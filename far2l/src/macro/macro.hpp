@@ -72,38 +72,6 @@ enum MACROMODEAREA
 	MACRO_LAST                        // Должен быть всегда последним! Используется в циклах
 };
 
-enum MACROFLAGS_MFLAGS
-{
-	MFLAGS_MODEMASK            =0x000000FF, // маска для выделения области действия (области начала исполнения) макроса
-
-	MFLAGS_DISABLEOUTPUT       =0x00000100, // подавить обновление экрана во время выполнения макроса
-	MFLAGS_NOSENDKEYSTOPLUGINS =0x00000200, // НЕ передавать плагинам клавиши во время записи/воспроизведения макроса
-	MFLAGS_RUNAFTERFARSTARTED  =0x00000400, // этот макрос уже запускался при старте ФАРа
-	MFLAGS_RUNAFTERFARSTART    =0x00000800, // этот макрос запускается при старте ФАРа
-
-	MFLAGS_EMPTYCOMMANDLINE    =0x00001000, // запускать, если командная линия пуста
-	MFLAGS_NOTEMPTYCOMMANDLINE =0x00002000, // запускать, если командная линия не пуста
-	MFLAGS_EDITSELECTION       =0x00004000, // запускать, если есть выделение в редакторе
-	MFLAGS_EDITNOSELECTION     =0x00008000, // запускать, если есть нет выделения в редакторе
-
-	MFLAGS_SELECTION           =0x00010000, // активная:  запускать, если есть выделение
-	MFLAGS_PSELECTION          =0x00020000, // пассивная: запускать, если есть выделение
-	MFLAGS_NOSELECTION         =0x00040000, // активная:  запускать, если есть нет выделения
-	MFLAGS_PNOSELECTION        =0x00080000, // пассивная: запускать, если есть нет выделения
-	MFLAGS_NOFILEPANELS        =0x00100000, // активная:  запускать, если это плагиновая панель
-	MFLAGS_PNOFILEPANELS       =0x00200000, // пассивная: запускать, если это плагиновая панель
-	MFLAGS_NOPLUGINPANELS      =0x00400000, // активная:  запускать, если это файловая панель
-	MFLAGS_PNOPLUGINPANELS     =0x00800000, // пассивная: запускать, если это файловая панель
-	MFLAGS_NOFOLDERS           =0x01000000, // активная:  запускать, если текущий объект "файл"
-	MFLAGS_PNOFOLDERS          =0x02000000, // пассивная: запускать, если текущий объект "файл"
-	MFLAGS_NOFILES             =0x04000000, // активная:  запускать, если текущий объект "папка"
-	MFLAGS_PNOFILES            =0x08000000, // пассивная: запускать, если текущий объект "папка"
-
-	MFLAGS_NEEDSAVEMACRO       =0x40000000, // необходимо этот макрос запомнить
-	MFLAGS_DISABLEMACRO        =0x80000000, // этот макрос отключен
-};
-
-
 // коды возврата для KeyMacro::GetCurRecord()
 enum MACRORECORDANDEXECUTETYPE
 {
@@ -271,7 +239,7 @@ class KeyMacro
 		int  IsRecording() {return(Recording);};
 		int  IsExecuting() {return(Work.Executing);};
 		int  IsExecutingLastKey();
-		int  IsDsableOutput() {return CheckCurMacroFlags(MFLAGS_DISABLEOUTPUT);};
+		int  IsDsableOutput();
 		void SetMode(int Mode) {KeyMacro::Mode=Mode;};
 		int  GetMode() {return(Mode);};
 

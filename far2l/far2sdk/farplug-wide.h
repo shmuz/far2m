@@ -1201,9 +1201,14 @@ struct ActlMediaType
 
 enum FARKEYSEQUENCEFLAGS
 {
-	KSFLAGS_DISABLEOUTPUT       = 0x00000001,
-	KSFLAGS_NOSENDKEYSTOPLUGINS = 0x00000002,
+	KSFLAGS_DISABLEOUTPUT       = 0x00000001, //### TO BE REMOVED
 	KSFLAGS_SILENTCHECK         = 0x00000001,
+	KSFLAGS_NOSENDKEYSTOPLUGINS = 0x00000002,
+	KSFLAGS_ENABLEOUTPUT        = 0x00000004,
+	KSFLAGS_LANGMASK            = 0x00000070, // 3 bits reserved for 8 languages
+	KSFLAGS_LUA                 = 0x00000000,
+	KSFLAGS_MOONSCRIPT          = 0x00000010,
+	KSFLAGS_NONE                = 0,
 };
 
 struct KeySequence
@@ -2251,11 +2256,7 @@ struct PluginInfo
 	const wchar_t * const *PluginConfigStrings;
 	int PluginConfigStringsNumber;
 	const wchar_t *CommandPrefix;
-#ifdef FAR_USE_INTERNALS
 	DWORD SysID;
-#else // ELSE FAR_USE_INTERNALS
-	DWORD Reserved;
-#endif // END FAR_USE_INTERNALS
 #ifdef FAR_USE_INTERNALS
 #if defined(PROCPLUGINMACROFUNC)
 	int MacroFunctionNumber;

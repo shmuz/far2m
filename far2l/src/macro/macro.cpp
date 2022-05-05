@@ -76,6 +76,37 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "dirmix.hpp"
 #include "console.hpp"
 
+enum MACROFLAGS_MFLAGS
+{
+	MFLAGS_MODEMASK            =0x000000FF, // маска для выделения области действия (области начала исполнения) макроса
+
+	MFLAGS_DISABLEOUTPUT       =0x00000100, // подавить обновление экрана во время выполнения макроса
+	MFLAGS_NOSENDKEYSTOPLUGINS =0x00000200, // НЕ передавать плагинам клавиши во время записи/воспроизведения макроса
+	MFLAGS_RUNAFTERFARSTARTED  =0x00000400, // этот макрос уже запускался при старте ФАРа
+	MFLAGS_RUNAFTERFARSTART    =0x00000800, // этот макрос запускается при старте ФАРа
+
+	MFLAGS_EMPTYCOMMANDLINE    =0x00001000, // запускать, если командная линия пуста
+	MFLAGS_NOTEMPTYCOMMANDLINE =0x00002000, // запускать, если командная линия не пуста
+	MFLAGS_EDITSELECTION       =0x00004000, // запускать, если есть выделение в редакторе
+	MFLAGS_EDITNOSELECTION     =0x00008000, // запускать, если есть нет выделения в редакторе
+
+	MFLAGS_SELECTION           =0x00010000, // активная:  запускать, если есть выделение
+	MFLAGS_PSELECTION          =0x00020000, // пассивная: запускать, если есть выделение
+	MFLAGS_NOSELECTION         =0x00040000, // активная:  запускать, если есть нет выделения
+	MFLAGS_PNOSELECTION        =0x00080000, // пассивная: запускать, если есть нет выделения
+	MFLAGS_NOFILEPANELS        =0x00100000, // активная:  запускать, если это плагиновая панель
+	MFLAGS_PNOFILEPANELS       =0x00200000, // пассивная: запускать, если это плагиновая панель
+	MFLAGS_NOPLUGINPANELS      =0x00400000, // активная:  запускать, если это файловая панель
+	MFLAGS_PNOPLUGINPANELS     =0x00800000, // пассивная: запускать, если это файловая панель
+	MFLAGS_NOFOLDERS           =0x01000000, // активная:  запускать, если текущий объект "файл"
+	MFLAGS_PNOFOLDERS          =0x02000000, // пассивная: запускать, если текущий объект "файл"
+	MFLAGS_NOFILES             =0x04000000, // активная:  запускать, если текущий объект "папка"
+	MFLAGS_PNOFILES            =0x08000000, // пассивная: запускать, если текущий объект "папка"
+
+	MFLAGS_NEEDSAVEMACRO       =0x40000000, // необходимо этот макрос запомнить
+	MFLAGS_DISABLEMACRO        =0x80000000, // этот макрос отключен
+};
+
 // для диалога назначения клавиши
 struct DlgParam
 {
@@ -84,6 +115,60 @@ struct DlgParam
 	int Mode;
 	int Recurse;
 };
+
+enum {
+	OP_ISEXECUTING              = 1,
+	OP_ISDISABLEOUTPUT          = 2,
+	OP_HISTORYDISABLEMASK       = 3,
+	OP_ISHISTORYDISABLE         = 4,
+	OP_ISTOPMACROOUTPUTDISABLED = 5,
+	OP_ISPOSTMACROENABLED       = 6,
+	OP_SETMACROVALUE            = 8,
+	OP_GETINPUTFROMMACRO        = 9,
+	OP_GETLASTERROR             = 11,
+};
+
+const DWORD Luamacro_Id = 0x10003;
+
+static bool ToDouble(long long v, double *d)
+{
+	if ((v >= 0 && v <= 0x1FFFFFFFFFFFFFLL) || (v < 0 && v >= -0x1FFFFFFFFFFFFFLL))
+	{
+		*d = (double)v;
+		return true;
+	}
+	return false;
+}
+
+static const wchar_t* GetMacroLanguage(FARKEYSEQUENCEFLAGS Flags)
+{
+	switch(Flags & KSFLAGS_LANGMASK)
+	{
+		default:
+		case KSFLAGS_LUA:        return L"lua";
+		case KSFLAGS_MOONSCRIPT: return L"moonscript";
+	}
+}
+
+static bool CallMacroPlugin(OpenMacroPluginInfo* Info)
+{
+	int ret;
+	int result = CtrlObject->Plugins.CallPlugin(Luamacro_Id, OPEN_LUAMACRO, Info, &ret) != 0;
+	return result && ret;
+}
+
+static bool MacroPluginOp(int OpCode, const FarMacroValue& Param, MacroPluginReturn* Ret = nullptr)
+{
+	FarMacroValue values[]={static_cast<double> (OpCode),Param};
+	FarMacroCall fmc={sizeof(FarMacroCall),2,values,nullptr,nullptr};
+	OpenMacroPluginInfo info={MCT_KEYMACRO,&fmc};
+	if (CallMacroPlugin(&info))
+	{
+		if (Ret) *Ret=info.Ret;
+		return true;
+	}
+	return false;
+}
 
 TMacroKeywords MKeywords[] =
 {
@@ -517,6 +602,8 @@ uint32_t WINAPI KeyNameMacroToKey(const wchar_t *Name)
 
 	return KEY_INVALID;
 }
+
+int KeyMacro::IsDsableOutput() {return CheckCurMacroFlags(MFLAGS_DISABLEOUTPUT);};
 
 KeyMacro::KeyMacro():
 	MacroVersion(ConfigReader("KeyMacros").GetInt("MacroVersion", 0)),
@@ -2270,7 +2357,7 @@ static bool kbdLayoutFunc(const TMacroFunction*)
 //	DWORD dwLayout = (DWORD)VMStack.Pop().getInteger();
 
 	BOOL Ret=TRUE;
-	HKL  RetLayout=(HKL)0; //Layout=(HKL)0, 
+	HKL  RetLayout=(HKL)0; //Layout=(HKL)0,
 
 	VMStack.Push(Ret?TVar(static_cast<INT64>(reinterpret_cast<INT_PTR>(RetLayout))):tviZero);
 
@@ -4483,7 +4570,7 @@ done:
 				double dbl;
 			} u = {};
 			static_assert( sizeof(u)==sizeof(LARGE_INTEGER) , "MCODE_OP_PUSHFLOAT: too big double");
-			
+
 			u.i64.u.HighPart=GetOpCode(MR,Work.ExecLIBPos++);   //???
 			u.i64.u.LowPart=GetOpCode(MR,Work.ExecLIBPos++);    //???
 			VMStack.Push(u.dbl);
@@ -6575,7 +6662,7 @@ int KeyMacro::GetMacroKeyInfo(bool FromReg,int Mode,int Pos, FARString &strKeyNa
 					case vtString:
 						strDescription.Format(Msg::MacroOutputFormatForHelpSz, var->value.s());
 						break;
-						
+
 					case vtUnknown: break;
 				}
 
