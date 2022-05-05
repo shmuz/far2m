@@ -1284,6 +1284,128 @@ struct MacroParseResult
 	const wchar_t *ErrSrc;
 };
 
+enum FARMACROVARTYPE
+{
+	FMVT_UNKNOWN                = 0,
+	FMVT_INTEGER                = 1,
+	FMVT_STRING                 = 2,
+	FMVT_DOUBLE                 = 3,
+	FMVT_BOOLEAN                = 4,
+	FMVT_BINARY                 = 5,
+	FMVT_POINTER                = 6,
+	FMVT_NIL                    = 7,
+	FMVT_ARRAY                  = 8,
+	FMVT_PANEL                  = 9,
+	FMVT_ERROR                  = 10,
+};
+
+struct FarMacroValue
+{
+	enum FARMACROVARTYPE Type;
+	union
+	{
+		long long        Integer;
+		long long        Boolean;
+		double         Double;
+		const wchar_t *String;
+		void          *Pointer;
+		struct
+		{
+			void *Data;
+			size_t Size;
+		} Binary;
+		struct
+		{
+			struct FarMacroValue *Values;
+			size_t Count;
+		} Array;
+	}
+#ifndef __cplusplus
+	Value
+#endif
+	;
+#ifdef __cplusplus
+	FarMacroValue()                   { Type=FMVT_NIL; }
+	FarMacroValue(int v)              { Type=FMVT_INTEGER; Integer=v; }
+	FarMacroValue(unsigned int v)     { Type=FMVT_INTEGER; Integer=v; }
+	FarMacroValue(long long v)          { Type=FMVT_INTEGER; Integer=v; }
+	FarMacroValue(unsigned long long v) { Type=FMVT_INTEGER; Integer=v; }
+	FarMacroValue(bool v)             { Type=FMVT_BOOLEAN; Boolean=v; }
+	FarMacroValue(double v)           { Type=FMVT_DOUBLE; Double=v; }
+	FarMacroValue(const wchar_t* v)   { Type=FMVT_STRING; String=v; }
+	FarMacroValue(void* v)            { Type=FMVT_POINTER; Pointer=v; }
+	//~ FarMacroValue(const UUID& v)      { Type=FMVT_BINARY; Binary.Data=&const_cast<UUID&>(v); Binary.Size=sizeof(UUID); }
+	FarMacroValue(FarMacroValue* arr,size_t count) { Type=FMVT_ARRAY; Array.Values=arr; Array.Count=count; }
+#ifdef FAR_USE_INTERNALS
+	//~ FarMacroValue(const string& v)    { Type=FMVT_STRING; String=v.c_str(); }
+#endif // END FAR_USE_INTERNALS
+#endif
+};
+
+struct FarMacroCall
+{
+	size_t StructSize;
+	size_t Count;
+	struct FarMacroValue *Values;
+	void (WINAPI *Callback)(void *CallbackData, struct FarMacroValue *Values, size_t Count);
+	void *CallbackData;
+};
+
+struct MacroPluginReturn
+{
+	intptr_t ReturnType;
+	size_t Count;
+	struct FarMacroValue *Values;
+};
+
+enum MACROCALLTYPE
+{
+	MCT_MACROPARSE         = 0,
+	MCT_LOADMACROS         = 1,
+	MCT_ENUMMACROS         = 2,
+	MCT_WRITEMACROS        = 3,
+	MCT_GETMACRO           = 4,
+	MCT_RECORDEDMACRO      = 5,
+	MCT_DELMACRO           = 6,
+	MCT_RUNSTARTMACRO      = 7,
+	MCT_EXECSTRING         = 8,
+	MCT_PANELSORT          = 9,
+	MCT_GETCUSTOMSORTMODES = 10,
+	MCT_ADDMACRO           = 11,
+	MCT_KEYMACRO           = 12,
+	MCT_CANPANELSORT       = 13,
+};
+
+enum MACROPLUGINRETURNTYPE
+{
+	MPRT_NORMALFINISH  = 0,
+	MPRT_ERRORFINISH   = 1,
+	MPRT_ERRORPARSE    = 2,
+	MPRT_KEYS          = 3,
+	MPRT_PRINT         = 4,
+	MPRT_PLUGINCALL    = 5,
+	MPRT_PLUGINMENU    = 6,
+	MPRT_PLUGINCONFIG  = 7,
+	MPRT_PLUGINCOMMAND = 8,
+	MPRT_USERMENU      = 9,
+	MPRT_HASNOMACRO    = 10,
+};
+
+struct OpenMacroPluginInfo
+{
+	enum MACROCALLTYPE CallType;
+	struct FarMacroCall *Data;
+	struct MacroPluginReturn Ret;
+};
+
+typedef intptr_t (WINAPI *FARAPICALLFAR)(intptr_t CheckCode, struct FarMacroCall* Data);
+
+struct MacroPrivateInfo
+{
+	size_t StructSize;
+	FARAPICALLFAR CallFar;
+};
+
 struct ActlKeyMacro
 {
 	int Command;
@@ -2101,6 +2223,8 @@ struct PluginStartupInfo
 	FARAPIPLUGINSCONTROL   PluginsControl;
 	FARAPIFILEFILTERCONTROL FileFilterControl;
 	FARAPIREGEXPCONTROL    RegExpControl;
+
+	const void*            Private;
 };
 
 
@@ -2268,6 +2392,7 @@ enum OPENPLUGIN_OPENFROM
 	OPEN_FILEPANEL          = 7,
 	OPEN_DIALOG             = 8,
 	OPEN_ANALYSE            = 9,
+	OPEN_LUAMACRO           = 100,
 
 	OPEN_FROMMACRO_MASK     = 0x000F0000,
 
