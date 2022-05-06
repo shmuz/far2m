@@ -218,12 +218,16 @@ class KeyMacro
 		DWORD SetOpCode(struct MacroRecord *MR,int PC,DWORD OpCode);
 
 	private:
+		static int GetExecutingState();
 		static LONG_PTR WINAPI AssignMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2);
 		static LONG_PTR WINAPI ParamMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2);
 
 	public:
 		KeyMacro();
 		~KeyMacro();
+		static bool IsOutputDisabled();
+		static bool IsHistoryDisabled(int TypeHistory);
+		intptr_t CallFar(intptr_t CheckCode, FarMacroCall* Data);
 
 	public:
 		uint32_t ProcessKey(uint32_t Key);

@@ -35,6 +35,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FARString.hpp"
 
+#define Luamacro_Id 0x10003
+
 //  +CASR_* Поведение Ctrl-Alt-Shift для AllCtrlAltShiftRule
 enum
 {

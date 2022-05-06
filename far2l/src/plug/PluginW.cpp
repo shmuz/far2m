@@ -122,6 +122,7 @@ static const char NFMP_GetMinFarVersion[] = "GetMinFarVersionW";
 static const char NFMP_Analyse[] = "AnalyseW";
 static const char NFMP_GetCustomData[] = "GetCustomDataW";
 static const char NFMP_FreeCustomData[] = "FreeCustomDataW";
+static const char NFMP_GetGlobalInfo[] = "GetGlobalInfoW";
 
 
 static void CheckScreenLock()
@@ -350,10 +351,11 @@ bool PluginW::Load()
 	GetModuleFN(pAnalyseW, NFMP_Analyse);
 	GetModuleFN(pGetCustomDataW, NFMP_GetCustomData);
 	GetModuleFN(pFreeCustomDataW, NFMP_FreeCustomData);
+	GetModuleFN(pGetGlobalInfoW, NFMP_GetGlobalInfo);
 
 	bool bUnloaded = false;
 
-	if (!CheckMinFarVersion(bUnloaded) || !SetStartupInfo(bUnloaded))
+	if (!CheckMinFarVersion(bUnloaded) || (GetGlobalInfo(), !SetStartupInfo(bUnloaded)))
 	{
 		if (!bUnloaded)
 			Unload();
@@ -396,6 +398,12 @@ static void WINAPI farBackgroundTaskW(const wchar_t *Info, BOOL Started)
 	else
 		CtrlObject->Plugins.BackroundTaskFinished(Info);
 }
+
+static const MacroPrivateInfo MacroInfo
+{
+	sizeof(MacroPrivateInfo),
+	farCallFar,
+};
 
 void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandardFunctions *FSF)
 {
@@ -502,6 +510,8 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 	if (pPlugin)
 	{
 		PSI->ModuleName = pPlugin->GetModuleName().CPtr();
+		if (pPlugin->GetGlobalInfo() == Luamacro_Id)
+			PSI->Private = &MacroInfo;
 	}
 }
 
@@ -564,6 +574,18 @@ bool PluginW::SetStartupInfo(bool &bUnloaded)
 	}
 
 	return true;
+}
+
+DWORD PluginW::GetGlobalInfo()
+{
+	if (pGetGlobalInfoW)
+	{
+		ExecuteStruct es;
+		es.id = EXCEPT_GETGLOBALINFO;
+		EXECUTE_FUNCTION_EX(pGetGlobalInfoW(), es);
+		SysID = (DWORD)es.nResult;
+	}
+	return SysID;
 }
 
 static void ShowMessageAboutIllegalPluginVersion(const wchar_t* plg,int required)

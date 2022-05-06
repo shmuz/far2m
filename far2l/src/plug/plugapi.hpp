@@ -132,6 +132,7 @@ int WINAPI farRegExpControl(HANDLE hHandle, int Command, LONG_PTR Param);
 
 DWORD WINAPI farGetCurrentDirectory(DWORD Size,wchar_t* Buffer);
 
+intptr_t WINAPI farCallFar(intptr_t CheckCode, FarMacroCall* Data);
 
 enum ExceptFunctionsType
 {
@@ -169,6 +170,7 @@ enum ExceptFunctionsType
 	EXCEPT_ANALYSE,
 	EXCEPT_GETCUSTOMDATA,
 	EXCEPT_FREECUSTOMDATA,
+	EXCEPT_GETGLOBALINFO,
 #if defined(PROCPLUGINMACROFUNC)
 	EXCEPT_PROCESSMACROFUNC,
 #endif

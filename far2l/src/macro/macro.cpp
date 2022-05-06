@@ -128,8 +128,6 @@ enum {
 	OP_GETLASTERROR             = 11,
 };
 
-const DWORD Luamacro_Id = 0x10003;
-
 static bool ToDouble(long long v, double *d)
 {
 	if ((v >= 0 && v <= 0x1FFFFFFFFFFFFFLL) || (v < 0 && v >= -0x1FFFFFFFFFFFFFLL))
@@ -168,6 +166,73 @@ static bool MacroPluginOp(int OpCode, const FarMacroValue& Param, MacroPluginRet
 		return true;
 	}
 	return false;
+}
+
+int KeyMacro::GetExecutingState()
+{
+	MacroPluginReturn Ret;
+	return MacroPluginOp(OP_ISEXECUTING,false,&Ret) ? Ret.ReturnType : static_cast<int>(MACROSTATE_NOMACRO);
+}
+
+bool KeyMacro::IsOutputDisabled()
+{
+	MacroPluginReturn Ret;
+	return MacroPluginOp(OP_ISDISABLEOUTPUT,false,&Ret)? Ret.ReturnType != 0 : false;
+}
+
+static DWORD SetHistoryDisableMask(DWORD Mask)
+{
+	MacroPluginReturn Ret;
+	return MacroPluginOp(OP_HISTORYDISABLEMASK, static_cast<double>(Mask), &Ret)? Ret.ReturnType : 0;
+}
+
+static DWORD GetHistoryDisableMask()
+{
+	MacroPluginReturn Ret;
+	return MacroPluginOp(OP_HISTORYDISABLEMASK,false,&Ret) ? Ret.ReturnType : 0;
+}
+
+bool KeyMacro::IsHistoryDisabled(int TypeHistory)
+{
+	MacroPluginReturn Ret;
+	return MacroPluginOp(OP_ISHISTORYDISABLE, static_cast<double>(TypeHistory), &Ret)? !!Ret.ReturnType : false;
+}
+
+static bool IsTopMacroOutputDisabled()
+{
+	MacroPluginReturn Ret;
+	return MacroPluginOp(OP_ISTOPMACROOUTPUTDISABLED,false,&Ret) ? !!Ret.ReturnType : false;
+}
+
+static bool IsPostMacroEnabled()
+{
+	MacroPluginReturn Ret;
+	return MacroPluginOp(OP_ISPOSTMACROENABLED,false,&Ret) && Ret.ReturnType==1;
+}
+
+static void SetMacroValue(bool Value)
+{
+	MacroPluginOp(OP_SETMACROVALUE, Value);
+}
+
+static bool TryToPostMacro(FARMACROAREA Area,const FARString& TextKey,DWORD IntKey)
+{
+	FarMacroValue values[] = { 10.0, static_cast<double>(Area), TextKey.CPtr(), static_cast<double>(IntKey) };
+	FarMacroCall fmc={sizeof(FarMacroCall),ARRAYSIZE(values),values,nullptr,nullptr};
+	OpenMacroPluginInfo info={MCT_KEYMACRO,&fmc};
+	return CallMacroPlugin(&info);
+}
+
+static inline Panel* TypeToPanel(int Type)
+{
+	Panel* ActivePanel = CtrlObject->Cp()->ActivePanel;
+	Panel* PassivePanel = CtrlObject->Cp()->GetAnotherPanel(ActivePanel);
+	return Type == 0 ? ActivePanel : (Type == 1 ? PassivePanel : nullptr);
+}
+
+intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
+{
+	return 0; //### TODO
 }
 
 TMacroKeywords MKeywords[] =

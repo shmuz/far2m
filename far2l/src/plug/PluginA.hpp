@@ -157,6 +157,7 @@ class PluginA: public Plugin
 		bool HasAnalyse() { return false; }
 		bool HasGetCustomData()  { return false; }
 		bool HasFreeCustomData() { return false; }
+		bool HasGetGlobalInfo()  { return false; }
 
 		const FARString &GetModuleName() { return m_strModuleName; }
 		const char *GetSettingsName() { return m_strSettingsName.c_str(); }
@@ -214,6 +215,7 @@ class PluginA: public Plugin
 
 		bool MayExitFAR();
 		void ExitFAR();
+		DWORD GetGlobalInfo() { return 0; }
 
 	private:
 

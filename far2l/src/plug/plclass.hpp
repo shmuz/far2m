@@ -134,6 +134,7 @@ class Plugin
 		virtual bool HasAnalyse() = 0;
 		virtual bool HasGetCustomData() = 0;
 		virtual bool HasFreeCustomData() = 0;
+		virtual bool HasGetGlobalInfo() = 0;
 #if defined(PROCPLUGINMACROFUNC)
 		virtual bool HasProcessMacroFunc() = 0;
 #endif
@@ -191,4 +192,5 @@ class Plugin
 
 		virtual bool MayExitFAR() = 0;
 		virtual void ExitFAR() = 0;
+		virtual DWORD GetGlobalInfo() = 0;
 };

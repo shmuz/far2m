@@ -2522,6 +2522,7 @@ extern "C"
 	int    WINAPI _export SetDirectoryW(HANDLE hPlugin,const wchar_t *Dir,int OpMode);
 	int    WINAPI _export SetFindListW(HANDLE hPlugin,const struct PluginPanelItem *PanelItem,int ItemsNumber);
 	void   WINAPI _export SetStartupInfoW(const struct PluginStartupInfo *Info);
+	DWORD  WINAPI _export GetGlobalInfoW();
 
 #ifdef __cplusplus
 };

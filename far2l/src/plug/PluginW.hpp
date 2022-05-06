@@ -68,6 +68,7 @@ typedef int (WINAPI *PLUGINPROCESSMACROFUNCW)(const wchar_t *Name, const FarMacr
 typedef int (WINAPI *PLUGINANALYSEW)(const AnalyseData *pData);
 typedef int (WINAPI *PLUGINGETCUSTOMDATAW)(const wchar_t *FilePath, wchar_t **CustomData);
 typedef void (WINAPI *PLUGINFREECUSTOMDATAW)(wchar_t *CustomData);
+typedef DWORD (WINAPI *PLUGINGETGLOBALINFOW)();
 
 
 class PluginW: public Plugin
@@ -108,6 +109,7 @@ class PluginW: public Plugin
 		PLUGINANALYSEW               pAnalyseW;
 		PLUGINGETCUSTOMDATAW         pGetCustomDataW;
 		PLUGINFREECUSTOMDATAW        pFreeCustomDataW;
+		PLUGINGETGLOBALINFOW         pGetGlobalInfoW;
 
 	public:
 
@@ -163,6 +165,7 @@ class PluginW: public Plugin
 		bool HasAnalyse() { return pAnalyseW!=nullptr; }
 		bool HasGetCustomData()  { return pGetCustomDataW!=nullptr; }
 		bool HasFreeCustomData() { return pFreeCustomDataW!=nullptr; }
+		bool HasGetGlobalInfo()  { return pGetGlobalInfoW!=nullptr; }
 		const FARString &GetModuleName() { return m_strModuleName; }
 		const char *GetSettingsName() { return m_strSettingsName.c_str(); }
 		DWORD GetSysID() { return SysID; }
@@ -219,6 +222,7 @@ class PluginW: public Plugin
 
 		bool MayExitFAR();
 		void ExitFAR();
+		DWORD GetGlobalInfo();
 
 	private:
 
