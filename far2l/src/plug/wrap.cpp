@@ -3069,9 +3069,9 @@ INT_PTR WINAPI FarAdvControlA(INT_PTR ModuleNumber,int Command,void *Param)
 					km.Command=MCMD_POSTMACROSTRING;
 					km.Param.PlainText.SequenceText=AnsiToUnicode(kmA->Param.PlainText.SequenceText);
 
-					if (kmA->Param.PlainText.Flags&oldfar::KSFLAGS_DISABLEOUTPUT) km.Param.PlainText.Flags|=KSFLAGS_DISABLEOUTPUT;
+					if (kmA->Param.PlainText.Flags&oldfar::KSFLAGS_DISABLEOUTPUT) km.Param.PlainText.Flags|=KMFLAGS_DISABLEOUTPUT;
 
-					if (kmA->Param.PlainText.Flags&oldfar::KSFLAGS_NOSENDKEYSTOPLUGINS) km.Param.PlainText.Flags|=KSFLAGS_NOSENDKEYSTOPLUGINS;
+					if (kmA->Param.PlainText.Flags&oldfar::KSFLAGS_NOSENDKEYSTOPLUGINS) km.Param.PlainText.Flags|=KMFLAGS_NOSENDKEYSTOPLUGINS;
 
 					break;
 				case oldfar::MCMD_GETSTATE:
@@ -3145,9 +3145,9 @@ INT_PTR WINAPI FarAdvControlA(INT_PTR ModuleNumber,int Command,void *Param)
 
 			ks.Count = ksA->Count;
 
-			if (ksA->Flags&oldfar::KSFLAGS_DISABLEOUTPUT) ks.Flags|=KSFLAGS_DISABLEOUTPUT;
+			if (ksA->Flags&oldfar::KSFLAGS_DISABLEOUTPUT) ks.Flags|=KMFLAGS_DISABLEOUTPUT;
 
-			if (ksA->Flags&oldfar::KSFLAGS_NOSENDKEYSTOPLUGINS) ks.Flags|=KSFLAGS_NOSENDKEYSTOPLUGINS;
+			if (ksA->Flags&oldfar::KSFLAGS_NOSENDKEYSTOPLUGINS) ks.Flags|=KMFLAGS_NOSENDKEYSTOPLUGINS;
 
 			DWORD* Sequence = (DWORD*)malloc(ks.Count*sizeof(DWORD));
 			for (int i=0; i<ks.Count; i++)

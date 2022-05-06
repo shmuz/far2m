@@ -76,6 +76,30 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "dirmix.hpp"
 #include "console.hpp"
 
+static void Log(const char* str)
+{
+  static int N = 0;
+  const char* home = getenv("HOME");
+  if (home) {
+    char* buf = (char*) malloc(strlen(home) + 64);
+    if (buf) {
+      strcpy(buf, home);
+      strcat(buf, "/luafar_log.txt");
+      FILE* fp = fopen(buf, "a");
+      if (fp) {
+        if (++N == 1) {
+          time_t rtime;
+          time (&rtime);
+          fprintf(fp, "\n%s------------------------------\n", ctime(&rtime));
+        }
+        fprintf(fp, "%d: %s\n", N, str);
+        fclose(fp);
+      }
+      free(buf);
+    }
+  }
+}
+
 enum MACROFLAGS_MFLAGS
 {
 	MFLAGS_MODEMASK            =0x000000FF, // маска для выделения области действия (области начала исполнения) макроса
@@ -138,20 +162,20 @@ static bool ToDouble(long long v, double *d)
 	return false;
 }
 
-static const wchar_t* GetMacroLanguage(FARKEYSEQUENCEFLAGS Flags)
+static const wchar_t* GetMacroLanguage(FARKEYMACROFLAGS Flags)
 {
-	switch(Flags & KSFLAGS_LANGMASK)
+	switch(Flags & KMFLAGS_LANGMASK)
 	{
 		default:
-		case KSFLAGS_LUA:        return L"lua";
-		case KSFLAGS_MOONSCRIPT: return L"moonscript";
+		case KMFLAGS_LUA:        return L"lua";
+		case KMFLAGS_MOONSCRIPT: return L"moonscript";
 	}
 }
 
 static bool CallMacroPlugin(OpenMacroPluginInfo* Info)
 {
 	int ret;
-	int result = CtrlObject->Plugins.CallPlugin(Luamacro_Id, OPEN_LUAMACRO, Info, &ret) != 0;
+	int result = CtrlObject->Plugins.CallPlugin(SYSID_LUAMACRO, OPEN_LUAMACRO, Info, &ret) != 0;
 	return result && ret;
 }
 
@@ -223,11 +247,89 @@ static bool TryToPostMacro(FARMACROAREA Area,const FARString& TextKey,DWORD IntK
 	return CallMacroPlugin(&info);
 }
 
-static inline Panel* TypeToPanel(int Type)
+static inline Panel* SelectPanel(int Type)
 {
 	Panel* ActivePanel = CtrlObject->Cp()->ActivePanel;
 	Panel* PassivePanel = CtrlObject->Cp()->GetAnotherPanel(ActivePanel);
 	return Type == 0 ? ActivePanel : (Type == 1 ? PassivePanel : nullptr);
+}
+
+KeyMacro::KeyMacro():
+	m_Area(MACROAREA_SHELL),
+	m_StartMode(MACROAREA_OTHER),
+	m_Recording(MACROSTATE_NOMACRO),
+	m_InternalInput(0),
+	m_WaitKey(0)
+{
+	//print_opcodes();
+}
+
+bool KeyMacro::LoadMacros(bool FromFar, bool InitedRAM, const FarMacroLoad *Data)
+{
+	if (FromFar)
+	{
+		if (Opt.Macro.DisableMacro&MDOL_ALL) return false;
+	}
+	else
+	{
+		if (!CtrlObject->Plugins.IsPluginsLoaded()) return false;
+	}
+
+	m_Recording = MACROSTATE_NOMACRO;
+
+	FarMacroValue values[]={InitedRAM,false,0.0};
+	if (Data)
+	{
+		if (Data->Path) values[1] = Data->Path;
+		values[2] = static_cast<double>(Data->Flags);
+	}
+	FarMacroCall fmc={sizeof(FarMacroCall),ARRAYSIZE(values),values,nullptr,nullptr};
+	OpenMacroPluginInfo info={MCT_LOADMACROS,&fmc};
+	return CallMacroPlugin(&info);
+}
+
+bool KeyMacro::SaveMacros(bool /*always*/)
+{
+	OpenMacroPluginInfo info={MCT_WRITEMACROS,nullptr};
+	return CallMacroPlugin(&info);
+}
+
+int KeyMacro::GetState() const
+{
+	return (m_Recording != MACROSTATE_NOMACRO) ? m_Recording : GetExecutingState();
+}
+
+static bool GetInputFromMacro(MacroPluginReturn *mpr)
+{
+	return MacroPluginOp(OP_GETINPUTFROMMACRO,false,mpr);
+}
+
+struct GetMacroData
+{
+	FARMACROAREA Area;
+	const wchar_t *Code;
+	const wchar_t *Description;
+	MACROFLAGS_MFLAGS Flags;
+	bool IsKeyboardMacro;
+};
+
+static bool LM_GetMacro(GetMacroData* Data, FARMACROAREA Area, const FARString& TextKey, bool UseCommon)
+{
+	FarMacroValue InValues[] = { static_cast<double>(Area),TextKey.CPtr(),UseCommon };
+	FarMacroCall fmc={sizeof(FarMacroCall),ARRAYSIZE(InValues),InValues,nullptr,nullptr};
+	OpenMacroPluginInfo info={MCT_GETMACRO,&fmc};
+
+	if (CallMacroPlugin(&info) && info.Ret.Count>=5)
+	{
+		const auto* Values = info.Ret.Values;
+		Data->Area        = static_cast<FARMACROAREA>(static_cast<int>(Values[0].Double));
+		Data->Code        = Values[1].Type==FMVT_STRING ? Values[1].String : L"";
+		Data->Description = Values[2].Type==FMVT_STRING ? Values[2].String : L"";
+		Data->Flags       = static_cast<MACROFLAGS_MFLAGS>(Values[3].Double);
+		Data->IsKeyboardMacro = Values[4].Boolean != 0;
+		return true;
+	}
+	return false;
 }
 
 intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
@@ -670,24 +772,6 @@ uint32_t WINAPI KeyNameMacroToKey(const wchar_t *Name)
 
 int KeyMacro::IsDsableOutput() {return CheckCurMacroFlags(MFLAGS_DISABLEOUTPUT);};
 
-KeyMacro::KeyMacro():
-	MacroVersion(ConfigReader("KeyMacros").GetInt("MacroVersion", 0)),
-	Recording(MACROMODE_NOMACRO),
-	InternalInput(0),
-	IsRedrawEditor(0),
-	Mode(MACRO_SHELL),
-	StartMode(0),
-	CurPCStack(-1),
-	MacroLIB(nullptr),
-	RecBufferSize(0),
-	RecBuffer(nullptr),
-	RecSrc(nullptr),
-	LockScr(nullptr)
-{
-	Work.Init(nullptr);
-	memset(&IndexMode,0,sizeof(IndexMode));
-}
-
 KeyMacro::~KeyMacro()
 {
 	InitInternalVars();
@@ -813,57 +897,6 @@ void KeyMacro::ReleaseWORKBuffer(BOOL All)
 	}
 }
 
-// загрузка ВСЕХ макросов из реестра
-int KeyMacro::LoadMacros(BOOL InitedRAM,BOOL LoadAll)
-{
-	int ErrCount=0;
-	InitInternalVars(InitedRAM);
-
-	if (Opt.Macro.DisableMacro&MDOL_ALL)
-		return FALSE;
-
-	FARString strBuffer;
-	ReadVarsConst(MACRO_VARS,strBuffer);
-	ReadVarsConst(MACRO_CONSTS,strBuffer);
-	ReadMacroFunction(MACRO_FUNCS,strBuffer);
-
-	int Areas[MACRO_LAST];
-
-	for (int i=MACRO_OTHER; i < MACRO_LAST; i++)
-	{
-		Areas[i]=i;
-	}
-
-	if (!LoadAll)
-	{
-		// "выведем из строя" ненужные области - будет загружаться только то, что не равно значению MACRO_LAST
-		Areas[MACRO_SHELL]=
-			Areas[MACRO_SEARCH]=
-			Areas[MACRO_DISKS]=
-			Areas[MACRO_MAINMENU]=
-			Areas[MACRO_INFOPANEL]=
-			Areas[MACRO_QVIEWPANEL]=
-			Areas[MACRO_TREEPANEL]=
-			Areas[MACRO_USERMENU]= // <-- Mantis#0001594
-			Areas[MACRO_FINDFOLDER]=MACRO_LAST;
-	}
-
-	for (int i=MACRO_OTHER; i < MACRO_LAST; i++)
-	{
-		if (Areas[i] == MACRO_LAST)
-			continue;
-
-		if (!ReadMacros(i,strBuffer))
-		{
-			ErrCount++;
-		}
-	}
-
-	KeyMacro::Sort();
-
-	return ErrCount?FALSE:TRUE;
-}
-
 uint32_t KeyMacro::ProcessKey(uint32_t Key)
 {
 	if (InternalInput || Key==KEY_IDLE || Key==KEY_NONE || !FrameManager->GetCurrentFrame())
@@ -981,7 +1014,7 @@ uint32_t KeyMacro::ProcessKey(uint32_t Key)
 			KeyMacro::Sort();
 
 			if (Opt.AutoSaveSetup)
-				SaveMacros(FALSE); // записать только изменения!
+				SaveMacros(false); // записать только изменения!
 
 			return TRUE;
 		}
@@ -5289,60 +5322,6 @@ wchar_t *KeyMacro::MkTextSequence(DWORD *Buffer,int BufferSize,const wchar_t *Sr
 
 	return nullptr;
 }
-
-// Сохранение ВСЕХ макросов
-void KeyMacro::SaveMacros(BOOL AllSaved)
-{
-	FARString strRegKeyName;
-	//WriteVarsConst(MACRO_VARS);
-	//WriteVarsConst(MACRO_CONSTS);
-
-	ConfigWriter cfg_writer;
-	for (int I=0; I<MacroLIBCount; I++)
-	{
-		if (!AllSaved  && !(MacroLIB[I].Flags&MFLAGS_NEEDSAVEMACRO))
-			continue;
-
-		MkRegKeyName(I, strRegKeyName);
-		cfg_writer.SelectSection(strRegKeyName);
-
-		if (!MacroLIB[I].BufferSize || !MacroLIB[I].Src)
-		{
-			cfg_writer.RemoveSection();
-			continue;
-		}
-
-#if 0
-
-		if (!(TextBuffer=MkTextSequence(MacroLIB[I].Buffer,MacroLIB[I].BufferSize,MacroLIB[I].Src)))
-			continue;
-
-		SetRegKey(RegKeyName,"Sequence",TextBuffer);
-
-		//_SVS(SysLog(L"%3d) %ls|Sequence='%ls'",I,RegKeyName,TextBuffer));
-		if (TextBuffer)
-			free(TextBuffer);
-
-#endif
-		cfg_writer.SetString("Sequence", MacroLIB[I].Src);
-
-		if (MacroLIB[I].Description)
-			cfg_writer.SetString("Description", MacroLIB[I].Description);
-		else
-			cfg_writer.RemoveKey("Description");
-
-		// подсократим кодУ...
-		for (int J=0; J < int(ARRAYSIZE(MKeywordsFlags)); ++J)
-		{
-			FARString KeywordName(MKeywordsFlags[J].Name);
-			if (MacroLIB[I].Flags & MKeywordsFlags[J].Value)
-				cfg_writer.SetUInt(KeywordName.GetMB(), 1);
-			else
-				cfg_writer.RemoveKey(KeywordName.GetMB());
-		}
-	}
-}
-
 
 int KeyMacro::WriteVarsConst(int WriteMode)
 {

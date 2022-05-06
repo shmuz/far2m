@@ -230,6 +230,7 @@ class KeyMacro
 		intptr_t CallFar(intptr_t CheckCode, FarMacroCall* Data);
 
 	public:
+		int GetState() const;
 		uint32_t ProcessKey(uint32_t Key);
 		int GetKey();
 		int PeekKey();
@@ -256,8 +257,8 @@ class KeyMacro
 		// Поместить временный рекорд (бинарное представление)
 		int PostNewMacro(struct MacroRecord *MRec,BOOL NeedAddSendFlag=0,BOOL IsPluginSend=FALSE);
 
-		int  LoadMacros(BOOL InitedRAM=TRUE,BOOL LoadAll=TRUE);
-		void SaveMacros(BOOL AllSaved=TRUE);
+		bool LoadMacros(bool FromFar, bool InitedRAM=true, const FarMacroLoad *Data=nullptr);
+		static bool SaveMacros(bool always);
 
 		int GetStartIndex(int Mode) {return IndexMode[Mode<MACRO_LAST-1?Mode:MACRO_LAST-1][0];}
 		// Функция получения индекса нужного макроса в массиве
@@ -294,6 +295,16 @@ class KeyMacro
 		static void RegisterMacroIntFunction();
 		static TMacroFunction *RegisterMacroFunction(const TMacroFunction *tmfunc);
 		static bool UnregMacroFunction(size_t Index);
+
+private:
+	FARMACROAREA m_Area;
+	FARMACROAREA m_StartMode;
+	FARMACROSTATE m_Recording;
+	FARString m_RecCode;
+	FARString m_RecDescription;
+	int m_InternalInput;
+	int m_WaitKey;
+	FARString m_StringToPrint;
 };
 
 BOOL WINAPI KeyMacroToText(uint32_t Key,FARString &strKeyText0);

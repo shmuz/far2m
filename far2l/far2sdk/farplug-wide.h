@@ -1199,16 +1199,16 @@ struct ActlMediaType
 };
 #endif // END FAR_USE_INTERNALS
 
-enum FARKEYSEQUENCEFLAGS
+enum FARKEYMACROFLAGS
 {
-	KSFLAGS_DISABLEOUTPUT       = 0x00000001, //### TO BE REMOVED
-	KSFLAGS_SILENTCHECK         = 0x00000001,
-	KSFLAGS_NOSENDKEYSTOPLUGINS = 0x00000002,
-	KSFLAGS_ENABLEOUTPUT        = 0x00000004,
-	KSFLAGS_LANGMASK            = 0x00000070, // 3 bits reserved for 8 languages
-	KSFLAGS_LUA                 = 0x00000000,
-	KSFLAGS_MOONSCRIPT          = 0x00000010,
-	KSFLAGS_NONE                = 0,
+	KMFLAGS_DISABLEOUTPUT       = 0x00000001, //### TO BE REMOVED
+	KMFLAGS_SILENTCHECK         = 0x00000001,
+	KMFLAGS_NOSENDKEYSTOPLUGINS = 0x00000002,
+	KMFLAGS_ENABLEOUTPUT        = 0x00000004,
+	KMFLAGS_LANGMASK            = 0x00000070, // 3 bits reserved for 8 languages
+	KMFLAGS_LUA                 = 0x00000000,
+	KMFLAGS_MOONSCRIPT          = 0x00000010,
+	KMFLAGS_NONE                = 0,
 };
 
 struct KeySequence
@@ -1354,6 +1354,31 @@ struct FarMacroCall
 	struct FarMacroValue *Values;
 	void (WINAPI *Callback)(void *CallbackData, struct FarMacroValue *Values, size_t Count);
 	void *CallbackData;
+};
+
+struct FarGetValue
+{
+	size_t StructSize;
+	intptr_t Type;
+	struct FarMacroValue Value;
+};
+
+struct MacroExecuteString
+{
+	size_t StructSize;
+	enum FARKEYMACROFLAGS Flags;
+	const wchar_t *SequenceText;
+	size_t InCount;
+	struct FarMacroValue *InValues;
+	size_t OutCount;
+	const struct FarMacroValue *OutValues;
+};
+
+struct FarMacroLoad
+{
+	size_t StructSize;
+	const wchar_t *Path;
+	unsigned long long Flags;
 };
 
 struct MacroPluginReturn

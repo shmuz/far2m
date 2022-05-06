@@ -510,7 +510,7 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 	if (pPlugin)
 	{
 		PSI->ModuleName = pPlugin->GetModuleName().CPtr();
-		if (pPlugin->GetGlobalInfo() == Luamacro_Id)
+		if (pPlugin->GetGlobalInfo() == SYSID_LUAMACRO)
 			PSI->Private = &MacroInfo;
 	}
 }

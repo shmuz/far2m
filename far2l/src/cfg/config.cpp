@@ -181,7 +181,7 @@ void SystemSettings()
 	DialogItemEx *SudoEnabledItem = Builder.AddCheckbox(Msg::ConfigSudoEnabled, &Opt.SudoEnabled);
 	DialogItemEx *SudoPasswordExpirationEdit = Builder.AddIntEditField(&Opt.SudoPasswordExpiration, 4);
 	DialogItemEx *SudoPasswordExpirationText = Builder.AddTextBefore(SudoPasswordExpirationEdit, Msg::ConfigSudoPasswordExpiration);
-	
+
 	SudoPasswordExpirationText->Indent(4);
 	SudoPasswordExpirationEdit->Indent(4);
 
@@ -325,48 +325,48 @@ void InterfaceSettings()
 {
 	for (;;) {
 		DialogBuilder Builder(Msg::ConfigInterfaceTitle, L"InterfSettings");
-		
+
 		Builder.AddCheckbox(Msg::ConfigClock, &Opt.Clock);
 		Builder.AddCheckbox(Msg::ConfigViewerEditorClock, &Opt.ViewerEditorClock);
 		Builder.AddCheckbox(Msg::ConfigKeyBar, &Opt.ShowKeyBar);
 		Builder.AddCheckbox(Msg::ConfigMenuBar, &Opt.ShowMenuBar);
 		DialogItemEx *SaverCheckbox = Builder.AddCheckbox(Msg::ConfigSaver, &Opt.ScreenSaver);
-		
+
 		DialogItemEx *SaverEdit = Builder.AddIntEditField(&Opt.ScreenSaverTime, 2);
 		SaverEdit->Indent(4);
 		Builder.AddTextAfter(SaverEdit, Msg::ConfigSaverMinutes);
 		Builder.LinkFlags(SaverCheckbox, SaverEdit, DIF_DISABLE);
-		
+
 		Builder.AddCheckbox(Msg::ConfigCopyTotal, &Opt.CMOpt.CopyShowTotal);
 		Builder.AddCheckbox(Msg::ConfigCopyTimeRule, &Opt.CMOpt.CopyTimeRule);
 		Builder.AddCheckbox(Msg::ConfigDeleteTotal, &Opt.DelOpt.DelShowTotal);
 		Builder.AddCheckbox(Msg::ConfigPgUpChangeDisk, &Opt.PgUpChangeDisk);
-		
-		
+
+
 		const DWORD supported_tweaks = ApplyConsoleTweaks();
 		int ChangeFontID = -1;
 		DialogItemEx *Item = Builder.AddButton(Msg::ConfigConsoleChangeFont, ChangeFontID);
-		
+
 		if (supported_tweaks & TWEAK_STATUS_SUPPORT_PAINT_SHARP) {
 			Builder.AddCheckboxAfter(Item, Msg::ConfigConsolePaintSharp, &Opt.ConsolePaintSharp);
 		}
-		
+
 		Builder.AddText(Msg::ConfigWindowTitle);
 		Builder.AddEditField(&Opt.strWindowTitle, 47);
-		
+
 		//OKButton->Flags = DIF_CENTERGROUP;
 		//OKButton->DefaultButton = TRUE;
 		//OKButton->Y1 = OKButton->Y2 = NextY++;
 		//OKButtonID = DialogItemsCount-1;
-		
-		
+
+
 		Builder.AddOKCancel();
-		
+
 		int clicked_id = -1;
 		if (Builder.ShowDialog(&clicked_id)) {
 			if (Opt.CMOpt.CopyTimeRule)
 				Opt.CMOpt.CopyTimeRule = 3;
-		
+
 			SetFarConsoleMode();
 			CtrlObject->Cp()->LeftPanel->Update(UPDATE_KEEP_SELECTION);
 			CtrlObject->Cp()->RightPanel->Update(UPDATE_KEEP_SELECTION);
@@ -376,10 +376,10 @@ void InterfaceSettings()
 			ApplyConsoleTweaks();
 			break;
 		}
-		
+
 		if (clicked_id != ChangeFontID)
 			break;
-		
+
 		WINPORT(ConsoleChangeFont)();
 	}
 }
@@ -395,7 +395,7 @@ void AutoCompleteSettings()
 
 	Builder.AddText(Msg::ConfigAutoCompleteExceptions);
 	Builder.AddEditField(&Opt.AutoComplete.Exceptions, 47);
-	
+
 	Builder.AddOKCancel();
 	Builder.ShowDialog();
 }
@@ -752,7 +752,7 @@ static struct FARConfig
 	{0, REG_DWORD,  NKeyInterface, "FormatNumberSeparators",&Opt.FormatNumberSeparators, 0, 0},
 	{1, REG_DWORD,  NKeyInterface, "CopyShowTotal",&Opt.CMOpt.CopyShowTotal,1, 0},
 	{1, REG_DWORD,  NKeyInterface, "DelShowTotal",&Opt.DelOpt.DelShowTotal,0, 0},
-	{1, REG_SZ,     NKeyInterface, "WindowTitle",&Opt.strWindowTitle, 0, L"%State - FAR2L %Ver %Backend %User@%Host"}, // %Platform 
+	{1, REG_SZ,     NKeyInterface, "WindowTitle",&Opt.strWindowTitle, 0, L"%State - FAR2L %Ver %Backend %User@%Host"}, // %Platform
 	{1, REG_SZ,     NKeyInterfaceCompletion, "Exceptions",&Opt.AutoComplete.Exceptions, 0, L"git*reset*--hard;*://*:*@*"},
 	{1, REG_DWORD,  NKeyInterfaceCompletion, "ShowList",&Opt.AutoComplete.ShowList, 1, 0},
 	{1, REG_DWORD,  NKeyInterfaceCompletion, "ModalList",&Opt.AutoComplete.ModalList, 0, 0},
@@ -1275,7 +1275,7 @@ void SaveConfig(int Ask)
 	FileList::SavePanelModes(cfg_writer);
 
 	if (Ask)
-		CtrlObject->Macro.SaveMacros();
+		CtrlObject->Macro.SaveMacros(false);
 
 	/* *************************************************** </ПОСТПРОЦЕССЫ> */
 }

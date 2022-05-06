@@ -435,7 +435,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 						if (Macro.IsRecording()) // || Macro.IsExecuting())
 							return FALSE;
 
-						Macro.SaveMacros();
+						Macro.SaveMacros(false);
 						return TRUE;
 					}
 					case MCMD_POSTMACROSTRING:
@@ -452,7 +452,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 					case MCMD_CHECKMACRO:  // проверка макроса
 					{
 						MacroRecord CurMacro{};
-						int Ret=Macro.ParseMacroString(&CurMacro,KeyMacro->Param.PlainText.SequenceText,(KeyMacro->Param.PlainText.Flags&KSFLAGS_SILENTCHECK)?TRUE:FALSE);
+						int Ret=Macro.ParseMacroString(&CurMacro,KeyMacro->Param.PlainText.SequenceText,(KeyMacro->Param.PlainText.Flags&KMFLAGS_SILENTCHECK)?TRUE:FALSE);
 
 						if (Ret)
 						{

@@ -127,7 +127,7 @@ void ControlObject::Init()
 		Plugins.LoadPlugins();
 		Console.SetTitle(strOldTitle);
 	}
-	Macro.LoadMacros();
+	Macro.LoadMacros(true);
 	/*
 		FarChDir(StartCurDir);
 	*/
