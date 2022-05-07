@@ -3010,9 +3010,11 @@ void WINAPI FarFreeDirListA(const oldfar::PluginPanelItem *PanelItem)
 
 INT_PTR WINAPI FarAdvControlA(INT_PTR ModuleNumber,int Command,void *Param)
 {
+#if 0	//### TODO
 	static char *ErrMsg1 = nullptr;
 	static char *ErrMsg2 = nullptr;
 	static char *ErrMsg3 = nullptr;
+#endif
 
 	switch (Command)
 	{
@@ -3093,6 +3095,7 @@ INT_PTR WINAPI FarAdvControlA(INT_PTR ModuleNumber,int Command,void *Param)
 
 			INT_PTR res = FarAdvControl(ModuleNumber, ACTL_KEYMACRO, &km);
 
+#if 0 //### TODO
 			switch (km.Command)
 			{
 				case MCMD_CHECKMACRO:
@@ -3131,6 +3134,7 @@ INT_PTR WINAPI FarAdvControlA(INT_PTR ModuleNumber,int Command,void *Param)
 
 					break;
 			}
+#endif
 
 			return res;
 		}

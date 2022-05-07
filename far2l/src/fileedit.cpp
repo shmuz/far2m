@@ -916,10 +916,10 @@ int FileEditor::ReProcessKey(int Key,int CalledFromControl)
 	_SVS(if (Key=='n' || Key=='m'))
 		_SVS(SysLog(L"%d Key='%c'",__LINE__,Key));
 
-	if (!CalledFromControl && (CtrlObject->Macro.IsRecording() == MACROMODE_RECORDING_COMMON || CtrlObject->Macro.IsExecuting() == MACROMODE_EXECUTING_COMMON || CtrlObject->Macro.GetCurRecord(nullptr,nullptr) == MACROMODE_NOMACRO))
+	if (!CalledFromControl && (CtrlObject->Macro.IsRecording() || CtrlObject->Macro.IsExecuting() || CtrlObject->Macro.GetCurRecord(nullptr,nullptr) == MACROMODE_NOMACRO))
 	{
 
-		_SVS(if (CtrlObject->Macro.IsRecording() == MACROMODE_RECORDING_COMMON || CtrlObject->Macro.IsExecuting() == MACROMODE_EXECUTING_COMMON))
+		_SVS(if (CtrlObject->Macro.IsRecording() || CtrlObject->Macro.IsExecuting() == MACROMODE_EXECUTING_COMMON))
 			_SVS(SysLog(L"%d !!!! CtrlObject->Macro.GetCurRecord(nullptr,nullptr) != MACROMODE_NOMACRO !!!!",__LINE__));
 
 		ProcessedNext=!ProcessEditorInput(FrameManager->GetLastInputRecord());
@@ -2610,7 +2610,7 @@ int FileEditor::EditorControl(int Command, void *Param)
 		}
 		case ECTL_READINPUT:
 		{
-			if (CtrlObject->Macro.IsRecording() == MACROMODE_RECORDING || CtrlObject->Macro.IsExecuting() == MACROMODE_EXECUTING)
+			if (CtrlObject->Macro.IsRecording() || CtrlObject->Macro.IsExecuting() == MACROMODE_EXECUTING)
 			{
 //        return FALSE;
 			}

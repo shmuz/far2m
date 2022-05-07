@@ -90,7 +90,6 @@ src/console/scrsaver.cpp
 
 src/macro/chgmmode.cpp
 src/macro/macro.cpp
-src/macro/syntax.cpp
 src/macro/tvar.cpp
 
 src/filemask/CFileMask.cpp

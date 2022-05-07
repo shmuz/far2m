@@ -33,9 +33,13 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "syntax.hpp"
 #include "tvar.hpp"
 #include "macroopcode.hpp"
+
+struct point {
+	int x;
+	int y;
+};
 
 enum MACRODISABLEONLOAD
 {
@@ -157,6 +161,37 @@ struct MacroPanelSelect {
 */
 class KeyMacro
 {
+public:
+	KeyMacro();
+
+	//static bool AddMacro(const UUID& PluginId, const MacroAddMacroV1* Data);
+	//static bool DelMacro(const UUID& PluginId, void* Id);
+	static bool ExecuteString(MacroExecuteString *Data);
+	static bool GetMacroKeyInfo(const FARString& StrArea, int Pos, FARString &strKeyName, FARString &strDescription);
+	static bool IsOutputDisabled();
+	static bool IsExecuting() { return GetExecutingState() != MACROSTATE_NOMACRO; }
+	static bool IsHistoryDisabled(int TypeHistory);
+	static bool MacroExists(int Key, FARMACROAREA Area, bool UseCommon);
+	static void RunStartMacro();
+	static bool SaveMacros(bool always);
+	static void SetMacroConst(const wchar_t *ConstName, const TVar Value);
+	static bool PostNewMacro(const wchar_t* Sequence, FARKEYMACROFLAGS InputFlags, DWORD AKey = 0);
+
+	intptr_t CallFar(intptr_t CheckCode, FarMacroCall* Data);
+	bool CheckWaitKeyFunc() const;
+	int  GetState() const;
+	int  GetKey();
+	static DWORD GetMacroParseError(point& ErrPos, FARString& ErrSrc);
+	FARMACROAREA GetArea() const { return m_Area; }
+	//string_view GetStringToPrint() const { return m_StringToPrint; }
+	bool IsRecording() const { return m_Recording != MACROSTATE_NOMACRO; }
+	bool LoadMacros(bool FromFar, bool InitedRAM=true, const FarMacroLoad *Data=nullptr);
+	bool ParseMacroString(const wchar_t* Sequence,FARKEYMACROFLAGS Flags,bool skipFile) const;
+	int  PeekKey() const;
+	//bool ProcessEvent(const FAR_INPUT_RECORD *Rec);
+	void SetArea(FARMACROAREA Area) { m_Area=Area; }
+	void SuspendMacros(bool Suspend) { Suspend ? ++m_InternalInput : --m_InternalInput; }
+
 	private:
 		DWORD MacroVersion;
 
@@ -194,9 +229,7 @@ class KeyMacro
 
 	private:
 		int ReadVarsConst(int ReadMode, FARString &strBuffer);
-		int ReadMacroFunction(int ReadMode, FARString &strBuffer);
 		int WriteVarsConst(int WriteMode);
-		int ReadMacros(int ReadMode, FARString &strBuffer);
 		DWORD AssignMacroKey();
 		int GetMacroSettings(uint32_t Key,DWORD &Flags);
 		void InitInternalVars(BOOL InitedRAM=TRUE);
@@ -223,42 +256,20 @@ class KeyMacro
 		static LONG_PTR WINAPI ParamMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2);
 
 	public:
-		KeyMacro();
 		~KeyMacro();
-		static bool IsOutputDisabled();
-		static bool IsHistoryDisabled(int TypeHistory);
-		intptr_t CallFar(intptr_t CheckCode, FarMacroCall* Data);
 
 	public:
-		int GetState() const;
 		uint32_t ProcessKey(uint32_t Key);
-		int GetKey();
-		int PeekKey();
 		bool IsOpCode(DWORD p);
-		bool CheckWaitKeyFunc();
 
 		int PushState(bool CopyLocalVars=FALSE);
 		int PopState();
 		int GetLevelState() {return CurPCStack;};
 
-		int  IsRecording() {return(Recording);};
-		int  IsExecuting() {return(Work.Executing);};
-		int  IsExecutingLastKey();
-		int  IsDsableOutput();
 		void SetMode(int Mode) {KeyMacro::Mode=Mode;};
 		int  GetMode() {return(Mode);};
 
 		void DropProcess();
-
-		void RunStartMacro();
-
-		// Поместить временное строковое представление макроса
-		int PostNewMacro(const wchar_t *PlainText,DWORD Flags=0,DWORD AKey=0,BOOL onlyCheck=FALSE);
-		// Поместить временный рекорд (бинарное представление)
-		int PostNewMacro(struct MacroRecord *MRec,BOOL NeedAddSendFlag=0,BOOL IsPluginSend=FALSE);
-
-		bool LoadMacros(bool FromFar, bool InitedRAM=true, const FarMacroLoad *Data=nullptr);
-		static bool SaveMacros(bool always);
 
 		int GetStartIndex(int Mode) {return IndexMode[Mode<MACRO_LAST-1?Mode:MACRO_LAST-1][0];}
 		// Функция получения индекса нужного макроса в массиве
@@ -279,15 +290,9 @@ class KeyMacro
 		BOOL CheckCurMacroFlags(DWORD Flags);
 
 		static const wchar_t* GetSubKey(int Mode);
-		static int   GetSubKey(const wchar_t *Mode);
-		static int   GetMacroKeyInfo(bool FromReg,int Mode,int Pos,FARString &strKeyName,FARString &strDescription);
+		static int GetSubKey(const wchar_t *Mode);
 		static wchar_t *MkTextSequence(DWORD *Buffer,int BufferSize,const wchar_t *Src=nullptr);
-		// из строкового представления макроса сделать MacroRecord
-		int ParseMacroString(struct MacroRecord *CurMacro,const wchar_t *BufPtr,BOOL onlyCheck=FALSE);
-		BOOL GetMacroParseError(DWORD* ErrCode, COORD* ErrPos, FARString *ErrSrc);
-		BOOL GetMacroParseError(FARString *Err1, FARString *Err2, FARString *Err3, FARString *Err4);
 
-		static void SetMacroConst(const wchar_t *ConstName, const TVar Value);
 		static DWORD GetNewOpCode();
 
 		static size_t GetCountMacroFunction();

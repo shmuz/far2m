@@ -441,7 +441,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 					case MCMD_POSTMACROSTRING:
 					{
 						if (KeyMacro->Param.PlainText.SequenceText && *KeyMacro->Param.PlainText.SequenceText)
-							return Macro.PostNewMacro(KeyMacro->Param.PlainText.SequenceText,KeyMacro->Param.PlainText.Flags<<8,KeyMacro->Param.PlainText.AKey);
+							return Macro.PostNewMacro(KeyMacro->Param.PlainText.SequenceText,(FARKEYMACROFLAGS)(KeyMacro->Param.PlainText.Flags<<8),KeyMacro->Param.PlainText.AKey);
 
 						return FALSE;
 					}
@@ -451,6 +451,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 					}
 					case MCMD_CHECKMACRO:  // проверка макроса
 					{
+						#if 0 //### TODO
 						MacroRecord CurMacro{};
 						int Ret=Macro.ParseMacroString(&CurMacro,KeyMacro->Param.PlainText.SequenceText,(KeyMacro->Param.PlainText.Flags&KMFLAGS_SILENTCHECK)?TRUE:FALSE);
 
@@ -468,6 +469,8 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 						}
 
 						return Ret;
+						#endif
+						return FALSE;
 					}
 					case MCMD_GETSTATE:
 					{
@@ -501,6 +504,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 		}
 		case ACTL_POSTKEYSEQUENCE:
 		{
+#if 0
 			if (CtrlObject && Param && ((KeySequence*)Param)->Count > 0)
 			{
 				MacroRecord MRec{};
@@ -513,32 +517,8 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 					MRec.Buffer=const_cast<DWORD*>(((KeySequence*)Param)->Sequence);
 
 				return CtrlObject->Macro.PostNewMacro(&MRec,TRUE,TRUE);
-#if 0
-				// Этот кусок - для дальнейших экспериментов
-				{
-					//CtrlObject->Macro.PostNewMacro(&MRec);
-					for (int I=0; I < MRec.BufferSize; ++I)
-					{
-						int Key=MRec.Buffer[I];
-
-						if (CtrlObject->Macro.ProcessKey(Key))
-						{
-							while ((Key=CtrlObject->Macro.GetKey()) )
-							{
-								FrameManager->ProcessKey(Key);
-							}
-						}
-						else
-							FrameManager->ProcessKey(Key);
-
-						FrameManager->PluginCommit();
-					}
-
-					return TRUE;
-				}
-#endif
 			}
-
+#endif
 			return FALSE;
 		}
 		/* $ 05.06.2001 tran

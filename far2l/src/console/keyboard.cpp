@@ -1500,14 +1500,14 @@ int CheckForEscSilent()
 #if 0
 
 		// ...но ЭТО конец последовательности (не Op-код)...
-		if (CtrlObject->Macro.IsExecutingLastKey() && !CtrlObject->Macro.IsOpCode(CtrlObject->Macro.PeekKey()))
+		if (!CtrlObject->Macro.IsOpCode(CtrlObject->Macro.PeekKey()))
 			CtrlObject->Macro.GetKey(); // ...то "завершим" макрос
 		else
 			Processed=FALSE;
 
 #else
 
-		if (CtrlObject->Macro.IsDsableOutput())
+		if (CtrlObject->Macro.IsOutputDisabled())
 			Processed=FALSE;
 
 #endif

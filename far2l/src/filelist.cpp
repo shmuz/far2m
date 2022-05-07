@@ -591,7 +591,7 @@ int FileList::SendKeyToPlugin(DWORD Key,BOOL Pred)
 	_ALGO(SysLog(L"Key=%ls Pred=%d",_FARKEY_ToName(Key),Pred));
 
 	if (PanelMode==PLUGIN_PANEL &&
-	        (CtrlObject->Macro.IsRecording() == MACROMODE_RECORDING_COMMON || CtrlObject->Macro.IsExecuting() == MACROMODE_EXECUTING_COMMON || CtrlObject->Macro.GetCurRecord(nullptr,nullptr) == MACROMODE_NOMACRO)
+	        (CtrlObject->Macro.IsRecording() || CtrlObject->Macro.IsExecuting() || CtrlObject->Macro.GetCurRecord(nullptr,nullptr) == MACROMODE_NOMACRO)
 	   )
 	{
 		int VirtKey,ControlState;
@@ -2954,8 +2954,8 @@ void FileList::SetViewMode(int ViewMode)
 	int ResortRequired=FALSE;
 
 	if (FileCount>0 && PanelMode!=PLUGIN_PANEL &&
-	        ((!OldOwner && NewOwner) || 
-	         (!OldGroup && NewGroup) || 
+	        ((!OldOwner && NewOwner) ||
+	         (!OldGroup && NewGroup) ||
 	         (!OldPhysical && NewPhysical) ||
 	         (!OldNumLink && NewNumLink) ||
 	         (AccessTimeUpdateRequired && NewAccessTime)))

@@ -58,7 +58,7 @@ enum
 {
 	SYSID_PRINTMANAGER      =0x6E614D50,
 	SYSID_NETWORK           =0x5774654E,
-	SYSID_LUAMACRO          =0x00010003,
+	SYSID_LUAMACRO          =0x4EBBEFC8,
 };
 
 enum
