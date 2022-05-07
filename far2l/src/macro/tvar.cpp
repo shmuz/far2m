@@ -1685,6 +1685,49 @@ TVar TVar::operator~()
 	}
 }
 
+long long TVar::asInteger() const
+{
+	switch (vType)
+	{
+	case vtInteger:
+	case vtUnknown:
+		return inum;
+
+	case vtDouble:
+		return dnum;
+
+	case vtString:
+		{
+			long long val;
+			return 1 == wscanf(str, "%ll", &val) ? val : 0;
+		}
+
+	default:
+		return 0;
+	}
+}
+
+double TVar::asDouble() const
+{
+	switch (vType)
+	{
+	case vtInteger:
+	case vtUnknown:
+		return inum;
+
+	case vtDouble:
+		return dnum;
+
+	case vtString:
+		{
+			double val;
+			return 1 == wscanf(str, "%lf", &val) ? val : 0;
+		}
+
+	default:
+		return 0;
+	}
+}
 
 //---------------------------------------------------------------
 // Работа с таблицами имен переменных

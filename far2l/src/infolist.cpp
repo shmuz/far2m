@@ -61,7 +61,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #elif !defined(__FreeBSD__)
 # include <sys/sysinfo.h>
 #endif
- 
+
 
 
 static int LastDizWrapMode = -1;
@@ -249,7 +249,7 @@ void InfoList::DisplayObject()
 
 	if (!ret_sc)
 	{
-		DWORD dwMemoryLoad = 100 - 
+		DWORD dwMemoryLoad = 100 -
 			ToPercent64(freeram, totalram);
 
 		GotoXY(X1+2,CurY++);
@@ -273,7 +273,7 @@ void InfoList::DisplayObject()
 	struct sysinfo si = {};
 	if (sysinfo(&si) == 0)
 	{
-		DWORD dwMemoryLoad = 100 - 
+		DWORD dwMemoryLoad = 100 -
 			ToPercent64(si.freeram + si.freeswap, si.totalram + si.totalswap);
 
 		GotoXY(X1+2,CurY++);

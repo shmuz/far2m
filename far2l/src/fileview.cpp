@@ -375,8 +375,8 @@ int FileViewer::ProcessKey(int Key)
 			*/
 			if (!CtrlObject->Macro.IsExecuting())
 				ViewKeyBar.Refresh(Opt.ViOpt.ShowKeyBar);
-			
-				
+
+
 			if (!ViewKeyBar.ProcessKey(Key)) {
 
 				if (AutoClose) {
@@ -384,7 +384,7 @@ int FileViewer::ProcessKey(int Key)
 						Key = KEY_MSWHEEL_DOWN;
 					else if (Key == (KEY_MSWHEEL_UP | KEY_CTRL | KEY_SHIFT) )
 						Key = KEY_MSWHEEL_UP;
-						
+
 					if (Key == KEY_MSWHEEL_DOWN || Key == (KEY_MSWHEEL_DOWN | KEY_ALT)) {
 						int64_t FilePosBefore = View.GetFilePos();
 						BOOL rv = View.ProcessKey(Key);
@@ -517,7 +517,7 @@ void FileViewer::OnChangeFocus(int focus)
 	CtrlObject->Plugins.ProcessViewerEvent(focus?VE_GOTFOCUS:VE_KILLFOCUS,&FCurViewerID);
 }
 
-static void ModalViewFileInternal(const std::string &pathname, int DisableHistory, 
+static void ModalViewFileInternal(const std::string &pathname, int DisableHistory,
 	int DisableEdit, bool scroll_to_end, bool autoclose, UINT codepage)
 {
 	FileViewer Viewer(StrMB2Wide(pathname).c_str(),
@@ -530,7 +530,7 @@ static void ModalViewFileInternal(const std::string &pathname, int DisableHistor
 	FrameManager->EnterModalEV();
 	FrameManager->ExecuteModal();
 	FrameManager->ExitModalEV();
-	Viewer.GetExitCode();	
+	Viewer.GetExitCode();
 }
 
 void ModalViewFile(const std::string &pathname, bool scroll_to_end)

@@ -33,7 +33,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
-
 #include "macro.hpp"
 #include "macroopcode.hpp"
 #include "keys.hpp"
@@ -241,7 +240,7 @@ static void SetMacroValue(bool Value)
 	MacroPluginOp(OP_SETMACROVALUE, Value);
 }
 
-static bool TryToPostMacro(FARMACROAREA Area,const FARString& TextKey,DWORD IntKey)
+static bool TryToPostMacro(int Area,const FARString& TextKey,DWORD IntKey)
 {
 	FarMacroValue values[] = { 10.0, static_cast<double>(Area), TextKey.CPtr(), static_cast<double>(IntKey) };
 	FarMacroCall fmc={sizeof(FarMacroCall),ARRAYSIZE(values),values,nullptr,nullptr};
@@ -304,6 +303,25 @@ int KeyMacro::GetState() const
 static bool GetInputFromMacro(MacroPluginReturn *mpr)
 {
 	return MacroPluginOp(OP_GETINPUTFROMMACRO,false,mpr);
+}
+
+void KeyMacro::RestoreMacroChar() const
+{
+	ScrBuf.RestoreMacroChar();
+
+	if (m_Area==MACROAREA_EDITOR &&
+					CtrlObject->Plugins.CurEditor &&
+					CtrlObject->Plugins.CurEditor->IsVisible()
+					/* && LockScr*/) // Mantis#0001595
+	{
+		CtrlObject->Plugins.CurEditor->Show();
+	}
+	else if (m_Area==MACROAREA_VIEWER &&
+					CtrlObject->Plugins.CurViewer &&
+					CtrlObject->Plugins.CurViewer->IsVisible())
+	{
+		CtrlObject->Plugins.CurViewer->Show(); // иначе может быть неправильный верхний левый символ экрана
+	}
 }
 
 struct GetMacroData
@@ -414,8 +432,177 @@ DWORD KeyMacro::GetMacroParseError(point& ErrPos, FARString& ErrSrc)
 	}
 }
 
+class FarMacroApi
+{
+public:
+	explicit FarMacroApi(FarMacroCall* Data) : mData(Data) {}
+
+	int PassBoolean(int b);
+	int PassError(const wchar_t* str);
+	int PassInteger(long long Int);
+	int PassNumber(double dbl);
+	int PassString(const wchar_t* str);
+	int PassString(const FARString& str);
+	int PassValue(const TVar& Var);
+
+	int absFunc();
+	int ascFunc();
+	int atoiFunc();
+	int beepFunc();
+	int chrFunc();
+	int clipFunc();
+	int dateFunc();
+	int dlggetvalueFunc();
+	int dlgsetfocusFunc();
+	int editordellineFunc();
+	int editorinsstrFunc();
+	int editorposFunc();
+	int editorselFunc();
+	int editorsetFunc();
+	int editorsetstrFunc();
+	int editorsettitleFunc();
+	int editorundoFunc();
+	int environFunc();
+	int farcfggetFunc();
+	int fargetconfigFunc();
+	int fattrFunc();
+	int fexistFunc();
+	int floatFunc();
+	int flockFunc();
+	int fmatchFunc();
+	int fsplitFunc();
+	int indexFunc();
+	int intFunc();
+	int itowFunc();
+	int kbdLayoutFunc();
+	int keyFunc();
+	int keybarshowFunc();
+	int lcaseFunc();
+	int lenFunc();
+	int maxFunc();
+	int menushowFunc();
+	int minFunc();
+	int modFunc();
+	int msgBoxFunc();
+	int panelfattrFunc();
+	int panelfexistFunc();
+	int panelitemFunc();
+	int panelselectFunc();
+	int panelsetposFunc();
+	int panelsetposidxFunc();
+	int pluginexistFunc();
+	int pluginloadFunc();
+	int pluginunloadFunc();
+	int promptFunc();
+	int replaceFunc();
+	int rindexFunc();
+	int size2strFunc();
+	int sleepFunc();
+	int stringFunc();
+	int strpadFunc();
+	int strwrapFunc();
+	int substrFunc();
+	int testfolderFunc();
+	int trimFunc();
+	int ucaseFunc();
+	int waitkeyFunc();
+	int windowscrollFunc();
+	int xlatFunc();
+
+private:
+	int fattrFuncImpl(int Type);
+
+	FarMacroCall* mData;
+};
+
+int FarMacroApi::PassString(const wchar_t *str)
+{
+	FarMacroValue val = NullToEmpty(str);
+	mData->Callback(mData->CallbackData, &val, 1);
+	return 1;
+}
+
+int FarMacroApi::PassString(const FARString& str)
+{
+	return PassString(str.CPtr());
+}
+
+int FarMacroApi::PassError(const wchar_t *str)
+{
+	FarMacroValue val = NullToEmpty(str);
+	val.Type = FMVT_ERROR;
+	mData->Callback(mData->CallbackData, &val, 1);
+	return 1;
+}
+
+int FarMacroApi::PassNumber(double dbl)
+{
+	FarMacroValue val = dbl;
+	mData->Callback(mData->CallbackData, &val, 1);
+	return 1;
+}
+
+int FarMacroApi::PassInteger(long long Int)
+{
+	FarMacroValue val = Int;
+	mData->Callback(mData->CallbackData, &val, 1);
+	return 1;
+}
+
+int FarMacroApi::PassBoolean(int b)
+{
+	FarMacroValue val = (b != 0);
+	mData->Callback(mData->CallbackData, &val, 1);
+	return 1;
+}
+
+int FarMacroApi::PassValue(const TVar& Var)
+{
+	FarMacroValue val;
+	double dd;
+
+	if (Var.isDouble())
+		val = Var.asDouble();
+	else if (Var.isString())
+		val = Var.s();
+	else if (ToDouble(Var.asInteger(), &dd))
+		val = dd;
+	else
+		val = Var.asInteger();
+
+	mData->Callback(mData->CallbackData, &val, 1);
+	return 1;
+}
+
 intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 {
+	intptr_t ret=0;
+	DWORD FileAttr = INVALID_FILE_ATTRIBUTES;
+	FarMacroApi api(Data);
+
+	// проверка на область
+	if (CheckCode == 0)
+	{
+		return api.PassNumber (FrameManager->GetCurrentFrame()->GetMacroMode());
+	}
+
+	const auto ActivePanel = CtrlObject->Cp() ? CtrlObject->Cp()->ActivePanel : nullptr;
+	const auto PassivePanel = CtrlObject->Cp() ? CtrlObject->Cp()->GetAnotherPanel(ActivePanel) : nullptr;
+
+	auto CurrentWindow = FrameManager->GetCurrentFrame();
+
+	switch (CheckCode)
+	{
+		//~ case MCODE_F_GETOPTIONS:
+		//~ {
+			//~ DWORD Options = Opt.OnlyEditorViewerUsed; // bits 0x1 and 0x2
+			//~ if (Opt.Macro.DisableMacro&MDOL_ALL)       Options |= 0x4;
+			//~ if (Opt.Macro.DisableMacro&MDOL_AUTOSTART) Options |= 0x8;
+			//~ if (Opt.ReadOnlyConfig)                    Options |= 0x10;
+			//~ api.PassNumber(Options);
+			//~ break;
+		//~ }
+	}
 	return 0; //### TODO
 }
 
@@ -688,94 +875,8 @@ static bool windowscrollFunc(const TMacroFunction*);
 
 static bool __CheckCondForSkip(DWORD Op);
 
-static TMacroFunction intMacroFunction[]=
-{
-	{L"ABS",              1, 0,   MCODE_F_ABS,              nullptr, 0,nullptr,L"N=Abs(N)",0,absFunc},
-	{L"AKEY",             2, 1,   MCODE_F_AKEY,             nullptr, 0,nullptr,L"V=Akey(Mode[,Type])",0,usersFunc},
-	{L"ASC",              1, 0,   MCODE_F_ASC,              nullptr, 0,nullptr,L"N=Asc(N)",0,ascFunc},
-	{L"ATOI",             2, 1,   MCODE_F_ATOI,             nullptr, 0,nullptr,L"N=Atoi(S[,Radix])",0,atoiFunc},
-	{L"BEEP",             1, 1,   MCODE_F_BEEP,             nullptr, 0,nullptr,L"N=Beep([N])",0,beepFunc},
-	{L"BM.ADD",           0, 0,   MCODE_F_BM_ADD,           nullptr, 0,nullptr,L"N=BM.Add()",0,usersFunc},
-	{L"BM.CLEAR",         0, 0,   MCODE_F_BM_CLEAR,         nullptr, 0,nullptr,L"N=BM.Clear()",0,usersFunc},
-	{L"BM.DEL",           1, 1,   MCODE_F_BM_DEL,           nullptr, 0,nullptr,L"N=BM.Del([Idx])",0,usersFunc},
-	{L"BM.GET",           2, 0,   MCODE_F_BM_GET,           nullptr, 0,nullptr,L"N=BM.Get(Idx,M)",0,usersFunc},
-	{L"BM.GOTO",          1, 1,   MCODE_F_BM_GOTO,          nullptr, 0,nullptr,L"N=BM.Goto([N])",0,usersFunc},
-	{L"BM.NEXT",          0, 0,   MCODE_F_BM_NEXT,          nullptr, 0,nullptr,L"N=BM.Next()",0,usersFunc},
-	{L"BM.POP",           0, 0,   MCODE_F_BM_POP,           nullptr, 0,nullptr,L"N=BM.Pop()",0,usersFunc},
-	{L"BM.PREV",          0, 0,   MCODE_F_BM_PREV,          nullptr, 0,nullptr,L"N=BM.Prev()",0,usersFunc},
-	{L"BM.BACK",          0, 0,   MCODE_F_BM_BACK,          nullptr, 0,nullptr,L"N=BM.Back()",0,usersFunc},
-	{L"BM.PUSH",          0, 0,   MCODE_F_BM_PUSH,          nullptr, 0,nullptr,L"N=BM.Push()",0,usersFunc},
-	{L"BM.STAT",          1, 1,   MCODE_F_BM_STAT,          nullptr, 0,nullptr,L"N=BM.Stat([N])",0,usersFunc},
-	{L"CALLPLUGIN",       2, 1,   MCODE_F_CALLPLUGIN,       nullptr, 0,nullptr,L"V=CallPlugin(SysID[,param])",0,callpluginFunc},
-	{L"CHECKHOTKEY",      2, 1,   MCODE_F_MENU_CHECKHOTKEY, nullptr, 0,nullptr,L"N=CheckHotkey(S[,N])",0,usersFunc},
-	{L"CHR",              1, 0,   MCODE_F_CHR,              nullptr, 0,nullptr,L"S=Chr(N)",0,chrFunc},
-	{L"CLIP",             2, 1,   MCODE_F_CLIP,             nullptr, 0,nullptr,L"V=Clip(N[,V])",0,clipFunc},
-	{L"DATE",             1, 1,   MCODE_F_DATE,             nullptr, 0,nullptr,L"S=Date([S])",0,dateFunc},
-	{L"DLG.GETVALUE",     2, 0,   MCODE_F_DLG_GETVALUE,     nullptr, 0,nullptr,L"V=Dlg.GetValue(ID,N)",0,dlggetvalueFunc},
-	{L"EDITOR.POS",       3, 1,   MCODE_F_EDITOR_POS,       nullptr, 0,nullptr,L"N=Editor.Pos(Op,What[,Where])",0,editorposFunc},
-	{L"EDITOR.SEL",       2, 1,   MCODE_F_EDITOR_SEL,       nullptr, 0,nullptr,L"V=Editor.Sel(Action[,Opt])",0,editorselFunc},
-	{L"EDITOR.SET",       2, 0,   MCODE_F_EDITOR_SET,       nullptr, 0,nullptr,L"N=Editor.Set(N,Var)",0,editorsetFunc},
-	{L"EDITOR.SETTITLE",  1, 1,   MCODE_F_EDITOR_SETTITLE,  nullptr, 0,nullptr,L"N=Editor.SetTitle([Title])",0,editorsettitleFunc},
-	{L"EDITOR.UNDO",      1, 0,   MCODE_F_EDITOR_UNDO,      nullptr, 0,nullptr,L"V=Editor.Undo(N)",0,editorundoFunc},
-	{L"ENV",              1, 0,   MCODE_F_ENVIRON,          nullptr, 0,nullptr,L"S=Env(S)",0,environFunc},
-	{L"EVAL",             2, 1,   MCODE_F_EVAL,             nullptr, 0,nullptr,L"N=Eval(S[,N])",0,usersFunc},
-	{L"FATTR",            1, 0,   MCODE_F_FATTR,            nullptr, 0,nullptr,L"N=FAttr(S)",0,fattrFunc},
-	{L"FEXIST",           1, 0,   MCODE_F_FEXIST,           nullptr, 0,nullptr,L"N=FExist(S)",0,fexistFunc},
-	{L"FLOAT",            1, 0,   MCODE_F_FLOAT,            nullptr, 0,nullptr,L"N=Float(V)",0,floatFunc},
-	{L"FLOCK",            2, 0,   MCODE_F_FLOCK,            nullptr, 0,nullptr,L"N=FLock(N,N)",0,flockFunc},
-	{L"FSPLIT",           2, 0,   MCODE_F_FSPLIT,           nullptr, 0,nullptr,L"S=FSplit(S,N)",0,fsplitFunc},
-	{L"GETHOTKEY",        1, 1,   MCODE_F_MENU_GETHOTKEY,   nullptr, 0,nullptr,L"S=GetHotkey([N])",0,usersFunc},
-	{L"IIF",              3, 0,   MCODE_F_IIF,              nullptr, 0,nullptr,L"V=Iif(Condition,V1,V2)",0,iifFunc},
-	{L"INDEX",            3, 1,   MCODE_F_INDEX,            nullptr, 0,nullptr,L"S=Index(S1,S2[,Mode])",0,indexFunc},
-	{L"INT",              1, 0,   MCODE_F_INT,              nullptr, 0,nullptr,L"N=Int(V)",0,intFunc},
-	{L"ITOA",             2, 1,   MCODE_F_ITOA,             nullptr, 0,nullptr,L"S=Itoa(N[,radix])",0,itowFunc},
-	{L"KBDLAYOUT",        1, 1,   MCODE_F_KBDLAYOUT,        nullptr, 0,nullptr,L"N=kbdLayout([N])",0,kbdLayoutFunc},
-	{L"KEY",              1, 0,   MCODE_F_KEY,              nullptr, 0,nullptr,L"S=Key(V)",0,keyFunc},
-	{L"LCASE",            1, 0,   MCODE_F_LCASE,            nullptr, 0,nullptr,L"S=LCase(S1)",0,lcaseFunc},
-	{L"LEN",              1, 0,   MCODE_F_LEN,              nullptr, 0,nullptr,L"N=Len(S)",0,lenFunc},
-	{L"MAX",              2, 0,   MCODE_F_MAX,              nullptr, 0,nullptr,L"N=Max(N1,N2)",0,maxFunc},
-	{L"MENU.GETVALUE",    1, 1,   MCODE_F_MENU_GETVALUE,    nullptr, 0,nullptr,L"S=Menu.GetValue([N])",0,usersFunc},
-	{L"MENU.ITEMSTATUS",  1, 1,   MCODE_F_MENU_ITEMSTATUS,  nullptr, 0,nullptr,L"N=Menu.ItemStatus([N])",0,usersFunc},
-	{L"MENU.SELECT",      3, 2,   MCODE_F_MENU_SELECT,      nullptr, 0,nullptr,L"N=Menu.Select(S[,N[,Dir]])",0,usersFunc},
-	{L"MIN",              2, 0,   MCODE_F_MIN,              nullptr, 0,nullptr,L"N=Min(N1,N2)",0,minFunc},
-	{L"MLOAD",            1, 0,   MCODE_F_MLOAD,            nullptr, 0,nullptr,L"N=MLoad(S)",0,mloadFunc},
-	{L"MMODE",            2, 1,   MCODE_F_MMODE,            nullptr, 0,nullptr,L"N=MMode(Action[,Value])",0,usersFunc},
-	{L"MOD",              2, 0,   MCODE_F_MOD,              nullptr, 0,nullptr,L"N=Mod(a,b)",0,modFunc},
-	{L"MSAVE",            1, 0,   MCODE_F_MSAVE,            nullptr, 0,nullptr,L"N=MSave(S)",0,msaveFunc},
-	{L"MSGBOX",           3, 3,   MCODE_F_MSGBOX,           nullptr, 0,nullptr,L"N=MsgBox([Title[,Text[,flags]]])",IMFF_UNLOCKSCREEN|IMFF_DISABLEINTINPUT,msgBoxFunc},
-	{L"PANEL.FATTR",      2, 0,   MCODE_F_PANEL_FATTR,      nullptr, 0,nullptr,L"N=Panel.FAttr(panelType,fileMask)",0,panelfattrFunc},
-	{L"PANEL.FEXIST",     2, 0,   MCODE_F_PANEL_FEXIST,     nullptr, 0,nullptr,L"N=Panel.FExist(panelType,fileMask)",0,panelfexistFunc},
-	{L"PANEL.ITEM",       3, 0,   MCODE_F_PANELITEM,        nullptr, 0,nullptr,L"V=Panel.Item(Panel,Index,TypeInfo)",0,panelitemFunc},
-	{L"PANEL.SELECT",     4, 2,   MCODE_F_PANEL_SELECT,     nullptr, 0,nullptr,L"V=Panel.Select(panelType,Action[,Mode[,Items]])",0,panelselectFunc},
-	{L"PANEL.SETPATH",    3, 1,   MCODE_F_PANEL_SETPATH,    nullptr, 0,nullptr,L"N=panel.SetPath(panelType,pathName[,fileName])",IMFF_UNLOCKSCREEN|IMFF_DISABLEINTINPUT,panelsetpathFunc},
-	{L"PANEL.SETPOS",     2, 0,   MCODE_F_PANEL_SETPOS,     nullptr, 0,nullptr,L"N=panel.SetPos(panelType,fileName)",IMFF_UNLOCKSCREEN|IMFF_DISABLEINTINPUT,panelsetposFunc},
-	{L"PANEL.SETPOSIDX",  3, 1,   MCODE_F_PANEL_SETPOSIDX,  nullptr, 0,nullptr,L"N=Panel.SetPosIdx(panelType,Idx[,InSelection])",IMFF_UNLOCKSCREEN|IMFF_DISABLEINTINPUT,panelsetposidxFunc},
-	{L"PANELITEM",        3, 0,   MCODE_F_PANELITEM,        nullptr, 0,nullptr,L"V=PanelItem(Panel,Index,TypeInfo)",0,panelitemFunc},
-	{L"PRINT",            1, 0,   MCODE_F_PRINT,            nullptr, 0,nullptr,L"N=Print(Str)",0,usersFunc},
-	{L"PROMPT",           5, 4,   MCODE_F_PROMPT,           nullptr, 0,nullptr,L"S=Prompt(Title[,Prompt[,flags[,Src[,History]]]])",IMFF_UNLOCKSCREEN|IMFF_DISABLEINTINPUT,promptFunc},
-	{L"REPLACE",          5, 2,   MCODE_F_REPLACE,          nullptr, 0,nullptr,L"S=Replace(Str,Find,Replace[,Cnt[,Mode]])",0,replaceFunc},
-	{L"RINDEX",           3, 1,   MCODE_F_RINDEX,           nullptr, 0,nullptr,L"S=RIndex(S1,S2[,Mode])",0,rindexFunc},
-	{L"SLEEP",            1, 0,   MCODE_F_SLEEP,            nullptr, 0,nullptr,L"N=Sleep(N)",0,sleepFunc},
-	{L"STRING",           1, 0,   MCODE_F_STRING,           nullptr, 0,nullptr,L"S=String(V)",0,stringFunc},
-	{L"SUBSTR",           3, 1,   MCODE_F_SUBSTR,           nullptr, 0,nullptr,L"S=substr(S,start[,length])",0,substrFunc},
-	{L"TESTFOLDER",       1, 0,   MCODE_F_TESTFOLDER,       nullptr, 0,nullptr,L"N=testfolder(S)",0,testfolderFunc},
-	{L"TRIM",             2, 1,   MCODE_F_TRIM,             nullptr, 0,nullptr,L"S=Trim(S[,N])",0,trimFunc},
-	{L"UCASE",            1, 0,   MCODE_F_UCASE,            nullptr, 0,nullptr,L"S=UCase(S1)",0,ucaseFunc},
-	{L"WAITKEY",          2, 2,   MCODE_F_WAITKEY,          nullptr, 0,nullptr,L"V=Waitkey([N,[T]])",0,waitkeyFunc},
-	{L"WINDOW.SCROLL",    2, 1,   MCODE_F_WINDOW_SCROLL,    nullptr, 0,nullptr,L"N=Window.Scroll(Lines[,Axis])",0,windowscrollFunc},
-	{L"XLAT",             1, 0,   MCODE_F_XLAT,             nullptr, 0,nullptr,L"S=Xlat(S)",0,xlatFunc},
-
-	{}
-};
-
-
 int MKeywordsSize = ARRAYSIZE(MKeywords);
 int MKeywordsFlagsSize = ARRAYSIZE(MKeywordsFlags);
-
-DWORD KeyMacro::LastOpCodeUF=KEY_MACRO_U_BASE;
-size_t KeyMacro::CMacroFunction=0;
-size_t KeyMacro::AllocatedFuncCount=0;
-TMacroFunction *KeyMacro::AMacroFunction=nullptr;
 
 TVarTable glbVarTable;
 TVarTable glbConstTable;
@@ -860,144 +961,19 @@ uint32_t WINAPI KeyNameMacroToKey(const wchar_t *Name)
 	return KEY_INVALID;
 }
 
-KeyMacro::~KeyMacro()
-{
-	InitInternalVars();
-
-	if (Work.AllocVarTable && Work.locVarTable)
-		free(Work.locVarTable);
-
-	UnregMacroFunction(-1);
-}
-
-void KeyMacro::InitInternalLIBVars()
-{
-	if (MacroLIB)
-	{
-		for (int I=0; I<MacroLIBCount; I++)
-		{
-			if (MacroLIB[I].BufferSize > 1 && MacroLIB[I].Buffer)
-				free(MacroLIB[I].Buffer);
-
-			if (MacroLIB[I].Src)
-				free(MacroLIB[I].Src);
-
-			if (MacroLIB[I].Description)
-				free(MacroLIB[I].Description);
-		}
-
-		free(MacroLIB);
-	}
-
-	if (RecBuffer)
-		free(RecBuffer);
-	RecBuffer=nullptr;
-	RecBufferSize=0;
-
-	memset(&IndexMode,0,sizeof(IndexMode));
-	MacroLIBCount=0;
-	MacroLIB=nullptr;
-	//LastOpCodeUF=KEY_MACRO_U_BASE;
-}
-
-// инициализация всех переменных
-void KeyMacro::InitInternalVars(BOOL InitedRAM)
-{
-	InitInternalLIBVars();
-
-	if (LockScr)
-	{
-		delete LockScr;
-		LockScr=nullptr;
-	}
-
-	if (InitedRAM)
-	{
-		ReleaseWORKBuffer(TRUE);
-		Work.Executing=MACROMODE_NOMACRO;
-	}
-
-	RecBuffer=nullptr;
-	RecBufferSize=0;
-	RecSrc=nullptr;
-	Recording=MACROMODE_NOMACRO;
-	InternalInput=FALSE;
-	VMStack.Free();
-	CurPCStack=-1;
-}
-
-// удаление временного буфера, если он создавался динамически
-// (динамически - значит в PlayMacros передали строку.
-void KeyMacro::ReleaseWORKBuffer(BOOL All)
-{
-	if (Work.MacroWORK)
-	{
-		if (All || Work.MacroWORKCount <= 1)
-		{
-			for (int I=0; I<Work.MacroWORKCount; I++)
-			{
-				if (Work.MacroWORK[I].BufferSize > 1 && Work.MacroWORK[I].Buffer)
-					free(Work.MacroWORK[I].Buffer);
-
-				if (Work.MacroWORK[I].Src)
-					free(Work.MacroWORK[I].Src);
-
-				if (Work.MacroWORK[I].Description)
-					free(Work.MacroWORK[I].Description);
-			}
-
-			free(Work.MacroWORK);
-
-			if (Work.AllocVarTable)
-			{
-				deleteVTable(*Work.locVarTable);
-				//free(Work.locVarTable);
-				//Work.locVarTable=nullptr;
-				//Work.AllocVarTable=false;
-			}
-
-			Work.MacroWORK=nullptr;
-			Work.MacroWORKCount=0;
-		}
-		else
-		{
-			if (Work.MacroWORK->BufferSize > 1 && Work.MacroWORK->Buffer)
-				free(Work.MacroWORK->Buffer);
-
-			if (Work.MacroWORK->Src)
-				free(Work.MacroWORK->Src);
-
-			if (Work.MacroWORK->Description)
-				free(Work.MacroWORK->Description);
-
-			if (Work.AllocVarTable)
-			{
-				deleteVTable(*Work.locVarTable);
-				//free(Work.locVarTable);
-				//Work.locVarTable=nullptr;
-				//Work.AllocVarTable=false;
-			}
-
-			Work.MacroWORKCount--;
-			memmove(Work.MacroWORK,((BYTE*)Work.MacroWORK)+sizeof(MacroRecord),sizeof(MacroRecord)*Work.MacroWORKCount);
-			Work.MacroWORK=(MacroRecord *)realloc(Work.MacroWORK,sizeof(MacroRecord)*Work.MacroWORKCount);
-		}
-	}
-}
-
 uint32_t KeyMacro::ProcessKey(uint32_t Key)
 {
-	if (InternalInput || Key==KEY_IDLE || Key==KEY_NONE || !FrameManager->GetCurrentFrame())
+	if (m_InternalInput || Key==KEY_IDLE || Key==KEY_NONE || !FrameManager->GetCurrentFrame())
 		return FALSE;
 
-	if (Recording) // Идет запись?
+	if (m_Recording) // Идет запись?
 	{
 		if (Key==Opt.Macro.KeyMacroCtrlDot || Key==Opt.Macro.KeyMacroCtrlShiftDot) // признак конца записи?
 		{
 			_KEYMACRO(CleverSysLog Clev(L"MACRO End record..."));
 			DWORD MacroKey;
 			int WaitInMainLoop0=WaitInMainLoop;
-			InternalInput=TRUE;
+			m_InternalInput=TRUE;
 			WaitInMainLoop=FALSE;
 			// Залочить _текущий_ фрейм, а не _последний немодальный_
 			FrameManager->GetCurrentFrame()->Lock(); // отменим прорисовку фрейма
@@ -1016,7 +992,7 @@ uint32_t KeyMacro::ProcessKey(uint32_t Key)
 			}
 
 			WaitInMainLoop=WaitInMainLoop0;
-			InternalInput=FALSE;
+			m_InternalInput=FALSE;
 
 			if (MacroKey==KEY_INVALID)
 			{
@@ -1030,7 +1006,7 @@ uint32_t KeyMacro::ProcessKey(uint32_t Key)
 			else
 			{
 				// в области common будем искать только при удалении
-				int Pos=GetIndex(MacroKey,StartMode,!(RecBuffer && RecBufferSize));
+				int Pos=GetIndex(MacroKey,m_StartMode,!(RecBuffer && RecBufferSize));
 
 				if (Pos == -1)
 				{
@@ -1084,16 +1060,16 @@ uint32_t KeyMacro::ProcessKey(uint32_t Key)
 					MacroLIB[Pos].Src=RecSrc?RecSrc:MkTextSequence(MacroLIB[Pos].Buffer,MacroLIB[Pos].BufferSize);
 					MacroLIB[Pos].Description=nullptr;
 
-					// если удаляем макрос - скорректируем StartMode,
+					// если удаляем макрос - скорректируем m_StartMode,
 					// иначе макрос из common получит ту область, в которой его решили удалить.
 					if (!MacroLIB[Pos].BufferSize||!MacroLIB[Pos].Src)
-						StartMode=MacroLIB[Pos].Flags&MFLAGS_MODEMASK;
+						m_StartMode = (FARMACROAREA) (MacroLIB[Pos].Flags&MFLAGS_MODEMASK);
 
-					MacroLIB[Pos].Flags=Flags|(StartMode&MFLAGS_MODEMASK)|MFLAGS_NEEDSAVEMACRO|(Recording==MACROMODE_RECORDING_COMMON?0:MFLAGS_NOSENDKEYSTOPLUGINS);
+					MacroLIB[Pos].Flags=Flags|(m_StartMode&MFLAGS_MODEMASK)|MFLAGS_NEEDSAVEMACRO|(m_Recording==MACROMODE_RECORDING_COMMON?0:MFLAGS_NOSENDKEYSTOPLUGINS);
 				}
 			}
 
-			Recording=MACROMODE_NOMACRO;
+			m_Recording=MACROMODE_NOMACRO;
 			RecBuffer=nullptr;
 			RecBufferSize=0;
 			RecSrc=nullptr;
@@ -1145,11 +1121,11 @@ uint32_t KeyMacro::ProcessKey(uint32_t Key)
 		LockScr=nullptr;
 
 		// Где мы?
-		StartMode=(Mode==MACRO_SHELL && !WaitInMainLoop)?MACRO_OTHER:Mode;
+		m_StartMode=(Mode==MACRO_SHELL && !WaitInMainLoop)?MACRO_OTHER:Mode;
 		// тип записи - с вызовом диалога настроек или...
 		// В зависимости от того, КАК НАЧАЛИ писать макрос, различаем общий режим (Ctrl-.
 		// с передачей плагину кеев) или специальный (Ctrl-Shift-. - без передачи клавиш плагину)
-		Recording=(Key==Opt.Macro.KeyMacroCtrlDot) ? MACROMODE_RECORDING_COMMON:MACROMODE_RECORDING;
+		m_Recording=(Key==Opt.Macro.KeyMacroCtrlDot) ? MACROMODE_RECORDING_COMMON:MACROMODE_RECORDING;
 
 		if (RecBuffer)
 			free(RecBuffer);
@@ -1267,732 +1243,6 @@ int KeyMacro::GetPlainTextSize()
 	MacroRecord *MR=Work.MacroWORK;
 	return StrLength((wchar_t*)&MR->Buffer[Work.ExecLIBPos]);
 }
-
-TVar KeyMacro::FARPseudoVariable(DWORD Flags,DWORD CheckCode,DWORD& Err)
-{
-	_KEYMACRO(CleverSysLog Clev(L"KeyMacro::FARPseudoVariable()"));
-	size_t I;
-	TVar Cond(tviZero);
-	FARString strFileName;
-	DWORD FileAttr=INVALID_FILE_ATTRIBUTES;
-
-	// Найдем индекс нужного кейворда
-	for (I=0 ; I < ARRAYSIZE(MKeywords) ; ++I)
-		if (MKeywords[I].Value == CheckCode)
-			break;
-
-	if (I == ARRAYSIZE(MKeywords))
-	{
-		Err=1;
-		_KEYMACRO(SysLog(L"return; Err=%d",Err));
-		return Cond; // здесь TRUE обязательно, чтобы прекратить выполнение макроса, ибо код не распознан.
-	}
-
-	Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
-
-	// теперь сделаем необходимые проверки
-	switch (MKeywords[I].Type)
-	{
-		case 0: // проверка на область
-		{
-			if (WaitInMainLoop) // здесь надо учесть тот самый WaitInMainLoop, хотя могу и ошибаться!!!
-				Cond=int(CheckCode-MCODE_C_AREA_OTHER+MACRO_OTHER) == FrameManager->GetCurrentFrame()->GetMacroMode()?1:0;
-			else
-				Cond=int(CheckCode-MCODE_C_AREA_OTHER+MACRO_OTHER) == CtrlObject->Macro.GetMode()?1:0;
-
-			break;
-		}
-		case 2:
-		{
-			Panel *PassivePanel=nullptr;
-
-			if (ActivePanel)
-				PassivePanel=CtrlObject->Cp()->GetAnotherPanel(ActivePanel);
-
-			Frame* CurFrame=FrameManager->GetCurrentFrame();
-
-			switch (CheckCode)
-			{
-				case MCODE_V_FAR_WIDTH:
-					Cond=ScrX+1;
-					break;
-				case MCODE_V_FAR_HEIGHT:
-					Cond=ScrY+1;
-					break;
-				case MCODE_V_FAR_TITLE:
-					Console.GetTitle(strFileName);
-					Cond=strFileName.CPtr();
-					break;
-				case MCODE_V_MACROAREA:
-					Cond=GetSubKey(CtrlObject->Macro.GetMode());
-					break;
-				case MCODE_C_FULLSCREENMODE: // Fullscreen?
-					Cond=IsFullscreen();
-					break;
-				case MCODE_C_ISUSERADMIN: // IsUserAdmin?
-					Cond=(int64_t)Opt.IsUserAdmin;
-					break;
-				case MCODE_V_DRVSHOWPOS: // Drv.ShowPos
-					Cond=Macro_DskShowPosType;
-					break;
-				case MCODE_V_DRVSHOWMODE: // Drv.ShowMode
-					Cond=Opt.ChangeDriveMode;
-					break;
-				case MCODE_C_CMDLINE_BOF:              // CmdLine.Bof - курсор в начале cmd-строки редактирования?
-				case MCODE_C_CMDLINE_EOF:              // CmdLine.Eof - курсор в конеце cmd-строки редактирования?
-				case MCODE_C_CMDLINE_EMPTY:            // CmdLine.Empty
-				case MCODE_C_CMDLINE_SELECTED:         // CmdLine.Selected
-				case MCODE_V_CMDLINE_ITEMCOUNT:        // CmdLine.ItemCount
-				case MCODE_V_CMDLINE_CURPOS:           // CmdLine.CurPos
-				{
-					Cond=CtrlObject->CmdLine?CtrlObject->CmdLine->VMProcess(CheckCode):-1;
-					break;
-				}
-				case MCODE_V_CMDLINE_VALUE:            // CmdLine.Value
-				{
-					if (CtrlObject->CmdLine)
-						CtrlObject->CmdLine->GetString(strFileName);
-					Cond=strFileName.CPtr();
-					break;
-				}
-				case MCODE_C_APANEL_ROOT:  // APanel.Root
-				case MCODE_C_PPANEL_ROOT:  // PPanel.Root
-				{
-					Panel *SelPanel=(CheckCode==MCODE_C_APANEL_ROOT)?ActivePanel:PassivePanel;
-
-					if (SelPanel)
-						Cond=SelPanel->VMProcess(MCODE_C_ROOTFOLDER)?1:0;
-
-					break;
-				}
-				case MCODE_C_APANEL_BOF:
-				case MCODE_C_PPANEL_BOF:
-				case MCODE_C_APANEL_EOF:
-				case MCODE_C_PPANEL_EOF:
-				{
-					Panel *SelPanel=(CheckCode==MCODE_C_APANEL_BOF || CheckCode==MCODE_C_APANEL_EOF)?ActivePanel:PassivePanel;
-
-					if (SelPanel)
-						Cond=SelPanel->VMProcess(CheckCode==MCODE_C_APANEL_BOF || CheckCode==MCODE_C_PPANEL_BOF?MCODE_C_BOF:MCODE_C_EOF)?1:0;
-
-					break;
-				}
-				case MCODE_C_SELECTED:    // Selected?
-				{
-					int NeedType = Mode == MACRO_EDITOR? MODALTYPE_EDITOR : (Mode == MACRO_VIEWER? MODALTYPE_VIEWER : (Mode == MACRO_DIALOG? MODALTYPE_DIALOG : MODALTYPE_PANELS));
-
-					if (!(Mode == MACRO_USERMENU || Mode == MACRO_MAINMENU || Mode == MACRO_MENU) && CurFrame && CurFrame->GetType()==NeedType)
-					{
-						int CurSelected;
-
-						if (Mode==MACRO_SHELL && CtrlObject->CmdLine->IsVisible())
-							CurSelected=(int)CtrlObject->CmdLine->VMProcess(CheckCode);
-						else
-							CurSelected=(int)CurFrame->VMProcess(CheckCode);
-
-						Cond=CurSelected?1:0;
-					}
-					else
-					{
-					#if 1
-						Frame *f=FrameManager->GetCurrentFrame(), *fo=nullptr;
-
-						//f=f->GetTopModal();
-						while (f)
-						{
-							fo=f;
-							f=f->GetTopModal();
-						}
-
-						if (!f)
-							f=fo;
-
-						if (f)
-						{
-							Cond=f->VMProcess(CheckCode);
-						}
-					#else
-
-						Frame *f=FrameManager->GetTopModal();
-
-						if (f)
-							Cond=(int64_t)f->VMProcess(CheckCode);
-					#endif
-					}
-					break;
-				}
-				case MCODE_C_EMPTY:   // Empty
-				case MCODE_C_BOF:
-				case MCODE_C_EOF:
-				{
-					int CurMMode=CtrlObject->Macro.GetMode();
-
-					if (!(Mode == MACRO_USERMENU || Mode == MACRO_MAINMENU || Mode == MACRO_MENU) && CurFrame && CurFrame->GetType() == MODALTYPE_PANELS && !(CurMMode == MACRO_INFOPANEL || CurMMode == MACRO_QVIEWPANEL || CurMMode == MACRO_TREEPANEL))
-					{
-						if (CheckCode == MCODE_C_EMPTY)
-							Cond=CtrlObject->CmdLine->GetLength()?0:1;
-						else
-							Cond=CtrlObject->CmdLine->VMProcess(CheckCode);
-					}
-					else
-					{
-						//if (IsMenuArea(CurMMode) || CurMMode == MACRO_DIALOG)
-						{
-							Frame *f=FrameManager->GetCurrentFrame(), *fo=nullptr;
-
-							//f=f->GetTopModal();
-							while (f)
-							{
-								fo=f;
-								f=f->GetTopModal();
-							}
-
-							if (!f)
-								f=fo;
-
-							if (f)
-							{
-								Cond=f->VMProcess(CheckCode);
-							}
-						}
-					}
-
-					break;
-				}
-				case MCODE_V_DLGITEMCOUNT: // Dlg.ItemCount
-				case MCODE_V_DLGCURPOS:    // Dlg.CurPos
-				case MCODE_V_DLGITEMTYPE:  // Dlg.ItemType
-				{
-					if (CurFrame && CurFrame->GetType()==MODALTYPE_DIALOG) // ?? Mode == MACRO_DIALOG ??
-						Cond=CurFrame->VMProcess(CheckCode);
-
-					break;
-				}
-				case MCODE_V_DLGINFOID:        // Dlg.Info.Id
-				{
-					if (CurFrame && CurFrame->GetType()==MODALTYPE_DIALOG) // ?? Mode == MACRO_DIALOG ??
-					{
-						Cond=reinterpret_cast<LPCWSTR>(CurFrame->VMProcess(CheckCode));
-					}
-
-					break;
-				}
-				case MCODE_C_APANEL_VISIBLE:  // APanel.Visible
-				case MCODE_C_PPANEL_VISIBLE:  // PPanel.Visible
-				{
-					Panel *SelPanel=CheckCode==MCODE_C_APANEL_VISIBLE?ActivePanel:PassivePanel;
-
-					if (SelPanel)
-						Cond = SelPanel->IsVisible()?1:0;
-
-					break;
-				}
-				case MCODE_C_APANEL_ISEMPTY: // APanel.Empty
-				case MCODE_C_PPANEL_ISEMPTY: // PPanel.Empty
-				{
-					Panel *SelPanel=CheckCode==MCODE_C_APANEL_ISEMPTY?ActivePanel:PassivePanel;
-
-					if (SelPanel)
-					{
-						SelPanel->GetFileName(strFileName,SelPanel->GetCurrentPos(),FileAttr);
-						int GetFileCount=SelPanel->GetFileCount();
-						Cond=(!GetFileCount ||
-						      (GetFileCount == 1 && TestParentFolderName(strFileName)))
-						     ?1:0;
-					}
-
-					break;
-				}
-				case MCODE_C_APANEL_FILTER:
-				case MCODE_C_PPANEL_FILTER:
-				{
-					Panel *SelPanel=(CheckCode==MCODE_C_APANEL_FILTER)?ActivePanel:PassivePanel;
-
-					if (SelPanel)
-						Cond=SelPanel->VMProcess(MCODE_C_APANEL_FILTER)?1:0;
-
-					break;
-				}
-				case MCODE_C_APANEL_LFN:
-				case MCODE_C_PPANEL_LFN:
-				{
-					Panel *SelPanel = CheckCode == MCODE_C_APANEL_LFN ? ActivePanel : PassivePanel;
-
-					if (SelPanel )
-						Cond = 1;
-
-					break;
-				}
-				case MCODE_C_APANEL_LEFT: // APanel.Left
-				case MCODE_C_PPANEL_LEFT: // PPanel.Left
-				{
-					Panel *SelPanel = CheckCode == MCODE_C_APANEL_LEFT ? ActivePanel : PassivePanel;
-
-					if (SelPanel )
-						Cond = SelPanel == CtrlObject->Cp()->LeftPanel ? 1 : 0;
-
-					break;
-				}
-				case MCODE_C_APANEL_FILEPANEL: // APanel.FilePanel
-				case MCODE_C_PPANEL_FILEPANEL: // PPanel.FilePanel
-				{
-					Panel *SelPanel = CheckCode == MCODE_C_APANEL_FILEPANEL ? ActivePanel : PassivePanel;
-
-					if (SelPanel )
-						Cond=SelPanel->GetType() == FILE_PANEL;
-
-					break;
-				}
-				case MCODE_C_APANEL_PLUGIN: // APanel.Plugin
-				case MCODE_C_PPANEL_PLUGIN: // PPanel.Plugin
-				{
-					Panel *SelPanel=CheckCode==MCODE_C_APANEL_PLUGIN?ActivePanel:PassivePanel;
-
-					if (SelPanel)
-						Cond=SelPanel->GetMode() == PLUGIN_PANEL;
-
-					break;
-				}
-				case MCODE_C_APANEL_FOLDER: // APanel.Folder
-				case MCODE_C_PPANEL_FOLDER: // PPanel.Folder
-				{
-					Panel *SelPanel=CheckCode==MCODE_C_APANEL_FOLDER?ActivePanel:PassivePanel;
-
-					if (SelPanel)
-					{
-						SelPanel->GetFileName(strFileName,SelPanel->GetCurrentPos(),FileAttr);
-
-						if (FileAttr != INVALID_FILE_ATTRIBUTES)
-							Cond=(FileAttr&FILE_ATTRIBUTE_DIRECTORY)?1:0;
-					}
-
-					break;
-				}
-				case MCODE_C_APANEL_SELECTED: // APanel.Selected
-				case MCODE_C_PPANEL_SELECTED: // PPanel.Selected
-				{
-					Panel *SelPanel=CheckCode==MCODE_C_APANEL_SELECTED?ActivePanel:PassivePanel;
-
-					if (SelPanel)
-					{
-						int SelCount=SelPanel->GetRealSelCount();
-						Cond=SelCount >= 1?1:0; //??
-					}
-
-					break;
-				}
-				case MCODE_V_APANEL_CURRENT: // APanel.Current
-				case MCODE_V_PPANEL_CURRENT: // PPanel.Current
-				{
-					Panel *SelPanel = CheckCode == MCODE_V_APANEL_CURRENT ? ActivePanel : PassivePanel;
-
-					Cond = L"";
-
-					if (SelPanel )
-					{
-						SelPanel->GetFileName(strFileName,SelPanel->GetCurrentPos(),FileAttr);
-
-						if (FileAttr != INVALID_FILE_ATTRIBUTES)
-							Cond = strFileName.CPtr();
-					}
-
-					break;
-				}
-				case MCODE_V_APANEL_SELCOUNT: // APanel.SelCount
-				case MCODE_V_PPANEL_SELCOUNT: // PPanel.SelCount
-				{
-					Panel *SelPanel = CheckCode == MCODE_V_APANEL_SELCOUNT ? ActivePanel : PassivePanel;
-
-					if (SelPanel )
-						Cond = SelPanel->GetRealSelCount();
-
-					break;
-				}
-				case MCODE_V_APANEL_COLUMNCOUNT:       // APanel.ColumnCount - активная панель:  количество колонок
-				case MCODE_V_PPANEL_COLUMNCOUNT:       // PPanel.ColumnCount - пассивная панель: количество колонок
-				{
-					Panel *SelPanel = CheckCode == MCODE_V_APANEL_COLUMNCOUNT ? ActivePanel : PassivePanel;
-
-					if (SelPanel )
-						Cond = SelPanel->GetColumnsCount();
-
-					break;
-				}
-				case MCODE_V_APANEL_WIDTH: // APanel.Width
-				case MCODE_V_PPANEL_WIDTH: // PPanel.Width
-				case MCODE_V_APANEL_HEIGHT: // APanel.Height
-				case MCODE_V_PPANEL_HEIGHT: // PPanel.Height
-				{
-					Panel *SelPanel = CheckCode == MCODE_V_APANEL_WIDTH || CheckCode == MCODE_V_APANEL_HEIGHT? ActivePanel : PassivePanel;
-
-					if (SelPanel )
-					{
-						int X1, Y1, X2, Y2;
-						SelPanel->GetPosition(X1,Y1,X2,Y2);
-
-						if (CheckCode == MCODE_V_APANEL_HEIGHT || CheckCode == MCODE_V_PPANEL_HEIGHT)
-							Cond = Y2-Y1+1;
-						else
-							Cond = X2-X1+1;
-					}
-
-					break;
-				}
-
-				case MCODE_V_APANEL_OPIFLAGS:  // APanel.OPIFlags
-				case MCODE_V_PPANEL_OPIFLAGS:  // PPanel.OPIFlags
-				case MCODE_V_APANEL_HOSTFILE: // APanel.HostFile
-				case MCODE_V_PPANEL_HOSTFILE: // PPanel.HostFile
-				{
-					Panel *SelPanel = CheckCode == MCODE_V_APANEL_OPIFLAGS || CheckCode == MCODE_V_APANEL_HOSTFILE? ActivePanel : PassivePanel;
-
-					if (CheckCode == MCODE_V_APANEL_HOSTFILE || CheckCode == MCODE_V_PPANEL_HOSTFILE)
-						Cond = L"";
-
-					if (SelPanel )
-					{
-						if (SelPanel->GetMode() == PLUGIN_PANEL)
-						{
-							OpenPluginInfo Info{};
-							Info.StructSize=sizeof(OpenPluginInfo);
-							SelPanel->GetOpenPluginInfo(&Info);
-							if (CheckCode == MCODE_V_APANEL_OPIFLAGS || CheckCode == MCODE_V_PPANEL_OPIFLAGS)
-								Cond = (int64_t)Info.Flags;
-							else
-								Cond = Info.HostFile;
-						}
-					}
-
-					break;
-				}
-
-				case MCODE_V_APANEL_PREFIX:           // APanel.Prefix
-				case MCODE_V_PPANEL_PREFIX:           // PPanel.Prefix
-				{
-					Panel *SelPanel = CheckCode == MCODE_V_APANEL_PREFIX ? ActivePanel : PassivePanel;
-
-					Cond = L"";
-
-					if (SelPanel )
-					{
-						PluginInfo PInfo;
-						if (SelPanel->VMProcess(MCODE_V_APANEL_PREFIX,&PInfo))
-							Cond = PInfo.CommandPrefix;
-					}
-
-					break;
-				}
-
-				case MCODE_V_APANEL_PATH0:           // APanel.Path0
-				case MCODE_V_PPANEL_PATH0:           // PPanel.Path0
-				{
-					Panel *SelPanel = CheckCode == MCODE_V_APANEL_PATH0 ? ActivePanel : PassivePanel;
-
-					Cond = L"";
-
-					if (SelPanel )
-					{
-						if (!SelPanel->VMProcess(CheckCode,&strFileName,0))
-							SelPanel->GetCurDir(strFileName);
-						Cond = strFileName.CPtr();
-					}
-
-					break;
-				}
-
-				case MCODE_V_APANEL_PATH: // APanel.Path
-				case MCODE_V_PPANEL_PATH: // PPanel.Path
-				{
-					Panel *SelPanel = CheckCode == MCODE_V_APANEL_PATH ? ActivePanel : PassivePanel;
-
-					Cond = L"";
-
-					if (SelPanel )
-					{
-						if (SelPanel->GetMode() == PLUGIN_PANEL)
-						{
-							OpenPluginInfo Info{};
-							Info.StructSize=sizeof(OpenPluginInfo);
-							SelPanel->GetOpenPluginInfo(&Info);
-							strFileName = Info.CurDir;
-						}
-						else
-							SelPanel->GetCurDir(strFileName);
-						DeleteEndSlash(strFileName); // - чтобы у корня диска было C:, тогда можно писать так: APanel.Path + "/file"
-						Cond = strFileName.CPtr();
-					}
-
-					break;
-				}
-
-				case MCODE_V_APANEL_UNCPATH: // APanel.UNCPath
-				case MCODE_V_PPANEL_UNCPATH: // PPanel.UNCPath
-				{
-					Cond = L"";
-
-					if (_MakePath1(CheckCode == MCODE_V_APANEL_UNCPATH?KEY_ALTSHIFTBRACKET:KEY_ALTSHIFTBACKBRACKET,strFileName,L""))
-					{
-						UnquoteExternal(strFileName);
-						DeleteEndSlash(strFileName);
-						Cond = strFileName.CPtr();
-					}
-
-					break;
-				}
-				//FILE_PANEL,TREE_PANEL,QVIEW_PANEL,INFO_PANEL
-				case MCODE_V_APANEL_TYPE: // APanel.Type
-				case MCODE_V_PPANEL_TYPE: // PPanel.Type
-				{
-					Panel *SelPanel = CheckCode == MCODE_V_APANEL_TYPE ? ActivePanel : PassivePanel;
-
-					if (SelPanel )
-						Cond=SelPanel->GetType();
-
-					break;
-				}
-				case MCODE_V_APANEL_DRIVETYPE: // APanel.DriveType - активная панель: тип привода
-				case MCODE_V_PPANEL_DRIVETYPE: // PPanel.DriveType - пассивная панель: тип привода
-				{
-					Panel *SelPanel = CheckCode == MCODE_V_APANEL_DRIVETYPE ? ActivePanel : PassivePanel;
-					Cond=-1;
-
-					if (SelPanel  && SelPanel->GetMode() != PLUGIN_PANEL)
-					{
-						SelPanel->GetCurDir(strFileName);
-						UINT DriveType=FAR_GetDriveType(strFileName,nullptr,0);
-
-/*						if (IsLocalPath(strFileName))
-						{
-							FARString strRemoteName;
-							strFileName.Truncate(2);
-
-							if (GetSubstName(DriveType,strFileName,strRemoteName))
-								DriveType=DRIVE_SUBSTITUTE;
-						}
-*/
-						Cond=TVar((int64_t)DriveType);
-					}
-
-					break;
-				}
-				case MCODE_V_APANEL_ITEMCOUNT: // APanel.ItemCount
-				case MCODE_V_PPANEL_ITEMCOUNT: // PPanel.ItemCount
-				{
-					Panel *SelPanel = CheckCode == MCODE_V_APANEL_ITEMCOUNT ? ActivePanel : PassivePanel;
-
-					if (SelPanel )
-						Cond=(int64_t)SelPanel->GetFileCount();
-
-					break;
-				}
-				case MCODE_V_APANEL_CURPOS: // APanel.CurPos
-				case MCODE_V_PPANEL_CURPOS: // PPanel.CurPos
-				{
-					Panel *SelPanel = CheckCode == MCODE_V_APANEL_CURPOS ? ActivePanel : PassivePanel;
-
-					if (SelPanel )
-						Cond=SelPanel->GetCurrentPos()+(SelPanel->GetFileCount()>0?1:0);
-
-					break;
-				}
-				case MCODE_V_TITLE: // Title
-				{
-					Frame *f=FrameManager->GetTopModal();
-
-					if (f)
-					{
-						if (CtrlObject->Cp() == f)
-						{
-							ActivePanel->GetTitle(strFileName);
-						}
-						else
-						{
-							FARString strType;
-
-							switch (f->GetTypeAndName(strType,strFileName))
-							{
-								case MODALTYPE_EDITOR:
-								case MODALTYPE_VIEWER:
-									f->GetTitle(strFileName);
-									break;
-							}
-						}
-
-						RemoveExternalSpaces(strFileName);
-					}
-
-					Cond=strFileName.CPtr();
-					break;
-				}
-				case MCODE_V_HEIGHT:  // Height - высота текущего объекта
-				case MCODE_V_WIDTH:   // Width - ширина текущего объекта
-				{
-					Frame *f=FrameManager->GetTopModal();
-
-					if (f)
-					{
-						int X1, Y1, X2, Y2;
-						f->GetPosition(X1,Y1,X2,Y2);
-
-						if (CheckCode == MCODE_V_HEIGHT)
-							Cond = Y2-Y1+1;
-						else
-							Cond = X2-X1+1;
-					}
-
-					break;
-				}
-				case MCODE_V_MENU_VALUE: // Menu.Value
-				{
-					int CurMMode=GetMode();
-					Cond=L"";
-
-					if (IsMenuArea(CurMMode) || CurMMode == MACRO_DIALOG)
-					{
-						Frame *f=FrameManager->GetCurrentFrame(), *fo=nullptr;
-
-						//f=f->GetTopModal();
-						while (f)
-						{
-							fo=f;
-							f=f->GetTopModal();
-						}
-
-						if (!f)
-							f=fo;
-
-						if (f)
-						{
-							FARString NewStr;
-
-							if (f->VMProcess(CheckCode,&NewStr))
-							{
-								HiText2Str(strFileName, NewStr);
-								RemoveExternalSpaces(strFileName);
-								Cond=strFileName.CPtr();
-							}
-						}
-					}
-
-					break;
-				}
-				case MCODE_V_ITEMCOUNT: // ItemCount - число элементов в текущем объекте
-				case MCODE_V_CURPOS: // CurPos - текущий индекс в текущем объекте
-				{
-					#if 1
-						Frame *f=FrameManager->GetCurrentFrame(), *fo=nullptr;
-
-						//f=f->GetTopModal();
-						while (f)
-						{
-							fo=f;
-							f=f->GetTopModal();
-						}
-
-						if (!f)
-							f=fo;
-
-						if (f)
-						{
-							Cond=f->VMProcess(CheckCode);
-						}
-					#else
-
-						Frame *f=FrameManager->GetTopModal();
-
-						if (f)
-							Cond=(int64_t)f->VMProcess(CheckCode);
-					#endif
-					break;
-				}
-				// *****************
-				case MCODE_V_EDITORCURLINE: // Editor.CurLine - текущая линия в редакторе (в дополнении к Count)
-				case MCODE_V_EDITORSTATE:   // Editor.State
-				case MCODE_V_EDITORLINES:   // Editor.Lines
-				case MCODE_V_EDITORCURPOS:  // Editor.CurPos
-				case MCODE_V_EDITORREALPOS: // Editor.RealPos
-				case MCODE_V_EDITORFILENAME: // Editor.FileName
-				case MCODE_V_EDITORVALUE:   // Editor.Value
-				case MCODE_V_EDITORSELVALUE: // Editor.SelValue
-				{
-					if (CheckCode == MCODE_V_EDITORVALUE || CheckCode == MCODE_V_EDITORSELVALUE)
-						Cond=L"";
-
-					if (CtrlObject->Macro.GetMode()==MACRO_EDITOR && CtrlObject->Plugins.CurEditor && CtrlObject->Plugins.CurEditor->IsVisible())
-					{
-						if (CheckCode == MCODE_V_EDITORFILENAME)
-						{
-							FARString strType;
-							CtrlObject->Plugins.CurEditor->GetTypeAndName(strType, strFileName);
-							Cond=strFileName.CPtr();
-						}
-						else if (CheckCode == MCODE_V_EDITORVALUE)
-						{
-							EditorGetString egs;
-							egs.StringNumber=-1;
-							CtrlObject->Plugins.CurEditor->EditorControl(ECTL_GETSTRING,&egs);
-							Cond=egs.StringText;
-						}
-						else if (CheckCode == MCODE_V_EDITORSELVALUE)
-						{
-							CtrlObject->Plugins.CurEditor->VMProcess(CheckCode,&strFileName);
-							Cond=strFileName.CPtr();
-						}
-						else
-							Cond=CtrlObject->Plugins.CurEditor->VMProcess(CheckCode);
-					}
-
-					break;
-				}
-				case MCODE_V_HELPFILENAME:  // Help.FileName
-				case MCODE_V_HELPTOPIC:     // Help.Topic
-				case MCODE_V_HELPSELTOPIC:  // Help.SelTopic
-				{
-					Cond=L"";
-
-					if (CtrlObject->Macro.GetMode() == MACRO_HELP)
-					{
-						CurFrame->VMProcess(CheckCode,&strFileName,0);
-						Cond=strFileName.CPtr();
-					}
-
-					break;
-				}
-				case MCODE_V_VIEWERFILENAME: // Viewer.FileName
-				case MCODE_V_VIEWERSTATE: // Viewer.State
-				{
-					if (CheckCode == MCODE_V_VIEWERFILENAME)
-						Cond=L"";
-
-					if ((CtrlObject->Macro.GetMode()==MACRO_VIEWER || CtrlObject->Macro.GetMode()==MACRO_QVIEWPANEL) &&
-					        CtrlObject->Plugins.CurViewer && CtrlObject->Plugins.CurViewer->IsVisible())
-					{
-						if (CheckCode == MCODE_V_VIEWERFILENAME)
-						{
-							CtrlObject->Plugins.CurViewer->GetFileName(strFileName);//GetTypeAndName(nullptr,FileName);
-							Cond=strFileName.CPtr();
-						}
-						else
-							Cond=CtrlObject->Plugins.CurViewer->VMProcess(MCODE_V_VIEWERSTATE);
-					}
-
-					break;
-				}
-			}
-
-			break;
-		}
-		default:
-		{
-			Err=1;
-			break;
-		}
-	}
-
-	_KEYMACRO(SysLog(L"return; Err=%d",Err));
-	return Cond;
-}
-
 
 // S=trim(S[,N])
 static bool trimFunc(const TMacroFunction*)
@@ -4541,202 +3791,9 @@ wchar_t *KeyMacro::MkTextSequence(DWORD *Buffer,int BufferSize,const wchar_t *Sr
 	return nullptr;
 }
 
-int KeyMacro::WriteVarsConst(int WriteMode)
-{
-	std::string strUpKeyName = "KeyMacros/";
-	strUpKeyName+= (WriteMode == MACRO_VARS) ? "Vars": "Consts";
-	TVarTable *t = (WriteMode == MACRO_VARS) ? &glbVarTable : &glbConstTable;
-
-	ConfigWriter cfg_writer(strUpKeyName);
-	for (int I=0; I < V_TABLE_SIZE; I++)
-		for (int J=0;; ++J)
-		{
-			TVarSet *var=varEnum(*t,I,J);
-
-			if (!var)
-				break;
-
-			FARString strValueName = (WriteMode == MACRO_VARS) ? L"%" : L"";
-			strValueName+= var->str;
-
-			FARString strValueData;
-			if (SerializeVar(var->value, strValueData))
-			{
-				cfg_writer.SetString(strValueName.GetMB(), strValueData);
-			}
-		}
-
-	return TRUE;
-}
-
-/*
-   KeyMacros/Vars
-     "StringName":REG_SZ
-     "IntName":REG_DWORD
-*/
-int KeyMacro::ReadVarsConst(int ReadMode, FARString &strSData)
-{
-	std::string strUpKeyName = "KeyMacros/";
-	strUpKeyName+= (ReadMode==MACRO_VARS) ? "Vars" : "Consts";
-	TVarTable *t = (ReadMode==MACRO_VARS) ? &glbVarTable : &glbConstTable;
-
-	ConfigReader cfg_reader(strUpKeyName);
-	const auto &Names = cfg_reader.EnumKeys();
-	for (const auto & Name : Names)
-	{
-		if (ReadMode == MACRO_VARS && !(Name[0] == L'%' && Name[1] == L'%')) // BUG??? should really check [1] ???
-			continue;
-
-		FARString ValSerialized = cfg_reader.GetString(Name, L"");
-		if (ValSerialized != L"")
-		{
-			FARString strValueName(Name);
-			const wchar_t *lpwszValueName = strValueName.CPtr() + ((ReadMode == MACRO_VARS) ? 1 : 0);
-			DeserializeVar(varInsert(*t, lpwszValueName)->value, ValSerialized);
-		}
-	}
-
-	if (ReadMode == MACRO_CONSTS)
-	{
-		SetMacroConst(constMsX, tviZero);
-		SetMacroConst(constMsY, tviZero);
-		SetMacroConst(constMsButton, tviZero);
-		SetMacroConst(constMsCtrlState, tviZero);
-		SetMacroConst(constMsEventFlags, tviZero);
-		SetMacroConst(constRCounter, tviZero);
-	}
-
-	return TRUE;
-}
-
 void KeyMacro::SetMacroConst(const wchar_t *ConstName, const TVar Value)
 {
 	varLook(glbConstTable, ConstName,1)->value = Value;
-}
-
-void KeyMacro::RegisterMacroIntFunction()
-{
-	static bool InitedInternalFuncs=false;
-
-	if (!InitedInternalFuncs)
-	{
-		for(size_t I=0; intMacroFunction[I].Name; ++I)
-		{
-			if (intMacroFunction[I].Code == MCODE_F_CALLPLUGIN)
-			{
-				if(!Opt.Macro.CallPluginRules)
-					intMacroFunction[I].IntFlags |= IMFF_DISABLEINTINPUT;
-			}
-
-			KeyMacro::RegisterMacroFunction(intMacroFunction+I);
-		}
-
-		InitedInternalFuncs=true;
-	}
-}
-
-TMacroFunction *KeyMacro::RegisterMacroFunction(const TMacroFunction *tmfunc)
-{
-	if (!tmfunc->Name || !tmfunc->Name[0])
-		return nullptr;
-
-	TMacroOpCode Code = tmfunc->Code;
-	if ( !Code || Code == MCODE_F_NOFUNC) // получить временный OpCode относительно KEY_MACRO_U_BASE
-		Code=(TMacroOpCode)GetNewOpCode();
-
-	TMacroFunction *pTemp;
-
-	if (CMacroFunction >= AllocatedFuncCount)
-	{
-		AllocatedFuncCount=AllocatedFuncCount+64;
-
-		if (!(pTemp=(TMacroFunction *)realloc(AMacroFunction,AllocatedFuncCount*sizeof(TMacroFunction))))
-			return nullptr;
-
-		AMacroFunction=pTemp;
-	}
-
-	pTemp=AMacroFunction+CMacroFunction;
-
-	pTemp->Name=wcsdup(tmfunc->Name);
-	pTemp->fnGUID=tmfunc->fnGUID?wcsdup(tmfunc->fnGUID):nullptr;
-	pTemp->Syntax=tmfunc->Syntax?wcsdup(tmfunc->Syntax):nullptr;
-	//pTemp->Src=tmfunc->Src?wcsdup(tmfunc->Src):nullptr;
-	//pTemp->Description=tmfunc->Description?wcsdup(tmfunc->Description):nullptr;
-	pTemp->nParam=tmfunc->nParam;
-	pTemp->oParam=tmfunc->oParam;
-	pTemp->Code=Code;
-	pTemp->BufferSize=tmfunc->BufferSize;
-
-	if (tmfunc->BufferSize > 0)
-	{
-		pTemp->Buffer=(DWORD *)malloc(sizeof(DWORD)*tmfunc->BufferSize);
-		if (pTemp->Buffer)
-			memmove(pTemp->Buffer,tmfunc->Buffer,sizeof(DWORD)*tmfunc->BufferSize);
-	}
-	else
-		pTemp->Buffer=nullptr;
-	pTemp->IntFlags=tmfunc->IntFlags;
-	pTemp->Func=tmfunc->Func;
-
-	CMacroFunction++;
-	return pTemp;
-}
-
-bool KeyMacro::UnregMacroFunction(size_t Index)
-{
-	if (Index < 0) // size_t < 0 ???
-	{
-		if (AMacroFunction)
-		{
-			TMacroFunction *pTemp;
-			for (size_t I=0; I < CMacroFunction; ++I)
-			{
-				pTemp=AMacroFunction+I;
-				if (pTemp->Name)        free((void*)pTemp->Name);
-				pTemp->Name=nullptr;
-				if (pTemp->fnGUID)      free((void*)pTemp->fnGUID);
-				pTemp->fnGUID=nullptr;
-				if (pTemp->Syntax)      free((void*)pTemp->Syntax);
-				pTemp->Syntax=nullptr;
-				if (pTemp->Buffer)      free((void*)pTemp->Buffer);
-				pTemp->Buffer=nullptr;
-				//if (pTemp->Src)         free((void*)pTemp->Src);         pTemp->Src=nullptr;
-				//if (pTemp->Description) free((void*)pTemp->Description); pTemp->Description=nullptr;
-			}
-			CMacroFunction=0;
-			AllocatedFuncCount=0;
-			free(AMacroFunction);
-			AMacroFunction=nullptr;
-		}
-	}
-	else
-	{
-		if (AMacroFunction && Index >=0 && Index < CMacroFunction)
-			AMacroFunction[Index].Code=MCODE_F_NOFUNC;
-		else
-			return false;
-	}
-
-	return true;
-}
-
-const TMacroFunction *KeyMacro::GetMacroFunction(size_t Index)
-{
-	if (AMacroFunction && Index >= 0 && Index < CMacroFunction)
-		return AMacroFunction+Index;
-
-	return nullptr;
-}
-
-size_t KeyMacro::GetCountMacroFunction()
-{
-	return CMacroFunction;
-}
-
-DWORD KeyMacro::GetNewOpCode()
-{
-	return LastOpCodeUF++;
 }
 
 // эта функция будет вызываться из тех классов, которым нужен перезапуск макросов
@@ -5020,8 +4077,8 @@ DWORD KeyMacro::AssignMacroKey()
 		{DI_COMBOBOX,5,3,28,3,{},DIF_FOCUS|DIF_DEFAULT,L""}
 	};
 	MakeDialogItemsEx(MacroAssignDlgData,MacroAssignDlg);
-	DlgParam Param={this,0,StartMode,0};
-	//_SVS(SysLog(L"StartMode=%d",StartMode));
+	DlgParam Param={this,0,m_StartMode,0};
+	//_SVS(SysLog(L"StartMode=%d",m_StartMode));
 	IsProcessAssignMacroKey++;
 	Dialog Dlg(MacroAssignDlg,ARRAYSIZE(MacroAssignDlg),AssignMacroDlgProc,(LONG_PTR)&Param);
 	Dlg.SetPosition(-1,-1,34,6);
@@ -5540,7 +4597,7 @@ int KeyMacro::GetCurRecord(MacroRecord* RBuf,int *KeyPos)
 		*KeyPos=Work.Executing?Work.ExecLIBPos:0;
 		memset(RBuf,0,sizeof(MacroRecord));
 
-		if (Recording == MACROMODE_NOMACRO)
+		if (m_Recording == MACROMODE_NOMACRO)
 		{
 			if (Work.Executing)
 			{
@@ -5555,10 +4612,10 @@ int KeyMacro::GetCurRecord(MacroRecord* RBuf,int *KeyPos)
 		RBuf->BufferSize=RecBufferSize;
 		RBuf->Buffer=RecBuffer;
 
-		return Recording==MACROMODE_RECORDING?MACROMODE_RECORDING:MACROMODE_RECORDING_COMMON;
+		return m_Recording==MACROMODE_RECORDING?MACROMODE_RECORDING:MACROMODE_RECORDING_COMMON;
 	}
 
-	return Recording?(Recording==MACROMODE_RECORDING?MACROMODE_RECORDING:MACROMODE_RECORDING_COMMON):(Work.Executing?Work.Executing:MACROMODE_NOMACRO);
+	return m_Recording?(m_Recording==MACROMODE_RECORDING?MACROMODE_RECORDING:MACROMODE_RECORDING_COMMON):(Work.Executing?Work.Executing:MACROMODE_NOMACRO);
 }
 
 static int __cdecl SortMacros(const MacroRecord *el1,const MacroRecord *el2)
@@ -5630,18 +4687,6 @@ DWORD KeyMacro::SetOpCode(MacroRecord *MR,int PC,DWORD OpCode)
 	return OldOpCode;
 }
 
-void KeyMacro::DropProcess()
-{
-	if (Work.Executing)
-	{
-		if (LockScr) delete LockScr;
-
-		LockScr=nullptr;
-		Clipboard::SetUseInternalClipboardState(false); //??
-		Work.Executing=MACROMODE_NOMACRO;
-		ReleaseWORKBuffer();
-	}
-}
 
 bool checkMacroConst(const wchar_t *name)
 {

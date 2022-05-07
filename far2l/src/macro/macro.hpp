@@ -182,7 +182,7 @@ public:
 	int  GetState() const;
 	int  GetKey();
 	static DWORD GetMacroParseError(point& ErrPos, FARString& ErrSrc);
-	FARMACROAREA GetArea() const { return m_Area; }
+	int GetArea() const { return m_Area; }
 	//string_view GetStringToPrint() const { return m_StringToPrint; }
 	bool IsRecording() const { return m_Recording != MACROSTATE_NOMACRO; }
 	bool LoadMacros(bool FromFar, bool InitedRAM=true, const FarMacroLoad *Data=nullptr);
@@ -192,23 +192,27 @@ public:
 	void SetArea(FARMACROAREA Area) { m_Area=Area; }
 	void SuspendMacros(bool Suspend) { Suspend ? ++m_InternalInput : --m_InternalInput; }
 
+private:
+	static int GetExecutingState();
+	//intptr_t AssignMacroDlgProc(Dialog* Dlg,intptr_t Msg,intptr_t Param1,void* Param2);
+	//int  AssignMacroKey(DWORD& MacroKey, unsigned long long& Flags);
+	//bool GetMacroSettings(int Key, unsigned long long &Flags, string_view Src = {}, string_view Descr = {});
+	//intptr_t ParamMacroDlgProc(Dialog* Dlg,intptr_t Msg,intptr_t Param1,void* Param2);
+	void RestoreMacroChar() const;
+
+	int m_Area;
+	int m_StartMode;
+	int m_Recording;
+	FARString m_RecCode;
+	FARString m_RecDescription;
+	int m_InternalInput;
+	int m_WaitKey;
+	FARString m_StringToPrint;
+
 	private:
-		DWORD MacroVersion;
-
-		static DWORD LastOpCodeUF; // последний не занятый OpCode для UserFunction (относительно KEY_MACRO_U_BASE)
-		// для функций
-		static size_t CMacroFunction;
-		static size_t AllocatedFuncCount;
-		static TMacroFunction *AMacroFunction;
-
-		// тип записи - с вызовом диалога настроек или...
-		// 0 - нет записи, 1 - простая запись, 2 - вызов диалога настроек
-		int Recording;
-		int InternalInput;
 		int IsRedrawEditor;
 
 		int Mode;
-		int StartMode;
 
 		struct MacroState Work;
 		struct MacroState PCStack[STACKLEVEL];
@@ -228,13 +232,8 @@ public:
 		class LockScreen *LockScr;
 
 	private:
-		int ReadVarsConst(int ReadMode, FARString &strBuffer);
-		int WriteVarsConst(int WriteMode);
 		DWORD AssignMacroKey();
 		int GetMacroSettings(uint32_t Key,DWORD &Flags);
-		void InitInternalVars(BOOL InitedRAM=TRUE);
-		void InitInternalLIBVars();
-		void ReleaseWORKBuffer(BOOL All=FALSE); // удалить временный буфер
 
 		DWORD SwitchFlags(DWORD& Flags,DWORD Value);
 		FARString &MkRegKeyName(int IdxMacro,FARString &strRegKeyName);
@@ -246,17 +245,12 @@ public:
 		BOOL CheckFileFolder(Panel *ActivePanel,DWORD CurFlags, BOOL IsPassivePanel);
 		BOOL CheckAll(int CheckMode,DWORD CurFlags);
 		void Sort();
-		TVar FARPseudoVariable(DWORD Flags,DWORD Code,DWORD& Err);
 		DWORD GetOpCode(struct MacroRecord *MR,int PC);
 		DWORD SetOpCode(struct MacroRecord *MR,int PC,DWORD OpCode);
 
 	private:
-		static int GetExecutingState();
 		static LONG_PTR WINAPI AssignMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2);
 		static LONG_PTR WINAPI ParamMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2);
-
-	public:
-		~KeyMacro();
 
 	public:
 		uint32_t ProcessKey(uint32_t Key);
@@ -266,10 +260,8 @@ public:
 		int PopState();
 		int GetLevelState() {return CurPCStack;};
 
-		void SetMode(int Mode) {KeyMacro::Mode=Mode;};
-		int  GetMode() {return(Mode);};
-
-		void DropProcess();
+		void SetMode(int aMode) {Mode=aMode;};
+		int GetMode() {return(Mode);};
 
 		int GetStartIndex(int Mode) {return IndexMode[Mode<MACRO_LAST-1?Mode:MACRO_LAST-1][0];}
 		// Функция получения индекса нужного макроса в массиве
@@ -292,24 +284,6 @@ public:
 		static const wchar_t* GetSubKey(int Mode);
 		static int GetSubKey(const wchar_t *Mode);
 		static wchar_t *MkTextSequence(DWORD *Buffer,int BufferSize,const wchar_t *Src=nullptr);
-
-		static DWORD GetNewOpCode();
-
-		static size_t GetCountMacroFunction();
-		static const TMacroFunction *GetMacroFunction(size_t Index);
-		static void RegisterMacroIntFunction();
-		static TMacroFunction *RegisterMacroFunction(const TMacroFunction *tmfunc);
-		static bool UnregMacroFunction(size_t Index);
-
-private:
-	FARMACROAREA m_Area;
-	FARMACROAREA m_StartMode;
-	FARMACROSTATE m_Recording;
-	FARString m_RecCode;
-	FARString m_RecDescription;
-	int m_InternalInput;
-	int m_WaitKey;
-	FARString m_StringToPrint;
 };
 
 BOOL WINAPI KeyMacroToText(uint32_t Key,FARString &strKeyText0);
