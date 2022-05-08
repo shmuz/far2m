@@ -474,7 +474,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 					}
 					case MCMD_GETSTATE:
 					{
-						return Macro.GetCurRecord(nullptr,nullptr);
+						return Macro.GetState();
 					}
 
 					case MCMD_GETAREA:

@@ -2863,7 +2863,7 @@ int __stdcall SystemCPEncoder::Transcode(
 
 EditControl::EditControl(ScreenObject *pOwner,Callback* aCallback,bool bAllocateData,History* iHistory,FarList* iList,DWORD iFlags)
 	: Edit(pOwner,aCallback,bAllocateData),
-	pCustomCompletionList(nullptr), pHistory(iHistory), pList(iList), 
+	pCustomCompletionList(nullptr), pHistory(iHistory), pList(iList),
 	Selection(false), SelectionStart(-1), ECFlags(iFlags)
 
 {
@@ -2913,19 +2913,19 @@ void EditControl::PopulateCompletionMenu(VMenu &ComplMenu, const FARString &strF
 	SudoSilentQueryRegion ssqr;
 	if (pCustomCompletionList)
 	{
-		for (const auto &possibility : *pCustomCompletionList) 
+		for (const auto &possibility : *pCustomCompletionList)
 			FilteredAddToMenu(ComplMenu, strFilter, FARString(possibility));
-			
+
 		if (ComplMenu.GetItemCount() < 10)
 			ComplMenu.AssignHighlights(0);
 	}
-	else 
+	else
 	{
-		if(pHistory) 
+		if(pHistory)
 		{
 			pHistory->GetAllSimilar(ComplMenu, strFilter);
-		} 
-		else if(pList) 
+		}
+		else if(pList)
 		{
 			for(int i=0;i<pList->ItemsNumber;i++)
 				FilteredAddToMenu(ComplMenu, strFilter, pList->Items[i].Text);
@@ -2937,7 +2937,7 @@ void EditControl::PopulateCompletionMenu(VMenu &ComplMenu, const FARString &strF
 
 			m_pSuggestor->Suggest(strFilter, ComplMenu);
 		}
-	}	
+	}
 }
 
 void EditControl::RemoveSelectedCompletionMenuItem(VMenu &ComplMenu)
@@ -3183,7 +3183,7 @@ int EditControl::AutoCompleteProc(bool Manual,bool DelBlock,int& BackKey)
 	int Result=0;
 	static int Reenter=0;
 
-	if(ECFlags.Check(EC_ENABLEAUTOCOMPLETE) && *Str && !Reenter && (CtrlObject->Macro.GetCurRecord(nullptr,nullptr) == MACROMODE_NOMACRO || Manual))
+	if(ECFlags.Check(EC_ENABLEAUTOCOMPLETE) && *Str && !Reenter && (CtrlObject->Macro.GetState() == MACROSTATE_NOMACRO || Manual))
 	{
 		Reenter++;
 		AutoCompleteProcMenu(Result,Manual,DelBlock,BackKey);

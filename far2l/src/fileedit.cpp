@@ -916,7 +916,7 @@ int FileEditor::ReProcessKey(int Key,int CalledFromControl)
 	_SVS(if (Key=='n' || Key=='m'))
 		_SVS(SysLog(L"%d Key='%c'",__LINE__,Key));
 
-	if (!CalledFromControl && (CtrlObject->Macro.IsRecording() || CtrlObject->Macro.IsExecuting() || CtrlObject->Macro.GetCurRecord(nullptr,nullptr) == MACROMODE_NOMACRO))
+	if (!CalledFromControl && (CtrlObject->Macro.IsRecording() || CtrlObject->Macro.IsExecuting() || CtrlObject->Macro.GetState() == MACROMODE_NOMACRO))
 	{
 
 		_SVS(if (CtrlObject->Macro.IsRecording() || CtrlObject->Macro.IsExecuting() == MACROMODE_EXECUTING_COMMON))

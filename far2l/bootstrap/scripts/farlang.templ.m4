@@ -22702,6 +22702,26 @@ upd:"Other panel"
 upd:"Other panel"
 "Інш. панель"
 
+MacroPluginLuamacroNotLoaded
+"Плагин LuaMacro не загружен"
+"Plugin LuaMacro is not loaded"
+"Plugin LuaMacro není nahrán"
+"Plugin LuaMacro wurde nicht geladen"
+upd:"Plugin LuaMacro is not loaded"
+"Wtyczka LuaMacro nie została wczytana"
+"Complemento LuaMacro no está cargado"
+"Плагін LuaMacro не завантажено"
+
+MacroRecordingIsDisabled
+"Запись макросов запрещена"
+"Macro recording is disabled"
+"Nahrávání maker je vypnuto"
+"Macro Screiben is verhindert"
+upd:"Macro recording is disabled"
+"Nagrywanie makr jest wyłączone"
+"Grabación de macro está desactivada"
+"Запис макросів заборонено"
+
 #Must be the last
 NewFileName
 l:

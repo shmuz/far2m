@@ -154,11 +154,6 @@ struct MacroPanelSelect {
 	TVar    *Item;
 };
 
-/* $TODO:
-    1. Удалить IndexMode[], Sort()
-    2. Из MacroLIB сделать
-       struct MacroRecord *MacroLIB[MACRO_LAST];
-*/
 class KeyMacro
 {
 public:
@@ -214,15 +209,6 @@ private:
 
 		int Mode;
 
-		struct MacroState Work;
-		struct MacroState PCStack[STACKLEVEL];
-		int CurPCStack;
-
-		// сюда "могут" писать только при чтении макросов (занесение нового),
-		// а исполнять через MacroWORK
-		int MacroLIBCount;
-		struct MacroRecord *MacroLIB;
-
 		int IndexMode[MACRO_LAST][2];
 
 		int RecBufferSize;
@@ -234,9 +220,6 @@ private:
 	private:
 		DWORD AssignMacroKey();
 		int GetMacroSettings(uint32_t Key,DWORD &Flags);
-
-		DWORD SwitchFlags(DWORD& Flags,DWORD Value);
-		FARString &MkRegKeyName(int IdxMacro,FARString &strRegKeyName);
 
 		BOOL CheckEditSelected(DWORD CurFlags);
 		BOOL CheckInsidePlugin(DWORD CurFlags);
@@ -253,33 +236,17 @@ private:
 		static LONG_PTR WINAPI ParamMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2);
 
 	public:
-		uint32_t ProcessKey(uint32_t Key);
+		bool ProcessKey(DWORD Key);
 		bool IsOpCode(DWORD p);
-
-		int PushState(bool CopyLocalVars=FALSE);
-		int PopState();
-		int GetLevelState() {return CurPCStack;};
 
 		void SetMode(int aMode) {Mode=aMode;};
 		int GetMode() {return(Mode);};
 
 		int GetStartIndex(int Mode) {return IndexMode[Mode<MACRO_LAST-1?Mode:MACRO_LAST-1][0];}
-		// Функция получения индекса нужного макроса в массиве
-		int GetIndex(uint32_t Key, int Mode, bool UseCommon=true);
-		// получение размера, занимаемого указанным макросом
-		int GetRecordSize(int Key, int Mode);
-
-		bool GetPlainText(FARString& Dest);
-		int  GetPlainTextSize();
 
 		void SetRedrawEditor(int Sets) {IsRedrawEditor=Sets;}
 
 		void RestartAutoMacro(int Mode);
-
-		// получить данные о макросе (возвращает статус)
-		int GetCurRecord(struct MacroRecord* RBuf=nullptr,int *KeyPos=nullptr);
-		// проверить флаги текущего исполняемого макроса.
-		BOOL CheckCurMacroFlags(DWORD Flags);
 
 		static const wchar_t* GetSubKey(int Mode);
 		static int GetSubKey(const wchar_t *Mode);
@@ -288,9 +255,6 @@ private:
 
 BOOL WINAPI KeyMacroToText(uint32_t Key,FARString &strKeyText0);
 uint32_t WINAPI KeyNameMacroToKey(const wchar_t *Name);
-void initMacroVarTable(int global);
-void doneMacroVarTable(int global);
-bool checkMacroConst(const wchar_t *name);
 const wchar_t *eStackAsString(int Pos=0);
 
 inline bool IsMenuArea(int Area){return Area==MACRO_MAINMENU || Area==MACRO_MENU || Area==MACRO_DISKS || Area==MACRO_USERMENU || Area==MACRO_AUTOCOMPLETION;}

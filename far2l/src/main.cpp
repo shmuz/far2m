@@ -387,7 +387,7 @@ int FarAppMain(int argc, char **argv)
 	// avoid killing process due to broker terminated unexpectedly
 	signal(SIGPIPE, SIG_IGN);
 
-	fprintf(stderr, "argv[0]='%s' g_strFarModuleName='%ls' translation_prefix='%ls' temp='%s' config='%s'\n", 
+	fprintf(stderr, "argv[0]='%s' g_strFarModuleName='%ls' translation_prefix='%ls' temp='%s' config='%s'\n",
 		argv[0], g_strFarModuleName.CPtr(), GetPathTranslationPrefix(), InMyTemp().c_str(), InMyConfig().c_str());
 
 	// make current thread to be same as main one to avoid FARString reference-counter
@@ -427,7 +427,7 @@ int FarAppMain(int argc, char **argv)
 		// /usr/bin/something -> /usr/share/far2l
 		g_strFarPath.Append("/" APP_BASENAME);
 	}
-		
+
 	setenv("FARHOME", g_strFarPath.GetMB().c_str(), 1);
 
 	AddEndSlash(g_strFarPath);
@@ -609,7 +609,7 @@ int FarAppMain(int argc, char **argv)
 
     const char *lc = setlocale(LC_CTYPE, NULL);
     char LangCode[3]; LangCode[0] = lc[0]; LangCode[1] = lc[1]; LangCode[2] = 0;
-    
+
     KbLayoutsTrIn = KeyboardLayouts->GetString(LangCode, "Latin");
     KbLayoutsTrOut = KeyboardLayouts->GetString(LangCode, "Local");
 
@@ -656,14 +656,12 @@ int FarAppMain(int argc, char **argv)
 		return 1;
 	}
 	setenv("FARLANG", Opt.strLanguage.GetMB().c_str(), 1);
-	initMacroVarTable(1);
 
 	CheckForImportLegacyShortcuts();
 
 	int Result = MainProcess(strEditViewArg,DestNames[0],DestNames[1],StartLine,StartChar);
 
 	EmptyInternalClipboard();
-	doneMacroVarTable(1);
 	VTShell_Shutdown();//ensure VTShell deinitialized before statics destructors called
 	_OT(SysLog(L"[[[[[Exit of FAR]]]]]]]]]"));
 	return Result;
@@ -676,12 +674,12 @@ int FarAppMain(int argc, char **argv)
 	printf("%u: '%ls'\n", (unsigned int)v.size(), v.c_str());
 	for (size_t i = 0; i<v.size(); ++i)
 		printf("%02x ", (unsigned int)v[i]);
-		
+
 	printf("\n");
 	std::string a = StrWide2MB(v);
 	for (size_t i = 0; i<a.size(); ++i)
 		printf("%02x ", (unsigned char)a[i]);
-	printf("\n");	
+	printf("\n");
 }
 
 void SudoTest()
@@ -736,7 +734,7 @@ int FarDispatchAnsiApplicationProtocolCommand(const char *str)
 				StartChar = atoi(command.c_str() + p + 1);
 		}
 		//FIXME: modality doesn't work with this FFILEEDIT_ENABLEF6! (see abort after loop)
-		FileEditor *Editor=new FileEditor(StrMB2Wide(argument).c_str(), CP_AUTODETECT, 
+		FileEditor *Editor=new FileEditor(StrMB2Wide(argument).c_str(), CP_AUTODETECT,
 			FFILEEDIT_DISABLEHISTORY | FFILEEDIT_SAVETOSAVEAS | FFILEEDIT_CANNEWFILE,
 			StartLine, StartChar);
 		r = Editor->GetExitCode();
@@ -749,7 +747,7 @@ int FarDispatchAnsiApplicationProtocolCommand(const char *str)
 	} else {
 		r = -1;
 	}
-	
+
 	return r;
 }
 

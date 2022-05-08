@@ -359,7 +359,7 @@ bool KeyMacro::MacroExists(int Key, FARMACROAREA Area, bool UseCommon)
 	return KeyToText(Key,KeyName) && LM_GetMacro(&dummy, Area, KeyName, UseCommon);
 }
 
-static void LM_ProcessRecordedMacro(FARMACROAREA Area, const FARString& TextKey, const FARString& Code,
+static void LM_ProcessRecordedMacro(int Area, const FARString& TextKey, const FARString& Code,
 	MACROFLAGS_MFLAGS Flags, const FARString& Description)
 {
 	FarMacroValue values[] = { static_cast<double>(Area), TextKey.CPtr(), Code.CPtr(), Flags, Description.CPtr() };
@@ -795,27 +795,6 @@ TMacroKeywords MKeywordsFlags[] =
 	{1,  L"NoSendKeysToPlugins",MFLAGS_NOSENDKEYSTOPLUGINS,0},
 };
 
-// транслирующая таблица - имя <-> код макроклавиши
-static struct TKeyCodeName
-{
-	uint32_t Key;
-	int Len;
-	const wchar_t *Name;
-} KeyMacroCodes[]=
-{
-	{ MCODE_OP_AKEY,                 5, L"$AKey"      }, // клавиша, которой вызвали макрос
-	{ MCODE_OP_CONTINUE,             9, L"$Continue"  },
-	{ MCODE_OP_ELSE,                 5, L"$Else"      },
-	{ MCODE_OP_END,                  4, L"$End"       },
-	{ MCODE_OP_EXIT,                 5, L"$Exit"      },
-	{ MCODE_OP_IF,                   3, L"$If"        },
-	{ MCODE_OP_REP,                  4, L"$Rep"       },
-	{ MCODE_OP_SELWORD,              8, L"$SelWord"   },
-	{ MCODE_OP_PLAINTEXT,            5, L"$Text"      }, // $Text "Plain Text"
-	{ MCODE_OP_WHILE,                6, L"$While"     },
-	{ MCODE_OP_XLAT,                 5, L"$XLat"      },
-};
-
 static bool absFunc(const TMacroFunction*);
 static bool ascFunc(const TMacroFunction*);
 static bool atoiFunc(const TMacroFunction*);
@@ -873,8 +852,6 @@ static bool pluginsFunc(const TMacroFunction*);
 static bool usersFunc(const TMacroFunction*);
 static bool windowscrollFunc(const TMacroFunction*);
 
-static bool __CheckCondForSkip(DWORD Op);
-
 int MKeywordsSize = ARRAYSIZE(MKeywords);
 int MKeywordsFlagsSize = ARRAYSIZE(MKeywordsFlags);
 
@@ -925,323 +902,116 @@ class TVMStack: public TStack<TVar>
 
 TVMStack VMStack;
 
-// функция преобразования кода макроклавиши в текст
-BOOL WINAPI KeyMacroToText(uint32_t Key,FARString &strKeyText0)
+bool KeyMacro::ProcessKey(DWORD IntKey)
 {
-	FARString strKeyText;
+	if (m_InternalInput || IntKey==KEY_IDLE || IntKey==KEY_NONE || !FrameManager->GetCurrentFrame()) //FIXME: избавиться от IntKey
+		return false;
 
-	for (int I=0; I<int(ARRAYSIZE(KeyMacroCodes)); I++)
+	FARString textKey;
+	if (!KeyToText(IntKey, textKey) || textKey.IsEmpty())
+		return false;
+
+	const bool ctrldot = IntKey == Opt.Macro.KeyMacroCtrlDot;           //###  || IntKey == Opt.Macro.KeyMacroRCtrlDot;
+	const bool ctrlshiftdot = IntKey == Opt.Macro.KeyMacroCtrlShiftDot; //###  || IntKey == Opt.Macro.KeyMacroRCtrlShiftDot;
+
+	if (m_Recording == MACROSTATE_NOMACRO)
 	{
-		if (Key==KeyMacroCodes[I].Key)
+		if ((ctrldot||ctrlshiftdot) && !IsExecuting())
 		{
-			strKeyText = KeyMacroCodes[I].Name;
-			break;
+			const Plugin* LuaMacro = CtrlObject->Plugins.FindPlugin(SYSID_LUAMACRO);
+			if (!LuaMacro) //###  || LuaMacro->IsPendingRemove())
+			{
+					Message(MSG_WARNING,1,Msg::Error,
+					   Msg::MacroPluginLuamacroNotLoaded,
+					   Msg::MacroRecordingIsDisabled,
+					   Msg::HOk);
+					return false;
+			}
+
+			// Где мы?
+			m_StartMode=m_Area;
+			// В зависимости от того, КАК НАЧАЛИ писать макрос, различаем общий режим (Ctrl-.
+			// с передачей плагину кеев) или специальный (Ctrl-Shift-. - без передачи клавиш плагину)
+			m_Recording=ctrldot?MACROSTATE_RECORDING_COMMON:MACROSTATE_RECORDING;
+
+			m_RecCode.Clear();
+			m_RecDescription.Clear();
+			ScrBuf.Flush();
+			return true;
+		}
+		else
+		{
+			if (!m_WaitKey && IsPostMacroEnabled())
+			{
+				auto key = IntKey;
+				if ((key&0x00FFFFFF) > 0x7F && (key&0x00FFFFFF) < 0xFFFF)
+					key=KeyToKeyLayout(key&0x0000FFFF)|(key&~0x0000FFFF);
+
+				if (key<0xFFFF)
+					key=Upper(static_cast<wchar_t>(key)); //### was: upper
+
+				FARString str = textKey;
+				if (key != IntKey)
+					KeyToText(key, str);
+				if (TryToPostMacro(m_Area, str, IntKey))
+					return true;
+			}
 		}
 	}
-
-	if (strKeyText.IsEmpty())
+	else // m_Recording!=MACROSTATE_NOMACRO
 	{
-		strKeyText0.Clear();
-		return FALSE;
-	}
-
-	strKeyText0 = strKeyText;
-	return TRUE;
-}
-
-// функция преобразования названия в код макроклавиши
-// вернет KEY_INVALID, если нет эквивалента!
-uint32_t WINAPI KeyNameMacroToKey(const wchar_t *Name)
-{
-	// пройдемся по всем модификаторам
-	for (const auto& elem : KeyMacroCodes)
-		if (!StrCmpNI(Name, elem.Name, elem.Len))
-			return elem.Key;
-
-	return KEY_INVALID;
-}
-
-uint32_t KeyMacro::ProcessKey(uint32_t Key)
-{
-	if (m_InternalInput || Key==KEY_IDLE || Key==KEY_NONE || !FrameManager->GetCurrentFrame())
-		return FALSE;
-
-	if (m_Recording) // Идет запись?
-	{
-		if (Key==Opt.Macro.KeyMacroCtrlDot || Key==Opt.Macro.KeyMacroCtrlShiftDot) // признак конца записи?
+		if (ctrldot||ctrlshiftdot) // признак конца записи?
 		{
-			_KEYMACRO(CleverSysLog Clev(L"MACRO End record..."));
+			m_InternalInput=1;
 			DWORD MacroKey;
-			int WaitInMainLoop0=WaitInMainLoop;
-			m_InternalInput=TRUE;
-			WaitInMainLoop=FALSE;
-			// Залочить _текущий_ фрейм, а не _последний немодальный_
-			FrameManager->GetCurrentFrame()->Lock(); // отменим прорисовку фрейма
-			MacroKey=AssignMacroKey();
-			FrameManager->ResetLastInputRecord();
-			FrameManager->GetCurrentFrame()->Unlock(); // теперь можно :-)
 			// выставляем флаги по умолчанию.
-			DWORD Flags=MFLAGS_DISABLEOUTPUT; // ???
-			// добавим проверку на удаление
-			// если удаляем, то не нужно выдавать диалог настройки.
-			//if (MacroKey != (DWORD)-1 && (Key==KEY_CTRLSHIFTDOT || Recording==2) && RecBufferSize)
-			if (MacroKey != KEY_INVALID && Key==Opt.Macro.KeyMacroCtrlShiftDot && RecBufferSize)
-			{
-				if (!GetMacroSettings(MacroKey,Flags))
-					MacroKey=KEY_INVALID;
-			}
+			DWORD Flags = 0;
+			int AssignRet=0; //### AssignMacroKey(MacroKey,Flags);
 
-			WaitInMainLoop=WaitInMainLoop0;
-			m_InternalInput=FALSE;
-
-			if (MacroKey==KEY_INVALID)
+			if (AssignRet && AssignRet!=2 && !m_RecCode.IsEmpty())
 			{
-				if (RecBuffer)
+				m_RecCode = L"Keys(\"" + m_RecCode + L"\")";
+				// добавим проверку на удаление
+				// если удаляем или был вызван диалог изменения, то не нужно выдавать диалог настройки.
+				//if (MacroKey != (DWORD)-1 && (Key==KEY_CTRLSHIFTDOT || Recording==2) && RecBufferSize)
+				if (ctrlshiftdot && !GetMacroSettings(MacroKey,Flags))
 				{
-					free(RecBuffer);
-					RecBuffer=nullptr;
-					RecBufferSize=0;
+					AssignRet=0;
 				}
 			}
-			else
+			m_InternalInput=0;
+			if (AssignRet)
 			{
-				// в области common будем искать только при удалении
-				int Pos=GetIndex(MacroKey,m_StartMode,!(RecBuffer && RecBufferSize));
-
-				if (Pos == -1)
-				{
-					Pos=MacroLIBCount;
-
-					if (RecBufferSize > 0)
-					{
-						MacroRecord *NewMacroLIB=(MacroRecord *)realloc(MacroLIB,sizeof(*MacroLIB)*(MacroLIBCount+1));
-
-						if (!NewMacroLIB)
-						{
-							WaitInFastFind++;
-							return FALSE;
-						}
-
-						MacroLIB=NewMacroLIB;
-						MacroLIBCount++;
-					}
-				}
-				else
-				{
-					if (MacroLIB[Pos].BufferSize > 1 && MacroLIB[Pos].Buffer)
-						free(MacroLIB[Pos].Buffer);
-
-					if (MacroLIB[Pos].Src)
-						free(MacroLIB[Pos].Src);
-
-					if (MacroLIB[Pos].Description)
-						free(MacroLIB[Pos].Description);
-
-					MacroLIB[Pos].Buffer=nullptr;
-					MacroLIB[Pos].Src=nullptr;
-					MacroLIB[Pos].Description=nullptr;
-				}
-
-				if (Pos < MacroLIBCount)
-				{
-					MacroLIB[Pos].Key=MacroKey;
-
-					if (RecBufferSize > 0 && !RecSrc)
-						RecBuffer[RecBufferSize++]=MCODE_OP_ENDKEYS;
-
-					if (RecBufferSize > 1)
-						MacroLIB[Pos].Buffer=RecBuffer;
-					else if (RecBuffer && RecBufferSize > 0)
-						MacroLIB[Pos].Buffer=reinterpret_cast<DWORD*>((DWORD_PTR)(*RecBuffer));
-					else if (!RecBufferSize)
-						MacroLIB[Pos].Buffer=nullptr;
-
-					MacroLIB[Pos].BufferSize=RecBufferSize;
-					MacroLIB[Pos].Src=RecSrc?RecSrc:MkTextSequence(MacroLIB[Pos].Buffer,MacroLIB[Pos].BufferSize);
-					MacroLIB[Pos].Description=nullptr;
-
-					// если удаляем макрос - скорректируем m_StartMode,
-					// иначе макрос из common получит ту область, в которой его решили удалить.
-					if (!MacroLIB[Pos].BufferSize||!MacroLIB[Pos].Src)
-						m_StartMode = (FARMACROAREA) (MacroLIB[Pos].Flags&MFLAGS_MODEMASK);
-
-					MacroLIB[Pos].Flags=Flags|(m_StartMode&MFLAGS_MODEMASK)|MFLAGS_NEEDSAVEMACRO|(m_Recording==MACROMODE_RECORDING_COMMON?0:MFLAGS_NOSENDKEYSTOPLUGINS);
-				}
+				FARString strKey;
+				KeyToText(MacroKey, strKey);
+				Flags |= m_Recording == MACROSTATE_RECORDING_COMMON? MFLAGS_NONE : MFLAGS_NOSENDKEYSTOPLUGINS;
+				LM_ProcessRecordedMacro(m_StartMode, strKey, m_RecCode, Flags, m_RecDescription);
 			}
 
-			m_Recording=MACROMODE_NOMACRO;
-			RecBuffer=nullptr;
-			RecBufferSize=0;
-			RecSrc=nullptr;
+			m_Recording=MACROSTATE_NOMACRO;
+			m_RecCode.Clear();
+			m_RecDescription.Clear();
 			ScrBuf.RestoreMacroChar();
-			WaitInFastFind++;
-			KeyMacro::Sort();
 
 			if (Opt.AutoSaveSetup)
 				SaveMacros(false); // записать только изменения!
 
-			return TRUE;
+			return true;
 		}
-		else // процесс записи продолжается.
+		else
 		{
-			if (Key>=KEY_NONE && Key<=KEY_END_SKEY) // специальные клавиши прокинем
-				return FALSE;
-
-			RecBuffer=(DWORD *)realloc(RecBuffer,sizeof(*RecBuffer)*(RecBufferSize+3));
-
-			if (!RecBuffer)
+			if (!IsProcessAssignMacroKey)
 			{
-				RecBufferSize=0;
-				return FALSE;
+				if (!m_RecCode.IsEmpty())
+					m_RecCode += L' ';
+
+				m_RecCode += textKey == L"\""? L"\\\"" : textKey;
 			}
-
-			if (ReturnAltValue) // "подтасовка" фактов ;-)
-				Key|=KEY_ALTDIGIT;
-
-			if (!RecBufferSize)
-				RecBuffer[RecBufferSize++]=MCODE_OP_KEYS;
-
-			RecBuffer[RecBufferSize++]=Key;
-			return FALSE;
+			return false;
 		}
-	}
-	else if (Key==Opt.Macro.KeyMacroCtrlDot || Key==Opt.Macro.KeyMacroCtrlShiftDot) // Начало записи?
-	{
-		_KEYMACRO(CleverSysLog Clev(L"MACRO Begin record..."));
-
-		// Полиция 18
-		if (Opt.Policies.DisabledOptions&FFPOL_CREATEMACRO)
-			return FALSE;
-
-		//if(CtrlObject->Plugins.CheckFlags(PSIF_ENTERTOOPENPLUGIN))
-		//	return FALSE;
-
-		if (LockScr)
-			delete LockScr;
-		LockScr=nullptr;
-
-		// Где мы?
-		m_StartMode=(Mode==MACRO_SHELL && !WaitInMainLoop)?MACRO_OTHER:Mode;
-		// тип записи - с вызовом диалога настроек или...
-		// В зависимости от того, КАК НАЧАЛИ писать макрос, различаем общий режим (Ctrl-.
-		// с передачей плагину кеев) или специальный (Ctrl-Shift-. - без передачи клавиш плагину)
-		m_Recording=(Key==Opt.Macro.KeyMacroCtrlDot) ? MACROMODE_RECORDING_COMMON:MACROMODE_RECORDING;
-
-		if (RecBuffer)
-			free(RecBuffer);
-		RecBuffer=nullptr;
-		RecBufferSize=0;
-
-		RecSrc=nullptr;
-		ScrBuf.ResetShadow();
-		ScrBuf.Flush();
-		WaitInFastFind--;
-		return TRUE;
-	}
-	else
-	{
-		if (Work.Executing == MACROMODE_NOMACRO) // Это еще не режим исполнения?
-		{
-			//_KEYMACRO(CleverSysLog Clev(L"MACRO find..."));
-			//_KEYMACRO(SysLog(L"Param Key=%ls",_FARKEY_ToName(Key)));
-			DWORD CurFlags;
-
-			if ((Key&(~KEY_CTRLMASK)) > 0x01 && (Key&(~KEY_CTRLMASK)) < KEY_FKEY_BEGIN) // 0xFFFF ??
-			{
-				//Key=KeyToKeyLayout(Key&0x0000FFFF)|(Key&(~0x0000FFFF));
-				//Key=Upper(Key&0x0000FFFF)|(Key&(~0x0000FFFF));
-				//_KEYMACRO(SysLog(L"Upper(Key)=%ls",_FARKEY_ToName(Key)));
-
-				if ((Key&(~KEY_CTRLMASK)) > 0x7F && (Key&(~KEY_CTRLMASK)) < KEY_FKEY_BEGIN)
-					Key=KeyToKeyLayout(Key&0x0000FFFF)|(Key&(~0x0000FFFFu));
-
-				if (Key < KEY_FKEY_BEGIN)
-					Key=Upper(Key&0x0000FFFF)|(Key&(~0x0000FFFFu));
-
-			}
-
-			int I=GetIndex(Key,(Mode==MACRO_SHELL && !WaitInMainLoop) ? MACRO_OTHER:Mode);
-
-			if (I != -1 && !((CurFlags=MacroLIB[I].Flags)&MFLAGS_DISABLEMACRO) && CtrlObject)
-			{
-				_KEYMACRO(SysLog(L"[%d] Found KeyMacro (I=%d Key=%ls,%ls)",__LINE__,I,_FARKEY_ToName(Key),_FARKEY_ToName(MacroLIB[I].Key)));
-
-				if (!CheckAll(Mode,CurFlags))
-					return FALSE;
-
-				// Скопируем текущее исполнение в MacroWORK
-				//PostNewMacro(MacroLIB+I);
-				// Подавлять вывод?
-				if (CurFlags&MFLAGS_DISABLEOUTPUT)
-				{
-					if (LockScr)
-						delete LockScr;
-
-					LockScr=new LockScreen;
-				}
-
-				// различаем общий режим (с передачей плагину кеев) или специальный (без передачи клавиш плагину)
-				Work.ExecLIBPos=0;
-				//### PostNewMacro(MacroLIB+I);
-				FARString textKey;
-				if (KeyToText(Key, textKey))
-				{
-					if (TryToPostMacro(m_Area, textKey, Key))
-						return TRUE;
-					Work.cRec=*FrameManager->GetLastInputRecord();
-					_SVS(FarSysLog_INPUT_RECORD_Dump(L"Macro",&Work.cRec));
-					Work.MacroPC=I;
-					IsRedrawEditor=CtrlObject->Plugins.CheckFlags(PSIF_ENTERTOOPENPLUGIN)?FALSE:TRUE;
-					_KEYMACRO(SysLog(L"**** Start Of Execute Macro ****"));
-					_KEYMACRO(SysLog(1));
-					return TRUE;
-				}
-			}
-		}
-
-		return FALSE;
-	}
-}
-
-bool KeyMacro::GetPlainText(FARString& strDest)
-{
-	strDest.Clear();
-
-	if (!Work.MacroWORK)
-		return false;
-
-	MacroRecord *MR=Work.MacroWORK;
-	int LenTextBuf=(int)(StrLength((wchar_t*)&MR->Buffer[Work.ExecLIBPos]))*sizeof(wchar_t);
-
-	if (LenTextBuf && MR->Buffer[Work.ExecLIBPos])
-	{
-		strDest=(const wchar_t *)&MR->Buffer[Work.ExecLIBPos];
-		_SVS(SysLog(L"strDest='%ls'",strDest.CPtr()));
-		_SVS(SysLog(L"Work.ExecLIBPos=%d",Work.ExecLIBPos));
-		Work.ExecLIBPos+=(LenTextBuf+sizeof(wchar_t))/sizeof(DWORD);
-		_SVS(SysLog(L"Work.ExecLIBPos=%d",Work.ExecLIBPos));
-
-		if (((LenTextBuf+sizeof(wchar_t))%sizeof(DWORD)) )
-			++Work.ExecLIBPos;
-
-		_SVS(SysLog(L"Work.ExecLIBPos=%d",Work.ExecLIBPos));
-		return true;
-	}
-	else
-	{
-		Work.ExecLIBPos++;
 	}
 
 	return false;
-}
-
-int KeyMacro::GetPlainTextSize()
-{
-	if (!Work.MacroWORK)
-		return 0;
-
-	MacroRecord *MR=Work.MacroWORK;
-	return StrLength((wchar_t*)&MR->Buffer[Work.ExecLIBPos]);
 }
 
 // S=trim(S[,N])
@@ -1672,10 +1442,7 @@ static bool modFunc(const TMacroFunction*)
 // n=iif(expression,n1,n2)
 static bool iifFunc(const TMacroFunction*)
 {
-	TVar V2, V1;
-	VMStack.Pop(V2);
-	VMStack.Pop(V1);
-	VMStack.Push(__CheckCondForSkip(MCODE_OP_JZ) ? V2 : V1);
+	//### to be implemented in Lua
 	return true;
 }
 
@@ -3264,146 +3031,6 @@ static bool editorsettitleFunc(const TMacroFunction*)
 	return Ret.i()!=0;
 }
 
-// V=callplugin(SysID[,param])
-#if 0
-static bool callpluginFunc(const TMacroFunction*)
-{
-/*
-Если в OpenPlugin встретился флаг OPEN_FROMMACRO - он приоритетный, говорит о том, что вызов плагина был из макросов.
-OPEN_FROMMACROSTRING уточняющий флаг - переметр Data содержит строку, если этот флаг не указан, то Data содержит число.
-Прочие значения для OpenFrom - рекомендательные... могут отличаться от...
-*/
-
-	int64_t Ret=0;
-	TVar Param; VMStack.Pop(Param);
-	TVar SysID; VMStack.Pop(SysID);
-
-	if (CtrlObject->Plugins.FindPlugin((DWORD)SysID.i()))
-	{
-		int OpenFrom = -1;
-		Frame* frame = FrameManager->GetCurrentFrame();
-
-		if (frame)
-			switch (frame->GetType())
-			{
-	/*
-OPEN_DISKMENU 	Открыт из меню дисков
-OPEN_PLUGINSMENU 	Открыт из меню плагинов (F11)
-OPEN_FINDLIST 	Открыт из диалога "поиска файлов" Этот идентификатор плагин получит только в том случае, если он экспортирует функцию SetFindListW. Последующий вызов функции SetFindListW произойдёт только в том случае, если функция OpenPluginW вернёт значение отличное от INVALID_HANDLE_VALUE.
-OPEN_SHORTCUT 	Открыт через ссылку на папку (Меню Commands|Folder shortcuts)
-OPEN_COMMANDLINE 	Был открыт из командной строки. Этот параметр может использоваться, только если плагин определил вызывающий префикс в функции GetPluginInfoW и этот префикс, с двоеточием после него, был указан в командной строке.
-OPEN_EDITOR 	Открыт из редактора
-OPEN_VIEWER 	Открыт из встроенной программы просмотра
-OPEN_FILEPANEL 	Открыт из панелей
-OPEN_DIALOG 	Открыт из диалога
-OPEN_ANALYSE 	Открыт из ???
-OPEN_FROMMACRO 	Открыт из макрокоманды
-
-
-# Для OPEN_FINDLIST Item всегда 0.
-# Для OPEN_SHORTCUT Item содержит адрес строки, которая была передана
-	в элемент ShortcutData структуры OpenPluginInfo в момент сохранения горячей клавиши.
-	Плагин может использовать это поле для сохранения дополнительной информации о текущем состоянии.
-	Не обязательно сохранять в нём информацию о текущей директории, так как этим занимается сам FAR.
-
-	OPEN_DISKMENU
-	OPEN_PLUGINSMENU
-	OPEN_FINDLIST
-	OPEN_SHORTCUT
-	OPEN_FILEPANEL
-	OPEN_ANALYSE
-    */
-
-				/*
-					Для параметров OPEN_DISKMENU, OPEN_PLUGINSMENU, OPEN_EDITOR и OPEN_VIEWER Item - это номер выбранного
-					пункта в меню из зарегистрированных плагином пунктов. Если плагин экспортирует только один элемент,
-					этот параметр всегда равен нулю.
-				*/
-				case MODALTYPE_EDITOR:
-					OpenFrom = OPEN_EDITOR      | OPEN_FROMMACRO;
-					break;
-				case MODALTYPE_VIEWER:
-					OpenFrom = OPEN_VIEWER      | OPEN_FROMMACRO;
-					break;
-				// Для OPEN_COMMANDLINE Item содержит адрес введённого пользователем в командной строке выражения.
-				case MODALTYPE_PANELS:
-					OpenFrom = OPEN_COMMANDLINE | OPEN_FROMMACRO;
-					break;
-				case MODALTYPE_DIALOG:
-					// Для OPEN_DIALOG Item содержит адрес структуры OpenDlgPluginData.
-					OpenFrom = OPEN_DIALOG      | OPEN_FROMMACRO;
-                    /*
-struct OpenDlgPluginData
-{
-	int ItemNumber;
-	HANDLE hDlg;
-};
-                    */
-					break;
-
-				/*
-				*/
-				case MODALTYPE_VMENU:
-				case MODALTYPE_COMBOBOX:
-
-				case MODALTYPE_VIRTUAL:
-				case MODALTYPE_HELP:
-				case MODALTYPE_FINDFOLDER:
-				case MODALTYPE_USER:
-				default:
-					break;
-			}
-
-		if (OpenFrom != -1)
-		{
-			if( Opt.Macro.CallPluginRules )
-				CtrlObject->Macro.PushState(true);
-
-			OpenFrom |= Param.isString() ? OPEN_FROMMACROSTRING : 0;
-
-			Ret=CtrlObject->Plugins.CallPlugin((DWORD)SysID.i(),OpenFrom,
-			                                   Param.isString() ? (void*)Param.s() :
-			                                   (void*)(size_t)Param.i());
-
-			if( Opt.Macro.CallPluginRules )
-				CtrlObject->Macro.PopState();
-		}
-	}
-
-	VMStack.Push(Ret);
-	return Ret?true:false;
-}
-#else
-static bool callpluginFunc(const TMacroFunction*)
-{
-	int64_t Ret=0;
-	TVar Param; VMStack.Pop(Param);
-	TVar SysID; VMStack.Pop(SysID);
-
-	if (CtrlObject->Plugins.FindPlugin((DWORD)SysID.i()))
-	{
-		// OpenFrom => OPEN_FROMMACRO [+OPEN_FROMMACROSTRING] + FARMACROAREA(i)
-		int OpenFrom = OPEN_FROMMACRO | (Param.isString() ? OPEN_FROMMACROSTRING : 0) | CtrlObject->Macro.GetMode();
-
-		if( Opt.Macro.CallPluginRules )
-			CtrlObject->Macro.PushState(true);
-
-		int ResultCallPlugin=0;
-
-		if (CtrlObject->Plugins.CallPlugin((DWORD)SysID.i(),OpenFrom,
-		                                   Param.isString() ? (void*)Param.s() :
-		                                   (void*)(size_t)Param.i(),&ResultCallPlugin))
-			Ret=ResultCallPlugin;
-
-		if( Opt.Macro.CallPluginRules )
-			CtrlObject->Macro.PopState();
-	}
-
-	VMStack.Push(Ret);
-	return Ret?true:false;
-}
-#endif
-
 // N=testfolder(S)
 /*
 возвращает одно состояний тестируемого каталога:
@@ -3542,31 +3169,6 @@ const wchar_t *eStackAsString(int)
 	return !s?L"":s;
 }
 
-static bool __CheckCondForSkip(DWORD Op)
-{
-	TVar tmpVar=VMStack.Pop();
-	if (tmpVar.isString() && *tmpVar.s())
-		return false;
-
-	int64_t res=tmpVar.getInteger();
-	switch(Op)
-	{
-		case MCODE_OP_JZ:
-			return !res?true:false;
-		case MCODE_OP_JNZ:
-			return res?true:false;
-		case MCODE_OP_JLT:
-			return res < 0?true:false;
-		case MCODE_OP_JLE:
-			return res <= 0?true:false;
-		case MCODE_OP_JGT:
-			return res > 0?true:false;
-		case MCODE_OP_JGE:
-			return res >= 0?true:false;
-	}
-	return false;
-}
-
 int KeyMacro::GetKey()
 {
 	if (m_InternalInput || !FrameManager->GetCurrentFrame())
@@ -3700,32 +3302,6 @@ bool KeyMacro::GetMacroKeyInfo(const FARString& StrArea, int Pos, FARString &str
 	return false;
 }
 
-DWORD KeyMacro::SwitchFlags(DWORD& Flags,DWORD Value)
-{
-	if (Flags&Value) Flags&=~Value;
-	else Flags|=Value;
-
-	return Flags;
-}
-
-
-FARString &KeyMacro::MkRegKeyName(int IdxMacro, FARString &strRegKeyName)
-{
-	FARString strKeyText;
-	KeyToText(MacroLIB[IdxMacro].Key, strKeyText);
-	strRegKeyName=L"KeyMacros/";
-	strRegKeyName+=GetSubKey(MacroLIB[IdxMacro].Flags&MFLAGS_MODEMASK);
-	AddEndSlash(strRegKeyName);
-
-	if (MacroLIB[IdxMacro].Flags&MFLAGS_DISABLEMACRO)
-	{
-		strRegKeyName+=L"~";
-	}
-
-	strRegKeyName+=strKeyText;
-	return strRegKeyName;
-}
-
 /*
   после вызова этой функции нужно удалить память!!!
   функция декомпилит только простые последовательности, т.к.... клавиши
@@ -3761,29 +3337,29 @@ wchar_t *KeyMacro::MkTextSequence(DWORD *Buffer,int BufferSize,const wchar_t *Sr
 #endif
 	strTextBuffer.Clear();
 
-	if (Buffer[0] == MCODE_OP_KEYS)
-		for (J=1; J < BufferSize; J++)
-		{
-			Key=Buffer[J];
+	//~ if (Buffer[0] == MCODE_OP_KEYS)
+		//~ for (J=1; J < BufferSize; J++)
+		//~ {
+			//~ Key=Buffer[J];
 
-			if (Key == MCODE_OP_ENDKEYS || Key == MCODE_OP_KEYS)
-				continue;
+			//~ if (Key == MCODE_OP_ENDKEYS || Key == MCODE_OP_KEYS)
+				//~ continue;
 
-			if (/*
-				(Key&KEY_MACRO_ENDBASE) >= KEY_MACRO_BASE && (Key&KEY_MACRO_ENDBASE) <= KEY_MACRO_ENDBASE ||
-				(Key&KEY_OP_ENDBASE) >= KEY_OP_BASE && (Key&KEY_OP_ENDBASE) <= KEY_OP_ENDBASE ||
-				*/
-			    !KeyToText(Key,strMacroKeyText)
-			)
-			{
-				return Src?wcsdup(Src):nullptr;
-			}
+			//~ if (/*
+				//~ (Key&KEY_MACRO_ENDBASE) >= KEY_MACRO_BASE && (Key&KEY_MACRO_ENDBASE) <= KEY_MACRO_ENDBASE ||
+				//~ (Key&KEY_OP_ENDBASE) >= KEY_OP_BASE && (Key&KEY_OP_ENDBASE) <= KEY_OP_ENDBASE ||
+				//~ */
+			    //~ !KeyToText(Key,strMacroKeyText)
+			//~ )
+			//~ {
+				//~ return Src?wcsdup(Src):nullptr;
+			//~ }
 
-			if (J > 1)
-				strTextBuffer += L" ";
+			//~ if (J > 1)
+				//~ strTextBuffer += L" ";
 
-			strTextBuffer += strMacroKeyText;
-		}
+			//~ strTextBuffer += strMacroKeyText;
+		//~ }
 
 	if (!strTextBuffer.IsEmpty())
 		return wcsdup(strTextBuffer.CPtr());
@@ -3978,77 +3554,77 @@ M1:
 		KeyToText((uint32_t)Param2,strKeyText);
 
 		// если УЖЕ есть такой макрос...
-		if ((Index=MacroDlg->GetIndex((uint32_t)Param2,KMParam->Mode)) != -1)
-		{
-			MacroRecord *Mac=MacroDlg->MacroLIB+Index;
+		//~ if ((Index=MacroDlg->GetIndex((uint32_t)Param2,KMParam->Mode)) != -1)
+		//~ {
+			//~ MacroRecord *Mac=MacroDlg->MacroLIB+Index;
 
-			// общие макросы учитываем только при удалении.
-			if (!MacroDlg->RecBuffer || !MacroDlg->RecBufferSize || (Mac->Flags&0xFF)!=MACRO_COMMON)
-			{
-				FARString strRegKeyName;
-				MacroDlg->MkRegKeyName(Index, strRegKeyName);
+			//~ // общие макросы учитываем только при удалении.
+			//~ if (!MacroDlg->RecBuffer || !MacroDlg->RecBufferSize || (Mac->Flags&0xFF)!=MACRO_COMMON)
+			//~ {
+				//~ FARString strRegKeyName;
+				//~ //### MacroDlg->MkRegKeyName(Index, strRegKeyName);
 
-				FARString strBufKey;
-				if (Mac->Src )
-				{
-					strBufKey=Mac->Src;
-					InsertQuote(strBufKey);
-				}
+				//~ FARString strBufKey;
+				//~ if (Mac->Src )
+				//~ {
+					//~ strBufKey=Mac->Src;
+					//~ InsertQuote(strBufKey);
+				//~ }
 
-				DWORD DisFlags=Mac->Flags&MFLAGS_DISABLEMACRO;
-				FARString strBuf;
-				if ((Mac->Flags&0xFF)==MACRO_COMMON)
-					strBuf.Format((!MacroDlg->RecBufferSize
-					                  ? (DisFlags ? Msg::MacroCommonDeleteAssign : Msg::MacroCommonDeleteKey)
-					                  : Msg::MacroCommonReDefinedKey), strKeyText.CPtr());
-				else
-					strBuf.Format((!MacroDlg->RecBufferSize
-					                  ? (DisFlags ? Msg::MacroDeleteAssign : Msg::MacroDeleteKey)
-					                  : Msg::MacroReDefinedKey), strKeyText.CPtr());
+				//~ DWORD DisFlags=Mac->Flags&MFLAGS_DISABLEMACRO;
+				//~ FARString strBuf;
+				//~ if ((Mac->Flags&0xFF)==MACRO_COMMON)
+					//~ strBuf.Format((!MacroDlg->RecBufferSize
+					                  //~ ? (DisFlags ? Msg::MacroCommonDeleteAssign : Msg::MacroCommonDeleteKey)
+					                  //~ : Msg::MacroCommonReDefinedKey), strKeyText.CPtr());
+				//~ else
+					//~ strBuf.Format((!MacroDlg->RecBufferSize
+					                  //~ ? (DisFlags ? Msg::MacroDeleteAssign : Msg::MacroDeleteKey)
+					                  //~ : Msg::MacroReDefinedKey), strKeyText.CPtr());
 
-				// проверим "а не совпадает ли всё?"
-				int Result=0;
-				if (!(!DisFlags &&
-				        Mac->Buffer && MacroDlg->RecBuffer &&
-				        Mac->BufferSize == MacroDlg->RecBufferSize &&
-				        (
-				            (Mac->BufferSize >  1 && !memcmp(Mac->Buffer,MacroDlg->RecBuffer,MacroDlg->RecBufferSize*sizeof(DWORD))) ||
-				            (Mac->BufferSize == 1 && (DWORD)(DWORD_PTR)Mac->Buffer == (DWORD)(DWORD_PTR)MacroDlg->RecBuffer)
-				        )
-				   ))
-					Result=Message(MSG_WARNING,2,Msg::Warning,
-					          strBuf,
-					          Msg::MacroSequence,
-					          strBufKey,
-					          (!MacroDlg->RecBufferSize?Msg::MacroDeleteKey2:
-					              (DisFlags?Msg::MacroDisDisabledKey:Msg::MacroReDefinedKey2)),
-					          (DisFlags && MacroDlg->RecBufferSize?Msg::MacroDisOverwrite:Msg::Yes),
-					          (DisFlags && MacroDlg->RecBufferSize?Msg::MacroDisAnotherKey:Msg::No));
+				//~ // проверим "а не совпадает ли всё?"
+				//~ int Result=0;
+				//~ if (!(!DisFlags &&
+				        //~ Mac->Buffer && MacroDlg->RecBuffer &&
+				        //~ Mac->BufferSize == MacroDlg->RecBufferSize &&
+				        //~ (
+				            //~ (Mac->BufferSize >  1 && !memcmp(Mac->Buffer,MacroDlg->RecBuffer,MacroDlg->RecBufferSize*sizeof(DWORD))) ||
+				            //~ (Mac->BufferSize == 1 && (DWORD)(DWORD_PTR)Mac->Buffer == (DWORD)(DWORD_PTR)MacroDlg->RecBuffer)
+				        //~ )
+				   //~ ))
+					//~ Result=Message(MSG_WARNING,2,Msg::Warning,
+					          //~ strBuf,
+					          //~ Msg::MacroSequence,
+					          //~ strBufKey,
+					          //~ (!MacroDlg->RecBufferSize?Msg::MacroDeleteKey2:
+					              //~ (DisFlags?Msg::MacroDisDisabledKey:Msg::MacroReDefinedKey2)),
+					          //~ (DisFlags && MacroDlg->RecBufferSize?Msg::MacroDisOverwrite:Msg::Yes),
+					          //~ (DisFlags && MacroDlg->RecBufferSize?Msg::MacroDisAnotherKey:Msg::No));
 
-				if (!Result)
-				{
-					if (DisFlags)
-					{
-						// удаляем из реестра только если включен автосейв
-						if (Opt.AutoSaveSetup)
-						{
-							// удалим старую запись из реестра
-							ConfigWriter(strRegKeyName.GetMB()).RemoveSection();
-						}
-						// раздисаблим
-						Mac->Flags&=~MFLAGS_DISABLEMACRO;
-					}
+				//~ if (!Result)
+				//~ {
+					//~ if (DisFlags)
+					//~ {
+						//~ // удаляем из реестра только если включен автосейв
+						//~ if (Opt.AutoSaveSetup)
+						//~ {
+							//~ // удалим старую запись из реестра
+							//~ ConfigWriter(strRegKeyName.GetMB()).RemoveSection();
+						//~ }
+						//~ // раздисаблим
+						//~ Mac->Flags&=~MFLAGS_DISABLEMACRO;
+					//~ }
 
-					// в любом случае - вываливаемся
-					SendDlgMessage(hDlg,DM_CLOSE,1,0);
-					return TRUE;
-				}
+					//~ // в любом случае - вываливаемся
+					//~ SendDlgMessage(hDlg,DM_CLOSE,1,0);
+					//~ return TRUE;
+				//~ }
 
-				// здесь - здесь мы нажимали "Нет", ну а на нет и суда нет
-				//  и значит очистим поле ввода.
-				strKeyText.Clear();
-			}
-		}
+				//~ // здесь - здесь мы нажимали "Нет", ну а на нет и суда нет
+				//~ //  и значит очистим поле ввода.
+				//~ strKeyText.Clear();
+			//~ }
+		//~ }
 
 		KMParam->Recurse++;
 		SendDlgMessage(hDlg,DM_SETTEXTPTR,2,(LONG_PTR)strKeyText.CPtr());
@@ -4319,100 +3895,6 @@ void MacroState::Init(TVarTable *tbl)
 	}
 }
 
-int KeyMacro::PushState(bool CopyLocalVars)
-{
-	if (CurPCStack+1 >= STACKLEVEL)
-		return FALSE;
-
-	++CurPCStack;
-	Work.UseInternalClipboard=Clipboard::GetUseInternalClipboardState();
-	PCStack[CurPCStack]=Work;
-	Work.Init(CopyLocalVars?PCStack[CurPCStack].locVarTable:nullptr);
-	return TRUE;
-}
-
-int KeyMacro::PopState()
-{
-	if (CurPCStack < 0)
-		return FALSE;
-
-	Work=PCStack[CurPCStack];
-	Clipboard::SetUseInternalClipboardState(Work.UseInternalClipboard);
-	CurPCStack--;
-	return TRUE;
-}
-
-// Функция получения индекса нужного макроса в массиве
-// Ret=-1 - не найден таковой.
-// если CheckMode=-1 - значит пофигу в каком режиме, т.е. первый попавшийся
-int KeyMacro::GetIndex(uint32_t Key, int ChechMode, bool UseCommon)
-{
-	if (MacroLIB)
-	{
-		for (int I=0; I < 2; ++I)
-		{
-			int Pos,Len;
-			MacroRecord *MPtr=nullptr;
-
-			if (ChechMode == -1)
-			{
-				Len=MacroLIBCount;
-				MPtr=MacroLIB;
-			}
-			else if (ChechMode >= 0 && ChechMode < MACRO_LAST)
-			{
-				Len=IndexMode[ChechMode][1];
-
-				if (Len)
-					MPtr=MacroLIB+IndexMode[ChechMode][0];
-
-				//_SVS(SysLog(L"ChechMode=%d (%d,%d)",ChechMode,IndexMode[ChechMode][0],IndexMode[ChechMode][1]));
-			}
-			else
-			{
-				Len=0;
-			}
-
-			if (Len)
-			{
-				for (Pos=0; Pos < Len; ++Pos, ++MPtr)
-				{
-					if (!((MPtr->Key ^ Key) & ~0xFFFFu) &&
-					        (Upper(static_cast<WCHAR>(MPtr->Key))==Upper(static_cast<WCHAR>(Key))) &&
-					        (MPtr->BufferSize > 0))
-					{
-						//        && (ChechMode == -1 || (MPtr->Flags&MFLAGS_MODEMASK) == ChechMode))
-						//_SVS(SysLog(L"GetIndex: Pos=%d MPtr->Key=0x%08X", Pos,MPtr->Key));
-						if (!(MPtr->Flags&MFLAGS_DISABLEMACRO))
-							return Pos+((ChechMode >= 0)?IndexMode[ChechMode][0]:0);
-					}
-				}
-			}
-
-			// здесь смотрим на MACRO_COMMON
-			if (ChechMode != -1 && !I && UseCommon)
-				ChechMode=MACRO_COMMON;
-			else
-				break;
-		}
-	}
-
-	return -1;
-}
-
-// получение размера, занимаемого указанным макросом
-// Ret= 0 - не найден таковой.
-// если CheckMode=-1 - значит пофигу в каком режиме, т.е. первый попавшийся
-int KeyMacro::GetRecordSize(int Key, int CheckMode)
-{
-	int Pos=GetIndex(Key,CheckMode);
-
-	if (Pos == -1)
-		return 0;
-
-	return sizeof(MacroRecord)+MacroLIB[Pos].BufferSize;
-}
-
 // получить название моды по коду
 const wchar_t* KeyMacro::GetSubKey(int Mode)
 {
@@ -4571,53 +4053,6 @@ BOOL KeyMacro::CheckAll(int /*CheckMode*/,DWORD CurFlags)
 	return TRUE;
 }
 
-/*
-  Return: FALSE - если тестируемый MFLAGS_* не установлен или
-                  это не режим исполнения макроса!
-          TRUE  - такой флаг(и) установлен(ы)
-*/
-BOOL KeyMacro::CheckCurMacroFlags(DWORD Flags)
-{
-	if (Work.Executing && Work.MacroWORK)
-	{
-		return (Work.MacroWORK->Flags&Flags)?TRUE:FALSE;
-	}
-
-	return FALSE;
-}
-
-/*
-  Return: 0 - не в режиме макро, 1 - Executing, 2 - Executing common, 3 - Recording, 4 - Recording common
-  See MacroRecordAndExecuteType
-*/
-int KeyMacro::GetCurRecord(MacroRecord* RBuf,int *KeyPos)
-{
-	if (KeyPos && RBuf)
-	{
-		*KeyPos=Work.Executing?Work.ExecLIBPos:0;
-		memset(RBuf,0,sizeof(MacroRecord));
-
-		if (m_Recording == MACROMODE_NOMACRO)
-		{
-			if (Work.Executing)
-			{
-				*RBuf=*Work.MacroWORK;   //MacroLIB[Work.MacroPC]; //????
-				return Work.Executing;
-			}
-
-			memset(RBuf,0,sizeof(MacroRecord));
-			return MACROMODE_NOMACRO;
-		}
-
-		RBuf->BufferSize=RecBufferSize;
-		RBuf->Buffer=RecBuffer;
-
-		return m_Recording==MACROMODE_RECORDING?MACROMODE_RECORDING:MACROMODE_RECORDING_COMMON;
-	}
-
-	return m_Recording?(m_Recording==MACROMODE_RECORDING?MACROMODE_RECORDING:MACROMODE_RECORDING_COMMON):(Work.Executing?Work.Executing:MACROMODE_NOMACRO);
-}
-
 static int __cdecl SortMacros(const MacroRecord *el1,const MacroRecord *el2)
 {
 	int Mode1, Mode2;
@@ -4631,32 +4066,6 @@ static int __cdecl SortMacros(const MacroRecord *el1,const MacroRecord *el2)
 	return 1;
 }
 
-// Сортировка элементов списка
-void KeyMacro::Sort()
-{
-	typedef int (__cdecl *qsort_fn)(const void*,const void*);
-	// сортируем
-	far_qsort(MacroLIB,MacroLIBCount,sizeof(MacroRecord),(qsort_fn)SortMacros);
-	// перестраиваем индекс начал
-	int CurMode=MACRO_OTHER;
-	memset(IndexMode,0,sizeof(IndexMode));
-
-	for (int I=0; I<MacroLIBCount; I++)
-	{
-		int J=MacroLIB[I].Flags&MFLAGS_MODEMASK;
-
-		if (CurMode != J)
-		{
-			IndexMode[J][0]=I;
-			CurMode=J;
-		}
-
-		IndexMode[J][1]++;
-	}
-
-	//_SVS(for(I=0; I < ARRAYSIZE(IndexMode); ++I)SysLog(L"IndexMode[%02d.%ls]=%d,%d",I,GetSubKey(I),IndexMode[I][0],IndexMode[I][1]));
-}
-
 DWORD KeyMacro::GetOpCode(MacroRecord *MR,int PC)
 {
 	DWORD OpCode=(MR->BufferSize > 1)?MR->Buffer[PC]:(DWORD)(DWORD_PTR)MR->Buffer;
@@ -4666,53 +4075,4 @@ DWORD KeyMacro::GetOpCode(MacroRecord *MR,int PC)
 bool KeyMacro::CheckWaitKeyFunc() const
 {
 	return m_WaitKey != 0;
-}
-
-// кинуть OpCode в буфер. Возвращает предыдущее значение
-DWORD KeyMacro::SetOpCode(MacroRecord *MR,int PC,DWORD OpCode)
-{
-	DWORD OldOpCode;
-
-	if (MR->BufferSize > 1)
-	{
-		OldOpCode=MR->Buffer[PC];
-		MR->Buffer[PC]=OpCode;
-	}
-	else
-	{
-		OldOpCode=(DWORD)(DWORD_PTR)MR->Buffer;
-		MR->Buffer=(DWORD*)(DWORD_PTR)OpCode;
-	}
-
-	return OldOpCode;
-}
-
-
-bool checkMacroConst(const wchar_t *name)
-{
-	return !varLook(glbConstTable, name)?false:true;
-}
-
-void initMacroVarTable(int global)
-{
-	if (global)
-	{
-		initVTable(glbVarTable);
-		initVTable(glbConstTable); //???
-	}
-}
-
-void doneMacroVarTable(int global)
-{
-	if (global)
-	{
-		deleteVTable(glbVarTable);
-		deleteVTable(glbConstTable); //???
-	}
-}
-
-// это OpCode (за исключением MCODE_OP_ENDKEYS)?
-bool KeyMacro::IsOpCode(DWORD p)
-{
-	return (!(p&KEY_MACRO_BASE) || p == MCODE_OP_ENDKEYS)?false:true;
 }
