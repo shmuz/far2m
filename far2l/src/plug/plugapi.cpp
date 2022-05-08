@@ -479,7 +479,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 
 					case MCMD_GETAREA:
 					{
-						return Macro.GetMode();
+						return Macro.GetArea();
 					}
 #if 0
 					case MCMD_COMPILEMACRO:
@@ -877,7 +877,7 @@ static int FarMenuFnSynched(
 	int ExitCode;
 	{
 		VMenu FarMenu(Title,nullptr,0,MaxHeight);
-		CtrlObject->Macro.SetMode(MACRO_MENU);
+		CtrlObject->Macro.SetArea(MACRO_MENU);
 		FarMenu.SetPosition(X,Y,0,0);
 
 		if (BreakCode)

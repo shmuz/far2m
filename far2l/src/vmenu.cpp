@@ -113,10 +113,10 @@ VMenu::VMenu(const wchar_t *Title,       // заголовок меню
 
 	if (!CheckFlags(VMENU_LISTBOX) && CtrlObject)
 	{
-		PrevMacroMode = CtrlObject->Macro.GetMode();
+		PrevMacroMode = CtrlObject->Macro.GetArea();
 
 		if (!IsMenuArea(PrevMacroMode))
-			CtrlObject->Macro.SetMode(MACRO_MENU);
+			CtrlObject->Macro.SetArea(MACRO_MENU);
 	}
 
 	if (!CheckFlags(VMENU_LISTBOX))
@@ -126,7 +126,7 @@ VMenu::VMenu(const wchar_t *Title,       // заголовок меню
 VMenu::~VMenu()
 {
 	if (!CheckFlags(VMENU_LISTBOX) && CtrlObject)
-		CtrlObject->Macro.SetMode(PrevMacroMode);
+		CtrlObject->Macro.SetArea(PrevMacroMode);
 
 	bool WasVisible=Flags.Check(FSCROBJ_VISIBLE)!=0;
 	Hide();

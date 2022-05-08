@@ -718,20 +718,20 @@ int TreeList::MsgReadTree(int TreeCount,int &FirstCall)
 
 bool TreeList::FillLastData()
 {
-	const size_t RootLength = 
+	const size_t RootLength =
 		strRoot.IsEmpty() ? 0 : strRoot.GetLength() - 1;
 
 	for (int I = 1; I < TreeCount; I++)
 	{
 		int PathLength;
 		size_t Pos, Depth ;
-		
+
 		if (ListData[I]->strName.RPos(Pos,GOOD_SLASH))
 			PathLength = (int)Pos+1;
 		else
 			PathLength = 0;
 
-		ListData[I]->Depth = Depth = 
+		ListData[I]->Depth = Depth =
 			CountSlash(ListData[I]->strName.CPtr()+RootLength);
 
 		if (!Depth)
@@ -2007,9 +2007,9 @@ void TreeList::SetMacroMode(int Restore)
 		return;
 
 	if (PrevMacroMode == -1)
-		PrevMacroMode = CtrlObject->Macro.GetMode();
+		PrevMacroMode = CtrlObject->Macro.GetArea();
 
-	CtrlObject->Macro.SetMode(Restore ? PrevMacroMode:MACRO_TREEPANEL);
+	CtrlObject->Macro.SetArea(Restore ? PrevMacroMode:MACRO_TREEPANEL);
 }
 
 BOOL TreeList::UpdateKeyBar()
@@ -2066,7 +2066,7 @@ static void MkTreeName(FARString &out, const wchar_t *RootDir, const char *ext)
 	int r = sdc_stat(Wide2MB(RootDir).c_str(), &s);
 	if (r == 0) {
 		char tmp[128];
-		sprintf(tmp, "tree/%llx-%llx.%s", 
+		sprintf(tmp, "tree/%llx-%llx.%s",
 			(unsigned long long)s.st_rdev, (unsigned long long)s.st_ino, ext);
 		out = InMyTemp(tmp);
 	} else {

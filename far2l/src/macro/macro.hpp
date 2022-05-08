@@ -184,7 +184,7 @@ public:
 	bool ParseMacroString(const wchar_t* Sequence,FARKEYMACROFLAGS Flags,bool skipFile) const;
 	int  PeekKey() const;
 	//bool ProcessEvent(const FAR_INPUT_RECORD *Rec);
-	void SetArea(FARMACROAREA Area) { m_Area=Area; }
+	void SetArea(int Area) { m_Area=Area; }
 	void SuspendMacros(bool Suspend) { Suspend ? ++m_InternalInput : --m_InternalInput; }
 
 private:
@@ -206,8 +206,6 @@ private:
 
 	private:
 		int IsRedrawEditor;
-
-		int Mode;
 
 		int IndexMode[MACRO_LAST][2];
 
@@ -238,14 +236,8 @@ private:
 	public:
 		bool ProcessKey(DWORD Key);
 		bool IsOpCode(DWORD p);
-
-		void SetMode(int aMode) {Mode=aMode;};
-		int GetMode() {return(Mode);};
-
 		int GetStartIndex(int Mode) {return IndexMode[Mode<MACRO_LAST-1?Mode:MACRO_LAST-1][0];}
-
 		void SetRedrawEditor(int Sets) {IsRedrawEditor=Sets;}
-
 		void RestartAutoMacro(int Mode);
 
 		static const wchar_t* GetSubKey(int Mode);

@@ -593,15 +593,15 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 
 	switch (CheckCode)
 	{
-		//~ case MCODE_F_GETOPTIONS:
-		//~ {
-			//~ DWORD Options = Opt.OnlyEditorViewerUsed; // bits 0x1 and 0x2
-			//~ if (Opt.Macro.DisableMacro&MDOL_ALL)       Options |= 0x4;
-			//~ if (Opt.Macro.DisableMacro&MDOL_AUTOSTART) Options |= 0x8;
-			//~ if (Opt.ReadOnlyConfig)                    Options |= 0x10;
-			//~ api.PassNumber(Options);
-			//~ break;
-		//~ }
+		case 0x80C65: //### MCODE_F_GETOPTIONS:
+		{
+			DWORD Options = Opt.OnlyEditorViewerUsed; // bits 0x1 and 0x2
+			if (Opt.Macro.DisableMacro&MDOL_ALL)       Options |= 0x4;
+			if (Opt.Macro.DisableMacro&MDOL_AUTOSTART) Options |= 0x8;
+			//### if (Opt.ReadOnlyConfig)              Options |= 0x10;
+			api.PassNumber(Options);
+			break;
+		}
 	}
 	return 0; //### TODO
 }
@@ -1849,7 +1849,7 @@ static bool dlggetvalueFunc(const TMacroFunction*)
 	unsigned Index=(unsigned)VMStack.Pop().getInteger()-1;
 	Frame* CurFrame=FrameManager->GetCurrentFrame();
 
-	if (CtrlObject->Macro.GetMode()==MACRO_DIALOG && CurFrame && CurFrame->GetType()==MODALTYPE_DIALOG)
+	if (CtrlObject->Macro.GetArea()==MACRO_DIALOG && CurFrame && CurFrame->GetType()==MODALTYPE_DIALOG)
 	{
 		unsigned DlgItemCount=((Dialog*)CurFrame)->GetAllItemCount();
 		const DialogItemEx **DlgItem=((Dialog*)CurFrame)->GetAllItem();
@@ -1971,7 +1971,7 @@ static bool editorposFunc(const TMacroFunction*)
 	int What  = VMStack.Pop().getInt32();
 	int Op    = VMStack.Pop().getInt32();
 
-	if (CtrlObject->Macro.GetMode()==MACRO_EDITOR && CtrlObject->Plugins.CurEditor && CtrlObject->Plugins.CurEditor->IsVisible())
+	if (CtrlObject->Macro.GetArea()==MACRO_EDITOR && CtrlObject->Plugins.CurEditor && CtrlObject->Plugins.CurEditor->IsVisible())
 	{
 		EditorInfo ei;
 		CtrlObject->Plugins.CurEditor->EditorControl(ECTL_GETINFO,&ei);
@@ -2083,7 +2083,7 @@ static bool editorsetFunc(const TMacroFunction*)
 	VMStack.Pop(_longState);
 	int Index = VMStack.Pop().getInt32();
 
-	if (CtrlObject->Macro.GetMode()==MACRO_EDITOR && CtrlObject->Plugins.CurEditor && CtrlObject->Plugins.CurEditor->IsVisible())
+	if (CtrlObject->Macro.GetArea()==MACRO_EDITOR && CtrlObject->Plugins.CurEditor && CtrlObject->Plugins.CurEditor->IsVisible())
 	{
 		long longState=-1L;
 
@@ -2978,7 +2978,7 @@ static bool editorselFunc(const TMacroFunction*)
 	TVar Ret{tviZero};
 	TVar Opt; VMStack.Pop(Opt);
 	TVar Action; VMStack.Pop(Action);
-	int Mode=CtrlObject->Macro.GetMode();
+	int Mode=CtrlObject->Macro.GetArea();
 	Frame* CurFrame=FrameManager->GetCurrentFrame();
 	int NeedType = Mode == MACRO_EDITOR?MODALTYPE_EDITOR:(Mode == MACRO_VIEWER?MODALTYPE_VIEWER:(Mode == MACRO_DIALOG?MODALTYPE_DIALOG:MODALTYPE_PANELS)); // MACRO_SHELL?
 
@@ -3000,7 +3000,7 @@ static bool editorundoFunc(const TMacroFunction*)
 	TVar Ret{tviZero};
 	TVar Action; VMStack.Pop(Action);
 
-	if (CtrlObject->Macro.GetMode()==MACRO_EDITOR && CtrlObject->Plugins.CurEditor && CtrlObject->Plugins.CurEditor->IsVisible())
+	if (CtrlObject->Macro.GetArea()==MACRO_EDITOR && CtrlObject->Plugins.CurEditor && CtrlObject->Plugins.CurEditor->IsVisible())
 	{
 		EditorUndoRedo eur;
 		eur.Command=(int)Action.toInteger();
@@ -3017,7 +3017,7 @@ static bool editorsettitleFunc(const TMacroFunction*)
 	TVar Ret{tviZero};
 	TVar Title; VMStack.Pop(Title);
 
-	if (CtrlObject->Macro.GetMode()==MACRO_EDITOR && CtrlObject->Plugins.CurEditor && CtrlObject->Plugins.CurEditor->IsVisible())
+	if (CtrlObject->Macro.GetArea()==MACRO_EDITOR && CtrlObject->Plugins.CurEditor && CtrlObject->Plugins.CurEditor->IsVisible())
 	{
 		if (Title.isInteger() && !Title.i())
 		{
@@ -3913,16 +3913,16 @@ int KeyMacro::GetSubKey(const wchar_t *Mode)
 
 BOOL KeyMacro::CheckEditSelected(DWORD CurFlags)
 {
-	if (Mode==MACRO_EDITOR || Mode==MACRO_DIALOG || Mode==MACRO_VIEWER || (Mode==MACRO_SHELL&&CtrlObject->CmdLine->IsVisible()))
+	if (m_Area==MACRO_EDITOR || m_Area==MACRO_DIALOG || m_Area==MACRO_VIEWER || (m_Area==MACRO_SHELL&&CtrlObject->CmdLine->IsVisible()))
 	{
-		int NeedType = Mode == MACRO_EDITOR?MODALTYPE_EDITOR:(Mode == MACRO_VIEWER?MODALTYPE_VIEWER:(Mode == MACRO_DIALOG?MODALTYPE_DIALOG:MODALTYPE_PANELS));
+		int NeedType = m_Area == MACRO_EDITOR?MODALTYPE_EDITOR:(m_Area == MACRO_VIEWER?MODALTYPE_VIEWER:(m_Area == MACRO_DIALOG?MODALTYPE_DIALOG:MODALTYPE_PANELS));
 		Frame* CurFrame=FrameManager->GetCurrentFrame();
 
 		if (CurFrame && CurFrame->GetType()==NeedType)
 		{
 			int CurSelected;
 
-			if (Mode==MACRO_SHELL && CtrlObject->CmdLine->IsVisible())
+			if (m_Area==MACRO_SHELL && CtrlObject->CmdLine->IsVisible())
 				CurSelected=(int)CtrlObject->CmdLine->VMProcess(MCODE_C_SELECTED);
 			else
 				CurSelected=(int)CurFrame->VMProcess(MCODE_C_SELECTED);
@@ -4033,7 +4033,7 @@ BOOL KeyMacro::CheckAll(int /*CheckMode*/,DWORD CurFlags)
 				return FALSE;
 
 		if (CurFlags&(MFLAGS_SELECTION|MFLAGS_NOSELECTION|MFLAGS_PSELECTION|MFLAGS_PNOSELECTION))
-			if (Mode!=MACRO_EDITOR && Mode != MACRO_DIALOG && Mode!=MACRO_VIEWER)
+			if (m_Area!=MACRO_EDITOR && m_Area != MACRO_DIALOG && m_Area!=MACRO_VIEWER)
 			{
 				int SelCount=ActivePanel->GetRealSelCount();
 

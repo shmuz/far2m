@@ -360,7 +360,7 @@ void QuickView::ShowFile(const wchar_t *FileName,int TempFile,HANDLE hDirPlugin)
 
 	if (hDirPlugin || (FileAttr!=INVALID_FILE_ATTRIBUTES && (FileAttr & FILE_ATTRIBUTE_DIRECTORY)))
 	{
-		// 
+		//
 		strCurFileType.Clear();
 
 		if (SameFile && !hDirPlugin)
@@ -525,9 +525,9 @@ void QuickView::SetMacroMode(int Restore)
 		return;
 
 	if (PrevMacroMode == -1)
-		PrevMacroMode = CtrlObject->Macro.GetMode();
+		PrevMacroMode = CtrlObject->Macro.GetArea();
 
-	CtrlObject->Macro.SetMode(Restore ? PrevMacroMode:MACRO_QVIEWPANEL);
+	CtrlObject->Macro.SetArea(Restore ? PrevMacroMode:MACRO_QVIEWPANEL);
 }
 
 int QuickView::GetCurName(FARString &strName)
@@ -567,7 +567,7 @@ void QuickView::DynamicUpdateKeyBar()
 		KB->Change(L"", 8-1);
 		KB->Change(KBL_SHIFT, L"", 2-1);
 		KB->Change(KBL_SHIFT, L"", 8-1);
-		KB->Change(KBL_ALT, Msg::AltF8, 8-1);  // 
+		KB->Change(KBL_ALT, Msg::AltF8, 8-1);  //
 	}
 	else
 	{

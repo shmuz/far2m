@@ -621,7 +621,7 @@ DWORD GetInputRecord(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,bool 
 	}
 
 	int EnableShowTime=Opt.Clock && (WaitInMainLoop || (CtrlObject &&
-	                                 CtrlObject->Macro.GetMode()==MACRO_SEARCH));
+	                                 CtrlObject->Macro.GetArea()==MACRO_SEARCH));
 
 	if (EnableShowTime)
 		ShowTime(1);
@@ -1515,10 +1515,10 @@ int CheckForEscSilent()
 
 	if (Processed && PeekInputRecord(&rec))
 	{
-		int MMode=CtrlObject->Macro.GetMode();
-		CtrlObject->Macro.SetMode(MACRO_LAST); // чтобы не срабатывали макросы :-)
+		int MMode=CtrlObject->Macro.GetArea();
+		CtrlObject->Macro.SetArea(MACRO_LAST); // чтобы не срабатывали макросы :-)
 		Key=GetInputRecord(&rec,false,false,false);
-		CtrlObject->Macro.SetMode(MMode);
+		CtrlObject->Macro.SetArea(MMode);
 
 		/*
 		if(Key == KEY_CONSOLE_BUFFER_RESIZE)

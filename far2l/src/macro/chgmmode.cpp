@@ -37,15 +37,15 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ctrlobj.hpp"
 
 ChangeMacroMode::ChangeMacroMode(int NewMode) :
-	PrevMacroMode( CtrlObject ? CtrlObject->Macro.GetMode() : MACRO_SHELL)
+	PrevMacroMode( CtrlObject ? CtrlObject->Macro.GetArea() : MACRO_SHELL)
 {
 	if (CtrlObject)
-		CtrlObject->Macro.SetMode(NewMode);
+		CtrlObject->Macro.SetArea(NewMode);
 }
 
 
 ChangeMacroMode::~ChangeMacroMode()
 {
 	if (CtrlObject)
-		CtrlObject->Macro.SetMode(PrevMacroMode);
+		CtrlObject->Macro.SetArea(PrevMacroMode);
 }

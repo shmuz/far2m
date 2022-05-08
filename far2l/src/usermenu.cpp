@@ -331,14 +331,14 @@ void UserMenu::ProcessUserMenu(bool ChoiceMenuType)
 		}
 
 		FARString strMenuRootKey = (MenuMode==MM_MAIN) ? L"UserMenu/MainMenu" : strLocalMenuKey;
-		int PrevMacroMode=CtrlObject->Macro.GetMode();
+		int PrevMacroMode=CtrlObject->Macro.GetArea();
 		int _CurrentFrame=FrameManager->GetCurrentFrame()->GetType();
-		CtrlObject->Macro.SetMode(MACRO_USERMENU);
+		CtrlObject->Macro.SetArea(MACRO_USERMENU);
 		// вызываем меню
 		ExitCode=ProcessSingleMenu(strMenuRootKey, 0,strMenuRootKey);
 
 		if (_CurrentFrame == FrameManager->GetCurrentFrame()->GetType()) //???
-			CtrlObject->Macro.SetMode(PrevMacroMode);
+			CtrlObject->Macro.SetArea(PrevMacroMode);
 
 		// обработка локального меню...
 		if (MenuMode != MM_MAIN)
