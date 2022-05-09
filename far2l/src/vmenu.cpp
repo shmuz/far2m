@@ -934,7 +934,7 @@ int VMenu::ProcessKey(int Key)
 
 	if (Key == KEY_OP_PLAINTEXT)
 	{
-		const wchar_t *str = eStackAsString();
+		const wchar_t *str = CtrlObject->Macro.GetStringToPrint();
 
 		if (!*str)
 			return FALSE;

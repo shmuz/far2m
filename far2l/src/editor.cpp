@@ -2552,7 +2552,7 @@ int Editor::ProcessKey(int Key)
 		{
 			if (!Flags.Check(FEDITOR_LOCKMODE))
 			{
-				const wchar_t *Fmt = eStackAsString();
+				const wchar_t *Fmt = CtrlObject->Macro.GetStringToPrint();
 				FARString strTStr;
 
 				strTStr = Fmt;

@@ -127,7 +127,8 @@ static const char NFMP_GetGlobalInfo[] = "GetGlobalInfoW";
 
 static void CheckScreenLock()
 {
-	if (ScrBuf.GetLockCount() > 0 && !CtrlObject->Macro.PeekKey())
+//if (ScrBuf.GetLockCount() > 0 && !CtrlObject->Macro.PeekKey()) ### THIS CAUSES RECURSION AND STACK OVERFLOW
+	if (ScrBuf.GetLockCount() > 0)
 	{
 		ScrBuf.SetLockCount(0);
 		ScrBuf.Flush();

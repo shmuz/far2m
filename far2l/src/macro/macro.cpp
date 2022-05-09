@@ -75,7 +75,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "dirmix.hpp"
 #include "console.hpp"
 
-static void Log(const char* str)
+void Log(const char* str)
 {
   static int N = 0;
   const char* home = getenv("HOME");
@@ -602,6 +602,33 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 			api.PassNumber(Options);
 			break;
 		}
+
+		case 0x80C68: //### MCODE_F_KEYMACRO:
+			if (Data->Count && Data->Values[0].Type==FMVT_DOUBLE)
+			{
+				switch (static_cast<int>(Data->Values[0].Double))
+				{
+					case 1: RestoreMacroChar(); break;
+					case 2: ScrBuf.Lock(); break;
+					case 3: ScrBuf.Unlock(); break;
+					case 4: ScrBuf.ResetLockCount(); break;
+					case 5: api.PassNumber(ScrBuf.GetLockCount()); break;
+					case 6: if (Data->Count > 1) ScrBuf.SetLockCount(Data->Values[1].Double); break;
+					case 7: api.PassBoolean(Clipboard::GetUseInternalClipboardState()); break;
+					case 8: if (Data->Count > 1) Clipboard::SetUseInternalClipboardState(Data->Values[1].Boolean != 0); break;
+					case 9: if (Data->Count > 1) api.PassNumber(KeyNameToKey(Data->Values[1].String)); break;
+					case 10:
+						if (Data->Count > 1)
+						{
+							FARString str;
+							KeyToText(Data->Values[1].Double, str);
+							api.PassString(str.CPtr());
+						}
+						break;
+				}
+			}
+			break;
+
 	}
 	return 0; //### TODO
 }
@@ -858,7 +885,6 @@ int MKeywordsFlagsSize = ARRAYSIZE(MKeywordsFlags);
 TVarTable glbVarTable;
 TVarTable glbConstTable;
 
-static TVar __varTextDate;
 const TVar tviZero {static_cast<int64_t>(0)};
 
 class TVMStack: public TStack<TVar>
@@ -3162,13 +3188,6 @@ static bool usersFunc(const TMacroFunction *thisFunc)
 	return Ret;
 }
 
-
-const wchar_t *eStackAsString(int)
-{
-	const wchar_t *s=__varTextDate.toString();
-	return !s?L"":s;
-}
-
 int KeyMacro::GetKey()
 {
 	if (m_InternalInput || !FrameManager->GetCurrentFrame())
@@ -3895,22 +3914,6 @@ void MacroState::Init(TVarTable *tbl)
 	}
 }
 
-// получить название моды по коду
-const wchar_t* KeyMacro::GetSubKey(int Mode)
-{
-	return (Mode >= MACRO_FUNCS && Mode < MACRO_LAST)?MKeywordsArea[Mode+3].Name:L"";
-}
-
-// получить код моды по имени
-int KeyMacro::GetSubKey(const wchar_t *Mode)
-{
-	for (int i=MACRO_FUNCS; i < MACRO_LAST; i++)
-		if (!StrCmpI(MKeywordsArea[i+3].Name,Mode))
-			return i;
-
-	return MACRO_FUNCS-1;
-}
-
 BOOL KeyMacro::CheckEditSelected(DWORD CurFlags)
 {
 	if (m_Area==MACRO_EDITOR || m_Area==MACRO_DIALOG || m_Area==MACRO_VIEWER || (m_Area==MACRO_SHELL&&CtrlObject->CmdLine->IsVisible()))
@@ -4051,25 +4054,6 @@ BOOL KeyMacro::CheckAll(int /*CheckMode*/,DWORD CurFlags)
 		return FALSE;
 
 	return TRUE;
-}
-
-static int __cdecl SortMacros(const MacroRecord *el1,const MacroRecord *el2)
-{
-	int Mode1, Mode2;
-
-	if ((Mode1=(el1->Flags&MFLAGS_MODEMASK)) == (Mode2=(el2->Flags&MFLAGS_MODEMASK)))
-		return 0;
-
-	if (Mode1 < Mode2)
-		return -1;
-
-	return 1;
-}
-
-DWORD KeyMacro::GetOpCode(MacroRecord *MR,int PC)
-{
-	DWORD OpCode=(MR->BufferSize > 1)?MR->Buffer[PC]:(DWORD)(DWORD_PTR)MR->Buffer;
-	return OpCode;
 }
 
 bool KeyMacro::CheckWaitKeyFunc() const

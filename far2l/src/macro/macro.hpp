@@ -178,7 +178,7 @@ public:
 	int  GetKey();
 	static DWORD GetMacroParseError(point& ErrPos, FARString& ErrSrc);
 	int GetArea() const { return m_Area; }
-	//string_view GetStringToPrint() const { return m_StringToPrint; }
+	const wchar_t* GetStringToPrint() const { return m_StringToPrint.CPtr(); }
 	bool IsRecording() const { return m_Recording != MACROSTATE_NOMACRO; }
 	bool LoadMacros(bool FromFar, bool InitedRAM=true, const FarMacroLoad *Data=nullptr);
 	bool ParseMacroString(const wchar_t* Sequence,FARKEYMACROFLAGS Flags,bool skipFile) const;
@@ -205,10 +205,6 @@ private:
 	FARString m_StringToPrint;
 
 	private:
-		int IsRedrawEditor;
-
-		int IndexMode[MACRO_LAST][2];
-
 		int RecBufferSize;
 		DWORD *RecBuffer;
 		wchar_t *RecSrc;
@@ -225,9 +221,6 @@ private:
 		BOOL CheckCmdLine(int CmdLength,DWORD Flags);
 		BOOL CheckFileFolder(Panel *ActivePanel,DWORD CurFlags, BOOL IsPassivePanel);
 		BOOL CheckAll(int CheckMode,DWORD CurFlags);
-		void Sort();
-		DWORD GetOpCode(struct MacroRecord *MR,int PC);
-		DWORD SetOpCode(struct MacroRecord *MR,int PC,DWORD OpCode);
 
 	private:
 		static LONG_PTR WINAPI AssignMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2);
@@ -235,18 +228,12 @@ private:
 
 	public:
 		bool ProcessKey(DWORD Key);
-		bool IsOpCode(DWORD p);
-		int GetStartIndex(int Mode) {return IndexMode[Mode<MACRO_LAST-1?Mode:MACRO_LAST-1][0];}
-		void SetRedrawEditor(int Sets) {IsRedrawEditor=Sets;}
 		void RestartAutoMacro(int Mode);
 
-		static const wchar_t* GetSubKey(int Mode);
-		static int GetSubKey(const wchar_t *Mode);
 		static wchar_t *MkTextSequence(DWORD *Buffer,int BufferSize,const wchar_t *Src=nullptr);
 };
 
 BOOL WINAPI KeyMacroToText(uint32_t Key,FARString &strKeyText0);
 uint32_t WINAPI KeyNameMacroToKey(const wchar_t *Name);
-const wchar_t *eStackAsString(int Pos=0);
 
 inline bool IsMenuArea(int Area){return Area==MACRO_MAINMENU || Area==MACRO_MENU || Area==MACRO_DISKS || Area==MACRO_USERMENU || Area==MACRO_AUTOCOMPLETION;}
