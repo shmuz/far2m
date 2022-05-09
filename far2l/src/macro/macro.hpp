@@ -50,10 +50,6 @@ enum MACRODISABLEONLOAD
 // области действия макросов (начало исполнения) -  НЕ БОЛЕЕ 0xFF областей!
 enum MACROMODEAREA
 {
-	MACRO_FUNCS                =  -3,
-	MACRO_CONSTS               =  -2,
-	MACRO_VARS                 =  -1,
-
 	// see also plugin.hpp # FARMACROAREA
 	MACRO_OTHER                =   0, // Режим копирования текста с экрана, вертикальные меню
 	MACRO_SHELL                =   1, // Файловые панели
@@ -166,7 +162,7 @@ public:
 	static bool IsOutputDisabled();
 	static bool IsExecuting() { return GetExecutingState() != MACROSTATE_NOMACRO; }
 	static bool IsHistoryDisabled(int TypeHistory);
-	static bool MacroExists(int Key, FARMACROAREA Area, bool UseCommon);
+	static bool MacroExists(int Key, int Area, bool UseCommon);
 	static void RunStartMacro();
 	static bool SaveMacros(bool always);
 	static void SetMacroConst(const wchar_t *ConstName, const TVar Value);
@@ -190,7 +186,7 @@ public:
 private:
 	static int GetExecutingState();
 	//intptr_t AssignMacroDlgProc(Dialog* Dlg,intptr_t Msg,intptr_t Param1,void* Param2);
-	//int  AssignMacroKey(DWORD& MacroKey, unsigned long long& Flags);
+	int AssignMacroKey(DWORD& MacroKey);
 	//bool GetMacroSettings(int Key, unsigned long long &Flags, string_view Src = {}, string_view Descr = {});
 	//intptr_t ParamMacroDlgProc(Dialog* Dlg,intptr_t Msg,intptr_t Param1,void* Param2);
 	void RestoreMacroChar() const;
@@ -198,8 +194,8 @@ private:
 	int m_Area;
 	int m_StartMode;
 	int m_Recording;
-	FARString m_RecCode;
-	FARString m_RecDescription;
+	static FARString m_RecCode;
+	static FARString m_RecDescription;
 	int m_InternalInput;
 	int m_WaitKey;
 	FARString m_StringToPrint;
@@ -212,7 +208,6 @@ private:
 		class LockScreen *LockScr;
 
 	private:
-		DWORD AssignMacroKey();
 		int GetMacroSettings(uint32_t Key,DWORD &Flags);
 
 		BOOL CheckEditSelected(DWORD CurFlags);
@@ -228,7 +223,6 @@ private:
 
 	public:
 		bool ProcessKey(DWORD Key);
-		void RestartAutoMacro(int Mode);
 
 		static wchar_t *MkTextSequence(DWORD *Buffer,int BufferSize,const wchar_t *Src=nullptr);
 };

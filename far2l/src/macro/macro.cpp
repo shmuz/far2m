@@ -137,7 +137,7 @@ struct DlgParam
 {
 	KeyMacro *Handle;
 	DWORD Key;
-	int Mode;
+	int Area;
 	int Recurse;
 };
 
@@ -152,6 +152,9 @@ enum {
 	OP_GETINPUTFROMMACRO        = 9,
 	OP_GETLASTERROR             = 11,
 };
+
+FARString KeyMacro::m_RecCode;
+FARString KeyMacro::m_RecDescription;
 
 static bool ToDouble(long long v, double *d)
 {
@@ -333,7 +336,7 @@ struct GetMacroData
 	bool IsKeyboardMacro;
 };
 
-static bool LM_GetMacro(GetMacroData* Data, FARMACROAREA Area, const FARString& TextKey, bool UseCommon)
+static bool LM_GetMacro(GetMacroData* Data, int Area, const FARString& TextKey, bool UseCommon)
 {
 	FarMacroValue InValues[] = { static_cast<double>(Area),TextKey.CPtr(),UseCommon };
 	FarMacroCall fmc={sizeof(FarMacroCall),ARRAYSIZE(InValues),InValues,nullptr,nullptr};
@@ -352,7 +355,7 @@ static bool LM_GetMacro(GetMacroData* Data, FARMACROAREA Area, const FARString& 
 	return false;
 }
 
-bool KeyMacro::MacroExists(int Key, FARMACROAREA Area, bool UseCommon)
+bool KeyMacro::MacroExists(int Key, int Area, bool UseCommon)
 {
 	GetMacroData dummy;
 	FARString KeyName;
@@ -641,187 +644,6 @@ struct TMacroKeywords
 	DWORD Reserved;
 };
 
-TMacroKeywords MKeywords[] =
-{
-	{0,  L"Other",              MCODE_C_AREA_OTHER,0},
-	{0,  L"Shell",              MCODE_C_AREA_SHELL,0},
-	{0,  L"Viewer",             MCODE_C_AREA_VIEWER,0},
-	{0,  L"Editor",             MCODE_C_AREA_EDITOR,0},
-	{0,  L"Dialog",             MCODE_C_AREA_DIALOG,0},
-	{0,  L"Search",             MCODE_C_AREA_SEARCH,0},
-	{0,  L"Disks",              MCODE_C_AREA_DISKS,0},
-	{0,  L"MainMenu",           MCODE_C_AREA_MAINMENU,0},
-	{0,  L"Menu",               MCODE_C_AREA_MENU,0},
-	{0,  L"Help",               MCODE_C_AREA_HELP,0},
-	{0,  L"Info",               MCODE_C_AREA_INFOPANEL,0},
-	{0,  L"QView",              MCODE_C_AREA_QVIEWPANEL,0},
-	{0,  L"Tree",               MCODE_C_AREA_TREEPANEL,0},
-	{0,  L"FindFolder",         MCODE_C_AREA_FINDFOLDER,0},
-	{0,  L"UserMenu",           MCODE_C_AREA_USERMENU,0},
-	{0,  L"AutoCompletion",     MCODE_C_AREA_AUTOCOMPLETION,0},
-
-	// ПРОЧЕЕ
-	{2,  L"Bof",                MCODE_C_BOF,0},
-	{2,  L"Eof",                MCODE_C_EOF,0},
-	{2,  L"Empty",              MCODE_C_EMPTY,0},
-	{2,  L"Selected",           MCODE_C_SELECTED,0},
-
-	{2,  L"Far.Width",          MCODE_V_FAR_WIDTH,0},
-	{2,  L"Far.Height",         MCODE_V_FAR_HEIGHT,0},
-	{2,  L"Far.Title",          MCODE_V_FAR_TITLE,0},
-	{2,  L"MacroArea",          MCODE_V_MACROAREA,0},
-
-	{2,  L"ItemCount",          MCODE_V_ITEMCOUNT,0},  // ItemCount - число элементов в текущем объекте
-	{2,  L"CurPos",             MCODE_V_CURPOS,0},    // CurPos - текущий индекс в текущем объекте
-	{2,  L"Title",              MCODE_V_TITLE,0},
-	{2,  L"Height",             MCODE_V_HEIGHT,0},
-	{2,  L"Width",              MCODE_V_WIDTH,0},
-
-	{2,  L"APanel.Empty",       MCODE_C_APANEL_ISEMPTY,0},
-	{2,  L"PPanel.Empty",       MCODE_C_PPANEL_ISEMPTY,0},
-	{2,  L"APanel.Bof",         MCODE_C_APANEL_BOF,0},
-	{2,  L"PPanel.Bof",         MCODE_C_PPANEL_BOF,0},
-	{2,  L"APanel.Eof",         MCODE_C_APANEL_EOF,0},
-	{2,  L"PPanel.Eof",         MCODE_C_PPANEL_EOF,0},
-	{2,  L"APanel.Root",        MCODE_C_APANEL_ROOT,0},
-	{2,  L"PPanel.Root",        MCODE_C_PPANEL_ROOT,0},
-	{2,  L"APanel.Visible",     MCODE_C_APANEL_VISIBLE,0},
-	{2,  L"PPanel.Visible",     MCODE_C_PPANEL_VISIBLE,0},
-	{2,  L"APanel.Plugin",      MCODE_C_APANEL_PLUGIN,0},
-	{2,  L"PPanel.Plugin",      MCODE_C_PPANEL_PLUGIN,0},
-	{2,  L"APanel.FilePanel",   MCODE_C_APANEL_FILEPANEL,0},
-	{2,  L"PPanel.FilePanel",   MCODE_C_PPANEL_FILEPANEL,0},
-	{2,  L"APanel.Folder",      MCODE_C_APANEL_FOLDER,0},
-	{2,  L"PPanel.Folder",      MCODE_C_PPANEL_FOLDER,0},
-	{2,  L"APanel.Selected",    MCODE_C_APANEL_SELECTED,0},
-	{2,  L"PPanel.Selected",    MCODE_C_PPANEL_SELECTED,0},
-	{2,  L"APanel.Left",        MCODE_C_APANEL_LEFT,0},
-	{2,  L"PPanel.Left",        MCODE_C_PPANEL_LEFT,0},
-	{2,  L"APanel.LFN",         MCODE_C_APANEL_LFN,0},
-	{2,  L"PPanel.LFN",         MCODE_C_PPANEL_LFN,0},
-	{2,  L"APanel.Filter",      MCODE_C_APANEL_FILTER,0},
-	{2,  L"PPanel.Filter",      MCODE_C_PPANEL_FILTER,0},
-
-	{2,  L"APanel.Type",        MCODE_V_APANEL_TYPE,0},
-	{2,  L"PPanel.Type",        MCODE_V_PPANEL_TYPE,0},
-	{2,  L"APanel.ItemCount",   MCODE_V_APANEL_ITEMCOUNT,0},
-	{2,  L"PPanel.ItemCount",   MCODE_V_PPANEL_ITEMCOUNT,0},
-	{2,  L"APanel.CurPos",      MCODE_V_APANEL_CURPOS,0},
-	{2,  L"PPanel.CurPos",      MCODE_V_PPANEL_CURPOS,0},
-	{2,  L"APanel.Current",     MCODE_V_APANEL_CURRENT,0},
-	{2,  L"PPanel.Current",     MCODE_V_PPANEL_CURRENT,0},
-	{2,  L"APanel.SelCount",    MCODE_V_APANEL_SELCOUNT,0},
-	{2,  L"PPanel.SelCount",    MCODE_V_PPANEL_SELCOUNT,0},
-	{2,  L"APanel.Path",        MCODE_V_APANEL_PATH,0},
-	{2,  L"PPanel.Path",        MCODE_V_PPANEL_PATH,0},
-	{2,  L"APanel.Path0",       MCODE_V_APANEL_PATH0,0},
-	{2,  L"PPanel.Path0",       MCODE_V_PPANEL_PATH0,0},
-	{2,  L"APanel.UNCPath",     MCODE_V_APANEL_UNCPATH,0},
-	{2,  L"PPanel.UNCPath",     MCODE_V_PPANEL_UNCPATH,0},
-	{2,  L"APanel.Height",      MCODE_V_APANEL_HEIGHT,0},
-	{2,  L"PPanel.Height",      MCODE_V_PPANEL_HEIGHT,0},
-	{2,  L"APanel.Width",       MCODE_V_APANEL_WIDTH,0},
-	{2,  L"PPanel.Width",       MCODE_V_PPANEL_WIDTH,0},
-	{2,  L"APanel.OPIFlags",    MCODE_V_APANEL_OPIFLAGS,0},
-	{2,  L"PPanel.OPIFlags",    MCODE_V_PPANEL_OPIFLAGS,0},
-	{2,  L"APanel.DriveType",   MCODE_V_APANEL_DRIVETYPE,0}, // APanel.DriveType - активная панель: тип привода
-	{2,  L"PPanel.DriveType",   MCODE_V_PPANEL_DRIVETYPE,0}, // PPanel.DriveType - пассивная панель: тип привода
-	{2,  L"APanel.ColumnCount", MCODE_V_APANEL_COLUMNCOUNT,0}, // APanel.ColumnCount - активная панель:  количество колонок
-	{2,  L"PPanel.ColumnCount", MCODE_V_PPANEL_COLUMNCOUNT,0}, // PPanel.ColumnCount - пассивная панель: количество колонок
-	{2,  L"APanel.HostFile",    MCODE_V_APANEL_HOSTFILE,0},
-	{2,  L"PPanel.HostFile",    MCODE_V_PPANEL_HOSTFILE,0},
-	{2,  L"APanel.Prefix",      MCODE_V_APANEL_PREFIX,0},
-	{2,  L"PPanel.Prefix",      MCODE_V_PPANEL_PREFIX,0},
-
-	{2,  L"CmdLine.Bof",        MCODE_C_CMDLINE_BOF,0}, // курсор в начале cmd-строки редактирования?
-	{2,  L"CmdLine.Eof",        MCODE_C_CMDLINE_EOF,0}, // курсор в конеце cmd-строки редактирования?
-	{2,  L"CmdLine.Empty",      MCODE_C_CMDLINE_EMPTY,0},
-	{2,  L"CmdLine.Selected",   MCODE_C_CMDLINE_SELECTED,0},
-	{2,  L"CmdLine.ItemCount",  MCODE_V_CMDLINE_ITEMCOUNT,0},
-	{2,  L"CmdLine.CurPos",     MCODE_V_CMDLINE_CURPOS,0},
-	{2,  L"CmdLine.Value",      MCODE_V_CMDLINE_VALUE,0},
-
-	{2,  L"Editor.FileName",    MCODE_V_EDITORFILENAME,0},
-	{2,  L"Editor.CurLine",     MCODE_V_EDITORCURLINE,0},  // текущая линия в редакторе (в дополнении к Count)
-	{2,  L"Editor.Lines",       MCODE_V_EDITORLINES,0},
-	{2,  L"Editor.CurPos",      MCODE_V_EDITORCURPOS,0},
-	{2,  L"Editor.RealPos",     MCODE_V_EDITORREALPOS,0},
-	{2,  L"Editor.State",       MCODE_V_EDITORSTATE,0},
-	{2,  L"Editor.Value",       MCODE_V_EDITORVALUE,0},
-	{2,  L"Editor.SelValue",    MCODE_V_EDITORSELVALUE,0},
-
-	{2,  L"Dlg.ItemType",       MCODE_V_DLGITEMTYPE,0},
-	{2,  L"Dlg.ItemCount",      MCODE_V_DLGITEMCOUNT,0},
-	{2,  L"Dlg.CurPos",         MCODE_V_DLGCURPOS,0},
-	{2,  L"Dlg.Info.Id",        MCODE_V_DLGINFOID,0},
-
-	{2,  L"Help.FileName",      MCODE_V_HELPFILENAME, 0},
-	{2,  L"Help.Topic",         MCODE_V_HELPTOPIC, 0},
-	{2,  L"Help.SelTopic",      MCODE_V_HELPSELTOPIC, 0},
-
-	{2,  L"Drv.ShowPos",        MCODE_V_DRVSHOWPOS,0},
-	{2,  L"Drv.ShowMode",       MCODE_V_DRVSHOWMODE,0},
-
-	{2,  L"Viewer.FileName",    MCODE_V_VIEWERFILENAME,0},
-	{2,  L"Viewer.State",       MCODE_V_VIEWERSTATE,0},
-
-	{2,  L"Menu.Value",         MCODE_V_MENU_VALUE,0},
-
-	{2,  L"Fullscreen",         MCODE_C_FULLSCREENMODE,0},
-	{2,  L"IsUserAdmin",        MCODE_C_ISUSERADMIN,0},
-};
-
-TMacroKeywords MKeywordsArea[] =
-{
-	{0,  L"Funcs",              (DWORD)MACRO_FUNCS,0},
-	{0,  L"Consts",             (DWORD)MACRO_CONSTS,0},
-	{0,  L"Vars",               (DWORD)MACRO_VARS,0},
-	{0,  L"Other",              (DWORD)MACRO_OTHER,0},
-	{0,  L"Shell",              (DWORD)MACRO_SHELL,0},
-	{0,  L"Viewer",             (DWORD)MACRO_VIEWER,0},
-	{0,  L"Editor",             (DWORD)MACRO_EDITOR,0},
-	{0,  L"Dialog",             (DWORD)MACRO_DIALOG,0},
-	{0,  L"Search",             (DWORD)MACRO_SEARCH,0},
-	{0,  L"Disks",              (DWORD)MACRO_DISKS,0},
-	{0,  L"MainMenu",           (DWORD)MACRO_MAINMENU,0},
-	{0,  L"Menu",               (DWORD)MACRO_MENU,0},
-	{0,  L"Help",               (DWORD)MACRO_HELP,0},
-	{0,  L"Info",               (DWORD)MACRO_INFOPANEL,0},
-	{0,  L"QView",              (DWORD)MACRO_QVIEWPANEL,0},
-	{0,  L"Tree",               (DWORD)MACRO_TREEPANEL,0},
-	{0,  L"FindFolder",         (DWORD)MACRO_FINDFOLDER,0},
-	{0,  L"UserMenu",           (DWORD)MACRO_USERMENU,0},
-	{0,  L"AutoCompletion",     (DWORD)MACRO_AUTOCOMPLETION,0},
-	{0,  L"Common",             (DWORD)MACRO_COMMON,0},
-};
-
-TMacroKeywords MKeywordsFlags[] =
-{
-	// ФЛАГИ
-	{1,  L"DisableOutput",      MFLAGS_DISABLEOUTPUT,0},
-	{1,  L"RunAfterFARStart",   MFLAGS_RUNAFTERFARSTART,0},
-	{1,  L"EmptyCommandLine",   MFLAGS_EMPTYCOMMANDLINE,0},
-	{1,  L"NotEmptyCommandLine",MFLAGS_NOTEMPTYCOMMANDLINE,0},
-	{1,  L"EVSelection",        MFLAGS_EDITSELECTION,0},
-	{1,  L"NoEVSelection",      MFLAGS_EDITNOSELECTION,0},
-
-	{1,  L"NoFilePanels",       MFLAGS_NOFILEPANELS,0},
-	{1,  L"NoPluginPanels",     MFLAGS_NOPLUGINPANELS,0},
-	{1,  L"NoFolders",          MFLAGS_NOFOLDERS,0},
-	{1,  L"NoFiles",            MFLAGS_NOFILES,0},
-	{1,  L"Selection",          MFLAGS_SELECTION,0},
-	{1,  L"NoSelection",        MFLAGS_NOSELECTION,0},
-
-	{1,  L"NoFilePPanels",      MFLAGS_PNOFILEPANELS,0},
-	{1,  L"NoPluginPPanels",    MFLAGS_PNOPLUGINPANELS,0},
-	{1,  L"NoPFolders",         MFLAGS_PNOFOLDERS,0},
-	{1,  L"NoPFiles",           MFLAGS_PNOFILES,0},
-	{1,  L"PSelection",         MFLAGS_PSELECTION,0},
-	{1,  L"NoPSelection",       MFLAGS_PNOSELECTION,0},
-
-	{1,  L"NoSendKeysToPlugins",MFLAGS_NOSENDKEYSTOPLUGINS,0},
-};
-
 static bool absFunc(const TMacroFunction*);
 static bool ascFunc(const TMacroFunction*);
 static bool atoiFunc(const TMacroFunction*);
@@ -851,9 +673,7 @@ static bool kbdLayoutFunc(const TMacroFunction*);
 static bool keyFunc(const TMacroFunction*);
 static bool lenFunc(const TMacroFunction*);
 static bool maxFunc(const TMacroFunction*);
-static bool mloadFunc(const TMacroFunction*);
 static bool modFunc(const TMacroFunction*);
-static bool msaveFunc(const TMacroFunction*);
 static bool msgBoxFunc(const TMacroFunction*);
 static bool minFunc(const TMacroFunction*);
 static bool panelfattrFunc(const TMacroFunction*);
@@ -879,10 +699,6 @@ static bool pluginsFunc(const TMacroFunction*);
 static bool usersFunc(const TMacroFunction*);
 static bool windowscrollFunc(const TMacroFunction*);
 
-int MKeywordsSize = ARRAYSIZE(MKeywords);
-int MKeywordsFlagsSize = ARRAYSIZE(MKeywordsFlags);
-
-TVarTable glbVarTable;
 TVarTable glbConstTable;
 
 const TVar tviZero {static_cast<int64_t>(0)};
@@ -992,7 +808,7 @@ bool KeyMacro::ProcessKey(DWORD IntKey)
 			DWORD MacroKey;
 			// выставляем флаги по умолчанию.
 			DWORD Flags = 0;
-			int AssignRet=0; //### AssignMacroKey(MacroKey,Flags);
+			int AssignRet = AssignMacroKey(MacroKey);
 
 			if (AssignRet && AssignRet!=2 && !m_RecCode.IsEmpty())
 			{
@@ -2267,68 +2083,6 @@ static bool SerializeVar(TVar &v, FARString &ValSerialized)
 	return false;
 }
 
-// b=mload(var)
-static bool mloadFunc(const TMacroFunction*)
-{
-	TVar Val;
-	VMStack.Pop(Val);
-	TVarTable *t = &glbVarTable;
-	const wchar_t *Name = Val.s();
-
-	if (!Name || *Name != L'%')
-	{
-		VMStack.Push(tviZero);
-		return false;
-	}
-
-	bool Ret = false;
-	FARString ValSerialized = ConfigReader("KeyMacros/Vars").GetString(Wide2MB(Name), L"");
-	if (ValSerialized != L"")
-	{
-		Ret = DeserializeVar(varInsert(*t, Name+1)->value, ValSerialized);
-	}
-	VMStack.Push(TVar(Ret ? 1 : 0));
-	return Ret;
-}
-
-// b=msave(var)
-static bool msaveFunc(const TMacroFunction*)
-{
-	TVar Val;
-	VMStack.Pop(Val);
-	TVarTable *t = &glbVarTable;
-	const wchar_t *Name=Val.s();
-
-	if (!Name || *Name!= L'%')
-	{
-		VMStack.Push(tviZero);
-		return false;
-	}
-
-	TVarSet *tmpVarSet=varLook(*t, Name+1);
-
-	if (!tmpVarSet)
-	{
-		VMStack.Push(tviZero);
-		return false;
-	}
-
-	TVar Result = tmpVarSet->value;
-	bool Ret = false;
-	FARString strValueName = Val.s();
-	FARString strValueData;
-	if (SerializeVar(Result, strValueData))
-	{
-		ConfigWriter cfg_writer("KeyMacros/Vars");
-		cfg_writer.SetString(strValueName.GetMB(), strValueData);
-		Ret = cfg_writer.Save();
-	}
-
-	VMStack.Push(TVar(Ret ? 1 : 0));
-
-	return Ret;
-}
-
 // V=Clip(N[,V])
 static bool clipFunc(const TMacroFunction*)
 {
@@ -3335,25 +3089,6 @@ wchar_t *KeyMacro::MkTextSequence(DWORD *Buffer,int BufferSize,const wchar_t *Sr
 	if (!Buffer)
 		return nullptr;
 
-#if 0
-
-	if (BufferSize == 1)
-	{
-		if (
-		    (((DWORD)(DWORD_PTR)Buffer)&KEY_MACRO_ENDBASE) >= KEY_MACRO_BASE && (((DWORD)(DWORD_PTR)Buffer)&KEY_MACRO_ENDBASE) <= KEY_MACRO_ENDBASE ||
-		    (((DWORD)(DWORD_PTR)Buffer)&KEY_OP_ENDBASE) >= KEY_OP_BASE && (((DWORD)(DWORD_PTR)Buffer)&KEY_OP_ENDBASE) <= KEY_OP_ENDBASE
-		)
-		{
-			return Src?wcsdup(Src):nullptr;
-		}
-
-		if (KeyToText((DWORD)(DWORD_PTR)Buffer,strMacroKeyText))
-			return wcsdup(strMacroKeyText.CPtr());
-
-		return nullptr;
-	}
-
-#endif
 	strTextBuffer.Clear();
 
 	//~ if (Buffer[0] == MCODE_OP_KEYS)
@@ -3389,31 +3124,6 @@ wchar_t *KeyMacro::MkTextSequence(DWORD *Buffer,int BufferSize,const wchar_t *Sr
 void KeyMacro::SetMacroConst(const wchar_t *ConstName, const TVar Value)
 {
 	varLook(glbConstTable, ConstName,1)->value = Value;
-}
-
-// эта функция будет вызываться из тех классов, которым нужен перезапуск макросов
-void KeyMacro::RestartAutoMacro(int /*Mode*/)
-{
-#if 0
-	/*
-	Область      Рестарт
-	-------------------------------------------------------
-	Other         0
-	Shell         1 раз, при запуске ФАРа
-	Viewer        для каждой новой копии вьювера
-	Editor        для каждой новой копии редатора
-	Dialog        0
-	Search        0
-	Disks         0
-	MainMenu      0
-	Menu          0
-	Help          0
-	Info          1 раз, при запуске ФАРа и выставлении такой панели
-	QView         1 раз, при запуске ФАРа и выставлении такой панели
-	Tree          1 раз, при запуске ФАРа и выставлении такой панели
-	Common        0
-	*/
-#endif
 }
 
 // Функция, запускающая макросы при старте ФАРа
@@ -3573,91 +3283,56 @@ M1:
 		KeyToText((uint32_t)Param2,strKeyText);
 
 		// если УЖЕ есть такой макрос...
-		//~ if ((Index=MacroDlg->GetIndex((uint32_t)Param2,KMParam->Mode)) != -1)
-		//~ {
-			//~ MacroRecord *Mac=MacroDlg->MacroLIB+Index;
+		GetMacroData Data;
+		if (LM_GetMacro(&Data,KMParam->Area,strKeyText,true) && Data.IsKeyboardMacro)
+		{
+			// общие макросы учитываем только при удалении.
+			bool deleting = m_RecCode.IsEmpty();
+			if (deleting || Data.Area!=MACROAREA_COMMON)
+			{
+				FARString strBufKey;
+				if (Data.Code)
+				{
+					strBufKey=Data.Code;
+					InsertQuote(strBufKey);
+				}
 
-			//~ // общие макросы учитываем только при удалении.
-			//~ if (!MacroDlg->RecBuffer || !MacroDlg->RecBufferSize || (Mac->Flags&0xFF)!=MACRO_COMMON)
-			//~ {
-				//~ FARString strRegKeyName;
-				//~ //### MacroDlg->MkRegKeyName(Index, strRegKeyName);
+				FARString strBuf;
+				if (Data.Area==MACROAREA_COMMON)
+					strBuf.Format(deleting ? Msg::MacroCommonDeleteKey : Msg::MacroCommonReDefinedKey, strKeyText.CPtr());
+				else
+					strBuf.Format(deleting ? Msg::MacroDeleteKey : Msg::MacroReDefinedKey, strKeyText.CPtr());
 
-				//~ FARString strBufKey;
-				//~ if (Mac->Src )
-				//~ {
-					//~ strBufKey=Mac->Src;
-					//~ InsertQuote(strBufKey);
-				//~ }
+				int	Result=Message(MSG_WARNING,2,Msg::Warning,
+					          strBuf,
+					          Msg::MacroSequence,
+					          strBufKey,
+					          deleting ? Msg::MacroDeleteKey2 : Msg::MacroReDefinedKey2,
+					          Msg::Yes, Msg::No);
 
-				//~ DWORD DisFlags=Mac->Flags&MFLAGS_DISABLEMACRO;
-				//~ FARString strBuf;
-				//~ if ((Mac->Flags&0xFF)==MACRO_COMMON)
-					//~ strBuf.Format((!MacroDlg->RecBufferSize
-					                  //~ ? (DisFlags ? Msg::MacroCommonDeleteAssign : Msg::MacroCommonDeleteKey)
-					                  //~ : Msg::MacroCommonReDefinedKey), strKeyText.CPtr());
-				//~ else
-					//~ strBuf.Format((!MacroDlg->RecBufferSize
-					                  //~ ? (DisFlags ? Msg::MacroDeleteAssign : Msg::MacroDeleteKey)
-					                  //~ : Msg::MacroReDefinedKey), strKeyText.CPtr());
+				if (!Result)
+				{
+					// в любом случае - вываливаемся
+					SendDlgMessage(hDlg,DM_CLOSE,1,0);
+					return TRUE;
+				}
 
-				//~ // проверим "а не совпадает ли всё?"
-				//~ int Result=0;
-				//~ if (!(!DisFlags &&
-				        //~ Mac->Buffer && MacroDlg->RecBuffer &&
-				        //~ Mac->BufferSize == MacroDlg->RecBufferSize &&
-				        //~ (
-				            //~ (Mac->BufferSize >  1 && !memcmp(Mac->Buffer,MacroDlg->RecBuffer,MacroDlg->RecBufferSize*sizeof(DWORD))) ||
-				            //~ (Mac->BufferSize == 1 && (DWORD)(DWORD_PTR)Mac->Buffer == (DWORD)(DWORD_PTR)MacroDlg->RecBuffer)
-				        //~ )
-				   //~ ))
-					//~ Result=Message(MSG_WARNING,2,Msg::Warning,
-					          //~ strBuf,
-					          //~ Msg::MacroSequence,
-					          //~ strBufKey,
-					          //~ (!MacroDlg->RecBufferSize?Msg::MacroDeleteKey2:
-					              //~ (DisFlags?Msg::MacroDisDisabledKey:Msg::MacroReDefinedKey2)),
-					          //~ (DisFlags && MacroDlg->RecBufferSize?Msg::MacroDisOverwrite:Msg::Yes),
-					          //~ (DisFlags && MacroDlg->RecBufferSize?Msg::MacroDisAnotherKey:Msg::No));
-
-				//~ if (!Result)
-				//~ {
-					//~ if (DisFlags)
-					//~ {
-						//~ // удаляем из реестра только если включен автосейв
-						//~ if (Opt.AutoSaveSetup)
-						//~ {
-							//~ // удалим старую запись из реестра
-							//~ ConfigWriter(strRegKeyName.GetMB()).RemoveSection();
-						//~ }
-						//~ // раздисаблим
-						//~ Mac->Flags&=~MFLAGS_DISABLEMACRO;
-					//~ }
-
-					//~ // в любом случае - вываливаемся
-					//~ SendDlgMessage(hDlg,DM_CLOSE,1,0);
-					//~ return TRUE;
-				//~ }
-
-				//~ // здесь - здесь мы нажимали "Нет", ну а на нет и суда нет
-				//~ //  и значит очистим поле ввода.
-				//~ strKeyText.Clear();
-			//~ }
-		//~ }
+				// здесь - здесь мы нажимали "Нет", ну а на нет и суда нет
+				//  и значит очистим поле ввода.
+				strKeyText.Clear();
+			}
+		}
 
 		KMParam->Recurse++;
 		SendDlgMessage(hDlg,DM_SETTEXTPTR,2,(LONG_PTR)strKeyText.CPtr());
 		KMParam->Recurse--;
-		//if(Param2 == KEY_F1 && LastKey == KEY_F1)
-		//LastKey=-1;
-		//else
 		LastKey=(int)Param2;
 		return TRUE;
 	}
 	return DefDlgProc(hDlg,Msg,Param1,Param2);
 }
 
-DWORD KeyMacro::AssignMacroKey()
+int KeyMacro::AssignMacroKey(DWORD& MacroKey)
 {
 	/*
 	  +------ Define macro ------+
@@ -3682,9 +3357,10 @@ DWORD KeyMacro::AssignMacroKey()
 	IsProcessAssignMacroKey--;
 
 	if (Dlg.GetExitCode() == -1)
-		return KEY_INVALID;
+		return 0;
 
-	return Param.Key;
+	MacroKey = Param.Key;
+	return 1;
 }
 
 static int Set3State(DWORD Flags,DWORD Chk1,DWORD Chk2)
@@ -3703,7 +3379,7 @@ enum MACROSETTINGSDLG
 	MS_TEXT_SEQUENCE,
 	MS_EDIT_SEQUENCE,
 	MS_SEPARATOR1,
-	MS_CHECKBOX_OUPUT,
+	MS_CHECKBOX_OUTPUT,
 	MS_CHECKBOX_START,
 	MS_SEPARATOR2,
 	MS_CHECKBOX_A_PANEL,
@@ -3821,7 +3497,7 @@ int KeyMacro::GetMacroSettings(uint32_t Key,DWORD &Flags)
 	MacroSettingsDlg[MS_DOUBLEBOX].strData.Format(Msg::MacroSettingsTitle, strKeyText.CPtr());
 	//if(!(Key&0x7F000000))
 	//MacroSettingsDlg[3].Flags|=DIF_DISABLE;
-	MacroSettingsDlg[MS_CHECKBOX_OUPUT].Selected=Flags&MFLAGS_DISABLEOUTPUT?0:1;
+	MacroSettingsDlg[MS_CHECKBOX_OUTPUT].Selected=Flags&MFLAGS_DISABLEOUTPUT?0:1;
 	MacroSettingsDlg[MS_CHECKBOX_START].Selected=Flags&MFLAGS_RUNAFTERFARSTART?1:0;
 	MacroSettingsDlg[MS_CHECKBOX_A_PLUGINPANEL].Selected=Set3State(Flags,MFLAGS_NOFILEPANELS,MFLAGS_NOPLUGINPANELS);
 	MacroSettingsDlg[MS_CHECKBOX_A_FOLDERS].Selected=Set3State(Flags,MFLAGS_NOFILES,MFLAGS_NOFOLDERS);
@@ -3852,7 +3528,7 @@ int KeyMacro::GetMacroSettings(uint32_t Key,DWORD &Flags)
 	if (Dlg.GetExitCode()!=MS_BUTTON_OK)
 		return FALSE;
 
-	Flags=MacroSettingsDlg[MS_CHECKBOX_OUPUT].Selected?0:MFLAGS_DISABLEOUTPUT;
+	Flags=MacroSettingsDlg[MS_CHECKBOX_OUTPUT].Selected?0:MFLAGS_DISABLEOUTPUT;
 	Flags|=MacroSettingsDlg[MS_CHECKBOX_START].Selected?MFLAGS_RUNAFTERFARSTART:0;
 
 	if (MacroSettingsDlg[MS_CHECKBOX_A_PANEL].Selected)
