@@ -41,6 +41,18 @@ struct point {
 	int y;
 };
 
+// Macro Const
+enum
+{
+	constMsX          = 0,
+	constMsY          = 1,
+	constMsButton     = 2,
+	constMsCtrlState  = 3,
+	constMsEventFlags = 4,
+	constMsLastCtrlState = 5,
+	constMsLAST       = 6,
+};
+
 enum MACRODISABLEONLOAD
 {
 	MDOL_ALL            = 0x80000000, // дисаблим все макросы при загрузке
@@ -165,8 +177,8 @@ public:
 	static bool MacroExists(int Key, int Area, bool UseCommon);
 	static void RunStartMacro();
 	static bool SaveMacros(bool always);
-	static void SetMacroConst(const wchar_t *ConstName, const TVar Value);
-	static bool PostNewMacro(const wchar_t* Sequence, FARKEYMACROFLAGS InputFlags, DWORD AKey = 0);
+	static void SetMacroConst(int ConstIndex, long long Value);
+	static bool PostNewMacro(const wchar_t* Sequence, DWORD InputFlags, DWORD AKey = 0);
 
 	intptr_t CallFar(intptr_t CheckCode, FarMacroCall* Data);
 	bool CheckWaitKeyFunc() const;
@@ -177,7 +189,7 @@ public:
 	const wchar_t* GetStringToPrint() const { return m_StringToPrint.CPtr(); }
 	bool IsRecording() const { return m_Recording != MACROSTATE_NOMACRO; }
 	bool LoadMacros(bool FromFar, bool InitedRAM=true, const FarMacroLoad *Data=nullptr);
-	bool ParseMacroString(const wchar_t* Sequence,FARKEYMACROFLAGS Flags,bool skipFile) const;
+	bool ParseMacroString(const wchar_t* Sequence,DWORD Flags,bool skipFile) const;
 	int  PeekKey() const;
 	//bool ProcessEvent(const FAR_INPUT_RECORD *Rec);
 	void SetArea(int Area) { m_Area=Area; }

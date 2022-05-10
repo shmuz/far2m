@@ -502,25 +502,6 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 
 			return FALSE;
 		}
-		case ACTL_POSTKEYSEQUENCE:
-		{
-#if 0
-			if (CtrlObject && Param && ((KeySequence*)Param)->Count > 0)
-			{
-				MacroRecord MRec{};
-				MRec.Flags=(((KeySequence*)Param)->Flags)<<8;
-				MRec.BufferSize=((KeySequence*)Param)->Count;
-
-				if (MRec.BufferSize == 1)
-					MRec.Buffer=(DWORD *)(DWORD_PTR)((KeySequence*)Param)->Sequence[0];
-				else
-					MRec.Buffer=const_cast<DWORD*>(((KeySequence*)Param)->Sequence);
-
-				return CtrlObject->Macro.PostNewMacro(&MRec,TRUE,TRUE);
-			}
-#endif
-			return FALSE;
-		}
 		/* $ 05.06.2001 tran
 		   новые ACTL_ для работы с фреймами */
 		case ACTL_GETWINDOWINFO:

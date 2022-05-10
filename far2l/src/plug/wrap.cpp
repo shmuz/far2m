@@ -3140,29 +3140,34 @@ INT_PTR WINAPI FarAdvControlA(INT_PTR ModuleNumber,int Command,void *Param)
 		}
 		case oldfar::ACTL_POSTKEYSEQUENCE:
 		{
-			if (!Param) return FALSE;
+			if (!Param)
+				return FALSE;
 
-			KeySequence ks{};
 			oldfar::KeySequence *ksA = (oldfar::KeySequence*)Param;
 
-			if (!ksA->Count || !ksA->Sequence) return FALSE;
+			if (!ksA->Count || !ksA->Sequence)
+				return FALSE;
 
-			ks.Count = ksA->Count;
+			DWORD Flags = KMFLAGS_LUA;
 
-			if (ksA->Flags&oldfar::KSFLAGS_DISABLEOUTPUT) ks.Flags|=KMFLAGS_DISABLEOUTPUT;
+			if (!(ksA->Flags & oldfar::KSFLAGS_DISABLEOUTPUT))
+			  Flags |= KMFLAGS_ENABLEOUTPUT;
 
-			if (ksA->Flags&oldfar::KSFLAGS_NOSENDKEYSTOPLUGINS) ks.Flags|=KMFLAGS_NOSENDKEYSTOPLUGINS;
+			if (ksA->Flags & oldfar::KSFLAGS_NOSENDKEYSTOPLUGINS)
+			  Flags |= KMFLAGS_NOSENDKEYSTOPLUGINS;
 
-			DWORD* Sequence = (DWORD*)malloc(ks.Count*sizeof(DWORD));
-			for (int i=0; i<ks.Count; i++)
+			FARString strSequence = L"Keys(\"";
+			FARString strKeyText;
+			for (int i=0; i<ksA->Count; i++)
 			{
-				Sequence[i]=OldKeyToKey(ksA->Sequence[i]);
+				if (KeyToText(OldKeyToKey(ksA->Sequence[i]), strKeyText))
+				{
+					strSequence += L" " + strKeyText;
+				}
 			}
-			ks.Sequence = Sequence;
+			strSequence += L"\")";
 
-			LONG_PTR ret = FarAdvControl(ModuleNumber, ACTL_POSTKEYSEQUENCE, &ks);
-			free(Sequence);
-			return ret;
+			return CtrlObject->Macro.PostNewMacro(strSequence, Flags);
 		}
 		case oldfar::ACTL_GETSHORTWINDOWINFO:
 		case oldfar::ACTL_GETWINDOWINFO:

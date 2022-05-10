@@ -166,7 +166,7 @@ static bool ToDouble(long long v, double *d)
 	return false;
 }
 
-static const wchar_t* GetMacroLanguage(FARKEYMACROFLAGS Flags)
+static const wchar_t* GetMacroLanguage(DWORD Flags)
 {
 	switch(Flags & KMFLAGS_LANGMASK)
 	{
@@ -371,7 +371,7 @@ static void LM_ProcessRecordedMacro(int Area, const FARString& TextKey, const FA
 	CallMacroPlugin(&info);
 }
 
-bool KeyMacro::ParseMacroString(const wchar_t* Sequence, FARKEYMACROFLAGS Flags, bool skipFile) const
+bool KeyMacro::ParseMacroString(const wchar_t* Sequence, DWORD Flags, bool skipFile) const
 {
 	const wchar_t* lang = GetMacroLanguage(Flags);
 	const auto onlyCheck = (Flags&KMFLAGS_SILENTCHECK) != 0;
@@ -577,6 +577,8 @@ int FarMacroApi::PassValue(const TVar& Var)
 	return 1;
 }
 
+static long long msValues[constMsLAST];
+
 intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 {
 	intptr_t ret=0;
@@ -596,6 +598,13 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 
 	switch (CheckCode)
 	{
+		case 0x80434: /* MCODE_C_MSX:             */ return api.PassNumber(msValues[constMsX]);
+		case 0x80435: /* MCODE_C_MSY:             */ return api.PassNumber(msValues[constMsY]);
+		case 0x80436: /* MCODE_C_MSBUTTON:        */ return api.PassNumber(msValues[constMsButton]);
+		case 0x80437: /* MCODE_C_MSCTRLSTATE:     */ return api.PassNumber(msValues[constMsCtrlState]);
+		case 0x80438: /* MCODE_C_MSEVENTFLAGS:    */ return api.PassNumber(msValues[constMsEventFlags]);
+		case 0x80439: /* MCODE_C_MSLASTCTRLSTATE: */ return api.PassNumber(msValues[constMsLastCtrlState]);
+
 		case 0x80C65: //### MCODE_F_GETOPTIONS:
 		{
 			DWORD Options = Opt.OnlyEditorViewerUsed; // bits 0x1 and 0x2
@@ -3121,9 +3130,9 @@ wchar_t *KeyMacro::MkTextSequence(DWORD *Buffer,int BufferSize,const wchar_t *Sr
 	return nullptr;
 }
 
-void KeyMacro::SetMacroConst(const wchar_t *ConstName, const TVar Value)
+void KeyMacro::SetMacroConst(int ConstIndex, long long Value)
 {
-	varLook(glbConstTable, ConstName,1)->value = Value;
+	msValues[ConstIndex] = Value;
 }
 
 // Функция, запускающая макросы при старте ФАРа
@@ -3558,7 +3567,7 @@ int KeyMacro::GetMacroSettings(uint32_t Key,DWORD &Flags)
 	return TRUE;
 }
 
-bool KeyMacro::PostNewMacro(const wchar_t* Sequence,FARKEYMACROFLAGS InputFlags,DWORD AKey)
+bool KeyMacro::PostNewMacro(const wchar_t* Sequence,DWORD InputFlags,DWORD AKey)
 {
 	const wchar_t* Lang = GetMacroLanguage(InputFlags);
 	const auto onlyCheck = (InputFlags & KMFLAGS_SILENTCHECK) != 0;

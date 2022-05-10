@@ -178,6 +178,13 @@ enum MACRO_OP_CODE
 	MCODE_C_CMDLINE_EMPTY,            // ком.строка пуста?
 	MCODE_C_CMDLINE_SELECTED,         // в ком.строке есть выделение блока?
 
+	MCODE_C_MSX,                      // "MsX"
+	MCODE_C_MSY,                      // "MsY"
+	MCODE_C_MSBUTTON,                 // "MsButton"
+	MCODE_C_MSCTRLSTATE,              // "MsCtrlState"
+	MCODE_C_MSEVENTFLAGS,             // "MsEventFlags"
+	MCODE_C_MSLASTCTRLSTATE,          // "MsLastCtrlState"
+
 	/* ************************************************************************* */
 	// не булевые переменные
 	MCODE_V_FAR_WIDTH=KEY_MACRO_V_BASE,// Far.Width - ширина консольного окна

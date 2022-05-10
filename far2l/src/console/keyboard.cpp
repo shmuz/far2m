@@ -1036,6 +1036,8 @@ DWORD GetInputRecord(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,bool 
 		RightCtrlPressed=(CtrlState & RIGHT_CTRL_PRESSED);
 		RightAltPressed=(CtrlState & RIGHT_ALT_PRESSED);
 
+		KeyMacro::SetMacroConst(constMsLastCtrlState,CtrlState);
+
 		// Для NumPad!
 		if ((CalcKey&(KEY_CTRL|KEY_SHIFT|KEY_ALT|KEY_RCTRL|KEY_RALT)) == KEY_SHIFT &&
 		        (CalcKey&KEY_MASKF) >= KEY_NUMPAD0 && (CalcKey&KEY_MASKF) <= KEY_NUMPAD9)
@@ -1220,6 +1222,7 @@ DWORD GetInputRecord(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,bool 
 		DWORD CtrlState=rec->Event.MouseEvent.dwControlKeyState;
 		KeyMacro::SetMacroConst(constMsCtrlState,(int64_t)CtrlState);
 		KeyMacro::SetMacroConst(constMsEventFlags,(int64_t)MouseEventFlags);
+		KeyMacro::SetMacroConst(constMsLastCtrlState, CtrlState);
 		/*
 		    // Сигнал на прорисовку ;-) Помогает прорисовать кейбар при движении мышью
 		    if(CtrlState != (CtrlPressed|AltPressed|ShiftPressed))
