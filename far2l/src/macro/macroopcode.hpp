@@ -120,6 +120,8 @@ enum MACRO_OP_CODE
 	MCODE_F_BEEP,                     // N=beep([N])
 	MCODE_F_KBDLAYOUT,                // N=kbdLayout([N])
 	MCODE_F_WINDOW_SCROLL,            // N=Window.Scroll(Lines[,Axis])
+	MCODE_F_GETOPTIONS,               // N=GetOptions()
+	MCODE_F_KEYMACRO,
 
 	/* ************************************************************************* */
 	// булевые переменные - различные состояния
@@ -190,7 +192,9 @@ enum MACRO_OP_CODE
 	MCODE_V_FAR_WIDTH=KEY_MACRO_V_BASE,// Far.Width - ширина консольного окна
 	MCODE_V_FAR_HEIGHT,               // Far.Height - высота консольного окна
 	MCODE_V_FAR_TITLE,                // Far.Title - текущий заголовок консольного окна
-	MCODE_V_MACROAREA,                // MacroArea - имя текущей макрос области
+	MCODE_V_FAR_UPTIME,               // Far.UpTime - время работы Far в миллисекундах
+	MCODE_V_FAR_PID,                  // Far.PID - содержит ИД текущей запущенной копии Far Manager
+	MCODE_V_MACRO_AREA,               // MacroArea - имя текущей макрос области
 
 	MCODE_V_APANEL_CURRENT,           // APanel.Current - имя файла на активной панели
 	MCODE_V_PPANEL_CURRENT,           // PPanel.Current - имя файла на пассивной панели
