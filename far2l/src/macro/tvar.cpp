@@ -1685,7 +1685,7 @@ TVar TVar::operator~()
 	}
 }
 
-long long TVar::asInteger() const
+int64_t TVar::asInteger() const
 {
 	switch (vType)
 	{

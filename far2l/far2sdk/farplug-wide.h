@@ -1300,8 +1300,8 @@ struct FarMacroValue
 	enum FARMACROVARTYPE Type;
 	union
 	{
-		long long        Integer;
-		long long        Boolean;
+		int64_t        Integer;
+		int64_t        Boolean;
 		double         Double;
 		const wchar_t *String;
 		void          *Pointer;
@@ -1324,8 +1324,8 @@ struct FarMacroValue
 	FarMacroValue()                   { Type=FMVT_NIL; }
 	FarMacroValue(int v)              { Type=FMVT_INTEGER; Integer=v; }
 	FarMacroValue(unsigned int v)     { Type=FMVT_INTEGER; Integer=v; }
-	FarMacroValue(long long v)          { Type=FMVT_INTEGER; Integer=v; }
-	FarMacroValue(unsigned long long v) { Type=FMVT_INTEGER; Integer=v; }
+	FarMacroValue(int64_t v)          { Type=FMVT_INTEGER; Integer=v; }
+	FarMacroValue(uint64_t v)         { Type=FMVT_INTEGER; Integer=v; }
 	FarMacroValue(bool v)             { Type=FMVT_BOOLEAN; Boolean=v; }
 	FarMacroValue(double v)           { Type=FMVT_DOUBLE; Double=v; }
 	FarMacroValue(const wchar_t* v)   { Type=FMVT_STRING; String=v; }

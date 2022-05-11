@@ -149,7 +149,7 @@ class TVar
 		double getDouble() const;
 
 		double asDouble() const;
-		long long asInteger() const;
+		int64_t asInteger() const;
 };
 
 //---------------------------------------------------------------

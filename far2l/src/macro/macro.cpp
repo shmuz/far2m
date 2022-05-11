@@ -251,6 +251,8 @@ void print_opcodes()
 	fprintf(fp, "  MCODE_V_PPANEL_HOSTFILE=0x%X; -- PPanel.HostFile - пассивная панель: имя Host-файла\n", MCODE_V_PPANEL_HOSTFILE);
 	fprintf(fp, "  MCODE_V_APANEL_PREFIX=0x%X; -- APanel.Prefix\n", MCODE_V_APANEL_PREFIX);
 	fprintf(fp, "  MCODE_V_PPANEL_PREFIX=0x%X; -- PPanel.Prefix\n", MCODE_V_PPANEL_PREFIX);
+	fprintf(fp, "  MCODE_V_APANEL_FORMAT=0x%X; -- APanel.Format\n", MCODE_V_APANEL_FORMAT);
+	fprintf(fp, "  MCODE_V_PPANEL_FORMAT=0x%X; -- PPanel.Format\n", MCODE_V_PPANEL_FORMAT);
 	fprintf(fp, "  MCODE_V_ITEMCOUNT=0x%X; -- ItemCount - число элементов в текущем объекте\n", MCODE_V_ITEMCOUNT);
 	fprintf(fp, "  MCODE_V_CURPOS=0x%X; -- CurPos - текущий индекс в текущем объекте\n", MCODE_V_CURPOS);
 	fprintf(fp, "  MCODE_V_TITLE=0x%X; -- Title - заголовок текущего объекта\n", MCODE_V_TITLE);
@@ -652,7 +654,7 @@ public:
 
 	int PassBoolean(int b);
 	int PassError(const wchar_t* str);
-	int PassInteger(long long Int);
+	int PassInteger(int64_t Int);
 	int PassNumber(double dbl);
 	int PassString(const wchar_t* str);
 	int PassString(const FARString& str);
@@ -755,7 +757,7 @@ int FarMacroApi::PassNumber(double dbl)
 	return 1;
 }
 
-int FarMacroApi::PassInteger(long long Int)
+int FarMacroApi::PassInteger(int64_t Int)
 {
 	FarMacroValue val = Int;
 	mData->Callback(mData->CallbackData, &val, 1);
@@ -787,6 +789,26 @@ int FarMacroApi::PassValue(const TVar& Var)
 	return 1;
 }
 
+static std::vector<TVar> parseParams(size_t Count, FarMacroCall* Data)
+{
+	const auto argNum = std::min(Data->Count, Count);
+	std::vector<TVar> Params;
+	Params.reserve(argNum);
+	for (size_t i=0; i<argNum; i++)
+	{
+		const FarMacroValue& val = Data->Values[i];
+		switch(val.Type)
+		{
+			case FMVT_INTEGER: Params.push_back(val.Integer); break;
+			case FMVT_BOOLEAN: Params.push_back(val.Boolean); break;
+			case FMVT_DOUBLE:  Params.push_back(val.Double);  break;
+			case FMVT_STRING:  Params.push_back(val.String);  break;
+			default:           Params.push_back(TVar());      break;
+		}
+	}
+	return Params;
+}
+
 static long long msValues[constMsLAST];
 
 intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
@@ -805,7 +827,7 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 	const auto ActivePanel = CtrlObject->Cp() ? CtrlObject->Cp()->ActivePanel : nullptr;
 	const auto PassivePanel = CtrlObject->Cp() ? CtrlObject->Cp()->GetAnotherPanel(ActivePanel) : nullptr;
 
-	Frame* CurrentWindow = FrameManager->GetCurrentFrame();
+	auto CurrentWindow = FrameManager->GetCurrentFrame();
 
 	switch (CheckCode)
 	{
@@ -940,20 +962,13 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 			else
 			{
 				Frame *f = CurrentWindow, *fo=nullptr;
-
 				while (f)
 				{
 					fo=f;
 					f=f->GetTopModal();
 				}
-
-				if (!f)
-					f=fo;
-
-				if (f)
-				{
-					ret=f->VMProcess(CheckCode);
-				}
+				if (fo)
+					ret=fo->VMProcess(CheckCode);
 			}
 			return api.PassBoolean(ret);
 		}
@@ -973,23 +988,14 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 			}
 			else
 			{
+				Frame* f = CurrentWindow, *fo=nullptr;
+				while (f)
 				{
-					Frame* f = CurrentWindow, *fo=nullptr;
-
-					while (f)
-					{
-						fo=f;
-						f=f->GetTopModal();
-					}
-
-					if (!f)
-						f=fo;
-
-					if (f)
-					{
-						ret=f->VMProcess(CheckCode);
-					}
+					fo=f;
+					f=f->GetTopModal();
 				}
+				if (fo)
+					ret=fo->VMProcess(CheckCode);
 			}
 			return api.PassBoolean(ret);
 		}
@@ -1024,160 +1030,563 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 
 		case MCODE_C_APANEL_FILTER:
 		case MCODE_C_PPANEL_FILTER:
-		case MCODE_C_APANEL_LFN:
-		case MCODE_C_PPANEL_LFN:
-		case MCODE_C_APANEL_LEFT:
-		case MCODE_C_PPANEL_LEFT:
-		case MCODE_C_APANEL_FILEPANEL:
-		case MCODE_C_PPANEL_FILEPANEL:
-		case MCODE_C_APANEL_PLUGIN:
-		case MCODE_C_PPANEL_PLUGIN:
-		case MCODE_C_APANEL_FOLDER:
-		case MCODE_C_PPANEL_FOLDER:
-		case MCODE_C_APANEL_SELECTED:
-		case MCODE_C_PPANEL_SELECTED:
-		case MCODE_V_APANEL_CURRENT:
-		case MCODE_V_PPANEL_CURRENT:
-		case MCODE_V_APANEL_SELCOUNT:
-		case MCODE_V_PPANEL_SELCOUNT:
-		case MCODE_V_APANEL_COLUMNCOUNT:
-		case MCODE_V_PPANEL_COLUMNCOUNT:
-		case MCODE_V_APANEL_WIDTH:
-		case MCODE_V_PPANEL_WIDTH:
-		case MCODE_V_APANEL_HEIGHT:
-		case MCODE_V_PPANEL_HEIGHT:
-		case MCODE_V_APANEL_OPIFLAGS:
-		case MCODE_V_PPANEL_OPIFLAGS:
-		case MCODE_V_APANEL_HOSTFILE:
-		case MCODE_V_PPANEL_HOSTFILE:
-		//case MCODE_V_APANEL_FORMAT:
-		//case MCODE_V_PPANEL_FORMAT:
-		case MCODE_V_APANEL_PREFIX:
-		case MCODE_V_PPANEL_PREFIX:
-		case MCODE_V_APANEL_PATH0:
-		case MCODE_V_PPANEL_PATH0:
-		case MCODE_V_APANEL_PATH:
-		case MCODE_V_PPANEL_PATH:
-		case MCODE_V_APANEL_UNCPATH:
-		case MCODE_V_PPANEL_UNCPATH:
-		case MCODE_V_APANEL_TYPE:
-		case MCODE_V_PPANEL_TYPE:
-		case MCODE_V_APANEL_DRIVETYPE:
-		case MCODE_V_PPANEL_DRIVETYPE:
-		case MCODE_V_APANEL_ITEMCOUNT:
-		case MCODE_V_PPANEL_ITEMCOUNT:
-		case MCODE_V_APANEL_CURPOS:
-		case MCODE_V_PPANEL_CURPOS:
-		case MCODE_V_TITLE:
-		case MCODE_V_HEIGHT:
-		case MCODE_V_WIDTH:
-		case MCODE_V_MENU_VALUE:
-		//case MCODE_V_MENUINFOID:
-		case MCODE_V_ITEMCOUNT:
-		case MCODE_V_CURPOS:
-		case MCODE_V_EDITORCURLINE:
-		case MCODE_V_EDITORSTATE:
-		case MCODE_V_EDITORLINES:
-		case MCODE_V_EDITORCURPOS:
-		case MCODE_V_EDITORREALPOS:
-		case MCODE_V_EDITORFILENAME:
-		case MCODE_V_EDITORSELVALUE:
-		case MCODE_V_HELPFILENAME:
-		case MCODE_V_HELPTOPIC:
-		case MCODE_V_HELPSELTOPIC:
-		case MCODE_V_VIEWERFILENAME:
-		case MCODE_V_VIEWERSTATE:
-		case MCODE_F_ABS:
-		case MCODE_F_ASC:
-		case MCODE_F_ATOI:
-		case MCODE_F_BEEP:
-		case MCODE_F_CHR:
-		case MCODE_F_CLIP:
-		case MCODE_F_DATE:
-		case MCODE_F_DLG_GETVALUE:
-		//case MCODE_F_DLG_SETFOCUS:
-		//case MCODE_F_EDITOR_DELLINE:
-		//case MCODE_F_EDITOR_INSSTR:
-		case MCODE_F_EDITOR_POS:
-		case MCODE_F_EDITOR_SEL:
-		case MCODE_F_EDITOR_SET:
-		//case MCODE_F_EDITOR_SETSTR:
-		case MCODE_F_EDITOR_SETTITLE:
-		case MCODE_F_EDITOR_UNDO:
-		case MCODE_F_ENVIRON:
-		//case MCODE_F_FAR_CFG_GET:
-		//case MCODE_F_FAR_GETCONFIG:
-		case MCODE_F_FATTR:
-		case MCODE_F_FEXIST:
-		case MCODE_F_FLOAT:
-		case MCODE_F_FLOCK:
-		//case MCODE_F_FMATCH:
-		case MCODE_F_FSPLIT:
-		case MCODE_F_INDEX:
-		case MCODE_F_INT:
-		case MCODE_F_ITOA:
-		case MCODE_F_KBDLAYOUT:
-		case MCODE_F_KEY:
-		//case MCODE_F_KEYBAR_SHOW:
-		case MCODE_F_LCASE:
-		case MCODE_F_LEN:
-		case MCODE_F_MAX:
-		//case MCODE_F_MENU_SHOW:
-		case MCODE_F_MIN:
-		case MCODE_F_MOD:
-		case MCODE_F_MSGBOX:
-		case MCODE_F_PANEL_FATTR:
-		case MCODE_F_PANEL_FEXIST:
-		case MCODE_F_PANELITEM:
-		case MCODE_F_PANEL_SELECT:
-		case MCODE_F_PANEL_SETPOS:
-		case MCODE_F_PANEL_SETPOSIDX:
-		//case MCODE_F_PLUGIN_EXIST:
-		//case MCODE_F_PLUGIN_LOAD:
-		//case MCODE_F_PLUGIN_UNLOAD:
-		case MCODE_F_REPLACE:
-		case MCODE_F_RINDEX:
-		//case MCODE_F_SIZE2STR:
-		case MCODE_F_SLEEP:
-		case MCODE_F_STRING:
-		//case MCODE_F_STRPAD:
-		//case MCODE_F_STRWRAP:
-		case MCODE_F_SUBSTR:
-		case MCODE_F_TESTFOLDER:
-		case MCODE_F_TRIM:
-		case MCODE_F_UCASE:
-		case MCODE_F_WAITKEY:
-		//case MCODE_F_PLUGIN_CALL:
-		case MCODE_F_WINDOW_SCROLL:
-		case MCODE_F_XLAT:
-		case MCODE_F_PROMPT:
-		//case MCODE_F_CHECKALL:
-		//case MCODE_F_GETOPTIONS:
-		//case MCODE_F_USERMENU:
-		//case MCODE_F_SETCUSTOMSORTMODE:
-		//case MCODE_F_KEYMACRO:
-		//case MCODE_F_MACROSETTINGS:
-		case MCODE_F_BM_ADD:
-		case MCODE_F_BM_CLEAR:
-		case MCODE_F_BM_NEXT:
-		case MCODE_F_BM_PREV:
-		case MCODE_F_BM_BACK:
-		case MCODE_F_BM_STAT:
-		case MCODE_F_BM_DEL:
-		case MCODE_F_BM_GET:
-		case MCODE_F_BM_GOTO:
-		case MCODE_F_BM_PUSH:
-		case MCODE_F_BM_POP:
-		case MCODE_F_MENU_ITEMSTATUS:
-		case MCODE_F_MENU_GETVALUE:
-		case MCODE_F_MENU_GETHOTKEY:
-		case MCODE_F_MENU_SELECT:
-		case MCODE_F_MENU_CHECKHOTKEY:
-		//case MCODE_F_MENU_FILTER:
-		//case MCODE_F_MENU_FILTERSTR:
-			break;
+		{
+			const auto SelPanel = (CheckCode == MCODE_C_APANEL_FILTER)?ActivePanel:PassivePanel;
+			return api.PassBoolean(SelPanel && SelPanel->VMProcess(MCODE_C_APANEL_FILTER));
+		}
+
+		case MCODE_C_APANEL_LEFT: // APanel.Left
+		case MCODE_C_PPANEL_LEFT: // PPanel.Left
+		{
+			const auto SelPanel = CheckCode == MCODE_C_APANEL_LEFT ? ActivePanel : PassivePanel;
+			return api.PassBoolean(SelPanel && SelPanel==CtrlObject->Cp()->LeftPanel);
+		}
+
+		case MCODE_C_APANEL_FILEPANEL: // APanel.FilePanel
+		case MCODE_C_PPANEL_FILEPANEL: // PPanel.FilePanel
+		{
+			const auto SelPanel = CheckCode == MCODE_C_APANEL_FILEPANEL ? ActivePanel : PassivePanel;
+			return api.PassBoolean(SelPanel && SelPanel->GetType() == FILE_PANEL);
+		}
+
+		case MCODE_C_APANEL_PLUGIN: // APanel.Plugin
+		case MCODE_C_PPANEL_PLUGIN: // PPanel.Plugin
+		{
+			const auto SelPanel = CheckCode == MCODE_C_APANEL_PLUGIN?ActivePanel:PassivePanel;
+			return api.PassBoolean(SelPanel && SelPanel->GetMode() == PLUGIN_PANEL);
+		}
+
+		case MCODE_C_APANEL_FOLDER: // APanel.Folder
+		case MCODE_C_PPANEL_FOLDER: // PPanel.Folder
+		{
+			const auto SelPanel = CheckCode == MCODE_C_APANEL_FOLDER?ActivePanel:PassivePanel;
+			if (SelPanel)
+			{
+				SelPanel->GetFileName(tmpStr, SelPanel->GetCurrentPos(), FileAttr);
+
+				if (FileAttr != INVALID_FILE_ATTRIBUTES)
+					ret=(FileAttr&FILE_ATTRIBUTE_DIRECTORY)?1:0;
+			}
+			return api.PassBoolean(ret);
+		}
+
+		case MCODE_C_APANEL_SELECTED: // APanel.Selected
+		case MCODE_C_PPANEL_SELECTED: // PPanel.Selected
+		{
+			const auto SelPanel = CheckCode == MCODE_C_APANEL_SELECTED?ActivePanel:PassivePanel;
+			return api.PassBoolean(SelPanel && SelPanel->GetRealSelCount() > 0);
+		}
+
+		case MCODE_V_APANEL_CURRENT: // APanel.Current
+		case MCODE_V_PPANEL_CURRENT: // PPanel.Current
+		{
+			const auto SelPanel = CheckCode == MCODE_V_APANEL_CURRENT ? ActivePanel : PassivePanel;
+			if (SelPanel)
+			{
+				SelPanel->GetFileName(tmpStr, SelPanel->GetCurrentPos(), FileAttr);
+			}
+			return api.PassString(tmpStr);
+		}
+
+		case MCODE_V_APANEL_SELCOUNT: // APanel.SelCount
+		case MCODE_V_PPANEL_SELCOUNT: // PPanel.SelCount
+		{
+			const auto SelPanel = CheckCode == MCODE_V_APANEL_SELCOUNT ? ActivePanel : PassivePanel;
+			return SelPanel ? SelPanel->GetRealSelCount() : 0;
+		}
+
+		case MCODE_V_APANEL_COLUMNCOUNT:       // APanel.ColumnCount - активная панель:  количество колонок
+		case MCODE_V_PPANEL_COLUMNCOUNT:       // PPanel.ColumnCount - пассивная панель: количество колонок
+		{
+			const auto SelPanel = CheckCode == MCODE_V_APANEL_COLUMNCOUNT ? ActivePanel : PassivePanel;
+			return SelPanel ? SelPanel->GetColumnsCount() : 0;
+		}
+
+		case MCODE_V_APANEL_WIDTH: // APanel.Width
+		case MCODE_V_PPANEL_WIDTH: // PPanel.Width
+		case MCODE_V_APANEL_HEIGHT: // APanel.Height
+		case MCODE_V_PPANEL_HEIGHT: // PPanel.Height
+		{
+			Panel *SelPanel = CheckCode == MCODE_V_APANEL_WIDTH || CheckCode == MCODE_V_APANEL_HEIGHT? ActivePanel : PassivePanel;
+			if (SelPanel )
+			{
+				int X1, Y1, X2, Y2;
+				SelPanel->GetPosition(X1,Y1,X2,Y2);
+
+				if (CheckCode == MCODE_V_APANEL_HEIGHT || CheckCode == MCODE_V_PPANEL_HEIGHT)
+					ret = Y2-Y1+1;
+				else
+					ret = X2-X1+1;
+			}
+			return ret;
+		}
+
+		case MCODE_V_APANEL_OPIFLAGS:  // APanel.OPIFlags
+		case MCODE_V_PPANEL_OPIFLAGS:  // PPanel.OPIFlags
+		case MCODE_V_APANEL_HOSTFILE: // APanel.HostFile
+		case MCODE_V_PPANEL_HOSTFILE: // PPanel.HostFile
+		case MCODE_V_APANEL_FORMAT:           // APanel.Format
+		case MCODE_V_PPANEL_FORMAT:           // PPanel.Format
+		{
+			const auto SelPanel =
+					CheckCode == MCODE_V_APANEL_OPIFLAGS ||
+					CheckCode == MCODE_V_APANEL_HOSTFILE ||
+					CheckCode == MCODE_V_APANEL_FORMAT? ActivePanel : PassivePanel;
+
+			const wchar_t* ptr = nullptr;
+			if (CheckCode == MCODE_V_APANEL_HOSTFILE || CheckCode == MCODE_V_PPANEL_HOSTFILE ||
+				CheckCode == MCODE_V_APANEL_FORMAT || CheckCode == MCODE_V_PPANEL_FORMAT)
+				ptr = L"";
+
+			if (SelPanel )
+			{
+				if (SelPanel->GetMode() == PLUGIN_PANEL)
+				{
+					OpenPluginInfo Info={};
+					Info.StructSize=sizeof(OpenPluginInfo);
+					SelPanel->GetOpenPluginInfo(&Info);
+					switch (CheckCode)
+					{
+						case MCODE_V_APANEL_OPIFLAGS:
+						case MCODE_V_PPANEL_OPIFLAGS:
+							return Info.Flags;
+						case MCODE_V_APANEL_HOSTFILE:
+						case MCODE_V_PPANEL_HOSTFILE:
+							return api.PassString(Info.HostFile);
+						case MCODE_V_APANEL_FORMAT:
+						case MCODE_V_PPANEL_FORMAT:
+							return api.PassString(Info.Format);
+					}
+				}
+			}
+
+			return ptr ? api.PassString(ptr) : 0;
+		}
+
+		case MCODE_V_APANEL_PREFIX:           // APanel.Prefix
+		case MCODE_V_PPANEL_PREFIX:           // PPanel.Prefix
+		{
+			const auto SelPanel = CheckCode == MCODE_V_APANEL_PREFIX ? ActivePanel : PassivePanel;
+			const wchar_t *ptr = L"";
+			if (SelPanel)
+			{
+				PluginInfo PInfo = {sizeof(PInfo)};
+				if (SelPanel->VMProcess(MCODE_V_APANEL_PREFIX,&PInfo))
+					ptr = PInfo.CommandPrefix;
+			}
+			return api.PassString(ptr);
+		}
+
+		case MCODE_V_APANEL_PATH0:           // APanel.Path0
+		case MCODE_V_PPANEL_PATH0:           // PPanel.Path0
+		{
+			const auto SelPanel = CheckCode == MCODE_V_APANEL_PATH0? ActivePanel : PassivePanel;
+			if (SelPanel)
+			{
+				SelPanel->GetCurDir(tmpStr);
+			}
+			return api.PassString(tmpStr);
+		}
+
+		case MCODE_V_APANEL_PATH: // APanel.Path
+		case MCODE_V_PPANEL_PATH: // PPanel.Path
+		{
+			const auto SelPanel = CheckCode == MCODE_V_APANEL_PATH? ActivePanel : PassivePanel;
+			if (SelPanel)
+			{
+				if (SelPanel->GetMode() == PLUGIN_PANEL)
+				{
+					OpenPluginInfo Info={};
+					Info.StructSize=sizeof(OpenPluginInfo);
+					SelPanel->GetOpenPluginInfo(&Info);
+					tmpStr = NullToEmpty(Info.CurDir);
+				}
+				else
+					SelPanel->GetCurDir(tmpStr);
+
+				DeleteEndSlash(tmpStr); // - чтобы у корня диска было C:, тогда можно писать так: APanel.Path + "\\file"
+			}
+			return api.PassString(tmpStr);
+		}
+
+		case MCODE_V_APANEL_UNCPATH: // APanel.UNCPath
+		case MCODE_V_PPANEL_UNCPATH: // PPanel.UNCPath
+		{
+			const wchar_t *ptr = L"";
+			if (_MakePath1(CheckCode == MCODE_V_APANEL_UNCPATH?KEY_ALTSHIFTBRACKET:KEY_ALTSHIFTBACKBRACKET,tmpStr,L""))
+			{
+				UnquoteExternal(tmpStr);
+				DeleteEndSlash(tmpStr);
+				ptr = tmpStr.CPtr();
+			}
+			return api.PassString(ptr);
+		}
+
+		//FILE_PANEL,TREE_PANEL,QVIEW_PANEL,INFO_PANEL
+		case MCODE_V_APANEL_TYPE: // APanel.Type
+		case MCODE_V_PPANEL_TYPE: // PPanel.Type
+		{
+			const auto SelPanel = CheckCode == MCODE_V_APANEL_TYPE ? ActivePanel : PassivePanel;
+			return static_cast<intptr_t>(SelPanel? SelPanel->GetType() : FILE_PANEL);
+		}
+
+		case MCODE_V_APANEL_DRIVETYPE: // APanel.DriveType - активная панель: тип привода
+		case MCODE_V_PPANEL_DRIVETYPE: // PPanel.DriveType - пассивная панель: тип привода
+		{
+			Panel *SelPanel = CheckCode == MCODE_V_APANEL_DRIVETYPE ? ActivePanel : PassivePanel;
+			ret=-1;
+
+			if (SelPanel  && SelPanel->GetMode() != PLUGIN_PANEL)
+			{
+				SelPanel->GetCurDir(tmpStr);
+				UINT DriveType=FAR_GetDriveType(tmpStr, 0);
+				ret = DriveType;
+			}
+			return ret;
+		}
+
+		case MCODE_V_APANEL_ITEMCOUNT: // APanel.ItemCount
+		case MCODE_V_PPANEL_ITEMCOUNT: // PPanel.ItemCount
+		{
+			const auto SelPanel = CheckCode == MCODE_V_APANEL_ITEMCOUNT ? ActivePanel : PassivePanel;
+			return SelPanel ? SelPanel->GetFileCount() : 0;
+		}
+
+		case MCODE_V_APANEL_CURPOS: // APanel.CurPos
+		case MCODE_V_PPANEL_CURPOS: // PPanel.CurPos
+		{
+			const auto SelPanel = CheckCode == MCODE_V_APANEL_CURPOS ? ActivePanel : PassivePanel;
+			return SelPanel ? SelPanel->GetCurrentPos()+(SelPanel->GetFileCount()>0?1:0) : 0;
+		}
+
+		case MCODE_V_TITLE: // Title
+		{
+			Frame *f=FrameManager->GetTopModal();
+			if (f)
+			{
+				if (CtrlObject->Cp() == f)
+				{
+					ActivePanel->GetTitle(tmpStr);
+				}
+				else
+				{
+					FARString strType;
+					switch (f->GetTypeAndName(strType,tmpStr))
+					{
+						case MODALTYPE_EDITOR:
+						case MODALTYPE_VIEWER:
+							f->GetTitle(tmpStr);
+							break;
+					}
+				}
+				RemoveExternalSpaces(tmpStr);
+			}
+      return api.PassString(tmpStr);
+		}
+
+		case MCODE_V_HEIGHT:  // Height - высота текущего объекта
+		case MCODE_V_WIDTH:   // Width - ширина текущего объекта
+		{
+			Frame *f = FrameManager->GetTopModal();
+
+			if (f)
+			{
+				int X1, Y1, X2, Y2;
+				f->GetPosition(X1,Y1,X2,Y2);
+
+				if (CheckCode == MCODE_V_HEIGHT)
+					ret = Y2-Y1+1;
+				else
+					ret = X2-X1+1;
+			}
+
+			return ret;
+		}
+
+		case MCODE_V_MENU_VALUE: // Menu.Value
+		{
+			int CurMMode=GetArea();
+			const wchar_t *ptr=L"";
+
+			if (IsMenuArea(CurMMode) || CurMMode == MACRO_DIALOG)
+			{
+				Frame *f=FrameManager->GetCurrentFrame(), *fo=nullptr;
+				while (f)
+				{
+					fo=f;
+					f=f->GetTopModal();
+				}
+				if (fo)
+				{
+					FARString NewStr;
+					if (fo->VMProcess(CheckCode,&NewStr))
+					{
+						HiText2Str(tmpStr, NewStr);
+						RemoveExternalSpaces(tmpStr);
+						ptr=tmpStr.CPtr();
+					}
+				}
+			}
+      return api.PassString(ptr);
+		}
+
+		case MCODE_V_ITEMCOUNT: // ItemCount - число элементов в текущем объекте
+		case MCODE_V_CURPOS: // CurPos - текущий индекс в текущем объекте
+		{
+			Frame *f = FrameManager->GetCurrentFrame(), *fo=nullptr;
+			while (f)
+			{
+				fo=f;
+				f=f->GetTopModal();
+			}
+			if (fo)
+			{
+				ret=fo->VMProcess(CheckCode);
+			}
+			return ret;
+		}
+
+		case MCODE_V_EDITORCURLINE: // Editor.CurLine - текущая линия в редакторе (в дополнении к Count)
+		case MCODE_V_EDITORSTATE:   // Editor.State
+		case MCODE_V_EDITORLINES:   // Editor.Lines
+		case MCODE_V_EDITORCURPOS:  // Editor.CurPos
+		case MCODE_V_EDITORREALPOS: // Editor.RealPos
+		case MCODE_V_EDITORFILENAME: // Editor.FileName
+		case MCODE_V_EDITORSELVALUE: // Editor.SelValue
+		{
+			const wchar_t* ptr = nullptr;
+			if (CheckCode == MCODE_V_EDITORSELVALUE)
+				ptr=L"";
+
+			if (GetArea()==MACROAREA_EDITOR && CtrlObject->Plugins.CurEditor && CtrlObject->Plugins.CurEditor->IsVisible())
+			{
+				if (CheckCode == MCODE_V_EDITORFILENAME)
+				{
+					FARString strType;
+					CtrlObject->Plugins.CurEditor->GetTypeAndName(strType, tmpStr);
+					ptr=tmpStr.CPtr();
+				}
+				else if (CheckCode == MCODE_V_EDITORSELVALUE)
+				{
+					CtrlObject->Plugins.CurEditor->VMProcess(CheckCode,&tmpStr);
+					ptr=tmpStr.CPtr();
+				}
+				else
+					return CtrlObject->Plugins.CurEditor->VMProcess(CheckCode);
+			}
+			return ptr ? api.PassString(ptr) : 0;
+		}
+
+		case MCODE_V_HELPFILENAME:  // Help.FileName
+		case MCODE_V_HELPTOPIC:     // Help.Topic
+		case MCODE_V_HELPSELTOPIC:  // Help.SelTopic
+		{
+			const wchar_t *ptr=L"";
+			if (CtrlObject->Macro.GetArea() == MACRO_HELP)
+			{
+				FrameManager->GetCurrentFrame()->VMProcess(CheckCode,&tmpStr,0);
+				ptr=tmpStr.CPtr();
+			}
+			return api.PassString(ptr);
+		}
+
+		case MCODE_V_VIEWERFILENAME: // Viewer.FileName
+		case MCODE_V_VIEWERSTATE: // Viewer.State
+		{
+			if ((GetArea()==MACROAREA_VIEWER || GetArea()==MACROAREA_QVIEWPANEL) &&
+							CtrlObject->Plugins.CurViewer && CtrlObject->Plugins.CurViewer->IsVisible())
+			{
+				if (CheckCode == MCODE_V_VIEWERFILENAME)
+				{
+					CtrlObject->Plugins.CurViewer->GetFileName(tmpStr);
+					return api.PassString(tmpStr);
+				}
+				else
+					return api.PassNumber(CtrlObject->Plugins.CurViewer->VMProcess(MCODE_V_VIEWERSTATE));
+			}
+			return (CheckCode == MCODE_V_VIEWERFILENAME) ? api.PassString(L"") : 0;
+		}
+
+		case MCODE_F_ABS:                break;
+		case MCODE_F_ASC:                break;
+		case MCODE_F_ATOI:               break;
+		case MCODE_F_BEEP:               break;
+		case MCODE_F_CHR:                break;
+		case MCODE_F_CLIP:               break;
+		case MCODE_F_DATE:               break;
+		case MCODE_F_DLG_GETVALUE:       break;
+		//case MCODE_F_DLG_SETFOCUS:     break;
+		//case MCODE_F_EDITOR_DELLINE:   break;
+		//case MCODE_F_EDITOR_INSSTR:    break;
+		case MCODE_F_EDITOR_POS:         break;
+		case MCODE_F_EDITOR_SEL:         break;
+		case MCODE_F_EDITOR_SET:         break;
+		//case MCODE_F_EDITOR_SETSTR:    break;
+		case MCODE_F_EDITOR_SETTITLE:    break;
+		case MCODE_F_EDITOR_UNDO:        break;
+		case MCODE_F_ENVIRON:            break;
+		//case MCODE_F_FAR_CFG_GET:      break;
+		//case MCODE_F_FAR_GETCONFIG:    break;
+		case MCODE_F_FATTR:              break;
+		case MCODE_F_FEXIST:             break;
+		case MCODE_F_FLOAT:              break;
+		case MCODE_F_FLOCK:              break;
+		//case MCODE_F_FMATCH:           break;
+		case MCODE_F_FSPLIT:             break;
+		case MCODE_F_INDEX:              break;
+		case MCODE_F_INT:                break;
+		case MCODE_F_ITOA:               break;
+		case MCODE_F_KBDLAYOUT:          break;
+		case MCODE_F_KEY:                break;
+		//case MCODE_F_KEYBAR_SHOW:      break;
+		case MCODE_F_LCASE:              break;
+		case MCODE_F_LEN:                break;
+		case MCODE_F_MAX:                break;
+		//case MCODE_F_MENU_SHOW:        break;
+		case MCODE_F_MIN:                break;
+		case MCODE_F_MOD:                break;
+		case MCODE_F_MSGBOX:             break;
+		case MCODE_F_PANEL_FATTR:        break;
+		case MCODE_F_PANEL_FEXIST:       break;
+		case MCODE_F_PANELITEM:          break;
+		case MCODE_F_PANEL_SELECT:       break;
+		case MCODE_F_PANEL_SETPOS:       break;
+		case MCODE_F_PANEL_SETPOSIDX:    break;
+		//case MCODE_F_PLUGIN_EXIST:     break;
+		//case MCODE_F_PLUGIN_LOAD:      break;
+		//case MCODE_F_PLUGIN_UNLOAD:    break;
+		case MCODE_F_REPLACE:            break;
+		case MCODE_F_RINDEX:             break;
+		//case MCODE_F_SIZE2STR:         break;
+		case MCODE_F_SLEEP:              break;
+		case MCODE_F_STRING:             break;
+		//case MCODE_F_STRPAD:           break;
+		//case MCODE_F_STRWRAP:          break;
+		case MCODE_F_SUBSTR:             return api.substrFunc();
+		case MCODE_F_TESTFOLDER:         break;
+		case MCODE_F_TRIM:               return api.trimFunc();
+		case MCODE_F_UCASE:              break;
+		case MCODE_F_WAITKEY:            break;
+		//case MCODE_F_PLUGIN_CALL:      break;
+		case MCODE_F_WINDOW_SCROLL:      break;
+		case MCODE_F_XLAT:               break;
+		case MCODE_F_PROMPT:             break;
+		//case MCODE_F_CHECKALL:         break;
+		//case MCODE_F_GETOPTIONS:       break;
+		//case MCODE_F_USERMENU:         break;
+		//case MCODE_F_SETCUSTOMSORTMODE:break;
+		//case MCODE_F_KEYMACRO:         break;
+		//case MCODE_F_MACROSETTINGS:    break;
+		case MCODE_F_BM_ADD:             break;
+		case MCODE_F_BM_CLEAR:           break;
+		case MCODE_F_BM_NEXT:            break;
+		case MCODE_F_BM_PREV:            break;
+		case MCODE_F_BM_BACK:            break;
+		case MCODE_F_BM_STAT:            break;
+		case MCODE_F_BM_DEL:             break;
+		case MCODE_F_BM_GET:             break;
+		case MCODE_F_BM_GOTO:            break;
+		case MCODE_F_BM_PUSH:            break;
+		case MCODE_F_BM_POP:             break;
+		case MCODE_F_MENU_ITEMSTATUS:    break;
+		case MCODE_F_MENU_GETVALUE:      break;
+		case MCODE_F_MENU_GETHOTKEY:     break;
+		case MCODE_F_MENU_SELECT:        break;
+		case MCODE_F_MENU_CHECKHOTKEY:   break;
+		//case MCODE_F_MENU_FILTER:      break;
+		//case MCODE_F_MENU_FILTERSTR:   break;
 	}
 	return 0; //### TODO
+}
+
+/* ------------------------------------------------------------------- */
+// S=trim(S[,N])
+int FarMacroApi::trimFunc()
+{
+	auto Params = parseParams(2, mData);
+	const auto mode = static_cast<int>(Params[1].asInteger());
+	auto p = wcsdup(Params[0].toString());
+	int Ret=1;
+
+	switch (mode)
+	{
+		case 0: p=RemoveExternalSpaces(p); break;  // alltrim
+		case 1: p=RemoveLeadingSpaces(p); break;   // ltrim
+		case 2: p=RemoveTrailingSpaces(p); break;  // rtrim
+		default: Ret=0;
+	}
+	PassString(p);
+	free(p);
+	return Ret;
+}
+
+// S=substr(S,start[,length])
+int FarMacroApi::substrFunc()
+{
+	/*
+		TODO: http://bugs.farmanager.com/view.php?id=1480
+			если start  >= 0, то вернётся подстрока, начиная со start-символа от начала строки.
+			если start  <  0, то вернётся подстрока, начиная со start-символа от конца строки.
+			если length >  0, то возвращаемая подстрока будет состоять максимум из length символов исходной строки начиная с start
+			если length <  0, то в возвращаемой подстроке будет отсутствовать length символов от конца исходной строки, при том, что она будет начинаться с символа start.
+								Или: length - длина того, что берем (если >=0) или отбрасываем (если <0).
+
+			пустая строка возвращается:
+				если length = 0
+				если ...
+	*/
+	auto Params = parseParams(3, mData);
+	int Ret=0;
+
+	int start = static_cast<int>(Params[1].asInteger());
+	const auto& p = Params[0].toString();
+	const auto length_str = static_cast<int>(wcslen(p));
+	int length = Params[2].isUnknown()? length_str : static_cast<int>(Params[2].asInteger());
+
+	if (length)
+	{
+		if (start < 0)
+		{
+			start=length_str+start;
+			if (start < 0)
+				start=0;
+		}
+
+		if (start >= length_str)
+		{
+			length=0;
+		}
+		else
+		{
+			if (length > 0)
+			{
+				if (start+length >= length_str)
+					length=length_str-start;
+			}
+			else
+			{
+				length=length_str-start+length;
+
+				if (length < 0)
+				{
+					length=0;
+				}
+			}
+		}
+	}
+
+	if (!length)
+	{
+		PassString(L"");
+	}
+	else
+	{
+		Ret=1;
+		FARString s(p+start, length);
+		PassString(s);
+	}
+
+	return Ret;
 }
 
 struct TMacroKeywords
