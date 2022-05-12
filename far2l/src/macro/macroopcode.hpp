@@ -85,7 +85,7 @@ enum MACRO_OP_CODE
 	MCODE_F_PANEL_SETPOS,             // N=Panel.SetPos(panelType,fileName)
 	MCODE_F_PANEL_SETPOSIDX,          // N=Panel.SetPosIdx(panelType,Idx[,InSelection])
 	MCODE_F_PANEL_SELECT,             // V=Panel.Select(panelType,Action[,Mode[,Items]])
-	MCODE_F_PANELITEM,                // V=PanelItem(Panel,Index,TypeInfo)
+	MCODE_F_PANELITEM,                // V=Panel.Item(Panel,Index,TypeInfo)
 	MCODE_F_EVAL,                     // N=eval(S[,N])
 	MCODE_F_RINDEX,                   // S=rindex(S1,S2[,Mode])
 	MCODE_F_SLEEP,                    // Sleep(N)

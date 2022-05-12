@@ -121,7 +121,7 @@ void print_opcodes()
 	fprintf(fp, "  MCODE_F_PANEL_SETPOS=0x%X; -- N=Panel.SetPos(panelType,fileName)\n", MCODE_F_PANEL_SETPOS);
 	fprintf(fp, "  MCODE_F_PANEL_SETPOSIDX=0x%X; -- N=Panel.SetPosIdx(panelType,Idx[,InSelection])\n", MCODE_F_PANEL_SETPOSIDX);
 	fprintf(fp, "  MCODE_F_PANEL_SELECT=0x%X; -- V=Panel.Select(panelType,Action[,Mode[,Items]])\n", MCODE_F_PANEL_SELECT);
-	fprintf(fp, "  MCODE_F_PANELITEM=0x%X; -- V=PanelItem(Panel,Index,TypeInfo)\n", MCODE_F_PANELITEM);
+	fprintf(fp, "  MCODE_F_PANELITEM=0x%X; -- V=Panel.Item(Panel,Index,TypeInfo)\n", MCODE_F_PANELITEM);
 	fprintf(fp, "  MCODE_F_EVAL=0x%X; -- N=eval(S[,N])\n", MCODE_F_EVAL);
 	fprintf(fp, "  MCODE_F_RINDEX=0x%X; -- S=rindex(S1,S2[,Mode])\n", MCODE_F_RINDEX);
 	fprintf(fp, "  MCODE_F_SLEEP=0x%X; -- Sleep(N)\n", MCODE_F_SLEEP);
@@ -791,9 +791,9 @@ int FarMacroApi::PassValue(const TVar& Var)
 
 static std::vector<TVar> parseParams(size_t Count, FarMacroCall* Data)
 {
-	const auto argNum = std::min(Data->Count, Count);
+	auto argNum = std::min(Data->Count, Count);
 	std::vector<TVar> Params;
-	Params.reserve(argNum);
+	Params.reserve(Count);
 	for (size_t i=0; i<argNum; i++)
 	{
 		const FarMacroValue& val = Data->Values[i];
@@ -806,6 +806,9 @@ static std::vector<TVar> parseParams(size_t Count, FarMacroCall* Data)
 			default:           Params.push_back(TVar());      break;
 		}
 	}
+	while (argNum++ < Count)
+		Params.push_back(TVar());
+
 	return Params;
 }
 
@@ -1409,56 +1412,56 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 
 		case MCODE_F_ABS:                break;
 		case MCODE_F_ASC:                break;
-		case MCODE_F_ATOI:               break;
+		case MCODE_F_ATOI:               return api.atoiFunc();
 		case MCODE_F_BEEP:               break;
 		case MCODE_F_CHR:                break;
-		case MCODE_F_CLIP:               break;
-		case MCODE_F_DATE:               break;
-		case MCODE_F_DLG_GETVALUE:       break;
+		case MCODE_F_CLIP:               return api.clipFunc();
+		case MCODE_F_DATE:               return api.dateFunc();
+		case MCODE_F_DLG_GETVALUE:       return api.dlggetvalueFunc();
 		//case MCODE_F_DLG_SETFOCUS:     break;
 		//case MCODE_F_EDITOR_DELLINE:   break;
 		//case MCODE_F_EDITOR_INSSTR:    break;
-		case MCODE_F_EDITOR_POS:         break;
+		case MCODE_F_EDITOR_POS:         return api.editorposFunc();
 		case MCODE_F_EDITOR_SEL:         break;
-		case MCODE_F_EDITOR_SET:         break;
+		case MCODE_F_EDITOR_SET:         return api.editorsetFunc();
 		//case MCODE_F_EDITOR_SETSTR:    break;
 		case MCODE_F_EDITOR_SETTITLE:    break;
 		case MCODE_F_EDITOR_UNDO:        break;
-		case MCODE_F_ENVIRON:            break;
+		case MCODE_F_ENVIRON:            return api.environFunc();
 		//case MCODE_F_FAR_CFG_GET:      break;
 		//case MCODE_F_FAR_GETCONFIG:    break;
-		case MCODE_F_FATTR:              break;
-		case MCODE_F_FEXIST:             break;
+		case MCODE_F_FATTR:              return api.fattrFunc();
+		case MCODE_F_FEXIST:             return api.fexistFunc();
 		case MCODE_F_FLOAT:              break;
-		case MCODE_F_FLOCK:              break;
+		case MCODE_F_FLOCK:              return api.flockFunc();
 		//case MCODE_F_FMATCH:           break;
-		case MCODE_F_FSPLIT:             break;
-		case MCODE_F_INDEX:              break;
+		case MCODE_F_FSPLIT:             return api.fsplitFunc();
+		case MCODE_F_INDEX:              return api.indexFunc();
 		case MCODE_F_INT:                break;
-		case MCODE_F_ITOA:               break;
+		case MCODE_F_ITOA:               return api.itowFunc();
 		case MCODE_F_KBDLAYOUT:          break;
-		case MCODE_F_KEY:                break;
+		case MCODE_F_KEY:                return api.keyFunc();
 		//case MCODE_F_KEYBAR_SHOW:      break;
 		case MCODE_F_LCASE:              break;
 		case MCODE_F_LEN:                break;
-		case MCODE_F_MAX:                break;
+		case MCODE_F_MAX:                return api.maxFunc();
 		//case MCODE_F_MENU_SHOW:        break;
-		case MCODE_F_MIN:                break;
-		case MCODE_F_MOD:                break;
-		case MCODE_F_MSGBOX:             break;
-		case MCODE_F_PANEL_FATTR:        break;
-		case MCODE_F_PANEL_FEXIST:       break;
-		case MCODE_F_PANELITEM:          break;
-		case MCODE_F_PANEL_SELECT:       break;
-		case MCODE_F_PANEL_SETPOS:       break;
-		case MCODE_F_PANEL_SETPOSIDX:    break;
+		case MCODE_F_MIN:                return api.minFunc();
+		case MCODE_F_MOD:                return api.modFunc();
+		case MCODE_F_MSGBOX:             return api.msgBoxFunc();
+		case MCODE_F_PANEL_FATTR:        return api.panelfattrFunc();
+		case MCODE_F_PANEL_FEXIST:       return api.panelfexistFunc();
+		case MCODE_F_PANELITEM:          return api.panelitemFunc();
+		case MCODE_F_PANEL_SELECT:       return api.panelselectFunc();
+		case MCODE_F_PANEL_SETPOS:       return api.panelsetposFunc();
+		case MCODE_F_PANEL_SETPOSIDX:    return api.panelsetposidxFunc();
 		//case MCODE_F_PLUGIN_EXIST:     break;
 		//case MCODE_F_PLUGIN_LOAD:      break;
 		//case MCODE_F_PLUGIN_UNLOAD:    break;
-		case MCODE_F_REPLACE:            break;
-		case MCODE_F_RINDEX:             break;
+		case MCODE_F_REPLACE:            return api.replaceFunc();
+		case MCODE_F_RINDEX:             return api.rindexFunc();
 		//case MCODE_F_SIZE2STR:         break;
-		case MCODE_F_SLEEP:              break;
+		case MCODE_F_SLEEP:              return api.sleepFunc();
 		case MCODE_F_STRING:             break;
 		//case MCODE_F_STRPAD:           break;
 		//case MCODE_F_STRWRAP:          break;
@@ -1466,11 +1469,11 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 		case MCODE_F_TESTFOLDER:         break;
 		case MCODE_F_TRIM:               return api.trimFunc();
 		case MCODE_F_UCASE:              break;
-		case MCODE_F_WAITKEY:            break;
+		case MCODE_F_WAITKEY:            return api.waitkeyFunc();
 		//case MCODE_F_PLUGIN_CALL:      break;
-		case MCODE_F_WINDOW_SCROLL:      break;
-		case MCODE_F_XLAT:               break;
-		case MCODE_F_PROMPT:             break;
+		case MCODE_F_WINDOW_SCROLL:      return api.windowscrollFunc();
+		case MCODE_F_XLAT:               return api.xlatFunc();
+		case MCODE_F_PROMPT:             return api.promptFunc();
 		//case MCODE_F_CHECKALL:         break;
 		//case MCODE_F_GETOPTIONS:       break;
 		//case MCODE_F_USERMENU:         break;
@@ -1587,6 +1590,1439 @@ int FarMacroApi::substrFunc()
 	}
 
 	return Ret;
+}
+
+static BOOL SplitFileName(const wchar_t *lpFullName,FARString &strDest,int nFlags)
+{
+#define FLAG_DISK   1
+#define FLAG_PATH   2
+#define FLAG_NAME   4
+#define FLAG_EXT    8
+	const wchar_t *s = lpFullName; //start of sub-string
+	const wchar_t *p = s; //current FARString pointer
+	const wchar_t *es = s+StrLength(s); //end of string
+	const wchar_t *e; //end of sub-string
+
+	if (!*p)
+		return FALSE;
+
+	if ((*p == L'/') && (*(p+1) == L'/'))   //share
+	{
+		p += 2;
+		p = wcschr(p, L'/');
+
+		if (!p)
+			return FALSE; //invalid share (\\server\)
+
+		p = wcschr(p+1, L'/');
+
+		if (!p)
+			p = es;
+
+		if ((nFlags & FLAG_DISK) == FLAG_DISK)
+		{
+			strDest=s;
+			strDest.Truncate(p-s);
+		}
+	}
+	else
+	{
+		if (*(p+1) == L':')
+		{
+			p += 2;
+
+			if ((nFlags & FLAG_DISK) == FLAG_DISK)
+			{
+				size_t Length=strDest.GetLength()+p-s;
+				strDest+=s;
+				strDest.Truncate(Length);
+			}
+		}
+	}
+
+	e = nullptr;
+	s = p;
+
+	while (p)
+	{
+		p = wcschr(p, L'/');
+
+		if (p)
+		{
+			e = p;
+			p++;
+		}
+	}
+
+	if (e)
+	{
+		if ((nFlags & FLAG_PATH))
+		{
+			size_t Length=strDest.GetLength()+e-s;
+			strDest+=s;
+			strDest.Truncate(Length);
+		}
+
+		s = e+1;
+		p = s;
+	}
+
+	if (!p)
+		p = s;
+
+	e = nullptr;
+
+	while (p)
+	{
+		p = wcschr(p+1, L'.');
+
+		if (p)
+			e = p;
+	}
+
+	if (!e)
+		e = es;
+
+	if (!strDest.IsEmpty())
+		AddEndSlash(strDest);
+
+	if (nFlags & FLAG_NAME)
+	{
+		const wchar_t *ptr = wcschr(s, L':');
+
+		if (ptr)
+			s=ptr+1;
+
+		size_t Length=strDest.GetLength()+e-s;
+		strDest+=s;
+		strDest.Truncate(Length);
+	}
+
+	if (nFlags & FLAG_EXT)
+		strDest+=e;
+
+	return TRUE;
+}
+
+// S=fsplit(S,N)
+int FarMacroApi::fsplitFunc()
+{
+	auto Params = parseParams(2, mData);
+	FARString strPath;
+	if (!SplitFileName(Params[0].toString(), strPath, Params[1].asInteger()))
+		strPath.Clear();
+
+	PassString(strPath);
+	return 1;
+}
+
+// N=atoi(S[,radix])
+int FarMacroApi::atoiFunc()
+{
+	auto Params = parseParams(2, mData);
+	wchar_t *endptr;
+	const auto Ret = _wcstoi64(Params[0].toString(), &endptr, Params[1].toInteger());
+	PassInteger(Ret);
+	return Ret;
+}
+
+// N=Window.Scroll(Lines[,Axis])
+int FarMacroApi::windowscrollFunc()
+{
+	auto Params = parseParams(2, mData);
+	int Ret=0;
+
+	if (Opt.WindowMode)
+	{
+		int Lines = static_cast<int>(Params[0].asInteger()), Columns = 0;
+		if (Params[1].asInteger())
+		{
+			Columns=Lines;
+			Lines=0;
+		}
+
+		if (Console.ScrollWindow(Lines, Columns))
+		{
+			Ret=1;
+		}
+	}
+
+	PassBoolean(Ret);
+	return Ret;
+}
+
+// S=itoa(N[,radix])
+int FarMacroApi::itowFunc()
+{
+	auto Params = parseParams(2, mData);
+	int Ret=0;
+
+	if (Params[0].isInteger() || Params[0].isDouble())
+	{
+		wchar_t value[65];
+		int Radix = static_cast<int>(Params[1].toInteger());
+
+		if (!Radix)
+			Radix=10;
+
+		Ret=1;
+		Params[0]=TVar(_i64tow(Params[0].toInteger(),value,Radix));
+	}
+
+	PassValue(Params[0]);
+	return Ret;
+}
+
+// os::chrono::sleep_for(Nms)
+int FarMacroApi::sleepFunc()
+{
+	const auto Params = parseParams(1, mData);
+	const auto Period = Params[0].asInteger();
+
+	if (Period > 0)
+	{
+		WINPORT(Sleep)(Period);
+		PassNumber(1);
+		return 1;
+	}
+	PassNumber(0);
+	return 0;
+}
+
+// S=key(V)
+int FarMacroApi::keyFunc()
+{
+	auto Params = parseParams(1, mData);
+	FARString strKeyText;
+
+	if (Params[0].isInteger() || Params[0].isDouble())
+	{
+		if (Params[0].asInteger())
+			KeyToText(static_cast<int>(Params[0].asInteger()), strKeyText);
+	}
+	else
+	{
+		// Проверим...
+		if (mData->Values[0].Type == FMVT_STRING)
+		{
+			if (KeyNameToKey(mData->Values[0].String))
+				strKeyText = mData->Values[0].String;
+		}
+	}
+
+	PassString(strKeyText);
+	return !strKeyText.IsEmpty();
+}
+
+// V=waitkey([N,[T]])
+int FarMacroApi::waitkeyFunc()
+{
+	auto Params = parseParams(2, mData);
+	const auto Type = static_cast<long>(Params[1].asInteger());
+	const auto Period = static_cast<long>(Params[0].asInteger());
+	auto Key = WaitKey(static_cast<DWORD>(-1), Period);
+
+	if (!Type)
+	{
+		FARString strKeyText;
+
+		if (Key != KEY_NONE)
+			KeyToText(Key, strKeyText);
+
+		PassString(strKeyText);
+		return !strKeyText.IsEmpty();
+	}
+
+	if (Key == KEY_NONE)
+		Key=-1;
+
+	PassNumber(Key);
+	return Key != static_cast<DWORD>(-1);
+}
+
+// n=min(n1,n2)
+int FarMacroApi::minFunc()
+{
+	auto Params = parseParams(2, mData);
+	PassValue(std::min(Params[0], Params[1]));
+	return 1;
+}
+
+// n=max(n1,n2)
+int FarMacroApi::maxFunc()
+{
+	auto Params = parseParams(2, mData);
+	PassValue(std::max(Params[0], Params[1]));
+	return 1;
+}
+
+// n=mod(n1,n2)
+int FarMacroApi::modFunc()
+{
+	auto Params = parseParams(2, mData);
+
+	if (!Params[1].asInteger())
+	{
+		_KEYMACRO(___FILEFUNCLINE___;SysLog(L"Error: Divide (mod) by zero"));
+		PassNumber(0);
+		return 0;
+	}
+	PassValue(Params[0] % Params[1]);
+	return 1;
+}
+
+// N=index(S1,S2[,Mode])
+int FarMacroApi::indexFunc()
+{
+	auto Params = parseParams(3, mData);
+	const wchar_t *s = Params[0].toString();
+	const wchar_t *p = Params[1].toString();
+	const wchar_t *i = !Params[2].getInteger() ? StrStrI(s,p) : StrStr(s,p);
+	PassNumber(i ? i-s : -1);
+	return i ? 1:0;
+}
+
+// S=rindex(S1,S2[,Mode])
+int FarMacroApi::rindexFunc()
+{
+	auto Params = parseParams(3, mData);
+	const wchar_t *s = Params[0].toString();
+	const wchar_t *p = Params[1].toString();
+	const wchar_t *i = !Params[2].getInteger() ? RevStrStrI(s,p) : RevStrStr(s,p);
+	PassNumber(i ? i-s : -1);
+	return i ? 1:0;
+}
+
+// S=date([S])
+int FarMacroApi::dateFunc()
+{
+	auto Params = parseParams(1, mData);
+
+	if (Params[0].isInteger() && !Params[0].asInteger())
+		Params[0] = L"";
+
+	FARString strTStr;
+	MkStrFTime(strTStr, Params[0].toString());
+	const auto Ret = !strTStr.IsEmpty();
+	PassString(strTStr);
+	return Ret;
+}
+
+// S=xlat(S[,Flags])
+/*
+  Flags:
+  	XLAT_SWITCHKEYBLAYOUT  = 1
+		XLAT_SWITCHKEYBBEEP    = 2
+		XLAT_USEKEYBLAYOUTNAME = 4
+*/
+int FarMacroApi::xlatFunc()
+{
+	auto Params = parseParams(2, mData);
+	auto StrParam = wcsdup(Params[0].toString());
+	int Ret=::Xlat(StrParam,0,StrLength(StrParam),Opt.XLat.Flags) ? 1:0;
+	PassString(StrParam);
+	free(StrParam);
+	return Ret;
+}
+
+// S=prompt(["Title"[,"Prompt"[,flags[, "Src"[, "History"]]]]])
+int FarMacroApi::promptFunc()
+{
+	auto Params = parseParams(5, mData);
+	auto& ValHistory(Params[4]);
+	auto& ValSrc(Params[3]);
+	const auto Flags = static_cast<DWORD>(Params[2].asInteger());
+	auto& ValPrompt(Params[1]);
+	auto& ValTitle(Params[0]);
+	int Ret=0;
+
+	const wchar_t* title   = ValTitle.isString()   ? ValTitle.toString()   : L"";
+	const wchar_t* history = ValHistory.isString() ? ValHistory.toString() : L"";
+	const wchar_t* src     = ValSrc.isString()     ? ValSrc.toString()     : L"";
+	const wchar_t* prompt  = ValPrompt.isString()  ? ValPrompt.toString()  : L"";
+
+	FARString strDest;
+
+	const auto oldHistoryDisable = GetHistoryDisableMask();
+	if (!history[0]) // Mantis#0001743: Возможность отключения истории
+		SetHistoryDisableMask(8); // если не указан history, то принудительно отключаем историю для ЭТОГО prompt()
+
+	if (GetString(title, prompt, history, src, strDest, {}, (Flags&~FIB_CHECKBOX) | FIB_ENABLEEMPTY))
+	{
+		PassString(strDest);
+		Ret=1;
+	}
+	else
+		PassBoolean(0);
+
+	SetHistoryDisableMask(oldHistoryDisable);
+
+	return Ret;
+}
+
+// N=msgbox(["Title"[,"Text"[,flags]]])
+int FarMacroApi::msgBoxFunc()
+{
+	auto Params = parseParams(3, mData);
+
+	DWORD Flags = (DWORD)Params[2].getInteger();
+	auto ValT = Params[0], ValB = Params[1];
+	const wchar_t *title = L"";
+
+	if (!(ValT.isInteger() && !ValT.i()))
+		title=NullToEmpty(ValT.toString());
+
+	const wchar_t *text  = L"";
+
+	if (!(ValB.isInteger() && !ValB.i()))
+		text =NullToEmpty(ValB.toString());
+
+	Flags&=~(FMSG_KEEPBACKGROUND|FMSG_ERRORTYPE);
+	Flags|=FMSG_ALLINONE;
+
+	if (!HIWORD(Flags) || HIWORD(Flags) > HIWORD(FMSG_MB_RETRYCANCEL))
+		Flags|=FMSG_MB_OK;
+
+	//_KEYMACRO(SysLog(L"title='%ls'",title));
+	//_KEYMACRO(SysLog(L"text='%ls'",text));
+	FARString TempBuf = title;
+	TempBuf += L"\n";
+	TempBuf += text;
+	auto Result=FarMessageFn(-1,Flags,nullptr,(const wchar_t * const *)TempBuf.CPtr(),0,0)+1;
+	PassNumber(Result);
+	return Result;
+}
+
+// S=env(S)
+int FarMacroApi::environFunc()
+{
+	auto Params = parseParams(1, mData);
+	int Ret=0;
+	FARString strEnv;
+
+	if (apiGetEnvironmentVariable(Params[0].toString(), strEnv))
+		Ret=1;
+	else
+		strEnv.Clear();
+
+	return Ret;
+}
+
+// V=Panel.Select(panelType,Action[,Mode[,Items]])
+int FarMacroApi::panelselectFunc()
+{
+	auto Params = parseParams(4, mData);
+
+	auto& ValItems = Params[3];
+	int Mode       = Params[2].getInt32();
+	DWORD Action   = (int)Params[1].getInteger();
+	int typePanel  = Params[0].getInt32();
+	int64_t Result=-1;
+
+	Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
+	Panel *PassivePanel=nullptr;
+
+	if (ActivePanel)
+		PassivePanel=CtrlObject->Cp()->GetAnotherPanel(ActivePanel);
+
+	Panel *SelPanel = !typePanel ? ActivePanel : (typePanel == 1?PassivePanel:nullptr);
+
+	if (SelPanel)
+	{
+		int64_t Index=-1;
+		if (Mode == 1)
+		{
+			Index=ValItems.getInteger();
+			if (!Index)
+				Index=SelPanel->GetCurrentPos();
+			else
+				Index--;
+		}
+
+		if (Mode == 2 || Mode == 3)
+		{
+			FARString strStr=ValItems.s();
+			ReplaceStrings(strStr,L"\r\n",L";");
+			ValItems=strStr.CPtr();
+		}
+
+		MacroPanelSelect mps;
+		mps.Action      = Action & 0xF;
+		mps.ActionFlags = (Action & (~0xF)) >> 4;
+		mps.Mode        = Mode;
+		mps.Index       = Index;
+		mps.Item        = &ValItems;
+		Result=SelPanel->VMProcess(MCODE_F_PANEL_SELECT,&mps,0);
+	}
+
+	if (Result < 0)
+		Result = 0;
+	PassNumber(Result);
+	return Result;
+}
+
+int FarMacroApi::fattrFuncImpl(int Type)
+{
+	int Ret=0;
+	DWORD FileAttr=INVALID_FILE_ATTRIBUTES;
+	long Pos=-1;
+
+	if (!Type || Type == 2) // не панели: fattr(0) & fexist(2)
+	{
+		auto Params = parseParams(1, mData);
+		FAR_FIND_DATA_EX FindData;
+		apiGetFindDataEx(Params[0].toString(), FindData);
+		FileAttr=FindData.dwFileAttributes;
+		Ret=1;
+	}
+	else // panel.fattr(1) & panel.fexist(3)
+	{
+		auto Params = parseParams(2, mData);
+		int typePanel = Params[0].getInt32();
+		const wchar_t *Str = Params[1].toString();
+		Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
+		Panel *PassivePanel=nullptr;
+
+		if (ActivePanel)
+			PassivePanel=CtrlObject->Cp()->GetAnotherPanel(ActivePanel);
+
+		//Frame* CurFrame=FrameManager->GetCurrentFrame();
+		Panel *SelPanel = !typePanel ? ActivePanel : (typePanel == 1?PassivePanel:nullptr);
+
+		if (SelPanel)
+		{
+			if (FindAnyOfChars(Str, "*?") )
+				Pos=SelPanel->FindFirst(Str);
+			else
+				Pos=SelPanel->FindFile(Str, FindAnyOfChars(Str, "/") ? FALSE : TRUE);
+
+			if (Pos >= 0)
+			{
+				FARString strFileName;
+				SelPanel->GetFileName(strFileName,Pos,FileAttr);
+				Ret=1;
+			}
+		}
+	}
+
+	if (Type == 2) // fexist(2)
+	{
+		PassBoolean(FileAttr!=INVALID_FILE_ATTRIBUTES);
+		return 1;
+	}
+
+	if (Type == 3) // panel.fexist(3)
+		FileAttr=(DWORD)Pos+1;
+
+	PassNumber(static_cast<long>(FileAttr));
+	return Ret;
+}
+
+// N=fattr(S)
+int FarMacroApi::fattrFunc()
+{
+	return fattrFuncImpl(0);
+}
+
+// N=fexist(S)
+int FarMacroApi::fexistFunc()
+{
+	return fattrFuncImpl(2);
+}
+
+// N=panel.fattr(S)
+int FarMacroApi::panelfattrFunc()
+{
+	return fattrFuncImpl(1);
+}
+
+// N=panel.fexist(S)
+int FarMacroApi::panelfexistFunc()
+{
+	return fattrFuncImpl(3);
+}
+
+// N=FLock(Nkey,NState)
+/*
+  Nkey:
+     0 - NumLock
+     1 - CapsLock
+     2 - ScrollLock
+
+  State:
+    -1 get state
+     0 off
+     1 on
+     2 flip
+*/
+int FarMacroApi::flockFunc()
+{
+	auto Params = parseParams(2, mData);
+	int Ret = -1;
+	const auto stateFLock = static_cast<int>(Params[1].asInteger());
+	auto vkKey = static_cast<unsigned>(Params[0].asInteger());
+
+	switch (vkKey)
+	{
+		case 0:
+			vkKey=VK_NUMLOCK;
+			break;
+		case 1:
+			vkKey=VK_CAPITAL;
+			break;
+		case 2:
+			vkKey=VK_SCROLL;
+			break;
+		default:
+			vkKey=0;
+			break;
+	}
+
+	if (vkKey)
+		Ret=SetFLockState(vkKey,stateFLock);
+
+	PassNumber(Ret);
+	return Ret != -1;
+}
+
+// V=Dlg.GetValue(ID,N)
+int FarMacroApi::dlggetvalueFunc()
+{
+	auto Params = parseParams(2, mData);
+	TVar Ret(-1);
+	int TypeInf = Params[1].getInt32();
+	unsigned Index=(unsigned)Params[0].getInteger()-1;
+	Frame* CurFrame=FrameManager->GetCurrentFrame();
+
+	if (CtrlObject->Macro.GetArea()==MACRO_DIALOG && CurFrame && CurFrame->GetType()==MODALTYPE_DIALOG)
+	{
+		unsigned DlgItemCount=((Dialog*)CurFrame)->GetAllItemCount();
+		const DialogItemEx **DlgItem=((Dialog*)CurFrame)->GetAllItem();
+
+		if (Index == std::numeric_limits<unsigned>::max())
+		{
+			SMALL_RECT Rect;
+
+			if (SendDlgMessage((HANDLE)CurFrame,DM_GETDLGRECT,0,(LONG_PTR)&Rect))
+			{
+				switch (TypeInf)
+				{
+					case 0: Ret=(int64_t)DlgItemCount; break;
+					case 2: Ret=Rect.Left; break;
+					case 3: Ret=Rect.Top; break;
+					case 4: Ret=Rect.Right; break;
+					case 5: Ret=Rect.Bottom; break;
+					case 6: Ret=(int64_t)(((Dialog*)CurFrame)->GetDlgFocusPos()+1); break;
+				}
+			}
+		}
+		else if (Index < DlgItemCount && DlgItem)
+		{
+			const DialogItemEx *Item=DlgItem[Index];
+			int ItemType=Item->Type;
+			DWORD ItemFlags=Item->Flags;
+
+			if (!TypeInf)
+			{
+				if (ItemType == DI_CHECKBOX || ItemType == DI_RADIOBUTTON)
+				{
+					TypeInf=7;
+				}
+				else if (ItemType == DI_COMBOBOX || ItemType == DI_LISTBOX)
+				{
+					FarListGetItem ListItem;
+					ListItem.ItemIndex=Item->ListPtr->GetSelectPos();
+
+					if (SendDlgMessage((HANDLE)CurFrame,DM_LISTGETITEM,Index,(LONG_PTR)&ListItem))
+					{
+						Ret=ListItem.Item.Text;
+					}
+					else
+					{
+						Ret=L"";
+					}
+
+					TypeInf=-1;
+				}
+				else
+				{
+					TypeInf=10;
+				}
+			}
+
+			switch (TypeInf)
+			{
+				case 1: Ret=ItemType;    break;
+				case 2: Ret=Item->X1;    break;
+				case 3: Ret=Item->Y1;    break;
+				case 4: Ret=Item->X2;    break;
+				case 5: Ret=Item->Y2;    break;
+				case 6: Ret=Item->Focus; break;
+				case 7:
+				{
+					if (ItemType == DI_CHECKBOX || ItemType == DI_RADIOBUTTON)
+					{
+						Ret=Item->Selected;
+					}
+					else if (ItemType == DI_COMBOBOX || ItemType == DI_LISTBOX)
+					{
+						Ret=Item->ListPtr->GetSelectPos()+1;
+					}
+					else
+					{
+						Ret = 0;
+					}
+					break;
+				}
+				case 8: Ret=(int64_t)ItemFlags; break;
+				case 9: Ret=Item->DefaultButton; break;
+				case 10:
+				{
+					Ret=Item->strData.CPtr();
+					if (FarIsEdit(ItemType))
+					{
+						DlgEdit *EditPtr;
+						if ((EditPtr = (DlgEdit *)(Item->ObjPtr)) )
+							Ret=EditPtr->GetStringAddr();
+					}
+					break;
+				}
+			}
+		}
+	}
+
+	PassValue(Ret);
+	return Ret.i() != -1;
+}
+
+// N=Editor.Pos(Op,What[,Where])
+// Op: 0 - get, 1 - set
+int FarMacroApi::editorposFunc()
+{
+	auto Params = parseParams(3, mData);
+	TVar Ret(-1);
+	int Where = Params[2].getInt32();
+	int What  = Params[1].getInt32();
+	int Op    = Params[0].getInt32();
+
+	if (CtrlObject->Macro.GetArea()==MACRO_EDITOR && CtrlObject->Plugins.CurEditor && CtrlObject->Plugins.CurEditor->IsVisible())
+	{
+		EditorInfo ei;
+		CtrlObject->Plugins.CurEditor->EditorControl(ECTL_GETINFO,&ei);
+
+		switch (Op)
+		{
+			case 0: // get
+			{
+				switch (What)
+				{
+					case 1: // CurLine
+						Ret=ei.CurLine+1;
+						break;
+					case 2: // CurPos
+						Ret=ei.CurPos+1;
+						break;
+					case 3: // CurTabPos
+						Ret=ei.CurTabPos+1;
+						break;
+					case 4: // TopScreenLine
+						Ret=ei.TopScreenLine+1;
+						break;
+					case 5: // LeftPos
+						Ret=ei.LeftPos+1;
+						break;
+					case 6: // Overtype
+						Ret=ei.Overtype;
+						break;
+				}
+
+				break;
+			}
+			case 1: // set
+			{
+				EditorSetPosition esp;
+				esp.CurLine=-1;
+				esp.CurPos=-1;
+				esp.CurTabPos=-1;
+				esp.TopScreenLine=-1;
+				esp.LeftPos=-1;
+				esp.Overtype=-1;
+
+				switch (What)
+				{
+					case 1: // CurLine
+						esp.CurLine=Where-1;
+
+						if (esp.CurLine < 0)
+							esp.CurLine=-1;
+
+						break;
+					case 2: // CurPos
+						esp.CurPos=Where-1;
+
+						if (esp.CurPos < 0)
+							esp.CurPos=-1;
+
+						break;
+					case 3: // CurTabPos
+						esp.CurTabPos=Where-1;
+
+						if (esp.CurTabPos < 0)
+							esp.CurTabPos=-1;
+
+						break;
+					case 4: // TopScreenLine
+						esp.TopScreenLine=Where-1;
+
+						if (esp.TopScreenLine < 0)
+							esp.TopScreenLine=-1;
+
+						break;
+					case 5: // LeftPos
+					{
+						int Delta=Where-1-ei.LeftPos;
+						esp.LeftPos=Where-1;
+
+						if (esp.LeftPos < 0)
+							esp.LeftPos=-1;
+
+						esp.CurPos=ei.CurPos+Delta;
+						break;
+					}
+					case 6: // Overtype
+						esp.Overtype=Where;
+						break;
+				}
+
+				int Result=CtrlObject->Plugins.CurEditor->EditorControl(ECTL_SETPOSITION,&esp);
+
+				if (Result)
+					CtrlObject->Plugins.CurEditor->EditorControl(ECTL_REDRAW,nullptr);
+
+				Ret=Result;
+				break;
+			}
+		}
+	}
+
+	PassValue(Ret);
+	return Ret.i() != -1;
+}
+
+// OldVar=Editor.Set(Idx,Var)
+int FarMacroApi::editorsetFunc()
+{
+	TVar Ret(-1);
+	auto Params = parseParams(2, mData);
+	auto& _longState = Params[1];
+	int Index = Params[0].getInt32();
+
+	if (CtrlObject->Macro.GetArea()==MACRO_EDITOR && CtrlObject->Plugins.CurEditor && CtrlObject->Plugins.CurEditor->IsVisible())
+	{
+		long longState=-1L;
+
+		if (Index != 12)
+			longState=(long)_longState.toInteger();
+
+		EditorOptions EdOpt;
+		CtrlObject->Plugins.CurEditor->GetEditorOptions(EdOpt);
+
+		switch (Index)
+		{
+			case 0:  // TabSize;
+				Ret=EdOpt.TabSize; break;
+			case 1:  // ExpandTabs;
+				Ret=EdOpt.ExpandTabs; break;
+			case 2:  // PersistentBlocks;
+				Ret=EdOpt.PersistentBlocks; break;
+			case 3:  // DelRemovesBlocks;
+				Ret=EdOpt.DelRemovesBlocks; break;
+			case 4:  // AutoIndent;
+				Ret=EdOpt.AutoIndent; break;
+			case 5:  // AutoDetectCodePage;
+				Ret=EdOpt.AutoDetectCodePage; break;
+			case 6:  // DefaultCodePage;
+				Ret=(int)EdOpt.DefaultCodePage; break;
+			case 7:  // CursorBeyondEOL;
+				Ret=EdOpt.CursorBeyondEOL; break;
+			case 8:  // BSLikeDel;
+				Ret=EdOpt.BSLikeDel; break;
+			case 9:  // CharCodeBase;
+				Ret=EdOpt.CharCodeBase; break;
+			case 10: // SavePos;
+				Ret=EdOpt.SavePos; break;
+			case 11: // SaveShortPos;
+				Ret=EdOpt.SaveShortPos; break;
+			case 12: // char WordDiv[256];
+				Ret=TVar(EdOpt.strWordDiv); break;
+			case 13: // F7Rules;
+				Ret=EdOpt.F7Rules; break;
+			case 14: // AllowEmptySpaceAfterEof;
+				Ret=EdOpt.AllowEmptySpaceAfterEof; break;
+			case 15: // ShowScrollBar;
+				Ret=EdOpt.ShowScrollBar; break;
+			case 16: // EditOpenedForWrite;
+				Ret=EdOpt.EditOpenedForWrite; break;
+			case 17: // SearchSelFound;
+				Ret=EdOpt.SearchSelFound; break;
+			case 18: // SearchRegexp;
+				Ret=EdOpt.SearchRegexp; break;
+			case 19: // SearchPickUpWord;
+				Ret=EdOpt.SearchPickUpWord; break;
+			case 20: // ShowWhiteSpace;
+				Ret=EdOpt.ShowWhiteSpace; break;
+			default:
+				Ret = -1;
+		}
+
+		if ((Index != 12 && longState != -1) || (Index == 12 && _longState.i() == -1))
+		{
+			switch (Index)
+			{
+				case 0:  // TabSize;
+					EdOpt.TabSize=longState; break;
+				case 1:  // ExpandTabs;
+					EdOpt.ExpandTabs=longState; break;
+				case 2:  // PersistentBlocks;
+					EdOpt.PersistentBlocks=longState; break;
+				case 3:  // DelRemovesBlocks;
+					EdOpt.DelRemovesBlocks=longState; break;
+				case 4:  // AutoIndent;
+					EdOpt.AutoIndent=longState; break;
+				case 5:  // AutoDetectCodePage;
+					EdOpt.AutoDetectCodePage=longState; break;
+				case 6:  // DefaultCodePage;
+					EdOpt.DefaultCodePage=longState; break;
+				case 7:  // CursorBeyondEOL;
+					EdOpt.CursorBeyondEOL=longState; break;
+				case 8:  // BSLikeDel;
+					EdOpt.BSLikeDel=longState; break;
+				case 9:  // CharCodeBase;
+					EdOpt.CharCodeBase=longState; break;
+				case 10: // SavePos;
+					EdOpt.SavePos=longState; break;
+				case 11: // SaveShortPos;
+					EdOpt.SaveShortPos=longState; break;
+				case 12: // char WordDiv[256];
+					EdOpt.strWordDiv = _longState.toString(); break;
+				case 13: // F7Rules;
+					EdOpt.F7Rules=longState; break;
+				case 14: // AllowEmptySpaceAfterEof;
+					EdOpt.AllowEmptySpaceAfterEof=longState; break;
+				case 15: // ShowScrollBar;
+					EdOpt.ShowScrollBar=longState; break;
+				case 16: // EditOpenedForWrite;
+					EdOpt.EditOpenedForWrite=longState; break;
+				case 17: // SearchSelFound;
+					EdOpt.SearchSelFound=longState; break;
+				case 18: // SearchRegexp;
+					EdOpt.SearchRegexp=longState; break;
+				case 19: // SearchPickUpWord;
+					EdOpt.SearchPickUpWord=longState; break;
+				case 20: // ShowWhiteSpace;
+					EdOpt.ShowWhiteSpace=longState; break;
+				default:
+					Ret=-1;
+					break;
+			}
+
+			CtrlObject->Plugins.CurEditor->SetEditorOptions(EdOpt);
+			CtrlObject->Plugins.CurEditor->ShowStatus();
+		}
+	}
+
+	PassValue(Ret);
+	return Ret.i()==-1;
+}
+
+// V=Clip(N[,V])
+int FarMacroApi::clipFunc()
+{
+	auto Params = parseParams(2, mData);
+	auto& Val = Params[1];
+	int cmdType = Params[0].getInt32();
+
+	// принудительно второй параметр ставим AS string
+	if (cmdType != 5 && Val.isInteger() && !Val.i())
+	{
+		Val=L"";
+		Val.toString();
+	}
+
+	int Ret=0;
+
+	switch (cmdType)
+	{
+		case 0: // Get from Clipboard, "S" - ignore
+		{
+			wchar_t *ClipText=PasteFromClipboard();
+			if (ClipText)
+			{
+				TVar varClip(ClipText);
+				free(ClipText);
+				PassValue(varClip);
+				return 1;
+			}
+			break;
+		}
+		case 1: // Put "S" into Clipboard
+		{
+			Ret=CopyToClipboard(Val.s());
+			PassNumber(Ret);
+			return Ret ? 1:0;
+		}
+		case 2: // Add "S" into Clipboard
+		{
+			TVar varClip(Val.s());
+			Clipboard clip;
+
+			Ret=0;
+
+			if (clip.Open())
+			{
+				wchar_t *CopyData=clip.Paste();
+
+				if (CopyData)
+				{
+					size_t DataSize=StrLength(CopyData);
+					wchar_t *NewPtr=(wchar_t *)realloc(CopyData,(DataSize+StrLength(Val.s())+2)*sizeof(wchar_t));
+
+					if (NewPtr)
+					{
+						CopyData=NewPtr;
+						wcscpy(CopyData+DataSize,Val.s());
+						varClip=CopyData;
+						free(CopyData);
+					}
+					else
+					{
+						free(CopyData);
+					}
+				}
+
+				Ret=clip.Copy(varClip.s());
+
+				clip.Close();
+			}
+			PassNumber(Ret);
+			return Ret ? 1:0;
+		}
+		case 3: // Copy Win to internal, "S" - ignore
+		case 4: // Copy internal to Win, "S" - ignore
+		{
+
+			bool OldUseInternalClipboard=Clipboard::SetUseInternalClipboardState((cmdType-3)?true:false);
+			TVar varClip(L"");
+			wchar_t *ClipText=PasteFromClipboard();
+
+			if (ClipText)
+			{
+				varClip=ClipText;
+				free(ClipText);
+			}
+
+			Clipboard::SetUseInternalClipboardState(!Clipboard::GetUseInternalClipboardState());
+			Ret=CopyToClipboard(varClip.s());
+
+			Clipboard::SetUseInternalClipboardState(OldUseInternalClipboard);
+			PassNumber(Ret); // 0!  ???
+			return Ret ? 1:0;
+		}
+		case 5: // ClipMode
+		{
+			// 0 - flip, 1 - виндовый буфер, 2 - внутренний, -1 - что сейчас?
+			int Action = Val.getInt32();
+			bool mode=Clipboard::GetUseInternalClipboardState();
+			if (Action >= 0)
+			{
+				switch (Action)
+				{
+					case 0: mode=!mode; break;
+					case 1: mode=false; break;
+					case 2: mode=true;  break;
+				}
+				mode=Clipboard::SetUseInternalClipboardState(mode);
+			}
+			PassNumber(Ret); // 0!  ???
+			return Ret ? 1:0;
+		}
+	}
+
+	return Ret ? 1:0;
+}
+
+// N=Panel.SetPosIdx(panelType,Idx[,InSelection])
+/*
+*/
+int FarMacroApi::panelsetposidxFunc()
+{
+	auto Params = parseParams(3, mData);
+	int InSelection = Params[2].getInt32();
+	long idxItem=(long)Params[1].getInteger();
+	int typePanel = Params[0].getInt32();
+
+	Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
+	Panel *PassivePanel=nullptr;
+
+	if (ActivePanel)
+		PassivePanel=CtrlObject->Cp()->GetAnotherPanel(ActivePanel);
+
+	//Frame* CurFrame=FrameManager->GetCurrentFrame();
+	Panel *SelPanel = typePanel? (typePanel == 1?PassivePanel:nullptr):ActivePanel;
+	int64_t Ret=0;
+
+	if (SelPanel)
+	{
+		int TypePanel=SelPanel->GetType(); //FILE_PANEL,TREE_PANEL,QVIEW_PANEL,INFO_PANEL
+
+		if (TypePanel == FILE_PANEL || TypePanel ==TREE_PANEL)
+		{
+			long EndPos=SelPanel->GetFileCount();
+			long StartPos;
+			long I;
+			long idxFoundItem=0;
+
+			if (idxItem) // < 0 || > 0
+			{
+				EndPos--;
+				if ( EndPos > 0 )
+				{
+					long Direct=idxItem < 0?-1:1;
+
+					if( Direct < 0 )
+						idxItem=-idxItem;
+					idxItem--;
+
+					if( Direct < 0 )
+					{
+						StartPos=EndPos;
+						EndPos=0;//InSelection?0:idxItem;
+					}
+					else
+						StartPos=0;//!InSelection?0:idxItem;
+
+					bool found=false;
+
+					for ( I=StartPos ; ; I+=Direct )
+					{
+						if (Direct > 0)
+						{
+							if(I > EndPos)
+								break;
+						}
+						else
+						{
+							if(I < EndPos)
+								break;
+						}
+
+						if ( (!InSelection || SelPanel->IsSelected(I)) && SelPanel->FileInFilter(I) )
+						{
+							if (idxFoundItem == idxItem)
+							{
+								idxItem=I;
+								found=true;
+								break;
+							}
+							idxFoundItem++;
+						}
+					}
+
+					if (!found)
+						idxItem=-1;
+
+					if (idxItem != -1 && SelPanel->GoToFile(idxItem))
+					{
+						//SelPanel->Show();
+						// <Mantis#0000289> - грозно, но со вкусом :-)
+						//ShellUpdatePanels(SelPanel);
+						SelPanel->UpdateIfChanged(UIC_UPDATE_NORMAL);
+						FrameManager->RefreshFrame(FrameManager->GetTopModal());
+						// </Mantis#0000289>
+
+						if ( !InSelection )
+							Ret = SelPanel->GetCurrentPos()+1;
+						else
+							Ret = idxFoundItem+1;
+					}
+				}
+			}
+			else // = 0 - вернем текущую позицию
+			{
+				if ( !InSelection )
+					Ret = SelPanel->GetCurrentPos()+1;
+				else
+				{
+					long CurPos=SelPanel->GetCurrentPos();
+					for ( I=0 ; I < EndPos ; I++ )
+					{
+						if ( SelPanel->IsSelected(I) && SelPanel->FileInFilter(I) )
+						{
+							if (I == CurPos)
+							{
+								Ret=(int64_t)(idxFoundItem+1);
+								break;
+							}
+							idxFoundItem++;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	PassNumber(Ret);
+	return Ret ? 1:0;
+}
+
+// N=Panel.SetPos(panelType,fileName)
+int FarMacroApi::panelsetposFunc()
+{
+	auto Params = parseParams(2, mData);
+	auto& Val = Params[1];
+	int typePanel = Params[0].getInt32();
+	const wchar_t *fileName=Val.s();
+
+	if (!fileName || !*fileName)
+		fileName=L"";
+
+	Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
+	Panel *PassivePanel=nullptr;
+
+	if (ActivePanel)
+		PassivePanel=CtrlObject->Cp()->GetAnotherPanel(ActivePanel);
+
+	//Frame* CurFrame=FrameManager->GetCurrentFrame();
+	Panel *SelPanel = typePanel? (typePanel == 1?PassivePanel:nullptr):ActivePanel;
+	int64_t Ret=0;
+
+	if (SelPanel)
+	{
+		int TypePanel=SelPanel->GetType(); //FILE_PANEL,TREE_PANEL,QVIEW_PANEL,INFO_PANEL
+
+		if (TypePanel == FILE_PANEL || TypePanel ==TREE_PANEL)
+		{
+			// Need PointToName()?
+			if (SelPanel->GoToFile(fileName))
+			{
+				//SelPanel->Show();
+				// <Mantis#0000289> - грозно, но со вкусом :-)
+				//ShellUpdatePanels(SelPanel);
+				SelPanel->UpdateIfChanged(UIC_UPDATE_NORMAL);
+				FrameManager->RefreshFrame(FrameManager->GetTopModal());
+				// </Mantis#0000289>
+				Ret=(int64_t)(SelPanel->GetCurrentPos()+1);
+			}
+		}
+	}
+
+	PassNumber(Ret);
+	return Ret ? 1:0;
+}
+
+// Result=replace(Str,Find,Replace[,Cnt[,Mode]])
+/*
+Find=="" - return Str
+Cnt==0 - return Str
+Replace=="" - return Str (с удалением всех подстрок Find)
+Str=="" return ""
+
+Mode:
+      0 - case insensitive
+      1 - case sensitive
+*/
+int FarMacroApi::replaceFunc()
+{
+	auto Params = parseParams(5, mData);
+	int Mode    = Params[4].getInt32();
+	auto& Count = Params[3];
+	auto& Repl  = Params[2];
+	auto& Find  = Params[1];
+	auto& Src   = Params[0];
+	int64_t Ret=1;
+	// TODO: Здесь нужно проверить в соответствии с УНИХОДОМ!
+	FARString strStr;
+	int lenS=StrLength(Src.s());
+	int lenF=StrLength(Find.s());
+	int lenR=StrLength(Repl.s());
+	int cnt=0;
+
+	if( lenF )
+	{
+		const wchar_t *Ptr=Src.s();
+		if( !Mode )
+		{
+			while ((Ptr=StrStrI(Ptr,Find.s())) )
+			{
+				cnt++;
+				Ptr+=lenF;
+			}
+		}
+		else
+		{
+			while ((Ptr=StrStr(Ptr,Find.s())) )
+			{
+				cnt++;
+				Ptr+=lenF;
+			}
+		}
+	}
+
+	if (cnt)
+	{
+		if (lenR > lenF)
+			lenS+=cnt*(lenR-lenF+1); //???
+
+		strStr=Src.s();
+		cnt=(int)Count.i();
+
+		if (cnt <= 0)
+			cnt=-1;
+
+		ReplaceStrings(strStr,Find.s(),Repl.s(),cnt,!Mode);
+		PassString(strStr);
+	}
+	else
+		PassValue(Src);
+
+	return Ret ? 1:0;
+}
+
+// V=Panel.Item(typePanel,Index,TypeInfo)
+int FarMacroApi::panelitemFunc()
+{
+	auto Params = parseParams(3, mData);
+	auto& P2 = Params[2];
+	auto& P1 = Params[1];
+	int typePanel = Params[0].getInt32();
+	Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
+	Panel *PassivePanel=nullptr;
+
+	if (ActivePanel)
+		PassivePanel=CtrlObject->Cp()->GetAnotherPanel(ActivePanel);
+
+	//Frame* CurFrame=FrameManager->GetCurrentFrame();
+	Panel *SelPanel = typePanel? (typePanel == 1?PassivePanel:nullptr):ActivePanel;
+
+	if (!SelPanel)
+	{
+		return 0;
+	}
+
+	int TypePanel=SelPanel->GetType(); //FILE_PANEL,TREE_PANEL,QVIEW_PANEL,INFO_PANEL
+
+	if (!(TypePanel == FILE_PANEL || TypePanel ==TREE_PANEL))
+	{
+		return 0;
+	}
+
+	int Index=(int)(P1.toInteger())-1;
+	int TypeInfo=(int)P2.toInteger();
+	FileListItem filelistItem;
+
+	if (TypePanel == TREE_PANEL)
+	{
+		TreeItem treeItem;
+
+		if (SelPanel->GetItem(Index,&treeItem) && !TypeInfo)
+		{
+			PassString(treeItem.strName);
+			return 1;
+		}
+	}
+	else
+	{
+		FARString strDate, strTime;
+
+		if (TypeInfo == 11)
+			SelPanel->ReadDiz();
+
+		if (!SelPanel->GetItem(Index,&filelistItem))
+			TypeInfo=-1;
+
+		switch (TypeInfo)
+		{
+			case 0:  // Name
+				return PassString(filelistItem.strName);
+
+			case 1:  // ShortName obsolete, use Name
+				return PassString(filelistItem.strName);
+
+			case 2:  // FileAttr
+				return PassNumber(filelistItem.FileAttr);
+
+			case 3:  // CreationTime
+				ConvertDate(filelistItem.CreationTime,strDate,strTime,8,FALSE,FALSE,TRUE,TRUE);
+				strDate += L" ";
+				strDate += strTime;
+			  return PassString(strDate);
+
+			case 4:  // AccessTime
+				ConvertDate(filelistItem.AccessTime,strDate,strTime,8,FALSE,FALSE,TRUE,TRUE);
+				strDate += L" ";
+				strDate += strTime;
+			  return PassString(strDate);
+
+			case 5:  // WriteTime
+				ConvertDate(filelistItem.WriteTime,strDate,strTime,8,FALSE,FALSE,TRUE,TRUE);
+				strDate += L" ";
+				strDate += strTime;
+			  return PassString(strDate);
+
+			case 6:  // FileSize
+			  return PassNumber(filelistItem.FileSize);
+
+			case 7:  // PhysicalSize
+			  return PassNumber(filelistItem.PhysicalSize);
+
+			case 8:  // Selected
+			  return PassNumber(filelistItem.Selected);
+
+			case 9:  // NumberOfLinks
+			  return PassNumber(filelistItem.NumberOfLinks);
+
+			case 10:  // SortGroup
+			  return PassNumber(filelistItem.SortGroup);
+
+			case 11:  // DizText
+			  return PassString(filelistItem.DizText);
+
+			case 12:  // Owner
+			  return PassString(filelistItem.strOwner);
+
+			case 13:  // CRC32
+			  return PassNumber(filelistItem.CRC32);
+
+			case 14:  // Position
+			  return PassNumber(filelistItem.Position);
+
+			case 15:  // CreationTime (FILETIME)
+			  return PassInteger((int64_t)FileTimeToUI64(&filelistItem.CreationTime));
+
+			case 16:  // AccessTime (FILETIME)
+			  return PassInteger((int64_t)FileTimeToUI64(&filelistItem.AccessTime));
+
+			case 17:  // WriteTime (FILETIME)
+			  return PassInteger((int64_t)FileTimeToUI64(&filelistItem.WriteTime));
+
+			case 18: // NumberOfStreams (deprecated)
+				return (filelistItem.FileAttr & FILE_ATTRIBUTE_DIRECTORY) ? 0 : 1;
+
+			case 19: // StreamsSize (deprecated)
+				return 0;
+
+			case 20:  // ChangeTime
+				ConvertDate(filelistItem.ChangeTime,strDate,strTime,8,FALSE,FALSE,TRUE,TRUE);
+				strDate += L" ";
+				strDate += strTime;
+				return PassString(strDate);
+
+			case 21:  // ChangeTime (FILETIME)
+			  return PassInteger((int64_t)FileTimeToUI64(&filelistItem.ChangeTime));
+		}
+	}
+
+	return 0;
 }
 
 struct TMacroKeywords
@@ -1906,119 +3342,6 @@ static bool substrFunc(const TMacroFunction*)
 
 	return Ret;
 }
-
-static BOOL SplitFileName(const wchar_t *lpFullName,FARString &strDest,int nFlags)
-{
-#define FLAG_DISK   1
-#define FLAG_PATH   2
-#define FLAG_NAME   4
-#define FLAG_EXT    8
-	const wchar_t *s = lpFullName; //start of sub-string
-	const wchar_t *p = s; //current FARString pointer
-	const wchar_t *es = s+StrLength(s); //end of string
-	const wchar_t *e; //end of sub-string
-
-	if (!*p)
-		return FALSE;
-
-	if ((*p == L'/') && (*(p+1) == L'/'))   //share
-	{
-		p += 2;
-		p = wcschr(p, L'/');
-
-		if (!p)
-			return FALSE; //invalid share (\\server\)
-
-		p = wcschr(p+1, L'/');
-
-		if (!p)
-			p = es;
-
-		if ((nFlags & FLAG_DISK) == FLAG_DISK)
-		{
-			strDest=s;
-			strDest.Truncate(p-s);
-		}
-	}
-	else
-	{
-		if (*(p+1) == L':')
-		{
-			p += 2;
-
-			if ((nFlags & FLAG_DISK) == FLAG_DISK)
-			{
-				size_t Length=strDest.GetLength()+p-s;
-				strDest+=s;
-				strDest.Truncate(Length);
-			}
-		}
-	}
-
-	e = nullptr;
-	s = p;
-
-	while (p)
-	{
-		p = wcschr(p, L'/');
-
-		if (p)
-		{
-			e = p;
-			p++;
-		}
-	}
-
-	if (e)
-	{
-		if ((nFlags & FLAG_PATH))
-		{
-			size_t Length=strDest.GetLength()+e-s;
-			strDest+=s;
-			strDest.Truncate(Length);
-		}
-
-		s = e+1;
-		p = s;
-	}
-
-	if (!p)
-		p = s;
-
-	e = nullptr;
-
-	while (p)
-	{
-		p = wcschr(p+1, L'.');
-
-		if (p)
-			e = p;
-	}
-
-	if (!e)
-		e = es;
-
-	if (!strDest.IsEmpty())
-		AddEndSlash(strDest);
-
-	if (nFlags & FLAG_NAME)
-	{
-		const wchar_t *ptr = wcschr(s, L':');
-
-		if (ptr)
-			s=ptr+1;
-
-		size_t Length=strDest.GetLength()+e-s;
-		strDest+=s;
-		strDest.Truncate(Length);
-	}
-
-	if (nFlags & FLAG_EXT)
-		strDest+=e;
-
-	return TRUE;
-}
-
 
 // S=fsplit(S,N)
 static bool fsplitFunc(const TMacroFunction*)
@@ -2515,85 +3838,6 @@ static bool panelselectFunc(const TMacroFunction*)
 	return Result==-1?false:true;
 }
 
-static bool _fattrFunc(int Type)
-{
-	bool Ret=false;
-	DWORD FileAttr=INVALID_FILE_ATTRIBUTES;
-	long Pos=-1;
-
-	if (!Type || Type == 2) // не панели: fattr(0) & fexist(2)
-	{
-		TVar Str;
-		VMStack.Pop(Str);
-		FAR_FIND_DATA_EX FindData;
-		apiGetFindDataEx(Str.toString(), FindData);
-		FileAttr=FindData.dwFileAttributes;
-		Ret=true;
-	}
-	else // panel.fattr(1) & panel.fexist(3)
-	{
-		TVar S;
-		VMStack.Pop(S);
-		int typePanel = VMStack.Pop().getInt32();
-		const wchar_t *Str = S.toString();
-		Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
-		Panel *PassivePanel=nullptr;
-
-		if (ActivePanel)
-			PassivePanel=CtrlObject->Cp()->GetAnotherPanel(ActivePanel);
-
-		//Frame* CurFrame=FrameManager->GetCurrentFrame();
-		Panel *SelPanel = !typePanel ? ActivePanel : (typePanel == 1?PassivePanel:nullptr);
-
-		if (SelPanel)
-		{
-			if (FindAnyOfChars(Str, "*?") )
-				Pos=SelPanel->FindFirst(Str);
-			else
-				Pos=SelPanel->FindFile(Str, FindAnyOfChars(Str, "/") ? FALSE : TRUE);
-
-			if (Pos >= 0)
-			{
-				FARString strFileName;
-				SelPanel->GetFileName(strFileName,Pos,FileAttr);
-				Ret=true;
-			}
-		}
-	}
-
-	if (Type == 2) // fexist(2)
-		FileAttr=(FileAttr!=INVALID_FILE_ATTRIBUTES)?1:0;
-	else if (Type == 3) // panel.fexist(3)
-		FileAttr=(DWORD)Pos+1;
-
-	VMStack.Push(TVar((int64_t)FileAttr));
-	return Ret;
-}
-
-// N=fattr(S)
-static bool fattrFunc(const TMacroFunction*)
-{
-	return _fattrFunc(0);
-}
-
-// N=fexist(S)
-static bool fexistFunc(const TMacroFunction*)
-{
-	return _fattrFunc(2);
-}
-
-// N=panel.fattr(S)
-static bool panelfattrFunc(const TMacroFunction*)
-{
-	return _fattrFunc(1);
-}
-
-// N=panel.fexist(S)
-static bool panelfexistFunc(const TMacroFunction*)
-{
-	return _fattrFunc(3);
-}
-
 // N=FLock(Nkey,NState)
 /*
   Nkey:
@@ -2636,366 +3880,6 @@ static bool flockFunc(const TMacroFunction*)
 	return Ret.i()!=-1;
 }
 
-// V=Dlg.GetValue(ID,N)
-static bool dlggetvalueFunc(const TMacroFunction*)
-{
-	TVar Ret(-1);
-	int TypeInf = VMStack.Pop().getInt32();
-	unsigned Index=(unsigned)VMStack.Pop().getInteger()-1;
-	Frame* CurFrame=FrameManager->GetCurrentFrame();
-
-	if (CtrlObject->Macro.GetArea()==MACRO_DIALOG && CurFrame && CurFrame->GetType()==MODALTYPE_DIALOG)
-	{
-		unsigned DlgItemCount=((Dialog*)CurFrame)->GetAllItemCount();
-		const DialogItemEx **DlgItem=((Dialog*)CurFrame)->GetAllItem();
-
-		if (Index == std::numeric_limits<unsigned>::max())
-		{
-			SMALL_RECT Rect;
-
-			if (SendDlgMessage((HANDLE)CurFrame,DM_GETDLGRECT,0,(LONG_PTR)&Rect))
-			{
-				switch (TypeInf)
-				{
-					case 0: Ret=(int64_t)DlgItemCount; break;
-					case 2: Ret=Rect.Left; break;
-					case 3: Ret=Rect.Top; break;
-					case 4: Ret=Rect.Right; break;
-					case 5: Ret=Rect.Bottom; break;
-					case 6: Ret=(int64_t)(((Dialog*)CurFrame)->GetDlgFocusPos()+1); break;
-				}
-			}
-		}
-		else if (Index < DlgItemCount && DlgItem)
-		{
-			const DialogItemEx *Item=DlgItem[Index];
-			int ItemType=Item->Type;
-			DWORD ItemFlags=Item->Flags;
-
-			if (!TypeInf)
-			{
-				if (ItemType == DI_CHECKBOX || ItemType == DI_RADIOBUTTON)
-				{
-					TypeInf=7;
-				}
-				else if (ItemType == DI_COMBOBOX || ItemType == DI_LISTBOX)
-				{
-					FarListGetItem ListItem;
-					ListItem.ItemIndex=Item->ListPtr->GetSelectPos();
-
-					if (SendDlgMessage((HANDLE)CurFrame,DM_LISTGETITEM,Index,(LONG_PTR)&ListItem))
-					{
-						Ret=ListItem.Item.Text;
-					}
-					else
-					{
-						Ret=L"";
-					}
-
-					TypeInf=-1;
-				}
-				else
-				{
-					TypeInf=10;
-				}
-			}
-
-			switch (TypeInf)
-			{
-				case 1: Ret=ItemType;    break;
-				case 2: Ret=Item->X1;    break;
-				case 3: Ret=Item->Y1;    break;
-				case 4: Ret=Item->X2;    break;
-				case 5: Ret=Item->Y2;    break;
-				case 6: Ret=Item->Focus; break;
-				case 7:
-				{
-					if (ItemType == DI_CHECKBOX || ItemType == DI_RADIOBUTTON)
-					{
-						Ret=Item->Selected;
-					}
-					else if (ItemType == DI_COMBOBOX || ItemType == DI_LISTBOX)
-					{
-						Ret=Item->ListPtr->GetSelectPos()+1;
-					}
-					else
-					{
-						Ret = tviZero;
-						/*
-						int Item->Selected;
-						const char *Item->History;
-						const char *Item->Mask;
-						FarList *Item->ListItems;
-						int  Item->ListPos;
-						CHAR_INFO *Item->VBuf;
-						*/
-					}
-
-					break;
-				}
-				case 8: Ret=(int64_t)ItemFlags; break;
-				case 9: Ret=Item->DefaultButton; break;
-				case 10:
-				{
-					Ret=Item->strData.CPtr();
-
-					if (FarIsEdit(ItemType))
-					{
-						DlgEdit *EditPtr;
-
-						if ((EditPtr = (DlgEdit *)(Item->ObjPtr)) )
-							Ret=EditPtr->GetStringAddr();
-					}
-
-					break;
-				}
-			}
-		}
-	}
-
-	VMStack.Push(Ret);
-	return Ret.i()!=-1;
-}
-
-// N=Editor.Pos(Op,What[,Where])
-// Op: 0 - get, 1 - set
-static bool editorposFunc(const TMacroFunction*)
-{
-	TVar Ret(-1);
-	int Where = VMStack.Pop().getInt32();
-	int What  = VMStack.Pop().getInt32();
-	int Op    = VMStack.Pop().getInt32();
-
-	if (CtrlObject->Macro.GetArea()==MACRO_EDITOR && CtrlObject->Plugins.CurEditor && CtrlObject->Plugins.CurEditor->IsVisible())
-	{
-		EditorInfo ei;
-		CtrlObject->Plugins.CurEditor->EditorControl(ECTL_GETINFO,&ei);
-
-		switch (Op)
-		{
-			case 0: // get
-			{
-				switch (What)
-				{
-					case 1: // CurLine
-						Ret=ei.CurLine+1;
-						break;
-					case 2: // CurPos
-						Ret=ei.CurPos+1;
-						break;
-					case 3: // CurTabPos
-						Ret=ei.CurTabPos+1;
-						break;
-					case 4: // TopScreenLine
-						Ret=ei.TopScreenLine+1;
-						break;
-					case 5: // LeftPos
-						Ret=ei.LeftPos+1;
-						break;
-					case 6: // Overtype
-						Ret=ei.Overtype;
-						break;
-				}
-
-				break;
-			}
-			case 1: // set
-			{
-				EditorSetPosition esp;
-				esp.CurLine=-1;
-				esp.CurPos=-1;
-				esp.CurTabPos=-1;
-				esp.TopScreenLine=-1;
-				esp.LeftPos=-1;
-				esp.Overtype=-1;
-
-				switch (What)
-				{
-					case 1: // CurLine
-						esp.CurLine=Where-1;
-
-						if (esp.CurLine < 0)
-							esp.CurLine=-1;
-
-						break;
-					case 2: // CurPos
-						esp.CurPos=Where-1;
-
-						if (esp.CurPos < 0)
-							esp.CurPos=-1;
-
-						break;
-					case 3: // CurTabPos
-						esp.CurTabPos=Where-1;
-
-						if (esp.CurTabPos < 0)
-							esp.CurTabPos=-1;
-
-						break;
-					case 4: // TopScreenLine
-						esp.TopScreenLine=Where-1;
-
-						if (esp.TopScreenLine < 0)
-							esp.TopScreenLine=-1;
-
-						break;
-					case 5: // LeftPos
-					{
-						int Delta=Where-1-ei.LeftPos;
-						esp.LeftPos=Where-1;
-
-						if (esp.LeftPos < 0)
-							esp.LeftPos=-1;
-
-						esp.CurPos=ei.CurPos+Delta;
-						break;
-					}
-					case 6: // Overtype
-						esp.Overtype=Where;
-						break;
-				}
-
-				int Result=CtrlObject->Plugins.CurEditor->EditorControl(ECTL_SETPOSITION,&esp);
-
-				if (Result)
-					CtrlObject->Plugins.CurEditor->EditorControl(ECTL_REDRAW,nullptr);
-
-				Ret=Result;
-				break;
-			}
-		}
-	}
-
-	VMStack.Push(Ret);
-	return Ret.i() != -1;
-}
-
-// OldVar=Editor.Set(Idx,Var)
-static bool editorsetFunc(const TMacroFunction*)
-{
-	TVar Ret(-1);
-	TVar _longState;
-	VMStack.Pop(_longState);
-	int Index = VMStack.Pop().getInt32();
-
-	if (CtrlObject->Macro.GetArea()==MACRO_EDITOR && CtrlObject->Plugins.CurEditor && CtrlObject->Plugins.CurEditor->IsVisible())
-	{
-		long longState=-1L;
-
-		if (Index != 12)
-			longState=(long)_longState.toInteger();
-
-		EditorOptions EdOpt;
-		CtrlObject->Plugins.CurEditor->GetEditorOptions(EdOpt);
-
-		switch (Index)
-		{
-			case 0:  // TabSize;
-				Ret=EdOpt.TabSize; break;
-			case 1:  // ExpandTabs;
-				Ret=EdOpt.ExpandTabs; break;
-			case 2:  // PersistentBlocks;
-				Ret=EdOpt.PersistentBlocks; break;
-			case 3:  // DelRemovesBlocks;
-				Ret=EdOpt.DelRemovesBlocks; break;
-			case 4:  // AutoIndent;
-				Ret=EdOpt.AutoIndent; break;
-			case 5:  // AutoDetectCodePage;
-				Ret=EdOpt.AutoDetectCodePage; break;
-			case 6:  // DefaultCodePage;
-				Ret=(int)EdOpt.DefaultCodePage; break;
-			case 7:  // CursorBeyondEOL;
-				Ret=EdOpt.CursorBeyondEOL; break;
-			case 8:  // BSLikeDel;
-				Ret=EdOpt.BSLikeDel; break;
-			case 9:  // CharCodeBase;
-				Ret=EdOpt.CharCodeBase; break;
-			case 10: // SavePos;
-				Ret=EdOpt.SavePos; break;
-			case 11: // SaveShortPos;
-				Ret=EdOpt.SaveShortPos; break;
-			case 12: // char WordDiv[256];
-				Ret=TVar(EdOpt.strWordDiv); break;
-			case 13: // F7Rules;
-				Ret=EdOpt.F7Rules; break;
-			case 14: // AllowEmptySpaceAfterEof;
-				Ret=EdOpt.AllowEmptySpaceAfterEof; break;
-			case 15: // ShowScrollBar;
-				Ret=EdOpt.ShowScrollBar; break;
-			case 16: // EditOpenedForWrite;
-				Ret=EdOpt.EditOpenedForWrite; break;
-			case 17: // SearchSelFound;
-				Ret=EdOpt.SearchSelFound; break;
-			case 18: // SearchRegexp;
-				Ret=EdOpt.SearchRegexp; break;
-			case 19: // SearchPickUpWord;
-				Ret=EdOpt.SearchPickUpWord; break;
-			case 20: // ShowWhiteSpace;
-				Ret=EdOpt.ShowWhiteSpace; break;
-			default:
-				Ret = -1;
-		}
-
-		if ((Index != 12 && longState != -1) || (Index == 12 && _longState.i() == -1))
-		{
-			switch (Index)
-			{
-				case 0:  // TabSize;
-					EdOpt.TabSize=longState; break;
-				case 1:  // ExpandTabs;
-					EdOpt.ExpandTabs=longState; break;
-				case 2:  // PersistentBlocks;
-					EdOpt.PersistentBlocks=longState; break;
-				case 3:  // DelRemovesBlocks;
-					EdOpt.DelRemovesBlocks=longState; break;
-				case 4:  // AutoIndent;
-					EdOpt.AutoIndent=longState; break;
-				case 5:  // AutoDetectCodePage;
-					EdOpt.AutoDetectCodePage=longState; break;
-				case 6:  // DefaultCodePage;
-					EdOpt.DefaultCodePage=longState; break;
-				case 7:  // CursorBeyondEOL;
-					EdOpt.CursorBeyondEOL=longState; break;
-				case 8:  // BSLikeDel;
-					EdOpt.BSLikeDel=longState; break;
-				case 9:  // CharCodeBase;
-					EdOpt.CharCodeBase=longState; break;
-				case 10: // SavePos;
-					EdOpt.SavePos=longState; break;
-				case 11: // SaveShortPos;
-					EdOpt.SaveShortPos=longState; break;
-				case 12: // char WordDiv[256];
-					EdOpt.strWordDiv = _longState.toString(); break;
-				case 13: // F7Rules;
-					EdOpt.F7Rules=longState; break;
-				case 14: // AllowEmptySpaceAfterEof;
-					EdOpt.AllowEmptySpaceAfterEof=longState; break;
-				case 15: // ShowScrollBar;
-					EdOpt.ShowScrollBar=longState; break;
-				case 16: // EditOpenedForWrite;
-					EdOpt.EditOpenedForWrite=longState; break;
-				case 17: // SearchSelFound;
-					EdOpt.SearchSelFound=longState; break;
-				case 18: // SearchRegexp;
-					EdOpt.SearchRegexp=longState; break;
-				case 19: // SearchPickUpWord;
-					EdOpt.SearchPickUpWord=longState; break;
-				case 20: // ShowWhiteSpace;
-					EdOpt.ShowWhiteSpace=longState; break;
-				default:
-					Ret=-1;
-					break;
-			}
-
-			CtrlObject->Plugins.CurEditor->SetEditorOptions(EdOpt);
-			CtrlObject->Plugins.CurEditor->ShowStatus();
-		}
-	}
-
-	VMStack.Push(Ret);
-	return Ret.i()==-1;
-}
-
 static bool DeserializeVar(TVar &v, FARString &ValSerialized)
 {
 	if (ValSerialized.Begins(L"INT:"))
@@ -3034,247 +3918,6 @@ static bool SerializeVar(TVar &v, FARString &ValSerialized)
 		return true;
 	}
 	return false;
-}
-
-// V=Clip(N[,V])
-static bool clipFunc(const TMacroFunction*)
-{
-	TVar Val;
-	VMStack.Pop(Val);
-	int cmdType = VMStack.Pop().getInt32();
-
-	// принудительно второй параметр ставим AS string
-	if (cmdType != 5 && Val.isInteger() && !Val.i())
-	{
-		Val=L"";
-		Val.toString();
-	}
-
-	int Ret=0;
-
-	switch (cmdType)
-	{
-		case 0: // Get from Clipboard, "S" - ignore
-		{
-			wchar_t *ClipText=PasteFromClipboard();
-
-			if (ClipText)
-			{
-				TVar varClip(ClipText);
-				free(ClipText);
-				VMStack.Push(varClip);
-				return true;
-			}
-
-			break;
-		}
-		case 1: // Put "S" into Clipboard
-		{
-			Ret=CopyToClipboard(Val.s());
-			VMStack.Push(TVar((int64_t)Ret)); // 0!  ???
-			return Ret?true:false;
-		}
-		case 2: // Add "S" into Clipboard
-		{
-			TVar varClip(Val.s());
-			Clipboard clip;
-
-			Ret=FALSE;
-
-			if (clip.Open())
-			{
-				wchar_t *CopyData=clip.Paste();
-
-				if (CopyData)
-				{
-					size_t DataSize=StrLength(CopyData);
-					wchar_t *NewPtr=(wchar_t *)realloc(CopyData,(DataSize+StrLength(Val.s())+2)*sizeof(wchar_t));
-
-					if (NewPtr)
-					{
-						CopyData=NewPtr;
-						wcscpy(CopyData+DataSize,Val.s());
-						varClip=CopyData;
-						free(CopyData);
-					}
-					else
-					{
-						free(CopyData);
-					}
-				}
-
-				Ret=clip.Copy(varClip.s());
-
-				clip.Close();
-			}
-			VMStack.Push(TVar((int64_t)Ret)); // 0!  ???
-			return Ret?true:false;
-		}
-		case 3: // Copy Win to internal, "S" - ignore
-		case 4: // Copy internal to Win, "S" - ignore
-		{
-
-			bool OldUseInternalClipboard=Clipboard::SetUseInternalClipboardState((cmdType-3)?true:false);
-			TVar varClip(L"");
-			wchar_t *ClipText=PasteFromClipboard();
-
-			if (ClipText)
-			{
-				varClip=ClipText;
-				free(ClipText);
-			}
-
-			Clipboard::SetUseInternalClipboardState(!Clipboard::GetUseInternalClipboardState());
-			Ret=CopyToClipboard(varClip.s());
-
-			Clipboard::SetUseInternalClipboardState(OldUseInternalClipboard);
-			VMStack.Push(TVar((int64_t)Ret)); // 0!  ???
-			return Ret?true:false;
-		}
-		case 5: // ClipMode
-		{
-			// 0 - flip, 1 - виндовый буфер, 2 - внутренний, -1 - что сейчас?
-			int Action = Val.getInt32();
-			bool mode=Clipboard::GetUseInternalClipboardState();
-			if (Action >= 0)
-			{
-				switch (Action)
-				{
-					case 0: mode=!mode; break;
-					case 1: mode=false; break;
-					case 2: mode=true;  break;
-				}
-				mode=Clipboard::SetUseInternalClipboardState(mode);
-			}
-			VMStack.Push((int64_t)(mode?2:1)); // 0!  ???
-			return Ret?true:false;
-		}
-	}
-
-	return Ret?true:false;
-}
-
-
-// N=Panel.SetPosIdx(panelType,Idx[,InSelection])
-/*
-*/
-static bool panelsetposidxFunc(const TMacroFunction*)
-{
-	int InSelection = VMStack.Pop().getInt32();
-	long idxItem=(long)VMStack.Pop().getInteger();
-	int typePanel = VMStack.Pop().getInt32();
-	Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
-	Panel *PassivePanel=nullptr;
-
-	if (ActivePanel)
-		PassivePanel=CtrlObject->Cp()->GetAnotherPanel(ActivePanel);
-
-	//Frame* CurFrame=FrameManager->GetCurrentFrame();
-	Panel *SelPanel = typePanel? (typePanel == 1?PassivePanel:nullptr):ActivePanel;
-	int64_t Ret=0;
-
-	if (SelPanel)
-	{
-		int TypePanel=SelPanel->GetType(); //FILE_PANEL,TREE_PANEL,QVIEW_PANEL,INFO_PANEL
-
-		if (TypePanel == FILE_PANEL || TypePanel ==TREE_PANEL)
-		{
-			long EndPos=SelPanel->GetFileCount();
-			long StartPos;
-			long I;
-			long idxFoundItem=0;
-
-			if (idxItem) // < 0 || > 0
-			{
-				EndPos--;
-				if ( EndPos > 0 )
-				{
-					long Direct=idxItem < 0?-1:1;
-
-					if( Direct < 0 )
-						idxItem=-idxItem;
-					idxItem--;
-
-					if( Direct < 0 )
-					{
-						StartPos=EndPos;
-						EndPos=0;//InSelection?0:idxItem;
-					}
-					else
-						StartPos=0;//!InSelection?0:idxItem;
-
-					bool found=false;
-
-					for ( I=StartPos ; ; I+=Direct )
-					{
-						if (Direct > 0)
-						{
-							if(I > EndPos)
-								break;
-						}
-						else
-						{
-							if(I < EndPos)
-								break;
-						}
-
-						if ( (!InSelection || SelPanel->IsSelected(I)) && SelPanel->FileInFilter(I) )
-						{
-							if (idxFoundItem == idxItem)
-							{
-								idxItem=I;
-								found=true;
-								break;
-							}
-							idxFoundItem++;
-						}
-					}
-
-					if (!found)
-						idxItem=-1;
-
-					if (idxItem != -1 && SelPanel->GoToFile(idxItem))
-					{
-						//SelPanel->Show();
-						// <Mantis#0000289> - грозно, но со вкусом :-)
-						//ShellUpdatePanels(SelPanel);
-						SelPanel->UpdateIfChanged(UIC_UPDATE_NORMAL);
-						FrameManager->RefreshFrame(FrameManager->GetTopModal());
-						// </Mantis#0000289>
-
-						if ( !InSelection )
-							Ret = SelPanel->GetCurrentPos()+1;
-						else
-							Ret = idxFoundItem+1;
-					}
-				}
-			}
-			else // = 0 - вернем текущую позицию
-			{
-				if ( !InSelection )
-					Ret = SelPanel->GetCurrentPos()+1;
-				else
-				{
-					long CurPos=SelPanel->GetCurrentPos();
-					for ( I=0 ; I < EndPos ; I++ )
-					{
-						if ( SelPanel->IsSelected(I) && SelPanel->FileInFilter(I) )
-						{
-							if (I == CurPos)
-							{
-								Ret=(int64_t)(idxFoundItem+1);
-								break;
-							}
-							idxFoundItem++;
-						}
-					}
-				}
-			}
-		}
-	}
-
-	VMStack.Push(Ret);
-	return Ret?true:false;
 }
 
 // N=panel.SetPath(panelType,pathName[,fileName])
@@ -3323,262 +3966,6 @@ static bool panelsetpathFunc(const TMacroFunction*)
 
 	VMStack.Push(Ret);
 	return Ret?true:false;
-}
-
-// N=Panel.SetPos(panelType,fileName)
-static bool panelsetposFunc(const TMacroFunction*)
-{
-	TVar Val; VMStack.Pop(Val);
-	int typePanel = VMStack.Pop().getInt32();
-	const wchar_t *fileName=Val.s();
-
-	if (!fileName || !*fileName)
-		fileName=L"";
-
-	Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
-	Panel *PassivePanel=nullptr;
-
-	if (ActivePanel)
-		PassivePanel=CtrlObject->Cp()->GetAnotherPanel(ActivePanel);
-
-	//Frame* CurFrame=FrameManager->GetCurrentFrame();
-	Panel *SelPanel = typePanel? (typePanel == 1?PassivePanel:nullptr):ActivePanel;
-	int64_t Ret=0;
-
-	if (SelPanel)
-	{
-		int TypePanel=SelPanel->GetType(); //FILE_PANEL,TREE_PANEL,QVIEW_PANEL,INFO_PANEL
-
-		if (TypePanel == FILE_PANEL || TypePanel ==TREE_PANEL)
-		{
-			// Need PointToName()?
-			if (SelPanel->GoToFile(fileName))
-			{
-				//SelPanel->Show();
-				// <Mantis#0000289> - грозно, но со вкусом :-)
-				//ShellUpdatePanels(SelPanel);
-				SelPanel->UpdateIfChanged(UIC_UPDATE_NORMAL);
-				FrameManager->RefreshFrame(FrameManager->GetTopModal());
-				// </Mantis#0000289>
-				Ret=(int64_t)(SelPanel->GetCurrentPos()+1);
-			}
-		}
-	}
-
-	VMStack.Push(Ret);
-	return Ret?true:false;
-}
-
-// Result=replace(Str,Find,Replace[,Cnt[,Mode]])
-/*
-Find=="" - return Str
-Cnt==0 - return Str
-Replace=="" - return Str (с удалением всех подстрок Find)
-Str=="" return ""
-
-Mode:
-      0 - case insensitive
-      1 - case sensitive
-
-*/
-static bool replaceFunc(const TMacroFunction*)
-{
-	int Mode = VMStack.Pop().getInt32();
-	TVar Count; VMStack.Pop(Count);
-	TVar Repl;  VMStack.Pop(Repl);
-	TVar Find;  VMStack.Pop(Find);
-	TVar Src;   VMStack.Pop(Src);
-	int64_t Ret=1;
-	// TODO: Здесь нужно проверить в соответствии с УНИХОДОМ!
-	FARString strStr;
-	int lenS=StrLength(Src.s());
-	int lenF=StrLength(Find.s());
-	int lenR=StrLength(Repl.s());
-	int cnt=0;
-
-	if( lenF )
-	{
-		const wchar_t *Ptr=Src.s();
-		if( !Mode )
-		{
-			while ((Ptr=StrStrI(Ptr,Find.s())) )
-			{
-				cnt++;
-				Ptr+=lenF;
-			}
-		}
-		else
-		{
-			while ((Ptr=StrStr(Ptr,Find.s())) )
-			{
-				cnt++;
-				Ptr+=lenF;
-			}
-		}
-	}
-
-	if (cnt)
-	{
-		if (lenR > lenF)
-			lenS+=cnt*(lenR-lenF+1); //???
-
-		strStr=Src.s();
-		cnt=(int)Count.i();
-
-		if (cnt <= 0)
-			cnt=-1;
-
-		ReplaceStrings(strStr,Find.s(),Repl.s(),cnt,!Mode);
-		VMStack.Push(strStr.CPtr());
-	}
-	else
-		VMStack.Push(Src);
-
-	return Ret?true:false;
-}
-
-// V=Panel.Item(typePanel,Index,TypeInfo)
-static bool panelitemFunc(const TMacroFunction*)
-{
-	TVar P2; VMStack.Pop(P2);
-	TVar P1; VMStack.Pop(P1);
-	int typePanel = VMStack.Pop().getInt32();
-	TVar Ret{tviZero};
-	Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
-	Panel *PassivePanel=nullptr;
-
-	if (ActivePanel)
-		PassivePanel=CtrlObject->Cp()->GetAnotherPanel(ActivePanel);
-
-	//Frame* CurFrame=FrameManager->GetCurrentFrame();
-	Panel *SelPanel = typePanel? (typePanel == 1?PassivePanel:nullptr):ActivePanel;
-
-	if (!SelPanel)
-	{
-		VMStack.Push(Ret);
-		return false;
-	}
-
-	int TypePanel=SelPanel->GetType(); //FILE_PANEL,TREE_PANEL,QVIEW_PANEL,INFO_PANEL
-
-	if (!(TypePanel == FILE_PANEL || TypePanel ==TREE_PANEL))
-	{
-		VMStack.Push(Ret);
-		return false;
-	}
-
-	int Index=(int)(P1.toInteger())-1;
-	int TypeInfo=(int)P2.toInteger();
-	FileListItem filelistItem;
-
-	if (TypePanel == TREE_PANEL)
-	{
-		TreeItem treeItem;
-
-		if (SelPanel->GetItem(Index,&treeItem) && !TypeInfo)
-		{
-			VMStack.Push(TVar(treeItem.strName));
-			return true;
-		}
-	}
-	else
-	{
-		FARString strDate, strTime;
-
-		if (TypeInfo == 11)
-			SelPanel->ReadDiz();
-
-		if (!SelPanel->GetItem(Index,&filelistItem))
-			TypeInfo=-1;
-
-		switch (TypeInfo)
-		{
-			case 0:  // Name
-				Ret=TVar(filelistItem.strName);
-				break;
-			case 1:  // ShortName obsolete, use Name
-				Ret=TVar(filelistItem.strName);
-				break;
-			case 2:  // FileAttr
-				Ret=TVar((int64_t)filelistItem.FileAttr);
-				break;
-			case 3:  // CreationTime
-				ConvertDate(filelistItem.CreationTime,strDate,strTime,8,FALSE,FALSE,TRUE,TRUE);
-				strDate += L" ";
-				strDate += strTime;
-				Ret=TVar(strDate.CPtr());
-				break;
-			case 4:  // AccessTime
-				ConvertDate(filelistItem.AccessTime,strDate,strTime,8,FALSE,FALSE,TRUE,TRUE);
-				strDate += L" ";
-				strDate += strTime;
-				Ret=TVar(strDate.CPtr());
-				break;
-			case 5:  // WriteTime
-				ConvertDate(filelistItem.WriteTime,strDate,strTime,8,FALSE,FALSE,TRUE,TRUE);
-				strDate += L" ";
-				strDate += strTime;
-				Ret=TVar(strDate.CPtr());
-				break;
-			case 6:  // FileSize
-				Ret=TVar((int64_t)filelistItem.FileSize);
-				break;
-			case 7:  // PhysicalSize
-				Ret=TVar((int64_t)filelistItem.PhysicalSize);
-				break;
-			case 8:  // Selected
-				Ret=TVar((int64_t)((DWORD)filelistItem.Selected));
-				break;
-			case 9:  // NumberOfLinks
-				Ret=TVar((int64_t)filelistItem.NumberOfLinks);
-				break;
-			case 10:  // SortGroup
-				Ret=filelistItem.SortGroup;
-				break;
-			case 11:  // DizText
-			{
-				const wchar_t *LPtr=filelistItem.DizText;
-				Ret=TVar(LPtr);
-				break;
-			}
-			case 12:  // Owner
-				Ret=TVar(filelistItem.strOwner);
-				break;
-			case 13:  // CRC32
-				Ret=TVar((int64_t)filelistItem.CRC32);
-				break;
-			case 14:  // Position
-				Ret=filelistItem.Position;
-				break;
-			case 15:  // CreationTime (FILETIME)
-				Ret=TVar((int64_t)FileTimeToUI64(&filelistItem.CreationTime));
-				break;
-			case 16:  // AccessTime (FILETIME)
-				Ret=TVar((int64_t)FileTimeToUI64(&filelistItem.AccessTime));
-				break;
-			case 17:  // WriteTime (FILETIME)
-				Ret=TVar((int64_t)FileTimeToUI64(&filelistItem.WriteTime));
-				break;
-			case 18: // NumberOfStreams (deprecated)
-				Ret=TVar((int64_t)((filelistItem.FileAttr & FILE_ATTRIBUTE_DIRECTORY) ? 0 : 1));
-				break;
-			case 19: // StreamsSize (deprecated)
-				Ret=TVar((int64_t)0);
-				break;
-			case 20:  // ChangeTime
-				ConvertDate(filelistItem.ChangeTime,strDate,strTime,8,FALSE,FALSE,TRUE,TRUE);
-				strDate += L" ";
-				strDate += strTime;
-				Ret=TVar(strDate.CPtr());
-				break;
-			case 21:  // ChangeTime (FILETIME)
-				Ret=TVar((int64_t)FileTimeToUI64(&filelistItem.ChangeTime));
-				break;
-		}
-	}
-
-	VMStack.Push(Ret);
-	return false;
 }
 
 // N=len(V)
