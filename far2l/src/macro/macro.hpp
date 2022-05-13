@@ -96,31 +96,9 @@ enum MACRORECORDANDEXECUTETYPE
 
 class Panel;
 
-struct TMacroFunction;
-typedef bool (*INTMACROFUNC)(const TMacroFunction*);
-
 enum INTMF_FLAGS{
 	IMFF_UNLOCKSCREEN               =0x00000001,
 	IMFF_DISABLEINTINPUT            =0x00000002,
-};
-
-struct TMacroFunction
-{
-	const wchar_t *Name;             // имя функции
-	int nParam;                      // количество параметров
-	int oParam;                      // необязательные параметры
-	TMacroOpCode Code;               // байткод функции
-	const wchar_t *fnGUID;           // GUID обработчика функции
-
-	int    BufferSize;               // Размер буфера компилированной последовательности
-	DWORD *Buffer;                   // компилированная последовательность (OpCode) макроса
-	//wchar_t  *Src;                   // оригинальный "текст" макроса
-	//wchar_t  *Description;           // описание макроса
-
-	const wchar_t *Syntax;           // Синтаксис функции
-
-	DWORD IntFlags;                  // флаги из INTMF_FLAGS (в основном отвечающие "как вызывать функцию")
-	INTMACROFUNC Func;               // функция
 };
 
 struct MacroRecord
@@ -135,24 +113,6 @@ struct MacroRecord
 };
 
 #define STACKLEVEL      32
-
-struct MacroState
-{
-	int KeyProcess;
-	int Executing;
-	int MacroPC;
-	int ExecLIBPos;
-	int MacroWORKCount;
-	bool UseInternalClipboard;
-	struct MacroRecord *MacroWORK; // т.н. текущее исполнение
-	INPUT_RECORD cRec; // "описание реально нажатой клавиши"
-
-	bool AllocVarTable;
-	TVarTable *locVarTable;
-
-	void Init(TVarTable *tbl);
-};
-
 
 struct MacroPanelSelect {
 	int     Action;
@@ -243,3 +203,4 @@ BOOL WINAPI KeyMacroToText(uint32_t Key,FARString &strKeyText0);
 uint32_t WINAPI KeyNameMacroToKey(const wchar_t *Name);
 
 inline bool IsMenuArea(int Area){return Area==MACRO_MAINMENU || Area==MACRO_MENU || Area==MACRO_DISKS || Area==MACRO_USERMENU || Area==MACRO_AUTOCOMPLETION;}
+void Log(const char* str);

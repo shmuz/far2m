@@ -1330,11 +1330,7 @@ struct FarMacroValue
 	FarMacroValue(double v)           { Type=FMVT_DOUBLE; Double=v; }
 	FarMacroValue(const wchar_t* v)   { Type=FMVT_STRING; String=v; }
 	FarMacroValue(void* v)            { Type=FMVT_POINTER; Pointer=v; }
-	//~ FarMacroValue(const UUID& v)      { Type=FMVT_BINARY; Binary.Data=&const_cast<UUID&>(v); Binary.Size=sizeof(UUID); }
 	FarMacroValue(FarMacroValue* arr,size_t count) { Type=FMVT_ARRAY; Array.Values=arr; Array.Count=count; }
-#ifdef FAR_USE_INTERNALS
-	//~ FarMacroValue(const string& v)    { Type=FMVT_STRING; String=v.c_str(); }
-#endif // END FAR_USE_INTERNALS
 #endif
 };
 
@@ -1417,6 +1413,13 @@ struct OpenMacroPluginInfo
 	enum MACROCALLTYPE CallType;
 	struct FarMacroCall *Data;
 	struct MacroPluginReturn Ret;
+};
+
+struct OpenMacroInfo
+{
+	size_t StructSize;
+	size_t Count;
+	struct FarMacroValue *Values;
 };
 
 typedef intptr_t (WINAPI *FARAPICALLFAR)(intptr_t CheckCode, struct FarMacroCall* Data);
