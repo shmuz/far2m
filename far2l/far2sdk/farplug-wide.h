@@ -1047,6 +1047,19 @@ enum ADVANCED_CONTROL_COMMANDS
 	ACTL_PROGRESSNOTIFY       = 35,
 };
 
+enum FAR_MACRO_CONTROL_COMMANDS
+{
+	MCTL_LOADALL           = 0,
+	MCTL_SAVEALL           = 1,
+	MCTL_SENDSTRING        = 2,
+	MCTL_GETSTATE          = 5,
+	MCTL_GETAREA           = 6,
+	MCTL_ADDMACRO          = 7,
+	MCTL_DELMACRO          = 8,
+	MCTL_GETLASTERROR      = 9,
+	MCTL_EXECSTRING        = 10,
+};
+
 #ifdef FAR_USE_INTERNALS
 enum FarPoliciesFlags
 {
@@ -1231,9 +1244,12 @@ enum FARMACROCOMMAND
 	MCMD_CHECKMACRO        = 4,
 	MCMD_GETSTATE          = 5,
 	MCMD_GETAREA           = 6,
-#ifdef FAR_USE_INTERNALS
-	MCMD_RUNMACROSTRING    = 7,
-#endif // END FAR_USE_INTERNALS
+};
+
+enum FARMACROSENDSTRINGCOMMAND
+{
+	MSSC_POST              =0,
+	MSSC_CHECK             =2,
 };
 
 enum FARMACROAREA
@@ -1275,9 +1291,18 @@ enum FARMACROPARSEERRORCODE
 
 struct MacroParseResult
 {
+	size_t StructSize;
 	DWORD ErrCode;
 	COORD ErrPos;
 	const wchar_t *ErrSrc;
+};
+
+struct MacroSendMacroText
+{
+	size_t StructSize;
+	enum FARKEYMACROFLAGS Flags;
+	DWORD AKey;
+	const wchar_t *SequenceText;
 };
 
 enum FARMACROVARTYPE
@@ -1966,6 +1991,13 @@ typedef int (WINAPI *FARAPIREGEXPCONTROL)(
     LONG_PTR Param
 );
 
+typedef int (WINAPI *FARAPIMACROCONTROL)(
+    DWORD PluginId,
+    int Command,
+    int Param1,
+    void* Param2
+);
+
 // <C&C++>
 typedef int (WINAPIV *FARSTDSNPRINTF)(wchar_t *Buffer,size_t Sizebuf,const wchar_t *Format,...);
 typedef int (WINAPIV *FARSTDSSCANF)(const wchar_t *Buffer, const wchar_t *Format,...);
@@ -2248,6 +2280,8 @@ struct PluginStartupInfo
 	FARAPIFILEFILTERCONTROL FileFilterControl;
 	FARAPIREGEXPCONTROL    RegExpControl;
 
+	void*                  RESERVED[2];
+	FARAPIMACROCONTROL     MacroControl;
 	const void*            Private;
 };
 

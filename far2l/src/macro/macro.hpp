@@ -36,10 +36,14 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tvar.hpp"
 #include "macroopcode.hpp"
 
-struct point {
-	int x;
-	int y;
-};
+template <typename T>
+bool CheckStructSize(const T* s)
+{
+	return s && (s->StructSize >= sizeof(T));
+}
+
+#define ALIGNAS(value, alignment) ((value+(alignment-1))&~(alignment-1))
+#define ALIGN(value) ALIGNAS(value, sizeof(void*))
 
 // Macro Const
 enum
@@ -144,7 +148,7 @@ public:
 	bool CheckWaitKeyFunc() const;
 	int  GetState() const;
 	int  GetKey();
-	static DWORD GetMacroParseError(point& ErrPos, FARString& ErrSrc);
+	static DWORD GetMacroParseError(COORD& ErrPos, FARString& ErrSrc);
 	int GetArea() const { return m_Area; }
 	const wchar_t* GetStringToPrint() const { return m_StringToPrint.CPtr(); }
 	bool IsRecording() const { return m_Recording != MACROSTATE_NOMACRO; }

@@ -331,7 +331,6 @@ static const MACROFLAGS_MFLAGS
 	MFLAGS_NONE                    = 0,
 	// public flags, read from/saved to config
 	MFLAGS_MODEMASK                = 0x000000FF, // ### этот флаг подлежит удалению в будущем
-	MFLAGS_DISABLEOUTPUT           = 0,          // ###
 	MFLAGS_NEEDSAVEMACRO           = 0x40000000, // ###
 	MFLAGS_DISABLEMACRO            = 0x80000000, // ###
 
@@ -644,14 +643,14 @@ bool KeyMacro::ExecuteString(MacroExecuteString *Data)
 	return false;
 }
 
-DWORD KeyMacro::GetMacroParseError(point& ErrPos, FARString& ErrSrc)
+DWORD KeyMacro::GetMacroParseError(COORD& ErrPos, FARString& ErrSrc)
 {
 	MacroPluginReturn Ret;
 	if (MacroPluginOp(OP_GETLASTERROR, false, &Ret))
 	{
 		ErrSrc = Ret.Values[0].String;
-		ErrPos.y = static_cast<int>(Ret.Values[1].Double);
-		ErrPos.x = static_cast<int>(Ret.Values[2].Double);
+		ErrPos.Y = static_cast<int>(Ret.Values[1].Double);
+		ErrPos.X = static_cast<int>(Ret.Values[2].Double);
 		return ErrSrc.IsEmpty() ? MPEC_SUCCESS : MPEC_ERROR;
 	}
 	else
@@ -679,7 +678,6 @@ public:
 	int ascFunc();
 	int atoiFunc();
 	int beepFunc();
-	int chrFunc();
 	int clipFunc();
 	int dateFunc();
 	int dlggetvalueFunc();
@@ -840,7 +838,8 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 	// проверка на область
 	if (CheckCode == 0)
 	{
-		return api.PassNumber (FrameManager->GetCurrentFrame()->GetMacroMode());
+		//return api.PassNumber (FrameManager->GetCurrentFrame()->GetMacroMode());
+		return GetArea();
 	}
 
 	const auto ActivePanel = CtrlObject->Cp() ? CtrlObject->Cp()->ActivePanel : nullptr;
@@ -1416,7 +1415,6 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 		//case MCODE_F_FAR_GETCONFIG:    break;
 		//case MCODE_F_GETOPTIONS:       break;
 		//case MCODE_F_KEYBAR_SHOW:      break;
-		//case MCODE_F_KEYMACRO:         break;
 		//case MCODE_F_MACROSETTINGS:    break;
 		//case MCODE_F_MENU_FILTER:      break;
 		//case MCODE_F_MENU_FILTERSTR:   break;
@@ -1434,7 +1432,6 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 		case MCODE_F_ABS:                return api.absFunc();
 		case MCODE_F_ASC:                return api.ascFunc();
 		case MCODE_F_ATOI:               return api.atoiFunc();
-		case MCODE_F_CHR:                return api.chrFunc();
 		case MCODE_F_CLIP:               return api.clipFunc();
 		case MCODE_F_DATE:               return api.dateFunc();
 		case MCODE_F_DLG_GETVALUE:       return api.dlggetvalueFunc();
@@ -2103,6 +2100,7 @@ int FarMacroApi::environFunc()
 	else
 		strEnv.Clear();
 
+	PassString(strEnv);
 	return Ret;
 }
 
@@ -3276,21 +3274,6 @@ int FarMacroApi::ascFunc()
 	return 1;
 }
 
-int FarMacroApi::chrFunc()
-{
-	auto Params = parseParams(1, mData);
-	auto& tmpVar = Params[0];
-
-	if (tmpVar.isInteger())
-	{
-		const wchar_t tmp[]={(wchar_t) (tmpVar.i() & (wchar_t)-1),L'\0'};
-		tmpVar = tmp;
-		tmpVar.toString();
-	}
-	PassValue(tmpVar);
-	return 1;
-}
-
 // N=FMatch(S,Mask)
 int FarMacroApi::fmatchFunc()
 {
@@ -4158,7 +4141,7 @@ int KeyMacro::GetMacroSettings(uint32_t Key,DWORD &Flags)
 	MacroSettingsDlg[MS_DOUBLEBOX].strData.Format(Msg::MacroSettingsTitle, strKeyText.CPtr());
 	//if(!(Key&0x7F000000))
 	//MacroSettingsDlg[3].Flags|=DIF_DISABLE;
-	MacroSettingsDlg[MS_CHECKBOX_OUTPUT].Selected=Flags&MFLAGS_DISABLEOUTPUT?0:1;
+	MacroSettingsDlg[MS_CHECKBOX_OUTPUT].Selected=Flags&MFLAGS_ENABLEOUTPUT?1:0;
 	MacroSettingsDlg[MS_CHECKBOX_START].Selected=Flags&MFLAGS_RUNAFTERFARSTART?1:0;
 	MacroSettingsDlg[MS_CHECKBOX_A_PLUGINPANEL].Selected=Set3State(Flags,MFLAGS_NOFILEPANELS,MFLAGS_NOPLUGINPANELS);
 	MacroSettingsDlg[MS_CHECKBOX_A_FOLDERS].Selected=Set3State(Flags,MFLAGS_NOFILES,MFLAGS_NOFOLDERS);
@@ -4189,7 +4172,7 @@ int KeyMacro::GetMacroSettings(uint32_t Key,DWORD &Flags)
 	if (Dlg.GetExitCode()!=MS_BUTTON_OK)
 		return FALSE;
 
-	Flags=MacroSettingsDlg[MS_CHECKBOX_OUTPUT].Selected?0:MFLAGS_DISABLEOUTPUT;
+	Flags=MacroSettingsDlg[MS_CHECKBOX_OUTPUT].Selected?MFLAGS_ENABLEOUTPUT:0;
 	Flags|=MacroSettingsDlg[MS_CHECKBOX_START].Selected?MFLAGS_RUNAFTERFARSTART:0;
 
 	if (MacroSettingsDlg[MS_CHECKBOX_A_PANEL].Selected)
