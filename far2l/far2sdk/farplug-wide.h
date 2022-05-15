@@ -1010,7 +1010,6 @@ enum ADVANCED_CONTROL_COMMANDS
 	ACTL_GETCOLOR             = 4,
 	ACTL_GETARRAYCOLOR        = 5,
 	ACTL_EJECTMEDIA           = 6,
-	ACTL_KEYMACRO             = 7,
 #ifdef FAR_USE_INTERNALS
 
 #endif // END FAR_USE_INTERNALS
@@ -1226,26 +1225,6 @@ enum FARKEYMACROFLAGS
 	KMFLAGS_NONE                = 0,
 };
 
-struct KeySequence
-{
-	DWORD Flags;
-	int Count;
-	const DWORD *Sequence;
-};
-
-enum FARMACROCOMMAND
-{
-	MCMD_LOADALL           = 0,
-	MCMD_SAVEALL           = 1,
-	MCMD_POSTMACROSTRING   = 2,
-#ifdef FAR_USE_INTERNALS
-	MCMD_COMPILEMACRO      = 3,
-#endif // END FAR_USE_INTERNALS
-	MCMD_CHECKMACRO        = 4,
-	MCMD_GETSTATE          = 5,
-	MCMD_GETAREA           = 6,
-};
-
 enum FARMACROSENDSTRINGCOMMAND
 {
 	MSSC_POST              =0,
@@ -1300,10 +1279,16 @@ struct MacroParseResult
 struct MacroSendMacroText
 {
 	size_t StructSize;
-	enum FARKEYMACROFLAGS Flags;
+	DWORD Flags;
 	DWORD AKey;
 	const wchar_t *SequenceText;
 };
+
+typedef uint64_t FARADDKEYMACROFLAGS;
+static const FARADDKEYMACROFLAGS
+	AKMFLAGS_NONE                = 0;
+
+typedef intptr_t (WINAPI *FARMACROCALLBACK)(void* Id,FARADDKEYMACROFLAGS Flags);
 
 enum FARMACROVARTYPE
 {
@@ -1378,7 +1363,7 @@ struct FarGetValue
 struct MacroExecuteString
 {
 	size_t StructSize;
-	enum FARKEYMACROFLAGS Flags;
+	DWORD Flags;
 	const wchar_t *SequenceText;
 	size_t InCount;
 	struct FarMacroValue *InValues;
@@ -1453,25 +1438,6 @@ struct MacroPrivateInfo
 {
 	size_t StructSize;
 	FARAPICALLFAR CallFar;
-};
-
-struct ActlKeyMacro
-{
-	int Command;
-	union
-	{
-		struct
-		{
-			const wchar_t *SequenceText;
-			DWORD Flags;
-			DWORD AKey;
-		} PlainText;
-#ifdef FAR_USE_INTERNALS
-		struct KeySequence Compile;
-#endif // END FAR_USE_INTERNALS
-		struct MacroParseResult MacroResult;
-		DWORD_PTR Reserved[3];
-	} Param;
 };
 
 #ifdef FAR_USE_INTERNALS

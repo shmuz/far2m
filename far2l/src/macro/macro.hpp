@@ -153,7 +153,7 @@ public:
 	const wchar_t* GetStringToPrint() const { return m_StringToPrint.CPtr(); }
 	bool IsRecording() const { return m_Recording != MACROSTATE_NOMACRO; }
 	bool LoadMacros(bool FromFar, bool InitedRAM=true, const FarMacroLoad *Data=nullptr);
-	bool ParseMacroString(const wchar_t* Sequence,DWORD Flags,bool skipFile) const;
+	static bool ParseMacroString(const wchar_t* Sequence,DWORD Flags,bool skipFile);
 	int  PeekKey() const;
 	//bool ProcessEvent(const FAR_INPUT_RECORD *Rec);
 	void SetArea(int Area) { m_Area=Area; }
@@ -163,7 +163,7 @@ private:
 	static int GetExecutingState();
 	//intptr_t AssignMacroDlgProc(Dialog* Dlg,intptr_t Msg,intptr_t Param1,void* Param2);
 	int AssignMacroKey(DWORD& MacroKey);
-	//bool GetMacroSettings(int Key, unsigned long long &Flags, string_view Src = {}, string_view Descr = {});
+	int GetMacroSettings(uint32_t Key,DWORD &Flags, const wchar_t* Src=L"", const wchar_t* Descr=L"");
 	//intptr_t ParamMacroDlgProc(Dialog* Dlg,intptr_t Msg,intptr_t Param1,void* Param2);
 	void RestoreMacroChar() const;
 
@@ -177,15 +177,6 @@ private:
 	FARString m_StringToPrint;
 
 	private:
-		int RecBufferSize;
-		DWORD *RecBuffer;
-		wchar_t *RecSrc;
-
-		class LockScreen *LockScr;
-
-	private:
-		int GetMacroSettings(uint32_t Key,DWORD &Flags);
-
 		BOOL CheckEditSelected(DWORD CurFlags);
 		BOOL CheckInsidePlugin(DWORD CurFlags);
 		BOOL CheckPanel(int PanelMode,DWORD CurFlags, BOOL IsPassivePanel);
@@ -199,8 +190,6 @@ private:
 
 	public:
 		bool ProcessKey(DWORD Key);
-
-		static wchar_t *MkTextSequence(DWORD *Buffer,int BufferSize,const wchar_t *Src=nullptr);
 };
 
 BOOL WINAPI KeyMacroToText(uint32_t Key,FARString &strKeyText0);

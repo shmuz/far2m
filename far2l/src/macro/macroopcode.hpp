@@ -123,8 +123,14 @@ enum MACRO_OP_CODE
 	MCODE_F_BEEP,                     // N=beep([N])
 	MCODE_F_KBDLAYOUT,                // N=kbdLayout([N])
 	MCODE_F_WINDOW_SCROLL,            // N=Window.Scroll(Lines[,Axis])
+	MCODE_F_CHECKALL,                 // B=CheckAll(Area,Flags[,Callback[,CallbackId]])
 	MCODE_F_GETOPTIONS,               // N=GetOptions()
-	MCODE_F_KEYMACRO,
+
+	MCODE_F_USERMENU,                 // UserMenu([Param])
+	MCODE_F_SETCUSTOMSORTMODE,        //
+	MCODE_F_KEYMACRO,                 //
+	MCODE_F_FAR_GETCONFIG,            //
+	MCODE_F_MACROSETTINGS,            //
 
 	/* ************************************************************************* */
 	// булевые переменные - различные состояния

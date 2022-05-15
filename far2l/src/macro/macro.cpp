@@ -82,208 +82,213 @@ void print_opcodes()
 	if (!fp) return;
 
 	fprintf(fp, "return {\n");
-	fprintf(fp, "  MCODE_F_NOFUNC=0x%X; \n", MCODE_F_NOFUNC);
-	fprintf(fp, "  MCODE_F_ABS=0x%X; -- N=abs(N)\n", MCODE_F_ABS);
-	fprintf(fp, "  MCODE_F_AKEY=0x%X; -- V=akey(Mode[,Type])\n", MCODE_F_AKEY);
-	fprintf(fp, "  MCODE_F_ASC=0x%X; -- N=asc(S)\n", MCODE_F_ASC);
-	fprintf(fp, "  MCODE_F_ATOI=0x%X; -- N=atoi(S[,radix])\n", MCODE_F_ATOI);
-	fprintf(fp, "  MCODE_F_CLIP=0x%X; -- V=clip(N[,V])\n", MCODE_F_CLIP);
-	fprintf(fp, "  MCODE_F_CHR=0x%X; -- S=chr(N)\n", MCODE_F_CHR);
-	fprintf(fp, "  MCODE_F_DATE=0x%X; -- S=date([S])\n", MCODE_F_DATE);
-	fprintf(fp, "  MCODE_F_DLG_GETVALUE=0x%X; -- V=Dlg.GetValue(ID,N)\n", MCODE_F_DLG_GETVALUE);
-	fprintf(fp, "  MCODE_F_EDITOR_SEL=0x%X; -- V=Editor.Sel(Action[,Opt])\n", MCODE_F_EDITOR_SEL);
-	fprintf(fp, "  MCODE_F_EDITOR_SET=0x%X; -- N=Editor.Set(N,Var)\n", MCODE_F_EDITOR_SET);
-	fprintf(fp, "  MCODE_F_EDITOR_UNDO=0x%X; -- V=Editor.Undo(N)\n", MCODE_F_EDITOR_UNDO);
-	fprintf(fp, "  MCODE_F_EDITOR_POS=0x%X; -- N=Editor.Pos(Op,What[,Where])\n", MCODE_F_EDITOR_POS);
-	fprintf(fp, "  MCODE_F_EDITOR_DELLINE=0x%X; -- N=Editor.DelLine([Line])\n", MCODE_F_EDITOR_DELLINE);
-	fprintf(fp, "  MCODE_F_EDITOR_INSSTR=0x%X; -- N=Editor.InsStr([S[,Line]])\n", MCODE_F_EDITOR_INSSTR);
-	fprintf(fp, "  MCODE_F_ENVIRON=0x%X; -- S=env(S)\n", MCODE_F_ENVIRON);
-	fprintf(fp, "  MCODE_F_FATTR=0x%X; -- N=fattr(S)\n", MCODE_F_FATTR);
-	fprintf(fp, "  MCODE_F_FEXIST=0x%X; -- S=fexist(S)\n", MCODE_F_FEXIST);
-	fprintf(fp, "  MCODE_F_FSPLIT=0x%X; -- S=fsplit(S,N)\n", MCODE_F_FSPLIT);
-	fprintf(fp, "  MCODE_F_FMATCH=0x%X; -- N=FMatch(S,Mask)\n", MCODE_F_FMATCH);
-	fprintf(fp, "  MCODE_F_IIF=0x%X; -- V=iif(C,V1,V2)\n", MCODE_F_IIF);
-	fprintf(fp, "  MCODE_F_INDEX=0x%X; -- S=index(S1,S2[,Mode])\n", MCODE_F_INDEX);
-	fprintf(fp, "  MCODE_F_INT=0x%X; -- N=int(V)\n", MCODE_F_INT);
-	fprintf(fp, "  MCODE_F_ITOA=0x%X; -- S=itoa(N[,radix])\n", MCODE_F_ITOA);
-	fprintf(fp, "  MCODE_F_KEY=0x%X; -- S=key(V)\n", MCODE_F_KEY);
-	fprintf(fp, "  MCODE_F_LCASE=0x%X; -- S=lcase(S1)\n", MCODE_F_LCASE);
-	fprintf(fp, "  MCODE_F_LEN=0x%X; -- N=len(S)\n", MCODE_F_LEN);
-	fprintf(fp, "  MCODE_F_MAX=0x%X; -- N=max(N1,N2)\n", MCODE_F_MAX);
-	fprintf(fp, "  MCODE_F_MENU_CHECKHOTKEY=0x%X; -- N=checkhotkey(S[,N])\n", MCODE_F_MENU_CHECKHOTKEY);
-	fprintf(fp, "  MCODE_F_MENU_GETHOTKEY=0x%X; -- S=gethotkey([N])\n", MCODE_F_MENU_GETHOTKEY);
-	fprintf(fp, "  MCODE_F_MENU_SELECT=0x%X; -- N=Menu.Select(S[,N[,Dir]])\n", MCODE_F_MENU_SELECT);
-	fprintf(fp, "  MCODE_F_MIN=0x%X; -- N=min(N1,N2)\n", MCODE_F_MIN);
-	fprintf(fp, "  MCODE_F_MOD=0x%X; -- N=mod(a,b) == a %  b\n", MCODE_F_MOD);
-	fprintf(fp, "  MCODE_F_MLOAD=0x%X; -- B=mload(var)\n", MCODE_F_MLOAD);
-	fprintf(fp, "  MCODE_F_MSAVE=0x%X; -- B=msave(var)\n", MCODE_F_MSAVE);
-	fprintf(fp, "  MCODE_F_MSGBOX=0x%X; -- N=msgbox([\"Title\"[,\"Text\"[,flags]]])\n", MCODE_F_MSGBOX);
-	fprintf(fp, "  MCODE_F_PANEL_FATTR=0x%X; -- N=Panel.FAttr(panelType,fileMask)\n", MCODE_F_PANEL_FATTR);
-	fprintf(fp, "  MCODE_F_PANEL_SETPATH=0x%X; -- N=panel.SetPath(panelType,pathName[,fileName])\n", MCODE_F_PANEL_SETPATH);
-	fprintf(fp, "  MCODE_F_PANEL_FEXIST=0x%X; -- N=Panel.FExist(panelType,fileMask)\n", MCODE_F_PANEL_FEXIST);
-	fprintf(fp, "  MCODE_F_PANEL_SETPOS=0x%X; -- N=Panel.SetPos(panelType,fileName)\n", MCODE_F_PANEL_SETPOS);
-	fprintf(fp, "  MCODE_F_PANEL_SETPOSIDX=0x%X; -- N=Panel.SetPosIdx(panelType,Idx[,InSelection])\n", MCODE_F_PANEL_SETPOSIDX);
-	fprintf(fp, "  MCODE_F_PANEL_SELECT=0x%X; -- V=Panel.Select(panelType,Action[,Mode[,Items]])\n", MCODE_F_PANEL_SELECT);
-	fprintf(fp, "  MCODE_F_PANELITEM=0x%X; -- V=Panel.Item(Panel,Index,TypeInfo)\n", MCODE_F_PANELITEM);
-	fprintf(fp, "  MCODE_F_EVAL=0x%X; -- N=eval(S[,N])\n", MCODE_F_EVAL);
-	fprintf(fp, "  MCODE_F_RINDEX=0x%X; -- S=rindex(S1,S2[,Mode])\n", MCODE_F_RINDEX);
-	fprintf(fp, "  MCODE_F_SLEEP=0x%X; -- Sleep(N)\n", MCODE_F_SLEEP);
-	fprintf(fp, "  MCODE_F_STRING=0x%X; -- S=string(V)\n", MCODE_F_STRING);
-	fprintf(fp, "  MCODE_F_SUBSTR=0x%X; -- S=substr(S,start[,length])\n", MCODE_F_SUBSTR);
-	fprintf(fp, "  MCODE_F_UCASE=0x%X; -- S=ucase(S1)\n", MCODE_F_UCASE);
-	fprintf(fp, "  MCODE_F_WAITKEY=0x%X; -- V=waitkey([N,[T]])\n", MCODE_F_WAITKEY);
-	fprintf(fp, "  MCODE_F_XLAT=0x%X; -- S=xlat(S)\n", MCODE_F_XLAT);
-	fprintf(fp, "  MCODE_F_FLOCK=0x%X; -- N=FLock(N,N)\n", MCODE_F_FLOCK);
-	fprintf(fp, "  MCODE_F_CALLPLUGIN=0x%X; -- V=callplugin(SysID[,param])\n", MCODE_F_CALLPLUGIN);
-	fprintf(fp, "  MCODE_F_REPLACE=0x%X; -- S=replace(sS,sF,sR[,Count[,Mode]])\n", MCODE_F_REPLACE);
-	fprintf(fp, "  MCODE_F_PROMPT=0x%X; -- S=prompt(\"Title\"[,\"Prompt\"[,flags[, \"Src\"[, \"History\"]]]])\n", MCODE_F_PROMPT);
-	fprintf(fp, "  MCODE_F_BM_ADD=0x%X; -- N=BM.Add()  - добавить текущие координаты и обрезать хвост\n", MCODE_F_BM_ADD);
-	fprintf(fp, "  MCODE_F_BM_CLEAR=0x%X; -- N=BM.Clear() - очистить все закладки\n", MCODE_F_BM_CLEAR);
-	fprintf(fp, "  MCODE_F_BM_DEL=0x%X; -- N=BM.Del([Idx]) - удаляет закладку с указанным индексом (x=1...), 0 - удаляет текущую закладку\n", MCODE_F_BM_DEL);
-	fprintf(fp, "  MCODE_F_BM_GET=0x%X; -- N=BM.Get(Idx,M) - возвращает координаты строки (M==0) или колонки (M==1) закладки с индексом (Idx=1...)\n", MCODE_F_BM_GET);
-	fprintf(fp, "  MCODE_F_BM_GOTO=0x%X; -- N=BM.Goto([n]) - переход на закладку с указанным индексом (0 --> текущую)\n", MCODE_F_BM_GOTO);
-	fprintf(fp, "  MCODE_F_BM_NEXT=0x%X; -- N=BM.Next() - перейти на следующую закладку\n", MCODE_F_BM_NEXT);
-	fprintf(fp, "  MCODE_F_BM_POP=0x%X; -- N=BM.Pop() - восстановить текущую позицию из закладки в конце стека и удалить закладку\n", MCODE_F_BM_POP);
-	fprintf(fp, "  MCODE_F_BM_PREV=0x%X; -- N=BM.Prev() - перейти на предыдущую закладку\n", MCODE_F_BM_PREV);
-	fprintf(fp, "  MCODE_F_BM_BACK=0x%X; -- N=BM.Back() - перейти на предыдущую закладку с возможным сохранением текущей позиции\n", MCODE_F_BM_BACK);
-	fprintf(fp, "  MCODE_F_BM_PUSH=0x%X; -- N=BM.Push() - сохранить текущую позицию в виде закладки в конце стека\n", MCODE_F_BM_PUSH);
-	fprintf(fp, "  MCODE_F_BM_STAT=0x%X; -- N=BM.Stat([M]) - возвращает информацию о закладках, N=0 - текущее количество закладок	MCODE_F_TRIM,                     // S=trim(S[,N])\n", MCODE_F_BM_STAT);
-	fprintf(fp, "  MCODE_F_TRIM=0x%X; -- S=trim(S[,N])\n", MCODE_F_TRIM);
-	fprintf(fp, "  MCODE_F_FLOAT=0x%X; -- N=float(V)\n", MCODE_F_FLOAT);
-	fprintf(fp, "  MCODE_F_TESTFOLDER=0x%X; -- N=testfolder(S)\n", MCODE_F_TESTFOLDER);
-	fprintf(fp, "  MCODE_F_PRINT=0x%X; -- N=Print(Str)\n", MCODE_F_PRINT);
-	fprintf(fp, "  MCODE_F_MMODE=0x%X; -- N=MMode(Action[,Value])\n", MCODE_F_MMODE);
-	fprintf(fp, "  MCODE_F_EDITOR_SETTITLE=0x%X; -- N=Editor.SetTitle([Title])\n", MCODE_F_EDITOR_SETTITLE);
-	fprintf(fp, "  MCODE_F_MENU_GETVALUE=0x%X; -- S=Menu.GetValue([N])\n", MCODE_F_MENU_GETVALUE);
-	fprintf(fp, "  MCODE_F_MENU_ITEMSTATUS=0x%X; -- N=Menu.ItemStatus([N])\n", MCODE_F_MENU_ITEMSTATUS);
-	fprintf(fp, "  MCODE_F_BEEP=0x%X; -- N=beep([N])\n", MCODE_F_BEEP);
-	fprintf(fp, "  MCODE_F_KBDLAYOUT=0x%X; -- N=kbdLayout([N])\n", MCODE_F_KBDLAYOUT);
-	fprintf(fp, "  MCODE_F_WINDOW_SCROLL=0x%X; -- N=Window.Scroll(Lines[,Axis])\n", MCODE_F_WINDOW_SCROLL);
-	fprintf(fp, "  MCODE_F_GETOPTIONS=0x%X; -- N=GetOptions()\n", MCODE_F_GETOPTIONS);
-	fprintf(fp, "  MCODE_F_KEYMACRO=0x%X; \n", MCODE_F_KEYMACRO);
-	fprintf(fp, "  MCODE_C_AREA_OTHER=0x%X; -- Режим копирования текста с экрана, вертикальные меню\n", MCODE_C_AREA_OTHER);
-	fprintf(fp, "  MCODE_C_AREA_SHELL=0x%X; -- Файловые панели\n", MCODE_C_AREA_SHELL);
-	fprintf(fp, "  MCODE_C_AREA_VIEWER=0x%X; -- Внутренняя программа просмотра\n", MCODE_C_AREA_VIEWER);
-	fprintf(fp, "  MCODE_C_AREA_EDITOR=0x%X; -- Редактор\n", MCODE_C_AREA_EDITOR);
-	fprintf(fp, "  MCODE_C_AREA_DIALOG=0x%X; -- Диалоги\n", MCODE_C_AREA_DIALOG);
-	fprintf(fp, "  MCODE_C_AREA_SEARCH=0x%X; -- Быстрый поиск в панелях\n", MCODE_C_AREA_SEARCH);
-	fprintf(fp, "  MCODE_C_AREA_DISKS=0x%X; -- Меню выбора дисков\n", MCODE_C_AREA_DISKS);
-	fprintf(fp, "  MCODE_C_AREA_MAINMENU=0x%X; -- Основное меню\n", MCODE_C_AREA_MAINMENU);
-	fprintf(fp, "  MCODE_C_AREA_MENU=0x%X; -- Прочие меню\n", MCODE_C_AREA_MENU);
-	fprintf(fp, "  MCODE_C_AREA_HELP=0x%X; -- Система помощи\n", MCODE_C_AREA_HELP);
-	fprintf(fp, "  MCODE_C_AREA_INFOPANEL=0x%X; -- Информационная панель\n", MCODE_C_AREA_INFOPANEL);
-	fprintf(fp, "  MCODE_C_AREA_QVIEWPANEL=0x%X; -- Панель быстрого просмотра\n", MCODE_C_AREA_QVIEWPANEL);
-	fprintf(fp, "  MCODE_C_AREA_TREEPANEL=0x%X; -- Панель дерева папок\n", MCODE_C_AREA_TREEPANEL);
-	fprintf(fp, "  MCODE_C_AREA_FINDFOLDER=0x%X; -- Поиск папок\n", MCODE_C_AREA_FINDFOLDER);
-	fprintf(fp, "  MCODE_C_AREA_USERMENU=0x%X; -- Меню пользователя\n", MCODE_C_AREA_USERMENU);
-	fprintf(fp, "  MCODE_C_AREA_AUTOCOMPLETION=0x%X; -- Список автодополнения\n", MCODE_C_AREA_AUTOCOMPLETION);
-	fprintf(fp, "  MCODE_C_FULLSCREENMODE=0x%X; -- полноэкранный режим?\n", MCODE_C_FULLSCREENMODE);
-	fprintf(fp, "  MCODE_C_ISUSERADMIN=0x%X; -- Administrator status\n", MCODE_C_ISUSERADMIN);
-	fprintf(fp, "  MCODE_C_BOF=0x%X; -- начало файла/активного каталога?\n", MCODE_C_BOF);
-	fprintf(fp, "  MCODE_C_EOF=0x%X; -- конец файла/активного каталога?\n", MCODE_C_EOF);
-	fprintf(fp, "  MCODE_C_EMPTY=0x%X; -- ком.строка пуста?\n", MCODE_C_EMPTY);
-	fprintf(fp, "  MCODE_C_SELECTED=0x%X; -- выделенный блок есть?\n", MCODE_C_SELECTED);
-	fprintf(fp, "  MCODE_C_ROOTFOLDER=0x%X; -- аналог MCODE_C_APANEL_ROOT для активной панели\n", MCODE_C_ROOTFOLDER);
-	fprintf(fp, "  MCODE_C_APANEL_BOF=0x%X; -- начало активного  каталога?\n", MCODE_C_APANEL_BOF);
-	fprintf(fp, "  MCODE_C_PPANEL_BOF=0x%X; -- начало пассивного каталога?\n", MCODE_C_PPANEL_BOF);
-	fprintf(fp, "  MCODE_C_APANEL_EOF=0x%X; -- конец активного  каталога?\n", MCODE_C_APANEL_EOF);
-	fprintf(fp, "  MCODE_C_PPANEL_EOF=0x%X; -- конец пассивного каталога?\n", MCODE_C_PPANEL_EOF);
-	fprintf(fp, "  MCODE_C_APANEL_ISEMPTY=0x%X; -- активная панель:  пуста?\n", MCODE_C_APANEL_ISEMPTY);
-	fprintf(fp, "  MCODE_C_PPANEL_ISEMPTY=0x%X; -- пассивная панель: пуста?\n", MCODE_C_PPANEL_ISEMPTY);
-	fprintf(fp, "  MCODE_C_APANEL_SELECTED=0x%X; -- активная панель:  выделенные элементы есть?\n", MCODE_C_APANEL_SELECTED);
-	fprintf(fp, "  MCODE_C_PPANEL_SELECTED=0x%X; -- пассивная панель: выделенные элементы есть?\n", MCODE_C_PPANEL_SELECTED);
-	fprintf(fp, "  MCODE_C_APANEL_ROOT=0x%X; -- это корневой каталог активной панели?\n", MCODE_C_APANEL_ROOT);
-	fprintf(fp, "  MCODE_C_PPANEL_ROOT=0x%X; -- это корневой каталог пассивной панели?\n", MCODE_C_PPANEL_ROOT);
-	fprintf(fp, "  MCODE_C_APANEL_VISIBLE=0x%X; -- активная панель:  видима?\n", MCODE_C_APANEL_VISIBLE);
-	fprintf(fp, "  MCODE_C_PPANEL_VISIBLE=0x%X; -- пассивная панель: видима?\n", MCODE_C_PPANEL_VISIBLE);
-	fprintf(fp, "  MCODE_C_APANEL_PLUGIN=0x%X; -- активная панель:  плагиновая?\n", MCODE_C_APANEL_PLUGIN);
-	fprintf(fp, "  MCODE_C_PPANEL_PLUGIN=0x%X; -- пассивная панель: плагиновая?\n", MCODE_C_PPANEL_PLUGIN);
-	fprintf(fp, "  MCODE_C_APANEL_FILEPANEL=0x%X; -- активная панель:  файловая?\n", MCODE_C_APANEL_FILEPANEL);
-	fprintf(fp, "  MCODE_C_PPANEL_FILEPANEL=0x%X; -- пассивная панель: файловая?\n", MCODE_C_PPANEL_FILEPANEL);
-	fprintf(fp, "  MCODE_C_APANEL_FOLDER=0x%X; -- активная панель:  текущий элемент каталог?\n", MCODE_C_APANEL_FOLDER);
-	fprintf(fp, "  MCODE_C_PPANEL_FOLDER=0x%X; -- пассивная панель: текущий элемент каталог?\n", MCODE_C_PPANEL_FOLDER);
-	fprintf(fp, "  MCODE_C_APANEL_LEFT=0x%X; -- активная панель левая?\n", MCODE_C_APANEL_LEFT);
-	fprintf(fp, "  MCODE_C_PPANEL_LEFT=0x%X; -- пассивная панель левая?\n", MCODE_C_PPANEL_LEFT);
-	fprintf(fp, "  MCODE_C_APANEL_LFN=0x%X; -- на активной панели длинные имена?\n", MCODE_C_APANEL_LFN);
-	fprintf(fp, "  MCODE_C_PPANEL_LFN=0x%X; -- на пассивной панели длинные имена?\n", MCODE_C_PPANEL_LFN);
-	fprintf(fp, "  MCODE_C_APANEL_FILTER=0x%X; -- на активной панели включен фильтр?\n", MCODE_C_APANEL_FILTER);
-	fprintf(fp, "  MCODE_C_PPANEL_FILTER=0x%X; -- на пассивной панели включен фильтр?\n", MCODE_C_PPANEL_FILTER);
-	fprintf(fp, "  MCODE_C_CMDLINE_BOF=0x%X; -- курсор в начале cmd-строки редактирования?\n", MCODE_C_CMDLINE_BOF);
-	fprintf(fp, "  MCODE_C_CMDLINE_EOF=0x%X; -- курсор в конце cmd-строки редактирования?\n", MCODE_C_CMDLINE_EOF);
-	fprintf(fp, "  MCODE_C_CMDLINE_EMPTY=0x%X; -- ком.строка пуста?\n", MCODE_C_CMDLINE_EMPTY);
-	fprintf(fp, "  MCODE_C_CMDLINE_SELECTED=0x%X; -- в ком.строке есть выделение блока?\n", MCODE_C_CMDLINE_SELECTED);
-	fprintf(fp, "  MCODE_C_MSX=0x%X; -- \"MsX\"\n", MCODE_C_MSX);
-	fprintf(fp, "  MCODE_C_MSY=0x%X; -- \"MsY\"\n", MCODE_C_MSY);
-	fprintf(fp, "  MCODE_C_MSBUTTON=0x%X; -- \"MsButton\"\n", MCODE_C_MSBUTTON);
-	fprintf(fp, "  MCODE_C_MSCTRLSTATE=0x%X; -- \"MsCtrlState\"\n", MCODE_C_MSCTRLSTATE);
-	fprintf(fp, "  MCODE_C_MSEVENTFLAGS=0x%X; -- \"MsEventFlags\"\n", MCODE_C_MSEVENTFLAGS);
-	fprintf(fp, "  MCODE_C_MSLASTCTRLSTATE=0x%X; -- \"MsLastCtrlState\"\n", MCODE_C_MSLASTCTRLSTATE);
-	fprintf(fp, "  MCODE_V_FAR_WIDTH=0x%X; -- Far.Width - ширина консольного окна\n", MCODE_V_FAR_WIDTH);
-	fprintf(fp, "  MCODE_V_FAR_HEIGHT=0x%X; -- Far.Height - высота консольного окна\n", MCODE_V_FAR_HEIGHT);
-	fprintf(fp, "  MCODE_V_FAR_TITLE=0x%X; -- Far.Title - текущий заголовок консольного окна\n", MCODE_V_FAR_TITLE);
-	fprintf(fp, "  MCODE_V_FAR_UPTIME=0x%X; -- Far.UpTime - время работы Far в миллисекундах\n", MCODE_V_FAR_UPTIME);
-	fprintf(fp, "  MCODE_V_FAR_PID=0x%X; -- Far.PID - содержит ИД текущей запущенной копии Far Manager\n", MCODE_V_FAR_PID);
-	fprintf(fp, "  MCODE_V_MACRO_AREA=0x%X; -- MacroArea - имя текущей макрос области\n", MCODE_V_MACRO_AREA);
-	fprintf(fp, "  MCODE_V_APANEL_CURRENT=0x%X; -- APanel.Current - имя файла на активной панели\n", MCODE_V_APANEL_CURRENT);
-	fprintf(fp, "  MCODE_V_PPANEL_CURRENT=0x%X; -- PPanel.Current - имя файла на пассивной панели\n", MCODE_V_PPANEL_CURRENT);
-	fprintf(fp, "  MCODE_V_APANEL_SELCOUNT=0x%X; -- APanel.SelCount - активная панель:  число выделенных элементов\n", MCODE_V_APANEL_SELCOUNT);
-	fprintf(fp, "  MCODE_V_PPANEL_SELCOUNT=0x%X; -- PPanel.SelCount - пассивная панель: число выделенных элементов\n", MCODE_V_PPANEL_SELCOUNT);
-	fprintf(fp, "  MCODE_V_APANEL_PATH=0x%X; -- APanel.Path - активная панель:  путь на панели\n", MCODE_V_APANEL_PATH);
-	fprintf(fp, "  MCODE_V_PPANEL_PATH=0x%X; -- PPanel.Path - пассивная панель: путь на панели\n", MCODE_V_PPANEL_PATH);
-	fprintf(fp, "  MCODE_V_APANEL_PATH0=0x%X; -- APanel.Path0 - активная панель:  путь на панели до вызова плагинов\n", MCODE_V_APANEL_PATH0);
-	fprintf(fp, "  MCODE_V_PPANEL_PATH0=0x%X; -- PPanel.Path0 - пассивная панель: путь на панели до вызова плагинов\n", MCODE_V_PPANEL_PATH0);
-	fprintf(fp, "  MCODE_V_APANEL_UNCPATH=0x%X; -- APanel.UNCPath - активная панель:  UNC-путь на панели\n", MCODE_V_APANEL_UNCPATH);
-	fprintf(fp, "  MCODE_V_PPANEL_UNCPATH=0x%X; -- PPanel.UNCPath - пассивная панель: UNC-путь на панели\n", MCODE_V_PPANEL_UNCPATH);
-	fprintf(fp, "  MCODE_V_APANEL_WIDTH=0x%X; -- APanel.Width - активная панель:  ширина панели\n", MCODE_V_APANEL_WIDTH);
-	fprintf(fp, "  MCODE_V_PPANEL_WIDTH=0x%X; -- PPanel.Width - пассивная панель: ширина панели\n", MCODE_V_PPANEL_WIDTH);
-	fprintf(fp, "  MCODE_V_APANEL_TYPE=0x%X; -- APanel.Type - тип активной панели\n", MCODE_V_APANEL_TYPE);
-	fprintf(fp, "  MCODE_V_PPANEL_TYPE=0x%X; -- PPanel.Type - тип пассивной панели\n", MCODE_V_PPANEL_TYPE);
-	fprintf(fp, "  MCODE_V_APANEL_ITEMCOUNT=0x%X; -- APanel.ItemCount - активная панель:  число элементов\n", MCODE_V_APANEL_ITEMCOUNT);
-	fprintf(fp, "  MCODE_V_PPANEL_ITEMCOUNT=0x%X; -- PPanel.ItemCount - пассивная панель: число элементов\n", MCODE_V_PPANEL_ITEMCOUNT);
-	fprintf(fp, "  MCODE_V_APANEL_CURPOS=0x%X; -- APanel.CurPos - активная панель:  текущий индекс\n", MCODE_V_APANEL_CURPOS);
-	fprintf(fp, "  MCODE_V_PPANEL_CURPOS=0x%X; -- PPanel.CurPos - пассивная панель: текущий индекс\n", MCODE_V_PPANEL_CURPOS);
-	fprintf(fp, "  MCODE_V_APANEL_OPIFLAGS=0x%X; -- APanel.OPIFlags - активная панель: флаги открытого плагина\n", MCODE_V_APANEL_OPIFLAGS);
-	fprintf(fp, "  MCODE_V_PPANEL_OPIFLAGS=0x%X; -- PPanel.OPIFlags - пассивная панель: флаги открытого плагина\n", MCODE_V_PPANEL_OPIFLAGS);
-	fprintf(fp, "  MCODE_V_APANEL_DRIVETYPE=0x%X; -- APanel.DriveType - активная панель: тип привода\n", MCODE_V_APANEL_DRIVETYPE);
-	fprintf(fp, "  MCODE_V_PPANEL_DRIVETYPE=0x%X; -- PPanel.DriveType - пассивная панель: тип привода\n", MCODE_V_PPANEL_DRIVETYPE);
-	fprintf(fp, "  MCODE_V_APANEL_HEIGHT=0x%X; -- APanel.Height - активная панель:  высота панели\n", MCODE_V_APANEL_HEIGHT);
-	fprintf(fp, "  MCODE_V_PPANEL_HEIGHT=0x%X; -- PPanel.Height - пассивная панель: высота панели\n", MCODE_V_PPANEL_HEIGHT);
-	fprintf(fp, "  MCODE_V_APANEL_COLUMNCOUNT=0x%X; -- APanel.ColumnCount - активная панель:  количество колонок\n", MCODE_V_APANEL_COLUMNCOUNT);
-	fprintf(fp, "  MCODE_V_PPANEL_COLUMNCOUNT=0x%X; -- PPanel.ColumnCount - пассивная панель: количество колонок\n", MCODE_V_PPANEL_COLUMNCOUNT);
-	fprintf(fp, "  MCODE_V_APANEL_HOSTFILE=0x%X; -- APanel.HostFile - активная панель:  имя Host-файла\n", MCODE_V_APANEL_HOSTFILE);
-	fprintf(fp, "  MCODE_V_PPANEL_HOSTFILE=0x%X; -- PPanel.HostFile - пассивная панель: имя Host-файла\n", MCODE_V_PPANEL_HOSTFILE);
-	fprintf(fp, "  MCODE_V_APANEL_PREFIX=0x%X; -- APanel.Prefix\n", MCODE_V_APANEL_PREFIX);
-	fprintf(fp, "  MCODE_V_PPANEL_PREFIX=0x%X; -- PPanel.Prefix\n", MCODE_V_PPANEL_PREFIX);
-	fprintf(fp, "  MCODE_V_APANEL_FORMAT=0x%X; -- APanel.Format\n", MCODE_V_APANEL_FORMAT);
-	fprintf(fp, "  MCODE_V_PPANEL_FORMAT=0x%X; -- PPanel.Format\n", MCODE_V_PPANEL_FORMAT);
-	fprintf(fp, "  MCODE_V_ITEMCOUNT=0x%X; -- ItemCount - число элементов в текущем объекте\n", MCODE_V_ITEMCOUNT);
-	fprintf(fp, "  MCODE_V_CURPOS=0x%X; -- CurPos - текущий индекс в текущем объекте\n", MCODE_V_CURPOS);
-	fprintf(fp, "  MCODE_V_TITLE=0x%X; -- Title - заголовок текущего объекта\n", MCODE_V_TITLE);
-	fprintf(fp, "  MCODE_V_HEIGHT=0x%X; -- Height - высота текущего объекта\n", MCODE_V_HEIGHT);
-	fprintf(fp, "  MCODE_V_WIDTH=0x%X; -- Width - ширина текущего объекта\n", MCODE_V_WIDTH);
-	fprintf(fp, "  MCODE_V_EDITORFILENAME=0x%X; -- Editor.FileName - имя редактируемого файла\n", MCODE_V_EDITORFILENAME);
-	fprintf(fp, "  MCODE_V_EDITORLINES=0x%X; -- Editor.Lines - количество строк в редакторе\n", MCODE_V_EDITORLINES);
-	fprintf(fp, "  MCODE_V_EDITORCURLINE=0x%X; -- Editor.CurLine - текущая линия в редакторе (в дополнении к Count)\n", MCODE_V_EDITORCURLINE);
-	fprintf(fp, "  MCODE_V_EDITORCURPOS=0x%X; -- Editor.CurPos - текущая поз. в редакторе\n", MCODE_V_EDITORCURPOS);
-	fprintf(fp, "  MCODE_V_EDITORREALPOS=0x%X; -- Editor.RealPos - текущая поз. в редакторе без привязки к размеру табуляции\n", MCODE_V_EDITORREALPOS);
-	fprintf(fp, "  MCODE_V_EDITORSTATE=0x%X; -- Editor.State\n", MCODE_V_EDITORSTATE);
-	fprintf(fp, "  MCODE_V_EDITORVALUE=0x%X; -- Editor.Value - содержимое текущей строки\n", MCODE_V_EDITORVALUE);
-	fprintf(fp, "  MCODE_V_EDITORSELVALUE=0x%X; -- Editor.SelValue - содержит содержимое выделенного блока\n", MCODE_V_EDITORSELVALUE);
-	fprintf(fp, "  MCODE_V_DLGITEMTYPE=0x%X; -- Dlg.ItemType\n", MCODE_V_DLGITEMTYPE);
-	fprintf(fp, "  MCODE_V_DLGITEMCOUNT=0x%X; -- Dlg.ItemCount\n", MCODE_V_DLGITEMCOUNT);
-	fprintf(fp, "  MCODE_V_DLGCURPOS=0x%X; -- Dlg.CurPos\n", MCODE_V_DLGCURPOS);
-	fprintf(fp, "  MCODE_V_DLGINFOID=0x%X; -- Dlg.Info.Id\n", MCODE_V_DLGINFOID);
-	fprintf(fp, "  MCODE_V_VIEWERFILENAME=0x%X; -- Viewer.FileName - имя просматриваемого файла\n", MCODE_V_VIEWERFILENAME);
-	fprintf(fp, "  MCODE_V_VIEWERSTATE=0x%X; -- Viewer.State\n", MCODE_V_VIEWERSTATE);
-	fprintf(fp, "  MCODE_V_CMDLINE_ITEMCOUNT=0x%X; -- CmdLine.ItemCount\n", MCODE_V_CMDLINE_ITEMCOUNT);
-	fprintf(fp, "  MCODE_V_CMDLINE_CURPOS=0x%X; -- CmdLine.CurPos\n", MCODE_V_CMDLINE_CURPOS);
-	fprintf(fp, "  MCODE_V_CMDLINE_VALUE=0x%X; -- CmdLine.Value\n", MCODE_V_CMDLINE_VALUE);
-	fprintf(fp, "  MCODE_V_DRVSHOWPOS=0x%X; -- Drv.ShowPos - меню выбора дисков отображено: 1=слева (Alt-F1), 2=справа (Alt-F2), 0=\"нету его\"\n", MCODE_V_DRVSHOWPOS);
-	fprintf(fp, "  MCODE_V_DRVSHOWMODE=0x%X; -- Drv.ShowMode - режимы отображения меню выбора дисков\n", MCODE_V_DRVSHOWMODE);
-	fprintf(fp, "  MCODE_V_HELPFILENAME=0x%X; -- Help.FileName\n", MCODE_V_HELPFILENAME);
-	fprintf(fp, "  MCODE_V_HELPTOPIC=0x%X; -- Help.Topic\n", MCODE_V_HELPTOPIC);
-	fprintf(fp, "  MCODE_V_HELPSELTOPIC=0x%X; -- Help.SelTopic\n", MCODE_V_HELPSELTOPIC);
-	fprintf(fp, "  MCODE_V_MENU_VALUE=0x%X; -- Menu.Value\n", MCODE_V_MENU_VALUE);
+	fprintf(fp, "  MCODE_F_NOFUNC=0x%X; -- %s\n", MCODE_F_NOFUNC, "");
+	fprintf(fp, "  MCODE_F_ABS=0x%X; -- %s\n", MCODE_F_ABS, "N=abs(N)");
+	fprintf(fp, "  MCODE_F_AKEY=0x%X; -- %s\n", MCODE_F_AKEY, "V=akey(Mode[,Type])");
+	fprintf(fp, "  MCODE_F_ASC=0x%X; -- %s\n", MCODE_F_ASC, "N=asc(S)");
+	fprintf(fp, "  MCODE_F_ATOI=0x%X; -- %s\n", MCODE_F_ATOI, "N=atoi(S[,radix])");
+	fprintf(fp, "  MCODE_F_CLIP=0x%X; -- %s\n", MCODE_F_CLIP, "V=clip(N[,V])");
+	fprintf(fp, "  MCODE_F_CHR=0x%X; -- %s\n", MCODE_F_CHR, "S=chr(N)");
+	fprintf(fp, "  MCODE_F_DATE=0x%X; -- %s\n", MCODE_F_DATE, "S=date([S])");
+	fprintf(fp, "  MCODE_F_DLG_GETVALUE=0x%X; -- %s\n", MCODE_F_DLG_GETVALUE, "V=Dlg.GetValue(ID,N)");
+	fprintf(fp, "  MCODE_F_EDITOR_SEL=0x%X; -- %s\n", MCODE_F_EDITOR_SEL, "V=Editor.Sel(Action[,Opt])");
+	fprintf(fp, "  MCODE_F_EDITOR_SET=0x%X; -- %s\n", MCODE_F_EDITOR_SET, "N=Editor.Set(N,Var)");
+	fprintf(fp, "  MCODE_F_EDITOR_UNDO=0x%X; -- %s\n", MCODE_F_EDITOR_UNDO, "V=Editor.Undo(N)");
+	fprintf(fp, "  MCODE_F_EDITOR_POS=0x%X; -- %s\n", MCODE_F_EDITOR_POS, "N=Editor.Pos(Op,What[,Where])");
+	fprintf(fp, "  MCODE_F_EDITOR_DELLINE=0x%X; -- %s\n", MCODE_F_EDITOR_DELLINE, "N=Editor.DelLine([Line])");
+	fprintf(fp, "  MCODE_F_EDITOR_INSSTR=0x%X; -- %s\n", MCODE_F_EDITOR_INSSTR, "N=Editor.InsStr([S[,Line]])");
+	fprintf(fp, "  MCODE_F_ENVIRON=0x%X; -- %s\n", MCODE_F_ENVIRON, "S=env(S)");
+	fprintf(fp, "  MCODE_F_FATTR=0x%X; -- %s\n", MCODE_F_FATTR, "N=fattr(S)");
+	fprintf(fp, "  MCODE_F_FEXIST=0x%X; -- %s\n", MCODE_F_FEXIST, "S=fexist(S)");
+	fprintf(fp, "  MCODE_F_FSPLIT=0x%X; -- %s\n", MCODE_F_FSPLIT, "S=fsplit(S,N)");
+	fprintf(fp, "  MCODE_F_FMATCH=0x%X; -- %s\n", MCODE_F_FMATCH, "N=FMatch(S,Mask)");
+	fprintf(fp, "  MCODE_F_IIF=0x%X; -- %s\n", MCODE_F_IIF, "V=iif(C,V1,V2)");
+	fprintf(fp, "  MCODE_F_INDEX=0x%X; -- %s\n", MCODE_F_INDEX, "S=index(S1,S2[,Mode])");
+	fprintf(fp, "  MCODE_F_INT=0x%X; -- %s\n", MCODE_F_INT, "N=int(V)");
+	fprintf(fp, "  MCODE_F_ITOA=0x%X; -- %s\n", MCODE_F_ITOA, "S=itoa(N[,radix])");
+	fprintf(fp, "  MCODE_F_KEY=0x%X; -- %s\n", MCODE_F_KEY, "S=key(V)");
+	fprintf(fp, "  MCODE_F_LCASE=0x%X; -- %s\n", MCODE_F_LCASE, "S=lcase(S1)");
+	fprintf(fp, "  MCODE_F_LEN=0x%X; -- %s\n", MCODE_F_LEN, "N=len(S)");
+	fprintf(fp, "  MCODE_F_MAX=0x%X; -- %s\n", MCODE_F_MAX, "N=max(N1,N2)");
+	fprintf(fp, "  MCODE_F_MENU_CHECKHOTKEY=0x%X; -- %s\n", MCODE_F_MENU_CHECKHOTKEY, "N=checkhotkey(S[,N])");
+	fprintf(fp, "  MCODE_F_MENU_GETHOTKEY=0x%X; -- %s\n", MCODE_F_MENU_GETHOTKEY, "S=gethotkey([N])");
+	fprintf(fp, "  MCODE_F_MENU_SELECT=0x%X; -- %s\n", MCODE_F_MENU_SELECT, "N=Menu.Select(S[,N[,Dir]])");
+	fprintf(fp, "  MCODE_F_MIN=0x%X; -- %s\n", MCODE_F_MIN, "N=min(N1,N2)");
+	fprintf(fp, "  MCODE_F_MOD=0x%X; -- %s\n", MCODE_F_MOD, "N=mod(a,b) == a %  b");
+	fprintf(fp, "  MCODE_F_MLOAD=0x%X; -- %s\n", MCODE_F_MLOAD, "B=mload(var)");
+	fprintf(fp, "  MCODE_F_MSAVE=0x%X; -- %s\n", MCODE_F_MSAVE, "B=msave(var)");
+	fprintf(fp, "  MCODE_F_MSGBOX=0x%X; -- %s\n", MCODE_F_MSGBOX, "N=msgbox([\"Title\"[,\"Text\"[,flags]]])");
+	fprintf(fp, "  MCODE_F_PANEL_FATTR=0x%X; -- %s\n", MCODE_F_PANEL_FATTR, "N=Panel.FAttr(panelType,fileMask)");
+	fprintf(fp, "  MCODE_F_PANEL_SETPATH=0x%X; -- %s\n", MCODE_F_PANEL_SETPATH, "N=panel.SetPath(panelType,pathName[,fileName])");
+	fprintf(fp, "  MCODE_F_PANEL_FEXIST=0x%X; -- %s\n", MCODE_F_PANEL_FEXIST, "N=Panel.FExist(panelType,fileMask)");
+	fprintf(fp, "  MCODE_F_PANEL_SETPOS=0x%X; -- %s\n", MCODE_F_PANEL_SETPOS, "N=Panel.SetPos(panelType,fileName)");
+	fprintf(fp, "  MCODE_F_PANEL_SETPOSIDX=0x%X; -- %s\n", MCODE_F_PANEL_SETPOSIDX, "N=Panel.SetPosIdx(panelType,Idx[,InSelection])");
+	fprintf(fp, "  MCODE_F_PANEL_SELECT=0x%X; -- %s\n", MCODE_F_PANEL_SELECT, "V=Panel.Select(panelType,Action[,Mode[,Items]])");
+	fprintf(fp, "  MCODE_F_PANELITEM=0x%X; -- %s\n", MCODE_F_PANELITEM, "V=Panel.Item(Panel,Index,TypeInfo)");
+	fprintf(fp, "  MCODE_F_EVAL=0x%X; -- %s\n", MCODE_F_EVAL, "N=eval(S[,N])");
+	fprintf(fp, "  MCODE_F_RINDEX=0x%X; -- %s\n", MCODE_F_RINDEX, "S=rindex(S1,S2[,Mode])");
+	fprintf(fp, "  MCODE_F_SLEEP=0x%X; -- %s\n", MCODE_F_SLEEP, "Sleep(N)");
+	fprintf(fp, "  MCODE_F_STRING=0x%X; -- %s\n", MCODE_F_STRING, "S=string(V)");
+	fprintf(fp, "  MCODE_F_SUBSTR=0x%X; -- %s\n", MCODE_F_SUBSTR, "S=substr(S,start[,length])");
+	fprintf(fp, "  MCODE_F_UCASE=0x%X; -- %s\n", MCODE_F_UCASE, "S=ucase(S1)");
+	fprintf(fp, "  MCODE_F_WAITKEY=0x%X; -- %s\n", MCODE_F_WAITKEY, "V=waitkey([N,[T]])");
+	fprintf(fp, "  MCODE_F_XLAT=0x%X; -- %s\n", MCODE_F_XLAT, "S=xlat(S)");
+	fprintf(fp, "  MCODE_F_FLOCK=0x%X; -- %s\n", MCODE_F_FLOCK, "N=FLock(N,N)");
+	fprintf(fp, "  MCODE_F_CALLPLUGIN=0x%X; -- %s\n", MCODE_F_CALLPLUGIN, "V=callplugin(SysID[,param])");
+	fprintf(fp, "  MCODE_F_REPLACE=0x%X; -- %s\n", MCODE_F_REPLACE, "S=replace(sS,sF,sR[,Count[,Mode]])");
+	fprintf(fp, "  MCODE_F_PROMPT=0x%X; -- %s\n", MCODE_F_PROMPT, "S=prompt(\"Title\"[,\"Prompt\"[,flags[, \"Src\"[, \"History\"]]]])");
+	fprintf(fp, "  MCODE_F_BM_ADD=0x%X; -- %s\n", MCODE_F_BM_ADD, "N=BM.Add()  - добавить текущие координаты и обрезать хвост");
+	fprintf(fp, "  MCODE_F_BM_CLEAR=0x%X; -- %s\n", MCODE_F_BM_CLEAR, "N=BM.Clear() - очистить все закладки");
+	fprintf(fp, "  MCODE_F_BM_DEL=0x%X; -- %s\n", MCODE_F_BM_DEL, "N=BM.Del([Idx]) - удаляет закладку с указанным индексом (x=1...), 0 - удаляет текущую закладку");
+	fprintf(fp, "  MCODE_F_BM_GET=0x%X; -- %s\n", MCODE_F_BM_GET, "N=BM.Get(Idx,M) - возвращает координаты строки (M==0) или колонки (M==1) закладки с индексом (Idx=1...)");
+	fprintf(fp, "  MCODE_F_BM_GOTO=0x%X; -- %s\n", MCODE_F_BM_GOTO, "N=BM.Goto([n]) - переход на закладку с указанным индексом (0 --> текущую)");
+	fprintf(fp, "  MCODE_F_BM_NEXT=0x%X; -- %s\n", MCODE_F_BM_NEXT, "N=BM.Next() - перейти на следующую закладку");
+	fprintf(fp, "  MCODE_F_BM_POP=0x%X; -- %s\n", MCODE_F_BM_POP, "N=BM.Pop() - восстановить текущую позицию из закладки в конце стека и удалить закладку");
+	fprintf(fp, "  MCODE_F_BM_PREV=0x%X; -- %s\n", MCODE_F_BM_PREV, "N=BM.Prev() - перейти на предыдущую закладку");
+	fprintf(fp, "  MCODE_F_BM_BACK=0x%X; -- %s\n", MCODE_F_BM_BACK, "N=BM.Back() - перейти на предыдущую закладку с возможным сохранением текущей позиции");
+	fprintf(fp, "  MCODE_F_BM_PUSH=0x%X; -- %s\n", MCODE_F_BM_PUSH, "N=BM.Push() - сохранить текущую позицию в виде закладки в конце стека");
+	fprintf(fp, "  MCODE_F_BM_STAT=0x%X; -- %s\n", MCODE_F_BM_STAT, "N=BM.Stat([M]) - возвращает информацию о закладках, N=0 - текущее количество закладок	MCODE_F_TRIM,                     // S=trim(S[,N])");
+	fprintf(fp, "  MCODE_F_TRIM=0x%X; -- %s\n", MCODE_F_TRIM, "S=trim(S[,N])");
+	fprintf(fp, "  MCODE_F_FLOAT=0x%X; -- %s\n", MCODE_F_FLOAT, "N=float(V)");
+	fprintf(fp, "  MCODE_F_TESTFOLDER=0x%X; -- %s\n", MCODE_F_TESTFOLDER, "N=testfolder(S)");
+	fprintf(fp, "  MCODE_F_PRINT=0x%X; -- %s\n", MCODE_F_PRINT, "N=Print(Str)");
+	fprintf(fp, "  MCODE_F_MMODE=0x%X; -- %s\n", MCODE_F_MMODE, "N=MMode(Action[,Value])");
+	fprintf(fp, "  MCODE_F_EDITOR_SETTITLE=0x%X; -- %s\n", MCODE_F_EDITOR_SETTITLE, "N=Editor.SetTitle([Title])");
+	fprintf(fp, "  MCODE_F_MENU_GETVALUE=0x%X; -- %s\n", MCODE_F_MENU_GETVALUE, "S=Menu.GetValue([N])");
+	fprintf(fp, "  MCODE_F_MENU_ITEMSTATUS=0x%X; -- %s\n", MCODE_F_MENU_ITEMSTATUS, "N=Menu.ItemStatus([N])");
+	fprintf(fp, "  MCODE_F_BEEP=0x%X; -- %s\n", MCODE_F_BEEP, "N=beep([N])");
+	fprintf(fp, "  MCODE_F_KBDLAYOUT=0x%X; -- %s\n", MCODE_F_KBDLAYOUT, "N=kbdLayout([N])");
+	fprintf(fp, "  MCODE_F_WINDOW_SCROLL=0x%X; -- %s\n", MCODE_F_WINDOW_SCROLL, "N=Window.Scroll(Lines[,Axis])");
+	fprintf(fp, "  MCODE_F_CHECKALL=0x%X; -- %s\n", MCODE_F_CHECKALL, "B=CheckAll(Area,Flags[,Callback[,CallbackId]])");
+	fprintf(fp, "  MCODE_F_GETOPTIONS=0x%X; -- %s\n", MCODE_F_GETOPTIONS, "N=GetOptions()");
+	fprintf(fp, "  MCODE_F_USERMENU=0x%X; -- %s\n", MCODE_F_USERMENU, "UserMenu([Param])");
+	fprintf(fp, "  MCODE_F_SETCUSTOMSORTMODE=0x%X; -- %s\n", MCODE_F_SETCUSTOMSORTMODE, "");
+	fprintf(fp, "  MCODE_F_KEYMACRO=0x%X; -- %s\n", MCODE_F_KEYMACRO, "");
+	fprintf(fp, "  MCODE_F_FAR_GETCONFIG=0x%X; -- %s\n", MCODE_F_FAR_GETCONFIG, "");
+	fprintf(fp, "  MCODE_F_MACROSETTINGS=0x%X; -- %s\n", MCODE_F_MACROSETTINGS, "");
+	fprintf(fp, "  MCODE_C_AREA_OTHER=0x%X; -- %s\n", MCODE_C_AREA_OTHER, "Режим копирования текста с экрана, вертикальные меню");
+	fprintf(fp, "  MCODE_C_AREA_SHELL=0x%X; -- %s\n", MCODE_C_AREA_SHELL, "Файловые панели");
+	fprintf(fp, "  MCODE_C_AREA_VIEWER=0x%X; -- %s\n", MCODE_C_AREA_VIEWER, "Внутренняя программа просмотра");
+	fprintf(fp, "  MCODE_C_AREA_EDITOR=0x%X; -- %s\n", MCODE_C_AREA_EDITOR, "Редактор");
+	fprintf(fp, "  MCODE_C_AREA_DIALOG=0x%X; -- %s\n", MCODE_C_AREA_DIALOG, "Диалоги");
+	fprintf(fp, "  MCODE_C_AREA_SEARCH=0x%X; -- %s\n", MCODE_C_AREA_SEARCH, "Быстрый поиск в панелях");
+	fprintf(fp, "  MCODE_C_AREA_DISKS=0x%X; -- %s\n", MCODE_C_AREA_DISKS, "Меню выбора дисков");
+	fprintf(fp, "  MCODE_C_AREA_MAINMENU=0x%X; -- %s\n", MCODE_C_AREA_MAINMENU, "Основное меню");
+	fprintf(fp, "  MCODE_C_AREA_MENU=0x%X; -- %s\n", MCODE_C_AREA_MENU, "Прочие меню");
+	fprintf(fp, "  MCODE_C_AREA_HELP=0x%X; -- %s\n", MCODE_C_AREA_HELP, "Система помощи");
+	fprintf(fp, "  MCODE_C_AREA_INFOPANEL=0x%X; -- %s\n", MCODE_C_AREA_INFOPANEL, "Информационная панель");
+	fprintf(fp, "  MCODE_C_AREA_QVIEWPANEL=0x%X; -- %s\n", MCODE_C_AREA_QVIEWPANEL, "Панель быстрого просмотра");
+	fprintf(fp, "  MCODE_C_AREA_TREEPANEL=0x%X; -- %s\n", MCODE_C_AREA_TREEPANEL, "Панель дерева папок");
+	fprintf(fp, "  MCODE_C_AREA_FINDFOLDER=0x%X; -- %s\n", MCODE_C_AREA_FINDFOLDER, "Поиск папок");
+	fprintf(fp, "  MCODE_C_AREA_USERMENU=0x%X; -- %s\n", MCODE_C_AREA_USERMENU, "Меню пользователя");
+	fprintf(fp, "  MCODE_C_AREA_AUTOCOMPLETION=0x%X; -- %s\n", MCODE_C_AREA_AUTOCOMPLETION, "Список автодополнения");
+	fprintf(fp, "  MCODE_C_FULLSCREENMODE=0x%X; -- %s\n", MCODE_C_FULLSCREENMODE, "полноэкранный режим?");
+	fprintf(fp, "  MCODE_C_ISUSERADMIN=0x%X; -- %s\n", MCODE_C_ISUSERADMIN, "Administrator status");
+	fprintf(fp, "  MCODE_C_BOF=0x%X; -- %s\n", MCODE_C_BOF, "начало файла/активного каталога?");
+	fprintf(fp, "  MCODE_C_EOF=0x%X; -- %s\n", MCODE_C_EOF, "конец файла/активного каталога?");
+	fprintf(fp, "  MCODE_C_EMPTY=0x%X; -- %s\n", MCODE_C_EMPTY, "ком.строка пуста?");
+	fprintf(fp, "  MCODE_C_SELECTED=0x%X; -- %s\n", MCODE_C_SELECTED, "выделенный блок есть?");
+	fprintf(fp, "  MCODE_C_ROOTFOLDER=0x%X; -- %s\n", MCODE_C_ROOTFOLDER, "аналог MCODE_C_APANEL_ROOT для активной панели");
+	fprintf(fp, "  MCODE_C_APANEL_BOF=0x%X; -- %s\n", MCODE_C_APANEL_BOF, "начало активного  каталога?");
+	fprintf(fp, "  MCODE_C_PPANEL_BOF=0x%X; -- %s\n", MCODE_C_PPANEL_BOF, "начало пассивного каталога?");
+	fprintf(fp, "  MCODE_C_APANEL_EOF=0x%X; -- %s\n", MCODE_C_APANEL_EOF, "конец активного  каталога?");
+	fprintf(fp, "  MCODE_C_PPANEL_EOF=0x%X; -- %s\n", MCODE_C_PPANEL_EOF, "конец пассивного каталога?");
+	fprintf(fp, "  MCODE_C_APANEL_ISEMPTY=0x%X; -- %s\n", MCODE_C_APANEL_ISEMPTY, "активная панель:  пуста?");
+	fprintf(fp, "  MCODE_C_PPANEL_ISEMPTY=0x%X; -- %s\n", MCODE_C_PPANEL_ISEMPTY, "пассивная панель: пуста?");
+	fprintf(fp, "  MCODE_C_APANEL_SELECTED=0x%X; -- %s\n", MCODE_C_APANEL_SELECTED, "активная панель:  выделенные элементы есть?");
+	fprintf(fp, "  MCODE_C_PPANEL_SELECTED=0x%X; -- %s\n", MCODE_C_PPANEL_SELECTED, "пассивная панель: выделенные элементы есть?");
+	fprintf(fp, "  MCODE_C_APANEL_ROOT=0x%X; -- %s\n", MCODE_C_APANEL_ROOT, "это корневой каталог активной панели?");
+	fprintf(fp, "  MCODE_C_PPANEL_ROOT=0x%X; -- %s\n", MCODE_C_PPANEL_ROOT, "это корневой каталог пассивной панели?");
+	fprintf(fp, "  MCODE_C_APANEL_VISIBLE=0x%X; -- %s\n", MCODE_C_APANEL_VISIBLE, "активная панель:  видима?");
+	fprintf(fp, "  MCODE_C_PPANEL_VISIBLE=0x%X; -- %s\n", MCODE_C_PPANEL_VISIBLE, "пассивная панель: видима?");
+	fprintf(fp, "  MCODE_C_APANEL_PLUGIN=0x%X; -- %s\n", MCODE_C_APANEL_PLUGIN, "активная панель:  плагиновая?");
+	fprintf(fp, "  MCODE_C_PPANEL_PLUGIN=0x%X; -- %s\n", MCODE_C_PPANEL_PLUGIN, "пассивная панель: плагиновая?");
+	fprintf(fp, "  MCODE_C_APANEL_FILEPANEL=0x%X; -- %s\n", MCODE_C_APANEL_FILEPANEL, "активная панель:  файловая?");
+	fprintf(fp, "  MCODE_C_PPANEL_FILEPANEL=0x%X; -- %s\n", MCODE_C_PPANEL_FILEPANEL, "пассивная панель: файловая?");
+	fprintf(fp, "  MCODE_C_APANEL_FOLDER=0x%X; -- %s\n", MCODE_C_APANEL_FOLDER, "активная панель:  текущий элемент каталог?");
+	fprintf(fp, "  MCODE_C_PPANEL_FOLDER=0x%X; -- %s\n", MCODE_C_PPANEL_FOLDER, "пассивная панель: текущий элемент каталог?");
+	fprintf(fp, "  MCODE_C_APANEL_LEFT=0x%X; -- %s\n", MCODE_C_APANEL_LEFT, "активная панель левая?");
+	fprintf(fp, "  MCODE_C_PPANEL_LEFT=0x%X; -- %s\n", MCODE_C_PPANEL_LEFT, "пассивная панель левая?");
+	fprintf(fp, "  MCODE_C_APANEL_LFN=0x%X; -- %s\n", MCODE_C_APANEL_LFN, "на активной панели длинные имена?");
+	fprintf(fp, "  MCODE_C_PPANEL_LFN=0x%X; -- %s\n", MCODE_C_PPANEL_LFN, "на пассивной панели длинные имена?");
+	fprintf(fp, "  MCODE_C_APANEL_FILTER=0x%X; -- %s\n", MCODE_C_APANEL_FILTER, "на активной панели включен фильтр?");
+	fprintf(fp, "  MCODE_C_PPANEL_FILTER=0x%X; -- %s\n", MCODE_C_PPANEL_FILTER, "на пассивной панели включен фильтр?");
+	fprintf(fp, "  MCODE_C_CMDLINE_BOF=0x%X; -- %s\n", MCODE_C_CMDLINE_BOF, "курсор в начале cmd-строки редактирования?");
+	fprintf(fp, "  MCODE_C_CMDLINE_EOF=0x%X; -- %s\n", MCODE_C_CMDLINE_EOF, "курсор в конце cmd-строки редактирования?");
+	fprintf(fp, "  MCODE_C_CMDLINE_EMPTY=0x%X; -- %s\n", MCODE_C_CMDLINE_EMPTY, "ком.строка пуста?");
+	fprintf(fp, "  MCODE_C_CMDLINE_SELECTED=0x%X; -- %s\n", MCODE_C_CMDLINE_SELECTED, "в ком.строке есть выделение блока?");
+	fprintf(fp, "  MCODE_C_MSX=0x%X; -- %s\n", MCODE_C_MSX, "\"MsX\"");
+	fprintf(fp, "  MCODE_C_MSY=0x%X; -- %s\n", MCODE_C_MSY, "\"MsY\"");
+	fprintf(fp, "  MCODE_C_MSBUTTON=0x%X; -- %s\n", MCODE_C_MSBUTTON, "\"MsButton\"");
+	fprintf(fp, "  MCODE_C_MSCTRLSTATE=0x%X; -- %s\n", MCODE_C_MSCTRLSTATE, "\"MsCtrlState\"");
+	fprintf(fp, "  MCODE_C_MSEVENTFLAGS=0x%X; -- %s\n", MCODE_C_MSEVENTFLAGS, "\"MsEventFlags\"");
+	fprintf(fp, "  MCODE_C_MSLASTCTRLSTATE=0x%X; -- %s\n", MCODE_C_MSLASTCTRLSTATE, "\"MsLastCtrlState\"");
+	fprintf(fp, "  MCODE_V_FAR_WIDTH=0x%X; -- %s\n", MCODE_V_FAR_WIDTH, "Far.Width - ширина консольного окна");
+	fprintf(fp, "  MCODE_V_FAR_HEIGHT=0x%X; -- %s\n", MCODE_V_FAR_HEIGHT, "Far.Height - высота консольного окна");
+	fprintf(fp, "  MCODE_V_FAR_TITLE=0x%X; -- %s\n", MCODE_V_FAR_TITLE, "Far.Title - текущий заголовок консольного окна");
+	fprintf(fp, "  MCODE_V_FAR_UPTIME=0x%X; -- %s\n", MCODE_V_FAR_UPTIME, "Far.UpTime - время работы Far в миллисекундах");
+	fprintf(fp, "  MCODE_V_FAR_PID=0x%X; -- %s\n", MCODE_V_FAR_PID, "Far.PID - содержит ИД текущей запущенной копии Far Manager");
+	fprintf(fp, "  MCODE_V_MACRO_AREA=0x%X; -- %s\n", MCODE_V_MACRO_AREA, "MacroArea - имя текущей макрос области");
+	fprintf(fp, "  MCODE_V_APANEL_CURRENT=0x%X; -- %s\n", MCODE_V_APANEL_CURRENT, "APanel.Current - имя файла на активной панели");
+	fprintf(fp, "  MCODE_V_PPANEL_CURRENT=0x%X; -- %s\n", MCODE_V_PPANEL_CURRENT, "PPanel.Current - имя файла на пассивной панели");
+	fprintf(fp, "  MCODE_V_APANEL_SELCOUNT=0x%X; -- %s\n", MCODE_V_APANEL_SELCOUNT, "APanel.SelCount - активная панель:  число выделенных элементов");
+	fprintf(fp, "  MCODE_V_PPANEL_SELCOUNT=0x%X; -- %s\n", MCODE_V_PPANEL_SELCOUNT, "PPanel.SelCount - пассивная панель: число выделенных элементов");
+	fprintf(fp, "  MCODE_V_APANEL_PATH=0x%X; -- %s\n", MCODE_V_APANEL_PATH, "APanel.Path - активная панель:  путь на панели");
+	fprintf(fp, "  MCODE_V_PPANEL_PATH=0x%X; -- %s\n", MCODE_V_PPANEL_PATH, "PPanel.Path - пассивная панель: путь на панели");
+	fprintf(fp, "  MCODE_V_APANEL_PATH0=0x%X; -- %s\n", MCODE_V_APANEL_PATH0, "APanel.Path0 - активная панель:  путь на панели до вызова плагинов");
+	fprintf(fp, "  MCODE_V_PPANEL_PATH0=0x%X; -- %s\n", MCODE_V_PPANEL_PATH0, "PPanel.Path0 - пассивная панель: путь на панели до вызова плагинов");
+	fprintf(fp, "  MCODE_V_APANEL_UNCPATH=0x%X; -- %s\n", MCODE_V_APANEL_UNCPATH, "APanel.UNCPath - активная панель:  UNC-путь на панели");
+	fprintf(fp, "  MCODE_V_PPANEL_UNCPATH=0x%X; -- %s\n", MCODE_V_PPANEL_UNCPATH, "PPanel.UNCPath - пассивная панель: UNC-путь на панели");
+	fprintf(fp, "  MCODE_V_APANEL_WIDTH=0x%X; -- %s\n", MCODE_V_APANEL_WIDTH, "APanel.Width - активная панель:  ширина панели");
+	fprintf(fp, "  MCODE_V_PPANEL_WIDTH=0x%X; -- %s\n", MCODE_V_PPANEL_WIDTH, "PPanel.Width - пассивная панель: ширина панели");
+	fprintf(fp, "  MCODE_V_APANEL_TYPE=0x%X; -- %s\n", MCODE_V_APANEL_TYPE, "APanel.Type - тип активной панели");
+	fprintf(fp, "  MCODE_V_PPANEL_TYPE=0x%X; -- %s\n", MCODE_V_PPANEL_TYPE, "PPanel.Type - тип пассивной панели");
+	fprintf(fp, "  MCODE_V_APANEL_ITEMCOUNT=0x%X; -- %s\n", MCODE_V_APANEL_ITEMCOUNT, "APanel.ItemCount - активная панель:  число элементов");
+	fprintf(fp, "  MCODE_V_PPANEL_ITEMCOUNT=0x%X; -- %s\n", MCODE_V_PPANEL_ITEMCOUNT, "PPanel.ItemCount - пассивная панель: число элементов");
+	fprintf(fp, "  MCODE_V_APANEL_CURPOS=0x%X; -- %s\n", MCODE_V_APANEL_CURPOS, "APanel.CurPos - активная панель:  текущий индекс");
+	fprintf(fp, "  MCODE_V_PPANEL_CURPOS=0x%X; -- %s\n", MCODE_V_PPANEL_CURPOS, "PPanel.CurPos - пассивная панель: текущий индекс");
+	fprintf(fp, "  MCODE_V_APANEL_OPIFLAGS=0x%X; -- %s\n", MCODE_V_APANEL_OPIFLAGS, "APanel.OPIFlags - активная панель: флаги открытого плагина");
+	fprintf(fp, "  MCODE_V_PPANEL_OPIFLAGS=0x%X; -- %s\n", MCODE_V_PPANEL_OPIFLAGS, "PPanel.OPIFlags - пассивная панель: флаги открытого плагина");
+	fprintf(fp, "  MCODE_V_APANEL_DRIVETYPE=0x%X; -- %s\n", MCODE_V_APANEL_DRIVETYPE, "APanel.DriveType - активная панель: тип привода");
+	fprintf(fp, "  MCODE_V_PPANEL_DRIVETYPE=0x%X; -- %s\n", MCODE_V_PPANEL_DRIVETYPE, "PPanel.DriveType - пассивная панель: тип привода");
+	fprintf(fp, "  MCODE_V_APANEL_HEIGHT=0x%X; -- %s\n", MCODE_V_APANEL_HEIGHT, "APanel.Height - активная панель:  высота панели");
+	fprintf(fp, "  MCODE_V_PPANEL_HEIGHT=0x%X; -- %s\n", MCODE_V_PPANEL_HEIGHT, "PPanel.Height - пассивная панель: высота панели");
+	fprintf(fp, "  MCODE_V_APANEL_COLUMNCOUNT=0x%X; -- %s\n", MCODE_V_APANEL_COLUMNCOUNT, "APanel.ColumnCount - активная панель:  количество колонок");
+	fprintf(fp, "  MCODE_V_PPANEL_COLUMNCOUNT=0x%X; -- %s\n", MCODE_V_PPANEL_COLUMNCOUNT, "PPanel.ColumnCount - пассивная панель: количество колонок");
+	fprintf(fp, "  MCODE_V_APANEL_HOSTFILE=0x%X; -- %s\n", MCODE_V_APANEL_HOSTFILE, "APanel.HostFile - активная панель:  имя Host-файла");
+	fprintf(fp, "  MCODE_V_PPANEL_HOSTFILE=0x%X; -- %s\n", MCODE_V_PPANEL_HOSTFILE, "PPanel.HostFile - пассивная панель: имя Host-файла");
+	fprintf(fp, "  MCODE_V_APANEL_PREFIX=0x%X; -- %s\n", MCODE_V_APANEL_PREFIX, "APanel.Prefix");
+	fprintf(fp, "  MCODE_V_PPANEL_PREFIX=0x%X; -- %s\n", MCODE_V_PPANEL_PREFIX, "PPanel.Prefix");
+	fprintf(fp, "  MCODE_V_APANEL_FORMAT=0x%X; -- %s\n", MCODE_V_APANEL_FORMAT, "APanel.Format");
+	fprintf(fp, "  MCODE_V_PPANEL_FORMAT=0x%X; -- %s\n", MCODE_V_PPANEL_FORMAT, "PPanel.Format");
+	fprintf(fp, "  MCODE_V_ITEMCOUNT=0x%X; -- %s\n", MCODE_V_ITEMCOUNT, "ItemCount - число элементов в текущем объекте");
+	fprintf(fp, "  MCODE_V_CURPOS=0x%X; -- %s\n", MCODE_V_CURPOS, "CurPos - текущий индекс в текущем объекте");
+	fprintf(fp, "  MCODE_V_TITLE=0x%X; -- %s\n", MCODE_V_TITLE, "Title - заголовок текущего объекта");
+	fprintf(fp, "  MCODE_V_HEIGHT=0x%X; -- %s\n", MCODE_V_HEIGHT, "Height - высота текущего объекта");
+	fprintf(fp, "  MCODE_V_WIDTH=0x%X; -- %s\n", MCODE_V_WIDTH, "Width - ширина текущего объекта");
+	fprintf(fp, "  MCODE_V_EDITORFILENAME=0x%X; -- %s\n", MCODE_V_EDITORFILENAME, "Editor.FileName - имя редактируемого файла");
+	fprintf(fp, "  MCODE_V_EDITORLINES=0x%X; -- %s\n", MCODE_V_EDITORLINES, "Editor.Lines - количество строк в редакторе");
+	fprintf(fp, "  MCODE_V_EDITORCURLINE=0x%X; -- %s\n", MCODE_V_EDITORCURLINE, "Editor.CurLine - текущая линия в редакторе (в дополнении к Count)");
+	fprintf(fp, "  MCODE_V_EDITORCURPOS=0x%X; -- %s\n", MCODE_V_EDITORCURPOS, "Editor.CurPos - текущая поз. в редакторе");
+	fprintf(fp, "  MCODE_V_EDITORREALPOS=0x%X; -- %s\n", MCODE_V_EDITORREALPOS, "Editor.RealPos - текущая поз. в редакторе без привязки к размеру табуляции");
+	fprintf(fp, "  MCODE_V_EDITORSTATE=0x%X; -- %s\n", MCODE_V_EDITORSTATE, "Editor.State");
+	fprintf(fp, "  MCODE_V_EDITORVALUE=0x%X; -- %s\n", MCODE_V_EDITORVALUE, "Editor.Value - содержимое текущей строки");
+	fprintf(fp, "  MCODE_V_EDITORSELVALUE=0x%X; -- %s\n", MCODE_V_EDITORSELVALUE, "Editor.SelValue - содержит содержимое выделенного блока");
+	fprintf(fp, "  MCODE_V_DLGITEMTYPE=0x%X; -- %s\n", MCODE_V_DLGITEMTYPE, "Dlg.ItemType");
+	fprintf(fp, "  MCODE_V_DLGITEMCOUNT=0x%X; -- %s\n", MCODE_V_DLGITEMCOUNT, "Dlg.ItemCount");
+	fprintf(fp, "  MCODE_V_DLGCURPOS=0x%X; -- %s\n", MCODE_V_DLGCURPOS, "Dlg.CurPos");
+	fprintf(fp, "  MCODE_V_DLGINFOID=0x%X; -- %s\n", MCODE_V_DLGINFOID, "Dlg.Info.Id");
+	fprintf(fp, "  MCODE_V_VIEWERFILENAME=0x%X; -- %s\n", MCODE_V_VIEWERFILENAME, "Viewer.FileName - имя просматриваемого файла");
+	fprintf(fp, "  MCODE_V_VIEWERSTATE=0x%X; -- %s\n", MCODE_V_VIEWERSTATE, "Viewer.State");
+	fprintf(fp, "  MCODE_V_CMDLINE_ITEMCOUNT=0x%X; -- %s\n", MCODE_V_CMDLINE_ITEMCOUNT, "CmdLine.ItemCount");
+	fprintf(fp, "  MCODE_V_CMDLINE_CURPOS=0x%X; -- %s\n", MCODE_V_CMDLINE_CURPOS, "CmdLine.CurPos");
+	fprintf(fp, "  MCODE_V_CMDLINE_VALUE=0x%X; -- %s\n", MCODE_V_CMDLINE_VALUE, "CmdLine.Value");
+	fprintf(fp, "  MCODE_V_DRVSHOWPOS=0x%X; -- %s\n", MCODE_V_DRVSHOWPOS, "Drv.ShowPos - меню выбора дисков отображено: 1=слева (Alt-F1), 2=справа (Alt-F2), 0=\"нету его\"");
+	fprintf(fp, "  MCODE_V_DRVSHOWMODE=0x%X; -- %s\n", MCODE_V_DRVSHOWMODE, "Drv.ShowMode - режимы отображения меню выбора дисков");
+	fprintf(fp, "  MCODE_V_HELPFILENAME=0x%X; -- %s\n", MCODE_V_HELPFILENAME, "Help.FileName");
+	fprintf(fp, "  MCODE_V_HELPTOPIC=0x%X; -- %s\n", MCODE_V_HELPTOPIC, "Help.Topic");
+	fprintf(fp, "  MCODE_V_HELPSELTOPIC=0x%X; -- %s\n", MCODE_V_HELPSELTOPIC, "Help.SelTopic");
+	fprintf(fp, "  MCODE_V_MENU_VALUE=0x%X; -- %s\n", MCODE_V_MENU_VALUE, "Menu.Value");
 	fprintf(fp, "}\n");
 
 	fclose(fp);
@@ -597,7 +602,7 @@ static void LM_ProcessRecordedMacro(int Area, const FARString& TextKey, const FA
 	CallMacroPlugin(&info);
 }
 
-bool KeyMacro::ParseMacroString(const wchar_t* Sequence, DWORD Flags, bool skipFile) const
+bool KeyMacro::ParseMacroString(const wchar_t* Sequence, DWORD Flags, bool skipFile)
 {
 	const wchar_t* lang = GetMacroLanguage(Flags);
 	const auto onlyCheck = (Flags&KMFLAGS_SILENTCHECK) != 0;
@@ -1406,16 +1411,13 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 		}
 
 		//case MCODE_F_BEEP:             break;
-		//case MCODE_F_CHECKALL:         break;
 		//case MCODE_F_DLG_SETFOCUS:     break;
 		//case MCODE_F_EDITOR_DELLINE:   break;
 		//case MCODE_F_EDITOR_INSSTR:    break;
 		//case MCODE_F_EDITOR_SETSTR:    break;
 		//case MCODE_F_FAR_CFG_GET:      break;
 		//case MCODE_F_FAR_GETCONFIG:    break;
-		//case MCODE_F_GETOPTIONS:       break;
 		//case MCODE_F_KEYBAR_SHOW:      break;
-		//case MCODE_F_MACROSETTINGS:    break;
 		//case MCODE_F_MENU_FILTER:      break;
 		//case MCODE_F_MENU_FILTERSTR:   break;
 		//case MCODE_F_MENU_SHOW:        break;
@@ -1428,6 +1430,40 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 		//case MCODE_F_STRPAD:           break;
 		//case MCODE_F_STRWRAP:          break;
 		//case MCODE_F_USERMENU:         break;
+
+		case MCODE_F_CHECKALL:
+		{
+			auto Result = false;
+			if (Data->Count >= 2)
+			{
+				const auto Area = static_cast<int>(Data->Values[0].Double);
+				const auto Flags = static_cast<DWORD>(Data->Values[1].Double);
+				const auto Callback = (Data->Count >= 3 && Data->Values[2].Type == FMVT_POINTER)? reinterpret_cast<FARMACROCALLBACK>(Data->Values[2].Pointer) : nullptr;
+				const auto CallbackId = (Data->Count >= 4 && Data->Values[3].Type == FMVT_POINTER)? Data->Values[3].Pointer : nullptr;
+				Result = CheckAll(Area, Flags) && (!Callback || Callback(CallbackId, AKMFLAGS_NONE));
+			}
+			api.PassBoolean(Result);
+			return 0;
+		}
+
+		case MCODE_F_MACROSETTINGS:
+			if (Data->Count>=4 && Data->Values[0].Type==FMVT_STRING && Data->Values[1].Type==FMVT_DOUBLE
+				&& Data->Values[2].Type==FMVT_STRING && Data->Values[3].Type==FMVT_STRING)
+			{
+				const auto Key = KeyNameToKey(Data->Values[0].String);
+				auto Flags = static_cast<DWORD>(Data->Values[1].Double);
+				const auto Src = Data->Values[2].String;
+				const auto Descr = Data->Values[3].String;
+				if (Key && GetMacroSettings(Key, Flags, Src, Descr))
+				{
+					api.PassNumber(static_cast<double>(Flags));
+					api.PassString(m_RecCode);
+					api.PassString(m_RecDescription);
+					return 0;
+				}
+			}
+			api.PassBoolean(false);
+			break;
 
 		case MCODE_F_ABS:                return api.absFunc();
 		case MCODE_F_ASC:                return api.ascFunc();
@@ -1854,7 +1890,7 @@ int FarMacroApi::itowFunc()
 
 	if (Params[0].isInteger() || Params[0].isDouble())
 	{
-		wchar_t value[65];
+		wchar_t value[80];
 		int Radix = static_cast<int>(Params[1].toInteger());
 
 		if (!Radix)
@@ -1900,7 +1936,7 @@ int FarMacroApi::keyFunc()
 		// Проверим...
 		if (mData->Values[0].Type == FMVT_STRING)
 		{
-			if (KeyNameToKey(mData->Values[0].String))
+			if (KeyNameToKey(mData->Values[0].String) != KEY_INVALID)
 				strKeyText = mData->Values[0].String;
 		}
 	}
@@ -2258,7 +2294,7 @@ int FarMacroApi::fattrFuncImpl(int Type)
 	if (Type == 3) // panel.fexist(3)
 		FileAttr=(DWORD)Pos+1;
 
-	PassNumber(static_cast<long>(FileAttr));
+	PassNumber(static_cast<int32_t>(FileAttr));
 	return Ret;
 }
 
@@ -3719,52 +3755,6 @@ bool KeyMacro::GetMacroKeyInfo(const FARString& StrArea, int Pos, FARString &str
 	return false;
 }
 
-/*
-  после вызова этой функции нужно удалить память!!!
-  функция декомпилит только простые последовательности, т.к.... клавиши
-  в противном случае возвращает Src
-*/
-wchar_t *KeyMacro::MkTextSequence(DWORD *Buffer,int BufferSize,const wchar_t *Src)
-{
-	int J, Key;
-	FARString strMacroKeyText;
-	FARString strTextBuffer;
-
-	if (!Buffer)
-		return nullptr;
-
-	strTextBuffer.Clear();
-
-	//~ if (Buffer[0] == MCODE_OP_KEYS)
-		//~ for (J=1; J < BufferSize; J++)
-		//~ {
-			//~ Key=Buffer[J];
-
-			//~ if (Key == MCODE_OP_ENDKEYS || Key == MCODE_OP_KEYS)
-				//~ continue;
-
-			//~ if (/*
-				//~ (Key&KEY_MACRO_ENDBASE) >= KEY_MACRO_BASE && (Key&KEY_MACRO_ENDBASE) <= KEY_MACRO_ENDBASE ||
-				//~ (Key&KEY_OP_ENDBASE) >= KEY_OP_BASE && (Key&KEY_OP_ENDBASE) <= KEY_OP_ENDBASE ||
-				//~ */
-			    //~ !KeyToText(Key,strMacroKeyText)
-			//~ )
-			//~ {
-				//~ return Src?wcsdup(Src):nullptr;
-			//~ }
-
-			//~ if (J > 1)
-				//~ strTextBuffer += L" ";
-
-			//~ strTextBuffer += strMacroKeyText;
-		//~ }
-
-	if (!strTextBuffer.IsEmpty())
-		return wcsdup(strTextBuffer.CPtr());
-
-	return nullptr;
-}
-
 void KeyMacro::SetMacroConst(int ConstIndex, long long Value)
 {
 	msValues[ConstIndex] = Value;
@@ -3796,7 +3786,6 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG
 	FARString strKeyText;
 	static int LastKey=0;
 	static DlgParam *KMParam=nullptr;
-	int Index;
 
 	//_SVS(SysLog(L"LastKey=%d Msg=%ls",LastKey,_DLGMSG_ToName(Msg)));
 	if (Msg == DN_INITDIALOG)
@@ -3839,29 +3828,6 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG
 			}
 		}
 
-		/*
-		int KeySize=GetRegKeySize("KeyMacros","DlgKeys");
-		char *KeyStr;
-		if(KeySize &&
-			(KeyStr=(char*)malloc(KeySize+1))  &&
-			GetRegKey("KeyMacros","DlgKeys",KeyStr,"",KeySize)
-		)
-		{
-			UserDefinedList KeybList;
-			if(KeybList.Set(KeyStr))
-			{
-				KeybList.Start();
-				const char *OneKey;
-				*KeyText=0;
-				while(nullptr!=(OneKey=KeybList.GetNext()))
-				{
-					far_strncpy(KeyText, OneKey, sizeof(KeyText));
-					SendDlgMessage(hDlg,DM_LISTADDSTR,2,(long)KeyText);
-				}
-			}
-			free(KeyStr);
-		}
-		*/
 		SendDlgMessage(hDlg,DM_SETTEXTPTR,2,reinterpret_cast<LONG_PTR>(L""));
 		// </Клавиши, которые не введешь в диалоге назначения>
 	}
@@ -3912,9 +3878,6 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG
 
 		// </Обработка особых клавиш: F1 & Enter>
 M1:
-		_SVS(SysLog(L"[%d] Assign ==> Param2='%ls',LastKey='%ls'",__LINE__,_FARKEY_ToName((DWORD)Param2),LastKey?_FARKEY_ToName(LastKey):L""));
-		KeyMacro *MacroDlg=KMParam->Handle;
-
 		if ((Param2&0x00FFFFFF) > 0x7F && (Param2&0x00FFFFFF) < 0xFFFF)
 			Param2=KeyToKeyLayout((int)(Param2&0x0000FFFF))|(DWORD)(Param2&(~0x0000FFFF));
 
@@ -4022,6 +3985,8 @@ enum MACROSETTINGSDLG
 	MS_DOUBLEBOX,
 	MS_TEXT_SEQUENCE,
 	MS_EDIT_SEQUENCE,
+	MS_TEXT_DESCR,
+	MS_EDIT_DESCR,
 	MS_SEPARATOR1,
 	MS_CHECKBOX_OUTPUT,
 	MS_CHECKBOX_START,
@@ -4044,13 +4009,8 @@ enum MACROSETTINGSDLG
 
 LONG_PTR WINAPI KeyMacro::ParamMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2)
 {
-	static DlgParam *KMParam=nullptr;
-
 	switch (Msg)
 	{
-		case DN_INITDIALOG:
-			KMParam=(DlgParam *)Param2;
-			break;
 		case DN_BTNCLICK:
 
 			if (Param1==MS_CHECKBOX_A_PANEL || Param1==MS_CHECKBOX_P_PANEL)
@@ -4062,22 +4022,17 @@ LONG_PTR WINAPI KeyMacro::ParamMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_
 
 			if (Param1==MS_BUTTON_OK)
 			{
-				MacroRecord mr{};
-				KeyMacro *Macro=KMParam->Handle;
 				LPCWSTR Sequence=(LPCWSTR)SendDlgMessage(hDlg,DM_GETCONSTTEXTPTR,MS_EDIT_SEQUENCE,0);
 
 				if (*Sequence)
 				{
-					//### TODO if (Macro->ParseMacroString(&mr,Sequence))
+					if (ParseMacroString(Sequence,KMFLAGS_LUA,true))
 					{
-						free(Macro->RecBuffer);
-						Macro->RecBufferSize=mr.BufferSize;
-						Macro->RecBuffer=mr.Buffer;
-						Macro->RecSrc=wcsdup(Sequence);
+						m_RecCode=Sequence;
+						//m_RecDescription = reinterpret_cast<const wchar_t*>(Dlg->SendMessage(DM_GETCONSTTEXTPTR, MS_EDIT_DESCR, nullptr));
 						return TRUE;
 					}
 				}
-
 				return FALSE;
 			}
 
@@ -4087,7 +4042,7 @@ LONG_PTR WINAPI KeyMacro::ParamMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_
 	return DefDlgProc(hDlg,Msg,Param1,Param2);
 }
 
-int KeyMacro::GetMacroSettings(uint32_t Key,DWORD &Flags)
+int KeyMacro::GetMacroSettings(uint32_t Key,DWORD &Flags, const wchar_t* Src, const wchar_t* Descr)
 {
 	/*
 	          1         2         3         4         5         6
@@ -4095,45 +4050,49 @@ int KeyMacro::GetMacroSettings(uint32_t Key,DWORD &Flags)
 	 1 г=========== Параметры макрокоманды для 'CtrlP' ==================¬
 	 2 | Последовательность:                                             |
 	 3 | _______________________________________________________________ |
-	 4 |-----------------------------------------------------------------|
-	 5 | [ ] Разрешить во время выполнения вывод на экран                |
-	 6 | [ ] Выполнять после запуска FAR                                 |
-	 7 |-----------------------------------------------------------------|
-	 8 | [ ] Активная панель             [ ] Пассивная панель            |
-	 9 |   [?] На панели плагина           [?] На панели плагина         |
-	10 |   [?] Выполнять для папок         [?] Выполнять для папок       |
-	11 |   [?] Отмечены файлы              [?] Отмечены файлы            |
-	12 |-----------------------------------------------------------------|
-	13 | [?] Пустая командная строка                                     |
-	14 | [?] Отмечен блок                                                |
-	15 |-----------------------------------------------------------------|
-	16 |               [ Продолжить ]  [ Отменить ]                      |
-	17 L=================================================================+
+	 4 | Описание:                                                       |
+	 5 | _______________________________________________________________ |
+	 6 |-----------------------------------------------------------------|
+	 7 | [ ] Разрешить во время выполнения вывод на экран                |
+	 8 | [ ] Выполнять после запуска FAR                                 |
+	 9 |-----------------------------------------------------------------|
+	10 | [ ] Активная панель             [ ] Пассивная панель            |
+	11 |   [?] На панели плагина           [?] На панели плагина         |
+	12 |   [?] Выполнять для папок         [?] Выполнять для папок       |
+	13 |   [?] Отмечены файлы              [?] Отмечены файлы            |
+	14 |-----------------------------------------------------------------|
+	15 | [?] Пустая командная строка                                     |
+	16 | [?] Отмечен блок                                                |
+	17 |-----------------------------------------------------------------|
+	18 |               [ Продолжить ]  [ Отменить ]                      |
+	19 L=================================================================+
 
 	*/
 	DialogDataEx MacroSettingsDlgData[]=
 	{
-		{DI_DOUBLEBOX,3,1,69,17,{},0,L""},
+		{DI_DOUBLEBOX,3,1,69,19,{},0,L""},
 		{DI_TEXT,5,2,0,2,{},0,Msg::MacroSequence},
-		{DI_EDIT,5,3,67,3,{},DIF_FOCUS,L""},
-		{DI_TEXT,3,4,0,4,{},DIF_SEPARATOR,L""},
-		{DI_CHECKBOX,5,5,0,5,{},0,Msg::MacroSettingsEnableOutput},
-		{DI_CHECKBOX,5,6,0,6,{},0,Msg::MacroSettingsRunAfterStart},
-		{DI_TEXT,3,7,0,7,{},DIF_SEPARATOR,L""},
-		{DI_CHECKBOX,5,8,0,8,{},0,Msg::MacroSettingsActivePanel},
-		{DI_CHECKBOX,7,9,0,9,{2},DIF_3STATE|DIF_DISABLE,Msg::MacroSettingsPluginPanel},
-		{DI_CHECKBOX,7,10,0,10,{2},DIF_3STATE|DIF_DISABLE,Msg::MacroSettingsFolders},
-		{DI_CHECKBOX,7,11,0,11,{2},DIF_3STATE|DIF_DISABLE,Msg::MacroSettingsSelectionPresent},
-		{DI_CHECKBOX,37,8,0,8,{},0,Msg::MacroSettingsPassivePanel},
-		{DI_CHECKBOX,39,9,0,9,{2},DIF_3STATE|DIF_DISABLE,Msg::MacroSettingsPluginPanel},
-		{DI_CHECKBOX,39,10,0,10,{2},DIF_3STATE|DIF_DISABLE,Msg::MacroSettingsFolders},
-		{DI_CHECKBOX,39,11,0,11,{2},DIF_3STATE|DIF_DISABLE,Msg::MacroSettingsSelectionPresent},
-		{DI_TEXT,3,12,0,12,{},DIF_SEPARATOR,L""},
-		{DI_CHECKBOX,5,13,0,13,{2},DIF_3STATE,Msg::MacroSettingsCommandLine},
-		{DI_CHECKBOX,5,14,0,14,{2},DIF_3STATE,Msg::MacroSettingsSelectionBlockPresent},
-		{DI_TEXT,3,15,0,15,{},DIF_SEPARATOR,L""},
-		{DI_BUTTON,0,16,0,16,{},DIF_DEFAULT|DIF_CENTERGROUP,Msg::Ok},
-		{DI_BUTTON,0,16,0,16,{},DIF_CENTERGROUP,Msg::Cancel}
+		{DI_EDIT,5,3,67,3,{reinterpret_cast<DWORD_PTR>(L"MacroSequence")},DIF_HISTORY|DIF_FOCUS,L""},
+		{DI_TEXT,5,4,0,4,{},0,Msg::MacroDescription},
+		{DI_EDIT,5,5,67,5,{reinterpret_cast<DWORD_PTR>(L"MacroDescription")},DIF_HISTORY,L""},
+		{DI_TEXT,3,6,0,6,{},DIF_SEPARATOR,L""},
+		{DI_CHECKBOX,5,7,0,7,{},0,Msg::MacroSettingsEnableOutput},
+		{DI_CHECKBOX,5,8,0,8,{},0,Msg::MacroSettingsRunAfterStart},
+		{DI_TEXT,3,9,0,9,{},DIF_SEPARATOR,L""},
+		{DI_CHECKBOX,5,10,0,10,{},0,Msg::MacroSettingsActivePanel},
+		{DI_CHECKBOX,7,11,0,11,{2},DIF_3STATE|DIF_DISABLE,Msg::MacroSettingsPluginPanel},
+		{DI_CHECKBOX,7,12,0,12,{2},DIF_3STATE|DIF_DISABLE,Msg::MacroSettingsFolders},
+		{DI_CHECKBOX,7,13,0,13,{2},DIF_3STATE|DIF_DISABLE,Msg::MacroSettingsSelectionPresent},
+		{DI_CHECKBOX,37,10,0,10,{},0,Msg::MacroSettingsPassivePanel},
+		{DI_CHECKBOX,39,11,0,11,{2},DIF_3STATE|DIF_DISABLE,Msg::MacroSettingsPluginPanel},
+		{DI_CHECKBOX,39,12,0,12,{2},DIF_3STATE|DIF_DISABLE,Msg::MacroSettingsFolders},
+		{DI_CHECKBOX,39,13,0,13,{2},DIF_3STATE|DIF_DISABLE,Msg::MacroSettingsSelectionPresent},
+		{DI_TEXT,3,14,0,14,{},DIF_SEPARATOR,L""},
+		{DI_CHECKBOX,5,15,0,15,{2},DIF_3STATE,Msg::MacroSettingsCommandLine},
+		{DI_CHECKBOX,5,16,0,16,{2},DIF_3STATE,Msg::MacroSettingsSelectionBlockPresent},
+		{DI_TEXT,3,17,0,17,{},DIF_SEPARATOR,L""},
+		{DI_BUTTON,0,18,0,18,{},DIF_DEFAULT|DIF_CENTERGROUP,Msg::Ok},
+		{DI_BUTTON,0,18,0,18,{},DIF_CENTERGROUP,Msg::Cancel}
 	};
 	MakeDialogItemsEx(MacroSettingsDlgData,MacroSettingsDlg);
 	FARString strKeyText;
@@ -4151,12 +4110,11 @@ int KeyMacro::GetMacroSettings(uint32_t Key,DWORD &Flags)
 	MacroSettingsDlg[MS_CHECKBOX_P_SELECTION].Selected=Set3State(Flags,MFLAGS_PSELECTION,MFLAGS_PNOSELECTION);
 	MacroSettingsDlg[MS_CHECKBOX_CMDLINE].Selected=Set3State(Flags,MFLAGS_EMPTYCOMMANDLINE,MFLAGS_NOTEMPTYCOMMANDLINE);
 	MacroSettingsDlg[MS_CHECKBOX_SELBLOCK].Selected=Set3State(Flags,MFLAGS_EDITSELECTION,MFLAGS_EDITNOSELECTION);
-	LPWSTR Sequence=MkTextSequence(RecBuffer,RecBufferSize);
+	LPCWSTR Sequence = *Src ? Src : m_RecCode.CPtr();
 	MacroSettingsDlg[MS_EDIT_SEQUENCE].strData=Sequence;
-	free(Sequence);
 	DlgParam Param={this,0,0,0};
 	Dialog Dlg(MacroSettingsDlg,ARRAYSIZE(MacroSettingsDlg),ParamMacroDlgProc,(LONG_PTR)&Param);
-	Dlg.SetPosition(-1,-1,73,19);
+	Dlg.SetPosition(-1,-1,73,21);
 	Dlg.SetHelp(L"KeyMacroSetting");
 	Frame* BottomFrame = FrameManager->GetBottomFrame();
 	if(BottomFrame)

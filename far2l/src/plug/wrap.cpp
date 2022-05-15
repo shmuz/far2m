@@ -3056,85 +3056,68 @@ INT_PTR WINAPI FarAdvControlA(INT_PTR ModuleNumber,int Command,void *Param)
 		{
 			if (!Param) return FALSE;
 
-			ActlKeyMacro km{};
-			oldfar::ActlKeyMacro *kmA=(oldfar::ActlKeyMacro *)Param;
+			const auto kmA = static_cast<oldfar::ActlKeyMacro*>(Param);
+			FAR_MACRO_CONTROL_COMMANDS MacroCommand = MCTL_LOADALL;
+			int Param1=0;
+			bool Process=true;
+
+			MacroSendMacroText mtW = {};
+			mtW.StructSize = sizeof(MacroSendMacroText);
 
 			switch (kmA->Command)
 			{
 				case oldfar::MCMD_LOADALL:
-					km.Command=MCMD_LOADALL;
+					MacroCommand = MCTL_LOADALL;
 					break;
 				case oldfar::MCMD_SAVEALL:
-					km.Command=MCMD_SAVEALL;
-					break;
-				case oldfar::MCMD_POSTMACROSTRING:
-					km.Command=MCMD_POSTMACROSTRING;
-					km.Param.PlainText.SequenceText=AnsiToUnicode(kmA->Param.PlainText.SequenceText);
-
-					if (kmA->Param.PlainText.Flags&oldfar::KSFLAGS_DISABLEOUTPUT) km.Param.PlainText.Flags|=KMFLAGS_DISABLEOUTPUT;
-
-					if (kmA->Param.PlainText.Flags&oldfar::KSFLAGS_NOSENDKEYSTOPLUGINS) km.Param.PlainText.Flags|=KMFLAGS_NOSENDKEYSTOPLUGINS;
-
+					MacroCommand = MCTL_SAVEALL;
 					break;
 				case oldfar::MCMD_GETSTATE:
-					km.Command=MCMD_GETSTATE;
+					MacroCommand = MCTL_GETSTATE;
 					break;
-					/*
-					case oldfar::MCMD_COMPILEMACRO:
-					km.Command=MCMD_COMPILEMACRO;
-					km.Param.Compile.Count = kmA->Param.Compile.Count;
-					km.Param.Compile.Flags = kmA->Param.Compile.Flags;
-					km.Param.Compile.Sequence = AnsiToUnicode(kmA->Param.Compile.Sequence);
+				case oldfar::MCMD_POSTMACROSTRING:
+					MacroCommand = MCTL_SENDSTRING;
+					Param1=MSSC_POST;
+					mtW.SequenceText=AnsiToUnicode(kmA->Param.PlainText.SequenceText);
+
+					if (!(kmA->Param.PlainText.Flags&oldfar::KSFLAGS_DISABLEOUTPUT)) mtW.Flags|=KMFLAGS_ENABLEOUTPUT;
+
+					if (kmA->Param.PlainText.Flags&oldfar::KSFLAGS_NOSENDKEYSTOPLUGINS) mtW.Flags|=KMFLAGS_NOSENDKEYSTOPLUGINS;
+
 					break;
-					*/
+
 				case oldfar::MCMD_CHECKMACRO:
-					km.Command=MCMD_CHECKMACRO;
-					km.Param.PlainText.SequenceText=AnsiToUnicode(kmA->Param.PlainText.SequenceText);
+					MacroCommand = MCTL_SENDSTRING;
+					Param1=MSSC_CHECK;
+					mtW.SequenceText=AnsiToUnicode(kmA->Param.PlainText.SequenceText);
+					break;
+
+				default:
+					Process=false;
 					break;
 			}
 
-			INT_PTR res = FarAdvControl(ModuleNumber, ACTL_KEYMACRO, &km);
+			intptr_t res=0;
 
-#if 0 //### TODO
-			switch (km.Command)
+			if (Process)
 			{
-				case MCMD_CHECKMACRO:
+				res = farMacroControl(0, MacroCommand, Param1, &mtW);
+
+				if (MacroCommand == MCTL_SENDSTRING)
 				{
-
-					if (ErrMsg1) free(ErrMsg1);
-
-					if (ErrMsg2) free(ErrMsg2);
-
-					if (ErrMsg3) free(ErrMsg3);
-
-					FARString ErrMessage[3];
-
-					CtrlObject->Macro.GetMacroParseError(&ErrMessage[0],&ErrMessage[1],&ErrMessage[2],nullptr);
-
-					kmA->Param.MacroResult.ErrMsg1 = ErrMsg1 = UnicodeToAnsi(ErrMessage[0]);
-					kmA->Param.MacroResult.ErrMsg2 = ErrMsg2 = UnicodeToAnsi(ErrMessage[1]);
-					kmA->Param.MacroResult.ErrMsg3 = ErrMsg3 = UnicodeToAnsi(ErrMessage[2]);
-
-					if (km.Param.PlainText.SequenceText)
-						free((void*)km.Param.PlainText.SequenceText);
-
-					break;
+					switch (Param1)
+					{
+						case MSSC_CHECK:
+							kmA->Param.MacroResult.ErrMsg1 = "";
+							kmA->Param.MacroResult.ErrMsg2 = "";
+							kmA->Param.MacroResult.ErrMsg3 = "";
+							[[fallthrough]];
+						case MSSC_POST:
+							free((void*)mtW.SequenceText);
+							break;
+					}
 				}
-
-				case MCMD_COMPILEMACRO:
-
-					if (km.Param.Compile.Sequence)
-						free((void*)km.Param.Compile.Sequence);
-
-					break;
-				case MCMD_POSTMACROSTRING:
-
-					if (km.Param.PlainText.SequenceText)
-						free((void*)km.Param.PlainText.SequenceText);
-
-					break;
 			}
-#endif
 
 			return res;
 		}

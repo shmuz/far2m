@@ -16967,6 +16967,16 @@ MacroSequence
 "Secuencia:"
 "Послідовність:"
 
+MacroDescription
+"Описание:"
+"Description:"
+"Popis:"
+"Beschreibung:"
+"Megjegyzés:"
+"Opis:"
+"Descripción:"
+"Опис:"
+
 MacroReDefinedKey2
 "Переопределить?"
 "Redefine?"
