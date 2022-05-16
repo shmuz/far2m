@@ -44,7 +44,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 FARString &FormatNumber(const wchar_t *Src, FARString &strDest, int NumDigits)
 {
 	FARString result;//can't use strDest cuz Src may point to its internal buffer
-	
+
 	const wchar_t *dot = wcschr(Src, L'.');
 	const wchar_t *part = dot ? dot : Src + wcslen(Src);
 	if (part == Src) {

@@ -2450,7 +2450,7 @@ int64_t Dialog::VMProcess(int OpCode,void *vParam,int64_t iParam)
 		case MCODE_V_DLGINFOID:        // Dlg.Info.Id
 		{
 			static FARString strId;
-			strId.Format(L"{%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X}",Id.Data1,Id.Data2,Id.Data3,Id.Data4[0],Id.Data4[1],Id.Data4[2],Id.Data4[3],Id.Data4[4],Id.Data4[5],Id.Data4[6],Id.Data4[7]);
+			strId.Format(L"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",Id.Data1,Id.Data2,Id.Data3,Id.Data4[0],Id.Data4[1],Id.Data4[2],Id.Data4[3],Id.Data4[4],Id.Data4[5],Id.Data4[6],Id.Data4[7]);
 			return reinterpret_cast<INT64>(strId.CPtr());
 		}
 		case MCODE_V_ITEMCOUNT:

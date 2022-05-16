@@ -733,7 +733,7 @@ public:
 	int size2strFunc();
 	int sleepFunc();
 	int stringFunc();
-	int strpadFunc();
+	int strpadFunc();     //implemented in Lua
 	int strwrapFunc();
 	int substrFunc();
 	int testfolderFunc();
@@ -1017,7 +1017,14 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 		case MCODE_V_DLGCURPOS:    // Dlg->CurPos
 		case MCODE_V_DLGITEMTYPE:  // Dlg->ItemType
 		//case MCODE_V_DLGPREVPOS:   // Dlg->PrevPos
+
 		case MCODE_V_DLGINFOID:      // Dlg->Info.Id
+			if (CurrentWindow && CurrentWindow->GetType()==MODALTYPE_DIALOG) // ?? Mode == MACRO_DIALOG ??
+			{
+				api.PassString( reinterpret_cast<LPCWSTR>(CurrentWindow->VMProcess(CheckCode)) );
+			}
+			break;
+
 		//case MCODE_V_DLGINFOOWNER: // Dlg->Info.Owner
 			break;
 
@@ -1426,9 +1433,6 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 		//case MCODE_F_PLUGIN_LOAD:      break;
 		//case MCODE_F_PLUGIN_UNLOAD:    break;
 		//case MCODE_F_SETCUSTOMSORTMODE:break;
-		//case MCODE_F_SIZE2STR:         break;
-		//case MCODE_F_STRPAD:           break;
-		//case MCODE_F_STRWRAP:          break;
 		//case MCODE_F_USERMENU:         break;
 
 		case MCODE_F_CHECKALL:
@@ -1504,8 +1508,10 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 		case MCODE_F_PROMPT:             return api.promptFunc();
 		case MCODE_F_REPLACE:            return api.replaceFunc();
 		case MCODE_F_RINDEX:             return api.rindexFunc();
+		case MCODE_F_SIZE2STR:           return api.size2strFunc();
 		case MCODE_F_SLEEP:              return api.sleepFunc();
 		case MCODE_F_STRING:             return api.stringFunc();
+		case MCODE_F_STRWRAP:            return api.strwrapFunc();
 		case MCODE_F_SUBSTR:             return api.substrFunc();
 		case MCODE_F_TESTFOLDER:         return api.testfolderFunc();
 		case MCODE_F_TRIM:               return api.trimFunc();
@@ -1672,10 +1678,10 @@ int FarMacroApi::substrFunc()
 	auto Params = parseParams(3, mData);
 	int Ret=0;
 
-	int start = static_cast<int>(Params[1].asInteger());
 	const auto& p = Params[0].toString();
+	int start = static_cast<int>(Params[1].asInteger());
 	const auto length_str = static_cast<int>(wcslen(p));
-	int length = Params[2].isUnknown()? length_str : static_cast<int>(Params[2].asInteger());
+	int length = Params[2] == 0 ? length_str : static_cast<int>(Params[2].asInteger());
 
 	if (length)
 	{
@@ -2022,6 +2028,18 @@ int FarMacroApi::rindexFunc()
 	const wchar_t *i = !Params[2].getInteger() ? RevStrStrI(s,p) : RevStrStr(s,p);
 	PassNumber(i ? i-s : -1);
 	return i ? 1:0;
+}
+
+// S=Size2Str(Size,Flags[,Width])
+int FarMacroApi::size2strFunc()
+{
+	const auto Params = parseParams(3, mData);
+	const auto Size = static_cast<uint64_t> (Params[0].asInteger());
+	const auto Flags = static_cast<int>     (Params[1].asInteger());
+	const auto Width = static_cast<int>     (Params[2].asInteger());
+	FARString Dest;
+	PassString(FileSizeToStr(Dest, Size, Width, Flags));
+	return 1;
 }
 
 // S=date([S])
@@ -2371,15 +2389,19 @@ int FarMacroApi::dlggetvalueFunc()
 	auto Params = parseParams(2, mData);
 	TVar Ret(-1);
 	int TypeInf = Params[1].getInt32();
-	unsigned Index=(unsigned)Params[0].getInteger()-1;
+	int Index=(int)Params[0].getInteger()-1;
 	Frame* CurFrame=FrameManager->GetCurrentFrame();
+	auto Dlg = dynamic_cast<Dialog*>(CurFrame);
 
-	if (CtrlObject->Macro.GetArea()==MACRO_DIALOG && CurFrame && CurFrame->GetType()==MODALTYPE_DIALOG)
+	if (Dlg && CtrlObject->Macro.GetArea()==MACRO_DIALOG && CurFrame && CurFrame->GetType()==MODALTYPE_DIALOG)
 	{
-		unsigned DlgItemCount=((Dialog*)CurFrame)->GetAllItemCount();
+		if (Index < -1)
+			Index=Dlg->GetDlgFocusPos();
+
+		int DlgItemCount=((Dialog*)CurFrame)->GetAllItemCount();
 		const DialogItemEx **DlgItem=((Dialog*)CurFrame)->GetAllItem();
 
-		if (Index == std::numeric_limits<unsigned>::max())
+		if (Index == -1)
 		{
 			SMALL_RECT Rect;
 
@@ -3242,6 +3264,28 @@ int FarMacroApi::stringFunc()
 	return 1;
 }
 
+// S=StrWrap(Text,Width[,Break[,Flags]])
+int FarMacroApi::strwrapFunc()
+{
+	auto Params = parseParams(4, mData);
+	auto& Text  = Params[0];
+	int Width   = (int)Params[1].asInteger();
+	auto& Break = Params[2];
+	//DWORD Flags = (DWORD)Params[3].asInteger();
+
+	if (!Break.isInteger() && !Break.asInteger())
+	{
+		Break=L"";
+		Break.toString();
+	}
+
+	const wchar_t* pBreak = *Break.s()==0 ? L"\n" : Break.s();
+	FARString strDest;
+	FarFormatText(Text.toString(), Width,strDest, pBreak, 1); // 1 == FFTM_BREAKLONGWORD
+	PassString(strDest);
+	return true;
+}
+
 int FarMacroApi::intFunc()
 {
 	auto Params = parseParams(1, mData);
@@ -3432,6 +3476,12 @@ int FarMacroApi::testfolderFunc()
 	if (tmpVar.isString())
 	{
 		Ret=TestFolder(tmpVar.s());
+		switch(Ret) // перекодируем в значения MacroAPI Far3
+		{
+			case 0: Ret=1; break;
+			case 1: Ret=2; break;
+			case 2: Ret=0; break;
+		}
 	}
 	return Ret;
 }
