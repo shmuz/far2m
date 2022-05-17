@@ -196,4 +196,4 @@ BOOL WINAPI KeyMacroToText(uint32_t Key,FARString &strKeyText0);
 uint32_t WINAPI KeyNameMacroToKey(const wchar_t *Name);
 
 inline bool IsMenuArea(int Area){return Area==MACRO_MAINMENU || Area==MACRO_MENU || Area==MACRO_DISKS || Area==MACRO_USERMENU || Area==MACRO_AUTOCOMPLETION;}
-void Log(const char* str);
+void Log(const char* str, ...);

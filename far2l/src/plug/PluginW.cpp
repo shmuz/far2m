@@ -687,7 +687,8 @@ HANDLE PluginW::OpenPlugin(int OpenFrom, INT_PTR Item)
 {
 	ChangePriority *ChPriority = new ChangePriority(ChangePriority::NORMAL);
 
-	CheckScreenLock(); //??
+	if (OpenFrom != OPEN_LUAMACRO)
+		CheckScreenLock(); //??
 
 	{
 //		FARString strCurDir;

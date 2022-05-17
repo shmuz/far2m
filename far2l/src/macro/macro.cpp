@@ -295,28 +295,34 @@ void print_opcodes()
 #endif
 }
 
-void Log(const char* str)
+void Log(const char* str, ...)
 {
-  static int N = 0;
-  const char* home = getenv("HOME");
-  if (home) {
-    char* buf = (char*) malloc(strlen(home) + 64);
-    if (buf) {
-      strcpy(buf, home);
-      strcat(buf, "/luafar_log.txt");
-      FILE* fp = fopen(buf, "a");
-      if (fp) {
-        if (++N == 1) {
-          time_t rtime;
-          time (&rtime);
-          fprintf(fp, "\n%s------------------------------\n", ctime(&rtime));
-        }
-        fprintf(fp, "%d: %s\n", N, str);
-        fclose(fp);
-      }
-      free(buf);
-    }
-  }
+	va_list valist;
+	va_start(valist, str);
+
+	static int N = 0;
+	const char* home = getenv("HOME");
+	if (home) {
+		char* buf = (char*) malloc(strlen(home) + 64);
+		if (buf) {
+			strcpy(buf, home);
+			strcat(buf, "/luafar_log.txt");
+			FILE* fp = fopen(buf, "a");
+			if (fp) {
+				if (++N == 1) {
+					time_t rtime;
+					time (&rtime);
+					fprintf(fp, "\n%s------------------------------\n", ctime(&rtime));
+				}
+				fprintf(fp, "%d: ", N);
+				vfprintf(fp, str, valist);
+				fprintf(fp, "\n");
+				fclose(fp);
+			}
+			free(buf);
+		}
+	}
+	va_end(valist);
 }
 
 
@@ -683,6 +689,7 @@ public:
 	int ascFunc();
 	int atoiFunc();
 	int beepFunc();
+	int chrFunc();     //implemented in Lua
 	int clipFunc();
 	int dateFunc();
 	int dlggetvalueFunc();
@@ -1013,20 +1020,25 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 			return api.PassBoolean(ret);
 		}
 
-		case MCODE_V_DLGITEMCOUNT: // Dlg->ItemCount
-		case MCODE_V_DLGCURPOS:    // Dlg->CurPos
-		case MCODE_V_DLGITEMTYPE:  // Dlg->ItemType
 		//case MCODE_V_DLGPREVPOS:   // Dlg->PrevPos
 
-		case MCODE_V_DLGINFOID:      // Dlg->Info.Id
+		case MCODE_V_DLGITEMCOUNT: // Dlg.ItemCount
+		case MCODE_V_DLGCURPOS:    // Dlg.CurPos
+		case MCODE_V_DLGITEMTYPE:  // Dlg.ItemType
+		{
 			if (CurrentWindow && CurrentWindow->GetType()==MODALTYPE_DIALOG) // ?? Mode == MACRO_DIALOG ??
-			{
-				api.PassString( reinterpret_cast<LPCWSTR>(CurrentWindow->VMProcess(CheckCode)) );
-			}
+				return CurrentWindow->VMProcess(CheckCode);
 			break;
+		}
+
+		case MCODE_V_DLGINFOID:      // Dlg->Info.Id
+		if (CurrentWindow && CurrentWindow->GetType()==MODALTYPE_DIALOG) // ?? Mode == MACRO_DIALOG ??
+		{
+			api.PassString( reinterpret_cast<LPCWSTR>(CurrentWindow->VMProcess(CheckCode)) );
+		}
+		break;
 
 		//case MCODE_V_DLGINFOOWNER: // Dlg->Info.Owner
-			break;
 
 		case MCODE_C_APANEL_VISIBLE:  // APanel.Visible
 		case MCODE_C_PPANEL_VISIBLE:  // PPanel.Visible
@@ -1418,7 +1430,6 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 		}
 
 		//case MCODE_F_BEEP:             break;
-		//case MCODE_F_DLG_SETFOCUS:     break;
 		//case MCODE_F_EDITOR_DELLINE:   break;
 		//case MCODE_F_EDITOR_INSSTR:    break;
 		//case MCODE_F_EDITOR_SETSTR:    break;
@@ -1475,6 +1486,7 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 		case MCODE_F_CLIP:               return api.clipFunc();
 		case MCODE_F_DATE:               return api.dateFunc();
 		case MCODE_F_DLG_GETVALUE:       return api.dlggetvalueFunc();
+		case MCODE_F_DLG_SETFOCUS:       return api.dlgsetfocusFunc();
 		case MCODE_F_EDITOR_POS:         return api.editorposFunc();
 		case MCODE_F_EDITOR_SEL:         return api.editorselFunc();
 		case MCODE_F_EDITOR_SET:         return api.editorsetFunc();
@@ -1549,31 +1561,24 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 		case MCODE_F_MENU_GETHOTKEY:      // S=gethotkey([N])
 		{
 			auto Params = parseParams(1, Data);
-			auto& tmpVar = Params[0];
+			auto MenuItemPos = Params[0].toInteger() - 1;
 
-			if (!tmpVar.isInteger())
-				tmpVar=0;
-
-			int CurMMode=CtrlObject->Macro.GetArea();
+			TVar Out = L"";
+			int CurMMode = GetArea();
 
 			if (IsMenuArea(CurMMode) || CurMMode == MACRO_DIALOG)
 			{
-				int64_t Result;
 				auto f = GetCurrentWindow();
-
 				if (f)
 				{
-					int64_t MenuItemPos=tmpVar.i()-1;
 					if (CheckCode == MCODE_F_MENU_GETHOTKEY)
 					{
+						int64_t Result;
 						if ((Result=f->VMProcess(CheckCode,nullptr,MenuItemPos)) )
 						{
-
 							const wchar_t _value[]={static_cast<wchar_t>(Result),0};
-							tmpVar=_value;
+							Out=_value;
 						}
-						else
-							tmpVar=L"";
 					}
 					else if (CheckCode == MCODE_F_MENU_GETVALUE)
 					{
@@ -1582,23 +1587,17 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 						{
 							HiText2Str(NewStr, NewStr);
 							RemoveExternalSpaces(NewStr);
-							tmpVar=NewStr.CPtr();
+							Out=NewStr.CPtr();
 						}
-						else
-							tmpVar=L"";
 					}
 					else if (CheckCode == MCODE_F_MENU_ITEMSTATUS)
 					{
-						tmpVar=f->VMProcess(CheckCode,nullptr,MenuItemPos);
+						Out=f->VMProcess(CheckCode,nullptr,MenuItemPos);
 					}
 				}
-				else
-					tmpVar=L"";
 			}
-			else
-				tmpVar=L"";
 
-			api.PassValue(tmpVar);
+			api.PassValue(Out);
 			return 0;
 		}
 
@@ -2381,6 +2380,29 @@ int FarMacroApi::flockFunc()
 
 	PassNumber(Ret);
 	return Ret != -1;
+}
+
+// N=Dlg->SetFocus([ID])
+int FarMacroApi::dlgsetfocusFunc()
+{
+	auto Params = parseParams(1, mData);
+	TVar Ret(-1);
+	const auto Index = static_cast<unsigned>(Params[0].asInteger()) - 1;
+
+	Frame* CurFrame=FrameManager->GetCurrentFrame();
+	auto Dlg = dynamic_cast<Dialog*>(CurFrame);
+	if (Dlg && CtrlObject->Macro.GetArea() == MACROAREA_DIALOG)
+	{
+		Ret = Dlg->VMProcess(MCODE_V_DLGCURPOS);
+		if (static_cast<int>(Index) >= 0)
+		{
+			//if (!Dlg->SendMessage(DM_SETFOCUS, Index, nullptr))
+			if (!SendDlgMessage(Dlg, DM_SETFOCUS, Index, 0))
+				Ret = 0;
+		}
+	}
+	PassValue(Ret);
+	return Ret.asInteger() != -1; // ?? <= 0 ??
 }
 
 // V=Dlg.GetValue(ID,N)

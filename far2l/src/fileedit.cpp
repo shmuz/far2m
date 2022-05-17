@@ -1477,7 +1477,7 @@ int FileEditor::LoadFile(const wchar_t *Name,int &UserBreak)
 		cp.CodePage = 0;
 
 	GetFileString GetStr(EditFile);
-	*m_editor->GlobalEOL=0; //BUGBUG???
+	wcscpy(m_editor->GlobalEOL,NATIVE_EOLW);
 	wchar_t *Str;
 	int StrLength,GetCode;
 	UINT dwCP=0;
