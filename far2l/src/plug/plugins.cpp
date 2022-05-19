@@ -1926,49 +1926,41 @@ int PluginManager::CallPlugin(DWORD SysID,int OpenFrom, void *Data,int *Ret)
 {
 	Plugin *pPlugin = FindPlugin(SysID);
 
-	if (pPlugin)
+	if (pPlugin && pPlugin->HasOpenPlugin())
 	{
-		if (pPlugin->HasOpenPlugin())
+		if (OpenFrom == OPEN_LUAMACRO)
 		{
-			HANDLE hNewPlugin=OpenPlugin(pPlugin,OpenFrom,(INT_PTR)Data);
-			bool process=false;
-
-			if (OpenFrom & OPEN_FROMMACRO)
-			{
-	            // <????>
-				;
-            	// </????>
-			}
-			else
-			{
-				process=OpenFrom == OPEN_PLUGINSMENU || OpenFrom == OPEN_FILEPANEL;
-            }
-
-			if (hNewPlugin!=INVALID_HANDLE_VALUE && process)
-			{
-				int CurFocus=CtrlObject->Cp()->ActivePanel->GetFocus();
-				Panel *NewPanel=CtrlObject->Cp()->ChangePanel(CtrlObject->Cp()->ActivePanel,FILE_PANEL,TRUE,TRUE);
-				NewPanel->SetPluginMode(hNewPlugin,L"",CurFocus || !CtrlObject->Cp()->GetAnotherPanel(NewPanel)->IsVisible());
-
-				if (Data && *(const wchar_t *)Data)
-					SetDirectory(hNewPlugin,(const wchar_t *)Data,0);
-
-				/* $ 04.04.2001 SVS
-					Код закомментирован! Попытка исключить ненужные вызовы в CallPlugin()
-					Если что-то не так - раскомментировать!!!
-				*/
-				//NewPanel->Update(0);
-				//NewPanel->Show();
-			}
-
-			if (Ret)
-			{
-				PluginHandle *handle=(PluginHandle *)hNewPlugin;
-				*Ret=hNewPlugin == INVALID_HANDLE_VALUE || handle->hPlugin?1:0;
-			}
-
+			HANDLE hPlugin = pPlugin->OpenPlugin(OpenFrom, (INT_PTR)Data);
+			*Ret = (hPlugin != nullptr);
 			return TRUE;
 		}
+		else if (OpenFrom == OPEN_FROMMACRO)
+		{
+			HANDLE hPlugin = pPlugin->OpenPlugin(OpenFrom, (INT_PTR)Data);
+			*reinterpret_cast<void**>(Ret) = hPlugin;
+			return TRUE;
+		}
+
+		HANDLE PluginPanel = OpenPlugin(pPlugin,OpenFrom,(INT_PTR)Data);
+		bool process = OpenFrom == OPEN_PLUGINSMENU || OpenFrom == OPEN_FILEPANEL;
+
+		if ((PluginPanel != INVALID_HANDLE_VALUE) && process)
+		{
+			int CurFocus=CtrlObject->Cp()->ActivePanel->GetFocus();
+			Panel *NewPanel=CtrlObject->Cp()->ChangePanel(CtrlObject->Cp()->ActivePanel,FILE_PANEL,TRUE,TRUE);
+			NewPanel->SetPluginMode(PluginPanel,L"",CurFocus || !CtrlObject->Cp()->GetAnotherPanel(NewPanel)->IsVisible());
+
+			if (Data && *(const wchar_t *)Data)
+				SetDirectory(PluginPanel,(const wchar_t *)Data,0);
+		}
+
+		if (Ret)
+		{
+			PluginHandle *handle=(PluginHandle *)PluginPanel;
+			*Ret=PluginPanel == INVALID_HANDLE_VALUE || handle->hPlugin?1:0;
+		}
+
+		return TRUE;
 	}
 
 	return FALSE;

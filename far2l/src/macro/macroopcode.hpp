@@ -134,6 +134,7 @@ enum MACRO_OP_CODE
 	MCODE_F_SIZE2STR,                 // S=Size2Str(Size,Flags[,Width])
 	MCODE_F_STRWRAP,                  // S=StrWrap(Text,Width[,Break[,Flags]])
 	MCODE_F_DLG_SETFOCUS,             // N=Dlg->SetFocus([ID])
+	MCODE_F_PLUGIN_CALL,              //
 
 	/* ************************************************************************* */
 	// булевые переменные - различные состояния

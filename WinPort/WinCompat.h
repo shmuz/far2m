@@ -116,20 +116,20 @@ static char * _i64toa(int64_t i, char *a, int radix)
 
 static wchar_t * _i64tow(int64_t i, wchar_t *w, int radix)
 {
+        int neg = i<0;
         if (i==0) {
                 w[0] = '0';
                 w[1] = 0;
                 return w;
         }
-        int neg = i<0;
         if (neg) {
                 *w++ = '-';
                 i = -i;
         }
 
         for (int64_t j = i; j; j/= radix) ++w;
-        *w = 0;
-        for (; i; i/= radix) {
+
+        for (*w=0; i; i/= radix) {
                 unsigned int d = i % radix;
                 --w;
                 if (d<=9) *w = d + '0';
@@ -142,20 +142,20 @@ static wchar_t * _i64tow(int64_t i, wchar_t *w, int radix)
 
 static wchar_t * _itow(int i, wchar_t *w, int radix)
 {
+        int neg = i<0;
         if (i==0) {
                 w[0] = '0';
                 w[1] = 0;
                 return w;
         }
-        int neg = i<0;
         if (neg) {
                 *w++ = '-';
                 i = -i;
         }
 
         for (int j = i; j; j/= radix) ++w;
-        *w = 0;
-        for (; i; i/= radix) {
+
+        for (*w=0; i; i/= radix) {
                 unsigned int d = i % radix;
                 --w;
                 if (d<=9) *w = d + '0';

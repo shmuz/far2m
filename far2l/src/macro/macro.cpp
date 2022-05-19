@@ -1439,7 +1439,6 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 		//case MCODE_F_MENU_FILTER:      break;
 		//case MCODE_F_MENU_FILTERSTR:   break;
 		//case MCODE_F_MENU_SHOW:        break;
-		//case MCODE_F_PLUGIN_CALL:      break;
 		//case MCODE_F_PLUGIN_EXIST:     break;
 		//case MCODE_F_PLUGIN_LOAD:      break;
 		//case MCODE_F_PLUGIN_UNLOAD:    break;
@@ -1479,6 +1478,39 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 			}
 			api.PassBoolean(false);
 			break;
+
+		case MCODE_F_PLUGIN_CALL:
+			if(Data->Count>=2 && Data->Values[0].Type==FMVT_BOOLEAN && Data->Values[1].Type==FMVT_DOUBLE)
+			{
+				bool SyncCall = (Data->Values[0].Boolean == 0);
+				DWORD SysID = (DWORD)Data->Values[1].Double;
+				if (CtrlObject->Plugins.FindPlugin(SysID))
+				{
+					FarMacroValue *Values = Data->Count>2 ? Data->Values+2:nullptr;
+					OpenMacroInfo info={sizeof(OpenMacroInfo),Data->Count-2,Values};
+					void *ResultCallPlugin = nullptr;
+
+					if (SyncCall) m_InternalInput++;
+
+					if (!CtrlObject->Plugins.CallPlugin(SysID, OPEN_FROMMACRO, &info, (int*)&ResultCallPlugin))
+						ResultCallPlugin = nullptr;
+
+					if (SyncCall) m_InternalInput--;
+
+					//в windows гарантируется, что не бывает указателей меньше 0x10000
+					if (reinterpret_cast<uintptr_t>(ResultCallPlugin) >= 0x10000 && ResultCallPlugin != INVALID_HANDLE_VALUE)
+					{
+						FarMacroValue Result(ResultCallPlugin);
+						Data->Callback(Data->CallbackData, &Result, 1);
+					}
+					else
+						api.PassBoolean(ResultCallPlugin != nullptr);
+
+					return 0;
+				}
+			}
+			api.PassBoolean(false);
+			return 0;
 
 		case MCODE_F_ABS:                return api.absFunc();
 		case MCODE_F_ASC:                return api.ascFunc();
