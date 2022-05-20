@@ -37,8 +37,11 @@ class ChangeMacroMode
 {
 	private:
 		int PrevMacroMode;
+		int CurMacroMode;
 
 	public:
 		ChangeMacroMode(int NewMode);
 		~ChangeMacroMode();
+		void SetPrevMode();
+		void SetCurMode();
 };

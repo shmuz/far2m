@@ -1400,6 +1400,7 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 				PluginInfo Info{};
 				KeyFileReadHelper kfh(PluginsIni());
 
+				CMM.SetPrevMode(); // for plugins: set the right macro area in GetPluginInfo()
 				for (int I=0; I<PluginsCount; I++)
 				{
 					Plugin *pPlugin = PluginsData[I];
@@ -1463,6 +1464,7 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 						PluginList.SetUserData(&item, sizeof(PluginMenuItemData),PluginList.AddItem(&ListItem));
 					}
 				}
+				CMM.SetCurMode();
 
 				PluginList.AssignHighlights(FALSE);
 				PluginList.SetBottomTitle(Msg::PluginHotKeyBottom);

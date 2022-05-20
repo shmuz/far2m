@@ -39,13 +39,25 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ChangeMacroMode::ChangeMacroMode(int NewMode) :
 	PrevMacroMode( CtrlObject ? CtrlObject->Macro.GetArea() : MACRO_SHELL)
 {
+	CurMacroMode = NewMode;
 	if (CtrlObject)
 		CtrlObject->Macro.SetArea(NewMode);
 }
-
 
 ChangeMacroMode::~ChangeMacroMode()
 {
 	if (CtrlObject)
 		CtrlObject->Macro.SetArea(PrevMacroMode);
+}
+
+void ChangeMacroMode::SetPrevMode()
+{
+	if (CtrlObject)
+		CtrlObject->Macro.SetArea(PrevMacroMode);
+}
+
+void ChangeMacroMode::SetCurMode()
+{
+	if (CtrlObject)
+		CtrlObject->Macro.SetArea(CurMacroMode);
 }
