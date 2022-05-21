@@ -1248,7 +1248,10 @@ enum FARMACROAREA
 	MACROAREA_FINDFOLDER        =13,
 	MACROAREA_USERMENU          =14,
 	MACROAREA_AUTOCOMPLETION    =15,
-
+#ifdef FAR_USE_INTERNALS
+	MACROAREA_LAST,
+	MACROAREA_INVALID           = -1,
+#endif
 	MACROAREA_COMMON            =255,
 };
 
@@ -1288,6 +1291,19 @@ static const FARADDKEYMACROFLAGS
 	AKMFLAGS_NONE                = 0;
 
 typedef intptr_t (WINAPI *FARMACROCALLBACK)(void* Id,FARADDKEYMACROFLAGS Flags);
+
+struct MacroAddMacro
+{
+	size_t StructSize;
+	void* Id;
+	const wchar_t *SequenceText;
+	const wchar_t *Description;
+	DWORD Flags;
+	const wchar_t *AKey;
+	enum FARMACROAREA Area;
+	FARMACROCALLBACK Callback;
+	int Priority;
+};
 
 enum FARMACROVARTYPE
 {

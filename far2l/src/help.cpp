@@ -349,7 +349,7 @@ int Help::ReadHelp(const wchar_t *Mask)
 			FARString strKeyName;
 			FARString strOutTemp;
 
-			if (CtrlObject->Macro.GetMacroKeyInfo(strMacroArea,MI,strKeyName,strDescription))
+			if (!CtrlObject->Macro.GetMacroKeyInfo(strMacroArea,MI,strKeyName,strDescription))
 			{
 				MacroProcess=false;
 				MI=0;

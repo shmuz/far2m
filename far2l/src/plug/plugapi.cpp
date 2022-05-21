@@ -2477,20 +2477,20 @@ int WINAPI farMacroControl(DWORD PluginId, int Command, int Param1, void* Param2
 			return Macro.GetArea();
 		}
 
-//		case MCTL_ADDMACRO:
-//		{
-//			const auto Data = static_cast<const MacroAddMacroV1*>(Param2);
-//			if (CheckStructSize(Data) && Data->SequenceText)
-//			{
-//				return Macro.AddMacro(*PluginId, Data) ? 1 : 0;
-//			}
-//			break;
-//		}
+		case MCTL_ADDMACRO:
+		{
+			const auto Data = static_cast<const MacroAddMacro*>(Param2);
+			if (CheckStructSize(Data) && Data->SequenceText)
+			{
+				return Macro.AddMacro(PluginId, Data) ? 1 : 0;
+			}
+			break;
+		}
 
-//		case MCTL_DELMACRO:
-//		{
-//			return Macro.DelMacro(*PluginId, Param2) ? 1 : 0;
-//		}
+		case MCTL_DELMACRO:
+		{
+			return Macro.DelMacro(PluginId, Param2) ? 1 : 0;
+		}
 
 		//Param1=size of buffer, Param2 - MacroParseResult*
 		case MCTL_GETLASTERROR:

@@ -57,7 +57,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "syslog.hpp"
 #include "ConfigRW.hpp"
 #include "plugapi.hpp"
-#include <farplug-wide.h>
 #include "plugins.hpp"
 #include "cddrv.hpp"
 #include "interf.hpp"
@@ -3882,6 +3881,43 @@ void KeyMacro::RunStartMacro()
 		IsRunStartMacro = CallMacroPlugin(&info);
 		IsInside = false;
 	}
+}
+
+bool KeyMacro::AddMacro(DWORD PluginId, const MacroAddMacro* Data)
+{
+	if (!(Data->Area >= 0 && (Data->Area < MACROAREA_LAST || Data->Area == MACROAREA_COMMON)))
+		return false;
+
+	if (!Data->AKey || !*Data->AKey)
+		return false;
+
+	MACROFLAGS_MFLAGS Flags = 0;
+	if (Data->Flags & KMFLAGS_ENABLEOUTPUT)        Flags |= MFLAGS_ENABLEOUTPUT;
+	if (Data->Flags & KMFLAGS_NOSENDKEYSTOPLUGINS) Flags |= MFLAGS_NOSENDKEYSTOPLUGINS;
+
+	FarMacroValue values[] = {
+		static_cast<double>(Data->Area),
+		Data->AKey,
+		GetMacroLanguage(Data->Flags),
+		Data->SequenceText,
+		Flags,
+		Data->Description,
+		PluginId,
+		reinterpret_cast<void*>(Data->Callback),
+		Data->Id,
+		Data->Priority
+	};
+	FarMacroCall fmc = {sizeof(FarMacroCall),ARRAYSIZE(values),values,nullptr,nullptr};
+	OpenMacroPluginInfo info = {MCT_ADDMACRO,&fmc};
+	return CallMacroPlugin(&info);
+}
+
+bool KeyMacro::DelMacro(DWORD PluginId, void* Id)
+{
+	FarMacroValue values[]={PluginId,Id};
+	FarMacroCall fmc={sizeof(FarMacroCall),ARRAYSIZE(values),values,nullptr,nullptr};
+	OpenMacroPluginInfo info={MCT_DELMACRO,&fmc};
+	return CallMacroPlugin(&info);
 }
 
 // обработчик диалогового окна назначения клавиши

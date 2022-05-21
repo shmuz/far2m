@@ -33,8 +33,8 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include "farplug-wide.h"
 #include "tvar.hpp"
-#include "macroopcode.hpp"
 
 template <typename T>
 bool CheckStructSize(const T* s)
@@ -66,23 +66,22 @@ enum MACRODISABLEONLOAD
 // области действия макросов (начало исполнения) -  НЕ БОЛЕЕ 0xFF областей!
 enum MACROMODEAREA
 {
-	// see also plugin.hpp # FARMACROAREA
-	MACRO_OTHER                =   0, // Режим копирования текста с экрана, вертикальные меню
-	MACRO_SHELL                =   1, // Файловые панели
-	MACRO_VIEWER               =   2, // Внутренняя программа просмотра
-	MACRO_EDITOR               =   3, // Редактор
-	MACRO_DIALOG               =   4, // Диалоги
-	MACRO_SEARCH               =   5, // Быстрый поиск в панелях
-	MACRO_DISKS                =   6, // Меню выбора дисков
-	MACRO_MAINMENU             =   7, // Основное меню
-	MACRO_MENU                 =   8, // Прочие меню
-	MACRO_HELP                 =   9, // Система помощи
-	MACRO_INFOPANEL            =  10, // Информационная панель
-	MACRO_QVIEWPANEL           =  11, // Панель быстрого просмотра
-	MACRO_TREEPANEL            =  12, // Панель дерева папок
-	MACRO_FINDFOLDER           =  13, // Поиск папок
-	MACRO_USERMENU             =  14, // Меню пользователя
-	MACRO_AUTOCOMPLETION       =  15, // Список автодополнения
+	MACRO_OTHER           = MACROAREA_OTHER,          // Режим копирования текста с экрана, вертикальные меню
+	MACRO_SHELL           = MACROAREA_SHELL,          // Файловые панели
+	MACRO_VIEWER          = MACROAREA_VIEWER,         // Внутренняя программа просмотра
+	MACRO_EDITOR          = MACROAREA_EDITOR,         // Редактор
+	MACRO_DIALOG          = MACROAREA_DIALOG,         // Диалоги
+	MACRO_SEARCH          = MACROAREA_SEARCH,         // Быстрый поиск в панелях
+	MACRO_DISKS           = MACROAREA_DISKS,          // Меню выбора дисков
+	MACRO_MAINMENU        = MACROAREA_MAINMENU,       // Основное меню
+	MACRO_MENU            = MACROAREA_MENU,           // Прочие меню
+	MACRO_HELP            = MACROAREA_HELP,           // Система помощи
+	MACRO_INFOPANEL       = MACROAREA_INFOPANEL,      // Информационная панель
+	MACRO_QVIEWPANEL      = MACROAREA_QVIEWPANEL,     // Панель быстрого просмотра
+	MACRO_TREEPANEL       = MACROAREA_TREEPANEL,      // Панель дерева папок
+	MACRO_FINDFOLDER      = MACROAREA_FINDFOLDER,     // Поиск папок
+	MACRO_USERMENU        = MACROAREA_USERMENU,       // Меню пользователя
+	MACRO_AUTOCOMPLETION  = MACROAREA_AUTOCOMPLETION, // Список автодополнения
 
 	MACRO_COMMON,                     // ВЕЗДЕ! - должен быть предпоследним, т.к. приоритет самый низший !!!
 	MACRO_LAST                        // Должен быть всегда последним! Используется в циклах
@@ -131,8 +130,8 @@ class KeyMacro
 public:
 	KeyMacro();
 
-	//static bool AddMacro(const UUID& PluginId, const MacroAddMacroV1* Data);
-	//static bool DelMacro(const UUID& PluginId, void* Id);
+	static bool AddMacro(DWORD PluginId, const MacroAddMacro* Data);
+	static bool DelMacro(DWORD PluginId, void* Id);
 	static bool ExecuteString(MacroExecuteString *Data);
 	static bool GetMacroKeyInfo(const FARString& StrArea, int Pos, FARString &strKeyName, FARString &strDescription);
 	static bool IsOutputDisabled();
