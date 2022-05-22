@@ -327,13 +327,7 @@ void Log(const char* str, ...)
 
 static Frame* GetCurrentWindow()
 {
-	Frame *f=FrameManager->GetCurrentFrame(), *fo=nullptr;
-	while (f)
-	{
-		fo = f;
-		f = f->GetTopModal();
-	}
-	return fo;
+	return FrameManager->GetTopModal();
 }
 
 typedef unsigned int MACROFLAGS_MFLAGS;
@@ -688,7 +682,7 @@ public:
 	int ascFunc();
 	int atoiFunc();
 	int beepFunc();
-	int chrFunc();     //implemented in Lua
+	int chrFunc();                 //implemented in Lua
 	int clipFunc();
 	int dateFunc();
 	int dlggetvalueFunc();
@@ -731,15 +725,15 @@ public:
 	int panelsetposFunc();
 	int panelsetposidxFunc();
 	int pluginexistFunc();
-	int pluginloadFunc();
-	int pluginunloadFunc();
+	int pluginloadFunc();          //implemented in Lua
+	int pluginunloadFunc();        //implemented in Lua
 	int promptFunc();
 	int replaceFunc();
 	int rindexFunc();
 	int size2strFunc();
 	int sleepFunc();
 	int stringFunc();
-	int strpadFunc();     //implemented in Lua
+	int strpadFunc();              //implemented in Lua
 	int strwrapFunc();
 	int substrFunc();
 	int testfolderFunc();
@@ -1438,9 +1432,6 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 		//case MCODE_F_MENU_FILTER:      break;
 		//case MCODE_F_MENU_FILTERSTR:   break;
 		//case MCODE_F_MENU_SHOW:        break;
-		//case MCODE_F_PLUGIN_EXIST:     break;
-		//case MCODE_F_PLUGIN_LOAD:      break;
-		//case MCODE_F_PLUGIN_UNLOAD:    break;
 		//case MCODE_F_SETCUSTOMSORTMODE:break;
 		//case MCODE_F_USERMENU:         break;
 
@@ -1511,6 +1502,7 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 			api.PassBoolean(false);
 			return 0;
 
+		case MCODE_F_PLUGIN_EXIST:       return api.pluginexistFunc();
 		case MCODE_F_ABS:                return api.absFunc();
 		case MCODE_F_ASC:                return api.ascFunc();
 		case MCODE_F_ATOI:               return api.atoiFunc();
@@ -2887,19 +2879,19 @@ int FarMacroApi::clipFunc()
 		{
 			// 0 - flip, 1 - виндовый буфер, 2 - внутренний, -1 - что сейчас?
 			int Action = Val.getInt32();
-			bool mode=Clipboard::GetUseInternalClipboardState();
-			if (Action >= 0)
+			bool prev_mode = Clipboard::GetUseInternalClipboardState();
+			if (Action >= 0 && Action <= 2)
 			{
+				bool mode = false;
 				switch (Action)
 				{
-					case 0: mode=!mode; break;
+					case 0: mode=!prev_mode; break;
 					case 1: mode=false; break;
 					case 2: mode=true;  break;
 				}
-				mode=Clipboard::SetUseInternalClipboardState(mode);
+				Clipboard::SetUseInternalClipboardState(mode);
 			}
-			PassNumber(Ret); // 0!  ???
-			return Ret ? 1:0;
+			return prev_mode ? 2 : 1;
 		}
 	}
 
@@ -3510,6 +3502,19 @@ int FarMacroApi::editorsettitleFunc()
 	return Ret.i() ? 1:0;
 }
 
+// N=Plugin.Exist(SysId)
+int FarMacroApi::pluginexistFunc()
+{
+	bool Ret = false;
+	if (mData->Count>0 && mData->Values[0].Type==FMVT_DOUBLE)
+	{
+		if (CtrlObject->Plugins.FindPlugin(static_cast<DWORD>(mData->Values[0].Double)))
+			Ret = true;
+	}
+	PassBoolean(Ret);
+	return Ret;
+}
+
 // N=testfolder(S)
 /*
 возвращает одно состояний тестируемого каталога:
@@ -3772,61 +3777,51 @@ int KeyMacro::GetKey()
 				return KEY_OP_PLAINTEXT;
 			}
 
-			//~ case MPRT_PLUGINMENU:   // N=Plugin.Menu(Uuid[,MenuUuid])
-			//~ case MPRT_PLUGINCONFIG: // N=Plugin.Config(Uuid[,MenuUuid])
-			//~ case MPRT_PLUGINCOMMAND: // N=Plugin.Command(Uuid[,Command])
-			//~ {
-				//~ SetMacroValue(false);
+			case MPRT_PLUGINMENU:   // N=Plugin.Menu(Uuid[,MenuUuid])
+			case MPRT_PLUGINCONFIG: // N=Plugin.Config(Uuid[,MenuUuid])
+			case MPRT_PLUGINCOMMAND: // N=Plugin.Command(Uuid[,Command])
+			{
+				SetMacroValue(false);
 
-				//~ if (!mpr.Count || mpr.Values[0].Type != FMVT_STRING)
-					//~ break;
+				if (!mpr.Count || mpr.Values[0].Type != FMVT_DOUBLE)
+					break;
 
-				//~ const auto Uuid = uuid::try_parse(string_view(mpr.Values[0].String));
-				//~ if (!Uuid)
-					//~ break;
+				DWORD SysID = static_cast<DWORD>(mpr.Values[0].Double);
+				if (!CtrlObject->Plugins.FindPlugin(SysID))
+					break;
 
-				//~ if (!Global->CtrlObject->Plugins->FindPlugin(*Uuid))
-					//~ break;
+				PluginManager::CallPluginInfo cpInfo = { CPT_CHECKONLY };
+				if (mpr.ReturnType==MPRT_PLUGINMENU || mpr.ReturnType==MPRT_PLUGINCONFIG)
+				{
+					cpInfo.ItemUuid = mpr.Count > 1 && mpr.Values[1].Type == FMVT_DOUBLE ?
+						static_cast<DWORD>(mpr.Values[1].Double) : 0;
+				}
 
-				//~ PluginManager::CallPluginInfo cpInfo = { CPT_CHECKONLY };
-				//~ const auto Arg = mpr.Count > 1 && mpr.Values[1].Type == FMVT_STRING? mpr.Values[1].String : L"";
+				if (mpr.ReturnType == MPRT_PLUGINMENU)
+					cpInfo.CallFlags |= CPT_MENU;
+				else if (mpr.ReturnType == MPRT_PLUGINCONFIG)
+					cpInfo.CallFlags |= CPT_CONFIGURE;
+				else if (mpr.ReturnType == MPRT_PLUGINCOMMAND)
+				{
+					cpInfo.CallFlags |= CPT_CMDLINE;
+					cpInfo.Command = mpr.Count > 1 && mpr.Values[1].Type == FMVT_STRING ? mpr.Values[1].String : L"";
+				}
 
-				//~ UUID MenuUuid;
-				//~ if (*Arg && (mpr.ReturnType==MPRT_PLUGINMENU || mpr.ReturnType==MPRT_PLUGINCONFIG))
-				//~ {
-					//~ if (const auto MenuUuidOpt = uuid::try_parse(string_view(Arg)))
-					//~ {
-						//~ MenuUuid = *MenuUuidOpt;
-						//~ cpInfo.ItemUuid = &MenuUuid;
-					//~ }
-					//~ else
-						//~ break;
-				//~ }
+				// Чтобы вернуть результат "выполнения" нужно проверить наличие плагина/пункта
+				if (CtrlObject->Plugins.CallPluginItem(SysID, &cpInfo))
+				{
+					// Если нашли успешно - то теперь выполнение
+					SetMacroValue(true);
+					cpInfo.CallFlags&=~CPT_CHECKONLY;
+					CtrlObject->Plugins.CallPluginItem(SysID, &cpInfo);
+				}
+				FrameManager->RefreshFrame();
 
-				//~ if (mpr.ReturnType == MPRT_PLUGINMENU)
-					//~ cpInfo.CallFlags |= CPT_MENU;
-				//~ else if (mpr.ReturnType == MPRT_PLUGINCONFIG)
-					//~ cpInfo.CallFlags |= CPT_CONFIGURE;
-				//~ else if (mpr.ReturnType == MPRT_PLUGINCOMMAND)
-				//~ {
-					//~ cpInfo.CallFlags |= CPT_CMDLINE;
-					//~ cpInfo.Command = Arg;
-				//~ }
+				//с текущим переключением окон могут быть проблемы с заголовком консоли.
+				FrameManager->PluginCommit();
 
-				//~ // Чтобы вернуть результат "выполнения" нужно проверить наличие плагина/пункта
-				//~ if (Global->CtrlObject->Plugins->CallPluginItem(*Uuid, &cpInfo))
-				//~ {
-					//~ // Если нашли успешно - то теперь выполнение
-					//~ SetMacroValue(true);
-					//~ cpInfo.CallFlags&=~CPT_CHECKONLY;
-					//~ Global->CtrlObject->Plugins->CallPluginItem(*Uuid, &cpInfo);
-				//~ }
-				//~ Global->WindowManager->RefreshWindow();
-				//~ //с текущим переключением окон могут быть проблемы с заголовком консоли.
-				//~ Global->WindowManager->PluginCommit();
-
-				//~ break;
-			//~ }
+				break;
+			}
 
 			//~ case MPRT_USERMENU:
 				//~ ShowUserMenu(mpr.Count,mpr.Values);

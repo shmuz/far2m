@@ -135,6 +135,7 @@ enum MACRO_OP_CODE
 	MCODE_F_STRWRAP,                  // S=StrWrap(Text,Width[,Break[,Flags]])
 	MCODE_F_DLG_SETFOCUS,             // N=Dlg->SetFocus([ID])
 	MCODE_F_PLUGIN_CALL,              //
+	MCODE_F_PLUGIN_EXIST,             // N=Plugin.Exist(SysId)
 
 	/* ************************************************************************* */
 	// булевые переменные - различные состояния

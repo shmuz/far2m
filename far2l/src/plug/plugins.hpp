@@ -160,6 +160,17 @@ struct PluginHandle
 	unsigned int RefCnt = 1;
 };
 
+// параметры вызова макрофункций plugin.call и т.п.
+enum CALLPLUGINFLAGS
+{
+	CPT_MENU        = 0x01,
+	CPT_CONFIGURE   = 0x02,
+	CPT_CMDLINE     = 0x04,
+	CPT_INTERNAL    = 0x08,
+	CPT_MASK        = 0x0F,
+	CPT_CHECKONLY   = 0x10000000,
+};
+
 class PluginManager
 {
 	private:
@@ -170,6 +181,20 @@ class PluginManager
 		struct BackgroundTasks : std::map<std::wstring, unsigned int>, std::mutex {} BgTasks;
 
 	public:
+
+		struct CallPluginInfo
+		{
+			unsigned int CallFlags; // CALLPLUGINFLAGS
+			int OpenFrom;
+			union
+			{
+				int ItemUuid;
+				const wchar_t *Command;
+			};
+			// Используется в функции CallPluginItem для внутренних нужд
+			Plugin *pPlugin;
+			int FoundUuid;
+		};
 
 		BitFlags Flags;        // флаги манагера плагинов
 
@@ -239,6 +264,7 @@ class PluginManager
 
 		// $ .09.2000 SVS - Функция CallPlugin - найти плагин по ID и запустить OpenFrom = OPEN_*
 		int CallPlugin(DWORD SysID,int OpenFrom, void *Data, int *Ret=nullptr);
+		bool CallPluginItem(DWORD SysID, CallPluginInfo* Data);
 		Plugin *FindPlugin(DWORD SysID);
 
 //api functions

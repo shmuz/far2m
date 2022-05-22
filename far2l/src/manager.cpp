@@ -1787,10 +1787,7 @@ Frame* Manager::GetTopModal()
 		f=f->GetTopModal();
 	}
 
-	if (!f)
-		f=fo;
-
-	return f;
+	return fo;
 }
 
 /////////

@@ -1968,6 +1968,208 @@ int PluginManager::CallPlugin(DWORD SysID,int OpenFrom, void *Data,int *Ret)
 	return FALSE;
 }
 
+// поддержка макрофункций plugin.call, plugin.cmd, plugin.config и т.п
+bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
+{
+	auto Result = false;
+
+	Frame *TopFrame = FrameManager->GetTopModal();
+	const auto curType = TopFrame->GetType();
+
+	if (curType==MODALTYPE_DIALOG && reinterpret_cast<Dialog*>(TopFrame)->CheckDialogMode(DMODE_NOPLUGINS))
+		return false;
+
+	const auto IsEditor = curType == MODALTYPE_EDITOR;
+	const auto IsViewer = curType == MODALTYPE_VIEWER;
+	const auto IsDialog = curType == MODALTYPE_DIALOG;
+
+	if (Data->CallFlags & CPT_CHECKONLY)
+	{
+		Data->pPlugin = FindPlugin(SysID);
+		if (!Data->pPlugin || !Data->pPlugin->Load())
+			return false;
+
+		// Разрешен ли вызов данного типа в текущей области (предварительная проверка)
+		switch (Data->CallFlags & CPT_MASK)
+		{
+		case CPT_MENU:
+			if (!Data->pPlugin->HasOpenPlugin())
+				return false;
+			break;
+
+		case CPT_CONFIGURE:
+			//TODO: Автокомплит не влияет?
+			if (curType!=MODALTYPE_PANELS)
+				return false;
+
+			if (!Data->pPlugin->HasConfigure())
+				return false;
+			break;
+
+		case CPT_CMDLINE:
+			//TODO: Автокомплит не влияет?
+			if (curType!=MODALTYPE_PANELS)
+				return false;
+
+			//TODO: OpenPanel или OpenFilePlugin?
+			if (!Data->pPlugin->HasOpenPlugin())
+				return false;
+			break;
+
+		case CPT_INTERNAL:
+			//TODO: Уточнить функцию
+			if (!Data->pPlugin->HasOpenPlugin())
+				return false;
+			break;
+
+		default:
+			break;
+		}
+
+		PluginInfo Info{sizeof(Info)};
+		if (!Data->pPlugin->GetPluginInfo(&Info))
+			return false;
+
+		const auto IFlags = Info.Flags;
+		int MenuItemsCount = 0;
+
+		// Разрешен ли вызов данного типа в текущей области
+		switch (Data->CallFlags & CPT_MASK)
+		{
+		case CPT_MENU:
+			if (
+				(IsEditor && !(IFlags & PF_EDITOR)) ||
+				(IsViewer && !(IFlags & PF_VIEWER)) ||
+				(IsDialog && !(IFlags & PF_DIALOG)) ||
+				(!IsEditor && !IsViewer && !IsDialog && (IFlags & PF_DISABLEPANELS)))
+				return false;
+
+			MenuItemsCount = Info.PluginMenuStringsNumber;
+			break;
+
+		case CPT_CONFIGURE:
+			MenuItemsCount = Info.PluginConfigStringsNumber;
+			break;
+
+		case CPT_CMDLINE:
+			if (!Info.CommandPrefix || !*Info.CommandPrefix)
+				return false;
+			break;
+
+		case CPT_INTERNAL:
+			break;
+
+		default:
+			break;
+		}
+
+		if ((Data->CallFlags & CPT_MASK)==CPT_MENU || (Data->CallFlags & CPT_MASK)==CPT_CONFIGURE)
+		{
+			auto ItemFound = false;
+			if (Data->ItemUuid == 0) // 0 means "not specified"
+			{
+				if (MenuItemsCount == 1)
+				{
+					Data->FoundUuid = 0;
+					Data->ItemUuid = 0;
+					ItemFound = true;
+				}
+			}
+			else if (Data->ItemUuid <= MenuItemsCount)
+			{
+				Data->FoundUuid = Data->ItemUuid - 1; // 1-based on the user side
+				ItemFound = true;
+			}
+			if (!ItemFound)
+				return false;
+		}
+
+		return true;
+	}
+
+	if (!Data->pPlugin)
+		return false;
+
+	HANDLE hPlugin = INVALID_HANDLE_VALUE;
+	Panel* ActivePanel = CtrlObject->Cp()->ActivePanel;
+
+	switch (Data->CallFlags & CPT_MASK)
+	{
+	case CPT_MENU:
+		{
+			auto OpenCode = OPEN_PLUGINSMENU;
+			INT_PTR Item = Data->FoundUuid;
+			OpenDlgPluginData pd { sizeof(pd) };
+
+			if (IsEditor)
+			{
+				OpenCode = OPEN_EDITOR;
+			}
+			else if (IsViewer)
+			{
+				OpenCode = OPEN_VIEWER;
+			}
+			else if (IsDialog)
+			{
+				OpenCode = OPEN_DIALOG;
+				pd.ItemNumber = Data->FoundUuid;
+				pd.hDlg = reinterpret_cast<Dialog*>(TopFrame);
+				Item = reinterpret_cast<intptr_t>(&pd);
+			}
+
+			hPlugin = Data->pPlugin->OpenPlugin(OpenCode, Item);
+			Result = true;
+		}
+		break;
+
+	case CPT_CONFIGURE:
+		CtrlObject->Plugins.ConfigureCurrent(Data->pPlugin,Data->FoundUuid);
+		return true;
+
+	case CPT_CMDLINE:
+		{
+			const FARString command = Data->Command; // Нужна копия строки
+			hPlugin = Data->pPlugin->OpenPlugin(OPEN_COMMANDLINE, reinterpret_cast<INT_PTR>(command.CPtr()));
+			Result = true;
+		}
+		break;
+
+	case CPT_INTERNAL:
+		//TODO: бывший CallPlugin
+		//WARNING: учесть, что он срабатывает без переключения MacroState
+		break;
+
+	default:
+		break;
+	}
+
+	if ((hPlugin != INVALID_HANDLE_VALUE) && !IsEditor && !IsViewer && !IsDialog)
+	{
+		//BUGBUG: Закрытие панели? Нужно ли оно?
+		//BUGBUG: В ProcessCommandLine зовется перед Open, а в CPT_MENU - после
+		if (ActivePanel->ProcessPluginEvent(FE_CLOSE, nullptr))
+		{
+			ClosePlugin(hPlugin);
+			return false;
+		}
+
+		const auto NewPanel = CtrlObject->Cp()->ChangePanel(ActivePanel, FILE_PANEL, TRUE, TRUE);
+		NewPanel->SetPluginMode(hPlugin, {}, true);
+		NewPanel->Update(0);
+		NewPanel->Show();
+	}
+
+	// restore title for old plugins only.
+#ifndef NO_WRAPPER
+	if (Data->pPlugin->IsOemPlugin() && IsEditor && CurEditor)
+	{
+		CurEditor->SetPluginTitle(nullptr);
+	}
+#endif // NO_WRAPPER
+
+	return Result;
+}
+
 Plugin *PluginManager::FindPlugin(DWORD SysID)
 {
 	if (SysID  && SysID != 0xFFFFFFFFUl) // не допускается 0 и -1
