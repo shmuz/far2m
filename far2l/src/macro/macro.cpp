@@ -334,10 +334,6 @@ typedef unsigned int MACROFLAGS_MFLAGS;
 static const MACROFLAGS_MFLAGS
 	MFLAGS_NONE                    = 0,
 	// public flags, read from/saved to config
-	MFLAGS_MODEMASK                = 0x000000FF, // ### этот флаг подлежит удалению в будущем
-	MFLAGS_NEEDSAVEMACRO           = 0x40000000, // ###
-	MFLAGS_DISABLEMACRO            = 0x80000000, // ###
-
 	MFLAGS_ENABLEOUTPUT            = 0x00000001, // не подавлять обновление экрана во время выполнения макроса
 	MFLAGS_NOSENDKEYSTOPLUGINS     = 0x00000002, // НЕ передавать плагинам клавиши во время записи/воспроизведения макроса
 	MFLAGS_RUNAFTERFARSTART        = 0x00000008, // этот макрос запускается при старте ФАРа
@@ -357,9 +353,7 @@ static const MACROFLAGS_MFLAGS
 	MFLAGS_PNOFOLDERS              = 0x00020000, // пассивная: запускать, если текущий объект "файл"
 	MFLAGS_NOFILES                 = 0x00040000, // активная:  запускать, если текущий объект "папка"
 	MFLAGS_PNOFILES                = 0x00080000, // пассивная: запускать, если текущий объект "папка"
-	MFLAGS_PUBLIC_MASK             = 0x10000000 - 1,
 	// private flags, for runtime purposes only
-	MFLAGS_PRIVATE_MASK            = ~MFLAGS_PUBLIC_MASK,
 	MFLAGS_POSTFROMPLUGIN          = 0x10000000; // последовательность пришла от АПИ
 
 // для диалога назначения клавиши

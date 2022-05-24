@@ -104,19 +104,6 @@ enum INTMF_FLAGS{
 	IMFF_DISABLEINTINPUT            =0x00000002,
 };
 
-struct MacroRecord
-{
-	DWORD  Flags;         // Флаги макропоследовательности
-	uint32_t    Key;           // Назначенная клавиша
-	int    BufferSize;    // Размер буфера компилированной последовательности
-	DWORD *Buffer;        // компилированная последовательность (OpCode) макроса
-	wchar_t  *Src;           // оригинальный "текст" макроса
-	wchar_t  *Description;   // описание макроса
-	DWORD  Reserved[2];   // зарезервировано
-};
-
-#define STACKLEVEL      32
-
 struct MacroPanelSelect {
 	int     Action;
 	DWORD   ActionFlags;
@@ -154,7 +141,6 @@ public:
 	bool LoadMacros(bool FromFar, bool InitedRAM=true, const FarMacroLoad *Data=nullptr);
 	static bool ParseMacroString(const wchar_t* Sequence,DWORD Flags,bool skipFile);
 	int  PeekKey() const;
-	//bool ProcessEvent(const FAR_INPUT_RECORD *Rec);
 	void SetArea(int Area) { m_Area=Area; }
 	void SuspendMacros(bool Suspend) { Suspend ? ++m_InternalInput : --m_InternalInput; }
 
@@ -190,9 +176,6 @@ private:
 	public:
 		bool ProcessKey(DWORD Key);
 };
-
-BOOL WINAPI KeyMacroToText(uint32_t Key,FARString &strKeyText0);
-uint32_t WINAPI KeyNameMacroToKey(const wchar_t *Name);
 
 inline bool IsMenuArea(int Area){return Area==MACRO_MAINMENU || Area==MACRO_MENU || Area==MACRO_DISKS || Area==MACRO_USERMENU || Area==MACRO_AUTOCOMPLETION;}
 void Log(const char* str, ...);
