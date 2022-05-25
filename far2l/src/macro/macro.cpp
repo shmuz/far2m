@@ -1422,7 +1422,6 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 		//case MCODE_F_EDITOR_SETSTR:    break;
 		//case MCODE_F_FAR_CFG_GET:      break;
 		//case MCODE_F_FAR_GETCONFIG:    break;
-		//case MCODE_F_KEYBAR_SHOW:      break;
 		//case MCODE_F_MENU_FILTER:      break;
 		//case MCODE_F_MENU_FILTERSTR:   break;
 		//case MCODE_F_MENU_SHOW:        break;
@@ -1521,6 +1520,7 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 		case MCODE_F_ITOA:               return api.itowFunc();
 		case MCODE_F_KBDLAYOUT:          return api.kbdLayoutFunc();
 		case MCODE_F_KEY:                return api.keyFunc();
+		case MCODE_F_KEYBAR_SHOW:        return api.keybarshowFunc();
 		case MCODE_F_LCASE:              return api.lcaseFunc();
 		case MCODE_F_LEN:                return api.lenFunc();
 		case MCODE_F_MAX:                return api.maxFunc();
@@ -1940,6 +1940,24 @@ int FarMacroApi::sleepFunc()
 	}
 	PassNumber(0);
 	return 0;
+}
+
+// N=KeyBar.Show([N])
+int FarMacroApi::keybarshowFunc()
+{
+	/*
+	Mode:
+		0 - visible?
+			ret: 0 - hide, 1 - show, -1 - KeyBar not found
+		1 - show
+		2 - hide
+		3 - swap
+		ret: prev mode or -1 - KeyBar not found
+    */
+	auto Params = parseParams(1, mData);
+	const auto f = GetCurrentWindow();
+
+	return f ? f->VMProcess(MCODE_F_KEYBAR_SHOW,nullptr,Params[0].asInteger())-1 : -1;
 }
 
 // S=key(V)

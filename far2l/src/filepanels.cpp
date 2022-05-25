@@ -395,6 +395,35 @@ int FilePanels::SwapPanels()
 
 int64_t FilePanels::VMProcess(int OpCode,void *vParam,int64_t iParam)
 {
+	if (OpCode == MCODE_F_KEYBAR_SHOW)
+	{
+		int PrevMode = Opt.ShowKeyBar ? 2:1;
+		switch (iParam)
+		{
+			case 0:
+				break;
+			case 1:
+				Opt.ShowKeyBar = false;
+				goto Label3;
+			case 2:
+				Opt.ShowKeyBar = true;
+				goto Label3;
+			case 3: Label3:
+				Opt.ShowKeyBar=!Opt.ShowKeyBar;
+				KeyBarVisible = Opt.ShowKeyBar;
+
+				if (!KeyBarVisible)
+					MainKeyBar.Hide();
+
+				SetScreenPosition();
+				FrameManager->RefreshFrame();
+				break;
+			default:
+				PrevMode=0;
+				break;
+		}
+		return PrevMode;
+	}
 	return ActivePanel->VMProcess(OpCode,vParam,iParam);
 }
 

@@ -52,6 +52,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "config.hpp"
 #include "strmix.hpp"
 #include "mix.hpp"
+#include "macroopcode.hpp"
 
 FileViewer::FileViewer(const wchar_t *Name,int EnableSwitch,int DisableHistory,
                        int DisableEdit,long ViewStartPos,const wchar_t *PluginData,
@@ -215,6 +216,39 @@ void FileViewer::DisplayObject()
 
 int64_t FileViewer::VMProcess(int OpCode,void *vParam,int64_t iParam)
 {
+	if (OpCode == MCODE_F_KEYBAR_SHOW)
+	{
+		int PrevMode = Opt.ViOpt.ShowKeyBar ? 2:1;
+		switch (iParam)
+		{
+			case 0:
+				break;
+
+			case 1:
+				Opt.ViOpt.ShowKeyBar = false;
+				goto Label3;
+
+			case 2:
+				Opt.ViOpt.ShowKeyBar = true;
+				goto Label3;
+
+			case 3: Label3:
+				Opt.ViOpt.ShowKeyBar=!Opt.ViOpt.ShowKeyBar;
+
+				if (!Opt.ViOpt.ShowKeyBar)
+					ViewKeyBar.Hide0(); // 0 mean - Don't purge saved screen
+
+				ViewKeyBar.Refresh(Opt.ViOpt.ShowKeyBar);
+				Show();
+				KeyBarVisible = Opt.ViOpt.ShowKeyBar;
+				break;
+
+			default:
+				PrevMode=0;
+				break;
+		}
+		return PrevMode;
+	}
 	return View.VMProcess(OpCode,vParam,iParam);
 }
 
