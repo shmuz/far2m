@@ -70,6 +70,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "synchro.hpp"
 #include "RegExp.hpp"
 #include "console.hpp"
+#include "setcolor.hpp"
 #include "InterThreadCall.hpp"
 
 wchar_t *WINAPI FarItoa(int value, wchar_t *string, int radix)
@@ -2522,4 +2523,18 @@ int WINAPI farMacroControl(DWORD PluginId, int Command, int Param1, void* Param2
 		}
 	}
 	return 0;
+}
+
+int WINAPI farColorDialog(INT_PTR PluginNumber, WORD* Color, int bAddTransparent)
+{
+	if (Color)
+	{
+		WORD tmpColor = *Color;
+		if (GetColorDialog(tmpColor, true, bAddTransparent, PluginNumber))
+		{
+			*Color = tmpColor;
+			return TRUE;
+		}
+	}
+	return FALSE;
 }

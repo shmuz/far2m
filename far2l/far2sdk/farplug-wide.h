@@ -1979,6 +1979,12 @@ typedef int (WINAPI *FARAPIMACROCONTROL)(
     void* Param2
 );
 
+typedef int (WINAPI *FARAPICOLORDIALOG)(
+    INT_PTR PluginNumber,
+    WORD*   Color,
+    int     bAddTransparent
+);
+
 // <C&C++>
 typedef int (WINAPIV *FARSTDSNPRINTF)(wchar_t *Buffer,size_t Sizebuf,const wchar_t *Format,...);
 typedef int (WINAPIV *FARSTDSSCANF)(const wchar_t *Buffer, const wchar_t *Format,...);
@@ -2263,6 +2269,7 @@ struct PluginStartupInfo
 
 	void*                  RESERVED[2];
 	FARAPIMACROCONTROL     MacroControl;
+	FARAPICOLORDIALOG      ColorDialog;
 	const void*            Private;
 };
 

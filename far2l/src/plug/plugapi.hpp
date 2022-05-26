@@ -132,6 +132,8 @@ int WINAPI farRegExpControl(HANDLE hHandle, int Command, LONG_PTR Param);
 
 int WINAPI farMacroControl(DWORD PluginId, int Command, int Param1, void* Param2);
 
+int WINAPI farColorDialog(INT_PTR PluginNumber, WORD* Color, int bAddTransparent);
+
 DWORD WINAPI farGetCurrentDirectory(DWORD Size,wchar_t* Buffer);
 
 intptr_t WINAPI farCallFar(intptr_t CheckCode, FarMacroCall* Data);

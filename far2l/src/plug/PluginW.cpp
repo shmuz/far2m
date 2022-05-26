@@ -501,6 +501,7 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 		StartupInfo.FileFilterControl=farFileFilterControl;
 		StartupInfo.RegExpControl=farRegExpControl;
 		StartupInfo.MacroControl=farMacroControl;
+		StartupInfo.ColorDialog=farColorDialog;
 	}
 
 	*PSI=StartupInfo;

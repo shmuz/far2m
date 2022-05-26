@@ -581,7 +581,7 @@ static LONG_PTR WINAPI GetColorDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PT
 }
 
 
-int GetColorDialog(WORD& Color,bool bCentered,bool bAddTransparent)
+int GetColorDialog(WORD& Color,bool bCentered,bool bAddTransparent,INT_PTR PluginNumber)
 {
 	DialogDataEx ColorDlgData[]=
 	{
@@ -714,6 +714,7 @@ int GetColorDialog(WORD& Color,bool bCentered,bool bAddTransparent)
 		else
 			Dlg.SetPosition(37,2,75+(bAddTransparent?4:0),16+(bAddTransparent?3:0));
 
+		Dlg.SetPluginNumber(PluginNumber);
 		Dlg.Process();
 		ExitCode=Dlg.GetExitCode();
 	}
