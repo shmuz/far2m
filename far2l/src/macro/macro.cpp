@@ -1007,11 +1007,11 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 			return api.PassBoolean(ret);
 		}
 
-		//case MCODE_V_DLGPREVPOS:   // Dlg->PrevPos
-
 		case MCODE_V_DLGITEMCOUNT: // Dlg.ItemCount
 		case MCODE_V_DLGCURPOS:    // Dlg.CurPos
 		case MCODE_V_DLGITEMTYPE:  // Dlg.ItemType
+		case MCODE_V_DLGPREVPOS:   // Dlg.PrevPos
+		case MCODE_V_DLGINFOOWNER: // Dlg.Owner
 		{
 			if (CurrentWindow && CurrentWindow->GetType()==MODALTYPE_DIALOG) // ?? Mode == MACRO_DIALOG ??
 				return CurrentWindow->VMProcess(CheckCode);
@@ -1024,8 +1024,6 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 			api.PassString( reinterpret_cast<LPCWSTR>(CurrentWindow->VMProcess(CheckCode)) );
 		}
 		break;
-
-		//case MCODE_V_DLGINFOOWNER: // Dlg->Info.Owner
 
 		case MCODE_C_APANEL_VISIBLE:  // APanel.Visible
 		case MCODE_C_PPANEL_VISIBLE:  // PPanel.Visible

@@ -2439,6 +2439,13 @@ int64_t Dialog::VMProcess(int OpCode,void *vParam,int64_t iParam)
 
 			return -1;
 		}
+		case MCODE_V_DLGINFOOWNER: // Dlg.Owner
+		{
+			if (PluginNumber == -1)
+				return 0;
+			auto Plug = reinterpret_cast<Plugin*>(PluginNumber);
+			return Plug->GetSysID();
+		}
 		case MCODE_V_DLGITEMCOUNT: // Dlg.ItemCount
 		{
 			return ItemCount;
@@ -2446,6 +2453,10 @@ int64_t Dialog::VMProcess(int OpCode,void *vParam,int64_t iParam)
 		case MCODE_V_DLGCURPOS:    // Dlg.CurPos
 		{
 			return FocusPos+1;
+		}
+		case MCODE_V_DLGPREVPOS:    // Dlg.PrevPos
+		{
+			return PrevFocusPos+1;
 		}
 		case MCODE_V_DLGINFOID:        // Dlg.Info.Id
 		{
