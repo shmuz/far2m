@@ -241,6 +241,7 @@ static int farExecuteASynched(const char *CmdStr, unsigned int ExecFlags)
 			CtrlObject->CmdLine->Redraw();
 		}
 //		CtrlObject->CmdLine->SetString(L"", TRUE);
+		ScrBuf.SetLockCount(0);
 		ScrBuf.Flush();
 		DWORD saved_mode = 0, dw;
 		WINPORT(GetConsoleMode)(NULL, &saved_mode);
