@@ -1377,13 +1377,7 @@ DWORD PeekInputRecord(INPUT_RECORD *rec,bool ExcludeMacro)
 		if (!TranslateKeyToVK(Key,VirtKey,ControlState,rec))
 			return 0;
 	}
-	else if ((!ExcludeMacro) && (Key=CtrlObject->Macro.PeekKey()) )
-	{
-		int VirtKey,ControlState;
-		if (!TranslateKeyToVK(Key,VirtKey,ControlState,rec))
-			return 0;
-	}
-	else
+	else if (ExcludeMacro || !CtrlObject->Macro.PeekKey())
 	{
 		if (!Console.PeekInput(*rec))
 			return 0;
