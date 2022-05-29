@@ -137,6 +137,7 @@ enum MACRO_OP_CODE
 	MCODE_F_PLUGIN_CALL,              //
 	MCODE_F_PLUGIN_EXIST,             // N=Plugin.Exist(SysId)
 	MCODE_F_KEYBAR_SHOW,              // N=keybar.show([Mode])
+	MCODE_F_FAR_CFG_GET,              // V=Far.Cfg_Get(Key,Name)
 
 	/* ************************************************************************* */
 	// булевые переменные - различные состояния

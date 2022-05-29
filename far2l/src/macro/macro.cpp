@@ -1507,6 +1507,7 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 		case MCODE_F_EDITOR_SETTITLE:    return api.editorsettitleFunc();
 		case MCODE_F_EDITOR_UNDO:        return api.editorundoFunc();
 		case MCODE_F_ENVIRON:            return api.environFunc();
+		case MCODE_F_FAR_CFG_GET:        return api.farcfggetFunc();
 		case MCODE_F_FATTR:              return api.fattrFunc();
 		case MCODE_F_FEXIST:             return api.fexistFunc();
 		case MCODE_F_FLOAT:              return api.floatFunc();
@@ -2436,6 +2437,24 @@ int FarMacroApi::dlgsetfocusFunc()
 	}
 	PassValue(Ret);
 	return Ret.asInteger() != -1; // ?? <= 0 ??
+}
+
+// V=Far.Cfg_Get(Key,Name)
+int FarMacroApi::farcfggetFunc()
+{
+	auto Params = parseParams(2, mData);
+	const auto& Key(Params[0]);
+	const auto& Name(Params[1]);
+
+	DWORD dwValue;
+	FARString strValue;
+	switch( GetConfigValue(Key.s(), Name.s(), dwValue, strValue) )
+	{
+		default: PassBoolean(0); break;
+		case 1:  PassNumber(dwValue); break;
+		case 2:  PassString(strValue); break;
+	}
+	return 0;
 }
 
 // V=Dlg.GetValue(ID,N)

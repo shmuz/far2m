@@ -1308,3 +1308,29 @@ void LanguageSettings()
 	}
 	delete LangMenu; //???? BUGBUG
 }
+
+int GetConfigValue(const wchar_t *wKey, const wchar_t *wName, DWORD &dwValue, FARString &strValue)
+{
+	std::string sKey = FARString(wKey).GetMB();
+	std::string sName = FARString(wName).GetMB();
+	const char *Key=sKey.c_str(), *Name=sName.c_str();
+
+	for (size_t I=0; I < ARRAYSIZE(CFG); ++I)
+	{
+		if (!strcasecmp(CFG[I].KeyName,Key) && !strcasecmp(CFG[I].ValName,Name))
+		{
+			switch (CFG[I].ValType)
+			{
+				case REG_DWORD:
+					dwValue = *(unsigned int *)CFG[I].ValPtr;
+					return 1;
+				case REG_SZ:
+					strValue = *(const FARString *)CFG[I].ValPtr;
+					return 2;
+				case REG_BINARY:
+					break; //TODO
+			}
+		}
+	}
+	return 0;
+}
