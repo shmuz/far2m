@@ -838,6 +838,16 @@ static std::vector<TVar> parseParams(size_t Count, FarMacroCall* Data)
 
 static long long msValues[constMsLAST];
 
+class LockOutput
+{
+public:
+	LockOutput(bool Lock): m_Lock(Lock) { if (m_Lock) ScrBuf.Lock(); }
+	~LockOutput() { if (m_Lock) ScrBuf.Unlock(); }
+
+private:
+	const bool m_Lock;
+};
+
 intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 {
 	intptr_t ret=0;
@@ -1555,10 +1565,18 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 		case MCODE_F_TESTFOLDER:         return api.testfolderFunc();
 		case MCODE_F_TRIM:               return api.trimFunc();
 		case MCODE_F_UCASE:              return api.ucaseFunc();
-		case MCODE_F_WAITKEY:            return api.waitkeyFunc();
+		case MCODE_F_WAITKEY:
+		{
+			LockOutput Lock(IsTopMacroOutputDisabled());
+
+			++m_WaitKey;
+			int result = api.waitkeyFunc();
+			--m_WaitKey;
+
+			return result;
+		}
 		case MCODE_F_WINDOW_SCROLL:      return api.windowscrollFunc();
 		case MCODE_F_XLAT:               return api.xlatFunc();
-
 		case MCODE_F_BM_ADD:              // N=BM.Add()
 		case MCODE_F_BM_CLEAR:            // N=BM.Clear()
 		case MCODE_F_BM_NEXT:             // N=BM.Next()
