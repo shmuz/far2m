@@ -1332,7 +1332,7 @@ struct FarMacroValue
 		void          *Pointer;
 		struct
 		{
-			void *Data;
+			const void *Data;
 			size_t Size;
 		} Binary;
 		struct

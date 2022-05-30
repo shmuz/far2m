@@ -1128,7 +1128,7 @@ const wchar_t * CalcWordFromString(const wchar_t *Str,int CurPos,int *Start,int 
 
 	const int StrSize = StrLength(Str);
 
-	if (CurPos < 0 || CurPos >= StrSize)
+	if (CurPos < 0 || CurPos > StrSize)
 		return nullptr;
 
 	if (IsWordDivSTNR(WordDiv0, Str[CurPos]))

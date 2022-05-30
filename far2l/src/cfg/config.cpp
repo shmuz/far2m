@@ -1309,7 +1309,7 @@ void LanguageSettings()
 	delete LangMenu; //???? BUGBUG
 }
 
-int GetConfigValue(const wchar_t *wKey, const wchar_t *wName, DWORD &dwValue, FARString &strValue)
+int GetConfigValue(const wchar_t *wKey, const wchar_t *wName, DWORD &dwValue, FARString &strValue, const void **binData)
 {
 	std::string sKey = FARString(wKey).GetMB();
 	std::string sName = FARString(wName).GetMB();
@@ -1323,14 +1323,16 @@ int GetConfigValue(const wchar_t *wKey, const wchar_t *wName, DWORD &dwValue, FA
 			{
 				case REG_DWORD:
 					dwValue = *(unsigned int *)CFG[I].ValPtr;
-					return 1;
+					return REG_DWORD;
 				case REG_SZ:
 					strValue = *(const FARString *)CFG[I].ValPtr;
-					return 2;
+					return REG_SZ;
 				case REG_BINARY:
-					break; //TODO
+					*binData = CFG[I].ValPtr;
+					dwValue = CFG[I].DefDWord;
+					return REG_BINARY;
 			}
 		}
 	}
-	return 0;
+	return REG_NONE;
 }

@@ -671,6 +671,7 @@ public:
 	int PassString(const wchar_t* str);
 	int PassString(const FARString& str);
 	int PassValue(const TVar& Var);
+	int PassBinary(const void* data, size_t size);
 
 	int absFunc();
 	int ascFunc();
@@ -798,6 +799,16 @@ int FarMacroApi::PassValue(const TVar& Var)
 	else
 		val = Var.asInteger();
 
+	mData->Callback(mData->CallbackData, &val, 1);
+	return 1;
+}
+
+int FarMacroApi::PassBinary(const void* data, size_t size)
+{
+	FarMacroValue val;
+	val.Type = FMVT_BINARY;
+	val.Binary.Data = data;
+	val.Binary.Size = size;
 	mData->Callback(mData->CallbackData, &val, 1);
 	return 1;
 }
@@ -2448,11 +2459,13 @@ int FarMacroApi::farcfggetFunc()
 
 	DWORD dwValue;
 	FARString strValue;
-	switch( GetConfigValue(Key.s(), Name.s(), dwValue, strValue) )
+	const void *binValue;
+	switch( GetConfigValue(Key.s(), Name.s(), dwValue, strValue, &binValue) )
 	{
-		default: PassBoolean(0); break;
-		case 1:  PassNumber(dwValue); break;
-		case 2:  PassString(strValue); break;
+		default:           PassBoolean(0); break;
+		case REG_DWORD:    PassNumber(dwValue); break;
+		case REG_SZ:       PassString(strValue); break;
+		case REG_BINARY:   PassBinary(binValue, dwValue); break;
 	}
 	return 0;
 }
