@@ -16997,6 +16997,16 @@ MacroDeleteKey2
 "Borrar?"
 "Видалити?"
 
+MacroEditKey
+"Изменить"
+"Chan&ge"
+"Změnit"
+"Verändern"
+upd:"Change"
+"Zmienić?"
+"Cambiar?"
+"Змінити"
+
 MacroSettingsTitle
 l:
 "Параметры макрокоманды для '%ls'"

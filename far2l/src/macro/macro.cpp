@@ -359,10 +359,11 @@ static const MACROFLAGS_MFLAGS
 // для диалога назначения клавиши
 struct DlgParam
 {
-	KeyMacro *Handle;
+	DWORD Flags;
 	DWORD Key;
 	int Area;
 	int Recurse;
+	bool Changed;
 };
 
 enum {
@@ -852,8 +853,8 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 {
 	intptr_t ret=0;
 	DWORD FileAttr = INVALID_FILE_ATTRIBUTES;
-	FARString tmpStr;
 	FarMacroApi api(Data);
+	FARString tmpStr;
 
 	// проверка на область
 	if (CheckCode == 0)
@@ -875,42 +876,6 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 		case MCODE_C_MSCTRLSTATE:     return api.PassNumber(msValues[constMsCtrlState]);
 		case MCODE_C_MSEVENTFLAGS:    return api.PassNumber(msValues[constMsEventFlags]);
 		case MCODE_C_MSLASTCTRLSTATE: return api.PassNumber(msValues[constMsLastCtrlState]);
-
-		case MCODE_F_GETOPTIONS:
-		{
-			DWORD Options = Opt.OnlyEditorViewerUsed; // bits 0x1 and 0x2
-			if (Opt.Macro.DisableMacro&MDOL_ALL)       Options |= 0x4;
-			if (Opt.Macro.DisableMacro&MDOL_AUTOSTART) Options |= 0x8;
-			//### if (Opt.ReadOnlyConfig)              Options |= 0x10;
-			api.PassNumber(Options);
-			break;
-		}
-
-		case MCODE_F_KEYMACRO:
-			if (Data->Count && Data->Values[0].Type==FMVT_DOUBLE)
-			{
-				switch (static_cast<int>(Data->Values[0].Double))
-				{
-					case 1: RestoreMacroChar(); break;
-					case 2: ScrBuf.Lock(); break;
-					case 3: ScrBuf.Unlock(); break;
-					case 4: ScrBuf.ResetLockCount(); break;
-					case 5: api.PassNumber(ScrBuf.GetLockCount()); break;
-					case 6: if (Data->Count > 1) ScrBuf.SetLockCount(Data->Values[1].Double); break;
-					case 7: api.PassBoolean(Clipboard::GetUseInternalClipboardState()); break;
-					case 8: if (Data->Count > 1) Clipboard::SetUseInternalClipboardState(Data->Values[1].Boolean != 0); break;
-					case 9: if (Data->Count > 1) api.PassNumber(KeyNameToKey(Data->Values[1].String)); break;
-					case 10:
-						if (Data->Count > 1)
-						{
-							FARString str;
-							KeyToText(Data->Values[1].Double, str);
-							api.PassString(str.CPtr());
-						}
-						break;
-				}
-			}
-			break;
 
 		case MCODE_V_FAR_WIDTH:
 			return ScrX + 1;
@@ -1027,6 +992,42 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 			}
 			return api.PassBoolean(ret);
 		}
+
+		case MCODE_F_GETOPTIONS:
+		{
+			DWORD Options = Opt.OnlyEditorViewerUsed; // bits 0x1 and 0x2
+			if (Opt.Macro.DisableMacro&MDOL_ALL)       Options |= 0x4;
+			if (Opt.Macro.DisableMacro&MDOL_AUTOSTART) Options |= 0x8;
+			//### if (Opt.ReadOnlyConfig)              Options |= 0x10;
+			api.PassNumber(Options);
+			break;
+		}
+
+		case MCODE_F_KEYMACRO:
+			if (Data->Count && Data->Values[0].Type==FMVT_DOUBLE)
+			{
+				switch (static_cast<int>(Data->Values[0].Double))
+				{
+					case 1: RestoreMacroChar(); break;
+					case 2: ScrBuf.Lock(); break;
+					case 3: ScrBuf.Unlock(); break;
+					case 4: ScrBuf.ResetLockCount(); break;
+					case 5: api.PassNumber(ScrBuf.GetLockCount()); break;
+					case 6: if (Data->Count > 1) ScrBuf.SetLockCount(Data->Values[1].Double); break;
+					case 7: api.PassBoolean(Clipboard::GetUseInternalClipboardState()); break;
+					case 8: if (Data->Count > 1) Clipboard::SetUseInternalClipboardState(Data->Values[1].Boolean != 0); break;
+					case 9: if (Data->Count > 1) api.PassNumber(KeyNameToKey(Data->Values[1].String)); break;
+					case 10:
+						if (Data->Count > 1)
+						{
+							FARString str;
+							KeyToText(Data->Values[1].Double, str);
+							api.PassString(str.CPtr());
+						}
+						break;
+				}
+			}
+			break;
 
 		case MCODE_V_DLGITEMCOUNT: // Dlg.ItemCount
 		case MCODE_V_DLGCURPOS:    // Dlg.CurPos
@@ -1522,7 +1523,11 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 		case MCODE_F_DATE:               return api.dateFunc();
 		case MCODE_F_DLG_GETVALUE:       return api.dlggetvalueFunc();
 		case MCODE_F_DLG_SETFOCUS:       return api.dlgsetfocusFunc();
-		case MCODE_F_EDITOR_POS:         return api.editorposFunc();
+		case MCODE_F_EDITOR_POS:
+		{
+			LockOutput Lock(IsTopMacroOutputDisabled());
+			return api.editorposFunc();
+		}
 		case MCODE_F_EDITOR_SEL:         return api.editorselFunc();
 		case MCODE_F_EDITOR_SET:         return api.editorsetFunc();
 		case MCODE_F_EDITOR_SETTITLE:    return api.editorsettitleFunc();
@@ -1577,6 +1582,7 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 		}
 		case MCODE_F_WINDOW_SCROLL:      return api.windowscrollFunc();
 		case MCODE_F_XLAT:               return api.xlatFunc();
+
 		case MCODE_F_BM_ADD:              // N=BM.Add()
 		case MCODE_F_BM_CLEAR:            // N=BM.Clear()
 		case MCODE_F_BM_NEXT:             // N=BM.Next()
@@ -3742,7 +3748,7 @@ bool KeyMacro::ProcessKey(DWORD IntKey)
 			DWORD MacroKey;
 			// выставляем флаги по умолчанию.
 			DWORD Flags = 0;
-			int AssignRet = AssignMacroKey(MacroKey);
+			int AssignRet = AssignMacroKey(MacroKey,Flags);
 
 			if (AssignRet && AssignRet!=2 && !m_RecCode.IsEmpty())
 			{
@@ -4089,10 +4095,10 @@ M1:
 		if (LM_GetMacro(&Data,KMParam->Area,strKeyText,true) && Data.IsKeyboardMacro)
 		{
 			// общие макросы учитываем только при удалении.
-			bool deleting = m_RecCode.IsEmpty();
-			if (deleting || Data.Area!=MACROAREA_COMMON)
+			if (m_RecCode.IsEmpty() || Data.Area!=MACROAREA_COMMON)
 			{
 				FARString strBufKey;
+				bool SetChange = m_RecCode.IsEmpty();
 				if (Data.Code)
 				{
 					strBufKey=Data.Code;
@@ -4101,22 +4107,44 @@ M1:
 
 				FARString strBuf;
 				if (Data.Area==MACROAREA_COMMON)
-					strBuf.Format(deleting ? Msg::MacroCommonDeleteKey : Msg::MacroCommonReDefinedKey, strKeyText.CPtr());
+					strBuf.Format(SetChange ? Msg::MacroCommonDeleteKey : Msg::MacroCommonReDefinedKey, strKeyText.CPtr());
 				else
-					strBuf.Format(deleting ? Msg::MacroDeleteKey : Msg::MacroReDefinedKey, strKeyText.CPtr());
+					strBuf.Format(SetChange ? Msg::MacroDeleteKey : Msg::MacroReDefinedKey, strKeyText.CPtr());
 
-				int	Result=Message(MSG_WARNING,2,Msg::Warning,
-					          strBuf,
-					          Msg::MacroSequence,
-					          strBufKey,
-					          deleting ? Msg::MacroDeleteKey2 : Msg::MacroReDefinedKey2,
-					          Msg::Yes, Msg::No);
+				int	Result = SetChange ?
+					Message(MSG_WARNING,3,Msg::Warning,strBuf,Msg::MacroSequence,strBufKey,
+							Msg::MacroDeleteKey2,
+							Msg::Yes, Msg::MacroEditKey, Msg::No) :
+					Message(MSG_WARNING,2,Msg::Warning,strBuf,Msg::MacroSequence,strBufKey,
+							Msg::MacroReDefinedKey2,
+							Msg::Yes, Msg::No);
 
-				if (!Result)
+				if (Result == 0)
 				{
 					// в любом случае - вываливаемся
 					SendDlgMessage(hDlg,DM_CLOSE,1,0);
 					return TRUE;
+				}
+
+				if (SetChange && Result == 1)
+				{
+					auto key = (DWORD)Param2;
+					FARString strDescription;
+
+					if ( *Data.Code )
+						strBufKey=Data.Code;
+
+					if ( *Data.Description )
+						strDescription=Data.Description;
+
+					if (GetMacroSettings(key, Data.Flags, strBufKey, strDescription))
+					{
+						KMParam->Flags = Data.Flags;
+						KMParam->Changed = true;
+						// в любом случае - вываливаемся
+						SendDlgMessage(hDlg, DM_CLOSE, 1, 0);
+						return TRUE;
+					}
 				}
 
 				// здесь - здесь мы нажимали "Нет", ну а на нет и суда нет
@@ -4134,7 +4162,7 @@ M1:
 	return DefDlgProc(hDlg,Msg,Param1,Param2);
 }
 
-int KeyMacro::AssignMacroKey(DWORD& MacroKey)
+int KeyMacro::AssignMacroKey(DWORD& MacroKey, DWORD& Flags)
 {
 	/*
 	  +------ Define macro ------+
@@ -4149,7 +4177,7 @@ int KeyMacro::AssignMacroKey(DWORD& MacroKey)
 		{DI_COMBOBOX,5,3,28,3,{},DIF_FOCUS|DIF_DEFAULT,L""}
 	};
 	MakeDialogItemsEx(MacroAssignDlgData,MacroAssignDlg);
-	DlgParam Param={this,0,m_StartMode,0};
+	DlgParam Param={Flags, 0, m_StartMode, false};
 	//_SVS(SysLog(L"StartMode=%d",m_StartMode));
 	IsProcessAssignMacroKey++;
 	Dialog Dlg(MacroAssignDlg,ARRAYSIZE(MacroAssignDlg),AssignMacroDlgProc,(LONG_PTR)&Param);
@@ -4162,7 +4190,8 @@ int KeyMacro::AssignMacroKey(DWORD& MacroKey)
 		return 0;
 
 	MacroKey = Param.Key;
-	return 1;
+	Flags = Param.Flags;
+	return Param.Changed ? 2 : 1;
 }
 
 static int Set3State(DWORD Flags,DWORD Chk1,DWORD Chk2)
@@ -4307,7 +4336,7 @@ int KeyMacro::GetMacroSettings(uint32_t Key,DWORD &Flags, const wchar_t* Src, co
 	MacroSettingsDlg[MS_CHECKBOX_SELBLOCK].Selected=Set3State(Flags,MFLAGS_EDITSELECTION,MFLAGS_EDITNOSELECTION);
 	LPCWSTR Sequence = *Src ? Src : m_RecCode.CPtr();
 	MacroSettingsDlg[MS_EDIT_SEQUENCE].strData=Sequence;
-	DlgParam Param={this,0,0,0};
+	DlgParam Param={0, 0, MACROAREA_OTHER, 0, false};
 	Dialog Dlg(MacroSettingsDlg,ARRAYSIZE(MacroSettingsDlg),ParamMacroDlgProc,(LONG_PTR)&Param);
 	Dlg.SetPosition(-1,-1,73,21);
 	Dlg.SetHelp(L"KeyMacroSetting");
