@@ -1507,7 +1507,7 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 						Data->Callback(Data->CallbackData, &Result, 1);
 					}
 					else
-						api.PassBoolean(ResultCallPlugin != nullptr);
+						api.PassBoolean(ResultCallPlugin != nullptr && ResultCallPlugin != INVALID_HANDLE_VALUE);
 
 					return 0;
 				}

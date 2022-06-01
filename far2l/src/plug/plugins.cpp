@@ -1927,45 +1927,67 @@ void PluginManager::ReadUserBackgound(SaveScreen *SaveScr)
 int PluginManager::CallPlugin(DWORD SysID,int OpenFrom, void *Data,int *Ret)
 {
 	Plugin *pPlugin = FindPlugin(SysID);
+	if ( !(pPlugin && pPlugin->HasOpenPlugin()) )
+		return FALSE;
 
-	if (pPlugin && pPlugin->HasOpenPlugin())
+	if (OpenFrom == OPEN_LUAMACRO)
 	{
-		if (OpenFrom == OPEN_LUAMACRO)
-		{
-			HANDLE hPlugin = pPlugin->OpenPlugin(OpenFrom, (INT_PTR)Data);
-			*Ret = (hPlugin != nullptr);
-			return TRUE;
-		}
-		else if (OpenFrom == OPEN_FROMMACRO)
-		{
-			HANDLE hPlugin = pPlugin->OpenPlugin(OpenFrom, (INT_PTR)Data);
-			*reinterpret_cast<void**>(Ret) = hPlugin;
-			return TRUE;
-		}
-
-		HANDLE PluginPanel = OpenPlugin(pPlugin,OpenFrom,(INT_PTR)Data);
-		bool process = OpenFrom == OPEN_PLUGINSMENU || OpenFrom == OPEN_FILEPANEL;
-
-		if ((PluginPanel != INVALID_HANDLE_VALUE) && process)
-		{
-			int CurFocus=CtrlObject->Cp()->ActivePanel->GetFocus();
-			Panel *NewPanel=CtrlObject->Cp()->ChangePanel(CtrlObject->Cp()->ActivePanel,FILE_PANEL,TRUE,TRUE);
-			NewPanel->SetPluginMode(PluginPanel,L"",CurFocus || !CtrlObject->Cp()->GetAnotherPanel(NewPanel)->IsVisible());
-
-			if (Data && *(const wchar_t *)Data)
-				SetDirectory(PluginPanel,(const wchar_t *)Data,0);
-		}
-
-		if (Ret)
-		{
-			PluginHandle *handle=(PluginHandle *)PluginPanel;
-			*Ret=PluginPanel == INVALID_HANDLE_VALUE || handle->hPlugin?1:0;
-		}
-
+		HANDLE hPlugin = pPlugin->OpenPlugin(OpenFrom, (INT_PTR)Data);
+		*Ret = (hPlugin != nullptr);
 		return TRUE;
 	}
 
-	return FALSE;
+	auto PluginPanel = reinterpret_cast<PluginHandle*>(OpenPlugin(pPlugin,OpenFrom,(INT_PTR)Data));
+	bool process = false;
+
+	if (OpenFrom == OPEN_FROMMACRO)
+	{
+		if ((PluginPanel != INVALID_HANDLE_VALUE) && (reinterpret_cast<UINT_PTR>(PluginPanel->hPlugin) >= 0x10000))
+		{
+			FarMacroCall *fmc = reinterpret_cast<FarMacroCall*>(PluginPanel->hPlugin);
+			if (fmc->Count > 0 && fmc->Values[0].Type == FMVT_PANEL)
+			{
+				process = true;
+				PluginPanel->hPlugin = fmc->Values[0].Pointer;
+				if (fmc->Callback)
+					fmc->Callback(fmc->CallbackData, fmc->Values, fmc->Count);
+			}
+		}
+		if (!process)
+		{
+			*reinterpret_cast<void**>(Ret) = (PluginPanel==INVALID_HANDLE_VALUE) ? PluginPanel : PluginPanel->hPlugin;
+			return TRUE;
+		}
+	}
+	else
+	{
+		process = OpenFrom == OPEN_PLUGINSMENU || OpenFrom == OPEN_FILEPANEL;
+	}
+
+	if ((PluginPanel != INVALID_HANDLE_VALUE) && process)
+	{
+		int CurFocus=CtrlObject->Cp()->ActivePanel->GetFocus();
+		Panel *NewPanel=CtrlObject->Cp()->ChangePanel(CtrlObject->Cp()->ActivePanel,FILE_PANEL,TRUE,TRUE);
+		NewPanel->SetPluginMode(PluginPanel,L"",CurFocus || !CtrlObject->Cp()->GetAnotherPanel(NewPanel)->IsVisible());
+
+		if (OpenFrom != OPEN_FROMMACRO)
+		{
+			if (Data && *(const wchar_t *)Data)
+				SetDirectory(PluginPanel,(const wchar_t *)Data,0);
+		}
+		else
+		{
+			NewPanel->Update(0);
+			NewPanel->Show();
+		}
+	}
+
+	if (Ret)
+	{
+		*Ret=PluginPanel == INVALID_HANDLE_VALUE || PluginPanel->hPlugin ? 1:0;
+	}
+
+	return TRUE;
 }
 
 // поддержка макрофункций plugin.call, plugin.cmd, plugin.config и т.п
