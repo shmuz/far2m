@@ -780,7 +780,9 @@ int Edit::ProcessKey(int Key)
 	        Key==KEY_CTRLSHIFTBACKBRACKET || Key==KEY_SHIFTENTER || Key==KEY_SHIFTNUMENTER))
 	{
 		LeftPos=0;
-		SetString(L"");
+		DisableCallback DC(m_Callback.Active);
+		SetString(L""); // mantis#0001722
+		DC.Restore();
 		Show();
 	}
 
