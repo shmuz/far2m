@@ -31,6 +31,8 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <numeric>
+#include <algorithm>
 #include "headers.hpp"
 
 
@@ -91,6 +93,83 @@ static int _cdecl SortList(const void *el1,const void *el2);
 static int ListSortMode,ListSortOrder,ListSortGroups,ListSelectedFirst,ListDirectoriesFirst;
 static int ListPanelMode,ListNumericSort,ListCaseSensitiveSort;
 static HANDLE hSortPlugin;
+
+static_assert(static_cast<size_t>(PanelSortMode::BY_USER) == static_cast<size_t>(OPENPLUGININFO_SORTMODES::SM_USER));
+
+namespace custom_sort
+{
+	static FileList* FileListPtr;
+
+static void FileListToSortingPanelItem(const FileListItem * const *arr, int index, SortingPanelItem* ppi)
+{
+	const auto& fi = *arr[index];
+	auto& pi = *ppi;
+
+	pi.FileName       = fi.strName.CPtr();
+	pi.FileSize       = fi.FileSize;
+	pi.AllocationSize = fi.PhysicalSize;
+	pi.FileAttributes = fi.FileAttr;
+	pi.LastWriteTime  = fi.WriteTime;
+	pi.CreationTime   = fi.CreationTime;
+	pi.LastAccessTime = fi.AccessTime;
+	pi.ChangeTime     = fi.ChangeTime;
+	pi.Flags          = fi.UserFlags;
+
+	if (fi.Selected)
+		pi.Flags |= PPIF_SELECTED;
+
+	pi.CustomColumnData   = fi.CustomColumnData;
+	pi.CustomColumnNumber = fi.CustomColumnNumber;
+	pi.Description        = fi.DizText; //BUGBUG???
+	pi.UserData           = fi.UserData;
+	pi.CRC32              = fi.CRC32;
+	pi.Position           = fi.Position;
+	pi.SortGroup          = fi.SortGroup - DEFAULT_SORT_GROUP;
+	pi.NumberOfLinks      = fi.NumberOfLinks;
+	pi.Owner              = fi.strOwner.CPtr();
+}
+
+struct CustomSort
+{
+	unsigned int        *Positions;
+	const FileListItem * const *Items;
+	size_t               ItemsCount;
+	void               (*FileListToSortingPanelItem)(const FileListItem * const *, int, SortingPanelItem*);
+	int                  ListSortGroups;
+	int                  ListSelectedFirst;
+	int                  ListDirectoriesFirst;
+	int                  ListSortMode;
+	int                  RevertSorting;
+	int                  Reserved[2];
+	HANDLE               hSortPlugin;
+};
+
+static bool SortFileList(CustomSort* cs, wchar_t* indicator)
+{
+	FarMacroValue values[]={cs};
+	FarMacroCall fmc={sizeof(FarMacroCall),ARRAYSIZE(values),values,nullptr,nullptr};
+	OpenMacroPluginInfo info={MCT_PANELSORT,&fmc};
+	int ret;
+
+	if (!CtrlObject->Plugins.CallPlugin(SYSID_LUAMACRO, OPEN_LUAMACRO, &info, &ret) || !ret)
+		return false;
+
+	indicator[0] = info.Ret.Values[0].String[0];
+	indicator[1] = info.Ret.Values[0].String[1];
+	return true;
+}
+
+static bool CanSort(int SortMode)
+{
+	FarMacroValue values[] = {static_cast<double>(SortMode)};
+	FarMacroCall fmc = {sizeof(FarMacroCall),ARRAYSIZE(values),values,nullptr,nullptr};
+	OpenMacroPluginInfo info = {MCT_CANPANELSORT,&fmc};
+	int ret;
+
+	return CtrlObject->Plugins.CallPlugin(SYSID_LUAMACRO, OPEN_LUAMACRO, &info, &ret) && ret;
+}
+
+}
 
 enum SELECT_MODES
 {
@@ -283,6 +362,36 @@ void FileList::CorrectPosition()
 }
 
 
+template<typename Iter1, typename Iter2>
+void apply_permutation(Iter1 first, Iter1 last, Iter2 indices)
+{
+	using difference_type = typename std::iterator_traits<Iter2>::value_type;
+	const difference_type length = std::distance(first, last);
+	for (difference_type i = 0; i < length; ++i)
+	{
+		auto current = i;
+		while (i != indices[current])
+		{
+			const auto next = indices[current];
+			if (next < 0 || next >= length)
+			{
+				indices[i] = next;
+				throw std::range_error("Invalid index in permutation");
+			}
+			if (next == current)
+			{
+				indices[i] = next;
+				throw std::range_error("Not a permutation");
+			}
+			using std::swap;
+			swap(first[current], first[next]);
+			indices[current] = current;
+			current = next;
+		}
+		indices[current] = current;
+	}
+}
+
 void FileList::SortFileList(int KeepPosition)
 {
 	if (FileCount>1)
@@ -309,14 +418,48 @@ void FileList::SortFileList(int KeepPosition)
 
 		hSortPlugin=(PanelMode==PLUGIN_PANEL && hPlugin && reinterpret_cast<PluginHandle*>(hPlugin)->pPlugin->HasCompare()) ? hPlugin:nullptr;
 
-		for (int i = 0; i < FileCount; ++i)
+		if (SortMode < PanelSortMode::COUNT)
 		{
-			auto Item = ListData[i];
-			const auto NamePtr = PointToName(Item->strName);
-			Item->FileNamePos = (unsigned short)std::min(size_t(NamePtr - Item->strName.CPtr()), (size_t)0xffff);
-			Item->FileExtPos = (unsigned short)std::min(size_t(PointToExt(NamePtr) - NamePtr), (size_t)0xffff);
+			for (int i = 0; i < FileCount; ++i)
+			{
+				auto Item = ListData[i];
+				const auto NamePtr = PointToName(Item->strName);
+				Item->FileNamePos = (unsigned short)std::min(size_t(NamePtr - Item->strName.CPtr()), (size_t)0xffff);
+				Item->FileExtPos = (unsigned short)std::min(size_t(PointToExt(NamePtr) - NamePtr), (size_t)0xffff);
+			}
+			qsort(ListData,FileCount,sizeof(*ListData),SortList);
 		}
-		qsort(ListData,FileCount,sizeof(*ListData),SortList);
+		else if (SortMode >= PanelSortMode::BY_USER)
+		{
+			custom_sort::CustomSort cs{};
+			custom_sort::FileListPtr = this;
+			std::vector<unsigned int> Positions(FileCount);
+			std::iota(Positions.begin(), Positions.end(), 0);
+			cs.Positions = Positions.data();
+			cs.Items = ListData;
+			cs.ItemsCount = FileCount;
+			cs.FileListToSortingPanelItem = custom_sort::FileListToSortingPanelItem;
+			cs.ListSortGroups = ListSortGroups;
+			cs.ListSelectedFirst = SelectedFirst;
+			cs.ListDirectoriesFirst = DirectoriesFirst;
+			cs.ListSortMode = static_cast<int>(SortMode);
+			cs.RevertSorting = (SortOrder < 0) ? 1 : 0;
+			cs.hSortPlugin = hSortPlugin;
+
+			if (custom_sort::SortFileList(&cs, CustomSortIndicator))
+			{
+				apply_permutation(ListData, ListData+FileCount, Positions.begin());
+			}
+			else
+			{
+				SetSortMode(PanelSortMode::BY_NAME); // recursive call
+				return;
+			}
+		}
+		else
+		{
+			// TODO: log
+		}
 
 		if (KeepPosition)
 			GoToFile(strCurName);
@@ -3013,17 +3156,24 @@ void FileList::SetViewMode(int ViewMode)
 }
 
 
-void FileList::SetSortMode(int SortMode)
+void FileList::SetSortMode(int SortMode, bool KeepOrder)
 {
-	if (SortMode==FileList::SortMode && Opt.ReverseSort)
-		SortOrder=-SortOrder;
-	else
-		SortOrder=1;
+	if (SortMode < PanelSortMode::COUNT)
+	{
+		if (SortMode==FileList::SortMode && Opt.ReverseSort)
+			SortOrder=-SortOrder;
+		else
+			SortOrder=1;
 
-	SetSortMode0(SortMode);
+		ApplySortMode(SortMode);
+	}
+	else if (SortMode >= PanelSortMode::BY_USER)
+	{
+		SetCustomSortMode(SortMode, KeepOrder ? sort_order::keep : sort_order::flip_or_default, false);
+	}
 }
 
-void FileList::SetSortMode0(int SortMode)
+void FileList::ApplySortMode(int SortMode)
 {
 	FileList::SortMode=SortMode;
 
@@ -3031,6 +3181,33 @@ void FileList::SetSortMode0(int SortMode)
 		SortFileList(TRUE);
 
 	FrameManager->RefreshFrame();
+}
+
+void FileList::SetCustomSortMode(int Mode, int Order, bool InvertByDefault)
+{
+	if (Mode < PanelSortMode::BY_USER)
+		return;
+
+	switch (Order)
+	{
+	default:
+	case sort_order::flip_or_default:
+		SortOrder = (Mode == SortMode && Opt.ReverseSort) ? -SortOrder : (InvertByDefault ? -1 : 1);
+		break;
+
+	case sort_order::keep:
+		break;
+
+	case sort_order::ascend:
+		SortOrder = 1;
+		break;
+
+	case sort_order::descend:
+		SortOrder = -1;
+		break;
+	}
+
+	ApplySortMode(Mode);
 }
 
 void FileList::ChangeNumericSort(int Mode)
@@ -4066,7 +4243,7 @@ void FileList::EditFilter()
 
 void FileList::SelectSortMode()
 {
-	MenuDataEx SortMenu[]=
+	MenuDataEx InitSortMenuModes[]=
 	{
 		{Msg::MenuSortByName,LIF_SELECTED,KEY_CTRLF3},
 		{Msg::MenuSortByExt,0,KEY_CTRLF4},
@@ -4081,14 +4258,40 @@ void FileList::SelectSortMode()
 		{Msg::MenuSortByPhysicalSize,0,0},
 		{Msg::MenuSortByNumLinks,0,0},
 		{Msg::MenuSortByFullName,0,0},
-		{Msg::MenuSortByCustomData,0,0},
-		{L"",LIF_SEPARATOR,0},
-		{Msg::MenuSortUseNumeric,0,0},
-		{Msg::MenuSortUseCaseSensitive,0,0},
-		{Msg::MenuSortUseGroups,0,KEY_SHIFTF11},
-		{Msg::MenuSortSelectedFirst,0,KEY_SHIFTF12},
-		{Msg::MenuSortDirectoriesFirst,0,0}
+		{Msg::MenuSortByCustomData,0,0}
 	};
+	static_assert(ARRAYSIZE(InitSortMenuModes) == PanelSortMode::COUNT);
+
+	std::vector<MenuDataEx> SortMenu(InitSortMenuModes, InitSortMenuModes + ARRAYSIZE(InitSortMenuModes));
+
+	static const MenuDataEx MenuSeparator = { L"",LIF_SEPARATOR };
+
+	OpenMacroPluginInfo ompInfo = { MCT_GETCUSTOMSORTMODES,nullptr };
+	MacroPluginReturn* mpr = nullptr;
+	size_t extra = 0; // number of additional menu items due to custom sort modes
+	{
+		int ret;
+		if (CtrlObject->Plugins.CallPlugin(SYSID_LUAMACRO, OPEN_LUAMACRO, &ompInfo, &ret) && ret)
+		{
+			mpr = &ompInfo.Ret;
+			if (mpr->Count >= 3)
+			{
+				extra = 1 + mpr->Count/3; // add 1 item for separator
+
+				SortMenu.reserve(SortMenu.size() + extra);
+
+				SortMenu.emplace_back(MenuSeparator);
+				for (size_t i=0; i < mpr->Count; i += 3)
+				{
+					MenuDataEx item = { mpr->Values[i+2].String };
+					SortMenu.emplace_back(item);
+				}
+			}
+			else
+				mpr = nullptr;
+		}
+	}
+
 	static int SortModes[]=
 	{
 		BY_NAME,
@@ -4106,25 +4309,61 @@ void FileList::SelectSortMode()
 		BY_FULLNAME,
 		BY_CUSTOMDATA
 	};
+	static_assert(ARRAYSIZE(SortModes) == PanelSortMode::COUNT);
 
-	for (size_t i=0; i<ARRAYSIZE(SortModes); i++)
-		if (SortModes[i]==SortMode)
+	{
+		const auto ItemIterator = std::find(SortModes, SortModes+PanelSortMode::COUNT, SortMode);
+		const wchar_t Check = SortOrder < 0 ? L'-' : L'+';
+
+		if (ItemIterator != SortModes + PanelSortMode::COUNT)
 		{
-			SortMenu[i].SetCheck(SortOrder==1 ? L'+':L'-');
-			break;
+			SortMenu[ItemIterator - SortModes].SetCheck(Check);
+			SortMenu[ItemIterator - SortModes].SetSelect(TRUE);
 		}
+		else if (mpr)
+		{
+			for (size_t i=0; i < mpr->Count; i += 3)
+			{
+				if (mpr->Values[i].Double == SortMode)
+				{
+					SortMenu[ARRAYSIZE(SortModes) + 1 + i/3].SetCheck(Check);
+					SortMenu[ARRAYSIZE(SortModes) + 1 + i/3].SetSelect(TRUE);
+					break;
+				}
+			}
+		}
+	}
 
-	int SG=GetSortGroups();
-	SortMenu[BY_CUSTOMDATA+2].SetCheck(NumericSort);
-	SortMenu[BY_CUSTOMDATA+3].SetCheck(CaseSensitiveSort);
-	SortMenu[BY_CUSTOMDATA+4].SetCheck(SG);
-	SortMenu[BY_CUSTOMDATA+5].SetCheck(SelectedFirst);
-	SortMenu[BY_CUSTOMDATA+6].SetCheck(DirectoriesFirst);
+	enum SortOptions
+	{
+		SortOptUseNumeric,
+		SortOptUseCaseSensitive,
+		SortOptUseGroups,
+		SortOptSelectedFirst,
+		SortOptDirectoriesFirst,
+
+		SortOptCount
+	};
+
+	const MenuDataEx InitSortMenuOptions[]=
+	{
+		{ Msg::MenuSortUseNumeric,        NumericSort       ? (DWORD)MIF_CHECKED : 0, 0 },
+		{ Msg::MenuSortUseCaseSensitive,  CaseSensitiveSort ? (DWORD)MIF_CHECKED : 0, 0 },
+		{ Msg::MenuSortUseGroups,         GetSortGroups()   ? (DWORD)MIF_CHECKED : 0, KEY_SHIFTF11 },
+		{ Msg::MenuSortSelectedFirst,     SelectedFirst     ? (DWORD)MIF_CHECKED : 0, KEY_SHIFTF12 },
+		{ Msg::MenuSortDirectoriesFirst,  DirectoriesFirst  ? (DWORD)MIF_CHECKED : 0, 0 },
+	};
+	static_assert(ARRAYSIZE(InitSortMenuOptions) == SortOptions::SortOptCount);
+
+	SortMenu.reserve(SortMenu.size() + 1 + ARRAYSIZE(InitSortMenuOptions)); // + 1 for separator
+	SortMenu.emplace_back(MenuSeparator);
+	SortMenu.insert(SortMenu.end(), InitSortMenuOptions, InitSortMenuOptions + ARRAYSIZE(InitSortMenuOptions));
+
 	int SortCode=-1;
 	bool setSortMode0=false;
 
 	{
-		VMenu SortModeMenu(Msg::MenuSortTitle,SortMenu,ARRAYSIZE(SortMenu),0);
+		VMenu SortModeMenu(Msg::MenuSortTitle,SortMenu.data(),SortMenu.size(),0);
 		SortModeMenu.SetHelp(L"PanelCmdSort");
 		SortModeMenu.SetPosition(X1+4,-1,0,0);
 		SortModeMenu.SetFlags(VMENU_WRAPMODE);
@@ -4240,7 +4479,7 @@ void FileList::SelectSortMode()
 	if (SortCode<(int)ARRAYSIZE(SortModes))
 	{
 		if (setSortMode0)
-			SetSortMode0(SortModes[SortCode]);
+			ApplySortMode(SortModes[SortCode]);
 		else
 			SetSortMode(SortModes[SortCode]);
 	}

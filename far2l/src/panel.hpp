@@ -81,7 +81,10 @@ enum PanelSortMode
 	BY_FULLNAME,
 	BY_CHTIME,
 	BY_CUSTOMDATA,
-	MAX_PANEL_SORT_MODE = BY_CUSTOMDATA
+
+	COUNT,
+
+	BY_USER = 100000
 };
 
 enum {VIEW_0=0,VIEW_1,VIEW_2,VIEW_3,VIEW_4,VIEW_5,VIEW_6,VIEW_7,VIEW_8,VIEW_9};
@@ -171,7 +174,7 @@ class Panel:public ScreenObject
 		virtual int GetRealSelCount() {return 0;};
 		virtual int GetSelName(FARString *strName,DWORD &FileAttr,DWORD &FileMode,FAR_FIND_DATA_EX *fd=nullptr) {return FALSE;};
 
-		int GetSelNameCompat(FARString *strName,DWORD &FileAttr,FAR_FIND_DATA_EX *fd=nullptr) 
+		int GetSelNameCompat(FARString *strName,DWORD &FileAttr,FAR_FIND_DATA_EX *fd=nullptr)
 		{
 			DWORD FileMode = 0;
 			return GetSelName(strName, FileAttr, FileMode, fd);
@@ -240,7 +243,8 @@ class Panel:public ScreenObject
 		int GetDirectoriesFirst() { return DirectoriesFirst; }
 		void SetDirectoriesFirst(int Mode) { DirectoriesFirst=Mode; }
 		virtual void ChangeDirectoriesFirst(int Mode) { SetDirectoriesFirst(Mode); }
-		virtual void SetSortMode(int SortMode) {Panel::SortMode=SortMode;};
+		virtual void SetSortMode(int SortMode, bool KeepOrder=false) {Panel::SortMode=SortMode;};
+		virtual void SetCustomSortMode(int Mode, int Order, bool InvertByDefault) {}
 		int GetSortOrder() {return(SortOrder);};
 		void SetSortOrder(int SortOrder) {Panel::SortOrder=SortOrder;};
 		virtual void ChangeSortOrder(int NewOrder) {SetSortOrder(NewOrder);};

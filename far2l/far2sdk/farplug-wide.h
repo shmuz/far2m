@@ -757,6 +757,28 @@ struct PluginPanelItem
 	DWORD_PTR     Reserved[2];
 };
 
+struct SortingPanelItem
+{
+	FILETIME             CreationTime;
+	FILETIME             LastAccessTime;
+	FILETIME             LastWriteTime;
+	FILETIME             ChangeTime;
+	uint64_t             FileSize;
+	uint64_t             AllocationSize;
+	const wchar_t*       FileName;
+	const wchar_t*       Description;
+	const wchar_t*       Owner;
+	const wchar_t*       const *CustomColumnData;
+	int                  CustomColumnNumber;
+	DWORD                Flags;
+	DWORD_PTR            UserData;
+	DWORD                FileAttributes;
+	DWORD                NumberOfLinks;
+	DWORD                CRC32;
+	int                  Position;
+	int                  SortGroup;
+};
+
 enum PANELINFOFLAGS
 {
 	PFLAGS_SHOWHIDDEN         = 0x00000001,
@@ -2369,6 +2391,10 @@ enum OPENPLUGININFO_SORTMODES
 	SM_NUMLINKS,
 	SM_FULLNAME,
 	SM_CHTIME,
+
+	SM_COUNT,
+
+	SM_USER = 100000
 };
 
 

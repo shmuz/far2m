@@ -236,46 +236,60 @@ void FileList::ShowFileList(int Fast)
 
 	if (Opt.ShowSortMode)
 	{
-		static int SortModes[]={UNSORTED,BY_NAME,BY_EXT,BY_MTIME,BY_CTIME,
-		                        BY_ATIME,BY_CHTIME,BY_SIZE,BY_DIZ,BY_OWNER,
-		                        BY_PHYSICALSIZE,BY_NUMLINKS,
-		                        BY_FULLNAME,BY_CUSTOMDATA
-		                       };
-		static FarLangMsg SortStrings[]={Msg::MenuUnsorted,Msg::MenuSortByName,
-		                          Msg::MenuSortByExt,Msg::MenuSortByWrite,Msg::MenuSortByCreation,
-		                          Msg::MenuSortByAccess,Msg::MenuSortByChange,Msg::MenuSortBySize,Msg::MenuSortByDiz,Msg::MenuSortByOwner,
-		                          Msg::MenuSortByPhysicalSize,Msg::MenuSortByNumLinks,
-		                          Msg::MenuSortByFullName,Msg::MenuSortByCustomData
-		                         };
-
-		for (size_t I=0; I<ARRAYSIZE(SortModes); I++)
+		wchar_t Ch = 0;
+		if (SortMode < PanelSortMode::COUNT)
 		{
-			if (SortModes[I]==SortMode)
+			static int SortModes[]={UNSORTED,BY_NAME,BY_EXT,BY_MTIME,BY_CTIME,
+															BY_ATIME,BY_CHTIME,BY_SIZE,BY_DIZ,BY_OWNER,
+															BY_PHYSICALSIZE,BY_NUMLINKS,
+															BY_FULLNAME,BY_CUSTOMDATA
+														 };
+			static FarLangMsg SortStrings[]={Msg::MenuUnsorted,Msg::MenuSortByName,
+																Msg::MenuSortByExt,Msg::MenuSortByWrite,Msg::MenuSortByCreation,
+																Msg::MenuSortByAccess,Msg::MenuSortByChange,Msg::MenuSortBySize,Msg::MenuSortByDiz,Msg::MenuSortByOwner,
+																Msg::MenuSortByPhysicalSize,Msg::MenuSortByNumLinks,
+																Msg::MenuSortByFullName,Msg::MenuSortByCustomData
+															 };
+
+			for (size_t I=0; I<ARRAYSIZE(SortModes); I++)
 			{
-				const wchar_t *SortStr=SortStrings[I];
-				const wchar_t *Ch=wcschr(SortStr,L'&');
-
-				if (Ch)
+				if (SortModes[I]==SortMode)
 				{
-					if (Opt.ShowColumnTitles)
-						GotoXY(NextX1,Y1+1);
-					else
-						GotoXY(NextX1,Y1);
-
-					SetColor(COL_PANELCOLUMNTITLE);
-					OutCharacter[0]=SortOrder==1 ? Lower(Ch[1]):Upper(Ch[1]);
-					Text(OutCharacter);
-					NextX1++;
-
-					if (Filter && Filter->IsEnabledOnPanel())
+					const wchar_t *p = wcschr(SortStrings[I], L'&');
+					if (p)
 					{
-						OutCharacter[0]=L'*';
-						Text(OutCharacter);
-						NextX1++;
+						Ch = SortOrder==1 ? Lower(p[1]):Upper(p[1]);
 					}
+					break;
 				}
+			}
+		}
+		else if (SortMode >= PanelSortMode::BY_USER)
+		{
+			Ch = SortOrder == 1 ? CustomSortIndicator[0] : CustomSortIndicator[1];
+		}
+		else
+		{
+			// TODO: log
+		}
 
-				break;
+		if (Ch)
+		{
+			if (Opt.ShowColumnTitles)
+				GotoXY(NextX1,Y1+1);
+			else
+				GotoXY(NextX1,Y1);
+
+			SetColor(COL_PANELCOLUMNTITLE);
+			OutCharacter[0]=Ch;
+			Text(OutCharacter);
+			NextX1++;
+
+			if (Filter && Filter->IsEnabledOnPanel())
+			{
+				OutCharacter[0]=L'*';
+				Text(OutCharacter);
+				NextX1++;
 			}
 		}
 	}
@@ -316,7 +330,7 @@ void FileList::ShowFileList(int Fast)
 		/*
 		if(GetCaseSensitiveSort())
 		{
-		
+
 		}
 		*/
 		*PtrOutCharacter=0;
@@ -569,9 +583,9 @@ void FileList::ShowTotalSize(OpenPluginInfo &Info)
 
 int FileList::ConvertName(const wchar_t *SrcName,FARString &strDest,int MaxLength,int RightAlign,int ShowStatus,DWORD FileAttr)
 {
-	if (ShowStatus && PanelMode==NORMAL_PANEL && (FileAttr&FILE_ATTRIBUTE_REPARSE_POINT) != 0 
+	if (ShowStatus && PanelMode==NORMAL_PANEL && (FileAttr&FILE_ATTRIBUTE_REPARSE_POINT) != 0
 			&& !strCurDir.IsEmpty() && strCurDir[0] == GOOD_SLASH) {
-		
+
 		FARString strTemp;
 		if (MixToFullPath(SrcName, strTemp, strCurDir) ) {
 			char LinkDest[MAX_PATH + 1] = {0};
@@ -581,7 +595,7 @@ int FileList::ConvertName(const wchar_t *SrcName,FARString &strDest,int MaxLengt
 				strTemp = SrcName;
 				strTemp+= L" ->";
 				strTemp+= LinkDest;
-				return ConvertName(strTemp, strDest, MaxLength, RightAlign, 
+				return ConvertName(strTemp, strDest, MaxLength, RightAlign,
 					ShowStatus, FileAttr & (~(DWORD)FILE_ATTRIBUTE_REPARSE_POINT));
 			} else {
 				fprintf(stderr, "sdc_readlink errno %u\n", errno);
@@ -627,7 +641,7 @@ int FileList::ConvertName(const wchar_t *SrcName,FARString &strDest,int MaxLengt
 	}
 
 	strDest.ReleaseBuffer(MaxLength);
-	
+
 	return(SrcLength>MaxLength);
 }
 

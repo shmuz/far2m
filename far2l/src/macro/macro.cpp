@@ -1224,8 +1224,36 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 		//case MCODE_F_MENU_FILTER:      break;
 		//case MCODE_F_MENU_FILTERSTR:   break;
 		//case MCODE_F_MENU_SHOW:        break;
-		//case MCODE_F_SETCUSTOMSORTMODE:break;
 		//case MCODE_F_USERMENU:         break;
+
+		case MCODE_F_SETCUSTOMSORTMODE:
+			if (Data->Count>=3 && Data->Values[0].Type==FMVT_DOUBLE  &&
+				Data->Values[1].Type==FMVT_DOUBLE && Data->Values[2].Type==FMVT_BOOLEAN)
+			{
+				auto panel = CtrlObject->Cp()->ActivePanel;
+				if (panel && Data->Values[0].Double == 1)
+					panel = CtrlObject->Cp()->GetAnotherPanel(panel);
+
+				if (panel)
+				{
+					int SortMode = (int)Data->Values[1].Double;
+					bool InvertByDefault = Data->Values[2].Boolean != 0;
+					sort_order Order = sort_order::first;
+					if (Data->Count>=4 && Data->Values[3].Type==FMVT_DOUBLE)
+					{
+						switch (static_cast<int>(Data->Values[3].Double))
+						{
+							default:
+							case 0: Order = sort_order::first;   break;
+							case 1: Order = sort_order::keep;    break;
+							case 2: Order = sort_order::ascend;  break;
+							case 3: Order = sort_order::descend; break;
+						}
+					}
+					panel->SetCustomSortMode(SortMode, Order, InvertByDefault);
+				}
+			}
+			break;
 
 		case MCODE_F_CHECKALL:
 		{

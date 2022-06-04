@@ -45,6 +45,18 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 class FileFilter;
 
+enum sort_order
+{
+	first,
+
+	flip_or_default = first,
+	keep,
+	ascend,
+	descend,
+
+	last = descend
+};
+
 struct FileListItem
 {
 	FARString strName;
@@ -231,6 +243,8 @@ class FileList:public Panel
 		long CacheSelIndex,CacheSelPos;
 		long CacheSelClearIndex,CacheSelClearPos;
 
+		wchar_t CustomSortIndicator[2];
+
 	private:
 		virtual void SetSelectedFirstMode(int Mode);
 		virtual int GetSelectedFirstMode() {return SelectedFirst;}
@@ -335,8 +349,9 @@ class FileList:public Panel
 		virtual void CloseChangeNotification();
 		virtual void SortFileList(int KeepPosition);
 		virtual void SetViewMode(int ViewMode);
-		virtual void SetSortMode(int SortMode);
-		void SetSortMode0(int SortMode);
+		virtual void SetSortMode(int SortMode, bool KeepOrder=false);
+		void ApplySortMode(int SortMode);
+		void SetCustomSortMode(int Mode, int Order, bool InvertByDefault);
 		virtual void ChangeSortOrder(int NewOrder);
 		virtual void ChangeNumericSort(int Mode);
 		virtual void ChangeCaseSensitiveSort(int Mode);
