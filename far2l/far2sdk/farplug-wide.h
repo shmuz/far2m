@@ -1308,7 +1308,7 @@ struct MacroSendMacroText
 	const wchar_t *SequenceText;
 };
 
-typedef uint64_t FARADDKEYMACROFLAGS;
+typedef DWORD FARADDKEYMACROFLAGS;
 static const FARADDKEYMACROFLAGS
 	AKMFLAGS_NONE                = 0;
 
@@ -1476,38 +1476,6 @@ struct MacroPrivateInfo
 	size_t StructSize;
 	FARAPICALLFAR CallFar;
 };
-
-#ifdef FAR_USE_INTERNALS
-#if defined(PROCPLUGINMACROFUNC)
-enum FARMACROVARTYPE
-{
-	FMVT_INTEGER                = 0,
-	FMVT_STRING                 = 1,
-	FMVT_DOUBLE                 = 2,
-};
-
-struct FarMacroValue
-{
-	enum FARMACROVARTYPE type;
-	union
-	{
-		int64_t  i;
-		double   d;
-		const wchar_t *s;
-	} v;
-};
-
-struct FarMacroFunction
-{
-	DWORD Flags;
-	const wchar_t *Name;
-	int nParam;
-	int oParam;
-	const wchar_t *Syntax;
-	const wchar_t *Description;
-};
-#endif
-#endif // END FAR_USE_INTERNALS
 
 enum FARCOLORFLAGS
 {
@@ -2320,12 +2288,6 @@ struct PluginInfo
 	int PluginConfigStringsNumber;
 	const wchar_t *CommandPrefix;
 	DWORD SysID;
-#ifdef FAR_USE_INTERNALS
-#if defined(PROCPLUGINMACROFUNC)
-	int MacroFunctionNumber;
-	const struct FarMacroFunction *MacroFunctions;
-#endif
-#endif // END FAR_USE_INTERNALS
 };
 
 
@@ -2575,11 +2537,6 @@ extern "C"
 	int    WINAPI _export ProcessEventW(HANDLE hPlugin,int Event,void *Param);
 	int    WINAPI _export ProcessHostFileW(HANDLE hPlugin,struct PluginPanelItem *PanelItem,int ItemsNumber,int OpMode);
 	int    WINAPI _export ProcessKeyW(HANDLE hPlugin,int Key,unsigned int ControlState);
-#ifdef FAR_USE_INTERNALS
-	#if defined(PROCPLUGINMACROFUNC)
-	int    WINAPI _export ProcessMacroFuncW(const wchar_t *Name, const struct FarMacroValue *Params, int nParams, struct FarMacroValue **Results, int *nResults);
-	#endif
-#endif // END FAR_USE_INTERNALS
 	int    WINAPI _export ProcessSynchroEventW(int Event,void *Param);
 	int    WINAPI _export ProcessViewerEventW(int Event,void *Param);
 	int    WINAPI _export PutFilesW(HANDLE hPlugin,struct PluginPanelItem *PanelItem,int ItemsNumber,int Move,const wchar_t *SrcPath,int OpMode);

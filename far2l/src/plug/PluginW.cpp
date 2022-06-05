@@ -80,9 +80,6 @@ static const char szCache_ProcessEditorEvent[] = "ProcessEditorEventW";
 static const char szCache_ProcessViewerEvent[] = "ProcessViewerEventW";
 static const char szCache_ProcessDialogEvent[] = "ProcessDialogEventW";
 static const char szCache_ProcessSynchroEvent[] = "ProcessSynchroEventW";
-#if defined(PROCPLUGINMACROFUNC)
-static const char szCache_ProcessMacroFunc[] = "ProcessMacroFuncW";
-#endif
 static const char szCache_Configure[] = "ConfigureW";
 static const char szCache_Analyse[] = "AnalyseW";
 static const char szCache_GetCustomData[] = "GetCustomDataW";
@@ -95,9 +92,6 @@ static const char NFMP_ProcessEditorEvent[] = "ProcessEditorEventW";
 static const char NFMP_ProcessViewerEvent[] = "ProcessViewerEventW";
 static const char NFMP_ProcessDialogEvent[] = "ProcessDialogEventW";
 static const char NFMP_ProcessSynchroEvent[] = "ProcessSynchroEventW";
-#if defined(PROCPLUGINMACROFUNC)
-static const char NFMP_ProcessMacroFunc[] = "ProcessMacroFuncW";
-#endif
 static const char NFMP_SetStartupInfo[] = "SetStartupInfoW";
 static const char NFMP_ClosePlugin[] = "ClosePluginW";
 static const char NFMP_GetPluginInfo[] = "GetPluginInfoW";
@@ -198,9 +192,6 @@ bool PluginW::LoadFromCache()
 	pProcessViewerEventW = (PLUGINPROCESSVIEWEREVENTW)(INT_PTR)kfh.GetUInt(szCache_ProcessViewerEvent, 0);
 	pProcessDialogEventW = (PLUGINPROCESSDIALOGEVENTW)(INT_PTR)kfh.GetUInt(szCache_ProcessDialogEvent, 0);
 	pProcessSynchroEventW = (PLUGINPROCESSSYNCHROEVENTW)(INT_PTR)kfh.GetUInt(szCache_ProcessSynchroEvent, 0);
-#if defined(PROCPLUGINMACROFUNC)
-	pProcessMacroFuncW = (PLUGINPROCESSMACROFUNCW)(INT_PTR)kfh.GetUInt(szCache_ProcessMacroFunc, 0);
-#endif
 	pConfigureW = (PLUGINCONFIGUREW)(INT_PTR)kfh.GetUInt(szCache_Configure, 0);
 	pAnalyseW = (PLUGINANALYSEW)(INT_PTR)kfh.GetUInt(szCache_Analyse, 0);
 	pGetCustomDataW = (PLUGINGETCUSTOMDATAW)(INT_PTR)kfh.GetUInt(szCache_GetCustomData, 0);
@@ -223,9 +214,6 @@ bool PluginW::SaveToCache()
         !pProcessViewerEventW &&
         !pProcessDialogEventW &&
         !pProcessSynchroEventW &&
-#if defined(PROCPLUGINMACROFUNC)
-        !pProcessMacroFuncW &&
-#endif
         !pAnalyseW &&
         !pGetCustomDataW
 	   )
@@ -296,9 +284,6 @@ bool PluginW::SaveToCache()
 	kfh.SetUInt(GetSettingsName(), szCache_ProcessViewerEvent, pProcessViewerEventW!=nullptr);
 	kfh.SetUInt(GetSettingsName(), szCache_ProcessDialogEvent, pProcessDialogEventW!=nullptr);
 	kfh.SetUInt(GetSettingsName(), szCache_ProcessSynchroEvent, pProcessSynchroEventW!=nullptr);
-#if defined(PROCPLUGINMACROFUNC)
-	kfh.SetUInt(GetSettingsName(), szCache_ProcessMacroFunc, pProcessMacroFuncW!=nullptr);
-#endif
 	kfh.SetUInt(GetSettingsName(), szCache_Configure, pConfigureW!=nullptr);
 	kfh.SetUInt(GetSettingsName(), szCache_Analyse, pAnalyseW!=nullptr);
 	kfh.SetUInt(GetSettingsName(), szCache_GetCustomData, pGetCustomDataW!=nullptr);
@@ -345,9 +330,6 @@ bool PluginW::Load()
 	GetModuleFN(pProcessViewerEventW, NFMP_ProcessViewerEvent);
 	GetModuleFN(pProcessDialogEventW, NFMP_ProcessDialogEvent);
 	GetModuleFN(pProcessSynchroEventW, NFMP_ProcessSynchroEvent);
-#if defined(PROCPLUGINMACROFUNC)
-	GetModuleFN(pProcessMacroFuncW, NFMP_ProcessMacroFunc);
-#endif
 	GetModuleFN(pMinFarVersionW,NFMP_GetMinFarVersion);
 	GetModuleFN(pAnalyseW, NFMP_Analyse);
 	GetModuleFN(pGetCustomDataW, NFMP_GetCustomData);
@@ -877,30 +859,6 @@ int PluginW::ProcessSynchroEvent(
 	return 0; //oops, again!
 }
 
-#if defined(PROCPLUGINMACROFUNC)
-int PluginW::ProcessMacroFunc(
-    const wchar_t *Name,
-    const FarMacroValue *Params,
-    int nParams,
-    FarMacroValue **Results,
-    int *nResults
-)
-{
-	int nResult = 0;
-
-	if (Load() && pProcessMacroFuncW)
-	{
-		ExecuteStruct es;
-		es.id = EXCEPT_PROCESSMACROFUNC;
-		es.nDefaultResult = 0;
-		EXECUTE_FUNCTION_EX(pProcessMacroFuncW(Name,Params,nParams,Results,nResults), es);
-		nResult = (int)es.nResult;
-	}
-
-	return nResult;
-}
-#endif
-
 int PluginW::GetVirtualFindData(
     HANDLE hPlugin,
     PluginPanelItem **pPanelItem,
@@ -1326,9 +1284,6 @@ void PluginW::ClearExports()
 	pProcessViewerEventW = nullptr;
 	pProcessDialogEventW = nullptr;
 	pProcessSynchroEventW = nullptr;
-#if defined(PROCPLUGINMACROFUNC)
-	pProcessMacroFuncW = nullptr;
-#endif
 	pMinFarVersionW = nullptr;
 	pAnalyseW = nullptr;
 	pGetCustomDataW = nullptr;

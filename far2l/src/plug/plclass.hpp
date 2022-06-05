@@ -135,9 +135,6 @@ class Plugin
 		virtual bool HasGetCustomData() = 0;
 		virtual bool HasFreeCustomData() = 0;
 		virtual bool HasGetGlobalInfo() = 0;
-#if defined(PROCPLUGINMACROFUNC)
-		virtual bool HasProcessMacroFunc() = 0;
-#endif
 
 		virtual const FARString &GetModuleName() = 0;
 		virtual const char *GetSettingsName() = 0;
@@ -181,9 +178,6 @@ class Plugin
 		virtual int ProcessViewerEvent(int Event, PVOID Param) = 0;
 		virtual int ProcessDialogEvent(int Event, PVOID Param) = 0;
 		virtual int ProcessSynchroEvent(int Event, PVOID Param) = 0;
-#if defined(PROCPLUGINMACROFUNC)
-		virtual int ProcessMacroFunc(const wchar_t *Name, const FarMacroValue *Params, int nParams, FarMacroValue **Results, int *nResults) = 0;
-#endif
 
 		virtual int Analyse(const AnalyseData *pData) = 0;
 
