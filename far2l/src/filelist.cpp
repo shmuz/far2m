@@ -4262,13 +4262,17 @@ void FileList::SelectSortMode()
 	};
 	static_assert(ARRAYSIZE(InitSortMenuModes) == PanelSortMode::COUNT);
 
+	int end_normal    = ARRAYSIZE(InitSortMenuModes);
+	int start_custom  = end_normal + 1;
+	int end_custom    = 0;
+	int start_options = end_normal + 1;
+
 	std::vector<MenuDataEx> SortMenu(InitSortMenuModes, InitSortMenuModes + ARRAYSIZE(InitSortMenuModes));
 
 	static const MenuDataEx MenuSeparator = { L"",LIF_SEPARATOR };
 
 	OpenMacroPluginInfo ompInfo = { MCT_GETCUSTOMSORTMODES,nullptr };
 	MacroPluginReturn* mpr = nullptr;
-	size_t extra = 0; // number of additional menu items due to custom sort modes
 	{
 		int ret;
 		if (CtrlObject->Plugins.CallPlugin(SYSID_LUAMACRO, OPEN_LUAMACRO, &ompInfo, &ret) && ret)
@@ -4276,9 +4280,11 @@ void FileList::SelectSortMode()
 			mpr = &ompInfo.Ret;
 			if (mpr->Count >= 3)
 			{
-				extra = 1 + mpr->Count/3; // add 1 item for separator
+				int extra = mpr->Count/3;
+				end_custom = start_custom + extra;
+				start_options = end_custom + 1; // 1 for separator
 
-				SortMenu.reserve(SortMenu.size() + extra);
+				SortMenu.reserve(SortMenu.size() + 1 + extra); // 1 for separator
 
 				SortMenu.emplace_back(MenuSeparator);
 				for (size_t i=0; i < mpr->Count; i += 3)
@@ -4362,6 +4368,8 @@ void FileList::SelectSortMode()
 	int SortCode=-1;
 	bool setSortMode0=false;
 
+	bool InvertPressed = true; // because "Enter" is inverting sort mode
+	bool PlusPressed = false;
 	{
 		VMenu SortModeMenu(Msg::MenuSortTitle,SortMenu.data(),SortMenu.size(),0);
 		SortModeMenu.SetHelp(L"PanelCmdSort");
@@ -4386,16 +4394,25 @@ void FileList::SelectSortMode()
 			int MenuPos=SortModeMenu.GetSelectPos();
 
 			if (Key == KEY_SUBTRACT)
+			{
 				Key=L'-';
+				InvertPressed = false;
+			}
 			else if (Key == KEY_ADD)
+			{
 				Key=L'+';
+				PlusPressed = true;
+				InvertPressed = false;
+			}
 			else if (Key == KEY_MULTIPLY)
+			{
 				Key=L'*';
+			}
 
-			if (MenuPos < (int)ARRAYSIZE(SortModes) && (Key == L'+' || Key == L'-' || Key == L'*'))
+			if (MenuPos < start_options && (Key == L'+' || Key == L'-' || Key == L'*'))
 			{
 				// clear check
-				for (size_t i=0; i<ARRAYSIZE(SortModes); i++)
+				for (int i=0; i<start_options; i++)
 					SortModeMenu.SetCheck(0,static_cast<int>(i));
 			}
 
@@ -4407,59 +4424,30 @@ void FileList::SelectSortMode()
 					break;
 
 				case L'+':
-					if (MenuPos<(int)ARRAYSIZE(SortModes))
-					{
-						SortOrder=1;
-						setSortMode0=true;
-					}
-					else
-					{
-						switch (MenuPos)
-						{
-							case BY_CUSTOMDATA+2:
-								NumericSort=0;
-								break;
-							case BY_CUSTOMDATA+3:
-								CaseSensitiveSort=0;
-								break;
-							case BY_CUSTOMDATA+4:
-								SortGroups=0;
-								break;
-							case BY_CUSTOMDATA+5:
-								SelectedFirst=0;
-								break;
-							case BY_CUSTOMDATA+6:
-								DirectoriesFirst=0;
-								break;
-						}
-					}
-					SortModeMenu.SetExitCode(MenuPos);
-					break;
-
 				case L'-':
-					if (MenuPos<(int)ARRAYSIZE(SortModes))
+					if (MenuPos < end_normal)
 					{
-						SortOrder=-1;
+						SortOrder = PlusPressed ? 1:-1;
 						setSortMode0=true;
 					}
-					else
+					else if (MenuPos >= start_options)
 					{
-						switch (MenuPos)
+						switch (MenuPos - start_options)
 						{
-							case BY_CUSTOMDATA+2:
-								NumericSort=1;
+							case SortOptUseNumeric:
+								NumericSort = PlusPressed ? 0:1;
 								break;
-							case BY_CUSTOMDATA+3:
-								CaseSensitiveSort=1;
+							case SortOptUseCaseSensitive:
+								CaseSensitiveSort = PlusPressed ? 0:1;
 								break;
-							case BY_CUSTOMDATA+4:
-								SortGroups=1;
+							case SortOptUseGroups:
+								SortGroups = PlusPressed ? 0:1;
 								break;
-							case BY_CUSTOMDATA+5:
-								SelectedFirst=1;
+							case SortOptSelectedFirst:
+								SelectedFirst = PlusPressed ? 0:1;
 								break;
-							case BY_CUSTOMDATA+6:
-								DirectoriesFirst=1;
+							case SortOptDirectoriesFirst:
+								DirectoriesFirst = PlusPressed ? 0:1;
 								break;
 						}
 					}
@@ -4472,33 +4460,55 @@ void FileList::SelectSortMode()
 			}
 		}
 
-		if ((SortCode=SortModeMenu.Modal::GetExitCode())<0)
+		if ((SortCode=SortModeMenu.Modal::GetExitCode()) < 0)
 			return;
 	}
 
-	if (SortCode<(int)ARRAYSIZE(SortModes))
+	// predefined sort modes
+	if (SortCode < end_normal)
 	{
 		if (setSortMode0)
 			ApplySortMode(SortModes[SortCode]);
 		else
 			SetSortMode(SortModes[SortCode]);
 	}
-	else
-		switch (SortCode)
+	// custom sort modes
+	else if (SortCode < end_custom)
+	{
+		const auto index = 3*(SortCode-ARRAYSIZE(SortModes)-1);
+		int mode = (int)mpr->Values[index].Double;
+
+		if (custom_sort::CanSort(mode))
 		{
-			case BY_CUSTOMDATA+2:
+			bool InvertByDefault = mpr->Values[index+1].Boolean != 0;
+			sort_order Order = sort_order::first;
+
+			if (!InvertPressed)
+			{
+				SortOrder = PlusPressed ? 1:-1;
+				Order = sort_order::keep;
+			}
+
+			SetCustomSortMode(mode, Order, InvertByDefault);
+		}
+	}
+	// sort options
+	else
+		switch (SortCode - start_options)
+		{
+			case SortOptUseNumeric:
 				ChangeNumericSort(NumericSort?0:1);
 				break;
-			case BY_CUSTOMDATA+3:
+			case SortOptUseCaseSensitive:
 				ChangeCaseSensitiveSort(CaseSensitiveSort?0:1);
 				break;
-			case BY_CUSTOMDATA+4:
+			case SortOptUseGroups:
 				ProcessKey(KEY_SHIFTF11);
 				break;
-			case BY_CUSTOMDATA+5:
+			case SortOptSelectedFirst:
 				ProcessKey(KEY_SHIFTF12);
 				break;
-			case BY_CUSTOMDATA+6:
+			case SortOptDirectoriesFirst:
 				ChangeDirectoriesFirst(DirectoriesFirst?0:1);
 				break;
 		}

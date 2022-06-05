@@ -51,6 +51,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "fileowner.hpp"
 #include "dirmix.hpp"
 #include "console.hpp"
+#include "filelist.hpp"
 
 ControlObject *CtrlObject;
 
@@ -128,6 +129,8 @@ void ControlObject::Init()
 		Console.SetTitle(strOldTitle);
 	}
 	Macro.LoadMacros(true);
+	FPanels->LeftPanel->SetCustomSortMode(Opt.LeftPanel.SortMode, sort_order::keep, false);
+	FPanels->RightPanel->SetCustomSortMode(Opt.RightPanel.SortMode, sort_order::keep, false);
 	/*
 		FarChDir(StartCurDir);
 	*/
