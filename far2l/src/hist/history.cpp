@@ -45,6 +45,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "strmix.hpp"
 #include "dialog.hpp"
 #include "interf.hpp"
+#include "ctrlobj.hpp"
 #include <crc64.h>
 #include "FileMasksProcessor.hpp"
 
@@ -95,6 +96,9 @@ static bool IsAllowedForHistory(const wchar_t *Str)
 void History::AddToHistory(const wchar_t *Str, int Type, const wchar_t *Prefix, bool SaveForbid)
 {
 	if (!EnableAdd)
+		return;
+
+	if (CtrlObject->Macro.IsExecuting() && CtrlObject->Macro.IsHistoryDisabled(Type))
 		return;
 
 	if (!IsAllowedForHistory(Str)) {
