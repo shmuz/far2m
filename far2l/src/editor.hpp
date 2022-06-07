@@ -33,6 +33,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <unordered_set>
 #include "scrobj.hpp"
 #include <farplug-wide.h>
 #include "poscache.hpp"
@@ -234,6 +235,8 @@ class Editor:public ScreenObject
 		Edit *LastGetLine;
 		int LastGetLineNumber;
 
+		std::unordered_set<Edit*> m_AutoDeletedColors;
+
 	private:
 		virtual void DisplayObject();
 		void ShowEditor(int CurLineOnly);
@@ -406,4 +409,5 @@ class Editor:public ScreenObject
 		void GetCursorType(bool& Visible, DWORD& Size);
 		void SetObjectColor(int Color,int SelColor,int ColorUnChanged);
 		void DrawScrollbar();
+		void AutoDeleteColors();
 };

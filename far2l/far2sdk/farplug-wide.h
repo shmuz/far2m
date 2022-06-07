@@ -1894,6 +1894,7 @@ struct EditorConvertPos
 enum EDITORCOLORFLAGS
 {
 	ECF_TAB1 = 0x10000,
+	ECF_AUTODELETE = 0x20000,
 };
 
 struct EditorColor

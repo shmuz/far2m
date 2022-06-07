@@ -66,6 +66,7 @@ struct ColorItem
 	int StartPos;
 	int EndPos;
 	int Color;
+	unsigned int Flags;
 };
 
 enum SetCPFlags
@@ -289,6 +290,7 @@ class Edit:public ScreenObject
 		void  AddColor(ColorItem *col);
 		int   DeleteColor(int ColorPos);
 		int   GetColor(ColorItem *col,int Item);
+		void  AutoDeleteColors();
 
 		void Xlat(bool All=false);
 

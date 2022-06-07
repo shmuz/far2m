@@ -2506,6 +2506,29 @@ int Edit::DeleteColor(int ColorPos)
 }
 
 
+void Edit::AutoDeleteColors()
+{
+	if (!ColorCount)
+		return;
+
+	int Dest=0;
+
+	for (int Src=0; Src<ColorCount; Src++)
+		if (!(ColorList[Src].Flags & ECF_AUTODELETE))
+		{
+			ColorList[Dest++] = ColorList[Src];
+		}
+
+	ColorCount=Dest;
+
+	if (!ColorCount)
+	{
+		free(ColorList);
+		ColorList=nullptr;
+	}
+}
+
+
 int Edit::GetColor(ColorItem *col,int Item)
 {
 	if (Item >= ColorCount)

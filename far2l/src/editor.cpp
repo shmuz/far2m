@@ -138,6 +138,7 @@ Editor::~Editor()
 
 void Editor::FreeAllocatedData(bool FreeUndo)
 {
+	m_AutoDeletedColors.clear();
 	while (EndList)
 	{
 		Edit *Prev=EndList->m_prev;
@@ -3165,6 +3166,8 @@ void Editor::DeleteString(Edit *DelPtr, int LineNumber, int DeleteLast,int UndoL
 	if (UndoLine!=-1)
 		AddUndoData(UNDO_DELSTR,DelPtr->GetStringAddr(),DelPtr->GetEOL(),UndoLine,0,DelPtr->GetLength());
 
+	m_AutoDeletedColors.erase(&*DelPtr); // why &* ?
+
 	delete DelPtr;
 }
 
@@ -5763,6 +5766,7 @@ int Editor::EditorControl(int Command,void *Param)
 				newcol.StartPos=col->StartPos+(col->StartPos!=-1?X1:0);
 				newcol.EndPos=col->EndPos+X1;
 				newcol.Color=col->Color;
+				newcol.Flags=col->Color & 0xFFFF0000;
 				Edit *CurPtr=GetStringByNumber(col->StringNumber);
 
 				if (!CurPtr)
@@ -5775,6 +5779,7 @@ int Editor::EditorControl(int Command,void *Param)
 					return(CurPtr->DeleteColor(newcol.StartPos));
 
 				CurPtr->AddColor(&newcol);
+				if (col->Color&ECF_AUTODELETE) m_AutoDeletedColors.emplace(&*CurPtr);
 				return TRUE;
 			}
 
@@ -6991,4 +6996,13 @@ void Editor::DrawScrollbar()
 		SetColor(COL_EDITORSCROLLBAR);
 		XX2=X2-(ScrollBarEx(X2,Y1,Y2-Y1+1,NumLine-CalcDistance(TopScreen,CurLine,-1),NumLastLine)?1:0);
 	}
+}
+
+void Editor::AutoDeleteColors()
+{
+	for (auto i=m_AutoDeletedColors.begin(); i != m_AutoDeletedColors.end(); i++)
+	{
+		(*i)->AutoDeleteColors();
+	}
+	m_AutoDeletedColors.clear();
 }

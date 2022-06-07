@@ -817,11 +817,14 @@ int PluginManager::ProcessEditorEvent(int Event,void *Param)
 
 	if (CtrlObject->Plugins.CurEditor)
 	{
-		Plugin *pPlugin = nullptr;
+		if (Event == EE_REDRAW)
+		{
+			CtrlObject->Plugins.CurEditor->AutoDeleteColors();
+		}
 
 		for (int i = 0; i < PluginsCount; i++)
 		{
-			pPlugin = PluginsData[i];
+			Plugin *pPlugin = PluginsData[i];
 
 			if (pPlugin->HasProcessEditorEvent())
 				nResult = pPlugin->ProcessEditorEvent(Event, Param);

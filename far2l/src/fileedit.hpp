@@ -115,6 +115,7 @@ class FileEditor : public Frame
 		void CodepageChangedByUser() {Flags.Set(FFILEEDIT_CODEPAGECHANGEDBYUSER);};
 		virtual void Show();
 		void SetPluginTitle(const wchar_t *PluginTitle);
+		void AutoDeleteColors() const { m_editor->AutoDeleteColors(); }
 		static const FileEditor *CurrentEditor;
 
 	private:
@@ -181,4 +182,4 @@ class FileEditor : public Frame
 };
 
 bool dlgOpenEditor(FARString &strFileName, UINT &codepage);
-void ModalEditConsoleHistory(bool scroll_to_end);//erases file internally 
+void ModalEditConsoleHistory(bool scroll_to_end);//erases file internally
