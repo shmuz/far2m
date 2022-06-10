@@ -55,7 +55,7 @@ int WINAPI ProcessName(const wchar_t *param1, wchar_t *param2, DWORD size, DWORD
 		const wchar_t *MaskPtr;
 		MaskPtr=param1;
 
-		while ((MaskPtr=GetCommaWord(MaskPtr,strFileMask)))
+		while ((MaskPtr=GetCommaWord(MaskPtr,strFileMask,L',',L';')))
 		{
 			if (CmpName(strFileMask,param2,skippath))
 			{

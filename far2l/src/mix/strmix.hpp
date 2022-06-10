@@ -81,7 +81,7 @@ FARString &RemoveChar(FARString &strStr,wchar_t Target,BOOL Dup=TRUE);
 wchar_t *InsertString(wchar_t *Str,int Pos,const wchar_t *InsStr,int InsSize=0);
 int ReplaceStrings(FARString &strStr,const wchar_t *FindStr,const wchar_t *ReplStr,int Count=-1,BOOL IgnoreCase=FALSE);
 
-const wchar_t *GetCommaWord(const wchar_t *Src,FARString &strWord,wchar_t Separator=L',');
+const wchar_t *GetCommaWord(const wchar_t *Src,FARString &strWord,wchar_t Separator=L',',wchar_t Separator2=0);
 
 FARString& WINAPI FarFormatText(const wchar_t *SrcText, int Width, FARString &strDestText, const wchar_t* Break, DWORD Flags);
 

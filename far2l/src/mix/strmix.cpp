@@ -546,7 +546,7 @@ FARString FixedSizeStr(FARString str, size_t Length, bool RAlign)
 }
 
 
-const wchar_t *GetCommaWord(const wchar_t *Src, FARString &strWord,wchar_t Separator)
+const wchar_t *GetCommaWord(const wchar_t *Src, FARString &strWord, wchar_t Separator, wchar_t Separator2)
 {
 	if (!*Src)
 		return nullptr;
@@ -563,7 +563,7 @@ const wchar_t *GetCommaWord(const wchar_t *Src, FARString &strWord,wchar_t Separ
 		if (*Src==L']')
 			SkipBrackets=false;
 
-		if (*Src==Separator && !SkipBrackets)
+		if ((*Src==Separator || *Src==Separator2) && !SkipBrackets)
 		{
 			Src++;
 
