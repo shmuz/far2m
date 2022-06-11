@@ -50,26 +50,37 @@ int WINAPI ProcessName(const wchar_t *param1, wchar_t *param2, DWORD size, DWORD
 
 	if (flags == PN_CMPNAMELIST)
 	{
-		wchar_t *Mask=nullptr;
+		int Found = FALSE;
+		FARString strFileMask;
+		wchar_t *Buf = nullptr;
 		const wchar_t *Mask1=param1, *Mask2=nullptr;
+
 		const wchar_t *pipe = wcschr(param1, L'|');
 		if (pipe)
 		{
-			Mask = wcsdup(param1);
-			Mask[pipe-param1] = 0;
-			Mask1 = Mask;
-			Mask2 = Mask + (pipe-param1+1);
+			if (pipe == param1)
+			{
+				Found = TRUE;  // mimic Far3 behavior
+				Mask2 = param1+1;
+			}
+			else
+			{
+				Buf = wcsdup(param1);
+				Buf[pipe-param1] = 0;
+				Mask1 = Buf;
+				Mask2 = Buf + (pipe-param1+1);
+			}
 		}
 
-		int Found=FALSE;
-		FARString strFileMask;
-
-		while ((Mask1=GetCommaWord(Mask1,strFileMask,L',',L';')))
+		if (!Found)
 		{
-			if (CmpName(strFileMask,param2,skippath))
+			while ((Mask1=GetCommaWord(Mask1,strFileMask,L',',L';')))
 			{
-				Found=TRUE;
-				break;
+				if (CmpName(strFileMask,param2,skippath))
+				{
+					Found=TRUE;
+					break;
+				}
 			}
 		}
 
@@ -85,7 +96,7 @@ int WINAPI ProcessName(const wchar_t *param1, wchar_t *param2, DWORD size, DWORD
 			}
 		}
 
-		free(Mask);
+		free(Buf);
 		return Found;
 	}
 
