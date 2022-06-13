@@ -37,6 +37,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "processname.hpp"
 #include "strmix.hpp"
 #include "pathmix.hpp"
+#include "CFileMask.hpp"
 
 // обработать имя файла: сравнить с маской, масками, сгенерировать по маске
 int WINAPI ProcessName(const wchar_t *param1, wchar_t *param2, DWORD size, DWORD flags)
@@ -50,54 +51,8 @@ int WINAPI ProcessName(const wchar_t *param1, wchar_t *param2, DWORD size, DWORD
 
 	if (flags == PN_CMPNAMELIST)
 	{
-		int Found = FALSE;
-		FARString strFileMask;
-		wchar_t *Buf = nullptr;
-		const wchar_t *Mask1=param1, *Mask2=nullptr;
-
-		const wchar_t *pipe = wcschr(param1, L'|');
-		if (pipe)
-		{
-			if (pipe == param1)
-			{
-				Found = TRUE;  // mimic Far3 behavior
-				Mask2 = param1+1;
-			}
-			else
-			{
-				Buf = wcsdup(param1);
-				Buf[pipe-param1] = 0;
-				Mask1 = Buf;
-				Mask2 = Buf + (pipe-param1+1);
-			}
-		}
-
-		if (!Found)
-		{
-			while ((Mask1=GetCommaWord(Mask1,strFileMask,L',',L';')))
-			{
-				if (CmpName(strFileMask,param2,skippath))
-				{
-					Found=TRUE;
-					break;
-				}
-			}
-		}
-
-		if (Found && Mask2)
-		{
-			while ((Mask2=GetCommaWord(Mask2,strFileMask,L',',L';')))
-			{
-				if (CmpName(strFileMask,param2,skippath))
-				{
-					Found=FALSE;
-					break;
-				}
-			}
-		}
-
-		free(Buf);
-		return Found;
+		CFileMask Masks;
+		return Masks.Set(param1,FMF_SILENT) && Masks.Compare(skippath ? PointToName(param2):param2);
 	}
 
 	if (flags&PN_GENERATENAME)
