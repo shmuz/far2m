@@ -4060,7 +4060,7 @@ LONG_PTR WINAPI KeyMacro::ParamMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_
 					if (ParseMacroString(Sequence,KMFLAGS_LUA,true))
 					{
 						m_RecCode=Sequence;
-						//m_RecDescription = reinterpret_cast<const wchar_t*>(Dlg->SendMessage(DM_GETCONSTTEXTPTR, MS_EDIT_DESCR, nullptr));
+						m_RecDescription = (LPCWSTR)SendDlgMessage(hDlg,DM_GETCONSTTEXTPTR,MS_EDIT_DESCR,0);
 						return TRUE;
 					}
 				}
@@ -4141,8 +4141,8 @@ int KeyMacro::GetMacroSettings(uint32_t Key,DWORD &Flags, const wchar_t* Src, co
 	MacroSettingsDlg[MS_CHECKBOX_P_SELECTION].Selected=Set3State(Flags,MFLAGS_PSELECTION,MFLAGS_PNOSELECTION);
 	MacroSettingsDlg[MS_CHECKBOX_CMDLINE].Selected=Set3State(Flags,MFLAGS_EMPTYCOMMANDLINE,MFLAGS_NOTEMPTYCOMMANDLINE);
 	MacroSettingsDlg[MS_CHECKBOX_SELBLOCK].Selected=Set3State(Flags,MFLAGS_EDITSELECTION,MFLAGS_EDITNOSELECTION);
-	LPCWSTR Sequence = *Src ? Src : m_RecCode.CPtr();
-	MacroSettingsDlg[MS_EDIT_SEQUENCE].strData=Sequence;
+	MacroSettingsDlg[MS_EDIT_SEQUENCE].strData = *Src ? Src : m_RecCode.CPtr();
+	MacroSettingsDlg[MS_EDIT_DESCR].strData = *Descr ? Descr : m_RecDescription.CPtr();
 	DlgParam Param={0, 0, MACROAREA_OTHER, 0, false};
 	Dialog Dlg(MacroSettingsDlg,ARRAYSIZE(MacroSettingsDlg),ParamMacroDlgProc,(LONG_PTR)&Param);
 	Dlg.SetPosition(-1,-1,73,21);

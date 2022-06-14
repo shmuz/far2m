@@ -609,7 +609,7 @@ int Panel::ChangeDiskMenu(int Pos,int FirstCall)
 								Key == KEY_SHIFTNUMDEL || Key == KEY_SHIFTDECIMAL || Key == KEY_SHIFTDEL);
 							return SelPos;
 						}
-						
+
 						case PanelMenuItem::SHORTCUT: {
 							Bookmarks().Clear(item->nItem);
 							return SelPos;
@@ -732,7 +732,7 @@ int Panel::ChangeDiskMenu(int Pos,int FirstCall)
 		}
 	} // эта скобка надо, см. M#605
 
-	
+
 
 	if (ProcessPluginEvent(FE_CLOSE,nullptr))
 		return -1;
@@ -1817,7 +1817,8 @@ int Panel::SetPluginCommand(int Command,int Param1,LONG_PTR Param2)
 			Info->Visible=IsVisible();
 			Info->Focus=GetFocus();
 			Info->ViewMode=GetViewMode();
-			Info->SortMode=SM_UNSORTED-UNSORTED+GetSortMode();
+			if ((Info->SortMode = GetSortMode()) < PanelSortMode::COUNT)
+				Info->SortMode += SM_UNSORTED-UNSORTED;
 			{
 				static struct
 				{
