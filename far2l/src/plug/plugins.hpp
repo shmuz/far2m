@@ -296,6 +296,7 @@ class PluginManager
 		int ProcessEditorEvent(int Event,void *Param);
 		int ProcessViewerEvent(int Event,void *Param);
 		int ProcessDialogEvent(int Event,void *Param);
+		int ProcessConsoleInput(INPUT_RECORD *Rec);
 		void GetCustomData(FileListItem *ListItem);
 		bool MayExitFar();
 

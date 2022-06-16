@@ -66,6 +66,7 @@ typedef int (WINAPI *PLUGINANALYSEW)(const AnalyseData *pData);
 typedef int (WINAPI *PLUGINGETCUSTOMDATAW)(const wchar_t *FilePath, wchar_t **CustomData);
 typedef void (WINAPI *PLUGINFREECUSTOMDATAW)(wchar_t *CustomData);
 typedef DWORD (WINAPI *PLUGINGETGLOBALINFOW)();
+typedef int (WINAPI *PLUGINPROCESSCONSOLEINPUTW)(INPUT_RECORD *Rec);
 
 
 class PluginW: public Plugin
@@ -104,6 +105,7 @@ class PluginW: public Plugin
 		PLUGINGETCUSTOMDATAW         pGetCustomDataW;
 		PLUGINFREECUSTOMDATAW        pFreeCustomDataW;
 		PLUGINGETGLOBALINFOW         pGetGlobalInfoW;
+		PLUGINPROCESSCONSOLEINPUTW   pProcessConsoleInputW;
 
 	public:
 
@@ -157,6 +159,7 @@ class PluginW: public Plugin
 		bool HasGetCustomData()  { return pGetCustomDataW!=nullptr; }
 		bool HasFreeCustomData() { return pFreeCustomDataW!=nullptr; }
 		bool HasGetGlobalInfo()  { return pGetGlobalInfoW!=nullptr; }
+		bool HasProcessConsoleInput() { return pProcessConsoleInputW!=nullptr; }
 		const FARString &GetModuleName() { return m_strModuleName; }
 		const char *GetSettingsName() { return m_strSettingsName.c_str(); }
 		DWORD GetSysID() { return SysID; }
@@ -204,6 +207,7 @@ class PluginW: public Plugin
 		int ProcessViewerEvent(int Event, PVOID Param);
 		int ProcessDialogEvent(int Event, PVOID Param);
 		int ProcessSynchroEvent(int Event, PVOID Param);
+		int ProcessConsoleInput(INPUT_RECORD *D);
 
 		bool GetPluginInfo(PluginInfo *pi);
 		int Configure(int MenuItem);

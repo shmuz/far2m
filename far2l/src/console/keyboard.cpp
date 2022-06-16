@@ -512,7 +512,7 @@ static DWORD KeyMsClick2ButtonState(DWORD Key,DWORD& Event)
 	return 0;
 }
 
-DWORD GetInputRecord(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,bool AllowSynchro)
+DWORD GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,bool AllowSynchro)
 {
 	_KEYMACRO(CleverSysLog Clev(L"GetInputRecord()"));
 	static int LastEventIdle=FALSE;
@@ -1364,6 +1364,28 @@ DWORD GetInputRecord(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,bool 
 		}
 	}
 	return(CalcKey);
+}
+
+DWORD GetInputRecord(INPUT_RECORD *rec, bool ExcludeMacro, bool ProcessMouse, bool AllowSynchro)
+{
+	*rec = {};
+
+	DWORD Key = GetInputRecordImpl(rec, ExcludeMacro, ProcessMouse, AllowSynchro);
+
+	if (Key && CtrlObject)
+	{
+		switch (CtrlObject->Plugins.ProcessConsoleInput(rec))
+		{
+		case 1:
+			Key = KEY_NONE;
+			rec->EventType = 0;
+			break;
+		case 2:
+			Key = CalcKeyCode(rec,FALSE);
+			break;
+		}
+	}
+	return Key;
 }
 
 DWORD PeekInputRecord(INPUT_RECORD *rec,bool ExcludeMacro)

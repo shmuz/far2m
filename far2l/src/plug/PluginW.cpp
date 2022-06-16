@@ -83,6 +83,7 @@ static const char szCache_ProcessSynchroEvent[] = "ProcessSynchroEventW";
 static const char szCache_Configure[] = "ConfigureW";
 static const char szCache_Analyse[] = "AnalyseW";
 static const char szCache_GetCustomData[] = "GetCustomDataW";
+static const char szCache_ProcessConsoleInput[] = "ProcessConsoleInputW";
 
 static const char NFMP_OpenPlugin[] = "OpenPluginW";
 static const char NFMP_OpenFilePlugin[] = "OpenFilePluginW";
@@ -117,6 +118,7 @@ static const char NFMP_Analyse[] = "AnalyseW";
 static const char NFMP_GetCustomData[] = "GetCustomDataW";
 static const char NFMP_FreeCustomData[] = "FreeCustomDataW";
 static const char NFMP_GetGlobalInfo[] = "GetGlobalInfoW";
+static const char NFMP_ProcessConsoleInput[] = "ProcessConsoleInputW";
 
 
 static void CheckScreenLock()
@@ -195,6 +197,7 @@ bool PluginW::LoadFromCache()
 	pConfigureW = (PLUGINCONFIGUREW)(INT_PTR)kfh.GetUInt(szCache_Configure, 0);
 	pAnalyseW = (PLUGINANALYSEW)(INT_PTR)kfh.GetUInt(szCache_Analyse, 0);
 	pGetCustomDataW = (PLUGINGETCUSTOMDATAW)(INT_PTR)kfh.GetUInt(szCache_GetCustomData, 0);
+	pProcessConsoleInputW = (PLUGINPROCESSCONSOLEINPUTW)(INT_PTR)kfh.GetUInt(szCache_ProcessConsoleInput, 0);
 	WorkFlags.Set(PIWF_CACHED); //too much "cached" flags
 
 	if (kfh.GetInt(szCache_Preopen) != 0)
@@ -215,7 +218,8 @@ bool PluginW::SaveToCache()
         !pProcessDialogEventW &&
         !pProcessSynchroEventW &&
         !pAnalyseW &&
-        !pGetCustomDataW
+        !pGetCustomDataW &&
+        !pProcessConsoleInputW
 	   )
 	{
 		return false;
@@ -287,6 +291,7 @@ bool PluginW::SaveToCache()
 	kfh.SetUInt(GetSettingsName(), szCache_Configure, pConfigureW!=nullptr);
 	kfh.SetUInt(GetSettingsName(), szCache_Analyse, pAnalyseW!=nullptr);
 	kfh.SetUInt(GetSettingsName(), szCache_GetCustomData, pGetCustomDataW!=nullptr);
+	kfh.SetUInt(GetSettingsName(), szCache_ProcessConsoleInput, pProcessConsoleInputW!=nullptr);
 
 	return true;
 }
@@ -335,6 +340,7 @@ bool PluginW::Load()
 	GetModuleFN(pGetCustomDataW, NFMP_GetCustomData);
 	GetModuleFN(pFreeCustomDataW, NFMP_FreeCustomData);
 	GetModuleFN(pGetGlobalInfoW, NFMP_GetGlobalInfo);
+	GetModuleFN(pProcessConsoleInputW, NFMP_ProcessConsoleInput);
 
 	bool bUnloaded = false;
 
@@ -1254,6 +1260,24 @@ void PluginW::ExitFAR()
 	}
 }
 
+int PluginW::ProcessConsoleInput(
+    INPUT_RECORD *D
+)
+{
+	int bResult = 0;
+
+	if (Load() && pProcessConsoleInputW)
+	{
+		ExecuteStruct es;
+		es.id = EXCEPT_PROCESSCONSOLEINPUT;
+		es.bDefaultResult = 0;
+		EXECUTE_FUNCTION_EX(pProcessConsoleInputW(D), es);
+		bResult = es.bResult;
+	}
+
+	return bResult;
+}
+
 void PluginW::ClearExports()
 {
 	pSetStartupInfoW = nullptr;
@@ -1288,5 +1312,7 @@ void PluginW::ClearExports()
 	pAnalyseW = nullptr;
 	pGetCustomDataW = nullptr;
 	pFreeCustomDataW = nullptr;
+	pGetGlobalInfoW = nullptr;
+	pProcessConsoleInputW = nullptr;
 }
 

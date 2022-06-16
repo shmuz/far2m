@@ -155,6 +155,7 @@ class PluginA: public Plugin
 		bool HasGetCustomData()  { return false; }
 		bool HasFreeCustomData() { return false; }
 		bool HasGetGlobalInfo()  { return false; }
+		bool HasProcessConsoleInput() { return false; }
 
 		const FARString &GetModuleName() { return m_strModuleName; }
 		const char *GetSettingsName() { return m_strSettingsName.c_str(); }
@@ -201,6 +202,7 @@ class PluginA: public Plugin
 		int ProcessViewerEvent(int Event, PVOID Param);
 		int ProcessDialogEvent(int Event, PVOID Param);
 		int ProcessSynchroEvent(int Event, PVOID Param) { return 0; }
+		int ProcessConsoleInput(INPUT_RECORD *D) { return 0; }
 
 		int Analyse(const AnalyseData *pData) { return FALSE; }
 

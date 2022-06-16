@@ -135,6 +135,7 @@ class Plugin
 		virtual bool HasGetCustomData() = 0;
 		virtual bool HasFreeCustomData() = 0;
 		virtual bool HasGetGlobalInfo() = 0;
+		virtual bool HasProcessConsoleInput() = 0;
 
 		virtual const FARString &GetModuleName() = 0;
 		virtual const char *GetSettingsName() = 0;
@@ -178,6 +179,7 @@ class Plugin
 		virtual int ProcessViewerEvent(int Event, PVOID Param) = 0;
 		virtual int ProcessDialogEvent(int Event, PVOID Param) = 0;
 		virtual int ProcessSynchroEvent(int Event, PVOID Param) = 0;
+		virtual int ProcessConsoleInput(INPUT_RECORD *D) = 0;
 
 		virtual int Analyse(const AnalyseData *pData) = 0;
 

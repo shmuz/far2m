@@ -925,6 +925,31 @@ int PluginManager::SetDirectory(
 }
 
 
+int PluginManager::ProcessConsoleInput(INPUT_RECORD *Rec)
+{
+	bool InputChanged = false;
+
+	for (int i = 0; i < PluginsCount; i++)
+	{
+		Plugin *pPlugin = PluginsData[i];
+		if (!pPlugin->HasProcessConsoleInput())
+			continue;
+
+		int Result = pPlugin->ProcessConsoleInput(Rec);
+		if (Result == 1)
+		{
+			return Result;
+		}
+		else if (Result == 2)
+		{
+			InputChanged = true;
+		}
+	}
+
+	return InputChanged ? 2 : 0;
+}
+
+
 int PluginManager::GetFile(
     HANDLE hPlugin,
     PluginPanelItem *PanelItem,
