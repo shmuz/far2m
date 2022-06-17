@@ -2017,11 +2017,16 @@ typedef int (WINAPI *FARSTDLOCALSTRNICMP)(const wchar_t *s1,const wchar_t *s2,in
 
 enum PROCESSNAME_FLAGS
 {
-	PN_CMPNAME      = 0x00000000UL,
-	PN_CMPNAMELIST  = 0x00010000UL,
-	PN_GENERATENAME = 0x00020000UL,
-	PN_CHECKMASK    = 0x00030000UL,
-	PN_SKIPPATH     = 0x01000000UL,
+	//     0xFFFF - length
+	//   0xFF0000 - mode
+	// 0xFF000000 - flags
+	PN_CMPNAME          = 0x00000000UL,
+	PN_CMPNAMELIST      = 0x00010000UL,
+	PN_GENERATENAME     = 0x00020000UL,
+	PN_CHECKMASK        = 0x00030000UL,
+	PN_SKIPPATH         = 0x01000000UL,
+	PN_SHOWERRORMESSAGE = 0x02000000UL,
+	PN_NONE             = 0
 };
 
 typedef int (WINAPI *FARSTDPROCESSNAME)(const wchar_t *param1, wchar_t *param2, DWORD size, DWORD flags);

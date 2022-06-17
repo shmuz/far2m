@@ -43,8 +43,9 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 int WINAPI ProcessName(const wchar_t *param1, wchar_t *param2, DWORD size, DWORD flags)
 {
 	bool skippath = (flags&PN_SKIPPATH)!=0;
+	bool silent = (flags&PN_SHOWERRORMESSAGE)==0;
 
-	flags &= ~PN_SKIPPATH;
+	flags &= ~(PN_SKIPPATH | PN_SHOWERRORMESSAGE);
 
 	if (flags == PN_CMPNAME)
 		return CmpName(param1, param2, skippath);
@@ -52,7 +53,7 @@ int WINAPI ProcessName(const wchar_t *param1, wchar_t *param2, DWORD size, DWORD
 	if (flags == PN_CMPNAMELIST || flags == PN_CHECKMASK)
 	{
 		CFileMask Masks;
-		if (!Masks.Set(param1,FMF_SILENT))
+		if (!Masks.Set(param1, silent ? FMF_SILENT:0))
 			return FALSE;
 		if (flags == PN_CHECKMASK)
 			return TRUE;
