@@ -94,7 +94,7 @@ static int ListSortMode,ListSortOrder,ListSortGroups,ListSelectedFirst,ListDirec
 static int ListPanelMode,ListNumericSort,ListCaseSensitiveSort;
 static HANDLE hSortPlugin;
 
-static_assert(static_cast<size_t>(PanelSortMode::BY_USER) == static_cast<size_t>(OPENPLUGININFO_SORTMODES::SM_USER));
+static_assert(static_cast<size_t>(PanelSortMode::BY_USER) == static_cast<size_t>(OPENPLUGININFO_SORTMODES::SM_USER), "Error!");
 
 namespace custom_sort
 {
@@ -4260,7 +4260,7 @@ void FileList::SelectSortMode()
 		{Msg::MenuSortByFullName,0,0},
 		{Msg::MenuSortByCustomData,0,0}
 	};
-	static_assert(ARRAYSIZE(InitSortMenuModes) == PanelSortMode::COUNT);
+	static_assert(ARRAYSIZE(InitSortMenuModes) == PanelSortMode::COUNT, "Error!");
 
 	int end_normal    = ARRAYSIZE(InitSortMenuModes);
 	int start_custom  = end_normal + 1;
@@ -4315,7 +4315,7 @@ void FileList::SelectSortMode()
 		BY_FULLNAME,
 		BY_CUSTOMDATA
 	};
-	static_assert(ARRAYSIZE(SortModes) == PanelSortMode::COUNT);
+	static_assert(ARRAYSIZE(SortModes) == PanelSortMode::COUNT, "Error!");
 
 	{
 		const auto ItemIterator = std::find(SortModes, SortModes+PanelSortMode::COUNT, SortMode);
@@ -4359,7 +4359,7 @@ void FileList::SelectSortMode()
 		{ Msg::MenuSortSelectedFirst,     SelectedFirst     ? (DWORD)MIF_CHECKED : 0, KEY_SHIFTF12 },
 		{ Msg::MenuSortDirectoriesFirst,  DirectoriesFirst  ? (DWORD)MIF_CHECKED : 0, 0 },
 	};
-	static_assert(ARRAYSIZE(InitSortMenuOptions) == SortOptions::SortOptCount);
+	static_assert(ARRAYSIZE(InitSortMenuOptions) == SortOptions::SortOptCount, "Error!");
 
 	SortMenu.reserve(SortMenu.size() + 1 + ARRAYSIZE(InitSortMenuOptions)); // + 1 for separator
 	SortMenu.emplace_back(MenuSeparator);
