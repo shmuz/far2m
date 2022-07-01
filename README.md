@@ -52,8 +52,7 @@ apt-get install gawk m4 libwxgtk3.0-gtk3-dev libx11-dev libxi-dev libpcre3-dev l
 In older distributives: use libpcre2-dev and libwxgtk3.0-dev instead of libpcre3-dev and libwxgtk3.0-gtk3-dev
 
 #### Clone and Build
- * Clone current master `git clone https://github.com/elfmz/far2l`
- * Checkout some stable release tag (master considered unstable): `git checkout v_2.#.#`
+ * Clone current master `git clone https://github.com/shmuz/far2l`
  * Prepare build directory:
 ``` sh
 mkdir -p far2l/_build
@@ -120,7 +119,7 @@ Some issues can be caused by conflicting dependencies, like having two versions 
 
  * Clone:
 ```sh
-git clone https://github.com/elfmz/far2l
+git clone https://github.com/shmuz/far2l
 cd far2l
 ```
  * Install needed dependencies with MacPorts:
