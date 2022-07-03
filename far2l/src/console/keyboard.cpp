@@ -1412,10 +1412,10 @@ DWORD PeekInputRecord(INPUT_RECORD *rec,bool ExcludeMacro)
  + Пераметр у фунции WaitKey - возможность ожидать конкретную клавишу
      Если KeyWait = -1 - как и раньше
 */
-DWORD WaitKey(DWORD KeyWait,DWORD delayMS,bool ExcludeMacro)
+DWORD WaitKey(DWORD KeyWait,DWORD delayMS,bool ExcludeMacro,bool EnableQuickEdit)
 {
 	bool Visible=false;
-	bool AdHocQuickEdit= ((KeyWait&(~KEY_CTRLMASK)) != KEY_MSLCLICK);
+	bool AdHocQuickEdit= EnableQuickEdit && ((KeyWait&(~KEY_CTRLMASK)) != KEY_MSLCLICK);
 	DWORD Size=0;
 
 	if (KeyWait == KEY_CTRLALTSHIFTRELEASE || KeyWait == KEY_RCTRLALTSHIFTRELEASE)

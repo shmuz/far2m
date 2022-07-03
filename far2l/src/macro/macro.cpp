@@ -1832,7 +1832,7 @@ int FarMacroApi::waitkeyFunc()
 	auto Params = parseParams(2, mData);
 	const auto Type = static_cast<long>(Params[1].asInteger());
 	const auto Period = static_cast<long>(Params[0].asInteger());
-	auto Key = WaitKey(static_cast<DWORD>(-1), Period);
+	auto Key = WaitKey(static_cast<DWORD>(-1), Period, true, false);
 
 	if (!Type)
 	{

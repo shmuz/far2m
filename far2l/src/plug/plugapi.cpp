@@ -314,7 +314,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 		*/
 		case ACTL_WAITKEY:
 		{
-			return WaitKey(Param?(DWORD)(DWORD_PTR)Param:(DWORD)-1,0,false);
+			return WaitKey(Param?(DWORD)(DWORD_PTR)Param:(DWORD)-1,0,false,false);
 		}
 		/* $ 04.12.2000 SVS
 		  ACTL_GETCOLOR - получить определенный цвет по индекс, определенному
