@@ -174,6 +174,7 @@ add_subdirectory (WinPort)
 add_subdirectory (utils)
 add_subdirectory (far2l)
 add_dependencies (far2l farlng)
+add_subdirectory (luafar)
 
 set_target_properties(farlng
   PROPERTIES
