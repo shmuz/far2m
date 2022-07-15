@@ -5,7 +5,6 @@ if (NOT DEFINED USE_LUAJIT OR USE_LUAJIT)
   include_directories("/usr/include/luajit-2.1")
   set(LIB_LUA "luajit-5.1")
   set(LUAEXE  "luajit")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUSE_LUAJIT")
 else()
   include_directories("/usr/include/lua5.1")
   set(LIB_LUA "lua5.1")
@@ -48,7 +47,8 @@ set(SOURCES
 )
 
 add_library (luafar2l MODULE ${SOURCES})
-target_link_libraries(luafar2l ${LIB_LUA} uuid)
+target_link_libraries(luafar2l uuid)
+# target_link_libraries(luafar2l ${LIB_LUA} uuid)
 
 target_compile_definitions(luafar2l PRIVATE -DWINPORT_DIRECT -DFAR_DONT_USE_INTERNALS)
 

@@ -10,12 +10,6 @@
 #include "ustring.h"
 #include "version.h"
 
-#ifdef USE_LUAJIT
-#  define LUADLL "libluajit-5.1.so"
-#else
-#  define LUADLL "liblua5.1.so"
-#endif
-
 extern int  luaopen_bit64 (lua_State *L);
 extern int  luaopen_unicode (lua_State *L);
 extern int  luaopen_utf8 (lua_State *L);
@@ -5684,7 +5678,9 @@ int LF_LuaOpen (TPluginData* aPlugData, lua_CFunction aOpenLibs)
 
   // without dlopen() all attempts to require() a binary Lua module would fail, e.g.
   // require "lfs" --> undefined symbol: lua_gettop
-  handle = dlopen(LUADLL, RTLD_NOW | RTLD_GLOBAL);
+  handle = dlopen("libluajit-5.1.so", RTLD_NOW | RTLD_GLOBAL);
+  if (handle == NULL)
+    handle = dlopen("liblua5.1.so", RTLD_NOW | RTLD_GLOBAL);
   if (handle == NULL)
     return 0;
 
