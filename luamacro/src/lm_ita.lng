@@ -1,0 +1,54 @@
+﻿.Language=Italian,Italian (Italiano)
+
+"OK"
+"Error parsing macro"
+"Reloading macros"
+
+"► Esegui Una Macro"
+"[Alt+F4] Modifica"
+"< No description: Index=%d >"
+"Low priority"
+
+// macro browser help window
+"F1          Mostra Questa Finestra Di Aiuto"
+"F3          Mostra Info Riguardo La Macro"
+"F4          Apri File Per La Modifica"
+"Alt+F4      Apre File In Popup Editor"
+"Ctrl+PgUp   Trova Il File Nel Pannello Attivo"
+"Ctrl+F1     Ordina Macro Per Area"
+"Ctrl+F2     Ordina Macro Per Tasti"
+"Ctrl+F3     Ordina Macro Per Descrizione"
+"Enter       Esegui Macro Selezionata"
+"Ctrl+H      Nascodi Macro Non Attive"
+"Ctrl+R      reload macros"
+
+// macro browser separators
+"Macro"
+"Macro Attive"
+"Eventi"
+"Items of Plugins menu"
+"Active items of Plugins menu"
+"Prefixes"
+"Panel modules"
+"Content columns"
+"Custom sort modes"
+
+// macro browser messages
+"Nessun Nome File Disponibile"
+"File Non Trovato"
+
+// macro browser F3 titles
+"Macro"
+"Gestore Evento"
+"Plugins menu item"
+"Prefix"
+"Panel module"
+"Content column"
+"Custom sort mode"
+
+// custom panel sort
+"Ordinamento "
+"Ordine Personale"
+
+// command line
+"Unsupported command: "

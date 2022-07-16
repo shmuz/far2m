@@ -46,7 +46,7 @@ set(SOURCES
   src/util.c
 )
 
-add_library (luafar2l MODULE ${SOURCES})
+add_library (luafar2l SHARED ${SOURCES})
 target_link_libraries(luafar2l uuid)
 # target_link_libraries(luafar2l ${LIB_LUA} uuid)
 

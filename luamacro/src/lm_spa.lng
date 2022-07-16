@@ -1,0 +1,54 @@
+﻿.Language=Spanish,Spanish
+
+"Aceptar"
+"Error analizando macro"
+"Reloading macros"
+
+"Ejecutar un macro"
+"Dígito: ejecutar | Alt+F4: abrir en editor"
+"< No description: Index=%d >"
+"Low priority"
+
+// macro browser help window
+"F1          mostrar esta ventana de ayuda"
+"F3          mostrar info acerca de macro/evento"
+"F4          abrir archivo en editor"
+"Alt+F4      abrir archivo en modo editor"
+"Ctrl+PgUp   localizar archivo en panel activo"
+"Ctrl+F1     ordenar macros por área"
+"Ctrl+F2     ordenar macros por tecla"
+"Ctrl+F3     ordenar macros por descripción"
+"Enter       ejecutar macro seleccionado"
+"Ctrl+H      ocultar macros inactivos"
+"Ctrl+R      reload macros"
+
+// macro browser separators
+"Macros"
+"Macros activos"
+"Eventos"
+"Items of Plugins menu"
+"Active items of Plugins menu"
+"Prefixes"
+"Panel modules"
+"Content columns"
+"Custom sort modes"
+
+// macro browser messages
+"No hay nombre de archivo disponible"
+"Archivo no encontrado"
+
+// macro browser F3 titles
+"Macro"
+"Gestor de eventos"
+"Plugins menu item"
+"Prefix"
+"Panel module"
+"Content column"
+"Custom sort mode"
+
+// custom panel sort
+"Modo de ordenamiento"
+"Ordenamiento panel personalizado"
+
+// command line
+"Comando no soportado: "
