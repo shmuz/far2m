@@ -7,9 +7,6 @@ else()
   include_directories("/usr/include/lua5.1")
 endif()
 
-string(REPLACE "-std=c99" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -O2")
-
 set(SYS_ID 0x4EBBEFC8)
 
 set(SOURCES
@@ -17,6 +14,7 @@ set(SOURCES
 )
 
 add_library (luamacro MODULE ${SOURCES})
+set_property(TARGET luamacro PROPERTY C_STANDARD 11)
 
 set(EXPORTS
   CLOSEPLUGIN COMPARE DELETEFILES GETFILES GETFINDDATA

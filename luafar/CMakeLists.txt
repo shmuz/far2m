@@ -11,9 +11,6 @@ else()
   set(LUAEXE  "lua")
 endif()
 
-string(REPLACE "-std=c99" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -O2")
-
 set(SDK "${CMAKE_SOURCE_DIR}/far2l/far2sdk")
 
 function(GenerateFile trg src script)
@@ -47,6 +44,7 @@ set(SOURCES
 )
 
 add_library (luafar2l SHARED ${SOURCES})
+set_property(TARGET luafar2l PROPERTY C_STANDARD 11)
 target_link_libraries(luafar2l uuid)
 # target_link_libraries(luafar2l ${LIB_LUA} uuid)
 
