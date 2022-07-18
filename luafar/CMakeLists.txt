@@ -58,3 +58,12 @@ set_target_properties(luafar2l
     LIBRARY_OUTPUT_DIRECTORY "${INSTALL_DIR}/Plugins/luafar"
     PREFIX ""
     SUFFIX ".so")
+
+set(MY_LIST
+  luafar2l_manual.chm
+  macroapi_manual_linux.chm
+)
+
+foreach(elem ${MY_LIST})
+  configure_file("manuals/${elem}" "${INSTALL_DIR}/Manuals/${elem}" COPYONLY)
+endforeach()
