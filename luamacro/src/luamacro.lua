@@ -434,15 +434,6 @@ function export.OpenPlugin (OpenFrom, Item, ...)
     local mod, obj = Open_CommandLine(Item)
     return mod and obj and PanelModuleExist(mod) and { module=mod; object=obj }
 
-  elseif OpenFrom == F.OPEN_ANALYSE then
-    local info = ...
-    local mod = info.Handle.module
-    if type(mod.Open) == "function" then
-      info.Handle = info.Handle.object
-      local obj = mod.OpenPlugin(OpenFrom, Item, info)
-      return obj and { module=mod; object=obj }
-    end
-
   elseif OpenFrom == F.OPEN_FINDLIST then
     for _,mod in ipairs(utils.GetPanelModules()) do
       if type(mod.Open) == "function" then
@@ -618,11 +609,10 @@ local function Init()
   end
 end
 
-function export.Analyse(Data)
+function export.OpenFilePlugin (Name, Data, OpMode)
   for _,module in ipairs(utils.GetPanelModules()) do
-    if type(module.Analyse) == "function" then
-      local datacopy = {}; for k,v in pairs(Data) do datacopy[k]=v; end -- prevent modifying 'Data'
-      local obj = module.Analyse(datacopy)
+    if type(module.OpenFilePlugin) == "function" then
+      local obj = module.OpenFilePlugin(Name, Data, OpMode)
       if obj then
         return { module=module; object=obj }
       end
