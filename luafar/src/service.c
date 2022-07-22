@@ -5654,12 +5654,12 @@ void LF_InitLuaState (lua_State *L, PSInfo *aInfo, lua_CFunction aOpenLibs)
   lua_setfield(L, -2, "__index");
   lua_pop(L, 2);
 
-  // Run "_plug_init.lua" residing in the plugin's directory (if any).
+  // Run "luafar_init.lua" residing in the Plugins/luafar directory (if any).
   // Absence of that file is not error.
   int top = lua_gettop(L);
   const wchar_t* p = aInfo->ModuleName;
   push_utf8_string(L, p, wcsrchr(p, L'/') + 1 - p);   //+1
-  lua_pushliteral(L, "../../_plug_init.lua");         //+2
+  lua_pushliteral(L, "../../luafar_init.lua");        //+2
   lua_concat(L, 2);                                   //+1
   FILE *fp = fopen(lua_tostring(L,-1), "r");
   if (fp) {

@@ -602,11 +602,6 @@ local function Init()
   package.path = ("%s/?.lua;%s/?/init.lua;%s"):format(modules, modules, package.path)
   package.moonpath = ("%s/?.moon;%s/?/init.moon;%s"):format(modules, modules, package.moonpath)
   package.cpath = mainpath..(win.IsProcess64bit() and "/lib64" or "/lib32").."/?.so;"..package.cpath
-
-  if _G.IsLuaStateRecreated then
-    _G.IsLuaStateRecreated = nil
-    utils.LoadMacros()
-  end
 end
 
 function export.OpenFilePlugin (Name, Data, OpMode)
