@@ -1215,16 +1215,15 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 			return (CheckCode == MCODE_V_VIEWERFILENAME) ? api.PassString(L"") : 0;
 		}
 
-		//case MCODE_F_BEEP:             break;
-		//case MCODE_F_EDITOR_DELLINE:   break;
-		//case MCODE_F_EDITOR_INSSTR:    break;
-		//case MCODE_F_EDITOR_SETSTR:    break;
-		//case MCODE_F_FAR_CFG_GET:      break;
-		//case MCODE_F_FAR_GETCONFIG:    break;
-		//case MCODE_F_MENU_FILTER:      break;
-		//case MCODE_F_MENU_FILTERSTR:   break;
-		//case MCODE_F_MENU_SHOW:        break;
-		//case MCODE_F_USERMENU:         break;
+		//case MCODE_F_BEEP:             not_implemented;
+		//case MCODE_F_EDITOR_DELLINE:   implemented_in_lua;
+		//case MCODE_F_EDITOR_INSSTR:    implemented_in_lua;
+		//case MCODE_F_EDITOR_SETSTR:    implemented_in_lua;
+		//case MCODE_F_FAR_GETCONFIG:    not_implemented;
+		//case MCODE_F_MENU_FILTER:      not_implemented;
+		//case MCODE_F_MENU_FILTERSTR:   not_implemented;
+		//case MCODE_F_MENU_SHOW:        not_implemented;
+		//case MCODE_F_USERMENU:         not_implemented;
 
 		case MCODE_F_SETCUSTOMSORTMODE:
 			if (Data->Count>=3 && Data->Values[0].Type==FMVT_DOUBLE  &&

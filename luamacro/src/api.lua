@@ -422,23 +422,6 @@ Far = {
   Window_Scroll  = function(...) return MacroCallFar(op.MCODE_F_WINDOW_SCROLL, ...) end,
 }
 
-function Far.GetConfig (keyname)
-  checkarg(keyname, 1, "string")
-  local key, name = keyname:match("^(.+)%.([^.]+)$")
-  if not key then
-    error("invalid format of arg. #1", 2)
-  end
-  local tp,val = MacroCallFar(MCODE_F_FAR_GETCONFIG, key, name)
-  if not tp then
-    error("cannot get setting '"..keyname.."'", 2)
-  end
-  tp = ({"boolean","3-state","integer","string"})[tp]
-  if tp == "3-state" then
-    if val==0 or val==1 then val=(val==1) else val="other" end
-  end
-  return val,tp
-end
-
 SetProperties(Far, {
   FullScreen     = function() return MacroCallFar(op.MCODE_C_FULLSCREENMODE) end,
   Height         = function() return MacroCallFar(op.MCODE_V_FAR_HEIGHT) end,
