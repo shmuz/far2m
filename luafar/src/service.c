@@ -15,12 +15,6 @@ extern int  luaopen_unicode (lua_State *L);
 extern int  luaopen_utf8 (lua_State *L);
 extern int  luaopen_timer (lua_State *L);
 extern int  luaopen_usercontrol (lua_State *L);
-extern int  far_Find (lua_State*);
-extern int  far_Tfind (lua_State*);
-extern int  far_Gmatch (lua_State*);
-extern int  far_Gsub (lua_State*);
-extern int  far_Match (lua_State*);
-extern int  far_Regex (lua_State*);
 extern int  luaopen_regex (lua_State*);
 extern int  pcall_msg (lua_State* L, int narg, int nret);
 extern void add_flags (lua_State *L);
@@ -696,8 +690,10 @@ int editor_SetString(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
   struct EditorSetString ess;
+  size_t len;
   ess.StringNumber = luaL_optinteger(L, 1, 0) - 1;
-  ess.StringText = check_utf8_string(L, 2, &ess.StringLength);
+  ess.StringText = check_utf8_string(L, 2, &len);
+  ess.StringLength = len;
   ess.StringEOL = opt_utf8_string(L, 3, NULL);
   lua_pushboolean(L, Info->EditorControl(ECTL_SETSTRING, &ess));
   return 1;
@@ -1229,13 +1225,15 @@ int editor_ReadInput(lua_State *L)
 
 void FillInputRecord(lua_State *L, int pos, INPUT_RECORD *ir)
 {
+  int temp;
+  size_t size;
+
   pos = abs_index(L, pos);
   luaL_checktype(L, pos, LUA_TTABLE);
   memset(ir, 0, sizeof(INPUT_RECORD));
 
   // determine event type
   lua_getfield(L, pos, "EventType");
-  int temp, size;
   if(!get_env_flag(L, -1, &temp))
     luaL_argerror(L, pos, "EventType field is missing or invalid");
   lua_pop(L, 1);
@@ -4285,7 +4283,7 @@ int win_FileTimeToLocalFileTime(lua_State *L)
 
 int win_CompareString (lua_State *L)
 {
-  int len1, len2;
+  size_t len1, len2;
   const wchar_t *ws1  = check_utf8_string(L, 1, &len1);
   const wchar_t *ws2  = check_utf8_string(L, 2, &len2);
   const char *sLocale = luaL_optstring(L, 3, "");
@@ -4635,7 +4633,7 @@ int far_UnloadPlugin(lua_State *L)     { return plugin_load(L, PCTL_UNLOADPLUGIN
 
 int far_XLat (lua_State *L)
 {
-  int size;
+  size_t size;
   wchar_t *Line = check_utf8_string(L, 1, &size), *str;
   intptr_t StartPos = luaL_optinteger(L, 2, 1) - 1;
   intptr_t EndPos = luaL_optinteger(L, 3, size);
@@ -5261,17 +5259,6 @@ static const luaL_Reg actl_funcs[] =
   {NULL, NULL},
 };
 
-static const luaL_Reg regex_funcs[] =
-{
-  {"find",   far_Find},
-  {"gmatch", far_Gmatch},
-  {"gsub",   far_Gsub},
-  {"match",  far_Match},
-  {"new",    far_Regex},
-  {"tfind",  far_Tfind},
-  {NULL, NULL},
-};
-
 static const luaL_Reg viewer_funcs[] =
 {
   {"Viewer",        viewer_Viewer},
@@ -5548,7 +5535,6 @@ int luaopen_far (lua_State *L)
   lua_setglobal(L, "export");
 
   luaopen_regex(L);
-  luaL_register(L, "regex",  regex_funcs);
   luaL_register(L, "editor", editor_funcs);
   luaL_register(L, "viewer", viewer_funcs);
   luaL_register(L, "panel",  panel_funcs);

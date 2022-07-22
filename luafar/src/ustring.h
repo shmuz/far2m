@@ -28,14 +28,17 @@ void   PutStrToTable      (lua_State *L, const char* key, const char* str);
 void   PutWStrToArray     (lua_State *L, int key, const wchar_t* str, int numchars);
 void   PutWStrToTable     (lua_State *L, const char* key, const wchar_t* str, int numchars);
 
-DLLFUNC wchar_t* check_utf8_string (lua_State *L, int pos, int* pTrgSize);
+DLLFUNC wchar_t* check_utf8_string (lua_State *L, int pos, size_t* pTrgSize);
 DLLFUNC const wchar_t* opt_utf8_string (lua_State *L, int pos, const wchar_t* dflt);
 DLLFUNC void push_utf8_string (lua_State* L, const wchar_t* str, int numchars);
 
-wchar_t* utf8_to_wcstring (lua_State *L, int pos, int* pTrgSize);
-wchar_t* oem_to_wcstring (lua_State *L, int pos, int* pTrgSize);
+wchar_t* utf8_to_wcstring (lua_State *L, int pos, size_t* pTrgSize);
+wchar_t* oem_to_wcstring (lua_State *L, int pos, size_t* pTrgSize);
 void push_oem_string (lua_State* L, const wchar_t* str, int numchars);
 void push_wcstring(lua_State* L, const wchar_t* str, int numchars);
+
+const wchar_t* check_wcstring(lua_State *L, int pos, size_t *len);
+const wchar_t* opt_wcstring(lua_State *L, int pos, const wchar_t *dflt);
 
 int ustring_EnumSystemCodePages (lua_State *L);
 int ustring_GetACP (lua_State* L);
