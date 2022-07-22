@@ -143,14 +143,23 @@ PluginManager::PluginManager():
 
 PluginManager::~PluginManager()
 {
-	CurPluginItem=nullptr;
-	Plugin *pPlugin;
+	Plugin *pLuaMacro=nullptr; //to be deleted last
 
 	for (int i = 0; i < PluginsCount; i++)
 	{
-		pPlugin = PluginsData[i];
-		pPlugin->Unload(true);
-		delete pPlugin;
+		Plugin *pPlugin = PluginsData[i];
+		if (pPlugin->GetSysID() == SYSID_LUAMACRO)
+			pLuaMacro = pPlugin;
+		else
+		{
+			pPlugin->Unload(true);
+			delete pPlugin;
+		}
+	}
+	if (pLuaMacro)
+	{
+		pLuaMacro->Unload(true);
+		delete pLuaMacro;
 	}
 	if(PluginsData)
 	{
