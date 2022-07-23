@@ -686,18 +686,39 @@ static int _EditorGetString(lua_State *L, int is_wide)
 static int editor_GetString(lua_State *L) { return _EditorGetString(L, 0); }
 static int editor_GetStringW(lua_State *L) { return _EditorGetString(L, 1); }
 
-int editor_SetString(lua_State *L)
+static int _EditorSetString(lua_State *L, int is_wide)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
   struct EditorSetString ess;
   size_t len;
   ess.StringNumber = luaL_optinteger(L, 1, 0) - 1;
-  ess.StringText = check_utf8_string(L, 2, &len);
+
+  if(is_wide)
+  {
+    ess.StringText = check_wcstring(L, 2, &len);
+    ess.StringEOL = opt_wcstring(L, 3, NULL);
+
+    if(ess.StringEOL)
+    {
+      lua_pushvalue(L, 3);
+      lua_pushliteral(L, "\0\0\0\0");
+      lua_concat(L, 2);
+      ess.StringEOL = (wchar_t*) lua_tostring(L, -1);
+    }
+  }
+  else
+  {
+    ess.StringText = check_utf8_string(L, 2, &len);
+    ess.StringEOL = opt_utf8_string(L, 3, NULL);
+  }
+
   ess.StringLength = len;
-  ess.StringEOL = opt_utf8_string(L, 3, NULL);
-  lua_pushboolean(L, Info->EditorControl(ECTL_SETSTRING, &ess));
+  lua_pushboolean(L, Info->EditorControl(ECTL_SETSTRING, &ess) != 0);
   return 1;
 }
+
+static int editor_SetString(lua_State *L) { return _EditorSetString(L, 0); }
+static int editor_SetStringW(lua_State *L) { return _EditorSetString(L, 1); }
 
 int editor_InsertString(lua_State *L)
 {
@@ -5140,6 +5161,38 @@ int win_IsProcess64bit(lua_State *L)
   return 1;
 }
 
+int ustring_sub(lua_State *L)
+{
+  size_t len;
+  intptr_t from, to;
+  const char* s = luaL_checklstring(L, 1, &len);
+  len /= sizeof(wchar_t);
+  from = luaL_optinteger(L, 2, 1);
+
+  if(from < 0) from += len+1;
+
+  if(--from < 0) from = 0;
+  else if((size_t)from > len) from = len;
+
+  to = luaL_optinteger(L, 3, -1);
+
+  if(to < 0) to += len+1;
+
+  if(to < from) to = from;
+  else if((size_t)to > len) to = len;
+
+  lua_pushlstring(L, s + from*sizeof(wchar_t), (to-from)*sizeof(wchar_t));
+  return 1;
+}
+
+int ustring_len(lua_State *L)
+{
+  size_t len;
+  (void) luaL_checklstring(L, 1, &len);
+  lua_pushinteger(L, len / sizeof(wchar_t));
+  return 1;
+}
+
 static const luaL_Reg filefilter_methods[] = {
   {"__gc",             filefilter_gc},
   {"__tostring",       filefilter_tostring},
@@ -5309,6 +5362,7 @@ static const luaL_Reg editor_funcs[] =
   {"SetParam",            editor_SetParam},
   {"SetPosition",         editor_SetPosition},
   {"SetString",           editor_SetString},
+  {"SetStringW",          editor_SetStringW},
   {"SetTitle",            editor_SetTitle},
   {"TabToReal",           editor_TabToReal},
   {"TurnOffMarkingBlock", editor_TurnOffMarkingBlock},
@@ -5394,6 +5448,8 @@ static const luaL_Reg win_funcs[] = {
   {"Utf32ToUtf8",                ustring_Utf32ToUtf8},
   {"Utf8ToOem",                  ustring_Utf8ToOem},
   {"Utf8ToUtf32",                ustring_Utf8ToUtf32},
+  {"lenW",                       ustring_len},
+  {"subW",                       ustring_sub},
   {"Uuid",                       ustring_Uuid},
   {"GetFileAttr",                ustring_GetFileAttr},
   {"SetFileAttr",                ustring_SetFileAttr},
