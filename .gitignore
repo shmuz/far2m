@@ -23,3 +23,5 @@ CPackSourceConfig.cmake
 cmake-build-*
 .DS_Store
 _build/
+SciTE*.properties
+assa.diff

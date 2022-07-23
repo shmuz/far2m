@@ -222,25 +222,25 @@ void push_oem_string (lua_State* L, const wchar_t* str, int numchars)
 
 void push_wcstring(lua_State* L, const wchar_t* str, int numchars)
 {
-	if(numchars < 0)
-		numchars = wcslen(str);
-	lua_pushlstring(L, (const char*)str, numchars*sizeof(wchar_t));
+  if(numchars < 0)
+    numchars = wcslen(str);
+  lua_pushlstring(L, (const char*)str, numchars*sizeof(wchar_t));
 }
 
 const wchar_t* check_wcstring(lua_State *L, int pos, size_t *len)
 {
-	size_t ln;
-	const wchar_t* s = (const wchar_t*)luaL_checklstring(L, pos, &ln);
+  size_t ln;
+  const wchar_t* s = (const wchar_t*)luaL_checklstring(L, pos, &ln);
 
-	if(len) *len = ln / sizeof(wchar_t);
+  if(len) *len = ln / sizeof(wchar_t);
 
-	return s;
+  return s;
 }
 
 const wchar_t* opt_wcstring(lua_State *L, int pos, const wchar_t *dflt)
 {
-	const wchar_t* s = (const wchar_t*)luaL_optstring(L, pos, (const char*)dflt);
-	return s;
+  const wchar_t* s = (const wchar_t*)luaL_optstring(L, pos, (const char*)dflt);
+  return s;
 }
 
 int ustring_MultiByteToWideChar (lua_State *L)
