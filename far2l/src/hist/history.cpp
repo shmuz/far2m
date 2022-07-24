@@ -76,7 +76,7 @@ History::~History()
 
 static bool IsAllowedForHistory(const wchar_t *Str)
 {
-	if (!Str || !*Str)
+	if (!Str)
 		return false;
 
 	FileMasksProcessor fmp;
@@ -116,7 +116,7 @@ void History::AddToHistory(const wchar_t *Str, int Type, const wchar_t *Prefix, 
 
 void History::AddToHistoryLocal(const wchar_t *Str, const wchar_t *Prefix, int Type)
 {
-	if (!Str || !*Str)
+	if (!Str)
 		return;
 
 	HistoryRecord AddRecord;

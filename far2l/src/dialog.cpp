@@ -4244,12 +4244,6 @@ BOOL Dialog::SelectFromEditHistory(DialogItemEx *CurItem,
 int Dialog::AddToEditHistory(const wchar_t *AddStr,const wchar_t *HistoryName)
 {
 	CriticalSectionLock Lock(CS);
-
-	if (!*AddStr)
-	{
-		return FALSE;
-	}
-
 	FARString strRegKey=fmtSavedDialogHistory;
 	strRegKey+=HistoryName;
 	History DlgHist(HISTORYTYPE_DIALOG, Opt.DialogsHistoryCount, strRegKey.GetMB(), &Opt.Dialogs.EditHistory, false);
