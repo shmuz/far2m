@@ -4800,7 +4800,11 @@ int MacroSendString(lua_State* L, int Param1)
   smt.SequenceText = check_utf8_string(L, 1, NULL);
   smt.Flags = OptFlags(L, 2, 0);
   if (Param1 == MSSC_POST)
-    smt.AKey = (DWORD)luaL_optinteger(L, 3, 0);
+  {
+    smt.AKey = (lua_type(L,3) == LUA_TSTRING) ?
+      (DWORD)pd->Info->FSF->FarNameToKey(check_utf8_string(L,3,NULL)) :
+      (DWORD)luaL_optinteger(L,3,0);
+  }
 
   lua_pushboolean(L, pd->Info->MacroControl(pd->PluginId, MCTL_SENDSTRING, Param1, &smt) != 0);
   return 1;
