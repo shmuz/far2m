@@ -67,4 +67,5 @@ jobs:
       working-directory: ${{github.workspace}}/build/install
       shell: bash
       # run: ./far2l "lua:far.MacroPost([=[R=win.GetEnv('FARHOME');R=R or os.exit(1); R=R..[[/Plugins/luafar/luamacro/plug/macrotest.lua]]; R=loadfile(R);R=R or os.exit(2); OK,R=pcall(R);OK=OK or os.exit(3); OK,R=pcall(R.test_all);os.exit(OK and 0 or 4);]=],nil,'CtrlShiftF12')"
-      run: ./far2l "lua:os.exit(0)"
+      # run: ./far2l "lua:os.exit(0)"
+      run: ./far2l
