@@ -1038,7 +1038,7 @@ local function GetMacro (argMode, argKey, argUseCommon, argCheckOnly)
 
   local m = GetFromMenu(macrolist, GetTrueAreaName(argMode), argKey)
   if m then return m, CInfo[Collector[m]+1] end
-  return {}, nil
+  return "cancel"
 
 end
 
