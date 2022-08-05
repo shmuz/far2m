@@ -591,21 +591,6 @@ DWORD GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,b
 		NotMacros=CalcKey&0x80000000?1:0;
 		CalcKey&=~0x80000000;
 
-		//???
-		if (!ExcludeMacro && CtrlObject && CtrlObject->Macro.IsRecording() && (CalcKey == (KEY_ALT|KEY_NUMPAD0) || CalcKey == (KEY_ALT|KEY_INS)))
-		{
-			_KEYMACRO(SysLog(L"[%d] CALL CtrlObject->Macro.ProcessKey(%ls)",__LINE__,_FARKEY_ToName(CalcKey)));
-			FrameManager->SetLastInputRecord(rec);
-			if (CtrlObject->Macro.ProcessKey(CalcKey))
-			{
-				RunGraber();
-				rec->EventType=0;
-				CalcKey=KEY_NONE;
-			}
-
-			return(CalcKey);
-		}
-
 		if (!NotMacros)
 		{
 			_KEYMACRO(SysLog(L"[%d] CALL CtrlObject->Macro.ProcessKey(%ls)",__LINE__,_FARKEY_ToName(CalcKey)));
@@ -666,54 +651,6 @@ DWORD GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,b
 				continue;
 			}
 
-			// // _SVS(INPUT_RECORD_DumpBuffer());
-#if 0
-
-			if (rec->EventType==KEY_EVENT)
-			{
-				// берем количество оставшейся порции эвентов
-				DWORD ReadCount2;
-				GetNumberOfConsoleInputEvents(Console.GetInputHandle(),&ReadCount2);
-
-				// если их безобразно много, то просмотрим все на предмет KEY_EVENT
-				if (ReadCount2 > 1)
-				{
-					INPUT_RECORD *TmpRec=(INPUT_RECORD*)malloc(sizeof(INPUT_RECORD)*ReadCount2);
-
-					if (TmpRec)
-					{
-						DWORD ReadCount3;
-						INPUT_RECORD TmpRec2;
-						Console.PeekInput(Console.GetInputHandle(),TmpRec,ReadCount2,&ReadCount3);
-
-						for (int I=0; I < ReadCount2; ++I)
-						{
-							if (TmpRec[I].EventType!=KEY_EVENT)
-								break;
-
-							// // _SVS(SysLog(L"%d> %ls",I,_INPUT_RECORD_Dump(rec)));
-							Console.ReadInput((Console.GetInputHandle(),&TmpRec2,1,&ReadCount3);
-
-							if (TmpRec[I].Event.KeyEvent.bKeyDown==1)
-							{
-								if (TmpRec[I].Event.KeyEvent.uChar.AsciiChar )
-									WriteInput(TmpRec[I].Event.KeyEvent.uChar.AsciiChar,0);
-							}
-							else if (TmpRec[I].Event.KeyEvent.wVirtualKeyCode==0x12)
-							{
-								if (TmpRec[I].Event.KeyEvent.uChar.AsciiChar )
-									WriteInput(TmpRec[I].Event.KeyEvent.uChar.AsciiChar,0);
-							}
-						}
-
-						// освободим память
-						free(TmpRec);
-						return KEY_NONE;
-					}
-				}
-			}
-
-#endif
 			break;
 		}
 
