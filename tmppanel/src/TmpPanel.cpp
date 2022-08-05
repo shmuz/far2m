@@ -295,7 +295,7 @@ void ReadFileLines(int fd, DWORD FileSizeLow, TCHAR **argv, TCHAR *args,
   *numargs = 0;
 
   char *FileData = (char *)mmap( NULL, FileSizeLow, PROT_READ, MAP_PRIVATE, fd, 0);
-  
+
   if (FileData==(char *)MAP_FAILED)
     return;
 
@@ -539,7 +539,7 @@ void ShowMenuFromList(TCHAR *Name)
         }
       }
 
-      if (bShellExecute) 
+      if (bShellExecute)
         fprintf(stderr, "TODO: ShellExecute: %ls\n", p);// ShellExecute(NULL,_T("open"),p,NULL,NULL,SW_SHOW);
     }
   }
@@ -560,6 +560,9 @@ SHAREDSYMBOL HANDLE WINAPI EXP_NAME(OpenFilePlugin)(_CONST TCHAR *Name,const uns
 #undef _OPARG
 #undef _CONST
 {
+	if (Name == NULL) //this plugin doesn't support ShiftF1
+    return INVALID_HANDLE_VALUE;
+
 #ifndef UNICODE
 #define PNAME_ARG Name
 #define pName     Name
