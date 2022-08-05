@@ -561,7 +561,7 @@ SHAREDSYMBOL HANDLE WINAPI EXP_NAME(OpenFilePlugin)(_CONST TCHAR *Name,const uns
 #undef _CONST
 {
 	if (Name == NULL) //this plugin doesn't support ShiftF1
-    return INVALID_HANDLE_VALUE;
+		return INVALID_HANDLE_VALUE;
 
 #ifndef UNICODE
 #define PNAME_ARG Name
