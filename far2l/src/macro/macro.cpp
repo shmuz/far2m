@@ -3441,55 +3441,6 @@ int FarMacroApi::kbdLayoutFunc()
 	return Ret ? 1 : 0;
 }
 
-struct TMacroKeywords
-{
-	int Type;              // Тип: 0=Area, 1=Flags, 2=Condition
-	const wchar_t *Name;   // Наименование
-	DWORD Value;           // Значение
-	DWORD Reserved;
-};
-
-class TVMStack: public TStack<TVar>
-{
-	private:
-		const TVar Error;
-
-	public:
-		TVMStack() {}
-		~TVMStack() {}
-
-	public:
-		const TVar &Pop()
-		{
-			static TVar temp; //чтоб можно было вернуть по референс.
-
-			if (TStack<TVar>::Pop(temp))
-				return temp;
-
-			return Error;
-		}
-
-		TVar &Pop(TVar &dest)
-		{
-			if (!TStack<TVar>::Pop(dest))
-				dest=Error;
-
-			return dest;
-		}
-
-		const TVar &Peek()
-		{
-			TVar *var = TStack<TVar>::Peek();
-
-			if (var)
-				return *var;
-
-			return Error;
-		}
-};
-
-TVMStack VMStack;
-
 bool KeyMacro::ProcessKey(DWORD dwKey)
 {
 	if (m_InternalInput || dwKey==KEY_IDLE || dwKey==KEY_NONE || !FrameManager->GetCurrentFrame())
