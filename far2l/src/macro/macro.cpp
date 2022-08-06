@@ -3490,17 +3490,17 @@ class TVMStack: public TStack<TVar>
 
 TVMStack VMStack;
 
-bool KeyMacro::ProcessKey(DWORD IntKey)
+bool KeyMacro::ProcessKey(DWORD dwKey)
 {
-	if (m_InternalInput || IntKey==KEY_IDLE || IntKey==KEY_NONE || !FrameManager->GetCurrentFrame()) //FIXME: избавиться от IntKey
+	if (m_InternalInput || dwKey==KEY_IDLE || dwKey==KEY_NONE || !FrameManager->GetCurrentFrame())
 		return false;
 
 	FARString textKey;
-	if (!KeyToText(IntKey, textKey) || textKey.IsEmpty())
+	if (!KeyToText(dwKey, textKey) || textKey.IsEmpty())
 		return false;
 
-	const bool ctrldot = IntKey == Opt.Macro.KeyMacroCtrlDot;           //###  || IntKey == Opt.Macro.KeyMacroRCtrlDot;
-	const bool ctrlshiftdot = IntKey == Opt.Macro.KeyMacroCtrlShiftDot; //###  || IntKey == Opt.Macro.KeyMacroRCtrlShiftDot;
+	const bool ctrldot = dwKey == Opt.Macro.KeyMacroCtrlDot;
+	const bool ctrlshiftdot = dwKey == Opt.Macro.KeyMacroCtrlShiftDot;
 
 	if (m_Recording == MACROSTATE_NOMACRO)
 	{
@@ -3531,17 +3531,17 @@ bool KeyMacro::ProcessKey(DWORD IntKey)
 		{
 			if (!m_WaitKey && IsPostMacroEnabled())
 			{
-				auto key = IntKey;
+				auto key = dwKey;
 				if ((key&0x00FFFFFF) > 0x7F && (key&0x00FFFFFF) < 0xFFFF)
-					key=KeyToKeyLayout(key&0x0000FFFF)|(key&~0x0000FFFF);
+					key=KeyToKeyLayout(key);
 
 				if (key<0xFFFF)
-					key=Upper(static_cast<wchar_t>(key)); //### was: upper
+					key=Upper(static_cast<wchar_t>(key));
 
 				FARString str = textKey;
-				if (key != IntKey)
+				if (key != dwKey)
 					KeyToText(key, str);
-				if (TryToPostMacro(m_Area, str, IntKey))
+				if (TryToPostMacro(m_Area, str, dwKey))
 					return true;
 			}
 		}
@@ -3853,9 +3853,6 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG
 	else if (Msg == DN_KEY && (((Param2&KEY_END_SKEY) < KEY_END_FKEY) ||
 	                           (((Param2&KEY_END_SKEY) > INTERNAL_KEY_BASE) && (Param2&KEY_END_SKEY) < INTERNAL_KEY_BASE_2)))
 	{
-		//if((Param2&0x00FFFFFF) >= 'A' && (Param2&0x00FFFFFF) <= 'Z' && ShiftPressed)
-		//Param2|=KEY_SHIFT;
-
 		//_SVS(SysLog(L"Macro: Key=%ls",_FARKEY_ToName(Param2)));
 		// <Обработка особых клавиш: F1 & Enter>
 		// Esc & (Enter и предыдущий Enter) - не обрабатываем
@@ -3867,16 +3864,6 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG
 			return FALSE;
 		}
 
-		/*
-		// F1 - особый случай - нужно жать 2 раза
-		// первый раз будет выведен хелп,
-		// а второй раз - второй раз уже назначение
-		if(Param2 == KEY_F1 && LastKey!=KEY_F1)
-		{
-		  LastKey=KEY_F1;
-		  return FALSE;
-		}
-		*/
 		// Было что-то уже нажато и Enter`ом подтверждаем
 		_SVS(SysLog(L"[%d] Assign ==> Param2='%ls',LastKey='%ls'",__LINE__,_FARKEY_ToName((DWORD)Param2),(LastKey?_FARKEY_ToName(LastKey):L"")));
 
@@ -3886,11 +3873,11 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG
 		// </Обработка особых клавиш: F1 & Enter>
 M1:
 		if ((Param2&0x00FFFFFF) > 0x7F && (Param2&0x00FFFFFF) < 0xFFFF)
-			Param2=KeyToKeyLayout((int)(Param2&0x0000FFFF))|(DWORD)(Param2&(~0x0000FFFF));
+			Param2=KeyToKeyLayout(Param2);
 
 		//косметика
 		if (Param2<0xFFFF)
-			Param2=Upper((wchar_t)(Param2&0x0000FFFF))|(Param2&(~0x0000FFFF));
+			Param2=Upper((wchar_t)Param2);
 
 		_SVS(SysLog(L"[%d] Assign ==> Param2='%ls',LastKey='%ls'",__LINE__,_FARKEY_ToName((DWORD)Param2),LastKey?_FARKEY_ToName(LastKey):L""));
 		KMParam->Key=(DWORD)Param2;
