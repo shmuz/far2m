@@ -958,6 +958,12 @@ int VMenu::ProcessKey(int Key)
 
 	if (!GetShowItemCount())
 	{
+		if (!bFilterEnabled && (Key==KEY_ENTER || Key==KEY_NUMENTER))
+		{
+			EndLoop = TRUE;
+			Modal::ExitCode = -1;
+			return TRUE;
+		}
 		if ((Key!=KEY_F1 && Key!=KEY_SHIFTF1 && Key!=KEY_F10 && Key!=KEY_ESC && Key!=KEY_ALTF9))
 		{
 			if (!bFilterEnabled || (bFilterEnabled && Key!=KEY_BS && Key!=KEY_CTRLALTF))
