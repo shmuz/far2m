@@ -1719,7 +1719,7 @@ int far_CmpName(lua_State *L)
   PSInfo *Info = GetPluginStartupInfo(L);
   const wchar_t *Pattern = check_utf8_string(L, 1, NULL);
   const wchar_t *String  = check_utf8_string(L, 2, NULL);
-  int SkipPath  = (lua_gettop(L) >= 3 && lua_toboolean(L,3)) ? 1:0;
+  int SkipPath = (lua_gettop(L) >= 3 && lua_toboolean(L,3)) ? 1:0;
   lua_pushboolean(L, Info->CmpName(Pattern, String, SkipPath));
   return 1;
 }

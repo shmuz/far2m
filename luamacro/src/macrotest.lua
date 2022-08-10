@@ -1,20 +1,23 @@
 -- encoding: utf-8
 -- Started: 2012-08-20.
 
---[[
--- The following macro can be used to run all the tests.
+local function assert_eq(a,b)   assert(a == b) end
+local function assert_neq(a,b)  assert(a ~= b) end
+local function assert_num(v)    assert(type(v)=="number") end
+local function assert_str(v)    assert(type(v)=="string") end
+local function assert_tbl(v)    assert(type(v)=="table") end
+local function assert_bool(v)   assert(type(v)=="boolean") end
+local function assert_func(v)   assert(type(v)=="function") end
+local function assert_nil(v)    assert(v==nil) end
+local function assert_false(v)  assert(v==false) end
+local function assert_true(v)   assert(v==true) end
+local function assert_falsy(v)  assert(not v == true) end
+local function assert_truthy(v) assert(not v == false) end
 
-Macro {
-  description="Macro-engine test";
-  area="Shell"; key="CtrlShiftF12";
-  action = function()
-    Far.DisableHistory(0x0F)
-    local f = assert(loadfile(far.PluginStartupInfo().ModuleDir.."macrotest.lua"))
-    setfenv(f, getfenv())().test_all()
-    far.Message("All tests OK", "LuaMacro")
-  end;
-}
---]]
+local function assert_range(val, low, high)
+  if low then assert(val >= low) end
+  if high then assert(val <= high) end
+end
 
 local MT = {} -- "macrotest", this module
 local F = far.Flags
@@ -1583,23 +1586,6 @@ local function test_AdvControl_Colors()
   assert(far.AdvControl("ACTL_SETARRAYCOLOR", allcolors))
 end
 
-local function test_AdvControl_Synchro()
-  local pass = 0
-  local oldProcessSynchroEvent = export.ProcessSynchroEvent
-  export.ProcessSynchroEvent =
-    function(event,param)
-      assert(pass==0 and param==123 or pass==1 and param==-456)
-      pass = pass + 1
-    end
-  far.AdvControl("ACTL_SYNCHRO", 123)
-  far.AdvControl("ACTL_SYNCHRO", -456)
-  for k=1,2 do
-    mf.acall(far.Show); Keys"Esc"
-  end
-  export.ProcessSynchroEvent = oldProcessSynchroEvent
-  assert(pass == 2)
-end
-
 local function test_AdvControl_Misc()
   local t
 
@@ -1624,11 +1610,46 @@ local function test_AdvControl_Misc()
   Keys("F2")
 end
 
+local function test_ACTL()
+  assert_func  ( actl.Commit)
+  assert_func  ( actl.EjectMedia)
+  assert_tbl   ( actl.GetArrayColor())
+  assert_range ( #actl.GetArrayColor(),142,152)
+  assert_num   ( actl.GetColor("COL_DIALOGBOXTITLE"))
+  assert_num   ( actl.GetConfirmations())
+  assert_tbl   ( actl.GetCursorPos())
+  assert_num   ( actl.GetDescSettings())
+  assert_num   ( actl.GetDialogSettings())
+  assert_eq    ( type(actl.GetFarHwnd()), "userdata")
+  assert_tbl   ( actl.GetFarRect())
+  assert_str   ( actl.GetFarVersion())
+  assert_num   ( actl.GetFarVersion(true))
+  assert_num   ( actl.GetInterfaceSettings())
+  assert_num   ( actl.GetPanelSettings())
+  assert_range ( actl.GetPluginMaxReadData(), 0x1000, 0x80000)
+  assert_num   ( actl.GetSystemSettings())
+  assert_str   ( actl.GetSysWordDiv())
+  assert_range ( actl.GetWindowCount(), 1)
+  assert_tbl   ( actl.GetWindowInfo(1))
+  assert_tbl   ( actl.GetShortWindowInfo(1))
+  assert_nil   ( actl.KeyMacro)
+  assert_func  ( actl.ProgressNotify)
+  assert_func  ( actl.Quit)
+  assert_func  ( actl.RedrawAll)
+  assert_func  ( actl.SetArrayColor)
+  assert_func  ( actl.SetCurrentWindow)
+  assert_func  ( actl.SetCursorPos)
+  assert_func  ( actl.SetProgressState)
+  assert_func  ( actl.SetProgressValue)
+  assert_nil   ( actl.Synchro)
+  assert_func  ( actl.WaitKey)
+end
+
 local function test_AdvControl()
 --test_AdvControl_Window()
   test_AdvControl_Colors()
---test_AdvControl_Synchro()
   test_AdvControl_Misc()
+  test_ACTL()
 end
 
 local function test_far_GetMsg()
@@ -1637,13 +1658,13 @@ end
 
 local function test_clipboard()
   local orig = far.PasteFromClipboard()
-  local values = { nil, "foo", "", n=3 }
+  local values = { "Человек", "foo", "", n=3 }
   for k=1,values.n do
     local v = values[k]
     far.CopyToClipboard(v)
     assert(far.PasteFromClipboard() == v)
   end
-  far.CopyToClipboard(orig)
+  if orig then far.CopyToClipboard(orig) end
   assert(far.PasteFromClipboard() == orig)
 end
 
@@ -1663,9 +1684,51 @@ local function test_far_FarClock()
   assert(OK)
 end
 
+local function test_CmpName()
+  assert_true  (far.CmpName("f*.ex?",      "ftp.exe"        ))
+  assert_true  (far.CmpName("f*.ex?",      "fc.exe"         ))
+  assert_true  (far.CmpName("f*.ex?",      "f.ext"          ))
+  assert_false (far.CmpName("f*.ex?",      "a/f.ext"        ))
+  assert_false (far.CmpName("f*.ex?",      "a/f.ext", false ))
+  assert_true  (far.CmpName("f*.ex?",      "a/f.ext", true  ))
+
+  assert_true  (far.CmpName("*co*",        "color.ini"      ))
+  assert_true  (far.CmpName("*co*",        "edit.com"       ))
+  assert_true  (far.CmpName("[c-ft]*.txt", "config.txt"     ))
+  assert_true  (far.CmpName("[c-ft]*.txt", "demo.txt"       ))
+  assert_true  (far.CmpName("[c-ft]*.txt", "faq.txt"        ))
+  assert_true  (far.CmpName("[c-ft]*.txt", "tips.txt"       ))
+  assert_true  (far.CmpName("*",           "foo.bar"        ))
+  assert_true  (far.CmpName("*.cpp",       "foo.cpp"        ))
+  assert_false (far.CmpName("*.cpp",       "foo.abc"        ))
+  assert_false (far.CmpName("*|*.cpp",     "foo.abc"        )) -- exclude mask not supported
+  assert_false (far.CmpName("*,*",         "foo.bar"        )) -- mask list not supported
+end
+
+local function test_ProcessName()
+  assert_true (far.ProcessName("PN_CMPNAMELIST", "*",          "foo.bar"    ))
+  assert_true (far.ProcessName("PN_CMPNAMELIST", "*.cpp",      "foo.cpp"    ))
+  assert_false(far.ProcessName("PN_CMPNAMELIST", "*.cpp",      "foo.abc"    ))
+  assert_true (far.ProcessName("PN_CMPNAMELIST", "*|*.cpp",    "foo.abc"    )) -- exclude mask IS supported
+  assert_true (far.ProcessName("PN_CMPNAMELIST", "|*.cpp",     "foo.abc"    )) -- +++
+  assert_false(far.ProcessName("PN_CMPNAMELIST", "*|*.abc",    "foo.abc"    )) -- +++
+  assert_true (far.ProcessName("PN_CMPNAMELIST", "*.aa,*.bar", "foo.bar"    ))
+  assert_true (far.ProcessName("PN_CMPNAMELIST", "*.aa,*.bar", "c:/foo.bar" ))
+  assert_true (far.ProcessName("PN_CMPNAMELIST", "/.+/",       "c:/foo.bar" ))
+  assert_true (far.ProcessName("PN_CMPNAMELIST", "/bar$/",     "c:/foo.bar" ))
+  assert_false(far.ProcessName("PN_CMPNAMELIST", "/dar$/",     "c:/foo.bar" ))
+--  assert_true (far.ProcessName("PN_CMPNAMELIST", "/abcd/*",    "/abcd/foo.bar"))
+  assert_false(far.ProcessName("PN_CMPNAMELIST", "/abcd/;*",    "/abcd/foo.bar", "PN_SKIPPATH"))
+  assert_true (far.ProcessName("PN_CMPNAMELIST", "/Makefile(.+)?/", "Makefile"))
+  assert_true (far.ProcessName("PN_CMPNAMELIST", "/makefile([._\\-].+)?$/i", "Makefile", "PN_SKIPPATH"))
+end
+
 local function test_FarStandardFunctions()
---  test_clipboard()
+  test_clipboard()
 --  test_far_FarClock()
+
+  test_CmpName()
+  test_ProcessName()
 
   assert(far.ConvertPath([[/foo/bar/../../abc]], "CPM_FULL") == [[/abc]])
 
@@ -1734,7 +1797,7 @@ local function test_issue_3129()
   assert(editor.SaveFile())
   assert(editor.Quit())
   actl.Commit()
-  local fp = assert(io.open(fname))
+  fp = assert(io.open(fname))
   local k = 0
   for line in fp:lines() do
     k = k + 1
