@@ -1714,16 +1714,6 @@ int far_Message(lua_State *L)
   return 1;
 }
 
-int far_CmpName(lua_State *L)
-{
-  PSInfo *Info = GetPluginStartupInfo(L);
-  const wchar_t *Pattern = check_utf8_string(L, 1, NULL);
-  const wchar_t *String  = check_utf8_string(L, 2, NULL);
-  int SkipPath = (lua_gettop(L) >= 3 && lua_toboolean(L,3)) ? 1:0;
-  lua_pushboolean(L, Info->CmpName(Pattern, String, SkipPath));
-  return 1;
-}
-
 int panel_CheckPanelsExist(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
@@ -3714,25 +3704,32 @@ int far_LStrnicmp (lua_State *L)
   return 1;
 }
 
-int far_ProcessName (lua_State *L)
+int _ProcessName (lua_State *L, int Op)
 {
-  int Op = CheckFlags(L,1);
-  const wchar_t* Mask = check_utf8_string(L,2,NULL);
-  const wchar_t* Name = check_utf8_string(L,3,NULL);
-  int Flags = OptFlags(L,4,0);
+  int pos2=2, pos3=3, pos4=4;
+  if (Op == -1)
+    Op = CheckFlags(L, 1);
+  else {
+    --pos2, --pos3, --pos4;
+    if (Op == PN_CHECKMASK)
+      --pos4;
+  }
+  const wchar_t* Mask = check_utf8_string(L, pos2, NULL);
+  const wchar_t* Name = (Op == PN_CHECKMASK) ? L"" : check_utf8_string(L, pos3, NULL);
+  int Flags = Op | OptFlags(L, pos4, 0);
   struct FarStandardFunctions* FSF = GetFSF(L);
 
   if(Op == PN_CMPNAME || Op == PN_CMPNAMELIST || Op == PN_CHECKMASK) {
-    int result = FSF->ProcessName(Mask, (wchar_t*)Name, 0, Op|Flags);
+    int result = FSF->ProcessName(Mask, (wchar_t*)Name, 0, Flags);
     lua_pushboolean(L, result);
   }
   else if (Op == PN_GENERATENAME) {
     const int BUFSIZE = 1024;
     wchar_t* buf = (wchar_t*)lua_newuserdata(L, BUFSIZE * sizeof(wchar_t));
-    wcsncpy(buf, Name, BUFSIZE-1);
+    wcsncpy(buf, Mask, BUFSIZE-1);
     buf[BUFSIZE-1] = 0;
 
-    int result = FSF->ProcessName(Mask, buf, BUFSIZE, Flags);
+    int result = FSF->ProcessName(Name, buf, BUFSIZE, Flags);
     if (result)
       push_utf8_string(L, buf, -1);
     else
@@ -3743,6 +3740,12 @@ int far_ProcessName (lua_State *L)
 
   return 1;
 }
+
+int far_ProcessName  (lua_State *L) { return _ProcessName(L, -1);              }
+int far_CmpName      (lua_State *L) { return _ProcessName(L, PN_CMPNAME);      }
+int far_CmpNameList  (lua_State *L) { return _ProcessName(L, PN_CMPNAMELIST);  }
+int far_CheckMask    (lua_State *L) { return _ProcessName(L, PN_CHECKMASK);    }
+int far_GenerateName (lua_State *L) { return _ProcessName(L, PN_GENERATENAME); }
 
 int far_GetReparsePointInfo (lua_State *L)
 {
@@ -5464,7 +5467,10 @@ static const luaL_Reg far_funcs[] = {
   {"PluginStartupInfo",   far_PluginStartupInfo},
   {"GetPluginId",         far_GetPluginId},
 
+  {"CheckMask",           far_CheckMask},
   {"CmpName",             far_CmpName},
+  {"CmpNameList",         far_CmpNameList},
+  {"GenerateName",        far_GenerateName},
   {"DialogInit",          far_DialogInit},
   {"DialogRun",           far_DialogRun},
   {"DialogFree",          far_DialogFree},

@@ -1684,13 +1684,19 @@ local function test_far_FarClock()
   assert(OK)
 end
 
-local function test_CmpName()
+local function test_ProcessName()
+  assert_true  (far.CheckMask("f*.ex?"))
+  assert_true  (far.CheckMask("/(abc)?def/"))
+  assert_false (far.CheckMask("/[[[/"))
+
+  assert_eq    (far.GenerateName("a??b.*", "cdef.txt"), "adeb.txt")
+
   assert_true  (far.CmpName("f*.ex?",      "ftp.exe"        ))
   assert_true  (far.CmpName("f*.ex?",      "fc.exe"         ))
   assert_true  (far.CmpName("f*.ex?",      "f.ext"          ))
   assert_false (far.CmpName("f*.ex?",      "a/f.ext"        ))
-  assert_false (far.CmpName("f*.ex?",      "a/f.ext", false ))
-  assert_true  (far.CmpName("f*.ex?",      "a/f.ext", true  ))
+  assert_false (far.CmpName("f*.ex?",      "a/f.ext", 0     ))
+  assert_true  (far.CmpName("f*.ex?",      "a/f.ext", "PN_SKIPPATH" ))
 
   assert_true  (far.CmpName("*co*",        "color.ini"      ))
   assert_true  (far.CmpName("*co*",        "edit.com"       ))
@@ -1703,31 +1709,28 @@ local function test_CmpName()
   assert_false (far.CmpName("*.cpp",       "foo.abc"        ))
   assert_false (far.CmpName("*|*.cpp",     "foo.abc"        )) -- exclude mask not supported
   assert_false (far.CmpName("*,*",         "foo.bar"        )) -- mask list not supported
-end
 
-local function test_ProcessName()
-  assert_true (far.ProcessName("PN_CMPNAMELIST", "*",          "foo.bar"    ))
-  assert_true (far.ProcessName("PN_CMPNAMELIST", "*.cpp",      "foo.cpp"    ))
-  assert_false(far.ProcessName("PN_CMPNAMELIST", "*.cpp",      "foo.abc"    ))
-  assert_true (far.ProcessName("PN_CMPNAMELIST", "*|*.cpp",    "foo.abc"    )) -- exclude mask IS supported
-  assert_true (far.ProcessName("PN_CMPNAMELIST", "|*.cpp",     "foo.abc"    )) -- +++
-  assert_false(far.ProcessName("PN_CMPNAMELIST", "*|*.abc",    "foo.abc"    )) -- +++
-  assert_true (far.ProcessName("PN_CMPNAMELIST", "*.aa,*.bar", "foo.bar"    ))
-  assert_true (far.ProcessName("PN_CMPNAMELIST", "*.aa,*.bar", "c:/foo.bar" ))
-  assert_true (far.ProcessName("PN_CMPNAMELIST", "/.+/",       "c:/foo.bar" ))
-  assert_true (far.ProcessName("PN_CMPNAMELIST", "/bar$/",     "c:/foo.bar" ))
-  assert_false(far.ProcessName("PN_CMPNAMELIST", "/dar$/",     "c:/foo.bar" ))
---  assert_true (far.ProcessName("PN_CMPNAMELIST", "/abcd/*",    "/abcd/foo.bar"))
-  assert_false(far.ProcessName("PN_CMPNAMELIST", "/abcd/;*",    "/abcd/foo.bar", "PN_SKIPPATH"))
-  assert_true (far.ProcessName("PN_CMPNAMELIST", "/Makefile(.+)?/", "Makefile"))
-  assert_true (far.ProcessName("PN_CMPNAMELIST", "/makefile([._\\-].+)?$/i", "Makefile", "PN_SKIPPATH"))
+  assert_true (far.CmpNameList("*",          "foo.bar"    ))
+  assert_true (far.CmpNameList("*.cpp",      "foo.cpp"    ))
+  assert_false(far.CmpNameList("*.cpp",      "foo.abc"    ))
+  assert_true (far.CmpNameList("*|*.cpp",    "foo.abc"    )) -- exclude mask IS supported
+  assert_true (far.CmpNameList("|*.cpp",     "foo.abc"    )) -- +++
+  assert_false(far.CmpNameList("*|*.abc",    "foo.abc"    )) -- +++
+  assert_true (far.CmpNameList("*.aa,*.bar", "foo.bar"    ))
+  assert_true (far.CmpNameList("*.aa,*.bar", "c:/foo.bar" ))
+  assert_true (far.CmpNameList("/.+/",       "c:/foo.bar" ))
+  assert_true (far.CmpNameList("/bar$/",     "c:/foo.bar" ))
+  assert_false(far.CmpNameList("/dar$/",     "c:/foo.bar" ))
+--  assert_true (far.CmpNameList("/abcd/*",    "/abcd/foo.bar"))
+  assert_false(far.CmpNameList("/abcd/;*",    "/abcd/foo.bar", "PN_SKIPPATH"))
+  assert_true (far.CmpNameList("/Makefile(.+)?/", "Makefile"))
+  assert_true (far.CmpNameList("/makefile([._\\-].+)?$/i", "Makefile", "PN_SKIPPATH"))
 end
 
 local function test_FarStandardFunctions()
   test_clipboard()
 --  test_far_FarClock()
 
-  test_CmpName()
   test_ProcessName()
 
   assert(far.ConvertPath([[/foo/bar/../../abc]], "CPM_FULL") == [[/abc]])
