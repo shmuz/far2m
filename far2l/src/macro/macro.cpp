@@ -3095,7 +3095,7 @@ int FarMacroApi::panelitemFunc()
 			  return PassNumber(filelistItem.PhysicalSize);
 
 			case 8:  // Selected
-			  return PassNumber(filelistItem.Selected);
+			  return PassBoolean(filelistItem.Selected);
 
 			case 9:  // NumberOfLinks
 			  return PassNumber(filelistItem.NumberOfLinks);
