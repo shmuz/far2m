@@ -55,6 +55,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "strmix.hpp"
 #include "dirmix.hpp"
 #include "ConfigRW.hpp"
+#include "DlgGuid.hpp"
 
 struct FileTypeStrings
 {
@@ -550,6 +551,7 @@ static bool EditTypeRecord(int EditPos, int TotalRecords, bool NewRec)
 	Dialog Dlg(EditDlg, ARRAYSIZE(EditDlg), EditTypeRecordDlgProc);
 	Dlg.SetHelp(FARString(FTS.HelpModify));
 	Dlg.SetPosition(-1, -1, DlgX, DlgY);
+	Dlg.SetId(FileAssocModifyId);
 	Dlg.Process();
 
 	if (Dlg.GetExitCode() == ETR_BUTTON_OK)

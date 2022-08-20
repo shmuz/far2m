@@ -53,6 +53,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "DialogBuilder.hpp"
 #include <farplug-wide.h>
 #include "plugins.hpp"
+#include "DlgGuid.hpp"
 
 static const wchar_t HelpBookmarks[] = L"Bookmarks";
 
@@ -163,6 +164,7 @@ static int ShowBookmarksMenuIteration(int Pos)
 					FARString strTemp = strNewDir;
 
 					DialogBuilder Builder(Msg::BookmarksTitle, HelpBookmarks);
+					Builder.SetId(FolderShortcutsDlgId);
 					Builder.AddText(Msg::FSShortcut);
 					Builder.AddEditField(&strNewDir, 50, L"FS_Path", DIF_EDITPATH);
 					//...

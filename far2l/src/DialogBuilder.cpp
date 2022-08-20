@@ -73,7 +73,7 @@ struct EditFieldIntBinding: public DialogItemBinding<DialogItemEx>
 		*IntValue = wcstoul(Item->strData, &endptr, 10);
 	}
 
-	const TCHAR *GetMask() 
+	const TCHAR *GetMask()
 	{
 		return Mask;
 	}
@@ -89,6 +89,8 @@ static bool IsEditField(DialogItemEx *Item)
 DialogBuilder::DialogBuilder(FarLangMsg TitleMessageId, const wchar_t *HelpTopic):
 	HelpTopic(HelpTopic)
 {
+	IdExist=false;
+	memset(&Id,0,sizeof(Id));
 	AddBorder(GetLangString(TitleMessageId));
 }
 
@@ -249,6 +251,14 @@ int DialogBuilder::DoShowDialog()
 	Dialog Dlg(DialogItems, DialogItemsCount, DlgProc, (LONG_PTR)this);
 	Dlg.SetHelp(HelpTopic);
 	Dlg.SetPosition(-1, -1, DialogItems [0].X2+4, DialogItems [0].Y2+2);
+	if (IdExist)
+		Dlg.SetId(Id);
 	Dlg.Process();
 	return Dlg.GetExitCode();
+}
+
+void DialogBuilder::SetId(const GUID& aId)
+{
+	Id = aId;
+	IdExist = true;
 }

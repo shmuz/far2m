@@ -76,6 +76,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "panel.hpp"
 #include "drivemix.hpp"
 #include "xlat.hpp"
+#include "DlgGuid.hpp"
 #include <StackHeapArray.hpp>
 
 static int DragX,DragY,DragMove;
@@ -297,6 +298,7 @@ static void AddPluginItems(VMenu &ChDisk, int Pos)
 static void ConfigureChangeDriveMode()
 {
 	DialogBuilder Builder(Msg::ChangeDriveConfigure, L"");
+	Builder.SetId(ChangeDriveModeId);
 //	Builder.AddCheckbox(Msg::ChangeDriveShowDiskType, &Opt.ChangeDriveMode, DRIVE_SHOW_TYPE);
 //	Builder.AddCheckbox(Msg::ChangeDriveShowNetworkName, &Opt.ChangeDriveMode, DRIVE_SHOW_NETNAME);
 //	Builder.AddCheckbox(Msg::ChangeDriveShowLabel, &Opt.ChangeDriveMode, DRIVE_SHOW_LABEL);

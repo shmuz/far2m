@@ -59,6 +59,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "syslog.hpp"
 #include "interf.hpp"
 #include "cache.hpp"
+#include "DlgGuid.hpp"
 
 #if defined(PROJECT_DI_MEMOEDIT)
 /*
@@ -1112,6 +1113,7 @@ bool UserMenu::EditMenu(const wchar_t *MenuKey,int EditPos,int TotalRecords,bool
 		Dialog Dlg(EditDlg,ARRAYSIZE(EditDlg),EditMenuDlgProc);
 		Dlg.SetHelp(L"UserMenu");
 		Dlg.SetPosition(-1,-1,DLG_X,DLG_Y);
+		Dlg.SetId(EditUserMenuId);
 		Dlg.Process();
 
 		if (Dlg.GetExitCode()==EM_BUTTON_OK)

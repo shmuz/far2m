@@ -51,6 +51,9 @@ struct DialogItemEx;
 class DialogBuilder: public DialogBuilderBase<DialogItemEx>
 {
 	private:
+		GUID Id;
+		bool IdExist;
+
 		static LONG_PTR WINAPI DlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2);
 
 		struct CodePageBox
@@ -102,4 +105,6 @@ class DialogBuilder: public DialogBuilderBase<DialogItemEx>
 		{
 			DialogBuilderBase<DialogItemEx>::AddOKCancel(Msg::Ok, Msg::Cancel);
 		}
+
+		void SetId(const GUID& Id);
 };
