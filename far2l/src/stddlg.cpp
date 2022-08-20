@@ -40,6 +40,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "dialog.hpp"
 #include "ctrlobj.hpp"
 #include "strmix.hpp"
+#include "DlgGuid.hpp"
 
 int WINAPI GetSearchReplaceString(
     int IsReplaceMode,
@@ -221,6 +222,7 @@ int WINAPI GetSearchReplaceString(
 		{
 			Dialog Dlg(ReplaceDlg,ARRAYSIZE(ReplaceDlgData));
 			Dlg.SetPosition(-1,-1,76,HeightDialog);
+			Dlg.SetId(EditorReplaceId);
 
 			if (HelpTopic && *HelpTopic)
 				Dlg.SetHelp(HelpTopic);
@@ -279,11 +281,7 @@ int WINAPI GetSearchReplaceString(
 		//индекс самого нижнего чекбокса каждой колонки в диалоге.
 		//предполагаем, что чекбокс на позиции Y+1 имеет индекс, на единицу больший
 		//чекбокса той же колонки на позиции Y.
-		static const int COL1_HIGH=6;
-		static const int COL2_HIGH=8;
 		HeightDialog=12;
-		DeltaCol1=0;
-		DeltaCol2=0;
 		MakeDialogItemsEx(SearchDlgData,SearchDlg);
 
 		if (!*TextHistoryName)
@@ -298,106 +296,27 @@ int WINAPI GetSearchReplaceString(
 
 		if (Case)
 			SearchDlg[4].Selected=*Case;
-		else
-		{
-			DeltaCol1++;
-			SearchDlg[0].Y2--;
-			SearchDlg[4].Type=DI_TEXT;
-
-			for (I=5; I <= COL1_HIGH; ++I)
-			{
-				SearchDlg[I].Y1--;
-				SearchDlg[I].Y2--;
-			}
-		}
 
 		if (WholeWords)
 			SearchDlg[5].Selected=*WholeWords;
-		else
-		{
-			DeltaCol1++;
-			SearchDlg[0].Y2--;
-			SearchDlg[5].Type=DI_TEXT;
-
-			for (I=6; I <= COL1_HIGH; ++I)
-			{
-				SearchDlg[I].Y1--;
-				SearchDlg[I].Y2--;
-			}
-		}
 
 		if (Reverse)
 			SearchDlg[6].Selected=*Reverse;
 		else
-		{
-			DeltaCol1++;
-			SearchDlg[0].Y2--;
-			SearchDlg[6].Type=DI_TEXT;
-
-			for (I=7; I <= COL1_HIGH; ++I)
-			{
-				SearchDlg[I].Y1--;
-				SearchDlg[I].Y2--;
-			}
-		}
+			SearchDlg[6].Flags |= DIF_DISABLE;
 
 		if (Regexp)
 			SearchDlg[7].Selected=*Regexp;
-		else
-		{
-			DeltaCol2++;
-			SearchDlg[0].Y2--;
-			SearchDlg[7].Type=DI_TEXT;
-
-			for (I=8; I <= COL2_HIGH; ++I)
-			{
-				SearchDlg[I].Y1--;
-				SearchDlg[I].Y2--;
-			}
-		}
 
 		if (SelectFound)
 			SearchDlg[8].Selected=*SelectFound;
 		else
-		{
-			DeltaCol2++;
-			SearchDlg[0].Y2--;
-			SearchDlg[8].Type=DI_TEXT;
-
-			for (I=9; I <= COL2_HIGH; ++I)
-			{
-				SearchDlg[I].Y1--;
-				SearchDlg[I].Y2--;
-			}
-		}
-
-		//сдвигаем кнопки
-		DeltaCol=(DeltaCol1<DeltaCol2)?DeltaCol1:DeltaCol2;
-
-		if (DeltaCol>0)
-		{
-			HeightDialog-=DeltaCol;
-
-			for (I=10; I < (int)ARRAYSIZE(SearchDlgData); ++I)
-			{
-				SearchDlg[I].Y1-=DeltaCol;
-				SearchDlg[I].Y2-=DeltaCol;
-			}
-		}
-
-		// нам не нужны 2 разделительных линии
-		if (HeightDialog == 9)
-		{
-			for (I=9; I < (int)ARRAYSIZE(SearchDlgData); ++I)
-			{
-				SearchDlg[I].Y1--;
-				SearchDlg[I].Y2--;
-			}
-		}
+			SearchDlg[8].Flags |= DIF_DISABLE;
 
 		{
 			Dialog Dlg(SearchDlg,ARRAYSIZE(SearchDlg));
 			Dlg.SetPosition(-1,-1,76,HeightDialog);
+			Dlg.SetId(Reverse ? EditorSearchId : HelpSearchId);
 
 			if (HelpTopic && *HelpTopic)
 				Dlg.SetHelp(HelpTopic);

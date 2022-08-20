@@ -43,6 +43,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "interf.hpp"
 #include "strmix.hpp"
 #include "panelmix.hpp"
+#include "DlgGuid.hpp"
 
 #define PANELMODES_INI	"panel_modes.ini"
 
@@ -171,6 +172,7 @@ void FileList::SetFilePanelModes()
 			Dialog Dlg(ModeDlg,ARRAYSIZE(ModeDlg));
 			Dlg.SetPosition(-1,-1,76,17);
 			Dlg.SetHelp(L"PanelViewModes");
+			Dlg.SetId(PanelViewModesEditId);
 			Dlg.Process();
 			ExitCode=Dlg.GetExitCode();
 		}

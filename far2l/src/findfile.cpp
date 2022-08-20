@@ -492,10 +492,10 @@ static void InitInFileSearch()
 					codePages[4].CodePage = CP_UTF8;
 					codePages[5].CodePage = CP_UTF16LE;
 					codePages[6].CodePage = CP_UTF16BE;
-#if (__WCHAR_MAX__ > 0xffff)					
+#if (__WCHAR_MAX__ > 0xffff)
 					codePages[7].CodePage = CP_UTF32LE;
 					codePages[8].CodePage = CP_UTF32BE;
-#endif					
+#endif
 				}
 				else
 				{
@@ -667,7 +667,7 @@ static void SetPluginDirectory(const wchar_t *DirName,HANDLE hPlugin,bool Update
 					CtrlObject->Plugins.FreeFindData(hPlugin,PanelData,FileCount);
 				}
 			}
-			
+
 			if (*DirPtr)
 			{
 				if (*DirPtr != GOOD_SLASH)//fix #182
@@ -1094,12 +1094,12 @@ static int FindStringBMH(const wchar_t* searchBuffer, size_t searchBufferCount)
 	size_t lastBufferChar = findStringCount-1;
 	while (searchBufferCount>=findStringCount)
 	{
-		for (size_t index = lastBufferChar; 
+		for (size_t index = lastBufferChar;
 			WC16(buffer[index])==WC16(findString[index]) || (findStringLower && WC16(buffer[index])==WC16(findStringLower[index])); index--) {
 			if (!index)
-				return static_cast<int>(buffer-searchBuffer);				
+				return static_cast<int>(buffer-searchBuffer);
 		}
-		
+
 		size_t offset = skipCharsTable[WC16(buffer[lastBufferChar])];
 		searchBufferCount-= offset;
 		buffer+= offset;
@@ -1173,8 +1173,8 @@ static bool ScanFile(const wchar_t *Name)
 
 	// Основной цикл чтения из файла
 
-	while (!StopFlag && 
-		file.Read(readBufferA, (!SearchInFirst || 
+	while (!StopFlag &&
+		file.Read(readBufferA, (!SearchInFirst ||
 			alreadyRead+sizeof(readBufferA) <= SearchInFirst)?sizeof(readBufferA):static_cast<DWORD>(SearchInFirst-alreadyRead), &readBlockSize))
 	{
 		UINT Percents=static_cast<UINT>(FileSize?alreadyRead*100/FileSize:0);
@@ -1241,7 +1241,7 @@ static bool ScanFile(const wchar_t *Name)
 					// Выходим, если размер буфера меньше длины строки посика
 					if (bufferCount < findStringCount)
 						CONTINUE(false)
-						
+
 
 					// Копируем буфер чтения в буфер сравнения
 					//todo
@@ -2932,6 +2932,7 @@ static bool FindFilesProcess(Vars& v)
 	Dialog Dlg=Dialog(FindDlg,ARRAYSIZE(FindDlg),FindDlgProc, reinterpret_cast<LONG_PTR>(&v));
 //  pDlg->SetDynamicallyBorn();
 	Dlg.SetHelp(L"FindFileResult");
+	Dlg.SetId(FindFileResultId);
 	Dlg.SetPosition(-1, -1, DlgWidth, DlgHeight);
 	// Надо бы показать диалог, а то инициализация элементов запаздывает
 	// иногда при поиске и первые элементы не добавляются

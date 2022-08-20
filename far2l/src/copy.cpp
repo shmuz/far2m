@@ -991,7 +991,7 @@ ShellCopy::ShellCopy(Panel *SrcPanel,        // исходная панель (�
 
 		Dialog Dlg(CopyDlg,ARRAYSIZE(CopyDlg),CopyDlgProc,(LONG_PTR)&CDP);
 		Dlg.SetHelp(Link?L"HardSymLink":L"CopyFiles");
-		Dlg.SetId(Link?HardSymLinkId:(Move?MoveFilesId:CopyFilesId));
+		Dlg.SetId(Link?HardSymLinkId:(Move?(CurrentOnly?MoveCurrentOnlyFileId:MoveFilesId):(CurrentOnly?CopyCurrentOnlyFileId:CopyFilesId)));
 		Dlg.SetPosition(-1,-1,DLG_WIDTH,DLG_HEIGHT);
 		Dlg.SetAutomation(ID_SC_USEFILTER,ID_SC_BTNFILTER,DIF_DISABLE,DIF_NONE,DIF_NONE,DIF_DISABLE);
 //    Dlg.Show();
@@ -1580,7 +1580,7 @@ COPY_CODES ShellCopy::CopyFileTree(const wchar_t *Dest)
 	FARString strSelName;
 	int Length;
 	DWORD FileAttr;
-	
+
 	if (!(Length=StrLength(Dest)) || !StrCmp(Dest,L"."))
 		return COPY_FAILURE; //????
 
@@ -1652,7 +1652,7 @@ COPY_CODES ShellCopy::CopyFileTree(const wchar_t *Dest)
 		SrcPanel->GetCurDir(strTmpSrcDir);
 		AllowMoveByOS = (CheckDisksProps(strTmpSrcDir,Dest,CHECKEDPROPS_ISSAMEDISK)) != 0;
 	}
-	
+
 
 	// Основной цикл копирования одной порции.
 	SrcPanel->GetSelNameCompat(nullptr,FileAttr);
@@ -2016,7 +2016,7 @@ COPY_CODES ShellCopy::CreateSymLink(const char *Target, const wchar_t *NewName, 
 		return COPY_SUCCESS;
 
 	int r = sdc_symlink( Target, Wide2MB(NewName).c_str());
-	if (r == 0) 
+	if (r == 0)
 		return COPY_SUCCESS;
 
 	if (errno == EEXIST ) {
@@ -2024,32 +2024,32 @@ COPY_CODES ShellCopy::CreateSymLink(const char *Target, const wchar_t *NewName, 
 		FARString strNewName = NewName, strTarget = Target;
 		if (AskOverwrite(SrcData, strTarget, NewName, 0, 0, 0, 0, Append, strNewName, RetCode)) {
 			if (strNewName == NewName) {
-				fprintf(stderr, 
-					"CreateSymLink('%s', '%ls') - overwriting and strNewName='%ls'\n", 
+				fprintf(stderr,
+					"CreateSymLink('%s', '%ls') - overwriting and strNewName='%ls'\n",
 					Target, NewName, strNewName.CPtr());
 				sdc_remove(strNewName.GetMB().c_str() );
 
 			} else {
-				fprintf(stderr, 
-					"CreateSymLink('%s', '%ls') - renaming and strNewName='%ls'\n", 
+				fprintf(stderr,
+					"CreateSymLink('%s', '%ls') - renaming and strNewName='%ls'\n",
 					Target, NewName, strNewName.CPtr());
 			}
 			return CreateSymLink(Target, strNewName.CPtr(), SrcData);
 		}
-			
+
 		return (COPY_CODES)RetCode;
-	} 
-	
-	
+	}
+
+
 	switch (Message(MSG_WARNING, 3 ,Msg::Error,
 			Msg::CopyCannotCreateSymlinkAskCopyContents,
 			NewName, Msg::Yes, Msg::Skip, Msg::Cancel   ))
 	{
-		case 0: 
+		case 0:
 			Flags.SYMLINK = COPY_SYMLINK_ASFILE;
 			return COPY_RETRY;
 
-		case 1: 
+		case 1:
 			return COPY_FAILURE;
 
 		case 2:
@@ -2168,7 +2168,7 @@ COPY_CODES ShellCopy::ShellCopyOneFileNoRetry(
 		if (apiGetFindDataForExactPathName(strDestPath,DestData))
 			DestAttr=DestData.dwFileAttributes;
 	}
-	
+
 	int SameName=0, Append=0;
 
 	if (DestAttr!=INVALID_FILE_ATTRIBUTES && (DestAttr & FILE_ATTRIBUTE_DIRECTORY))
@@ -2226,8 +2226,8 @@ COPY_CODES ShellCopy::ShellCopyOneFileNoRetry(
 	CP->SetProgressValue(0,0);
 	CP->SetNames(Src,strDestPath);
 
-	const bool copy_sym_link = (RPT == RP_EXACTCOPY && 
-		(SrcData.dwFileAttributes&FILE_ATTRIBUTE_REPARSE_POINT) != 0 && 
+	const bool copy_sym_link = (RPT == RP_EXACTCOPY &&
+		(SrcData.dwFileAttributes&FILE_ATTRIBUTE_REPARSE_POINT) != 0 &&
 		( (SrcData.dwFileAttributes&FILE_ATTRIBUTE_BROKEN) != 0
 		  || (Flags.SYMLINK != COPY_SYMLINK_ASFILE &&
 		     (Flags.SYMLINK != COPY_SYMLINK_SMART || IsSymlinkTargetAlsoCopied(Src))  )) );
@@ -2303,7 +2303,7 @@ COPY_CODES ShellCopy::ShellCopyOneFileNoRetry(
 				} /* else */
 			} /* while */
 		} // if (Rename)
-		if (RPT!=RP_SYMLINKFILE && 
+		if (RPT!=RP_SYMLINKFILE &&
 			(SrcData.dwFileAttributes & (FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_DIRECTORY)) == FILE_ATTRIBUTE_DIRECTORY)
 		{
 			while (!apiCreateDirectory(strDestPath, nullptr))
@@ -2568,7 +2568,7 @@ int ShellCopy::DeleteAfterMove(const wchar_t *Name,DWORD Attr)
 				return(COPY_CANCEL);
 		}
 	}
-	
+
 	TemporaryMakeWritable tmw(Name);
 
 	while ((Attr&FILE_ATTRIBUTE_DIRECTORY)?!apiRemoveDirectory(Name):!apiDeleteFile(Name))
@@ -2790,7 +2790,7 @@ void ShellFileTransfer::Do()
 	_SrcFile.Close();
 
 	if (!apiIsDevNull(_strDestName)) // avoid sudo prompt when copying to /dev/null
-	{ 
+	{
 		if (_LastWriteWasHole)
 		{
 			while (!_DestFile.SetEnd())
