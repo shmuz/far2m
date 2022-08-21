@@ -83,6 +83,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mix.hpp"
 #include "constitle.hpp"
 #include "plugapi.hpp"
+#include "DlgGuid.hpp"
 
 extern PanelViewSettings ViewSettingsArray[];
 extern size_t SizeViewSettingsArray;
@@ -3604,6 +3605,7 @@ long FileList::SelectFiles(int Mode,const wchar_t *Mask)
 					Dialog Dlg(SelectDlg,ARRAYSIZE(SelectDlg));
 					Dlg.SetHelp(L"SelectFiles");
 					Dlg.SetPosition(-1,-1,55,7);
+					Dlg.SetId(Mode==SELECT_ADD ? SelectDialogId : UnSelectDialogId);
 
 					for (;;)
 					{
