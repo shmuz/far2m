@@ -67,6 +67,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "wakeful.hpp"
 #include "WideMB.h"
 #include "UtfConvert.hpp"
+#include "DlgGuid.hpp"
 
 static void PR_ViewerSearchMsg();
 static void ViewerSearchMsg(const wchar_t *Name,int Percent);
@@ -2127,8 +2128,8 @@ void Viewer::Up()
 
 	if (VM.Hex)
 	{
-		// Alter-1: here we use BYTE COUNT, while in Down handler we use ::vread which may 
-		// accept either CHARACTER COUNT or w_char count. 
+		// Alter-1: here we use BYTE COUNT, while in Down handler we use ::vread which may
+		// accept either CHARACTER COUNT or w_char count.
 		//int UpSize=IsFullWideCodePage(VM.CodePage) ? 8 : 8 * sizeof(wchar_t);
 		int UpSize=16; // always have 16 bytes per row
 
@@ -2550,6 +2551,7 @@ void Viewer::Search(int Next,int FirstChar)
 		Dialog Dlg(SearchDlg,ARRAYSIZE(SearchDlg),ViewerSearchDlgProc);
 		Dlg.SetPosition(-1,-1,76,13);
 		Dlg.SetHelp(L"ViewerSearch");
+		Dlg.SetId(ViewerSearchId);
 
 		if (FirstChar)
 		{
@@ -3239,7 +3241,7 @@ void Viewer::GoTo(int ShowDlg,int64_t Offset, DWORD Flags)
 			if (Relative==-1 && Offset>FilePos)   // меньше нуля, if (FilePos<0) не пройдет - FilePos у нас uint32_t
 				FilePos=0;
 			else switch (VM.CodePage) {
-					case CP_UTF32LE: case CP_UTF32BE: 
+					case CP_UTF32LE: case CP_UTF32BE:
 						FilePos = FilePos+Offset*Relative / 4;
 						break;
 
@@ -3254,7 +3256,7 @@ void Viewer::GoTo(int ShowDlg,int64_t Offset, DWORD Flags)
 
 		}
 		else switch (VM.CodePage) {
-			case CP_UTF32LE: case CP_UTF32BE: 
+			case CP_UTF32LE: case CP_UTF32BE:
 				FilePos = Offset / 4;
 				break;
 
@@ -3304,7 +3306,7 @@ void Viewer::AdjustFilePos()
 		if (VM.Hex) {
 			size_t len = 8;
 			switch (VM.CodePage) {
-				case CP_UTF32LE: case CP_UTF32BE: 
+				case CP_UTF32LE: case CP_UTF32BE:
 					len*= 4;
 				break;
 
@@ -3337,7 +3339,7 @@ void Viewer::SetFileSize()
 	   уменьшается в два раза, поэтому FileSize тоже надо уменьшать
 	*/
 	switch (VM.CodePage) {
-		case CP_UTF32LE: case CP_UTF32BE: 
+		case CP_UTF32LE: case CP_UTF32BE:
 			FileSize=(FileSize+(FileSize&3)) / 4;
 		break;
 
@@ -3394,7 +3396,7 @@ void Viewer::SelectText(const int64_t &MatchPos,const int64_t &SearchLength, con
 	{
 		size_t len = 8;
 		switch (VM.CodePage) {
-			case CP_UTF32LE: case CP_UTF32BE: 
+			case CP_UTF32LE: case CP_UTF32BE:
 				len*= 4;
 			break;
 
@@ -3493,7 +3495,7 @@ int Viewer::ViewerControl(int Command,void *Param)
 				int64_t NewPos = vsp->StartPos;
 
 				switch (VM.CodePage) {
-					case CP_UTF32LE: case CP_UTF32BE: 
+					case CP_UTF32LE: case CP_UTF32BE:
 						NewPos*= 4;
 					break;
 

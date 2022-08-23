@@ -57,6 +57,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "scrbuf.hpp"
 #include "console.hpp"
 #include "InterThreadCall.hpp"
+#include "DlgGuid.hpp"
 
 Manager *FrameManager;
 
@@ -724,13 +725,13 @@ static bool ConfirmExit()
 {
 	int r;
 	if (WINPORT(ConsoleBackgroundMode)(FALSE)) {
-		r = Message(0,3,Msg::Quit,Msg::AskQuit,Msg::Yes,Msg::No,Msg::Background);
+		r = Message(0,3,&FarAskQuitId,Msg::Quit,Msg::AskQuit,Msg::Yes,Msg::No,Msg::Background);
 		if (r == 2) {
 			WINPORT(ConsoleBackgroundMode)(TRUE);
 		}
 
 	} else {
-		r = Message(0,2,Msg::Quit,Msg::AskQuit,Msg::Yes,Msg::No);
+		r = Message(0,2,&FarAskQuitId,Msg::Quit,Msg::AskQuit,Msg::Yes,Msg::No);
 	}
 
 	return r == 0;

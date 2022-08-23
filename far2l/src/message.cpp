@@ -106,7 +106,8 @@ static int ShowMessageSynched(
     const wchar_t *Title,
     const wchar_t * const *Items,
     int ItemsNumber,
-    INT_PTR PluginNumber
+    INT_PTR PluginNumber,
+    const GUID *Guid
 )
 {
 	FARString strTempStr;
@@ -377,6 +378,9 @@ static int ShowMessageSynched(
 			Dialog Dlg(MsgDlg,ItemCount,MsgDlgProc);
 			Dlg.SetPosition(X1,Y1,X2,Y2);
 
+			if (Guid)
+				Dlg.SetId(*Guid);
+
 			if (!strHelpTopic.IsEmpty())
 				Dlg.SetHelp(strHelpTopic);
 
@@ -500,9 +504,9 @@ static int ShowMessageSynched(
 }
 
 static int ShowMessage( DWORD Flags, int Buttons, const wchar_t *Title,
-	const wchar_t * const *Items, int ItemsNumber, INT_PTR PluginNumber)
+	const wchar_t * const *Items, int ItemsNumber, INT_PTR PluginNumber, const GUID *Guid)
 {
-	return InterThreadCall<int, 0>(std::bind(ShowMessageSynched, Flags, Buttons, Title, Items, ItemsNumber, PluginNumber));
+	return InterThreadCall<int, 0>(std::bind(ShowMessageSynched, Flags, Buttons, Title, Items, ItemsNumber, PluginNumber, Guid));
 }
 
 FN_NOINLINE Messager::Messager(FarLangMsg title)
@@ -534,7 +538,7 @@ Messager & FN_NOINLINE Messager::Add(const wchar_t *v)
 	return *this;
 }
 
-int FN_NOINLINE Messager::Show(DWORD Flags, int Buttons, INT_PTR PluginNumber)
+int FN_NOINLINE Messager::Show(DWORD Flags, int Buttons, INT_PTR PluginNumber, const GUID *Guid)
 {
 	// ignore trailing nullptr-s
 	while (!empty() && !back())
@@ -543,12 +547,12 @@ int FN_NOINLINE Messager::Show(DWORD Flags, int Buttons, INT_PTR PluginNumber)
 	if (empty())
 		return -1;
 
-	return ShowMessage(Flags, Buttons, front(), data() + 1, (int)(size() - 1), PluginNumber);
+	return ShowMessage(Flags, Buttons, front(), data() + 1, (int)(size() - 1), PluginNumber, Guid);
 }
 
-int FN_NOINLINE Messager::Show(DWORD Flags, int Buttons)
+int FN_NOINLINE Messager::Show(DWORD Flags, int Buttons, const GUID *Guid)
 {
-	return Show(Flags, Buttons, -1);
+	return Show(Flags, Buttons, -1, Guid);
 }
 
 int FN_NOINLINE Messager::Show(int Buttons)

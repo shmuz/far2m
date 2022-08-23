@@ -530,6 +530,7 @@ int WINAPI GetNameAndPassword(const wchar_t *Title, FARString &strUserName, FARS
 	{
 		Dialog Dlg(PassDlg,ARRAYSIZE(PassDlg));
 		Dlg.SetPosition(-1,-1,76,10);
+		Dlg.SetId(GetNameAndPasswordId);
 
 		if (HelpTopic)
 			Dlg.SetHelp(HelpTopic);

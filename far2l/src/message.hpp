@@ -69,8 +69,8 @@ struct Messager : protected std::vector<const wchar_t *>
 		return Add(FirstItem).Add(SecondItem, OtherItems...);
 	}
 
-	int Show(DWORD Flags, int Buttons, INT_PTR PluginNumber);
-	int Show(DWORD Flags, int Buttons);
+	int Show(DWORD Flags, int Buttons, INT_PTR PluginNumber, const GUID *Guid=nullptr);
+	int Show(DWORD Flags, int Buttons, const GUID *Guid=nullptr);
 	int Show(int Buttons = 0);
 };
 
@@ -78,6 +78,12 @@ template <class TitleT, class ... ItemsT>
 	int Message(DWORD Flags, int Buttons, const TitleT &Title, ItemsT... Items)
 {
 	return Messager(Title).Add(Items...).Show(Flags, Buttons);
+}
+
+template <class TitleT, class ... ItemsT>
+	int Message(DWORD Flags, int Buttons, const GUID *Guid, const TitleT &Title, ItemsT... Items)
+{
+	return Messager(Title).Add(Items...).Show(Flags, Buttons, Guid);
 }
 
 void SetMessageHelp(const wchar_t *Topic);

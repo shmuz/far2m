@@ -1021,7 +1021,7 @@ bool UserMenu::EditMenu(const wchar_t *MenuKey,int EditPos,int TotalRecords,bool
 
 	if (Create)
 	{
-		switch (Message(0,2,Msg::UserMenuTitle,Msg::AskInsertMenuOrCommand,Msg::MenuInsertCommand,Msg::MenuInsertMenu))
+		switch (Message(0,2,&AskInsertMenuOrCommandId,Msg::UserMenuTitle,Msg::AskInsertMenuOrCommand,Msg::MenuInsertCommand,Msg::MenuInsertMenu))
 		{
 			case -1:
 			case -2:
