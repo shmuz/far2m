@@ -117,11 +117,11 @@ int WINAPI GetString(
     DWORD Flags = 0,
     int *CheckBoxValue = nullptr,
     const wchar_t *CheckBoxText = nullptr,
-		const GUID *Guid = nullptr
+    const GUID *Guid = nullptr
 );
 
 int WINAPI GetString(
-		const GUID &Guid,
+    const GUID &Guid,
     const wchar_t *Title,
     const wchar_t *SubTitle,
     const wchar_t *HistoryName,
