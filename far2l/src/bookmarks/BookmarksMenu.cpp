@@ -68,6 +68,7 @@ static int ShowBookmarksMenuIteration(int Pos)
 		FolderList.SetFlags(VMENU_WRAPMODE); // VMENU_SHOWAMPERSAND|
 		FolderList.SetHelp(HelpBookmarks);
 		FolderList.SetPosition(-1,-1,0,0);
+		FolderList.SetId(FolderShortcutsId);
 		FolderList.SetBottomTitle(Msg::BookmarkBottom);
 
 		for (I=0; ; I++)

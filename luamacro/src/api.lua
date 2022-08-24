@@ -409,7 +409,7 @@ Menu = {
 }
 
 SetProperties(Menu, {
---Id         = function() return MacroCallFar(0x80844) end,
+  Id         = function() return MacroCallFar(op.MCODE_V_MENUINFOID) end,
   Value      = function() return MacroCallFar(op.MCODE_V_MENU_VALUE) end,
 })
 --------------------------------------------------------------------------------

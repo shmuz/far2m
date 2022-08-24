@@ -63,6 +63,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "SafeMMap.hpp"
 #include "HotkeyLetterDialog.hpp"
 #include "InterThreadCall.hpp"
+#include "DlgGuid.hpp"
 #include <KeyFileHelper.h>
 #include <crc64.h>
 #include <assert.h>
@@ -1241,6 +1242,7 @@ void PluginManager::Configure(int StartPos)
 		VMenu PluginList(Msg::PluginConfigTitle,nullptr,0,ScrY-4);
 		PluginList.SetFlags(VMENU_WRAPMODE);
 		PluginList.SetHelp(L"PluginsConfig");
+		PluginList.SetId(PluginsConfigMenuId);
 
 		for (;;)
 		{
@@ -1402,6 +1404,7 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 		VMenu PluginList(Msg::PluginCommandsMenuTitle,nullptr,0,ScrY-4);
 		PluginList.SetFlags(VMENU_WRAPMODE);
 		PluginList.SetHelp(L"PluginCommands");
+		PluginList.SetId(PluginsMenuId);
 		BOOL NeedUpdateItems=TRUE;
 		BOOL Done=FALSE;
 

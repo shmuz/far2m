@@ -95,6 +95,7 @@ void FileList::SetFilePanelModes()
 			ModeList.SetPosition(-1,-1,0,0);
 			ModeList.SetHelp(L"PanelViewModes");
 			ModeList.SetFlags(VMENU_WRAPMODE);
+			ModeList.SetId(PanelViewModesId);
 			ModeList.Process();
 			ModeNumber=ModeList.Modal::GetExitCode();
 		}

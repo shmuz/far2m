@@ -245,6 +245,9 @@ class VMenu: public Modal
 		int MaxLineWidth;
 		bool bRightBtnPressed;
 
+		GUID Id;
+		bool IdExist;
+
 	private:
 		virtual void DisplayObject();
 		void ShowMenu(bool IsParent=false);
@@ -368,4 +371,6 @@ class VMenu: public Modal
 
 		static LONG_PTR WINAPI DefMenuProc(HANDLE hVMenu,int Msg,int Param1,LONG_PTR Param2);
 		static LONG_PTR WINAPI SendMenuMessage(HANDLE hVMenu,int Msg,int Param1,LONG_PTR Param2);
+
+		void SetId(const GUID& Id);
 };

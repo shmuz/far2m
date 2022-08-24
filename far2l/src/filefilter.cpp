@@ -49,6 +49,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pathmix.hpp"
 #include "strmix.hpp"
 #include "interf.hpp"
+#include "DlgGuid.hpp"
 
 static int _cdecl ExtSort(const void *el1,const void *el2);
 
@@ -96,6 +97,7 @@ bool FileFilter::FilterEdit()
 	FilterList.SetPosition(-1,-1,0,0);
 	FilterList.SetBottomTitle(Msg::FilterBottom);
 	FilterList.SetFlags(/*VMENU_SHOWAMPERSAND|*/VMENU_WRAPMODE);
+	FilterList.SetId(FiltersMenuId);
 
 	for (size_t i=0; i<FilterData.getCount(); i++)
 	{

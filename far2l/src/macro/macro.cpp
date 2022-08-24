@@ -1123,24 +1123,32 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 
 		case MCODE_V_MENU_VALUE: // Menu.Value
 		{
-			int CurMMode=GetArea();
-			const wchar_t *ptr=L"";
+			const wchar_t *ptr = L"";
+			int CurArea = GetArea();
+			auto f = GetCurrentWindow();
 
-			if (IsMenuArea(CurMMode) || CurMMode == MACRO_DIALOG)
+			if (f && (IsMenuArea(CurArea) || CurArea == MACRO_DIALOG))
 			{
-				auto f = GetCurrentWindow();
-				if (f)
+				FARString NewStr;
+				if (f->VMProcess(CheckCode,&NewStr))
 				{
-					FARString NewStr;
-					if (f->VMProcess(CheckCode,&NewStr))
-					{
-						HiText2Str(tmpStr, NewStr);
-						RemoveExternalSpaces(tmpStr);
-						ptr=tmpStr.CPtr();
-					}
+					HiText2Str(tmpStr, NewStr);
+					RemoveExternalSpaces(tmpStr);
+					ptr = tmpStr.CPtr();
 				}
 			}
       return api.PassString(ptr);
+		}
+
+		case MCODE_V_MENUINFOID: // Menu.Id
+		{
+			auto f = GetCurrentWindow();
+
+			if (f && f->GetType()==MODALTYPE_VMENU)
+			{
+			  return api.PassString( reinterpret_cast<LPCWSTR>(f->VMProcess(CheckCode)) );
+			}
+      return api.PassString(L"");
 		}
 
 		case MCODE_V_ITEMCOUNT: // ItemCount - число элементов в текущем объекте

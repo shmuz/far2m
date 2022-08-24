@@ -87,6 +87,8 @@ VMenu::VMenu(const wchar_t *Title,       // заголовок меню
 	ClearFlags(VMENU_SHOWAMPERSAND|VMENU_MOUSEDOWN);
 	GetCursorType(PrevCursorVisible,PrevCursorSize);
 	bRightBtnPressed = false;
+	IdExist=false;
+	memset(&Id,0,sizeof(Id));
 
 	// инициализируем перед тем, как добавлять айтема
 	UpdateMaxLengthFromTitles();
@@ -897,6 +899,12 @@ int64_t VMenu::VMProcess(int OpCode,void *vParam,int64_t iParam)
 			return 0;
 		}
 
+		case MCODE_V_MENUINFOID: // Menu.Id
+		{
+			static FARString strId;
+			strId.Format(L"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",Id.Data1,Id.Data2,Id.Data3,Id.Data4[0],Id.Data4[1],Id.Data4[2],Id.Data4[3],Id.Data4[4],Id.Data4[5],Id.Data4[6],Id.Data4[7]);
+			return reinterpret_cast<INT64>(strId.CPtr());
+		}
 	}
 
 	return 0;
@@ -2815,6 +2823,12 @@ int VMenu::FindItem(int StartIndex,const wchar_t *Pattern,DWORD Flags)
 	}
 
 	return -1;
+}
+
+void VMenu::SetId(const GUID& aId)
+{
+	Id = aId;
+	IdExist = true;
 }
 
 struct SortItemParam

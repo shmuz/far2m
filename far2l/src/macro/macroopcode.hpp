@@ -282,6 +282,7 @@ enum MACRO_OP_CODE
 	MCODE_V_MENU_VALUE,               // Menu.Value
 	MCODE_V_DLGINFOOWNER,             // N=Dlg.Owner
 	MCODE_V_DLGPREVPOS,               // Dlg.PrevPos
+	MCODE_V_MENUINFOID,               // Menu.Id
 };
 
 typedef enum MACRO_OP_CODE TMacroOpCode;

@@ -46,6 +46,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "dialog.hpp"
 #include "interf.hpp"
 #include "ctrlobj.hpp"
+#include "DlgGuid.hpp"
 #include <crc64.h>
 #include "FileMasksProcessor.hpp"
 
@@ -368,6 +369,13 @@ int History::Select(const wchar_t *Title, const wchar_t *HelpTopic, FARString &s
 	int Height=ScrY-8;
 	VMenu HistoryMenu(Title,nullptr,0,Height);
 	HistoryMenu.SetFlags(VMENU_SHOWAMPERSAND|VMENU_WRAPMODE);
+	switch(TypeHistory)
+	{
+		case HISTORYTYPE_CMD:     HistoryMenu.SetId(HistoryCmdId); break;
+		case HISTORYTYPE_FOLDER:  HistoryMenu.SetId(HistoryFolderId); break;
+		case HISTORYTYPE_VIEW:    HistoryMenu.SetId(HistoryEditViewId); break;
+		default:                  break;
+	}
 
 	if (HelpTopic)
 		HistoryMenu.SetHelp(HelpTopic);

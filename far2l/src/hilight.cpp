@@ -51,6 +51,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "config.hpp"
 #include "interf.hpp"
 #include "ConfigRW.hpp"
+#include "DlgGuid.hpp"
 #include <Threaded.h>
 #include <list>
 
@@ -117,7 +118,7 @@ static void SetDefaultHighlighting()
              Mask                NormalColor
                           IncludeAttributes
                        IgnoreMask       CursorColor             */
-	        /* 7 */{Masks[0], 1, FILE_ATTRIBUTE_BROKEN, 0x10 | F_LIGHTRED, 0x30 | F_LIGHTRED }, 
+	        /* 7 */{Masks[0], 1, FILE_ATTRIBUTE_BROKEN, 0x10 | F_LIGHTRED, 0x30 | F_LIGHTRED },
 	        /* 0 */{Masks[0], 0, 0x0002, 0x13, 0x38},
 	        /* 1 */{Masks[0], 0, 0x0004, 0x13, 0x38},
 	        /* 2 */{Masks[3], 0, 0x0010, 0x1F, 0x3F},
@@ -127,9 +128,9 @@ static void SetDefaultHighlighting()
 	        /* 6 */{Masks[2], 0, 0x0000, 0x16, 0x36},
 	        // это настройка для каталогов на тех панелях, которые должны раскрашиваться
 	        // без учета масок (например, список хостов в "far navigator")
-	        /* 7 */{Masks[0], 1, FILE_ATTRIBUTE_EXECUTABLE | FILE_ATTRIBUTE_REPARSE_POINT, 0x10 | F_GREEN, 0x30 | F_GREEN }, 
+	        /* 7 */{Masks[0], 1, FILE_ATTRIBUTE_EXECUTABLE | FILE_ATTRIBUTE_REPARSE_POINT, 0x10 | F_GREEN, 0x30 | F_GREEN },
 	        /* 7 */{Masks[0], 1, FILE_ATTRIBUTE_DIRECTORY, 0x10 | F_WHITE, 0x30 | F_WHITE},
-	        /* 7 */{Masks[0], 1, FILE_ATTRIBUTE_EXECUTABLE, 0x10 | F_LIGHTGREEN, 0x30 | F_LIGHTGREEN}, 
+	        /* 7 */{Masks[0], 1, FILE_ATTRIBUTE_EXECUTABLE, 0x10 | F_LIGHTGREEN, 0x30 | F_LIGHTGREEN},
 	    };
 
 
@@ -580,6 +581,7 @@ void HighlightFiles::HiEdit(int MenuPos)
 	HiMenu.SetHelp(FARString(HLS.HighlightList));
 	HiMenu.SetFlags(VMENU_WRAPMODE|VMENU_SHOWAMPERSAND);
 	HiMenu.SetPosition(-1,-1,0,0);
+	HiMenu.SetId(HighlightMenuId);
 	HiMenu.SetBottomTitle(Msg::HighlightBottom);
 	FillMenu(&HiMenu,MenuPos);
 	int NeedUpdate;

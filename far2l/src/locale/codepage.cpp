@@ -41,6 +41,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "interf.hpp"
 #include "config.hpp"
 #include "ConfigRW.hpp"
+#include "DlgGuid.hpp"
 
 #include"stdio.h"
 #include"stdarg.h"
@@ -62,7 +63,7 @@ enum StandardCodePages
 	UTF8 = 64,
 	UTF16LE = 128,
 	UTF16BE = 256,
-#if (__WCHAR_MAX__ > 0xffff)	
+#if (__WCHAR_MAX__ > 0xffff)
 	UTF32LE = 512,
 	UTF32BE = 1024,
 	AllUtfBiggerThan8 = UTF16BE | UTF16LE | UTF32BE | UTF32LE,
@@ -70,7 +71,7 @@ enum StandardCodePages
 #else
 	AllUtfBiggerThan8 = UTF16BE | UTF16LE,
 	AllStandard = DOS | ANSI | KOI8 | UTF7 | UTF8 | UTF16BE | UTF16LE
-#endif	
+#endif
 };
 
 // Источник вызова коллбака прохода по кодовым страницам
@@ -362,7 +363,7 @@ static bool GetCodePageInfo(UINT CodePage, CPINFOEX &CodePageInfoEx)
 		CodePageInfoEx.MaxCharSize = CodePageInfo.MaxCharSize;
 		CodePageInfoEx.CodePageName[0] = L'\0';
 	}
-	
+
 	// BUBUG: Пока не поддерживаем многобайтовые кодовые страницы
 	if (CodePageInfoEx.MaxCharSize != 1)
 		return false;
@@ -762,6 +763,7 @@ UINT SelectCodePage(UINT nCurrent, bool bShowUnicode, bool bShowUTF, bool bShowU
 	CodePages->SetBottomTitle(!Opt.CPMenuMode ? Msg::GetCodePageBottomTitle : Msg::GetCodePageBottomShortTitle);
 	CodePages->SetFlags(VMENU_WRAPMODE|VMENU_AUTOHIGHLIGHT);
 	CodePages->SetHelp(L"CodePagesMenu");
+	CodePages->SetId(CodePagesMenuId);
 	// Добавляем таблицы символов
 	FillCodePagesVMenu(bShowUnicode, bShowUTF, bShowUTF7, bShowAuto);
 	// Показываем меню

@@ -4377,6 +4377,7 @@ void FileList::SelectSortMode()
 		SortModeMenu.SetHelp(L"PanelCmdSort");
 		SortModeMenu.SetPosition(X1+4,-1,0,0);
 		SortModeMenu.SetFlags(VMENU_WRAPMODE);
+		SortModeMenu.SetId(SelectSortModeId);
 		//SortModeMenu.Process();
 		bool MenuNeedRefresh=true;
 

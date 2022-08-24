@@ -143,6 +143,7 @@ bool ProcessLocalFileTypes(const wchar_t *Name, int Mode, bool CanAddHistory)
 	TypesMenu.SetHelp(FARString(FTS.Help));
 	TypesMenu.SetFlags(VMENU_WRAPMODE);
 	TypesMenu.SetPosition(-1,-1,0,0);
+	TypesMenu.SetId(SelectAssocMenuId);
 	int DizWidth = GetDescriptionWidth(cfg_reader, Name);
 	int ActualCmdCount=0; // отображаемых ассоциаций в меню
 	CFileMask FMask; // для работы с масками файлов
@@ -622,6 +623,7 @@ void EditFileTypes()
 	TypesMenu.SetHelp(FARString(FTS.Help));
 	TypesMenu.SetFlags(VMENU_WRAPMODE);
 	TypesMenu.SetPosition(-1,-1,0,0);
+	TypesMenu.SetId(FileAssocMenuId);
 	TypesMenu.SetBottomTitle(Msg::AssocBottom);
 	while (1)
 	{
