@@ -383,7 +383,8 @@ int WINAPI GetString(
     const wchar_t *HelpTopic,
     DWORD Flags,
     int *CheckBoxValue,
-    const wchar_t *CheckBoxText
+    const wchar_t *CheckBoxText,
+    const GUID *Guid
 )
 {
 	int Substract=5; // дополнительная величина :-)
@@ -465,6 +466,9 @@ int WINAPI GetString(
 		if (HelpTopic)
 			Dlg.SetHelp(HelpTopic);
 
+		if (Guid)
+			Dlg.SetId(*Guid);
+
 		Dlg.Process();
 
 		ExitCode=Dlg.GetExitCode();
@@ -484,6 +488,21 @@ int WINAPI GetString(
 	}
 
 	return FALSE;
+}
+
+int WINAPI GetString(
+    const GUID &Guid,
+    const wchar_t *Title,
+    const wchar_t *Prompt,
+    const wchar_t *HistoryName,
+    const wchar_t *SrcText,
+    FARString &strDestText,
+    const wchar_t *HelpTopic,
+    DWORD Flags,
+    int *CheckBoxValue,
+    const wchar_t *CheckBoxText)
+{
+	return GetString(Title,Prompt,HistoryName,SrcText,strDestText,HelpTopic,Flags,CheckBoxValue,CheckBoxText,&Guid);
 }
 
 /*

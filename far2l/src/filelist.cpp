@@ -4567,7 +4567,7 @@ void FileList::DescribeFiles()
 		/* $ 09.08.2000 SVS
 		   Для Ctrl-Z ненужно брать предыдущее значение!
 		*/
-		if (!GetString(Msg::DescribeFiles,strMsg,L"DizText",
+		if (!GetString(DescribeFileId,Msg::DescribeFiles,strMsg,L"DizText",
 		               PrevText ? PrevText:L"",strDizText,
 		               L"FileDiz",FIB_ENABLEEMPTY|(!DizCount?FIB_NOUSELASTHISTORY:0)|FIB_BUTTONS))
 			break;
@@ -4619,7 +4619,7 @@ bool FileList::ApplyCommand()
 	FARString strCommand;
 	bool isSilent=false;
 
-	if (!GetString(Msg::AskApplyCommandTitle,Msg::AskApplyCommand,L"ApplyCmd",strPrevCommand,strCommand,L"ApplyCmd",FIB_BUTTONS|FIB_EDITPATH) || !SetCurPath())
+	if (!GetString(ApplyCommandId,Msg::AskApplyCommandTitle,Msg::AskApplyCommand,L"ApplyCmd",strPrevCommand,strCommand,L"ApplyCmd",FIB_BUTTONS|FIB_EDITPATH) || !SetCurPath())
 		return false;
 
 	strPrevCommand = strCommand;

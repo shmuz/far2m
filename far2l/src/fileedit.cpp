@@ -503,7 +503,7 @@ void FileEditor::Init(
 				if (OpenModeExstFile == FEOPMODE_QUERY)
 				{
 					SetMessageHelp(L"EditorReload");
-					MsgCode=Message(0,3,Msg::EditTitle,
+					MsgCode=Message(0,3,&EditorReloadId,Msg::EditTitle,
 					                strFullFileName,
 					                Msg::AskReload,
 					                Msg::Current,Msg::NewOpen,Msg::Reload);
@@ -571,7 +571,7 @@ void FileEditor::Init(
 	*/
 	if (FAttr!=INVALID_FILE_ATTRIBUTES && FAttr&FILE_ATTRIBUTE_DIRECTORY)
 	{
-		Message(MSG_WARNING,1,Msg::EditTitle,Msg::EditCanNotEditDirectory,Msg::Ok);
+		Message(MSG_WARNING,1,&EditorCanNotEditDirectoryId,Msg::EditTitle,Msg::EditCanNotEditDirectory,Msg::Ok);
 		ExitCode=XC_OPEN_ERROR;
 		return;
 	}
@@ -589,7 +589,7 @@ void FileEditor::Init(
 	        )
 	   )
 	{
-		if (Message(MSG_WARNING,2,Msg::EditTitle,Name,Msg::EditRSH,
+		if (Message(MSG_WARNING,2,&EditorOpenRSHId,Msg::EditTitle,Name,Msg::EditRSH,
 		            Msg::EditROOpen,Msg::Yes,Msg::No))
 		{
 			ExitCode=XC_OPEN_ERROR;
@@ -883,7 +883,7 @@ int FileEditor::ReProcessKey(int Key,int CalledFromControl)
 				if (m_editor->IsFileChanged() && // в текущем сеансе были изменения?
 				        apiGetFileAttributes(strFullFileName) == INVALID_FILE_ATTRIBUTES) // а файл еще существует?
 				{
-					switch (Message(MSG_WARNING,2,Msg::EditTitle,
+					switch (Message(MSG_WARNING,2,&EditorSaveF6DeletedId,Msg::EditTitle,
 					                Msg::EditSavedChangedNonFile,
 					                Msg::EditSavedChangedNonFile2,
 					                Msg::HYes,Msg::HNo))
@@ -1251,12 +1251,12 @@ int FileEditor::ReProcessKey(int Key,int CalledFromControl)
 						int Res;
 
 						if (m_editor->IsFileChanged() && FilePlaced)
-							Res=Message(MSG_WARNING,3,Msg::EditTitle,
+							Res=Message(MSG_WARNING,3,&EditorSaveExitDeletedId,Msg::EditTitle,
 							            Msg::EditSavedChangedNonFile,
 							            Msg::EditSavedChangedNonFile2,
 							            Msg::HYes,Msg::HNo,Msg::HCancel);
 						else if (!m_editor->IsFileChanged() && FilePlaced)
-							Res=Message(MSG_WARNING,3,Msg::EditTitle,
+							Res=Message(MSG_WARNING,3,&EditorSaveExitDeletedId,Msg::EditTitle,
 							            Msg::EditSavedChangedNonFile1,
 							            Msg::EditSavedChangedNonFile2,
 						                Msg::HYes,Msg::HNo,Msg::HCancel);
@@ -1473,7 +1473,7 @@ int FileEditor::LoadFile(const wchar_t *Name,int &UserBreak)
 				strTempStr3.Format(Msg::EditFileLong, RemoveExternalSpaces(strTempStr1).CPtr());
 				strTempStr4.Format(Msg::EditFileLong2, RemoveExternalSpaces(strTempStr2).CPtr());
 
-				if (Message(MSG_WARNING,2,Msg::EditTitle, Name, strTempStr3, strTempStr4, Msg::EditROOpen, Msg::Yes,Msg::No))
+				if (Message(MSG_WARNING,2,&EditorFileLongId,Msg::EditTitle, Name, strTempStr3, strTempStr4, Msg::EditROOpen, Msg::Yes,Msg::No))
 				{
 					EditFile.Close();
 					UserBreak=1;
@@ -1486,7 +1486,7 @@ int FileEditor::LoadFile(const wchar_t *Name,int &UserBreak)
 		else
 		{
 			ErrnoSaver ErSr;
-			if (Message(MSG_WARNING|MSG_ERRORTYPE,2,Msg::EditTitle,Name,Msg::EditFileGetSizeError,Msg::EditROOpen,Msg::Yes,Msg::No))
+			if (Message(MSG_WARNING|MSG_ERRORTYPE,2,&EditorFileGetSizeErrorId,Msg::EditTitle,Name,Msg::EditFileGetSizeError,Msg::EditROOpen,Msg::Yes,Msg::No))
 			{
 				EditFile.Close();
 				UserBreak=1;
@@ -1811,7 +1811,7 @@ int FileEditor::SaveFile(const wchar_t *Name,int Ask, bool bSaveAs, int TextForm
 
 		if (Ask)
 		{
-			switch (Message(MSG_WARNING,3,Msg::EditTitle,Msg::EditAskSave,Msg::HYes,Msg::HNo,Msg::HCancel))
+			switch (Message(MSG_WARNING,3,&EditAskSaveId,Msg::EditTitle,Msg::EditAskSave,Msg::HYes,Msg::HNo,Msg::HCancel))
 			{
 				case -1:
 				case -2:
@@ -1832,7 +1832,7 @@ int FileEditor::SaveFile(const wchar_t *Name,int Ask, bool bSaveAs, int TextForm
 	if (FileUnmakeWritable.get())
 	{
 			//BUGBUG
-		int AskOverwrite=Message(MSG_WARNING,2,Msg::EditTitle,Name,Msg::EditRO, Msg::EditOvr,Msg::Yes,Msg::No);
+		int AskOverwrite=Message(MSG_WARNING,2,&EditorSavedROId,Msg::EditTitle,Name,Msg::EditRO, Msg::EditOvr,Msg::Yes,Msg::No);
 
 		if (AskOverwrite) {
 			FileUnmakeWritable->Unmake();
@@ -1857,7 +1857,7 @@ int FileEditor::SaveFile(const wchar_t *Name,int Ask, bool bSaveAs, int TextForm
 				{
 					SetMessageHelp(L"WarnEditorSavedEx");
 
-					switch (Message(MSG_WARNING,3,Msg::EditTitle,Msg::EditAskSaveExt,Msg::HYes,Msg::EditBtnSaveAs,Msg::HCancel))
+					switch (Message(MSG_WARNING,3,&EditAskSaveExtId,Msg::EditTitle,Msg::EditAskSaveExt,Msg::HYes,Msg::EditBtnSaveAs,Msg::HCancel))
 					{
 						case -1:
 						case -2:
@@ -2865,7 +2865,7 @@ bool FileEditor::AskOverwrite(const FARString& FileName)
 
 	if (FNAttr!=INVALID_FILE_ATTRIBUTES)
 	{
-		if (Message(MSG_WARNING,2,Msg::EditTitle,FileName,Msg::EditExists,Msg::EditOvr,Msg::Yes,Msg::No))
+		if (Message(MSG_WARNING,2,&EditorAskOverwriteId,Msg::EditTitle,FileName,Msg::EditExists,Msg::EditOvr,Msg::Yes,Msg::No))
 		{
 			result=false;
 		}

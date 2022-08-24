@@ -47,6 +47,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "strmix.hpp"
 #include "panelmix.hpp"
 #include "mix.hpp"
+#include "DlgGuid.hpp"
 
 struct TSubstData
 {
@@ -276,7 +277,7 @@ static const wchar_t *_SubstFileName(const wchar_t *CurStr,TSubstData *PSubstDat
 	// !\       Текущий путь
 	// !/       Короткое имя текущего пути
 	// Ниже идет совмещение кода для разбора как !\ так и !/
-	if (!StrCmpN(CurStr,L"!/",2) || !StrCmpN(CurStr,L"!=/",3))//!StrCmpN(CurStr,L"!\\",2) || !StrCmpN(CurStr,L"!=\\",3) || 
+	if (!StrCmpN(CurStr,L"!/",2) || !StrCmpN(CurStr,L"!=/",3))//!StrCmpN(CurStr,L"!\\",2) || !StrCmpN(CurStr,L"!=\\",3) ||
 	{
 		FARString strCurDir;
 		int RealPath= CurStr[1]==L'='?1:0;
@@ -605,6 +606,7 @@ int ReplaceVariables(FARString &strStr,TSubstData *PSubstData)
 	{
 		Dialog Dlg(DlgData,DlgSize);
 		Dlg.SetPosition(-1,-1,76,DlgSize+3);
+		Dlg.SetId(UserMenuUserInputId);
 		Dlg.Process();
 		ExitCode=Dlg.GetExitCode();
 	}
