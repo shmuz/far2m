@@ -260,7 +260,7 @@ class PluginManager
 		std::string GetHotKeySettingName(Plugin *pPlugin, int ItemNumber, const char *HotKeyType);
 
 		// $ .09.2000 SVS - Функция CallPlugin - найти плагин по ID и запустить OpenFrom = OPEN_*
-		int CallPlugin(DWORD SysID,int OpenFrom, void *Data, int *Ret=nullptr);
+		int CallPlugin(DWORD SysID,int OpenFrom, void *Data, void **Ret=nullptr);
 		bool CallPluginItem(DWORD SysID, CallPluginInfo* Data);
 		Plugin *FindPlugin(DWORD SysID);
 

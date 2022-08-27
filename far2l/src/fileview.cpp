@@ -368,7 +368,7 @@ int FileViewer::ProcessKey(int Key)
 		case KEY_ALTF5:
 		{
 			if (Opt.UsePrintManager && CtrlObject->Plugins.FindPlugin(SYSID_PRINTMANAGER))
-				CtrlObject->Plugins.CallPlugin(SYSID_PRINTMANAGER,OPEN_VIEWER,0); // printman
+				CtrlObject->Plugins.CallPlugin(SYSID_PRINTMANAGER,OPEN_VIEWER,nullptr); // printman
 
 			return TRUE;
 		}

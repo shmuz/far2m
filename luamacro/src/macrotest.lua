@@ -761,6 +761,14 @@ local function test_CheckAndGetHotKey()
   Keys("Esc")
 end
 
+function MT.test_Menu()
+  Keys("F11")
+  assert_str(Menu.Value)
+  assert_eq(Menu.Id, far.Guids.PluginsMenuId)
+  assert_eq(Menu.Id, "937F0B1C-7690-4F85-8469-AA935517F202")
+  Keys("Esc")
+end
+
 function MT.test_Object()
   assert(type(Object.Bof)         == "boolean")
   assert(type(Object.CurPos)      == "number")
@@ -1567,6 +1575,7 @@ function MT.test_all()
   MT.test_Dlg()
   MT.test_Drv()
   MT.test_Far()
+  MT.test_Menu()
   MT.test_Mouse()
   MT.test_Object()
   MT.test_Panel()

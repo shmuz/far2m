@@ -1946,25 +1946,27 @@ void PluginManager::ReadUserBackgound(SaveScreen *SaveScr)
   Функция CallPlugin - найти плагин по ID и запустить
   в зачаточном состоянии!
 */
-int PluginManager::CallPlugin(DWORD SysID,int OpenFrom, void *Data,int *Ret)
+int PluginManager::CallPlugin(DWORD SysID, int OpenFrom, void *Data, void **Ret)
 {
 	Plugin *pPlugin = FindPlugin(SysID);
 	if ( !(pPlugin && pPlugin->HasOpenPlugin()) )
 		return FALSE;
 
+	if (Ret)
+		*Ret = nullptr;
+
 	if (OpenFrom == OPEN_LUAMACRO)
-	{
-		HANDLE hPlugin = pPlugin->OpenPlugin(OpenFrom, (INT_PTR)Data);
-		*Ret = (hPlugin != nullptr);
-		return TRUE;
-	}
+		return pPlugin->OpenPlugin(OpenFrom, (INT_PTR)Data) != nullptr;
 
 	auto PluginPanel = reinterpret_cast<PluginHandle*>(OpenPlugin(pPlugin,OpenFrom,(INT_PTR)Data));
+	if (PluginPanel == INVALID_HANDLE_VALUE)
+		return TRUE;
+
 	bool process = false;
 
 	if (OpenFrom == OPEN_FROMMACRO)
 	{
-		if ((PluginPanel != INVALID_HANDLE_VALUE) && (reinterpret_cast<UINT_PTR>(PluginPanel->hPlugin) >= 0x10000))
+		if (reinterpret_cast<UINT_PTR>(PluginPanel->hPlugin) >= 0x10000)
 		{
 			FarMacroCall *fmc = reinterpret_cast<FarMacroCall*>(PluginPanel->hPlugin);
 			if (fmc->Count > 0 && fmc->Values[0].Type == FMVT_PANEL)
@@ -1975,9 +1977,12 @@ int PluginManager::CallPlugin(DWORD SysID,int OpenFrom, void *Data,int *Ret)
 					fmc->Callback(fmc->CallbackData, fmc->Values, fmc->Count);
 			}
 		}
+
 		if (!process)
 		{
-			*reinterpret_cast<void**>(Ret) = (PluginPanel==INVALID_HANDLE_VALUE) ? PluginPanel : PluginPanel->hPlugin;
+			if (Ret)
+				*Ret = PluginPanel->hPlugin;
+			delete PluginPanel;
 			return TRUE;
 		}
 	}
@@ -1986,7 +1991,7 @@ int PluginManager::CallPlugin(DWORD SysID,int OpenFrom, void *Data,int *Ret)
 		process = OpenFrom == OPEN_PLUGINSMENU || OpenFrom == OPEN_FILEPANEL;
 	}
 
-	if ((PluginPanel != INVALID_HANDLE_VALUE) && process)
+	if (process)
 	{
 		int CurFocus=CtrlObject->Cp()->ActivePanel->GetFocus();
 		Panel *NewPanel=CtrlObject->Cp()->ChangePanel(CtrlObject->Cp()->ActivePanel,FILE_PANEL,TRUE,TRUE);
@@ -2002,11 +2007,6 @@ int PluginManager::CallPlugin(DWORD SysID,int OpenFrom, void *Data,int *Ret)
 			NewPanel->Update(0);
 			NewPanel->Show();
 		}
-	}
-
-	if (Ret)
-	{
-		*Ret=PluginPanel == INVALID_HANDLE_VALUE || PluginPanel->hPlugin ? 1:0;
 	}
 
 	return TRUE;

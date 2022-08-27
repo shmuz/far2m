@@ -150,9 +150,8 @@ static bool SortFileList(CustomSort* cs, wchar_t* indicator)
 	FarMacroValue values[]={cs};
 	FarMacroCall fmc={sizeof(FarMacroCall),ARRAYSIZE(values),values,nullptr,nullptr};
 	OpenMacroPluginInfo info={MCT_PANELSORT,&fmc};
-	int ret;
 
-	if (!CtrlObject->Plugins.CallPlugin(SYSID_LUAMACRO, OPEN_LUAMACRO, &info, &ret) || !ret)
+	if (!CtrlObject->Plugins.CallPlugin(SYSID_LUAMACRO, OPEN_LUAMACRO, &info))
 		return false;
 
 	indicator[0] = info.Ret.Values[0].String[0];
@@ -165,9 +164,8 @@ static bool CanSort(int SortMode)
 	FarMacroValue values[] = {static_cast<double>(SortMode)};
 	FarMacroCall fmc = {sizeof(FarMacroCall),ARRAYSIZE(values),values,nullptr,nullptr};
 	OpenMacroPluginInfo info = {MCT_CANPANELSORT,&fmc};
-	int ret;
 
-	return CtrlObject->Plugins.CallPlugin(SYSID_LUAMACRO, OPEN_LUAMACRO, &info, &ret) && ret;
+	return CtrlObject->Plugins.CallPlugin(SYSID_LUAMACRO, OPEN_LUAMACRO, &info);
 }
 
 }
@@ -1892,7 +1890,7 @@ int FileList::ProcessKey(int Key)
 			_ALGO(SysLog(L"%ls, FileCount=%d",(PanelMode==PLUGIN_PANEL?"PluginPanel":"FilePanel"),FileCount));
 			// $ 11.03.2001 VVM - Печать через pman только из файловых панелей.
 			if ((PanelMode!=PLUGIN_PANEL) && (Opt.UsePrintManager && CtrlObject->Plugins.FindPlugin(SYSID_PRINTMANAGER)))
-				CtrlObject->Plugins.CallPlugin(SYSID_PRINTMANAGER,OPEN_FILEPANEL,0); // printman
+				CtrlObject->Plugins.CallPlugin(SYSID_PRINTMANAGER,OPEN_FILEPANEL,nullptr); // printman
 			else if (FileCount>0 && SetCurPath())
 			{;}//PrintFiles(this);
 
@@ -4276,8 +4274,7 @@ void FileList::SelectSortMode()
 	OpenMacroPluginInfo ompInfo = { MCT_GETCUSTOMSORTMODES,nullptr };
 	MacroPluginReturn* mpr = nullptr;
 	{
-		int ret;
-		if (CtrlObject->Plugins.CallPlugin(SYSID_LUAMACRO, OPEN_LUAMACRO, &ompInfo, &ret) && ret)
+		if (CtrlObject->Plugins.CallPlugin(SYSID_LUAMACRO, OPEN_LUAMACRO, &ompInfo))
 		{
 			mpr = &ompInfo.Ret;
 			if (mpr->Count >= 3)

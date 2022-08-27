@@ -183,9 +183,7 @@ static const wchar_t* GetMacroLanguage(DWORD Flags)
 
 static bool CallMacroPlugin(OpenMacroPluginInfo* Info)
 {
-	int ret;
-	int result = CtrlObject->Plugins.CallPlugin(SYSID_LUAMACRO, OPEN_LUAMACRO, Info, &ret) != 0;
-	return result && ret;
+	return CtrlObject->Plugins.CallPlugin(SYSID_LUAMACRO, OPEN_LUAMACRO, Info) != 0;
 }
 
 static bool MacroPluginOp(int OpCode, const FarMacroValue& Param, MacroPluginReturn* Ret = nullptr)
@@ -1099,7 +1097,7 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 				}
 				RemoveExternalSpaces(tmpStr);
 			}
-      return api.PassString(tmpStr);
+			return api.PassString(tmpStr);
 		}
 
 		case MCODE_V_HEIGHT:  // Height - высота текущего объекта
@@ -1137,7 +1135,7 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 					ptr = tmpStr.CPtr();
 				}
 			}
-      return api.PassString(ptr);
+			return api.PassString(ptr);
 		}
 
 		case MCODE_V_MENUINFOID: // Menu.Id
@@ -1148,7 +1146,7 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 			{
 			  return api.PassString( reinterpret_cast<LPCWSTR>(f->VMProcess(CheckCode)) );
 			}
-      return api.PassString(L"");
+			return api.PassString(L"");
 		}
 
 		case MCODE_V_ITEMCOUNT: // ItemCount - число элементов в текущем объекте
@@ -1309,7 +1307,7 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 
 					if (SyncCall) m_InternalInput++;
 
-					if (!CtrlObject->Plugins.CallPlugin(SysID, OPEN_FROMMACRO, &info, (int*)&ResultCallPlugin))
+					if (!CtrlObject->Plugins.CallPlugin(SysID, OPEN_FROMMACRO, &info, &ResultCallPlugin))
 						ResultCallPlugin = nullptr;
 
 					if (SyncCall) m_InternalInput--;
