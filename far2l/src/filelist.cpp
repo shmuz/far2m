@@ -2482,9 +2482,9 @@ void FileList::ProcessEnter(bool EnableExec,bool SeparateWindow,bool EnableAssoc
 			}
 
 			if (SeparateWindow || (hOpen=OpenFilePlugin(strFileName,TRUE, Type))==INVALID_HANDLE_VALUE ||
-			        hOpen==(HANDLE)-2)
+			        hOpen==PANEL_STOP)
 			{
-				if (EnableExec && hOpen!=(HANDLE)-2)
+				if (EnableExec && hOpen!=PANEL_STOP)
 //					if (SeparateWindow || Opt.UseRegisteredTypes)
 					{
 						SetCurPath(); // OpenFilePlugin can change current path
@@ -4834,7 +4834,7 @@ HANDLE FileList::OpenFilePlugin(const wchar_t *FileName, int PushPrev, OPENFILEP
 		for (;;)
 		{
 			if (ProcessPluginEvent(FE_CLOSE,nullptr))
-				return((HANDLE)-2);
+				return PANEL_STOP;
 
 			if (!PopPlugin(TRUE))
 				break;
@@ -4843,7 +4843,7 @@ HANDLE FileList::OpenFilePlugin(const wchar_t *FileName, int PushPrev, OPENFILEP
 
 	HANDLE hNewPlugin=OpenPluginForFile(FileName, 0, Type);
 
-	if (hNewPlugin!=INVALID_HANDLE_VALUE && hNewPlugin!=(HANDLE)-2)
+	if (hNewPlugin!=INVALID_HANDLE_VALUE && hNewPlugin!=PANEL_STOP)
 	{
 		if (PushPrev)
 		{

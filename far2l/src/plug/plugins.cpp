@@ -560,9 +560,9 @@ HANDLE PluginManager::OpenFilePlugin(
 				smm ? (const unsigned char *)smm->View() : nullptr,
 				smm ? (DWORD)smm->Length() : 0, OpMode);
 
-			if (hPlugin == (HANDLE)-2)   //сразу на выход, плагин решил нагло обработать все сам (Autorun/PictureView)!!!
+			if (hPlugin == PANEL_STOP)   //сразу на выход, плагин решил нагло обработать все сам (Autorun/PictureView)!!!
 			{
-				hResult = (HANDLE)-2;
+				hResult = PANEL_STOP;
 				break;
 			}
 
@@ -593,7 +593,7 @@ HANDLE PluginManager::OpenFilePlugin(
 			break;
 	}
 
-	if (items.getCount() && (hResult != (HANDLE)-2))
+	if (items.getCount() && (hResult != PANEL_STOP))
 	{
 		bool OnlyOne = (items.getCount() == 1) && !(Name && Opt.PluginConfirm.OpenFilePlugin && Opt.PluginConfirm.StandardAssociation && Opt.PluginConfirm.EvenIfOnlyOnePlugin);
 
@@ -634,7 +634,7 @@ HANDLE PluginManager::OpenFilePlugin(
 			}
 
 			if (menu.GetExitCode() == -1)
-				hResult = (HANDLE)-2;
+				hResult = PANEL_STOP;
 			else
 				pResult = (PluginHandle*)menu.GetUserData(nullptr, 0);
 		}

@@ -455,7 +455,7 @@ HANDLE LF_OpenFilePlugin(lua_State* L, const wchar_t *aName,
     if (!pcall_msg(L, 3, 1)) {
       if (lua_type(L,-1) == LUA_TNUMBER && lua_tointeger(L,-1) == -2) {
         lua_pop(L,1);
-        return (HANDLE)(-2);
+        return PANEL_STOP;
       }
       if (lua_toboolean(L, -1))                   //+1
         return RegisterObject(L);                 //+0
@@ -766,15 +766,14 @@ HANDLE LF_OpenPlugin (lua_State* L, int OpenFrom, INT_PTR Item)
     int top = lua_gettop(L);
     if (pcall_msg(L, 2, LUA_MULTRET) == 0)
     {
-      HANDLE ret;
-      int narg = lua_gettop(L) - top + 3; // narg
-      if (narg > 0 && lua_istable(L, -narg))
+      int nret = lua_gettop(L) - top + 3; // nret
+      if (nret > 0 && lua_istable(L, -nret))
       {
-        lua_getfield(L, -narg, "type"); // narg+1
+        lua_getfield(L, -nret, "type"); // nret+1
         if (lua_type(L,-1)==LUA_TSTRING && lua_objlen(L,-1)==5 && !strcmp("panel",lua_tostring(L,-1)))
         {
-          lua_pop(L,1); // narg
-          lua_rawgeti(L,-narg,1); // narg+1
+          lua_pop(L,1); // nret
+          lua_rawgeti(L,-nret,1); // nret+1
           if(lua_toboolean(L, -1))
           {
             struct FarMacroCall* fmc = (struct FarMacroCall*)
@@ -785,19 +784,23 @@ HANDLE LF_OpenPlugin (lua_State* L, int OpenFrom, INT_PTR Item)
             fmc->Callback = FillFarMacroCall_Callback;
             fmc->CallbackData = fmc;
             fmc->Values[0].Type = FMVT_PANEL;
-            fmc->Values[0].Value.Pointer = RegisterObject(L); // narg
+            fmc->Values[0].Value.Pointer = RegisterObject(L); // nret
 
-            lua_pop(L,narg); // +0
+            lua_pop(L,nret); // +0
             return fmc;
           }
-          lua_pop(L,narg+1); // +0
+          lua_pop(L,nret+1); // +0
           return INVALID_HANDLE_VALUE;
         }
-        lua_pop(L,1); // narg
+        lua_pop(L,1); // nret
       }
-      ret = FillFarMacroCall(L,narg);
-      lua_pop(L,narg);
-      return ret;
+      if (nret)
+      {
+        HANDLE hndl = FillFarMacroCall(L,nret);
+        lua_pop(L,nret); // +0
+        return hndl;
+      }
+      return INVALID_HANDLE_VALUE;
     }
   }
   else

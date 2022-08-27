@@ -843,6 +843,7 @@ struct FarPanelLocation
 #define PANEL_NONE		((HANDLE)(-1))
 #define PANEL_ACTIVE	((HANDLE)(-1))
 #define PANEL_PASSIVE	((HANDLE)(-2))
+#define PANEL_STOP		((HANDLE)(-2))
 
 enum FILE_CONTROL_COMMANDS
 {

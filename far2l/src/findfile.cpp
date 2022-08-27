@@ -1528,7 +1528,7 @@ class FindDlg_TempFileHolder : public TempFileUploadHolder
 			DisablePluginsOutput = TRUE;
 			ArcItem.hPlugin = CtrlObject->Plugins.OpenFilePlugin(strFindArcName, OPM_FIND, OFP_SEARCH);
 			DisablePluginsOutput = SavePluginsOutput;
-			if (ArcItem.hPlugin == (HANDLE)-2 || ArcItem.hPlugin == INVALID_HANDLE_VALUE)
+			if (ArcItem.hPlugin == PANEL_STOP || ArcItem.hPlugin == INVALID_HANDLE_VALUE)
 			{
 				ArcItem.hPlugin = INVALID_HANDLE_VALUE;
 				fprintf(stderr, "OnEditedFileSaved: can't open plugins '%ls'\n", strFindArcName.CPtr());
@@ -1844,7 +1844,7 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 								itd.SetArcListItem(FindItem.ArcIndex, ArcItem);
 								DisablePluginsOutput=SavePluginsOutput;
 
-								if (ArcItem.hPlugin == (HANDLE)-2 ||
+								if (ArcItem.hPlugin == PANEL_STOP ||
 										ArcItem.hPlugin == INVALID_HANDLE_VALUE)
 								{
 									ArcItem.hPlugin = INVALID_HANDLE_VALUE;
@@ -2452,7 +2452,7 @@ static void ArchiveSearch(HANDLE hDlg, const wchar_t *ArcName)
 		DisablePluginsOutput=SavePluginsOutput;
 	}
 
-	if (hArc==(HANDLE)-2)
+	if (hArc==PANEL_STOP)
 	{
 		StopFlag = true;
 		_ALGO(SysLog(L"return: hArc==(HANDLE)-2"));
@@ -3060,7 +3060,7 @@ static bool FindFilesProcess(Vars& v)
 						CutToSlash(strArcPath);
 						FindPanel->SetCurDir(strArcPath,TRUE);
 						ArcItem.hPlugin=((FileList *)FindPanel)->OpenFilePlugin(strArcName,FALSE, OFP_SEARCH);
-						if (ArcItem.hPlugin==(HANDLE)-2)
+						if (ArcItem.hPlugin==PANEL_STOP)
 							ArcItem.hPlugin = INVALID_HANDLE_VALUE;
 						itd.SetArcListItem(FindItem.ArcIndex, ArcItem);
 					}
