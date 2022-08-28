@@ -773,7 +773,7 @@ HANDLE PluginManager::OpenFindListPlugin(const PluginPanelItem *PanelItem, int I
 }
 
 
-void PluginManager::ClosePlugin(HANDLE hPlugin)
+void PluginManager::ClosePanel(HANDLE hPlugin)
 {
 	ChangePriority ChPriority(ChangePriority::NORMAL);
 	PanelHandle *ph = (PanelHandle*)hPlugin;
@@ -786,7 +786,7 @@ void PluginManager::ClosePlugin(HANDLE hPlugin)
 	}
 }
 
-void PluginManager::RetainPlugin(HANDLE hPlugin)
+void PluginManager::RetainPanel(HANDLE hPlugin)
 {
 	PanelHandle *ph = (PanelHandle*)hPlugin;
 	const auto RefCnt = ph->RefCnt;
@@ -1608,7 +1608,7 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 	{
 		if (ActivePanel->ProcessPluginEvent(FE_CLOSE,nullptr))
 		{
-			ClosePlugin(hPlugin);
+			ClosePanel(hPlugin);
 			return FALSE;
 		}
 
@@ -2193,7 +2193,7 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 		//BUGBUG: В ProcessCommandLine зовется перед Open, а в CPT_MENU - после
 		if (ActivePanel->ProcessPluginEvent(FE_CLOSE, nullptr))
 		{
-			ClosePlugin(hPlugin);
+			ClosePanel(hPlugin);
 			return false;
 		}
 

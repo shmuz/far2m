@@ -1572,7 +1572,7 @@ class FindDlg_TempFileHolder : public TempFileUploadHolder
 
 		if (ClosePlugin)
 		{
-			CtrlObject->Plugins.ClosePlugin(ArcItem.hPlugin);
+			CtrlObject->Plugins.ClosePanel(ArcItem.hPlugin);
 		}
 		else
 		{
@@ -1867,7 +1867,7 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 
 								if (ClosePlugin)
 								{
-									CtrlObject->Plugins.ClosePlugin(ArcItem.hPlugin);
+									CtrlObject->Plugins.ClosePanel(ArcItem.hPlugin);
 									ArcItem.hPlugin = INVALID_HANDLE_VALUE;
 									itd.SetArcListItem(FindItem.ArcIndex, ArcItem);
 								}
@@ -1877,7 +1877,7 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 							{
 								if (ClosePlugin)
 								{
-									CtrlObject->Plugins.ClosePlugin(ArcItem.hPlugin);
+									CtrlObject->Plugins.ClosePanel(ArcItem.hPlugin);
 									ArcItem.hPlugin = INVALID_HANDLE_VALUE;
 									itd.SetArcListItem(FindItem.ArcIndex, ArcItem);
 								}
@@ -2493,7 +2493,7 @@ static void ArchiveSearch(HANDLE hDlg, const wchar_t *ArcName)
 			itd.GetArcListItem(itd.GetFindFileArcIndex(), ArcItem);
 			{
 				PluginLocker Lock;
-				CtrlObject->Plugins.ClosePlugin(ArcItem.hPlugin);
+				CtrlObject->Plugins.ClosePanel(ArcItem.hPlugin);
 			}
 			ArcItem.hPlugin = INVALID_HANDLE_VALUE;
 			itd.SetArcListItem(itd.GetFindFileArcIndex(), ArcItem);

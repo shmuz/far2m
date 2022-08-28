@@ -1021,12 +1021,12 @@ public:
 		TempFileUploadHolder(strTempFileName_),
 		hPlugin(hPlugin_)
 	{
-		CtrlObject->Plugins.RetainPlugin(hPlugin);
+		CtrlObject->Plugins.RetainPanel(hPlugin);
 	}
 
 	virtual ~FileList_TempFileHolder()
 	{
-		CtrlObject->Plugins.ClosePlugin(hPlugin);
+		CtrlObject->Plugins.ClosePanel(hPlugin);
 	}
 };
 

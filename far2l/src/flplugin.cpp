@@ -87,7 +87,7 @@ int FileList::PopPlugin(int EnableRestoreViewMode)
 
 	// закрываем текущий плагин.
 	PluginsList.Delete(PluginsList.Last());
-	CtrlObject->Plugins.ClosePlugin(hPlugin);
+	CtrlObject->Plugins.ClosePanel(hPlugin);
 
 	if (!PluginsList.Empty())
 	{
@@ -744,7 +744,7 @@ void FileList::PluginHostGetFiles()
 			}
 
 			_ALGO(SysLog(L"call Plugins.ClosePlugin"));
-			CtrlObject->Plugins.ClosePlugin(hCurPlugin);
+			CtrlObject->Plugins.ClosePanel(hCurPlugin);
 		}
 	}
 
@@ -994,8 +994,8 @@ int FileList::ProcessOneHostFile(int Idx)
 			CtrlObject->Plugins.FreeFindData(hNewPlugin,ItemList,ItemNumber);
 		}
 
-		_ALGO(SysLog(L"call Plugins.ClosePlugin"));
-		CtrlObject->Plugins.ClosePlugin(hNewPlugin);
+		_ALGO(SysLog(L"call Plugins.ClosePanel"));
+		CtrlObject->Plugins.ClosePanel(hNewPlugin);
 	}
 
 	return Done;

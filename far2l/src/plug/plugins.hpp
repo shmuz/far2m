@@ -275,8 +275,8 @@ class PluginManager
 		HANDLE OpenFindListPlugin(const PluginPanelItem *PanelItem,int ItemsNumber);
 		HANDLE GetRealPanelHandle(HANDLE hPlugin);
 		FARString GetPluginModuleName(HANDLE hPlugin);
-		void ClosePlugin(HANDLE hPlugin); // decreases refcnt and actually closes plugin if refcnt reached zero
-		void RetainPlugin(HANDLE hPlugin); // increments refcnt
+		void ClosePanel(HANDLE hPlugin); // decreases refcnt and actually closes plugin if refcnt reached zero
+		void RetainPanel(HANDLE hPlugin); // increments refcnt
 		void GetOpenPluginInfo(HANDLE hPlugin, OpenPluginInfo *Info);
 		int GetFindData(HANDLE hPlugin,PluginPanelItem **pPanelItem,int *pItemsNumber,int Silent);
 		void FreeFindData(HANDLE hPlugin,PluginPanelItem *PanelItem,int ItemsNumber);
