@@ -306,7 +306,7 @@ int WINAPI GetSearchReplaceString(
 		{
 			HeightDialog--;
 			SearchDlg[0].Y2--;
-			SearchDlg[6].Flags |= DIF_DISABLE;
+			SearchDlg[6].Flags |= (DIF_DISABLE|DIF_HIDDEN);
 			for (int i=9; i<12; i++)
 			{
 				SearchDlg[i].Y1--;
@@ -320,7 +320,7 @@ int WINAPI GetSearchReplaceString(
 		if (SelectFound)
 			SearchDlg[8].Selected=*SelectFound;
 		else
-			SearchDlg[8].Flags |= DIF_DISABLE;
+			SearchDlg[8].Flags |= (DIF_DISABLE|DIF_HIDDEN);
 
 		{
 			Dialog Dlg(SearchDlg,ARRAYSIZE(SearchDlg));
