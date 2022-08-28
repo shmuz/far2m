@@ -303,7 +303,16 @@ int WINAPI GetSearchReplaceString(
 		if (Reverse)
 			SearchDlg[6].Selected=*Reverse;
 		else
+		{
+			HeightDialog--;
+			SearchDlg[0].Y2--;
 			SearchDlg[6].Flags |= DIF_DISABLE;
+			for (int i=9; i<12; i++)
+			{
+				SearchDlg[i].Y1--;
+				SearchDlg[i].Y2--;
+			}
+		}
 
 		if (Regexp)
 			SearchDlg[7].Selected=*Regexp;
