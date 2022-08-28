@@ -149,7 +149,7 @@ static int ShowBookmarksMenuIteration(int Pos)
 					{
 						OpenPluginInfo Info;
 						ActivePanel->GetOpenPluginInfo(&Info);
-						PluginHandle *ph = (PluginHandle*)ActivePanel->GetPluginHandle();
+						PanelHandle *ph = (PanelHandle*)ActivePanel->GetPluginHandle();
 						strNewPluginModule = ph->pPlugin->GetModuleName();
 						strNewPluginFile = Info.HostFile;
 						strNewPluginData = Info.ShortcutData;

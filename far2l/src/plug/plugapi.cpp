@@ -1258,15 +1258,15 @@ static int FarControlSynched(HANDLE hPlugin,int Command,int Param1,LONG_PTR Para
 			Panel *LeftPanel=FPanels->LeftPanel;
 			Panel *RightPanel=FPanels->RightPanel;
 			int Processed=FALSE;
-			PluginHandle *PlHandle;
+			PanelHandle *PlHandle;
 
 			if (LeftPanel && LeftPanel->GetMode()==PLUGIN_PANEL)
 			{
-				PlHandle=(PluginHandle *)LeftPanel->GetPluginHandle();
+				PlHandle=(PanelHandle *)LeftPanel->GetPluginHandle();
 
 				if (PlHandle)
 				{
-					hInternal=PlHandle->hPlugin;
+					hInternal=PlHandle->hPanel;
 
 					if (hPlugin==hInternal)
 					{
@@ -1277,11 +1277,11 @@ static int FarControlSynched(HANDLE hPlugin,int Command,int Param1,LONG_PTR Para
 
 			if (RightPanel && RightPanel->GetMode()==PLUGIN_PANEL)
 			{
-				PlHandle=(PluginHandle *)RightPanel->GetPluginHandle();
+				PlHandle=(PanelHandle *)RightPanel->GetPluginHandle();
 
 				if (PlHandle)
 				{
-					hInternal=PlHandle->hPlugin;
+					hInternal=PlHandle->hPanel;
 
 					if (hPlugin==hInternal)
 					{
@@ -1396,15 +1396,15 @@ static int FarControlSynched(HANDLE hPlugin,int Command,int Param1,LONG_PTR Para
 				return TRUE;
 
 			Panel *pPanel = FPanels->ActivePanel;
-			PluginHandle *PlHandle;
+			PanelHandle *PlHandle;
 
 			if (pPanel && (pPanel->GetMode() == PLUGIN_PANEL))
 			{
-				PlHandle = (PluginHandle *)pPanel->GetPluginHandle();
+				PlHandle = (PanelHandle *)pPanel->GetPluginHandle();
 
 				if (PlHandle)
 				{
-					if (PlHandle->hPlugin == hPlugin)
+					if (PlHandle->hPanel == hPlugin)
 						return TRUE;
 				}
 			}
@@ -1559,7 +1559,7 @@ int FarGetPluginDirListSynched(INT_PTR PluginNumber,
 		if (!StrCmp(Dir,L".") || TestParentFolderName(Dir))
 			return FALSE;
 
-		static PluginHandle DirListPlugin;
+		static PanelHandle DirListPlugin;
 
 		// А не хочет ли плагин посмотреть на текущую панель?
 		if (hPlugin==PANEL_ACTIVE || hPlugin==PANEL_PASSIVE)
@@ -1572,12 +1572,12 @@ int FarGetPluginDirListSynched(INT_PTR PluginNumber,
 			if (!Handle || Handle == INVALID_HANDLE_VALUE)
 				return FALSE;
 
-			DirListPlugin=*(PluginHandle *)Handle;
+			DirListPlugin=*(PanelHandle *)Handle;
 		}
 		else
 		{
 			DirListPlugin.pPlugin=(Plugin*)PluginNumber;
-			DirListPlugin.hPlugin=hPlugin;
+			DirListPlugin.hPanel=hPlugin;
 		}
 
 		{

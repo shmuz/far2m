@@ -714,7 +714,7 @@ HANDLE PluginW::OpenPlugin(int OpenFrom, INT_PTR Item)
 		      }
 		      if (hInternal!=INVALID_HANDLE_VALUE)
 		      {
-		        PluginHandle *hPlugin=new PluginHandle;
+		        PanelHandle *hPlugin=new PanelHandle;
 		        hPlugin->InternalHandle=es.hResult;
 		        hPlugin->PluginNumber=(INT_PTR)this;
 		        return((HANDLE)hPlugin);

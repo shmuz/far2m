@@ -1403,7 +1403,7 @@ int Panel::GetCurDirPluginAware(FARString &strCurDir)
 	if (PanelMode==PLUGIN_PANEL)
 	{
 		HANDLE hPlugin=GetPluginHandle();
-//		PluginHandle *ph = (PluginHandle*)hPlugin;
+//		PanelHandle *ph = (PanelHandle*)hPlugin;
 		OpenPluginInfo Info;
 		CtrlObject->Plugins.GetOpenPluginInfo(hPlugin,&Info);
 
@@ -1752,7 +1752,7 @@ int Panel::SetPluginCommand(int Command,int Param1,LONG_PTR Param2)
 
 		case FCTL_GETPANELPLUGINHANDLE:
 		{
-			*(HANDLE *)Param2 = (GetPluginHandle() != INVALID_HANDLE_VALUE) ? CtrlObject->Plugins.GetRealPluginHandle(GetPluginHandle()) : INVALID_HANDLE_VALUE;
+			*(HANDLE *)Param2 = (GetPluginHandle() != INVALID_HANDLE_VALUE) ? CtrlObject->Plugins.GetRealPanelHandle(GetPluginHandle()) : INVALID_HANDLE_VALUE;
 			Result=TRUE;
 			break;
 		}
@@ -2094,7 +2094,7 @@ bool Panel::SaveShortcutFolder(int Pos)
 	if (PanelMode==PLUGIN_PANEL)
 	{
 		HANDLE hPlugin=GetPluginHandle();
-		PluginHandle *ph = (PluginHandle*)hPlugin;
+		PanelHandle *ph = (PanelHandle*)hPlugin;
 		strPluginModule = ph->pPlugin->GetModuleName();
 		OpenPluginInfo Info;
 		CtrlObject->Plugins.GetOpenPluginInfo(hPlugin,&Info);

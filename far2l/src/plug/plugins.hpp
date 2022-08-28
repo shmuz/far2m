@@ -150,9 +150,9 @@ enum OPENFILEPLUGINTYPE
 	OFP_COMMANDS,
 };
 
-struct PluginHandle
+struct PanelHandle
 {
-	HANDLE hPlugin;
+	HANDLE hPanel;
 	class Plugin *pPlugin;
 	unsigned int RefCnt = 1;
 };
@@ -273,7 +273,7 @@ class PluginManager
 		HANDLE OpenPlugin(Plugin *pPlugin,int OpenFrom,INT_PTR Item);
 		HANDLE OpenFilePlugin(const wchar_t *Name, int OpMode, OPENFILEPLUGINTYPE Type, Plugin *pDesiredPlugin = nullptr);
 		HANDLE OpenFindListPlugin(const PluginPanelItem *PanelItem,int ItemsNumber);
-		HANDLE GetRealPluginHandle(HANDLE hPlugin);
+		HANDLE GetRealPanelHandle(HANDLE hPlugin);
 		FARString GetPluginModuleName(HANDLE hPlugin);
 		void ClosePlugin(HANDLE hPlugin); // decreases refcnt and actually closes plugin if refcnt reached zero
 		void RetainPlugin(HANDLE hPlugin); // increments refcnt

@@ -415,7 +415,7 @@ void FileList::SortFileList(int KeepPosition)
 			strCurName = ListData[CurFile]->strName;
 		}
 
-		hSortPlugin=(PanelMode==PLUGIN_PANEL && hPlugin && reinterpret_cast<PluginHandle*>(hPlugin)->pPlugin->HasCompare()) ? hPlugin:nullptr;
+		hSortPlugin=(PanelMode==PLUGIN_PANEL && hPlugin && reinterpret_cast<PanelHandle*>(hPlugin)->pPlugin->HasCompare()) ? hPlugin:nullptr;
 
 		if (SortMode < PanelSortMode::COUNT)
 		{
@@ -792,8 +792,8 @@ int64_t FileList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 			PluginInfo *PInfo=(PluginInfo *)vParam;
 			memset(PInfo,0,sizeof(*PInfo));
 			PInfo->StructSize=sizeof(*PInfo);
-			if (GetMode() == PLUGIN_PANEL && hPlugin != INVALID_HANDLE_VALUE && ((PluginHandle*)hPlugin)->pPlugin)
-				return ((PluginHandle*)hPlugin)->pPlugin->GetPluginInfo(PInfo)?1:0;
+			if (GetMode() == PLUGIN_PANEL && hPlugin != INVALID_HANDLE_VALUE && ((PanelHandle*)hPlugin)->pPlugin)
+				return ((PanelHandle*)hPlugin)->pPlugin->GetPluginInfo(PInfo)?1:0;
 			return 0;
 		}
 
@@ -1144,7 +1144,7 @@ int FileList::ProcessKey(int Key)
 		}
 		case KEY_ALTSHIFTF9:
 		{
-			PluginHandle *ph = (PluginHandle*)hPlugin;
+			PanelHandle *ph = (PanelHandle*)hPlugin;
 
 			if (PanelMode==PLUGIN_PANEL)
 				CtrlObject->Plugins.ConfigureCurrent(ph->pPlugin, 0);
@@ -5017,7 +5017,7 @@ BOOL FileList::UpdateKeyBar()
 int FileList::PluginPanelHelp(HANDLE hPlugin)
 {
 	FARString strPath, strFileName, strStartTopic;
-	PluginHandle *ph = (PluginHandle*)hPlugin;
+	PanelHandle *ph = (PanelHandle*)hPlugin;
 	strPath = ph->pPlugin->GetModuleName();
 	CutToSlash(strPath);
 	UINT nCodePage = CP_UTF8;

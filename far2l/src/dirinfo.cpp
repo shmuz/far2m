@@ -258,9 +258,9 @@ int GetPluginDirInfo(HANDLE hPlugin,const wchar_t *DirName, uint32_t &DirCount,
 	int ItemsNumber,ExitCode;
 	DirCount=FileCount=0;
 	FileSize=PhysicalSize=0;
-	PluginHandle *ph = (PluginHandle*)hPlugin;
+	PanelHandle *ph = (PanelHandle*)hPlugin;
 
-	if ((ExitCode=FarGetPluginDirList((INT_PTR)ph->pPlugin, ph->hPlugin, DirName, &PanelItem,&ItemsNumber))==TRUE) //INT_PTR - BUGBUG
+	if ((ExitCode=FarGetPluginDirList((INT_PTR)ph->pPlugin, ph->hPanel, DirName, &PanelItem,&ItemsNumber))==TRUE) //INT_PTR - BUGBUG
 	{
 		for (int I=0; I<ItemsNumber; I++)
 		{
