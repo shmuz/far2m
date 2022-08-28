@@ -174,7 +174,7 @@ struct FileListItem
 
 struct PluginsListItem
 {
-	HANDLE hPlugin;
+	PHPTR hPlugin;
 	FARString strHostFile;
 	FARString strPrevOriginalCurDir;
 	std::map<FARString, FARString> Dir2CursorFile;
@@ -212,7 +212,7 @@ class FileList:public Panel
 		FARString strPluginDizName;
 		FileListItem **ListData;
 		int FileCount;
-		HANDLE hPlugin;
+		PHPTR hPlugin;
 		DList<PrevDataItem*>PrevDataList;
 		DList<PluginsListItem*>PluginsList;
 		std::unique_ptr<IFSNotify> ListChange;
@@ -286,7 +286,7 @@ class FileList:public Panel
 		virtual int GetCurName(FARString &strName);
 		virtual int GetCurBaseName(FARString &strName);
 
-		void PushPlugin(HANDLE hPlugin,const wchar_t *HostFile);
+		void PushPlugin(PHPTR hPlugin,const wchar_t *HostFile);
 		int PopPlugin(int EnableRestoreViewMode);
 		void CopyFiles();
 		void CopyNames(bool FullPathName, bool UNC);
@@ -295,7 +295,7 @@ class FileList:public Panel
 		void DescribeFiles();
 		void CreatePluginItemList(PluginPanelItem *(&ItemList),int &ItemNumber,BOOL AddTwoDot=TRUE);
 		void DeletePluginItemList(PluginPanelItem *(&ItemList),int &ItemNumber);
-		HANDLE OpenPluginForFile(const wchar_t *FileName,DWORD FileAttr, OPENFILEPLUGINTYPE Type);
+		PHPTR OpenPluginForFile(const wchar_t *FileName,DWORD FileAttr, OPENFILEPLUGINTYPE Type);
 		int PreparePanelView(PanelViewSettings *PanelView);
 		int PrepareColumnWidths(unsigned int *ColumnTypes,int *ColumnWidths,
 		                        int *ColumnWidthsTypes,int &ColumnCount,int FullScreen);
@@ -364,7 +364,7 @@ class FileList:public Panel
 		virtual int GetPrevCaseSensitiveSort();
 		virtual int GetPrevDirectoriesFirst();
 
-		HANDLE OpenFilePlugin(const wchar_t *FileName,int PushPrev, OPENFILEPLUGINTYPE Type);
+		PHPTR OpenFilePlugin(const wchar_t *FileName,int PushPrev, OPENFILEPLUGINTYPE Type);
 		virtual int GetFileName(FARString &strName,int Pos,DWORD &FileAttr);
 		virtual int GetCurrentPos();
 		virtual bool FindPartName(const wchar_t *Name,int Next,int Direct=1,int ExcludeSets=0);
@@ -399,7 +399,7 @@ class FileList:public Panel
 		virtual int GetColumnsCount() { return Columns;}
 		virtual void SetReturnCurrentFile(int Mode);
 		virtual void GetOpenPluginInfo(OpenPluginInfo *Info);
-		virtual void SetPluginMode(HANDLE hPlugin,const wchar_t *PluginFile,bool SendOnFocus=false);
+		virtual void SetPluginMode(PHPTR hPlugin,const wchar_t *PluginFile,bool SendOnFocus=false);
 
 		void PluginGetPanelInfo(PanelInfo &Info);
 		size_t PluginGetPanelItem(int ItemNumber,PluginPanelItem *Item);
@@ -427,7 +427,7 @@ class FileList:public Panel
 		virtual void IfGoHome(wchar_t Drive);
 
 		void ResetLastUpdateTime() {LastUpdateTime = 0;}
-		virtual HANDLE GetPluginHandle();
+		virtual PHPTR GetPluginHandle();
 		virtual int GetRealSelCount();
 		static void SetFilePanelModes();
 		static void SavePanelModes(ConfigWriter &cfg_writer);

@@ -53,7 +53,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    В стеке ФАРова панель не хранится - только плагиновые!
 */
 
-void FileList::PushPlugin(HANDLE hPlugin,const wchar_t *HostFile)
+void FileList::PushPlugin(PHPTR hPlugin,const wchar_t *HostFile)
 {
 	PluginsListItem* stItem = new PluginsListItem;
 	stItem->hPlugin=hPlugin;
@@ -134,7 +134,7 @@ int FileList::PopPlugin(int EnableRestoreViewMode)
 	}
 	else
 	{
-		hPlugin = INVALID_HANDLE_VALUE;
+		hPlugin = nullptr;
 		PanelMode=NORMAL_PANEL;
 
 		if (EnableRestoreViewMode)
@@ -382,9 +382,9 @@ void FileList::PluginToFileListItem(PluginPanelItem *pi,FileListItem *fi)
 }
 
 
-HANDLE FileList::OpenPluginForFile(const wchar_t *FileName, DWORD FileAttr, OPENFILEPLUGINTYPE Type)
+PHPTR FileList::OpenPluginForFile(const wchar_t *FileName, DWORD FileAttr, OPENFILEPLUGINTYPE Type)
 {
-	HANDLE Result = INVALID_HANDLE_VALUE;
+	PHPTR Result = nullptr;
 	if(FileName && *FileName && !(FileAttr&FILE_ATTRIBUTE_DIRECTORY))
 	{
 		SetCurPath();
@@ -716,10 +716,10 @@ void FileList::PluginHostGetFiles()
 
 	while (!ExitLoop && GetSelNameCompat(&strSelName,FileAttr))
 	{
-		HANDLE hCurPlugin;
+		PHPTR hCurPlugin;
 
-		if ((hCurPlugin=OpenPluginForFile(strSelName,FileAttr, OFP_EXTRACT))!=INVALID_HANDLE_VALUE &&
-		        hCurPlugin!=PANEL_STOP)
+		if ((hCurPlugin=OpenPluginForFile(strSelName,FileAttr, OFP_EXTRACT))!=nullptr &&
+		        hCurPlugin!=PHPTR_STOP)
 		{
 			PluginPanelItem *ItemList;
 			int ItemNumber;
@@ -760,9 +760,9 @@ void FileList::PluginPutFilesToNew()
 	_ALGO(CleverSysLog clv(L"FileList::PluginPutFilesToNew()"));
 	//_ALGO(SysLog(L"FileName='%ls'",(FileName?FileName:"(nullptr)")));
 	_ALGO(SysLog(L"call Plugins.OpenFilePlugin(nullptr, 0)"));
-	HANDLE hNewPlugin=CtrlObject->Plugins.OpenFilePlugin(nullptr, 0, OFP_CREATE);
+	PHPTR hNewPlugin=CtrlObject->Plugins.OpenFilePlugin(nullptr, 0, OFP_CREATE);
 
-	if (hNewPlugin!=INVALID_HANDLE_VALUE && hNewPlugin!=PANEL_STOP)
+	if (hNewPlugin && hNewPlugin!=PHPTR_STOP)
 	{
 		_ALGO(SysLog(L"Create: FileList TmpPanel, FileCount=%d",FileCount));
 		FileList TmpPanel;
@@ -978,9 +978,9 @@ int FileList::ProcessOneHostFile(int Idx)
 	int Done=-1;
 	_ALGO(SysLog(L"call OpenPluginForFile([Idx=%d] '%ls')",Idx,ListData[Idx]->strName.CPtr()));
 	FARString strName = ListData[Idx]->strName;
-	HANDLE hNewPlugin=OpenPluginForFile(strName,ListData[Idx]->FileAttr, OFP_COMMANDS);
+	PHPTR hNewPlugin=OpenPluginForFile(strName,ListData[Idx]->FileAttr, OFP_COMMANDS);
 
-	if (hNewPlugin!=INVALID_HANDLE_VALUE && hNewPlugin!=PANEL_STOP)
+	if (hNewPlugin && hNewPlugin!=PHPTR_STOP)
 	{
 		PluginPanelItem *ItemList;
 		int ItemNumber;
@@ -1003,7 +1003,7 @@ int FileList::ProcessOneHostFile(int Idx)
 
 
 
-void FileList::SetPluginMode(HANDLE hPlugin,const wchar_t *PluginFile,bool SendOnFocus)
+void FileList::SetPluginMode(PHPTR hPlugin,const wchar_t *PluginFile,bool SendOnFocus)
 {
 	if (PanelMode!=PLUGIN_PANEL)
 	{
@@ -1186,7 +1186,7 @@ void FileList::SetPluginModified()
 }
 
 
-HANDLE FileList::GetPluginHandle()
+PHPTR FileList::GetPluginHandle()
 {
 	return(hPlugin);
 }

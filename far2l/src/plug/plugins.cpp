@@ -496,7 +496,7 @@ int _cdecl PluginsSort(const void *el1,const void *el2)
 	return (StrCmpI(PointToName(Plugin1->GetModuleName()),PointToName(Plugin2->GetModuleName())));
 }
 
-HANDLE PluginManager::OpenFilePlugin(
+PHPTR PluginManager::OpenFilePlugin(
     const wchar_t *Name,
     int OpMode,
     OPENFILEPLUGINTYPE Type,
@@ -505,8 +505,8 @@ HANDLE PluginManager::OpenFilePlugin(
 {
 	ChangePriority ChPriority(ChangePriority::NORMAL);
 	ConsoleTitle ct(Opt.ShowCheckingFile ? Msg::CheckingFileInPlugin.CPtr() : nullptr);
-	HANDLE hResult = INVALID_HANDLE_VALUE;
-	PanelHandle *pResult = nullptr;
+	PHPTR hResult = nullptr;
+	PHPTR pResult = nullptr;
 	TPointerArray<PanelHandle> items;
 	FARString strFullName;
 
@@ -562,7 +562,7 @@ HANDLE PluginManager::OpenFilePlugin(
 
 			if (hPlugin == PANEL_STOP)   //сразу на выход, плагин решил нагло обработать все сам (Autorun/PictureView)!!!
 			{
-				hResult = PANEL_STOP;
+				hResult = PHPTR_STOP;
 				break;
 			}
 
@@ -593,7 +593,7 @@ HANDLE PluginManager::OpenFilePlugin(
 			break;
 	}
 
-	if (items.getCount() && (hResult != PANEL_STOP))
+	if (items.getCount() && (hResult != PHPTR_STOP))
 	{
 		bool OnlyOne = (items.getCount() == 1) && !(Name && Opt.PluginConfirm.OpenFilePlugin && Opt.PluginConfirm.StandardAssociation && Opt.PluginConfirm.EvenIfOnlyOnePlugin);
 
@@ -634,7 +634,7 @@ HANDLE PluginManager::OpenFilePlugin(
 			}
 
 			if (menu.GetExitCode() == -1)
-				hResult = PANEL_STOP;
+				hResult = PHPTR_STOP;
 			else
 				pResult = (PanelHandle*)menu.GetUserData(nullptr, 0);
 		}
@@ -667,16 +667,15 @@ HANDLE PluginManager::OpenFilePlugin(
 
 	if (pResult)
 	{
-		PanelHandle* pDup=new PanelHandle;
-		pDup->hPanel=pResult->hPanel;
-		pDup->pPlugin=pResult->pPlugin;
-		hResult=reinterpret_cast<HANDLE>(pDup);
+		hResult=new PanelHandle;
+		hResult->hPanel=pResult->hPanel;
+		hResult->pPlugin=pResult->pPlugin;
 	}
 
 	return hResult;
 }
 
-HANDLE PluginManager::OpenFindListPlugin(const PluginPanelItem *PanelItem, int ItemsNumber)
+PHPTR PluginManager::OpenFindListPlugin(const PluginPanelItem *PanelItem, int ItemsNumber)
 {
 	ChangePriority ChPriority(ChangePriority::NORMAL);
 	PanelHandle *pResult = nullptr;
@@ -769,14 +768,13 @@ HANDLE PluginManager::OpenFindListPlugin(const PluginPanelItem *PanelItem, int I
 		pResult=pDup;
 	}
 
-	return pResult?reinterpret_cast<HANDLE>(pResult):INVALID_HANDLE_VALUE;
+	return pResult;
 }
 
 
-void PluginManager::ClosePanel(HANDLE hPlugin)
+void PluginManager::ClosePanel(PHPTR ph)
 {
 	ChangePriority ChPriority(ChangePriority::NORMAL);
-	PanelHandle *ph = (PanelHandle*)hPlugin;
 	const auto RefCnt = ph->RefCnt;
 	assert(RefCnt > 0);
 	ph->RefCnt = RefCnt - 1;
@@ -786,23 +784,20 @@ void PluginManager::ClosePanel(HANDLE hPlugin)
 	}
 }
 
-void PluginManager::RetainPanel(HANDLE hPlugin)
+void PluginManager::RetainPanel(PHPTR ph)
 {
-	PanelHandle *ph = (PanelHandle*)hPlugin;
 	const auto RefCnt = ph->RefCnt;
 	assert(RefCnt > 0);
 	ph->RefCnt = RefCnt + 1;
 }
 
-HANDLE PluginManager::GetRealPanelHandle(HANDLE hPlugin)
+HANDLE PluginManager::GetRealPanelHandle(PHPTR ph)
 {
-	PanelHandle *ph = (PanelHandle*)hPlugin;
 	return ph->hPanel;
 }
 
-FARString PluginManager::GetPluginModuleName(HANDLE hPlugin)
+FARString PluginManager::GetPluginModuleName(PHPTR ph)
 {
-	PanelHandle *ph = (PanelHandle*)hPlugin;
 	return ph->pPlugin->GetModuleName();
 }
 
@@ -874,63 +869,58 @@ int PluginManager::ProcessDialogEvent(int Event, void *Param)
 }
 
 int PluginManager::GetFindData(
-    HANDLE hPlugin,
+    PHPTR ph,
     PluginPanelItem **pPanelData,
     int *pItemsNumber,
     int OpMode
 )
 {
 	ChangePriority ChPriority(ChangePriority::NORMAL);
-	PanelHandle *ph = (PanelHandle *)hPlugin;
 	*pItemsNumber = 0;
 	return ph->pPlugin->GetFindData(ph->hPanel, pPanelData, pItemsNumber, OpMode);
 }
 
 
 void PluginManager::FreeFindData(
-    HANDLE hPlugin,
+    PHPTR ph,
     PluginPanelItem *PanelItem,
     int ItemsNumber
 )
 {
-	PanelHandle *ph = (PanelHandle *)hPlugin;
 	ph->pPlugin->FreeFindData(ph->hPanel, PanelItem, ItemsNumber);
 }
 
 
 int PluginManager::GetVirtualFindData(
-    HANDLE hPlugin,
+    PHPTR ph,
     PluginPanelItem **pPanelData,
     int *pItemsNumber,
     const wchar_t *Path
 )
 {
 	ChangePriority ChPriority(ChangePriority::NORMAL);
-	PanelHandle *ph = (PanelHandle*)hPlugin;
 	*pItemsNumber=0;
 	return ph->pPlugin->GetVirtualFindData(ph->hPanel, pPanelData, pItemsNumber, Path);
 }
 
 
 void PluginManager::FreeVirtualFindData(
-    HANDLE hPlugin,
+    PHPTR ph,
     PluginPanelItem *PanelItem,
     int ItemsNumber
 )
 {
-	PanelHandle *ph = (PanelHandle*)hPlugin;
 	return ph->pPlugin->FreeVirtualFindData(ph->hPanel, PanelItem, ItemsNumber);
 }
 
 
 int PluginManager::SetDirectory(
-    HANDLE hPlugin,
+    PHPTR ph,
     const wchar_t *Dir,
     int OpMode
 )
 {
 	ChangePriority ChPriority(ChangePriority::NORMAL);
-	PanelHandle *ph = (PanelHandle*)hPlugin;
 	return ph->pPlugin->SetDirectory(ph->hPanel, Dir, OpMode);
 }
 
@@ -961,7 +951,7 @@ int PluginManager::ProcessConsoleInput(INPUT_RECORD *Rec)
 
 
 int PluginManager::GetFile(
-    HANDLE hPlugin,
+    PHPTR ph,
     PluginPanelItem *PanelItem,
     const wchar_t *DestPath,
     FARString &strResultName,
@@ -969,7 +959,6 @@ int PluginManager::GetFile(
 )
 {
 	ChangePriority ChPriority(ChangePriority::NORMAL);
-	PanelHandle *ph = (PanelHandle*)hPlugin;
 	SaveScreen *SaveScr=nullptr;
 	int Found=FALSE;
 	KeepUserScreen=FALSE;
@@ -1017,14 +1006,13 @@ int PluginManager::GetFile(
 
 
 int PluginManager::DeleteFiles(
-    HANDLE hPlugin,
+    PHPTR ph,
     PluginPanelItem *PanelItem,
     int ItemsNumber,
     int OpMode
 )
 {
 	ChangePriority ChPriority(ChangePriority::NORMAL);
-	PanelHandle *ph = (PanelHandle*)hPlugin;
 	SaveScreen SaveScr;
 	KeepUserScreen=FALSE;
 	int Code = ph->pPlugin->DeleteFiles(ph->hPanel, PanelItem, ItemsNumber, OpMode);
@@ -1037,13 +1025,12 @@ int PluginManager::DeleteFiles(
 
 
 int PluginManager::MakeDirectory(
-    HANDLE hPlugin,
+    PHPTR ph,
     const wchar_t **Name,
     int OpMode
 )
 {
 	ChangePriority ChPriority(ChangePriority::NORMAL);
-	PanelHandle *ph = (PanelHandle*)hPlugin;
 	SaveScreen SaveScr;
 	KeepUserScreen=FALSE;
 	int Code = ph->pPlugin->MakeDirectory(ph->hPanel, Name, OpMode);
@@ -1056,13 +1043,12 @@ int PluginManager::MakeDirectory(
 
 
 int PluginManager::ProcessHostFile(
-    HANDLE hPlugin,
+    PHPTR ph,
     PluginPanelItem *PanelItem,
     int ItemsNumber,
     int OpMode
 )
 {
-	PanelHandle *ph = (PanelHandle*)hPlugin;
 	ChangePriority ChPriority(ChangePriority::NORMAL);
 	SaveScreen SaveScr;
 	KeepUserScreen=FALSE;
@@ -1076,7 +1062,7 @@ int PluginManager::ProcessHostFile(
 
 
 int PluginManager::GetFiles(
-    HANDLE hPlugin,
+    PHPTR ph,
     PluginPanelItem *PanelItem,
     int ItemsNumber,
     int Move,
@@ -1085,20 +1071,18 @@ int PluginManager::GetFiles(
 )
 {
 	ChangePriority ChPriority(ChangePriority::NORMAL);
-	PanelHandle *ph=(PanelHandle*)hPlugin;
 	return ph->pPlugin->GetFiles(ph->hPanel, PanelItem, ItemsNumber, Move, DestPath, OpMode);
 }
 
 
 int PluginManager::PutFiles(
-    HANDLE hPlugin,
+    PHPTR ph,
     PluginPanelItem *PanelItem,
     int ItemsNumber,
     int Move,
     int OpMode
 )
 {
-	PanelHandle *ph = (PanelHandle*)hPlugin;
 	ChangePriority ChPriority(ChangePriority::NORMAL);
 	SaveScreen SaveScr;
 	KeepUserScreen=FALSE;
@@ -1111,7 +1095,7 @@ int PluginManager::PutFiles(
 }
 
 void PluginManager::GetOpenPluginInfo(
-    HANDLE hPlugin,
+    PHPTR ph,
     OpenPluginInfo *Info
 )
 {
@@ -1119,47 +1103,43 @@ void PluginManager::GetOpenPluginInfo(
 		return;
 
 	memset(Info, 0, sizeof(*Info));
-	PanelHandle *ph = (PanelHandle*)hPlugin;
 	ph->pPlugin->GetOpenPluginInfo(ph->hPanel, Info);
 
 	if (!Info->CurDir)  //хмм...
 		Info->CurDir = L"";
 
-	if ((Info->Flags & OPIF_REALNAMES) && (CtrlObject->Cp()->ActivePanel->GetPluginHandle() == hPlugin) && *Info->CurDir && !IsNetworkServerPath(Info->CurDir))
+	if ((Info->Flags & OPIF_REALNAMES) && (CtrlObject->Cp()->ActivePanel->GetPluginHandle() == ph) && *Info->CurDir && !IsNetworkServerPath(Info->CurDir))
 		apiSetCurrentDirectory(Info->CurDir, false);
 }
 
 
 int PluginManager::ProcessKey(
-    HANDLE hPlugin,
+    PHPTR ph,
     int Key,
     unsigned int ControlState
 )
 {
-	PanelHandle *ph = (PanelHandle*)hPlugin;
 	return ph->pPlugin->ProcessKey(ph->hPanel, Key, ControlState);
 }
 
 
 int PluginManager::ProcessEvent(
-    HANDLE hPlugin,
+    PHPTR ph,
     int Event,
     void *Param
 )
 {
-	PanelHandle *ph = (PanelHandle*)hPlugin;
 	return ph->pPlugin->ProcessEvent(ph->hPanel, Event, Param);
 }
 
 
 int PluginManager::Compare(
-    HANDLE hPlugin,
+    PHPTR ph,
     const PluginPanelItem *Item1,
     const PluginPanelItem *Item2,
     unsigned int Mode
 )
 {
-	PanelHandle *ph = (PanelHandle*)hPlugin;
 	return ph->pPlugin->Compare(ph->hPanel, Item1, Item2, Mode);
 }
 
@@ -1602,9 +1582,9 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 		Item=(INT_PTR)&pd;
 	}
 
-	HANDLE hPlugin=OpenPlugin(item.pPlugin,OpenCode,Item);
+	PHPTR hPlugin=OpenPlugin(item.pPlugin,OpenCode,Item);
 
-	if (hPlugin!=INVALID_HANDLE_VALUE && !Editor && !Viewer && !Dialog)
+	if (hPlugin && !Editor && !Viewer && !Dialog)
 	{
 		if (ActivePanel->ProcessPluginEvent(FE_CLOSE,nullptr))
 		{
@@ -1696,15 +1676,13 @@ bool PluginManager::GetDiskMenuItem(
 	return true;
 }
 
-int PluginManager::UseFarCommand(HANDLE hPlugin,int CommandType)
+int PluginManager::UseFarCommand(PHPTR ph,int CommandType)
 {
 	OpenPluginInfo Info;
-	GetOpenPluginInfo(hPlugin,&Info);
+	GetOpenPluginInfo(ph,&Info);
 
 	if (!(Info.Flags & OPIF_REALNAMES))
 		return FALSE;
-
-	PanelHandle *ph = (PanelHandle*)hPlugin;
 
 	switch (CommandType)
 	{
@@ -1908,9 +1886,9 @@ int PluginManager::ProcessCommandLine(const wchar_t *CommandParam,Panel *Target)
 		CtrlObject->CmdLine->SetString(L"");
 		FARString strPluginCommand=strCommand.CPtr()+(PData->PluginFlags & PF_FULLCMDLINE ? 0:PrefixLength+1);
 		RemoveTrailingSpaces(strPluginCommand);
-		HANDLE hPlugin=OpenPlugin(PData->pPlugin,OPEN_COMMANDLINE,(INT_PTR)strPluginCommand.CPtr()); //BUGBUG
+		PHPTR hPlugin=OpenPlugin(PData->pPlugin,OPEN_COMMANDLINE,(INT_PTR)strPluginCommand.CPtr()); //BUGBUG
 
-		if (hPlugin!=INVALID_HANDLE_VALUE)
+		if (hPlugin)
 		{
 			Panel *NewPanel=CtrlObject->Cp()->ChangePanel(CurPanel,FILE_PANEL,TRUE,TRUE);
 			NewPanel->SetPluginMode(hPlugin,L"",!Target || Target == ActivePanel);
@@ -1958,8 +1936,8 @@ int PluginManager::CallPlugin(DWORD SysID, int OpenFrom, void *Data, void **Ret)
 	if (OpenFrom == OPEN_LUAMACRO)
 		return pPlugin->OpenPlugin(OpenFrom, (INT_PTR)Data) != nullptr;
 
-	auto PluginPanel = reinterpret_cast<PanelHandle*>(OpenPlugin(pPlugin,OpenFrom,(INT_PTR)Data));
-	if (PluginPanel == INVALID_HANDLE_VALUE)
+	PHPTR PluginPanel = OpenPlugin(pPlugin,OpenFrom,(INT_PTR)Data);
+	if (!PluginPanel)
 		return TRUE;
 
 	bool process = false;
@@ -2134,7 +2112,7 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 	if (!Data->pPlugin)
 		return false;
 
-	HANDLE hPlugin = INVALID_HANDLE_VALUE;
+	PHPTR hPlugin = nullptr;
 	Panel* ActivePanel = CtrlObject->Cp()->ActivePanel;
 
 	switch (Data->CallFlags & CPT_MASK)
@@ -2161,7 +2139,7 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 				Item = reinterpret_cast<intptr_t>(&pd);
 			}
 
-			hPlugin = Data->pPlugin->OpenPlugin(OpenCode, Item);
+			hPlugin = OpenPlugin(Data->pPlugin, OpenCode, Item);
 			Result = true;
 		}
 		break;
@@ -2173,7 +2151,7 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 	case CPT_CMDLINE:
 		{
 			const FARString command = Data->Command; // Нужна копия строки
-			hPlugin = Data->pPlugin->OpenPlugin(OPEN_COMMANDLINE, reinterpret_cast<INT_PTR>(command.CPtr()));
+			hPlugin = OpenPlugin(Data->pPlugin, OPEN_COMMANDLINE, reinterpret_cast<INT_PTR>(command.CPtr()));
 			Result = true;
 		}
 		break;
@@ -2187,7 +2165,7 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 		break;
 	}
 
-	if ((hPlugin != INVALID_HANDLE_VALUE) && !IsEditor && !IsViewer && !IsDialog)
+	if (hPlugin && !IsEditor && !IsViewer && !IsDialog)
 	{
 		//BUGBUG: Закрытие панели? Нужно ли оно?
 		//BUGBUG: В ProcessCommandLine зовется перед Open, а в CPT_MENU - после
@@ -2232,7 +2210,7 @@ Plugin *PluginManager::FindPlugin(DWORD SysID)
 	return nullptr;
 }
 
-HANDLE PluginManager::OpenPlugin(Plugin *pPlugin,int OpenFrom,INT_PTR Item)
+PHPTR PluginManager::OpenPlugin(Plugin *pPlugin,int OpenFrom,INT_PTR Item)
 {
 	HANDLE hPlugin = pPlugin->OpenPlugin(OpenFrom, Item);
 
@@ -2241,10 +2219,10 @@ HANDLE PluginManager::OpenPlugin(Plugin *pPlugin,int OpenFrom,INT_PTR Item)
 		PanelHandle *handle = new PanelHandle;
 		handle->hPanel = hPlugin;
 		handle->pPlugin = pPlugin;
-		return (HANDLE)handle;
+		return handle;
 	}
 
-	return hPlugin;
+	return nullptr;
 }
 
 void PluginManager::GetCustomData(FileListItem *ListItem)

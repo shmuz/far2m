@@ -1528,7 +1528,7 @@ static PluginPanelItem *PluginDirList;
 static int DirListItemsNumber;
 static FARString strPluginSearchPath;
 static int StopSearch;
-static HANDLE hDirListPlugin;
+static PHPTR hDirListPlugin;
 static int PluginSearchMsgOut;
 
 static void FarGetPluginDirListMsg(const wchar_t *Name,DWORD Flags)
@@ -1567,12 +1567,12 @@ int FarGetPluginDirListSynched(INT_PTR PluginNumber,
 			/* $ 30.11.2001 DJ
 			   А плагиновая ли это панель?
 			*/
-			HANDLE Handle = ((hPlugin==PANEL_ACTIVE)?CtrlObject->Cp()->ActivePanel:CtrlObject->Cp()->GetAnotherPanel(CtrlObject->Cp()->ActivePanel))->GetPluginHandle();
+			PHPTR Handle = ((hPlugin==PANEL_ACTIVE)?CtrlObject->Cp()->ActivePanel:CtrlObject->Cp()->GetAnotherPanel(CtrlObject->Cp()->ActivePanel))->GetPluginHandle();
 
-			if (!Handle || Handle == INVALID_HANDLE_VALUE)
+			if (!Handle)
 				return FALSE;
 
-			DirListPlugin=*(PanelHandle *)Handle;
+			DirListPlugin=*Handle;
 		}
 		else
 		{
@@ -1591,7 +1591,7 @@ int FarGetPluginDirListSynched(INT_PTR PluginNumber,
 				SetCursorType(FALSE,0);
 				FarGetPluginDirListMsg(strDirName,0);
 				PluginSearchMsgOut=FALSE;
-				hDirListPlugin=(HANDLE)&DirListPlugin;
+				hDirListPlugin=&DirListPlugin;
 				StopSearch=FALSE;
 				*pItemsNumber=DirListItemsNumber=0;
 				*pPanelItem=PluginDirList=nullptr;

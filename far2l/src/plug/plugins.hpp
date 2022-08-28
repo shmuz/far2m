@@ -157,6 +157,9 @@ struct PanelHandle
 	unsigned int RefCnt = 1;
 };
 
+typedef PanelHandle * PHPTR;
+#define PHPTR_STOP ((PHPTR)(-2))
+
 // параметры вызова макрофункций plugin.call и т.п.
 enum CALLPLUGINFLAGS
 {
@@ -251,7 +254,7 @@ class PluginManager
 		int CommandsMenu(int ModalType,int StartPos,const wchar_t *HistoryName=nullptr);
 		bool GetDiskMenuItem(Plugin *pPlugin,int PluginItem,bool &ItemPresent, wchar_t& PluginHotkey, FARString &strPluginText);
 
-		int UseFarCommand(HANDLE hPlugin,int CommandType);
+		int UseFarCommand(PHPTR ph,int CommandType);
 		void ReloadLanguage();
 		void DiscardCache();
 		int ProcessCommandLine(const wchar_t *Command,Panel *Target=nullptr);
@@ -270,28 +273,28 @@ class PluginManager
 
 		Plugin *Analyse(const AnalyseData *pData);
 
-		HANDLE OpenPlugin(Plugin *pPlugin,int OpenFrom,INT_PTR Item);
-		HANDLE OpenFilePlugin(const wchar_t *Name, int OpMode, OPENFILEPLUGINTYPE Type, Plugin *pDesiredPlugin = nullptr);
-		HANDLE OpenFindListPlugin(const PluginPanelItem *PanelItem,int ItemsNumber);
-		HANDLE GetRealPanelHandle(HANDLE hPlugin);
-		FARString GetPluginModuleName(HANDLE hPlugin);
-		void ClosePanel(HANDLE hPlugin); // decreases refcnt and actually closes plugin if refcnt reached zero
-		void RetainPanel(HANDLE hPlugin); // increments refcnt
-		void GetOpenPluginInfo(HANDLE hPlugin, OpenPluginInfo *Info);
-		int GetFindData(HANDLE hPlugin,PluginPanelItem **pPanelItem,int *pItemsNumber,int Silent);
-		void FreeFindData(HANDLE hPlugin,PluginPanelItem *PanelItem,int ItemsNumber);
-		int GetVirtualFindData(HANDLE hPlugin,PluginPanelItem **pPanelItem,int *pItemsNumber,const wchar_t *Path);
-		void FreeVirtualFindData(HANDLE hPlugin,PluginPanelItem *PanelItem,int ItemsNumber);
-		int SetDirectory(HANDLE hPlugin,const wchar_t *Dir,int OpMode);
-		int GetFile(HANDLE hPlugin,PluginPanelItem *PanelItem,const wchar_t *DestPath,FARString &strResultName,int OpMode);
-		int GetFiles(HANDLE hPlugin,PluginPanelItem *PanelItem,int ItemsNumber,int Move,const wchar_t **DestPath,int OpMode);
-		int PutFiles(HANDLE hPlugin,PluginPanelItem *PanelItem,int ItemsNumber,int Move,int OpMode);
-		int DeleteFiles(HANDLE hPlugin,PluginPanelItem *PanelItem,int ItemsNumber,int OpMode);
-		int MakeDirectory(HANDLE hPlugin,const wchar_t **Name,int OpMode);
-		int ProcessHostFile(HANDLE hPlugin,PluginPanelItem *PanelItem,int ItemsNumber,int OpMode);
-		int ProcessKey(HANDLE hPlugin,int Key,unsigned int ControlState);
-		int ProcessEvent(HANDLE hPlugin,int Event,void *Param);
-		int Compare(HANDLE hPlugin,const PluginPanelItem *Item1,const PluginPanelItem *Item2,unsigned int Mode);
+		PHPTR OpenPlugin(Plugin *pPlugin,int OpenFrom,INT_PTR Item);
+		PHPTR OpenFilePlugin(const wchar_t *Name, int OpMode, OPENFILEPLUGINTYPE Type, Plugin *pDesiredPlugin = nullptr);
+		PHPTR OpenFindListPlugin(const PluginPanelItem *PanelItem,int ItemsNumber);
+		HANDLE GetRealPanelHandle(PHPTR ph);
+		FARString GetPluginModuleName(PHPTR ph);
+		void ClosePanel(PHPTR ph); // decreases refcnt and actually closes plugin if refcnt reached zero
+		void RetainPanel(PHPTR ph); // increments refcnt
+		void GetOpenPluginInfo(PHPTR ph, OpenPluginInfo *Info);
+		int GetFindData(PHPTR ph,PluginPanelItem **pPanelItem,int *pItemsNumber,int Silent);
+		void FreeFindData(PHPTR ph,PluginPanelItem *PanelItem,int ItemsNumber);
+		int GetVirtualFindData(PHPTR ph,PluginPanelItem **pPanelItem,int *pItemsNumber,const wchar_t *Path);
+		void FreeVirtualFindData(PHPTR ph,PluginPanelItem *PanelItem,int ItemsNumber);
+		int SetDirectory(PHPTR ph,const wchar_t *Dir,int OpMode);
+		int GetFile(PHPTR ph,PluginPanelItem *PanelItem,const wchar_t *DestPath,FARString &strResultName,int OpMode);
+		int GetFiles(PHPTR ph,PluginPanelItem *PanelItem,int ItemsNumber,int Move,const wchar_t **DestPath,int OpMode);
+		int PutFiles(PHPTR ph,PluginPanelItem *PanelItem,int ItemsNumber,int Move,int OpMode);
+		int DeleteFiles(PHPTR ph,PluginPanelItem *PanelItem,int ItemsNumber,int OpMode);
+		int MakeDirectory(PHPTR ph,const wchar_t **Name,int OpMode);
+		int ProcessHostFile(PHPTR ph,PluginPanelItem *PanelItem,int ItemsNumber,int OpMode);
+		int ProcessKey(PHPTR ph,int Key,unsigned int ControlState);
+		int ProcessEvent(PHPTR ph,int Event,void *Param);
+		int Compare(PHPTR ph,const PluginPanelItem *Item1,const PluginPanelItem *Item2,unsigned int Mode);
 		int ProcessEditorInput(INPUT_RECORD *Rec);
 		int ProcessEditorEvent(int Event,void *Param);
 		int ProcessViewerEvent(int Event,void *Param);

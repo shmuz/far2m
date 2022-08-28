@@ -425,7 +425,7 @@ int Panel::ChangeDiskMenu(int Pos,int FirstCall)
 
 	auto another_panel = CtrlObject->Cp()->GetAnotherPanel(this);
 	another_panel->GetCurDirPluginAware(another_curdir);
-	if (another_panel->GetPluginHandle() != INVALID_HANDLE_VALUE)
+	if (another_panel->GetPluginHandle())
 	{
 		another_curdir.Insert(0, L"{");
 		another_curdir.Append(L"}");
@@ -473,7 +473,7 @@ int Panel::ChangeDiskMenu(int Pos,int FirstCall)
 				wcsncpy(item.location.path, m.path.CPtr(), ARRAYSIZE(item.location.path) - 1);
 				item.location.id = m.id;
 				if (item.location.path[0] == L'{' && another_curdir == item.location.path
-				 && another_panel->GetPluginHandle() != INVALID_HANDLE_VALUE)
+				 && another_panel->GetPluginHandle())
 				{
 					item.kind = PanelMenuItem::PLUGIN;
 					item.pPlugin = nullptr;
@@ -792,7 +792,7 @@ int Panel::ChangeDiskMenu(int Pos,int FirstCall)
 
 bool Panel::SetLocation_Plugin(bool file_plugin, Plugin *plugin, const wchar_t *path, const wchar_t *host_file, LONG_PTR item)
 {
-	HANDLE hPlugin;
+	PHPTR hPlugin;
 
 	if (file_plugin)
 	{
@@ -803,7 +803,7 @@ bool Panel::SetLocation_Plugin(bool file_plugin, Plugin *plugin, const wchar_t *
 		hPlugin = CtrlObject->Plugins.OpenPlugin( plugin, OPEN_DISKMENU, item); //nItem
 	}
 
-	if (hPlugin == INVALID_HANDLE_VALUE)
+	if (hPlugin == nullptr)
 	{
 		fprintf(stderr,
 			"SetLocation_Plugin(%d, %p, '%ls', '%ls', %lld) FAILED plugin open\n",
@@ -1402,7 +1402,7 @@ int Panel::GetCurDirPluginAware(FARString &strCurDir)
 {
 	if (PanelMode==PLUGIN_PANEL)
 	{
-		HANDLE hPlugin=GetPluginHandle();
+		PHPTR hPlugin=GetPluginHandle();
 //		PanelHandle *ph = (PanelHandle*)hPlugin;
 		OpenPluginInfo Info;
 		CtrlObject->Plugins.GetOpenPluginInfo(hPlugin,&Info);
@@ -1752,7 +1752,7 @@ int Panel::SetPluginCommand(int Command,int Param1,LONG_PTR Param2)
 
 		case FCTL_GETPANELPLUGINHANDLE:
 		{
-			*(HANDLE *)Param2 = (GetPluginHandle() != INVALID_HANDLE_VALUE) ? CtrlObject->Plugins.GetRealPanelHandle(GetPluginHandle()) : INVALID_HANDLE_VALUE;
+			*(HANDLE *)Param2 = GetPluginHandle() ? CtrlObject->Plugins.GetRealPanelHandle(GetPluginHandle()) : INVALID_HANDLE_VALUE;
 			Result=TRUE;
 			break;
 		}
@@ -2093,7 +2093,7 @@ bool Panel::SaveShortcutFolder(int Pos)
 
 	if (PanelMode==PLUGIN_PANEL)
 	{
-		HANDLE hPlugin=GetPluginHandle();
+		PHPTR hPlugin=GetPluginHandle();
 		PanelHandle *ph = (PanelHandle*)hPlugin;
 		strPluginModule = ph->pPlugin->GetModuleName();
 		OpenPluginInfo Info;
@@ -2231,9 +2231,9 @@ bool Panel::ExecShortcutFolder(int Pos)
 					{
 						if (pPlugin->HasOpenPlugin())
 						{
-							HANDLE hNewPlugin=CtrlObject->Plugins.OpenPlugin(pPlugin,OPEN_SHORTCUT,(INT_PTR)strPluginData.CPtr());
+							PHPTR hNewPlugin=CtrlObject->Plugins.OpenPlugin(pPlugin,OPEN_SHORTCUT,(INT_PTR)strPluginData.CPtr());
 
-							if (hNewPlugin!=INVALID_HANDLE_VALUE)
+							if (hNewPlugin)
 							{
 								int CurFocus=SrcPanel->GetFocus();
 

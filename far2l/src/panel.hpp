@@ -36,6 +36,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "scrobj.hpp"
 #include "panelctype.hpp"
 #include "FARString.hpp"
+#include "plugins.hpp"
 
 class DizList;
 
@@ -273,10 +274,10 @@ class Panel:public ScreenObject
 		virtual void SetReturnCurrentFile(int Mode) {};
 		virtual void QViewDelTempName() {};
 		virtual void GetOpenPluginInfo(struct OpenPluginInfo *Info) {};
-		virtual void SetPluginMode(HANDLE hPlugin,const wchar_t *PluginFile,bool SendOnFocus=false) {};
+		virtual void SetPluginMode(PHPTR hPlugin,const wchar_t *PluginFile,bool SendOnFocus=false) {};
 		virtual void SetPluginModified() {};
 		virtual int ProcessPluginEvent(int Event,void *Param) {return FALSE;};
-		virtual HANDLE GetPluginHandle() {return(INVALID_HANDLE_VALUE);};
+		virtual PHPTR GetPluginHandle() {return nullptr;};
 		virtual void SetTitle();
 		virtual FARString &GetTitle(FARString &Title,int SubLen=-1,int TruncSize=0);
 

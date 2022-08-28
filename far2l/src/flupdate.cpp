@@ -244,7 +244,7 @@ void FileList::ReadFileNames(int KeepSelection, int IgnoreVisible, int DrawMessa
 
 	CachedFileOwnerLookup cached_owners;
 	CachedFileGroupLookup cached_groups;
-	
+
 	DWORD StartTime = WINPORT(GetTickCount)();
 
 	while (Find.Get(fdata))
@@ -412,7 +412,7 @@ void FileList::ReadFileNames(int KeepSelection, int IgnoreVisible, int DrawMessa
 
 	if (AnotherPanel->GetMode()==PLUGIN_PANEL)
 	{
-		HANDLE hAnotherPlugin=AnotherPanel->GetPluginHandle();
+		PHPTR hAnotherPlugin=AnotherPanel->GetPluginHandle();
 		PluginPanelItem *PanelData=nullptr;
 		FARString strPath;
 		int PanelCount=0;

@@ -2328,7 +2328,7 @@ int FarMacroApi::dlggetvalueFunc()
 		{
 			SMALL_RECT Rect;
 
-			if (SendDlgMessage((HANDLE)CurFrame,DM_GETDLGRECT,0,(LONG_PTR)&Rect))
+			if (SendDlgMessage(CurFrame,DM_GETDLGRECT,0,(LONG_PTR)&Rect))
 			{
 				switch (TypeInf)
 				{
@@ -2358,7 +2358,7 @@ int FarMacroApi::dlggetvalueFunc()
 					FarListGetItem ListItem;
 					ListItem.ItemIndex=Item->ListPtr->GetSelectPos();
 
-					if (SendDlgMessage((HANDLE)CurFrame,DM_LISTGETITEM,Index,(LONG_PTR)&ListItem))
+					if (SendDlgMessage(CurFrame,DM_LISTGETITEM,Index,(LONG_PTR)&ListItem))
 					{
 						Ret=ListItem.Item.Text;
 					}

@@ -936,7 +936,7 @@ int TreeList::ProcessKey(int Key)
 				{
 					PluginPanelItem *ItemList=new PluginPanelItem[1];
 					int ItemNumber=1;
-					HANDLE hAnotherPlugin=AnotherPanel->GetPluginHandle();
+					PHPTR hAnotherPlugin=AnotherPanel->GetPluginHandle();
 					FileList::FileNameToPluginItem(ListData[CurFile]->strName,ItemList);
 					int PutCode=CtrlObject->Plugins.PutFiles(hAnotherPlugin,ItemList,ItemNumber,Move,0);
 

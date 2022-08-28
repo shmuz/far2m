@@ -93,7 +93,7 @@ struct FINDLIST
 struct ARCLIST
 {
 	FARString strArcName;
-	HANDLE hPlugin = INVALID_HANDLE_VALUE;    // Plugin handle
+	PHPTR hPlugin = nullptr;    // Plugin handle
 	DWORD Flags = 0;       // OpenPluginInfo.Flags
 	FARString strRootPath; // Root path in plugin after opening.
 };
@@ -188,7 +188,7 @@ public:
 		ArcList.clear();
 	}
 
-	size_t AddArcListItem(const wchar_t *ArcName,HANDLE hPlugin,DWORD dwFlags,const wchar_t *RootPath)
+	size_t AddArcListItem(const wchar_t *ArcName,PHPTR hPlugin,DWORD dwFlags,const wchar_t *RootPath)
 	{
 		CriticalSectionLock Lock(DataCS);
 		try {
@@ -645,7 +645,7 @@ static bool IsWordDiv(const wchar_t symbol)
 	return !symbol||IsSpace(symbol)||IsEol(symbol)||IsWordDiv(Opt.strWordDiv,symbol);
 }
 
-static void SetPluginDirectory(const wchar_t *DirName,HANDLE hPlugin,bool UpdatePanel=false)
+static void SetPluginDirectory(const wchar_t *DirName,PHPTR hPlugin,bool UpdatePanel=false)
 {
 	if (DirName && *DirName)
 	{
@@ -1450,7 +1450,7 @@ static void AnalyzeFileItem(HANDLE hDlg, PluginPanelItem* FileItem,
 
 	bool RemoveTemp = false;
 
-	HANDLE hPlugin = INVALID_HANDLE_VALUE;
+	PHPTR hPlugin = nullptr;
 	if (ArcIndex != LIST_INDEX_NONE)
 	{
 		ARCLIST ArcItem;
@@ -1459,7 +1459,7 @@ static void AnalyzeFileItem(HANDLE hDlg, PluginPanelItem* FileItem,
 	}
 
 	FARString FileToScan;
-	if (hPlugin != INVALID_HANDLE_VALUE)
+	if (hPlugin)
 	{
 		if (!CtrlObject->Plugins.UseFarCommand(hPlugin, PLUGIN_FARGETFILES))
 		{
@@ -1521,16 +1521,16 @@ class FindDlg_TempFileHolder : public TempFileUploadHolder
 
 		FARString strSaveDir;
 
-		if (ArcItem.hPlugin == INVALID_HANDLE_VALUE)
+		if (ArcItem.hPlugin == nullptr)
 		{
 			FARString strFindArcName = ArcItem.strArcName;
 			int SavePluginsOutput = DisablePluginsOutput;
 			DisablePluginsOutput = TRUE;
 			ArcItem.hPlugin = CtrlObject->Plugins.OpenFilePlugin(strFindArcName, OPM_FIND, OFP_SEARCH);
 			DisablePluginsOutput = SavePluginsOutput;
-			if (ArcItem.hPlugin == PANEL_STOP || ArcItem.hPlugin == INVALID_HANDLE_VALUE)
+			if (ArcItem.hPlugin == PHPTR_STOP || ArcItem.hPlugin == nullptr)
 			{
-				ArcItem.hPlugin = INVALID_HANDLE_VALUE;
+				ArcItem.hPlugin = nullptr;
 				fprintf(stderr, "OnEditedFileSaved: can't open plugins '%ls'\n", strFindArcName.CPtr());
 				return false;
 			}
@@ -1833,7 +1833,7 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 						if(!(ArcItem.Flags & OPIF_REALNAMES))
 						{
 							FARString strFindArcName = ArcItem.strArcName;
-							if(ArcItem.hPlugin == INVALID_HANDLE_VALUE)
+							if(ArcItem.hPlugin == nullptr)
 							{
 								int SavePluginsOutput=DisablePluginsOutput;
 								DisablePluginsOutput=TRUE;
@@ -1844,10 +1844,10 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 								itd.SetArcListItem(FindItem.ArcIndex, ArcItem);
 								DisablePluginsOutput=SavePluginsOutput;
 
-								if (ArcItem.hPlugin == PANEL_STOP ||
-										ArcItem.hPlugin == INVALID_HANDLE_VALUE)
+								if (ArcItem.hPlugin == PHPTR_STOP ||
+										ArcItem.hPlugin == nullptr)
 								{
-									ArcItem.hPlugin = INVALID_HANDLE_VALUE;
+									ArcItem.hPlugin = nullptr;
 									itd.SetArcListItem(FindItem.ArcIndex, ArcItem);
 									return TRUE;
 								}
@@ -1868,7 +1868,7 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 								if (ClosePlugin)
 								{
 									CtrlObject->Plugins.ClosePanel(ArcItem.hPlugin);
-									ArcItem.hPlugin = INVALID_HANDLE_VALUE;
+									ArcItem.hPlugin = nullptr;
 									itd.SetArcListItem(FindItem.ArcIndex, ArcItem);
 								}
 								return FALSE;
@@ -1878,7 +1878,7 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 								if (ClosePlugin)
 								{
 									CtrlObject->Plugins.ClosePanel(ArcItem.hPlugin);
-									ArcItem.hPlugin = INVALID_HANDLE_VALUE;
+									ArcItem.hPlugin = nullptr;
 									itd.SetArcListItem(FindItem.ArcIndex, ArcItem);
 								}
 							}
@@ -2443,7 +2443,7 @@ static void ArchiveSearch(HANDLE hDlg, const wchar_t *ArcName)
 	_ALGO(SysLog(L"ArcName='%ls'",(ArcName?ArcName:L"nullptr")));
 
 	FARString strArcName = ArcName;
-	HANDLE hArc;
+	PHPTR hArc;
 	{
 		PluginLocker Lock;
 		int SavePluginsOutput=DisablePluginsOutput;
@@ -2452,16 +2452,16 @@ static void ArchiveSearch(HANDLE hDlg, const wchar_t *ArcName)
 		DisablePluginsOutput=SavePluginsOutput;
 	}
 
-	if (hArc==PANEL_STOP)
+	if (hArc==PHPTR_STOP)
 	{
 		StopFlag = true;
 		_ALGO(SysLog(L"return: hArc==(HANDLE)-2"));
 		return;
 	}
 
-	if (hArc==INVALID_HANDLE_VALUE)
+	if (hArc==nullptr)
 	{
-		_ALGO(SysLog(L"return: hArc==INVALID_HANDLE_VALUE"));
+		_ALGO(SysLog(L"return: hArc==nullptr"));
 		return;
 	}
 
@@ -2495,7 +2495,7 @@ static void ArchiveSearch(HANDLE hDlg, const wchar_t *ArcName)
 				PluginLocker Lock;
 				CtrlObject->Plugins.ClosePanel(ArcItem.hPlugin);
 			}
-			ArcItem.hPlugin = INVALID_HANDLE_VALUE;
+			ArcItem.hPlugin = nullptr;
 			itd.SetArcListItem(itd.GetFindFileArcIndex(), ArcItem);
 
 			if (SaveListCount == itd.GetFindListCount())
@@ -2598,7 +2598,7 @@ static void DoScanTree(HANDLE hDlg, FARString& strRoot)
 	}
 }
 
-static void ScanPluginTree(HANDLE hDlg, HANDLE hPlugin, DWORD Flags, int& RecurseLevel)
+static void ScanPluginTree(HANDLE hDlg, PHPTR hPlugin, DWORD Flags, int& RecurseLevel)
 {
 	PluginPanelItem *PanelData=nullptr;
 	int ItemCount=0;
@@ -2640,7 +2640,7 @@ static void ScanPluginTree(HANDLE hDlg, HANDLE hPlugin, DWORD Flags, int& Recurs
 
 				AnalyzeFileItem(hDlg, CurPanelItem, strCurName, CurPanelItem->FindData);
 
-				if (SearchInArchives && (hPlugin != INVALID_HANDLE_VALUE) && (Flags & OPIF_REALNAMES))
+				if (SearchInArchives && hPlugin && (Flags & OPIF_REALNAMES))
 					ArchiveSearch(hDlg, strPluginSearchPath + strCurName);
 			}
 		}
@@ -2893,12 +2893,12 @@ static bool FindFilesProcess(Vars& v)
 	if (v.PluginMode)
 	{
 		Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
-		HANDLE hPlugin=ActivePanel->GetPluginHandle();
+		PHPTR hPlugin=ActivePanel->GetPluginHandle();
 		OpenPluginInfo Info;
 		{
 			PluginLocker Lock;
 			CtrlObject->Plugins.GetOpenPluginInfo(hPlugin,&Info);
-			itd.SetFindFileArcIndex(itd.AddArcListItem(Info.HostFile, hPlugin, Info.Flags, Info.CurDir));
+			itd.SetFindFileArcIndex(itd.AddArcListItem(Info.HostFile, (PHPTR)hPlugin, Info.Flags, Info.CurDir));
 		}
 
 		if (itd.GetFindFileArcIndex() == LIST_INDEX_NONE)
@@ -3014,9 +3014,9 @@ static bool FindFilesProcess(Vars& v)
 					}
 				}
 
-				HANDLE hNewPlugin = CtrlObject->Plugins.OpenFindListPlugin(PanelItems,ItemsNumber);
+				PHPTR hNewPlugin = CtrlObject->Plugins.OpenFindListPlugin(PanelItems,ItemsNumber);
 
-				if (hNewPlugin!=INVALID_HANDLE_VALUE)
+				if (hNewPlugin)
 				{
 					Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
 					Panel *NewPanel=CtrlObject->Cp()->ChangePanel(ActivePanel,FILE_PANEL,TRUE,TRUE);
@@ -3047,7 +3047,7 @@ static bool FindFilesProcess(Vars& v)
 					ARCLIST ArcItem;
 					itd.GetArcListItem(FindItem.ArcIndex, ArcItem);
 
-					if (ArcItem.hPlugin == INVALID_HANDLE_VALUE)
+					if (ArcItem.hPlugin == nullptr)
 					{
 						FARString strArcName = ArcItem.strArcName;
 
@@ -3060,12 +3060,12 @@ static bool FindFilesProcess(Vars& v)
 						CutToSlash(strArcPath);
 						FindPanel->SetCurDir(strArcPath,TRUE);
 						ArcItem.hPlugin=((FileList *)FindPanel)->OpenFilePlugin(strArcName,FALSE, OFP_SEARCH);
-						if (ArcItem.hPlugin==PANEL_STOP)
-							ArcItem.hPlugin = INVALID_HANDLE_VALUE;
+						if (ArcItem.hPlugin==PHPTR_STOP)
+							ArcItem.hPlugin = nullptr;
 						itd.SetArcListItem(FindItem.ArcIndex, ArcItem);
 					}
 
-					if (ArcItem.hPlugin != INVALID_HANDLE_VALUE)
+					if (ArcItem.hPlugin)
 					{
 						PluginLocker Lock;
 						OpenPluginInfo Info;

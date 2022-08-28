@@ -93,7 +93,7 @@ static int _cdecl SortList(const void *el1,const void *el2);
 
 static int ListSortMode,ListSortOrder,ListSortGroups,ListSelectedFirst,ListDirectoriesFirst;
 static int ListPanelMode,ListNumericSort,ListCaseSensitiveSort;
-static HANDLE hSortPlugin;
+static PHPTR hSortPlugin;
 
 static_assert(static_cast<size_t>(PanelSortMode::BY_USER) == static_cast<size_t>(OPENPLUGININFO_SORTMODES::SM_USER), "Error!");
 
@@ -190,7 +190,7 @@ FileList::FileList():
 	DizRead(FALSE),
 	ListData(nullptr),
 	FileCount(0),
-	hPlugin(INVALID_HANDLE_VALUE),
+	hPlugin(nullptr),
 	UpperFolderTopFile(0),
 	LastCurFile(-1),
 	ReturnCurrentFile(FALSE),
@@ -792,8 +792,8 @@ int64_t FileList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 			PluginInfo *PInfo=(PluginInfo *)vParam;
 			memset(PInfo,0,sizeof(*PInfo));
 			PInfo->StructSize=sizeof(*PInfo);
-			if (GetMode() == PLUGIN_PANEL && hPlugin != INVALID_HANDLE_VALUE && ((PanelHandle*)hPlugin)->pPlugin)
-				return ((PanelHandle*)hPlugin)->pPlugin->GetPluginInfo(PInfo)?1:0;
+			if (GetMode() == PLUGIN_PANEL && hPlugin && hPlugin->pPlugin)
+				return hPlugin->pPlugin->GetPluginInfo(PInfo)?1:0;
 			return 0;
 		}
 
@@ -969,7 +969,7 @@ int64_t FileList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 
 class FileList_TempFileHolder : public TempFileUploadHolder
 {
-	HANDLE hPlugin;
+	PHPTR hPlugin;
 
 	virtual bool UploadTempFile()
 	{
@@ -1016,7 +1016,7 @@ class FileList_TempFileHolder : public TempFileUploadHolder
 public:
 	int PutCode = -1;
 
-	FileList_TempFileHolder(const FARString &strTempFileName_, HANDLE hPlugin_)
+	FileList_TempFileHolder(const FARString &strTempFileName_, PHPTR hPlugin_)
 	:
 		TempFileUploadHolder(strTempFileName_),
 		hPlugin(hPlugin_)
@@ -2468,7 +2468,7 @@ void FileList::ProcessEnter(bool EnableExec,bool SeparateWindow,bool EnableAssoc
 		}
 		else if (SetCurPath())
 		{
-			HANDLE hOpen=INVALID_HANDLE_VALUE;
+			PHPTR hOpen=nullptr;
 
 			if (EnableAssoc &&
 			        !EnableExec &&     // не запускаем и не в отдельном окне,
@@ -2481,10 +2481,10 @@ void FileList::ProcessEnter(bool EnableExec,bool SeparateWindow,bool EnableAssoc
 				return;
 			}
 
-			if (SeparateWindow || (hOpen=OpenFilePlugin(strFileName,TRUE, Type))==INVALID_HANDLE_VALUE ||
-			        hOpen==PANEL_STOP)
+			if (SeparateWindow || (hOpen=OpenFilePlugin(strFileName,TRUE, Type))==nullptr ||
+			        hOpen==PHPTR_STOP)
 			{
-				if (EnableExec && hOpen!=PANEL_STOP)
+				if (EnableExec && hOpen!=PHPTR_STOP)
 //					if (SeparateWindow || Opt.UseRegisteredTypes)
 					{
 						SetCurPath(); // OpenFilePlugin can change current path
@@ -4827,23 +4827,23 @@ int FileList::GetPrevDirectoriesFirst()
 	return (PanelMode==PLUGIN_PANEL && !PluginsList.Empty())?(*PluginsList.First())->PrevDirectoriesFirst:DirectoriesFirst;
 }
 
-HANDLE FileList::OpenFilePlugin(const wchar_t *FileName, int PushPrev, OPENFILEPLUGINTYPE Type)
+PHPTR FileList::OpenFilePlugin(const wchar_t *FileName, int PushPrev, OPENFILEPLUGINTYPE Type)
 {
 	if (!PushPrev && PanelMode==PLUGIN_PANEL)
 	{
 		for (;;)
 		{
 			if (ProcessPluginEvent(FE_CLOSE,nullptr))
-				return PANEL_STOP;
+				return PHPTR_STOP;
 
 			if (!PopPlugin(TRUE))
 				break;
 		}
 	}
 
-	HANDLE hNewPlugin=OpenPluginForFile(FileName, 0, Type);
+	PHPTR hNewPlugin=OpenPluginForFile(FileName, 0, Type);
 
-	if (hNewPlugin!=INVALID_HANDLE_VALUE && hNewPlugin!=PANEL_STOP)
+	if (hNewPlugin && hNewPlugin!=PHPTR_STOP)
 	{
 		if (PushPrev)
 		{
