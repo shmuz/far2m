@@ -3567,7 +3567,7 @@ long FileList::SelectFiles(int Mode,const wchar_t *Mask)
 		}
 		else
 		{
-			strMask = L"*.";
+			strMask = L"/^[^.]+$/";
 		}
 
 		Mode=(Mode==SELECT_ADDEXT) ? SELECT_ADD:SELECT_REMOVE;
