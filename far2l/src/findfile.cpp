@@ -2898,7 +2898,7 @@ static bool FindFilesProcess(Vars& v)
 		{
 			PluginLocker Lock;
 			CtrlObject->Plugins.GetOpenPluginInfo(hPlugin,&Info);
-			itd.SetFindFileArcIndex(itd.AddArcListItem(Info.HostFile, (PHPTR)hPlugin, Info.Flags, Info.CurDir));
+			itd.SetFindFileArcIndex(itd.AddArcListItem(Info.HostFile, hPlugin, Info.Flags, Info.CurDir));
 		}
 
 		if (itd.GetFindFileArcIndex() == LIST_INDEX_NONE)

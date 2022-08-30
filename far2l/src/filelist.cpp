@@ -142,7 +142,7 @@ struct CustomSort
 	int                  ListSortMode;
 	int                  RevertSorting;
 	int                  Reserved[2];
-	HANDLE               hSortPlugin;
+	PHPTR                hSortPlugin;
 };
 
 static bool SortFileList(CustomSort* cs, wchar_t* indicator)
@@ -415,7 +415,7 @@ void FileList::SortFileList(int KeepPosition)
 			strCurName = ListData[CurFile]->strName;
 		}
 
-		hSortPlugin=(PanelMode==PLUGIN_PANEL && hPlugin && reinterpret_cast<PanelHandle*>(hPlugin)->pPlugin->HasCompare()) ? hPlugin:nullptr;
+		hSortPlugin=(PanelMode==PLUGIN_PANEL && hPlugin && hPlugin->pPlugin->HasCompare()) ? hPlugin:nullptr;
 
 		if (SortMode < PanelSortMode::COUNT)
 		{

@@ -688,12 +688,6 @@ HANDLE PluginW::OpenPlugin(int OpenFrom, INT_PTR Item)
 
 	HANDLE hResult = INVALID_HANDLE_VALUE;
 
-#define EXECUTE_FUNCTION_EX(function, es) \
-	{ \
-		es.bUnloaded = false; \
-		es.nResult = 0; \
-			es.nResult = (INT_PTR)function; \
-	}
 	if (Load() && pOpenPluginW)
 	{
 		//CurPluginItem=this; //BUGBUG
