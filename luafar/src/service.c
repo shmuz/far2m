@@ -1931,6 +1931,10 @@ int panel_GetColumnWidths(lua_State *L) {
   return get_string_info(L, FCTL_GETCOLUMNWIDTHS);
 }
 
+int panel_GetPanelPrefix(lua_State *L) {
+  return get_string_info(L, FCTL_GETPANELPREFIX);
+}
+
 int panel_RedrawPanel(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
@@ -5489,6 +5493,7 @@ static const luaL_Reg panel_funcs[] =
   {"GetPanelInfo",            panel_GetPanelInfo},
   {"GetPanelItem",            panel_GetPanelItem},
   {"GetPanelPluginHandle",    panel_GetPanelPluginHandle},
+  {"GetPanelPrefix",          panel_GetPanelPrefix},
   {"GetSelectedPanelItem",    panel_GetSelectedPanelItem},
   {"GetUserScreen",           panel_GetUserScreen},
   {"InsertCmdLine",           panel_InsertCmdLine},

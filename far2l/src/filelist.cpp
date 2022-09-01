@@ -753,6 +753,17 @@ int FileList::SendKeyToPlugin(DWORD Key,BOOL Pred)
 	return FALSE;
 }
 
+bool FileList::GetPluginInfo(PluginInfo *PInfo)
+{
+	const auto PluginPanel = GetPluginHandle();
+	if (PluginPanel && PluginPanel->pPlugin && GetMode() == PLUGIN_PANEL)
+	{
+		PInfo->StructSize = sizeof(PluginInfo);
+		return PluginPanel->pPlugin->GetPluginInfo(PInfo);
+	}
+	return false;
+}
+
 int64_t FileList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 {
 	switch (OpCode)

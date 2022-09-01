@@ -381,6 +381,7 @@ class FileList:public Panel
 		virtual long FindNext(int StartPos, const wchar_t *Name);
 
 		void ProcessHostFile();
+		bool GetPluginInfo(PluginInfo *PInfo);
 		virtual void UpdateViewPanel();
 		virtual void CompareDir();
 		virtual void ClearSelection();

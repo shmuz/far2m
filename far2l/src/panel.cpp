@@ -1883,6 +1883,25 @@ int Panel::SetPluginCommand(int Command,int Param1,LONG_PTR Param2)
 			break;
 		}
 
+		case FCTL_GETPANELPREFIX:
+		{
+			FARString strTemp;
+
+			if (GetType() == FILE_PANEL && GetMode() == PLUGIN_PANEL)
+			{
+				PluginInfo PInfo = {sizeof(PInfo)};
+				auto DestPanel = dynamic_cast<FileList*>(this);
+				if (DestPanel && DestPanel->GetPluginInfo(&PInfo))
+					strTemp = NullToEmpty(PInfo.CommandPrefix);
+			}
+
+			if (Param1 && Param2)
+				far_wcsncpy(reinterpret_cast<wchar_t*>(Param2), strTemp, Param1);
+
+			Result = static_cast<int>(strTemp.GetLength() + 1);
+			break;
+		}
+
 		case FCTL_GETPANELHOSTFILE:
 		case FCTL_GETPANELFORMAT:
 		case FCTL_GETPANELDIR:
