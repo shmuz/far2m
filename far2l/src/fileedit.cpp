@@ -2526,6 +2526,16 @@ int FileEditor::EditorControl(int Command, void *Param)
 		{
 			return m_editor->GetStackBookmarks((EditorBookMarks *)Param);
 		}
+		case ECTL_GETTITLE:
+		{
+			FARString title;
+			GetTitle(title);
+			if (Param)
+			{
+				wcscpy(reinterpret_cast<LPWSTR>(Param),title);
+			}
+			return static_cast<int>(title.GetLength()+1);
+		}
 		case ECTL_SETTITLE:
 		{
 			strPluginTitle = (const wchar_t*)Param;

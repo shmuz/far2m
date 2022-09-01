@@ -631,6 +631,19 @@ int editor_GetFileName(lua_State *L) {
   return 1;
 }
 
+int editor_GetTitle(lua_State *L)
+{
+  PSInfo *Info = GetPluginStartupInfo(L);
+  int size = Info->EditorControl(ECTL_GETTITLE, NULL);
+  lua_pushstring(L, "");
+  if (size) {
+    void* str = lua_newuserdata(L, size * sizeof(wchar_t));
+    if (Info->EditorControl(ECTL_GETTITLE, str))
+      push_utf8_string(L, (wchar_t*)str, -1);
+  }
+  return 1;
+}
+
 int editor_GetInfo(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
@@ -5432,6 +5445,7 @@ static const luaL_Reg editor_funcs[] =
   {"GetStackBookmarks",   editor_GetStackBookmarks},
   {"GetString",           editor_GetString},
   {"GetStringW",          editor_GetStringW},
+  {"GetTitle",            editor_GetTitle},
   {"InsertString",        editor_InsertString},
   {"InsertText",          editor_InsertText},
   {"NextStackBookmark",   editor_NextStackBookmark},
