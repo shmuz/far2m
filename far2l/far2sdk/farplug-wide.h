@@ -887,6 +887,7 @@ enum FILE_CONTROL_COMMANDS
 	FCTL_RESERVED1                  = 37,
 	FCTL_RESERVED2                  = 38,
 	FCTL_GETPANELPREFIX             = 39,
+	FCTL_SETACTIVEPANEL             = 40,
 };
 
 typedef int (WINAPI *FARAPICONTROL)(

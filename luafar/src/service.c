@@ -2168,6 +2168,13 @@ int panel_IsActivePanel(lua_State *L)
   return lua_pushboolean(L, Info->Control(handle, FCTL_ISACTIVEPANEL, 0, 0)), 1;
 }
 
+int panel_SetActivePanel(lua_State *L)
+{
+  PSInfo *Info = GetPluginStartupInfo(L);
+  HANDLE handle = OptHandle(L);
+  return lua_pushboolean(L, Info->Control(handle, FCTL_SETACTIVEPANEL, 0, 0)), 1;
+}
+
 int panel_GetPanelPluginHandle(lua_State *L)
 {
   HANDLE plug_handle;
@@ -5499,6 +5506,7 @@ static const luaL_Reg panel_funcs[] =
   {"InsertCmdLine",           panel_InsertCmdLine},
   {"IsActivePanel",           panel_IsActivePanel},
   {"RedrawPanel",             panel_RedrawPanel},
+  {"SetActivePanel",          panel_SetActivePanel},
   {"SetCaseSensitiveSort",    panel_SetCaseSensitiveSort},
   {"SetCmdLine",              panel_SetCmdLine},
   {"SetCmdLinePos",           panel_SetCmdLinePos},

@@ -1239,6 +1239,7 @@ static int FarControlSynched(HANDLE hPlugin,int Command,int Param1,LONG_PTR Para
 		case FCTL_GETPANELPLUGINHANDLE:
 		case FCTL_SETPANELLOCATION:
 		case FCTL_GETPANELPREFIX:
+		case FCTL_SETACTIVEPANEL:
 		{
 			if (!FPanels)
 				return FALSE;
@@ -1246,6 +1247,9 @@ static int FarControlSynched(HANDLE hPlugin,int Command,int Param1,LONG_PTR Para
 			if ((hPlugin == PANEL_ACTIVE) || (hPlugin == PANEL_PASSIVE))
 			{
 				Panel *pPanel = (hPlugin == PANEL_ACTIVE)?FPanels->ActivePanel:FPanels->GetAnotherPanel(FPanels->ActivePanel);
+
+				if (Command == FCTL_SETACTIVEPANEL && hPlugin == PANEL_ACTIVE)
+					return TRUE;
 
 				if (pPanel)
 				{
