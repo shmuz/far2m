@@ -170,6 +170,7 @@ enum
 {
 	RE_FAST_CHAR_COUNT = 0x10000
 };
+#define RE_FAST_CHAR_MASK 0xFFFF0000
 
 static bool isTypeUncached(wchar_t chr, CharType type)
 {
@@ -269,7 +270,7 @@ public:
 
 		bool Set;
 #if (__WCHAR_MAX__ > 0xffff)
-		if (UNLIKELY(chr >= RE_FAST_CHAR_COUNT))
+		if (UNLIKELY(chr & RE_FAST_CHAR_MASK))
 		{
 			Set = (HighBits.find(chr) != HighBits.end());
 
@@ -286,7 +287,7 @@ public:
 	inline void SetBit(wchar_t  chr)
 	{
 #if (__WCHAR_MAX__ > 0xffff)
-		if (UNLIKELY(chr >= RE_FAST_CHAR_COUNT))
+		if (UNLIKELY(chr & RE_FAST_CHAR_MASK))
 		{
 			HighBits.insert(chr);
 		}
@@ -300,7 +301,7 @@ public:
 	inline void ClearBit(wchar_t chr)
 	{
 #if (__WCHAR_MAX__ > 0xffff)
-		if (UNLIKELY(chr >= RE_FAST_CHAR_COUNT))
+		if (UNLIKELY(chr & RE_FAST_CHAR_MASK))
 		{
 			HighBits.erase(chr);
 		}
@@ -3552,7 +3553,7 @@ bool RegExp::SearchEx(ReStringView const text, size_t const From, RegExpMatch* m
 			bool res = false;
 			do
 			{
-				while (!first.GetBit(*str) && str<tempend)str++;
+				while (!first.GetBit(*str) && str<tempend) str++;
 
 				if (InnerMatch(start, str, tempend, match, matchcount, hmatch, stack))
 				{
