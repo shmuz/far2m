@@ -1126,6 +1126,23 @@ local function test_RegexControl()
   assert(str=="ITEM;ITEM;ITEM" and nfound==3 and nrep==3)
   str, nfound, nrep = regex.gsub(";a;", "a*?", "ITEM")
   assert(str=="ITEM;ITEMaITEM;ITEM" and nfound==4 and nrep==4)
+
+  -- separate tests from lrexlib
+  local test = require "far2.test.regex.runtest"
+  local numerr = test(function() end)
+  assert(numerr == 0)
+
+  -- this test used to crash Far2L (fixed in a commit from 2022-09-02)
+  local rx = regex.new("abcd", "o")
+  local txt = "\233\149\254\255".."\255\15\31\0".."\76\137\226\190".."\100\0\0\0"
+  assert_nil(rx:findW(txt))
+
+  -- Mantis 3336 (https://bugs.farmanager.com/view.php?id=3336)
+  local fr,to,c1,c2,c3
+  fr,to,c1 = regex.find("{}", "\\{(.)?\\}")
+  assert(fr==1 and to==2 and c1==false)
+  fr,to,c1,c2,c3 = regex.find("bbb", "(b)?b(b)?(b)?b")
+  assert(fr==1 and to==3 and c1=="b" and c2==false and c3==false)
 end
 
 --[[------------------------------------------------------------------------------------------------
