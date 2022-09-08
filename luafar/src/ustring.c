@@ -187,37 +187,48 @@ wchar_t* oem_to_wcstring (lua_State *L, int pos, size_t* pTrgSize)
   return convert_multibyte_string (L, pos, CP_OEMCP, 0, pTrgSize, FALSE);
 }
 
-void push_multibyte_string (lua_State* L, UINT CodePage, const wchar_t* str, int numchars)
+char* push_multibyte_string(lua_State* L, UINT CodePage, const wchar_t* str, int numchars, DWORD dwFlags)
 {
-  int targetSize = WINPORT(WideCharToMultiByte)(
-    CodePage, // UINT CodePage,
-    0,        // DWORD dwFlags,
-    str,      // LPCWSTR lpWideCharStr,
-    numchars, // int cchWideChar,
-    NULL,     // LPSTR lpMultiByteStr,
-    0,        // int cbMultiByte,
-    NULL,     // LPCSTR lpDefaultChar,
-    NULL      // LPBOOL lpUsedDefaultChar
-  );
-  if (targetSize == 0 && numchars == -1 && str[0]) {
+  int targetSize;
+  char *target;
+
+  if(str == NULL) { lua_pushnil(L); return NULL; }
+
+  targetSize = WINPORT(WideCharToMultiByte)(
+                   CodePage, // UINT CodePage,
+                   dwFlags,  // DWORD dwFlags,
+                   str,      // LPCWSTR lpWideCharStr,
+                   numchars, // int cchWideChar,
+                   NULL,     // LPSTR lpMultiByteStr,
+                   0,        // int cbMultiByte,
+                   NULL,     // LPCSTR lpDefaultChar,
+                   NULL      // LPBOOL lpUsedDefaultChar
+               );
+
+  if(targetSize == 0 && numchars == -1 && str[0])
+  {
     luaL_error(L, "invalid UTF-32 string");
   }
-  char *target = (char*)malloc(targetSize+1);
-  WINPORT(WideCharToMultiByte)(CodePage, 0, str, numchars, target, targetSize, NULL, NULL);
-  if (numchars == -1)
+
+  target = (char*)lua_newuserdata(L, targetSize+1);
+  WideCharToMultiByte(CodePage, dwFlags, str, (int)numchars, target, targetSize, NULL, NULL);
+
+  if(numchars == -1)
     --targetSize;
+
   lua_pushlstring(L, target, targetSize);
-  free(target);
+  lua_remove(L, -2);
+  return target;
 }
 
 void push_utf8_string (lua_State* L, const wchar_t* str, int numchars)
 {
-  push_multibyte_string(L, CP_UTF8, str, numchars);
+  push_multibyte_string(L, CP_UTF8, str, numchars, 0);
 }
 
 void push_oem_string (lua_State* L, const wchar_t* str, int numchars)
 {
-  push_multibyte_string(L, CP_OEMCP, str, numchars);
+  push_multibyte_string(L, CP_OEMCP, str, numchars, 0);
 }
 
 void push_wcstring(lua_State* L, const wchar_t* str, int numchars)
@@ -241,6 +252,32 @@ const wchar_t* opt_wcstring(lua_State *L, int pos, const wchar_t *dflt)
 {
   const wchar_t* s = (const wchar_t*)luaL_optstring(L, pos, (const char*)dflt);
   return s;
+}
+
+int ustring_WideCharToMultiByte(lua_State *L)
+{
+  size_t numchars;
+  const wchar_t* src = (const wchar_t*)luaL_checklstring(L, 1, &numchars);
+  UINT codepage;
+  DWORD dwFlags = 0;
+  numchars /= sizeof(wchar_t);
+  codepage = (UINT)luaL_checkinteger(L, 2);
+
+  if(lua_isstring(L, 3))
+  {
+    const char *s = lua_tostring(L, 3);
+
+    for(; *s; s++)
+    {
+      if      (*s == 'c') dwFlags |= WC_COMPOSITECHECK;
+      else if (*s == 'd') dwFlags |= WC_DISCARDNS;
+      else if (*s == 's') dwFlags |= WC_SEPCHARS;
+      else if (*s == 'f') dwFlags |= WC_DEFAULTCHAR;
+    }
+  }
+
+  push_multibyte_string(L, codepage, src, numchars, dwFlags);
+  return 1;
 }
 
 int ustring_MultiByteToWideChar (lua_State *L)

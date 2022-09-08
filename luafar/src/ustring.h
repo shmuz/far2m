@@ -47,6 +47,7 @@ int ustring_GetDriveType (lua_State *L);
 int ustring_GetLogicalDriveStrings (lua_State *L);
 int ustring_GetOEMCP (lua_State* L);
 int ustring_MultiByteToWideChar (lua_State *L);
+int ustring_WideCharToMultiByte (lua_State *L);
 int ustring_OemToUtf8 (lua_State *L);
 int ustring_Utf32ToUtf8 (lua_State *L);
 int ustring_Utf8ToOem (lua_State *L);
