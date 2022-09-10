@@ -72,6 +72,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "console.hpp"
 #include "setcolor.hpp"
 #include "InterThreadCall.hpp"
+#include "filestr.hpp"
 
 wchar_t *WINAPI FarItoa(int value, wchar_t *string, int radix)
 {
@@ -2542,4 +2543,14 @@ int WINAPI farColorDialog(INT_PTR PluginNumber, WORD* Color, int bAddTransparent
 		}
 	}
 	return FALSE;
+}
+
+int WINAPI farGetFileFormat(const wchar_t *FileName)
+{
+	if (FileName && *FileName)
+	{
+		UINT nCodePage;
+		return GetFileFormat2(FileName,nCodePage,nullptr,true,true) ? (int)nCodePage : 0;
+	}
+	return 0;
 }

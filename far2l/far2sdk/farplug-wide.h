@@ -1985,6 +1985,10 @@ typedef int (WINAPI *FARAPICOLORDIALOG)(
     int     bAddTransparent
 );
 
+typedef int (WINAPI *FARAPIGETFILEFORMAT)(
+    const wchar_t *FileName
+);
+
 // <C&C++>
 typedef int (WINAPIV *FARSTDSNPRINTF)(wchar_t *Buffer,size_t Sizebuf,const wchar_t *Format,...);
 typedef int (WINAPIV *FARSTDSSCANF)(const wchar_t *Buffer, const wchar_t *Format,...);
@@ -2232,6 +2236,8 @@ typedef struct FarStandardFunctions
 	FARDISPLAYNOTIFICATION     DisplayNotification;
 	FARDISPATCHNTRTHRDCALLS    DispatchInterThreadCalls;
 	FARBACKGROUNDTASK          BackgroundTask;
+	void*                      RESERVED[2];
+	FARAPIGETFILEFORMAT        GetFileFormat;
 } FARSTANDARDFUNCTIONS;
 
 struct PluginStartupInfo

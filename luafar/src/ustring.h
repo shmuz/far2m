@@ -11,6 +11,7 @@ extern "C" {
 #include <lua.h>
 #include <lauxlib.h>
 
+void  Log(const char* str);
 int  SysErrorReturn (lua_State *L);
 
 BOOL   GetBoolFromTable   (lua_State *L, const char* key);

@@ -40,7 +40,6 @@ typedef struct
   CHAR_INFO VBuf[1];
 } TFarUserControl;
 
-void  Log(const char* str);
 int   DecodeAttributes(const char* str);
 int   GetAttrFromTable(lua_State *L);
 int   GetIntFromArray(lua_State *L, int index);

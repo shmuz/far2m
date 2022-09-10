@@ -456,6 +456,7 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 		StandardFunctions.DisplayNotification = farDisplayNotificationW;
 		StandardFunctions.DispatchInterThreadCalls = farDispatchInterThreadCallsW;
 		StandardFunctions.BackgroundTask = farBackgroundTaskW;
+		StandardFunctions.GetFileFormat = farGetFileFormat;
 	}
 
 	if (!StartupInfo.StructSize)
