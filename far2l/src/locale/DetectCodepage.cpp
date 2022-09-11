@@ -49,48 +49,41 @@ static int TranslateUDCharset(const char *cs)
 		return CP_UTF8;
 	if (!strcasecmp(cs, "UTF-7"))
 		return CP_UTF7;
-//	if (!strcasecmp(cs, "IBM855"))
-//		return 855;
-//	if (!strcasecmp(cs, "IBM866"))
-//		return 866;
+	if (!strcasecmp(cs, "ASCII"))
+		return 20127;
 	if (!strcasecmp(cs, "KOI8-R"))
 		return 20866;
 	if (!strcasecmp(cs, "KOI8-U"))
 		return 21866;
-	if (!strcasecmp(cs, "x-mac-hebrew") || !strcasecmp(cs, "MS-MAC-HEBREW"))
-		return 10005;
-	if (!strcasecmp(cs, "x-mac-cyrillic") || !strcasecmp(cs, "MS-MAC-CYRILLIC"))
-		return 10007;
-	if (!strcasecmp(cs, "ISO-8859-2"))
-		return 28592;
-	if (!strcasecmp(cs, "ISO-8859-5"))
-		return 28595;
-	if (!strcasecmp(cs, "ISO-8859-7"))
-		return 28597;
-	if (!strcasecmp(cs, "ISO-8859-8"))
-		return 28598;
+	if (!strncasecmp(cs, "ISO-8859-", 9) && IsDecimalNumber(cs + 9))
+		return 28590 + atoi(cs + 9);
 	if (!strcasecmp(cs, "ISO-8859-8-I"))
 		return 38598;
+	if (!strcasecmp(cs, "x-mac-hebrew") || !strcasecmp(cs, "MS-MAC-HEBREW"))
+		return 10005;
+	if (!strcasecmp(cs, "mac-cyrillic") || !strcasecmp(cs, "x-mac-cyrillic") || !strcasecmp(cs, "MS-MAC-CYRILLIC"))
+		return 10007;
 	if (!strcasecmp(cs, "EUC-JP"))
 		return 20932;
+	if (!strcasecmp(cs, "EUC-KR"))
+		return 51949;
+	if (!strcasecmp(cs, "ISO-2022-KR"))
+		return 50225;
+	if (!strcasecmp(cs, "GB18030"))
+		return 54936;
+	if (!strcasecmp(cs, "Shift_JIS"))
+		return 932;
 
 	fprintf(stderr, "TranslateUDCharset: unknown charset '%s'\n", cs);
 
 	/*
 		and the rest:
-		"Shift_JIS"
-		"gb18030"
-		"x-euc-tw"
-		"EUC-KR"
-		"EUC-JP"
 		"Big5"
+		"x-euc-tw"
 		"X-ISO-10646-UCS-4-3412" - UCS-4, unusual octet order BOM (3412)
-		"UTF-32BE"
 		"X-ISO-10646-UCS-4-2143" - UCS-4, unusual octet order BOM (2143)
-		"UTF-32LE"
 		ISO-2022-CN
 		ISO-2022-JP
-		ISO-2022-KR
 		"TIS-620"
 		*/
 	return -1;

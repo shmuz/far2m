@@ -2550,7 +2550,7 @@ int WINAPI farGetFileFormat(const wchar_t *FileName)
 	if (FileName && *FileName)
 	{
 		UINT nCodePage;
-		return GetFileFormat2(FileName,nCodePage,nullptr,true,true) ? (int)nCodePage : 0;
+		return GetFileFormat2(FileName,nCodePage,nullptr,true,false) ? (int)nCodePage : 0;
 	}
 	return 0;
 }
