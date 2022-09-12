@@ -4,6 +4,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <string.h>
+#include <time.h>
 
 #if !defined(__FreeBSD__) && !defined(__MUSL__) // todo: pass to linker -lexecinfo under BSD and then may remove this ifndef
 # include <execinfo.h>
@@ -161,7 +162,7 @@ void SafeMMap::sSigaction(int num, siginfo_t *info, void *ctx)
 	{
 		SMM_Lock sl;
 		for (const auto &smm : s_safe_mmaps) {
-			if ((uintptr_t)info->si_addr >= (uintptr_t)smm->_view && 
+			if ((uintptr_t)info->si_addr >= (uintptr_t)smm->_view &&
 				(uintptr_t)info->si_addr - (uintptr_t)smm->_view < (uintptr_t)smm->_len) {
 				if (!smm->_remapped) {
 					smm->_remapped = true;
