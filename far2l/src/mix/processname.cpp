@@ -48,7 +48,7 @@ int WINAPI ProcessName(const wchar_t *param1, wchar_t *param2, DWORD size, DWORD
 	flags &= ~(PN_SKIPPATH | PN_SHOWERRORMESSAGE);
 
 	if (flags == PN_CMPNAME)
-		return CmpName(param1, param2, skippath);
+		return CmpName(param1, param2, skippath) ? TRUE:FALSE;
 
 	if (flags == PN_CMPNAMELIST || flags == PN_CHECKMASK)
 	{
@@ -57,7 +57,7 @@ int WINAPI ProcessName(const wchar_t *param1, wchar_t *param2, DWORD size, DWORD
 			return FALSE;
 		if (flags == PN_CHECKMASK)
 			return TRUE;
-		return Masks.Compare(skippath ? PointToName(param2) : param2);
+		return Masks.Compare(param2, skippath) ? TRUE:FALSE;
 	}
 
 	if (flags&PN_GENERATENAME)

@@ -103,9 +103,8 @@ bool CFileMask::IsEmpty()const
 
 /* сравнить имя файла со списком масок
    Возвращает TRUE в случае успеха.
-   Путь в имени файла игнорируется.
 */
-bool CFileMask::Compare(const wchar_t *FileName) const
+bool CFileMask::Compare(const wchar_t *FileName, bool SkipPath) const
 {
-	return FileMask?FileMask->Compare(PointToName(FileName)):false;
+	return FileMask ? FileMask->Compare(SkipPath ? PointToName(FileName):FileName) : false;
 }
