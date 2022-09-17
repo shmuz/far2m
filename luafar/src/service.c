@@ -852,6 +852,22 @@ int editor_InsertText(lua_State *L)
   return 1;
 }
 
+int editor_InsertTextW(lua_State *L)
+{
+  int res, redraw;
+  PSInfo *Info = GetPluginStartupInfo(L);
+  luaL_checkstring(L,1);
+  redraw = lua_toboolean(L,2);
+  lua_pushvalue(L,1);
+  lua_pushstring(L, "\0\0\0\0");
+  lua_concat(L,2);
+  res = Info->EditorControl(ECTL_INSERTTEXT, (void*)lua_tostring(L,-1));
+  if (res && redraw)
+    Info->EditorControl(ECTL_REDRAW, NULL);
+  lua_pushboolean(L, res);
+  return 1;
+}
+
 int editor_DeleteChar(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
@@ -5473,6 +5489,7 @@ static const luaL_Reg editor_funcs[] =
   {"GetTitle",            editor_GetTitle},
   {"InsertString",        editor_InsertString},
   {"InsertText",          editor_InsertText},
+  {"InsertTextW",         editor_InsertTextW},
   {"NextStackBookmark",   editor_NextStackBookmark},
   {"PrevStackBookmark",   editor_PrevStackBookmark},
   {"ProcessInput",        editor_ProcessInput},
