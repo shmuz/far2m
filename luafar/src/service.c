@@ -859,7 +859,7 @@ int editor_InsertTextW(lua_State *L)
   luaL_checkstring(L,1);
   redraw = lua_toboolean(L,2);
   lua_pushvalue(L,1);
-  lua_pushstring(L, "\0\0\0\0");
+  lua_pushlstring(L, "\0\0\0\0", 4);
   lua_concat(L,2);
   res = Info->EditorControl(ECTL_INSERTTEXT, (void*)lua_tostring(L,-1));
   if (res && redraw)
