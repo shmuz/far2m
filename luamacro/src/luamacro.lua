@@ -601,8 +601,8 @@ local function Init()
   local modules = mainpath .. "/modules"
   package.path = ("%s/?.lua;%s/?/init.lua;%s"):format(modules, modules, package.path)
   if package.moonpath then
-	  package.moonpath = ("%s/?.moon;%s/?/init.moon;%s"):format(modules, modules, package.moonpath)
-	end
+    package.moonpath = ("%s/?.moon;%s/?/init.moon;%s"):format(modules, modules, package.moonpath)
+  end
   package.cpath = mainpath..(win.IsProcess64bit() and "/lib64" or "/lib32").."/?.so;"..package.cpath
 end
 
