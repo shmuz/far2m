@@ -697,7 +697,8 @@ local function LoadMacros (unload, paths)
       --win.CreateDir(win.GetEnv("HOME").."/.config/far2l/Menus")
     end
 
-    local moonscript = require "moonscript"
+    local ok1, moonscript = pcall(require, "moonscript")
+    if not ok1 then moonscript=nil; end
 
     local FuncList1 = {"Macro",  "Event",  "MenuItem",  "CommandLine",  "PanelModule",  "ContentColumns"}
     local FuncList2 = {"NoMacro","NoEvent","NoMenuItem","NoCommandLine","NoPanelModule","NoContentColumns"}
@@ -772,6 +773,7 @@ local function LoadMacros (unload, paths)
 
     paths = paths and ExpandEnv(paths) or MacroDirs.MainPath.."/scripts;"..MacroDirs.LoadPathList
 
+    local filemask = moonscript and "*.lua,*.moon" or "*.lua"
     for p in paths:gmatch("[^;]+") do
       p = far.ConvertPath(p, F.CPM_FULL) -- needed for relative paths
       local macroinit = p:gsub("/*$", "/_macroinit.lua")
@@ -781,7 +783,7 @@ local function LoadMacros (unload, paths)
       else
         macroinit = nil
       end
-      far.RecursiveSearch (p, "*.lua,*.moon", LoadRegularFile, bor(F.FRS_RECUR,F.FRS_SCANSYMLINK), macroinit)
+      far.RecursiveSearch (p, filemask, LoadRegularFile, bor(F.FRS_RECUR,F.FRS_SCANSYMLINK), macroinit)
     end
 
     far.RecursiveSearch (MacroDirs.MainPath.."/internal", "*.lua", LoadRecordedFile, 0)

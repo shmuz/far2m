@@ -581,7 +581,7 @@ local function Init()
   macrobrowser = RunPluginFile("mbrowser.lua", Shared)
 
   do
-    require "moonscript"
+    pcall(require, "moonscript")
   end
 
   if bit and jit then
@@ -600,7 +600,9 @@ local function Init()
   local mainpath = Shared.MacroDirs.MainPath
   local modules = mainpath .. "/modules"
   package.path = ("%s/?.lua;%s/?/init.lua;%s"):format(modules, modules, package.path)
-  package.moonpath = ("%s/?.moon;%s/?/init.moon;%s"):format(modules, modules, package.moonpath)
+  if package.moonpath then
+	  package.moonpath = ("%s/?.moon;%s/?/init.moon;%s"):format(modules, modules, package.moonpath)
+	end
   package.cpath = mainpath..(win.IsProcess64bit() and "/lib64" or "/lib32").."/?.so;"..package.cpath
 end
 
