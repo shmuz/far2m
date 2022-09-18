@@ -1916,7 +1916,7 @@ void Help::ReadDocumentsHelp(int TypeIndex)
 			for (int I=0; I<CtrlObject->Plugins.GetPluginsCount(); I++)
 			{
 				strPath = CtrlObject->Plugins.GetPlugin(I)->GetModuleName();
-				CutToSlash(strPath);
+				CutToSlash(strPath,true);
 				UINT nCodePage = CP_UTF8;
 				FILE *HelpFile=OpenLangFile(strPath,HelpFileMask,Opt.strHelpLanguage,strFullFileName, nCodePage);
 

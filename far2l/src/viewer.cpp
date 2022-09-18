@@ -237,7 +237,7 @@ Viewer::~Viewer()
 	if (!strProcessedViewName.IsEmpty())
 	{
 		unlink(strProcessedViewName.GetMB().c_str());
-		CutToSlash(strProcessedViewName);
+		CutToSlash(strProcessedViewName,true);
 		if (!strProcessedViewName.IsEmpty())
 		{
 			rmdir(strProcessedViewName.GetMB().c_str());

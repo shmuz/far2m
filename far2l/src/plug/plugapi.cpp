@@ -212,7 +212,7 @@ BOOL WINAPI FarShowHelpSynched(
 					else
 						strMask.Clear();
 
-					CutToSlash(strPath);
+					CutToSlash(strPath,true);
 				}
 			}
 			else

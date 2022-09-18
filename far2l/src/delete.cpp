@@ -82,13 +82,13 @@ enum {DELETE_SUCCESS,DELETE_YES,DELETE_SKIP,DELETE_CANCEL};
 struct AskDeleteReadOnly
 {
 	AskDeleteReadOnly(const wchar_t *Name,int Wipe);
-	
+
 	~AskDeleteReadOnly()
 	{
 		if (_ump)
 			_ump->Unmake();
 	}
-	
+
 	inline int Choice() const
 	{
 		return _r;
@@ -169,7 +169,7 @@ void ShellDelete(Panel *SrcPanel,int Wipe)
 	}
 
 	Ret=1;
-	
+
 	if (Ret && (Opt.Confirm.Delete || SelCount>1))// || (FileAttr & FILE_ATTRIBUTE_DIRECTORY)))
 	{
 		const wchar_t *DelMsg;
@@ -596,7 +596,7 @@ void ShellDeleteMsg(const wchar_t *Name,int Wipe,int Percent)
 	PreRedraw.SetParam(preRedrawItem.Param);
 }
 
-AskDeleteReadOnly::AskDeleteReadOnly(const wchar_t *Name,int Wipe) 
+AskDeleteReadOnly::AskDeleteReadOnly(const wchar_t *Name,int Wipe)
 	: _r(DELETE_YES)
 {
 	int MsgCode;
@@ -826,7 +826,7 @@ int RemoveToRecycleBin(const wchar_t *Name)
 static FARString WipingRename(const wchar_t *Name)
 {
 	FARString strTempName = Name;
-	CutToSlash(strTempName, false);
+	CutToSlash(strTempName, true);
 	for (size_t i = 0, ii = 3 + (rand() % 4);
 			(i < ii || apiGetFileAttributes(strTempName) != INVALID_FILE_ATTRIBUTES); ++i)
 	{
@@ -895,7 +895,7 @@ int WipeDirectory(const wchar_t *Name)
 	{
 		strPath = Name;
 		DeleteEndSlash(strPath);
-		CutToSlash(strPath);
+		CutToSlash(strPath,true);
 	}
 
 	FARString strRemoveName = WipingRename(Name);
@@ -910,7 +910,7 @@ int DeleteFileWithFolder(const wchar_t *FileName)
 	Unquote(strFileOrFolderName);
 
 	strParentFolder = strFileOrFolderName;
-	CutToSlash(strParentFolder, true);
+	CutToSlash(strParentFolder, false);
 	if (!strParentFolder.IsEmpty())
 		apiMakeWritable(strParentFolder);
 	apiMakeWritable(strFileOrFolderName);

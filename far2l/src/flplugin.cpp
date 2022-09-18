@@ -161,7 +161,7 @@ int FileList::FileNameToPluginItem(const wchar_t *Name,PluginPanelItem *pi)
 {
 	FARString strTempDir = Name;
 
-	if (!CutToSlash(strTempDir,true))
+	if (!CutToSlash(strTempDir,false))
 		return FALSE;
 
 	FarChDir(strTempDir);

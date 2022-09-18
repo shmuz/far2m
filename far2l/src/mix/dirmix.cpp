@@ -68,7 +68,7 @@ BOOL FarChDir(const wchar_t *NewDir, BOOL ChangeDir)
 				apiGetCurrentDirectory(strCurDir);
 				ConvertNameToFull(NewDir,strCurDir);
 				PrepareDiskPath(strCurDir,false); // TRUE ???
-				rc = apiSetCurrentDirectory(strCurDir);				
+				rc = apiSetCurrentDirectory(strCurDir);
 			}
 			if (!rc)
 			{
@@ -178,7 +178,7 @@ int CheckShortcutFolder(FARString *pTestPath,int IsHostFile, BOOL Silent)
 
 				for (;;)
 				{
-					if (!CutToSlash(strTestPathTemp,true))
+					if (!CutToSlash(strTestPathTemp,false))
 						break;
 
 					if (apiGetFileAttributes(strTestPathTemp) != INVALID_FILE_ATTRIBUTES)
@@ -293,7 +293,7 @@ void PrepareTemporaryOpenPath(FARString &Path)
 		time_t delta = std::min(now - ts_mod.tv_sec, now - ts_change.tv_sec);
 		if (delta > 60) {//one minute ought be enouht to open anything (c)
 			outdated.push_back(found_name);
-			fprintf(stderr, "PrepareTemporaryOpenPath: delta=%u for '%ls'\n", 
+			fprintf(stderr, "PrepareTemporaryOpenPath: delta=%u for '%ls'\n",
 				(unsigned int)delta, found_name.CPtr());
 		}
 	};
@@ -302,10 +302,10 @@ void PrepareTemporaryOpenPath(FARString &Path)
 		DeleteDirTree(p.CPtr());
 	}
 	apiCreateDirectory(Path, nullptr);
-	
+
 	static std::atomic<unsigned short>	s_counter{0};
 	char tmp[64]; sprintf(tmp, "%c%u_%u", GOOD_SLASH, (unsigned int)getpid(), (unsigned int)++s_counter);
-	
+
 	Path+= tmp;
 	apiCreateDirectory(Path, nullptr);
 }
@@ -320,7 +320,7 @@ FARString DefaultPanelInitialDirectory()
 	} else {
 		out = g_strFarPath;
 	}
-	
+
 	DeleteEndSlash(out);
 	return out;
 }

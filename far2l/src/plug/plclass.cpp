@@ -50,7 +50,7 @@ bool Plugin::OpenModule()
 	char *saved_cwd = sdc_getcwd(saved_cwd_buf, MAX_PATH);
 
 	FARString strModulePath = m_strModuleName.Clone();
-	CutToSlash(strModulePath);
+	CutToSlash(strModulePath,true);
 	if (sdc_chdir(strModulePath.GetMB().c_str()) == -1 )
 		fprintf(stderr, "Error %d chdir for plugin '%ls'\n", errno, m_strModuleName.CPtr());
 

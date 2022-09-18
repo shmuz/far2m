@@ -2226,7 +2226,7 @@ bool Panel::ExecShortcutFolder(int Pos)
 				FARString strRealDir;
 				strRealDir = strPluginFile;
 
-				if (CutToSlash(strRealDir))
+				if (CutToSlash(strRealDir,true))
 				{
 					SrcPanel->SetCurDir(strRealDir,TRUE);
 					SrcPanel->GoToFile(PointToName(strPluginFile));

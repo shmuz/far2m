@@ -992,7 +992,7 @@ class FileList_TempFileHolder : public TempFileUploadHolder
 		if (apiGetFileAttributes(strPath) == INVALID_FILE_ATTRIBUTES)
 		{
 			FARString strFindName;
-			CutToSlash(strPath, false);
+			CutToSlash(strPath, true);
 			strFindName = strPath + L"*";
 			FAR_FIND_DATA_EX FindData;
 			::FindFile Find(strFindName);
@@ -2779,7 +2779,7 @@ BOOL FileList::ChangeDir(const wchar_t *NewDir,BOOL IsUpdated)
 					strSetDir = strCurDir;
 					do
 					{
-						CutToSlash(strSetDir, true);
+						CutToSlash(strSetDir, false);
 					} while (!strSetDir.IsEmpty() && !FarChDir(strSetDir));
 					if (!strSetDir.IsEmpty())
 						break;
@@ -5025,12 +5025,11 @@ BOOL FileList::UpdateKeyBar()
 	return TRUE;
 }
 
-int FileList::PluginPanelHelp(HANDLE hPlugin)
+int FileList::PluginPanelHelp(PHPTR ph)
 {
 	FARString strPath, strFileName, strStartTopic;
-	PanelHandle *ph = (PanelHandle*)hPlugin;
 	strPath = ph->pPlugin->GetModuleName();
-	CutToSlash(strPath);
+	CutToSlash(strPath,true);
 	UINT nCodePage = CP_UTF8;
 	FILE *HelpFile=OpenLangFile(strPath,HelpFileMask,Opt.strHelpLanguage,strFileName, nCodePage);
 	if (!HelpFile)

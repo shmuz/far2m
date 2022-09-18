@@ -338,9 +338,9 @@ bool CutToSlash(FARString &strStr, bool bInclude)
 	if (FindLastSlash(pos,strStr))
 	{
 		if (bInclude)
-			strStr.Truncate(pos);
-		else
 			strStr.Truncate(pos+1);
+		else
+			strStr.Truncate(pos);
 
 		return true;
 	}

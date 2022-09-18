@@ -104,13 +104,13 @@ bool TestCurrentDirectory(const wchar_t *TestDir);
 FARString ExtractFileName(const FARString &Path);
 FARString ExtractFilePath(const FARString &Path);
 
-template < bool (*PTranslateFN)(std::wstring &s) > 
+template < bool (*PTranslateFN)(std::wstring &s) >
 	static bool TranslateFarString(FARString &str)
 {
 	std::wstring tmp(str.CPtr(), str.GetLength());
 	if ( !PTranslateFN(tmp))
 		return false;
-		
+
 	str.Copy(tmp.c_str(), tmp.size());
 	return true;
 }

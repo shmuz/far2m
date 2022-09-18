@@ -141,21 +141,21 @@ bool MixToFullPath(LPCWSTR stPath, FARString& strDest, LPCWSTR stCurrentDir)
 	}
 
 	strDest.Clear();
-	
+
 	if (stCurrentDir && *stCurrentDir) {
 		strDest = stCurrentDir;
 	}
-	
+
 	if (strDest.IsEmpty()) {
 		apiGetCurrentDirectory(strDest);
 		if (strDest.IsEmpty()) { //wtf
 			strDest = L"." WGOOD_SLASH;
 		}
 	}
-	
+
 	if (strDest.At(strDest.GetLength() - 1) != GOOD_SLASH)
 		strDest+= GOOD_SLASH;
-		
+
 	if (stPath) {
 		while (stPath[0]=='.' && (!stPath[1] || stPath[1]==GOOD_SLASH)) {
 			++stPath;
@@ -164,14 +164,14 @@ bool MixToFullPath(LPCWSTR stPath, FARString& strDest, LPCWSTR stCurrentDir)
 		}
 		strDest+= stPath;
 	}
-	
+
 	MixToFullPath(strDest);
 	return true;
-	
-	
-	
-	
-	
+
+
+
+
+
 	/*
 	size_t lPath=wcslen(NullToEmpty(stPath)),
 	       lCurrentDir=wcslen(NullToEmpty(stCurrentDir)),
@@ -285,7 +285,7 @@ void ConvertNameToReal(const wchar_t *Src, FARString &strDest)
 				}
 				break;
 			}
-			
+
 			size_t p = s.rfind(GOOD_SLASH);
 			if (p==std::string::npos || p==0) break;
 			cutoff.insert(0, s.c_str() + p);
@@ -303,7 +303,7 @@ void ConvertNameToReal(const wchar_t *Src, FARString &strDest)
 				buf[r] = 0;
 				if (buf[0] != GOOD_SLASH) {
 					strDest = s;
-					CutToSlash(strDest);
+					CutToSlash(strDest,true);
 					strDest+= buf;
 				} else
 					strDest = buf;
@@ -319,7 +319,7 @@ void ConvertNameToReal(const wchar_t *Src, FARString &strDest)
 // CheckFullPath используется в FCTL_SET[ANOTHER]PANELDIR
 FARString& PrepareDiskPath(FARString &strPath, bool CheckFullPath)
 {
-	// elevation not required during cosmetic operation 
+	// elevation not required during cosmetic operation
 
 	if (!strPath.IsEmpty())
 	{

@@ -416,7 +416,7 @@ class FileList:public Panel
 		virtual int ProcessPluginEvent(int Event,void *Param);
 		virtual void SetTitle();
 		//virtual FARString &GetTitle(FARString &Title,int SubLen=-1,int TruncSize=0);
-		int PluginPanelHelp(HANDLE hPlugin);
+		int PluginPanelHelp(PHPTR ph);
 		virtual long GetFileCount() {return FileCount;}
 
 		FARString &CreateFullPathName(const wchar_t *Name,DWORD FileAttr, FARString &strDest,int UNC);

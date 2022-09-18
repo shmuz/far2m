@@ -370,10 +370,10 @@ static void SetupFarPath(int argc, char **argv)
 	}
 
 	FARString dir = g_strFarModuleName;
-	CutToSlash(dir, true);
+	CutToSlash(dir, false);
 	const wchar_t *last_element = PointToName(dir);
 	if (last_element && wcscmp(last_element, L"bin") == 0) {
-		CutToSlash(dir, false);
+		CutToSlash(dir, true);
 		SetPathTranslationPrefix(dir);
 	}
 
@@ -422,7 +422,7 @@ int FarAppMain(int argc, char **argv)
 	g_strFarPath = g_strFarModuleName;
 
 	bool translated = TranslateFarString<TranslateInstallPath_Bin2Share>(g_strFarPath);
-	CutToSlash(g_strFarPath, true);
+	CutToSlash(g_strFarPath, false);
 	if (translated) {
 		// /usr/bin/something -> /usr/share/far2l
 		g_strFarPath.Append("/" APP_BASENAME);

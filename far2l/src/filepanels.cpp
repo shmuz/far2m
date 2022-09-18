@@ -1185,7 +1185,7 @@ void FilePanels::GoToFile(const wchar_t *FileName)
 
 		FARString strNameFile = PointToName(FileName);
 		FARString strNameDir = FileName;
-		CutToSlash(strNameDir);
+		CutToSlash(strNameDir,true);
 		/* $ 10.04.2001 IS
 		     Не делаем SetCurDir, если нужный путь уже есть на открытых
 		     панелях, тем самым добиваемся того, что выделение с элементов

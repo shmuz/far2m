@@ -233,7 +233,7 @@ int GetDirInfo(const wchar_t *Title,
 			if ((Flags&GETDIRINFO_USEFILTER))
 			{
 				strCurDirName = strFullName;
-				CutToSlash(strCurDirName); //???
+				CutToSlash(strCurDirName,true); //???
 
 				if (StrCmp(strCurDirName,strLastDirName))
 				{

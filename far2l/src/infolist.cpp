@@ -555,7 +555,7 @@ void InfoList::ShowDirDescription(int YPos)
 				}
 				break;
 			}
-		} while (CutToSlash(strDir, true));
+		} while (CutToSlash(strDir, false));
 
 
 		AnotherPanel->GetCurDir(strDir);
@@ -577,7 +577,7 @@ void InfoList::ShowDirDescription(int YPos)
 				continue;
 			}
 
-			CutToSlash(strFullDizName, false);
+			CutToSlash(strFullDizName, true);
 			strFullDizName += FindData.strFileName;
 
 			if (OpenDizFile(strFullDizName,YPos))
