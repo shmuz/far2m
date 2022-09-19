@@ -5827,7 +5827,7 @@ BOOL LF_RunDefaultScript(lua_State* L)
   return (status == 0);
 }
 
-void LF_InitLuaState (lua_State *L, PSInfo *aInfo, lua_CFunction aOpenLibs)
+void LF_InitLuaState (lua_State *L, TPluginData *aPlugData, lua_CFunction aOpenLibs)
 {
   int idx;
   lua_CFunction func_arr[] = { luaopen_far, luaopen_bit64, luaopen_unicode, luaopen_utf8 };
@@ -5852,8 +5852,7 @@ void LF_InitLuaState (lua_State *L, PSInfo *aInfo, lua_CFunction aOpenLibs)
   // Run "luafar_init.lua" residing in the Plugins/luafar directory (if any).
   // Absence of that file is not error.
   int top = lua_gettop(L);
-  const wchar_t* p = aInfo->ModuleName;
-  push_utf8_string(L, p, wcsrchr(p, L'/') + 1 - p);   //+1
+  lua_pushstring(L, aPlugData->ShareDir);             //+1
   lua_pushliteral(L, "../../luafar_init.lua");        //+2
   lua_concat(L, 2);                                   //+1
   FILE *fp = fopen(lua_tostring(L,-1), "r");
@@ -5898,7 +5897,7 @@ int LF_LuaOpen (TPluginData* aPlugData, lua_CFunction aOpenLibs)
     lua_pop(L,2);                                                          //+0
     strrchr(aPlugData->ShareDir,'/')[1] = '\0';
 
-    LF_InitLuaState(L, aPlugData->Info, aOpenLibs);
+    LF_InitLuaState(L, aPlugData, aOpenLibs);
     return 1;
   }
   dlclose(handle);
@@ -5914,7 +5913,7 @@ int LF_InitOtherLuaState (lua_State *L, lua_State *Lplug, lua_CFunction aOpenLib
     memcpy(pd, PluginData, sizeof(TPluginData));
     pd->MainLuaState = L;
     pd->dlopen_handle = NULL;
-    LF_InitLuaState(L, pd->Info, aOpenLibs);
+    LF_InitLuaState(L, pd, aOpenLibs);
   }
   return 0;
 }
