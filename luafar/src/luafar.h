@@ -24,6 +24,7 @@ typedef struct
   FARWINDOWPROC  DlgProc;
   lua_State     *MainLuaState;
   void          *dlopen_handle;
+  char          *ShareDir;
   char           Reserved[64];
 } TPluginData;
 

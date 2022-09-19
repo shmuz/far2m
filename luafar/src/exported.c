@@ -1007,10 +1007,9 @@ int LF_SetFindList(lua_State* L, HANDLE hPlugin, const struct PluginPanelItem *P
 
 void LF_LuaClose(TPluginData* aPlugData)
 {
-  lua_State *L = aPlugData->MainLuaState;
-  DestroyPluginInfoCollector(L);
-  lua_close(L);
+  lua_close(aPlugData->MainLuaState);
   dlclose(aPlugData->dlopen_handle);
+  free(aPlugData->ShareDir);
 }
 
 void LF_ExitFAR(lua_State* L)

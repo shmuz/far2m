@@ -605,6 +605,8 @@ int far_PluginStartupInfo(lua_State *L)
 
   lua_pushinteger(L, pd->PluginId);
   lua_setfield(L, -2, "PluginId");
+
+  PutStrToTable(L, "ShareDir", pd->ShareDir);
   return 1;
 }
 
@@ -5791,10 +5793,13 @@ BOOL LF_RunDefaultScript(lua_State* L)
   }
 
   // Second: try to load the default script from a disk file
-  PSInfo *Info = GetPluginStartupInfo(L);
-  char* defscript = (char*)lua_newuserdata (L, wcslen(Info->ModuleName) + 5);
-  push_utf8_string(L, Info->ModuleName, -1);
-  strcpy(defscript, lua_tostring(L, -1));
+  TPluginData* pd = GetPluginData(L);
+  lua_pushstring(L, pd->ShareDir);
+  push_utf8_string(L, wcsrchr(pd->Info->ModuleName,L'/')+1, -1);
+  lua_concat(L,2);
+
+  char* defscript = (char*)lua_newuserdata (L, lua_objlen(L,-1) + 8);
+  strcpy(defscript, lua_tostring(L, -2));
 
   FILE *fp = NULL;
   const char delims[] = ".-";
@@ -5882,6 +5887,17 @@ int LF_LuaOpen (TPluginData* aPlugData, lua_CFunction aOpenLibs)
     aPlugData->dlopen_handle = handle;
     lua_pushlightuserdata(L, aPlugData);
     lua_setfield(L, LUA_REGISTRYINDEX, FAR_KEYINFO);
+
+    // Evaluate the path where the scripts are (ShareDir)
+    // It may (or may not) be the same as ModuleDir.
+    const char *s1=  "/lib/far2l/Plugins/luafar/";
+    const char *s2="/share/far2l/Plugins/luafar/";
+    push_utf8_string(L, aPlugData->Info->ModuleName, -1);                  //+1
+    aPlugData->ShareDir = (char*) malloc(lua_objlen(L,-1) + 8);
+    strcpy(aPlugData->ShareDir, luaL_gsub(L, lua_tostring(L,-1), s1, s2)); //+2
+    lua_pop(L,2);                                                          //+0
+    strrchr(aPlugData->ShareDir,'/')[1] = '\0';
+
     LF_InitLuaState(L, aPlugData->Info, aOpenLibs);
     return 1;
   }
