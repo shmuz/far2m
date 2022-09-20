@@ -31,7 +31,7 @@ namespace Sudo
 			throw;
 		}
 	}
-	
+
 	void BaseTransaction::SendStr(const char *sz)
 	{
 		size_t len = strlen(sz);
@@ -54,7 +54,7 @@ namespace Sudo
 			throw;
 		}
 	}
-	
+
 	void BaseTransaction::RecvStr(std::string &str)
 	{
 		size_t len;
@@ -63,24 +63,24 @@ namespace Sudo
 		if (len)
 			RecvBuf(&str[0], len);
 	}
-	
+
 	int BaseTransaction::RecvInt()
 	{
 		int r;
 		RecvPOD(r);
 		return r;
 	}
-	
+
 /////////////////////
 
 #if !defined(__APPLE__) && !defined(__FreeBSD__)
 # include <sys/ioctl.h>
 
-	int bugaware_ioctl_pint(int fd, unsigned long req, int *v)
+	int bugaware_ioctl_pint(int fd, unsigned long req, unsigned long *v)
 	{
 		// workaround for stupid FUSE/NTFS-3G bug with wrong FS_IOC_GETFLAGS' arg size,
 		// that modifies more than sizeof(int) near to arg ptr, corrupting memory
-		int placeholder[8] = {*v, 0};
+		unsigned long placeholder[8] = {*v, 0};
 		int out = ioctl(fd, req, &placeholder[0], NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 		*v = placeholder[0];
 		return out;

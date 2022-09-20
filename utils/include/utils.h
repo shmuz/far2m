@@ -21,6 +21,13 @@ template <class C> static size_t tzlen(const C *ptz)
 	return (etz - ptz);
 }
 
+template <class C> static size_t tnzlen(const C *ptz, size_t n)
+{
+	size_t i;
+	for (i = 0; i < n && ptz[i]; ++i);
+	return i;
+}
+
 
 unsigned long htoul(const char *str, size_t maxlen = (size_t)-1);
 unsigned long atoul(const char *str, size_t maxlen = (size_t)-1);
@@ -99,6 +106,7 @@ template <class StrT>
 
 const std::string &GetMyHome();
 
+void InMyPathChanged(); // NOT thread safe, can be called only before any concurrent use of InMy...
 std::string InMyConfig(const char *subpath = NULL, bool create_path = true);
 std::string InMyCache(const char *subpath = NULL, bool create_path = true);
 std::string InMyTemp(const char *subpath = NULL);
@@ -276,8 +284,51 @@ template <typename HaystackIT, typename NeedlesT>
 	return nullptr;
 }
 
+bool CaseIgnoreEngStrMatch(const std::string &str1, const std::string &str2);
 bool CaseIgnoreEngStrMatch(const char *str1, const char *str2, size_t len);
 const char *CaseIgnoreEngStrChr(const char c, const char *str, size_t len);
 
+
+template <class POD_T>
+	void ZeroFill(POD_T &dst)
+{
+	static_assert ( std::is_pod<POD_T>::value, "ZeroFill should be used with POD types only");
+	static_assert ( sizeof(dst) != sizeof(void *), "ZeroFill should not be used with pointers");
+	memset(&dst, 0, sizeof(dst));
+}
+
+template <class STRING_T, typename ARRAY_T>
+	void StrAssignArray(STRING_T &s, const ARRAY_T &a)
+{
+	static_assert ( sizeof(a) != sizeof(void *), "StrAssignArray should be used with arrays but not pointers");
+	s.assign(a, tnzlen(a, ARRAYSIZE(a)));
+}
+
+template <class STRING_T, typename ARRAY_T>
+	void StrAppendArray(STRING_T &s, const ARRAY_T &a)
+{
+	static_assert ( sizeof(a) != sizeof(void *), "StrAppendArray should be used with arrays but not pointers");
+	s.append(a, tnzlen(a, ARRAYSIZE(a)));
+}
+
+
+template <class STRING_T, typename ARRAY_T>
+	bool StrMatchArray(STRING_T &s, const ARRAY_T &a)
+{
+	static_assert ( sizeof(a) != sizeof(void *), "StrMatchArray should be used with arrays but not pointers");
+	const size_t l = tnzlen(a, ARRAYSIZE(a));
+	return s.size() == l && s.compare(0, std::string::npos, a, l) == 0;
+}
+
+template <typename ARRAY_T, class CHAR_T>
+	void ArrayCpyZ(ARRAY_T &dst, const CHAR_T *src)
+{
+	static_assert ( sizeof(dst) != sizeof(void *), "ArrayCpyZ should be used with arrays but not pointers");
+	size_t i;
+	for (i = 0; src[i] && i + 1 < ARRAYSIZE(dst); ++i) {
+		dst[i] = src[i];
+	}
+	dst[i] = 0;
+}
 
 #define DBGLINE fprintf(stderr, "%d %d @%s\n", getpid(), __LINE__, __FILE__)

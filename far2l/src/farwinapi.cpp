@@ -49,6 +49,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ctrlobj.hpp"
 #include "config.hpp"
 #include "MountInfo.h"
+#include "FSFileFlags.h"
 
 
 static void TranslateFindFile(const WIN32_FIND_DATA &wfd, FAR_FIND_DATA_EX& FindData)
@@ -67,7 +68,8 @@ static void TranslateFindFile(const WIN32_FIND_DATA &wfd, FAR_FIND_DATA_EX& Find
 	FindData.dwUnixMode = wfd.dwUnixMode;
 	FindData.nHardLinks = wfd.nHardLinks;
 	FindData.nBlockSize = wfd.nBlockSize;
-	FindData.strFileName = wfd.cFileName;
+
+	FindData.strFileName.CopyArray(wfd.cFileName);
 }
 
 FindFile::FindFile(LPCWSTR Object, bool ScanSymLink, DWORD WinPortFindFlags) :
@@ -160,7 +162,7 @@ bool File::SetPointer(INT64 DistanceToMove, PINT64 NewFilePointer, DWORD MoveMet
 	} else {
 		r = WINPORT(SetFilePointerEx)(Handle, li, NULL, MoveMethod);
 	}
-	
+
 	return r != FALSE;
 }
 
@@ -206,7 +208,7 @@ bool File::Chmod(DWORD dwUnixMode)
 		WINPORT(SetLastError)(r);
 		return false;
 	}
-	
+
 	return true;
 }
 
@@ -417,13 +419,13 @@ BOOL apiSetCurrentDirectory(LPCWSTR lpPathName, bool Validate)
 {
 	// correct path to our standard
 	FARString strDir=lpPathName;
-	if (lpPathName[0]!='/' || lpPathName[1]!=0) 
+	if (lpPathName[0]!='/' || lpPathName[1]!=0)
 		DeleteEndSlash(strDir);
 	//LPCWSTR CD=strDir;
 //	int Offset=HasPathPrefix(CD)?4:0;
 ///	if ((CD[Offset] && CD[Offset+1]==L':' && !CD[Offset+2]) || IsLocalVolumeRootPath(CD))
 		//AddEndSlash(strDir);
-	
+
 
 	if (strDir == strCurrentDirectory())
 		return TRUE;
@@ -612,7 +614,7 @@ BOOL apiGetFindDataEx(const wchar_t *lpwszFileName, FAR_FIND_DATA_EX& FindData, 
 		}
 	}
 
-	fprintf(stderr, "apiGetFindDataEx: FAILED - %ls\n", lpwszFileName);		
+	fprintf(stderr, "apiGetFindDataEx: FAILED - %ls\n", lpwszFileName);
 
 	FindData.Clear();
 	FindData.dwFileAttributes = INVALID_FILE_ATTRIBUTES; //BUGBUG
@@ -695,13 +697,13 @@ IUnmakeWritablePtr apiMakeWritable(LPCWSTR lpFileName)
 	{
 		std::string target, dir;
 		mode_t target_mode, dir_mode;
-		int target_flags, dir_flags;
+		unsigned long target_flags, dir_flags;
 		bool target_flags_modified, dir_flags_modified;
-		UnmakeWritable() : 
+		UnmakeWritable() :
 			target_mode(0), dir_mode(0), target_flags_modified(false), dir_flags_modified(false)
 		{
 		}
-		
+
 		virtual void Unmake()
 		{
 			if (target_mode) {
@@ -745,30 +747,30 @@ IUnmakeWritablePtr apiMakeWritable(LPCWSTR lpFileName)
 		}
 	}
 
-#if defined(__APPLE__) || defined(__FreeBSD__) || defined(__CYGWIN__)
+#if defined(__CYGWIN__)
 //TODO: handle chattr +i
 #else
-	if (!um->dir.empty() && sdc_fs_flags_get(um->dir.c_str(), &um->dir_flags) != -1 
-	&& (um->dir_flags & FS_IMMUTABLE_FL) != 0) {
-		if (sdc_fs_flags_set(um->dir.c_str(), um->dir_flags & ~FS_IMMUTABLE_FL) != -1) {
+	if (!um->dir.empty() && sdc_fs_flags_get(um->dir.c_str(), &um->dir_flags) != -1
+	&& FS_FLAGS_CONTAIN_IMMUTABLE(um->dir_flags)) {
+		if (sdc_fs_flags_set(um->dir.c_str(), FS_FLAGS_WITHOUT_IMMUTABLE(um->dir_flags)) != -1) {
 			um->dir_flags_modified = true;
 		}
 	}
 
 	if ( (s.st_mode & S_IFMT) == S_IFREG // calling sdc_fs_flags_get on special files useless and may stuck
 	&& sdc_fs_flags_get(um->target.c_str(), &um->target_flags) != -1
-	&& (um->target_flags & FS_IMMUTABLE_FL) != 0) {
-		if (sdc_fs_flags_set(um->target.c_str(), um->target_flags & ~FS_IMMUTABLE_FL) != -1) {
+	&& FS_FLAGS_CONTAIN_IMMUTABLE(um->target_flags)) {
+		if (sdc_fs_flags_set(um->target.c_str(), FS_FLAGS_WITHOUT_IMMUTABLE(um->target_flags)) != -1) {
 			um->target_flags_modified = true;
 		}
 	}
 #endif
-	
+
 	if (um->target_mode == 0 && um->dir_mode == 0 && !um->target_flags_modified && !um->dir_flags_modified) {
 		delete um;
 		um = nullptr;
 	}
-	
+
 	return IUnmakeWritablePtr(um);
 }
 

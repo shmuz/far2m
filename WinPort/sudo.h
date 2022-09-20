@@ -20,10 +20,10 @@ extern "C" {
 	 SCM_CONFIRM_NONE
  } SudoClientMode;
 
- void sudo_client_configure(SudoClientMode mode, int password_expiration, 
+ void sudo_client_configure(SudoClientMode mode, int password_expiration,
 	const char *sudo_app, const char *askpass_app,
 	const char *sudo_title, const char *sudo_prompt, const char *sudo_confirm);
-	
+
  int sudo_main_askpass();
  int sudo_main_dispatcher(int argc, char *argv[]);
 
@@ -73,8 +73,8 @@ extern "C" {
  __attribute__ ((visibility("default"))) ssize_t sdc_flistxattr(int fd, char *namebuf, size_t size);
  __attribute__ ((visibility("default"))) ssize_t sdc_fgetxattr(int fd, const char *name,void *value, size_t size);
  __attribute__ ((visibility("default"))) int sdc_fsetxattr(int fd, const char *name, const void *value, size_t size, int flags);
- __attribute__ ((visibility("default"))) int sdc_fs_flags_get(const char *path, int *flags);
- __attribute__ ((visibility("default"))) int sdc_fs_flags_set(const char *path, int flags);
+ __attribute__ ((visibility("default"))) int sdc_fs_flags_get(const char *path, unsigned long *flags);
+ __attribute__ ((visibility("default"))) int sdc_fs_flags_set(const char *path, unsigned long flags);
 #ifdef __cplusplus
 }
 
@@ -101,7 +101,7 @@ public:
 		if (enter)
 			sudo_silent_query_region_enter();
 	}
-	
+
 	inline void Enter()
 	{
 		if (!_entered) {
