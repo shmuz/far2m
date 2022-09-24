@@ -34,6 +34,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "FARString.hpp"
+#include "panel.hpp"
 
 //  +CASR_* Поведение Ctrl-Alt-Shift для AllCtrlAltShiftRule
 enum
@@ -308,9 +309,7 @@ struct FindFileOptions
 	FARString strSearchOutFormat;
 	FARString strSearchOutFormatWidth;
 	int OutColumnCount;
-	unsigned int OutColumnTypes[20];
-	int OutColumnWidths[20];
-	int OutColumnWidthType[20];
+	Column OutColumns[20];
 };
 
 struct InfoPanelOptions

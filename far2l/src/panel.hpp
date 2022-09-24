@@ -40,13 +40,18 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 class DizList;
 
+struct Column
+{
+	unsigned int Type;
+	int Width;
+	int WidthType;
+};
+
 struct PanelViewSettings
 {
-	unsigned int ColumnType[PANEL_COLUMNCOUNT];
-	int ColumnWidth[PANEL_COLUMNCOUNT];
-	int ColumnCount;
-	unsigned int StatusColumnType[PANEL_COLUMNCOUNT];
-	int StatusColumnWidth[PANEL_COLUMNCOUNT];
+	Column PanelColumns[PANEL_COLUMNCOUNT];
+	Column StatusColumns[PANEL_COLUMNCOUNT];
+	int PanelColumnCount;
 	int StatusColumnCount;
 	int FullScreen;
 	int AlignExtensions;
@@ -54,8 +59,6 @@ struct PanelViewSettings
 	int FolderUpperCase;
 	int FileLowerCase;
 	int FileUpperToLowerCase;
-	int ColumnWidthType[PANEL_COLUMNCOUNT];
-	int StatusColumnWidthType[PANEL_COLUMNCOUNT];
 };
 
 enum

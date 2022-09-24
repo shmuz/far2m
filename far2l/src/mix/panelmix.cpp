@@ -48,10 +48,50 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lang.hpp"
 #include "datetime.hpp"
 
-int ColumnTypeWidth[]={0, 6, 6, 8, 5, 14, 14, 14, 14, 10, 0, 0, 3, 3, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
- 
-static const wchar_t *ColumnSymbol[]={L"N",L"S",L"P",L"D",L"T",L"DM",L"DC",L"DA",L"DE",L"A",L"Z",L"O",L"U",L"LN",L"F",L"G",L"C0",L"C1",L"C2",L"C3",L"C4",L"C5",L"C6",L"C7",L"C8",L"C9",L"C10",L"C11",L"C12",L"C13",L"C14",L"C15",L"C16",L"C17",L"C18",L"C19"};
+static const struct { const wchar_t *Symbol; int Width; } ColumnTypes[] =
+{
+	{ L"N",   0 },      // NAME_COLUMN
+	{ L"S",   6 },      // SIZE_COLUMN
+	{ L"P",   6 },      // PHYSICAL_COLUMN
+	{ L"D",   8 },      // DATE_COLUMN
+	{ L"T",   5 },      // TIME_COLUMN,
+	{ L"DM", 14 },      // WDATE_COLUMN
+	{ L"DC", 14 },      // CDATE_COLUMN
+	{ L"DA", 14 },      // ADATE_COLUMN
+	{ L"DE", 14 },      // CHDATE_COLUMN
+	{ L"A",  10 },      // ATTR_COLUMN
+	{ L"Z",   0 },      // DIZ_COLUMN
+	{ L"O",   0 },      // OWNER_COLUMN
+	{ L"U",   3 },      // GROUP_COLUMN
+	{ L"LN",  3 },      // NUMLINK_COLUMN
+	{ L"F",   6 },      // RESERVED_COLUMN1 (was: number of streams)
+	{ L"G",   0 },      // RESERVED_COLUMN2 (was: size of file streams)
+	{ L"C0",  0 },      // CUSTOM_COLUMN0
+	{ L"C1",  0 },
+	{ L"C2",  0 },
+	{ L"C3",  0 },
+	{ L"C4",  0 },
+	{ L"C5",  0 },
+	{ L"C6",  0 },
+	{ L"C7",  0 },
+	{ L"C8",  0 },
+	{ L"C9",  0 },
+	{ L"C10", 0 },
+	{ L"C11", 0 },
+	{ L"C12", 0 },
+	{ L"C13", 0 },
+	{ L"C14", 0 },
+	{ L"C15", 0 },
+	{ L"C16", 0 },
+	{ L"C17", 0 },
+	{ L"C18", 0 },
+	{ L"C19", 0 },
+};
 
+int GetColumnTypeWidth(unsigned ColIndex)
+{
+	return ColIndex < ARRAYSIZE(ColumnTypes) ? ColumnTypes[ColIndex].Width : 0;
+}
 
 void ShellUpdatePanels(Panel *SrcPanel,BOOL NeedSetUpADir)
 {
@@ -216,8 +256,8 @@ int _MakePath1(DWORD Key, FARString &strPathName, const wchar_t *Param2)
 }
 
 
-void TextToViewSettings(const wchar_t *ColumnTitles,const wchar_t *ColumnWidths,
-                                  unsigned int *ViewColumnTypes,int *ViewColumnWidths,int *ViewColumnWidthsTypes,int &ColumnCount)
+void TextToViewSettings(
+	const wchar_t *ColumnTitles, const wchar_t *ColumnWidths, Column *Columns, int &ColumnCount)
 {
 	const wchar_t *TextPtr=ColumnTitles;
 
@@ -229,14 +269,13 @@ void TextToViewSettings(const wchar_t *ColumnTitles,const wchar_t *ColumnWidths,
 			break;
 
 		strArgName.Upper();
+		unsigned int &ColumnType=Columns[ColumnCount].Type;
 
 		if (strArgName.At(0)==L'N')
 		{
-			unsigned int &ColumnType=ViewColumnTypes[ColumnCount];
 			ColumnType=NAME_COLUMN;
-			const wchar_t *Ptr = strArgName.CPtr()+1;
 
-			while (*Ptr)
+			for (auto Ptr=strArgName.CPtr()+1; *Ptr; Ptr++)
 			{
 				switch (*Ptr)
 				{
@@ -250,19 +289,15 @@ void TextToViewSettings(const wchar_t *ColumnTitles,const wchar_t *ColumnWidths,
 						ColumnType|=COLUMN_RIGHTALIGN;
 						break;
 				}
-
-				Ptr++;
 			}
 		}
 		else
 		{
 			if (strArgName.At(0)==L'S' || strArgName.At(0)==L'P' || strArgName.At(0)==L'G')
 			{
-				unsigned int &ColumnType=ViewColumnTypes[ColumnCount];
 				ColumnType=(strArgName.At(0)==L'S') ? SIZE_COLUMN:PHYSICAL_COLUMN;
-				const wchar_t *Ptr = strArgName.CPtr()+1;
 
-				while (*Ptr)
+				for (auto Ptr=strArgName.CPtr()+1; *Ptr; Ptr++)
 				{
 					switch (*Ptr)
 					{
@@ -279,16 +314,12 @@ void TextToViewSettings(const wchar_t *ColumnTitles,const wchar_t *ColumnWidths,
 							ColumnType|=COLUMN_THOUSAND;
 							break;
 					}
-
-					Ptr++;
 				}
 			}
 			else
 			{
 				if (!StrCmpN(strArgName,L"DM",2) || !StrCmpN(strArgName,L"DC",2) || !StrCmpN(strArgName,L"DA",2) || !StrCmpN(strArgName,L"DE",2))
 				{
-					unsigned int &ColumnType=ViewColumnTypes[ColumnCount];
-
 					switch (strArgName.At(1))
 					{
 						case L'M':
@@ -305,9 +336,7 @@ void TextToViewSettings(const wchar_t *ColumnTitles,const wchar_t *ColumnWidths,
 							break;
 					}
 
-					const wchar_t *Ptr = strArgName.CPtr()+2;
-
-					while (*Ptr)
+					for (auto Ptr=strArgName.CPtr()+2; *Ptr; Ptr++)
 					{
 						switch (*Ptr)
 						{
@@ -318,20 +347,16 @@ void TextToViewSettings(const wchar_t *ColumnTitles,const wchar_t *ColumnWidths,
 								ColumnType|=COLUMN_MONTH;
 								break;
 						}
-
-						Ptr++;
 					}
 				}
 				else
 				{
 					if (strArgName.At(0)==L'U')
 					{
-						unsigned int &ColumnType=ViewColumnTypes[ColumnCount];
 						ColumnType=GROUP_COLUMN;
 					}
 					else if (strArgName.At(0)==L'O')
 					{
-						unsigned int &ColumnType=ViewColumnTypes[ColumnCount];
 						ColumnType=OWNER_COLUMN;
 
 						if (strArgName.At(1)==L'L')
@@ -339,11 +364,11 @@ void TextToViewSettings(const wchar_t *ColumnTitles,const wchar_t *ColumnWidths,
 					}
 					else
 					{
-						for (unsigned I=0; I<ARRAYSIZE(ColumnSymbol); I++)
+						for (unsigned I=0; I<ARRAYSIZE(ColumnTypes); I++)
 						{
-							if (!StrCmp(strArgName,ColumnSymbol[I]))
+							if (!StrCmp(strArgName,ColumnTypes[I].Symbol))
 							{
-								ViewColumnTypes[ColumnCount]=I;
+								ColumnType=I;
 								break;
 							}
 						}
@@ -362,15 +387,15 @@ void TextToViewSettings(const wchar_t *ColumnTitles,const wchar_t *ColumnWidths,
 		if (!(TextPtr=GetCommaWord(TextPtr,strArgName)))
 			break;
 
-		ViewColumnWidths[I]=_wtoi(strArgName);
-		ViewColumnWidthsTypes[I]=COUNT_WIDTH;
+		Columns[I].Width=_wtoi(strArgName);
+		Columns[I].WidthType=COUNT_WIDTH;
 
 		if (strArgName.GetLength()>1)
 		{
 			switch (strArgName.At(strArgName.GetLength()-1))
 			{
 				case L'%':
-					ViewColumnWidthsTypes[I]=PERCENT_WIDTH;
+					Columns[I].WidthType=PERCENT_WIDTH;
 					break;
 			}
 		}
@@ -378,68 +403,65 @@ void TextToViewSettings(const wchar_t *ColumnTitles,const wchar_t *ColumnWidths,
 }
 
 
-void ViewSettingsToText(unsigned int *ViewColumnTypes,int *ViewColumnWidths,
-                                  int *ViewColumnWidthsTypes,int ColumnCount,FARString &strColumnTitles,
-                                  FARString &strColumnWidths)
+void ViewSettingsToText(const Column* Columns, int ColumnCount, FARString &strColumnTitles, FARString &strColumnWidths)
 {
 	strColumnTitles.Clear();
 	strColumnWidths.Clear();
 
 	for (int I=0; I<ColumnCount; I++)
 	{
-		FARString strType;
-		int ColumnType=ViewColumnTypes[I] & 0xff;
-		strType = ColumnSymbol[ColumnType];
+		int ColumnType=Columns[I].Type & 0xff;
+		FARString strType = ColumnTypes[ColumnType].Symbol;
 
 		if (ColumnType==NAME_COLUMN)
 		{
-			if (ViewColumnTypes[I] & COLUMN_MARK)
+			if (Columns[I].Type & COLUMN_MARK)
 				strType += L"M";
 
-			if (ViewColumnTypes[I] & COLUMN_NAMEONLY)
+			if (Columns[I].Type & COLUMN_NAMEONLY)
 				strType += L"O";
 
-			if (ViewColumnTypes[I] & COLUMN_RIGHTALIGN)
+			if (Columns[I].Type & COLUMN_RIGHTALIGN)
 				strType += L"R";
 		}
 
 		if (ColumnType==SIZE_COLUMN || ColumnType==PHYSICAL_COLUMN)
 		{
-			if (ViewColumnTypes[I] & COLUMN_COMMAS)
+			if (Columns[I].Type & COLUMN_COMMAS)
 				strType += L"C";
 
-			if (ViewColumnTypes[I] & COLUMN_ECONOMIC)
+			if (Columns[I].Type & COLUMN_ECONOMIC)
 				strType += L"E";
 
-			if (ViewColumnTypes[I] & COLUMN_FLOATSIZE)
+			if (Columns[I].Type & COLUMN_FLOATSIZE)
 				strType += L"F";
 
-			if (ViewColumnTypes[I] & COLUMN_THOUSAND)
+			if (Columns[I].Type & COLUMN_THOUSAND)
 				strType += L"T";
 		}
 
 		if (ColumnType==WDATE_COLUMN || ColumnType==ADATE_COLUMN || ColumnType==CDATE_COLUMN  || ColumnType==CHDATE_COLUMN)
 		{
-			if (ViewColumnTypes[I] & COLUMN_BRIEF)
+			if (Columns[I].Type & COLUMN_BRIEF)
 				strType += L"B";
 
-			if (ViewColumnTypes[I] & COLUMN_MONTH)
+			if (Columns[I].Type & COLUMN_MONTH)
 				strType += L"M";
 		}
 
 		if (ColumnType==OWNER_COLUMN)
 		{
-			if (ViewColumnTypes[I] & COLUMN_FULLOWNER)
+			if (Columns[I].Type & COLUMN_FULLOWNER)
 				strType += L"L";
 		}
 
 		strColumnTitles += strType;
 		wchar_t *lpwszWidth = strType.GetBuffer(20);
-		_itow(ViewColumnWidths[I],lpwszWidth,10);
+		_itow(Columns[I].Width,lpwszWidth,10);
 		strType.ReleaseBuffer();
 		strColumnWidths += strType;
 
-		switch (ViewColumnWidthsTypes[I])
+		switch (Columns[I].WidthType)
 		{
 			case PERCENT_WIDTH:
 				strColumnWidths += L"%";
@@ -461,13 +483,13 @@ const FARString FormatStr_Attribute( DWORD FileAttributes, DWORD UnixMode, int W
 	if (UnixMode!=0) {
 			if (FileAttributes&FILE_ATTRIBUTE_BROKEN)
 				OutStr[0] = L'B';
-			else if (FileAttributes&FILE_ATTRIBUTE_DEVICE) 
+			else if (FileAttributes&FILE_ATTRIBUTE_DEVICE)
 				OutStr[0] = L'V';
-			else if (FileAttributes&FILE_ATTRIBUTE_REPARSE_POINT) 
+			else if (FileAttributes&FILE_ATTRIBUTE_REPARSE_POINT)
 				OutStr[0] = L'L';
-			else if (FileAttributes&FILE_ATTRIBUTE_DIRECTORY) 
+			else if (FileAttributes&FILE_ATTRIBUTE_DIRECTORY)
 				OutStr[0] = L'D';
-			else 
+			else
 				OutStr[0] = L'F';
 
 			OutStr[1] = UnixMode&S_IRUSR? L'r' : L'-';
@@ -606,6 +628,6 @@ const FARString FormatStr_Size(int64_t FileSize, int64_t PhysicalSize, const FAR
 		FARString strOutStr;
 		strResult<<FileSizeToStr(strOutStr,Physical?PhysicalSize:FileSize,Width,Flags).CPtr();
 	}
-	
+
 	return std::move(strResult.strValue());
 }

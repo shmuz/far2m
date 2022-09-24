@@ -1157,20 +1157,15 @@ void ReadConfig()
 		}
 	}
 
-
-	memset(Opt.FindOpt.OutColumnTypes,0,sizeof(Opt.FindOpt.OutColumnTypes));
-	memset(Opt.FindOpt.OutColumnWidths,0,sizeof(Opt.FindOpt.OutColumnWidths));
-	memset(Opt.FindOpt.OutColumnWidthType,0,sizeof(Opt.FindOpt.OutColumnWidthType));
+	memset(Opt.FindOpt.OutColumns,0,sizeof(Opt.FindOpt.OutColumns));
 	Opt.FindOpt.OutColumnCount=0;
-
 
 	if (!Opt.FindOpt.strSearchOutFormat.IsEmpty())
 	{
 		if (Opt.FindOpt.strSearchOutFormatWidth.IsEmpty())
 			Opt.FindOpt.strSearchOutFormatWidth=L"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0";
 		TextToViewSettings(Opt.FindOpt.strSearchOutFormat.CPtr(),Opt.FindOpt.strSearchOutFormatWidth.CPtr(),
-                                  Opt.FindOpt.OutColumnTypes,Opt.FindOpt.OutColumnWidths,Opt.FindOpt.OutColumnWidthType,
-                                  Opt.FindOpt.OutColumnCount);
+		                   Opt.FindOpt.OutColumns,Opt.FindOpt.OutColumnCount);
 	}
 
 	FileFilter::InitFilter(cfg_reader);

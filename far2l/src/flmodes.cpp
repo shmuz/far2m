@@ -49,16 +49,16 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 PanelViewSettings ViewSettingsArray[]=
 {
-	/* 00 */{{COLUMN_MARK|NAME_COLUMN,SIZE_COLUMN|COLUMN_COMMAS,DATE_COLUMN},{0,10,0},3,{COLUMN_RIGHTALIGN|NAME_COLUMN},{0},1,0,1,0,0,0,0,{COUNT_WIDTH,COUNT_WIDTH,COUNT_WIDTH},{COUNT_WIDTH}},
-	/* 01 */{{NAME_COLUMN,NAME_COLUMN,NAME_COLUMN},{0,0,0},3,{COLUMN_RIGHTALIGN|NAME_COLUMN,OWNER_COLUMN,GROUP_COLUMN,SIZE_COLUMN,DATE_COLUMN,TIME_COLUMN},{0,6,6,6,0,5},6,0,1,0,0,0,0,{COUNT_WIDTH,COUNT_WIDTH,COUNT_WIDTH},{COUNT_WIDTH,COUNT_WIDTH,COUNT_WIDTH,COUNT_WIDTH}},
-	/* 02 */{{NAME_COLUMN,NAME_COLUMN},{0,0},2,{COLUMN_RIGHTALIGN|NAME_COLUMN,OWNER_COLUMN,GROUP_COLUMN,SIZE_COLUMN,DATE_COLUMN,TIME_COLUMN},{0,6,6,6,0,5},6,0,0,0,0,0,0,{COUNT_WIDTH,COUNT_WIDTH},{COUNT_WIDTH,COUNT_WIDTH,COUNT_WIDTH,COUNT_WIDTH}},
-	/* 03 */{{NAME_COLUMN,SIZE_COLUMN,DATE_COLUMN,TIME_COLUMN},{0,6,0,5},4,{COLUMN_RIGHTALIGN|NAME_COLUMN,OWNER_COLUMN,GROUP_COLUMN},{0,6,6},3,0,1,0,0,0,0,{COUNT_WIDTH,COUNT_WIDTH,COUNT_WIDTH,COUNT_WIDTH},{COUNT_WIDTH}},
-	/* 04 */{{NAME_COLUMN,SIZE_COLUMN},{0,6},2,{COLUMN_RIGHTALIGN|NAME_COLUMN,SIZE_COLUMN,OWNER_COLUMN,GROUP_COLUMN,DATE_COLUMN,TIME_COLUMN},{0,0,6,6,0,5},6,0,0,0,0,0,0,{COUNT_WIDTH,COUNT_WIDTH},{COUNT_WIDTH,COUNT_WIDTH,COUNT_WIDTH,COUNT_WIDTH}},
-	/* 05 */{{NAME_COLUMN,SIZE_COLUMN,PHYSICAL_COLUMN,WDATE_COLUMN,CDATE_COLUMN,ADATE_COLUMN,OWNER_COLUMN,GROUP_COLUMN,ATTR_COLUMN},{0,6,6,14,14,14,6,6,0},9,{COLUMN_RIGHTALIGN|NAME_COLUMN},{0},1,1,1,0,0,0,0,{COUNT_WIDTH,COUNT_WIDTH,COUNT_WIDTH,COUNT_WIDTH,COUNT_WIDTH,COUNT_WIDTH,COUNT_WIDTH},{COUNT_WIDTH}},
-	/* 06 */{{NAME_COLUMN,DIZ_COLUMN},{40,0},2,{COLUMN_RIGHTALIGN|NAME_COLUMN,OWNER_COLUMN,GROUP_COLUMN,SIZE_COLUMN,DATE_COLUMN,TIME_COLUMN},{0,6,6,6,0,5},6,0,1,0,0,0,0,{PERCENT_WIDTH,COUNT_WIDTH},{COUNT_WIDTH,COUNT_WIDTH,COUNT_WIDTH,COUNT_WIDTH}},
-	/* 07 */{{NAME_COLUMN,SIZE_COLUMN,DIZ_COLUMN},{0,6,54},3,{COLUMN_RIGHTALIGN|NAME_COLUMN},{0},1,1,1,0,0,0,0,{COUNT_WIDTH,COUNT_WIDTH,COUNT_WIDTH},{COUNT_WIDTH}},
-	/* 08 */{{NAME_COLUMN,SIZE_COLUMN,OWNER_COLUMN,GROUP_COLUMN},{0,6,6,15},4,{COLUMN_RIGHTALIGN|NAME_COLUMN,OWNER_COLUMN,GROUP_COLUMN,SIZE_COLUMN,DATE_COLUMN,TIME_COLUMN},{0,6,6,6,0,5},6,0,1,0,0,0,0,{COUNT_WIDTH,COUNT_WIDTH,COUNT_WIDTH},{COUNT_WIDTH,COUNT_WIDTH,COUNT_WIDTH,COUNT_WIDTH}},
-	/* 09 */{{NAME_COLUMN,SIZE_COLUMN,NUMLINK_COLUMN},{0,6,3},3,{COLUMN_RIGHTALIGN|NAME_COLUMN,OWNER_COLUMN,GROUP_COLUMN,SIZE_COLUMN,DATE_COLUMN,TIME_COLUMN},{0,6,6,6,0,5},6,0,1,0,0,0,0,{COUNT_WIDTH,COUNT_WIDTH,COUNT_WIDTH},{COUNT_WIDTH,COUNT_WIDTH,COUNT_WIDTH,COUNT_WIDTH}}
+	/* 00 */{{{COLUMN_MARK|NAME_COLUMN,0,COUNT_WIDTH},{SIZE_COLUMN|COLUMN_COMMAS,10,COUNT_WIDTH},{DATE_COLUMN,0,COUNT_WIDTH}},{{COLUMN_RIGHTALIGN|NAME_COLUMN,0,COUNT_WIDTH}},3,1,0,1,0,0,0,0},
+	/* 01 */{{{NAME_COLUMN,0,COUNT_WIDTH},{NAME_COLUMN,0,COUNT_WIDTH},{NAME_COLUMN,0,COUNT_WIDTH}},{{COLUMN_RIGHTALIGN|NAME_COLUMN,0,COUNT_WIDTH},{OWNER_COLUMN,6,COUNT_WIDTH},{GROUP_COLUMN,6,COUNT_WIDTH},{SIZE_COLUMN,6,COUNT_WIDTH},{DATE_COLUMN,0},{TIME_COLUMN,5}},3,6,0,1,0,0,0,0},
+	/* 02 */{{{NAME_COLUMN,0,COUNT_WIDTH},{NAME_COLUMN,0,COUNT_WIDTH}},{{COLUMN_RIGHTALIGN|NAME_COLUMN,0,COUNT_WIDTH},{OWNER_COLUMN,6,COUNT_WIDTH},{GROUP_COLUMN,6,COUNT_WIDTH},{SIZE_COLUMN,6,COUNT_WIDTH},{DATE_COLUMN,0},{TIME_COLUMN,5}},2,6,0,0,0,0,0,0},
+	/* 03 */{{{NAME_COLUMN,0,COUNT_WIDTH},{SIZE_COLUMN,6,COUNT_WIDTH},{DATE_COLUMN,0,COUNT_WIDTH},{TIME_COLUMN,5,COUNT_WIDTH}},{{COLUMN_RIGHTALIGN|NAME_COLUMN,0,COUNT_WIDTH},{OWNER_COLUMN,6},{GROUP_COLUMN,6}},4,3,0,1,0,0,0,0},
+	/* 04 */{{{NAME_COLUMN,0,COUNT_WIDTH},{SIZE_COLUMN,6,COUNT_WIDTH}},{{COLUMN_RIGHTALIGN|NAME_COLUMN,0,COUNT_WIDTH},{SIZE_COLUMN,0,COUNT_WIDTH},{OWNER_COLUMN,6,COUNT_WIDTH},{GROUP_COLUMN,6,COUNT_WIDTH},{DATE_COLUMN,0},{TIME_COLUMN,5}},2,6,0,0,0,0,0,0},
+	/* 05 */{{{NAME_COLUMN,0,COUNT_WIDTH},{SIZE_COLUMN,6,COUNT_WIDTH},{PHYSICAL_COLUMN,6,COUNT_WIDTH},{WDATE_COLUMN,14,COUNT_WIDTH},{CDATE_COLUMN,14,COUNT_WIDTH},{ADATE_COLUMN,14,COUNT_WIDTH},{OWNER_COLUMN,6,COUNT_WIDTH},{GROUP_COLUMN,6},{ATTR_COLUMN,0}},{{COLUMN_RIGHTALIGN|NAME_COLUMN,0,COUNT_WIDTH}},9,1,1,1,0,0,0,0},
+	/* 06 */{{{NAME_COLUMN,40,PERCENT_WIDTH},{DIZ_COLUMN,0,COUNT_WIDTH}},{{COLUMN_RIGHTALIGN|NAME_COLUMN,0,COUNT_WIDTH},{OWNER_COLUMN,6,COUNT_WIDTH},{GROUP_COLUMN,6,COUNT_WIDTH},{SIZE_COLUMN,6,COUNT_WIDTH},{DATE_COLUMN,0},{TIME_COLUMN,5}},2,6,0,1,0,0,0,0},
+	/* 07 */{{{NAME_COLUMN,0,COUNT_WIDTH},{SIZE_COLUMN,6,COUNT_WIDTH},{DIZ_COLUMN,54,COUNT_WIDTH}},{{COLUMN_RIGHTALIGN|NAME_COLUMN,0,COUNT_WIDTH}},3,1,1,1,0,0,0,0},
+	/* 08 */{{{NAME_COLUMN,0,COUNT_WIDTH},{SIZE_COLUMN,6,COUNT_WIDTH},{OWNER_COLUMN,6,COUNT_WIDTH},{GROUP_COLUMN,15}},{{COLUMN_RIGHTALIGN|NAME_COLUMN,0,COUNT_WIDTH},{OWNER_COLUMN,6,COUNT_WIDTH},{GROUP_COLUMN,6,COUNT_WIDTH},{SIZE_COLUMN,6,COUNT_WIDTH},{DATE_COLUMN,0},{TIME_COLUMN,5}},4,6,0,1,0,0,0,0},
+	/* 09 */{{{NAME_COLUMN,0,COUNT_WIDTH},{SIZE_COLUMN,6,COUNT_WIDTH},{NUMLINK_COLUMN,3,COUNT_WIDTH}},{{COLUMN_RIGHTALIGN|NAME_COLUMN,0,COUNT_WIDTH},{OWNER_COLUMN,6,COUNT_WIDTH},{GROUP_COLUMN,6,COUNT_WIDTH},{SIZE_COLUMN,6,COUNT_WIDTH},{DATE_COLUMN,0},{TIME_COLUMN,5}},3,6,0,1,0,0,0,0},
 };
 
 size_t SizeViewSettingsArray=ARRAYSIZE(ViewSettingsArray);
@@ -165,10 +165,8 @@ void FileList::SetFilePanelModes()
 		ModeDlg[MD_CHECKBOX_FOLDERUPPERCASE].Selected=NewSettings.FolderUpperCase;
 		ModeDlg[MD_CHECKBOX_FILESLOWERCASE].Selected=NewSettings.FileLowerCase;
 		ModeDlg[MD_CHECKBOX_UPPERTOLOWERCASE].Selected=NewSettings.FileUpperToLowerCase;
-		ViewSettingsToText(NewSettings.ColumnType,NewSettings.ColumnWidth,NewSettings.ColumnWidthType,
-		                   NewSettings.ColumnCount,ModeDlg[2].strData,ModeDlg[4].strData);
-		ViewSettingsToText(NewSettings.StatusColumnType,NewSettings.StatusColumnWidth,NewSettings.StatusColumnWidthType,
-		                   NewSettings.StatusColumnCount,ModeDlg[6].strData,ModeDlg[8].strData);
+		ViewSettingsToText(NewSettings.PanelColumns,NewSettings.PanelColumnCount,ModeDlg[2].strData,ModeDlg[4].strData);
+		ViewSettingsToText(NewSettings.StatusColumns,NewSettings.StatusColumnCount,ModeDlg[6].strData,ModeDlg[8].strData);
 		{
 			Dialog Dlg(ModeDlg,ARRAYSIZE(ModeDlg));
 			Dlg.SetPosition(-1,-1,76,17);
@@ -188,10 +186,10 @@ void FileList::SetFilePanelModes()
 		NewSettings.FolderUpperCase=ModeDlg[MD_CHECKBOX_FOLDERUPPERCASE].Selected;
 		NewSettings.FileLowerCase=ModeDlg[MD_CHECKBOX_FILESLOWERCASE].Selected;
 		NewSettings.FileUpperToLowerCase=ModeDlg[MD_CHECKBOX_UPPERTOLOWERCASE].Selected;
-		TextToViewSettings(ModeDlg[MD_EDITTYPES].strData,ModeDlg[MD_EDITWIDTHS].strData,NewSettings.ColumnType,
-		                   NewSettings.ColumnWidth,NewSettings.ColumnWidthType,NewSettings.ColumnCount);
-		TextToViewSettings(ModeDlg[MD_EDITSTATUSTYPES].strData,ModeDlg[MD_EDITSTATUSWIDTHS].strData,NewSettings.StatusColumnType,
-		                   NewSettings.StatusColumnWidth,NewSettings.StatusColumnWidthType,NewSettings.StatusColumnCount);
+		TextToViewSettings(ModeDlg[MD_EDITTYPES].strData,ModeDlg[MD_EDITWIDTHS].strData,
+				NewSettings.PanelColumns,NewSettings.PanelColumnCount);
+		TextToViewSettings(ModeDlg[MD_EDITSTATUSTYPES].strData,ModeDlg[MD_EDITSTATUSWIDTHS].strData,
+				NewSettings.StatusColumns,NewSettings.StatusColumnCount);
 		ViewSettingsArray[ModeNumber]=NewSettings;
 		CtrlObject->Cp()->LeftPanel->SortFileList(TRUE);
 		CtrlObject->Cp()->RightPanel->SortFileList(TRUE);
@@ -224,12 +222,10 @@ void FileList::ReadPanelModes(ConfigReader &cfg_reader)
 		PanelViewSettings NewSettings = ViewSettingsArray[VIEW_0+I];
 
 		if (!strColumnTitles.IsEmpty())
-			TextToViewSettings(strColumnTitles,strColumnWidths,NewSettings.ColumnType,
-			                   NewSettings.ColumnWidth,NewSettings.ColumnWidthType,NewSettings.ColumnCount);
+			TextToViewSettings(strColumnTitles,strColumnWidths,NewSettings.PanelColumns,NewSettings.PanelColumnCount);
 
 		if (!strStatusColumnTitles.IsEmpty())
-			TextToViewSettings(strStatusColumnTitles,strStatusColumnWidths,NewSettings.StatusColumnType,
-			                   NewSettings.StatusColumnWidth,NewSettings.StatusColumnWidthType,NewSettings.StatusColumnCount);
+			TextToViewSettings(strStatusColumnTitles,strStatusColumnWidths,NewSettings.StatusColumns,NewSettings.StatusColumnCount);
 
 		NewSettings.FullScreen = cfg_reader.GetInt("FullScreen", 0);
 		NewSettings.AlignExtensions = cfg_reader.GetInt("AlignExtensions", 1);
@@ -251,10 +247,8 @@ void FileList::SavePanelModes(ConfigWriter &cfg_writer)
 		FARString strColumnTitles, strColumnWidths, strStatusColumnTitles, strStatusColumnWidths;
 
 		PanelViewSettings NewSettings = ViewSettingsArray[VIEW_0+I];
-		ViewSettingsToText(NewSettings.ColumnType,NewSettings.ColumnWidth,NewSettings.ColumnWidthType,
-		                   NewSettings.ColumnCount,strColumnTitles,strColumnWidths);
-		ViewSettingsToText(NewSettings.StatusColumnType,NewSettings.StatusColumnWidth,NewSettings.StatusColumnWidthType,
-		                   NewSettings.StatusColumnCount,strStatusColumnTitles,strStatusColumnWidths);
+		ViewSettingsToText(NewSettings.PanelColumns,NewSettings.PanelColumnCount,strColumnTitles,strColumnWidths);
+		ViewSettingsToText(NewSettings.StatusColumns,NewSettings.StatusColumnCount,strStatusColumnTitles,strStatusColumnWidths);
 
 		cfg_writer.SetString("Columns", strColumnTitles.CPtr());
 		cfg_writer.SetString("ColumnWidths", strColumnWidths.CPtr());

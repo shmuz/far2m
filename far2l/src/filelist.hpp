@@ -297,8 +297,7 @@ class FileList:public Panel
 		void DeletePluginItemList(PluginPanelItem *(&ItemList),int &ItemNumber);
 		PHPTR OpenPluginForFile(const wchar_t *FileName,DWORD FileAttr, OPENFILEPLUGINTYPE Type);
 		int PreparePanelView(PanelViewSettings *PanelView);
-		int PrepareColumnWidths(unsigned int *ColumnTypes,int *ColumnWidths,
-		                        int *ColumnWidthsTypes,int &ColumnCount,int FullScreen);
+		int PrepareColumnWidths(Column *Columns,int &ColumnCount,int FullScreen);
 		void PrepareViewSettings(int ViewMode,OpenPluginInfo *PlugInfo);
 
 		void PluginDelete();
