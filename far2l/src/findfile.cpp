@@ -748,8 +748,7 @@ static void AdvancedDialog()
 		Opt.FindOpt.strSearchOutFormat = AdvancedDlg[AD_EDIT_COLUMNSFORMAT].strData;
 		Opt.FindOpt.strSearchOutFormatWidth = AdvancedDlg[AD_EDIT_COLUMNSWIDTH].strData;
 
-		memset(Opt.FindOpt.OutColumns,0,sizeof(Opt.FindOpt.OutColumns));
-		Opt.FindOpt.OutColumnCount=0;
+		Opt.FindOpt.OutColumns.clear();
 
 		if (!Opt.FindOpt.strSearchOutFormat.IsEmpty())
 		{
@@ -757,7 +756,7 @@ static void AdvancedDialog()
 				Opt.FindOpt.strSearchOutFormatWidth=L"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0";
 
 			TextToViewSettings(Opt.FindOpt.strSearchOutFormat.CPtr(),Opt.FindOpt.strSearchOutFormatWidth.CPtr(),
-			                   Opt.FindOpt.OutColumns, Opt.FindOpt.OutColumnCount);
+			                   Opt.FindOpt.OutColumns);
 		}
 
 		Opt.FindOpt.FindAlternateStreams=(AdvancedDlg[AD_CHECKBOX_FINDALTERNATESTREAMS].Selected==BSTATE_CHECKED);
@@ -2234,15 +2233,12 @@ static void AddMenuRecord(HANDLE hDlg,const wchar_t *FullName, const FAR_FIND_DA
 	FARString strDateStr, strTimeStr;
 	const wchar_t *DisplayName=FindData.strFileName;
 
-	Column *Columns = Opt.FindOpt.OutColumns;
-	int ColumnCount=Opt.FindOpt.OutColumnCount;
-	//int *ColumnWidthType=Opt.FindOpt.OutColumnWidthType;
-
 	MenuText << L' ';
 
-	for (int Count=0; Count < ColumnCount; ++Count)
+	for (size_t Count=0; Count < Opt.FindOpt.OutColumns.size(); ++Count)
 	{
-		unsigned int CurColumnType = Columns[Count].Type & 0xFF;
+		const Column &CurColumn = Opt.FindOpt.OutColumns[Count];
+		unsigned int CurColumnType = CurColumn.Type & 0xFF;
 
 		switch (CurColumnType)
 		{
@@ -2275,8 +2271,8 @@ static void AddMenuRecord(HANDLE hDlg,const wchar_t *FullName, const FAR_FIND_DA
 								FindData.dwFileAttributes,
 								0,
 								CurColumnType,
-								Columns[Count].Type,
-								Columns[Count].Width);
+								CurColumn.Type,
+								CurColumn.Width);
 
 				MenuText << BoxSymbols[BS_V1];
 				break;
@@ -2309,7 +2305,7 @@ static void AddMenuRecord(HANDLE hDlg,const wchar_t *FullName, const FAR_FIND_DA
 						break;
 				}
 
-				MenuText << FormatStr_DateTime(FileTime,CurColumnType,Columns[Count].Type,Columns[Count].Width) << BoxSymbols[BS_V1];
+				MenuText << FormatStr_DateTime(FileTime,CurColumnType,CurColumn.Type,CurColumn.Width) << BoxSymbols[BS_V1];
 				break;
 			}
 		}

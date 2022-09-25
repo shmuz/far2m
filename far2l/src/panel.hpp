@@ -33,6 +33,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <vector>
 #include "scrobj.hpp"
 #include "panelctype.hpp"
 #include "FARString.hpp"
@@ -49,10 +50,8 @@ struct Column
 
 struct PanelViewSettings
 {
-	Column PanelColumns[PANEL_COLUMNCOUNT];
-	Column StatusColumns[PANEL_COLUMNCOUNT];
-	int PanelColumnCount;
-	int StatusColumnCount;
+	std::vector<Column> PanelColumns;
+	std::vector<Column> StatusColumns;
 	int FullScreen;
 	int AlignExtensions;
 	int FolderAlignExtensions;

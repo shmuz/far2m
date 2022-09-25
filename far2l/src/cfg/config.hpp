@@ -308,8 +308,7 @@ struct FindFileOptions
 
 	FARString strSearchOutFormat;
 	FARString strSearchOutFormatWidth;
-	int OutColumnCount;
-	Column OutColumns[20];
+	std::vector<Column> OutColumns;
 };
 
 struct InfoPanelOptions

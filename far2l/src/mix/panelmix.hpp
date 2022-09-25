@@ -33,8 +33,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-class Panel;
-struct Column;
+#include "panel.hpp"
 
 void ShellUpdatePanels(Panel *SrcPanel,BOOL NeedSetUpADir=FALSE);
 int  CheckUpdateAnotherPanel(Panel *SrcPanel,const wchar_t *SelName);
@@ -44,7 +43,7 @@ int _MakePath1(DWORD Key,FARString &strPathName, const wchar_t *Param2);
 const FARString FormatStr_Attribute(DWORD FileAttributes, DWORD UnixMode, int Width=-1);
 const FARString FormatStr_DateTime(const FILETIME *FileTime,int ColumnType,DWORD Flags,int Width);
 const FARString FormatStr_Size(int64_t FileSize, int64_t PhysicalSize, const FARString &strName, DWORD FileAttributes,uint8_t ShowFolderSize,int ColumnType,DWORD Flags,int Width);
-void TextToViewSettings(const wchar_t *ColumnTitles, const wchar_t *ColumnWidths, Column *Columns, int &ColumnCount);
-void ViewSettingsToText(const Column* Columns, int ColumnCount, FARString &strColumnTitles, FARString &strColumnWidths);
+void TextToViewSettings(const wchar_t *ColumnTitles, const wchar_t *ColumnWidths, std::vector<Column> &Columns);
+void ViewSettingsToText(const std::vector<Column> &Columns, FARString &strColumnTitles, FARString &strColumnWidths);
 
 int GetColumnTypeWidth(unsigned int ColIndex);

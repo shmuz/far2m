@@ -129,7 +129,7 @@ void FileList::ShowFileList(int Fast)
 		//FS<<fmt::Width(X2-X1-1)<<L"";
 	}
 
-	for (int I=0,ColumnPos=X1+1; I<ViewSettings.PanelColumnCount; I++)
+	for (size_t I=0,ColumnPos=X1+1; I<ViewSettings.PanelColumns.size(); I++)
 	{
 		if (ViewSettings.PanelColumns[I].Width<0)
 			continue;
@@ -205,7 +205,7 @@ void FileList::ShowFileList(int Fast)
 			FS<<fmt::Precision(ViewSettings.PanelColumns[I].Width)<<strTitleMsg;
 		}
 
-		if (I>=ViewSettings.PanelColumnCount-1)
+		if (I>=ViewSettings.PanelColumns.size()-1)
 			break;
 
 		if (ViewSettings.PanelColumns[I+1].Width<0)
@@ -495,10 +495,11 @@ void FileList::ShowSelectedSize()
 		SetColor(COL_PANELBOX);
 		DrawSeparator(Y2-2);
 
-		for (int I=0,ColumnPos=X1+1; I<ViewSettings.PanelColumnCount-1; I++)
+		int ColumnPos = X1+1;
+		for (size_t I=0; I<ViewSettings.PanelColumns.size()-1; I++)
 		{
 			if (ViewSettings.PanelColumns[I].Width<0 ||
-			        (I==ViewSettings.PanelColumnCount-2 && ViewSettings.PanelColumns[I+1].Width<0))
+			        (I==ViewSettings.PanelColumns.size()-2 && ViewSettings.PanelColumns[I+1].Width<0))
 				continue;
 
 			ColumnPos+=ViewSettings.PanelColumns[I].Width;
@@ -667,15 +668,16 @@ void FileList::PrepareViewSettings(int ViewMode,OpenPluginInfo *PlugInfo)
 		{
 			TextToViewSettings(Info.PanelModesArray[ViewMode].ColumnTypes,
 			                   Info.PanelModesArray[ViewMode].ColumnWidths,
-			                   ViewSettings.PanelColumns, ViewSettings.PanelColumnCount);
+			                   ViewSettings.PanelColumns);
 
 			if (Info.PanelModesArray[ViewMode].StatusColumnTypes &&
 			        Info.PanelModesArray[ViewMode].StatusColumnWidths)
 				TextToViewSettings(Info.PanelModesArray[ViewMode].StatusColumnTypes,
 				                   Info.PanelModesArray[ViewMode].StatusColumnWidths,
-				                   ViewSettings.StatusColumns, ViewSettings.StatusColumnCount);
+				                   ViewSettings.StatusColumns);
 			else if (Info.PanelModesArray[ViewMode].DetailedStatus)
 			{
+				ViewSettings.StatusColumns.resize(4);
 				ViewSettings.StatusColumns[0].Type=COLUMN_RIGHTALIGN|NAME_COLUMN;
 				ViewSettings.StatusColumns[1].Type=SIZE_COLUMN;
 				ViewSettings.StatusColumns[2].Type=DATE_COLUMN;
@@ -684,13 +686,12 @@ void FileList::PrepareViewSettings(int ViewMode,OpenPluginInfo *PlugInfo)
 				ViewSettings.StatusColumns[1].Width=8;
 				ViewSettings.StatusColumns[2].Width=0;
 				ViewSettings.StatusColumns[3].Width=5;
-				ViewSettings.StatusColumnCount=4;
 			}
 			else
 			{
+				ViewSettings.StatusColumns.resize(1);
 				ViewSettings.StatusColumns[0].Type=COLUMN_RIGHTALIGN|NAME_COLUMN;
 				ViewSettings.StatusColumns[0].Width=0;
-				ViewSettings.StatusColumnCount=1;
 			}
 
 			ViewSettings.FullScreen=Info.PanelModesArray[ViewMode].FullScreen;
@@ -704,7 +705,7 @@ void FileList::PrepareViewSettings(int ViewMode,OpenPluginInfo *PlugInfo)
 			}
 		}
 		else
-			for (int I=0; I<ViewSettings.PanelColumnCount; I++)
+			for (size_t I=0; I<ViewSettings.PanelColumns.size(); I++)
 				if ((ViewSettings.PanelColumns[I].Type & 0xff)==NAME_COLUMN)
 				{
 					if (Info.Flags & OPIF_SHOWNAMESONLY)
@@ -735,53 +736,59 @@ void FileList::PrepareViewSettings(int ViewMode,OpenPluginInfo *PlugInfo)
 
 int FileList::PreparePanelView(PanelViewSettings *PanelView)
 {
-	PrepareColumnWidths(PanelView->StatusColumns,PanelView->StatusColumnCount,PanelView->FullScreen);
-	return(PrepareColumnWidths(PanelView->PanelColumns,PanelView->PanelColumnCount,PanelView->FullScreen));
+	PrepareColumnWidths(PanelView->StatusColumns,PanelView->FullScreen);
+	return(PrepareColumnWidths(PanelView->PanelColumns,PanelView->FullScreen));
 }
 
 
-int FileList::PrepareColumnWidths(Column *Columns,int &ColumnCount,int FullScreen)
+int FileList::PrepareColumnWidths(std::vector<Column> &Columns,int FullScreen)
 {
-	int TotalWidth,TotalPercentWidth,TotalPercentCount,ZeroLengthCount,EmptyColumns,I;
+	if (Columns.empty())
+	{
+		Column col = {NAME_COLUMN,0,COUNT_WIDTH};
+		Columns.emplace_back(col);
+	}
+
+	int TotalWidth,TotalPercentWidth,TotalPercentCount,ZeroLengthCount,EmptyColumns;
 	ZeroLengthCount=EmptyColumns=0;
-	TotalWidth=ColumnCount-1;
+	TotalWidth=Columns.size()-1;
 	TotalPercentCount=TotalPercentWidth=0;
 
-	for (I=0; I<ColumnCount; I++)
+	for (auto col=Columns.begin(); col!=Columns.end(); col++)
 	{
-		if (Columns[I].Width<0)
+		if (col->Width<0)
 		{
 			EmptyColumns++;
 			continue;
 		}
 
-		int ColumnType=Columns[I].Type & 0xff;
+		int ColumnType=col->Type & 0xff;
 
-		if (!Columns[I].Width)
+		if (!col->Width)
 		{
-			Columns[I].WidthType = COUNT_WIDTH; //manage all zero-width columns in same way
-			Columns[I].Width=GetColumnTypeWidth(ColumnType);
+			col->WidthType = COUNT_WIDTH; //manage all zero-width columns in same way
+			col->Width=GetColumnTypeWidth(ColumnType);
 
 			if (ColumnType==WDATE_COLUMN || ColumnType==CDATE_COLUMN || ColumnType==ADATE_COLUMN || ColumnType==CHDATE_COLUMN)
 			{
-				if (Columns[I].Type & COLUMN_BRIEF)
-					Columns[I].Width-=3;
+				if (col->Type & COLUMN_BRIEF)
+					col->Width-=3;
 
-				if (Columns[I].Type & COLUMN_MONTH)
-					Columns[I].Width++;
+				if (col->Type & COLUMN_MONTH)
+					col->Width++;
 			}
 		}
 
-		if (!Columns[I].Width)
+		if (!col->Width)
 			ZeroLengthCount++;
 
-		switch (Columns[I].WidthType)
+		switch (col->WidthType)
 		{
 			case COUNT_WIDTH:
-				TotalWidth+=Columns[I].Width;
+				TotalWidth+=col->Width;
 				break;
 			case PERCENT_WIDTH:
-				TotalPercentWidth+=Columns[I].Width;
+				TotalPercentWidth+=col->Width;
 				TotalPercentCount++;
 				break;
 		}
@@ -800,24 +807,25 @@ int FileList::PrepareColumnWidths(Column *Columns,int &ColumnCount,int FullScree
 		int ExtraPercentWidth=(TotalPercentWidth>100 || !ZeroLengthCount)?ExtraWidth:ExtraWidth*TotalPercentWidth/100;
 		int TempWidth=0;
 
-		for (I=0; I<ColumnCount && TotalPercentCount>0; I++)
-			if (Columns[I].WidthType==PERCENT_WIDTH)
+		for (auto col=Columns.begin(); col!=Columns.end() && TotalPercentCount>0; col++)
+			if (col->WidthType==PERCENT_WIDTH)
 			{
-				int PercentWidth = (TotalPercentCount>1)?(ExtraPercentWidth*Columns[I].Width/TotalPercentWidth):(ExtraPercentWidth-TempWidth);
+				int PercentWidth = TotalPercentCount>1 ?
+					ExtraPercentWidth*col->Width/TotalPercentWidth : ExtraPercentWidth-TempWidth;
 
 				if (PercentWidth<1)
 					PercentWidth=1;
 
 				TempWidth+=PercentWidth;
-				Columns[I].Width=PercentWidth;
-				Columns[I].WidthType = COUNT_WIDTH;
+				col->Width=PercentWidth;
+				col->WidthType = COUNT_WIDTH;
 				TotalPercentCount--;
 			}
 
 		ExtraWidth-=TempWidth;
 	}
 
-	for (I=0; I<ColumnCount && ZeroLengthCount>0; I++)
+	for (size_t I=0; I<Columns.size() && ZeroLengthCount>0; I++)
 		if (!Columns[I].Width)
 		{
 			int AutoWidth=ExtraWidth/ZeroLengthCount;
@@ -832,17 +840,17 @@ int FileList::PrepareColumnWidths(Column *Columns,int &ColumnCount,int FullScree
 
 	while (1)
 	{
-		int LastColumn=ColumnCount-1;
+		int LastColumn=Columns.size()-1;
 		TotalWidth=LastColumn-EmptyColumns;
 
-		for (I=0; I<ColumnCount; I++)
+		for (size_t I=0; I<Columns.size(); I++)
 			if (Columns[I].Width>0)
 				TotalWidth+=Columns[I].Width;
 
 		if (TotalWidth<=PanelTextWidth)
 			break;
 
-		if (ColumnCount<=1)
+		if (Columns.size()<=1)
 		{
 			Columns[0].Width=PanelTextWidth;
 			break;
@@ -853,7 +861,7 @@ int FileList::PrepareColumnWidths(Column *Columns,int &ColumnCount,int FullScree
 			break;
 		}
 		else
-			ColumnCount--;
+			Columns.pop_back();
 	}
 
 	ColumnsInGlobal = 1;
@@ -861,11 +869,11 @@ int FileList::PrepareColumnWidths(Column *Columns,int &ColumnCount,int FullScree
 	bool UnEqual;
 	int Remainder;
 
-	for (int i = 0; i < ViewSettings.PanelColumnCount; i++)
+	for (size_t i = 0; i < ViewSettings.PanelColumns.size(); i++)
 	{
 		UnEqual = false;
-		Remainder = ViewSettings.PanelColumnCount%ColumnsInGlobal;
-		GlobalColumns = ViewSettings.PanelColumnCount/ColumnsInGlobal;
+		Remainder = ViewSettings.PanelColumns.size() % ColumnsInGlobal;
+		GlobalColumns = ViewSettings.PanelColumns.size() / ColumnsInGlobal;
 
 		if (!Remainder)
 		{
@@ -896,7 +904,7 @@ void FileList::ShowList(int ShowStatus,int StartColumn)
 {
 	int StatusShown=FALSE;
 	int MaxLeftPos=0,MinLeftPos=FALSE;
-	int ColumnCount=ShowStatus ? ViewSettings.StatusColumnCount:ViewSettings.PanelColumnCount;
+	size_t ColumnCount=ShowStatus ? ViewSettings.StatusColumns.size() : ViewSettings.PanelColumns.size();
 
 	for (int I=Y1+1+Opt.ShowColumnTitles,J=CurTopFile; I<Y2-2*Opt.ShowPanelStatus; I++,J++)
 	{
@@ -916,7 +924,7 @@ void FileList::ShowList(int ShowStatus,int StartColumn)
 		int StatusLine=FALSE;
 		int Level = 1;
 
-		for (int K=0; K<ColumnCount; K++)
+		for (size_t K=0; K<ColumnCount; K++)
 		{
 			int ListPos=J+CurColumn*Height;
 
@@ -934,7 +942,7 @@ void FileList::ShowList(int ShowStatus,int StartColumn)
 			int CurX=WhereX();
 			int CurY=WhereY();
 			int ShowDivider=TRUE;
-			Column *Columns=ShowStatus ? ViewSettings.StatusColumns:ViewSettings.PanelColumns;
+			auto &Columns = ShowStatus ? ViewSettings.StatusColumns:ViewSettings.PanelColumns;
 			int ColumnType=Columns[K].Type & 0xff;
 			int ColumnWidth=Columns[K].Width;
 
@@ -1383,11 +1391,11 @@ int FileList::IsDizDisplayed()
 int FileList::IsColumnDisplayed(int Type)
 {
 
-	for (int i=0; i<ViewSettings.PanelColumnCount; i++)
+	for (size_t i=0; i<ViewSettings.PanelColumns.size(); i++)
 		if ((int)(ViewSettings.PanelColumns[i].Type & 0xff)==Type)
 			return TRUE;
 
-	for (int i=0; i<ViewSettings.StatusColumnCount; i++)
+	for (size_t i=0; i<ViewSettings.StatusColumns.size(); i++)
 		if ((int)(ViewSettings.StatusColumns[i].Type & 0xff)==Type)
 			return TRUE;
 
