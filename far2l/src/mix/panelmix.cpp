@@ -66,26 +66,6 @@ static const struct { const wchar_t *Symbol; int Width; } ColumnTypes[] =
 	{ L"LN",  3 },      // NUMLINK_COLUMN
 	{ L"F",   6 },      // RESERVED_COLUMN1 (was: number of streams)
 	{ L"G",   0 },      // RESERVED_COLUMN2 (was: size of file streams)
-	{ L"C0",  0 },      // CUSTOM_COLUMN0
-	{ L"C1",  0 },
-	{ L"C2",  0 },
-	{ L"C3",  0 },
-	{ L"C4",  0 },
-	{ L"C5",  0 },
-	{ L"C6",  0 },
-	{ L"C7",  0 },
-	{ L"C8",  0 },
-	{ L"C9",  0 },
-	{ L"C10", 0 },
-	{ L"C11", 0 },
-	{ L"C12", 0 },
-	{ L"C13", 0 },
-	{ L"C14", 0 },
-	{ L"C15", 0 },
-	{ L"C16", 0 },
-	{ L"C17", 0 },
-	{ L"C18", 0 },
-	{ L"C19", 0 },
 };
 
 int GetColumnTypeWidth(unsigned ColIndex)
@@ -256,18 +236,15 @@ int _MakePath1(DWORD Key, FARString &strPathName, const wchar_t *Param2)
 }
 
 
-void TextToViewSettings(
-	const wchar_t *ColumnTitles, const wchar_t *ColumnWidths, Column *Columns, int &ColumnCount)
+void TextToViewSettings(const wchar_t *ColumnTitles, const wchar_t *ColumnWidths, std::vector<Column> &Columns)
 {
 	const wchar_t *TextPtr=ColumnTitles;
+	FARString strArgName;
 
-	for (ColumnCount=0; ColumnCount < PANEL_COLUMNCOUNT; ColumnCount++)
+	Columns.clear();
+	for (int ColumnCount=0; (TextPtr=GetCommaWord(TextPtr,strArgName)); ColumnCount++)
 	{
-		FARString strArgName;
-
-		if (!(TextPtr=GetCommaWord(TextPtr,strArgName)))
-			break;
-
+		Columns.emplace_back(Column());
 		strArgName.Upper();
 		unsigned int &ColumnType=Columns[ColumnCount].Type;
 
@@ -362,6 +339,15 @@ void TextToViewSettings(
 						if (strArgName.At(1)==L'L')
 							ColumnType|=COLUMN_FULLOWNER;
 					}
+					else if (strArgName.At(0)==L'C')
+					{
+						size_t len=strArgName.GetLength();
+						if (len>=2 && len<=3)
+						{
+							if (iswdigit(strArgName.At(1)) && (len==2 || iswdigit(strArgName.At(2))))
+								ColumnType=CUSTOM_COLUMN0 + _wtoi(strArgName.CPtr()+1);
+						}
+					}
 					else
 					{
 						for (unsigned I=0; I<ARRAYSIZE(ColumnTypes); I++)
@@ -380,7 +366,7 @@ void TextToViewSettings(
 
 	TextPtr=ColumnWidths;
 
-	for (int I=0; I<ColumnCount; I++)
+	for (size_t I=0; I<Columns.size(); I++)
 	{
 		FARString strArgName;
 
@@ -403,15 +389,15 @@ void TextToViewSettings(
 }
 
 
-void ViewSettingsToText(const Column* Columns, int ColumnCount, FARString &strColumnTitles, FARString &strColumnWidths)
+void ViewSettingsToText(const std::vector<Column> &Columns, FARString &strColumnTitles, FARString &strColumnWidths)
 {
 	strColumnTitles.Clear();
 	strColumnWidths.Clear();
 
-	for (int I=0; I<ColumnCount; I++)
+	for (size_t I=0; I<Columns.size(); I++)
 	{
-		int ColumnType=Columns[I].Type & 0xff;
-		FARString strType = ColumnTypes[ColumnType].Symbol;
+		unsigned ColumnType = Columns[I].Type & 0xff;
+		FARString strType = ColumnType<ARRAYSIZE(ColumnTypes) ? ColumnTypes[ColumnType].Symbol : L"";
 
 		if (ColumnType==NAME_COLUMN)
 		{
@@ -425,7 +411,7 @@ void ViewSettingsToText(const Column* Columns, int ColumnCount, FARString &strCo
 				strType += L"R";
 		}
 
-		if (ColumnType==SIZE_COLUMN || ColumnType==PHYSICAL_COLUMN)
+		else if (ColumnType==SIZE_COLUMN || ColumnType==PHYSICAL_COLUMN)
 		{
 			if (Columns[I].Type & COLUMN_COMMAS)
 				strType += L"C";
@@ -440,7 +426,7 @@ void ViewSettingsToText(const Column* Columns, int ColumnCount, FARString &strCo
 				strType += L"T";
 		}
 
-		if (ColumnType==WDATE_COLUMN || ColumnType==ADATE_COLUMN || ColumnType==CDATE_COLUMN  || ColumnType==CHDATE_COLUMN)
+		else if (ColumnType==WDATE_COLUMN || ColumnType==ADATE_COLUMN || ColumnType==CDATE_COLUMN  || ColumnType==CHDATE_COLUMN)
 		{
 			if (Columns[I].Type & COLUMN_BRIEF)
 				strType += L"B";
@@ -449,10 +435,17 @@ void ViewSettingsToText(const Column* Columns, int ColumnCount, FARString &strCo
 				strType += L"M";
 		}
 
-		if (ColumnType==OWNER_COLUMN)
+		else if (ColumnType==OWNER_COLUMN)
 		{
 			if (Columns[I].Type & COLUMN_FULLOWNER)
 				strType += L"L";
+		}
+
+		else if (ColumnType>=CUSTOM_COLUMN0 && ColumnType<=CUSTOM_COLUMN_LAST)
+		{
+			wchar_t buf[8];
+			swprintf(buf, ARRAYSIZE(buf), L"C%d", (int)ColumnType);
+			strType = buf;
 		}
 
 		strColumnTitles += strType;
@@ -468,7 +461,7 @@ void ViewSettingsToText(const Column* Columns, int ColumnCount, FARString &strCo
 				break;
 		}
 
-		if (I<ColumnCount-1)
+		if (I < Columns.size()-1)
 		{
 			strColumnTitles += L",";
 			strColumnWidths += L",";
