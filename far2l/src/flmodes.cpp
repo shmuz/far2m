@@ -45,20 +45,165 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "panelmix.hpp"
 #include "DlgGuid.hpp"
 
-#define PANELMODES_INI	"panel_modes.ini"
-
 PanelViewSettings ViewSettingsArray[]=
 {
-	/* 00 */{{{COLUMN_MARK|NAME_COLUMN,0,COUNT_WIDTH},{SIZE_COLUMN|COLUMN_COMMAS,10,COUNT_WIDTH},{DATE_COLUMN,0,COUNT_WIDTH}},{{COLUMN_RIGHTALIGN|NAME_COLUMN,0,COUNT_WIDTH}},0,1,0,0,0,0},
-	/* 01 */{{{NAME_COLUMN,0,COUNT_WIDTH},{NAME_COLUMN,0,COUNT_WIDTH},{NAME_COLUMN,0,COUNT_WIDTH}},{{COLUMN_RIGHTALIGN|NAME_COLUMN,0,COUNT_WIDTH},{OWNER_COLUMN,6,COUNT_WIDTH},{GROUP_COLUMN,6,COUNT_WIDTH},{SIZE_COLUMN,6,COUNT_WIDTH},{DATE_COLUMN,0},{TIME_COLUMN,5}},0,1,0,0,0,0},
-	/* 02 */{{{NAME_COLUMN,0,COUNT_WIDTH},{NAME_COLUMN,0,COUNT_WIDTH}},{{COLUMN_RIGHTALIGN|NAME_COLUMN,0,COUNT_WIDTH},{OWNER_COLUMN,6,COUNT_WIDTH},{GROUP_COLUMN,6,COUNT_WIDTH},{SIZE_COLUMN,6,COUNT_WIDTH},{DATE_COLUMN,0},{TIME_COLUMN,5}},0,0,0,0,0,0},
-	/* 03 */{{{NAME_COLUMN,0,COUNT_WIDTH},{SIZE_COLUMN,6,COUNT_WIDTH},{DATE_COLUMN,0,COUNT_WIDTH},{TIME_COLUMN,5,COUNT_WIDTH}},{{COLUMN_RIGHTALIGN|NAME_COLUMN,0,COUNT_WIDTH},{OWNER_COLUMN,6},{GROUP_COLUMN,6}},0,1,0,0,0,0},
-	/* 04 */{{{NAME_COLUMN,0,COUNT_WIDTH},{SIZE_COLUMN,6,COUNT_WIDTH}},{{COLUMN_RIGHTALIGN|NAME_COLUMN,0,COUNT_WIDTH},{SIZE_COLUMN,0,COUNT_WIDTH},{OWNER_COLUMN,6,COUNT_WIDTH},{GROUP_COLUMN,6,COUNT_WIDTH},{DATE_COLUMN,0},{TIME_COLUMN,5}},0,0,0,0,0,0},
-	/* 05 */{{{NAME_COLUMN,0,COUNT_WIDTH},{SIZE_COLUMN,6,COUNT_WIDTH},{PHYSICAL_COLUMN,6,COUNT_WIDTH},{WDATE_COLUMN,14,COUNT_WIDTH},{CDATE_COLUMN,14,COUNT_WIDTH},{ADATE_COLUMN,14,COUNT_WIDTH},{OWNER_COLUMN,6,COUNT_WIDTH},{GROUP_COLUMN,6},{ATTR_COLUMN,0}},{{COLUMN_RIGHTALIGN|NAME_COLUMN,0,COUNT_WIDTH}},1,1,0,0,0,0},
-	/* 06 */{{{NAME_COLUMN,40,PERCENT_WIDTH},{DIZ_COLUMN,0,COUNT_WIDTH}},{{COLUMN_RIGHTALIGN|NAME_COLUMN,0,COUNT_WIDTH},{OWNER_COLUMN,6,COUNT_WIDTH},{GROUP_COLUMN,6,COUNT_WIDTH},{SIZE_COLUMN,6,COUNT_WIDTH},{DATE_COLUMN,0},{TIME_COLUMN,5}},0,1,0,0,0,0},
-	/* 07 */{{{NAME_COLUMN,0,COUNT_WIDTH},{SIZE_COLUMN,6,COUNT_WIDTH},{DIZ_COLUMN,54,COUNT_WIDTH}},{{COLUMN_RIGHTALIGN|NAME_COLUMN,0,COUNT_WIDTH}},1,1,0,0,0,0},
-	/* 08 */{{{NAME_COLUMN,0,COUNT_WIDTH},{SIZE_COLUMN,6,COUNT_WIDTH},{OWNER_COLUMN,6,COUNT_WIDTH},{GROUP_COLUMN,15}},{{COLUMN_RIGHTALIGN|NAME_COLUMN,0,COUNT_WIDTH},{OWNER_COLUMN,6,COUNT_WIDTH},{GROUP_COLUMN,6,COUNT_WIDTH},{SIZE_COLUMN,6,COUNT_WIDTH},{DATE_COLUMN,0},{TIME_COLUMN,5}},0,1,0,0,0,0},
-	/* 09 */{{{NAME_COLUMN,0,COUNT_WIDTH},{SIZE_COLUMN,6,COUNT_WIDTH},{NUMLINK_COLUMN,3,COUNT_WIDTH}},{{COLUMN_RIGHTALIGN|NAME_COLUMN,0,COUNT_WIDTH},{OWNER_COLUMN,6,COUNT_WIDTH},{GROUP_COLUMN,6,COUNT_WIDTH},{SIZE_COLUMN,6,COUNT_WIDTH},{DATE_COLUMN,0},{TIME_COLUMN,5}},0,1,0,0,0,0},
+	// VIEW_0 (Alternative full mode)
+	{
+		{
+			{COLUMN_MARK|NAME_COLUMN,0,COUNT_WIDTH},
+			{SIZE_COLUMN|COLUMN_COMMAS,10,COUNT_WIDTH},
+			{DATE_COLUMN,0,COUNT_WIDTH}
+		},
+		{
+			{COLUMN_RIGHTALIGN|NAME_COLUMN,0,COUNT_WIDTH}
+		},
+		0,1,0,0,0,0
+	},
+	// VIEW_1 (Brief mode)
+	{
+		{
+			{NAME_COLUMN,0,COUNT_WIDTH},
+			{NAME_COLUMN,0,COUNT_WIDTH},
+			{NAME_COLUMN,0,COUNT_WIDTH}
+		},
+		{
+			{COLUMN_RIGHTALIGN|NAME_COLUMN,0,COUNT_WIDTH},
+			{OWNER_COLUMN,6,COUNT_WIDTH},
+			{GROUP_COLUMN,6,COUNT_WIDTH},
+			{SIZE_COLUMN,6,COUNT_WIDTH},
+			{DATE_COLUMN,0,COUNT_WIDTH},
+			{TIME_COLUMN,5,COUNT_WIDTH}
+		},
+		0,1,0,0,0,0
+	},
+	// VIEW_2 (Medium mode)
+	{
+		{
+			{NAME_COLUMN,0,COUNT_WIDTH},
+			{NAME_COLUMN,0,COUNT_WIDTH}
+		},
+		{
+			{COLUMN_RIGHTALIGN|NAME_COLUMN,0,COUNT_WIDTH},
+			{OWNER_COLUMN,6,COUNT_WIDTH},
+			{GROUP_COLUMN,6,COUNT_WIDTH},
+			{SIZE_COLUMN,6,COUNT_WIDTH},
+			{DATE_COLUMN,0,COUNT_WIDTH},
+			{TIME_COLUMN,5,COUNT_WIDTH}
+		},
+		0,0,0,0,0,0
+	},
+	// VIEW_3 (Full mode)
+	{
+		{
+			{NAME_COLUMN,0,COUNT_WIDTH},
+			{SIZE_COLUMN,6,COUNT_WIDTH},
+			{DATE_COLUMN,0,COUNT_WIDTH},
+			{TIME_COLUMN,5,COUNT_WIDTH}
+		},
+		{
+			{COLUMN_RIGHTALIGN|NAME_COLUMN,0,COUNT_WIDTH},
+			{OWNER_COLUMN,6,COUNT_WIDTH},
+			{GROUP_COLUMN,6,COUNT_WIDTH}
+		},
+		0,1,0,0,0,0
+	},
+	// VIEW_4 (Wide mode)
+	{
+		{
+			{NAME_COLUMN,0,COUNT_WIDTH},
+			{SIZE_COLUMN,6,COUNT_WIDTH}
+		},
+		{
+			{COLUMN_RIGHTALIGN|NAME_COLUMN,0,COUNT_WIDTH},
+			{SIZE_COLUMN,0,COUNT_WIDTH},
+			{OWNER_COLUMN,6,COUNT_WIDTH},
+			{GROUP_COLUMN,6,COUNT_WIDTH},
+			{DATE_COLUMN,0,COUNT_WIDTH},
+			{TIME_COLUMN,5,COUNT_WIDTH}
+		},
+		0,0,0,0,0,0
+	},
+	// VIEW_5 (Detailed mode)
+	{
+		{
+			{NAME_COLUMN,0,COUNT_WIDTH},
+			{SIZE_COLUMN,6,COUNT_WIDTH},
+			{PHYSICAL_COLUMN,6,COUNT_WIDTH},
+			{WDATE_COLUMN,14,COUNT_WIDTH},
+			{CDATE_COLUMN,14,COUNT_WIDTH},
+			{ADATE_COLUMN,14,COUNT_WIDTH},
+			{OWNER_COLUMN,6,COUNT_WIDTH},
+			{GROUP_COLUMN,6,COUNT_WIDTH},
+			{ATTR_COLUMN,0,COUNT_WIDTH}
+		},
+		{
+			{COLUMN_RIGHTALIGN|NAME_COLUMN,0,COUNT_WIDTH}
+		},
+		1,1,0,0,0,0
+	},
+	// VIEW_6 (Descriptions mode)
+	{
+		{
+			{NAME_COLUMN,40,PERCENT_WIDTH},
+			{DIZ_COLUMN,0,COUNT_WIDTH}
+		},
+		{
+			{COLUMN_RIGHTALIGN|NAME_COLUMN,0,COUNT_WIDTH},
+			{OWNER_COLUMN,6,COUNT_WIDTH},
+			{GROUP_COLUMN,6,COUNT_WIDTH},
+			{SIZE_COLUMN,6,COUNT_WIDTH},
+			{DATE_COLUMN,0,COUNT_WIDTH},
+			{TIME_COLUMN,5,COUNT_WIDTH}
+		},
+		0,1,0,0,0,0
+	},
+	// VIEW_7 (Long descriptions mode)
+	{
+		{
+			{NAME_COLUMN,0,COUNT_WIDTH},
+			{SIZE_COLUMN,6,COUNT_WIDTH},
+			{DIZ_COLUMN,54,COUNT_WIDTH}
+		},
+		{
+			{COLUMN_RIGHTALIGN|NAME_COLUMN,0,COUNT_WIDTH}
+		},
+		1,1,0,0,0,0
+	},
+	// VIEW_8 (File owners mode)
+	{
+		{
+			{NAME_COLUMN,0,COUNT_WIDTH},
+			{SIZE_COLUMN,6,COUNT_WIDTH},
+			{OWNER_COLUMN,6,COUNT_WIDTH},
+			{GROUP_COLUMN,15,COUNT_WIDTH}
+		},
+		{
+			{COLUMN_RIGHTALIGN|NAME_COLUMN,0,COUNT_WIDTH},
+			{OWNER_COLUMN,6,COUNT_WIDTH},
+			{GROUP_COLUMN,6,COUNT_WIDTH},
+			{SIZE_COLUMN,6,COUNT_WIDTH},
+			{DATE_COLUMN,0,COUNT_WIDTH},
+			{TIME_COLUMN,5,COUNT_WIDTH}
+		},
+		0,1,0,0,0,0
+	},
+	// VIEW_9 (Links mode)
+	{
+		{
+			{NAME_COLUMN,0,COUNT_WIDTH},
+			{SIZE_COLUMN,6,COUNT_WIDTH},
+			{NUMLINK_COLUMN,3,COUNT_WIDTH}
+		},
+		{
+			{COLUMN_RIGHTALIGN|NAME_COLUMN,0,COUNT_WIDTH},
+			{OWNER_COLUMN,6,COUNT_WIDTH},
+			{GROUP_COLUMN,6,COUNT_WIDTH},
+			{SIZE_COLUMN,6,COUNT_WIDTH},
+			{DATE_COLUMN,0,COUNT_WIDTH},
+			{TIME_COLUMN,5,COUNT_WIDTH}
+		},
+		0,1,0,0,0,0
+	},
 };
 
 size_t SizeViewSettingsArray=ARRAYSIZE(ViewSettingsArray);
@@ -158,7 +303,7 @@ void FileList::SetFilePanelModes()
 		else
 			ModeNumber++;
 
-		PanelViewSettings NewSettings=ViewSettingsArray[ModeNumber];
+		PanelViewSettings &NewSettings=ViewSettingsArray[ModeNumber];
 		ModeDlg[MD_CHECKBOX_FULLSCREEN].Selected=NewSettings.FullScreen;
 		ModeDlg[MD_CHECKBOX_ALIGNFILEEXT].Selected=NewSettings.AlignExtensions;
 		ModeDlg[MD_CHECKBOX_ALIGNFOLDEREXT].Selected=NewSettings.FolderAlignExtensions;
@@ -179,7 +324,6 @@ void FileList::SetFilePanelModes()
 		if (ExitCode!=MD_BUTTON_OK)
 			continue;
 
-		NewSettings = PanelViewSettings();
 		NewSettings.FullScreen=ModeDlg[MD_CHECKBOX_FULLSCREEN].Selected;
 		NewSettings.AlignExtensions=ModeDlg[MD_CHECKBOX_ALIGNFILEEXT].Selected;
 		NewSettings.FolderAlignExtensions=ModeDlg[MD_CHECKBOX_ALIGNFOLDEREXT].Selected;
@@ -188,7 +332,6 @@ void FileList::SetFilePanelModes()
 		NewSettings.FileUpperToLowerCase=ModeDlg[MD_CHECKBOX_UPPERTOLOWERCASE].Selected;
 		TextToViewSettings(ModeDlg[MD_EDITTYPES].strData,ModeDlg[MD_EDITWIDTHS].strData,NewSettings.PanelColumns);
 		TextToViewSettings(ModeDlg[MD_EDITSTATUSTYPES].strData,ModeDlg[MD_EDITSTATUSWIDTHS].strData,NewSettings.StatusColumns);
-		ViewSettingsArray[ModeNumber]=NewSettings;
 		CtrlObject->Cp()->LeftPanel->SortFileList(TRUE);
 		CtrlObject->Cp()->RightPanel->SortFileList(TRUE);
 		CtrlObject->Cp()->SetScreenPosition();
@@ -206,9 +349,9 @@ void FileList::SetFilePanelModes()
 
 void FileList::ReadPanelModes(ConfigReader &cfg_reader)
 {
-	for (int I=0; I<10; I++)
+	for (size_t I=0; I<ARRAYSIZE(ViewSettingsArray); I++)
 	{
-		cfg_reader.SelectSectionFmt("Panel/ViewModes/Mode%d", I);
+		cfg_reader.SelectSectionFmt("Panel/ViewModes/Mode%d", (int)I);
 		FARString strColumnTitles = cfg_reader.GetString("Columns", L"");
 		FARString strColumnWidths = cfg_reader.GetString("ColumnWidths", L"");
 		FARString strStatusColumnTitles = cfg_reader.GetString("StatusColumns", L"");
@@ -217,7 +360,7 @@ void FileList::ReadPanelModes(ConfigReader &cfg_reader)
 		if (strColumnTitles.IsEmpty() || strColumnWidths.IsEmpty())
 			continue;
 
-		PanelViewSettings NewSettings = ViewSettingsArray[VIEW_0+I];
+		PanelViewSettings &NewSettings = ViewSettingsArray[I];
 
 		if (!strColumnTitles.IsEmpty())
 			TextToViewSettings(strColumnTitles,strColumnWidths,NewSettings.PanelColumns);
@@ -231,20 +374,19 @@ void FileList::ReadPanelModes(ConfigReader &cfg_reader)
 		NewSettings.FolderUpperCase = cfg_reader.GetInt("FolderUpperCase", 0);
 		NewSettings.FileLowerCase = cfg_reader.GetInt("FileLowerCase", 0);
 		NewSettings.FileUpperToLowerCase = cfg_reader.GetInt("FileUpperToLowerCase", 0);
-		ViewSettingsArray[VIEW_0 + I] = NewSettings;
 	}
 }
 
 
 void FileList::SavePanelModes(ConfigWriter &cfg_writer)
 {
-	for (int I=0; I<10; I++)
+	for (size_t I=0; I<ARRAYSIZE(ViewSettingsArray); I++)
 	{
-		cfg_writer.SelectSectionFmt("Panel/ViewModes/Mode%d", I);
+		cfg_writer.SelectSectionFmt("Panel/ViewModes/Mode%d", (int)I);
 
 		FARString strColumnTitles, strColumnWidths, strStatusColumnTitles, strStatusColumnWidths;
 
-		PanelViewSettings NewSettings = ViewSettingsArray[VIEW_0+I];
+		const PanelViewSettings &NewSettings = ViewSettingsArray[I];
 		ViewSettingsToText(NewSettings.PanelColumns,strColumnTitles,strColumnWidths);
 		ViewSettingsToText(NewSettings.StatusColumns,strStatusColumnTitles,strStatusColumnWidths);
 

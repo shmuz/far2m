@@ -44,7 +44,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "treelist.hpp"
 #include "filelist.hpp"
 #include "pathmix.hpp"
-#include "panelctype.hpp"
 #include "lang.hpp"
 #include "datetime.hpp"
 
@@ -444,7 +443,7 @@ void ViewSettingsToText(const std::vector<Column> &Columns, FARString &strColumn
 		else if (ColumnType>=CUSTOM_COLUMN0 && ColumnType<=CUSTOM_COLUMN_LAST)
 		{
 			wchar_t buf[8];
-			swprintf(buf, ARRAYSIZE(buf), L"C%d", (int)ColumnType);
+			swprintf(buf, ARRAYSIZE(buf), L"C%d", int(ColumnType-CUSTOM_COLUMN0));
 			strType = buf;
 		}
 

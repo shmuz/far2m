@@ -852,7 +852,8 @@ int FileList::PrepareColumnWidths(std::vector<Column> &Columns,int FullScreen)
 
 		if (Columns.size()<=1)
 		{
-			Columns[0].Width=PanelTextWidth;
+			if (!Columns.empty())
+				Columns[0].Width=PanelTextWidth;
 			break;
 		}
 		else if (PanelTextWidth>=TotalWidth-Columns[LastColumn].Width)

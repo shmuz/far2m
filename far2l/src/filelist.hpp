@@ -37,7 +37,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "dizlist.hpp"
 #include "filefilterparams.hpp"
 #include "DList.hpp"
-#include "panelctype.hpp"
 #include "plugins.hpp"
 #include "ConfigRW.hpp"
 #include "FSNotify.h"

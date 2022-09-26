@@ -35,7 +35,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <vector>
 #include "scrobj.hpp"
-#include "panelctype.hpp"
 #include "FARString.hpp"
 #include "plugins.hpp"
 
@@ -140,7 +139,7 @@ class Panel:public ScreenObject
 		FARString strPluginParam;
 
 	public:
-		struct PanelViewSettings ViewSettings;
+		PanelViewSettings ViewSettings;
 		int ProcessingPluginCommand;
 
 	private:
