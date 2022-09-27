@@ -2119,8 +2119,12 @@ int FarMacroApi::panelsetpathFunc()
 
 		if (SelPanel)
 		{
-			if (SelPanel->SetCurDir(pathName,TRUE))
+			if (SelPanel->SetCurDir(pathName,SelPanel->GetMode()==PLUGIN_PANEL && IsAbsolutePath(pathName)))
 			{
+				ActivePanel=CtrlObject->Cp()->ActivePanel;
+				PassivePanel=ActivePanel?CtrlObject->Cp()->GetAnotherPanel(ActivePanel):nullptr;
+				SelPanel = typePanel? (typePanel == 1?PassivePanel:nullptr):ActivePanel;
+
 				//восстановим текущую папку из активной панели.
 				ActivePanel->SetCurPath();
 				// Need PointToName()?
