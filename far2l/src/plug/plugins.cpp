@@ -1987,6 +1987,9 @@ int PluginManager::CallPlugin(DWORD SysID, int OpenFrom, void *Data, void **Ret)
 		}
 	}
 
+	if (Ret && (OpenFrom == OPEN_FROMMACRO) && process)
+		*Ret = reinterpret_cast<void*>(1);
+
 	return TRUE;
 }
 

@@ -880,14 +880,14 @@ local function test_Panel_SetPath()
   local pdir = "/bin"
   local adir = "/usr/bin"
   local afile = "ldd"
-  Panel.SetPath(1, pdir)
-  Panel.SetPath(0, adir, afile)
+  assert(true == Panel.SetPath(1, pdir))
+  assert(true == Panel.SetPath(0, adir, afile))
   assert(pdir == panel.GetPanelDirectory(0))
   assert(adir == panel.GetPanelDirectory(1))
   assert(panel.GetCurrentPanelItem(1).FileName == afile)
   -- restore
-  Panel.SetPath(1, pdir_old)
-  Panel.SetPath(0, adir_old)
+  assert(true == Panel.SetPath(1, pdir_old))
+  assert(true == Panel.SetPath(0, adir_old))
   actl.Commit()
 end
 

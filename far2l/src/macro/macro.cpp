@@ -2098,7 +2098,7 @@ int FarMacroApi::panelsetpathFunc()
 	auto& ValFileName = Params[2];
 	auto& Val         = Params[1];
 	int typePanel     = Params[0].getInt32();
-	int64_t Ret=0;
+	int Ret=0;
 
 	if (!(Val.isInteger() && !Val.i()))
 	{
@@ -2136,7 +2136,8 @@ int FarMacroApi::panelsetpathFunc()
 		}
 	}
 
-	return Ret ? 1 : 0;
+	PassBoolean(Ret);
+	return 0;
 }
 
 int FarMacroApi::fattrFuncImpl(int Type)

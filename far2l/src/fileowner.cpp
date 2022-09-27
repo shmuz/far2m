@@ -35,8 +35,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #include "fileowner.hpp"
-#include "pathmix.hpp"
-#include "DList.hpp"
 #include <sys/stat.h>
 #include <pwd.h>
 #include <grp.h>
@@ -58,7 +56,7 @@ const char *GroupNameByID(gid_t id)
 		perror("GroupNameByID");
 		return NULL;
 	}
-	return gr->gr_name;	
+	return gr->gr_name;
 }
 
 
@@ -73,7 +71,7 @@ bool WINAPI GetFileOwner(const wchar_t *Computer,const wchar_t *Name, FARString 
 			return true;
 		}
 	}
-	
+
 	return false;
 }
 
@@ -92,14 +90,14 @@ bool WINAPI GetFileGroup(const wchar_t *Computer,const wchar_t *Name, FARString 
 }
 
 bool SetOwner(LPCWSTR Object, LPCWSTR Owner)
-{		
+{
 	struct passwd *p = getpwnam(Wide2MB(Owner).c_str());
 	if ( p) {
 		if (sdc_chown(Wide2MB(Object).c_str(), p->pw_uid, -1)==0)
 			return true;
 	} else
 		perror("getpwnam");
-		
+
 	return false;
 }
 
@@ -111,7 +109,7 @@ bool SetGroup(LPCWSTR Object, LPCWSTR Group)
 			return true;
 	} else
 		perror("getgrnam");
-		
+
 	return false;
 }
 
