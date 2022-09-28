@@ -924,7 +924,7 @@ int SetKeyBar(lua_State *L, BOOL editor)
     int store = 0;
     size_t i;
     int j;
-    for (i=0; i < sizeof(pairs)/sizeof(pairs[0]); i++) {
+    for (i=0; i < ARRAYSIZE(pairs); i++) {
       lua_getfield (L, 1, pairs[i].key);
       if (lua_istable (L, -1)) {
         for (j=0; j<12; j++) {
