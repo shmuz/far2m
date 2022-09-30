@@ -2095,18 +2095,15 @@ int FarMacroApi::panelselectFunc()
 int FarMacroApi::panelsetpathFunc()
 {
 	auto Params = parseParams(3, mData);
-	auto& ValFileName = Params[2];
-	auto& Val         = Params[1];
 	int typePanel     = Params[0].getInt32();
+	auto& Val         = Params[1];
+	auto& ValFileName = Params[2];
 	int Ret=0;
 
-	if (!(Val.isInteger() && !Val.i()))
+	if (Val.isString())
 	{
 		const wchar_t *pathName=Val.s();
-		const wchar_t *fileName=L"";
-
-		if (!ValFileName.isInteger())
-			fileName=ValFileName.s();
+		const wchar_t *fileName=ValFileName.isString() ? ValFileName.s():L"";
 
 		Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
 		Panel *PassivePanel=nullptr;
@@ -2115,7 +2112,7 @@ int FarMacroApi::panelsetpathFunc()
 			PassivePanel=CtrlObject->Cp()->GetAnotherPanel(ActivePanel);
 
 		//Frame* CurFrame=FrameManager->GetCurrentFrame();
-		Panel *SelPanel = typePanel? (typePanel == 1?PassivePanel:nullptr):ActivePanel;
+		Panel *SelPanel = typePanel==0 ? ActivePanel : typePanel==1 ? PassivePanel : nullptr;
 
 		if (SelPanel)
 		{

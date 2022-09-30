@@ -60,18 +60,23 @@ void CDList::Clear()
 }
 void CDList::CSwap(CDList &l)
 {
-	Node *pr=root.prev;
-	root.next->prev=&l.root;
-	pr->next=&l.root;
-	pr=l.root.prev;
-	l.root.next->prev=&root;
-	pr->next=&root;
-	size_t tcount=count;
-	Node troot=root;
+	const auto c1=count;
 	count=l.count;
+	l.count=c1;
+
+	const auto r1=root;
 	root=l.root;
-	l.count=tcount;
-	l.root=troot;
+	l.root=r1;
+
+	if (count==0)
+		root.next = root.prev = &root;
+	else
+		root.next->prev = root.prev->next = &root;
+
+	if (l.count==0)
+		l.root.next = l.root.prev = &l.root;
+	else
+		l.root.next->prev = l.root.prev->next = &l.root;
 }
 void *CDList::CInsertBefore(void *b, void *item)
 {
