@@ -2059,6 +2059,8 @@ typedef wchar_t*(WINAPI *FARSTDXLAT)(wchar_t *Line,int StartPos,int EndPos,DWORD
 
 typedef int (WINAPI *FARSTDKEYNAMETOKEY)(const wchar_t *Name);
 
+typedef BOOL (WINAPI *FARSTDKEYNAMETOINPUTRECORD)(const wchar_t *Name,INPUT_RECORD* Key);
+
 typedef int (WINAPI *FRSUSERFUNC)(
     const struct FAR_FIND_DATA *FData,
     const wchar_t *FullName,
@@ -2237,7 +2239,9 @@ typedef struct FarStandardFunctions
 	FARDISPATCHNTRTHRDCALLS    DispatchInterThreadCalls;
 	FARBACKGROUNDTASK          BackgroundTask;
 	void*                      RESERVED[2];
+
 	FARAPIGETFILEFORMAT        GetFileFormat;
+	FARSTDKEYNAMETOINPUTRECORD FarNameToInputRecord;
 } FARSTANDARDFUNCTIONS;
 
 struct PluginStartupInfo

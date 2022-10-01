@@ -16,6 +16,7 @@ extern HANDLE Open_Luamacro (lua_State* L, int OpenFrom, INT_PTR Item);
 extern int  bit64_push(lua_State *L, INT64 v);
 extern int  bit64_getvalue(lua_State *L, int pos, INT64 *target);
 extern void FillInputRecord(lua_State *L, int pos, INPUT_RECORD *ir);
+extern void PushInputRecord (lua_State* L, const INPUT_RECORD *Rec);
 
 void PackMacroValues(lua_State* L, size_t Count, const struct FarMacroValue* Values); // forward declaration
 
@@ -1063,33 +1064,6 @@ void LF_GetPluginInfo(lua_State* L, struct PluginInfo *aPI)
   //--------------------------------------------------------------------------
   lua_pop(L, 3);
   *aPI = *PI;
-}
-
-void PushInputRecord (lua_State* L, const INPUT_RECORD *Rec)
-{
-  lua_newtable(L);                   //+2: Func,Tbl
-  PutNumToTable(L, "EventType", Rec->EventType);
-  if (Rec->EventType==KEY_EVENT || Rec->EventType==FARMACRO_KEY_EVENT) {
-    PutBoolToTable(L,"KeyDown",         Rec->Event.KeyEvent.bKeyDown);
-    PutNumToTable(L, "RepeatCount",     Rec->Event.KeyEvent.wRepeatCount);
-    PutNumToTable(L, "VirtualKeyCode",  Rec->Event.KeyEvent.wVirtualKeyCode);
-    PutNumToTable(L, "VirtualScanCode", Rec->Event.KeyEvent.wVirtualScanCode);
-    PutWStrToTable(L, "UnicodeChar",   &Rec->Event.KeyEvent.uChar.UnicodeChar, 1);
-    PutNumToTable(L, "ControlKeyState", Rec->Event.KeyEvent.dwControlKeyState);
-  }
-  else if (Rec->EventType == MOUSE_EVENT) {
-    PutMouseEvent(L, &Rec->Event.MouseEvent, TRUE);
-  }
-  else if (Rec->EventType == WINDOW_BUFFER_SIZE_EVENT) {
-    PutNumToTable(L, "SizeX", Rec->Event.WindowBufferSizeEvent.dwSize.X);
-    PutNumToTable(L, "SizeY", Rec->Event.WindowBufferSizeEvent.dwSize.Y);
-  }
-  else if (Rec->EventType == MENU_EVENT) {
-    PutNumToTable(L, "CommandId", Rec->Event.MenuEvent.dwCommandId);
-  }
-  else if (Rec->EventType == FOCUS_EVENT) {
-    PutBoolToTable(L, "SetFocus", Rec->Event.FocusEvent.bSetFocus);
-  }
 }
 
 int LF_ProcessEditorInput (lua_State* L, const INPUT_RECORD *Rec)

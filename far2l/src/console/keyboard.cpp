@@ -464,6 +464,11 @@ int WINAPI InputRecordToKey(const INPUT_RECORD *r)
 	return KEY_NONE;
 }
 
+BOOL KeyToInputRecord(int Key, INPUT_RECORD *Rec)
+{
+	int VirtKey, ControlState;
+	return TranslateKeyToVK(Key, VirtKey, ControlState, Rec) != 0;
+}
 
 DWORD IsMouseButtonPressed()
 {
@@ -1766,7 +1771,7 @@ BOOL WINAPI KeyToText(uint32_t Key0, FARString &strKeyText0)
 
 int TranslateKeyToVK(int Key,int &VirtKey,int &ControlState,INPUT_RECORD *Rec)
 {
-	int FKey  =Key&0x0003FFFF;
+	int FKey  =Key&KEY_END_SKEY;
 	int FShift=Key&0x7F000000; // старший бит используется в других целях!
 	VirtKey=0;
 	ControlState=(FShift&KEY_SHIFT?PKF_SHIFT:0)|

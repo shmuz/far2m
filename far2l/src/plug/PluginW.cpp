@@ -152,6 +152,12 @@ static size_t WINAPI FarKeyToName(int Key,wchar_t *KeyText,size_t Size)
 	return (len+1);
 }
 
+static BOOL WINAPI FarNameToInputRecord(const wchar_t *Name,INPUT_RECORD* RecKey)
+{
+	const auto Key = KeyNameToKey(Name);
+	return Key && KeyToInputRecord(Key, RecKey);
+}
+
 int WINAPI KeyNameToKeyW(const wchar_t *Name)
 {
 	FARString strN(Name);
@@ -457,6 +463,7 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 		StandardFunctions.DispatchInterThreadCalls = farDispatchInterThreadCallsW;
 		StandardFunctions.BackgroundTask = farBackgroundTaskW;
 		StandardFunctions.GetFileFormat = farGetFileFormat;
+		StandardFunctions.FarNameToInputRecord = FarNameToInputRecord;
 	}
 
 	if (!StartupInfo.StructSize)

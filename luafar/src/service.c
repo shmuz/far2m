@@ -3794,6 +3794,33 @@ int far_PasteFromClipboard (lua_State *L)
   return 1;
 }
 
+void PushInputRecord (lua_State* L, const INPUT_RECORD *Rec)
+{
+  lua_newtable(L);                   //+2: Func,Tbl
+  PutNumToTable(L, "EventType", Rec->EventType);
+  if (Rec->EventType==KEY_EVENT || Rec->EventType==FARMACRO_KEY_EVENT) {
+    PutBoolToTable(L,"KeyDown",         Rec->Event.KeyEvent.bKeyDown);
+    PutNumToTable(L, "RepeatCount",     Rec->Event.KeyEvent.wRepeatCount);
+    PutNumToTable(L, "VirtualKeyCode",  Rec->Event.KeyEvent.wVirtualKeyCode);
+    PutNumToTable(L, "VirtualScanCode", Rec->Event.KeyEvent.wVirtualScanCode);
+    PutWStrToTable(L, "UnicodeChar",   &Rec->Event.KeyEvent.uChar.UnicodeChar, 1);
+    PutNumToTable(L, "ControlKeyState", Rec->Event.KeyEvent.dwControlKeyState);
+  }
+  else if (Rec->EventType == MOUSE_EVENT) {
+    PutMouseEvent(L, &Rec->Event.MouseEvent, TRUE);
+  }
+  else if (Rec->EventType == WINDOW_BUFFER_SIZE_EVENT) {
+    PutNumToTable(L, "SizeX", Rec->Event.WindowBufferSizeEvent.dwSize.X);
+    PutNumToTable(L, "SizeY", Rec->Event.WindowBufferSizeEvent.dwSize.Y);
+  }
+  else if (Rec->EventType == MENU_EVENT) {
+    PutNumToTable(L, "CommandId", Rec->Event.MenuEvent.dwCommandId);
+  }
+  else if (Rec->EventType == FOCUS_EVENT) {
+    PutBoolToTable(L, "SetFocus", Rec->Event.FocusEvent.bSetFocus);
+  }
+}
+
 int far_KeyToName (lua_State *L)
 {
   wchar_t buf[256];
@@ -3818,6 +3845,19 @@ int far_InputRecordToKey (lua_State *L)
   INPUT_RECORD ir;
   FillInputRecord(L, 1, &ir);
   lua_pushinteger(L, GetFSF(L)->FarInputRecordToKey(&ir));
+  return 1;
+}
+
+int far_NameToInputRecord(lua_State *L)
+{
+  INPUT_RECORD ir;
+  const wchar_t* str = check_utf8_string(L, 1, NULL);
+
+  if(GetFSF(L)->FarNameToInputRecord(str, &ir))
+    PushInputRecord(L, &ir);
+  else
+    lua_pushnil(L);
+
   return 1;
 }
 
@@ -5659,6 +5699,7 @@ static const luaL_Reg far_funcs[] = {
   {"LUpperBuf",           far_LUpperBuf},
   {"MkTemp",              far_MkTemp},
   {"MkLink",              far_MkLink},
+  {"NameToInputRecord",   far_NameToInputRecord},
   {"TruncPathStr",        far_TruncPathStr},
   {"TruncStr",            far_TruncStr},
   {"RecursiveSearch",     far_RecursiveSearch},
