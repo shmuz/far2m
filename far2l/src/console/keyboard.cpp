@@ -1795,8 +1795,8 @@ int TranslateKeyToVK(int Key,int &VirtKey,int &ControlState,INPUT_RECORD *Rec)
 			VirtKey=FKey;
 		else if ((unsigned int)FKey > KEY_FKEY_BEGIN && (unsigned int)FKey < KEY_END_FKEY)
 			VirtKey=FKey-KEY_FKEY_BEGIN;
-		else if (FKey < MAX_VKEY_CODE)
-			VirtKey=WINPORT(VkKeyScan)(FKey);
+		//else if (FKey < MAX_VKEY_CODE)
+		//	VirtKey=WINPORT(VkKeyScan)(FKey);
 		else
 			VirtKey=FKey;
 	}
@@ -2875,7 +2875,7 @@ DWORD CalcKeyCode(INPUT_RECORD *rec,int RealKey,int *NotMacros)
 		{
 			if (!Opt.ShiftsKeyRules || WaitInFastFind > 0)
 				return KEY_ALT|Upper(Char);
-			else if (WaitInMainLoop)
+			else // if (WaitInMainLoop)
 				return KEY_ALT|Char;
 		}
 

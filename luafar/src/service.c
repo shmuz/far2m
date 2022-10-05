@@ -4841,14 +4841,12 @@ int far_UnloadPlugin(lua_State *L)     { return plugin_load(L, PCTL_UNLOADPLUGIN
 int far_XLat (lua_State *L)
 {
   size_t size;
-  wchar_t *Line = check_utf8_string(L, 1, &size), *str;
-  intptr_t StartPos = luaL_optinteger(L, 2, 1) - 1;
-  intptr_t EndPos = luaL_optinteger(L, 3, size);
+  wchar_t *Line = check_utf8_string(L, 1, &size);
+  int StartPos = luaL_optinteger(L, 2, 1) - 1;
+  int EndPos = luaL_optinteger(L, 3, size);
   int Flags = OptFlags(L, 4, 0);
-  StartPos < 0 ? StartPos = 0 : StartPos > (intptr_t)size ? StartPos = size : 0;
-  EndPos < StartPos ? EndPos = StartPos : EndPos > (intptr_t)size ? EndPos = size : 0;
-  str = GetPluginStartupInfo(L)->FSF->XLat(Line, StartPos, EndPos, Flags);
-  str ? push_utf8_string(L, str, -1) : lua_pushnil(L);
+  Line = GetFSF(L)->XLat(Line, StartPos, EndPos, Flags);
+  Line ? push_utf8_string(L, Line, -1) : lua_pushnil(L);
   return 1;
 }
 
