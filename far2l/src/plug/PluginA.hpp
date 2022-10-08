@@ -211,7 +211,7 @@ class PluginA: public Plugin
 
 		bool MayExitFAR();
 		void ExitFAR();
-		DWORD GetGlobalInfo() { return 0; }
+		void GetGlobalInfo() {}
 
 	private:
 

@@ -65,7 +65,7 @@ typedef int (WINAPI *PLUGINPROCESSSYNCHROEVENTW)(int Event,void *Param);
 typedef int (WINAPI *PLUGINANALYSEW)(const AnalyseData *pData);
 typedef int (WINAPI *PLUGINGETCUSTOMDATAW)(const wchar_t *FilePath, wchar_t **CustomData);
 typedef void (WINAPI *PLUGINFREECUSTOMDATAW)(wchar_t *CustomData);
-typedef DWORD (WINAPI *PLUGINGETGLOBALINFOW)();
+typedef void (WINAPI *PLUGINGETGLOBALINFOW)(GlobalInfo *gi);
 typedef int (WINAPI *PLUGINPROCESSCONSOLEINPUTW)(INPUT_RECORD *Rec);
 
 
@@ -214,7 +214,7 @@ class PluginW: public Plugin
 
 		bool MayExitFAR();
 		void ExitFAR();
-		DWORD GetGlobalInfo();
+		void GetGlobalInfo();
 
 	private:
 

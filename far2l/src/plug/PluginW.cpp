@@ -509,7 +509,7 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 	if (pPlugin)
 	{
 		PSI->ModuleName = pPlugin->GetModuleName().CPtr();
-		if (pPlugin->GetGlobalInfo() == SYSID_LUAMACRO)
+		if (pPlugin->GetSysID() == SYSID_LUAMACRO)
 			PSI->Private = &MacroInfo;
 	}
 }
@@ -549,7 +549,7 @@ struct ExecuteStruct
 	{ \
 		es.bUnloaded = false; \
 		es.nResult = 0; \
-			es.nResult = (INT_PTR)function; \
+		es.nResult = (INT_PTR)function; \
 	}
 
 bool PluginW::SetStartupInfo(bool &bUnloaded)
@@ -575,16 +575,18 @@ bool PluginW::SetStartupInfo(bool &bUnloaded)
 	return true;
 }
 
-DWORD PluginW::GetGlobalInfo()
+void PluginW::GetGlobalInfo()
 {
 	if (pGetGlobalInfoW)
 	{
 		ExecuteStruct es;
 		es.id = EXCEPT_GETGLOBALINFO;
-		EXECUTE_FUNCTION_EX(pGetGlobalInfoW(), es);
-		SysID = (DWORD)es.nResult;
+		GlobalInfo gi = { sizeof(GlobalInfo), 0 };
+		EXECUTE_FUNCTION(pGetGlobalInfoW(&gi), es);
+		SysID = gi.SysId;
+		if (es.bUnloaded) // supress a warning
+			{}
 	}
-	return SysID;
 }
 
 static void ShowMessageAboutIllegalPluginVersion(const wchar_t* plg,int required)

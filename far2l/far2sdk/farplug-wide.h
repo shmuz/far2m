@@ -2532,6 +2532,11 @@ struct RegExpSearch
 	void* Reserved;
 };
 
+struct GlobalInfo
+{
+	size_t StructSize;
+	DWORD SysId;
+};
 
 #if defined(__BORLANDC__) || defined(_MSC_VER) || defined(__GNUC__) || defined(__WATCOMC__)
 #ifdef __cplusplus
@@ -2569,7 +2574,7 @@ extern "C"
 	int    WINAPI _export SetDirectoryW(HANDLE hPlugin,const wchar_t *Dir,int OpMode);
 	int    WINAPI _export SetFindListW(HANDLE hPlugin,const struct PluginPanelItem *PanelItem,int ItemsNumber);
 	void   WINAPI _export SetStartupInfoW(const struct PluginStartupInfo *Info);
-	DWORD  WINAPI _export GetGlobalInfoW(void);
+	void   WINAPI _export GetGlobalInfoW(struct GlobalInfo *Info);
 	int    WINAPI _export ProcessConsoleInputW(INPUT_RECORD *Rec);
 
 #ifdef __cplusplus

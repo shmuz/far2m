@@ -41,9 +41,9 @@ static LONG_PTR WINAPI DlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
   return LF_DlgProc(LS, hDlg, Msg, Param1, Param2);
 }
 
-DWORD LUAPLUG GetGlobalInfoW()
+void LUAPLUG GetGlobalInfoW(struct GlobalInfo *aInfo)
 {
-  return SYS_ID;
+  aInfo->SysId = SYS_ID;
 }
 
 void LUAPLUG SetStartupInfoW(const PSInfo *aInfo)
