@@ -2414,24 +2414,24 @@ enum OPERATION_MODES
 
 struct OpenPluginInfo
 {
-	int                   StructSize;
-	DWORD                 Flags;
-	const wchar_t           *HostFile;
-	const wchar_t           *CurDir;
-	const wchar_t           *Format;
-	const wchar_t           *PanelTitle;
-	const struct InfoPanelLine *InfoLines;
-	int                   InfoLinesNumber;
-	const wchar_t * const   *DescrFiles;
-	int                   DescrFilesNumber;
-	const struct PanelMode *PanelModesArray;
-	int                   PanelModesNumber;
-	int                   StartPanelMode;
-	int                   StartSortMode;
-	int                   StartSortOrder;
-	const struct KeyBarTitles *KeyBar;
-	const wchar_t           *ShortcutData;
-	long                  Reserved;
+	int                           StructSize;
+	DWORD                         Flags;
+	const wchar_t*                HostFile;
+	const wchar_t*                CurDir;
+	const wchar_t*                Format;
+	const wchar_t*                PanelTitle;
+	const struct InfoPanelLine*   InfoLines;
+	int                           InfoLinesNumber;
+	const wchar_t* const*         DescrFiles;
+	int                           DescrFilesNumber;
+	const struct PanelMode*       PanelModesArray;
+	int                           PanelModesNumber;
+	int                           StartPanelMode;
+	int                           StartSortMode;
+	int                           StartSortOrder;
+	const struct KeyBarTitles*    KeyBar;
+	const wchar_t*                ShortcutData;
+	long                          Reserved;
 };
 
 enum OPENPLUGIN_OPENFROM
