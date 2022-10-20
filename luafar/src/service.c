@@ -596,7 +596,7 @@ int far_PluginStartupInfo(lua_State *L)
 
   slash = wcsrchr(pd->Info->ModuleName, L'/');
   if (slash)
-    PutWStrToTable(L, "ModuleDir", pd->Info->ModuleName, slash + 1 - pd->Info->ModuleName);
+    PutWStrToTable(L, "ModuleDir", pd->Info->ModuleName, slash - pd->Info->ModuleName);
 
   lua_pushlightuserdata(L, (void*)pd->Info->ModuleNumber);
   lua_setfield(L, -2, "ModuleNumber");
@@ -5843,8 +5843,9 @@ BOOL LF_RunDefaultScript(lua_State* L)
   // Second: try to load the default script from a disk file
   TPluginData* pd = GetPluginData(L);
   lua_pushstring(L, pd->ShareDir);
+  lua_pushstring(L, "/");
   push_utf8_string(L, wcsrchr(pd->Info->ModuleName,L'/')+1, -1);
-  lua_concat(L,2);
+  lua_concat(L,3);
 
   char* defscript = (char*)lua_newuserdata (L, lua_objlen(L,-1) + 8);
   strcpy(defscript, lua_tostring(L, -2));
@@ -5901,7 +5902,7 @@ void LF_InitLuaState (lua_State *L, TPluginData *aPlugData, lua_CFunction aOpenL
   // Absence of that file is not error.
   int top = lua_gettop(L);
   lua_pushstring(L, aPlugData->ShareDir);             //+1
-  lua_pushliteral(L, "../../luafar_init.lua");        //+2
+  lua_pushliteral(L, "/../../luafar_init.lua");       //+2
   lua_concat(L, 2);                                   //+1
   FILE *fp = fopen(lua_tostring(L,-1), "r");
   if (fp) {
@@ -5943,7 +5944,7 @@ int LF_LuaOpen (TPluginData* aPlugData, lua_CFunction aOpenLibs)
     aPlugData->ShareDir = (char*) malloc(lua_objlen(L,-1) + 8);
     strcpy(aPlugData->ShareDir, luaL_gsub(L, lua_tostring(L,-1), s1, s2)); //+2
     lua_pop(L,2);                                                          //+0
-    strrchr(aPlugData->ShareDir,'/')[1] = '\0';
+    strrchr(aPlugData->ShareDir,'/')[0] = '\0';
 
     LF_InitLuaState(L, aPlugData, aOpenLibs);
     return 1;

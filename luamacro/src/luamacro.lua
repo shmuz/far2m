@@ -531,7 +531,7 @@ end
 
 local function GetMacroDirs()
   local mainpath, loadpathlist
-  local cfg, msg = ReadIniFile(far.PluginStartupInfo().ShareDir.."luamacro.ini")
+  local cfg, msg = ReadIniFile(far.PluginStartupInfo().ShareDir.."/luamacro.ini")
   if cfg then
     local sect = cfg["General"]
     if sect then
@@ -563,9 +563,9 @@ local function Init()
   Shared.MacroCallFar, far.MacroCallFar = far.MacroCallFar, nil
   Shared.FarMacroCallToLua, far.FarMacroCallToLua = far.FarMacroCallToLua, nil
 
-  local ShareDir = far.PluginStartupInfo().ShareDir
+  local ShareDirSlash = far.PluginStartupInfo().ShareDir .. "/"
   local function RunPluginFile (fname, param)
-    local func = assert(loadfile(ShareDir..fname))
+    local func = assert(loadfile(ShareDirSlash..fname))
     return func(param)
   end
 
