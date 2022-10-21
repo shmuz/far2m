@@ -909,23 +909,9 @@ void Viewer::DrawScrollbar()
 FARString &Viewer::GetTitle(FARString &strName,int,int)
 {
 	if (!strTitle.IsEmpty())
-	{
 		strName = strTitle;
-	}
 	else
-	{
-		if (!IsAbsolutePath(strFileName))
-		{
-			FARString strPath;
-			ViewNamesList.GetCurDir(strPath);
-			AddEndSlash(strPath);
-			strName = strPath+strFileName;
-		}
-		else
-		{
-			strName = strFileName;
-		}
-	}
+		strName = strFullFileName;
 
 	return strName;
 }
