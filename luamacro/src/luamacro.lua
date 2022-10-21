@@ -115,7 +115,7 @@ local PluginInfo
 function export.GetPluginInfo()
   local out = {
     Flags = bor(F.PF_PRELOAD,F.PF_FULLCMDLINE,F.PF_EDITOR,F.PF_VIEWER,F.PF_DIALOG),
-    CommandPrefix = "lm:macro:lua:moon:luas:moons"..utils.GetPrefixes()[1],
+    CommandPrefix = "lm:macro:lua:moon:luas:moons:edit:view:load:unload"..utils.GetPrefixes()[1],
     PluginMenuStrings = { "Macro Browser" },
     PluginMenuGuids = { win.Uuid("EF6D67A2-59F7-4DF3-952E-F9049877B492") },
     PluginConfigGuids = {},
@@ -342,10 +342,26 @@ end
 
 local function ShowAndPass(...) far.Show(...) return ... end
 
+local function Redirect(command)
+  local fp = io.popen(command)
+  if fp then
+    local fname = far.MkTemp()
+    local fp2 = io.open(fname, "w")
+    if fp2 then
+      for line in fp:lines() do fp2:write(line,"\n") end
+      fp2:close()
+      fp:close()
+      return fname
+    end
+    fp:close()
+  end
+end
+
 local function Open_CommandLine (strCmdLine)
   local prefix, text = strCmdLine:match("^%s*([^:%s]+):%s*(.-)%s*$")
   if not prefix then return end -- this can occur with Plugin.Command()
   prefix = prefix:lower()
+  ----------------------------------------------------------------------------
   if prefix == "lm" or prefix == "macro" then
     if text=="" then return end
     local cmd = text:match("%S*"):lower()
@@ -357,6 +373,7 @@ local function Open_CommandLine (strCmdLine)
     elseif cmd == "unload" then utils.UnloadMacros()
     elseif cmd == "about" then About()
     elseif cmd ~= "" then ErrMsg(Msg.CL_UnsupportedCommand .. cmd) end
+  ----------------------------------------------------------------------------
   elseif prefix == "lua" or prefix == "moon" or prefix == "luas" or prefix == "moons" then
     if text=="" then return end
     local show = false
@@ -381,6 +398,41 @@ local function Open_CommandLine (strCmdLine)
     else
       ErrMsg(f2)
     end
+  ----------------------------------------------------------------------------
+  elseif prefix == "edit" then
+		local cmd = text:match("^<%s*(.+)")
+    if cmd then
+      local tmpname = Redirect(cmd)
+      if tmpname then
+        local flags = bor(F.EF_NONMODAL, F.EF_IMMEDIATERETURN, F.EF_ENABLE_F6,
+                          F.EF_DELETEONLYFILEONCLOSE, F.EF_DISABLEHISTORY)
+        editor.Editor(tmpname,nil,nil,nil,nil,nil,flags)
+      end
+    else
+      local flags = bor(F.EF_NONMODAL, F.EF_IMMEDIATERETURN, F.EF_ENABLE_F6)
+      editor.Editor(text,nil,nil,nil,nil,nil,flags)
+    end
+  ----------------------------------------------------------------------------
+  elseif prefix == "view" then
+		local cmd = text:match("^<%s*(.+)")
+    if cmd then
+      local tmpname = Redirect(cmd)
+      if tmpname then
+        local flags = bor(F.VF_NONMODAL, F.VF_IMMEDIATERETURN, F.VF_ENABLE_F6,
+                          F.VF_DELETEONLYFILEONCLOSE, F.VF_DISABLEHISTORY)
+        viewer.Viewer(tmpname,nil,nil,nil,nil,nil,flags)
+      end
+    else
+      local flags = bor(F.VF_NONMODAL, F.VF_IMMEDIATERETURN, F.VF_ENABLE_F6)
+      viewer.Viewer(text,nil,nil,nil,nil,nil,flags)
+    end
+  ----------------------------------------------------------------------------
+  elseif prefix == "load" and text~="" then
+    far.LoadPlugin("PLT_PATH", text)
+  ----------------------------------------------------------------------------
+  elseif prefix == "unload" and text~="" then
+    far.UnloadPlugin("PLT_PATH", text)
+  ----------------------------------------------------------------------------
   else
     local item = utils.GetPrefixes()[prefix]
     if item then return item.action(prefix, text) end
