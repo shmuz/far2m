@@ -145,7 +145,7 @@ void ScreenBuf::Write(int X,int Y,const CHAR_INFO *Text,int TextLength)
 	}
 
 	if (X>=BufX || Y>=BufY || !TextLength || Y<0) {
-		return;		
+		return;
 	}
 
 	if (X+TextLength >= BufX)
@@ -317,7 +317,7 @@ void ScreenBuf::FillRect(int X1,int Y1,int X2,int Y2,WCHAR Ch,WORD Color)
 void ScreenBuf::Flush()
 {
 	CriticalSectionLock Lock(CS);
-	
+
 	if (!LockCount)
 	{
 		if (CtrlObject && (CtrlObject->Macro.IsRecording() || CtrlObject->Macro.IsExecuting()))
@@ -441,6 +441,7 @@ void ScreenBuf::Flush()
 		if (MacroCharUsed)
 		{
 			Buf[0]=MacroChar;
+			MacroCharUsed=false;
 		}
 
 		if (ElevationCharUsed)

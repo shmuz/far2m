@@ -400,7 +400,7 @@ local function Open_CommandLine (strCmdLine)
     end
   ----------------------------------------------------------------------------
   elseif prefix == "edit" then
-		local cmd = text:match("^<%s*(.+)")
+    local cmd = text:match("^<%s*(.+)")
     if cmd then
       local tmpname = Redirect(cmd)
       if tmpname then
@@ -414,7 +414,7 @@ local function Open_CommandLine (strCmdLine)
     end
   ----------------------------------------------------------------------------
   elseif prefix == "view" then
-		local cmd = text:match("^<%s*(.+)")
+    local cmd = text:match("^<%s*(.+)")
     if cmd then
       local tmpname = Redirect(cmd)
       if tmpname then
