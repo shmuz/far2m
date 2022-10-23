@@ -138,7 +138,7 @@ DWORD WINAPI farGetCurrentDirectory(DWORD Size,wchar_t* Buffer);
 
 intptr_t WINAPI farCallFar(intptr_t CheckCode, FarMacroCall* Data);
 
-int WINAPI farGetFileFormat(const wchar_t *FileName);
+int WINAPI farGetFileEncoding(const wchar_t *FileName);
 
 enum ExceptFunctionsType
 {

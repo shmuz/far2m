@@ -416,13 +416,13 @@ int far_GetNumberOfLinks (lua_State *L)
   return lua_pushinteger (L, num), 1;
 }
 
-int far_GetFileFormat (lua_State *L)
+int far_GetFileEncoding (lua_State *L)
 {
   int codepage;
   struct FarStandardFunctions* FSF = GetFSF(L);
-  if (FSF->StructSize <= offsetof(struct FarStandardFunctions, GetFileFormat))
-    luaL_error(L, "This version of FAR doesn't support FSF.GetFileFormat()");
-  codepage = FSF->GetFileFormat(check_utf8_string(L,1,NULL));
+  if (FSF->StructSize <= offsetof(struct FarStandardFunctions, GetFileEncoding))
+    luaL_error(L, "This version of FAR doesn't support FSF.GetFileEncoding()");
+  codepage = FSF->GetFileEncoding(check_utf8_string(L,1,NULL));
   if (codepage)
     lua_pushinteger(L, codepage);
   else
@@ -5712,7 +5712,7 @@ static const luaL_Reg far_funcs[] = {
   {"ColorDialog",         far_ColorDialog},
   {"CPluginStartupInfo",  far_CPluginStartupInfo},
   {"GetCurrentDirectory", far_GetCurrentDirectory},
-  {"GetFileFormat",       far_GetFileFormat},
+  {"GetFileEncoding",     far_GetFileEncoding},
   {"GetFileOwner",        far_GetFileOwner},
   {"GetNumberOfLinks",    far_GetNumberOfLinks},
   {"LuafarVersion",       far_LuafarVersion},

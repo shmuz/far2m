@@ -2545,7 +2545,7 @@ int WINAPI farColorDialog(INT_PTR PluginNumber, WORD* Color, int bAddTransparent
 	return FALSE;
 }
 
-int WINAPI farGetFileFormat(const wchar_t *FileName)
+int WINAPI farGetFileEncoding(const wchar_t *FileName)
 {
 	if (FileName && *FileName)
 	{

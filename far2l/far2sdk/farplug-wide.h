@@ -1985,7 +1985,7 @@ typedef int (WINAPI *FARAPICOLORDIALOG)(
     int     bAddTransparent
 );
 
-typedef int (WINAPI *FARAPIGETFILEFORMAT)(
+typedef int (WINAPI *FARAPIGETFILEENCODING)(
     const wchar_t *FileName
 );
 
@@ -2240,7 +2240,7 @@ typedef struct FarStandardFunctions
 	FARBACKGROUNDTASK          BackgroundTask;
 	void*                      RESERVED[2];
 
-	FARAPIGETFILEFORMAT        GetFileFormat;
+	FARAPIGETFILEENCODING      GetFileEncoding;
 	FARSTDKEYNAMETOINPUTRECORD FarNameToInputRecord;
 } FARSTANDARDFUNCTIONS;
 
