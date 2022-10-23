@@ -5172,18 +5172,28 @@ int far_ColorDialog(lua_State *L)
 
 int far_GetConfigDir(lua_State *L)
 {
-  const char* dir = getenv("FARSETTINGS");
-  if (dir) {
-    lua_pushstring(L, dir);
-    lua_pushstring(L, "/.config");
+  const char* name = getenv("FARSETTINGS");
+  const char* home = getenv("HOME");
+  if (!home)
+    luaL_error(L, "$HOME not found");
+  if (name) {
+    if (name[0] == '/') {
+      lua_pushstring(L, name);
+      lua_pushstring(L, "/.config");
+      lua_concat(L,2);
+    }
+    else {
+      lua_pushstring(L, home);
+      lua_pushstring(L, "/.config/far2l/custom/");
+      lua_pushstring(L, name);
+      lua_concat(L,3);
+    }
   }
   else {
-    dir = getenv("HOME");
-    if (!dir) luaL_error(L, "$HOME not found");
-    lua_pushstring(L, dir);
+    lua_pushstring(L, home);
     lua_pushstring(L, "/.config/far2l");
+    lua_concat(L,2);
   }
-  lua_concat(L,2);
   return 1;
 }
 
