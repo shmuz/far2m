@@ -133,6 +133,8 @@ void ScanTree::LeaveSubdir()
 		size_t p = strFindPath.rfind('/', strFindPath.size() - 2);
 		if (p != std::string::npos && p > 0)
 			strFindPath.resize(p + 1);
+		else
+			strFindPath = L"";
 
 	} else
 		fprintf(stderr, "ScanTree::LeaveSubdir() invoked on empty stack!\n");
