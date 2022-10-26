@@ -325,7 +325,7 @@ void QuickView::Update(int Mode)
 	if (!EnableUpdate)
 		return;
 
-	if (strCurFileName.IsEmpty())
+	if (!strCurFileName.IsEmpty())
 		CtrlObject->Cp()->GetAnotherPanel(this)->UpdateViewPanel();
 
 	Redraw();
