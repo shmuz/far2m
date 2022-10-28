@@ -4824,7 +4824,7 @@ int filefilter_IsFileInFilter (lua_State *L)
   return 1;
 }
 
-int plugin_load(lua_State *L, enum FAR_PLUGINS_CONTROL_COMMANDS command)
+int plugin_operation(lua_State *L, enum FAR_PLUGINS_CONTROL_COMMANDS command)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
   int param1 = check_env_flag(L, 1);
@@ -4834,9 +4834,10 @@ int plugin_load(lua_State *L, enum FAR_PLUGINS_CONTROL_COMMANDS command)
   return 1;
 }
 
-int far_LoadPlugin(lua_State *L)       { return plugin_load(L, PCTL_LOADPLUGIN); }
-int far_ForcedLoadPlugin(lua_State *L) { return plugin_load(L, PCTL_FORCEDLOADPLUGIN); }
-int far_UnloadPlugin(lua_State *L)     { return plugin_load(L, PCTL_UNLOADPLUGIN); }
+int far_LoadPlugin(lua_State *L)       { return plugin_operation(L, PCTL_LOADPLUGIN); }
+int far_ForcedLoadPlugin(lua_State *L) { return plugin_operation(L, PCTL_FORCEDLOADPLUGIN); }
+int far_UnloadPlugin(lua_State *L)     { return plugin_operation(L, PCTL_UNLOADPLUGIN); }
+int far_ClearPluginCache(lua_State *L) { return plugin_operation(L, PCTL_CACHEFORGET); }
 
 int far_XLat (lua_State *L)
 {
@@ -5687,6 +5688,7 @@ static const luaL_Reg far_funcs[] = {
   {"LoadPlugin",          far_LoadPlugin},
   {"ForcedLoadPlugin",    far_ForcedLoadPlugin},
   {"UnloadPlugin",        far_UnloadPlugin},
+  {"ClearPluginCache",    far_ClearPluginCache},
 
   {"CopyToClipboard",     far_CopyToClipboard},
   {"PasteFromClipboard",  far_PasteFromClipboard},
