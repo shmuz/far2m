@@ -3851,9 +3851,14 @@ int far_InputRecordToKey (lua_State *L)
 int far_NameToInputRecord(lua_State *L)
 {
   INPUT_RECORD ir;
-  const wchar_t* str = check_utf8_string(L, 1, NULL);
+  const wchar_t* str;
 
-  if(GetFSF(L)->FarNameToInputRecord(str, &ir))
+  struct FarStandardFunctions* FSF = GetFSF(L);
+  if (FSF->StructSize <= offsetof(struct FarStandardFunctions, FarNameToInputRecord))
+    luaL_error(L, "This version of FAR doesn't support FSF.FarNameToInputRecord()");
+
+  str = check_utf8_string(L, 1, NULL);
+  if (FSF->FarNameToInputRecord(str, &ir))
     PushInputRecord(L, &ir);
   else
     lua_pushnil(L);

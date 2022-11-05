@@ -60,7 +60,7 @@ int WINAPI ProcessName(const wchar_t *param1, wchar_t *param2, DWORD size, DWORD
 		return Masks.Compare(param2, skippath) ? TRUE:FALSE;
 	}
 
-	if (flags&PN_GENERATENAME)
+	if (flags == PN_GENERATENAME)
 	{
 		FARString strResult = param2;
 		int nResult = ConvertWildcards(param1, strResult, (flags&0xFFFF)|(skippath?PN_SKIPPATH:0));
