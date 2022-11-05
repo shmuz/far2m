@@ -44,23 +44,24 @@ int WINAPI ProcessName(const wchar_t *param1, wchar_t *param2, DWORD size, DWORD
 {
 	bool skippath = (flags&PN_SKIPPATH)!=0;
 	bool silent = (flags&PN_SHOWERRORMESSAGE)==0;
+	DWORD mode = flags&0xFF0000;
 
 	flags &= ~(PN_SKIPPATH | PN_SHOWERRORMESSAGE);
 
-	if (flags == PN_CMPNAME)
+	if (mode == PN_CMPNAME)
 		return CmpName(param1, param2, skippath) ? TRUE:FALSE;
 
-	if (flags == PN_CMPNAMELIST || flags == PN_CHECKMASK)
+	if (mode == PN_CMPNAMELIST || mode == PN_CHECKMASK)
 	{
 		CFileMask Masks;
 		if (!Masks.Set(param1, silent ? FMF_SILENT:0))
 			return FALSE;
-		if (flags == PN_CHECKMASK)
+		if (mode == PN_CHECKMASK)
 			return TRUE;
 		return Masks.Compare(param2, skippath) ? TRUE:FALSE;
 	}
 
-	if (flags == PN_GENERATENAME)
+	if (mode == PN_GENERATENAME)
 	{
 		FARString strResult = param2;
 		int nResult = ConvertWildcards(param1, strResult, (flags&0xFFFF)|(skippath?PN_SKIPPATH:0));
