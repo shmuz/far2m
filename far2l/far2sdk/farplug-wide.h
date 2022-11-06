@@ -1959,6 +1959,13 @@ typedef int (WINAPI *FARAPIPLUGINSCONTROL)(
     LONG_PTR Param2
 );
 
+typedef intptr_t (WINAPI *FARAPIPLUGINSCONTROLV3)(
+	HANDLE hHandle,
+	int Command,
+	intptr_t Param1,
+	void* Param2
+);
+
 typedef int (WINAPI *FARAPIFILEFILTERCONTROL)(
     HANDLE hHandle,
     int Command,
@@ -2285,6 +2292,7 @@ struct PluginStartupInfo
 
 	void*                  RESERVED[2];
 	FARAPIMACROCONTROL     MacroControl;
+	FARAPIPLUGINSCONTROLV3 PluginsControlV3;
 	FARAPICOLORDIALOG      ColorDialog;
 	const void*            Private;
 };
@@ -2480,12 +2488,29 @@ enum FAR_PLUGINS_CONTROL_COMMANDS
 	PCTL_UNLOADPLUGIN       = 1,
 	PCTL_FORCEDLOADPLUGIN   = 2,
 
-	PCTL_CACHEFORGET		= 3 // forgets cached information for specified plugin
+	PCTL_CACHEFORGET		= 3, // forgets cached information for specified plugin
+
+	PCTL_FINDPLUGIN           = 4,
+	PCTL_GETPLUGININFORMATION = 5,
+	PCTL_GETPLUGINS           = 6,
 };
 
 enum FAR_PLUGIN_LOAD_TYPE
 {
 	PLT_PATH = 0,
+};
+
+enum FAR_PLUGIN_FIND_TYPE
+{
+	PFM_GUID       = 0,
+	PFM_MODULENAME = 1,
+};
+
+enum FAR_PLUGIN_FLAGS
+{
+	FPF_LOADED     = 0x00000001,
+	FPF_ANSI       = 0x10000000,
+	FPF_NONE       = 0,
 };
 
 enum FAR_FILE_FILTER_CONTROL_COMMANDS

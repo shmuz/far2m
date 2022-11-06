@@ -287,6 +287,11 @@ bool PluginManager::CacheForget(const wchar_t *lpwszModuleName)
 
 bool PluginManager::LoadPluginExternal(const wchar_t *lpwszModuleName, bool LoadToMem)
 {
+	return LoadPluginExternalV3(lpwszModuleName, LoadToMem) ? true:false;
+}
+
+Plugin* PluginManager::LoadPluginExternalV3(const wchar_t *lpwszModuleName, bool LoadToMem)
+{
 	Plugin *pPlugin = GetPlugin(lpwszModuleName);
 
 	if (pPlugin)
@@ -294,17 +299,17 @@ bool PluginManager::LoadPluginExternal(const wchar_t *lpwszModuleName, bool Load
 		if (LoadToMem && !pPlugin->Load())
 		{
 			RemovePlugin(pPlugin);
-			return false;
+			return nullptr;
 		}
 	}
 	else
 	{
 		if (!LoadPlugin(lpwszModuleName, LoadToMem))
-			return false;
+			return nullptr;
 
 		far_qsort(PluginsData, PluginsCount, sizeof(*PluginsData), PluginsSort);
 	}
-	return true;
+	return pPlugin;
 }
 
 int PluginManager::UnloadPlugin(Plugin *pPlugin, DWORD dwException, bool bRemove)
@@ -365,6 +370,20 @@ int PluginManager::UnloadPluginExternal(const wchar_t *lpwszModuleName)
 	}
 
 	return nResult;
+}
+
+int PluginManager::UnloadPluginExternalV3(Plugin* pPlugin)
+{
+	for (int i=0; i < PluginsCount; i++)
+	{
+		if (PluginsData[i] == pPlugin)
+		{
+			int nResult = pPlugin->Unload(true);
+			RemovePlugin(pPlugin);
+			return nResult;
+		}
+	}
+	return FALSE;
 }
 
 Plugin *PluginManager::GetPlugin(const wchar_t *lpwszModuleName)

@@ -232,15 +232,19 @@ class PluginManager
 	public:
 
 		bool CacheForget(const wchar_t *lpwszModuleName);
-		bool LoadPluginExternal(const wchar_t *lpwszModuleName, bool LoadToMem);
+		bool LoadPluginExternal(const wchar_t *ModuleName, bool LoadToMem);
 
 		int UnloadPlugin(Plugin *pPlugin, DWORD dwException, bool bRemove = false);
 		int UnloadPluginExternal(const wchar_t *lpwszModuleName);
+
+		Plugin* LoadPluginExternalV3(const wchar_t *ModuleName, bool LoadToMem);
+		int UnloadPluginExternalV3(Plugin* pPlugin);
 
 		void LoadPlugins();
 
 		Plugin *GetPlugin(const wchar_t *lpwszModuleName);
 		Plugin *GetPlugin(int PluginNumber);
+		Plugin *FindPlugin(DWORD SysID);
 
 		int GetPluginsCount() { return PluginsCount; }
 		int GetOemPluginsCount() { return OemPluginsCount; }
@@ -265,7 +269,6 @@ class PluginManager
 		// $ .09.2000 SVS - Функция CallPlugin - найти плагин по ID и запустить OpenFrom = OPEN_*
 		int CallPlugin(DWORD SysID,int OpenFrom, void *Data, void **Ret=nullptr);
 		bool CallPluginItem(DWORD SysID, CallPluginInfo* Data);
-		Plugin *FindPlugin(DWORD SysID);
 
 //api functions
 

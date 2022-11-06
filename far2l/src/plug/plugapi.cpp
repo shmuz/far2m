@@ -2230,32 +2230,24 @@ int WINAPI farGetPathRoot(const wchar_t *Path, wchar_t *Root, int DestSize)
 
 static int farPluginsControlSynched(HANDLE hHandle, int Command, int Param1, LONG_PTR Param2)
 {
-	switch (Command)
+	if (Param1 == PLT_PATH)
 	{
-		case PCTL_CACHEFORGET:
-		case PCTL_LOADPLUGIN:
-		case PCTL_UNLOADPLUGIN:
-		case PCTL_FORCEDLOADPLUGIN:
+		if (Param2 )
 		{
-			if (Param1 == PLT_PATH)
+			FARString strPath;
+			ConvertNameToFull((const wchar_t *)Param2, strPath);
+
+			switch(Command)
 			{
-				if (Param2 )
-				{
-					FARString strPath;
-					ConvertNameToFull((const wchar_t *)Param2, strPath);
-
-					if (Command == PCTL_CACHEFORGET)
-						return CtrlObject->Plugins.CacheForget(strPath);
-					if (Command == PCTL_LOADPLUGIN)
-						return CtrlObject->Plugins.LoadPluginExternal(strPath, false);
-					if (Command == PCTL_FORCEDLOADPLUGIN)
-						return CtrlObject->Plugins.LoadPluginExternal(strPath, true);
-					else
-						return CtrlObject->Plugins.UnloadPluginExternal(strPath);
-				}
+				case PCTL_CACHEFORGET:
+					return CtrlObject->Plugins.CacheForget(strPath);
+				case PCTL_LOADPLUGIN:
+					return CtrlObject->Plugins.LoadPluginExternal(strPath, false);
+				case PCTL_FORCEDLOADPLUGIN:
+					return CtrlObject->Plugins.LoadPluginExternal(strPath, true);
+				case PCTL_UNLOADPLUGIN:
+					return CtrlObject->Plugins.UnloadPluginExternal(strPath);
 			}
-
-			break;
 		}
 	}
 
@@ -2265,6 +2257,67 @@ static int farPluginsControlSynched(HANDLE hHandle, int Command, int Param1, LON
 int WINAPI farPluginsControl(HANDLE hHandle, int Command, int Param1, LONG_PTR Param2)
 {
 	return InterThreadCall<int, 0>(std::bind(farPluginsControlSynched, hHandle, Command, Param1, Param2));
+}
+
+static FARString Param2ToPath(void* Param2)
+{
+	FARString strPath;
+	ConvertNameToFull((const wchar_t *)Param2, strPath);
+	return strPath;
+}
+
+static intptr_t WINAPI farPluginsControlV3Synched(HANDLE hHandle, int Command, intptr_t Param1, void* Param2)
+{
+	switch(Command)
+	{
+		case PCTL_CACHEFORGET:
+			if (Param1==PLT_PATH && Param2)
+			{
+				return CtrlObject->Plugins.CacheForget(Param2ToPath(Param2));
+			}
+			break;
+
+		case PCTL_LOADPLUGIN:
+		case PCTL_FORCEDLOADPLUGIN:
+			if (Param1==PLT_PATH && Param2)
+			{
+				return (intptr_t)CtrlObject->Plugins.LoadPluginExternalV3(Param2ToPath(Param2), Command==PCTL_FORCEDLOADPLUGIN);
+			}
+			break;
+
+		case PCTL_UNLOADPLUGIN:
+			return CtrlObject->Plugins.UnloadPluginExternalV3((Plugin*)hHandle);
+
+		case PCTL_FINDPLUGIN:
+			if (Param1==PFM_GUID && Param2)
+			{
+				return (intptr_t)CtrlObject->Plugins.FindPlugin(*(DWORD*)Param2);
+			}
+			if (Param1==PFM_MODULENAME && Param2)
+			{
+				return (intptr_t)CtrlObject->Plugins.GetPlugin(Param2ToPath(Param2));
+			}
+			break;
+
+		case PCTL_GETPLUGINS:
+		{
+			int Count = CtrlObject->Plugins.GetPluginsCount();
+			if (Param1 && Param2)
+			{
+				if (Param1 > Count)
+					Param1 = Count;
+				for (int i=0; i<Param1; i++)
+					*((HANDLE*)Param2 + i) = CtrlObject->Plugins.GetPlugin(i);
+			}
+			return Count;
+		}
+	}
+	return 0;
+}
+
+intptr_t WINAPI farPluginsControlV3(HANDLE hHandle, int Command, intptr_t Param1, void* Param2)
+{
+	return InterThreadCall<intptr_t, 0>(std::bind(farPluginsControlV3Synched, hHandle, Command, Param1, Param2));
 }
 
 int WINAPI farFileFilterControl(HANDLE hHandle, int Command, int Param1, LONG_PTR Param2)
