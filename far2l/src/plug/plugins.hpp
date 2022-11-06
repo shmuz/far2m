@@ -239,6 +239,7 @@ class PluginManager
 
 		Plugin* LoadPluginExternalV3(const wchar_t *ModuleName, bool LoadToMem);
 		int UnloadPluginExternalV3(Plugin* pPlugin);
+		size_t GetPluginInformation(Plugin *pPlugin, FarGetPluginInformation *pInfo, size_t BufferSize);
 
 		void LoadPlugins();
 

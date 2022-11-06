@@ -2335,3 +2335,7 @@ std::map<std::wstring, unsigned int> PluginManager::BackgroundTasks()
 	return BgTasks;
 }
 
+size_t PluginManager::GetPluginInformation(Plugin *pPlugin, FarGetPluginInformation *pInfo, size_t BufferSize)
+{
+	return 0;
+}

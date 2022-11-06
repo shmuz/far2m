@@ -4829,20 +4829,63 @@ int filefilter_IsFileInFilter (lua_State *L)
   return 1;
 }
 
-int plugin_operation(lua_State *L, enum FAR_PLUGINS_CONTROL_COMMANDS command)
+int plugin_load(lua_State *L, enum FAR_PLUGINS_CONTROL_COMMANDS command)
+{
+  PSInfo *Info = GetPluginData(L)->Info;
+  int param1 = check_env_flag(L, 1);
+  void *param2 = check_utf8_string(L, 2, NULL);
+  intptr_t result = Info->PluginsControlV3(INVALID_HANDLE_VALUE, command, param1, param2);
+
+  if(result) lua_pushlightuserdata(L, (void*)result);
+  else lua_pushnil(L);
+
+  return 1;
+}
+
+int far_LoadPlugin(lua_State *L) { return plugin_load(L, PCTL_LOADPLUGIN); }
+int far_ForcedLoadPlugin(lua_State *L) { return plugin_load(L, PCTL_FORCEDLOADPLUGIN); }
+
+int far_UnloadPlugin(lua_State *L)
+{
+  PSInfo *Info = GetPluginData(L)->Info;
+  void* Handle = lua_touserdata(L, 1);
+  lua_pushboolean(L, Handle ? Info->PluginsControl(Handle, PCTL_UNLOADPLUGIN, 0, 0) : 0);
+  return 1;
+}
+
+int far_ClearPluginCache(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
   int param1 = check_env_flag(L, 1);
-  LONG_PTR param2 = (LONG_PTR)check_utf8_string(L, 2, NULL);
-  int result = Info->PluginsControl(INVALID_HANDLE_VALUE, command, param1, param2);
+  void* param2 = (void*)check_utf8_string(L, 2, NULL);
+  intptr_t result = Info->PluginsControlV3(INVALID_HANDLE_VALUE, PCTL_CACHEFORGET, param1, param2);
   lua_pushboolean(L, result);
   return 1;
 }
 
-int far_LoadPlugin(lua_State *L)       { return plugin_operation(L, PCTL_LOADPLUGIN); }
-int far_ForcedLoadPlugin(lua_State *L) { return plugin_operation(L, PCTL_FORCEDLOADPLUGIN); }
-int far_UnloadPlugin(lua_State *L)     { return plugin_operation(L, PCTL_UNLOADPLUGIN); }
-int far_ClearPluginCache(lua_State *L) { return plugin_operation(L, PCTL_CACHEFORGET); }
+int far_GetPlugins(lua_State *L)
+{
+  PSInfo *Info = GetPluginData(L)->Info;
+  int count = (int)Info->PluginsControlV3(INVALID_HANDLE_VALUE, PCTL_GETPLUGINS, 0, 0);
+  lua_createtable(L, count, 0);
+
+  if(count > 0)
+  {
+    int i;
+    HANDLE *handles = lua_newuserdata(L, count*sizeof(HANDLE));
+    count = (int)Info->PluginsControlV3(INVALID_HANDLE_VALUE, PCTL_GETPLUGINS, count, handles);
+
+    for(i=0; i<count; i++)
+    {
+      lua_pushlightuserdata(L, handles[i]);
+      lua_rawseti(L, -3, i+1);
+    }
+
+    lua_pop(L, 1);
+  }
+
+  return 1;
+}
 
 int far_XLat (lua_State *L)
 {
@@ -5694,6 +5737,7 @@ static const luaL_Reg far_funcs[] = {
   {"ForcedLoadPlugin",    far_ForcedLoadPlugin},
   {"UnloadPlugin",        far_UnloadPlugin},
   {"ClearPluginCache",    far_ClearPluginCache},
+  {"GetPlugins",          far_GetPlugins},
 
   {"CopyToClipboard",     far_CopyToClipboard},
   {"PasteFromClipboard",  far_PasteFromClipboard},

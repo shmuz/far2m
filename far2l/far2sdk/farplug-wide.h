@@ -2563,6 +2563,15 @@ struct GlobalInfo
 	DWORD SysId;
 };
 
+struct FarGetPluginInformation
+{
+	size_t StructSize;
+	const wchar_t *ModuleName;
+	enum FAR_PLUGIN_FLAGS Flags;
+	struct PluginInfo *PInfo;
+	struct GlobalInfo *GInfo;
+};
+
 #if defined(__BORLANDC__) || defined(_MSC_VER) || defined(__GNUC__) || defined(__WATCOMC__)
 #ifdef __cplusplus
 extern "C"
