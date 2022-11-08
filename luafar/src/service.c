@@ -4849,7 +4849,7 @@ int far_UnloadPlugin(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
   void* Handle = lua_touserdata(L, 1);
-  lua_pushboolean(L, Handle ? Info->PluginsControl(Handle, PCTL_UNLOADPLUGIN, 0, 0) : 0);
+  lua_pushboolean(L, Handle ? Info->PluginsControlV3(Handle, PCTL_UNLOADPLUGIN, 0, 0) : 0);
   return 1;
 }
 

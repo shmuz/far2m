@@ -1,18 +1,19 @@
 -- encoding: utf-8
 -- Started: 2012-08-20.
 
-local function assert_eq(a,b)   assert(a == b) end
-local function assert_neq(a,b)  assert(a ~= b) end
-local function assert_num(v)    assert(type(v)=="number") end
-local function assert_str(v)    assert(type(v)=="string") end
-local function assert_tbl(v)    assert(type(v)=="table") end
-local function assert_bool(v)   assert(type(v)=="boolean") end
-local function assert_func(v)   assert(type(v)=="function") end
-local function assert_nil(v)    assert(v==nil) end
-local function assert_false(v)  assert(v==false) end
-local function assert_true(v)   assert(v==true) end
-local function assert_falsy(v)  assert(not v == true) end
-local function assert_truthy(v) assert(not v == false) end
+local function assert_eq(a,b)      assert(a == b) end
+local function assert_neq(a,b)     assert(a ~= b) end
+local function assert_num(v)       assert(type(v)=="number") end
+local function assert_str(v)       assert(type(v)=="string") end
+local function assert_table(v)     assert(type(v)=="table") end
+local function assert_bool(v)      assert(type(v)=="boolean") end
+local function assert_func(v)      assert(type(v)=="function") end
+local function assert_userdata(v)  assert(type(v)=="userdata") end
+local function assert_nil(v)       assert(v==nil) end
+local function assert_false(v)     assert(v==false) end
+local function assert_true(v)      assert(v==true) end
+local function assert_falsy(v)     assert(not v == true) end
+local function assert_truthy(v)    assert(not v == false) end
 
 local function assert_range(val, low, high)
   if low then assert(val >= low) end
@@ -21,6 +22,7 @@ end
 
 local MT = {} -- "macrotest", this module
 local F = far.Flags
+local band, bor, bnot = bit64.band, bit64.bor, bit64.bnot
 local luamacroId=0x4EBBEFC8
 
 local function pack (...)
@@ -1335,15 +1337,15 @@ end
 local function test_ACTL()
   assert_func  ( actl.Commit)
   assert_func  ( actl.EjectMedia)
-  assert_tbl   ( actl.GetArrayColor())
+  assert_table ( actl.GetArrayColor())
   assert_range ( #actl.GetArrayColor(),142,152)
   assert_num   ( actl.GetColor("COL_DIALOGBOXTITLE"))
   assert_num   ( actl.GetConfirmations())
-  assert_tbl   ( actl.GetCursorPos())
+  assert_table ( actl.GetCursorPos())
   assert_num   ( actl.GetDescSettings())
   assert_num   ( actl.GetDialogSettings())
   assert_eq    ( type(actl.GetFarHwnd()), "userdata")
-  assert_tbl   ( actl.GetFarRect())
+  assert_table ( actl.GetFarRect())
   assert_str   ( actl.GetFarVersion())
   assert_num   ( actl.GetFarVersion(true))
   assert_num   ( actl.GetInterfaceSettings())
@@ -1352,8 +1354,8 @@ local function test_ACTL()
   assert_num   ( actl.GetSystemSettings())
   assert_str   ( actl.GetSysWordDiv())
   assert_range ( actl.GetWindowCount(), 1)
-  assert_tbl   ( actl.GetWindowInfo(1))
-  assert_tbl   ( actl.GetShortWindowInfo(1))
+  assert_table ( actl.GetWindowInfo(1))
+  assert_table ( actl.GetShortWindowInfo(1))
   assert_nil   ( actl.KeyMacro)
   assert_func  ( actl.ProgressNotify)
   assert_func  ( actl.Quit)
@@ -1547,6 +1549,35 @@ local function test_gmatch_coro()
   assert(head() == "1")
 end
 
+local function test_PluginsControl()
+  local mod = assert(far.PluginStartupInfo().ModuleName)
+	local hnd1 = far.FindPlugin("PFM_MODULENAME", mod)
+	assert_userdata(hnd1)
+	local hnd2 = far.FindPlugin("PFM_SYSID", far.GetPluginId())
+	assert_eq(hnd1, hnd2)
+
+	local info = far.GetPluginInformation(hnd1)
+	assert_table(info)
+	assert_table(info.GInfo)
+	assert_table(info.PInfo)
+	assert_eq(mod, info.ModuleName)
+	assert_num(info.Flags)
+	assert(0 ~= band(info.Flags, F.FPF_LOADED))
+	assert(0 == band(info.Flags, F.FPF_ANSI))
+
+	local pluglist = far.GetPlugins()
+	assert_table(pluglist)
+	assert(#pluglist >= 1)
+	for _,plug in ipairs(pluglist) do
+	  assert_userdata(plug)
+	end
+
+	assert_func(far.ClearPluginCache)
+	assert_func(far.LoadPlugin)
+	assert_func(far.ForcedLoadPlugin)
+	assert_func(far.UnloadPlugin)
+end
+
 function MT.test_luafar()
   test_bit64()
   test_gmatch_coro()
@@ -1560,6 +1591,7 @@ function MT.test_luafar()
   test_issue_3129()
   test_MacroControl()
   test_RegexControl()
+  test_PluginsControl()
 end
 
 -- Test in particular that Plugin.Call (a so-called "restricted" function) works properly

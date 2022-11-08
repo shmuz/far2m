@@ -431,7 +431,8 @@ local function Open_CommandLine (strCmdLine)
     far.LoadPlugin("PLT_PATH", text)
   ----------------------------------------------------------------------------
   elseif prefix == "unload" and text~="" then
-    far.UnloadPlugin("PLT_PATH", text)
+    local plug = far.FindPlugin("PFM_MODULENAME", text)
+    if plug then far.UnloadPlugin(plug) end
   ----------------------------------------------------------------------------
   else
     local item = utils.GetPrefixes()[prefix]
