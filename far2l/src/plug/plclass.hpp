@@ -189,4 +189,6 @@ class Plugin
 		virtual bool MayExitFAR() = 0;
 		virtual void ExitFAR() = 0;
 		virtual void GetGlobalInfo() = 0;
+
+		bool IsLoaded() { return m_hModule != nullptr; }
 };

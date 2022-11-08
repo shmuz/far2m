@@ -757,7 +757,7 @@ int Panel::ChangeDiskMenu(int Pos,int FirstCall)
 			// duplicate plugin instance of passive panel
 			auto plugin_name = CtrlObject->Plugins.GetPluginModuleName(another_panel->GetPluginHandle());
 			if (!plugin_name.IsEmpty()) {
-				auto pPlugin = CtrlObject->Plugins.GetPlugin(plugin_name);
+				auto pPlugin = CtrlObject->Plugins.FindPlugin(plugin_name);
 				if (pPlugin) {
 					OpenPluginInfo opi = {sizeof(OpenPluginInfo), 0};
 					CtrlObject->Plugins.GetOpenPluginInfo(another_panel->GetPluginHandle(), &opi);
@@ -890,7 +890,7 @@ int Panel::OnFCtlSetLocation(const FarPanelLocation *location)
 		return SetLocation_Directory(location->Path);
 	}
 
-	auto pPlugin = CtrlObject->Plugins.GetPlugin(location->PluginName);
+	auto pPlugin = CtrlObject->Plugins.FindPlugin(location->PluginName);
 	if (!pPlugin)
 	{
 		fprintf(stderr, "OnFCtlSetLocation: wrong plugin='%ls'", location->PluginName);

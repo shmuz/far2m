@@ -2502,7 +2502,7 @@ enum FAR_PLUGIN_LOAD_TYPE
 
 enum FAR_PLUGIN_FIND_TYPE
 {
-	PFM_GUID       = 0,
+	PFM_SYSID      = 0,
 	PFM_MODULENAME = 1,
 };
 
@@ -2560,14 +2560,14 @@ struct RegExpSearch
 struct GlobalInfo
 {
 	size_t StructSize;
-	DWORD SysId;
+	DWORD SysID;
 };
 
 struct FarGetPluginInformation
 {
 	size_t StructSize;
 	const wchar_t *ModuleName;
-	enum FAR_PLUGIN_FLAGS Flags;
+	DWORD Flags;
 	struct PluginInfo *PInfo;
 	struct GlobalInfo *GInfo;
 };

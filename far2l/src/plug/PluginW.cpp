@@ -584,7 +584,7 @@ void PluginW::GetGlobalInfo()
 		es.id = EXCEPT_GETGLOBALINFO;
 		GlobalInfo gi = { sizeof(GlobalInfo), 0 };
 		EXECUTE_FUNCTION(pGetGlobalInfoW(&gi), es);
-		SysID = gi.SysId;
+		SysID = gi.SysID;
 		if (es.bUnloaded) // supress a warning
 			{}
 	}

@@ -292,7 +292,7 @@ bool PluginManager::LoadPluginExternal(const wchar_t *lpwszModuleName, bool Load
 
 Plugin* PluginManager::LoadPluginExternalV3(const wchar_t *lpwszModuleName, bool LoadToMem)
 {
-	Plugin *pPlugin = GetPlugin(lpwszModuleName);
+	Plugin *pPlugin = FindPlugin(lpwszModuleName);
 
 	if (pPlugin)
 	{
@@ -361,7 +361,7 @@ int PluginManager::UnloadPluginExternal(const wchar_t *lpwszModuleName)
 {
 //BUGBUG нужны проверки на легальность выгрузки
 	int nResult = FALSE;
-	Plugin *pPlugin = GetPlugin(lpwszModuleName);
+	Plugin *pPlugin = FindPlugin(lpwszModuleName);
 
 	if (pPlugin)
 	{
@@ -386,7 +386,7 @@ int PluginManager::UnloadPluginExternalV3(Plugin* pPlugin)
 	return FALSE;
 }
 
-Plugin *PluginManager::GetPlugin(const wchar_t *lpwszModuleName)
+Plugin *PluginManager::FindPlugin(const wchar_t *lpwszModuleName)
 {
 	Plugin *pPlugin;
 
@@ -1674,8 +1674,7 @@ bool PluginManager::GetDiskMenuItem(
 	if (pPlugin->CheckWorkFlags(PIWF_CACHED))
 	{
 		KeyFileReadSection kfh(PluginsIni(), pPlugin->GetSettingsName());
-		strPluginText = kfh.GetString(
-			StrPrintf(FmtDiskMenuStringD, PluginItem), "");
+		strPluginText = kfh.GetString( StrPrintf(FmtDiskMenuStringD, PluginItem), "" );
 		ItemPresent = !strPluginText.IsEmpty();
 		return true;
 	}
@@ -2335,7 +2334,163 @@ std::map<std::wstring, unsigned int> PluginManager::BackgroundTasks()
 	return BgTasks;
 }
 
+static void ReadCache(KeyFileReadSection& kfh, const char *Fmt, std::vector<FARString>& Items)
+{
+	for (int J=0; ; J++)
+	{
+		const std::string& key = StrPrintf(Fmt, J);
+		if (!kfh.HasKey(key))
+			break;
+		Items.emplace_back(kfh.GetString(key, ""));
+	}
+}
+
+static char* BufReserve(char*& Buf, size_t Count, size_t& Rest, size_t& Size)
+{
+	char* Res = nullptr;
+
+	if (Buf)
+	{
+		if (Rest >= Count)
+		{
+			Res = Buf;
+			Buf += Count;
+			Rest -= Count;
+		}
+		else
+		{
+			Buf += Rest;
+			Rest = 0;
+		}
+	}
+
+	Size += Count;
+	return Res;
+}
+
+
+static wchar_t* StrToBuf(const FARString& Str, char*& Buf, size_t& Rest, size_t& Size)
+{
+	const auto Count = (Str.GetLength() + 1) * sizeof(wchar_t);
+	const auto Res = reinterpret_cast<wchar_t*>(BufReserve(Buf, Count, Rest, Size));
+	if (Res)
+	{
+		wcscpy(Res, Str.CPtr());
+	}
+	return Res;
+}
+
+static void ItemsToBuf(const wchar_t* const* &Strings, int& Count,
+	const std::vector<FARString>& NamesArray, char*& Buf, size_t& Rest, size_t& Size)
+{
+	Count = NamesArray.size();
+	Strings = nullptr;
+
+	if (Count)
+	{
+		const auto Items = reinterpret_cast<wchar_t**>(BufReserve(Buf, Count * sizeof(wchar_t*), Rest, Size));
+		Strings = Items;
+
+		for (int i = 0; i < Count; ++i)
+		{
+			wchar_t* pStr = StrToBuf(NamesArray[i], Buf, Rest, Size);
+			if (Items)
+			{
+				Items[i] = pStr;
+			}
+		}
+	}
+}
+
 size_t PluginManager::GetPluginInformation(Plugin *pPlugin, FarGetPluginInformation *pInfo, size_t BufferSize)
 {
-	return 0;
+	// if(IsPluginUnloaded(pPlugin)) return 0;
+	FARString Prefix;
+	DWORD Flags=0, SysID=0;
+	std::vector<FARString> MenuItems, DiskItems, ConfItems;
+
+	if (pPlugin->CheckWorkFlags(PIWF_CACHED))
+	{
+		KeyFileReadSection kfh(PluginsIni(), pPlugin->GetSettingsName());
+		Prefix = kfh.GetString("CommandPrefix", "");
+		Flags = kfh.GetUInt("Flags", 0);
+		SysID = kfh.GetUInt("SysID", 0);
+		ReadCache(kfh, FmtPluginMenuStringD, MenuItems);
+		ReadCache(kfh, FmtDiskMenuStringD, DiskItems);
+		ReadCache(kfh, FmtPluginConfigStringD, ConfItems);
+	}
+	else
+	{
+		PluginInfo Info = {sizeof(Info)};
+		if (pPlugin->GetPluginInfo(&Info))
+		{
+			Prefix = NullToEmpty(Info.CommandPrefix);
+			Flags = Info.Flags;
+			SysID = Info.SysID;
+			for (int i=0; i<Info.PluginMenuStringsNumber; i++)
+				MenuItems.emplace_back(Info.PluginMenuStrings[i]);
+
+			for (int i=0; i<Info.DiskMenuStringsNumber; i++)
+				DiskItems.emplace_back(Info.DiskMenuStrings[i]);
+
+			for (int i=0; i<Info.PluginConfigStringsNumber; i++)
+				ConfItems.emplace_back(Info.PluginConfigStrings[i]);
+		}
+	}
+
+	struct
+	{
+		FarGetPluginInformation fgpi;
+		PluginInfo PInfo;
+		GlobalInfo GInfo;
+	} Temp;
+	char* Buffer = nullptr;
+	size_t Rest = 0;
+	size_t Size = sizeof(Temp);
+
+	if (pInfo && BufferSize >= Size)
+	{
+		Rest = BufferSize - Size;
+		Buffer = reinterpret_cast<char*>(pInfo) + Size;
+	}
+	else
+	{
+		pInfo = &Temp.fgpi;
+	}
+
+	pInfo->PInfo = reinterpret_cast<PluginInfo*>(pInfo+1);
+	pInfo->GInfo = reinterpret_cast<GlobalInfo*>(pInfo->PInfo+1);
+	pInfo->ModuleName = StrToBuf(pPlugin->GetModuleName(), Buffer, Rest, Size);
+
+	pInfo->Flags = 0;
+
+	if (pPlugin->IsLoaded())
+	{
+		pInfo->Flags |= FPF_LOADED;
+	}
+#ifndef NO_WRAPPER
+	if (pPlugin->IsOemPlugin())
+	{
+		pInfo->Flags |= FPF_ANSI;
+	}
+#endif // NO_WRAPPER
+
+	pInfo->GInfo->StructSize = sizeof(GlobalInfo);
+	pInfo->GInfo->SysID = SysID;
+	// pInfo->GInfo->Version = pPlugin->version();
+	// pInfo->GInfo->MinFarVersion = pPlugin->MinFarVersion();
+	// pInfo->GInfo->Title = StrToBuf(pPlugin->strTitle, Buffer, Rest, Size);
+	// pInfo->GInfo->Description = StrToBuf(pPlugin->strDescription, Buffer, Rest, Size);
+	// pInfo->GInfo->Author = StrToBuf(pPlugin->strAuthor, Buffer, Rest, Size);
+
+	pInfo->PInfo->StructSize = sizeof(PluginInfo);
+	pInfo->PInfo->Flags = Flags;
+	pInfo->PInfo->SysID = SysID;
+	pInfo->PInfo->CommandPrefix = StrToBuf(Prefix, Buffer, Rest, Size);
+
+	ItemsToBuf(pInfo->PInfo->PluginMenuStrings, pInfo->PInfo->PluginMenuStringsNumber, MenuItems, Buffer, Rest, Size);
+	ItemsToBuf(pInfo->PInfo->DiskMenuStrings, pInfo->PInfo->DiskMenuStringsNumber, DiskItems, Buffer, Rest, Size);
+	ItemsToBuf(pInfo->PInfo->PluginConfigStrings, pInfo->PInfo->PluginConfigStringsNumber, ConfItems, Buffer, Rest, Size);
+
+	return Size;
 }

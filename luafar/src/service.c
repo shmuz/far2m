@@ -4831,7 +4831,7 @@ int filefilter_IsFileInFilter (lua_State *L)
 
 int plugin_load(lua_State *L, enum FAR_PLUGINS_CONTROL_COMMANDS command)
 {
-  PSInfo *Info = GetPluginData(L)->Info;
+  PSInfo *Info = GetPluginStartupInfo(L);
   int param1 = check_env_flag(L, 1);
   void *param2 = check_utf8_string(L, 2, NULL);
   intptr_t result = Info->PluginsControlV3(INVALID_HANDLE_VALUE, command, param1, param2);
@@ -4847,9 +4847,41 @@ int far_ForcedLoadPlugin(lua_State *L) { return plugin_load(L, PCTL_FORCEDLOADPL
 
 int far_UnloadPlugin(lua_State *L)
 {
-  PSInfo *Info = GetPluginData(L)->Info;
+  PSInfo *Info = GetPluginStartupInfo(L);
   void* Handle = lua_touserdata(L, 1);
   lua_pushboolean(L, Handle ? Info->PluginsControl(Handle, PCTL_UNLOADPLUGIN, 0, 0) : 0);
+  return 1;
+}
+
+int far_FindPlugin(lua_State *L)
+{
+  PSInfo *Info = GetPluginStartupInfo(L);
+  int param1 = check_env_flag(L, 1);
+  void *param2 = NULL;
+  DWORD SysID;
+
+  if(param1 == PFM_MODULENAME)
+  {
+    param2 = check_utf8_string(L, 2, NULL);
+  }
+  else if(param1 == PFM_SYSID)
+  {
+    SysID = (DWORD)luaL_checkinteger(L, 2);
+    param2 = &SysID;
+  }
+
+  if(param2)
+  {
+    intptr_t handle = Info->PluginsControlV3(NULL, PCTL_FINDPLUGIN, param1, param2);
+
+    if(handle)
+    {
+      lua_pushlightuserdata(L, (void*)handle);
+      return 1;
+    }
+  }
+
+  lua_pushnil(L);
   return 1;
 }
 
@@ -4863,9 +4895,74 @@ int far_ClearPluginCache(lua_State *L)
   return 1;
 }
 
+void PutPluginMenuItemToTable(lua_State *L, const char* Field, const wchar_t* const* Strings, int Count)
+{
+  lua_createtable(L, Count, 0);
+  if (Strings) {
+    int i;
+    for (i=0; i<Count; i++)
+      PutWStrToArray(L, i+1, Strings[i], -1);
+  }
+  lua_setfield(L, -2, Field);
+}
+
+int far_GetPluginInformation(lua_State *L)
+{
+  struct FarGetPluginInformation *pi;
+  PSInfo *Info = GetPluginStartupInfo(L);
+  HANDLE Handle;
+  size_t size;
+
+  luaL_checktype(L, 1, LUA_TLIGHTUSERDATA);
+  Handle = lua_touserdata(L, 1);
+  size = Info->PluginsControlV3(Handle, PCTL_GETPLUGININFORMATION, 0, 0);
+
+  if (size == 0) return lua_pushnil(L), 1;
+
+  pi = (struct FarGetPluginInformation *)lua_newuserdata(L, size);
+  pi->StructSize = sizeof(*pi);
+
+  if (!Info->PluginsControlV3(Handle, PCTL_GETPLUGININFORMATION, size, pi))
+    return lua_pushnil(L), 1;
+
+  lua_createtable(L, 0, 4);
+  {
+    PutWStrToTable(L, "ModuleName", pi->ModuleName, -1);
+    PutNumToTable(L, "Flags", pi->Flags);
+    lua_createtable(L, 0, 6); // PInfo
+    {
+      PutNumToTable(L, "StructSize", pi->PInfo->StructSize);
+      PutNumToTable(L, "Flags", pi->PInfo->Flags);
+      PutNumToTable(L, "SysID", pi->PInfo->SysID);
+      PutPluginMenuItemToTable(L, "DiskMenu", pi->PInfo->DiskMenuStrings, pi->PInfo->DiskMenuStringsNumber);
+      PutPluginMenuItemToTable(L, "PluginMenu", pi->PInfo->PluginMenuStrings, pi->PInfo->PluginMenuStringsNumber);
+      PutPluginMenuItemToTable(L, "PluginConfig", pi->PInfo->PluginConfigStrings, pi->PInfo->PluginConfigStringsNumber);
+
+      if(pi->PInfo->CommandPrefix)
+        PutWStrToTable(L, "CommandPrefix", pi->PInfo->CommandPrefix, -1);
+
+      lua_setfield(L, -2, "PInfo");
+    }
+    lua_createtable(L, 0, 7); // GInfo
+    {
+      PutIntToTable(L, "StructSize", pi->GInfo->StructSize);
+      PutIntToTable(L, "SysID", pi->GInfo->SysID);
+      // PutVersionInfoToTable(L, "MinFarVersion", &pi->GInfo->MinFarVersion);
+      // PutVersionInfoToTable(L, "Version", &pi->GInfo->Version);
+      // PutLStrToTable(L, "Guid", (const char*)&pi->GInfo->Guid, sizeof(GUID));
+      // PutWStrToTable(L, "Title", pi->GInfo->Title, -1);
+      // PutWStrToTable(L, "Description", pi->GInfo->Description, -1);
+      // PutWStrToTable(L, "Author", pi->GInfo->Author, -1);
+      lua_setfield(L, -2, "GInfo");
+    }
+  }
+
+  return 1;
+}
+
 int far_GetPlugins(lua_State *L)
 {
-  PSInfo *Info = GetPluginData(L)->Info;
+  PSInfo *Info = GetPluginStartupInfo(L);
   int count = (int)Info->PluginsControlV3(INVALID_HANDLE_VALUE, PCTL_GETPLUGINS, 0, 0);
   lua_createtable(L, count, 0);
 
@@ -5737,7 +5834,9 @@ static const luaL_Reg far_funcs[] = {
   {"ForcedLoadPlugin",    far_ForcedLoadPlugin},
   {"UnloadPlugin",        far_UnloadPlugin},
   {"ClearPluginCache",    far_ClearPluginCache},
+  {"FindPlugin",          far_FindPlugin},
   {"GetPlugins",          far_GetPlugins},
+  {"GetPluginInformation",far_GetPluginInformation},
 
   {"CopyToClipboard",     far_CopyToClipboard},
   {"PasteFromClipboard",  far_PasteFromClipboard},

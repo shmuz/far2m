@@ -43,7 +43,7 @@ static LONG_PTR WINAPI DlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 
 void LUAPLUG GetGlobalInfoW(struct GlobalInfo *aInfo)
 {
-  aInfo->SysId = SYS_ID;
+  aInfo->SysID = SYS_ID;
 }
 
 void LUAPLUG SetStartupInfoW(const PSInfo *aInfo)
@@ -65,11 +65,11 @@ void LUAPLUG SetStartupInfoW(const PSInfo *aInfo)
 }
 //---------------------------------------------------------------------------
 
-void LUAPLUG GetPluginInfoW(struct PluginInfo *Info)
+void LUAPLUG GetPluginInfoW(struct PluginInfo *aInfo)
 {
   if(LS) {
-    LF_GetPluginInfo (LS, Info);
-    Info->SysID = SYS_ID;
+    LF_GetPluginInfo (LS, aInfo);
+    aInfo->SysID = SYS_ID;
   }
 }
 //---------------------------------------------------------------------------
