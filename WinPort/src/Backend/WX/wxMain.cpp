@@ -1,37 +1,15 @@
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <unistd.h>
-
-#include "Backend.h"
-#include "wxWinTranslations.h"
-#include "CallInMain.h"
-#include "PathHelpers.h"
-#include "Paint.h"
-#include "utils.h"
-#include "WinPortHandle.h"
-#include "wxClipboardBackend.h"
-
-#include <wx/wx.h>
-#include <wx/display.h>
-#include <wx/clipbrd.h>
-#include <wx/debug.h>
-#include <wx/filename.h>
-#include <wx/stdpaths.h>
-
-#include "ExclusiveHotkeys.h"
-#include <set>
-#include <fstream>
-#include <vector>
-#include <algorithm>
-#include <atomic>
-
-#ifdef __APPLE__
-# include "Mac/dockicon.h"
-# include "Mac/touchbar.h"
-#endif
-
+# include "wxMain.h"
 
 #define AREAS_REDUCTION
+
+#define TIMER_ID     10
+
+// interval of timer that used to blink cursor and do some other things
+#define TIMER_PERIOD 500        // 0.5 second
+
+// how many timer ticks may pass since last input activity
+// before timer will be stopped until restarted by some activity
+#define TIMER_IDLING_CYCLES 60  // 0.5 second * 60 = 30 seconds
 
 // If time between adhoc text copy and mouse button release less then this value then text will not be copied. Used to protect against unwanted copy-paste-s
 #define QEDIT_COPY_MINIMAL_DELAY 150
@@ -45,10 +23,9 @@ IConsoleOutput *g_winport_con_out = nullptr;
 IConsoleInput *g_winport_con_in = nullptr;
 bool g_broadway = false, g_wayland = false, g_remote = false;
 static int g_exit_code = 0;
-enum
-{
-    TIMER_ID_PERIODIC = 10
-};
+
+static WinPortAppThread *g_winport_app_thread = NULL;
+static WinPortFrame *g_winport_frame = nullptr;
 
 bool WinPortClipboard_IsBusy();
 
@@ -59,35 +36,26 @@ static void NormalizeArea(SMALL_RECT &area)
 	if (area.Top > area.Bottom) std::swap(area.Top, area.Bottom);	
 }
 
-class WinPortAppThread : public wxThread
+WinPortAppThread::WinPortAppThread(int argc, char **argv, int(*appmain)(int argc, char **argv))
+	: wxThread(wxTHREAD_DETACHED), _backend(nullptr), _argv(argv), _argc(argc), _appmain(appmain)
 {
-public:
-	WinPortAppThread(int argc, char **argv, int(*appmain)(int argc, char **argv))
-		: wxThread(wxTHREAD_DETACHED), _backend(nullptr), _argv(argv), _argc(argc), _appmain(appmain)  {  }
+}
 
-	wxThreadError Start(IConsoleOutputBackend *backend)
-	{
-		_backend = backend;
-		return Run();
-	}
+wxThreadError WinPortAppThread::Start(IConsoleOutputBackend *backend)
+{
+	_backend = backend;
+	return Run();
+}
 
-protected:
-	virtual ExitCode Entry()
-	{
-		g_exit_code = _appmain(_argc, _argv);
-		_backend->OnConsoleExit();
-		//exit(_r);
-		return 0;
-	}
+wxThread::ExitCode WinPortAppThread::Entry()
+{
+	g_exit_code = _appmain(_argc, _argv);
+	_backend->OnConsoleExit();
+	//exit(_r);
+	return 0;
+}
 
-private:
-	WinPortAppThread() = delete;
-	WinPortAppThread(const WinPortAppThread&) = delete;
-	IConsoleOutputBackend *_backend;
-	char **_argv;
-	int _argc;
-	int(*_appmain)(int argc, char **argv);
-} *g_winport_app_thread = NULL;
+///////////
 
 static void WinPortWxAssertHandler(const wxString& file,
 		int line, const wxString& func,
@@ -119,8 +87,12 @@ static void DetectHostAbilities()
 
 		g_remote = true;
 	}
-}
 
+	const char *xrdp = getenv("XRDP_SESSION");
+	if (xrdp) {
+		g_remote = true;
+	}
+}
 
 
 extern "C" __attribute__ ((visibility("default"))) bool WinPortMainBackend(WinPortMainBackendArg *a)
@@ -206,7 +178,7 @@ static void LoadSize(unsigned int &width, unsigned int &height)
 }
 
 template <class COOKIE_T>
-struct EventWith : wxCommandEvent
+	struct EventWith : wxCommandEvent
 {
 	EventWith(const COOKIE_T &cookie_, wxEventType commandType = wxEVT_NULL, int winid = 0) 
 		:wxCommandEvent(commandType, winid), cookie(cookie_) { }
@@ -243,157 +215,73 @@ wxDEFINE_EVENT(WX_CONSOLE_CHANGE_FONT, wxCommandEvent);
 wxDEFINE_EVENT(WX_CONSOLE_EXIT, wxCommandEvent);
 
 
-//////////////////////////////////////////
+////////////////////////////////////////// app
 
-class WinPortApp: public wxApp
+wxIMPLEMENT_APP_NO_MAIN(WinPortApp);
+
+wxEvtHandler *WinPort_EventHandler()
 {
-#ifdef __APPLE__
-	std::shared_ptr<MacDockIcon> _mac_dock_icon = std::make_shared<MacDockIcon>();
-#endif
-
-public:
-	virtual bool OnInit();
-};
-
-class WinPortFrame;
-
-class WinPortPanel: public wxPanel, protected IConsoleOutputBackend
-#ifdef __APPLE__
-	, protected ITouchbarListener
-#endif
-{
-public:
-    WinPortPanel(WinPortFrame *frame, const wxPoint& pos, const wxSize& size);
-	virtual ~WinPortPanel();
-	void CompleteInitialization();
-	void OnChar( wxKeyEvent& event );
-	virtual void OnTouchbarKey(bool alternate, int index);
-
-protected: 
-	virtual void OnConsoleOutputUpdated(const SMALL_RECT *areas, size_t count);
-	virtual void OnConsoleOutputResized();
-	virtual void OnConsoleOutputTitleChanged();
-	virtual void OnConsoleOutputWindowMoved(bool absolute, COORD pos);
-	virtual COORD OnConsoleGetLargestWindowSize();
-	virtual void OnConsoleSetMaximized(bool maximized);
-	virtual void OnConsoleAdhocQuickEdit();
-	virtual DWORD OnConsoleSetTweaks(DWORD tweaks);
-	virtual void OnConsoleChangeFont();
-	virtual void OnConsoleExit();
-	virtual bool OnConsoleIsActive();
-	virtual void OnConsoleDisplayNotification(const wchar_t *title, const wchar_t *text);
-	virtual bool OnConsoleBackgroundMode(bool TryEnterBackgroundMode);
-	virtual bool OnConsoleSetFKeyTitles(const char **titles);
-
-private:
-	void CheckForResizePending();
-	void CheckPutText2CLip();
-	void OnInitialized( wxCommandEvent& event );
-	void OnTimerPeriodic(wxTimerEvent& event);	
-	void OnWindowMovedSync( wxCommandEvent& event );
-	void OnRefreshSync( wxCommandEvent& event );
-	void OnConsoleResizedSync( wxCommandEvent& event );
-	void OnTitleChangedSync( wxCommandEvent& event );
-	void OnSetMaximizedSync( wxCommandEvent& event );
-	void OnConsoleAdhocQuickEditSync( wxCommandEvent& event );
-	void OnConsoleSetTweaksSync( wxCommandEvent& event );
-	void OnConsoleChangeFontSync(wxCommandEvent& event);
-	void OnConsoleExitSync( wxCommandEvent& event );
-	void OnKeyDown( wxKeyEvent& event );
-	void OnKeyUp( wxKeyEvent& event );
-	void OnPaint( wxPaintEvent& event );
-	void OnEraseBackground( wxEraseEvent& event );
-	void OnSize(wxSizeEvent &event);
-	void OnMouse( wxMouseEvent &event );
-	void OnMouseNormal( wxMouseEvent &event, COORD pos_char);
-	void OnMouseQEdit( wxMouseEvent &event, COORD pos_char);
-	void OnSetFocus( wxFocusEvent &event );
-	void OnKillFocus( wxFocusEvent &event );
-	COORD TranslateMousePosition( wxMouseEvent &event );
-	void DamageAreaBetween(COORD c1, COORD c2);
-	int GetDisplayIndex();
-
-	wxDECLARE_EVENT_TABLE();
-	KeyTracker _key_tracker;
-	
-	ConsolePaintContext _paint_context;
-	COORD _last_mouse_click{};
-	wxMouseEvent _last_mouse_event;
-	std::wstring _text2clip;
-	ExclusiveHotkeys _exclusive_hotkeys;
-	std::atomic<bool> _has_focus{false};
-	MOUSE_EVENT_RECORD _prev_mouse_event;
-	DWORD _prev_mouse_event_ts;
-
-	WinPortFrame *_frame;
-	wxTimer* _periodic_timer;
-	bool _last_keydown_enqueued;
-	bool _initialized;
-	bool _adhoc_quickedit;
-	enum
-	{
-		RP_NONE,
-		RP_DEFER,
-		RP_INSTANT
-	} _resize_pending;
-	DWORD _mouse_state, _mouse_qedit_start_ticks, _mouse_qedit_moved;
-	COORD _mouse_qedit_start, _mouse_qedit_last;
-	
-	int _last_valid_display;
-	DWORD _refresh_rects_throttle;
-	unsigned int _pending_refreshes;
-	struct RefreshRects : std::vector<SMALL_RECT>, std::mutex {} _refresh_rects;
-};
-
-///////////////////////////////////////////
-
-class WinPortFrame: public wxFrame
-{
-public:
-    WinPortFrame(const wxString& title, const wxPoint& pos, const wxSize& size);
-	virtual ~WinPortFrame();
-	
-	void OnShow(wxShowEvent &show);
-	
-protected: 
-	void OnClose(wxCloseEvent &show);
-private:
-	enum {
-		ID_CTRL_BASE = 1,
-		ID_CTRL_END = ID_CTRL_BASE + 'Z' - 'A' + 1,
-		ID_CTRL_SHIFT_BASE,
-		ID_CTRL_SHIFT_END = ID_CTRL_SHIFT_BASE + 'Z' - 'A' + 1,
-		ID_ALT_BASE,
-		ID_ALT_END = ID_ALT_BASE + 'Z' - 'A' + 1
-	};
-	WinPortPanel		*_panel;
-	bool _shown;
-	wxMenuBar *_menu_bar;
-	std::vector<wxMenu *> _menus;
-
-	void OnChar( wxKeyEvent& event )
-	{
-		_panel->OnChar(event);
+	if (!g_winport_frame) {
+		return wxTheApp->GetTopWindow()->GetEventHandler();
 	}
-	
-	void OnAccelerator(wxCommandEvent& event);
-	void OnPaint( wxPaintEvent& event ) {}
-	void OnEraseBackground( wxEraseEvent& event ) {}
-	
-    wxDECLARE_EVENT_TABLE();
-};
 
+	return g_winport_frame->GetEventHandler();
+}
+
+bool WinPortApp::OnInit()
+{
+	g_winport_frame = new WinPortFrame("WinPortApp", wxDefaultPosition, wxDefaultSize );
+//    WinPortFrame *frame = new WinPortFrame( "WinPortApp", wxPoint(50, 50), wxSize(800, 600) );
+	g_winport_frame->Show( true );
+	if (g_broadway)
+		g_winport_frame->Maximize();
+		
+	return true;
+}
+
+////////////////////////////////////////// frame
 
 wxBEGIN_EVENT_TABLE(WinPortFrame, wxFrame)
+	EVT_ERASE_BACKGROUND(WinPortFrame::OnEraseBackground)
 	EVT_PAINT(WinPortFrame::OnPaint)
 	EVT_SHOW(WinPortFrame::OnShow)
 	EVT_CLOSE(WinPortFrame::OnClose)
-	EVT_ERASE_BACKGROUND(WinPortFrame::OnEraseBackground)
 	EVT_CHAR(WinPortFrame::OnChar)
 	EVT_MENU_RANGE(ID_CTRL_BASE, ID_CTRL_END, WinPortFrame::OnAccelerator)
 	EVT_MENU_RANGE(ID_CTRL_SHIFT_BASE, ID_CTRL_SHIFT_END, WinPortFrame::OnAccelerator)
 	EVT_MENU_RANGE(ID_ALT_BASE, ID_ALT_END, WinPortFrame::OnAccelerator)
 wxEND_EVENT_TABLE()
+
+WinPortFrame::WinPortFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
+        : wxFrame(NULL, wxID_ANY, title, pos, size), _shown(false), 
+		_menu_bar(nullptr)
+{
+	_panel = new WinPortPanel(this, wxPoint(0, 0), GetClientSize());
+	_panel->SetFocus();
+	SetBackgroundColour(*wxBLACK);
+}
+
+WinPortFrame::~WinPortFrame()
+{
+	SetMenuBar(nullptr);
+	delete _menu_bar;
+	delete _panel;
+	_panel = NULL;
+}
+
+void WinPortFrame::OnEraseBackground(wxEraseEvent &event)
+{
+}
+
+void WinPortFrame::OnPaint(wxPaintEvent &event)
+{
+	wxPaintDC dc(this);
+}
+
+void WinPortFrame::OnChar(wxKeyEvent &event)
+{
+	_panel->OnChar(event);
+}
 
 void WinPortFrame::OnShow(wxShowEvent &show)
 {
@@ -453,24 +341,6 @@ void WinPortFrame::OnClose(wxCloseEvent &event)
 	}
 }
 
-WinPortFrame::WinPortFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
-        : wxFrame(NULL, wxID_ANY, title, pos, size), _shown(false), 
-		_menu_bar(nullptr)
-{
-	_panel = new WinPortPanel(this, wxPoint(0, 0), GetClientSize());
-	_panel->SetFocus();
-	SetBackgroundColour(*wxBLACK);
-}
-
-WinPortFrame::~WinPortFrame()
-{
-	SetMenuBar(nullptr);
-	delete _menu_bar;
-	delete _panel;
-	_panel = NULL;
-}
-
-	
 void WinPortFrame::OnAccelerator(wxCommandEvent& event)
 {
 	INPUT_RECORD ir = {};
@@ -502,13 +372,11 @@ void WinPortFrame::OnAccelerator(wxCommandEvent& event)
 	g_winport_con_in->Enqueue(&ir, 1);
 }
 
-////////////////////////////
-
-
+////////////////////////////////////////// panel
 
 wxBEGIN_EVENT_TABLE(WinPortPanel, wxPanel)
 	EVT_COMMAND(wxID_ANY, WX_CONSOLE_INITIALIZED, WinPortPanel::OnInitialized)
-	EVT_TIMER(TIMER_ID_PERIODIC, WinPortPanel::OnTimerPeriodic)
+	EVT_TIMER(TIMER_ID, WinPortPanel::OnTimerPeriodic)
 	EVT_COMMAND(wxID_ANY, WX_CONSOLE_REFRESH, WinPortPanel::OnRefreshSync)
 	EVT_COMMAND(wxID_ANY, WX_CONSOLE_WINDOW_MOVED, WinPortPanel::OnWindowMovedSync)
 	EVT_COMMAND(wxID_ANY, WX_CONSOLE_RESIZED, WinPortPanel::OnConsoleResizedSync)
@@ -528,34 +396,7 @@ wxBEGIN_EVENT_TABLE(WinPortPanel, wxPanel)
 	EVT_MOUSE_EVENTS(WinPortPanel::OnMouse )
 	EVT_SET_FOCUS(WinPortPanel::OnSetFocus )
 	EVT_KILL_FOCUS(WinPortPanel::OnKillFocus )
-
 wxEND_EVENT_TABLE()
-
-wxIMPLEMENT_APP_NO_MAIN(WinPortApp);
-
-
-static WinPortFrame *g_winport_frame = nullptr;
-
-wxEvtHandler *WinPort_EventHandler()
-{
-	if (!g_winport_frame) {
-		return wxTheApp->GetTopWindow()->GetEventHandler();
-	}
-
-	return g_winport_frame->GetEventHandler();
-}
-
-bool WinPortApp::OnInit()
-{
-	g_winport_frame = new WinPortFrame("WinPortApp", wxDefaultPosition, wxDefaultSize );
-//    WinPortFrame *frame = new WinPortFrame( "WinPortApp", wxPoint(50, 50), wxSize(800, 600) );
-	g_winport_frame->Show( true );
-	if (g_broadway)
-		g_winport_frame->Maximize();
-		
-	return true;
-}
-
 
 
 ///////////////////////////
@@ -566,11 +407,11 @@ WinPortPanel::WinPortPanel(WinPortFrame *frame, const wxPoint& pos, const wxSize
 		_paint_context(this), _has_focus(true), _prev_mouse_event_ts(0), _frame(frame), _periodic_timer(NULL),
 		_last_keydown_enqueued(false), _initialized(false), _adhoc_quickedit(false),
 		_resize_pending(RP_NONE),  _mouse_state(0), _mouse_qedit_start_ticks(0), _mouse_qedit_moved(false), _last_valid_display(0),
-		_refresh_rects_throttle(0), _pending_refreshes(0)
+		_refresh_rects_throttle(0), _pending_refreshes(0), _repaint_on_next_timer(false), _timer_idling_counter(0), _stolen_key(0)
 {
 	g_winport_con_out->SetBackend(this);
-	_periodic_timer = new wxTimer(this, TIMER_ID_PERIODIC);
-	_periodic_timer->Start(500);
+	_periodic_timer = new wxTimer(this, TIMER_ID);
+	_periodic_timer->Start(TIMER_PERIOD);
 	OnConsoleOutputTitleChanged();
 }
 
@@ -623,14 +464,18 @@ bool WinPortPanel::OnConsoleSetFKeyTitles(const char **titles)
 	if (!wxIsMainThread()) {
 		auto fn = std::bind(&WinPortPanel::OnConsoleSetFKeyTitles, this, titles);
 		return CallInMain<bool>(fn);
-
-	} else {
-#ifdef __APPLE__
-		return Touchbar_SetTitles(titles);
-#else
-		return false;
-#endif
 	}
+
+#ifdef __APPLE__
+	return Touchbar_SetTitles(titles);
+#else
+	return false;
+#endif
+}
+
+BYTE WinPortPanel::OnConsoleGetColorPalette()
+{
+	return 24;
 }
 
 void WinPortPanel::OnTouchbarKey(bool alternate, int index)
@@ -733,6 +578,24 @@ void WinPortPanel::OnTimerPeriodic(wxTimerEvent& event)
 		DamageAreaBetween(_mouse_qedit_start, _mouse_qedit_last);
 	}
 	_paint_context.BlinkCursor();
+	if (_repaint_on_next_timer) {
+		_repaint_on_next_timer = false;
+		Refresh(false);
+		Update();
+	}
+	++_timer_idling_counter;
+	// stop timer if counter reached limit and cursor is visible and no other timer-dependent things remained
+	if (_timer_idling_counter >= TIMER_IDLING_CYCLES && _paint_context.CursorBlinkState() && _text2clip.empty()) {
+		_periodic_timer->Stop();
+	}
+}
+
+void WinPortPanel::ResetTimerIdling()
+{
+	if (_timer_idling_counter >= TIMER_IDLING_CYCLES && !_periodic_timer->IsRunning()) {
+		_periodic_timer->Start(TIMER_PERIOD);
+	}
+	_timer_idling_counter = 0;
 }
 
 static int ProcessAllEvents()
@@ -979,6 +842,10 @@ void WinPortPanel::OnTitleChangedSync( wxCommandEvent& event )
 	const std::wstring &title = g_winport_con_out->GetTitle();
 	wxGetApp().SetAppDisplayName(title.c_str());
 	_frame->SetTitle(title.c_str());
+	if (g_remote) { // under xrdp/forwarded x11 (repro?) - force full repaint after some time to workaround #1303
+		_repaint_on_next_timer = true;
+		ResetTimerIdling();
+	}
 }
 
 
@@ -993,7 +860,8 @@ static bool IsForcedCharTranslation(int code)
 }
 
 void WinPortPanel::OnKeyDown( wxKeyEvent& event )
-{	
+{
+	ResetTimerIdling();
 	DWORD now = WINPORT(GetTickCount)();
 	const auto uni = event.GetUnicodeKey();
 	fprintf(stderr, "OnKeyDown: raw=%x code=%x uni=%x (%lc) ts=%lu [now=%u]",
@@ -1019,6 +887,24 @@ void WinPortPanel::OnKeyDown( wxKeyEvent& event )
 		event.Skip();
 		return;
 	}
+
+#ifdef __APPLE__
+	if (!event.RawControlDown() && !event.ShiftDown() && !event.MetaDown() && !event.AltDown() && event.CmdDown()
+		&& (uni == 'H' || uni == 'Q')) {
+		fprintf(stderr, " Cmd+%lc\n", uni);
+		ResetInputState();
+		event.Skip();
+		_stolen_key = uni;
+		if (uni == 'Q') {
+			_frame->Close();
+		} else {
+			MacHide();
+			//_frame->Hide();
+		}
+		return;
+	}
+#endif
+	_stolen_key = 0;
 
 	_key_tracker.OnKeyDown(event, now);
 	if (_key_tracker.Composing()) {
@@ -1084,6 +970,7 @@ void WinPortPanel::OnKeyDown( wxKeyEvent& event )
 
 void WinPortPanel::OnKeyUp( wxKeyEvent& event )
 {
+	ResetTimerIdling();
 	const auto uni = event.GetUnicodeKey();
 	fprintf(stderr, "OnKeyUp: raw=%x code=%x uni=%x (%lc) ts=%lu",
 		event.GetRawKeyCode(), event.GetKeyCode(),
@@ -1100,6 +987,12 @@ void WinPortPanel::OnKeyUp( wxKeyEvent& event )
 	const bool was_pressed = _key_tracker.OnKeyUp(event);
 	if (composing) {
 		fprintf(stderr, " COMPOSING\n");
+		event.Skip();
+		return;
+	}
+
+	if (_stolen_key && _stolen_key == uni) {
+		fprintf(stderr, " STOLEN\n");
 		event.Skip();
 		return;
 	}
@@ -1141,6 +1034,7 @@ void WinPortPanel::OnKeyUp( wxKeyEvent& event )
 
 void WinPortPanel::OnChar( wxKeyEvent& event )
 {
+	ResetTimerIdling();
 	const auto uni = event.GetUnicodeKey();
 	fprintf(stderr, "OnChar: raw=%x code=%x uni=%x (%lc) ts=%lu lke=%u",
 		event.GetRawKeyCode(), event.GetKeyCode(),
@@ -1149,6 +1043,11 @@ void WinPortPanel::OnChar( wxKeyEvent& event )
 
 	if (event.GetSkipped()) {
 		fprintf(stderr, " SKIPPED\n");
+		return;
+	}
+	if (_stolen_key && _stolen_key == uni) {
+		fprintf(stderr, " STOLEN\n");
+		event.Skip();
 		return;
 	}
 	fprintf(stderr, "\n");
@@ -1208,6 +1107,7 @@ void WinPortPanel::OnSize(wxSizeEvent &event)
 		CheckForResizePending();
 	} else {
 		_resize_pending = RP_DEFER;	
+		ResetTimerIdling();
 		//fprintf(stderr, "RP_DEFER\n");
 	}
 }
@@ -1233,6 +1133,8 @@ COORD WinPortPanel::TranslateMousePosition( wxMouseEvent &event )
 
 void WinPortPanel::OnMouse( wxMouseEvent &event )
 {
+	ResetTimerIdling();
+
 	COORD pos_char = TranslateMousePosition( event );
 	
 	DWORD mode = 0;
@@ -1359,8 +1261,13 @@ void WinPortPanel::OnMouseQEdit( wxMouseEvent &event, COORD pos_char )
 					}
 					for (pos.X = x1; pos.X<=x2; ++pos.X) {
 						CHAR_INFO ch;
-						if (g_winport_con_out->Read(ch, pos))
-							_text2clip+= ch.Char.UnicodeChar ? ch.Char.UnicodeChar : L' ';
+						if (g_winport_con_out->Read(ch, pos)) {
+							if (CI_USING_COMPOSITE_CHAR(ch)) {
+								_text2clip+= WINPORT(CompositeCharLookup)(ch.Char.UnicodeChar);
+							} else if (ch.Char.UnicodeChar) {
+								_text2clip+= ch.Char.UnicodeChar;
+							}
+						}
 					}
 					if (y2 > y1) {
 						while (!_text2clip.empty() && _text2clip[_text2clip.size() - 1] == ' ') {
@@ -1555,12 +1462,18 @@ void WinPortPanel::CheckPutText2CLip()
 void WinPortPanel::OnSetFocus( wxFocusEvent &event )
 {
 	_has_focus = true;
+	ResetTimerIdling();
 }
 
 void WinPortPanel::OnKillFocus( wxFocusEvent &event )
 {
 	fprintf(stderr, "OnKillFocus\n");
 	_has_focus = false;
+	ResetInputState();
+}
+
+void WinPortPanel::ResetInputState()
+{
 	_key_tracker.ForceAllUp();
 	
 	if (_mouse_qedit_start_ticks) {

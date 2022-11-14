@@ -78,16 +78,16 @@ static WCHAR eol[2] = {'\r', '\n'};
 class ExecClassifier
 {
 	bool _dir, _file, _executable, _prefixed;
-	
+
 	bool IsExecutableByExtension(const char *s)
 	{
 		s = strrchr(s, '.');
 		if (!s || strchr(s, GOOD_SLASH))
 			return true;//assume files without extension to be scripts
-			
+
 		return (strcmp(s, ".sh")==0 || strcasecmp(s, ".pl")==0|| strcasecmp(s, ".py")==0);//todo: extend
 	}
-	
+
 public:
 	ExecClassifier(const char *cmd, bool direct)
 		: _dir(false), _file(false), _executable(false), _prefixed(false)
@@ -147,7 +147,7 @@ public:
 
 			} else {
 				_executable = IsExecutableByExtension(arg0.c_str());
-				fprintf(stderr, "ExecClassifier('%s') - unknown: %02x %02x %02x %02x assumed %sexecutable\n", 
+				fprintf(stderr, "ExecClassifier('%s') - unknown: %02x %02x %02x %02x assumed %sexecutable\n",
 					cmd, (unsigned)buf[0], (unsigned)buf[1], (unsigned)buf[2], (unsigned)buf[3],
 						_executable ? "" : "not ");
 			}
@@ -156,7 +156,7 @@ public:
 			fprintf(stderr, "ExecClassifier('%s') - not executable mode=0x%x\n", cmd, s.st_mode);
 		}
 	}
-	
+
 	bool IsPrefixed() const {return _prefixed; }
 	bool IsFile() const {return _file; }
 	bool IsDir() const {return _dir; }
@@ -170,7 +170,7 @@ bool IsDirectExecutableFilePath(const char *path)
 	return ec.IsExecutable();
 }
 
-static void CallExec(const char *CmdStr) 
+static void CallExec(const char *CmdStr)
 {
 	int r = execl("/bin/sh", "sh", "-c", CmdStr, NULL);
 	fprintf(stderr, "CallExec: execl returned %d errno %u\n", r, errno);
@@ -187,7 +187,7 @@ static int NotVTExecute(const char *CmdStr, bool NoWait, bool NeedSudo)
 // DEBUG
 //	fdr = open(DEVNULL, O_RDONLY);
 //	if (fdr==-1) perror("stdin error opening " DEVNULL);
-	
+
 	//let debug out go to console
 //	fdw = open(DEVNULL, O_WRONLY);
 	//if (fdw==-1) perror("open stdout error");
@@ -197,7 +197,7 @@ static int NotVTExecute(const char *CmdStr, bool NoWait, bool NeedSudo)
 			dup2(fdr, STDIN_FILENO);
 			close(fdr);
 		}
-			
+
 		if (fdw!=-1) {
 			dup2(fdw, STDOUT_FILENO);
 			dup2(fdw, STDERR_FILENO);
@@ -253,7 +253,7 @@ static int farExecuteASynched(const char *CmdStr, unsigned int ExecFlags)
 		}
 		WINPORT(WriteConsole)( NULL, &eol[0], ARRAYSIZE(eol), &dw, NULL );
 		WINPORT(SetConsoleFKeyTitles)(NULL);
-		
+
 		if (ExecFlags & (EF_NOWAIT|EF_HIDEOUT) ) {
 			r = NotVTExecute(CmdStr, (ExecFlags & EF_NOWAIT) != 0, (ExecFlags & EF_SUDO) != 0);
 		} else {
@@ -262,7 +262,7 @@ static int farExecuteASynched(const char *CmdStr, unsigned int ExecFlags)
 		if ((ExecFlags & EF_NOTIFY) && Opt.NotifOpt.OnConsole) {
 			DisplayNotification( (r == 0) ? Msg::ConsoleCommandComplete : Msg::ConsoleCommandFailed, CmdStr);
 		}
-		WINPORT(SetConsoleMode)( NULL, saved_mode | 
+		WINPORT(SetConsoleMode)( NULL, saved_mode |
 			ENABLE_PROCESSED_OUTPUT | ENABLE_WRAP_AT_EOL_OUTPUT );
 		WINPORT(WriteConsole)( NULL, &eol[0], ARRAYSIZE(eol), &dw, NULL );
 		WINPORT(SetConsoleMode)(NULL, saved_mode);
@@ -278,7 +278,7 @@ static int farExecuteASynched(const char *CmdStr, unsigned int ExecFlags)
 		}
 	}
 	fprintf(stderr, "farExecuteA:('%s', 0x%x): r=%d\n", CmdStr, ExecFlags, r);
-	
+
 	return r;
 }
 
@@ -418,8 +418,8 @@ int CommandLine::CmdExecute(const wchar_t *CmdLine, bool SeparateWindow, bool Di
 
 		SetString(L"", FALSE);
 		SaveBackground();
-		
-		r = -1; 
+
+		r = -1;
 	} else {
 		CtrlObject->CmdLine->SetString(L"", TRUE);
 		char cd_prev[MAX_PATH + 1] = {'.', 0};
@@ -468,9 +468,9 @@ int CommandLine::CmdExecute(const wchar_t *CmdLine, bool SeparateWindow, bool Di
 	if (!Flags.Check(FCMDOBJ_LOCKUPDATEPANEL) && CtrlObject) {
 		ShellUpdatePanels(CtrlObject->Cp()->ActivePanel, FALSE);
 		CtrlObject->MainKeyBar->Refresh(Opt.ShowKeyBar);
-		
+
 	}
-	
+
 	return r;
 }
 
@@ -483,33 +483,3 @@ bool ProcessOSAliases(FARString &strStr)
 {
 	return false;
 }
-
-bool POpen(std::vector<std::wstring> &result, const char *command)
-{
-	FILE *f = popen(command, "r");
-	if (!f) {
-		perror("POpen: popen");
-		return false;
-	}
-
-	char buf[0x400] = { };
-	while (fgets(buf, sizeof(buf)-1, f)) {
-		size_t l = strlen(buf);
-		while (l && (buf[l-1]=='\r' || buf[l-1]=='\n')) --l;
-		if (l) {
-			buf[l] = 0;
-			std::wstring line = MB2Wide(buf);
-			while (line.size() > 40) {
-				size_t p = line.find(L',' , 30);
-				if (p==std::string::npos) break;
-				result.emplace_back( line.substr(0, p) );
-				line.erase(0, p + 1);
-			}
-
-			if (!line.empty()) result.push_back( line );
-		}
-	}
-	pclose(f);
-	return true;
-}
-

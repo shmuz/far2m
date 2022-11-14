@@ -134,6 +134,8 @@ size_t WriteAll(int fd, const void *data, size_t len, size_t chunk = (size_t)-1)
 size_t ReadAll(int fd, void *data, size_t len);
 ssize_t ReadWritePiece(int fd_src, int fd_dst);
 
+bool ReadWholeFile(const char *path, std::string &result, size_t limit = (size_t)-1);
+
 
 int pipe_cloexec(int pipedes[2]);
 
@@ -234,22 +236,22 @@ template <class CharT>
 }
 
 template <class CharT>
-	void StrTrimRight(std::basic_string<CharT> &str, const CharT *spaces = " \t")
+	void StrTrimRight(std::basic_string<CharT> &str, const char *spaces = " \t")
 {
-	while (!str.empty() && strchr(spaces, str[str.size() - 1]) != NULL) {
-		str.resize(str.size() - 1);
+	while (!str.empty() && unsigned(str.back()) <= 0x7f && strchr(spaces, str.back()) != NULL) {
+		str.pop_back();
 	}
 }
 template <class CharT>
-	void StrTrimLeft(std::basic_string<CharT> &str, const CharT *spaces = " \t")
+	void StrTrimLeft(std::basic_string<CharT> &str, const char *spaces = " \t")
 {
-	while (!str.empty() && strchr(spaces, str[0]) != NULL) {
+	while (!str.empty() && unsigned(str[0]) <= 0x7f && strchr(spaces, str[0]) != NULL) {
 		str.erase(0, 1);
 	}
 }
 
 template <class CharT>
-	void StrTrim(std::basic_string<CharT> &str, const CharT *spaces = " \t")
+	void StrTrim(std::basic_string<CharT> &str, const char *spaces = " \t")
 {
 	StrTrimRight(str, spaces);
 	StrTrimLeft(str, spaces);
@@ -331,4 +333,12 @@ template <typename ARRAY_T, class CHAR_T>
 	dst[i] = 0;
 }
 
+bool POpen(std::string &result, const char *command);
+bool POpen(std::vector<std::wstring> &result, const char *command);
+
 #define DBGLINE fprintf(stderr, "%d %d @%s\n", getpid(), __LINE__, __FILE__)
+
+bool IsCharFullWidth(wchar_t c);
+bool IsCharPrefix(wchar_t c);
+bool IsCharSuffix(wchar_t c);
+bool IsCharXxxfix(wchar_t c);

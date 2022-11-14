@@ -94,7 +94,7 @@ static int64_t _wtoi64(const wchar_t *w)
 	return wcstoll(w, &endptr, 10);
 }
 
-#ifndef __CYGWIN__
+#ifndef __CYGWIN__	
 static char * itoa(int i, char *a, int radix)
 {
 	switch (radix) {
@@ -116,53 +116,56 @@ static char * _i64toa(int64_t i, char *a, int radix)
 
 static wchar_t * _i64tow(int64_t i, wchar_t *w, int radix)
 {
-        int neg = i<0;
-        if (i==0) {
-                w[0] = '0';
-                w[1] = 0;
-                return w;
-        }
-        if (neg) {
-                *w++ = '-';
-                i = -i;
-        }
+	int neg;
+	if (i==0) {
+		w[0] = '0';
+		w[1] = 0;
+		return w;
+	}
 
-        for (int64_t j = i; j; j/= radix) ++w;
+	neg = i < 0;
+	if (neg) {
+		*w++ = '-';
+		i = -i;
+	}
 
-        for (*w=0; i; i/= radix) {
-                unsigned int d = i % radix;
-                --w;
-                if (d<=9) *w = d + '0';
-                else *w = d - 10 + 'a';
-        }
+	for (int64_t j = i; j; j/= radix) ++w;
+	*w = 0;
+	for (; i; i/= radix) {
+		unsigned int d = i % radix;
+		--w;
+		if (d<=9) *w = d + '0';
+		else *w = d - 10 + 'a';
+	}
 
-        return neg ? w-1 : w;
+	return neg ? w-1 : w;
 }
 
 
 static wchar_t * _itow(int i, wchar_t *w, int radix)
 {
-        int neg = i<0;
-        if (i==0) {
-                w[0] = '0';
-                w[1] = 0;
-                return w;
-        }
-        if (neg) {
-                *w++ = '-';
-                i = -i;
-        }
+	int neg;
+	if (i==0) {
+		w[0] = '0';
+		w[1] = 0;
+		return w;
+	}
+	neg = i<0;
+	if (neg) {
+		*w++ = '-';
+		i = -i;
+	}
 
-        for (int j = i; j; j/= radix) ++w;
+	for (int j = i; j; j/= radix) ++w;
+	*w = 0;
+	for (; i; i/= radix) {
+		unsigned int d = i % radix;
+		--w;
+		if (d<=9) *w = d + '0';
+		else *w = d - 10 + 'a';
+	}
 
-        for (*w=0; i; i/= radix) {
-                unsigned int d = i % radix;
-                --w;
-                if (d<=9) *w = d + '0';
-                else *w = d - 10 + 'a';
-        }
-
-        return neg ? w-1 : w;
+	return neg ? w-1 : w;
 }
 
 static const void *_lfind(
@@ -279,7 +282,7 @@ typedef SHORT *PSHORT;
 typedef LONGLONG *PLONGLONG;
 typedef ULONGLONG *PULONGLONG;
 
-#define TCHAR WCHAR
+#define TCHAR WCHAR 
 
 #define CONST const
 
@@ -463,7 +466,7 @@ typedef struct _SMALL_RECT {
 typedef struct _CONSOLE_SCREEN_BUFFER_INFO {
     COORD dwSize;
     COORD dwCursorPosition;
-    WORD  wAttributes;
+    DWORD64  wAttributes;
     SMALL_RECT srWindow;
     COORD dwMaximumWindowSize;
 } CONSOLE_SCREEN_BUFFER_INFO, *PCONSOLE_SCREEN_BUFFER_INFO;
@@ -473,14 +476,43 @@ typedef struct _CONSOLE_CURSOR_INFO {
     BOOL   bVisible;
 } CONSOLE_CURSOR_INFO, *PCONSOLE_CURSOR_INFO;
 
+typedef DWORD64 COMP_CHAR;
+
 typedef struct _CHAR_INFO {
     union {
-        WCHAR UnicodeChar;
+        // WCHAR or result of CompositeCharRegister() can be differentiated
+        // using CI_USING_COMPOSITE_CHAR() that checks presence of highest bit
+        // to change this field better use CI_SET_WCHAR/CI_SET_WCATTR/CI_SET_COMPOSITE
+        // that guards against unwanted sign extension if casting from wchar_t
+        COMP_CHAR UnicodeChar;
         CHAR   AsciiChar;
     } Char;
-    WORD Attributes;
+
+    // low 16 bits - usual attributes, followed by two 24-bit RGB colors that used
+    // if FOREGROUND_TRUECOLOR/BACKGROUND_TRUECOLOR defined and backend supports truecolor
+    DWORD64 Attributes;
 } CHAR_INFO, *PCHAR_INFO;
 
+#define COMPOSITE_CHAR_MARK (COMP_CHAR(1) << 63)
+
+#define CI_SET_ATTR(CI, ATTR)       { (CI).Attributes = (DWORD64)ATTR; }
+#define CI_SET_WCHAR(CI, WC)        { (CI).Char.UnicodeChar = (COMP_CHAR)(uint32_t)(WC); }
+#define CI_SET_COMPOSITE(CI, PWC)   { (CI).Char.UnicodeChar = WINPORT(CompositeCharRegister)(PWC); }
+
+#define CI_SET_WCATTR(CI, WC, ATTR) {(CI).Char.UnicodeChar = (COMP_CHAR)(uint32_t)(WC); (CI).Attributes = (DWORD64)ATTR;}
+
+#define CI_USING_COMPOSITE_CHAR(CI) ( ((CI).Char.UnicodeChar & COMPOSITE_CHAR_MARK) != 0 )
+#define CI_FULL_WIDTH_CHAR(CI) ( (!CI_USING_COMPOSITE_CHAR(CI) && IsCharFullWidth((CI).Char.UnicodeChar)) \
+	|| (CI_USING_COMPOSITE_CHAR(CI) && IsCharFullWidth(*WINPORT(CompositeCharLookup)((CI).Char.UnicodeChar))))
+
+#define GET_RGB_FORE(ATTR)       ((DWORD)(((ATTR) >> 16) & 0xffffff))
+#define GET_RGB_BACK(ATTR)       ((DWORD)(((ATTR) >> 40) & 0xffffff))
+#define SET_RGB_FORE(ATTR, RGB)  \
+	((ATTR) = ((ATTR) & 0xffffff000000ffff) | FOREGROUND_TRUECOLOR | ((((DWORD64)(RGB)) & 0xffffff) << 16))
+#define SET_RGB_BACK(ATTR, RGB)  \
+	((ATTR) = ((ATTR) & 0x000000ffffffffff) | BACKGROUND_TRUECOLOR | ((((DWORD64)(RGB)) & 0xffffff) << 40))
+#define SET_RGB_BOTH(ATTR, RGB_FORE, RGB_BACK)  \
+	((ATTR) = ((ATTR) & 0xffff) | FOREGROUND_TRUECOLOR | BACKGROUND_TRUECOLOR | ((((DWORD64)(RGB_FORE)) & 0xffffff) << 16) | ((((DWORD64)(RGB_BACK)) & 0xffffff) << 40) )
 
 typedef struct _WINDOW_BUFFER_SIZE_RECORD {
     COORD dwSize;
@@ -575,15 +607,18 @@ typedef struct _INPUT_RECORD {
 #define BACKGROUND_GREEN     0x0020 // background color contains green.
 #define BACKGROUND_RED       0x0040 // background color contains red.
 #define BACKGROUND_INTENSITY 0x0080 // background color is intensified.
-#define COMMON_LVB_LEADING_BYTE    0x0100 // Leading Byte of DBCS
-#define COMMON_LVB_TRAILING_BYTE   0x0200 // Trailing Byte of DBCS
-#define COMMON_LVB_GRID_HORIZONTAL 0x0400 // DBCS: Grid attribute: top horizontal.
-#define COMMON_LVB_GRID_LVERTICAL  0x0800 // DBCS: Grid attribute: left vertical.
-#define COMMON_LVB_GRID_RVERTICAL  0x1000 // DBCS: Grid attribute: right vertical.
-#define COMMON_LVB_REVERSE_VIDEO   0x4000 // DBCS: Reverse fore/back ground attribute.
-#define COMMON_LVB_UNDERSCORE      0x8000 // DBCS: Underscore.
+#define FOREGROUND_TRUECOLOR    0x0100 // Use 24 bit RGB colors set by SET_RGB_FORE
+#define BACKGROUND_TRUECOLOR    0x0200 // Use 24 bit RGB colors set by SET_RGB_BACK
+#define COMMON_LVB_REVERSE_VIDEO   0x4000 // Reverse fore/back ground attribute.
+#define COMMON_LVB_UNDERSCORE      0x8000 // Underscore.
+#define COMMON_LVB_STRIKEOUT       0x2000 // Striekout.
 
-#define COMMON_LVB_SBCSDBCS        0x0300 // SBCS or DBCS flag.
+// Constants below not implemented and their bit values are reserved and must be zero-inited
+// #define COMMON_LVB_GRID_HORIZONTAL
+// #define COMMON_LVB_GRID_LVERTICAL
+// #define COMMON_LVB_GRID_RVERTICAL
+// #define COMMON_LVB_SBCSDBCS
+
 
 
 //
@@ -630,9 +665,9 @@ typedef struct _INPUT_RECORD {
 #define CSTR_EQUAL                2           // string 1 equal to string 2
 #define CSTR_GREATER_THAN         3           // string 1 greater than string 2
 
-#define WINAPI
+#define WINAPI	
 #define WINAPIV
-#define CALLBACK
+#define CALLBACK 
 #define PASCAL
 
 
@@ -996,36 +1031,36 @@ typedef void *HMODULE;
 #define FILE_ALL_ACCESS (STANDARD_RIGHTS_REQUIRED | SYNCHRONIZE | 0x1FF)
 
 
-#define FILE_SHARE_READ                 0x00000001
-#define FILE_SHARE_WRITE                0x00000002
-#define FILE_SHARE_DELETE               0x00000004
-#define FILE_ATTRIBUTE_READONLY             0x00000001
-#define FILE_ATTRIBUTE_HIDDEN               0x00000002
-#define FILE_ATTRIBUTE_SYSTEM               0x00000004
-#define FILE_ATTRIBUTE_DIRECTORY            0x00000010
-#define FILE_ATTRIBUTE_ARCHIVE              0x00000020
-#define FILE_ATTRIBUTE_DEVICE               0x00000040
-#define FILE_ATTRIBUTE_NORMAL               0x00000080
-#define FILE_ATTRIBUTE_TEMPORARY            0x00000100
-#define FILE_ATTRIBUTE_SPARSE_FILE          0x00000200
-#define FILE_ATTRIBUTE_REPARSE_POINT        0x00000400
-#define FILE_ATTRIBUTE_COMPRESSED           0x00000800
-#define FILE_ATTRIBUTE_OFFLINE              0x00001000
-#define FILE_ATTRIBUTE_NOT_CONTENT_INDEXED  0x00002000
-#define FILE_ATTRIBUTE_ENCRYPTED            0x00004000
-#define FILE_ATTRIBUTE_INTEGRITY_STREAM     0x00008000
-#define FILE_ATTRIBUTE_VIRTUAL              0x00010000
-#define FILE_ATTRIBUTE_NO_SCRUB_DATA        0x00020000
-#define FILE_ATTRIBUTE_BROKEN               0x00200000
-#define FILE_ATTRIBUTE_EXECUTABLE           0x00400000
+#define FILE_SHARE_READ                 0x00000001  
+#define FILE_SHARE_WRITE                0x00000002  
+#define FILE_SHARE_DELETE               0x00000004  
+#define FILE_ATTRIBUTE_READONLY             0x00000001  
+#define FILE_ATTRIBUTE_HIDDEN               0x00000002  
+#define FILE_ATTRIBUTE_SYSTEM               0x00000004  
+#define FILE_ATTRIBUTE_DIRECTORY            0x00000010  
+#define FILE_ATTRIBUTE_ARCHIVE              0x00000020  
+#define FILE_ATTRIBUTE_DEVICE               0x00000040  
+#define FILE_ATTRIBUTE_NORMAL               0x00000080  
+#define FILE_ATTRIBUTE_TEMPORARY            0x00000100  
+#define FILE_ATTRIBUTE_SPARSE_FILE          0x00000200  
+#define FILE_ATTRIBUTE_REPARSE_POINT        0x00000400  
+#define FILE_ATTRIBUTE_COMPRESSED           0x00000800  
+#define FILE_ATTRIBUTE_OFFLINE              0x00001000  
+#define FILE_ATTRIBUTE_NOT_CONTENT_INDEXED  0x00002000  
+#define FILE_ATTRIBUTE_ENCRYPTED            0x00004000  
+#define FILE_ATTRIBUTE_INTEGRITY_STREAM     0x00008000  
+#define FILE_ATTRIBUTE_VIRTUAL              0x00010000  
+#define FILE_ATTRIBUTE_NO_SCRUB_DATA        0x00020000  
+#define FILE_ATTRIBUTE_BROKEN               0x00200000  
+#define FILE_ATTRIBUTE_EXECUTABLE           0x00400000  
 
-#define FILE_FILE_COMPRESSION               0x00000010
-#define FILE_SUPPORTS_SPARSE_FILES          0x00000040
-#define FILE_SUPPORTS_REPARSE_POINTS        0x00000080
-#define FILE_SUPPORTS_REMOTE_STORAGE        0x00000100
-#define FILE_SUPPORTS_ENCRYPTION            0x00020000
+#define FILE_FILE_COMPRESSION               0x00000010  
+#define FILE_SUPPORTS_SPARSE_FILES          0x00000040  
+#define FILE_SUPPORTS_REPARSE_POINTS        0x00000080  
+#define FILE_SUPPORTS_REMOTE_STORAGE        0x00000100  
+#define FILE_SUPPORTS_ENCRYPTION            0x00020000  
 
-
+ 
 #define FILE_FLAG_WRITE_THROUGH         0x80000000
 #define FILE_FLAG_OVERLAPPED            0x40000000
 #define FILE_FLAG_NO_BUFFERING          0x20000000
@@ -1187,14 +1222,14 @@ typedef void *HKL;
 #define HKEY_PERFORMANCE_NLSTEXT            (( HKEY ) (ULONG_PTR)((LONG)0x80000060) )
 
 
-#define COMPRESSION_FORMAT_NONE          (0x0000)
-#define COMPRESSION_FORMAT_DEFAULT       (0x0001)
-#define COMPRESSION_FORMAT_LZNT1         (0x0002)
-#define COMPRESSION_FORMAT_XPRESS        (0x0003)
-#define COMPRESSION_FORMAT_XPRESS_HUFF   (0x0004)
-#define COMPRESSION_ENGINE_STANDARD      (0x0000)
-#define COMPRESSION_ENGINE_MAXIMUM       (0x0100)
-#define COMPRESSION_ENGINE_HIBER         (0x0200)
+#define COMPRESSION_FORMAT_NONE          (0x0000)   
+#define COMPRESSION_FORMAT_DEFAULT       (0x0001)   
+#define COMPRESSION_FORMAT_LZNT1         (0x0002)   
+#define COMPRESSION_FORMAT_XPRESS        (0x0003)   
+#define COMPRESSION_FORMAT_XPRESS_HUFF   (0x0004)   
+#define COMPRESSION_ENGINE_STANDARD      (0x0000)   
+#define COMPRESSION_ENGINE_MAXIMUM       (0x0100)   
+#define COMPRESSION_ENGINE_HIBER         (0x0200)   
 
 
 #define IO_REPARSE_TAG_SYMLINK                  (0xA000000CL)
@@ -1353,19 +1388,19 @@ typedef LONG NTSTATUS;
 
 #define MAX_COMPUTERNAME_LENGTH 15
 
-#define FILE_NOTIFY_CHANGE_FILE_NAME    0x00000001
-#define FILE_NOTIFY_CHANGE_DIR_NAME     0x00000002
-#define FILE_NOTIFY_CHANGE_ATTRIBUTES   0x00000004
-#define FILE_NOTIFY_CHANGE_SIZE         0x00000008
-#define FILE_NOTIFY_CHANGE_LAST_WRITE   0x00000010
-#define FILE_NOTIFY_CHANGE_LAST_ACCESS  0x00000020
-#define FILE_NOTIFY_CHANGE_CREATION     0x00000040
-#define FILE_NOTIFY_CHANGE_SECURITY     0x00000100
-#define FILE_ACTION_ADDED                   0x00000001
-#define FILE_ACTION_REMOVED                 0x00000002
-#define FILE_ACTION_MODIFIED                0x00000003
-#define FILE_ACTION_RENAMED_OLD_NAME        0x00000004
-#define FILE_ACTION_RENAMED_NEW_NAME        0x00000005
+#define FILE_NOTIFY_CHANGE_FILE_NAME    0x00000001   
+#define FILE_NOTIFY_CHANGE_DIR_NAME     0x00000002   
+#define FILE_NOTIFY_CHANGE_ATTRIBUTES   0x00000004   
+#define FILE_NOTIFY_CHANGE_SIZE         0x00000008   
+#define FILE_NOTIFY_CHANGE_LAST_WRITE   0x00000010   
+#define FILE_NOTIFY_CHANGE_LAST_ACCESS  0x00000020   
+#define FILE_NOTIFY_CHANGE_CREATION     0x00000040   
+#define FILE_NOTIFY_CHANGE_SECURITY     0x00000100   
+#define FILE_ACTION_ADDED                   0x00000001   
+#define FILE_ACTION_REMOVED                 0x00000002   
+#define FILE_ACTION_MODIFIED                0x00000003   
+#define FILE_ACTION_RENAMED_OLD_NAME        0x00000004   
+#define FILE_ACTION_RENAMED_NEW_NAME        0x00000005 
 
 #ifndef MAPVK_VK_TO_VSC
 #define MAPVK_VK_TO_VSC 0
@@ -1517,8 +1552,8 @@ typedef LONG_PTR            LRESULT;
 #define LOCALE_USE_CP_ACP             0x40000000   // use the system ACP
 
 #define MAX_VKEY_CODE 0xffff
-//#define MINSHORT    0x8000
-#define MAXSHORT    0x7fff
+//#define MINSHORT    0x8000      
+#define MAXSHORT    0x7fff      
 #endif
 
 typedef DWORD (*WINPORT_THREAD_START_ROUTINE)(LPVOID lpThreadParameter);
@@ -1542,9 +1577,9 @@ typedef VOID (*PCONSOLE_SCROLL_CALLBACK)(PVOID pContext, unsigned int Width, CHA
 #define DECLARE_INTERFACE(iface)    struct iface
 #define DECLARE_INTERFACE_(iface, baseiface)    struct iface : public baseiface
 
-#define IS_SOCKET_NONBLOCKING_ERR(err)	((err)==EINPROGRESS || (err)==EWOULDBLOCK)
+#define IS_SOCKET_NONBLOCKING_ERR(err)	((err)==EINPROGRESS || (err)==EWOULDBLOCK) 
 
-#ifndef SOCKET
+#ifndef SOCKET 
 # define SOCKET		int
 #endif
 

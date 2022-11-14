@@ -28,8 +28,6 @@
 #include "FarTTY.h"
 #include "../FSClipboardBackend.h"
 
-bool IsUnstableWidthChar(wchar_t c);
-
 static volatile long s_terminal_size_change_id = 0;
 static TTYBackend * g_vtb = nullptr;
 
@@ -382,18 +380,6 @@ void TTYBackend::DispatchTermResized(TTYOutput &tty_out)
 	}
 }
 
-bool TTYBackend::IsUnstableWidthCharCached(wchar_t c)
-{
-	const size_t h = size_t(c) % ARRAYSIZE(_stable_width_chars_cache);
-	if (_stable_width_chars_cache[h] != c) {
-		if (IsUnstableWidthChar(c)) {
-			return true;
-		}
-		_stable_width_chars_cache[h] = c;
-	}
-	return false;
-}
-
 //#define LOG_OUTPUT_COUNT
 void TTYBackend::DispatchOutput(TTYOutput &tty_out)
 {
@@ -404,7 +390,7 @@ void TTYBackend::DispatchOutput(TTYOutput &tty_out)
 	SMALL_RECT screen_rect = {0, 0, CheckedCast<SHORT>(_cur_width - 1), CheckedCast<SHORT>(_cur_height - 1)};
 	g_winport_con_out->Read(&_cur_output[0], data_size, data_pos, screen_rect);
 #ifdef LOG_OUTPUT_COUNT
-	unsigned long printed_count = 0, printed_skipable = 0, forced_by_unstable = 0;
+	unsigned long printed_count = 0, printed_skipable = 0;
 #endif
 	if (_cur_output.empty()) {
 		;
@@ -420,14 +406,11 @@ void TTYBackend::DispatchOutput(TTYOutput &tty_out)
 		const CHAR_INFO *cur_line = &_cur_output[y * _cur_width];
 		const CHAR_INFO *prev_line = &_prev_output[y * _prev_width];
 
-		const auto UnstableWidth = [&](unsigned int x_)
-		{
-			return IsUnstableWidthCharCached(cur_line[x_].Char.UnicodeChar)
-				|| IsUnstableWidthCharCached(prev_line[x_].Char.UnicodeChar);
-		};
-
 		const auto ApproxWeight = [&](unsigned int x_)
 		{
+			if (CI_USING_COMPOSITE_CHAR(cur_line[x_])) {
+				return 4;
+			}
 			return ((cur_line[x_].Char.UnicodeChar > 0x7f) ? 2 : 1);
 		};
 
@@ -438,33 +421,6 @@ void TTYBackend::DispatchOutput(TTYOutput &tty_out)
 		};
 
 		for (unsigned int x = 0, skipped_start = 0, skipped_weight = 0; x < _cur_width; ++x) {
-			// If first or next character is/was 'special' - like fullwidth or diacric then need
-			// to write whole line til the end to avoid artifacts on non-far2l terminals
-			if (!_far2l_tty && ((x + 2 < _cur_width && UnstableWidth(x + 1)) || (x == 0 && UnstableWidth(x)))) {
-#ifdef LOG_OUTPUT_COUNT
-				fprintf(stderr, "!!! OUTPUT_UNSTABLE: 0x%x '%lc' or 0x%x '%lc'\n",
-					cur_line[x + 1].Char.UnicodeChar, cur_line[x + 1].Char.UnicodeChar,
-					prev_line[x + 1].Char.UnicodeChar, prev_line[x + 1].Char.UnicodeChar);
-				forced_by_unstable+= _cur_width - x;
-#endif
-				// print line's remainder fully without exceptions, but keep box-drawing characters at
-				// expected positions overwriting tails of previously printed sequence of full-width chars.
-				tty_out.MoveCursorLazy(y + 1, x + 1);
-				for (;;) {
-					unsigned int edge;
-					for (edge = x + 1; edge < _cur_width && !WCHAR_IS_PSEUDOGRAPHIC(cur_line[edge].Char.UnicodeChar);) {
-						++edge;
-					}
-					tty_out.WriteLine(&cur_line[x], edge - x);
-					if (edge == _cur_width) {
-						break;
-					}
-					x = edge;
-					tty_out.MoveCursorStrict(y + 1, x + 1);
-				}
-				break;
-			}
-
 			if (!Modified(x)) {
 				skipped_weight+= ApproxWeight(x);
 				continue;
@@ -498,9 +454,9 @@ void TTYBackend::DispatchOutput(TTYOutput &tty_out)
 		}
 	}
 #ifdef LOG_OUTPUT_COUNT
-	fprintf(stderr, "!!! OUTPUT_COUNT: (normal=%lu + skipable=%lu + unstable=%lu) = %lu of %lu\n",
-		printed_count, printed_skipable, forced_by_unstable,
-		printed_count + printed_skipable + forced_by_unstable,
+	fprintf(stderr, "!!! OUTPUT_COUNT: (normal=%lu + skipable=%lu) = %lu of %lu\n",
+		printed_count, printed_skipable,
+		printed_count + printed_skipable,
 		(unsigned long)_cur_output.size());
 #endif
 	_prev_width = _cur_width;
@@ -648,6 +604,36 @@ bool TTYBackend::OnConsoleSetFKeyTitles(const char **titles)
 	}
 
 	return (_fkeys_support == FKS_SUPPORTED);
+}
+
+BYTE TTYBackend::OnConsoleGetColorPalette()
+{
+	if (_far2l_tty) try {
+		StackSerializer stk_ser;
+		stk_ser.PushPOD(FARTTY_INTERRACT_GET_COLOR_PALETTE);
+		Far2lInterract(stk_ser, true);
+		uint8_t bits, reserved;
+		stk_ser.PopPOD(bits);
+		stk_ser.PopPOD(reserved);
+		return bits;
+
+	} catch (std::exception &) {
+		return 4;
+	}
+
+	static BYTE s_out = []() {
+		const char *env = getenv("COLORTERM");
+		if (env) {
+			return (strcmp(env, "truecolor") == 0 || strcmp(env, "24bit") == 0) ? 24 : 8;
+		}
+		env = getenv("TERM");
+		if (env && strstr(env, "256") != nullptr) {
+			return 8;
+		}
+		return 4;
+	} ();
+
+	return s_out;
 }
 
 void TTYBackend::OnConsoleAdhocQuickEdit()

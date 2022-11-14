@@ -20,10 +20,10 @@ extern "C" {
 	 SCM_CONFIRM_NONE
  } SudoClientMode;
 
- void sudo_client_configure(SudoClientMode mode, int password_expiration,
+ void sudo_client_configure(SudoClientMode mode, int password_expiration, 
 	const char *sudo_app, const char *askpass_app,
 	const char *sudo_title, const char *sudo_prompt, const char *sudo_confirm);
-
+	
  int sudo_main_askpass();
  int sudo_main_dispatcher(int argc, char *argv[]);
 
@@ -101,7 +101,7 @@ public:
 		if (enter)
 			sudo_silent_query_region_enter();
 	}
-
+	
 	inline void Enter()
 	{
 		if (!_entered) {

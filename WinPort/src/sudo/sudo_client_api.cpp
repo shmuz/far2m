@@ -80,7 +80,7 @@ static class Client2ServerDIR : protected Client2Server<DIR *, void *>
 	void *Deregister(DIR *local)
 	{
 		void *remote;
-		if (!Client2ServerBase::Deregister(local, remote))
+		if (!Client2ServerBase::Deregister(local, remote)) 
 			return nullptr;
 
 		closedir(local);
@@ -111,10 +111,10 @@ extern "C" int sudo_client_execute(const char *cmd, bool modify, bool no_wait)
 {
 	//this call doesnt require outside region demarkation, so ensure it now
 	SudoClientRegion scr;
-
+			
 	if (!TouchClientConnection(modify))
 		return -2;
-
+	
 	int r;
 	try {
 		ClientTransaction ct(SUDO_CMD_EXECUTE);
@@ -129,30 +129,30 @@ extern "C" int sudo_client_execute(const char *cmd, bool modify, bool no_wait)
 		r = -3;
 	}
 	return r;
-}
+}		
 
 extern "C" __attribute__ ((visibility("default"))) int sudo_client_is_required_for(const char *pathname, bool modify)
 {
 	ClientReconstructCurDir crcd(pathname);
 	struct stat s;
-
+	
 	int r = stat(pathname, &s);
 	if (r == 0) {
 		r = access(pathname, modify ? R_OK|W_OK : R_OK);
 		if (r==0)
 			return 0;
-
+			
 		return IsAccessDeniedErrno() ? 1 : -1;
 	}
 
 	if (IsAccessDeniedErrno())
 		return 1;
-
+		
 	if (errno != ENOENT) {
 		//fprintf(stderr, "stat: error %u on path %s\n", errno, pathname);
 		return -1;
 	}
-
+	
 	std::string tmp(pathname);
 	size_t p = tmp.rfind('/');
 	if (p == std::string::npos)
@@ -161,13 +161,13 @@ extern "C" __attribute__ ((visibility("default"))) int sudo_client_is_required_f
 		tmp.resize(p - 1);
 	else
 		tmp = "/";
-
+	
 	r = access(tmp.c_str(), modify ? R_OK|W_OK : R_OK);
 	if (r==0) {
 		//fprintf(stderr, "access: may %s path %s\n", modify ? "modify" : "read", tmp.c_str());
 		return 0;
 	}
-
+		
 	if (IsAccessDeniedErrno())
 		return 1;
 
@@ -179,22 +179,22 @@ extern "C" __attribute__ ((visibility("default"))) int sdc_open(const char* path
 {
 	int saved_errno = errno;
 	mode_t mode = 0;
-
+	
 	if (flags & O_CREAT) {
 		va_list va;
 		va_start(va, flags);
 		mode = (mode_t)va_arg(va, unsigned int);
 		va_end(va);
 	}
-
+	
 	ClientReconstructCurDir crcd(pathname);
-
+	
 	int r = open(pathname, flags, mode);
-	if (r!=-1 || !pathname || !IsAccessDeniedErrno() ||
+	if (r!=-1 || !pathname || !IsAccessDeniedErrno() || 
 		!TouchClientConnection((flags & (O_CREAT | O_RDWR | O_TRUNC | O_WRONLY))!=0)) {
 		return r;
 	}
-
+		
 	try {
 		ClientTransaction ct(SUDO_CMD_OPEN);
 		ct.SendStr(pathname);
@@ -448,7 +448,7 @@ static int common_path_and_mode(SudoCommand cmd, int (*pfn)(const char *, mode_t
 			r = -1;
 		}
 	}
-	return r;
+	return r;	
 }
 
 static int common_one_path(SudoCommand cmd, int (*pfn)(const char *), const char *path, bool want_modify)
@@ -456,7 +456,7 @@ static int common_one_path(SudoCommand cmd, int (*pfn)(const char *), const char
 	int saved_errno = errno;
 	ClientReconstructCurDir crcd(path);
 	int r = pfn(path);
-
+	
 	if (r==-1 && IsAccessDeniedErrno() && TouchClientConnection(want_modify)) {
 		try {
 			ClientTransaction ct(cmd);
@@ -486,7 +486,7 @@ extern "C" __attribute__ ((visibility("default"))) int sdc_chdir(const char *pat
 	//fprintf(stderr, "sdc_chdir: %s\n", path);
 	ClientReconstructCurDir crcd(path);
 	int r = chdir(path);
-	const bool access_denied = (r==-1 && IsAccessDeniedErrno());
+	const bool access_denied = (r==-1 && IsAccessDeniedErrno());	
 	ClientCurDirOverrideReset();
 	if (IsSudoRegionActive() || (access_denied && TouchClientConnection(false))) {
 		int r2;
@@ -507,7 +507,7 @@ extern "C" __attribute__ ((visibility("default"))) int sdc_chdir(const char *pat
 
 		if (!cwd.empty())
 			ClientCurDirOverrideSet(cwd.c_str());
-
+		
 		if (r != 0 && r2 == 0) {
 			r = 0;
 			errno = saved_errno;
@@ -515,7 +515,7 @@ extern "C" __attribute__ ((visibility("default"))) int sdc_chdir(const char *pat
 
 	} else if (access_denied && !IsSudoRegionActive()) {
 		//Workaround to avoid excessive sudo prompt on TAB panel swicth:
-		//set override if path likely to be existing but not accessible
+		//set override if path likely to be existing but not accessible 
 		//cuz we're out of sudo region now
 		//Right solution would be putting TAB worker code into sudo region
 		//but showing sudo just to switch focus between panels is bad UX
@@ -530,10 +530,10 @@ extern "C" __attribute__ ((visibility("default"))) int sdc_chdir(const char *pat
 		//workaround for chdir(symlink-to-somedir) following getcwd returns somedir but not symlink to it
 		ClientCurDirOverrideSet(path);
 	}
-
+	
 	//if (r!=0)
 	//	fprintf(stderr, "FAILED sdc_chdir: %s\n", path);
-
+	
 	return r;
 }
 
@@ -544,7 +544,7 @@ extern "C" __attribute__ ((visibility("default"))) int sdc_rmdir(const char *pat
 
 extern "C" __attribute__ ((visibility("default"))) int sdc_remove(const char *path)
 {
-	return common_one_path(SUDO_CMD_REMOVE, &remove, path, true);
+	return common_one_path(SUDO_CMD_REMOVE, &remove, path, true);	
 }
 
 extern "C" __attribute__ ((visibility("default"))) int sdc_unlink(const char *path)
@@ -578,7 +578,7 @@ extern "C" __attribute__ ((visibility("default"))) int sdc_chown(const char *pat
 			r = -1;
 		}
 	}
-	return r;
+	return r;	
 }
 
 extern "C" __attribute__ ((visibility("default"))) int sdc_utimes(const char *filename, const struct timeval times[2])
@@ -602,7 +602,7 @@ extern "C" __attribute__ ((visibility("default"))) int sdc_utimes(const char *fi
 			r = -1;
 		}
 	}
-	return r;
+	return r;	
 }
 
 extern "C" __attribute__ ((visibility("default"))) int sdc_futimes(int fd, const struct timeval tv[2])
@@ -610,7 +610,7 @@ extern "C" __attribute__ ((visibility("default"))) int sdc_futimes(int fd, const
 	return futimes(fd, tv);
 }
 
-static int common_two_pathes(SudoCommand cmd,
+static int common_two_pathes(SudoCommand cmd, 
 	int (*pfn)(const char *, const char *), const char *path1, const char *path2, bool modify)
 {
 	int saved_errno = errno;
@@ -648,7 +648,7 @@ extern "C" __attribute__ ((visibility("default"))) int sdc_symlink(const char *p
 extern "C" __attribute__ ((visibility("default"))) int sdc_link(const char *path1, const char *path2)
 {
 	ClientReconstructCurDir crcd(path2);
-	return common_two_pathes(SUDO_CMD_LINK, &link, path1, path2, true);
+	return common_two_pathes(SUDO_CMD_LINK, &link, path1, path2, true);	
 }
 
 extern "C" __attribute__ ((visibility("default"))) char *sdc_realpath(const char *path, char *resolved_path)
@@ -779,7 +779,7 @@ extern "C" __attribute__ ((visibility("default"))) int sdc_fsetxattr(int fd, con
 	}
 	if (r == 0 || !IsAccessDeniedErrno() || !TouchClientConnection(false))
 		return r;
-
+	 
 	try {
 		ClientTransaction ct(SUDO_CMD_FSFLAGSGET);
 		ct.SendStr(path);
@@ -797,7 +797,7 @@ extern "C" __attribute__ ((visibility("default"))) int sdc_fsetxattr(int fd, con
 	return r;
 #endif
  }
-
+ 
  extern "C" __attribute__ ((visibility("default"))) int sdc_fs_flags_set(const char *path, unsigned long flags)
  {
 #if defined(__CYGWIN__)
@@ -828,12 +828,12 @@ extern "C" __attribute__ ((visibility("default"))) int sdc_fsetxattr(int fd, con
 		r = ct.RecvInt();
 		if (r != 0)
 			ct.RecvErrno();
-
+			
 	} catch(std::exception &e) {
 		fprintf(stderr, "sudo_client: sdc_fs_flags_set('%s', 0x%lx) - error %s\n", path, flags, e.what());
 		r = -1;
 	}
-
+	 
 	return r;
 #endif
  }

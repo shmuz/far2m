@@ -63,15 +63,46 @@ extern "C"
 {
 	struct WinPortHandleFile : WinPortHandle
 	{
+		int fd;
+
 		WinPortHandleFile(int fd_ = -1) : fd(fd_) {}
 
 		virtual ~WinPortHandleFile()
 		{
-			if (os_call_int(sdc_close, fd) == -1 ){
-				fprintf(stderr, "~WinPortHandleFile: error %u closing fd %d", errno, fd);
-			}	
+			if (fd != -1) {
+				fprintf(stderr, "~WinPortHandleFile: unclosed fd %d\n", fd);
+			}
 		}
-		int fd;
+
+	protected:
+		bool EnsureClosed()
+		{
+			bool out = (fd == -1 || os_call_int(sdc_close, fd) == 0);
+			if (!out) {
+				ErrnoSaver es;
+				fprintf(stderr, "WinPortHandleFile: error %u closing fd %d\n", es.Get(), fd);
+			}
+
+			fd = -1;
+			return out;
+		}
+
+		virtual bool Cleanup()
+		{
+			bool out = EnsureClosed();
+			int saved_errno;
+			if (!out) {
+				saved_errno = errno;
+			}
+			if (!WinPortHandle::Cleanup()) {
+				return false;
+			}
+			if (!out) {
+				errno = saved_errno;
+			}
+			return out;
+		}
+
 	};
 	
 
@@ -565,6 +596,11 @@ extern "C"
 				_attr = FILE_ATTRIBUTE_REPARSE_POINT;
 			}
 
+#if defined(__APPLE__) || defined(__FreeBSD__)
+			if (DereferencedStat().st_flags & UF_HIDDEN) { // chflags hidden FILENAME
+				_attr|= FILE_ATTRIBUTE_HIDDEN;
+			}
+#endif
 			_attr|= EvaluateAttributesT(DereferencedStat().st_mode, name);
 		}
 
@@ -761,7 +797,7 @@ extern "C"
 			}
 
 			MB2Wide(name, _tmp.wide_name);
-			wcsncpy(wfd->cFileName, _tmp.wide_name.c_str(), MAX_NAME - 1);
+			wcsncpy(wfd->cFileName, _tmp.wide_name.c_str(), MAX_NAME);
 
 			const DWORD attrs = wfd->dwFileAttributes;
 			if ((attrs & FILE_ATTRIBUTE_DIRECTORY) != 0) {
@@ -865,7 +901,7 @@ extern "C"
 			}
 
 			LPCWSTR last_slash = wcsrchr(lpFileName, GOOD_SLASH);
-			wcsncpy(lpFindFileData->cFileName, last_slash ? last_slash + 1 : lpFileName, MAX_NAME - 1);
+			wcsncpy(lpFindFileData->cFileName, last_slash ? last_slash + 1 : lpFileName, MAX_NAME);
 			return (HANDLE)&g_unix_found_file_dummy;
 		}
 

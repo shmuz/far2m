@@ -29,6 +29,11 @@ set(SOURCES
   src/FSNotify.cpp
   src/TestPath.cpp
   src/PipeIPC.cpp
+  src/PathParts.cpp
+  src/CharClasses.cpp
+  src/POpen.cpp
+  src/VT256ColorTable.cpp
+  src/ReadWholeFile.cpp
 )
 
 add_library (utils ${SOURCES})
