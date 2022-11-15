@@ -2245,7 +2245,7 @@ typedef struct FarStandardFunctions
 	FARDISPLAYNOTIFICATION     DisplayNotification;
 	FARDISPATCHNTRTHRDCALLS    DispatchInterThreadCalls;
 	FARBACKGROUNDTASK          BackgroundTask;
-	void*                      RESERVED[2];
+	void*                      RESERVED[4];
 
 	FARAPIGETFILEENCODING      GetFileEncoding;
 	FARSTDKEYNAMETOINPUTRECORD FarNameToInputRecord;

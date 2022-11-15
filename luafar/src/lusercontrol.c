@@ -43,8 +43,9 @@ static int uc_index(lua_State* L)
 	else
 	{
 		intptr_t index = CheckFarUserControlIndex(L, fuc, 2);
+		wchar_t UnicodeChar = fuc->VBuf[index].Char.UnicodeChar & 0xFFFFFFFF;
 		lua_createtable(L, 0, 2);
-		PutWStrToTable(L, "Char", &fuc->VBuf[index].Char.UnicodeChar, 1);
+		PutWStrToTable(L, "Char", &UnicodeChar, 1);
 		lua_pushinteger(L, fuc->VBuf[index].Attributes);
 		lua_setfield(L, -2, "Attributes");
 	}
