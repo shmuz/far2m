@@ -1,7 +1,7 @@
 #include "headers.hpp"
 
 #include <crc64.h>
-
+#include <fstream>
 #include "Mounts.hpp"
 #include "lang.hpp"
 #include "keys.hpp"
@@ -16,6 +16,7 @@
 #include "manager.hpp"
 #include "ConfigRW.hpp"
 #include "HotkeyLetterDialog.hpp"
+#include "MountInfo.h"
 
 namespace Mounts
 {
@@ -63,52 +64,12 @@ namespace Mounts
 
 	Enum::Enum(FARString &another_curdir)
 	{
-		std::string cmd = GetMyScriptQuoted("mounts.sh");
-		cmd+= " enum";
-
 		bool has_rootfs = false;
-
-		FILE *f = popen(cmd.c_str(), "r");
-		if (f) {
-			char buf[0x2100] = { };
-			std::wstring s, tmp;
-			while (fgets(buf, sizeof(buf) - 1, f)!=NULL) {
-				for (;;) {
-					size_t l = strlen(buf);
-					if (!l) break;
-					if (buf[l-1]!='\r' && buf[l-1]!='\n') break;
-					buf[l-1] = 0;
-				}
-				if (buf[0]) {
-					emplace_back();
-					auto &e = back();
-					e.path.Copy(&buf[0]);
-					size_t t;
-					if (e.path.Pos(t, L'\t')) {
-						e.info = e.path.SubStr(t + 1);
-						e.path.Truncate(t);
-						if (e.info.Pos(t, L'\t')) {
-							e.usage = e.info.SubStr(0, t);
-							e.info = e.info.SubStr(t + 1);
-						}
-					}
-					if (e.path == L"/") {
-						has_rootfs = true;
-					} else {
-						e.unmountable = true;
-					}
-					RemoveExternalSpaces(e.usage);
-					RemoveExternalSpaces(e.info);
-					e.id = GenerateIdFromPath(e.path);
-				}
-			}
-			int r = pclose(f);
-			if (r != 0) {
-				fprintf(stderr, "Exit code %u executing '%s'\n", r, cmd.c_str());
-			}
-		} else {
-			fprintf(stderr, "Error %u executing '%s'\n", errno, cmd.c_str());
+		if (Opt.ChangeDriveMode & DRIVE_SHOW_MOUNTS)
+		{
+			AddMounts(has_rootfs);
 		}
+		AddFavorites(has_rootfs);
 
 		if (!has_rootfs) {
 			emplace(begin(), Entry(L"/", Msg::MountsRoot, false, ID_ROOT));
@@ -119,22 +80,130 @@ namespace Mounts
 
 		ConfigReader cfg_reader(HOTKEYS_SECTION);
 		for (auto &m : *this) {
-			if (max_path < m.path.GetLength())
-				max_path = m.path.GetLength();
-			if (max_info < m.info.GetLength())
-				max_info = m.info.GetLength();
-			if (max_usage < m.usage.GetLength())
-				max_usage = m.usage.GetLength();
+			if (max_path < m.path.CellsCount())
+				max_path = m.path.CellsCount();
+			if (max_col3 < m.col3.CellsCount())
+				max_col3 = m.col3.CellsCount();
+			if (max_col2 < m.col2.CellsCount())
+				max_col2 = m.col2.CellsCount();
 			wchar_t def_hk[] = {DefaultHotKey(m.id, m.path), 0};
 			auto hk = cfg_reader.GetString(SettingsKey(m.id), def_hk);
 			m.hotkey = hk.IsEmpty() ? 0 : *hk.CPtr();
 		}
 	}
 
+	static void ExpandMountpointInfo(const Mountpoint &mp, FARString &str)
+	{
+		FARString val = L" ";
+		if (mp.bad) {
+			val = L"?";
+		} else if (mp.read_only) {
+			val = L"!";
+		}
+		ReplaceStrings(str, L"$S", val);
+
+		FileSizeToStr(val, mp.total, -1, COLUMN_ECONOMIC | COLUMN_FLOATSIZE | COLUMN_SHOWBYTESINDEX);
+		ReplaceStrings(str, L"$T", val);
+
+		FileSizeToStr(val, mp.avail, -1, COLUMN_ECONOMIC | COLUMN_FLOATSIZE | COLUMN_SHOWBYTESINDEX);
+		ReplaceStrings(str, L"$A", val);
+
+		FileSizeToStr(val, mp.freee, -1, COLUMN_ECONOMIC | COLUMN_FLOATSIZE | COLUMN_SHOWBYTESINDEX);
+		ReplaceStrings(str, L"$F", val);
+
+		FileSizeToStr(val, mp.total - mp.freee, -1, COLUMN_ECONOMIC | COLUMN_FLOATSIZE | COLUMN_SHOWBYTESINDEX);
+		ReplaceStrings(str, L"$U", val);
+
+		if (mp.total)
+			val.Format(L"%d", (mp.avail * 100) / mp.total);
+		else
+			val = L"NA";
+		ReplaceStrings(str, L"$a", val);
+
+		if (mp.total)
+			val.Format(L"%d", (mp.freee * 100) / mp.total);
+		else
+			val = L"NA";
+		ReplaceStrings(str, L"$f", val);
+
+		if (mp.total)
+			val.Format(L"%d", ((mp.total - mp.freee) * 100) / mp.total);
+		else
+			val = L"NA";
+		ReplaceStrings(str, L"$u", val);
+
+		val = mp.filesystem;
+		ReplaceStrings(str, L"$N", val);
+
+		val = mp.device;
+		ReplaceStrings(str, L"$D", val);
+	}
+
+	void Enum::AddMounts(bool &has_rootfs)
+	{
+		MountInfo mi(true);
+		for (const auto &mp : mi.Enum()) {
+			emplace_back();
+			auto &e = back();
+			e.path = mp.path;
+			e.col2 = Opt.ChangeDriveColumn2;
+			e.col3 = Opt.ChangeDriveColumn3;
+			ExpandMountpointInfo(mp, e.col2);
+			ExpandMountpointInfo(mp, e.col3);
+			
+			if (e.path == L"/") {
+				has_rootfs = true;
+			} else {
+				e.unmountable = true;
+			}
+			e.id = GenerateIdFromPath(e.path);
+		}
+	}
+
+	void Enum::AddFavorites(bool &has_rootfs)
+	{
+		std::ifstream favis(InMyConfig("favorites"));
+		if (favis.is_open()) {
+			std::string line;
+			while (std::getline(favis, line)) {
+				StrTrim(line, " \t\r\n");
+				if (line.empty() || line.front() == '#') {
+					continue;
+				}
+				Environment::ExpandString(line, true, true);
+				std::vector<std::string> sublines;
+				StrExplode(sublines, line, "\n");
+				for (const auto &subline : sublines) {
+					std::vector<std::string> parts;
+					StrExplode(parts, subline, "\t");
+					if (!parts.empty()) {
+						emplace_back();
+						auto &e = back();
+						e.path = parts.front();
+						if (parts.size() > 1) {
+							e.col3 = parts.back();
+							if (parts.size() > 2) {
+								e.col2 = parts[1];
+							}
+						}
+						e.id = GenerateIdFromPath(e.path);
+						if (e.path == L"/") {
+							has_rootfs = true;
+
+						} else if (*e.path.CPtr() == L'/') {
+							e.unmountable = true;
+						}
+					}
+				}
+			}
+		}
+	}
+	//////
+
 	bool Unmount(const FARString &path, bool force)
 	{
-		std::string cmd = GetMyScriptQuoted("mounts.sh");
-		cmd+= " umount \"";
+		std::string cmd = GetMyScriptQuoted("unmount.sh");
+		cmd+= " \"";
 		cmd+= EscapeCmdStr(Wide2MB(path));
 		cmd+= "\"";
 		if (force) {

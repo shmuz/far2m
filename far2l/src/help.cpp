@@ -986,7 +986,7 @@ void Help::OutString(const wchar_t *Str)
 	if (!Locked() && WhereX()<X2)
 	{
 		SetColor(CurColor);
-		FS<<fmt::Width(X2-WhereX())<<L"";
+		FS << fmt::Cells() << fmt::Expand(X2 - WhereX()) << L"";
 	}
 }
 
@@ -1301,7 +1301,7 @@ int Help::ProcessKey(int Key)
 
 				FARString strTempStr;
 				//int RetCode = GetString(Msg::HelpSearchTitle,Msg::HelpSearchingFor,L"HelpSearch",strLastSearchStr,strLastSearchStr0);
-				//Msg::HelpSearchTitle, Msg::HelpSearchingFor,
+				//Msg::HelpSearchTitle, Msg::HelpSearchingFor, 
 				int RetCode = GetSearchReplaceString(false, &strLastSearchStr0, &strTempStr, L"HelpSearch", L"", &Case, &WholeWords, nullptr, nullptr, &Regexp,nullptr);
 
 				if (RetCode <= 0)

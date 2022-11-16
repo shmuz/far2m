@@ -66,7 +66,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "vtshell.h"
 #include "InterThreadCall.hpp"
 #include "ScopeHelpers.h"
-#include <wordexp.h>
 #include <set>
 #include <sys/wait.h>
 #ifdef __FreeBSD__
@@ -390,7 +389,7 @@ int CommandLine::CmdExecute(const wchar_t *CmdLine, bool SeparateWindow, bool Di
 		{
 			//CmdStr.SetString(L"");
 			GotoXY(X1,Y1);
-			FS<<fmt::Width(X2-X1+1)<<L"";
+			FS << fmt::Cells() << fmt::Expand(X2 - X1 + 1) << L"";
 			Show();
 			ScrBuf.Flush();
 		}
@@ -483,3 +482,4 @@ bool ProcessOSAliases(FARString &strStr)
 {
 	return false;
 }
+

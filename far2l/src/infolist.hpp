@@ -68,7 +68,7 @@ class InfoList:public Panel
 {
 	private:
 		DizViewer *DizView;
-		int PrevMacroMode;
+		int  PrevMacroMode;
 		int  OldWrapMode;
 		int  OldWrapType;
 		FARString strDizFileName;

@@ -96,7 +96,7 @@ inline bool IsWordDiv(const wchar_t *WordDiv, wchar_t Chr)
 	{ return wcschr(WordDiv, Chr) != nullptr; }
 
 inline bool IsWordDivSTNR(const wchar_t *WordDiv, wchar_t Chr)
-	{ return wcschr(WordDiv, Chr) != nullptr || wcschr(L" \t\n\r", Chr) != nullptr; }
+	{ return wcschr(WordDiv, Chr) != nullptr || IsSpace(Chr) || IsEol(Chr); }
 
 //   WordDiv  - набор разделителей слова в кодировке OEM
 // возвращает указатель на начало слова
@@ -115,7 +115,7 @@ BOOL IsCaseMixed(const FARString &strStr);
 BOOL IsCaseLower(const FARString &strStr);
 
 FARString& CenterStr(const wchar_t *Src, FARString &strDest,int Length);
-FARString FixedSizeStr(FARString str, size_t Length, bool RAlign);
+FARString FixedSizeStr(FARString str, size_t Cells, bool RAlign, bool TruncateCenter);
 
 void Transform(FARString &strBuffer,const wchar_t *ConvStr,wchar_t TransformType);
 

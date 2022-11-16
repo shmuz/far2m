@@ -101,8 +101,8 @@ void SetScreen(int X1,int Y1,int X2,int Y2,wchar_t Ch,int Color);
 void MakeShadow(int X1,int Y1,int X2,int Y2);
 void ChangeBlockColor(int X1,int Y1,int X2,int Y2,int Color);
 void SetColor(int Color, bool ApplyToConsole = false);
-void SetRealColor(WORD wAttributes, bool ApplyToConsole = false);
-WORD GetRealColor();
+void SetRealColor(DWORD64 wAttributes, bool ApplyToConsole = false);
+DWORD64 GetRealColor();
 void ClearScreen(int Color);
 int GetColor();
 
@@ -119,12 +119,12 @@ void InitRecodeOutTable();
 
 int WINAPI TextToCharInfo(const char *Text,WORD Attr, CHAR_INFO *CharInfo, int Length, DWORD Reserved);
 
-inline void SetVidChar(CHAR_INFO& CI,wchar_t Chr)
+inline void SetVidChar(CHAR_INFO& CI, COMP_CHAR Chr)
 {
 	CI.Char.UnicodeChar = (Chr >= 0 && (Chr < L'\x20' || Chr == L'\x7f')) ? Oem2Unicode[Chr] : Chr;
 }
 
-int HiStrlen(const wchar_t *Str);
+int HiStrCellsCount(const wchar_t *Str);
 int HiFindRealPos(const wchar_t *Str, int Pos, BOOL ShowAmp);
 int HiFindNextVisualPos(const wchar_t *Str, int Pos, int Direct);
 FARString& HiText2Str(FARString& strDest, const wchar_t *Str);

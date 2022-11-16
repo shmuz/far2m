@@ -73,6 +73,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "console.hpp"
 #include "wakeful.hpp"
 #include <unistd.h>
+#include <algorithm>
 
 #if defined(__APPLE__)
 # include <AvailabilityMacros.h>
@@ -92,7 +93,7 @@ extern long WaitUserTime;
 /* Для того, что бы время при ожидании пользователя тикало, а remaining/speed нет */
 static long OldCalcTime;
 
-#define PROGRESS_REFRESH_THRESHOLD    500 // msec
+#define PROGRESS_REFRESH_THRESHOLD    200 // msec
 
 enum {COPY_BUFFER_SIZE  = 0x800000, COPY_PIECE_MINIMAL = 0x10000};
 
@@ -283,7 +284,7 @@ void CopyProgress::SetScanName(const wchar_t *Name)
 	}
 
 	GotoXY(Rect.Left+5,Rect.Top+3);
-	FS<<fmt::LeftAlign()<<fmt::Width(Rect.Right-Rect.Left-9)<<fmt::Precision(Rect.Right-Rect.Left-9)<<Name;
+	FS << fmt::Cells() << fmt::LeftAlign() << fmt::Size(Rect.Right - Rect.Left - 9) << Name;
 	Flush();
 }
 
@@ -368,10 +369,10 @@ void CopyProgress::SetNames(const wchar_t *Src,const wchar_t *Dst)
 	}
 
 	FormatString FString;
-	FString<<fmt::LeftAlign()<<fmt::Width(Rect.Right-Rect.Left-9)<<fmt::Precision(Rect.Right-Rect.Left-9)<<Src;
+	FString << fmt::Cells() << fmt::LeftAlign() << fmt::Size(Rect.Right - Rect.Left - 9) << Src;
 	strSrc=std::move(FString.strValue());
 	FString.Clear();
-	FString<<fmt::LeftAlign()<<fmt::Width(Rect.Right-Rect.Left-9)<<fmt::Precision(Rect.Right-Rect.Left-9)<<Dst;
+	FString << fmt::Cells() << fmt::LeftAlign() << fmt::Size(Rect.Right - Rect.Left - 9) << Dst;
 	strDst=std::move(FString.strValue());
 
 	if (Total)
@@ -423,7 +424,7 @@ void CopyProgress::SetProgress(bool TotalProgress,UINT64 CompletedSize,UINT64 To
 	Bar[BarLength]=0;
 	Percents=ToPercent64(CompletedSize,TotalSize);
 	FormatString strPercents;
-	strPercents<<fmt::Width(4)<<Percents<<L"%";
+	strPercents<<fmt::Expand(4)<<Percents<<L"%";
 	Text(BarCoord.X,BarCoord.Y,Color,Bar);
 	Text(static_cast<int>(BarCoord.X+BarLength),BarCoord.Y,Color,strPercents);
 
@@ -1976,10 +1977,48 @@ COPY_CODES ShellCopy::CopyFileTree(const wchar_t *Dest)
 			}
 		}
 	}
+
+	SetEnqueuedDirectoriesAttributes();
+
 	return COPY_SUCCESS; //COPY_SUCCESS_MOVE???
 }
 
+void ShellCopy::EnqueueDirectoryAttributes(const FAR_FIND_DATA_EX &SrcData, FARString &strDest)
+{
+	DirectoriesAttributes.emplace_back();
+	auto &cdb = DirectoriesAttributes.back();
+	cdb.Path = strDest.GetMB();
+	cdb.ftUnixAccessTime = SrcData.ftUnixAccessTime;
+	cdb.ftUnixModificationTime = SrcData.ftUnixModificationTime;
+	cdb.dwUnixMode = SrcData.dwUnixMode;
+}
 
+void ShellCopy::SetEnqueuedDirectoriesAttributes()
+{
+	std::sort(DirectoriesAttributes.begin(), DirectoriesAttributes.end(),
+		[&](const CopiedDirectory &a, const CopiedDirectory &b) -> bool {
+		return b.Path < a.Path;
+	});
+	for (const auto &cd : DirectoriesAttributes) {
+//		fprintf(stderr, "!!! '%s'\n", cd.Path.c_str());
+		struct timespec ts[2] = {};
+		WINPORT(FileTime_Win32ToUnix)(&cd.ftUnixAccessTime, &ts[0]);
+		WINPORT(FileTime_Win32ToUnix)(&cd.ftUnixModificationTime, &ts[1]);
+		const struct timeval tv[2] = {
+			{ts[0].tv_sec, suseconds_t(ts[0].tv_nsec / 1000)},
+			{ts[1].tv_sec, suseconds_t(ts[1].tv_nsec / 1000)}
+		};
+		if (sdc_utimes(cd.Path.c_str(), tv) == -1) {
+			fprintf(stderr, "sdc_utimes error %d for '%s'\n", errno, cd.Path.c_str());
+		}
+		if (Flags.COPYACCESSMODE) {
+			if (sdc_chmod(cd.Path.c_str(), cd.dwUnixMode) == -1) {
+				fprintf(stderr, "sdc_chmod mode=0%o error %d for '%s'\n", cd.dwUnixMode, errno, cd.Path.c_str());
+			}
+		}
+	}
+	DirectoriesAttributes.clear();
+}
 
 bool ShellCopy::IsSymlinkTargetAlsoCopied(const wchar_t *SymLink)
 {
@@ -2058,6 +2097,16 @@ COPY_CODES ShellCopy::CreateSymLink(const char *Target, const wchar_t *NewName, 
 	}
 }
 
+static bool InSameDirectory(const wchar_t *ExistingName, const wchar_t *NewName) // #1334
+{
+	FARString strExistingDir, strNewDir;
+	ConvertNameToFull(ExistingName, strExistingDir);
+	ConvertNameToFull(NewName, strNewDir);
+	CutToSlash(strExistingDir);
+	CutToSlash(strNewDir);
+	return strExistingDir == strNewDir;
+}
+
 COPY_CODES ShellCopy::CopySymLink(const wchar_t *ExistingName, const wchar_t *NewName, const FAR_FIND_DATA_EX &SrcData)
 {
 	FARString strExistingName;
@@ -2080,7 +2129,8 @@ COPY_CODES ShellCopy::CopySymLink(const wchar_t *ExistingName, const wchar_t *Ne
 	//  - if existing symlink points to unexisting destination that is also out or set of files being copied
 	//  note that in case of being smart and if symlink is relative then caller
 	//  guarantees that its target is within copied tree, so link will be valid
-	if (Flags.SYMLINK != COPY_SYMLINK_SMART || LinkTarget[0] != '/'
+	if (Flags.SYMLINK != COPY_SYMLINK_SMART
+			|| (LinkTarget[0] != '/' && !InSameDirectory(ExistingName, NewName))
 			|| ((SrcData.dwFileAttributes&FILE_ATTRIBUTE_BROKEN) != 0 && !IsSymlinkTargetAlsoCopied(ExistingName))) {
 		FARString strNewName;
 		ConvertNameToFull(NewName, strNewName);
@@ -2226,11 +2276,13 @@ COPY_CODES ShellCopy::ShellCopyOneFileNoRetry(
 	CP->SetProgressValue(0,0);
 	CP->SetNames(Src,strDestPath);
 
-	const bool copy_sym_link = (RPT == RP_EXACTCOPY &&
-		(SrcData.dwFileAttributes&FILE_ATTRIBUTE_REPARSE_POINT) != 0 &&
+	const bool copy_sym_link = (RPT == RP_EXACTCOPY && 
+		(SrcData.dwFileAttributes&FILE_ATTRIBUTE_REPARSE_POINT) != 0 && 
 		( (SrcData.dwFileAttributes&FILE_ATTRIBUTE_BROKEN) != 0
 		  || (Flags.SYMLINK != COPY_SYMLINK_ASFILE &&
-		     (Flags.SYMLINK != COPY_SYMLINK_SMART || IsSymlinkTargetAlsoCopied(Src))  )) );
+		     (Flags.SYMLINK != COPY_SYMLINK_SMART
+				|| IsSymlinkTargetAlsoCopied(Src)
+				|| InSameDirectory(Src, strDestPath)) )));
 
 	if ((SrcData.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) != 0 || copy_sym_link)
 	{
@@ -2251,6 +2303,12 @@ COPY_CODES ShellCopy::ShellCopyOneFileNoRetry(
 
 			if (Type==FILE_TYPE_CHAR || Type==FILE_TYPE_PIPE)
 				return(Rename ? COPY_NEXT:COPY_SUCCESS);
+		}
+
+		if ((SrcData.dwFileAttributes & (FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_DIRECTORY)) == FILE_ATTRIBUTE_DIRECTORY)
+		{ // Enqueue attributes before creating directory, so even if will fail (like directory exists)
+		  // but ignored then still will still try apply them on whole copy process finish successfully
+			EnqueueDirectoryAttributes(SrcData, strDestPath);
 		}
 
 		if (Rename)
@@ -2323,7 +2381,8 @@ COPY_CODES ShellCopy::ShellCopyOneFileNoRetry(
 			if (CopyRetCode != COPY_SUCCESS && CopyRetCode != COPY_SUCCESS_MOVE)
 				return CopyRetCode;
 		}
-		TreeList::AddTreeName(strDestPath);
+		if (SrcData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+			TreeList::AddTreeName(strDestPath);
 		return COPY_SUCCESS;
 	}
 
@@ -2808,7 +2867,12 @@ void ShellFileTransfer::Do()
 		_DestFile.SetTime(nullptr, nullptr, &_SrcData.ftLastWriteTime, nullptr);
 	}
 
-	_DestFile.Close();
+	if (!_DestFile.Close())
+	{	// #1387
+		// if file located on old samba share then in out of space condition
+		// write()-s succeed but close() reports error
+		throw ErrnoSaver();
+	}
 
 	_Done = true;
 
@@ -2913,14 +2977,17 @@ DWORD ShellFileTransfer::PieceCopy()
 	if (BytesWritten > BytesRead)
 	{	// likely we written bit more due to no_buffering requires aligned io
 		// move backward and correct file size
-		_DestFile.SetPointer((INT64)BytesRead - (INT64)WriteSize, nullptr, FILE_CURRENT);
-		_DestFile.SetEnd();
+		if (!_DestFile.SetPointer((INT64)BytesRead - (INT64)WriteSize, nullptr, FILE_CURRENT))
+			throw ErrnoSaver();
+		if (!_DestFile.SetEnd())
+			throw ErrnoSaver();
 		return BytesRead;
 	}
 
 	if (BytesWritten < BytesRead)
 	{	// if written less than read then need to rewind source file by difference
-		_SrcFile.SetPointer((INT64)BytesWritten - (INT64)BytesRead, nullptr, FILE_CURRENT);
+		if (!_SrcFile.SetPointer((INT64)BytesWritten - (INT64)BytesRead, nullptr, FILE_CURRENT))
+			throw ErrnoSaver();
 	}
 
 	return BytesWritten;
@@ -3232,9 +3299,11 @@ int ShellCopy::AskOverwrite(const FAR_FIND_DATA_EX &SrcData,
 				strDestSizeText<<DestSize;
 				FARString strDateText, strTimeText;
 				ConvertDate(SrcLastWriteTime,strDateText,strTimeText,8,FALSE,FALSE,TRUE,TRUE);
-				strSrcFileStr<<fmt::LeftAlign()<<fmt::Width(17)<<Msg::CopySource<<L" "<<fmt::Width(25)<<fmt::Precision(25)<<strSrcSizeText<<L" "<<strDateText<<L" "<<strTimeText;
+				strSrcFileStr << fmt::Cells() << fmt::LeftAlign() << fmt::Expand(17) << Msg::CopySource
+					<< L" " << fmt::Size(25) << strSrcSizeText << L" " << strDateText << L" " << strTimeText;
 				ConvertDate(DestData.ftLastWriteTime,strDateText,strTimeText,8,FALSE,FALSE,TRUE,TRUE);
-				strDestFileStr<<fmt::LeftAlign()<<fmt::Width(17)<<Msg::CopyDest<<L" "<<fmt::Width(25)<<fmt::Precision(25)<<strDestSizeText<<L" "<<strDateText<<L" "<<strTimeText;
+				strDestFileStr << fmt::Cells() << fmt::LeftAlign() << fmt::Expand(17) << Msg::CopyDest
+					<< L" " << fmt::Size(25) << strDestSizeText << L" " << strDateText << L" " << strTimeText;
 
 				WarnCopyDlgData[WDLG_SRCFILEBTN].Data=strSrcFileStr;
 				WarnCopyDlgData[WDLG_DSTFILEBTN].Data=strDestFileStr;
@@ -3332,9 +3401,9 @@ int ShellCopy::AskOverwrite(const FAR_FIND_DATA_EX &SrcData,
 					FormatString strDestSizeText;
 					strDestSizeText<<DestSize;
 					ConvertDate(SrcData.ftLastWriteTime,strDateText,strTimeText,8,FALSE,FALSE,TRUE,TRUE);
-					strSrcFileStr<<fmt::LeftAlign()<<fmt::Width(17)<<Msg::CopySource<<L" "<<fmt::Width(25)<<fmt::Precision(25)<<strSrcSizeText<<L" "<<strDateText<<L" "<<strTimeText;
+					strSrcFileStr << fmt::Cells() << fmt::LeftAlign() << fmt::Expand(17) << Msg::CopySource << L" " << fmt::Size(25) << strSrcSizeText << L" " << strDateText << L" " << strTimeText;
 					ConvertDate(DestData.ftLastWriteTime,strDateText,strTimeText,8,FALSE,FALSE,TRUE,TRUE);
-					strDestFileStr<<fmt::LeftAlign()<<fmt::Width(17)<<Msg::CopyDest<<L" "<<fmt::Width(25)<<fmt::Precision(25)<<strDestSizeText<<L" "<<strDateText<<L" "<<strTimeText;
+					strDestFileStr << fmt::Cells() << fmt::LeftAlign() << fmt::Expand(17) << Msg::CopyDest << L" " << fmt::Size(25) << strDestSizeText << L" " << strDateText << L" " << strTimeText;
 					WarnCopyDlgData[WDLG_SRCFILEBTN].Data=strSrcFileStr;
 					WarnCopyDlgData[WDLG_DSTFILEBTN].Data=strDestFileStr;
 					WarnCopyDlgData[WDLG_TEXT].Data=Msg::CopyFileRO;
