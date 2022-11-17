@@ -1,8 +1,6 @@
 #include <colorer/parsers/FileTypeImpl.h>
 #include <colorer/unicode/UnicodeTools.h>
 
-#include <memory>
-
 FileTypeImpl::FileTypeImpl(HRCParserImpl* hrcParser): name(nullptr), group(nullptr), description(nullptr)
 {
   this->hrcParser = hrcParser;
@@ -13,14 +11,7 @@ FileTypeImpl::FileTypeImpl(HRCParserImpl* hrcParser): name(nullptr), group(nullp
 }
 
 FileTypeImpl::~FileTypeImpl(){
-  for(auto it : chooserVector){
-    delete it;
-  }
   chooserVector.clear();
-
-  for(const auto& it: paramsHash){
-    delete it.second;
-  }
   paramsHash.clear();
 
   importVector.clear();
@@ -79,11 +70,12 @@ const String* FileTypeImpl::getParamUserValue(const String &name) const{
 }
 
 TypeParameter* FileTypeImpl::addParam(const String *name){
-  auto* tp = new TypeParameter;
-  tp->name.reset(new SString(name));
-  std::pair<SString, TypeParameter*> pp(name, tp);
-  paramsHash.emplace(pp);
-  return tp;
+  const auto &ir = paramsHash.emplace(name, std::unique_ptr<TypeParameter>());
+  if (ir.second) {
+    ir.first->second.reset(new TypeParameter);
+    ir.first->second->name.reset(new SString(name));
+  }
+  return ir.first->second.get();
 }
 
 void FileTypeImpl::setParamValue(const String &name, const String *value){
@@ -135,7 +127,7 @@ size_t FileTypeImpl::getParamUserValueCount() const{
 double FileTypeImpl::getPriority(const String *fileName, const String *fileContent) const{
   SMatches match;
   double cur_prior = 0;
-  for(auto ftc : chooserVector){
+  for(const auto &ftc : chooserVector){
     if (fileName != nullptr && ftc->isFileName() && ftc->getRE()->parse(fileName, &match))
       cur_prior += ftc->getPriority();
     if (fileContent != nullptr && ftc->isFileContent() && ftc->getRE()->parse(fileContent, &match))

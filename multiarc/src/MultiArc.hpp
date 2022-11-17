@@ -10,6 +10,7 @@
 #include <vector>
 #include <utils.h>
 #include <KeyFileHelper.h>
+#include <PathParts.h>
 #include <farplug-mb.h>
 using namespace oldfar;
 #include "fmt.hpp"
@@ -35,6 +36,8 @@ using namespace oldfar;
 
 #define SUPER_PUPER_ZERO (0)
 
+#define USER_DATA_MAGIC 0xfeedf00d
+
 enum {
   CMD_EXTRACT=0,
   CMD_EXTRACTWITHOUTPATH,
@@ -54,19 +57,10 @@ enum {
   CMD_DEFEXT
 };
 
-
-// TODO: add to Archive API (?)
-struct ArcItemUserData{
-   DWORD SizeStruct;
-   int Codepage;
-   char *Prefix;
-   char *LinkName;
-};
-
 typedef DWORD (WINAPI *PLUGINLOADFORMATMODULE)(const char *ModuleName);
 typedef BOOL (WINAPI *PLUGINISARCHIVE)(const char *Name,const unsigned char *Data,int DataSize);
 typedef BOOL (WINAPI *PLUGINOPENARCHIVE)(const char *Name,int *Type,bool Silent);
-typedef int (WINAPI *PLUGINGETARCITEM)(struct PluginPanelItem *Item,struct ArcItemInfo *Info);
+typedef int (WINAPI *PLUGINGETARCITEM)(struct ArcItemInfo *Info);
 typedef BOOL (WINAPI *PLUGINCLOSEARCHIVE)(struct ArcInfo *Info);
 typedef BOOL (WINAPI *PLUGINGETFORMATNAME)(int Type,char *FormatName,char *DefaultExt);
 typedef BOOL (WINAPI *PLUGINGETDEFAULTCOMMANDS)(int Type,int Command,char *Dest);
@@ -90,6 +84,7 @@ struct PluginItem
   PLUGINGETSFXPOS pGetSFXPos;
 };
 
+typedef PathNode<ArcItemAttributes> ArcItemNode;
 
 class ArcPlugins
 {
@@ -114,7 +109,7 @@ class ArcPlugins
     int  IsArchive(const char *Name,const unsigned char *Data,int DataSize);
     BOOL IsArchive(int ArcPluginNumber, const char *Name,const unsigned char *Data,int DataSize, DWORD* SFXSize);
     BOOL OpenArchive(int PluginNumber,const char *Name,int *Type,bool Silent);
-    int  GetArcItem(int PluginNumber,struct PluginPanelItem *Item,struct ArcItemInfo *Info);
+    int  GetArcItem(int PluginNumber,struct ArcItemInfo *Info);
     void CloseArchive(int PluginNumber,struct ArcInfo *Info);
     BOOL GetFormatName(int PluginNumber,int Type,char *FormatName,char *DefaultExt);
     BOOL GetDefaultCommands(int PluginNumber,int Type,int Command,char *Dest);
@@ -128,9 +123,10 @@ class ArcPlugins
 class PluginClass
 {
   private:
-    char ArcName[NM];
+    char ArcName[NM + 2];
     char CurDir[NM];
-    std::vector<PluginPanelItem> ArcData;
+    ArcItemNode ArcData;
+    size_t ArcDataCount = 0;
     struct stat ArcStat {};
     int ArcPluginNumber;
     int ArcPluginType;
@@ -154,6 +150,10 @@ class PluginClass
     char DescrFilesString[256];
 
   private:
+    void SetInfoLineSZ(size_t Index, int TextID, const char *Data);
+    void SetInfoLine(size_t Index, int TextID, const std::string &Data);
+    void SetInfoLine(size_t Index, int TextID, int DataID);
+
     void GetGroupName(PluginPanelItem *Items, int Count, char *ArcName);//$ AA 29.11.2001
     BOOL GetCursorName(char *ArcName, char *ArcFormat, char *ArcExt, PanelInfo *pi);//$ AA 29.11.2001
     BOOL GetFormatName(char *FormatName, char *DefExt=NULL); //$ AA 25.11.2001
@@ -330,8 +330,7 @@ BOOL AddExt(char *Name, char *Ext);                               //$ AA 28.11.2
 char* QuoteText(char *Str);
 void InitDialogItems(const struct InitDialogItem *Init,struct FarDialogItem *Item,
                      int ItemsNumber);
-void InsertCommas(unsigned long Number,char *Dest);
-void InsertCommas(int64_t Number,char *Dest);
+std::string NumberWithCommas(unsigned long long Number);
 int MA_ToPercent(long N1,long N2);
 int MA_ToPercent(int64_t N1,int64_t N2);
 int IsCaseMixed(const char *Str);

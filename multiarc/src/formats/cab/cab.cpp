@@ -59,7 +59,7 @@ struct CFFILE
   u2 date;
   u2 time;
   u2 attribs;
-  u1 szName[256];
+  char szName[256];
 };
 
 static int ArcHandle = -1;
@@ -155,7 +155,7 @@ BOOL WINAPI _export CAB_OpenArchive(const char *Name,int *Type,bool Silent)
 	  
     if (FileHeader.iFolder == 0xFFFD || FileHeader.iFolder == 0xFFFF)
     {
-      EndPos = (char*)FileHeader.szName;
+      EndPos = FileHeader.szName;
       while (EndPos - (char*)&FileHeader < (int)sizeof(FileHeader) && *EndPos)
         EndPos++;
       if (EndPos - (char*)&FileHeader >= (int)sizeof(FileHeader))
@@ -176,7 +176,7 @@ BOOL WINAPI _export CAB_OpenArchive(const char *Name,int *Type,bool Silent)
 }
 
 
-int WINAPI _export CAB_GetArcItem(struct PluginPanelItem *Item,struct ArcItemInfo *Info)
+int WINAPI _export CAB_GetArcItem(struct ArcItemInfo *Info)
 {
   struct CFFILE FileHeader;
 
@@ -190,7 +190,7 @@ int WINAPI _export CAB_GetArcItem(struct PluginPanelItem *Item,struct ArcItemInf
   if (ReadSize < 18)
     return GETARC_READERROR;
 
-  EndPos = (char *)FileHeader.szName;
+  EndPos = FileHeader.szName;
   while (EndPos - (char*)&FileHeader < (int)sizeof(FileHeader) && *EndPos)
     EndPos++;
   if (EndPos - (char*)&FileHeader >= (int)sizeof(FileHeader))
@@ -198,22 +198,23 @@ int WINAPI _export CAB_GetArcItem(struct PluginPanelItem *Item,struct ArcItemInf
 
   lseek( ArcHandle, (LONG)((EndPos-(char*)&FileHeader+1) - ReadSize), SEEK_CUR);
 
-  EndPos = (char *)FileHeader.szName;
+  EndPos = FileHeader.szName;
   if (EndPos[ 0 ] == '\\' && EndPos[ 1 ] != '\\')
     EndPos++;
 
-  strncpy(Item->FindData.cFileName, EndPos, ARRAYSIZE(Item->FindData.cFileName) - 1);
-  for (size_t i = 0; (i < ARRAYSIZE(Item->FindData.cFileName) && Item->FindData.cFileName[i]); ++i) {
-    if (Item->FindData.cFileName[i] == '\\') Item->FindData.cFileName[i] = '/';
+  Info->PathName.assign(EndPos, strnlen(EndPos, &FileHeader.szName[ARRAYSIZE(FileHeader.szName)] - EndPos));
+
+  for (auto &c : Info->PathName) {
+    if (c == '\\') c = '/';
   }
 
   #define _A_ENCRYPTED 8
-  Item->FindData.dwFileAttributes = FileHeader.attribs & (FILE_ATTRIBUTE_READONLY|FILE_ATTRIBUTE_SYSTEM|FILE_ATTRIBUTE_HIDDEN|FILE_ATTRIBUTE_ARCHIVE|FILE_ATTRIBUTE_DIRECTORY);
+  Info->dwFileAttributes = FileHeader.attribs & (FILE_ATTRIBUTE_READONLY|FILE_ATTRIBUTE_SYSTEM|FILE_ATTRIBUTE_HIDDEN|FILE_ATTRIBUTE_ARCHIVE|FILE_ATTRIBUTE_DIRECTORY);
   Info->Encrypted = FileHeader.attribs & _A_ENCRYPTED;
-  Item->FindData.nPhysicalSize=0;
-  Item->FindData.nFileSize=FileHeader.cbFile;
+  Info->nPhysicalSize=0;
+  Info->nFileSize=FileHeader.cbFile;
   WINPORT(DosDateTimeToFileTime)(FileHeader.date,FileHeader.time,&lft);
-  WINPORT(LocalFileTimeToFileTime)(&lft,&Item->FindData.ftLastWriteTime);
+  WINPORT(LocalFileTimeToFileTime)(&lft,&Info->ftLastWriteTime);
   Info->UnpVer=UnpVer;
   return(GETARC_SUCCESS);
 }

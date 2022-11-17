@@ -3,24 +3,6 @@
 #include <string>
 #include <unistd.h>
 
-#if defined(__GNUC__)
-#ifdef __cplusplus
-extern "C"{
-#endif
-  BOOL WINAPI DllMainCRTStartup(HANDLE hDll,DWORD dwReason,LPVOID lpReserved);
-#ifdef __cplusplus
-};
-#endif
-
-BOOL WINAPI DllMainCRTStartup(HANDLE hDll,DWORD dwReason,LPVOID lpReserved)
-{
-  (void) lpReserved;
-  (void) dwReason;
-  (void) hDll;
-  return TRUE;
-}
-#endif
-
 SHAREDSYMBOL int WINAPI _export GetMinFarVersion(void)
 {
 	#define MAKEFARVERSION(major,minor) ( ((major)<<16) | (minor))
@@ -258,7 +240,7 @@ SHAREDSYMBOL void WINAPI _export GetPluginInfo(struct PluginInfo *Info)
   Info->PluginConfigStrings=PluginCfgStrings;
   Info->PluginConfigStringsNumber=ARRAYSIZE(PluginCfgStrings);
   static char CommandPrefix[sizeof(Opt.CommandPrefix1)];
-  strcpy(CommandPrefix,Opt.CommandPrefix1);
+  ArrayCpyZ(CommandPrefix,Opt.CommandPrefix1);
   Info->CommandPrefix=CommandPrefix;
 }
 
@@ -287,9 +269,9 @@ SHAREDSYMBOL int WINAPI _export ProcessKey(HANDLE hPlugin,int Key,unsigned int C
 SHAREDSYMBOL int WINAPI _export Configure(int ItemNumber)
 {
   struct FarMenuItem MenuItems[2];
-  memset(MenuItems,0,sizeof(MenuItems));
-  strcpy(MenuItems[0].Text,GetMsg(MCfgLine1));
-  strcpy(MenuItems[1].Text,GetMsg(MCfgLine2));
+  ZeroFill(MenuItems);
+  ArrayCpyZ(MenuItems[0].Text,GetMsg(MCfgLine1));
+  ArrayCpyZ(MenuItems[1].Text,GetMsg(MCfgLine2));
   MenuItems[0].Selected=TRUE;
 
   do{

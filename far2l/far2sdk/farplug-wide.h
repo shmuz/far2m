@@ -1717,9 +1717,7 @@ enum EDITOR_CONTROL_COMMANDS
 	ECTL_GETFILENAME                = 33,
 	ECTL_ADDTRUECOLOR               = 34,
 	ECTL_GETTRUECOLOR               = 35,
-#ifdef FAR_USE_INTERNALS
-//ECTL_SERVICEREGION,
-#endif // END FAR_USE_INTERNALS
+
 	ECTL_RESERVED1                  = 36,
 	ECTL_RESERVED2                  = 37,
 	ECTL_GETTITLE                   = 38,
@@ -2142,7 +2140,24 @@ typedef int (WINAPI *FAREXECUTE)(const wchar_t *CmdStr, unsigned int ExecFlags);
 typedef int (WINAPI *FAREXECUTE_LIBRARY)(const wchar_t *Library, const wchar_t *Symbol, const wchar_t *CmdStr, unsigned int ExecFlags);
 typedef void (WINAPI *FARDISPLAYNOTIFICATION)(const wchar_t *action, const wchar_t *object);
 typedef int (WINAPI *FARDISPATCHNTRTHRDCALLS)();
+
+// If plugin implements tasks running in background it may invoke this function to indicate about
+// pending task in left-top corner. Info is a short description of task or just its owner and must
+// be same string when invoked with Started TRUE or FALSE.
 typedef void (WINAPI *FARBACKGROUNDTASK)(const wchar_t *Info, BOOL Started);
+
+// Returns count of console cells which will be used to display given string of CharsCount characters.
+typedef size_t (WINAPI *FARSTRCELLSCOUNT)(const wchar_t *Str, size_t CharsCount);
+
+// Returns count of characters which will be used for fill up to *CellsCount cells from given string
+// of CharsCount characters.
+// RoundUp argument tells what to do with full-width characters that crossed by *CellsCount.
+// On return *CellsCount contains cells count that will be filled by returned characters count, that:
+//  Can be smaller than initial value if string has too few characters to fill all *CellsCount cells
+//  or if RoundUp was set to FALSE and last character would then overflow wanted amount.
+//  Can be larger by one than initial value if RoundUp was set to TRUE and last full-width character
+//  crossed initial value specified in *CellsCount.
+typedef size_t (WINAPI *FARSTRSIZEOFCELLS)(const wchar_t *Str, size_t CharsCount, size_t *CellsCount, BOOL RoundUp);
 
 enum BOX_DEF_SYMBOLS
 {
@@ -2262,7 +2277,9 @@ typedef struct FarStandardFunctions
 	FARDISPLAYNOTIFICATION     DisplayNotification;
 	FARDISPATCHNTRTHRDCALLS    DispatchInterThreadCalls;
 	FARBACKGROUNDTASK          BackgroundTask;
-	void*                      RESERVED[4];
+	FARSTRCELLSCOUNT           StrCellsCount;
+	FARSTRSIZEOFCELLS          StrSizeOfCells;
+	void*                      RESERVED[2];
 
 	FARAPIGETFILEENCODING      GetFileEncoding;
 	FARSTDKEYNAMETOINPUTRECORD FarNameToInputRecord;

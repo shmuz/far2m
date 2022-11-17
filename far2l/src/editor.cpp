@@ -5786,7 +5786,8 @@ int Editor::EditorControl(int Command,void *Param)
 					newcol.TrueBack = tcol->TrueBack;
 				}
 				CurPtr->AddColor(&newcol);
-				if (col->Color&ECF_AUTODELETE) m_AutoDeletedColors.emplace(&*CurPtr);
+				if (col->Color&ECF_AUTODELETE)
+					m_AutoDeletedColors.emplace(&*CurPtr);
 				return TRUE;
 			}
 
@@ -5818,7 +5819,7 @@ int Editor::EditorControl(int Command,void *Param)
 				col->StartPos=curcol.StartPos-X1;
 				col->EndPos=curcol.EndPos-X1;
 				col->Color=curcol.Color;
-				if (Command == ECTL_ADDTRUECOLOR)
+				if (Command == ECTL_GETTRUECOLOR)
 				{
 					EditorTrueColor *tcol = (EditorTrueColor *)Param;
 					tcol->TrueFore = curcol.TrueFore;

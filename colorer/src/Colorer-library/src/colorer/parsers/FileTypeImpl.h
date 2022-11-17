@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <unordered_map>
+#include <memory>
 #include <colorer/parsers/HRCParserImpl.h>
 #include <colorer/parsers/FileTypeChooser.h>
 
@@ -91,8 +92,8 @@ protected:
   HRCParserImpl *hrcParser;
   SchemeImpl *baseScheme;
 
-  std::vector<FileTypeChooser*> chooserVector;
-  std::unordered_map<SString, TypeParameter*> paramsHash;
+  std::vector<std::unique_ptr<FileTypeChooser> > chooserVector;
+  std::unordered_map<SString, std::unique_ptr<TypeParameter> > paramsHash;
   std::vector<UString> importVector;
   uXmlInputSource inputSource;
 

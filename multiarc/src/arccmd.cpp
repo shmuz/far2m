@@ -173,8 +173,8 @@ bool ArcCommand::ProcessCommand(std::string FormatString, int CommandType, int I
       char NameMsg[NM];
       FSF.sprintf(ErrMsg,(char *)GetMsg(MArcNonZero),ExecCode);
       const char *MsgItems[]={GetMsg(MError),NameMsg,ErrMsg,GetMsg(MOk)};
-
-      FSF.TruncPathStr(strncpy(NameMsg,ArcName.c_str(),sizeof(NameMsg) - 1),MAX_WIDTH_MESSAGE);
+      ArrayCpyZ(NameMsg, ArcName.c_str());
+      FSF.TruncPathStr(NameMsg, MAX_WIDTH_MESSAGE);
       Info.Message(Info.ModuleNumber,FMSG_WARNING,NULL,MsgItems,ARRAYSIZE(MsgItems),1);
     }
     return false;
@@ -304,18 +304,15 @@ int ArcCommand::ReplaceVar(std::string &Command)
       Command.clear();
       for (int N = 0; N < ItemsNumber; ++N)
       {
-        if(PanelItem[N].UserData && (PanelItem[N].Flags & PPIF_USERDATA))
+        const ArcItemAttributes *Attrs = (const ArcItemAttributes *)PanelItem[N].UserData;
+        if (Attrs && Attrs->Codepage > 0)
         {
-          struct ArcItemUserData *aud=(struct ArcItemUserData*)PanelItem[N].UserData;
-          if(aud->SizeStruct == sizeof(struct ArcItemUserData) && aud->Codepage > 0)
-          {
-            Command = StrPrintf("CP%u", aud->Codepage);
-            break;
-          }
+          Command = StrPrintf("CP%u", Attrs->Codepage);
+          break;
         }
       }
       if (Command.empty() && DefaultCodepage > 0)
-            Command = StrPrintf("CP%u", DefaultCodepage);
+        Command = StrPrintf("CP%u", DefaultCodepage);
 
       break;
 
@@ -421,18 +418,14 @@ int ArcCommand::ReplaceVar(std::string &Command)
               break;
 
             *PrefixFileName=0;
-            char *cFileName = PanelItem[N].FindData.cFileName;
-
-            if(PanelItem[N].UserData && (PanelItem[N].Flags & PPIF_USERDATA))
+            const char *cFileName = PanelItem[N].FindData.cFileName;
+            const ArcItemAttributes *Attrs = (const ArcItemAttributes *)PanelItem[N].UserData;
+            if (Attrs)
             {
-              struct ArcItemUserData *aud=(struct ArcItemUserData*)PanelItem[N].UserData;
-              if(aud->SizeStruct == sizeof(struct ArcItemUserData))
-              {
-                if(aud->Prefix)
-                  strncpy(PrefixFileName,aud->Prefix,sizeof(PrefixFileName) - 1);
-                if(aud->LinkName)
-                  cFileName=aud->LinkName;
-              }
+              if (Attrs->Prefix)
+                  ArrayCpyZ(PrefixFileName, Attrs->Prefix->c_str());
+              if (Attrs->LinkName)
+                  cFileName = Attrs->LinkName->c_str();
             }
             // CHECK for BUGS!!
             Name = PrefixFileName;
@@ -527,7 +520,8 @@ int ArcCommand::MakeListFile(char *ListFileName, int QuoteName,
     {
       char NameMsg[NM];
       const char *MsgItems[]={GetMsg(MError),GetMsg(MCannotCreateListFile),NameMsg,GetMsg(MOk)};
-      FSF.TruncPathStr(strncpy(NameMsg,ListFileName,sizeof(NameMsg) - 1),MAX_WIDTH_MESSAGE);
+      ArrayCpyZ(NameMsg, ListFileName);
+      FSF.TruncPathStr(NameMsg, MAX_WIDTH_MESSAGE);
       Info.Message(Info.ModuleNumber,FMSG_WARNING,NULL,MsgItems,ARRAYSIZE(MsgItems),1);
     }
 /* $ 25.07.2001 AA
@@ -560,16 +554,13 @@ int ArcCommand::MakeListFile(char *ListFileName, int QuoteName,
     int FileAttr=PanelItem[I].FindData.dwFileAttributes;
 
     *PrefixFileName=0;
-    if(PanelItem[I].UserData && (PanelItem[I].Flags & PPIF_USERDATA))
+    const ArcItemAttributes *Attrs = (const ArcItemAttributes *)PanelItem[I].UserData;
+    if (Attrs)
     {
-      struct ArcItemUserData *aud=(struct ArcItemUserData*)PanelItem[I].UserData;
-      if(aud->SizeStruct == sizeof(struct ArcItemUserData))
-      {
-        if(aud->Prefix)
-          strncpy(PrefixFileName,aud->Prefix,sizeof(PrefixFileName) - 1);
-        if(aud->LinkName)
-           FileName = aud->LinkName;
-      }
+      if (Attrs->Prefix)
+        ArrayCpyZ(PrefixFileName, Attrs->Prefix->c_str());
+      if (Attrs->LinkName)
+        FileName = *Attrs->LinkName;
     }
 
     int Error=FALSE;
