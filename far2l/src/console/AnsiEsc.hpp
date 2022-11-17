@@ -6,19 +6,27 @@
 
 namespace AnsiEsc
 {
+	BYTE ConsoleColorToAnsi(BYTE clr);
+
 	struct FontState
 	{
-		BYTE	foreground = false;	// ANSI base color (0 to 7; add 30)
-		BYTE	background = false;	// ANSI base color (0 to 7; add 40)
+		BYTE	foreground = 0;	    // ANSI base color (0 to 7; add 30)
+		BYTE	background = 0;	    // ANSI base color (0 to 7; add 40)
 		bool	bold = false;		//
 		bool	underline = false;	//
-		bool	rvideo = false; 	// swap foreground/bold & background/underline
+		bool	strikeout = false;  //
+		bool	rvideo = false; 	// swap console foreground & background attributes
 		bool	concealed = false;	// set foreground/bold to background/underline
-		bool	reverse = false;	// swap console foreground & background attributes
+
+		bool	use_rgb_foreground = false;
+		bool	use_rgb_background = false;
+
+		DWORD	rgb_foreground = 0;
+		DWORD	rgb_background = 0;
 
 		void ParseSuffixM(const int *args, int argc);
-		void FromConsoleAttributes(WORD wAttributes);
-		WORD ToConsoleAttributes();
+		void FromConsoleAttributes(DWORD64 qAttributes);
+		DWORD64 ToConsoleAttributes();
 	};
 
 	struct Parser
@@ -40,7 +48,7 @@ namespace AnsiEsc
 	private:
 		Parser _parser;
 		FontState _font_state;
-		WORD _initial_attr;
+		DWORD64 _initial_attr;
 		wchar_t _last_char = L' ';
 
 		void EnforceStateColor();

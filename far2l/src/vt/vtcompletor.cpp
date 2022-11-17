@@ -5,7 +5,6 @@
 #include <sys/stat.h>
 #include <sys/select.h>
 #include <sys/wait.h>
-#include <wordexp.h>
 #include <algorithm>
 
 #include <stdio.h>
@@ -113,7 +112,7 @@ static void AvoidMarkerCollision(std::string &marker, const std::string &cmd)
 }
 
 bool VTCompletor::TalkWithShell(const std::string &cmd, std::string &reply, const char *tabs)
-{
+{	
 	if (!EnsureStarted())
 		return false;
 
@@ -137,7 +136,7 @@ bool VTCompletor::TalkWithShell(const std::string &cmd, std::string &reply, cons
 	sendline+= cmd;
 	sendline+= tabs;
 	sendline+= done;
-
+	
 	if (write(_pipe_stdin, sendline.c_str(), sendline.size()) != (ssize_t)sendline.size()) {
 		perror("VTCompletor: write");
 		Stop();
