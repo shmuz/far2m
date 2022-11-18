@@ -1263,15 +1263,42 @@ int editor_TurnOffMarkingBlock(lua_State *L)
 int editor_AddColor(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
-  struct EditorColor ec;
+  struct EditorTrueColor etc;
   int Flags;
-  ec.StringNumber = luaL_optinteger  (L, 1, 0) - 1;
-  ec.StartPos     = luaL_checkinteger(L, 2) - 1;
-  ec.EndPos       = luaL_checkinteger(L, 3) - 1;
-  Flags           = CheckFlags       (L, 4);
-  ec.Color        = (luaL_checkinteger(L, 5) & 0xFFFF) | (Flags & 0xFFFF0000);
-  ec.ColorItem    = 0;
-  lua_pushboolean(L, Info->EditorControl(ECTL_ADDCOLOR, &ec));
+  uint32_t fg, bg;
+
+  memset(&etc, 0, sizeof(etc));
+  etc.Base.StringNumber = luaL_optinteger(L,1,0) - 1;
+  etc.Base.StartPos     = luaL_checkinteger(L,2) - 1;
+  etc.Base.EndPos       = luaL_checkinteger(L,3) - 1;
+  if (lua_istable(L,4))
+  {
+    lua_pushvalue(L,4);
+    {
+      etc.Base.Color = GetOptIntFromTable(L,"BaseColor",0) & 0x0000FFFF;
+      fg = GetOptIntFromTable(L,"TrueFore",0xFFFFFF);
+      bg = GetOptIntFromTable(L,"TrueBack",0x000000);
+      etc.TrueFore.R = (fg >>  0) & 0xFF;
+      etc.TrueFore.G = (fg >>  8) & 0xFF;
+      etc.TrueFore.B = (fg >> 16) & 0xFF;
+      etc.TrueFore.Flags = 0x1;
+      etc.TrueBack.R = (bg >>  0) & 0xFF;
+      etc.TrueBack.G = (bg >>  8) & 0xFF;
+      etc.TrueBack.B = (bg >> 16) & 0xFF;
+      etc.TrueBack.Flags = 0x1;
+    }
+    lua_pop(L,1);
+  }
+  else
+    etc.Base.Color = luaL_optinteger(L,4,0) & 0x0000FFFF;
+
+  Flags = CheckFlags(L,5) & 0xFFFF0000;
+  etc.Base.Color |= Flags;
+
+  if (etc.Base.Color) // prevent color deletion
+    lua_pushboolean(L, Info->EditorControl(ECTL_ADDTRUECOLOR, &etc));
+  else
+    lua_pushboolean(L,0);
   return 1;
 }
 
@@ -1289,16 +1316,20 @@ int editor_DelColor(lua_State *L)
 int editor_GetColor(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
-  struct EditorColor ec;
-  memset(&ec, 0, sizeof(ec));
-  ec.StringNumber = luaL_optinteger(L, 1, 0) - 1;
-  ec.ColorItem    = luaL_checkinteger(L, 2) - 1;
-  if (Info->EditorControl(ECTL_GETCOLOR, &ec))
+  struct EditorTrueColor etc;
+  memset(&etc, 0, sizeof(etc));
+  etc.Base.StringNumber = luaL_optinteger(L, 1, 0) - 1;
+  etc.Base.ColorItem    = luaL_checkinteger(L, 2) - 1;
+  if (Info->EditorControl(ECTL_GETTRUECOLOR, &etc))
   {
-    lua_createtable(L, 0, 3);
-    PutNumToTable(L, "StartPos", ec.StartPos+1);
-    PutNumToTable(L, "EndPos", ec.EndPos+1);
-    PutNumToTable(L, "Color", ec.Color);
+    lua_createtable(L, 0, 5);
+    PutNumToTable(L, "StartPos", etc.Base.StartPos+1);
+    PutNumToTable(L, "EndPos", etc.Base.EndPos+1);
+    PutNumToTable(L, "BaseColor", etc.Base.Color);
+    if (etc.TrueFore.Flags & 0x1)
+      PutNumToTable(L, "TrueFore", etc.TrueFore.R | (etc.TrueFore.G << 8) | (etc.TrueFore.B << 16));
+    if (etc.TrueBack.Flags & 0x1)
+      PutNumToTable(L, "TrueBack", etc.TrueBack.R | (etc.TrueBack.G << 8) | (etc.TrueBack.B << 16));
   }
   else
     lua_pushnil(L);
