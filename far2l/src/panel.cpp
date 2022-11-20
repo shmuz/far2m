@@ -1416,7 +1416,6 @@ int Panel::GetCurDirPluginAware(FARString &strCurDir)
 	if (PanelMode==PLUGIN_PANEL)
 	{
 		PHPTR hPlugin=GetPluginHandle();
-//		PanelHandle *ph = (PanelHandle*)hPlugin;
 		OpenPluginInfo Info;
 		CtrlObject->Plugins.GetOpenPluginInfo(hPlugin,&Info);
 
@@ -1822,7 +1821,11 @@ int Panel::SetPluginCommand(int Command,int Param1,LONG_PTR Param2)
 					break;
 			}
 
-			Info->Plugin=(GetMode()==PLUGIN_PANEL);
+			if (GetMode()==PLUGIN_PANEL)
+			{
+				Info->Plugin=TRUE;
+				Info->PluginHandle=GetPluginHandle();
+			}
 			int X1,Y1,X2,Y2;
 			GetPosition(X1,Y1,X2,Y2);
 			Info->PanelRect.left=X1;

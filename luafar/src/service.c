@@ -1868,43 +1868,47 @@ int panel_ClosePlugin(lua_State *L)
 
 }
 
-int panel_GetPanelInfo(lua_State *L /*, BOOL ShortInfo*/)
+int panel_GetPanelInfo(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
-  HANDLE handle = OptHandle(L);
-  HANDLE plug_handle;
+  HANDLE input_handle = OptHandle(L);
+  HANDLE panel_handle;
   struct PanelInfo pi;
-  if (!Info->Control(handle, FCTL_GETPANELINFO, 0, (LONG_PTR)&pi))
+  if (!Info->Control(input_handle, FCTL_GETPANELINFO, 0, (LONG_PTR)&pi))
     return lua_pushnil(L), 1;
 
-  lua_createtable(L, 0, 14);
+  lua_createtable(L, 0, 15);
   //-------------------------------------------------------------------------
-  Info->Control(handle, FCTL_GETPANELPLUGINHANDLE, 0, (LONG_PTR)&plug_handle);
-  if (plug_handle != INVALID_HANDLE_VALUE) {
-    lua_pushlightuserdata(L, plug_handle);
+  PutIntToTable (L, "PanelType", pi.PanelType);
+  PutBoolToTable(L, "Plugin",    pi.Plugin != 0);
+  //-------------------------------------------------------------------------
+  lua_createtable(L, 0, 4); // "PanelRect"
+  PutIntToTable (L, "left",   pi.PanelRect.left);
+  PutIntToTable (L, "top",    pi.PanelRect.top);
+  PutIntToTable (L, "right",  pi.PanelRect.right);
+  PutIntToTable (L, "bottom", pi.PanelRect.bottom);
+  lua_setfield(L, -2, "PanelRect");
+  //-------------------------------------------------------------------------
+  PutIntToTable (L, "ItemsNumber",  pi.ItemsNumber);
+  PutIntToTable (L, "SelectedItemsNumber", pi.SelectedItemsNumber);
+  PutIntToTable (L, "CurrentItem",  pi.CurrentItem + 1);
+  PutIntToTable (L, "TopPanelItem", pi.TopPanelItem + 1);
+  PutBoolToTable(L, "Visible",      pi.Visible);
+  PutBoolToTable(L, "Focus",        pi.Focus);
+  PutIntToTable (L, "ViewMode",     pi.ViewMode);
+  PutIntToTable (L, "SortMode",     pi.SortMode);
+  PutIntToTable (L, "Flags",        pi.Flags);
+  //-------------------------------------------------------------------------
+  if (pi.PluginHandle) {
+    lua_pushlightuserdata(L, pi.PluginHandle);
     lua_setfield(L, -2, "PluginHandle");
   }
   //-------------------------------------------------------------------------
-  PutIntToTable(L, "PanelType", pi.PanelType);
-  PutBoolToTable(L, "Plugin", pi.Plugin != 0);
-  //-------------------------------------------------------------------------
-  lua_createtable(L, 0, 4); // "PanelRect"
-  PutIntToTable(L, "left", pi.PanelRect.left);
-  PutIntToTable(L, "top", pi.PanelRect.top);
-  PutIntToTable(L, "right", pi.PanelRect.right);
-  PutIntToTable(L, "bottom", pi.PanelRect.bottom);
-  lua_setfield(L, -2, "PanelRect");
-  //-------------------------------------------------------------------------
-  PutIntToTable(L, "ItemsNumber", pi.ItemsNumber);
-  PutIntToTable(L, "SelectedItemsNumber", pi.SelectedItemsNumber);
-  //-------------------------------------------------------------------------
-  PutIntToTable(L, "CurrentItem", pi.CurrentItem + 1);
-  PutIntToTable(L, "TopPanelItem", pi.TopPanelItem + 1);
-  PutBoolToTable(L, "Visible", pi.Visible);
-  PutBoolToTable(L, "Focus", pi.Focus);
-  PutIntToTable(L, "ViewMode", pi.ViewMode);
-  PutIntToTable(L, "SortMode", pi.SortMode);
-  PutIntToTable(L, "Flags", pi.Flags);
+  Info->Control(input_handle, FCTL_GETPANELPLUGINHANDLE, 0, (LONG_PTR)&panel_handle);
+  if (panel_handle != INVALID_HANDLE_VALUE) {
+    lua_pushlightuserdata(L, panel_handle);
+    lua_setfield(L, -2, "PanelHandle");
+  }
   //-------------------------------------------------------------------------
   return 1;
 }

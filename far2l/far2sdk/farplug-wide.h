@@ -817,6 +817,7 @@ struct PanelInfo
 	int SortMode;
 	DWORD Flags;
 	DWORD Reserved;
+	HANDLE PluginHandle;
 };
 
 
