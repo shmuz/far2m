@@ -603,14 +603,14 @@ int FileList::ConvertName(const wchar_t *SrcName,FARString &strDest,int MaxLengt
 		}
 	}
 
-	int SrcLength = StrLength(SrcName);
-	int SrcVisualLength = StrCellsCount(SrcName, SrcLength);
+	wchar_t *lpwszDest = strDest.GetBuffer(MaxLength+1);
+	wmemset(lpwszDest,L' ',MaxLength);
+	int SrcLength=StrLength(SrcName);
 
-	if (RightAlign && SrcVisualLength > MaxLength)
+	if (RightAlign && SrcLength>MaxLength)
 	{
-		size_t SkipCells = SrcVisualLength - MaxLength;
-		size_t SkipOfs = StrSizeOfCells(SrcName, SrcLength, SkipCells, true);
-		strDest.Copy(SrcName + SkipOfs, SrcLength - SkipOfs);
+		wmemcpy(lpwszDest,SrcName+SrcLength-MaxLength,MaxLength);
+		strDest.ReleaseBuffer(MaxLength);
 		return TRUE;
 	}
 
@@ -618,7 +618,7 @@ int FileList::ConvertName(const wchar_t *SrcName,FARString &strDest,int MaxLengt
 
 	if (!ShowStatus &&
 	        ((!(FileAttr&FILE_ATTRIBUTE_DIRECTORY) && ViewSettings.AlignExtensions) || ((FileAttr&FILE_ATTRIBUTE_DIRECTORY) && ViewSettings.FolderAlignExtensions))
-	        && SrcVisualLength<=MaxLength &&
+	        && SrcLength<=MaxLength &&
 	        (DotPtr=wcsrchr(SrcName,L'.')) && DotPtr!=SrcName &&
 	        (SrcName[0]!=L'.' || SrcName[2]) && !wcschr(DotPtr+1,L' '))
 	{
@@ -629,23 +629,20 @@ int FileList::ConvertName(const wchar_t *SrcName,FARString &strDest,int MaxLengt
 		if (DotPos<=NameLength)
 			DotPos=NameLength+1;
 
-		strDest.Copy(SrcName, NameLength);
-		strDest.Append(L'.');
-		strDest.Append(DotPtr+1,DotLength);
+		if (DotPos>0 && NameLength>0 && SrcName[NameLength-1]==L' ')
+			lpwszDest[NameLength]=L'.';
+
+		wmemcpy(lpwszDest,SrcName,NameLength);
+		wmemcpy(lpwszDest+DotPos,DotPtr+1,DotLength);
 	}
 	else
 	{
-		size_t CellsCount = MaxLength;
-		size_t CopyLen = StrSizeOfCells(SrcName, SrcLength, CellsCount, false);
-		strDest.Copy(SrcName, CopyLen);
+		wmemcpy(lpwszDest,SrcName,Min(SrcLength, MaxLength));
 	}
 
-	const size_t CopiedCellsCount = strDest.CellsCount();
-	if (CopiedCellsCount < size_t(MaxLength)) {
-		strDest.Append(L' ', size_t(MaxLength - CopiedCellsCount));
-	}
+	strDest.ReleaseBuffer(MaxLength);
 
-	return (SrcVisualLength > MaxLength);
+	return(SrcLength>MaxLength);
 }
 
 
