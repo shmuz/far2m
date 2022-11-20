@@ -379,24 +379,6 @@ struct FarStandardFunctions* GetFSF(lua_State* L)
   return pd->Info->FSF;
 }
 
-void uuid_to_guid(const char *uuid, GUID *guid)
-{
-  //copy field-wise because uuid_t is always 16 bytes while GUID may be more than that
-  memcpy(&guid->Data1, uuid+0, 4);
-  memcpy(&guid->Data2, uuid+4, 2);
-  memcpy(&guid->Data3, uuid+6, 2);
-  memcpy( guid->Data4, uuid+8, 8);
-}
-
-void guid_to_uuid(const GUID *guid, char *uuid)
-{
-  //copy field-wise because uuid_t is always 16 bytes while GUID may be more than that
-  memcpy(uuid+0, &guid->Data1, 4);
-  memcpy(uuid+4, &guid->Data2, 2);
-  memcpy(uuid+6, &guid->Data3, 2);
-  memcpy(uuid+8,  guid->Data4, 8);
-}
-
 int far_GetFileOwner (lua_State *L)
 {
   wchar_t Owner[512];
@@ -2775,10 +2757,8 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
     case DM_GETDIALOGINFO:
       dlg_info.StructSize = sizeof(dlg_info);
       if (Info->SendDlgMessage (hDlg, Msg, Param1, (LONG_PTR)&dlg_info)) {
-        char uuid[16];
-        guid_to_uuid(&dlg_info.Id, uuid);
         lua_createtable(L,0,1);
-        PutLStrToTable(L, "Id", uuid, 16);
+        PutLStrToTable(L, "Id", &dlg_info.Id, 16);
         return 1;
       }
       return lua_pushnil(L), 1;
@@ -3220,10 +3200,8 @@ int PushDNParams (lua_State *L, int Msg, int Param1, LONG_PTR Param2)
       break;
 
     case DN_GETDIALOGINFO: {
-      char uuid[16];
       struct DialogInfo* di = (struct DialogInfo*) Param2;
-      guid_to_uuid(&di->Id, uuid);
-      lua_pushlstring(L, uuid, 16);
+      lua_pushlstring(L, (const char*) &di->Id, 16);
       break;
     }
 
@@ -3413,7 +3391,7 @@ LONG_PTR LF_DlgProc(lua_State *L, HANDLE hDlg, int Msg, int Param1, LONG_PTR Par
     ret = lua_isstring(L,-1) && lua_objlen(L,-1) >= 16;
     if (ret) {
       struct DialogInfo* di = (struct DialogInfo*) Param2;
-      uuid_to_guid(lua_tostring(L,-1), &di->Id);
+      memcpy(&di->Id, lua_tostring(L,-1), 16);
     }
   }
 
