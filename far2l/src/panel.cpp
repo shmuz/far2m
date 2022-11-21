@@ -1824,7 +1824,7 @@ int Panel::SetPluginCommand(int Command,int Param1,LONG_PTR Param2)
 			if (GetMode()==PLUGIN_PANEL)
 			{
 				Info->Plugin=TRUE;
-				Info->PluginHandle=GetPluginHandle();
+				Info->PluginHandle=GetPluginHandle()->pPlugin;
 			}
 			int X1,Y1,X2,Y2;
 			GetPosition(X1,Y1,X2,Y2);
