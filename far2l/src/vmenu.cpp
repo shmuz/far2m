@@ -255,6 +255,7 @@ int VMenu::SetSelectPos(int Pos, int Direct)
 			if (CheckFlags(VMENU_WRAPMODE))
 			{
 				Pos = 0;
+				TopPos = 0;
 			}
 			else
 			{
@@ -1032,6 +1033,7 @@ int VMenu::ProcessKey(int Key)
 		case KEY_CTRLPGUP:     case KEY_CTRLNUMPAD9:
 		{
 			SetSelectPos(0,1);
+			TopPos = 0;
 			ShowMenu(true);
 			break;
 		}
