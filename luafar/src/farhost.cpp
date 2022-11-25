@@ -14,14 +14,13 @@ extern "C"
 }
 
 
-const char* GetStringFromTable(lua_State *L, const char *Key)
+const char* GetStrFromTable(lua_State *L, const char *Key)
 {
   lua_getfield(L, -1, Key);
   const char *val = lua_tostring(L,-1);
   lua_pop(L,1);
   return val;
 }
-
 
 // - input table is on stack top (-1)
 // - no collector is required
@@ -35,11 +34,11 @@ void FillAnsiPluginPanelItem (lua_State *L, oldfar::PluginPanelItem *pi)
   pi->FindData.nFileSize        = GetFileSizeFromTable(L, "FileSize");
   pi->NumberOfLinks             = GetOptIntFromTable  (L, "NumberOfLinks", 0);
 
-  const char* FileName          = GetStringFromTable  (L, "FileName");
+  const char* FileName          = GetStrFromTable  (L, "FileName");
   if (FileName)
     strncpy(pi->FindData.cFileName, FileName, MAX_NAME-1);
-  pi->Description        = (char*)GetStringFromTable  (L, "Description");
-  pi->Owner              = (char*)GetStringFromTable  (L, "Owner");
+  pi->Description        = (char*)GetStrFromTable  (L, "Description");
+  pi->Owner              = (char*)GetStrFromTable  (L, "Owner");
 
   // custom column data
   lua_getfield(L, -1, "CustomColumnData");
@@ -59,6 +58,46 @@ void FillAnsiPluginPanelItem (lua_State *L, oldfar::PluginPanelItem *pi)
   pi->Flags = GetOptIntFromTable(L, "Flags", 0) & ~oldfar::PPIF_USERDATA;
 }
 
+//a table expected on Lua stack top
+void PushAnsiFarFindData(lua_State *L, const oldfar::FAR_FIND_DATA *wfd)
+{
+  PutAttrToTable     (L,                       wfd->dwFileAttributes);
+  PutNumToTable      (L, "FileSize",           (double)wfd->nFileSize);
+  PutFileTimeToTable (L, "LastWriteTime",      wfd->ftLastWriteTime);
+  PutFileTimeToTable (L, "LastAccessTime",     wfd->ftLastAccessTime);
+  PutFileTimeToTable (L, "CreationTime",       wfd->ftCreationTime);
+  PutStrToTable      (L, "FileName",           wfd->cFileName);
+  PutNumToTable      (L, "UnixMode",           wfd->dwUnixMode);
+}
+
+void PushAnsiPanelItems(lua_State *L, oldfar::PluginPanelItem *Items, int ItemsNumber)
+{
+  lua_createtable(L, ItemsNumber, 0);
+  for (int i=0; i<ItemsNumber; i++)
+  {
+    lua_createtable(L, 10, 0);
+    {
+      auto *PanelItem = Items+i;
+      PushAnsiFarFindData(L, &PanelItem->FindData);
+
+      PutNumToTable(L, "Flags", PanelItem->Flags);
+      PutNumToTable(L, "NumberOfLinks", PanelItem->NumberOfLinks);
+      if (PanelItem->Description)
+        PutStrToTable(L, "Description",  PanelItem->Description);
+      if (PanelItem->Owner)
+        PutStrToTable(L, "Owner",  PanelItem->Owner);
+
+      if (PanelItem->CustomColumnNumber > 0) {
+        int j;
+        lua_createtable (L, PanelItem->CustomColumnNumber, 0);
+        for(j=0; j < PanelItem->CustomColumnNumber; j++)
+          PutStrToArray(L, j+1, PanelItem->CustomColumnData[j]);
+        lua_setfield(L, -2, "CustomColumnData");
+      }
+    }
+    lua_rawseti(L, -2, i+1);
+  }
+}
 
 struct CommonParams
 {
@@ -150,8 +189,8 @@ int _GetFilesW(lua_State *L, HANDLE hPanel, HMODULE hModule)
   }
 
   int ret = getfilesW(hPanel, ppi, ppi_curr-ppi, Move, &DestPath, OpMode);
-  for(; ppi<ppi_curr; ppi++)
-    free((void*)ppi->CustomColumnData);
+  for (auto curr=ppi; curr<ppi_curr; curr++)
+    free((void*)curr->CustomColumnData);
   free(ppi);
   return ret;
 }
@@ -195,12 +234,93 @@ int _GetFilesA(lua_State *L, HANDLE hPanel, HMODULE hModule)
   }
 
   int ret = getfilesA(hPanel, ppi, ppi_curr-ppi, Move, DestPathOut, OpMode);
-  for(; ppi<ppi_curr; ppi++)
-    free((void*)ppi->CustomColumnData);
+  for (auto curr=ppi; curr<ppi_curr; curr++)
+    free((void*)curr->CustomColumnData);
   free(ppi);
   return ret;
 }
 
+int _SetDirectoryW(lua_State *L, HANDLE hPanel, HMODULE hModule)
+{
+  typedef int (WINAPI * T_SetDirectoryW)(HANDLE, const wchar_t*, int);
+  ModuleGuard mg(hModule);
+
+  const wchar_t *dir_name = check_utf8_string(L, 2, NULL); //2-nd argument
+  int OpMode = luaL_optinteger(L, 3, OPM_FIND | OPM_SILENT); //3-rd argument
+
+  T_SetDirectoryW setDirectoryW;
+  if (NULL == (setDirectoryW = (T_SetDirectoryW) dlsym(hModule, "SetDirectoryW")))
+    return FALSE;
+
+  return setDirectoryW(hPanel, dir_name, OpMode);
+}
+
+int _SetDirectoryA(lua_State *L, HANDLE hPanel, HMODULE hModule)
+{
+  typedef int (WINAPI * T_SetDirectoryA)(HANDLE, const char*, int);
+  ModuleGuard mg(hModule);
+
+  const char *dir_name = luaL_checkstring(L, 2); //2-nd argument
+  int OpMode = luaL_optinteger(L, 3, oldfar::OPM_FIND | oldfar::OPM_SILENT); //3-rd argument
+
+  T_SetDirectoryA setDirectoryA;
+  if (NULL == (setDirectoryA = (T_SetDirectoryA) dlsym(hModule, "SetDirectory")))
+    return FALSE;
+
+  return setDirectoryA(hPanel, dir_name, OpMode);
+}
+
+int _GetFindDataW(lua_State *L, HANDLE hPanel, HMODULE hModule)
+{
+  typedef int  (WINAPI * T_GetFindDataW) (HANDLE, PluginPanelItem**, int*, int);
+  typedef void (WINAPI * T_FreeFindDataW)(HANDLE, PluginPanelItem*, int);
+  ModuleGuard mg(hModule);
+
+  T_GetFindDataW getFindDataW;
+  if (NULL == (getFindDataW = (T_GetFindDataW) dlsym(hModule, "GetFindDataW")))
+    return FALSE;
+
+  PluginPanelItem *PanelItems;
+  int ItemsNumber;
+  int OpMode = luaL_optinteger(L, 2, OPM_FIND | OPM_SILENT); //2-nd argument
+
+  if (0 == getFindDataW(hPanel, &PanelItems, &ItemsNumber, OpMode))
+    return FALSE;
+
+  PushPanelItems(L, INVALID_HANDLE_VALUE, PanelItems, ItemsNumber);
+
+  T_FreeFindDataW freeFindDataW = (T_FreeFindDataW) dlsym(hModule, "FreeFindDataW");
+  if (freeFindDataW)
+    freeFindDataW(hPanel, PanelItems, ItemsNumber);
+
+  return TRUE;
+}
+
+int _GetFindDataA(lua_State *L, HANDLE hPanel, HMODULE hModule)
+{
+  typedef int  (WINAPI * T_GetFindDataA) (HANDLE, oldfar::PluginPanelItem**, int*, int);
+  typedef void (WINAPI * T_FreeFindDataA)(HANDLE, oldfar::PluginPanelItem*, int);
+  ModuleGuard mg(hModule);
+
+  T_GetFindDataA getFindDataA;
+  if (NULL == (getFindDataA = (T_GetFindDataA) dlsym(hModule, "GetFindData")))
+    return FALSE;
+
+  oldfar::PluginPanelItem *PanelItems;
+  int ItemsNumber;
+  int OpMode = luaL_optinteger(L, 2, oldfar::OPM_FIND | oldfar::OPM_SILENT); //2-nd argument
+
+  if (0 == getFindDataA(hPanel, &PanelItems, &ItemsNumber, OpMode))
+    return FALSE;
+
+  PushAnsiPanelItems(L, PanelItems, ItemsNumber);
+
+  T_FreeFindDataA freeFindDataA = (T_FreeFindDataA) dlsym(hModule, "FreeFindData");
+  if (freeFindDataA)
+    freeFindDataA(hPanel, PanelItems, ItemsNumber);
+
+  return TRUE;
+}
 
 extern "C" int far_host_GetFiles(lua_State *L)
 {
@@ -213,15 +333,37 @@ extern "C" int far_host_GetFiles(lua_State *L)
   return 1;
 }
 
+extern "C" int far_host_SetDirectory(lua_State *L)
+{
+  CommonParams CP;
+  if (GetCommonParams(L, &CP))
+    lua_pushboolean(L, (CP.Ansi ? _SetDirectoryA : _SetDirectoryW)(L, CP.hPanel, CP.hModule));
+  else
+    lua_pushboolean(L,0);
+
+  return 1;
+}
+
+extern "C" int far_host_GetFindData(lua_State *L)
+{
+  CommonParams CP;
+  if (GetCommonParams(L, &CP)) {
+    if ((CP.Ansi ? _GetFindDataA : _GetFindDataW)(L, CP.hPanel, CP.hModule))
+      return 1;
+  }
+  lua_pushnil(L);
+  return 1;
+}
+
 const luaL_Reg far_host_funcs[] =
 {
   {"GetFiles",      far_host_GetFiles},
 //  {"PutFiles",      far_host_PutFiles},
-//  {"GetFindData",   far_host_GetFindData},
-//  {"SetDirectory",  far_host_SetDirectory},
+  {"GetFindData",   far_host_GetFindData},
+  {"SetDirectory",  far_host_SetDirectory},
 //  {"FreeUserData",  far_host_FreeUserData},
 
-	{NULL, NULL}
+  {NULL, NULL}
 };
 
 extern "C" int luaopen_far_host(lua_State *L)
