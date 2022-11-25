@@ -41,6 +41,7 @@ set(SOURCES
   src/slnunico.c
   src/ustring.c
   src/util.c
+  src/farhost.cpp
 )
 
 add_library (luafar2l SHARED ${SOURCES})

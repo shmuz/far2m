@@ -10,22 +10,27 @@
 #include "ustring.h"
 #include "version.h"
 
-extern int  luaopen_bit64 (lua_State *L);
-extern int  luaopen_unicode (lua_State *L);
-extern int  luaopen_utf8 (lua_State *L);
-extern int  luaopen_timer (lua_State *L);
-extern int  luaopen_usercontrol (lua_State *L);
-extern int  luaopen_regex (lua_State*);
-extern int  pcall_msg (lua_State* L, int narg, int nret);
-extern void add_flags (lua_State *L);
 extern void add_colors (lua_State *L);
+extern void add_flags (lua_State *L);
 extern void add_keys (lua_State *L);
-extern void PushPluginTable(lua_State* L, HANDLE hPlugin);
-extern int  far_MacroCallFar(lua_State *L);
-extern int  far_FarMacroCallToLua(lua_State *L);
-extern int  bit64_push(lua_State *L, INT64 v);
+
 extern int  bit64_getvalue(lua_State *L, int pos, INT64 *target);
+extern int  bit64_push(lua_State *L, INT64 v);
+
+extern int  far_MacroCallFar(lua_State *L);
+extern int  far_MacroCallToLua(lua_State *L);
+
+extern int  luaopen_bit64 (lua_State *L);
+extern int  luaopen_far_host(lua_State *L);
+extern int  luaopen_regex (lua_State*);
+extern int  luaopen_timer (lua_State *L);
+extern int  luaopen_unicode (lua_State *L);
+extern int  luaopen_usercontrol (lua_State *L);
+extern int  luaopen_utf8 (lua_State *L);
+
 extern void PackMacroValues(lua_State* L, size_t Count, const struct FarMacroValue* Values);
+extern int  pcall_msg (lua_State* L, int narg, int nret);
+extern void PushPluginTable(lua_State* L, HANDLE hPlugin);
 
 #ifndef ARRAYSIZE
 #  define ARRAYSIZE(buff) (sizeof(buff)/sizeof(buff[0]))
@@ -5948,11 +5953,14 @@ int luaopen_far (lua_State *L)
   lua_insert(L, -2);
   lua_setfield(L, -2, "Flags");
 
+  luaopen_far_host(L);
+  lua_setfield(L, -2, "Host");
+
   if (Info->StructSize > offsetof(PSInfo, Private) && Info->Private)
   {
     lua_pushcfunction(L, far_MacroCallFar);
     lua_setfield(L, -2, "MacroCallFar");
-    lua_pushcfunction(L, far_FarMacroCallToLua);
+    lua_pushcfunction(L, far_MacroCallToLua);
     lua_setfield(L, -2, "FarMacroCallToLua");
   }
 

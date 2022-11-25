@@ -4,10 +4,6 @@
 #include <windows.h>
 #include "luafar.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <lua.h>
 #include <lauxlib.h>
 
@@ -56,31 +52,5 @@ int ustring_Utf8ToUtf32 (lua_State *L);
 int ustring_Uuid(lua_State* L);
 int ustring_GetFileAttr(lua_State *L);
 int ustring_SetFileAttr(lua_State *L);
-
-#ifdef __cplusplus
-}
-#endif
-
-#ifdef __cplusplus
-inline wchar_t* check_utf8_string (lua_State *L, int pos) {
-  return check_utf8_string(L, pos, NULL);
-}
-
-inline wchar_t* utf8_to_wcstring (lua_State *L, int pos) {
-  return utf8_to_wcstring(L, pos, NULL);
-}
-
-inline void push_utf8_string (lua_State* L, const wchar_t* str) {
-  push_utf8_string(L, str, -1);
-}
-
-inline void PutWStrToArray(lua_State *L, int key, const wchar_t* str) {
-  PutWStrToArray(L, key, str, -1);
-}
-
-inline void PutWStrToTable(lua_State *L, const char* key, const wchar_t* str) {
-  PutWStrToTable(L, key, str, -1);
-}
-#endif
 
 #endif // #ifndef _USTRING_H

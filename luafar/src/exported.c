@@ -220,7 +220,7 @@ void FillPluginPanelItem (lua_State *L, struct PluginPanelItem *pi, int index)
   if (lua_istable(L,-1)) {
     int i;
     pi->CustomColumnNumber = lua_objlen(L,-1);
-    pi->CustomColumnData = malloc(pi->CustomColumnNumber * sizeof(wchar_t**));
+    pi->CustomColumnData = malloc(pi->CustomColumnNumber * sizeof(wchar_t*));
     for (i=0; i < pi->CustomColumnNumber; i++) {
       lua_rawgeti(L, -1, i+1);
       *(wchar_t**)(pi->CustomColumnData+i) = (wchar_t*)_AddStringToCollector(L, Collector);
@@ -230,14 +230,16 @@ void FillPluginPanelItem (lua_State *L, struct PluginPanelItem *pi, int index)
 
   // prevent Far from treating UserData as pointer and copying data from it
   pi->Flags = GetOptIntFromTable(L, "Flags", 0) & ~PPIF_USERDATA;
-  lua_getfield(L, -1, "UserData");
-  if (!lua_isnil(L, -1)) {
-    pi->UserData = index;
-    lua_rawseti(L, Collector-1, index);
-  }
-  else {
-    pi->UserData = 0;
-    lua_pop(L, 1);
+  if (index) {
+    lua_getfield(L, -1, "UserData");
+    if (!lua_isnil(L, -1)) {
+      pi->UserData = index;
+      lua_rawseti(L, Collector-1, index);
+    }
+    else {
+      pi->UserData = 0;
+      lua_pop(L, 1);
+    }
   }
 }
 
