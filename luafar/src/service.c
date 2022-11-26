@@ -3623,6 +3623,7 @@ int viewer_GetInfo(lua_State *L)
     PutBoolToTable(L, "Wrap",        vi.CurMode.Wrap);
     PutNumToTable (L, "WordWrap",    vi.CurMode.WordWrap);
     PutBoolToTable(L, "Hex",         vi.CurMode.Hex);
+    PutBoolToTable(L, "Processed",   vi.CurMode.Processed);
     lua_setfield(L, -2, "CurMode");
   }
   else
