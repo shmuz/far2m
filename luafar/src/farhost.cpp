@@ -32,6 +32,8 @@ void FillAnsiPluginPanelItem (lua_State *L, oldfar::PluginPanelItem *pi)
   pi->FindData.ftLastAccessTime = GetFileTimeFromTable(L, "LastAccessTime");
   pi->FindData.ftLastWriteTime  = GetFileTimeFromTable(L, "LastWriteTime");
   pi->FindData.nFileSize        = GetFileSizeFromTable(L, "FileSize");
+  pi->FindData.nPhysicalSize    = GetFileSizeFromTable(L, "PhysicalSize");
+  pi->FindData.dwUnixMode       = GetOptIntFromTable  (L, "UnixMode", 0);
   pi->NumberOfLinks             = GetOptIntFromTable  (L, "NumberOfLinks", 0);
 
   const char* FileName          = GetStrFromTable  (L, "FileName");
@@ -39,6 +41,7 @@ void FillAnsiPluginPanelItem (lua_State *L, oldfar::PluginPanelItem *pi)
     strncpy(pi->FindData.cFileName, FileName, MAX_NAME-1);
   pi->Description        = (char*)GetStrFromTable  (L, "Description");
   pi->Owner              = (char*)GetStrFromTable  (L, "Owner");
+  pi->Group              = (char*)GetStrFromTable  (L, "Group");
 
   // custom column data
   lua_getfield(L, -1, "CustomColumnData");
@@ -54,8 +57,18 @@ void FillAnsiPluginPanelItem (lua_State *L, oldfar::PluginPanelItem *pi)
   }
   lua_pop(L,1);
 
-  // prevent Far from treating UserData as pointer and copying data from it
-  pi->Flags = GetOptIntFromTable(L, "Flags", 0) & ~oldfar::PPIF_USERDATA;
+  // Flags
+  pi->Flags = GetOptIntFromTable(L, "Flags", 0);
+
+  // UserData
+  lua_getfield(L, -1, "UserData");
+  if (pi->Flags & oldfar::PPIF_USERDATA) {
+    if (lua_isuserdata(L,-1))
+      pi->UserData = (DWORD_PTR) lua_touserdata(L,-1);
+  }
+  else
+    pi->UserData = (DWORD_PTR) lua_tointeger(L,-1);
+  lua_pop(L,1);
 }
 
 //a table expected on Lua stack top
@@ -63,6 +76,7 @@ void PushAnsiFarFindData(lua_State *L, const oldfar::FAR_FIND_DATA *wfd)
 {
   PutAttrToTable     (L,                       wfd->dwFileAttributes);
   PutNumToTable      (L, "FileSize",           (double)wfd->nFileSize);
+  PutNumToTable      (L, "PhysicalSize",       (double)wfd->nPhysicalSize);
   PutFileTimeToTable (L, "LastWriteTime",      wfd->ftLastWriteTime);
   PutFileTimeToTable (L, "LastAccessTime",     wfd->ftLastAccessTime);
   PutFileTimeToTable (L, "CreationTime",       wfd->ftCreationTime);
@@ -75,25 +89,33 @@ void PushAnsiPanelItems(lua_State *L, oldfar::PluginPanelItem *Items, int ItemsN
   lua_createtable(L, ItemsNumber, 0);
   for (int i=0; i<ItemsNumber; i++)
   {
-    lua_createtable(L, 10, 0);
+    lua_createtable(L, 16, 0);
     {
       auto *PanelItem = Items+i;
       PushAnsiFarFindData(L, &PanelItem->FindData);
 
       PutNumToTable(L, "Flags", PanelItem->Flags);
       PutNumToTable(L, "NumberOfLinks", PanelItem->NumberOfLinks);
-      if (PanelItem->Description)
-        PutStrToTable(L, "Description",  PanelItem->Description);
-      if (PanelItem->Owner)
-        PutStrToTable(L, "Owner",  PanelItem->Owner);
+
+      if (PanelItem->Description)  PutStrToTable(L, "Description",  PanelItem->Description);
+      if (PanelItem->Owner)        PutStrToTable(L, "Owner",  PanelItem->Owner);
+      if (PanelItem->Group)        PutStrToTable(L, "Group",  PanelItem->Group);
 
       if (PanelItem->CustomColumnNumber > 0) {
-        int j;
         lua_createtable (L, PanelItem->CustomColumnNumber, 0);
-        for(j=0; j < PanelItem->CustomColumnNumber; j++)
+        for (int j=0; j < PanelItem->CustomColumnNumber; j++)
           PutStrToArray(L, j+1, PanelItem->CustomColumnData[j]);
         lua_setfield(L, -2, "CustomColumnData");
       }
+
+      if (PanelItem->Flags & oldfar::PPIF_USERDATA) {
+        DWORD *structsize = (DWORD*)PanelItem->UserData;
+        void *udata = lua_newuserdata(L, *structsize);
+        memcpy(udata, structsize, *structsize);
+        lua_setfield(L, -2, "UserData");
+      }
+      else
+        PutNumToTable(L, "UserData", PanelItem->UserData);
     }
     lua_rawseti(L, -2, i+1);
   }
@@ -361,7 +383,6 @@ const luaL_Reg far_host_funcs[] =
 //  {"PutFiles",      far_host_PutFiles},
   {"GetFindData",   far_host_GetFindData},
   {"SetDirectory",  far_host_SetDirectory},
-//  {"FreeUserData",  far_host_FreeUserData},
 
   {NULL, NULL}
 };

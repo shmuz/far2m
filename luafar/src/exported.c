@@ -209,11 +209,14 @@ void FillPluginPanelItem (lua_State *L, struct PluginPanelItem *pi, int index)
   pi->FindData.ftLastAccessTime = GetFileTimeFromTable(L, "LastAccessTime");
   pi->FindData.ftLastWriteTime  = GetFileTimeFromTable(L, "LastWriteTime");
   pi->FindData.nFileSize        = GetFileSizeFromTable(L, "FileSize");
+  pi->FindData.nPhysicalSize    = GetFileSizeFromTable(L, "PhysicalSize");
+  pi->FindData.dwUnixMode       = GetOptIntFromTable  (L, "UnixMode", 0);
   pi->NumberOfLinks             = GetOptIntFromTable  (L, "NumberOfLinks", 0);
 
   pi->FindData.lpwszFileName = (wchar_t*)AddStringToCollectorField(L, Collector, "FileName");
   pi->Description            = (wchar_t*)AddStringToCollectorField(L, Collector, "Description");
   pi->Owner                  = (wchar_t*)AddStringToCollectorField(L, Collector, "Owner");
+  pi->Group                  = (wchar_t*)AddStringToCollectorField(L, Collector, "Group");
 
   // custom column data
   lua_getfield(L, -1, "CustomColumnData");

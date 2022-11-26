@@ -484,10 +484,12 @@ void PushFarFindData(lua_State *L, const struct FAR_FIND_DATA *wfd)
 {
   PutAttrToTable     (L,                       wfd->dwFileAttributes);
   PutNumToTable      (L, "FileSize",           (double)wfd->nFileSize);
+  PutNumToTable      (L, "PhysicalSize",       (double)wfd->nPhysicalSize);
   PutFileTimeToTable (L, "LastWriteTime",      wfd->ftLastWriteTime);
   PutFileTimeToTable (L, "LastAccessTime",     wfd->ftLastAccessTime);
   PutFileTimeToTable (L, "CreationTime",       wfd->ftCreationTime);
   PutWStrToTable     (L, "FileName",           wfd->lpwszFileName, -1);
+  PutNumToTable      (L, "UnixMode",           wfd->dwUnixMode);
 }
 
 // on entry : the table's on the stack top
@@ -497,10 +499,12 @@ void GetFarFindData(lua_State *L, struct FAR_FIND_DATA *wfd)
   memset(wfd, 0, sizeof(*wfd));
 
   wfd->dwFileAttributes = GetAttrFromTable(L);
-  wfd->nFileSize = GetFileSizeFromTable(L, "FileSize");
+  wfd->nFileSize        = GetFileSizeFromTable(L, "FileSize");
+  wfd->nPhysicalSize    = GetFileSizeFromTable(L, "PhysicalSize");
   wfd->ftLastWriteTime  = GetFileTimeFromTable(L, "LastWriteTime");
   wfd->ftLastAccessTime = GetFileTimeFromTable(L, "LastAccessTime");
   wfd->ftCreationTime   = GetFileTimeFromTable(L, "CreationTime");
+  wfd->dwUnixMode       = GetOptIntFromTable  (L, "UnixMode", 0);
 
   lua_getfield(L, -1, "FileName"); // +1
   wfd->lpwszFileName = opt_utf8_string(L, -1, L""); // +1
@@ -510,12 +514,12 @@ void GetFarFindData(lua_State *L, struct FAR_FIND_DATA *wfd)
 void PushWinFindData (lua_State *L, const WIN32_FIND_DATAW *FData)
 {
   lua_createtable(L, 0, 7);
-  PutAttrToTable(L,                          FData->dwFileAttributes);
-  PutNumToTable(L, "FileSize",               FData->nFileSize);
+  PutAttrToTable    (L,                      FData->dwFileAttributes);
+  PutNumToTable     (L, "FileSize",          FData->nFileSize);
   PutFileTimeToTable(L, "LastWriteTime",     FData->ftLastWriteTime);
   PutFileTimeToTable(L, "LastAccessTime",    FData->ftLastAccessTime);
   PutFileTimeToTable(L, "CreationTime",      FData->ftCreationTime);
-  PutWStrToTable(L, "FileName",              FData->cFileName, -1);
+  PutWStrToTable    (L, "FileName",          FData->cFileName, -1);
 }
 
 void PushOptPluginTable(lua_State *L, HANDLE handle, PSInfo *Info)
@@ -537,10 +541,10 @@ void PushPanelItem(lua_State *L, const struct PluginPanelItem *PanelItem)
   PushFarFindData(L, &PanelItem->FindData);
   PutNumToTable(L, "Flags", PanelItem->Flags);
   PutNumToTable(L, "NumberOfLinks", PanelItem->NumberOfLinks);
-  if (PanelItem->Description)
-    PutWStrToTable(L, "Description",  PanelItem->Description, -1);
-  if (PanelItem->Owner)
-    PutWStrToTable(L, "Owner",  PanelItem->Owner, -1);
+
+  if (PanelItem->Description)    PutWStrToTable(L, "Description",  PanelItem->Description, -1);
+  if (PanelItem->Owner)          PutWStrToTable(L, "Owner",  PanelItem->Owner, -1);
+  if (PanelItem->Group)          PutWStrToTable(L, "Group",  PanelItem->Group, -1);
 
   if (PanelItem->CustomColumnNumber > 0) {
     int j;
@@ -3869,14 +3873,9 @@ int far_InputRecordToKey (lua_State *L)
 int far_NameToInputRecord(lua_State *L)
 {
   INPUT_RECORD ir;
-  const wchar_t* str;
+  const wchar_t* str = check_utf8_string(L, 1, NULL);
 
-  struct FarStandardFunctions* FSF = GetFSF(L);
-  if (FSF->StructSize <= offsetof(struct FarStandardFunctions, FarNameToInputRecord))
-    luaL_error(L, "This version of FAR doesn't support FSF.FarNameToInputRecord()");
-
-  str = check_utf8_string(L, 1, NULL);
-  if (FSF->FarNameToInputRecord(str, &ir))
+  if (GetFSF(L)->FarNameToInputRecord(str, &ir))
     PushInputRecord(L, &ir);
   else
     lua_pushnil(L);
