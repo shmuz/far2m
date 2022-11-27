@@ -155,7 +155,7 @@ static size_t WINAPI FarKeyToName(int Key,wchar_t *KeyText,size_t Size)
 static BOOL WINAPI FarNameToInputRecord(const wchar_t *Name,INPUT_RECORD* RecKey)
 {
 	const auto Key = KeyNameToKey(Name);
-	return Key && KeyToInputRecord(Key, RecKey);
+	return Key && (Key != KEY_INVALID) && KeyToInputRecord(Key, RecKey);
 }
 
 int WINAPI KeyNameToKeyW(const wchar_t *Name)

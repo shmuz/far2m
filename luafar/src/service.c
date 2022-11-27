@@ -1487,8 +1487,8 @@ int far_Menu(lua_State *L)
   lua_settop (L, 3);    // cut unneeded parameters; make stack predictable
   luaL_checktype(L, 1, LUA_TTABLE);
   luaL_checktype(L, 2, LUA_TTABLE);
-  if (!lua_isnil(L,3) && !lua_istable(L,3))
-    return luaL_argerror(L, 3, "must be table or nil");
+  if (!lua_isnil(L,3) && !lua_istable(L,3) && !lua_isstring(L,3))
+    return luaL_argerror(L, 3, "must be table, string or nil");
 
   lua_newtable(L); // temporary store; at stack position 4
   int store = 0;
@@ -1563,7 +1563,27 @@ int far_Menu(lua_State *L)
   // Break Keys
   int BreakCode;
   int *pBreakKeys=NULL, *pBreakCode=NULL;
-  int NumBreakCodes = lua_istable(L,3) ? lua_objlen(L,3) : 0;
+  int NumBreakCodes = 0;
+  if (lua_isstring(L,3))
+  {
+    const char *q, *ptr = lua_tostring(L,3);
+    lua_newtable(L);
+    while (*ptr)
+    {
+      while (isspace(*ptr)) ptr++;
+      if (*ptr == 0) break;
+      q = ptr++;
+      while(*ptr && !isspace(*ptr)) ptr++;
+      lua_createtable(L,0,1);
+      lua_pushlstring(L,q,ptr-q);
+      lua_setfield(L,-2,"BreakKey");
+      lua_rawseti(L,-2,++NumBreakCodes);
+    }
+    lua_replace(L,3);
+  }
+  else
+    NumBreakCodes = lua_istable(L,3) ? (int)lua_objlen(L,3) : 0;
+
   if (NumBreakCodes) {
     int* BreakKeys = (int*)lua_newuserdata(L, (1+NumBreakCodes)*sizeof(int));
     // get virtualkeys table from the registry; push it on top
@@ -1580,6 +1600,29 @@ int far_Menu(lua_State *L)
       if(!lua_istable(L,-1))  { lua_pop(L,1); continue; }
       lua_getfield(L, -1, "BreakKey");// vk=-4; bk=-3;
       if(!lua_isstring(L,-1)) { lua_pop(L,2); continue; }
+
+      // first try to use "Far key names" instead of "virtual key names"
+      if (utf8_to_wcstring(L, -1, NULL))
+      {
+        INPUT_RECORD Rec;
+        if (Info->FSF->FarNameToInputRecord((const wchar_t*)lua_touserdata(L,-1), &Rec)
+          && Rec.EventType == KEY_EVENT)
+        {
+          int mod = 0;
+          DWORD Code = Rec.Event.KeyEvent.wVirtualKeyCode;
+          DWORD State = Rec.Event.KeyEvent.dwControlKeyState;
+          if (State & (LEFT_CTRL_PRESSED|RIGHT_CTRL_PRESSED)) mod |= PKF_CONTROL;
+          if (State & (LEFT_ALT_PRESSED|RIGHT_ALT_PRESSED))   mod |= PKF_ALT;
+          if (State & SHIFT_PRESSED)                          mod |= PKF_SHIFT;
+          BreakKeys[out++] = (Code & 0xFFFF) | (mod << 16);
+          lua_pop(L, 2);
+          continue; // success
+        }
+        // restore the original string
+        lua_pop(L, 1);
+        lua_getfield(L, -1, "BreakKey");// vk=-4; bk=-3;bki=-2;bknm=-1;
+      }
+
       // separate modifier and virtual key strings
       int mod = 0;
       const char* s = lua_tostring(L,-1);

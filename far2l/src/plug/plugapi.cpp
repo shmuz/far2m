@@ -886,12 +886,6 @@ static int FarMenuFnSynched(
 				{
 					for (int I=0; BreakKeys[I]; I++)
 					{
-						if (CtrlObject->Macro.IsExecuting())
-						{
-							int VirtKey,ControlState;
-							TranslateKeyToVK(ReadKey,VirtKey,ControlState,&ReadRec);
-						}
-
 						if (ReadRec.Event.KeyEvent.wVirtualKeyCode==(BreakKeys[I] & 0xffff))
 						{
 							DWORD Flags=BreakKeys[I]>>16;
