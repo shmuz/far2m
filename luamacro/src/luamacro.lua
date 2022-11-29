@@ -115,7 +115,7 @@ local PluginInfo
 function export.GetPluginInfo()
   local out = {
     Flags = bor(F.PF_PRELOAD,F.PF_FULLCMDLINE,F.PF_EDITOR,F.PF_VIEWER,F.PF_DIALOG),
-    CommandPrefix = "lm:macro:lua:moon:luas:moons:edit:view:load:unload"..utils.GetPrefixes()[1],
+    CommandPrefix = "lm:macro:lua:moon:luas:moons:edit:view:load:unload:goto"..utils.GetPrefixes()[1],
     PluginMenuStrings = { "Macro Browser" },
     PluginMenuGuids = { win.Uuid("EF6D67A2-59F7-4DF3-952E-F9049877B492") },
     PluginConfigGuids = {},
@@ -427,12 +427,36 @@ local function Open_CommandLine (strCmdLine)
       viewer.Viewer(text,nil,nil,nil,nil,nil,flags)
     end
   ----------------------------------------------------------------------------
-  elseif prefix == "load" and text~="" then
-    far.LoadPlugin("PLT_PATH", text)
+  elseif prefix == "load" then
+    if text~="" then far.LoadPlugin("PLT_PATH", text) end
   ----------------------------------------------------------------------------
-  elseif prefix == "unload" and text~="" then
-    local plug = far.FindPlugin("PFM_MODULENAME", text)
-    if plug then far.UnloadPlugin(plug) end
+  elseif prefix == "unload" then
+    if text~="" then
+      local plug = far.FindPlugin("PFM_MODULENAME", text)
+      if plug then far.UnloadPlugin(plug) end
+    end
+  ----------------------------------------------------------------------------
+  elseif prefix == "goto" then
+    if text~="" then
+      local path,filename = text:match("(.*/)(.*)")
+      if path==nil then filename = text end
+      local current = panel.GetPanelDirectory(1)
+      local result = path==nil or panel.SetPanelDirectory(1,path:sub(1,1)=='/' and path or current.."/"..path)
+      if result and filename~="" then
+        local info=panel.GetPanelInfo(1)
+        if info then
+          filename=filename:lower()
+          for ii=1,info.ItemsNumber do
+            local item=panel.GetPanelItem(1,ii)
+            if not item then break end
+            if filename==item.FileName:lower() then
+              panel.RedrawPanel(1,{TopPanelItem=1,CurrentItem=ii})
+              break
+            end
+          end
+        end
+      end
+    end
   ----------------------------------------------------------------------------
   else
     local item = utils.GetPrefixes()[prefix]
