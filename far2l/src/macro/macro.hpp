@@ -34,7 +34,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "farplug-wide.h"
-#include "tvar.hpp"
 
 template <typename T>
 bool CheckStructSize(const T* s)
@@ -63,30 +62,6 @@ enum MACRODISABLEONLOAD
 	MDOL_AUTOSTART      = 0x00000001, // дисаблим автостартующие макросы
 };
 
-// области действия макросов (начало исполнения) -  НЕ БОЛЕЕ 0xFF областей!
-enum MACROMODEAREA
-{
-	MACRO_OTHER           = MACROAREA_OTHER,          // Режим копирования текста с экрана, вертикальные меню
-	MACRO_SHELL           = MACROAREA_SHELL,          // Файловые панели
-	MACRO_VIEWER          = MACROAREA_VIEWER,         // Внутренняя программа просмотра
-	MACRO_EDITOR          = MACROAREA_EDITOR,         // Редактор
-	MACRO_DIALOG          = MACROAREA_DIALOG,         // Диалоги
-	MACRO_SEARCH          = MACROAREA_SEARCH,         // Быстрый поиск в панелях
-	MACRO_DISKS           = MACROAREA_DISKS,          // Меню выбора дисков
-	MACRO_MAINMENU        = MACROAREA_MAINMENU,       // Основное меню
-	MACRO_MENU            = MACROAREA_MENU,           // Прочие меню
-	MACRO_HELP            = MACROAREA_HELP,           // Система помощи
-	MACRO_INFOPANEL       = MACROAREA_INFOPANEL,      // Информационная панель
-	MACRO_QVIEWPANEL      = MACROAREA_QVIEWPANEL,     // Панель быстрого просмотра
-	MACRO_TREEPANEL       = MACROAREA_TREEPANEL,      // Панель дерева папок
-	MACRO_FINDFOLDER      = MACROAREA_FINDFOLDER,     // Поиск папок
-	MACRO_USERMENU        = MACROAREA_USERMENU,       // Меню пользователя
-	MACRO_AUTOCOMPLETION  = MACROAREA_AUTOCOMPLETION, // Список автодополнения
-
-	MACRO_COMMON,                     // ВЕЗДЕ! - должен быть предпоследним, т.к. приоритет самый низший !!!
-	MACRO_LAST                        // Должен быть всегда последним! Используется в циклах
-};
-
 // коды возврата для KeyMacro::GetCurRecord()
 enum MACRORECORDANDEXECUTETYPE
 {
@@ -99,17 +74,12 @@ enum MACRORECORDANDEXECUTETYPE
 
 class Panel;
 
-enum INTMF_FLAGS{
-	IMFF_UNLOCKSCREEN               =0x00000001,
-	IMFF_DISABLEINTINPUT            =0x00000002,
-};
-
 struct MacroPanelSelect {
 	int     Action;
 	DWORD   ActionFlags;
 	int     Mode;
 	int64_t Index;
-	TVar    *Item;
+	const wchar_t *Item;
 };
 
 class KeyMacro
@@ -175,5 +145,7 @@ private:
 		bool ProcessKey(DWORD Key);
 };
 
-inline bool IsMenuArea(int Area){return Area==MACRO_MAINMENU || Area==MACRO_MENU || Area==MACRO_DISKS || Area==MACRO_USERMENU || Area==MACRO_AUTOCOMPLETION;}
+inline bool IsMenuArea(int Area) { return
+	Area==MACROAREA_MAINMENU || Area==MACROAREA_MENU || Area==MACROAREA_DISKS ||
+	Area==MACROAREA_USERMENU || Area==MACROAREA_AUTOCOMPLETION; }
 void Log(const char* str, ...);

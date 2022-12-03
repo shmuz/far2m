@@ -334,7 +334,7 @@ void UserMenu::ProcessUserMenu(bool ChoiceMenuType)
 		FARString strMenuRootKey = (MenuMode==MM_MAIN) ? L"UserMenu/MainMenu" : strLocalMenuKey;
 		int PrevMacroMode=CtrlObject->Macro.GetArea();
 		int _CurrentFrame=FrameManager->GetCurrentFrame()->GetType();
-		CtrlObject->Macro.SetArea(MACRO_USERMENU);
+		CtrlObject->Macro.SetArea(MACROAREA_USERMENU);
 		// вызываем меню
 		ExitCode=ProcessSingleMenu(strMenuRootKey, 0,strMenuRootKey);
 

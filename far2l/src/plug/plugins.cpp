@@ -1399,7 +1399,7 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 	                      Dialog = ModalType==MODALTYPE_DIALOG;
 	PluginMenuItemData item;
 	{
-		ChangeMacroMode CMM(MACRO_MENU);
+		ChangeMacroMode CMM(MACROAREA_MENU);
 		VMenu PluginList(Msg::PluginCommandsMenuTitle,nullptr,0,ScrY-4);
 		PluginList.SetFlags(VMENU_WRAPMODE);
 		PluginList.SetHelp(L"PluginCommands");

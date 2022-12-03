@@ -527,7 +527,7 @@ void QuickView::SetMacroMode(int Restore)
 	if (PrevMacroMode == -1)
 		PrevMacroMode = CtrlObject->Macro.GetArea();
 
-	CtrlObject->Macro.SetArea(Restore ? PrevMacroMode:MACRO_QVIEWPANEL);
+	CtrlObject->Macro.SetArea(Restore ? PrevMacroMode:MACROAREA_QVIEWPANEL);
 }
 
 int QuickView::GetCurName(FARString &strName)

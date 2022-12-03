@@ -770,7 +770,7 @@ static int FarMenuFnSynched(
 	int ExitCode;
 	{
 		VMenu FarMenu(Title,nullptr,0,MaxHeight);
-		CtrlObject->Macro.SetArea(MACRO_MENU);
+		CtrlObject->Macro.SetArea(MACROAREA_MENU);
 		FarMenu.SetPosition(X,Y,0,0);
 
 		if (BreakCode)

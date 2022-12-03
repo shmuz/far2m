@@ -2968,7 +2968,7 @@ void EditControl::AutoCompleteProcMenu(int &Result,bool Manual,bool DelBlock,int
 		}
 		if(Opt.AutoComplete.ShowList)
 		{
-			ChangeMacroMode MacroMode(MACRO_AUTOCOMPLETION);
+			ChangeMacroMode MacroMode(MACROAREA_AUTOCOMPLETION);
 			MenuItemEx EmptyItem;
 			ComplMenu.AddItem(&EmptyItem,0);
 			SetMenuPos(ComplMenu);

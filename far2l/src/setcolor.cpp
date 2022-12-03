@@ -493,7 +493,7 @@ static void SetItemColors(MenuDataEx *Items,int *PaletteItems,int Size,int TypeS
 
 void GetColor(int PaletteIndex)
 {
-	ChangeMacroMode chgMacroMode(MACRO_MENU);
+	ChangeMacroMode chgMacroMode(MACROAREA_MENU);
 	WORD NewColor=Palette[PaletteIndex-COL_FIRSTPALETTECOLOR];
 
 	if (GetColorDialog(NewColor))

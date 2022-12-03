@@ -836,7 +836,7 @@ int64_t FileList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 				if (mps->Mode == 2)
 				{
 					itemsList=new UserDefinedList(L';',L',',ULF_UNIQUE);
-					if (!itemsList->Set(mps->Item->s()))
+					if (!itemsList->Set(mps->Item))
 						return Result;
 				}
 
@@ -875,7 +875,7 @@ int64_t FileList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 							break;
 						}
 						case 3: // масками файлов, разделенных запятыми
-							Result=SelectFiles(SELECT_REMOVEMASK,mps->Item->s());
+							Result=SelectFiles(SELECT_REMOVEMASK,mps->Item);
 							break;
 					}
 					break;
@@ -911,7 +911,7 @@ int64_t FileList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 							break;
 						}
 						case 3: // масками файлов, разделенных запятыми
-							Result=SelectFiles(SELECT_ADDMASK,mps->Item->s());
+							Result=SelectFiles(SELECT_ADDMASK,mps->Item);
 							break;
 					}
 					break;
@@ -947,7 +947,7 @@ int64_t FileList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 							break;
 						}
 						case 3: // масками файлов, разделенных запятыми
-							Result=SelectFiles(SELECT_INVERTMASK,mps->Item->s());
+							Result=SelectFiles(SELECT_INVERTMASK,mps->Item);
 							break;
 					}
 					break;

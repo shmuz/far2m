@@ -732,7 +732,7 @@ void InfoList::SetMacroMode(int Restore)
 	if (PrevMacroMode == -1)
 		PrevMacroMode = CtrlObject->Macro.GetArea();
 
-	CtrlObject->Macro.SetArea(Restore ? PrevMacroMode:MACRO_INFOPANEL);
+	CtrlObject->Macro.SetArea(Restore ? PrevMacroMode:MACROAREA_INFOPANEL);
 }
 
 

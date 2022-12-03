@@ -2016,7 +2016,7 @@ void TreeList::SetMacroMode(int Restore)
 	if (PrevMacroMode == -1)
 		PrevMacroMode = CtrlObject->Macro.GetArea();
 
-	CtrlObject->Macro.SetArea(Restore ? PrevMacroMode:MACRO_TREEPANEL);
+	CtrlObject->Macro.SetArea(Restore ? PrevMacroMode:MACROAREA_TREEPANEL);
 }
 
 BOOL TreeList::UpdateKeyBar()

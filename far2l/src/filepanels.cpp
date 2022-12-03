@@ -67,7 +67,7 @@ FilePanels::FilePanels():
 	RightStateBeforeHide(0)
 {
 	_OT(SysLog(L"[%p] FilePanels::FilePanels()", this));
-	MacroMode = MACRO_SHELL;
+	MacroMode = MACROAREA_SHELL;
 	KeyBarVisible = Opt.ShowKeyBar;
 //  SetKeyBar(&MainKeyBar);
 //  _D(SysLog(L"MainKeyBar=0x%p",&MainKeyBar));
@@ -1214,12 +1214,12 @@ int  FilePanels::GetMacroMode()
 	switch (ActivePanel->GetType())
 	{
 		case TREE_PANEL:
-			return MACRO_TREEPANEL;
+			return MACROAREA_TREEPANEL;
 		case QVIEW_PANEL:
-			return MACRO_QVIEWPANEL;
+			return MACROAREA_QVIEWPANEL;
 		case INFO_PANEL:
-			return MACRO_INFOPANEL;
+			return MACROAREA_INFOPANEL;
 		default:
-			return MACRO_SHELL;
+			return MACROAREA_SHELL;
 	}
 }

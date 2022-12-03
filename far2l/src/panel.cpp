@@ -537,7 +537,7 @@ int Panel::ChangeDiskMenu(int Pos,int FirstCall)
 			else*/
 			{
 				{ //очередная фигня
-					ChangeMacroMode MacroMode(MACRO_DISKS);
+					ChangeMacroMode MacroMode(MACROAREA_DISKS);
 					Key=ChDisk.ReadInput();
 				}
 			}
@@ -996,7 +996,7 @@ void Panel::FastFind(int FirstKey)
 	{
 		int FindX=Min(X1+9,ScrX-22);
 		int FindY=Min(Y2,ScrY-2);
-		ChangeMacroMode MacroMode(MACRO_SEARCH);
+		ChangeMacroMode MacroMode(MACROAREA_SEARCH);
 		SaveScreen SaveScr(FindX,FindY,FindX+21,FindY+2);
 		FastFindShow(FindX,FindY);
 		Edit FindEdit;

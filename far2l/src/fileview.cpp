@@ -114,8 +114,8 @@ void FileViewer::Init(const wchar_t *name,int EnableSwitch,int disableHistory, /
 	KeyBarVisible = Opt.ViOpt.ShowKeyBar;
 	TitleBarVisible = Opt.ViOpt.ShowTitleBar;
 	int OldMacroMode=CtrlObject->Macro.GetArea();
-	MacroMode = MACRO_VIEWER;
-	CtrlObject->Macro.SetArea(MACRO_VIEWER);
+	MacroMode = MACROAREA_VIEWER;
+	CtrlObject->Macro.SetArea(MACROAREA_VIEWER);
 	View.SetPluginData(PluginData);
 	View.SetHostFileViewer(this);
 	DisableHistory=disableHistory; ///

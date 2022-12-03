@@ -50,7 +50,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "exitcode.hpp"
 
 FolderTree::FolderTree(FARString &strResultFolder,int iModalMode,int IsStandalone,int IsFullScreen):
-	CMM(MACRO_FINDFOLDER),
+	CMM(MACROAREA_FINDFOLDER),
 	Tree(nullptr),
 	FindEdit(nullptr),
 	ModalMode(iModalMode),
@@ -67,8 +67,8 @@ FolderTree::FolderTree(FARString &strResultFolder,int iModalMode,int IsStandalon
 
 	if ((Tree=new(std::nothrow) TreeList(FALSE)))
 	{
-		CtrlObject->Macro.SetArea(MACRO_FINDFOLDER);
-		MacroMode = MACRO_FINDFOLDER;
+		CtrlObject->Macro.SetArea(MACROAREA_FINDFOLDER);
+		MacroMode = MACROAREA_FINDFOLDER;
 		strLastName.Clear();
 		Tree->SetModalMode(ModalMode);
 		Tree->SetPosition(X1,Y1,X2,Y2);

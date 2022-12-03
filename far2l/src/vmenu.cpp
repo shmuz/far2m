@@ -118,7 +118,7 @@ VMenu::VMenu(const wchar_t *Title,       // заголовок меню
 		PrevMacroMode = CtrlObject->Macro.GetArea();
 
 		if (!IsMenuArea(PrevMacroMode))
-			CtrlObject->Macro.SetArea(MACRO_MENU);
+			CtrlObject->Macro.SetArea(MACROAREA_MENU);
 	}
 
 	if (!CheckFlags(VMENU_LISTBOX))
