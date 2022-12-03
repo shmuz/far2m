@@ -6102,18 +6102,22 @@ BOOL LF_RunDefaultScript(lua_State* L)
 
 void LF_InitLuaState (lua_State *L, TPluginData *aPlugData, lua_CFunction aOpenLibs)
 {
-  int idx;
-  lua_CFunction func_arr[] = { aOpenLibs, luaopen_far, luaopen_bit64, luaopen_unicode, luaopen_utf8 };
+  int idx, top;
+  FILE *fp;
+  lua_CFunction func_arr[] = { luaopen_far, luaopen_bit64, luaopen_unicode, luaopen_utf8 };
 
   // open Lua libraries
   luaL_openlibs(L);
 
-  // open additional libraries
+  if (aOpenLibs) {
+    lua_pushcfunction(L, aOpenLibs);
+    lua_call(L, 0, 0);
+  }
+
+  // open more libraries
   for (idx=0; idx < ARRAYSIZE(func_arr); idx++) {
-    if (func_arr[idx]) {
-      lua_pushcfunction(L, func_arr[idx]);
-      lua_call(L, 0, 0);
-    }
+    lua_pushcfunction(L, func_arr[idx]);
+    lua_call(L, 0, 0);
   }
 
   // getmetatable("").__index = utf8
@@ -6125,11 +6129,11 @@ void LF_InitLuaState (lua_State *L, TPluginData *aPlugData, lua_CFunction aOpenL
 
   // Run "luafar_init.lua" residing in the Plugins/luafar directory (if any).
   // Absence of that file is not error.
-  int top = lua_gettop(L);
+  top = lua_gettop(L);
   lua_pushstring(L, aPlugData->ShareDir);             //+1
   lua_pushliteral(L, "/../../luafar_init.lua");       //+2
   lua_concat(L, 2);                                   //+1
-  FILE *fp = fopen(lua_tostring(L,-1), "r");
+  fp = fopen(lua_tostring(L,-1), "r");
   if (fp) {
     fclose(fp);
     if (luaL_loadfile(L,lua_tostring(L,-1)) || lua_pcall(L,0,0,0))

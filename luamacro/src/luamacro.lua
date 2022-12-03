@@ -437,12 +437,18 @@ local function Open_CommandLine (strCmdLine)
     end
   ----------------------------------------------------------------------------
   elseif prefix == "goto" then
-    if text~="" then
+    if text ~= "" then
+      local path_ok = true
       local path,filename = text:match("(.*/)(.*)")
-      if path==nil then filename = text end
-      local current = panel.GetPanelDirectory(1)
-      local result = path==nil or panel.SetPanelDirectory(1,path:sub(1,1)=='/' and path or current.."/"..path)
-      if result and filename~="" then
+			if path == nil then
+			  filename = text
+			else
+			  if path:sub(1,1) ~= "/" then
+				  path = panel.GetPanelDirectory(1).."/"..path
+				end
+				path_ok = panel.SetPanelDirectory(1,path)
+			end
+      if path_ok and filename ~= "" then
         local info=panel.GetPanelInfo(1)
         if info then
           filename=filename:lower()
