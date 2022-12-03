@@ -94,55 +94,52 @@ public:
 	static bool IsOutputDisabled();
 	static bool IsExecuting() { return GetExecutingState() != MACROSTATE_NOMACRO; }
 	static bool IsHistoryDisabled(int TypeHistory);
-	static bool MacroExists(int Key, int Area, bool UseCommon);
 	static void RunStartMacro();
 	static bool SaveMacros(bool always);
 	static void SetMacroConst(int ConstIndex, long long Value);
 	static bool PostNewMacro(const wchar_t* Sequence, DWORD InputFlags, DWORD AKey = 0);
+	static DWORD GetMacroParseError(COORD& ErrPos, FARString& ErrSrc);
+	static bool ParseMacroString(const wchar_t* Sequence,DWORD Flags,bool skipFile);
 
-	intptr_t CallFar(intptr_t CheckCode, FarMacroCall* Data);
+	int  CallFar(int CheckCode, FarMacroCall* Data);
 	bool CheckWaitKeyFunc() const;
 	int  GetState() const;
+	int  PeekKey() const;
+	int  GetArea() const { return m_Area; }
 	int  GetKey();
-	static DWORD GetMacroParseError(COORD& ErrPos, FARString& ErrSrc);
-	int GetArea() const { return m_Area; }
+	bool ProcessKey(DWORD Key);
 	const wchar_t* GetStringToPrint() const { return m_StringToPrint.CPtr(); }
 	bool IsRecording() const { return m_Recording != MACROSTATE_NOMACRO; }
 	bool LoadMacros(bool FromFar, bool InitedRAM=true, const FarMacroLoad *Data=nullptr);
-	static bool ParseMacroString(const wchar_t* Sequence,DWORD Flags,bool skipFile);
-	int  PeekKey() const;
 	void SetArea(int Area) { m_Area=Area; }
 	void SuspendMacros(bool Suspend) { Suspend ? ++m_InternalInput : --m_InternalInput; }
 
 private:
 	static int GetExecutingState();
-	int AssignMacroKey(DWORD& MacroKey, DWORD& Flags);
 	static int GetMacroSettings(uint32_t Key,DWORD &Flags, const wchar_t* Src=L"", const wchar_t* Descr=L"");
+
+	int AssignMacroKey(DWORD& MacroKey, DWORD& Flags);
 	void RestoreMacroChar() const;
 
+	static FARString m_RecCode;
+	static FARString m_RecDescription;
 	int m_Area;
 	int m_StartMode;
 	int m_Recording;
-	static FARString m_RecCode;
-	static FARString m_RecDescription;
 	int m_InternalInput;
 	int m_WaitKey;
 	FARString m_StringToPrint;
 
-	private:
-		BOOL CheckEditSelected(DWORD CurFlags);
-		BOOL CheckInsidePlugin(DWORD CurFlags);
-		BOOL CheckPanel(int PanelMode,DWORD CurFlags, BOOL IsPassivePanel);
-		BOOL CheckCmdLine(int CmdLength,DWORD Flags);
-		BOOL CheckFileFolder(Panel *ActivePanel,DWORD CurFlags, BOOL IsPassivePanel);
-		BOOL CheckAll(int CheckMode,DWORD CurFlags);
+private:
+	BOOL CheckEditSelected(DWORD CurFlags);
+	BOOL CheckInsidePlugin(DWORD CurFlags);
+	BOOL CheckPanel(int PanelMode,DWORD CurFlags, BOOL IsPassivePanel);
+	BOOL CheckCmdLine(int CmdLength,DWORD Flags);
+	BOOL CheckFileFolder(Panel *ActivePanel,DWORD CurFlags, BOOL IsPassivePanel);
+	BOOL CheckAll(int CheckMode,DWORD CurFlags);
 
-	private:
-		static LONG_PTR WINAPI AssignMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2);
-		static LONG_PTR WINAPI ParamMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2);
-
-	public:
-		bool ProcessKey(DWORD Key);
+	static LONG_PTR WINAPI AssignMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2);
+	static LONG_PTR WINAPI ParamMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2);
 };
 
 inline bool IsMenuArea(int Area) { return

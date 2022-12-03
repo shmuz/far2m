@@ -358,13 +358,6 @@ static bool LM_GetMacro(GetMacroData* Data, int Area, const FARString& TextKey, 
 	return false;
 }
 
-bool KeyMacro::MacroExists(int Key, int Area, bool UseCommon)
-{
-	GetMacroData dummy;
-	FARString KeyName;
-	return KeyToText(Key,KeyName) && LM_GetMacro(&dummy, Area, KeyName, UseCommon);
-}
-
 static void LM_ProcessRecordedMacro(int Area, const FARString& TextKey, const FARString& Code,
 	MACROFLAGS_MFLAGS Flags, const FARString& Description)
 {
@@ -627,9 +620,9 @@ private:
 	const bool m_Lock;
 };
 
-intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
+int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 {
-	intptr_t ret=0;
+	int ret=0;
 	DWORD FileAttr = INVALID_FILE_ATTRIBUTES;
 	FarMacroApi api(Data);
 	FARString tmpStr;
@@ -1046,7 +1039,7 @@ intptr_t KeyMacro::CallFar(intptr_t CheckCode, FarMacroCall* Data)
 		case MCODE_V_PPANEL_TYPE: // PPanel.Type
 		{
 			const auto SelPanel = CheckCode == MCODE_V_APANEL_TYPE ? ActivePanel : PassivePanel;
-			return static_cast<intptr_t>(SelPanel? SelPanel->GetType() : FILE_PANEL);
+			return SelPanel? SelPanel->GetType() : FILE_PANEL;
 		}
 
 		case MCODE_V_APANEL_DRIVETYPE: // APanel.DriveType - активная панель: тип привода

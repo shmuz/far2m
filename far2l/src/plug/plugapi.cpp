@@ -2473,7 +2473,7 @@ DWORD WINAPI farGetCurrentDirectory(DWORD Size,wchar_t* Buffer)
 	return static_cast<DWORD>(strCurDir.GetLength()+1);
 }
 
-intptr_t WINAPI farCallFar(intptr_t CheckCode, FarMacroCall* Data)
+int WINAPI farCallFar(int CheckCode, FarMacroCall* Data)
 {
 	if (CtrlObject)
 	{

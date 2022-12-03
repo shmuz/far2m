@@ -189,7 +189,7 @@ int far_MacroCallFar(lua_State *L)
 	struct FarMacroValue args[MAXARG];
 	struct FarMacroCall fmc;
 	int idx, pushed;
-	INT64 ret;
+	int ret;
 	mcfc_data cbdata = { L, MAXRET, 0 };
 	PSInfo *Info = GetPluginStartupInfo(L);
 	struct MacroPrivateInfo *privateInfo = (struct MacroPrivateInfo*)Info->Private;
