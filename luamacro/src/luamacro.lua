@@ -440,14 +440,14 @@ local function Open_CommandLine (strCmdLine)
     if text ~= "" then
       local path_ok = true
       local path,filename = text:match("(.*/)(.*)")
-			if path == nil then
-			  filename = text
-			else
-			  if path:sub(1,1) ~= "/" then
-				  path = panel.GetPanelDirectory(1).."/"..path
-				end
-				path_ok = panel.SetPanelDirectory(1,path)
-			end
+      if path == nil then
+        filename = text
+      else
+        if path:sub(1,1) ~= "/" then
+          path = panel.GetPanelDirectory(1).."/"..path
+        end
+        path_ok = panel.SetPanelDirectory(1,path)
+      end
       if path_ok and filename ~= "" then
         local info=panel.GetPanelInfo(1)
         if info then
