@@ -35,7 +35,12 @@ local TablePanelSort -- must be separate from LastMessage, otherwise Far crashes
 local TableExecString -- must be separate from LastMessage, otherwise Far crashes
 local utils, macrobrowser, panelsort, keymacro
 
-local function ExpandEnv(str) return (str:gsub("%%(.-)%%", win.GetEnv)) end
+local function ExpandEnv(str) return (str:gsub("%$([%w_]+)", win.GetEnv)) end
+
+local function Unquote(text)
+  text = text:gsub('^"(.+)"$', "%1") -- remove double quotes
+  return text
+end
 
 local function pack (...)
   return { n=select("#",...), ... }
@@ -400,43 +405,54 @@ local function Open_CommandLine (strCmdLine)
     end
   ----------------------------------------------------------------------------
   elseif prefix == "edit" then
-    local cmd = text:match("^<%s*(.+)")
-    if cmd then
+    local redir, cmd = text:match("^(<?)%s*(.+)")
+    if redir == nil then
+      return
+    end
+    cmd = ExpandEnv(Unquote(cmd))
+    local flags = bor(F.EF_NONMODAL, F.EF_IMMEDIATERETURN, F.EF_ENABLE_F6)
+    if redir == "<" then
       local tmpname = Redirect(cmd)
       if tmpname then
-        local flags = bor(F.EF_NONMODAL, F.EF_IMMEDIATERETURN, F.EF_ENABLE_F6,
-                          F.EF_DELETEONLYFILEONCLOSE, F.EF_DISABLEHISTORY)
+        flags = bor(flags, F.EF_DELETEONLYFILEONCLOSE, F.EF_DISABLEHISTORY)
         editor.Editor(tmpname,nil,nil,nil,nil,nil,flags)
       end
     else
-      local flags = bor(F.EF_NONMODAL, F.EF_IMMEDIATERETURN, F.EF_ENABLE_F6)
-      editor.Editor(text,nil,nil,nil,nil,nil,flags)
+      editor.Editor(cmd,nil,nil,nil,nil,nil,flags)
     end
   ----------------------------------------------------------------------------
   elseif prefix == "view" then
-    local cmd = text:match("^<%s*(.+)")
-    if cmd then
+    local redir, cmd = text:match("^(<?)%s*(.+)")
+    if redir == nil then
+      return
+    end
+    cmd = ExpandEnv(Unquote(cmd))
+    local flags = bor(F.VF_NONMODAL, F.VF_IMMEDIATERETURN, F.VF_ENABLE_F6)
+    if redir == "<" then
       local tmpname = Redirect(cmd)
       if tmpname then
-        local flags = bor(F.VF_NONMODAL, F.VF_IMMEDIATERETURN, F.VF_ENABLE_F6,
-                          F.VF_DELETEONLYFILEONCLOSE, F.VF_DISABLEHISTORY)
+        flags = bor(flags, F.VF_DELETEONLYFILEONCLOSE, F.VF_DISABLEHISTORY)
         viewer.Viewer(tmpname,nil,nil,nil,nil,nil,flags)
       end
     else
-      local flags = bor(F.VF_NONMODAL, F.VF_IMMEDIATERETURN, F.VF_ENABLE_F6)
-      viewer.Viewer(text,nil,nil,nil,nil,nil,flags)
+      viewer.Viewer(cmd,nil,nil,nil,nil,nil,flags)
     end
   ----------------------------------------------------------------------------
   elseif prefix == "load" then
-    if text~="" then far.LoadPlugin("PLT_PATH", text) end
+    text = ExpandEnv(Unquote(text))
+    if text ~= "" then
+      far.LoadPlugin("PLT_PATH", text)
+    end
   ----------------------------------------------------------------------------
   elseif prefix == "unload" then
-    if text~="" then
+    text = ExpandEnv(Unquote(text))
+    if text ~= "" then
       local plug = far.FindPlugin("PFM_MODULENAME", text)
       if plug then far.UnloadPlugin(plug) end
     end
   ----------------------------------------------------------------------------
   elseif prefix == "goto" then
+    text = ExpandEnv(Unquote(text))
     if text ~= "" then
       local path_ok = true
       local path,filename = text:match("(.*/)(.*)")
@@ -644,7 +660,7 @@ local function Init()
     MacroDirs         = GetMacroDirs(),
   }
   Shared.MacroCallFar, far.MacroCallFar = far.MacroCallFar, nil
-  Shared.FarMacroCallToLua, far.FarMacroCallToLua = far.FarMacroCallToLua, nil
+  Shared.MacroCallToLua, far.MacroCallToLua = far.MacroCallToLua, nil
 
   local ShareDirSlash = far.PluginStartupInfo().ShareDir .. "/"
   local function RunPluginFile (fname, param)

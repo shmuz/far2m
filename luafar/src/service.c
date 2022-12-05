@@ -6004,7 +6004,7 @@ int luaopen_far (lua_State *L)
     lua_pushcfunction(L, far_MacroCallFar);
     lua_setfield(L, -2, "MacroCallFar");
     lua_pushcfunction(L, far_MacroCallToLua);
-    lua_setfield(L, -2, "FarMacroCallToLua");
+    lua_setfield(L, -2, "MacroCallToLua");
   }
 
   (void)luaL_dostring(L, far_Guids);
