@@ -1151,10 +1151,8 @@ int LF_ProcessDialogEvent (lua_State* L, int Event, void *Param)
   BOOL PushDN = FALSE;
 
 #ifdef LOGGING_ON
-  char buf[200];
-  sprintf(buf, "%s: Event=0x%X, fde=%p, fde->Msg=0x%X, fde->Param1=0x%X, fde->Param2=0x%lX",
-          __func__, Event,      fde,    fde->Msg,      fde->Param1,      fde->Param2);
-  Log(buf);
+  Log("%s: Event=0x%X, fde=%p, fde->Msg=0x%X, fde->Param1=0x%X, fde->Param2=0x%lX",
+      __func__, Event, fde,    fde->Msg,      fde->Param1,      fde->Param2);
 #endif
 
   if (!GetExportFunction(L, "ProcessDialogEvent")) //+1: Func

@@ -7,7 +7,7 @@
 #include <lua.h>
 #include <lauxlib.h>
 
-void  Log(const char* str);
+void Log(const char* Format, ...);
 int  SysErrorReturn (lua_State *L);
 
 BOOL   GetBoolFromTable   (lua_State *L, const char* key);

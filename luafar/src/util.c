@@ -1,8 +1,11 @@
 #include "ustring.h"
 #include "util.h"
 
-void Log(const char* str)
+void Log(const char* Format, ...)
 {
+  va_list valist;
+  va_start(valist, Format);
+
   static int N = 0;
   const char* home = getenv("HOME");
   if (home) {
@@ -17,12 +20,15 @@ void Log(const char* str)
           time (&rtime);
           fprintf(fp, "\n%s------------------------------\n", ctime(&rtime));
         }
-        fprintf(fp, "%d: %s\n", N, str);
+        fprintf(fp, "%d: ", N);
+        vfprintf(fp, Format, valist);
+        fprintf(fp, "\n");
         fclose(fp);
       }
       free(buf);
     }
   }
+  va_end(valist);
 }
 
 // stack[-2] - table
