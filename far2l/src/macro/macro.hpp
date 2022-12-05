@@ -62,16 +62,6 @@ enum MACRODISABLEONLOAD
 	MDOL_AUTOSTART      = 0x00000001, // дисаблим автостартующие макросы
 };
 
-// коды возврата для KeyMacro::GetCurRecord()
-enum MACRORECORDANDEXECUTETYPE
-{
-	MACROMODE_NOMACRO          =0,  // не в режиме макро
-	MACROMODE_EXECUTING        =1,  // исполнение: без передачи плагину пимп
-	MACROMODE_EXECUTING_COMMON =2,  // исполнение: с передачей плагину пимп
-	MACROMODE_RECORDING        =3,  // запись: без передачи плагину пимп
-	MACROMODE_RECORDING_COMMON =4,  // запись: с передачей плагину пимп
-};
-
 class Panel;
 
 struct MacroPanelSelect {
@@ -145,4 +135,4 @@ private:
 inline bool IsMenuArea(int Area) { return
 	Area==MACROAREA_MAINMENU || Area==MACROAREA_MENU || Area==MACROAREA_DISKS ||
 	Area==MACROAREA_USERMENU || Area==MACROAREA_AUTOCOMPLETION; }
-void Log(const char* str, ...);
+void Log(const char* Format, ...);

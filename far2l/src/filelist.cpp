@@ -733,7 +733,7 @@ int FileList::SendKeyToPlugin(DWORD Key,BOOL Pred)
 	_ALGO(SysLog(L"Key=%ls Pred=%d",_FARKEY_ToName(Key),Pred));
 
 	if (PanelMode==PLUGIN_PANEL &&
-	        (CtrlObject->Macro.IsRecording() || CtrlObject->Macro.IsExecuting() || CtrlObject->Macro.GetState() == MACROMODE_NOMACRO) //###
+	        (CtrlObject->Macro.IsRecording() || CtrlObject->Macro.IsExecuting() || CtrlObject->Macro.GetState() == MACROSTATE_NOMACRO) //###
 	   )
 	{
 		int VirtKey,ControlState;

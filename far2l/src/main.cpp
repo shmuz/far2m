@@ -184,7 +184,7 @@ static int MainProcess(
 			CtrlObj.CreateFilePanels();
 			CtrlObj.Cp()->LeftPanel=CtrlObj.Cp()->RightPanel=CtrlObj.Cp()->ActivePanel=DummyPanel;
 			CtrlObj.Plugins.LoadPlugins();
-			CtrlObj.Macro.LoadMacros(TRUE,FALSE);
+			CtrlObj.Macro.LoadMacros(true,false);
 
 			if (Opt.OnlyEditorViewerUsed == Options::ONLY_EDITOR_ON_CMDOUT || Opt.OnlyEditorViewerUsed == Options::ONLY_VIEWER_ON_CMDOUT)
 			{

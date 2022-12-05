@@ -75,10 +75,10 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "dirmix.hpp"
 #include "console.hpp"
 
-void Log(const char* str, ...)
+void Log(const char* Format, ...)
 {
 	va_list valist;
-	va_start(valist, str);
+	va_start(valist, Format);
 
 	static int N = 0;
 	const char* home = getenv("HOME");
@@ -95,7 +95,7 @@ void Log(const char* str, ...)
 					fprintf(fp, "\n%s------------------------------\n", ctime(&rtime));
 				}
 				fprintf(fp, "%d: ", N);
-				vfprintf(fp, str, valist);
+				vfprintf(fp, Format, valist);
 				fprintf(fp, "\n");
 				fclose(fp);
 			}
@@ -115,27 +115,27 @@ typedef unsigned int MACROFLAGS_MFLAGS;
 static const MACROFLAGS_MFLAGS
 	MFLAGS_NONE                    = 0,
 	// public flags, read from/saved to config
-	MFLAGS_ENABLEOUTPUT            = 0x00000001, // не подавлять обновление экрана во время выполнения макроса
-	MFLAGS_NOSENDKEYSTOPLUGINS     = 0x00000002, // НЕ передавать плагинам клавиши во время записи/воспроизведения макроса
-	MFLAGS_RUNAFTERFARSTART        = 0x00000008, // этот макрос запускается при старте ФАРа
-	MFLAGS_EMPTYCOMMANDLINE        = 0x00000010, // запускать, если командная линия пуста
-	MFLAGS_NOTEMPTYCOMMANDLINE     = 0x00000020, // запускать, если командная линия не пуста
-	MFLAGS_EDITSELECTION           = 0x00000040, // запускать, если есть выделение в редакторе
-	MFLAGS_EDITNOSELECTION         = 0x00000080, // запускать, если есть нет выделения в редакторе
-	MFLAGS_SELECTION               = 0x00000100, // активная:  запускать, если есть выделение
-	MFLAGS_PSELECTION              = 0x00000200, // пассивная: запускать, если есть выделение
-	MFLAGS_NOSELECTION             = 0x00000400, // активная:  запускать, если есть нет выделения
-	MFLAGS_PNOSELECTION            = 0x00000800, // пассивная: запускать, если есть нет выделения
-	MFLAGS_NOFILEPANELS            = 0x00001000, // активная:  запускать, если это плагиновая панель
-	MFLAGS_PNOFILEPANELS           = 0x00002000, // пассивная: запускать, если это плагиновая панель
-	MFLAGS_NOPLUGINPANELS          = 0x00004000, // активная:  запускать, если это файловая панель
-	MFLAGS_PNOPLUGINPANELS         = 0x00008000, // пассивная: запускать, если это файловая панель
-	MFLAGS_NOFOLDERS               = 0x00010000, // активная:  запускать, если текущий объект "файл"
-	MFLAGS_PNOFOLDERS              = 0x00020000, // пассивная: запускать, если текущий объект "файл"
-	MFLAGS_NOFILES                 = 0x00040000, // активная:  запускать, если текущий объект "папка"
-	MFLAGS_PNOFILES                = 0x00080000, // пассивная: запускать, если текущий объект "папка"
+	MFLAGS_ENABLEOUTPUT            = (1 <<  0), // не подавлять обновление экрана во время выполнения макроса
+	MFLAGS_NOSENDKEYSTOPLUGINS     = (1 <<  1), // НЕ передавать плагинам клавиши во время записи/воспроизведения макроса
+	MFLAGS_RUNAFTERFARSTART        = (1 <<  3), // этот макрос запускается при старте ФАРа
+	MFLAGS_EMPTYCOMMANDLINE        = (1 <<  4), // запускать, если командная линия пуста
+	MFLAGS_NOTEMPTYCOMMANDLINE     = (1 <<  5), // запускать, если командная линия не пуста
+	MFLAGS_EDITSELECTION           = (1 <<  6), // запускать, если есть выделение в редакторе
+	MFLAGS_EDITNOSELECTION         = (1 <<  7), // запускать, если есть нет выделения в редакторе
+	MFLAGS_SELECTION               = (1 <<  8), // активная:  запускать, если есть выделение
+	MFLAGS_PSELECTION              = (1 <<  9), // пассивная: запускать, если есть выделение
+	MFLAGS_NOSELECTION             = (1 << 10), // активная:  запускать, если есть нет выделения
+	MFLAGS_PNOSELECTION            = (1 << 11), // пассивная: запускать, если есть нет выделения
+	MFLAGS_NOFILEPANELS            = (1 << 12), // активная:  запускать, если это плагиновая панель
+	MFLAGS_PNOFILEPANELS           = (1 << 13), // пассивная: запускать, если это плагиновая панель
+	MFLAGS_NOPLUGINPANELS          = (1 << 14), // активная:  запускать, если это файловая панель
+	MFLAGS_PNOPLUGINPANELS         = (1 << 15), // пассивная: запускать, если это файловая панель
+	MFLAGS_NOFOLDERS               = (1 << 16), // активная:  запускать, если текущий объект "файл"
+	MFLAGS_PNOFOLDERS              = (1 << 17), // пассивная: запускать, если текущий объект "файл"
+	MFLAGS_NOFILES                 = (1 << 18), // активная:  запускать, если текущий объект "папка"
+	MFLAGS_PNOFILES                = (1 << 19), // пассивная: запускать, если текущий объект "папка"
 	// private flags, for runtime purposes only
-	MFLAGS_POSTFROMPLUGIN          = 0x10000000; // последовательность пришла от АПИ
+	MFLAGS_POSTFROMPLUGIN          = (1 << 28); // последовательность пришла от АПИ
 
 // для диалога назначения клавиши
 struct DlgParam

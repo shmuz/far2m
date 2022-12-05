@@ -1456,7 +1456,7 @@ int CheckForEscSilent()
 	*/
 
 	// если в "макросе"...
-	if (CtrlObject->Macro.IsExecuting() != MACROMODE_NOMACRO && FrameManager->GetCurrentFrame())
+	if (CtrlObject->Macro.IsExecuting() != MACROSTATE_NOMACRO && FrameManager->GetCurrentFrame())
 	{
 #if 0
 
@@ -1503,7 +1503,7 @@ int CheckForEscSilent()
 			FrameManager->ProcessKey(KEY_ALTF9);
 	}
 
-	if (!Processed && CtrlObject->Macro.IsExecuting() != MACROMODE_NOMACRO)
+	if (!Processed && CtrlObject->Macro.IsExecuting() != MACROSTATE_NOMACRO)
 		ScrBuf.Flush();
 
 	return FALSE;
@@ -2116,7 +2116,7 @@ DWORD CalcKeyCode(INPUT_RECORD *rec,int RealKey,int *NotMacros)
 	{
 #if 0
 
-		if (!AltValue && (CtrlObject->Macro.IsRecording() == MACROMODE_NOMACRO || !Opt.UseNumPad))
+		if (!AltValue && (CtrlObject->Macro.IsRecording() == MACROSTATE_NOMACRO || !Opt.UseNumPad))
 		{
 			// VK_INSERT  = 0x2D       AS-0 = 0x2D
 			// VK_NUMPAD0 = 0x60       A-0  = 0x60
@@ -2579,7 +2579,7 @@ DWORD CalcKeyCode(INPUT_RECORD *rec,int RealKey,int *NotMacros)
 		if (KeyCode>='0' && KeyCode<='9')
 		{
 			if (WaitInFastFind > 0 &&
-			        CtrlObject->Macro.GetState() < MACROMODE_RECORDING && //###
+			        CtrlObject->Macro.GetState() < MACROSTATE_RECORDING && //###
 			        true) //### was: CtrlObject->Macro.GetIndex(KEY_ALTSHIFT0+KeyCode-'0',-1) == -1)
 			{
 				return KEY_ALT|KEY_SHIFT|Char;

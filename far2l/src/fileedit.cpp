@@ -839,7 +839,7 @@ int FileEditor::ReProcessKey(int Key,int CalledFromControl)
 		ShowConsoleTitle();
 
 	// BugZ#488 - Shift=enter
-	if (ShiftPressed && (Key == KEY_ENTER || Key == KEY_NUMENTER) && CtrlObject->Macro.IsExecuting() == MACROMODE_NOMACRO)
+	if (ShiftPressed && (Key == KEY_ENTER || Key == KEY_NUMENTER) && CtrlObject->Macro.IsExecuting() == MACROSTATE_NOMACRO)
 	{
 		Key=Key == KEY_ENTER?KEY_SHIFTENTER:KEY_SHIFTNUMENTER;
 	}
@@ -946,11 +946,11 @@ int FileEditor::ReProcessKey(int Key,int CalledFromControl)
 	_SVS(if (Key=='n' || Key=='m'))
 		_SVS(SysLog(L"%d Key='%c'",__LINE__,Key));
 
-	if (!CalledFromControl && (CtrlObject->Macro.IsRecording() || CtrlObject->Macro.IsExecuting() || CtrlObject->Macro.GetState() == MACROMODE_NOMACRO))
+	if (!CalledFromControl && (CtrlObject->Macro.IsRecording() || CtrlObject->Macro.IsExecuting() || CtrlObject->Macro.GetState() == MACROSTATE_NOMACRO))
 	{
 
-		_SVS(if (CtrlObject->Macro.IsRecording() || CtrlObject->Macro.IsExecuting() == MACROMODE_EXECUTING_COMMON))
-			_SVS(SysLog(L"%d !!!! CtrlObject->Macro.GetCurRecord(nullptr,nullptr) != MACROMODE_NOMACRO !!!!",__LINE__));
+		_SVS(if (CtrlObject->Macro.IsRecording() || CtrlObject->Macro.IsExecuting() == MACROSTATE_EXECUTING_COMMON))
+			_SVS(SysLog(L"%d !!!! CtrlObject->Macro.GetCurRecord(nullptr,nullptr) != MACROSTATE_NOMACRO !!!!",__LINE__));
 
 		ProcessedNext=!ProcessEditorInput(FrameManager->GetLastInputRecord());
 	}
@@ -1346,7 +1346,7 @@ int FileEditor::ReProcessKey(int Key,int CalledFromControl)
 			}
 			default:
 			{
-				if (Flags.Check(FFILEEDIT_FULLSCREEN) && CtrlObject->Macro.IsExecuting() == MACROMODE_NOMACRO)
+				if (Flags.Check(FFILEEDIT_FULLSCREEN) && CtrlObject->Macro.IsExecuting() == MACROSTATE_NOMACRO)
 					EditKeyBar.Refresh(Opt.EdOpt.ShowKeyBar);
 
 				if (!EditKeyBar.ProcessKey(Key))
@@ -2652,7 +2652,7 @@ int FileEditor::EditorControl(int Command, void *Param)
 		}
 		case ECTL_READINPUT:
 		{
-			if (CtrlObject->Macro.IsRecording() || CtrlObject->Macro.IsExecuting() == MACROMODE_EXECUTING)
+			if (CtrlObject->Macro.IsRecording() || CtrlObject->Macro.IsExecuting() == MACROSTATE_EXECUTING)
 			{
 //        return FALSE;
 			}

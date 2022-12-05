@@ -73,7 +73,6 @@ ControlObject::ControlObject():
 	ViewerPosCache = new FilePositionCache(FPCK_VIEWER);
 	EditorPosCache = new FilePositionCache(FPCK_EDITOR);
 	FrameManager = new Manager;
-	//Macro.LoadMacros();
 	ApplyConfig();
 	CmdHistory=new History(HISTORYTYPE_CMD,Opt.HistoryCount,"SavedHistory",&Opt.SaveHistory,false);
 	FolderHistory=new History(HISTORYTYPE_FOLDER,Opt.FoldersHistoryCount,"SavedFolderHistory",&Opt.SaveFoldersHistory,true);
