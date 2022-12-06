@@ -515,7 +515,9 @@ void PushWinFindData (lua_State *L, const WIN32_FIND_DATAW *FData)
 {
   lua_createtable(L, 0, 7);
   PutAttrToTable    (L,                      FData->dwFileAttributes);
+  PutNumToTable     (L, "UnixMode",          FData->dwUnixMode);
   PutNumToTable     (L, "FileSize",          FData->nFileSize);
+  PutNumToTable     (L, "PhysicalSize",      FData->nPhysicalSize);
   PutFileTimeToTable(L, "LastWriteTime",     FData->ftLastWriteTime);
   PutFileTimeToTable(L, "LastAccessTime",    FData->ftLastAccessTime);
   PutFileTimeToTable(L, "CreationTime",      FData->ftCreationTime);
