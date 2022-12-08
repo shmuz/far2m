@@ -732,22 +732,24 @@ int FileList::SendKeyToPlugin(DWORD Key,BOOL Pred)
 	_ALGO(CleverSysLog clv(L"FileList::SendKeyToPlugin()"));
 	_ALGO(SysLog(L"Key=%ls Pred=%d",_FARKEY_ToName(Key),Pred));
 
-	if (PanelMode==PLUGIN_PANEL &&
-	        (CtrlObject->Macro.IsRecording() || CtrlObject->Macro.IsExecuting() || CtrlObject->Macro.GetState() == MACROSTATE_NOMACRO) //###
-	   )
+	if (PanelMode != PLUGIN_PANEL)
+		return FALSE;
+
+	const auto MacroState = CtrlObject->Macro.GetState();
+	if (MacroState == MACROSTATE_RECORDING || MacroState == MACROSTATE_EXECUTING)
+		return FALSE;
+
+	int VirtKey,ControlState;
+
+	if (TranslateKeyToVK(Key,VirtKey,ControlState))
 	{
-		int VirtKey,ControlState;
+		_ALGO(SysLog(L"call Plugins.ProcessKey() {"));
+		int ProcessCode = CtrlObject->Plugins.ProcessKey(hPlugin, VirtKey|(Pred?PKF_PREPROCESS:0), ControlState);
+		_ALGO(SysLog(L"} ProcessCode=%d",ProcessCode));
+		ProcessPluginCommand();
 
-		if (TranslateKeyToVK(Key,VirtKey,ControlState))
-		{
-			_ALGO(SysLog(L"call Plugins.ProcessKey() {"));
-			int ProcessCode=CtrlObject->Plugins.ProcessKey(hPlugin,VirtKey|(Pred?PKF_PREPROCESS:0),ControlState);
-			_ALGO(SysLog(L"} ProcessCode=%d",ProcessCode));
-			ProcessPluginCommand();
-
-			if (ProcessCode)
-				return TRUE;
-		}
+		if (ProcessCode)
+			return TRUE;
 	}
 
 	return FALSE;

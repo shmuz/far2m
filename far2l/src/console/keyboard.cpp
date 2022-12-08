@@ -464,10 +464,10 @@ int WINAPI InputRecordToKey(const INPUT_RECORD *r)
 	return KEY_NONE;
 }
 
-BOOL KeyToInputRecord(int Key, INPUT_RECORD *Rec)
+bool KeyToInputRecord(int Key, INPUT_RECORD *Rec)
 {
 	int VirtKey, ControlState;
-	return TranslateKeyToVK(Key, VirtKey, ControlState, Rec) != 0;
+	return TranslateKeyToVK(Key, VirtKey, ControlState, Rec);
 }
 
 DWORD IsMouseButtonPressed()
@@ -1769,14 +1769,14 @@ BOOL WINAPI KeyToText(uint32_t Key0, FARString &strKeyText0)
 }
 
 
-int TranslateKeyToVK(int Key,int &VirtKey,int &ControlState,INPUT_RECORD *Rec)
+bool TranslateKeyToVK(int Key,int &VirtKey,int &ControlState,INPUT_RECORD *Rec)
 {
 	int FKey  =Key&KEY_END_SKEY;
 	int FShift=Key&0x7F000000; // старший бит используется в других целях!
 	VirtKey=0;
-	ControlState=(FShift&KEY_SHIFT?PKF_SHIFT:0)|
-	             (FShift&KEY_ALT?PKF_ALT:0)|
-	             (FShift&KEY_CTRL?PKF_CONTROL:0);
+	ControlState = (FShift & KEY_SHIFT ? PKF_SHIFT:0) |
+	               (FShift & KEY_ALT   ? PKF_ALT:0)   |
+	               (FShift & KEY_CTRL  ? PKF_CONTROL:0);
 
 	bool KeyInTable=false;
 	for (size_t i=0; i < ARRAYSIZE(Table_KeyToVK); i++)
@@ -1809,18 +1809,18 @@ int TranslateKeyToVK(int Key,int &VirtKey,int &ControlState,INPUT_RECORD *Rec)
 		Rec->Event.KeyEvent.wVirtualKeyCode=VirtKey;
 		Rec->Event.KeyEvent.wVirtualScanCode = WINPORT(MapVirtualKey)(Rec->Event.KeyEvent.wVirtualKeyCode,MAPVK_VK_TO_VSC);
 
-		Rec->Event.KeyEvent.uChar.UnicodeChar=Key>MAX_VKEY_CODE?0:Key;
+		Rec->Event.KeyEvent.uChar.UnicodeChar = Key > MAX_VKEY_CODE ? 0:Key;
 
 		// здесь подход к Shift-клавишам другой, нежели для ControlState
-		Rec->Event.KeyEvent.dwControlKeyState=
-		    (FShift&KEY_SHIFT?SHIFT_PRESSED:0)|
-		    (FShift&KEY_ALT?LEFT_ALT_PRESSED:0)|
-		    (FShift&KEY_CTRL?LEFT_CTRL_PRESSED:0)|
-		    (FShift&KEY_RALT?RIGHT_ALT_PRESSED:0)|
-		    (FShift&KEY_RCTRL?RIGHT_CTRL_PRESSED:0);
+		Rec->Event.KeyEvent.dwControlKeyState =
+		    (FShift & KEY_SHIFT ? SHIFT_PRESSED:0)     |
+		    (FShift & KEY_ALT   ? LEFT_ALT_PRESSED:0)  |
+		    (FShift & KEY_CTRL  ? LEFT_CTRL_PRESSED:0) |
+		    (FShift & KEY_RALT  ? RIGHT_ALT_PRESSED:0) |
+		    (FShift & KEY_RCTRL ? RIGHT_CTRL_PRESSED:0);
 	}
 
-	return VirtKey;
+	return VirtKey != 0;
 }
 
 

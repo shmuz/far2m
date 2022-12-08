@@ -940,26 +940,18 @@ int FileEditor::ReProcessKey(int Key,int CalledFromControl)
 		}
 	}
 
-#if 1
 	BOOL ProcessedNext=TRUE;
 
 	_SVS(if (Key=='n' || Key=='m'))
 		_SVS(SysLog(L"%d Key='%c'",__LINE__,Key));
 
-	if (!CalledFromControl && (CtrlObject->Macro.IsRecording() || CtrlObject->Macro.IsExecuting() || CtrlObject->Macro.GetState() == MACROSTATE_NOMACRO))
+	const auto MacroState = CtrlObject->Macro.GetState();
+	if (!CalledFromControl && !(MacroState == MACROSTATE_RECORDING || MacroState == MACROSTATE_EXECUTING))
 	{
-
-		_SVS(if (CtrlObject->Macro.IsRecording() || CtrlObject->Macro.IsExecuting() == MACROSTATE_EXECUTING_COMMON))
-			_SVS(SysLog(L"%d !!!! CtrlObject->Macro.GetCurRecord(nullptr,nullptr) != MACROSTATE_NOMACRO !!!!",__LINE__));
-
-		ProcessedNext=!ProcessEditorInput(FrameManager->GetLastInputRecord());
+		ProcessedNext = !ProcessEditorInput(FrameManager->GetLastInputRecord());
 	}
 
 	if (ProcessedNext)
-#else
-	if (!CalledFromControl && //CtrlObject->Macro.IsExecuting() || CtrlObject->Macro.IsRecording() || // пусть доходят!
-	        !ProcessEditorInput(FrameManager->GetLastInputRecord()))
-#endif
 	{
 
 		switch (Key)
@@ -2652,9 +2644,10 @@ int FileEditor::EditorControl(int Command, void *Param)
 		}
 		case ECTL_READINPUT:
 		{
-			if (CtrlObject->Macro.IsRecording() || CtrlObject->Macro.IsExecuting() == MACROSTATE_EXECUTING)
+			const auto MacroState = CtrlObject->Macro.GetState();
+			if (MacroState == MACROSTATE_RECORDING || MacroState == MACROSTATE_EXECUTING)
 			{
-//        return FALSE;
+				//return FALSE;
 			}
 
 			if (Param)
