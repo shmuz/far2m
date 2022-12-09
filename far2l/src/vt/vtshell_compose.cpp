@@ -74,7 +74,7 @@ static std::string VT_ComposeInitialTitleCommand(const char *cd, const char *cmd
 		title.insert(0, "sudo ");
 	}
 
-	std::string out = "printf '\\033]2;";
+	std::string out = "printf \"\\033]2;";
 
 	for (auto &ch : title) {
 		if ((ch >= 0 && ch < 0x20)) {
@@ -87,11 +87,11 @@ static std::string VT_ComposeInitialTitleCommand(const char *cd, const char *cmd
 			out+= ch;
 		}
 	}
-	out+= "\\007'\n";
+	out+= "\\007\"\n";
 
 	return out;
 }
-	
+
 ///////////////////////////////////////////////////////////////////////////////////////
 
 static std::atomic<bool> s_shown_tip_exit{false};
@@ -105,7 +105,7 @@ VT_ComposeCommandExec::VT_ComposeCommandExec(const char *cd, const char *cmd, bo
 	const char *pwd_file_ext = need_sudo ? ".spwd" : ".pwd";
 
 	unsigned int id = ++s_vt_script_id;
-	char name[128]; 
+	char name[128];
 	sprintf(name, "vtcmd/%x_%u", getpid(), id);
 	_cmd_script = InMyTemp(name);
 	_pwd_file = _cmd_script + pwd_file_ext;
