@@ -293,6 +293,7 @@ enum AddDefKeyboard
 	KEY_CTRLSHIFT            =KEY_CTRL|KEY_SHIFT,
 	KEY_ALTSHIFT             =KEY_ALT|KEY_SHIFT,
 	KEY_CTRLALT              =KEY_CTRL|KEY_ALT,
+	KEY_CTRLALTSHIFT         =KEY_CTRL|KEY_ALT|KEY_SHIFT,
 
 	KEY_CTRL0                =KEY_CTRL+'0',
 	KEY_CTRL1                =KEY_CTRL+'1',

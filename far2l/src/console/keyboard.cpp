@@ -97,8 +97,8 @@ static int LastShiftEnterPressed=FALSE;
 /* ----------------------------------------------------------------- */
 static struct TTable_KeyToVK
 {
-	int Key;
-	int VK;
+	unsigned int Key;
+	unsigned int VK;
 } Table_KeyToVK[]=
 {
 //   {KEY_PGUP,          VK_PRIOR},
@@ -551,7 +551,7 @@ DWORD GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,b
 //     _KEYMACRO(CleverSysLog SL(L"GetInputRecord()"));
 		int VirtKey,ControlState;
 		CtrlObject->Macro.RunStartMacro();
-		int MacroKey=CtrlObject->Macro.GetKey();
+		unsigned int MacroKey=CtrlObject->Macro.GetKey();
 
 		if (MacroKey)
 		{
@@ -578,7 +578,9 @@ DWORD GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,b
 
 				ScrBuf.Flush();
 				TranslateKeyToVK(MacroKey,VirtKey,ControlState,rec);
-				rec->EventType=((((unsigned int)MacroKey >= KEY_MACRO_BASE && (unsigned int)MacroKey <= KEY_MACRO_ENDBASE) || ((unsigned int)MacroKey>=KEY_OP_BASE && (unsigned int)MacroKey <=KEY_OP_ENDBASE)) || (MacroKey&(~0xFF000000)) >= KEY_END_FKEY)?0:FARMACRO_KEY_EVENT;
+				rec->EventType = (MacroKey >= KEY_MACRO_BASE && MacroKey <= KEY_MACRO_ENDBASE) ||
+					(MacroKey >= KEY_OP_BASE && MacroKey <= KEY_OP_ENDBASE)                      ||
+					((MacroKey & 0x00FFFFFF) >= KEY_END_FKEY) ? 0 : FARMACRO_KEY_EVENT;
 
 				if (!(MacroKey&KEY_SHIFT))
 					ShiftPressed=0;
@@ -610,8 +612,7 @@ DWORD GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,b
 		return(CalcKey);
 	}
 
-	int EnableShowTime=Opt.Clock && (WaitInMainLoop || (CtrlObject &&
-	                                 CtrlObject->Macro.GetArea()==MACROAREA_SEARCH));
+	int EnableShowTime=Opt.Clock && (WaitInMainLoop || (CtrlObject && CtrlObject->Macro.GetArea()==MACROAREA_SEARCH));
 
 	if (EnableShowTime)
 		ShowTime(1);
@@ -873,25 +874,9 @@ DWORD GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,b
 		}
 	}
 
-//_SVS(if(rec->EventType==KEY_EVENT)SysLog(L"[%d] if(rec->EventType==KEY_EVENT) >>> %ls",__LINE__,_INPUT_RECORD_Dump(rec)));
 	ReturnAltValue=FALSE;
 	CalcKey=CalcKeyCode(rec,TRUE,&NotMacros);
-	/*
-	  if(CtrlObject && CtrlObject->Macro.IsRecording() && (CalcKey == (KEY_ALT|KEY_NUMPAD0) || CalcKey == (KEY_ALT|KEY_INS)))
-	  {
-	  	_KEYMACRO(SysLog(L"[%d] CALL CtrlObject->Macro.ProcessKey(%ls)",__LINE__,_FARKEY_ToName(CalcKey)));
-	  	FrameManager->SetLastInputRecord(rec);
-	    if(CtrlObject->Macro.ProcessKey(CalcKey))
-	    {
-	      RunGraber();
-	      rec->EventType=0;
-	      CalcKey=KEY_NONE;
-	    }
-	    return(CalcKey);
-	  }
-	*/
 
-//_SVS(SysLog(L"1) CalcKey=%ls",_FARKEY_ToName(CalcKey)));
 	if (ReturnAltValue && !NotMacros)
 	{
 		_KEYMACRO(SysLog(L"[%d] CALL CtrlObject->Macro.ProcessKey(%ls)",__LINE__,_FARKEY_ToName(CalcKey)));
@@ -981,7 +966,7 @@ DWORD GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,b
 		KeyMacro::SetMacroConst(constMsLastCtrlState,CtrlState);
 
 		// Для NumPad!
-		if ((CalcKey&(KEY_CTRL|KEY_SHIFT|KEY_ALT|KEY_RCTRL|KEY_RALT)) == KEY_SHIFT &&
+		if ((CalcKey&(KEY_CTRLALTSHIFT|KEY_RCTRL|KEY_RALT)) == KEY_SHIFT &&
 		        (CalcKey&KEY_MASKF) >= KEY_NUMPAD0 && (CalcKey&KEY_MASKF) <= KEY_NUMPAD9)
 			ShiftPressed=SHIFT_PRESSED;
 		else
@@ -1231,7 +1216,8 @@ DWORD GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,b
 			rec->EventType = KEY_EVENT;
 		}
 
-		if (rec->EventType==MOUSE_EVENT && (!ExcludeMacro||ProcessMouse) && CtrlObject && (ProcessMouse || !(CtrlObject->Macro.IsRecording() || CtrlObject->Macro.IsExecuting())))
+		if (rec->EventType==MOUSE_EVENT && (!ExcludeMacro||ProcessMouse) && CtrlObject &&
+			(ProcessMouse || !(CtrlObject->Macro.IsRecording() || CtrlObject->Macro.IsExecuting())))
 		{
 			if (MouseEventFlags != MOUSE_MOVED)
 			{
@@ -1456,7 +1442,7 @@ int CheckForEscSilent()
 	*/
 
 	// если в "макросе"...
-	if (CtrlObject->Macro.IsExecuting() != MACROSTATE_NOMACRO && FrameManager->GetCurrentFrame())
+	if (CtrlObject->Macro.IsExecuting() && FrameManager->GetCurrentFrame())
 	{
 #if 0
 
@@ -1503,7 +1489,7 @@ int CheckForEscSilent()
 			FrameManager->ProcessKey(KEY_ALTF9);
 	}
 
-	if (!Processed && CtrlObject->Macro.IsExecuting() != MACROSTATE_NOMACRO)
+	if (!Processed && CtrlObject->Macro.IsExecuting())
 		ScrBuf.Flush();
 
 	return FALSE;
@@ -1771,8 +1757,8 @@ BOOL WINAPI KeyToText(uint32_t Key0, FARString &strKeyText0)
 
 bool TranslateKeyToVK(int Key,int &VirtKey,int &ControlState,INPUT_RECORD *Rec)
 {
-	int FKey  =Key&KEY_END_SKEY;
-	int FShift=Key&0x7F000000; // старший бит используется в других целях!
+	unsigned int FKey  =Key&KEY_END_SKEY;
+	unsigned int FShift=Key&0x7F000000; // старший бит используется в других целях!
 	VirtKey=0;
 	ControlState = (FShift & KEY_SHIFT ? PKF_SHIFT:0) |
 	               (FShift & KEY_ALT   ? PKF_ALT:0)   |
@@ -1791,14 +1777,12 @@ bool TranslateKeyToVK(int Key,int &VirtKey,int &ControlState,INPUT_RECORD *Rec)
 
 	if (!KeyInTable)
 	{
-		if ((FKey>='0' && FKey<='9') || (FKey>='A' && FKey<='Z'))
-			VirtKey=FKey;
-		else if ((unsigned int)FKey > KEY_FKEY_BEGIN && (unsigned int)FKey < KEY_END_FKEY)
-			VirtKey=FKey-KEY_FKEY_BEGIN;
-		else if (FKey < MAX_VKEY_CODE)
-			VirtKey=WINPORT(VkKeyScan)(FKey);
+		if (FKey > KEY_FKEY_BEGIN && FKey < KEY_END_FKEY) // [0x10000 - 0x1FFFF]
+			VirtKey = FKey - KEY_FKEY_BEGIN;
+		else if (FKey < MAX_VKEY_CODE)                    // 0xFFFF
+			VirtKey = WINPORT(VkKeyScan)(FKey);
 		else
-			VirtKey=FKey;
+			VirtKey = FKey;
 	}
 
 	if (Rec && VirtKey)
@@ -2116,7 +2100,7 @@ DWORD CalcKeyCode(INPUT_RECORD *rec,int RealKey,int *NotMacros)
 	{
 #if 0
 
-		if (!AltValue && (CtrlObject->Macro.IsRecording() == MACROSTATE_NOMACRO || !Opt.UseNumPad))
+		if (!AltValue && (!CtrlObject->Macro.IsRecording() || !Opt.UseNumPad))
 		{
 			// VK_INSERT  = 0x2D       AS-0 = 0x2D
 			// VK_NUMPAD0 = 0x60       A-0  = 0x60
@@ -2447,35 +2431,35 @@ DWORD CalcKeyCode(INPUT_RECORD *rec,int RealKey,int *NotMacros)
 		_SVS(if (KeyCode!=VK_CONTROL && KeyCode!=VK_MENU) SysLog(L"CtrlAltShift -> |%ls|%ls|",_VK_KEY_ToName(KeyCode),_INPUT_RECORD_Dump(rec)));
 
 		if (KeyCode>='A' && KeyCode<='Z')
-			return((KEY_SHIFT|KEY_CTRL|KEY_ALT)+KeyCode);
+			return(KEY_CTRLALTSHIFT+KeyCode);
 
 		if (Opt.ShiftsKeyRules) //???
 			switch (KeyCode)
 			{
 				case VK_OEM_3:
-					return(KEY_SHIFT+KEY_CTRL+KEY_ALT+'`');
+					return(KEY_CTRLALTSHIFT+'`');
 				case VK_OEM_MINUS:
-					return(KEY_SHIFT+KEY_CTRL+KEY_ALT+'-');
+					return(KEY_CTRLALTSHIFT+'-');
 				case VK_OEM_PLUS:
-					return(KEY_SHIFT+KEY_CTRL+KEY_ALT+'=');
+					return(KEY_CTRLALTSHIFT+'=');
 				case VK_OEM_5:
-					return(KEY_SHIFT+KEY_CTRL+KEY_ALT+KEY_BACKSLASH);
+					return(KEY_CTRLALTSHIFT+KEY_BACKSLASH);
 				case VK_OEM_6:
-					return(KEY_SHIFT+KEY_CTRL+KEY_ALT+KEY_BACKBRACKET);
+					return(KEY_CTRLALTSHIFT+KEY_BACKBRACKET);
 				case VK_OEM_4:
-					return(KEY_SHIFT+KEY_CTRL+KEY_ALT+KEY_BRACKET);
+					return(KEY_CTRLALTSHIFT+KEY_BRACKET);
 				case VK_OEM_7:
-					return(KEY_SHIFT+KEY_CTRL+KEY_ALT+'\'');
+					return(KEY_CTRLALTSHIFT+'\'');
 				case VK_OEM_1:
-					return(KEY_SHIFT+KEY_CTRL+KEY_ALT+KEY_SEMICOLON);
+					return(KEY_CTRLALTSHIFT+KEY_SEMICOLON);
 				case VK_OEM_2:
-					return(KEY_SHIFT+KEY_CTRL+KEY_ALT+KEY_SLASH);
+					return(KEY_CTRLALTSHIFT+KEY_SLASH);
 				case VK_OEM_PERIOD:
-					return(KEY_SHIFT+KEY_CTRL+KEY_ALT+KEY_DOT);
+					return(KEY_CTRLALTSHIFT+KEY_DOT);
 				case VK_OEM_COMMA:
-					return(KEY_SHIFT+KEY_CTRL+KEY_ALT+KEY_COMMA);
+					return(KEY_CTRLALTSHIFT+KEY_COMMA);
 				case VK_OEM_102: // <> \|
- 					return KEY_SHIFT+KEY_CTRL+KEY_ALT+KEY_BACKSLASH;
+ 					return KEY_CTRLALTSHIFT+KEY_BACKSLASH;
 			}
 
 		switch (KeyCode)
@@ -2561,13 +2545,13 @@ DWORD CalcKeyCode(INPUT_RECORD *rec,int RealKey,int *NotMacros)
 		}
 
 		if (Char)
-			return KEY_CTRL|KEY_ALT|Char;
+			return KEY_CTRLALT|Char;
 
 		if (!RealKey && (KeyCode==VK_CONTROL || KeyCode==VK_MENU))
 			return(KEY_NONE);
 
 		if (KeyCode)
-			return((KEY_CTRL|KEY_ALT)+KeyCode);
+			return(KEY_CTRLALT+KeyCode);
 	}
 
 	/* ------------------------------------------------------------- */
@@ -2578,12 +2562,8 @@ DWORD CalcKeyCode(INPUT_RECORD *rec,int RealKey,int *NotMacros)
 
 		if (KeyCode>='0' && KeyCode<='9')
 		{
-			if (WaitInFastFind > 0 &&
-			        CtrlObject->Macro.GetState() < MACROSTATE_RECORDING && //###
-			        true) //### was: CtrlObject->Macro.GetIndex(KEY_ALTSHIFT0+KeyCode-'0',-1) == -1)
-			{
-				return KEY_ALT|KEY_SHIFT|Char;
-			}
+			if (WaitInFastFind > 0 && !CtrlObject->Macro.IsRecording())
+				return KEY_ALTSHIFT|Char;
 			else
 				return(KEY_ALTSHIFT0+KeyCode-'0');
 		}
@@ -2595,45 +2575,45 @@ DWORD CalcKeyCode(INPUT_RECORD *rec,int RealKey,int *NotMacros)
 			switch (KeyCode)
 			{
 				case VK_OEM_3:
-					return(KEY_ALT+KEY_SHIFT+'`');
+					return(KEY_ALTSHIFT+'`');
 				case VK_OEM_MINUS:
-					return(KEY_ALT+KEY_SHIFT+'_');
+					return(KEY_ALTSHIFT+'_');
 				case VK_OEM_PLUS:
-					return(KEY_ALT+KEY_SHIFT+'=');
+					return(KEY_ALTSHIFT+'=');
 				case VK_OEM_5:
-					return(KEY_ALT+KEY_SHIFT+KEY_BACKSLASH);
+					return(KEY_ALTSHIFT+KEY_BACKSLASH);
 				case VK_OEM_6:
-					return(KEY_ALT+KEY_SHIFT+KEY_BACKBRACKET);
+					return(KEY_ALTSHIFT+KEY_BACKBRACKET);
 				case VK_OEM_4:
-					return(KEY_ALT+KEY_SHIFT+KEY_BRACKET);
+					return(KEY_ALTSHIFT+KEY_BRACKET);
 				case VK_OEM_7:
-					return(KEY_ALT+KEY_SHIFT+'\'');
+					return(KEY_ALTSHIFT+'\'');
 				case VK_OEM_1:
-					return(KEY_ALT+KEY_SHIFT+KEY_SEMICOLON);
+					return(KEY_ALTSHIFT+KEY_SEMICOLON);
 				case VK_OEM_2:
 					//if(WaitInFastFind)
-					//  return(KEY_ALT+KEY_SHIFT+'?');
+					//  return(KEY_ALTSHIFT+'?');
 					//else
-					return(KEY_ALT+KEY_SHIFT+KEY_SLASH);
+					return(KEY_ALTSHIFT+KEY_SLASH);
 				case VK_OEM_PERIOD:
-					return(KEY_ALT+KEY_SHIFT+KEY_DOT);
+					return(KEY_ALTSHIFT+KEY_DOT);
 				case VK_OEM_COMMA:
-					return(KEY_ALT+KEY_SHIFT+KEY_COMMA);
+					return(KEY_ALTSHIFT+KEY_COMMA);
 				case VK_OEM_102: // <> \|
- 					return KEY_ALT+KEY_SHIFT+KEY_BACKSLASH;
+ 					return KEY_ALTSHIFT+KEY_BACKSLASH;
 			}
 
 		switch (KeyCode)
 		{
 			case VK_DIVIDE:
 				//if(WaitInFastFind)
-				//  return(KEY_ALT+KEY_SHIFT+'/');
+				//  return(KEY_ALTSHIFT+'/');
 				//else
 				return(KEY_ALTSHIFT|KEY_DIVIDE);
 			case VK_MULTIPLY:
 				//if(WaitInFastFind)
 				//{
-				//  return(KEY_ALT+KEY_SHIFT+'*');
+				//  return(KEY_ALTSHIFT+'*');
 				//}
 				//else
 				return(KEY_ALTSHIFT|KEY_MULTIPLY);
@@ -2652,7 +2632,7 @@ DWORD CalcKeyCode(INPUT_RECORD *rec,int RealKey,int *NotMacros)
 			return(KEY_NONE);
 
 		if (KeyCode)
-			return(KEY_ALT+KEY_SHIFT+KeyCode);
+			return(KEY_ALTSHIFT+KeyCode);
 	}
 
 	/* ------------------------------------------------------------- */
@@ -2826,7 +2806,7 @@ DWORD CalcKeyCode(INPUT_RECORD *rec,int RealKey,int *NotMacros)
 					return(KEY_ALT+'`');
 				case VK_OEM_MINUS:
 					//if(WaitInFastFind)
-					//  return(KEY_ALT+KEY_SHIFT+'_');
+					//  return(KEY_ALTSHIFT+'_');
 					//else
 					return(KEY_ALT+'-');
 				case VK_OEM_PLUS:
@@ -2855,12 +2835,12 @@ DWORD CalcKeyCode(INPUT_RECORD *rec,int RealKey,int *NotMacros)
 				return(KEY_ALTDOT);
 			case VK_DIVIDE:
 				//if(WaitInFastFind)
-				//  return(KEY_ALT+KEY_SHIFT+'/');
+				//  return(KEY_ALTSHIFT+'/');
 				//else
 				return(KEY_ALT|KEY_DIVIDE);
 			case VK_MULTIPLY:
 //        if(WaitInFastFind)
-//          return(KEY_ALT+KEY_SHIFT+'*');
+//          return(KEY_ALTSHIFT+'*');
 //        else
 				return(KEY_ALT|KEY_MULTIPLY);
 			case VK_PAUSE:

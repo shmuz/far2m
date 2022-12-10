@@ -839,7 +839,7 @@ int FileEditor::ReProcessKey(int Key,int CalledFromControl)
 		ShowConsoleTitle();
 
 	// BugZ#488 - Shift=enter
-	if (ShiftPressed && (Key == KEY_ENTER || Key == KEY_NUMENTER) && CtrlObject->Macro.IsExecuting() == MACROSTATE_NOMACRO)
+	if (ShiftPressed && (Key == KEY_ENTER || Key == KEY_NUMENTER) && !CtrlObject->Macro.IsExecuting())
 	{
 		Key=Key == KEY_ENTER?KEY_SHIFTENTER:KEY_SHIFTNUMENTER;
 	}
@@ -1338,7 +1338,7 @@ int FileEditor::ReProcessKey(int Key,int CalledFromControl)
 			}
 			default:
 			{
-				if (Flags.Check(FFILEEDIT_FULLSCREEN) && CtrlObject->Macro.IsExecuting() == MACROSTATE_NOMACRO)
+				if (Flags.Check(FFILEEDIT_FULLSCREEN) && !CtrlObject->Macro.IsExecuting())
 					EditKeyBar.Refresh(Opt.EdOpt.ShowKeyBar);
 
 				if (!EditKeyBar.ProcessKey(Key))
