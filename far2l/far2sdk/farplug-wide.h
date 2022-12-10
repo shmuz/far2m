@@ -120,8 +120,6 @@ other possible license with no implications from the above license on them.
 
 #undef DefDlgProc
 
-#define FARMACRO_KEY_EVENT  (KEY_EVENT|0x8000)
-
 #ifdef FAR_USE_INTERNALS
 #ifndef _FAR_HAS_NAMELESS_UNIONS
 #define _FAR_NO_NAMELESS_UNIONS

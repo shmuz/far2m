@@ -579,14 +579,12 @@ DWORD GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,b
 				ScrBuf.Flush();
 				TranslateKeyToVK(MacroKey,VirtKey,ControlState,rec);
 				rec->EventType = (MacroKey >= KEY_MACRO_BASE && MacroKey <= KEY_MACRO_ENDBASE) ||
-					(MacroKey >= KEY_OP_BASE && MacroKey <= KEY_OP_ENDBASE)                      ||
-					((MacroKey & 0x00FFFFFF) >= KEY_END_FKEY) ? 0 : FARMACRO_KEY_EVENT;
+					(MacroKey >= KEY_OP_BASE && MacroKey <= KEY_OP_ENDBASE) ||
+					((MacroKey & 0x00FFFFFF) >= KEY_END_FKEY) ? 0 : KEY_EVENT;
 
 				if (!(MacroKey&KEY_SHIFT))
 					ShiftPressed=0;
 
-				//_KEYMACRO(SysLog(L"MacroKey1 =%ls",_FARKEY_ToName(MacroKey)));
-				// memset(rec,0,sizeof(*rec));
 				return(MacroKey);
 			}
 		}
@@ -967,17 +965,21 @@ DWORD GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,b
 
 		// Для NumPad!
 		if ((CalcKey&(KEY_CTRLALTSHIFT|KEY_RCTRL|KEY_RALT)) == KEY_SHIFT &&
-		        (CalcKey&KEY_MASKF) >= KEY_NUMPAD0 && (CalcKey&KEY_MASKF) <= KEY_NUMPAD9)
-			ShiftPressed=SHIFT_PRESSED;
+			(CalcKey&KEY_MASKF) >= KEY_NUMPAD0 && (CalcKey&KEY_MASKF) <= KEY_NUMPAD9)
+		{
+			ShiftPressed = SHIFT_PRESSED;
+		}
 		else
-			ShiftPressed=(CtrlState & SHIFT_PRESSED);
+		{
+			ShiftPressed = CtrlState & SHIFT_PRESSED;
+		}
 
 		if ((KeyCode==VK_F16 && ReadKey==VK_F16) || !KeyCode)
 			return(KEY_NONE);
 
 		if (!rec->Event.KeyEvent.bKeyDown &&
-		        (KeyCode==VK_SHIFT || KeyCode==VK_CONTROL || KeyCode==VK_MENU) &&
-		        CurClock-PressedLastTime<500)
+			(KeyCode==VK_SHIFT || KeyCode==VK_CONTROL || KeyCode==VK_MENU) &&
+			CurClock-PressedLastTime<500)
 		{
 			uint32_t Key {std::numeric_limits<uint32_t>::max()};
 
@@ -1887,7 +1889,6 @@ int IsShiftKey(DWORD Key)
 }
 
 
-// GetAsyncKeyState(VK_RSHIFT)
 DWORD CalcKeyCode(INPUT_RECORD *rec,int RealKey,int *NotMacros)
 {
 	_SVS(CleverSysLog Clev(L"CalcKeyCode"));
@@ -1896,14 +1897,11 @@ DWORD CalcKeyCode(INPUT_RECORD *rec,int RealKey,int *NotMacros)
 	UINT ScanCode=rec->Event.KeyEvent.wVirtualScanCode;
 	UINT KeyCode=rec->Event.KeyEvent.wVirtualKeyCode;
 	WCHAR Char=rec->Event.KeyEvent.uChar.UnicodeChar;
-	//// // _SVS(if(KeyCode == VK_DECIMAL || KeyCode == VK_DELETE) SysLog(L"CalcKeyCode -> CtrlState=%04X KeyCode=%ls ScanCode=%08X AsciiChar=%02X ShiftPressed=%d ShiftPressedLast=%d",CtrlState,_VK_KEY_ToName(KeyCode), ScanCode, Char.AsciiChar,ShiftPressed,ShiftPressedLast));
 
 	if (NotMacros)
 		*NotMacros=CtrlState&0x80000000?TRUE:FALSE;
 
-//  CtrlState&=~0x80000000;
-
-	if (!(rec->EventType==KEY_EVENT || rec->EventType == FARMACRO_KEY_EVENT))
+	if (rec->EventType != KEY_EVENT)
 		return(KEY_NONE);
 
 	if (!RealKey)

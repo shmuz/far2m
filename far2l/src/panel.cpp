@@ -1026,7 +1026,7 @@ void Panel::FastFind(int FirstKey)
 					else
 						Key=KEY_ESC;
 				}
-				else if (!rec.EventType || rec.EventType==KEY_EVENT || rec.EventType==FARMACRO_KEY_EVENT)
+				else if (!rec.EventType || rec.EventType==KEY_EVENT)
 				{
 					// для вставки воспользуемся макродвижком...
 					if (Key==KEY_CTRLV || Key==KEY_SHIFTINS || Key==KEY_SHIFTNUMPAD0)

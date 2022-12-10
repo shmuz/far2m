@@ -3657,7 +3657,6 @@ int WINAPI FarEditorControlA(int Command,void* Param)
 				switch (pIR->EventType)
 				{
 					case KEY_EVENT:
-					case FARMACRO_KEY_EVENT:
 					{
 						wchar_t res;
 						ErrnoSaver ErSr;
@@ -3691,7 +3690,6 @@ int WINAPI FarEditorControlA(int Command,void* Param)
 				switch (pIR->EventType)
 				{
 					case KEY_EVENT:
-					case FARMACRO_KEY_EVENT:
 					{
 						char res;
 						ErrnoSaver ErSr;

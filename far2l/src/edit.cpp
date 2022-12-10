@@ -2998,7 +2998,7 @@ void EditControl::AutoCompleteProcMenu(int &Result,bool Manual,bool DelBlock,int
 					SetMenuPos(ComplMenu);
 					ComplMenu.Show();
 				}
-				else if(ir.EventType==KEY_EVENT || ir.EventType==FARMACRO_KEY_EVENT)
+				else if(ir.EventType==KEY_EVENT)
 				{
 					int MenuKey=InputRecordToKey(&ir);
 

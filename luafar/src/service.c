@@ -3866,7 +3866,7 @@ void PushInputRecord (lua_State* L, const INPUT_RECORD *Rec)
 {
   lua_newtable(L);                   //+2: Func,Tbl
   PutNumToTable(L, "EventType", Rec->EventType);
-  if (Rec->EventType==KEY_EVENT || Rec->EventType==FARMACRO_KEY_EVENT) {
+  if (Rec->EventType == KEY_EVENT) {
     PutBoolToTable(L,"KeyDown",         Rec->Event.KeyEvent.bKeyDown);
     PutNumToTable(L, "RepeatCount",     Rec->Event.KeyEvent.wRepeatCount);
     PutNumToTable(L, "VirtualKeyCode",  Rec->Event.KeyEvent.wVirtualKeyCode);
@@ -4700,7 +4700,7 @@ int far_InputRecordToName(lua_State* L)
 
   lua_getfield(L, 1, "EventType");
   get_env_flag(L, -1, &event);
-  if (! (event==0 || event==KEY_EVENT || event==FARMACRO_KEY_EVENT))
+  if (! (event==0 || event==KEY_EVENT))
     return lua_pushnil(L), 1;
 
   lua_getfield(L, 1, "ControlKeyState");
