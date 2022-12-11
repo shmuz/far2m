@@ -464,12 +464,6 @@ int WINAPI InputRecordToKey(const INPUT_RECORD *r)
 	return KEY_NONE;
 }
 
-bool KeyToInputRecord(int Key, INPUT_RECORD *Rec)
-{
-	int VirtKey, ControlState;
-	return TranslateKeyToVK(Key, VirtKey, ControlState, Rec);
-}
-
 DWORD IsMouseButtonPressed()
 {
 	INPUT_RECORD rec;
@@ -548,7 +542,6 @@ DWORD GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,b
 
 	if (!ExcludeMacro && CtrlObject && CtrlObject->Cp())
 	{
-//     _KEYMACRO(CleverSysLog SL(L"GetInputRecord()"));
 		int VirtKey,ControlState;
 		CtrlObject->Macro.RunStartMacro();
 		unsigned int MacroKey=CtrlObject->Macro.GetKey();
@@ -1949,7 +1942,6 @@ DWORD CalcKeyCode(INPUT_RECORD *rec,int RealKey,int *NotMacros)
 			INPUT_RECORD TempRec;
 			Console.ReadInput(TempRec);
 			ReturnAltValue=TRUE;
-			//_SVS(SysLog(L"0 AltNumPad -> AltValue=0x%0X CtrlState=%X",AltValue,CtrlState));
 			AltValue&=0xFFFF;
 			/*
 			О перетаскивании из проводника / вставке текста в консоль, на примере буквы 'ы':
@@ -1986,14 +1978,13 @@ DWORD CalcKeyCode(INPUT_RECORD *rec,int RealKey,int *NotMacros)
 				rec->Event.KeyEvent.uChar.UnicodeChar=static_cast<WCHAR>(AltValue);
 			}
 
-			//// // _SVS(SysLog(L"KeyCode==VK_MENU -> AltValue=%X (%c)",AltValue,AltValue));
 			return(AltValue);
 		}
 		else
 			return(KEY_NONE);
 	}
 
-	if ((CtrlState & 9)==9)
+	if ((CtrlState & LEFT_CTRL_PRESSED) && (CtrlState & RIGHT_ALT_PRESSED))
 	{
 		if (Char)
 			return Char;
@@ -2148,13 +2139,11 @@ DWORD CalcKeyCode(INPUT_RECORD *rec,int RealKey,int *NotMacros)
 
 #endif
 
-		//// // _SVS(SysLog(L"1 AltNumPad -> CalcKeyCode -> KeyCode=%ls  ScanCode=0x%0X AltValue=0x%0X CtrlState=%X GetAsyncKeyState(VK_SHIFT)=%X",_VK_KEY_ToName(KeyCode),ScanCode,AltValue,CtrlState,GetAsyncKeyState(VK_SHIFT)));
 		if (!(CtrlState & ENHANCED_KEY)
 		        //(CtrlState&NUMLOCK_ON) && KeyCode >= VK_NUMPAD0 && KeyCode <= VK_NUMPAD9 ||
 		        // !(CtrlState&NUMLOCK_ON) && KeyCode < VK_NUMPAD0
 		   )
 		{
-			//// // _SVS(SysLog(L"2 AltNumPad -> CalcKeyCode -> KeyCode=%ls  ScanCode=0x%0X AltValue=0x%0X CtrlState=%X GetAsyncKeyState(VK_SHIFT)=%X",_VK_KEY_ToName(KeyCode),ScanCode,AltValue,CtrlState,GetAsyncKeyState(VK_SHIFT)));
 			static unsigned int ScanCodes[]={82,79,80,81,75,76,77,71,72,73};
 
 			for (int I=0; I<int(ARRAYSIZE(ScanCodes)); I++)
@@ -2167,7 +2156,6 @@ DWORD CalcKeyCode(INPUT_RECORD *rec,int RealKey,int *NotMacros)
 						KeyCodeForALT_LastPressed=KeyCode;
 					}
 
-//          _SVS(SysLog(L"AltNumPad -> AltValue=0x%0X CtrlState=%X",AltValue,CtrlState));
 					if (AltValue)
 						return(KEY_NONE);
 				}
@@ -2336,7 +2324,6 @@ DWORD CalcKeyCode(INPUT_RECORD *rec,int RealKey,int *NotMacros)
 		case VK_RETURN:
 			//  !!!!!!!!!!!!! - Если "!ShiftPressed", то Shift-F4 Shift-Enter, не
 			//                  отпуская Shift...
-//_SVS(SysLog(L"ShiftPressed=%d RealKey=%d !ShiftPressedLast=%d !CtrlPressed=%d !AltPressed=%d (%d)",ShiftPressed,RealKey,ShiftPressedLast,CtrlPressed,AltPressed,(ShiftPressed && RealKey && !ShiftPressedLast && !CtrlPressed && !AltPressed)));
 #if 0
 
 			if (ShiftPressed && RealKey && !ShiftPressedLast && !CtrlPressed && !AltPressed && !LastShiftEnterPressed)
@@ -2697,7 +2684,7 @@ DWORD CalcKeyCode(INPUT_RECORD *rec,int RealKey,int *NotMacros)
 	}
 
 	/* ------------------------------------------------------------- */
-	if ((CtrlState & RIGHT_CTRL_PRESSED)==RIGHT_CTRL_PRESSED)
+	if (CtrlState & RIGHT_CTRL_PRESSED)
 	{
 		if (KeyCode>='0' && KeyCode<='9')
 			return(KEY_RCTRL0+KeyCode-'0');
