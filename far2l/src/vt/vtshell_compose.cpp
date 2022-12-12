@@ -74,20 +74,20 @@ static std::string VT_ComposeInitialTitleCommand(const char *cd, const char *cmd
 		title.insert(0, "sudo ");
 	}
 
-	std::string out = "printf \"\\033]2;";
+	std::string out = "printf '\\033]2;";
 
 	for (auto &ch : title) {
 		if ((ch >= 0 && ch < 0x20)) {
 			out+= '\x01';
 
+		} else if (ch == '\'') {
+			out+= "'\\''";
+
 		} else {
-			if (ch == '\'' || ch == '\\') {
-				out+= '\\';
-			}
 			out+= ch;
 		}
 	}
-	out+= "\\007\"\n";
+	out+= "\\007'\n";
 
 	return out;
 }
@@ -175,7 +175,8 @@ void VT_ComposeCommandExec::Create(const char *cd, const char *cmd, bool need_su
 	}
 
 	if (need_sudo) {
-		content+= StrPrintf("sudo sh -c \"cd \\\"%s\\\" && %s%s\"\n",
+		content+= Opt.SudoEnabled ? "sudo -A " : "sudo ";
+		content+= StrPrintf("sh -c \"cd \\\"%s\\\" && %s%s\"\n",
 			EscapeEscapes(EscapeCmdStr(cd)).c_str(), EscapeCmdStr(cmd).c_str(), pwd_suffix.c_str());
 	} else {
 		content+= StrPrintf("cd \"%s\" && %s%s\n",

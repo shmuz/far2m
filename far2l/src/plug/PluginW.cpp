@@ -154,14 +154,18 @@ static size_t WINAPI FarKeyToName(int Key,wchar_t *KeyText,size_t Size)
 
 static BOOL WINAPI FarNameToInputRecord(const wchar_t *Name,INPUT_RECORD* Rec)
 {
-	int VirtKey, ControlState;
-	auto Key = Name ? KeyNameToKey(Name) : 0;
-	return Key && Key != KEY_INVALID && TranslateKeyToVK(Key,VirtKey,ControlState,Rec);
+	if (Name)
+	{
+		int VirtKey, ControlState;
+		auto Key = KeyNameToKey(Name);
+		return Key && Key != KEY_INVALID && TranslateKeyToVK(Key,VirtKey,ControlState,Rec);
+	}
+	return FALSE;
 }
 
 int WINAPI KeyNameToKeyW(const wchar_t *Name)
 {
-	return Name ? KeyNameToKey(Name) : 0;
+	return Name ? KeyNameToKey(Name) : -1;
 }
 
 PluginW::PluginW(PluginManager *owner, const FARString &strModuleName,

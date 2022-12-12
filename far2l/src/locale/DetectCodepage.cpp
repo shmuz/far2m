@@ -50,7 +50,7 @@ static int TranslateUDCharset(const char *cs)
 	if (!strcasecmp(cs, "UTF-7"))
 		return CP_UTF7;
 	if (!strcasecmp(cs, "ASCII"))
-		return 20127;
+		return CP_UTF8;   //it's 20127 but CP_UTF8 is better in the editor
 	if (!strcasecmp(cs, "KOI8-R"))
 		return 20866;
 	if (!strcasecmp(cs, "KOI8-U"))
