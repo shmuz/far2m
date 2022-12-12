@@ -1556,23 +1556,9 @@ uint32_t WINAPI KeyNameToKey(const wchar_t *Name)
 		return KEY_INVALID;
 
 	uint32_t Key=0;
-    // _SVS(SysLog(L"KeyNameToKey('%ls')",Name));
 
-	// Это макроклавиша?
-	if (Name[0] == L'$' && Name[1])
-		return KEY_INVALID; // KeyNameMacroToKey(Name);
-
-	if (Name[0] == L'%' && Name[1])
-		return KEY_INVALID;
-
-	if (Name[1] && FindAnyOfChars(Name, "()")) // если не один символ и встречаются '(' или ')', то это явно не клавиша!
-		return KEY_INVALID;
-
-//   if((Key=KeyNameMacroToKey(Name)) != (DWORD)-1)
-//     return Key;
 	int I, Pos;
-	static FARString strTmpName;
-	strTmpName = Name;
+	FARString strTmpName = Name;
 	strTmpName.Upper();
 	int Len=(int)strTmpName.GetLength();
 
@@ -1586,9 +1572,6 @@ uint32_t WINAPI KeyNameToKey(const wchar_t *Name)
 			Pos+=ModifKeyName[I].Len*CntReplace;
 		}
 	}
-    // _SVS(SysLog(L"[%d] Name=%ls",__LINE__,Name));
-
-	//Pos=strlen(TmpName);
 
 	// если что-то осталось - преобразуем.
 	if (Pos < Len)
@@ -1664,7 +1647,6 @@ uint32_t WINAPI KeyNameToKey(const wchar_t *Name)
 		Key=LocalUpper(Key);
 	}
 	*/
-	// _SVS(SysLog(L"Key=0x%08X (%c) => '%ls'",Key,(Key?Key:' '),Name));
 	return (!Key || Pos < Len)? KEY_INVALID : Key;
 }
 

@@ -336,6 +336,7 @@ static Codepages DeduceCodepages()
 	if (IsLocaleMatches(lc, "rm_CH")) { return Codepages{850, 1252}; }
 	if (IsLocaleMatches(lc, "ro_RO")) { return Codepages{852, 1250}; }
 	if (IsLocaleMatches(lc, "ru_RU")) { return Codepages{866, 1251}; }
+	if (IsLocaleMatches(lc, "ru_UA")) { return Codepages{866, 1251}; }
 	if (IsLocaleMatches(lc, "sk_SK")) { return Codepages{852, 1250}; }
 	if (IsLocaleMatches(lc, "sl_SI")) { return Codepages{852, 1250}; }
 	if (IsLocaleMatches(lc, "sq_AL")) { return Codepages{852, 1250}; }
