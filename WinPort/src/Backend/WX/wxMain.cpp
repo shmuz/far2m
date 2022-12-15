@@ -250,6 +250,7 @@ wxBEGIN_EVENT_TABLE(WinPortFrame, wxFrame)
 	EVT_MENU_RANGE(ID_CTRL_BASE, ID_CTRL_END, WinPortFrame::OnAccelerator)
 	EVT_MENU_RANGE(ID_CTRL_SHIFT_BASE, ID_CTRL_SHIFT_END, WinPortFrame::OnAccelerator)
 	EVT_MENU_RANGE(ID_ALT_BASE, ID_ALT_END, WinPortFrame::OnAccelerator)
+	EVT_MENU_RANGE(ID_CTRL_ALT_BASE, ID_CTRL_ALT_END, WinPortFrame::OnAccelerator)
 wxEND_EVENT_TABLE()
 
 WinPortFrame::WinPortFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
@@ -308,6 +309,13 @@ void WinPortFrame::OnShow(wxShowEvent &show)
 		}
 		_menu_bar->Append(menu, _T("Ctrl + Shift + ?"));
 
+		menu = new wxMenu;
+		for (char c = 'A'; c <= 'Z'; ++c) {
+			sprintf(str, "Ctrl + Alt + %c\tCtrl+Alt+%c", c, c);
+			menu->Append(ID_CTRL_ALT_BASE + (c - 'A'), wxString(str));
+		}
+		_menu_bar->Append(menu, _T("Ctrl + Alt + ?"));
+
 #ifndef WX_ALT_NONLATIN
 		menu = new wxMenu;
 		for (char c = 'A'; c <= 'Z'; ++c) {
@@ -358,6 +366,10 @@ void WinPortFrame::OnAccelerator(wxCommandEvent& event)
 	} else if (event.GetId() >= ID_ALT_BASE && event.GetId() < ID_ALT_END) {
 		ir.Event.KeyEvent.dwControlKeyState = LEFT_ALT_PRESSED;
 		ir.Event.KeyEvent.wVirtualKeyCode = 'A' + (event.GetId() - ID_ALT_BASE);
+
+	} else if (event.GetId() >= ID_CTRL_ALT_BASE && event.GetId() < ID_CTRL_ALT_END) {
+		ir.Event.KeyEvent.dwControlKeyState = LEFT_CTRL_PRESSED | LEFT_ALT_PRESSED;
+		ir.Event.KeyEvent.wVirtualKeyCode = 'A' + (event.GetId() - ID_CTRL_ALT_BASE);
 
 	} else {
 		fprintf(stderr, "OnAccelerator: bad ID=%u\n", event.GetId());

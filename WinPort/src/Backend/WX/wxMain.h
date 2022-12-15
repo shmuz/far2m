@@ -169,7 +169,9 @@ class WinPortFrame: public wxFrame
 		ID_CTRL_SHIFT_BASE,
 		ID_CTRL_SHIFT_END = ID_CTRL_SHIFT_BASE + 'Z' - 'A' + 1,
 		ID_ALT_BASE,
-		ID_ALT_END = ID_ALT_BASE + 'Z' - 'A' + 1
+		ID_ALT_END = ID_ALT_BASE + 'Z' - 'A' + 1,
+		ID_CTRL_ALT_BASE,
+		ID_CTRL_ALT_END = ID_CTRL_ALT_BASE + 'Z' - 'A' + 1,
 	};
 	WinPortPanel		*_panel;
 	bool _shown;

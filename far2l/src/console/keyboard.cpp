@@ -981,12 +981,10 @@ DWORD GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,b
 				if (ShiftPressedLast)
 				{
 					Key=KEY_SHIFT;
-					//// // _SVS(SysLog(L"ShiftPressedLast, Key=KEY_SHIFT"));
 				}
 				else if (RightShiftPressedLast)
 				{
 					Key=KEY_RSHIFT;
-					//// // _SVS(SysLog(L"RightShiftPressedLast, Key=KEY_RSHIFT"));
 				}
 			}
 
@@ -995,12 +993,10 @@ DWORD GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,b
 				if (CtrlPressedLast)
 				{
 					Key=KEY_CTRL;
-					//// // _SVS(SysLog(L"CtrlPressedLast, Key=KEY_CTRL"));
 				}
 				else if (RightCtrlPressedLast)
 				{
 					Key=KEY_RCTRL;
-					//// // _SVS(SysLog(L"CtrlPressedLast, Key=KEY_RCTRL"));
 				}
 			}
 
@@ -1009,12 +1005,10 @@ DWORD GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,b
 				if (AltPressedLast)
 				{
 					Key=KEY_ALT;
-					//// // _SVS(SysLog(L"AltPressedLast, Key=KEY_ALT"));
 				}
 				else if (RightAltPressedLast)
 				{
 					Key=KEY_RALT;
-					//// // _SVS(SysLog(L"RightAltPressedLast, Key=KEY_RALT"));
 				}
 			}
 
@@ -2444,51 +2438,50 @@ DWORD CalcKeyCode(INPUT_RECORD *rec,int RealKey,int *NotMacros)
 		}
 
 		if (Char)
-			return KEY_SHIFT|KEY_CTRL|KEY_ALT|Char;
+			return KEY_CTRLALTSHIFT|Char;
 
 		if (!RealKey && (KeyCode==VK_CONTROL || KeyCode==VK_MENU))
 			return(KEY_NONE);
 
 		if (KeyCode)
-			return((KEY_SHIFT|KEY_CTRL|KEY_ALT)+KeyCode);
+			return(KEY_CTRLALTSHIFT+KeyCode);
 	}
 
 	/* ------------------------------------------------------------- */
 	if (CtrlPressed && AltPressed)
 	{
-
 		_SVS(if (KeyCode!=VK_CONTROL && KeyCode!=VK_MENU) SysLog(L"CtrlAlt -> |%ls|%ls|",_VK_KEY_ToName(KeyCode),_INPUT_RECORD_Dump(rec)));
 
 		if (KeyCode>='A' && KeyCode<='Z')
-			return((KEY_CTRL|KEY_ALT)+KeyCode);
+			return(KEY_CTRLALT+KeyCode);
 
 		if (Opt.ShiftsKeyRules) //???
 			switch (KeyCode)
 			{
 				case VK_OEM_3:
-					return(KEY_CTRL+KEY_ALT+'`');
+					return(KEY_CTRLALT+'`');
 				case VK_OEM_MINUS:
-					return(KEY_CTRL+KEY_ALT+'-');
+					return(KEY_CTRLALT+'-');
 				case VK_OEM_PLUS:
-					return(KEY_CTRL+KEY_ALT+'=');
+					return(KEY_CTRLALT+'=');
 				case VK_OEM_5:
-					return(KEY_CTRL+KEY_ALT+KEY_BACKSLASH);
+					return(KEY_CTRLALT+KEY_BACKSLASH);
 				case VK_OEM_6:
-					return(KEY_CTRL+KEY_ALT+KEY_BACKBRACKET);
+					return(KEY_CTRLALT+KEY_BACKBRACKET);
 				case VK_OEM_4:
-					return(KEY_CTRL+KEY_ALT+KEY_BRACKET);
+					return(KEY_CTRLALT+KEY_BRACKET);
 				case VK_OEM_7:
-					return(KEY_CTRL+KEY_ALT+'\'');
+					return(KEY_CTRLALT+'\'');
 				case VK_OEM_1:
-					return(KEY_CTRL+KEY_ALT+KEY_SEMICOLON);
+					return(KEY_CTRLALT+KEY_SEMICOLON);
 				case VK_OEM_2:
-					return(KEY_CTRL+KEY_ALT+KEY_SLASH);
+					return(KEY_CTRLALT+KEY_SLASH);
 				case VK_OEM_PERIOD:
-					return(KEY_CTRL+KEY_ALT+KEY_DOT);
+					return(KEY_CTRLALT+KEY_DOT);
 				case VK_OEM_COMMA:
-					return(KEY_CTRL+KEY_ALT+KEY_COMMA);
+					return(KEY_CTRLALT+KEY_COMMA);
 				case VK_OEM_102: // <> \|
- 					return KEY_CTRL+KEY_ALT+KEY_BACKSLASH;
+ 					return KEY_CTRLALT+KEY_BACKSLASH;
 			}
 
 		switch (KeyCode)
