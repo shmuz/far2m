@@ -251,6 +251,7 @@ wxBEGIN_EVENT_TABLE(WinPortFrame, wxFrame)
 	EVT_MENU_RANGE(ID_CTRL_SHIFT_BASE, ID_CTRL_SHIFT_END, WinPortFrame::OnAccelerator)
 	EVT_MENU_RANGE(ID_ALT_BASE, ID_ALT_END, WinPortFrame::OnAccelerator)
 	EVT_MENU_RANGE(ID_CTRL_ALT_BASE, ID_CTRL_ALT_END, WinPortFrame::OnAccelerator)
+	EVT_MENU_RANGE(ID_ALT_SHIFT_BASE, ID_ALT_SHIFT_END, WinPortFrame::OnAccelerator)
 wxEND_EVENT_TABLE()
 
 WinPortFrame::WinPortFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
@@ -284,6 +285,16 @@ void WinPortFrame::OnChar(wxKeyEvent &event)
 	_panel->OnChar(event);
 }
 
+#define APP_MENUBAR(IdBase, s1, s2) do {                \
+		char str[128];                                      \
+		wxMenu *menu = new wxMenu;                          \
+		for (char c = 'A'; c<='Z'; ++c) {                   \
+			sprintf(str, s1, c, c);                           \
+			menu->Append(IdBase + (c - 'A'), wxString(str));  \
+		}                                                   \
+		_menu_bar->Append(menu, _T(s2));                    \
+	} while(false)
+
 void WinPortFrame::OnShow(wxShowEvent &show)
 {
 // create accelerators to handle hotkeys (like Ctrl-O) when using non-latin layouts under Linux
@@ -293,37 +304,15 @@ void WinPortFrame::OnShow(wxShowEvent &show)
 	if (stat(InMyConfig("nomenu").c_str(), &s)!=0) {
 		//workaround for non-working with non-latin input language Ctrl+? hotkeys
 		_menu_bar = new wxMenuBar(wxMB_DOCKABLE);
-		char str[128];
 
-		wxMenu *menu = new wxMenu;
-		for (char c = 'A'; c<='Z'; ++c) {
-			sprintf(str, "Ctrl + %c\tCtrl+%c", c, c);
-			menu->Append(ID_CTRL_BASE + (c - 'A'), wxString(str));
-		}
-		_menu_bar->Append(menu, _T("Ctrl + ?"));
+		APP_MENUBAR(ID_CTRL_BASE,       "Ctrl + %c\tCtrl+%c",               "Ctrl + ?");
+		APP_MENUBAR(ID_CTRL_SHIFT_BASE, "Ctrl + Shift + %c\tCtrl+Shift+%c", "Ctrl + Shift + ?");
+		APP_MENUBAR(ID_CTRL_ALT_BASE,   "Ctrl + Alt + %c\tCtrl+Alt+%c",     "Ctrl + Alt + ?");
+		APP_MENUBAR(ID_ALT_SHIFT_BASE,  "Alt + Shift + %c\tAlt+Shift+%c",   "Alt + Shift + ?");
 
-		menu = new wxMenu;
-		for (char c = 'A'; c <= 'Z'; ++c) {
-			sprintf(str, "Ctrl + Shift + %c\tCtrl+Shift+%c", c, c);
-			menu->Append(ID_CTRL_SHIFT_BASE + (c - 'A'), wxString(str));
-		}
-		_menu_bar->Append(menu, _T("Ctrl + Shift + ?"));
-
-		menu = new wxMenu;
-		for (char c = 'A'; c <= 'Z'; ++c) {
-			sprintf(str, "Ctrl + Alt + %c\tCtrl+Alt+%c", c, c);
-			menu->Append(ID_CTRL_ALT_BASE + (c - 'A'), wxString(str));
-		}
-		_menu_bar->Append(menu, _T("Ctrl + Alt + ?"));
-
-#ifndef WX_ALT_NONLATIN
-		menu = new wxMenu;
-		for (char c = 'A'; c <= 'Z'; ++c) {
-			sprintf(str, "Alt + %c\tAlt+%c", c, c);
-			menu->Append(ID_ALT_BASE + (c - 'A'), wxString(str));
-		}
-		_menu_bar->Append(menu, _T("Alt + ?"));
-#endif
+// #ifndef WX_ALT_NONLATIN
+		APP_MENUBAR(ID_ALT_BASE, "Alt + %c\tAlt+%c", "Alt + ?");
+// #endif
 		SetMenuBar(_menu_bar);
 
 		//now hide menu bar just like it gets hidden during fullscreen transition
@@ -370,6 +359,10 @@ void WinPortFrame::OnAccelerator(wxCommandEvent& event)
 	} else if (event.GetId() >= ID_CTRL_ALT_BASE && event.GetId() < ID_CTRL_ALT_END) {
 		ir.Event.KeyEvent.dwControlKeyState = LEFT_CTRL_PRESSED | LEFT_ALT_PRESSED;
 		ir.Event.KeyEvent.wVirtualKeyCode = 'A' + (event.GetId() - ID_CTRL_ALT_BASE);
+
+	} else if (event.GetId() >= ID_ALT_SHIFT_BASE && event.GetId() < ID_ALT_SHIFT_END) {
+		ir.Event.KeyEvent.dwControlKeyState = LEFT_ALT_PRESSED | SHIFT_PRESSED;
+		ir.Event.KeyEvent.wVirtualKeyCode = 'A' + (event.GetId() - ID_ALT_SHIFT_BASE);
 
 	} else {
 		fprintf(stderr, "OnAccelerator: bad ID=%u\n", event.GetId());
