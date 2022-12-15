@@ -310,9 +310,9 @@ void WinPortFrame::OnShow(wxShowEvent &show)
 		APP_MENUBAR(ID_CTRL_ALT_BASE,   "Ctrl + Alt + %c\tCtrl+Alt+%c",     "Ctrl + Alt + ?");
 		APP_MENUBAR(ID_ALT_SHIFT_BASE,  "Alt + Shift + %c\tAlt+Shift+%c",   "Alt + Shift + ?");
 
-// #ifndef WX_ALT_NONLATIN
+#ifndef WX_ALT_NONLATIN
 		APP_MENUBAR(ID_ALT_BASE, "Alt + %c\tAlt+%c", "Alt + ?");
-// #endif
+#endif
 		SetMenuBar(_menu_bar);
 
 		//now hide menu bar just like it gets hidden during fullscreen transition
