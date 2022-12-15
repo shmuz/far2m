@@ -33,7 +33,7 @@ bool WinPortClipboard_IsBusy();
 static void NormalizeArea(SMALL_RECT &area)
 {
 	if (area.Left > area.Right) std::swap(area.Left, area.Right);
-	if (area.Top > area.Bottom) std::swap(area.Top, area.Bottom);	
+	if (area.Top > area.Bottom) std::swap(area.Top, area.Bottom);
 }
 
 WinPortAppThread::WinPortAppThread(int argc, char **argv, int(*appmain)(int argc, char **argv))
@@ -180,7 +180,7 @@ static void LoadSize(unsigned int &width, unsigned int &height)
 template <class COOKIE_T>
 	struct EventWith : wxCommandEvent
 {
-	EventWith(const COOKIE_T &cookie_, wxEventType commandType = wxEVT_NULL, int winid = 0) 
+	EventWith(const COOKIE_T &cookie_, wxEventType commandType = wxEVT_NULL, int winid = 0)
 		:wxCommandEvent(commandType, winid), cookie(cookie_) { }
 
 	virtual wxEvent *Clone() const { return new EventWith<COOKIE_T>(*this); }
@@ -191,7 +191,7 @@ template <class COOKIE_T>
 
 struct EventWithRect : EventWith<SMALL_RECT>
 {
-	EventWithRect(const SMALL_RECT &cookie_, wxEventType commandType = wxEVT_NULL, int winid = 0) 
+	EventWithRect(const SMALL_RECT &cookie_, wxEventType commandType = wxEVT_NULL, int winid = 0)
 		:EventWith<SMALL_RECT>(cookie_, commandType, winid)
 	{
 		NormalizeArea(cookie);
@@ -235,7 +235,7 @@ bool WinPortApp::OnInit()
 	g_winport_frame->Show( true );
 	if (g_broadway)
 		g_winport_frame->Maximize();
-		
+
 	return true;
 }
 
@@ -254,7 +254,7 @@ wxBEGIN_EVENT_TABLE(WinPortFrame, wxFrame)
 wxEND_EVENT_TABLE()
 
 WinPortFrame::WinPortFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
-        : wxFrame(NULL, wxID_ANY, title, pos, size), _shown(false), 
+        : wxFrame(NULL, wxID_ANY, title, pos, size), _shown(false),
 		_menu_bar(nullptr)
 {
 	_panel = new WinPortPanel(this, wxPoint(0, 0), GetClientSize());
@@ -291,17 +291,17 @@ void WinPortFrame::OnShow(wxShowEvent &show)
 #ifndef __APPLE__
 	struct stat s;
 	if (stat(InMyConfig("nomenu").c_str(), &s)!=0) {
-		//workaround for non-working with non-latin input language Ctrl+? hotkeys 
+		//workaround for non-working with non-latin input language Ctrl+? hotkeys
 		_menu_bar = new wxMenuBar(wxMB_DOCKABLE);
 		char str[128];
-		
+
 		wxMenu *menu = new wxMenu;
 		for (char c = 'A'; c<='Z'; ++c) {
 			sprintf(str, "Ctrl + %c\tCtrl+%c", c, c);
 			menu->Append(ID_CTRL_BASE + (c - 'A'), wxString(str));
 		}
 		_menu_bar->Append(menu, _T("Ctrl + ?"));
-		
+
 		menu = new wxMenu;
 		for (char c = 'A'; c <= 'Z'; ++c) {
 			sprintf(str, "Ctrl + Shift + %c\tCtrl+Shift+%c", c, c);
@@ -325,22 +325,22 @@ void WinPortFrame::OnShow(wxShowEvent &show)
 		_menu_bar->Append(menu, _T("Alt + ?"));
 #endif
 		SetMenuBar(_menu_bar);
-		
+
 		//now hide menu bar just like it gets hidden during fullscreen transition
         //wxAcceleratorTable table(wxCreateAcceleratorTableForMenuBar(_menu_bar);
         //if (table.IsOk())
-        //    SetAcceleratorTable(table);		
+        //    SetAcceleratorTable(table);
 		_menu_bar->Show(false);
 	}
 #endif
-	
+
 	if (!_shown) {
 		_shown = true;
 		wxCommandEvent *event = new(std::nothrow) wxCommandEvent(WX_CONSOLE_INITIALIZED);
 		if (event)
 			wxQueueEvent(_panel, event);
 	}
-}	
+}
 
 void WinPortFrame::OnClose(wxCloseEvent &event)
 {
@@ -358,11 +358,11 @@ void WinPortFrame::OnAccelerator(wxCommandEvent& event)
 	if (event.GetId() >= ID_CTRL_BASE && event.GetId() < ID_CTRL_END) {
 		ir.Event.KeyEvent.dwControlKeyState = LEFT_CTRL_PRESSED;
 		ir.Event.KeyEvent.wVirtualKeyCode = 'A' + (event.GetId() - ID_CTRL_BASE);
-		
+
 	} else if (event.GetId() >= ID_CTRL_SHIFT_BASE && event.GetId() < ID_CTRL_SHIFT_END) {
 		ir.Event.KeyEvent.dwControlKeyState = LEFT_CTRL_PRESSED | SHIFT_PRESSED;
 		ir.Event.KeyEvent.wVirtualKeyCode = 'A' + (event.GetId() - ID_CTRL_SHIFT_BASE);
-		
+
 	} else if (event.GetId() >= ID_ALT_BASE && event.GetId() < ID_ALT_END) {
 		ir.Event.KeyEvent.dwControlKeyState = LEFT_ALT_PRESSED;
 		ir.Event.KeyEvent.wVirtualKeyCode = 'A' + (event.GetId() - ID_ALT_BASE);
@@ -375,10 +375,10 @@ void WinPortFrame::OnAccelerator(wxCommandEvent& event)
 		fprintf(stderr, "OnAccelerator: bad ID=%u\n", event.GetId());
 		return;
 	}
-	
-	fprintf(stderr, "OnAccelerator: ID=%u ControlKeyState=0x%x Key=0x%x '%c'\n", 
+
+	fprintf(stderr, "OnAccelerator: ID=%u ControlKeyState=0x%x Key=0x%x '%c'\n",
 		event.GetId(), ir.Event.KeyEvent.dwControlKeyState, ir.Event.KeyEvent.wVirtualKeyCode, ir.Event.KeyEvent.wVirtualKeyCode );
-		
+
 	g_winport_con_in->Enqueue(&ir, 1);
 	ir.Event.KeyEvent.bKeyDown = FALSE;
 	g_winport_con_in->Enqueue(&ir, 1);
@@ -398,7 +398,7 @@ wxBEGIN_EVENT_TABLE(WinPortPanel, wxPanel)
 	EVT_COMMAND(wxID_ANY, WX_CONSOLE_SET_TWEAKS, WinPortPanel::OnConsoleSetTweaksSync)
 	EVT_COMMAND(wxID_ANY, WX_CONSOLE_CHANGE_FONT, WinPortPanel::OnConsoleChangeFontSync)
 	EVT_COMMAND(wxID_ANY, WX_CONSOLE_EXIT, WinPortPanel::OnConsoleExitSync)
-	
+
 	EVT_KEY_DOWN(WinPortPanel::OnKeyDown)
 	EVT_KEY_UP(WinPortPanel::OnKeyUp)
 	EVT_CHAR(WinPortPanel::OnChar)
@@ -415,7 +415,7 @@ wxEND_EVENT_TABLE()
 
 
 WinPortPanel::WinPortPanel(WinPortFrame *frame, const wxPoint& pos, const wxSize& size)
-        : wxPanel(frame, wxID_ANY, pos, size, wxWANTS_CHARS | wxNO_BORDER), 
+        : wxPanel(frame, wxID_ANY, pos, size, wxWANTS_CHARS | wxNO_BORDER),
 		_paint_context(this), _has_focus(true), _prev_mouse_event_ts(0), _frame(frame), _periodic_timer(NULL),
 		_last_keydown_enqueued(false), _initialized(false), _adhoc_quickedit(false),
 		_resize_pending(RP_NONE),  _mouse_state(0), _mouse_qedit_start_ticks(0), _mouse_qedit_moved(false), _last_valid_display(0),
@@ -447,17 +447,17 @@ void WinPortPanel::OnInitialized( wxCommandEvent& event )
 	LoadSize(cw, ch);
 	wxDisplay disp(GetDisplayIndex());
 	wxRect rc = disp.GetClientArea();
-	if ((unsigned)rc.GetWidth() >= cw * _paint_context.FontWidth() 
+	if ((unsigned)rc.GetWidth() >= cw * _paint_context.FontWidth()
 		&& (unsigned)rc.GetHeight() >= ch * _paint_context.FontHeight()) {
-		g_winport_con_out->SetSize(cw, ch);		
+		g_winport_con_out->SetSize(cw, ch);
 	}
 	g_winport_con_out->GetSize(cw, ch);
-	
+
 	cw*= _paint_context.FontWidth();
 	ch*= _paint_context.FontHeight();
 	if ( w != (int)cw || h != (int)ch)
 		_frame->SetClientSize(cw, ch);
-		
+
 	_initialized = true;
 
 	if (g_winport_app_thread) {
@@ -548,14 +548,14 @@ void WinPortPanel::CheckForResizePending()
 			_resize_pending = RP_NONE;
 
 			g_winport_con_out->GetSize(prev_width, prev_height);
-	
+
 			int width = 0, height = 0;
 			_frame->GetClientSize(&width, &height);
-#ifndef __APPLE__			
-			fprintf(stderr, "Current client size: %u %u font %u %u\n", 
+#ifndef __APPLE__
+			fprintf(stderr, "Current client size: %u %u font %u %u\n",
 				width, height, _paint_context.FontWidth(), _paint_context.FontHeight());
 #endif
-			width/= _paint_context.FontWidth(); 
+			width/= _paint_context.FontWidth();
 			height/= _paint_context.FontHeight();
 			if (width!=(int)prev_width || height!=(int)prev_height) {
 				fprintf(stderr, "Changing size: %u x %u\n", width, height);
@@ -579,13 +579,13 @@ void WinPortPanel::CheckForResizePending()
 			_resize_pending = RP_INSTANT;
 			//fprintf(stderr, "RP_INSTANT\n");
 		}
-	}	
+	}
 }
 
 void WinPortPanel::OnTimerPeriodic(wxTimerEvent& event)
 {
 	CheckForResizePending();
-	CheckPutText2CLip();	
+	CheckPutText2CLip();
 	if (_mouse_qedit_start_ticks != 0 && WINPORT(GetTickCount)() - _mouse_qedit_start_ticks > QEDIT_COPY_MINIMAL_DELAY) {
 		DamageAreaBetween(_mouse_qedit_start, _mouse_qedit_last);
 	}
@@ -704,14 +704,14 @@ void WinPortPanel::OnConsoleOutputUpdated(const SMALL_RECT *areas, size_t count)
 #endif // AREAS_REDUCTION
 		}
 	}
-	
+
 	switch (action) {
 		case A_QUEUE: {
 			wxCommandEvent *event = new(std::nothrow) wxCommandEvent(WX_CONSOLE_REFRESH);
 			if (event)
 				wxQueueEvent (this, event);
 		} break;
-		
+
 		case A_THROTTLE: {
 			auto fn = std::bind(&ProcessAllEvents);
 			CallInMain<int>(fn);
@@ -720,7 +720,7 @@ void WinPortPanel::OnConsoleOutputUpdated(const SMALL_RECT *areas, size_t count)
 			if (_refresh_rects_throttle == (DWORD)-1)
 				_refresh_rects_throttle = 0;
 		} break;
-		
+
 		case A_NOTHING: break;
 	}
 }
@@ -763,7 +763,7 @@ COORD WinPortPanel::OnConsoleGetLargestWindowSize()
 		auto fn = std::bind(&WinPortPanel::OnConsoleGetLargestWindowSize, this);
 		return CallInMain<COORD>(fn);
 	}
-	
+
 	wxDisplay disp(GetDisplayIndex());
 	wxRect rc = disp.GetClientArea();
 	wxSize outer_size = _frame->GetSize();
@@ -809,7 +809,7 @@ void WinPortPanel::OnRefreshSync( wxCommandEvent& event )
 		if (_refresh_rects.empty())
 			return;
 
-		refresh_rects.swap(_refresh_rects);	
+		refresh_rects.swap(_refresh_rects);
 	}
 
 	for (const auto & r : refresh_rects) {
@@ -835,16 +835,16 @@ void WinPortPanel::OnConsoleResizedSync( wxCommandEvent& event )
 
 	prev_width/= _paint_context.FontWidth();
 	prev_height/= _paint_context.FontHeight();
-	
+
 	if ((int)width != prev_width || (int)height != prev_height) {
 //		if ((int)width > prev_width || (int)height > prev_height) {
 //			_frame->SetPosition(wxPoint(0,0 ));
 //		}
-		
+
 		width*= _paint_context.FontWidth();
 		height*= _paint_context.FontHeight();
 		fprintf(stderr, "OnConsoleResized SET client size: %u %u\n", width, height);
-		_frame->SetClientSize(width, height);		
+		_frame->SetClientSize(width, height);
 	}
 	Refresh(false);
 }
@@ -863,9 +863,9 @@ void WinPortPanel::OnTitleChangedSync( wxCommandEvent& event )
 
 static bool IsForcedCharTranslation(int code)
 {
-	return (code==WXK_NUMPAD0 || code==WXK_NUMPAD1|| code==WXK_NUMPAD2 
+	return (code==WXK_NUMPAD0 || code==WXK_NUMPAD1|| code==WXK_NUMPAD2
 		|| code==WXK_NUMPAD3 || code==WXK_NUMPAD4 || code==WXK_NUMPAD5
-		|| code==WXK_NUMPAD6 || code==WXK_NUMPAD7 || code==WXK_NUMPAD8 
+		|| code==WXK_NUMPAD6 || code==WXK_NUMPAD7 || code==WXK_NUMPAD8
 		|| code==WXK_NUMPAD9 || code==WXK_NUMPAD_DECIMAL || code==WXK_NUMPAD_SPACE
 		|| code==WXK_NUMPAD_SEPARATOR || code==WXK_NUMPAD_EQUAL || code==WXK_NUMPAD_ADD
 		|| code==WXK_NUMPAD_MULTIPLY || code==WXK_NUMPAD_SUBTRACT || code==WXK_NUMPAD_DIVIDE);
@@ -969,7 +969,7 @@ void WinPortPanel::OnKeyDown( wxKeyEvent& event )
 	  || (event.GetUnicodeKey()==WXK_NONE && !IsForcedCharTranslation(event.GetKeyCode()) )) {
 		g_winport_con_in->Enqueue(&ir, 1);
 		_last_keydown_enqueued = true;
-	} 
+	}
 
 #ifdef WX_ALT_NONLATIN
 	if (alt_nonlatin_workaround) {
@@ -1064,13 +1064,13 @@ void WinPortPanel::OnChar( wxKeyEvent& event )
 	}
 	fprintf(stderr, "\n");
 
-	if (event.GetUnicodeKey() != WXK_NONE && 
+	if (event.GetUnicodeKey() != WXK_NONE &&
 		(!_last_keydown_enqueued || _key_tracker.LastKeydown().GetTimestamp() != event.GetTimestamp())) {
 		INPUT_RECORD ir = {0};
 		ir.EventType = KEY_EVENT;
 		ir.Event.KeyEvent.wRepeatCount = 1;
 		ir.Event.KeyEvent.wVirtualKeyCode = VK_OEM_PERIOD;
-		if (event.GetUnicodeKey() <= 0x7f) { 
+		if (event.GetUnicodeKey() <= 0x7f) {
 			if (_key_tracker.LastKeydown().GetTimestamp() == event.GetTimestamp()) {
 				wx2INPUT_RECORD irx(TRUE, _key_tracker.LastKeydown(), _key_tracker);
 				ir.Event.KeyEvent.wVirtualKeyCode = irx.Event.KeyEvent.wVirtualKeyCode;
@@ -1081,10 +1081,10 @@ void WinPortPanel::OnChar( wxKeyEvent& event )
 
 		ir.Event.KeyEvent.bKeyDown = TRUE;
 		g_winport_con_in->Enqueue(&ir, 1);
-		
+
 		ir.Event.KeyEvent.bKeyDown = FALSE;
 		g_winport_con_in->Enqueue(&ir, 1);
-		
+
 	}
 	//event.Skip();
 }
@@ -1092,7 +1092,7 @@ void WinPortPanel::OnChar( wxKeyEvent& event )
 
 void WinPortPanel::OnPaint( wxPaintEvent& event )
 {
-	//fprintf(stderr, "WinPortPanel::OnPaint\n"); 
+	//fprintf(stderr, "WinPortPanel::OnPaint\n");
 	_pending_refreshes = 0;
 	if (_mouse_qedit_moved && _mouse_qedit_start_ticks != 0
 	 && WINPORT(GetTickCount)() - _mouse_qedit_start_ticks > QEDIT_COPY_MINIMAL_DELAY) {
@@ -1106,7 +1106,7 @@ void WinPortPanel::OnPaint( wxPaintEvent& event )
 	}
 	else
 		_paint_context.OnPaint();
-	
+
 }
 
 void WinPortPanel::OnEraseBackground( wxEraseEvent& event )
@@ -1118,7 +1118,7 @@ void WinPortPanel::OnSize(wxSizeEvent &event)
 	if (_resize_pending==RP_INSTANT) {
 		CheckForResizePending();
 	} else {
-		_resize_pending = RP_DEFER;	
+		_resize_pending = RP_DEFER;
 		ResetTimerIdling();
 		//fprintf(stderr, "RP_DEFER\n");
 	}
@@ -1137,7 +1137,7 @@ COORD WinPortPanel::TranslateMousePosition( wxMouseEvent &event )
 
 	unsigned int width = 80, height = 25;
 	g_winport_con_out->GetSize(width, height);
-	
+
 	if ( (USHORT)out.X >= width) out.X = width - 1;
 	if ( (USHORT)out.Y >= height) out.Y = height - 1;
 	return out;
@@ -1148,7 +1148,7 @@ void WinPortPanel::OnMouse( wxMouseEvent &event )
 	ResetTimerIdling();
 
 	COORD pos_char = TranslateMousePosition( event );
-	
+
 	DWORD mode = 0;
 	if (!WINPORT(GetConsoleMode)(NULL, &mode))
 		mode = 0;
@@ -1191,7 +1191,7 @@ void WinPortPanel::OnMouseNormal( wxMouseEvent &event, COORD pos_char)
 		if (event.GetWheelRotation() > 0)
 			ir.Event.MouseEvent.dwButtonState|= 0x00010000;
 	} else if ( event.ButtonDClick() ) {
-		
+
 		if (event.ButtonDClick(wxMOUSE_BTN_LEFT))
 			ir.Event.MouseEvent.dwButtonState|= FROM_LEFT_1ST_BUTTON_PRESSED;
 		else if (event.ButtonDClick(wxMOUSE_BTN_MIDDLE))
@@ -1200,7 +1200,7 @@ void WinPortPanel::OnMouseNormal( wxMouseEvent &event, COORD pos_char)
 			ir.Event.MouseEvent.dwButtonState|= RIGHTMOST_BUTTON_PRESSED;
 		else {
 			fprintf(stderr, "Unsupported mouse double-click\n");
-			return;			
+			return;
 		}
 		ir.Event.MouseEvent.dwEventFlags|= DOUBLE_CLICK;
 	} else {
@@ -1208,13 +1208,13 @@ void WinPortPanel::OnMouseNormal( wxMouseEvent &event, COORD pos_char)
 			fprintf(stderr, "Unsupported mouse event\n");
 		return;
 	}
-	
+
 	ir.Event.MouseEvent.dwButtonState|= _mouse_state;
 	ir.Event.MouseEvent.dwMousePosition = pos_char;
-	
+
 	if (!(ir.Event.MouseEvent.dwEventFlags &MOUSE_MOVED) ) {
 		fprintf(stderr, "Mouse: dwEventFlags=0x%x dwButtonState=0x%x dwControlKeyState=0x%x\n",
-			ir.Event.MouseEvent.dwEventFlags, ir.Event.MouseEvent.dwButtonState, 
+			ir.Event.MouseEvent.dwEventFlags, ir.Event.MouseEvent.dwButtonState,
 			ir.Event.MouseEvent.dwControlKeyState);
 	}
 
@@ -1250,11 +1250,11 @@ void WinPortPanel::OnMouseQEdit( wxMouseEvent &event, COORD pos_char )
 		if (!_mouse_qedit_start_ticks) _mouse_qedit_start_ticks = 1;
 		_mouse_qedit_moved = false;
 		DamageAreaBetween(_mouse_qedit_start, _mouse_qedit_last);
-		
+
 	} else if (_mouse_qedit_start_ticks != 0) {
 		if (event.Moving() || event.Dragging()) {
 			DamageAreaBetween(_mouse_qedit_start, _mouse_qedit_last);
-			DamageAreaBetween(_mouse_qedit_start, pos_char);			
+			DamageAreaBetween(_mouse_qedit_start, pos_char);
 			_mouse_qedit_last = pos_char;
 			_mouse_qedit_moved = true;
 
@@ -1303,20 +1303,20 @@ void WinPortPanel::OnConsoleAdhocQuickEditSync( wxCommandEvent& event )
 {
 	if (_adhoc_quickedit) {
 		fprintf(stderr, "OnConsoleAdhocQuickEditSync: already\n");
-		return;		
+		return;
 	}
 	if ((_mouse_state & (FROM_LEFT_2ND_BUTTON_PRESSED | RIGHTMOST_BUTTON_PRESSED)) != 0) {
 		fprintf(stderr, "OnConsoleAdhocQuickEditSync: inappropriate _mouse_state=0x%x\n", _mouse_state);
 		return;
 	}
-	
+
 	_adhoc_quickedit = true;
-	
+
 	if ( (_mouse_state & FROM_LEFT_1ST_BUTTON_PRESSED) != 0) {
 		_mouse_state&= ~FROM_LEFT_1ST_BUTTON_PRESSED;
-	
+
 		COORD pos_char = TranslateMousePosition( _last_mouse_event );
-		
+
 		INPUT_RECORD ir = {0};
 		ir.EventType = MOUSE_EVENT;
 		ir.Event.MouseEvent.dwButtonState = _mouse_state;
@@ -1355,7 +1355,7 @@ DWORD WinPortPanel::OnConsoleSetTweaks(DWORD tweaks)
 
 	if (_paint_context.IsSharpSupported())
 		out|= TWEAK_STATUS_SUPPORT_PAINT_SHARP;
-		
+
 	if (_exclusive_hotkeys.Available())
 		out|= TWEAK_STATUS_SUPPORT_EXCLUSIVE_KEYS;
 
@@ -1466,9 +1466,9 @@ void WinPortPanel::CheckPutText2CLip()
 				wxTheClipboard->SetData( new wxTextDataObject(text2clip) );
 				wxTheClipboard->Close();
 			}
-		} else 
+		} else
 			fprintf(stderr, "CheckPutText2CLip: clipboard busy\n");
-	}	
+	}
 }
 
 void WinPortPanel::OnSetFocus( wxFocusEvent &event )
@@ -1487,11 +1487,11 @@ void WinPortPanel::OnKillFocus( wxFocusEvent &event )
 void WinPortPanel::ResetInputState()
 {
 	_key_tracker.ForceAllUp();
-	
+
 	if (_mouse_qedit_start_ticks) {
 		_mouse_qedit_start_ticks = 0;
 		DamageAreaBetween(_mouse_qedit_start, _mouse_qedit_last);
 	}
-	
+
 	_exclusive_hotkeys.Reset();
 }
