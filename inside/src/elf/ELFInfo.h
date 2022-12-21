@@ -1,11 +1,22 @@
 #pragma once
 #include <stdint.h>
+#include <stdio.h>
 #include <string>
 #include <vector>
 #include <elf.h>
 #include <fcntl.h> // for O_RDONLY
+#include <BitTwiddle.hpp>
 
 #include "../../../WinPort/sudo.h" // for sdc_open
+#ifdef __HAIKU__
+  #define PF_W PF_WRITE
+  #define PF_R PF_READ
+  #define PF_X PF_EXECUTE
+
+  #define SHF_MERGE     0x10
+  #define SHF_STRINGS   0x20
+  #define SHF_INFO_LINK 0x10
+#endif
 
 struct ELFInfo
 {
@@ -24,22 +35,16 @@ struct ELFInfo
 };
 
 
-struct ELF_EndianessSame
+struct ELF_EndianessBig
 {
 	template <class T>
-		static T C(T v) { return v; }
+		static T C(const T &v) { return BIGEND(v); }
 };
 
-struct ELF_EndianessReverse
+struct ELF_EndianessLittle
 {
 	template <class T>
-		static T C(T v)
-	{
-		for (size_t i = 0; i< sizeof(v) / 2; ++i) {
-			std::swap( ((char *)&v)[i], ((char *)&v)[sizeof(v) - 1 - i]);
-		}
-		return v; 
-	}
+		static T C(const T &v) { return LITEND(v); }
 };
 
 template <class E, class Ehdr, class Phdr, class Shdr>
@@ -56,8 +61,8 @@ template <class E, class Ehdr, class Phdr, class Shdr>
 	Ehdr eh = {};
 	if (sdc_read(fd, &eh, sizeof(eh)) == sizeof(eh) && eh.e_phnum) {
 		
-		info.machine = E::C(((uint16_t *)&eh.e_ident)[9]);
-		uint64_t tmp = E::C(eh.e_phoff) + E::C(eh.e_phnum) * E::C(eh.e_phentsize);
+		info.machine = E::C(((const uint16_t *)&eh)[9]);
+		uint64_t tmp = E::C(eh.e_phoff) + uint64_t(E::C(eh.e_phnum)) * E::C(eh.e_phentsize);
 		if (info.elf_length < tmp) info.elf_length = tmp;
 		for (size_t i = 0; i < E::C(eh.e_phnum); ++i) {
 			Phdr ph = {};
@@ -80,16 +85,22 @@ template <class E, class Ehdr, class Phdr, class Shdr>
 		if (eh.e_shnum) {
 			Shdr sh = {};
 			std::vector<char> strings;
-			E::C(eh.e_shstrndx);
-			if (sdc_lseek(fd, E::C(eh.e_shoff) + E::C(eh.e_shstrndx) * E::C(eh.e_shentsize), SEEK_SET) != (off_t)-1
-			&& sdc_read(fd, &sh, sizeof(sh)) == sizeof(sh)) {
-				strings.resize(E::C(sh.sh_size) + 1);
-				if (sdc_lseek(fd, E::C(sh.sh_offset), SEEK_SET) != -1) {
-					sdc_read(fd, &strings[0], strings.size() - 1);
+			if (sdc_lseek(fd, E::C(eh.e_shoff) + off_t(E::C(eh.e_shstrndx)) * E::C(eh.e_shentsize), SEEK_SET) != (off_t)-1
+			&& sdc_read(fd, &sh, sizeof(sh)) == sizeof(sh)
+			&& E::C(sh.sh_offset) <= s.st_size && E::C(sh.sh_offset) + E::C(sh.sh_size) <= s.st_size) {
+				try {
+					strings.resize(E::C(sh.sh_size) + 1);
+					if (sdc_lseek(fd, E::C(sh.sh_offset), SEEK_SET) != -1) {
+						sdc_read(fd, strings.data(), strings.size() - 1);
+					}
+				} catch (std::exception &e) {
+					fprintf(stderr, "ELFInfo: failed to read strings - %s\n", e.what());
 				}
+			} else {
+				fprintf(stderr, "ELFInfo: bad strings boundaries\n");
 			}
 
-			tmp = E::C(eh.e_shoff) + E::C(eh.e_shnum) * E::C(eh.e_shentsize);
+			tmp = E::C(eh.e_shoff) + uint64_t(E::C(eh.e_shnum)) * E::C(eh.e_shentsize);
 			if (info.elf_length < tmp) info.elf_length = tmp;
 			for (size_t i = 0; i < E::C(eh.e_shnum); ++i) {
 				if (sdc_lseek(fd, E::C(eh.e_shoff) + i * E::C(eh.e_shentsize), SEEK_SET) != (off_t)-1
