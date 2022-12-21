@@ -1265,7 +1265,24 @@ int Edit::ProcessKey(int Key)
 
 			if (Mask && *Mask)
 			{
-				Str[CurPos] = L' ';
+				const size_t MaskLen = wcslen(Mask);
+				size_t j = CurPos;
+				for (size_t i = CurPos; i < MaskLen; ++i)
+				{
+					if (i+1 < MaskLen && CheckCharMask(Mask[i+1]))
+					{
+						while (j < MaskLen && !CheckCharMask(Mask[j]))
+							j++;
+
+						if (!CharInMask(Str[i + 1], Mask[j]))
+							break;
+
+						Str[j]=Str[i+1];
+						j++;
+					}
+				}
+
+				Str[j]=L' ';
 			}
 			else
 			{
@@ -2699,29 +2716,24 @@ void Edit::Xlat(bool All)
 	}
 }
 
-
 /* $ 15.11.2000 KM
    Проверяет: попадает ли символ в разрешённый
    диапазон символов, пропускаемых маской
 */
-int Edit::KeyMatchedMask(int Key)
+bool Edit::KeyMatchedMask(int Key) const
 {
-	int Inserted=FALSE;
+	return CharInMask(Key, Mask[CurPos]);
+}
 
-	if (Mask[CurPos]==EDMASK_ANY)
-		Inserted=TRUE;
-	else if (Mask[CurPos] == EDMASK_DSS && (std::iswdigit(Key) || Key == L' ' || Key == L'-'))
-		Inserted=TRUE;
-	else if (Mask[CurPos] == EDMASK_DIGITS && (std::iswdigit(Key) || Key == L' '))
-		Inserted=TRUE;
-	else if (Mask[CurPos] == EDMASK_DIGIT && (std::iswdigit(Key)))
-		Inserted=TRUE;
-	else if (Mask[CurPos] == EDMASK_ALPHA && IsAlpha(Key))
-		Inserted=TRUE;
-	else if (Mask[CurPos] == EDMASK_HEX && std::iswxdigit(Key))
-		Inserted=TRUE;
-
-	return Inserted;
+bool Edit::CharInMask(wchar_t Char, wchar_t Mask)
+{
+	return
+		(Mask == EDMASK_ANY) ||
+		(Mask == EDMASK_DSS && (std::iswdigit(Char) || Char == L' ' || Char == L'-')) ||
+		(Mask == EDMASK_DIGITS && (std::iswdigit(Char) || Char == L' ')) ||
+		(Mask == EDMASK_DIGIT && (std::iswdigit(Char))) ||
+		(Mask == EDMASK_ALPHA && IsAlpha(Char)) ||
+		(Mask == EDMASK_HEX && std::iswxdigit(Char));
 }
 
 int Edit::CheckCharMask(wchar_t Chr)

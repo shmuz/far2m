@@ -187,7 +187,8 @@ class Edit:public ScreenObject
 		void   ApplyColor();
 		int    GetNextCursorPos(int Position,int Where);
 		void   RefreshStrByMask(int InitMode=FALSE);
-		int KeyMatchedMask(int Key);
+		bool   KeyMatchedMask(int Key) const;
+		static bool CharInMask(wchar_t Char, wchar_t Mask);
 
 		int ProcessCtrlQ();
 		int ProcessInsDate(const wchar_t *Str);
