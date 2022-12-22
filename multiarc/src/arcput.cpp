@@ -237,7 +237,7 @@ LONG_PTR WINAPI PluginClass::PutDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR 
         KeyFileHelper kfh(INI_LOCATION);
         kfh.SetString(INI_SECTION,"DefaultFormat",pdd->ArcFormat);
         Info.SendDlgMessage(hDlg, DM_GETTEXTPTR, PDI_SWITCHESEDT, (LONG_PTR)Buffer);
-        kfh.SetString(INI_SECTION,"AddSwitches",pdd->ArcFormat);
+        kfh.SetString(INI_SECTION,"AddSwitches",Buffer);
 
         //Info.SendDlgMessage(hDlg, DM_GETTEXTPTR, PDI_SWITCHESEDT, (LONG_PTR)Buffer);
         //Info.SendDlgMessage(hDlg, DM_ADDHISTORY, PDI_SWITCHESEDT, (LONG_PTR)Buffer);
@@ -536,7 +536,7 @@ int PluginClass::PutFiles(struct PluginPanelItem *PanelItem,int ItemsNumber,
       pdd.NoChangeArcName=TRUE;
       pdd.OldExactState=TRUE;
       RestoreExactState=TRUE;
-      strcpy(DialogItems[PDI_ARCNAMEEDT].Data, ArcName);
+      ArrayCpyZ(DialogItems[PDI_ARCNAMEEDT].Data, ArcName);
     }
     else
     {
@@ -559,7 +559,7 @@ int PluginClass::PutFiles(struct PluginPanelItem *PanelItem,int ItemsNumber,
         {
           char CurDir[NM] = {0};
           if (sdc_getcwd(CurDir, sizeof(CurDir)))
-			strcpy(DialogItems[PDI_ARCNAMEEDT].Data, FSF.PointToName(CurDir));
+			ArrayCpyZ(DialogItems[PDI_ARCNAMEEDT].Data, FSF.PointToName(CurDir));
         }
         else
         {
@@ -568,7 +568,7 @@ int PluginClass::PutFiles(struct PluginPanelItem *PanelItem,int ItemsNumber,
 #else //_GROUP_NAME_
         if (ItemsNumber==1 && pi.SelectedItemsNumber==1 && !(pi.SelectedItems[0].Flags&PPIF_SELECTED))
         {
-          strcpy(DialogItems[PDI_ARCNAMEEDT].Data, PanelItem->FindData.cFileName);
+          ArrayCpyZ(DialogItems[PDI_ARCNAMEEDT].Data, PanelItem->FindData.cFileName);
           char *Dot=strrchr(DialogItems[PDI_ARCNAMEEDT].Data,'.');
           if(Dot!=NULL)
             *Dot=0;
@@ -577,7 +577,7 @@ int PluginClass::PutFiles(struct PluginPanelItem *PanelItem,int ItemsNumber,
         {
           char CurDir[NM];
           GetCurrentDirectory(sizeof(CurDir),CurDir);
-          strcpy(DialogItems[PDI_ARCNAMEEDT].Data, FSF.PointToName(CurDir));
+          ArrayCpyZ(DialogItems[PDI_ARCNAMEEDT].Data, FSF.PointToName(CurDir));
         }
 #endif //else _GROUP_NAME_
         if(pdd.OldExactState && !*ArcName)
@@ -683,7 +683,10 @@ int PluginClass::PutFiles(struct PluginPanelItem *PanelItem,int ItemsNumber,
 
     size_t SwPos = Command.find("%%S");
     if (SwPos != std::string::npos) {
-      Command.replace(SwPos, 3, DialogItems[PDI_SWITCHESEDT].Data);
+      if (SwPos > 0 && SwPos + 3 < Command.size() && Command[SwPos - 1] == '{' && Command[SwPos + 3] == '}')
+        Command.replace(SwPos - 1, 5, DialogItems[PDI_SWITCHESEDT].Data);
+      else
+        Command.replace(SwPos, 3, DialogItems[PDI_SWITCHESEDT].Data);
 
     } else if (*DialogItems[PDI_SWITCHESEDT].Data) {
       SwPos = Command.find(" -- ");
