@@ -138,6 +138,7 @@ static DWORD ApplyConsoleTweaks()
 	if (Opt.ExclusiveWinLeft) tweaks|= EXCLUSIVE_WIN_LEFT;
 	if (Opt.ExclusiveWinRight) tweaks|= EXCLUSIVE_WIN_RIGHT;
 	if (Opt.ConsolePaintSharp) tweaks|= CONSOLE_PAINT_SHARP;
+	if (Opt.OSC52ClipSet) tweaks|= CONSOLE_OSC52CLIP_SET;
 	return WINPORT(SetConsoleTweaks)(tweaks);
 }
 
@@ -345,11 +346,22 @@ void InterfaceSettings()
 
 		const DWORD supported_tweaks = ApplyConsoleTweaks();
 		int ChangeFontID = -1;
-		DialogItemEx *Item = Builder.AddButton(Msg::ConfigConsoleChangeFont, ChangeFontID);
+		DialogItemEx *ChangeFontItem = nullptr;
+		if (supported_tweaks & TWEAK_STATUS_SUPPORT_PAINT_SHARP) {
+			ChangeFontItem = Builder.AddButton(Msg::ConfigConsoleChangeFont, ChangeFontID);
+		}
 
 		if (supported_tweaks & TWEAK_STATUS_SUPPORT_PAINT_SHARP) {
-			Builder.AddCheckboxAfter(Item, Msg::ConfigConsolePaintSharp, &Opt.ConsolePaintSharp);
+			if (ChangeFontItem)
+				Builder.AddCheckboxAfter(ChangeFontItem, Msg::ConfigConsolePaintSharp, &Opt.ConsolePaintSharp);
+			else
+				Builder.AddCheckbox(Msg::ConfigConsolePaintSharp, &Opt.ConsolePaintSharp);
 		}
+
+		if (supported_tweaks & TWEAK_STATUS_SUPPORT_OSC52CLIP_SET) {
+			Builder.AddCheckbox(Msg::ConfigOSC52ClipSet, &Opt.OSC52ClipSet);
+		}
+
 
 		Builder.AddText(Msg::ConfigWindowTitle);
 		Builder.AddEditField(&Opt.strWindowTitle, 47);
@@ -377,7 +389,7 @@ void InterfaceSettings()
 			break;
 		}
 
-		if (clicked_id != ChangeFontID)
+		if (ChangeFontID == -1 || clicked_id != ChangeFontID)
 			break;
 
 		WINPORT(ConsoleChangeFont)();
@@ -746,6 +758,8 @@ static struct FARConfig
 	{1, REG_DWORD,  NKeyInterface, "ExclusiveAltRight",&Opt.ExclusiveAltRight, 0, 0},
 	{1, REG_DWORD,  NKeyInterface, "ExclusiveWinLeft",&Opt.ExclusiveWinLeft, 0, 0},
 	{1, REG_DWORD,  NKeyInterface, "ExclusiveWinRight",&Opt.ExclusiveWinRight, 0, 0},
+
+	{1, REG_DWORD,  NKeyInterface, "OSC52ClipSet",&Opt.OSC52ClipSet, 0, 0},
 
 	{0, REG_DWORD,  NKeyInterface, "ShowTimeoutDelFiles",&Opt.ShowTimeoutDelFiles, 50, 0},
 	{0, REG_DWORD,  NKeyInterface, "ShowTimeoutDACLFiles",&Opt.ShowTimeoutDACLFiles, 50, 0},
