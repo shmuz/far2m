@@ -75,8 +75,8 @@ class DList : public CDList
 		Node *AllocNode(void *key) {return new TNode((Type*)key);}
 		void DeleteNode(Node *node) {delete(TNode*)node;}
 
-		Type *Node2Type(Node *node) {return node!=&root ? (Type*)((BYTE*)node+sizeof(Node)) : nullptr;}
-		Node *Type2Node(const Type *item) {return item ? (Node*)((BYTE*)item-sizeof(Node)) : &root;}
+		Type *Node2Type(Node *node) {return node!=&root ? (Type*)(node+1) : nullptr;}
+		Node *Type2Node(const Type *item) {return item ? (Node*)item-1 : &root;}
 
 	public:
 		~DList() {Clear();};
