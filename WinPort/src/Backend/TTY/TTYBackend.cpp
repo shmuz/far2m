@@ -173,7 +173,7 @@ void TTYBackend::ReaderThread()
 
 			} else {
 				g_winport_backend = L"TTY";
-				_clipboard_backend_setter.Set<FSClipboardBackend>();
+				ChooseSimpleClipboardBackend();
 			}
 		}
 		prev_far2l_tty = _far2l_tty;
@@ -312,7 +312,7 @@ void TTYBackend::WriterThread()
 					_async_cond.wait(lock);
 				}
 				if (_ae.all != 0) {
-					std::swap(ae, _ae);
+					std::swap(ae.all, _ae.all);
 					break;
 				}
 			} while (!_exiting && !_deadio);
@@ -331,6 +331,10 @@ void TTYBackend::WriterThread()
 
 			if (ae.flags.far2l_interract)
 				DispatchFar2lInterract(tty_out);
+
+			if (ae.flags.osc52clip_set) {
+				DispatchOSC52ClipSet(tty_out);
+			}
 
 			tty_out.Flush();
 			tcdrain(_stdout);
@@ -383,7 +387,7 @@ void TTYBackend::DispatchTermResized(TTYOutput &tty_out)
 //#define LOG_OUTPUT_COUNT
 void TTYBackend::DispatchOutput(TTYOutput &tty_out)
 {
-	_cur_output.resize(_cur_width * _cur_height);
+	_cur_output.resize(size_t(_cur_width) * _cur_height);
 
 	COORD data_size = {CheckedCast<SHORT>(_cur_width), CheckedCast<SHORT>(_cur_height) };
 	COORD data_pos = {0, 0};
@@ -397,14 +401,14 @@ void TTYBackend::DispatchOutput(TTYOutput &tty_out)
 
 	} else if (_cur_width != _prev_width || _cur_height != _prev_height) {
 		for (unsigned int y = 0; y < _cur_height; ++y) {
-			const CHAR_INFO *cur_line = &_cur_output[y * _cur_width];
+			const CHAR_INFO *cur_line = &_cur_output[size_t(y) * _cur_width];
 			tty_out.MoveCursorLazy(y + 1, 1);
 			tty_out.WriteLine(cur_line, _cur_width);
 		}
 
 	} else for (unsigned int y = 0; y < _cur_height; ++y) {
-		const CHAR_INFO *cur_line = &_cur_output[y * _cur_width];
-		const CHAR_INFO *prev_line = &_prev_output[y * _prev_width];
+		const CHAR_INFO *cur_line = &_cur_output[size_t(y) * _cur_width];
+		const CHAR_INFO *prev_line = &_prev_output[size_t(y) * _prev_width];
 
 		const auto ApproxWeight = [&](unsigned int x_)
 		{
@@ -502,13 +506,23 @@ void TTYBackend::DispatchFar2lInterract(TTYOutput &tty_out)
 				if (id && _far2l_interracts_sent.find(id) == _far2l_interracts_sent.end()) break;
 			}
 		}
-		i->stk_ser.PushPOD(id);
+		i->stk_ser.PushNum(id);
 
 		if (i->waited)
 			_far2l_interracts_sent.emplace(id, i);
 
 		tty_out.SendFar2lInterract(i->stk_ser);
 	}
+}
+
+void TTYBackend::DispatchOSC52ClipSet(TTYOutput &tty_out)
+{
+	std::string osc52clip;
+	{
+		std::unique_lock<std::mutex> lock(_async_mutex);
+		osc52clip.swap(_osc52clip);
+	}
+	tty_out.SendOSC52ClipSet(osc52clip);
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -556,9 +570,10 @@ COORD TTYBackend::OnConsoleGetLargestWindowSize()
 
 		try {
 			StackSerializer stk_ser;
-			stk_ser.PushPOD(FARTTY_INTERRACT_GET_WINDOW_MAXSIZE);
+			stk_ser.PushNum(FARTTY_INTERRACT_GET_WINDOW_MAXSIZE);
 			if (Far2lInterract(stk_ser, true)) {
-				stk_ser.PopPOD(out);
+				stk_ser.PopNum(out.Y);
+				stk_ser.PopNum(out.X);
 				_largest_window_size = out;
 				_largest_window_size_ready = true;
 			}
@@ -582,14 +597,14 @@ bool TTYBackend::OnConsoleSetFKeyTitles(const char **titles)
 			if (state != 0) {
 				stk_ser.PushStr(titles[i]);
 			}
-			stk_ser.PushPOD(state);
+			stk_ser.PushNum(state);
 		}
-		stk_ser.PushPOD(FARTTY_INTERRACT_SET_FKEY_TITLES);
+		stk_ser.PushNum(FARTTY_INTERRACT_SET_FKEY_TITLES);
 
 		if (Far2lInterract(stk_ser, detect_support)) {
 			if (detect_support) {
 				bool supported = false;
-				stk_ser.PopPOD(supported);
+				stk_ser.PopNum(supported);
 				fprintf(stderr, "%s: %ssupported\n",
 					__FUNCTION__, supported ? "" : "not ");
 				_fkeys_support = supported
@@ -610,11 +625,11 @@ BYTE TTYBackend::OnConsoleGetColorPalette()
 {
 	if (_far2l_tty) try {
 		StackSerializer stk_ser;
-		stk_ser.PushPOD(FARTTY_INTERRACT_GET_COLOR_PALETTE);
+		stk_ser.PushNum(FARTTY_INTERRACT_GET_COLOR_PALETTE);
 		Far2lInterract(stk_ser, true);
 		uint8_t bits, reserved;
-		stk_ser.PopPOD(bits);
-		stk_ser.PopPOD(reserved);
+		stk_ser.PopNum(bits);
+		stk_ser.PopNum(reserved);
 		return bits;
 
 	} catch (std::exception &) {
@@ -640,14 +655,21 @@ void TTYBackend::OnConsoleAdhocQuickEdit()
 {
 	try {
 		StackSerializer stk_ser;
-		stk_ser.PushPOD(FARTTY_INTERRACT_CONSOLE_ADHOC_QEDIT);
+		stk_ser.PushNum(FARTTY_INTERRACT_CONSOLE_ADHOC_QEDIT);
 		Far2lInterract(stk_ser, false);
 	} catch (std::exception &) {}
 }
 
-DWORD TTYBackend::OnConsoleSetTweaks(DWORD tweaks)
+DWORD64 TTYBackend::OnConsoleSetTweaks(DWORD64 tweaks)
 {
-	return 0;
+	const auto prev_osc52clip_set = _osc52clip_set;
+	_osc52clip_set = (tweaks & CONSOLE_OSC52CLIP_SET) != 0;
+
+	if (_osc52clip_set != prev_osc52clip_set && !_far2l_tty && !_ttyx) {
+		ChooseSimpleClipboardBackend();
+	}
+
+	return (_far2l_tty || _ttyx) ? 0 : TWEAK_STATUS_SUPPORT_OSC52CLIP_SET;
 }
 
 void TTYBackend::OnConsoleChangeFont()
@@ -658,9 +680,28 @@ void TTYBackend::OnConsoleSetMaximized(bool maximized)
 {
 	try {
 		StackSerializer stk_ser;
-		stk_ser.PushPOD(maximized ? FARTTY_INTERRACT_WINDOW_MAXIMIZE : FARTTY_INTERRACT_WINDOW_RESTORE);
+		stk_ser.PushNum(maximized ? FARTTY_INTERRACT_WINDOW_MAXIMIZE : FARTTY_INTERRACT_WINDOW_RESTORE);
 		Far2lInterract(stk_ser, false);
 	} catch (std::exception &) {}
+}
+
+void TTYBackend::ChooseSimpleClipboardBackend()
+{
+	if (_osc52clip_set) {
+		IOSC52Interractor *interractor = this;
+		_clipboard_backend_setter.Set<OSC52ClipboardBackend>(interractor);
+	} else {
+		_clipboard_backend_setter.Set<FSClipboardBackend>();
+	}
+}
+
+void TTYBackend::OSC52SetClipboard(const char *text)
+{
+	fprintf(stderr, "TTYBackend::OSC52SetClipboard\n");
+	std::unique_lock<std::mutex> lock(_async_mutex);
+	_osc52clip = text;
+	_ae.flags.osc52clip_set = true;
+	_async_cond.notify_all();
 }
 
 bool TTYBackend::Far2lInterract(StackSerializer &stk_ser, bool wait)
@@ -716,10 +757,10 @@ static void OnFar2lKey(bool down, StackSerializer &stk_ser)
 		ir.Event.KeyEvent.bKeyDown = down ? TRUE : FALSE;
 
 		ir.Event.KeyEvent.uChar.UnicodeChar = (wchar_t)stk_ser.PopU32();
-		stk_ser.PopPOD(ir.Event.KeyEvent.dwControlKeyState);
-		stk_ser.PopPOD(ir.Event.KeyEvent.wVirtualScanCode);
-		stk_ser.PopPOD(ir.Event.KeyEvent.wVirtualKeyCode);
-		stk_ser.PopPOD(ir.Event.KeyEvent.wRepeatCount);
+		stk_ser.PopNum(ir.Event.KeyEvent.dwControlKeyState);
+		stk_ser.PopNum(ir.Event.KeyEvent.wVirtualScanCode);
+		stk_ser.PopNum(ir.Event.KeyEvent.wVirtualKeyCode);
+		stk_ser.PopNum(ir.Event.KeyEvent.wRepeatCount);
 		g_winport_con_in->Enqueue(&ir, 1);
 
 	} catch (std::exception &) {
@@ -759,13 +800,13 @@ static void OnFar2lMouse(bool compact, StackSerializer &stk_ser)
 				| ( (ir.Event.MouseEvent.dwButtonState & 0xff00) << 8);
 
 		} else {
-			stk_ser.PopPOD(ir.Event.MouseEvent.dwEventFlags);
-			stk_ser.PopPOD(ir.Event.MouseEvent.dwControlKeyState);
-			stk_ser.PopPOD(ir.Event.MouseEvent.dwButtonState);
+			stk_ser.PopNum(ir.Event.MouseEvent.dwEventFlags);
+			stk_ser.PopNum(ir.Event.MouseEvent.dwControlKeyState);
+			stk_ser.PopNum(ir.Event.MouseEvent.dwButtonState);
 		}
 
-		stk_ser.PopPOD(ir.Event.MouseEvent.dwMousePosition.Y);
-		stk_ser.PopPOD(ir.Event.MouseEvent.dwMousePosition.X);
+		stk_ser.PopNum(ir.Event.MouseEvent.dwMousePosition.Y);
+		stk_ser.PopNum(ir.Event.MouseEvent.dwMousePosition.X);
 
 		g_winport_con_in->Enqueue(&ir, 1);
 
@@ -829,7 +870,7 @@ void TTYBackend::OnFar2lReply(StackSerializer &stk_ser)
 	}
 
 	uint8_t id;
-	stk_ser.PopPOD(id);
+	stk_ser.PopNum(id);
 
 	std::unique_lock<std::mutex> lock_sent(_far2l_interracts_sent);
 
@@ -918,7 +959,7 @@ void TTYBackend::OnConsoleDisplayNotification(const wchar_t *title, const wchar_
 		StackSerializer stk_ser;
 		stk_ser.PushStr(Wide2MB(text));
 		stk_ser.PushStr(Wide2MB(title));
-		stk_ser.PushPOD(FARTTY_INTERRACT_DESKTOP_NOTIFICATION);
+		stk_ser.PushNum(FARTTY_INTERRACT_DESKTOP_NOTIFICATION);
 		Far2lInterract(stk_ser, false);
 	} catch (std::exception &) {}
 }

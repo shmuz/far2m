@@ -5,10 +5,12 @@
 # include <sys/types.h>
 # include <sys/event.h>
 # include <sys/time.h>
+#elif defined(__HAIKU__)
 #elif !defined(__CYGWIN__)
 # include <sys/inotify.h>
 #endif
 #include <pthread.h>
+#include <limits.h>
 #include <dirent.h>
 #include <string.h>
 #include <sys/types.h>
@@ -19,11 +21,12 @@
 #include "FSNotify.h"
 #include <utils.h>
 
-#if defined(__CYGWIN__)
+#if defined(__CYGWIN__) || defined(__HAIKU__)
 
 class FSNotify : public IFSNotify
 { // dummy implementation that doesnt watch for changes
-	FSNotify(const std::string &pathname, bool watch_subtree, FSNotifyWhat what) {}
+  public:
+    FSNotify(const std::string &pathname, bool watch_subtree, FSNotifyWhat what) {}
 	virtual bool Check() const noexcept { return false; }
 };
 

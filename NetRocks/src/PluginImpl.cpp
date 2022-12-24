@@ -1,6 +1,7 @@
 #include <vector>
 #include <mutex>
 #include <wchar.h>
+#include <limits.h>
 #include "Globals.h"
 #include <utils.h>
 #include "SitesConfig.h"
@@ -588,18 +589,18 @@ int PluginImpl::MakeDirectory(const wchar_t **Name, int OpMode)
 
 	if (dir_name.empty()) {
 		fprintf(stderr, "NetRocks::MakeDirectory: cancel\n");
-		return FALSE;
+		return -1;
 	}
 
 	if (!_remote) {
 		if (!_sites_cfg_location.Make(dir_name)) {
-			return FALSE;
+			return 0;
 		}
 
 	} else {
 		OpMakeDirectory op(OpMode, _remote, CurrentSiteDir(true), dir_name);
 		if (!op.Do()) {
-			return FALSE;
+			return 0;
 		}
 
 		dir_name = op.DirName();
@@ -611,7 +612,7 @@ int PluginImpl::MakeDirectory(const wchar_t **Name, int OpMode)
 		*Name = _mk_dir;
 	}
 
-	return TRUE;;
+	return 1;
 }
 
 int PluginImpl::ProcessKey(int Key, unsigned int ControlState)

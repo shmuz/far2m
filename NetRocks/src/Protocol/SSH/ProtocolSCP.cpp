@@ -199,6 +199,7 @@ public:
 
 		cmd.Execute();
 		while (cmd.FetchOutput()) {
+			; // nothing
 		}
 		_output.swap(cmd.output);
 		_error.swap(cmd.error);
@@ -531,7 +532,11 @@ drwx------    2 root     root         12288 Sep 25  2021 lost+found
 				t = *tnow;
 
 			if (str_yt.find(':') == std::string::npos) {
-				t.tm_year = atoul(str_yt.c_str()) - 1900;
+#ifndef __HAIKU__
+                t.tm_year = atoul(str_yt.c_str()) - 1900;
+#else
+                t.tm_year = atoul(str_yt.c_str(), str_yt.length()) - 1900;
+#endif
 			} else {
 				if (sscanf(str_yt.c_str(), "%d:%d", &t.tm_hour, &t.tm_min) <= -1) {
 					perror("scanf(str_yt)");
@@ -618,27 +623,66 @@ ProtocolSCP::ProtocolSCP(const std::string &host, unsigned int port,
 {
 	_quirks.use_ls = false;
 	_quirks.ls_supports_dash_f = true;
+	_quirks.rm_file = "unlink";
+	_quirks.rm_dir = "rmdir";
 
 	StringConfig protocol_options(options);
 	_conn = std::make_shared<SSHConnection>(host, port, username, password, protocol_options);
 	_now.tv_sec = time(nullptr);
 
-	int rc = SimpleCommand(_conn).Execute("%s", "stat --format=\"%n %f %s %X %Y %Z %U %G\" -L .");
+	SimpleCommand cmd(_conn);
+	int rc = cmd.Execute("%s", "stat --format=\"%n %f %s %X %Y %Z %U %G\" -L .");
 	if (rc != 0) {
 		_quirks.use_ls = true;
 		fprintf(stderr, "ProtocolSCP::ProtocolSCP: <stat .> result %d -> fallback to ls\n", rc);
 	}
 
-	if (_quirks.use_ls) {
-		SimpleCommand ls_cmd(_conn);
-		ls_cmd.Execute("%s", "ls --help");
-		if (ls_cmd.Output().find("BusyBox") != std::string::npos
-		  || ls_cmd.Error().find("BusyBox") != std::string::npos) {
-			fprintf(stderr, "ProtocolSCP::ProtocolSCP: BusyBox detected -> disable -f argument for ls\n");
-			_quirks.ls_supports_dash_f = false;
+	bool busybox = false;
+	bool applets_list = false;
+	if (cmd.Execute("readlink /bin/sh") == 0) {
+		if (cmd.Output().find("busybox") != std::string::npos && cmd.Execute("busybox") == 0) {
+			fprintf(stderr, "ProtocolSCP: BusyBox detected\n");
+			busybox = true;
+		}
+	} else {
+		int busybox_return_code = cmd.Execute("busybox 2>&1");
+		if (busybox_return_code == 0 || // busybox found and returns list of available applets OR
+			// busybox found and returns "busybox: applet not found"
+			(busybox_return_code == 127 && cmd.Output().find("applet not found") != std::string::npos))
+		{
+			// readlink not exists or /bin/sh not exists and also busybox exists?
+			// Its enough arguments to assume that ls will be handled by busybox.
+			fprintf(stderr, "ProtocolSCP: BusyBox assumed\n");
+			busybox = true;
+			applets_list = (busybox_return_code == 0);
 		}
 	}
 
+	if (busybox) {
+		if (applets_list) {
+			// some busybox systems may miss very usual things, analyze busybox command output
+			// where it printed lit of supported commands
+			std::vector<std::string> words;
+			StrExplode(words, cmd.Output(), "\t ,");
+			if (std::find(words.begin(), words.end(), _quirks.rm_file) == words.end()) {
+				fprintf(stderr, "ProtocolSCP: '%s' unsupported\n", _quirks.rm_file);
+				_quirks.rm_file = "rm -f";
+			}
+			if (std::find(words.begin(), words.end(), _quirks.rm_dir) == words.end()) {
+				fprintf(stderr, "ProtocolSCP: '%s' unsupported\n", _quirks.rm_dir);
+				_quirks.rm_dir = "rm -f -d";
+			}
+		} else {
+			// some routers have rmdir, but have no unlink (and also no applets list from busybox w/o args)
+			std::string probe_command = "ls /bin/"; probe_command += _quirks.rm_file;
+			if (cmd.Execute(probe_command.c_str()) != 0) {
+				fprintf(stderr, "ProtocolSCP: '%s' unsupported\n", _quirks.rm_file);
+				_quirks.rm_file = "rm -f";
+			}
+		}
+
+		_quirks.ls_supports_dash_f = false;
+	}
 }
 
 ProtocolSCP::~ProtocolSCP()
@@ -845,7 +889,7 @@ void ProtocolSCP::GetInformation(FileInformation &file_info, const std::string &
 void ProtocolSCP::FileDelete(const std::string &path)
 {
 	SimpleCommand sc(_conn);
-	int rc = sc.Execute("unlink %s", QuotedArg(path).c_str());
+	int rc = sc.Execute("%s %s", _quirks.rm_file, QuotedArg(path).c_str());
 	if (rc != 0) {
 		throw ProtocolError(sc.FilteredError().c_str(), rc);
 	}
@@ -854,7 +898,7 @@ void ProtocolSCP::FileDelete(const std::string &path)
 void ProtocolSCP::DirectoryDelete(const std::string &path)
 {
 	SimpleCommand sc(_conn);
-	int rc = sc.Execute("rmdir %s", QuotedArg(path).c_str());
+	int rc = sc.Execute("%s %s", _quirks.rm_dir, QuotedArg(path).c_str());
 	if (rc != 0) {
 		throw ProtocolError(sc.FilteredError().c_str(), rc);
 	}

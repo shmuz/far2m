@@ -5,10 +5,11 @@
 #include <sys/statvfs.h>
 #include <utime.h>
 #include <dirent.h>
+#include <limits.h>
 
 #ifdef __APPLE__
   #include <sys/mount.h>
-#elif !defined(__FreeBSD__)
+#elif !defined(__FreeBSD__) && !defined(__HAIKU__)
   #include <sys/statfs.h>
 #endif
 
@@ -24,6 +25,7 @@
 #include "HostLocal.h"
 
 #ifdef NETROCKS_PROTOCOL
+# include <utimens_compat.h>
 # define API(x) x
 
 #else
@@ -32,6 +34,7 @@
 # include <sudo.h>
 # define API(x) sdc_##x
 #endif
+
 
 HostLocal::HostLocal()
 {
@@ -144,14 +147,10 @@ void HostLocal::Rename(const std::string &path_old, const std::string &path_new)
 
 void HostLocal::SetTimes(const std::string &path, const timespec &access_time, const timespec &modification_time)
 {
-	struct timeval times[2] = {};
-	times[0].tv_sec = access_time.tv_sec;
-	times[0].tv_usec = suseconds_t(access_time.tv_nsec / 1000);
-	times[1].tv_sec = modification_time.tv_sec;
-	times[1].tv_usec = suseconds_t(modification_time.tv_nsec / 1000);
-	int r = API(utimes)(path.c_str(), times);
+	struct timespec times[2] = {access_time, modification_time};
+	int r = API(utimens)(path.c_str(), times);
 	if (r == -1) {
-		throw ProtocolError("utimes failed", errno);
+		throw ProtocolError("utimens failed", errno);
 	}
 }
 
@@ -159,7 +158,7 @@ void HostLocal::SetMode(const std::string &path, mode_t mode)
 {
 	int r = API(chmod)(path.c_str(), mode);
 	if (r == -1) {
-		throw ProtocolError("utimes failed", errno);
+		throw ProtocolError("chmod failed", errno);
 	}
 }
 

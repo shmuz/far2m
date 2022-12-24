@@ -34,11 +34,12 @@ src/Backend/TTY/TTYInput.cpp
 src/Backend/TTY/TTYInputSequenceParser.cpp
 src/Backend/TTY/TTYOutput.cpp
 src/Backend/TTY/TTYFar2lClipboardBackend.cpp
+src/Backend/TTY/OSC52ClipboardBackend.cpp
 src/Backend/TTY/TTYNegotiateFar2l.cpp
 src/Backend/TTY/TTYXGlue.cpp
 )
 
-add_library (WinPort ${SOURCES})
+add_library (WinPort STATIC ${SOURCES})
 
 target_include_directories(WinPort PRIVATE .)
 target_include_directories(WinPort PRIVATE src)
@@ -52,4 +53,7 @@ if(THREADS_HAVE_PTHREAD_ARG)
 endif()
 if(CMAKE_THREAD_LIBS_INIT)
   target_link_libraries(WinPort "${CMAKE_THREAD_LIBS_INIT}")
+endif()
+if(${CMAKE_SYSTEM_NAME} MATCHES "Haiku")
+    target_link_libraries(WinPort root)
 endif()

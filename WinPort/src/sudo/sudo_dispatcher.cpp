@@ -8,7 +8,7 @@
 #include <sys/stat.h>
 #if defined(__APPLE__) || defined(__FreeBSD__)
   #include <sys/mount.h>
-#else
+#elif !defined(__HAIKU__)
   #include <sys/statfs.h>
   #include <sys/ioctl.h>
 #  if !defined(__CYGWIN__)
@@ -27,6 +27,7 @@
 #include <mutex>
 #include <locale.h>
 #include <LocalSocket.h>
+#include <utimens_compat.h>
 #include "sudo_private.h"
 
 namespace Sudo 
@@ -220,16 +221,16 @@ namespace Sudo
 			bt.SendErrno();
 	}
 				
-	static void OnSudoDispatch_UTimes(BaseTransaction &bt)
+	static void OnSudoDispatch_UTimens(BaseTransaction &bt)
 	{
 		std::string path;
-		struct timeval times[2];
+		struct timespec times[2];
 		
 		bt.RecvStr(path);
 		bt.RecvPOD(times[0]);
 		bt.RecvPOD(times[1]);
 		
-		int r = utimes(path.c_str(), times);
+		int r = utimens(path.c_str(), times);
 		bt.SendInt(r);
 		if (r==-1)
 			bt.SendErrno();
@@ -279,7 +280,7 @@ namespace Sudo
 	
 	static void OnSudoDispatch_FSFlagsGet(BaseTransaction &bt)
 	{
-#if !defined(__APPLE__) && !defined(__FreeBSD__) && !defined(__CYGWIN__)
+#if !defined(__APPLE__) && !defined(__FreeBSD__) && !defined(__CYGWIN__) && !defined(__HAIKU__)
 		std::string path;
 		bt.RecvStr(path);
 		int r = -1;
@@ -312,6 +313,8 @@ namespace Sudo
 			return;
 		}
 
+#elif defined(__HAIKU__)
+        // ???
 #elif !defined(__CYGWIN__)
 		int fd = open(path.c_str(), O_RDONLY);
 		if (fd != -1) {
@@ -354,13 +357,13 @@ namespace Sudo
 			case SUDO_CMD_OPEN:
 				OnSudoDispatch_Open(bt);
 				break;
-				
+#ifndef __HAIKU__
 			case SUDO_CMD_STATFS:
 				OnSudoDispatch_StatCommon<struct statfs>(&statfs, bt);
 				break;
-				
+#endif
 			case SUDO_CMD_STATVFS:
-				OnSudoDispatch_StatCommon<struct statvfs>(&statvfs, bt);
+                OnSudoDispatch_StatCommon<struct statvfs>(&statvfs, bt);
 				break;
 				
 			case SUDO_CMD_STAT:
@@ -411,8 +414,8 @@ namespace Sudo
 				OnSudoDispatch_ChOwn(bt);
 				break;
 				
-			case SUDO_CMD_UTIMES:
-				OnSudoDispatch_UTimes(bt);
+			case SUDO_CMD_UTIMENS:
+				OnSudoDispatch_UTimens(bt);
 				break;
 			
 			case SUDO_CMD_RENAME:

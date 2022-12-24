@@ -124,6 +124,8 @@ src/vt/vtshell.cpp
 src/vt/vtshell_translation.cpp
 src/vt/vtshell_compose.cpp
 src/vt/vtshell_leader.cpp
+src/vt/vtshell_ioreaders.cpp
+src/vt/vtshell_mouse.cpp
 src/vt/vtlog.cpp
 src/vt/vtcompletor.cpp
 src/vt/VTFar2lExtensios.cpp

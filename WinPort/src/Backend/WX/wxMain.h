@@ -100,9 +100,10 @@ class WinPortPanel: public wxPanel, protected IConsoleOutputBackend
 	unsigned int _pending_refreshes;
 	struct RefreshRects : std::vector<SMALL_RECT>, std::mutex {} _refresh_rects;
 
-	bool _repaint_on_next_timer;
 	unsigned int _timer_idling_counter;
 	wchar_t _stolen_key;
+	std::atomic<unsigned int> _last_title_ticks{0};
+	bool _extra_refresh{false};
 
 	void CheckForResizePending();
 	void CheckPutText2CLip();
@@ -140,7 +141,7 @@ class WinPortPanel: public wxPanel, protected IConsoleOutputBackend
 	virtual COORD OnConsoleGetLargestWindowSize();
 	virtual void OnConsoleSetMaximized(bool maximized);
 	virtual void OnConsoleAdhocQuickEdit();
-	virtual DWORD OnConsoleSetTweaks(DWORD tweaks);
+	virtual DWORD64 OnConsoleSetTweaks(DWORD64 tweaks);
 	virtual void OnConsoleChangeFont();
 	virtual void OnConsoleExit();
 	virtual bool OnConsoleIsActive();

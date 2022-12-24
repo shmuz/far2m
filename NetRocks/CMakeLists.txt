@@ -76,7 +76,7 @@ set_target_properties(NetRocks-FILE
 	SUFFIX ".broker")
 target_compile_options(NetRocks-FILE PUBLIC -DNETROCKS_PROTOCOL)
 
-if (LIBSSH_FOUND)
+if (LIBSSH_FOUND AND ((NOT DEFINED NR_SFTP) OR NR_SFTP))
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_SFTP")
 	add_executable (NetRocks-SFTP
 		${PROTOCOL_SOURCES}
@@ -91,9 +91,9 @@ if (LIBSSH_FOUND)
 		RUNTIME_OUTPUT_DIRECTORY "${INSTALL_DIR}/Plugins/NetRocks/plug"
 		PREFIX ""
 		SUFFIX ".broker")
-endif (LIBSSH_FOUND)
+endif ()
 
-if (LIBSMBCLIENT_FOUND)
+if (LIBSMBCLIENT_FOUND AND ((NOT DEFINED NR_SMB) OR NR_SMB))
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_SMB")
 	add_executable (NetRocks-SMB
 		${PROTOCOL_SOURCES}
@@ -107,9 +107,9 @@ if (LIBSMBCLIENT_FOUND)
 		RUNTIME_OUTPUT_DIRECTORY "${INSTALL_DIR}/Plugins/NetRocks/plug"
 		PREFIX ""
 		SUFFIX ".broker")
-endif (LIBSMBCLIENT_FOUND)
+endif ()
 
-if (LIBNFS_FOUND)
+if (LIBNFS_FOUND AND ((NOT DEFINED NR_NFS) OR NR_NFS))
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_NFS")
 	add_executable (NetRocks-NFS
 		${PROTOCOL_SOURCES}
@@ -122,9 +122,10 @@ if (LIBNFS_FOUND)
 		RUNTIME_OUTPUT_DIRECTORY "${INSTALL_DIR}/Plugins/NetRocks/plug"
 		PREFIX ""
 		SUFFIX ".broker")
-endif (LIBNFS_FOUND)
+endif ()
 
-if (LIBNEON_FOUND)
+
+if (LIBNEON_FOUND AND ((NOT DEFINED NR_WEBDAV) OR NR_WEBDAV))
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_WEBDAV")
 	add_executable (NetRocks-WebDAV
 		${PROTOCOL_SOURCES}
@@ -137,7 +138,7 @@ if (LIBNEON_FOUND)
 		RUNTIME_OUTPUT_DIRECTORY "${INSTALL_DIR}/Plugins/NetRocks/plug"
 		PREFIX ""
 		SUFFIX ".broker")
-endif (LIBNEON_FOUND)
+endif ()
 
 	add_executable (NetRocks-FTP
 		${PROTOCOL_SOURCES}
@@ -149,11 +150,11 @@ endif (LIBNEON_FOUND)
 	)
 	target_link_libraries(NetRocks-FTP utils)
 	target_include_directories(NetRocks-FTP PRIVATE src)
-if (OPENSSL_FOUND)
+if (OPENSSL_FOUND AND ((NOT DEFINED NR_OPENSSL) OR NR_OPENSSL))
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_OPENSSL")
 	target_link_libraries(NetRocks-FTP ${OPENSSL_LIBRARIES})
 	target_include_directories(NetRocks-FTP PRIVATE ${OPENSSL_INCLUDE_DIRS})
-endif (OPENSSL_FOUND)
+endif ()
 	set_target_properties(NetRocks-FTP
 		PROPERTIES
 		RUNTIME_OUTPUT_DIRECTORY "${INSTALL_DIR}/Plugins/NetRocks/plug"

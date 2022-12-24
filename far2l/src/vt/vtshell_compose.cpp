@@ -91,7 +91,7 @@ static std::string VT_ComposeInitialTitleCommand(const char *cd, const char *cmd
 
 	return out;
 }
-
+	
 ///////////////////////////////////////////////////////////////////////////////////////
 
 static std::atomic<bool> s_shown_tip_exit{false};

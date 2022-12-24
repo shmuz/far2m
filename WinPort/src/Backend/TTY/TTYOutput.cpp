@@ -148,15 +148,15 @@ TTYOutput::TTYOutput(int out, bool far2l_tty)
 	}
 #endif
 
-	Format(ESC "7" ESC "[?47h" ESC "[?1049h");
+	Format(ESC "7" ESC "[?47h" ESC "[?1049h" ESC "[?2004h");
 	ChangeKeypad(true);
 	ChangeMouse(true);
 
 	if (far2l_tty) {
 		StackSerializer stk_ser;
-		stk_ser.PushPOD((uint64_t)(FARTTY_FEAT_COMPACT_INPUT));
-		stk_ser.PushPOD(FARTTY_INTERRACT_CHOOSE_EXTRA_FEATURES);
-		stk_ser.PushPOD((uint8_t)0); // zero ID means not expecting reply
+		stk_ser.PushNum((uint64_t)(FARTTY_FEAT_COMPACT_INPUT));
+		stk_ser.PushNum(FARTTY_INTERRACT_CHOOSE_EXTRA_FEATURES);
+		stk_ser.PushNum((uint8_t)0); // zero ID means not expecting reply
 		SendFar2lInterract(stk_ser);
 	}
 	Flush();
@@ -171,7 +171,7 @@ TTYOutput::~TTYOutput()
 		if (!_kernel_tty) {
 			Format(ESC "[0 q");
 		}
-		Format(ESC "[0m" ESC "[?1049l" ESC "[?47l" ESC "8" "\r\n");
+		Format(ESC "[0m" ESC "[?1049l" ESC "[?47l" ESC "8" ESC "[?2004l" "\r\n");
 		Flush();
 
 	} catch (std::exception &) {
@@ -309,9 +309,9 @@ void TTYOutput::ChangeCursorHeight(unsigned int height)
 {
 	if (_far2l_tty) {
 		StackSerializer stk_ser;
-		stk_ser.PushPOD(UCHAR(height));
-		stk_ser.PushPOD(FARTTY_INTERRACT_SET_CURSOR_HEIGHT);
-		stk_ser.PushPOD((uint8_t)0); // zero ID means not expecting reply
+		stk_ser.PushNum(UCHAR(height));
+		stk_ser.PushNum(FARTTY_INTERRACT_SET_CURSOR_HEIGHT);
+		stk_ser.PushNum((uint8_t)0); // zero ID means not expecting reply
 		SendFar2lInterract(stk_ser);
 
 	} else if (_kernel_tty) {
@@ -446,5 +446,13 @@ void TTYOutput::SendFar2lInterract(const StackSerializer &stk_ser)
 	request+= stk_ser.ToBase64();
 	request+= '\x07';
 
+	Write(request.c_str(), request.size());
+}
+
+void TTYOutput::SendOSC52ClipSet(const std::string &clip_data)
+{
+	std::string request = ESC "]52;;";
+	base64_encode(request, (const unsigned char *)clip_data.data(), clip_data.size());
+	request+= '\a';
 	Write(request.c_str(), request.size());
 }

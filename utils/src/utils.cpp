@@ -19,11 +19,11 @@
 ////////////////////////////
 char MakeHexDigit(const unsigned char c)
 {
-	if (c >= 0 && c <= 9) {
+	if (c <= 9) {
 		return '0' + c;
 	}
 
-	if (c >= 0xa && c <= 0xf) {
+	if (c <= 0xf) {
 		return 'a' + (c - 0xa);
 	}
 
@@ -111,7 +111,7 @@ ssize_t ReadWritePiece(int fd_src, int fd_dst)
 
 int pipe_cloexec(int pipedes[2])
 {
-#if defined(__APPLE__) || defined(__CYGWIN__)
+#if defined(__APPLE__) || defined(__CYGWIN__) || defined(__HAIKU__)
 	int r = os_call_int(pipe, pipedes);
 	if (r==0) {
 		fcntl(pipedes[0], F_SETFD, FD_CLOEXEC);

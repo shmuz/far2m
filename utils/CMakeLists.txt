@@ -34,9 +34,10 @@ set(SOURCES
   src/POpen.cpp
   src/VT256ColorTable.cpp
   src/ReadWholeFile.cpp
+  src/ThrowPrintf.cpp
 )
 
-add_library (utils ${SOURCES})
+add_library (utils STATIC ${SOURCES})
 
 
 target_include_directories(utils PRIVATE include)
@@ -47,4 +48,7 @@ if(THREADS_HAVE_PTHREAD_ARG)
 endif()
 if(CMAKE_THREAD_LIBS_INIT)
   target_link_libraries(utils "${CMAKE_THREAD_LIBS_INIT}")
+endif()
+if(${CMAKE_SYSTEM_NAME} MATCHES "Haiku")
+    target_link_libraries(utils network)
 endif()
