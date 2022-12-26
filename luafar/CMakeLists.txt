@@ -3,12 +3,10 @@ project(luafar2l)
 
 if (NOT DEFINED USE_LUAJIT OR USE_LUAJIT)
   include_directories("/usr/include/luajit-2.1")
-  set(LIB_LUA "luajit-5.1")
-  set(LUAEXE  "luajit")
+  set(LUAEXE "luajit")
 else()
   include_directories("/usr/include/lua5.1")
-  set(LIB_LUA "lua5.1")
-  set(LUAEXE  "lua")
+  set(LUAEXE "lua")
 endif()
 
 set(SDK "${CMAKE_SOURCE_DIR}/far2l/far2sdk")
@@ -47,7 +45,6 @@ set(SOURCES
 add_library (luafar2l SHARED ${SOURCES})
 set_property(TARGET luafar2l PROPERTY C_STANDARD 11)
 target_link_libraries(luafar2l uuid)
-# target_link_libraries(luafar2l ${LIB_LUA} uuid)
 
 target_compile_definitions(luafar2l PRIVATE -DWINPORT_DIRECT -DFAR_DONT_USE_INTERNALS)
 

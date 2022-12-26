@@ -6149,14 +6149,26 @@ int LF_LuaOpen (TPluginData* aPlugData, lua_CFunction aOpenLibs)
 {
   void *handle;
   lua_State *L;
+  const char *libs[] = {"libluajit-5.1.so", "liblua5.1.so", NULL};
+  int idx;
 
   // without dlopen() all attempts to require() a binary Lua module would fail, e.g.
   // require "lfs" --> undefined symbol: lua_gettop
-  handle = dlopen("libluajit-5.1.so", RTLD_NOW | RTLD_GLOBAL);
-  if (handle == NULL)
-    handle = dlopen("liblua5.1.so", RTLD_NOW | RTLD_GLOBAL);
-  if (handle == NULL)
+  if (getenv("FARPLAINLUA")) {
+    const char *ptr = libs[0];
+    libs[0] = libs[1];
+    libs[1] = ptr;
+  }
+  for (idx=0; libs[idx]; idx++) {
+    if ((handle = dlopen(libs[idx], RTLD_NOW|RTLD_GLOBAL)) != NULL)
+      break;
+  }
+  if (handle == NULL) {
+    const wchar_t *Name = wcsrchr(aPlugData->Info->ModuleName, L'/');
+    Name = Name ? Name+1 : L"<plugin name>";
+    LF_Message(aPlugData->Info, L"Neither LuaJIT nor Lua5.1 library was found", Name, L"OK", "w", NULL);
     return 0;
+  }
 
   // create Lua State
   L = lua_open();
