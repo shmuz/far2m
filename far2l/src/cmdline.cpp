@@ -159,7 +159,7 @@ void CommandLine::ProcessCompletion(bool possibilities)
 	CmdStr.GetString(strStr);
 	if (!strStr.IsEmpty()) {
 		std::string cmd = strStr.GetMB();
-		VTCompletor vtc;		
+		VTCompletor vtc;
 		if (possibilities) {
 			std::vector<std::string>  possibilities;
 			if (vtc.GetPossibilities(cmd, possibilities) && !possibilities.empty()) {
@@ -171,9 +171,9 @@ void CommandLine::ProcessCompletion(bool possibilities)
 				strStr = cmd;
 				CmdStr.SetString(strStr);
 				CmdStr.Show();
-			}			
+			}
 		}
-	}	
+	}
 }
 
 std::string CommandLine::GetConsoleLog(bool colored)
@@ -202,32 +202,32 @@ int CommandLine::ProcessKey(int Key)
 	FARString strStr;
 
 	int SavedLastKey = LastKey;
-	
+
 	if ( Key!=KEY_NONE)
 		LastKey = Key;
-	
+
 	if ( Key==KEY_TAB || Key==KEY_SHIFTTAB) {
 		ProcessCompletion(SavedLastKey==Key);
 		return TRUE;
 	}
-	
+
 	if (Key == (KEY_MSWHEEL_UP | KEY_CTRL | KEY_SHIFT))
 	{
 		ModalViewConsoleHistory(true, true);
 		return TRUE;
 	}
 
-	if ( Key==KEY_CTRLSHIFTF3 || Key==KEY_F3) { 
+	if ( Key==KEY_CTRLSHIFTF3 || Key==KEY_F3) {
 		ModalViewConsoleHistory(true);
 		return TRUE;
 	}
-	
-	if ( Key==KEY_CTRLSHIFTF4 || Key==KEY_F4) { 
+
+	if ( Key==KEY_CTRLSHIFTF4 || Key==KEY_F4) {
 		ModalEditConsoleHistory(true);
 		return TRUE;
 	}
-	
-	if ( Key==KEY_F8) { 
+
+	if ( Key==KEY_F8) {
 		ClearScreen(COL_COMMANDLINEUSERSCREEN);
 		SaveBackground();
 		VTLog::Reset();
@@ -238,8 +238,8 @@ int CommandLine::ProcessKey(int Key)
 
 //		CmdExecute(L"reset", true, false, true, false, false, false);
 		return TRUE;
-	}	
-		
+	}
+
 
 	if ((Key==KEY_CTRLEND || Key==KEY_CTRLNUMPAD1) && CmdStr.GetCurPos()==CmdStr.GetLength())
 	{
@@ -555,9 +555,6 @@ BOOL CommandLine::SetCurDir(const wchar_t *CurDir)
 	if (StrCmp(strCurDir,CurDir) || !TestCurrentDirectory(CurDir))
 	{
 		strCurDir = CurDir;
-
-		if (CtrlObject->Cp()->ActivePanel->GetMode()!=PLUGIN_PANEL)
-			PrepareDiskPath(strCurDir);
 	}
 
 	return TRUE;

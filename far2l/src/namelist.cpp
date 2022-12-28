@@ -113,7 +113,6 @@ void NamesList::SetCurDir(const wchar_t *Dir)
 	if (StrCmp(strCurrentDir,Dir) || !TestCurrentDirectory(Dir))
 	{
 		strCurrentDir = Dir;
-		PrepareDiskPath(strCurrentDir);
 	}
 }
 

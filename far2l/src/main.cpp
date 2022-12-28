@@ -376,8 +376,6 @@ static void SetupFarPath(int argc, char **argv)
 		CutToSlash(dir, true);
 		SetPathTranslationPrefix(dir);
 	}
-
-	PrepareDiskPath(g_strFarModuleName);
 }
 
 static unsigned int gMainThreadID;

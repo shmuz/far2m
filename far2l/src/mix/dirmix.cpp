@@ -67,7 +67,6 @@ BOOL FarChDir(const wchar_t *NewDir, BOOL ChangeDir)
 			} else {
 				apiGetCurrentDirectory(strCurDir);
 				ConvertNameToFull(NewDir,strCurDir);
-				PrepareDiskPath(strCurDir,false); // TRUE ???
 				rc = apiSetCurrentDirectory(strCurDir);
 			}
 			if (!rc)

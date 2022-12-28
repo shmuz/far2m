@@ -1444,9 +1444,6 @@ BOOL Panel::SetCurDir(const wchar_t *CurDir,int ClosePlugin)
 	if (StrCmpI(strCurDir,CurDir) || !TestCurrentDirectory(CurDir))
 	{
 		strCurDir = CurDir;
-
-		if (PanelMode!=PLUGIN_PANEL)
-			PrepareDiskPath(strCurDir);
 	}
 
 	return TRUE;
@@ -1458,9 +1455,6 @@ void Panel::InitCurDir(const wchar_t *CurDir)
 	if (StrCmpI(strCurDir,CurDir) || !TestCurrentDirectory(CurDir))
 	{
 		strCurDir = CurDir;
-
-		if (PanelMode!=PLUGIN_PANEL)
-			PrepareDiskPath(strCurDir);
 	}
 }
 

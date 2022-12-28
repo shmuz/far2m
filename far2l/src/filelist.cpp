@@ -2561,29 +2561,6 @@ BOOL FileList::ChangeDir(const wchar_t *NewDir,BOOL IsUpdated)
 	bool dot2Present = !StrCmp(strSetDir, L"..");
 	fprintf(stderr,"NewDir=%ls strCurDir=%ls dot2Present=%u\n", NewDir, strCurDir.CPtr(), dot2Present);
 
-	if (PanelMode!=PLUGIN_PANEL)
-	{
-		/* $ 28.08.2007 YJH
-		+ У форточек сносит крышу на GetFileAttributes("..") при нахождении в
-		корне UNC пути. Приходится обходить в ручную */
-		/* if (dot2Present &&
-		        !StrCmpN(strCurDir, L"//?/", 4) && strCurDir.At(4) &&
-		        !StrCmpN(&strCurDir[5], L":/",2))
-		{
-			if (!strCurDir.At(7))
-			{
-				strSetDir = strCurDir.CPtr()+4;
-			}
-			else
-			{
-				strSetDir = strCurDir;
-				CutToSlash(strSetDir);
-			}
-		} */
-
-		PrepareDiskPath(strSetDir);
-	}
-
 	if (!dot2Present && StrCmp(strSetDir,L"."))
 		UpperFolderTopFile=CurTopFile;
 
