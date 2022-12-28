@@ -763,7 +763,7 @@ ShellCopy::ShellCopy(Panel *SrcPanel,        // исходная панель (�
 			{
 				strNewDir.Truncate(pos);
 
-				if (!pos || strNewDir.At(pos-1)==L':')
+				if (!pos)
 					strNewDir += L"/";
 
 				FarChDir(strNewDir);
@@ -2244,13 +2244,10 @@ COPY_CODES ShellCopy::ShellCopyOneFileNoRetry(
 		{
 			int Length=(int)strDestPath.GetLength();
 
-			if (!IsSlash(strDestPath.At(Length-1)) && strDestPath.At(Length-1)!=L':')
+			if (!IsSlash(strDestPath.At(Length-1)))
 				strDestPath += L"/";
 
 			const wchar_t *PathPtr=Src+KeepPathPos;
-
-			if (*PathPtr && !KeepPathPos && PathPtr[1]==L':')
-				PathPtr+=2;
 
 			if (IsSlash(*PathPtr))
 				PathPtr++;
