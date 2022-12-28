@@ -1066,7 +1066,6 @@ int FileEditor::ReProcessKey(int Key,int CalledFromControl)
 						m_AddSignature = AddSignature ? FB_YES : FB_NO;
 
 						apiExpandEnvironmentStrings(strSaveAsName, strSaveAsName);
-						Unquote(strSaveAsName);
 						NameChanged=StrCmpI(strSaveAsName, (Flags.Check(FFILEEDIT_SAVETOSAVEAS)?strFullFileName:strFileName));
 
 						if (!NameChanged)

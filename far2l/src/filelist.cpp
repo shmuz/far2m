@@ -1613,7 +1613,6 @@ int FileList::ProcessKey(int Key)
 						if (!strLastFileName.IsEmpty())
 						{
 							strFileName = strLastFileName;
-							Unquote(strFileName);
 
 							if (IsAbsolutePath(strFileName))
 							{
