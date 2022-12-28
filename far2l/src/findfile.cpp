@@ -3079,7 +3079,7 @@ static bool FindFilesProcess(Vars& v)
 					if (!Length)
 						break;
 
-					if (Length>1 && IsSlash(strFileName.At(Length-1)) && strFileName.At(Length-2)!=L':')
+					if (Length>1 && IsSlash(strFileName.At(Length-1)))
 						strFileName.Truncate(Length-1);
 
 					if ((apiGetFileAttributes(strFileName)==INVALID_FILE_ATTRIBUTES) && !ErrnoSaver().IsAccessDenied())
@@ -3091,7 +3091,7 @@ static bool FindFilesProcess(Vars& v)
 					strFileName.Truncate(NamePtr-strFileName.CPtr());
 					Length=strFileName.GetLength();
 
-					if (Length>1 && IsSlash(strFileName.At(Length-1)) && strFileName.At(Length-2)!=L':')
+					if (Length>1 && IsSlash(strFileName.At(Length-1)))
 						strFileName.Truncate(Length-1);
 
 					if (strFileName.IsEmpty())
@@ -3115,7 +3115,7 @@ static bool FindFilesProcess(Vars& v)
 					FindPanel->GetCurDir(strDirTmp);
 					Length=strDirTmp.GetLength();
 
-					if (Length>1 && IsSlash(strDirTmp.At(Length-1)) && strDirTmp.At(Length-2)!=L':')
+					if (Length>1 && IsSlash(strDirTmp.At(Length-1)))
 						strDirTmp.Truncate(Length-1);
 
 					if (StrCmp(strFileName, strDirTmp))

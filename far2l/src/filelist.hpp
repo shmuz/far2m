@@ -423,8 +423,6 @@ class FileList:public Panel
 		virtual BOOL GetItem(int Index,void *Dest);
 		virtual BOOL UpdateKeyBar();
 
-		virtual void IfGoHome(wchar_t Drive);
-
 		void ResetLastUpdateTime() {LastUpdateTime = 0;}
 		virtual PHPTR GetPluginHandle();
 		virtual int GetRealSelCount();

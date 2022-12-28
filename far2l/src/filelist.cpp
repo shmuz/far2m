@@ -5019,39 +5019,6 @@ int FileList::PluginPanelHelp(PHPTR ph)
 	return TRUE;
 }
 
-void FileList::IfGoHome(wchar_t Drive)
-{
-	FARString strTmpCurDir;
-	FARString strFName=g_strFarModuleName;
-
-	{
-		strFName.Truncate(3); //BUGBUG!
-		// СНАЧАЛА ПАССИВНАЯ ПАНЕЛЬ!!!
-		/*
-			Почему? - Просто - если активная широкая (или пассивная
-			широкая) - получаем багу с прорисовкой!
-		*/
-		Panel *Another=CtrlObject->Cp()->GetAnotherPanel(this);
-
-		if (Another->GetMode() != PLUGIN_PANEL)
-		{
-			Another->GetCurDir(strTmpCurDir);
-
-			if (strTmpCurDir.At(0) == Drive && strTmpCurDir.At(1) == L':')
-				Another->SetCurDir(strFName, FALSE);
-		}
-
-		if (GetMode() != PLUGIN_PANEL)
-		{
-			GetCurDir(strTmpCurDir);
-
-			if (strTmpCurDir.At(0) == Drive && strTmpCurDir.At(1) == L':')
-				SetCurDir(strFName, FALSE); // переходим в корень диска с far.exe
-		}
-	}
-}
-
-
 BOOL FileList::GetItem(int Index,void *Dest)
 {
 	if (Index == -1 || Index == -2)

@@ -270,8 +270,6 @@ class Panel:public ScreenObject
 
 		virtual int64_t VMProcess(int OpCode,void *vParam=nullptr,int64_t iParam=0);
 
-		virtual void IfGoHome(wchar_t Drive) {};
-
 		/* $ 30.04.2001 DJ
 		   функция вызывается для обновления кейбара; если возвращает FALSE,
 		   используется стандартный кейбар
