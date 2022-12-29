@@ -642,7 +642,7 @@ local function GetMacroDirs()
   end
 
   local dirs = {}
-  dirs.MainPath = mainpath and ExpandEnv(mainpath) or far.GetConfigDir().."/Macros"
+  dirs.MainPath = mainpath and ExpandEnv(mainpath) or far.InMyConfig("Macros")
   dirs.LoadPathList = loadpathlist and ExpandEnv(loadpathlist) or ""
   return dirs
 end

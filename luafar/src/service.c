@@ -5379,33 +5379,6 @@ int far_ColorDialog(lua_State *L)
   return 1;
 }
 
-int far_GetConfigDir(lua_State *L)
-{
-  const char* name = getenv("FARSETTINGS");
-  const char* home = getenv("HOME");
-  if (!home)
-    luaL_error(L, "$HOME not found");
-  if (name) {
-    if (name[0] == '/') {
-      lua_pushstring(L, name);
-      lua_pushstring(L, "/.config");
-      lua_concat(L,2);
-    }
-    else {
-      lua_pushstring(L, home);
-      lua_pushstring(L, "/.config/far2l/custom/");
-      lua_pushstring(L, name);
-      lua_concat(L,3);
-    }
-  }
-  else {
-    lua_pushstring(L, home);
-    lua_pushstring(L, "/.config/far2l");
-    lua_concat(L,2);
-  }
-  return 1;
-}
-
 int win_GetConsoleScreenBufferInfo (lua_State* L)
 {
   CONSOLE_SCREEN_BUFFER_INFO info;
@@ -5952,7 +5925,10 @@ static const luaL_Reg far_funcs[] = {
   {"MacroCheck",          far_MacroCheck},
   {"MacroPost",           far_MacroPost},
   {"Log",                 far_Log},
-  {"GetConfigDir",        far_GetConfigDir},
+  {"InMyConfig",          far_InMyConfig},
+  {"InMyCache",           far_InMyCache},
+  {"InMyTemp",            far_InMyTemp},
+  {"GetMyHome",           far_GetMyHome},
 
   {NULL, NULL}
 };

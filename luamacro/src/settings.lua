@@ -97,7 +97,7 @@ local function deserialize (str, isfile)
 end
 
 local function get_work_dir(key)
-  work_dir = work_dir or far.GetConfigDir().."/plugins/luafar/"
+  work_dir = work_dir or far.InMyConfig("plugins/luafar/")
   return work_dir..key:lower().."/"
 end
 

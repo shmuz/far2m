@@ -44,7 +44,7 @@ set(SOURCES
 
 add_library (luafar2l SHARED ${SOURCES})
 set_property(TARGET luafar2l PROPERTY C_STANDARD 11)
-target_link_libraries(luafar2l uuid)
+target_link_libraries(luafar2l uuid utils)
 
 target_compile_definitions(luafar2l PRIVATE -DWINPORT_DIRECT -DFAR_DONT_USE_INTERNALS)
 

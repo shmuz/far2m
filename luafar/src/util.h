@@ -56,5 +56,9 @@ void  PutFileTimeToTable(lua_State *L, const char* key, FILETIME ft);
 TDialogData* NewDialogData(lua_State* L, struct PluginStartupInfo *Info, HANDLE hDlg, BOOL isOwned);
 struct PluginStartupInfo* GetPluginStartupInfo(lua_State* L);
 TFarUserControl* CheckFarUserControl(lua_State* L, int pos);
+int far_InMyConfig(lua_State *L);
+int far_InMyCache(lua_State *L);
+int far_InMyTemp(lua_State *L);
+int far_GetMyHome(lua_State *L);
 
 #endif // LUAFAR_UTIL_H

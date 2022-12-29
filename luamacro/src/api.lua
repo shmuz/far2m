@@ -131,7 +131,7 @@ mf.strpad = function(V, Size, Fill, Op)
   return strDest
 end
 
-if false then
+--[=[
 mf.usermenu = function(mode, filename)
   if Shared.OnlyEditorViewerUsed then return end -- mantis #2986 (crash)
   if mode and type(mode)~="number" then return end
@@ -145,7 +145,7 @@ mf.usermenu = function(mode, filename)
   elseif (mode==2 or mode==3) and type(filename)=="string" then
     if mode==3 then
       if not filename:find("^/") then
-        filename = far.GetConfigDir().."/Menus/"..filename
+        filename = far.InMyConfig("Menus/"..filename)
       end
     end
     if sync_call then MacroCallFar(MCODE_F_USERMENU, filename)
@@ -153,7 +153,7 @@ mf.usermenu = function(mode, filename)
     end
   end
 end
-end
+--]=]
 
 mf.GetMacroCopy = utils.GetMacroCopy
 mf.EnumScripts = utils.EnumScripts
