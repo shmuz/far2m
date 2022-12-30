@@ -47,7 +47,7 @@ UserDefinedListItem::~UserDefinedListItem()
 
 bool UserDefinedListItem::operator==(const UserDefinedListItem &rhs) const
 {
-	return (Str && rhs.Str)?(!StrCmpI(Str, rhs.Str)):false;
+	return (Str && rhs.Str) ? !(CaseSensitive ? StrCmp:StrCmpI)(Str, rhs.Str) : false;
 }
 
 int UserDefinedListItem::operator<(const UserDefinedListItem &rhs) const
@@ -57,7 +57,7 @@ int UserDefinedListItem::operator<(const UserDefinedListItem &rhs) const
 	else if (!rhs.Str)
 		return -1;
 	else
-		return StrCmpI(Str, rhs.Str)<0;
+		return (CaseSensitive ? StrCmp:StrCmpI)(Str, rhs.Str) < 0;
 }
 
 const UserDefinedListItem& UserDefinedListItem::operator=(const
@@ -75,6 +75,7 @@ const UserDefinedListItem& UserDefinedListItem::operator=(const
 			Str=wcsdup(rhs.Str);
 
 		index=rhs.index;
+		CaseSensitive=rhs.CaseSensitive;
 	}
 
 	return *this;
@@ -158,6 +159,7 @@ bool UserDefinedList::SetParameters(WORD separator1, WORD separator2,
 	IsTrim=(Flags & ULF_NOTTRIM)?false:true;
 	IsUnQuotes=(Flags & ULF_NOTUNQUOTES)?false:true;
 	AccountEmptyLine=(Flags & ULF_ACCOUNTEMPTYLINE)?true:false;
+	CaseSensitive=(Flags & ULF_CASESENSITIVE)?true:false;
 
 	if (!Separator1 && Separator2)
 	{
@@ -190,7 +192,7 @@ bool UserDefinedList::Set(const wchar_t *List, bool AddToList)
 	if (CheckSeparators() && List && *List)
 	{
 		int Length, RealLength;
-		UserDefinedListItem item;
+		UserDefinedListItem item(CaseSensitive);
 		item.index=Array.getSize();
 
 		if (*List!=Separator1 && *List!=Separator2)

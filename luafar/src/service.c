@@ -5573,6 +5573,41 @@ int ustring_len(lua_State *L)
   return 1;
 }
 
+typedef intptr_t WINAPI UDList_Create(unsigned Flags, const wchar_t* Subj);
+typedef intptr_t WINAPI UDList_Get(void* udlist, int index);
+
+int far_udlcreate(lua_State*L)
+{
+  PSInfo* psi = GetPluginStartupInfo(L);
+  UDList_Create *ff = (UDList_Create*)psi->RESERVED[0];
+
+  unsigned Flags = luaL_optinteger(L,1,0);
+  const wchar_t* Subj = check_utf8_string(L,2,0);
+
+  void *ptr = (void*) ff(Flags, Subj);
+  if (ptr)
+    lua_pushlightuserdata(L, ptr);
+  else
+    lua_pushnil(L);
+  return 1;
+}
+
+int far_udlget(lua_State*L)
+{
+  PSInfo* psi = GetPluginStartupInfo(L);
+  UDList_Get *ff = (UDList_Get*)psi->RESERVED[1];
+
+  void* list = lua_touserdata(L,1);
+  lua_pushnil(L);
+  if (list) {
+    int index = luaL_checkinteger(L,2);
+    intptr_t res = ff(list,index);
+    if (res)
+      push_utf8_string(L, (const wchar_t*)res, -1);
+  }
+  return 1;
+}
+
 static const luaL_Reg filefilter_methods[] = {
   {"__gc",             filefilter_gc},
   {"__tostring",       filefilter_tostring},
@@ -5842,6 +5877,9 @@ static const luaL_Reg win_funcs[] = {
 };
 
 static const luaL_Reg far_funcs[] = {
+  {"udlcreate",far_udlcreate},
+  {"udlget",   far_udlget},
+
   {"PluginStartupInfo",   far_PluginStartupInfo},
   {"GetPluginId",         far_GetPluginId},
 

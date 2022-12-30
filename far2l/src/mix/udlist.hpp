@@ -50,6 +50,7 @@ enum UDL_FLAGS
 	ULF_NOTTRIM        =0x00000040, // не удалять пробелы
 	ULF_NOTUNQUOTES    =0x00000080, // не раскавычивать
 	ULF_ACCOUNTEMPTYLINE=0x00000100, // учитывать пустые "строки"
+	ULF_CASESENSITIVE  =0x00000200, // регистрозависимый
 };
 
 
@@ -58,7 +59,8 @@ class UserDefinedListItem
 	public:
 		size_t index;
 		wchar_t *Str;
-		UserDefinedListItem():index(0), Str(nullptr) {}
+		bool CaseSensitive;
+		UserDefinedListItem(bool cs=false):index(0), Str(nullptr), CaseSensitive(cs) {}
 		bool operator==(const UserDefinedListItem &rhs) const;
 		int operator<(const UserDefinedListItem &rhs) const;
 		const UserDefinedListItem& operator=(const UserDefinedListItem &rhs);
@@ -72,7 +74,7 @@ class UserDefinedList : private NonCopyable
 	private:
 		TArray<UserDefinedListItem> Array;
 		WORD Separator1, Separator2;
-		bool ProcessBrackets, AddAsterisk, PackAsterisks, Unique, Sort, IsTrim, IsUnQuotes;
+		bool ProcessBrackets, AddAsterisk, PackAsterisks, Unique, Sort, IsTrim, IsUnQuotes, CaseSensitive;
 		bool AccountEmptyLine;
 
 	private:
