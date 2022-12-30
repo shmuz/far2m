@@ -40,13 +40,11 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "panel.hpp"
 #include "treelist.hpp"
 #include "ctrlobj.hpp"
-#include "udlist.hpp"
 #include "message.hpp"
 #include "config.hpp"
 #include "dialog.hpp"
 #include "pathmix.hpp"
 #include "strmix.hpp"
-#include "dirmix.hpp"
 #include "DlgGuid.hpp"
 
 enum
@@ -72,26 +70,18 @@ LONG_PTR WINAPI MkDirDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2)
 				FARString strDirName=reinterpret_cast<LPCWSTR>(SendDlgMessage(hDlg,DM_GETCONSTTEXTPTR,MKDIR_EDIT,0));
 				Opt.MultiMakeDir=(SendDlgMessage(hDlg,DM_GETCHECK,MKDIR_CHECKBOX,0)==BSTATE_CHECKED);
 
-				// это по поводу создания одиночного каталога, который
-				// начинается с пробела! Чтобы ручками не заключать
-				// такой каталог в кавычки
-				if (Opt.MultiMakeDir && !strDirName.ContainsAnyOf(";,\""))
+				auto pDirList=reinterpret_cast<std::vector<FARString>*>(SendDlgMessage(hDlg,DM_GETDLGDATA,0,0));
+
+				bool OK = !strDirName.IsEmpty();
+				if (OK)
 				{
-					QuoteSpaceOnly(strDirName);
+					if (Opt.MultiMakeDir)
+						OK = SplitString(strDirName,*pDirList);
+					else
+						pDirList->push_back(strDirName);
 				}
 
-				// нужно создать только ОДИН каталог
-				if (!Opt.MultiMakeDir)
-				{
-					// уберем все лишние кавычки
-					Unquote(strDirName);
-					// возьмем в кавычки, т.к. могут быть разделители
-					InsertQuote(strDirName);
-				}
-
-				UserDefinedList* pDirList=reinterpret_cast<UserDefinedList*>(SendDlgMessage(hDlg,DM_GETDLGDATA,0,0));
-
-				if (!pDirList->Set(strDirName))
+				if (!OK)
 				{
 					Message(MSG_WARNING,1,Msg::Warning,Msg::IncorrectDirList,Msg::Ok);
 					return FALSE;
@@ -106,10 +96,7 @@ LONG_PTR WINAPI MkDirDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2)
 
 void ShellMakeDir(Panel *SrcPanel)
 {
-	FARString strDirName;
-	FARString strOriginalDirName;
-	wchar_t *lpwszDirName;
-	UserDefinedList DirList(0,0,ULF_UNIQUE);
+	std::vector<FARString> DirList;
 	DialogDataEx MkDirDlgData[]=
 	{
 		{DI_DOUBLEBOX,3,1,72,8,{},0,Msg::MakeFolderTitle},
@@ -130,17 +117,16 @@ void ShellMakeDir(Panel *SrcPanel)
 
 	if (Dlg.GetExitCode()==MKDIR_OK)
 	{
-		strDirName=MkDirDlg[MKDIR_EDIT].strData;
-		const wchar_t *OneDir;
+		FARString strDirName;
+		FARString strOriginalDirName;
 
-		for (size_t DI = 0; nullptr!=(OneDir=DirList.Get(DI)); ++DI)
+		for (size_t DI = 0; DI<DirList.size(); ++DI)
 		{
-			strDirName = OneDir;
+			strDirName = DirList[DI];
 			strOriginalDirName = strDirName;
 
-			//Unquote(DirName);
 			DeleteEndSlash(strDirName,true);
-			lpwszDirName = strDirName.GetBuffer();
+			wchar_t *lpwszDirName = strDirName.GetBuffer();
 			bool bSuccess = false;
 
 			if(HasPathPrefix(lpwszDirName))
@@ -179,7 +165,7 @@ void ShellMakeDir(Panel *SrcPanel)
 				{
 					int ret;
 
-					if (DirList.IsLastElement(DI))
+					if (DI == DirList.size()-1)
 						ret=Message(MSG_WARNING|MSG_ERRORTYPE,1,Msg::Error,Msg::CannotCreateFolder,strOriginalDirName,Msg::Cancel);
 					else
 						ret=Message(MSG_WARNING|MSG_ERRORTYPE,2,Msg::Error,Msg::CannotCreateFolder,strOriginalDirName,Msg::Ok,Msg::Skip);
@@ -195,7 +181,7 @@ void ShellMakeDir(Panel *SrcPanel)
 				{
 					int ret;
 
-					if (DirList.IsLastElement(DI))
+					if (DI == DirList.size()-1)
 					{
 						ret=Message(MSG_WARNING|MSG_ERRORTYPE,2,Msg::Error,Msg::CannotCreateFolder,strOriginalDirName,Msg::Retry,Msg::Cancel);
 					}

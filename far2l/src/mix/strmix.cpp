@@ -1428,3 +1428,73 @@ bool SearchString(const wchar_t *Source, int StrSize, const FARString& Str, FARS
 	return false;
 }
 
+//  Split the string 'Str' and place its parts into 'Vec'
+//  Returns true if 'Str' is syntactycally correct and 'Vec' is not empty
+//  Part delimiters are ',' and/or ';'
+//  Parts containing literal delimiter characters must be surrounded by quotes
+//  To place a literal quote into a quoted part it must be doubled
+//----------------------------------------------------------------------------------
+bool SplitString(const FARString& Str, std::vector<FARString> &Vec)
+{
+	auto Start = Str.CPtr();
+	bool Quoted = false;
+	Vec.clear();
+	for (auto Ptr=Start; ; Ptr++)
+	{
+		if (Quoted)
+		{
+			if (*Ptr==L'\"')
+			{
+				if (Ptr[1]==L'\"') //two quotes in a row encode a literal quote
+				{
+					++Ptr;
+					continue;
+				}
+				if (Ptr > Start) //save the quoted part
+				{
+					size_t j = 0;
+					wchar_t *buf = new wchar_t[Ptr-Start];
+					for (; Start<Ptr; ++Start) //replace each "" with "
+					{
+						if ((buf[j++] = *Start) == L'\"')
+							++Start;
+					}
+					Vec.push_back(FARString(buf,j));
+					delete[] buf;
+				}
+				if (*++Ptr==0) //skip closing quote and test for end of input
+					break;
+				if (*Ptr==L',' || *Ptr==L';') //next char must be delimiter
+				{
+					Quoted = false;
+					Start = Ptr+1;
+				}
+				else
+					return false;
+			}
+			else if (*Ptr==0) //no closing quote
+				return false;
+		}
+		else
+		{
+			if (*Ptr==L'\"')
+			{
+				if (Ptr==Start)
+				{
+					Quoted=true;
+					Start=Ptr+1;
+				}
+			}
+			else if (*Ptr==L',' || *Ptr==L';' || *Ptr==0)
+			{
+				if (Ptr > Start)
+					Vec.push_back(FARString(Start,Ptr-Start));
+				if (*Ptr)
+					Start=Ptr+1;
+				else
+					break;
+			}
+		}
+	}
+	return !Vec.empty();
+}

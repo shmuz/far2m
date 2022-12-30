@@ -1342,9 +1342,9 @@ $ #Új mappa#
     Ezzel a funkcióval új mappákat hozhatunk létre. Környezeti változókat is
 megadhatunk a parancssorban, helyükön a mappa létrehozásakor az értékük fog
 megjelenni. Egy lépésben hozhatunk létre mélyebbre ágyazott almappákat, ha a
-mappák neveit #\\#-karakterrel választjuk el. Példa:
+mappák neveit #/#-karakterrel választjuk el. Példa:
 
-    #%USERDOMAIN%\\%USERNAME%\\Mappa3#
+    #$USERDOMAIN/$USER/Folder3#
 
     Ha a #Több név feldolgozása# opciót engedélyezzük, egyszerre több mappát
 készíthetünk. Ebben az esetben a mappák neveit "#;#" vagy "#,#" karakterrel kell
@@ -1352,9 +1352,9 @@ elválasztani. Ha a fent említett opciót engedélyeztük és a mappa nevében 
 "#;#" (vagy "#,#") karakter, akkor a nevet idézőjelek közé kell tenni. Például
 a következő soron Entert ütve:
 
-    #C:\\Foo1;"E:\\foo,2;";D:\\foo3#
+    #/Foo1;"/foo,2;";/foo3#
 
- a #C:\\Foo1#, az #E:\\foo,2;# és a #D:\\foo3# nevű mappák jönnek létre.
+ a #/Foo1#, az #/foo,2;# és a #/foo3# nevű mappák jönnek létre.
 
 
 @FindFile
