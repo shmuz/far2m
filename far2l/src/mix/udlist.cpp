@@ -98,7 +98,7 @@ const UserDefinedListItem& UserDefinedListItem::operator=(const wchar_t *rhs)
 	return *this;
 }
 
-wchar_t *UserDefinedListItem::set(const wchar_t *Src, size_t size)
+wchar_t *UserDefinedListItem::set(const wchar_t *Src, size_t Len)
 {
 	if (Str!=Src)
 	{
@@ -108,12 +108,12 @@ wchar_t *UserDefinedListItem::set(const wchar_t *Src, size_t size)
 			Str=nullptr;
 		}
 
-		Str=static_cast<wchar_t*>(malloc((size+1)*sizeof(wchar_t)));
+		Str=static_cast<wchar_t*>(malloc((Len+1)*sizeof(wchar_t)));
 
 		if (Str)
 		{
-			wmemcpy(Str,Src,size);
-			Str[size]=0;
+			wmemcpy(Str,Src,Len);
+			Str[Len]=0;
 		}
 	}
 
@@ -139,8 +139,8 @@ void UserDefinedList::SetDefaultSeparators()
 
 bool UserDefinedList::CheckSeparators() const
 {
-	return !((IsUnQuotes && (Separator1==L'\"' || Separator2==L'\"')) ||
-	         (ProcessBrackets && (Separator1==L'[' || Separator2==L'[' ||
+	return !((mUnQuote && (Separator1==L'\"' || Separator2==L'\"')) ||
+	         (mProcessBrackets && (Separator1==L'[' || Separator2==L'[' ||
 	                              Separator1==L']' || Separator2==L']'))
 	        );
 }
@@ -149,22 +149,22 @@ bool UserDefinedList::SetParameters(WORD separator1, WORD separator2,
                                     DWORD Flags)
 {
 	Free();
-	Separator1=separator1;
-	Separator2=separator2;
-	ProcessBrackets=(Flags & ULF_PROCESSBRACKETS)?true:false;
-	AddAsterisk=(Flags & ULF_ADDASTERISK)?true:false;
-	PackAsterisks=(Flags & ULF_PACKASTERISKS)?true:false;
-	Unique=(Flags & ULF_UNIQUE)?true:false;
-	Sort=(Flags & ULF_SORT)?true:false;
-	IsTrim=(Flags & ULF_NOTTRIM)?false:true;
-	IsUnQuotes=(Flags & ULF_NOTUNQUOTES)?false:true;
-	AccountEmptyLine=(Flags & ULF_ACCOUNTEMPTYLINE)?true:false;
-	CaseSensitive=(Flags & ULF_CASESENSITIVE)?true:false;
+	Separator1 = separator1;
+	Separator2 = separator2;
+	mProcessBrackets = (Flags & ULF_PROCESSBRACKETS)?true:false;
+	mAddAsterisk = (Flags & ULF_ADDASTERISK)?true:false;
+	mPackAsterisks = (Flags & ULF_PACKASTERISKS)?true:false;
+	mUnique = (Flags & ULF_UNIQUE)?true:false;
+	mSort = (Flags & ULF_SORT)?true:false;
+	mTrim = (Flags & ULF_NOTTRIM)?false:true;
+	mUnQuote = (Flags & ULF_NOTUNQUOTES)?false:true;
+	mAccountEmptyLine = (Flags & ULF_ACCOUNTEMPTYLINE)?true:false;
+	mCaseSensitive = (Flags & ULF_CASESENSITIVE)?true:false;
 
 	if (!Separator1 && Separator2)
 	{
-		Separator1=Separator2;
-		Separator2=0;
+		Separator1 = Separator2;
+		Separator2 = 0;
 	}
 
 	if (!Separator1 && !Separator2) SetDefaultSeparators();
@@ -177,7 +177,7 @@ void UserDefinedList::Free()
 	Array.Free();
 }
 
-bool UserDefinedList::Set(const wchar_t *List, bool AddToList)
+bool UserDefinedList::Set(const wchar_t* const List, bool AddToList)
 {
 	if (AddToList)
 	{
@@ -191,119 +191,91 @@ bool UserDefinedList::Set(const wchar_t *List, bool AddToList)
 
 	if (CheckSeparators() && List && *List)
 	{
-		int Length, RealLength;
-		UserDefinedListItem item(CaseSensitive);
+		UserDefinedListItem item(mCaseSensitive);
 		item.index=Array.getSize();
 
-		if (*List!=Separator1 && *List!=Separator2)
-		{
-			Length=StrLength(List);
-			bool Error=false;
-			const wchar_t *CurList=List;
+		int Length, RealLength;
+		bool Error=false;
+		const wchar_t *CurList=List;
 
-			while (!Error &&
-			        nullptr!=(CurList=Skip(CurList, Length, RealLength, Error)))
+		while (!Error &&
+						nullptr!=(CurList=Skip(CurList, Length, RealLength, Error)))
+		{
+			if (Length > 0)
 			{
-				if (Length > 0)
-				{
-					item.set(CurList, Length);
-
-					if (item.Str)
-					{
-						if (PackAsterisks)
-						{
-							int i=0;
-							bool lastAsterisk=false;
-
-							while (i<Length)
-							{
-								if (item.Str[i]==L'*')
-								{
-									if (!lastAsterisk)
-										lastAsterisk=true;
-									else
-									{
-										wmemcpy(item.Str+i, item.Str+i+1, StrLength(item.Str+i+1)+1);
-										--i;
-									}
-								}
-								else
-									lastAsterisk=false;
-
-								++i;
-							}
-						}
-
-						if (AddAsterisk && !FindAnyOfChars(item.Str, "?*."))
-						{
-							Length=StrLength(item.Str);
-							/* $ 18.09.2002 DJ
-							   выделялось на 1 байт меньше, чем надо
-							*/
-							item.Str=static_cast<wchar_t*>(realloc(item.Str, (Length+2)*sizeof(wchar_t)));
-
-							/* DJ $ */
-							if (item.Str)
-							{
-								item.Str[Length]=L'*';
-								item.Str[Length+1]=0;
-							}
-							else
-								Error=true;
-						}
-
-						if (!Error && !Array.addItem(item))
-							Error=true;
-					}
-					else
-						Error=true;
-
-					CurList+=RealLength;
-				}
-				else
-				{
-					if (!AccountEmptyLine || (AccountEmptyLine && CurList==List && !item.index))
-						Error=true;
-				}
-
-				++item.index;
-			}
-
-			rc=!Error;
-		}
-		else
-		{
-			const wchar_t *End=List+1;
-
-			if ( IsTrim )
-				while (IsSpace(*End)) ++End; // пропустим мусор
-
-			if (!*End) // Если кроме разделителя ничего больше в строке нет,
-			{         // то считается, что это не разделитель, а простой символ
-				item=L" ";
+				item.set(CurList, Length);
 
 				if (item.Str)
 				{
-					*item.Str=*List;
+					if (mPackAsterisks)
+					{
+						bool lastAsterisk=false;
 
-					if (Array.addItem(item))
-						rc=true;
+						for (int i=0; item.Str[i]; ++i)
+						{
+							if (item.Str[i]==L'*')
+							{
+								if (lastAsterisk)
+								{
+									wmemmove(item.Str+i, item.Str+i+1, StrLength(item.Str+i));
+									--i;
+								}
+								lastAsterisk=true;
+							}
+							else
+								lastAsterisk=false;
+						}
+					}
+
+					if (mAddAsterisk && !FindAnyOfChars(item.Str, "?*."))
+					{
+						Length=StrLength(item.Str);
+						/* $ 18.09.2002 DJ
+							 выделялось на 1 байт меньше, чем надо
+						*/
+						item.Str=static_cast<wchar_t*>(realloc(item.Str, (Length+2)*sizeof(wchar_t)));
+
+						/* DJ $ */
+						if (item.Str)
+						{
+							item.Str[Length]=L'*';
+							item.Str[Length+1]=0;
+						}
+						else
+							Error=true;
+					}
+
+					if (!Error && !Array.addItem(item))
+						Error=true;
 				}
+				else
+					Error=true;
+
+				CurList+=RealLength;
 			}
+			else
+			{
+				if (!mAccountEmptyLine)
+					Error=true;
+			}
+
+			++item.index;
 		}
+
+		rc=!Error;
 	}
 
 	if (rc)
 	{
-		if (Unique)
+		if (mUnique)
 		{
 			Array.Sort();
 			Array.Pack();
 		}
 
-		if (!Sort)
+		if (!mSort)
 			Array.Sort(reinterpret_cast<TARRAYCMPFUNC>(CmpItems));
-		else if (!Unique) // чтобы не сортировать уже отсортированное
+		else if (!mUnique) // чтобы не сортировать уже отсортированное
 			Array.Sort();
 
 		size_t i=0, maxI=Array.getSize();
@@ -334,24 +306,28 @@ const wchar_t *UserDefinedList::Skip(const wchar_t *Str, int &Length, int &RealL
 {
 	Length=RealLength=0;
 	Error=false;
+	auto Str0=Str;
 
-	if ( IsTrim )
+	if ( mTrim )
 		while (IsSpace(*Str)) ++Str;
 
-	if (*Str==Separator1 || *Str==Separator2) ++Str;
+	if (*Str==Separator1 || *Str==Separator2)
+	{
+		++Str;
+		if ( mTrim )
+			while (IsSpace(*Str)) ++Str;
+	}
 
-	if ( IsTrim )
-		while (IsSpace(*Str)) ++Str;
-
-	if (!*Str) return nullptr;
+	if (!*Str)
+		return Str==Str0 ? nullptr:Str;
 
 	const wchar_t *cur=Str;
-	bool InBrackets=false, InQoutes = (*cur==L'\"');
+	bool InBrackets=false, InQuotes = (*cur==L'\"');
 
-	if (!InQoutes) // если мы в кавычках, то обработка будет позже и чуть сложнее
+	if (!InQuotes) // если мы в кавычках, то обработка будет позже и чуть сложнее
 		while (*cur) // важно! проверка *cur должна стоять первой
 		{
-			if (ProcessBrackets)
+			if (mProcessBrackets)
 			{
 				if (*cur==L']')
 					InBrackets=false;
@@ -366,12 +342,12 @@ const wchar_t *UserDefinedList::Skip(const wchar_t *Str, int &Length, int &RealL
 			++cur;
 		}
 
-	if (!InQoutes || !*cur)
+	if (!InQuotes || !*cur)
 	{
 		RealLength=Length=(int)(cur-Str);
 		--cur;
 
-		if ( IsTrim )
+		if ( mTrim )
 			while (IsSpace(*cur))
 			{
 				--Length;
@@ -381,7 +357,7 @@ const wchar_t *UserDefinedList::Skip(const wchar_t *Str, int &Length, int &RealL
 		return Str;
 	}
 
-	if ( IsUnQuotes )
+	if ( mUnQuote )
 	{
 		// мы в кавычках - захватим все отсюда и до следующих кавычек
 		++cur;
@@ -395,7 +371,7 @@ const wchar_t *UserDefinedList::Skip(const wchar_t *Str, int &Length, int &RealL
 
 		const wchar_t *End=QuoteEnd+1;
 
-		if ( IsTrim )
+		if ( mTrim )
 			while (IsSpace(*End)) ++End;
 
 		if (!*End || *End==Separator1 || *End==Separator2)

@@ -65,7 +65,7 @@ class UserDefinedListItem
 		int operator<(const UserDefinedListItem &rhs) const;
 		const UserDefinedListItem& operator=(const UserDefinedListItem &rhs);
 		const UserDefinedListItem& operator=(const wchar_t *rhs);
-		wchar_t *set(const wchar_t *Src, size_t size);
+		wchar_t *set(const wchar_t *Src, size_t Len);
 		~UserDefinedListItem();
 };
 
@@ -74,8 +74,8 @@ class UserDefinedList : private NonCopyable
 	private:
 		TArray<UserDefinedListItem> Array;
 		WORD Separator1, Separator2;
-		bool ProcessBrackets, AddAsterisk, PackAsterisks, Unique, Sort, IsTrim, IsUnQuotes, CaseSensitive;
-		bool AccountEmptyLine;
+		bool mProcessBrackets, mAddAsterisk, mPackAsterisks, mUnique, mSort, mTrim, mUnQuote;
+		bool mAccountEmptyLine, mCaseSensitive;
 
 	private:
 		bool CheckSeparators() const; // проверка разделителей на корректность
@@ -86,8 +86,8 @@ class UserDefinedList : private NonCopyable
 
 	public:
 		// по умолчанию разделителем считается ';' и ',', а
-		// ProcessBrackets=AddAsterisk=PackAsterisks=false
-		// Unique=Sort=false
+		// mProcessBrackets=mAddAsterisk=mPackAsterisks=false
+		// mUnique=mSort=false
 		UserDefinedList();
 
 		// Явно указываются разделители. См. описание SetParameters
@@ -101,7 +101,7 @@ class UserDefinedList : private NonCopyable
 		// (т.е. в Set)
 		// Если оба разделителя равны 0x00, то восстанавливаются разделители по
 		// умолчанию (';' & ',').
-		// Если AddAsterisk равно true, то к концу элемента списка будет
+		// Если mAddAsterisk равно true, то к концу элемента списка будет
 		// добавляться '*', если этот элемент не содержит '?', '*' и '.'
 		// Возвращает false, если один из разделителей является кавычкой или
 		// включена обработка скобок и один из разделителей является квадратной
@@ -111,7 +111,7 @@ class UserDefinedList : private NonCopyable
 		// Инициализирует список. Принимает список, разделенный разделителями.
 		// Возвращает false при неудаче.
 		// Фича: если List==nullptr, то происходит освобождение занятой ранее памяти
-		bool Set(const wchar_t *List, bool AddToList=false);
+		bool Set(const wchar_t* const List, bool AddToList=false);
 
 		// Добавление к уже существующему списку
 		// Фича: если NewItem==nullptr, то происходит освобождение занятой ранее
