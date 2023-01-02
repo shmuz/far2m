@@ -40,6 +40,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "panel.hpp"
 #include "treelist.hpp"
 #include "ctrlobj.hpp"
+#include "udlist.hpp"
 #include "message.hpp"
 #include "config.hpp"
 #include "dialog.hpp"
@@ -70,17 +71,9 @@ LONG_PTR WINAPI MkDirDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2)
 				FARString strDirName=reinterpret_cast<LPCWSTR>(SendDlgMessage(hDlg,DM_GETCONSTTEXTPTR,MKDIR_EDIT,0));
 				Opt.MultiMakeDir=(SendDlgMessage(hDlg,DM_GETCHECK,MKDIR_CHECKBOX,0)==BSTATE_CHECKED);
 
-				auto pDirList=reinterpret_cast<std::vector<FARString>*>(SendDlgMessage(hDlg,DM_GETDLGDATA,0,0));
+				UserDefinedList* pDirList=reinterpret_cast<UserDefinedList*>(SendDlgMessage(hDlg,DM_GETDLGDATA,0,0));
 
-				bool OK = !strDirName.IsEmpty();
-				if (OK)
-				{
-					if (Opt.MultiMakeDir)
-						OK = SplitString(strDirName,*pDirList);
-					else
-						pDirList->push_back(strDirName);
-				}
-
+				bool OK = (Opt.MultiMakeDir && pDirList->Set(strDirName)) || (!Opt.MultiMakeDir && pDirList->SetAsIs(strDirName));
 				if (!OK)
 				{
 					Message(MSG_WARNING,1,Msg::Warning,Msg::IncorrectDirList,Msg::Ok);
@@ -96,7 +89,7 @@ LONG_PTR WINAPI MkDirDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2)
 
 void ShellMakeDir(Panel *SrcPanel)
 {
-	std::vector<FARString> DirList;
+	UserDefinedList DirList(0,0,ULF_UNIQUE|ULF_CASESENSITIVE);
 	DialogDataEx MkDirDlgData[]=
 	{
 		{DI_DOUBLEBOX,3,1,72,8,{},0,Msg::MakeFolderTitle},
@@ -118,21 +111,17 @@ void ShellMakeDir(Panel *SrcPanel)
 	if (Dlg.GetExitCode()==MKDIR_OK)
 	{
 		FARString strDirName;
-		FARString strOriginalDirName;
+		const wchar_t *OneDir;
 
-		for (size_t DI = 0; DI<DirList.size(); ++DI)
+		for (size_t DI = 0; nullptr!=(OneDir=DirList.Get(DI)); ++DI)
 		{
-			strDirName = DirList[DI];
-			strOriginalDirName = strDirName;
+			strDirName = OneDir;
+			FARString strOriginalDirName = strDirName;
 
 			DeleteEndSlash(strDirName,true);
 			wchar_t *lpwszDirName = strDirName.GetBuffer();
 			bool bSuccess = false;
 
-			if(HasPathPrefix(lpwszDirName))
-			{
-				lpwszDirName += 4;
-			}
 			for (wchar_t *ChPtr=lpwszDirName; *ChPtr; ChPtr++)
 			{
 				if (IsSlash(*ChPtr))
@@ -165,7 +154,7 @@ void ShellMakeDir(Panel *SrcPanel)
 				{
 					int ret;
 
-					if (DI == DirList.size()-1)
+					if (DirList.IsLastElement(DI))
 						ret=Message(MSG_WARNING|MSG_ERRORTYPE,1,Msg::Error,Msg::CannotCreateFolder,strOriginalDirName,Msg::Cancel);
 					else
 						ret=Message(MSG_WARNING|MSG_ERRORTYPE,2,Msg::Error,Msg::CannotCreateFolder,strOriginalDirName,Msg::Ok,Msg::Skip);
@@ -181,7 +170,7 @@ void ShellMakeDir(Panel *SrcPanel)
 				{
 					int ret;
 
-					if (DI == DirList.size()-1)
+					if (DirList.IsLastElement(DI))
 					{
 						ret=Message(MSG_WARNING|MSG_ERRORTYPE,2,Msg::Error,Msg::CannotCreateFolder,strOriginalDirName,Msg::Retry,Msg::Cancel);
 					}

@@ -124,4 +124,3 @@ wchar_t GetDecimalSeparator();
 FARString ReplaceBrackets(const FARString& SearchStr,const FARString& ReplaceStr,RegExpMatch* Match,int Count);
 
 bool SearchString(const wchar_t *Source, int StrSize, const FARString& Str, FARString& ReplaceStr,int& CurPos, int Position,int Case,int WholeWords,int Reverse,int Regexp, int *SearchLength,const wchar_t* WordDiv=nullptr);
-bool SplitString(const FARString& Str, std::vector<FARString> &Vec);
