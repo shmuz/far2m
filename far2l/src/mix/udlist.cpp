@@ -177,6 +177,43 @@ void UserDefinedList::Free()
 	Array.Free();
 }
 
+static void Compact(wchar_t* Str, wchar_t Char, bool ByPairs)
+{
+	bool lastFound=false;
+
+	for (int i=0; Str[i]; ++i)
+	{
+		if (Str[i]==Char)
+		{
+			if (lastFound)
+			{
+				if (ByPairs) lastFound=false;
+				wmemmove(Str+i, Str+i+1, StrLength(Str+i));
+				--i;
+			}
+			else
+				lastFound=true;
+		}
+		else
+			lastFound=false;
+	}
+}
+
+bool UserDefinedList::SetAsIs(const wchar_t* const List)
+{
+	if (List && *List)
+	{
+		UserDefinedListItem item(mCaseSensitive);
+		item = List;
+		if (item.Str)
+		{
+			Free();
+			return Array.addItem(item) != nullptr;
+		}
+	}
+	return false;
+}
+
 bool UserDefinedList::Set(const wchar_t* const List, bool AddToList)
 {
 	if (AddToList)
@@ -208,24 +245,10 @@ bool UserDefinedList::Set(const wchar_t* const List, bool AddToList)
 				if (item.Str)
 				{
 					if (mPackAsterisks)
-					{
-						bool lastAsterisk=false;
+						Compact(item.Str, L'*', false);
 
-						for (int i=0; item.Str[i]; ++i)
-						{
-							if (item.Str[i]==L'*')
-							{
-								if (lastAsterisk)
-								{
-									wmemmove(item.Str+i, item.Str+i+1, StrLength(item.Str+i));
-									--i;
-								}
-								lastAsterisk=true;
-							}
-							else
-								lastAsterisk=false;
-						}
-					}
+					if (mUnQuote)
+						Compact(item.Str, L'\"', true);
 
 					if (mAddAsterisk && !FindAnyOfChars(item.Str, "?*."))
 					{
@@ -361,7 +384,21 @@ const wchar_t *UserDefinedList::Skip(const wchar_t *Str, int &Length, int &RealL
 	{
 		// мы в кавычках - захватим все отсюда и до следующих кавычек
 		++cur;
-		const wchar_t *QuoteEnd=wcschr(cur, L'\"');
+
+		const wchar_t *QuoteEnd = nullptr;
+		for (auto ptr=cur; *ptr; ++ptr)
+		{
+			if (*ptr == L'\"')
+			{
+				if (*(ptr+1) == L'\"') // 2 кавычки подряд будут потом заменены на одну
+					++ptr;
+				else
+				{
+					QuoteEnd=ptr;
+					break;
+				}
+			}
+		}
 
 		if (!QuoteEnd)
 		{

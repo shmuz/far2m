@@ -113,6 +113,10 @@ class UserDefinedList : private NonCopyable
 		// Фича: если List==nullptr, то происходит освобождение занятой ранее памяти
 		bool Set(const wchar_t* const List, bool AddToList=false);
 
+		// Ничего не парсим, устанавливаем 1 элемент "как есть".
+		// Возвращает false только при нехватке памяти.
+		bool SetAsIs(const wchar_t* const List);
+
 		// Добавление к уже существующему списку
 		// Фича: если NewItem==nullptr, то происходит освобождение занятой ранее
 		// памяти

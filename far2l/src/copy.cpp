@@ -704,7 +704,7 @@ ShellCopy::ShellCopy(Panel *SrcPanel,        // исходная панель (�
 		{DI_TEXT,        5, 2, 0, 2,{},DIF_SHOWAMPERSAND,L""}
 	};
 	MakeDialogItemsEx(CopyDlgData,CopyDlg);
-	CopyDlg[ID_SC_MULTITARGET].Selected=Opt.CMOpt.MultiCopy;
+	//CopyDlg[ID_SC_MULTITARGET].Selected=Opt.CMOpt.MultiCopy; //this option may only be activated explicitly by the user
 	CopyDlg[ID_SC_WRITETHROUGH].Selected=Opt.CMOpt.WriteThrough;
 	CopyDlg[ID_SC_SPARSEFILES].Selected=Opt.CMOpt.SparseFiles;
 #ifdef COW_SUPPORTED
@@ -840,14 +840,7 @@ ShellCopy::ShellCopy(Panel *SrcPanel,        // исходная панель (�
 
 	if (CurrentOnly)
 	{
-		//   При копировании только элемента под курсором берем его имя в кавычки, если оно содержит разделители.
 		CopyDlg[ID_SC_TARGETEDIT].strData = strSelName;
-
-		if (!Move && CopyDlg[ID_SC_TARGETEDIT].strData.ContainsAnyOf(",;"))
-		{
-			Unquote(CopyDlg[ID_SC_TARGETEDIT].strData);     // уберем все лишние кавычки
-			InsertQuote(CopyDlg[ID_SC_TARGETEDIT].strData); // возьмем в кавычки, т.к. могут быть разделители
-		}
 	}
 	else
 	{
@@ -862,17 +855,6 @@ ShellCopy::ShellCopy(Panel *SrcPanel,        // исходная панель (�
 					CopyDlg[ID_SC_TARGETEDIT].strData = strDestDir;
 					AddEndSlash(CopyDlg[ID_SC_TARGETEDIT].strData);
 				}
-
-				/* $ 19.07.2003 IS
-				   Если цель содержит разделители, то возьмем ее в кавычки, дабы не получить
-				   ерунду при F5, Enter в панелях, когда пользователь включит MultiCopy
-				*/
-				if (!Move && CopyDlg[ID_SC_TARGETEDIT].strData.ContainsAnyOf(",;"))
-				{
-					Unquote(CopyDlg[ID_SC_TARGETEDIT].strData);     // уберем все лишние кавычки
-					InsertQuote(CopyDlg[ID_SC_TARGETEDIT].strData); // возьмем в кавычки, т.к. могут быть разделители
-				}
-
 				break;
 			}
 
@@ -1024,16 +1006,8 @@ ShellCopy::ShellCopy(Panel *SrcPanel,        // исходная панель (�
 				Opt.CMOpt.SparseFiles=CopyDlg[ID_SC_SPARSEFILES].Selected;
 				Opt.CMOpt.UseCOW=CopyDlg[ID_SC_USECOW].Selected;
 
-				if (!CopyDlg[ID_SC_MULTITARGET].Selected || !strCopyDlgValue.ContainsAnyOf(",;")) // отключено multi*
-				{
-					// уберем лишние кавычки
-					Unquote(strCopyDlgValue);
-					// добавим кавычки, чтобы "список" удачно скомпилировался вне
-					// зависимости от наличия разделителей в оном
-					InsertQuote(strCopyDlgValue);
-				}
-
-				if (DestList.Set(strCopyDlgValue))
+				if ((CopyDlg[ID_SC_MULTITARGET].Selected && DestList.Set(strCopyDlgValue)) ||
+				   (!CopyDlg[ID_SC_MULTITARGET].Selected && DestList.SetAsIs(strCopyDlgValue)))
 				{
 					// Запомнить признак использования фильтра. KM
 					UseFilter=CopyDlg[ID_SC_USEFILTER].Selected;
@@ -1175,7 +1149,6 @@ ShellCopy::ShellCopy(Panel *SrcPanel,        // исходная панель (�
 	{
 		Flags.MOVE = false;
 
-		if (DestList.Set(strCopyDlgValue)) // если список успешно "скомпилировался"
 		{
 			const wchar_t *NamePtr;
 			FARString strNameTmp;
@@ -1282,7 +1255,6 @@ ShellCopy::ShellCopy(Panel *SrcPanel,        // исходная панель (�
 				}
 			}
 		}
-		_LOGCOPYR(else SysLog(L"Error: DestList.Set(CopyDlgValue) return FALSE"));
 	}
 	// ***********************************************************************
 	// *** заключительеая стадия процесса
