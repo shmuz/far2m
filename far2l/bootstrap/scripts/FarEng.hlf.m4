@@ -1379,16 +1379,17 @@ $ #Make folder#
 variables in the input line, which are expanded to their values before creating
 the folder. Also you can create multiple nested subfolders at the same time:
 simply separate the folder names with the "#/#" character. For example:
-
-    #$USERDOMAIN/$USER/Folder3#
+#$USERDOMAIN/$USER/Folder3#.
 
     If the option #Process multiple names# is enabled, it is possible to
 create multiple folders in a single operation. In this case, folder names
-should be separated with the character "#;#" or "#,#". If the option is enabled
-and the name of the folder contains a character "#;#" (or "#,#"), it must be
-enclosed in quotes. For example, if the user enters
-#/Foo1;"/foo,2;";/foo3#, folders called #/Foo1#, #/foo,2;#
-and #/foo3# will be created.
+should be separated with the character "#;#" or "#,#".
+ #-# ^<wrap>If the option is enabled and the name of the folder contains
+separators and/or white space characters, it must be enclosed in quotes.
+ #-# ^<wrap>For example, if the user enters #/Foo1;"/foo,2;";/foo3#,
+folders called #/Foo1#, #/foo,2;# and #/foo3# will be created.
+ #-# ^<wrap>If the name is enclosed in quotes then each quote inside
+the name should be doubled.
 
 
 @FindFile
