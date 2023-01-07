@@ -3,7 +3,9 @@
 local function add_enums (src, trg)
   local enum, skip = false, false
   for line in src:gmatch("[^\r\n]+") do
-    if line:find("#ifdef%s+FAR_USE_INTERNALS") or line:find("#if.-_WIN32_WINNT") then
+    if line:find("^%s*//") then
+      skip = skip
+    elseif line:find("#ifdef%s+FAR_USE_INTERNALS") or line:find("#if.-_WIN32_WINNT") then
       skip = true
     elseif skip then
       if line:find("#else") or line:find("#endif") then skip = false end
