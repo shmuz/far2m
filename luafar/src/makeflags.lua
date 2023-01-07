@@ -21,7 +21,7 @@ local function add_enums (src, trg)
   for line in src:gmatch("[^\r\n]+") do
     if line:find("^%s*//") then
       skip = skip
-    elseif line:find("#ifdef%s+FAR_USE_INTERNALS") then
+    elseif line:find("#ifdef%s+FAR_USE_INTERNALS") or line:find("#if.-_WIN32_WINNT") then
       skip = true
     elseif skip then
       if line:find("#else") or line:find("#endif") then skip = false end
@@ -85,6 +85,8 @@ extern "C" {
 #endif
 
 #include "farplug-wide.h"
+#include "farcolor.h"
+#include "farkeys.h"
 
 typedef struct {
   const char* key;
@@ -108,16 +110,21 @@ void add_flags (lua_State *L)
 ]]
 
 do
-  local fname = ...
-  assert (fname, "input file not specified")
-  local fp = assert (io.open (fname))
-  local src = fp:read ("*all")
-  fp:close()
+  local dir = ...
+  assert (dir, "input directory not specified")
 
   local collector = {}
-  add_defines(src, collector)
-  add_enums(src, collector)
   for _,v in ipairs(t_winapi) do table.insert(collector, v) end
+
+  for _,fname in ipairs { "farplug-wide.h", "farcolor.h", "farkeys.h" } do
+    local fp = assert (io.open (dir.."/"..fname))
+    local src = fp:read ("*all")
+    fp:close()
+    if fname == "farplug-wide.h" then
+      add_defines(src, collector)
+    end
+    add_enums(src, collector)
+  end
 
   io.write(file_top)
   write_target(collector)

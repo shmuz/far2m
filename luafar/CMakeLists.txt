@@ -11,22 +11,20 @@ endif()
 
 set(SDK "${CMAKE_SOURCE_DIR}/far2l/far2sdk")
 
-function(GenerateFile trg src script)
+function(GenerateFile trg script)
   add_custom_command(
       OUTPUT  ${trg}          # Treated as relative to CMAKE_CURRENT_BINARY_DIR
-      COMMAND ${LUAEXE} ${CMAKE_CURRENT_SOURCE_DIR}/src/${script} ${SDK}/${src}
+      COMMAND ${LUAEXE} ${CMAKE_CURRENT_SOURCE_DIR}/src/${script} ${SDK}
               > ${CMAKE_CURRENT_BINARY_DIR}/${trg}
-      DEPENDS ${SDK}/${src}
+      DEPENDS ${SDK}/farplug-wide.h
+      DEPENDS ${SDK}/farcolor.h
+      DEPENDS ${SDK}/farkeys.h
   )
 endfunction()
 
-GenerateFile("farkeys.c"  "farkeys.h"      "makefarkeys.lua" )
-GenerateFile("farcolor.c" "farcolor.h"     "makefarkeys.lua")
-GenerateFile("farflags.c" "farplug-wide.h" "makeflags.lua")
+GenerateFile("farflags.c" "makeflags.lua")
 
 set(SOURCES
-  ${CMAKE_CURRENT_BINARY_DIR}/farkeys.c
-  ${CMAKE_CURRENT_BINARY_DIR}/farcolor.c
   ${CMAKE_CURRENT_BINARY_DIR}/farflags.c
   src/bit64.c
   src/exported.c

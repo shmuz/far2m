@@ -10,9 +10,7 @@
 #include "ustring.h"
 #include "version.h"
 
-extern void add_colors (lua_State *L);
 extern void add_flags (lua_State *L);
-extern void add_keys (lua_State *L);
 
 extern int  bit64_getvalue(lua_State *L, int pos, INT64 *target);
 extern int  bit64_push(lua_State *L, INT64 v);
@@ -6001,10 +5999,8 @@ int luaopen_far (lua_State *L)
   NewVirtualKeyTable(L, FALSE);
   lua_setfield(L, LUA_REGISTRYINDEX, FAR_VIRTUALKEYS);
 
-  lua_createtable(L, 0, 1500);
+  lua_createtable(L, 0, 1600);
   add_flags(L);
-  add_colors(L);
-  add_keys(L);
   lua_pushvalue(L, -1);
   lua_replace (L, LUA_ENVIRONINDEX);
 
