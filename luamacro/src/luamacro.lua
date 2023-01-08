@@ -418,7 +418,11 @@ local function Open_CommandLine (strCmdLine)
         editor.Editor(tmpname,nil,nil,nil,nil,nil,flags)
       end
     else
-      editor.Editor(cmd,nil,nil,nil,nil,nil,flags)
+      local line,col,fname = regex.match(cmd, [=[ \[ (\d+)? (?: ,(\d+))? \] \s+ (.+) ]=], nil, "x")
+      line  = line or (col and 1) or nil
+      col   = col or nil
+      fname = fname or cmd
+      editor.Editor(fname,nil,nil,nil,nil,nil,flags,line,col)
     end
   ----------------------------------------------------------------------------
   elseif prefix == "view" then
