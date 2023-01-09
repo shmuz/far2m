@@ -2105,11 +2105,15 @@ int panel_SetPanelDirectory(lua_State *L)
   PSInfo *Info = GetPluginStartupInfo(L);
   HANDLE handle = OptHandle(L);
   LONG_PTR param2 = 0;
+  int ret;
   if (lua_isstring(L, 2)) {
     const wchar_t* dir = check_utf8_string(L, 2, NULL);
     param2 = (LONG_PTR)dir;
   }
-  lua_pushboolean(L, Info->Control(handle, FCTL_SETPANELDIR, 0, param2));
+  ret = Info->Control(handle, FCTL_SETPANELDIR, 0, param2);
+  if (ret)
+    Info->Control(handle, FCTL_REDRAWPANEL, 0, 0); //not required in Far3
+  lua_pushboolean(L, ret);
   return 1;
 }
 
