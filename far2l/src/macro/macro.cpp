@@ -444,6 +444,7 @@ public:
 	int PassString(const FARString& str);
 	int PassValue(const TVar& Var);
 	int PassBinary(const void* data, size_t size);
+	int PassPointer(void* ptr);
 
 	int absFunc();
 	int ascFunc();
@@ -509,6 +510,8 @@ public:
 	int waitkeyFunc();
 	int windowscrollFunc();
 	int xlatFunc();
+	int UDList_Create();
+	int UDList_Get();
 
 private:
 	int fattrFuncImpl(int Type);
@@ -585,6 +588,13 @@ int FarMacroApi::PassBinary(const void* data, size_t size)
 	return 1;
 }
 
+int FarMacroApi::PassPointer(void* ptr)
+{
+	FarMacroValue val(ptr);
+	mData->Callback(mData->CallbackData, &val, 1);
+	return 1;
+}
+
 static std::vector<TVar> parseParams(size_t Count, FarMacroCall* Data)
 {
 	auto argNum = std::min(Data->Count, Count);
@@ -599,6 +609,7 @@ static std::vector<TVar> parseParams(size_t Count, FarMacroCall* Data)
 			case FMVT_BOOLEAN: Params.push_back(val.Boolean); break;
 			case FMVT_DOUBLE:  Params.push_back(val.Double);  break;
 			case FMVT_STRING:  Params.push_back(val.String);  break;
+			case FMVT_POINTER: Params.push_back((intptr_t)val.Pointer); break;
 			default:           Params.push_back(TVar());      break;
 		}
 	}
@@ -1493,6 +1504,9 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 
 			return Result;
 		}
+
+		case MCODE_UDLIST_CREATE: return api.UDList_Create();
+		case MCODE_UDLIST_GET:    return api.UDList_Get();
 	}
 	return 0;
 }
@@ -3444,6 +3458,40 @@ int FarMacroApi::kbdLayoutFunc()
 	PassValue(Ret?TVar(static_cast<INT64>(reinterpret_cast<INT_PTR>(RetLayout))):0);
 
 	return Ret ? 1 : 0;
+}
+
+//### temporary function, for test only
+// No memory freeing will occur (OK for tests)
+int FarMacroApi::UDList_Create()
+{
+	auto Params = parseParams(2, mData);
+	auto Flags = (unsigned)Params[0].getInteger();
+	auto Subj = Params[1].toString();
+
+	UserDefinedList *udl = new UserDefinedList(0,0,Flags);
+	if (udl->Set(Subj))
+		PassPointer(udl);
+	else
+	{
+		delete udl;
+		PassBoolean(0);
+	}
+	return 0;
+}
+
+//### temporary function, for test only
+int FarMacroApi::UDList_Get()
+{
+	auto Params = parseParams(2, mData);
+	auto udl = (UserDefinedList*)Params[0].getInteger();
+	int index = Params[1].getInteger() - 1;
+
+	const wchar_t* str = udl->Get(index);
+	if (str)
+		PassString(str);
+	else
+		PassBoolean(0);
+	return 0;
 }
 
 bool KeyMacro::ProcessKey(DWORD dwKey)

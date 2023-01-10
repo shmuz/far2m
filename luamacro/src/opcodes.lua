@@ -216,4 +216,6 @@ return {
   MCODE_V_DLGINFOOWNER=0x80842; -- N=Dlg.Owner
   MCODE_V_DLGPREVPOS=0x80843; -- Dlg.PrevPos
   MCODE_V_MENUINFOID=0x80844; -- Menu.Id
+  MCODE_UDLIST_CREATE=0x80845; -- User defined list
+  MCODE_UDLIST_GET=0x80846;    -- +
 }

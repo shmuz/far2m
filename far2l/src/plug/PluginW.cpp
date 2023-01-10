@@ -414,26 +414,6 @@ static const MacroPrivateInfo MacroInfo
 	farCallFar,
 };
 
-//### temporary function, for test only
-extern "C" intptr_t WINAPI UDList_Create(unsigned Flags, const wchar_t* Subj)
-{
-	UserDefinedList *udl = new UserDefinedList(0,0,Flags);
-	if (udl->Set(Subj))
-		return (intptr_t)udl;
-	delete udl;
-	return 0;
-}
-
-//### temporary function, for test only
-extern "C" intptr_t WINAPI UDList_Get(void* udlist, int index)
-{
-	UserDefinedList *udl = (UserDefinedList*)udlist;
-	auto ptr = (intptr_t)udl->Get(index);
-	if (ptr == 0)
-		delete udl;
-	return ptr;
-}
-
 void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandardFunctions *FSF)
 {
 	static PluginStartupInfo StartupInfo{};
@@ -535,8 +515,6 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 		StartupInfo.MacroControl=farMacroControl;
 		StartupInfo.PluginsControlV3=farPluginsControlV3;
 		StartupInfo.ColorDialog=farColorDialog;
-		StartupInfo.RESERVED[0]=(void*)UDList_Create; //### to be deleted
-		StartupInfo.RESERVED[1]=(void*)UDList_Get;    //### to be deleted
 	}
 
 	*PSI=StartupInfo;
