@@ -1006,8 +1006,7 @@ ShellCopy::ShellCopy(Panel *SrcPanel,        // исходная панель (�
 				Opt.CMOpt.SparseFiles=CopyDlg[ID_SC_SPARSEFILES].Selected;
 				Opt.CMOpt.UseCOW=CopyDlg[ID_SC_USECOW].Selected;
 
-				if ((CopyDlg[ID_SC_MULTITARGET].Selected && DestList.Set(strCopyDlgValue)) ||
-				   (!CopyDlg[ID_SC_MULTITARGET].Selected && DestList.SetAsIs(strCopyDlgValue)))
+				if (CopyDlg[ID_SC_MULTITARGET].Selected ? DestList.Set(strCopyDlgValue) : DestList.SetAsIs(strCopyDlgValue))
 				{
 					// Запомнить признак использования фильтра. KM
 					UseFilter=CopyDlg[ID_SC_USEFILTER].Selected;
@@ -2345,6 +2344,8 @@ COPY_CODES ShellCopy::ShellCopyOneFileNoRetry(
 		}
 		if (SrcData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 			TreeList::AddTreeName(strDestPath);
+		if (Flags.MOVE && PointToName(strDestPath)==strDestPath.CPtr())
+			strRenamedName = strDestPath;
 		return COPY_SUCCESS;
 	}
 
