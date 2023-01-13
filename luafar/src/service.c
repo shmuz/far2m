@@ -1113,7 +1113,7 @@ int editor_Quit(lua_State *L)
   return 1;
 }
 
-int SetEditorSelect(lua_State *L, int pos_table, struct EditorSelect *es)
+int FillEditorSelect(lua_State *L, int pos_table, struct EditorSelect *es)
 {
   lua_getfield(L, pos_table, "BlockType");
   if (!get_env_flag(L, -1, &es->BlockType)) {
@@ -1135,7 +1135,7 @@ int editor_Select(lua_State *L)
   struct EditorSelect es;
   int result;
   if (lua_istable(L, 1))
-    result = SetEditorSelect(L, 1, &es);
+    result = FillEditorSelect(L, 1, &es);
   else {
     result = get_env_flag(L, 1, &es.BlockType);
     if (result) {
@@ -2854,7 +2854,7 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 
     case DM_SETSELECTION:
       luaL_checktype(L, pos4, LUA_TTABLE);
-      if (SetEditorSelect(L, pos4, &es)) {
+      if (FillEditorSelect(L, pos4, &es)) {
         Param2 = (LONG_PTR)&es;
         break;
       }
