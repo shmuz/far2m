@@ -206,7 +206,7 @@ bool PluginManager::RemovePlugin(Plugin *pPlugin)
 }
 
 
-bool PluginManager::LoadPlugin(
+Plugin* PluginManager::LoadPlugin(
     const FARString &strModuleName,
     bool UncachedLoad
 )
@@ -214,14 +214,14 @@ bool PluginManager::LoadPlugin(
 	const PluginType PlType = PluginTypeByExtension(strModuleName);
 
 	if (PlType == NOT_PLUGIN)
-		return false;
+		return nullptr;
 
 	struct stat st{};
 	if (stat(strModuleName.GetMB().c_str(), &st) == -1)
 	{
 		fprintf(stderr, "%s: stat error %u for '%ls'\n",
 			__FUNCTION__, errno, strModuleName.CPtr());
-		return false;
+		return nullptr;
 	}
 
 	const std::string &SettingsName = PluginSettingsName(strModuleName);
@@ -240,16 +240,16 @@ bool PluginManager::LoadPlugin(
 			pPlugin = new(std::nothrow) PluginA(this, strModuleName, SettingsName, ModuleID);
 			break;
 		default:
-			abort();
+			break;
 	}
 
 	if (!pPlugin)
-		return false;
+		return nullptr;
 
 	if (!AddPlugin(pPlugin))
 	{
 		delete pPlugin;
-		return false;
+		return nullptr;
 	}
 
 	bool bResult = false;
@@ -269,7 +269,7 @@ bool PluginManager::LoadPlugin(
 			RemovePlugin(pPlugin);
 	}
 
-	return bResult;
+	return bResult ? pPlugin : nullptr;
 }
 
 bool PluginManager::CacheForget(const wchar_t *lpwszModuleName)
@@ -287,7 +287,7 @@ bool PluginManager::CacheForget(const wchar_t *lpwszModuleName)
 
 bool PluginManager::LoadPluginExternal(const wchar_t *lpwszModuleName, bool LoadToMem)
 {
-	return LoadPluginExternalV3(lpwszModuleName, LoadToMem) ? true:false;
+	return LoadPluginExternalV3(lpwszModuleName, LoadToMem) != nullptr;
 }
 
 Plugin* PluginManager::LoadPluginExternalV3(const wchar_t *lpwszModuleName, bool LoadToMem)
@@ -304,10 +304,9 @@ Plugin* PluginManager::LoadPluginExternalV3(const wchar_t *lpwszModuleName, bool
 	}
 	else
 	{
-		if (!LoadPlugin(lpwszModuleName, LoadToMem))
-			return nullptr;
-
-		far_qsort(PluginsData, PluginsCount, sizeof(*PluginsData), PluginsSort);
+		pPlugin = LoadPlugin(lpwszModuleName, LoadToMem);
+		if (pPlugin)
+			far_qsort(PluginsData, PluginsCount, sizeof(*PluginsData), PluginsSort);
 	}
 	return pPlugin;
 }
