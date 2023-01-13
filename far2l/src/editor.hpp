@@ -302,6 +302,7 @@ class Editor:public ScreenObject
 		bool CheckLine(Edit* line);
 		wchar_t *Block2Text(wchar_t *ptrInitData);
 		wchar_t *VBlock2Text(wchar_t *ptrInitData);
+		void TurnOffMarkingBlock();
 
 	public:
 		Editor(ScreenObject *pOwner=nullptr,bool DialogUsed=false);
