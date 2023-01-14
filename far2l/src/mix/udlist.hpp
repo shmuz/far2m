@@ -48,7 +48,6 @@ enum UDL_FLAGS
 	ULF_UNIQUE         =0x00000010, // убирать дублирующиеся элементы
 	ULF_SORT           =0x00000020, // отсортировать (с учетом регистра)
 	ULF_NOTTRIM        =0x00000040, // не удалять пробелы
-	ULF_NOTUNQUOTES    =0x00000080, // не раскавычивать
 	ULF_ACCOUNTEMPTYLINE=0x00000100, // учитывать пустые "строки"
 	ULF_CASESENSITIVE  =0x00000200, // регистрозависимый
 };
@@ -74,7 +73,7 @@ class UserDefinedList : private NonCopyable
 	private:
 		TArray<UserDefinedListItem> Array;
 		WORD Separator1, Separator2;
-		bool mProcessBrackets, mAddAsterisk, mPackAsterisks, mUnique, mSort, mTrim, mUnQuote;
+		bool mProcessBrackets, mAddAsterisk, mPackAsterisks, mUnique, mSort, mTrim;
 		bool mAccountEmptyLine, mCaseSensitive;
 
 	private:

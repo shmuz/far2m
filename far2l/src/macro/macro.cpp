@@ -510,8 +510,7 @@ public:
 	int waitkeyFunc();
 	int windowscrollFunc();
 	int xlatFunc();
-	int UDList_Create();
-	int UDList_Get();
+	int UDList_Split();
 
 private:
 	int fattrFuncImpl(int Type);
@@ -1505,8 +1504,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 			return Result;
 		}
 
-		case MCODE_UDLIST_CREATE: return api.UDList_Create();
-		case MCODE_UDLIST_GET:    return api.UDList_Get();
+		case MCODE_UDLIST_SPLIT: return api.UDList_Split();
 	}
 	return 0;
 }
@@ -3461,36 +3459,23 @@ int FarMacroApi::kbdLayoutFunc()
 }
 
 //### temporary function, for test only
-// No memory freeing will occur (OK for tests)
-int FarMacroApi::UDList_Create()
+int FarMacroApi::UDList_Split()
 {
 	auto Params = parseParams(2, mData);
 	auto Flags = (unsigned)Params[0].getInteger();
 	auto Subj = Params[1].toString();
 
-	UserDefinedList *udl = new UserDefinedList(0,0,Flags);
-	if (udl->Set(Subj))
-		PassPointer(udl);
+	UserDefinedList udl(0,0,Flags);
+	if (udl.Set(Subj))
+	{
+		const wchar_t* str;
+		for (int i=0; (str=udl.Get(i)); i++)
+			PassString(str);
+	}
 	else
 	{
-		delete udl;
 		PassBoolean(0);
 	}
-	return 0;
-}
-
-//### temporary function, for test only
-int FarMacroApi::UDList_Get()
-{
-	auto Params = parseParams(2, mData);
-	auto udl = (UserDefinedList*)Params[0].getInteger();
-	int index = Params[1].getInteger() - 1;
-
-	const wchar_t* str = udl->Get(index);
-	if (str)
-		PassString(str);
-	else
-		PassBoolean(0);
 	return 0;
 }
 

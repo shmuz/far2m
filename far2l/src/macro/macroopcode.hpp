@@ -284,8 +284,7 @@ enum MACRO_OP_CODE
 	MCODE_V_DLGPREVPOS,               // Dlg.PrevPos
 	MCODE_V_MENUINFOID,               // Menu.Id
 
-	MCODE_UDLIST_CREATE,              // User defined list
-	MCODE_UDLIST_GET,                 // +
+	MCODE_UDLIST_SPLIT,               // User defined list
 };
 
 typedef enum MACRO_OP_CODE TMacroOpCode;

@@ -61,8 +61,7 @@ mf = {
   testfolder      = function(...) return MacroCallFar( op.MCODE_F_TESTFOLDER, ...) end,
   trim            = function(...) return MacroCallFar( op.MCODE_F_TRIM      , ...) end,
   ucase           = function(...) return MacroCallFar( op.MCODE_F_UCASE     , ...) end,
-  udlcreate       = function(...) return MacroCallFar( op.MCODE_UDLIST_CREATE, ...) end,
-  udlget          = function(...) return MacroCallFar( op.MCODE_UDLIST_GET  , ...) end,
+  udlsplit        = function(...) return MacroCallFar( op.MCODE_UDLIST_SPLIT, ...) end,
   waitkey         = function(...) return MacroCallFar( op.MCODE_F_WAITKEY   , ...) end,
   xlat            = function(...) return MacroCallFar( op.MCODE_F_XLAT      , ...) end,
 }
