@@ -190,7 +190,7 @@ You can import the project into your favourite IDE like QtCreator, CodeLite, or 
 
 ### Useful 3rd-party extras
 
- * A collection of macros for far2l: https://github.com/corporateshark/far2l-macros
+ * A collection of plugins and macros for far2l: https://github.com/shmuz/LuaFAR-2L
  * Fork of Putty (Windows SSH client) with added far2l TTY extensions support (fluent keypresses, clipboard sharing etc): https://github.com/unxed/putty4far2l
  * Similar fork of Kitty: https://github.com/mihmig/KiTTY
  * Tool to import color schemes from windows FAR manager 2 .reg format: https://github.com/unxed/far2l-deb/blob/master/far2l_import.pl
@@ -248,4 +248,4 @@ far2l asks plugin if it can exit now. If plugin has some background tasks pendin
 
 ## Known issues:
 * Only valid translations are English, Russian and Ukrainian, all other languages require deep correction.
-* Characters that occupy more than single cell or diacritic-like characters are rendered buggy, that means Chinees and Japaneese texts are hardly readable in some cases.
+* Characters that occupy more than single cell or diacritic-like characters are rendered buggy, that means Chinese and Japanese texts are hardly readable in some cases.
