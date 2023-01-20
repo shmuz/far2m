@@ -31,7 +31,6 @@ DLLFUNC int  LF_InitOtherLuaState (lua_State *L, lua_State *Lplug, lua_CFunction
 DLLFUNC void LF_LuaClose(TPluginData* aPlugData);
 DLLFUNC int  LF_Message(PSInfo *Info, const wchar_t* aMsg, const wchar_t* aTitle, const wchar_t* aButtons, const char* aFlags, const wchar_t* aHelpTopic);
 DLLFUNC BOOL LF_RunDefaultScript(lua_State* L);
-DLLFUNC int  LF_LoadFile(lua_State *L, const wchar_t* filename);
 DLLFUNC const wchar_t *LF_Gsub (lua_State *L, const wchar_t *s, const wchar_t *p, const wchar_t *r);
 DLLFUNC LONG_PTR LF_DlgProc(lua_State *L, HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2);
 

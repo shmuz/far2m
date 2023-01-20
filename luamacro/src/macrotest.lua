@@ -1145,6 +1145,14 @@ local function test_RegexControl()
   assert(fr==1 and to==2 and c1==false)
   fr,to,c1,c2,c3 = regex.find("bbb", "(b)?b(b)?(b)?b")
   assert(fr==1 and to==3 and c1=="b" and c2==false and c3==false)
+
+  -- Mantis 1388 (https://bugs.farmanager.com/view.php?id=1388)
+  c1,c2 = regex.match("123", "(\\d+)A|(\\d+)")
+  assert(c1==false and c2=="123")
+
+  -- Issue #609 (https://github.com/FarGroup/FarManager/issues/609)
+  c1 = regex.match("88", "(8)+")
+  assert(c1=="8")
 end
 
 --[[------------------------------------------------------------------------------------------------
