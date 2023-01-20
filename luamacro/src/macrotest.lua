@@ -1623,6 +1623,12 @@ function MT.test_misc()
   test_coroutine()
 end
 
+function MT.test_far_regex(printfunc, verbose)
+  local test = require "far2.test.regex.runtest"
+  local numerr = test(printfunc, verbose)
+  assert(numerr == 0)
+end
+
 function MT.test_all()
   TestArea("Shell", "Run these tests from the Shell area.")
   assert(not APanel.Plugin and not PPanel.Plugin, "Run these tests when neither of panels is a plugin panel.")
@@ -1644,6 +1650,8 @@ function MT.test_all()
   MT.test_mantis_1722()
   MT.test_luafar()
   MT.test_misc()
+  MT.test_far_regex(far.Log,true) -- external test files
+  actl.RedrawAll()
 end
 
 return MT
