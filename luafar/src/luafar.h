@@ -21,8 +21,14 @@ typedef struct
   lua_State     *MainLuaState;
   void          *dlopen_handle;
   char          *ShareDir;
+  DWORD          Flags;
   char           Reserved[64];
 } TPluginData;
+
+enum LF_PLUGIN_FLAGS
+{
+  LPF_SETPACKAGEPATH = 0x00000001,
+};
 
 TPluginData* GetPluginData(lua_State* L);
 

@@ -54,6 +54,9 @@ void LUAPLUG SetStartupInfoW(const PSInfo *aInfo)
   PluginData.Info = &Info;
   PluginData.DlgProc = DlgProc;
   PluginData.PluginId = SYS_ID;
+#ifdef SETPACKAGEPATH
+  PluginData.Flags |= LPF_SETPACKAGEPATH;
+#endif
 
   if (!LS && LF_LuaOpen(&PluginData, FUNC_OPENLIBS)) //includes opening "far" library
     LS = PluginData.MainLuaState;

@@ -6083,8 +6083,7 @@ BOOL LF_RunDefaultScript(lua_State* L)
 
 void LF_InitLuaState (lua_State *L, TPluginData *aPlugData, lua_CFunction aOpenLibs)
 {
-  int idx, top;
-  FILE *fp;
+  int idx;
   lua_CFunction func_arr[] = { luaopen_far, luaopen_bit64, luaopen_unicode, luaopen_utf8 };
 
   // open Lua libraries
@@ -6108,19 +6107,19 @@ void LF_InitLuaState (lua_State *L, TPluginData *aPlugData, lua_CFunction aOpenL
   lua_setfield(L, -2, "__index");
   lua_pop(L, 2);
 
-  // Run "luafar_init.lua" residing in the Plugins/luafar directory (if any).
-  // Absence of that file is not error.
-  top = lua_gettop(L);
-  lua_pushstring(L, aPlugData->ShareDir);             //+1
-  lua_pushliteral(L, "/../../luafar_init.lua");       //+2
-  lua_concat(L, 2);                                   //+1
-  fp = fopen(lua_tostring(L,-1), "r");
-  if (fp) {
-    fclose(fp);
-    if (luaL_loadfile(L,lua_tostring(L,-1)) || lua_pcall(L,0,0,0))
-      LF_Error(L, utf8_to_wcstring(L,-1,NULL));
+  // If the plugin was built with -DSETPACKAGEPATH in its CFLAGS then
+  //   package.path = <plugin_dir>/?.lua;<lua_share>/?.lua;<package.path>
+  if (aPlugData->Flags & LPF_SETPACKAGEPATH) {
+    lua_getglobal  (L, "package");                    //+1
+    lua_pushstring (L, aPlugData->ShareDir);          //+2
+    lua_pushstring (L, "/?.lua;");                    //+3
+    lua_pushstring (L, aPlugData->ShareDir);          //+4
+    lua_pushstring (L, "/../../lua_share/?.lua;");    //+5
+    lua_getfield   (L, -5, "path");                   //+6
+    lua_concat     (L, 5);                            //+2
+    lua_setfield   (L, -2, "path");                   //+1
+    lua_pop        (L, 1);                            //+0
   }
-  lua_settop(L,top);
 }
 
 // Initialize the interpreter
