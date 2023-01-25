@@ -1,28 +1,33 @@
 
 project(luafar2l)
 
-if (NOT DEFINED USE_LUAJIT OR USE_LUAJIT)
-  include_directories("/usr/include/luajit-2.1")
-  set(LUAEXE "luajit")
+find_program(LUAEXE NAMES luajit lua5.1)
+if (${LUAEXE} STREQUAL LUAEXE-NOTFOUND)
+  message(WARNING "${ColorRed}Neither luajit nor lua5.1 was found.${ColorNormal}")
+  return()
+endif()
+
+find_path(LUAINC luajit-2.1/lua.h)
+if (NOT ${LUAINC} STREQUAL LUAINC-NOTFOUND)
+  include_directories(${LUAINC}/luajit-2.1)
 else()
-  include_directories("/usr/include/lua5.1")
-  set(LUAEXE "lua")
+  find_path(LUAINC lua5.1/lua.h)
+  if (NOT ${LUAINC} STREQUAL LUAINC-NOTFOUND)
+    include_directories(${LUAINC}/lua5.1)
+  else()
+    message(WARNING "${ColorRed}Neither of LuaJIT/Lua5.1 include path was found.${ColorNormal}")
+    return()
+  endif()
 endif()
 
 set(SDK "${CMAKE_SOURCE_DIR}/far2l/far2sdk")
 
-function(GenerateFile trg script)
-  add_custom_command(
-      OUTPUT  ${trg}          # Treated as relative to CMAKE_CURRENT_BINARY_DIR
-      COMMAND ${LUAEXE} ${CMAKE_CURRENT_SOURCE_DIR}/src/${script} ${SDK}
-              > ${CMAKE_CURRENT_BINARY_DIR}/${trg}
-      DEPENDS ${SDK}/farplug-wide.h
-      DEPENDS ${SDK}/farcolor.h
-      DEPENDS ${SDK}/farkeys.h
-  )
-endfunction()
-
-GenerateFile("farflags.c" "makeflags.lua")
+add_custom_command(
+    OUTPUT  farflags.c    # Treated as relative to CMAKE_CURRENT_BINARY_DIR
+    COMMAND ${LUAEXE} ${CMAKE_CURRENT_SOURCE_DIR}/src/makeflags.lua
+        ${SDK} > farflags.c
+    DEPENDS ${SDK}/farplug-wide.h ${SDK}/farcolor.h ${SDK}/farkeys.h
+)
 
 set(SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/farflags.c
