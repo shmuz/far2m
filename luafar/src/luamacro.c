@@ -37,7 +37,7 @@ static void InitMPR (lua_State* L, struct MacroPluginReturn *mpr, size_t nargs, 
 	mpr->ReturnType = ReturnType;
 }
 
-HANDLE Open_Luamacro (lua_State* L, int OpenFrom, INT_PTR Item)
+HANDLE Open_Luamacro (lua_State* L, INT_PTR Item)
 {
 	struct OpenMacroPluginInfo* om_info = (struct OpenMacroPluginInfo*)Item;
 	int calltype = om_info->CallType;
@@ -50,16 +50,15 @@ HANDLE Open_Luamacro (lua_State* L, int OpenFrom, INT_PTR Item)
 		return NULL;
 	}
 
-	lua_pushinteger(L, OpenFrom);                  //+2
-	lua_pushinteger(L, calltype);                  //+3
+	lua_pushinteger(L, calltype);                  //+2
 	if (om_info->Data && !FL_PushParams(L, om_info->Data))
 	{
-		lua_pop(L, 3);
+		lua_pop(L, 2);
 		LF_Message(pd->Info, L"too many values to place onto Lua stack", L"LuaMacro", L"OK", "wl", NULL);
 		return NULL;
 	}
 
-	if(pcall_msg(L, 2+(int)argc, 2) == 0)
+	if(pcall_msg(L, 1+(int)argc, 2) == 0)
 	{
 		intptr_t ReturnType;
 		if (!lua_toboolean(L,-2))

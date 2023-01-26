@@ -496,7 +496,7 @@ local function PanelModuleExist(mod)
   end
 end
 
-local function Open_LuaMacro (calltype, ...)
+function export.OpenLuaMacro (calltype, ...)
   if     calltype==F.MCT_KEYMACRO       then return keymacro.Dispatch(...)
   elseif calltype==F.MCT_MACROPARSE     then return MacroParse(...)
   elseif calltype==F.MCT_DELMACRO       then return utils.DelMacro(...)
@@ -534,45 +534,44 @@ local CanCreatePanel = {
   [F.OPEN_PLUGINSMENU]   = true;
 }
 
+function export.OpenCommandLine (CmdLine)
+  local mod, obj = Open_CommandLine(CmdLine)
+  return mod and obj and PanelModuleExist(mod) and { module=mod; object=obj }
+end
+
+function export.OpenShortcut (Item, ...)
+  local info = ...
+  if info and info.ShortcutData then
+    local mod_guid, data = info.ShortcutData:match(
+      "^(%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x)/(.*)")
+    if mod_guid then
+      local mod = utils.GetPanelModules()[win.Uuid(mod_guid)]
+      if mod and type(mod.OpenShortcut) == "function" then
+        info.ShortcutData = data
+        local obj = mod.OpenShortcut(Item, info)
+        return obj and { module=mod; object=obj }
+      end
+    end
+  end
+end
+
+function export.OpenFromMacro (argtable)
+  if argtable[1]=="argtest" then -- argtest: return received arguments
+    return unpack(argtable, 2, argtable.n)
+  elseif argtable[1]=="macropost" then -- test Mantis # 2222
+    return far.MacroPost([[far.Message"macropost"]])
+  elseif argtable[1]=="browser" then
+    macrobrowser()
+  end
+end
+
 function export.OpenPlugin (OpenFrom, Item, ...)
-  if OpenFrom == F.OPEN_LUAMACRO then
-    return Open_LuaMacro(Item, ...)
-
-  elseif OpenFrom == F.OPEN_COMMANDLINE then
-    local mod, obj = Open_CommandLine(Item)
-    return mod and obj and PanelModuleExist(mod) and { module=mod; object=obj }
-
-  elseif OpenFrom == F.OPEN_FINDLIST then
+  if OpenFrom == F.OPEN_FINDLIST then
     for _,mod in ipairs(utils.GetPanelModules()) do
-      if type(mod.Open) == "function" then
-        local obj = mod.Open(OpenFrom, Item, ...)
+      if type(mod.OpenPlugin) == "function" then
+        local obj = mod.OpenPlugin(OpenFrom, Item, ...)
         if obj then return { module=mod; object=obj } end
       end
-    end
-
-  elseif OpenFrom == F.OPEN_SHORTCUT then
-    local info = ...
-    if info.ShortcutData then
-      local mod_guid, data = info.ShortcutData:match(
-        "^(%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x)/(.*)")
-      if mod_guid then
-        local mod = utils.GetPanelModules()[win.Uuid(mod_guid)]
-        if mod and type(mod.Open) == "function" then
-          info.ShortcutData = data
-          local obj = mod.Open(OpenFrom, Item, info)
-          return obj and { module=mod; object=obj }
-        end
-      end
-    end
-
-  elseif OpenFrom == F.OPEN_FROMMACRO then -- TODO: add panel modules support
-    local argtable = Item
-    if argtable[1]=="argtest" then -- argtest: return received arguments
-      return unpack(argtable, 2, argtable.n)
-    elseif argtable[1]=="macropost" then -- test Mantis # 2222
-      return far.MacroPost([[far.Message"macropost"]])
-    elseif argtable[1]=="browser" then
-      macrobrowser()
     end
 
   else
