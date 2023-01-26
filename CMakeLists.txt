@@ -206,8 +206,25 @@ endif()
 ##############################
 # plugins directives
 
+function (FindLuaIncludes)
+  if (NOT DEFINED LUAINC)
+    foreach(PP "luajit-2.1" "lua5.1")
+      find_path(INC ${PP}/lua.h)
+      if (NOT ${INC} STREQUAL INC-NOTFOUND)
+        set(LUAINC ${INC}/${PP} CACHE INTERNAL "Lua #include path" FORCE)
+        return()
+      endif()
+    endforeach()
+    message(STATUS "${ColorRed}Neither of LuaJIT/Lua5.1 #include path was found${ColorNormal}")
+  endif()
+endfunction()
+
 add_subdirectory (luafar)
-add_subdirectory (luamacro)
+if (DEFINED LUAFAR_OK)
+  add_subdirectory (luamacro)
+else()
+  message(STATUS "${ColorRed}LuaMacro plugin disabled due to missing LuaFAR${ColorNormal}")
+endif()
 
 if (NOT DEFINED ALIGN OR ALIGN)
 	message(STATUS "ALIGN plugin enabled")

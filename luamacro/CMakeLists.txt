@@ -1,10 +1,11 @@
 
 project(luamacro)
 
-if (NOT DEFINED USE_LUAJIT OR USE_LUAJIT)
-  include_directories("/usr/include/luajit-2.1")
+FindLuaIncludes()
+if (DEFINED LUAINC)
+  include_directories(${LUAINC})
 else()
-  include_directories("/usr/include/lua5.1")
+  return()
 endif()
 
 set(SYS_ID 0x4EBBEFC8)

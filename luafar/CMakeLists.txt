@@ -3,21 +3,15 @@ project(luafar2l)
 
 find_program(LUAEXE NAMES luajit lua5.1)
 if (${LUAEXE} STREQUAL LUAEXE-NOTFOUND)
-  message(WARNING "${ColorRed}Neither luajit nor lua5.1 was found.${ColorNormal}")
+  message(STATUS "${ColorRed}Neither luajit nor lua5.1 was found${ColorNormal}")
   return()
 endif()
 
-find_path(LUAINC luajit-2.1/lua.h)
-if (NOT ${LUAINC} STREQUAL LUAINC-NOTFOUND)
-  include_directories(${LUAINC}/luajit-2.1)
+FindLuaIncludes()
+if (DEFINED LUAINC)
+  include_directories(${LUAINC})
 else()
-  find_path(LUAINC lua5.1/lua.h)
-  if (NOT ${LUAINC} STREQUAL LUAINC-NOTFOUND)
-    include_directories(${LUAINC}/lua5.1)
-  else()
-    message(WARNING "${ColorRed}Neither of LuaJIT/Lua5.1 include path was found.${ColorNormal}")
-    return()
-  endif()
+  return()
 endif()
 
 set(SDK "${CMAKE_SOURCE_DIR}/far2l/far2sdk")
@@ -60,11 +54,8 @@ set_target_properties(luafar2l
     PREFIX ""
     SUFFIX ".so")
 
-set(MY_LIST
-  luafar2l_manual.chm
-  macroapi_manual_linux.chm
-)
-
-foreach(elem ${MY_LIST})
+foreach(elem "luafar2l_manual.chm" "macroapi_manual_linux.chm")
   configure_file("manuals/${elem}" "${INSTALL_DIR}/Manuals/${elem}" COPYONLY)
 endforeach()
+
+set(LUAFAR_OK "OK" PARENT_SCOPE)
