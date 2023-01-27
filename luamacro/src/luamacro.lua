@@ -539,16 +539,14 @@ function export.OpenCommandLine (CmdLine)
   return mod and obj and PanelModuleExist(mod) and { module=mod; object=obj }
 end
 
-function export.OpenShortcut (Item, ...)
-  local info = ...
-  if info and info.ShortcutData then
-    local mod_guid, data = info.ShortcutData:match(
+function export.OpenShortcut (Item)
+  if Item then
+    local mod_guid, data = Item:match(
       "^(%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x)/(.*)")
     if mod_guid then
       local mod = utils.GetPanelModules()[win.Uuid(mod_guid)]
       if mod and type(mod.OpenShortcut) == "function" then
-        info.ShortcutData = data
-        local obj = mod.OpenShortcut(Item, info)
+        local obj = mod.OpenShortcut(Item)
         return obj and { module=mod; object=obj }
       end
     end
