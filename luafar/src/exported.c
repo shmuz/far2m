@@ -822,11 +822,9 @@ HANDLE LF_OpenPlugin (lua_State* L, int OpenFrom, INT_PTR Item)
       struct OpenDlgPluginData *data = (struct OpenDlgPluginData*)Item;
       if (!GetExportFunction(L, "OpenDialog"))
         break;
-      lua_createtable(L, 0, 2);
-      PutIntToTable(L, "ItemNumber", data->ItemNumber);
+      lua_pushinteger(L, data->ItemNumber);
       NewDialogData(L, NULL, data->hDlg, FALSE);
-      lua_setfield(L, -2, "hDlg");
-      if (pcall_msg(L, 1, 1) == 0) {
+      if (pcall_msg(L, 2, 1) == 0) {
         if (lua_toboolean(L, -1))        //+1: Obj
           return RegisterObject(L);      //+0
         lua_pop(L,1);
