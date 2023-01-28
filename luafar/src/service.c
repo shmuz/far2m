@@ -2322,7 +2322,7 @@ int far_GetDirList (lua_State *L)
 int far_GetPluginDirList (lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
-  int PluginNumber = luaL_checkinteger (L, 1);
+  INT_PTR PluginNumber = (INT_PTR)lua_touserdata(L, 1);
   HANDLE handle = OptHandlePos(L, 2);
   const wchar_t *Dir = check_utf8_string (L, 3, NULL);
   struct PluginPanelItem *PanelItems;
@@ -4264,7 +4264,7 @@ int DoAdvControl (lua_State *L, int Command, int Delta)
       int1 = luaL_checkinteger(L, pos2) - 1;
       int1 = Info->AdvControl(Info->ModuleNumber, ACTL_SETCURRENTWINDOW, (void*)int1);
       if (int1 && lua_toboolean(L, pos3))
-        int1 = Info->AdvControl(Info->ModuleNumber, ACTL_COMMIT, NULL);
+        Info->AdvControl(Info->ModuleNumber, ACTL_COMMIT, NULL);
       return lua_pushboolean(L, int1), 1;
 
     case ACTL_SETPROGRESSSTATE:
