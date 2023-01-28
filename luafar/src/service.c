@@ -37,6 +37,8 @@ extern void PushPluginTable(lua_State* L, HANDLE hPlugin);
 const char FarFileFilterType[] = "FarFileFilter";
 const char FarDialogType[]     = "FarDialog";
 const char AddMacroDataType[]  = "FarAddMacroData";
+const char SavedScreenType[]   = "FarSavedScreen";
+
 const char FAR_KEYINFO[]       = "far.info";
 const char FAR_VIRTUALKEYS[]   = "far.virtualkeys";
 const char FAR_DN_STORAGE[]    = "FAR_DN_STORAGE";
@@ -2340,25 +2342,32 @@ int far_GetPluginDirList (lua_State *L)
 //   handle:    handle of saved screen.
 int far_RestoreScreen (lua_State *L)
 {
-  int res = 0;
-  if (lua_type(L,1) == LUA_TLIGHTUSERDATA) {
-    PSInfo *Info = GetPluginStartupInfo(L);
-    Info->RestoreScreen ((HANDLE)lua_touserdata (L, 1));
-    res = 1;
+  if (lua_isnoneornil(L, 1))
+    GetPluginStartupInfo(L)->RestoreScreen(NULL);
+  else
+  {
+    void **pp = (void**)luaL_checkudata(L, 1, SavedScreenType);
+    if (*pp)
+    {
+      GetPluginStartupInfo(L)->RestoreScreen(*pp);
+      *pp = NULL;
+    }
   }
-  return lua_pushboolean(L,res), 1;
+  return 0;
 }
 
 // handle = SaveScreen (X1,Y1,X2,Y2)
 //   handle:    handle of saved screen, [lightuserdata]
 int far_SaveScreen (lua_State *L)
 {
-  PSInfo *Info = GetPluginStartupInfo(L);
-  int X1 = luaL_optinteger(L,1,0);
-  int Y1 = luaL_optinteger(L,2,0);
-  int X2 = luaL_optinteger(L,3,-1);
-  int Y2 = luaL_optinteger(L,4,-1);
-  lua_pushlightuserdata(L, Info->SaveScreen(X1,Y1,X2,Y2));
+  intptr_t X1 = luaL_optinteger(L,1,0);
+  intptr_t Y1 = luaL_optinteger(L,2,0);
+  intptr_t X2 = luaL_optinteger(L,3,-1);
+  intptr_t Y2 = luaL_optinteger(L,4,-1);
+
+  *(void**)lua_newuserdata(L, sizeof(void*)) = GetPluginStartupInfo(L)->SaveScreen(X1,Y1,X2,Y2);
+  luaL_getmetatable(L, SavedScreenType);
+  lua_setmetatable(L, -2);
   return 1;
 }
 
@@ -6025,8 +6034,8 @@ int luaopen_far (lua_State *L)
   luaL_newmetatable(L, AddMacroDataType);
   lua_pushcfunction(L, AddMacroData_gc);
   lua_setfield(L, -2, "__gc");
-  lua_pop(L, 1);
 
+  luaL_newmetatable(L, SavedScreenType);
   return 0;
 }
 
