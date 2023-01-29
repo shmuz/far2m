@@ -1449,6 +1449,11 @@ void WINAPI FarRestoreScreen(HANDLE hScreen)
 		delete(SaveScreen *)hScreen;
 }
 
+void WINAPI FarFreeScreen(HANDLE hScreen)
+{
+	if (hScreen)
+		delete(SaveScreen *)hScreen;
+}
 
 static void PR_FarGetDirListMsg()
 {

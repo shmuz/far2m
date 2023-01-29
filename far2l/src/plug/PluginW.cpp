@@ -515,6 +515,7 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 		StartupInfo.MacroControl=farMacroControl;
 		StartupInfo.PluginsControlV3=farPluginsControlV3;
 		StartupInfo.ColorDialog=farColorDialog;
+		StartupInfo.FreeScreen=FarFreeScreen;
 	}
 
 	*PSI=StartupInfo;

@@ -907,6 +907,7 @@ typedef HANDLE(WINAPI *FARAPISAVESCREEN)(int X1, int Y1, int X2, int Y2);
 
 typedef void (WINAPI *FARAPIRESTORESCREEN)(HANDLE hScreen);
 
+typedef void (WINAPI *FARAPIFREESCREEN)(HANDLE hScreen);
 
 typedef int (WINAPI *FARAPIGETDIRLIST)(
     const wchar_t *Dir,
@@ -2327,6 +2328,7 @@ struct PluginStartupInfo
 	FARAPIMACROCONTROL     MacroControl;
 	FARAPIPLUGINSCONTROLV3 PluginsControlV3;
 	FARAPICOLORDIALOG      ColorDialog;
+	FARAPIFREESCREEN       FreeScreen;
 	const void*            Private;
 };
 

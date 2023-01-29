@@ -83,6 +83,7 @@ int WINAPI FarMessageFn(INT_PTR PluginNumber,DWORD Flags,
 int WINAPI FarControl(HANDLE hPlugin,int Command,int Param1,LONG_PTR Param2);
 HANDLE WINAPI FarSaveScreen(int X1,int Y1,int X2,int Y2);
 void WINAPI FarRestoreScreen(HANDLE hScreen);
+void WINAPI FarFreeScreen(HANDLE hScreen);
 
 int WINAPI FarGetDirList(const wchar_t *Dir, FAR_FIND_DATA **pPanelItem, int *pItemsNumber);
 void WINAPI FarFreeDirList(FAR_FIND_DATA *PanelItem, int nItemsNumber);
