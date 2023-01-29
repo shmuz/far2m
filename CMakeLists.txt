@@ -208,7 +208,7 @@ endif()
 
 function (FindLuaIncludes)
   if (NOT DEFINED LUAINC)
-    foreach(PP "luajit-2.1" "lua5.1")
+    foreach(PP "luajit-2.1" "luajit-2.0" "lua5.1")
       find_path(INC ${PP}/lua.h)
       if (NOT ${INC} STREQUAL INC-NOTFOUND)
         set(LUAINC ${INC}/${PP} CACHE INTERNAL "Lua #include path" FORCE)
