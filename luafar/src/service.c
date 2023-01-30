@@ -6112,19 +6112,27 @@ void LF_InitLuaState (lua_State *L, TPluginData *aPlugData, lua_CFunction aOpenL
   int idx, len;
   lua_CFunction func_arr[] = { luaopen_far, luaopen_bit64, luaopen_unicode, luaopen_utf8 };
 
+Log("LF_InitLuaState is entered");
+
   // open Lua libraries
   luaL_openlibs(L);
 
+Log("luaL_openlibs was called");
+
   if (aOpenLibs) {
+Log("About to call aOpenLibs");
     lua_pushcfunction(L, aOpenLibs);
     lua_call(L, 0, 0);
+Log("aOpenLibs was called");
   }
 
   // open more libraries
   for (idx=0; idx < ARRAYSIZE(func_arr); idx++) {
+Log("open more libraried: # %d", idx+1);
     lua_pushcfunction(L, func_arr[idx]);
     lua_call(L, 0, 0);
   }
+Log("--------");
 
   // getmetatable("").__index = utf8
   lua_pushliteral(L, "");
@@ -6159,6 +6167,8 @@ int LF_LuaOpen (TPluginData* aPlugData, lua_CFunction aOpenLibs)
   const char *libs[] = {"libluajit-5.1.so", "liblua5.1.so", NULL};
   int idx;
 
+Log("LF_LuaOpen entered");
+
   // without dlopen() all attempts to require() a binary Lua module would fail, e.g.
   // require "lfs" --> undefined symbol: lua_gettop
   if (getenv("FARPLAINLUA")) {
@@ -6167,10 +6177,12 @@ int LF_LuaOpen (TPluginData* aPlugData, lua_CFunction aOpenLibs)
     libs[1] = ptr;
   }
   for (idx=0; libs[idx]; idx++) {
+Log("Calling dlopen on %s", libs[idx]);
     if ((handle = dlopen(libs[idx], RTLD_NOW|RTLD_GLOBAL)) != NULL)
       break;
   }
   if (handle == NULL) {
+Log("All dlopen attempts have failed");
     const wchar_t *Name = wcsrchr(aPlugData->Info->ModuleName, L'/');
     Name = Name ? Name+1 : L"<plugin name>";
     LF_Message(aPlugData->Info, L"Neither LuaJIT nor Lua5.1 library was found", Name, L"OK", "w", NULL);
@@ -6180,6 +6192,7 @@ int LF_LuaOpen (TPluginData* aPlugData, lua_CFunction aOpenLibs)
   // create Lua State
   L = lua_open();
   if (L) {
+Log("A lua_State was successfully created");
     // place pointer to plugin data in the L's registry -
     aPlugData->MainLuaState = L;
     aPlugData->dlopen_handle = handle;
@@ -6196,9 +6209,11 @@ int LF_LuaOpen (TPluginData* aPlugData, lua_CFunction aOpenLibs)
     lua_pop(L,2);                                                          //+0
     strrchr(aPlugData->ShareDir,'/')[0] = '\0';
 
+Log("About to call LF_InitLuaState");
     LF_InitLuaState(L, aPlugData, aOpenLibs);
     return 1;
   }
+Log("Failed to create a lua_State");
   dlclose(handle);
   return 0;
 }
