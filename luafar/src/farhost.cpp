@@ -170,7 +170,7 @@ bool GetCommonParams(lua_State *L, CommonParams *Params)
 
   Params->Ansi = piInfo->Flags & FPF_ANSI;
   push_utf8_string(L, piInfo->ModuleName, -1);
-  Params->hModule = dlopen(lua_tostring(L,-1), RTLD_NOW | RTLD_GLOBAL);
+  Params->hModule = dlopen(lua_tostring(L,-1), RTLD_LAZY | RTLD_GLOBAL);
   lua_pop(L, 1);
   free(piInfo);
 

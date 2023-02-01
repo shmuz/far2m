@@ -6168,7 +6168,7 @@ int LF_LuaOpen (TPluginData* aPlugData, lua_CFunction aOpenLibs)
     libs[1] = ptr;
   }
   for (idx=0; libs[idx]; idx++) {
-    if ((handle = dlopen(libs[idx], RTLD_NOW|RTLD_GLOBAL)) != NULL)
+    if ((handle = dlopen(libs[idx], RTLD_LAZY|RTLD_GLOBAL)) != NULL)
       break;
   }
   if (handle == NULL) {
