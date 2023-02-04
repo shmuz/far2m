@@ -394,12 +394,8 @@ int SubstFileName(FARString &strStr,            // результирующая 
 
 	PSubstData->PreserveLFN=FALSE;
 	PSubstData->PassivePanel=FALSE; // первоначально речь идет про активную панель!
-	FARString strTmp = strStr;
 
-	if (!IgnoreInput)
-		ReplaceVariables(strTmp,PSubstData);
-
-	const wchar_t *CurStr = strTmp;
+	const wchar_t *CurStr = strStr;
 	FARString strOut;
 
 	while (*CurStr)
@@ -414,8 +410,11 @@ int SubstFileName(FARString &strStr,            // результирующая 
 			CurStr++;
 		}
 	}
-
 	strStr = strOut;
+
+	if (!IgnoreInput)
+		ReplaceVariables(strStr,PSubstData);
+
 	return(PSubstData->PreserveLFN);
 }
 
