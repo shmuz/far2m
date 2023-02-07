@@ -1650,7 +1650,7 @@ function MT.test_all()
   MT.test_mantis_1722()
   MT.test_luafar()
   MT.test_misc()
-  MT.test_far_regex(far.Log,true) -- external test files
+  MT.test_far_regex( --[[far.Log, true]] ) -- external test files
   actl.RedrawAll()
 end
 
