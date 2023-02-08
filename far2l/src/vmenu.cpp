@@ -648,28 +648,91 @@ void VMenu::RestoreFilteredItems()
 
 	ItemHiddenCount=0;
 
-	if (SelectPos < 0)
-		SetSelectPos(0,1);
+	FilterUpdateHeight();
+
+	// Подровнять, а то в нижней части списка может оставаться куча пустых строк
+	FarListPos pos={SelectPos < 0 ? 0 : SelectPos,-1};
+	SetSelectPos(&pos);
 }
 
 void VMenu::FilterStringUpdated(bool bLonger)
 {
+	int PrevSeparator = -1, PrevGroup = -1;
+	int UpperVisible = -1, LowerVisible = -2;
+	bool bBottomMode = false;
+
+	if (SelectPos > 0)
+	{
+		// Определить, в верхней или нижней части расположен курсор
+		int TopVisible = GetVisualPos(TopPos);
+		int SelectedVisible = GetVisualPos(SelectPos);
+		int BottomVisible = (TopVisible+MaxHeight > GetShowItemCount()) ? (TopVisible+MaxHeight-1) : (GetShowItemCount()-1);
+		if (SelectedVisible >= ((TopVisible+BottomVisible)>>1))
+			bBottomMode = true;
+	}
 
 	if (bLonger)
 	{
 		//строка фильтра увеличилась
 		for (int i=0; i < ItemCount; i++)
 		{
-			if (ItemIsVisible(Item[i]->Flags) && !StrStrI(Item[i]->strName, strFilter))
+			// Нет смысла накладывать фильтр на разделители
+			if (ItemIsVisible(Item[i]->Flags))
 			{
-				Item[i]->Flags |= LIF_HIDDEN;
-				ItemHiddenCount++;
-				if (SelectPos == i)
+				if (Item[i]->Flags & LIF_SEPARATOR)
 				{
-					Item[i]->Flags &= ~LIF_SELECTED;
-					SelectPos = -1;
+					// В предыдущей группе все элементы скрыты, разделитель перед группой - не нужен
+					if (PrevSeparator != -1)
+					{
+						Item[PrevSeparator]->Flags |= LIF_HIDDEN;
+						ItemHiddenCount++;
+					}
+					if (Item[i]->strName.IsEmpty() && PrevGroup == -1)
+					{
+						Item[i]->Flags |= LIF_HIDDEN;
+						ItemHiddenCount++;
+						PrevSeparator = -1;
+					}
+					else
+					{
+						PrevSeparator = i;
+					}
+				}
+				else if (!StrStrI(Item[i]->strName, strFilter))
+				{
+					Item[i]->Flags |= LIF_HIDDEN;
+					ItemHiddenCount++;
+					if (SelectPos == i)
+					{
+						Item[i]->Flags &= ~LIF_SELECTED;
+						SelectPos = -1;
+						LowerVisible = -1;
+					}
+				}
+				else
+				{
+					PrevGroup = i;
+					if (LowerVisible == -2)
+					{
+						if (ItemCanHaveFocus(Item[i]->Flags))
+							UpperVisible = i;
+					}
+					else if (LowerVisible == -1)
+					{
+						if (ItemCanHaveFocus(Item[i]->Flags))
+							LowerVisible = i;
+					}
+					// Этот разделитель - оставить видимым
+					if (PrevSeparator != -1)
+						PrevSeparator = -1;
 				}
 			}
+		}
+		// В предыдущей группе все элементы скрыты, разделитель перед группой - не нужен
+		if (PrevSeparator != -1)
+		{
+			Item[PrevSeparator]->Flags |= LIF_HIDDEN;
+			ItemHiddenCount++;
 		}
 	}
 	else
@@ -677,16 +740,59 @@ void VMenu::FilterStringUpdated(bool bLonger)
 		//строка фильтра сократилась
 		for (int i=0; i < ItemCount; i++)
 		{
-			if (!ItemIsVisible(Item[i]->Flags) && StrStrI(Item[i]->strName, strFilter))
+			if (!ItemIsVisible(Item[i]->Flags))
 			{
-				Item[i]->Flags &= ~LIF_HIDDEN;
-				ItemHiddenCount--;
+				if (Item[i]->Flags & LIF_SEPARATOR)
+				{
+					PrevSeparator = i;
+				}
+				else if (StrStrI(Item[i]->strName, strFilter))
+				{
+					Item[i]->Flags &= ~LIF_HIDDEN;
+					ItemHiddenCount--;
+				}
+			}
+
+			if (ItemIsVisible(Item[i]->Flags))
+			{
+				if (Item[i]->Flags & LIF_SEPARATOR)
+				{
+					PrevGroup = -1;
+					if ((PrevSeparator != -1))
+						PrevSeparator = -1;
+				}
+				else
+				{
+					if (PrevSeparator != -1)
+					{
+						if (!Item[PrevSeparator]->strName.IsEmpty() || PrevGroup != -1)
+						{
+							// Разделитель перед ранее скрытой группой был скрыт
+							Item[PrevSeparator]->Flags &= ~LIF_HIDDEN;
+							ItemHiddenCount--;
+						}
+						PrevSeparator = -1;
+					}
+					PrevGroup = i;
+				}
 			}
 		}
+
+		FilterUpdateHeight();
 	}
 
-	if (SelectPos<0)
-		SetSelectPos(0,1);
+	if (GetShowItemCount()>0)
+	{
+		// Подровнять, а то в нижней части списка может оставаться куча пустых строк
+		FarListPos pos={SelectPos,-1};
+		if (SelectPos<0)
+		{
+			pos.SelectPos = bBottomMode ? ((LowerVisible>0) ? LowerVisible : UpperVisible) : UpperVisible;
+			if (pos.SelectPos == -1)
+				pos.SelectPos = bBottomMode ? VisualPosToReal(GetShowItemCount()-1) : 0;
+		}
+		SetSelectPos(&pos);
+	}
 }
 
 void VMenu::FilterUpdateHeight(bool bShrink)
