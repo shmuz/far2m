@@ -401,8 +401,8 @@ end
 --------------------------------------------------------------------------------
 
 Menu = {
---Filter     = function(...) return MacroCallFar(0x80C55, ...) end,
---FilterStr  = function(...) return MacroCallFar(0x80C56, ...) end,
+  Filter     = function(...) return MacroCallFar(op.MCODE_F_MENU_FILTER, ...) end,
+  FilterStr  = function(...) return MacroCallFar(op.MCODE_F_MENU_FILTERSTR, ...) end,
   GetValue   = function(...) return MacroCallFar(op.MCODE_F_MENU_GETVALUE, ...) end,
   ItemStatus = function(...) return MacroCallFar(op.MCODE_F_MENU_ITEMSTATUS, ...) end,
   Select     = function(...) return MacroCallFar(op.MCODE_F_MENU_SELECT, ...) end,

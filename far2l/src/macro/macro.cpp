@@ -1232,8 +1232,6 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		//case MCODE_F_EDITOR_INSSTR:    implemented_in_lua;
 		//case MCODE_F_EDITOR_SETSTR:    implemented_in_lua;
 		//case MCODE_F_FAR_GETCONFIG:    not_implemented;
-		//case MCODE_F_MENU_FILTER:      not_implemented;
-		//case MCODE_F_MENU_FILTERSTR:   not_implemented;
 		//case MCODE_F_MENU_SHOW:        not_implemented;
 		//case MCODE_F_USERMENU:         not_implemented;
 
@@ -1504,7 +1502,60 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 			return Result;
 		}
 
-		case MCODE_UDLIST_SPLIT: return api.UDList_Split();
+		case MCODE_F_MENU_FILTER:      // N=Menu.Filter([Action[,Mode]])
+		case MCODE_F_MENU_FILTERSTR:   // S=Menu.FilterStr([Action[,S]])
+		{
+			auto Params = parseParams(2, Data);
+			bool success=false;
+			TVar& tmpAction(Params[0]);
+
+			TVar tmpVar=Params[1];
+			if (tmpAction.isUnknown())
+				tmpAction=CheckCode == MCODE_F_MENU_FILTER ? 4 : 0;
+
+			int CurMMode=CtrlObject->Macro.GetArea();
+
+			if (IsMenuArea(CurMMode) || CurMMode == MACROAREA_DIALOG)
+			{
+				Frame *f=GetCurrentWindow();
+
+				if (f)
+				{
+					if (CheckCode == MCODE_F_MENU_FILTER)
+					{
+						if (tmpVar.isUnknown())
+							tmpVar = -1;
+						tmpVar=f->VMProcess(CheckCode,(void*)static_cast<intptr_t>(tmpVar.toInteger()),tmpAction.toInteger());
+						success=true;
+					}
+					else
+					{
+						FARString NewStr;
+						if (tmpVar.isString())
+							NewStr = tmpVar.toString();
+						if (f->VMProcess(CheckCode,(void*)&NewStr,tmpAction.toInteger()))
+						{
+							tmpVar=NewStr.CPtr();
+							success=true;
+						}
+					}
+				}
+			}
+
+			if (!success)
+			{
+				if (CheckCode == MCODE_F_MENU_FILTER)
+					tmpVar = -1;
+				else
+					tmpVar = L"";
+			}
+
+			api.PassValue(tmpVar);
+			return success;
+		}
+
+		case MCODE_UDLIST_SPLIT:
+			return api.UDList_Split();
 	}
 	return 0;
 }

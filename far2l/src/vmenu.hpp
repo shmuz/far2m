@@ -211,6 +211,7 @@ class VMenu: public Modal
 		int SelectPos;
 		int TopPos;
 		int MaxHeight;
+		bool WasAutoHeight;
 		int MaxLength;
 		int BoxType;
 		bool PrevCursorVisible;
@@ -268,6 +269,7 @@ class VMenu: public Modal
 		void UpdateInternalCounters(DWORD OldFlags, DWORD NewFlags);
 		void RestoreFilteredItems();
 		void FilterStringUpdated(bool bLonger);
+		void FilterUpdateHeight(bool bShrink=false);
 		bool IsFilterEditKey(int Key);
 		bool ShouldSendKeyToFilter(int Key);
 		bool AddToFilter(const wchar_t *str);

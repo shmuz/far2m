@@ -73,23 +73,25 @@ return {
   MCODE_F_EDITOR_SETTITLE=0x80C47; -- N=Editor.SetTitle([Title])
   MCODE_F_MENU_GETVALUE=0x80C48; -- S=Menu.GetValue([N])
   MCODE_F_MENU_ITEMSTATUS=0x80C49; -- N=Menu.ItemStatus([N])
-  MCODE_F_BEEP=0x80C4A; -- N=beep([N])
-  MCODE_F_KBDLAYOUT=0x80C4B; -- N=kbdLayout([N])
-  MCODE_F_WINDOW_SCROLL=0x80C4C; -- N=Window.Scroll(Lines[,Axis])
-  MCODE_F_CHECKALL=0x80C4D; -- B=CheckAll(Area,Flags[,Callback[,CallbackId]])
-  MCODE_F_GETOPTIONS=0x80C4E; -- N=GetOptions()
-  MCODE_F_USERMENU=0x80C4F; -- UserMenu([Param])
-  MCODE_F_SETCUSTOMSORTMODE=0x80C50;
-  MCODE_F_KEYMACRO=0x80C51;
-  MCODE_F_FAR_GETCONFIG=0x80C52;
-  MCODE_F_MACROSETTINGS=0x80C53;
-  MCODE_F_SIZE2STR=0x80C54; -- S=Size2Str(Size,Flags[,Width])
-  MCODE_F_STRWRAP=0x80C55; -- S=StrWrap(Text,Width[,Break[,Flags]])
-  MCODE_F_DLG_SETFOCUS=0x80C56; -- N=Dlg->SetFocus([ID])
-  MCODE_F_PLUGIN_CALL=0x80C57;
-  MCODE_F_PLUGIN_EXIST=0x80C58; -- N=Plugin.Exist(SysId)
-  MCODE_F_KEYBAR_SHOW=0x80C59; -- N=keybar.show([Mode])
-  MCODE_F_FAR_CFG_GET=0x80C5A; -- V=Far.Cfg_Get(Key,Name)
+  MCODE_F_MENU_FILTER=0x80C4A; -- N=Menu.Filter(Action[,Mode])
+  MCODE_F_MENU_FILTERSTR=0x80C4B; -- S=Menu.FilterStr([Action[,S]])
+  MCODE_F_BEEP=0x80C4C; -- N=beep([N])
+  MCODE_F_KBDLAYOUT=0x80C4D; -- N=kbdLayout([N])
+  MCODE_F_WINDOW_SCROLL=0x80C4E; -- N=Window.Scroll(Lines[,Axis])
+  MCODE_F_CHECKALL=0x80C4F; -- B=CheckAll(Area,Flags[,Callback[,CallbackId]])
+  MCODE_F_GETOPTIONS=0x80C50; -- N=GetOptions()
+  MCODE_F_USERMENU=0x80C51; -- UserMenu([Param])
+  MCODE_F_SETCUSTOMSORTMODE=0x80C52;
+  MCODE_F_KEYMACRO=0x80C53;
+  MCODE_F_FAR_GETCONFIG=0x80C54;
+  MCODE_F_MACROSETTINGS=0x80C55;
+  MCODE_F_SIZE2STR=0x80C56; -- S=Size2Str(Size,Flags[,Width])
+  MCODE_F_STRWRAP=0x80C57; -- S=StrWrap(Text,Width[,Break[,Flags]])
+  MCODE_F_DLG_SETFOCUS=0x80C58; -- N=Dlg->SetFocus([ID])
+  MCODE_F_PLUGIN_CALL=0x80C59;
+  MCODE_F_PLUGIN_EXIST=0x80C5A; -- N=Plugin.Exist(SysId)
+  MCODE_F_KEYBAR_SHOW=0x80C5B; -- N=keybar.show([Mode])
+  MCODE_F_FAR_CFG_GET=0x80C5C; -- V=Far.Cfg_Get(Key,Name)
   MCODE_C_AREA_OTHER=0x80400; -- Режим копирования текста с экрана, вертикальные меню
   MCODE_C_AREA_SHELL=0x80401; -- Файловые панели
   MCODE_C_AREA_VIEWER=0x80402; -- Внутренняя программа просмотра

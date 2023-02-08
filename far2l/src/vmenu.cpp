@@ -68,6 +68,7 @@ VMenu::VMenu(const wchar_t *Title,       // заголовок меню
 	strTitle(Title),
 	SelectPos(-1),
 	TopPos(0),
+	WasAutoHeight(false),
 	MaxLength(0),
 	BoxType(DOUBLE_BOX),
 	ParentDialog(ParentDialog),
@@ -688,6 +689,24 @@ void VMenu::FilterStringUpdated(bool bLonger)
 		SetSelectPos(0,1);
 }
 
+void VMenu::FilterUpdateHeight(bool bShrink)
+{
+	if (WasAutoHeight)
+	{
+		int NewY2;
+		if (MaxHeight && MaxHeight<GetShowItemCount())
+			NewY2 = Y1 + MaxHeight + 1;
+		else
+			NewY2 = Y1 + GetShowItemCount() + 1;
+		if (NewY2 > ScrY)
+			NewY2 = ScrY;
+		if (NewY2 > Y2 || (bShrink && NewY2 < Y2))
+		{
+			SetPosition(X1,Y1,X2,NewY2);
+		}
+	}
+}
+
 bool VMenu::IsFilterEditKey(int Key)
 {
 	return (Key>=(int)KEY_SPACE && Key<0xffff) || Key==KEY_BS;
@@ -895,6 +914,119 @@ int64_t VMenu::VMProcess(int OpCode,void *vParam,int64_t iParam)
 			{
 				*(FARString *)vParam = menuEx->strName;
 				return 1;
+			}
+
+			return 0;
+		}
+
+		case MCODE_F_MENU_FILTER:
+		{
+			int64_t RetValue = 0;
+			/*
+			Action
+			  0 - фильтр
+			    Mode
+			      -1 - (по умолчанию) вернуть 1 если фильтр уже включен, 0 - фильтр выключен
+				   1 - включить фильтр, если фильтр уже включен - ничего не делает
+				   0 - выключить фильтр
+			  1 - фиксация текста фильтра
+			    Mode
+			      -1 - (по умолчанию) вернуть 1 если текст фильтра зафиксирован, 0 - фильтр можно менять с клавиатуры
+				   1 - зафиксировать фильтр
+				   0 - отменить фиксацию фильтра
+			  2 - вернуть 1 если фильтр включен и строка фильтра не пуста
+			  3 - вернуть количество отфильтрованных (невидимых) строк\
+			  4 - (по умолчанию) подправить высоту списка под количество элементов
+			*/
+			switch (iParam)
+			{
+				case 0:
+					switch ((intptr_t)vParam)
+					{
+						case 0:
+						case 1:
+							if (bFilterEnabled != ((intptr_t)vParam == 1))
+							{
+								bFilterEnabled=((intptr_t)vParam == 1);
+								bFilterLocked=false;
+								strFilter.Clear();
+								if (!vParam)
+									RestoreFilteredItems();
+								DisplayObject();
+							}
+							RetValue = 1;
+							break;
+						case -1:
+							RetValue = bFilterEnabled ? 1 : 0;
+							break;
+					}
+					break;
+
+				case 1:
+					switch ((intptr_t)vParam)
+					{
+						case 0:
+						case 1:
+							bFilterLocked=((intptr_t)vParam == 1);
+							DisplayObject();
+							RetValue = 1;
+							break;
+						case -1:
+							RetValue = bFilterLocked ? 1 : 0;
+							break;
+					}
+					break;
+
+				case 2:
+					RetValue = (bFilterEnabled && !strFilter.IsEmpty()) ? 1 : 0;
+					break;
+
+				case 3:
+					RetValue = ItemHiddenCount;
+					break;
+
+				case 4:
+					FilterUpdateHeight(true);
+					DisplayObject();
+					RetValue = 1;
+					break;
+			}
+			return RetValue;
+		}
+
+		case MCODE_F_MENU_FILTERSTR:
+		{
+			/*
+			Action
+			  0 - (по умолчанию) вернуть текущую строку, если фильтр включен
+			  1 - установить в фильтре строку S.
+			      Если фильтр не был включен - включает его, режим фиксации не трогается, но игнорируется.
+				  Возвращает предыдущее значение строки фильтра.
+			*/
+			switch (iParam)
+			{
+				case 0:
+					if (bFilterEnabled)
+					{
+						*(FARString *)vParam = strFilter;
+						return 1;
+					}
+					break;
+				case 1:
+					if (!bFilterEnabled)
+						bFilterEnabled=true;
+					bool prevLocked = bFilterLocked;
+					bFilterLocked = false;
+					RestoreFilteredItems();
+					FARString oldFilter = strFilter;
+					strFilter.Clear();
+					if (vParam!=nullptr)
+						AddToFilter(((FARString *)vParam)->CPtr());
+					FilterStringUpdated(true);
+					bFilterLocked = prevLocked;
+					DisplayObject();
+					*(FARString *)vParam = oldFilter;
+					return 1;
 			}
 
 			return 0;
@@ -1607,8 +1739,10 @@ void VMenu::Show()
 			}
 		}
 
+		WasAutoHeight = false;
 		if (Y2 <= 0)
 		{
+			WasAutoHeight = true;
 			if (MaxHeight && MaxHeight<GetShowItemCount())
 				Y2 = Y1 + MaxHeight + 1;
 			else

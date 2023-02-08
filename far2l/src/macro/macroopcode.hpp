@@ -120,6 +120,8 @@ enum MACRO_OP_CODE
 	MCODE_F_EDITOR_SETTITLE,          // N=Editor.SetTitle([Title])
 	MCODE_F_MENU_GETVALUE,            // S=Menu.GetValue([N])
 	MCODE_F_MENU_ITEMSTATUS,          // N=Menu.ItemStatus([N])
+	MCODE_F_MENU_FILTER,              // N=Menu.Filter(Action[,Mode])
+	MCODE_F_MENU_FILTERSTR,           // S=Menu.FilterStr([Action[,S]])
 	MCODE_F_BEEP,                     // N=beep([N])
 	MCODE_F_KBDLAYOUT,                // N=kbdLayout([N])
 	MCODE_F_WINDOW_SCROLL,            // N=Window.Scroll(Lines[,Axis])
