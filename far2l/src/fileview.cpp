@@ -254,7 +254,7 @@ int64_t FileViewer::VMProcess(int OpCode,void *vParam,int64_t iParam)
 
 int FileViewer::ProcessKey(int Key)
 {
-	if (RedrawTitle && (((unsigned int)Key & 0x00ffffff) < KEY_END_FKEY || IS_INTERNAL_KEY_REAL((unsigned int)Key & 0x00ffffff)))
+	if (RedrawTitle && (((unsigned int)Key & 0x00ffffff) < KEY_END_FKEY || IsInternalKeyReal((unsigned int)Key & 0x00ffffff)))
 		ShowConsoleTitle();
 
 	if (Key!=KEY_F3 && Key!=KEY_IDLE)
