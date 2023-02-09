@@ -1330,18 +1330,19 @@ void PluginManager::Configure(int StartPos)
 				switch (Key)
 				{
 					case KEY_SHIFTF1:
-						strPluginModuleName = item->pPlugin->GetModuleName();
-
-						if (!FarShowHelp(strPluginModuleName,L"Config",FHELP_SELFHELP|FHELP_NOSHOWERROR) &&
-						        !FarShowHelp(strPluginModuleName,L"Configure",FHELP_SELFHELP|FHELP_NOSHOWERROR))
+						if (item)
 						{
-							FarShowHelp(strPluginModuleName,nullptr,FHELP_SELFHELP|FHELP_NOSHOWERROR);
+							strPluginModuleName = item->pPlugin->GetModuleName();
+							if (!FarShowHelp(strPluginModuleName,L"Config",FHELP_SELFHELP|FHELP_NOSHOWERROR) &&
+											!FarShowHelp(strPluginModuleName,L"Configure",FHELP_SELFHELP|FHELP_NOSHOWERROR))
+							{
+								FarShowHelp(strPluginModuleName,nullptr,FHELP_SELFHELP|FHELP_NOSHOWERROR);
+							}
 						}
-
 						break;
-					case KEY_F4:
 
-						if (PluginList.GetItemCount() > 0 && SelPos<MenuItemNumber)
+					case KEY_F4:
+						if (item && PluginList.GetItemCount() > 0 && SelPos<MenuItemNumber)
 						{
 							FARString strName00;
 							int nOffset = HotKeysPresent?3:0;
@@ -1356,11 +1357,10 @@ void PluginManager::Configure(int StartPos)
 								StartPos=SelPos;
 								PluginList.SetExitCode(SelPos);
 								PluginList.Show();
-								break;
 							}
 						}
-
 						break;
+
 					default:
 						PluginList.ProcessInput();
 						break;
@@ -1505,14 +1505,16 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 				{
 					case KEY_SHIFTF1:
 						// Вызываем нужный топик, который передали в CommandsMenu()
-						FarShowHelp(item->pPlugin->GetModuleName(),HistoryName,FHELP_SELFHELP|FHELP_NOSHOWERROR|FHELP_USECONTENTS);
+						if (item)
+							FarShowHelp(item->pPlugin->GetModuleName(),HistoryName,FHELP_SELFHELP|FHELP_NOSHOWERROR|FHELP_USECONTENTS);
 						break;
+
 					case KEY_ALTF11:
 						//todo WriteEvent(FLOG_PLUGINSINFO);
 						break;
-					case KEY_F4:
 
-						if (PluginList.GetItemCount() > 0 && SelPos<MenuItemNumber)
+					case KEY_F4:
+						if (item && PluginList.GetItemCount() > 0 && SelPos<MenuItemNumber)
 						{
 							FARString strName00;
 							int nOffset = HotKeysPresent?3:0;
@@ -1529,10 +1531,9 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 								PluginList.Show();
 							}
 						}
-
 						break;
+
 					case KEY_ALTSHIFTF9:
-					{
 						PluginList.Hide();
 						NeedUpdateItems=TRUE;
 						StartPos=SelPos;
@@ -1540,10 +1541,9 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 						Configure();
 						PluginList.Show();
 						break;
-					}
+
 					case KEY_SHIFTF9:
-					{
-						if (PluginList.GetItemCount() > 0 && SelPos<MenuItemNumber)
+						if (item && PluginList.GetItemCount() > 0 && SelPos<MenuItemNumber)
 						{
 							NeedUpdateItems=TRUE;
 							StartPos=SelPos;
@@ -1554,9 +1554,8 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 							PluginList.SetExitCode(SelPos);
 							PluginList.Show();
 						}
-
 						break;
-					}
+
 					default:
 						PluginList.ProcessInput();
 						break;
