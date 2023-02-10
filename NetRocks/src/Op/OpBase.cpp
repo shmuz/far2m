@@ -23,19 +23,48 @@ void OpBase::SetNotifyTitle(int title_lng)
 	_notify_title_lng = title_lng;
 }
 
+void OpBase::ResetProgressState()
+{
+	std::lock_guard<std::mutex> locker(_state.mtx);
+	_state.stats = ProgressStateStats();
+	_state.path.clear();
+	_state.paused = _state.aborting = _state.finished = false;
+}
+
+static void OpBaseExceptionMessage(const std::wstring &what)
+{
+	// split long string into two (for now) parts if appropriate
+	size_t div_pos = what.rfind(L": "), div_len = 2;
+	if (div_pos == std::string::npos) {
+		div_pos = what.rfind(L" - ");
+		div_len = 3;
+	}
+	if (what.size() > 20 && div_pos != std::string::npos && div_pos != 0 && div_pos + div_len < what.size()) {
+		const auto &what1 = what.substr(0, div_pos);
+		for (div_pos+= div_len; div_pos < what.size() && what[div_pos] == ' '; ++div_pos) {
+		}
+		const auto &what2 = what.substr(div_pos);
+		const wchar_t *msg[] = { G.GetMsgWide(MOperationFailed), what1.c_str(), what2.c_str(), G.GetMsgWide(MOK)};
+		G.info.Message(G.info.ModuleNumber, FMSG_WARNING, nullptr, msg, ARRAYSIZE(msg), 1);
+	} else {
+		const wchar_t *msg[] = { G.GetMsgWide(MOperationFailed), what.c_str(), G.GetMsgWide(MOK)};
+		G.info.Message(G.info.ModuleNumber, FMSG_WARNING, nullptr, msg, ARRAYSIZE(msg), 1);
+	}
+}
 
 void *OpBase::ThreadProc()
 {
 	void *out = this;
 	try {
-		_state.Reset();
+		ResetProgressState();
 		SudoClientRegion sdc_region;
 		Process();
+		out = nullptr;
+
+		std::lock_guard<std::mutex> locker(_state.mtx);
 		fprintf(stderr,
 			"NetRocks::OpBase('%s'): count=%llu all_total=%llu\n",
 			_base_dir.c_str(), _state.stats.count_total, _state.stats.all_total);
-
-		out = nullptr;
 
 	} catch (AbortError &) {
 		fprintf(stderr, "NetRocks::OpBase('%s'): aborted\n", _base_dir.c_str());
@@ -49,9 +78,8 @@ void *OpBase::ThreadProc()
 			aborting = _state.aborting;
 		}
 		if (!aborting) {
-			const std::wstring &tmp_what = MB2Wide(e.what());
-			const wchar_t *msg[] = { G.GetMsgWide(MOperationFailed), tmp_what.c_str(), G.GetMsgWide(MOK)};
-			G.info.Message(G.info.ModuleNumber, FMSG_WARNING, nullptr, msg, ARRAYSIZE(msg), 1);
+			const std::wstring &what = MB2Wide(e.what());
+			OpBaseExceptionMessage(what);
 		}
 	}
 	{

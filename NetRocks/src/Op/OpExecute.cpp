@@ -64,15 +64,29 @@ SHAREDSYMBOL int OpExecute_Shell(int argc, char *argv[])
 
 	std::string fifo = argv[0];
 
+	if (argc > 1) {
+		std::string identity = argv[1];
+		for (auto &c : identity) {
+			if (((unsigned char)c) < 32) {
+				c = ' ';
+			}
+		}
+		identity.insert(0, "\033_far2l#");
+		identity+= "\a";
+		if (write(1, identity.c_str(), identity.size()) == -1) {
+			perror("write");
+		}
+	}
+
 	try {
 		int fd_stdin = 0, fd_stdout = 1, fd_stderr = 2;
 
 		TTYRawMode tty_raw_mode(fd_stdin, fd_stdout);
 
-		FDScope fd_err(open((fifo + ".err").c_str(), O_RDONLY));
-		FDScope fd_out(open((fifo + ".out").c_str(), O_RDONLY));
-		FDScope fd_in(open((fifo + ".in").c_str(), O_WRONLY));
-		FDScope fd_ctl(open((fifo + ".ctl").c_str(), O_WRONLY));
+		FDScope fd_err((fifo + ".err").c_str(), O_RDONLY | O_CLOEXEC);
+		FDScope fd_out((fifo + ".out").c_str(), O_RDONLY | O_CLOEXEC);
+		FDScope fd_in((fifo + ".in").c_str(), O_WRONLY | O_CLOEXEC);
+		FDScope fd_ctl((fifo + ".ctl").c_str(), O_WRONLY | O_CLOEXEC);
 
 		if (!fd_ctl.Valid() || !fd_in.Valid() || !fd_out.Valid() || !fd_err.Valid()) {
 			throw std::runtime_error("Can't open FIFO");
@@ -184,7 +198,19 @@ void OpExecute::Do()
 	}
 
 	if (_status == 0) {
-		_status = G.info.FSF->ExecuteLibrary(G.plugin_path.c_str(), L"OpExecute_Shell", StrMB2Wide(_fifo.FileName()).c_str(), EF_NOCMDPRINT);
+		std::string fifo_arg = _fifo.FileName();
+		QuoteCmdArgIfNeed(fifo_arg);
+
+		IHost::Identity identity;
+		_base_host->GetIdentity(identity);
+		std::string identity_arg = StrPrintf("%s@%s", identity.username.c_str(), identity.host.c_str());
+		QuoteCmdArgIfNeed(identity_arg);
+
+		std::wstring args = StrMB2Wide(fifo_arg);
+		args+= L' ';
+		args+= StrMB2Wide(identity_arg);
+
+		_status = G.info.FSF->ExecuteLibrary(G.plugin_path.c_str(), L"OpExecute_Shell", args.c_str(), EF_NOCMDPRINT);
 	}
 
 	if (G.GetGlobalConfigBool("EnableDesktopNotifications", true)) {

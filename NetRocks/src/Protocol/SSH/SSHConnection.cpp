@@ -73,22 +73,47 @@ SSHConnection::SSHConnection(const std::string &host, unsigned int port, const s
 	if (!ssh)
 		throw ProtocolError("SSH session");
 
+	fprintf(stderr, "Compiled for libssh %u.%u.%u ssh_version returned '%s'\n",
+		LIBSSH_VERSION_MAJOR, LIBSSH_VERSION_MINOR, LIBSSH_VERSION_MICRO, ssh_version(0));
+
+
+	const std::string &hostkeys = protocol_options.GetString("HostKeys");
+	if (!hostkeys.empty()) {
+		int rc = ssh_options_set(ssh, SSH_OPTIONS_HOSTKEYS, hostkeys.c_str());
+		if (rc != SSH_OK) {
+			fprintf(stderr, "HostKeys set error %u '%s'\n", rc, ssh_get_error(ssh));
+		}
+	}
+
 	ssh_options_set(ssh, SSH_OPTIONS_HOST, host.c_str());
 	if (port > 0)
 		ssh_options_set(ssh, SSH_OPTIONS_PORT, &port);
 
 	ssh_options_set(ssh, SSH_OPTIONS_USER, username.c_str());
 
-	if (protocol_options.GetInt("UseOpenSSHConfigs", 0) ) {
-		struct stat s{};
-		if (stat("/etc/ssh/ssh_config", &s) == 0) {
-			ssh_options_parse_config(ssh, "/etc/ssh/ssh_config");
+	const auto &openssh_cfgs = protocol_options.GetString("OpenSSHConfigs");
+	if (!openssh_cfgs.empty()) {
+		if (openssh_cfgs != "-") {
+			std::vector<std::string> openssh_cfgs_parts;
+			StrExplode(openssh_cfgs_parts, openssh_cfgs, ";:");
+			for (const auto &part : openssh_cfgs_parts) {
+				Environment::ExplodeCommandLine ecl_part(part);
+				for (const auto &openssh_cfg : ecl_part) {
+					int r = ssh_options_parse_config(ssh, openssh_cfg.c_str());
+					if (r != SSH_OK) {
+						fprintf(stderr, "parse_config error %d for '%s'\n", r, openssh_cfg.c_str());
+					} else {
+						fprintf(stderr, "parse_config OK for '%s'\n", openssh_cfg.c_str());
+					}
+				}
+			}
 		}
-		std::string per_user_config = GetMyHome();
-		per_user_config+= "/.ssh/config";
-		if (stat(per_user_config.c_str(), &s) == 0) {
-			ssh_options_parse_config(ssh, per_user_config.c_str());
-		}
+#if (LIBSSH_VERSION_INT >= SSH_VERSION_INT(0, 9, 0))
+		int v = 0;
+		ssh_options_set(ssh, SSH_OPTIONS_PROCESS_CONFIG, &v);
+#else
+		fprintf(stderr, "Current libssh doesn't support SSH_OPTIONS_PROCESS_CONFIG\n");
+#endif
 	}
 
 #if (LIBSSH_VERSION_INT >= SSH_VERSION_INT(0, 8, 0))
@@ -134,7 +159,7 @@ SSHConnection::SSHConnection(const std::string &host, unsigned int port, const s
 		}
 		switch (key_import_result) {
 			case SSH_EOF:
-				throw std::runtime_error(StrPrintf("Cannot read key file \'%s\'", key_path_spec.c_str()));
+				throw std::runtime_error(StrPrintf("Cannot read key file: %s", key_path_spec.c_str()));
 
 			case SSH_ERROR:
 				throw ProtocolAuthFailedError();
@@ -144,7 +169,7 @@ SSHConnection::SSHConnection(const std::string &host, unsigned int port, const s
 
 			default:
 				throw std::runtime_error(
-					StrPrintf("Unexpected error %u while loading key from \'%s\'",
+					StrPrintf("Unexpected error %u while loading key from: %s",
 					key_import_result, key_path_spec.c_str()));
 		}
 	}
@@ -316,10 +341,10 @@ void SSHExecutedCommand::OnReadFDCtl(int fd)
 
 void SSHExecutedCommand::IOLoop()
 {
-	FDScope fd_err(open((_fifo + ".err").c_str(), O_WRONLY));
-	FDScope fd_out(open((_fifo + ".out").c_str(), O_WRONLY));
-	FDScope fd_in(open((_fifo + ".in").c_str(), O_RDONLY));
-	FDScope fd_ctl(open((_fifo + ".ctl").c_str(), O_RDONLY));
+	FDScope fd_err(open((_fifo + ".err").c_str(), O_WRONLY | O_CLOEXEC));
+	FDScope fd_out(open((_fifo + ".out").c_str(), O_WRONLY | O_CLOEXEC));
+	FDScope fd_in(open((_fifo + ".in").c_str(), O_RDONLY | O_CLOEXEC));
+	FDScope fd_ctl(open((_fifo + ".ctl").c_str(), O_RDONLY | O_CLOEXEC));
 
 	if (!fd_err.Valid() || !fd_out.Valid() || !fd_in.Valid() || !fd_ctl.Valid())
 		throw ProtocolError("fifo");
@@ -351,7 +376,7 @@ void SSHExecutedCommand::IOLoop()
 		throw ProtocolError("ssh execute",  ssh_get_error(_conn->ssh));
 	}
 
-	fcntl(fd_in, F_SETFL, fcntl(fd_in, F_GETFL, 0) | O_NONBLOCK);
+	MakeFDNonBlocking(fd_in);
 
 	for (unsigned int idle = 0;;) {
 		char buf[0x8000];
@@ -413,7 +438,7 @@ void SSHExecutedCommand::IOLoop()
 			if (status == 0) {
 				_succeess = true;
 			}
-			FDScope fd_status(open((_fifo + ".status").c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0600));
+			FDScope fd_status(open((_fifo + ".status").c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC, 0600));
 			if (fd_status.Valid()) {
 				WriteAll(fd_status, &status, sizeof(status));
 			}
@@ -478,7 +503,7 @@ SSHExecutedCommand::SSHExecutedCommand(std::shared_ptr<SSHConnection> conn, cons
 		throw ProtocolError("pipe",  ssh_get_error(_conn->ssh));
 	}
 
-	fcntl(_kickass[1], F_SETFL, fcntl(_kickass[1], F_GETFL, 0) | O_NONBLOCK);
+	MakeFDNonBlocking(_kickass[1]);
 
 	if (!StartThread()) {
 		CheckedCloseFDPair(_kickass);

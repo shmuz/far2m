@@ -47,7 +47,7 @@
 "Pro&tocol options"
 "&Save"
 "C&onnect"
-"S&ave/Connect"
+"Save/C&onnect"
 
 "<Create site connection>"
 "Site connection settings"
@@ -220,7 +220,11 @@
 "Enable TCP_&QUICKACK option"
 "Automatically retr&y connect, times:"
 "Connection t&imeout, seconds:"
-"Use OpenSS&H configuration files"
+"Allowed host &keys:"
+"OpenSS&H config files:"
+"(Default config files)"
+"(Don't use config files)"
+"(Specified config files)"
 "Enable &sandbox (if you don't trust server)"
 
 "File Protocol options"

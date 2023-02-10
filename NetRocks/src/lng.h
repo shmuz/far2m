@@ -223,7 +223,11 @@ enum LanguageID
   MSFTPTCPQuickAck,
   MSFTPConnectRetries,
   MSFTPConnectTimeout,
-  MSFTPUseOpenSSHConfigs,
+  MSFTPAllowedHostkeys,
+  MSFTPOpenSSHConfigs,
+  MSFTPCfgFilesDefault,
+  MSFTPCfgFilesNone,
+  MSFTPCfgFilesSpecified,
   MSFTPEnableSandbox,
 
   MSFileOptionsTitle,

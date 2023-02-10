@@ -8,6 +8,8 @@
 #include <fstream>
 #include <streambuf>
 #include <utils.h>
+#include <RandomString.h>
+#include <EnsureDir.h>
 #include <base64.h>
 
 #include "SitesConfig.h"
@@ -38,11 +40,10 @@ static void StringObfuscate(std::string &s)
 {
 	const std::string &key = ObfuscationKey();
 	std::vector<unsigned char> data;
-	unsigned char salt_len = (unsigned char)(rand() & 0x7);
+	unsigned char salt[7];
+	unsigned char salt_len = (unsigned char)RandomStringBuffer(salt, 3, sizeof(salt), RNDF_ANY);
 	data.emplace_back(salt_len ^ ((unsigned char)key[key.size() - 1]));
-	for (unsigned char i = 0; i < salt_len; ++i) {
-		data.emplace_back((unsigned char)(rand()&0xff));
-	}
+	data.insert(data.end(), &salt[0], &salt[0] + salt_len);
 	for (size_t i = 0; i < s.size(); ++i) {
 		data.emplace_back(((unsigned char)s[i]) ^ ((unsigned char)key[i % key.size()]));
 	}
@@ -154,14 +155,7 @@ bool SitesConfigLocation::Make(const std::string &sub)
 
 	const std::string &dir = SitesConfig_TranslateToDir(parts);
 
-	struct stat s{};
-	if (stat(dir.c_str(), &s) != 0) {
-		if (mkdir(dir.c_str(), 0700) != 0) {
-			return false;
-		}
-	}
-
-	return true;
+	return EnsureDir(dir.c_str());
 }
 
 bool SitesConfigLocation::Remove(const std::string &sub)
@@ -360,7 +354,7 @@ bool SitesConfigLocation::Export(const std::string &dst_dir, const std::string &
 
 	item_fs_path+= NETROCKS_EXPORT_DIR_EXTENSION;
 
-	mkdir(item_fs_path.c_str(), 0700);
+	EnsureDir(item_fs_path.c_str());
 
 	std::vector<std::string> saved_parts = _parts;
 	bool out = Change(item_name);
