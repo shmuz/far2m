@@ -75,7 +75,7 @@ class WinPortPanel: public wxPanel, protected IConsoleOutputBackend
 
 	wxDECLARE_EVENT_TABLE();
 	KeyTracker _key_tracker;
-	
+
 	ConsolePaintContext _paint_context;
 	WinPortFrame *_frame;
 	DWORD _refresh_rects_throttle;
@@ -104,7 +104,7 @@ class WinPortPanel: public wxPanel, protected IConsoleOutputBackend
 	DWORD _mouse_state{0}, _mouse_qedit_start_ticks{0}, _mouse_qedit_moved{0};
 	COORD _mouse_qedit_start{}, _mouse_qedit_last{};
 	wchar_t _stolen_key{0};
-	
+
 	unsigned int _pending_refreshes{0};
 	struct RefreshRects : std::vector<SMALL_RECT>, std::mutex {} _refresh_rects;
 
@@ -112,7 +112,7 @@ class WinPortPanel: public wxPanel, protected IConsoleOutputBackend
 	void CheckForResizePending();
 	void CheckPutText2CLip();
 	void OnInitialized( wxCommandEvent& event );
-	void OnTimerPeriodic(wxTimerEvent& event);	
+	void OnTimerPeriodic(wxTimerEvent& event);
 	void OnWindowMovedSync( wxCommandEvent& event );
 	void OnRefreshSync( wxCommandEvent& event );
 	void OnConsoleResizedSync( wxCommandEvent& event );
@@ -188,7 +188,11 @@ class WinPortFrame: public wxFrame
 		ID_CTRL_SHIFT_BASE,
 		ID_CTRL_SHIFT_END = ID_CTRL_SHIFT_BASE + 'Z' - 'A' + 1,
 		ID_ALT_BASE,
-		ID_ALT_END = ID_ALT_BASE + 'Z' - 'A' + 1
+		ID_ALT_END = ID_ALT_BASE + 'Z' - 'A' + 1,
+		ID_CTRL_ALT_BASE,
+		ID_CTRL_ALT_END = ID_CTRL_ALT_BASE + 'Z' - 'A' + 1,
+		ID_ALT_SHIFT_BASE,
+		ID_ALT_SHIFT_END = ID_ALT_SHIFT_BASE + 'Z' - 'A' + 1,
 	};
 	WinPortPanel		*_panel;
 	bool _shown;
