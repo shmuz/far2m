@@ -13,15 +13,26 @@
 #endif
 #include <os_call.hpp>
 #include <VT256ColorTable.h>
+#include <utils.h>
+#include <TestPath.h>
 #include "TTYOutput.h"
 #include "FarTTY.h"
 #include "WideMB.h"
 #include "WinPort.h"
+#include "../WinPortRGB.h"
 
 #define ESC "\x1b"
 
 #define ATTRIBUTES_AFFECTING_BACKGROUND \
 	(BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED | BACKGROUND_INTENSITY | BACKGROUND_TRUECOLOR)
+
+TTYBasePalette::TTYBasePalette()
+{
+	for (size_t i = 0; i < BASE_PALETTE_SIZE; ++i) {
+		foreground[i] = (DWORD)-1;
+		background[i] = (DWORD)-1;
+	}
+}
 
 void TTYOutput::TrueColors::AppendSuffix(std::string &out, DWORD rgb)
 {
@@ -159,6 +170,7 @@ TTYOutput::TTYOutput(int out, bool far2l_tty)
 		stk_ser.PushNum((uint8_t)0); // zero ID means not expecting reply
 		SendFar2lInterract(stk_ser);
 	}
+
 	Flush();
 }
 
@@ -172,9 +184,36 @@ TTYOutput::~TTYOutput()
 			Format(ESC "[0 q");
 		}
 		Format(ESC "[0m" ESC "[?1049l" ESC "[?47l" ESC "8" ESC "[?2004l" "\r\n");
+		TTYBasePalette def_palette;
+		ChangePalette(def_palette);
 		Flush();
 
 	} catch (std::exception &) {
+	}
+}
+
+void TTYOutput::ChangePalette(const TTYBasePalette &palette)
+{
+	for (size_t i = 0; i < BASE_PALETTE_SIZE; ++i) {
+		// Win <-> TTY color index adjustement
+		const unsigned int j = (((i) & 0b001) << 2 | ((i) & 0b100) >> 2 | ((i) & 0b1010));
+		if (_palette.background[i] != palette.background[i] || _palette.foreground[i] != palette.foreground[i]) {
+			_palette.background[i] = palette.background[i];
+			_palette.foreground[i] = palette.foreground[i];
+
+			if (palette.foreground[i] == (DWORD)-1 || palette.background[i] == (DWORD)-1) {
+				Format(ESC "]104;%d\a", j);
+				continue;
+			}
+
+			WinPortRGB fg(palette.foreground[i]), bk(palette.background[i]);
+
+			if (_far2l_tty) { // far2l may set separate foreground & background colors
+				Format(ESC "]4;%d;#%06x;#%06x\a", j, fg.AsBGR(), bk.AsBGR());
+			} else {
+				Format(ESC "]4;%d;#%06x\a", j, (i < 8) ? bk.AsBGR() : fg.AsBGR());
+			}
+		}
 	}
 }
 

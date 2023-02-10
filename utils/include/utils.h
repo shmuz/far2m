@@ -11,6 +11,8 @@
 #include "Environment.h"
 #include "ErrnoSaver.hpp"
 #include "PlatformConstants.h"
+#include "debug.h"
+#include "IntStrConv.h"
 
 #define MAKE_STR(x) _MAKE_STR(x)
 #define _MAKE_STR(x) #x
@@ -28,10 +30,6 @@ template <class C> static size_t tnzlen(const C *ptz, size_t n)
 	for (i = 0; i < n && ptz[i]; ++i);
 	return i;
 }
-
-
-unsigned long htoul(const char *str, size_t maxlen = (size_t)-1);
-unsigned long atoul(const char *str, size_t maxlen = (size_t)-1);
 
 // converts given hex digit to value between 0x0 and 0xf
 // in case of error returns 0xff
@@ -131,12 +129,17 @@ void FilePathHashSuffix(std::string &pathname);
 void CheckedCloseFD(int &fd);
 void CheckedCloseFDPair(int *fd);
 
+void MakeFDBlocking(int fd);
+void MakeFDNonBlocking(int fd);
+void MakeFDCloexec(int fd);
+void MakeFDNonCloexec(int fd);
+void HintFDSequentialAccess(int fd);
+
 size_t WriteAll(int fd, const void *data, size_t len, size_t chunk = (size_t)-1);
 size_t ReadAll(int fd, void *data, size_t len);
 ssize_t ReadWritePiece(int fd_src, int fd_dst);
 
 bool ReadWholeFile(const char *path, std::string &result, size_t limit = (size_t)-1);
-
 
 int pipe_cloexec(int pipedes[2]);
 

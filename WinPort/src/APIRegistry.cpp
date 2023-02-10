@@ -12,20 +12,26 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <assert.h>
 
 #include "WinCompat.h"
 #include "WinPort.h"
 #include "WinPortHandle.h"
 #include "PathHelpers.h"
+#include "EnsureDir.h"
 #include <utils.h>
+#include <RandomString.h>
 #include <os_call.hpp>
 
 static std::atomic<int>	s_reg_wipe_count{0};
 
-struct WinPortHandleReg : WinPortHandle
+struct WinPortHandleReg : MagicWinPortHandle<1>  // <1> - for reg handles
 {
 	std::string dir;
+
+	virtual bool Cleanup() noexcept
+	{
+		return true;
+	}
 };
 
 #define WINPORT_REG_PREFIX_KEY		"k-"
@@ -85,14 +91,11 @@ static std::string LitterFile(const char *path)
 
 	srand(fd ^ time(nullptr));
 
-	unsigned char garbage[128];
+	char garbage[128];
+	RandomStringBuffer(garbage, sizeof(garbage), sizeof(garbage), RNDF_NZ);
 	for (off_t i = 0; i < s.st_size;) {
 		const size_t piece = (s.st_size - i > (off_t)sizeof(garbage))
 			? sizeof(garbage) : (size_t) (s.st_size - i);
-		for (size_t j = 0; j < piece; ++j) {
-			garbage[j] = rand() % 0xff;
-		}
-
 		if (os_call_v<ssize_t, -1>(write, fd,
 			(const void *)&garbage[0], piece) != (ssize_t)piece) {
 			perror("LitterFile - write");
@@ -107,9 +110,9 @@ static std::string LitterFile(const char *path)
 	size_t p = garbage_path.rfind('/');
 	if (p != std::string::npos) {
 		size_t l = garbage_path.size();
-		garbage_path.resize(p + 1);
-		for (size_t i = p + 1; i < l; ++i) {
-			garbage_path+= 'a' + (rand() % ('z' - 'a' + 1));
+		if (l > p + 1) {
+			garbage_path.resize(p + 1);
+			RandomStringAppend(garbage_path, l - garbage_path.size(), l - garbage_path.size(), RNDF_ALNUM);
 		}
 	}
 	if (os_call_int(rename, path, garbage_path.c_str()) == 0) {
@@ -166,11 +169,11 @@ LONG RegXxxKeyEx(
 
 
 	WinPortHandleReg *rd = new(std::nothrow) WinPortHandleReg;
-	if (!rd)
+	if (UNLIKELY(!rd))
 		return ERROR_OUTOFMEMORY;
 	rd->dir.swap(dir);
 	
-	*phkResult = WinPortHandle_Register(rd);
+	*phkResult = rd->Register();
 	return ERROR_SUCCESS;
 }
 
@@ -236,7 +239,8 @@ void RegEscape(std::string &s)
 						i = s.insert(i, '\n');
 					}
 				 break;
-				 default: abort();
+				 default:
+					ABORT();
 			 }
 		}
 	}
@@ -466,7 +470,8 @@ static void RegValueSerialize(std::ofstream &os, DWORD Type, const VOID *lpData,
 				case REG_SZ: os << "SZ" << std::endl << s; break;
 				case REG_MULTI_SZ: os << "MULTI_SZ" << std::endl  << s; break;
 				case REG_EXPAND_SZ: os << "EXPAND_SZ" << std::endl << s; break;
-				default: abort();
+				default:
+					ABORT();
 			}
 		} break;
 		
@@ -524,9 +529,23 @@ extern "C" {
 
 	LONG WINPORT(RegCloseKey)(HKEY hKey)
 	{
-		if (!WinPortHandle_Deregister(hKey)) {
+		if (!hKey || hKey == (HKEY)INVALID_HANDLE_VALUE)
 			return ERROR_INVALID_HANDLE;
-		}
+		if ((ULONG_PTR)hKey == (ULONG_PTR)HKEY_CLASSES_ROOT)
+			return ERROR_INVALID_HANDLE;
+		if ((ULONG_PTR)hKey == (ULONG_PTR)HKEY_CURRENT_USER)
+			return ERROR_INVALID_HANDLE;
+		if ((ULONG_PTR)hKey == (ULONG_PTR)HKEY_LOCAL_MACHINE)
+			return ERROR_INVALID_HANDLE;
+		if ((ULONG_PTR)hKey == (ULONG_PTR)HKEY_USERS)
+			return ERROR_INVALID_HANDLE;
+		if ((ULONG_PTR)hKey == (ULONG_PTR)HKEY_PERFORMANCE_DATA)
+			return ERROR_INVALID_HANDLE;
+		if ((ULONG_PTR)hKey == (ULONG_PTR)HKEY_PERFORMANCE_TEXT)
+			return ERROR_INVALID_HANDLE;
+
+		if (!WinPortHandle::Deregister(hKey))
+			return ERROR_INVALID_HANDLE;
 
 		return ERROR_SUCCESS;
 	}
@@ -566,7 +585,7 @@ extern "C" {
 		 LPCWSTR lpValueName)
 	{
 		AutoWinPortHandle<WinPortHandleReg> wph(hKey);
-		if (!wph) {
+		if (UNLIKELY(!wph)) {
 			fprintf(stderr, "RegDeleteValue: bad handle - %p, %ls\n", hKey, lpValueName);
 			return ERROR_INVALID_HANDLE;
 		}
@@ -702,7 +721,7 @@ extern "C" {
 		)
 	{
 		AutoWinPortHandle<WinPortHandleReg> wph(hKey);
-		if (!wph) {
+		if (UNLIKELY(!wph)) {
 			fprintf(stderr, "RegSetValueEx: bad handle - %p\n", hKey);
 			return ERROR_INVALID_HANDLE;
 		}
@@ -738,7 +757,7 @@ extern "C" {
 	_Out_opt_   PFILETIME lpftLastWriteTime)
 	{
 		AutoWinPortHandle<WinPortHandleReg> wph(hKey);
-		if (!wph)
+		if (UNLIKELY(!wph))
 		{//TODO: FIXME: handle predefined HKEY_-s
 			fprintf(stderr, "RegQueryInfoKey: bad handle - %p\n", hKey);
 			return ERROR_INVALID_HANDLE;
@@ -788,19 +807,20 @@ extern "C" {
 	WINPORT_DECL(RegWipeEnd, VOID, ())
 	{
 		--s_reg_wipe_count;
-		assert(s_reg_wipe_count >= 0);
+		ASSERT(s_reg_wipe_count >= 0);
 	}
 
 	void WinPortInitRegistry()
 	{
-		int ret = mkdir( GetRegistrySubroot("") .c_str(), 0775);
-		if (ret < 0 && EEXIST != errno)
-			fprintf(stderr, "WinPortInitRegistry: errno=%d \n", errno);
+		unsigned int fail_mask = 0;
+		if (!EnsureDir(GetRegistrySubroot("").c_str())) fail_mask|= 0x1;
+		if (!EnsureDir(HKDir(HKEY_LOCAL_MACHINE).c_str())) fail_mask|= 0x2;
+		if (!EnsureDir(HKDir(HKEY_USERS).c_str())) fail_mask|= 0x4;
+		if (!EnsureDir(HKDir(HKEY_CURRENT_USER).c_str())) fail_mask|= 0x8;
+		if (fail_mask)
+			fprintf(stderr, "WinPortInitRegistry: fail_mask=0x%x errno=%d \n", fail_mask, errno);
 		else
 			fprintf(stderr, "WinPortInitRegistry: OK \n");
-		mkdir(HKDir(HKEY_LOCAL_MACHINE).c_str(), 0775);
-		mkdir(HKDir(HKEY_USERS).c_str(), 0775);
-		mkdir(HKDir(HKEY_CURRENT_USER).c_str(), 0775);
 	}
 
 }

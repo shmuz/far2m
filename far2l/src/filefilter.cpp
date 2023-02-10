@@ -58,6 +58,24 @@ static FileFilterParams FoldersFilter;
 
 static bool bMenuOpen = false;
 
+static const void *_lfind(
+   const void *key,
+   const void *base,
+   unsigned int *num,
+   unsigned int width,
+   int (__cdecl *compare)(const void *, const void *)
+)
+{
+	unsigned int i, n = *num;
+	for (i = 0; i<n; ++i) {
+		if (compare(key, base)==0)
+			return base;
+		base = (const char *)base + width;
+	}
+
+	return NULL;
+}
+
 FileFilter::FileFilter(Panel *HostPanel, FAR_FILE_FILTER_TYPE FilterType):
 	m_HostPanel(HostPanel),
 	m_FilterType(FilterType)

@@ -22,6 +22,11 @@ class TTYBackend : IConsoleOutputBackend, ITTYInputSpecialSequenceHandler, IFar2
 	bool _far2l_tty = false;
 	bool _osc52clip_set = false;
 
+	std::mutex _palette_mtx;
+	TTYBasePalette _palette;
+	bool _override_default_palette = false;
+	std::condition_variable _palette_changed_cond;
+
 	enum {
 		FKS_UNKNOWN,
 		FKS_SUPPORTED,
@@ -82,6 +87,7 @@ class TTYBackend : IConsoleOutputBackend, ITTYInputSpecialSequenceHandler, IFar2
 			bool far2l_interract : 1;
 			bool go_background : 1;
 			bool osc52clip_set : 1;
+			bool palette : 1;
 		} flags;
 		uint32_t all;
 	} _ae {};
@@ -90,11 +96,13 @@ class TTYBackend : IConsoleOutputBackend, ITTYInputSpecialSequenceHandler, IFar2
 
 	ClipboardBackendSetter _clipboard_backend_setter;
 
+	bool GetWinSize(struct winsize &w);
 	void ChooseSimpleClipboardBackend();
 	void DispatchTermResized(TTYOutput &tty_out);
 	void DispatchOutput(TTYOutput &tty_out);
 	void DispatchFar2lInterract(TTYOutput &tty_out);
 	void DispatchOSC52ClipSet(TTYOutput &tty_out);
+	void DispatchPalette(TTYOutput &tty_out);
 
 	void DetachNotifyPipe();
 
@@ -114,6 +122,7 @@ protected:
 	virtual void OnConsoleAdhocQuickEdit();
 	virtual DWORD64 OnConsoleSetTweaks(DWORD64 tweaks);
 	virtual void OnConsoleChangeFont();
+	virtual void OnConsoleSaveWindowState();
 	virtual void OnConsoleSetMaximized(bool maximized);
 	virtual void OnConsoleExit();
 	virtual bool OnConsoleIsActive();
@@ -121,6 +130,7 @@ protected:
 	virtual bool OnConsoleBackgroundMode(bool TryEnterBackgroundMode);
 	virtual bool OnConsoleSetFKeyTitles(const char **titles);
 	virtual BYTE OnConsoleGetColorPalette();
+	virtual void OnConsoleOverrideColor(DWORD Index, DWORD *ColorFG, DWORD *ColorBK);
 
 	// ITTYInputSpecialSequenceHandler
 	virtual void OnInspectKeyEvent(KEY_EVENT_RECORD &event);

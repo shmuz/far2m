@@ -1,7 +1,7 @@
 #include "wxWinTranslations.h"
 #include "KeyFileHelper.h"
 #include "utils.h"
-#include "WinCompat.h"
+#include "WinPort.h"
 #include "Backend.h"
 
 #include <wx/wx.h>
@@ -36,136 +36,19 @@
 
 
 extern bool g_broadway;
-extern bool g_wayland;
 extern bool g_remote;
 
-/*
-    Foreground/Background color palettes are 16 (r,g,b) values.
-    More words here from Miotio...
-*/
-static WinPortRGB g_palette_background[16];
-static WinPortRGB g_palette_foreground[16];
-#define PALETTE_CONFIG "palette.ini"
-
-static void InitDefaultPalette() {
-	for ( unsigned int i = 0; i < 16; ++i) {
-
-		switch (i) {
-			case FOREGROUND_INTENSITY: {
-				g_palette_foreground[i].r =
-					g_palette_foreground[i].g =
-						g_palette_foreground[i].b = 0x80;
-			} break;
-
-			case (FOREGROUND_BLUE|FOREGROUND_GREEN|FOREGROUND_RED): {
-				g_palette_foreground[i].r =
-					g_palette_foreground[i].g =
-						g_palette_foreground[i].b = 0xc0;
-			} break;
-
-			default: {
-				const unsigned char lvl = (i & FOREGROUND_INTENSITY) ? 0xff : 0xa0;
-				g_palette_foreground[i].r = (i & FOREGROUND_RED) ? lvl : 0;
-				g_palette_foreground[i].g = (i & FOREGROUND_GREEN) ? lvl : 0;
-				g_palette_foreground[i].b = (i & FOREGROUND_BLUE) ? lvl : 0;
-			}
-		}
-
-		switch (i) {
-			case (BACKGROUND_INTENSITY >> 4): {
-				g_palette_background[i].r =
-					g_palette_background[i].g =
-						g_palette_background[i].b = 0x80;
-			} break;
-
-			case (BACKGROUND_BLUE|BACKGROUND_GREEN|BACKGROUND_RED) >> 4: {
-				g_palette_background[i].r =
-					g_palette_background[i].g =
-						g_palette_background[i].b = 0xc0;
-			} break;
-
-			default: {
-				const unsigned char lvl = (i & (BACKGROUND_INTENSITY>>4)) ? 0xff : 0x80;
-				g_palette_background[i].r = (i & (BACKGROUND_RED>>4)) ? lvl : 0;
-				g_palette_background[i].g = (i & (BACKGROUND_GREEN>>4)) ? lvl : 0;
-				g_palette_background[i].b = (i & (BACKGROUND_BLUE>>4)) ? lvl : 0;
-			}
-		}
-	}
-}
-
-static bool LoadPaletteEntry(KeyFileHelper &kfh, const char *section, const char *name, WinPortRGB &result)
-{
-	const std::string &str = kfh.GetString(section, name, "#000000");
-	if (str.empty() || str[0] != '#')
-		return false;
-
-	unsigned int value = 0;
-	sscanf(str.c_str(), "#%x", &value);
-	result.r = (value & 0xff0000) >> 16;
-	result.g = (value & 0x00ff00) >> 8;
-	result.b = (value & 0x0000ff);
-	return true;
-}
-
-static bool LoadPalette(KeyFileHelper &kfh)
-{
-	char name[16];
-	bool out = true;
-	for (unsigned int i = 0; i < 16; ++i) {
-		snprintf(name, sizeof(name), "%d", i);
-
-		if (!LoadPaletteEntry(kfh, "foreground", name, g_palette_foreground[i])
-		|| !LoadPaletteEntry(kfh, "background", name, g_palette_background[i])) {
-			out = false;
-		}
-	}
-	return out;
-}
-
-static void SavePalette(KeyFileHelper &kfh)
-{
-	char name[16], value[16];
-	for (int i=0; i<16; i++) {
-		snprintf(name, sizeof(name), "%d", i);
-
-		snprintf(value, sizeof(value), "#%02X%02X%02X",
-			g_palette_foreground[i].r, g_palette_foreground[i].g, g_palette_foreground[i].b);
-		kfh.SetString("foreground", name, value);
-
-		snprintf(value, sizeof(value), "#%02X%02X%02X",
-			g_palette_background[i].r, g_palette_background[i].g, g_palette_background[i].b);
-		kfh.SetString("background", name, value);
-    }
-}
-
-bool InitPalettes()
-{
-	const std::string &palette_file = InMyConfig(PALETTE_CONFIG);
-	KeyFileHelper kfh(palette_file);
-	if (!kfh.IsLoaded()) {
-		InitDefaultPalette();
-		SavePalette(kfh);
-		return true;
-	}
-
-	if (LoadPalette(kfh))
-		return true;
-
-	fprintf(stderr, "InitPalettes: failed to load from %s\n", palette_file.c_str());
-	InitDefaultPalette();
-	return false;
-}
+WinPortPalette g_wx_palette;
 
 
 static const WinPortRGB &InternalConsoleForeground2RGB(USHORT attributes)
 {
-	return g_palette_foreground[(attributes & 0x0f)];
+	return g_wx_palette.foreground[(attributes & 0x0f)];
 }
 
 static const WinPortRGB &InternalConsoleBackground2RGB(USHORT attributes)
 {
-	return g_palette_background[(attributes & 0xf0) >> 4];
+	return g_wx_palette.background[(attributes & 0xf0) >> 4];
 }
 
 WinPortRGB ConsoleForeground2RGB(DWORD64 attributes)
@@ -522,6 +405,8 @@ bool KeyTracker::RightControl() const
 
 //////////////////////
 
+static DWORD s_cached_led_state = 0;
+
 wx2INPUT_RECORD::wx2INPUT_RECORD(BOOL KeyDown, const wxKeyEvent& event, const KeyTracker &key_tracker)
 {
 	auto key_code = event.GetKeyCode();
@@ -565,19 +450,12 @@ wx2INPUT_RECORD::wx2INPUT_RECORD(BOOL KeyDown, const wxKeyEvent& event, const Ke
 		Event.KeyEvent.wVirtualKeyCode = VK_CONTROL;
 		Event.KeyEvent.dwControlKeyState|= ENHANCED_KEY;
 	}
-	
-	// Getting LED modifiers not supported on broadway and wayland, also it requires
-	// 3 server roundtrips that is too time-expensive for remotely forwarded connections.
-	if (!g_broadway && !g_wayland && !g_remote) {
-		if (wxGetKeyState(WXK_NUMLOCK))
-			Event.KeyEvent.dwControlKeyState|= NUMLOCK_ON;
-		
-		if (wxGetKeyState(WXK_SCROLL))
-			Event.KeyEvent.dwControlKeyState|= SCROLLLOCK_ON;
-		
-		if (wxGetKeyState(WXK_CAPITAL))
-			Event.KeyEvent.dwControlKeyState|= CAPSLOCK_ON;
+
+	if (KeyDown || WINPORT(GetTickCount)() - key_tracker.LastKeydownTicks() > 500) {
+		s_cached_led_state = WxKeyboardLedsState();
 	}
+
+	Event.KeyEvent.dwControlKeyState|= s_cached_led_state;
 
 	// Keep in mind that key composing combinations with AltGr+.. arrive as keydown of Ctrl+Alt+..
 	// so if event.ControlDown() and event.AltDown() are together then don't believe them and
@@ -603,4 +481,68 @@ wx2INPUT_RECORD::wx2INPUT_RECORD(BOOL KeyDown, const wxKeyEvent& event, const Ke
 	}
 }
 
-/////////////////
+//////////////
+
+static unsigned int s_wx_assert_cached_bits = 0;
+static unsigned int s_wx_assert_cache_bit = 0;
+static unsigned int s_remote_time_avg = 0;
+
+#define REMOTE_SLOWNESS_TRSH_MSEC		50
+
+DWORD WxKeyboardLedsState()
+{
+	// Getting LED modifiers requires 3 server roundtrips that
+	// can be too time-expensive for remotely forwarded connections.
+	clock_t stopwatch = 0;
+	if (g_remote) {
+		if (s_remote_time_avg > REMOTE_SLOWNESS_TRSH_MSEC) {
+			return 0;
+		}
+		stopwatch = GetProcessUptimeMSec();
+	}
+
+	DWORD out = 0;
+	// Old non-GTK wxWidgets had missing support for this keys, and attempt
+	// to use wxGetKeyState with unsupported key causes assert callback
+	// to be invoked several times on each key event thats not good.
+	// Avoid asserts all the time by 'caching' unsupported state.
+	s_wx_assert_cache_bit = 1;
+	if ((s_wx_assert_cached_bits & 1) == 0 && wxGetKeyState(WXK_NUMLOCK)) {
+		out|= NUMLOCK_ON;
+	}
+
+	s_wx_assert_cache_bit = 2;
+	if ((s_wx_assert_cached_bits & 2) == 0 && wxGetKeyState(WXK_SCROLL)) {
+		out|= SCROLLLOCK_ON;
+	}
+
+	s_wx_assert_cache_bit = 4;
+	if ((s_wx_assert_cached_bits & 4) == 0 && wxGetKeyState(WXK_CAPITAL)) {
+		out|= CAPSLOCK_ON;
+	}
+
+	s_wx_assert_cache_bit = 0;
+
+	if (g_remote) {
+		s_remote_time_avg+= (unsigned int)(GetProcessUptimeMSec() - stopwatch);
+		s_remote_time_avg/= 2;
+		if (s_remote_time_avg > REMOTE_SLOWNESS_TRSH_MSEC) {
+			fprintf(stderr, "%s: remote is slow (%u)\n", __FUNCTION__, s_remote_time_avg);
+		}
+	}
+
+	return out;
+}
+
+void WinPortWxAssertHandler(const wxString& file, int line, const wxString& func, const wxString& cond, const wxString& msg)
+{
+	s_wx_assert_cached_bits|= s_wx_assert_cache_bit;
+
+	fprintf(stderr, "%s: file='%ls' line=%d func='%ls' cond='%ls' msg='%ls'\n",
+			__FUNCTION__,
+			static_cast<const wchar_t*>(file.wc_str()), line,
+			static_cast<const wchar_t*>(func.wc_str()),
+			static_cast<const wchar_t*>(cond.wc_str()),
+			static_cast<const wchar_t*>(msg.wc_str()));
+}
+

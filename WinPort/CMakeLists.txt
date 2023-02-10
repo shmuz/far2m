@@ -17,6 +17,7 @@ src/ConsoleBuffer.cpp
 src/ConsoleInput.cpp
 src/ConsoleOutput.cpp
 src/WinPortHandle.cpp
+src/CustomPanic.cpp
 src/PathHelpers.cpp
 src/SavedScreen.cpp
 src/sudo/sudo_common.cpp
@@ -26,6 +27,7 @@ src/sudo/sudo_dispatcher.cpp
 src/sudo/sudo_askpass.cpp
 src/sudo/sudo_askpass_ipc.cpp
 src/Backend/WinPortMain.cpp
+src/Backend/WinPortRGB.cpp
 src/Backend/SudoAskpassImpl.cpp
 src/Backend/FSClipboardBackend.cpp
 src/Backend/TTY/TTYBackend.cpp

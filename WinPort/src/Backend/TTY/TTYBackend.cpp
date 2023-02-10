@@ -91,10 +91,14 @@ TTYBackend::TTYBackend(const char *full_exe_path, int std_in, int std_out, const
 	if (pipe_cloexec(_kickass) == -1) {
 		_kickass[0] = _kickass[1] = -1;
 	} else {
-		fcntl(_kickass[1], F_SETFL,
-			fcntl(_kickass[1], F_GETFL, 0) | O_NONBLOCK);
+		MakeFDNonBlocking(_kickass[1]);
 	}
 
+	struct winsize w{};
+	if (GetWinSize(w)) {
+		g_winport_con_out->SetSize(w.ws_col, w.ws_row);
+	}
+	g_winport_con_out->GetSize(_cur_width, _cur_height);
 	g_vtb = this;
 }
 
@@ -119,11 +123,24 @@ TTYBackend::~TTYBackend()
 	DetachNotifyPipe();
 }
 
+bool TTYBackend::GetWinSize(struct winsize &w)
+{
+	int r = ioctl(_stdout, TIOCGWINSZ, &w);
+	if (UNLIKELY(r != 0)) {
+		r = ioctl(_stdin, TIOCGWINSZ, &w);
+		if (UNLIKELY(r != 0)) {
+			perror("GetWinSize");
+			return false;
+		}
+	}
+
+	return true;
+}
+
 void TTYBackend::DetachNotifyPipe()
 {
 	if (_notify_pipe != -1) {
-	    fcntl(_notify_pipe, F_SETFL,
-			fcntl(_notify_pipe, F_GETFL, 0) | O_NONBLOCK);
+		MakeFDNonBlocking(_notify_pipe);
 
 		if (_result && write(_notify_pipe, _result,
 				sizeof(*_result)) != sizeof(*_result)) {
@@ -302,7 +319,8 @@ void TTYBackend::WriterThread()
 	bool gone_background = false;
 	try {
 		TTYOutput tty_out(_stdout, _far2l_tty);
-
+		DispatchPalette(tty_out);
+//		DispatchTermResized(tty_out);
 		while (!_exiting && !_deadio) {
 			AsyncEvent ae;
 			ae.all = 0;
@@ -313,9 +331,16 @@ void TTYBackend::WriterThread()
 				}
 				if (_ae.all != 0) {
 					std::swap(ae.all, _ae.all);
+					if (ae.flags.palette) {
+						_async_cond.notify_all();
+					}
 					break;
 				}
 			} while (!_exiting && !_deadio);
+
+			if (ae.flags.palette) {
+				DispatchPalette(tty_out);
+			}
 
 			if (ae.flags.term_resized) {
 				DispatchTermResized(tty_out);
@@ -358,30 +383,46 @@ void TTYBackend::WriterThread()
 
 /////////////////////////////////////////////////////////////////////////
 
+void TTYBackend::DispatchPalette(TTYOutput &tty_out)
+{
+	TTYBasePalette palette;
+	{
+		std::lock_guard<std::mutex> lock(_palette_mtx);
+		palette = _palette;
+		if (_override_default_palette) {
+			for (size_t i = 0; i < BASE_PALETTE_SIZE; ++i) {
+				if (palette.background[i] == (DWORD)-1) {
+					palette.background[i] = g_winport_palette.background[i].AsRGB();
+				}
+				if (palette.foreground[i] == (DWORD)-1) {
+					palette.foreground[i] = g_winport_palette.foreground[i].AsRGB();
+				}
+			}
+		}
+	}
+	tty_out.ChangePalette(palette);
+}
+
 void TTYBackend::DispatchTermResized(TTYOutput &tty_out)
 {
-	struct winsize w = {};
-	int r = ioctl(_stdout, TIOCGWINSZ, &w);
-	if (r != 0) {
-		r = ioctl(_stdin, TIOCGWINSZ, &w);
+	struct winsize w{};
+	if (!GetWinSize(w)) {
+		return;
 	}
-	if (r == 0) {
-		if (_cur_width != w.ws_col || _cur_height != w.ws_row) {
-			_cur_width = w.ws_col;
-			_cur_height = w.ws_row;
-			g_winport_con_out->SetSize(_cur_width, _cur_height);
-			g_winport_con_out->GetSize(_cur_width, _cur_height);
-			INPUT_RECORD ir = {};
-			ir.EventType = WINDOW_BUFFER_SIZE_EVENT;
-			ir.Event.WindowBufferSizeEvent.dwSize.X = _cur_width;
-			ir.Event.WindowBufferSizeEvent.dwSize.Y = _cur_height;
-			g_winport_con_in->Enqueue(&ir, 1);
-		}
-		std::vector<CHAR_INFO> tmp;
-		tty_out.MoveCursorStrict(1, 1);
-		_prev_height = _prev_width = 0;
-		_prev_output.swap(tmp);// ensure memory released
+
+	if (_cur_width != w.ws_col || _cur_height != w.ws_row) {
+		g_winport_con_out->SetSize(w.ws_col, w.ws_row);
+		g_winport_con_out->GetSize(_cur_width, _cur_height);
+		INPUT_RECORD ir = {};
+		ir.EventType = WINDOW_BUFFER_SIZE_EVENT;
+		ir.Event.WindowBufferSizeEvent.dwSize.X = _cur_width;
+		ir.Event.WindowBufferSizeEvent.dwSize.Y = _cur_height;
+		g_winport_con_in->Enqueue(&ir, 1);
 	}
+	std::vector<CHAR_INFO> tmp;
+	tty_out.MoveCursorStrict(1, 1);
+	_prev_height = _prev_width = 0;
+	_prev_output.swap(tmp);// ensure memory released
 }
 
 //#define LOG_OUTPUT_COUNT
@@ -669,10 +710,65 @@ DWORD64 TTYBackend::OnConsoleSetTweaks(DWORD64 tweaks)
 		ChooseSimpleClipboardBackend();
 	}
 
-	return (_far2l_tty || _ttyx) ? 0 : TWEAK_STATUS_SUPPORT_OSC52CLIP_SET;
+	bool override_default_palette = (tweaks & CONSOLE_TTY_PALETTE_OVERRIDE) != 0;
+
+	{
+		std::lock_guard<std::mutex> lock(_palette_mtx);
+		std::swap(override_default_palette, _override_default_palette);
+	}
+
+	if (override_default_palette != ((tweaks & CONSOLE_TTY_PALETTE_OVERRIDE) != 0)) {
+		{
+			std::unique_lock<std::mutex> lock(_async_mutex);
+			_ae.flags.palette = true;
+			_async_cond.notify_all();
+			while (_ae.flags.palette) {
+				_async_cond.wait(lock);
+			}
+		}
+	}
+
+//
+
+	DWORD64 out = TWEAK_STATUS_SUPPORT_TTY_PALETTE;
+
+	if (!_far2l_tty && !_ttyx) {
+		out|= TWEAK_STATUS_SUPPORT_OSC52CLIP_SET;
+	}
+
+	return out;
+}
+
+void TTYBackend::OnConsoleOverrideColor(DWORD Index, DWORD *ColorFG, DWORD *ColorBK)
+{
+	if (Index >= BASE_PALETTE_SIZE) {
+		fprintf(stderr, "%s: too big index=%u\n", __FUNCTION__, Index);
+		return;
+	}
+
+	{
+		std::unique_lock<std::mutex> lock(_palette_mtx);
+		if (_palette.foreground[Index] == *ColorFG && _palette.background[Index] == *ColorBK) {
+			return;
+		}
+
+		std::swap(_palette.foreground[Index], *ColorFG);
+		std::swap(_palette.background[Index], *ColorBK);
+	}
+
+	std::unique_lock<std::mutex> lock(_async_mutex);
+	_ae.flags.palette = true;
+	_async_cond.notify_all();
+	while (_ae.flags.palette) {
+		_async_cond.wait(lock);
+	}
 }
 
 void TTYBackend::OnConsoleChangeFont()
+{
+}
+
+void TTYBackend::OnConsoleSaveWindowState()
 {
 }
 

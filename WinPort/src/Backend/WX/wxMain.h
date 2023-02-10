@@ -25,6 +25,7 @@
 #include <vector>
 #include <algorithm>
 #include <atomic>
+#include <mutex>
 
 #ifdef __APPLE__
 # include "Mac/dockicon.h"
@@ -34,6 +35,7 @@
 
 class WinPortAppThread : public wxThread
 {
+	std::mutex _start;
 	IConsoleOutputBackend *_backend;
 	char **_argv;
 	int _argc;
@@ -46,7 +48,9 @@ class WinPortAppThread : public wxThread
 
 public:
 	WinPortAppThread(int argc, char **argv, int(*appmain)(int argc, char **argv));
-	wxThreadError Start(IConsoleOutputBackend *backend);
+	bool Prepare();
+
+	void Start(IConsoleOutputBackend *backend);
 };
 
 //////////////////////////////////////////
@@ -71,44 +75,44 @@ class WinPortPanel: public wxPanel, protected IConsoleOutputBackend
 
 	wxDECLARE_EVENT_TABLE();
 	KeyTracker _key_tracker;
-
+	
 	ConsolePaintContext _paint_context;
+	WinPortFrame *_frame;
+	DWORD _refresh_rects_throttle;
+
 	COORD _last_mouse_click{};
 	wxMouseEvent _last_mouse_event;
 	std::wstring _text2clip;
 	ExclusiveHotkeys _exclusive_hotkeys;
-	std::atomic<bool> _has_focus{false};
-	MOUSE_EVENT_RECORD _prev_mouse_event;
-	DWORD _prev_mouse_event_ts;
+	std::atomic<bool> _has_focus{true};
+	MOUSE_EVENT_RECORD _prev_mouse_event{};
+	DWORD _prev_mouse_event_ts{0};
 
-	WinPortFrame *_frame;
-	wxTimer* _periodic_timer;
-	bool _last_keydown_enqueued;
-	bool _initialized;
-	bool _adhoc_quickedit;
+	wxTimer* _periodic_timer{nullptr};
+	unsigned int _timer_idling_counter{0};
+	std::atomic<unsigned int> _last_title_ticks{0};
+	bool _extra_refresh{false};
+	bool _last_keydown_enqueued{false};
+	bool _app_entry_started{false};
+	bool _adhoc_quickedit{false};
 	enum
 	{
 		RP_NONE,
 		RP_DEFER,
 		RP_INSTANT
-	} _resize_pending;
-	DWORD _mouse_state, _mouse_qedit_start_ticks, _mouse_qedit_moved;
-	COORD _mouse_qedit_start, _mouse_qedit_last;
-
-	int _last_valid_display;
-	DWORD _refresh_rects_throttle;
-	unsigned int _pending_refreshes;
+	} _resize_pending{RP_NONE};
+	DWORD _mouse_state{0}, _mouse_qedit_start_ticks{0}, _mouse_qedit_moved{0};
+	COORD _mouse_qedit_start{}, _mouse_qedit_last{};
+	wchar_t _stolen_key{0};
+	
+	unsigned int _pending_refreshes{0};
 	struct RefreshRects : std::vector<SMALL_RECT>, std::mutex {} _refresh_rects;
 
-	unsigned int _timer_idling_counter;
-	wchar_t _stolen_key;
-	std::atomic<unsigned int> _last_title_ticks{0};
-	bool _extra_refresh{false};
-
+	void SetConsoleSizeFromWindow();
 	void CheckForResizePending();
 	void CheckPutText2CLip();
 	void OnInitialized( wxCommandEvent& event );
-	void OnTimerPeriodic(wxTimerEvent& event);
+	void OnTimerPeriodic(wxTimerEvent& event);	
 	void OnWindowMovedSync( wxCommandEvent& event );
 	void OnRefreshSync( wxCommandEvent& event );
 	void OnConsoleResizedSync( wxCommandEvent& event );
@@ -117,7 +121,9 @@ class WinPortPanel: public wxPanel, protected IConsoleOutputBackend
 	void OnConsoleAdhocQuickEditSync( wxCommandEvent& event );
 	void OnConsoleSetTweaksSync( wxCommandEvent& event );
 	void OnConsoleChangeFontSync(wxCommandEvent& event);
+	void OnConsoleSaveWindowStateSync(wxCommandEvent& event);
 	void OnConsoleExitSync( wxCommandEvent& event );
+	void OnIdle( wxIdleEvent& event );
 	void OnKeyDown( wxKeyEvent& event );
 	void OnKeyUp( wxKeyEvent& event );
 	void OnPaint( wxPaintEvent& event );
@@ -131,7 +137,6 @@ class WinPortPanel: public wxPanel, protected IConsoleOutputBackend
 	void ResetInputState();
 	COORD TranslateMousePosition( wxMouseEvent &event );
 	void DamageAreaBetween(COORD c1, COORD c2);
-	int GetDisplayIndex();
 	void ResetTimerIdling();
 
 	virtual void OnConsoleOutputUpdated(const SMALL_RECT *areas, size_t count);
@@ -143,22 +148,35 @@ class WinPortPanel: public wxPanel, protected IConsoleOutputBackend
 	virtual void OnConsoleAdhocQuickEdit();
 	virtual DWORD64 OnConsoleSetTweaks(DWORD64 tweaks);
 	virtual void OnConsoleChangeFont();
+	virtual void OnConsoleSaveWindowState();
 	virtual void OnConsoleExit();
 	virtual bool OnConsoleIsActive();
 	virtual void OnConsoleDisplayNotification(const wchar_t *title, const wchar_t *text);
 	virtual bool OnConsoleBackgroundMode(bool TryEnterBackgroundMode);
 	virtual bool OnConsoleSetFKeyTitles(const char **titles);
 	virtual BYTE OnConsoleGetColorPalette();
+	virtual void OnConsoleOverrideColor(DWORD Index, DWORD *ColorFG, DWORD *ColorBK);
 
 public:
     WinPortPanel(WinPortFrame *frame, const wxPoint& pos, const wxSize& size);
 	virtual ~WinPortPanel();
-	void CompleteInitialization();
+	void GetAlignmentGaps(int &horz, int &vert);
 	void OnChar( wxKeyEvent& event );
 	virtual void OnTouchbarKey(bool alternate, int index);
 };
 
 ///////////////////////////////////////////
+
+struct WinState
+{
+	wxPoint pos {40, 40};
+	wxSize size {800, 440};
+	bool maximized{false};
+	bool fullscreen{false};
+
+	WinState();
+	void Save();
+};
 
 class WinPortFrame: public wxFrame
 {
@@ -170,16 +188,13 @@ class WinPortFrame: public wxFrame
 		ID_CTRL_SHIFT_BASE,
 		ID_CTRL_SHIFT_END = ID_CTRL_SHIFT_BASE + 'Z' - 'A' + 1,
 		ID_ALT_BASE,
-		ID_ALT_END = ID_ALT_BASE + 'Z' - 'A' + 1,
-		ID_CTRL_ALT_BASE,
-		ID_CTRL_ALT_END = ID_CTRL_ALT_BASE + 'Z' - 'A' + 1,
-		ID_ALT_SHIFT_BASE,
-		ID_ALT_SHIFT_END = ID_ALT_SHIFT_BASE + 'Z' - 'A' + 1,
+		ID_ALT_END = ID_ALT_BASE + 'Z' - 'A' + 1
 	};
 	WinPortPanel		*_panel;
 	bool _shown;
 	wxMenuBar *_menu_bar;
 	std::vector<wxMenu *> _menus;
+	WinState _win_state;
 
 	void OnEraseBackground(wxEraseEvent &event);
 	void OnPaint(wxPaintEvent &event);
@@ -187,8 +202,12 @@ class WinPortFrame: public wxFrame
 	void OnAccelerator(wxCommandEvent &event);
 	void OnShow(wxShowEvent &show);
 	void OnClose(wxCloseEvent &show);
+	void OnConsoleSaveWindowStateSync(wxCommandEvent& event);
 
 public:
-    WinPortFrame(const wxString& title, const wxPoint& pos, const wxSize& size);
+	WinPortFrame(const wxString& title);
 	virtual ~WinPortFrame();
+
+	void OnInitialized();
+	void SaveWindowState();
 };

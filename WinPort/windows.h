@@ -18,8 +18,6 @@
 # endif
 #define swprintf swprintf_ws2ls
 
-#define    GetConsoleFontSize			WINPORT(GetConsoleFontSize)
-#define    GetCurrentConsoleFont		WINPORT(GetCurrentConsoleFont)
 #define    GetLargestConsoleWindowSize		WINPORT(GetLargestConsoleWindowSize)
 #define    SetConsoleWindowInfo			WINPORT(SetConsoleWindowInfo)
 #define    SetConsoleTitle			WINPORT(SetConsoleTitle)
@@ -45,13 +43,11 @@
 #define    GetNumberOfConsoleInputEvents			WINPORT(GetNumberOfConsoleInputEvents)
 #define    PeekConsoleInput			WINPORT(PeekConsoleInput)
 #define    ReadConsoleInput			WINPORT(ReadConsoleInput)
-#define    ReadConsole			WINPORT(ReadConsole)
 #define    WriteConsoleInput			WINPORT(WriteConsoleInput)
-	
+
 #define    SetConsoleDisplayMode			WINPORT(SetConsoleDisplayMode)
 #define    GetConsoleDisplayMode			WINPORT(GetConsoleDisplayMode)
 
-#define    AddConsoleAlias			WINPORT(AddConsoleAlias)
 #define    GetConsoleAlias			WINPORT(GetConsoleAlias)
 #define    GenerateConsoleCtrlEvent			WINPORT(GenerateConsoleCtrlEvent)
 #define    GenerateConsoleCtrlEvent			WINPORT(GenerateConsoleCtrlEvent)
@@ -77,7 +73,6 @@
 #define    GetDoubleClickTime			WINPORT(GetDoubleClickTime)
 #define    GetComputerName			WINPORT(GetComputerName)
 #define    GetUserName			WINPORT(GetUserName)
-	
 
 //files
 
@@ -127,7 +122,7 @@
 #define    FileTimeToDosDateTime			WINPORT(FileTimeToDosDateTime)
 #define    DosDateTimeToFileTime			WINPORT(DosDateTimeToFileTime)
 #define    FileTime_UnixToWin32			WINPORT(FileTime_UnixToWin32)
-	
+
 
 	//String
 #define    LCMapString			WINPORT(LCMapString)
@@ -168,8 +163,8 @@
 #define    MapVirtualKey			WINPORT(MapVirtualKey)
 #define    VkKeyScan				WINPORT(VkKeyScan)
 #define    ToUnicodeEx				WINPORT(ToUnicodeEx)
-	
-	
+
+
 #endif //#ifdef WINPORT_DIRECT
 
 #ifdef UNICODE

@@ -61,7 +61,7 @@ template <class CHAR_T>
 
 extern "C"
 {
-	struct WinPortHandleFile : WinPortHandle
+	struct WinPortHandleFile : MagicWinPortHandle<0> // <0> - for file handles
 	{
 		int fd;
 
@@ -75,7 +75,8 @@ extern "C"
 		}
 
 	protected:
-		bool EnsureClosed()
+
+		virtual bool Cleanup() noexcept
 		{
 			bool out = (fd == -1 || os_call_int(sdc_close, fd) == 0);
 			if (!out) {
@@ -84,22 +85,6 @@ extern "C"
 			}
 
 			fd = -1;
-			return out;
-		}
-
-		virtual bool Cleanup()
-		{
-			bool out = EnsureClosed();
-			int saved_errno;
-			if (!out) {
-				saved_errno = errno;
-			}
-			if (!WinPortHandle::Cleanup()) {
-				return false;
-			}
-			if (!out) {
-				errno = saved_errno;
-			}
 			return out;
 		}
 
@@ -212,11 +197,9 @@ extern "C"
 		}
 #endif // __linux__
 
-#if defined(__linux__) || defined(__FreeBSD__)
 		if ((dwFlagsAndAttributes & (FILE_FLAG_NO_BUFFERING | FILE_FLAG_SEQUENTIAL_SCAN)) == FILE_FLAG_SEQUENTIAL_SCAN && !want_write) {
-			posix_fadvise(r, 0, 0, POSIX_FADV_SEQUENTIAL);
+			HintFDSequentialAccess(r);
 		}
-#endif
 
 		/*nobody cares.. if ((dwFlagsAndAttributes&FILE_FLAG_BACKUP_SEMANTICS)==0) {
 			struct stat s = { };
@@ -228,7 +211,13 @@ extern "C"
 			}
 		}*/
 
-		return WinPortHandle_Register(new WinPortHandleFile(r));
+		auto *wph = new(std::nothrow) WinPortHandleFile(r);
+		if (!wph) {
+			sdc_close(r);
+			return INVALID_HANDLE_VALUE;
+		}
+
+		return wph->Register();
 	}
 
 	BOOL WINPORT(MoveFile)(LPCWSTR ExistingFileName, LPCWSTR NewFileName )
@@ -253,28 +242,30 @@ extern "C"
 	DWORD WINPORT(GetCurrentDirectory)( DWORD  nBufferLength, LPWSTR lpBuffer)
 	{
 		std::vector<char> buf(nBufferLength + 1);
-		if (!_getcwd(&buf[0], nBufferLength)) {
-			return (nBufferLength < 1024) ? 1024 : 0;
+		if (UNLIKELY(!_getcwd(buf.data(), nBufferLength))) {
+			return (nBufferLength < PATH_MAX) ? PATH_MAX : 0;
 		}
 
-		std::wstring u16 = MB2Wide(&buf[0]);
-		memcpy(lpBuffer, u16.c_str(), (u16.size() + 1) * sizeof(*lpBuffer));
-		return (DWORD)u16.size();
+		const std::wstring &wstr = MB2Wide(buf.data());
+		if (UNLIKELY(wstr.size() + 1 > nBufferLength)) {
+			return DWORD(wstr.size() + 1);
+		}
+
+		wmemcpy(lpBuffer, wstr.c_str(), wstr.size() + 1);
+		return (DWORD)wstr.size();
 	}
 
 	BOOL WINPORT(SetCurrentDirectory)(LPCWSTR lpPathName)
 	{
 		const std::string &path = ConsumeWinPath(lpPathName);
-		int r = os_call_int(sdc_chdir, path.c_str());
-		if (r == 0)
-			return TRUE;
-		return FALSE;
+		auto r = os_call_int(sdc_chdir, path.c_str());
+		return UNLIKELY(r == -1) ? FALSE : TRUE;
 	}
 
 	BOOL WINPORT(GetFileSizeEx)( HANDLE hFile, PLARGE_INTEGER lpFileSize)
 	{
 		AutoWinPortHandle<WinPortHandleFile> wph(hFile);
-		if (!wph) {
+		if (UNLIKELY(!wph)) {
 			return FALSE;
 		}
 #ifdef _WIN32
@@ -317,10 +308,10 @@ extern "C"
 		LPDWORD lpNumberOfBytesRead, LPOVERLAPPED lpOverlapped)
 	{
 		AutoWinPortHandle<WinPortHandleFile> wph(hFile);
-		if (!wph) {
+		if (UNLIKELY(!wph)) {
 			return FALSE;
 		}
-		if (lpOverlapped) {
+		if (UNLIKELY(lpOverlapped)) {
 			fprintf(stderr, "WINPORT(ReadFile) with lpOverlapped\n");
 		}
 
@@ -365,7 +356,7 @@ extern "C"
 		LPDWORD lpNumberOfBytesWritten, LPOVERLAPPED lpOverlapped)
 	{
 		AutoWinPortHandle<WinPortHandleFile> wph(hFile);
-		if (!wph) {
+		if (UNLIKELY(!wph)) {
 			if (lpNumberOfBytesWritten)
 				*lpNumberOfBytesWritten = 0;
 			return FALSE;
@@ -390,21 +381,21 @@ extern "C"
 		PLARGE_INTEGER lpNewFilePointer, DWORD dwMoveMethod)
 	{
 		AutoWinPortHandle<WinPortHandleFile> wph(hFile);
-		if (!wph) {
+		if (UNLIKELY(!wph)) {
 			return FALSE;
 		}
 		int whence;
 		switch (dwMoveMethod) {
-		case FILE_BEGIN: whence = SEEK_SET; break;
-		case FILE_CURRENT: whence = SEEK_CUR; break;
-		case FILE_END: whence = SEEK_END; break;
-		default:
-			WINPORT(SetLastError)(ERROR_INVALID_PARAMETER);
-			return FALSE;
+			case FILE_BEGIN: whence = SEEK_SET; break;
+			case FILE_CURRENT: whence = SEEK_CUR; break;
+			case FILE_END: whence = SEEK_END; break;
+			default:
+				WINPORT(SetLastError)(ERROR_INVALID_PARAMETER);
+				return FALSE;
 		}
 
 		off_t r = os_call_v<off_t, -1>(sdc_lseek, wph->fd, (off_t)liDistanceToMove.QuadPart, whence);
-		if (r==(off_t)-1)
+		if (UNLIKELY(r==(off_t)-1))
 			return FALSE;
 		if (lpNewFilePointer) lpNewFilePointer->QuadPart = r;
 		return TRUE;
@@ -413,7 +404,7 @@ extern "C"
 	VOID WINPORT(FileAllocationHint) (HANDLE hFile, DWORD64 HintFileSize)
 	{
 		AutoWinPortHandle<WinPortHandleFile> wph(hFile);
-		if (!wph) {
+		if (UNLIKELY(!wph)) {
 			return;
 		}
 
@@ -434,7 +425,7 @@ extern "C"
 	BOOL WINPORT(FileAllocationRequire) (HANDLE hFile, DWORD64 RequireFileSize)
 	{
 		AutoWinPortHandle<WinPortHandleFile> wph(hFile);
-		if (!wph) {
+		if (UNLIKELY(!wph)) {
 			return FALSE;
 		}
 
@@ -495,14 +486,14 @@ extern "C"
 	DWORD WINPORT(SetFilePointer)( HANDLE hFile, LONG lDistanceToMove, PLONG  lpDistanceToMoveHigh, DWORD  dwMoveMethod)
 	{
 		LARGE_INTEGER liDistanceToMove, liNewFilePointer = {};
+		liDistanceToMove.LowPart = lDistanceToMove;
 		if (lpDistanceToMoveHigh) {
-			liDistanceToMove.LowPart = lDistanceToMove;
-			liDistanceToMove.HighPart = lpDistanceToMoveHigh ? *lpDistanceToMoveHigh : 0;
+			liDistanceToMove.HighPart = *lpDistanceToMoveHigh;
 		} else {
-			liDistanceToMove.LowPart = lDistanceToMove;
 			liDistanceToMove.HighPart = (lDistanceToMove < 0) ? -1 : 0;
 		}
-		if (!WINPORT(SetFilePointerEx)( hFile, liDistanceToMove, &liNewFilePointer, dwMoveMethod))
+		auto r = WINPORT(SetFilePointerEx)( hFile, liDistanceToMove, &liNewFilePointer, dwMoveMethod);
+		if (UNLIKELY(!r))
 			return INVALID_SET_FILE_POINTER;
 
 		if (lpDistanceToMoveHigh)
@@ -515,11 +506,12 @@ extern "C"
 		LPFILETIME lpLastAccessTime, LPFILETIME lpLastWriteTime)
 	{
 		AutoWinPortHandle<WinPortHandleFile> wph(hFile);
-		if (!wph) {
+		if (UNLIKELY(!wph)) {
 			return FALSE;
 		}
 		struct stat s{};
-		if (os_call_int(sdc_fstat, wph->fd, &s) < 0)
+		auto r = os_call_int(sdc_fstat, wph->fd, &s);
+		if (UNLIKELY(r < 0))
 			return FALSE;
 
 		WINPORT(FileTime_UnixToWin32)(s.st_mtim, lpLastWriteTime);
@@ -532,7 +524,7 @@ extern "C"
 		const FILETIME *lpLastAccessTime, const FILETIME *lpLastWriteTime)
 	{
 		AutoWinPortHandle<WinPortHandleFile> wph(hFile);
-		if (!wph) {
+		if (UNLIKELY(!wph)) {
 			return FALSE;
 		}
 
@@ -544,7 +536,8 @@ extern "C"
 			WINPORT(FileTime_Win32ToUnix)(lpLastWriteTime, &ts[1]);
 		}
 
-		if (os_call_int(sdc_futimens, wph->fd, (const struct timespec *)ts) < 0)
+		auto r = os_call_int(sdc_futimens, wph->fd, (const struct timespec *)ts);
+		if (UNLIKELY(r < 0))
 			return FALSE;
 
 		return TRUE;
@@ -648,14 +641,15 @@ extern "C"
 	BOOL WINPORT(SetEndOfFile)( HANDLE hFile)
 	{
 		AutoWinPortHandle<WinPortHandleFile> wph(hFile);
-		if (!wph) {
+		if (UNLIKELY(!wph)) {
 			return FALSE;
 		}
 
 		off_t pos = os_call_v<off_t, -1>(sdc_lseek, wph->fd, (off_t)0, SEEK_CUR);
-		if (pos==(off_t)-1)
+		if (UNLIKELY(pos==(off_t)-1))
 			return FALSE;
-		if (os_call_int(sdc_ftruncate, wph->fd, pos) == -1)
+		auto r = os_call_int(sdc_ftruncate, wph->fd, pos);
+		if (UNLIKELY(r == -1))
 			return FALSE;
 
 		return TRUE;
@@ -664,7 +658,7 @@ extern "C"
 	BOOL WINPORT(FlushFileBuffers)( HANDLE hFile)
 	{
 		AutoWinPortHandle<WinPortHandleFile> wph(hFile);
-		if (!wph) {
+		if (UNLIKELY(!wph)) {
 			return FALSE;
 		}
 		//fsync(wph->fd);
@@ -674,7 +668,7 @@ extern "C"
 	DWORD WINPORT(GetFileType)( HANDLE hFile)
 	{
 		AutoWinPortHandle<WinPortHandleFile> wph(hFile);
-		if (!wph) {
+		if (UNLIKELY(!wph)) {
 			return FILE_TYPE_UNKNOWN;
 		}
 
@@ -701,7 +695,7 @@ extern "C"
 	WINPORT_DECL(GetFileDescriptor, int, (HANDLE hFile))
 	{
 		AutoWinPortHandle<WinPortHandleFile> wph(hFile);
-		if (!wph) {
+		if (UNLIKELY(!wph)) {
 			return -1;
 		}
 

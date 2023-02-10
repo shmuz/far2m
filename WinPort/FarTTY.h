@@ -1,8 +1,10 @@
 #pragma once
 
+/*** This particular file distributed under Public Domain terms. ***/
+
 /** This file contains main definitions of commands used by far2l TTY extensions,
- as well as some documentation for them.
-*/
+ * as well as some documentation for them.
+ */
 
 ////////////////////
 /**
@@ -127,6 +129,8 @@ Glossary:
 
  Passcode - random string that client sends to server to identify itself. Server on its side may
   ask user for allowing clipboard access and may use this passcode to remember user's choice.
+  Its recommended to remember passcode on server side on per-client identity basis, to protect
+  against malicious client that somehow stolen other client's passcode.
 
  Clipboard format ID - value that describes kind of data to be transferred. ID can be predefined
   or dynamically registered. In first case it describes some well-known data format, in another -
@@ -198,8 +202,7 @@ Glossary:
  In:
   uint32_t (format ID)
  Out:
-  int8_t (1 - success, 0 - failure, -1 - clipboard wasn't open)
-  uint32_t (size of data)
+  uint32_t (0 - on failure, -1 - clipboard wasn't open, other value - size of data - on success)
   data of specified size
   uint64_t OPTIONAL (clipboard data ID, only if server reported FARTTY_FEATCLIP_DATA_ID)
 */

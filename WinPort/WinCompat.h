@@ -26,6 +26,9 @@ typedef unsigned __int64 uint64_t;
 
 #else
 #ifndef FAR_PYTHON_GEN
+# include <limits.h>
+# include <sys/types.h>
+# include <sys/stat.h>
 # include <unistd.h>
 # include <wchar.h>
 # ifdef __cplusplus
@@ -80,135 +83,6 @@ typedef unsigned __int64 uint64_t;
 # define st_ctim st_ctimespec
 # define st_atim st_atimespec
 #endif
-
-#ifndef FAR_PYTHON_GEN
-#include <limits.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-
-static int _wtoi(const wchar_t *w)
-{
-	wchar_t *endptr = 0;
-	return wcstol(w, &endptr, 10);
-}
-static int64_t _wtoi64(const wchar_t *w)
-{
-	wchar_t *endptr = 0;
-	return wcstoll(w, &endptr, 10);
-}
-
-#ifndef __CYGWIN__	
-static char * itoa(int i, char *a, int radix)
-{
-	switch (radix) {
-		case 10: sprintf(a, "%d", i); break;
-		case 16: sprintf(a, "%x", i); break;
-	}
-	return a;
-}
-#endif
-
-static char * _i64toa(int64_t i, char *a, int radix)
-{
-	switch (radix) {
-		case 10: sprintf(a, "%lld", (long long)i); break;
-		case 16: sprintf(a, "%llx", (long long)i); break;
-	}
-	return a;
-}
-
-static wchar_t * _i64tow(int64_t i, wchar_t *w, int radix)
-{
-	int neg;
-	if (i==0) {
-		w[0] = '0';
-		w[1] = 0;
-		return w;
-	}
-
-	neg = i < 0;
-	if (neg) {
-		*w++ = '-';
-		i = -i;
-	}
-
-	for (int64_t j = i; j; j/= radix) ++w;
-	*w = 0;
-	for (; i; i/= radix) {
-		unsigned int d = i % radix;
-		--w;
-		if (d<=9) *w = d + '0';
-		else *w = d - 10 + 'a';
-	}
-
-	return neg ? w-1 : w;
-}
-
-
-static wchar_t * _itow(int i, wchar_t *w, int radix)
-{
-	int neg;
-	if (i==0) {
-		w[0] = '0';
-		w[1] = 0;
-		return w;
-	}
-	neg = i<0;
-	if (neg) {
-		*w++ = '-';
-		i = -i;
-	}
-
-	for (int j = i; j; j/= radix) ++w;
-	*w = 0;
-	for (; i; i/= radix) {
-		unsigned int d = i % radix;
-		--w;
-		if (d<=9) *w = d + '0';
-		else *w = d - 10 + 'a';
-	}
-
-	return neg ? w-1 : w;
-}
-
-static const void *_lfind(
-   const void *key,
-   const void *base,
-   unsigned int *num,
-   unsigned int width,
-   int (__cdecl *compare)(const void *, const void *)
-)
-{
-	unsigned int i, n = *num;
-	for (i = 0; i<n; ++i) {
-		if (compare(key, base)==0)
-			return base;
-		base = (const char *)base + width;
-	}
-
-	return NULL;
-}
-/*
-static char iswdigit(wchar_t w)
-{
-	return w>='0' && w<='9';
-}
-
-static char iswxdigit(wchar_t w)
-{
-	return ( (w>='0' && w<='9') || (w>='a' && w<='f') || (w>='A' && w<='F'));
-}
-
-static char iswspace(wchar_t c) {return c==' '; }
-static char iswlower(wchar_t c) {return 0; }
-static char iswupper(wchar_t c) {return 0; }
-static char iswalpha(wchar_t c) {return ((c>='a' && c<='z') || (c>='A' && c<='Z')); }
-static char iswalnum(wchar_t c) {return iswalpha(c) || (c>='0' && c<='9'); }
-static wchar_t towupper(wchar_t c) {return c; }
-static wchar_t towlower(wchar_t c) {return c; }*/
-
-#endif /* FAR_PYTHON_GEN */
 #endif
 
 
@@ -569,6 +443,11 @@ typedef struct _KEY_EVENT_RECORD {
     DWORD dwControlKeyState;
 } KEY_EVENT_RECORD, *PKEY_EVENT_RECORD;
 
+typedef struct _CALLBACK_EVENT_RECORD {
+	VOID (*Function)(VOID *Context);
+	VOID *Context;
+} CALLBACK_EVENT_RECORD, *PCALLBACK_EVENT_RECORD;
+
 //
 // ControlKeyState flags
 //
@@ -618,6 +497,7 @@ typedef struct _BRACKETED_PASTE {
 #define MENU_EVENT 0x0008 // Event contains menu event record
 #define FOCUS_EVENT 0x0010 // event contains focus change
 #define BRACKETED_PASTE_EVENT 0x0020 // event contains bracketed paste state change
+#define CALLBACK_EVENT 0x0040 // callback to be invoked when its record dequeued, its translated into NOOP_EVENT when invoked
 #define NOOP_EVENT 0x0080 // nothing interesting, typically injected to kick events dispatcher
 
 
@@ -630,6 +510,7 @@ typedef struct _INPUT_RECORD {
         MENU_EVENT_RECORD MenuEvent;
         FOCUS_EVENT_RECORD FocusEvent;
         BRACKETED_PASTE BracketedPaste;
+        CALLBACK_EVENT_RECORD CallbackEvent;
     } Event;
 } INPUT_RECORD, *PINPUT_RECORD;
 

@@ -26,6 +26,11 @@ class ConsolePaintContext
 	wxWindow *_window;
 	unsigned int _font_width, _font_height, _font_descent, _font_thickness;
 	bool _custom_draw_enabled, _buffered_paint, _sharp;
+	enum {
+		STG_NOT_REFRESHED,
+		STG_REFRESHED,
+		STG_PAINTED
+	} _stage;
 	CursorProps _cursor_props;
 	struct {
 		std::vector<bool> checked;
@@ -45,7 +50,7 @@ public:
 	ConsolePaintContext(wxWindow *window);
 	void ShowFontDialog();
 	
-	uint8_t CharFitTest(wxPaintDC &dc, const wchar_t *wcz, unsigned int nx);
+	uint8_t CharFitTest(wxPaintDC &dc, wchar_t wcz, unsigned int nx);
 	void ApplyFont(wxPaintDC &dc, uint8_t index = 0);
 	void OnPaint(SMALL_RECT *qedit = NULL);	
 	void RefreshArea( const SMALL_RECT &area );
@@ -104,7 +109,6 @@ class ConsolePainter
 
 	friend struct WXCustomDrawCharPainter;
 
-	void SetFillColor(const WinPortRGB &clr);
 	void PrepareBackground(unsigned int cx, const WinPortRGB &clr, unsigned int nx);
 	void FlushBackground(unsigned int cx_end);
 	void FlushText(unsigned int cx_end);
@@ -112,6 +116,7 @@ class ConsolePainter
 		
 public:
 	ConsolePainter(ConsolePaintContext *context, wxPaintDC &dc, wxString &_buffer, CursorProps &cursor_props);
+	void SetFillColor(const WinPortRGB &clr);
 	
 
 	void NextChar(unsigned int cx, DWORD64 attributes, const wchar_t *wcz, unsigned int nx);

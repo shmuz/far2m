@@ -35,6 +35,11 @@ set(SOURCES
   src/VT256ColorTable.cpp
   src/ReadWholeFile.cpp
   src/ThrowPrintf.cpp
+  src/FcntlHelpers.cpp
+  src/Panic.cpp
+  src/IntStrConv.cpp
+  src/EnsureDir.cpp
+  src/RandomString.cpp
 )
 
 add_library (utils STATIC ${SOURCES})

@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <fcntl.h>
 #include <string.h>
+#include <errno.h>
 #include <os_call.hpp>
 
 #include <algorithm>
@@ -36,12 +37,13 @@ void CheckedCloseFD(int &fd)
 {
 	int tmp = fd;
 	if (tmp != -1) {
-               fd = -1;
-               if (os_call_int(close, tmp) != 0) {
-                       perror("CheckedCloseFD");
-                       abort();
-               }
-       }
+		fd = -1;
+		if (os_call_int(close, tmp) != 0) {
+			const int err = errno;
+			fprintf(stderr, "%s: %d\n", __FUNCTION__, err);
+			ASSERT(err != EBADF);
+		}
+	}
 }
 
 void CheckedCloseFDPair(int *fd)
@@ -114,8 +116,8 @@ int pipe_cloexec(int pipedes[2])
 #if defined(__APPLE__) || defined(__CYGWIN__) || defined(__HAIKU__)
 	int r = os_call_int(pipe, pipedes);
 	if (r==0) {
-		fcntl(pipedes[0], F_SETFD, FD_CLOEXEC);
-		fcntl(pipedes[1], F_SETFD, FD_CLOEXEC);
+		MakeFDCloexec(pipedes[0]);
+		MakeFDCloexec(pipedes[1]);
 	}
 	return r;
 #else
@@ -216,55 +218,6 @@ std::wstring FileSizeString(unsigned long long value)
 	str+= units;
 	return str;
 }
-
-
-
-#ifdef __CYGWIN__
-extern "C"
-{
-char * itoa(int i, char *a, int radix)
-{
-	switch (radix) {
-		case 10: sprintf(a, "%d", i); break;
-		case 16: sprintf(a, "%x", i); break;
-	}
-	return a;
-}
-}
-#endif
-
-unsigned long htoul(const char *str, size_t maxlen)
-{
-	unsigned long out = 0;
-
-	for (size_t i = 0; i != maxlen; ++i) {
-		unsigned char x = ParseHexDigit(str[i]);
-		if (x == 0xff) {
-			break;
-		}
-		out<<= 4;
-		out|= (unsigned char)x;
-	}
-
-	return out;
-}
-
-unsigned long atoul(const char *str, size_t maxlen)
-{
-	unsigned long out = 0;
-
-	for (size_t i = 0; i != maxlen; ++i) {
-		if (str[i] >= '0' && str[i] <= '9') {
-			out*= 10;
-			out+= str[i] - '0';
-
-		} else
-			break;
-	}
-
-	return out;
-}
-
 
 static inline bool CaseIgnoreEngChrMatch(const char c1, const char c2)
 {

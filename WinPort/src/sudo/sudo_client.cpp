@@ -133,7 +133,7 @@ namespace Sudo
 			throw std::runtime_error("pipe-leash");
 		}
 
-		fcntl(leash[0], F_SETFD, FD_CLOEXEC);
+		MakeFDCloexec(leash[0]);
 
 		int r = fork();
 		if (r == 0) {
@@ -325,8 +325,8 @@ namespace Sudo
 		__attribute__ ((visibility("default"))) void sudo_client_region_leave()
 		{
 			std::lock_guard<std::mutex> lock(s_uds_mutex);
-			assert(global_client_region_counter > 0);
-			assert(thread_client_region_counter.count > 0);
+			ASSERT(global_client_region_counter > 0);
+			ASSERT(thread_client_region_counter.count > 0);
 
 			global_client_region_counter--;
 			thread_client_region_counter.count--;

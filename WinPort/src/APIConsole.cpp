@@ -9,20 +9,6 @@ static DWORD g_winport_con_mode = ENABLE_QUICK_EDIT_MODE | ENABLE_EXTENDED_FLAGS
 static std::mutex g_winport_con_mode_mutex;
 
 extern "C" {
-	
-	WINPORT_DECL(GetConsoleFontSize,COORD,( HANDLE hConsoleOutput, DWORD  nFont))
-	{
-		//hardcoded for a now
-		COORD rv = {16, 24};
-		return rv;
-	}
-
-	WINPORT_DECL(GetCurrentConsoleFont,BOOL,( HANDLE hConsoleOutput, BOOL bMaximumWindow,PCONSOLE_FONT_INFO lpConsoleCurrentFont))
-	{
-		lpConsoleCurrentFont->nFont = 0; //hardcoded for a now
-		lpConsoleCurrentFont->dwFontSize = WINPORT(GetConsoleFontSize)(hConsoleOutput, lpConsoleCurrentFont->nFont);
-		return TRUE;
-	}
 
 	WINPORT_DECL(GetLargestConsoleWindowSize,COORD,(HANDLE hConsoleOutput))
 	{
@@ -63,7 +49,7 @@ extern "C" {
 		*lpModeFlags = 0;//WTF??? GetConsoleDisplayMode/SetConsoleDisplayMode returns different meanings!!!
 		return TRUE;
 	}
-	WINPORT_DECL(ScrollConsoleScreenBuffer,BOOL,(HANDLE hConsoleOutput, const SMALL_RECT *lpScrollRectangle, 
+	WINPORT_DECL(ScrollConsoleScreenBuffer,BOOL,(HANDLE hConsoleOutput, const SMALL_RECT *lpScrollRectangle,
 		const SMALL_RECT *lpClipRectangle, COORD dwDestinationOrigin, const CHAR_INFO *lpFill))
 	{
 		return g_winport_con_out->Scroll(lpScrollRectangle, lpClipRectangle, dwDestinationOrigin, lpFill) ? TRUE : FALSE;
@@ -89,7 +75,7 @@ extern "C" {
 		lpConsoleScreenBufferInfo->srWindow.Bottom = height - 1;
 		lpConsoleScreenBufferInfo->dwMaximumWindowSize.X = width;
 		lpConsoleScreenBufferInfo->dwMaximumWindowSize.Y = height;
-		
+
 		return TRUE;
 	}
 
@@ -125,7 +111,7 @@ extern "C" {
 		*lpMode|= g_winport_con_out->GetMode();
 		return TRUE;
 	}
-	
+
 	WINPORT_DECL(SetConsoleMode,BOOL,(HANDLE hConsoleHandle, DWORD dwMode))
 	{
 		std::lock_guard<std::mutex> lock(g_winport_con_mode_mutex);
@@ -225,29 +211,6 @@ extern "C" {
 		return g_winport_con_in->WaitForNonEmpty((dwTimeout == INFINITE) ? -1 : dwTimeout) ? TRUE : FALSE;
 	}
 
-	WINPORT_DECL(ReadConsole,BOOL,(HANDLE hConsoleInput, WCHAR *lpBuffer, DWORD nNumberOfCharsToRead, LPDWORD lpNumberOfCharsRead, LPVOID pInputControl))
-	{
-		INPUT_RECORD ir;
-		*lpNumberOfCharsRead = 0;
-		if (pInputControl) {
-			fprintf(stderr, "TODO: ReadConsole - pInputControl\n");
-		}
-		while (nNumberOfCharsToRead) {
-			DWORD rd = 0;
-			if (!WINPORT(ReadConsoleInput)(hConsoleInput, &ir, 1, &rd))
-				return FALSE;
-			if (ir.EventType==KEY_EVENT && 
-				ir.Event.KeyEvent.bKeyDown && 
-				ir.Event.KeyEvent.uChar.UnicodeChar) {
-				*lpBuffer = ir.Event.KeyEvent.uChar.UnicodeChar;
-				++lpBuffer;
-				--nNumberOfCharsToRead;
-				++(*lpNumberOfCharsRead);
-			}
-		}
-		return TRUE;
-	}
-
 	WINPORT_DECL(WriteConsoleInput,BOOL,(HANDLE hConsoleInput, const INPUT_RECORD *lpBuffer, DWORD nLength, LPDWORD lpNumberOfEventsWritten))
 	{
 		g_winport_con_in->Enqueue(lpBuffer, nLength);
@@ -287,22 +250,22 @@ extern "C" {
 
 		return FALSE;
 	}
-	
+
 	WINPORT_DECL(SetConsoleScrollRegion, VOID, (HANDLE hConsoleOutput, SHORT top, SHORT bottom))
 	{
 		g_winport_con_out->SetScrollRegion(top, bottom);
 	}
-	
+
 	WINPORT_DECL(GetConsoleScrollRegion, VOID, (HANDLE hConsoleOutput, SHORT *top, SHORT *bottom))
 	{
 		g_winport_con_out->GetScrollRegion(*top, *bottom);
 	}
-	
+
 	WINPORT_DECL(SetConsoleScrollCallback, VOID, (HANDLE hConsoleOutput, PCONSOLE_SCROLL_CALLBACK pCallback, PVOID pContext))
 	{
 		g_winport_con_out->SetScrollCallback(pCallback, pContext);
 	}
-	
+
 	WINPORT_DECL(BeginConsoleAdhocQuickEdit, BOOL, ())
 	{
 		{
@@ -312,7 +275,7 @@ extern "C" {
 				return FALSE;
 			}
 		}
-		
+
 		//here is possible non-critical race with enabling ENABLE_QUICK_EDIT_MODE
 		g_winport_con_out->AdhocQuickEdit();
 		return TRUE;
@@ -321,6 +284,11 @@ extern "C" {
 	WINPORT_DECL(SetConsoleTweaks, DWORD64, (DWORD64 tweaks))
 	{
 		return g_winport_con_out->SetConsoleTweaks(tweaks);
+	}
+
+	WINPORT_DECL(SaveConsoleWindowState,VOID,())
+	{
+		return g_winport_con_out->ConsoleSaveWindowState();
 	}
 
 	WINPORT_DECL(ConsoleChangeFont, VOID, ())
@@ -351,6 +319,20 @@ extern "C" {
 	WINPORT_DECL(GetConsoleColorPalette,BYTE,())
 	{
 		return g_winport_con_out->GetColorPalette();
+	}
+
+	WINPORT_DECL(OverrideConsoleColor, VOID, (DWORD Index, DWORD *ColorFG, DWORD *ColorBK))
+	{
+		return g_winport_con_out->OverrideColor(Index, ColorFG, ColorBK);
+	}
+
+	WINPORT_DECL(SetConsoleRepaintsDefer, VOID, (BOOL Deferring))
+	{
+		if (Deferring) {
+			g_winport_con_out->RepaintsDeferStart();
+		} else {
+			g_winport_con_out->RepaintsDeferFinish();
+		}
 	}
 
 	static struct {

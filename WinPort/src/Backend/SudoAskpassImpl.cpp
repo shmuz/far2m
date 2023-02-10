@@ -1,6 +1,6 @@
-#include <random>
 #include <vector>
 #include <utils.h>
+#include <RandomString.h>
 #include <crc64.h>
 #include <fcntl.h>
 #include <SavedScreen.h>
@@ -143,13 +143,9 @@ class SudoAskpassScreen
 		const std::string &salt_file = InMyConfig("askpass.salt");
 		std::string salt;
 		if (!ReadWholeFile(salt_file.c_str(), salt, 0x1000)) {
-			std::uniform_int_distribution<std::mt19937::result_type> udist(1, 127);
-			std::mt19937 rng;
-			rng.seed(getpid() ^ time(NULL));
-			for (size_t i = 0; i < 0x20; ++i) {
-				salt+= udist(rng);
-			}
-			FDScope fd(open(salt_file.c_str(), O_WRONLY | O_TRUNC | O_CREAT, 0600));
+			salt.clear();
+			RandomStringAppend(salt, 0x20, 0x20, RNDF_NZ);
+			FDScope fd(salt_file.c_str(), O_WRONLY | O_TRUNC | O_CREAT | O_CLOEXEC, 0600);
 			if (fd.Valid()) {
 				WriteAll(fd, salt.c_str(), salt.size());
 			}
