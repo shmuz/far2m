@@ -1216,6 +1216,8 @@ void SaveConfig(int Ask)
 	if (Ask && Message(0,2,Msg::SaveSetupTitle,Msg::SaveSetupAsk1,Msg::SaveSetupAsk2,Msg::SaveSetup,Msg::Cancel))
 		return;
 
+	WINPORT(SaveConsoleWindowState)();
+
 	/* <ПРЕПРОЦЕССЫ> *************************************************** */
 	Panel *LeftPanel=CtrlObject->Cp()->LeftPanel;
 	Panel *RightPanel=CtrlObject->Cp()->RightPanel;
