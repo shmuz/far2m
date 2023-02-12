@@ -207,7 +207,6 @@ endif()
 # plugins directives
 
 function (FindLuaIncludes)
-  if (NOT DEFINED LUAINC)
     foreach(PP "luajit-2.1" "luajit-2.0" "lua5.1")
       find_path(INC ${PP}/lua.h)
       if (NOT ${INC} STREQUAL INC-NOTFOUND)
@@ -216,7 +215,6 @@ function (FindLuaIncludes)
       endif()
     endforeach()
     message(STATUS "${ColorRed}Neither of LuaJIT/Lua5.1 #include path was found${ColorNormal}")
-  endif()
 endfunction()
 
 add_subdirectory (luafar)
