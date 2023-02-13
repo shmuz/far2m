@@ -32,6 +32,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "headers.hpp"
+#include <pwd.h>
 
 #include "infolist.hpp"
 #include "macroopcode.hpp"
@@ -134,23 +135,18 @@ void InfoList::DisplayObject()
 
 	{
 		FARString strComputerName, strUserName;
-		DWORD dwSize = 256; //MAX_COMPUTERNAME_LENGTH+1;
-		wchar_t *ComputerName = strComputerName.GetBuffer(dwSize);
-//		if (Opt.InfoPanel.ComputerNameFormat == ComputerNamePhysicalNetBIOS || !GetComputerNameEx(Opt.InfoPanel.ComputerNameFormat, ComputerName, &dwSize))
-		{
-			dwSize = MAX_COMPUTERNAME_LENGTH+1;
-			WINPORT(GetComputerName)(ComputerName, &dwSize);  // retrieves only the NetBIOS name of the local computer
-		}
-		strComputerName.ReleaseBuffer();
+
+		char buf[0x100];
+		if (gethostname(buf, ARRAYSIZE(buf) - 1) == 0)
+			strComputerName = buf;
 
 		GotoXY(X1+2,CurY++);
 		PrintText(Msg::InfoCompName);
 		PrintInfo(strComputerName);
 
-		dwSize = 256;
-		wchar_t *UserName = strUserName.GetBuffer(dwSize);
-		WINPORT(GetUserName)(UserName, &dwSize);
-		strUserName.ReleaseBuffer();
+		struct passwd *pw = getpwuid(getuid());
+		if (pw && pw->pw_name)
+			strUserName = pw->pw_name;
 
 		GotoXY(X1+2,CurY++);
 		PrintText(Msg::InfoUserName);
