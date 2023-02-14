@@ -168,11 +168,14 @@ jadoxa@yahoo.com.au
 
 #include <mutex>
 #include <atomic>
+#include <map>
 #include "vtansi.h"
 #include "AnsiEsc.hpp"
 #include "UtfConvert.hpp"
 
 #define is_digit(c) ('0' <= (c) && (c) <= '9')
+
+#define BGR2RGB(COLOR) ((((COLOR) & 0xff0000) >> 16) | ((COLOR) & 0x00ff00) | (((COLOR) & 0x0000ff) << 16))
 
 // ========== Global variables and constants
 
@@ -230,6 +233,7 @@ static std::mutex g_vt_ansi_mutex;
 IVTShell *g_vt_shell = nullptr;
 static std::string g_title;
 static std::atomic<bool> g_output_disabled{false};
+static std::map<DWORD, std::pair<DWORD, DWORD> > g_orig_palette;
 
 static HANDLE	  hConOut = NULL;		// handle to CONOUT$
 
@@ -646,6 +650,39 @@ static void LimitByScrollRegion(SMALL_RECT &rect)
 // es_argc = 3, es_argv[0] = 33, es_argv[1] = 45, es_argv[2] = 1
 // suffix = 'm'
 //-----------------------------------------------------------------------------
+
+static void ParseOSCPalette(int cmd, const char *args, size_t args_size)
+{
+	size_t pos = 0;
+	unsigned int index = DecToULong(args, args_size, &pos);
+	// Win <-> TTY color index adjustement
+	index = (((index) & 0b001) << 2 | ((index) & 0b100) >> 2 | ((index) & 0b1010));
+
+	DWORD fg = 0xffffffff, bk = 0xffffffff;
+	if (cmd == 4) {
+		if (pos + 2 >= args_size || args[pos] != ';' || args[pos + 1] != '#') {
+			fprintf(stderr, "%s: bad args='%s'\n", __FUNCTION__, args);
+			return;
+		}
+		pos+= 2;
+		size_t saved_pos = pos;
+		fg = HexToULong(args, args_size, &pos);
+		if (pos == saved_pos) {
+			return;
+		}
+		fg = bk = BGR2RGB(fg);
+		if (pos + 2 < args_size && args[pos] == ';' && args[pos + 1] == '#') {
+			pos+= 2;
+			saved_pos = pos;
+			bk = HexToULong(args, args_size, &pos);
+			bk = (pos == saved_pos) ? fg : BGR2RGB(bk);
+		}
+	}
+
+	WINPORT(OverrideConsoleColor)(index, &fg, &bk);
+	// remember very first original...
+	g_orig_palette.emplace(index, std::make_pair(fg, bk));
+}
 
 void InterpretEscSeq( void )
 {
@@ -1121,6 +1158,9 @@ void InterpretEscSeq( void )
 			os_cmd_arg.clear();
 			ApplyConsoleTitle();
 
+		} else if (es_argc >= 1 && (es_argv[0] == 4 || es_argv[0] == 104)) {
+			ParseOSCPalette(es_argv[0], os_cmd_arg.c_str(), os_cmd_arg.size());
+
 		} else if (g_vt_shell) {
 			g_vt_shell->OnOSCommand(es_argv[0], os_cmd_arg);
 		}
@@ -1386,7 +1426,7 @@ void ParseAndPrintString( HANDLE hDev,
 				os_cmd_arg.resize(os_cmd_arg.size() - 1);
 				done = true;
 			} else try {
-				os_cmd_arg+= *s;
+				Wide2MB(s, 1, os_cmd_arg, true);
 
 			} catch (std::exception &e) {
 				os_cmd_arg.clear();
@@ -1438,7 +1478,7 @@ void ParseAndPrintString( HANDLE hDev,
 		}
 	}
 	FlushBuffer();
-	assert(i == 0);
+	ASSERT(i == 0);
 }
 
 
@@ -1504,6 +1544,10 @@ void VTAnsi::OnStart()
 
 void VTAnsi::OnStop()
 {
+	for (auto &it : g_orig_palette) { // restore all changed palette colors
+		WINPORT(OverrideConsoleColor)(it.first, &it.second.first, &it.second.second);
+	}
+	g_orig_palette.clear();
 	g_alternative_screen_buffer.Reset();
 	g_saved_state.ApplyToConsole(NULL, false);
 	ResetTerminal();
@@ -1541,6 +1585,7 @@ void VTAnsi::Write(const char *str, size_t len)
 		--len;
 	}
 
+	ConsoleRepaintsDeferScope crds;
 	ParseAndPrintString(NULL, _ws.c_str(), _ws.size());
 }
 

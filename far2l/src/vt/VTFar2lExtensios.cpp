@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <base64.h>
 #include <crc64.h>
 #include <utils.h>
@@ -68,7 +67,10 @@ static void ListFileAppend(const std::string &filename, std::string line)
 
 static uint64_t CalculateDataID(UINT fmt, const void *data, uint32_t len)
 {
-	if (fmt == CF_UNICODETEXT) {
+	if (!data) {
+		len = 0;
+
+	} else if (fmt == CF_UNICODETEXT) {
 		len = wcsnlen((const wchar_t *)data, len / sizeof(wchar_t)) * sizeof(wchar_t);
 
 	} else if (fmt == CF_TEXT) {
@@ -86,9 +88,20 @@ static uint64_t CalculateDataID(UINT fmt, const void *data, uint32_t len)
 
 ///
 
-VTFar2lExtensios::VTFar2lExtensios(IVTShell *vt_shell)
-	: _vt_shell(vt_shell)
+VTFar2lExtensios::VTFar2lExtensios(IVTShell *vt_shell, const std::string &host_id)
+	: _vt_shell(vt_shell), _client_id_prefix(host_id)
 {
+	// host_id pased by NetRocks representing client identity (user@host) and
+	// used together with clipboard client_id to guard against spoofed client_id
+	// in case malicious client was somehow able to steal id of some other client
+	if (!_client_id_prefix.empty()) {
+		for (auto &c : _client_id_prefix) {
+			if (((unsigned char)c) < 32) {
+				c = 32;
+			}
+		}
+		_client_id_prefix+= ':';
+	}
 }
 
 VTFar2lExtensios::~VTFar2lExtensios()
@@ -218,7 +231,7 @@ bool VTFar2lExtensios::OnInputKey(const KEY_EVENT_RECORD &KeyEvent)
 	return true;
 }
 
-char VTFar2lExtensios::ClipboardAuthorize(const std::string &client_id)
+char VTFar2lExtensios::ClipboardAuthorize(std::string client_id)
 {
 	if (client_id.size() < 0x20 || client_id.size() > 0x100)
 		return 0;
@@ -227,6 +240,8 @@ char VTFar2lExtensios::ClipboardAuthorize(const std::string &client_id)
 		if ( (c < '0' || c > '9') && (c < 'a' || c > 'z') && c != '-' && c != '_')
 			return 0;
 	}
+
+	client_id.insert(0, _client_id_prefix);
 
 	if (_autheds.find(client_id) != _autheds.end())
 		return 1;
@@ -358,19 +373,21 @@ void VTFar2lExtensios::OnInterract_ClipboardSetData(StackSerializer &stk_ser)
 		stk_ser.PopNum(len);
 		if (len && len + uint32_t(_clipboard_chunks.size()) >= len) {
 			data = (unsigned char *)WINPORT(ClipboardAlloc)(len + uint32_t(_clipboard_chunks.size()));
-			memcpy(data, _clipboard_chunks.data(), uint32_t(_clipboard_chunks.size()));
-			stk_ser.Pop(data + uint32_t(_clipboard_chunks.size()), len);
-			len+= uint32_t(_clipboard_chunks.size());
+			if (data) {
+				memcpy(data, _clipboard_chunks.data(), uint32_t(_clipboard_chunks.size()));
+				stk_ser.Pop(data + uint32_t(_clipboard_chunks.size()), len);
+				len+= uint32_t(_clipboard_chunks.size());
 #if (__WCHAR_MAX__ <= 0xffff)
-			if (fmt == CF_UNICODETEXT) { // UTF32 -> UTF16
-				UtfConverter<uint32_t, uint16_t> cvt((const uint32_t *)data, len / sizeof(uint32_t));
-				void *new_data = ClipboardAllocFromVector(cvt, len);
-				if (new_data) {
-					WINPORT(ClipboardFree)(data);
-					data = new_data;
+				if (fmt == CF_UNICODETEXT) { // UTF32 -> UTF16
+					UtfConverter<uint32_t, uint16_t> cvt((const uint32_t *)data, len / sizeof(uint32_t));
+					void *new_data = ClipboardAllocFromVector(cvt, len);
+					if (new_data) {
+						WINPORT(ClipboardFree)(data);
+						data = new_data;
+					}
 				}
-			}
 #endif
+			}
 		} else
 			data = nullptr;
 
