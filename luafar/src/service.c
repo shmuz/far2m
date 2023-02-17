@@ -3798,15 +3798,16 @@ int far_ShowHelp(lua_State *L)
 
 // DestText = far.InputBox(Title,Prompt,HistoryName,SrcText,DestLength,HelpTopic,Flags)
 // all arguments are optional
+// 1-st argument (GUID) is ignored (kept for compatibility with Far3 scripts)
 int far_InputBox(lua_State *L)
 {
-  const wchar_t *Title       = opt_utf8_string (L, 1, L"Input Box");
-  const wchar_t *Prompt      = opt_utf8_string (L, 2, L"Enter the text:");
-  const wchar_t *HistoryName = opt_utf8_string (L, 3, NULL);
-  const wchar_t *SrcText     = opt_utf8_string (L, 4, L"");
-  int DestLength             = luaL_optinteger (L, 5, 1024);
-  const wchar_t *HelpTopic   = opt_utf8_string (L, 6, NULL);
-  DWORD Flags = luaL_optinteger (L, 7, FIB_ENABLEEMPTY|FIB_BUTTONS|FIB_NOAMPERSAND);
+  const wchar_t *Title       = opt_utf8_string (L, 2, L"Input Box");
+  const wchar_t *Prompt      = opt_utf8_string (L, 3, L"Enter the text:");
+  const wchar_t *HistoryName = opt_utf8_string (L, 4, NULL);
+  const wchar_t *SrcText     = opt_utf8_string (L, 5, L"");
+  int DestLength             = luaL_optinteger (L, 6, 1024);
+  const wchar_t *HelpTopic   = opt_utf8_string (L, 7, NULL);
+  DWORD Flags = luaL_optinteger (L, 8, FIB_ENABLEEMPTY|FIB_BUTTONS|FIB_NOAMPERSAND);
 
   if (DestLength < 1) DestLength = 1;
   wchar_t *DestText = (wchar_t*) malloc(sizeof(wchar_t)*DestLength);
