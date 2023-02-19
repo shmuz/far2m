@@ -59,6 +59,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "palette.hpp"
 #include "DialogBuilder.hpp"
 #include "wakeful.hpp"
+#include "codepage.hpp"
 
 static int ReplaceMode,ReplaceAll;
 
@@ -5899,8 +5900,11 @@ int Editor::EditorControl(int Command,void *Param)
 						/* $ 07.08.2001 IS сменить кодировку из плагина */
 					case ESPT_CODEPAGE:
 					{
-						//BUGBUG
-						if ((UINT)espar->Param.iParam==CP_AUTODETECT)
+						if ((UINT)espar->Param.iParam==CP_AUTODETECT) //BUGBUG
+						{
+							rc=FALSE;
+						}
+						else if (!IsCodePageSupported(espar->Param.iParam))
 						{
 							rc=FALSE;
 						}
