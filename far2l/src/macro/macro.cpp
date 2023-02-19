@@ -1452,9 +1452,10 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 						FARString NewStr;
 						if (f->VMProcess(CheckCode,&NewStr,MenuItemPos))
 						{
-							HiText2Str(NewStr, NewStr);
-							RemoveExternalSpaces(NewStr);
-							Out=NewStr.CPtr();
+							FARString tmpStr = NewStr;
+							HiText2Str(tmpStr, NewStr);
+							RemoveExternalSpaces(tmpStr);
+							Out=tmpStr.CPtr();
 						}
 					}
 					else if (CheckCode == MCODE_F_MENU_ITEMSTATUS)
