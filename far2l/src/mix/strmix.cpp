@@ -1217,7 +1217,7 @@ wchar_t GetDecimalSeparator()
 	return L'.';
 }
 
-FARString ReplaceBrackets(const FARString& SearchStr,const FARString& ReplaceStr,RegExpMatch* Match,int Count)
+FARString ReplaceBrackets(const wchar_t* SearchStr,const FARString& ReplaceStr,RegExpMatch* Match,int Count)
 {
 	FARString result;
 	size_t pos=0,length=ReplaceStr.GetLength();
@@ -1248,7 +1248,7 @@ FARString ReplaceBrackets(const FARString& SearchStr,const FARString& ReplaceStr
 			{
 				if (index<Count)
 				{
-					FARString bracket(SearchStr.CPtr()+Match[index].start,Match[index].end-Match[index].start);
+					FARString bracket(SearchStr+Match[index].start,Match[index].end-Match[index].start);
 					result+=bracket;
 				}
 
