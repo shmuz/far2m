@@ -1723,6 +1723,7 @@ int Panel::SetPluginCommand(int Command,int Param1,LONG_PTR Param2)
 	ProcessingPluginCommand++;
 	FilePanels *FPanels=CtrlObject->Cp();
 	PluginCommand=Command;
+	auto DestFilePanel = dynamic_cast<FileList*>(this);
 
 	switch (Command)
 	{
@@ -1862,7 +1863,6 @@ int Panel::SetPluginCommand(int Command,int Param1,LONG_PTR Param2)
 
 			if (GetType()==FILE_PANEL)
 			{
-				FileList *DestFilePanel=(FileList *)this;
 				static int Reenter=0;
 
 				if (!Reenter && Info->Plugin)
@@ -1900,8 +1900,7 @@ int Panel::SetPluginCommand(int Command,int Param1,LONG_PTR Param2)
 			if (GetType() == FILE_PANEL && GetMode() == PLUGIN_PANEL)
 			{
 				PluginInfo PInfo = {sizeof(PInfo)};
-				auto DestPanel = dynamic_cast<FileList*>(this);
-				if (DestPanel && DestPanel->GetPluginInfo(&PInfo))
+				if (DestFilePanel && DestFilePanel->GetPluginInfo(&PInfo))
 					strTemp = NullToEmpty(PInfo.CommandPrefix);
 			}
 
@@ -1923,7 +1922,6 @@ int Panel::SetPluginCommand(int Command,int Param1,LONG_PTR Param2)
 
 			if (GetType()==FILE_PANEL)
 			{
-				FileList *DestFilePanel=(FileList *)this;
 				static int Reenter=0;
 
 				if (!Reenter && GetMode()==PLUGIN_PANEL)
@@ -1963,7 +1961,7 @@ int Panel::SetPluginCommand(int Command,int Param1,LONG_PTR Param2)
 			if (GetType()==FILE_PANEL)
 			{
 				FARString strColumnTypes,strColumnWidths;
-				((FileList *)this)->PluginGetColumnTypesAndWidths(strColumnTypes,strColumnWidths);
+				DestFilePanel->PluginGetColumnTypesAndWidths(strColumnTypes,strColumnWidths);
 
 				if (Command==FCTL_GETCOLUMNTYPES)
 				{
@@ -1984,22 +1982,26 @@ int Panel::SetPluginCommand(int Command,int Param1,LONG_PTR Param2)
 
 		case FCTL_GETPANELITEM:
 		{
-			Result=(int)((FileList*)this)->PluginGetPanelItem(Param1,(PluginPanelItem*)Param2);
+			if (DestFilePanel)
+				Result=(int)DestFilePanel->PluginGetPanelItem(Param1,(PluginPanelItem*)Param2);
 			break;
 		}
 
 		case FCTL_GETSELECTEDPANELITEM:
 		{
-			Result=(int)((FileList*)this)->PluginGetSelectedPanelItem(Param1,(PluginPanelItem*)Param2);
+			if (DestFilePanel)
+				Result=(int)DestFilePanel->PluginGetSelectedPanelItem(Param1,(PluginPanelItem*)Param2);
 			break;
 		}
 
 		case FCTL_GETCURRENTPANELITEM:
 		{
-			PanelInfo Info;
-			FileList *DestPanel = ((FileList*)this);
-			DestPanel->PluginGetPanelInfo(Info);
-			Result = (int)DestPanel->PluginGetPanelItem(Info.CurrentItem,(PluginPanelItem*)Param2);
+			if (DestFilePanel)
+			{
+				PanelInfo Info;
+				DestFilePanel->PluginGetPanelInfo(Info);
+				Result = (int)DestFilePanel->PluginGetPanelItem(Info.CurrentItem,(PluginPanelItem*)Param2);
+			}
 			break;
 		}
 
@@ -2007,7 +2009,7 @@ int Panel::SetPluginCommand(int Command,int Param1,LONG_PTR Param2)
 		{
 			if (GetType()==FILE_PANEL)
 			{
-				((FileList *)this)->PluginBeginSelection();
+				DestFilePanel->PluginBeginSelection();
 				Result=TRUE;
 			}
 			break;
@@ -2017,7 +2019,7 @@ int Panel::SetPluginCommand(int Command,int Param1,LONG_PTR Param2)
 		{
 			if (GetType()==FILE_PANEL)
 			{
-				((FileList *)this)->PluginSetSelection(Param1,Param2?true:false);
+				DestFilePanel->PluginSetSelection(Param1,Param2?true:false);
 				Result=TRUE;
 			}
 			break;
@@ -2027,7 +2029,7 @@ int Panel::SetPluginCommand(int Command,int Param1,LONG_PTR Param2)
 		{
 			if (GetType()==FILE_PANEL)
 			{
-				reinterpret_cast<FileList*>(this)->PluginClearSelection(Param1);
+				DestFilePanel->PluginClearSelection(Param1);
 				Result=TRUE;
 			}
 			break;
@@ -2037,7 +2039,7 @@ int Panel::SetPluginCommand(int Command,int Param1,LONG_PTR Param2)
 		{
 			if (GetType()==FILE_PANEL)
 			{
-				((FileList *)this)->PluginEndSelection();
+				DestFilePanel->PluginEndSelection();
 				Result=TRUE;
 			}
 			break;
