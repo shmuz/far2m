@@ -2596,7 +2596,7 @@ int FileEditor::EditorControl(int Command, void *Param)
 			{
 				EditorSaveFile *esf=(EditorSaveFile *)Param;
 
-				if (*esf->FileName) strName=esf->FileName;
+				if (esf->FileName) strName=esf->FileName;
 
 				if (esf->FileEOL)
 				{
