@@ -3582,8 +3582,12 @@ bool KeyMacro::ProcessKey(DWORD dwKey)
 				FARString str = textKey;
 				if (key != dwKey)
 					KeyToText(key, str);
+
+				auto last_input = *FrameManager->GetLastInputRecord();
 				if (TryToPostMacro(m_Area, str, dwKey))
 					return true;
+				// Mantis 0002307: При вызове msgbox из condition(), ключ закрытия msgbox передаётся дальше (не съедается)
+				*FrameManager->GetLastInputRecord() = last_input;
 			}
 		}
 	}
