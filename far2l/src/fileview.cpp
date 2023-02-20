@@ -53,6 +53,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "strmix.hpp"
 #include "mix.hpp"
 #include "macroopcode.hpp"
+#include "exitcode.hpp"
 
 FileViewer::FileViewer(const wchar_t *Name,int EnableSwitch,int DisableHistory,
                        int DisableEdit,long ViewStartPos,const wchar_t *PluginData,
@@ -355,11 +356,20 @@ int FileViewer::ProcessKey(int Key)
 				FileEditor *ShellEditor = new FileEditor(strViewFileName, cp,
 				        (GetCanLoseFocus()?FFILEEDIT_ENABLEF6:0)|(SaveToSaveAs?FFILEEDIT_SAVETOSAVEAS:0)|(DisableHistory?FFILEEDIT_DISABLEHISTORY:0),
 						-2, static_cast<int>(FilePos), strPluginData);
-				ShellEditor->SetEnableF6(TRUE);
-				ShellEditor->SetFileHolder(View.GetFileHolder());
-				/* $ 07.05.2001 DJ сохраняем NamesList */
-				ShellEditor->SetNamesList(View.GetNamesList());
-				FrameManager->DeleteFrame(this); // Insert уже есть внутри конструктора
+
+				int load = ShellEditor->GetExitCode();
+				if (load == XC_LOADING_INTERRUPTED || load == XC_OPEN_ERROR)
+				{
+					delete ShellEditor;
+				}
+				else
+				{
+					ShellEditor->SetEnableF6(TRUE);
+					ShellEditor->SetFileHolder(View.GetFileHolder());
+					/* $ 07.05.2001 DJ сохраняем NamesList */
+					ShellEditor->SetNamesList(View.GetNamesList());
+					FrameManager->DeleteFrame(this); // Insert уже есть внутри конструктора
+				}
 				ShowTime(2);
 			}
 
