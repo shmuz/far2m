@@ -3574,7 +3574,7 @@ bool KeyMacro::ProcessKey(DWORD dwKey)
 			{
 				auto key = dwKey;
 				if ((key&0x00FFFFFF) > 0x7F && (key&0x00FFFFFF) < 0xFFFF)
-					key=KeyToKeyLayout(key);
+					key = KeyToKeyLayout(key&0x0000FFFF) | (key&(~0x0000FFFF));
 
 				if (key<0xFFFF)
 					key=Upper(static_cast<wchar_t>(key));
@@ -3918,7 +3918,7 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG
 		// </Обработка особых клавиш: F1 & Enter>
 M1:
 		if ((Param2&0x00FFFFFF) > 0x7F && (Param2&0x00FFFFFF) < 0xFFFF)
-			Param2=KeyToKeyLayout(Param2);
+			Param2 = KeyToKeyLayout(Param2&0x0000FFFF) | (Param2&(~0x0000FFFF));
 
 		//косметика
 		if (Param2<0xFFFF)
