@@ -3531,6 +3531,13 @@ int FarMacroApi::UDList_Split()
 	return 0;
 }
 
+static DWORD LayoutKey(DWORD key)
+{
+	if ((key&0x00FFFFFF) > 0x7F && (key&0x00FFFFFF) < 0xFFFF)
+		key = KeyToKeyLayout(key&0x0000FFFF) | (key&(~0x0000FFFF));
+	return key;
+}
+
 bool KeyMacro::ProcessKey(DWORD dwKey)
 {
 	if (m_InternalInput || dwKey==KEY_IDLE || dwKey==KEY_NONE || !FrameManager->GetCurrentFrame())
@@ -3572,9 +3579,7 @@ bool KeyMacro::ProcessKey(DWORD dwKey)
 		{
 			if (!m_WaitKey && IsPostMacroEnabled())
 			{
-				auto key = dwKey;
-				if ((key&0x00FFFFFF) > 0x7F && (key&0x00FFFFFF) < 0xFFFF)
-					key = KeyToKeyLayout(key&0x0000FFFF) | (key&(~0x0000FFFF));
+				DWORD key = LayoutKey(dwKey);
 
 				if (key<0xFFFF)
 					key=Upper(static_cast<wchar_t>(key));
@@ -3917,8 +3922,7 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG
 
 		// </Обработка особых клавиш: F1 & Enter>
 M1:
-		if ((Param2&0x00FFFFFF) > 0x7F && (Param2&0x00FFFFFF) < 0xFFFF)
-			Param2 = KeyToKeyLayout(Param2&0x0000FFFF) | (Param2&(~0x0000FFFF));
+		Param2 = LayoutKey(Param2);
 
 		//косметика
 		if (Param2<0xFFFF)

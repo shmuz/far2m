@@ -1126,7 +1126,7 @@ void Dialog::ProcessLastHistory(DialogItemEx *CurItem, int MsgIndex)
 
 
 //   Изменение координат и/или размеров итема диалога.
-BOOL Dialog::SetItemRect(unsigned ID,SMALL_RECT *Rect)
+BOOL Dialog::SetItemRect(unsigned ID,const SMALL_RECT *Rect)
 {
 	CriticalSectionLock Lock(CS);
 

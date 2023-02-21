@@ -397,11 +397,9 @@ FileEditor::~FileEditor()
 	if (m_editor->EdOpt.SavePos && CtrlObject)
 		SaveToCache();
 
-	BitFlags FEditFlags=m_editor->Flags;
-	int FEditEditorID=m_editor->EditorID;
-
 	if (bEE_READ_Sent && CtrlObject)
 	{
+		int FEditEditorID = m_editor->EditorID;
 		FileEditor *save = CtrlObject->Plugins.CurEditor;
 		CtrlObject->Plugins.CurEditor=this;
 		CtrlObject->Plugins.ProcessEditorEvent(EE_CLOSE,&FEditEditorID);

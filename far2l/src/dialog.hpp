@@ -329,7 +329,7 @@ class Dialog: public Frame
 		// возвращает заголовок диалога (текст первого текста или фрейма)
 		const wchar_t *GetDialogTitle();
 
-		BOOL SetItemRect(unsigned ID,SMALL_RECT *Rect);
+		BOOL SetItemRect(unsigned ID, const SMALL_RECT *Rect);
 
 		/* $ 23.06.2001 KM
 		   + Функции программного открытия/закрытия комбобокса и хистори
