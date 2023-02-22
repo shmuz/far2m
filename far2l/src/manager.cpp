@@ -91,9 +91,6 @@ Manager::~Manager()
 
 	if (ModalStack)
 		free(ModalStack);
-
-	/*if (SemiModalBackFrames)
-	  free(SemiModalBackFrames);*/
 }
 
 
@@ -106,9 +103,9 @@ BOOL Manager::ExitAll()
 {
 	_MANAGER(CleverSysLog clv(L"Manager::ExitAll()"));
 
-	for (int i=this->ModalStackCount-1; i>=0; i--)
+	for (int i=ModalStackCount-1; i>=0; i--)
 	{
-		Frame *iFrame=this->ModalStack[i];
+		Frame *iFrame=ModalStack[i];
 
 		if (!iFrame->GetCanLoseFocus(TRUE))
 		{
@@ -228,7 +225,7 @@ void Manager::DeleteFrame(int Index)
 {
 	_MANAGER(CleverSysLog clv(L"Manager::DeleteFrame(int Index)"));
 	_MANAGER(SysLog(L"Index=%i",Index));
-	DeleteFrame(this->operator[](Index));
+	DeleteFrame((*this)[Index]);
 }
 
 
@@ -259,12 +256,7 @@ void Manager::ExecuteNonModal()
 		return;
 	}
 
-	/* $ 14.05.2002 SKV
-	  Положим текущий фрэйм в список "родителей" полумодальных фрэймов
-	*/
-	//Frame *SaveFrame=CurrentFrame;
-	//AddSemiModalBackFrame(SaveFrame);
-	int NonModalIndex=IndexOf(NonModal);
+	int NonModalIndex=IndexOfList(NonModal);
 
 	if (-1==NonModalIndex)
 	{
@@ -292,10 +284,6 @@ void Manager::ExecuteNonModal()
 	}
 
 	//ExecuteModal(NonModal);
-	/* $ 14.05.2002 SKV
-	  ... и уберём его же.
-	*/
-	//RemoveSemiModalBackFrame(SaveFrame);
 }
 
 void Manager::ExecuteModal(Frame *Executed)
@@ -512,7 +500,7 @@ void Manager::ActivateFrame(Frame *Activated)
 	_MANAGER(CleverSysLog clv(L"Manager::ActivateFrame(Frame *Activated)"));
 	_MANAGER(SysLog(L"Activated=%i",Activated));
 
-	if (IndexOf(Activated)==-1 && IndexOfStack(Activated)==-1)
+	if (IndexOfList(Activated)==-1 && IndexOfStack(Activated)==-1)
 		return;
 
 	if (!ActivatedFrame)
@@ -563,7 +551,7 @@ void Manager::DeactivateFrame(Frame *Deactivated,int Direction)
 	DeactivatedFrame=Deactivated;
 }
 
-void Manager::SwapTwoFrame(int Direction)
+void Manager::SwapTwoFrames(int Direction)
 {
 	if (Direction)
 	{
@@ -611,7 +599,7 @@ void Manager::RefreshFrame(Frame *Refreshed)
 		RefreshedFrame=CurrentFrame;
 	}
 
-	if (IndexOf(Refreshed)==-1 && IndexOfStack(Refreshed)==-1)
+	if (IndexOfList(Refreshed)==-1 && IndexOfStack(Refreshed)==-1)
 		return;
 
 	/* $ 13.04.2002 KM
@@ -1150,7 +1138,7 @@ int Manager::IndexOfStack(Frame *Frame)
 	return Result;
 }
 
-int Manager::IndexOf(Frame *Frame)
+int Manager::IndexOfList(Frame *Frame)
 {
 	int Result=-1;
 
@@ -1264,12 +1252,6 @@ void Manager::DeactivateCommit()
 
 	if (-1 != modalIndex && modalIndex== ModalStackCount-1)
 	{
-		/*if (IsSemiModalBackFrame(ActivatedFrame))
-		{ // Является ли "родителем" полумодального фрэйма?
-		  ModalStackCount--;
-		}
-		else
-		{*/
 		if (IndexOfStack(ActivatedFrame)==-1)
 		{
 			ModalStack[ModalStackCount-1]=ActivatedFrame;
@@ -1278,8 +1260,6 @@ void Manager::DeactivateCommit()
 		{
 			ModalStackCount--;
 		}
-
-//    }
 	}
 }
 
@@ -1295,7 +1275,7 @@ void Manager::ActivateCommit()
 		return;
 	}
 
-	int FrameIndex=IndexOf(ActivatedFrame);
+	int FrameIndex=IndexOfList(ActivatedFrame);
 
 	if (-1!=FrameIndex)
 	{
@@ -1333,7 +1313,7 @@ void Manager::UpdateCommit()
 		return;
 	}
 
-	int FrameIndex=IndexOf(DeletedFrame);
+	int FrameIndex=IndexOfList(DeletedFrame);
 
 	if (-1!=FrameIndex)
 	{
@@ -1399,7 +1379,7 @@ void Manager::DeleteCommit()
 		}
 	}
 
-	int FrameIndex=IndexOf(DeletedFrame);
+	int FrameIndex=IndexOfList(DeletedFrame);
 
 	if (-1!=FrameIndex)
 	{
@@ -1427,30 +1407,6 @@ void Manager::DeleteCommit()
 		}
 	}
 
-	/* $ 14.05.2002 SKV
-	  Долго не мог понять, нужен всё же этот код или нет.
-	  Но вроде как нужен.
-	  SVS> Когда понадобится - в некоторых местах расскомментить куски кода
-	       помеченные скобками <ifDoubleInstance>
-
-	if (ifDoubI && IsSemiModalBackFrame(ActivatedFrame)){
-	  for(int i=0;i<ModalStackCount;i++)
-	  {
-	    if(ModalStack[i]==ActivatedFrame)
-	    {
-	      break;
-	    }
-	  }
-
-	  if(i==ModalStackCount)
-	  {
-	    if (ModalStackCount == ModalStackSize){
-	      ModalStack = (Frame **) realloc (ModalStack, ++ModalStackSize * sizeof (Frame *));
-	    }
-	    ModalStack[ModalStackCount++]=ActivatedFrame;
-	  }
-	}
-	*/
 	DeletedFrame->OnDestroy();
 
 	if (DeletedFrame->GetDynamicallyBorn())
@@ -1514,7 +1470,7 @@ void Manager::RefreshCommit()
 	if (!RefreshedFrame)
 		return;
 
-	if (IndexOf(RefreshedFrame)==-1 && IndexOfStack(RefreshedFrame)==-1)
+	if (IndexOfList(RefreshedFrame)==-1 && IndexOfStack(RefreshedFrame)==-1)
 		return;
 
 	if (!RefreshedFrame->Locked())
@@ -1684,7 +1640,7 @@ BOOL Manager::ifDoubleInstance(Frame *frame)
 	    return FALSE;
 	  if(IndexOfStack(frame)==-1)
 	    return FALSE;
-	  if(IndexOf(frame)!=-1)
+	  if(IndexOfList(frame)!=-1)
 	    return TRUE;
 	*/
 	// </ifDoubleInstance>
@@ -1736,47 +1692,6 @@ void Manager::InitKeyBar()
 	for (int I=0; I < FrameCount; I++)
 		FrameList[I]->InitKeyBar();
 }
-
-/*void Manager::AddSemiModalBackFrame(Frame* frame)
-{
-  if(SemiModalBackFramesCount>=SemiModalBackFramesSize)
-  {
-    SemiModalBackFramesSize+=4;
-    SemiModalBackFrames=
-      (Frame**)realloc(SemiModalBackFrames,sizeof(Frame*)*SemiModalBackFramesSize);
-
-  }
-  SemiModalBackFrames[SemiModalBackFramesCount]=frame;
-  SemiModalBackFramesCount++;
-}
-
-BOOL Manager::IsSemiModalBackFrame(Frame *frame)
-{
-  if(!SemiModalBackFrames)return FALSE;
-  for(int i=0;i<SemiModalBackFramesCount;i++)
-  {
-    if(SemiModalBackFrames[i]==frame)return TRUE;
-  }
-  return FALSE;
-}
-
-void Manager::RemoveSemiModalBackFrame(Frame* frame)
-{
-  if(!SemiModalBackFrames)return;
-  for(int i=0;i<SemiModalBackFramesCount;i++)
-  {
-    if(SemiModalBackFrames[i]==frame)
-    {
-      for(int j=i+1;j<SemiModalBackFramesCount;j++)
-      {
-        SemiModalBackFrames[j-1]=SemiModalBackFrames[j];
-      }
-      SemiModalBackFramesCount--;
-      return;
-    }
-  }
-}
-*/
 
 // возвращает top-модал или сам фрейм, если у фрейма нету модалов
 Frame* Manager::GetTopModal()

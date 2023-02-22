@@ -63,9 +63,6 @@ class Manager
 
 		Frame *CurrentFrame;     // текущий фрейм. Он может находиться как в немодальной очереди, так и в модальном стеке
 		// его можно получить с помощью FrameManager->GetCurrentFrame();
-		/*Frame **SemiModalBackFrames;
-		int SemiModalBackFramesCount;
-		int SemiModalBackFramesSize;*/
 
 		/* $ 15.05.2002 SKV
 		  Так как есть полумодалы, что б не было путаницы,
@@ -104,10 +101,6 @@ class Manager
 
 		int GetModalExitCode();
 
-		/*void AddSemiModalBackFrame(Frame* frame);
-		BOOL IsSemiModalBackFrame(Frame *frame);
-		void RemoveSemiModalBackFrame(Frame* frame);*/
-
 	public:
 		Manager();
 		~Manager();
@@ -119,7 +112,7 @@ class Manager
 		void DeleteFrame(Frame *Deleted=nullptr);
 		void DeleteFrame(int Index);
 		void DeactivateFrame(Frame *Deactivated,int Direction);
-		void SwapTwoFrame(int Direction);
+		void SwapTwoFrames(int Direction);
 		void ActivateFrame(Frame *Activated);
 		void ActivateFrame(int Index);
 		void RefreshFrame(Frame *Refreshed=nullptr);
@@ -182,7 +175,7 @@ class Manager
 
 		Frame *operator[](int Index);
 
-		int IndexOf(Frame *Frame);
+		int IndexOfList(Frame *Frame);
 
 		int IndexOfStack(Frame *Frame);
 		int HaveAnyFrame();
