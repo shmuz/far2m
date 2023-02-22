@@ -46,7 +46,7 @@ class Manager
 		int ModalStackSize;     // Буфер стека модальных фреймов
 
 		int  FrameCount;         // Размер немодальной очереди
-		Frame **FrameList;       // Очередь модальных фреймов
+		Frame **FrameList;       // Очередь немодальных фреймов
 		int  FrameListSize;      // размер буфера под немодальную очередь
 		int  FramePos;           // Индекс текущий немодального фрейма. Он не всегда совпадает с CurrentFrame
 		// текущий немодальный фрейм можно получить с помощью FrameManager->GetBottomFrame();
@@ -59,9 +59,9 @@ class Manager
 		Frame *ModalizedFrame;  // Фрейм, который становится в "очередь" к текущему немодальному фрейму
 		Frame *UnmodalizedFrame;// Фрейм, убираюющийся из "очереди" немодального фрейма
 		Frame *DeactivatedFrame;// Фрейм, который указывает на предудущий активный фрейм
-		Frame *ExecutedFrame;   // Фрейм, которого вскорости нужно будет поставить на вершину модального сттека
+		Frame *ExecutedFrame;   // Фрейм, которого вскорости нужно будет поставить на вершину модального стека
 
-		Frame *CurrentFrame;     // текущий фрейм. Он может нахлодиться как в немодальной очереди, так и в можальном стеке
+		Frame *CurrentFrame;     // текущий фрейм. Он может находиться как в немодальной очереди, так и в модальном стеке
 		// его можно получить с помощью FrameManager->GetCurrentFrame();
 		/*Frame **SemiModalBackFrames;
 		int SemiModalBackFramesCount;
