@@ -325,8 +325,8 @@ class Editor:public ScreenObject
 
 		void KeepInitParameters();
 		void SetStartPos(int LineNum,int CharNum);
-		BOOL IsFileModified() const;
-		BOOL IsFileChanged() const;
+		bool IsFileModified() const;
+		bool IsFileChanged() const;
 		void SetTitle(const wchar_t *Title);
 		long GetCurPos();
 		int EditorControl(int Command,void *Param);

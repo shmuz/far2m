@@ -4722,13 +4722,13 @@ void Editor::SetStartPos(int LineNum,int CharNum)
 }
 
 
-BOOL Editor::IsFileChanged() const
+bool Editor::IsFileChanged() const
 {
 	return Flags.Check(FEDITOR_MODIFIED|FEDITOR_WASCHANGED);
 }
 
 
-BOOL Editor::IsFileModified() const
+bool Editor::IsFileModified() const
 {
 	return Flags.Check(FEDITOR_MODIFIED);
 }

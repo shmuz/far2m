@@ -52,7 +52,7 @@ class BitFlags
 		// сбросить набор флагов
 		DWORD Clear(DWORD NewFlags) { Flags&=~NewFlags; return Flags; }
 		// проверить набор флагов
-		BOOL Check(DWORD NewFlags) const { return Flags&NewFlags?TRUE:FALSE; }
+		bool Check(DWORD NewFlags) const { return (Flags & NewFlags) != 0; }
 		// изменить состояние набора флагов в заивисмости от Status
 		DWORD Change(DWORD NewFlags,BOOL Status) { if (Status) Flags|=NewFlags; else Flags&=~NewFlags; return Flags;}
 		// инвертировать состояние флагов

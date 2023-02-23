@@ -42,7 +42,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Frame::Frame():
 	FrameToBack(nullptr),
 	NextModal(nullptr),
-	PrevModal(nullptr),
 	DynamicallyBorn(true),
 	CanLoseFocus(false),
 	ExitCode(-1),
@@ -73,9 +72,9 @@ void Frame::SetRegularIdle(bool enabled)
 	}
 }
 
-void Frame::SetKeyBar(KeyBar *FrameKeyBar)
+void Frame::SetKeyBar(KeyBar *aFrameKeyBar)
 {
-	Frame::FrameKeyBar=FrameKeyBar;
+	FrameKeyBar = aFrameKeyBar;
 }
 
 void Frame::UpdateKeyBar()
@@ -109,28 +108,22 @@ void Frame::OnChangeFocus(int focus)
 
 void Frame::Push(Frame* Modalized)
 {
-	if (!NextModal)
+	Frame* f = this;
+	while (f->NextModal)
 	{
-		NextModal=Modalized;
-		NextModal->PrevModal=this;
+		f = f->NextModal;
 	}
-	else
-	{
-		NextModal->Push(Modalized);
-	}
+	f->NextModal = Modalized;
 }
 
 void Frame::DestroyAllModal()
 {
-	// найти вершину
-	Frame *Prev=this;
-	Frame *Next=NextModal;
-
-	while (Next)
+	Frame* f = this;
+	while (f->NextModal)
 	{
-		Prev->NextModal=nullptr;
-		Prev=Next;
-		Next=Next->NextModal;
+		Frame *Prev = f;
+		f = f->NextModal;
+		Prev->NextModal = nullptr;
 	}
 }
 
@@ -149,19 +142,14 @@ bool Frame::RemoveModal(Frame *aFrame)
 	if (!aFrame)
 		return false;
 
-	Frame *Prev=this;
-
-	for (Frame *Next=NextModal; Next; Next=Next->NextModal)
+	for (Frame* f=this; f->NextModal; f=f->NextModal)
 	{
-		if (Next==aFrame)
+		if (f->NextModal == aFrame)
 		{
-			RemoveModal(Next->NextModal);
-			Prev->NextModal=nullptr;
+			f->DestroyAllModal();
 			return true;
 		}
-		Prev=Next;
 	}
-
 	return false;
 }
 

@@ -61,7 +61,7 @@ class Frame: public ScreenObject
 		friend class Manager;
 	private:
 		Frame *FrameToBack;
-		Frame *NextModal,*PrevModal;
+		Frame *NextModal;
 		bool RegularIdle = false;
 
 	protected:
@@ -83,7 +83,7 @@ class Frame: public ScreenObject
 		int  GetExitCode() { return ExitCode; };
 		virtual void SetExitCode(int Code) { ExitCode=Code; };
 
-		virtual BOOL IsFileModified() const { return FALSE; };
+		virtual bool IsFileModified() const { return false; };
 
 		virtual const wchar_t *GetTypeName() {return L"[FarModal]";};
 		virtual int GetTypeAndName(FARString &strType, FARString &strName) {return(MODALTYPE_VIRTUAL);};

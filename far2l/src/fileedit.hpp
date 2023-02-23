@@ -104,11 +104,11 @@ class FileEditor : public Frame
 		// Добавлено для поиска по AltF7. При редактировании найденного файла из
 		// архива для клавиши F2 сделать вызов ShiftF2.
 		void SetSaveToSaveAs(int ToSaveAs) { Flags.Change(FFILEEDIT_SAVETOSAVEAS,ToSaveAs); InitKeyBar(); }
-		virtual BOOL IsFileModified() const { return m_editor->IsFileModified(); };
+		virtual bool IsFileModified() const { return m_editor->IsFileModified(); };
 		virtual int GetTypeAndName(FARString &strType, FARString &strName);
 		int EditorControl(int Command,void *Param);
 		void SetCodePage(UINT codepage);  //BUGBUG
-		BOOL IsFileChanged() const { return m_editor->IsFileChanged(); };
+		bool IsFileChanged() const { return m_editor->IsFileChanged(); };
 		virtual int64_t VMProcess(int OpCode,void *vParam=nullptr,int64_t iParam=0);
 		void GetEditorOptions(EditorOptions& EdOpt);
 		void SetEditorOptions(EditorOptions& EdOpt);

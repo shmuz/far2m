@@ -469,7 +469,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 
 				wi->Pos=FrameManager->IndexOfList(f);
 				wi->Type=f->GetType();
-				wi->Modified=f->IsFileModified();
+				wi->Modified=f->IsFileModified() ? 1 : 0;
 				wi->Current=f==FrameManager->GetCurrentFrame();
 				return TRUE;
 			}

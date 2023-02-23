@@ -1967,7 +1967,7 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 															int SwitchTo=FALSE;
 															if (FramePos!=-1)
 															{
-																if (!(*FrameManager)[FramePos]->GetCanLoseFocus(TRUE) ||
+																if (!(*FrameManager)[FramePos]->GetCanLoseFocus(true) ||
 																	Opt.Confirm.AllowReedit)
 																{
 																	char MsgFullFileName[NM];
@@ -1998,7 +1998,7 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 															}
 															if (SwitchTo)
 															{
-																(*FrameManager)[FramePos]->SetCanLoseFocus(FALSE);
+																(*FrameManager)[FramePos]->SetCanLoseFocus(false);
 																(*FrameManager)[FramePos]->SetDynamicallyBorn(false);
 																FrameManager->ActivateFrame(FramePos);
 																FrameManager->EnterModalEV();
