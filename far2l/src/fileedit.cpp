@@ -495,7 +495,7 @@ void FileEditor::Init(
 			int SwitchTo=FALSE;
 			int MsgCode=0;
 
-			if (!(*FrameManager)[FramePos]->GetCanLoseFocus(TRUE) ||
+			if (!(*FrameManager)[FramePos]->GetCanLoseFocus(true) ||
 			        Opt.Confirm.AllowReedit)
 			{
 				if (OpenModeExstFile == FEOPMODE_QUERY)
@@ -2154,13 +2154,13 @@ void FileEditor::OnDestroy()
 	}
 }
 
-int FileEditor::GetCanLoseFocus(int DynamicMode)
+bool FileEditor::GetCanLoseFocus(bool DynamicMode)
 {
 	if (DynamicMode)
 	{
 		if (m_editor->IsFileModified())
 		{
-			return FALSE;
+			return false;
 		}
 	}
 	else
@@ -2168,7 +2168,7 @@ int FileEditor::GetCanLoseFocus(int DynamicMode)
 		return CanLoseFocus;
 	}
 
-	return TRUE;
+	return true;
 }
 
 void FileEditor::SetLockEditor(BOOL LockMode)

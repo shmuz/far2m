@@ -54,7 +54,7 @@ HMenu::HMenu(HMenuData *Item,int ItemCount):
 	ItemCount(ItemCount),
 	VExitCode(-1)
 {
-	SetDynamicallyBorn(FALSE);
+	SetDynamicallyBorn(false);
 	SetRestoreScreenMode(TRUE);
 	FrameManager->ModalizeFrame(this);
 }

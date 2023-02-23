@@ -443,8 +443,8 @@ Dialog::Dialog(FarDialogItem *SrcItem,    // Набор элементов ди�
 void Dialog::Init(FARWINDOWPROC DlgProc,      // Диалоговая процедура
                   LONG_PTR InitParam)         // Ассоцированные с диалогом данные
 {
-	SetDynamicallyBorn(FALSE); // $OT: По умолчанию все диалоги создаются статически
-	CanLoseFocus = FALSE;
+	SetDynamicallyBorn(false); // $OT: По умолчанию все диалоги создаются статически
+	CanLoseFocus = false;
 	HelpTopic = nullptr;
 	//Номер плагина, вызвавшего диалог (-1 = Main)
 	PluginNumber=-1;

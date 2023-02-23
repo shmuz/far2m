@@ -112,7 +112,7 @@ void FilePanels::Init()
 	RightPanel->SetSelectedFirstMode(Opt.RightSelectedFirst);
 	LeftPanel->SetDirectoriesFirst(Opt.LeftPanel.DirectoriesFirst);
 	RightPanel->SetDirectoriesFirst(Opt.RightPanel.DirectoriesFirst);
-	SetCanLoseFocus(TRUE);
+	SetCanLoseFocus(true);
 	Panel *PassivePanel=nullptr;
 	int PassiveIsLeftFlag=TRUE;
 

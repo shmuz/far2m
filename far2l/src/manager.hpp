@@ -126,8 +126,6 @@ class Manager
 		void ExecuteModal(Frame *Executed=nullptr);
 		//! Запускает немодальный фрейм в модальном режиме
 		void ExecuteNonModal();
-		//! Проверка того, что немодальный фрейм находится еще и на вершине стека.
-		BOOL ifDoubleInstance(Frame* frame);
 
 		//!  Функции, которые работают с очередью немодально фрейма.
 		//  Сейчас используются только для хранения информаци о наличии запущенных объектов типа VFMenu
@@ -141,7 +139,6 @@ class Manager
 		     Возвращает TRUE, если все закрыли и можно выходить из фара.
 		*/
 		BOOL ExitAll();
-		BOOL IsAnyFrameModified(int Activate);
 
 		int  GetFrameCount() {return(FrameCount);};
 		int  GetFrameCountByType(int Type);
@@ -154,7 +151,6 @@ class Manager
 		int CountFramesWithName(const wchar_t *Name, BOOL IgnoreCase=TRUE);
 
 		BOOL IsPanelsActive(); // используется как признак WaitInMainLoop
-		void SetFramePos(int NewPos);
 		int  FindFrameByFile(int ModalType,const wchar_t *FileName,const wchar_t *Dir=nullptr);
 		BOOL ShowBackground();
 
@@ -169,7 +165,6 @@ class Manager
 
 		INPUT_RECORD *GetLastInputRecord() { return &LastInputRecord; }
 		void SetLastInputRecord(INPUT_RECORD *Rec);
-		void ResetLastInputRecord() { LastInputRecord.EventType=0; }
 
 		Frame *GetCurrentFrame() { return CurrentFrame; }
 

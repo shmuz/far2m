@@ -60,15 +60,13 @@ class Frame: public ScreenObject
 {
 		friend class Manager;
 	private:
-//    Frame **ModalStack;
-//    int  ModalStackCount, ModalStackSize;
 		Frame *FrameToBack;
 		Frame *NextModal,*PrevModal;
 		bool RegularIdle = false;
 
 	protected:
-		int  DynamicallyBorn;
-		int  CanLoseFocus;
+		bool DynamicallyBorn;
+		bool CanLoseFocus;
 		int  ExitCode;
 		int  KeyBarVisible;
 		int  TitleBarVisible;
@@ -79,11 +77,8 @@ class Frame: public ScreenObject
 		Frame();
 		virtual ~Frame();
 
-//    virtual int ProcessKey(int Key);
-//    virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
-
-		virtual int GetCanLoseFocus(int DynamicMode=FALSE) { return(CanLoseFocus); };
-		void SetCanLoseFocus(int Mode) { CanLoseFocus=Mode; };
+		virtual bool GetCanLoseFocus(bool DynamicMode=false) { return(CanLoseFocus); };
+		void SetCanLoseFocus(bool Mode) { CanLoseFocus=Mode; };
 		void SetRegularIdle(bool enabled);
 		int  GetExitCode() { return ExitCode; };
 		virtual void SetExitCode(int Code) { ExitCode=Code; };
@@ -106,25 +101,17 @@ class Frame: public ScreenObject
 
 		int IsTitleBarVisible() const {return TitleBarVisible;};
 
-		/* $ 12.05.2001 DJ */
 		int IsTopFrame();
 		virtual int GetMacroMode() { return MacroMode; }
-		/* DJ $ */
 		void Push(Frame* Modalized);
 		Frame *GetTopModal() {return NextModal;};
-//    bool Pop();
-//    Frame *operator[](int Index);
-//    int operator[](Frame *ModalFarame);
-//    int ModalCount() {return ModalStackCount;}
 		void DestroyAllModal();
-		void SetDynamicallyBorn(int Born) {DynamicallyBorn=Born;}
-		int GetDynamicallyBorn() {return DynamicallyBorn;};
+		void SetDynamicallyBorn(bool Born) {DynamicallyBorn=Born;}
+		bool GetDynamicallyBorn() {return DynamicallyBorn;};
 		virtual int FastHide();
-//    int IndexOf(Frame *aFrame);
 		bool RemoveModal(Frame *aFrame);
 		virtual void ResizeConsole();
 		bool HasSaveScreen();
-//    bool ifFullConsole();
 		virtual FARString &GetTitle(FARString &Title,int SubLen=-1,int TruncSize=0) { return Title; };
 		virtual bool ProcessEvents() {return true;};
 };

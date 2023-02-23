@@ -1932,7 +1932,7 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 							SendDlgMessage(hDlg,DM_ENABLEREDRAW,FALSE,0);
 							{
 								FileViewer ShellViewer(strSearchFileName,FALSE,FALSE,FALSE,-1,nullptr,(FindItem.ArcIndex != LIST_INDEX_NONE)?nullptr:(Opt.FindOpt.CollectFiles?&ViewList:nullptr));
-								ShellViewer.SetDynamicallyBorn(FALSE);
+								ShellViewer.SetDynamicallyBorn(false);
 								ShellViewer.SetEnableF6(TRUE);
 
 								// FindFileArcIndex нельзя здесь использовать
@@ -1999,7 +1999,7 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 															if (SwitchTo)
 															{
 																(*FrameManager)[FramePos]->SetCanLoseFocus(FALSE);
-																(*FrameManager)[FramePos]->SetDynamicallyBorn(FALSE);
+																(*FrameManager)[FramePos]->SetDynamicallyBorn(false);
 																FrameManager->ActivateFrame(FramePos);
 																FrameManager->EnterModalEV();
 																FrameManager->ExecuteModal ();
@@ -2013,7 +2013,7 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 								{
 									std::shared_ptr<FindDlg_TempFileHolder> TFH;
 									FileEditor ShellEditor(strSearchFileName,CP_AUTODETECT,0);
-									ShellEditor.SetDynamicallyBorn(FALSE);
+									ShellEditor.SetDynamicallyBorn(false);
 									ShellEditor.SetEnableF6(TRUE);
 
 									// FindFileArcIndex нельзя здесь использовать

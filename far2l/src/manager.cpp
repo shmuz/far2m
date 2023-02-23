@@ -107,7 +107,7 @@ BOOL Manager::ExitAll()
 	{
 		Frame *iFrame=ModalStack[i];
 
-		if (!iFrame->GetCanLoseFocus(TRUE))
+		if (!iFrame->GetCanLoseFocus(true))
 		{
 			int PrevFrameCount=ModalStackCount;
 			iFrame->ProcessKey(KEY_ESC);
@@ -124,7 +124,7 @@ BOOL Manager::ExitAll()
 	{
 		Frame *iFrame=FrameList[i];
 
-		if (!iFrame->GetCanLoseFocus(TRUE))
+		if (!iFrame->GetCanLoseFocus(true))
 		{
 			ActivateFrame(iFrame);
 			Commit();
@@ -166,23 +166,6 @@ void Manager::CloseAll()
 	free(FrameList);
 	FrameList=nullptr;
 	FrameCount=FramePos=0;
-}
-
-BOOL Manager::IsAnyFrameModified(int Activate)
-{
-	for (int I=0; I<FrameCount; I++)
-		if (FrameList[I]->IsFileModified())
-		{
-			if (Activate)
-			{
-				ActivateFrame(I);
-				Commit();
-			}
-
-			return TRUE;
-		}
-
-	return FALSE;
 }
 
 void Manager::InsertFrame(Frame *Inserted, int Index)
@@ -373,7 +356,8 @@ Frame *Manager::FrameMenu()
 	if (AlreadyShown)
 		return nullptr;
 
-	int ExitCode, CheckCanLoseFocus=CurrentFrame->GetCanLoseFocus();
+	int ExitCode;
+	bool CheckCanLoseFocus=CurrentFrame->GetCanLoseFocus();
 	{
 		MenuItemEx ModalMenuItem;
 		VMenu ModalMenu(Msg::ScreensTitle,nullptr,0,ScrY-4);
@@ -444,13 +428,6 @@ int Manager::GetFrameCountByType(int Type)
 	}
 
 	return ret;
-}
-
-void Manager::SetFramePos(int NewPos)
-{
-	_MANAGER(CleverSysLog clv(L"Manager::SetFramePos(int NewPos)"));
-	_MANAGER(SysLog(L"NewPos=%i",NewPos));
-	FramePos=NewPos;
 }
 
 /*$ 11.05.2001 OT Теперь можно искать файл не только по полному имени, но и отдельно - путь, отдельно имя */
@@ -1340,9 +1317,6 @@ void Manager::DeleteCommit()
 		return;
 	}
 
-	// <ifDoubleInstance>
-	//BOOL ifDoubI=ifDoubleInstance(DeletedFrame);
-	// </ifDoubleInstance>
 	int ModalIndex=IndexOfStack(DeletedFrame);
 
 	if (ModalIndex!=-1)
@@ -1630,21 +1604,6 @@ void Manager::UnmodalizeCommit()
 	}
 
 	UnmodalizedFrame=nullptr;
-}
-
-BOOL Manager::ifDoubleInstance(Frame *frame)
-{
-	// <ifDoubleInstance>
-	/*
-	  if (ModalStackCount<=0)
-	    return FALSE;
-	  if(IndexOfStack(frame)==-1)
-	    return FALSE;
-	  if(IndexOfList(frame)!=-1)
-	    return TRUE;
-	*/
-	// </ifDoubleInstance>
-	return FALSE;
 }
 
 /*  Вызов ResizeConsole для всех NextModal у

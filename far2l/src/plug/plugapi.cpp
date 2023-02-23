@@ -1005,10 +1005,10 @@ static HANDLE FarDialogInitSynched(INT_PTR PluginNumber, int X1, int Y1, int X2,
 			FarDialog->SetDialogMode(DMODE_KEEPCONSOLETITLE);
 
 		if (Flags & FDLG_NONMODAL)
-			FarDialog->SetCanLoseFocus(TRUE);
+			FarDialog->SetCanLoseFocus(true);
 
 		if (Flags & FDLG_REGULARIDLE)
-			FarDialog->SetRegularIdle(TRUE);
+			FarDialog->SetRegularIdle(true);
 
 		FarDialog->SetHelp(HelpTopic);
 		/* $ 29.08.2000 SVS

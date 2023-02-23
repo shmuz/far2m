@@ -158,7 +158,7 @@ class FileEditor : public Frame
 		virtual const wchar_t *GetTypeName() {return L"[FileEdit]";};
 		virtual int GetType() { return MODALTYPE_EDITOR; }
 		virtual void OnDestroy();
-		virtual int GetCanLoseFocus(int DynamicMode=FALSE);
+		virtual bool GetCanLoseFocus(bool DynamicMode=false);
 		virtual int FastHide(); // для нужд CtrlAltShift
 		// возвращает признак того, является ли файл временным
 		// используется для принятия решения переходить в каталог по CtrlF10

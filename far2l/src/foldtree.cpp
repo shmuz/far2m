@@ -57,7 +57,7 @@ FolderTree::FolderTree(FARString &strResultFolder,int iModalMode,int IsStandalon
 	IsFullScreen(IsFullScreen),
 	IsStandalone(IsStandalone)
 {
-	SetDynamicallyBorn(FALSE);
+	SetDynamicallyBorn(false);
 	SetRestoreScreenMode(TRUE);
 	if (ModalMode != MODALTREE_FREE)
 		strResultFolder.Clear();

@@ -43,8 +43,8 @@ Frame::Frame():
 	FrameToBack(nullptr),
 	NextModal(nullptr),
 	PrevModal(nullptr),
-	DynamicallyBorn(TRUE),
-	CanLoseFocus(FALSE),
+	DynamicallyBorn(true),
+	CanLoseFocus(false),
 	ExitCode(-1),
 	KeyBarVisible(0),
 	TitleBarVisible(0),
@@ -59,7 +59,6 @@ Frame::~Frame()
 	_OT(SysLog(L"[%p] Frame::~Frame()", this));
 	SetRegularIdle(false);
 	DestroyAllModal();
-//  free(ModalStack);
 }
 
 void Frame::SetRegularIdle(bool enabled)
@@ -95,14 +94,11 @@ void Frame::OnChangeFocus(int focus)
 	if (focus)
 	{
 		Show();
-		Frame *iModal=NextModal;
 
-		while (iModal)
+		for (Frame *iModal=NextModal; iModal; iModal=iModal->NextModal)
 		{
 			if (iModal->GetType()!=MODALTYPE_COMBOBOX && iModal->IsVisible())
 				iModal->Show();
-
-			iModal=iModal->NextModal;
 		}
 	}
 	else
@@ -124,68 +120,19 @@ void Frame::Push(Frame* Modalized)
 	}
 }
 
-/*
-bool Frame::Pop(){
-  if (!NextModal) {
-    return false;
-  }
-  while (NextFrame->Pop()){
-    NextFrame->Pop();
-    return true;
-  }
-}
-
-Frame *Frame::operator[](int Index)
-{
-  Frame *Result=nullptr;
-  if (Index>=0 && Index<ModalStackSize){
-    Result=ModalStack[Index];
-  }
-  return Result;
-}
-
-int Frame::operator[](Frame *ModalFrame)
-{
-  int Result=-1;
-  for (int i=0;i<ModalStackSize;i++){
-    if (ModalStack[i]==ModalFrame){
-      Result=i;
-      break;
-    }
-  }
-  return Result;
-}
-*/
-
 void Frame::DestroyAllModal()
 {
 	// найти вершину
 	Frame *Prev=this;
 	Frame *Next=NextModal;
 
-	while (NextModal)
+	while (Next)
 	{
 		Prev->NextModal=nullptr;
 		Prev=Next;
 		Next=Next->NextModal;
-//    if (GetDynamicallyBorn())
 	}
 }
-
-/*
-int Frame::ProcessKey(int Key)
-{
-  if (ModalSize()){
-    return (ModalStack[ModalStackSize-1])->ProcessKey(Key);
-  }
-  return FALSE;
-}
-
-int Frame::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
-{
-  return FALSE;
-}
-*/
 
 int Frame::FastHide()
 {
@@ -197,40 +144,25 @@ void Frame::OnDestroy()
 	DestroyAllModal();
 }
 
-
 bool Frame::RemoveModal(Frame *aFrame)
 {
 	if (!aFrame)
-	{
 		return false;
-	}
 
 	Frame *Prev=this;
-	Frame *Next=NextModal;
-	bool fFound=false;
 
-	while (Next)
+	for (Frame *Next=NextModal; Next; Next=Next->NextModal)
 	{
 		if (Next==aFrame)
 		{
-			fFound=true;
-			break;
+			RemoveModal(Next->NextModal);
+			Prev->NextModal=nullptr;
+			return true;
 		}
-
 		Prev=Next;
-		Next=Next->NextModal;
 	}
 
-	if (fFound)
-	{
-		RemoveModal(Next->NextModal);
-		Prev->NextModal=nullptr;
-		return true;
-	}
-	else
-	{
-		return false;
-	}
+	return false;
 }
 
 void Frame::ResizeConsole()
@@ -240,14 +172,5 @@ void Frame::ResizeConsole()
 
 bool Frame::HasSaveScreen()
 {
-	if (this->SaveScr||this->ShadowSaveScr)
-	{
-		return true;
-	}
-
-	return false;
+	return this->SaveScr || this->ShadowSaveScr;
 }
-
-//bool Frame::ifFullConsole() {
-//  return !X1 && !Y1 && X2>=ScrX && Y2>=ScrY-1;
-//}

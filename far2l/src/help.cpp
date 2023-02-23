@@ -121,10 +121,10 @@ Help::Help(const wchar_t *Topic, const wchar_t *Mask,DWORD Flags):
 	CurColor(COL_HELPTEXT),
 	CtrlTabSize(8)
 {
-	CanLoseFocus=FALSE;
+	CanLoseFocus=false;
 	KeyBarVisible=TRUE;
 	/* $ OT По умолчанию все хелпы создаются статически*/
-	SetDynamicallyBorn(FALSE);
+	SetDynamicallyBorn(false);
 	Stack=new CallBackStack;
 	StackData.Clear();
 	StackData.Flags=Flags;
