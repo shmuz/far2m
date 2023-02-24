@@ -524,7 +524,6 @@ void TTYInputSequenceParser::ParseMouse(char action, char col, char raw)
 				_mouse.right_ts = 0;
 			} else
 				_mouse.right_ts = now;
-
 			_mouse.left_ts = _mouse.middle_ts = 0;
 			_mouse.right = true;
 			break;
@@ -557,7 +556,17 @@ void TTYInputSequenceParser::ParseMouse(char action, char col, char raw)
 		case 'P': // ctrl + mouse move
 			ir.Event.MouseEvent.dwControlKeyState|= LEFT_CTRL_PRESSED;
 
-		case '@': // mouse move
+		case 'C': // mouse move
+			break;
+
+		case 'B': // RButon + mouse move
+			_mouse.right = true;
+			_mouse.right_ts = 0;
+			break;
+
+		case '@': // LButon + mouse move
+			_mouse.left = true;
+			_mouse.left_ts = 0;
 			break;
 
 		default:
@@ -571,7 +580,7 @@ void TTYInputSequenceParser::ParseMouse(char action, char col, char raw)
 			ir.Event.MouseEvent.dwButtonState|= FROM_LEFT_2ND_BUTTON_PRESSED;
 
 	if (_mouse.right)
-			ir.Event.MouseEvent.dwButtonState|= FROM_LEFT_3RD_BUTTON_PRESSED;
+			ir.Event.MouseEvent.dwButtonState|= RIGHTMOST_BUTTON_PRESSED;
 
 	_ir_pending.emplace_back(ir); // g_winport_con_in->Enqueue(&ir, 1);
 
