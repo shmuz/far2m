@@ -79,8 +79,8 @@ Manager::Manager():
 	ExecutedFrame(nullptr),
 	CurrentFrame(nullptr),
 	ModalEVCount(0),
-	EndLoop(FALSE),
-	StartManager(FALSE)
+	EndLoop(false),
+	StartManager(false)
 {
 }
 
@@ -173,9 +173,6 @@ void Manager::InsertFrame(Frame *Inserted, int Index)
 	_MANAGER(CleverSysLog clv(L"Manager::InsertFrame(Frame *Inserted, int Index)"));
 	_MANAGER(SysLog(L"Inserted=%p, Index=%i",Inserted, Index));
 
-	if (Index==-1)
-		Index=FramePos;
-
 	InsertedFrame=Inserted;
 }
 
@@ -184,22 +181,21 @@ void Manager::DeleteFrame(Frame *Deleted)
 	_MANAGER(CleverSysLog clv(L"Manager::DeleteFrame(Frame *Deleted)"));
 	_MANAGER(SysLog(L"Deleted=%p",Deleted));
 
-	for (int i=0; i<FrameCount; i++)
-	{
-		Frame *iFrame=FrameList[i];
-
-		if (iFrame->RemoveModal(Deleted))
-		{
-			return;
-		}
-	}
-
 	if (!Deleted)
 	{
 		DeletedFrame=CurrentFrame;
 	}
 	else
 	{
+		for (int i=0; i<FrameCount; i++)
+		{
+			Frame *iFrame=FrameList[i];
+
+			if (iFrame->RemoveModal(Deleted))
+			{
+				return;
+			}
+		}
 		DeletedFrame=Deleted;
 	}
 }
@@ -253,7 +249,6 @@ void Manager::ExecuteNonModal()
 		ActivateFrame(NonModalIndex);
 	}
 
-	//Frame* ModalStartLevel=NonModal;
 	for (;;)
 	{
 		Commit();
@@ -265,8 +260,6 @@ void Manager::ExecuteNonModal()
 
 		ProcessMainLoop();
 	}
-
-	//ExecuteModal(NonModal);
 }
 
 void Manager::ExecuteModal(Frame *Executed)
@@ -286,7 +279,7 @@ void Manager::ExecuteModal(Frame *Executed)
 		{
 			fprintf(stderr, "ExecuteModal2\n");
 			_MANAGER(SysLog(L"WARNING! Попытка в одном цикле запустить в модальном режиме два фрейма. Executed=%p, ExecitedFrame=%p",Executed, ExecutedFrame));
-			return;// nullptr; //?? Определить, какое значение правильно возвращать в этом случае
+			return;
 		}
 		else
 		{
@@ -295,8 +288,8 @@ void Manager::ExecuteModal(Frame *Executed)
 	}
 
 	int ModalStartLevel=ModalStackCount;
-	int OriginalStartManager=StartManager;
-	StartManager=TRUE;
+	bool OriginalStartManager=StartManager;
+	StartManager=true;
 
 	for (;;)
 	{
@@ -311,18 +304,13 @@ void Manager::ExecuteModal(Frame *Executed)
 	}
 
 	StartManager=OriginalStartManager;
-	return;// GetModalExitCode();
-}
-
-int Manager::GetModalExitCode()
-{
-	return ModalExitCode;
+	return;
 }
 
 /* $ 11.10.2001 IS
    Подсчитать количество фреймов с указанным именем.
 */
-int Manager::CountFramesWithName(const wchar_t *Name, BOOL IgnoreCase)
+int Manager::CountFramesWithName(const wchar_t *Name, bool IgnoreCase)
 {
 	int Counter=0;
 	typedef int (__cdecl *cmpfunc_t)(const wchar_t *s1, const wchar_t *s2);
@@ -420,7 +408,7 @@ int Manager::GetFrameCountByType(int Type)
 		/* $ 10.05.2001 DJ
 		   не учитываем фрейм, который собираемся удалять
 		*/
-		if (FrameList[I] == DeletedFrame || (unsigned int)FrameList [I]->GetExitCode() == XC_QUIT)
+		if (FrameList[I] == DeletedFrame || (unsigned int)FrameList[I]->GetExitCode() == XC_QUIT)
 			continue;
 
 		if (FrameList[I]->GetType()==Type)
@@ -471,18 +459,14 @@ BOOL Manager::ShowBackground()
 	return FALSE;
 }
 
-
 void Manager::ActivateFrame(Frame *Activated)
 {
 	_MANAGER(CleverSysLog clv(L"Manager::ActivateFrame(Frame *Activated)"));
 	_MANAGER(SysLog(L"Activated=%i",Activated));
 
-	if (IndexOfList(Activated)==-1 && IndexOfStack(Activated)==-1)
-		return;
-
-	if (!ActivatedFrame)
+	if (!ActivatedFrame && !(IndexOfList(Activated)==-1 && IndexOfStack(Activated)==-1))
 	{
-		ActivatedFrame=Activated;
+		ActivatedFrame = Activated;
 	}
 }
 
@@ -518,11 +502,6 @@ void Manager::DeactivateFrame(Frame *Deactivated,int Direction)
 		}
 
 		ActivateFrame(FramePos);
-	}
-	else
-	{
-		// Direction==0
-		// Direct access from menu or (in future) from plugin
 	}
 
 	DeactivatedFrame=Deactivated;
@@ -597,7 +576,7 @@ bool Manager::HaveAnyFrame()
 void Manager::EnterMainLoop()
 {
 	WaitInFastFind=0;
-	StartManager=TRUE;
+	StartManager=true;
 
 	for (;;)
 	{
@@ -692,7 +671,7 @@ void Manager::ExitMainLoop(int Ask)
 			if (!(cp = CtrlObject->Cp())
 			        || (!cp->LeftPanel->ProcessPluginEvent(FE_CLOSE,nullptr) && !cp->RightPanel->ProcessPluginEvent(FE_CLOSE,nullptr)))
 			{
-				EndLoop=TRUE;
+				EndLoop=true;
 			}
 		}
 		else
@@ -1150,15 +1129,7 @@ void Manager::DeactivateCommit()
 		return;
 	}
 
-	if (!ActivatedFrame)
-	{
-		_MANAGER("WARNING! !ActivatedFrame");
-	}
-
-	if (DeactivatedFrame)
-	{
-		DeactivatedFrame->OnChangeFocus(0);
-	}
+	DeactivatedFrame->OnChangeFocus(0);
 
 	int modalIndex=IndexOfStack(DeactivatedFrame);
 
@@ -1198,14 +1169,12 @@ void Manager::ActivateCommit()
 	  Если мы пытаемся активировать полумодальный фрэйм,
 	  то надо его вытащить на верх стэка модалов.
 	*/
-
-	for (int I=0; I<ModalStackCount; I++)
+	for (int I=0; I<ModalStackCount-1; I++)
 	{
 		if (ModalStack[I]==ActivatedFrame)
 		{
-			Frame *tmp=ModalStack[I];
-			ModalStack[I]=ModalStack[ModalStackCount-1];
-			ModalStack[ModalStackCount-1]=tmp;
+			memmove(ModalStack+I, ModalStack+I+1, (ModalStackCount-I-1)*sizeof(Frame*));
+			ModalStack[ModalStackCount-1] = ActivatedFrame;
 			break;
 		}
 	}
@@ -1334,7 +1303,7 @@ void Manager::DeleteCommit()
 		delete tmp;
 	}
 
-	// Полагаемся на то, что в ActevateFrame не будет переписан уже
+	// Полагаемся на то, что в ActivateFrame не будет переписан уже
 	// присвоенный  ActivatedFrame
 	if (ModalStackCount)
 	{

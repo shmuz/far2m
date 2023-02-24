@@ -75,11 +75,9 @@ class Manager
 		int ModalEVCount;
 		unsigned int RegularIdleWanters = 0;
 
-		int  EndLoop;            // Признак выхода из цикла
-		int  StartManager;
+		bool EndLoop;            // Признак выхода из цикла
+		bool StartManager;
 		INPUT_RECORD LastInputRecord;
-
-		int ModalExitCode;
 
 	private:
 		void StartupMainloop();
@@ -147,7 +145,7 @@ class Manager
 		*/
 		BOOL PluginCommit();
 
-		int CountFramesWithName(const wchar_t *Name, BOOL IgnoreCase=TRUE);
+		int CountFramesWithName(const wchar_t *Name, bool IgnoreCase=true);
 
 		bool IsPanelsActive(); // используется как признак WaitInMainLoop
 		int  FindFrameByFile(int ModalType,const wchar_t *FileName,const wchar_t *Dir=nullptr);
@@ -183,8 +181,8 @@ class Manager
 
 		Frame *GetBottomFrame() { return (*this)[FramePos]; }
 
-		BOOL ManagerIsDown() {return EndLoop;}
-		BOOL ManagerStarted() {return StartManager;}
+		bool ManagerIsDown() const {return EndLoop;}
+		bool ManagerStarted() const {return StartManager;}
 
 		void InitKeyBar();
 

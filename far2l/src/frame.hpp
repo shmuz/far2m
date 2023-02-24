@@ -107,7 +107,7 @@ class Frame: public ScreenObject
 		Frame *GetTopModal() {return NextModal;};
 		void DestroyAllModal();
 		void SetDynamicallyBorn(bool Born) {DynamicallyBorn=Born;}
-		bool GetDynamicallyBorn() {return DynamicallyBorn;};
+		bool GetDynamicallyBorn() const {return DynamicallyBorn;};
 		virtual int FastHide();
 		bool RemoveModal(Frame *aFrame);
 		virtual void ResizeConsole();
