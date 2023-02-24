@@ -568,7 +568,7 @@ int CommandLine::GetCurDir(FARString &strCurDir)
 }
 
 
-void CommandLine::SetString(const wchar_t *Str,BOOL Redraw)
+void CommandLine::SetString(const wchar_t *Str,bool Redraw)
 {
 	LastCmdPartLength=-1;
 	CmdStr.SetString(Str);

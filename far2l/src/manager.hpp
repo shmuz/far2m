@@ -85,7 +85,7 @@ class Manager
 		void StartupMainloop();
 		Frame *FrameMenu(); //    вместо void SelectFrame(); // show window menu (F12)
 
-		BOOL Commit();         // завершает транзакцию по изменениям в очереди и стеке фреймов
+		bool Commit();         // завершает транзакцию по изменениям в очереди и стеке фреймов
 		// Она в цикле вызывает себя, пока хотябы один из указателей отличен от nullptr
 		// Функции, "подмастерья начальника" - Commit'a
 		// Иногда вызываются не только из него и из других мест
@@ -112,7 +112,6 @@ class Manager
 		void DeleteFrame(Frame *Deleted=nullptr);
 		void DeleteFrame(int Index);
 		void DeactivateFrame(Frame *Deactivated,int Direction);
-		void SwapTwoFrames(int Direction);
 		void ActivateFrame(Frame *Activated);
 		void ActivateFrame(int Index);
 		void RefreshFrame(Frame *Refreshed=nullptr);
@@ -150,7 +149,7 @@ class Manager
 
 		int CountFramesWithName(const wchar_t *Name, BOOL IgnoreCase=TRUE);
 
-		BOOL IsPanelsActive(); // используется как признак WaitInMainLoop
+		bool IsPanelsActive(); // используется как признак WaitInMainLoop
 		int  FindFrameByFile(int ModalType,const wchar_t *FileName,const wchar_t *Dir=nullptr);
 		BOOL ShowBackground();
 
@@ -173,7 +172,7 @@ class Manager
 		int IndexOfList(Frame *Frame);
 
 		int IndexOfStack(Frame *Frame);
-		int HaveAnyFrame();
+		bool HaveAnyFrame();
 
 		void ImmediateHide();
 		/* $ 13.04.2002 KM

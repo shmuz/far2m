@@ -88,7 +88,7 @@ class CommandLine:public ScreenObject
 
 		void GetString(FARString &strStr) { CmdStr.GetString(strStr); };
 		int GetLength() { return CmdStr.GetLength(); };
-		void SetString(const wchar_t *Str,BOOL Redraw=TRUE);
+		void SetString(const wchar_t *Str,bool Redraw=true);
 		void InsertString(const wchar_t *Str);
 
 		void ExecString(const wchar_t *Str, bool SeparateWindow = false, bool DirectRun = false, bool WaitForIdle = false, bool Silent = false, bool RunAs = false);

@@ -106,7 +106,7 @@ void Frame::OnChangeFocus(int focus)
 	}
 }
 
-void Frame::Push(Frame* Modalized)
+void Frame::PushFrame(Frame* Modalized)
 {
 	Frame* f = this;
 	while (f->NextModal)

@@ -103,7 +103,7 @@ class Frame: public ScreenObject
 
 		int IsTopFrame();
 		virtual int GetMacroMode() { return MacroMode; }
-		void Push(Frame* Modalized);
+		void PushFrame(Frame* Modalized);
 		Frame *GetTopModal() {return NextModal;};
 		void DestroyAllModal();
 		void SetDynamicallyBorn(bool Born) {DynamicallyBorn=Born;}

@@ -528,37 +528,6 @@ void Manager::DeactivateFrame(Frame *Deactivated,int Direction)
 	DeactivatedFrame=Deactivated;
 }
 
-void Manager::SwapTwoFrames(int Direction)
-{
-	if (Direction)
-	{
-		int OldFramePos=FramePos;
-		FramePos+=Direction;
-
-		if (Direction>0)
-		{
-			if (FramePos>=FrameCount)
-			{
-				FramePos=0;
-			}
-		}
-		else
-		{
-			if (FramePos<0)
-			{
-				FramePos=FrameCount-1;
-			}
-		}
-
-		Frame *TmpFrame=FrameList[OldFramePos];
-		FrameList[OldFramePos]=FrameList[FramePos];
-		FrameList[FramePos]=TmpFrame;
-		ActivateFrame(OldFramePos);
-	}
-
-	DeactivatedFrame=CurrentFrame;
-}
-
 void Manager::RefreshFrame(Frame *Refreshed)
 {
 	_MANAGER(CleverSysLog clv(L"Manager::RefreshFrame(Frame *Refreshed)"));
@@ -619,13 +588,10 @@ void Manager::SwitchToPanels()
 }
 
 
-int Manager::HaveAnyFrame()
+bool Manager::HaveAnyFrame()
 {
-	if (FrameCount || InsertedFrame || DeletedFrame || ActivatedFrame || RefreshedFrame ||
-	        ModalizedFrame || DeactivatedFrame || ExecutedFrame || CurrentFrame)
-		return 1;
-
-	return 0;
+	return (FrameCount || InsertedFrame || DeletedFrame || ActivatedFrame || RefreshedFrame ||
+	        ModalizedFrame || DeactivatedFrame || ExecutedFrame || CurrentFrame);
 }
 
 void Manager::EnterMainLoop()
@@ -806,7 +772,7 @@ int Manager::ProcessKey(DWORD Key)
 			}
 		}
 
-		/*** БЛОК ПРИВЕЛЕГИРОВАННЫХ КЛАВИШ ! ***/
+		/*** БЛОК ПРИВИЛЕГИРОВАННЫХ КЛАВИШ ! ***/
 
 		/***   КОТОРЫЕ НЕЛЬЗЯ НАМАКРОСИТЬ    ***/
 		switch (Key)
@@ -1077,65 +1043,44 @@ void Manager::PluginsMenu()
 	_MANAGER(SysLog(-1));
 }
 
-BOOL Manager::IsPanelsActive()
+bool Manager::IsPanelsActive()
 {
-	if (FramePos>=0)
-	{
-		return CurrentFrame?CurrentFrame->GetType() == MODALTYPE_PANELS:FALSE;
-	}
-	else
-	{
-		return FALSE;
-	}
+	return FramePos>=0 && CurrentFrame && CurrentFrame->GetType() == MODALTYPE_PANELS;
 }
 
 Frame *Manager::operator[](int Index)
 {
-	if (Index<0 || Index>=FrameCount || !FrameList)
-	{
-		return nullptr;
-	}
-
-	return FrameList[Index];
+	return (Index>=0 && Index<FrameCount && FrameList) ? FrameList[Index] : nullptr;
 }
 
 int Manager::IndexOfStack(Frame *Frame)
 {
-	int Result=-1;
-
 	for (int i=0; i<ModalStackCount; i++)
 	{
 		if (Frame==ModalStack[i])
 		{
-			Result=i;
-			break;
+			return i;
 		}
 	}
-
-	return Result;
+	return -1;
 }
 
 int Manager::IndexOfList(Frame *Frame)
 {
-	int Result=-1;
-
 	for (int i=0; i<FrameCount; i++)
 	{
 		if (Frame==FrameList[i])
 		{
-			Result=i;
-			break;
+			return i;
 		}
 	}
-
-	return Result;
+	return -1;
 }
 
-BOOL Manager::Commit()
+bool Manager::Commit()
 {
 	_MANAGER(CleverSysLog clv(L"Manager::Commit()"));
 	_MANAGER(ManagerClass_Dump(L"ManagerClass"));
-	int Result = false;
 
 	if (DeletedFrame && (InsertedFrame||ExecutedFrame))
 	{
@@ -1143,63 +1088,53 @@ BOOL Manager::Commit()
 		DeletedFrame = nullptr;
 		InsertedFrame = nullptr;
 		ExecutedFrame=nullptr;
-		Result=true;
 	}
 	else if (ExecutedFrame)
 	{
 		ExecuteCommit();
 		ExecutedFrame=nullptr;
-		Result=true;
 	}
 	else if (DeletedFrame)
 	{
 		DeleteCommit();
 		DeletedFrame = nullptr;
-		Result=true;
 	}
 	else if (InsertedFrame)
 	{
 		InsertCommit();
 		InsertedFrame = nullptr;
-		Result=true;
 	}
 	else if (DeactivatedFrame)
 	{
 		DeactivateCommit();
 		DeactivatedFrame=nullptr;
-		Result=true;
 	}
 	else if (ActivatedFrame)
 	{
 		ActivateCommit();
 		ActivatedFrame=nullptr;
-		Result=true;
 	}
 	else if (RefreshedFrame)
 	{
 		RefreshCommit();
 		RefreshedFrame=nullptr;
-		Result=true;
 	}
 	else if (ModalizedFrame)
 	{
 		ModalizeCommit();
 //    ModalizedFrame=nullptr;
-		Result=true;
 	}
 	else if (UnmodalizedFrame)
 	{
 		UnmodalizeCommit();
 //    UnmodalizedFrame=nullptr;
-		Result=true;
 	}
-
-	if (Result)
+	else
 	{
-		Result=Commit();
+		return false;
 	}
 
-	return Result;
+	return Commit();
 }
 
 void Manager::DeactivateCommit()
@@ -1261,7 +1196,7 @@ void Manager::ActivateCommit()
 
 	/* 14.05.2002 SKV
 	  Если мы пытаемся активировать полумодальный фрэйм,
-	  то надо его вытащит на верх стэка модалов.
+	  то надо его вытащить на верх стэка модалов.
 	*/
 
 	for (int I=0; I<ModalStackCount; I++)
@@ -1388,7 +1323,7 @@ void Manager::DeleteCommit()
 		_MANAGER(SysLog(L"delete DeletedFrame %p, CurrentFrame=%p",DeletedFrame,CurrentFrame));
 
 		if (CurrentFrame==DeletedFrame)
-			CurrentFrame=0;
+			CurrentFrame=nullptr;
 
 		/* $ 14.05.2002 SKV
 		  Так как в деструкторе фрэйма неявно может быть
@@ -1492,7 +1427,7 @@ void Manager::ExecuteCommit()
 */
 BOOL Manager::PluginCommit()
 {
-	return Commit();
+	return Commit() ? TRUE:FALSE;
 }
 
 /* $ Введена для нужд CtrlAltShift OT */
@@ -1516,8 +1451,8 @@ void Manager::ImmediateHide()
 		    Проверим, а не модальный ли редактор или вьювер на вершине
 		    модального стека? И если да, покажем User screen.
 		*/
-		if (ModalStack[ModalStackCount-1]->GetType()==MODALTYPE_EDITOR ||
-		        ModalStack[ModalStackCount-1]->GetType()==MODALTYPE_VIEWER)
+		auto type = ModalStack[ModalStackCount-1]->GetType();
+		if (type==MODALTYPE_EDITOR || type==MODALTYPE_VIEWER)
 		{
 			if (CtrlObject->CmdLine)
 				CtrlObject->CmdLine->ShowBackground();
@@ -1575,7 +1510,7 @@ void Manager::ImmediateHide()
 
 void Manager::ModalizeCommit()
 {
-	CurrentFrame->Push(ModalizedFrame);
+	CurrentFrame->PushFrame(ModalizedFrame);
 	ModalizedFrame=nullptr;
 }
 
@@ -1611,9 +1546,6 @@ void Manager::UnmodalizeCommit()
 */
 void Manager::ResizeAllModal(Frame *ModalFrame)
 {
-	if (!ModalFrame->NextModal)
-		return;
-
 	Frame *iModal=ModalFrame->NextModal;
 
 	while (iModal)
