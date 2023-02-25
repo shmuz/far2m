@@ -167,9 +167,9 @@ class Manager
 
 		Frame *operator[](int Index);
 
-		int IndexOfList(Frame *Frame);
+		int IndexOfList(Frame *Frame) const;
 
-		int IndexOfStack(Frame *Frame);
+		int IndexOfStack(Frame *Frame) const;
 		bool HaveAnyFrame();
 
 		void ImmediateHide();

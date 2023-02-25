@@ -59,6 +59,27 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "InterThreadCall.hpp"
 #include "DlgGuid.hpp"
 
+// #define DEBUG_MANAGER
+#ifdef DEBUG_MANAGER
+#define BasicLog Log
+void FrameLog(const char* prefix, Frame* frame)
+{
+	if (frame)
+	{
+		char buf[128];
+		FARString tp, nm;
+		frame->GetTypeAndName(tp,nm);
+		sprintf(buf, "%s: %p : %ls : %ls", prefix, frame, tp.CPtr(), nm.CPtr());
+		Log(buf);
+	}
+	else
+		Log("%s: nullptr", prefix);
+}
+#else
+#define BasicLog(a,...)
+#define FrameLog(a,b)
+#endif
+
 Manager *FrameManager;
 
 Manager::Manager():
@@ -172,6 +193,7 @@ void Manager::InsertFrame(Frame *Inserted, int Index)
 {
 	_MANAGER(CleverSysLog clv(L"Manager::InsertFrame(Frame *Inserted, int Index)"));
 	_MANAGER(SysLog(L"Inserted=%p, Index=%i",Inserted, Index));
+	FrameLog("InsertFrame", Inserted);
 
 	InsertedFrame=Inserted;
 }
@@ -180,6 +202,7 @@ void Manager::DeleteFrame(Frame *Deleted)
 {
 	_MANAGER(CleverSysLog clv(L"Manager::DeleteFrame(Frame *Deleted)"));
 	_MANAGER(SysLog(L"Deleted=%p",Deleted));
+	FrameLog("DeleteFrame", Deleted);
 
 	if (!Deleted)
 	{
@@ -212,6 +235,8 @@ void Manager::ModalizeFrame(Frame *Modalized, int Mode)
 {
 	_MANAGER(CleverSysLog clv(L"Manager::ModalizeFrame (Frame *Modalized, int Mode)"));
 	_MANAGER(SysLog(L"Modalized=%p",Modalized));
+	FrameLog("ModalizeFrame", Modalized);
+
 	ModalizedFrame=Modalized;
 	ModalizeCommit();
 }
@@ -220,6 +245,8 @@ void Manager::UnmodalizeFrame(Frame *Unmodalized)
 {
 	_MANAGER(CleverSysLog clv(L"Manager::UnmodalizeFrame (Frame *Unmodalized)"));
 	_MANAGER(SysLog(L"Unmodalized=%p",Unmodalized));
+	FrameLog("UnmodalizeFrame", Unmodalized);
+
 	UnmodalizedFrame=Unmodalized;
 	UnmodalizeCommit();
 }
@@ -229,6 +256,7 @@ void Manager::ExecuteNonModal()
 	_MANAGER(CleverSysLog clv(L"Manager::ExecuteNonModal ()"));
 	_MANAGER(SysLog(L"ExecutedFrame=%p, InsertedFrame=%p, DeletedFrame=%p",ExecutedFrame, InsertedFrame, DeletedFrame));
 	Frame *NonModal=InsertedFrame?InsertedFrame:(ExecutedFrame?ExecutedFrame:ActivatedFrame);
+	FrameLog("ExecuteNonModal", NonModal);
 
 	if (!NonModal)
 	{
@@ -266,6 +294,7 @@ void Manager::ExecuteModal(Frame *Executed)
 {
 	_MANAGER(CleverSysLog clv(L"Manager::ExecuteModal (Frame *Executed)"));
 	_MANAGER(SysLog(L"Executed=%p, ExecutedFrame=%p",Executed,ExecutedFrame));
+	FrameLog("ExecuteModal", Executed);
 
 	if (!Executed && !ExecutedFrame)
 	{
@@ -463,6 +492,7 @@ void Manager::ActivateFrame(Frame *Activated)
 {
 	_MANAGER(CleverSysLog clv(L"Manager::ActivateFrame(Frame *Activated)"));
 	_MANAGER(SysLog(L"Activated=%i",Activated));
+	FrameLog("ActivateFrame", Activated);
 
 	if (!ActivatedFrame && !(IndexOfList(Activated)==-1 && IndexOfStack(Activated)==-1))
 	{
@@ -481,6 +511,7 @@ void Manager::DeactivateFrame(Frame *Deactivated,int Direction)
 {
 	_MANAGER(CleverSysLog clv(L"Manager::DeactivateFrame (Frame *Deactivated,int Direction)"));
 	_MANAGER(SysLog(L"Deactivated=%p, Direction=%d",Deactivated,Direction));
+	FrameLog("DeactivateFrame", Deactivated);
 
 	if (Direction)
 	{
@@ -511,6 +542,7 @@ void Manager::RefreshFrame(Frame *Refreshed)
 {
 	_MANAGER(CleverSysLog clv(L"Manager::RefreshFrame(Frame *Refreshed)"));
 	_MANAGER(SysLog(L"Refreshed=%p",Refreshed));
+	FrameLog("RefreshFrame", Refreshed);
 
 	if (ActivatedFrame)
 		return;
@@ -552,6 +584,8 @@ void Manager::ExecuteFrame(Frame *Executed)
 {
 	_MANAGER(CleverSysLog clv(L"Manager::ExecuteFrame(Frame *Executed)"));
 	_MANAGER(SysLog(L"Executed=%p",Executed));
+	FrameLog("ExecuteFrame", Executed);
+
 	ExecutedFrame=Executed;
 }
 
@@ -1032,26 +1066,22 @@ Frame *Manager::operator[](int Index)
 	return (Index>=0 && Index<FrameCount && FrameList) ? FrameList[Index] : nullptr;
 }
 
-int Manager::IndexOfStack(Frame *Frame)
+int Manager::IndexOfStack(Frame *Frame) const
 {
 	for (int i=0; i<ModalStackCount; i++)
 	{
 		if (Frame==ModalStack[i])
-		{
 			return i;
-		}
 	}
 	return -1;
 }
 
-int Manager::IndexOfList(Frame *Frame)
+int Manager::IndexOfList(Frame *Frame) const
 {
 	for (int i=0; i<FrameCount; i++)
 	{
 		if (Frame==FrameList[i])
-		{
 			return i;
-		}
 	}
 	return -1;
 }
@@ -1060,6 +1090,7 @@ bool Manager::Commit()
 {
 	_MANAGER(CleverSysLog clv(L"Manager::Commit()"));
 	_MANAGER(ManagerClass_Dump(L"ManagerClass"));
+	BasicLog("Commit");
 
 	if (DeletedFrame && (InsertedFrame||ExecutedFrame))
 	{
@@ -1120,6 +1151,7 @@ void Manager::DeactivateCommit()
 {
 	_MANAGER(CleverSysLog clv(L"Manager::DeactivateCommit()"));
 	_MANAGER(SysLog(L"DeactivatedFrame=%p",DeactivatedFrame));
+	FrameLog("DeactivateCommit", DeactivatedFrame);
 
 	/*$ 18.04.2002 skv
 	  Если нечего активировать, то в общем-то не надо и деактивировать.
@@ -1151,6 +1183,7 @@ void Manager::ActivateCommit()
 {
 	_MANAGER(CleverSysLog clv(L"Manager::ActivateCommit()"));
 	_MANAGER(SysLog(L"ActivatedFrame=%p",ActivatedFrame));
+	FrameLog("ActivateCommit", ActivatedFrame);
 
 	if (CurrentFrame==ActivatedFrame)
 	{
@@ -1186,6 +1219,7 @@ void Manager::UpdateCommit()
 {
 	_MANAGER(CleverSysLog clv(L"Manager::UpdateCommit()"));
 	_MANAGER(SysLog(L"DeletedFrame=%p, InsertedFrame=%p, ExecutedFrame=%p",DeletedFrame,InsertedFrame, ExecutedFrame));
+	BasicLog("UpdateCommit: DeletedFrame=%p, InsertedFrame=%p, ExecutedFrame=%p", DeletedFrame,InsertedFrame, ExecutedFrame);
 
 	if (ExecutedFrame)
 	{
@@ -1198,7 +1232,9 @@ void Manager::UpdateCommit()
 
 	if (-1!=FrameIndex)
 	{
-		ActivateFrame(FrameList[FrameIndex] = InsertedFrame);
+		FrameList[FrameIndex]=InsertedFrame;
+		ActivateFrame(InsertedFrame);
+		InsertedFrame=nullptr; // Issue #26
 		ActivatedFrame->FrameToBack=CurrentFrame;
 		DeleteCommit();
 	}
@@ -1215,6 +1251,7 @@ void Manager::DeleteCommit()
 {
 	_MANAGER(CleverSysLog clv(L"Manager::DeleteCommit()"));
 	_MANAGER(SysLog(L"DeletedFrame=%p",DeletedFrame));
+	FrameLog("DeleteCommit", DeletedFrame);
 
 	if (!DeletedFrame)
 	{
@@ -1261,6 +1298,11 @@ void Manager::DeleteCommit()
 
 	if (-1!=FrameIndex)
 	{
+#ifdef DEBUG_MANAGER
+		for (int j=FrameIndex; j<FrameCount; j++)
+			FrameLog("--> ", FrameList[j]);
+#endif
+
 		DeletedFrame->DestroyAllModal();
 
 		for (int j=FrameIndex; j<FrameCount-1; j++)
@@ -1277,10 +1319,12 @@ void Manager::DeleteCommit()
 
 		if (DeletedFrame->FrameToBack==CtrlObject->Cp())
 		{
+			BasicLog("== ActivateFrame(FrameList[FramePos])");
 			ActivateFrame(FrameList[FramePos]);
 		}
 		else
 		{
+			BasicLog("== ActivateFrame(DeletedFrame->FrameToBack)");
 			ActivateFrame(DeletedFrame->FrameToBack);
 		}
 	}
@@ -1292,7 +1336,7 @@ void Manager::DeleteCommit()
 		_MANAGER(SysLog(L"delete DeletedFrame %p, CurrentFrame=%p",DeletedFrame,CurrentFrame));
 
 		if (CurrentFrame==DeletedFrame)
-			CurrentFrame=nullptr;
+			CurrentFrame=ActivatedFrame; // Issue #26
 
 		/* $ 14.05.2002 SKV
 		  Так как в деструкторе фрэйма неявно может быть
@@ -1319,6 +1363,7 @@ void Manager::InsertCommit()
 {
 	_MANAGER(CleverSysLog clv(L"Manager::InsertCommit()"));
 	_MANAGER(SysLog(L"InsertedFrame=%p",InsertedFrame));
+	FrameLog("InsertCommit", InsertedFrame);
 
 	if (InsertedFrame)
 	{
@@ -1344,6 +1389,7 @@ void Manager::RefreshCommit()
 {
 	_MANAGER(CleverSysLog clv(L"Manager::RefreshCommit()"));
 	_MANAGER(SysLog(L"RefreshedFrame=%p",RefreshedFrame));
+	FrameLog("RefreshCommit", RefreshedFrame);
 
 	if (!RefreshedFrame)
 		return;
@@ -1376,6 +1422,7 @@ void Manager::ExecuteCommit()
 {
 	_MANAGER(CleverSysLog clv(L"Manager::ExecuteCommit()"));
 	_MANAGER(SysLog(L"ExecutedFrame=%p",ExecutedFrame));
+	FrameLog("ExecuteCommit", ExecutedFrame);
 
 	if (!ExecutedFrame)
 	{
@@ -1396,12 +1443,14 @@ void Manager::ExecuteCommit()
 */
 BOOL Manager::PluginCommit()
 {
+	BasicLog("PluginCommit");
 	return Commit() ? TRUE:FALSE;
 }
 
 /* $ Введена для нужд CtrlAltShift OT */
 void Manager::ImmediateHide()
 {
+	BasicLog("ImmediateHide");
 	if (FramePos<0)
 		return;
 
@@ -1479,12 +1528,14 @@ void Manager::ImmediateHide()
 
 void Manager::ModalizeCommit()
 {
+	FrameLog("ModalizeCommit", ModalizedFrame);
 	CurrentFrame->PushFrame(ModalizedFrame);
 	ModalizedFrame=nullptr;
 }
 
 void Manager::UnmodalizeCommit()
 {
+	FrameLog("UnmodalizeCommit", UnmodalizedFrame);
 	Frame *iFrame;
 
 	for (int i=0; i<FrameCount; i++)
