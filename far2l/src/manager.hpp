@@ -97,8 +97,6 @@ class Manager
 		void ModalizeCommit();
 		void UnmodalizeCommit();
 
-		int GetModalExitCode();
-
 	public:
 		Manager();
 		~Manager();
@@ -137,18 +135,18 @@ class Manager
 		*/
 		BOOL ExitAll();
 
-		int  GetFrameCount() {return(FrameCount);};
-		int  GetFrameCountByType(int Type);
+		int  GetFrameCount() const {return(FrameCount);};
+		int  GetFrameCountByType(int Type) const;
 
 		/*$ 26.06.2001 SKV
 		Для вызова через ACTL_COMMIT
 		*/
 		BOOL PluginCommit();
 
-		int CountFramesWithName(const wchar_t *Name, bool IgnoreCase=true);
+		int CountFramesWithName(const wchar_t *Name, bool IgnoreCase=true) const;
 
-		bool IsPanelsActive(); // используется как признак WaitInMainLoop
-		int  FindFrameByFile(int ModalType,const wchar_t *FileName,const wchar_t *Dir=nullptr);
+		bool IsPanelsActive() const; // используется как признак WaitInMainLoop
+		int  FindFrameByFile(int ModalType,const wchar_t *FileName,const wchar_t *Dir=nullptr) const;
 		BOOL ShowBackground();
 
 		void EnterMainLoop();
@@ -163,14 +161,14 @@ class Manager
 		INPUT_RECORD *GetLastInputRecord() { return &LastInputRecord; }
 		void SetLastInputRecord(INPUT_RECORD *Rec);
 
-		Frame *GetCurrentFrame() { return CurrentFrame; }
+		Frame *GetCurrentFrame() const { return CurrentFrame; }
 
-		Frame *operator[](int Index);
+		Frame *operator[](int Index) const;
 
 		int IndexOfList(Frame *Frame) const;
 
 		int IndexOfStack(Frame *Frame) const;
-		bool HaveAnyFrame();
+		bool HaveAnyFrame() const;
 
 		void ImmediateHide();
 		/* $ 13.04.2002 KM
@@ -179,7 +177,7 @@ class Manager
 		*/
 		void ResizeAllModal(Frame *ModalFrame);
 
-		Frame *GetBottomFrame() { return (*this)[FramePos]; }
+		Frame *GetBottomFrame() const { return (*this)[FramePos]; }
 
 		bool ManagerIsDown() const {return EndLoop;}
 		bool ManagerStarted() const {return StartManager;}
@@ -193,12 +191,12 @@ class Manager
 		*/
 		void EnterModalEV() {ModalEVCount++;}
 		void ExitModalEV() {ModalEVCount--;}
-		BOOL InModalEV() {return ModalEVCount;}
+		BOOL InModalEV() const {return ModalEVCount;}
 
 		void ResizeAllFrame();
 
 		// возвращает top-модал или сам фрейм, если у фрейма нету модалов
-		Frame* GetTopModal();
+		Frame* GetTopModal() const;
 
 		void RegularIdleWantersAdd() { RegularIdleWanters++; }
 		void RegularIdleWantersRemove() { if (RegularIdleWanters) RegularIdleWanters--; }

@@ -61,24 +61,32 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // #define DEBUG_MANAGER
 #ifdef DEBUG_MANAGER
+
 #define BasicLog Log
 void FrameLog(const char* prefix, Frame* frame)
 {
 	if (frame)
 	{
-		char buf[128];
 		FARString tp, nm;
 		frame->GetTypeAndName(tp,nm);
-		sprintf(buf, "%s: %p : %ls : %ls", prefix, frame, tp.CPtr(), nm.CPtr());
-		Log(buf);
+		Log("%s: %p : %ls : %ls", prefix, frame, tp.CPtr(), nm.CPtr());
 	}
 	else
 		Log("%s: nullptr", prefix);
 }
+
+#define DumpFrameList() do {                  \
+		for (int j=FrameIndex; j<FrameCount; j++) \
+			FrameLog("--> ", FrameList[j]);         \
+	} while(false)
+
 #else
+
 #define BasicLog(a,...)
 #define FrameLog(a,b)
-#endif
+#define DumpFrameList()
+
+#endif // #ifdef DEBUG_MANAGER
 
 Manager *FrameManager;
 
@@ -339,7 +347,7 @@ void Manager::ExecuteModal(Frame *Executed)
 /* $ 11.10.2001 IS
    Подсчитать количество фреймов с указанным именем.
 */
-int Manager::CountFramesWithName(const wchar_t *Name, bool IgnoreCase)
+int Manager::CountFramesWithName(const wchar_t *Name, bool IgnoreCase) const
 {
 	int Counter=0;
 	typedef int (__cdecl *cmpfunc_t)(const wchar_t *s1, const wchar_t *s2);
@@ -428,7 +436,7 @@ Frame *Manager::FrameMenu()
 }
 
 
-int Manager::GetFrameCountByType(int Type)
+int Manager::GetFrameCountByType(int Type) const
 {
 	int ret=0;
 
@@ -448,7 +456,7 @@ int Manager::GetFrameCountByType(int Type)
 }
 
 /*$ 11.05.2001 OT Теперь можно искать файл не только по полному имени, но и отдельно - путь, отдельно имя */
-int  Manager::FindFrameByFile(int ModalType,const wchar_t *FileName, const wchar_t *Dir)
+int  Manager::FindFrameByFile(int ModalType,const wchar_t *FileName, const wchar_t *Dir) const
 {
 	FARString strBufFileName;
 	FARString strFullFileName = FileName;
@@ -601,7 +609,7 @@ void Manager::SwitchToPanels()
 }
 
 
-bool Manager::HaveAnyFrame()
+bool Manager::HaveAnyFrame() const
 {
 	return (FrameCount || InsertedFrame || DeletedFrame || ActivatedFrame || RefreshedFrame ||
 	        ModalizedFrame || DeactivatedFrame || ExecutedFrame || CurrentFrame);
@@ -1056,12 +1064,12 @@ void Manager::PluginsMenu()
 	_MANAGER(SysLog(-1));
 }
 
-bool Manager::IsPanelsActive()
+bool Manager::IsPanelsActive() const
 {
 	return FramePos>=0 && CurrentFrame && CurrentFrame->GetType() == MODALTYPE_PANELS;
 }
 
-Frame *Manager::operator[](int Index)
+Frame *Manager::operator[](int Index) const
 {
 	return (Index>=0 && Index<FrameCount && FrameList) ? FrameList[Index] : nullptr;
 }
@@ -1298,10 +1306,7 @@ void Manager::DeleteCommit()
 
 	if (-1!=FrameIndex)
 	{
-#ifdef DEBUG_MANAGER
-		for (int j=FrameIndex; j<FrameCount; j++)
-			FrameLog("--> ", FrameList[j]);
-#endif
+		DumpFrameList();
 
 		DeletedFrame->DestroyAllModal();
 
@@ -1605,7 +1610,7 @@ void Manager::InitKeyBar()
 }
 
 // возвращает top-модал или сам фрейм, если у фрейма нету модалов
-Frame* Manager::GetTopModal()
+Frame* Manager::GetTopModal() const
 {
 	Frame *f=CurrentFrame, *fo=nullptr;
 

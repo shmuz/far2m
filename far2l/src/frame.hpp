@@ -80,7 +80,7 @@ class Frame: public ScreenObject
 		virtual bool GetCanLoseFocus(bool DynamicMode=false) { return(CanLoseFocus); };
 		void SetCanLoseFocus(bool Mode) { CanLoseFocus=Mode; };
 		void SetRegularIdle(bool enabled);
-		int  GetExitCode() { return ExitCode; };
+		int  GetExitCode() const { return ExitCode; };
 		virtual void SetExitCode(int Code) { ExitCode=Code; };
 
 		virtual bool IsFileModified() const { return false; };
