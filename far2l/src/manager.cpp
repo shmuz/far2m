@@ -75,9 +75,14 @@ void FrameLog(const char* prefix, Frame* frame)
 		Log("%s: nullptr", prefix);
 }
 
-#define DumpFrameList() do {                  \
-		for (int j=FrameIndex; j<FrameCount; j++) \
-			FrameLog("--> ", FrameList[j]);         \
+#define DumpFrameList() do {               \
+		for (int j=0; j<FrameCount; j++)       \
+			FrameLog("--> ", FrameList[j]);      \
+	} while(false)
+
+#define DumpFrameStack() do {              \
+		for (int j=0; j<ModalStackCount; j++)  \
+			FrameLog("==> ", ModalStack[j]);     \
 	} while(false)
 
 #else
@@ -85,6 +90,7 @@ void FrameLog(const char* prefix, Frame* frame)
 #define BasicLog(a,...)
 #define FrameLog(a,b)
 #define DumpFrameList()
+#define DumpFrameStack()
 
 #endif // #ifdef DEBUG_MANAGER
 
