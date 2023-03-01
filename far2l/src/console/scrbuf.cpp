@@ -33,7 +33,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
-
+#include <list>
 #include "scrbuf.hpp"
 #include "colors.hpp"
 #include "ctrlobj.hpp"
@@ -41,7 +41,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "interf.hpp"
 #include "palette.hpp"
 #include "config.hpp"
-#include "DList.hpp"
 #include "console.hpp"
 
 enum
@@ -353,7 +352,7 @@ void ScreenBuf::Flush()
 				ShowTime(FALSE);
 			}
 
-			DList<SMALL_RECT>WriteList;
+			std::list<SMALL_RECT>WriteList;
 			bool Changes=false;
 
 			if (SBFlags.Check(SBFLAGS_USESHADOW))
@@ -386,23 +385,23 @@ void ScreenBuf::Flush()
 								WriteRegion.Left=Max(static_cast<SHORT>(0),static_cast<SHORT>(WriteRegion.Left-1));
 								WriteRegion.Right=Min(static_cast<SHORT>(WriteRegion.Right+1),static_cast<SHORT>(BufX-1));
 								bool Merge=false;
-								PSMALL_RECT Last=WriteList.Last();
 
-								if (Last)
+								if (!WriteList.empty())
 								{
 #define MAX_DELTA 5
+									SMALL_RECT& Last=WriteList.back();
 
-									if (WriteRegion.Top-1==Last->Bottom && ((WriteRegion.Left>=Last->Left && WriteRegion.Left-Last->Left<MAX_DELTA) || (Last->Right>=WriteRegion.Right && Last->Right-WriteRegion.Right<MAX_DELTA)))
+									if (WriteRegion.Top-1==Last.Bottom && ((WriteRegion.Left>=Last.Left && WriteRegion.Left-Last.Left<MAX_DELTA) || (Last.Right>=WriteRegion.Right && Last.Right-WriteRegion.Right<MAX_DELTA)))
 									{
-										Last->Bottom=WriteRegion.Bottom;
-										Last->Left=Min(Last->Left,WriteRegion.Left);
-										Last->Right=Max(Last->Right,WriteRegion.Right);
+										Last.Bottom=WriteRegion.Bottom;
+										Last.Left=Min(Last.Left,WriteRegion.Left);
+										Last.Right=Max(Last.Right,WriteRegion.Right);
 										Merge=true;
 									}
 								}
 
 								if (!Merge)
-									WriteList.Push(&WriteRegion);
+									WriteList.push_back(WriteRegion);
 
 								WriteRegion.Left=BufX-1;
 								WriteRegion.Top=BufY-1;
@@ -415,7 +414,7 @@ void ScreenBuf::Flush()
 
 					if (Started)
 					{
-						WriteList.Push(&WriteRegion);
+						WriteList.push_back(WriteRegion);
 					}
 				}
 			}
@@ -423,12 +422,12 @@ void ScreenBuf::Flush()
 			{
 				Changes=true;
 				SMALL_RECT WriteRegion={0,0,(SHORT)(BufX-1),(SHORT)(BufY-1)};
-				WriteList.Push(&WriteRegion);
+				WriteList.push_back(WriteRegion);
 			}
 
 			if (Changes)
 			{
-				for (PSMALL_RECT PtrRect=WriteList.First(); PtrRect; PtrRect=WriteList.Next(PtrRect))
+				for (auto PtrRect=WriteList.begin(); PtrRect!=WriteList.end(); PtrRect++)
 				{
 					COORD BufferSize={BufX, BufY}, BufferCoord={PtrRect->Left,PtrRect->Top};
 					SMALL_RECT WriteRegion=*PtrRect;

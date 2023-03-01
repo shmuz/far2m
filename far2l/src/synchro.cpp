@@ -50,10 +50,11 @@ PluginSynchro::~PluginSynchro()
 void PluginSynchro::Synchro(bool Plugin, INT_PTR ModuleNumber,void* Param)
 {
 	RecursiveMutex.lock();
-	SynchroData* item=Data.Push();
-	item->Plugin=Plugin;
-	item->ModuleNumber=ModuleNumber;
-	item->Param=Param;
+	SynchroData item;
+	item.Plugin=Plugin;
+	item.ModuleNumber=ModuleNumber;
+	item.Param=Param;
+	Data.push_back(item);
 	RecursiveMutex.unlock();
 }
 
@@ -64,15 +65,15 @@ bool PluginSynchro::Process(void)
 	bool process=false; bool plugin=false; INT_PTR module=0; void* param=nullptr;
 
 	RecursiveMutex.lock();
-	SynchroData* item=Data.First();
 
-	if (item)
+	if (!Data.empty())
 	{
 		process=true;
-		plugin=item->Plugin;
-		module=item->ModuleNumber;
-		param=item->Param;
-		Data.Delete(item);
+		auto item=Data.front();
+		plugin=item.Plugin;
+		module=item.ModuleNumber;
+		param=item.Param;
+		Data.erase(Data.begin());
 	}
 
 	RecursiveMutex.unlock();

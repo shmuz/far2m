@@ -31,7 +31,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "DList.hpp"
+#include <list>
 #include <mutex>
 
 class PluginSynchro
@@ -45,7 +45,7 @@ class PluginSynchro
 		};
 	private:
 		std::recursive_mutex RecursiveMutex;
-		DList<SynchroData> Data;
+		std::list<SynchroData> Data;
 	public:
 		PluginSynchro();
 		~PluginSynchro();
