@@ -1196,6 +1196,8 @@ struct PluginMenuItemData
 
 bool PluginManager::CheckIfHotkeyPresent(const char *HotKeyType)
 {
+	auto Fmt = !strcmp(HotKeyType,"Hotkey") ? FmtPluginMenuStringD : FmtPluginConfigStringD;
+
 	for (int I=0; I<PluginsCount; I++)
 	{
 		Plugin *pPlugin = PluginsData[I];
@@ -1211,7 +1213,7 @@ bool PluginManager::CheckIfHotkeyPresent(const char *HotKeyType)
 			if (bCached)
 			{
 				KeyFileReadSection kfh(PluginsIni(), pPlugin->GetSettingsName());
-				if (!kfh.HasKey(StrPrintf(FmtPluginConfigStringD, J)))
+				if (!kfh.HasKey(StrPrintf(Fmt, J)))
 					break;
 			}
 			else if (J >= Info.PluginConfigStringsNumber)
