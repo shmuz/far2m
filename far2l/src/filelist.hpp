@@ -33,10 +33,10 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include "list"
 #include "panel.hpp"
 #include "dizlist.hpp"
 #include "filefilterparams.hpp"
-#include "DList.hpp"
 #include "plugins.hpp"
 #include "ConfigRW.hpp"
 #include "FSNotify.h"
@@ -212,8 +212,8 @@ class FileList:public Panel
 		FileListItem **ListData;
 		int FileCount;
 		PHPTR hPlugin;
-		DList<PrevDataItem*>PrevDataList;
-		DList<PluginsListItem*>PluginsList;
+		std::list<PrevDataItem*>PrevDataList;
+		std::list<PluginsListItem*>PluginsList;
 		std::unique_ptr<IFSNotify> ListChange;
 		long UpperFolderTopFile,LastCurFile;
 		long ReturnCurrentFile;

@@ -252,13 +252,13 @@ FileList::~FileList()
 	_OT(SysLog(L"[%p] FileList::~FileList()", this));
 	CloseChangeNotification();
 
-	for (PrevDataItem **i=PrevDataList.First();i;i=PrevDataList.Next(i))
+	for (auto i=PrevDataList.begin(); i!=PrevDataList.end(); i++)
 	{
 		DeleteListData((*i)->PrevListData,(*i)->PrevFileCount);
 		delete *i;
 	}
 
-	PrevDataList.Clear();
+	PrevDataList.clear();
 
 	DeleteListData(ListData,FileCount);
 
@@ -813,9 +813,9 @@ int64_t FileList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 		case MCODE_V_APANEL_PATH0:
 		case MCODE_V_PPANEL_PATH0:
 		{
-			if (PluginsList.Empty())
+			if (PluginsList.empty())
 				return 0;
-			*(FARString *)vParam = (*PluginsList.Last())->strPrevOriginalCurDir;
+			*(FARString *)vParam = PluginsList.back()->strPrevOriginalCurDir;
 			return 1;
 		}
 
@@ -2606,9 +2606,9 @@ BOOL FileList::ChangeDir(const wchar_t *NewDir,BOOL IsUpdated)
 		}
 		else
 		{
-			if (!dot2Present && CurFile<FileCount && !PluginsList.Empty())
+			if (!dot2Present && CurFile<FileCount && !PluginsList.empty())
 			{
-				PluginsListItem *Last=*PluginsList.Last();
+				PluginsListItem *Last=PluginsList.back();
 				if (Last)
 				{
 					Last->Dir2CursorFile[strInfoCurDir] = ListData[CurFile]->strName;
@@ -2627,10 +2627,10 @@ BOOL FileList::ChangeDir(const wchar_t *NewDir,BOOL IsUpdated)
 		} else
 			Update(UPDATE_KEEP_SELECTION);
 
-		if (PluginClosed && !PrevDataList.Empty())
+		if (PluginClosed && !PrevDataList.empty())
 		{
-			PrevDataItem* Item=*PrevDataList.Last();
-			PrevDataList.Delete(PrevDataList.Last());
+			PrevDataItem* Item=PrevDataList.back();
+			PrevDataList.erase(--PrevDataList.end());
 			if (Item->PrevFileCount>0)
 			{
 				MoveSelection(ListData,FileCount,Item->PrevListData,Item->PrevFileCount);
@@ -2652,9 +2652,9 @@ BOOL FileList::ChangeDir(const wchar_t *NewDir,BOOL IsUpdated)
 		if (dot2Present)
 		{
 			long Pos=FindFile(PointToName(strFindDir));
-			if (Pos==-1 && !PluginClosed && !PluginsList.Empty())
+			if (Pos==-1 && !PluginClosed && !PluginsList.empty())
 			{
-				PluginsListItem *Last=*PluginsList.Last();
+				PluginsListItem *Last=PluginsList.back();
 				if (Last)
 				{
 					OpenPluginInfo InfoNew;
@@ -3487,9 +3487,9 @@ int FileList::GetCurBaseName(FARString &strName)
 		return FALSE;
 	}
 
-	if (PanelMode==PLUGIN_PANEL && !PluginsList.Empty()) // для плагинов
+	if (PanelMode==PLUGIN_PANEL && !PluginsList.empty()) // для плагинов
 	{
-		strName = PointToName((*PluginsList.First())->strHostFile);
+		strName = PointToName(PluginsList.front()->strHostFile);
 	}
 	else if (PanelMode==NORMAL_PANEL)
 	{
@@ -4785,34 +4785,34 @@ void FileList::CountDirSize(DWORD PluginFlags)
 
 int FileList::GetPrevViewMode()
 {
-	return (PanelMode==PLUGIN_PANEL && !PluginsList.Empty())?(*PluginsList.First())->PrevViewMode:ViewMode;
+	return (PanelMode==PLUGIN_PANEL && !PluginsList.empty())?PluginsList.front()->PrevViewMode:ViewMode;
 }
 
 
 int FileList::GetPrevSortMode()
 {
-	return (PanelMode==PLUGIN_PANEL && !PluginsList.Empty())?(*PluginsList.First())->PrevSortMode:SortMode;
+	return (PanelMode==PLUGIN_PANEL && !PluginsList.empty())?PluginsList.front()->PrevSortMode:SortMode;
 }
 
 
 int FileList::GetPrevSortOrder()
 {
-	return (PanelMode==PLUGIN_PANEL && !PluginsList.Empty())?(*PluginsList.First())->PrevSortOrder:SortOrder;
+	return (PanelMode==PLUGIN_PANEL && !PluginsList.empty())?PluginsList.front()->PrevSortOrder:SortOrder;
 }
 
 int FileList::GetPrevNumericSort()
 {
-	return (PanelMode==PLUGIN_PANEL && !PluginsList.Empty())?(*PluginsList.First())->PrevNumericSort:NumericSort;
+	return (PanelMode==PLUGIN_PANEL && !PluginsList.empty())?PluginsList.front()->PrevNumericSort:NumericSort;
 }
 
 int FileList::GetPrevCaseSensitiveSort()
 {
-	return (PanelMode==PLUGIN_PANEL && !PluginsList.Empty())?(*PluginsList.First())->PrevCaseSensitiveSort:CaseSensitiveSort;
+	return (PanelMode==PLUGIN_PANEL && !PluginsList.empty())?PluginsList.front()->PrevCaseSensitiveSort:CaseSensitiveSort;
 }
 
 int FileList::GetPrevDirectoriesFirst()
 {
-	return (PanelMode==PLUGIN_PANEL && !PluginsList.Empty())?(*PluginsList.First())->PrevDirectoriesFirst:DirectoriesFirst;
+	return (PanelMode==PLUGIN_PANEL && !PluginsList.empty())?PluginsList.front()->PrevDirectoriesFirst:DirectoriesFirst;
 }
 
 PHPTR FileList::OpenFilePlugin(const wchar_t *FileName, int PushPrev, OPENFILEPLUGINTYPE Type)
@@ -4840,7 +4840,7 @@ PHPTR FileList::OpenFilePlugin(const wchar_t *FileName, int PushPrev, OPENFILEPL
 			Item->PrevFileCount=FileCount;
 			Item->PrevTopFile = CurTopFile;
 			Item->strPrevName = FileName;
-			PrevDataList.Push(&Item);
+			PrevDataList.push_back(Item);
 			ListData=nullptr;
 			FileCount=0;
 		}
@@ -5033,12 +5033,9 @@ BOOL FileList::GetItem(int Index,void *Dest)
 void FileList::ClearAllItem()
 {
 	// удалим пред.значение.
-	if (!PrevDataList.Empty()) //???
+	for(auto i=PrevDataList.rbegin(); i!=PrevDataList.rend(); i++)
 	{
-		for(PrevDataItem* i=*PrevDataList.Last();i;i=*PrevDataList.Prev(&i))
-		{
-			DeleteListData(i->PrevListData,i->PrevFileCount); //???
-		}
+		DeleteListData((*i)->PrevListData,(*i)->PrevFileCount); //???
 	}
 }
 

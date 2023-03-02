@@ -638,8 +638,8 @@ void FileList::UpdatePlugin(int KeepSelection, int IgnoreVisible)
 		Update(KeepSelection);
 
 		// WARP> явный хак, но очень способствует - восстанавливает позицию на панели при ошибке чтения архива.
-		if (!PrevDataList.Empty())
-			GoToFile((*PrevDataList.Last())->strPrevName);
+		if (!PrevDataList.empty())
+			GoToFile(PrevDataList.back()->strPrevName);
 
 		return;
 	}

@@ -68,7 +68,7 @@ void FileList::PushPlugin(PHPTR hPlugin,const wchar_t *HostFile)
 	stItem->PrevCaseSensitiveSort=CaseSensitiveSort;
 	stItem->PrevViewSettings=ViewSettings;
 	stItem->PrevDirectoriesFirst=DirectoriesFirst;
-	PluginsList.Push(&stItem);
+	PluginsList.push_back(stItem);
 }
 
 
@@ -76,22 +76,22 @@ int FileList::PopPlugin(int EnableRestoreViewMode)
 {
 	OpenPluginInfo Info{};
 
-	if (PluginsList.Empty())
+	if (PluginsList.empty())
 	{
 		PanelMode=NORMAL_PANEL;
 		return FALSE;
 	}
 
 	// указатель на плагин, с которого уходим
-	PluginsListItem *PStack=*PluginsList.Last();
+	PluginsListItem *PStack=PluginsList.back();
 
 	// закрываем текущий плагин.
-	PluginsList.Delete(PluginsList.Last());
+	PluginsList.erase(--PluginsList.end());
 	CtrlObject->Plugins.ClosePanel(hPlugin);
 
-	if (!PluginsList.Empty())
+	if (!PluginsList.empty())
 	{
-		hPlugin=(*PluginsList.Last())->hPlugin;
+		hPlugin=PluginsList.back()->hPlugin;
 		strOriginalCurDir=PStack->strPrevOriginalCurDir;
 
 		if (EnableRestoreViewMode)
@@ -898,7 +898,7 @@ void FileList::ProcessHostFile()
 		int Done=FALSE;
 		SaveSelection();
 
-		if (PanelMode==PLUGIN_PANEL && !(*PluginsList.Last())->strHostFile.IsEmpty())
+		if (PanelMode==PLUGIN_PANEL && !PluginsList.back()->strHostFile.IsEmpty())
 		{
 			PluginPanelItem *ItemList = nullptr;
 			int ItemNumber;
@@ -1178,9 +1178,9 @@ void FileList::ProcessPluginCommand()
 
 void FileList::SetPluginModified()
 {
-	if(PluginsList.Last())
+	if (!PluginsList.empty() && PluginsList.back())
 	{
-		(*PluginsList.Last())->Modified=TRUE;
+		PluginsList.back()->Modified=TRUE;
 	}
 }
 
