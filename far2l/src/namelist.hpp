@@ -34,7 +34,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 
-#include "DList.hpp"
+#include <list>
 #include <farplug-wide.h>
 #include "FARString.hpp"
 
@@ -61,10 +61,8 @@ class NamesList
 			}
 		};
 
-		typedef DList<OneName> StrList;
-
-		StrList Names;
-		const OneName *CurrentName;
+		std::list<OneName> Names;
+		std::list<OneName>::const_iterator CurrentName;
 
 		FARString strCurrentDir;
 

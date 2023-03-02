@@ -33,13 +33,13 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <list>
 #include <unordered_set>
 #include "scrobj.hpp"
 #include <farplug-wide.h>
 #include "poscache.hpp"
 #include "bitflags.hpp"
 #include "config.hpp"
-#include "DList.hpp"
 #include "noncopyable.hpp"
 #include "FARString.hpp"
 
@@ -175,9 +175,9 @@ class Editor:public ScreenObject
 		};
 
 
-		DList<EditorUndoData> UndoData;
-		EditorUndoData *UndoPos;
-		EditorUndoData *UndoSavePos;
+		std::list<EditorUndoData> UndoData;
+		std::list<EditorUndoData>::iterator UndoPos;
+		std::list<EditorUndoData>::iterator UndoSavePos;
 		int UndoSkipLevel;
 
 		int LastChangeStrPos;

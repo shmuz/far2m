@@ -67,6 +67,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "execute.hpp"
 #include "flink.hpp"
 #include "ConfigRW.hpp"
+#include "DList.hpp"
 #include "wrap.cpp"
 #include <KeyFileHelper.h>
 

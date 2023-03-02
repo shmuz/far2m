@@ -48,41 +48,39 @@ NamesList::~NamesList()
 
 void NamesList::AddName(const wchar_t *Name)
 {
-	OneName *pName=Names.Push();
-	pName->Value.strName = Name?Name:L"";
-	CurrentName=pName;
+	Names.push_back(OneName());
+	auto pName = Names.back();
+	pName.Value.strName = Name?Name:L"";
+	CurrentName = --Names.end();
 }
 
 
 bool NamesList::GetNextName(FARString &strName)
 {
-	const OneName *pName=Names.Next(CurrentName);
-
-	if (!pName)
+	auto pName = CurrentName;
+	if (++pName == Names.end())
 		return false;
 
-	strName = pName->Value.strName;
-	CurrentName=pName;
+	CurrentName = pName;
+	strName = CurrentName->Value.strName;
 	return true;
 }
 
 
 bool NamesList::GetPrevName(FARString &strName)
 {
-	const OneName *pName=Names.Prev(CurrentName);
-
-	if (!pName)
+	if (CurrentName == Names.begin())
 		return false;
 
-	strName = pName->Value.strName;
-	CurrentName=pName;
+	--CurrentName;
+	strName = CurrentName->Value.strName;
 	return true;
 }
 
 
 void NamesList::SetCurName(const wchar_t *Name)
 {
-	for (const OneName *pCurName=Names.First(); pCurName; pCurName=Names.Next(pCurName))
+	for (auto pCurName=Names.cbegin(); pCurName!=Names.cend(); pCurName++)
 	{
 		if (!StrCmp(Name, pCurName->Value.strName))
 		{
@@ -95,7 +93,7 @@ void NamesList::SetCurName(const wchar_t *Name)
 
 void NamesList::MoveData(NamesList &Dest)
 {
-	Dest.Names.Swap(Names);
+	Dest.Names.swap(Names);
 	Dest.strCurrentDir = strCurrentDir;
 	Dest.CurrentName = CurrentName;
 	Init();
@@ -118,7 +116,7 @@ void NamesList::SetCurDir(const wchar_t *Dir)
 
 void NamesList::Init()
 {
-	Names.Clear();
+	Names.clear();
 	strCurrentDir.Clear();
-	CurrentName=nullptr;
+	CurrentName=Names.cend();
 }
