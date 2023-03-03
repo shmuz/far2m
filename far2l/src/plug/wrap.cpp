@@ -1169,14 +1169,14 @@ typedef struct DialogData
 	FarList *l;
 } *PDialogData;
 
-DList<PDialogData>DialogList;
+static std::list<PDialogData> DialogList;
 
 oldfar::FarDialogItem* OneDialogItem=nullptr;
 
 PDialogData FindCurrentDialogData(HANDLE hDlg)
 {
 	PDialogData Result=nullptr;
-	for(PDialogData* i=DialogList.Last();i;i=DialogList.Prev(i))
+	for(auto i=DialogList.rbegin(); i!=DialogList.rend() ; i++)
 	{
 		if((*i)->hDlg==hDlg)
 		{
@@ -2439,7 +2439,7 @@ int WINAPI FarDialogExA(INT_PTR PluginNumber,int X1,int Y1,int X2,int Y2,const c
 	NewDialogData->diA=diA;
 	NewDialogData->di=di;
 	NewDialogData->l=l;
-	DialogList.Push(&NewDialogData);
+	DialogList.push_back(NewDialogData);
 
 	if (hDlg != INVALID_HANDLE_VALUE)
 	{
@@ -2488,12 +2488,12 @@ int WINAPI FarDialogExA(INT_PTR PluginNumber,int X1,int Y1,int X2,int Y2,const c
 		FreeUnicodeDialogItem(di[i]);
 	}
 
-	for(PDialogData* i=DialogList.Last();i;i=DialogList.Prev(i))
+	for(auto i=--DialogList.end(); i!=DialogList.end(); i--)
 	{
 		if((*i)->hDlg==hDlg)
 		{
 			delete *i;
-			DialogList.Delete(i);
+			DialogList.erase(i);
 			break;
 		}
 	}

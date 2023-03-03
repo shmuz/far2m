@@ -1194,16 +1194,16 @@ struct PluginMenuItemData
      списком только при нажатии на ESC
 */
 
-bool PluginManager::CheckIfHotkeyPresent(const char *HotKeyType)
+bool PluginManager::CheckIfHotkeyPresent(bool IsConfig)
 {
-	auto IsConfig = strcmp(HotKeyType,"Hotkey") != 0;
-	auto Fmt = IsConfig ? FmtPluginConfigStringD : FmtPluginMenuStringD;
+	const char *HotKeyType = IsConfig ? "ConfHotkey" : "Hotkey";
+	const char *Fmt = IsConfig ? FmtPluginConfigStringD : FmtPluginMenuStringD;
 
 	for (int I=0; I<PluginsCount; I++)
 	{
 		Plugin *pPlugin = PluginsData[I];
 		PluginInfo Info{};
-		bool bCached = pPlugin->CheckWorkFlags(PIWF_CACHED) ? true : false;
+		bool bCached = pPlugin->CheckWorkFlags(PIWF_CACHED);
 		if (!bCached && !pPlugin->GetPluginInfo(&Info))
 		{
 			continue;
@@ -1249,7 +1249,7 @@ void PluginManager::Configure(int StartPos)
 		{
 			BOOL NeedUpdateItems=TRUE;
 			int MenuItemNumber=0;
-			bool HotKeysPresent = CheckIfHotkeyPresent("ConfHotkey");
+			bool HotKeysPresent = CheckIfHotkeyPresent(true);
 
 			if (NeedUpdateItems)
 			{
@@ -1411,7 +1411,7 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 
 		while (!Done)
 		{
-			bool HotKeysPresent = CheckIfHotkeyPresent("Hotkey");
+			bool HotKeysPresent = CheckIfHotkeyPresent(false);
 
 			if (NeedUpdateItems)
 			{

@@ -33,7 +33,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "DList.hpp"
+#include <list>
 
 class Dialog;
 class VMenu;
@@ -86,8 +86,9 @@ class History
 		enumHISTORYTYPE TypeHistory;
 		size_t HistoryCount;
 		const int *EnableSave;
-		DList<HistoryRecord> HistoryList;
-		HistoryRecord *CurrentItem;
+		std::list<HistoryRecord> HistoryList;
+		typedef std::list<HistoryRecord>::iterator Iter;
+		Iter CurrentItem;
 		struct stat LoadedStat{};
 
 	private:
@@ -114,5 +115,5 @@ class History
 		bool GetAllSimilar(VMenu &HistoryMenu,const wchar_t *Str);
 		bool DeleteMatching(FARString &strStr);
 		void SetAddMode(bool EnableAdd, int RemoveDups, bool KeepSelectedPos);
-		void ResetPosition() { CurrentItem = nullptr; }
+		void ResetPosition() { CurrentItem = HistoryList.end(); }
 };

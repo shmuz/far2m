@@ -212,7 +212,7 @@ class PluginManager
 
 		bool TestPluginInfo(Plugin *Item,PluginInfo *Info);
 		bool TestOpenPluginInfo(Plugin *Item,OpenPluginInfo *Info);
-		bool CheckIfHotkeyPresent(const char *HotKeyType);
+		bool CheckIfHotkeyPresent(bool IsConfig);
 
 		Plugin* LoadPlugin(const FARString &strModuleName, bool LoadUncached);
 

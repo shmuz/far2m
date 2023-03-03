@@ -27,12 +27,12 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "headers.hpp"
+#include <list>
 
 #include "plugins.hpp"
 #include "lang.hpp"
 #include "keys.hpp"
 #include "codepage.hpp"
-//#include "flink.hpp"
 #include "scantree.hpp"
 #include "chgprior.hpp"
 #include "constitle.hpp"
@@ -46,13 +46,11 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ctrlobj.hpp"
 #include "scrbuf.hpp"
 #include "udlist.hpp"
-//#include "farexcpt.hpp"
 #include "fileedit.hpp"
 #include "RefreshFrameManager.hpp"
 #include "InterThreadCall.hpp"
 #include "plclass.hpp"
 #include "PluginA.hpp"
-//#include "localOEM.hpp"
 #include "plugapi.hpp"
 #include "keyboard.hpp"
 #include "message.hpp"
@@ -67,7 +65,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "execute.hpp"
 #include "flink.hpp"
 #include "ConfigRW.hpp"
-#include "DList.hpp"
 #include "wrap.cpp"
 #include <KeyFileHelper.h>
 

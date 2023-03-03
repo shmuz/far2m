@@ -135,7 +135,6 @@ src/base/SafeMMap.cpp
 src/base/farqueue.cpp
 src/base/FARString.cpp
 src/base/farrtl.cpp
-src/base/DList.cpp
 
 src/mix/format.cpp
 src/mix/udlist.cpp
