@@ -62,16 +62,16 @@ bool PluginSynchro::Process(void)
 {
 	bool res=false;
 
-	bool process=false; bool plugin=false; INT_PTR module=0; void* param=nullptr;
+	bool process=false; bool plugin=false; Plugin* pPlugin=nullptr; void* param=nullptr;
 
 	RecursiveMutex.lock();
 
 	if (!Data.empty())
 	{
 		process=true;
-		auto item=Data.front();
+		const auto& item=Data.front();
 		plugin=item.Plugin;
-		module=item.ModuleNumber;
+		pPlugin=(Plugin*)item.ModuleNumber;
 		param=item.Param;
 		Data.erase(Data.begin());
 	}
@@ -79,22 +79,20 @@ bool PluginSynchro::Process(void)
 	RecursiveMutex.unlock();
 
 	if (process)
+	{
+		if(plugin)
 		{
-			if(plugin)
+			if (pPlugin)
 			{
-				Plugin* pPlugin=(Plugin*)module;
-
-				if (pPlugin)
-				{
-					pPlugin->ProcessSynchroEvent(SE_COMMONSYNCHRO,param);
-					res=true;
-				}
-			}
-			else
-			{
+				pPlugin->ProcessSynchroEvent(SE_COMMONSYNCHRO,param);
 				res=true;
 			}
 		}
+		else
+		{
+			res=true;
+		}
+	}
 
 	return res;
 }

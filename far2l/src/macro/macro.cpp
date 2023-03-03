@@ -2172,11 +2172,14 @@ int FarMacroApi::panelsetpathFunc()
 		if (ActivePanel)
 			PassivePanel=CtrlObject->Cp()->GetAnotherPanel(ActivePanel);
 
-		//Frame* CurFrame=FrameManager->GetCurrentFrame();
 		Panel *SelPanel = typePanel==0 ? ActivePanel : typePanel==1 ? PassivePanel : nullptr;
 
 		if (SelPanel)
 		{
+			FARString strPath;
+			if (apiExpandEnvironmentStrings(pathName, strPath))
+				pathName = strPath.CPtr();
+
 			if (SelPanel->SetCurDir(pathName,SelPanel->GetMode()==PLUGIN_PANEL && IsAbsolutePath(pathName)))
 			{
 				ActivePanel=CtrlObject->Cp()->ActivePanel;
