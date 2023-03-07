@@ -1480,20 +1480,6 @@ int Panel::SetCurPath()
 	if (GetMode()==PLUGIN_PANEL)
 		return TRUE;
 
-	Panel *AnotherPanel=CtrlObject->Cp()->GetAnotherPanel(this);
-
-	if (AnotherPanel->GetType()!=PLUGIN_PANEL)
-	{
-		if (IsAlpha(AnotherPanel->strCurDir.At(0)) && AnotherPanel->strCurDir.At(1)==L':' &&
-		        Upper(AnotherPanel->strCurDir.At(0))!=Upper(strCurDir.At(0)))
-		{
-			// сначала установим переменные окружения для пассивной панели
-			// (без реальной смены пути, чтобы лишний раз пассивный каталог
-			// не перечитывать)
-			FarChDir(AnotherPanel->strCurDir,FALSE);
-		}
-	}
-
 	if (!FarChDir(strCurDir))
 	{
 		while (!FarChDir(strCurDir))
@@ -1513,7 +1499,7 @@ int Panel::SetCurPath()
 
 			if (FrameManager && FrameManager->ManagerStarted()) // сначала проверим - а запущен ли менеджер
 			{
-				SetCurDir(DefaultPanelInitialDirectory(),TRUE);                    // если запущен - выставим путь который мы точно знаем что существует
+				SetCurDir(DefaultPanelInitialDirectory(),TRUE);  // если запущен - выставим путь который мы точно знаем что существует
 				ChangeDisk();                                    // и вызовем меню выбора дисков
 			}
 			else                                               // оппа...
@@ -1523,7 +1509,7 @@ int Panel::SetCurPath()
 
 				if (strTemp.GetLength()==strCurDir.GetLength())  // здесь проблема - видимо диск недоступен
 				{
-					SetCurDir(DefaultPanelInitialDirectory(),TRUE);                 // тогда просто сваливаем в каталог, откуда стартанул FAR.
+					SetCurDir(DefaultPanelInitialDirectory(),TRUE); // тогда просто сваливаем в каталог, откуда стартанул FAR.
 					break;
 				}
 				else
