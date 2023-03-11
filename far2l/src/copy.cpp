@@ -1285,7 +1285,7 @@ ShellCopy::ShellCopy(Panel *SrcPanel,        // исходная панель (�
 	{
 		FARString strTmpSrcDir;
 		SrcPanel->GetCurDir(strTmpSrcDir);
-		DestPanel->SetCurDir(strTmpSrcDir,FALSE);
+		DestPanel->SetCurDir(strTmpSrcDir,false);
 	}
 
 	// проверим "нужность" апдейта пассивной панели

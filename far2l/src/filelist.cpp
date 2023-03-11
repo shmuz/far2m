@@ -1442,7 +1442,7 @@ int FileList::ProcessKey(int Key)
 
 				if (AnotherPanel->GetType()!=FILE_PANEL)
 				{
-					AnotherPanel->SetCurDir(strCurDir,FALSE);
+					AnotherPanel->SetCurDir(strCurDir,false);
 					AnotherPanel->Redraw();
 				}
 			}
@@ -1982,7 +1982,7 @@ int FileList::ProcessKey(int Key)
 
 					if (AnotherPanel->GetType()!=FILE_PANEL)
 					{
-						AnotherPanel->SetCurDir(strCurDir,FALSE);
+						AnotherPanel->SetCurDir(strCurDir,false);
 						AnotherPanel->Redraw();
 					}
 				}
@@ -2514,7 +2514,7 @@ void FileList::ProcessEnter(bool EnableExec,bool SeparateWindow,bool EnableAssoc
 }
 
 
-BOOL FileList::SetCurDir(const wchar_t *NewDir,int ClosePlugin)
+bool FileList::SetCurDir(const wchar_t *NewDir,bool ClosePlugin,bool ShowMessage)
 {
 	int CheckFullScreen=0;
 
@@ -2541,13 +2541,13 @@ BOOL FileList::SetCurDir(const wchar_t *NewDir,int ClosePlugin)
 
 	if ((NewDir) && (*NewDir))
 	{
-		return ChangeDir(NewDir);
+		return ChangeDir(NewDir,ShowMessage);
 	}
 
-	return FALSE;
+	return false;
 }
 
-BOOL FileList::ChangeDir(const wchar_t *NewDir,BOOL IsUpdated)
+bool FileList::ChangeDir(const wchar_t *NewDir, bool ShowMessage)
 {
 	SudoClientRegion sdc_rgn;
 
@@ -2582,12 +2582,12 @@ BOOL FileList::ChangeDir(const wchar_t *NewDir,BOOL IsUpdated)
 		/* $ 25.04.01 DJ
 		   при неудаче SetDirectory не сбрасываем выделение
 		*/
-		BOOL SetDirectorySuccess = TRUE;
+		bool SetDirectorySuccess = true;
 
 		if (dot2Present && strInfoCurDir.IsEmpty())
 		{
 			if (ProcessPluginEvent(FE_CLOSE,nullptr))
-				return TRUE;
+				return true;
 
 			PluginClosed=TRUE;
 			strFindDir = strInfoHostFile;
@@ -2709,7 +2709,7 @@ BOOL FileList::ChangeDir(const wchar_t *NewDir,BOOL IsUpdated)
 				         !CtrlObject->Plugins.FindPlugin(SYSID_NETWORK)))
 				{
 					CtrlObject->Cp()->ActivePanel->ChangeDisk();
-					return TRUE;
+					return true;
 				}
 
 				FARString strNewCurDir;
@@ -2722,7 +2722,7 @@ BOOL FileList::ChangeDir(const wchar_t *NewDir,BOOL IsUpdated)
 					if (PtrS1 && !FirstSlash(PtrS1+1))
 					{
 						if (CtrlObject->Plugins.CallPlugin(SYSID_NETWORK,OPEN_FILEPANEL,(void*)strNewCurDir.CPtr())) // NetWork Plugin :-)
-							return FALSE;
+							return false;
 					}
 				}
 			}
@@ -2735,12 +2735,17 @@ BOOL FileList::ChangeDir(const wchar_t *NewDir,BOOL IsUpdated)
 	   если не удалось
 	*/
 	int UpdateFlags = 0;
-	BOOL SetDirectorySuccess = TRUE;
+	bool SetDirectorySuccess = true;
 
 	FARString strOrigCurDir;
 	apiGetCurrentDirectory(strOrigCurDir);
 	while (!FarChDir(strSetDir))
 	{
+		if (!ShowMessage)
+		{
+			SetDirectorySuccess = false;
+			break;
+		}
 		if (FrameManager && FrameManager->ManagerStarted())
 		{
 			/* $ 03.11.2001 IS Укажем имя неудачного каталога */
@@ -2777,14 +2782,11 @@ BOOL FileList::ChangeDir(const wchar_t *NewDir,BOOL IsUpdated)
 			FarChDir(strOrigCurDir);
 
 		UpdateFlags = UPDATE_KEEP_SELECTION;
-		SetDirectorySuccess = FALSE;
+		SetDirectorySuccess = false;
 		break;
 	}
 
 	apiGetCurrentDirectory(strCurDir);
-
-	if (!IsUpdated)
-		return SetDirectorySuccess;
 
 	Update(UpdateFlags);
 
@@ -2808,7 +2810,7 @@ BOOL FileList::ChangeDir(const wchar_t *NewDir,BOOL IsUpdated)
 
 	if (AnotherPanel->GetType()!=FILE_PANEL)
 	{
-		AnotherPanel->SetCurDir(strCurDir,FALSE);
+		AnotherPanel->SetCurDir(strCurDir,false);
 		AnotherPanel->Redraw();
 	}
 

@@ -1224,7 +1224,7 @@ void TreeList::CorrectPosition()
 		CurTopFile=CurFile-(Height-1);
 }
 
-BOOL TreeList::SetCurDir(const wchar_t *NewDir,int ClosePlugin)
+bool TreeList::SetCurDir(const wchar_t *NewDir,bool ClosePlugin, bool ShowMessage)
 {
 	if (!TreeCount)
 		Update(0);
@@ -1241,7 +1241,7 @@ BOOL TreeList::SetCurDir(const wchar_t *NewDir,int ClosePlugin)
 		CtrlObject->CmdLine->Show();
 	}
 
-	return TRUE; //???
+	return true; //???
 }
 
 int TreeList::SetDirPosition(const wchar_t *NewDir)
@@ -1408,9 +1408,9 @@ void TreeList::ProcessEnter()
 		if (!ModalMode && FarChDir(CurPtr->strName))
 		{
 			Panel *AnotherPanel=GetRootPanel();
-			SetCurDir(CurPtr->strName,TRUE);
+			SetCurDir(CurPtr->strName,true);
 			Show();
-			AnotherPanel->SetCurDir(CurPtr->strName,TRUE);
+			AnotherPanel->SetCurDir(CurPtr->strName,true);
 			AnotherPanel->Redraw();
 		}
 	}

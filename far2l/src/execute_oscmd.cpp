@@ -123,7 +123,7 @@ bool CommandLine::ProcessOSCommands(const wchar_t *CmdLine, bool SeparateWindow,
 	} else if (ecl[0]=="exit") {
 		if (ecl.size() == 2 && ecl[1]=="far") {
 			FrameManager->ExitMainLoop(FALSE);
-			return true;			
+			return true;
 		}
 		PushDirStackSize = 0;
 	}
@@ -131,7 +131,7 @@ bool CommandLine::ProcessOSCommands(const wchar_t *CmdLine, bool SeparateWindow,
 	return false;
 }
 
-BOOL CommandLine::IntChDir(const wchar_t *CmdLine,int ClosePlugin,bool Silent)
+bool CommandLine::IntChDir(const wchar_t *CmdLine,bool ClosePlugin,bool Silent)
 {
 	Panel *SetPanel;
 	SetPanel=CtrlObject->Cp()->ActivePanel;
@@ -150,8 +150,8 @@ BOOL CommandLine::IntChDir(const wchar_t *CmdLine,int ClosePlugin,bool Silent)
 
 	if (DirAtt!=INVALID_FILE_ATTRIBUTES && (DirAtt & FILE_ATTRIBUTE_DIRECTORY) && IsAbsolutePath(strDir))
 	{
-		SetPanel->SetCurDir(strDir,TRUE);
-		return TRUE;
+		SetPanel->SetCurDir(strDir,true);
+		return true;
 	}
 
 	/* $ 20.09.2002 SKV
@@ -168,7 +168,7 @@ BOOL CommandLine::IntChDir(const wchar_t *CmdLine,int ClosePlugin,bool Silent)
 	  GotoXY(X1,Y1);
 	  FS<<fmt::Width(X2-X1+1)<<L"";
 	  Show();
-	  return TRUE;
+	  return true;
 	}
 	*/
 	strDir.ReleaseBuffer();
@@ -176,7 +176,7 @@ BOOL CommandLine::IntChDir(const wchar_t *CmdLine,int ClosePlugin,bool Silent)
 	if (SetPanel->GetType()==FILE_PANEL && SetPanel->GetMode()==PLUGIN_PANEL)
 	{
 		SetPanel->SetCurDir(strDir,ClosePlugin);
-		return TRUE;
+		return true;
 	}
 
 	if (FarChDir(strDir))
@@ -191,8 +191,8 @@ BOOL CommandLine::IntChDir(const wchar_t *CmdLine,int ClosePlugin,bool Silent)
 		if (!Silent)
 			Message(MSG_WARNING|MSG_ERRORTYPE,1,Msg::Error,strDir,Msg::Ok);
 
-		return FALSE;
+		return false;
 	}
 
-	return TRUE;
+	return true;
 }

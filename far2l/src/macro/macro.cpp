@@ -2180,7 +2180,7 @@ int FarMacroApi::panelsetpathFunc()
 			if (apiExpandEnvironmentStrings(pathName, strPath))
 				pathName = strPath.CPtr();
 
-			if (SelPanel->SetCurDir(pathName,SelPanel->GetMode()==PLUGIN_PANEL && IsAbsolutePath(pathName)))
+			if (SelPanel->SetCurDir(pathName,SelPanel->GetMode()==PLUGIN_PANEL && IsAbsolutePath(pathName),false))
 			{
 				ActivePanel=CtrlObject->Cp()->ActivePanel;
 				PassivePanel=ActivePanel?CtrlObject->Cp()->GetAnotherPanel(ActivePanel):nullptr;

@@ -150,7 +150,7 @@ void Panel::ChangeDirToCurrent()
 {
 	FARString strNewDir;
 	apiGetCurrentDirectory(strNewDir);
-	SetCurDir(strNewDir,TRUE);
+	SetCurDir(strNewDir,true);
 }
 
 
@@ -883,7 +883,7 @@ bool Panel::SetLocation_Directory(const wchar_t *path)
 	{
 		int Focus=GetFocus();
 		Panel *NewPanel=CtrlObject->Cp()->ChangePanel(this, FILE_PANEL, TRUE, FALSE);
-		NewPanel->SetCurDir(strNewCurDir,TRUE);
+		NewPanel->SetCurDir(strNewCurDir,true);
 		NewPanel->Show();
 
 		if (Focus || !CtrlObject->Cp()->GetAnotherPanel(this)->IsVisible())
@@ -1439,14 +1439,14 @@ int Panel::GetCurDirPluginAware(FARString &strCurDir)
 
 
 
-BOOL Panel::SetCurDir(const wchar_t *CurDir,int ClosePlugin)
+bool Panel::SetCurDir(const wchar_t *CurDir,bool ClosePlugin, bool ShowMessage)
 {
 	if (StrCmpI(strCurDir,CurDir) || !TestCurrentDirectory(CurDir))
 	{
 		strCurDir = CurDir;
 	}
 
-	return TRUE;
+	return true;
 }
 
 
@@ -1490,7 +1490,7 @@ int Panel::SetCurPath()
 			{
 				if (CheckShortcutFolder(&strCurDir,FALSE,TRUE) && FarChDir(strCurDir))
 				{
-					SetCurDir(strCurDir,TRUE);
+					SetCurDir(strCurDir,true);
 					return TRUE;
 				}
 			}
@@ -1499,7 +1499,7 @@ int Panel::SetCurPath()
 
 			if (FrameManager && FrameManager->ManagerStarted()) // сначала проверим - а запущен ли менеджер
 			{
-				SetCurDir(DefaultPanelInitialDirectory(),TRUE);  // если запущен - выставим путь который мы точно знаем что существует
+				SetCurDir(DefaultPanelInitialDirectory(),true);  // если запущен - выставим путь который мы точно знаем что существует
 				ChangeDisk();                                    // и вызовем меню выбора дисков
 			}
 			else                                               // оппа...
@@ -1509,14 +1509,14 @@ int Panel::SetCurPath()
 
 				if (strTemp.GetLength()==strCurDir.GetLength())  // здесь проблема - видимо диск недоступен
 				{
-					SetCurDir(DefaultPanelInitialDirectory(),TRUE); // тогда просто сваливаем в каталог, откуда стартанул FAR.
+					SetCurDir(DefaultPanelInitialDirectory(),true); // тогда просто сваливаем в каталог, откуда стартанул FAR.
 					break;
 				}
 				else
 				{
 					if (FarChDir(strCurDir))
 					{
-						SetCurDir(strCurDir,TRUE);
+						SetCurDir(strCurDir,true);
 						break;
 					}
 				}
@@ -2062,7 +2062,7 @@ int Panel::SetPluginCommand(int Command,int Param1,LONG_PTR Param2)
 		{
 			if (Param2)
 			{
-				Result = SetCurDir((const wchar_t *)Param2,TRUE);
+				Result = SetCurDir((const wchar_t *)Param2, true, false);
 				// restore current directory to active panel path
 				Panel* ActivePanel = CtrlObject->Cp()->ActivePanel;
 				if (Result && this != ActivePanel)
@@ -2156,12 +2156,12 @@ int Panel::ProcessShortcutFolder(int Key,BOOL ProcTreePanel)
 		{
 			if (AnotherPanel->GetType()==FILE_PANEL)
 			{
-				AnotherPanel->SetCurDir(strShortcutFolder,TRUE);
+				AnotherPanel->SetCurDir(strShortcutFolder,true);
 				AnotherPanel->Redraw();
 			}
 			else
 			{
-				SetCurDir(strShortcutFolder,TRUE);
+				SetCurDir(strShortcutFolder,true);
 				ProcessKey(KEY_ENTER);
 			}
 		}
@@ -2169,7 +2169,7 @@ int Panel::ProcessShortcutFolder(int Key,BOOL ProcTreePanel)
 		{
 			if (AnotherPanel->GetType()==FILE_PANEL && !strPluginModule.IsEmpty())
 			{
-				AnotherPanel->SetCurDir(strShortcutFolder,TRUE);
+				AnotherPanel->SetCurDir(strShortcutFolder,true);
 				AnotherPanel->Redraw();
 			}
 		}
@@ -2226,7 +2226,7 @@ bool Panel::ExecShortcutFolder(int Pos)
 
 				if (CutToSlash(strRealDir,true))
 				{
-					SrcPanel->SetCurDir(strRealDir,TRUE);
+					SrcPanel->SetCurDir(strRealDir,true);
 					SrcPanel->GoToFile(PointToName(strPluginFile));
 
 					SrcPanel->ClearAllItem();
@@ -2236,7 +2236,7 @@ bool Panel::ExecShortcutFolder(int Pos)
 					((FileList*)SrcPanel)->OpenFilePlugin(strPluginFile,FALSE, OFP_SHORTCUT); //???
 
 				if (!strShortcutFolder.IsEmpty())
-						SrcPanel->SetCurDir(strShortcutFolder,FALSE);
+						SrcPanel->SetCurDir(strShortcutFolder,false);
 
 				SrcPanel->Show();
 			}
@@ -2298,7 +2298,7 @@ bool Panel::ExecShortcutFolder(int Pos)
 		}
         */
 
-		SrcPanel->SetCurDir(strShortcutFolder,TRUE);
+		SrcPanel->SetCurDir(strShortcutFolder,true);
 
 		if (CheckFullScreen!=SrcPanel->IsFullScreen())
 			CtrlObject->Cp()->GetAnotherPanel(SrcPanel)->Show();

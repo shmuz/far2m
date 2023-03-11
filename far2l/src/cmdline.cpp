@@ -368,7 +368,7 @@ int CommandLine::ProcessKey(int Key)
 
 			if (!strStr.IsEmpty())
 			{
-				ActivePanel->SetCurDir(strStr,TRUE);
+				ActivePanel->SetCurDir(strStr,true);
 				ActivePanel->Show();
 
 				if (ActivePanel->GetType()==TREE_PANEL)
@@ -427,7 +427,7 @@ int CommandLine::ProcessKey(int Key)
 				{
 					if (Panel->GetMode() == PLUGIN_PANEL || CheckShortcutFolder(&strStr,FALSE))
 					{
-						Panel->SetCurDir(strStr,Type ? FALSE:TRUE);
+						Panel->SetCurDir(strStr,Type ? false:true);
 						// restore current directory to active panel path
 						if(SelectType == 6)
 						{

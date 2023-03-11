@@ -550,7 +550,7 @@ int FilePanels::ProcessKey(int Key)
 					{
 						FARString strCurDir;
 						ActivePanel->GetCurDir(strCurDir);
-						AnotherPanel->SetCurDir(strCurDir, TRUE);
+						AnotherPanel->SetCurDir(strCurDir, true);
 						AnotherPanel->Update(0);
 					}
 					else
@@ -1200,7 +1200,7 @@ void FilePanels::GoToFile(const wchar_t *FileName)
 			ProcessKey(KEY_TAB);
 
 		if (!AExist && !PExist)
-			ActivePanel->SetCurDir(strNameDir,TRUE);
+			ActivePanel->SetCurDir(strNameDir,true);
 
 		ActivePanel->GoToFile(strNameFile);
 		// всегда обновим заголовок панели, чтобы дать обратную связь, что

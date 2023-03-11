@@ -1862,9 +1862,9 @@ DWORD CalcKeyCode(INPUT_RECORD *rec,int RealKey,int *NotMacros)
 {
 	_SVS(CleverSysLog Clev(L"CalcKeyCode"));
 	_SVS(SysLog(L"CalcKeyCode -> %ls| RealKey=%d  *NotMacros=%d",_INPUT_RECORD_Dump(rec),RealKey,(NotMacros?*NotMacros:0)));
-	UINT CtrlState=rec->Event.KeyEvent.dwControlKeyState;
-	UINT ScanCode=rec->Event.KeyEvent.wVirtualScanCode;
-	UINT KeyCode=rec->Event.KeyEvent.wVirtualKeyCode;
+	const UINT CtrlState = rec->Event.KeyEvent.dwControlKeyState;
+	const UINT ScanCode = rec->Event.KeyEvent.wVirtualScanCode;
+	const UINT KeyCode = rec->Event.KeyEvent.wVirtualKeyCode;
 	WCHAR Char=rec->Event.KeyEvent.uChar.UnicodeChar;
 
 	if (NotMacros)
@@ -2426,15 +2426,15 @@ DWORD CalcKeyCode(INPUT_RECORD *rec,int RealKey,int *NotMacros)
 		switch (KeyCode)
 		{
 			case VK_DIVIDE:
-				return(KEY_SHIFT|KEY_CTRLALT|KEY_DIVIDE);
+				return KEY_CTRLALTSHIFT|KEY_DIVIDE;
 			case VK_MULTIPLY:
-				return(KEY_SHIFT|KEY_CTRLALT|KEY_MULTIPLY);
+				return KEY_CTRLALTSHIFT|KEY_MULTIPLY;
 			case VK_CANCEL:
-				return(KEY_SHIFT|KEY_CTRLALT|KEY_PAUSE);
+				return KEY_CTRLALTSHIFT|KEY_PAUSE;
 			case VK_SLEEP:
-				return KEY_SHIFT|KEY_CTRLALT|KEY_STANDBY;
+				return KEY_CTRLALTSHIFT|KEY_STANDBY;
 			case VK_SNAPSHOT:
-				return KEY_SHIFT|KEY_CTRLALT|KEY_PRNTSCRN;
+				return KEY_CTRLALTSHIFT|KEY_PRNTSCRN;
 		}
 
 		if (Char)
@@ -2525,7 +2525,7 @@ DWORD CalcKeyCode(INPUT_RECORD *rec,int RealKey,int *NotMacros)
 			if (WaitInFastFind > 0 && !CtrlObject->Macro.IsRecording())
 				return KEY_ALTSHIFT|Char;
 			else
-				return(KEY_ALTSHIFT0+KeyCode-'0');
+				return KEY_ALTSHIFT+KeyCode;
 		}
 
 		if (!WaitInMainLoop && KeyCode>='A' && KeyCode<='Z')
@@ -2602,10 +2602,10 @@ DWORD CalcKeyCode(INPUT_RECORD *rec,int RealKey,int *NotMacros)
 		_SVS(if (KeyCode!=VK_CONTROL && KeyCode!=VK_SHIFT) SysLog(L"CtrlShift -> |%ls|%ls|",_VK_KEY_ToName(KeyCode),_INPUT_RECORD_Dump(rec)));
 
 		if (KeyCode>='0' && KeyCode<='9')
-			return(KEY_CTRLSHIFT0+KeyCode-'0');
+			return(KEY_CTRLSHIFT+KeyCode);
 
 		if (KeyCode>='A' && KeyCode<='Z')
-			return(KEY_CTRLSHIFTA+KeyCode-'A');
+			return(KEY_CTRLSHIFT+KeyCode);
 
 		switch (KeyCode)
 		{
@@ -2633,36 +2633,36 @@ DWORD CalcKeyCode(INPUT_RECORD *rec,int RealKey,int *NotMacros)
 			switch (KeyCode)
 			{
 				case VK_OEM_3:
-					return(KEY_CTRL+KEY_SHIFT+'`');
+					return(KEY_CTRLSHIFT+'`');
 				case VK_OEM_MINUS:
-					return(KEY_CTRL+KEY_SHIFT+'-');
+					return(KEY_CTRLSHIFT+'-');
 				case VK_OEM_PLUS:
-					return(KEY_CTRL+KEY_SHIFT+'=');
+					return(KEY_CTRLSHIFT+'=');
 				case VK_OEM_7:
-					return(KEY_CTRL+KEY_SHIFT+'\'');
+					return(KEY_CTRLSHIFT+'\'');
 				case VK_OEM_1:
-					return(KEY_CTRL+KEY_SHIFT+KEY_SEMICOLON);
+					return(KEY_CTRLSHIFT+KEY_SEMICOLON);
 				case VK_OEM_COMMA:
-					return(KEY_CTRL+KEY_SHIFT+KEY_COMMA);
+					return(KEY_CTRLSHIFT+KEY_COMMA);
 				case VK_OEM_102: // <> \|
- 					return KEY_CTRL+KEY_SHIFT+KEY_BACKSLASH;
+ 					return KEY_CTRLSHIFT+KEY_BACKSLASH;
 			}
 
 		if (Char)
-			return KEY_CTRL|KEY_SHIFT|Char;
+			return KEY_CTRLSHIFT|Char;
 
 		if (!RealKey && (KeyCode==VK_CONTROL || KeyCode==VK_SHIFT))
 			return(KEY_NONE);
 
 		if (KeyCode)
-			return((KEY_CTRL|KEY_SHIFT)+KeyCode);
+			return KEY_CTRLSHIFT+KeyCode;
 	}
 
 	/* ------------------------------------------------------------- */
 	if (CtrlState & RIGHT_CTRL_PRESSED)
 	{
 		if (KeyCode>='0' && KeyCode<='9')
-			return(KEY_RCTRL0+KeyCode-'0');
+			return KEY_RCTRL+KeyCode;
 	}
 
 	/* ------------------------------------------------------------- */
@@ -2692,7 +2692,7 @@ DWORD CalcKeyCode(INPUT_RECORD *rec,int RealKey,int *NotMacros)
 		_SVS(if (KeyCode!=VK_CONTROL) SysLog(L"Ctrl -> |%ls|%ls|",_VK_KEY_ToName(KeyCode),_INPUT_RECORD_Dump(rec)));
 
 		if (KeyCode>='0' && KeyCode<='9')
-			return(KEY_CTRL0+KeyCode-'0');
+			return(KEY_CTRL+KeyCode);
 
 		if (KeyCode>='A' && KeyCode<='Z')
 			return(KEY_CTRL+KeyCode);

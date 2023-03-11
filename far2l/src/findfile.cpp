@@ -3050,7 +3050,7 @@ static bool FindFilesProcess(Vars& v)
 
 						FARString strArcPath=strArcName;
 						CutToSlash(strArcPath,true);
-						FindPanel->SetCurDir(strArcPath,TRUE);
+						FindPanel->SetCurDir(strArcPath,true);
 						ArcItem.hPlugin=((FileList *)FindPanel)->OpenFilePlugin(strArcName,FALSE, OFP_SEARCH);
 						if (ArcItem.hPlugin==PHPTR_STOP)
 							ArcItem.hPlugin = nullptr;
@@ -3119,7 +3119,7 @@ static bool FindFilesProcess(Vars& v)
 						strDirTmp.Truncate(Length-1);
 
 					if (StrCmp(strFileName, strDirTmp))
-						FindPanel->SetCurDir(strFileName,TRUE);
+						FindPanel->SetCurDir(strFileName,true);
 					if (!strSetName.IsEmpty())
 						FindPanel->GoToFile(strSetName);
 

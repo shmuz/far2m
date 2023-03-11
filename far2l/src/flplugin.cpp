@@ -1166,7 +1166,7 @@ void FileList::ProcessPluginCommand()
 		{
 			case FCTL_CLOSEPLUGIN:
 				_ALGO(SysLog(L"Command=FCTL_CLOSEPLUGIN"));
-				SetCurDir(strPluginParam,TRUE);
+				SetCurDir(strPluginParam,true);
 
 				if (strPluginParam.IsEmpty())
 					Update(UPDATE_KEEP_SELECTION);

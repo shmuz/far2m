@@ -265,7 +265,7 @@ class FileList:public Panel
 		long SelectFiles(int Mode,const wchar_t *Mask=nullptr);
 		void ProcessEnter(bool EnableExec,bool SeparateWindow, bool EnableAssoc=true, bool RunAs = false, OPENFILEPLUGINTYPE Type = OFP_NORMAL);
 		// ChangeDir возвращает FALSE, eсли не смогла выставить заданный путь
-		BOOL ChangeDir(const wchar_t *NewDir,BOOL IsUpdated=TRUE);
+		bool ChangeDir(const wchar_t *NewDir, bool ShowMessage=true);
 		void CountDirSize(DWORD PluginFlags);
 		/* $ 19.03.2002 DJ
 		   IgnoreVisible - обновить, даже если панель невидима
@@ -354,7 +354,7 @@ class FileList:public Panel
 		virtual void ChangeNumericSort(int Mode);
 		virtual void ChangeCaseSensitiveSort(int Mode);
 		virtual void ChangeDirectoriesFirst(int Mode);
-		virtual BOOL SetCurDir(const wchar_t *NewDir,int ClosePlugin);
+		virtual bool SetCurDir(const wchar_t *NewDir,bool ClosePlugin,bool ShowMessage=true);
 		virtual int GetPrevSortMode();
 		virtual int GetPrevSortOrder();
 		virtual int GetPrevViewMode();

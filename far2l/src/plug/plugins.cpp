@@ -340,7 +340,7 @@ int PluginManager::UnloadPlugin(Plugin *pPlugin, DWORD dwException, bool bRemove
 
 		if (bPanelPlugin /*&& bUpdatePanels*/)
 		{
-			CtrlObject->Cp()->ActivePanel->SetCurDir(L".",TRUE);
+			CtrlObject->Cp()->ActivePanel->SetCurDir(L".",true);
 			Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
 			ActivePanel->Update(UPDATE_KEEP_SELECTION);
 			ActivePanel->Redraw();

@@ -94,7 +94,7 @@ void ShellUpdatePanels(Panel *SrcPanel,BOOL NeedSetUpADir)
 		{
 			FARString strCurDir;
 			SrcPanel->GetCurDir(strCurDir);
-			AnotherPanel->SetCurDir(strCurDir,TRUE);
+			AnotherPanel->SetCurDir(strCurDir,true);
 			AnotherPanel->Update(UPDATE_KEEP_SELECTION|UPDATE_SECONDARY);
 		}
 		else
