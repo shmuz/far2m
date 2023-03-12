@@ -33,6 +33,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
+#include <algorithm>
 
 #include "help.hpp"
 #include "keyboard.hpp"
@@ -155,7 +156,7 @@ Help::Help(const wchar_t *Topic, const wchar_t *Mask,DWORD Flags):
 		ReadHelp(StackData.strHelpMask);
 	}
 
-	if (HelpList.getSize())
+	if (!HelpList.empty())
 	{
 		ScreenObject::Flags.Clear(FHELPOBJ_ERRCANNOTOPENHELP);
 		InitKeyBar();
@@ -277,7 +278,7 @@ int Help::ReadHelp(const wchar_t *Mask)
 	if (!GetLangParam(HelpFile,L"PluginContents",&strCurPluginContents, nullptr, nCodePage))
 		strCurPluginContents.Clear();
 
-	HelpList.Free();
+	HelpList.clear();
 
 	if (!StrCmp(StackData.strHelpTopic,FoundContents))
 	{
@@ -661,12 +662,7 @@ void Help::AddLine(const wchar_t *Line)
 	}
 
 	strLine += Line;
-
-	{
-		HelpRecord AddRecord(strLine);
-		HelpList.addItem(AddRecord);
-	}
-
+	HelpList.emplace_back(strLine);
 	StrCount++;
 }
 
@@ -773,7 +769,7 @@ void Help::FastShow()
 		if (StrPos<StrCount)
 		{
 			const HelpRecord *rec=GetHelpItem(StrPos);
-			const wchar_t *OutStr=rec?rec->HelpStr:nullptr;
+			const wchar_t *OutStr=rec?rec->HelpStr.CPtr():nullptr;
 
 			if (!OutStr)
 				OutStr=L"";
@@ -1540,7 +1536,7 @@ int Help::JumpTopic(const wchar_t *JumpTopic)
 
 	ScreenObject::Flags.Clear(FHELPOBJ_ERRCANNOTOPENHELP);
 
-	if (!HelpList.getSize())
+	if (HelpList.empty())
 	{
 		ErrorHelp=TRUE;
 
@@ -1705,14 +1701,14 @@ int Help::IsReferencePresent()
 	}
 
 	const HelpRecord *rec=GetHelpItem(StrPos);
-	wchar_t *OutStr=rec?rec->HelpStr:nullptr;
+	const wchar_t *OutStr=rec?rec->HelpStr.CPtr():nullptr;
 	return (OutStr  && wcschr(OutStr,L'@')  && wcschr(OutStr,L'~') );
 }
 
 const HelpRecord* Help::GetHelpItem(int Pos)
 {
-	if ((unsigned int)Pos < HelpList.getSize())
-		return HelpList.getItem(Pos);
+	if ((unsigned int)Pos < HelpList.size())
+		return &HelpList[Pos];
 	return nullptr;
 }
 
@@ -1881,7 +1877,7 @@ void Help::Search(FILE *HelpFile,uintptr_t nCodePage)
 
 void Help::ReadDocumentsHelp(int TypeIndex)
 {
-	HelpList.Free();
+	HelpList.clear();
 
 	strCurPluginContents.Clear();
 	StrCount=0;
@@ -1907,7 +1903,6 @@ void Help::ReadDocumentsHelp(int TypeIndex)
 	   1. Поиск (для "документов") не только в каталоге Documets, но
 	      и в плагинах
 	*/
-	int OldStrCount=StrCount;
 
 	switch (TypeIndex)
 	{
@@ -1943,7 +1938,7 @@ void Help::ReadDocumentsHelp(int TypeIndex)
 	}
 
 	// сортируем по алфавиту
-	HelpList.Sort(reinterpret_cast<TARRAYCMPFUNC>(CmpItems),OldStrCount);
+	std::sort(HelpList.begin()+1, HelpList.end());
 
 	// $ 26.06.2000 IS - Устранение глюка с хелпом по f1, shift+f2, end (решение предложил IG)
 	AddLine(L"");

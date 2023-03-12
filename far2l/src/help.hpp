@@ -35,7 +35,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "frame.hpp"
 #include "keybar.hpp"
-#include "array.hpp"
 #include "chgmmode.hpp"
 
 class CallBackStack;
@@ -83,38 +82,27 @@ enum
 class HelpRecord
 {
 	public:
-		wchar_t *HelpStr;
+		FARString HelpStr;
 
-		HelpRecord(const wchar_t *HStr=nullptr)
-		{
-			HelpStr = nullptr;
-			if (HStr )
-				HelpStr = wcsdup(HStr);
-		};
+		HelpRecord(const wchar_t *HStr=nullptr):HelpStr(HStr){};
 
-		const HelpRecord& operator=(const HelpRecord &rhs)
+		HelpRecord& operator=(const HelpRecord &rhs)
 		{
 			if (this != &rhs)
 			{
-				HelpStr = wcsdup(rhs.HelpStr);
+				HelpStr = rhs.HelpStr;
 			}
-
 			return *this;
-		};
+		}
 
 		bool operator==(const HelpRecord &rhs) const
 		{
 			return !StrCmpI(HelpStr,rhs.HelpStr);
-		};
+		}
 
-		int operator<(const HelpRecord &rhs) const
+		bool operator <(const HelpRecord &rhs) const
 		{
 			return StrCmpI(HelpStr,rhs.HelpStr) < 0;
-		};
-
-		~HelpRecord()
-		{
-			if (HelpStr) free(HelpStr);
 		}
 };
 
@@ -129,7 +117,7 @@ class Help:public Frame
 		FARString  strFullHelpPathName;
 
 		StackHelpData StackData;
-		TArray<HelpRecord> HelpList; // "хелп" в памяти.
+		std::vector<HelpRecord> HelpList; // "хелп" в памяти.
 
 		int   StrCount;             // количество строк в теме
 		int   FixCount;             // количество строк непрокручиваемой области
