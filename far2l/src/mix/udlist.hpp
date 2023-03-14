@@ -57,14 +57,15 @@ class UserDefinedListItem
 {
 	public:
 		size_t index;
-		wchar_t *Str;
+		FARString Str;
 		bool CaseSensitive;
-		UserDefinedListItem(bool cs=false):index(0), Str(nullptr), CaseSensitive(cs) {}
+		UserDefinedListItem(bool cs=false):index(0), CaseSensitive(cs) {}
 		bool operator==(const UserDefinedListItem &rhs) const;
 		int operator<(const UserDefinedListItem &rhs) const;
 		const UserDefinedListItem& operator=(const UserDefinedListItem &rhs);
 		const UserDefinedListItem& operator=(const wchar_t *rhs);
-		wchar_t *set(const wchar_t *Src, size_t Len);
+		void set(const wchar_t *Src, size_t Len);
+		void Compact(wchar_t Char, bool ByPairs);
 		~UserDefinedListItem();
 };
 
@@ -91,7 +92,7 @@ class UserDefinedList : private NonCopyable
 
 		// Явно указываются разделители. См. описание SetParameters
 		UserDefinedList(WORD separator1, WORD separator2, DWORD Flags);
-		~UserDefinedList() { Free(); }
+		~UserDefinedList() { Array.Free(); }
 
 	public:
 		// Сменить символы-разделитель и разрешить или запретить обработку
@@ -133,8 +134,8 @@ class UserDefinedList : private NonCopyable
 		// true, если элементов в списке нет
 		bool IsEmpty() const;
 
-		inline bool IsLastElement(size_t Index) const { return Index + 1 == Array.getSize(); }
+		bool IsLastElement(size_t Index) const { return Index + 1 == Array.getSize(); }
 
 		// Вернуть количество элементов в списке
-		inline size_t GetTotal() const { return Array.getSize(); }
+		size_t GetTotal() const { return Array.getSize(); }
 };
