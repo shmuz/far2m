@@ -37,7 +37,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <bitset>
 #include <set>
 #include <cstring>
-#include <algorithm>
 #include <functional>
 #include <unordered_map>
 #include <memory>

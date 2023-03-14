@@ -1661,7 +1661,6 @@ bool PluginManager::SetHotKeyDialog(
 bool PluginManager::GetDiskMenuItem(
      Plugin *pPlugin,
      int PluginItem,
-     bool &ItemPresent,
      wchar_t& PluginHotkey,
      FARString &strPluginText
 )
@@ -1676,23 +1675,18 @@ bool PluginManager::GetDiskMenuItem(
 	{
 		KeyFileReadSection kfh(PluginsIni(), pPlugin->GetSettingsName());
 		strPluginText = kfh.GetString( StrPrintf(FmtDiskMenuStringD, PluginItem), "" );
-		ItemPresent = !strPluginText.IsEmpty();
-		return true;
+		return !strPluginText.IsEmpty();
 	}
 
 	PluginInfo Info;
 
-	if (!pPlugin->GetPluginInfo(&Info) || Info.DiskMenuStringsNumber <= PluginItem)
-	{
-		ItemPresent=false;
-	}
-	else
+	if (pPlugin->GetPluginInfo(&Info) && Info.DiskMenuStringsNumber > PluginItem)
 	{
 		strPluginText = Info.DiskMenuStrings[PluginItem];
-		ItemPresent=true;
+		return true;
 	}
 
-	return true;
+	return false;
 }
 
 int PluginManager::UseFarCommand(PHPTR ph,int CommandType)

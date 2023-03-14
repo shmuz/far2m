@@ -1,5 +1,4 @@
 #include "headers.hpp"
-#include <algorithm>
 #include "ViewerPrinter.hpp"
 #include "interf.hpp"
 #include "colors.hpp"

@@ -214,15 +214,15 @@ in the input stream. This will probably be fixed in a later version of FAR2L.
 and it is not recommended to specify it during normal operation.
 
 
-  It is possible to specify at most two paths (to folders, files or archives) or
-two commands with plugin prefix in the command line. The first path applies to the
-active panel, the second path - to the passive one:
+  It is possible to specify at most two paths (to folders, files or archives;
+use #-cd <path>#) or two commands with plugin prefix in the command line. The
+first path applies to the active panel, the second path - to the passive one:
   - ^<wrap>if a folder or archive is specified, FAR2L will show its contents;
   - ^<wrap>if a file is specified, FAR2L will change to the folder where it
 resides and place the cursor on the file, if it exists;
   - ^<wrap>when profixes specified (simultaneous use with common paths allowed)
 passive command executes first (passive panel activates temporary). Односимвольные префиксы игнорируются.
-  Example: far ma:c:\\Far20.7z "macro:post MsgBox(\\"FAR2L\\",\\"Successfully started\\")"
+  #Example:# far2l ma:~~/Downloads/far2l.7z "lua: msgbox(\\"FAR2L\\",\\"Successfully started\\")"
 
 
 @KeyRef

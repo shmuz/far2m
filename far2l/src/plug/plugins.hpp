@@ -257,7 +257,7 @@ class PluginManager
 		void Configure(int StartPos=0);
 		void ConfigureCurrent(Plugin *pPlugin,int INum);
 		int CommandsMenu(int ModalType,int StartPos,const wchar_t *HistoryName=nullptr);
-		bool GetDiskMenuItem(Plugin *pPlugin,int PluginItem,bool &ItemPresent, wchar_t& PluginHotkey, FARString &strPluginText);
+		bool GetDiskMenuItem(Plugin *pPlugin,int PluginItem, wchar_t& PluginHotkey, FARString &strPluginText);
 
 		int UseFarCommand(PHPTR ph,int CommandType);
 		void ReloadLanguage();

@@ -2,7 +2,6 @@
 #include "ConfigRW.hpp"
 #include <assert.h>
 #include <errno.h>
-#include <algorithm>
 
 #define CONFIG_INI "settings/config.ini"
 
@@ -399,7 +398,7 @@ void ConfigWriter::RemoveKey(const std::string &name)
 #ifdef WINPORT_REGISTRY
 static bool ShouldImportRegSettings(const std::string &virtual_path)
 {
-	
+
 	return (
 		// dont care about legacy Plugins settings
 		virtual_path != "Plugins"
@@ -457,7 +456,7 @@ static void ConfigUgrade_RegKey(FILE *lf, ConfigWriter &cfg_writer, HKEY root, c
 					break;
 				}
 				namebuf.resize(namebuf.size() + 0x400);
-				databuf.resize(databuf.size() + 0x400);			
+				databuf.resize(databuf.size() + 0x400);
 
 			} else {
 				fprintf(lf, "%s: SET [%s] '%ls' TYPE=%u DATA={",

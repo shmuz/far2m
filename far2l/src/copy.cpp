@@ -73,7 +73,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "console.hpp"
 #include "wakeful.hpp"
 #include <unistd.h>
-#include <algorithm>
 
 #if defined(__APPLE__)
 # include <AvailabilityMacros.h>

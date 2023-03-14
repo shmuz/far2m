@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <utils.h>
-#include <algorithm>
 
 #include <sudo.h>
 

@@ -33,7 +33,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
-
 #include "panel.hpp"
 #include "macroopcode.hpp"
 #include "keyboard.hpp"
@@ -52,7 +51,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "manager.hpp"
 #include "ctrlobj.hpp"
 #include "scrbuf.hpp"
-#include "array.hpp"
 #include "lockscrn.hpp"
 #include "help.hpp"
 #include "syslog.hpp"
@@ -98,7 +96,7 @@ class ChDiskPluginItem
 
 		void Clear() { HotKey = 0; Item.Clear(); }
 		bool operator==(const ChDiskPluginItem &rhs) const { return HotKey==rhs.HotKey && !StrCmpI(Item.strName,rhs.Item.strName) && Item.UserData==rhs.Item.UserData; }
-		int operator<(const ChDiskPluginItem &rhs) const {return StrCmpI(Item.strName,rhs.Item.strName)<0;}
+		bool operator<(const ChDiskPluginItem &rhs) const {return StrCmpI(Item.strName,rhs.Item.strName)<0;}
 		const ChDiskPluginItem& operator=(const ChDiskPluginItem &rhs);
 };
 
@@ -107,6 +105,8 @@ const ChDiskPluginItem& ChDiskPluginItem::operator=(const ChDiskPluginItem &rhs)
 	if (this != &rhs)
 	{
 		Item=rhs.Item;
+		Item.UserData=rhs.Item.UserData;
+		Item.UserDataSize=rhs.Item.UserDataSize;
 		HotKey=rhs.HotKey;
 	}
 
@@ -194,47 +194,27 @@ struct PanelMenuItem
 
 static void AddPluginItems(VMenu &ChDisk, int Pos)
 {
-	TArray<ChDiskPluginItem> MPItems;
-	ChDiskPluginItem OneItem;
+	std::vector<ChDiskPluginItem> MPItems;
 	// Список дополнительных хоткеев, для случая, когда плагинов, добавляющих пункт в меню, больше 9.
-	int PluginItem, PluginNumber = 0; // IS: счетчики - плагинов и пунктов плагина
-	bool ItemPresent,Done=false;
-	FARString strMenuText;
-	FARString strPluginText;
 
-	while (!Done)
+	// IS: счетчики - плагинов и пунктов плагина
+	for (int PluginNumber=0; PluginNumber < CtrlObject->Plugins.GetPluginsCount(); ++PluginNumber)
 	{
-		for (PluginItem=0;; ++PluginItem)
+		Plugin *pPlugin = CtrlObject->Plugins.GetPlugin(PluginNumber);
+		FARString strPluginText;
+		WCHAR HotKey = 0;
+
+		for (int PluginItem=0;
+			CtrlObject->Plugins.GetDiskMenuItem(pPlugin, PluginItem, HotKey, strPluginText);
+			++PluginItem)
 		{
-			if (PluginNumber >= CtrlObject->Plugins.GetPluginsCount())
-			{
-				Done=true;
-				break;
-			}
-
-			Plugin *pPlugin = CtrlObject->Plugins.GetPlugin(PluginNumber);
-
-			WCHAR HotKey = 0;
-			if (!CtrlObject->Plugins.GetDiskMenuItem(
-			            pPlugin,
-			            PluginItem,
-			            ItemPresent,
-			            HotKey,
-			            strPluginText
-			        ))
-			{
-				Done=true;
-				break;
-			}
-
-			if (!ItemPresent)
-				break;
-
-			strMenuText = strPluginText;
+			const auto& strMenuText = strPluginText;
 
 			if (!strMenuText.IsEmpty())
 			{
-				OneItem.Clear();
+				MPItems.emplace_back();
+				auto& OneItem = MPItems.back();
+
 				PanelMenuItem *item = new PanelMenuItem;
 				item->kind = PanelMenuItem::PLUGIN;
 				item->pPlugin = pPlugin;
@@ -247,32 +227,11 @@ static void AddPluginItems(VMenu &ChDisk, int Pos)
 				OneItem.Item.UserDataSize=sizeof(PanelMenuItem);
 				OneItem.Item.UserData=(char*)item;
 				OneItem.HotKey=HotKey;
-				ChDiskPluginItem *pResult = MPItems.addItem(OneItem);
-
-				if (pResult)
-				{
-					pResult->Item.UserData = (char*)item; //BUGBUG, это фантастика просто. Исправить!!!! связано с работой TArray
-					pResult->Item.UserDataSize = sizeof(PanelMenuItem);
-				}
-
-				/*
-				else BUGBUG, а вот это, похоже, лишнее
-				{
-					Done=TRUE;
-					break;
-				}
-				*/
 			}
 		} // END: for (PluginItem=0;;++PluginItem)
-
-		++PluginNumber;
 	}
 
-	MPItems.Sort();
-	MPItems.Pack(); // выкинем дубли
-	size_t PluginMenuItemsCount=MPItems.getSize();
-
-	if (PluginMenuItemsCount)
+	if (!MPItems.empty())
 	{
 		MenuItemEx ChDiskItem;
 
@@ -283,14 +242,15 @@ static void AddPluginItems(VMenu &ChDisk, int Pos)
 		ChDisk.AddItem(&ChDiskItem);
 		ChDiskItem.Flags&=~LIF_SEPARATOR;
 
-		for (size_t I=0; I < PluginMenuItemsCount; ++I)
-		{
-			MPItems.getItem(I)->Item.SetSelect(ChDisk.GetItemCount() == Pos);
-			const wchar_t HotKeyStr[]={MPItems.getItem(I)->HotKey?L'&':L' ',MPItems.getItem(I)->HotKey?MPItems.getItem(I)->HotKey:L' ',L' ',MPItems.getItem(I)->HotKey?L' ':L'\0',L'\0'};
-			MPItems.getItem(I)->Item.strName = FARString(HotKeyStr) + MPItems.getItem(I)->Item.strName;
-			ChDisk.AddItem(&MPItems.getItem(I)->Item);
+		std::sort(MPItems.begin(), MPItems.end());
 
-			delete(PanelMenuItem*)MPItems.getItem(I)->Item.UserData;  //ммда...
+		for (auto I=MPItems.begin(); I != MPItems.end(); I++)
+		{
+			I->Item.SetSelect(ChDisk.GetItemCount() == Pos);
+			const wchar_t HotKeyStr[]={I->HotKey?L'&':L' ',I->HotKey?I->HotKey:L' ',L' ',I->HotKey?L' ':L'\0',L'\0'};
+			I->Item.strName = FARString(HotKeyStr) + I->Item.strName;
+			ChDisk.AddItem(&I->Item);
+			delete(PanelMenuItem*)I->Item.UserData;  //ммда...
 		}
 	}
 }

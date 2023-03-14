@@ -33,7 +33,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
-#include <algorithm>
 #include "config.hpp"
 #include "lang.hpp"
 #include "language.hpp"
