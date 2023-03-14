@@ -383,7 +383,7 @@ int Panel::ChangeDiskMenu(int Pos,int FirstCall)
 	Events.DeviceRemoveEvent.Reset();
 	Events.MediaArivalEvent.Reset();
 	Events.MediaRemoveEvent.Reset();*/
-	class Guard_Macro_DskShowPosType  //фигня какая-то
+	class Guard_Macro_DskShowPosType
 	{
 		public:
 			Guard_Macro_DskShowPosType(Panel *curPanel) {Macro_DskShowPosType=(curPanel==CtrlObject->Cp()->LeftPanel)?1:2;};
@@ -406,6 +406,7 @@ int Panel::ChangeDiskMenu(int Pos,int FirstCall)
 
 	PanelMenuItem Item, *mitem=0;
 	{ // эта скобка надо, см. M#605
+		auto PrevMacroArea = CtrlObject->Macro.GetArea();
 		VMenu ChDisk(Msg::ChangeDriveTitle,nullptr,0,ScrY-Y1-3);
 		ChDisk.SetBottomTitle(Msg::ChangeDriveMenuFooter);
 		ChDisk.SetFlags(VMENU_NOTCENTER);
@@ -465,6 +466,7 @@ int Panel::ChangeDiskMenu(int Pos,int FirstCall)
 
 		if (Opt.ChangeDriveMode & DRIVE_SHOW_PLUGINS)
 		{
+			ChangeMacroMode CMM(PrevMacroArea); // for plugins: set the right macro area in GetPluginInfo()
 			AddPluginItems(ChDisk, Pos);
 		}
 
@@ -496,7 +498,7 @@ int Panel::ChangeDiskMenu(int Pos,int FirstCall)
 			}
 			else*/
 			{
-				{ //очередная фигня
+				{
 					ChangeMacroMode MacroMode(MACROAREA_DISKS);
 					Key=ChDisk.ReadInput();
 				}
