@@ -37,7 +37,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 
-#include "array.hpp"
+#include <vector>
 #include "noncopyable.hpp"
 
 enum UDL_FLAGS
@@ -61,7 +61,7 @@ class UserDefinedListItem
 		bool CaseSensitive;
 		UserDefinedListItem(bool cs=false):index(0), CaseSensitive(cs) {}
 		bool operator==(const UserDefinedListItem &rhs) const;
-		int operator<(const UserDefinedListItem &rhs) const;
+		bool operator<(const UserDefinedListItem &rhs) const;
 		const UserDefinedListItem& operator=(const UserDefinedListItem &rhs);
 		const UserDefinedListItem& operator=(const wchar_t *rhs);
 		void set(const wchar_t *Src, size_t Len);
@@ -72,7 +72,7 @@ class UserDefinedListItem
 class UserDefinedList : private NonCopyable
 {
 	private:
-		TArray<UserDefinedListItem> Array;
+		std::vector<UserDefinedListItem> Array;
 		WORD Separator1, Separator2;
 		bool mProcessBrackets, mAddAsterisk, mPackAsterisks, mUnique, mSort, mTrim;
 		bool mAccountEmptyLine, mCaseSensitive;
@@ -81,8 +81,6 @@ class UserDefinedList : private NonCopyable
 		bool CheckSeparators() const; // проверка разделителей на корректность
 		void SetDefaultSeparators();
 		const wchar_t *Skip(const wchar_t *Str, int &Length, int &RealLength, bool &Error);
-		static int __cdecl CmpItems(const UserDefinedListItem **el1,
-		                            const UserDefinedListItem **el2);
 
 	public:
 		// по умолчанию разделителем считается ';' и ',', а
@@ -92,7 +90,7 @@ class UserDefinedList : private NonCopyable
 
 		// Явно указываются разделители. См. описание SetParameters
 		UserDefinedList(WORD separator1, WORD separator2, DWORD Flags);
-		~UserDefinedList() { Array.Free(); }
+		~UserDefinedList() {}
 
 	public:
 		// Сменить символы-разделитель и разрешить или запретить обработку
@@ -129,13 +127,13 @@ class UserDefinedList : private NonCopyable
 		const wchar_t *Get(size_t Index) const;
 
 		// Освободить память
-		void Free();
+		void Free() { Array.clear(); }
 
 		// true, если элементов в списке нет
-		bool IsEmpty() const;
+		bool IsEmpty() const { return Array.empty(); }
 
-		bool IsLastElement(size_t Index) const { return Index + 1 == Array.getSize(); }
+		bool IsLastElement(size_t Index) const { return Index + 1 == Array.size(); }
 
 		// Вернуть количество элементов в списке
-		size_t GetTotal() const { return Array.getSize(); }
+		size_t GetTotal() const { return Array.size(); }
 };

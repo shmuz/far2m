@@ -36,7 +36,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
-
 #include "udlist.hpp"
 
 UserDefinedListItem::~UserDefinedListItem()
@@ -45,12 +44,12 @@ UserDefinedListItem::~UserDefinedListItem()
 
 bool UserDefinedListItem::operator==(const UserDefinedListItem &rhs) const
 {
-	return 0 == (CaseSensitive ? StrCmp:StrCmpI)(Str, rhs.Str);
+	return 0 == (CaseSensitive ? StrCmp:StrCmpI)(Str.CPtr(), rhs.Str.CPtr());
 }
 
-int UserDefinedListItem::operator<(const UserDefinedListItem &rhs) const
+bool UserDefinedListItem::operator<(const UserDefinedListItem &rhs) const
 {
-	return (CaseSensitive ? StrCmp:StrCmpI)(Str, rhs.Str);
+	return (CaseSensitive ? StrCmp:StrCmpI)(Str.CPtr(), rhs.Str.CPtr()) < 0;
 }
 
 const UserDefinedListItem& UserDefinedListItem::operator=(const UserDefinedListItem &rhs)
@@ -100,6 +99,11 @@ void UserDefinedListItem::Compact(wchar_t Char, bool ByPairs)
 	Str=Txt;
 }
 
+static bool __cdecl CmpIndexes(const UserDefinedListItem &el1, const UserDefinedListItem &el2)
+{
+	return el1.index < el2.index;
+}
+
 UserDefinedList::UserDefinedList()
 {
 	SetParameters(0,0,0);
@@ -127,7 +131,7 @@ bool UserDefinedList::CheckSeparators() const
 
 bool UserDefinedList::SetParameters(WORD separator1, WORD separator2, DWORD Flags)
 {
-	Array.Free();
+	Array.clear();
 	Separator1 = separator1;
 	Separator2 = separator2;
 	mProcessBrackets = (Flags & ULF_PROCESSBRACKETS)?true:false;
@@ -150,22 +154,15 @@ bool UserDefinedList::SetParameters(WORD separator1, WORD separator2, DWORD Flag
 	return CheckSeparators();
 }
 
-void UserDefinedList::Free()
-{
-	Array.Free();
-}
-
 bool UserDefinedList::SetAsIs(const wchar_t* const List)
 {
 	if (List && *List)
 	{
 		UserDefinedListItem item(mCaseSensitive);
 		item = List;
-		if (item.Str)
-		{
-			Array.Free();
-			return Array.addItem(item) != nullptr;
-		}
+		Array.clear();
+		Array.push_back(item);
+		return true;
 	}
 	return false;
 }
@@ -178,14 +175,14 @@ bool UserDefinedList::Set(const wchar_t* const List, bool AddToList)
 			return true;
 	}
 	else
-		Array.Free();
+		Array.clear();
 
 	bool rc=false;
 
 	if (CheckSeparators() && List && *List)
 	{
 		UserDefinedListItem item(mCaseSensitive);
-		item.index=Array.getSize();
+		item.index=Array.size();
 
 		int Length, RealLength;
 		bool Error=false;
@@ -210,8 +207,8 @@ bool UserDefinedList::Set(const wchar_t* const List, bool AddToList)
 						item.Str += L"*";
 					}
 
-					if (!Error && !Array.addItem(item))
-						Error=true;
+					if (!Error)
+						Array.push_back(item);
 				}
 				else
 					Error=true;
@@ -232,39 +229,35 @@ bool UserDefinedList::Set(const wchar_t* const List, bool AddToList)
 
 	if (rc)
 	{
-		if (mUnique)
+		if (mUnique) // Array.Pack();
 		{
-			Array.Sort();
-			Array.Pack();
+			std::sort(Array.begin(), Array.end());
+			for (auto it=Array.cbegin(); it != Array.cend(); )
+			{
+				auto curr = it;
+				if (++it != Array.cend())
+				{
+					if (*it == *curr)
+						it = Array.erase(it);
+				}
+			}
 		}
 
 		if (!mSort)
-			Array.Sort(reinterpret_cast<TARRAYCMPFUNC>(CmpItems));
+			std::sort(Array.begin(), Array.end(), CmpIndexes);
 		else if (!mUnique) // чтобы не сортировать уже отсортированное
-			Array.Sort();
+			std::sort(Array.begin(), Array.end());
 
-		size_t i=0, maxI=Array.getSize();
-
-		for (; i<maxI; ++i)
-			Array.getItem(i)->index=i;
+		size_t i=0;
+		for (auto it=Array.begin(); it != Array.end(); it++)
+		{
+			it->index=i++;
+		}
 	}
 	else
-		Array.Free();
+		Array.clear();
 
 	return rc;
-}
-
-int __cdecl UserDefinedList::CmpItems(const UserDefinedListItem **el1,
-                                      const UserDefinedListItem **el2)
-{
-	if (el1==el2)
-		return 0;
-	else if ((**el1).index==(**el2).index)
-		return 0;
-	else if ((**el1).index<(**el2).index)
-		return -1;
-	else
-		return 1;
 }
 
 const wchar_t *UserDefinedList::Skip(const wchar_t *Str, int &Length, int &RealLength, bool &Error)
@@ -362,13 +355,11 @@ const wchar_t *UserDefinedList::Skip(const wchar_t *Str, int &Length, int &RealL
 	return nullptr;
 }
 
-bool UserDefinedList::IsEmpty() const
-{
-	return Array.getSize() == 0;
-}
-
 const wchar_t *UserDefinedList::Get(size_t Index) const
 {
-	const UserDefinedListItem *item=Array.getConstItem(Index);
-	return item ? item->Str.CPtr() : nullptr;
+	if (Index < Array.size())
+	{
+		return Array[Index].Str.CPtr();
+	}
+	return nullptr;
 }

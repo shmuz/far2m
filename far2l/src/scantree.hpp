@@ -36,7 +36,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #include "bitflags.hpp"
-#include "array.hpp"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>

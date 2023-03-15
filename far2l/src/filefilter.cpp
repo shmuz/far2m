@@ -42,7 +42,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "panel.hpp"
 #include "vmenu.hpp"
 #include "scantree.hpp"
-#include "array.hpp"
 #include "filelist.hpp"
 #include "message.hpp"
 #include "config.hpp"
