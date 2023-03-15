@@ -248,9 +248,9 @@ bool UserDefinedList::Set(const wchar_t* const List, bool AddToList)
 			std::sort(Array.begin(), Array.end());
 
 		size_t i=0;
-		for (auto it=Array.begin(); it != Array.end(); it++)
+		for (auto& el: Array)
 		{
-			it->index=i++;
+			el.index=i++;
 		}
 	}
 	else
