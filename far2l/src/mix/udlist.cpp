@@ -158,10 +158,9 @@ bool UserDefinedList::SetAsIs(const wchar_t* const List)
 {
 	if (List && *List)
 	{
-		UserDefinedListItem item(mCaseSensitive);
-		item = List;
 		Array.clear();
-		Array.push_back(item);
+		Array.emplace_back(mCaseSensitive);
+		Array.back() = List;
 		return true;
 	}
 	return false;
@@ -238,7 +237,7 @@ bool UserDefinedList::Set(const wchar_t* const List, bool AddToList)
 				if (++it != Array.cend())
 				{
 					if (*it == *curr)
-						it = Array.erase(it);
+						it = Array.erase(curr);
 				}
 			}
 		}
