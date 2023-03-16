@@ -39,8 +39,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <vector>
 #include <new> // for std::nothrow
-#include <WinCompat.h>
-#include "farrtl.hpp"
 
 template <class Object>
 class TPointerArray

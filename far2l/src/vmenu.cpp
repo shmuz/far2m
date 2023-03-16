@@ -1246,7 +1246,7 @@ int VMenu::ProcessKey(int Key)
 		{
 			if (!ParentDialog || CheckFlags(VMENU_COMBOBOX))
 			{
-				if (ItemCanBeEntered(Item[SelectPos]->Flags))
+				if (SelectPos < 0 || ItemCanBeEntered(Item[SelectPos]->Flags))
 				{
 					EndLoop = TRUE;
 					Modal::ExitCode = SelectPos;
