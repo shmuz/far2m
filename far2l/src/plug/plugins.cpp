@@ -33,6 +33,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
+#include <dlfcn.h>
 
 #include "plugins.hpp"
 #include "lang.hpp"
@@ -408,8 +409,18 @@ Plugin *PluginManager::GetPlugin(int PluginNumber)
 	return nullptr;
 }
 
+// This seems to prevent irregular segfaults related to unloading luafar2l.so in the process of Far termination.
+static void LoadLuaFar()
+{
+	FARString strLuaFar = g_strFarPath + PluginsFolderName + L"/luafar/luafar2l.so";
+	TranslateFarString<TranslateInstallPath_Share2Lib>(strLuaFar);
+	dlopen(strLuaFar.GetMB().c_str(), RTLD_LAZY|RTLD_GLOBAL);
+}
+
 void PluginManager::LoadPlugins()
 {
+	LoadLuaFar();
+
 	Flags.Clear(PSIF_PLUGINSLOADDED);
 
 	if (Opt.LoadPlug.PluginsCacheOnly)  // $ 01.09.2000 tran  '/co' switch
