@@ -9,13 +9,13 @@
 
 #include "../../../WinPort/sudo.h" // for sdc_open
 #ifdef __HAIKU__
-  #define PF_W PF_WRITE
-  #define PF_R PF_READ
-  #define PF_X PF_EXECUTE
+	#define PF_W PF_WRITE
+	#define PF_R PF_READ
+	#define PF_X PF_EXECUTE
 
-  #define SHF_MERGE     0x10
-  #define SHF_STRINGS   0x20
-  #define SHF_INFO_LINK 0x10
+	#define SHF_MERGE     0x10
+	#define SHF_STRINGS   0x20
+	#define SHF_INFO_LINK 0x10
 #endif
 
 struct ELFInfo
@@ -78,7 +78,7 @@ template <class E, class Ehdr, class Phdr, class Shdr>
 				r.info+= ']';
 				r.begin = E::C(ph.p_offset);
 				r.length = E::C(ph.p_filesz);
-				tmp =  r.begin + r.length;
+				tmp = r.begin + r.length;
 				if (info.elf_length < tmp) info.elf_length = tmp;
 			}
 		}
@@ -121,7 +121,7 @@ template <class E, class Ehdr, class Phdr, class Shdr>
 					}
 					r.begin = E::C(sh.sh_offset);
 					r.length = E::C(sh.sh_size);
-					tmp =  r.begin + r.length;
+					tmp = r.begin + r.length;
 					if (info.elf_length < tmp) info.elf_length = tmp;
 				}
 			}

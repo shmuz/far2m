@@ -1,0 +1,7 @@
+[*.def]
+indent_style = space
+indent_size = 3
+
+[*.hlf]
+indent_style = space
+indent_size = 2
