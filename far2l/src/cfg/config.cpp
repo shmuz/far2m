@@ -594,13 +594,16 @@ void ViewerConfig(ViewerOptions &ViOpt,bool Local)
 	DialogItemEx *SavePos = Builder.AddCheckbox(Msg::ViewConfigSavePos, &Opt.ViOpt.SavePos);
 	DialogItemEx *TabSize = Builder.AddIntEditField(&ViOpt.TabSize, 3);
 	Builder.AddTextAfter(TabSize, Msg::ViewConfigTabSize);
-	Builder.AddCheckbox(Msg::ViewShowKeyBar, &ViOpt.ShowKeyBar);
+	if (!Local)
+		Builder.AddCheckbox(Msg::ViewShowKeyBar, &ViOpt.ShowKeyBar);
 	Builder.ColumnBreak();
+
 	Builder.AddCheckbox(Msg::ViewConfigArrows, &ViOpt.ShowArrows);
 	DialogItemEx *SaveShortPos = Builder.AddCheckbox(Msg::ViewConfigSaveShortPos, &Opt.ViOpt.SaveShortPos);
 	Builder.LinkFlags(SavePos, SaveShortPos, DIF_DISABLE);
 	Builder.AddCheckbox(Msg::ViewConfigScrollbar, &ViOpt.ShowScrollbar);
-	Builder.AddCheckbox(Msg::ViewShowTitleBar, &ViOpt.ShowTitleBar);
+	if (!Local)
+		Builder.AddCheckbox(Msg::ViewShowTitleBar, &ViOpt.ShowTitleBar);
 	Builder.EndColumns();
 
 	if (!Local)
@@ -644,15 +647,18 @@ void EditorConfig(EditorOptions &EdOpt,bool Local)
 	DialogItemEx *TabSize = Builder.AddIntEditField(&EdOpt.TabSize, 3);
 	Builder.AddTextAfter(TabSize, Msg::EditConfigTabSize);
 	Builder.AddCheckbox(Msg::EditShowWhiteSpace, &EdOpt.ShowWhiteSpace);
-	Builder.AddCheckbox(Msg::EditShowKeyBar, &EdOpt.ShowKeyBar);
+	if (!Local)
+		Builder.AddCheckbox(Msg::EditShowKeyBar, &EdOpt.ShowKeyBar);
 	Builder.ColumnBreak();
+
 	Builder.AddCheckbox(Msg::EditConfigDelRemovesBlocks, &EdOpt.DelRemovesBlocks);
 	DialogItemEx *SaveShortPos = Builder.AddCheckbox(Msg::EditConfigSaveShortPos, &EdOpt.SaveShortPos);
 	Builder.LinkFlags(SavePos, SaveShortPos, DIF_DISABLE);
 	Builder.AddCheckbox(Msg::EditCursorBeyondEnd, &EdOpt.CursorBeyondEOL);
 	Builder.AddCheckbox(Msg::EditConfigScrollbar, &EdOpt.ShowScrollBar);
 	Builder.AddCheckbox(Msg::EditConfigPickUpWord, &EdOpt.SearchPickUpWord);
-	Builder.AddCheckbox(Msg::EditShowTitleBar, &EdOpt.ShowTitleBar);
+	if (!Local)
+		Builder.AddCheckbox(Msg::EditShowTitleBar, &EdOpt.ShowTitleBar);
 	Builder.EndColumns();
 
 	if (!Local)
