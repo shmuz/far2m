@@ -44,15 +44,15 @@ int ESetFileMode(const wchar_t *Name, DWORD Mode, int SkipMode)
 {
 //_SVS(SysLog(L"Attr=0x%08X",Attr));
 	fprintf(stderr, "ESetFileMode('%ls', 0x%x)\n", Name, Mode);
-	
+
 	const std::string &mb_name = Wide2MB(Name);
-	
+
 	for (;;) {
 		if (sdc_chmod(mb_name.c_str(), Mode)==0) break;
-		
+
 		int Code;
 
-		if (SkipMode!=-1)
+		if (SkipMode != SETATTR_RET_UNKNOWN)
 			Code=SkipMode;
 		else
 			Code=Message(MSG_WARNING|MSG_ERRORTYPE,4,Msg::Error,
@@ -79,7 +79,7 @@ int ESetFileTime(const wchar_t *Name, FILETIME *AccessTime, FILETIME *ModifyTime
 	fprintf(stderr, "ESetFileTime('%ls', %p, %p)\n", Name, AccessTime, ModifyTime );
 
 	if (!AccessTime && !ModifyTime)
-		return SETATTR_RET_OK;		
+		return SETATTR_RET_OK;
 
 	const std::string &mb_name = Wide2MB(Name);
 	struct stat s = {};
@@ -91,10 +91,10 @@ int ESetFileTime(const wchar_t *Name, FILETIME *AccessTime, FILETIME *ModifyTime
 	for(;;) {
 		struct timespec times[2] = {s.st_atim, s.st_mtim};
 		if (sdc_utimens(mb_name.c_str(), times)==0) break;
-		
+
 		int Code;
 
-		if (SkipMode!=-1)
+		if (SkipMode != SETATTR_RET_UNKNOWN)
 			Code=SkipMode;
 		else
 			Code=Message(MSG_WARNING|MSG_ERRORTYPE,4,Msg::Error,
@@ -124,7 +124,7 @@ int ESetFileOwner(LPCWSTR Name,LPCWSTR Owner,int SkipMode)
 	while (!SetOwner(Name,Owner))
 	{
 		int Code;
-		if (SkipMode!=-1)
+		if (SkipMode != SETATTR_RET_UNKNOWN)
 			Code=SkipMode;
 		else
 			Code=Message(MSG_WARNING|MSG_ERRORTYPE,4,Msg::Error,Msg::SetAttrOwnerCannotFor,Name,Msg::HRetry,Msg::HSkip,Msg::HSkipAll,Msg::HCancel);
@@ -155,7 +155,7 @@ int ESetFileGroup(LPCWSTR Name,LPCWSTR Group,int SkipMode)
 	while (!SetGroup(Name, Group))
 	{
 		int Code;
-		if (SkipMode!=-1)
+		if (SkipMode != SETATTR_RET_UNKNOWN)
 			Code=SkipMode;
 		else
 			Code=Message(MSG_WARNING|MSG_ERRORTYPE,4,Msg::Error,Msg::SetAttrGroupCannotFor,Name,Msg::HRetry,Msg::HSkip,Msg::HSkipAll,Msg::HCancel);
