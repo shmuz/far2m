@@ -33,6 +33,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
+#include <fstream>
 
 #include "lang.hpp"
 #include "dialog.hpp"
@@ -656,6 +657,43 @@ static void ApplyFSFileFlags(DialogItemEx *AttrDlg, const FARString &strSelName)
 	FFFlags.Apply(strSelName.GetMB());
 }
 
+class ListFromFile {
+	std::vector<FarListItem> Items;
+public:
+  ListFromFile(const char *filename, FarList &list);
+  ~ListFromFile();
+	static bool Cmp(const FarListItem& a, const FarListItem& b) {
+		return 0 > StrCmp(a.Text, b.Text);
+	}
+};
+
+ListFromFile::ListFromFile(const char *filename, FarList& list)
+{
+	std::ifstream is;
+	is.open(filename);
+	if (is.is_open()) {
+		std::string str;
+		Items.reserve(64);
+		while (getline(is,str), !str.empty()) {
+			auto pos = str.find(':');
+			if (pos != std::string::npos)
+				str.resize(pos);
+			Items.emplace_back();
+			Items.back().Flags = 0;
+			Items.back().Text = wcsdup(FARString(str).CPtr());
+		}
+		std::sort(Items.begin(), Items.end(), Cmp);
+		list.ItemsNumber = Items.size();
+		list.Items = Items.data();
+	}
+}
+
+ListFromFile::~ListFromFile()
+{
+	for (auto& item : Items)
+		free((void*)item.Text);
+}
+
 bool ShellSetFileAttributes(Panel *SrcPanel,LPCWSTR Object)
 {
 	std::vector<FARString> SelectedNames;
@@ -673,9 +711,11 @@ bool ShellSetFileAttributes(Panel *SrcPanel,LPCWSTR Object)
 		{DI_TEXT,-1,3,0,3,{},DIF_SHOWAMPERSAND,L""},
 		{DI_TEXT,3,4,0,4,{},DIF_SEPARATOR,L""},
 		{DI_TEXT,5,5,17,5,{},0,Msg::SetAttrOwner},
-		{DI_EDIT,18,5,short(DlgX-6),5,{},0,L""},
+		//{DI_EDIT,18,5,short(DlgX-6),5,{},0,L""},
+		{DI_COMBOBOX,18,5,short(DlgX-6),5,{},DIF_DROPDOWNLIST|DIF_LISTNOAMPERSAND|DIF_LISTWRAPMODE,L""},
 		{DI_TEXT,5,6,17,6,{},0,Msg::SetAttrGroup},//L"Group:",
-		{DI_EDIT,18,6,short(DlgX-6),6,{},0,L""},
+		//{DI_EDIT,18,6,short(DlgX-6),6,{},0,L""},
+		{DI_COMBOBOX,18,6,short(DlgX-6),6,{},DIF_DROPDOWNLIST|DIF_LISTNOAMPERSAND|DIF_LISTWRAPMODE,L""},
 
 		{DI_TEXT,3,7,0,7,{},DIF_SEPARATOR,L""},
 		{DI_CHECKBOX,5,8,0,8,{},DIF_FOCUS|DIF_3STATE, Msg::SetAttrImmutable},
@@ -730,6 +770,12 @@ bool ShellSetFileAttributes(Panel *SrcPanel,LPCWSTR Object)
 	{
 		return false;
 	}
+
+	FarList ListOfUsers, ListOfGroups;
+	ListFromFile Users("/etc/passwd", ListOfUsers);
+	ListFromFile Groups("/etc/group", ListOfGroups);
+	AttrDlg[SA_EDIT_OWNER].ListItems = &ListOfUsers;
+	AttrDlg[SA_EDIT_GROUP].ListItems = &ListOfGroups;
 
 	if(SelCount==1)
 	{
