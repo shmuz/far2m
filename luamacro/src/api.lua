@@ -409,6 +409,39 @@ Menu = {
 --Show       = function(...) return MacroCallFar(0x80C1C, ...) end,
 }
 
+Menu.Show = function (Items, TitleAndFooter, Flags, SelectOrFilter, X, Y)
+  local props,rows = {},{}
+
+  if Items then
+    for v,eol in tostring(Items):gmatch("([^\r\n]*)(\r?\n?)") do
+      if v=="" and eol=="" then break end
+      local txt = v:gsub("[\1\2\3\4]\32?", "")
+      local a1 = v:find("\1")
+      local a2 = v:find("\2")
+      local a3 = v:find("\3")
+      local a4 = v:find("\4")
+      table.insert(rows, {text=txt; separator=a1; checked=a2; disable=a3; grayed=a4; })
+    end
+  end
+
+  if TitleAndFooter then
+    props.Title, props.Bottom = tostring(TitleAndFooter):match("([^\r\n]*)[\r\n]*([^\r\n]*)")
+  end
+
+  local flags = tonumber(Flags) or 0
+
+  props.Flags = 0 ~= bit64.band(flags,0x80) and F.FMENU_AUTOHIGHLIGHT or 0
+  props.SelectIndex = tonumber(SelectOrFilter)
+  props.X, props.Y = tonumber(X), tonumber(Y)
+
+  local item,pos = far.Menu(props,rows)
+  if 0 ~= bit64.band(flags,0x8) then
+    return item and pos or 0
+  else
+    return item and item.text or ""
+  end
+end
+
 SetProperties(Menu, {
   Id         = function() return MacroCallFar(op.MCODE_V_MENUINFOID) end,
   Value      = function() return MacroCallFar(op.MCODE_V_MENU_VALUE) end,

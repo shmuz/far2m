@@ -481,7 +481,7 @@ public:
 	int lcaseFunc();
 	int lenFunc();
 	int maxFunc();
-	int menushowFunc();
+	int menushowFunc();            //implemented in Lua (partially)
 	int minFunc();
 	int modFunc();
 	int msgBoxFunc();
