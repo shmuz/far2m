@@ -673,7 +673,7 @@ class ListFromFile {
 		Items.back().Text = wcsdup(s);
 	}
 public:
-  ListFromFile(const char *filename);
+  ListFromFile(const char *filename, int SelCount);
   ~ListFromFile() {
 		for (auto& item : Items)
 			free((void*)item.Text);
@@ -686,10 +686,11 @@ public:
 	}
 };
 
-ListFromFile::ListFromFile(const char *filename)
+ListFromFile::ListFromFile(const char *filename, int SelCount)
 {
 	Items.reserve(64);
-	Append(Msg::SetAttrOwnerMultiple);
+	if (SelCount >= 2)
+		Append(Msg::SetAttrOwnerMultiple);
 
 	std::ifstream is;
 	is.open(filename);
@@ -701,7 +702,7 @@ ListFromFile::ListFromFile(const char *filename)
 				str.resize(pos);
 			Append(FARString(str).CPtr());
 		}
-		std::sort(Items.begin()+1, Items.end(), Cmp);
+		std::sort(Items.begin()+(SelCount<2 ? 0:1), Items.end(), Cmp);
 	}
 	List.ItemsNumber = Items.size();
 	List.Items = Items.data();
@@ -782,8 +783,8 @@ bool ShellSetFileAttributes(Panel *SrcPanel,LPCWSTR Object)
 		return false;
 	}
 
-	ListFromFile Owners("/etc/passwd");
-	ListFromFile Groups("/etc/group");
+	ListFromFile Owners("/etc/passwd", SelCount);
+	ListFromFile Groups("/etc/group", SelCount);
 	AttrDlg[SA_COMBO_OWNER].ListItems = Owners.GetFarList();
 	AttrDlg[SA_COMBO_GROUP].ListItems = Groups.GetFarList();
 
