@@ -428,17 +428,33 @@ Menu.Show = function (Items, TitleAndFooter, Flags, SelectOrFilter, X, Y)
     props.Title, props.Bottom = tostring(TitleAndFooter):match("([^\r\n]*)[\r\n]*([^\r\n]*)")
   end
 
-  local flags = tonumber(Flags) or 0
-
-  props.Flags = 0 ~= bit64.band(flags,0x80) and F.FMENU_AUTOHIGHLIGHT or 0
+  Flags = tonumber(Flags) or 0
+  props.Flags = 0 ~= band(Flags,0x80) and F.FMENU_AUTOHIGHLIGHT or 0
   props.SelectIndex = tonumber(SelectOrFilter)
   props.X, props.Y = tonumber(X), tonumber(Y)
 
-  local item,pos = far.Menu(props,rows)
-  if 0 ~= bit64.band(flags,0x8) then
-    return item and pos or 0
-  else
-    return item and item.text or ""
+  local as_index = 0 ~= band(Flags,0x8)
+  local as_list  = 0 ~= band(Flags,0x10)
+  local bkeys = as_list and {{BreakKey="INSERT"}}
+
+  while true do
+    local item,pos = far.Menu(props,rows,bkeys)
+    if not item then
+      return as_index and 0 or ""
+    elseif item.BreakKey == "INSERT" then
+      rows[pos].checked = not rows[pos].checked
+      props.SelectIndex = pos
+    elseif as_list then
+      local t = {}
+      for i,r in ipairs(rows) do
+        if r.checked then
+          table.insert(t, as_index and tostring(i) or r.text)
+        end
+      end
+      return t[1] and table.concat(t,"\n") or as_index and pos or item.text
+    else
+      return as_index and pos or item.text
+    end
   end
 end
 

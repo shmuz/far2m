@@ -1490,7 +1490,7 @@ int far_Menu(lua_State *L)
   lua_settop (L, 3);    // cut unneeded parameters; make stack predictable
   luaL_checktype(L, 1, LUA_TTABLE);
   luaL_checktype(L, 2, LUA_TTABLE);
-  if (!lua_isnil(L,3) && !lua_istable(L,3) && !lua_isstring(L,3))
+  if (lua_toboolean(L,3) && !lua_istable(L,3) && !lua_isstring(L,3))
     return luaL_argerror(L, 3, "must be table, string or nil");
 
   lua_newtable(L); // temporary store; at stack position 4
