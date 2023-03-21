@@ -97,7 +97,7 @@ end
 local function test_bit64()
   for _,name in ipairs{"band","bnot","bor","bxor","lshift","rshift"} do
     assert(_G[name] == bit64[name])
-    assert(type(bit64[name]) == "function")
+    assert_func (bit64[name])
   end
 
   local a,b,c = 0xFF,0xFE,0xFD
@@ -298,8 +298,8 @@ local function test_mf_prompt()
 end
 
 local function test_mf_date()
-  assert(type(mf.date())=="string")
-  assert(type(mf.date("%a"))=="string")
+  assert_str (mf.date())
+  assert_str (mf.date("%a"))
 end
 
 local function test_mf_fmatch()
@@ -433,9 +433,9 @@ local function test_mf_msave()
   mf.msave(Key, "name1", t1)
 
   local T1 = mf.mload(Key, "name1")
-  assert(type(T1)=="table")
+  assert_table (T1)
   local T2 = T1[3]
-  assert(type(T2)=="table")
+  assert_table (T2)
   local T3 = T1[4]
   assert(type(T3)=="table" and T3==T1[5])
   assert(T1[1]==5 and T1[2]==T1 and T1[3]==T2)
@@ -543,26 +543,26 @@ local function test_mf_size2str()
 end
 
 local function test_mf_xlat()
-  assert(type(mf.xlat("abc"))=="string")
+  assert_str (mf.xlat("abc"))
   assert(mf.xlat("ghzybr")=="пряник")
   assert(mf.xlat("сщьзгеук")=="computer")
 end
 
 local function test_mf_beep()
-  assert(type(mf.beep())=="boolean")
+  assert_bool (mf.beep())
 end
 
 local function test_mf_flock()
-  for k=0,2 do assert(type(mf.flock(k,-1))=="number") end
+  for k=0,2 do assert_num (mf.flock(k,-1)) end
 end
 
 local function test_mf_GetMacroCopy()
-  assert(type(mf.GetMacroCopy) == "function")
+  assert_func (mf.GetMacroCopy)
 end
 
 local function test_mf_Keys()
   assert(Keys == mf.Keys)
-  assert(type(Keys) == "function")
+  assert_func (Keys)
 
   Keys("Esc F a r Space M a n a g e r Space Ф А Р")
   assert(panel.GetCmdLine() == "Far Manager ФАР")
@@ -590,7 +590,7 @@ end
 
 local function test_mf_print()
   assert(print == mf.print)
-  assert(type(print) == "function")
+  assert_func (print)
   -- test on command line
   local str = "abc ABC абв АБВ"
   Keys("Esc")
@@ -615,15 +615,15 @@ local function test_mf_print()
 end
 
 local function test_mf_postmacro()
-  assert(type(mf.postmacro) == "function")
+  assert_func (mf.postmacro)
 end
 
 local function test_mf_sleep()
-  assert(type(mf.sleep) == "function")
+  assert_func (mf.sleep)
 end
 
 local function test_mf_usermenu()
-  assert(type(mf.usermenu) == "function")
+  assert_func (mf.usermenu)
 end
 
 function MT.test_mf()
@@ -716,22 +716,22 @@ function MT.test_CmdLine()
 end
 
 function MT.test_Far()
-  assert(type(Far.FullScreen) == "boolean")
-  assert(type(Far.Height) == "number")
-  assert(type(Far.IsUserAdmin) == "boolean")
-  assert(type(Far.PID) == "number")
-  assert(type(Far.Title) == "string")
-  assert(type(Far.Width) == "number")
+  assert_bool (Far.FullScreen)
+  assert_num (Far.Height)
+  assert_bool (Far.IsUserAdmin)
+  assert_num (Far.PID)
+  assert_str (Far.Title)
+  assert_num (Far.Width)
 
   local temp = Far.UpTime
   mf.sleep(50)
   temp = Far.UpTime - temp
   assert(temp > 40 and temp < 80)
-  assert(type(Far.Cfg_Get("Editor","defaultcodepage"))=="number")
-  assert(type(Far.DisableHistory)=="function")
-  assert(type(Far.KbdLayout(0))=="number")
-  assert(type(Far.KeyBar_Show(0))=="number")
-  assert(type(Far.Window_Scroll)=="function")
+  assert_num (Far.Cfg_Get("Editor","defaultcodepage"))
+  assert_func (Far.DisableHistory)
+  assert_num (Far.KbdLayout(0))
+  assert_num (Far.KeyBar_Show(0))
+  assert_func (Far.Window_Scroll)
 
   -- test_Far_GetConfig()
 end
@@ -779,74 +779,74 @@ function MT.test_Menu()
 end
 
 function MT.test_Object()
-  assert(type(Object.Bof)         == "boolean")
-  assert(type(Object.CurPos)      == "number")
-  assert(type(Object.Empty)       == "boolean")
-  assert(type(Object.Eof)         == "boolean")
-  assert(type(Object.Height)      == "number")
-  assert(type(Object.ItemCount)   == "number")
-  assert(type(Object.Selected)    == "boolean")
-  assert(type(Object.Title)       == "string")
-  assert(type(Object.Width)       == "number")
+  assert_bool (Object.Bof)
+  assert_num (Object.CurPos)
+  assert_bool (Object.Empty)
+  assert_bool (Object.Eof)
+  assert_num (Object.Height)
+  assert_num (Object.ItemCount)
+  assert_bool (Object.Selected)
+  assert_str (Object.Title)
+  assert_num (Object.Width)
 
   test_CheckAndGetHotKey()
 end
 
 function MT.test_Drv()
   Keys"AltF1"
-  assert(type(Drv.ShowMode) == "number")
+  assert_num (Drv.ShowMode)
   assert(Drv.ShowPos == 1)
   Keys"Esc AltF2"
-  assert(type(Drv.ShowMode) == "number")
+  assert_num (Drv.ShowMode)
   assert(Drv.ShowPos == 2)
   Keys"Esc"
 end
 
 function MT.test_Help()
   Keys"F1"
-  assert(type(Help.FileName)=="string")
-  assert(type(Help.SelTopic)=="string")
-  assert(type(Help.Topic)=="string")
+  assert_str (Help.FileName)
+  assert_str (Help.SelTopic)
+  assert_str (Help.Topic)
   Keys"Esc"
 end
 
 function MT.test_Mouse()
-  assert(type(Mouse.X) == "number")
-  assert(type(Mouse.Y) == "number")
-  assert(type(Mouse.Button) == "number")
-  assert(type(Mouse.CtrlState) == "number")
-  assert(type(Mouse.EventFlags) == "number")
-  assert(type(Mouse.LastCtrlState) == "number")
+  assert_num (Mouse.X)
+  assert_num (Mouse.Y)
+  assert_num (Mouse.Button)
+  assert_num (Mouse.CtrlState)
+  assert_num (Mouse.EventFlags)
+  assert_num (Mouse.LastCtrlState)
 end
 
 function MT.test_XPanel(pan) -- (@pan: either APanel or PPanel)
-  assert(type(pan.Bof)         == "boolean")
-  assert(type(pan.ColumnCount) == "number")
-  assert(type(pan.CurPos)      == "number")
-  assert(type(pan.Current)     == "string")
-  assert(type(pan.DriveType)   == "number")
-  assert(type(pan.Empty)       == "boolean")
-  assert(type(pan.Eof)         == "boolean")
-  assert(type(pan.FilePanel)   == "boolean")
-  assert(type(pan.Filter)      == "boolean")
-  assert(type(pan.Folder)      == "boolean")
-  assert(type(pan.Format)      == "string")
-  assert(type(pan.Height)      == "number")
-  assert(type(pan.HostFile)    == "string")
-  assert(type(pan.ItemCount)   == "number")
-  assert(type(pan.Left)        == "boolean")
-  assert(type(pan.OPIFlags)    == "number")
-  assert(type(pan.Path)        == "string")
-  assert(type(pan.Path0)       == "string")
-  assert(type(pan.Plugin)      == "boolean")
-  assert(type(pan.Prefix)      == "string")
-  assert(type(pan.Root)        == "boolean")
-  assert(type(pan.SelCount)    == "number")
-  assert(type(pan.Selected)    == "boolean")
-  assert(type(pan.Type)        == "number")
-  assert(type(pan.UNCPath)     == "string")
-  assert(type(pan.Visible)     == "boolean")
-  assert(type(pan.Width)       == "number")
+  assert_bool (pan.Bof)
+  assert_num (pan.ColumnCount)
+  assert_num (pan.CurPos)
+  assert_str (pan.Current)
+  assert_num (pan.DriveType)
+  assert_bool (pan.Empty)
+  assert_bool (pan.Eof)
+  assert_bool (pan.FilePanel)
+  assert_bool (pan.Filter)
+  assert_bool (pan.Folder)
+  assert_str (pan.Format)
+  assert_num (pan.Height)
+  assert_str (pan.HostFile)
+  assert_num (pan.ItemCount)
+  assert_bool (pan.Left)
+  assert_num (pan.OPIFlags)
+  assert_str (pan.Path)
+  assert_str (pan.Path0)
+  assert_bool (pan.Plugin)
+  assert_str (pan.Prefix)
+  assert_bool (pan.Root)
+  assert_num (pan.SelCount)
+  assert_bool (pan.Selected)
+  assert_num (pan.Type)
+  assert_str (pan.UNCPath)
+  assert_bool (pan.Visible)
+  assert_num (pan.Width)
 
   if pan == APanel then
     Keys "End"  assert(pan.Eof==true)
@@ -856,27 +856,27 @@ end
 
 local function test_Panel_Item()
   for pt=0,1 do
-    assert(type(Panel.Item(pt,0,0))  =="string")
-    assert(type(Panel.Item(pt,0,1))  =="string")
-    assert(type(Panel.Item(pt,0,2))  =="number")
-    assert(type(Panel.Item(pt,0,3))  =="string")
-    assert(type(Panel.Item(pt,0,4))  =="string")
-    assert(type(Panel.Item(pt,0,5))  =="string")
+    assert_str (Panel.Item(pt,0,0))
+    assert_str (Panel.Item(pt,0,1))
+    assert_num (Panel.Item(pt,0,2))
+    assert_str (Panel.Item(pt,0,3))
+    assert_str (Panel.Item(pt,0,4))
+    assert_str (Panel.Item(pt,0,5))
     assert(IsNumOrInt(Panel.Item(pt,0,6)))
     assert(IsNumOrInt(Panel.Item(pt,0,7)))
-    assert(type(Panel.Item(pt,0,8))  =="boolean")
-    assert(type(Panel.Item(pt,0,9))  =="number")
-    assert(type(Panel.Item(pt,0,10)) =="number")
-    assert(type(Panel.Item(pt,0,11)) =="string")
-    assert(type(Panel.Item(pt,0,12)) =="string")
-    assert(type(Panel.Item(pt,0,13)) =="number")
-    assert(type(Panel.Item(pt,0,14)) =="number")
+    assert_bool (Panel.Item(pt,0,8))
+    assert_num (Panel.Item(pt,0,9))
+    assert_num (Panel.Item(pt,0,10))
+    assert_str (Panel.Item(pt,0,11))
+    assert_str (Panel.Item(pt,0,12))
+    assert_num (Panel.Item(pt,0,13))
+    assert_num (Panel.Item(pt,0,14))
     assert(IsNumOrInt(Panel.Item(pt,0,15)))
     assert(IsNumOrInt(Panel.Item(pt,0,16)))
     assert(IsNumOrInt(Panel.Item(pt,0,17)))
-    assert(type(Panel.Item(pt,0,18)) =="number")
+    assert_num (Panel.Item(pt,0,18))
     assert(IsNumOrInt(Panel.Item(pt,0,19)))
-    assert(type(Panel.Item(pt,0,20)) =="string")
+    assert_str (Panel.Item(pt,0,20))
     assert(IsNumOrInt(Panel.Item(pt,0,21)))
   end
 end
@@ -909,10 +909,10 @@ function MT.test_Panel()
   assert(Panel.FExist(0,":")==0)
   assert(Panel.FExist(1,":")==0)
 
-  assert(type(Panel.Select)    == "function")
+  assert_func (Panel.Select)
   test_Panel_SetPath()
-  assert(type(Panel.SetPos)    == "function")
-  assert(type(Panel.SetPosIdx) == "function")
+  assert_func (Panel.SetPos)
+  assert_func (Panel.SetPosIdx)
 end
 
 function MT.test_Dlg()
@@ -968,7 +968,7 @@ local function test_far_MacroExecute()
       nil,
       bit64.new("0x8765876587658765"),
       {"bar"})
-    assert(type(t) == "table")
+    assert_table (t)
     assert(t.n  == 6)
     assert(t[1] == "foo")
     assert(t[2] == false)
@@ -1392,7 +1392,7 @@ local function test_AdvControl()
 end
 
 local function test_far_GetMsg()
-  assert(type(far.GetMsg(0))=="string")
+  assert_str (far.GetMsg(0))
 end
 
 local function test_clipboard()
@@ -1479,7 +1479,7 @@ local function test_FarStandardFunctions()
 --  assert(far.FormatFileSize(123456, 8)  == "  123456")
 --  assert(far.FormatFileSize(123456, -8) == "123456  ")
 
-  assert(type(far.GetCurrentDirectory()) == "string")
+  assert_str (far.GetCurrentDirectory())
 
   assert(far.GetPathRoot[[/foo/bar]] == [[/]])
 
