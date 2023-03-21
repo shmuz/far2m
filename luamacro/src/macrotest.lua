@@ -769,6 +769,13 @@ function MT.test_Menu()
   assert_eq(Menu.Id, far.Guids.PluginsMenuId)
   assert_eq(Menu.Id, "937F0B1C-7690-4F85-8469-AA935517F202")
   Keys("Esc")
+
+  assert_func(Menu.Filter)
+  assert_func(Menu.FilterStr)
+  assert_func(Menu.GetValue)
+  assert_func(Menu.ItemStatus)
+  assert_func(Menu.Select)
+  assert_func(Menu.Show)
 end
 
 function MT.test_Object()

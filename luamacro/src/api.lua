@@ -430,8 +430,18 @@ Menu.Show = function (Items, TitleAndFooter, Flags, SelectOrFilter, X, Y)
 
   Flags = tonumber(Flags) or 0
   props.Flags = 0 ~= band(Flags,0x80) and F.FMENU_AUTOHIGHLIGHT or 0
-  props.SelectIndex = tonumber(SelectOrFilter)
   props.X, props.Y = tonumber(X), tonumber(Y)
+
+  if type(SelectOrFilter) == "number" then
+    props.SelectIndex = SelectOrFilter
+  elseif type(SelectOrFilter) == "string" then
+    local pat = SelectOrFilter:lower()
+    for i,v in ipairs(rows) do
+      if not v.separator and far.CmpName(pat,v.text:lower()) then
+        props.SelectIndex = i; break;
+      end
+    end
+  end
 
   local as_index = 0 ~= band(Flags,0x8)
   local as_list  = 0 ~= band(Flags,0x10)
