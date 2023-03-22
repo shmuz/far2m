@@ -2330,6 +2330,7 @@ struct PluginStartupInfo
 	FARAPICOLORDIALOG      ColorDialog;
 	FARAPIFREESCREEN       FreeScreen;
 	const void*            Private;
+	void*                  LuafarHandle;
 };
 
 

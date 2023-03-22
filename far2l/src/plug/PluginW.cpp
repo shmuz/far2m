@@ -28,6 +28,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
+#include <dlfcn.h>
 
 #include "plugins.hpp"
 #include "plugapi.hpp"
@@ -67,6 +68,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <list>
 #include <vector>
 #include <KeyFileHelper.h>
+
+extern const wchar_t *PluginsFolderName;
 
 static const char *szCache_Preload = "Preload";
 static const char *szCache_Preopen = "Preopen";
@@ -414,6 +417,19 @@ static const MacroPrivateInfo MacroInfo
 	farCallFar,
 };
 
+// This seems to prevent irregular segfaults related to unloading luafar2l.so in the process of Far termination.
+static void *LoadLuafar()
+{
+	FARString strLuaFar = g_strFarPath + PluginsFolderName + L"/luafar/luafar2l.so";
+	TranslateFarString<TranslateInstallPath_Share2Lib>(strLuaFar);
+	void *handle = dlopen(strLuaFar.GetMB().c_str(), RTLD_LAZY|RTLD_GLOBAL);
+	if (!handle)
+	{
+		Message(MSG_WARNING, 1, Msg::Error, L"Cannot load luafar2l.so", Msg::Ok);
+	}
+	return handle;
+}
+
 void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandardFunctions *FSF)
 {
 	static PluginStartupInfo StartupInfo{};
@@ -516,6 +532,7 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 		StartupInfo.PluginsControlV3=farPluginsControlV3;
 		StartupInfo.ColorDialog=farColorDialog;
 		StartupInfo.FreeScreen=FarFreeScreen;
+		StartupInfo.LuafarHandle=LoadLuafar();
 	}
 
 	*PSI=StartupInfo;

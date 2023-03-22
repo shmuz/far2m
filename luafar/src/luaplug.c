@@ -1,5 +1,4 @@
 //---------------------------------------------------------------------------
-#include <windows.h>
 #include "lua.h"
 #include "luafar.h"
 
@@ -48,6 +47,9 @@ void LUAPLUG GetGlobalInfoW(struct GlobalInfo *aInfo)
 
 void LUAPLUG SetStartupInfoW(const PSInfo *aInfo)
 {
+  if (!aInfo->LuafarHandle)
+    return; // luafar2l.so is not loaded
+
   Info = *aInfo;
   FSF = *aInfo->FSF;
   Info.FSF = &FSF;
