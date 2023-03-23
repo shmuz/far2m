@@ -426,9 +426,7 @@ static void *LoadLuafar()
 
 	if (getenv("FARPLAINLUA"))
 	{
-		auto ptr = libs[0];
-		libs[0] = libs[1];
-		libs[1] = ptr;
+		std::swap(libs[0], libs[1]);
 	}
 	for (auto ptr=libs; *ptr; ptr++)
 	{
