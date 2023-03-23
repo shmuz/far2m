@@ -457,7 +457,7 @@ bool console::GetNumberOfInputEvents(DWORD& NumberOfEvents)
 
 DWORD console::GetAlias(LPCWSTR Source, LPWSTR TargetBuffer, DWORD TargetBufferLength, LPCWSTR ExeName)
 {
-	return WINPORT(GetConsoleAlias)(const_cast<LPWSTR>(Source), TargetBuffer, TargetBufferLength, const_cast<LPWSTR>(ExeName));
+	return 0;
 }
 
 bool console::GetDisplayMode(DWORD& Mode)

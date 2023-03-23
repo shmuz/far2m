@@ -9,7 +9,7 @@ static DWORD g_winport_con_mode = ENABLE_QUICK_EDIT_MODE | ENABLE_EXTENDED_FLAGS
 static std::mutex g_winport_con_mode_mutex;
 
 extern "C" {
-
+	
 	WINPORT_DECL(GetLargestConsoleWindowSize,COORD,(HANDLE hConsoleOutput))
 	{
 		return g_winport_con_out->GetLargestConsoleWindowSize();
@@ -49,7 +49,7 @@ extern "C" {
 		*lpModeFlags = 0;//WTF??? GetConsoleDisplayMode/SetConsoleDisplayMode returns different meanings!!!
 		return TRUE;
 	}
-	WINPORT_DECL(ScrollConsoleScreenBuffer,BOOL,(HANDLE hConsoleOutput, const SMALL_RECT *lpScrollRectangle,
+	WINPORT_DECL(ScrollConsoleScreenBuffer,BOOL,(HANDLE hConsoleOutput, const SMALL_RECT *lpScrollRectangle, 
 		const SMALL_RECT *lpClipRectangle, COORD dwDestinationOrigin, const CHAR_INFO *lpFill))
 	{
 		return g_winport_con_out->Scroll(lpScrollRectangle, lpClipRectangle, dwDestinationOrigin, lpFill) ? TRUE : FALSE;
@@ -75,7 +75,7 @@ extern "C" {
 		lpConsoleScreenBufferInfo->srWindow.Bottom = height - 1;
 		lpConsoleScreenBufferInfo->dwMaximumWindowSize.X = width;
 		lpConsoleScreenBufferInfo->dwMaximumWindowSize.Y = height;
-
+		
 		return TRUE;
 	}
 
@@ -111,7 +111,7 @@ extern "C" {
 		*lpMode|= g_winport_con_out->GetMode();
 		return TRUE;
 	}
-
+	
 	WINPORT_DECL(SetConsoleMode,BOOL,(HANDLE hConsoleHandle, DWORD dwMode))
 	{
 		std::lock_guard<std::mutex> lock(g_winport_con_mode_mutex);
@@ -257,11 +257,6 @@ extern "C" {
 	}
 
 
-	WINPORT_DECL(GetConsoleAlias, DWORD,(LPWSTR lpSource, LPWSTR lpTargetBuffer, DWORD TargetBufferLength, LPWSTR lpExeName))
-	{
-		return 0;
-	}
-
 	static PHANDLER_ROUTINE gHandlerRoutine = NULL;
 
 	WINPORT_DECL(GenerateConsoleCtrlEvent, BOOL, (DWORD dwCtrlEvent, DWORD dwProcessGroupId ))
@@ -288,22 +283,22 @@ extern "C" {
 
 		return FALSE;
 	}
-
+	
 	WINPORT_DECL(SetConsoleScrollRegion, VOID, (HANDLE hConsoleOutput, SHORT top, SHORT bottom))
 	{
 		g_winport_con_out->SetScrollRegion(top, bottom);
 	}
-
+	
 	WINPORT_DECL(GetConsoleScrollRegion, VOID, (HANDLE hConsoleOutput, SHORT *top, SHORT *bottom))
 	{
 		g_winport_con_out->GetScrollRegion(*top, *bottom);
 	}
-
+	
 	WINPORT_DECL(SetConsoleScrollCallback, VOID, (HANDLE hConsoleOutput, PCONSOLE_SCROLL_CALLBACK pCallback, PVOID pContext))
 	{
 		g_winport_con_out->SetScrollCallback(pCallback, pContext);
 	}
-
+	
 	WINPORT_DECL(BeginConsoleAdhocQuickEdit, BOOL, ())
 	{
 		{
@@ -313,7 +308,7 @@ extern "C" {
 				return FALSE;
 			}
 		}
-
+		
 		//here is possible non-critical race with enabling ENABLE_QUICK_EDIT_MODE
 		g_winport_con_out->AdhocQuickEdit();
 		return TRUE;
@@ -418,7 +413,7 @@ extern "C" {
 	{
 		if ((CompositeChar & COMPOSITE_CHAR_MARK) == 0) {
 			fprintf(stderr, "%s: invoked for not composite-char 0x%llx\n",
-				__FUNCTION__,  (unsigned long long)CompositeChar);
+				__FUNCTION__, (unsigned long long)CompositeChar);
 			return L"\u2022";
 		}
 
@@ -427,7 +422,7 @@ extern "C" {
 		std::lock_guard<std::mutex> lock(s_composite_chars.mtx);
 		if (id >= (COMP_CHAR)s_composite_chars.id2str.size()) {
 			fprintf(stderr, "%s: out of range composite-char 0x%llx\n",
-				__FUNCTION__,  (unsigned long long)CompositeChar);
+				__FUNCTION__, (unsigned long long)CompositeChar);
 			return L"\u2022";
 		}
 		return s_composite_chars.id2str[id];
