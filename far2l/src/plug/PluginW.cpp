@@ -420,9 +420,31 @@ static const MacroPrivateInfo MacroInfo
 // This seems to prevent irregular segfaults related to unloading luafar2l.so in the process of Far termination.
 static void *LoadLuafar()
 {
+	// 1. Load Lua
+	const char *libs[] = {"libluajit-5.1.so", "liblua5.1.so", nullptr};
+	void *handle;
+
+	if (getenv("FARPLAINLUA"))
+	{
+		auto ptr = libs[0];
+		libs[0] = libs[1];
+		libs[1] = ptr;
+	}
+	for (auto ptr=libs; *ptr; ptr++)
+	{
+		if ((handle = dlopen(*ptr, RTLD_LAZY|RTLD_GLOBAL)))
+			break;
+	}
+	if (!handle)
+	{
+		Message(MSG_WARNING, 1, Msg::Error, L"Neither LuaJIT nor Lua5.1 library was found", Msg::Ok);
+		return nullptr;
+	}
+
+	// 2. Load LuaFAR
 	FARString strLuaFar = g_strFarPath + PluginsFolderName + L"/luafar/luafar2l.so";
 	TranslateFarString<TranslateInstallPath_Share2Lib>(strLuaFar);
-	void *handle = dlopen(strLuaFar.GetMB().c_str(), RTLD_LAZY|RTLD_GLOBAL);
+	handle = dlopen(strLuaFar.GetMB().c_str(), RTLD_LAZY|RTLD_GLOBAL);
 	if (!handle)
 	{
 		Message(MSG_WARNING, 1, Msg::Error, L"Cannot load luafar2l.so", Msg::Ok);

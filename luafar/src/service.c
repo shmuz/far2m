@@ -6156,35 +6156,11 @@ void LF_InitLuaState (lua_State *L, TPluginData *aPlugData, lua_CFunction aOpenL
 // Initialize the interpreter
 int LF_LuaOpen (TPluginData* aPlugData, lua_CFunction aOpenLibs)
 {
-  void *handle;
-  lua_State *L;
-  const char *libs[] = {"libluajit-5.1.so", "liblua5.1.so", NULL};
-  int idx;
-
-  // without dlopen() all attempts to require() a binary Lua module would fail, e.g.
-  // require "lfs" --> undefined symbol: lua_gettop
-  if (getenv("FARPLAINLUA")) {
-    const char *ptr = libs[0];
-    libs[0] = libs[1];
-    libs[1] = ptr;
-  }
-  for (idx=0; libs[idx]; idx++) {
-    if ((handle = dlopen(libs[idx], RTLD_LAZY|RTLD_GLOBAL)) != NULL)
-      break;
-  }
-  if (handle == NULL) {
-    const wchar_t *Name = wcsrchr(aPlugData->Info->ModuleName, L'/');
-    Name = Name ? Name+1 : L"<plugin name>";
-    LF_Message(aPlugData->Info, L"Neither LuaJIT nor Lua5.1 library was found", Name, L"OK", "w", NULL);
-    return 0;
-  }
-
   // create Lua State
-  L = lua_open();
+  lua_State *L = lua_open();
   if (L) {
     // place pointer to plugin data in the L's registry -
     aPlugData->MainLuaState = L;
-    aPlugData->dlopen_handle = handle;
     lua_pushlightuserdata(L, aPlugData);
     lua_setfield(L, LUA_REGISTRYINDEX, FAR_KEYINFO);
 
@@ -6209,7 +6185,7 @@ int LF_LuaOpen (TPluginData* aPlugData, lua_CFunction aOpenLibs)
     LF_InitLuaState(L, aPlugData, aOpenLibs);
     return 1;
   }
-  dlclose(handle);
+
   return 0;
 }
 
@@ -6221,7 +6197,6 @@ int LF_InitOtherLuaState (lua_State *L, lua_State *Lplug, lua_CFunction aOpenLib
     lua_setfield(L, LUA_REGISTRYINDEX, FAR_KEYINFO);
     memcpy(pd, PluginData, sizeof(TPluginData));
     pd->MainLuaState = L;
-    pd->dlopen_handle = NULL;
     LF_InitLuaState(L, pd, aOpenLibs);
   }
   return 0;

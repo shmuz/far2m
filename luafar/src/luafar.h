@@ -19,7 +19,6 @@ typedef struct
   DWORD          PluginId;
   FARWINDOWPROC  DlgProc;
   lua_State     *MainLuaState;
-  void          *dlopen_handle;
   char          *ShareDir;
   DWORD          Flags;
   char           Reserved[64];
