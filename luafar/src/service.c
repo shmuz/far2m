@@ -3531,8 +3531,10 @@ int far_DialogInit(lua_State *L)
       SetFarDialogItem(L, Items+i, i, 1);
     }
     lua_pop(L, 1);
-    if(type == LUA_TNIL)
+    if(type == LUA_TNIL) {
+      ItemsNumber = i;
       break;
+    }
     if(type != LUA_TTABLE)
       return luaL_error(L, "Items[%d] is not a table", i+1);
   }
