@@ -20,44 +20,44 @@ set(DIRBIT 64)
 set(BOOTSTRAP "${PROJECT_BINARY_DIR}/bootstrap")
 set(SCRIPTS "${CMAKE_CURRENT_SOURCE_DIR}/scripts")
 set(DEPENDENCIES
-  "${SCRIPTS}/copyright.inc.m4"
-  "${SCRIPTS}/farversion.m4"
-  "${SCRIPTS}/tools.m4"
-  "${SCRIPTS}/farlang.templ.m4"
+    "${SCRIPTS}/copyright.inc.m4"
+    "${SCRIPTS}/farversion.m4"
+    "${SCRIPTS}/tools.m4"
+    "${SCRIPTS}/farlang.templ.m4"
 )
 
 set(HLFFILES
-  "${BOOTSTRAP}/FarEng.hlf"
-  "${BOOTSTRAP}/FarRus.hlf"
-  "${BOOTSTRAP}/FarHun.hlf"
-  "${BOOTSTRAP}/FarUkr.hlf"
+    "${BOOTSTRAP}/FarEng.hlf"
+    "${BOOTSTRAP}/FarRus.hlf"
+    "${BOOTSTRAP}/FarHun.hlf"
+    "${BOOTSTRAP}/FarUkr.hlf"
 )
 set(LNGFILES
-  "${BOOTSTRAP}/FarEng.lng"
-  "${BOOTSTRAP}/FarRus.lng"
-  "${BOOTSTRAP}/FarHun.lng"
-  "${BOOTSTRAP}/FarUkr.lng"
+    "${BOOTSTRAP}/FarEng.lng"
+    "${BOOTSTRAP}/FarRus.lng"
+    "${BOOTSTRAP}/FarHun.lng"
+    "${BOOTSTRAP}/FarUkr.lng"
 )
 
 add_custom_command(OUTPUT "${BOOTSTRAP}/copyright.inc"
-   COMMAND ${M4} "${SCRIPTS}/copyright.inc.m4" | ${GAWK} -f "${SCRIPTS}/enc.awk" > "${BOOTSTRAP}/copyright.inc"
-   WORKING_DIRECTORY "${SCRIPTS}"
-   DEPENDS ${DEPENDENCIES}
-   COMMENT generating header
+    COMMAND ${M4} "${SCRIPTS}/copyright.inc.m4" | ${GAWK} -f "${SCRIPTS}/enc.awk" > "${BOOTSTRAP}/copyright.inc"
+    WORKING_DIRECTORY "${SCRIPTS}"
+    DEPENDS ${DEPENDENCIES}
+    COMMENT generating header
 )
 
 add_custom_command(OUTPUT "${BOOTSTRAP}/farversion.inc"
-   COMMAND ${M4} "${SCRIPTS}/farversion.inc.m4" > "${BOOTSTRAP}/farversion.inc"
-   WORKING_DIRECTORY "${SCRIPTS}"
-   DEPENDS ${DEPENDENCIES}
-   COMMENT generating header
+    COMMAND ${M4} "${SCRIPTS}/farversion.inc.m4" > "${BOOTSTRAP}/farversion.inc"
+    WORKING_DIRECTORY "${SCRIPTS}"
+    DEPENDS ${DEPENDENCIES}
+    COMMENT generating header
 )
 
 add_custom_command(OUTPUT "${BOOTSTRAP}/farlang.templ"
-   COMMAND ${M4} "${SCRIPTS}/farlang.templ.m4" > "${BOOTSTRAP}/farlang.templ"
-   WORKING_DIRECTORY "${SCRIPTS}"
-   DEPENDS ${DEPENDENCIES}
-   COMMENT generating language template
+    COMMAND ${M4} "${SCRIPTS}/farlang.templ.m4" > "${BOOTSTRAP}/farlang.templ"
+    WORKING_DIRECTORY "${SCRIPTS}"
+    DEPENDS ${DEPENDENCIES}
+    COMMENT generating language template
 )
 
 add_custom_command(TARGET bootstrap
@@ -66,6 +66,8 @@ add_custom_command(TARGET bootstrap
    DEPENDS ${DEPENDENCIES}
    COMMENT generating lang eng
 )
+
+
 add_custom_command(TARGET bootstrap
    COMMAND ${GAWK} -f "${SCRIPTS}/mkhlf.awk" "${SCRIPTS}/FarRus.hlf.m4" | ${M4} > "${BOOTSTRAP}/FarRus.hlf"
    WORKING_DIRECTORY "${SCRIPTS}"
@@ -84,7 +86,6 @@ add_custom_command(TARGET bootstrap
    DEPENDS ${DEPENDENCIES}
    COMMENT generating lang ukr
 )
-
 add_custom_command(TARGET bootstrap
    COMMAND "${FARLNGTOOL}" generator -nc -i "${BOOTSTRAP}/lang.ini" -ol "${BOOTSTRAP}" "${BOOTSTRAP}/farlang.templ"
    WORKING_DIRECTORY "${BOOTSTRAP}"
@@ -92,24 +93,23 @@ add_custom_command(TARGET bootstrap
    COMMENT generating languages
 )
 
-
 # older cmake versions does not support copying of multiple files,
 # so we use simple stupid /bin/cp and wildcards
 
 add_custom_command(TARGET bootstrap
-   POST_BUILD
-   DEPENDS "${LNGFILES}"
-   COMMAND "cp" "${BOOTSTRAP}/*.lng" "${INSTALL_DIR}"
+    POST_BUILD
+    DEPENDS "${LNGFILES}"
+    COMMAND "cp" "${BOOTSTRAP}/*.lng" "${INSTALL_DIR}"
 )
 
 add_custom_command(TARGET bootstrap
-   POST_BUILD
-   DEPENDS "${HLFFILES}"
-   COMMAND "cp" "${BOOTSTRAP}/*.hlf" "${INSTALL_DIR}"
+    POST_BUILD
+    DEPENDS "${HLFFILES}"
+    COMMAND "cp" "${BOOTSTRAP}/*.hlf" "${INSTALL_DIR}"
 )
 
 add_custom_command(TARGET bootstrap
-   POST_BUILD
-   COMMAND "cp" "${CMAKE_CURRENT_SOURCE_DIR}/*.sh" "${INSTALL_DIR}"
-   COMMAND "cp" "${CMAKE_CURRENT_SOURCE_DIR}/*.ini" "${INSTALL_DIR}"
+    POST_BUILD
+    COMMAND "cp" "${CMAKE_CURRENT_SOURCE_DIR}/*.sh" "${INSTALL_DIR}"
+    COMMAND "cp" "${CMAKE_CURRENT_SOURCE_DIR}/*.ini" "${INSTALL_DIR}"
 )

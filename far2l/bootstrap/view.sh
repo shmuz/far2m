@@ -31,7 +31,14 @@ FILECHARSET="$(echo "$FILEMIME" | sed -n -e 's/^.\{0,100\}: .\{1,100\};[ ]\{0,10
 
 # Optional per-user script
 if [ -x ~/.config/far2l/view.sh ]; then
-. ~/.config/far2l/view.sh
+	# safely source this script from user config dir if it copied there without changes
+	export far2l_view_per_user_script_sourced=$((${far2l_view_per_user_script_sourced:-0}+0))
+	if [ ${far2l_view_per_user_script_sourced} -lt 1 ]; then
+		export far2l_view_per_user_script_sourced=$((${far2l_view_per_user_script_sourced}+1))
+		if [ ${far2l_view_per_user_script_sourced} -eq 1 ]; then
+			. ~/.config/far2l/view.sh
+		fi
+	fi
 fi
 
 echo "$1" > "$2"
@@ -298,21 +305,52 @@ if [[ "$FILE" == *": "*"image data, "* ]] \
 	TLINES=$( bash -c "echo ${LINES}" )
 	TCOLUMNS=$(( ${TCOLUMNS:-80} - 0 ))
 	TLINES=$(( ${TLINES:-25} - 2 ))
-	VCHAFA="no"
+	TCOLORS="$(tput colors)" || TCOLORS=""
+	VPRETTY="no"
 	if command -v chafa >/dev/null 2>&1; then
-		VCHAFA="yes"
+		VPRETTY="yes"
 		# chafa -c 16 --color-space=din99d --dither=ordered -w 9 --symbols all --fill all !.! && read -n1 -r -p "$1" >>"$2" 2>&1
 		TCOLUMNS=$(( ${TCOLUMNS:-80} - 1 ))
+		TCOLORMODE=""
+		if [ ".${TCOLORS}" = ".2" ]; then
+			TCOLORMODE="none"
+		elif [ ".${TCOLORS}" = ".8" ]; then
+			TCOLORMODE="16"
+		elif [ ".${TCOLORS}" = ".16" ]; then
+			TCOLORMODE="16"
+		elif [ ".${TCOLORS}" = ".256" ]; then
+			# recommended in chafa manual
+			# TCOLORMODE="-c 240"
+			# for new far2l terminal
+			TCOLORMODE="full"
+		fi
+		VCHAFACOLOR=""
+		if [ ! ".${TCOLORMODE}" = "." ]; then
+			VCHAFACOLOR="-c "${TCOLORMODE}
+		fi
 		chafa -c none --symbols -all+stipple+braille+ascii+space+extra --size ${TCOLUMNS}x${TLINES} "$1" >>"$2" 2>&1
-		echo "Image is viewed by chafa in "${TCOLUMNS}"x"${TLINES}" symbols sized area" >>"$2" 2>&1
-		chafa -c 16 --color-space=din99d -w 9 --symbols all --fill all "$1" && read -n1 -r -p "" >>"$2" 2>&1
+		echo "Image is viewed by chafa in "${TCOLUMNS}"x"${TLINES}" symbols sized area, no colors" >>"$2" 2>&1
 		clear
+		chafa ${VCHAFACOLOR} --color-space=din99d -w 9 --symbols all --fill all "$1" && \
+			echo "Image is viewed by chafa in "${TCOLUMNS}"x"${TLINES}" symbols sized area, "${TCOLORMODE}" colors" && \
+			read -n1 -r -p "" >>"$2" 2>&1
+		clear
+
+	elif command -v timg >/dev/null 2>&1; then
+		VPRETTY="yes"
+		timg "$1" >>"$2" 2>&1
+		echo "Image is viewed by timg in "${TCOLUMNS}"x"${TLINES}" symbols sized area, no colors" >>"$2" 2>&1
+		clear
+		timg "$1" && read -n1 -r -p "" >>"$2" 2>&1
+		clear
+
 	else
-		echo "Install <chafa> to see picture" >>"$2" 2>&1
+		echo "Install <chafa> or <timg> to see pretty picture" >>"$2" 2>&1
 	fi
+
 	VJP2A="no"
 	if [[ "$FILE" == *": "*"JPEG image"* ]] \
-		&& [[ "$VCHAFA" == "no" ]]; then
+		&& [[ "$VPRETTY" == "no" ]]; then
 		if command -v jp2a >/dev/null 2>&1; then
 			VJP2A="yes"
 			# jp2a --colors "$1" >>"$2" 2>&1
@@ -328,7 +366,7 @@ if [[ "$FILE" == *": "*"image data, "* ]] \
 		fi
 	fi
 	VASCIIART="no"
-	if [[ "$VCHAFA" == "no" ]] \
+	if [[ "$VPRETTY" == "no" ]] \
 		&& [[ "$VJP2A" == "no" ]]; then
 		if command -v asciiart >/dev/null 2>&1; then
 			VASCIIART="yes"
@@ -837,4 +875,7 @@ fi
 
 echo "" >>"$2" 2>&1
 echo "Hint: use <F5> to switch back to raw file viewer" >>"$2" 2>&1
-#exit 1
+
+##########################################################
+# safely source this script from user config dir if it copied there without changes
+exit 0
