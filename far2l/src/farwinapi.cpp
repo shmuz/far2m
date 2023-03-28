@@ -39,7 +39,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <errno.h>
 #if defined(__APPLE__) || defined(__FreeBSD__) || defined(__CYGWIN__)
 # include <sys/mount.h>
-#else
+#elif !defined(__HAIKU__)
 # include <sys/statfs.h>
 # include <sys/ioctl.h>
 # include <linux/fs.h>
@@ -116,7 +116,7 @@ bool FindFile::Get(FAR_FIND_DATA_EX& FindData)
 	if ((FindData.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) && FindData.strFileName.At(0) == L'.'
 		&& ((FindData.strFileName.At(1) == L'.' && !FindData.strFileName.At(2)) || !FindData.strFileName.At(1)))
 	{ // FIND_FILE_FLAG_NO_CUR_UP should handle this
-		abort();
+		ABORT();
 	}
 
 	return true;
@@ -162,7 +162,7 @@ bool File::SetPointer(INT64 DistanceToMove, PINT64 NewFilePointer, DWORD MoveMet
 	} else {
 		r = WINPORT(SetFilePointerEx)(Handle, li, NULL, MoveMethod);
 	}
-
+	
 	return r != FALSE;
 }
 
@@ -208,7 +208,7 @@ bool File::Chmod(DWORD dwUnixMode)
 		WINPORT(SetLastError)(r);
 		return false;
 	}
-
+	
 	return true;
 }
 
@@ -345,8 +345,8 @@ HANDLE apiCreateFile(const wchar_t* Object, DWORD DesiredAccess, DWORD ShareMode
 }
 
 BOOL apiMoveFile(
-    const wchar_t *lpwszExistingFileName, // address of name of the existing file
-    const wchar_t *lpwszNewFileName   // address of new name for the file
+	const wchar_t *lpwszExistingFileName, // address of name of the existing file
+	const wchar_t *lpwszNewFileName       // address of new name for the file
 )
 {
 	BOOL Result = WINPORT(MoveFile)(lpwszExistingFileName, lpwszNewFileName);
@@ -354,9 +354,9 @@ BOOL apiMoveFile(
 }
 
 BOOL apiMoveFileEx(
-    const wchar_t *lpwszExistingFileName, // address of name of the existing file
-    const wchar_t *lpwszNewFileName,   // address of new name for the file
-    DWORD dwFlags   // flag to determine how to move file
+	const wchar_t *lpwszExistingFileName, // address of name of the existing file
+	const wchar_t *lpwszNewFileName,      // address of new name for the file
+	DWORD dwFlags                         // flag to determine how to move file
 )
 {
 	BOOL Result = WINPORT(MoveFileEx)(lpwszExistingFileName, lpwszNewFileName, dwFlags);
@@ -419,13 +419,13 @@ BOOL apiSetCurrentDirectory(LPCWSTR lpPathName, bool Validate)
 {
 	// correct path to our standard
 	FARString strDir=lpPathName;
-	if (lpPathName[0]!='/' || lpPathName[1]!=0)
+	if (lpPathName[0]!='/' || lpPathName[1]!=0) 
 		DeleteEndSlash(strDir);
 	//LPCWSTR CD=strDir;
 //	int Offset=HasPathPrefix(CD)?4:0;
 ///	if ((CD[Offset] && CD[Offset+1]==L':' && !CD[Offset+2]) || IsLocalVolumeRootPath(CD))
 		//AddEndSlash(strDir);
-
+	
 
 	if (strDir == strCurrentDirectory())
 		return TRUE;
@@ -476,12 +476,12 @@ bool apiExpandEnvironmentStrings(const wchar_t *src, FARString &strDest)
 }
 
 BOOL apiGetVolumeInformation(
-    const wchar_t *lpwszRootPathName,
-    FARString *pVolumeName,
-    LPDWORD lpVolumeSerialNumber,
-    LPDWORD lpMaximumComponentLength,
-    LPDWORD lpFileSystemFlags,
-    FARString *pFileSystemName
+	const wchar_t *lpwszRootPathName,
+	FARString *pVolumeName,
+	DWORD64 *lpVolumeSerialNumber,
+	LPDWORD lpMaximumComponentLength,
+	LPDWORD lpFileSystemFlags,
+	FARString *pFileSystemName
 )
 {
 	struct statvfs svfs = {};
@@ -614,7 +614,7 @@ BOOL apiGetFindDataEx(const wchar_t *lpwszFileName, FAR_FIND_DATA_EX& FindData, 
 		}
 	}
 
-	fprintf(stderr, "apiGetFindDataEx: FAILED - %ls\n", lpwszFileName);
+	fprintf(stderr, "apiGetFindDataEx: FAILED - %ls\n", lpwszFileName);		
 
 	FindData.Clear();
 	FindData.dwFileAttributes = INVALID_FILE_ATTRIBUTES; //BUGBUG
@@ -647,11 +647,11 @@ int apiGetFileTypeByName(const wchar_t *Name)
 
 BOOL apiGetDiskSize(const wchar_t *Path,uint64_t *TotalSize, uint64_t *TotalFree, uint64_t *UserFree)
 {
-	struct statvfs s = {};
-	if (statvfs(Wide2MB(Path).c_str(), &s) != 0) {
+	struct statfs s = {};
+	if (statfs(Wide2MB(Path).c_str(), &s) != 0) {
 		return FALSE;
 	}
-	*TotalSize = *TotalFree = *UserFree = s.f_frsize;
+	*TotalSize = *TotalFree = *UserFree = s.f_bsize; //f_frsize
 	*TotalSize*= s.f_blocks;
 	*TotalFree*= s.f_bfree;
 	*UserFree*= s.f_bavail;
@@ -686,6 +686,24 @@ BOOL apiSetFileAttributes(LPCWSTR lpFileName,DWORD dwFileAttributes)
 	return FALSE;
 }
 
+bool apiPathExists(LPCWSTR lpPathName)
+{
+	struct stat s{};
+	return sdc_lstat(Wide2MB(lpPathName).c_str(), &s) == 0;
+}
+
+bool apiPathIsDir(LPCWSTR lpPathName)
+{
+	struct stat s{};
+	return sdc_stat(Wide2MB(lpPathName).c_str(), &s) == 0 && S_ISDIR(s.st_mode);
+}
+
+bool apiPathIsFile(LPCWSTR lpPathName)
+{
+	struct stat s{};
+	return sdc_stat(Wide2MB(lpPathName).c_str(), &s) == 0 && S_ISREG(s.st_mode);
+}
+
 IUnmakeWritablePtr apiMakeWritable(LPCWSTR lpFileName)
 {
 	FARString strFullName;
@@ -699,11 +717,11 @@ IUnmakeWritablePtr apiMakeWritable(LPCWSTR lpFileName)
 		mode_t target_mode, dir_mode;
 		unsigned long target_flags, dir_flags;
 		bool target_flags_modified, dir_flags_modified;
-		UnmakeWritable() :
+		UnmakeWritable() : 
 			target_mode(0), dir_mode(0), target_flags_modified(false), dir_flags_modified(false)
 		{
 		}
-
+		
 		virtual void Unmake()
 		{
 			if (target_mode) {
@@ -750,14 +768,14 @@ IUnmakeWritablePtr apiMakeWritable(LPCWSTR lpFileName)
 #if defined(__CYGWIN__)
 //TODO: handle chattr +i
 #else
-	if (!um->dir.empty() && sdc_fs_flags_get(um->dir.c_str(), &um->dir_flags) != -1
+	if (!um->dir.empty() && sdc_fs_flags_get(um->dir.c_str(), &um->dir_flags) != -1 
 	&& FS_FLAGS_CONTAIN_IMMUTABLE(um->dir_flags)) {
 		if (sdc_fs_flags_set(um->dir.c_str(), FS_FLAGS_WITHOUT_IMMUTABLE(um->dir_flags)) != -1) {
 			um->dir_flags_modified = true;
 		}
 	}
 
-	if ( (s.st_mode & S_IFMT) == S_IFREG // calling sdc_fs_flags_get on special files useless and may stuck
+	if ((s.st_mode & S_IFMT) == S_IFREG // calling sdc_fs_flags_get on special files useless and may stuck
 	&& sdc_fs_flags_get(um->target.c_str(), &um->target_flags) != -1
 	&& FS_FLAGS_CONTAIN_IMMUTABLE(um->target_flags)) {
 		if (sdc_fs_flags_set(um->target.c_str(), FS_FLAGS_WITHOUT_IMMUTABLE(um->target_flags)) != -1) {
@@ -765,12 +783,12 @@ IUnmakeWritablePtr apiMakeWritable(LPCWSTR lpFileName)
 		}
 	}
 #endif
-
+	
 	if (um->target_mode == 0 && um->dir_mode == 0 && !um->target_flags_modified && !um->dir_flags_modified) {
 		delete um;
 		um = nullptr;
 	}
-
+	
 	return IUnmakeWritablePtr(um);
 }
 

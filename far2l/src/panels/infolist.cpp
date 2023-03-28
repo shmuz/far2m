@@ -32,7 +32,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "headers.hpp"
-#include <pwd.h>
 
 #include "infolist.hpp"
 #include "macroopcode.hpp"
@@ -50,6 +49,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "syslog.hpp"
 #include "interf.hpp"
 #include "drivemix.hpp"
+#include "CachedCreds.hpp"
 #include "dirmix.hpp"
 #include "pathmix.hpp"
 #include "strmix.hpp"
@@ -59,7 +59,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //# include <sys/sysctl.h>
 # include <mach/mach_host.h>
 # include <mach/vm_statistics.h>
-#elif !defined(__FreeBSD__)
+#elif !defined(__FreeBSD__) && !defined(__HAIKU__)
 # include <sys/sysinfo.h>
 #endif
 
@@ -112,7 +112,8 @@ void InfoList::DisplayObject()
 	Panel *AnotherPanel;
 //	FARString strDriveRoot;
 	FARString strVolumeName, strFileSystemName;
-	DWORD MaxNameLength,FileSystemFlags,VolumeNumber;
+	DWORD MaxNameLength,FileSystemFlags;
+	DWORD64 VolumeNumber;
 	FARString strDiskNumber;
 	CloseFile();
 
@@ -134,23 +135,13 @@ void InfoList::DisplayObject()
 	/* #1 - computer name/user name */
 
 	{
-		FARString strComputerName, strUserName;
-
-		char buf[0x100];
-		if (gethostname(buf, ARRAYSIZE(buf) - 1) == 0)
-			strComputerName = buf;
-
 		GotoXY(X1+2,CurY++);
 		PrintText(Msg::InfoCompName);
-		PrintInfo(strComputerName);
-
-		struct passwd *pw = getpwuid(getuid());
-		if (pw && pw->pw_name)
-			strUserName = pw->pw_name;
+		PrintInfo(CachedComputerName());
 
 		GotoXY(X1+2,CurY++);
 		PrintText(Msg::InfoUserName);
-		PrintInfo(strUserName);
+		PrintInfo(CachedUserName());
 	}
 
 	/* #2 - disk info */
@@ -167,13 +158,13 @@ void InfoList::DisplayObject()
 
 	fprintf(stderr, "apiGetVolumeInformation: %ls\n", strCurDir.CPtr());
 	if (apiGetVolumeInformation(strCurDir,&strVolumeName,
-	                            &VolumeNumber,&MaxNameLength,&FileSystemFlags,
-	                            &strFileSystemName))
+		&VolumeNumber,&MaxNameLength,&FileSystemFlags,
+		&strFileSystemName))
 	{
 //		strTitle=FARString(L" ")+DiskType+L" "+Msg::InfoDisk+L" "+(strDriveRoot)+L" ("+strFileSystemName+L") ";
 		strTitle=FARString(L" ")+L" ("+strFileSystemName+L") ";
 
-		strDiskNumber.Format(L"%04X-%04X",VolumeNumber>>16,VolumeNumber & 0xffff);
+		strDiskNumber.Format(L"%08X-%08X", (DWORD)(VolumeNumber >> 32), (DWORD)(VolumeNumber & 0xffffffff));
 	}
 	else // Error!
 		strTitle = strCurDir;//strDriveRoot;
@@ -222,26 +213,26 @@ void InfoList::DisplayObject()
 	PrintText(strTitle);
 
 #ifdef __APPLE__
-        unsigned long long totalram;
-        vm_size_t page_size;
-        unsigned long long freeram;
-        int ret_sc;
+	unsigned long long totalram;
+	vm_size_t page_size;
+	unsigned long long freeram;
+	int ret_sc;
 
-        //ret_sc =  (sysctlbyname("hw.memsize", &totalram, &ulllen, NULL, 0) ? 1 : 0);
-        ret_sc = ( KERN_SUCCESS !=_host_page_size(mach_host_self(), &page_size)  ? 1 : 0);
+	//ret_sc =  (sysctlbyname("hw.memsize", &totalram, &ulllen, NULL, 0) ? 1 : 0);
+	ret_sc = ( KERN_SUCCESS !=_host_page_size(mach_host_self(), &page_size)  ? 1 : 0);
 
-        mach_msg_type_number_t count = HOST_VM_INFO_COUNT;
-        vm_statistics_data_t vmstat;
+	mach_msg_type_number_t count = HOST_VM_INFO_COUNT;
+	vm_statistics_data_t vmstat;
 
-        ret_sc += (KERN_SUCCESS != host_statistics(mach_host_self(), HOST_VM_INFO, (host_info_t)&vmstat, &count) ? 1 : 0);
-        totalram = (vmstat.wire_count + vmstat.active_count + vmstat.inactive_count + vmstat.free_count) * page_size;
-        freeram  = vmstat.free_count * page_size;
+	ret_sc += (KERN_SUCCESS != host_statistics(mach_host_self(), HOST_VM_INFO, (host_info_t)&vmstat, &count) ? 1 : 0);
+	totalram = (vmstat.wire_count + vmstat.active_count + vmstat.inactive_count + vmstat.free_count) * page_size;
+	freeram  = vmstat.free_count * page_size;
 
-        //double total = vmstat.wire_count + vmstat.active_count + vmstat.inactive_count + vmstat.free_count;
-        //double wired = vmstat.wire_count;
-        //double active = vmstat.active_count;
-        //double inactive = vmstat.inactive_count;
-        //double free = vmstat.free_count;
+	//double total = vmstat.wire_count + vmstat.active_count + vmstat.inactive_count + vmstat.free_count;
+	//double wired = vmstat.wire_count;
+	//double active = vmstat.active_count;
+	//double inactive = vmstat.inactive_count;
+	//double free = vmstat.free_count;
 
 	if (!ret_sc)
 	{
@@ -265,7 +256,7 @@ void InfoList::DisplayObject()
 	}
 
 
-#elif !defined(__FreeBSD__)
+#elif !defined(__FreeBSD__) && !defined(__HAIKU__)
 	struct sysinfo si = {};
 	if (sysinfo(&si) == 0)
 	{
@@ -360,10 +351,11 @@ int InfoList::ProcessKey(int Key)
 			CtrlObject->Cp()->Redraw();
 			return TRUE;
 		case KEY_F4:
-			/* $ 30.04.2001 DJ
-			не показываем редактор, если ничего не задано в именах файлов;
-			не редактируем имена описаний со звездочками;
-			убираем лишнюю перерисовку панелей
+			/*
+				$ 30.04.2001 DJ
+				не показываем редактор, если ничего не задано в именах файлов;
+				не редактируем имена описаний со звездочками;
+				убираем лишнюю перерисовку панелей
 			*/
 		{
 			Panel *AnotherPanel=CtrlObject->Cp()->GetAnotherPanel(this);
@@ -400,7 +392,8 @@ int InfoList::ProcessKey(int Key)
 			return TRUE;
 	}
 
-	/* $ 30.04.2001 DJ
+	/*
+		$ 30.04.2001 DJ
 		обновляем кейбар после нажатия F8, F2 или Shift-F2
 	*/
 	if (DizView && Key>=256)
@@ -447,11 +440,11 @@ int InfoList::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 		DizView->GetPosition(DVX1,DVY1,DVX2,DVY2);
 
 		if ((MouseEvent->dwButtonState & FROM_LEFT_1ST_BUTTON_PRESSED) &&
-		        MouseEvent->dwMousePosition.X > DVX1+1 &&
-		        MouseEvent->dwMousePosition.X < DVX2 - DizView->GetShowScrollbar() - 1 &&
-		        MouseEvent->dwMousePosition.Y > DVY1+1 &&
-		        MouseEvent->dwMousePosition.Y < DVY2-1
-		   )
+			MouseEvent->dwMousePosition.X > DVX1+1 &&
+			MouseEvent->dwMousePosition.X < DVX2 - DizView->GetShowScrollbar() - 1 &&
+			MouseEvent->dwMousePosition.Y > DVY1+1 &&
+			MouseEvent->dwMousePosition.Y < DVY2-1
+		)
 		{
 			ProcessKey(KEY_F3);
 			return TRUE;

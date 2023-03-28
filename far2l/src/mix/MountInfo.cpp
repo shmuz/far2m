@@ -12,6 +12,8 @@
 #  include <sys/ucred.h>
 # endif
 # include <sys/mount.h>
+#elif defined(__HAIKU__)
+#  include <kernel/fs_info.h>
 #else
 # include <sys/statfs.h>
 # include <linux/fs.h>
@@ -40,7 +42,7 @@ static struct FSMagic {
 {"AUTOFS",	0x0187},
 {"CODA",	0x73757245},
 {"CRAMFS",		0x28cd3d45},	/* some random number */
-{"CRAMFS",	0x453dcd28},	/* magic number with the wrong endianess */
+{"CRAMFS",	0x453dcd28},		/* magic number with the wrong endianess */
 {"DEBUGFS",          0x64626720},
 {"SECURITYFS",	0x73636673},
 {"SELINUX",		0xf97cff8c},
@@ -79,8 +81,8 @@ static struct FSMagic {
 {"QNX6",	0x68191122},	/* qnx6 fs detection */
 
 {"REISERFS",	0x52654973},	/* used by gcc */
-					/* used by file system utilities that
-	                                   look at the superblock, etc.  */
+								/* used by file system utilities that
+								look at the superblock, etc.  */
 {"SMB",		0x517B},
 {"CGROUP",	0x27e0eb},
 
@@ -121,33 +123,33 @@ struct Mountpoints : std::vector<Mountpoint>
 
 static std::atomic<unsigned int> s_mount_info_threads{0};
 
-class ThreadedStatVFS : Threaded
+class ThreadedStatFS : Threaded
 {
 	std::shared_ptr<Mountpoints> _mps;
 	size_t _mpi;
 
 	void *ThreadProc()
 	{
-		struct statvfs s = {};
-		int r = statvfs((*_mps)[_mpi].path.c_str(), &s);
+		struct statfs s = {};
+		int r = statfs((*_mps)[_mpi].path.c_str(), &s);
 		if (r == 0) {
-			(*_mps)[_mpi].total = ((unsigned long long)s.f_blocks) * s.f_frsize;
-			(*_mps)[_mpi].avail = ((unsigned long long)s.f_bavail) * s.f_frsize;
-			(*_mps)[_mpi].freee = ((unsigned long long)s.f_bfree) * s.f_frsize;
-			(*_mps)[_mpi].read_only = (s.f_flag & ST_RDONLY) != 0;
+			(*_mps)[_mpi].total = ((unsigned long long)s.f_blocks) * s.f_bsize; //f_frsize;
+			(*_mps)[_mpi].avail = ((unsigned long long)s.f_bavail) * s.f_bsize; //f_frsize;
+			(*_mps)[_mpi].freee = ((unsigned long long)s.f_bfree) * s.f_bsize; //f_frsize;
+			(*_mps)[_mpi].read_only = (s.f_flags & ST_RDONLY) != 0;
 			(*_mps)[_mpi].bad = false;
 		}
 		return nullptr;
 	}
 
 public:
-	ThreadedStatVFS(std::shared_ptr<Mountpoints> &mps, size_t mpi)
+	ThreadedStatFS(std::shared_ptr<Mountpoints> &mps, size_t mpi)
 		: _mps(mps), _mpi(mpi)
 	{
 		++s_mount_info_threads;
 	}
 
-	virtual ~ThreadedStatVFS()
+	virtual ~ThreadedStatFS()
 	{
 		--s_mount_info_threads;
 		std::unique_lock<std::mutex> lock(_mps->pending.mtx);
@@ -161,7 +163,7 @@ public:
 	void Start()
 	{
 		if (!StartThread(true)) {
-			fprintf(stderr, "ThreadedStatVFS: can't start thread\n");
+			fprintf(stderr, "ThreadedStatFS: can't start thread\n");
 			delete this;
 		}
 	}
@@ -222,7 +224,8 @@ MountInfo::MountInfo(bool for_location_menu)
 				Environment::UnescapeCLikeSequences(part);
 			}
 			if (parts.size() > 1 && StrStartsFrom(parts[1], "/")
-			  && (!for_location_menu || !lme.Match(parts[1].c_str()))) {
+				&& (!for_location_menu || !lme.Match(parts[1].c_str())))
+			{
 				bool multi_thread_friendly;
 				if (for_location_menu) {
 					// Location menu doesn't care about this, so dont waist time
@@ -283,7 +286,7 @@ MountInfo::MountInfo(bool for_location_menu)
 						false,
 						false,
 						((unsigned long long)fs.f_blocks) * fs.f_bsize, // unreliable due to MNT_NOWAIT
-						((unsigned long long)fs.f_bavail) * fs.f_bsize, // ThreadedStatVFS will set true nums
+						((unsigned long long)fs.f_bavail) * fs.f_bsize, // ThreadedStatFS will set true nums
 						((unsigned long long)fs.f_bfree) * fs.f_bsize  // ...
 					});
 				}
@@ -296,6 +299,7 @@ MountInfo::MountInfo(bool for_location_menu)
 		fprintf(stderr, "%s: no mountpoints found\n", __FUNCTION__);
 
 	} else if (for_location_menu) {
+		// TODO: honor Opt.RememberLogicalDrives
 		if (s_mount_info_threads != 0) {
 			fprintf(stderr, "%s: still %u old threads hanging around\n",
 				__FUNCTION__, (unsigned int)s_mount_info_threads);
@@ -303,7 +307,7 @@ MountInfo::MountInfo(bool for_location_menu)
 		for (size_t i = 0; i < _mountpoints->size(); ++i) {
 			try {
 				(*_mountpoints)[i].bad = true;
-				(new ThreadedStatVFS(_mountpoints, i))->Start();
+				(new ThreadedStatFS(_mountpoints, i))->Start();
 				std::unique_lock<std::mutex> lock(_mountpoints->pending.mtx);
 				_mountpoints->pending.cnt++;
 
@@ -345,6 +349,7 @@ const std::vector<Mountpoint> &MountInfo::Enum() const
 std::string MountInfo::GetFileSystem(const std::string &path) const
 {
 	std::string out;
+#ifndef __HAIKU__
 	size_t longest_match = 0;
 	for (const auto &it : *_mountpoints) {
 		if (it.path.size() > longest_match && StrStartsFrom(path, it.path.c_str())) {
@@ -355,11 +360,7 @@ std::string MountInfo::GetFileSystem(const std::string &path) const
 
 	if (out.empty()) {
 		struct statfs sfs{};
-#if !defined(__FreeBSD__) && !defined(__CYGWIN__)
 		if (sdc_statfs(path.c_str(), &sfs) == 0) {
-#else
-		if (statfs(path.c_str(), &sfs) == 0) {
-#endif
 #ifdef __APPLE__
 		out = sfs.f_fstypename;
 		if (out.empty())
@@ -372,7 +373,14 @@ std::string MountInfo::GetFileSystem(const std::string &path) const
 			}
 		}
 	}
-
+#else
+	dev_t dev = dev_for_path(path.c_str());
+	if (dev >= 0) {
+		fs_info fsinfo;
+		if (fs_stat_dev(dev, &fsinfo) == B_OK)
+			out = fsinfo.fsh_name;
+	}
+#endif
 	return out;
 }
 

@@ -115,19 +115,19 @@ namespace Mounts
 		ReplaceStrings(str, L"$U", val);
 
 		if (mp.total)
-			val.Format(L"%d", (mp.avail * 100) / mp.total);
+			val.Format(L"%lld", (mp.avail * 100) / mp.total);
 		else
 			val = L"NA";
 		ReplaceStrings(str, L"$a", val);
 
 		if (mp.total)
-			val.Format(L"%d", (mp.freee * 100) / mp.total);
+			val.Format(L"%lld", (mp.freee * 100) / mp.total);
 		else
 			val = L"NA";
 		ReplaceStrings(str, L"$f", val);
 
 		if (mp.total)
-			val.Format(L"%d", ((mp.total - mp.freee) * 100) / mp.total);
+			val.Format(L"%lld", ((mp.total - mp.freee) * 100) / mp.total);
 		else
 			val = L"NA";
 		ReplaceStrings(str, L"$u", val);
@@ -138,6 +138,71 @@ namespace Mounts
 		val = mp.device;
 		ReplaceStrings(str, L"$D", val);
 	}
+
+	class Aligner
+	{
+		std::vector<size_t> _maximums;
+
+		static bool IsWordDiv(wchar_t c)
+		{
+			return !iswalnum(c) && c != L'.' && c != L',';
+		}
+
+		static size_t LeftWordLength(const FARString &str, size_t pos)
+		{
+			ssize_t out = pos;
+			while (out >= 0 && !IsWordDiv(str.At(out))) {
+				--out;
+			}
+			return ssize_t(pos) - out;
+		}
+
+		static size_t RightWordLength(const FARString &str, size_t pos)
+		{
+			size_t out = pos;
+			while (out < str.GetLength() && !IsWordDiv(str.At(out))) {
+				++out;
+			}
+			return out - pos;
+		}
+
+	public:
+		void Analize(const FARString &str)
+		{
+			size_t m = 0;
+			const int str_len = str.GetLength();
+			for (int i = str_len - 2; i >= 0; --i) {
+				if (str.At(i) == '$' && ((str.At(i + 1) == '<' && i >= 0)
+						|| (str.At(i + 1) == '>' && i + 2 <= str_len))
+					) {
+					const size_t len = (str.At(i + 1) == '>')
+						? RightWordLength(str, i + 2) : LeftWordLength(str, i - 1);
+					if (_maximums.size() <= m) {
+						_maximums.emplace_back(len);
+					} else if (_maximums[m] < len) {
+						_maximums[m] = len;
+					}
+					++m;
+				}
+			}
+		}
+
+		void Apply(FARString &str)
+		{
+			size_t m = 0;
+			const int str_len = str.GetLength();
+			for (int i = str_len - 2; i >= 0; --i) {
+				if (str.At(i) == '$' && ((str.At(i + 1) == '<' && i >= 0)
+						|| (str.At(i + 1) == '>' && i + 2 <= str_len))
+					) {
+					const size_t len = (str.At(i + 1) == '>')
+						? RightWordLength(str, i + 2) : LeftWordLength(str, i - 1);
+					str.Replace(i, 2, L' ', _maximums[m] - len);
+					++m;
+				}
+			}
+		}
+	};
 
 	void Enum::AddMounts(bool &has_rootfs)
 	{
@@ -157,6 +222,19 @@ namespace Mounts
 				e.unmountable = true;
 			}
 			e.id = GenerateIdFromPath(e.path);
+		}
+
+		// apply replace $> and $< spacers
+		Aligner al_path, al_col2, al_col3;
+		for (const auto &e : *this) {
+			al_path.Analize(e.path);
+			al_col2.Analize(e.col2);
+			al_col3.Analize(e.col3);
+		}
+		for (auto &e : *this) {
+			al_path.Apply(e.path);
+			al_col2.Apply(e.col2);
+			al_col3.Apply(e.col3);
 		}
 	}
 
