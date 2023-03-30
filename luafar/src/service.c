@@ -4579,6 +4579,14 @@ int win_GetSystemTime(lua_State *L)
   return 1;
 }
 
+int win_GetLocalTime(lua_State *L)
+{
+  SYSTEMTIME st;
+  WINPORT(GetLocalTime)(&st);
+  pushSystemTime(L, &st);
+  return 1;
+}
+
 int win_CompareString (lua_State *L)
 {
   size_t len1, len2;
@@ -5838,6 +5846,7 @@ static const luaL_Reg win_funcs[] = {
   {"SystemTimeToFileTime",       win_SystemTimeToFileTime},
   {"GetSystemTimeAsFileTime",    win_GetSystemTimeAsFileTime},
   {"GetSystemTime",              win_GetSystemTime},
+  {"GetLocalTime",               win_GetLocalTime},
   {"CompareString",              win_CompareString},
   {"wcscmp",                     win_wcscmp},
   {"ExtractKey",                 win_ExtractKey},
