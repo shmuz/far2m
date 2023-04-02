@@ -1536,7 +1536,7 @@ local function test_issue_3129()
   assert(editor.Editor(fname,nil,nil,nil,nil,nil,flags) == F.EEC_MODIFIED)
   for k=1,3 do
     editor.InsertString()
-    editor.SetString(k, "foo")
+    editor.SetString(nil, k, "foo")
   end
   assert(editor.SaveFile())
   assert(editor.Quit())

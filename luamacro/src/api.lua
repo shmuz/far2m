@@ -312,7 +312,7 @@ SetProperties(Dlg, {
 
 Editor = {
 --DelLine  -- implemented below in this file
-  GetStr   = function(n)   return editor.GetString(n,2) or "" end,
+  GetStr   = function(n)   return editor.GetString(nil,n,2) or "" end,
 --InsStr   -- implemented below in this file
   Pos      = function(...) return MacroCallFar(op.MCODE_F_EDITOR_POS, ...) end,
   Sel      = function(...) return MacroCallFar(op.MCODE_F_EDITOR_SEL, ...) end,
@@ -330,7 +330,7 @@ SetProperties(Editor, {
   RealPos  = function() return MacroCallFar(op.MCODE_V_EDITORREALPOS) end,
   SelValue = function() return MacroCallFar(op.MCODE_V_EDITORSELVALUE) end,
   State    = function() return MacroCallFar(op.MCODE_V_EDITORSTATE) end,
-  Value    = function() return editor.GetString(nil,2) or "" end,
+  Value    = function() return editor.GetString(nil,nil,2) or "" end,
 })
 
 Editor.DelLine = function(Line)
@@ -343,10 +343,10 @@ Editor.DelLine = function(Line)
       if Line then
         Line = math.floor(Line)
         if Line <= info.TotalLines then
-          editor.SetPosition(Line)
+          editor.SetPosition(nil,Line)
           ok = editor.DeleteString()
           if info.CurLine > Line then info.CurLine = info.CurLine-1 end
-          editor.SetPosition(info) -- restore the position
+          editor.SetPosition(nil,info) -- restore the position
         end
       else
         ok = editor.DeleteString()
@@ -367,14 +367,14 @@ Editor.InsStr = function(S, Line)
       if Line <= info.TotalLines then
         if type(S)=="number" then S = tostring(S) end
         if type(S)~="string" then S = "" end
-        editor.SetPosition(Line, 1)
+        editor.SetPosition(nil, Line, 1)
         ok = editor.InsertString()
         if S ~= "" then
-          editor.SetPosition(Line, 1)
-          editor.SetString(nil, S)
+          editor.SetPosition(nil, Line, 1)
+          editor.SetString(nil, nil, S)
         end
         if info.CurLine > Line then info.CurLine = info.CurLine+1 end
-        editor.SetPosition(info) -- restore the position
+        editor.SetPosition(nil,info) -- restore the position
       end
     end
   end
@@ -392,7 +392,7 @@ Editor.SetStr = function(S, Line)
       if Line <= info.TotalLines then
         if type(S)=="number" then S = tostring(S) end
         if type(S)~="string" then S = "" end
-        ok = editor.SetString(Line, S)
+        ok = editor.SetString(nil, Line, S)
       end
     end
   end
