@@ -73,7 +73,7 @@ class UserDefinedList : private NonCopyable
 {
 	private:
 		std::vector<UserDefinedListItem> Array;
-		WORD Separator1, Separator2;
+		wchar_t Separator1, Separator2;
 		bool mProcessBrackets, mAddAsterisk, mPackAsterisks, mUnique, mSort, mTrim;
 		bool mAccountEmptyLine, mCaseSensitive;
 
@@ -89,7 +89,7 @@ class UserDefinedList : private NonCopyable
 		UserDefinedList();
 
 		// Явно указываются разделители. См. описание SetParameters
-		UserDefinedList(WORD separator1, WORD separator2, DWORD Flags);
+		UserDefinedList(wchar_t separator1, wchar_t separator2, DWORD Flags);
 		~UserDefinedList() {}
 
 	public:
@@ -104,7 +104,7 @@ class UserDefinedList : private NonCopyable
 		// Возвращает false, если один из разделителей является кавычкой или
 		// включена обработка скобок и один из разделителей является квадратной
 		// скобкой.
-		bool SetParameters(WORD Separator1, WORD Separator2, DWORD Flags);
+		bool SetParameters(wchar_t Separator1, wchar_t Separator2, DWORD Flags);
 
 		// Инициализирует список. Принимает список, разделенный разделителями.
 		// Возвращает false при неудаче.

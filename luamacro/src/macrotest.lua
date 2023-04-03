@@ -1611,7 +1611,7 @@ end
 
 -- Test in particular that Plugin.Call (a so-called "restricted" function) works properly
 -- from inside a deeply nested coroutine.
-local function test_coroutine()
+function MT.test_coroutine()
   for k=1,2 do
     local Call = k==1 and Plugin.Call or Plugin.SyncCall
     local function f1()
@@ -1626,14 +1626,66 @@ local function test_coroutine()
   end
 end
 
-function MT.test_misc()
-  test_coroutine()
-end
-
 function MT.test_far_regex(printfunc, verbose)
   local test = require "far2.test.regex.runtest"
   local numerr = test(printfunc, verbose)
   assert(numerr == 0)
+end
+
+function MT.test_UserDefinedList()
+  local ADDASTERISK      = 0x001
+  local PACKASTERISKS    = 0x002
+  local PROCESSBRACKETS  = 0x004
+  local UNIQUE           = 0x010
+  local SORT             = 0x020
+  local NOTTRIM          = 0x040
+  local ACCOUNTEMPTYLINE = 0x100
+  local CASESENSITIVE    = 0x200
+
+  local cases = {
+    {0,                    "",                         false},
+    {0,                    ",abc;",                    false},
+    {ACCOUNTEMPTYLINE,     ",abc;",                    "abc"},
+    ----------------------------------------------------------------------------
+    {0,                    "abc",                      "abc"},
+    {PACKASTERISKS,        "***abc***",                "*abc*"},
+    ----------------------------------------------------------------------------
+    {0,                    [["abc"]],                  "abc"},            --removing double quotes
+    {0,                    [["ab""c"]],                [[ab"c]]},         --double quote inside double quotes
+    {0,                    [["abc; def,",123]],        "abc; def,","123"},--spaces and delims inside dbl quotes
+    ----------------------------------------------------------------------------
+    {ADDASTERISK,          "abc;def",                  "abc*","def*"}, --add asterisk to every element
+    {ADDASTERISK,          "abc?",                     "abc?"},        --don't add: contains ?
+    {ADDASTERISK,          "ab*c",                     "ab*c"},        --don't add: contains *
+    {ADDASTERISK,          "ab.c",                     "ab.c"},        --don't add: contains .
+    ----------------------------------------------------------------------------
+    {0,                    "abc,def;123",              "abc","def","123"},--used both , and ; delims
+    ----------------------------------------------------------------------------
+    {UNIQUE,               "abc,Abc;ABc",              "ABc"},             --case insensitive
+    {UNIQUE+CASESENSITIVE, "abc,Abc;ABc",              "abc","Abc","ABc"}, --case sensitive
+    {UNIQUE+CASESENSITIVE, "abc,abc;abc",              "abc"},
+    ----------------------------------------------------------------------------
+    {0,                    "789,456,123",              "789","456","123"}, --as is
+    {SORT,                 "789,456,123",              "123","456","789"}, --sorted
+    ----------------------------------------------------------------------------
+    {0,                    "[a,z;t]",                  "[a","z","t]"},
+    {PROCESSBRACKETS,      "[a,z;t]",                  "[a,z;t]"},
+    ----------------------------------------------------------------------------
+    {0,                    "  ab  cd  ",               "ab  cd"},
+    {NOTTRIM,              "  ab  cd  ",               "  ab  cd  "},
+    ----------------------------------------------------------------------------
+  }
+
+  for cnt,tt in ipairs(cases) do
+    local ref = { unpack(tt,3) }
+    local out = { mf.udlsplit(tt[1],tt[2]) }
+    assert(#out == #ref)
+    for i=1,#ref do
+      if out[i]~=ref[i] then
+        error(("test %d, input: '%s'"):format(cnt,tt[2]))
+      end
+    end
+  end
 end
 
 function MT.test_all()
@@ -1656,7 +1708,8 @@ function MT.test_all()
   MT.test_XPanel(PPanel)
   MT.test_mantis_1722()
   MT.test_luafar()
-  MT.test_misc()
+  MT.test_coroutine()
+  MT.test_UserDefinedList()
   MT.test_far_regex( --[[far.Log, true]] ) -- external test files
   actl.RedrawAll()
 end

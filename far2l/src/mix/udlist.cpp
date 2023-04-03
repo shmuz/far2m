@@ -109,7 +109,7 @@ UserDefinedList::UserDefinedList()
 	SetParameters(0,0,0);
 }
 
-UserDefinedList::UserDefinedList(WORD separator1, WORD separator2,
+UserDefinedList::UserDefinedList(wchar_t separator1, wchar_t separator2,
                                  DWORD Flags)
 {
 	SetParameters(separator1, separator2, Flags);
@@ -129,19 +129,19 @@ bool UserDefinedList::CheckSeparators() const
 	        );
 }
 
-bool UserDefinedList::SetParameters(WORD separator1, WORD separator2, DWORD Flags)
+bool UserDefinedList::SetParameters(wchar_t separator1, wchar_t separator2, DWORD Flags)
 {
 	Array.clear();
 	Separator1 = separator1;
 	Separator2 = separator2;
-	mProcessBrackets = (Flags & ULF_PROCESSBRACKETS)?true:false;
-	mAddAsterisk = (Flags & ULF_ADDASTERISK)?true:false;
-	mPackAsterisks = (Flags & ULF_PACKASTERISKS)?true:false;
-	mUnique = (Flags & ULF_UNIQUE)?true:false;
-	mSort = (Flags & ULF_SORT)?true:false;
-	mTrim = (Flags & ULF_NOTTRIM)?false:true;
-	mAccountEmptyLine = (Flags & ULF_ACCOUNTEMPTYLINE)?true:false;
-	mCaseSensitive = (Flags & ULF_CASESENSITIVE)?true:false;
+	mProcessBrackets = (Flags & ULF_PROCESSBRACKETS) != 0;
+	mAddAsterisk = (Flags & ULF_ADDASTERISK) != 0;
+	mPackAsterisks = (Flags & ULF_PACKASTERISKS) != 0;
+	mUnique = (Flags & ULF_UNIQUE) != 0;
+	mSort = (Flags & ULF_SORT) != 0;
+	mTrim = (Flags & ULF_NOTTRIM) == 0;
+	mAccountEmptyLine = (Flags & ULF_ACCOUNTEMPTYLINE) != 0;
+	mCaseSensitive = (Flags & ULF_CASESENSITIVE) != 0;
 
 	if (!Separator1 && Separator2)
 	{
