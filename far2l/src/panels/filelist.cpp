@@ -820,21 +820,24 @@ int64_t FileList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 
 		case MCODE_F_PANEL_SELECT:
 		{
-			// vParam = MacroPanelSelect*, iParam = 0
+			enum ps_action { remove=0, add=1, invert=2, restore=3 };
+
+			enum ps_mode { all=0, position=1, list_names=2, list_masks=3 };
+
 			int64_t Result=-1;
 			MacroPanelSelect *mps=(MacroPanelSelect *)vParam;
 
 			if (!ListData)
 				return Result;
 
-			if (mps->Mode == 1 && (DWORD)mps->Index >= (DWORD)FileCount)
+			if (mps->Mode == ps_mode::position && (DWORD)mps->Index >= (DWORD)FileCount)
 				return Result;
 
 			UserDefinedList itemsList(ULF_UNIQUE);
 
-			if (mps->Action != 3)
+			if (mps->Action != ps_action::restore)
 			{
-				if (mps->Mode == 2)
+				if (mps->Mode == ps_mode::list_names)
 				{
 					if (!itemsList.Set(mps->Item))
 						return Result;
@@ -846,19 +849,19 @@ int64_t FileList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 			// mps->ActionFlags
 			switch (mps->Action)
 			{
-				case 0:  // снять выделение
+				case ps_action::remove:  // снять выделение
 				{
 					switch(mps->Mode)
 					{
-						case 0: // снять со всего?
+						case ps_mode::all: // снять со всего?
 							Result=(int64_t)GetRealSelCount();
 							ClearSelection();
 							break;
-						case 1: // по индексу?
+						case ps_mode::position: // по индексу?
 							Result=1;
 							Select(ListData[mps->Index],FALSE);
 							break;
-						case 2: // набор строк
+						case ps_mode::list_names: // набор строк
 						{
 							const wchar_t *namePtr;
 							int Pos;
@@ -874,27 +877,27 @@ int64_t FileList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 							}
 							break;
 						}
-						case 3: // масками файлов, разделенных запятыми
+						case ps_mode::list_masks: // масками файлов, разделенных запятыми
 							Result=SelectFiles(SELECT_REMOVEMASK,mps->Item);
 							break;
 					}
 					break;
 				}
 
-				case 1:  // добавить выделение
+				case ps_action::add:  // добавить выделение
 				{
 					switch(mps->Mode)
 					{
-						case 0: // выделить все?
+						case ps_mode::all: // выделить все?
 							for (int i=0; i < FileCount; i++)
 							  Select(ListData[i],TRUE);
 							Result=(int64_t)GetRealSelCount();
 							break;
-						case 1: // по индексу?
+						case ps_mode::position: // по индексу?
 							Result=1;
 							Select(ListData[mps->Index],TRUE);
 							break;
-						case 2: // набор строк через CRLF
+						case ps_mode::list_names: // набор строк через CRLF
 						{
 							const wchar_t *namePtr;
 							int Pos;
@@ -910,27 +913,27 @@ int64_t FileList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 							}
 							break;
 						}
-						case 3: // масками файлов, разделенных запятыми
+						case ps_mode::list_masks: // масками файлов, разделенных запятыми
 							Result=SelectFiles(SELECT_ADDMASK,mps->Item);
 							break;
 					}
 					break;
 				}
 
-				case 2:  // инвертировать выделение
+				case ps_action::invert:  // инвертировать выделение
 				{
 					switch(mps->Mode)
 					{
-						case 0: // инвертировать все?
+						case ps_mode::all: // инвертировать все?
 							for (int i=0; i < FileCount; i++)
 							  Select(ListData[i],ListData[i]->Selected?FALSE:TRUE);
 							Result=(int64_t)GetRealSelCount();
 							break;
-						case 1: // по индексу?
+						case ps_mode::position: // по индексу?
 							Result=1;
 							Select(ListData[mps->Index],ListData[mps->Index]->Selected?FALSE:TRUE);
 							break;
-						case 2: // набор строк через CRLF
+						case ps_mode::list_names: // набор строк через CRLF
 						{
 							const wchar_t *namePtr;
 							int Pos;
@@ -946,14 +949,14 @@ int64_t FileList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 							}
 							break;
 						}
-						case 3: // масками файлов, разделенных запятыми
+						case ps_mode::list_masks: // масками файлов, разделенных запятыми
 							Result=SelectFiles(SELECT_INVERTMASK,mps->Item);
 							break;
 					}
 					break;
 				}
 
-				case 3:  // восстановить выделение
+				case ps_action::restore:  // восстановить выделение
 				{
 					RestoreSelection();
 					Result=(int64_t)GetRealSelCount();
@@ -961,7 +964,7 @@ int64_t FileList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 				}
 			}
 
-			if (Result != -1 && mps->Action != 3)
+			if (Result != -1 && mps->Action != ps_action::restore)
 			{
 				if (SelectedFirst)
 					SortFileList(TRUE);
