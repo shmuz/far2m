@@ -3520,7 +3520,7 @@ int FarMacroApi::UDList_Split()
 	auto Flags = (unsigned)Params[0].getInteger();
 	auto Subj = Params[1].toString();
 
-	UserDefinedList udl(0,0,Flags);
+	UserDefinedList udl(Flags);
 	if (udl.Set(Subj))
 	{
 		const wchar_t* str;

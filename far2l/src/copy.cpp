@@ -1449,7 +1449,7 @@ LONG_PTR WINAPI CopyDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2)
 
 				if (MultiCopy)
 				{
-					UserDefinedList DestList(0,0,ULF_UNIQUE|ULF_CASESENSITIVE);
+					UserDefinedList DestList(ULF_UNIQUE|ULF_CASESENSITIVE);
 
 					if (DestList.Set(strOldFolder))
 					{

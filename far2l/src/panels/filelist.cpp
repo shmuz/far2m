@@ -830,14 +830,13 @@ int64_t FileList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 			if (mps->Mode == 1 && (DWORD)mps->Index >= (DWORD)FileCount)
 				return Result;
 
-			UserDefinedList *itemsList=nullptr;
+			UserDefinedList itemsList(ULF_UNIQUE);
 
 			if (mps->Action != 3)
 			{
 				if (mps->Mode == 2)
 				{
-					itemsList=new UserDefinedList(L';',L',',ULF_UNIQUE);
-					if (!itemsList->Set(mps->Item))
+					if (!itemsList.Set(mps->Item))
 						return Result;
 				}
 
@@ -865,7 +864,7 @@ int64_t FileList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 							int Pos;
 							Result=0;
 
-							for(size_t ILI = 0; (namePtr=itemsList->Get(ILI)) != nullptr; ++ILI)
+							for(size_t ILI = 0; (namePtr=itemsList.Get(ILI)) != nullptr; ++ILI)
 							{
 								if ((Pos=FindFile(PointToName(namePtr),TRUE)) != -1)
 								{
@@ -901,7 +900,7 @@ int64_t FileList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 							int Pos;
 							Result=0;
 
-							for(size_t ILI = 0; (namePtr=itemsList->Get(ILI)) != nullptr; ++ILI)
+							for(size_t ILI = 0; (namePtr=itemsList.Get(ILI)) != nullptr; ++ILI)
 							{
 								if ((Pos=FindFile(PointToName(namePtr),TRUE)) != -1)
 								{
@@ -937,7 +936,7 @@ int64_t FileList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 							int Pos;
 							Result=0;
 
-							for(size_t ILI = 0; (namePtr=itemsList->Get(ILI)) != nullptr; ++ILI)
+							for(size_t ILI = 0; (namePtr=itemsList.Get(ILI)) != nullptr; ++ILI)
 							{
 								if ((Pos=FindFile(PointToName(namePtr),TRUE)) != -1)
 								{
@@ -968,9 +967,6 @@ int64_t FileList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 					SortFileList(TRUE);
 				Redraw();
 			}
-
-			if (itemsList)
-				delete itemsList;
 
 			return Result;
 		}

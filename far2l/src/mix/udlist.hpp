@@ -89,6 +89,7 @@ class UserDefinedList : private NonCopyable
 
 		// Явно указываются разделители. См. описание SetParameters
 		UserDefinedList(wchar_t separator1, wchar_t separator2, DWORD Flags);
+		UserDefinedList(DWORD Flags);
 		~UserDefinedList() {}
 
 	public:

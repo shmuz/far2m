@@ -105,10 +105,14 @@ UserDefinedList::UserDefinedList()
 	SetParameters(0,0,0);
 }
 
-UserDefinedList::UserDefinedList(wchar_t separator1, wchar_t separator2,
-                                 DWORD Flags)
+UserDefinedList::UserDefinedList(wchar_t separator1, wchar_t separator2, DWORD Flags)
 {
 	SetParameters(separator1, separator2, Flags);
+}
+
+UserDefinedList::UserDefinedList(DWORD Flags)
+{
+	SetParameters(0, 0, Flags);
 }
 
 void UserDefinedList::SetDefaultSeparators()
