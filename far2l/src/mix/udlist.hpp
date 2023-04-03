@@ -64,7 +64,6 @@ class UserDefinedListItem
 		bool operator<(const UserDefinedListItem &rhs) const;
 		const UserDefinedListItem& operator=(const UserDefinedListItem &rhs);
 		const UserDefinedListItem& operator=(const wchar_t *rhs);
-		void set(const wchar_t *Src, size_t Len);
 		void Compact(wchar_t Char, bool ByPairs);
 		~UserDefinedListItem();
 };

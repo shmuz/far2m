@@ -70,11 +70,6 @@ const UserDefinedListItem& UserDefinedListItem::operator=(const wchar_t *rhs)
 	return *this;
 }
 
-void UserDefinedListItem::set(const wchar_t *Src, size_t Len)
-{
-	Str=FARString(Src,Len);
-}
-
 void UserDefinedListItem::Compact(wchar_t Char, bool ByPairs)
 {
 	bool lastFound=false;
@@ -97,6 +92,7 @@ void UserDefinedListItem::Compact(wchar_t Char, bool ByPairs)
 			lastFound=false;
 	}
 	Str=Txt;
+	free(Txt);
 }
 
 static bool __cdecl CmpIndexes(const UserDefinedListItem &el1, const UserDefinedListItem &el2)
@@ -191,7 +187,7 @@ bool UserDefinedList::Set(const wchar_t* const List, bool AddToList)
 		{
 			if (Length > 0)
 			{
-				item.set(CurList, Length);
+				item.Str=FARString(CurList,Length);
 
 				if (item.Str)
 				{
