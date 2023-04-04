@@ -72,6 +72,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "DlgGuid.hpp"
 #include "console.hpp"
 #include "wakeful.hpp"
+#include "udlist.hpp"
 #include <unistd.h>
 
 #if defined(__APPLE__)
@@ -630,7 +631,7 @@ ShellCopy::ShellCopy(Panel *SrcPanel,        // исходная панель (�
 	RPT(RP_EXACTCOPY)
 {
 	Filter=nullptr;
-	DestList.SetParameters(0,0,ULF_UNIQUE|ULF_CASESENSITIVE);
+	UserDefinedList DestList(ULF_UNIQUE|ULF_CASESENSITIVE);
 	CopyDlgParam CDP{};
 	if (!(CDP.SelCount=SrcPanel->GetSelCount()))
 		return;

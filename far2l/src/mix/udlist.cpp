@@ -72,27 +72,30 @@ const UserDefinedListItem& UserDefinedListItem::operator=(const wchar_t *rhs)
 
 void UserDefinedListItem::Compact(wchar_t Char, bool ByPairs)
 {
-	bool lastFound=false;
-	wchar_t *Txt=wcsdup(Str.CPtr());
+	auto buf=new wchar_t[Str.GetLength()+1], trg=buf;
+	bool found=false;
 
-	for (int i=0; Txt[i]; ++i)
+	for (auto src=Str.CPtr(); *src; src++)
 	{
-		if (Txt[i]==Char)
+		if (!found)
 		{
-			if (lastFound)
-			{
-				if (ByPairs) lastFound=false;
-				wmemmove(Txt+i, Txt+i+1, StrLength(Txt+i));
-				--i;
-			}
-			else
-				lastFound=true;
+			found=(*src==Char);
 		}
 		else
-			lastFound=false;
+		{
+			if (*src==Char)
+			{
+				found=!ByPairs;
+				continue;
+			}
+			found=false;
+		}
+		*trg++=*src;
 	}
-	Str=Txt;
-	free(Txt);
+
+	*trg=0;
+	Str=buf;
+	delete[] buf;
 }
 
 static bool __cdecl CmpIndexes(const UserDefinedListItem &el1, const UserDefinedListItem &el2)

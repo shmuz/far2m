@@ -1651,7 +1651,7 @@ int FarMacroApi::substrFunc()
 	return Ret;
 }
 
-static BOOL SplitFileName(const wchar_t *lpFullName,FARString &strDest,int nFlags)
+static bool SplitFileName(const wchar_t *lpFullName,FARString &strDest,int nFlags)
 {
 #define FLAG_DISK   1
 #define FLAG_PATH   2
@@ -1663,7 +1663,7 @@ static BOOL SplitFileName(const wchar_t *lpFullName,FARString &strDest,int nFlag
 	const wchar_t *e; //end of sub-string
 
 	if (!*p)
-		return FALSE;
+		return false;
 
 	if ((*p == L'/') && (*(p+1) == L'/'))   //share
 	{
@@ -1671,7 +1671,7 @@ static BOOL SplitFileName(const wchar_t *lpFullName,FARString &strDest,int nFlag
 		p = wcschr(p, L'/');
 
 		if (!p)
-			return FALSE; //invalid share (\\server\)
+			return false; //invalid share (\\server\)
 
 		p = wcschr(p+1, L'/');
 
@@ -1760,7 +1760,7 @@ static BOOL SplitFileName(const wchar_t *lpFullName,FARString &strDest,int nFlag
 	if (nFlags & FLAG_EXT)
 		strDest+=e;
 
-	return TRUE;
+	return true;
 }
 
 // S=fsplit(S,N)

@@ -84,7 +84,7 @@ const wchar_t *FileMasksWithExclude::FindExcludeChar(const wchar_t *masks)
 
 /*
  Инициализирует список масок. Принимает список, разделенных запятой.
- Возвращает FALSE при неудаче (например, одна из
+ Возвращает false при неудаче (например, одна из
  длина одной из масок равна 0)
 */
 
@@ -92,16 +92,14 @@ bool FileMasksWithExclude::Set(const wchar_t *masks, DWORD Flags)
 {
 	Free();
 
-	if (nullptr==masks || !*masks) return FALSE;
+	if (nullptr==masks || !*masks) return false;
 
-	size_t len=StrLength(masks)+1;
 	bool rc=false;
-	wchar_t *MasksStr=(wchar_t *) malloc(len*sizeof(wchar_t));
+	wchar_t *MasksStr=wcsdup(masks);
 
 	if (MasksStr)
 	{
 		rc=true;
-		wcscpy(MasksStr, masks);
 		wchar_t *pExclude = (wchar_t *) FindExcludeChar(MasksStr);
 
 		if (pExclude)
@@ -110,7 +108,7 @@ bool FileMasksWithExclude::Set(const wchar_t *masks, DWORD Flags)
 			++pExclude;
 
 			if (*pExclude!=L'/' && wcschr(pExclude, EXCLUDEMASKSEPARATOR))
-				rc=FALSE;
+				rc=false;
 		}
 
 		if (rc)
@@ -120,13 +118,12 @@ bool FileMasksWithExclude::Set(const wchar_t *masks, DWORD Flags)
 			if (rc)
 				rc=Exclude.Set(pExclude, 0);
 		}
+
+		free(MasksStr);
 	}
 
 	if (!rc)
 		Free();
-
-	if (MasksStr)
-		free(MasksStr);
 
 	return rc;
 }

@@ -34,7 +34,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "dizlist.hpp"
-#include "udlist.hpp"
 #include "flink.hpp"
 class Panel;
 
@@ -158,7 +157,6 @@ class ShellCopy
 		int SkipMode;          // ...для пропуска при копировании залоченных файлов.
 		int SkipDeleteMode;
 		int SelectedFolderNameLength;
-		UserDefinedList DestList;
 		// тип создаваемого репарспоинта.
 		// при AltF6 будет то, что выбрал юзер в диалоге,
 		// в остальных случаях - RP_EXACTCOPY - как у источника
@@ -199,7 +197,7 @@ class ShellCopy
 		                  DWORD DestAttr,int SameName,int Rename,int AskAppend,
 		                  int &Append,FARString &strNewName,int &RetCode);
 		bool CalcTotalSize();
-		
+
 		COPY_CODES CreateSymLink(const char *ExistingName, const wchar_t *NewName, const FAR_FIND_DATA_EX &SrcData);
 		COPY_CODES CopySymLink(const wchar_t *ExistingName, const wchar_t *NewName, const FAR_FIND_DATA_EX &SrcData);
 

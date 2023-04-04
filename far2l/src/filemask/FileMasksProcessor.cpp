@@ -63,11 +63,6 @@ void FileMasksProcessor::Free()
 bool FileMasksProcessor::Set(const wchar_t *masks, DWORD Flags)
 {
 	Free();
-	// разделителем масок является не только запятая, но и точка с запятой!
-	DWORD flags=ULF_PACKASTERISKS|ULF_PROCESSBRACKETS|ULF_SORT|ULF_UNIQUE;
-
-	if (Flags&FMPF_ADDASTERISK)
-		flags|=ULF_ADDASTERISK;
 
 	if (masks && *masks == L'/')
 	{
@@ -80,6 +75,12 @@ bool FileMasksProcessor::Set(const wchar_t *masks, DWORD Flags)
 		re.reset();
 		return false;
 	}
+
+	// разделителем масок является не только запятая, но и точка с запятой!
+	DWORD flags=ULF_PACKASTERISKS|ULF_PROCESSBRACKETS|ULF_SORT|ULF_UNIQUE;
+
+	if (Flags&FMPF_ADDASTERISK)
+		flags|=ULF_ADDASTERISK;
 
 	Masks.SetParameters(L',',L';',flags);
 	return Masks.Set(masks);
