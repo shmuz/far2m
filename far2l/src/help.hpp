@@ -109,7 +109,7 @@ class HelpRecord
 class Help:public Frame
 {
 	private:
-		ChangeMacroMode CMM;
+		ChangeMacroArea Cma;
 		BOOL  ErrorHelp;            // TRUE - ошибка! Например - нет такого топика
 		SaveScreen *TopScreen;      // область сохранения под хелпом
 		KeyBar      HelpKeyBar;     // кейбар

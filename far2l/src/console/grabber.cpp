@@ -47,7 +47,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "config.hpp"
 
 Grabber::Grabber() :
-	CMM(MACROAREA_OTHER)
+	Cma(MACROAREA_OTHER)
 {
 	Frame *pFrame = FrameManager->GetCurrentFrame();
 	pFrame->Lock();

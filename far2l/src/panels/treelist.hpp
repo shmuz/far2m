@@ -73,7 +73,7 @@ enum TREELIST_FLAGS
 class TreeList: public Panel
 {
 	private:
-		int PrevMacroMode;
+		int PrevMacroArea;
 		TreeItem **ListData;
 		FARString strRoot;
 		long TreeCount;
@@ -88,7 +88,7 @@ class TreeList: public Panel
 		long SaveWorkDir;
 
 	private:
-		void SetMacroMode(int Restore = FALSE);
+		void SetMacroArea(int Restore = FALSE);
 		virtual void DisplayObject();
 		void DisplayTree(int Fast);
 		void DisplayTreeName(const wchar_t *Name,int Pos);

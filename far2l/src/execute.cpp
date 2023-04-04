@@ -447,7 +447,7 @@ int CommandLine::CmdExecute(const wchar_t *CmdLine, bool SeparateWindow, bool Di
 			  && (cp->LeftPanel->IsVisible() || cp->RightPanel->IsVisible())) {
 				int Key;
 				{
-					ChangeMacroMode cmm(MACROAREA_OTHER); // prevent macros from intercepting key (#1003)
+					ChangeMacroArea Cma(MACROAREA_OTHER); // prevent macros from intercepting key (#1003)
 					Key = WaitKey();
 				}
 				// allow user to open console log etc directly from pause-on-error state

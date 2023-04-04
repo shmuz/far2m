@@ -71,7 +71,7 @@ class Frame: public ScreenObject
 		int  KeyBarVisible;
 		int  TitleBarVisible;
 		KeyBar *FrameKeyBar;
-		int MacroMode;
+		int MacroArea;
 
 	public:
 		Frame();
@@ -102,7 +102,7 @@ class Frame: public ScreenObject
 		int IsTitleBarVisible() const {return TitleBarVisible;};
 
 		int IsTopFrame();
-		virtual int GetMacroMode() { return MacroMode; }
+		virtual int GetMacroArea() { return MacroArea; }
 		void PushFrame(Frame* Modalized);
 		Frame *GetTopModal() {return NextModal;};
 		void DestroyAllModal();

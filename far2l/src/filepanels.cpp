@@ -67,7 +67,7 @@ FilePanels::FilePanels():
 	RightStateBeforeHide(0)
 {
 	_OT(SysLog(L"[%p] FilePanels::FilePanels()", this));
-	MacroMode = MACROAREA_SHELL;
+	MacroArea = MACROAREA_SHELL;
 	KeyBarVisible = Opt.ShowKeyBar;
 //  SetKeyBar(&MainKeyBar);
 //  _D(SysLog(L"MainKeyBar=0x%p",&MainKeyBar));
@@ -1210,7 +1210,7 @@ void FilePanels::GoToFile(const wchar_t *FileName)
 }
 
 
-int  FilePanels::GetMacroMode()
+int  FilePanels::GetMacroArea()
 {
 	switch (ActivePanel->GetType())
 	{

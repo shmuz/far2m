@@ -58,7 +58,7 @@ static int LastWrapType = -1;
 QuickView::QuickView():
 	QView(nullptr),
 	Directory(0),
-	PrevMacroMode(-1)
+	PrevMacroArea(-1)
 {
 	Type=QVIEW_PANEL;
 	if (LastWrapMode < 0)
@@ -72,7 +72,7 @@ QuickView::QuickView():
 QuickView::~QuickView()
 {
 	CloseFile();
-	SetMacroMode(TRUE);
+	SetMacroArea(TRUE);
 }
 
 
@@ -510,24 +510,24 @@ void QuickView::SetFocus()
 {
 	Panel::SetFocus();
 	SetTitle();
-	SetMacroMode(FALSE);
+	SetMacroArea(FALSE);
 }
 
 void QuickView::KillFocus()
 {
 	Panel::KillFocus();
-	SetMacroMode(TRUE);
+	SetMacroArea(TRUE);
 }
 
-void QuickView::SetMacroMode(int Restore)
+void QuickView::SetMacroArea(int Restore)
 {
 	if (!CtrlObject)
 		return;
 
-	if (PrevMacroMode == -1)
-		PrevMacroMode = CtrlObject->Macro.GetArea();
+	if (PrevMacroArea == -1)
+		PrevMacroArea = CtrlObject->Macro.GetArea();
 
-	CtrlObject->Macro.SetArea(Restore ? PrevMacroMode:MACROAREA_QVIEWPANEL);
+	CtrlObject->Macro.SetArea(Restore ? PrevMacroArea:MACROAREA_QVIEWPANEL);
 }
 
 int QuickView::GetCurName(FARString &strName)

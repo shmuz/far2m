@@ -1,7 +1,7 @@
 /*
 chgmmode.cpp
 
-class ChangeMacroMode
+class ChangeMacroArea
 */
 /*
 Copyright (c) 1996 Eugene Roshal
@@ -36,28 +36,28 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "chgmmode.hpp"
 #include "ctrlobj.hpp"
 
-ChangeMacroMode::ChangeMacroMode(int NewMode) :
-	PrevMacroMode( CtrlObject ? CtrlObject->Macro.GetArea() : MACROAREA_SHELL)
+ChangeMacroArea::ChangeMacroArea(int NewArea) :
+	PrevMacroArea( CtrlObject ? CtrlObject->Macro.GetArea() : MACROAREA_SHELL)
 {
-	CurMacroMode = NewMode;
+	CurMacroArea = NewArea;
 	if (CtrlObject)
-		CtrlObject->Macro.SetArea(NewMode);
+		CtrlObject->Macro.SetArea(NewArea);
 }
 
-ChangeMacroMode::~ChangeMacroMode()
+ChangeMacroArea::~ChangeMacroArea()
 {
 	if (CtrlObject)
-		CtrlObject->Macro.SetArea(PrevMacroMode);
+		CtrlObject->Macro.SetArea(PrevMacroArea);
 }
 
-void ChangeMacroMode::SetPrevMode()
+void ChangeMacroArea::SetPrevArea()
 {
 	if (CtrlObject)
-		CtrlObject->Macro.SetArea(PrevMacroMode);
+		CtrlObject->Macro.SetArea(PrevMacroArea);
 }
 
-void ChangeMacroMode::SetCurMode()
+void ChangeMacroArea::SetCurArea()
 {
 	if (CtrlObject)
-		CtrlObject->Macro.SetArea(CurMacroMode);
+		CtrlObject->Macro.SetArea(CurMacroArea);
 }

@@ -1400,7 +1400,7 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 	                      Dialog = ModalType==MODALTYPE_DIALOG;
 	PluginMenuItemData item;
 	{
-		ChangeMacroMode CMM(MACROAREA_MENU);
+		ChangeMacroArea Cma(MACROAREA_MENU);
 		VMenu PluginList(Msg::PluginCommandsMenuTitle,nullptr,0,ScrY-4);
 		PluginList.SetFlags(VMENU_WRAPMODE);
 		PluginList.SetHelp(L"PluginCommands");
@@ -1422,7 +1422,7 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 				PluginInfo Info{};
 				KeyFileReadHelper kfh(PluginsIni());
 
-				CMM.SetPrevMode(); // for plugins: set the right macro area in GetPluginInfo()
+				Cma.SetPrevArea(); // for plugins: set the right macro area in GetPluginInfo()
 				for (int I=0; I<PluginsCount; I++)
 				{
 					Plugin *pPlugin = PluginsData[I];
@@ -1486,7 +1486,7 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 						PluginList.SetUserData(&item, sizeof(PluginMenuItemData),PluginList.AddItem(&ListItem));
 					}
 				}
-				CMM.SetCurMode();
+				Cma.SetCurArea();
 
 				PluginList.AssignHighlights(FALSE);
 				PluginList.SetBottomTitle(Msg::PluginHotKeyBottom);

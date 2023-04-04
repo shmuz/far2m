@@ -640,7 +640,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 	// проверка на область
 	if (CheckCode == 0)
 	{
-		//return api.PassNumber (FrameManager->GetCurrentFrame()->GetMacroMode());
+		//return api.PassNumber (FrameManager->GetCurrentFrame()->GetMacroArea());
 		return GetArea();
 	}
 

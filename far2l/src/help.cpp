@@ -113,7 +113,7 @@ static const wchar_t *HelpContents=L"Contents";
 static int RunURL(const wchar_t *Protocol, wchar_t *URLPath);
 
 Help::Help(const wchar_t *Topic, const wchar_t *Mask,DWORD Flags):
-	CMM(MACROAREA_HELP),
+	Cma(MACROAREA_HELP),
 	ErrorHelp(TRUE),
 	IsNewTopic(TRUE),
 	MouseDown(FALSE),
@@ -158,7 +158,7 @@ Help::Help(const wchar_t *Topic, const wchar_t *Mask,DWORD Flags):
 	{
 		ScreenObject::Flags.Clear(FHELPOBJ_ERRCANNOTOPENHELP);
 		InitKeyBar();
-		MacroMode = MACROAREA_HELP;
+		MacroArea = MACROAREA_HELP;
 		MoveToReference(1,1);
 		FrameManager->ExecuteModal(this); //OT
 	}

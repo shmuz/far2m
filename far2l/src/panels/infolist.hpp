@@ -69,7 +69,7 @@ class InfoList:public Panel
 {
 	private:
 		DizViewer *DizView;
-		int  PrevMacroMode;
+		int  PrevMacroArea;
 		int  OldWrapMode;
 		int  OldWrapType;
 		FARString strDizFileName;
@@ -86,7 +86,7 @@ class InfoList:public Panel
 
 
 		int  OpenDizFile(const wchar_t *DizFile,int YPos);
-		void SetMacroMode(int Restore = FALSE);
+		void SetMacroArea(int Restore = FALSE);
 		void DynamicUpdateKeyBar();
 
 	public:

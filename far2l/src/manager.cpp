@@ -649,7 +649,7 @@ void Manager::SetLastInputRecord(INPUT_RECORD *Rec)
 void Manager::ProcessMainLoop()
 {
 	if ( CurrentFrame )
-		CtrlObject->Macro.SetArea(CurrentFrame->GetMacroMode());
+		CtrlObject->Macro.SetArea(CurrentFrame->GetMacroArea());
 
 	DispatchInterThreadCalls();
 
@@ -1419,7 +1419,7 @@ void Manager::RefreshCommit()
 		if (!RefreshedFrame)
 			return;
 
-		CtrlObject->Macro.SetArea(RefreshedFrame->GetMacroMode());
+		CtrlObject->Macro.SetArea(RefreshedFrame->GetMacroArea());
 	}
 
 	if ((Opt.ViewerEditorClock &&

@@ -45,7 +45,7 @@ struct GrabberArea
 class Grabber:Modal
 {
 	private:
-		ChangeMacroMode CMM;
+		ChangeMacroArea Cma;
 		SaveScreen *SaveScr;
 		GrabberArea PrevArea;
 		GrabberArea GArea;

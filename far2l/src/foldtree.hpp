@@ -44,7 +44,7 @@ class SaveScreen;
 class FolderTree:public Frame
 {
 	private:
-		ChangeMacroMode CMM;
+		ChangeMacroArea Cma;
 		TreeList *Tree;
 		Edit *FindEdit;
 

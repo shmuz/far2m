@@ -216,7 +216,7 @@ class VMenu: public Modal
 		int BoxType;
 		bool PrevCursorVisible;
 		DWORD PrevCursorSize;
-		int PrevMacroMode;
+		int PrevMacroArea;
 
 		// переменная, отвечающая за отображение scrollbar в DI_LISTBOX & DI_COMBOBOX
 		BitFlags VMFlags;

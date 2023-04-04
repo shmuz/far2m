@@ -71,7 +71,7 @@ static int LastDizShowScrollbar = -1;
 
 InfoList::InfoList():
 	DizView(nullptr),
-	PrevMacroMode(-1)
+	PrevMacroArea(-1)
 {
 	Type=INFO_PANEL;
 	if (LastDizWrapMode < 0)
@@ -85,7 +85,7 @@ InfoList::InfoList():
 InfoList::~InfoList()
 {
 	CloseFile();
-	SetMacroMode(TRUE);
+	SetMacroArea(TRUE);
 }
 
 // перерисовка, только если мы текущий фрейм
@@ -706,24 +706,24 @@ int InfoList::OpenDizFile(const wchar_t *DizFile,int YPos)
 void InfoList::SetFocus()
 {
 	Panel::SetFocus();
-	SetMacroMode(FALSE);
+	SetMacroArea(FALSE);
 }
 
 void InfoList::KillFocus()
 {
 	Panel::KillFocus();
-	SetMacroMode(TRUE);
+	SetMacroArea(TRUE);
 }
 
-void InfoList::SetMacroMode(int Restore)
+void InfoList::SetMacroArea(int Restore)
 {
 	if (!CtrlObject)
 		return;
 
-	if (PrevMacroMode == -1)
-		PrevMacroMode = CtrlObject->Macro.GetArea();
+	if (PrevMacroArea == -1)
+		PrevMacroArea = CtrlObject->Macro.GetArea();
 
-	CtrlObject->Macro.SetArea(Restore ? PrevMacroMode:MACROAREA_INFOPANEL);
+	CtrlObject->Macro.SetArea(Restore ? PrevMacroArea:MACROAREA_INFOPANEL);
 }
 
 

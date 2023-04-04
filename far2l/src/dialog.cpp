@@ -402,7 +402,7 @@ Dialog::Dialog(DialogItemEx *SrcItem,    // Набор элементов диа
                FARWINDOWPROC DlgProc,      // Диалоговая процедура
                LONG_PTR InitParam)             // Ассоцированные с диалогом данные
 :
-	CMM(MACROAREA_DIALOG)
+	Cma(MACROAREA_DIALOG)
 {
 	Dialog::Item = (DialogItemEx**)malloc(sizeof(DialogItemEx*)*SrcItemCount);
 
@@ -423,7 +423,7 @@ Dialog::Dialog(FarDialogItem *SrcItem,    // Набор элементов ди�
                FARWINDOWPROC DlgProc,      // Диалоговая процедура
                LONG_PTR InitParam)             // Ассоцированные с диалогом данные
 :
-	CMM(MACROAREA_DIALOG)
+	Cma(MACROAREA_DIALOG)
 {
 	Dialog::Item = (DialogItemEx**)malloc(sizeof(DialogItemEx*)*SrcItemCount);
 
@@ -4564,7 +4564,7 @@ int Dialog::GetTypeAndName(FARString &strType, FARString &strName)
 }
 
 
-int Dialog::GetMacroMode()
+int Dialog::GetMacroArea()
 {
 	return MACROAREA_DIALOG;
 }

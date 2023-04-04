@@ -466,7 +466,7 @@ int Panel::ChangeDiskMenu(int Pos,int FirstCall)
 
 		if (Opt.ChangeDriveMode & DRIVE_SHOW_PLUGINS)
 		{
-			ChangeMacroMode CMM(PrevMacroArea); // for plugins: set the right macro area in GetPluginInfo()
+			ChangeMacroArea Cma(PrevMacroArea); // for plugins: set the right macro area in GetPluginInfo()
 			AddPluginItems(ChDisk, Pos);
 		}
 
@@ -499,7 +499,7 @@ int Panel::ChangeDiskMenu(int Pos,int FirstCall)
 			else*/
 			{
 				{
-					ChangeMacroMode MacroMode(MACROAREA_DISKS);
+					ChangeMacroArea Cma(MACROAREA_DISKS);
 					Key=ChDisk.ReadInput();
 				}
 			}
@@ -958,7 +958,7 @@ void Panel::FastFind(int FirstKey)
 	{
 		int FindX=Min(X1+9,ScrX-22);
 		int FindY=Min(Y2,ScrY-2);
-		ChangeMacroMode MacroMode(MACROAREA_SEARCH);
+		ChangeMacroArea Cma(MACROAREA_SEARCH);
 		SaveScreen SaveScr(FindX,FindY,FindX+21,FindY+2);
 		FastFindShow(FindX,FindY);
 		Edit FindEdit;

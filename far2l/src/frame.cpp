@@ -48,7 +48,7 @@ Frame::Frame():
 	KeyBarVisible(0),
 	TitleBarVisible(0),
 	FrameKeyBar(nullptr),
-	MacroMode(0)
+	MacroArea(MACROAREA_OTHER)
 {
 	_OT(SysLog(L"[%p] Frame::Frame()", this));
 }

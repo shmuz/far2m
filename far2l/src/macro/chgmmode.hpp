@@ -3,7 +3,7 @@
 /*
 chgmmode.hpp
 
-class ChangeMacroMode
+class ChangeMacroArea
 */
 /*
 Copyright (c) 1996 Eugene Roshal
@@ -33,15 +33,15 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-class ChangeMacroMode
+class ChangeMacroArea
 {
 	private:
-		int PrevMacroMode;
-		int CurMacroMode;
+		int PrevMacroArea;
+		int CurMacroArea;
 
 	public:
-		ChangeMacroMode(int NewMode);
-		~ChangeMacroMode();
-		void SetPrevMode();
-		void SetCurMode();
+		ChangeMacroArea(int NewArea);
+		~ChangeMacroArea();
+		void SetPrevArea();
+		void SetCurArea();
 };

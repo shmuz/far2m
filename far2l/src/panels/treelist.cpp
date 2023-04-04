@@ -162,7 +162,7 @@ static struct TreeListCache
 
 
 TreeList::TreeList(int IsPanel):
-	PrevMacroMode(-1),
+	PrevMacroArea(-1),
 	ListData(nullptr),
 	TreeCount(0),
 	WorkDir(0),
@@ -194,7 +194,7 @@ TreeList::~TreeList()
 
 	tempTreeCache.Clean();
 	FlushCache();
-	SetMacroMode(TRUE);
+	SetMacroArea(TRUE);
 }
 
 void TreeList::SetRootDir(const wchar_t *NewRootDir)
@@ -1990,7 +1990,7 @@ void TreeList::SetFocus()
 {
 	Panel::SetFocus();
 	SetTitle();
-	SetMacroMode(FALSE);
+	SetMacroArea(FALSE);
 }
 
 void TreeList::KillFocus()
@@ -2005,18 +2005,18 @@ void TreeList::KillFocus()
 	}
 
 	Panel::KillFocus();
-	SetMacroMode(TRUE);
+	SetMacroArea(TRUE);
 }
 
-void TreeList::SetMacroMode(int Restore)
+void TreeList::SetMacroArea(int Restore)
 {
 	if (!CtrlObject)
 		return;
 
-	if (PrevMacroMode == -1)
-		PrevMacroMode = CtrlObject->Macro.GetArea();
+	if (PrevMacroArea == -1)
+		PrevMacroArea = CtrlObject->Macro.GetArea();
 
-	CtrlObject->Macro.SetArea(Restore ? PrevMacroMode:MACROAREA_TREEPANEL);
+	CtrlObject->Macro.SetArea(Restore ? PrevMacroArea:MACROAREA_TREEPANEL);
 }
 
 BOOL TreeList::UpdateKeyBar()

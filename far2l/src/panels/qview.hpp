@@ -51,7 +51,7 @@ class QuickView:public Panel
 		CriticalSection CS;
 
 		int Directory;
-		int PrevMacroMode;
+		int PrevMacroArea;
 		uint32_t DirCount,FileCount,ClusterSize;
 		uint64_t FileSize,PhysicalSize;
 		int OldWrapMode;
@@ -61,7 +61,7 @@ class QuickView:public Panel
 		virtual void DisplayObject();
 		void PrintText(const wchar_t *Str);
 
-		void SetMacroMode(int Restore = FALSE);
+		void SetMacroArea(int Restore = FALSE);
 
 		void DynamicUpdateKeyBar();
 

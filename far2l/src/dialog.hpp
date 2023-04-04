@@ -263,7 +263,7 @@ class Dialog: public Frame
 		friend LONG_PTR WINAPI DefDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2);
 
 	private:
-		ChangeMacroMode CMM;
+		ChangeMacroArea Cma;
 		INT_PTR PluginNumber;       // Номер плагина, для формирования HelpTopic
 		unsigned FocusPos;               // всегда известно какой элемент в фокусе
 		unsigned PrevFocusPos;           // всегда известно какой элемент был в фокусе
@@ -401,7 +401,7 @@ class Dialog: public Frame
 		virtual int GetType() { return MODALTYPE_DIALOG; }
 		virtual const wchar_t *GetTypeName() {return L"[Dialog]";};
 
-		virtual int GetMacroMode();
+		virtual int GetMacroArea();
 
 		/* $ Введена для нужд CtrlAltShift OT */
 		virtual int FastHide();
