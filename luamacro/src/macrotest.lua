@@ -23,7 +23,7 @@ end
 local MT = {} -- "macrotest", this module
 local F = far.Flags
 local band, bor, bnot = bit64.band, bit64.bor, bit64.bnot
-local luamacroId=0x4EBBEFC8
+local luamacroId = far.GetPluginId()
 
 local function pack (...)
   return { n=select("#",...), ... }
@@ -1593,6 +1593,16 @@ local function test_PluginsControl()
 	assert_func(far.UnloadPlugin)
 end
 
+local function test_far_timer()
+  local N = 0
+  local timer = far.Timer(50, function(hnd)
+      N = N+1
+      if N==5 then hnd:Close() end
+    end)
+  while not timer.Closed do Keys("foobar") end
+  assert(N==5)
+end
+
 function MT.test_luafar()
   test_bit64()
   test_gmatch_coro()
@@ -1607,6 +1617,7 @@ function MT.test_luafar()
   test_MacroControl()
   test_RegexControl()
   test_PluginsControl()
+  test_far_timer()
 end
 
 -- Test in particular that Plugin.Call (a so-called "restricted" function) works properly

@@ -143,17 +143,16 @@ bool GetCommonParams(lua_State *L, CommonParams *Params)
     return false;
 
   // get plugin handle (for obtaining dll name)
-  PSInfo *psInfo = GetPluginStartupInfo(L);
   PanelInfo panInfo;
-  if (! (psInfo->Control(panHandle,FCTL_GETPANELINFO,0,(LONG_PTR)&panInfo) && panInfo.PluginHandle) )
+  if (! (PSInfo.Control(panHandle,FCTL_GETPANELINFO,0,(LONG_PTR)&panInfo) && panInfo.PluginHandle) )
     return false;
 
   // get panel handle (a parameter to dll function)
-  psInfo->Control(panHandle, FCTL_GETPANELPLUGINHANDLE, 0, (LONG_PTR)&Params->hPanel);
+  PSInfo.Control(panHandle, FCTL_GETPANELPLUGINHANDLE, 0, (LONG_PTR)&Params->hPanel);
   if (Params->hPanel == INVALID_HANDLE_VALUE)
     return false;
 
-  size_t size = psInfo->PluginsControlV3(panInfo.PluginHandle, PCTL_GETPLUGININFORMATION, 0, NULL);
+  size_t size = PSInfo.PluginsControlV3(panInfo.PluginHandle, PCTL_GETPLUGININFORMATION, 0, NULL);
   if (size == 0)
     return false;
 
@@ -162,7 +161,7 @@ bool GetCommonParams(lua_State *L, CommonParams *Params)
     return false;
 
   piInfo->StructSize = sizeof(*piInfo);
-  if (0 == psInfo->PluginsControlV3(panInfo.PluginHandle, PCTL_GETPLUGININFORMATION, size, piInfo))
+  if (0 == PSInfo.PluginsControlV3(panInfo.PluginHandle, PCTL_GETPLUGININFORMATION, size, piInfo))
   {
     free(piInfo);
     return false;

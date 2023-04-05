@@ -12,11 +12,6 @@ typedef struct
   HANDLE hnd;
 } TFarRegex;
 
-FARAPIREGEXPCONTROL GetRegExpControl(lua_State *L)
-{
-  return GetPluginData(L)->Info->RegExpControl;
-}
-
 TFarRegex* CheckFarRegex(lua_State *L, int pos)
 {
   TFarRegex* fr = (TFarRegex*)luaL_checkudata(L, pos, TYPE_REGEX);
@@ -30,8 +25,7 @@ int method_gc(lua_State *L)
 
   if(fr->hnd != INVALID_HANDLE_VALUE)
   {
-    FARAPIREGEXPCONTROL RegExpControl = GetRegExpControl(L);
-    RegExpControl(fr->hnd, RECTL_FREE, 0);
+    PSInfo.RegExpControl(fr->hnd, RECTL_FREE, 0);
     fr->hnd = INVALID_HANDLE_VALUE;
   }
 
@@ -65,17 +59,17 @@ const wchar_t* check_regex_pattern (lua_State *L, int pos_pat, int pos_cflags)
   return check_utf8_string(L, pos_pat, NULL);
 }
 
-TFarRegex* push_far_regex(lua_State *L, FARAPIREGEXPCONTROL RegExpControl, const wchar_t* pat)
+TFarRegex* push_far_regex(lua_State *L, const wchar_t* pat)
 {
   TFarRegex* fr = (TFarRegex*)lua_newuserdata(L, sizeof(TFarRegex));
 
-  if(!RegExpControl(NULL, RECTL_CREATE, (LONG_PTR)&fr->hnd))
+  if(!PSInfo.RegExpControl(NULL, RECTL_CREATE, (LONG_PTR)&fr->hnd))
     luaL_error(L, "RECTL_CREATE failed");
 
-  if(!RegExpControl(fr->hnd, RECTL_COMPILE, (LONG_PTR)pat))
+  if(!PSInfo.RegExpControl(fr->hnd, RECTL_COMPILE, (LONG_PTR)pat))
     luaL_error(L, "invalid regular expression");
 
-//(void)RegExpControl(fr->hnd, RECTL_OPTIMIZE, 0, 0); // very slow operation
+//(void)PSInfo.RegExpControl(fr->hnd, RECTL_OPTIMIZE, 0, 0); // very slow operation
   luaL_getmetatable(L, TYPE_REGEX);
   lua_setmetatable(L, -2);
   return fr;
@@ -85,9 +79,8 @@ int _regex_gmatch_closure(lua_State *L, int is_wide)
 {
   TFarRegex* fr = (TFarRegex*)lua_touserdata(L, lua_upvalueindex(1));
   struct RegExpSearch* pData = (struct RegExpSearch*)lua_touserdata(L, lua_upvalueindex(2));
-  FARAPIREGEXPCONTROL RegExpControl = GetRegExpControl(L);
 
-  if((pData->Position <= pData->Length) && RegExpControl(fr->hnd, RECTL_SEARCHEX, (LONG_PTR)pData))
+  if((pData->Position <= pData->Length) && PSInfo.RegExpControl(fr->hnd, RECTL_SEARCHEX, (LONG_PTR)pData))
   {
     int i, skip = pData->Count>1 ? 1 : 0;
 
@@ -124,14 +117,13 @@ int _Gmatch(lua_State *L, int is_wide)
   size_t len;
   const wchar_t* Text = is_wide ? check_wcstring(L, 1, &len) : check_utf8_string(L, 1, &len);
   const wchar_t* pat = check_regex_pattern(L, 2, 3);
-  FARAPIREGEXPCONTROL RegExpControl = GetRegExpControl(L);
-  TFarRegex* fr = push_far_regex(L, RegExpControl, pat); // upvalue 1
+  TFarRegex* fr = push_far_regex(L, pat); // upvalue 1
   struct RegExpSearch* pData = (struct RegExpSearch*)lua_newuserdata(L, sizeof(struct RegExpSearch)); // upvalue 2
   memset(pData, 0, sizeof(struct RegExpSearch));
   pData->Text = Text;
   pData->Position = 0;
   pData->Length = len;
-  pData->Count = RegExpControl(fr->hnd, RECTL_BRACKETSCOUNT, 0);
+  pData->Count = PSInfo.RegExpControl(fr->hnd, RECTL_BRACKETSCOUNT, 0);
   /* upvalues 3 and 4 must be kept to prevent values from being garbage-collected */
   pData->Match = (struct RegExpMatch*)lua_newuserdata(L, pData->Count*sizeof(struct RegExpMatch)); // upvalue 3
   pData->Match[0].end = -1;
@@ -146,7 +138,6 @@ int func_GmatchW(lua_State *L) { return _Gmatch(L, 1); }
 int rx_find_match(lua_State *L, int Op, int is_function, int is_wide)
 {
   size_t len;
-  FARAPIREGEXPCONTROL RegExpControl = GetRegExpControl(L);
   TFarRegex* fr;
   struct RegExpSearch data;
   memset(&data, 0, sizeof(data));
@@ -158,7 +149,7 @@ int rx_find_match(lua_State *L, int Op, int is_function, int is_wide)
     else
       data.Text = check_utf8_string(L, 1, &len);
 
-    fr = push_far_regex(L, RegExpControl, check_regex_pattern(L, 2, 4));
+    fr = push_far_regex(L, check_regex_pattern(L, 2, 4));
     lua_replace(L, 2);
   }
   else
@@ -180,10 +171,10 @@ int rx_find_match(lua_State *L, int Op, int is_function, int is_wide)
   if(data.Position < 0 && (data.Position += data.Length) < 0)
     data.Position = 0;
 
-  data.Count = RegExpControl(fr->hnd, RECTL_BRACKETSCOUNT, 0);
+  data.Count = PSInfo.RegExpControl(fr->hnd, RECTL_BRACKETSCOUNT, 0);
   data.Match = (struct RegExpMatch*)lua_newuserdata(L, data.Count*sizeof(struct RegExpMatch));
 
-  if(RegExpControl(fr->hnd, RECTL_SEARCHEX, (LONG_PTR)&data))
+  if(PSInfo.RegExpControl(fr->hnd, RECTL_SEARCHEX, (LONG_PTR)&data))
   {
     int i;
     int skip = (Op != OP_MATCH || data.Count>1) ? 1 : 0;
@@ -253,8 +244,7 @@ int rx_find_match(lua_State *L, int Op, int is_function, int is_wide)
 int method_bracketscount(lua_State *L)
 {
   TFarRegex* fr = CheckFarRegex(L, 1);
-  FARAPIREGEXPCONTROL RegExpControl = GetRegExpControl(L);
-  lua_pushinteger(L, RegExpControl(fr->hnd, RECTL_BRACKETSCOUNT, 0));
+  lua_pushinteger(L, PSInfo.RegExpControl(fr->hnd, RECTL_BRACKETSCOUNT, 0));
   return 1;
 }
 
@@ -262,7 +252,6 @@ int rx_gsub(lua_State *L, int is_function, int is_wide)
 {
   size_t len, flen;
   TFarRegex* fr;
-  FARAPIREGEXPCONTROL RegExpControl = GetRegExpControl(L);
   const wchar_t *s, *f;
   int max_rep_capture, ftype, n, matches, reps;
   luaL_Buffer out;
@@ -276,7 +265,7 @@ int rx_gsub(lua_State *L, int is_function, int is_wide)
     else
       data.Text = check_utf8_string(L, 1, &len);
 
-    fr = push_far_regex(L, RegExpControl, check_regex_pattern(L, 2, 5));
+    fr = push_far_regex(L, check_regex_pattern(L, 2, 5));
     lua_replace(L, 2);
   }
   else
@@ -329,7 +318,7 @@ int rx_gsub(lua_State *L, int is_function, int is_wide)
   }
 
   lua_settop(L, 3);
-  data.Count = RegExpControl(fr->hnd, RECTL_BRACKETSCOUNT, 0);
+  data.Count = PSInfo.RegExpControl(fr->hnd, RECTL_BRACKETSCOUNT, 0);
 
   if((ftype == LUA_TSTRING) &&
           !(max_rep_capture == 1 && data.Count == 1) &&
@@ -347,7 +336,7 @@ int rx_gsub(lua_State *L, int is_function, int is_wide)
     intptr_t from, to;
     intptr_t prev_end = data.Match[0].end;
 
-    if(!RegExpControl(fr->hnd, RECTL_SEARCHEX, (LONG_PTR)&data))
+    if(!PSInfo.RegExpControl(fr->hnd, RECTL_SEARCHEX, (LONG_PTR)&data))
       break;
 
     if(data.Match[0].end == prev_end)
@@ -524,7 +513,7 @@ int rx_gsub(lua_State *L, int is_function, int is_wide)
 int func_New(lua_State *L)
 {
   const wchar_t* pat = check_regex_pattern(L, 1, 2);
-  push_far_regex(L, GetRegExpControl(L), pat);
+  push_far_regex(L, pat);
   return 1;
 }
 

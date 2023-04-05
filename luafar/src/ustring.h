@@ -7,6 +7,9 @@
 #include <lua.h>
 #include <lauxlib.h>
 
+extern struct PluginStartupInfo PSInfo;
+extern struct FarStandardFunctions FSF;
+
 void Log(const char* Format, ...);
 int  SysErrorReturn (lua_State *L);
 

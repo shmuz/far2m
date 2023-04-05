@@ -82,9 +82,9 @@ THE SOFTWARE.
 #include <windows.h>
 #include <ctype.h>
 
-#include "lua.h"
-#include "lauxlib.h"
-#include "lualib.h"
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
 
 #include "ustring.h"
 

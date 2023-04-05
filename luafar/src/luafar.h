@@ -11,17 +11,18 @@
 #define DLLFUNC __attribute__ ((visibility ("default")))
 #endif
 
-typedef struct PluginStartupInfo PSInfo;
-
 typedef struct
 {
-  PSInfo        *Info;
+  const wchar_t* ModuleName;   // copied from PluginStartupInfo
+  INT_PTR        ModuleNumber; // +
+  const wchar_t* RootKey;      // +
+  const void*    Private;      // +
+
   DWORD          PluginId;
   FARWINDOWPROC  DlgProc;
-  lua_State     *MainLuaState;
-  char          *ShareDir;
+  lua_State*     MainLuaState;
+  char*          ShareDir;
   DWORD          Flags;
-  char           Reserved[64];
 } TPluginData;
 
 enum LF_PLUGIN_FLAGS
@@ -31,10 +32,10 @@ enum LF_PLUGIN_FLAGS
 
 TPluginData* GetPluginData(lua_State* L);
 
-DLLFUNC int  LF_LuaOpen(TPluginData* aPlugData, lua_CFunction aOpenLibs);
+DLLFUNC int  LF_LuaOpen(const struct PluginStartupInfo *aInfo, TPluginData* aPlugData, lua_CFunction aOpenLibs);
 DLLFUNC int  LF_InitOtherLuaState (lua_State *L, lua_State *Lplug, lua_CFunction aOpenLibs);
 DLLFUNC void LF_LuaClose(TPluginData* aPlugData);
-DLLFUNC int  LF_Message(PSInfo *Info, const wchar_t* aMsg, const wchar_t* aTitle, const wchar_t* aButtons, const char* aFlags, const wchar_t* aHelpTopic);
+DLLFUNC int  LF_Message(lua_State* L, const wchar_t* aMsg, const wchar_t* aTitle, const wchar_t* aButtons, const char* aFlags, const wchar_t* aHelpTopic);
 DLLFUNC BOOL LF_RunDefaultScript(lua_State* L);
 DLLFUNC const wchar_t *LF_Gsub (lua_State *L, const wchar_t *s, const wchar_t *p, const wchar_t *r);
 DLLFUNC LONG_PTR LF_DlgProc(lua_State *L, HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2);

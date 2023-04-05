@@ -2,9 +2,11 @@
 #include <windows.h>
 #include <dlfcn.h> //dlclose
 #include <farkeys.h>
+
+#include "bit64.h"
 #include "luafar.h"
-#include "util.h"
 #include "ustring.h"
+#include "util.h"
 
 extern void LF_Error(lua_State *L, const wchar_t* aMsg);
 extern int  PushDMParams    (lua_State *L, int Msg, int Param1);
@@ -13,8 +15,6 @@ extern int  ProcessDNResult (lua_State *L, int Msg, LONG_PTR Param2);
 extern BOOL GetFlagCombination (lua_State *L, int stack_pos, int *trg);
 extern int  GetFlagsFromTable(lua_State *L, int pos, const char* key);
 extern HANDLE Open_Luamacro (lua_State* L, INT_PTR Item);
-extern int  bit64_push(lua_State *L, INT64 v);
-extern int  bit64_getvalue(lua_State *L, int pos, INT64 *target);
 extern void FillInputRecord(lua_State *L, int pos, INPUT_RECORD *ir);
 extern void PushInputRecord (lua_State* L, const INPUT_RECORD *Rec);
 
@@ -670,7 +670,7 @@ static void WINAPI FillFarMacroCall_Callback (void *CallbackData, struct FarMacr
 
 static HANDLE FillFarMacroCall (lua_State* L, int narg)
 {
-	INT64 val64;
+	int64_t val64;
 	int i;
 
 	struct FarMacroCall *fmc = (struct FarMacroCall*)
@@ -823,7 +823,7 @@ HANDLE LF_OpenPlugin (lua_State* L, int OpenFrom, INT_PTR Item)
       if (!GetExportFunction(L, "OpenDialog"))
         break;
       lua_pushinteger(L, data->ItemNumber);
-      NewDialogData(L, NULL, data->hDlg, FALSE);
+      NewDialogData(L, data->hDlg, FALSE);
       if (pcall_msg(L, 2, 1) == 0) {
         if (lua_toboolean(L, -1))        //+1: Obj
           return RegisterObject(L);      //+0
@@ -1122,9 +1122,8 @@ int LF_ProcessEditorEvent (lua_State* L, int Event, void *Param)
 {
   int ret = 0;
   if (GetExportFunction(L, "ProcessEditorEvent"))  { //+1: Func
-    PSInfo *Info = GetPluginStartupInfo(L);
     struct EditorInfo ei;
-    if (Info->EditorControlV2(-1, ECTL_GETINFO, &ei))
+    if (PSInfo.EditorControlV2(-1, ECTL_GETINFO, &ei))
       lua_pushinteger(L, ei.EditorID);
     else
       lua_pushnil(L);
@@ -1156,10 +1155,9 @@ int LF_ProcessViewerEvent (lua_State* L, int Event, void* Param)
 {
   int ret = 0;
   if (GetExportFunction(L, "ProcessViewerEvent"))  { //+1: Func
-    PSInfo *Info = GetPluginStartupInfo(L);
     struct ViewerInfo vi;
     vi.StructSize = sizeof(vi);
-    if (Info->ViewerControlV2(-1, VCTL_GETINFO, &vi))
+    if (PSInfo.ViewerControlV2(-1, VCTL_GETINFO, &vi))
       lua_pushinteger(L, vi.ViewerID);
     else
       lua_pushnil(L);
@@ -1194,7 +1192,7 @@ int LF_ProcessDialogEvent (lua_State* L, int Event, void *Param)
 
   lua_pushinteger(L, Event);       //+2
   lua_createtable(L, 0, 5);        //+3
-  NewDialogData(L, NULL, fde->hDlg, FALSE);
+  NewDialogData(L, fde->hDlg, FALSE);
   lua_setfield(L, -2, "hDlg");     //+3
 
   if (PushDNParams(L, fde->Msg, fde->Param1, fde->Param2)) //+6

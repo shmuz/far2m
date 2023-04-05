@@ -1,5 +1,5 @@
 //---------------------------------------------------------------------------
-#include "lua.h"
+#include <lua.h>
 #include "luafar.h"
 
 #ifndef LUAPLUG
@@ -17,8 +17,6 @@ extern int FUNC_OPENLIBS (lua_State*);
 #define FUNC_OPENLIBS NULL
 #endif
 
-static PSInfo Info;
-static struct FarStandardFunctions FSF;
 static lua_State* LS;
 static TPluginData PluginData;
 //---------------------------------------------------------------------------
@@ -45,22 +43,22 @@ void LUAPLUG GetGlobalInfoW(struct GlobalInfo *aInfo)
   aInfo->SysID = SYS_ID;
 }
 
-void LUAPLUG SetStartupInfoW(const PSInfo *aInfo)
+void LUAPLUG SetStartupInfoW(const struct PluginStartupInfo *aInfo)
 {
   if (!aInfo->LuafarHandle)
     return; // luafar2l.so is not loaded
 
-  Info = *aInfo;
-  FSF = *aInfo->FSF;
-  Info.FSF = &FSF;
-  PluginData.Info = &Info;
-  PluginData.DlgProc = DlgProc;
-  PluginData.PluginId = SYS_ID;
+  PluginData.ModuleName   = aInfo->ModuleName;
+  PluginData.ModuleNumber = aInfo->ModuleNumber;
+  PluginData.RootKey      = aInfo->RootKey;
+  PluginData.Private      = aInfo->Private;
+  PluginData.DlgProc      = DlgProc;
+  PluginData.PluginId     = SYS_ID;
 #ifdef SETPACKAGEPATH
   PluginData.Flags |= LPF_SETPACKAGEPATH;
 #endif
 
-  if (!LS && LF_LuaOpen(&PluginData, FUNC_OPENLIBS)) //includes opening "far" library
+  if (!LS && LF_LuaOpen(aInfo, &PluginData, FUNC_OPENLIBS)) //includes opening "far" library
     LS = PluginData.MainLuaState;
 
   if (LS && !LF_RunDefaultScript(LS))  {

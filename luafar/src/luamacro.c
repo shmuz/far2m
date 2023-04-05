@@ -2,8 +2,8 @@
 #include "luafar.h"
 #include "ustring.h"
 #include "util.h"
+#include "bit64.h"
 
-extern int bit64_getvalue(lua_State *L, int pos, INT64 *target);
 extern int pcall_msg(lua_State* L, int narg, int nret);
 extern void PushFarMacroValue(lua_State* L, const struct FarMacroValue* val);
 extern void ConvertLuaValue (lua_State *L, int pos, struct FarMacroValue *target);
@@ -54,7 +54,7 @@ HANDLE Open_Luamacro (lua_State* L, INT_PTR Item)
 	if (om_info->Data && !FL_PushParams(L, om_info->Data))
 	{
 		lua_pop(L, 2);
-		LF_Message(pd->Info, L"too many values to place onto Lua stack", L"LuaMacro", L"OK", "wl", NULL);
+		LF_Message(L, L"too many values to place onto Lua stack", L"LuaMacro", L"OK", "wl", NULL);
 		return NULL;
 	}
 
@@ -94,7 +94,7 @@ HANDLE Open_Luamacro (lua_State* L, INT_PTR Item)
 			for(idx=0; idx<nargs; idx++)
 			{
 				int type;
-				INT64 val64;
+				int64_t val64;
 				lua_rawgeti(L,-1,idx+1);
 				type = lua_type(L, -1);
 
@@ -190,8 +190,8 @@ int far_MacroCallFar(lua_State *L)
 	int idx, pushed;
 	int ret;
 	mcfc_data cbdata = { L, MAXRET, 0 };
-	PSInfo *Info = GetPluginStartupInfo(L);
-	struct MacroPrivateInfo *privateInfo = (struct MacroPrivateInfo*)Info->Private;
+ 	TPluginData *pd = GetPluginData(L);
+	struct MacroPrivateInfo *privateInfo = (struct MacroPrivateInfo*)pd->Private;
 	int opcode = (int)luaL_checkinteger(L, 1);
 	fmc.Count = lua_gettop(L) - 1;
 	fmc.Values = fmc.Count<=MAXARG ? args:(struct FarMacroValue*)malloc(fmc.Count*sizeof(struct FarMacroValue));
@@ -231,8 +231,7 @@ int far_MacroCallToLua(lua_State *L)
 		lua_settop(L, 0);
 		if (Data && !FL_PushParams(L, Data))
 		{
-			PSInfo *Info = GetPluginStartupInfo(L);
-			LF_Message(Info, L"too many values to place onto Lua stack", L"LuaMacro", L"OK", "wl", NULL);
+			LF_Message(L, L"too many values to place onto Lua stack", L"LuaMacro", L"OK", "wl", NULL);
 		}
 		return lua_gettop(L);
 	}

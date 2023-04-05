@@ -189,8 +189,6 @@ void * _timer_thread(void * data)
     return NULL;
 }
 
-typedef struct PluginStartupInfo PSInfo;
-
 const char FarTimerType[] = "FarTimer";
 
 void timer_handler(size_t timer_id, void *user_data)
@@ -199,13 +197,13 @@ void timer_handler(size_t timer_id, void *user_data)
   switch(td->closeStage) {
     case 0:
       if (td->enabled)
-        td->Info->AdvControl(td->Info->ModuleNumber, ACTL_SYNCHRO, td);
+        PSInfo.AdvControl(td->plugin_data->ModuleNumber, ACTL_SYNCHRO, td);
       break;
 
     case 1:
       stop_timer(td->timer_id);
       td->closeStage++;
-      td->Info->AdvControl(td->Info->ModuleNumber, ACTL_SYNCHRO, td);
+      PSInfo.AdvControl(td->plugin_data->ModuleNumber, ACTL_SYNCHRO, td);
       break;
 
     case 2:
@@ -231,7 +229,7 @@ int far_Timer (lua_State *L)
   lua_pushthread(L);
   td->threadRef = luaL_ref(L, LUA_REGISTRYINDEX);
 
-  td->Info = GetPluginStartupInfo(L);
+  td->plugin_data = GetPluginData(L);
   td->closeStage = 0;
   td->enabled = 0;
   td->interval_changed = 0; //TODO
