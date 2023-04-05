@@ -620,14 +620,14 @@ int far_GetCurrentDirectory (lua_State *L)
   return 1;
 }
 
-int push_editor_filename(lua_State *L)
+int push_editor_filename(lua_State *L, int editorId)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
-  int size = Info->EditorControl(ECTL_GETFILENAME, 0);
+  int size = Info->EditorControlV2(editorId, ECTL_GETFILENAME, 0);
   if (!size) return 0;
 
   wchar_t* fname = (wchar_t*)lua_newuserdata(L, size * sizeof(wchar_t));
-  if (Info->EditorControl(ECTL_GETFILENAME, fname)) {
+  if (Info->EditorControlV2(editorId, ECTL_GETFILENAME, fname)) {
     push_utf8_string(L, fname, -1);
     lua_remove(L, -2);
     return 1;
@@ -637,20 +637,20 @@ int push_editor_filename(lua_State *L)
 }
 
 int editor_GetFileName(lua_State *L) {
-  (void) luaL_optinteger(L,1,0);
-  if (!push_editor_filename(L)) lua_pushnil(L);
+  int editorId = luaL_optinteger(L,1,-1);
+  if (!push_editor_filename(L, editorId)) lua_pushnil(L);
   return 1;
 }
 
 int editor_GetTitle(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
-  (void) luaL_optinteger(L,1,0);
-  int size = Info->EditorControl(ECTL_GETTITLE, NULL);
+  int editorId = luaL_optinteger(L,1,-1);
+  int size = Info->EditorControlV2(editorId, ECTL_GETTITLE, NULL);
   lua_pushstring(L, "");
   if (size) {
     void* str = lua_newuserdata(L, size * sizeof(wchar_t));
-    if (Info->EditorControl(ECTL_GETTITLE, str))
+    if (Info->EditorControlV2(editorId, ECTL_GETTITLE, str))
       push_utf8_string(L, (wchar_t*)str, -1);
   }
   return 1;
@@ -660,14 +660,14 @@ int editor_GetInfo(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
   struct EditorInfo ei;
-  (void) luaL_optinteger(L,1,0);
-  if (!Info->EditorControl(ECTL_GETINFO, &ei))
+  int editorId = luaL_optinteger(L,1,-1);
+  if (!Info->EditorControlV2(editorId, ECTL_GETINFO, &ei))
     return lua_pushnil(L), 1;
 
   lua_createtable(L, 0, 18);
   PutNumToTable(L, "EditorID", ei.EditorID);
 
-  if (push_editor_filename(L))
+  if (push_editor_filename(L, editorId))
     lua_setfield(L, -2, "FileName");
 
   PutNumToTable(L, "WindowSizeX", ei.WindowSizeX);
@@ -700,7 +700,7 @@ int editor_GetInfo(lua_State *L)
  * i,i+1,i+2,...) то перед каждым ECTL_* надо делать ECTL_SETPOSITION а
  * сами ECTL_* вызывать с -1.
  */
-BOOL FastGetString(int string_num, struct EditorGetString *egs, PSInfo *Info)
+BOOL FastGetString(int editorId, int string_num, struct EditorGetString *egs, PSInfo *Info)
 {
   struct EditorSetPosition esp;
   esp.CurLine   = string_num;
@@ -710,11 +710,11 @@ BOOL FastGetString(int string_num, struct EditorGetString *egs, PSInfo *Info)
   esp.LeftPos   = -1;
   esp.Overtype  = -1;
 
-  if(!Info->EditorControl(ECTL_SETPOSITION, &esp))
+  if(!Info->EditorControlV2(editorId, ECTL_SETPOSITION, &esp))
     return FALSE;
 
   egs->StringNumber = string_num;
-  return Info->EditorControl(ECTL_GETSTRING, egs) != 0;
+  return Info->EditorControlV2(editorId, ECTL_GETSTRING, egs) != 0;
 }
 
 // EditorGetString (EditorId, line_num, [mode])
@@ -731,7 +731,7 @@ BOOL FastGetString(int string_num, struct EditorGetString *egs, PSInfo *Info)
 static int _EditorGetString(lua_State *L, int is_wide)
 {
   PSInfo *Info = GetPluginData(L)->Info;
-  (void) luaL_optinteger(L,1,0);
+  int editorId = luaL_optinteger(L,1,-1);
   intptr_t line_num = luaL_optinteger(L, 2, 0) - 1;
   intptr_t mode = luaL_optinteger(L, 3, 0);
   BOOL res = 0;
@@ -740,10 +740,10 @@ static int _EditorGetString(lua_State *L, int is_wide)
   if(mode == 0 || mode == 3)
   {
     egs.StringNumber = line_num;
-    res = Info->EditorControl(ECTL_GETSTRING, &egs) != 0;
+    res = Info->EditorControlV2(editorId, ECTL_GETSTRING, &egs) != 0;
   }
   else if(mode == 1 || mode == 2)
-    res = FastGetString(line_num, &egs, Info);
+    res = FastGetString(editorId, line_num, &egs, Info);
 
   if(res)
   {
@@ -798,7 +798,7 @@ static int _EditorSetString(lua_State *L, int is_wide)
   PSInfo *Info = GetPluginStartupInfo(L);
   struct EditorSetString ess;
   size_t len;
-  (void) luaL_optinteger(L,1,0);
+  int editorId = luaL_optinteger(L,1,-1);
   ess.StringNumber = luaL_optinteger(L, 2, 0) - 1;
 
   if(is_wide)
@@ -821,7 +821,7 @@ static int _EditorSetString(lua_State *L, int is_wide)
   }
 
   ess.StringLength = len;
-  lua_pushboolean(L, Info->EditorControl(ECTL_SETSTRING, &ess) != 0);
+  lua_pushboolean(L, Info->EditorControlV2(editorId, ECTL_SETSTRING, &ess) != 0);
   return 1;
 }
 
@@ -831,28 +831,28 @@ static int editor_SetStringW(lua_State *L) { return _EditorSetString(L, 1); }
 int editor_InsertString(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
-  (void) luaL_optinteger(L,1,0);
+  int editorId = luaL_optinteger(L,1,-1);
   int indent = lua_toboolean(L, 2);
-  lua_pushboolean(L, Info->EditorControl(ECTL_INSERTSTRING, &indent));
+  lua_pushboolean(L, Info->EditorControlV2(editorId, ECTL_INSERTSTRING, &indent));
   return 1;
 }
 
 int editor_DeleteString(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
-  (void) luaL_optinteger(L,1,0);
-  lua_pushboolean(L, Info->EditorControl(ECTL_DELETESTRING, NULL));
+  int editorId = luaL_optinteger(L,1,-1);
+  lua_pushboolean(L, Info->EditorControlV2(editorId, ECTL_DELETESTRING, NULL));
   return 1;
 }
 
 int editor_InsertText(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
-  (void) luaL_optinteger(L,1,0);
+  int editorId = luaL_optinteger(L,1,-1);
   wchar_t* text = check_utf8_string(L,2,NULL);
-  int res = Info->EditorControl(ECTL_INSERTTEXT, text);
+  int res = Info->EditorControlV2(editorId, ECTL_INSERTTEXT, text);
   if (res && lua_toboolean(L,3))
-    Info->EditorControl(ECTL_REDRAW, NULL);
+    Info->EditorControlV2(editorId, ECTL_REDRAW, NULL);
   lua_pushboolean(L, res);
   return 1;
 }
@@ -861,15 +861,15 @@ int editor_InsertTextW(lua_State *L)
 {
   int res, redraw;
   PSInfo *Info = GetPluginStartupInfo(L);
-  (void) luaL_optinteger(L,1,0);
+  int editorId = luaL_optinteger(L,1,-1);
   luaL_checkstring(L,2);
   redraw = lua_toboolean(L,3);
   lua_pushvalue(L,2);
   lua_pushlstring(L, "\0\0\0\0", 4);
   lua_concat(L,2);
-  res = Info->EditorControl(ECTL_INSERTTEXT, (void*)lua_tostring(L,-1));
+  res = Info->EditorControlV2(editorId, ECTL_INSERTTEXT, (void*)lua_tostring(L,-1));
   if (res && redraw)
-    Info->EditorControl(ECTL_REDRAW, NULL);
+    Info->EditorControlV2(editorId, ECTL_REDRAW, NULL);
   lua_pushboolean(L, res);
   return 1;
 }
@@ -877,27 +877,27 @@ int editor_InsertTextW(lua_State *L)
 int editor_DeleteChar(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
-  (void) luaL_optinteger(L,1,0);
-  lua_pushboolean(L, Info->EditorControl(ECTL_DELETECHAR, NULL));
+  int editorId = luaL_optinteger(L,1,-1);
+  lua_pushboolean(L, Info->EditorControlV2(editorId, ECTL_DELETECHAR, NULL));
   return 1;
 }
 
 int editor_DeleteBlock(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
-  (void) luaL_optinteger(L,1,0);
-  lua_pushboolean(L, Info->EditorControl(ECTL_DELETEBLOCK, NULL));
+  int editorId = luaL_optinteger(L,1,-1);
+  lua_pushboolean(L, Info->EditorControlV2(editorId, ECTL_DELETEBLOCK, NULL));
   return 1;
 }
 
 int editor_UndoRedo(lua_State *L)
 {
   struct EditorUndoRedo eur;
-  (void) luaL_optinteger(L,1,0);
+  int editorId = luaL_optinteger(L,1,-1);
   memset(&eur, 0, sizeof(eur));
   eur.Command = check_env_flag(L, 2);
   PSInfo *Info = GetPluginStartupInfo(L);
-  return lua_pushboolean (L, Info->EditorControl(ECTL_UNDOREDO, &eur)), 1;
+  return lua_pushboolean (L, Info->EditorControlV2(editorId, ECTL_UNDOREDO, &eur)), 1;
 }
 
 int SetKeyBar(lua_State *L, BOOL editor)
@@ -905,7 +905,7 @@ int SetKeyBar(lua_State *L, BOOL editor)
   void* param;
   struct KeyBarTitles kbt;
   PSInfo *Info = GetPluginStartupInfo(L);
-  (void) luaL_optinteger(L,1,0);
+  int frameId = luaL_optinteger(L,1,-1);
 
   enum { REDRAW=-1, RESTORE=0 }; // corresponds to FAR API
   BOOL argfail = FALSE;
@@ -952,8 +952,8 @@ int SetKeyBar(lua_State *L, BOOL editor)
   if (argfail)
     return luaL_argerror(L, 1, "must be 'redraw', 'restore', or table");
 
-  int result = editor ? Info->EditorControl(ECTL_SETKEYBAR, param) :
-                        Info->ViewerControl(VCTL_SETKEYBAR, param);
+  int result = editor ? Info->EditorControlV2(frameId, ECTL_SETKEYBAR, param) :
+                        Info->ViewerControlV2(frameId, VCTL_SETKEYBAR, param);
   lua_pushboolean(L, result);
   return 1;
 }
@@ -972,7 +972,7 @@ int editor_SetParam(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
   struct EditorSetParameter esp;
-  (void) luaL_optinteger(L,1,0);
+  int editorId = luaL_optinteger(L,1,-1);
   memset(&esp, 0, sizeof(esp));
   wchar_t buf[256];
   esp.Type = check_env_flag(L,2);
@@ -994,7 +994,7 @@ int editor_SetParam(lua_State *L)
   GetFlagCombination (L, 4, &f);
   esp.Flags = f;
   //-----------------------------------------------------
-  int result = Info->EditorControl(ECTL_SETPARAM, &esp);
+  int result = Info->EditorControlV2(editorId, ECTL_SETPARAM, &esp);
   lua_pushboolean(L, result);
   if(result && esp.Type == ESPT_GETWORDDIV) {
     push_utf8_string(L,buf,-1); return 2;
@@ -1006,7 +1006,7 @@ int editor_SetPosition(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
   struct EditorSetPosition esp;
-  (void) luaL_optinteger(L,1,0);
+  int editorId = luaL_optinteger(L,1,-1);
   if (lua_istable(L, 2)) {
     lua_settop(L, 2);
     FillEditorSetPosition(L, &esp);
@@ -1019,28 +1019,28 @@ int editor_SetPosition(lua_State *L)
     esp.LeftPos   = luaL_optinteger(L, 6, 0) - 1;
     esp.Overtype  = luaL_optinteger(L, 7, -1);
   }
-  lua_pushboolean(L, Info->EditorControl(ECTL_SETPOSITION, &esp));
+  lua_pushboolean(L, Info->EditorControlV2(editorId, ECTL_SETPOSITION, &esp));
   return 1;
 }
 
 int editor_Redraw(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
-  (void) luaL_optinteger(L,1,0);
-  lua_pushboolean(L, Info->EditorControl(ECTL_REDRAW, NULL));
+  int editorId = luaL_optinteger(L,1,-1);
+  lua_pushboolean(L, Info->EditorControlV2(editorId, ECTL_REDRAW, NULL));
   return 1;
 }
 
 int editor_ExpandTabs(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
-  (void) luaL_optinteger(L,1,0);
+  int editorId = luaL_optinteger(L,1,-1);
   int line_num = luaL_optinteger(L, 2, 0) - 1;
-  lua_pushboolean(L, Info->EditorControl(ECTL_EXPANDTABS, &line_num));
+  lua_pushboolean(L, Info->EditorControlV2(editorId, ECTL_EXPANDTABS, &line_num));
   return 1;
 }
 
-int PushBookmarks(lua_State *L, int count, int command)
+int PushBookmarks(lua_State *L, int editorId, int count, int command)
 {
   if (count > 0) {
     struct EditorBookMarks ebm;
@@ -1049,7 +1049,7 @@ int PushBookmarks(lua_State *L, int count, int command)
     ebm.ScreenLine = ebm.Cursor + count;
     ebm.LeftPos    = ebm.ScreenLine + count;
     PSInfo *Info = GetPluginStartupInfo(L);
-    if (Info->EditorControl(command, &ebm)) {
+    if (Info->EditorControlV2(editorId, command, &ebm)) {
       int i;
       lua_createtable(L, count, 0);
       for (i=0; i < count; i++) {
@@ -1071,75 +1071,75 @@ int editor_GetBookmarks(lua_State *L)
 {
   struct EditorInfo ei;
   PSInfo *Info = GetPluginStartupInfo(L);
-  (void) luaL_optinteger(L,1,0);
-  if (!Info->EditorControl(ECTL_GETINFO, &ei))
+  int editorId = luaL_optinteger(L,1,-1);
+  if (!Info->EditorControlV2(editorId, ECTL_GETINFO, &ei))
     return 0;
-  return PushBookmarks(L, ei.BookMarkCount, ECTL_GETBOOKMARKS);
+  return PushBookmarks(L, editorId, ei.BookMarkCount, ECTL_GETBOOKMARKS);
 }
 
 int editor_GetStackBookmarks(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
-  (void) luaL_optinteger(L,1,0);
-  int count = Info->EditorControl(ECTL_GETSTACKBOOKMARKS, NULL);
-  return PushBookmarks(L, count, ECTL_GETSTACKBOOKMARKS);
+  int editorId = luaL_optinteger(L,1,-1);
+  int count = Info->EditorControlV2(editorId, ECTL_GETSTACKBOOKMARKS, NULL);
+  return PushBookmarks(L, editorId, count, ECTL_GETSTACKBOOKMARKS);
 }
 
 int editor_AddStackBookmark(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
-  (void) luaL_optinteger(L,1,0);
-  lua_pushboolean(L, Info->EditorControl(ECTL_ADDSTACKBOOKMARK, NULL));
+  int editorId = luaL_optinteger(L,1,-1);
+  lua_pushboolean(L, Info->EditorControlV2(editorId, ECTL_ADDSTACKBOOKMARK, NULL));
   return 1;
 }
 
 int editor_ClearStackBookmarks(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
-  (void) luaL_optinteger(L,1,0);
-  lua_pushinteger(L, Info->EditorControl(ECTL_CLEARSTACKBOOKMARKS, NULL));
+  int editorId = luaL_optinteger(L,1,-1);
+  lua_pushinteger(L, Info->EditorControlV2(editorId, ECTL_CLEARSTACKBOOKMARKS, NULL));
   return 1;
 }
 
 int editor_DeleteStackBookmark(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
-  (void) luaL_optinteger(L,1,0);
+  int editorId = luaL_optinteger(L,1,-1);
   INT_PTR num = luaL_optinteger(L, 2, 0) - 1;
-  lua_pushboolean(L, Info->EditorControl(ECTL_DELETESTACKBOOKMARK, (void*)num));
+  lua_pushboolean(L, Info->EditorControlV2(editorId, ECTL_DELETESTACKBOOKMARK, (void*)num));
   return 1;
 }
 
 int editor_NextStackBookmark(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
-  (void) luaL_optinteger(L,1,0);
-  lua_pushboolean(L, Info->EditorControl(ECTL_NEXTSTACKBOOKMARK, NULL));
+  int editorId = luaL_optinteger(L,1,-1);
+  lua_pushboolean(L, Info->EditorControlV2(editorId, ECTL_NEXTSTACKBOOKMARK, NULL));
   return 1;
 }
 
 int editor_PrevStackBookmark(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
-  (void) luaL_optinteger(L,1,0);
-  lua_pushboolean(L, Info->EditorControl(ECTL_PREVSTACKBOOKMARK, NULL));
+  int editorId = luaL_optinteger(L,1,-1);
+  lua_pushboolean(L, Info->EditorControlV2(editorId, ECTL_PREVSTACKBOOKMARK, NULL));
   return 1;
 }
 
 int editor_SetTitle(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
-  (void) luaL_optinteger(L,1,0);
+  int editorId = luaL_optinteger(L,1,-1);
   const wchar_t* text = opt_utf8_string(L, 2, NULL);
-  lua_pushboolean(L, Info->EditorControl(ECTL_SETTITLE, (wchar_t*)text));
+  lua_pushboolean(L, Info->EditorControlV2(editorId, ECTL_SETTITLE, (wchar_t*)text));
   return 1;
 }
 
 int editor_Quit(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
-  (void) luaL_optinteger(L,1,0);
-  lua_pushboolean(L, Info->EditorControl(ECTL_QUIT, NULL));
+  int editorId = luaL_optinteger(L,1,-1);
+  lua_pushboolean(L, Info->EditorControlV2(editorId, ECTL_QUIT, NULL));
   return 1;
 }
 
@@ -1164,7 +1164,7 @@ int editor_Select(lua_State *L)
   PSInfo *Info = GetPluginStartupInfo(L);
   struct EditorSelect es;
   int result;
-  (void) luaL_optinteger(L,1,0);
+  int editorId = luaL_optinteger(L,1,-1);
   if (lua_istable(L, 2))
     result = FillEditorSelect(L, 2, &es);
   else {
@@ -1176,7 +1176,7 @@ int editor_Select(lua_State *L)
       es.BlockHeight    = luaL_optinteger(L, 6, -1);
     }
   }
-  result = result && Info->EditorControl(ECTL_SELECT, &es);
+  result = result && Info->EditorControlV2(editorId, ECTL_SELECT, &es);
   return lua_pushboolean(L, result), 1;
 }
 
@@ -1189,10 +1189,10 @@ int editor_GetSelection(lua_State *L)
   struct EditorInfo EI;
   struct EditorGetString egs;
   struct EditorSetPosition esp;
-  (void) luaL_optinteger(L,1,0);
-  Info->EditorControl(ECTL_GETINFO, &EI);
+  int editorId = luaL_optinteger(L,1,-1);
+  Info->EditorControlV2(editorId, ECTL_GETINFO, &EI);
 
-  if(EI.BlockType == BTYPE_NONE || !FastGetString(EI.BlockStartLine, &egs, Info))
+  if(EI.BlockType == BTYPE_NONE || !FastGetString(editorId, EI.BlockStartLine, &egs, Info))
     return lua_pushnil(L), 1;
 
   lua_createtable(L, 0, 5);
@@ -1206,7 +1206,7 @@ int editor_GetSelection(lua_State *L)
 
   for(to = from+h; to < EI.TotalLines; to = from + (h*=2))
   {
-    if(!FastGetString(to, &egs, Info))
+    if(!FastGetString(editorId, to, &egs, Info))
       return lua_pushnil(L), 1;
 
     if(egs.SelStart < 0)
@@ -1221,7 +1221,7 @@ int editor_GetSelection(lua_State *L)
   {
     int curr = (from + to + 1) / 2;
 
-    if(!FastGetString(curr, &egs, Info))
+    if(!FastGetString(editorId, curr, &egs, Info))
       return lua_pushnil(L), 1;
 
     if(egs.SelStart < 0)
@@ -1237,19 +1237,19 @@ int editor_GetSelection(lua_State *L)
     }
   }
 
-  if(!FastGetString(from, &egs, Info))
+  if(!FastGetString(editorId, from, &egs, Info))
     return lua_pushnil(L), 1;
 
   PutIntToTable(L, "EndLine", from+1);
   PutIntToTable(L, "EndPos", egs.SelEnd);
-  // restore current position, since FastGetString() changed it
+  // restore current position, since FastGetString changed it
   esp.CurLine       = EI.CurLine;
   esp.CurPos        = EI.CurPos;
   esp.CurTabPos     = EI.CurTabPos;
   esp.TopScreenLine = EI.TopScreenLine;
   esp.LeftPos       = EI.LeftPos;
   esp.Overtype      = EI.Overtype;
-  Info->EditorControl(ECTL_SETPOSITION, &esp);
+  Info->EditorControlV2(editorId, ECTL_SETPOSITION, &esp);
   return 1;
 }
 
@@ -1257,10 +1257,10 @@ int _EditorTabConvert(lua_State *L, int Operation)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
   struct EditorConvertPos ecp;
-  (void) luaL_optinteger(L,1,0);
+  int editorId = luaL_optinteger(L,1,-1);
   ecp.StringNumber = luaL_optinteger(L, 2, 0) - 1;
   ecp.SrcPos = luaL_checkinteger(L, 3) - 1;
-  if (Info->EditorControl(Operation, &ecp))
+  if (Info->EditorControlV2(editorId, Operation, &ecp))
     lua_pushinteger(L, ecp.DestPos+1);
   else
     lua_pushnil(L);
@@ -1280,8 +1280,8 @@ int editor_RealToTab(lua_State *L)
 int editor_TurnOffMarkingBlock(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
-  (void) luaL_optinteger(L,1,0);
-  Info->EditorControl(ECTL_TURNOFFMARKINGBLOCK, NULL);
+  int editorId = luaL_optinteger(L,1,-1);
+  Info->EditorControlV2(editorId, ECTL_TURNOFFMARKINGBLOCK, NULL);
   return 0;
 }
 
@@ -1291,7 +1291,7 @@ int editor_AddColor(lua_State *L)
   struct EditorTrueColor etc;
   int Flags;
   uint32_t fg, bg;
-  (void) luaL_optinteger(L,1,0);
+  int editorId = luaL_optinteger(L,1,-1);
 
   memset(&etc, 0, sizeof(etc));
   etc.Base.StringNumber = luaL_optinteger(L,2,0) - 1;
@@ -1322,7 +1322,7 @@ int editor_AddColor(lua_State *L)
   etc.Base.Color |= Flags;
 
   if (etc.Base.Color) // prevent color deletion
-    lua_pushboolean(L, Info->EditorControl(ECTL_ADDTRUECOLOR, &etc));
+    lua_pushboolean(L, Info->EditorControlV2(editorId, ECTL_ADDTRUECOLOR, &etc));
   else
     lua_pushboolean(L,0);
   return 1;
@@ -1332,11 +1332,11 @@ int editor_DelColor(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
   struct EditorColor ec;
-  (void) luaL_optinteger(L,1,0);
+  int editorId = luaL_optinteger(L,1,-1);
   memset(&ec, 0, sizeof(ec)); // set ec.Color = 0
   ec.StringNumber = luaL_optinteger  (L, 2, 0) - 1;
   ec.StartPos     = luaL_optinteger  (L, 3, 0) - 1;
-  lua_pushboolean(L, Info->EditorControl(ECTL_ADDCOLOR, &ec)); // ECTL_ADDCOLOR (sic)
+  lua_pushboolean(L, Info->EditorControlV2(editorId, ECTL_ADDCOLOR, &ec)); // ECTL_ADDCOLOR (sic)
   return 1;
 }
 
@@ -1344,11 +1344,11 @@ int editor_GetColor(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
   struct EditorTrueColor etc;
-  (void) luaL_optinteger(L,1,0);
+  int editorId = luaL_optinteger(L,1,-1);
   memset(&etc, 0, sizeof(etc));
   etc.Base.StringNumber = luaL_optinteger(L, 2, 0) - 1;
   etc.Base.ColorItem    = luaL_checkinteger(L, 3) - 1;
-  if (Info->EditorControl(ECTL_GETTRUECOLOR, &etc))
+  if (Info->EditorControlV2(editorId, ECTL_GETTRUECOLOR, &etc))
   {
     lua_createtable(L, 0, 5);
     PutNumToTable(L, "StartPos", etc.Base.StartPos+1);
@@ -1368,16 +1368,16 @@ int editor_SaveFile(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
   struct EditorSaveFile esf;
-  (void) luaL_optinteger(L,1,0);
+  int editorId = luaL_optinteger(L,1,-1);
   esf.FileName = opt_utf8_string(L, 2, L"");
   esf.FileEOL = opt_utf8_string(L, 3, NULL);
   esf.CodePage = luaL_optinteger(L, 4, 0);
   if (esf.CodePage == 0) {
     struct EditorInfo ei;
-    if (Info->EditorControl(ECTL_GETINFO, &ei))
+    if (Info->EditorControlV2(editorId, ECTL_GETINFO, &ei))
       esf.CodePage = ei.CodePage;
   }
-  lua_pushboolean(L, Info->EditorControl(ECTL_SAVEFILE, &esf));
+  lua_pushboolean(L, Info->EditorControlV2(editorId, ECTL_SAVEFILE, &esf));
   return 1;
 }
 
@@ -1385,9 +1385,9 @@ int editor_ReadInput(lua_State *L)
 {
   PSInfo *Info = GetPluginStartupInfo(L);
   INPUT_RECORD ir;
-  (void) luaL_optinteger(L,1,0);
+  int editorId = luaL_optinteger(L,1,-1);
   lua_pushnil(L); // prepare to return nil
-  if (!Info->EditorControl(ECTL_READINPUT, &ir))
+  if (!Info->EditorControlV2(editorId, ECTL_READINPUT, &ir))
     return 1;
   lua_newtable(L);
   switch(ir.EventType) {
@@ -1486,23 +1486,23 @@ void FillInputRecord(lua_State *L, int pos, INPUT_RECORD *ir)
 
 int editor_ProcessInput(lua_State *L)
 {
-  (void) luaL_optinteger(L,1,0);
+  int editorId = luaL_optinteger(L,1,-1);
   if (!lua_istable(L, 2))
     return 0;
   PSInfo *Info = GetPluginStartupInfo(L);
   INPUT_RECORD ir;
   FillInputRecord(L, 2, &ir);
-  if (Info->EditorControl(ECTL_PROCESSINPUT, &ir))
+  if (Info->EditorControlV2(editorId, ECTL_PROCESSINPUT, &ir))
     return lua_pushboolean(L, 1), 1;
   return 0;
 }
 
 int editor_ProcessKey(lua_State *L)
 {
-  (void) luaL_optinteger(L,1,0);
+  int editorId = luaL_optinteger(L,1,-1);
   INT_PTR key = luaL_checkinteger(L,2);
   PSInfo *Info = GetPluginStartupInfo(L);
-  Info->EditorControl(ECTL_PROCESSKEY, (void*)key);
+  Info->EditorControlV2(editorId, ECTL_PROCESSKEY, (void*)key);
   return 0;
 }
 
@@ -3709,11 +3709,11 @@ int viewer_Viewer(lua_State *L)
 
 int viewer_GetInfo(lua_State *L)
 {
-  (void) luaL_optinteger(L,1,0);
+  int viewerId = luaL_optinteger(L,1,-1);
   PSInfo *Info = GetPluginStartupInfo(L);
   struct ViewerInfo vi;
   vi.StructSize = sizeof(vi);
-  if (Info->ViewerControl(VCTL_GETINFO, &vi)) {
+  if (Info->ViewerControlV2(viewerId, VCTL_GETINFO, &vi)) {
     lua_createtable(L, 0, 10);
     PutNumToTable(L,  "ViewerID",    vi.ViewerID);
     PutWStrToTable(L, "FileName",    vi.FileName, -1);
@@ -3739,11 +3739,11 @@ int viewer_GetInfo(lua_State *L)
 
 int viewer_GetFileName(lua_State *L)
 {
-  (void) luaL_optinteger(L,1,0);
+  int viewerId = luaL_optinteger(L,1,-1);
   PSInfo *Info = GetPluginStartupInfo(L);
   struct ViewerInfo vi;
   vi.StructSize = sizeof(vi);
-  if (Info->ViewerControl(VCTL_GETINFO, &vi))
+  if (Info->ViewerControlV2(viewerId, VCTL_GETINFO, &vi))
     push_utf8_string(L, vi.FileName, -1);
   else
     lua_pushnil(L);
@@ -3752,34 +3752,34 @@ int viewer_GetFileName(lua_State *L)
 
 int viewer_Quit(lua_State *L)
 {
-  (void) luaL_optinteger(L,1,0);
+  int viewerId = luaL_optinteger(L,1,-1);
   PSInfo *Info = GetPluginStartupInfo(L);
-  Info->ViewerControl(VCTL_QUIT, NULL);
+  Info->ViewerControlV2(viewerId, VCTL_QUIT, NULL);
   return 0;
 }
 
 int viewer_Redraw(lua_State *L)
 {
-  (void) luaL_optinteger(L,1,0);
+  int viewerId = luaL_optinteger(L,1,-1);
   PSInfo *Info = GetPluginStartupInfo(L);
-  Info->ViewerControl(VCTL_REDRAW, NULL);
+  Info->ViewerControlV2(viewerId, VCTL_REDRAW, NULL);
   return 0;
 }
 
 int viewer_Select(lua_State *L)
 {
-  (void) luaL_optinteger(L,1,0);
+  int viewerId = luaL_optinteger(L,1,-1);
   PSInfo *Info = GetPluginStartupInfo(L);
   struct ViewerSelect vs;
   vs.BlockStartPos = (long long int)luaL_checknumber(L,2);
   vs.BlockLen = luaL_checkinteger(L,3);
-  lua_pushboolean(L, Info->ViewerControl(VCTL_SELECT, &vs));
+  lua_pushboolean(L, Info->ViewerControlV2(viewerId, VCTL_SELECT, &vs));
   return 1;
 }
 
 int viewer_SetPosition(lua_State *L)
 {
-  (void) luaL_optinteger(L,1,0);
+  int viewerId = luaL_optinteger(L,1,-1);
   PSInfo *Info = GetPluginStartupInfo(L);
   struct ViewerSetPosition vsp;
   if (lua_istable(L, 2)) {
@@ -3793,7 +3793,7 @@ int viewer_SetPosition(lua_State *L)
     vsp.LeftPos = (int64_t)luaL_optnumber(L,3,1) - 1;
     vsp.Flags = luaL_optinteger(L,4,0);
   }
-  if (Info->ViewerControl(VCTL_SETPOSITION, &vsp))
+  if (Info->ViewerControlV2(viewerId, VCTL_SETPOSITION, &vsp))
     lua_pushnumber(L, (double)vsp.StartPos);
   else
     lua_pushnil(L);
@@ -3802,7 +3802,7 @@ int viewer_SetPosition(lua_State *L)
 
 int viewer_SetMode(lua_State *L)
 {
-  (void) luaL_optinteger(L,1,0);
+  int viewerId = luaL_optinteger(L,1,-1);
   struct ViewerSetMode vsm;
   memset(&vsm, 0, sizeof(struct ViewerSetMode));
   luaL_checktype(L, 2, LUA_TTABLE);
@@ -3824,7 +3824,7 @@ int viewer_SetMode(lua_State *L)
   vsm.Flags = flags;
 
   PSInfo *Info = GetPluginStartupInfo(L);
-  lua_pushboolean(L, Info->ViewerControl(VCTL_SETMODE, &vsm));
+  lua_pushboolean(L, Info->ViewerControlV2(viewerId, VCTL_SETMODE, &vsm));
   return 1;
 }
 

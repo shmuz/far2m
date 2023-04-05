@@ -1124,7 +1124,7 @@ int LF_ProcessEditorEvent (lua_State* L, int Event, void *Param)
   if (GetExportFunction(L, "ProcessEditorEvent"))  { //+1: Func
     PSInfo *Info = GetPluginStartupInfo(L);
     struct EditorInfo ei;
-    if (Info->EditorControl(ECTL_GETINFO, &ei))
+    if (Info->EditorControlV2(-1, ECTL_GETINFO, &ei))
       lua_pushinteger(L, ei.EditorID);
     else
       lua_pushnil(L);
@@ -1159,7 +1159,7 @@ int LF_ProcessViewerEvent (lua_State* L, int Event, void* Param)
     PSInfo *Info = GetPluginStartupInfo(L);
     struct ViewerInfo vi;
     vi.StructSize = sizeof(vi);
-    if (Info->ViewerControl(VCTL_GETINFO, &vi))
+    if (Info->ViewerControlV2(-1, VCTL_GETINFO, &vi))
       lua_pushinteger(L, vi.ViewerID);
     else
       lua_pushnil(L);

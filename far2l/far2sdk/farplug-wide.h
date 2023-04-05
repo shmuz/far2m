@@ -1637,8 +1637,14 @@ struct ViewerInfo
 };
 
 typedef int (WINAPI *FARAPIVIEWERCONTROL)(
-    int Command,
-    void *Param
+	int Command,
+	void *Param
+);
+
+typedef int (WINAPI *FARAPIVIEWERCONTROLV2)(
+	int ViewerID,
+	int Command,
+	void *Param
 );
 
 enum VIEWER_EVENTS
@@ -1937,8 +1943,14 @@ struct EditorSaveFile
 };
 
 typedef int (WINAPI *FARAPIEDITORCONTROL)(
-    int Command,
-    void *Param
+	int Command,
+	void *Param
+);
+
+typedef int (WINAPI *FARAPIEDITORCONTROLV2)(
+	int EditorID,
+	int Command,
+	void *Param
 );
 
 enum INPUTBOXFLAGS
@@ -2326,6 +2338,8 @@ struct PluginStartupInfo
 
 	void*                  RESERVED[2];
 	FARAPIMACROCONTROL     MacroControl;
+	FARAPIEDITORCONTROLV2  EditorControlV2;
+	FARAPIVIEWERCONTROLV2  ViewerControlV2;
 	FARAPIPLUGINSCONTROLV3 PluginsControlV3;
 	FARAPICOLORDIALOG      ColorDialog;
 	FARAPIFREESCREEN       FreeScreen;

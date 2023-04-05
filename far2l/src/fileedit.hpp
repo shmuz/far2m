@@ -117,6 +117,7 @@ class FileEditor : public Frame
 		void SetPluginTitle(const wchar_t *PluginTitle);
 		void AutoDeleteColors() const { m_editor->AutoDeleteColors(); }
 		static const FileEditor *CurrentEditor;
+		int GetEditorID() const;
 
 	private:
 		Editor *m_editor;

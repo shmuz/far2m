@@ -97,8 +97,10 @@ int WINAPI FarCmpName(const wchar_t *pattern,const wchar_t *string,int skippath)
 void WINAPI FarText(int X,int Y,int Color,const wchar_t *Str);
 int WINAPI TextToCharInfo(const char *Text,WORD Attr, CHAR_INFO *CharInfo, int Length, DWORD Reserved);
 int WINAPI FarEditorControl(int Command,void *Param);
+int WINAPI FarEditorControlV2(int EditorId,int Command,void *Param);
 
 int WINAPI FarViewerControl(int Command,void *Param);
+int WINAPI FarViewerControlV2(int ViewerId,int Command,void *Param);
 
 /* Функция вывода помощи */
 BOOL WINAPI FarShowHelp(const wchar_t *ModuleName,

@@ -2047,31 +2047,74 @@ void WINAPI FarText(int X,int Y,int Color,const wchar_t *Str)
 	InterThreadCall<bool>(std::bind(FarTextSynched, X, Y, Color, Str));
 }
 
-static int FarEditorControlSynched(int Command,void *Param)
+static int FarEditorControlSynchedV2(int EditorID,int Command,void *Param)
 {
-	if (FrameManager->ManagerIsDown() || !CtrlObject->Plugins.CurEditor)
+	if (FrameManager->ManagerIsDown())
 		return 0;
 
-	return(CtrlObject->Plugins.CurEditor->EditorControl(Command,Param));
+	if (EditorID==-1)
+	{
+		auto fileedit = CtrlObject->Plugins.CurEditor;
+		return fileedit ? fileedit->EditorControl(Command,Param) : 0;
+	}
+
+	int count = FrameManager->GetFrameCount();
+	for (int i=0; i<count; i++)
+	{
+		auto fileedit = dynamic_cast<FileEditor*>(FrameManager->operator[](i));
+		if (fileedit)
+		{
+			if (fileedit->GetEditorID()==EditorID)
+				return fileedit->EditorControl(Command,Param);
+		}
+	}
+
+	return 0;
 }
 
 int WINAPI FarEditorControl(int Command,void *Param)
 {
-	return InterThreadCall<int, 0>(std::bind(FarEditorControlSynched, Command, Param));
+	return InterThreadCall<int, 0>(std::bind(FarEditorControlSynchedV2, -1, Command, Param));
 }
 
-
-static int FarViewerControlSynched(int Command,void *Param)
+int WINAPI FarEditorControlV2(int EditorID, int Command,void *Param)
 {
-	if (FrameManager->ManagerIsDown() || !CtrlObject->Plugins.CurViewer)
+	return InterThreadCall<int, 0>(std::bind(FarEditorControlSynchedV2, EditorID, Command, Param));
+}
+
+static int FarViewerControlSynchedV2(int ViewerID,int Command,void *Param)
+{
+	if (FrameManager->ManagerIsDown())
 		return 0;
 
-	return(CtrlObject->Plugins.CurViewer->ViewerControl(Command,Param));
+	if (ViewerID==-1)
+	{
+		auto fileview = CtrlObject->Plugins.CurViewer;
+		return fileview ? fileview->ViewerControl(Command,Param) : 0;
+	}
+
+	int count = FrameManager->GetFrameCount();
+	for (int i=0; i<count; i++)
+	{
+		auto fileview = dynamic_cast<FileViewer*>(FrameManager->operator[](i));
+		if (fileview)
+		{
+			if (fileview->GetViewerID()==ViewerID)
+				return fileview->ViewerControl(Command,Param);
+		}
+	}
+
+	return 0;
 }
 
 int WINAPI FarViewerControl(int Command,void *Param)
 {
-	return InterThreadCall<int, 0>(std::bind(FarViewerControlSynched, Command, Param));
+	return InterThreadCall<int, 0>(std::bind(FarViewerControlSynchedV2, -1, Command, Param));
+}
+
+int WINAPI FarViewerControlV2(int ViewerId,int Command,void *Param)
+{
+	return InterThreadCall<int, 0>(std::bind(FarViewerControlSynchedV2, ViewerId, Command, Param));
 }
 
 

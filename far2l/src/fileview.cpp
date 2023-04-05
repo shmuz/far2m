@@ -561,6 +561,11 @@ void FileViewer::OnChangeFocus(int focus)
 	CtrlObject->Plugins.ProcessViewerEvent(focus?VE_GOTFOCUS:VE_KILLFOCUS,&FCurViewerID);
 }
 
+int FileViewer::GetViewerID() const
+{
+	return View.ViewerID;
+}
+
 static void ModalViewFileInternal(const std::string &pathname, int DisableHistory,
 	int DisableEdit, bool scroll_to_end, bool autoclose, UINT codepage)
 {

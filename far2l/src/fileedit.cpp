@@ -2877,6 +2877,11 @@ bool FileEditor::AskOverwrite(const FARString& FileName)
 	return result;
 }
 
+int FileEditor::GetEditorID() const
+{
+	return m_editor->EditorID;
+}
+
 void ModalEditConsoleHistory(bool scroll_to_end)
 {
 	const std::string &histfile = CtrlObject->CmdLine->GetConsoleLog(false);

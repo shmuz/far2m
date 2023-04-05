@@ -104,6 +104,7 @@ class FileViewer:public Frame
 		int64_t GetViewFilePos() const;
 		void ShowStatus();
 		void SetAutoClose(bool AC) { AutoClose = AC;}
+		int GetViewerID() const;
 };
 
 void ModalViewFile(const std::string &pathname, bool scroll_to_end);

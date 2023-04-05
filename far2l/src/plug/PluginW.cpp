@@ -552,6 +552,8 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 		StartupInfo.PluginsControlV3=farPluginsControlV3;
 		StartupInfo.ColorDialog=farColorDialog;
 		StartupInfo.FreeScreen=FarFreeScreen;
+		StartupInfo.EditorControlV2=FarEditorControlV2;
+		StartupInfo.ViewerControlV2=FarViewerControlV2;
 		StartupInfo.LuafarHandle=LoadLuafar();
 	}
 
