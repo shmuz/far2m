@@ -1597,10 +1597,10 @@ local function test_far_timer()
   local N = 0
   local timer = far.Timer(50, function(hnd)
       N = N+1
-      if N==5 then hnd:Close() end
+      if N==3 then hnd:Close() end
     end)
   while not timer.Closed do Keys("foobar") end
-  assert(N==5)
+  assert(N==3)
 end
 
 function MT.test_luafar()

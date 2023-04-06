@@ -7,13 +7,18 @@
 #include <ctype.h>
 #include <math.h>
 
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
+
 #include "bit64.h"
 #include "luafar.h"
 #include "ustring.h"
 #include "util.h"
 #include "version.h"
+#include "service.h"
 
-extern void add_flags (lua_State *L);
+extern void add_flags (lua_State *L); // from generated file farflags.c
 
 extern int  far_MacroCallFar(lua_State *L);
 extern int  far_MacroCallToLua(lua_State *L);
@@ -6045,7 +6050,7 @@ BOOL LF_RunDefaultScript(lua_State* L)
   return (status == 0);
 }
 
-void LF_InitLuaState (lua_State *L, TPluginData *aPlugData, lua_CFunction aOpenLibs)
+void InitLuaState (lua_State *L, TPluginData *aPlugData, lua_CFunction aOpenLibs)
 {
   int idx, len;
   lua_CFunction func_arr[] = { luaopen_far, luaopen_bit64, luaopen_unicode, luaopen_utf8 };
@@ -6124,7 +6129,7 @@ int LF_LuaOpen (const struct PluginStartupInfo *aInfo, TPluginData* aPlugData, l
     }
     lua_pop(L,2);                                                    //+0
 
-    LF_InitLuaState(L, aPlugData, aOpenLibs);
+    InitLuaState(L, aPlugData, aOpenLibs);
     return 1;
   }
 
@@ -6139,7 +6144,7 @@ int LF_InitOtherLuaState (lua_State *L, lua_State *Lplug, lua_CFunction aOpenLib
     lua_setfield(L, LUA_REGISTRYINDEX, FAR_KEYINFO);
     memcpy(pd, PluginData, sizeof(TPluginData));
     pd->MainLuaState = L;
-    LF_InitLuaState(L, pd, aOpenLibs);
+    InitLuaState(L, pd, aOpenLibs);
   }
   return 0;
 }

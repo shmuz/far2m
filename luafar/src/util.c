@@ -1,3 +1,6 @@
+#include <lua.h>
+#include <lauxlib.h>
+
 #include "ustring.h"
 #include "util.h"
 

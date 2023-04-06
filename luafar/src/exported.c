@@ -1,22 +1,18 @@
 //---------------------------------------------------------------------------
 #include <windows.h>
 #include <dlfcn.h> //dlclose
+
+#include <lua.h>
+#include <lauxlib.h>
+
 #include <farkeys.h>
 
 #include "bit64.h"
-#include "luafar.h"
+#include "service.h"
 #include "ustring.h"
 #include "util.h"
 
-extern void LF_Error(lua_State *L, const wchar_t* aMsg);
-extern int  PushDMParams    (lua_State *L, int Msg, int Param1);
-extern int  PushDNParams    (lua_State *L, int Msg, int Param1, LONG_PTR Param2);
-extern int  ProcessDNResult (lua_State *L, int Msg, LONG_PTR Param2);
-extern BOOL GetFlagCombination (lua_State *L, int stack_pos, int *trg);
-extern int  GetFlagsFromTable(lua_State *L, int pos, const char* key);
 extern HANDLE Open_Luamacro (lua_State* L, INT_PTR Item);
-extern void FillInputRecord(lua_State *L, int pos, INPUT_RECORD *ir);
-extern void PushInputRecord (lua_State* L, const INPUT_RECORD *Rec);
 
 void PackMacroValues(lua_State* L, size_t Count, const struct FarMacroValue* Values); // forward declaration
 

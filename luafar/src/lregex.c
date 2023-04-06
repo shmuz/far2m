@@ -1,7 +1,11 @@
 /* lregex.cpp */
 
-#include "luafar.h"
+#include <windows.h>
+#include <lua.h>
+#include <lauxlib.h>
+
 #include "ustring.h"
+#include "util.h"
 
 #define TYPE_REGEX "far_regex"
 

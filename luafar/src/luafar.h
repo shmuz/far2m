@@ -4,8 +4,6 @@
 #include <farplug-wide.h>
 
 #include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
 
 #ifndef DLLFUNC
 #define DLLFUNC __attribute__ ((visibility ("default")))
@@ -29,8 +27,6 @@ enum LF_PLUGIN_FLAGS
 {
   LPF_SETPACKAGEPATH = 0x00000001,
 };
-
-TPluginData* GetPluginData(lua_State* L);
 
 DLLFUNC int  LF_LuaOpen(const struct PluginStartupInfo *aInfo, TPluginData* aPlugData, lua_CFunction aOpenLibs);
 DLLFUNC int  LF_InitOtherLuaState (lua_State *L, lua_State *Lplug, lua_CFunction aOpenLibs);

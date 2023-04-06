@@ -1,12 +1,13 @@
 ﻿//---------------------------------------------------------------------------
-#include "luafar.h"
+#include <lua.h>
+#include <lauxlib.h>
+
+#include "service.h"
 #include "ustring.h"
-#include "util.h"
 #include "bit64.h"
 
 extern int pcall_msg(lua_State* L, int narg, int nret);
 extern void PushFarMacroValue(lua_State* L, const struct FarMacroValue* val);
-extern void ConvertLuaValue (lua_State *L, int pos, struct FarMacroValue *target);
 
 static const DWORD LuamacroId = 0x4EBBEFC8;
 

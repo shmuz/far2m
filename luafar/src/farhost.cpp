@@ -6,11 +6,13 @@
 
 extern "C"
 {
-#include "luafar.h"
+#include <lua.h>
+#include <lauxlib.h>
+
 #include "util.h"
 #include "ustring.h"
+#include "service.h"
 
-  HANDLE OptHandle(lua_State *L);
   void FillPluginPanelItem(lua_State *L, struct PluginPanelItem *pi, int CollectorPos);
 }
 

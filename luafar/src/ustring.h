@@ -1,14 +1,10 @@
-#ifndef _USTRING_H
-#define _USTRING_H
+#ifndef LUAFAR_USTRING_H
+#define LUAFAR_USTRING_H
 
 #include <windows.h>
-#include "luafar.h"
-
 #include <lua.h>
-#include <lauxlib.h>
 
-extern struct PluginStartupInfo PSInfo;
-extern struct FarStandardFunctions FSF;
+#include "luafar.h"
 
 void Log(const char* Format, ...);
 int  SysErrorReturn (lua_State *L);
@@ -56,4 +52,4 @@ int ustring_Uuid(lua_State* L);
 int ustring_GetFileAttr(lua_State *L);
 int ustring_SetFileAttr(lua_State *L);
 
-#endif // #ifndef _USTRING_H
+#endif // #ifndef LUAFAR_USTRING_H

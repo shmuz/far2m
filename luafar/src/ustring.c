@@ -1,4 +1,9 @@
 #include <uuid/uuid.h>
+
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
+
 #include "ustring.h"
 #include "util.h"
 

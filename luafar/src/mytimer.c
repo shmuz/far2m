@@ -6,6 +6,7 @@
 #include <pthread.h>
 #include <poll.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #include <lua.h>
 #include <lauxlib.h>
