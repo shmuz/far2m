@@ -355,7 +355,7 @@ int CommandLine::ProcessKey(int Key)
 			SaveConfig(1);
 			return TRUE;
 		case KEY_F10:
-			FrameManager->ExitMainLoop(TRUE);
+			FrameManager->ExitMainLoop(true);
 			return TRUE;
 		case KEY_ALTF10:
 		{

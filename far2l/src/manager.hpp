@@ -126,9 +126,9 @@ class Manager
 		/* $ 29.12.2000 IS
 		     Аналог CloseAll, но разрешает продолжение полноценной работы в фаре,
 		     если пользователь продолжил редактировать файл.
-		     Возвращает TRUE, если все закрыли и можно выходить из фара.
+		     Возвращает true, если все закрыли и можно выходить из фара.
 		*/
-		BOOL ExitAll();
+		bool ExitAll();
 
 		int  GetFrameCount() const {return FrameList.size();};
 		int  GetFrameCountByType(int Type) const;
@@ -136,17 +136,17 @@ class Manager
 		/*$ 26.06.2001 SKV
 		Для вызова через ACTL_COMMIT
 		*/
-		BOOL PluginCommit();
+		bool PluginCommit();
 
 		int CountFramesWithName(const wchar_t *Name, bool IgnoreCase=true) const;
 
 		bool IsPanelsActive() const; // используется как признак WaitInMainLoop
 		int  FindFrameByFile(int ModalType,const wchar_t *FileName,const wchar_t *Dir=nullptr) const;
-		BOOL ShowBackground();
+		bool ShowBackground();
 
 		void EnterMainLoop();
 		void ProcessMainLoop();
-		void ExitMainLoop(int Ask);
+		void ExitMainLoop(bool Ask);
 		int ProcessKey(DWORD key);
 		int ProcessMouse(MOUSE_EVENT_RECORD *me);
 
@@ -154,7 +154,7 @@ class Manager
 		void SwitchToPanels();
 
 		INPUT_RECORD *GetLastInputRecord() { return &LastInputRecord; }
-		void SetLastInputRecord(INPUT_RECORD *Rec);
+		void SetLastInputRecord(const INPUT_RECORD *Rec);
 
 		Frame *GetCurrentFrame() const { return CurrentFrame; }
 
@@ -186,7 +186,7 @@ class Manager
 		*/
 		void EnterModalEV() {ModalEVCount++;}
 		void ExitModalEV() {ModalEVCount--;}
-		BOOL InModalEV() const {return ModalEVCount;}
+		bool InModalEV() const {return ModalEVCount!=0;}
 
 		void ResizeAllFrame();
 

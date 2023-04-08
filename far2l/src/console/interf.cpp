@@ -243,7 +243,7 @@ void ChangeVideoMode(int NumLines,int NumColumns)
 	srWindowRect.Right = xSize-1;
 	srWindowRect.Bottom = ySize-1;
 	srWindowRect.Left = srWindowRect.Top = 0;
-	
+
 	COORD coordScreen={(SHORT)xSize,(SHORT)ySize};
 
 	if (xSize>Size.X || ySize > Size.Y)
@@ -1279,7 +1279,7 @@ bool CheckForInactivityExit()
 	        FrameManager && FrameManager->GetFrameCount()==1 &&
 	        (!CtrlObject || !CtrlObject->Plugins.HasBackgroundTasks()))
 	{
-		FrameManager->ExitMainLoop(FALSE);
+		FrameManager->ExitMainLoop(false);
 		return true;
 	}
 

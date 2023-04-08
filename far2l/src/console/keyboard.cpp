@@ -666,7 +666,7 @@ DWORD GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,b
 			   нажатии на F10 в панелях, только не запрашиваем подтверждение закрытия,
 			   если это возможно.
 			*/
-			FrameManager->ExitMainLoop(FALSE);
+			FrameManager->ExitMainLoop(false);
 
 			return KEY_NONE;
 		}

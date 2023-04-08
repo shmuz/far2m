@@ -123,7 +123,7 @@ Manager::~Manager()
   если пользователь продолжил редактировать файл.
   Возвращает TRUE, если все закрыли и можно выходить из фара.
 */
-BOOL Manager::ExitAll()
+bool Manager::ExitAll()
 {
 	_MANAGER(CleverSysLog clv(L"Manager::ExitAll()"));
 
@@ -139,7 +139,7 @@ BOOL Manager::ExitAll()
 
 			if (PrevFrameCount==ModalStack.size())
 			{
-				return FALSE;
+				return false;
 			}
 		}
 	}
@@ -158,12 +158,12 @@ BOOL Manager::ExitAll()
 
 			if (PrevFrameCount==FrameList.size())
 			{
-				return FALSE;
+				return false;
 			}
 		}
 	}
 
-	return TRUE;
+	return true;
 }
 
 void Manager::CloseAll()
@@ -181,7 +181,7 @@ void Manager::CloseAll()
 
 	for (int i=(int)FrameList.size()-1; i>=0; i--)
 	{
-		iFrame=FrameList[i];
+		iFrame=(*this)[i];
 		DeleteFrame(iFrame);
 		DeleteCommit();
 		DeletedFrame=nullptr;
@@ -478,14 +478,14 @@ int  Manager::FindFrameByFile(int ModalType,const wchar_t *FileName, const wchar
 	return -1;
 }
 
-BOOL Manager::ShowBackground()
+bool Manager::ShowBackground()
 {
 	if (CtrlObject->CmdLine)
 	{
 		CtrlObject->CmdLine->ShowBackground();
-		return TRUE;
+		return true;
 	}
-	return FALSE;
+	return false;
 }
 
 void Manager::ActivateFrame(Frame *Activated)
@@ -625,7 +625,7 @@ void Manager::EnterMainLoop()
 	}
 }
 
-void Manager::SetLastInputRecord(INPUT_RECORD *Rec)
+void Manager::SetLastInputRecord(const INPUT_RECORD *Rec)
 {
 	if (&LastInputRecord != Rec)
 		LastInputRecord=*Rec;
@@ -682,7 +682,7 @@ static bool ConfirmExit()
 	return r == 0;
 }
 
-void Manager::ExitMainLoop(int Ask)
+void Manager::ExitMainLoop(bool Ask)
 {
 	if (CloseFAR)
 	{
@@ -1413,10 +1413,10 @@ void Manager::ExecuteCommit()
 /*$ 26.06.2001 SKV
   Для вызова из плагинов посредством ACTL_COMMIT
 */
-BOOL Manager::PluginCommit()
+bool Manager::PluginCommit()
 {
 	BasicLog("PluginCommit");
-	return Commit() ? TRUE:FALSE;
+	return Commit();
 }
 
 /* $ Введена для нужд CtrlAltShift OT */

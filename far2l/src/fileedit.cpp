@@ -1195,7 +1195,7 @@ int FileEditor::ReProcessKey(int Key,int CalledFromControl)
 			}
 			case KEY_ALTF10:
 			{
-				FrameManager->ExitMainLoop(1);
+				FrameManager->ExitMainLoop(true);
 				return (TRUE);
 			}
 			case KEY_CTRLB:

@@ -505,7 +505,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 		*/
 		case ACTL_COMMIT:
 		{
-			return FrameManager?FrameManager->PluginCommit():FALSE;
+			return FrameManager && FrameManager->PluginCommit() ? TRUE:FALSE;
 		}
 		/* $ 15.09.2001 tran
 		   пригодится плагинам */
@@ -676,7 +676,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 		case ACTL_QUIT:
 		{
 			CloseFARMenu=TRUE;
-			FrameManager->ExitMainLoop(FALSE);
+			FrameManager->ExitMainLoop(false);
 			return TRUE;
 		}
 

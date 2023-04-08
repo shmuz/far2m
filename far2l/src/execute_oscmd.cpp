@@ -122,7 +122,7 @@ bool CommandLine::ProcessOSCommands(const wchar_t *CmdLine, bool SeparateWindow,
 #endif
 	} else if (ecl[0]=="exit") {
 		if (ecl.size() == 2 && ecl[1]=="far") {
-			FrameManager->ExitMainLoop(FALSE);
+			FrameManager->ExitMainLoop(false);
 			return true;
 		}
 		PushDirStackSize = 0;

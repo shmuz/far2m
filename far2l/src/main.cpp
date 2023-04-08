@@ -198,7 +198,7 @@ static int MainProcess(
 
 				if (!ShellEditor->GetExitCode())  // ????????????
 				{
-					FrameManager->ExitMainLoop(0);
+					FrameManager->ExitMainLoop(false);
 				}
 			}
 			else
@@ -207,7 +207,7 @@ static int MainProcess(
 
 				if (!ShellViewer->GetExitCode())
 				{
-					FrameManager->ExitMainLoop(0);
+					FrameManager->ExitMainLoop(false);
 				}
 
 				_tran(SysLog(L"make shellviewer, %p",ShellViewer));
