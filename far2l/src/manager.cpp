@@ -1623,7 +1623,7 @@ Frame* Manager::GetTopModal() const
 	while (f)
 	{
 		fo=f;
-		f=f->GetTopModal();
+		f=f->NextModal;
 	}
 
 	return fo;

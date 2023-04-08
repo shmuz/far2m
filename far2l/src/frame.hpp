@@ -104,7 +104,6 @@ class Frame: public ScreenObject
 		int IsTopFrame();
 		virtual int GetMacroArea() { return MacroArea; }
 		void PushFrame(Frame* Modalized);
-		Frame *GetTopModal() {return NextModal;};
 		void DestroyAllModal();
 		void SetDynamicallyBorn(bool Born) {DynamicallyBorn=Born;}
 		bool GetDynamicallyBorn() const {return DynamicallyBorn;};

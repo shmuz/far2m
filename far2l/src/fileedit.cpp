@@ -2156,19 +2156,7 @@ void FileEditor::OnDestroy()
 
 bool FileEditor::GetCanLoseFocus(bool DynamicMode)
 {
-	if (DynamicMode)
-	{
-		if (m_editor->IsFileModified())
-		{
-			return false;
-		}
-	}
-	else
-	{
-		return CanLoseFocus;
-	}
-
-	return true;
+	return DynamicMode ? !m_editor->IsFileModified() : CanLoseFocus;
 }
 
 void FileEditor::SetLockEditor(BOOL LockMode)
