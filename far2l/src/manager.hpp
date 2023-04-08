@@ -42,10 +42,7 @@ class Manager
 #endif
 	private:
 		std::vector<Frame*> ModalStack; // Стек модальных фреймов
-
-		int  FrameCount;         // Размер немодальной очереди
-		Frame **FrameList;       // Очередь немодальных фреймов
-		int  FrameListSize;      // размер буфера под немодальную очередь
+		std::vector<Frame*> FrameList;  // Очередь немодальных фреймов
 		int  FramePos;           // Индекс текущий немодального фрейма. Он не всегда совпадает с CurrentFrame
 		// текущий немодальный фрейм можно получить с помощью FrameManager->GetBottomFrame();
 
@@ -133,7 +130,7 @@ class Manager
 		*/
 		BOOL ExitAll();
 
-		int  GetFrameCount() const {return(FrameCount);};
+		int  GetFrameCount() const {return FrameList.size();};
 		int  GetFrameCountByType(int Type) const;
 
 		/*$ 26.06.2001 SKV

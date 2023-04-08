@@ -75,14 +75,14 @@ void FrameLog(const char* prefix, Frame* frame)
 		Log("%s: nullptr", prefix);
 }
 
-#define DumpFrameList() do {               \
-		for (int j=0; j<FrameCount; j++)       \
-			FrameLog("--> ", FrameList[j]);      \
+#define DumpFrameList() do {          \
+		for (auto iFrame: FrameList)      \
+			FrameLog("--> ", iFrame);       \
 	} while(false)
 
 #define DumpFrameStack() do {         \
-		for (auto frame: ModalStack)      \
-			FrameLog("==> ", frame);        \
+		for (auto iFrame: ModalStack)     \
+			FrameLog("==> ", iFrame);       \
 	} while(false)
 
 #else
@@ -97,9 +97,6 @@ void FrameLog(const char* prefix, Frame* frame)
 Manager *FrameManager;
 
 Manager::Manager():
-	FrameCount(0),
-	FrameList(reinterpret_cast<Frame **>(malloc(sizeof(Frame*)*(FrameCount+1)))),
-	FrameListSize(0),
 	FramePos(-1),
 	InsertedFrame(nullptr),
 	DeletedFrame(nullptr),
@@ -118,8 +115,6 @@ Manager::Manager():
 
 Manager::~Manager()
 {
-	if (FrameList)
-		free(FrameList);
 }
 
 
@@ -149,7 +144,7 @@ BOOL Manager::ExitAll()
 		}
 	}
 
-	for (int i=FrameCount-1; i>=0; i--)
+	for (int i=(int)FrameList.size()-1; i>=0; i--)
 	{
 		Frame *iFrame=FrameList[i];
 
@@ -157,11 +152,11 @@ BOOL Manager::ExitAll()
 		{
 			ActivateFrame(iFrame);
 			Commit();
-			int PrevFrameCount=FrameCount;
+			auto PrevFrameCount=FrameList.size();
 			iFrame->ProcessKey(KEY_ESC);
 			Commit();
 
-			if (PrevFrameCount==FrameCount)
+			if (PrevFrameCount==FrameList.size())
 			{
 				return FALSE;
 			}
@@ -184,17 +179,16 @@ void Manager::CloseAll()
 		DeletedFrame=nullptr;
 	}
 
-	for (int i=FrameCount-1; i>=0; i--)
+	for (int i=(int)FrameList.size()-1; i>=0; i--)
 	{
-		iFrame=(*this)[i];
+		iFrame=FrameList[i];
 		DeleteFrame(iFrame);
 		DeleteCommit();
 		DeletedFrame=nullptr;
 	}
 
-	free(FrameList);
-	FrameList=nullptr;
-	FrameCount=FramePos=0;
+	FrameList.clear();
+	FramePos=0;
 }
 
 void Manager::InsertFrame(Frame *Inserted, int Index)
@@ -218,10 +212,8 @@ void Manager::DeleteFrame(Frame *Deleted)
 	}
 	else
 	{
-		for (int i=0; i<FrameCount; i++)
+		for (auto iFrame: FrameList)
 		{
-			Frame *iFrame=FrameList[i];
-
 			if (iFrame->RemoveModal(Deleted))
 			{
 				return;
@@ -354,9 +346,9 @@ int Manager::CountFramesWithName(const wchar_t *Name, bool IgnoreCase) const
 	cmpfunc_t cmpfunc=IgnoreCase ? StrCmpI : StrCmp;
 	FARString strType, strCurName;
 
-	for (int I=0; I<FrameCount; I++)
+	for (auto iFrame: FrameList)
 	{
-		FrameList[I]->GetTypeAndName(strType, strCurName);
+		iFrame->GetTypeAndName(strType, strCurName);
 
 		if (!cmpfunc(Name, strCurName)) ++Counter;
 	}
@@ -394,7 +386,7 @@ Frame *Manager::FrameMenu()
 		if (!CheckCanLoseFocus)
 			ModalMenuItem.SetDisable(TRUE);
 
-		for (int I=0; I<FrameCount; I++)
+		for (int I=0; I<(int)FrameList.size(); I++)
 		{
 			FARString strType, strName, strNumText;
 			FrameList[I]->GetTypeAndName(strType, strName);
@@ -440,15 +432,15 @@ int Manager::GetFrameCountByType(int Type) const
 {
 	int ret=0;
 
-	for (int I=0; I<FrameCount; I++)
+	for (auto iFrame: FrameList)
 	{
 		/* $ 10.05.2001 DJ
 		   не учитываем фрейм, который собираемся удалять
 		*/
-		if (FrameList[I] == DeletedFrame || (unsigned int)FrameList[I]->GetExitCode() == XC_QUIT)
+		if (iFrame == DeletedFrame || (unsigned int)iFrame->GetExitCode() == XC_QUIT)
 			continue;
 
-		if (FrameList[I]->GetType()==Type)
+		if (iFrame->GetType()==Type)
 			ret++;
 	}
 
@@ -469,7 +461,7 @@ int  Manager::FindFrameByFile(int ModalType,const wchar_t *FileName, const wchar
 		strFullFileName = strBufFileName;
 	}
 
-	for (int I=0; I<FrameCount; I++)
+	for (int I=0; I<(int)FrameList.size(); I++)
 	{
 		FARString strType, strName;
 
@@ -527,7 +519,7 @@ void Manager::DeactivateFrame(Frame *Deactivated,int Direction)
 
 		if (Direction>0)
 		{
-			if (FramePos>=FrameCount)
+			if (FramePos>=(int)FrameList.size())
 			{
 				FramePos=0;
 			}
@@ -536,7 +528,7 @@ void Manager::DeactivateFrame(Frame *Deactivated,int Direction)
 		{
 			if (FramePos<0)
 			{
-				FramePos=FrameCount-1;
+				FramePos=(int)FrameList.size()-1;
 			}
 		}
 
@@ -611,8 +603,8 @@ void Manager::SwitchToPanels()
 
 bool Manager::HaveAnyFrame() const
 {
-	return (FrameCount || InsertedFrame || DeletedFrame || ActivatedFrame || RefreshedFrame ||
-	        ModalizedFrame || DeactivatedFrame || ExecutedFrame || CurrentFrame);
+	return !FrameList.empty() || InsertedFrame || DeletedFrame || ActivatedFrame || RefreshedFrame ||
+	        ModalizedFrame || DeactivatedFrame || ExecutedFrame || CurrentFrame;
 }
 
 void Manager::EnterMainLoop()
@@ -1071,7 +1063,7 @@ bool Manager::IsPanelsActive() const
 
 Frame *Manager::operator[](int Index) const
 {
-	return (Index>=0 && Index<FrameCount && FrameList) ? FrameList[Index] : nullptr;
+	return Index>=0 && Index<(int)FrameList.size() ? FrameList[Index] : nullptr;
 }
 
 int Manager::IndexOfStack(Frame *Frame) const
@@ -1086,7 +1078,7 @@ int Manager::IndexOfStack(Frame *Frame) const
 
 int Manager::IndexOfList(Frame *Frame) const
 {
-	for (int i=0; i<FrameCount; i++)
+	for (size_t i=0; i<FrameList.size(); i++)
 	{
 		if (Frame==FrameList[i])
 			return i;
@@ -1289,11 +1281,11 @@ void Manager::DeleteCommit()
 		}
 	}
 
-	for (int i=0; i<FrameCount; i++)
+	for (auto iFrame: FrameList)
 	{
-		if (FrameList[i]->FrameToBack==DeletedFrame)
+		if (iFrame->FrameToBack==DeletedFrame)
 		{
-			FrameList[i]->FrameToBack=CtrlObject->Cp();
+			iFrame->FrameToBack=CtrlObject->Cp();
 		}
 	}
 
@@ -1305,14 +1297,9 @@ void Manager::DeleteCommit()
 
 		DeletedFrame->DestroyAllModal();
 
-		for (int j=FrameIndex; j<FrameCount-1; j++)
-		{
-			FrameList[j]=FrameList[j+1];
-		}
+		FrameList.erase(FrameList.begin()+FrameIndex);
 
-		FrameCount--;
-
-		if (FramePos >= FrameCount)
+		if (FramePos >= (int)FrameList.size())
 		{
 			FramePos=0;
 		}
@@ -1367,21 +1354,13 @@ void Manager::InsertCommit()
 
 	if (InsertedFrame)
 	{
-		if (FrameListSize <= FrameCount)
-		{
-			FrameList=(Frame **)realloc(FrameList,sizeof(*FrameList)*(FrameCount+1));
-			FrameListSize++;
-		}
-
 		InsertedFrame->FrameToBack=CurrentFrame;
-		FrameList[FrameCount]=InsertedFrame;
+		FrameList.push_back(InsertedFrame);
 
 		if (!ActivatedFrame)
 		{
 			ActivatedFrame=InsertedFrame;
 		}
-
-		FrameCount++;
 	}
 }
 
@@ -1529,12 +1508,9 @@ void Manager::ModalizeCommit()
 void Manager::UnmodalizeCommit()
 {
 	FrameLog("UnmodalizeCommit", UnmodalizedFrame);
-	Frame *iFrame;
 
-	for (int i=0; i<FrameCount; i++)
+	for (auto iFrame: FrameList)
 	{
-		iFrame=FrameList[i];
-
 		if (iFrame->RemoveModal(UnmodalizedFrame))
 		{
 			break;
@@ -1569,9 +1545,9 @@ void Manager::ResizeAllModal(Frame *ModalFrame)
 void Manager::ResizeAllFrame()
 {
 	ScrBuf.Lock();
-	for (int i=0; i < FrameCount; i++)
+	for (auto iFrame: FrameList)
 	{
-		FrameList[i]->ResizeConsole();
+		iFrame->ResizeConsole();
 	}
 
 	for (auto iFrame: ModalStack)
@@ -1591,8 +1567,8 @@ void Manager::ResizeAllFrame()
 
 void Manager::InitKeyBar()
 {
-	for (int I=0; I < FrameCount; I++)
-		FrameList[I]->InitKeyBar();
+	for (auto iFrame: FrameList)
+		iFrame->InitKeyBar();
 }
 
 // возвращает top-модал или сам фрейм, если у фрейма нету модалов
