@@ -41,9 +41,7 @@ class Manager
 		friend void ManagerClass_Dump(const wchar_t *Title,const Manager *m,FILE *fp);
 #endif
 	private:
-		Frame **ModalStack;     // Стек модальных фреймов
-		int ModalStackCount;    // Размер стека модальных фреймов
-		int ModalStackSize;     // Буфер стека модальных фреймов
+		std::vector<Frame*> ModalStack; // Стек модальных фреймов
 
 		int  FrameCount;         // Размер немодальной очереди
 		Frame **FrameList;       // Очередь немодальных фреймов

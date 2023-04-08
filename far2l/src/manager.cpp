@@ -80,9 +80,9 @@ void FrameLog(const char* prefix, Frame* frame)
 			FrameLog("--> ", FrameList[j]);      \
 	} while(false)
 
-#define DumpFrameStack() do {              \
-		for (int j=0; j<ModalStackCount; j++)  \
-			FrameLog("==> ", ModalStack[j]);     \
+#define DumpFrameStack() do {         \
+		for (auto frame: ModalStack)      \
+			FrameLog("==> ", frame);        \
 	} while(false)
 
 #else
@@ -97,9 +97,6 @@ void FrameLog(const char* prefix, Frame* frame)
 Manager *FrameManager;
 
 Manager::Manager():
-	ModalStack(nullptr),
-	ModalStackCount(0),
-	ModalStackSize(0),
 	FrameCount(0),
 	FrameList(reinterpret_cast<Frame **>(malloc(sizeof(Frame*)*(FrameCount+1)))),
 	FrameListSize(0),
@@ -123,9 +120,6 @@ Manager::~Manager()
 {
 	if (FrameList)
 		free(FrameList);
-
-	if (ModalStack)
-		free(ModalStack);
 }
 
 
@@ -138,17 +132,17 @@ BOOL Manager::ExitAll()
 {
 	_MANAGER(CleverSysLog clv(L"Manager::ExitAll()"));
 
-	for (int i=ModalStackCount-1; i>=0; i--)
+	for (int i=(int)ModalStack.size()-1; i>=0; i--)
 	{
 		Frame *iFrame=ModalStack[i];
 
 		if (!iFrame->GetCanLoseFocus(true))
 		{
-			int PrevFrameCount=ModalStackCount;
+			auto PrevFrameCount=ModalStack.size();
 			iFrame->ProcessKey(KEY_ESC);
 			Commit();
 
-			if (PrevFrameCount==ModalStackCount)
+			if (PrevFrameCount==ModalStack.size())
 			{
 				return FALSE;
 			}
@@ -182,7 +176,7 @@ void Manager::CloseAll()
 	_MANAGER(CleverSysLog clv(L"Manager::CloseAll()"));
 	Frame *iFrame;
 
-	for (int i=ModalStackCount-1; i>=0; i--)
+	for (int i=(int)ModalStack.size()-1; i>=0; i--)
 	{
 		iFrame=ModalStack[i];
 		DeleteFrame(iFrame);
@@ -330,7 +324,7 @@ void Manager::ExecuteModal(Frame *Executed)
 		}
 	}
 
-	int ModalStartLevel=ModalStackCount;
+	auto ModalStartLevel=ModalStack.size();
 	bool OriginalStartManager=StartManager;
 	StartManager=true;
 
@@ -338,7 +332,7 @@ void Manager::ExecuteModal(Frame *Executed)
 	{
 		Commit();
 
-		if (ModalStackCount<=ModalStartLevel)
+		if (ModalStack.size()<=ModalStartLevel)
 		{
 			break;
 		}
@@ -1082,10 +1076,10 @@ Frame *Manager::operator[](int Index) const
 
 int Manager::IndexOfStack(Frame *Frame) const
 {
-	for (int i=0; i<ModalStackCount; i++)
+	for (size_t i=0; i<ModalStack.size(); i++)
 	{
 		if (Frame==ModalStack[i])
-			return i;
+			return (int)i;
 	}
 	return -1;
 }
@@ -1179,15 +1173,15 @@ void Manager::DeactivateCommit()
 
 	int modalIndex=IndexOfStack(DeactivatedFrame);
 
-	if (-1 != modalIndex && modalIndex== ModalStackCount-1)
+	if (-1 != modalIndex && modalIndex==(int)ModalStack.size()-1)
 	{
 		if (IndexOfStack(ActivatedFrame)==-1)
 		{
-			ModalStack[ModalStackCount-1]=ActivatedFrame;
+			ModalStack.back()=ActivatedFrame;
 		}
 		else
 		{
-			ModalStackCount--;
+			ModalStack.pop_back();
 		}
 	}
 }
@@ -1216,12 +1210,12 @@ void Manager::ActivateCommit()
 	  Если мы пытаемся активировать полумодальный фрэйм,
 	  то надо его вытащить на верх стэка модалов.
 	*/
-	for (int I=0; I<ModalStackCount-1; I++)
+	for (size_t I=0; I+1<ModalStack.size(); I++)
 	{
 		if (ModalStack[I]==ActivatedFrame)
 		{
-			memmove(ModalStack+I, ModalStack+I+1, (ModalStackCount-I-1)*sizeof(Frame*));
-			ModalStack[ModalStackCount-1] = ActivatedFrame;
+			ModalStack.erase(ModalStack.begin()+I);
+			ModalStack.push_back(ActivatedFrame);
 			break;
 		}
 	}
@@ -1280,23 +1274,18 @@ void Manager::DeleteCommit()
 		  Надёжнее найти и удалить именно то, что
 		  нужно, а не просто верхний.
 		*/
-		for (int i=0; i<ModalStackCount; i++)
+		for (auto it=ModalStack.begin(); it!=ModalStack.end(); it++)
 		{
-			if (ModalStack[i]==DeletedFrame)
+			if (*it==DeletedFrame)
 			{
-				for (int j=i+1; j<ModalStackCount; j++)
-				{
-					ModalStack[j-1]=ModalStack[j];
-				}
-
-				ModalStackCount--;
+				ModalStack.erase(it);
 				break;
 			}
 		}
 
-		if (ModalStackCount)
+		if (!ModalStack.empty())
 		{
-			ActivateFrame(ModalStack[ModalStackCount-1]);
+			ActivateFrame(ModalStack.back());
 		}
 	}
 
@@ -1360,9 +1349,9 @@ void Manager::DeleteCommit()
 
 	// Полагаемся на то, что в ActivateFrame не будет переписан уже
 	// присвоенный  ActivatedFrame
-	if (ModalStackCount)
+	if (!ModalStack.empty())
 	{
-		ActivateFrame(ModalStack[ModalStackCount-1]);
+		ActivateFrame(ModalStack.back());
 	}
 	else
 	{
@@ -1435,18 +1424,11 @@ void Manager::ExecuteCommit()
 	_MANAGER(SysLog(L"ExecutedFrame=%p",ExecutedFrame));
 	FrameLog("ExecuteCommit", ExecutedFrame);
 
-	if (!ExecutedFrame)
+	if (ExecutedFrame)
 	{
-		return;
+		ModalStack.push_back(ExecutedFrame);
+		ActivatedFrame=ExecutedFrame;
 	}
-
-	if (ModalStackCount == ModalStackSize)
-	{
-		ModalStack = (Frame **) realloc(ModalStack, ++ModalStackSize * sizeof(Frame *));
-	}
-
-	ModalStack [ModalStackCount++] = ExecutedFrame;
-	ActivatedFrame=ExecutedFrame;
 }
 
 /*$ 26.06.2001 SKV
@@ -1474,13 +1456,13 @@ void Manager::ImmediateHide()
 
 	// Фреймы перерисовываются, значит для нижних
 	// не выставляем заголовок консоли, чтобы не мелькал.
-	if (ModalStackCount>0)
+	if (!ModalStack.empty())
 	{
 		/* $ 28.04.2002 KM
 		    Проверим, а не модальный ли редактор или вьювер на вершине
 		    модального стека? И если да, покажем User screen.
 		*/
-		auto type = ModalStack[ModalStackCount-1]->GetType();
+		auto type = ModalStack.back()->GetType();
 		if (type==MODALTYPE_EDITOR || type==MODALTYPE_VIEWER)
 		{
 			if (CtrlObject->CmdLine)
@@ -1505,9 +1487,9 @@ void Manager::ImmediateHide()
 				(*this)[FramePos]->Lock();
 			}
 
-			if (ModalStackCount>1)
+			if (ModalStack.size()>1)
 			{
-				for (int i=0; i<ModalStackCount-1; i++)
+				for (int i=0; i<(int)ModalStack.size()-1; i++)
 				{
 					if (!(ModalStack[i]->FastHide() & CASR_HELP))
 					{
@@ -1559,10 +1541,8 @@ void Manager::UnmodalizeCommit()
 		}
 	}
 
-	for (int i=0; i<ModalStackCount; i++)
+	for (auto iFrame: ModalStack)
 	{
-		iFrame=ModalStack[i];
-
 		if (iFrame->RemoveModal(UnmodalizedFrame))
 		{
 			break;
@@ -1594,13 +1574,13 @@ void Manager::ResizeAllFrame()
 		FrameList[i]->ResizeConsole();
 	}
 
-	for (int i=0; i < ModalStackCount; i++)
+	for (auto iFrame: ModalStack)
 	{
-		ModalStack[i]->ResizeConsole();
+		iFrame->ResizeConsole();
 		/* $ 13.04.2002 KM
 		  - А теперь проресайзим все NextModal...
 		*/
-		ResizeAllModal(ModalStack[i]);
+		ResizeAllModal(iFrame);
 	}
 
 	ImmediateHide();
