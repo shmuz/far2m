@@ -1245,7 +1245,6 @@ void Manager::UpdateCommit()
 	{
 		FrameList[FrameIndex]=InsertedFrame;
 		ActivateFrame(InsertedFrame);
-		InsertedFrame=nullptr; // Issue #26
 		ActivatedFrame->FrameToBack=CurrentFrame;
 		DeleteCommit();
 	}
@@ -1334,7 +1333,7 @@ void Manager::DeleteCommit()
 		_MANAGER(SysLog(L"delete DeletedFrame %p, CurrentFrame=%p",DeletedFrame,CurrentFrame));
 
 		if (CurrentFrame==DeletedFrame)
-			CurrentFrame=ActivatedFrame; // Issue #26
+			CurrentFrame=nullptr;
 
 		/* $ 14.05.2002 SKV
 		  Так как в деструкторе фрэйма неявно может быть
