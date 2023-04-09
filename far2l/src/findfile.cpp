@@ -1946,9 +1946,7 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 										ShellViewer.SetSaveToSaveAs(true);
 									}
 								}
-								FrameManager->EnterModalEV();
-								FrameManager->ExecuteModal();
-								FrameManager->ExitModalEV();
+								FrameManager->ExecuteModalEV();
 								// заставляем рефрешиться экран
 								FrameManager->ProcessKey(KEY_CONSOLE_BUFFER_RESIZE);
 							}
@@ -2001,9 +1999,7 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 																(*FrameManager)[FramePos]->SetCanLoseFocus(false);
 																(*FrameManager)[FramePos]->SetDynamicallyBorn(false);
 																FrameManager->ActivateFrame(FramePos);
-																FrameManager->EnterModalEV();
-																FrameManager->ExecuteModal ();
-																FrameManager->ExitModalEV();
+																FrameManager->ExecuteModalEV ();
 																// FrameManager->ExecuteNonModal();
 																// заставляем рефрешиться экран
 																FrameManager->ProcessKey(KEY_CONSOLE_BUFFER_RESIZE);
@@ -2024,9 +2020,7 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 											(strSearchFileName, FindItem.ArcIndex, FindItem.FindData);
 										ShellEditor.SetFileHolder(TFH);
 									}
-									FrameManager->EnterModalEV();
-									FrameManager->ExecuteModal();
-									FrameManager->ExitModalEV();
+									FrameManager->ExecuteModalEV();
 									if (TFH)
 									{
 										TFH->UploadIfTimestampChanged();

@@ -336,6 +336,18 @@ void Manager::ExecuteModal(Frame *Executed)
 	return;
 }
 
+/* $ 15.05.2002 SKV
+  Так как нужно это в разных местах,
+  а глобальные счётчики не концептуально,
+  то лучше это делать тут.
+*/
+void Manager::ExecuteModalEV()
+{
+	ModalEVCount++;
+	ExecuteModal(nullptr);
+	ModalEVCount--;
+}
+
 /* $ 11.10.2001 IS
    Подсчитать количество фреймов с указанным именем.
 */
@@ -368,7 +380,7 @@ Frame *Manager::FrameMenu()
 	    Флаг для определения того, что меню переключения
 	    экранов уже активировано.
 	*/
-	static int AlreadyShown=FALSE;
+	static bool AlreadyShown=false;
 
 	if (AlreadyShown)
 		return nullptr;
@@ -402,14 +414,15 @@ Frame *Manager::FrameMenu()
 			//TruncPathStr(strName,ScrX-24);
 			ReplaceStrings(strName,L"&",L"&&",-1);
 			/*  добавляется "*" если файл изменен */
-			ModalMenuItem.strName.Format(L"%ls%-10.10ls %lc %ls", strNumText.CPtr(), strType.CPtr(),(FrameList[I]->IsFileModified()?L'*':L' '), strName.CPtr());
+			ModalMenuItem.strName.Format(L"%ls%-10.10ls %lc %ls", strNumText.CPtr(), strType.CPtr(),
+				(FrameList[I]->IsFileModified()?L'*':L' '), strName.CPtr());
 			ModalMenuItem.SetSelect(I==FramePos);
 			ModalMenu.AddItem(&ModalMenuItem);
 		}
 
-		AlreadyShown=TRUE;
+		AlreadyShown=true;
 		ModalMenu.Process();
-		AlreadyShown=FALSE;
+		AlreadyShown=false;
 		ExitCode=ModalMenu.Modal::GetExitCode();
 	}
 
@@ -589,17 +602,14 @@ void Manager::ExecuteFrame(Frame *Executed)
 	ExecutedFrame=Executed;
 }
 
-
 /* $ 10.05.2001 DJ
    переключается на панели (фрейм с номером 0)
 */
-
 void Manager::SwitchToPanels()
 {
 	_MANAGER(CleverSysLog clv(L"Manager::SwitchToPanels()"));
 	ActivateFrame(0);
 }
-
 
 bool Manager::HaveAnyFrame() const
 {
@@ -700,10 +710,10 @@ void Manager::ExitMainLoop(bool Ask)
 		{
 			//TODO: при закрытии по x нужно делать форсированный выход. Иначе могут быть
 			//      глюки, например, при перезагрузке
-			FilePanels *cp;
+			FilePanels *cp = CtrlObject->Cp();
 
-			if (!(cp = CtrlObject->Cp())
-			        || (!cp->LeftPanel->ProcessPluginEvent(FE_CLOSE,nullptr) && !cp->RightPanel->ProcessPluginEvent(FE_CLOSE,nullptr)))
+			if (!cp || (!cp->LeftPanel->ProcessPluginEvent(FE_CLOSE,nullptr) &&
+			            !cp->RightPanel->ProcessPluginEvent(FE_CLOSE,nullptr)))
 			{
 				EndLoop=true;
 			}
@@ -1068,17 +1078,17 @@ Frame *Manager::operator[](int Index) const
 
 int Manager::IndexOfStack(Frame *Frame) const
 {
-	for (size_t i=0; i<ModalStack.size(); i++)
+	for (int i=0; i<(int)ModalStack.size(); i++)
 	{
 		if (Frame==ModalStack[i])
-			return (int)i;
+			return i;
 	}
 	return -1;
 }
 
 int Manager::IndexOfList(Frame *Frame) const
 {
-	for (size_t i=0; i<FrameList.size(); i++)
+	for (int i=0; i<(int)FrameList.size(); i++)
 	{
 		if (Frame==FrameList[i])
 			return i;
@@ -1086,65 +1096,66 @@ int Manager::IndexOfList(Frame *Frame) const
 	return -1;
 }
 
-bool Manager::Commit()
+void Manager::Commit()
 {
-	_MANAGER(CleverSysLog clv(L"Manager::Commit()"));
-	_MANAGER(ManagerClass_Dump(L"ManagerClass"));
-	BasicLog("Commit");
+	while(true)
+	{
+		_MANAGER(CleverSysLog clv(L"Manager::Commit()"));
+		_MANAGER(ManagerClass_Dump(L"ManagerClass"));
+		BasicLog("Commit");
 
-	if (DeletedFrame && (InsertedFrame||ExecutedFrame))
-	{
-		UpdateCommit();
-		DeletedFrame = nullptr;
-		InsertedFrame = nullptr;
-		ExecutedFrame=nullptr;
+		if (DeletedFrame && (InsertedFrame||ExecutedFrame))
+		{
+			UpdateCommit();
+			DeletedFrame = nullptr;
+			InsertedFrame = nullptr;
+			ExecutedFrame=nullptr;
+		}
+		else if (ExecutedFrame)
+		{
+			ExecuteCommit();
+			ExecutedFrame=nullptr;
+		}
+		else if (DeletedFrame)
+		{
+			DeleteCommit();
+			DeletedFrame = nullptr;
+		}
+		else if (InsertedFrame)
+		{
+			InsertCommit();
+			InsertedFrame = nullptr;
+		}
+		else if (DeactivatedFrame)
+		{
+			DeactivateCommit();
+			DeactivatedFrame=nullptr;
+		}
+		else if (ActivatedFrame)
+		{
+			ActivateCommit();
+			ActivatedFrame=nullptr;
+		}
+		else if (RefreshedFrame)
+		{
+			RefreshCommit();
+			RefreshedFrame=nullptr;
+		}
+		else if (ModalizedFrame)
+		{
+			ModalizeCommit();
+	//    ModalizedFrame=nullptr;
+		}
+		else if (UnmodalizedFrame)
+		{
+			UnmodalizeCommit();
+	//    UnmodalizedFrame=nullptr;
+		}
+		else
+		{
+			break;
+		}
 	}
-	else if (ExecutedFrame)
-	{
-		ExecuteCommit();
-		ExecutedFrame=nullptr;
-	}
-	else if (DeletedFrame)
-	{
-		DeleteCommit();
-		DeletedFrame = nullptr;
-	}
-	else if (InsertedFrame)
-	{
-		InsertCommit();
-		InsertedFrame = nullptr;
-	}
-	else if (DeactivatedFrame)
-	{
-		DeactivateCommit();
-		DeactivatedFrame=nullptr;
-	}
-	else if (ActivatedFrame)
-	{
-		ActivateCommit();
-		ActivatedFrame=nullptr;
-	}
-	else if (RefreshedFrame)
-	{
-		RefreshCommit();
-		RefreshedFrame=nullptr;
-	}
-	else if (ModalizedFrame)
-	{
-		ModalizeCommit();
-//    ModalizedFrame=nullptr;
-	}
-	else if (UnmodalizedFrame)
-	{
-		UnmodalizeCommit();
-//    UnmodalizedFrame=nullptr;
-	}
-	else
-	{
-		return false;
-	}
-
-	return Commit();
 }
 
 void Manager::DeactivateCommit()
@@ -1413,10 +1424,10 @@ void Manager::ExecuteCommit()
 /*$ 26.06.2001 SKV
   Для вызова из плагинов посредством ACTL_COMMIT
 */
-bool Manager::PluginCommit()
+void Manager::PluginCommit()
 {
 	BasicLog("PluginCommit");
-	return Commit();
+	Commit();
 }
 
 /* $ Введена для нужд CtrlAltShift OT */
@@ -1584,8 +1595,6 @@ Frame* Manager::GetTopModal() const
 
 	return fo;
 }
-
-/////////
 
 LockBottomFrame::LockBottomFrame()
 	: _frame(FrameManager ? FrameManager->GetBottomFrame() : nullptr)

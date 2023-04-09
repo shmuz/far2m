@@ -505,7 +505,8 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 		*/
 		case ACTL_COMMIT:
 		{
-			return FrameManager && FrameManager->PluginCommit() ? TRUE:FALSE;
+			if (FrameManager) FrameManager->PluginCommit();
+			return FALSE;
 		}
 		/* $ 15.09.2001 tran
 		   пригодится плагинам */
@@ -1864,9 +1865,7 @@ static int FarViewerSynched(const wchar_t *FileName,const wchar_t *Title,
 		FileViewer Viewer(FileName,FALSE,DisableHistory,Title,X1,Y1,X2,Y2,CodePage);
 		/* $ 28.05.2001 По умолчанию Вьюер, поэтому нужно здесь признак выставиль явно */
 		Viewer.SetDynamicallyBorn(false);
-		FrameManager->EnterModalEV();
-		FrameManager->ExecuteModal();
-		FrameManager->ExitModalEV();
+		FrameManager->ExecuteModalEV();
 
 		ApplyViewerDeleteOnClose(&Viewer, FileName, Flags);
 
@@ -1987,9 +1986,7 @@ int FarEditorSynched( const wchar_t *FileName, const wchar_t *Title,
 			/* $ 15.05.2002 SKV
 			  Зафиксируем вход и выход в/из модального редактора.
 			*/
-			FrameManager->EnterModalEV();
-			FrameManager->ExecuteModal();
-			FrameManager->ExitModalEV();
+			FrameManager->ExecuteModalEV();
 			ExitCode = Editor.GetExitCode();
 
 			if (ExitCode)

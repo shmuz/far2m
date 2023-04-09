@@ -78,7 +78,7 @@ class Manager
 		void StartupMainloop();
 		Frame *FrameMenu(); //    вместо void SelectFrame(); // show window menu (F12)
 
-		bool Commit();         // завершает транзакцию по изменениям в очереди и стеке фреймов
+		void Commit();         // завершает транзакцию по изменениям в очереди и стеке фреймов
 		// Она в цикле вызывает себя, пока хотябы один из указателей отличен от nullptr
 		// Функции, "подмастерья начальника" - Commit'a
 		// Иногда вызываются не только из него и из других мест
@@ -117,6 +117,8 @@ class Manager
 		//! Запускает немодальный фрейм в модальном режиме
 		void ExecuteNonModal();
 
+		void ExecuteModalEV();
+
 		//!  Функции, которые работают с очередью немодально фрейма.
 		//  Сейчас используются только для хранения информаци о наличии запущенных объектов типа VFMenu
 		void ModalizeFrame(Frame *Modalized=nullptr, int Mode=TRUE);
@@ -136,7 +138,7 @@ class Manager
 		/*$ 26.06.2001 SKV
 		Для вызова через ACTL_COMMIT
 		*/
-		bool PluginCommit();
+		void PluginCommit();
 
 		int CountFramesWithName(const wchar_t *Name, bool IgnoreCase=true) const;
 
@@ -179,13 +181,6 @@ class Manager
 
 		void InitKeyBar();
 
-		/* $ 15.05.2002 SKV
-		  Так как нужно это в разных местах,
-		  а глобальные счётчики не концептуально,
-		  то лучше это делать тут.
-		*/
-		void EnterModalEV() {ModalEVCount++;}
-		void ExitModalEV() {ModalEVCount--;}
 		bool InModalEV() const {return ModalEVCount!=0;}
 
 		void ResizeAllFrame();

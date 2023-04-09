@@ -128,7 +128,6 @@ void FileViewer::Init(const wchar_t *name,int EnableSwitch,int disableHistory, /
 	if (!View.OpenFile(strName,TRUE)) // $ 04.07.2000 tran + add TRUE as 'warning' parameter
 	{
 		DisableHistory = TRUE;  // $ 26.03.2002 DJ - при неудаче открытия - не пишем мусор в историю
-		// FrameManager->DeleteFrame(this); // ЗАЧЕМ? Вьювер то еще не помещен в очередь манагера!
 		ExitCode=FALSE;
 		CtrlObject->Macro.SetArea(OldMacroArea);
 		return;
@@ -576,9 +575,7 @@ static void ModalViewFileInternal(const std::string &pathname, int DisableHistor
 		Viewer.ProcessKey(KEY_END);
 	if (autoclose)
 		Viewer.SetAutoClose(true);
-	FrameManager->EnterModalEV();
-	FrameManager->ExecuteModal();
-	FrameManager->ExitModalEV();
+	FrameManager->ExecuteModalEV();
 	Viewer.GetExitCode();
 }
 
