@@ -99,7 +99,7 @@ class Manager
 	public:
 		// Эти функции можно безопасно вызывать практически из любого места кода
 		// они как бы накапливают информацию о том, что нужно будет сделать с фреймами при следующем вызове Commit()
-		void InsertFrame(Frame *NewFrame, int Index=-1);
+		void InsertFrame(Frame *NewFrame);
 		void DeleteFrame(Frame *Deleted=nullptr);
 		void DeleteFrame(int Index);
 		void DeactivateFrame(Frame *Deactivated,int Direction);
@@ -121,7 +121,7 @@ class Manager
 
 		//!  Функции, которые работают с очередью немодально фрейма.
 		//  Сейчас используются только для хранения информаци о наличии запущенных объектов типа VFMenu
-		void ModalizeFrame(Frame *Modalized=nullptr, int Mode=TRUE);
+		void ModalizeFrame(Frame *Modalized=nullptr);
 		void UnmodalizeFrame(Frame *Unmodalized);
 
 		void CloseAll();

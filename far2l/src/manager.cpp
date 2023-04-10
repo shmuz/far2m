@@ -191,10 +191,10 @@ void Manager::CloseAll()
 	FramePos=0;
 }
 
-void Manager::InsertFrame(Frame *Inserted, int Index)
+void Manager::InsertFrame(Frame *Inserted)
 {
-	_MANAGER(CleverSysLog clv(L"Manager::InsertFrame(Frame *Inserted, int Index)"));
-	_MANAGER(SysLog(L"Inserted=%p, Index=%i",Inserted, Index));
+	_MANAGER(CleverSysLog clv(L"Manager::InsertFrame(Frame *Inserted)"));
+	_MANAGER(SysLog(L"Inserted=%p",Inserted));
 	FrameLog("InsertFrame", Inserted);
 
 	InsertedFrame=Inserted;
@@ -231,9 +231,9 @@ void Manager::DeleteFrame(int Index)
 }
 
 
-void Manager::ModalizeFrame(Frame *Modalized, int Mode)
+void Manager::ModalizeFrame(Frame *Modalized)
 {
-	_MANAGER(CleverSysLog clv(L"Manager::ModalizeFrame (Frame *Modalized, int Mode)"));
+	_MANAGER(CleverSysLog clv(L"Manager::ModalizeFrame (Frame *Modalized)"));
 	_MANAGER(SysLog(L"Modalized=%p",Modalized));
 	FrameLog("ModalizeFrame", Modalized);
 
@@ -483,7 +483,7 @@ int  Manager::FindFrameByFile(int ModalType,const wchar_t *FileName, const wchar
 		{
 			FrameList[I]->GetTypeAndName(strType, strName);
 
-			if (!StrCmpI(strName, strFullFileName))
+			if (!StrCmp(strName, strFullFileName))
 				return(I);
 		}
 	}
@@ -507,7 +507,7 @@ void Manager::ActivateFrame(Frame *Activated)
 	_MANAGER(SysLog(L"Activated=%i",Activated));
 	FrameLog("ActivateFrame", Activated);
 
-	if (!ActivatedFrame && !(IndexOfList(Activated)==-1 && IndexOfStack(Activated)==-1))
+	if (!ActivatedFrame && (IndexOfList(Activated)!=-1 || IndexOfStack(Activated)!=-1))
 	{
 		ActivatedFrame = Activated;
 	}
