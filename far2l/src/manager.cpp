@@ -463,15 +463,13 @@ int Manager::GetFrameCountByType(int Type) const
 /*$ 11.05.2001 OT Теперь можно искать файл не только по полному имени, но и отдельно - путь, отдельно имя */
 int  Manager::FindFrameByFile(int ModalType,const wchar_t *FileName, const wchar_t *Dir) const
 {
-	FARString strBufFileName;
 	FARString strFullFileName = FileName;
 
 	if (Dir)
 	{
-		strBufFileName = Dir;
-		AddEndSlash(strBufFileName);
-		strBufFileName += FileName;
-		strFullFileName = strBufFileName;
+		strFullFileName = Dir;
+		AddEndSlash(strFullFileName);
+		strFullFileName += FileName;
 	}
 
 	for (int I=0; I<(int)FrameList.size(); I++)

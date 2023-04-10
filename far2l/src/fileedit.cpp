@@ -324,7 +324,15 @@ bool dlgSaveFileAs(FARString &strFileName, int &TextFormat, UINT &codepage,bool 
 
 const FileEditor *FileEditor::CurrentEditor = nullptr;
 
-FileEditor::FileEditor(const wchar_t *Name, UINT codepage, DWORD InitFlags, int StartLine, int StartChar, const wchar_t *PluginData, int OpenModeExstFile):
+FileEditor::FileEditor(
+    const wchar_t *Name,
+    UINT codepage,
+    DWORD InitFlags,
+    int StartLine,
+    int StartChar,
+    const wchar_t *PluginData,
+    int OpenModeExstFile
+) :
 	BadConversion(false), SaveAsTextFormat(0)
 {
 	ScreenObject::SetPosition(0,0,ScrX,ScrY);
@@ -483,11 +491,8 @@ void FileEditor::Init(
 		return;
 	}
 
-	//int FramePos=FrameManager->FindFrameByFile(MODALTYPE_EDITOR,FullFileName);
-	//if (FramePos!=-1)
 	if (Flags.Check(FFILEEDIT_ENABLEF6))
 	{
-		//if (Flags.Check(FFILEEDIT_ENABLEF6))
 		int FramePos=FrameManager->FindFrameByFile(MODALTYPE_EDITOR, strFullFileName);
 
 		if (FramePos!=-1)
@@ -518,7 +523,6 @@ void FileEditor::Init(
 				{
 					case 0:         // Current
 						SwitchTo=TRUE;
-						FrameManager->DeleteFrame(this); //???
 						break;
 					case 1:         // NewOpen
 						SwitchTo=FALSE;
@@ -528,11 +532,9 @@ void FileEditor::Init(
 						SetExitCode(-2);
 						break;
 					case -100:
-						//FrameManager->DeleteFrame(this);  //???
 						SetExitCode(XC_EXISTS);
 						return;
 					default:
-						FrameManager->DeleteFrame(this);  //???
 						SetExitCode(MsgCode == -100?XC_EXISTS:XC_QUIT);
 						return;
 				}
@@ -545,7 +547,6 @@ void FileEditor::Init(
 			if (SwitchTo)
 			{
 				FrameManager->ActivateFrame(FramePos);
-				//FrameManager->PluginCommit();
 				SetExitCode((OpenModeExstFile != FEOPMODE_QUERY)?XC_EXISTS:TRUE);
 				return ;
 			}
