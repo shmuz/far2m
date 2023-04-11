@@ -4045,8 +4045,11 @@ int far_MkLink (lua_State *L)
 {
   const wchar_t* src = check_utf8_string(L, 1, NULL);
   const wchar_t* dst = check_utf8_string(L, 2, NULL);
-  DWORD flags = CheckFlags(L, 3);
-  return lua_pushboolean(L, FSF.MkLink(src, dst, flags)), 1;
+  DWORD link_type = OptFlags(L, 3, FLINK_SYMLINK);
+  DWORD flags = CheckFlags(L, 4);
+  flags = (link_type & 0x0000FFFF) | (flags & 0xFFFF0000);
+  lua_pushboolean(L, FSF.MkLink(src, dst, flags));
+  return 1;
 }
 
 int far_GetPathRoot (lua_State *L)

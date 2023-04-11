@@ -51,7 +51,7 @@ int WINAPI GetNumberOfLinks(const wchar_t *Name)
 	struct stat s = {};
 	if (sdc_stat(Wide2MB(Name).c_str(), &s)!=0)
 		return 1;
-		
+
 	return (s.st_nlink > 0) ? s.st_nlink : 1;
 }
 
@@ -78,7 +78,7 @@ static std::string SymSubject(const wchar_t *ExistingName)
 	apiGetCurrentDirectory(path);
 	AddEndSlash(path);
 	path+= ExistingName;
-	
+
 	return Wide2MB(path.CPtr());
 }
 
@@ -88,7 +88,7 @@ int WINAPI MkHardLink(const wchar_t *ExistingName,const wchar_t *NewName)
 	if (r!=0) {
 		return 0;
 	}
-	
+
 	return 1;
 }
 
@@ -99,10 +99,10 @@ int WINAPI MkSymLink(const wchar_t *ExistingName, const wchar_t *NewName, Repars
 		if (CanShowMsg) {
 			Message(MSG_WARNING,1,Msg::Error,Msg::CopyCannotCreateJunctionToFile,NewName, Msg::Ok);
 		}
-		
+
 		return 0;
 	}
-	
+
 	return 1;
 }
 
@@ -123,9 +123,11 @@ int WINAPI FarMkLink(const wchar_t *ExistingName, const wchar_t *NewName, DWORD 
 			case FLINK_VOLMOUNT:
 			case FLINK_SYMLINKFILE:
 			case FLINK_SYMLINKDIR:
+			case FLINK_SYMLINK:
 				ReparsePointTypes LinkType=RP_JUNCTION;
 
 				Result=MkSymLink(ExistingName, NewName,LinkType,(Flags&FLINK_SHOWERRMSG) != 0);
+				break;
 		}
 	}
 
