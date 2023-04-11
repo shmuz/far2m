@@ -301,7 +301,7 @@ void ConvertNameToReal(const wchar_t *Src, FARString &strDest)
 			ssize_t r = sdc_readlink(s.c_str(), buf, sizeof(buf) - 1);
 			if (r > 0 && r < (ssize_t)sizeof(buf) && buf[0]) {
 				buf[r] = 0;
-				if (buf[0] != GOOD_SLASH) {
+				if (buf[0] != GOOD_SLASH && strchr(buf,GOOD_SLASH)) {
 					strDest = s;
 					CutToSlash(strDest,true);
 					strDest+= buf;
