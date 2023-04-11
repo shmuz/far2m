@@ -483,7 +483,8 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 		case ACTL_SETCURRENTWINDOW:
 		{
 			// Запретим переключение фрэймов, если находимся в модальном редакторе/вьюере.
-			if (FrameManager && !FrameManager->InModalEV() && FrameManager->operator[]((int)(INT_PTR)Param))
+			int Index=(int)(INT_PTR)Param;
+			if (FrameManager && !FrameManager->InModalEV() && FrameManager->operator[](Index))
 			{
 				int TypeFrame=FrameManager->GetCurrentFrame()->GetType();
 
@@ -491,7 +492,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 				if (TypeFrame != MODALTYPE_HELP && TypeFrame != MODALTYPE_DIALOG)
 				{
 					Frame* PrevFrame = FrameManager->GetCurrentFrame();
-					FrameManager->ActivateFrame((int)(INT_PTR)Param);
+					FrameManager->ActivateFrame(Index);
 					FrameManager->DeactivateFrame(PrevFrame, 0);
 					return TRUE;
 				}
@@ -2224,20 +2225,22 @@ int WINAPI farGetReparsePointInfo(const wchar_t *Src,wchar_t *Dest,int DestSize)
 {
 	_LOGCOPYR(CleverSysLog Clev(L"farGetReparsePointInfo()"));
 	_LOGCOPYR(SysLog(L"Params: Src='%ls'",Src));
-	/*
+
 	if (Src && *Src)
 	{
-		FARString strSrc(Src);
-		FARString strDest;
-		AddEndSlash(strDest);
-		DWORD Size=GetReparsePointInfo(strSrc,strDest,nullptr);
-		_LOGCOPYR(SysLog(L"return -> %d strSrc='%ls', strDest='%ls'",__LINE__,strSrc.CPtr(),strDest.CPtr()));
-
-		if (DestSize && Dest)
-			far_wcsncpy(Dest,strDest,DestSize);
-
-		return Size;
-	}*/
+		DWORD FileAttr = WINPORT(GetFileAttributes)(Src);
+		if ((FileAttr != INVALID_FILE_ATTRIBUTES) && (FileAttr & FILE_ATTRIBUTE_REPARSE_POINT))
+		{
+			FARString strDest;
+			ConvertNameToReal(Src, strDest);
+			if (Dest && DestSize>0)
+			{
+				wcsncpy(Dest,strDest.CPtr(),DestSize-1);
+				Dest[DestSize-1]=0;
+			}
+			return 1+strDest.GetLength();
+		}
+	}
 
 	return 0;
 }

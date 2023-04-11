@@ -528,19 +528,13 @@ void Manager::DeactivateFrame(Frame *Deactivated,int Direction)
 	{
 		FramePos+=Direction;
 
-		if (Direction>0)
+		if (FramePos>=(int)FrameList.size())
 		{
-			if (FramePos>=(int)FrameList.size())
-			{
-				FramePos=0;
-			}
+			FramePos=0;
 		}
-		else
+		else if (FramePos<0)
 		{
-			if (FramePos<0)
-			{
-				FramePos=(int)FrameList.size()-1;
-			}
+			FramePos=(int)FrameList.size()-1;
 		}
 
 		ActivateFrame(FramePos);
