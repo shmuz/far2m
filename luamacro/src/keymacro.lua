@@ -396,7 +396,7 @@ function KeyMacro.TransformKey (key)
     return 3, k > 0 and k or 0
   else
     local iKey = Import.KeyNameToKey(key)
-    return 3, iKey==-1 and KEY_NONE or iKey
+    return 3, (iKey==-1 or iKey==0xFFFFFFFF) and KEY_NONE or iKey
   end
 end
 
