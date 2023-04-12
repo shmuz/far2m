@@ -244,18 +244,16 @@ void Manager::ExecuteNonModal()
 		return;
 	}
 
-	int NonModalIndex=IndexOfList(NonModal);
-
-	if (-1==NonModalIndex)
+	if (InList(NonModal))
+	{
+		ActivateFrame(NonModal);
+	}
+	else
 	{
 		InsertedFrame=NonModal;
 		ExecutedFrame=nullptr;
 		InsertCommit();
 		InsertedFrame=nullptr;
-	}
-	else
-	{
-		ActivateFrame(NonModalIndex);
 	}
 
 	for (;;)
@@ -277,7 +275,6 @@ void Manager::ExecuteModal(Frame *Executed)
 
 	if (!Executed && !ExecutedFrame)
 	{
-		fprintf(stderr, "ExecuteModal1\n");
 		return;
 	}
 
@@ -285,7 +282,6 @@ void Manager::ExecuteModal(Frame *Executed)
 	{
 		if (ExecutedFrame)
 		{
-			fprintf(stderr, "ExecuteModal2\n");
 			return;
 		}
 		else
@@ -533,14 +529,14 @@ void Manager::RefreshFrame(Frame *Refreshed)
 	if (InList(Refreshed) || InStack(Refreshed))
 	{
 		/* $ 13.04.2002 KM
-			- Вызываем принудительный Commit() для фрейма имеющего члена
-				NextModal, это означает что активным сейчас является
-				VMenu, а значит Commit() сам не будет вызван после возврата
-				из функции.
-				Устраняет ещё один момент неперерисовки, когда один над
-				другим находится несколько объектов VMenu. Пример:
-				настройка цветов. Теперь AltF9 в диалоге настройки
-				цветов корректно перерисовывает меню.
+			Вызываем принудительный Commit() для фрейма имеющего члена
+			NextModal, это означает что активным сейчас является
+			VMenu, а значит Commit() сам не будет вызван после возврата
+			из функции.
+			Устраняет ещё один момент неперерисовки, когда один над
+			другим находится несколько объектов VMenu. Пример:
+			настройка цветов. Теперь AltF9 в диалоге настройки
+			цветов корректно перерисовывает меню.
 		*/
 		if (RefreshedFrame && RefreshedFrame->NextModal)
 			Commit();
@@ -830,11 +826,9 @@ int Manager::ProcessKey(DWORD Key)
 				case KEY_F11:
 					PluginsMenu();
 					FrameManager->RefreshFrame();
-					//_MANAGER(SysLog(-1));
 					return TRUE;
 				case KEY_ALTF9:
 				{
-					//_MANAGER(SysLog(1,"Manager::ProcessKey, KEY_ALTF9 pressed..."));
 					WINPORT(Sleep)(10);
 					SetVideoMode();
 					WINPORT(Sleep)(10);
@@ -854,20 +848,17 @@ int Manager::ProcessKey(DWORD Key)
 
 						if (PScrX+1 == CurSize.X && PScrY+1 == CurSize.Y)
 						{
-							//_MANAGER(SysLog(-1,"GetInputRecord(WINDOW_BUFFER_SIZE_EVENT); return KEY_NONE"));
 							return TRUE;
 						}
 						else
 						{
 							PrevScrX=PScrX;
 							PrevScrY=PScrY;
-							//_MANAGER(SysLog(-1,"GetInputRecord(WINDOW_BUFFER_SIZE_EVENT); return KEY_CONSOLE_BUFFER_RESIZE"));
 							WINPORT(Sleep)(10);
 							return ProcessKey(KEY_CONSOLE_BUFFER_RESIZE);
 						}
 					}
 
-					//_MANAGER(SysLog(-1));
 					return TRUE;
 				}
 				case KEY_F12:
@@ -877,7 +868,6 @@ int Manager::ProcessKey(DWORD Key)
 					if (TypeFrame != MODALTYPE_HELP && TypeFrame != MODALTYPE_DIALOG)
 					{
 						DeactivateFrame(FrameMenu(),0);
-						//_MANAGER(SysLog(-1));
 						return TRUE;
 					}
 
@@ -1153,14 +1143,11 @@ void Manager::ActivateCommit()
 	  Если мы пытаемся активировать полумодальный фрэйм,
 	  то надо его вытащить на верх стэка модалов.
 	*/
-	for (size_t I=0; I+1<ModalStack.size(); I++)
+	int Index=IndexOfStack(ActivatedFrame);
+	if (Index!=-1)
 	{
-		if (ModalStack[I]==ActivatedFrame)
-		{
-			ModalStack.erase(ModalStack.begin()+I);
-			ModalStack.push_back(ActivatedFrame);
-			break;
-		}
+		ModalStack.erase(ModalStack.begin()+Index);
+		ModalStack.push_back(ActivatedFrame);
 	}
 
 	RefreshedFrame=CurrentFrame=ActivatedFrame;
