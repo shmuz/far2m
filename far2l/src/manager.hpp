@@ -167,6 +167,9 @@ class Manager
 		int IndexOfStack(Frame *Frame) const;
 		bool HaveAnyFrame() const;
 
+		bool InList(Frame *frame) const { return IndexOfList(frame)!=-1; }
+		bool InStack(Frame *frame) const { return IndexOfStack(frame)!=-1; }
+
 		void ImmediateHide();
 		/* $ 13.04.2002 KM
 		  Для вызова ResizeConsole для всех NextModal у

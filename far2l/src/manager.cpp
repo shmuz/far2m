@@ -62,8 +62,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // #define DEBUG_MANAGER
 #ifdef DEBUG_MANAGER
 
-#define BasicLog Log
-void FrameLog(const char* prefix, Frame* frame)
+#define _BASICLOG Log
+void _FRAMELOG(const char* prefix, Frame* frame)
 {
 	if (frame)
 	{
@@ -75,22 +75,22 @@ void FrameLog(const char* prefix, Frame* frame)
 		Log("%s: nullptr", prefix);
 }
 
-#define DumpFrameList() do {          \
+#define _DUMP_FRAME_LIST() do {          \
 		for (auto iFrame: FrameList)      \
-			FrameLog("--> ", iFrame);       \
+			_FRAMELOG("--> ", iFrame);       \
 	} while(false)
 
-#define DumpFrameStack() do {         \
+#define _DUMP_FRAME_STACK() do {         \
 		for (auto iFrame: ModalStack)     \
-			FrameLog("==> ", iFrame);       \
+			_FRAMELOG("==> ", iFrame);       \
 	} while(false)
 
 #else
 
-#define BasicLog(a,...)
-#define FrameLog(a,b)
-#define DumpFrameList()
-#define DumpFrameStack()
+#define _BASICLOG(a,...)
+#define _FRAMELOG(a,b)
+#define _DUMP_FRAME_LIST()
+#define _DUMP_FRAME_STACK()
 
 #endif // #ifdef DEBUG_MANAGER
 
@@ -125,8 +125,6 @@ Manager::~Manager()
 */
 bool Manager::ExitAll()
 {
-	_MANAGER(CleverSysLog clv(L"Manager::ExitAll()"));
-
 	for (int i=(int)ModalStack.size()-1; i>=0; i--)
 	{
 		Frame *iFrame=ModalStack[i];
@@ -168,21 +166,16 @@ bool Manager::ExitAll()
 
 void Manager::CloseAll()
 {
-	_MANAGER(CleverSysLog clv(L"Manager::CloseAll()"));
-	Frame *iFrame;
-
 	for (int i=(int)ModalStack.size()-1; i>=0; i--)
 	{
-		iFrame=ModalStack[i];
-		DeleteFrame(iFrame);
+		DeleteFrame(ModalStack[i]);
 		DeleteCommit();
 		DeletedFrame=nullptr;
 	}
 
 	for (int i=(int)FrameList.size()-1; i>=0; i--)
 	{
-		iFrame=(*this)[i];
-		DeleteFrame(iFrame);
+		DeleteFrame(FrameList[i]);
 		DeleteCommit();
 		DeletedFrame=nullptr;
 	}
@@ -193,18 +186,14 @@ void Manager::CloseAll()
 
 void Manager::InsertFrame(Frame *Inserted)
 {
-	_MANAGER(CleverSysLog clv(L"Manager::InsertFrame(Frame *Inserted)"));
-	_MANAGER(SysLog(L"Inserted=%p",Inserted));
-	FrameLog("InsertFrame", Inserted);
+	_FRAMELOG("InsertFrame", Inserted);
 
 	InsertedFrame=Inserted;
 }
 
 void Manager::DeleteFrame(Frame *Deleted)
 {
-	_MANAGER(CleverSysLog clv(L"Manager::DeleteFrame(Frame *Deleted)"));
-	_MANAGER(SysLog(L"Deleted=%p",Deleted));
-	FrameLog("DeleteFrame", Deleted);
+	_FRAMELOG("DeleteFrame", Deleted);
 
 	if (!Deleted)
 	{
@@ -225,17 +214,13 @@ void Manager::DeleteFrame(Frame *Deleted)
 
 void Manager::DeleteFrame(int Index)
 {
-	_MANAGER(CleverSysLog clv(L"Manager::DeleteFrame(int Index)"));
-	_MANAGER(SysLog(L"Index=%i",Index));
 	DeleteFrame((*this)[Index]);
 }
 
 
 void Manager::ModalizeFrame(Frame *Modalized)
 {
-	_MANAGER(CleverSysLog clv(L"Manager::ModalizeFrame (Frame *Modalized)"));
-	_MANAGER(SysLog(L"Modalized=%p",Modalized));
-	FrameLog("ModalizeFrame", Modalized);
+	_FRAMELOG("ModalizeFrame", Modalized);
 
 	ModalizedFrame=Modalized;
 	ModalizeCommit();
@@ -243,9 +228,7 @@ void Manager::ModalizeFrame(Frame *Modalized)
 
 void Manager::UnmodalizeFrame(Frame *Unmodalized)
 {
-	_MANAGER(CleverSysLog clv(L"Manager::UnmodalizeFrame (Frame *Unmodalized)"));
-	_MANAGER(SysLog(L"Unmodalized=%p",Unmodalized));
-	FrameLog("UnmodalizeFrame", Unmodalized);
+	_FRAMELOG("UnmodalizeFrame", Unmodalized);
 
 	UnmodalizedFrame=Unmodalized;
 	UnmodalizeCommit();
@@ -253,10 +236,8 @@ void Manager::UnmodalizeFrame(Frame *Unmodalized)
 
 void Manager::ExecuteNonModal()
 {
-	_MANAGER(CleverSysLog clv(L"Manager::ExecuteNonModal ()"));
-	_MANAGER(SysLog(L"ExecutedFrame=%p, InsertedFrame=%p, DeletedFrame=%p",ExecutedFrame, InsertedFrame, DeletedFrame));
 	Frame *NonModal=InsertedFrame?InsertedFrame:(ExecutedFrame?ExecutedFrame:ActivatedFrame);
-	FrameLog("ExecuteNonModal", NonModal);
+	_FRAMELOG("ExecuteNonModal", NonModal);
 
 	if (!NonModal)
 	{
@@ -292,9 +273,7 @@ void Manager::ExecuteNonModal()
 
 void Manager::ExecuteModal(Frame *Executed)
 {
-	_MANAGER(CleverSysLog clv(L"Manager::ExecuteModal (Frame *Executed)"));
-	_MANAGER(SysLog(L"Executed=%p, ExecutedFrame=%p",Executed,ExecutedFrame));
-	FrameLog("ExecuteModal", Executed);
+	_FRAMELOG("ExecuteModal", Executed);
 
 	if (!Executed && !ExecutedFrame)
 	{
@@ -307,7 +286,6 @@ void Manager::ExecuteModal(Frame *Executed)
 		if (ExecutedFrame)
 		{
 			fprintf(stderr, "ExecuteModal2\n");
-			_MANAGER(SysLog(L"WARNING! Попытка в одном цикле запустить в модальном режиме два фрейма. Executed=%p, ExecitedFrame=%p",Executed, ExecutedFrame));
 			return;
 		}
 		else
@@ -440,7 +418,6 @@ Frame *Manager::FrameMenu()
 	return nullptr;
 }
 
-
 int Manager::GetFrameCountByType(int Type) const
 {
 	int ret=0;
@@ -501,11 +478,9 @@ bool Manager::ShowBackground()
 
 void Manager::ActivateFrame(Frame *Activated)
 {
-	_MANAGER(CleverSysLog clv(L"Manager::ActivateFrame(Frame *Activated)"));
-	_MANAGER(SysLog(L"Activated=%i",Activated));
-	FrameLog("ActivateFrame", Activated);
+	_FRAMELOG("ActivateFrame", Activated);
 
-	if (!ActivatedFrame && (IndexOfList(Activated)!=-1 || IndexOfStack(Activated)!=-1))
+	if (!ActivatedFrame && (InList(Activated) || InStack(Activated)))
 	{
 		ActivatedFrame = Activated;
 	}
@@ -513,16 +488,12 @@ void Manager::ActivateFrame(Frame *Activated)
 
 void Manager::ActivateFrame(int Index)
 {
-	_MANAGER(CleverSysLog clv(L"Manager::ActivateFrame(int Index)"));
-	_MANAGER(SysLog(L"Index=%i",Index));
 	ActivateFrame((*this)[Index]);
 }
 
 void Manager::DeactivateFrame(Frame *Deactivated,int Direction)
 {
-	_MANAGER(CleverSysLog clv(L"Manager::DeactivateFrame (Frame *Deactivated,int Direction)"));
-	_MANAGER(SysLog(L"Deactivated=%p, Direction=%d",Deactivated,Direction));
-	FrameLog("DeactivateFrame", Deactivated);
+	_FRAMELOG("DeactivateFrame", Deactivated);
 
 	if (Direction)
 	{
@@ -545,9 +516,7 @@ void Manager::DeactivateFrame(Frame *Deactivated,int Direction)
 
 void Manager::RefreshFrame(Frame *Refreshed)
 {
-	_MANAGER(CleverSysLog clv(L"Manager::RefreshFrame(Frame *Refreshed)"));
-	_MANAGER(SysLog(L"Refreshed=%p",Refreshed));
-	FrameLog("RefreshFrame", Refreshed);
+	_FRAMELOG("RefreshFrame", Refreshed);
 
 	if (ActivatedFrame)
 		return;
@@ -561,35 +530,31 @@ void Manager::RefreshFrame(Frame *Refreshed)
 		RefreshedFrame=CurrentFrame;
 	}
 
-	if (IndexOfList(Refreshed)==-1 && IndexOfStack(Refreshed)==-1)
-		return;
-
-	/* $ 13.04.2002 KM
-	  - Вызываем принудительный Commit() для фрейма имеющего члена
-	    NextModal, это означает что активным сейчас является
-	    VMenu, а значит Commit() сам не будет вызван после возврата
-	    из функции.
-	    Устраняет ещё один момент неперерисовки, когда один над
-	    другим находится несколько объектов VMenu. Пример:
-	    настройка цветов. Теперь AltF9 в диалоге настройки
-	    цветов корректно перерисовывает меню.
-	*/
-	if (RefreshedFrame && RefreshedFrame->NextModal)
-		Commit();
+	if (InList(Refreshed) || InStack(Refreshed))
+	{
+		/* $ 13.04.2002 KM
+			- Вызываем принудительный Commit() для фрейма имеющего члена
+				NextModal, это означает что активным сейчас является
+				VMenu, а значит Commit() сам не будет вызван после возврата
+				из функции.
+				Устраняет ещё один момент неперерисовки, когда один над
+				другим находится несколько объектов VMenu. Пример:
+				настройка цветов. Теперь AltF9 в диалоге настройки
+				цветов корректно перерисовывает меню.
+		*/
+		if (RefreshedFrame && RefreshedFrame->NextModal)
+			Commit();
+	}
 }
 
 void Manager::RefreshFrame(int Index)
 {
-	_MANAGER(CleverSysLog clv(L"Manager::RefreshFrame(int Index)"));
-	_MANAGER(SysLog(L"Index=%d",Index));
 	RefreshFrame((*this)[Index]);
 }
 
 void Manager::ExecuteFrame(Frame *Executed)
 {
-	_MANAGER(CleverSysLog clv(L"Manager::ExecuteFrame(Frame *Executed)"));
-	_MANAGER(SysLog(L"Executed=%p",Executed));
-	FrameLog("ExecuteFrame", Executed);
+	_FRAMELOG("ExecuteFrame", Executed);
 
 	ExecutedFrame=Executed;
 }
@@ -599,7 +564,6 @@ void Manager::ExecuteFrame(Frame *Executed)
 */
 void Manager::SwitchToPanels()
 {
-	_MANAGER(CleverSysLog clv(L"Manager::SwitchToPanels()"));
 	ActivateFrame(0);
 }
 
@@ -987,7 +951,6 @@ int Manager::ProcessKey(DWORD Key)
 						DeactivateFrame(CurrentFrame,Key==KEY_CTRLTAB?1:-1);
 					}
 
-					_MANAGER(SysLog(-1));
 					return TRUE;
 			}
 		}
@@ -996,7 +959,6 @@ int Manager::ProcessKey(DWORD Key)
 		CurrentFrame->ProcessKey(Key);
 	}
 
-	_MANAGER(SysLog(-1));
 	return ret;
 }
 
@@ -1012,13 +974,11 @@ int Manager::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 		ret=CurrentFrame->ProcessMouse(MouseEvent);
 
 //    _D(SysLog(L"Manager::ProcessMouse() ret=%i",ret));
-	_MANAGER(SysLog(-1));
 	return ret;
 }
 
 void Manager::PluginsMenu()
 {
-	_MANAGER(SysLog(1));
 	int curType = CurrentFrame->GetType();
 
 	if (curType == MODALTYPE_PANELS || curType == MODALTYPE_EDITOR || curType == MODALTYPE_VIEWER || curType == MODALTYPE_DIALOG)
@@ -1054,8 +1014,6 @@ void Manager::PluginsMenu()
 		                     curType==MODALTYPE_DIALOG?L"Dialog":nullptr;
 		CtrlObject->Plugins.CommandsMenu(curType,0,Topic);
 	}
-
-	_MANAGER(SysLog(-1));
 }
 
 bool Manager::IsPanelsActive() const
@@ -1092,9 +1050,7 @@ void Manager::Commit()
 {
 	while(true)
 	{
-		_MANAGER(CleverSysLog clv(L"Manager::Commit()"));
-		_MANAGER(ManagerClass_Dump(L"ManagerClass"));
-		BasicLog("Commit");
+		_BASICLOG("Commit");
 
 		if (DeletedFrame && (InsertedFrame||ExecutedFrame))
 		{
@@ -1152,31 +1108,25 @@ void Manager::Commit()
 
 void Manager::DeactivateCommit()
 {
-	_MANAGER(CleverSysLog clv(L"Manager::DeactivateCommit()"));
-	_MANAGER(SysLog(L"DeactivatedFrame=%p",DeactivatedFrame));
-	FrameLog("DeactivateCommit", DeactivatedFrame);
+	_FRAMELOG("DeactivateCommit", DeactivatedFrame);
 
 	/*$ 18.04.2002 skv
 	  Если нечего активировать, то в общем-то не надо и деактивировать.
 	*/
-	if (!DeactivatedFrame || !ActivatedFrame)
+	if (DeactivatedFrame && ActivatedFrame)
 	{
-		return;
-	}
+		DeactivatedFrame->OnChangeFocus(0);
 
-	DeactivatedFrame->OnChangeFocus(0);
-
-	int modalIndex=IndexOfStack(DeactivatedFrame);
-
-	if (-1 != modalIndex && modalIndex==(int)ModalStack.size()-1)
-	{
-		if (IndexOfStack(ActivatedFrame)==-1)
+		if (!ModalStack.empty() && DeactivatedFrame==ModalStack.back())
 		{
-			ModalStack.back()=ActivatedFrame;
-		}
-		else
-		{
-			ModalStack.pop_back();
+			if (InStack(ActivatedFrame))
+			{
+				ModalStack.pop_back();
+			}
+			else
+			{
+				ModalStack.back()=ActivatedFrame;
+			}
 		}
 	}
 }
@@ -1184,9 +1134,7 @@ void Manager::DeactivateCommit()
 
 void Manager::ActivateCommit()
 {
-	_MANAGER(CleverSysLog clv(L"Manager::ActivateCommit()"));
-	_MANAGER(SysLog(L"ActivatedFrame=%p",ActivatedFrame));
-	FrameLog("ActivateCommit", ActivatedFrame);
+	_FRAMELOG("ActivateCommit", ActivatedFrame);
 
 	if (CurrentFrame==ActivatedFrame)
 	{
@@ -1220,9 +1168,7 @@ void Manager::ActivateCommit()
 
 void Manager::UpdateCommit()
 {
-	_MANAGER(CleverSysLog clv(L"Manager::UpdateCommit()"));
-	_MANAGER(SysLog(L"DeletedFrame=%p, InsertedFrame=%p, ExecutedFrame=%p",DeletedFrame,InsertedFrame, ExecutedFrame));
-	BasicLog("UpdateCommit: DeletedFrame=%p, InsertedFrame=%p, ExecutedFrame=%p", DeletedFrame,InsertedFrame, ExecutedFrame);
+	_BASICLOG("UpdateCommit: DeletedFrame=%p, InsertedFrame=%p, ExecutedFrame=%p", DeletedFrame,InsertedFrame, ExecutedFrame);
 
 	if (ExecutedFrame)
 	{
@@ -1240,10 +1186,6 @@ void Manager::UpdateCommit()
 		ActivatedFrame->FrameToBack=CurrentFrame;
 		DeleteCommit();
 	}
-	else
-	{
-		_MANAGER(SysLog(L"ERROR! DeletedFrame not found"));
-	}
 }
 
 //! Удаляет DeletedFrame изо всех очередей!
@@ -1251,35 +1193,27 @@ void Manager::UpdateCommit()
 //! Но только в том случае, если активный фрейм еще не назначен заранее.
 void Manager::DeleteCommit()
 {
-	_MANAGER(CleverSysLog clv(L"Manager::DeleteCommit()"));
-	_MANAGER(SysLog(L"DeletedFrame=%p",DeletedFrame));
-	FrameLog("DeleteCommit", DeletedFrame);
+	_FRAMELOG("DeleteCommit", DeletedFrame);
 
 	if (!DeletedFrame)
 	{
 		return;
 	}
 
-	int ModalIndex=IndexOfStack(DeletedFrame);
-
-	if (ModalIndex!=-1)
+	/* $ 14.05.2002 SKV
+	  Надёжнее найти и удалить именно то, что
+	  нужно, а не просто верхний.
+	*/
+	for (auto it=ModalStack.begin(); it!=ModalStack.end(); it++)
 	{
-		/* $ 14.05.2002 SKV
-		  Надёжнее найти и удалить именно то, что
-		  нужно, а не просто верхний.
-		*/
-		for (auto it=ModalStack.begin(); it!=ModalStack.end(); it++)
+		if (*it==DeletedFrame)
 		{
-			if (*it==DeletedFrame)
+			ModalStack.erase(it);
+			if (!ModalStack.empty())
 			{
-				ModalStack.erase(it);
-				break;
+				ActivateFrame(ModalStack.back());
 			}
-		}
-
-		if (!ModalStack.empty())
-		{
-			ActivateFrame(ModalStack.back());
+			break;
 		}
 	}
 
@@ -1295,7 +1229,7 @@ void Manager::DeleteCommit()
 
 	if (-1!=FrameIndex)
 	{
-		DumpFrameList();
+		_DUMP_FRAME_LIST();
 
 		DeletedFrame->DestroyAllModal();
 
@@ -1308,12 +1242,12 @@ void Manager::DeleteCommit()
 
 		if (DeletedFrame->FrameToBack==CtrlObject->Cp())
 		{
-			BasicLog("== ActivateFrame(FrameList[FramePos])");
+			_BASICLOG("== ActivateFrame(FrameList[FramePos])");
 			ActivateFrame(FrameList[FramePos]);
 		}
 		else
 		{
-			BasicLog("== ActivateFrame(DeletedFrame->FrameToBack)");
+			_BASICLOG("== ActivateFrame(DeletedFrame->FrameToBack)");
 			ActivateFrame(DeletedFrame->FrameToBack);
 		}
 	}
@@ -1322,8 +1256,6 @@ void Manager::DeleteCommit()
 
 	if (DeletedFrame->GetDynamicallyBorn())
 	{
-		_MANAGER(SysLog(L"delete DeletedFrame %p, CurrentFrame=%p",DeletedFrame,CurrentFrame));
-
 		if (CurrentFrame==DeletedFrame)
 			CurrentFrame=nullptr;
 
@@ -1350,9 +1282,7 @@ void Manager::DeleteCommit()
 
 void Manager::InsertCommit()
 {
-	_MANAGER(CleverSysLog clv(L"Manager::InsertCommit()"));
-	_MANAGER(SysLog(L"InsertedFrame=%p",InsertedFrame));
-	FrameLog("InsertCommit", InsertedFrame);
+	_FRAMELOG("InsertCommit", InsertedFrame);
 
 	if (InsertedFrame)
 	{
@@ -1368,14 +1298,12 @@ void Manager::InsertCommit()
 
 void Manager::RefreshCommit()
 {
-	_MANAGER(CleverSysLog clv(L"Manager::RefreshCommit()"));
-	_MANAGER(SysLog(L"RefreshedFrame=%p",RefreshedFrame));
-	FrameLog("RefreshCommit", RefreshedFrame);
+	_FRAMELOG("RefreshCommit", RefreshedFrame);
 
 	if (!RefreshedFrame)
 		return;
 
-	if (IndexOfList(RefreshedFrame)==-1 && IndexOfStack(RefreshedFrame)==-1)
+	if (!InList(RefreshedFrame) && !InStack(RefreshedFrame))
 		return;
 
 	if (!RefreshedFrame->Locked())
@@ -1401,9 +1329,7 @@ void Manager::RefreshCommit()
 
 void Manager::ExecuteCommit()
 {
-	_MANAGER(CleverSysLog clv(L"Manager::ExecuteCommit()"));
-	_MANAGER(SysLog(L"ExecutedFrame=%p",ExecutedFrame));
-	FrameLog("ExecuteCommit", ExecutedFrame);
+	_FRAMELOG("ExecuteCommit", ExecutedFrame);
 
 	if (ExecutedFrame)
 	{
@@ -1417,14 +1343,14 @@ void Manager::ExecuteCommit()
 */
 void Manager::PluginCommit()
 {
-	BasicLog("PluginCommit");
+	_BASICLOG("PluginCommit");
 	Commit();
 }
 
 /* $ Введена для нужд CtrlAltShift OT */
 void Manager::ImmediateHide()
 {
-	BasicLog("ImmediateHide");
+	_BASICLOG("ImmediateHide");
 	if (FramePos<0)
 		return;
 
@@ -1502,14 +1428,14 @@ void Manager::ImmediateHide()
 
 void Manager::ModalizeCommit()
 {
-	FrameLog("ModalizeCommit", ModalizedFrame);
+	_FRAMELOG("ModalizeCommit", ModalizedFrame);
 	CurrentFrame->PushFrame(ModalizedFrame);
 	ModalizedFrame=nullptr;
 }
 
 void Manager::UnmodalizeCommit()
 {
-	FrameLog("UnmodalizeCommit", UnmodalizedFrame);
+	_FRAMELOG("UnmodalizeCommit", UnmodalizedFrame);
 
 	for (auto iFrame: FrameList)
 	{

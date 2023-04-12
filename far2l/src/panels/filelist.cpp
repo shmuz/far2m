@@ -1400,7 +1400,7 @@ int FileList::ProcessKey(int Key)
 				{
 					// позиционируемся в панели
 					if (!FrameManager->IsPanelsActive())
-						FrameManager->ActivateFrame(0);
+						FrameManager->SwitchToPanels();
 
 					Update(UPDATE_KEEP_SELECTION);
 					Redraw();
