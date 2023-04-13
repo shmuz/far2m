@@ -493,14 +493,14 @@ void FileEditor::Init(
 
 	if (Flags.Check(FFILEEDIT_ENABLEF6))
 	{
-		int FramePos=FrameManager->FindFrameByFile(MODALTYPE_EDITOR, strFullFileName);
+		Frame *iFrame=FrameManager->FindFrameByFile(MODALTYPE_EDITOR, strFullFileName);
 
-		if (FramePos!=-1)
+		if (iFrame)
 		{
 			int SwitchTo=FALSE;
 			int MsgCode=0;
 
-			if (!(*FrameManager)[FramePos]->GetCanLoseFocus(true) ||
+			if (!iFrame->GetCanLoseFocus(true) ||
 			        Opt.Confirm.AllowReedit)
 			{
 				if (OpenModeExstFile == FEOPMODE_QUERY)
@@ -528,7 +528,7 @@ void FileEditor::Init(
 						SwitchTo=FALSE;
 						break;
 					case 2:         // Reload
-						FrameManager->DeleteFrame(FramePos);
+						FrameManager->DeleteFrame(iFrame);
 						SetExitCode(-2);
 						break;
 					case -100:
@@ -546,7 +546,7 @@ void FileEditor::Init(
 
 			if (SwitchTo)
 			{
-				FrameManager->ActivateFrame(FramePos);
+				FrameManager->ActivateFrame(iFrame);
 				SetExitCode((OpenModeExstFile != FEOPMODE_QUERY)?XC_EXISTS:TRUE);
 				return ;
 			}

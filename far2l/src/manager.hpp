@@ -48,12 +48,10 @@ class Manager
 
 		/*$ Претенденты на ... */
 		Frame *InsertedFrame;   // Фрейм, который будет добавлен в конец немодальной очереди
-		Frame *DeletedFrame;    // Фрейм, предназначений для удаления из модальной очереди, из модального стека, либо одиночный (которого нет ни там, ни там)
+		Frame *DeletedFrame;    // Фрейм, предназначенный для удаления из модальной очереди, из модального стека, либо одиночный (которого нет ни там, ни там)
 		Frame *ActivatedFrame;  // Фрейм, который необходимо активировать после каких нибудь изменений
 		Frame *RefreshedFrame;  // Фрейм, который нужно просто освежить, т.е. перерисовать
-		Frame *ModalizedFrame;  // Фрейм, который становится в "очередь" к текущему немодальному фрейму
-		Frame *UnmodalizedFrame;// Фрейм, убираюющийся из "очереди" немодального фрейма
-		Frame *DeactivatedFrame;// Фрейм, который указывает на предудущий активный фрейм
+		Frame *DeactivatedFrame;// Фрейм, который указывает на предыдущий активный фрейм
 		Frame *ExecutedFrame;   // Фрейм, которого вскорости нужно будет поставить на вершину модального стека
 
 		Frame *CurrentFrame;     // текущий фрейм. Он может находиться как в немодальной очереди, так и в модальном стеке
@@ -64,11 +62,11 @@ class Manager
 		  заведём счётчик модальных editor/viewer'ов.
 		  Дёргать его  надо ручками перед вызовом ExecuteModal.
 		  А автоматом нельзя, так как ExecuteModal вызывается
-		  1) не только для настоящих модалов (как это не пародоксально),
+		  1) не только для настоящих модалов (как это не парадоксально),
 		  2) не только для editor/viewer'ов.
 		*/
 		int ModalEVCount;
-		unsigned int RegularIdleWanters = 0;
+		int RegularIdleWanters = 0;
 
 		bool EndLoop;            // Признак выхода из цикла
 		bool StartManager;
@@ -76,21 +74,19 @@ class Manager
 
 	private:
 		void StartupMainloop();
-		Frame *FrameMenu(); //    вместо void SelectFrame(); // show window menu (F12)
+		Frame *FrameMenu(); // show window menu (F12)
 
 		void Commit();         // завершает транзакцию по изменениям в очереди и стеке фреймов
 		// Она в цикле вызывает себя, пока хотябы один из указателей отличен от nullptr
 		// Функции, "подмастерья начальника" - Commit'a
 		// Иногда вызываются не только из него и из других мест
-		void RefreshCommit();  //
-		void DeactivateCommit(); //
-		void ActivateCommit(); //
+		void RefreshCommit();
+		void DeactivateCommit();
+		void ActivateCommit();
 		void UpdateCommit();   // выполняется тогда, когда нужно заменить один фрейм на другой
 		void InsertCommit();
 		void DeleteCommit();
 		void ExecuteCommit();
-		void ModalizeCommit();
-		void UnmodalizeCommit();
 
 	public:
 		Manager();
@@ -101,28 +97,26 @@ class Manager
 		// они как бы накапливают информацию о том, что нужно будет сделать с фреймами при следующем вызове Commit()
 		void InsertFrame(Frame *NewFrame);
 		void DeleteFrame(Frame *Deleted=nullptr);
-		void DeleteFrame(int Index);
 		void DeactivateFrame(Frame *Deactivated,int Direction);
 		void ActivateFrame(Frame *Activated);
 		void ActivateFrame(int Index);
 		void RefreshFrame(Frame *Refreshed=nullptr);
 		void RefreshFrame(int Index);
 
-		//! Функции для запуска модальных фреймов.
+		// Функции для запуска модальных фреймов.
 		void ExecuteFrame(Frame *Executed);
 
-
-		//! Входит в новый цикл обработки событий
+		// Входит в новый цикл обработки событий
 		void ExecuteModal(Frame *Executed=nullptr);
-		//! Запускает немодальный фрейм в модальном режиме
+		// Запускает немодальный фрейм в модальном режиме
 		void ExecuteNonModal();
 
 		void ExecuteModalEV();
 
-		//!  Функции, которые работают с очередью немодально фрейма.
+		//  Функции, которые работают с очередью немодального фрейма.
 		//  Сейчас используются только для хранения информаци о наличии запущенных объектов типа VFMenu
-		void ModalizeFrame(Frame *Modalized=nullptr);
-		void UnmodalizeFrame(Frame *Unmodalized);
+		void ModalizeFrame(Frame *Modalized);     // Поставить в "очередь" к текущему немодальному фрейму
+		void UnmodalizeFrame(Frame *Unmodalized); // Убрать из "очереди" немодального фрейма
 
 		void CloseAll();
 		/* $ 29.12.2000 IS
@@ -132,7 +126,7 @@ class Manager
 		*/
 		bool ExitAll();
 
-		int  GetFrameCount() const {return FrameList.size();};
+		int  GetFrameCount() const {return FrameList.size();}
 		int  GetFrameCountByType(int Type) const;
 
 		/*$ 26.06.2001 SKV
@@ -143,7 +137,7 @@ class Manager
 		int CountFramesWithName(const wchar_t *Name, bool IgnoreCase=true) const;
 
 		bool IsPanelsActive() const; // используется как признак WaitInMainLoop
-		int  FindFrameByFile(int ModalType,const wchar_t *FileName,const wchar_t *Dir=nullptr) const;
+		Frame* FindFrameByFile(int ModalType,const wchar_t *FileName,const wchar_t *Dir=nullptr) const;
 		bool ShowBackground();
 
 		void EnterMainLoop();
@@ -193,7 +187,7 @@ class Manager
 
 		void RegularIdleWantersAdd() { RegularIdleWanters++; }
 		void RegularIdleWantersRemove() { if (RegularIdleWanters) RegularIdleWanters--; }
-		unsigned int RegularIdleWantersCount() const { return RegularIdleWanters; };
+		int RegularIdleWantersCount() const { return RegularIdleWanters; }
 };
 
 extern Manager *FrameManager;

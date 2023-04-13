@@ -102,8 +102,6 @@ Manager::Manager():
 	DeletedFrame(nullptr),
 	ActivatedFrame(nullptr),
 	RefreshedFrame(nullptr),
-	ModalizedFrame(nullptr),
-	UnmodalizedFrame(nullptr),
 	DeactivatedFrame(nullptr),
 	ExecutedFrame(nullptr),
 	CurrentFrame(nullptr),
@@ -205,6 +203,8 @@ void Manager::DeleteFrame(Frame *Deleted)
 		{
 			if (iFrame->RemoveModal(Deleted))
 			{
+				//### it seems we never get here
+				//Log("if (iFrame->RemoveModal(Deleted))");
 				return;
 			}
 		}
@@ -212,26 +212,32 @@ void Manager::DeleteFrame(Frame *Deleted)
 	}
 }
 
-void Manager::DeleteFrame(int Index)
-{
-	DeleteFrame((*this)[Index]);
-}
-
-
 void Manager::ModalizeFrame(Frame *Modalized)
 {
 	_FRAMELOG("ModalizeFrame", Modalized);
 
-	ModalizedFrame=Modalized;
-	ModalizeCommit();
+	CurrentFrame->PushFrame(Modalized);
 }
 
 void Manager::UnmodalizeFrame(Frame *Unmodalized)
 {
 	_FRAMELOG("UnmodalizeFrame", Unmodalized);
 
-	UnmodalizedFrame=Unmodalized;
-	UnmodalizeCommit();
+	for (auto iFrame: FrameList)
+	{
+		if (iFrame->RemoveModal(Unmodalized))
+		{
+			break;
+		}
+	}
+
+	for (auto iFrame: ModalStack)
+	{
+		if (iFrame->RemoveModal(Unmodalized))
+		{
+			break;
+		}
+	}
 }
 
 void Manager::ExecuteNonModal()
@@ -434,7 +440,7 @@ int Manager::GetFrameCountByType(int Type) const
 }
 
 /*$ 11.05.2001 OT Теперь можно искать файл не только по полному имени, но и отдельно - путь, отдельно имя */
-int  Manager::FindFrameByFile(int ModalType,const wchar_t *FileName, const wchar_t *Dir) const
+Frame* Manager::FindFrameByFile(int ModalType,const wchar_t *FileName, const wchar_t *Dir) const
 {
 	FARString strFullFileName = FileName;
 
@@ -445,21 +451,20 @@ int  Manager::FindFrameByFile(int ModalType,const wchar_t *FileName, const wchar
 		strFullFileName += FileName;
 	}
 
-	for (int I=0; I<(int)FrameList.size(); I++)
+	for (auto iFrame: FrameList)
 	{
-		FARString strType, strName;
-
 		// Mantis#0000469 - получать Name будем только при совпадении ModalType
-		if (FrameList[I]->GetType()==ModalType)
+		if (iFrame->GetType()==ModalType)
 		{
-			FrameList[I]->GetTypeAndName(strType, strName);
+			FARString strType, strName;
+			iFrame->GetTypeAndName(strType, strName);
 
 			if (!StrCmp(strName, strFullFileName))
-				return(I);
+				return iFrame;
 		}
 	}
 
-	return -1;
+	return nullptr;
 }
 
 bool Manager::ShowBackground()
@@ -566,7 +571,7 @@ void Manager::SwitchToPanels()
 bool Manager::HaveAnyFrame() const
 {
 	return !FrameList.empty() || InsertedFrame || DeletedFrame || ActivatedFrame || RefreshedFrame ||
-	        ModalizedFrame || DeactivatedFrame || ExecutedFrame || CurrentFrame;
+	        DeactivatedFrame || ExecutedFrame || CurrentFrame;
 }
 
 void Manager::EnterMainLoop()
@@ -1079,16 +1084,6 @@ void Manager::Commit()
 			RefreshCommit();
 			RefreshedFrame=nullptr;
 		}
-		else if (ModalizedFrame)
-		{
-			ModalizeCommit();
-	//    ModalizedFrame=nullptr;
-		}
-		else if (UnmodalizedFrame)
-		{
-			UnmodalizeCommit();
-	//    UnmodalizedFrame=nullptr;
-		}
 		else
 		{
 			break;
@@ -1143,10 +1138,10 @@ void Manager::ActivateCommit()
 	  Если мы пытаемся активировать полумодальный фрэйм,
 	  то надо его вытащить на верх стэка модалов.
 	*/
-	int Index=IndexOfStack(ActivatedFrame);
-	if (Index!=-1)
+	FrameIndex=IndexOfStack(ActivatedFrame);
+	if (FrameIndex!=-1)
 	{
-		ModalStack.erase(ModalStack.begin()+Index);
+		ModalStack.erase(ModalStack.begin()+FrameIndex);
 		ModalStack.push_back(ActivatedFrame);
 	}
 
@@ -1298,11 +1293,7 @@ void Manager::RefreshCommit()
 		if (!IsRedrawFramesInProcess)
 			RefreshedFrame->ShowConsoleTitle();
 
-		if (RefreshedFrame)
-			RefreshedFrame->Refresh();
-
-		if (!RefreshedFrame)
-			return;
+		RefreshedFrame->Refresh();
 
 		CtrlObject->Macro.SetArea(RefreshedFrame->GetMacroArea());
 	}
@@ -1413,36 +1404,6 @@ void Manager::ImmediateHide()
 	}
 }
 
-void Manager::ModalizeCommit()
-{
-	_FRAMELOG("ModalizeCommit", ModalizedFrame);
-	CurrentFrame->PushFrame(ModalizedFrame);
-	ModalizedFrame=nullptr;
-}
-
-void Manager::UnmodalizeCommit()
-{
-	_FRAMELOG("UnmodalizeCommit", UnmodalizedFrame);
-
-	for (auto iFrame: FrameList)
-	{
-		if (iFrame->RemoveModal(UnmodalizedFrame))
-		{
-			break;
-		}
-	}
-
-	for (auto iFrame: ModalStack)
-	{
-		if (iFrame->RemoveModal(UnmodalizedFrame))
-		{
-			break;
-		}
-	}
-
-	UnmodalizedFrame=nullptr;
-}
-
 /*  Вызов ResizeConsole для всех NextModal у
     модального фрейма. KM
 */
@@ -1475,8 +1436,7 @@ void Manager::ResizeAllFrame()
 	}
 
 	ImmediateHide();
-	FrameManager->RefreshFrame();
-	//RefreshFrame();
+	RefreshFrame();
 	ScrBuf.Unlock();
 }
 
@@ -1489,15 +1449,13 @@ void Manager::InitKeyBar()
 // возвращает top-модал или сам фрейм, если у фрейма нету модалов
 Frame* Manager::GetTopModal() const
 {
-	Frame *f=CurrentFrame, *fo=nullptr;
-
-	while (f)
+	Frame *f=CurrentFrame;
+	if (f)
 	{
-		fo=f;
-		f=f->NextModal;
+		while (f->NextModal)
+			f=f->NextModal;
 	}
-
-	return fo;
+	return f;
 }
 
 LockBottomFrame::LockBottomFrame()
