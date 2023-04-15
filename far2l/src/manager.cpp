@@ -214,6 +214,12 @@ void Manager::DeleteFrame(Frame *Deleted)
 
 void Manager::ModalizeFrame(Frame *Modalized)
 {
+	if (ActivatedFrame) // Issue #26 (the 1-st problem)
+	{
+		ActivateCommit();
+		ActivatedFrame=nullptr;
+	}
+
 	_FRAMELOG("ModalizeFrame", Modalized);
 
 	CurrentFrame->PushFrame(Modalized);
@@ -1156,6 +1162,7 @@ void Manager::UpdateCommit()
 	{
 		FrameList[Index]=InsertedFrame;
 		ActivateFrame(InsertedFrame);
+		InsertedFrame=nullptr; // Issue #26 (the 2-nd problem)
 		ActivatedFrame->FrameToBack=CurrentFrame;
 		DeleteCommit();
 	}
