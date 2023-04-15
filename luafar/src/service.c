@@ -4381,6 +4381,10 @@ int DoAdvControl (lua_State *L, int Command, int Delta)
       lua_pushboolean(L, PSInfo.AdvControl(pd->ModuleNumber, Command, &coord));
       return 1;
 
+    case ACTL_WINPORTBACKEND:
+      PSInfo.AdvControl(pd->ModuleNumber, Command, buf);
+      return push_utf8_string(L,buf,-1), 1;
+
     //case ACTL_SYNCHRO:   //  not supported as it is used in far.Timer
     //case ACTL_KEYMACRO:  //  not supported as it's replaced by separate functions far.MacroXxx
   }
@@ -4419,6 +4423,7 @@ AdvCommand( SetCursorPos,           ACTL_SETCURSORPOS, 1)
 AdvCommand( SetProgressState,       ACTL_SETPROGRESSSTATE, 1)
 AdvCommand( SetProgressValue,       ACTL_SETPROGRESSVALUE, 1)
 AdvCommand( WaitKey,                ACTL_WAITKEY, 1)
+AdvCommand( WinPortBackend,         ACTL_WINPORTBACKEND, 1)
 
 int far_CPluginStartupInfo(lua_State *L)
 {
@@ -5688,6 +5693,7 @@ static const luaL_Reg actl_funcs[] =
   {"SetProgressState",      adv_SetProgressState},
   {"SetProgressValue",      adv_SetProgressValue},
   {"WaitKey",               adv_WaitKey},
+  {"WinPortBackend",        adv_WinPortBackend},
   {NULL, NULL},
 };
 

@@ -280,6 +280,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 		case ACTL_GETCURSORPOS:
 		case ACTL_SETCURSORPOS:
 		case ACTL_PROGRESSNOTIFY:
+		case ACTL_WINPORTBACKEND:
 			break;
 		default:
 
@@ -736,6 +737,17 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 		case ACTL_PROGRESSNOTIFY:
 		{
 			return TRUE;
+		}
+
+		case ACTL_WINPORTBACKEND:
+		{
+			const wchar_t* Backend = WinPortBackend();
+			size_t Size = wcslen(Backend) + 1;
+			if (Param)
+			{
+				wcscpy((wchar_t*)Param, Backend);
+			}
+			return (INT_PTR)Size;
 		}
 
 	}
