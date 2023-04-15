@@ -279,21 +279,14 @@ void Manager::ExecuteModal(Frame *Executed)
 {
 	_FRAMELOG("ExecuteModal", Executed);
 
-	if (!Executed && !ExecutedFrame)
+	if (!Executed == !ExecutedFrame)
 	{
 		return;
 	}
 
 	if (Executed)
 	{
-		if (ExecutedFrame)
-		{
-			return;
-		}
-		else
-		{
-			ExecutedFrame=Executed;
-		}
+		ExecutedFrame=Executed;
 	}
 
 	auto ModalStartLevel=ModalStack.size();
@@ -313,7 +306,6 @@ void Manager::ExecuteModal(Frame *Executed)
 	}
 
 	StartManager=OriginalStartManager;
-	return;
 }
 
 /* $ 15.05.2002 SKV
@@ -324,7 +316,7 @@ void Manager::ExecuteModal(Frame *Executed)
 void Manager::ExecuteModalEV()
 {
 	ModalEVCount++;
-	ExecuteModal(nullptr);
+	ExecuteModal();
 	ModalEVCount--;
 }
 
@@ -655,7 +647,7 @@ void Manager::ExitMainLoop(bool Ask)
 	{
 		CloseFAR=FALSE;
 		CloseFARMenu=TRUE;
-	};
+	}
 
 	if (!Ask || ((!Opt.Confirm.Exit || ConfirmExit()) && CtrlObject->Plugins.MayExitFar()))
 	{
@@ -1127,21 +1119,20 @@ void Manager::ActivateCommit()
 		return;
 	}
 
-	int FrameIndex=IndexOfList(ActivatedFrame);
-
-	if (-1!=FrameIndex)
+	int Index=IndexOfList(ActivatedFrame);
+	if (Index!=-1)
 	{
-		FramePos=FrameIndex;
+		FramePos=Index;
 	}
 
 	/* 14.05.2002 SKV
 	  Если мы пытаемся активировать полумодальный фрэйм,
 	  то надо его вытащить на верх стэка модалов.
 	*/
-	FrameIndex=IndexOfStack(ActivatedFrame);
-	if (FrameIndex!=-1)
+	Index=IndexOfStack(ActivatedFrame);
+	if (Index!=-1)
 	{
-		ModalStack.erase(ModalStack.begin()+FrameIndex);
+		ModalStack.erase(ModalStack.begin()+Index);
 		ModalStack.push_back(ActivatedFrame);
 	}
 
@@ -1159,11 +1150,11 @@ void Manager::UpdateCommit()
 		return;
 	}
 
-	int FrameIndex=IndexOfList(DeletedFrame);
+	int Index=IndexOfList(DeletedFrame);
 
-	if (-1!=FrameIndex)
+	if (-1!=Index)
 	{
-		FrameList[FrameIndex]=InsertedFrame;
+		FrameList[Index]=InsertedFrame;
 		ActivateFrame(InsertedFrame);
 		ActivatedFrame->FrameToBack=CurrentFrame;
 		DeleteCommit();
@@ -1186,16 +1177,13 @@ void Manager::DeleteCommit()
 	  Надёжнее найти и удалить именно то, что
 	  нужно, а не просто верхний.
 	*/
-	for (auto it=ModalStack.begin(); it!=ModalStack.end(); it++)
+	int Index=IndexOfStack(DeletedFrame);
+	if (Index!=-1)
 	{
-		if (*it==DeletedFrame)
+		ModalStack.erase(ModalStack.begin()+Index);
+		if (!ModalStack.empty())
 		{
-			ModalStack.erase(it);
-			if (!ModalStack.empty())
-			{
-				ActivateFrame(ModalStack.back());
-			}
-			break;
+			ActivateFrame(ModalStack.back());
 		}
 	}
 
@@ -1207,15 +1195,15 @@ void Manager::DeleteCommit()
 		}
 	}
 
-	int FrameIndex=IndexOfList(DeletedFrame);
+	Index=IndexOfList(DeletedFrame);
 
-	if (-1!=FrameIndex)
+	if (-1!=Index)
 	{
 		_DUMP_FRAME_LIST();
 
 		DeletedFrame->DestroyAllModal();
 
-		FrameList.erase(FrameList.begin()+FrameIndex);
+		FrameList.erase(FrameList.begin()+Index);
 
 		if (FramePos >= (int)FrameList.size())
 		{
