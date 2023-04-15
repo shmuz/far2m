@@ -214,13 +214,13 @@ void Manager::DeleteFrame(Frame *Deleted)
 
 void Manager::ModalizeFrame(Frame *Modalized)
 {
+	_FRAMELOG("ModalizeFrame", Modalized);
+
 	if (ActivatedFrame) // Issue #26 (the 1-st problem)
 	{
 		ActivateCommit();
 		ActivatedFrame=nullptr;
 	}
-
-	_FRAMELOG("ModalizeFrame", Modalized);
 
 	CurrentFrame->PushFrame(Modalized);
 }

@@ -5510,6 +5510,33 @@ int win_IsProcess64bit(lua_State *L)
   return 1;
 }
 
+int win_WriteConsole(lua_State *L)
+{
+  int i, narg = lua_gettop(L);
+  HANDLE h_out = stdout; //GetStdHandle(STD_OUTPUT_HANDLE);
+  if (h_out==INVALID_HANDLE_VALUE)
+    return SysErrorReturn(L);
+  if (h_out==NULL)
+    return 0;
+  for (i=0; i<narg; i++)
+  {
+    size_t nCharsToWrite;
+    DWORD nCharsWritten;
+    lua_getglobal(L, "tostring"); //narg+1
+    if (!lua_isfunction(L, -1))
+      return 0;
+    lua_pushvalue(L, i+1); //narg+2
+    if (lua_pcall(L, 1, 1, 0) || lua_type(L, -1) != LUA_TSTRING) //narg+1
+      return 0;
+    check_utf8_string(L, -1, &nCharsToWrite); //narg+1
+    if (!WINPORT(WriteConsole)(h_out, (const void*)lua_touserdata(L,-1), (DWORD)nCharsToWrite, &nCharsWritten, NULL))
+      return SysErrorReturn(L);
+    lua_pop(L, 1); //narg
+  }
+  lua_pushboolean(L, 1);
+  return 1;
+}
+
 int ustring_sub(lua_State *L)
 {
   size_t len;
@@ -5794,6 +5821,7 @@ static const luaL_Reg win_funcs[] = {
   {"GetCurrentDir",              win_GetCurrentDir},
   {"SetCurrentDir",              win_SetCurrentDir},
   {"IsProcess64bit",             win_IsProcess64bit},
+  {"WriteConsole",               win_WriteConsole},
 
   {"EnumSystemCodePages",        ustring_EnumSystemCodePages },
   {"GetACP",                     ustring_GetACP},
