@@ -1047,28 +1047,28 @@ int editor_GetBookmarks(lua_State *L)
   return PushBookmarks(L, editorId, ei.BookMarkCount, ECTL_GETBOOKMARKS);
 }
 
-int editor_GetStackBookmarks(lua_State *L)
+int editor_GetSessionBookmarks(lua_State *L)
 {
   int editorId = luaL_optinteger(L,1,-1);
   int count = PSInfo.EditorControlV2(editorId, ECTL_GETSTACKBOOKMARKS, NULL);
   return PushBookmarks(L, editorId, count, ECTL_GETSTACKBOOKMARKS);
 }
 
-int editor_AddStackBookmark(lua_State *L)
+int editor_AddSessionBookmark(lua_State *L)
 {
   int editorId = luaL_optinteger(L,1,-1);
   lua_pushboolean(L, PSInfo.EditorControlV2(editorId, ECTL_ADDSTACKBOOKMARK, NULL));
   return 1;
 }
 
-int editor_ClearStackBookmarks(lua_State *L)
+int editor_ClearSessionBookmarks(lua_State *L)
 {
   int editorId = luaL_optinteger(L,1,-1);
   lua_pushinteger(L, PSInfo.EditorControlV2(editorId, ECTL_CLEARSTACKBOOKMARKS, NULL));
   return 1;
 }
 
-int editor_DeleteStackBookmark(lua_State *L)
+int editor_DeleteSessionBookmark(lua_State *L)
 {
   int editorId = luaL_optinteger(L,1,-1);
   INT_PTR num = luaL_optinteger(L, 2, 0) - 1;
@@ -1076,14 +1076,14 @@ int editor_DeleteStackBookmark(lua_State *L)
   return 1;
 }
 
-int editor_NextStackBookmark(lua_State *L)
+int editor_NextSessionBookmark(lua_State *L)
 {
   int editorId = luaL_optinteger(L,1,-1);
   lua_pushboolean(L, PSInfo.EditorControlV2(editorId, ECTL_NEXTSTACKBOOKMARK, NULL));
   return 1;
 }
 
-int editor_PrevStackBookmark(lua_State *L)
+int editor_PrevSessionBookmark(lua_State *L)
 {
   int editorId = luaL_optinteger(L,1,-1);
   lua_pushboolean(L, PSInfo.EditorControlV2(editorId, ECTL_PREVSTACKBOOKMARK, NULL));
@@ -5713,47 +5713,47 @@ static const luaL_Reg viewer_funcs[] =
 
 static const luaL_Reg editor_funcs[] =
 {
-  {"AddColor",            editor_AddColor},
-  {"AddStackBookmark",    editor_AddStackBookmark},
-  {"ClearStackBookmarks", editor_ClearStackBookmarks},
-  {"DelColor",            editor_DelColor},
-  {"DeleteBlock",         editor_DeleteBlock},
-  {"DeleteChar",          editor_DeleteChar},
-  {"DeleteStackBookmark", editor_DeleteStackBookmark},
-  {"DeleteString",        editor_DeleteString},
-  {"Editor",              editor_Editor},
-  {"ExpandTabs",          editor_ExpandTabs},
-  {"GetBookmarks",        editor_GetBookmarks},
-  {"GetColor",            editor_GetColor},
-  {"GetFileName",         editor_GetFileName},
-  {"GetInfo",             editor_GetInfo},
-  {"GetSelection",        editor_GetSelection},
-  {"GetStackBookmarks",   editor_GetStackBookmarks},
-  {"GetString",           editor_GetString},
-  {"GetStringW",          editor_GetStringW},
-  {"GetTitle",            editor_GetTitle},
-  {"InsertString",        editor_InsertString},
-  {"InsertText",          editor_InsertText},
-  {"InsertTextW",         editor_InsertTextW},
-  {"NextStackBookmark",   editor_NextStackBookmark},
-  {"PrevStackBookmark",   editor_PrevStackBookmark},
-  {"ProcessInput",        editor_ProcessInput},
-  {"ProcessKey",          editor_ProcessKey},
-  {"Quit",                editor_Quit},
-  {"ReadInput",           editor_ReadInput},
-  {"RealToTab",           editor_RealToTab},
-  {"Redraw",              editor_Redraw},
-  {"SaveFile",            editor_SaveFile},
-  {"Select",              editor_Select},
-  {"SetKeyBar",           editor_SetKeyBar},
-  {"SetParam",            editor_SetParam},
-  {"SetPosition",         editor_SetPosition},
-  {"SetString",           editor_SetString},
-  {"SetStringW",          editor_SetStringW},
-  {"SetTitle",            editor_SetTitle},
-  {"TabToReal",           editor_TabToReal},
-  {"TurnOffMarkingBlock", editor_TurnOffMarkingBlock},
-  {"UndoRedo",            editor_UndoRedo},
+  {"AddColor",              editor_AddColor},
+  {"AddSessionBookmark",    editor_AddSessionBookmark},
+  {"ClearSessionBookmarks", editor_ClearSessionBookmarks},
+  {"DelColor",              editor_DelColor},
+  {"DeleteBlock",           editor_DeleteBlock},
+  {"DeleteChar",            editor_DeleteChar},
+  {"DeleteSessionBookmark", editor_DeleteSessionBookmark},
+  {"DeleteString",          editor_DeleteString},
+  {"Editor",                editor_Editor},
+  {"ExpandTabs",            editor_ExpandTabs},
+  {"GetBookmarks",          editor_GetBookmarks},
+  {"GetColor",              editor_GetColor},
+  {"GetFileName",           editor_GetFileName},
+  {"GetInfo",               editor_GetInfo},
+  {"GetSelection",          editor_GetSelection},
+  {"GetSessionBookmarks",   editor_GetSessionBookmarks},
+  {"GetString",             editor_GetString},
+  {"GetStringW",            editor_GetStringW},
+  {"GetTitle",              editor_GetTitle},
+  {"InsertString",          editor_InsertString},
+  {"InsertText",            editor_InsertText},
+  {"InsertTextW",           editor_InsertTextW},
+  {"NextSessionBookmark",   editor_NextSessionBookmark},
+  {"PrevSessionBookmark",   editor_PrevSessionBookmark},
+  {"ProcessInput",          editor_ProcessInput},
+  {"ProcessKey",            editor_ProcessKey},
+  {"Quit",                  editor_Quit},
+  {"ReadInput",             editor_ReadInput},
+  {"RealToTab",             editor_RealToTab},
+  {"Redraw",                editor_Redraw},
+  {"SaveFile",              editor_SaveFile},
+  {"Select",                editor_Select},
+  {"SetKeyBar",             editor_SetKeyBar},
+  {"SetParam",              editor_SetParam},
+  {"SetPosition",           editor_SetPosition},
+  {"SetString",             editor_SetString},
+  {"SetStringW",            editor_SetStringW},
+  {"SetTitle",              editor_SetTitle},
+  {"TabToReal",             editor_TabToReal},
+  {"TurnOffMarkingBlock",   editor_TurnOffMarkingBlock},
+  {"UndoRedo",              editor_UndoRedo},
   {NULL, NULL},
 };
 
