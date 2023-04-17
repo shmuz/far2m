@@ -364,7 +364,7 @@ void UpdateFileSelection(lua_State* L, struct PluginPanelItem *PanelItems, int I
       if(lua_toboolean(L,-1))
       {
         int success = 0;
-        int Flags = GetFlagCombination(L,-1,&success);
+        DWORD Flags = GetFlagCombination(L,-1,&success);
         if(success && ((Flags & PPIF_SELECTED) == 0))
           PanelItems[i].Flags &= ~PPIF_SELECTED;
       }
@@ -495,7 +495,7 @@ void LF_GetOpenPluginInfo(lua_State* L, HANDLE hPlugin, struct OpenPluginInfo *a
     (struct OpenPluginInfo*) AddBufToCollector(L, cpos, sizeof(struct OpenPluginInfo));
   //---------------------------------------------------------------------------
   Info->StructSize = sizeof (struct OpenPluginInfo);
-  Info->Flags      = GetOptIntFromTable(L, "Flags", 0);
+  Info->Flags      = GetFlagsFromTable(L, -1, "Flags");
   Info->HostFile   = AddStringToCollectorField(L, cpos, "HostFile");
   Info->CurDir     = AddStringToCollectorField(L, cpos, "CurDir");
   Info->Format     = AddStringToCollectorField(L, cpos, "Format");
@@ -1090,7 +1090,7 @@ void LF_GetPluginInfo(lua_State* L, struct PluginInfo *aPI)
     AddBufToCollector (L, cpos, sizeof(struct PluginInfo));
   PI->StructSize = sizeof (struct PluginInfo);
   //--------------------------------------------------------------------------
-  PI->Flags = GetOptIntFromTable (L, "Flags", 0);
+  PI->Flags = GetFlagsFromTable (L, -1, "Flags");
   //--------------------------------------------------------------------------
   PI->DiskMenuStrings = CreateStringsArray (L, cpos, "DiskMenuStrings", &PI->DiskMenuStringsNumber);
   PI->PluginMenuStrings = CreateStringsArray (L, cpos, "PluginMenuStrings", &PI->PluginMenuStringsNumber);

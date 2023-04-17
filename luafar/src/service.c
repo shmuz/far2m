@@ -266,102 +266,112 @@ HANDLE OptHandle(lua_State *L)
   return OptHandlePos(L,1);
 }
 
-BOOL get_env_flag (lua_State *L, int stack_pos, int *trg)
+DWORD get_env_flag (lua_State *L, int stack_pos, int *success)
 {
-  *trg = 0;
-  int type = lua_type (L, stack_pos);
-  if (type == LUA_TNUMBER) {
-    *trg = lua_tointeger (L, stack_pos);
-    return TRUE;
-  }
-  else if (type == LUA_TNONE || type == LUA_TNIL)
-    return TRUE;
-  if (type == LUA_TSTRING) {
-    lua_getfield (L, LUA_ENVIRONINDEX, lua_tostring(L, stack_pos));
-    if (lua_isnumber(L, -1)) {
-      *trg = lua_tointeger (L, -1);
+  int dummy;
+  success = success ? success : &dummy;
+  *success = TRUE;
+
+  switch(lua_type(L,stack_pos))
+  {
+    case LUA_TNONE:
+    case LUA_TNIL:
+      return 0;
+    case LUA_TNUMBER:
+      return (DWORD)lua_tointeger (L, stack_pos);
+    case LUA_TSTRING:
+      lua_getfield (L, LUA_ENVIRONINDEX, lua_tostring(L, stack_pos));
+      if (lua_isnumber(L, -1)) {
+        DWORD trg = (DWORD)lua_tointeger (L, -1);
+        lua_pop (L, 1);
+        return trg;
+      }
       lua_pop (L, 1);
-      return TRUE;
-    }
-    lua_pop (L, 1);
+      break;
+    default:
+      break;
   }
-  return FALSE;
+  *success = FALSE;
+  return 0;
 }
 
-int check_env_flag (lua_State *L, int stack_pos)
+DWORD check_env_flag (lua_State *L, int stack_pos)
 {
-  int trg;
-  if (lua_isnoneornil(L, stack_pos) || !get_env_flag (L, stack_pos, &trg))
+  DWORD trg = 0;
+  int success = FALSE;
+  if (!lua_isnoneornil(L,stack_pos))
+    trg = get_env_flag(L,stack_pos,&success);
+  if (!success)
     luaL_argerror(L, stack_pos, "invalid flag");
   return trg;
 }
 
-int opt_env_flag (lua_State *L, int stack_pos, int dflt)
+DWORD opt_env_flag (lua_State *L, int stack_pos, DWORD dflt)
 {
-  int trg = dflt;
-  if (!lua_isnoneornil(L, stack_pos) && !get_env_flag (L, stack_pos, &trg))
-    luaL_argerror(L, stack_pos, "invalid flag");
+  DWORD trg = dflt;
+  if (!lua_isnoneornil(L,stack_pos)) {
+    int success;
+    trg = get_env_flag(L,stack_pos,&success);
+    if (!success)
+      luaL_argerror(L, stack_pos, "invalid flag");
+  }
   return trg;
 }
 
-BOOL GetFlagCombination (lua_State *L, int stack_pos, int *trg)
+DWORD GetFlagCombination (lua_State *L, int stack_pos, int *success)
 {
-  *trg = 0;
+  DWORD trg = 0;
+  int dummy;
+  success = success ? success : &dummy;
+  *success = TRUE;
+
   int type = lua_type (L, stack_pos);
-  if (type == LUA_TNUMBER) {
-    *trg = lua_tointeger (L, stack_pos);
-    return TRUE;
-  }
-  if (type == LUA_TNONE || type == LUA_TNIL)
-    return TRUE;
-  if (type == LUA_TSTRING)
-    return get_env_flag (L, stack_pos, trg);
-  if (type == LUA_TTABLE) {
+  if (type == LUA_TNUMBER)
+    return (DWORD)lua_tointeger (L, stack_pos);
+  else if (type == LUA_TNONE || type == LUA_TNIL)
+    return 0;
+  else if (type == LUA_TSTRING)
+    return get_env_flag (L, stack_pos, success);
+  else if (type == LUA_TTABLE) {
     stack_pos = abs_index (L, stack_pos);
     lua_pushnil(L);
     while (lua_next(L, stack_pos)) {
       if (lua_type(L,-2)==LUA_TSTRING && lua_toboolean(L,-1)) {
-        int flag;
-        if (get_env_flag (L, -2, &flag))
-          *trg |= flag;
+        DWORD flag = get_env_flag (L, -2, success);
+        if (*success)
+          trg |= flag;
         else
-          { lua_pop(L,2); return FALSE; }
+          { lua_pop(L,2); return 0; }
       }
       lua_pop(L, 1);
     }
-    return TRUE;
+    return trg;
   }
-  return FALSE;
+  else {
+    *success = FALSE;
+    return 0;
+  }
 }
 
-int CheckFlags(lua_State* L, int stackpos)
+DWORD CheckFlags(lua_State* L, int stackpos)
 {
-  int Flags;
-  if (!GetFlagCombination (L, stackpos, &Flags))
+  int success;
+  DWORD Flags = GetFlagCombination(L, stackpos, &success);
+  if (!success)
     luaL_error(L, "invalid flag combination");
   return Flags;
 }
 
-int OptFlags(lua_State* L, int pos, int dflt)
+DWORD OptFlags(lua_State* L, int pos, DWORD dflt)
 {
   return lua_isnoneornil(L, pos) ? dflt : CheckFlags(L, pos);
 }
 
-int CheckFlagsFromTable(lua_State *L, int pos, const char* key)
+DWORD GetFlagsFromTable(lua_State *L, int pos, const char* key)
 {
-  int f = 0;
+  DWORD f;
   lua_getfield(L, pos, key);
-  if (!lua_isnil(L, -1))
-    f = CheckFlags(L, -1);
-  lua_pop(L, 1);
-  return f;
-}
-
-int GetFlagsFromTable(lua_State *L, int pos, const char* key)
-{
-  int f;
-  lua_getfield(L, pos, key);
-  GetFlagCombination(L, -1, &f);
+  f = GetFlagCombination(L, -1, NULL);
   lua_pop(L, 1);
   return f;
 }
@@ -965,9 +975,7 @@ int editor_SetParam(lua_State *L)
     esp.Size = ARRAYSIZE(buf);
   }
   //-----------------------------------------------------
-  int f;
-  GetFlagCombination (L, 4, &f);
-  esp.Flags = f;
+  esp.Flags = GetFlagCombination (L, 4, NULL);
   //-----------------------------------------------------
   int result = PSInfo.EditorControlV2(editorId, ECTL_SETPARAM, &esp);
   lua_pushboolean(L, result);
@@ -1107,8 +1115,10 @@ int editor_Quit(lua_State *L)
 
 int FillEditorSelect(lua_State *L, int pos_table, struct EditorSelect *es)
 {
+  int OK;
   lua_getfield(L, pos_table, "BlockType");
-  if (!get_env_flag(L, -1, &es->BlockType)) {
+  es->BlockType = get_env_flag(L, -1, &OK);
+  if (!OK) {
     lua_pop(L,1);
     return 0;
   }
@@ -1129,7 +1139,7 @@ int editor_Select(lua_State *L)
   if (lua_istable(L, 2))
     result = FillEditorSelect(L, 2, &es);
   else {
-    result = get_env_flag(L, 2, &es.BlockType);
+    es.BlockType = get_env_flag(L, 2, &result);
     if (result) {
       es.BlockStartLine = luaL_optinteger(L, 3, 0) - 1;
       es.BlockStartPos  = luaL_optinteger(L, 4, 0) - 1;
@@ -1384,7 +1394,7 @@ int editor_ReadInput(lua_State *L)
 
 void FillInputRecord(lua_State *L, int pos, INPUT_RECORD *ir)
 {
-  int temp;
+  int ok;
   size_t size;
 
   pos = abs_index(L, pos);
@@ -1393,12 +1403,12 @@ void FillInputRecord(lua_State *L, int pos, INPUT_RECORD *ir)
 
   // determine event type
   lua_getfield(L, pos, "EventType");
-  if(!get_env_flag(L, -1, &temp))
+  ir->EventType = get_env_flag(L, -1, &ok);
+  if (!ok)
     luaL_argerror(L, pos, "EventType field is missing or invalid");
   lua_pop(L, 1);
 
   lua_pushvalue(L, pos);
-  ir->EventType = temp;
   switch(ir->EventType) {
     case KEY_EVENT:
       ir->Event.KeyEvent.bKeyDown = GetOptBoolFromTable(L, "KeyDown", FALSE);
@@ -2352,10 +2362,11 @@ int far_SaveScreen (lua_State *L)
 
 int GetDialogItemType(lua_State* L, int key, int item)
 {
+  int ok;
   lua_pushinteger(L, key);
   lua_gettable(L, -2);
-  int iType;
-  if(!get_env_flag(L, -1, &iType)) {
+  int iType = get_env_flag(L, -1, &ok);
+  if (!ok) {
     const char* sType = lua_tostring(L, -1);
     return luaL_error(L, "%s - unsupported type in dialog item %d", sType, item);
   }
@@ -2367,9 +2378,11 @@ int GetDialogItemType(lua_State* L, int key, int item)
 int GetItemFlags(lua_State* L, int flag_index, int item_index)
 {
   int flags;
+  int ok;
   lua_pushinteger(L, flag_index);
   lua_gettable(L, -2);
-  if (!GetFlagCombination (L, -1, &flags))
+  flags = GetFlagCombination (L, -1, &ok);
+  if (!ok)
     return luaL_error(L, "unsupported flag in dialog item %d", item_index);
   lua_pop(L, 1);
   return flags;
@@ -2682,7 +2695,7 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 {
   typedef struct { void *Id; int Ref; } listdata_t;
   TPluginData *pd = GetPluginData(L);
-  int Param1, res, res_incr=0, tmpint;
+  int Param1, res, res_incr=0;
   LONG_PTR Param2=0;
   wchar_t buf[512];
   int pos2 = 2-delta, pos3 = 3-delta, pos4 = 4-delta;
@@ -2788,8 +2801,7 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
       break;
 
     case DM_LISTSETMOUSEREACTION:
-      get_env_flag (L, pos4, &tmpint);
-      Param2 = tmpint;
+      Param2 = get_env_flag (L, pos4, NULL);
       break;
 
     case DM_GETCURSORPOS:
@@ -2913,7 +2925,7 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
       lua_getfield(L, pos4, "Pattern");
       flf.Pattern = check_utf8_string(L, -1, NULL);
       lua_getfield(L, pos4, "Flags");
-      get_env_flag(L, -1, (int*)&flf.Flags);
+      flf.Flags = get_env_flag(L, -1, NULL);
       res = PSInfo.SendDlgMessage (hDlg, Msg, Param1, (LONG_PTR)&flf);
       res < 0 ? lua_pushnil(L) : lua_pushinteger (L, res+1);
       return 1;
@@ -3586,7 +3598,7 @@ int far_DefDlgProc(lua_State *L)
 
   luaL_checktype(L, 1, LUA_TLIGHTUSERDATA);
   HANDLE hDlg = lua_touserdata(L, 1);
-  get_env_flag(L, 2, &Msg);
+  Msg = get_env_flag(L, 2, NULL);
   Param1 = luaL_checkinteger(L, 3);
   Param2 = luaL_checkinteger(L, 4);
 
@@ -3700,12 +3712,12 @@ int viewer_SetPosition(lua_State *L)
     lua_settop(L, 2);
     vsp.StartPos = (int64_t)GetOptNumFromTable(L, "StartPos", 0);
     vsp.LeftPos = (int64_t)GetOptNumFromTable(L, "LeftPos", 1) - 1;
-    vsp.Flags   = GetOptIntFromTable(L, "Flags", 0);
+    vsp.Flags   = GetFlagsFromTable(L, -1, "Flags");
   }
   else {
     vsp.StartPos = (int64_t)luaL_optnumber(L,2,0);
     vsp.LeftPos = (int64_t)luaL_optnumber(L,3,1) - 1;
-    vsp.Flags = luaL_optinteger(L,4,0);
+    vsp.Flags = OptFlags(L,4,0);
   }
   if (PSInfo.ViewerControlV2(viewerId, VCTL_SETPOSITION, &vsp))
     lua_pushnumber(L, (double)vsp.StartPos);
@@ -3716,13 +3728,15 @@ int viewer_SetPosition(lua_State *L)
 
 int viewer_SetMode(lua_State *L)
 {
+  int ok;
   int viewerId = luaL_optinteger(L,1,-1);
   struct ViewerSetMode vsm;
   memset(&vsm, 0, sizeof(struct ViewerSetMode));
   luaL_checktype(L, 2, LUA_TTABLE);
 
   lua_getfield(L, 2, "Type");
-  if (!get_env_flag (L, -1, &vsm.Type))
+  vsm.Type = get_env_flag (L, -1, &ok);
+  if (!ok)
     return lua_pushboolean(L,0), 1;
 
   lua_getfield(L, 2, "iParam");
@@ -3731,11 +3745,10 @@ int viewer_SetMode(lua_State *L)
   else
     return lua_pushboolean(L,0), 1;
 
-  int flags;
   lua_getfield(L, 2, "Flags");
-  if (!get_env_flag (L, -1, &flags))
+  vsm.Flags = get_env_flag (L, -1, &ok);
+  if (!ok)
     return lua_pushboolean(L,0), 1;
-  vsm.Flags = flags;
 
   lua_pushboolean(L, PSInfo.ViewerControlV2(viewerId, VCTL_SETMODE, &vsm));
   return 1;
@@ -3761,7 +3774,7 @@ int far_InputBox(lua_State *L)
   const wchar_t *SrcText     = opt_utf8_string (L, 5, L"");
   int DestLength             = luaL_optinteger (L, 6, 1024);
   const wchar_t *HelpTopic   = opt_utf8_string (L, 7, NULL);
-  DWORD Flags = luaL_optinteger (L, 8, FIB_ENABLEEMPTY|FIB_BUTTONS|FIB_NOAMPERSAND);
+  DWORD Flags = OptFlags (L, 8, FIB_ENABLEEMPTY|FIB_BUTTONS|FIB_NOAMPERSAND);
 
   if (DestLength < 1) DestLength = 1;
   wchar_t *DestText = (wchar_t*) malloc(sizeof(wchar_t)*DestLength);
@@ -4228,7 +4241,10 @@ int DoAdvControl (lua_State *L, int Command, int Delta)
       return 1;
 
     case ACTL_WAITKEY:
-      int1 = opt_env_flag(L, pos2, -1);
+      if (lua_isnumber(L, pos2))
+        int1 = lua_tointeger(L, pos2);
+      else
+        int1 = opt_env_flag(L, pos2, -1);
       if (int1 < -1) //this prevents program freeze
         int1 = -1;
       lua_pushinteger(L, PSInfo.AdvControl(pd->ModuleNumber, Command, (void*)int1));
@@ -4335,7 +4351,7 @@ int DoAdvControl (lua_State *L, int Command, int Delta)
       lua_settop(L, pos2);
       fsc.StartIndex = GetOptIntFromTable(L, "StartIndex", 0);
       lua_getfield(L, pos2, "Flags");
-      GetFlagCombination(L, -1, (int*)&fsc.Flags);
+      fsc.Flags = GetFlagCombination(L, -1, NULL);
       fsc.ColorCount = lua_objlen(L, pos2);
       fsc.Colors = (BYTE*)lua_newuserdata(L, fsc.ColorCount);
       for (i=0; i < fsc.ColorCount; i++) {
@@ -4689,7 +4705,7 @@ int far_InputRecordToName(lua_State* L)
   lua_settop(L, 1);
 
   lua_getfield(L, 1, "EventType");
-  get_env_flag(L, -1, &event);
+  event = get_env_flag(L, -1, NULL);
   if (! (event==0 || event==KEY_EVENT))
     return lua_pushnil(L), 1;
 
