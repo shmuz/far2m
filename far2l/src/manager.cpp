@@ -166,15 +166,13 @@ void Manager::CloseAll()
 {
 	for (int i=(int)ModalStack.size()-1; i>=0; i--)
 	{
-		DeleteFrame(ModalStack[i]);
-		DeleteCommit();
+		DeleteCommit(ModalStack[i]);
 		DeletedFrame=nullptr;
 	}
 
 	for (int i=(int)FrameList.size()-1; i>=0; i--)
 	{
-		DeleteFrame(FrameList[i]);
-		DeleteCommit();
+		DeleteCommit(FrameList[i]);
 		DeletedFrame=nullptr;
 	}
 
@@ -262,9 +260,8 @@ void Manager::ExecuteNonModal()
 	}
 	else
 	{
-		InsertedFrame=NonModal;
 		ExecutedFrame=nullptr;
-		InsertCommit();
+		InsertCommit(NonModal);
 		InsertedFrame=nullptr;
 	}
 
@@ -1047,24 +1044,24 @@ void Manager::Commit()
 
 		if (DeletedFrame && (InsertedFrame||ExecutedFrame))
 		{
-			UpdateCommit();
+			UpdateCommit(DeletedFrame);
 			DeletedFrame = nullptr;
 			InsertedFrame = nullptr;
 			ExecutedFrame=nullptr;
 		}
 		else if (ExecutedFrame)
 		{
-			ExecuteCommit();
+			ExecuteCommit(ExecutedFrame);
 			ExecutedFrame=nullptr;
 		}
 		else if (DeletedFrame)
 		{
-			DeleteCommit();
+			DeleteCommit(DeletedFrame);
 			DeletedFrame = nullptr;
 		}
 		else if (InsertedFrame)
 		{
-			InsertCommit();
+			InsertCommit(InsertedFrame);
 			InsertedFrame = nullptr;
 		}
 		else if (DeactivatedFrame)
@@ -1079,7 +1076,7 @@ void Manager::Commit()
 		}
 		else if (RefreshedFrame)
 		{
-			RefreshCommit();
+			RefreshCommit(RefreshedFrame);
 			RefreshedFrame=nullptr;
 		}
 		else
@@ -1145,46 +1142,41 @@ void Manager::ActivateCommit()
 	RefreshedFrame=CurrentFrame=ActivatedFrame;
 }
 
-void Manager::UpdateCommit()
+void Manager::UpdateCommit(Frame *aDeletedFrame)
 {
 	_BASICLOG("UpdateCommit: DeletedFrame=%p, InsertedFrame=%p, ExecutedFrame=%p", DeletedFrame,InsertedFrame, ExecutedFrame);
 
 	if (ExecutedFrame)
 	{
-		DeleteCommit();
-		ExecuteCommit();
-		return;
+		DeleteCommit(aDeletedFrame);
+		ExecuteCommit(ExecutedFrame);
 	}
-
-	int Index=IndexOfList(DeletedFrame);
-
-	if (-1!=Index)
+	else if (InsertedFrame)
 	{
-		FrameList[Index]=InsertedFrame;
-		ActivateFrame(InsertedFrame);
-		InsertedFrame=nullptr; // Issue #26 (the 2-nd problem)
-		ActivatedFrame->FrameToBack=CurrentFrame;
-		DeleteCommit();
+		int Index=IndexOfList(aDeletedFrame);
+		if (-1!=Index)
+		{
+			FrameList[Index]=InsertedFrame;
+			ActivateFrame(InsertedFrame);
+			InsertedFrame=nullptr; // Issue #26 (the 2-nd problem)
+			ActivatedFrame->FrameToBack=CurrentFrame;
+			DeleteCommit(aDeletedFrame);
+		}
 	}
 }
 
 //! Удаляет DeletedFrame изо всех очередей!
 //! Назначает следующий активный, (исходя из своих представлений)
 //! Но только в том случае, если активный фрейм еще не назначен заранее.
-void Manager::DeleteCommit()
+void Manager::DeleteCommit(Frame *aDeletedFrame)
 {
-	_FRAMELOG("DeleteCommit", DeletedFrame);
-
-	if (!DeletedFrame)
-	{
-		return;
-	}
+	_FRAMELOG("DeleteCommit", aDeletedFrame);
 
 	/* $ 14.05.2002 SKV
 	  Надёжнее найти и удалить именно то, что
 	  нужно, а не просто верхний.
 	*/
-	int Index=IndexOfStack(DeletedFrame);
+	int Index=IndexOfStack(aDeletedFrame);
 	if (Index!=-1)
 	{
 		ModalStack.erase(ModalStack.begin()+Index);
@@ -1196,19 +1188,18 @@ void Manager::DeleteCommit()
 
 	for (auto iFrame: FrameList)
 	{
-		if (iFrame->FrameToBack==DeletedFrame)
+		if (iFrame->FrameToBack==aDeletedFrame)
 		{
 			iFrame->FrameToBack=CtrlObject->Cp();
 		}
 	}
 
-	Index=IndexOfList(DeletedFrame);
-
-	if (-1!=Index)
+	Index=IndexOfList(aDeletedFrame);
+	if (Index!=-1)
 	{
 		_DUMP_FRAME_LIST();
 
-		DeletedFrame->DestroyAllModal();
+		aDeletedFrame->DestroyAllModal();
 
 		FrameList.erase(FrameList.begin()+Index);
 
@@ -1217,32 +1208,31 @@ void Manager::DeleteCommit()
 			FramePos=0;
 		}
 
-		if (DeletedFrame->FrameToBack==CtrlObject->Cp())
+		if (aDeletedFrame->FrameToBack==CtrlObject->Cp())
 		{
 			_BASICLOG("== ActivateFrame(FrameList[FramePos])");
 			ActivateFrame(FrameList[FramePos]);
 		}
 		else
 		{
-			_BASICLOG("== ActivateFrame(DeletedFrame->FrameToBack)");
-			ActivateFrame(DeletedFrame->FrameToBack);
+			_BASICLOG("== ActivateFrame(aDeletedFrame->FrameToBack)");
+			ActivateFrame(aDeletedFrame->FrameToBack);
 		}
 	}
 
-	DeletedFrame->OnDestroy();
+	aDeletedFrame->OnDestroy();
 
-	if (DeletedFrame->GetDynamicallyBorn())
+	if (aDeletedFrame->GetDynamicallyBorn())
 	{
-		if (CurrentFrame==DeletedFrame)
+		if (CurrentFrame==aDeletedFrame)
 			CurrentFrame=nullptr;
 
 		/* $ 14.05.2002 SKV
 		  Так как в деструкторе фрэйма неявно может быть
 		  вызван commit, то надо подстраховаться.
 		*/
-		Frame *tmp=DeletedFrame;
 		DeletedFrame=nullptr;
-		delete tmp;
+		delete aDeletedFrame;
 	}
 
 	// Полагаемся на то, что в ActivateFrame не будет переписан уже
@@ -1257,58 +1247,49 @@ void Manager::DeleteCommit()
 	}
 }
 
-void Manager::InsertCommit()
+void Manager::InsertCommit(Frame *aInsertedFrame)
 {
-	_FRAMELOG("InsertCommit", InsertedFrame);
+	_FRAMELOG("InsertCommit", aInsertedFrame);
 
-	if (InsertedFrame)
+	aInsertedFrame->FrameToBack=CurrentFrame;
+	FrameList.push_back(aInsertedFrame);
+
+	if (!ActivatedFrame)
 	{
-		InsertedFrame->FrameToBack=CurrentFrame;
-		FrameList.push_back(InsertedFrame);
-
-		if (!ActivatedFrame)
-		{
-			ActivatedFrame=InsertedFrame;
-		}
+		ActivatedFrame=aInsertedFrame;
 	}
 }
 
-void Manager::RefreshCommit()
+void Manager::RefreshCommit(Frame *aRefreshedFrame)
 {
-	_FRAMELOG("RefreshCommit", RefreshedFrame);
+	_FRAMELOG("RefreshCommit", aRefreshedFrame);
 
-	if (!RefreshedFrame)
+	if (!InList(aRefreshedFrame) && !InStack(aRefreshedFrame))
 		return;
 
-	if (!InList(RefreshedFrame) && !InStack(RefreshedFrame))
-		return;
-
-	if (!RefreshedFrame->Locked())
+	if (!aRefreshedFrame->Locked())
 	{
 		if (!IsRedrawFramesInProcess)
-			RefreshedFrame->ShowConsoleTitle();
+			aRefreshedFrame->ShowConsoleTitle();
 
-		RefreshedFrame->Refresh();
+		aRefreshedFrame->Refresh();
 
-		CtrlObject->Macro.SetArea(RefreshedFrame->GetMacroArea());
+		CtrlObject->Macro.SetArea(aRefreshedFrame->GetMacroArea());
 	}
 
 	if ((Opt.ViewerEditorClock &&
-	        (RefreshedFrame->GetType() == MODALTYPE_EDITOR ||
-	         RefreshedFrame->GetType() == MODALTYPE_VIEWER))
+	        (aRefreshedFrame->GetType() == MODALTYPE_EDITOR ||
+	         aRefreshedFrame->GetType() == MODALTYPE_VIEWER))
 	        || (WaitInMainLoop && Opt.Clock))
 		ShowTime(1);
 }
 
-void Manager::ExecuteCommit()
+void Manager::ExecuteCommit(Frame *aExecutedFrame)
 {
-	_FRAMELOG("ExecuteCommit", ExecutedFrame);
+	_FRAMELOG("ExecuteCommit", aExecutedFrame);
 
-	if (ExecutedFrame)
-	{
-		ModalStack.push_back(ExecutedFrame);
-		ActivatedFrame=ExecutedFrame;
-	}
+	ModalStack.push_back(aExecutedFrame);
+	ActivatedFrame=aExecutedFrame;
 }
 
 /*$ 26.06.2001 SKV
