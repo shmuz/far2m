@@ -4499,7 +4499,8 @@ void Dialog::CloseDialog()
 		{
 			DialogMode.Clear(DMODE_BEGINLOOP);
 			FrameManager->DeleteFrame(this);
-			FrameManager->PluginCommit();
+			if (!GetDynamicallyBorn())  //this condition prevents crash "delete(this)" with non-modal plugin dialogs
+				FrameManager->PluginCommit();
 		}
 
 		_DIALOG(CleverSysLog CL(L"Close Dialog"));
