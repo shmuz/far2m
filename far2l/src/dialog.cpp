@@ -4453,22 +4453,30 @@ void Dialog::Process()
 
 	if (ExitCode == -1)
 	{
-		clock_t btm = 0;
-		long    save = 0;
 		DialogMode.Set(DMODE_BEGINLOOP);
 
-		if (1 == ++s_in_dialog)
+		if (GetCanLoseFocus())
 		{
-			btm = GetProcessUptimeMSec();
-			save = WaitUserTime;
-			WaitUserTime = -1;
+			FrameManager->InsertFrame(this);
 		}
+		else
+		{
+			clock_t btm = 0;
+			long    save = 0;
 
-		FrameManager->ExecuteModal(this);
-		save += (GetProcessUptimeMSec() - btm);
+			if (1 == ++s_in_dialog)
+			{
+				btm = GetProcessUptimeMSec();
+				save = WaitUserTime;
+				WaitUserTime = -1;
+			}
 
-		if (0 == --s_in_dialog)
-			WaitUserTime = save;
+			FrameManager->ExecuteModal(this);
+			save += (GetProcessUptimeMSec() - btm);
+
+			if (0 == --s_in_dialog)
+				WaitUserTime = save;
+		}
 	}
 
 	if (pSaveItemEx)
