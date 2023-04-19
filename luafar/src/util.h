@@ -36,6 +36,7 @@ typedef struct {
   HANDLE            hDlg;
   BOOL              isOwned;
   BOOL              wasError;
+  BOOL              isModal;
 } TDialogData;
 
 typedef struct
