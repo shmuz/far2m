@@ -354,7 +354,8 @@ FileEditor::FileEditor(
     int X2,
     int Y2,
     int OpenModeExstFile
-) : SaveAsTextFormat(0)
+) :
+	BadConversion(false), SaveAsTextFormat(0)
 {
 	Flags.Set(InitFlags);
 
