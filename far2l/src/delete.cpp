@@ -59,6 +59,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "dirinfo.hpp"
 #include "wakeful.hpp"
 #include "execute.hpp"
+#include "DlgGuid.hpp"
 
 #if defined(__APPLE__) || defined(__FreeBSD__)
   #include <errno.h>
@@ -179,17 +180,27 @@ void ShellDelete(Panel *SrcPanel,int Wipe)
 		     какие и сколько элементов выделено.
 		*/
 		BOOL folder=(FileAttr & FILE_ATTRIBUTE_DIRECTORY);
+		const GUID *MsgId=nullptr;
 
 		if (SelCount==1)
 		{
 			if (Wipe && !(FileAttr & FILE_ATTRIBUTE_REPARSE_POINT))
+			{
 				DelMsg = folder ? Msg::AskWipeFolder : Msg::AskWipeFile;
+				MsgId = &DeleteWipeId;
+			}
 			else
 			{
 				if (Opt.DeleteToRecycleBin && !(FileAttr & FILE_ATTRIBUTE_REPARSE_POINT))
+				{
 					DelMsg = folder ? Msg::AskDeleteRecycleFolder : Msg::AskDeleteRecycleFile;
+					MsgId = &DeleteRecycleId;
+				}
 				else
+				{
 					DelMsg = folder ? Msg::AskDeleteFolder : Msg::AskDeleteFile;
+					MsgId = &DeleteFileFolderId;
+				}
 			}
 		}
 		else
@@ -198,16 +209,23 @@ void ShellDelete(Panel *SrcPanel,int Wipe)
 			{
 				DelMsg=Msg::AskWipe;
 				TitleMsg=Msg::DeleteWipeTitle;
+				MsgId = &DeleteWipeId;
 			}
 			else if (Opt.DeleteToRecycleBin && !(FileAttr & FILE_ATTRIBUTE_REPARSE_POINT))
+			{
 				DelMsg=Msg::AskDeleteRecycle;
+				MsgId = &DeleteRecycleId;
+			}
 			else
+			{
 				DelMsg=Msg::AskDelete;
+				MsgId = &DeleteFileFolderId;
+			}
 		}
 
 		SetMessageHelp(L"DeleteFile");
 
-		if (Message(0,2,TitleMsg,DelMsg,strDeleteFilesMsg,(Wipe?Msg::DeleteWipe:Opt.DeleteToRecycleBin?Msg::DeleteRecycle:Msg::Delete),Msg::Cancel))
+		if (Message(0,2,MsgId,TitleMsg,DelMsg,strDeleteFilesMsg,(Wipe?Msg::DeleteWipe:Opt.DeleteToRecycleBin?Msg::DeleteRecycle:Msg::Delete),Msg::Cancel))
 		{
 			NeedUpdate=FALSE;
 			goto done;
@@ -219,8 +237,9 @@ void ShellDelete(Panel *SrcPanel,int Wipe)
 		//SaveScreen SaveScr;
 		SetCursorType(FALSE,0);
 		SetMessageHelp(L"DeleteFile");
+		const GUID *MsgId = Wipe ? &DeleteWipeId:&DeleteFileFolderId;
 
-		if (Message(MSG_WARNING,2,(Wipe?Msg::WipeFilesTitle:Msg::DeleteFilesTitle),(Wipe?Msg::AskWipe:Msg::AskDelete),
+		if (Message(MSG_WARNING,2,MsgId,(Wipe?Msg::WipeFilesTitle:Msg::DeleteFilesTitle),(Wipe?Msg::AskWipe:Msg::AskDelete),
 		            strDeleteFilesMsg,Msg::DeleteFileAll,Msg::DeleteFileCancel))
 		{
 			NeedUpdate=FALSE;
