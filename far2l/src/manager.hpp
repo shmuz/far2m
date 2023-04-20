@@ -81,9 +81,9 @@ class Manager
 		// Функции, "подмастерья начальника" - Commit'a
 		// Иногда вызываются не только из него и из других мест
 		void RefreshCommit(Frame *aFrame);
-		void DeactivateCommit(Frame *aFrame);
+		void DeactivateCommit(Frame *aDeactivated,Frame *aActivated);
 		void ActivateCommit(Frame *aFrame);
-		void UpdateCommit(Frame *aFrame);   // выполняется тогда, когда нужно заменить один фрейм на другой
+		void UpdateCommit(Frame *aDeleted,Frame *aInserted,Frame *aExecuted); // выполняется тогда, когда нужно заменить один фрейм на другой
 		void InsertCommit(Frame *aFrame);
 		void DeleteCommit(Frame *aFrame);
 		void ExecuteCommit(Frame *aFrame);
