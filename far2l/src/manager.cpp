@@ -1039,46 +1039,54 @@ int Manager::IndexOfList(Frame *Frame) const
 
 void Manager::Commit()
 {
+	Frame *tmp;
 	while(true)
 	{
 		_BASICLOG("Commit");
 
 		if (DeletedFrame && (InsertedFrame||ExecutedFrame))
 		{
-			UpdateCommit(DeletedFrame);
+			tmp = DeletedFrame;
 			DeletedFrame = nullptr;
+			UpdateCommit(tmp);
 			InsertedFrame = nullptr;
-			ExecutedFrame=nullptr;
+			ExecutedFrame = nullptr;
 		}
 		else if (ExecutedFrame)
 		{
-			ExecuteCommit(ExecutedFrame);
-			ExecutedFrame=nullptr;
+			tmp = ExecutedFrame;
+			ExecutedFrame = nullptr;
+			ExecuteCommit(tmp);
 		}
 		else if (DeletedFrame)
 		{
-			DeleteCommit(DeletedFrame);
+			tmp = DeletedFrame;
 			DeletedFrame = nullptr;
+			DeleteCommit(tmp);
 		}
 		else if (InsertedFrame)
 		{
-			InsertCommit(InsertedFrame);
+			tmp = InsertedFrame;
 			InsertedFrame = nullptr;
+			InsertCommit(tmp);
 		}
 		else if (DeactivatedFrame)
 		{
-			DeactivateCommit(DeactivatedFrame);
-			DeactivatedFrame=nullptr;
+			tmp = DeactivatedFrame;
+			DeactivatedFrame = nullptr;
+			DeactivateCommit(tmp);
 		}
 		else if (ActivatedFrame)
 		{
-			ActivateCommit(ActivatedFrame);
-			ActivatedFrame=nullptr;
+			tmp = ActivatedFrame;
+			ActivatedFrame = nullptr;
+			ActivateCommit(tmp);
 		}
 		else if (RefreshedFrame)
 		{
-			RefreshCommit(RefreshedFrame);
-			RefreshedFrame=nullptr;
+			tmp = RefreshedFrame;
+			RefreshedFrame = nullptr;
+			RefreshCommit(tmp);
 		}
 		else
 		{
@@ -1090,8 +1098,6 @@ void Manager::Commit()
 void Manager::DeactivateCommit(Frame *aFrame)
 {
 	_FRAMELOG("DeactivateCommit", aFrame);
-
-	DeactivatedFrame=nullptr;
 
 	/*$ 18.04.2002 skv
 	  Если нечего активировать, то в общем-то не надо и деактивировать.
@@ -1145,25 +1151,25 @@ void Manager::ActivateCommit(Frame *aFrame)
 	RefreshedFrame=CurrentFrame=aFrame;
 }
 
-void Manager::UpdateCommit(Frame *aFrame)
+void Manager::UpdateCommit(Frame *aFrameToDelete)
 {
 	_BASICLOG("UpdateCommit: DeletedFrame=%p, InsertedFrame=%p, ExecutedFrame=%p", DeletedFrame,InsertedFrame, ExecutedFrame);
 
 	if (ExecutedFrame)
 	{
-		DeleteCommit(aFrame);
+		DeleteCommit(aFrameToDelete);
 		ExecuteCommit(ExecutedFrame);
 	}
 	else if (InsertedFrame)
 	{
-		int Index=IndexOfList(aFrame);
+		int Index=IndexOfList(aFrameToDelete);
 		if (-1!=Index)
 		{
 			FrameList[Index]=InsertedFrame;
 			ActivateFrame(InsertedFrame);
 			InsertedFrame=nullptr; // Issue #26 (the 2-nd problem)
 			ActivatedFrame->FrameToBack=CurrentFrame;
-			DeleteCommit(aFrame);
+			DeleteCommit(aFrameToDelete);
 		}
 	}
 }
