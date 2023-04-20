@@ -80,13 +80,13 @@ class Manager
 		// Она в цикле вызывает себя, пока хотябы один из указателей отличен от nullptr
 		// Функции, "подмастерья начальника" - Commit'a
 		// Иногда вызываются не только из него и из других мест
-		void RefreshCommit(Frame *aRefreshedFrame);
-		void DeactivateCommit();
-		void ActivateCommit();
-		void UpdateCommit(Frame *aDeletedFrame);   // выполняется тогда, когда нужно заменить один фрейм на другой
-		void InsertCommit(Frame *aInsertedFrame);
-		void DeleteCommit(Frame *aDeletedFrame);
-		void ExecuteCommit(Frame *aExecutedFrame);
+		void RefreshCommit(Frame *aFrame);
+		void DeactivateCommit(Frame *aFrame);
+		void ActivateCommit(Frame *aFrame);
+		void UpdateCommit(Frame *aFrame);   // выполняется тогда, когда нужно заменить один фрейм на другой
+		void InsertCommit(Frame *aFrame);
+		void DeleteCommit(Frame *aFrame);
+		void ExecuteCommit(Frame *aFrame);
 
 	public:
 		Manager();

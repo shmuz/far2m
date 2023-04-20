@@ -4555,6 +4555,12 @@ void Dialog::SetExitCode(int Code)
 	//CloseDialog();
 }
 
+void Dialog::OnChangeFocus(int focus)
+{
+	Frame::OnChangeFocus(focus);
+	if (GetCanLoseFocus())
+		DlgProc(this, focus ? DN_GOTFOCUS : DN_KILLFOCUS, -1, 0);
+}
 
 /* $ 19.05.2001 DJ
    возвращаем наше название для меню по F12

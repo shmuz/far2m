@@ -3354,16 +3354,16 @@ int DN_ConvertParam1(int Msg, int Param1)
     case DN_CTLCOLORDLGLIST:
     case DN_DRAWDLGITEM:
     case DN_EDITCHANGE:
-    case DN_GOTFOCUS:
     case DN_HELP:
     case DN_HOTKEY:
     case DN_INITDIALOG:
     case DN_KEY:
-    case DN_KILLFOCUS:
     case DN_LISTCHANGE:
     case DN_LISTHOTKEY:
       return Param1 + 1;
 
+    case DN_GOTFOCUS:
+    case DN_KILLFOCUS:
     case DN_CLOSE:
     case DN_MOUSECLICK:
       return Param1 < 0 ? Param1 : Param1 + 1;
