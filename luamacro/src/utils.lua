@@ -195,11 +195,11 @@ local function EV_Handler (macros, filename, ...)
 end
 
 function export.ProcessEditorEvent (EditorID, Event, Param)
-  return EV_Handler(Events.editorevent, editor.GetFileName(EditorID), EditorID, Event, Param)
+  return EV_Handler(Events.editorevent, editor.GetFileName(nil), EditorID, Event, Param)
 end
 
 local function export_ProcessViewerEvent (ViewerID, Event, Param)
-  return EV_Handler(Events.viewerevent, viewer.GetFileName(ViewerID), ViewerID, Event, Param)
+  return EV_Handler(Events.viewerevent, viewer.GetFileName(nil), ViewerID, Event, Param)
 end
 
 local function export_ExitFAR (unload)
