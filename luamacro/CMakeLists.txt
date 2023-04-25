@@ -14,8 +14,8 @@ set(SOURCES
   ${CMAKE_SOURCE_DIR}/luafar/src/luaplug.c
 )
 
-add_library (luamacro MODULE ${SOURCES})
-set_property(TARGET luamacro PROPERTY C_STANDARD 11)
+add_library (${PROJECT_NAME} MODULE ${SOURCES})
+set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 11)
 
 set(EXPNAMES
   CLOSEPLUGIN COMPARE CONFIGURE DELETEFILES GETFILES GETFINDDATA
@@ -29,16 +29,16 @@ foreach(f ${EXPNAMES})
   list(APPEND EXPORTS "-DEXPORT_${f}")
 endforeach()
 
-target_link_libraries(luamacro PRIVATE luafar)
+target_link_libraries(${PROJECT_NAME} PRIVATE luafar)
 
-target_compile_definitions(luamacro PRIVATE ${EXPORTS} "-DSYS_ID=${SYS_ID}")
+target_compile_definitions(${PROJECT_NAME} PRIVATE ${EXPORTS} "-DSYS_ID=${SYS_ID}")
 
-target_include_directories(luamacro PRIVATE ../far2l/far2sdk)
-target_include_directories(luamacro PRIVATE ../WinPort)
+target_include_directories(${PROJECT_NAME} PRIVATE ../far2l/far2sdk)
+target_include_directories(${PROJECT_NAME} PRIVATE ../WinPort)
 
 set(INSTALL_DIR "${INSTALL_DIR}/Plugins/luafar/luamacro")
 
-set_target_properties(luamacro
+set_target_properties(${PROJECT_NAME}
   PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${INSTALL_DIR}/plug"
     LINK_FLAGS "-Wl,-rpath,../../"
