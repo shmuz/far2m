@@ -514,7 +514,7 @@ install(DIRECTORY "${INSTALL_DIR}/" DESTINATION "lib/far2l" USE_SOURCE_PERMISSIO
     PATTERN "far2l_ttyx.broker"
     PATTERN "plug/*.far-plug-*"
     PATTERN "plug/*.broker"
-    PATTERN "luafar/luafar2l.so")
+    PATTERN "luafar/luafar.so")
 
 install(DIRECTORY "${INSTALL_DIR}/" DESTINATION "share/far2l" USE_SOURCE_PERMISSIONS COMPONENT base FILES_MATCHING
     PATTERN "${EXECUTABLE_NAME}" EXCLUDE
@@ -522,7 +522,7 @@ install(DIRECTORY "${INSTALL_DIR}/" DESTINATION "share/far2l" USE_SOURCE_PERMISS
     PATTERN "*.far-plug-*" EXCLUDE
     PATTERN "*.broker" EXCLUDE
     PATTERN "python/plug/python" EXCLUDE
-    PATTERN "luafar/luafar2l.so" EXCLUDE
+    PATTERN "luafar/luafar.so" EXCLUDE
     PATTERN "*")
 
 # setup some symlinks and remove deprecated stuff from previous installation

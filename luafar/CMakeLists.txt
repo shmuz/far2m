@@ -1,5 +1,5 @@
 
-project(luafar2l)
+project(luafar)
 
 find_program(LUAEXE NAMES luajit lua5.1)
 if (${LUAEXE} STREQUAL LUAEXE-NOTFOUND)
@@ -39,16 +39,16 @@ set(SOURCES
   src/farhost.cpp
 )
 
-add_library (luafar2l SHARED ${SOURCES})
-set_property(TARGET luafar2l PROPERTY C_STANDARD 11)
-target_link_libraries(luafar2l uuid utils)
+add_library (${PROJECT_NAME} SHARED ${SOURCES})
+set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 11)
+target_link_libraries(${PROJECT_NAME} uuid utils)
 
-target_compile_definitions(luafar2l PRIVATE -DWINPORT_DIRECT -DFAR_DONT_USE_INTERNALS)
+target_compile_definitions(${PROJECT_NAME} PRIVATE -DWINPORT_DIRECT -DFAR_DONT_USE_INTERNALS)
 
-target_include_directories(luafar2l PRIVATE ${CMAKE_SOURCE_DIR}/far2l/far2sdk)
-target_include_directories(luafar2l PRIVATE ${CMAKE_SOURCE_DIR}/WinPort)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/far2l/far2sdk)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/WinPort)
 
-set_target_properties(luafar2l
+set_target_properties(${PROJECT_NAME}
   PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${INSTALL_DIR}/Plugins/luafar"
     PREFIX ""

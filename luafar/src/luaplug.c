@@ -46,7 +46,7 @@ void LUAPLUG GetGlobalInfoW(struct GlobalInfo *aInfo)
 void LUAPLUG SetStartupInfoW(const struct PluginStartupInfo *aInfo)
 {
   if (!aInfo->LuafarHandle)
-    return; // luafar2l.so is not loaded
+    return; // luafar.so is not loaded
 
   PluginData.ModuleName   = aInfo->ModuleName;
   PluginData.ModuleNumber = aInfo->ModuleNumber;

@@ -29,7 +29,7 @@ foreach(f ${EXPNAMES})
   list(APPEND EXPORTS "-DEXPORT_${f}")
 endforeach()
 
-target_link_libraries(luamacro PRIVATE luafar2l)
+target_link_libraries(luamacro PRIVATE luafar)
 
 target_compile_definitions(luamacro PRIVATE ${EXPORTS} "-DSYS_ID=${SYS_ID}")
 
