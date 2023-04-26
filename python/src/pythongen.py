@@ -11,7 +11,7 @@ target = os.path.join(sys.argv[2], "far2lcffi.py")
 
 cpp = pcpp.Preprocessor()
 cpp.add_path(source)
-cpp.add_path(os.path.join(source, "far2l", "far2sdk"))
+cpp.add_path(os.path.join(source, "far", "far2sdk"))
 cpp.add_path(sys.argv[2])  # to find consts.h
 cpp.define("FAR_USE_INTERNALS 1")
 # cpp.define('WINPORT_DIRECT')
