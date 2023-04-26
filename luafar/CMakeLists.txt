@@ -14,7 +14,7 @@ else()
   return()
 endif()
 
-set(SDK "${CMAKE_SOURCE_DIR}/far2l/far2sdk")
+set(SDK "${CMAKE_SOURCE_DIR}/far/far2sdk")
 
 add_custom_command(
     OUTPUT  farflags.c    # Treated as relative to CMAKE_CURRENT_BINARY_DIR
@@ -45,7 +45,7 @@ target_link_libraries(${PROJECT_NAME} uuid utils)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE -DWINPORT_DIRECT -DFAR_DONT_USE_INTERNALS)
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/far2l/far2sdk)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/far/far2sdk)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/WinPort)
 
 set_target_properties(${PROJECT_NAME}

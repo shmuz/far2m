@@ -197,7 +197,7 @@ endif()
 target_include_directories(multiarc PRIVATE src)
 target_include_directories(multiarc PRIVATE src/libpcre)
 target_include_directories(multiarc PRIVATE ../WinPort)
-target_include_directories(multiarc PRIVATE ../far2l/far2sdk)
+target_include_directories(multiarc PRIVATE ../far/far2sdk)
 
 if(PCRE_FOUND)
     target_compile_definitions(multiarc PRIVATE -DHAVE_PCRE)

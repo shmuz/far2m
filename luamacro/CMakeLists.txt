@@ -33,7 +33,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE luafar)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE ${EXPORTS} "-DSYS_ID=${SYS_ID}")
 
-target_include_directories(${PROJECT_NAME} PRIVATE ../far2l/far2sdk)
+target_include_directories(${PROJECT_NAME} PRIVATE ../far/far2sdk)
 target_include_directories(${PROJECT_NAME} PRIVATE ../WinPort)
 
 set(INSTALL_DIR "${INSTALL_DIR}/Plugins/luafar/luamacro")

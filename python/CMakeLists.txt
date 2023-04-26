@@ -16,7 +16,7 @@ target_compile_definitions(python PRIVATE -DWINPORT_DIRECT -DUNICODE -DFAR_USE_I
 
 target_include_directories(python PRIVATE .)
 target_include_directories(python PRIVATE ../WinPort)
-target_include_directories(python PRIVATE ../far2l/far2sdk)
+target_include_directories(python PRIVATE ../far/far2sdk)
 target_include_directories(python PRIVATE ${PYTHON_INCLUDE_DIRS} )
 
 set_target_properties(python PROPERTIES
@@ -35,9 +35,9 @@ add_custom_command(TARGET python POST_BUILD
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/far2lcffi.py
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/pythongen.py
-    DEPENDS ../far2l/far2sdk/farplug-wide.h
-    DEPENDS ../far2l/far2sdk/farcolor.h
-    DEPENDS ../far2l/far2sdk/farkeys.h
+    DEPENDS ../far/far2sdk/farplug-wide.h
+    DEPENDS ../far/far2sdk/farcolor.h
+    DEPENDS ../far/far2sdk/farkeys.h
     DEPENDS ../WinPort/windows.h
     DEPENDS ../WinPort/WinCompat.h
     DEPENDS ../WinPort/WinPort.h
