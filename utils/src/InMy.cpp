@@ -77,7 +77,7 @@ static std::string GetMyHomeUncached()
 	}
 
 	// fallback to in-temp location
-	return GetTempSubdirUncached("far2l_home");
+	return GetTempSubdirUncached(APP_BASENAME "_home");
 }
 
 const std::string &GetMyHome()
@@ -149,7 +149,7 @@ public:
 				_base_path+= GOOD_SLASH;
 			}
 
-			_base_path+= "far2l";
+			_base_path+= APP_BASENAME;
 
 			if (!settings.empty()) {
 				_base_path+= "/custom/";
@@ -216,7 +216,7 @@ std::string InMyCache(const char *subpath, bool create_path)
 
 std::string InMyTemp(const char *subpath)
 {
-	static std::string temp(GetTempSubdirUncached("far2l"));
+	static std::string temp(GetTempSubdirUncached(APP_BASENAME));
 	std::string path = temp;
 	path+= GOOD_SLASH;
 	if (subpath) {

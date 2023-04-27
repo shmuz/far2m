@@ -92,7 +92,7 @@ bool EnsureDir(const char *dir, PrivacyLevel pl)
 
 	// may be mode bits lie us? check it with stick
 	std::string check_path = dir;
-	check_path+= "/.far2l-stick-check.tmp";
+	check_path+= ("/." APP_BASENAME "-stick-check.tmp");
 	{
 		FDScope fd(check_path.c_str(), O_CREAT | O_RDWR | O_CLOEXEC, 0600);
 		if (!fd.Valid()) {
