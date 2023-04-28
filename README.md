@@ -1,3 +1,4 @@
+
 # far2m
 A fork of far2l (https://github.com/elfmz/far2l)
 Linux fork of FAR Manager v2 (http://farmanager.com/)
