@@ -1,4 +1,4 @@
-project(far2l)
+project(far2m)
 
 add_subdirectory (bootstrap)
 
@@ -163,15 +163,15 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(MACOSX_BUNDLE_GUI_IDENTIFIER ${APP_IDENTIFIER})
     set(MACOSX_BUNDLE_ICON_FILE "Far.icns")
     set(MACOSX_BUNDLE_BUNDLE_NAME ${APP_NAME})
-    add_executable(far2l MACOSX_BUNDLE ${SOURCES} "DE/Far.icns")
-    set_target_properties(far2l PROPERTIES
+    add_executable(far2m MACOSX_BUNDLE ${SOURCES} "DE/Far.icns")
+    set_target_properties(far2m PROPERTIES
         OUTPUT_NAME ${APP_NAME}
         RUNTIME_OUTPUT_DIRECTORY ${APP_DIR})
     set_source_files_properties("DE/Far.icns" PROPERTIES
         MACOSX_PACKAGE_LOCATION Resources)
 else()
-    add_executable(far2l ${SOURCES})
-    set_target_properties(far2l PROPERTIES
+    add_executable(far2m ${SOURCES})
+    set_target_properties(far2m PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${INSTALL_DIR}")
 endif()
 
@@ -184,12 +184,12 @@ if (NOT USEUCD)
 else()
 	message(STATUS "Building with libuchardet")
 	find_package(Uchardet REQUIRED)
-	target_compile_definitions(far2l PRIVATE -DUSEUCD)
+	target_compile_definitions(far2m PRIVATE -DUSEUCD)
 endif()
 
-target_compile_definitions(far2l PRIVATE -DUNICODE)
+target_compile_definitions(far2m PRIVATE -DUNICODE)
 
-target_include_directories(far2l PRIVATE
+target_include_directories(far2m PRIVATE
 	.
 	far2sdk
 	src
@@ -209,7 +209,7 @@ target_include_directories(far2l PRIVATE
 	${UCHARDET_INCLUDE_DIRS}
 	../WinPort)
 
-add_dependencies(far2l bootstrap WinPort)
+add_dependencies(far2m bootstrap WinPort)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     SET (WINPORT -force_load WinPort wineguts utils)
@@ -217,31 +217,31 @@ else()
     SET (WINPORT -Wl,--whole-archive WinPort -Wl,--no-whole-archive)
 endif()
 
-set_target_properties(far2l
+set_target_properties(far2m
     PROPERTIES
     ENABLE_EXPORTS TRUE)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
-    target_link_libraries(far2l
+    target_link_libraries(far2m
 	PRIVATE ${WINPORT}
 	PRIVATE c
 	PRIVATE ${UCHARDET_LIBRARIES})
 else()
-    target_link_libraries(far2l
+    target_link_libraries(far2m
 	PRIVATE ${WINPORT}
 	PRIVATE dl
 	PRIVATE ${UCHARDET_LIBRARIES})
 endif()
 
-add_custom_command(TARGET far2l POST_BUILD
-    COMMAND ln -sf ${EXECUTABLE_NAME} ${INSTALL_DIR}/far2l_askpass
-    COMMAND ln -sf ${EXECUTABLE_NAME} ${INSTALL_DIR}/far2l_sudoapp)
+add_custom_command(TARGET far2m POST_BUILD
+    COMMAND ln -sf ${EXECUTABLE_NAME} ${INSTALL_DIR}/far2m_askpass
+    COMMAND ln -sf ${EXECUTABLE_NAME} ${INSTALL_DIR}/far2m_sudoapp)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 #TODO
 else()
-    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/DE/far2l.desktop" "${CMAKE_CURRENT_BINARY_DIR}/DE/far2l.desktop")
+    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/DE/far2m.desktop" "${CMAKE_CURRENT_BINARY_DIR}/DE/far2m.desktop")
 
     install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/DE/icons" DESTINATION "share" USE_SOURCE_PERMISSIONS COMPONENT desktop FILES_MATCHING PATTERN "*")
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/DE/far2l.desktop" DESTINATION "share/applications" COMPONENT desktop)
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/DE/far2m.desktop" DESTINATION "share/applications" COMPONENT desktop)
 endif()

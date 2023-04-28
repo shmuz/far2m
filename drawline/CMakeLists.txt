@@ -7,7 +7,7 @@ src/DrawLine.cpp
 
 add_library (drawline MODULE ${SOURCES})
 
-target_link_libraries(drawline utils far2l)
+target_link_libraries(drawline utils far2m)
 
 target_compile_definitions(drawline PRIVATE -DWINPORT_DIRECT -DUNICODE -DFAR_DONT_USE_INTERNALS)
 

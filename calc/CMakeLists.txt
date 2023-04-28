@@ -37,7 +37,7 @@ set(SOURCES
 
 add_library (${PROJECT_NAME} MODULE ${SOURCES})
 
-target_link_libraries(${PROJECT_NAME} utils far2l)
+target_link_libraries(${PROJECT_NAME} utils far2m)
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC TTMATH_NOASM UNICODE _UNICODE)
 

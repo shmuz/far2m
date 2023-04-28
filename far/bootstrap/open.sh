@@ -9,17 +9,17 @@
 #Other arguments - actual command/file to be executed/opened
 ############################################################
 #For per user customization - create:
-#~/.config/far2l/open.sh
+#~/.config/far2m/open.sh
 ############################################################
 
 what=$1
 shift
 
-# Define EXEC_TERM here to allow overriding its from ~/.config/far2l/open.sh
+# Define EXEC_TERM here to allow overriding its from ~/.config/far2m/open.sh
 EXEC_TERM=xterm
 
-if [ -x ~/.config/far2l/open.sh ]; then
-. ~/.config/far2l/open.sh
+if [ -x ~/.config/far2m/open.sh ]; then
+. ~/.config/far2m/open.sh
 fi
 
 if [ "$what" = "exec" ] ; then

@@ -7,7 +7,7 @@ src/AutoWrap.cpp
 
 add_library (autowrap MODULE ${SOURCES})
 
-target_link_libraries(autowrap utils far2l)
+target_link_libraries(autowrap utils far2m)
 
 target_compile_definitions(autowrap PRIVATE -DWINPORT_DIRECT -DUNICODE -DFAR_DONT_USE_INTERNALS)
 

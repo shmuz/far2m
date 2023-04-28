@@ -83,7 +83,7 @@ static void FDWriteStr(int fd, const char *str)
 static void FDWriteSignalInfo(int fd, int num, siginfo_t *info, void *ctx)
 {
 	FDWriteStr(fd, "\n🔥🔥🔥 ");
-	FDWriteStr(fd, "far2l ");
+	FDWriteStr(fd, "far2m ");
 	FDWriteStr(fd, FAR_BUILD);
 	FDWriteStr(fd, " ");
 	FDWriteStr(fd, FAR_PLATFORM);

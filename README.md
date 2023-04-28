@@ -1,4 +1,5 @@
-# far2l
+# far2m
+A fork of far2l (https://github.com/elfmz/far2l)
 Linux fork of FAR Manager v2 (http://farmanager.com/)
 Works also on OSX/MacOS and BSD (but later not tested on regular manner)
 BETA VERSION.

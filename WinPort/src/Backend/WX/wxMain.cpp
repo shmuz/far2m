@@ -98,7 +98,7 @@ static void DetectHostAbilities()
 extern "C" __attribute__ ((visibility("default"))) bool WinPortMainBackend(WinPortMainBackendArg *a)
 {
 	if (a->abi_version != FAR2L_BACKEND_ABI_VERSION) {
-		fprintf(stderr, "This far2l_gui is not compatible and cannot be used\n");
+		fprintf(stderr, "This far2m_gui is not compatible and cannot be used\n");
 		return false;
 	}
 

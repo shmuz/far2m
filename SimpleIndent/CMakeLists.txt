@@ -7,7 +7,7 @@ src/SimpleIndent.cpp
 
 add_library (SimpleIndent MODULE ${SOURCES})
 
-target_link_libraries(SimpleIndent utils far2l)
+target_link_libraries(SimpleIndent utils far2m)
 
 target_compile_definitions(SimpleIndent PRIVATE -DWINPORT_DIRECT -DUNICODE -DFAR_DONT_USE_INTERNALS)
 

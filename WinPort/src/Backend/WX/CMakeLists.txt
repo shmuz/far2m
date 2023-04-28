@@ -1,4 +1,4 @@
-project(far2l_gui)
+project(far2m_gui)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	find_program(LSB_RELEASE_EXEC lsb_release)
@@ -67,21 +67,21 @@ endif()
 
 include(${wxWidgets_USE_FILE})
 
-add_library (far2l_gui MODULE ${SOURCES})
+add_library (far2m_gui MODULE ${SOURCES})
 
-target_include_directories(far2l_gui PRIVATE ..)
-target_include_directories(far2l_gui PRIVATE ../..)
-target_include_directories(far2l_gui PRIVATE ../../..)
-target_include_directories(far2l_gui PRIVATE ../../../../utils/include)
-target_include_directories(far2l_gui PRIVATE ${wxWidgets_INCLUDE_DIRS})
+target_include_directories(far2m_gui PRIVATE ..)
+target_include_directories(far2m_gui PRIVATE ../..)
+target_include_directories(far2m_gui PRIVATE ../../..)
+target_include_directories(far2m_gui PRIVATE ../../../../utils/include)
+target_include_directories(far2m_gui PRIVATE ${wxWidgets_INCLUDE_DIRS})
 
 
 #${wxWidgets_CXX_FLAGS}
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-	target_link_libraries(far2l_gui utils far2l "-framework IOKit -framework Carbon -framework Cocoa -framework AudioToolbox -framework System -framework OpenGL" ${wxWidgets_LIBRARIES})
+	target_link_libraries(far2m_gui utils far2m "-framework IOKit -framework Carbon -framework Cocoa -framework AudioToolbox -framework System -framework OpenGL" ${wxWidgets_LIBRARIES})
 else()
-	target_link_libraries(far2l_gui utils far2l ${wxWidgets_LIBRARIES})
+	target_link_libraries(far2m_gui utils far2m ${wxWidgets_LIBRARIES})
 endif()
 
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${wxWidgets_CXX_FLAGS}")
@@ -89,17 +89,17 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${wxWidgets_CXX_FLAGS}")
 
 find_package(Threads REQUIRED)
 if(THREADS_HAVE_PTHREAD_ARG)
-  target_compile_options(far2l_gui PUBLIC "-pthread")
+  target_compile_options(far2m_gui PUBLIC "-pthread")
 endif()
 if(CMAKE_THREAD_LIBS_INIT)
-  target_link_libraries(far2l_gui "${CMAKE_THREAD_LIBS_INIT}")
+  target_link_libraries(far2m_gui "${CMAKE_THREAD_LIBS_INIT}")
 endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-	set_property (TARGET far2l_gui APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+	set_property (TARGET far2m_gui APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 endif()
 
-set_target_properties(far2l_gui
+set_target_properties(far2m_gui
   PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${INSTALL_DIR}"
     PREFIX ""

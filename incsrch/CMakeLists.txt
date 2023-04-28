@@ -13,7 +13,7 @@ config.cpp
 
 add_library (incsrch MODULE ${SOURCES})
 
-target_link_libraries(incsrch utils far2l)
+target_link_libraries(incsrch utils far2m)
 
 target_compile_definitions(incsrch PRIVATE -DWINPORT_DIRECT -DUNICODE -DFAR_DONT_USE_INTERNALS)
 set_property(TARGET incsrch PROPERTY C_STANDARD 11)

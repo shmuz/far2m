@@ -809,7 +809,7 @@ void Help::DrawWindowFrame()
 	if (!strCurPluginContents.IsEmpty())
 		strHelpTitleBuf += strCurPluginContents;
 	else
-		strHelpTitleBuf += L"FAR2L";
+		strHelpTitleBuf += L"FAR2M";
 
 	TruncStrFromEnd(strHelpTitleBuf,X2-X1-3);
 	GotoXY(X1+(X2-X1+1-(int)strHelpTitleBuf.GetLength()-2)/2,Y1);

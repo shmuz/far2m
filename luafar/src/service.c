@@ -6185,8 +6185,8 @@ int LF_LuaOpen (const struct PluginStartupInfo *aInfo, TPluginData* aPlugData, l
 
     // Evaluate the path where the scripts are (ShareDir)
     // It may (or may not) be the same as ModuleDir.
-    const char *s1=  "/lib/far2l/Plugins/luafar/";
-    const char *s2="/share/far2l/Plugins/luafar/";
+    const char *s1=  "/lib/far2m/Plugins/luafar/";
+    const char *s2="/share/far2m/Plugins/luafar/";
     push_utf8_string(L, aPlugData->ModuleName, -1);                  //+1
     aPlugData->ShareDir = (char*) malloc(lua_objlen(L,-1) + 8);
     strcpy(aPlugData->ShareDir, luaL_gsub(L, lua_tostring(L,-1), s1, s2)); //+2

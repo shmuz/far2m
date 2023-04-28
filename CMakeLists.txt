@@ -2,11 +2,11 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
 
 cmake_minimum_required (VERSION 3.0.2)
 
-project (far2l)
+project (far2m)
 
-set(APP_NAME "far2l")
-set(APP_IDENTIFIER "com.far2l")
-set(CPACK_PACKAGE_NAME "far2l")
+set(APP_NAME "far2m")
+set(APP_IDENTIFIER "com.far2m")
+set(CPACK_PACKAGE_NAME "far2m")
 
 string(ASCII 27 Esc)
 set(ColorNormal "${Esc}[m")
@@ -141,7 +141,7 @@ else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffunction-sections -fdata-sections")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffunction-sections -fdata-sections")
     set(INSTALL_DIR ${CMAKE_BINARY_DIR}/install)
-    set(EXECUTABLE_NAME far2l)
+    set(EXECUTABLE_NAME far2m)
 
     if (NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,--gc-sections")
@@ -177,7 +177,7 @@ add_subdirectory (farlng)
 add_subdirectory (WinPort)
 add_subdirectory (utils)
 add_subdirectory (far)
-add_dependencies (far2l farlng)
+add_dependencies (far2m farlng)
 
 set_target_properties(farlng
   PROPERTIES
@@ -234,7 +234,7 @@ if (NOT DEFINED ALIGN OR ALIGN)
 else()
     message(STATUS "${ColorRed}ALIGN plugin disabled due to ALIGN=${ALIGN}${ColorNormal}")
     install(CODE "
-        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2l/Plugins/align/plug/align.far-plug-wide)
+        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/align/plug/align.far-plug-wide)
         " COMPONENT system)
 endif()
 
@@ -244,7 +244,7 @@ if (NOT DEFINED AUTOWRAP OR AUTOWRAP)
 else()
     message(STATUS "${ColorRed}AUTOWRAP plugin disabled due to AUTOWRAP=${AUTOWRAP}${ColorNormal}")
     install(CODE "
-        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2l/Plugins/autowrap/plug/autowrap.far-plug-wide)
+        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/autowrap/plug/autowrap.far-plug-wide)
         " COMPONENT system)
 endif()
 
@@ -254,7 +254,7 @@ if (NOT DEFINED CALC OR CALC)
 else()
     message(STATUS "${ColorRed}CALC plugin disabled due to CALC=${CALC}${ColorNormal}")
     install(CODE "
-        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2l/Plugins/calc/plug/calc.far-plug-wide)
+        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/calc/plug/calc.far-plug-wide)
         " COMPONENT system)
 endif()
 
@@ -264,7 +264,7 @@ if (NOT DEFINED COLORER OR COLORER)
 else()
     message(STATUS "${ColorRed}COLORER plugin disabled due to COLORER=${COLORER}${ColorNormal}")
     install(CODE "
-        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2l/Plugins/colorer/plug/colorer.far-plug-wide)
+        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/colorer/plug/colorer.far-plug-wide)
         " COMPONENT system)
 endif()
 
@@ -274,7 +274,7 @@ if (NOT DEFINED COMPARE OR COMPARE)
 else()
     message(STATUS "${ColorRed}COMPARE plugin disabled due to COMPARE=${COMPARE}${ColorNormal}")
     install(CODE "
-        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2l/Plugins/compare/plug/compare.far-plug-wide)
+        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/compare/plug/compare.far-plug-wide)
         " COMPONENT system)
 endif()
 
@@ -284,7 +284,7 @@ if (NOT DEFINED DRAWLINE OR DRAWLINE)
 else()
     message(STATUS "${ColorRed}DRAWLINE plugin disabled due to DRAWLINE=${DRAWLINE}${ColorNormal}")
     install(CODE "
-        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2l/Plugins/drawline/plug/drawline.far-plug-wide)
+        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/drawline/plug/drawline.far-plug-wide)
         " COMPONENT system)
 endif()
 
@@ -294,7 +294,7 @@ if (NOT DEFINED EDITCASE OR EDITCASE)
 else()
     message(STATUS "${ColorRed}EDITCASE plugin disabled due to EDITCASE=${EDITCASE}${ColorNormal}")
     install(CODE "
-        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2l/Plugins/editcase/plug/editcase.far-plug-wide)
+        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/editcase/plug/editcase.far-plug-wide)
         " COMPONENT system)
 endif()
 
@@ -304,7 +304,7 @@ if (NOT DEFINED EDITORCOMP OR EDITORCOMP)
 else()
     message(STATUS "${ColorRed}EDITORCOMP plugin disabled due to EDITORCOMP=${EDITORCOMP}${ColorNormal}")
     install(CODE "
-        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2l/Plugins/editorcomp/plug/editorcomp.far-plug-wide)
+        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/editorcomp/plug/editorcomp.far-plug-wide)
         " COMPONENT system)
 endif()
 
@@ -314,7 +314,7 @@ if (DEFINED FARFTP AND FARFTP)
     add_subdirectory (farftp)
 else()
     install(CODE "
-        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2l/Plugins/farftp/plug/farftp.far-plug-mb)
+        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/farftp/plug/farftp.far-plug-mb)
         " COMPONENT system)
 endif()
 
@@ -324,7 +324,7 @@ if (NOT DEFINED FILECASE OR FILECASE)
 else()
     message(STATUS "${ColorRed}FILECASE plugin disabled due to FILECASE=${FILECASE}${ColorNormal}")
     install(CODE "
-        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2l/Plugins/filecase/plug/filecase.far-plug-wide)
+        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/filecase/plug/filecase.far-plug-wide)
         " COMPONENT system)
 endif()
 
@@ -334,7 +334,7 @@ if (NOT DEFINED INCSRCH OR INCSRCH)
 else()
     message(STATUS "${ColorRed}Building without <INCSRCH> plugin due to INCSRCH=${INCSRCH}${ColorNormal}")
     install(CODE "
-        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2l/Plugins/incsrch/plug/incsrch.far-plug-wide)
+        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/incsrch/plug/incsrch.far-plug-wide)
         " COMPONENT system)
 endif()
 
@@ -344,7 +344,7 @@ if (NOT DEFINED INSIDE OR INSIDE)
 else()
     message(STATUS "${ColorRed}INSIDE plugin disabled due to INSIDE=${INSIDE}${ColorNormal}")
     install(CODE "
-        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2l/Plugins/inside/plug/inside.far-plug-mb)
+        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/inside/plug/inside.far-plug-mb)
         " COMPONENT system)
 endif()
 
@@ -360,19 +360,19 @@ if (NOT DEFINED MULTIARC OR MULTIARC)
 
     find_package(LibArchive)
     if(NOT LibArchive_FOUND)
-        message(WARNING "${ColorRed}libarchive not found, multiarc will have weaker archives support. Its recommended to install libarchive-dev and reconfigure far2l.${ColorNormal}")
+        message(WARNING "${ColorRed}libarchive not found, multiarc will have weaker archives support. Its recommended to install libarchive-dev and reconfigure far2m.${ColorNormal}")
     endif()
 
     find_package(PCRE)
     if(NOT PCRE_FOUND)
-        message(WARNING "${ColorRed}libpcre not found, multiarc will have no custom archives support. Install libpcre and reconfigure far2l if you need that functionality.${ColorNormal}")
+        message(WARNING "${ColorRed}libpcre not found, multiarc will have no custom archives support. Install libpcre and reconfigure far2m if you need that functionality.${ColorNormal}")
     endif()
 
     add_subdirectory (multiarc)
 else()
     message(STATUS "${ColorRed}MULTIARC plugin disabled due to MULTIARC=${MULTIARC}${ColorNormal}")
     install(CODE "
-        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2l/Plugins/multiarc/plug/multiarc.far-plug-mb)
+        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/multiarc/plug/multiarc.far-plug-mb)
         " COMPONENT system)
 endif()
 
@@ -428,7 +428,7 @@ if (NOT DEFINED NETROCKS OR NETROCKS)
 else()
     message(STATUS "${ColorRed}NETROCKS plugin disabled due to NETROCKS=${NETROCKS}${ColorNormal}")
     install(CODE "
-        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2l/Plugins/NetRocks/plug/NetRocks.far-plug-wide)
+        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/NetRocks/plug/NetRocks.far-plug-wide)
         " COMPONENT system)
 endif()
 
@@ -451,25 +451,25 @@ if (DEFINED PYTHON AND PYTHON)
         execute_process(COMMAND echo Python: preparing virtual environment)
         " COMPONENT system)
     install(CODE "
-        execute_process(COMMAND ${PYTHON3} -m venv --system-site-packages ${CMAKE_INSTALL_PREFIX}/lib/far2l/Plugins/python/plug/python)
+        execute_process(COMMAND ${PYTHON3} -m venv --system-site-packages ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/python/plug/python)
         " COMPONENT system)
     install(CODE "
         execute_process(COMMAND echo Python: installing packages)
         " COMPONENT system)
     install(CODE "
-        execute_process(COMMAND ${CMAKE_INSTALL_PREFIX}/lib/far2l/Plugins/python/plug/python/bin/python -m pip install cffi debugpy)
+        execute_process(COMMAND ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/python/plug/python/bin/python -m pip install cffi debugpy)
         " COMPONENT system)
 
-    # Copy this explicitly cuz generic copier command excludes 'far2l'
-    install(DIRECTORY "${INSTALL_DIR}/Plugins/python/plug/far2l"
-        DESTINATION "share/far2l/Plugins/python/plug/" USE_SOURCE_PERMISSIONS
+    # Copy this explicitly cuz generic copier command excludes 'far2m'
+    install(DIRECTORY "${INSTALL_DIR}/Plugins/python/plug/far2m"
+        DESTINATION "share/far2m/Plugins/python/plug/" USE_SOURCE_PERMISSIONS
         COMPONENT base FILES_MATCHING
         PATTERN "*")
 
 else()
     message(STATUS "${ColorRed}PYTHON plugin disabled, use -DPYTHON=yes if you need it${ColorNormal}")
     install(CODE "
-        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2l/Plugins/python/plug/python.far-plug-wide)
+        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/python/plug/python.far-plug-wide)
         " COMPONENT system)
 endif()
 
@@ -479,7 +479,7 @@ if (NOT DEFINED SIMPLEINDENT OR SIMPLEINDENT)
 else()
     message(STATUS "${ColorRed}SIMPLEINDENT plugin disabled due to SIMPLEINDENT=${SIMPLEINDENT}${ColorNormal}")
     install(CODE "
-        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2l/Plugins/SimpleIndent/plug/SimpleIndent.far-plug-wide)
+        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/SimpleIndent/plug/SimpleIndent.far-plug-wide)
         " COMPONENT system)
 endif()
 
@@ -489,7 +489,7 @@ if (NOT DEFINED TMPPANEL OR TMPPANEL)
 else()
     message(STATUS "${ColorRed}TMPPANEL plugin disabled due to TMPPANEL=${TMPPANEL}${ColorNormal}")
     install(CODE "
-        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2l/Plugins/tmppanel/plug/tmppanel.far-plug-wide)
+        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/tmppanel/plug/tmppanel.far-plug-wide)
         " COMPONENT system)
 endif()
 
@@ -505,20 +505,20 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     install(SCRIPT ${PROJECT_BINARY_DIR}/${FIXUP_SCRIPT} COMPONENT app EXCLUDE_FROM_ALL)
 endif()
 
-install(PROGRAMS "${INSTALL_DIR}/${EXECUTABLE_NAME}" DESTINATION "bin" RENAME far2l COMPONENT base)
+install(PROGRAMS "${INSTALL_DIR}/${EXECUTABLE_NAME}" DESTINATION "bin" RENAME far2m COMPONENT base)
 
-install(DIRECTORY "${INSTALL_DIR}/" DESTINATION "lib/far2l" USE_SOURCE_PERMISSIONS COMPONENT base FILES_MATCHING
+install(DIRECTORY "${INSTALL_DIR}/" DESTINATION "lib/far2m" USE_SOURCE_PERMISSIONS COMPONENT base FILES_MATCHING
     PATTERN "colorer/base" EXCLUDE
     PATTERN "Manuals" EXCLUDE
-    PATTERN "far2l_gui.so"
-    PATTERN "far2l_ttyx.broker"
+    PATTERN "far2m_gui.so"
+    PATTERN "far2m_ttyx.broker"
     PATTERN "plug/*.far-plug-*"
     PATTERN "plug/*.broker"
     PATTERN "luafar/luafar.so")
 
-install(DIRECTORY "${INSTALL_DIR}/" DESTINATION "share/far2l" USE_SOURCE_PERMISSIONS COMPONENT base FILES_MATCHING
+install(DIRECTORY "${INSTALL_DIR}/" DESTINATION "share/far2m" USE_SOURCE_PERMISSIONS COMPONENT base FILES_MATCHING
     PATTERN "${EXECUTABLE_NAME}" EXCLUDE
-    PATTERN "far2l_*" EXCLUDE
+    PATTERN "far2m_*" EXCLUDE
     PATTERN "*.far-plug-*" EXCLUDE
     PATTERN "*.broker" EXCLUDE
     PATTERN "python/plug/python" EXCLUDE
@@ -527,7 +527,7 @@ install(DIRECTORY "${INSTALL_DIR}/" DESTINATION "share/far2l" USE_SOURCE_PERMISS
 
 # setup some symlinks and remove deprecated stuff from previous installation
 install(CODE "
-    execute_process(COMMAND ln -sf ../../bin/far2l ${CMAKE_INSTALL_PREFIX}/lib/far2l/far2l_askpass)
-    execute_process(COMMAND ln -sf ../../bin/far2l ${CMAKE_INSTALL_PREFIX}/lib/far2l/far2l_sudoapp)
-    execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2l/Plugins/objinfo/plug/objinfo.far-plug-mb)
+    execute_process(COMMAND ln -sf ../../bin/far2m ${CMAKE_INSTALL_PREFIX}/lib/far2m/far2m_askpass)
+    execute_process(COMMAND ln -sf ../../bin/far2m ${CMAKE_INSTALL_PREFIX}/lib/far2m/far2m_sudoapp)
+    execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/objinfo/plug/objinfo.far-plug-mb)
     " COMPONENT system)

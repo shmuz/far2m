@@ -25,7 +25,7 @@ endif()
 
 add_library (inside MODULE ${SOURCES})
 
-target_link_libraries(inside utils far2l)
+target_link_libraries(inside utils far2m)
 
 target_include_directories(inside PRIVATE src)
 target_include_directories(inside PRIVATE src/elf)

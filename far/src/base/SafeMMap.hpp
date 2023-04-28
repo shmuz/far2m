@@ -10,7 +10,7 @@ of getting SIGBUS/SIGSEGV due to underlying FS failure it silently
 substitudes file's view with a dummy zero-filled view.
 The only way to be informed about IO error is to use IsDummy()
  2. For unrelevant to mappings SIGBUS/SIGSEGV it generates
-crash reports writing them into ~/.config/far2l/crash.log
+crash reports writing them into ~/.config/far2m/crash.log
 */
 
 class SafeMMap
@@ -33,8 +33,8 @@ public:
 
 	struct SignalHandlerRegistrar
 	{
-		SignalHandlerRegistrar() { SafeMMap::sRegisterSignalHandler(); } 
-		~SignalHandlerRegistrar() { SafeMMap::sUnregisterSignalHandler(); } 
+		SignalHandlerRegistrar() { SafeMMap::sRegisterSignalHandler(); }
+		~SignalHandlerRegistrar() { SafeMMap::sUnregisterSignalHandler(); }
 	};
 
 	enum Mode

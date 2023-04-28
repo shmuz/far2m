@@ -143,8 +143,8 @@ static DWORD ApplyConsoleTweaks()
 
 static void ApplySudoConfiguration()
 {
- 	const std::string &sudo_app = GetHelperPathName("far2l_sudoapp");
-	const std::string &askpass_app = GetHelperPathName("far2l_askpass");
+ 	const std::string &sudo_app = GetHelperPathName("far2m_sudoapp");
+	const std::string &askpass_app = GetHelperPathName("far2m_askpass");
 
 	SudoClientMode mode;
 	if (Opt.SudoEnabled) {
@@ -771,7 +771,7 @@ static struct FARConfig
 	{0, REG_DWORD,  NKeyInterface, "FormatNumberSeparators",&Opt.FormatNumberSeparators, 0, 0},
 	{1, REG_DWORD,  NKeyInterface, "CopyShowTotal",&Opt.CMOpt.CopyShowTotal,1, 0},
 	{1, REG_DWORD,  NKeyInterface, "DelShowTotal",&Opt.DelOpt.DelShowTotal,0, 0},
-	{1, REG_SZ,     NKeyInterface, "WindowTitle",&Opt.strWindowTitle, 0, L"%State - FAR2L %Ver %Backend %User@%Host"}, // %Platform
+	{1, REG_SZ,     NKeyInterface, "WindowTitle",&Opt.strWindowTitle, 0, L"%State - FAR2M %Ver %Backend %User@%Host"}, // %Platform
 	{1, REG_SZ,     NKeyInterfaceCompletion, "Exceptions",&Opt.AutoComplete.Exceptions, 0, L"git*reset*--hard;*://*:*@*"},
 	{1, REG_DWORD,  NKeyInterfaceCompletion, "ShowList",&Opt.AutoComplete.ShowList, 1, 0},
 	{1, REG_DWORD,  NKeyInterfaceCompletion, "ModalList",&Opt.AutoComplete.ModalList, 0, 0},

@@ -7,7 +7,7 @@ src/FileCase.cpp
 
 add_library (filecase MODULE ${SOURCES})
 
-target_link_libraries(filecase utils far2l)
+target_link_libraries(filecase utils far2m)
 
 target_compile_definitions(filecase PRIVATE -DWINPORT_DIRECT -DUNICODE -DFAR_DONT_USE_INTERNALS)
 

@@ -5276,14 +5276,14 @@ upd:"Closing back shell."
 
 VTStopTip
 l:
-"Подсказка: чтобы закрыть far2l - введите 'exit far'."
-"TIP: To close far2l - type 'exit far'."
-upd:"TIP: To close far2l - type 'exit far'."
-upd:"TIP: To close far2l - type 'exit far'."
-upd:"TIP: To close far2l - type 'exit far'."
-upd:"TIP: To close far2l - type 'exit far'."
-upd:"TIP: To close far2l - type 'exit far'."
-"Підказка: щоб закрити far2l - введіть 'exit far'."
+"Подсказка: чтобы закрыть far2m - введите 'exit far'."
+"TIP: To close far2m - type 'exit far'."
+upd:"TIP: To close far2m - type 'exit far'."
+upd:"TIP: To close far2m - type 'exit far'."
+upd:"TIP: To close far2m - type 'exit far'."
+upd:"TIP: To close far2m - type 'exit far'."
+upd:"TIP: To close far2m - type 'exit far'."
+"Підказка: щоб закрити far2m - введіть 'exit far'."
 
 VTStartTipNoCmdTitle
 l:
@@ -5386,14 +5386,14 @@ upd:" Ctrl+Alt+C - terminate everything in this shell.                         "
 
 VTStartTipPendCmdCtrlAltZ
 l:
-" Ctrl+Alt+Z - отправить процесс far2l в фон, освободив терминал.          "
-" Ctrl+Alt+Z - detach far2l application to background releasing terminal.  "
-upd:" Ctrl+Alt+Z - detach far2l application to background releasing terminal.  "
-upd:" Ctrl+Alt+Z - detach far2l application to background releasing terminal.  "
-upd:" Ctrl+Alt+Z - detach far2l application to background releasing terminal.  "
-upd:" Ctrl+Alt+Z - detach far2l application to background releasing terminal.  "
-upd:" Ctrl+Alt+Z - detach far2l application to background releasing terminal.  "
-" Ctrl+Alt+Z - надіслати процес far2l у фон, звільнивши термінал.          "
+" Ctrl+Alt+Z - отправить процесс far2m в фон, освободив терминал.          "
+" Ctrl+Alt+Z - detach far2m application to background releasing terminal.  "
+upd:" Ctrl+Alt+Z - detach far2m application to background releasing terminal.  "
+upd:" Ctrl+Alt+Z - detach far2m application to background releasing terminal.  "
+upd:" Ctrl+Alt+Z - detach far2m application to background releasing terminal.  "
+upd:" Ctrl+Alt+Z - detach far2m application to background releasing terminal.  "
+upd:" Ctrl+Alt+Z - detach far2m application to background releasing terminal.  "
+" Ctrl+Alt+Z - надіслати процес far2m у фон, звільнивши термінал.          "
 
 VTStartTipPendCmdMouse
 l:

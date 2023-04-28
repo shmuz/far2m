@@ -10,7 +10,7 @@ find_package(PythonLibs 3.0)
 
 add_library (python MODULE ${SOURCES})
 
-target_link_libraries(python utils far2l ${PYTHON_LIBRARIES})
+target_link_libraries(python utils far2m ${PYTHON_LIBRARIES})
 
 target_compile_definitions(python PRIVATE -DWINPORT_DIRECT -DUNICODE -DFAR_USE_INTERNALS -DPROCPLUGINMACROFUNC -DPYTHON_LIBRARY="${PYTHON_LIBRARY}")
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#define APP_BASENAME "far2l"
+#define APP_BASENAME "far2m"
 
 #ifdef _WIN32
 # define GOOD_SLASH	'\\'

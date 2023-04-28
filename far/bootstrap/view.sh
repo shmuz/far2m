@@ -30,13 +30,13 @@ FILEMIME="$(echo -n ': ' ; file --brief --mime -- "$1")"
 FILECHARSET="$(echo "$FILEMIME" | sed -n -e 's/^.\{0,100\}: .\{1,100\};[ ]\{0,10\}charset=\([a-zA-Z0-9\-]\{1,20\}\).\{0,30\}$/\1/p')"
 
 # Optional per-user script
-if [ -x ~/.config/far2l/view.sh ]; then
+if [ -x ~/.config/far2m/view.sh ]; then
 	# safely source this script from user config dir if it copied there without changes
-	export far2l_view_per_user_script_sourced=$((${far2l_view_per_user_script_sourced:-0}+0))
-	if [ ${far2l_view_per_user_script_sourced} -lt 1 ]; then
-		export far2l_view_per_user_script_sourced=$((${far2l_view_per_user_script_sourced}+1))
-		if [ ${far2l_view_per_user_script_sourced} -eq 1 ]; then
-			. ~/.config/far2l/view.sh
+	export far2m_view_per_user_script_sourced=$((${far2m_view_per_user_script_sourced:-0}+0))
+	if [ ${far2m_view_per_user_script_sourced} -lt 1 ]; then
+		export far2m_view_per_user_script_sourced=$((${far2m_view_per_user_script_sourced}+1))
+		if [ ${far2m_view_per_user_script_sourced} -eq 1 ]; then
+			. ~/.config/far2m/view.sh
 		fi
 	fi
 fi
@@ -321,7 +321,7 @@ if [[ "$FILE" == *": "*"image data, "* ]] \
 		elif [ ".${TCOLORS}" = ".256" ]; then
 			# recommended in chafa manual
 			# TCOLORMODE="-c 240"
-			# for new far2l terminal
+			# for new far2m terminal
 			TCOLORMODE="full"
 		fi
 		VCHAFACOLOR=""

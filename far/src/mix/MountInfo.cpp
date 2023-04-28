@@ -196,8 +196,8 @@ public:
 MountInfo::MountInfo(bool for_location_menu)
 {
 	if (!for_location_menu) {
-		// force-enable multi-threaded disk access: echo e > ~/.config/far2l/mtfs
-		// force-disable multi-threaded disk access: echo d > ~/.config/far2l/mtfs
+		// force-enable multi-threaded disk access: echo e > ~/.config/far2m/mtfs
+		// force-disable multi-threaded disk access: echo d > ~/.config/far2m/mtfs
 		FDScope fd(open(InMyConfig("mtfs").c_str(), O_RDONLY));
 		if (fd.Valid()) {
 			if (os_call_ssize(read, (int)fd, (void *)&_mtfs, sizeof(_mtfs)) == 0) {

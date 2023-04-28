@@ -7,7 +7,7 @@ src/EditCase.cpp
 
 add_library (editcase MODULE ${SOURCES})
 
-target_link_libraries(editcase utils far2l)
+target_link_libraries(editcase utils far2m)
 
 target_compile_definitions(editcase PRIVATE -DWINPORT_DIRECT -DUNICODE -DFAR_DONT_USE_INTERNALS)
 

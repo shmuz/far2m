@@ -1,7 +1,7 @@
 #include <sys/ioctl.h>
 #include <signal.h>
 #include <fcntl.h>
-#include <termios.h> 
+#include <termios.h>
 #include <dlfcn.h>
 
 #ifdef __linux__
@@ -85,8 +85,8 @@ static std::string GetStdPath(const char *env1, const char *env2)
 
 static void SetupStdHandles()
 {
-	const std::string &out = GetStdPath("FAR2L_STDOUT", "FAR2L_STD");
-	const std::string &err = GetStdPath("FAR2L_STDERR", "FAR2L_STD");
+	const std::string &out = GetStdPath("FAR_STDOUT", "FAR_STD");
+	const std::string &err = GetStdPath("FAR_STDERR", "FAR_STD");
 	unsigned char reopened = 0;
 	if (!out.empty() && out != "-") {
 		if (freopen(out.c_str(), "a", stdout)) {
@@ -101,7 +101,7 @@ static void SetupStdHandles()
 		} else
 			perror("freopen stderr");
 	}
-	
+
 	if ( reopened == 3 && out == DEVNULL && err == DEVNULL) {
 		if (!freopen(DEVNULL, "r", stdin)) {
 			perror("freopen stdin");
@@ -170,12 +170,12 @@ static int TTYTryReviveSome(int std_in, int std_out, bool far2l_tty, std::unique
 		NormalizeTerminalState nts(std_in, std_out, far2l_tty, tty_raw_mode);
 		FScope f_out(fdopen(dup(std_out), "w"));
 
-		fprintf(f_out, "\n\x1b[1;31mSome far2l-s lost in space-time nearby:\x1b[39;22m\n");
+		fprintf(f_out, "\n\x1b[1;31mSome far2m-s lost in space-time nearby:\x1b[39;22m\n");
 		for (size_t i = 0; i < instances.size(); ++i) {
 			fprintf(f_out, " \x1b[1;31m%lu\x1b[39;22m: %s\n", i + 1, instances[i].info.c_str());
 		}
 
-		fprintf(f_out, "\x1b[1;31mInput instance index to revive or empty string to spawn new far2l\x1b[39;22m\n");
+		fprintf(f_out, "\x1b[1;31mInput instance index to revive or empty string to spawn new far2m\x1b[39;22m\n");
 
 		char buf[32] = {};
 		{
@@ -221,7 +221,7 @@ static void ShimSigWinch(int sig)
 
 extern "C" void WinPortHelp()
 {
-	printf("FAR2L backend-specific options:\n");
+	printf("FAR2M backend-specific options:\n");
 	printf("\t--tty - force using TTY backend only (disable GUI/TTY autodetection)\n");
 	printf("\t--notty - don't fallback to TTY backend if GUI backend failed\n");
 	printf("\t--nodetect or --nodetect=[f|][x|xi] - don't detect if TTY backend supports FAR2L or X11/Xi extensions\n");
@@ -311,7 +311,7 @@ extern "C" int WinPortMain(const char *full_exe_path, int argc, char **argv, int
 	}
 #endif
 
-	char *ea = getenv("FAR2L_ARGS");
+	char *ea = getenv("FAR_ARGS");
 	if (ea != nullptr && *ea) {
 		std::string str;
 		for (const char *begin = ea;;) {
@@ -379,7 +379,7 @@ extern "C" int WinPortMain(const char *full_exe_path, int argc, char **argv, int
 	int result = -1;
 	if (!arg_opts.tty) {
 		std::string gui_path = full_exe_path;
-		ReplaceFileNamePart(gui_path, "far2l_gui.so");
+		ReplaceFileNamePart(gui_path, "far2m_gui.so");
 		TranslateInstallPath_Bin2Lib(gui_path);
 		void *gui_so = dlopen(gui_path.c_str(), RTLD_GLOBAL | RTLD_NOW);
 		if (gui_so) {

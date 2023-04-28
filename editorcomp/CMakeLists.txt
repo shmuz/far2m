@@ -10,7 +10,7 @@ set(SOURCES
 
 add_library (editorcomp MODULE ${SOURCES})
 
-target_link_libraries(editorcomp utils far2l)
+target_link_libraries(editorcomp utils far2m)
 
 target_compile_definitions(editorcomp PRIVATE -D_UNICODE -DUNICODE -D__unix__)
 

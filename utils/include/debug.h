@@ -2,7 +2,7 @@
 #include "cctweaks.h"
 
 /** This ABORT_* / ASSERT_* have following distinctions comparing to abort/assert:
-  * - Errors logged into ~/.config/far2l/crash.log
+  * - Errors logged into ~/.config/far2m/crash.log
   * - Error printed in WinPort UI if possible, so user will see it unlike abort/assert that typically cause silent exit
   * - Have possibility to show customized message
   * - ASSERT_* evaluated _always_ regardless of _NDEBUG macro

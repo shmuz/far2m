@@ -10,7 +10,7 @@ src/TmpPanel.cpp
 
 add_library (tmppanel MODULE ${SOURCES})
 
-target_link_libraries(tmppanel utils far2l)
+target_link_libraries(tmppanel utils far2m)
 
 target_compile_definitions(tmppanel PRIVATE -DWINPORT_DIRECT -DUNICODE -DFAR_DONT_USE_INTERNALS)
 

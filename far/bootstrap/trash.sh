@@ -3,13 +3,13 @@
 #This script used by FAR to move files to Trash
 ##########################################################
 #For per user customization - create:
-#~/.config/far2l/trash.sh
+#~/.config/far2m/trash.sh
 ##########################################################
 
 set -e
 
-if [ -x ~/.config/far2l/trash.sh ]; then
-. ~/.config/far2l/trash.sh
+if [ -x ~/.config/far2m/trash.sh ]; then
+. ~/.config/far2m/trash.sh
 fi
 
 if command -v gio >/dev/null 2>&1; then

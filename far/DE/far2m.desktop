@@ -1,11 +1,11 @@
 [Desktop Entry]
 Type=Application
-Name=far2l
-GenericName=far2l
+Name=far2m
+GenericName=far2m
 Comment=File and archive manager
-Exec=${CMAKE_INSTALL_PREFIX}/bin/far2l
-TryExec=${CMAKE_INSTALL_PREFIX}/bin/far2l
+Exec=${CMAKE_INSTALL_PREFIX}/bin/far2m
+TryExec=${CMAKE_INSTALL_PREFIX}/bin/far2m
 Terminal=false
 Categories=Utility;FileManager;
-Icon=far2l
+Icon=far2m
 StartupNotify=true

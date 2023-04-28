@@ -177,7 +177,7 @@ add_library (multiarc MODULE ${SOURCES})
 
 target_compile_definitions(multiarc PRIVATE -D_7ZIP_ST -D_7ZIP_PPMD_SUPPPORT)
 
-target_link_libraries(multiarc utils far2l)
+target_link_libraries(multiarc utils far2m)
 
 if(NOT UNRAR)
     message(STATUS "${ColorRed}rar archives support disabled due to UNRAR=${UNRAR}.${ColorNormal}")

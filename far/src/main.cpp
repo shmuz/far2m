@@ -80,7 +80,7 @@ int DirectRT=0;
 
 static void print_help(const char *self)
 {
-	printf( "FAR2L - oldschool file manager, with built-in terminal and other usefullness'es\n"
+	printf( "FAR2M - oldschool file manager, with built-in terminal and other usefullness'es\n"
 		"Usage: %s [switches] [-cd apath [-cd ppath]]\n\n"
 		"where\n"
 		"  apath - path to a folder (or a file or an archive or command with prefix)\n"
@@ -146,7 +146,7 @@ static FARString ExecuteCommandAndGrabItsOutput(FARString cmd)
 	}
 	else
 	{
-		exec_cmd+= "far2l -h";
+		exec_cmd+= "far2m -h";
 	}
 
 	exec_cmd+= " >";
@@ -422,7 +422,7 @@ int FarAppMain(int argc, char **argv)
 	bool translated = TranslateFarString<TranslateInstallPath_Bin2Share>(g_strFarPath);
 	CutToSlash(g_strFarPath, false);
 	if (translated) {
-		// /usr/bin/something -> /usr/share/far2l
+		// /usr/bin/something -> /usr/share/far2m
 		g_strFarPath.Append("/" APP_BASENAME);
 	}
 
@@ -440,7 +440,7 @@ int FarAppMain(int argc, char **argv)
 	}
 
 	// run by symlinc in editor mode
-	if (strstr(argv[0], "far2ledit") != NULL) {
+	if (strstr(argv[0], "far2medit") != NULL) {
 		Opt.OnlyEditorViewerUsed = Options::ONLY_EDITOR;
 		if (argc > 1) {
 			strEditViewArg = argv[argc - 1]; // use last argument
@@ -552,7 +552,7 @@ int FarAppMain(int argc, char **argv)
 					Opt.SmallIcon=TRUE;
 					break;
 				case L'X':
-					fprintf(stderr, "Unsupported in far2l\n");
+					fprintf(stderr, "Unsupported in far2m\n");
 					break;
 
 				case L'C':
@@ -788,9 +788,9 @@ int _cdecl main(int argc, char *argv[])
 	char *name = strrchr(argv[0], GOOD_SLASH);
 	if (name) ++name; else name = argv[0];
 	if (argc > 0) {
-		if (strcmp(name, "far2l_askpass")==0)
+		if (strcmp(name, "far2m_askpass")==0)
 			return sudo_main_askpass();
-		if (strcmp(name, "far2l_sudoapp")==0)
+		if (strcmp(name, "far2m_sudoapp")==0)
 			return sudo_main_dispatcher(argc - 1, argv + 1);
 		if (argc >= 4) {
 			if (strcmp(argv[1], "--libexec")==0)

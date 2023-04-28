@@ -66,7 +66,7 @@ lib/Progress/Utils.cpp
 
 add_library (farftp MODULE ${SOURCES})
 
-target_link_libraries(farftp utils FARStdlib far2l)
+target_link_libraries(farftp utils FARStdlib far2m)
 
 target_include_directories(farftp PRIVATE .)
 target_include_directories(farftp PRIVATE src)

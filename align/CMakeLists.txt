@@ -7,7 +7,7 @@ src/Align.cpp
 
 add_library (align MODULE ${SOURCES})
 
-target_link_libraries(align utils far2l)
+target_link_libraries(align utils far2m)
 
 target_compile_definitions(align PRIVATE -DWINPORT_DIRECT -DUNICODE -DFAR_DONT_USE_INTERNALS)
 

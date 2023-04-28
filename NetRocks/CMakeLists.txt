@@ -166,7 +166,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_FAR_HAS_NAMELESS_UNIONS")
 
 add_library (NetRocks MODULE ${SOURCES})
 
-target_link_libraries(NetRocks utils far2l)
+target_link_libraries(NetRocks utils far2m)
 
 target_include_directories(NetRocks PRIVATE src)
 target_include_directories(NetRocks PRIVATE ../WinPort)

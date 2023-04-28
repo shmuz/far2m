@@ -1,15 +1,15 @@
-project(far2l_ttyx)
+project(far2m_ttyx)
 
 set(SOURCES
     TTYX.cpp
 )
 
-add_executable (far2l_ttyx ${SOURCES})
+add_executable (far2m_ttyx ${SOURCES})
 
-target_include_directories(far2l_ttyx PRIVATE ../..)
-target_include_directories(far2l_ttyx PRIVATE ../../..)
-target_include_directories(far2l_ttyx PRIVATE ../../../..)
-target_include_directories(far2l_ttyx PRIVATE ../../../../../utils/include)
+target_include_directories(far2m_ttyx PRIVATE ../..)
+target_include_directories(far2m_ttyx PRIVATE ../../..)
+target_include_directories(far2m_ttyx PRIVATE ../../../..)
+target_include_directories(far2m_ttyx PRIVATE ../../../../../utils/include)
 
 find_package(X11 REQUIRED)
 
@@ -32,15 +32,15 @@ endif()
 
 if (TTYXI)
     include_directories(${X11_INCLUDE_DIR} ${X11_Xi_INCLUDE_PATH})
-    target_link_libraries(far2l_ttyx utils ${X11_LIBRARIES} ${X11_Xi_LIB})
-    target_compile_options(far2l_ttyx PUBLIC -DTTYXI)
+    target_link_libraries(far2m_ttyx utils ${X11_LIBRARIES} ${X11_Xi_LIB})
+    target_compile_options(far2m_ttyx PUBLIC -DTTYXI)
 
 else()
     include_directories(${X11_INCLUDE_DIR})
-    target_link_libraries(far2l_ttyx utils ${X11_LIBRARIES})
+    target_link_libraries(far2m_ttyx utils ${X11_LIBRARIES})
 endif()
 
-set_target_properties(far2l_ttyx PROPERTIES
+set_target_properties(far2m_ttyx PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${INSTALL_DIR}"
     PREFIX ""
     SUFFIX ".broker")

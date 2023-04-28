@@ -40,7 +40,7 @@ FIND_PACKAGE(fmt)
 # so have to copy it into intermediate var but only if fmt_FOUND
 if (fmt_FOUND)
     set(fmt_LIBRARY_OPTIONAL "${fmt_LIBRARY}")
-    # add libfmt package into far2l dependencies if needed
+    # add libfmt package into far2m dependencies if needed
     IF(PACKAGE_DEPENDENCIES)
         SET(PACKAGE_DEPENDENCIES "${PACKAGE_DEPENDENCIES}, libfmt${fmt_VERSION_MAJOR}" PARENT_SCOPE)
     ELSE(PACKAGE_DEPENDENCIES)
@@ -61,7 +61,7 @@ target_link_libraries(colorer
     ${fmt_LIBRARY_OPTIONAL}
     utils
     colorer_lib
-    far2l
+    far2m
     )
 
 set (SPDLOG_DEFINES
