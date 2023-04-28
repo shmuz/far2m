@@ -55,11 +55,11 @@ apt-get install gawk m4 libwxgtk3.0-gtk3-dev libx11-dev libxi-dev libpcre3-dev l
 In older distributives: use libpcre2-dev and libwxgtk3.0-dev instead of libpcre3-dev and libwxgtk3.0-gtk3-dev
 
 #### Clone and Build
- * Clone current master `git clone https://github.com/shmuz/far2l`
+ * Clone current master `git clone https://github.com/shmuz/far2m`
  * Prepare build directory:
 ``` sh
-mkdir -p far2l/_build
-cd far2l/_build
+mkdir -p far2m/_build
+cd far2m/_build
 ```
 
  * Build:
@@ -74,9 +74,9 @@ cmake -DUSEWX=yes -DCMAKE_BUILD_TYPE=Release -G Ninja ..
 ninja
 ```
 
- * If above commands finished without errors - you may also install far2l, _with make:_ `sudo make install` _or with ninja:_ `sudo ninja install`
+ * If above commands finished without errors - you may also install far2m, _with make:_ `sudo make install` _or with ninja:_ `sudo ninja install`
 
- * Also its possible to create far2l_2.X.X_ARCH.deb or ...tar.gz packages in `_build` directory by running `cpack` command
+ * Also its possible to create far2m_2.X.X_ARCH.deb or ...tar.gz packages in `_build` directory by running `cpack` command
 
 ##### Additional build configuration options:
 
@@ -84,7 +84,7 @@ To build without WX backend (console version only): change -DUSEWX=yes to -DUSEW
 
 To force-disable TTY|X and TTY|Xi backends: add argument -DTTYX=no; to disable only TTY|Xi - add argument -DTTYXI=no
 
-To eliminate libuchardet requirement to reduce far2l dependencies by cost of losing automatic charset detection functionality: add -DUSEUCD=no
+To eliminate libuchardet requirement to reduce far2m dependencies by cost of losing automatic charset detection functionality: add -DUSEUCD=no
 
 To build with Python plugin: add argument -DPYTHON=yes
 
@@ -122,8 +122,8 @@ Some issues can be caused by conflicting dependencies, like having two versions 
 
  * Clone:
 ```sh
-git clone https://github.com/shmuz/far2l
-cd far2l
+git clone https://github.com/shmuz/far2m
+cd far2m
 ```
  * Install needed dependencies with MacPorts:
 ``` sh
@@ -133,7 +133,7 @@ sudo port install cmake gawk pkgconfig wxWidgets-3.2 libssh openssl xercesc3 lib
 ```sh
 brew bundle -v
 ```
- * After dependencies installed - you can build far2l:
+ * After dependencies installed - you can build far2m:
 _with make:_
 ```sh
 mkdir _build
@@ -151,14 +151,14 @@ ninja
  * Then you may create .dmg package by running: `cpack` command.
 Note that this step sometimes fails and may succeed from not very first attempt.
 Its recommended not to do anything on machine while cpack is in progress.
-After .dmg successfully created, you may install it by running `open ...path/to/created/far2l-*.dmg`
+After .dmg successfully created, you may install it by running `open ...path/to/created/far2m-*.dmg`
 
 #### Building on Gentoo (and derivatives)
 For absolute minimum you need:
 ```
 emerge -avn dev-libs/xerces-c app-i18n/uchardet dev-util/cmake dev-libs/spdlog
 ```
-If you want to build far2l with wxGTK support also install it:
+If you want to build far2m with wxGTK support also install it:
 ```
 emerge -avn x11-libs/wxGTK
 ```
@@ -201,7 +201,7 @@ You can import the project into your favourite IDE like QtCreator, CodeLite, or 
 
 ## Notes on porting
 
-I implemented/borrowed from WINE some commonly used WinAPI functions. They are all declared in WinPort/WinPort.h and corresponding defines can be found in WinPort/WinCompat.h (both are included by WinPort/windows.h). Note that this stuff may not be 1-to-1 to corresponding Win32 functionality also doesn't provide full-UNIX functionality, but it simplifies porting and can be considered as temporary scaffold.
+I (elfmz) implemented/borrowed from WINE some commonly used WinAPI functions. They are all declared in WinPort/WinPort.h and corresponding defines can be found in WinPort/WinCompat.h (both are included by WinPort/windows.h). Note that this stuff may not be 1-to-1 to corresponding Win32 functionality also doesn't provide full-UNIX functionality, but it simplifies porting and can be considered as temporary scaffold.
 
 However, only the main executable is linked statically to WinPort, although it also _exports_ WinPort functionality, so plugins use it without the neccessity to bring their own copies of this code. This is the reason that each plugin's binary should not statically link to WinPort.
 
