@@ -435,9 +435,9 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 
 		SetFarConsoleMode(TRUE);
 		if (kind == CLK_EDIT)
-			ModalEditConsoleHistory(true);
+			EditConsoleHistory(true);
 		else
-			ModalViewConsoleHistory(true, kind == CLK_VIEW_AUTOCLOSE);
+			ViewConsoleHistory(true, kind == CLK_VIEW_AUTOCLOSE);
 
 		CtrlObject->CmdLine->ShowBackground();
 		ScrBuf.Flush();

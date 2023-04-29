@@ -2872,21 +2872,25 @@ int FileEditor::GetEditorID() const
 	return m_editor->EditorID;
 }
 
-void ModalEditConsoleHistory(bool scroll_to_end)
+void EditConsoleHistory(bool Modal)
 {
 	const std::string &histfile = CtrlObject->CmdLine->GetConsoleLog(false);
 	if (histfile.empty())
 		return;
 
-	FileEditor *ShellEditor=new(std::nothrow) FileEditor(StrMB2Wide(histfile).c_str(),
-		CP_UTF8, FFILEEDIT_DISABLEHISTORY | FFILEEDIT_NEW | FFILEEDIT_SAVETOSAVEAS,
-		scroll_to_end ? std::numeric_limits<int>::max() : 0 );
+	FileEditor *ShellEditor=new(std::nothrow) FileEditor(StrMB2Wide(histfile).c_str(), CP_UTF8,
+		FFILEEDIT_DISABLEHISTORY | FFILEEDIT_NEW | FFILEEDIT_SAVETOSAVEAS | (Modal ? 0:FFILEEDIT_ENABLEF6),
+		std::numeric_limits<int>::max());
 	unlink(histfile.c_str());
 	if (ShellEditor) {
 		DWORD editorExitCode = ShellEditor->GetExitCode();
 		if (editorExitCode != XC_LOADING_INTERRUPTED && editorExitCode != XC_OPEN_ERROR) {
-			FrameManager->ExecuteModal();
-		} else
+			if (Modal)
+				FrameManager->ExecuteModalEV();
+			else
+				FrameManager->PluginCommit();
+		}
+		else
 			delete ShellEditor;
 	}
 }

@@ -183,4 +183,4 @@ class FileEditor : public Frame
 };
 
 bool dlgOpenEditor(FARString &strFileName, UINT &codepage);
-void ModalEditConsoleHistory(bool scroll_to_end);//erases file internally
+void EditConsoleHistory(bool Modal);

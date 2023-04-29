@@ -213,17 +213,17 @@ int CommandLine::ProcessKey(int Key)
 
 	if (Key == (KEY_MSWHEEL_UP | KEY_CTRL | KEY_SHIFT))
 	{
-		ModalViewConsoleHistory(true, true);
+		ViewConsoleHistory(true, true);
 		return TRUE;
 	}
 
 	if ( Key==KEY_CTRLSHIFTF3 || Key==KEY_F3) {
-		ModalViewConsoleHistory(true);
+		ViewConsoleHistory(true);
 		return TRUE;
 	}
 
 	if ( Key==KEY_CTRLSHIFTF4 || Key==KEY_F4) {
-		ModalEditConsoleHistory(true);
+		EditConsoleHistory(false);
 		return TRUE;
 	}
 

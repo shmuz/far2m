@@ -584,7 +584,7 @@ void ModalViewFile(const std::string &pathname, bool scroll_to_end)
 	ModalViewFileInternal(pathname, FALSE, FALSE, scroll_to_end, false, CP_AUTODETECT);
 }
 
-void ModalViewConsoleHistory(bool scroll_to_end, bool autoclose)
+void ViewConsoleHistory(bool scroll_to_end, bool autoclose)
 {
 	const std::string &histfile = CtrlObject->CmdLine->GetConsoleLog(true);
 	if (histfile.empty())
