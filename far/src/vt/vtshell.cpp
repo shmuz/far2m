@@ -337,11 +337,11 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 		}
 
 		if (MouseEvent.dwEventFlags & MOUSE_WHEELED) {
-			if (HIWORD(MouseEvent.dwButtonState) > 0) {
+			if (short(HIWORD(MouseEvent.dwButtonState)) > 0) {
 				OnConsoleLog(CLK_VIEW_AUTOCLOSE);
 			}
 		} else if ( (MouseEvent.dwButtonState&FROM_LEFT_1ST_BUTTON_PRESSED) != 0 &&
-			(MouseEvent.dwEventFlags & (MOUSE_HWHEELED|MOUSE_MOVED|DOUBLE_CLICK)) == 0 ) {
+				(MouseEvent.dwEventFlags & (MOUSE_HWHEELED | MOUSE_MOVED | DOUBLE_CLICK)) == 0 ) {
 			WINPORT(BeginConsoleAdhocQuickEdit)();
 		}
 	}

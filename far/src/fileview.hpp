@@ -107,5 +107,5 @@ class FileViewer:public Frame
 		int GetViewerID() const;
 };
 
-void ModalViewFile(const std::string &pathname, bool scroll_to_end);
-void ViewConsoleHistory(bool scroll_to_end, bool autoclose = false);
+void ModalViewFile(const std::string &pathname);
+void ViewConsoleHistory(bool modal, bool autoclose);

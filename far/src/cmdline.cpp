@@ -213,12 +213,12 @@ int CommandLine::ProcessKey(int Key)
 
 	if (Key == (KEY_MSWHEEL_UP | KEY_CTRL | KEY_SHIFT))
 	{
-		ViewConsoleHistory(true, true);
+		ViewConsoleHistory(false, true);
 		return TRUE;
 	}
 
 	if ( Key==KEY_CTRLSHIFTF3 || Key==KEY_F3) {
-		ViewConsoleHistory(true);
+		ViewConsoleHistory(false, false);
 		return TRUE;
 	}
 
