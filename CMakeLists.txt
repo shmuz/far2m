@@ -32,17 +32,24 @@ if("${VERSION_MAJOR}" STREQUAL "" OR "${VERSION_MAJOR}" STREQUAL "${VERSION}"
     message(FATAL_ERROR "${ColorRed}packaging/version is corrupted, please write actual X.Y.Z version into it.${ColorNormal}")
 endif()
 
-execute_process(COMMAND sh -c
-        "cd ${CMAKE_SOURCE_DIR} && git describe --tag"
-        OUTPUT_VARIABLE GIT_TAG)
-string(REGEX REPLACE "[\r\n\t ]$" "" GIT_TAG "${GIT_TAG}")
+find_package(Git)
+
+if(GIT_FOUND)
+    execute_process(COMMAND "${GIT_EXECUTABLE}" describe --tag
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+        OUTPUT_VARIABLE GIT_TAG
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+endif()
 
 if(NOT "${GIT_TAG}" STREQUAL "v_${VERSION}")
-    execute_process(COMMAND sh -c
-        "cd ${CMAKE_SOURCE_DIR} && git rev-parse --short HEAD"
-        OUTPUT_VARIABLE GIT_HASH)
-    string(REGEX REPLACE "[\r\n\t ]$" "" GIT_HASH "${GIT_HASH}")
+    if(GIT_FOUND)
+        execute_process(COMMAND "${GIT_EXECUTABLE}" rev-parse --short HEAD
+            WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+            OUTPUT_VARIABLE GIT_HASH
+            OUTPUT_STRIP_TRAILING_WHITESPACE)
+    endif()
     if(NOT "${GIT_HASH}" STREQUAL "")
+        message(STATUS "git hash: ${GIT_HASH}")
         set(VERSION_PATCH "${VERSION_PATCH}-${GIT_HASH}")
     else()
         message(WARNING "git information unavailable, assuming its a build from v_${VERSION}")
