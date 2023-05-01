@@ -49,13 +49,13 @@ class FileMasksProcessor : public BaseFileMask
 {
 	public:
 		FileMasksProcessor();
-		virtual ~FileMasksProcessor() { Free(); }
+		virtual ~FileMasksProcessor() { Reset(); }
 
 	public:
 		virtual bool Set(const wchar_t *Masks, DWORD Flags);
 		virtual bool Compare(const wchar_t *Name) const;
 		virtual bool IsEmpty() const;
-		void Free();
+		void Reset();
 
 	private:
 		UserDefinedList Masks; // список масок файлов

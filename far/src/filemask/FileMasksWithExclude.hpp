@@ -41,7 +41,7 @@ extern const wchar_t EXCLUDEMASKSEPARATOR;
 class FileMasksWithExclude:public BaseFileMask
 {
 	private:
-		void Free();
+		void Reset();
 		static const wchar_t *FindExcludeChar(const wchar_t *masks);
 
 	public:

@@ -38,10 +38,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "udlist.hpp"
 
-UserDefinedListItem::~UserDefinedListItem()
-{
-}
-
 bool UserDefinedListItem::operator==(const UserDefinedListItem &rhs) const
 {
 	return 0 == (CaseSensitive ? StrCmp:StrCmpI)(Str.CPtr(), rhs.Str.CPtr());
@@ -103,19 +99,9 @@ static bool __cdecl CmpIndexes(const UserDefinedListItem &el1, const UserDefined
 	return el1.index < el2.index;
 }
 
-UserDefinedList::UserDefinedList()
+UserDefinedList::UserDefinedList(DWORD Flags, wchar_t separator1, wchar_t separator2)
 {
-	SetParameters(0,0,0);
-}
-
-UserDefinedList::UserDefinedList(wchar_t separator1, wchar_t separator2, DWORD Flags)
-{
-	SetParameters(separator1, separator2, Flags);
-}
-
-UserDefinedList::UserDefinedList(DWORD Flags)
-{
-	SetParameters(0, 0, Flags);
+	SetParameters(Flags, separator1, separator2);
 }
 
 void UserDefinedList::SetDefaultSeparators()
@@ -132,7 +118,7 @@ bool UserDefinedList::CheckSeparators() const
 	        );
 }
 
-bool UserDefinedList::SetParameters(wchar_t separator1, wchar_t separator2, DWORD Flags)
+bool UserDefinedList::SetParameters(DWORD Flags, wchar_t separator1, wchar_t separator2)
 {
 	Array.clear();
 	Separator1 = separator1;
@@ -157,9 +143,9 @@ bool UserDefinedList::SetParameters(wchar_t separator1, wchar_t separator2, DWOR
 	return CheckSeparators();
 }
 
-bool UserDefinedList::SetAsIs(const wchar_t* const List)
+bool UserDefinedList::SetAsIs(const wchar_t* List)
 {
-	if (List && *List)
+	if (*List)
 	{
 		Array.clear();
 		Array.emplace_back(mCaseSensitive);
@@ -169,19 +155,17 @@ bool UserDefinedList::SetAsIs(const wchar_t* const List)
 	return false;
 }
 
-bool UserDefinedList::Set(const wchar_t* const List, bool AddToList)
+bool UserDefinedList::Set(const wchar_t* List, bool AddToList)
 {
-	if (AddToList)
-	{
-		if (List && !*List) // пусто, нечего добавлять
-			return true;
-	}
-	else
+	if (!*List)
+		return AddToList; // пусто, нечего добавлять
+
+	if (!AddToList)
 		Array.clear();
 
 	bool rc=false;
 
-	if (CheckSeparators() && List && *List)
+	if (CheckSeparators())
 	{
 		UserDefinedListItem item(mCaseSensitive);
 		item.index=Array.size();

@@ -65,7 +65,7 @@ class UserDefinedListItem
 		const UserDefinedListItem& operator=(const UserDefinedListItem &rhs);
 		const UserDefinedListItem& operator=(const wchar_t *rhs);
 		void Compact(wchar_t Char, bool ByPairs);
-		~UserDefinedListItem();
+		~UserDefinedListItem() {}
 };
 
 class UserDefinedList : private NonCopyable
@@ -85,11 +85,9 @@ class UserDefinedList : private NonCopyable
 		// по умолчанию разделителем считается ';' и ',', а
 		// mProcessBrackets=mAddAsterisk=mPackAsterisks=false
 		// mUnique=mSort=false
-		UserDefinedList();
 
 		// Явно указываются разделители. См. описание SetParameters
-		UserDefinedList(wchar_t separator1, wchar_t separator2, DWORD Flags);
-		UserDefinedList(DWORD Flags);
+		UserDefinedList(DWORD Flags=0, wchar_t separator1=L';', wchar_t separator2=L',');
 		~UserDefinedList() {}
 
 	public:
@@ -104,20 +102,17 @@ class UserDefinedList : private NonCopyable
 		// Возвращает false, если один из разделителей является кавычкой или
 		// включена обработка скобок и один из разделителей является квадратной
 		// скобкой.
-		bool SetParameters(wchar_t Separator1, wchar_t Separator2, DWORD Flags);
+		bool SetParameters(DWORD Flags=0, wchar_t Separator1=L';', wchar_t Separator2=L',');
 
 		// Инициализирует список. Принимает список, разделенный разделителями.
 		// Возвращает false при неудаче.
-		// Фича: если List==nullptr, то происходит освобождение занятой ранее памяти
-		bool Set(const wchar_t* const List, bool AddToList=false);
+		bool Set(const wchar_t* List, bool AddToList=false);
 
 		// Ничего не парсим, устанавливаем 1 элемент "как есть".
 		// Возвращает false только при нехватке памяти.
-		bool SetAsIs(const wchar_t* const List);
+		bool SetAsIs(const wchar_t* List);
 
 		// Добавление к уже существующему списку
-		// Фича: если NewItem==nullptr, то происходит освобождение занятой ранее
-		// памяти
 		bool AddItem(const wchar_t *NewItem)
 		{
 			return Set(NewItem,true);
@@ -125,9 +120,6 @@ class UserDefinedList : private NonCopyable
 
 		// Выдает указатель на очередной элемент списка или nullptr
 		const wchar_t *Get(size_t Index) const;
-
-		// Освободить память
-		void Free() { Array.clear(); }
 
 		// true, если элементов в списке нет
 		bool IsEmpty() const { return Array.empty(); }

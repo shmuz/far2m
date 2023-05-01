@@ -43,10 +43,10 @@ FileMasksWithExclude::FileMasksWithExclude():BaseFileMask()
 {
 }
 
-void FileMasksWithExclude::Free()
+void FileMasksWithExclude::Reset()
 {
-	Include.Free();
-	Exclude.Free();
+	Include.Reset();
+	Exclude.Reset();
 }
 
 bool FileMasksWithExclude::IsExcludeMask(const wchar_t *masks)
@@ -90,7 +90,7 @@ const wchar_t *FileMasksWithExclude::FindExcludeChar(const wchar_t *masks)
 
 bool FileMasksWithExclude::Set(const wchar_t *masks, DWORD Flags)
 {
-	Free();
+	Reset();
 
 	if (nullptr==masks || !*masks) return false;
 
@@ -123,7 +123,7 @@ bool FileMasksWithExclude::Set(const wchar_t *masks, DWORD Flags)
 	}
 
 	if (!rc)
-		Free();
+		Reset();
 
 	return rc;
 }

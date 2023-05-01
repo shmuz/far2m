@@ -46,10 +46,8 @@ FileMasksProcessor::FileMasksProcessor():
 {
 }
 
-void FileMasksProcessor::Free()
+void FileMasksProcessor::Reset()
 {
-	Masks.Free();
-
 	re.reset();
 	n = 0;
 }
@@ -62,7 +60,7 @@ void FileMasksProcessor::Free()
 
 bool FileMasksProcessor::Set(const wchar_t *masks, DWORD Flags)
 {
-	Free();
+	Reset();
 
 	if (masks && *masks == L'/')
 	{
@@ -82,7 +80,7 @@ bool FileMasksProcessor::Set(const wchar_t *masks, DWORD Flags)
 	if (Flags&FMPF_ADDASTERISK)
 		flags|=ULF_ADDASTERISK;
 
-	Masks.SetParameters(L',',L';',flags);
+	Masks.SetParameters(flags);
 	return Masks.Set(masks);
 }
 
