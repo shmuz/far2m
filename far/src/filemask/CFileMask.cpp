@@ -65,12 +65,8 @@ bool CFileMask::Set(const wchar_t *Masks, DWORD Flags)
 	Free();
 	bool Result=false;
 	int Silent=Flags & FMF_SILENT;
-	DWORD flags=0;
 
-	if (Flags & FMF_ADDASTERISK)
-		flags|=FMPF_ADDASTERISK;
-
-	if (Masks && *Masks)
+	if (*Masks)
 	{
 		if (FileMasksWithExclude::IsExcludeMask(Masks))
 		{
@@ -83,7 +79,10 @@ bool CFileMask::Set(const wchar_t *Masks, DWORD Flags)
 		}
 
 		if (FileMask)
+		{
+			DWORD flags = (Flags & FMF_ADDASTERISK) ? FMPF_ADDASTERISK : 0;
 			Result=FileMask->Set(Masks, flags);
+		}
 
 		if (!Result)
 			Free();

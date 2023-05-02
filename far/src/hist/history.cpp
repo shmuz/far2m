@@ -77,16 +77,8 @@ History::~History()
 
 static bool IsAllowedForHistory(const wchar_t *Str)
 {
-	if (!Str)
-		return false;
-
 	FileMasksProcessor fmp;
-	fmp.Set(Opt.AutoComplete.Exceptions.CPtr(), FMPF_ADDASTERISK);
-	if (!fmp.IsEmpty() && fmp.Compare(Str)) {
-		return false;
-	}
-
-	return true;
+	return !(fmp.Set(Opt.AutoComplete.Exceptions.CPtr(), FMPF_ADDASTERISK) && fmp.Compare(Str));
 }
 
 

@@ -62,7 +62,7 @@ bool FileMasksProcessor::Set(const wchar_t *masks, DWORD Flags)
 {
 	Reset();
 
-	if (masks && *masks == L'/')
+	if (*masks == L'/')
 	{
 		re.reset(new(std::nothrow) RegExp);
 		if (re && re->Compile(masks, OP_PERLSTYLE|OP_OPTIMIZE))

@@ -56,27 +56,24 @@ bool FileMasksWithExclude::IsExcludeMask(const wchar_t *masks)
 
 const wchar_t *FileMasksWithExclude::FindExcludeChar(const wchar_t *masks)
 {
-	if (masks)
+	for (bool regexp=false; *masks; masks++)
 	{
-		for (bool regexp=false; *masks; masks++)
+		if (!regexp)
 		{
-			if (!regexp)
+			if (*masks == EXCLUDEMASKSEPARATOR)
+				return masks;
+			if (*masks == L'/')
+				regexp = true;
+		}
+		else
+		{
+			if (*masks == L'\\')
 			{
-				if (*masks == EXCLUDEMASKSEPARATOR)
-					return masks;
-				if (*masks == L'/')
-					regexp = true;
+				if (*(++masks) == 0) // skip the next char
+					break;
 			}
-			else
-			{
-				if (*masks == L'\\')
-				{
-					if (*(++masks) == 0) // skip the next char
-						break;
-				}
-				else if (*masks == L'/')
-					regexp = false;
-			}
+			else if (*masks == L'/')
+				regexp = false;
 		}
 	}
 	return nullptr;
@@ -92,7 +89,7 @@ bool FileMasksWithExclude::Set(const wchar_t *masks, DWORD Flags)
 {
 	Reset();
 
-	if (nullptr==masks || !*masks) return false;
+	if (!*masks) return false;
 
 	bool rc=false;
 	wchar_t *MasksStr=wcsdup(masks);
@@ -104,8 +101,7 @@ bool FileMasksWithExclude::Set(const wchar_t *masks, DWORD Flags)
 
 		if (pExclude)
 		{
-			*pExclude=0;
-			++pExclude;
+			*pExclude++ = 0;
 
 			if (*pExclude!=L'/' && wcschr(pExclude, EXCLUDEMASKSEPARATOR))
 				rc=false;
@@ -113,9 +109,9 @@ bool FileMasksWithExclude::Set(const wchar_t *masks, DWORD Flags)
 
 		if (rc)
 		{
-			rc = Include.Set(*MasksStr?MasksStr:L"*",(Flags&FMPF_ADDASTERISK)?FMPF_ADDASTERISK:0);
+			rc = Include.Set(*MasksStr ? MasksStr:L"*", Flags&FMPF_ADDASTERISK);
 
-			if (rc)
+			if (rc && pExclude)
 				rc=Exclude.Set(pExclude, 0);
 		}
 
