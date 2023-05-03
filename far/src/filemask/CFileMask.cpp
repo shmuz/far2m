@@ -73,47 +73,20 @@ bool CFileMask::Set(const wchar_t *Masks, DWORD Flags)
 
 	if (!strMask.IsEmpty())
 	{
-		bool Error=false;
-		//	auto pStart=strMask.CPtr();
-		//
-		//	if (*pStart == L'<')
-		//	{
-		//		auto pEnd = wcschr(pStart+1, L'>');
-		//		if (pEnd && pEnd[1]==0)
-		//		{
-		//			Error=true;
-		//			KeyFileReadSection kfh(InMyConfig("settings/masks.ini"), "Masks");
-		//
-		//			if (kfh.SectionLoaded())
-		//			{
-		//				FARString strKey(pStart+1, pEnd-pStart-1);
-		//				const std::string& strValue = kfh.GetString(Wide2MB(strKey));
-		//
-		//				if (!strValue.empty())
-		//				{
-		//					strMask = strValue;
-		//					Error=false;
-		//				}
-		//			}
-		//		}
-		//	}
-		if (!Error)
+		Masks = strMask.CPtr();
+		if (FileMasksWithExclude::IsExcludeMask(Masks))
 		{
-			Masks = strMask.CPtr();
-			if (FileMasksWithExclude::IsExcludeMask(Masks))
-			{
-				FileMask=new FileMasksWithExclude;
-			}
-			else
-			{
-				FileMask=new FileMasksProcessor;
-			}
+			FileMask=new FileMasksWithExclude;
+		}
+		else
+		{
+			FileMask=new FileMasksProcessor;
+		}
 
-			if (FileMask)
-			{
-				DWORD flags = (Flags & FMF_ADDASTERISK) ? FMPF_ADDASTERISK : 0;
-				Result=FileMask->Set(Masks, flags);
-			}
+		if (FileMask)
+		{
+			DWORD flags = (Flags & FMF_ADDASTERISK) ? FMPF_ADDASTERISK : 0;
+			Result=FileMask->Set(Masks, flags);
 		}
 
 		if (!Result)

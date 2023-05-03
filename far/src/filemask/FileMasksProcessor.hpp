@@ -36,7 +36,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <vector>
 #include "BaseFileMask.hpp"
-#include "udlist.hpp"
 #include "RegExp.hpp"
 
 enum FMP_FLAGS

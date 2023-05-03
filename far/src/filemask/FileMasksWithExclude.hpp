@@ -38,10 +38,9 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 extern const wchar_t EXCLUDEMASKSEPARATOR;
 
-class FileMasksWithExclude:public BaseFileMask
+class FileMasksWithExclude : public BaseFileMask
 {
 	private:
-		void Reset();
 		static const wchar_t *FindExcludeChar(const wchar_t *masks);
 
 	public:
@@ -52,6 +51,7 @@ class FileMasksWithExclude:public BaseFileMask
 		virtual bool Set(const wchar_t *Masks, DWORD Flags);
 		virtual bool Compare(const wchar_t *Name) const;
 		virtual bool IsEmpty() const;
+		virtual void Reset();
 		static bool IsExcludeMask(const wchar_t *masks);
 
 	private:

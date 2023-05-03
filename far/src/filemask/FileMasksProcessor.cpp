@@ -36,8 +36,11 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #include "FileMasksProcessor.hpp"
+#include "FileMasksWithExclude.hpp"
 #include "processname.hpp"
 #include "StackHeapArray.hpp"
+#include "udlist.hpp"
+#include "KeyFileHelper.h"
 
 bool SingleFileMask::Set(const wchar_t *Masks, DWORD Flags)
 {
@@ -152,23 +155,49 @@ bool FileMasksProcessor::Set(const wchar_t *masks, DWORD Flags)
 
 	if (UdList.Set(masks))
 	{
+		FARString strMask;
 		const wchar_t *onemask;
+		KeyFileReadSection kfh(InMyConfig("settings/masks.ini"), "Masks");
+
 		for (int I=0; (onemask=UdList.Get(I)); I++)
 		{
-			BaseFileMask *base;
-			if (*onemask == L'/')
-				base = new RegexMask();
-			else
-				base = new SingleFileMask();
+			BaseFileMask *baseMask = nullptr;
 
-			if (base->Set(onemask,0))
+			auto pStart=onemask;
+
+			if (*pStart == L'<')
 			{
-				Masks.push_back(base);
+				auto pEnd = wcschr(++pStart, L'>');
+				if (pEnd && pEnd[1]==0 && kfh.SectionLoaded())
+				{
+					FARString strKey(pStart, pEnd-pStart);
+					const std::string& strValue = kfh.GetString(Wide2MB(strKey));
+
+					if (!strValue.empty())
+					{
+						baseMask = new(std::nothrow) FileMasksWithExclude;
+						strMask = strValue; // convert to FARString
+						onemask = strMask.CPtr();
+					}
+				}
+			}
+			else if (*onemask == L'/')
+			{
+				baseMask = new(std::nothrow) RegexMask;
+			}
+			else
+			{
+				baseMask = new(std::nothrow) SingleFileMask;
+			}
+
+			if (baseMask && baseMask->Set(onemask,0))
+			{
+				Masks.push_back(baseMask);
 			}
 			else
 			{
 				Reset();
-				delete base;
+				delete baseMask;
 				return false;
 			}
 		}

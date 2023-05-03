@@ -39,7 +39,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 const wchar_t EXCLUDEMASKSEPARATOR=L'|';
 
-FileMasksWithExclude::FileMasksWithExclude():BaseFileMask()
+FileMasksWithExclude::FileMasksWithExclude() : BaseFileMask()
 {
 }
 
