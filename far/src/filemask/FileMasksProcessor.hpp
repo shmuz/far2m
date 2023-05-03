@@ -34,6 +34,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <vector>
 #include "BaseFileMask.hpp"
 #include "udlist.hpp"
 #include "RegExp.hpp"
@@ -45,20 +46,52 @@ enum FMP_FLAGS
 	// символов: '*', '?', '.'
 };
 
-class FileMasksProcessor : public BaseFileMask
+class SingleFileMask : public BaseFileMask
 {
 	public:
-		FileMasksProcessor();
-		virtual ~FileMasksProcessor() { Reset(); }
+		SingleFileMask() {}
+		virtual ~SingleFileMask() {}
 
 	public:
 		virtual bool Set(const wchar_t *Masks, DWORD Flags);
 		virtual bool Compare(const wchar_t *Name) const;
 		virtual bool IsEmpty() const;
-		void Reset();
+		virtual void Reset();
 
 	private:
-		UserDefinedList Masks; // список масок файлов
+		FARString Mask;
+};
+
+class RegexMask : public BaseFileMask
+{
+	public:
+		RegexMask();
+		virtual ~RegexMask();
+
+	public:
+		virtual bool Set(const wchar_t *Masks, DWORD Flags);
+		virtual bool Compare(const wchar_t *Name) const;
+		virtual bool IsEmpty() const;
+		virtual void Reset();
+
+	private:
 		std::unique_ptr<RegExp> re;
 		int n = 0;
 };
+
+class FileMasksProcessor : public BaseFileMask
+{
+	public:
+		FileMasksProcessor();
+		virtual ~FileMasksProcessor();
+
+	public:
+		virtual bool Set(const wchar_t *Masks, DWORD Flags);
+		virtual bool Compare(const wchar_t *Name) const;
+		virtual bool IsEmpty() const;
+		virtual void Reset();
+
+	private:
+		std::vector<BaseFileMask*> Masks;
+};
+

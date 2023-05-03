@@ -47,5 +47,5 @@ class BaseFileMask : private NonCopyable
 		virtual bool Set(const wchar_t *Masks, DWORD Flags)=0;
 		virtual bool Compare(const wchar_t *Name) const =0;
 		virtual bool IsEmpty() const { return true; }
-
+		virtual void Reset() {}
 };

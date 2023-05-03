@@ -1460,7 +1460,7 @@ local function test_ProcessName()
   assert_true (far.CmpNameList("/.+/",       "c:/foo.bar" ))
   assert_true (far.CmpNameList("/bar$/",     "c:/foo.bar" ))
   assert_false(far.CmpNameList("/dar$/",     "c:/foo.bar" ))
-  assert_false(far.CmpNameList("/abcd/;*",    "/abcd/foo.bar", "PN_SKIPPATH"))
+  assert_true (far.CmpNameList("/abcd/;*",    "/abcd/foo.bar", "PN_SKIPPATH"))
   assert_true (far.CmpNameList("/Makefile(.+)?/", "Makefile"))
   assert_true (far.CmpNameList("/makefile([._\\-].+)?$/i", "Makefile", "PN_SKIPPATH"))
 

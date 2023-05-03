@@ -39,6 +39,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lang.hpp"
 #include "message.hpp"
 #include "pathmix.hpp"
+#include "strmix.hpp"
+#include "KeyFileHelper.h"
 
 CFileMask::CFileMask():
 	FileMask(nullptr)
@@ -66,22 +68,52 @@ bool CFileMask::Set(const wchar_t *Masks, DWORD Flags)
 	bool Result=false;
 	int Silent=Flags & FMF_SILENT;
 
-	if (*Masks)
-	{
-		if (FileMasksWithExclude::IsExcludeMask(Masks))
-		{
-			if (!(Flags&FMF_FORBIDEXCLUDE))
-				FileMask=new FileMasksWithExclude;
-		}
-		else
-		{
-			FileMask=new FileMasksProcessor;
-		}
+	FARString strMask(Masks);
+	RemoveTrailingSpaces(strMask);
 
-		if (FileMask)
+	if (!strMask.IsEmpty())
+	{
+		bool Error=false;
+		//	auto pStart=strMask.CPtr();
+		//
+		//	if (*pStart == L'<')
+		//	{
+		//		auto pEnd = wcschr(pStart+1, L'>');
+		//		if (pEnd && pEnd[1]==0)
+		//		{
+		//			Error=true;
+		//			KeyFileReadSection kfh(InMyConfig("settings/masks.ini"), "Masks");
+		//
+		//			if (kfh.SectionLoaded())
+		//			{
+		//				FARString strKey(pStart+1, pEnd-pStart-1);
+		//				const std::string& strValue = kfh.GetString(Wide2MB(strKey));
+		//
+		//				if (!strValue.empty())
+		//				{
+		//					strMask = strValue;
+		//					Error=false;
+		//				}
+		//			}
+		//		}
+		//	}
+		if (!Error)
 		{
-			DWORD flags = (Flags & FMF_ADDASTERISK) ? FMPF_ADDASTERISK : 0;
-			Result=FileMask->Set(Masks, flags);
+			Masks = strMask.CPtr();
+			if (FileMasksWithExclude::IsExcludeMask(Masks))
+			{
+				FileMask=new FileMasksWithExclude;
+			}
+			else
+			{
+				FileMask=new FileMasksProcessor;
+			}
+
+			if (FileMask)
+			{
+				DWORD flags = (Flags & FMF_ADDASTERISK) ? FMPF_ADDASTERISK : 0;
+				Result=FileMask->Set(Masks, flags);
+			}
 		}
 
 		if (!Result)

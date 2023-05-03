@@ -39,26 +39,48 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "processname.hpp"
 #include "StackHeapArray.hpp"
 
-FileMasksProcessor::FileMasksProcessor():
-	BaseFileMask(),
-	re(nullptr),
-	n(0)
+bool SingleFileMask::Set(const wchar_t *Masks, DWORD Flags)
+{
+	Mask=Masks;
+	return !Mask.IsEmpty();
+}
+
+bool SingleFileMask::Compare(const wchar_t *Name) const
+{
+	return CmpName(Mask.CPtr(), Name, false);
+}
+
+bool SingleFileMask::IsEmpty() const
+{
+	return Mask.IsEmpty();
+}
+
+void SingleFileMask::Reset()
+{
+	Mask.Clear();
+}
+
+RegexMask::RegexMask(): BaseFileMask(), re(nullptr), n(0)
 {
 }
 
-void FileMasksProcessor::Reset()
+RegexMask::~RegexMask()
+{
+	re.reset();
+}
+
+bool RegexMask::IsEmpty() const
+{
+	return re ? !n : true;
+}
+
+void RegexMask::Reset()
 {
 	re.reset();
 	n = 0;
 }
 
-/*
- Инициализирует список масок. Принимает список, разделенных запятой.
- Возвращает FALSE при неудаче (например, одна из
- длина одной из масок равна 0)
-*/
-
-bool FileMasksProcessor::Set(const wchar_t *masks, DWORD Flags)
+bool RegexMask::Set(const wchar_t *masks, DWORD Flags)
 {
 	Reset();
 
@@ -70,34 +92,16 @@ bool FileMasksProcessor::Set(const wchar_t *masks, DWORD Flags)
 			n = re->GetBracketsCount();
 			return true;
 		}
-		re.reset();
-		return false;
 	}
 
-	// разделителем масок является не только запятая, но и точка с запятой!
-	DWORD flags=ULF_PACKASTERISKS|ULF_PROCESSBRACKETS|ULF_SORT|ULF_UNIQUE;
-
-	if (Flags&FMPF_ADDASTERISK)
-		flags|=ULF_ADDASTERISK;
-
-	Masks.SetParameters(flags);
-	return Masks.Set(masks);
-}
-
-bool FileMasksProcessor::IsEmpty() const
-{
-	if (re)
-	{
-		return !n;
-	}
-
-	return Masks.IsEmpty();
+	Reset();
+	return false;
 }
 
 /* сравнить имя файла со списком масок
    Возвращает TRUE в случае успеха.
    Путь к файлу в FileName НЕ игнорируется */
-bool FileMasksProcessor::Compare(const wchar_t *FileName) const
+bool RegexMask::Compare(const wchar_t *FileName) const
 {
 	if (re)
 	{
@@ -106,13 +110,83 @@ bool FileMasksProcessor::Compare(const wchar_t *FileName) const
 		return re->Search(ReStringView(FileName), m.Get(), i);
 	}
 
-	const wchar_t *MaskPtr;   // указатель на текущую маску в списке
-	for (size_t MI = 0; nullptr!=(MaskPtr=Masks.Get(MI)); ++MI)
+	return false;
+}
+
+FileMasksProcessor::FileMasksProcessor() {}
+
+FileMasksProcessor::~FileMasksProcessor()
+{
+	Reset();
+}
+
+void FileMasksProcessor::Reset()
+{
+	for (auto I: Masks)
+		I->Reset();
+
+	Masks.clear();
+}
+
+bool FileMasksProcessor::IsEmpty() const
+{
+	return Masks.empty();
+}
+
+/*
+ Инициализирует список масок. Принимает список, разделенных запятой.
+ Возвращает FALSE при неудаче (например, одна из
+ длина одной из масок равна 0)
+*/
+bool FileMasksProcessor::Set(const wchar_t *masks, DWORD Flags)
+{
+	Reset();
+
+	// разделителем масок является не только запятая, но и точка с запятой!
+	DWORD flags=ULF_PACKASTERISKS|ULF_PROCESSBRACKETS|ULF_SORT|ULF_UNIQUE;
+
+	if (Flags&FMPF_ADDASTERISK)
+		flags|=ULF_ADDASTERISK;
+
+	UserDefinedList UdList(flags);
+
+	if (UdList.Set(masks))
 	{
-		// SkipPath=FALSE, т.к. в CFileMask вызывается PointToName
-		if (CmpName(MaskPtr,FileName, false))
-			return true;
+		const wchar_t *onemask;
+		for (int I=0; (onemask=UdList.Get(I)); I++)
+		{
+			BaseFileMask *base;
+			if (*onemask == L'/')
+				base = new RegexMask();
+			else
+				base = new SingleFileMask();
+
+			if (base->Set(onemask,0))
+			{
+				Masks.push_back(base);
+			}
+			else
+			{
+				Reset();
+				delete base;
+				return false;
+			}
+		}
+		return true;
 	}
 
+	return false;
+}
+
+/* сравнить имя файла со списком масок
+   Возвращает TRUE в случае успеха.
+   Путь к файлу в FileName НЕ игнорируется */
+bool FileMasksProcessor::Compare(const wchar_t *FileName) const
+{
+	for (auto I: Masks)
+	{
+		if (I->Compare(FileName))
+			return true;
+	}
 	return false;
 }
