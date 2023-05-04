@@ -35,19 +35,17 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "CFileMask.hpp"
 #include "FileMasksProcessor.hpp"
-#include "FileMasksWithExclude.hpp"
 #include "lang.hpp"
 #include "message.hpp"
 #include "pathmix.hpp"
 #include "strmix.hpp"
-#include "KeyFileHelper.h"
 
 CFileMask::CFileMask():
 	FileMask(nullptr)
 {
 }
 
-void CFileMask::Free()
+void CFileMask::Reset()
 {
 	if (FileMask)
 		delete FileMask;
@@ -64,7 +62,7 @@ void CFileMask::Free()
 
 bool CFileMask::Set(const wchar_t *Masks, DWORD Flags)
 {
-	Free();
+	Reset();
 	bool Result=false;
 	int Silent=Flags & FMF_SILENT;
 
@@ -74,14 +72,7 @@ bool CFileMask::Set(const wchar_t *Masks, DWORD Flags)
 	if (!strMask.IsEmpty())
 	{
 		Masks = strMask.CPtr();
-		if (FileMasksWithExclude::IsExcludeMask(Masks))
-		{
-			FileMask=new FileMasksWithExclude;
-		}
-		else
-		{
-			FileMask=new FileMasksProcessor;
-		}
+		FileMask=new(std::nothrow) FileMasksProcessor;
 
 		if (FileMask)
 		{
@@ -90,7 +81,7 @@ bool CFileMask::Set(const wchar_t *Masks, DWORD Flags)
 		}
 
 		if (!Result)
-			Free();
+			Reset();
 	}
 
 	if (!Silent && !Result)

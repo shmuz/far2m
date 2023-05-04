@@ -3341,7 +3341,7 @@ FindFiles::FindFiles()
 
 FindFiles::~FindFiles()
 {
-	FileMaskForFindFile.Free();
+	FileMaskForFindFile.Reset();
 	itd.ClearAllLists();
 	ScrBuf.ResetShadow();
 

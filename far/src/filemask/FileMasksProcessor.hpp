@@ -91,6 +91,10 @@ class FileMasksProcessor : public BaseFileMask
 		virtual void Reset();
 
 	private:
-		std::vector<BaseFileMask*> Masks;
+		std::vector<BaseFileMask*> IncludeMasks;
+		std::vector<BaseFileMask*> ExcludeMasks;
+
+	private:
+		bool SetPart(const wchar_t *Masks, DWORD Flags, std::vector<BaseFileMask*>& Target);
 };
 

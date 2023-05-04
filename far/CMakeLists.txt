@@ -85,7 +85,6 @@ src/macro/tvar.cpp
 
 src/filemask/CFileMask.cpp
 src/filemask/FileMasksProcessor.cpp
-src/filemask/FileMasksWithExclude.cpp
 
 src/locale/codepage.cpp
 src/locale/DetectCodepage.cpp

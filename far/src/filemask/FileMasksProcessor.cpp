@@ -34,13 +34,43 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
-
 #include "FileMasksProcessor.hpp"
-#include "FileMasksWithExclude.hpp"
 #include "processname.hpp"
 #include "StackHeapArray.hpp"
 #include "udlist.hpp"
 #include "KeyFileHelper.h"
+
+#define EXCLUDEMASKSEPARATOR (L'|')
+
+static const wchar_t *FindExcludeChar(const wchar_t *masks)
+{
+	for (bool regexp=false; *masks; masks++)
+	{
+		if (!regexp)
+		{
+			if (*masks == EXCLUDEMASKSEPARATOR)
+				return masks;
+			if (*masks == L'/')
+				regexp = true;
+		}
+		else
+		{
+			if (*masks == L'\\')
+			{
+				if (*(++masks) == 0) // skip the next char
+					break;
+			}
+			else if (*masks == L'/')
+				regexp = false;
+		}
+	}
+	return nullptr;
+}
+
+static bool IsExcludeMask(const wchar_t *masks)
+{
+	return FindExcludeChar(masks)!=nullptr;
+}
 
 bool SingleFileMask::Set(const wchar_t *Masks, DWORD Flags)
 {
@@ -125,15 +155,16 @@ FileMasksProcessor::~FileMasksProcessor()
 
 void FileMasksProcessor::Reset()
 {
-	for (auto I: Masks)
-		I->Reset();
+	for (auto I: IncludeMasks) I->Reset();
+	for (auto I: ExcludeMasks) I->Reset();
 
-	Masks.clear();
+	IncludeMasks.clear();
+	ExcludeMasks.clear();
 }
 
 bool FileMasksProcessor::IsEmpty() const
 {
-	return Masks.empty();
+	return IncludeMasks.empty();
 }
 
 /*
@@ -145,6 +176,48 @@ bool FileMasksProcessor::Set(const wchar_t *masks, DWORD Flags)
 {
 	Reset();
 
+	if (!*masks) return false;
+
+	bool rc=false;
+	wchar_t *MasksStr=wcsdup(masks);
+
+	if (MasksStr)
+	{
+		rc=true;
+		wchar_t *pExclude = (wchar_t *) FindExcludeChar(MasksStr);
+
+		if (pExclude)
+		{
+			*pExclude++ = 0;
+
+			if (*pExclude!=L'/' && wcschr(pExclude, EXCLUDEMASKSEPARATOR))
+				rc=false;
+		}
+
+		if (rc)
+		{
+			rc = SetPart(*MasksStr ? MasksStr:L"*", Flags&FMPF_ADDASTERISK, IncludeMasks);
+
+			if (rc && pExclude)
+				rc = SetPart(pExclude, 0, ExcludeMasks);
+		}
+
+		free(MasksStr);
+	}
+
+	if (!rc)
+		Reset();
+
+	return rc;
+}
+
+/*
+ Инициализирует список масок. Принимает список, разделенных запятой.
+ Возвращает FALSE при неудаче (например, одна из
+ длина одной из масок равна 0)
+*/
+bool FileMasksProcessor::SetPart(const wchar_t *masks, DWORD Flags, std::vector<BaseFileMask*> &Target)
+{
 	// разделителем масок является не только запятая, но и точка с запятой!
 	DWORD flags=ULF_PACKASTERISKS|ULF_PROCESSBRACKETS|ULF_SORT|ULF_UNIQUE;
 
@@ -175,7 +248,7 @@ bool FileMasksProcessor::Set(const wchar_t *masks, DWORD Flags)
 
 					if (!strValue.empty())
 					{
-						baseMask = new(std::nothrow) FileMasksWithExclude;
+						baseMask = new(std::nothrow) FileMasksProcessor;
 						strMask = strValue; // convert to FARString
 						onemask = strMask.CPtr();
 					}
@@ -192,7 +265,7 @@ bool FileMasksProcessor::Set(const wchar_t *masks, DWORD Flags)
 
 			if (baseMask && baseMask->Set(onemask,0))
 			{
-				Masks.push_back(baseMask);
+				Target.push_back(baseMask);
 			}
 			else
 			{
@@ -212,10 +285,17 @@ bool FileMasksProcessor::Set(const wchar_t *masks, DWORD Flags)
    Путь к файлу в FileName НЕ игнорируется */
 bool FileMasksProcessor::Compare(const wchar_t *FileName) const
 {
-	for (auto I: Masks)
+	bool OK=false;
+	for (auto I: IncludeMasks)
 	{
-		if (I->Compare(FileName))
-			return true;
+		if (I->Compare(FileName))	{ OK=true; break; }
 	}
-	return false;
+	if (OK)
+	{
+		for (auto I: ExcludeMasks)
+		{
+			if (I->Compare(FileName))	{ OK=false; break; }
+		}
+	}
+	return OK;
 }
