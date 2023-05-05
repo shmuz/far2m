@@ -2908,7 +2908,7 @@ $ #Изменение имени кодовой страницы#
 
 @DriveDlg
 $ #Location#
-    This menu allows to change the current location of a panel, unmount mountpoint 
+    This menu allows to change the current location of a panel, unmount mountpoint
 or open a new ~plugin~@Plugins@ panel.
 
     Select the item with the corresponding drive letter to change the drive or
@@ -3615,6 +3615,26 @@ the character '#|#'.
     The comma (or semicolon) is used for separating file masks from each other,
 and the '|' character separates include masks from exclude masks.
 
+ File masks can be joined into ~groups~@MaskGroupsSettings@.
+
+
+@MaskGroupsSettings
+$ #Groups of file masks#
+ An arbirtary number of ~file masks~@FileMasks@ can be joined into a named group.
+
+ Hereinafter the group name, enclosed in angle brackets (i.e. #<#name#>#), can be used wherever masks can be used.
+
+ Groups can contain other groups.
+
+ For example, the #<arc># group contains the "*.rar,*.zip,*.[zj],*.[bg7]z,*.[bg]zip,*.tar" masks.
+To ~highlight~@Highlight@ all archives except "*.rar" #<arc>|*.rar# should be used.
+
+ These settings are found in #~~/.config/far2m/settings/masks.ini# file under the #[Masks]# section, e.g.
+ [Masks]
+ arc=*.rar,*.zip,*.[zj],*.[bg7]z,*.[bg]zip,*.tar
+
+ Currently there is no user interface, please create and maintain this file yourselves.
+
 
 @SelectFiles
 $ #Selecting files#
@@ -3698,7 +3718,7 @@ fragmentation if it or original file will be overwritten in the future.
     #With symlink# combobox allows to chose from any of three possible ways of handling
 symlinks during copying:
     - Either all symlinks will be copied as is.
-    - Either far2m will check each symlink target to find out if it refers 'outer' file 
+    - Either far2m will check each symlink target to find out if it refers 'outer' file
 or some file also being copied. In first case link will be copied as file, in second
 it will be copied as symlink with possible adjusted destination, so it will refer copied
 target file.
@@ -4424,7 +4444,7 @@ documentation.
 
 @KeyMacroList
 $ #Макросы: Список установленных макросов#
-    Ниже приведен список разделов, в которых можно узнать какие ~макросы~@KeyMacro@ 
+    Ниже приведен список разделов, в которых можно узнать какие ~макросы~@KeyMacro@
 действуют в текущей сессии Far Manager.
 
   ~Общие макросы#~@KeyMacroCommonList@
@@ -4443,12 +4463,12 @@ $ #Макросы: Список установленных макросов#
   ~Меню выбора дисков~@KeyMacroDisksList@
   ~Меню пользователя~@KeyMacroUserMenuList@
   ~Прочие меню~@KeyMacroMenuList@
-  
+
   ~Программа просмотра~@KeyMacroViewerList@
   ~Редактор~@KeyMacroEditList@
-  
+
   ~Файл помощи#~@KeyMacroHelpList@
-  
+
   ~Остальные области~@KeyMacroOtherList@
 
 @KeyMacroCommonList
