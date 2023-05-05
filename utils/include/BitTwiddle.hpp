@@ -8,6 +8,8 @@
 # include <endian.h>  // __BYTE_ORDER
 #endif
 
+#include <cstdint>
+
 template <class POD_T>
 	inline void ZeroFill(POD_T &dst)
 {
@@ -76,7 +78,7 @@ template <class V>
 
 #else // #ifdef ENDIAN_IS_BIG
 # define LITEND(V)   (V)
-# define LITEND_INPLACE(V) 
+# define LITEND_INPLACE(V)
 # define BIGEND(V)   (RevBytes(V))
 # define BIGEND_INPLACE(V)   V = BIGEND(V)
 # define LITEND_INPLACE_FILETIME(FT)

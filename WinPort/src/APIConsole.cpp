@@ -1,6 +1,7 @@
 #include <mutex>
 #include <map>
 #include <vector>
+#include <stdexcept>
 
 #include "WinPort.h"
 #include "Backend.h"
@@ -9,7 +10,7 @@ static DWORD g_winport_con_mode = ENABLE_QUICK_EDIT_MODE | ENABLE_EXTENDED_FLAGS
 static std::mutex g_winport_con_mode_mutex;
 
 extern "C" {
-	
+
 	WINPORT_DECL(GetLargestConsoleWindowSize,COORD,(HANDLE hConsoleOutput))
 	{
 		return g_winport_con_out->GetLargestConsoleWindowSize();
@@ -49,7 +50,7 @@ extern "C" {
 		*lpModeFlags = 0;//WTF??? GetConsoleDisplayMode/SetConsoleDisplayMode returns different meanings!!!
 		return TRUE;
 	}
-	WINPORT_DECL(ScrollConsoleScreenBuffer,BOOL,(HANDLE hConsoleOutput, const SMALL_RECT *lpScrollRectangle, 
+	WINPORT_DECL(ScrollConsoleScreenBuffer,BOOL,(HANDLE hConsoleOutput, const SMALL_RECT *lpScrollRectangle,
 		const SMALL_RECT *lpClipRectangle, COORD dwDestinationOrigin, const CHAR_INFO *lpFill))
 	{
 		return g_winport_con_out->Scroll(lpScrollRectangle, lpClipRectangle, dwDestinationOrigin, lpFill) ? TRUE : FALSE;
@@ -75,7 +76,7 @@ extern "C" {
 		lpConsoleScreenBufferInfo->srWindow.Bottom = height - 1;
 		lpConsoleScreenBufferInfo->dwMaximumWindowSize.X = width;
 		lpConsoleScreenBufferInfo->dwMaximumWindowSize.Y = height;
-		
+
 		return TRUE;
 	}
 
@@ -111,7 +112,7 @@ extern "C" {
 		*lpMode|= g_winport_con_out->GetMode();
 		return TRUE;
 	}
-	
+
 	WINPORT_DECL(SetConsoleMode,BOOL,(HANDLE hConsoleHandle, DWORD dwMode))
 	{
 		std::lock_guard<std::mutex> lock(g_winport_con_mode_mutex);
@@ -283,22 +284,22 @@ extern "C" {
 
 		return FALSE;
 	}
-	
+
 	WINPORT_DECL(SetConsoleScrollRegion, VOID, (HANDLE hConsoleOutput, SHORT top, SHORT bottom))
 	{
 		g_winport_con_out->SetScrollRegion(top, bottom);
 	}
-	
+
 	WINPORT_DECL(GetConsoleScrollRegion, VOID, (HANDLE hConsoleOutput, SHORT *top, SHORT *bottom))
 	{
 		g_winport_con_out->GetScrollRegion(*top, *bottom);
 	}
-	
+
 	WINPORT_DECL(SetConsoleScrollCallback, VOID, (HANDLE hConsoleOutput, PCONSOLE_SCROLL_CALLBACK pCallback, PVOID pContext))
 	{
 		g_winport_con_out->SetScrollCallback(pCallback, pContext);
 	}
-	
+
 	WINPORT_DECL(BeginConsoleAdhocQuickEdit, BOOL, ())
 	{
 		{
@@ -308,7 +309,7 @@ extern "C" {
 				return FALSE;
 			}
 		}
-		
+
 		//here is possible non-critical race with enabling ENABLE_QUICK_EDIT_MODE
 		g_winport_con_out->AdhocQuickEdit();
 		return TRUE;
