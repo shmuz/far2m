@@ -47,19 +47,16 @@ CFileMask::CFileMask():
 
 void CFileMask::Reset()
 {
-	if (FileMask)
-		delete FileMask;
-
+	delete FileMask;
 	FileMask=nullptr;
 }
 
 /*
  Инициализирует список масок. Принимает список, разделенных запятой или точкой
  с запятой. Разрешается указывать маски исключения, отделив их от основных
- символом '|' Возвращает FALSE при неудаче (например, одна из длина одной из
+ символом '|' Возвращает FALSE при неудаче (например, длина одной из
  масок равна 0).
 */
-
 bool CFileMask::Set(const wchar_t *Masks, DWORD Flags)
 {
 	Reset();

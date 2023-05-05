@@ -135,4 +135,3 @@ private:
 inline bool IsMenuArea(int Area) { return
 	Area==MACROAREA_MAINMENU || Area==MACROAREA_MENU || Area==MACROAREA_DISKS ||
 	Area==MACROAREA_USERMENU || Area==MACROAREA_AUTOCOMPLETION; }
-void Log(const char* Format, ...);

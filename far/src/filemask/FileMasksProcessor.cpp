@@ -42,6 +42,11 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define EXCLUDEMASKSEPARATOR (L'|')
 
+// Protect against cases like a=<a> or a=<b>, b=<a>, etc.
+// It also restricts valid nesting depth but the limit is high enough to cover all practical cases.
+// This method was chosen due to its simplicity.
+#define MAXCALLDEPTH 64
+
 static const wchar_t *FindExcludeChar(const wchar_t *masks)
 {
 	for (bool regexp=false; *masks; masks++)
@@ -146,7 +151,13 @@ bool RegexMask::Compare(const wchar_t *FileName) const
 	return false;
 }
 
-FileMasksProcessor::FileMasksProcessor() {}
+FileMasksProcessor::FileMasksProcessor() : BaseFileMask(), CallDepth(0)
+{
+}
+
+FileMasksProcessor::FileMasksProcessor(int aCallDepth) : BaseFileMask(), CallDepth(aCallDepth)
+{
+}
 
 FileMasksProcessor::~FileMasksProcessor()
 {
@@ -155,8 +166,8 @@ FileMasksProcessor::~FileMasksProcessor()
 
 void FileMasksProcessor::Reset()
 {
-	for (auto I: IncludeMasks) I->Reset();
-	for (auto I: ExcludeMasks) I->Reset();
+	for (auto I: IncludeMasks) { I->Reset(); delete I; }
+	for (auto I: ExcludeMasks) { I->Reset(); delete I; }
 
 	IncludeMasks.clear();
 	ExcludeMasks.clear();
@@ -175,6 +186,8 @@ bool FileMasksProcessor::IsEmpty() const
 bool FileMasksProcessor::Set(const wchar_t *masks, DWORD Flags)
 {
 	Reset();
+
+	if (CallDepth >= MAXCALLDEPTH) return false;
 
 	if (!*masks) return false;
 
@@ -248,7 +261,7 @@ bool FileMasksProcessor::SetPart(const wchar_t *masks, DWORD Flags, std::vector<
 
 					if (!strValue.empty())
 					{
-						baseMask = new(std::nothrow) FileMasksProcessor;
+						baseMask = new(std::nothrow) FileMasksProcessor(CallDepth+1);
 						strMask = strValue; // convert to FARString
 						onemask = strMask.CPtr();
 					}

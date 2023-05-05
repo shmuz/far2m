@@ -93,8 +93,10 @@ class FileMasksProcessor : public BaseFileMask
 	private:
 		std::vector<BaseFileMask*> IncludeMasks;
 		std::vector<BaseFileMask*> ExcludeMasks;
+		const int CallDepth;
 
 	private:
+		FileMasksProcessor(int aCallDepth);
 		bool SetPart(const wchar_t *Masks, DWORD Flags, std::vector<BaseFileMask*>& Target);
 };
 
