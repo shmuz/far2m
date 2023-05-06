@@ -6,7 +6,6 @@
 #include <algorithm>
 #include <chrono>
 
-
 // OSX has no pthread_timedjoin_np, so here goes bicycle for timed thread waiting
 
 Threaded::~Threaded()

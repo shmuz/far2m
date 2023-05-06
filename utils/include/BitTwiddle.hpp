@@ -2,7 +2,7 @@
 
 #ifdef __APPLE__
 # include <machine/endian.h>  // __BYTE_ORDER
-#elif defined(__FreeBSD__)
+#elif defined(__FreeBSD__) || defined(__DragonFly__)
 # include <sys/endian.h>  // __BYTE_ORDER
 #else
 # include <endian.h>  // __BYTE_ORDER
@@ -78,7 +78,7 @@ template <class V>
 
 #else // #ifdef ENDIAN_IS_BIG
 # define LITEND(V)   (V)
-# define LITEND_INPLACE(V)
+# define LITEND_INPLACE(V) 
 # define BIGEND(V)   (RevBytes(V))
 # define BIGEND_INPLACE(V)   V = BIGEND(V)
 # define LITEND_INPLACE_FILETIME(FT)
