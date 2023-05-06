@@ -151,17 +151,21 @@ bool RegexMask::Compare(const wchar_t *FileName) const
 	return false;
 }
 
-FileMasksProcessor::FileMasksProcessor() : BaseFileMask(), CallDepth(0)
+FileMasksProcessor::FileMasksProcessor() : CallDepth(0)
 {
+	IniReader = new KeyFileReadSection(InMyConfig("settings/masks.ini"), "Masks");
 }
 
-FileMasksProcessor::FileMasksProcessor(int aCallDepth) : BaseFileMask(), CallDepth(aCallDepth)
+FileMasksProcessor::FileMasksProcessor(int aCallDepth, KeyFileReadSection *aIniReader)
+	: CallDepth(aCallDepth), IniReader(aIniReader)
 {
 }
 
 FileMasksProcessor::~FileMasksProcessor()
 {
 	Reset();
+	if (CallDepth==0)
+		delete IniReader;
 }
 
 void FileMasksProcessor::Reset()
@@ -176,6 +180,11 @@ void FileMasksProcessor::Reset()
 bool FileMasksProcessor::IsEmpty() const
 {
 	return IncludeMasks.empty();
+}
+
+FARString FileMasksProcessor::GetNamedMask(const wchar_t *Name)
+{
+	return IniReader->SectionLoaded() ? IniReader->GetString(Wide2MB(Name)) : "";
 }
 
 /*
@@ -243,7 +252,6 @@ bool FileMasksProcessor::SetPart(const wchar_t *masks, DWORD Flags, std::vector<
 	{
 		FARString strMask;
 		const wchar_t *onemask;
-		KeyFileReadSection kfh(InMyConfig("settings/masks.ini"), "Masks");
 
 		for (int I=0; (onemask=UdList.Get(I)); I++)
 		{
@@ -254,15 +262,14 @@ bool FileMasksProcessor::SetPart(const wchar_t *masks, DWORD Flags, std::vector<
 			if (*pStart == L'<')
 			{
 				auto pEnd = wcschr(++pStart, L'>');
-				if (pEnd && pEnd[1]==0 && kfh.SectionLoaded())
+				if (pEnd && pEnd!=pStart && pEnd[1]==0)
 				{
 					FARString strKey(pStart, pEnd-pStart);
-					const std::string& strValue = kfh.GetString(Wide2MB(strKey));
+					strMask = GetNamedMask(strKey);
 
-					if (!strValue.empty())
+					if (!strMask.IsEmpty())
 					{
-						baseMask = new(std::nothrow) FileMasksProcessor(CallDepth+1);
-						strMask = strValue; // convert to FARString
+						baseMask = new(std::nothrow) FileMasksProcessor(CallDepth+1,IniReader);
 						onemask = strMask.CPtr();
 					}
 				}

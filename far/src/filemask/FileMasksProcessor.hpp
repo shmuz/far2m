@@ -37,6 +37,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vector>
 #include "BaseFileMask.hpp"
 #include "RegExp.hpp"
+#include "FARString.hpp"
 
 enum FMP_FLAGS
 {
@@ -78,6 +79,8 @@ class RegexMask : public BaseFileMask
 		int n = 0;
 };
 
+class KeyFileReadSection;
+
 class FileMasksProcessor : public BaseFileMask
 {
 	public:
@@ -94,9 +97,11 @@ class FileMasksProcessor : public BaseFileMask
 		std::vector<BaseFileMask*> IncludeMasks;
 		std::vector<BaseFileMask*> ExcludeMasks;
 		const int CallDepth;
+		KeyFileReadSection *IniReader;
 
 	private:
-		FileMasksProcessor(int aCallDepth);
+		FileMasksProcessor(int aCallDepth, KeyFileReadSection *aIniReader);
 		bool SetPart(const wchar_t *Masks, DWORD Flags, std::vector<BaseFileMask*>& Target);
+		FARString GetNamedMask(const wchar_t *Name);
 };
 
