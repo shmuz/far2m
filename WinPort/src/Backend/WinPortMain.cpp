@@ -8,7 +8,7 @@
 # include <termios.h>
 # include <linux/kd.h>
 # include <linux/keyboard.h>
-#elif defined(__FreeBSD__)
+#elif defined(__FreeBSD__) || defined(__DragonFly__)
 # include <sys/ioctl.h>
 # include <sys/kbio.h>
 #endif
@@ -300,7 +300,7 @@ extern "C" int WinPortMain(const char *full_exe_path, int argc, char **argv, int
 
 	InitPalette();
 
-#if defined(__linux__) || defined(__FreeBSD__)
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__DragonFly__)
 	unsigned long int leds = 0;
 	if (ioctl(0, KDGETLED, &leds) == 0) {
 		// running under linux 'real' TTY, such kind of terminal cannot be dropped due to lost connection etc
@@ -353,7 +353,9 @@ extern "C" int WinPortMain(const char *full_exe_path, int argc, char **argv, int
 
 //	tcgetattr(std_out, &g_ts_tstp);
 
-	std::unique_ptr<TTYRawMode> tty_raw_mode(new TTYRawMode(std_in, std_out));
+	std::unique_ptr<TTYRawMode> tty_raw_mode;
+	if (!arg_opts.notty) {
+		tty_raw_mode.reset(new TTYRawMode(std_in, std_out));;
 	if (!strchr(arg_opts.nodetect, 'f')) {
 //		tty_raw_mode.reset(new TTYRawMode(std_out));
 		if (tty_raw_mode->Applied()) {
@@ -364,6 +366,7 @@ extern "C" int WinPortMain(const char *full_exe_path, int argc, char **argv, int
 
 		} else {
 			arg_opts.notty = true;
+			}
 		}
 	}
 
