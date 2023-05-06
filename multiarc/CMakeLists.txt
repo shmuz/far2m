@@ -20,7 +20,7 @@ set(SOURCES
     src/formats/lzh/lzh.cpp
 
         src/formats/7z/7z.cpp
-        src/formats/7z/7zMain.c
+        src/formats/7z/7zMain.cpp
         src/formats/7z/C/Lzma86Dec.c
         src/formats/7z/C/7zDec.c
         src/formats/7z/C/Ppmd7Dec.c
@@ -201,7 +201,7 @@ target_include_directories(multiarc PRIVATE ../far/far2sdk)
 
 if(PCRE_FOUND)
     target_compile_definitions(multiarc PRIVATE -DHAVE_PCRE)
-    target_link_libraries(multiarc ${PCRE_LIBRARIES})
+    target_link_libraries(multiarc ${PCRE_LDFLAGS} ${PCRE_LIBRARIES})
     target_include_directories(multiarc PRIVATE ${PCRE_INCLUDE_DIRS})
 endif()
 

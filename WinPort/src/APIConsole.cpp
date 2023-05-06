@@ -10,7 +10,7 @@ static DWORD g_winport_con_mode = ENABLE_QUICK_EDIT_MODE | ENABLE_EXTENDED_FLAGS
 static std::mutex g_winport_con_mode_mutex;
 
 extern "C" {
-
+	
 	WINPORT_DECL(GetLargestConsoleWindowSize,COORD,(HANDLE hConsoleOutput))
 	{
 		return g_winport_con_out->GetLargestConsoleWindowSize();
@@ -50,7 +50,7 @@ extern "C" {
 		*lpModeFlags = 0;//WTF??? GetConsoleDisplayMode/SetConsoleDisplayMode returns different meanings!!!
 		return TRUE;
 	}
-	WINPORT_DECL(ScrollConsoleScreenBuffer,BOOL,(HANDLE hConsoleOutput, const SMALL_RECT *lpScrollRectangle,
+	WINPORT_DECL(ScrollConsoleScreenBuffer,BOOL,(HANDLE hConsoleOutput, const SMALL_RECT *lpScrollRectangle, 
 		const SMALL_RECT *lpClipRectangle, COORD dwDestinationOrigin, const CHAR_INFO *lpFill))
 	{
 		return g_winport_con_out->Scroll(lpScrollRectangle, lpClipRectangle, dwDestinationOrigin, lpFill) ? TRUE : FALSE;
@@ -76,7 +76,7 @@ extern "C" {
 		lpConsoleScreenBufferInfo->srWindow.Bottom = height - 1;
 		lpConsoleScreenBufferInfo->dwMaximumWindowSize.X = width;
 		lpConsoleScreenBufferInfo->dwMaximumWindowSize.Y = height;
-
+		
 		return TRUE;
 	}
 
@@ -112,7 +112,7 @@ extern "C" {
 		*lpMode|= g_winport_con_out->GetMode();
 		return TRUE;
 	}
-
+	
 	WINPORT_DECL(SetConsoleMode,BOOL,(HANDLE hConsoleHandle, DWORD dwMode))
 	{
 		std::lock_guard<std::mutex> lock(g_winport_con_mode_mutex);
@@ -207,35 +207,36 @@ extern "C" {
 		return TRUE;
 	}
 
-	WINPORT_DECL(CheckForKeyPress, DWORD, (HANDLE hConsoleInput, const WORD *KeyCodes, DWORD KeyCodesCount, BOOL KeepKeyEvents, BOOL KeepMouseEvents, BOOL KeepOtherEvents))
+	WINPORT_DECL(CheckForKeyPress,DWORD,(HANDLE hConsoleInput, const WORD *KeyCodes, DWORD KeyCodesCount, DWORD Flags))
 	{
 		std::vector<INPUT_RECORD> backlog;
 		DWORD out = 0;
-		while (g_winport_con_in->WaitForNonEmpty(0)) {
+		while (g_winport_con_in->WaitForNonEmptyWithTimeout(0)) {
 			INPUT_RECORD rec;
 			if (!g_winport_con_in->Dequeue(&rec, 1)) {
 				break;
 			}
 			if (rec.EventType == KEY_EVENT) {
-				if (rec.Event.KeyEvent.bKeyDown) {
-					for (DWORD i = 0; i < KeyCodesCount; ++i) {
-						if (KeyCodes[i] == rec.Event.KeyEvent.wVirtualKeyCode) {
+				DWORD i;
+				for (i = 0; i != KeyCodesCount; ++i) {
+					if (KeyCodes[i] == rec.Event.KeyEvent.wVirtualKeyCode) {
+						if (rec.Event.KeyEvent.bKeyDown && out == 0) {
 							out = i + 1;
-							break;
 						}
-					}
-					if (out) {
 						break;
 					}
 				}
-				if (KeepKeyEvents) {
+				if (i == KeyCodesCount && (Flags & CFKP_KEEP_UNMATCHED_KEY_EVENTS) != 0) {
+					backlog.emplace_back(rec);
+				}
+				if (i != KeyCodesCount && (Flags & CFKP_KEEP_MATCHED_KEY_EVENTS) != 0) {
 					backlog.emplace_back(rec);
 				}
 			} else if (rec.EventType == MOUSE_EVENT) {
-				if (KeepMouseEvents) {
+				if ((Flags & CFKP_KEEP_MOUSE_EVENTS) != 0) {
 					backlog.emplace_back(rec);
 				}
-			} else if (KeepOtherEvents && rec.EventType != NOOP_EVENT) {
+			} else if ((Flags & CFKP_KEEP_OTHER_EVENTS) != 0) {
 				backlog.emplace_back(rec);
 			}
 		}
@@ -247,7 +248,11 @@ extern "C" {
 
 	WINPORT_DECL(WaitConsoleInput,BOOL,(DWORD dwTimeout))
 	{
-		return g_winport_con_in->WaitForNonEmpty((dwTimeout == INFINITE) ? -1 : dwTimeout) ? TRUE : FALSE;
+		if (dwTimeout == INFINITE) {
+			g_winport_con_in->WaitForNonEmpty();
+			return TRUE;
+		}
+		return g_winport_con_in->WaitForNonEmptyWithTimeout(dwTimeout) ? TRUE : FALSE;
 	}
 
 	WINPORT_DECL(WriteConsoleInput,BOOL,(HANDLE hConsoleInput, const INPUT_RECORD *lpBuffer, DWORD nLength, LPDWORD lpNumberOfEventsWritten))
@@ -284,22 +289,22 @@ extern "C" {
 
 		return FALSE;
 	}
-
+	
 	WINPORT_DECL(SetConsoleScrollRegion, VOID, (HANDLE hConsoleOutput, SHORT top, SHORT bottom))
 	{
 		g_winport_con_out->SetScrollRegion(top, bottom);
 	}
-
+	
 	WINPORT_DECL(GetConsoleScrollRegion, VOID, (HANDLE hConsoleOutput, SHORT *top, SHORT *bottom))
 	{
 		g_winport_con_out->GetScrollRegion(*top, *bottom);
 	}
-
+	
 	WINPORT_DECL(SetConsoleScrollCallback, VOID, (HANDLE hConsoleOutput, PCONSOLE_SCROLL_CALLBACK pCallback, PVOID pContext))
 	{
 		g_winport_con_out->SetScrollCallback(pCallback, pContext);
 	}
-
+	
 	WINPORT_DECL(BeginConsoleAdhocQuickEdit, BOOL, ())
 	{
 		{
@@ -309,7 +314,7 @@ extern "C" {
 				return FALSE;
 			}
 		}
-
+		
 		//here is possible non-critical race with enabling ENABLE_QUICK_EDIT_MODE
 		g_winport_con_out->AdhocQuickEdit();
 		return TRUE;
