@@ -40,8 +40,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pathmix.hpp"
 #include "strmix.hpp"
 
-CFileMask::CFileMask():
-	FileMask(nullptr)
+CFileMask::CFileMask(bool aCaseSens):
+	FileMask(nullptr), CaseSens(aCaseSens)
 {
 }
 
@@ -69,7 +69,7 @@ bool CFileMask::Set(const wchar_t *Masks, DWORD Flags)
 	if (!strMask.IsEmpty())
 	{
 		Masks = strMask.CPtr();
-		FileMask=new(std::nothrow) FileMasksProcessor;
+		FileMask=new(std::nothrow) FileMasksProcessor(CaseSens);
 
 		if (FileMask)
 		{

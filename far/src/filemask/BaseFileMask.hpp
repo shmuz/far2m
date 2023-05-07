@@ -39,8 +39,11 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 class BaseFileMask : private NonCopyable
 {
+	protected:
+		bool CaseSens;
+
 	public:
-		BaseFileMask() {}
+		BaseFileMask(bool aCaseSens) : CaseSens(aCaseSens) {}
 		virtual ~BaseFileMask() {}
 
 	public:

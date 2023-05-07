@@ -85,7 +85,7 @@ bool SingleFileMask::Set(const wchar_t *Masks, DWORD Flags)
 
 bool SingleFileMask::Compare(const wchar_t *Name) const
 {
-	return CmpName(Mask.CPtr(), Name, false);
+	return CmpName(Mask.CPtr(), Name, false, CaseSens);
 }
 
 bool SingleFileMask::IsEmpty() const
@@ -98,7 +98,7 @@ void SingleFileMask::Reset()
 	Mask.Clear();
 }
 
-RegexMask::RegexMask(): BaseFileMask(), re(nullptr), n(0)
+RegexMask::RegexMask(): BaseFileMask(false), re(nullptr), n(0)
 {
 }
 
@@ -151,13 +151,14 @@ bool RegexMask::Compare(const wchar_t *FileName) const
 	return false;
 }
 
-FileMasksProcessor::FileMasksProcessor() : CallDepth(0)
+FileMasksProcessor::FileMasksProcessor(bool aCaseSens)
+	: BaseFileMask(aCaseSens), CallDepth(0)
 {
 	IniReader = new KeyFileReadSection(InMyConfig("settings/masks.ini"), "Masks");
 }
 
-FileMasksProcessor::FileMasksProcessor(int aCallDepth, KeyFileReadSection *aIniReader)
-	: CallDepth(aCallDepth), IniReader(aIniReader)
+FileMasksProcessor::FileMasksProcessor(bool aCaseSens, int aCallDepth, KeyFileReadSection *aIniReader)
+	: BaseFileMask(aCaseSens), CallDepth(aCallDepth), IniReader(aIniReader)
 {
 }
 
@@ -269,7 +270,7 @@ bool FileMasksProcessor::SetPart(const wchar_t *masks, DWORD Flags, std::vector<
 
 					if (!strMask.IsEmpty())
 					{
-						baseMask = new(std::nothrow) FileMasksProcessor(CallDepth+1,IniReader);
+						baseMask = new(std::nothrow) FileMasksProcessor(CaseSens,CallDepth+1,IniReader);
 						onemask = strMask.CPtr();
 					}
 				}
@@ -280,7 +281,7 @@ bool FileMasksProcessor::SetPart(const wchar_t *masks, DWORD Flags, std::vector<
 			}
 			else
 			{
-				baseMask = new(std::nothrow) SingleFileMask;
+				baseMask = new(std::nothrow) SingleFileMask(CaseSens);
 			}
 
 			if (baseMask && baseMask->Set(onemask,0))
@@ -305,17 +306,16 @@ bool FileMasksProcessor::SetPart(const wchar_t *masks, DWORD Flags, std::vector<
    Путь к файлу в FileName НЕ игнорируется */
 bool FileMasksProcessor::Compare(const wchar_t *FileName) const
 {
-	bool OK=false;
 	for (auto I: IncludeMasks)
 	{
-		if (I->Compare(FileName))	{ OK=true; break; }
-	}
-	if (OK)
-	{
-		for (auto I: ExcludeMasks)
+		if (I->Compare(FileName))
 		{
-			if (I->Compare(FileName))	{ OK=false; break; }
+			for (auto J: ExcludeMasks)
+			{
+				if (J->Compare(FileName))	return false;
+			}
+			return true;
 		}
 	}
-	return OK;
+	return false;
 }

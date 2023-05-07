@@ -49,7 +49,7 @@ enum FMP_FLAGS
 class SingleFileMask : public BaseFileMask
 {
 	public:
-		SingleFileMask() {}
+		SingleFileMask(bool aCaseSens) : BaseFileMask(aCaseSens) {}
 		virtual ~SingleFileMask() {}
 
 	public:
@@ -84,7 +84,7 @@ class KeyFileReadSection;
 class FileMasksProcessor : public BaseFileMask
 {
 	public:
-		FileMasksProcessor();
+		FileMasksProcessor(bool aCaseSens);
 		virtual ~FileMasksProcessor();
 
 	public:
@@ -100,7 +100,7 @@ class FileMasksProcessor : public BaseFileMask
 		KeyFileReadSection *IniReader;
 
 	private:
-		FileMasksProcessor(int aCallDepth, KeyFileReadSection *aIniReader);
+		FileMasksProcessor(bool aCaseSens, int aCallDepth, KeyFileReadSection *aIniReader);
 		bool SetPart(const wchar_t *Masks, DWORD Flags, std::vector<BaseFileMask*>& Target);
 		FARString GetNamedMask(const wchar_t *Name);
 };

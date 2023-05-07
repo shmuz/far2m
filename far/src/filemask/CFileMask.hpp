@@ -47,9 +47,10 @@ class CFileMask : private NonCopyable
 {
 	private:
 		BaseFileMask *FileMask;
+		bool CaseSens;
 
 	public:
-		CFileMask();
+		CFileMask(bool aCaseSens=true);
 		~CFileMask() { Reset(); }
 
 	public:

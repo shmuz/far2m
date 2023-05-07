@@ -44,16 +44,15 @@ int WINAPI ProcessName(const wchar_t *param1, wchar_t *param2, DWORD size, DWORD
 {
 	bool skippath = (flags&PN_SKIPPATH)!=0;
 	bool silent = (flags&PN_SHOWERRORMESSAGE)==0;
+	bool casesens = (flags&PN_CASEINSENSITIVE)==0;
 	DWORD mode = flags&0xFF0000;
 
-	flags &= ~(PN_SKIPPATH | PN_SHOWERRORMESSAGE);
-
 	if (mode == PN_CMPNAME)
-		return CmpName(param1, param2, skippath) ? TRUE:FALSE;
+		return CmpName(param1, param2, skippath, casesens) ? TRUE:FALSE;
 
-	if (mode == PN_CMPNAMELIST || mode == PN_CHECKMASK)
+	else if (mode == PN_CMPNAMELIST || mode == PN_CHECKMASK)
 	{
-		CFileMask Masks;
+		CFileMask Masks(casesens);
 		if (!Masks.Set(param1, silent ? FMF_SILENT:0))
 			return FALSE;
 		if (mode == PN_CHECKMASK)
@@ -61,10 +60,10 @@ int WINAPI ProcessName(const wchar_t *param1, wchar_t *param2, DWORD size, DWORD
 		return Masks.Compare(param2, skippath) ? TRUE:FALSE;
 	}
 
-	if (mode == PN_GENERATENAME)
+	else if (mode == PN_GENERATENAME)
 	{
 		FARString strResult = param2;
-		int nResult = ConvertWildcards(param1, strResult, (flags&0xFFFF)|(skippath?PN_SKIPPATH:0));
+		int nResult = ConvertWildcards(param1, strResult, flags&(0xFFFF|PN_SKIPPATH));
 		far_wcsncpy(param2, strResult, size);
 		return nResult;
 	}
@@ -182,11 +181,19 @@ int ConvertWildcards(const wchar_t *SrcName, FARString &strDest, int SelectedFol
 	return TRUE;
 }
 
+static wchar_t AsIs(wchar_t ch)
+{
+	return ch;
+}
+
 // IS: это реальное тело функции сравнения с маской, но использовать
 // IS: "снаружи" нужно не эту функцию, а CmpName (ее тело расположено
 // IS: после CmpName_Body)
-static bool CmpName_Body(const wchar_t *pattern, const wchar_t *str)
+static bool CmpName_Body(const wchar_t *pattern, const wchar_t *str, bool casesens)
 {
+	auto UpperCase = casesens ? AsIs : Upper;
+	auto LowerCase = casesens ? AsIs : Lower;
+
 	for (;;++str)
 	{
 		/* $ 01.05.2001 DJ
@@ -216,15 +223,16 @@ static bool CmpName_Body(const wchar_t *pattern, const wchar_t *str)
 
 				if (!FindAnyOfChars(pattern, "*?["))
 				{
-					const size_t pattern_len = wcslen(pattern);
-					const size_t str_len = wcslen(str);
-					return (str_len >= pattern_len
-						&& wmemcmp(pattern, str + str_len - pattern_len, pattern_len) == 0);
+					size_t pattern_len = wcslen(pattern);
+					size_t str_len = wcslen(str);
+					return (str_len >= pattern_len) && (casesens ?
+							(wmemcmp (pattern, str + str_len - pattern_len, pattern_len) == 0) :
+							(StrCmpNI(pattern, str + str_len - pattern_len, pattern_len) == 0));
 				}
 
 				do
 				{
-					if (CmpName_Body(pattern, str))
+					if (CmpName_Body(pattern, str, casesens))
 						return true;
 				}
 				while (*str++);
@@ -251,7 +259,7 @@ static bool CmpName_Body(const wchar_t *pattern, const wchar_t *str)
 				}
 
 				match = 0;
-				stringc = Upper(stringc);
+				stringc = UpperCase(stringc);
 				while ((rangec = *pattern++) != 0)
 				{
 					if (rangec == L']')
@@ -267,11 +275,11 @@ static bool CmpName_Body(const wchar_t *pattern, const wchar_t *str)
 
 					if (rangec == L'-' && *(pattern - 2) != L'[' && *pattern != L']')
 					{
-						match = (stringc <= Upper(*pattern) && Upper(*(pattern - 2)) <= stringc);
+						match = (stringc <= UpperCase(*pattern) && UpperCase(*(pattern - 2)) <= stringc);
 						pattern++;
 					}
 					else
-						match = (stringc == Upper(rangec));
+						match = (stringc == UpperCase(rangec));
 				}
 
 				if (!rangec)
@@ -280,7 +288,7 @@ static bool CmpName_Body(const wchar_t *pattern, const wchar_t *str)
 				break;
 
 			default:
-				if (Upper(patternc) != stringc && Lower(patternc) != stringc)
+				if (UpperCase(patternc) != stringc && LowerCase(patternc) != stringc)
 					return false;
 
 				break;
@@ -289,7 +297,7 @@ static bool CmpName_Body(const wchar_t *pattern, const wchar_t *str)
 }
 
 // IS: функция для внешнего мира, использовать ее
-bool CmpName(const wchar_t *pattern, const wchar_t *str, bool skippath)
+bool CmpName(const wchar_t *pattern, const wchar_t *str, bool skippath, bool casesens)
 {
 	if (!pattern || !str)
 		return false;
@@ -297,5 +305,5 @@ bool CmpName(const wchar_t *pattern, const wchar_t *str, bool skippath)
 	if (skippath)
 		str = PointToName(str);
 
-	return CmpName_Body(pattern, str);
+	return CmpName_Body(pattern, str, casesens);
 }
