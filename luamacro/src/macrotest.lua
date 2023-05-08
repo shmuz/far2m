@@ -1487,8 +1487,6 @@ local function test_FarStandardFunctions()
 
   assert_str (far.GetCurrentDirectory())
 
-  assert(far.GetPathRoot[[/foo/bar]] == [[/]])
-
   assert(far.LIsAlpha("A") == true)
   assert(far.LIsAlpha("Я") == true)
   assert(far.LIsAlpha("7") == false)

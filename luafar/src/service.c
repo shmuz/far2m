@@ -387,17 +387,24 @@ TPluginData* GetPluginData(lua_State* L)
   return pd;
 }
 
-int far_GetFileOwner (lua_State *L)
+int _GetFileProperty (lua_State *L, int Owner)
 {
-  wchar_t Owner[512];
+  wchar_t Target[512] = {0};
   const wchar_t *Computer = opt_utf8_string (L, 1, NULL);
   const wchar_t *Name = check_utf8_string (L, 2, NULL);
-  if (FSF.GetFileOwner (Computer, Name, Owner, ARRAYSIZE(Owner))) {
-    push_utf8_string(L, Owner, -1);
-    return 1;
-  }
-  return 0;
+  if (Owner)
+    FSF.GetFileOwner (Computer, Name, Target, ARRAYSIZE(Target));
+  else
+    FSF.GetFileGroup (Computer, Name, Target, ARRAYSIZE(Target));
+  if (*Target)
+    push_utf8_string(L, Target, -1);
+  else
+    lua_pushnil(L);
+  return 1;
 }
+
+int far_GetFileOwner (lua_State *L) { return _GetFileProperty(L,1); }
+int far_GetFileGroup (lua_State *L) { return _GetFileProperty(L,0); }
 
 int far_GetNumberOfLinks (lua_State *L)
 {
@@ -4084,15 +4091,6 @@ int far_MkLink (lua_State *L)
   return 1;
 }
 
-int far_GetPathRoot (lua_State *L)
-{
-  const wchar_t* Path = check_utf8_string(L, 1, NULL);
-  wchar_t* Root = (wchar_t*)lua_newuserdata(L, 4096 * sizeof(wchar_t));
-  *Root = L'\0';
-  FSF.GetPathRoot(Path, Root, 4096);
-  return push_utf8_string(L, Root, -1), 1;
-}
-
 int truncstring (lua_State *L, int op)
 {
   const wchar_t* Src = check_utf8_string(L, 1, NULL);
@@ -5926,7 +5924,6 @@ static const luaL_Reg far_funcs[] = {
   {"LStricmp",            far_LStricmp},
   {"LStrnicmp",           far_LStrnicmp},
   {"ProcessName",         far_ProcessName},
-  {"GetPathRoot",         far_GetPathRoot},
   {"GetReparsePointInfo", far_GetReparsePointInfo},
   {"LIsAlpha",            far_LIsAlpha},
   {"LIsAlphanum",         far_LIsAlphanum},
@@ -5953,6 +5950,7 @@ static const luaL_Reg far_funcs[] = {
   {"GetCurrentDirectory", far_GetCurrentDirectory},
   {"GetFileEncoding",     far_GetFileEncoding},
   {"GetFileOwner",        far_GetFileOwner},
+  {"GetFileGroup",        far_GetFileGroup},
   {"GetNumberOfLinks",    far_GetNumberOfLinks},
   {"LuafarVersion",       far_LuafarVersion},
   {"MakeMenuItems",       far_MakeMenuItems},

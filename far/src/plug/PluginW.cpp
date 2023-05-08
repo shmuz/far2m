@@ -516,6 +516,7 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 		StandardFunctions.StrSizeOfCells = farStrSizeOfCells;
 		StandardFunctions.GetFileEncoding = farGetFileEncoding;
 		StandardFunctions.FarNameToInputRecord = FarNameToInputRecord;
+		StandardFunctions.GetFileGroup = farGetFileGroup;
 	}
 
 	if (!StartupInfo.StructSize)
