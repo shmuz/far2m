@@ -1428,7 +1428,9 @@ local function test_ProcessName()
   assert_true  (far.CheckMask("/(abc)?def/"))
   assert_false (far.CheckMask("/[[[/"))
 
-  assert_eq    (far.GenerateName("a??b.*", "cdef.txt"), "adeb.txt")
+  assert_eq    (far.GenerateName("a??b.*", "cdef.txt"),     "adeb.txt")
+  assert_eq    (far.GenerateName("a??b.*", "cdef.txt", 50), "adeb.txt")
+  assert_eq    (far.GenerateName("a??b.*", "cdef.txt", 2),  "adbef.txt")
 
   assert_true  (far.CmpName("f*.ex?",      "ftp.exe"        ))
   assert_true  (far.CmpName("f*.ex?",      "fc.exe"         ))

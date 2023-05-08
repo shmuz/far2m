@@ -63,7 +63,7 @@ int WINAPI ProcessName(const wchar_t *param1, wchar_t *param2, DWORD size, DWORD
 	else if (mode == PN_GENERATENAME)
 	{
 		FARString strResult = param2;
-		int nResult = ConvertWildcards(param1, strResult, flags&(0xFFFF|PN_SKIPPATH));
+		int nResult = ConvertWildcards(param1, strResult, flags&0xFFFF);
 		far_wcsncpy(param2, strResult, size);
 		return nResult;
 	}
@@ -96,8 +96,9 @@ int ConvertWildcards(const wchar_t *SrcName, FARString &strDest, int SelectedFol
 
 	if (SelectedFolderNameLength)
 	{
-		strPartAfterFolderName = ((const wchar_t *)strSrc+SelectedFolderNameLength);
-		strSrc.Truncate(SelectedFolderNameLength);
+		auto Len = std::min((int)strSrc.GetLength(), SelectedFolderNameLength);
+		strPartAfterFolderName = ((const wchar_t *)strSrc+Len);
+		strSrc.Truncate(Len);
 	}
 
 	const wchar_t *Src = strSrc;
