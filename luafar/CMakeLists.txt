@@ -54,7 +54,7 @@ set_target_properties(${PROJECT_NAME}
     PREFIX ""
     SUFFIX ".so")
 
-foreach(elem "luafar2l_manual.chm" "macroapi_manual_linux.chm")
+foreach(elem "luafar2m_manual.chm" "macroapi_manual_linux.chm")
   configure_file("manuals/${elem}" "${INSTALL_DIR}/Manuals/${elem}" COPYONLY)
 endforeach()
 
