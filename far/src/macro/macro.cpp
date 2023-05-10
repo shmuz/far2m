@@ -1232,7 +1232,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		//case MCODE_F_EDITOR_INSSTR:    implemented_in_lua;
 		//case MCODE_F_EDITOR_SETSTR:    implemented_in_lua;
 		//case MCODE_F_FAR_GETCONFIG:    not_implemented;
-		//case MCODE_F_MENU_SHOW:        not_implemented;
+		//case MCODE_F_MENU_SHOW:        implemented_in_lua_partially;
 		//case MCODE_F_USERMENU:         not_implemented;
 
 		case MCODE_F_SETCUSTOMSORTMODE:

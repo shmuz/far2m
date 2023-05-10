@@ -4,6 +4,9 @@
 #include <map>
 #include <StackSerializer.h>
 
+extern long _iterm2_cmd_ts;
+extern bool _iterm2_cmd_state;
+
 struct TTYInputKey
 {
 	WORD vk;
@@ -62,6 +65,7 @@ template <size_t N> using NChars2Key = NCharsMap<N, TTYInputKey>;
 
 struct ITTYInputSpecialSequenceHandler
 {
+	virtual void OnUsingExtension(char extension) = 0;
 	virtual void OnInspectKeyEvent(KEY_EVENT_RECORD &event) = 0;
 	virtual void OnFar2lEvent(StackSerializer &stk_ser) = 0;
 	virtual void OnFar2lReply(StackSerializer &stk_ser) = 0;
@@ -97,6 +101,9 @@ class TTYInputSequenceParser
 	StackSerializer _tmp_stk_ser;
 	DWORD _extra_control_keys = 0;
 	std::vector<INPUT_RECORD> _ir_pending;
+	bool _kitty_right_ctrl_down = false;
+	int _iterm_last_flags = 0;
+	char _using_extension = 0;
 
 	void AssertNoConflicts();
 
@@ -111,6 +118,10 @@ class TTYInputSequenceParser
 	size_t ParseNChars2Key(const char *s, size_t l);
 	void ParseMouse(char action, char col, char raw);
 	void ParseAPC(const char *s, size_t l);
+	size_t TryParseAsWinTermEscapeSequence(const char *s, size_t l);
+	size_t ReadUTF8InHex(const char *s, wchar_t *uni_char);
+	size_t TryParseAsITerm2EscapeSequence(const char *s, size_t l);
+	size_t TryParseAsKittyEscapeSequence(const char *s, size_t l);
 	size_t ParseEscapeSequence(const char *s, size_t l);
 	void OnBracketedPaste(bool start);
 
@@ -122,4 +133,5 @@ public:
 	TTYInputSequenceParser(ITTYInputSpecialSequenceHandler *handler);
 
 	size_t Parse(const char *s, size_t l, bool idle_expired); // 0 - need more, -1 - not sequence, -2 - unrecognized sequence, >0 - sequence
+	char UsingExtension() const { return _using_extension; };
 };

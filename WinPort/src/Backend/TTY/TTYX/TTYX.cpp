@@ -8,8 +8,8 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/keysym.h>
+#include <X11/XKBlib.h>
 #ifdef TTYXI
-# include <X11/XKBlib.h>
 # include <X11/extensions/XInput2.h>
 #endif
 
@@ -33,6 +33,7 @@ class TTYX
 	int _screen;
 	Window _root_window;
 	Window _window;
+	XkbDescPtr _xkb_en = nullptr;
 	Atom _targets_atom;
 	Atom _text_atom;
 	Atom _utf8_atom;
@@ -155,7 +156,33 @@ class TTYX
 			if ((cookie->evtype == XI_RawKeyPress || cookie->evtype == XI_RawKeyRelease) && cookie->data) {
 				const XIRawEvent *ev = (const XIRawEvent *)cookie->data;
 				//fprintf(stderr, "TTYXi: !!!!! %d %d\n", cookie->evtype == XI_RawKeyPress, ev->detail);
-				const KeySym ks = XkbKeycodeToKeysym(_display, ev->detail, 0 /*xkbState.group*/, 0 /*shift level*/);
+
+				if (!_xkb_en) {
+
+					char keycodes[] = "evdev";
+					char types[] = "complete";
+					char compat[] = "complete";
+					char symbols[] = "pc+us+inet(evdev)";
+
+					XkbComponentNamesRec component_names = {0};
+					component_names.keycodes = keycodes;
+					component_names.types = types;
+					component_names.compat = compat;
+					component_names.symbols = symbols;
+
+					_xkb_en = XkbGetKeyboardByName(
+						_display, XkbUseCoreKbd, &component_names,
+						XkbGBN_AllComponentsMask, XkbGBN_AllComponentsMask, False);
+
+					XkbGetControls(_display, XkbGroupsWrapMask, _xkb_en);
+					XkbGetNames(_display, XkbGroupNamesMask, _xkb_en);
+				}
+
+				KeySym ks;
+				unsigned int mods;
+				if (!_xkb_en || !XkbTranslateKeyCode(_xkb_en, ev->detail, 0, &mods, &ks)) {
+					ks = XkbKeycodeToKeysym(_display, ev->detail, 0, 0); // fallback to old method
+				}
 
 				if (cookie->evtype == XI_RawKeyPress) {
 					_xi_keys[ks] = std::chrono::steady_clock::now();
@@ -476,6 +503,7 @@ public:
 
 	~TTYX()
 	{
+		if (_xkb_en) { XkbFreeKeyboard(_xkb_en, 0, True); }
 		XDestroyWindow(_display, _window);
 		XCloseDisplay(_display);
 	}
@@ -524,6 +552,32 @@ public:
 
 	void InspectKeyEvent(KEY_EVENT_RECORD &event)
 	{
+
+#ifdef TTYXI
+		if ((event.uChar.UnicodeChar > 127) && (!event.wVirtualKeyCode)) {
+			for (const auto &xki : _xi_keys) {
+				if (xki.first && !IsXiKeyModifier(xki.first)) {
+					switch (xki.first) {
+						case XK_minus:        event.wVirtualKeyCode = VK_OEM_MINUS;   break;
+						case XK_equal:        event.wVirtualKeyCode = VK_OEM_PLUS;    break;
+						case XK_bracketleft:  event.wVirtualKeyCode = VK_OEM_4;       break;
+						case XK_bracketright: event.wVirtualKeyCode = VK_OEM_6;       break;
+						case XK_semicolon:    event.wVirtualKeyCode = VK_OEM_1;       break;
+						case XK_apostrophe:   event.wVirtualKeyCode = VK_OEM_7;       break;
+						case XK_grave:        event.wVirtualKeyCode = VK_OEM_3;       break;
+						case XK_backslash:    event.wVirtualKeyCode = VK_OEM_5;       break;
+						case XK_comma:        event.wVirtualKeyCode = VK_OEM_COMMA;   break;
+						case XK_period:       event.wVirtualKeyCode = VK_OEM_PERIOD;  break;
+						case XK_slash:        event.wVirtualKeyCode = VK_OEM_2;       break;
+						default:
+							char* kstr = XKeysymToString(xki.first);
+							if (strlen(kstr) == 1) { event.wVirtualKeyCode = toupper(kstr[0]); }
+					}
+				}
+			}
+		}
+#endif
+
 		auto x_keymods = GetKeyModifiers();
 #ifdef TTYXI
 		if (!_xi) {
@@ -548,6 +602,7 @@ public:
 			{XK_Escape, 0, '\x1b', false, VK_ESCAPE},
 			{XK_BackSpace, 'H', 0, true, VK_BACK},
 			{'2', VK_SPACE, ' ', true, '2'},
+			{XK_grave, VK_SPACE, ' ', true, VK_OEM_3},
 			{'3', 0, '\x1b', true, '3'},
 			{XK_bracketleft, 0, '\x1b', true, VK_OEM_4},
 			{XK_slash, '7', 0, true, VK_DIVIDE},
@@ -557,8 +612,13 @@ public:
 			{'m', VK_RETURN, 0, true, 'M'},
 			// Ctrl+1/6/7/9/0 seems don't need fixup
 		};
-
 		WaitForNonModifierXiKeydown();
+#if 0 /* change to 1 to see pressed XK_* codes */
+		for (const auto &xik : _xi_keys) {
+			fprintf(stderr, "!!! TTYXi: xik=0x%lx vk=0x%x ch=0x%x\n",
+				xik.first, event.wVirtualKeyCode, event.uChar.UnicodeChar);
+		}
+#endif
 
 		if (event.wVirtualKeyCode == VK_RETURN
 				&& _xi_keys.find(XK_KP_Enter) == _xi_keys.end()

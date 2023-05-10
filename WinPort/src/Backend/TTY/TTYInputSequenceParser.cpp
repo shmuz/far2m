@@ -122,6 +122,7 @@ void TTYInputSequenceParser::AddStrCursors(WORD vk, const char *code)
 TTYInputSequenceParser::TTYInputSequenceParser(ITTYInputSpecialSequenceHandler *handler)
 	: _handler(handler)
 {
+	ASSERT(_handler != nullptr);
 	for (char c = 'A'; c <= 'Z'; ++c) {
 		AddStr(c, LEFT_ALT_PRESSED, "%c", c + ('a' - 'A'));
 		if (c != 'O') {
@@ -273,9 +274,7 @@ size_t TTYInputSequenceParser::ParseNChars2Key(const char *s, size_t l)
 					ir.Event.KeyEvent.uChar.UnicodeChar = wc;
 					ir.Event.KeyEvent.dwControlKeyState|= LEFT_ALT_PRESSED;
 					ir.Event.KeyEvent.bKeyDown = TRUE;
-					if (_handler) {
-						_handler->OnInspectKeyEvent(ir.Event.KeyEvent);
-					}
+					_handler->OnInspectKeyEvent(ir.Event.KeyEvent);
 					_ir_pending.emplace_back(ir); // g_winport_con_in->Enqueue(&ir, 1);
 					ir.Event.KeyEvent.bKeyDown = FALSE;
 					_ir_pending.emplace_back(ir); // g_winport_con_in->Enqueue(&ir, 1);
@@ -296,9 +295,6 @@ size_t TTYInputSequenceParser::ParseNChars2Key(const char *s, size_t l)
 
 void TTYInputSequenceParser::ParseAPC(const char *s, size_t l)
 {
-	if (!_handler)
-		return;
-
 	if (strncmp(s, "f2l", 3) == 0) {
 		_tmp_stk_ser.FromBase64(s + 3, l - 3);
 		_handler->OnFar2lEvent(_tmp_stk_ser);
@@ -311,6 +307,14 @@ void TTYInputSequenceParser::ParseAPC(const char *s, size_t l)
 
 size_t TTYInputSequenceParser::ParseEscapeSequence(const char *s, size_t l)
 {
+	/*
+	fprintf(stderr, "Parsing: ");
+	for (size_t i = 0; i < l && s[i] != '\0'; i++) {
+		fprintf(stderr, "%c", s[i]);
+	}
+	fprintf(stderr, "\n");
+	*/
+
 	if (l > 2 && s[0] == '[' && s[2] == 'n') {
 		return 3;
 	}
@@ -338,9 +342,31 @@ size_t TTYInputSequenceParser::ParseEscapeSequence(const char *s, size_t l)
 		return 5;
 	}
 
-	size_t r = ParseNChars2Key(s, l);
+	size_t r = 0;
+
+	if (l > 5 && s[0] == ']' && s[1] == '1' && s[2] == '3' && s[3] == '3' && s[4] == '7' && s[5] == ';') {
+		r = TryParseAsITerm2EscapeSequence(s, l);
+		if (r != TTY_PARSED_BADSEQUENCE) {
+			return r;
+		}
+	}
+	
+	r = ParseNChars2Key(s, l);
 	if (r != 0)
 		return r;
+
+	if (l > 1 && s[0] == '[') {
+		r = TryParseAsKittyEscapeSequence(s, l);
+		if (r != TTY_PARSED_BADSEQUENCE) {
+			return r;
+		}
+	}	
+
+	if (l > 1 && s[0] == '[') {
+		r = TryParseAsWinTermEscapeSequence(s, l);
+		if (r != TTY_PARSED_BADSEQUENCE)
+			return r;
+	}
 
 	// be well-responsive on panic-escaping
 	for (size_t i = 0; (i + 1) < l; ++i) {
@@ -470,9 +496,7 @@ void TTYInputSequenceParser::AddPendingKeyEvent(const TTYInputKey &k)
 	ir.Event.KeyEvent.wVirtualKeyCode = k.vk;
 	ir.Event.KeyEvent.dwControlKeyState = k.control_keys | _extra_control_keys;
 	ir.Event.KeyEvent.wVirtualScanCode = WINPORT(MapVirtualKey)(k.vk,MAPVK_VK_TO_VSC);
-	if (_handler) {
-		_handler->OnInspectKeyEvent(ir.Event.KeyEvent);
-	}
+	_handler->OnInspectKeyEvent(ir.Event.KeyEvent);
 	_ir_pending.emplace_back(ir); // g_winport_con_in->Enqueue(&ir, 1);
 	ir.Event.KeyEvent.bKeyDown = FALSE;
 	_ir_pending.emplace_back(ir); // g_winport_con_in->Enqueue(&ir, 1);

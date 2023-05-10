@@ -7,7 +7,7 @@
 # include <termios.h>
 # include <linux/kd.h>
 # include <linux/keyboard.h>
-#elif defined(__FreeBSD__)
+#elif defined(__FreeBSD__) || defined(__DragonFly__)
 # include <sys/ioctl.h>
 # include <sys/kbio.h>
 #endif
@@ -151,7 +151,7 @@ TTYOutput::TTYOutput(int out, bool far2l_tty)
 	:
 	_out(out), _far2l_tty(far2l_tty), _kernel_tty(false)
 {
-#if defined(__linux__) || defined(__FreeBSD__)
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__DragonFly__)
 	unsigned long int leds = 0;
 	if (ioctl(out, KDGETLED, &leds) == 0) {
 		// running under linux 'real' TTY, such kind of terminal cannot be dropped due to lost connection etc
@@ -162,6 +162,9 @@ TTYOutput::TTYOutput(int out, bool far2l_tty)
 #endif
 
 	Format(ESC "7" ESC "[?47h" ESC "[?1049h" ESC "[?2004h");
+	Format(ESC "[?9001h"); // win32-input-mode on
+	Format(ESC "[?1337h"); // iTerm2 input mode on
+	Format(ESC "[=15;1u"); // kovidgoyal's kitty mode on
 	ChangeKeypad(true);
 	ChangeMouse(true);
 
@@ -185,7 +188,10 @@ TTYOutput::~TTYOutput()
 		if (!_kernel_tty) {
 			Format(ESC "[0 q");
 		}
+		Format(ESC "[=0;1u" "\r"); // kovidgoyal's kitty mode off
 		Format(ESC "[0m" ESC "[?1049l" ESC "[?47l" ESC "8" ESC "[?2004l" "\r\n");
+		Format(ESC "[?9001l"); // win32-input-mode off
+		Format(ESC "[?1337l"); // iTerm2 input mode off
 		TTYBasePalette def_palette;
 		ChangePalette(def_palette);
 		Flush();
@@ -503,4 +509,18 @@ void TTYOutput::SendOSC52ClipSet(const std::string &clip_data)
 	base64_encode(request, (const unsigned char *)clip_data.data(), clip_data.size());
 	request+= '\a';
 	Write(request.c_str(), request.size());
+}
+
+// iTerm2 cmd+v workaround
+void TTYOutput::CheckiTerm2Hack() {
+	if (_iterm2_cmd_state) {
+		_iterm2_cmd_state = 0;
+		const char it2off[] = "\x1b[?1337l";
+		WriteReally(it2off, sizeof(it2off));
+	}
+	if (!_iterm2_cmd_state && _iterm2_cmd_ts && (time(NULL) - _iterm2_cmd_ts) >= 2) {
+		_iterm2_cmd_ts = 0;
+		const char it2on[] = "\x1b[?1337h";
+		WriteReally(it2on, sizeof(it2on));
+	}
 }
