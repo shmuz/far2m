@@ -194,7 +194,7 @@ You can import the project into your favourite IDE like QtCreator, CodeLite, or 
 
 ### Useful 3rd-party extras
 
- * A collection of plugins and macros for far2l: https://github.com/shmuz/LuaFAR-2L
+ * A collection of plugins and macros for far2m: https://github.com/shmuz/LuaFAR-2M
  * Fork of Putty (Windows SSH client) with added far2l TTY extensions support (fluent keypresses, clipboard sharing etc): https://github.com/unxed/putty4far2l
  * Similar fork of Kitty: https://github.com/mihmig/KiTTY
  * Tool to import color schemes from windows FAR manager 2 .reg format: https://github.com/unxed/far2l-deb/blob/master/far2l_import.pl
