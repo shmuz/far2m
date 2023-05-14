@@ -6,7 +6,7 @@ import configparser
 import logging
 import logging.config
 
-USERHOME = os.path.expanduser("~/.config/far2l/plugins/python")
+USERHOME = os.path.expanduser("~/.config/far2m/plugins/python")
 
 logging.basicConfig(level=logging.INFO)
 
