@@ -126,6 +126,7 @@ class Manager
 		*/
 		bool ExitAll();
 
+		int  GetModalCount() const {return ModalStack.size();}
 		int  GetFrameCount() const {return FrameList.size();}
 		int  GetFrameCountByType(int Type) const;
 
@@ -155,6 +156,7 @@ class Manager
 		Frame *GetCurrentFrame() const { return CurrentFrame; }
 
 		Frame *operator[](int Index) const;
+		Frame *GetModalByIndex(int Index) const;
 
 		int IndexOfList(Frame *Frame) const;
 

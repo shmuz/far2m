@@ -2076,24 +2076,40 @@ static int FarEditorControlSynchedV2(int EditorID,int Command,void *Param)
 	if (FrameManager->ManagerIsDown())
 		return 0;
 
+	FileEditor *Editor = nullptr;
+
 	if (EditorID==-1)
 	{
-		auto fileedit = CtrlObject->Plugins.CurEditor;
-		return fileedit ? fileedit->EditorControl(Command,Param) : 0;
+		Editor = CtrlObject->Plugins.CurEditor;
 	}
-
-	int count = FrameManager->GetFrameCount();
-	for (int i=0; i<count; i++)
+	else
 	{
-		auto fileedit = dynamic_cast<FileEditor*>(FrameManager->operator[](i));
-		if (fileedit)
+		int count = FrameManager->GetFrameCount();
+		for (int i=0; i<count; i++)
 		{
-			if (fileedit->GetEditorID()==EditorID)
-				return fileedit->EditorControl(Command,Param);
+			auto fileedit = dynamic_cast<FileEditor*>(FrameManager->operator[](i));
+			if (fileedit && (fileedit->GetEditorID()==EditorID))
+			{
+				Editor=fileedit;
+				break;
+			}
+		}
+		if (!Editor)
+		{
+			count = FrameManager->GetModalCount();
+			for (int i=0; i<count; i++)
+			{
+				auto fileedit = dynamic_cast<FileEditor*>(FrameManager->GetModalByIndex(i));
+				if (fileedit && (fileedit->GetEditorID()==EditorID))
+				{
+					Editor=fileedit;
+					break;
+				}
+			}
 		}
 	}
 
-	return 0;
+	return Editor ? Editor->EditorControl(Command,Param) : 0;
 }
 
 int WINAPI FarEditorControl(int Command,void *Param)
@@ -2111,24 +2127,41 @@ static int FarViewerControlSynchedV2(int ViewerID,int Command,void *Param)
 	if (FrameManager->ManagerIsDown())
 		return 0;
 
+	FileViewer *viewer = nullptr;
+
 	if (ViewerID==-1)
 	{
-		auto fileview = CtrlObject->Plugins.CurViewer;
-		return fileview ? fileview->ViewerControl(Command,Param) : 0;
+		auto view = CtrlObject->Plugins.CurViewer;
+		return view ? view->ViewerControl(Command,Param) : 0;
 	}
-
-	int count = FrameManager->GetFrameCount();
-	for (int i=0; i<count; i++)
+	else
 	{
-		auto fileview = dynamic_cast<FileViewer*>(FrameManager->operator[](i));
-		if (fileview)
+		int count = FrameManager->GetFrameCount();
+		for (int i=0; i<count; i++)
 		{
-			if (fileview->GetViewerID()==ViewerID)
-				return fileview->ViewerControl(Command,Param);
+			auto fileview = dynamic_cast<FileViewer*>(FrameManager->operator[](i));
+			if (fileview && (fileview->GetViewerID()==ViewerID))
+			{
+				viewer=fileview;
+				break;
+			}
+		}
+		if (!viewer)
+		{
+			count = FrameManager->GetModalCount();
+			for (int i=0; i<count; i++)
+			{
+				auto fileview = dynamic_cast<FileViewer*>(FrameManager->GetModalByIndex(i));
+				if (fileview && (fileview->GetViewerID()==ViewerID))
+				{
+					viewer=fileview;
+					break;
+				}
+			}
 		}
 	}
 
-	return 0;
+	return viewer ? viewer->ViewerControl(Command,Param) : 0;
 }
 
 int WINAPI FarViewerControl(int Command,void *Param)

@@ -1017,6 +1017,11 @@ Frame *Manager::operator[](int Index) const
 	return Index>=0 && Index<(int)FrameList.size() ? FrameList[Index] : nullptr;
 }
 
+Frame *Manager::GetModalByIndex(int Index) const
+{
+	return Index>=0 && Index<(int)ModalStack.size() ? ModalStack[Index] : nullptr;
+}
+
 int Manager::IndexOfStack(Frame *Frame) const
 {
 	for (int i=0; i<(int)ModalStack.size(); i++)
