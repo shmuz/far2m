@@ -6,7 +6,7 @@ Linux fork of FAR Manager v2 (http://farmanager.com/)
 Works also on OSX/MacOS and BSD (but later not tested on regular manner)
 
 BETA VERSION.
-**Use on your own risk!**
+**Use at your own risk!**
 
 Plug-ins that are currently working: NetRocks (SFTP/SCP/FTP/FTPS/SMB/NFS/WebDAV), LuaMacro, colorer,
 multiarc, tmppanel, align, autowrap, drawline, editcase, SimpleIndent, Calculator, Python (optional scripting support)
