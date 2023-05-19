@@ -848,6 +848,11 @@ int64_t FileList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 				SaveSelection();
 			}
 
+			auto Find = [this] (const wchar_t *namePtr)
+			{
+				return this->FindFile(namePtr, !wcschr(namePtr,LGOOD_SLASH));
+			};
+
 			// mps->ActionFlags
 			switch (mps->Action)
 			{
@@ -871,7 +876,7 @@ int64_t FileList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 
 							for(size_t ILI = 0; (namePtr=itemsList.Get(ILI)) != nullptr; ++ILI)
 							{
-								if ((Pos=FindFile(namePtr, !wcschr(namePtr,LGOOD_SLASH))) != -1)
+								if ((Pos=Find(namePtr)) != -1)
 								{
 									Select(ListData[Pos],FALSE);
 									Result++;
@@ -907,7 +912,7 @@ int64_t FileList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 
 							for(size_t ILI = 0; (namePtr=itemsList.Get(ILI)) != nullptr; ++ILI)
 							{
-								if ((Pos=FindFile(namePtr, !wcschr(namePtr,LGOOD_SLASH))) != -1)
+								if ((Pos=Find(namePtr)) != -1)
 								{
 									Select(ListData[Pos],TRUE);
 									Result++;
@@ -943,7 +948,7 @@ int64_t FileList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 
 							for(size_t ILI = 0; (namePtr=itemsList.Get(ILI)) != nullptr; ++ILI)
 							{
-								if ((Pos=FindFile(namePtr, !wcschr(namePtr,LGOOD_SLASH))) != -1)
+								if ((Pos=Find(namePtr)) != -1)
 								{
 									Select(ListData[Pos],ListData[Pos]->Selected?FALSE:TRUE);
 									Result++;
