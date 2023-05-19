@@ -871,7 +871,7 @@ int64_t FileList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 
 							for(size_t ILI = 0; (namePtr=itemsList.Get(ILI)) != nullptr; ++ILI)
 							{
-								if ((Pos=FindFile(namePtr,FALSE)) != -1)
+								if ((Pos=FindFile(namePtr, !wcschr(namePtr,LGOOD_SLASH))) != -1)
 								{
 									Select(ListData[Pos],FALSE);
 									Result++;
@@ -907,7 +907,7 @@ int64_t FileList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 
 							for(size_t ILI = 0; (namePtr=itemsList.Get(ILI)) != nullptr; ++ILI)
 							{
-								if ((Pos=FindFile(namePtr,FALSE)) != -1)
+								if ((Pos=FindFile(namePtr, !wcschr(namePtr,LGOOD_SLASH))) != -1)
 								{
 									Select(ListData[Pos],TRUE);
 									Result++;
@@ -943,7 +943,7 @@ int64_t FileList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 
 							for(size_t ILI = 0; (namePtr=itemsList.Get(ILI)) != nullptr; ++ILI)
 							{
-								if ((Pos=FindFile(namePtr,FALSE)) != -1)
+								if ((Pos=FindFile(namePtr, !wcschr(namePtr,LGOOD_SLASH))) != -1)
 								{
 									Select(ListData[Pos],ListData[Pos]->Selected?FALSE:TRUE);
 									Result++;
