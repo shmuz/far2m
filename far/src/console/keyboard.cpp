@@ -1748,7 +1748,9 @@ bool TranslateKeyToVK(int Key,int &VirtKey,int &ControlState,INPUT_RECORD *Rec)
 
 	if (!KeyInTable)
 	{
-		if (FKey > KEY_FKEY_BEGIN && FKey < KEY_END_FKEY) // [0x10000 - 0x1FFFF]
+		if ((FKey>='0' && FKey<='9') || (FKey>='A' && FKey<='Z')) //makes work TmpPanel switch on AltShift0...AltShift9
+			VirtKey = FKey;
+		else if (FKey > KEY_FKEY_BEGIN && FKey < KEY_END_FKEY) // [0x10000 - 0x1FFFF]
 			VirtKey = FKey - KEY_FKEY_BEGIN;
 		else if (FKey < MAX_VKEY_CODE)                    // 0xFFFF
 			VirtKey = WINPORT(VkKeyScan)(FKey);
