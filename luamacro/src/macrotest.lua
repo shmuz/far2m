@@ -68,27 +68,27 @@ function MT.test_areas()
   Keys "AltF10"              TestArea "FindFolder" Keys "Esc"
   Keys "F2"                  TestArea "UserMenu"   Keys "Esc"
 
-  assert(Area.Current              =="Shell")
-  assert(Area.Other                ==false)
-  assert(Area.Shell                ==true)
-  assert(Area.Viewer               ==false)
-  assert(Area.Editor               ==false)
-  assert(Area.Dialog               ==false)
-  assert(Area.Search               ==false)
-  assert(Area.Disks                ==false)
-  assert(Area.MainMenu             ==false)
-  assert(Area.Menu                 ==false)
-  assert(Area.Help                 ==false)
-  assert(Area.Info                 ==false)
-  assert(Area.QView                ==false)
-  assert(Area.Tree                 ==false)
-  assert(Area.FindFolder           ==false)
-  assert(Area.UserMenu             ==false)
-  assert(Area.AutoCompletion       ==false)
+  assert_eq    (Area.Current, "Shell")
+  assert_false (Area.Other)
+  assert_true  (Area.Shell)
+  assert_false (Area.Viewer)
+  assert_false (Area.Editor)
+  assert_false (Area.Dialog)
+  assert_false (Area.Search)
+  assert_false (Area.Disks)
+  assert_false (Area.MainMenu)
+  assert_false (Area.Menu)
+  assert_false (Area.Help)
+  assert_false (Area.Info)
+  assert_false (Area.QView)
+  assert_false (Area.Tree)
+  assert_false (Area.FindFolder)
+  assert_false (Area.UserMenu)
+  assert_false (Area.AutoCompletion)
 end
 
 local function test_mf_akey()
-  assert(akey == mf.akey)
+  assert_eq(akey, mf.akey)
   local k0,k1 = akey(0),akey(1)
   assert(k0==0x0501007B and k1=="CtrlShiftF12" or
          k0==0x1401007B and k1=="RCtrlShiftF12")
@@ -97,86 +97,86 @@ end
 
 local function test_bit64()
   for _,name in ipairs{"band","bnot","bor","bxor","lshift","rshift"} do
-    assert(_G[name] == bit64[name])
+    assert_eq   (_G[name], bit64[name])
     assert_func (bit64[name])
   end
 
   local a,b,c = 0xFF,0xFE,0xFD
-  assert(band(a,b,c,a,b,c) == 0xFC)
+  assert_eq(band(a,b,c,a,b,c), 0xFC)
   a,b,c = bit64.new(0xFF),bit64.new(0xFE),bit64.new(0xFD)
-  assert(band(a,b,c,a,b,c) == 0xFC)
+  assert_eq(band(a,b,c,a,b,c), 0xFC)
 
   a,b = bit64.new("0xFFFF0000FFFF0000"),bit64.new("0x0000FFFF0000FFFF")
-  assert(band(a,b) == 0)
-  assert(bor(a,b) == -1)
-  assert(a+b == -1)
+  assert_eq(band(a,b), 0)
+  assert_eq(bor(a,b), -1)
+  assert_eq(a+b, -1)
 
   a,b,c = 1,2,4
-  assert(bor(a,b,c,a,b,c) == 7)
+  assert_eq(bor(a,b,c,a,b,c), 7)
 
-  for k=-3,3 do assert(bnot(k) == -1-k) end
-  assert(bnot(bit64.new(5)) == -6)
+  for k=-3,3 do assert_eq(bnot(k), -1-k) end
+  assert_eq(bnot(bit64.new(5)), -6)
 
-  assert(bxor(0x01,0xF0,0xAA) == 0x5B)
-  assert(lshift(0xF731,4) == 0xF7310)
-  assert(rshift(0xF7310,4) == 0xF731)
+  assert_eq(bxor(0x01,0xF0,0xAA), 0x5B)
+  assert_eq(lshift(0xF731,4),  0xF7310)
+  assert_eq(rshift(0xF7310,4), 0xF731)
 
   local v = bit64.new(5)
-  assert(v+2==7  and 2+v==7)
-  assert(v-2==3  and 2-v==-3)
-  assert(v*2==10 and 2*v==10)
-  assert(v/2==2  and 2/v==0)
-  assert(v%2==1  and 2%v==2)
-  assert(v+v==10 and v-v==0 and v*v==25 and v/v==1 and v%v==0)
+  assert_true(v+2==7  and 2+v==7)
+  assert_true(v-2==3  and 2-v==-3)
+  assert_true(v*2==10 and 2*v==10)
+  assert_true(v/2==2  and 2/v==0)
+  assert_true(v%2==1  and 2%v==2)
+  assert_true(v+v==10 and v-v==0 and v*v==25 and v/v==1 and v%v==0)
 
   local w = lshift(1,63)
-  assert(w == bit64.new("0x8000".."0000".."0000".."0000"))
-  assert(rshift(w,63)==1)
-  assert(rshift(w,64)==0)
-  assert(bit64.arshift(w,62)==-2)
-  assert(bit64.arshift(w,63)==-1)
-  assert(bit64.arshift(w,64)==-1)
+  assert_eq(w, bit64.new("0x8000".."0000".."0000".."0000"))
+  assert_eq(rshift(w,63), 1)
+  assert_eq(rshift(w,64), 0)
+  assert_eq(bit64.arshift(w,62), -2)
+  assert_eq(bit64.arshift(w,63), -1)
+  assert_eq(bit64.arshift(w,64), -1)
 end
 
 local function test_mf_eval()
-  assert(eval==mf.eval)
+  assert_eq(eval, mf.eval)
 
   -- test arguments validity checking
-  assert(eval("") == 0)
-  assert(eval("", 0) == 0)
-  assert(eval() == -1)
-  assert(eval(0) == -1)
-  assert(eval(true) == -1)
-  assert(eval("", -1) == -1)
-  assert(eval("", 5) == -1)
-  assert(eval("", true) == -1)
-  assert(eval("", 1, true) == -1)
-  assert(eval("",1,"javascript")==-1)
+  assert_eq (eval(""), 0)
+  assert_eq (eval("", 0), 0)
+  assert_eq (eval(), -1)
+  assert_eq (eval(0), -1)
+  assert_eq (eval(true), -1)
+  assert_eq (eval("", -1), -1)
+  assert_eq (eval("", 5), -1)
+  assert_eq (eval("", true), -1)
+  assert_eq (eval("", 1, true), -1)
+  assert_eq (eval("",1,"javascript"), -1)
 
   -- test macro-not-found error
-  assert(eval("", 2) == -2)
+  assert_eq (eval("", 2), -2)
 
   temp=3
-  assert(eval("temp=5+7")==0)
-  assert(temp==12)
+  assert_eq (eval("temp=5+7"), 0)
+  assert_eq (temp, 12)
 
   temp=3
-  assert(eval("temp=5+7",0,"moonscript")==0)
-  assert(eval("temp=5+7",1,"lua")==0)
-  assert(eval("temp=5+7",3,"lua")=="")
-  assert(eval("temp=5+7",1,"moonscript")==0)
-  assert(eval("temp=5+7",3,"moonscript")=="")
-  assert(temp==3)
-  assert(eval("getfenv(1).temp=12",0,"moonscript")==0)
-  assert(temp==12)
+  assert_eq (eval("temp=5+7",0,"moonscript"), 0)
+  assert_eq (eval("temp=5+7",1,"lua"), 0)
+  assert_eq (eval("temp=5+7",3,"lua"), "")
+  assert_eq (eval("temp=5+7",1,"moonscript"), 0)
+  assert_eq (eval("temp=5+7",3,"moonscript"), "")
+  assert_eq (temp, 3)
+  assert_eq (eval("getfenv(1).temp=12",0,"moonscript"), 0)
+  assert_eq (temp, 12)
 
-  assert(eval("5",0,"moonscript")==0)
-  assert(eval("5+7",1,"lua")==11)
-  assert(eval("5+7",1,"moonscript")==0)
-  assert(eval("5 7",1,"moonscript")==11)
+  assert_eq (eval("5",0,"moonscript"), 0)
+  assert_eq (eval("5+7",1,"lua"), 11)
+  assert_eq (eval("5+7",1,"moonscript"), 0)
+  assert_eq (eval("5 7",1,"moonscript"), 11)
 
   -- test with Mode==2
-  local Id = assert(far.MacroAdd(nil,nil,"CtrlA",[[
+  local Id = assert_userdata(far.MacroAdd(nil,nil,"CtrlA",[[
     local key = akey(1,0)
     assert(key=="CtrlShiftF12" or key=="RCtrlShiftF12")
     assert(akey(1,1)=="CtrlA")
@@ -185,52 +185,52 @@ local function test_mf_eval()
   ]]))
   for k=1,3 do
     local ret1,a,b,c,d,e = eval("CtrlA",2)
-    assert(ret1==0 and a==k and b==false and c==5 and d==nil and e=="foo")
+    assert_true(ret1==0 and a==k and b==false and c==5 and d==nil and e=="foo")
   end
-  assert(far.MacroDelete(Id))
+  assert_true(far.MacroDelete(Id))
 end
 
 local function test_mf_abs()
-  assert(mf.abs(1.3)==1.3)
-  assert(mf.abs(-1.3)==1.3)
-  assert(mf.abs(0)==0)
+  assert_eq (mf.abs(1.3), 1.3)
+  assert_eq (mf.abs(-1.3), 1.3)
+  assert_eq (mf.abs(0), 0)
 end
 
 local function test_mf_acall()
   local a,b,c,d = mf.acall(function(p) return 3, nil, p, "foo" end, 77)
-  assert(a==3 and b==nil and c==77 and d=="foo")
-  assert(true == mf.acall(far.Show))
+  assert_true (a==3 and b==nil and c==77 and d=="foo")
+  assert_true (mf.acall(far.Show))
   Keys"Esc"
 end
 
 local function test_mf_asc()
-  assert(mf.asc("0")==48)
-  assert(mf.asc("Я")==1071)
+  assert_eq (mf.asc("0"), 48)
+  assert_eq (mf.asc("Я"), 1071)
 end
 
 local function test_mf_atoi()
-  assert(mf.atoi("0")==0)
-  assert(mf.atoi("-10")==-10)
-  assert(mf.atoi("0x11")==17)
-  assert(mf.atoi("1011",2)==11)
-  assert(mf.atoi("123456789123456789")==bit64.new("123456789123456789"))
-  assert(mf.atoi("-123456789123456789")==bit64.new("-123456789123456789"))
-  assert(mf.atoi("0x1B69B4BACD05F15")==bit64.new("0x1B69B4BACD05F15"))
-  assert(mf.atoi("-0x1B69B4BACD05F15")==bit64.new("-0x1B69B4BACD05F15"))
+  assert_eq (mf.atoi("0"), 0)
+  assert_eq (mf.atoi("-10"), -10)
+  assert_eq (mf.atoi("0x11"), 17)
+  assert_eq (mf.atoi("1011",2), 11)
+  assert_eq (mf.atoi("123456789123456789"),  bit64.new("123456789123456789"))
+  assert_eq (mf.atoi("-123456789123456789"), bit64.new("-123456789123456789"))
+  assert_eq (mf.atoi("0x1B69B4BACD05F15"),   bit64.new("0x1B69B4BACD05F15"))
+  assert_eq (mf.atoi("-0x1B69B4BACD05F15"),  bit64.new("-0x1B69B4BACD05F15"))
 end
 
 local function test_mf_chr()
-  assert(mf.chr(48)=="0")
-  assert(mf.chr(1071)=="Я")
+  assert_eq (mf.chr(48), "0")
+  assert_eq (mf.chr(1071), "Я")
 end
 
 local function test_mf_clip()
   local oldval = far.PasteFromClipboard() -- store
 
   mf.clip(5,2) -- turn on the internal clipboard
-  assert(mf.clip(5,-1)==2)
-  assert(mf.clip(5,1)==2) -- turn on the OS clipboard
-  assert(mf.clip(5,-1)==1)
+  assert_eq (mf.clip(5,-1), 2)
+  assert_eq (mf.clip(5,1),  2) -- turn on the OS clipboard
+  assert_eq (mf.clip(5,-1), 1)
 
   for clipnum=1,2 do
     mf.clip(5,clipnum)
@@ -243,17 +243,17 @@ local function test_mf_clip()
 
   mf.clip(5,1); mf.clip(1,"foo")
   mf.clip(5,2); mf.clip(1,"bar")
-  assert(mf.clip(0) == "bar")
-  mf.clip(5,1); assert(mf.clip(0) == "foo")
-  mf.clip(5,2); assert(mf.clip(0) == "bar")
+  assert_eq (mf.clip(0), "bar")
+  mf.clip(5,1); assert_eq (mf.clip(0), "foo")
+  mf.clip(5,2); assert_eq (mf.clip(0), "bar")
 
-  mf.clip(3);   assert(mf.clip(0) == "foo")
-  mf.clip(5,1); assert(mf.clip(0) == "foo")
+  mf.clip(3);   assert_eq (mf.clip(0), "foo")
+  mf.clip(5,1); assert_eq (mf.clip(0), "foo")
 
   mf.clip(5,2); mf.clip(1,"bar")
-  mf.clip(5,1); assert(mf.clip(0) == "foo")
-  mf.clip(4);   assert(mf.clip(0) == "bar")
-  mf.clip(5,2); assert(mf.clip(0) == "bar")
+  mf.clip(5,1); assert_eq (mf.clip(0), "foo")
+  mf.clip(4);   assert_eq (mf.clip(0), "bar")
+  mf.clip(5,2); assert_eq (mf.clip(0), "bar")
 
   mf.clip(5,1) -- leave the OS clipboard active in the end
   far.CopyToClipboard(oldval or "") -- restore
@@ -261,14 +261,14 @@ end
 
 local function test_mf_env()
   mf.env("Foo",1,"Bar")
-  assert(mf.env("Foo")=="Bar")
+  assert_eq (mf.env("Foo"), "Bar")
   mf.env("Foo",1,"")
-  assert(mf.env("Foo")=="")
+  assert_eq (mf.env("Foo"), "")
 end
 
 local function test_mf_fattr()
   DeleteTmpFile()
-  assert(mf.fattr(TmpFileName) == -1)
+  assert_eq (mf.fattr(TmpFileName), -1)
   WriteTmpFile("")
   local attr = mf.fattr(TmpFileName)
   DeleteTmpFile()
@@ -277,25 +277,25 @@ end
 
 local function test_mf_fexist()
   WriteTmpFile("")
-  assert(mf.fexist(TmpFileName) == true)
+  assert_true(mf.fexist(TmpFileName))
   DeleteTmpFile()
-  assert(mf.fexist(TmpFileName) == false)
+  assert_false(mf.fexist(TmpFileName))
 end
 
 local function test_mf_msgbox()
-  assert(msgbox == mf.msgbox)
+  assert_eq (msgbox, mf.msgbox)
   mf.postmacro(function() Keys("Esc") end)
-  assert(0 == msgbox("title","message"))
+  assert_eq (0, msgbox("title","message"))
   mf.postmacro(function() Keys("Enter") end)
-  assert(1 == msgbox("title","message"))
+  assert_eq (1, msgbox("title","message"))
 end
 
 local function test_mf_prompt()
-  assert(prompt == mf.prompt)
+  assert_eq (prompt, mf.prompt)
   mf.postmacro(function() Keys("a b c Esc") end)
-  assert(not prompt())
+  assert_false (prompt())
   mf.postmacro(function() Keys("a b c Enter") end)
-  assert("abc" == prompt())
+  assert_eq ("abc", prompt())
 end
 
 local function test_mf_date()
@@ -304,97 +304,97 @@ local function test_mf_date()
 end
 
 local function test_mf_fmatch()
-  assert(mf.fmatch("Readme.txt", "*.txt") == 1)
-  assert(mf.fmatch("Readme.txt", "Readme.*|*.txt") == 0)
-  assert(mf.fmatch("c:\\Readme.txt", "/txt$/i") == 1)
-  assert(mf.fmatch("c:\\Readme.txt", "/txt$") == -1)
+  assert_eq (mf.fmatch("Readme.txt", "*.txt"), 1)
+  assert_eq (mf.fmatch("Readme.txt", "Readme.*|*.txt"), 0)
+  assert_eq (mf.fmatch("c:\\Readme.txt", "/txt$/i"), 1)
+  assert_eq (mf.fmatch("c:\\Readme.txt", "/txt$"), -1)
 end
 
 local function test_mf_fsplit()
   local path="C:/Program Files/Far/Far.exe"
-  assert(mf.fsplit(path,0x01)=="C:/")
-  assert(mf.fsplit(path,0x02)=="/Program Files/Far/")
-  assert(mf.fsplit(path,0x04)=="Far")
-  assert(mf.fsplit(path,0x08)==".exe")
+  assert_eq (mf.fsplit(path,0x01), "C:/")
+  assert_eq (mf.fsplit(path,0x02), "/Program Files/Far/")
+  assert_eq (mf.fsplit(path,0x04), "Far")
+  assert_eq (mf.fsplit(path,0x08), ".exe")
 
-  assert(mf.fsplit(path,0x03)=="C:/Program Files/Far/")
-  assert(mf.fsplit(path,0x0C)=="Far.exe")
-  assert(mf.fsplit(path,0x0F)==path)
+  assert_eq (mf.fsplit(path,0x03), "C:/Program Files/Far/")
+  assert_eq (mf.fsplit(path,0x0C), "Far.exe")
+  assert_eq (mf.fsplit(path,0x0F), path)
 end
 
 local function test_mf_iif()
-  assert(mf.iif(true,  1, 2)==1)
-  assert(mf.iif("a",   1, 2)==1)
-  assert(mf.iif(100,   1, 2)==1)
-  assert(mf.iif(false, 1, 2)==2)
-  assert(mf.iif(nil,   1, 2)==2)
-  assert(mf.iif(0,     1, 2)==2)
-  assert(mf.iif("",    1, 2)==2)
+  assert_eq (mf.iif(true,  1, 2), 1)
+  assert_eq (mf.iif("a",   1, 2), 1)
+  assert_eq (mf.iif(100,   1, 2), 1)
+  assert_eq (mf.iif(false, 1, 2), 2)
+  assert_eq (mf.iif(nil,   1, 2), 2)
+  assert_eq (mf.iif(0,     1, 2), 2)
+  assert_eq (mf.iif("",    1, 2), 2)
 end
 
 local function test_mf_index()
-  assert(mf.index("language","gua",0)==3)
-  assert(mf.index("language","gua",1)==3)
-  assert(mf.index("language","gUA",1)==-1)
-  assert(mf.index("language","gUA",0)==3)
+  assert_eq (mf.index("language","gua",0), 3)
+  assert_eq (mf.index("language","gua",1), 3)
+  assert_eq (mf.index("language","gUA",1), -1)
+  assert_eq (mf.index("language","gUA",0), 3)
 end
 
 local function test_mf_int()
-  assert(mf.int("2.99")==2)
-  assert(mf.int("-2.99")==-2)
-  assert(mf.int("0x10")==0)
-  assert(mf.int("123456789123456789")==bit64.new("123456789123456789"))
-  assert(mf.int("-123456789123456789")==bit64.new("-123456789123456789"))
+  assert_eq (mf.int("2.99"), 2)
+  assert_eq (mf.int("-2.99"), -2)
+  assert_eq (mf.int("0x10"), 0)
+  assert_eq (mf.int("123456789123456789"), bit64.new("123456789123456789"))
+  assert_eq (mf.int("-123456789123456789"), bit64.new("-123456789123456789"))
 end
 
 local function test_mf_itoa()
-  assert(mf.itoa(100)=="100")
-  assert(mf.itoa(100,10)=="100")
-  assert(mf.itoa(bit64.new("123456789123456789"))=="123456789123456789")
-  assert(mf.itoa(bit64.new("-123456789123456789"))=="-123456789123456789")
-  assert(mf.itoa(100,2)=="1100100")
-  assert(mf.itoa(100,16)=="64")
-  assert(mf.itoa(100,36)=="2s")
+  assert_eq (mf.itoa(100), "100")
+  assert_eq (mf.itoa(100,10), "100")
+  assert_eq (mf.itoa(bit64.new("123456789123456789")), "123456789123456789")
+  assert_eq (mf.itoa(bit64.new("-123456789123456789")), "-123456789123456789")
+  assert_eq (mf.itoa(100,2), "1100100")
+  assert_eq (mf.itoa(100,16), "64")
+  assert_eq (mf.itoa(100,36), "2s")
 end
 
 local function test_mf_key()
-  assert(mf.key(0x01000000)=="Ctrl")
-  assert(mf.key(0x02000000)=="Alt")
-  assert(mf.key(0x04000000)=="Shift")
-  assert(mf.key(0x10000000)=="RCtrl")
-  assert(mf.key(0x20000000)=="RAlt")
+  assert_eq (mf.key(0x01000000), "Ctrl")
+  assert_eq (mf.key(0x02000000), "Alt")
+  assert_eq (mf.key(0x04000000), "Shift")
+  assert_eq (mf.key(0x10000000), "RCtrl")
+  assert_eq (mf.key(0x20000000), "RAlt")
 
-  assert(mf.key(0x0501007B)=="CtrlShiftF12")
-  assert(mf.key("CtrlShiftF12")=="CtrlShiftF12")
+  assert_eq (mf.key(0x0501007B), "CtrlShiftF12")
+  assert_eq (mf.key("CtrlShiftF12"), "CtrlShiftF12")
 
-  assert(mf.key("foobar")=="")
+  assert_eq (mf.key("foobar"), "")
 end
 
 -- Separate tests for mf.float and mf.string are locale-dependant, thus they are tested together.
 local function test_mf_float_and_string()
   local t = { 0, -0, 2.56e1, -5.37, -2.2e100, 2.2e-100 }
   for _,num in ipairs(t) do
-    assert(mf.float(mf.string(num))==num)
+    assert_eq (mf.float(mf.string(num)), num)
   end
 end
 
 local function test_mf_lcase()
-  assert(mf.lcase("FOo БАр")=="foo бар")
+  assert_eq (mf.lcase("FOo БАр"), "foo бар")
 end
 
 local function test_mf_len()
-  assert(mf.len("")==0)
-  assert(mf.len("FOo БАр")==7)
+  assert_eq (mf.len(""), 0)
+  assert_eq (mf.len("FOo БАр"), 7)
 end
 
 local function test_mf_max()
-  assert(mf.max(-2,-5)==-2)
-  assert(mf.max(2,5)==5)
+  assert_eq (mf.max(-2,-5), -2)
+  assert_eq (mf.max(2,5), 5)
 end
 
 local function test_mf_min()
-  assert(mf.min(-2,-5)==-5)
-  assert(mf.min(2,5)==2)
+  assert_eq (mf.min(-2,-5), -5)
+  assert_eq (mf.min(2,5), 2)
 end
 
 local function test_mf_msave()
@@ -408,21 +408,21 @@ local function test_mf_msave()
   mf.msave(Key, "name4", v4)
   mf.msave(Key, "name5", v5)
   mf.msave(Key, "name6", v6)
-  assert(mf.mload(Key, "name1") == v1)
-  assert(mf.mload(Key, "name2") == v2)
-  assert(mf.mload(Key, "name3") == v3)
-  assert(mf.mload(Key, "name4") == v4)
-  assert(mf.mload(Key, "name5") == v5)
-  assert(mf.mload(Key, "name6") == v6)
+  assert_eq (mf.mload(Key, "name1"), v1)
+  assert_eq (mf.mload(Key, "name2"), v2)
+  assert_eq (mf.mload(Key, "name3"), v3)
+  assert_eq (mf.mload(Key, "name4"), v4)
+  assert_eq (mf.mload(Key, "name5"), v5)
+  assert_eq (mf.mload(Key, "name6"), v6)
   mf.mdelete(Key, "*")
-  assert(mf.mload(Key, "name3")==nil)
+  assert_eq (mf.mload(Key, "name3"), nil)
 
   -- test tables
   mf.msave(Key, "name1", { a=5, {b="foo"}, c={d=false} })
   local t=mf.mload(Key, "name1")
-  assert(t.a==5 and t[1].b=="foo" and t.c.d==false)
+  assert_true(t.a==5 and t[1].b=="foo" and t.c.d==false)
   mf.mdelete(Key, "name1")
-  assert(mf.mload(Key, "name1")==nil)
+  assert_nil(mf.mload(Key, "name1"))
 
   -- test tables more
   local t1, t2, t3 = {5}, {6}, {}
@@ -433,10 +433,8 @@ local function test_mf_msave()
   setmetatable(t3, { __index=t1 })
   mf.msave(Key, "name1", t1)
 
-  local T1 = mf.mload(Key, "name1")
-  assert_table (T1)
-  local T2 = T1[3]
-  assert_table (T2)
+  local T1 = assert_table(mf.mload(Key, "name1"))
+  local T2 = assert_table(T1[3])
   local T3 = T1[4]
   assert(type(T3)=="table" and T3==T1[5])
   assert(T1[1]==5 and T1[2]==T1 and T1[3]==T2)
@@ -445,46 +443,46 @@ local function test_mf_msave()
   assert(T2[T1]==88 and T2[T2]==99)
   assert(getmetatable(T3).__index==T1 and T3[1]==5 and rawget(T3,1)==nil)
   mf.mdelete(Key, "*")
-  assert(mf.mload(Key, "name1")==nil)
+  assert_nil(mf.mload(Key, "name1"))
 end
 
 local function test_mf_mod()
-  assert(mf.mod(11,4) == 3)
-  assert(math.fmod(11,4) == 3)
-  assert(11 % 4 == 3)
+  assert_eq (mf.mod(11,4), 3)
+  assert_eq (math.fmod(11,4), 3)
+  assert_eq (11 % 4, 3)
 
-  assert(mf.mod(-1,4) == -1)
-  assert(math.fmod(-1,4) == -1)
-  assert(-1 % 4 == 3)
+  assert_eq (mf.mod(-1,4), -1)
+  assert_eq (math.fmod(-1,4), -1)
+  assert_eq (-1 % 4, 3)
 end
 
 local function test_mf_replace()
-  assert(mf.replace("Foo Бар", "o", "1")=="F11 Бар")
-  assert(mf.replace("Foo Бар", "o", "1", 1)=="F1o Бар")
-  assert(mf.replace("Foo Бар", "O", "1", 1, 1)=="Foo Бар")
-  assert(mf.replace("Foo Бар", "O", "1", 1, 0)=="F1o Бар")
+  assert_eq (mf.replace("Foo Бар", "o", "1"), "F11 Бар")
+  assert_eq (mf.replace("Foo Бар", "o", "1", 1), "F1o Бар")
+  assert_eq (mf.replace("Foo Бар", "O", "1", 1, 1), "Foo Бар")
+  assert_eq (mf.replace("Foo Бар", "O", "1", 1, 0), "F1o Бар")
 end
 
 local function test_mf_rindex()
-  assert(mf.rindex("language","a",0)==5)
-  assert(mf.rindex("language","a",1)==5)
-  assert(mf.rindex("language","A",1)==-1)
-  assert(mf.rindex("language","A",0)==5)
+  assert_eq (mf.rindex("language","a",0), 5)
+  assert_eq (mf.rindex("language","a",1), 5)
+  assert_eq (mf.rindex("language","A",1), -1)
+  assert_eq (mf.rindex("language","A",0), 5)
 end
 
 local function test_mf_strpad()
-  assert(mf.strpad("Foo",10,"*",  2) == '***Foo****')
-  assert(mf.strpad("",   10,"-*-",2) == '-*--*--*--')
-  assert(mf.strpad("",   10,"-*-")   == '-*--*--*--')
-  assert(mf.strpad("Foo",10)         == 'Foo       ')
-  assert(mf.strpad("Foo",10,"-")     == 'Foo-------')
-  assert(mf.strpad("Foo",10," ",  1) == '       Foo')
-  assert(mf.strpad("Foo",10," ",  2) == '   Foo    ')
-  assert(mf.strpad("Foo",10,"1234567890",2) == '123Foo1234')
+  assert_eq (mf.strpad("Foo",10,"*",  2), '***Foo****')
+  assert_eq (mf.strpad("",   10,"-*-",2), '-*--*--*--')
+  assert_eq (mf.strpad("",   10,"-*-"), '-*--*--*--')
+  assert_eq (mf.strpad("Foo",10), 'Foo       ')
+  assert_eq (mf.strpad("Foo",10,"-"), 'Foo-------')
+  assert_eq (mf.strpad("Foo",10," ",  1), '       Foo')
+  assert_eq (mf.strpad("Foo",10," ",  2), '   Foo    ')
+  assert_eq (mf.strpad("Foo",10,"1234567890",2), '123Foo1234')
 end
 
 local function test_mf_strwrap()
-  assert(mf.strwrap("Пример строки, которая будет разбита на несколько строк по ширине в 7 символов.", 7,"\n")==
+  assert_eq (mf.strwrap("Пример строки, которая будет разбита на несколько строк по ширине в 7 символов.", 7,"\n"),
 [[
 Пример
 строки,
@@ -503,17 +501,17 @@ local function test_mf_strwrap()
 end
 
 local function test_mf_substr()
-  assert(mf.substr("abcdef", 1) == "bcdef")
-  assert(mf.substr("abcdef", 1, 3) == "bcd")
-  assert(mf.substr("abcdef", 0, 4) == "abcd")
-  assert(mf.substr("abcdef", 0, 8) == "abcdef")
-  assert(mf.substr("abcdef", -1) == "f")
-  assert(mf.substr("abcdef", -2) == "ef")
-  assert(mf.substr("abcdef", -3, 1) == "d")
-  assert(mf.substr("abcdef", 0, -1) == "abcde")
-  assert(mf.substr("abcdef", 2, -1) == "cde")
-  assert(mf.substr("abcdef", 4, -4) == "")
-  assert(mf.substr("abcdef", -3, -1) == "de")
+  assert_eq (mf.substr("abcdef", 1), "bcdef")
+  assert_eq (mf.substr("abcdef", 1, 3), "bcd")
+  assert_eq (mf.substr("abcdef", 0, 4), "abcd")
+  assert_eq (mf.substr("abcdef", 0, 8), "abcdef")
+  assert_eq (mf.substr("abcdef", -1), "f")
+  assert_eq (mf.substr("abcdef", -2), "ef")
+  assert_eq (mf.substr("abcdef", -3, 1), "d")
+  assert_eq (mf.substr("abcdef", 0, -1), "abcde")
+  assert_eq (mf.substr("abcdef", 2, -1), "cde")
+  assert_eq (mf.substr("abcdef", 4, -4), "")
+  assert_eq (mf.substr("abcdef", -3, -1), "de")
 end
 
 local function test_mf_testfolder()
@@ -523,30 +521,30 @@ local function test_mf_testfolder()
 end
 
 local function test_mf_trim()
-  assert(mf.trim(" abc ")=="abc")
-  assert(mf.trim(" abc ",0)=="abc")
-  assert(mf.trim(" abc ",1)=="abc ")
-  assert(mf.trim(" abc ",2)==" abc")
+  assert_eq (mf.trim(" abc "), "abc")
+  assert_eq (mf.trim(" abc ",0), "abc")
+  assert_eq (mf.trim(" abc ",1), "abc ")
+  assert_eq (mf.trim(" abc ",2), " abc")
 end
 
 local function test_mf_ucase()
-  assert(mf.ucase("FOo БАр")=="FOO БАР")
+  assert_eq (mf.ucase("FOo БАр"), "FOO БАР")
 end
 
 local function test_mf_waitkey()
-  assert(mf.waitkey(50,0)=="")
-  assert(mf.waitkey(50,1)==0xFFFFFFFF)
+  assert_eq (mf.waitkey(50,0), "")
+  assert_eq (mf.waitkey(50,1), 0xFFFFFFFF)
 end
 
 local function test_mf_size2str()
-  assert(mf.size2str(123,0,5)=="  123")
-  assert(mf.size2str(123,0,-5)=="123  ")
+  assert_eq (mf.size2str(123,0,5), "  123")
+  assert_eq (mf.size2str(123,0,-5), "123  ")
 end
 
 local function test_mf_xlat()
   assert_str (mf.xlat("abc"))
-  assert(mf.xlat("ghzybr")=="пряник")
-  assert(mf.xlat("сщьзгеук")=="computer")
+  assert_eq (mf.xlat("ghzybr"), "пряник")
+  assert_eq (mf.xlat("сщьзгеук"), "computer")
 end
 
 local function test_mf_beep()
@@ -562,17 +560,17 @@ local function test_mf_GetMacroCopy()
 end
 
 local function test_mf_Keys()
-  assert(Keys == mf.Keys)
+  assert_eq (Keys, mf.Keys)
   assert_func (Keys)
 
   Keys("Esc F a r Space M a n a g e r Space Ф А Р")
-  assert(panel.GetCmdLine() == "Far Manager ФАР")
+  assert_eq (panel.GetCmdLine(), "Far Manager ФАР")
   Keys("Esc")
-  assert(panel.GetCmdLine() == "")
+  assert_eq (panel.GetCmdLine(), "")
 end
 
 local function test_mf_exit()
-  assert(exit == mf.exit)
+  assert_eq (exit, mf.exit)
   local N
   mf.postmacro(
     function()
@@ -581,28 +579,28 @@ local function test_mf_exit()
     end)
   mf.postmacro(function() Keys"Esc" end)
   far.Message("dummy")
-  assert(N == 50)
+  assert_eq (N, 50)
 end
 
 local function test_mf_mmode()
-  assert(mmode == mf.mmode)
-  assert(1 == mmode(1,-1))
+  assert_eq (mmode, mf.mmode)
+  assert_eq (1, mmode(1,-1))
 end
 
 local function test_mf_print()
-  assert(print == mf.print)
+  assert_eq (print, mf.print)
   assert_func (print)
   -- test on command line
   local str = "abc ABC абв АБВ"
   Keys("Esc")
   print(str)
-  assert(panel.GetCmdLine() == str)
+  assert_eq (panel.GetCmdLine(), str)
   Keys("Esc")
-  assert(panel.GetCmdLine() == "")
+  assert_eq (panel.GetCmdLine(), "")
   -- test on dialog input field
   Keys("F7 CtrlY")
   print(str)
-  assert(Dlg.GetValue(-1,0) == str)
+  assert_eq (Dlg.GetValue(-1,0), str)
   Keys("Esc")
   -- test on editor
   str = "abc ABC\nабв АБВ"
@@ -681,37 +679,37 @@ end
 
 function MT.test_CmdLine()
   Keys"Esc f o o Space Б а р"
-  assert(CmdLine.Bof==false)
-  assert(CmdLine.Eof==true)
-  assert(CmdLine.Empty==false)
-  assert(CmdLine.Selected==false)
-  assert(CmdLine.Value=="foo Бар")
-  assert(CmdLine.ItemCount==7)
-  assert(CmdLine.CurPos==8)
+  assert_false(CmdLine.Bof)
+  assert_true(CmdLine.Eof)
+  assert_false(CmdLine.Empty)
+  assert_false(CmdLine.Selected)
+  assert_eq (CmdLine.Value, "foo Бар")
+  assert_eq (CmdLine.ItemCount, 7)
+  assert_eq (CmdLine.CurPos, 8)
 
   Keys"SelWord"
-  assert(CmdLine.Selected)
+  assert_true(CmdLine.Selected)
 
   Keys"CtrlHome"
-  assert(CmdLine.Bof==true)
-  assert(CmdLine.Eof==false)
+  assert_true(CmdLine.Bof)
+  assert_false(CmdLine.Eof)
 
   Keys"Esc"
-  assert(CmdLine.Bof==true)
-  assert(CmdLine.Eof==true)
-  assert(CmdLine.Empty==true)
-  assert(CmdLine.Selected==false)
-  assert(CmdLine.Value=="")
-  assert(CmdLine.ItemCount==0)
-  assert(CmdLine.CurPos==1)
+  assert_true(CmdLine.Bof)
+  assert_true(CmdLine.Eof)
+  assert_true(CmdLine.Empty)
+  assert_false(CmdLine.Selected)
+  assert_eq (CmdLine.Value, "")
+  assert_eq (CmdLine.ItemCount, 0)
+  assert_eq (CmdLine.CurPos, 1)
 
   Keys"Esc"
   print("foo Бар")
-  assert(CmdLine.Value=="foo Бар")
+  assert_eq (CmdLine.Value, "foo Бар")
 
   Keys"Esc"
   print(("%s %d %s"):format("foo", 5+7, "Бар"))
-  assert(CmdLine.Value=="foo 12 Бар")
+  assert_eq (CmdLine.Value, "foo 12 Бар")
 
   Keys"Esc"
 end
@@ -741,25 +739,25 @@ local function test_CheckAndGetHotKey()
   mf.acall(far.Menu, {Flags="FMENU_AUTOHIGHLIGHT"},
     {{text="abcd"},{text="abc&d"},{text="abcd"},{text="abcd"},{text="abcd"}})
 
-  assert(Object.CheckHotkey("a")==1)
-  assert(Object.GetHotkey(1)=="a")
-  assert(Object.GetHotkey()=="a")
-  assert(Object.GetHotkey(0)=="a")
+  assert_eq (Object.CheckHotkey("a"), 1)
+  assert_eq (Object.GetHotkey(1), "a")
+  assert_eq (Object.GetHotkey(), "a")
+  assert_eq (Object.GetHotkey(0), "a")
 
-  assert(Object.CheckHotkey("b")==3)
-  assert(Object.GetHotkey(3)=="b")
+  assert_eq (Object.CheckHotkey("b"), 3)
+  assert_eq (Object.GetHotkey(3), "b")
 
-  assert(Object.CheckHotkey("c")==4)
-  assert(Object.GetHotkey(4)=="c")
+  assert_eq (Object.CheckHotkey("c"), 4)
+  assert_eq (Object.GetHotkey(4), "c")
 
-  assert(Object.CheckHotkey("d")==2)
-  assert(Object.GetHotkey(2)=="d")
+  assert_eq (Object.CheckHotkey("d"), 2)
+  assert_eq (Object.GetHotkey(2), "d")
 
-  assert(Object.CheckHotkey("e")==0)
+  assert_eq (Object.CheckHotkey("e"), 0)
 
-  assert(Object.CheckHotkey("")==5)
-  assert(Object.GetHotkey(5)=="")
-  assert(Object.GetHotkey(6)=="")
+  assert_eq (Object.CheckHotkey(""), 5)
+  assert_eq (Object.GetHotkey(5), "")
+  assert_eq (Object.GetHotkey(6), "")
 
   Keys("Esc")
 end
