@@ -848,12 +848,24 @@ int64_t FileList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 				SaveSelection();
 			}
 
-			auto Find = [this] (const wchar_t *namePtr)
+			auto SelectByList = [&] (ps_action act)
 			{
-				return this->FindFile(namePtr, !wcschr(namePtr,LGOOD_SLASH));
+				Result=0;
+				const wchar_t *name;
+				bool RegularPanel = !GetPluginHandle();
+				for(size_t I = 0; (name=itemsList.Get(I)) != nullptr; ++I)
+				{
+					int Pos;
+					auto arg1 = RegularPanel ? PointToName(name) : name;
+					auto arg2 = RegularPanel || !wcschr(name,LGOOD_SLASH);
+					if ((Pos=FindFile(arg1,	arg2)) != -1)
+					{
+						Select(ListData[Pos], act==remove?FALSE : act==add?TRUE : !ListData[Pos]->Selected);
+						Result++;
+					}
+				}
 			};
 
-			// mps->ActionFlags
 			switch (mps->Action)
 			{
 				case ps_action::remove:  // снять выделение
@@ -869,21 +881,8 @@ int64_t FileList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 							Select(ListData[mps->Index],FALSE);
 							break;
 						case ps_mode::list_names: // набор строк
-						{
-							const wchar_t *namePtr;
-							int Pos;
-							Result=0;
-
-							for(size_t ILI = 0; (namePtr=itemsList.Get(ILI)) != nullptr; ++ILI)
-							{
-								if ((Pos=Find(namePtr)) != -1)
-								{
-									Select(ListData[Pos],FALSE);
-									Result++;
-								}
-							}
+							SelectByList(ps_action::remove);
 							break;
-						}
 						case ps_mode::list_masks: // масками файлов, разделенных запятыми
 							Result=SelectFiles(SELECT_REMOVEMASK,mps->Item);
 							break;
@@ -905,21 +904,8 @@ int64_t FileList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 							Select(ListData[mps->Index],TRUE);
 							break;
 						case ps_mode::list_names: // набор строк через CRLF
-						{
-							const wchar_t *namePtr;
-							int Pos;
-							Result=0;
-
-							for(size_t ILI = 0; (namePtr=itemsList.Get(ILI)) != nullptr; ++ILI)
-							{
-								if ((Pos=Find(namePtr)) != -1)
-								{
-									Select(ListData[Pos],TRUE);
-									Result++;
-								}
-							}
+							SelectByList(ps_action::add);
 							break;
-						}
 						case ps_mode::list_masks: // масками файлов, разделенных запятыми
 							Result=SelectFiles(SELECT_ADDMASK,mps->Item);
 							break;
@@ -941,21 +927,8 @@ int64_t FileList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 							Select(ListData[mps->Index],ListData[mps->Index]->Selected?FALSE:TRUE);
 							break;
 						case ps_mode::list_names: // набор строк через CRLF
-						{
-							const wchar_t *namePtr;
-							int Pos;
-							Result=0;
-
-							for(size_t ILI = 0; (namePtr=itemsList.Get(ILI)) != nullptr; ++ILI)
-							{
-								if ((Pos=Find(namePtr)) != -1)
-								{
-									Select(ListData[Pos],ListData[Pos]->Selected?FALSE:TRUE);
-									Result++;
-								}
-							}
+							SelectByList(ps_action::invert);
 							break;
-						}
 						case ps_mode::list_masks: // масками файлов, разделенных запятыми
 							Result=SelectFiles(SELECT_INVERTMASK,mps->Item);
 							break;

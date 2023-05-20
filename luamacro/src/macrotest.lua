@@ -1,23 +1,24 @@
 -- encoding: utf-8
 -- Started: 2012-08-20.
 
-local function assert_eq(a,b)      assert(a == b) end
-local function assert_neq(a,b)     assert(a ~= b) end
-local function assert_num(v)       assert(type(v)=="number") end
-local function assert_str(v)       assert(type(v)=="string") end
-local function assert_table(v)     assert(type(v)=="table") end
-local function assert_bool(v)      assert(type(v)=="boolean") end
-local function assert_func(v)      assert(type(v)=="function") end
-local function assert_userdata(v)  assert(type(v)=="userdata") end
-local function assert_nil(v)       assert(v==nil) end
-local function assert_false(v)     assert(v==false) end
-local function assert_true(v)      assert(v==true) end
-local function assert_falsy(v)     assert(not v == true) end
-local function assert_truthy(v)    assert(not v == false) end
+local function assert_eq(a,b)      assert(a == b)               return true; end
+local function assert_neq(a,b)     assert(a ~= b)               return true; end
+local function assert_num(v)       assert(type(v)=="number")    return v; end
+local function assert_str(v)       assert(type(v)=="string")    return v; end
+local function assert_table(v)     assert(type(v)=="table")     return v; end
+local function assert_bool(v)      assert(type(v)=="boolean")   return v; end
+local function assert_func(v)      assert(type(v)=="function")  return v; end
+local function assert_userdata(v)  assert(type(v)=="userdata")  return v; end
+local function assert_nil(v)       assert(v==nil)               return v; end
+local function assert_false(v)     assert(v==false)             return v; end
+local function assert_true(v)      assert(v==true)              return v; end
+local function assert_falsy(v)     assert(not v == true)        return v; end
+local function assert_truthy(v)    assert(not v == false)       return v; end
 
 local function assert_range(val, low, high)
   if low then assert(val >= low) end
   if high then assert(val <= high) end
+  return true
 end
 
 local MT = {} -- "macrotest", this module
@@ -900,6 +901,100 @@ local function test_Panel_SetPath()
   actl.Commit()
 end
 
+-- N=Panel.Select(panelType,Action[,Mode[,Items]])
+local function Test_Panel_Select()
+  local PS = assert_func(Panel.Select)
+  local RM,ADD,INV,RST = 0,1,2,3 -- Action
+  local MODE
+
+  local dir = assert_str(os.getenv("FARHOME"))
+  assert_true(panel.SetPanelDirectory(1,dir))
+  local pi = assert_table(panel.GetPanelInfo(1))
+  local ItemsCount = assert_num(pi.ItemsNumber)-1 -- don't count ".."
+  assert(ItemsCount>=10, "not enough files to test")
+
+  --------------------------------------------------------------
+  MODE = 0
+  assert_eq(ItemsCount,PS(0,ADD,MODE)) -- select all
+  pi = assert_table(panel.GetPanelInfo(1))
+  assert_eq(ItemsCount, pi.SelectedItemsNumber)
+
+  assert_eq(ItemsCount,PS(0,RM,MODE)) -- clear all
+  pi = assert_table(panel.GetPanelInfo(1))
+  assert_eq(0, pi.SelectedItemsNumber)
+
+  assert_eq(ItemsCount,PS(0,INV,MODE)) -- invert
+  pi = assert_table(panel.GetPanelInfo(1))
+  assert_eq(ItemsCount, pi.SelectedItemsNumber)
+
+  assert_eq(0,PS(0,INV,MODE)) -- invert again (return value is the selection count, contrary to docs)
+  pi = assert_table(panel.GetPanelInfo(1))
+  assert_eq(0, pi.SelectedItemsNumber)
+
+  --------------------------------------------------------------
+  MODE = 1
+  assert_eq(1,PS(0,ADD,MODE,5))
+  pi = assert_table(panel.GetPanelInfo(1))
+  assert_eq(1, pi.SelectedItemsNumber)
+
+  assert_eq(1,PS(0,RM,MODE,5))
+  pi = assert_table(panel.GetPanelInfo(1))
+  assert_eq(0, pi.SelectedItemsNumber)
+
+  assert_eq(1,PS(0,INV,MODE,5))
+  pi = assert_table(panel.GetPanelInfo(1))
+  assert_eq(1, pi.SelectedItemsNumber)
+
+  assert_eq(1,PS(0,INV,MODE,5))
+  pi = assert_table(panel.GetPanelInfo(1))
+  assert_eq(0, pi.SelectedItemsNumber)
+
+  --------------------------------------------------------------
+  MODE = 2
+  local list = dir.."/FarEng.hlf\nFarEng.lng" -- the 1-st file with path, the 2-nd without
+  assert_eq(2,PS(0,ADD,MODE,list))
+  pi = assert_table(panel.GetPanelInfo(1))
+  assert_eq(2, pi.SelectedItemsNumber)
+
+  assert_eq(2,PS(0,RM,MODE,list))
+  pi = assert_table(panel.GetPanelInfo(1))
+  assert_eq(0, pi.SelectedItemsNumber)
+
+  assert_eq(2,PS(0,INV,MODE,list))
+  pi = assert_table(panel.GetPanelInfo(1))
+  assert_eq(2, pi.SelectedItemsNumber)
+
+  assert_eq(2,PS(0,INV,MODE,list))
+  pi = assert_table(panel.GetPanelInfo(1))
+  assert_eq(0, pi.SelectedItemsNumber)
+
+  --------------------------------------------------------------
+  MODE = 3
+  local mask = "*.hlf;*.lng"
+  local count = 0
+  for i=1,pi.ItemsNumber do
+    local item = assert_table(panel.GetPanelItem(1,i))
+    if far.CmpNameList(mask, item.FileName) then count=count+1 end
+  end
+  assert(count>1, "not enough files to test")
+
+  assert_eq(count,PS(0,ADD,MODE,mask))
+  pi = assert_table(panel.GetPanelInfo(1))
+  assert_eq(count, pi.SelectedItemsNumber)
+
+  assert_eq(count,PS(0,RM,MODE,mask))
+  pi = assert_table(panel.GetPanelInfo(1))
+  assert_eq(0, pi.SelectedItemsNumber)
+
+  assert_eq(count,PS(0,INV,MODE,mask))
+  pi = assert_table(panel.GetPanelInfo(1))
+  assert_eq(count, pi.SelectedItemsNumber)
+
+  assert_eq(count,PS(0,INV,MODE,mask))
+  pi = assert_table(panel.GetPanelInfo(1))
+  assert_eq(0, pi.SelectedItemsNumber)
+end
+
 function MT.test_Panel()
   test_Panel_Item()
 
@@ -909,7 +1004,7 @@ function MT.test_Panel()
   assert(Panel.FExist(0,":")==0)
   assert(Panel.FExist(1,":")==0)
 
-  assert_func (Panel.Select)
+  Test_Panel_Select()
   test_Panel_SetPath()
   assert_func (Panel.SetPos)
   assert_func (Panel.SetPosIdx)
@@ -1570,31 +1665,31 @@ end
 
 local function test_PluginsControl()
   local mod = assert(far.PluginStartupInfo().ModuleName)
-	local hnd1 = far.FindPlugin("PFM_MODULENAME", mod)
-	assert_userdata(hnd1)
-	local hnd2 = far.FindPlugin("PFM_SYSID", far.GetPluginId())
-	assert_eq(hnd1, hnd2)
+  local hnd1 = far.FindPlugin("PFM_MODULENAME", mod)
+  assert_userdata(hnd1)
+  local hnd2 = far.FindPlugin("PFM_SYSID", far.GetPluginId())
+  assert_eq(hnd1, hnd2)
 
-	local info = far.GetPluginInformation(hnd1)
-	assert_table(info)
-	assert_table(info.GInfo)
-	assert_table(info.PInfo)
-	assert_eq(mod, info.ModuleName)
-	assert_num(info.Flags)
-	assert(0 ~= band(info.Flags, F.FPF_LOADED))
-	assert(0 == band(info.Flags, F.FPF_ANSI))
+  local info = far.GetPluginInformation(hnd1)
+  assert_table(info)
+  assert_table(info.GInfo)
+  assert_table(info.PInfo)
+  assert_eq(mod, info.ModuleName)
+  assert_num(info.Flags)
+  assert(0 ~= band(info.Flags, F.FPF_LOADED))
+  assert(0 == band(info.Flags, F.FPF_ANSI))
 
-	local pluglist = far.GetPlugins()
-	assert_table(pluglist)
-	assert(#pluglist >= 1)
-	for _,plug in ipairs(pluglist) do
-	  assert_userdata(plug)
-	end
+  local pluglist = far.GetPlugins()
+  assert_table(pluglist)
+  assert(#pluglist >= 1)
+  for _,plug in ipairs(pluglist) do
+    assert_userdata(plug)
+  end
 
-	assert_func(far.ClearPluginCache)
-	assert_func(far.LoadPlugin)
-	assert_func(far.ForcedLoadPlugin)
-	assert_func(far.UnloadPlugin)
+  assert_func(far.ClearPluginCache)
+  assert_func(far.LoadPlugin)
+  assert_func(far.ForcedLoadPlugin)
+  assert_func(far.UnloadPlugin)
 end
 
 local function test_far_timer()
