@@ -55,7 +55,6 @@ set(MY_LIST
   lm_sky.lng
   lm_spa.lng
   api.lua
-  farapi.lua
   keymacro.lua
   lang.lua
   luamacro.lua
