@@ -54,7 +54,6 @@ enum DialogItemTypes
 
 
 
-
 enum FarDialogItemFlags
 {
 	DIF_NONE                  = 0,
@@ -216,6 +215,7 @@ enum FarMessagesProc
 
 
 	DM_USER=0x4000,
+
 };
 
 enum FARCHECKEDSTATE
@@ -408,6 +408,7 @@ enum FARDIALOGFLAGS
 	FDLG_SMALLDIALOG         = 0x00000002,
 	FDLG_NODRAWSHADOW        = 0x00000004,
 	FDLG_NODRAWPANEL         = 0x00000008,
+	FDLG_NONMODAL            = 0x00000010,
 	FDLG_KEEPCONSOLETITLE    = 0x00000020,
 	FDLG_REGULARIDLE         = 0x00000040 // causes dialog to receive DN_ENTERIDLE at least once per second
 };
@@ -526,6 +527,7 @@ struct FAR_FIND_DATA
 	uint64_t nFileSize;
 	DWORD    dwFileAttributes;
 	DWORD    dwUnixMode;
+	const wchar_t *lpwszFileName;
 };
 
 struct PluginPanelItem
@@ -603,6 +605,7 @@ struct PanelInfo
 	int SortMode;
 	DWORD Flags;
 	DWORD Reserved;
+	HANDLE PluginHandle;
 };
 
 
@@ -628,43 +631,47 @@ struct FarPanelLocation
 
 enum FILE_CONTROL_COMMANDS
 {
-	FCTL_CLOSEPLUGIN,
-	FCTL_GETPANELINFO,
-	FCTL_UPDATEPANEL,
-	FCTL_REDRAWPANEL,
-	FCTL_GETCMDLINE,
-	FCTL_SETCMDLINE,
-	FCTL_SETSELECTION,
-	FCTL_SETVIEWMODE,
-	FCTL_INSERTCMDLINE,
-	FCTL_SETUSERSCREEN,
-	FCTL_SETPANELDIR,
-	FCTL_SETCMDLINEPOS,
-	FCTL_GETCMDLINEPOS,
-	FCTL_SETSORTMODE,
-	FCTL_SETSORTORDER,
-	FCTL_GETCMDLINESELECTEDTEXT,
-	FCTL_SETCMDLINESELECTION,
-	FCTL_GETCMDLINESELECTION,
-	FCTL_CHECKPANELSEXIST,
-	FCTL_SETNUMERICSORT,
-	FCTL_GETUSERSCREEN,
-	FCTL_ISACTIVEPANEL,
-	FCTL_GETPANELITEM,
-	FCTL_GETSELECTEDPANELITEM,
-	FCTL_GETCURRENTPANELITEM,
-	FCTL_GETPANELDIR,
-	FCTL_GETCOLUMNTYPES,
-	FCTL_GETCOLUMNWIDTHS,
-	FCTL_BEGINSELECTION,
-	FCTL_ENDSELECTION,
-	FCTL_CLEARSELECTION,
-	FCTL_SETDIRECTORIESFIRST,
-	FCTL_GETPANELFORMAT,
-	FCTL_GETPANELHOSTFILE,
-	FCTL_SETCASESENSITIVESORT,
-	FCTL_GETPANELPLUGINHANDLE, // Param2 points to value of type HANDLE, sets that value to handle of plugin that renders that panel or INVALID_HANDLE_VALUE
-	FCTL_SETPANELLOCATION, // Param2 points to FarPanelLocation
+	FCTL_CLOSEPLUGIN                = 0,
+	FCTL_GETPANELINFO               = 1,
+	FCTL_UPDATEPANEL                = 2,
+	FCTL_REDRAWPANEL                = 3,
+	FCTL_GETCMDLINE                 = 4,
+	FCTL_SETCMDLINE                 = 5,
+	FCTL_SETSELECTION               = 6,
+	FCTL_SETVIEWMODE                = 7,
+	FCTL_INSERTCMDLINE              = 8,
+	FCTL_SETUSERSCREEN              = 9,
+	FCTL_SETPANELDIR                = 10,
+	FCTL_SETCMDLINEPOS              = 11,
+	FCTL_GETCMDLINEPOS              = 12,
+	FCTL_SETSORTMODE                = 13,
+	FCTL_SETSORTORDER               = 14,
+	FCTL_GETCMDLINESELECTEDTEXT     = 15,
+	FCTL_SETCMDLINESELECTION        = 16,
+	FCTL_GETCMDLINESELECTION        = 17,
+	FCTL_CHECKPANELSEXIST           = 18,
+	FCTL_SETNUMERICSORT             = 19,
+	FCTL_GETUSERSCREEN              = 20,
+	FCTL_ISACTIVEPANEL              = 21,
+	FCTL_GETPANELITEM               = 22,
+	FCTL_GETSELECTEDPANELITEM       = 23,
+	FCTL_GETCURRENTPANELITEM        = 24,
+	FCTL_GETPANELDIR                = 25,
+	FCTL_GETCOLUMNTYPES             = 26,
+	FCTL_GETCOLUMNWIDTHS            = 27,
+	FCTL_BEGINSELECTION             = 28,
+	FCTL_ENDSELECTION               = 29,
+	FCTL_CLEARSELECTION             = 30,
+	FCTL_SETDIRECTORIESFIRST        = 31,
+	FCTL_GETPANELFORMAT             = 32,
+	FCTL_GETPANELHOSTFILE           = 33,
+	FCTL_SETCASESENSITIVESORT       = 34,
+	FCTL_GETPANELPLUGINHANDLE       = 35, // Param2 points to value of type HANDLE, sets that value to handle of plugin that renders that panel or INVALID_HANDLE_VALUE
+	FCTL_SETPANELLOCATION           = 36, // Param2 points to FarPanelLocation
+	FCTL_RESERVED1                  = 37,
+	FCTL_RESERVED2                  = 38,
+	FCTL_GETPANELPREFIX             = 39,
+	FCTL_SETACTIVEPANEL             = 40,
 };
 
 typedef int (__stdcall *FARAPICONTROL)(
@@ -685,6 +692,7 @@ typedef HANDLE(__stdcall *FARAPISAVESCREEN)(int X1, int Y1, int X2, int Y2);
 
 typedef void (__stdcall *FARAPIRESTORESCREEN)(HANDLE hScreen);
 
+typedef void (__stdcall *FARAPIFREESCREEN)(HANDLE hScreen);
 
 typedef int (__stdcall *FARAPIGETDIRLIST)(
     const wchar_t *Dir,
@@ -816,6 +824,8 @@ enum ADVANCED_CONTROL_COMMANDS
 	ACTL_GETCURSORPOS         = 33,
 	ACTL_SETCURSORPOS         = 34,
 	ACTL_PROGRESSNOTIFY       = 35,
+
+	ACTL_WINPORTBACKEND       = 40,
 };
 
 enum FAR_MACRO_CONTROL_COMMANDS
@@ -830,6 +840,7 @@ enum FAR_MACRO_CONTROL_COMMANDS
 	MCTL_GETLASTERROR      = 9,
 	MCTL_EXECSTRING        = 10,
 };
+
 
 enum FarSystemSettings
 {
@@ -918,6 +929,7 @@ struct ActlEjectMedia
 	DWORD Flags;
 };
 
+
 enum FARKEYMACROFLAGS
 {
 	KMFLAGS_SILENTCHECK         = 0x00000001,
@@ -953,7 +965,6 @@ enum FARMACROAREA
 	MACROAREA_FINDFOLDER        =13,
 	MACROAREA_USERMENU          =14,
 	MACROAREA_AUTOCOMPLETION    =15,
-
 	MACROAREA_COMMON            =255,
 };
 
@@ -1136,7 +1147,7 @@ struct OpenMacroInfo
 	struct FarMacroValue *Values;
 };
 
-typedef intptr_t (__stdcall *FARAPICALLFAR)(intptr_t CheckCode, struct FarMacroCall* Data);
+typedef int (__stdcall *FARAPICALLFAR)(int CheckCode, struct FarMacroCall* Data);
 
 struct MacroPrivateInfo
 {
@@ -1289,8 +1300,14 @@ struct ViewerInfo
 };
 
 typedef int (__stdcall *FARAPIVIEWERCONTROL)(
-    int Command,
-    void *Param
+	int Command,
+	void *Param
+);
+
+typedef int (__stdcall *FARAPIVIEWERCONTROLV2)(
+	int ViewerID,
+	int Command,
+	void *Param
 );
 
 enum VIEWER_EVENTS
@@ -1328,40 +1345,46 @@ enum SYNCHRO_EVENTS
 
 enum EDITOR_CONTROL_COMMANDS
 {
-	ECTL_GETSTRING,
-	ECTL_SETSTRING,
-	ECTL_INSERTSTRING,
-	ECTL_DELETESTRING,
-	ECTL_DELETECHAR,
-	ECTL_INSERTTEXT,
-	ECTL_GETINFO,
-	ECTL_SETPOSITION,
-	ECTL_SELECT,
-	ECTL_REDRAW,
-	ECTL_TABTOREAL,
-	ECTL_REALTOTAB,
-	ECTL_EXPANDTABS,
-	ECTL_SETTITLE,
-	ECTL_READINPUT,
-	ECTL_PROCESSINPUT,
-	ECTL_ADDCOLOR,
-	ECTL_GETCOLOR,
-	ECTL_SAVEFILE,
-	ECTL_QUIT,
-	ECTL_SETKEYBAR,
-	ECTL_PROCESSKEY,
-	ECTL_SETPARAM,
-	ECTL_GETBOOKMARKS,
-	ECTL_TURNOFFMARKINGBLOCK,
-	ECTL_DELETEBLOCK,
-	ECTL_ADDSTACKBOOKMARK,
-	ECTL_PREVSTACKBOOKMARK,
-	ECTL_NEXTSTACKBOOKMARK,
-	ECTL_CLEARSTACKBOOKMARKS,
-	ECTL_DELETESTACKBOOKMARK,
-	ECTL_GETSTACKBOOKMARKS,
-	ECTL_UNDOREDO,
-	ECTL_GETFILENAME,
+	ECTL_GETSTRING                  = 0,
+	ECTL_SETSTRING                  = 1,
+	ECTL_INSERTSTRING               = 2,
+	ECTL_DELETESTRING               = 3,
+	ECTL_DELETECHAR                 = 4,
+	ECTL_INSERTTEXT                 = 5,
+	ECTL_GETINFO                    = 6,
+	ECTL_SETPOSITION                = 7,
+	ECTL_SELECT                     = 8,
+	ECTL_REDRAW                     = 9,
+	ECTL_TABTOREAL                  = 10,
+	ECTL_REALTOTAB                  = 11,
+	ECTL_EXPANDTABS                 = 12,
+	ECTL_SETTITLE                   = 13,
+	ECTL_READINPUT                  = 14,
+	ECTL_PROCESSINPUT               = 15,
+	ECTL_ADDCOLOR                   = 16,
+	ECTL_GETCOLOR                   = 17,
+	ECTL_SAVEFILE                   = 18,
+	ECTL_QUIT                       = 19,
+	ECTL_SETKEYBAR                  = 20,
+	ECTL_PROCESSKEY                 = 21,
+	ECTL_SETPARAM                   = 22,
+	ECTL_GETBOOKMARKS               = 23,
+	ECTL_TURNOFFMARKINGBLOCK        = 24,
+	ECTL_DELETEBLOCK                = 25,
+	ECTL_ADDSTACKBOOKMARK           = 26,
+	ECTL_PREVSTACKBOOKMARK          = 27,
+	ECTL_NEXTSTACKBOOKMARK          = 28,
+	ECTL_CLEARSTACKBOOKMARKS        = 29,
+	ECTL_DELETESTACKBOOKMARK        = 30,
+	ECTL_GETSTACKBOOKMARKS          = 31,
+	ECTL_UNDOREDO                   = 32,
+	ECTL_GETFILENAME                = 33,
+	ECTL_ADDTRUECOLOR               = 34,
+	ECTL_GETTRUECOLOR               = 35,
+
+	ECTL_RESERVED1                  = 36,
+	ECTL_RESERVED2                  = 37,
+	ECTL_GETTITLE                   = 38,
 };
 
 enum EDITOR_SETPARAMETER_TYPES
@@ -1379,6 +1402,7 @@ enum EDITOR_SETPARAMETER_TYPES
 	ESPT_SHOWWHITESPACE,
 	ESPT_SETBOM,
 };
+
 
 
 struct EditorSetParameter
@@ -1413,6 +1437,8 @@ struct EditorUndoRedo
 struct EditorGetString
 {
 	int StringNumber;
+	const wchar_t *StringText;
+	const wchar_t *StringEOL;
 	int StringLength;
 	int SelStart;
 	int SelEnd;
@@ -1528,6 +1554,8 @@ struct EditorConvertPos
 enum EDITORCOLORFLAGS
 {
 	ECF_TAB1 = 0x10000,
+	ECF_TABMARKFIRST = ECF_TAB1,
+	ECF_AUTODELETE = 0x20000,
 };
 
 struct EditorColor
@@ -1539,6 +1567,21 @@ struct EditorColor
 	int Color;
 };
 
+struct FarTrueColor
+{
+	unsigned char R;
+	unsigned char G;
+	unsigned char B;
+	unsigned char Flags; // bit one - 'active' flag, others - ignored and must be set to zero
+};
+
+struct EditorTrueColor
+{
+	struct EditorColor Base;
+	struct FarTrueColor TrueFore;
+	struct FarTrueColor TrueBack;
+};
+
 struct EditorSaveFile
 {
 	const wchar_t *FileName;
@@ -1547,8 +1590,14 @@ struct EditorSaveFile
 };
 
 typedef int (__stdcall *FARAPIEDITORCONTROL)(
-    int Command,
-    void *Param
+	int Command,
+	void *Param
+);
+
+typedef int (__stdcall *FARAPIEDITORCONTROLV2)(
+	int EditorID,
+	int Command,
+	void *Param
 );
 
 enum INPUTBOXFLAGS
@@ -1580,6 +1629,13 @@ typedef int (__stdcall *FARAPIPLUGINSCONTROL)(
     LONG_PTR Param2
 );
 
+typedef intptr_t (__stdcall *FARAPIPLUGINSCONTROLV3)(
+	HANDLE hHandle,
+	int Command,
+	intptr_t Param1,
+	void* Param2
+);
+
 typedef int (__stdcall *FARAPIFILEFILTERCONTROL)(
     HANDLE hHandle,
     int Command,
@@ -1605,12 +1661,17 @@ typedef int (__stdcall *FARAPICOLORDIALOG)(
     WORD*   Color,
     int     bAddTransparent
 );
+
+typedef int (__stdcall *FARAPIGETFILEENCODING)(
+    const wchar_t *FileName
+);
 typedef int (__cdecl *FARSTDSNPRINTF)(wchar_t *Buffer,size_t Sizebuf,const wchar_t *Format,...);
 typedef int (__cdecl *FARSTDSSCANF)(const wchar_t *Buffer, const wchar_t *Format,...);
 typedef void (__stdcall *FARSTDQSORT)(void *base, size_t nelem, size_t width, int (__cdecl *fcmp)(const void *, const void *));
 typedef void (__stdcall *FARSTDQSORTEX)(void *base, size_t nelem, size_t width, int (__cdecl *fcmp)(const void *, const void *,void *userparam),void *userparam);
 typedef void   *(__stdcall *FARSTDBSEARCH)(const void *key, const void *base, size_t nelem, size_t width, int (__cdecl *fcmp)(const void *, const void *));
 typedef int (__stdcall *FARSTDGETFILEOWNER)(const wchar_t *Computer,const wchar_t *Name,wchar_t *Owner,int Size);
+typedef int (__stdcall *FARSTDGETFILEGROUP)(const wchar_t *Computer,const wchar_t *Name,wchar_t *Group,int Size);
 typedef int (__stdcall *FARSTDGETNUMBEROFLINKS)(const wchar_t *Name);
 typedef int (__stdcall *FARSTDATOI)(const wchar_t *s);
 typedef int64_t (__stdcall *FARSTDATOI64)(const wchar_t *s);
@@ -1643,10 +1704,15 @@ typedef int (__stdcall *FARSTDLOCALSTRNICMP)(const wchar_t *s1,const wchar_t *s2
 
 enum PROCESSNAME_FLAGS
 {
-	PN_CMPNAME      = 0x00000000U,
-	PN_CMPNAMELIST  = 0x00010000U,
-	PN_GENERATENAME = 0x00020000U,
-	PN_SKIPPATH     = 0x01000000U,
+	PN_CMPNAME          = 0x00000000U,
+	PN_CMPNAMELIST      = 0x00010000U,
+	PN_GENERATENAME     = 0x00020000U,
+	PN_CHECKMASK        = 0x00030000U,
+	PN_SKIPPATH         = 0x01000000U,
+	PN_SHOWERRORMESSAGE = 0x02000000U,
+	PN_RESERVED1        = 0x04000000U,
+	PN_CASEINSENSITIVE  = 0x08000000U,
+	PN_NONE             = 0
 };
 
 typedef int (__stdcall *FARSTDPROCESSNAME)(const wchar_t *param1, wchar_t *param2, DWORD size, DWORD flags);
@@ -1666,6 +1732,8 @@ typedef size_t (__stdcall *FARSTDKEYTOKEYNAME)(int Key,wchar_t *KeyText,size_t S
 typedef wchar_t*(__stdcall *FARSTDXLAT)(wchar_t *Line,int StartPos,int EndPos,DWORD Flags);
 
 typedef int (__stdcall *FARSTDKEYNAMETOKEY)(const wchar_t *Name);
+
+typedef BOOL (__stdcall *FARSTDKEYNAMETOINPUTRECORD)(const wchar_t *Name,INPUT_RECORD* Key);
 
 typedef int (__stdcall *FRSUSERFUNC)(
     const struct FAR_FIND_DATA *FData,
@@ -1713,11 +1781,12 @@ typedef DWORD (__stdcall *FARGETCURRENTDIRECTORY)(DWORD Size,wchar_t* Buffer);
 
 enum EXECUTEFLAGS
 {
-	EF_HIDEOUT = 0x01,
-	EF_NOWAIT = 0x02,
-	EF_SUDO = 0x04,
-	EF_NOTIFY = 0x08,
-	EF_NOCMDPRINT = 0x10
+	EF_HIDEOUT = 0x01,    // dont display output of the command
+	EF_NOWAIT = 0x02,     // dont wait for command completion
+	EF_SUDO = 0x04,       // command must be run with root priviledges
+	EF_NOTIFY = 0x08,     // notify when command completed (if such notifications enabled in settings)
+	EF_NOCMDPRINT = 0x10, // dont print command in command line nor include it to history
+	EF_OPEN = 0x20        // use desktop shell (if present) to open command (e.g. URLs, documents..)
 };
 
 typedef int (__stdcall *FAREXECUTE)(const wchar_t *CmdStr, unsigned int ExecFlags);
@@ -1725,6 +1794,8 @@ typedef int (__stdcall *FAREXECUTE_LIBRARY)(const wchar_t *Library, const wchar_
 typedef void (__stdcall *FARDISPLAYNOTIFICATION)(const wchar_t *action, const wchar_t *object);
 typedef int (__stdcall *FARDISPATCHNTRTHRDCALLS)();
 typedef void (__stdcall *FARBACKGROUNDTASK)(const wchar_t *Info, BOOL Started);
+typedef size_t (__stdcall *FARSTRCELLSCOUNT)(const wchar_t *Str, size_t CharsCount);
+typedef size_t (__stdcall *FARSTRSIZEOFCELLS)(const wchar_t *Str, size_t CharsCount, size_t *CellsCount, BOOL RoundUp);
 
 enum BOX_DEF_SYMBOLS
 {
@@ -1840,6 +1911,13 @@ typedef struct FarStandardFunctions
 	FARDISPLAYNOTIFICATION     DisplayNotification;
 	FARDISPATCHNTRTHRDCALLS    DispatchInterThreadCalls;
 	FARBACKGROUNDTASK          BackgroundTask;
+	FARSTRCELLSCOUNT           StrCellsCount;
+	FARSTRSIZEOFCELLS          StrSizeOfCells;
+	void*                      RESERVED[2];
+
+	FARAPIGETFILEENCODING      GetFileEncoding;
+	FARSTDKEYNAMETOINPUTRECORD FarNameToInputRecord;
+	FARSTDGETFILEGROUP         GetFileGroup;
 } FARSTANDARDFUNCTIONS;
 
 struct PluginStartupInfo
@@ -1883,8 +1961,13 @@ struct PluginStartupInfo
 
 	void*                  RESERVED[2];
 	FARAPIMACROCONTROL     MacroControl;
+	FARAPIEDITORCONTROLV2  EditorControlV2;
+	FARAPIVIEWERCONTROLV2  ViewerControlV2;
+	FARAPIPLUGINSCONTROLV3 PluginsControlV3;
 	FARAPICOLORDIALOG      ColorDialog;
+	FARAPIFREESCREEN       FreeScreen;
 	const void*            Private;
+	void*                  LuafarHandle;
 };
 
 
@@ -2010,24 +2093,24 @@ enum OPERATION_MODES
 
 struct OpenPluginInfo
 {
-	int                   StructSize;
-	DWORD                 Flags;
-	const wchar_t           *HostFile;
-	const wchar_t           *CurDir;
-	const wchar_t           *Format;
-	const wchar_t           *PanelTitle;
-	const struct InfoPanelLine *InfoLines;
-	int                   InfoLinesNumber;
-	const wchar_t * const   *DescrFiles;
-	int                   DescrFilesNumber;
-	const struct PanelMode *PanelModesArray;
-	int                   PanelModesNumber;
-	int                   StartPanelMode;
-	int                   StartSortMode;
-	int                   StartSortOrder;
-	const struct KeyBarTitles *KeyBar;
-	const wchar_t           *ShortcutData;
-	long                  Reserved;
+	int                           StructSize;
+	DWORD                         Flags;
+	const wchar_t*                HostFile;
+	const wchar_t*                CurDir;
+	const wchar_t*                Format;
+	const wchar_t*                PanelTitle;
+	const struct InfoPanelLine*   InfoLines;
+	int                           InfoLinesNumber;
+	const wchar_t* const*         DescrFiles;
+	int                           DescrFilesNumber;
+	const struct PanelMode*       PanelModesArray;
+	int                           PanelModesNumber;
+	int                           StartPanelMode;
+	int                           StartSortMode;
+	int                           StartSortOrder;
+	const struct KeyBarTitles*    KeyBar;
+	const wchar_t*                ShortcutData;
+	long                          Reserved;
 };
 
 enum OPENPLUGIN_OPENFROM
@@ -2076,12 +2159,29 @@ enum FAR_PLUGINS_CONTROL_COMMANDS
 	PCTL_UNLOADPLUGIN       = 1,
 	PCTL_FORCEDLOADPLUGIN   = 2,
 
-	PCTL_CACHEFORGET		= 3 // forgets cached information for specified plugin
+	PCTL_CACHEFORGET		= 3, // forgets cached information for specified plugin
+
+	PCTL_FINDPLUGIN           = 4,
+	PCTL_GETPLUGININFORMATION = 5,
+	PCTL_GETPLUGINS           = 6,
 };
 
 enum FAR_PLUGIN_LOAD_TYPE
 {
 	PLT_PATH = 0,
+};
+
+enum FAR_PLUGIN_FIND_TYPE
+{
+	PFM_SYSID      = 0,
+	PFM_MODULENAME = 1,
+};
+
+enum FAR_PLUGIN_FLAGS
+{
+	FPF_LOADED     = 0x00000001,
+	FPF_ANSI       = 0x10000000,
+	FPF_NONE       = 0,
 };
 
 enum FAR_FILE_FILTER_CONTROL_COMMANDS
@@ -2127,6 +2227,21 @@ struct RegExpSearch
 	int Count;
 	void* Reserved;
 };
+
+struct GlobalInfo
+{
+	size_t StructSize;
+	DWORD SysID;
+};
+
+struct FarGetPluginInformation
+{
+	size_t StructSize;
+	const wchar_t *ModuleName;
+	DWORD Flags;
+	struct PluginInfo *PInfo;
+	struct GlobalInfo *GInfo;
+};
 	void   __stdcall  PluginModuleOpen(const char *path);
 	void   __stdcall  ClosePluginW(HANDLE hPlugin);
 	int    __stdcall  CompareW(HANDLE hPlugin,const struct PluginPanelItem *Item1,const struct PluginPanelItem *Item2,unsigned int Mode);
@@ -2157,9 +2272,7 @@ struct RegExpSearch
 	int    __stdcall  SetDirectoryW(HANDLE hPlugin,const wchar_t *Dir,int OpMode);
 	int    __stdcall  SetFindListW(HANDLE hPlugin,const struct PluginPanelItem *PanelItem,int ItemsNumber);
 	void   __stdcall  SetStartupInfoW(const struct PluginStartupInfo *Info);
-	DWORD  __stdcall  GetGlobalInfoW();
-
+	void   __stdcall  GetGlobalInfoW(struct GlobalInfo *Info);
+	int    __stdcall  ProcessConsoleInputW(INPUT_RECORD *Rec);
 
 ]=]
-
-
