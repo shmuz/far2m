@@ -29,8 +29,6 @@ foreach(f ${EXPNAMES})
   list(APPEND EXPORTS "-DEXPORT_${f}")
 endforeach()
 
-target_link_libraries(${PROJECT_NAME} PRIVATE luafar)
-
 target_compile_definitions(${PROJECT_NAME} PRIVATE ${EXPORTS} "-DSYS_ID=${SYS_ID}")
 
 target_include_directories(${PROJECT_NAME} PRIVATE ../far/far2sdk)
@@ -41,7 +39,6 @@ set(INSTALL_DIR "${INSTALL_DIR}/Plugins/luafar/luamacro")
 set_target_properties(${PROJECT_NAME}
   PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${INSTALL_DIR}/plug"
-    LINK_FLAGS "-Wl,-rpath,../../"
     PREFIX ""
     SUFFIX ".far-plug-wide")
 
@@ -55,6 +52,7 @@ set(MY_LIST
   lm_sky.lng
   lm_spa.lng
   api.lua
+  farapi.lua
   keymacro.lua
   lang.lua
   luamacro.lua
