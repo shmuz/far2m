@@ -66,7 +66,7 @@ local LoadMacrosDone
 local LoadingInProgress
 local EnumState = {}
 local Events
-local EventGroups = {"dialogevent","editorevent","editorinput","exitfar","viewerevent", "consoleinput"}
+local EventGroups = {"dialogevent","editorevent","editorinput","exitfar","viewerevent","consoleinput","mayexitfar"}
 local AddedMenuItems
 local AddedPrefixes
 local IdSet
@@ -185,16 +185,19 @@ local function EV_Handler (macros, filename, ...)
     if priorities[i] < 0 then break end
     local ret = macros[i].action(...)
     if ret then
-      if macros==Events.dialogevent or macros==Events.editorinput or macros==Events.commandline then
+      if macros==Events.dialogevent or macros==Events.editorinput then
         return ret
       elseif macros==Events.consoleinput then
         if ret ~= 0 then return ret end
       end
+    else
+      if macros==Events.mayexitfar then return false end
     end
   end
+  if macros==Events.mayexitfar then return true end
 end
 
-function export.ProcessEditorEvent (EditorID, Event, Param)
+local function export_ProcessEditorEvent (EditorID, Event, Param)
   return EV_Handler(Events.editorevent, editor.GetFileName(nil), EditorID, Event, Param)
 end
 
@@ -204,6 +207,10 @@ end
 
 local function export_ExitFAR (unload)
   return EV_Handler(Events.exitfar, nil, not not unload)
+end
+
+local function export_MayExitFAR ()
+  return EV_Handler(Events.mayexitfar)
 end
 
 local function export_ProcessDialogEvent (Event, Param)
@@ -643,7 +650,9 @@ local function LoadMacros (unload, paths)
   end
 
   export.ExitFAR = nil
+  export.MayExitFAR = nil
   export.ProcessDialogEvent = nil
+  export.ProcessEditorEvent = nil
   export.ProcessEditorInput = nil
   export.ProcessViewerEvent = nil
   export.ProcessConsoleInput = nil
@@ -794,10 +803,12 @@ local function LoadMacros (unload, paths)
 
     far.RecursiveSearch (MacroDirs.MainPath.."/internal", "*.lua", LoadRecordedFile, 0)
 
-    export.ExitFAR = Events.exitfar[1] and export_ExitFAR
-    export.ProcessDialogEvent = Events.dialogevent[1] and export_ProcessDialogEvent
-    export.ProcessEditorInput = Events.editorinput[1] and export_ProcessEditorInput
-    export.ProcessViewerEvent = Events.viewerevent[1] and export_ProcessViewerEvent
+    export.ExitFAR             = Events.exitfar[1]      and export_ExitFAR
+    export.MayExitFAR          = Events.mayexitfar[1]   and export_MayExitFAR
+    export.ProcessDialogEvent  = Events.dialogevent[1]  and export_ProcessDialogEvent
+    export.ProcessEditorEvent  = Events.editorevent[1]  and export_ProcessEditorEvent
+    export.ProcessEditorInput  = Events.editorinput[1]  and export_ProcessEditorInput
+    export.ProcessViewerEvent  = Events.viewerevent[1]  and export_ProcessViewerEvent
     export.ProcessConsoleInput = Events.consoleinput[1] and export_ProcessConsoleInput
     if ContentColumns[1] then
       export.GetContentFields = export_GetContentFields

@@ -8,7 +8,7 @@ local function assert_str(v)       assert(type(v)=="string")    return v; end
 local function assert_table(v)     assert(type(v)=="table")     return v; end
 local function assert_bool(v)      assert(type(v)=="boolean")   return v; end
 local function assert_func(v)      assert(type(v)=="function")  return v; end
-local function assert_userdata(v)  assert(type(v)=="userdata")  return v; end
+local function assert_udata(v)     assert(type(v)=="userdata")  return v; end
 local function assert_nil(v)       assert(v==nil)               return v; end
 local function assert_false(v)     assert(v==false)             return v; end
 local function assert_true(v)      assert(v==true)              return v; end
@@ -176,7 +176,7 @@ local function test_mf_eval()
   assert_eq (eval("5 7",1,"moonscript"), 11)
 
   -- test with Mode==2
-  local Id = assert_userdata(far.MacroAdd(nil,nil,"CtrlA",[[
+  local Id = assert_udata(far.MacroAdd(nil,nil,"CtrlA",[[
     local key = akey(1,0)
     assert(key=="CtrlShiftF12" or key=="RCtrlShiftF12")
     assert(akey(1,1)=="CtrlA")
@@ -794,10 +794,10 @@ end
 function MT.test_Drv()
   Keys"AltF1"
   assert_num (Drv.ShowMode)
-  assert(Drv.ShowPos == 1)
+  assert_eq (Drv.ShowPos, 1)
   Keys"Esc AltF2"
   assert_num (Drv.ShowMode)
-  assert(Drv.ShowPos == 2)
+  assert_eq (Drv.ShowPos, 2)
   Keys"Esc"
 end
 
@@ -820,36 +820,36 @@ end
 
 function MT.test_XPanel(pan) -- (@pan: either APanel or PPanel)
   assert_bool (pan.Bof)
-  assert_num (pan.ColumnCount)
-  assert_num (pan.CurPos)
-  assert_str (pan.Current)
-  assert_num (pan.DriveType)
+  assert_num  (pan.ColumnCount)
+  assert_num  (pan.CurPos)
+  assert_str  (pan.Current)
+  assert_num  (pan.DriveType)
   assert_bool (pan.Empty)
   assert_bool (pan.Eof)
   assert_bool (pan.FilePanel)
   assert_bool (pan.Filter)
   assert_bool (pan.Folder)
-  assert_str (pan.Format)
-  assert_num (pan.Height)
-  assert_str (pan.HostFile)
-  assert_num (pan.ItemCount)
+  assert_str  (pan.Format)
+  assert_num  (pan.Height)
+  assert_str  (pan.HostFile)
+  assert_num  (pan.ItemCount)
   assert_bool (pan.Left)
-  assert_num (pan.OPIFlags)
-  assert_str (pan.Path)
-  assert_str (pan.Path0)
+  assert_num  (pan.OPIFlags)
+  assert_str  (pan.Path)
+  assert_str  (pan.Path0)
   assert_bool (pan.Plugin)
-  assert_str (pan.Prefix)
+  assert_str  (pan.Prefix)
   assert_bool (pan.Root)
-  assert_num (pan.SelCount)
+  assert_num  (pan.SelCount)
   assert_bool (pan.Selected)
-  assert_num (pan.Type)
-  assert_str (pan.UNCPath)
+  assert_num  (pan.Type)
+  assert_str  (pan.UNCPath)
   assert_bool (pan.Visible)
-  assert_num (pan.Width)
+  assert_num  (pan.Width)
 
   if pan == APanel then
-    Keys "End"  assert(pan.Eof==true)
-    Keys "Home" assert(pan.Bof==true)
+    Keys "End"  assert_true(pan.Eof)
+    Keys "Home" assert_true(pan.Bof)
   end
 end
 
@@ -888,14 +888,14 @@ local function test_Panel_SetPath()
   local pdir = "/bin"
   local adir = "/usr/bin"
   local afile = "ldd"
-  assert(true == Panel.SetPath(1, pdir))
-  assert(true == Panel.SetPath(0, adir, afile))
-  assert(pdir == panel.GetPanelDirectory(0))
-  assert(adir == panel.GetPanelDirectory(1))
-  assert(panel.GetCurrentPanelItem(1).FileName == afile)
+  assert_true(Panel.SetPath(1, pdir))
+  assert_true(Panel.SetPath(0, adir, afile))
+  assert_eq (pdir, panel.GetPanelDirectory(0))
+  assert_eq (adir, panel.GetPanelDirectory(1))
+  assert_eq (panel.GetCurrentPanelItem(1).FileName, afile)
   -- restore
-  assert(true == Panel.SetPath(1, pdir_old))
-  assert(true == Panel.SetPath(0, adir_old))
+  assert_true(Panel.SetPath(1, pdir_old))
+  assert_true(Panel.SetPath(0, adir_old))
   actl.Commit()
 end
 
@@ -996,11 +996,11 @@ end
 function MT.test_Panel()
   test_Panel_Item()
 
-  assert(Panel.FAttr(0,":")==-1)
-  assert(Panel.FAttr(1,":")==-1)
+  assert_eq (Panel.FAttr(0,":"), -1)
+  assert_eq (Panel.FAttr(1,":"), -1)
 
-  assert(Panel.FExist(0,":")==0)
-  assert(Panel.FExist(1,":")==0)
+  assert_eq (Panel.FExist(0,":"), 0)
+  assert_eq (Panel.FExist(1,":"), 0)
 
   Test_Panel_Select()
   test_Panel_SetPath()
@@ -1010,33 +1010,33 @@ end
 
 function MT.test_Dlg()
   Keys"F7 a b c"
-  assert(Area.Dialog)
-  assert(Dlg.Id == "FAD00DBE-3FFF-4095-9232-E1CC70C67737")
-  assert(Dlg.Owner == 0)
+  assert_true(Area.Dialog)
+  assert_eq(Dlg.Id, "FAD00DBE-3FFF-4095-9232-E1CC70C67737")
+  assert_eq(Dlg.Owner, 0)
   assert(Dlg.ItemCount > 6)
-  assert(Dlg.ItemType == 4)
-  assert(Dlg.CurPos == 3)
-  assert(Dlg.PrevPos == 0)
+  assert_eq(Dlg.ItemType, 4)
+  assert_eq(Dlg.CurPos, 3)
+  assert_eq(Dlg.PrevPos, 0)
 
   Keys"Tab"
   local pos = Dlg.CurPos
   assert(Dlg.CurPos > 3)
-  assert(Dlg.PrevPos == 3)
-  assert(pos == Dlg.SetFocus(3))
-  assert(pos == Dlg.PrevPos)
+  assert_eq(Dlg.PrevPos, 3)
+  assert_eq(pos, Dlg.SetFocus(3))
+  assert_eq(pos, Dlg.PrevPos)
 
-  assert(Dlg.GetValue(0,0) == Dlg.ItemCount)
+  assert_eq(Dlg.GetValue(0,0), Dlg.ItemCount)
   Keys"Esc"
 end
 
 function MT.test_Plugin()
-  assert(Plugin.Menu()==false)
-  assert(Plugin.Config()==false)
-  assert(Plugin.Command()==false)
-  assert(Plugin.Command(luamacroId)==true)
+  assert_false(Plugin.Menu())
+  assert_false(Plugin.Config())
+  assert_false(Plugin.Command())
+  assert_true(Plugin.Command(luamacroId))
 
-  assert(Plugin.Exist(far.GetPluginId()) == true)
-  assert(Plugin.Exist(far.GetPluginId()+1) == false)
+  assert_true(Plugin.Exist(far.GetPluginId()))
+  assert_false(Plugin.Exist(far.GetPluginId()+1))
 
   local function test (func, N) -- Plugin.Call, Plugin.SyncCall: test arguments and returns
     local i1 = bit64.new("0x8765876587658765")
@@ -1062,13 +1062,13 @@ local function test_far_MacroExecute()
       bit64.new("0x8765876587658765"),
       {"bar"})
     assert_table (t)
-    assert(t.n  == 6)
-    assert(t[1] == "foo")
-    assert(t[2] == false)
-    assert(t[3] == 5)
-    assert(t[4] == nil)
-    assert(t[5] == bit64.new("0x8765876587658765"))
-    assert(type(t[6])=="table" and t[6][1]=="bar")
+    assert_eq    (t.n,  6)
+    assert_eq    (t[1], "foo")
+    assert_false (t[2])
+    assert_eq    (t[3], 5)
+    assert_nil   (t[4])
+    assert_eq    (t[5], bit64.new("0x8765876587658765"))
+		assert_eq    (assert_table(t[6])[1], "bar")
   end
   test("return ...", nil)
   test("return ...", "KMFLAGS_LUA")
@@ -1079,80 +1079,80 @@ local function test_far_MacroAdd()
   local area, key, descr = "MACROAREA_SHELL", "CtrlA", "Test MacroAdd"
 
   local Id = far.MacroAdd(area, nil, key, [[A = { b=5 }]], descr)
-  assert(type(Id)=="userdata" and far.MacroDelete(Id))
+	assert_true(far.MacroDelete(assert_udata(Id)))
 
   Id = far.MacroAdd(-1, nil, key, [[A = { b=5 }]], descr)
-  assert(not Id) -- bad area
+  assert_nil(Id) -- bad area
 
   Id = far.MacroAdd(area, nil, key, [[A = { b:5 }]], descr)
-  assert(not Id) -- bad code
+  assert_nil(Id) -- bad code
 
   Id = far.MacroAdd(area, "KMFLAGS_MOONSCRIPT", key, [[A = { b:5 }]], descr)
-  assert(type(Id)=="userdata" and far.MacroDelete(Id))
+	assert_true(far.MacroDelete(assert_udata(Id)))
 
   Id = far.MacroAdd(area, "KMFLAGS_MOONSCRIPT", key, [[A = { b=5 }]], descr)
-  assert(not Id) -- bad code
+  assert_nil(Id) -- bad code
 
   Id = far.MacroAdd(area, nil, key, [[@c:\myscript 5+6,"foo"]], descr)
-  assert(type(Id)=="userdata" and far.MacroDelete(Id))
+	assert_true(far.MacroDelete(assert_udata(Id)))
 
   Id = far.MacroAdd(area, nil, key, [[@c:\myscript 5***6,"foo"]], descr)
-  assert(type(Id)=="userdata" and far.MacroDelete(Id)) -- with @ there is no syntax check till the macro runs
+  assert_true(far.MacroDelete(assert_udata(Id))) -- with @ there is no syntax check till the macro runs
 
   Id = far.MacroAdd(nil, nil, key, [[@c:\myscript]])
-  assert(type(Id)=="userdata" and far.MacroDelete(Id)) -- check default area (MACROAREA_COMMON)
+  assert_true(far.MacroDelete(assert_udata(Id))) -- check default area (MACROAREA_COMMON)
 
-  local Id = far.MacroAdd(area,nil,key,[[Keys"F7" assert(Dlg.Id=="FAD00DBE-3FFF-4095-9232-E1CC70C67737") Keys"Esc"]],descr)
-  assert(0==mf.eval("Shell/"..key, 2))
-  assert(far.MacroDelete(Id))
+  Id = far.MacroAdd(area,nil,key,[[Keys"F7" assert(Dlg.Id=="FAD00DBE-3FFF-4095-9232-E1CC70C67737") Keys"Esc"]],descr)
+  assert_eq(0, mf.eval("Shell/"..key, 2))
+  assert_true(far.MacroDelete(Id))
 
   Id = far.MacroAdd(area,nil,key,[[a=5]],descr,function(id,flags) return false end)
-  assert(-2 == mf.eval("Shell/"..key, 2))
-  assert(far.MacroDelete(Id))
+  assert_eq(-2, mf.eval("Shell/"..key, 2))
+  assert_true(far.MacroDelete(Id))
 
   Id = far.MacroAdd(area,nil,key,[[a=5]],descr,function(id,flags) error"deliberate error" end)
-  assert(-2 == mf.eval("Shell/"..key, 2))
-  assert(far.MacroDelete(Id))
+  assert_eq(-2, mf.eval("Shell/"..key, 2))
+  assert_true(far.MacroDelete(Id))
 
   Id = far.MacroAdd(area,nil,key,[[a=5]],descr,function(id,flags) return id==Id end)
-  assert(0 == mf.eval("Shell/"..key, 2))
-  assert(far.MacroDelete(Id))
+  assert_eq(0, mf.eval("Shell/"..key, 2))
+  assert_true(far.MacroDelete(Id))
 
 end
 
 local function test_far_MacroCheck()
-  assert(far.MacroCheck([[A = { b=5 }]]))
-  assert(far.MacroCheck([[A = { b=5 }]], "KMFLAGS_LUA"))
+  assert_true(far.MacroCheck([[A = { b=5 }]]))
+  assert_true(far.MacroCheck([[A = { b=5 }]], "KMFLAGS_LUA"))
 
-  assert(not far.MacroCheck([[A = { b:5 }]], "KMFLAGS_SILENTCHECK"))
+  assert_false(far.MacroCheck([[A = { b:5 }]], "KMFLAGS_SILENTCHECK"))
 
-  assert(far.MacroCheck([[A = { b:5 }]], "KMFLAGS_MOONSCRIPT"))
+  assert_true(far.MacroCheck([[A = { b:5 }]], "KMFLAGS_MOONSCRIPT"))
 
-  assert(not far.MacroCheck([[A = { b=5 }]], {KMFLAGS_MOONSCRIPT=1,KMFLAGS_SILENTCHECK=1} ))
+  assert_false(far.MacroCheck([[A = { b=5 }]], {KMFLAGS_MOONSCRIPT=1,KMFLAGS_SILENTCHECK=1} ))
 
   WriteTmpFile [[A = { b=5 }]] -- valid Lua, invalid MoonScript
-  assert(far.MacroCheck("@"..TmpFileName, "KMFLAGS_LUA"))
-  assert(far.MacroCheck("@"..TmpFileName.." 5+6,'foo'", "KMFLAGS_LUA")) -- valid file arguments
-  assert(not far.MacroCheck("@"..TmpFileName.." 5***6,'foo'", "KMFLAGS_SILENTCHECK")) -- invalid file arguments
-  assert(not far.MacroCheck("@"..TmpFileName, {KMFLAGS_MOONSCRIPT=1,KMFLAGS_SILENTCHECK=1}))
+  assert_true (far.MacroCheck("@"..TmpFileName, "KMFLAGS_LUA"))
+  assert_true (far.MacroCheck("@"..TmpFileName.." 5+6,'foo'", "KMFLAGS_LUA")) -- valid file arguments
+  assert_false(far.MacroCheck("@"..TmpFileName.." 5***6,'foo'", "KMFLAGS_SILENTCHECK")) -- invalid file arguments
+  assert_false(far.MacroCheck("@"..TmpFileName, {KMFLAGS_MOONSCRIPT=1,KMFLAGS_SILENTCHECK=1}))
 
   WriteTmpFile [[A = { b:5 }]] -- invalid Lua, valid MoonScript
-  assert(not far.MacroCheck("@"..TmpFileName, "KMFLAGS_SILENTCHECK"))
-  assert(far.MacroCheck("@"..TmpFileName, "KMFLAGS_MOONSCRIPT"))
+  assert_false (far.MacroCheck("@"..TmpFileName, "KMFLAGS_SILENTCHECK"))
+  assert_true  (far.MacroCheck("@"..TmpFileName, "KMFLAGS_MOONSCRIPT"))
   DeleteTmpFile()
 
-  assert(not far.MacroCheck([[@//////]], "KMFLAGS_SILENTCHECK"))
+  assert_false (far.MacroCheck([[@//////]], "KMFLAGS_SILENTCHECK"))
 end
 
 local function test_far_MacroGetArea()
-  assert(far.MacroGetArea()==F.MACROAREA_SHELL)
+  assert_eq(far.MacroGetArea(), F.MACROAREA_SHELL)
 end
 
 local function test_far_MacroGetLastError()
-  assert(far.MacroCheck("a=1"))
-  assert(far.MacroGetLastError().ErrSrc=="")
-  assert(not far.MacroCheck("a=", "KMFLAGS_SILENTCHECK"))
-  assert(far.MacroGetLastError().ErrSrc:len() > 0)
+  assert_true  (far.MacroCheck("a=1"))
+  assert_eq    (far.MacroGetLastError().ErrSrc, "")
+  assert_false (far.MacroCheck("a=", "KMFLAGS_SILENTCHECK"))
+  assert       (far.MacroGetLastError().ErrSrc:len() > 0)
 end
 
 local function test_far_MacroGetState()
@@ -1180,7 +1180,7 @@ local function test_RegexControl()
   local fr,to,cap
   local str, nfound, nrep
 
-  assert(R:bracketscount()==2)
+  assert_eq(R:bracketscount(), 2)
 
   fr,to,cap = regex.find("abc", pat)
   assert(fr==2 and to==3 and cap=="bc")
@@ -1232,7 +1232,7 @@ local function test_RegexControl()
   -- separate tests from lrexlib
   local test = require "far2.test.regex.runtest"
   local numerr = test(function() end)
-  assert(numerr == 0)
+  assert_eq(numerr, 0)
 
   -- this test used to crash Far2L (fixed in a commit from 2022-09-02)
   local rx = regex.new("abcd", "o")
@@ -1252,7 +1252,7 @@ local function test_RegexControl()
 
   -- Issue #609 (https://github.com/FarGroup/FarManager/issues/609)
   c1 = regex.match("88", "(8)+")
-  assert(c1=="8")
+  assert_eq(c1, "8")
 end
 
 --[[------------------------------------------------------------------------------------------------
@@ -1272,20 +1272,20 @@ function MT.test_mantis_1722()
   local function DlgProc (hDlg, msg, p1, p2)
     if msg == F.DN_EDITCHANGE then
       check = check + 1
-      assert(p1 == 1)
+      assert_eq(p1, 1)
     end
   end
   local Dlg = { {"DI_EDIT", 3,1,56,10, 0,0,0,0, "a"}, }
   mf.acall(far.Dialog, -1,-1,60,3,"Contents",Dlg, 0, DlgProc)
-  assert(Area.Dialog)
+  assert_true(Area.Dialog)
   Keys("W 1 2 3 4 BS Esc")
-  assert(check == 6)
-  assert(Dlg[1][10] == "W123")
+  assert_eq(check, 6)
+  assert_eq(Dlg[1][10], "W123")
 end
 
 local function test_utf8_len()
-  assert((""):len() == 0)
-  assert(("FOo БАр"):len() == 7)
+  assert_eq ((""):len(), 0)
+  assert_eq (("FOo БАр"):len(), 7)
 end
 
 local function test_utf8_sub()
@@ -1293,67 +1293,67 @@ local function test_utf8_sub()
   local len = assert(text:len()==8) and 8
 
   for _,start in ipairs{-len*3, 0, 1} do
-    assert(text:sub(start, -len*4) == "")
-    assert(text:sub(start, -len*3) == "")
-    assert(text:sub(start, -len*2) == "")
-    assert(text:sub(start, -len-1 + 0) == "")
-    assert(text:sub(start,          0) == "")
-    assert(text:sub(start, -len-1 + 1) == "a")
-    assert(text:sub(start,          1) == "a")
-    assert(text:sub(start, -len-1 + 6) == "abcdаб")
-    assert(text:sub(start,          6) == "abcdаб")
-    assert(text:sub(start, len*1) == text)
-    assert(text:sub(start, len*2) == text)
+    assert_eq (text:sub(start, -len*4), "")
+    assert_eq (text:sub(start, -len*3), "")
+    assert_eq (text:sub(start, -len*2), "")
+    assert_eq (text:sub(start, -len-1 + 0), "")
+    assert_eq (text:sub(start,          0), "")
+    assert_eq (text:sub(start, -len-1 + 1), "a")
+    assert_eq (text:sub(start,          1), "a")
+    assert_eq (text:sub(start, -len-1 + 6), "abcdаб")
+    assert_eq (text:sub(start,          6), "abcdаб")
+    assert_eq (text:sub(start, len*1), text)
+    assert_eq (text:sub(start, len*2), text)
   end
 
   for _,start in ipairs{3, -6} do
-    assert(text:sub(start, -len*2)  == "")
-    assert(text:sub(start,      0)  == "")
-    assert(text:sub(start,      1)  == "")
-    assert(text:sub(start, start-1) == "")
-    assert(text:sub(start,      -6) == "c")
-    assert(text:sub(start, start+0) == "c")
-    assert(text:sub(start,      -5) == "cd")
-    assert(text:sub(start, start+3) == "cdаб")
-    assert(text:sub(start,      -3) == "cdаб")
-    assert(text:sub(start, len)     == "cdабвг")
-    assert(text:sub(start, 2*len)   == "cdабвг")
+    assert_eq (text:sub(start, -len*2), "")
+    assert_eq (text:sub(start,      0), "")
+    assert_eq (text:sub(start,      1), "")
+    assert_eq (text:sub(start, start-1), "")
+    assert_eq (text:sub(start,      -6), "c")
+    assert_eq (text:sub(start, start+0), "c")
+    assert_eq (text:sub(start,      -5), "cd")
+    assert_eq (text:sub(start, start+3), "cdаб")
+    assert_eq (text:sub(start,      -3), "cdаб")
+    assert_eq (text:sub(start, len), "cdабвг")
+    assert_eq (text:sub(start, 2*len), "cdабвг")
   end
 
   for _,start in ipairs{len+1, 2*len} do
     for _,fin in ipairs{-2*len, -1*len, -1, 0, 1, len-1, len, 2*len} do
-      assert(text:sub(start,fin) == "")
+      assert_eq(text:sub(start,fin), "")
     end
   end
 
   for _,start in ipairs{-2*len,-len-1,-len,-len+1,-1,0,1,len-1,len,len+1} do
-    assert(text:sub(start) == text:sub(start,len))
+    assert_eq(text:sub(start), text:sub(start,len))
   end
 
-  assert(not pcall(text.sub, text))
-  assert(not pcall(text.sub, text, {}))
-  assert(not pcall(text.sub, text, nil))
+  assert_false(pcall(text.sub, text))
+  assert_false(pcall(text.sub, text, {}))
+  assert_false(pcall(text.sub, text, nil))
 end
 
 local function test_utf8_lower_upper()
-  assert((""):lower() == "")
-  assert(("abc"):lower() == "abc")
-  assert(("ABC"):lower() == "abc")
+  assert_eq ((""):lower(), "")
+  assert_eq (("abc"):lower(), "abc")
+  assert_eq (("ABC"):lower(), "abc")
 
-  assert((""):upper() == "")
-  assert(("abc"):upper() == "ABC")
-  assert(("ABC"):upper() == "ABC")
+  assert_eq ((""):upper(), "")
+  assert_eq (("abc"):upper(), "ABC")
+  assert_eq (("ABC"):upper(), "ABC")
 
   local russian_abc = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя"
   local part1, part2 = russian_abc:sub(1,33), russian_abc:sub(34)
-  assert(part1:lower() == part2)
-  assert(part2:lower() == part2)
-  assert(part1:upper() == part1)
-  assert(part2:upper() == part1)
+  assert_eq (part1:lower(), part2)
+  assert_eq (part2:lower(), part2)
+  assert_eq (part1:upper(), part1)
+  assert_eq (part2:upper(), part1)
 
   local noletters = "1234567890~@#$%^&*()_+-=[]{}|/\\';.,"
-  assert(noletters:lower() == noletters)
-  assert(noletters:upper() == noletters)
+  assert_eq (noletters:lower(), noletters)
+  assert_eq (noletters:upper(), noletters)
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -1368,77 +1368,77 @@ local function test_AdvControl_Window()
 --  assert(far.AdvControl("ACTL_GETSHORTWINDOWINFO").Type == F.WTYPE_VMENU)
 --  assert(num+2 == far.AdvControl("ACTL_GETWINDOWCOUNT")) -- menus don't count as windows?
   Keys("Esc Esc")
-  assert(num == far.AdvControl("ACTL_GETWINDOWCOUNT"))
+  assert_eq(num, far.AdvControl("ACTL_GETWINDOWCOUNT"))
 
   -- Get information about 2 available windows
-  t = assert(far.AdvControl("ACTL_GETWINDOWINFO", 1))
+  t = assert_table(far.AdvControl("ACTL_GETWINDOWINFO", 1))
   assert(t.Type==F.WTYPE_DESKTOP and t.Id==0 and t.Pos==1 and t.Flags==0 and #t.TypeName>0 and
          t.Name=="")
 
-  t = assert(far.AdvControl("ACTL_GETWINDOWINFO", 2))
+  t = assert_table(far.AdvControl("ACTL_GETWINDOWINFO", 2))
   assert(t.Type==F.WTYPE_PANELS and t.Id==0 and t.Pos==2 and t.Flags==F.WIF_CURRENT and
          #t.TypeName>0 and #t.Name>0)
-  assert(far.AdvControl("ACTL_GETWINDOWTYPE").Type == F.WTYPE_PANELS)
+  assert_eq(far.AdvControl("ACTL_GETWINDOWTYPE").Type, F.WTYPE_PANELS)
 
   -- Set "Desktop" as the current window
-  assert(1 == far.AdvControl("ACTL_SETCURRENTWINDOW", 1))
-  assert(1 == far.AdvControl("ACTL_COMMIT"))
-  t = assert(far.AdvControl("ACTL_GETWINDOWINFO", 2)) -- "z-order": the window that was #1 is now #2
+  assert_eq (1, far.AdvControl("ACTL_SETCURRENTWINDOW", 1))
+  assert_eq (1, far.AdvControl("ACTL_COMMIT"))
+  t = assert_table(far.AdvControl("ACTL_GETWINDOWINFO", 2)) -- "z-order": the window that was #1 is now #2
   assert(t.Type==0 and t.Id==0 and t.Pos==2 and t.Flags==F.WIF_CURRENT and #t.TypeName>0 and
          t.Name=="")
-  assert(far.AdvControl("ACTL_GETWINDOWTYPE").Type == F.WTYPE_DESKTOP)
-  t = assert(far.AdvControl("ACTL_GETWINDOWINFO", 1))
+  assert_eq (far.AdvControl("ACTL_GETWINDOWTYPE").Type, F.WTYPE_DESKTOP)
+  t = assert_table(far.AdvControl("ACTL_GETWINDOWINFO", 1))
   assert(t.Type==F.WTYPE_PANELS and t.Id==0 and t.Pos==1 and t.Flags==0 and #t.TypeName>0 and
          #t.Name>0)
 
   -- Restore "Panels" as the current window
-  assert(1 == far.AdvControl("ACTL_SETCURRENTWINDOW", 1))
-  assert(1 == far.AdvControl("ACTL_COMMIT"))
-  assert(far.AdvControl("ACTL_GETWINDOWTYPE").Type == F.WTYPE_PANELS)
+  assert_eq (1, far.AdvControl("ACTL_SETCURRENTWINDOW", 1))
+  assert_eq (1, far.AdvControl("ACTL_COMMIT"))
+  assert_eq (far.AdvControl("ACTL_GETWINDOWTYPE").Type, F.WTYPE_PANELS)
 end
 
 local function test_AdvControl_Colors()
-  local allcolors = assert(far.AdvControl("ACTL_GETARRAYCOLOR"))
-  assert(#allcolors == 147)
+  local allcolors = assert_table(far.AdvControl("ACTL_GETARRAYCOLOR"))
+  assert_eq(#allcolors, 147)
   for i,color in ipairs(allcolors) do
-    assert(far.AdvControl("ACTL_GETCOLOR", i-1) == color)
+    assert_eq(far.AdvControl("ACTL_GETCOLOR", i-1), color)
   end
-  assert(not far.AdvControl("ACTL_GETCOLOR", #allcolors))
-  assert(not far.AdvControl("ACTL_GETCOLOR", -1))
+  assert_nil(far.AdvControl("ACTL_GETCOLOR", #allcolors))
+  assert_nil(far.AdvControl("ACTL_GETCOLOR", -1))
 
   -- change the colors
   local arr, elem = {StartIndex=0; Flags=0}, 123
   for n=1,#allcolors do arr[n]=elem end
-  assert(far.AdvControl("ACTL_SETARRAYCOLOR", arr))
+  assert_bool(far.AdvControl("ACTL_SETARRAYCOLOR", arr))
   for n=1,#allcolors do
-    assert(elem == far.AdvControl("ACTL_GETCOLOR", n-1))
+    assert_eq(elem, far.AdvControl("ACTL_GETCOLOR", n-1))
   end
 
   -- restore the colors
-  assert(far.AdvControl("ACTL_SETARRAYCOLOR", allcolors))
+  assert_true(far.AdvControl("ACTL_SETARRAYCOLOR", allcolors))
 end
 
 local function test_AdvControl_Misc()
   local t
 
-  assert(type(far.AdvControl("ACTL_GETFARHWND"))=="userdata")
+  assert_udata(far.AdvControl("ACTL_GETFARHWND"))
 
-  assert(far.AdvControl("ACTL_GETFARVERSION"):sub(1,1)=="2")
-  assert(far.AdvControl("ACTL_GETFARVERSION",true)==2)
+  assert_eq (far.AdvControl("ACTL_GETFARVERSION"):sub(1,1), "2")
+  assert_eq (far.AdvControl("ACTL_GETFARVERSION",true), 2)
 
   t = far.AdvControl("ACTL_GETFARRECT")
   assert(t.Left>=0 and t.Top>=0 and t.Right>t.Left and t.Bottom>t.Top)
 
-  assert(true == far.AdvControl("ACTL_SETCURSORPOS", {X=-1,Y=0}))
+  assert_true(far.AdvControl("ACTL_SETCURSORPOS", {X=-1,Y=0}))
   for k=0,2 do
-    assert(true == far.AdvControl("ACTL_SETCURSORPOS", {X=k,Y=k+1}))
-    t = assert(far.AdvControl("ACTL_GETCURSORPOS"))
+    assert_true(far.AdvControl("ACTL_SETCURSORPOS", {X=k,Y=k+1}))
+    t = assert_table(far.AdvControl("ACTL_GETCURSORPOS"))
     assert(t.X==k and t.Y==k+1)
   end
 
-  assert(true == mf.acall(far.AdvControl, "ACTL_WAITKEY", "KEY_F4"))
+  assert_true(mf.acall(far.AdvControl, "ACTL_WAITKEY", "KEY_F4"))
   Keys("F4")
-  assert(true == mf.acall(far.AdvControl, "ACTL_WAITKEY"))
+  assert_true(mf.acall(far.AdvControl, "ACTL_WAITKEY"))
   Keys("F2")
 end
 
@@ -1452,7 +1452,7 @@ local function test_ACTL()
   assert_table ( actl.GetCursorPos())
   assert_num   ( actl.GetDescSettings())
   assert_num   ( actl.GetDialogSettings())
-  assert_eq    ( type(actl.GetFarHwnd()), "userdata")
+  assert_udata ( actl.GetFarHwnd())
   assert_table ( actl.GetFarRect())
   assert_str   ( actl.GetFarVersion())
   assert_num   ( actl.GetFarVersion(true))
@@ -1494,10 +1494,10 @@ local function test_clipboard()
   for k=1,values.n do
     local v = values[k]
     far.CopyToClipboard(v)
-    assert(far.PasteFromClipboard() == v)
+    assert_eq(far.PasteFromClipboard(), v)
   end
   if orig then far.CopyToClipboard(orig) end
-  assert(far.PasteFromClipboard() == orig)
+  assert_eq(far.PasteFromClipboard(), orig)
 end
 
 local function test_far_FarClock()
@@ -1513,7 +1513,7 @@ local function test_far_FarClock()
     win.Sleep(20)
     if temp ~= far.FarClock() % 10 then OK=true; break; end
   end
-  assert(OK)
+  assert_true(OK)
 end
 
 local function test_ProcessName()
@@ -1573,39 +1573,39 @@ local function test_FarStandardFunctions()
 
   test_ProcessName()
 
-  assert(far.ConvertPath([[/foo/bar/../../abc]], "CPM_FULL") == [[/abc]])
+  assert_eq(far.ConvertPath([[/foo/bar/../../abc]], "CPM_FULL"), [[/abc]])
 
 --  assert(far.FormatFileSize(123456, 8)  == "  123456")
 --  assert(far.FormatFileSize(123456, -8) == "123456  ")
 
   assert_str (far.GetCurrentDirectory())
 
-  assert(far.LIsAlpha("A") == true)
-  assert(far.LIsAlpha("Я") == true)
-  assert(far.LIsAlpha("7") == false)
-  assert(far.LIsAlpha(";") == false)
+  assert_true  (far.LIsAlpha("A"))
+  assert_true  (far.LIsAlpha("Я"))
+  assert_false (far.LIsAlpha("7"))
+  assert_false (far.LIsAlpha(";"))
 
-  assert(far.LIsAlphanum("A") == true)
-  assert(far.LIsAlphanum("Я") == true)
-  assert(far.LIsAlphanum("7") == true)
-  assert(far.LIsAlphanum(";") == false)
+  assert_true  (far.LIsAlphanum("A"))
+  assert_true  (far.LIsAlphanum("Я"))
+  assert_true  (far.LIsAlphanum("7"))
+  assert_false (far.LIsAlphanum(";"))
 
-  assert(far.LIsLower("A") == false)
-  assert(far.LIsLower("a") == true)
-  assert(far.LIsLower("Я") == false)
-  assert(far.LIsLower("я") == true)
-  assert(far.LIsLower("7") == false)
-  assert(far.LIsLower(";") == false)
+  assert_false (far.LIsLower("A"))
+  assert_true  (far.LIsLower("a"))
+  assert_false (far.LIsLower("Я"))
+  assert_true  (far.LIsLower("я"))
+  assert_false (far.LIsLower("7"))
+  assert_false (far.LIsLower(";"))
 
-  assert(far.LIsUpper("A") == true)
-  assert(far.LIsUpper("a") == false)
-  assert(far.LIsUpper("Я") == true)
-  assert(far.LIsUpper("я") == false)
-  assert(far.LIsUpper("7") == false)
-  assert(far.LIsUpper(";") == false)
+  assert_true  (far.LIsUpper("A"))
+  assert_false (far.LIsUpper("a"))
+  assert_true  (far.LIsUpper("Я"))
+  assert_false (far.LIsUpper("я"))
+  assert_false (far.LIsUpper("7"))
+  assert_false (far.LIsUpper(";"))
 
-  assert(far.LLowerBuf("abc-ABC-эюя-ЭЮЯ-7;") == "abc-abc-эюя-эюя-7;")
-  assert(far.LUpperBuf("abc-ABC-эюя-ЭЮЯ-7;") == "ABC-ABC-ЭЮЯ-ЭЮЯ-7;")
+  assert_eq (far.LLowerBuf("abc-ABC-эюя-ЭЮЯ-7;"), "abc-abc-эюя-эюя-7;")
+  assert_eq (far.LUpperBuf("abc-ABC-эюя-ЭЮЯ-7;"), "ABC-ABC-ЭЮЯ-ЭЮЯ-7;")
 
   assert(far.LStricmp("abc","def") < 0)
   assert(far.LStricmp("def","abc") > 0)
@@ -1635,18 +1635,18 @@ local function test_issue_3129()
     editor.InsertString()
     editor.SetString(nil, k, "foo")
   end
-  assert(editor.SaveFile())
-  assert(editor.Quit())
+  assert_true (editor.SaveFile())
+  assert_true (editor.Quit())
   actl.Commit()
   fp = assert(io.open(fname))
   local k = 0
   for line in fp:lines() do
     k = k + 1
-    assert(line=="foo")
+    assert_eq (line, "foo")
   end
   fp:close()
   win.DeleteFile(fname)
-  assert(k == 3)
+  assert_eq (k, 3)
 end
 
 local function test_gmatch_coro()
@@ -1658,13 +1658,13 @@ local function test_gmatch_coro()
 
   local it = ("1 2 3"):gmatch("(%d+)")
   local head = yieldFirst(it)
-  assert(head() == "1")
+  assert_eq (head(), "1")
 end
 
 local function test_PluginsControl()
   local mod = assert(far.PluginStartupInfo().ModuleName)
   local hnd1 = far.FindPlugin("PFM_MODULENAME", mod)
-  assert_userdata(hnd1)
+  assert_udata(hnd1)
   local hnd2 = far.FindPlugin("PFM_SYSID", far.GetPluginId())
   assert_eq(hnd1, hnd2)
 
@@ -1681,7 +1681,7 @@ local function test_PluginsControl()
   assert_table(pluglist)
   assert(#pluglist >= 1)
   for _,plug in ipairs(pluglist) do
-    assert_userdata(plug)
+    assert_udata(plug)
   end
 
   assert_func(far.ClearPluginCache)
@@ -1697,7 +1697,7 @@ local function test_far_timer()
       if N==3 then hnd:Close() end
     end)
   while not timer.Closed do Keys("foobar") end
-  assert(N==3)
+  assert_eq (N, 3)
 end
 
 function MT.test_luafar()
@@ -1737,7 +1737,7 @@ end
 function MT.test_far_regex(printfunc, verbose)
   local test = require "far2.test.regex.runtest"
   local numerr = test(printfunc, verbose)
-  assert(numerr == 0)
+  assert_eq (numerr, 0)
 end
 
 function MT.test_UserDefinedList()
