@@ -2300,7 +2300,7 @@ int FileList::ProcessKey(int Key)
 
 				if (Key >= KEY_ALTSHIFT0 && Key <= KEY_ALTSHIFT9)
 					Key=(DWORD)Code[Key-KEY_ALTSHIFT0];
-				else if ((Key&(~(KEY_ALT+KEY_SHIFT))) == '/')
+				else if (Key == KEY_ALTSHIFT+'/')
 					Key='?';
 				else if (Key == KEY_ALTSHIFT+'-')
 					Key='_';
