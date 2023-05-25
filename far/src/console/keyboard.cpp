@@ -1283,18 +1283,18 @@ DWORD GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,b
 	return(CalcKey);
 }
 
-void LogInputRecord(const INPUT_RECORD *rec)
-{
-	const KEY_EVENT_RECORD &KE = rec->Event.KeyEvent;
-
-	Log("bKeyDown=%d",         (int) KE.bKeyDown);
-	Log("wRepeatCount=%d",     (int) KE.wRepeatCount);
-	Log("wVirtualKeyCode=%d",  (int) KE.wVirtualKeyCode);
-	Log("wVirtualScanCode=%d", (int) KE.wVirtualScanCode);
-	Log("UnicodeChar=%d",      (int) KE.uChar.UnicodeChar);
-	Log("dwControlKeyState=%X", KE.dwControlKeyState);
-	Log("---------------");
-}
+//void LogInputRecord(const INPUT_RECORD *rec)
+//{
+//	const KEY_EVENT_RECORD &KE = rec->Event.KeyEvent;
+//
+//	Log("bKeyDown=%d",         (int) KE.bKeyDown);
+//	Log("wRepeatCount=%d",     (int) KE.wRepeatCount);
+//	Log("wVirtualKeyCode=%d",  (int) KE.wVirtualKeyCode);
+//	Log("wVirtualScanCode=%d", (int) KE.wVirtualScanCode);
+//	Log("UnicodeChar=%d",      (int) KE.uChar.UnicodeChar);
+//	Log("dwControlKeyState=%X", KE.dwControlKeyState);
+//	Log("---------------");
+//}
 
 DWORD GetInputRecord(INPUT_RECORD *rec, bool ExcludeMacro, bool ProcessMouse, bool AllowSynchro)
 {
@@ -1302,7 +1302,7 @@ DWORD GetInputRecord(INPUT_RECORD *rec, bool ExcludeMacro, bool ProcessMouse, bo
 
 	DWORD Key = GetInputRecordImpl(rec, ExcludeMacro, ProcessMouse, AllowSynchro);
 
-	if (Key && CtrlObject)
+	if (CtrlObject && Key && (Key!=KEY_OP_PLAINTEXT) && (Key!=KEY_OP_SELWORD) && (Key!=KEY_OP_XLAT))
 	{
 		switch (CtrlObject->Plugins.ProcessConsoleInput(rec))
 		{
