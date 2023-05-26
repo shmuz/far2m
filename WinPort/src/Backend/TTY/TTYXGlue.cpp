@@ -136,7 +136,7 @@ ITTYXGluePtr StartTTYX(const char *full_exe_path, bool allow_xi)
 
 	try {
 		std::string broker_path = full_exe_path;
-		ReplaceFileNamePart(broker_path, "far2l_ttyx.broker");
+		ReplaceFileNamePart(broker_path, "far2m_ttyx.broker");
 		TranslateInstallPath_Bin2Lib(broker_path);
 		if (!TestPath(broker_path).Executable()) {
 			// likely compiled without TTYX, thats not an error, just such a configuration
