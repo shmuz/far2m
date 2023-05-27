@@ -84,7 +84,8 @@ function MT.test_areas()
   assert_false (Area.Tree)
   assert_false (Area.FindFolder)
   assert_false (Area.UserMenu)
-  assert_false (Area.AutoCompletion)
+  assert_false (Area.ShellAutoCompletion)
+  assert_false (Area.DialogAutoCompletion)
 end
 
 local function test_mf_akey()

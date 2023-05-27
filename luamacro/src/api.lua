@@ -195,7 +195,8 @@ local prop_Area = {
   Tree       = function() return MacroCallFar(0)==12 end,
   FindFolder = function() return MacroCallFar(0)==13 end,
   UserMenu   = function() return MacroCallFar(0)==14 end,
-  AutoCompletion = function()  return MacroCallFar(0)==15 end,
+  ShellAutoCompletion  = function() return MacroCallFar(0)==15 end,
+  DialogAutoCompletion = function() return MacroCallFar(0)==16 end,
 }
 
 local prop_APanel = {
