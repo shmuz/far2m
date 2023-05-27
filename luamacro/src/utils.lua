@@ -32,7 +32,7 @@ local TrueAreaNames = {
   [F.MACROAREA_USERMENU]             = "UserMenu",
   [F.MACROAREA_SHELLAUTOCOMPLETION]  = "ShellAutoCompletion",
   [F.MACROAREA_DIALOGAUTOCOMPLETION] = "DialogAutoCompletion",
---~   [F.MACROAREA_GRABBER]              = "Grabber",
+  [F.MACROAREA_GRABBER]              = "Grabber",
 --~   [F.MACROAREA_DESKTOP]              = "Desktop",
   [F.MACROAREA_COMMON]               = "Common",
 }

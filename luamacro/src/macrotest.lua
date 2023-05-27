@@ -51,7 +51,7 @@ local function TestArea (area, msg)
 end
 
 function MT.test_areas()
-  Keys "AltIns"              TestArea "Other"      Keys "Esc"
+  Keys "AltIns"              TestArea "Grabber"    Keys "Esc"
   Keys "F12 0"               TestArea "Shell"
   Keys "ShiftF4 CtrlY Enter" TestArea "Editor"     Keys "Esc"
   Keys "F7"                  TestArea "Dialog"     Keys "Esc"
@@ -86,6 +86,7 @@ function MT.test_areas()
   assert_false (Area.UserMenu)
   assert_false (Area.ShellAutoCompletion)
   assert_false (Area.DialogAutoCompletion)
+  assert_false (Area.Grabber)
 end
 
 local function test_mf_akey()
