@@ -1977,6 +1977,16 @@ upd:"Use OSC&52 to set clipboard data"
 upd:"Use OSC&52 to set clipboard data"
 upd:"Use OSC&52 to set clipboard data"
 
+ConfigTTYPaletteOverride
+"Исп. свою &палитру базовых цветов"
+"Override base colors &palette"
+upd:"Override base colors &palette"
+upd:"Override base colors &palette"
+upd:"Override base colors &palette"
+upd:"Override base colors &palette"
+upd:"Override base colors &palette"
+upd:"Override base colors &palette"
+
 ConfigExclusiveKeys
 "&Экслюзивная обработка нажатий, включающих:"
 "&Exclusively handle hotkeys that include:"

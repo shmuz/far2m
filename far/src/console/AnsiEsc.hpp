@@ -10,6 +10,8 @@ namespace AnsiEsc
 
 	struct FontState
 	{
+		FontState();
+
 		BYTE	foreground = 0;	    // ANSI base color (0 to 7; add 30)
 		BYTE	background = 0;	    // ANSI base color (0 to 7; add 40)
 		bool	bold = false;		//

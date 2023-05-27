@@ -6,14 +6,13 @@
 
 namespace AnsiEsc
 {
-
 #define FOREGROUND_BLACK 0
 #define FOREGROUND_WHITE FOREGROUND_RED|FOREGROUND_GREEN|FOREGROUND_BLUE
 
 #define BACKGROUND_BLACK 0
 #define BACKGROUND_WHITE BACKGROUND_RED|BACKGROUND_GREEN|BACKGROUND_BLUE
 
-static const BYTE ForegroundColor[16] = {
+static const BYTE g_palette_foreground[16] = {
 	FOREGROUND_BLACK,			// black foreground
 	FOREGROUND_RED,			// red foreground
 	FOREGROUND_GREEN,			// green foreground
@@ -34,7 +33,7 @@ static const BYTE ForegroundColor[16] = {
 
 };
 
-static const BYTE BackgroundColor[16] = {
+static const BYTE g_palette_background[16] = {
 	BACKGROUND_BLACK,			// black background
 	BACKGROUND_RED,			// red background
 	BACKGROUND_GREEN,			// green background
@@ -73,6 +72,11 @@ BYTE ConsoleColorToAnsi(BYTE clr)
 
 
 /////////////////
+
+FontState::FontState()
+{
+}
+
 void FontState::ParseSuffixM(const int *args, int argc)
 {
 	int argz = 0;
@@ -101,8 +105,8 @@ void FontState::ParseSuffixM(const int *args, int argc)
 
 		} else if (a == 38 || a == 48) {
 			// This is technically incorrect, but it's what xterm does, so
-			// that's what we do.  According to T.416 (ISO 8613-6), there is
-			// only one parameter, which is divided into elements.  So where
+			// that's what we do. According to T.416 (ISO 8613-6), there is
+			// only one parameter, which is divided into elements. So where
 			// xterm does "38;2;R;G;B" it should really be "38;2:I:R:G:B" (I is
 			// a colour space identifier).
 			DWORD rgb = (DWORD)-1;
@@ -228,14 +232,14 @@ DWORD64 FontState::ToConsoleAttributes()
 	DWORD64 attribut = 0;
 
 	if (concealed) {
-		attribut = ForegroundColor[background] | BackgroundColor[background];
+		attribut = g_palette_foreground[background] | g_palette_background[background];
 
 		if (use_rgb_background) {
 			SET_RGB_BOTH(attribut, rgb_background, rgb_background);
 		}
 
 	} else {
-		attribut = ForegroundColor[foreground] | BackgroundColor[background];
+		attribut = g_palette_foreground[foreground] | g_palette_background[background];
 
 		if (use_rgb_foreground) {
 			SET_RGB_FORE(attribut, rgb_foreground);
@@ -379,13 +383,13 @@ void Printer::Print(int skip_len, int print_len, const wchar_t *str)
 			}
 			if (_parser.suffix == L'C') {
 				for (int i = 0; i < _parser.args[0] || i < 1; ++i, ++processed ) {
-				    if (processed >= skip_len && processed < skip_len + print_len) {
+					if (processed >= skip_len && processed < skip_len + print_len) {
 						Text(L" ", 1);
 					}
 				}
 			} else if (_parser.suffix == L'b') {
 				for (int i = 0; i < _parser.args[0] || i < 1; ++i, ++processed ) {
-				    if (processed >= skip_len && processed < skip_len + print_len) {
+					if (processed >= skip_len && processed < skip_len + print_len) {
 						Text(&_last_char, 1);
 					}
 				}
@@ -400,7 +404,7 @@ void Printer::Print(int skip_len, int print_len, const wchar_t *str)
 			++ch;
 		}
 	}
-    while (processed < skip_len) {
+	while (processed < skip_len) {
 		++processed;
 	}
 	if (processed < skip_len + print_len) {

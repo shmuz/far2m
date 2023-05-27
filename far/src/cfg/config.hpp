@@ -429,7 +429,6 @@ struct Options
 	FARString strExternalViewer;
 	ViewerOptions ViOpt;
 
-
 	FARString strWordDiv; // $ 03.08.2000 SVS Разграничитель слов из реестра
 	FARString strQuotedSymbols;
 	DWORD QuotedName;
@@ -466,8 +465,10 @@ struct Options
 	int CleanAscii;
 	int NoGraphics;
 	int NoBoxes;
-	int ConsolePaintSharp, ExclusiveCtrlLeft, ExclusiveCtrlRight, ExclusiveAltLeft, ExclusiveAltRight, ExclusiveWinLeft, ExclusiveWinRight;
+	int ConsolePaintSharp, ExclusiveCtrlLeft, ExclusiveCtrlRight, ExclusiveAltLeft, ExclusiveAltRight,
+			ExclusiveWinLeft, ExclusiveWinRight;
 	int OSC52ClipSet;
+	int TTYPaletteOverride;
 
 	Confirmation Confirm;
 	PluginConfirmation PluginConfirm;

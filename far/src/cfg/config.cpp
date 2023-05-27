@@ -129,15 +129,25 @@ struct AllXlats : std::vector<std::string>
 
 static DWORD ApplyConsoleTweaks()
 {
-	DWORD tweaks = 0;
-	if (Opt.ExclusiveCtrlLeft) tweaks|= EXCLUSIVE_CTRL_LEFT;
-	if (Opt.ExclusiveCtrlRight) tweaks|= EXCLUSIVE_CTRL_RIGHT;
-	if (Opt.ExclusiveAltLeft) tweaks|= EXCLUSIVE_ALT_LEFT;
-	if (Opt.ExclusiveAltRight) tweaks|= EXCLUSIVE_ALT_RIGHT;
-	if (Opt.ExclusiveWinLeft) tweaks|= EXCLUSIVE_WIN_LEFT;
-	if (Opt.ExclusiveWinRight) tweaks|= EXCLUSIVE_WIN_RIGHT;
-	if (Opt.ConsolePaintSharp) tweaks|= CONSOLE_PAINT_SHARP;
-	if (Opt.OSC52ClipSet) tweaks|= CONSOLE_OSC52CLIP_SET;
+	DWORD64 tweaks = 0;
+	if (Opt.ExclusiveCtrlLeft)
+		tweaks|= EXCLUSIVE_CTRL_LEFT;
+	if (Opt.ExclusiveCtrlRight)
+		tweaks|= EXCLUSIVE_CTRL_RIGHT;
+	if (Opt.ExclusiveAltLeft)
+		tweaks|= EXCLUSIVE_ALT_LEFT;
+	if (Opt.ExclusiveAltRight)
+		tweaks|= EXCLUSIVE_ALT_RIGHT;
+	if (Opt.ExclusiveWinLeft)
+		tweaks|= EXCLUSIVE_WIN_LEFT;
+	if (Opt.ExclusiveWinRight)
+		tweaks|= EXCLUSIVE_WIN_RIGHT;
+	if (Opt.ConsolePaintSharp)
+		tweaks|= CONSOLE_PAINT_SHARP;
+	if (Opt.OSC52ClipSet)
+		tweaks|= CONSOLE_OSC52CLIP_SET;
+	if (Opt.TTYPaletteOverride)
+		tweaks|= CONSOLE_TTY_PALETTE_OVERRIDE;
 	return WINPORT(SetConsoleTweaks)(tweaks);
 }
 
@@ -361,6 +371,9 @@ void InterfaceSettings()
 			Builder.AddCheckbox(Msg::ConfigOSC52ClipSet, &Opt.OSC52ClipSet);
 		}
 
+		if (supported_tweaks & TWEAK_STATUS_SUPPORT_TTY_PALETTE) {
+			Builder.AddCheckbox(Msg::ConfigTTYPaletteOverride, &Opt.TTYPaletteOverride);
+		}
 
 		Builder.AddText(Msg::ConfigWindowTitle);
 		Builder.AddEditField(&Opt.strWindowTitle, 47);
@@ -728,7 +741,7 @@ static struct FARConfig
 	const wchar_t *DefStr;   // строка/данные по умолчанию
 } CFG[]=
 {
-	{1, REG_BINARY, NKeyColors, "CurrentPalette",(char*)Palette,(DWORD)SizeArrayPalette,(wchar_t*)DefaultPalette},
+	{1, REG_BINARY, NKeyColors, "CurrentPalette",(char*)Palette,SIZE_ARRAY_PALETTE,(wchar_t*)DefaultPalette},
 
 	{1, REG_DWORD,  NKeyScreen, "Clock", &Opt.Clock, 1, 0},
 	{1, REG_DWORD,  NKeyScreen, "ViewerEditorClock",&Opt.ViewerEditorClock,0, 0},
@@ -765,6 +778,7 @@ static struct FARConfig
 	{1, REG_DWORD,  NKeyInterface, "ExclusiveWinRight",&Opt.ExclusiveWinRight, 0, 0},
 
 	{1, REG_DWORD,  NKeyInterface, "OSC52ClipSet",&Opt.OSC52ClipSet, 0, 0},
+	{1, REG_DWORD,  NKeyInterface, "TTYPaletteOverride",&Opt.TTYPaletteOverride, 1, 0},
 
 	{0, REG_DWORD,  NKeyInterface, "ShowTimeoutDelFiles",&Opt.ShowTimeoutDelFiles, 50, 0},
 	{0, REG_DWORD,  NKeyInterface, "ShowTimeoutDACLFiles",&Opt.ShowTimeoutDACLFiles, 50, 0},

@@ -8,7 +8,7 @@
 ///   Something changed in code below.
 ///   "WinCompat.h" changed in a way affecting code below.
 ///   Behavior of backend's code changed in incompatible way.
-#define FAR2L_BACKEND_ABI_VERSION	0x04
+#define FAR2L_BACKEND_ABI_VERSION	0x05
 
 class IConsoleOutputBackend
 {
@@ -239,5 +239,6 @@ struct WinPortMainBackendArg
 	int *result;
 	IConsoleOutput *winport_con_out;
 	IConsoleInput *winport_con_in;
+	bool ext_clipboard;
 };
 

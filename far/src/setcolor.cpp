@@ -33,7 +33,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
-
 #include "setcolor.hpp"
 #include "keys.hpp"
 #include "lang.hpp"
@@ -56,33 +55,24 @@ static VMenu *MenuToRedraw1=nullptr,*MenuToRedraw2=nullptr,*MenuToRedraw3=nullpt
 
 // 0,1 - dialog,warn List
 // 2,3 - dialog,warn Combobox
-static int ListPaletteItems[4][13]=
-{
+static int ListPaletteItems[4][13] = {
 	// Listbox
-	{ // normal
-		COL_DIALOGLISTTEXT,
-		COL_DIALOGLISTHIGHLIGHT,
-		COL_DIALOGLISTSELECTEDTEXT,
-		COL_DIALOGLISTSELECTEDHIGHLIGHT,
-		COL_DIALOGLISTDISABLED,
-		COL_DIALOGLISTBOX,
-		COL_DIALOGLISTTITLE,
-		COL_DIALOGLISTSCROLLBAR,
+{
+		// normal
+		COL_DIALOGLISTTEXT, COL_DIALOGLISTHIGHLIGHT, COL_DIALOGLISTSELECTEDTEXT,
+		COL_DIALOGLISTSELECTEDHIGHLIGHT, COL_DIALOGLISTDISABLED, COL_DIALOGLISTBOX,
+		COL_DIALOGLISTTITLE, COL_DIALOGLISTSCROLLBAR,
 		COL_DIALOGLISTARROWS,             // Arrow
 		COL_DIALOGLISTARROWSSELECTED,     // Выбранный - Arrow
 		COL_DIALOGLISTARROWSDISABLED,     // Arrow disabled
 		COL_DIALOGLISTGRAY,                        // "серый"
 		COL_DIALOGLISTSELECTEDGRAYTEXT,            // выбранный "серый"
 	},
-	{ // warn
-		COL_WARNDIALOGLISTTEXT,
-		COL_WARNDIALOGLISTHIGHLIGHT,
-		COL_WARNDIALOGLISTSELECTEDTEXT,
-		COL_WARNDIALOGLISTSELECTEDHIGHLIGHT,
-		COL_WARNDIALOGLISTDISABLED,
-		COL_WARNDIALOGLISTBOX,
-		COL_WARNDIALOGLISTTITLE,
-		COL_WARNDIALOGLISTSCROLLBAR,
+	{
+		// warn
+		COL_WARNDIALOGLISTTEXT, COL_WARNDIALOGLISTHIGHLIGHT, COL_WARNDIALOGLISTSELECTEDTEXT,
+		COL_WARNDIALOGLISTSELECTEDHIGHLIGHT, COL_WARNDIALOGLISTDISABLED, COL_WARNDIALOGLISTBOX,
+		COL_WARNDIALOGLISTTITLE, COL_WARNDIALOGLISTSCROLLBAR,
 		COL_WARNDIALOGLISTARROWS,                   // Arrow
 		COL_WARNDIALOGLISTARROWSSELECTED,           // Выбранный - Arrow
 		COL_WARNDIALOGLISTARROWSDISABLED,           // Arrow disabled
@@ -90,30 +80,22 @@ static int ListPaletteItems[4][13]=
 		COL_WARNDIALOGLISTSELECTEDGRAYTEXT,        // выбранный "серый"
 	},
 	// Combobox
-	{ // normal
-		COL_DIALOGCOMBOTEXT,
-		COL_DIALOGCOMBOHIGHLIGHT,
-		COL_DIALOGCOMBOSELECTEDTEXT,
-		COL_DIALOGCOMBOSELECTEDHIGHLIGHT,
-		COL_DIALOGCOMBODISABLED,
-		COL_DIALOGCOMBOBOX,
-		COL_DIALOGCOMBOTITLE,
-		COL_DIALOGCOMBOSCROLLBAR,
+	{
+		// normal
+		COL_DIALOGCOMBOTEXT, COL_DIALOGCOMBOHIGHLIGHT, COL_DIALOGCOMBOSELECTEDTEXT,
+		COL_DIALOGCOMBOSELECTEDHIGHLIGHT, COL_DIALOGCOMBODISABLED, COL_DIALOGCOMBOBOX,
+		COL_DIALOGCOMBOTITLE, COL_DIALOGCOMBOSCROLLBAR,
 		COL_DIALOGCOMBOARROWS,                      // Arrow
 		COL_DIALOGCOMBOARROWSSELECTED,              // Выбранный - Arrow
 		COL_DIALOGCOMBOARROWSDISABLED,              // Arrow disabled
 		COL_DIALOGCOMBOGRAY,                       // "серый"
 		COL_DIALOGCOMBOSELECTEDGRAYTEXT,           // выбранный "серый"
 	},
-	{ // warn
-		COL_WARNDIALOGCOMBOTEXT,
-		COL_WARNDIALOGCOMBOHIGHLIGHT,
-		COL_WARNDIALOGCOMBOSELECTEDTEXT,
-		COL_WARNDIALOGCOMBOSELECTEDHIGHLIGHT,
-		COL_WARNDIALOGCOMBODISABLED,
-		COL_WARNDIALOGCOMBOBOX,
-		COL_WARNDIALOGCOMBOTITLE,
-		COL_WARNDIALOGCOMBOSCROLLBAR,
+	{
+		// warn
+		COL_WARNDIALOGCOMBOTEXT, COL_WARNDIALOGCOMBOHIGHLIGHT, COL_WARNDIALOGCOMBOSELECTEDTEXT,
+		COL_WARNDIALOGCOMBOSELECTEDHIGHLIGHT, COL_WARNDIALOGCOMBODISABLED, COL_WARNDIALOGCOMBOBOX,
+		COL_WARNDIALOGCOMBOTITLE, COL_WARNDIALOGCOMBOSCROLLBAR,
 		COL_WARNDIALOGCOMBOARROWS,                  // Arrow
 		COL_WARNDIALOGCOMBOARROWSSELECTED,          // Выбранный - Arrow
 		COL_WARNDIALOGCOMBOARROWSDISABLED,          // Arrow disabled
@@ -124,8 +106,7 @@ static int ListPaletteItems[4][13]=
 
 void SetColors()
 {
-	MenuDataEx Groups[]=
-	{
+	MenuDataEx Groups[] = {
 		{(const wchar_t *)Msg::SetColorPanel,LIF_SELECTED,0},
 		{(const wchar_t *)Msg::SetColorDialog,0,0},
 		{(const wchar_t *)Msg::SetColorWarning,0,0},
@@ -141,8 +122,7 @@ void SetColors()
 		{(const wchar_t *)Msg::SetDefaultColors,0,0},
 		{(const wchar_t *)Msg::SetBW,0,0}
 	};
-	MenuDataEx PanelItems[]=
-	{
+	MenuDataEx PanelItems[] = {
 		{(const wchar_t *)Msg::SetColorPanelNormal,LIF_SELECTED,0},
 		{(const wchar_t *)Msg::SetColorPanelSelected,0,0},
 		{(const wchar_t *)Msg::SetColorPanelHighlightedInfo,0,0},
@@ -158,16 +138,11 @@ void SetColors()
 		{(const wchar_t *)Msg::SetColorPanelScrollbar,0,0},
 		{(const wchar_t *)Msg::SetColorPanelScreensNumber,0,0}
 	};
-	int PanelPaletteItems[]=
-	{
-		COL_PANELTEXT,COL_PANELSELECTEDTEXT,COL_PANELINFOTEXT,
-		COL_PANELDRAGTEXT,COL_PANELBOX,COL_PANELCURSOR,COL_PANELSELECTEDCURSOR,
-		COL_PANELTITLE,COL_PANELSELECTEDTITLE,COL_PANELCOLUMNTITLE,
-		COL_PANELTOTALINFO,COL_PANELSELECTEDINFO,COL_PANELSCROLLBAR,
-		COL_PANELSCREENSNUMBER
-	};
-	MenuDataEx DialogItems[]=
-	{
+	int PanelPaletteItems[] = {COL_PANELTEXT, COL_PANELSELECTEDTEXT, COL_PANELINFOTEXT, COL_PANELDRAGTEXT,
+			COL_PANELBOX, COL_PANELCURSOR, COL_PANELSELECTEDCURSOR, COL_PANELTITLE, COL_PANELSELECTEDTITLE,
+			COL_PANELCOLUMNTITLE, COL_PANELTOTALINFO, COL_PANELSELECTEDINFO, COL_PANELSCROLLBAR,
+			COL_PANELSCREENSNUMBER};
+	MenuDataEx DialogItems[] = {
 		{(const wchar_t *)Msg::SetColorDialogNormal,LIF_SELECTED,0},
 		{(const wchar_t *)Msg::SetColorDialogHighlighted,0,0},
 		{(const wchar_t *)Msg::SetColorDialogDisabled,0,0},
@@ -189,8 +164,7 @@ void SetColors()
 		{(const wchar_t *)Msg::SetColorDialogListBoxControl,0,0},
 		{(const wchar_t *)Msg::SetColorDialogComboBoxControl,0,0}
 	};
-	int DialogPaletteItems[]=
-	{
+	int DialogPaletteItems[] = {
 		COL_DIALOGTEXT,
 		COL_DIALOGHIGHLIGHTTEXT,
 		COL_DIALOGDISABLED,
@@ -212,8 +186,7 @@ void SetColors()
 		0,
 		2,
 	};
-	MenuDataEx WarnDialogItems[]=
-	{
+	MenuDataEx WarnDialogItems[] = {
 		{(const wchar_t *)Msg::SetColorDialogNormal,LIF_SELECTED,0},
 		{(const wchar_t *)Msg::SetColorDialogHighlighted,0,0},
 		{(const wchar_t *)Msg::SetColorDialogDisabled,0,0},
@@ -235,8 +208,7 @@ void SetColors()
 		{(const wchar_t *)Msg::SetColorDialogListBoxControl,0,0},
 		{(const wchar_t *)Msg::SetColorDialogComboBoxControl,0,0}
 	};
-	int WarnDialogPaletteItems[]=
-	{
+	int WarnDialogPaletteItems[] = {
 		COL_WARNDIALOGTEXT,
 		COL_WARNDIALOGHIGHLIGHTTEXT,
 		COL_WARNDIALOGDISABLED,
@@ -258,8 +230,7 @@ void SetColors()
 		1,
 		3,
 	};
-	MenuDataEx MenuItems[]=
-	{
+	MenuDataEx MenuItems[] = {
 		{(const wchar_t *)Msg::SetColorMenuNormal,LIF_SELECTED,0},
 		{(const wchar_t *)Msg::SetColorMenuSelected,0,0},
 		{(const wchar_t *)Msg::SetColorMenuHighlighted,0,0},
@@ -274,86 +245,61 @@ void SetColors()
 		{(const wchar_t *)Msg::SetColorMenuGrayed,0,0},
 		{(const wchar_t *)Msg::SetColorMenuSelectedGrayed,0,0}
 	};
-	int MenuPaletteItems[]=
-	{
-		COL_MENUTEXT,COL_MENUSELECTEDTEXT,COL_MENUHIGHLIGHT,
-		COL_MENUSELECTEDHIGHLIGHT,COL_MENUDISABLEDTEXT,
-		COL_MENUBOX,COL_MENUTITLE,COL_MENUSCROLLBAR,
+	int MenuPaletteItems[] = {
+		COL_MENUTEXT, COL_MENUSELECTEDTEXT, COL_MENUHIGHLIGHT, COL_MENUSELECTEDHIGHLIGHT,
+		COL_MENUDISABLEDTEXT, COL_MENUBOX, COL_MENUTITLE, COL_MENUSCROLLBAR,
 		COL_MENUARROWS,                             // Arrow
 		COL_MENUARROWSSELECTED,                     // Выбранный - Arrow
 		COL_MENUARROWSDISABLED,
 		COL_MENUGRAYTEXT,                          // "серый"
 		COL_MENUSELECTEDGRAYTEXT,                  // выбранный "серый"
 	};
-	MenuDataEx HMenuItems[]=
-	{
+	MenuDataEx HMenuItems[] = {
 		{(const wchar_t *)Msg::SetColorHMenuNormal,LIF_SELECTED,0},
 		{(const wchar_t *)Msg::SetColorHMenuSelected,0,0},
 		{(const wchar_t *)Msg::SetColorHMenuHighlighted,0,0},
 		{(const wchar_t *)Msg::SetColorHMenuSelectedHighlighted,0,0}
 	};
-	int HMenuPaletteItems[]=
-	{
-		COL_HMENUTEXT,COL_HMENUSELECTEDTEXT,COL_HMENUHIGHLIGHT,
-		COL_HMENUSELECTEDHIGHLIGHT
-	};
-	MenuDataEx KeyBarItems[]=
-	{
+	int HMenuPaletteItems[] = {COL_HMENUTEXT, COL_HMENUSELECTEDTEXT, COL_HMENUHIGHLIGHT,
+			COL_HMENUSELECTEDHIGHLIGHT};
+	MenuDataEx KeyBarItems[] = {
 		{(const wchar_t *)Msg::SetColorKeyBarNumbers,LIF_SELECTED,0},
 		{(const wchar_t *)Msg::SetColorKeyBarNames,0,0},
 		{(const wchar_t *)Msg::SetColorKeyBarBackground,0,0}
 	};
-	int KeyBarPaletteItems[]=
-	{
-		COL_KEYBARNUM,COL_KEYBARTEXT,COL_KEYBARBACKGROUND
-	};
-	MenuDataEx CommandLineItems[]=
-	{
+	int KeyBarPaletteItems[] = {COL_KEYBARNUM, COL_KEYBARTEXT, COL_KEYBARBACKGROUND};
+	MenuDataEx CommandLineItems[] = {
 		{(const wchar_t *)Msg::SetColorCommandLineNormal,LIF_SELECTED,0},
 		{(const wchar_t *)Msg::SetColorCommandLineSelected,0,0},
 		{(const wchar_t *)Msg::SetColorCommandLinePrefix,0,0},
 		{(const wchar_t *)Msg::SetColorCommandLineUserScreen,0,0}
 	};
-	int CommandLinePaletteItems[]=
-	{
-		COL_COMMANDLINE,COL_COMMANDLINESELECTED,COL_COMMANDLINEPREFIX,COL_COMMANDLINEUSERSCREEN
-	};
-	MenuDataEx ClockItems[]=
-	{
+	int CommandLinePaletteItems[] = {COL_COMMANDLINE, COL_COMMANDLINESELECTED, COL_COMMANDLINEPREFIX,
+			COL_COMMANDLINEUSERSCREEN};
+	MenuDataEx ClockItems[] = {
 		{(const wchar_t *)Msg::SetColorClockNormal,LIF_SELECTED,0},
 		{(const wchar_t *)Msg::SetColorClockNormalEditor,0,0},
 		{(const wchar_t *)Msg::SetColorClockNormalViewer,0,0}
 	};
-	int ClockPaletteItems[]=
-	{
-		COL_CLOCK,
-		COL_EDITORCLOCK,COL_VIEWERCLOCK,
-	};
-	MenuDataEx ViewerItems[]=
-	{
+	int ClockPaletteItems[] = { COL_CLOCK, COL_EDITORCLOCK, COL_VIEWERCLOCK };
+	MenuDataEx ViewerItems[] = {
 		{(const wchar_t *)Msg::SetColorViewerNormal,LIF_SELECTED,0},
 		{(const wchar_t *)Msg::SetColorViewerSelected,0,0},
 		{(const wchar_t *)Msg::SetColorViewerStatus,0,0},
 		{(const wchar_t *)Msg::SetColorViewerArrows,0,0},
 		{(const wchar_t *)Msg::SetColorViewerScrollbar,0,0}
 	};
-	int ViewerPaletteItems[]=
-	{
-		COL_VIEWERTEXT,COL_VIEWERSELECTEDTEXT,COL_VIEWERSTATUS,COL_VIEWERARROWS,COL_VIEWERSCROLLBAR
-	};
-	MenuDataEx EditorItems[]=
-	{
+	int ViewerPaletteItems[] = {COL_VIEWERTEXT, COL_VIEWERSELECTEDTEXT, COL_VIEWERSTATUS, COL_VIEWERARROWS,
+			COL_VIEWERSCROLLBAR};
+	MenuDataEx EditorItems[] = {
 		{(const wchar_t *)Msg::SetColorEditorNormal,LIF_SELECTED,0},
 		{(const wchar_t *)Msg::SetColorEditorSelected,0,0},
 		{(const wchar_t *)Msg::SetColorEditorStatus,0,0},
 		{(const wchar_t *)Msg::SetColorEditorScrollbar,0,0}
 	};
-	int EditorPaletteItems[]=
-	{
-		COL_EDITORTEXT,COL_EDITORSELECTEDTEXT,COL_EDITORSTATUS,COL_EDITORSCROLLBAR
-	};
-	MenuDataEx HelpItems[]=
-	{
+	int EditorPaletteItems[] = {COL_EDITORTEXT, COL_EDITORSELECTEDTEXT, COL_EDITORSTATUS,
+			COL_EDITORSCROLLBAR};
+	MenuDataEx HelpItems[] = {
 		{(const wchar_t *)Msg::SetColorHelpNormal,LIF_SELECTED,0},
 		{(const wchar_t *)Msg::SetColorHelpHighlighted,0,0},
 		{(const wchar_t *)Msg::SetColorHelpReference,0,0},
@@ -362,18 +308,14 @@ void SetColors()
 		{(const wchar_t *)Msg::SetColorHelpBoxTitle,0,0},
 		{(const wchar_t *)Msg::SetColorHelpScrollbar,0,0}
 	};
-	int HelpPaletteItems[]=
-	{
-		COL_HELPTEXT,COL_HELPHIGHLIGHTTEXT,COL_HELPTOPIC,COL_HELPSELECTEDTOPIC,
-		COL_HELPBOX,COL_HELPBOXTITLE,COL_HELPSCROLLBAR
-	};
+	int HelpPaletteItems[] = {COL_HELPTEXT, COL_HELPHIGHLIGHTTEXT, COL_HELPTOPIC, COL_HELPSELECTEDTOPIC,
+			COL_HELPBOX, COL_HELPBOXTITLE, COL_HELPSCROLLBAR};
 	{
 		int GroupsCode;
 		VMenu GroupsMenu(Msg::SetColorGroupsTitle,Groups,ARRAYSIZE(Groups),0);
 		MenuToRedraw1=&GroupsMenu;
 
-		for (;;)
-		{
+		for (;;) {
 			GroupsMenu.SetPosition(2,1,0,0);
 			GroupsMenu.SetFlags(VMENU_WRAPMODE|VMENU_NOTCHANGE);
 			GroupsMenu.ClearDone();
@@ -382,21 +324,18 @@ void SetColors()
 			if ((GroupsCode=GroupsMenu.Modal::GetExitCode())<0)
 				break;
 
-			if (GroupsCode==12)
-			{
+			if (GroupsCode == 12) {
 				//                   было sizeof(Palette)
-				memcpy(Palette,DefaultPalette,SizeArrayPalette);
+				memcpy(Palette, DefaultPalette, SIZE_ARRAY_PALETTE);
 				break;
 			}
 
-			if (GroupsCode==13)
-			{
-				memcpy(Palette,BlackPalette,SizeArrayPalette);
+			if (GroupsCode == 13) {
+				memcpy(Palette, BlackPalette, SIZE_ARRAY_PALETTE);
 				break;
 			}
 
-			switch (GroupsCode)
-			{
+			switch (GroupsCode) {
 				case 0:
 					SetItemColors(PanelItems,PanelPaletteItems,ARRAYSIZE(PanelItems),0);
 					break;
@@ -443,8 +382,7 @@ void SetColors()
 
 static void SetItemColors(MenuDataEx *Items,int *PaletteItems,int Size,int TypeSub)
 {
-	MenuDataEx ListItems[] =
-	{
+	MenuDataEx ListItems[] = {
 		{Msg::SetColorDialogListText, LIF_SELECTED, 0},
 		{Msg::SetColorDialogListHighLight, 0, 0},
 		{Msg::SetColorDialogListSelectedText, 0, 0},
@@ -468,8 +406,7 @@ static void SetItemColors(MenuDataEx *Items,int *PaletteItems,int Size,int TypeS
 	else
 		MenuToRedraw2=&ItemsMenu;
 
-	for (;;)
-	{
+	for (;;) {
 		ItemsMenu.SetPosition(17-(TypeSub == 2?7:0),5+(TypeSub == 2?2:0),0,0);
 		ItemsMenu.SetFlags(VMENU_WRAPMODE|VMENU_NOTCHANGE);
 		ItemsMenu.ClearDone();
@@ -480,12 +417,10 @@ static void SetItemColors(MenuDataEx *Items,int *PaletteItems,int Size,int TypeS
 
 // 0,1 - dialog,warn List
 // 2,3 - dialog,warn Combobox
-		if (TypeSub == 1 && PaletteItems[ItemsCode] < 4)
-		{
+		if (TypeSub == 1 && PaletteItems[ItemsCode] < 4) {
 			SetItemColors(ListItems,ListPaletteItems[PaletteItems[ItemsCode]],ARRAYSIZE(ListItems),2);
 			MenuToRedraw3=nullptr;
-		}
-		else
+		} else
 			GetColor(PaletteItems[ItemsCode]);
 	}
 }
@@ -496,8 +431,7 @@ void GetColor(int PaletteIndex)
 	ChangeMacroArea Cma(MACROAREA_MENU);
 	WORD NewColor=Palette[PaletteIndex-COL_FIRSTPALETTECOLOR];
 
-	if (GetColorDialog(NewColor))
-	{
+	if (GetColorDialog(NewColor)) {
 		Palette[PaletteIndex-COL_FIRSTPALETTECOLOR]=static_cast<BYTE>(NewColor);
 		ScrBuf.Lock(); // отменяем всякую прорисовку
 		CtrlObject->Cp()->LeftPanel->Update(UPDATE_KEEP_SELECTION);
@@ -517,8 +451,7 @@ void GetColor(int PaletteIndex)
 		MenuToRedraw2->SetColors();
 		MenuToRedraw2->Show();
 
-		if (MenuToRedraw3)
-		{
+		if (MenuToRedraw3) {
 			MenuToRedraw3->SetColors();
 			MenuToRedraw3->Show();
 		}
@@ -531,15 +464,60 @@ void GetColor(int PaletteIndex)
 	}
 }
 
+static void GetColorDlgProc_OnDrawn(HANDLE hDlg)
+{
+	// Trick to fix #1392:
+	// For foreground-colored boxes invert Fg&Bg colors and add COMMON_LVB_REVERSE_VIDEO attribute
+	// this will put real colors on them if mapping of colors is different for Fg and Bg indexes
+
+	// Ensure everything is on screen and will use console API then
+	ScrBuf.Flush();
+
+	SMALL_RECT DlgRect{};
+	SendDlgMessage(hDlg, DM_GETDLGRECT, 0, (LONG_PTR)&DlgRect);
+
+	for (int ID = 2; ID <= 17; ++ID) {
+		SMALL_RECT ItemRect{};
+		if (SendDlgMessage(hDlg, DM_GETITEMPOSITION, ID, (LONG_PTR)&ItemRect)) {
+			ItemRect.Left+= DlgRect.Left;
+			ItemRect.Right+= DlgRect.Left;
+			ItemRect.Top+= DlgRect.Top;
+			ItemRect.Bottom+= DlgRect.Top;
+
+			CHAR_INFO ci{};
+			SMALL_RECT Rect = {ItemRect.Left, ItemRect.Top, ItemRect.Left, ItemRect.Top};
+			WINPORT(ReadConsoleOutput)(0, &ci, COORD{1, 1}, COORD{0, 0}, &Rect);
+			if (ci.Attributes & COMMON_LVB_REVERSE_VIDEO)
+				continue;	// this cell is already tweaked during prev paint
+
+			DWORD64 InvColors = COMMON_LVB_REVERSE_VIDEO;
+
+			InvColors|= ((ci.Attributes & 0x0f) << 4) | ((ci.Attributes & 0xf0) >> 4);
+
+			InvColors|= (ci.Attributes & (COMMON_LVB_UNDERSCORE | COMMON_LVB_STRIKEOUT));
+
+			if (ci.Attributes & FOREGROUND_TRUECOLOR) {
+				SET_RGB_BACK(InvColors, GET_RGB_FORE(ci.Attributes));
+			}
+
+			if (ci.Attributes & BACKGROUND_TRUECOLOR) {
+				SET_RGB_FORE(InvColors, GET_RGB_BACK(ci.Attributes));
+			}
+
+			DWORD NumberOfAttrsWritten{};
+			WINPORT(FillConsoleOutputAttribute)
+			(0, InvColors, ItemRect.Right - ItemRect.Left, COORD{ItemRect.Left, ItemRect.Top},
+					&NumberOfAttrsWritten);
+		}
+	}
+}
 
 static LONG_PTR WINAPI GetColorDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 {
-	switch (Msg)
-	{
+	switch (Msg) {
 		case DN_CTLCOLORDLGITEM:
 
-			if (Param1 >= 37 && Param1 <= 39)
-			{
+			if (Param1 >= 37 && Param1 <= 39) {
 				int *CurColor=(int *)SendDlgMessage(hDlg,DM_GETDLGDATA,0,0);
 				return (Param2&0xFFFFFF00U)|((*CurColor)&0xFF);
 			}
@@ -547,21 +525,19 @@ static LONG_PTR WINAPI GetColorDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PT
 			break;
 		case DN_BTNCLICK:
 
-			if (Param1 >= 2 && Param1 <= 34)
-			{
+			if (Param1 >= 2 && Param1 <= 34) {
 				int NewColor;
 				int *CurColor = (int *) SendDlgMessage(hDlg, DM_GETDLGDATA, 0, 0);
-				FarDialogItem *DlgItem = (FarDialogItem *)malloc(SendDlgMessage(hDlg, DM_GETDLGITEM, Param1, 0));
+				FarDialogItem *DlgItem =
+						(FarDialogItem *)malloc(SendDlgMessage(hDlg, DM_GETDLGITEM, Param1, 0));
 				SendDlgMessage(hDlg, DM_GETDLGITEM, Param1, (LONG_PTR)DlgItem);
 				NewColor=*CurColor;
 
-				if (Param1 >= 2 && Param1 <= 17) // Fore
+				if (Param1 <= 17)		// Fore
 				{
 					NewColor&=~0x0F;
 					NewColor|=(DlgItem->Flags & B_MASK)>>4;
-				}
-
-				if (Param1 >= 19 && Param1 <= 34) // Back
+				} else if (Param1 >= 19)	// Back
 				{
 					NewColor&=~0xF0;
 					NewColor|=DlgItem->Flags & B_MASK;
@@ -575,6 +551,10 @@ static LONG_PTR WINAPI GetColorDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PT
 			}
 
 			break;
+
+		case DN_DRAWDIALOGDONE:
+			GetColorDlgProc_OnDrawn(hDlg);
+			break;
 	}
 
 	return DefDlgProc(hDlg, Msg, Param1, Param2);
@@ -583,8 +563,7 @@ static LONG_PTR WINAPI GetColorDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PT
 
 int GetColorDialog(WORD& Color,bool bCentered,bool bAddTransparent,INT_PTR PluginNumber)
 {
-	DialogDataEx ColorDlgData[]=
-	{
+	DialogDataEx ColorDlgData[] = {
 		/*   0 */ {DI_DOUBLEBOX,   3, 1,35,13, {},0,Msg::SetColorTitle},
 		/*   1 */ {DI_SINGLEBOX,   5, 2,18, 7, {},0,Msg::SetColorForeground},
 		/*   2 */ {DI_RADIOBUTTON, 6, 3, 0, 3, {},F_LIGHTGRAY|B_BLACK|DIF_GROUP|DIF_SETCOLOR|DIF_MOVESELECT,L""},
@@ -636,36 +615,29 @@ int GetColorDialog(WORD& Color,bool bCentered,bool bAddTransparent,INT_PTR Plugi
 	int ExitCode;
 	WORD CurColor=Color;
 
-	for (size_t i=2; i<18; i++)
-	{
-		if (static_cast<WORD>((ColorDlg[i].Flags & B_MASK)>>4)==(Color & F_MASK))
-		{
+	for (size_t i = 2; i < 18; i++) {
+		if (static_cast<WORD>((ColorDlg[i].Flags & B_MASK) >> 4) == (Color & F_MASK)) {
 			ColorDlg[i].Selected=1;
 			ColorDlg[i].Focus=TRUE;
 			break;
 		}
 	}
 
-	for (size_t i=19; i<35; i++)
-	{
-		if (static_cast<WORD>(ColorDlg[i].Flags & B_MASK)==(Color & B_MASK))
-		{
+	for (size_t i = 19; i < 35; i++) {
+		if (static_cast<WORD>(ColorDlg[i].Flags & B_MASK) == (Color & B_MASK)) {
 			ColorDlg[i].Selected=1;
 			break;
 		}
 	}
 
-	for (size_t i=37; i<40; i++)
-	{
+	for (size_t i = 37; i < 40; i++) {
 		ColorDlg[i].Flags=(ColorDlg[i].Flags & ~DIF_COLORMASK) | Color;
 	}
 
-	if (bAddTransparent)
-	{
+	if (bAddTransparent) {
 		ColorDlg[0].Y2++;
 
-		for (size_t i=37; i<=42; i++)
-		{
+		for (size_t i = 37; i <= 42; i++) {
 			ColorDlg[i].Y1+=3;
 			ColorDlg[i].Y2+=3;
 		}
@@ -678,30 +650,25 @@ int GetColorDialog(WORD& Color,bool bCentered,bool bAddTransparent,INT_PTR Plugi
 		ColorDlg[18].X2+=4;
 		ColorDlg[18].Y2+=2;
 
-		for (size_t i=2; i<=17; i++)
-		{
+		for (size_t i = 2; i <= 17; i++) {
 			ColorDlg[i].X1+=1;
 			ColorDlg[i].Y1+=1;
 			ColorDlg[i].Y2+=1;
 		}
 
-		for (size_t i=19; i<=34; i++)
-		{
+		for (size_t i = 19; i <= 34; i++) {
 			ColorDlg[i].X1+=3;
 			ColorDlg[i].Y1+=1;
 			ColorDlg[i].Y2+=1;
 		}
 
-		for (size_t i=37; i<=39; i++)
-		{
+		for (size_t i = 37; i <= 39; i++) {
 			ColorDlg[i].X2+=4;
 		}
 
 		ColorDlg[35].Selected=(Color&0x0F00?1:0);
 		ColorDlg[36].Selected=(Color&0xF000?1:0);
-	}
-	else
-	{
+	} else {
 		ColorDlg[35].Flags|=DIF_HIDDEN;
 		ColorDlg[36].Flags|=DIF_HIDDEN;
 	}
@@ -719,8 +686,7 @@ int GetColorDialog(WORD& Color,bool bCentered,bool bAddTransparent,INT_PTR Plugi
 		ExitCode=Dlg.GetExitCode();
 	}
 
-	if (ExitCode==41)
-	{
+	if (ExitCode == 41) {
 		Color=CurColor;
 
 		if (ColorDlg[35].Selected)
