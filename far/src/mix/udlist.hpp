@@ -42,14 +42,15 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 enum UDL_FLAGS
 {
-	ULF_ADDASTERISK    =0x00000001, // добавлять '*' к концу элемента списка, если он не содержит '?', '*' и '.'
-	ULF_PACKASTERISKS  =0x00000002, // вместо "***" в список помещать просто "*"
-	ULF_PROCESSBRACKETS=0x00000004, // учитывать квадратные скобки при анализе строки инициализации
-	ULF_UNIQUE         =0x00000010, // убирать дублирующиеся элементы
-	ULF_SORT           =0x00000020, // отсортировать (с учетом регистра)
-	ULF_NOTTRIM        =0x00000040, // не удалять пробелы
-	ULF_ACCOUNTEMPTYLINE=0x00000100, // учитывать пустые "строки"
-	ULF_CASESENSITIVE  =0x00000200, // регистрозависимый
+	ULF_ADDASTERISK      =0x00000001, // добавлять '*' к концу элемента списка, если он не содержит '?', '*' и '.'
+	ULF_PACKASTERISKS    =0x00000002, // вместо "***" в список помещать просто "*"
+	ULF_PROCESSBRACKETS  =0x00000004, // учитывать квадратные скобки при анализе строки инициализации
+	ULF_UNIQUE           =0x00000010, // убирать дублирующиеся элементы
+	ULF_SORT             =0x00000020, // отсортировать (с учетом регистра)
+	ULF_NOTTRIM          =0x00000040, // не удалять пробелы
+	ULF_ACCOUNTEMPTYLINE =0x00000100, // учитывать пустые "строки"
+	ULF_CASESENSITIVE    =0x00000200, // регистрозависимый
+	ULF_PROCESSREGEXP    =0x00000400, // учитывать регулярные выражения, например /a+,b+;c+/i
 };
 
 
@@ -74,7 +75,7 @@ class UserDefinedList : private NonCopyable
 		std::vector<UserDefinedListItem> Array;
 		wchar_t Separator1, Separator2;
 		bool mProcessBrackets, mAddAsterisk, mPackAsterisks, mUnique, mSort, mTrim;
-		bool mAccountEmptyLine, mCaseSensitive;
+		bool mAccountEmptyLine, mCaseSensitive, mProcessRegexp;
 
 	private:
 		bool CheckSeparators() const; // проверка разделителей на корректность

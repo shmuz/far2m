@@ -242,7 +242,7 @@ bool FileMasksProcessor::Set(const wchar_t *masks, DWORD Flags)
 bool FileMasksProcessor::SetPart(const wchar_t *masks, DWORD Flags, std::vector<BaseFileMask*> &Target)
 {
 	// разделителем масок является не только запятая, но и точка с запятой!
-	DWORD flags=ULF_PACKASTERISKS|ULF_PROCESSBRACKETS|ULF_SORT|ULF_UNIQUE;
+	DWORD flags=ULF_PACKASTERISKS|ULF_PROCESSBRACKETS|ULF_PROCESSREGEXP;
 
 	if (Flags&FMPF_ADDASTERISK)
 		flags|=ULF_ADDASTERISK;

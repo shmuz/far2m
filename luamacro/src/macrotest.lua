@@ -1571,6 +1571,11 @@ local function test_ProcessName()
 
   assert_false (far.CmpNameList("f*.ex?",    "a/f.ext", 0     ))
   assert_true  (far.CmpNameList("f*.ex?",    "a/f.ext", "PN_SKIPPATH" ))
+
+  assert_true  (far.CmpNameList("/ BAR ; /xi  ;*.md", "bar;foo"))
+  assert_false (far.CmpNameList("/ BAR ; /xi  ;*.md", "bar,foo"))
+  assert_true  (far.CmpNameList("/ BAR ; /xi  ;*.md", "README.md"))
+  assert_false (far.CmpNameList("/ BAR ; /xi  ;*.md", "README.me"))
 end
 
 local function test_FarStandardFunctions()

@@ -1305,7 +1305,7 @@ DWORD GetInputRecord(INPUT_RECORD *rec, bool ExcludeMacro, bool ProcessMouse, bo
 
 	DWORD Key = GetInputRecordImpl(rec, ExcludeMacro, ProcessMouse, AllowSynchro);
 
-	if (CtrlObject && Key && (Key!=KEY_OP_PLAINTEXT) && (Key!=KEY_OP_SELWORD) && (Key!=KEY_OP_XLAT))
+	if (CtrlObject && Key && !(Key >= KEY_OP_BASE && Key <= KEY_OP_ENDBASE))
 	{
 		switch (CtrlObject->Plugins.ProcessConsoleInput(rec))
 		{
