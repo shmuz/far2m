@@ -218,7 +218,7 @@ bool UserDefinedList::Set(const wchar_t* List, bool AddToList)
 
 	if (rc)
 	{
-		if (mUnique) // Array.Pack();
+		if (mUnique)
 		{
 			std::sort(Array.begin(), Array.end());
 			for (auto it=Array.cbegin(); it != Array.cend(); )
@@ -274,33 +274,7 @@ const wchar_t *UserDefinedList::Skip(const wchar_t *Str, int &Length, int &RealL
 	bool InQuotes = (*cur==L'\"');
 	bool IsRegexp = mProcessRegexp && (*cur==L'/');
 
-	if (!InQuotes && !IsRegexp)
-	{
-		bool InBrackets=false;
-		for (; *cur; ++cur) // важно! проверка *cur должна стоять первой
-		{
-			if (mProcessBrackets)
-			{
-				if (*cur==L'[' && wcschr(cur+1, L']'))
-					InBrackets=true;
-				else if (*cur==L']')
-					InBrackets=false;
-			}
-			if (!InBrackets && (*cur==Separator1 || *cur==Separator2))
-				break;
-		}
-
-		RealLength=Length=(int)(cur-Str);
-
-		if ( mTrim )
-		{
-			while (IsSpace(*--cur))
-				--Length;
-		}
-		return Str;
-	}
-
-	else if (InQuotes)
+	if (InQuotes)
 	{
 		const wchar_t *End = nullptr;
 		for (auto ptr=++cur; *ptr; ++ptr)
@@ -366,6 +340,32 @@ const wchar_t *UserDefinedList::Skip(const wchar_t *Str, int &Length, int &RealL
 				return cur;
 			}
 		}
+	}
+
+	else
+	{
+		bool InBrackets=false;
+		for (; *cur; ++cur) // важно! проверка *cur должна стоять первой
+		{
+			if (mProcessBrackets)
+			{
+				if (*cur==L'[')
+					InBrackets=true;
+				else if (*cur==L']')
+					InBrackets=false;
+			}
+			if (!InBrackets && (*cur==Separator1 || *cur==Separator2))
+				break;
+		}
+
+		RealLength=Length=(int)(cur-Str);
+
+		if ( mTrim )
+		{
+			while (Length>0 && IsSpace(*--cur))
+				--Length;
+		}
+		return Str;
 	}
 
 ErrorLabel:
