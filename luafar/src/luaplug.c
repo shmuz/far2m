@@ -6,10 +6,8 @@
 #define LUAPLUG __attribute__ ((visibility ("default")))
 #endif
 
-// define the minimum FAR version required by the plugin
-#ifndef MINFARVERSION
-#define MINFARVERSION MAKEFARVERSION(2,0)
-#endif
+#define WIDEN2(x) L ## x
+#define WIDEN(x) WIDEN2(x)
 
 #ifdef FUNC_OPENLIBS
 extern int FUNC_OPENLIBS (lua_State*);
@@ -40,7 +38,12 @@ static LONG_PTR WINAPI DlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 
 void LUAPLUG GetGlobalInfoW(struct GlobalInfo *aInfo)
 {
-  aInfo->SysID = SYS_ID;
+  aInfo->SysID         = SYS_ID;
+  aInfo->MinFarVersion = PLUG_MINFARVERSION;
+  aInfo->Version       = PLUG_VERSION;
+  aInfo->Title         = WIDEN(PLUG_TITLE);
+  aInfo->Description   = WIDEN(PLUG_DESCRIPTION);
+  aInfo->Author        = WIDEN(PLUG_AUTHOR);
 }
 
 void LUAPLUG SetStartupInfoW(const struct PluginStartupInfo *aInfo)
@@ -258,7 +261,7 @@ int LUAPLUG SetFindListW(HANDLE hPlugin, const struct PluginPanelItem *PanelItem
 #if defined(EXPORT_GETMINFARVERSION) || defined(EXPORT_ALL)
 int LUAPLUG GetMinFarVersionW (void)
 {
-  return MINFARVERSION;
+  return PLUG_MINFARVERSION;
 }
 #endif
 //---------------------------------------------------------------------------

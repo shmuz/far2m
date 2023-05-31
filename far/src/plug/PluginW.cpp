@@ -639,7 +639,8 @@ void PluginW::GetGlobalInfo()
 	{
 		ExecuteStruct es;
 		es.id = EXCEPT_GETGLOBALINFO;
-		GlobalInfo gi = { sizeof(GlobalInfo), 0 };
+		GlobalInfo gi {};
+		gi.StructSize = sizeof(GlobalInfo);
 		EXECUTE_FUNCTION(pGetGlobalInfoW(&gi), es);
 		SysID = gi.SysID;
 		if (es.bUnloaded) // supress a warning

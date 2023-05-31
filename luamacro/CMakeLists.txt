@@ -8,8 +8,6 @@ else()
   return()
 endif()
 
-set(SYS_ID 0x4EBBEFC8)
-
 set(SOURCES
   ${CMAKE_SOURCE_DIR}/luafar/src/luaplug.c
 )
@@ -29,7 +27,15 @@ foreach(f ${EXPNAMES})
   list(APPEND EXPORTS "-DEXPORT_${f}")
 endforeach()
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE ${EXPORTS} "-DSYS_ID=${SYS_ID}")
+target_compile_definitions(${PROJECT_NAME}
+  PRIVATE ${EXPORTS}
+  PRIVATE "-DSYS_ID=0x4EBBEFC8"
+  PRIVATE "-DPLUG_MINFARVERSION=0x00020004"
+  PRIVATE "-DPLUG_VERSION=0x00030000"
+  PRIVATE "-DPLUG_TITLE=\"LuaMacro\""
+  PRIVATE "-DPLUG_DESCRIPTION=\"Far macros in Lua\""
+  PRIVATE "-DPLUG_AUTHOR=\"Shmuel Zeigerman & Far Group\""
+)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ../far/far2sdk)
 target_include_directories(${PROJECT_NAME} PRIVATE ../WinPort)

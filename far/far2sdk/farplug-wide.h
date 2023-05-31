@@ -2617,6 +2617,11 @@ struct GlobalInfo
 {
 	size_t StructSize;
 	DWORD SysID;
+	DWORD MinFarVersion;
+	DWORD Version;
+	const wchar_t *Title;
+	const wchar_t *Description;
+	const wchar_t *Author;
 };
 
 struct FarGetPluginInformation
