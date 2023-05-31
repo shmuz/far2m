@@ -5024,14 +5024,14 @@ int far_GetPluginInformation(lua_State *L)
     }
     lua_createtable(L, 0, 7); // GInfo
     {
-      PutIntToTable(L, "StructSize", pi->GInfo->StructSize);
-      PutIntToTable(L, "SysID", pi->GInfo->SysID);
-      // PutVersionInfoToTable(L, "MinFarVersion", &pi->GInfo->MinFarVersion);
-      // PutVersionInfoToTable(L, "Version", &pi->GInfo->Version);
+      PutNumToTable(L, "StructSize", pi->GInfo->StructSize);
+      PutNumToTable(L, "SysID", pi->GInfo->SysID);
+      PutNumToTable(L, "MinFarVersion", pi->GInfo->MinFarVersion);
+      PutNumToTable(L, "Version", pi->GInfo->Version);
       // PutLStrToTable(L, "Guid", (const char*)&pi->GInfo->Guid, sizeof(GUID));
-      // PutWStrToTable(L, "Title", pi->GInfo->Title, -1);
-      // PutWStrToTable(L, "Description", pi->GInfo->Description, -1);
-      // PutWStrToTable(L, "Author", pi->GInfo->Author, -1);
+      PutWStrToTable(L, "Title", pi->GInfo->Title, -1);
+      PutWStrToTable(L, "Description", pi->GInfo->Description, -1);
+      PutWStrToTable(L, "Author", pi->GInfo->Author, -1);
       lua_setfield(L, -2, "GInfo");
     }
   }

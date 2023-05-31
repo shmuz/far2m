@@ -357,20 +357,25 @@ bool PluginW::Load()
 
 	bool bUnloaded = false;
 
-	if (!CheckMinFarVersion(bUnloaded) || (GetGlobalInfo(), !SetStartupInfo(bUnloaded)))
+	if (CheckMinFarVersion(bUnloaded))
 	{
-		if (!bUnloaded)
-			Unload();
+		GetGlobalInfo();
 
-		//чтоб не пытаться загрузить опять а то ошибка будет постоянно показываться.
-		WorkFlags.Set(PIWF_DONTLOADAGAIN);
-
-		return false;
+		if (SetStartupInfo(bUnloaded))
+		{
+			FuncFlags.Set(PICFF_LOADED);
+			SaveToCache();
+			return true;
+		}
 	}
 
-	FuncFlags.Set(PICFF_LOADED);
-	SaveToCache();
-	return true;
+	if (!bUnloaded)
+		Unload();
+
+	//чтоб не пытаться загрузить опять а то ошибка будет постоянно показываться.
+	WorkFlags.Set(PIWF_DONTLOADAGAIN);
+
+	return false;
 }
 
 static int WINAPI farExecuteW(const wchar_t *CmdStr, unsigned int flags)
@@ -642,7 +647,17 @@ void PluginW::GetGlobalInfo()
 		GlobalInfo gi {};
 		gi.StructSize = sizeof(GlobalInfo);
 		EXECUTE_FUNCTION(pGetGlobalInfoW(&gi), es);
-		SysID = gi.SysID;
+
+		if (gi.StructSize && gi.Title && *gi.Title && gi.Description && *gi.Description && gi.Author && *gi.Author)
+		{
+			SysID = gi.SysID;
+			strTitle = gi.Title;
+			strDescription = gi.Description;
+			strAuthor= gi.Author;
+			m_MinFarVersion = gi.MinFarVersion;
+			m_PluginVersion = gi.Version;
+		}
+
 		if (es.bUnloaded) // supress a warning
 			{}
 	}

@@ -2471,11 +2471,11 @@ size_t PluginManager::GetPluginInformation(Plugin *pPlugin, FarGetPluginInformat
 
 	pInfo->GInfo->StructSize = sizeof(GlobalInfo);
 	pInfo->GInfo->SysID = SysID;
-	// pInfo->GInfo->Version = pPlugin->version();
-	// pInfo->GInfo->MinFarVersion = pPlugin->MinFarVersion();
-	// pInfo->GInfo->Title = StrToBuf(pPlugin->strTitle, Buffer, Rest, Size);
-	// pInfo->GInfo->Description = StrToBuf(pPlugin->strDescription, Buffer, Rest, Size);
-	// pInfo->GInfo->Author = StrToBuf(pPlugin->strAuthor, Buffer, Rest, Size);
+	pInfo->GInfo->Version = pPlugin->m_PluginVersion;
+	pInfo->GInfo->MinFarVersion = pPlugin->m_MinFarVersion;
+	pInfo->GInfo->Title = StrToBuf(pPlugin->strTitle, Buffer, Rest, Size);
+	pInfo->GInfo->Description = StrToBuf(pPlugin->strDescription, Buffer, Rest, Size);
+	pInfo->GInfo->Author = StrToBuf(pPlugin->strAuthor, Buffer, Rest, Size);
 
 	pInfo->PInfo->StructSize = sizeof(PluginInfo);
 	pInfo->PInfo->Flags = Flags;

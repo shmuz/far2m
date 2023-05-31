@@ -48,6 +48,8 @@ class PluginManager;
 
 class Plugin
 {
+	friend class PluginManager;
+
 		void *m_hModule = nullptr;
 		void *GetModulePFN(const char *fn);
 
@@ -71,6 +73,12 @@ class Plugin
 		   PrintManager = 0x6E614D50 (PMan)  SYSID_PRINTMANAGER
 		*/
 		DWORD SysID = 0;
+
+		FARString strTitle;
+		FARString strDescription;
+		FARString strAuthor;
+		DWORD m_MinFarVersion{};
+		DWORD m_PluginVersion{};
 
 		Language Lang;
 
