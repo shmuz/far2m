@@ -4974,12 +4974,15 @@ int far_ClearPluginCache(lua_State *L)
 
 void PutPluginMenuItemToTable(lua_State *L, const char* Field, const wchar_t* const* Strings, int Count)
 {
+  lua_createtable(L, 0, 2);
+  PutIntToTable(L, "Count", Count);
   lua_createtable(L, Count, 0);
   if (Strings) {
     int i;
     for (i=0; i<Count; i++)
       PutWStrToArray(L, i+1, Strings[i], -1);
   }
+  lua_setfield(L, -2, "Strings");
   lua_setfield(L, -2, Field);
 }
 
