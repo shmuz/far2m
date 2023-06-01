@@ -860,6 +860,7 @@ in filenames and in editor).
                   that owns the menu item.
     #F4#          - assign a hotkey for selected menu item. If #Space# is
                   entered, then Far sets the hotkey automatically.
+    #F3#          - show plugin technical information.
     #Shift-F9#    - settings of the selected plugin.
     #Alt-Shift-F9# - open ~"Plugins configuration"~@PluginsConfig@ menu.
 
