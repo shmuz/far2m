@@ -75,6 +75,11 @@ static const char *szCache_Preload = "Preload";
 static const char *szCache_Preopen = "Preopen";
 static const char *szCache_SysID = "SysID";
 
+static const char *szCache_PluginVersion = "Version";
+static const char *szCache_Title = "Title";
+static const char *szCache_Description = "Description";
+static const char *szCache_Author = "Author";
+
 static const char szCache_OpenPlugin[] = "OpenPluginW";
 static const char szCache_OpenFilePlugin[] = "OpenFilePluginW";
 static const char szCache_SetFindList[] = "SetFindListW";
@@ -198,6 +203,11 @@ bool PluginW::LoadFromCache()
 	if (kfh.GetString("ID") != m_strModuleID)
 		return false;
 
+	m_PluginVersion = kfh.GetUInt(szCache_PluginVersion, 0);
+	strTitle = kfh.GetString(szCache_Title);
+	strDescription = kfh.GetString(szCache_Description);
+	strAuthor = kfh.GetString(szCache_Author);
+
 	SysID = kfh.GetUInt(szCache_SysID, 0);
 	pOpenPluginW = (PLUGINOPENPLUGINW)(INT_PTR)kfh.GetUInt(szCache_OpenPlugin, 0);
 	pOpenFilePluginW = (PLUGINOPENFILEPLUGINW)(INT_PTR)kfh.GetUInt(szCache_OpenFilePlugin, 0);
@@ -221,23 +231,6 @@ bool PluginW::LoadFromCache()
 
 bool PluginW::SaveToCache()
 {
-	if (!pGetPluginInfoW &&
-        !pOpenPluginW &&
-        !pOpenFilePluginW &&
-        !pSetFindListW &&
-        !pProcessEditorInputW &&
-        !pProcessEditorEventW &&
-        !pProcessViewerEventW &&
-        !pProcessDialogEventW &&
-        !pProcessSynchroEventW &&
-        !pAnalyseW &&
-        !pGetCustomDataW &&
-        !pProcessConsoleInputW
-	   )
-	{
-		return false;
-	}
-
 	KeyFileHelper kfh(PluginsIni());
 	kfh.RemoveSection(GetSettingsName());
 
@@ -305,6 +298,11 @@ bool PluginW::SaveToCache()
 	kfh.SetUInt(GetSettingsName(), szCache_Analyse, pAnalyseW!=nullptr);
 	kfh.SetUInt(GetSettingsName(), szCache_GetCustomData, pGetCustomDataW!=nullptr);
 	kfh.SetUInt(GetSettingsName(), szCache_ProcessConsoleInput, pProcessConsoleInputW!=nullptr);
+
+	kfh.SetUInt(GetSettingsName(),   szCache_PluginVersion, m_PluginVersion);
+	kfh.SetString(GetSettingsName(), szCache_Title, strTitle);
+	kfh.SetString(GetSettingsName(), szCache_Description, strDescription);
+	kfh.SetString(GetSettingsName(), szCache_Author, strAuthor);
 
 	return true;
 }
@@ -691,6 +689,7 @@ bool PluginW::CheckMinFarVersion(bool &bUnloaded)
 		}
 
 		DWORD FVer = (DWORD)es.nResult;
+		m_MinFarVersion = FVer;
 
 		if (LOWORD(FVer) >  LOWORD(FAR_VERSION) ||
 		        (LOWORD(FVer) == LOWORD(FAR_VERSION) &&
