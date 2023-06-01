@@ -88,6 +88,8 @@ class DialogBuilder: public DialogBuilderBase<DialogItemEx>
 		// Добавляет поле типа DI_FIXEDIT для редактирования указанного числового значения.
 		virtual DialogItemEx *AddIntEditField(int *Value, int Width);
 
+		virtual DialogItemEx* AddConstEditField(const FARString& Value, int Width, int Flags=0);
+
 		// Добавляет выпадающий список с указанными значениями.
 		DialogItemEx *AddComboBox(int *Value, int Width, DialogBuilderListItem *Items, int ItemCount, DWORD Flags = DIF_NONE);
 
@@ -104,6 +106,11 @@ class DialogBuilder: public DialogBuilderBase<DialogItemEx>
 		void AddOKCancel()
 		{
 			DialogBuilderBase<DialogItemEx>::AddOKCancel(Msg::Ok, Msg::Cancel);
+		}
+
+		void AddOK()
+		{
+			DialogBuilderBase<DialogItemEx>::AddOK(Msg::Ok);
 		}
 
 		void SetId(const GUID& Id);

@@ -663,6 +663,12 @@ int Panel::ChangeDiskMenu(int Pos,int FirstCall)
 
 					break;
 				}
+				case KEY_F3:
+					if (item && item->pPlugin)
+					{
+						CtrlObject->Plugins.ShowPluginInfo(item->pPlugin);
+					}
+					break;
 				case KEY_ALTSHIFTF9:
 
 					if (Opt.ChangeDriveMode&DRIVE_SHOW_PLUGINS)

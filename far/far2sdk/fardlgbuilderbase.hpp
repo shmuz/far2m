@@ -30,7 +30,7 @@ struct DialogItemBinding
 		: BeforeLabelID(-1), AfterLabelID(-1)
 	{
 	}
-	
+
 	virtual ~DialogItemBinding()
 	{
 	}
@@ -391,7 +391,7 @@ class DialogBuilderBase
 		{
 			T *Item = AddDialogItem(DI_CHECKBOX, GetLangString(TextMessageId));
 			Item->X2 = Item->X1 + ItemWidth(*Item);
-			
+
 			Item->Y1 = Item->Y2 = RelativeTo->Y1;
 			Item->X1 = RelativeTo->X2 + 2;
 			if (!Mask)
@@ -514,7 +514,7 @@ class DialogBuilderBase
 				SetNextY(Button);
 			}
 			Button->X2 = Button->X1 + 20;//TODO: FIXME: ItemWidth(*Button);
-			
+
 			id = DialogItemsCount - 1;
 			return Button;
 		}
@@ -526,6 +526,18 @@ class DialogBuilderBase
 			Separator->Flags = DIF_SEPARATOR;
 			Separator->X1 = 3;
 			Separator->Y1 = Separator->Y2 = NextY++;
+		}
+
+		// Добавляет сепаратор и кнопку OK.
+		void AddOK(FarLangMsg OKMessageId)
+		{
+			AddSeparator();
+
+			T *OKButton = AddDialogItem(DI_BUTTON, GetLangString(OKMessageId));
+			OKButton->Flags = DIF_CENTERGROUP;
+			OKButton->DefaultButton = TRUE;
+			OKButton->Y1 = OKButton->Y2 = NextY++;
+			OKButtonID = DialogItemsCount-1;
 		}
 
 		// Добавляет сепаратор, кнопки OK и Cancel.

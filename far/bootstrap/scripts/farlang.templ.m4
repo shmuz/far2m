@@ -13316,8 +13316,8 @@ ChangeCouldNotEjectHotPlugMedia2
 "Не можна видалити пристрій:"
 
 ChangeHotPlugNotify1
-"Теперь устройство" 
-"The device" 
+"Теперь устройство"
+"The device"
 "Zařízení"
 "Das Gerät"
 "Az eszköz:"
@@ -22831,6 +22831,96 @@ upd:"Macro recording is disabled"
 "Nagrywanie makr jest wyłączone"
 "Grabación de macro está desactivada"
 "Запис макросів заборонено"
+
+MPluginInformation
+"Информация о плагине"
+"Plugin information"
+"Informace o modulu"
+"Information über Plugin"
+upd:"Plugin information"
+"Informacje o wtyczce"
+"Información de complemento"
+"Інформація про плагін"
+
+MPluginModuleTitle
+"&Название:"
+"&Title:"
+"&Nadpis:"
+"&Titel:"
+upd:"&Title:"
+"&Tytuł:"
+"&Título:"
+"&Назва"
+
+MPluginDescription
+"&Описание:"
+"&Description:"
+"&Popis:"
+"&Beschreibung:"
+upd:"&Description:"
+"&Opis:"
+"&Descripción:"
+"&Опис:"
+
+MPluginAuthor
+"&Автор:"
+"&Author:"
+"&Autor:"
+"&Autor:"
+upd:"&Author:"
+"&Autor:"
+"&Autor:"
+"&Автор:"
+
+MPluginVersion
+"&Версия:"
+"&Version:"
+"&Verze:"
+upd:"&Version:"
+upd:"&Version:"
+"&Wersja:"
+"&Versión:"
+"&Версія:"
+
+MPluginModulePath
+"&Файл плагина:"
+"&Module path:"
+"Cesta k &modulu:"
+"&Plugin-Datei:"
+upd:"&Module path:"
+"Ścieżka &modułu:"
+"Ruta de &módulo:"
+"&Файл плагіна:"
+
+MPluginSysID
+"&SysID плагина:"
+"Plugin &SysID:"
+"&SysID modulu:"
+"Plugin &SysID"
+upd:"Plugin &SysID:"
+"&SysID wtyczki:"
+"&SysID complemento:"
+"&SysID плагіна:"
+
+MPluginPrefix
+"&Префикс плагина:"
+"Plugin &prefix:"
+"Předpona mo&dulu:"
+"Plugin &Präfix:"
+upd:"Plugin &prefix:"
+"&Przedrostek wtyczki:"
+"&Prefijo de complemento:"
+"&Префікс плагіна:"
+
+MDataNotAvailable
+"(нет данных)"
+"(data not available)"
+"(data nejsou k dispozici)"
+"(nicht verfügbar)"
+"(adat nem elérhető)"
+"(dane niedostępne)"
+"(dato no disponible)"
+"(немає даних)"
 
 #Must be the last
 NewFileName

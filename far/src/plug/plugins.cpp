@@ -65,6 +65,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "InterThreadCall.hpp"
 #include "DlgGuid.hpp"
 #include <KeyFileHelper.h>
+#include "DialogBuilder.hpp"
 #include <crc64.h>
 #include <assert.h>
 
@@ -1343,6 +1344,13 @@ void PluginManager::Configure(int StartPos)
 						}
 						break;
 
+					case KEY_F3:
+						if (item)
+						{
+							ShowPluginInfo(item->pPlugin);
+						}
+						break;
+
 					case KEY_F4:
 						if (item && PluginList.GetItemCount() > 0 && SelPos<MenuItemNumber)
 						{
@@ -1509,6 +1517,13 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 						// Вызываем нужный топик, который передали в CommandsMenu()
 						if (item)
 							FarShowHelp(item->pPlugin->GetModuleName(),HistoryName,FHELP_SELFHELP|FHELP_NOSHOWERROR|FHELP_USECONTENTS);
+						break;
+
+					case KEY_F3:
+						if (item)
+						{
+							ShowPluginInfo(item->pPlugin);
+						}
 						break;
 
 					case KEY_ALTF11:
@@ -2487,4 +2502,60 @@ size_t PluginManager::GetPluginInformation(Plugin *pPlugin, FarGetPluginInformat
 	ItemsToBuf(pInfo->PInfo->PluginConfigStrings, pInfo->PInfo->PluginConfigStringsNumber, ConfItems, Buffer, Rest, Size);
 
 	return Size;
+}
+
+void PluginManager::ShowPluginInfo(Plugin* pPlugin)
+{
+	const auto strPluginSysId = FARString().Format(L"0x%08X", pPlugin->GetSysID());
+	FARString strPluginPrefix;
+	if (pPlugin->CheckWorkFlags(PIWF_CACHED))
+	{
+		KeyFileReadSection kfh(PluginsIni(), pPlugin->GetSettingsName());
+		if (kfh.SectionLoaded())
+			strPluginPrefix = kfh.GetString("CommandPrefix");
+	}
+	else
+	{
+		PluginInfo Info = {sizeof(Info)};
+		if (pPlugin->GetPluginInfo(&Info))
+			strPluginPrefix = NullToEmpty(Info.CommandPrefix);
+	}
+	const int Width = 36;
+	DialogBuilder Builder(Msg::MPluginInformation, L"ShowPluginInfo");
+	Builder.SetId(PluginInformationId);
+
+	auto SetEditData = [&] (const FARString &str)
+	{
+		Builder.AddConstEditField(str.IsEmpty() ? Msg::MDataNotAvailable:str, Width);
+	};
+
+	Builder.AddText(Msg::MPluginModuleTitle);
+	SetEditData(pPlugin->strTitle);
+
+	Builder.AddText(Msg::MPluginDescription);
+	SetEditData(pPlugin->strDescription);
+
+	Builder.AddText(Msg::MPluginAuthor);
+	SetEditData(pPlugin->strAuthor);
+
+	Builder.AddText(Msg::MPluginVersion);
+	if (pPlugin->m_PluginVersion)
+	{
+		auto Ver = pPlugin->m_PluginVersion;
+		Builder.AddConstEditField(FARString().Format(L"%u.%u.%u", (Ver>>24), (Ver>>16)&0xFF, Ver&0xFFFF), Width);
+	}
+	else
+		SetEditData(L"");
+
+	Builder.AddText(Msg::MPluginModulePath);
+	Builder.AddConstEditField(pPlugin->GetModuleName(), Width);
+
+	Builder.AddText(Msg::MPluginSysID);
+	Builder.AddConstEditField(strPluginSysId, Width);
+
+	Builder.AddText(Msg::MPluginPrefix);
+	Builder.AddConstEditField(strPluginPrefix, Width);
+
+	Builder.AddOK();
+	Builder.ShowDialog();
 }
