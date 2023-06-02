@@ -9,6 +9,7 @@ colorer_extract_version()
 message(STATUS "Build Colorer: ${COLORER_VERSION}")
 
 set(SOURCES
+    src/pcolorer2/GlobalInfo.cpp
     src/pcolorer2/ChooseTypeMenu.h
     src/pcolorer2/ConsoleAnnotation.h
     src/pcolorer2/FarEditor.h

@@ -2,7 +2,8 @@
 project(autowrap)
 
 set(SOURCES
-src/AutoWrap.cpp 
+src/GlobalInfo.cpp
+src/AutoWrap.cpp
 )
 
 add_library (autowrap MODULE ${SOURCES})

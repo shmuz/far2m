@@ -2,7 +2,8 @@
 project(editcase)
 
 set(SOURCES
-src/Compare.cpp 
+src/GlobalInfo.cpp
+src/Compare.cpp
 )
 
 add_library (compare MODULE ${SOURCES})
@@ -15,7 +16,7 @@ target_include_directories(compare PRIVATE .)
 target_include_directories(compare PRIVATE ../WinPort)
 target_include_directories(compare PRIVATE ../far/far2sdk)
 
-set_target_properties(compare 
+set_target_properties(compare
     PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "${INSTALL_DIR}/Plugins/compare/plug"
         PREFIX ""

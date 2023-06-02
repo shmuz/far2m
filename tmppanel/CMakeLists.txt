@@ -2,9 +2,10 @@
 project(tmppanel)
 
 set(SOURCES
-src/TmpCfg.cpp 
-src/TmpClass.cpp 
-src/TmpMix.cpp 
+src/GlobalInfo.cpp
+src/TmpCfg.cpp
+src/TmpClass.cpp
+src/TmpMix.cpp
 src/TmpPanel.cpp
 )
 

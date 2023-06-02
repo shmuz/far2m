@@ -1286,7 +1286,11 @@ bool PluginW::GetPluginInfo(PluginInfo *pi)
 		EXECUTE_FUNCTION(pGetPluginInfoW(pi), es);
 
 		if (!es.bUnloaded)
+		{
+			if (pi->SysID == 0) // prevent erasing SysID that may be already set by GetGlobalInfoW()
+				pi->SysID = SysID;
 			return true;
+		}
 	}
 
 	return false;

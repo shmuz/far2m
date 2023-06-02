@@ -2,7 +2,8 @@
 project(editcase)
 
 set(SOURCES
-src/EditCase.cpp 
+src/GlobalInfo.cpp
+src/EditCase.cpp
 )
 
 add_library (editcase MODULE ${SOURCES})
@@ -15,7 +16,7 @@ target_include_directories(editcase PRIVATE .)
 target_include_directories(editcase PRIVATE ../far/far2sdk)
 target_include_directories(editcase PRIVATE ../WinPort)
 
-set_target_properties(editcase 
+set_target_properties(editcase
     PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "${INSTALL_DIR}/Plugins/editcase/plug"
         PREFIX ""

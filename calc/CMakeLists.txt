@@ -1,6 +1,7 @@
 project(calc)
 
 set(SOURCES
+    src/plugcalc/GlobalInfo.cpp
     src/plugcalc/api.cpp
     src/plugcalc/api.h
     src/plugcalc/api-far2.cpp

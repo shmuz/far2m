@@ -2,6 +2,7 @@
 project(incsrch)
 
 set(SOURCES
+GlobalInfo.cpp
 clip.c
 control.c
 incsrch.c

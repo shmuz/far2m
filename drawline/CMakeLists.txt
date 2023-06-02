@@ -2,7 +2,8 @@
 project(drawline)
 
 set(SOURCES
-src/DrawLine.cpp 
+src/GlobalInfo.cpp
+src/DrawLine.cpp
 )
 
 add_library (drawline MODULE ${SOURCES})
@@ -15,7 +16,7 @@ target_include_directories(drawline PRIVATE .)
 target_include_directories(drawline PRIVATE ../WinPort)
 target_include_directories(drawline PRIVATE ../far/far2sdk)
 
-set_target_properties(drawline 
+set_target_properties(drawline
     PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "${INSTALL_DIR}/Plugins/drawline/plug"
         PREFIX ""

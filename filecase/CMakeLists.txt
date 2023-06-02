@@ -2,7 +2,8 @@
 project(filecase)
 
 set(SOURCES
-src/FileCase.cpp 
+src/GlobalInfo.cpp
+src/FileCase.cpp
 )
 
 add_library (filecase MODULE ${SOURCES})
@@ -15,7 +16,7 @@ target_include_directories(filecase PRIVATE .)
 target_include_directories(filecase PRIVATE ../far/far2sdk)
 target_include_directories(filecase PRIVATE ../WinPort)
 
-set_target_properties(filecase 
+set_target_properties(filecase
     PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "${INSTALL_DIR}/Plugins/filecase/plug"
         PREFIX ""

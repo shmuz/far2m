@@ -2,7 +2,8 @@
 project(align)
 
 set(SOURCES
-src/Align.cpp 
+src/GlobalInfo.cpp
+src/Align.cpp
 )
 
 add_library (align MODULE ${SOURCES})
@@ -15,7 +16,7 @@ target_include_directories(align PRIVATE .)
 target_include_directories(align PRIVATE ../far/far2sdk)
 target_include_directories(align PRIVATE ../WinPort)
 
-set_target_properties(align 
+set_target_properties(align
     PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "${INSTALL_DIR}/Plugins/align/plug"
         PREFIX ""

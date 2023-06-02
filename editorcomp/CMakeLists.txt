@@ -2,6 +2,7 @@
 project(editorcomp)
 
 set(SOURCES
+    src/GlobalInfo.cpp
     src/editorcomp.cpp src/editorcomp.h
     src/Editor.cpp src/Editor.h
     src/Editors.cpp src/Editors.h

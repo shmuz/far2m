@@ -1,6 +1,7 @@
 project(NetRocks)
 
 set(SOURCES
+src/GlobalInfo.cpp
 src/Erroring.cpp
 src/Globals.cpp
 src/SitesConfig.cpp

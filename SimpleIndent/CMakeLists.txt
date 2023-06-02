@@ -2,7 +2,8 @@
 project(SimpleIndent)
 
 set(SOURCES
-src/SimpleIndent.cpp 
+src/GlobalInfo.cpp
+src/SimpleIndent.cpp
 )
 
 add_library (SimpleIndent MODULE ${SOURCES})
