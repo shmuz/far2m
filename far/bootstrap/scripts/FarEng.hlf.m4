@@ -888,6 +888,7 @@ the corresponding plugin is written for Far 1.7x and it does not support all
 possibilities available in Far 2 (these are, in particular, Unicode characters
 in filenames and in editor).
 
+    Pressing #F3# will show some technical information about the plugin.
 
 @PluginsReviews
 $ #Overview of plugin capabilities#
@@ -2919,6 +2920,8 @@ is not a ~file panel~@FilePanel@, it will be changed to the file panel.
     #Ctrl-A#, #F4# hotkeys invoke the ~file attributes~@FileAttrDlg@.
 
     #F4# key can be used to assign a hotkey to plugin item.
+
+    #F3# key shows plugin technical information.
 
     #Del# key can be used:
 
