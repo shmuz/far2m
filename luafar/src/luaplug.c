@@ -52,12 +52,13 @@ void LUAPLUG SetStartupInfoW(const struct PluginStartupInfo *aInfo)
   if (!aInfo->LuafarHandle)
     return; // luafar.so is not loaded
 
-  PluginData.ModuleName   = aInfo->ModuleName;
-  PluginData.ModuleNumber = aInfo->ModuleNumber;
-  PluginData.RootKey      = aInfo->RootKey;
-  PluginData.Private      = aInfo->Private;
-  PluginData.DlgProc      = DlgProc;
-  PluginData.PluginId     = SYS_ID;
+  PluginData.ModuleName    = aInfo->ModuleName;
+  PluginData.ModuleNumber  = aInfo->ModuleNumber;
+  PluginData.RootKey       = aInfo->RootKey;
+  PluginData.Private       = aInfo->Private;
+  PluginData.DlgProc       = DlgProc;
+  PluginData.PluginId      = SYS_ID;
+  PluginData.GetGlobalInfo = GetGlobalInfoW;
 #ifdef SETPACKAGEPATH
   PluginData.Flags |= LPF_SETPACKAGEPATH;
 #endif

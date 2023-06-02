@@ -21,6 +21,7 @@ typedef struct
   lua_State*     MainLuaState;
   char*          ShareDir;
   DWORD          Flags;
+  void         (*GetGlobalInfo)(struct GlobalInfo *aInfo);
 } TPluginData;
 
 enum LF_PLUGIN_FLAGS

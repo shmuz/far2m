@@ -617,6 +617,20 @@ int far_GetPluginId(lua_State *L)
   return 1;
 }
 
+int far_GetPluginGlobalInfo(lua_State *L)
+{
+  struct GlobalInfo info;
+  GetPluginData(L)->GetGlobalInfo(&info);
+  lua_createtable(L,0,6);
+  PutNumToTable  (L, "SysID", info.SysID);
+  PutNumToTable  (L, "MinFarVersion", info.MinFarVersion);
+  PutNumToTable  (L, "Version", info.Version);
+  PutWStrToTable (L, "Title", info.Title, -1);
+  PutWStrToTable (L, "Description", info.Description, -1);
+  PutWStrToTable (L, "Author", info.Author, -1);
+  return 1;
+}
+
 int far_GetCurrentDirectory (lua_State *L)
 {
   int size = FSF.GetCurrentDirectory(0, NULL);
@@ -5887,6 +5901,7 @@ static const luaL_Reg win_funcs[] = {
 static const luaL_Reg far_funcs[] = {
   {"PluginStartupInfo",   far_PluginStartupInfo},
   {"GetPluginId",         far_GetPluginId},
+  {"GetPluginGlobalInfo", far_GetPluginGlobalInfo},
 
   {"CheckMask",           far_CheckMask},
   {"CmpName",             far_CmpName},
