@@ -296,20 +296,26 @@ bool PluginA::Load()
 	GetModuleFN(pMinFarVersion, NFMP_GetMinFarVersion);
 
 	bool bUnloaded = false;
-	if (!CheckMinFarVersion(bUnloaded) || !SetStartupInfo(bUnloaded))
+
+	if (CheckMinFarVersion(bUnloaded))
 	{
-		if (!bUnloaded)
-			Unload();
+		GetGlobalInfo();
 
-		//чтоб не пытаться загрузить опять а то ошибка будет постоянно показываться.
-		WorkFlags.Set(PIWF_DONTLOADAGAIN);
-
-		return false;
+		if (SetStartupInfo(bUnloaded))
+		{
+			FuncFlags.Set(PICFF_LOADED);
+			SaveToCache();
+			return true;
+		}
 	}
 
-	FuncFlags.Set(PICFF_LOADED);
-	SaveToCache();
-	return true;
+	if (!bUnloaded)
+		Unload();
+
+	//чтоб не пытаться загрузить опять а то ошибка будет постоянно показываться.
+	WorkFlags.Set(PIWF_DONTLOADAGAIN);
+
+	return false;
 }
 
 
@@ -437,44 +443,6 @@ static void CreatePluginStartupInfoA(PluginA *pPlugin, oldfar::PluginStartupInfo
 	PSI->RootKey=nullptr;
 }
 
-struct ExecuteStruct
-{
-	int id; //function id
-	union
-	{
-		INT_PTR nResult;
-		HANDLE hResult;
-		BOOL bResult;
-	};
-
-	union
-	{
-		INT_PTR nDefaultResult;
-		HANDLE hDefaultResult;
-		BOOL bDefaultResult;
-	};
-
-	bool bUnloaded;
-};
-
-
-#define EXECUTE_FUNCTION(function, es) \
-	{ \
-		es.nResult = 0; \
-		es.nDefaultResult = 0; \
-		es.bUnloaded = false; \
-		function; \
-	}
-
-
-#define EXECUTE_FUNCTION_EX(function, es) \
-	{ \
-		es.bUnloaded = false; \
-		es.nResult = 0; \
-		es.nResult = (INT_PTR)function; \
-	}
-
-
 bool PluginA::SetStartupInfo(bool &bUnloaded)
 {
 	if (pSetStartupInfo)
@@ -487,8 +455,7 @@ bool PluginA::SetStartupInfo(bool &bUnloaded)
 		if (mbRootKey.empty())
 			mbRootKey = strRootKey.GetMB();
 		_info.RootKey = mbRootKey.c_str();
-		ExecuteStruct es;
-		es.id = EXCEPT_SETSTARTUPINFO;
+		ExecuteStruct es(EXCEPT_SETSTARTUPINFO);
 		EXECUTE_FUNCTION(pSetStartupInfo(&_info), es);
 
 		if (es.bUnloaded)
@@ -514,9 +481,7 @@ bool PluginA::CheckMinFarVersion(bool &bUnloaded)
 {
 	if (pMinFarVersion)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_MINFARVERSION;
-		es.nDefaultResult = 0;
+		ExecuteStruct es(EXCEPT_MINFARVERSION);
 		EXECUTE_FUNCTION_EX(pMinFarVersion(), es);
 
 		if (es.bUnloaded)
@@ -594,8 +559,7 @@ HANDLE PluginA::OpenPlugin(int OpenFrom, INT_PTR Item)
 	if (Load() && pOpenPlugin)
 	{
 		//CurPluginItem=this; //BUGBUG
-		ExecuteStruct es;
-		es.id = EXCEPT_OPENPLUGIN;
+		ExecuteStruct es(EXCEPT_OPENPLUGIN);
 		es.hDefaultResult = INVALID_HANDLE_VALUE;
 		es.hResult = INVALID_HANDLE_VALUE;
 		char *ItemA = nullptr;
@@ -660,8 +624,7 @@ HANDLE PluginA::OpenFilePlugin(
 
 	if (Load() && pOpenFilePlugin)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_OPENFILEPLUGIN;
+		ExecuteStruct es(EXCEPT_OPENFILEPLUGIN);
 		es.hDefaultResult = INVALID_HANDLE_VALUE;
 		char *NameA = nullptr;
 
@@ -689,8 +652,7 @@ int PluginA::SetFindList(
 
 	if (pSetFindList)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_SETFINDLIST;
+		ExecuteStruct es(EXCEPT_SETFINDLIST);
 		es.bDefaultResult = FALSE;
 		oldfar::PluginPanelItem *PanelItemA = nullptr;
 		ConvertPanelItemsArrayToAnsi(PanelItem,PanelItemA,ItemsNumber);
@@ -710,8 +672,7 @@ int PluginA::ProcessEditorInput(
 
 	if (Load() && pProcessEditorInput)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_PROCESSEDITORINPUT;
+		ExecuteStruct es(EXCEPT_PROCESSEDITORINPUT);
 		es.bDefaultResult = TRUE; //(TRUE) treat the result as a completed request on exception!
 		const INPUT_RECORD *Ptr=D;
 		INPUT_RECORD OemRecord;
@@ -740,9 +701,7 @@ int PluginA::ProcessEditorEvent(
 {
 	if (Load() && pProcessEditorEvent)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_PROCESSEDITOREVENT;
-		es.nDefaultResult = 0;
+		ExecuteStruct es(EXCEPT_PROCESSEDITOREVENT);
 		EXECUTE_FUNCTION_EX(pProcessEditorEvent(Event, Param), es);
 		(void)es; // supress 'set but not used' warning
 	}
@@ -757,9 +716,7 @@ int PluginA::ProcessViewerEvent(
 {
 	if (Load() && pProcessViewerEvent)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_PROCESSVIEWEREVENT;
-		es.nDefaultResult = 0;
+		ExecuteStruct es(EXCEPT_PROCESSVIEWEREVENT);
 		EXECUTE_FUNCTION_EX(pProcessViewerEvent(Event, Param), es);
 		(void)es; // supress 'set but not used' warning
 	}
@@ -776,8 +733,7 @@ int PluginA::ProcessDialogEvent(
 
 	if (Load() && pProcessDialogEvent)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_PROCESSDIALOGEVENT;
+		ExecuteStruct es(EXCEPT_PROCESSDIALOGEVENT);
 		es.bDefaultResult = FALSE;
 		EXECUTE_FUNCTION_EX(pProcessDialogEvent(Event, Param), es);
 		bResult = es.bResult;
@@ -797,8 +753,7 @@ int PluginA::GetVirtualFindData(
 
 	if (pGetVirtualFindData)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_GETVIRTUALFINDDATA;
+		ExecuteStruct es(EXCEPT_GETVIRTUALFINDDATA);
 		es.bDefaultResult = FALSE;
 		pVFDPanelItemA = nullptr;
 		size_t Size=StrLength(Path)+1;
@@ -828,8 +783,7 @@ void PluginA::FreeVirtualFindData(
 
 	if (pFreeVirtualFindData && pVFDPanelItemA)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_FREEVIRTUALFINDDATA;
+		ExecuteStruct es(EXCEPT_FREEVIRTUALFINDDATA);
 		EXECUTE_FUNCTION(pFreeVirtualFindData(hPlugin, pVFDPanelItemA, ItemsNumber), es);
 		pVFDPanelItemA = nullptr;
 		(void)es; // supress 'set but not used' warning
@@ -851,8 +805,7 @@ int PluginA::GetFiles(
 
 	if (pGetFiles)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_GETFILES;
+		ExecuteStruct es(EXCEPT_GETFILES);
 		es.nDefaultResult = -1;
 		oldfar::PluginPanelItem *PanelItemA = nullptr;
 		ConvertPanelItemsArrayToAnsi(PanelItem,PanelItemA,ItemsNumber);
@@ -882,8 +835,7 @@ int PluginA::PutFiles(
 
 	if (pPutFiles)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_PUTFILES;
+		ExecuteStruct es(EXCEPT_PUTFILES);
 		es.nDefaultResult = -1;
 		oldfar::PluginPanelItem *PanelItemA = nullptr;
 		ConvertPanelItemsArrayToAnsi(PanelItem,PanelItemA,ItemsNumber);
@@ -906,8 +858,7 @@ int PluginA::DeleteFiles(
 
 	if (pDeleteFiles)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_DELETEFILES;
+		ExecuteStruct es(EXCEPT_DELETEFILES);
 		es.bDefaultResult = FALSE;
 		oldfar::PluginPanelItem *PanelItemA = nullptr;
 		ConvertPanelItemsArrayToAnsi(PanelItem,PanelItemA,ItemsNumber);
@@ -930,8 +881,7 @@ int PluginA::MakeDirectory(
 
 	if (pMakeDirectory)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_MAKEDIRECTORY;
+		ExecuteStruct es(EXCEPT_MAKEDIRECTORY);
 		es.nDefaultResult = -1;
 		char NameA[oldfar::NM];
 		PWZ_to_PZ(*Name,NameA,sizeof(NameA));
@@ -957,8 +907,7 @@ int PluginA::ProcessHostFile(
 
 	if (pProcessHostFile)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_PROCESSHOSTFILE;
+		ExecuteStruct es(EXCEPT_PROCESSHOSTFILE);
 		es.bDefaultResult = FALSE;
 		oldfar::PluginPanelItem *PanelItemA = nullptr;
 		ConvertPanelItemsArrayToAnsi(PanelItem,PanelItemA,ItemsNumber);
@@ -981,8 +930,7 @@ int PluginA::ProcessEvent(
 
 	if (pProcessEvent)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_PROCESSEVENT;
+		ExecuteStruct es(EXCEPT_PROCESSEVENT);
 		es.bDefaultResult = FALSE;
 		PVOID ParamA = Param;
 
@@ -1012,8 +960,7 @@ int PluginA::Compare(
 
 	if (pCompare)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_COMPARE;
+		ExecuteStruct es(EXCEPT_COMPARE);
 		es.nDefaultResult = -2;
 		oldfar::PluginPanelItem *Item1A = nullptr;
 		oldfar::PluginPanelItem *Item2A = nullptr;
@@ -1040,8 +987,7 @@ int PluginA::GetFindData(
 
 	if (pGetFindData)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_GETFINDDATA;
+		ExecuteStruct es(EXCEPT_GETFINDDATA);
 		es.bDefaultResult = FALSE;
 		pFDPanelItemA = nullptr;
 		EXECUTE_FUNCTION_EX(pGetFindData(hPlugin, &pFDPanelItemA, pItemsNumber, OpMode), es);
@@ -1067,8 +1013,7 @@ void PluginA::FreeFindData(
 
 	if (pFreeFindData && pFDPanelItemA)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_FREEFINDDATA;
+		ExecuteStruct es(EXCEPT_FREEFINDDATA);
 		EXECUTE_FUNCTION(pFreeFindData(hPlugin, pFDPanelItemA, ItemsNumber), es);
 		pFDPanelItemA = nullptr;
 		(void)es; // supress 'set but not used' warning
@@ -1085,8 +1030,7 @@ int PluginA::ProcessKey(
 
 	if (pProcessKey)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_PROCESSKEY;
+		ExecuteStruct es(EXCEPT_PROCESSKEY);
 		es.bDefaultResult = TRUE; // do not pass this key to far on exception
 		EXECUTE_FUNCTION_EX(pProcessKey(hPlugin, Key, dwControlState), es);
 		bResult = es.bResult;
@@ -1102,8 +1046,7 @@ void PluginA::ClosePlugin(
 {
 	if (pClosePlugin)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_CLOSEPLUGIN;
+		ExecuteStruct es(EXCEPT_CLOSEPLUGIN);
 		EXECUTE_FUNCTION(pClosePlugin(hPlugin), es);
 		(void)es; // supress 'set but not used' warning
 	}
@@ -1123,8 +1066,7 @@ int PluginA::SetDirectory(
 
 	if (pSetDirectory)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_SETDIRECTORY;
+		ExecuteStruct es(EXCEPT_SETDIRECTORY);
 		es.bDefaultResult = FALSE;
 		char *DirA = UnicodeToAnsi(Dir);
 		EXECUTE_FUNCTION_EX(pSetDirectory(hPlugin, DirA, OpMode), es);
@@ -1239,8 +1181,7 @@ void PluginA::GetOpenPluginInfo(
 
 	if (pGetOpenPluginInfo)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_GETOPENPLUGININFO;
+		ExecuteStruct es(EXCEPT_GETOPENPLUGININFO);
 		oldfar::OpenPluginInfo InfoA{};
 		EXECUTE_FUNCTION(pGetOpenPluginInfo(hPlugin, &InfoA), es);
 		ConvertOpenPluginInfo(InfoA,pInfo);
@@ -1257,8 +1198,7 @@ int PluginA::Configure(
 
 	if (Load() && pConfigure)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_CONFIGURE;
+		ExecuteStruct es(EXCEPT_CONFIGURE);
 		es.bDefaultResult = FALSE;
 		EXECUTE_FUNCTION_EX(pConfigure(MenuItem), es);
 		bResult = es.bResult;
@@ -1350,8 +1290,7 @@ bool PluginA::GetPluginInfo(PluginInfo *pi)
 
 	if (pGetPluginInfo)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_GETPLUGININFO;
+		ExecuteStruct es(EXCEPT_GETPLUGININFO);
 		oldfar::PluginInfo InfoA{};
 		EXECUTE_FUNCTION(pGetPluginInfo(&InfoA), es);
 
@@ -1369,8 +1308,7 @@ bool PluginA::MayExitFAR()
 {
 	if (pMayExitFAR)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_MAYEXITFAR;
+		ExecuteStruct es(EXCEPT_MAYEXITFAR);
 		es.bDefaultResult = 1;
 		EXECUTE_FUNCTION_EX(pMayExitFAR(), es);
 		return es.bResult;
@@ -1383,8 +1321,7 @@ void PluginA::ExitFAR()
 {
 	if (pExitFAR)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_EXITFAR;
+		ExecuteStruct es(EXCEPT_EXITFAR);
 		EXECUTE_FUNCTION(pExitFAR(), es);
 		(void)es; // supress 'set but not used' warning
 	}

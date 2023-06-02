@@ -575,44 +575,6 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 	}
 }
 
-
-struct ExecuteStruct
-{
-	int id; //function id
-	union
-	{
-		INT_PTR nResult;
-		HANDLE hResult;
-		BOOL bResult;
-	};
-
-	union
-	{
-		INT_PTR nDefaultResult;
-		HANDLE hDefaultResult;
-		BOOL bDefaultResult;
-	};
-
-	bool bUnloaded;
-};
-
-
-#define EXECUTE_FUNCTION(function, es) \
-	{ \
-		es.nResult = 0; \
-		es.nDefaultResult = 0; \
-		es.bUnloaded = false; \
-		function; \
-	}
-
-
-#define EXECUTE_FUNCTION_EX(function, es) \
-	{ \
-		es.bUnloaded = false; \
-		es.nResult = 0; \
-		es.nResult = (INT_PTR)function; \
-	}
-
 bool PluginW::SetStartupInfo(bool &bUnloaded)
 {
 	if (pSetStartupInfoW)
@@ -622,8 +584,7 @@ bool PluginW::SetStartupInfo(bool &bUnloaded)
 		CreatePluginStartupInfo(this, &_info, &_fsf);
 		// скорректируем адреса и плагино-зависимые поля
 		_info.RootKey = strRootKey.CPtr();
-		ExecuteStruct es;
-		es.id = EXCEPT_SETSTARTUPINFO;
+		ExecuteStruct es(EXCEPT_SETSTARTUPINFO);
 		EXECUTE_FUNCTION(pSetStartupInfoW(&_info), es);
 
 		if (es.bUnloaded)
@@ -640,8 +601,7 @@ void PluginW::GetGlobalInfo()
 {
 	if (pGetGlobalInfoW)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_GETGLOBALINFO;
+		ExecuteStruct es(EXCEPT_GETGLOBALINFO);
 		GlobalInfo gi {};
 		gi.StructSize = sizeof(GlobalInfo);
 		EXECUTE_FUNCTION(pGetGlobalInfoW(&gi), es);
@@ -677,9 +637,7 @@ bool PluginW::CheckMinFarVersion(bool &bUnloaded)
 {
 	if (pMinFarVersionW)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_MINFARVERSION;
-		es.nDefaultResult = 0;
+		ExecuteStruct es(EXCEPT_MINFARVERSION);
 		EXECUTE_FUNCTION_EX(pMinFarVersionW(), es);
 
 		if (es.bUnloaded)
@@ -744,8 +702,7 @@ int PluginW::Analyse(const AnalyseData *pData)
 {
 	if (Load() && pAnalyseW)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_ANALYSE;
+		ExecuteStruct es(EXCEPT_ANALYSE);
 		es.bDefaultResult = FALSE;
 		es.bResult = FALSE;
 		EXECUTE_FUNCTION_EX(pAnalyseW(pData), es);
@@ -774,8 +731,7 @@ HANDLE PluginW::OpenPlugin(int OpenFrom, INT_PTR Item)
 	if (Load() && pOpenPluginW)
 	{
 		//CurPluginItem=this; //BUGBUG
-		ExecuteStruct es;
-		es.id = EXCEPT_OPENPLUGIN;
+		ExecuteStruct es(EXCEPT_OPENPLUGIN);
 		es.hDefaultResult = INVALID_HANDLE_VALUE;
 		es.hResult = INVALID_HANDLE_VALUE;
 		EXECUTE_FUNCTION_EX(pOpenPluginW(OpenFrom,Item), es);
@@ -829,8 +785,7 @@ HANDLE PluginW::OpenFilePlugin(
 
 	if (Load() && pOpenFilePluginW)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_OPENFILEPLUGIN;
+		ExecuteStruct es(EXCEPT_OPENFILEPLUGIN);
 		es.hDefaultResult = INVALID_HANDLE_VALUE;
 		EXECUTE_FUNCTION_EX(pOpenFilePluginW(Name, Data, DataSize, OpMode), es);
 		hResult = es.hResult;
@@ -850,8 +805,7 @@ int PluginW::SetFindList(
 
 	if (pSetFindListW)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_SETFINDLIST;
+		ExecuteStruct es(EXCEPT_SETFINDLIST);
 		es.bDefaultResult = FALSE;
 		EXECUTE_FUNCTION_EX(pSetFindListW(hPlugin, PanelItem, ItemsNumber), es);
 		bResult = es.bResult;
@@ -868,8 +822,7 @@ int PluginW::ProcessEditorInput(
 
 	if (Load() && pProcessEditorInputW)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_PROCESSEDITORINPUT;
+		ExecuteStruct es(EXCEPT_PROCESSEDITORINPUT);
 		es.bDefaultResult = TRUE; //(TRUE) treat the result as a completed request on exception!
 		EXECUTE_FUNCTION_EX(pProcessEditorInputW(D), es);
 		bResult = es.bResult;
@@ -885,9 +838,7 @@ int PluginW::ProcessEditorEvent(
 {
 	if (Load() && pProcessEditorEventW)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_PROCESSEDITOREVENT;
-		es.nDefaultResult = 0;
+		ExecuteStruct es(EXCEPT_PROCESSEDITOREVENT);
 		EXECUTE_FUNCTION_EX(pProcessEditorEventW(Event, Param), es);
 		(void)es; // supress 'set but not used' warning
 	}
@@ -902,9 +853,7 @@ int PluginW::ProcessViewerEvent(
 {
 	if (Load() && pProcessViewerEventW)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_PROCESSVIEWEREVENT;
-		es.nDefaultResult = 0;
+		ExecuteStruct es(EXCEPT_PROCESSVIEWEREVENT);
 		EXECUTE_FUNCTION_EX(pProcessViewerEventW(Event, Param), es);
 		(void)es; // supress 'set but not used' warning
 	}
@@ -921,8 +870,7 @@ int PluginW::ProcessDialogEvent(
 
 	if (Load() && pProcessDialogEventW)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_PROCESSDIALOGEVENT;
+		ExecuteStruct es(EXCEPT_PROCESSDIALOGEVENT);
 		es.bDefaultResult = FALSE;
 		EXECUTE_FUNCTION_EX(pProcessDialogEventW(Event, Param), es);
 		bResult = es.bResult;
@@ -938,9 +886,7 @@ int PluginW::ProcessSynchroEvent(
 {
 	if (Load() && pProcessSynchroEventW)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_PROCESSSYNCHROEVENT;
-		es.nDefaultResult = 0;
+		ExecuteStruct es(EXCEPT_PROCESSSYNCHROEVENT);
 		EXECUTE_FUNCTION_EX(pProcessSynchroEventW(Event, Param), es);
 		(void)es; // supress 'set but not used' warning
 	}
@@ -959,8 +905,7 @@ int PluginW::GetVirtualFindData(
 
 	if (pGetVirtualFindDataW)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_GETVIRTUALFINDDATA;
+		ExecuteStruct es(EXCEPT_GETVIRTUALFINDDATA);
 		es.bDefaultResult = FALSE;
 		EXECUTE_FUNCTION_EX(pGetVirtualFindDataW(hPlugin, pPanelItem, pItemsNumber, Path), es);
 		bResult = es.bResult;
@@ -978,8 +923,7 @@ void PluginW::FreeVirtualFindData(
 {
 	if (pFreeVirtualFindDataW)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_FREEVIRTUALFINDDATA;
+		ExecuteStruct es(EXCEPT_FREEVIRTUALFINDDATA);
 		EXECUTE_FUNCTION(pFreeVirtualFindDataW(hPlugin, PanelItem, ItemsNumber), es);
 		(void)es; // supress 'set but not used' warning
 	}
@@ -1000,8 +944,7 @@ int PluginW::GetFiles(
 
 	if (pGetFilesW)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_GETFILES;
+		ExecuteStruct es(EXCEPT_GETFILES);
 		es.nDefaultResult = -1;
 		EXECUTE_FUNCTION_EX(pGetFilesW(hPlugin, PanelItem, ItemsNumber, Move, DestPath, OpMode), es);
 		nResult = (int)es.nResult;
@@ -1023,8 +966,7 @@ int PluginW::PutFiles(
 
 	if (pPutFilesW)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_PUTFILES;
+		ExecuteStruct es(EXCEPT_PUTFILES);
 		es.nDefaultResult = -1;
 		static FARString strCurrentDirectory;
 		apiGetCurrentDirectory(strCurrentDirectory);
@@ -1046,8 +988,7 @@ int PluginW::DeleteFiles(
 
 	if (pDeleteFilesW)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_DELETEFILES;
+		ExecuteStruct es(EXCEPT_DELETEFILES);
 		es.bDefaultResult = FALSE;
 		EXECUTE_FUNCTION_EX(pDeleteFilesW(hPlugin, PanelItem, ItemsNumber, OpMode), es);
 		bResult = (int)es.bResult;
@@ -1067,8 +1008,7 @@ int PluginW::MakeDirectory(
 
 	if (pMakeDirectoryW)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_MAKEDIRECTORY;
+		ExecuteStruct es(EXCEPT_MAKEDIRECTORY);
 		es.nDefaultResult = -1;
 		EXECUTE_FUNCTION_EX(pMakeDirectoryW(hPlugin, Name, OpMode), es);
 		nResult = (int)es.nResult;
@@ -1089,8 +1029,7 @@ int PluginW::ProcessHostFile(
 
 	if (pProcessHostFileW)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_PROCESSHOSTFILE;
+		ExecuteStruct es(EXCEPT_PROCESSHOSTFILE);
 		es.bDefaultResult = FALSE;
 		EXECUTE_FUNCTION_EX(pProcessHostFileW(hPlugin, PanelItem, ItemsNumber, OpMode), es);
 		bResult = es.bResult;
@@ -1110,8 +1049,7 @@ int PluginW::ProcessEvent(
 
 	if (pProcessEventW)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_PROCESSEVENT;
+		ExecuteStruct es(EXCEPT_PROCESSEVENT);
 		es.bDefaultResult = FALSE;
 		EXECUTE_FUNCTION_EX(pProcessEventW(hPlugin, Event, Param), es);
 		bResult = es.bResult;
@@ -1132,8 +1070,7 @@ int PluginW::Compare(
 
 	if (pCompareW)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_COMPARE;
+		ExecuteStruct es(EXCEPT_COMPARE);
 		es.nDefaultResult = -2;
 		EXECUTE_FUNCTION_EX(pCompareW(hPlugin, Item1, Item2, Mode), es);
 		nResult = (int)es.nResult;
@@ -1154,8 +1091,7 @@ int PluginW::GetFindData(
 
 	if (pGetFindDataW)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_GETFINDDATA;
+		ExecuteStruct es(EXCEPT_GETFINDDATA);
 		es.bDefaultResult = FALSE;
 		EXECUTE_FUNCTION_EX(pGetFindDataW(hPlugin, pPanelItem, pItemsNumber, OpMode), es);
 		bResult = es.bResult;
@@ -1173,8 +1109,7 @@ void PluginW::FreeFindData(
 {
 	if (pFreeFindDataW)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_FREEFINDDATA;
+		ExecuteStruct es(EXCEPT_FREEFINDDATA);
 		EXECUTE_FUNCTION(pFreeFindDataW(hPlugin, PanelItem, ItemsNumber), es);
 		(void)es; // supress 'set but not used' warning
 	}
@@ -1190,8 +1125,7 @@ int PluginW::ProcessKey(
 
 	if (pProcessKeyW)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_PROCESSKEY;
+		ExecuteStruct es(EXCEPT_PROCESSKEY);
 		es.bDefaultResult = TRUE; // do not pass this key to far on exception
 		EXECUTE_FUNCTION_EX(pProcessKeyW(hPlugin, Key, dwControlState), es);
 		bResult = es.bResult;
@@ -1207,8 +1141,7 @@ void PluginW::ClosePlugin(
 {
 	if (pClosePluginW)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_CLOSEPLUGIN;
+		ExecuteStruct es(EXCEPT_CLOSEPLUGIN);
 		EXECUTE_FUNCTION(pClosePluginW(hPlugin), es);
 		(void)es; // supress 'set but not used' warning
 	}
@@ -1227,8 +1160,7 @@ int PluginW::SetDirectory(
 
 	if (pSetDirectoryW)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_SETDIRECTORY;
+		ExecuteStruct es(EXCEPT_SETDIRECTORY);
 		es.bDefaultResult = FALSE;
 		EXECUTE_FUNCTION_EX(pSetDirectoryW(hPlugin, Dir, OpMode), es);
 		bResult = es.bResult;
@@ -1248,8 +1180,7 @@ void PluginW::GetOpenPluginInfo(
 
 	if (pGetOpenPluginInfoW)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_GETOPENPLUGININFO;
+		ExecuteStruct es(EXCEPT_GETOPENPLUGININFO);
 		EXECUTE_FUNCTION(pGetOpenPluginInfoW(hPlugin, pInfo), es);
 		(void)es; // supress 'set but not used' warning
 	}
@@ -1264,8 +1195,7 @@ int PluginW::Configure(
 
 	if (Load() && pConfigureW)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_CONFIGURE;
+		ExecuteStruct es(EXCEPT_CONFIGURE);
 		es.bDefaultResult = FALSE;
 		EXECUTE_FUNCTION_EX(pConfigureW(MenuItem), es);
 		bResult = es.bResult;
@@ -1281,8 +1211,7 @@ bool PluginW::GetPluginInfo(PluginInfo *pi)
 
 	if (pGetPluginInfoW)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_GETPLUGININFO;
+		ExecuteStruct es(EXCEPT_GETPLUGININFO);
 		EXECUTE_FUNCTION(pGetPluginInfoW(pi), es);
 
 		if (!es.bUnloaded)
@@ -1300,8 +1229,7 @@ int PluginW::GetCustomData(const wchar_t *FilePath, wchar_t **CustomData)
 {
 	if (Load() && pGetCustomDataW)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_GETCUSTOMDATA;
+		ExecuteStruct es(EXCEPT_GETCUSTOMDATA);
 		es.bDefaultResult = 0;
 		es.bResult = 0;
 		EXECUTE_FUNCTION_EX(pGetCustomDataW(FilePath, CustomData), es);
@@ -1315,8 +1243,7 @@ void PluginW::FreeCustomData(wchar_t *CustomData)
 {
 	if (Load() && pFreeCustomDataW)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_FREECUSTOMDATA;
+		ExecuteStruct es(EXCEPT_FREECUSTOMDATA);
 		EXECUTE_FUNCTION(pFreeCustomDataW(CustomData), es);
 		(void)es; // supress 'set but not used' warning
 	}
@@ -1326,8 +1253,7 @@ bool PluginW::MayExitFAR()
 {
 	if (pMayExitFARW)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_MAYEXITFAR;
+		ExecuteStruct es(EXCEPT_MAYEXITFAR);
 		es.bDefaultResult = 1;
 		EXECUTE_FUNCTION_EX(pMayExitFARW(), es);
 		return es.bResult;
@@ -1340,8 +1266,7 @@ void PluginW::ExitFAR()
 {
 	if (pExitFARW)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_EXITFAR;
+		ExecuteStruct es(EXCEPT_EXITFAR);
 		EXECUTE_FUNCTION(pExitFARW(), es);
 		(void)es; // supress 'set but not used' warning
 	}
@@ -1355,8 +1280,7 @@ int PluginW::ProcessConsoleInput(
 
 	if (Load() && pProcessConsoleInputW)
 	{
-		ExecuteStruct es;
-		es.id = EXCEPT_PROCESSCONSOLEINPUT;
+		ExecuteStruct es(EXCEPT_PROCESSCONSOLEINPUT);
 		es.bDefaultResult = 0;
 		EXECUTE_FUNCTION_EX(pProcessConsoleInputW(D), es);
 		bResult = es.bResult;

@@ -200,3 +200,35 @@ class Plugin
 
 		bool IsLoaded() { return m_hModule != nullptr; }
 };
+
+struct ExecuteStruct
+{
+	int id; //function id
+	union
+	{
+		INT_PTR nResult;
+		HANDLE hResult;
+		BOOL bResult;
+	};
+
+	union
+	{
+		INT_PTR nDefaultResult;
+		HANDLE hDefaultResult;
+		BOOL bDefaultResult;
+	};
+
+	bool bUnloaded;
+
+	ExecuteStruct(int ID) : id(ID), nResult(0), nDefaultResult(0), bUnloaded(false) {}
+};
+
+#define EXECUTE_FUNCTION(function, es) \
+	{ \
+		function; \
+	}
+
+#define EXECUTE_FUNCTION_EX(function, es) \
+	{ \
+		es.nResult = (INT_PTR)function; \
+	}
