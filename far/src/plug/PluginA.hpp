@@ -60,6 +60,7 @@ typedef int (WINAPI *PLUGINSETFINDLIST)(HANDLE hPlugin,const oldfar::PluginPanel
 typedef void (WINAPI *PLUGINSETSTARTUPINFO)(const oldfar::PluginStartupInfo *Info);
 typedef int (WINAPI *PLUGINPROCESSVIEWEREVENT)(int Event,void *Param);
 typedef int (WINAPI *PLUGINPROCESSDIALOGEVENT)(int Event,void *Param);
+typedef void (WINAPI *PLUGINGETGLOBALINFO)(GlobalInfo *gi);
 
 
 class PluginA: public Plugin
@@ -154,7 +155,6 @@ class PluginA: public Plugin
 		bool HasAnalyse() { return false; }
 		bool HasGetCustomData()  { return false; }
 		bool HasFreeCustomData() { return false; }
-		bool HasGetGlobalInfo()  { return false; }
 		bool HasProcessConsoleInput() { return false; }
 
 		const FARString &GetModuleName() { return m_strModuleName; }
@@ -211,7 +211,6 @@ class PluginA: public Plugin
 
 		bool MayExitFAR();
 		void ExitFAR();
-		void GetGlobalInfo() {}
 
 	private:
 

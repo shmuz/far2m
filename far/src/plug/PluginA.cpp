@@ -72,6 +72,11 @@ static const char *szCache_Preload = "Preload";
 static const char *szCache_Preopen = "Preopen";
 static const char *szCache_SysID = "SysID";
 
+static const char *szCache_PluginVersion = "Version";
+static const char *szCache_Title = "Title";
+static const char *szCache_Description = "Description";
+static const char *szCache_Author = "Author";
+
 static const char szCache_OpenPlugin[] = "OpenPlugin";
 static const char szCache_OpenFilePlugin[] = "OpenFilePlugin";
 static const char szCache_SetFindList[] = "SetFindList";
@@ -109,6 +114,7 @@ static const char NFMP_ProcessKey[] = "ProcessKey";
 static const char NFMP_ProcessEvent[] = "ProcessEvent";
 static const char NFMP_Compare[] = "Compare";
 static const char NFMP_GetMinFarVersion[] = "GetMinFarVersion";
+static const char NFMP_GetGlobalInfo[] = "GetGlobalInfoW";
 
 
 static void CheckScreenLock()
@@ -156,6 +162,11 @@ bool PluginA::LoadFromCache()
 	//одинаковые ли бинарники?
 	if (kfh.GetString("ID") != m_strModuleID)
 		return false;
+
+	m_PluginVersion = kfh.GetUInt(szCache_PluginVersion, 0);
+	strTitle = kfh.GetString(szCache_Title);
+	strDescription = kfh.GetString(szCache_Description);
+	strAuthor = kfh.GetString(szCache_Author);
 
 	SysID = kfh.GetUInt(szCache_SysID,0);
 	pOpenPlugin = (PLUGINOPENPLUGIN)(INT_PTR)kfh.GetUInt(szCache_OpenPlugin, 0);
@@ -252,6 +263,12 @@ bool PluginA::SaveToCache()
 	kfh.SetUInt(GetSettingsName(), szCache_ProcessViewerEvent, pProcessViewerEvent!=nullptr);
 	kfh.SetUInt(GetSettingsName(), szCache_ProcessDialogEvent, pProcessDialogEvent!=nullptr);
 	kfh.SetUInt(GetSettingsName(),  szCache_Configure, pConfigure!=nullptr);
+
+	kfh.SetUInt(GetSettingsName(),   szCache_PluginVersion, m_PluginVersion);
+	kfh.SetString(GetSettingsName(), szCache_Title, strTitle);
+	kfh.SetString(GetSettingsName(), szCache_Description, strDescription);
+	kfh.SetString(GetSettingsName(), szCache_Author, strAuthor);
+
 	return true;
 }
 
@@ -294,6 +311,7 @@ bool PluginA::Load()
 	GetModuleFN(pProcessViewerEvent, NFMP_ProcessViewerEvent);
 	GetModuleFN(pProcessDialogEvent, NFMP_ProcessDialogEvent);
 	GetModuleFN(pMinFarVersion, NFMP_GetMinFarVersion);
+	GetModuleFN(pGetGlobalInfoW, NFMP_GetGlobalInfo);
 
 	bool bUnloaded = false;
 
@@ -1244,6 +1262,7 @@ void PluginA::ConvertPluginInfo(oldfar::PluginInfo &Src, PluginInfo *Dest)
 	FreePluginInfo();
 	PI.StructSize = sizeof(PI);
 	PI.Flags = Src.Flags;
+	PI.SysID = Src.SysID;
 
 	if (Src.DiskMenuStringsNumber)
 	{
@@ -1297,6 +1316,8 @@ bool PluginA::GetPluginInfo(PluginInfo *pi)
 		if (!es.bUnloaded)
 		{
 			ConvertPluginInfo(InfoA, pi);
+			if (pi->SysID == 0) // prevent erasing SysID that may be already set by GetGlobalInfoW()
+				pi->SysID = SysID;
 			return true;
 		}
 	}

@@ -34,6 +34,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FARString.hpp"
 #include <string>
 
+typedef void (WINAPI *PLUGINGETGLOBALINFOW)(GlobalInfo *gi);
+
 struct AnalyseData
 {
 	int StructSize;
@@ -54,6 +56,8 @@ class Plugin
 		void *GetModulePFN(const char *fn);
 
 	protected:
+		PLUGINGETGLOBALINFOW pGetGlobalInfoW;
+
 		PluginManager *m_owner; //BUGBUG
 
 		FARString m_strModuleName;
@@ -142,7 +146,6 @@ class Plugin
 		virtual bool HasAnalyse() = 0;
 		virtual bool HasGetCustomData() = 0;
 		virtual bool HasFreeCustomData() = 0;
-		virtual bool HasGetGlobalInfo() = 0;
 		virtual bool HasProcessConsoleInput() = 0;
 
 		virtual const FARString &GetModuleName() = 0;
@@ -196,8 +199,8 @@ class Plugin
 
 		virtual bool MayExitFAR() = 0;
 		virtual void ExitFAR() = 0;
-		virtual void GetGlobalInfo() = 0;
 
+		void GetGlobalInfo();
 		bool IsLoaded() { return m_hModule != nullptr; }
 };
 
@@ -232,3 +235,43 @@ struct ExecuteStruct
 	{ \
 		es.nResult = (INT_PTR)function; \
 	}
+
+enum ExceptFunctionsType
+{
+	EXCEPT_KERNEL=-1,
+	EXCEPT_SETSTARTUPINFO,
+	EXCEPT_GETVIRTUALFINDDATA,
+	EXCEPT_OPENPLUGIN,
+	EXCEPT_OPENFILEPLUGIN,
+	EXCEPT_CLOSEPLUGIN,
+	EXCEPT_GETPLUGININFO,
+	EXCEPT_GETOPENPLUGININFO,
+	EXCEPT_GETFINDDATA,
+	EXCEPT_FREEFINDDATA,
+	EXCEPT_FREEVIRTUALFINDDATA,
+	EXCEPT_SETDIRECTORY,
+	EXCEPT_GETFILES,
+	EXCEPT_PUTFILES,
+	EXCEPT_DELETEFILES,
+	EXCEPT_MAKEDIRECTORY,
+	EXCEPT_PROCESSHOSTFILE,
+	EXCEPT_SETFINDLIST,
+	EXCEPT_CONFIGURE,
+	EXCEPT_EXITFAR,
+	EXCEPT_MAYEXITFAR,
+	EXCEPT_PROCESSKEY,
+	EXCEPT_PROCESSEVENT,
+	EXCEPT_PROCESSEDITOREVENT,
+	EXCEPT_COMPARE,
+	EXCEPT_PROCESSEDITORINPUT,
+	EXCEPT_MINFARVERSION,
+	EXCEPT_PROCESSVIEWEREVENT,
+	EXCEPT_PROCESSVIEWERINPUT,
+	EXCEPT_PROCESSDIALOGEVENT,
+	EXCEPT_PROCESSSYNCHROEVENT,
+	EXCEPT_ANALYSE,
+	EXCEPT_GETCUSTOMDATA,
+	EXCEPT_FREECUSTOMDATA,
+	EXCEPT_GETGLOBALINFO,
+	EXCEPT_PROCESSCONSOLEINPUT,
+};

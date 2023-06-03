@@ -100,3 +100,23 @@ void Plugin::CloseModule()
 	}
 }
 
+void Plugin::GetGlobalInfo()
+{
+	if (pGetGlobalInfoW)
+	{
+		ExecuteStruct es(EXCEPT_GETGLOBALINFO);
+		GlobalInfo gi {};
+		gi.StructSize = sizeof(GlobalInfo);
+		EXECUTE_FUNCTION(pGetGlobalInfoW(&gi), es);
+
+		if (gi.StructSize && gi.Title && *gi.Title && gi.Description && *gi.Description && gi.Author && *gi.Author)
+		{
+			SysID = gi.SysID;
+			strTitle = gi.Title;
+			strDescription = gi.Description;
+			strAuthor= gi.Author;
+			m_MinFarVersion = gi.MinFarVersion;
+			m_PluginVersion = gi.Version;
+		}
+	}
+}

@@ -2,6 +2,7 @@
 project(multiarc)
 
 set(SOURCES
+    src/GlobalInfo.cpp
     src/MultiArc.cpp
     src/ArcPlg.cpp
     src/arccfg.cpp

@@ -597,30 +597,6 @@ bool PluginW::SetStartupInfo(bool &bUnloaded)
 	return true;
 }
 
-void PluginW::GetGlobalInfo()
-{
-	if (pGetGlobalInfoW)
-	{
-		ExecuteStruct es(EXCEPT_GETGLOBALINFO);
-		GlobalInfo gi {};
-		gi.StructSize = sizeof(GlobalInfo);
-		EXECUTE_FUNCTION(pGetGlobalInfoW(&gi), es);
-
-		if (gi.StructSize && gi.Title && *gi.Title && gi.Description && *gi.Description && gi.Author && *gi.Author)
-		{
-			SysID = gi.SysID;
-			strTitle = gi.Title;
-			strDescription = gi.Description;
-			strAuthor= gi.Author;
-			m_MinFarVersion = gi.MinFarVersion;
-			m_PluginVersion = gi.Version;
-		}
-
-		if (es.bUnloaded) // supress a warning
-			{}
-	}
-}
-
 static void ShowMessageAboutIllegalPluginVersion(const wchar_t* plg,int required)
 {
 	FARString strMsg1, strMsg2;
@@ -840,7 +816,6 @@ int PluginW::ProcessEditorEvent(
 	{
 		ExecuteStruct es(EXCEPT_PROCESSEDITOREVENT);
 		EXECUTE_FUNCTION_EX(pProcessEditorEventW(Event, Param), es);
-		(void)es; // supress 'set but not used' warning
 	}
 
 	return 0; //oops!
@@ -855,7 +830,6 @@ int PluginW::ProcessViewerEvent(
 	{
 		ExecuteStruct es(EXCEPT_PROCESSVIEWEREVENT);
 		EXECUTE_FUNCTION_EX(pProcessViewerEventW(Event, Param), es);
-		(void)es; // supress 'set but not used' warning
 	}
 
 	return 0; //oops, again!
@@ -888,7 +862,6 @@ int PluginW::ProcessSynchroEvent(
 	{
 		ExecuteStruct es(EXCEPT_PROCESSSYNCHROEVENT);
 		EXECUTE_FUNCTION_EX(pProcessSynchroEventW(Event, Param), es);
-		(void)es; // supress 'set but not used' warning
 	}
 
 	return 0; //oops, again!
@@ -925,7 +898,6 @@ void PluginW::FreeVirtualFindData(
 	{
 		ExecuteStruct es(EXCEPT_FREEVIRTUALFINDDATA);
 		EXECUTE_FUNCTION(pFreeVirtualFindDataW(hPlugin, PanelItem, ItemsNumber), es);
-		(void)es; // supress 'set but not used' warning
 	}
 }
 
@@ -1111,7 +1083,6 @@ void PluginW::FreeFindData(
 	{
 		ExecuteStruct es(EXCEPT_FREEFINDDATA);
 		EXECUTE_FUNCTION(pFreeFindDataW(hPlugin, PanelItem, ItemsNumber), es);
-		(void)es; // supress 'set but not used' warning
 	}
 }
 
@@ -1143,7 +1114,6 @@ void PluginW::ClosePlugin(
 	{
 		ExecuteStruct es(EXCEPT_CLOSEPLUGIN);
 		EXECUTE_FUNCTION(pClosePluginW(hPlugin), es);
-		(void)es; // supress 'set but not used' warning
 	}
 
 //	m_pManager->m_pCurrentPlugin = (Plugin*)-1;
@@ -1182,7 +1152,6 @@ void PluginW::GetOpenPluginInfo(
 	{
 		ExecuteStruct es(EXCEPT_GETOPENPLUGININFO);
 		EXECUTE_FUNCTION(pGetOpenPluginInfoW(hPlugin, pInfo), es);
-		(void)es; // supress 'set but not used' warning
 	}
 }
 
@@ -1245,7 +1214,6 @@ void PluginW::FreeCustomData(wchar_t *CustomData)
 	{
 		ExecuteStruct es(EXCEPT_FREECUSTOMDATA);
 		EXECUTE_FUNCTION(pFreeCustomDataW(CustomData), es);
-		(void)es; // supress 'set but not used' warning
 	}
 }
 
@@ -1268,7 +1236,6 @@ void PluginW::ExitFAR()
 	{
 		ExecuteStruct es(EXCEPT_EXITFAR);
 		EXECUTE_FUNCTION(pExitFARW(), es);
-		(void)es; // supress 'set but not used' warning
 	}
 }
 

@@ -1,6 +1,7 @@
 project(inside)
 
 set(SOURCES
+src/GlobalInfo.cpp
 src/inside.cpp
 src/Globals.cpp
 src/Commands.cpp
