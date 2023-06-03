@@ -116,7 +116,7 @@ void Plugin::GetGlobalInfo()
 			strDescription = gi.Description;
 			strAuthor= gi.Author;
 			m_MinFarVersion = gi.MinFarVersion;
-			m_PluginVersion = gi.Version;
+			m_PlugVersion = gi.Version;
 		}
 	}
 }

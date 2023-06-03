@@ -2486,7 +2486,7 @@ size_t PluginManager::GetPluginInformation(Plugin *pPlugin, FarGetPluginInformat
 
 	pInfo->GInfo->StructSize = sizeof(GlobalInfo);
 	pInfo->GInfo->SysID = SysID;
-	pInfo->GInfo->Version = pPlugin->m_PluginVersion;
+	pInfo->GInfo->Version = pPlugin->m_PlugVersion;
 	pInfo->GInfo->MinFarVersion = pPlugin->m_MinFarVersion;
 	pInfo->GInfo->Title = StrToBuf(pPlugin->strTitle, Buffer, Rest, Size);
 	pInfo->GInfo->Description = StrToBuf(pPlugin->strDescription, Buffer, Rest, Size);
@@ -2539,13 +2539,8 @@ void PluginManager::ShowPluginInfo(Plugin* pPlugin)
 	SetEditData(pPlugin->strAuthor);
 
 	Builder.AddText(Msg::MPluginVersion);
-	if (pPlugin->m_PluginVersion)
-	{
-		auto Ver = pPlugin->m_PluginVersion;
-		Builder.AddConstEditField(FARString().Format(L"%u.%u.%u", (Ver>>24), (Ver>>16)&0xFF, Ver&0xFFFF), Width);
-	}
-	else
-		SetEditData(L"");
+	const auto& Ver = pPlugin->m_PlugVersion;
+	Builder.AddConstEditField(FARString().Format(L"%u.%u.%u.%u", Ver.Major,Ver.Minor,Ver.Revision,Ver.Build), Width);
 
 	Builder.AddText(Msg::MPluginModulePath);
 	Builder.AddConstEditField(pPlugin->GetModuleName(), Width);

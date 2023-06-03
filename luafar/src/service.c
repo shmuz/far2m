@@ -624,10 +624,16 @@ int far_GetPluginGlobalInfo(lua_State *L)
   lua_createtable(L,0,6);
   PutNumToTable  (L, "SysID", info.SysID);
   PutNumToTable  (L, "MinFarVersion", info.MinFarVersion);
-  PutNumToTable  (L, "Version", info.Version);
   PutWStrToTable (L, "Title", info.Title, -1);
   PutWStrToTable (L, "Description", info.Description, -1);
   PutWStrToTable (L, "Author", info.Author, -1);
+
+  lua_createtable(L,4,0);
+  PutIntToArray(L, 1, info.Version.Major);
+  PutIntToArray(L, 2, info.Version.Minor);
+  PutIntToArray(L, 3, info.Version.Revision);
+  PutIntToArray(L, 4, info.Version.Build);
+  lua_setfield(L, -1, "Version");
   return 1;
 }
 
@@ -5041,7 +5047,14 @@ int far_GetPluginInformation(lua_State *L)
       PutNumToTable(L, "StructSize", pi->GInfo->StructSize);
       PutNumToTable(L, "SysID", pi->GInfo->SysID);
       PutNumToTable(L, "MinFarVersion", pi->GInfo->MinFarVersion);
-      PutNumToTable(L, "Version", pi->GInfo->Version);
+
+      lua_createtable(L,4,0);
+      PutIntToArray(L, 1, pi->GInfo->Version.Major);
+      PutIntToArray(L, 2, pi->GInfo->Version.Minor);
+      PutIntToArray(L, 3, pi->GInfo->Version.Revision);
+      PutIntToArray(L, 4, pi->GInfo->Version.Build);
+      lua_setfield(L, -1, "Version");
+
       // PutLStrToTable(L, "Guid", (const char*)&pi->GInfo->Guid, sizeof(GUID));
       PutWStrToTable(L, "Title", pi->GInfo->Title, -1);
       PutWStrToTable(L, "Description", pi->GInfo->Description, -1);

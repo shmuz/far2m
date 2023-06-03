@@ -72,7 +72,10 @@ static const char *szCache_Preload = "Preload";
 static const char *szCache_Preopen = "Preopen";
 static const char *szCache_SysID = "SysID";
 
-static const char *szCache_PluginVersion = "Version";
+static const char *szCache_VerMajor = "VerMajor";
+static const char *szCache_VerMinor = "VerMinor";
+static const char *szCache_VerRevision = "VerRevision";
+static const char *szCache_VerBuild = "VerBuild";
 static const char *szCache_Title = "Title";
 static const char *szCache_Description = "Description";
 static const char *szCache_Author = "Author";
@@ -163,7 +166,10 @@ bool PluginA::LoadFromCache()
 	if (kfh.GetString("ID") != m_strModuleID)
 		return false;
 
-	m_PluginVersion = kfh.GetUInt(szCache_PluginVersion, 0);
+	m_PlugVersion.Major = kfh.GetUInt(szCache_VerMajor, 0);
+	m_PlugVersion.Minor = kfh.GetUInt(szCache_VerMinor, 0);
+	m_PlugVersion.Revision = kfh.GetUInt(szCache_VerRevision, 0);
+	m_PlugVersion.Build = kfh.GetUInt(szCache_VerBuild, 0);
 	strTitle = kfh.GetString(szCache_Title);
 	strDescription = kfh.GetString(szCache_Description);
 	strAuthor = kfh.GetString(szCache_Author);
@@ -264,7 +270,10 @@ bool PluginA::SaveToCache()
 	kfh.SetUInt(GetSettingsName(), szCache_ProcessDialogEvent, pProcessDialogEvent!=nullptr);
 	kfh.SetUInt(GetSettingsName(),  szCache_Configure, pConfigure!=nullptr);
 
-	kfh.SetUInt(GetSettingsName(),   szCache_PluginVersion, m_PluginVersion);
+	kfh.SetUInt(GetSettingsName(),   szCache_VerMajor, m_PlugVersion.Major);
+	kfh.SetUInt(GetSettingsName(),   szCache_VerMinor, m_PlugVersion.Minor);
+	kfh.SetUInt(GetSettingsName(),   szCache_VerRevision, m_PlugVersion.Revision);
+	kfh.SetUInt(GetSettingsName(),   szCache_VerBuild, m_PlugVersion.Build);
 	kfh.SetString(GetSettingsName(), szCache_Title, strTitle);
 	kfh.SetString(GetSettingsName(), szCache_Description, strDescription);
 	kfh.SetString(GetSettingsName(), szCache_Author, strAuthor);

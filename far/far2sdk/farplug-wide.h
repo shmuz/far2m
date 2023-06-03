@@ -2613,12 +2613,26 @@ struct RegExpSearch
 	void* Reserved;
 };
 
+struct VersionInfo
+{
+	DWORD Major;
+	DWORD Minor;
+	DWORD Revision;
+	DWORD Build;
+};
+
+static __inline struct VersionInfo MAKEPLUGVERSION(DWORD Major, DWORD Minor, DWORD Revision, DWORD Build)
+{
+	struct VersionInfo Info = {Major, Minor, Revision, Build};
+	return Info;
+}
+
 struct GlobalInfo
 {
 	size_t StructSize;
 	DWORD SysID;
 	DWORD MinFarVersion;
-	DWORD Version;
+	struct VersionInfo Version;
 	const wchar_t *Title;
 	const wchar_t *Description;
 	const wchar_t *Author;
