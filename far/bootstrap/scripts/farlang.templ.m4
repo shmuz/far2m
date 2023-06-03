@@ -17577,14 +17577,14 @@ HelpHotKey
 "Введіть гарячу клавішу (літеру або цифру)"
 
 PluginHotKeyBottom
-"F4 - задать горячую клавишу"
-"F4 - set hot key"
-"F4 - nastavení horké klávesy"
-"Kurztaste setzen: F4"
-"F4 - gyorsbillentyű hozzárendelés"
-"F4 - ustaw klawisz skrótu"
-"F4 - asignar tecla rápida"
-"F4 - встановити гарячу клавішу"
+"F4: горячая клавиша, F3: информация"
+"F4: set hot key, F3: information"
+"F4: nastavení horké klávesy, F3: informace"
+"Kurztaste setzen: F4, information: F3"
+"F4: gyorsbillentyű hozzárendelés, F3: information"
+"F4: ustaw klawisz skrótu, F3: informacja"
+"F4: asignar tecla rápida, F3: información"
+"F4: гаряча клавіша, F3: інформація"
 
 PluginHotKeyTitle
 l:
