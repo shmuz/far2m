@@ -201,6 +201,7 @@ class Plugin
 
 		void GetGlobalInfo();
 		bool IsLoaded() { return m_hModule != nullptr; }
+		static void ShowMessageAboutIllegalPluginVersion(const wchar_t* plg,int required);
 };
 
 struct ExecuteStruct

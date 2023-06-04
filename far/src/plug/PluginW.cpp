@@ -598,18 +598,6 @@ bool PluginW::SetStartupInfo(bool &bUnloaded)
 	return true;
 }
 
-static void ShowMessageAboutIllegalPluginVersion(const wchar_t* plg,int required)
-{
-	FARString strMsg1, strMsg2;
-	FARString strPlgName;
-	strMsg1.Format(Msg::PlgRequired,
-	               (WORD)(HIWORD(required)),(WORD)(LOWORD(required)));
-	strMsg2.Format(Msg::PlgRequired2,
-	               (WORD)(HIWORD(FAR_VERSION)),(WORD)(LOWORD(FAR_VERSION)));
-	Message(MSG_WARNING,1,Msg::Error,Msg::PlgBadVers,plg,strMsg1,strMsg2,Msg::Ok);
-}
-
-
 bool PluginW::CheckMinFarVersion(bool &bUnloaded)
 {
 	if (pMinFarVersionW)
