@@ -624,7 +624,6 @@ bool PluginW::CheckMinFarVersion(bool &bUnloaded)
 		}
 
 		DWORD FVer = (DWORD)es.nResult;
-		m_MinFarVersion = FVer;
 
 		if (LOWORD(FVer) >  LOWORD(FAR_VERSION) ||
 		        (LOWORD(FVer) == LOWORD(FAR_VERSION) &&

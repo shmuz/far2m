@@ -40,7 +40,6 @@ void LUAPLUG GetGlobalInfoW(struct GlobalInfo *aInfo)
 {
   aInfo->StructSize    = sizeof(*aInfo);
   aInfo->SysID         = SYS_ID;
-  aInfo->MinFarVersion = PLUG_MINFARVERSION;
   aInfo->Version       = PLUG_VERSION;
   aInfo->Title         = WIDEN(PLUG_TITLE);
   aInfo->Description   = WIDEN(PLUG_DESCRIPTION);

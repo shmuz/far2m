@@ -81,7 +81,6 @@ class Plugin
 		FARString strTitle;
 		FARString strDescription;
 		FARString strAuthor;
-		DWORD m_MinFarVersion{};
 		VersionInfo m_PlugVersion{};
 
 		Language Lang;

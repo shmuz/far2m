@@ -2631,7 +2631,6 @@ struct GlobalInfo
 {
 	size_t StructSize;
 	DWORD SysID;
-	DWORD MinFarVersion;
 	struct VersionInfo Version;
 	const wchar_t *Title;
 	const wchar_t *Description;

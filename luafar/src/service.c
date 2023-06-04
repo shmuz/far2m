@@ -623,7 +623,6 @@ int far_GetPluginGlobalInfo(lua_State *L)
   GetPluginData(L)->GetGlobalInfo(&info);
   lua_createtable(L,0,6);
   PutNumToTable  (L, "SysID", info.SysID);
-  PutNumToTable  (L, "MinFarVersion", info.MinFarVersion);
   PutWStrToTable (L, "Title", info.Title, -1);
   PutWStrToTable (L, "Description", info.Description, -1);
   PutWStrToTable (L, "Author", info.Author, -1);
@@ -5046,7 +5045,6 @@ int far_GetPluginInformation(lua_State *L)
     {
       PutNumToTable(L, "StructSize", pi->GInfo->StructSize);
       PutNumToTable(L, "SysID", pi->GInfo->SysID);
-      PutNumToTable(L, "MinFarVersion", pi->GInfo->MinFarVersion);
 
       lua_createtable(L,4,0);
       PutIntToArray(L, 1, pi->GInfo->Version.Major);
