@@ -2,6 +2,7 @@
 project(python)
 
 set(SOURCES
+src/GlobalInfo.cpp
 src/python.cpp
 ${CMAKE_CURRENT_BINARY_DIR}/incpy/far2lcffi.py
 )

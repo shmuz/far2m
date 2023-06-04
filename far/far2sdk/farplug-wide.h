@@ -48,7 +48,7 @@ other possible license with no implications from the above license on them.
 
 #ifndef RC_INVOKED
 
-#define MAKEFARVERSION(major,minor) ( ((major)*0x10000) + (minor))
+#define MAKEFARVERSION(major,minor) ( ((major)<<16) | (minor))
 
 #define FARMANAGERVERSION MAKEFARVERSION(FARMANAGERVERSION_MAJOR,FARMANAGERVERSION_MINOR)
 
@@ -2621,11 +2621,13 @@ struct VersionInfo
 	DWORD Build;
 };
 
+#ifndef FAR_PYTHON_GEN
 static __inline struct VersionInfo MAKEPLUGVERSION(DWORD Major, DWORD Minor, DWORD Revision, DWORD Build)
 {
 	struct VersionInfo Info = {Major, Minor, Revision, Build};
 	return Info;
 }
+#endif
 
 struct GlobalInfo
 {
