@@ -48,7 +48,7 @@ other possible license with no implications from the above license on them.
 
 #ifndef RC_INVOKED
 
-#define MAKEFARVERSION(major,minor) ( ((major)<<16) | (minor))
+#define MAKEFARVERSION(major,minor) ( ((major)*0x10000) + (minor))
 
 #define FARMANAGERVERSION MAKEFARVERSION(FARMANAGERVERSION_MAJOR,FARMANAGERVERSION_MINOR)
 

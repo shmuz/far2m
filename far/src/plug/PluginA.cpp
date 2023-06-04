@@ -511,9 +511,7 @@ bool PluginA::CheckMinFarVersion(bool &bUnloaded)
 
 		DWORD FVer = (DWORD)es.nResult;
 
-		if (LOWORD(FVer) >  LOWORD(FAR_VERSION) ||
-		        (LOWORD(FVer) == LOWORD(FAR_VERSION) &&
-		         HIWORD(FVer) >  HIWORD(FAR_VERSION)))
+		if (FVer > FAR_VERSION)
 		{
 			ShowMessageAboutIllegalPluginVersion(m_strModuleName,FVer);
 			return false;
