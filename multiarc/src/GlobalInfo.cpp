@@ -1,5 +1,6 @@
 #include <farplug-wide.h>
 
+#ifdef FAR_MANAGER_FAR2M
 SHAREDSYMBOL void WINAPI EXP_NAME(GetGlobalInfo)(struct GlobalInfo *aInfo)
 {
   aInfo->StructSize    = sizeof(*aInfo);
@@ -9,3 +10,4 @@ SHAREDSYMBOL void WINAPI EXP_NAME(GetGlobalInfo)(struct GlobalInfo *aInfo)
   aInfo->Description   = L"Archive support plugin for FAR Manager";
   aInfo->Author        = L"Eugene Roshal, FAR Group, FAR People";
 }
+#endif
