@@ -3,9 +3,10 @@
 #ifdef FAR_MANAGER_FAR2M
 SHAREDSYMBOL void WINAPI EXP_NAME(GetGlobalInfo)(struct GlobalInfo *aInfo)
 {
+  struct VersionInfo Version = { 3,25,0,0 };
   aInfo->StructSize    = sizeof(*aInfo);
   aInfo->SysID         = 0x894EAABB;
-  aInfo->Version       = MAKEPLUGVERSION(3,25,0,0);
+  aInfo->Version       = Version;
   aInfo->Title         = L"Calculator";
   aInfo->Description   = L"Calculator plugin for FAR manager";
   aInfo->Author        = L"Igor Ruskih, uncle-vunkis, FAR People";

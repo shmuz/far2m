@@ -2623,14 +2623,6 @@ struct VersionInfo
 	DWORD Build;
 };
 
-#ifndef FAR_PYTHON_GEN
-static __inline struct VersionInfo MAKEPLUGVERSION(DWORD Major, DWORD Minor, DWORD Revision, DWORD Build)
-{
-	struct VersionInfo Info = {Major, Minor, Revision, Build};
-	return Info;
-}
-#endif
-
 struct GlobalInfo
 {
 	size_t StructSize;

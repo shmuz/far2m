@@ -6,6 +6,12 @@
 #define LUAPLUG __attribute__ ((visibility ("default")))
 #endif
 
+static __inline struct VersionInfo MAKEPLUGVERSION(DWORD Major, DWORD Minor, DWORD Revision, DWORD Build)
+{
+	struct VersionInfo Info = {Major, Minor, Revision, Build};
+	return Info;
+}
+
 #define WIDEN2(x) L ## x
 #define WIDEN(x) WIDEN2(x)
 
