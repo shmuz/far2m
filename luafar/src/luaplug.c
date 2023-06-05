@@ -6,12 +6,6 @@
 #define LUAPLUG __attribute__ ((visibility ("default")))
 #endif
 
-static __inline struct VersionInfo MAKEPLUGVERSION(DWORD Major, DWORD Minor, DWORD Revision, DWORD Build)
-{
-	struct VersionInfo Info = {Major, Minor, Revision, Build};
-	return Info;
-}
-
 #define WIDEN2(x) L ## x
 #define WIDEN(x) WIDEN2(x)
 
@@ -44,9 +38,10 @@ static LONG_PTR WINAPI DlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 
 void LUAPLUG GetGlobalInfoW(struct GlobalInfo *aInfo)
 {
+  struct VersionInfo Version = PLUG_VERSION;
   aInfo->StructSize    = sizeof(*aInfo);
   aInfo->SysID         = SYS_ID;
-  aInfo->Version       = PLUG_VERSION;
+  aInfo->Version       = Version;
   aInfo->Title         = WIDEN(PLUG_TITLE);
   aInfo->Description   = WIDEN(PLUG_DESCRIPTION);
   aInfo->Author        = WIDEN(PLUG_AUTHOR);

@@ -30,7 +30,7 @@ endforeach()
 target_compile_definitions(${PROJECT_NAME}
   PRIVATE ${EXPORTS}
   PRIVATE "-DSYS_ID=0x4EBBEFC8"
-  PRIVATE "-DPLUG_VERSION=MAKEPLUGVERSION(3,0,0,765)"
+  PRIVATE "-DPLUG_VERSION={3,0,0,765}"
   PRIVATE "-DPLUG_TITLE=\"LuaMacro\""
   PRIVATE "-DPLUG_DESCRIPTION=\"Far macros in Lua\""
   PRIVATE "-DPLUG_AUTHOR=\"Shmuel Zeigerman & Far Group\""
