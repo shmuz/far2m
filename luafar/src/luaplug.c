@@ -38,7 +38,7 @@ static LONG_PTR WINAPI DlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 
 void LUAPLUG GetGlobalInfoW(struct GlobalInfo *aInfo)
 {
-  struct VersionInfo Version = PLUG_VERSION;
+  struct VersionInfo Version = { PLUG_VERSION };
   aInfo->StructSize    = sizeof(*aInfo);
   aInfo->SysID         = SYS_ID;
   aInfo->Version       = Version;
