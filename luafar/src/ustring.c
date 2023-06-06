@@ -394,47 +394,6 @@ int ustring_GetCPInfo(lua_State *L)
   return 1;
 }
 
-#if 0
-int ustring_GetLogicalDriveStrings (lua_State *L)
-{
-  int i;
-  wchar_t* buf;
-  DWORD len = GetLogicalDriveStringsW(0, NULL);
-  if (len) {
-    buf = (wchar_t*)lua_newuserdata(L, (len+1)*sizeof(wchar_t));
-    if (GetLogicalDriveStringsW(len, buf)) {
-      lua_newtable(L);
-      for(i=1; TRUE; i++) {
-        if (*buf == 0) break;
-        PutWStrToArray(L, i, buf, -1);
-        buf += wcslen(buf) + 1;
-      }
-      return 1;
-    }
-  }
-  return SysErrorReturn(L);
-}
-#endif
-
-int ustring_GetDriveType (lua_State *L)
-{
-  const wchar_t *root = opt_utf8_string(L, 1, NULL);
-  const char* out;
-  UINT tp = WINPORT(GetDriveType)(root);
-  switch(tp) {
-    default:
-    case 0:               out = "unknown type";      break;
-    case 1:               out = "no root directory"; break;
-    case DRIVE_REMOVABLE: out = "removable";         break;
-    case DRIVE_FIXED:     out = "fixed";             break;
-    case DRIVE_REMOTE:    out = "remote";            break;
-    case DRIVE_CDROM:     out = "cdrom";             break;
-    case DRIVE_RAMDISK:   out = "ramdisk";           break;
-  }
-  lua_pushstring(L, out);
-  return 1;
-}
-
 // This function is used to achieve compatibility between Windows' GUID's and uuid_t values
 // (uuid_t is just a byte array, i.e. always big-endian)
 void shuffle_uuid(void* uuid)

@@ -39,8 +39,6 @@ const wchar_t* opt_wcstring(lua_State *L, int pos, const wchar_t *dflt);
 int ustring_EnumSystemCodePages (lua_State *L);
 int ustring_GetACP (lua_State* L);
 int ustring_GetCPInfo (lua_State *L);
-int ustring_GetDriveType (lua_State *L);
-int ustring_GetLogicalDriveStrings (lua_State *L);
 int ustring_GetOEMCP (lua_State* L);
 int ustring_MultiByteToWideChar (lua_State *L);
 int ustring_WideCharToMultiByte (lua_State *L);

@@ -1074,7 +1074,7 @@ local function test_far_MacroExecute()
     assert_eq    (t[3], 5)
     assert_nil   (t[4])
     assert_eq    (t[5], bit64.new("0x8765876587658765"))
-		assert_eq    (assert_table(t[6])[1], "bar")
+    assert_eq    (assert_table(t[6])[1], "bar")
   end
   test("return ...", nil)
   test("return ...", "KMFLAGS_LUA")
@@ -1085,7 +1085,7 @@ local function test_far_MacroAdd()
   local area, key, descr = "MACROAREA_SHELL", "CtrlA", "Test MacroAdd"
 
   local Id = far.MacroAdd(area, nil, key, [[A = { b=5 }]], descr)
-	assert_true(far.MacroDelete(assert_udata(Id)))
+  assert_true(far.MacroDelete(assert_udata(Id)))
 
   Id = far.MacroAdd(-1, nil, key, [[A = { b=5 }]], descr)
   assert_nil(Id) -- bad area
@@ -1094,13 +1094,13 @@ local function test_far_MacroAdd()
   assert_nil(Id) -- bad code
 
   Id = far.MacroAdd(area, "KMFLAGS_MOONSCRIPT", key, [[A = { b:5 }]], descr)
-	assert_true(far.MacroDelete(assert_udata(Id)))
+  assert_true(far.MacroDelete(assert_udata(Id)))
 
   Id = far.MacroAdd(area, "KMFLAGS_MOONSCRIPT", key, [[A = { b=5 }]], descr)
   assert_nil(Id) -- bad code
 
   Id = far.MacroAdd(area, nil, key, [[@c:\myscript 5+6,"foo"]], descr)
-	assert_true(far.MacroDelete(assert_udata(Id)))
+  assert_true(far.MacroDelete(assert_udata(Id)))
 
   Id = far.MacroAdd(area, nil, key, [[@c:\myscript 5***6,"foo"]], descr)
   assert_true(far.MacroDelete(assert_udata(Id))) -- with @ there is no syntax check till the macro runs
@@ -1506,22 +1506,6 @@ local function test_clipboard()
   assert_eq(far.PasteFromClipboard(), orig)
 end
 
-local function test_far_FarClock()
-  -- check time difference
-  local temp = far.FarClock()
-  win.Sleep(500)
-  temp = (far.FarClock() - temp) / 1000
-  assert(temp > 480 and temp < 550, temp)
-  -- check granularity
-  local OK = false
-  temp = far.FarClock() % 10
-  for k=1,10 do
-    win.Sleep(20)
-    if temp ~= far.FarClock() % 10 then OK=true; break; end
-  end
-  assert_true(OK)
-end
-
 local function test_ProcessName()
   assert_true  (far.CheckMask("f*.ex?"))
   assert_true  (far.CheckMask("/(abc)?def/"))
@@ -1580,7 +1564,6 @@ end
 
 local function test_FarStandardFunctions()
   test_clipboard()
---  test_far_FarClock()
 
   test_ProcessName()
 
@@ -1711,21 +1694,63 @@ local function test_far_timer()
   assert_eq (N, 3)
 end
 
-function MT.test_luafar()
-  test_bit64()
-  test_gmatch_coro()
+local function test_win_Clock()
+  -- check time difference
+  local temp = win.Clock()
+  win.Sleep(500)
+  temp = (win.Clock() - temp)
+  assert(temp > 0.480 and temp < 0.550, temp)
+  -- check granularity
+  local OK = false
+  temp = math.floor(win.Clock()*1e6) % 10
+  for k=1,10 do
+    win.Sleep(20)
+    local temp2 = math.floor(win.Clock()*1e6) % 10
+    if temp ~= temp2 then OK=true; break; end
+  end
+  assert_true(OK)
+end
+
+local function test_win_CompareString()
+  assert(win.CompareString("a","b") < 0)
+  assert(win.CompareString("b","a") > 0)
+  assert(win.CompareString("b","b") == 0)
+end
+
+local function test_win()
+  test_win_Clock()
+  test_win_CompareString()
+
+  assert_str(win.GetCurrentDir())
+  assert_table(win.EnumSystemCodePages())
+  assert_num(win.GetACP())
+  assert_num(win.GetOEMCP())
+
+  local dir = assert_str(win.GetEnv("FARHOME"))
+  local attr = assert_str(win.GetFileAttr(dir))
+  assert_num(attr:find("d"))
+end
+
+local function test_utf8()
   test_utf8_len()
   test_utf8_sub()
   test_utf8_lower_upper()
+end
 
+function MT.test_luafar()
+  test_bit64()
+  test_utf8()
+  test_win()
   test_AdvControl()
-  test_far_GetMsg()
-  test_FarStandardFunctions()
-  test_issue_3129()
   test_MacroControl()
-  test_RegexControl()
   test_PluginsControl()
+  test_RegexControl()
+  test_FarStandardFunctions()
+
+  test_far_GetMsg()
   test_far_timer()
+  test_gmatch_coro()
+  test_issue_3129()
 end
 
 -- Test in particular that Plugin.Call (a so-called "restricted" function) works properly

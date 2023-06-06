@@ -5893,7 +5893,6 @@ static const luaL_Reg win_funcs[] = {
   {"EnumSystemCodePages",        ustring_EnumSystemCodePages },
   {"GetACP",                     ustring_GetACP},
   {"GetCPInfo",                  ustring_GetCPInfo},
-  {"GetDriveType",               ustring_GetDriveType},
   {"GetOEMCP",                   ustring_GetOEMCP},
   {"MultiByteToWideChar",        ustring_MultiByteToWideChar },
   {"WideCharToMultiByte",        ustring_WideCharToMultiByte },
