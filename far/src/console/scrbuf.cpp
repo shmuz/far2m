@@ -313,7 +313,7 @@ void ScreenBuf::FillRect(int X1,int Y1,int X2,int Y2,WCHAR Ch,DWORD64 Color)
 
 /* "Сбросить" виртуальный буфер на консоль
 */
-void ScreenBuf::Flush()
+void ScreenBuf::Flush(bool Force)
 {
 	CriticalSectionLock Lock(CS);
 
@@ -343,7 +343,7 @@ void ScreenBuf::Flush()
 			SBFlags.Set(SBFLAGS_FLUSHEDCURTYPE);
 		}
 
-		if (!SBFlags.Check(SBFLAGS_FLUSHED))
+		if (Force || !SBFlags.Check(SBFLAGS_FLUSHED))
 		{
 			SBFlags.Set(SBFLAGS_FLUSHED);
 

@@ -3575,7 +3575,7 @@ bool KeyMacro::ProcessKey(DWORD dwKey)
 
 			m_RecCode.Clear();
 			m_RecDescription.Clear();
-			ScrBuf.Flush();
+			ScrBuf.Flush(true);
 			return true;
 		}
 		else
@@ -3632,7 +3632,7 @@ bool KeyMacro::ProcessKey(DWORD dwKey)
 			m_Recording=MACROSTATE_NOMACRO;
 			m_RecCode.Clear();
 			m_RecDescription.Clear();
-			ScrBuf.RestoreMacroChar();
+			ScrBuf.Flush(true);
 
 			if (Opt.AutoSaveSetup)
 				SaveMacros(false); // записать только изменения!

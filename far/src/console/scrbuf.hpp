@@ -88,7 +88,7 @@ class ScreenBuf
 		void FillRect(int X1,int Y1,int X2,int Y2,WCHAR Ch,DWORD64 Color);
 
 		void Scroll(int);
-		void Flush();
+		void Flush(bool Force=false);
 };
 
 extern ScreenBuf ScrBuf;
