@@ -4264,7 +4264,6 @@ int DoAdvControl (lua_State *L, int Command, int Delta)
       return lua_pushinteger(L, int1), 1;
 
     case ACTL_COMMIT:
-    case ACTL_PROGRESSNOTIFY:
     case ACTL_QUIT:
     case ACTL_REDRAWALL:
       int1 = PSInfo.AdvControl(pd->ModuleNumber, Command, NULL);
@@ -4292,21 +4291,6 @@ int DoAdvControl (lua_State *L, int Command, int Delta)
       if (int1 && lua_toboolean(L, pos3))
         PSInfo.AdvControl(pd->ModuleNumber, ACTL_COMMIT, NULL);
       return lua_pushboolean(L, int1), 1;
-
-    case ACTL_SETPROGRESSSTATE:
-      int1 = check_env_flag(L, pos2);
-      int1 = PSInfo.AdvControl(pd->ModuleNumber, Command, (void*)int1);
-      return lua_pushboolean(L, int1), 1;
-
-    case ACTL_SETPROGRESSVALUE: {
-      struct PROGRESSVALUE pv;
-      luaL_checktype(L, pos2, LUA_TTABLE);
-      lua_settop(L, pos2);
-      pv.Completed = GetOptNumFromTable(L, "Completed", 0.0);
-      pv.Total = GetOptNumFromTable(L, "Total", 100.0);
-      lua_pushboolean(L, PSInfo.AdvControl(pd->ModuleNumber, Command, &pv));
-      return 1;
-    }
 
     case ACTL_GETSYSWORDDIV:
       PSInfo.AdvControl(pd->ModuleNumber, Command, buf);
@@ -4466,14 +4450,11 @@ AdvCommand( GetSystemSettings,      ACTL_GETSYSTEMSETTINGS, 1)
 AdvCommand( GetSysWordDiv,          ACTL_GETSYSWORDDIV, 1)
 AdvCommand( GetWindowCount,         ACTL_GETWINDOWCOUNT, 1)
 AdvCommand( GetWindowInfo,          ACTL_GETWINDOWINFO, 1)
-AdvCommand( ProgressNotify,         ACTL_PROGRESSNOTIFY, 1)
 AdvCommand( Quit,                   ACTL_QUIT, 1)
 AdvCommand( RedrawAll,              ACTL_REDRAWALL, 1)
 AdvCommand( SetArrayColor,          ACTL_SETARRAYCOLOR, 1)
 AdvCommand( SetCurrentWindow,       ACTL_SETCURRENTWINDOW, 1)
 AdvCommand( SetCursorPos,           ACTL_SETCURSORPOS, 1)
-AdvCommand( SetProgressState,       ACTL_SETPROGRESSSTATE, 1)
-AdvCommand( SetProgressValue,       ACTL_SETPROGRESSVALUE, 1)
 AdvCommand( WaitKey,                ACTL_WAITKEY, 1)
 AdvCommand( WinPortBackend,         ACTL_WINPORTBACKEND, 1)
 
@@ -5745,14 +5726,11 @@ static const luaL_Reg actl_funcs[] =
   {"GetSysWordDiv",         adv_GetSysWordDiv},
   {"GetWindowCount",        adv_GetWindowCount},
   {"GetWindowInfo",         adv_GetWindowInfo},
-  {"ProgressNotify",        adv_ProgressNotify},
   {"Quit",                  adv_Quit},
   {"RedrawAll",             adv_RedrawAll},
   {"SetArrayColor",         adv_SetArrayColor},
   {"SetCurrentWindow",      adv_SetCurrentWindow},
   {"SetCursorPos",          adv_SetCursorPos},
-  {"SetProgressState",      adv_SetProgressState},
-  {"SetProgressValue",      adv_SetProgressValue},
   {"WaitKey",               adv_WaitKey},
   {"WinPortBackend",        adv_WinPortBackend},
   {NULL, NULL},
