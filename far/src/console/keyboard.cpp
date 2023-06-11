@@ -394,7 +394,7 @@ bool KeyToKeyLayoutCompare(int Key, int CompareKey)
 		return true;
 
 	int TransKey = Xlator(0).Transcode(Key);
-	return CompareKey==TransKey || toupper(CompareKey)==toupper(TransKey);
+	return toupper(CompareKey)==toupper(TransKey);
 }
 
 //Должно вернуть клавишный Eng эквивалент Key
