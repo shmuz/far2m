@@ -387,8 +387,14 @@ bool KeyToKeyLayoutCompare(int Key, int CompareKey)
 	_KEYMACRO(SysLog(L"Param: Key=%08X",Key));
 //	Key = KeyToVKey[Key&0xFFFF]&0xFF;
 //	CompareKey = KeyToVKey[CompareKey&0xFFFF]&0xFF;
+	if (!Key)
+		return false;
 
-	return (Key && (Key == CompareKey || Xlator(0).Transcode(Key) == CompareKey));
+	if (Key == CompareKey)
+		return true;
+
+	int TransKey = Xlator(0).Transcode(Key);
+	return CompareKey==TransKey || toupper(CompareKey)==toupper(TransKey);
 }
 
 //Должно вернуть клавишный Eng эквивалент Key
