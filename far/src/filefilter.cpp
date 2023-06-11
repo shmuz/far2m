@@ -53,7 +53,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 static int _cdecl ExtSort(const void *el1,const void *el2);
 
 static TPointerArray<FileFilterParams> FilterData, TempFilterData;
-static FileFilterParams FoldersFilter;
+static FileFilterParams *FoldersFilter = nullptr;
 
 static bool bMenuOpen = false;
 
@@ -166,9 +166,9 @@ bool FileFilter::FilterEdit()
 		ListItem.Flags|=LIF_SEPARATOR;
 		FilterList.AddItem(&ListItem);
 		ListItem.Clear();
-		FoldersFilter.SetTitle(Msg::FolderFileType);
-		MenuString(ListItem.strName,&FoldersFilter,false,L'0');
-		int Check = GetCheck(&FoldersFilter);
+		FoldersFilter->SetTitle(Msg::FolderFileType);
+		MenuString(ListItem.strName,FoldersFilter,false,L'0');
+		int Check = GetCheck(FoldersFilter);
 
 		if (Check)
 			ListItem.SetCheck(Check);
@@ -328,7 +328,7 @@ bool FileFilter::FilterEdit()
 					}
 					else if (SelPos2 == FilterData.getCount()+2)
 					{
-						*NewFilter = FoldersFilter;
+						*NewFilter = *FoldersFilter;
 						NewFilter->SetTitle(L"");
 						NewFilter->ClearAllFlags();
 					}
@@ -531,7 +531,7 @@ void FileFilter::ProcessSelection(VMenu *FilterList)
 		}
 		else if (i == (int)(FilterData.getCount() + 2))
 		{
-			CurFilterData = &FoldersFilter;
+			CurFilterData = FoldersFilter;
 		}
 		else if (i > (int)(FilterData.getCount() + 2))
 		{
@@ -700,7 +700,7 @@ bool FileFilter::FileInFilter(const FAR_FIND_DATA_EX& fde,enumFileInFilterType *
 	//авто-фильтр папки
 	if (FFFT != FFFT_CUSTOM)
 	{
-		Flags = FoldersFilter.GetFlags(FFFT);
+		Flags = FoldersFilter->GetFlags(FFFT);
 
 		if (Flags && (!bFound || (Flags&FFF_STRONG)))
 		{
@@ -710,7 +710,7 @@ bool FileFilter::FileInFilter(const FAR_FIND_DATA_EX& fde,enumFileInFilterType *
 				bAnyFolderIncludeFound = true;
 			}
 
-			if (bFolder && FoldersFilter.FileInFilter(fde, CurrentTime))
+			if (bFolder && FoldersFilter->FileInFilter(fde, CurrentTime))
 			{
 				bFound = true;
 
@@ -796,7 +796,7 @@ bool FileFilter::IsEnabledOnPanel()
 			return true;
 	}
 
-	if (FoldersFilter.GetFlags(FFFT))
+	if (FoldersFilter->GetFlags(FFFT))
 		return true;
 
 	for (size_t i=0; i<TempFilterData.getCount(); i++)
@@ -810,6 +810,7 @@ bool FileFilter::IsEnabledOnPanel()
 
 void FileFilter::InitFilter(ConfigReader &cfg_reader)
 {
+	FoldersFilter = new FileFilterParams;
 	FilterData.Free();
 	TempFilterData.Free();
 	while (1)
@@ -883,13 +884,13 @@ void FileFilter::InitFilter(ConfigReader &cfg_reader)
 
 	{
 		cfg_reader.SelectSectionFmt("Filters");
-		FoldersFilter.SetMask(0,L"");
-		FoldersFilter.SetAttr(1,FILE_ATTRIBUTE_DIRECTORY,0);
+		FoldersFilter->SetMask(0,L"");
+		FoldersFilter->SetAttr(1,FILE_ATTRIBUTE_DIRECTORY,0);
 		DWORD Flags[FFFT_COUNT]{};
 		cfg_reader.GetPOD("FoldersFilterFFlags", Flags);
 
 		for (DWORD i=FFFT_FIRST; i < FFFT_COUNT; i++)
-			FoldersFilter.SetFlags((enumFileFilterFlagsType)i, Flags[i]);
+			FoldersFilter->SetFlags((enumFileFilterFlagsType)i, Flags[i]);
 	}
 }
 
@@ -898,6 +899,7 @@ void FileFilter::CloseFilter()
 {
 	FilterData.Free();
 	TempFilterData.Free();
+	delete FoldersFilter;
 }
 
 void FileFilter::SaveFilters(ConfigWriter &cfg_writer)
@@ -957,7 +959,7 @@ void FileFilter::SaveFilters(ConfigWriter &cfg_writer)
 		DWORD Flags[FFFT_COUNT]{};
 
 		for (DWORD i=FFFT_FIRST; i < FFFT_COUNT; i++)
-			Flags[i] = FoldersFilter.GetFlags((enumFileFilterFlagsType)i);
+			Flags[i] = FoldersFilter->GetFlags((enumFileFilterFlagsType)i);
 
 		cfg_writer.SetPOD("FoldersFilterFFlags", Flags);
 	}
@@ -976,7 +978,7 @@ void FileFilter::SwapFilter()
 	for (size_t i=0; i<FilterData.getCount(); i++)
 		SwapPanelFlags(FilterData.getItem(i));
 
-	SwapPanelFlags(&FoldersFilter);
+	SwapPanelFlags(FoldersFilter);
 
 	for (size_t i=0; i<TempFilterData.getCount(); i++)
 		SwapPanelFlags(TempFilterData.getItem(i));
