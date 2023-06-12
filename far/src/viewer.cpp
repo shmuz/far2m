@@ -1502,7 +1502,13 @@ int Viewer::ProcessKey(int Key)
 					break;
 			}
 
-			VM.CodePage = VM.CodePage==WINPORT(GetOEMCP)() ? WINPORT(GetACP)() : WINPORT(GetOEMCP)();
+			if (VM.CodePage == CP_UTF8)
+				VM.CodePage = WINPORT(GetACP)();
+			else if (VM.CodePage == WINPORT(GetACP)() )
+				VM.CodePage = WINPORT(GetOEMCP)();
+			else
+				VM.CodePage = VM.Hex ? WINPORT(GetACP)() : CP_UTF8; // STUB - для hex UTF8/UTF32 сейчас не работает
+
 			ChangeViewKeyBar();
 			Show();
 //    LastSelPos=FilePos;
@@ -2296,40 +2302,41 @@ void Viewer::SetViewKeyBar(KeyBar *ViewKeyBar)
 
 void Viewer::ChangeViewKeyBar()
 {
-	if (ViewKeyBar)
-	{
-		/* $ 12.07.2000 SVS
-		   Wrap имеет 3 позиции
+	if (ViewKeyBar) {
+		/*
+			$ 12.07.2000 SVS
+			Wrap имеет 3 позиции
 		*/
-		/* $ 15.07.2000 SVS
-		   Wrap должен показываться следующий, а не текущий
+		/*
+			$ 15.07.2000 SVS
+			Wrap должен показываться следующий, а не текущий
 		*/
-		ViewKeyBar->Change(
-		        VM.Wrap ? Msg::ViewF2Unwrap : (VM.WordWrap ? Msg::ViewShiftF2 : Msg::ViewF2),
-				1);
+		ViewKeyBar->Change(VM.Wrap ? Msg::ViewF2Unwrap : (VM.WordWrap ? Msg::ViewShiftF2 : Msg::ViewF2), 1);
 		ViewKeyBar->Change(KBL_SHIFT, VM.WordWrap ? Msg::ViewF2 : Msg::ViewShiftF2, 1);
 
 		if (VM.Hex)
-			ViewKeyBar->Change(Msg::ViewF4Text,3);
+			ViewKeyBar->Change(Msg::ViewF4Text, 3);
 		else
-			ViewKeyBar->Change(Msg::ViewF4,3);
+			ViewKeyBar->Change(Msg::ViewF4, 3);
 
-		if (VM.CodePage != WINPORT(GetOEMCP)())
-			ViewKeyBar->Change(Msg::ViewF8DOS,7);
+		if (VM.CodePage == CP_UTF8)
+			ViewKeyBar->Change(Msg::ViewF8, 7);
+		else if (VM.CodePage == WINPORT(GetACP)())
+			ViewKeyBar->Change(Msg::ViewF8DOS, 7);
 		else
-			ViewKeyBar->Change(Msg::ViewF8,7);
+			ViewKeyBar->Change(VM.Hex ? Msg::ViewF8 : Msg::ViewF8UTF8, 7); // STUB - для hex UTF8/UTF32 сейчас не работает
 
 		if (VM.Processed)
-			ViewKeyBar->Change(Msg::ViewF5Raw,4);
+			ViewKeyBar->Change(Msg::ViewF5Raw, 4);
 		else
-			ViewKeyBar->Change(Msg::ViewF5Processed,4);
+			ViewKeyBar->Change(Msg::ViewF5Processed, 4);
 
 		ViewKeyBar->Redraw();
 	}
 
-//	ViewerMode vm=VM;
-	CtrlObject->Plugins.CurViewer=this; //HostFileViewer;
-//  CtrlObject->Plugins.ProcessViewerEvent(VE_MODE,&vm);
+	//	ViewerMode vm=VM;
+	CtrlObject->Plugins.CurViewer = this;	// HostFileViewer;
+	//	CtrlObject->Plugins.ProcessViewerEvent(VE_MODE,&vm);
 }
 
 enum SEARCHDLG

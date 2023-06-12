@@ -706,10 +706,7 @@ void FileEditor::InitKeyBar()
 	if (!Opt.UsePrintManager || CtrlObject->Plugins.FindPlugin(SYSID_PRINTMANAGER))
 		EditKeyBar.Change(KBL_ALT,L"",5-1);
 
-	if (m_codepage!=WINPORT(GetOEMCP)())
-		EditKeyBar.Change(KBL_MAIN,(Opt.OnlyEditorViewerUsed?Msg::SingleEditF8DOS:Msg::EditF8DOS),7);
-	else
-		EditKeyBar.Change(KBL_MAIN,(Opt.OnlyEditorViewerUsed?Msg::SingleEditF8:Msg::EditF8),7);
+	ChangeEditKeyBar();
 
 	EditKeyBar.ReadRegGroup(L"Editor",Opt.strLanguage);
 	EditKeyBar.SetAllRegGroup();
@@ -1289,8 +1286,14 @@ int FileEditor::ReProcessKey(int Key,int CalledFromControl)
 			{
 				UINT codepage;
 				if (Key==KEY_F8) {
-					codepage = (m_codepage==WINPORT(GetACP)()?WINPORT(GetOEMCP)():WINPORT(GetACP)());
-				} else {
+					if (m_codepage == CP_UTF8)
+						codepage = WINPORT(GetACP)();
+					else if (m_codepage == WINPORT(GetACP)() )
+						codepage = WINPORT(GetOEMCP)();
+					else
+						codepage = CP_UTF8;
+				}
+				else {
 					codepage = SelectCodePage(m_codepage, false, true, false, true);
 					if (codepage == CP_AUTODETECT) {
 						if (!GetFileFormat2(strFileName,codepage,nullptr,true,true)) {
@@ -1315,6 +1318,7 @@ int FileEditor::ReProcessKey(int Key,int CalledFromControl)
 						} else {
 							SetCodePage(codepage);
 						}
+						Show(); // need to force redraw after F8 UTF8<->ANSI/OEM
 						ChangeEditKeyBar();
 					} else
 						Message(0, 1, Msg::EditTitle, L"Save file before changing this codepage", Msg::HOk, nullptr);
@@ -2240,10 +2244,12 @@ void FileEditor::SetTitle(const wchar_t *Title)
 
 void FileEditor::ChangeEditKeyBar()
 {
-	if (m_codepage!=WINPORT(GetOEMCP)())
-		EditKeyBar.Change((Opt.OnlyEditorViewerUsed?Msg::SingleEditF8DOS:Msg::EditF8DOS),7);
+	if (m_codepage == CP_UTF8)
+		EditKeyBar.Change(KBL_MAIN, (Opt.OnlyEditorViewerUsed ? Msg::SingleEditF8 : Msg::EditF8), 7);
+	else if (m_codepage == WINPORT(GetACP)())
+		EditKeyBar.Change(KBL_MAIN, (Opt.OnlyEditorViewerUsed ? Msg::SingleEditF8DOS : Msg::EditF8DOS), 7);
 	else
-		EditKeyBar.Change((Opt.OnlyEditorViewerUsed?Msg::SingleEditF8:Msg::EditF8),7);
+		EditKeyBar.Change(KBL_MAIN, (Opt.OnlyEditorViewerUsed ? Msg::SingleEditF8UTF8 : Msg::EditF8UTF8), 7);
 
 	EditKeyBar.Redraw();
 }

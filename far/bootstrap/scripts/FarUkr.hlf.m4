@@ -2552,7 +2552,7 @@ $ #Програма перегляду: клавіші керування#
 #F7# ~Пошук~@ViewerSearch@
  #Shift-F7, Space# Продовжити пошук
  #Alt-F7# Продовжити пошук у зворотному напрямку
- #F8# Перемикання OEM/ANSI кодової сторінки
+ #F8# Перемикання ~ANSI/OEM~@CodePagesSet@/UTF8 кодової сторінки
  #Shift-F8# Вибір кодової сторінки
 #Alt-F8# ~Змінити поточну позицію~@ViewerGotoPos@
  #Alt-F9# Зміна розмірів вікна FAR2M
@@ -2752,7 +2752,7 @@ $ #Редактор#
 #Ctrl-F7# ~Заміна~@EditorSearch@
  #Shift-F7# Продовжити пошук/заміну
  #Alt-F7# Продовжити пошук/заміну у зворотному напрямку
- #F8# Перемикання OEM/ANSI кодової сторінки
+ #F8# Перемикання ~ANSI/OEM~@CodePagesSet@/UTF8 кодової сторінки
  #Shift-F8# Вибір кодової сторінки
 #Alt-F8# ~Перейти~@EditorGotoPos@ на вказаний рядок та позицію
  #Alt-F9# Зміна розмірів вікна FAR2M
@@ -2925,7 +2925,7 @@ $ #Меню вибору кодової сторінки#
 
  # Автоматичне визначення - визначення правильної кодової сторінки;
 
- #Системні# - основні однобайтні системні кодові сторінки - ANSI та OEM;
+ #Системні# - основні однобайтні системні кодові сторінки - ~ANSI та OEM~@CodePagesSet@;
 
  # Юнікод # - Юнікодні кодові сторінки;
 
@@ -2943,6 +2943,12 @@ $ #Меню вибору кодової сторінки#
 змінено ім'я позначені символом #*# перед ім'ям).
 
 Діалог ~Зміна імені кодової сторінки~@EditCodePageNameDlg@
+
+@CodePagesSet
+$ #ANSI and OEM codepage setting
+  Switchable by #F8# and #Shift-F8# OEM and ANSI code pages are defined based on the file
+  #~~/.config/far2m/cp# (firts line is #OEM#, second is #ANSI#)
+  or, if its absence, by environment variable #LC_CTYPE#
 
 @EditCodePageNameDlg
 $ #Зміна імені кодової сторінки#
