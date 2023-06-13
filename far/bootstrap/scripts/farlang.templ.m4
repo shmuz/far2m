@@ -2300,6 +2300,16 @@ upd:"AutoComplete"
 "&AutoCompletar"
 "&Автозавершення"
 
+ConfigCmdlineVTLogLimit
+"Максимум строк в &логе вывода:"
+"Maximum terminal &log lines:"
+upd:"Maximum terminal &log lines:"
+upd:"Maximum terminal &log lines:"
+upd:"Maximum terminal &log lines:"
+upd:"Maximum terminal &log lines:"
+upd:"Maximum terminal &log lines:"
+"Максимум рядків &логії виводу:"
+
 ConfigCmdlineWaitKeypress
 "&Ожидать нажатие перед закрытием"
 "&Wait keypress before close"

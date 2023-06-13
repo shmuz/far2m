@@ -1499,8 +1499,10 @@ local function test_clipboard()
     far.CopyToClipboard(v)
     assert_eq(far.PasteFromClipboard(), v)
   end
-  if orig then far.CopyToClipboard(orig) end
-  assert_eq(far.PasteFromClipboard(), orig)
+  if orig then
+    far.CopyToClipboard(orig)
+    assert_eq(far.PasteFromClipboard(), orig)
+  end
 end
 
 local function test_ProcessName()
