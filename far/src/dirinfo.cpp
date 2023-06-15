@@ -130,39 +130,43 @@ int GetDirInfo(const wchar_t *Title,
 		ClusterSize = s.st_blksize;//TODO: check if its best thing to be used here
 	}
 
+	struct SuspendMacros
+	{
+		SuspendMacros() { CtrlObject->Macro.SuspendMacros(true); }
+		~SuspendMacros() { CtrlObject->Macro.SuspendMacros(false); }
+	} Suspend;
+
 	while (ScTree.GetNextName(&FindData,strFullName))
 	{
-		if (!CtrlObject->Macro.IsExecuting())
+		INPUT_RECORD rec;
+
+		switch (PeekInputRecord(&rec))
 		{
-			INPUT_RECORD rec;
+			case 0:
+			case KEY_IDLE:
+				break;
 
-			switch (PeekInputRecord(&rec))
-			{
-				case 0:
-				case KEY_IDLE:
-					break;
-				case KEY_NONE:
-				case KEY_ALT:
-				case KEY_CTRL:
-				case KEY_SHIFT:
-				case KEY_RALT:
-				case KEY_RCTRL:
-					GetInputRecord(&rec);
-					break;
-				case KEY_ESC:
-				case KEY_BREAK:
-					GetInputRecord(&rec);
-					return 0;
-				default:
+			case KEY_ESC:
+			case KEY_BREAK:
+				GetInputRecord(&rec);
+				return 0;
 
-					if (Flags&GETDIRINFO_ENHBREAK)
-					{
-						return -1;
-					}
+			case KEY_LEFT:
+			case KEY_RIGHT:
+			case KEY_DOWN:
+			case KEY_UP:
+			case KEY_PGDN:
+			case KEY_PGUP:
+			case KEY_HOME:
+			case KEY_END:
+				if (Flags&GETDIRINFO_ENHBREAK)
+				{
+					return -1;
+				}
 
-					GetInputRecord(&rec);
-					break;
-			}
+			default:
+				GetInputRecord(&rec);
+				break;
 		}
 
 		if (!(FindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) || !Opt.OnlyFilesSize)
