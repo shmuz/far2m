@@ -151,14 +151,14 @@ int GetDirInfo(const wchar_t *Title,
 				GetInputRecord(&rec);
 				return 0;
 
-			case KEY_LEFT:
-			case KEY_RIGHT:
-			case KEY_DOWN:
-			case KEY_UP:
-			case KEY_PGDN:
-			case KEY_PGUP:
-			case KEY_HOME:
-			case KEY_END:
+			case KEY_LEFT:     case KEY_NUMPAD4:
+			case KEY_RIGHT:    case KEY_NUMPAD6:
+			case KEY_DOWN:     case KEY_NUMPAD2:
+			case KEY_UP:       case KEY_NUMPAD8:
+			case KEY_PGDN:     case KEY_NUMPAD3:
+			case KEY_PGUP:     case KEY_NUMPAD9:
+			case KEY_HOME:     case KEY_NUMPAD1:
+			case KEY_END:      case KEY_NUMPAD7:
 				if (Flags&GETDIRINFO_ENHBREAK)
 				{
 					return -1;
