@@ -2662,14 +2662,6 @@ bool FileList::ChangeDir(const wchar_t *NewDir, bool ShowMessage)
 	}
 	else
 	{
-		{
-			FARString strFullNewDir;
-			ConvertNameToFull(strSetDir, strFullNewDir);
-
-			if (StrCmp(strFullNewDir, strCurDir))
-				CtrlObject->FolderHistory->AddToHistory(strFullNewDir);//see #174 strCurDir);
-		}
-
 		if (dot2Present)
 		{
 			FARString strTempDir;
@@ -2762,6 +2754,15 @@ bool FileList::ChangeDir(const wchar_t *NewDir, bool ShowMessage)
 		UpdateFlags = UPDATE_KEEP_SELECTION;
 		SetDirectorySuccess = false;
 		break;
+	}
+
+	if (PanelMode != PLUGIN_PANEL && SetDirectorySuccess)
+	{
+		FARString strFullNewDir;
+		ConvertNameToFull(strSetDir, strFullNewDir);
+
+		if (StrCmp(strFullNewDir, strCurDir))
+			CtrlObject->FolderHistory->AddToHistory(strFullNewDir);//see #174 strCurDir);
 	}
 
 	apiGetCurrentDirectory(strCurDir);
