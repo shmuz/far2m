@@ -2759,9 +2759,9 @@ bool FileList::ChangeDir(const wchar_t *NewDir, bool ShowMessage)
 	if (PanelMode != PLUGIN_PANEL && SetDirectorySuccess)
 	{
 		FARString strFullNewDir;
-		ConvertNameToFull(strSetDir, strFullNewDir);
+		apiGetCurrentDirectory(strFullNewDir);
 
-		if (StrCmp(strFullNewDir, strCurDir))
+		if (StrCmp(strFullNewDir, strOrigCurDir))
 			CtrlObject->FolderHistory->AddToHistory(strFullNewDir);//see #174 strCurDir);
 	}
 
