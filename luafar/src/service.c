@@ -5394,6 +5394,45 @@ int far_ColorDialog(lua_State *L)
   return 1;
 }
 
+int far_WriteConsole(lua_State *L)
+{
+  HANDLE h_out = stdout; //GetStdHandle(STD_OUTPUT_HANDLE);
+  const wchar_t* src = opt_utf8_string(L, 1, L"");
+
+  TPluginData* pd = GetPluginData(L);
+  SMALL_RECT sr;
+  PSInfo.AdvControl(pd->ModuleNumber, ACTL_GETFARRECT, &sr);
+  size_t FarWidth = sr.Right - sr.Left + 1;
+
+  for (;;)
+  {
+    BOOL bResult;
+    DWORD nCharsWritten;
+
+    const wchar_t *ptr1 = wcschr(src, L'\n');
+    const wchar_t *ptr2 = ptr1 ? ptr1 : src + wcslen(src);
+    size_t nCharsToWrite = ptr2 - src;
+    int wrap = nCharsToWrite > FarWidth ? 1 : 0;
+    if (wrap)
+      nCharsToWrite = FarWidth;
+
+    PSInfo.Control(PANEL_ACTIVE, FCTL_GETUSERSCREEN, 0, 0);
+    bResult = nCharsToWrite ? WINPORT(WriteConsole)(h_out, src, (DWORD)nCharsToWrite, &nCharsWritten, NULL) : TRUE;
+    PSInfo.Control(PANEL_ACTIVE, FCTL_SETUSERSCREEN, 0, 0);
+
+    if (!bResult)
+      return SysErrorReturn(L);
+
+    if (!wrap && !ptr1)
+      break;
+
+    src += nCharsToWrite + (wrap ? 0:1);
+  }
+
+  lua_pushboolean(L, 1);
+  return 1;
+}
+
 int win_GetConsoleScreenBufferInfo (lua_State* L)
 {
   CONSOLE_SCREEN_BUFFER_INFO info;
@@ -5553,33 +5592,6 @@ int win_RemoveDir (lua_State *L)
 int win_IsProcess64bit(lua_State *L)
 {
   lua_pushboolean(L, sizeof(void*) == 8);
-  return 1;
-}
-
-int win_WriteConsole(lua_State *L)
-{
-  int i, narg = lua_gettop(L);
-  HANDLE h_out = stdout; //GetStdHandle(STD_OUTPUT_HANDLE);
-  if (h_out==INVALID_HANDLE_VALUE)
-    return SysErrorReturn(L);
-  if (h_out==NULL)
-    return 0;
-  for (i=0; i<narg; i++)
-  {
-    size_t nCharsToWrite;
-    DWORD nCharsWritten;
-    lua_getglobal(L, "tostring"); //narg+1
-    if (!lua_isfunction(L, -1))
-      return 0;
-    lua_pushvalue(L, i+1); //narg+2
-    if (lua_pcall(L, 1, 1, 0) || lua_type(L, -1) != LUA_TSTRING) //narg+1
-      return 0;
-    check_utf8_string(L, -1, &nCharsToWrite); //narg+1
-    if (!WINPORT(WriteConsole)(h_out, (const void*)lua_touserdata(L,-1), (DWORD)nCharsToWrite, &nCharsWritten, NULL))
-      return SysErrorReturn(L);
-    lua_pop(L, 1); //narg
-  }
-  lua_pushboolean(L, 1);
   return 1;
 }
 
@@ -5865,7 +5877,6 @@ static const luaL_Reg win_funcs[] = {
   {"GetCurrentDir",              win_GetCurrentDir},
   {"SetCurrentDir",              win_SetCurrentDir},
   {"IsProcess64bit",             win_IsProcess64bit},
-  {"WriteConsole",               win_WriteConsole},
 
   {"EnumSystemCodePages",        ustring_EnumSystemCodePages },
   {"GetACP",                     ustring_GetACP},
@@ -5975,6 +5986,7 @@ static const luaL_Reg far_funcs[] = {
   {"InMyCache",           far_InMyCache},
   {"InMyTemp",            far_InMyTemp},
   {"GetMyHome",           far_GetMyHome},
+  {"WriteConsole",        far_WriteConsole},
 
   {NULL, NULL}
 };
