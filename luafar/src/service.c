@@ -1975,6 +1975,7 @@ int panel_GetPanelInfo(lua_State *L)
   PutIntToTable (L, "ViewMode",     pi.ViewMode);
   PutIntToTable (L, "SortMode",     pi.SortMode);
   PutIntToTable (L, "Flags",        pi.Flags);
+  PutNumToTable (L, "PluginID",     pi.PluginID);
   //-------------------------------------------------------------------------
   if (pi.PluginHandle) {
     lua_pushlightuserdata(L, pi.PluginHandle);
