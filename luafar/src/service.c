@@ -2753,6 +2753,8 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
     Param1 = luaL_optinteger(L,pos3,-1);
     if (Param1>0) --Param1;
   }
+  else if (Msg == DM_ENABLEREDRAW)
+    Param1 = GetEnableFromLua(L,pos3);
   else
     Param1 = Is_DM_DialogItem(Msg) ? luaL_optinteger(L,pos3,1)-1 : luaL_optinteger(L,pos3,0);
 
@@ -2789,7 +2791,6 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
       break;
 
     case DM_ENABLEREDRAW:
-      Param2 = GetEnableFromLua(L, pos4);
       break;
 
     case DM_ENABLE:
