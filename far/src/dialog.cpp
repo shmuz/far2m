@@ -451,7 +451,7 @@ void Dialog::Init(FARWINDOWPROC DlgProc,      // Диалоговая проце
 	Dialog::DataDialog=InitParam;
 	DialogMode.Set(DMODE_ISCANMOVE);
 	SetDropDownOpened(FALSE);
-	m_DisableRedraw=0;
+	m_EnableRedraw=1;
 	FocusPos=(unsigned)-1;
 	PrevFocusPos=(unsigned)-1;
 
@@ -1700,7 +1700,7 @@ void Dialog::ShowDialog(unsigned ID)
 	DWORD Attr;
 
 	//   Если не разрешена отрисовка, то вываливаем.
-	if (m_DisableRedraw ||               // запрещена прорисовка ?
+	if ((m_EnableRedraw < 1) ||          // запрещена прорисовка ?
 	        (ID+1 > ItemCount) ||             // а номер в рамках дозволенного?
 	        DialogMode.Check(DMODE_DRAWING) || // диалог рисуется?
 	        !DialogMode.Check(DMODE_SHOW) ||   // если не видим, то и не отрисовываем.
@@ -4933,16 +4933,14 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2)
 		/*****************************************************************/
 		case DM_ENABLEREDRAW:
 		{
-			int Prev=Dlg->m_DisableRedraw;
+			int Prev=Dlg->m_EnableRedraw;
 
-			if (Param1 == TRUE)
-				Dlg->m_DisableRedraw++;
-			else if (Param1 == FALSE)
-				Dlg->m_DisableRedraw--;
+			if (Param1)
+				Dlg->m_EnableRedraw++;
+			else
+				Dlg->m_EnableRedraw--;
 
-			//Edit::DisableEditOut(!Dlg->m_DisableRedraw?FALSE:TRUE);
-
-			if (!Dlg->m_DisableRedraw && Prev != Dlg->m_DisableRedraw)
+			if (Dlg->m_EnableRedraw==1 && Prev==0)
 				if (Dlg->DialogMode.Check(DMODE_INITOBJECTS))
 				{
 					Dlg->ShowDialog();
@@ -4955,7 +4953,7 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2)
 		/*****************************************************************/
 		case DM_SHOWDIALOG:
 		{
-//      if(!Dlg->m_DisableRedraw)
+//      if (Dlg->m_EnableRedraw)
 			{
 				if (Param1)
 				{
