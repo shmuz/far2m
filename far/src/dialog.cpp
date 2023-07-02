@@ -4933,7 +4933,9 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2)
 		/*****************************************************************/
 		case DM_ENABLEREDRAW:
 		{
-			int Prev=Dlg->m_EnableRedraw;
+			int Prev = Dlg->m_EnableRedraw;
+			if (Param1 < 0)
+				return Prev;
 
 			if (Param1)
 				Dlg->m_EnableRedraw++;
