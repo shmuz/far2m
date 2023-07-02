@@ -451,7 +451,7 @@ void Dialog::Init(FARWINDOWPROC DlgProc,      // Диалоговая проце
 	Dialog::DataDialog=InitParam;
 	DialogMode.Set(DMODE_ISCANMOVE);
 	SetDropDownOpened(FALSE);
-	IsEnableRedraw=0;
+	m_DisableRedraw=0;
 	FocusPos=(unsigned)-1;
 	PrevFocusPos=(unsigned)-1;
 
@@ -1700,7 +1700,7 @@ void Dialog::ShowDialog(unsigned ID)
 	DWORD Attr;
 
 	//   Если не разрешена отрисовка, то вываливаем.
-	if (IsEnableRedraw ||                // разрешена прорисовка ?
+	if (m_DisableRedraw ||               // запрещена прорисовка ?
 	        (ID+1 > ItemCount) ||             // а номер в рамках дозволенного?
 	        DialogMode.Check(DMODE_DRAWING) || // диалог рисуется?
 	        !DialogMode.Check(DMODE_SHOW) ||   // если не видим, то и не отрисовываем.
@@ -4933,16 +4933,16 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2)
 		/*****************************************************************/
 		case DM_ENABLEREDRAW:
 		{
-			int Prev=Dlg->IsEnableRedraw;
+			int Prev=Dlg->m_DisableRedraw;
 
 			if (Param1 == TRUE)
-				Dlg->IsEnableRedraw++;
+				Dlg->m_DisableRedraw++;
 			else if (Param1 == FALSE)
-				Dlg->IsEnableRedraw--;
+				Dlg->m_DisableRedraw--;
 
-			//Edit::DisableEditOut(!Dlg->IsEnableRedraw?FALSE:TRUE);
+			//Edit::DisableEditOut(!Dlg->m_DisableRedraw?FALSE:TRUE);
 
-			if (!Dlg->IsEnableRedraw && Prev != Dlg->IsEnableRedraw)
+			if (!Dlg->m_DisableRedraw && Prev != Dlg->m_DisableRedraw)
 				if (Dlg->DialogMode.Check(DMODE_INITOBJECTS))
 				{
 					Dlg->ShowDialog();
@@ -4952,28 +4952,10 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2)
 
 			return Prev;
 		}
-		/*
-		    case DM_ENABLEREDRAW:
-		    {
-		      if(Param1)
-		        Dlg->IsEnableRedraw++;
-		      else
-		        Dlg->IsEnableRedraw--;
-
-		      if(!Dlg->IsEnableRedraw)
-		        if(Dlg->DialogMode.Check(DMODE_INITOBJECTS))
-		        {
-		          Dlg->ShowDialog();
-		          ScrBuf.Flush();
-		//          Dlg->Show();
-		        }
-		      return 0;
-		    }
-		*/
 		/*****************************************************************/
 		case DM_SHOWDIALOG:
 		{
-//      if(!Dlg->IsEnableRedraw)
+//      if(!Dlg->m_DisableRedraw)
 			{
 				if (Param1)
 				{

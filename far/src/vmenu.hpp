@@ -222,7 +222,7 @@ class VMenu: public Modal
 		BitFlags VMFlags;
 		BitFlags VMOldFlags;
 
-		Dialog *ParentDialog;         // Для LisBox - родитель в виде диалога
+		Dialog *ParentDialog;         // Для ListBox - родитель в виде диалога
 		int DialogItemID;
 		FARWINDOWPROC VMenuProc;      // функция обработки меню
 
@@ -375,4 +375,5 @@ class VMenu: public Modal
 		static LONG_PTR WINAPI SendMenuMessage(HANDLE hVMenu,int Msg,int Param1,LONG_PTR Param2);
 
 		void SetId(const GUID& Id);
+		Dialog* GetDialog() const { return ParentDialog; }
 };

@@ -1905,6 +1905,9 @@ void VMenu::DisplayObject()
 	CriticalSectionLock Lock(CS);
 	ChangePriority ChPriority(ChangePriority::NORMAL);
 
+	auto Parent = GetDialog();
+	if (Parent && !Parent->IsRedrawEnabled()) return;
+
 	ClearFlags(VMENU_UPDATEREQUIRED);
 	Modal::ExitCode = -1;
 

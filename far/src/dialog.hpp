@@ -267,7 +267,7 @@ class Dialog: public Frame
 		INT_PTR PluginNumber;       // Номер плагина, для формирования HelpTopic
 		unsigned FocusPos;               // всегда известно какой элемент в фокусе
 		unsigned PrevFocusPos;           // всегда известно какой элемент был в фокусе
-		int IsEnableRedraw;         // Разрешена перерисовка диалога? ( 0 - разрешена)
+		int m_DisableRedraw;        // Запрещена перерисовка диалога?
 		BitFlags DialogMode;        // Флаги текущего режима диалога
 
 		LONG_PTR DataDialog;        // Данные, специфические для конкретного экземпляра диалога (первоначально здесь параметр, переданный в конструктор)
@@ -428,6 +428,7 @@ class Dialog: public Frame
 		bool ProcessEvents();
 
 		void SetId(const GUID& Id);
+		bool IsRedrawEnabled() const { return m_DisableRedraw == 0; }
 
 		friend class History;
 };
