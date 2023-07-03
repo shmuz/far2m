@@ -44,7 +44,7 @@ int WINAPI ProcessName(const wchar_t *param1, wchar_t *param2, DWORD size, DWORD
 {
 	bool skippath = (flags&PN_SKIPPATH)!=0;
 	bool silent = (flags&PN_SHOWERRORMESSAGE)==0;
-	bool casesens = (flags&PN_CASEINSENSITIVE)==0;
+	bool casesens = (flags&PN_CASESENSITIVE)!=0;
 	DWORD mode = flags&0xFF0000;
 
 	if (mode == PN_CMPNAME)

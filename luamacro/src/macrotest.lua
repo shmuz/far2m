@@ -1518,8 +1518,8 @@ local function test_ProcessName()
   assert_true  (far.CmpName("f*.ex?",      "fc.exe"         ))
   assert_true  (far.CmpName("f*.ex?",      "f.ext"          ))
 
-  assert_false (far.CmpName("f*.ex?",      "FTP.exe"        ))
-  assert_true  (far.CmpName("f*.ex?",      "FTP.exe", "PN_CASEINSENSITIVE" ))
+  assert_false (far.CmpName("f*.ex?",      "FTP.exe", "PN_CASESENSITIVE" ))
+  assert_true  (far.CmpName("f*.ex?",      "FTP.exe"        ))
 
   assert_false (far.CmpName("f*.ex?",      "a/f.ext"        ))
   assert_false (far.CmpName("f*.ex?",      "a/f.ext", 0     ))
