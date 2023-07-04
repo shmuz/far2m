@@ -1,8 +1,8 @@
 
 project(luafar)
 
-find_program(LUAEXE NAMES luajit lua5.1)
-if (${LUAEXE} STREQUAL LUAEXE-NOTFOUND)
+find_library(LUALIB NAMES luajit-5.1 lua5.1)
+if (${LUALIB} STREQUAL LUALIB-NOTFOUND)
   message(STATUS "${ColorRed}Neither luajit nor lua5.1 was found${ColorNormal}")
   return()
 endif()
@@ -14,11 +14,14 @@ else()
   return()
 endif()
 
+add_executable (minilua src/minilua.c)
+target_link_libraries(minilua PRIVATE ${LUALIB})
+
 set(SDK "${CMAKE_SOURCE_DIR}/far/far2sdk")
 
 add_custom_command(
     OUTPUT  farflags.c    # Treated as relative to CMAKE_CURRENT_BINARY_DIR
-    COMMAND ${LUAEXE} ${CMAKE_CURRENT_SOURCE_DIR}/src/makeflags.lua
+    COMMAND minilua ${CMAKE_CURRENT_SOURCE_DIR}/src/makeflags.lua
         ${SDK} > farflags.c
     DEPENDS ${SDK}/farplug-wide.h ${SDK}/farcolor.h ${SDK}/farkeys.h
 )

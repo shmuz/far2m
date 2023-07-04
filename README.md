@@ -41,7 +41,6 @@ multiarc, tmppanel, align, autowrap, drawline, editcase, SimpleIndent, Calculato
 * libarchive-dev (needed for better archives support in multiarc)
 * libpcre3-dev (or in older distributives - libpcre2-dev) (needed for custom archives support in multiarc)
 * libluajit-5.1-dev
-* luajit
 * uuid-dev
 * cmake ( >= 3.2.2 )
 * g++
@@ -49,7 +48,7 @@ multiarc, tmppanel, align, autowrap, drawline, editcase, SimpleIndent, Calculato
 
 #### Or simply on Debian/Ubuntu:
 ``` sh
-apt-get install gawk m4 libwxgtk3.0-gtk3-dev libx11-dev libxi-dev libpcre3-dev libxerces-c-dev libspdlog-dev libuchardet-dev libssh-dev libssl-dev libsmbclient-dev libnfs-dev libneon27-dev libarchive-dev libluajit-5.1-dev luajit uuid-dev cmake g++ git
+apt-get install gawk m4 libwxgtk3.0-gtk3-dev libx11-dev libxi-dev libpcre3-dev libxerces-c-dev libspdlog-dev libuchardet-dev libssh-dev libssl-dev libsmbclient-dev libnfs-dev libneon27-dev libarchive-dev libluajit-5.1-dev uuid-dev cmake g++ git
 
 ```
 In older distributives: use libpcre2-dev and libwxgtk3.0-dev instead of libpcre3-dev and libwxgtk3.0-gtk3-dev
