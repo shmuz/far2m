@@ -1054,6 +1054,7 @@ WCHAR* MakeSeparator(int Length,WCHAR *DestStr,int Type, const wchar_t* UserSep)
 FARString& HiText2Str(FARString& strDest, const wchar_t *Str)
 {
 	const wchar_t *ChPtr;
+	Str = NullToEmpty(Str);
 	strDest = Str;
 
 	if ((ChPtr=wcschr(Str,L'&')) )
