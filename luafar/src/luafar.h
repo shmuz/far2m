@@ -3,6 +3,10 @@
 
 #include <farplug-wide.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <lua.h>
 
 #ifndef DLLFUNC
@@ -67,5 +71,9 @@ DLLFUNC int    LF_SetFindList (lua_State* L, HANDLE hPlugin,const struct PluginP
 DLLFUNC int    LF_GetCustomData(lua_State* L, const wchar_t *FilePath, wchar_t **CustomData);
 DLLFUNC void   LF_FreeCustomData(lua_State* L, wchar_t *CustomData);
 DLLFUNC int    LF_ProcessConsoleInput(lua_State* L, INPUT_RECORD *Rec);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // LUAFAR_H
