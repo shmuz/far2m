@@ -84,6 +84,7 @@ if (LIBSSH_FOUND AND ((NOT DEFINED NR_SFTP) OR NR_SFTP))
         src/Protocol/SSH/SSHConnection.cpp
         src/Protocol/SSH/ProtocolSFTP.cpp
         src/Protocol/SSH/ProtocolSCP.cpp
+        src/Protocol/FileStatsOverride.cpp
     )
     target_link_libraries(NetRocks-SFTP utils ${LIBSSH_LIBRARIES})
     target_include_directories(NetRocks-SFTP PRIVATE src ${LIBSSH_INCLUDE_DIRS})
@@ -154,7 +155,7 @@ endif ()
 if (OPENSSL_FOUND AND ((NOT DEFINED NR_OPENSSL) OR NR_OPENSSL))
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_OPENSSL")
     target_link_libraries(NetRocks-FTP ${OPENSSL_LIBRARIES})
-    target_include_directories(NetRocks-FTP PRIVATE ${OPENSSL_INCLUDE_DIRS})
+    target_include_directories(NetRocks-FTP PRIVATE ${OPENSSL_INCLUDE_DIR})
 endif ()
     set_target_properties(NetRocks-FTP
         PROPERTIES

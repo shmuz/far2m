@@ -213,9 +213,11 @@ mode_t ProtocolSFTP::GetMode(const std::string &path, bool follow_symlink)
 #endif
 
 	_conn->executed_command.reset();
-
 	SFTPAttributes attributes(SFTPGetAttributes(_conn->sftp, path, follow_symlink));
-	return SFTPModeFromAttributes(attributes);
+	mode_t mode = SFTPModeFromAttributes(attributes);
+	if (_conn->file_stats_override)
+		_conn->file_stats_override->FilterFileMode(path, mode);
+	return mode;
 }
 
 unsigned long long ProtocolSFTP::GetSize(const std::string &path, bool follow_symlink)
@@ -242,6 +244,9 @@ void ProtocolSFTP::GetInformation(FileInformation &file_info, const std::string 
 
 	SFTPAttributes attributes(SFTPGetAttributes(_conn->sftp, path, follow_symlink));
 	SftpFileInfoFromAttributes(file_info, attributes);
+
+	if (_conn->file_stats_override)
+		_conn->file_stats_override->FilterFileInformation(path, file_info);
 }
 
 void ProtocolSFTP::FileDelete(const std::string &path)
@@ -256,6 +261,9 @@ void ProtocolSFTP::FileDelete(const std::string &path)
 	int rc = sftp_unlink(_conn->sftp, path.c_str());
 	if (rc != 0)
 		throw ProtocolError(ssh_get_error(_conn->ssh), rc);
+
+	if (_conn->file_stats_override)
+		_conn->file_stats_override->Cleanup(path);
 }
 
 void ProtocolSFTP::DirectoryDelete(const std::string &path)
@@ -270,6 +278,9 @@ void ProtocolSFTP::DirectoryDelete(const std::string &path)
 	int rc = sftp_rmdir(_conn->sftp, path.c_str());
 	if (rc != 0)
 		throw ProtocolError(ssh_get_error(_conn->ssh), rc);
+
+	if (_conn->file_stats_override)
+		_conn->file_stats_override->Cleanup(path);
 }
 
 void ProtocolSFTP::DirectoryCreate(const std::string &path, mode_t mode)
@@ -298,6 +309,9 @@ void ProtocolSFTP::Rename(const std::string &path_old, const std::string &path_n
 	int rc = sftp_rename(_conn->sftp, path_old.c_str(), path_new.c_str());
 	if (rc != 0)
 		throw ProtocolError(ssh_get_error(_conn->ssh), rc);
+
+	if (_conn->file_stats_override)
+		_conn->file_stats_override->Rename(path_old, path_new);
 }
 
 void ProtocolSFTP::SetTimes(const std::string &path, const timespec &access_time, const timespec &modification_time)
@@ -311,8 +325,13 @@ void ProtocolSFTP::SetTimes(const std::string &path, const timespec &access_time
 	times[1].tv_usec = suseconds_t(modification_time.tv_nsec / 1000);
 
 	int rc = sftp_utimes(_conn->sftp, path.c_str(), times);
-	if (rc != 0)
-		throw ProtocolError(ssh_get_error(_conn->ssh), rc);
+	if (rc != 0) {
+		if (!_conn->file_stats_override)
+			throw ProtocolError(ssh_get_error(_conn->ssh), rc);
+
+		fprintf(stderr, "%s(%s) ignored error %d\n", __FUNCTION__, path.c_str(), rc);
+		_conn->file_stats_override->OverrideTimes(path, access_time, modification_time);
+	}
 }
 
 void ProtocolSFTP::SetMode(const std::string &path, mode_t mode)
@@ -320,8 +339,13 @@ void ProtocolSFTP::SetMode(const std::string &path, mode_t mode)
 	_conn->executed_command.reset();
 
 	int rc = sftp_chmod(_conn->sftp, path.c_str(), mode);
-	if (rc != 0)
-		throw ProtocolError(ssh_get_error(_conn->ssh), rc);
+	if (rc != 0) {
+		if (!_conn->file_stats_override)
+			throw ProtocolError(ssh_get_error(_conn->ssh), rc);
+
+		fprintf(stderr, "%s(%s) ignored error %d\n", __FUNCTION__, path.c_str(), rc);
+		_conn->file_stats_override->OverrideMode(path, mode);
+	}
 }
 
 
@@ -393,7 +417,13 @@ std::shared_ptr<IDirectoryEnumer> ProtocolSFTP::DirectoryEnum(const std::string 
 {
 	_conn->executed_command.reset();
 
-	return std::make_shared<SFTPDirectoryEnumer>(_conn, path);
+	std::shared_ptr<IDirectoryEnumer> enumer = std::make_shared<SFTPDirectoryEnumer>(_conn, path);
+
+	if (_conn->file_stats_override && _conn->file_stats_override->NonEmpty()) {
+		enumer = std::make_shared<DirectoryEnumerWithFileStatsOverride>(*_conn->file_stats_override, enumer, path);
+	}
+
+	return enumer;
 }
 
 class SFTPFileIO

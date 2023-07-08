@@ -7,6 +7,7 @@
 #include <StringConfig.h>
 #include <libssh/libssh.h>
 #include <libssh/ssh2.h>
+#include "../FileStatsOverride.h"
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -70,13 +71,13 @@ public:
 	void KeepAlive();
 };
 
-
 struct SSHConnection
 {
 	std::shared_ptr<SSHExecutedCommand> executed_command;
 	std::map<std::string, std::string> env_set {{"TERM", "xterm"}};
 
 	SSHSession ssh;
+	std::unique_ptr<FileStatsOverride> file_stats_override;
 
 	SSHConnection(const SSHConnection&) = delete;
 
