@@ -1621,13 +1621,17 @@ int far_Menu(lua_State *L)
     lua_pushvalue(L, 3);              // vk=-2; bk=-1;
     char buf[32];
     int ind, out; // used outside the following loop
+
+// Prevent an invalid break key from shifting or invalidating the following ones
+#define INSERT_INVALID() do { BreakKeys[out++] = (0|PKF_ALT); } while (0)
+
     for(ind=0,out=0; ind < NumBreakCodes; ind++) {
       // get next break key (optional modifier plus virtual key)
       lua_pushinteger(L,ind+1);       // vk=-3; bk=-2;
       lua_gettable(L,-2);             // vk=-3; bk=-2;
-      if(!lua_istable(L,-1))  { lua_pop(L,1); continue; }
+      if(!lua_istable(L,-1))  { lua_pop(L,1); INSERT_INVALID(); continue; }
       lua_getfield(L, -1, "BreakKey");// vk=-4; bk=-3;
-      if(!lua_isstring(L,-1)) { lua_pop(L,2); continue; }
+      if(!lua_isstring(L,-1)) { lua_pop(L,2); INSERT_INVALID(); continue; }
 
       // first try to use "Far key names" instead of "virtual key names"
       if (utf8_to_wcstring(L, -1, NULL))
@@ -1654,7 +1658,7 @@ int far_Menu(lua_State *L)
       // separate modifier and virtual key strings
       int mod = 0;
       const char* s = lua_tostring(L,-1);
-      if(strlen(s) >= sizeof(buf)) { lua_pop(L,2); continue; }
+      if(strlen(s) >= sizeof(buf)) { lua_pop(L,2); INSERT_INVALID(); continue; }
       char* vk = buf;
       do *vk++ = toupper(*s); while(*s++); // copy and convert to upper case
       vk = strchr(buf, '+');  // virtual key
@@ -1670,9 +1674,14 @@ int far_Menu(lua_State *L)
       }
       // get virtual key and break key values
       lua_rawget(L,-4);               // vk=-4; bk=-3;
-      BreakKeys[out++] = lua_tointeger(L,-1) | mod;
+      int tmp = lua_tointeger(L,-1) | mod;
+      if (tmp)
+        BreakKeys[out++] = tmp;
+      else
+        INSERT_INVALID();
       lua_pop(L,2);                   // vk=-2; bk=-1;
     }
+#undef INSERT_INVALID
     BreakKeys[out] = 0; // required by FAR API
     pBreakKeys = BreakKeys;
     pBreakCode = &BreakCode;
