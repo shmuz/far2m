@@ -399,11 +399,6 @@ int FarAppMain(int argc, char **argv)
 	FARString DestNames[2];
 	int StartLine=-1,StartChar=-1;
 	int CntDestName=0; // количество параметров-имен каталогов
-	/*$ 18.04.2002 SKV
-	  Попользуем floating point что бы проинициализировался vc-ный fprtl.
-	*/
-	// если под дебагером, то отключаем исключения однозначно,
-	//  иначе - смотря что указал юзвер.
 
 	Opt.strRegRoot = L"Software/Far2";
 	CheckForConfigUpgrade();
@@ -439,7 +434,7 @@ int FarAppMain(int argc, char **argv)
 		unsetenv("FARADMINMODE");
 	}
 
-	// run by symlinc in editor mode
+	// run by symlink in editor mode
 	if (strstr(argv[0], "far2medit") != NULL) {
 		Opt.OnlyEditorViewerUsed = Options::ONLY_EDITOR;
 		if (argc > 1) {
@@ -464,39 +459,35 @@ int FarAppMain(int argc, char **argv)
 			switch (Upper(arg_w[1]))
 			{
 				case L'A':
-
 					switch (Upper(arg_w[2]))
 					{
 						case 0:
 							Opt.CleanAscii=TRUE;
 							break;
-						case L'G':
 
+						case L'G':
 							if (!arg_w[3])
 								Opt.NoGraphics=TRUE;
-
 							break;
-						case L'N':
 
+						case L'N':
 							if (!arg_w[3])
 								Opt.NoBoxes=TRUE;
-
 							break;
 					}
-
 					break;
-				case L'E':
 
+				case L'E':
 					if (iswdigit(arg_w[2]))
 					{
-						StartLine=_wtoi((const wchar_t *)&arg_w[2]);
-						wchar_t *ChPtr=wcschr((wchar_t *)&arg_w[2],L':');
-
+						auto ptr = arg_w.data() + 2;
+						StartLine = _wtoi(ptr);
+						auto ChPtr = wcschr(ptr, L':');
 						if (ChPtr)
-							StartChar=_wtoi(ChPtr+1);
+							StartChar = _wtoi(ChPtr+1);
 					}
 
-					if (I+1<argc)
+					if (I+1 < argc)
 					{
 						strEditViewArg = argv[I+1];
 						if (strEditViewArg == "-")
@@ -513,9 +504,9 @@ int FarAppMain(int argc, char **argv)
 					}
 
 					break;
-				case L'V':
 
-					if (I+1<argc)
+				case L'V':
+					if (I+1 < argc)
 					{
 						strEditViewArg = argv[I+1];
 						if (strEditViewArg == "-")
@@ -530,33 +521,31 @@ int FarAppMain(int argc, char **argv)
 							I++;
 						}
 					}
-
 					break;
-				case L'M':
 
+				case L'M':
 					switch (Upper(arg_w[2]))
 					{
 						case 0:
 							Opt.Macro.DisableMacro|=MDOL_ALL;
 							break;
-						case L'A':
 
+						case L'A':
 							if (!arg_w[3])
 								Opt.Macro.DisableMacro|=MDOL_AUTOSTART;
-
 							break;
 					}
-
 					break;
+
 				case L'I':
 					Opt.SmallIcon=TRUE;
 					break;
+
 				case L'X':
 					fprintf(stderr, "Unsupported in far2m\n");
 					break;
 
 				case L'C':
-
 					if (Upper(arg_w[2])==L'O' && !arg_w[3])
 					{
 						Opt.LoadPlug.PluginsCacheOnly=TRUE;
@@ -569,13 +558,10 @@ int FarAppMain(int argc, char **argv)
 							switchHandled = false;
 						}
 					}
-
 					break;
 
 				case L'W':
-					{
-						Opt.WindowMode=TRUE;
-					}
+					Opt.WindowMode=TRUE;
 					break;
 
 				case L'U':
@@ -587,38 +573,32 @@ int FarAppMain(int argc, char **argv)
 		{
 			if (CntDestName < 2)
 			{
-				if (IsPluginPrefixPath((const wchar_t *)arg_w.c_str()))
+				if (IsPluginPrefixPath(arg_w.c_str()))
 				{
-					DestNames[CntDestName++] = (const wchar_t *)arg_w.c_str();
+					DestNames[CntDestName++] = arg_w.c_str();
 				}
 				else
 				{
-					DestNames[CntDestName] = arg_w;
-					ConvertNameToFull(DestNames[CntDestName],DestNames[CntDestName]);
-
-					if (apiGetFileAttributes(DestNames[CntDestName]) != INVALID_FILE_ATTRIBUTES)
-						CntDestName++; //???
+					FARString tmpStr = arg_w;
+					ConvertNameToFull(tmpStr, tmpStr);
+					if (apiGetFileAttributes(tmpStr) != INVALID_FILE_ATTRIBUTES)
+						DestNames[CntDestName++] = tmpStr;
 				}
 			}
 		}
 	}
 
+	std::unique_ptr<KeyFileHelper> KeyboardLayouts;
+	wchar_t *far2l_path = (wchar_t*)g_strFarPath.CPtr();
+	std::string kblo_path = StrPrintf("%lskblayouts.ini", far2l_path);
+	KeyboardLayouts.reset(new KeyFileHelper(kblo_path.c_str()));
 
-    std::unique_ptr<KeyFileHelper> KeyboardLayouts;
-    wchar_t *far2l_path = (wchar_t*)g_strFarPath.CPtr();
-    std::string kblo_path = StrPrintf("%lskblayouts.ini", far2l_path);
-    KeyboardLayouts.reset(new KeyFileHelper(kblo_path.c_str()));
+	const char *lc = setlocale(LC_CTYPE, NULL);
+	char LangCode[3]; LangCode[0] = lc[0]; LangCode[1] = lc[1]; LangCode[2] = 0;
 
-    const char *lc = setlocale(LC_CTYPE, NULL);
-    char LangCode[3]; LangCode[0] = lc[0]; LangCode[1] = lc[1]; LangCode[2] = 0;
+	KbLayoutsTrIn = KeyboardLayouts->GetString(LangCode, "Latin");
+	KbLayoutsTrOut = KeyboardLayouts->GetString(LangCode, "Local");
 
-    KbLayoutsTrIn = KeyboardLayouts->GetString(LangCode, "Latin");
-    KbLayoutsTrOut = KeyboardLayouts->GetString(LangCode, "Local");
-
-
-	//Настройка OEM сортировки. Должна быть после CopyGlobalSettings и перед InitKeysArray!
-	//LocalUpperInit();
-	//InitLCIDSort();
 	//Инициализация массива клавиш. Должна быть после CopyGlobalSettings!
 	InitKeysArray();
 	//WaitForInputIdle(GetCurrentProcess(),0);
