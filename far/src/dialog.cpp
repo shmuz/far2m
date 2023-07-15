@@ -4934,21 +4934,19 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2)
 		case DM_ENABLEREDRAW:
 		{
 			int Prev = Dlg->m_EnableRedraw;
-			if (Param1 < 0)
-				return Prev;
 
-			if (Param1)
+			if (Param1 > 0)
+			{
 				Dlg->m_EnableRedraw++;
-			else
-				Dlg->m_EnableRedraw--;
-
-			if (Dlg->m_EnableRedraw==1 && Prev==0)
-				if (Dlg->DialogMode.Check(DMODE_INITOBJECTS))
+				if (Dlg->m_EnableRedraw==1 && Dlg->DialogMode.Check(DMODE_INITOBJECTS))
 				{
 					Dlg->ShowDialog();
-//          Dlg->Show();
+					// Dlg->Show();
 					ScrBuf.Flush();
 				}
+			}
+			else if (Param1 == 0)
+				Dlg->m_EnableRedraw--;
 
 			return Prev;
 		}

@@ -320,37 +320,45 @@ DWORD opt_env_flag (lua_State *L, int stack_pos, DWORD dflt)
 
 DWORD GetFlagCombination (lua_State *L, int stack_pos, int *success)
 {
-  DWORD trg = 0;
-  int dummy;
+  DWORD trg = 0, flag;
+  int dummy, ok;
   success = success ? success : &dummy;
   *success = TRUE;
 
   int type = lua_type (L, stack_pos);
-  if (type == LUA_TNUMBER)
-    return (DWORD)lua_tointeger (L, stack_pos);
-  else if (type == LUA_TNONE || type == LUA_TNIL)
-    return 0;
-  else if (type == LUA_TSTRING)
-    return get_env_flag (L, stack_pos, success);
+  if (type == LUA_TSTRING) {
+    const char *p = lua_tostring(L, stack_pos), *q;
+    for (; *p; p=q) {
+      while (isspace(*p)) p++;
+      if (*p == 0) break;
+      for (q=p+1; *q && !isspace(*q); ) q++;
+      lua_pushlstring(L, p, q-p);
+      flag = get_env_flag(L, -1, &ok);
+      lua_pop(L, 1);
+      if (ok)
+        trg |= flag;
+      else
+        *success = FALSE;
+    }
+  }
   else if (type == LUA_TTABLE) {
     stack_pos = abs_index (L, stack_pos);
     lua_pushnil(L);
     while (lua_next(L, stack_pos)) {
       if (lua_type(L,-2)==LUA_TSTRING && lua_toboolean(L,-1)) {
-        DWORD flag = get_env_flag (L, -2, success);
-        if (*success)
+        flag = get_env_flag (L, -2, &ok);
+        if (ok)
           trg |= flag;
         else
-          { lua_pop(L,2); return 0; }
+          *success = FALSE;
       }
       lua_pop(L, 1);
     }
-    return trg;
   }
   else {
-    *success = FALSE;
-    return 0;
+    trg = get_env_flag (L, stack_pos, success);
   }
+  return trg;
 }
 
 DWORD CheckFlags(lua_State* L, int stackpos)
