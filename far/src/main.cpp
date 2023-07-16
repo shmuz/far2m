@@ -551,7 +551,8 @@ int FarAppMain(int argc, char **argv)
 						Opt.LoadPlug.PluginsCacheOnly=TRUE;
 						Opt.LoadPlug.PluginsPersonal=FALSE;
 
-					} else if (Upper(arg_w[2]) == L'D' && !arg_w[3]) {
+					}
+					else if (Upper(arg_w[2]) == L'D' && !arg_w[3]) {
 						if (I + 1 < argc) {
 							I++;
 							arg_w = MB2Wide(argv[I]);
@@ -565,7 +566,8 @@ int FarAppMain(int argc, char **argv)
 					break;
 
 				case L'U':
-					I++; // skip 2 args as this case is processed in SetCustomSettings()
+					if (!arg_w[2])
+						I++; // skip 2 args as this case is processed in SetCustomSettings()
 					break;
 			}
 		}
@@ -736,18 +738,15 @@ int FarDispatchAnsiApplicationProtocolCommand(const char *str)
 static void SetCustomSettings(const char *arg)
 {
 	std::string refined;
-	if (arg[0] == '/') {
-		refined = arg;
-
-	} else if (arg[0] == '.' && arg[1] == '/') {
-		char cwdbuf[MAX_PATH + 1] = {'.', 0};
+	if (arg[0] == '.' && arg[1] == '/') {
+		char cwdbuf[MAX_PATH + 1];
 		const char *cwd = getcwd(cwdbuf, MAX_PATH);
 		if (cwd) {
 			refined = cwd;
+			refined+= &arg[1];
 		}
-		refined+= &arg[1];
-
-	} else {
+	}
+	else {
 		refined = arg;
 	}
 
@@ -788,8 +787,9 @@ int _cdecl main(int argc, char *argv[])
 	}
 
 	for (int i = 1; i + 1 < argc; ++i) {
-		if (strcasecmp(argv[i], "-u") == 0 && argv[i + 1][0] ) {
-			SetCustomSettings(argv[i + 1]);
+		if ((!strcasecmp(argv[i],"-u") || !strcasecmp(argv[i],"/u")) && argv[i+1][0] ) {
+			SetCustomSettings(argv[i+1]);
+			break;
 		}
 	}
 
