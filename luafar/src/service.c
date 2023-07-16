@@ -266,9 +266,11 @@ HANDLE OptHandle(lua_State *L)
   return OptHandlePos(L,1);
 }
 
-DWORD get_env_flag (lua_State *L, int stack_pos, int *success)
+DWORD GetFlags (lua_State *L, int stack_pos, int *success)
 {
-  int dummy;
+  int dummy, ok;
+  DWORD trg = 0, flag;
+
   success = success ? success : &dummy;
   *success = TRUE;
 
@@ -276,97 +278,60 @@ DWORD get_env_flag (lua_State *L, int stack_pos, int *success)
   {
     case LUA_TNONE:
     case LUA_TNIL:
-      return 0;
+      break;
+
     case LUA_TNUMBER:
-      return (DWORD)lua_tointeger (L, stack_pos);
+      trg = (DWORD)lua_tointeger (L, stack_pos);
+      break;
+
     case LUA_TSTRING:
-      lua_getfield (L, LUA_ENVIRONINDEX, lua_tostring(L, stack_pos));
-      if (lua_isnumber(L, -1)) {
-        DWORD trg = (DWORD)lua_tointeger (L, -1);
-        lua_pop (L, 1);
-        return trg;
-      }
-      lua_pop (L, 1);
-      break;
-    default:
-      break;
-  }
-  *success = FALSE;
-  return 0;
-}
-
-DWORD check_env_flag (lua_State *L, int stack_pos)
-{
-  DWORD trg = 0;
-  int success = FALSE;
-  if (!lua_isnoneornil(L,stack_pos))
-    trg = get_env_flag(L,stack_pos,&success);
-  if (!success)
-    luaL_argerror(L, stack_pos, "invalid flag");
-  return trg;
-}
-
-DWORD opt_env_flag (lua_State *L, int stack_pos, DWORD dflt)
-{
-  DWORD trg = dflt;
-  if (!lua_isnoneornil(L,stack_pos)) {
-    int success;
-    trg = get_env_flag(L,stack_pos,&success);
-    if (!success)
-      luaL_argerror(L, stack_pos, "invalid flag");
-  }
-  return trg;
-}
-
-DWORD GetFlagCombination (lua_State *L, int stack_pos, int *success)
-{
-  DWORD trg = 0, flag;
-  int dummy, ok;
-  success = success ? success : &dummy;
-  *success = TRUE;
-
-  int type = lua_type (L, stack_pos);
-  if (type == LUA_TSTRING) {
-    const char *p = lua_tostring(L, stack_pos), *q;
-    for (; *p; p=q) {
-      while (isspace(*p)) p++;
-      if (*p == 0) break;
-      for (q=p+1; *q && !isspace(*q); ) q++;
-      lua_pushlstring(L, p, q-p);
-      flag = get_env_flag(L, -1, &ok);
-      lua_pop(L, 1);
-      if (ok)
-        trg |= flag;
-      else
-        *success = FALSE;
-    }
-  }
-  else if (type == LUA_TTABLE) {
-    stack_pos = abs_index (L, stack_pos);
-    lua_pushnil(L);
-    while (lua_next(L, stack_pos)) {
-      if (lua_type(L,-2)==LUA_TSTRING && lua_toboolean(L,-1)) {
-        flag = get_env_flag (L, -2, &ok);
-        if (ok)
-          trg |= flag;
+    {
+      const char *p = lua_tostring(L, stack_pos), *q;
+      for (; *p; p=q)
+      {
+        while (isspace(*p)) p++;
+        if (*p == 0) break;
+        for (q=p+1; *q && !isspace(*q); ) q++;
+        lua_pushlstring(L, p, q-p);
+        lua_getfield (L, LUA_ENVIRONINDEX, lua_tostring(L, -1));
+        if (lua_isnumber(L, -1))
+          trg |= (DWORD)lua_tointeger (L, -1);
         else
           *success = FALSE;
+        lua_pop(L, 2);
       }
-      lua_pop(L, 1);
+      break;
     }
+
+    case LUA_TTABLE:
+      stack_pos = abs_index (L, stack_pos);
+      lua_pushnil(L);
+      while (lua_next(L, stack_pos)) {
+        if (lua_type(L,-2)==LUA_TSTRING && lua_toboolean(L,-1)) {
+          flag = GetFlags (L, -2, &ok); // recursion
+          if (ok)
+            trg |= flag;
+          else
+            *success = FALSE;
+        }
+        lua_pop(L, 1);
+      }
+      break;
+
+    default:
+      *success = FALSE;
+      break;
   }
-  else {
-    trg = get_env_flag (L, stack_pos, success);
-  }
+
   return trg;
 }
 
 DWORD CheckFlags(lua_State* L, int stackpos)
 {
   int success;
-  DWORD Flags = GetFlagCombination(L, stackpos, &success);
+  DWORD Flags = GetFlags(L, stackpos, &success);
   if (!success)
-    luaL_error(L, "invalid flag combination");
+    luaL_argerror(L, stackpos, "invalid flags");
   return Flags;
 }
 
@@ -379,7 +344,7 @@ DWORD GetFlagsFromTable(lua_State *L, int pos, const char* key)
 {
   DWORD f;
   lua_getfield(L, pos, key);
-  f = GetFlagCombination(L, -1, NULL);
+  f = GetFlags(L, -1, NULL);
   lua_pop(L, 1);
   return f;
 }
@@ -917,7 +882,7 @@ int editor_UndoRedo(lua_State *L)
   struct EditorUndoRedo eur;
   int editorId = luaL_optinteger(L,1,-1);
   memset(&eur, 0, sizeof(eur));
-  eur.Command = check_env_flag(L, 2);
+  eur.Command = CheckFlags(L, 2);
   return lua_pushboolean (L, PSInfo.EditorControlV2(editorId, ECTL_UNDOREDO, &eur)), 1;
 }
 
@@ -994,7 +959,7 @@ int editor_SetParam(lua_State *L)
   int editorId = luaL_optinteger(L,1,-1);
   memset(&esp, 0, sizeof(esp));
   wchar_t buf[256];
-  esp.Type = check_env_flag(L,2);
+  esp.Type = CheckFlags(L,2);
   //-----------------------------------------------------
   int tp = lua_type(L,3);
   if (tp == LUA_TNUMBER)
@@ -1009,7 +974,7 @@ int editor_SetParam(lua_State *L)
     esp.Size = ARRAYSIZE(buf);
   }
   //-----------------------------------------------------
-  esp.Flags = GetFlagCombination (L, 4, NULL);
+  esp.Flags = GetFlags (L, 4, NULL);
   //-----------------------------------------------------
   int result = PSInfo.EditorControlV2(editorId, ECTL_SETPARAM, &esp);
   lua_pushboolean(L, result);
@@ -1151,7 +1116,7 @@ int FillEditorSelect(lua_State *L, int pos_table, struct EditorSelect *es)
 {
   int OK;
   lua_getfield(L, pos_table, "BlockType");
-  es->BlockType = get_env_flag(L, -1, &OK);
+  es->BlockType = GetFlags(L, -1, &OK);
   if (!OK) {
     lua_pop(L,1);
     return 0;
@@ -1173,7 +1138,7 @@ int editor_Select(lua_State *L)
   if (lua_istable(L, 2))
     result = FillEditorSelect(L, 2, &es);
   else {
-    es.BlockType = get_env_flag(L, 2, &result);
+    es.BlockType = GetFlags(L, 2, &result);
     if (result) {
       es.BlockStartLine = luaL_optinteger(L, 3, 0) - 1;
       es.BlockStartPos  = luaL_optinteger(L, 4, 0) - 1;
@@ -1437,7 +1402,7 @@ void FillInputRecord(lua_State *L, int pos, INPUT_RECORD *ir)
 
   // determine event type
   lua_getfield(L, pos, "EventType");
-  ir->EventType = get_env_flag(L, -1, &ok);
+  ir->EventType = GetFlags(L, -1, &ok);
   if (!ok)
     luaL_argerror(L, pos, "EventType field is missing or invalid");
   lua_pop(L, 1);
@@ -2104,7 +2069,7 @@ int SetPanelBooleanProperty(lua_State *L, int command)
 int SetPanelIntegerProperty(lua_State *L, int command)
 {
   HANDLE handle = OptHandle(L);
-  int param1 = check_env_flag(L,2);
+  int param1 = CheckFlags(L,2);
   lua_pushboolean(L, PSInfo.Control(handle, command, param1, 0));
   return 1;
 }
@@ -2409,7 +2374,7 @@ int GetDialogItemType(lua_State* L, int key, int item)
   int ok;
   lua_pushinteger(L, key);
   lua_gettable(L, -2);
-  int iType = get_env_flag(L, -1, &ok);
+  int iType = GetFlags(L, -1, &ok);
   if (!ok) {
     const char* sType = lua_tostring(L, -1);
     return luaL_error(L, "%s - unsupported type in dialog item %d", sType, item);
@@ -2425,7 +2390,7 @@ int GetItemFlags(lua_State* L, int flag_index, int item_index)
   int ok;
   lua_pushinteger(L, flag_index);
   lua_gettable(L, -2);
-  flags = GetFlagCombination (L, -1, &ok);
+  flags = GetFlags (L, -1, &ok);
   if (!ok)
     return luaL_error(L, "unsupported flag in dialog item %d", item_index);
   lua_pop(L, 1);
@@ -2765,7 +2730,7 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
   lua_settop(L, pos4); //many cases below rely on top==pos4
   HANDLE hDlg = CheckDialogHandle(L, 1);
   if (delta == 0)
-    Msg = check_env_flag (L, 2);
+    Msg = CheckFlags (L, 2);
   if (Msg == DM_CLOSE) {
     Param1 = luaL_optinteger(L,pos3,-1);
     if (Param1>0) --Param1;
@@ -2847,7 +2812,7 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
       break;
 
     case DM_LISTSETMOUSEREACTION:
-      Param2 = get_env_flag (L, pos4, NULL);
+      Param2 = GetFlags (L, pos4, NULL);
       break;
 
     case DM_GETCURSORPOS:
@@ -2971,7 +2936,7 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
       lua_getfield(L, pos4, "Pattern");
       flf.Pattern = check_utf8_string(L, -1, NULL);
       lua_getfield(L, pos4, "Flags");
-      flf.Flags = get_env_flag(L, -1, NULL);
+      flf.Flags = GetFlags(L, -1, NULL);
       res = PSInfo.SendDlgMessage (hDlg, Msg, Param1, (LONG_PTR)&flf);
       res < 0 ? lua_pushnil(L) : lua_pushinteger (L, res+1);
       return 1;
@@ -3662,7 +3627,7 @@ int far_DefDlgProc(lua_State *L)
 
   luaL_checktype(L, 1, LUA_TLIGHTUSERDATA);
   HANDLE hDlg = lua_touserdata(L, 1);
-  Msg = get_env_flag(L, 2, NULL);
+  Msg = GetFlags(L, 2, NULL);
   Param1 = luaL_checkinteger(L, 3);
   Param2 = luaL_checkinteger(L, 4);
 
@@ -3799,7 +3764,7 @@ int viewer_SetMode(lua_State *L)
   luaL_checktype(L, 2, LUA_TTABLE);
 
   lua_getfield(L, 2, "Type");
-  vsm.Type = get_env_flag (L, -1, &ok);
+  vsm.Type = GetFlags (L, -1, &ok);
   if (!ok)
     return lua_pushboolean(L,0), 1;
 
@@ -3810,7 +3775,7 @@ int viewer_SetMode(lua_State *L)
     return lua_pushboolean(L,0), 1;
 
   lua_getfield(L, 2, "Flags");
-  vsm.Flags = get_env_flag (L, -1, &ok);
+  vsm.Flags = GetFlags (L, -1, &ok);
   if (!ok)
     return lua_pushboolean(L,0), 1;
 
@@ -4211,7 +4176,7 @@ int far_ConvertPath (lua_State *L)
 {
   const wchar_t *Src = check_utf8_string(L, 1, NULL);
   enum CONVERTPATHMODES Mode = lua_isnoneornil(L,2) ?
-    CPM_FULL : (enum CONVERTPATHMODES)check_env_flag(L,2);
+    CPM_FULL : (enum CONVERTPATHMODES)CheckFlags(L,2);
   size_t Size = FSF.ConvertPath(Mode, Src, NULL, 0);
   wchar_t* Target = (wchar_t*)lua_newuserdata(L, Size*sizeof(wchar_t));
   FSF.ConvertPath(Mode, Src, Target, Size);
@@ -4261,7 +4226,7 @@ int DoAdvControl (lua_State *L, int Command, int Delta)
   COORD coord;
 
   if (Delta == 0)
-    Command = check_env_flag(L, 1);
+    Command = CheckFlags(L, 1);
 
   switch (Command) {
     default:
@@ -4289,7 +4254,7 @@ int DoAdvControl (lua_State *L, int Command, int Delta)
       return lua_pushboolean(L, int1), 1;
 
     case ACTL_GETCOLOR:
-      int1 = check_env_flag(L, pos2);
+      int1 = CheckFlags(L, pos2);
       int1 = PSInfo.AdvControl(pd->ModuleNumber, Command, (void*)int1);
       int1 >= 0 ? lua_pushinteger(L, int1) : lua_pushnil(L);
       return 1;
@@ -4298,7 +4263,7 @@ int DoAdvControl (lua_State *L, int Command, int Delta)
       if (lua_isnumber(L, pos2))
         int1 = lua_tointeger(L, pos2);
       else
-        int1 = opt_env_flag(L, pos2, -1);
+        int1 = OptFlags(L, pos2, -1);
       if (int1 < -1) //this prevents program freeze
         int1 = -1;
       lua_pushinteger(L, PSInfo.AdvControl(pd->ModuleNumber, Command, (void*)int1));
@@ -4390,7 +4355,7 @@ int DoAdvControl (lua_State *L, int Command, int Delta)
       lua_settop(L, pos2);
       fsc.StartIndex = GetOptIntFromTable(L, "StartIndex", 0);
       lua_getfield(L, pos2, "Flags");
-      fsc.Flags = GetFlagCombination(L, -1, NULL);
+      fsc.Flags = GetFlags(L, -1, NULL);
       fsc.ColorCount = lua_objlen(L, pos2);
       fsc.Colors = (BYTE*)lua_newuserdata(L, fsc.ColorCount);
       for (i=0; i < fsc.ColorCount; i++) {
@@ -4741,7 +4706,7 @@ int far_InputRecordToName(lua_State* L)
   lua_settop(L, 1);
 
   lua_getfield(L, 1, "EventType");
-  event = get_env_flag(L, -1, NULL);
+  event = GetFlags(L, -1, NULL);
   if (! (event==0 || event==KEY_EVENT))
     return lua_pushnil(L), 1;
 
@@ -4863,7 +4828,7 @@ HANDLE CheckValidFileFilter(lua_State* L, int pos)
 int far_CreateFileFilter (lua_State *L)
 {
   HANDLE hHandle = (luaL_checkinteger(L,1) % 2) ? PANEL_ACTIVE:PANEL_PASSIVE;
-  int filterType = check_env_flag(L,2);
+  int filterType = CheckFlags(L,2);
   HANDLE* pOutHandle = (HANDLE*)lua_newuserdata(L, sizeof(HANDLE));
   if (PSInfo.FileFilterControl(hHandle, FFCTL_CREATEFILEFILTER, filterType,
     (LONG_PTR)pOutHandle))
@@ -4931,7 +4896,7 @@ int filefilter_IsFileInFilter (lua_State *L)
 
 int plugin_load(lua_State *L, enum FAR_PLUGINS_CONTROL_COMMANDS command)
 {
-  int param1 = check_env_flag(L, 1);
+  int param1 = CheckFlags(L, 1);
   void *param2 = check_utf8_string(L, 2, NULL);
   intptr_t result = PSInfo.PluginsControlV3(INVALID_HANDLE_VALUE, command, param1, param2);
 
@@ -4953,7 +4918,7 @@ int far_UnloadPlugin(lua_State *L)
 
 int far_FindPlugin(lua_State *L)
 {
-  int param1 = check_env_flag(L, 1);
+  int param1 = CheckFlags(L, 1);
   void *param2 = NULL;
   DWORD SysID;
 
@@ -4984,7 +4949,7 @@ int far_FindPlugin(lua_State *L)
 
 int far_ClearPluginCache(lua_State *L)
 {
-  int param1 = check_env_flag(L, 1);
+  int param1 = CheckFlags(L, 1);
   void* param2 = (void*)check_utf8_string(L, 2, NULL);
   intptr_t result = PSInfo.PluginsControlV3(INVALID_HANDLE_VALUE, PCTL_CACHEFORGET, param1, param2);
   lua_pushboolean(L, result);

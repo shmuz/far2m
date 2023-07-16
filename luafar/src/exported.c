@@ -364,7 +364,7 @@ void UpdateFileSelection(lua_State* L, struct PluginPanelItem *PanelItems, int I
       if(lua_toboolean(L,-1))
       {
         int success = 0;
-        DWORD Flags = GetFlagCombination(L,-1,&success);
+        DWORD Flags = GetFlags(L,-1,&success);
         if(success && ((Flags & PPIF_SELECTED) == 0))
           PanelItems[i].Flags &= ~PPIF_SELECTED;
       }
