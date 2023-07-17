@@ -326,12 +326,35 @@ DWORD GetFlags (lua_State *L, int stack_pos, int *success)
   return trg;
 }
 
+DWORD check_env_flag (lua_State *L, int stack_pos)
+{
+  DWORD trg = 0;
+  int success = FALSE;
+  if (!lua_isnoneornil(L,stack_pos))
+    trg = GetFlags(L,stack_pos,&success);
+  if (!success)
+    luaL_argerror(L, stack_pos, "invalid flag");
+  return trg;
+}
+
+DWORD opt_env_flag (lua_State *L, int stack_pos, DWORD dflt)
+{
+  DWORD trg = dflt;
+  if (!lua_isnoneornil(L,stack_pos)) {
+    int success;
+    trg = GetFlags(L,stack_pos,&success);
+    if (!success)
+      luaL_argerror(L, stack_pos, "invalid flag");
+  }
+  return trg;
+}
+
 DWORD CheckFlags(lua_State* L, int stackpos)
 {
   int success;
   DWORD Flags = GetFlags(L, stackpos, &success);
   if (!success)
-    luaL_argerror(L, stackpos, "invalid flags");
+    luaL_error(L, "invalid flag combination");
   return Flags;
 }
 
@@ -882,7 +905,7 @@ int editor_UndoRedo(lua_State *L)
   struct EditorUndoRedo eur;
   int editorId = luaL_optinteger(L,1,-1);
   memset(&eur, 0, sizeof(eur));
-  eur.Command = CheckFlags(L, 2);
+  eur.Command = check_env_flag(L, 2);
   return lua_pushboolean (L, PSInfo.EditorControlV2(editorId, ECTL_UNDOREDO, &eur)), 1;
 }
 
@@ -959,7 +982,7 @@ int editor_SetParam(lua_State *L)
   int editorId = luaL_optinteger(L,1,-1);
   memset(&esp, 0, sizeof(esp));
   wchar_t buf[256];
-  esp.Type = CheckFlags(L,2);
+  esp.Type = check_env_flag(L,2);
   //-----------------------------------------------------
   int tp = lua_type(L,3);
   if (tp == LUA_TNUMBER)
@@ -2069,7 +2092,7 @@ int SetPanelBooleanProperty(lua_State *L, int command)
 int SetPanelIntegerProperty(lua_State *L, int command)
 {
   HANDLE handle = OptHandle(L);
-  int param1 = CheckFlags(L,2);
+  int param1 = check_env_flag(L,2);
   lua_pushboolean(L, PSInfo.Control(handle, command, param1, 0));
   return 1;
 }
@@ -2730,7 +2753,7 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
   lua_settop(L, pos4); //many cases below rely on top==pos4
   HANDLE hDlg = CheckDialogHandle(L, 1);
   if (delta == 0)
-    Msg = CheckFlags (L, 2);
+    Msg = check_env_flag (L, 2);
   if (Msg == DM_CLOSE) {
     Param1 = luaL_optinteger(L,pos3,-1);
     if (Param1>0) --Param1;
@@ -4176,7 +4199,7 @@ int far_ConvertPath (lua_State *L)
 {
   const wchar_t *Src = check_utf8_string(L, 1, NULL);
   enum CONVERTPATHMODES Mode = lua_isnoneornil(L,2) ?
-    CPM_FULL : (enum CONVERTPATHMODES)CheckFlags(L,2);
+    CPM_FULL : (enum CONVERTPATHMODES)check_env_flag(L,2);
   size_t Size = FSF.ConvertPath(Mode, Src, NULL, 0);
   wchar_t* Target = (wchar_t*)lua_newuserdata(L, Size*sizeof(wchar_t));
   FSF.ConvertPath(Mode, Src, Target, Size);
@@ -4226,7 +4249,7 @@ int DoAdvControl (lua_State *L, int Command, int Delta)
   COORD coord;
 
   if (Delta == 0)
-    Command = CheckFlags(L, 1);
+    Command = check_env_flag(L, 1);
 
   switch (Command) {
     default:
@@ -4254,7 +4277,7 @@ int DoAdvControl (lua_State *L, int Command, int Delta)
       return lua_pushboolean(L, int1), 1;
 
     case ACTL_GETCOLOR:
-      int1 = CheckFlags(L, pos2);
+      int1 = check_env_flag(L, pos2);
       int1 = PSInfo.AdvControl(pd->ModuleNumber, Command, (void*)int1);
       int1 >= 0 ? lua_pushinteger(L, int1) : lua_pushnil(L);
       return 1;
@@ -4263,7 +4286,7 @@ int DoAdvControl (lua_State *L, int Command, int Delta)
       if (lua_isnumber(L, pos2))
         int1 = lua_tointeger(L, pos2);
       else
-        int1 = OptFlags(L, pos2, -1);
+        int1 = opt_env_flag(L, pos2, -1);
       if (int1 < -1) //this prevents program freeze
         int1 = -1;
       lua_pushinteger(L, PSInfo.AdvControl(pd->ModuleNumber, Command, (void*)int1));
@@ -4828,7 +4851,7 @@ HANDLE CheckValidFileFilter(lua_State* L, int pos)
 int far_CreateFileFilter (lua_State *L)
 {
   HANDLE hHandle = (luaL_checkinteger(L,1) % 2) ? PANEL_ACTIVE:PANEL_PASSIVE;
-  int filterType = CheckFlags(L,2);
+  int filterType = check_env_flag(L,2);
   HANDLE* pOutHandle = (HANDLE*)lua_newuserdata(L, sizeof(HANDLE));
   if (PSInfo.FileFilterControl(hHandle, FFCTL_CREATEFILEFILTER, filterType,
     (LONG_PTR)pOutHandle))
@@ -4896,7 +4919,7 @@ int filefilter_IsFileInFilter (lua_State *L)
 
 int plugin_load(lua_State *L, enum FAR_PLUGINS_CONTROL_COMMANDS command)
 {
-  int param1 = CheckFlags(L, 1);
+  int param1 = check_env_flag(L, 1);
   void *param2 = check_utf8_string(L, 2, NULL);
   intptr_t result = PSInfo.PluginsControlV3(INVALID_HANDLE_VALUE, command, param1, param2);
 
@@ -4918,7 +4941,7 @@ int far_UnloadPlugin(lua_State *L)
 
 int far_FindPlugin(lua_State *L)
 {
-  int param1 = CheckFlags(L, 1);
+  int param1 = check_env_flag(L, 1);
   void *param2 = NULL;
   DWORD SysID;
 
@@ -4949,7 +4972,7 @@ int far_FindPlugin(lua_State *L)
 
 int far_ClearPluginCache(lua_State *L)
 {
-  int param1 = CheckFlags(L, 1);
+  int param1 = check_env_flag(L, 1);
   void* param2 = (void*)check_utf8_string(L, 2, NULL);
   intptr_t result = PSInfo.PluginsControlV3(INVALID_HANDLE_VALUE, PCTL_CACHEFORGET, param1, param2);
   lua_pushboolean(L, result);
