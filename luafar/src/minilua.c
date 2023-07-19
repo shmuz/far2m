@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdio.h>
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
@@ -6,7 +7,7 @@
 int main(int argc, char **argv)
 {
   lua_State *L;
-  int status = 1;
+  int status = 0;
 
   if (argc >= 2 && (L = lua_open()))
   {
@@ -45,6 +46,10 @@ int main(int argc, char **argv)
 
     if (status == 0 && j >= 0)
       status = lua_pcall(L, j, 0, 0);
+
+    if (status)
+      fprintf(stderr, "%s\n", lua_tostring(L,-1));
+
     lua_close(L);
   }
 

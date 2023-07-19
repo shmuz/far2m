@@ -162,7 +162,7 @@ bool File::SetPointer(INT64 DistanceToMove, PINT64 NewFilePointer, DWORD MoveMet
 	} else {
 		r = WINPORT(SetFilePointerEx)(Handle, li, NULL, MoveMethod);
 	}
-	
+
 	return r != FALSE;
 }
 
@@ -208,7 +208,7 @@ bool File::Chmod(DWORD dwUnixMode)
 		WINPORT(SetLastError)(r);
 		return false;
 	}
-	
+
 	return true;
 }
 
@@ -419,13 +419,8 @@ BOOL apiSetCurrentDirectory(LPCWSTR lpPathName, bool Validate)
 {
 	// correct path to our standard
 	FARString strDir=lpPathName;
-	if (lpPathName[0]!='/' || lpPathName[1]!=0) 
+	if (lpPathName[0]!='/' || lpPathName[1]!=0)
 		DeleteEndSlash(strDir);
-	//LPCWSTR CD=strDir;
-//	int Offset=HasPathPrefix(CD)?4:0;
-///	if ((CD[Offset] && CD[Offset+1]==L':' && !CD[Offset+2]) || IsLocalVolumeRootPath(CD))
-		//AddEndSlash(strDir);
-	
 
 	if (strDir == strCurrentDirectory())
 		return TRUE;
@@ -433,7 +428,7 @@ BOOL apiSetCurrentDirectory(LPCWSTR lpPathName, bool Validate)
 	if (Validate)
 	{
 		DWORD attr = WINPORT(GetFileAttributes)(lpPathName);
-		if (attr == 0xffffffff) {
+		if (attr == INVALID_FILE_ATTRIBUTES) {
 			fprintf(stderr, "apiSetCurrentDirectory: get attr error %u for %ls\n", WINPORT(GetLastError()), lpPathName);
 			return FALSE;
 		} else if ( (attr & FILE_ATTRIBUTE_DIRECTORY) == 0 ) {
@@ -614,7 +609,7 @@ BOOL apiGetFindDataEx(const wchar_t *lpwszFileName, FAR_FIND_DATA_EX& FindData, 
 		}
 	}
 
-	fprintf(stderr, "apiGetFindDataEx: FAILED - %ls\n", lpwszFileName);		
+	fprintf(stderr, "apiGetFindDataEx: FAILED - %ls\n", lpwszFileName);
 
 	FindData.Clear();
 	FindData.dwFileAttributes = INVALID_FILE_ATTRIBUTES; //BUGBUG
@@ -717,11 +712,11 @@ IUnmakeWritablePtr apiMakeWritable(LPCWSTR lpFileName)
 		mode_t target_mode, dir_mode;
 		unsigned long target_flags, dir_flags;
 		bool target_flags_modified, dir_flags_modified;
-		UnmakeWritable() : 
+		UnmakeWritable() :
 			target_mode(0), dir_mode(0), target_flags_modified(false), dir_flags_modified(false)
 		{
 		}
-		
+
 		virtual void Unmake()
 		{
 			if (target_mode) {
@@ -768,7 +763,7 @@ IUnmakeWritablePtr apiMakeWritable(LPCWSTR lpFileName)
 #if defined(__CYGWIN__)
 //TODO: handle chattr +i
 #else
-	if (!um->dir.empty() && sdc_fs_flags_get(um->dir.c_str(), &um->dir_flags) != -1 
+	if (!um->dir.empty() && sdc_fs_flags_get(um->dir.c_str(), &um->dir_flags) != -1
 	&& FS_FLAGS_CONTAIN_IMMUTABLE(um->dir_flags)) {
 		if (sdc_fs_flags_set(um->dir.c_str(), FS_FLAGS_WITHOUT_IMMUTABLE(um->dir_flags)) != -1) {
 			um->dir_flags_modified = true;
@@ -783,12 +778,12 @@ IUnmakeWritablePtr apiMakeWritable(LPCWSTR lpFileName)
 		}
 	}
 #endif
-	
+
 	if (um->target_mode == 0 && um->dir_mode == 0 && !um->target_flags_modified && !um->dir_flags_modified) {
 		delete um;
 		um = nullptr;
 	}
-	
+
 	return IUnmakeWritablePtr(um);
 }
 

@@ -369,7 +369,7 @@ static void SetupFarPath(int argc, char **argv)
 		g_strFarModuleName = LookupExecutable(argv[0]);
 	}
 
-	FARString dir = g_strFarModuleName;
+	FARString dir = g_strFarModuleName; // e.g. /usr/local/bin/far2m
 	CutToSlash(dir, false);
 	const wchar_t *last_element = PointToName(dir);
 	if (last_element && wcscmp(last_element, L"bin") == 0) {
