@@ -35,7 +35,7 @@ local TablePanelSort -- must be separate from LastMessage, otherwise Far crashes
 local TableExecString -- must be separate from LastMessage, otherwise Far crashes
 local utils, macrobrowser, panelsort, keymacro
 
-local function ExpandEnv(str) return (str:gsub("%$([%w_]+)", win.GetEnv)) end
+local function ExpandEnv(str) return (str:gsub("%$%((.-)%)", win.GetEnv)) end
 
 local function Unquote(text)
   text = text:gsub('^"(.+)"$', "%1") -- remove double quotes
