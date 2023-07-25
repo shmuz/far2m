@@ -2688,6 +2688,7 @@ int Is_DM_DialogItem(int Msg)
     case DM_SETTEXT:
     case DM_SETTEXTPTR:
     case DM_SHOWITEM:
+    case DM_SETREADONLY:
       return 1;
   }
   return 0;
@@ -2695,7 +2696,7 @@ int Is_DM_DialogItem(int Msg)
 
 int PushDMParams (lua_State *L, int Msg, int Param1)
 {
-  if (! ((Msg>DM_FIRST && Msg<=DM_SETCOLOR) || Msg==DM_USER))
+  if (! ((Msg>DM_FIRST && Msg<DN_FIRST) || Msg==DM_USER))
     return 0;
 
   // Msg
@@ -3156,6 +3157,10 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
       Param2 = (LONG_PTR)&esp;
       break;
 
+    case DM_SETREADONLY:
+      Param2 = lua_isnumber(L, pos4) ? lua_tointeger(L, pos4) : lua_toboolean(L, pos4);
+      break;
+
     //~ case DM_GETTEXTPTR:
   }
   res = PSInfo.SendDlgMessage (hDlg, Msg, Param1, Param2);
@@ -3229,14 +3234,13 @@ DlgMethod( SetItemData,            DM_SETITEMDATA, 1)
 DlgMethod( SetItemPosition,        DM_SETITEMPOSITION, 1)
 DlgMethod( SetMaxTextLength,       DM_SETMAXTEXTLENGTH, 1)
 DlgMethod( SetMouseEventNotify,    DM_SETMOUSEEVENTNOTIFY, 1)
+DlgMethod( SetReadOnly,            DM_SETREADONLY, 1)
 DlgMethod( SetSelection,           DM_SETSELECTION, 1)
 DlgMethod( SetText,                DM_SETTEXT, 1)
 DlgMethod( SetTextPtr,             DM_SETTEXTPTR, 1)
 DlgMethod( ShowDialog,             DM_SHOWDIALOG, 1)
 DlgMethod( ShowItem,               DM_SHOWITEM, 1)
 DlgMethod( User,                   DM_USER, 1)
-
-
 
 
 int PushDNParams (lua_State *L, int Msg, int Param1, LONG_PTR Param2)
@@ -5741,6 +5745,7 @@ static const luaL_Reg dialog_methods[] = {
   {"SetItemPosition",      dlg_SetItemPosition},
   {"SetMaxTextLength",     dlg_SetMaxTextLength},
   {"SetMouseEventNotify",  dlg_SetMouseEventNotify},
+  {"SetReadOnly",          dlg_SetReadOnly},
   {"SetSelection",         dlg_SetSelection},
   {"SetText",              dlg_SetText},
   {"SetTextPtr",           dlg_SetTextPtr},

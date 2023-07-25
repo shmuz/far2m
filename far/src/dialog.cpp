@@ -6245,7 +6245,6 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2)
 			return TRUE;
 		}
 
-
 		case DM_SETCOLOR:
 		{
 			CurItem->Flags&= ~(DIF_SETCOLOR | DIF_COLORMASK);
@@ -6257,6 +6256,29 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2)
 				ScrBuf.Flush();
 			}
 
+			return TRUE;
+		}
+
+		case DM_SETREADONLY: {
+			if (Param2) {
+				CurItem->Flags|= DIF_READONLY;
+			} else {
+				CurItem->Flags&= ~DIF_READONLY;
+			}
+			if (FarIsEdit(Type)) {
+				DlgEdit *CurItemEdit = (DlgEdit *)CurItem->ObjPtr;
+				if (CurItemEdit) {
+					CurItemEdit->SetReadOnly(Param2 ? 1 : 0);
+				}
+			} else {
+				fprintf(stderr,
+					"%s: DM_SETREADONLY invoked for non-edit item %u\n",
+					__FUNCTION__, Param1);
+			}
+			if (Dlg->DialogMode.Check(DMODE_SHOW)) {		//???
+				Dlg->ShowDialog(Param1);
+				ScrBuf.Flush();
+			}
 			return TRUE;
 		}
 
