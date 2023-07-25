@@ -2,7 +2,7 @@
 
 local Shared = ...
 local op = Shared.OpCodes
-local Msg, ErrMsg, pack, ExpandEnv = Shared.Msg, Shared.ErrMsg, Shared.pack, Shared.ExpandEnv
+local Msg, ErrMsg, pack = Shared.Msg, Shared.ErrMsg, Shared.pack
 local MacroDirs = Shared.MacroDirs
 
 local F = far.Flags
@@ -785,7 +785,7 @@ local function LoadMacros (unload, paths)
       end
     end
 
-    paths = paths and ExpandEnv(paths) or MacroDirs.MainPath.."/scripts;"..MacroDirs.LoadPathList
+    paths = paths and win.ExpandEnv(paths) or MacroDirs.MainPath.."/scripts;"..MacroDirs.LoadPathList
 
     local filemask = moonscript and "*.lua,*.moon" or "*.lua"
     for p in paths:gmatch("[^;]+") do

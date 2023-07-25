@@ -4240,6 +4240,33 @@ int win_SetEnv (lua_State *L)
   return 1;
 }
 
+int win_ExpandEnv (lua_State *L)
+{
+  const char *p = luaL_checkstring(L,1), *q, *r, *s;
+  int remove = lua_toboolean(L,2);
+  luaL_Buffer buf;
+  luaL_buffinit(L, &buf);
+  for (; *p; p=r+1) {
+    if ( (q = strstr(p, "$(")) && (r = strchr(q+2, ')')) ) {
+      lua_pushlstring(L, q+2, r-q-2);
+      s = getenv(lua_tostring(L,-1));
+      lua_pop(L,1);
+      if (s) {
+        luaL_addlstring(&buf, p, q-p);
+        luaL_addstring(&buf, s);
+      }
+      else
+        luaL_addlstring(&buf, p, remove ? q-p : r+1-p);
+    }
+    else {
+      luaL_addstring(&buf, p);
+      break;
+    }
+  }
+  luaL_pushresult(&buf);
+  return 1;
+}
+
 int DoAdvControl (lua_State *L, int Command, int Delta)
 {
   int pos2 = 2-Delta, pos3 = 3-Delta;
@@ -5867,6 +5894,7 @@ static const luaL_Reg win_funcs[] = {
 
   {"GetEnv",                     win_GetEnv},
   {"SetEnv",                     win_SetEnv},
+  {"ExpandEnv",                  win_ExpandEnv},
 //$  {"GetTimeZoneInformation",  win_GetTimeZoneInformation},
   {"GetFileInfo",                win_GetFileInfo},
   {"FileTimeToLocalFileTime",    win_FileTimeToLocalFileTime},
