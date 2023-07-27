@@ -1501,6 +1501,20 @@ struct FarSetColors
 	LPBYTE Colors;
 };
 
+struct FarTrueColor
+{
+	unsigned char R;
+	unsigned char G;
+	unsigned char B;
+	unsigned char Flags; // bit one - 'active' flag, others - ignored and must be set to zero
+};
+
+struct FarTrueColorForeAndBack
+{
+	struct FarTrueColor Fore;
+	struct FarTrueColor Back;
+};
+
 enum WINDOWINFO_TYPE
 {
 #ifdef FAR_USE_INTERNALS
@@ -1927,19 +1941,10 @@ struct EditorColor
 	int Color;
 };
 
-struct FarTrueColor
-{
-	unsigned char R;
-	unsigned char G;
-	unsigned char B;
-	unsigned char Flags; // bit one - 'active' flag, others - ignored and must be set to zero
-};
-
 struct EditorTrueColor
 {
 	struct EditorColor Base;
-	struct FarTrueColor TrueFore;
-	struct FarTrueColor TrueBack;
+	struct FarTrueColorForeAndBack TrueColor;
 };
 
 struct EditorSaveFile

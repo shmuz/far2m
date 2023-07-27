@@ -5790,8 +5790,8 @@ int Editor::EditorControl(int Command,void *Param)
 				if (Command == ECTL_ADDTRUECOLOR)
 				{
 					const EditorTrueColor *tcol = (EditorTrueColor *)Param;
-					newcol.TrueFore = tcol->TrueFore;
-					newcol.TrueBack = tcol->TrueBack;
+					newcol.TrueFore = tcol->TrueColor.Fore;
+					newcol.TrueBack = tcol->TrueColor.Back;
 				}
 				CurPtr->AddColor(&newcol);
 				if (col->Color&ECF_AUTODELETE)
@@ -5830,8 +5830,8 @@ int Editor::EditorControl(int Command,void *Param)
 				if (Command == ECTL_GETTRUECOLOR)
 				{
 					EditorTrueColor *tcol = (EditorTrueColor *)Param;
-					tcol->TrueFore = curcol.TrueFore;
-					tcol->TrueBack = curcol.TrueBack;
+					tcol->TrueColor.Fore = curcol.TrueFore;
+					tcol->TrueColor.Back = curcol.TrueBack;
 				}
 				_ECTLLOG(SysLog(L"EditorColor{"));
 				_ECTLLOG(SysLog(L"  StringNumber=%d",col->StringNumber));

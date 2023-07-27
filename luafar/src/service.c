@@ -1293,14 +1293,14 @@ int editor_AddColor(lua_State *L)
       etc.Base.Color = GetOptIntFromTable(L,"BaseColor",0) & 0x0000FFFF;
       fg = GetOptIntFromTable(L,"TrueFore",0xFFFFFF);
       bg = GetOptIntFromTable(L,"TrueBack",0x000000);
-      etc.TrueFore.R = (fg >>  0) & 0xFF;
-      etc.TrueFore.G = (fg >>  8) & 0xFF;
-      etc.TrueFore.B = (fg >> 16) & 0xFF;
-      etc.TrueFore.Flags = 0x1;
-      etc.TrueBack.R = (bg >>  0) & 0xFF;
-      etc.TrueBack.G = (bg >>  8) & 0xFF;
-      etc.TrueBack.B = (bg >> 16) & 0xFF;
-      etc.TrueBack.Flags = 0x1;
+      etc.TrueColor.Fore.R = (fg >>  0) & 0xFF;
+      etc.TrueColor.Fore.G = (fg >>  8) & 0xFF;
+      etc.TrueColor.Fore.B = (fg >> 16) & 0xFF;
+      etc.TrueColor.Fore.Flags = 0x1;
+      etc.TrueColor.Back.R = (bg >>  0) & 0xFF;
+      etc.TrueColor.Back.G = (bg >>  8) & 0xFF;
+      etc.TrueColor.Back.B = (bg >> 16) & 0xFF;
+      etc.TrueColor.Back.Flags = 0x1;
     }
     lua_pop(L,1);
   }
@@ -1341,10 +1341,10 @@ int editor_GetColor(lua_State *L)
     PutNumToTable(L, "StartPos", etc.Base.StartPos+1);
     PutNumToTable(L, "EndPos", etc.Base.EndPos+1);
     PutNumToTable(L, "BaseColor", etc.Base.Color);
-    if (etc.TrueFore.Flags & 0x1)
-      PutNumToTable(L, "TrueFore", etc.TrueFore.R | (etc.TrueFore.G << 8) | (etc.TrueFore.B << 16));
-    if (etc.TrueBack.Flags & 0x1)
-      PutNumToTable(L, "TrueBack", etc.TrueBack.R | (etc.TrueBack.G << 8) | (etc.TrueBack.B << 16));
+    if (etc.TrueColor.Fore.Flags & 0x1)
+      PutNumToTable(L, "TrueFore", etc.TrueColor.Fore.R | (etc.TrueColor.Fore.G << 8) | (etc.TrueColor.Fore.B << 16));
+    if (etc.TrueColor.Back.Flags & 0x1)
+      PutNumToTable(L, "TrueBack", etc.TrueColor.Back.R | (etc.TrueColor.Back.G << 8) | (etc.TrueColor.Back.B << 16));
   }
   else
     lua_pushnil(L);
