@@ -361,7 +361,7 @@ static void SetupFarPath(const char *Arg0)
 
 	char buf[PATH_MAX + 1];
 	ssize_t buf_sz = readlink("/proc/self/exe", buf, sizeof(buf) - 1);
-	if (buf_sz > 0 && buf_sz < (ssize_t)sizeof(buf) && buf[0] == GOOD_SLASH) {
+	if (buf_sz > 0 && buf[0] == GOOD_SLASH) {
 		buf[buf_sz] = 0;
 		g_strFarModuleName = buf;
 
@@ -749,9 +749,12 @@ int _cdecl main(int argc, char *argv[])
 	}
 
 	for (int i = 1; i + 1 < argc; ++i) {
-		if ((!strcasecmp(argv[i],"-u") || !strcasecmp(argv[i],"/u")) && argv[i+1][0] ) {
-			SetCustomSettings(argv[i+1]);
-			break;
+		if (!strcasecmp(argv[i],"-u") || !strcasecmp(argv[i],"/u")) {
+			++i;
+			if (argv[i][0]) {
+				SetCustomSettings(argv[i]);
+				break;
+			}
 		}
 	}
 
