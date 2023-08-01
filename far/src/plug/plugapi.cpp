@@ -1935,10 +1935,7 @@ int FarEditorSynched( const wchar_t *FileName, const wchar_t *Title,
 	if (Flags & (EF_DELETEONCLOSE|EF_DELETEONLYFILEONCLOSE))
 		TFH = std::make_shared<TempFileHolder>(FileName, (Flags & EF_DELETEONCLOSE) != 0);
 
-	int OpMode=FEOPMODE_QUERY;
-
-	if ((Flags&EF_OPENMODE_MASK) )
-		OpMode=Flags&EF_OPENMODE_MASK;
+	int OpMode = Flags&EF_OPENMODE_MASK;
 
 	/*$ 15.05.2002 SKV
 	  Запретим вызов немодального редактора, если находимся в модальном
@@ -1956,9 +1953,9 @@ int FarEditorSynched( const wchar_t *FileName, const wchar_t *Title,
 	{
 		/* 09.09.2001 IS ! Добавим имя файла в историю, если потребуется */
 		FileEditor *Editor=new(std::nothrow) FileEditor(FileName,CodePage,
-		                                  (CreateNew?FFILEEDIT_CANNEWFILE:0) | FFILEEDIT_ENABLEF6 | (DisableHistory?FFILEEDIT_DISABLEHISTORY:0) | (Locked?FFILEEDIT_LOCKED:0),
-		                                  StartLine,StartChar,Title,
-		                                  X1,Y1,X2,Y2,OpMode);
+			(CreateNew?FFILEEDIT_CANNEWFILE:0) | FFILEEDIT_ENABLEF6 | (DisableHistory?FFILEEDIT_DISABLEHISTORY:0) | (Locked?FFILEEDIT_LOCKED:0),
+			StartLine,StartChar,Title,
+			X1,Y1,X2,Y2,OpMode);
 
 		if (Editor)
 		{
@@ -1995,10 +1992,11 @@ int FarEditorSynched( const wchar_t *FileName, const wchar_t *Title,
 	else
 	{
 		/* 09.09.2001 IS ! Добавим имя файла в историю, если потребуется */
-		FileEditor Editor(FileName,CodePage,(CreateNew?FFILEEDIT_CANNEWFILE:0)|(DisableHistory?FFILEEDIT_DISABLEHISTORY:0)|(Locked?FFILEEDIT_LOCKED:0),
-		                  StartLine,StartChar,Title,
-		                  X1,Y1,X2,Y2,
-		                  OpMode);
+		FileEditor Editor(FileName,CodePage,
+			(CreateNew?FFILEEDIT_CANNEWFILE:0)|(DisableHistory?FFILEEDIT_DISABLEHISTORY:0)|(Locked?FFILEEDIT_LOCKED:0),
+			StartLine,StartChar,Title,
+			X1,Y1,X2,Y2,
+			OpMode);
 		Editor.SetFileHolder(TFH);
 		editorExitCode=Editor.GetExitCode();
 
