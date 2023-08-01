@@ -522,7 +522,7 @@ int FarMacroApi::PassString(const wchar_t *str)
 {
 	FarMacroValue val = NullToEmpty(str);
 	mData->Callback(mData->CallbackData, &val, 1);
-	return 1;
+	return 0;
 }
 
 int FarMacroApi::PassString(const FARString& str)
@@ -535,28 +535,28 @@ int FarMacroApi::PassError(const wchar_t *str)
 	FarMacroValue val = NullToEmpty(str);
 	val.Type = FMVT_ERROR;
 	mData->Callback(mData->CallbackData, &val, 1);
-	return 1;
+	return 0;
 }
 
 int FarMacroApi::PassNumber(double dbl)
 {
 	FarMacroValue val = dbl;
 	mData->Callback(mData->CallbackData, &val, 1);
-	return 1;
+	return 0;
 }
 
 int FarMacroApi::PassInteger(int64_t Int)
 {
 	FarMacroValue val = Int;
 	mData->Callback(mData->CallbackData, &val, 1);
-	return 1;
+	return 0;
 }
 
 int FarMacroApi::PassBoolean(int b)
 {
 	FarMacroValue val = (b != 0);
 	mData->Callback(mData->CallbackData, &val, 1);
-	return 1;
+	return 0;
 }
 
 int FarMacroApi::PassValue(const TVar& Var)
@@ -574,7 +574,7 @@ int FarMacroApi::PassValue(const TVar& Var)
 		val = Var.asInteger();
 
 	mData->Callback(mData->CallbackData, &val, 1);
-	return 1;
+	return 0;
 }
 
 int FarMacroApi::PassBinary(const void* data, size_t size)
@@ -584,14 +584,14 @@ int FarMacroApi::PassBinary(const void* data, size_t size)
 	val.Binary.Data = data;
 	val.Binary.Size = size;
 	mData->Callback(mData->CallbackData, &val, 1);
-	return 1;
+	return 0;
 }
 
 int FarMacroApi::PassPointer(void* ptr)
 {
 	FarMacroValue val(ptr);
 	mData->Callback(mData->CallbackData, &val, 1);
-	return 1;
+	return 0;
 }
 
 static std::vector<TVar> parseParams(size_t Count, FarMacroCall* Data)
@@ -1568,18 +1568,17 @@ int FarMacroApi::trimFunc()
 	auto Params = parseParams(2, mData);
 	const auto mode = static_cast<int>(Params[1].asInteger());
 	auto p = wcsdup(Params[0].toString());
-	int Ret=1;
 
 	switch (mode)
 	{
 		case 0: p=RemoveExternalSpaces(p); break;  // alltrim
 		case 1: p=RemoveLeadingSpaces(p); break;   // ltrim
 		case 2: p=RemoveTrailingSpaces(p); break;  // rtrim
-		default: Ret=0;
+		default: break;
 	}
 	PassString(p);
 	free(p);
-	return Ret;
+	return 0;
 }
 
 // S=substr(S,start[,length])
@@ -1598,7 +1597,6 @@ int FarMacroApi::substrFunc()
 				если ...
 	*/
 	auto Params = parseParams(3, mData);
-	int Ret=0;
 
 	const auto& p = Params[0].toString();
 	int start = static_cast<int>(Params[1].asInteger());
@@ -1637,18 +1635,8 @@ int FarMacroApi::substrFunc()
 		}
 	}
 
-	if (!length)
-	{
-		PassString(L"");
-	}
-	else
-	{
-		Ret=1;
-		FARString s(p+start, length);
-		PassString(s);
-	}
-
-	return Ret;
+	PassString(length ? FARString(p+start,length).CPtr() : L"");
+	return 0;
 }
 
 static bool SplitFileName(const wchar_t *lpFullName,FARString &strDest,int nFlags)
@@ -1772,7 +1760,7 @@ int FarMacroApi::fsplitFunc()
 		strPath.Clear();
 
 	PassString(strPath);
-	return 1;
+	return 0;
 }
 
 // N=atoi(S[,radix])
@@ -1782,7 +1770,7 @@ int FarMacroApi::atoiFunc()
 	wchar_t *endptr;
 	const auto Ret = _wcstoi64(Params[0].toString(), &endptr, Params[1].toInteger());
 	PassInteger(Ret);
-	return Ret;
+	return 0;
 }
 
 // N=Window.Scroll(Lines[,Axis])
@@ -1807,14 +1795,13 @@ int FarMacroApi::windowscrollFunc()
 	}
 
 	PassBoolean(Ret);
-	return Ret;
+	return 0;
 }
 
 // S=itoa(N[,radix])
 int FarMacroApi::itowFunc()
 {
 	auto Params = parseParams(2, mData);
-	int Ret=0;
 
 	if (Params[0].isInteger() || Params[0].isDouble())
 	{
@@ -1824,12 +1811,11 @@ int FarMacroApi::itowFunc()
 		if (!Radix)
 			Radix=10;
 
-		Ret=1;
 		Params[0]=TVar(_i64tow(Params[0].toInteger(),value,Radix));
 	}
 
 	PassValue(Params[0]);
-	return Ret;
+	return 0;
 }
 
 // os::chrono::sleep_for(Nms)
@@ -1842,9 +1828,9 @@ int FarMacroApi::sleepFunc()
 	{
 		WINPORT(Sleep)(Period);
 		PassNumber(1);
-		return 1;
 	}
-	PassNumber(0);
+	else
+		PassNumber(0);
 	return 0;
 }
 
@@ -1888,7 +1874,7 @@ int FarMacroApi::keyFunc()
 	}
 
 	PassString(strKeyText);
-	return !strKeyText.IsEmpty();
+	return 0;
 }
 
 // V=waitkey([N,[T]])
@@ -1907,14 +1893,14 @@ int FarMacroApi::waitkeyFunc()
 			KeyToText(Key, strKeyText);
 
 		PassString(strKeyText);
-		return !strKeyText.IsEmpty();
+		return 0;
 	}
 
 	if (Key == KEY_NONE)
 		Key=-1;
 
 	PassNumber(Key);
-	return Key != static_cast<DWORD>(-1);
+	return 0;
 }
 
 // n=min(n1,n2)
@@ -1922,7 +1908,7 @@ int FarMacroApi::minFunc()
 {
 	auto Params = parseParams(2, mData);
 	PassValue(std::min(Params[0], Params[1]));
-	return 1;
+	return 0;
 }
 
 // n=max(n1,n2)
@@ -1930,7 +1916,7 @@ int FarMacroApi::maxFunc()
 {
 	auto Params = parseParams(2, mData);
 	PassValue(std::max(Params[0], Params[1]));
-	return 1;
+	return 0;
 }
 
 // n=mod(n1,n2)
@@ -1942,10 +1928,10 @@ int FarMacroApi::modFunc()
 	{
 		_KEYMACRO(___FILEFUNCLINE___;SysLog(L"Error: Divide (mod) by zero"));
 		PassNumber(0);
-		return 0;
 	}
-	PassValue(Params[0] % Params[1]);
-	return 1;
+	else
+		PassValue(Params[0] % Params[1]);
+	return 0;
 }
 
 // N=index(S1,S2[,Mode])
@@ -1956,7 +1942,7 @@ int FarMacroApi::indexFunc()
 	const wchar_t *p = Params[1].toString();
 	const wchar_t *i = !Params[2].getInteger() ? StrStrI(s,p) : StrStr(s,p);
 	PassNumber(i ? i-s : -1);
-	return i ? 1:0;
+	return 0;
 }
 
 // S=rindex(S1,S2[,Mode])
@@ -1967,7 +1953,7 @@ int FarMacroApi::rindexFunc()
 	const wchar_t *p = Params[1].toString();
 	const wchar_t *i = !Params[2].getInteger() ? RevStrStrI(s,p) : RevStrStr(s,p);
 	PassNumber(i ? i-s : -1);
-	return i ? 1:0;
+	return 0;
 }
 
 // S=Size2Str(Size,Flags[,Width])
@@ -1979,7 +1965,7 @@ int FarMacroApi::size2strFunc()
 	const auto Width = static_cast<int>     (Params[2].asInteger());
 	FARString Dest;
 	PassString(FileSizeToStr(Dest, Size, Width, Flags));
-	return 1;
+	return 0;
 }
 
 // S=date([S])
@@ -1992,9 +1978,8 @@ int FarMacroApi::dateFunc()
 
 	FARString strTStr;
 	MkStrFTime(strTStr, Params[0].toString());
-	const auto Ret = !strTStr.IsEmpty();
 	PassString(strTStr);
-	return Ret;
+	return 0;
 }
 
 // S=xlat(S[,Flags])
@@ -2008,10 +1993,10 @@ int FarMacroApi::xlatFunc()
 {
 	auto Params = parseParams(2, mData);
 	auto StrParam = wcsdup(Params[0].toString());
-	int Ret=::Xlat(StrParam,0,StrLength(StrParam),Opt.XLat.Flags) ? 1:0;
+	::Xlat(StrParam,0,StrLength(StrParam),Opt.XLat.Flags);
 	PassString(StrParam);
 	free(StrParam);
-	return Ret;
+	return 0;
 }
 
 // S=prompt(["Title"[,"Prompt"[,flags[, "Src"[, "History"]]]]])
@@ -2023,7 +2008,6 @@ int FarMacroApi::promptFunc()
 	const auto Flags = static_cast<DWORD>(Params[2].asInteger());
 	auto& ValPrompt(Params[1]);
 	auto& ValTitle(Params[0]);
-	int Ret=0;
 
 	const wchar_t* title   = ValTitle.isString()   ? ValTitle.toString()   : L"";
 	const wchar_t* history = ValHistory.isString() ? ValHistory.toString() : L"";
@@ -2039,14 +2023,13 @@ int FarMacroApi::promptFunc()
 	if (GetString(title, prompt, history, src, strDest, {}, (Flags&~FIB_CHECKBOX) | FIB_ENABLEEMPTY))
 	{
 		PassString(strDest);
-		Ret=1;
 	}
 	else
 		PassBoolean(0);
 
 	SetHistoryDisableMask(oldHistoryDisable);
 
-	return Ret;
+	return 0;
 }
 
 // N=msgbox(["Title"[,"Text"[,flags]]])
@@ -2079,23 +2062,20 @@ int FarMacroApi::msgBoxFunc()
 	TempBuf += text;
 	auto Result=FarMessageFn(-1,Flags,nullptr,(const wchar_t * const *)TempBuf.CPtr(),0,0)+1;
 	PassNumber(Result);
-	return Result;
+	return 0;
 }
 
 // S=env(S)
 int FarMacroApi::environFunc()
 {
 	auto Params = parseParams(1, mData);
-	int Ret=0;
 	FARString strEnv;
 
-	if (apiGetEnvironmentVariable(Params[0].toString(), strEnv))
-		Ret=1;
-	else
+	if (!apiGetEnvironmentVariable(Params[0].toString(), strEnv))
 		strEnv.Clear();
 
 	PassString(strEnv);
-	return Ret;
+	return 0;
 }
 
 // V=Panel.Select(panelType,Action[,Mode[,Items]])
@@ -2149,7 +2129,7 @@ int FarMacroApi::panelselectFunc()
 	if (Result < 0)
 		Result = 0;
 	PassNumber(Result);
-	return Result;
+	return 0;
 }
 
 // N=panel.SetPath(panelType,pathName[,fileName])
@@ -2207,7 +2187,6 @@ int FarMacroApi::panelsetpathFunc()
 
 int FarMacroApi::fattrFuncImpl(int Type)
 {
-	int Ret=0;
 	DWORD FileAttr=INVALID_FILE_ATTRIBUTES;
 	long Pos=-1;
 
@@ -2217,7 +2196,6 @@ int FarMacroApi::fattrFuncImpl(int Type)
 		FAR_FIND_DATA_EX FindData;
 		apiGetFindDataEx(Params[0].toString(), FindData);
 		FileAttr=FindData.dwFileAttributes;
-		Ret=1;
 	}
 	else // panel.fattr(1) & panel.fexist(3)
 	{
@@ -2244,7 +2222,6 @@ int FarMacroApi::fattrFuncImpl(int Type)
 			{
 				FARString strFileName;
 				SelPanel->GetFileName(strFileName,Pos,FileAttr);
-				Ret=1;
 			}
 		}
 	}
@@ -2252,14 +2229,14 @@ int FarMacroApi::fattrFuncImpl(int Type)
 	if (Type == 2) // fexist(2)
 	{
 		PassBoolean(FileAttr!=INVALID_FILE_ATTRIBUTES);
-		return 1;
+		return 0;
 	}
 
 	if (Type == 3) // panel.fexist(3)
 		FileAttr=(DWORD)Pos+1;
 
 	PassNumber(static_cast<int32_t>(FileAttr));
-	return Ret;
+	return 0;
 }
 
 // N=fattr(S)
@@ -2326,7 +2303,7 @@ int FarMacroApi::flockFunc()
 		Ret=SetFLockState(vkKey,stateFLock);
 
 	PassNumber(Ret);
-	return Ret != -1;
+	return 0;
 }
 
 // N=Dlg->SetFocus([ID])
@@ -2349,7 +2326,7 @@ int FarMacroApi::dlgsetfocusFunc()
 		}
 	}
 	PassValue(Ret);
-	return Ret.asInteger() != -1; // ?? <= 0 ??
+	return 0;
 }
 
 // V=Far.Cfg_Get(Key,Name)
@@ -2483,7 +2460,7 @@ int FarMacroApi::dlggetvalueFunc()
 	}
 
 	PassValue(Ret);
-	return Ret.i() != -1;
+	return 0;
 }
 
 // N=Editor.Pos(Op,What[,Where])
@@ -2597,7 +2574,7 @@ int FarMacroApi::editorposFunc()
 	}
 
 	PassValue(Ret);
-	return Ret.i() != -1;
+	return 0;
 }
 
 // OldVar=Editor.Set(Idx,Var)
@@ -2723,7 +2700,7 @@ int FarMacroApi::editorsetFunc()
 	}
 
 	PassValue(Ret);
-	return Ret.i()==-1;
+	return 0;
 }
 
 // V=Clip(N[,V])
@@ -2752,7 +2729,7 @@ int FarMacroApi::clipFunc()
 				TVar varClip(ClipText);
 				free(ClipText);
 				PassValue(varClip);
-				return 1;
+				return 0;
 			}
 			break;
 		}
@@ -2760,7 +2737,7 @@ int FarMacroApi::clipFunc()
 		{
 			Ret=CopyToClipboard(Val.s());
 			PassNumber(Ret);
-			return Ret ? 1:0;
+			return 0;
 		}
 		case 2: // Add "S" into Clipboard
 		{
@@ -2796,7 +2773,7 @@ int FarMacroApi::clipFunc()
 				clip.Close();
 			}
 			PassNumber(Ret);
-			return Ret ? 1:0;
+			return 0;
 		}
 		case 3: // Copy Win to internal, "S" - ignore
 		case 4: // Copy internal to Win, "S" - ignore
@@ -2817,7 +2794,7 @@ int FarMacroApi::clipFunc()
 
 			Clipboard::SetUseInternalClipboardState(OldUseInternalClipboard);
 			PassNumber(Ret); // 0!  ???
-			return Ret ? 1:0;
+			return 0;
 		}
 		case 5: // ClipMode
 		{
@@ -2963,7 +2940,7 @@ int FarMacroApi::panelsetposidxFunc()
 	}
 
 	PassNumber(Ret);
-	return Ret ? 1:0;
+	return 0;
 }
 
 // N=Panel.SetPos(panelType,fileName)
@@ -3008,7 +2985,7 @@ int FarMacroApi::panelsetposFunc()
 	}
 
 	PassNumber(Ret);
-	return Ret ? 1:0;
+	return 0;
 }
 
 // Result=replace(Str,Find,Replace[,Cnt[,Mode]])
@@ -3030,7 +3007,6 @@ int FarMacroApi::replaceFunc()
 	auto& Repl  = Params[2];
 	auto& Find  = Params[1];
 	auto& Src   = Params[0];
-	int64_t Ret=1;
 	// TODO: Здесь нужно проверить в соответствии с УНИХОДОМ!
 	FARString strStr;
 	int lenS=StrLength(Src.s());
@@ -3076,7 +3052,7 @@ int FarMacroApi::replaceFunc()
 	else
 		PassValue(Src);
 
-	return Ret ? 1:0;
+	return 0;
 }
 
 // V=Panel.Item(typePanel,Index,TypeInfo)
@@ -3221,7 +3197,7 @@ int FarMacroApi::lenFunc()
 {
 	auto Params = parseParams(1, mData);
 	PassNumber(StrLength(Params[0].toString()));
-	return 1;
+	return 0;
 }
 
 int FarMacroApi::ucaseFunc()
@@ -3231,7 +3207,7 @@ int FarMacroApi::ucaseFunc()
 	StrUpper(Val);
 	PassString(Val);
 	free(Val);
-	return 1;
+	return 0;
 }
 
 int FarMacroApi::lcaseFunc()
@@ -3241,7 +3217,7 @@ int FarMacroApi::lcaseFunc()
 	StrLower(Val);
 	PassString(Val);
 	free(Val);
-	return 1;
+	return 0;
 }
 
 int FarMacroApi::stringFunc()
@@ -3250,7 +3226,7 @@ int FarMacroApi::stringFunc()
 	auto& Val = Params[0];
 	Val.toString();
 	PassValue(Val);
-	return 1;
+	return 0;
 }
 
 // S=StrWrap(Text,Width[,Break[,Flags]])
@@ -3272,7 +3248,7 @@ int FarMacroApi::strwrapFunc()
 	FARString strDest;
 	FarFormatText(Text.toString(), Width,strDest, pBreak, 1); // 1 == FFTM_BREAKLONGWORD
 	PassString(strDest);
-	return true;
+	return 0;
 }
 
 int FarMacroApi::intFunc()
@@ -3281,7 +3257,7 @@ int FarMacroApi::intFunc()
 	auto& Val = Params[0];
 	Val.toInteger();
 	PassValue(Val);
-	return 1;
+	return 0;
 }
 
 int FarMacroApi::floatFunc()
@@ -3290,7 +3266,7 @@ int FarMacroApi::floatFunc()
 	auto& Val = Params[0];
 	Val.toDouble();
 	PassValue(Val);
-	return 1;
+	return 0;
 }
 
 int FarMacroApi::absFunc()
@@ -3326,7 +3302,7 @@ int FarMacroApi::absFunc()
 	}
 
 	PassValue(Result);
-	return !Result.isUnknown();
+	return 0;
 }
 
 int FarMacroApi::ascFunc()
@@ -3340,7 +3316,7 @@ int FarMacroApi::ascFunc()
 		tmpVar.toInteger();
 	}
 	PassValue(tmpVar);
-	return 1;
+	return 0;
 }
 
 // N=FMatch(S,Mask)
@@ -3355,7 +3331,7 @@ int FarMacroApi::fmatchFunc()
 		PassNumber(FileMask.Compare(S.toString()));
 	else
 		PassNumber(-1);
-	return 1;
+	return 0;
 }
 
 // V=Editor.Sel(Action[,Opt])
@@ -3406,7 +3382,7 @@ int FarMacroApi::editorselFunc()
 	}
 
 	PassValue(Ret);
-	return Ret.i() == 1 ? 1 : 0;
+	return 0;
 }
 
 // V=Editor.Undo(N)
@@ -3456,7 +3432,7 @@ int FarMacroApi::pluginexistFunc()
 			Ret = true;
 	}
 	PassBoolean(Ret);
-	return Ret;
+	return 0;
 }
 
 // N=testfolder(S)
@@ -3510,7 +3486,7 @@ int FarMacroApi::kbdLayoutFunc()
 
 	PassValue(Ret?TVar(static_cast<INT64>(reinterpret_cast<INT_PTR>(RetLayout))):0);
 
-	return Ret ? 1 : 0;
+	return 0;
 }
 
 //### temporary function, for test only
