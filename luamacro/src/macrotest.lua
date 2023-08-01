@@ -1282,7 +1282,7 @@ function MT.test_mantis_1722()
     end
   end
   local Dlg = { {"DI_EDIT", 3,1,56,10, 0,0,0,0, "a"}, }
-  mf.acall(far.Dialog, -1,-1,60,3,"Contents",Dlg, 0, DlgProc)
+  mf.acall(far.Dialog, nil,-1,-1,60,3,"Contents",Dlg, 0, DlgProc)
   assert_true(Area.Dialog)
   Keys("W 1 2 3 4 BS Esc")
   assert_eq(check, 6)

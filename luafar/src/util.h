@@ -37,6 +37,7 @@ typedef struct {
   BOOL              isOwned;
   BOOL              wasError;
   BOOL              isModal;
+  GUID              Guid;
 } TDialogData;
 
 typedef struct

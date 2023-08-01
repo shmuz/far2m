@@ -2599,6 +2599,7 @@ TDialogData* NewDialogData(lua_State* L, HANDLE hDlg, BOOL isOwned)
   dd->isOwned  = isOwned;
   dd->wasError = FALSE;
   dd->isModal  = TRUE;
+  memset(&dd->Guid, 0, sizeof(GUID));
   luaL_getmetatable(L, FarDialogType);
   lua_setmetatable(L, -2);
   if (isOwned) {
@@ -3426,6 +3427,11 @@ LONG_PTR LF_DlgProc(lua_State *L, HANDLE hDlg, int Msg, int Param1, LONG_PTR Par
   if (dd->wasError)
     return PSInfo.DefDlgProc(hDlg, Msg, Param1, Param2);
 
+  if (Msg == DN_GETDIALOGINFO) {
+     ((struct DialogInfo*)(Param2))->Id = dd->Guid;
+     return TRUE;
+  }
+
   L = dd->L; // the dialog may be called from a lua_State other than the main one
   int Param1_mod = DN_ConvertParam1(Msg, Param1);
 
@@ -3536,23 +3542,24 @@ int far_DialogInit(lua_State *L)
   LONG_PTR Param;
   TPluginData *pd = GetPluginData(L);
 
-  int X1 = luaL_checkinteger(L, 1);
-  int Y1 = luaL_checkinteger(L, 2);
-  int X2 = luaL_checkinteger(L, 3);
-  int Y2 = luaL_checkinteger(L, 4);
-  const wchar_t *HelpTopic = opt_utf8_string(L, 5, NULL);
+  GUID Id = *(GUID*)luaL_optstring(L, 1, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
+  int X1 = luaL_checkinteger(L, 2);
+  int Y1 = luaL_checkinteger(L, 3);
+  int X2 = luaL_checkinteger(L, 4);
+  int Y2 = luaL_checkinteger(L, 5);
+  const wchar_t *HelpTopic = opt_utf8_string(L, 6, NULL);
 
-  luaL_checktype(L, 6, LUA_TTABLE);
+  luaL_checktype(L, 7, LUA_TTABLE);
   lua_newtable (L); // create a "histories" table, to prevent history strings
                     // from being garbage collected too early
   lua_replace (L, 1);
-  ItemsNumber = lua_objlen(L, 6);
+  ItemsNumber = lua_objlen(L, 7);
   Items = (struct FarDialogItem*)lua_newuserdata (L, ItemsNumber * sizeof(struct FarDialogItem));
   lua_replace (L, 2);
 
   for(i=0; i < ItemsNumber; i++) {
     lua_pushinteger(L, i+1);
-    lua_gettable(L, 6);
+    lua_gettable(L, 7);
     if (lua_type(L, -1) == LUA_TTABLE) {
       SetFarDialogItem(L, Items+i, i, 1);
       lua_pop(L, 1);
@@ -3561,15 +3568,16 @@ int far_DialogInit(lua_State *L)
       return luaL_error(L, "Items[%d] is not a table", i+1);
   }
 
-  // 7-th parameter (flags)
-  Flags = OptFlags(L,7,0);
+  // 8-th parameter (flags)
+  Flags = OptFlags(L,8,0);
   dd = NewDialogData(L, INVALID_HANDLE_VALUE, TRUE);
   dd->isModal = (Flags&FDLG_NONMODAL) == 0;
+  dd->Guid = Id;
 
-  // 8-th parameter (DlgProc function)
+  // 9-th parameter (DlgProc function)
   Proc = NULL;
   Param = 0;
-  if (lua_isfunction(L, 8)) {
+  if (lua_isfunction(L, 9)) {
     Proc = pd->DlgProc;
     Param = (LONG_PTR)dd;
   }
@@ -3580,9 +3588,9 @@ int far_DialogInit(lua_State *L)
   lua_pushvalue(L, 1);      // store the "histories" table
   lua_rawseti(L, -2, 1);
 
-  if(lua_isfunction(L, 8))
+  if(lua_isfunction(L, 9))
   {
-    lua_pushvalue(L, 8);    // store the procedure
+    lua_pushvalue(L, 9);    // store the procedure
     lua_rawseti(L, -2, 2);
     lua_pushvalue(L, -3);   // store the handle
     lua_rawseti(L, -2, 3);
@@ -6032,8 +6040,8 @@ static const luaL_Reg far_funcs[] = {
 };
 
 const char far_Dialog[] =
-"function far.Dialog (X1,Y1,X2,Y2,HelpTopic,Items,Flags,DlgProc)\n\
-  local hDlg = far.DialogInit(X1,Y1,X2,Y2,HelpTopic,Items,Flags,DlgProc)\n\
+"function far.Dialog (Guid,X1,Y1,X2,Y2,HelpTopic,Items,Flags,DlgProc)\n\
+  local hDlg = far.DialogInit(Guid,X1,Y1,X2,Y2,HelpTopic,Items,Flags,DlgProc)\n\
   if hDlg == nil then return nil end\n\
 \n\
   local ret = far.DialogRun(hDlg)\n\
