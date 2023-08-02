@@ -1745,6 +1745,7 @@ enum EDITOR_CONTROL_COMMANDS
 	ECTL_RESERVED1                  = 36,
 	ECTL_RESERVED2                  = 37,
 	ECTL_GETTITLE                   = 38,
+	ECTL_INSERTTEXT_V2              = 39,
 };
 
 enum EDITOR_SETPARAMETER_TYPES

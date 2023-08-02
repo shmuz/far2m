@@ -5344,29 +5344,32 @@ int Editor::EditorControl(int Command,void *Param)
 			return TRUE;
 		}
 		case ECTL_INSERTTEXT:
+		case ECTL_INSERTTEXT_V2:
 		{
 			if (!Param)
 				return FALSE;
 
-			_ECTLLOG(SysLog(L"(const wchar_t *)Param='%ls'",(const wchar_t *)Param));
-
 			if (Flags.Check(FEDITOR_LOCKMODE))
-			{
-				_ECTLLOG(SysLog(L"FEDITOR_LOCKMODE!"));
 				return FALSE;
-			}
-			else
+
+			const wchar_t *Str=(const wchar_t *)Param;
+			Pasting++;
+			Lock();
+
+			for (; *Str; Str++)
 			{
-				const wchar_t *Str=(const wchar_t *)Param;
-				Pasting++;
-				Lock();
-
-				while (*Str)
-					ProcessKey(*(Str++));
-
-				Unlock();
-				Pasting--;
+				if (Command==ECTL_INSERTTEXT_V2 && L'\n'==*Str)
+				{
+					--Pasting;
+					InsertString();
+					++Pasting;
+				}
+				else
+					ProcessKey(*Str);
 			}
+
+			Unlock();
+			Pasting--;
 
 			return TRUE;
 		}

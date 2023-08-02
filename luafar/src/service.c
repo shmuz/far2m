@@ -861,10 +861,14 @@ int editor_DeleteString(lua_State *L)
 
 int editor_InsertText(lua_State *L)
 {
-  int editorId = luaL_optinteger(L,1,-1);
-  wchar_t* text = check_utf8_string(L,2,NULL);
-  int res = PSInfo.EditorControlV2(editorId, ECTL_INSERTTEXT, text);
-  if (res && lua_toboolean(L,3))
+  int editorId, redraw, res;
+  wchar_t* text;
+
+  editorId = luaL_optinteger(L,1,-1);
+  text = check_utf8_string(L,2,NULL);
+  redraw = lua_toboolean(L,3);
+  res = PSInfo.EditorControlV2(editorId, ECTL_INSERTTEXT_V2, text);
+  if (res && redraw)
     PSInfo.EditorControlV2(editorId, ECTL_REDRAW, NULL);
   lua_pushboolean(L, res);
   return 1;
@@ -872,14 +876,15 @@ int editor_InsertText(lua_State *L)
 
 int editor_InsertTextW(lua_State *L)
 {
-  int res, redraw;
-  int editorId = luaL_optinteger(L,1,-1);
-  luaL_checkstring(L,2);
+  int editorId, redraw, res;
+
+  editorId = luaL_optinteger(L,1,-1);
+  (void)luaL_checkstring(L,2);
   redraw = lua_toboolean(L,3);
   lua_pushvalue(L,2);
   lua_pushlstring(L, "\0\0\0\0", 4);
   lua_concat(L,2);
-  res = PSInfo.EditorControlV2(editorId, ECTL_INSERTTEXT, (void*)lua_tostring(L,-1));
+  res = PSInfo.EditorControlV2(editorId, ECTL_INSERTTEXT_V2, (void*)lua_tostring(L,-1));
   if (res && redraw)
     PSInfo.EditorControlV2(editorId, ECTL_REDRAW, NULL);
   lua_pushboolean(L, res);
