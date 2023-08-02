@@ -4458,6 +4458,7 @@ void Dialog::Process()
 		if (GetCanLoseFocus())
 		{
 			FrameManager->InsertFrame(this);
+			FrameManager->PluginCommit();
 		}
 		else
 		{
