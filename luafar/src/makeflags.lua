@@ -1,6 +1,6 @@
 -- This script is intended to generate the "flags.cpp" file
 
-local function add_defines (src, trg)
+local function add_defines (src, trg_int, trg_ptr)
   local skip = false
   for line in src:gmatch("[^\r\n]+") do
     if line:find("^%s*//") then
@@ -10,8 +10,11 @@ local function add_defines (src, trg)
     elseif skip then
       if line:find("#else") or line:find("#endif") then skip = false end
     else
-      local c = line:match("#define%s+([A-Z][A-Z0-9_]*)%s")
-      if c then table.insert(trg, c) end
+      local c, v = line:match("#define%s+([A-Z][A-Z0-9_]*)%s+(.+)")
+      if c then
+        local trg = (v:find("%(HANDLE%)") or v:find("%(void%*%)")) and trg_ptr or trg_int
+        table.insert(trg, c)
+      end
     end
   end
 end
@@ -48,15 +51,26 @@ local function add_static  (src, trg)
   end
 end
 
-local function write_target (trg)
+local function write_target (trg_int, trg_ptr)
   io.write [[
 static const flag_pair flags[] = {
 ]]
-  table.sort(trg) -- sort the table: this will allow for binary search
-  for k,v in ipairs(trg) do
+  table.sort(trg_int)
+  for k,v in ipairs(trg_int) do
     local len = math.max(1, 32 - #v)
     local space = (" "):rep(len)
-    io.write(string.format('  {"%s",%s(int64_t) %s },\n', v, space, v))
+    io.write(string.format('  {"%s",%s%s },\n', v, space, v))
+  end
+  io.write("};\n\n")
+
+  io.write [[
+static const ptr_pair pflags[] = {
+]]
+  table.sort(trg_ptr)
+  for k,v in ipairs(trg_ptr) do
+    local len = math.max(1, 32 - #v)
+    local space = (" "):rep(len)
+    io.write(string.format('  {"%s",%s%s },\n', v, space, v))
   end
   io.write("};\n\n")
 end
@@ -103,6 +117,11 @@ typedef struct {
   int64_t val;
 } flag_pair;
 
+typedef struct {
+  const char* key;
+  void* val;
+} ptr_pair;
+
 ]]
 
 
@@ -110,10 +129,15 @@ local file_bottom = [[
 void add_flags (lua_State *L)
 {
   int i;
-  const int nelem = sizeof(flags) / sizeof(flags[0]);
+  int nelem = sizeof(flags) / sizeof(flags[0]);
   for (i=0; i<nelem; ++i) {
     lua_pushnumber(L, flags[i].val);
     lua_setfield(L, -2, flags[i].key);
+  }
+  nelem = sizeof(pflags) / sizeof(pflags[0]);
+  for (i=0; i<nelem; ++i) {
+    lua_pushlightuserdata(L, pflags[i].val);
+    lua_setfield(L, -2, pflags[i].key);
   }
 }
 
@@ -123,22 +147,22 @@ do
   local dir = ...
   assert (dir, "input directory not specified")
 
-  local collector = {}
-  for _,v in ipairs(t_winapi) do table.insert(collector, v) end
+  local trg_int, trg_ptr = {}, {}
+  for _,v in ipairs(t_winapi) do table.insert(trg_int, v) end
 
   for _,fname in ipairs { "farplug-wide.h", "farcolor.h", "farkeys.h" } do
     local fp = assert (io.open (dir.."/"..fname))
     local src = fp:read ("*all")
     fp:close()
     if fname == "farplug-wide.h" then
-      add_defines(src, collector)
-      add_static(src, collector)
+      add_defines(src, trg_int, trg_ptr)
+      add_static(src, trg_int)
     end
-    add_enums(src, collector)
+    add_enums(src, trg_int)
   end
 
   io.write(file_top)
-  write_target(collector)
+  write_target(trg_int, trg_ptr)
   io.write(file_bottom)
 end
 
