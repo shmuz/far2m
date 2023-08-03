@@ -36,6 +36,13 @@ void PutIntToArray(lua_State *L, int key, int val)
   lua_settable(L, -3);
 }
 
+void PutNumToArray(lua_State *L, int key, double val)
+{
+  lua_pushinteger(L, key);
+  lua_pushnumber(L, val);
+  lua_settable(L, -3);
+}
+
 void PutIntToTable(lua_State *L, const char *key, int val)
 {
   lua_pushinteger(L, val);

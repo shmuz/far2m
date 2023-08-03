@@ -16,6 +16,7 @@ int    GetOptIntFromTable (lua_State *L, const char* key, int dflt);
 double GetOptNumFromTable (lua_State *L, const char* key, double dflt);
 void   PutBoolToTable     (lua_State *L, const char* key, int num);
 void   PutIntToArray      (lua_State *L, int key, int val);
+void   PutNumToArray      (lua_State *L, int key, double val);
 void   PutIntToTable      (lua_State *L, const char *key, int val);
 void   PutLStrToTable     (lua_State *L, const char* key, const void* str, size_t len);
 void   PutNumToTable      (lua_State *L, const char* key, double num);

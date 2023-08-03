@@ -2553,6 +2553,8 @@ void PushCheckbox (lua_State *L, int value)
 
 void PushDlgItem (lua_State *L, const struct FarDialogItem* pItem, BOOL table_exist)
 {
+  flags_t Flags;
+
   if (! table_exist) {
     lua_createtable(L, 11, 0);
     if (pItem->Type == DI_LISTBOX || pItem->Type == DI_COMBOBOX) {
@@ -2585,7 +2587,11 @@ void PushDlgItem (lua_State *L, const struct FarDialogItem* pItem, BOOL table_ex
   else
     PutIntToArray(L, 6, pItem->Selected);
 
-  PutIntToArray  (L, 9, pItem->Flags);
+  Flags = pItem->Flags;
+  if (pItem->Focus) Flags |= DIF_FOCUS;
+  if (pItem->DefaultButton) Flags |= DIF_DEFAULTBUTTON;
+  PutNumToArray(L, 9, Flags);
+
   lua_pushinteger(L, 10);
   push_utf8_string(L, pItem->PtrData, -1);
   lua_settable(L, -3);
@@ -6060,10 +6066,10 @@ const char far_Dialog[] =
   local ret = far.DialogRun(hDlg)\n\
   for i, item in ipairs(Items) do\n\
     local newitem = hDlg:GetDlgItem(i)\n\
-    if type(item[7]) == 'table' then\n\
-      item[7].SelectIndex = newitem[7].SelectIndex\n\
+    if type(item[6]) == 'table' then\n\
+      item[6].SelectIndex = newitem[6].SelectIndex\n\
     else\n\
-      item[7] = newitem[7]\n\
+      item[6] = newitem[6]\n\
     end\n\
     item[10] = newitem[10]\n\
   end\n\
