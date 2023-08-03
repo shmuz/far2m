@@ -18,12 +18,12 @@ add_executable (minilua src/minilua.c)
 target_link_libraries(minilua PRIVATE ${LUALIB})
 
 set(SDK "${CMAKE_SOURCE_DIR}/far/far2sdk")
+set(MAKEFLAGS "${CMAKE_CURRENT_SOURCE_DIR}/src/makeflags.lua")
 
 add_custom_command(
     OUTPUT  farflags.c    # Treated as relative to CMAKE_CURRENT_BINARY_DIR
-    COMMAND minilua ${CMAKE_CURRENT_SOURCE_DIR}/src/makeflags.lua
-        ${SDK} > farflags.c
-    DEPENDS ${SDK}/farplug-wide.h ${SDK}/farcolor.h ${SDK}/farkeys.h
+    COMMAND minilua ${MAKEFLAGS} ${SDK} > farflags.c
+    DEPENDS ${SDK}/farplug-wide.h ${SDK}/farcolor.h ${SDK}/farkeys.h ${MAKEFLAGS}
 )
 
 set(SOURCES

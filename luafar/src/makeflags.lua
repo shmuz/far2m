@@ -40,6 +40,14 @@ local function add_enums (src, trg)
   end
 end
 
+local function add_static  (src, trg)
+  for chunk in src:gmatch("static%s+const%s+[^;]-;") do
+    for k,v in chunk:gmatch("\n%s*([%w_]+)%s*=%s*(%w+)") do
+      table.insert(trg, k)
+    end
+  end
+end
+
 local function write_target (trg)
   io.write [[
 static const flag_pair flags[] = {
@@ -48,7 +56,7 @@ static const flag_pair flags[] = {
   for k,v in ipairs(trg) do
     local len = math.max(1, 32 - #v)
     local space = (" "):rep(len)
-    io.write(string.format('  {"%s",%s(INT_PTR) %s },\n', v, space, v))
+    io.write(string.format('  {"%s",%s(int64_t) %s },\n', v, space, v))
   end
   io.write("};\n\n")
 end
@@ -84,13 +92,15 @@ extern "C" {
 }
 #endif
 
+#define LUAFAR_INTERNALS
+
 #include "farplug-wide.h"
 #include "farcolor.h"
 #include "farkeys.h"
 
 typedef struct {
   const char* key;
-  INT_PTR val;
+  int64_t val;
 } flag_pair;
 
 ]]
@@ -102,7 +112,7 @@ void add_flags (lua_State *L)
   int i;
   const int nelem = sizeof(flags) / sizeof(flags[0]);
   for (i=0; i<nelem; ++i) {
-    lua_pushinteger(L, flags[i].val);
+    lua_pushnumber(L, flags[i].val);
     lua_setfield(L, -2, flags[i].key);
   }
 }
@@ -122,6 +132,7 @@ do
     fp:close()
     if fname == "farplug-wide.h" then
       add_defines(src, collector)
+      add_static(src, collector)
     end
     add_enums(src, collector)
   end

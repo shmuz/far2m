@@ -1,6 +1,8 @@
 #ifndef LUAFAR_H
 #define LUAFAR_H
 
+#define LUAFAR_INTERNALS
+
 #include <farplug-wide.h>
 
 #ifdef __cplusplus

@@ -256,6 +256,13 @@ enum FarDialogItemFlags
 	DIF_DISABLE               = 0x80000000UL,
 };
 
+#ifdef LUAFAR_INTERNALS    // luafar only; use 53 bits at most
+typedef int64_t FarDialogItemFlags64;
+static const FarDialogItemFlags64
+	DIF_DEFAULTBUTTON         = 0x000100000000LL,
+	DIF_FOCUS                 = 0x000200000000LL;
+#endif
+
 enum FarMessagesProc
 {
 	DM_FIRST=0,

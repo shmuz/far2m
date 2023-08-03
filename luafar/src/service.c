@@ -266,10 +266,10 @@ HANDLE OptHandle(lua_State *L)
   return OptHandlePos(L,1);
 }
 
-DWORD GetFlags (lua_State *L, int stack_pos, int *success)
+flags_t GetFlags (lua_State *L, int stack_pos, int *success)
 {
   int dummy, ok;
-  DWORD trg = 0, flag;
+  flags_t trg = 0, flag;
 
   success = success ? success : &dummy;
   *success = TRUE;
@@ -281,7 +281,7 @@ DWORD GetFlags (lua_State *L, int stack_pos, int *success)
       break;
 
     case LUA_TNUMBER:
-      trg = (DWORD)lua_tointeger (L, stack_pos);
+      trg = (flags_t)lua_tonumber(L, stack_pos);
       break;
 
     case LUA_TSTRING:
@@ -289,13 +289,13 @@ DWORD GetFlags (lua_State *L, int stack_pos, int *success)
       const char *p = lua_tostring(L, stack_pos), *q;
       for (; *p; p=q)
       {
-        while (isspace(*p)) p++;
+        while (isspace(*p) || *p=='+') p++;
         if (*p == 0) break;
-        for (q=p+1; *q && !isspace(*q); ) q++;
+        for (q=p+1; *q && !isspace(*q) && *q!='+'; ) q++;
         lua_pushlstring(L, p, q-p);
         lua_getfield (L, LUA_ENVIRONINDEX, lua_tostring(L, -1));
         if (lua_isnumber(L, -1))
-          trg |= (DWORD)lua_tointeger (L, -1);
+          trg |= (flags_t)lua_tonumber(L, -1);
         else
           *success = FALSE;
         lua_pop(L, 2);
@@ -326,9 +326,9 @@ DWORD GetFlags (lua_State *L, int stack_pos, int *success)
   return trg;
 }
 
-DWORD check_env_flag (lua_State *L, int stack_pos)
+flags_t check_env_flag (lua_State *L, int stack_pos)
 {
-  DWORD trg = 0;
+  flags_t trg = 0;
   int success = FALSE;
   if (!lua_isnoneornil(L,stack_pos))
     trg = GetFlags(L,stack_pos,&success);
@@ -337,9 +337,9 @@ DWORD check_env_flag (lua_State *L, int stack_pos)
   return trg;
 }
 
-DWORD opt_env_flag (lua_State *L, int stack_pos, DWORD dflt)
+flags_t opt_env_flag (lua_State *L, int stack_pos, flags_t dflt)
 {
-  DWORD trg = dflt;
+  flags_t trg = dflt;
   if (!lua_isnoneornil(L,stack_pos)) {
     int success;
     trg = GetFlags(L,stack_pos,&success);
@@ -349,23 +349,23 @@ DWORD opt_env_flag (lua_State *L, int stack_pos, DWORD dflt)
   return trg;
 }
 
-DWORD CheckFlags(lua_State* L, int stackpos)
+flags_t CheckFlags(lua_State* L, int stackpos)
 {
   int success;
-  DWORD Flags = GetFlags(L, stackpos, &success);
+  flags_t Flags = GetFlags(L, stackpos, &success);
   if (!success)
     luaL_error(L, "invalid flag combination");
   return Flags;
 }
 
-DWORD OptFlags(lua_State* L, int pos, DWORD dflt)
+flags_t OptFlags(lua_State* L, int pos, flags_t dflt)
 {
   return lua_isnoneornil(L, pos) ? dflt : CheckFlags(L, pos);
 }
 
-DWORD GetFlagsFromTable(lua_State *L, int pos, const char* key)
+flags_t GetFlagsFromTable(lua_State *L, int pos, const char* key)
 {
-  DWORD f;
+  flags_t f;
   lua_getfield(L, pos, key);
   f = GetFlags(L, -1, NULL);
   lua_pop(L, 1);
@@ -2412,9 +2412,9 @@ int GetDialogItemType(lua_State* L, int key, int item)
 }
 
 // the table is on lua stack top
-int GetItemFlags(lua_State* L, int flag_index, int item_index)
+flags_t GetItemFlags(lua_State* L, int flag_index, int item_index)
 {
-  int flags;
+  flags_t flags;
   int ok;
   lua_pushinteger(L, flag_index);
   lua_gettable(L, -2);
@@ -2459,19 +2459,24 @@ struct FarList* CreateList(lua_State *L, int historyindex)
 }
 
 // item table is on Lua stack top
-void SetFarDialogItem(lua_State *L, struct FarDialogItem* Item, int itemindex,
-  int historyindex)
+void SetFarDialogItem(lua_State *L, struct FarDialogItem* Item, int itemindex, int historyindex)
 {
+  flags_t Flags;
+
   memset(Item, 0, sizeof(struct FarDialogItem));
   Item->Type  = GetDialogItemType (L, 1, itemindex+1);
   Item->X1    = GetIntFromArray   (L, 2);
   Item->Y1    = GetIntFromArray   (L, 3);
   Item->X2    = GetIntFromArray   (L, 4);
   Item->Y2    = GetIntFromArray   (L, 5);
-  Item->Focus = GetIntFromArray   (L, 6);
-  Item->Flags = GetItemFlags      (L, 8, itemindex+1);
+
+  Flags = GetItemFlags(L, 9, itemindex+1);
+  Item->Focus = (Flags & DIF_FOCUS) ? 1:0;
+  Item->DefaultButton = (Flags & DIF_DEFAULTBUTTON) ? 1:0;
+  Item->Flags = Flags & 0xFFFFFFFF;
+
   if (Item->Type==DI_LISTBOX || Item->Type==DI_COMBOBOX) {
-    lua_pushinteger(L, 7);   // +1
+    lua_pushinteger(L, 6);   // +1
     lua_gettable(L, -2);     // +1
     if (lua_type(L,-1) != LUA_TTABLE)
       luaLF_SlotError (L, 7, "table");
@@ -2483,7 +2488,7 @@ void SetFarDialogItem(lua_State *L, struct FarDialogItem* Item, int itemindex,
   }
   else if (Item->Type == DI_USERCONTROL)
   {
-    lua_rawgeti(L, -1, 7);
+    lua_rawgeti(L, -1, 6);
     if (lua_type(L,-1) == LUA_TUSERDATA)
     {
       TFarUserControl* fuc = CheckFarUserControl(L, -1);
@@ -2492,7 +2497,7 @@ void SetFarDialogItem(lua_State *L, struct FarDialogItem* Item, int itemindex,
     lua_pop(L,1);
   }
   else if (Item->Type == DI_CHECKBOX || Item->Type == DI_RADIOBUTTON) {
-    lua_pushinteger(L, 7);
+    lua_pushinteger(L, 6);
     lua_gettable(L, -2);
     if (lua_isnumber(L,-1))
       Item->Selected = lua_tointeger(L,-1);
@@ -2500,12 +2505,9 @@ void SetFarDialogItem(lua_State *L, struct FarDialogItem* Item, int itemindex,
       Item->Selected = lua_toboolean(L,-1) ? BSTATE_CHECKED : BSTATE_UNCHECKED;
     lua_pop(L, 1);
   }
-  else if (Item->Type == DI_EDIT || Item->Type == DI_FIXEDIT) {
-    if ((Item->Flags & DIF_HISTORY) ||
-        (Item->Type == DI_FIXEDIT && (Item->Flags & DIF_MASKEDIT)))
-    {
-      lua_pushinteger(L, 7);   // +1
-      lua_gettable(L, -2);     // +1
+  else if (Item->Type == DI_EDIT) {
+    if (Item->Flags & DIF_HISTORY) {
+      lua_rawgeti(L, -1, 7);      // +1
       if (!lua_isstring(L,-1))
         luaLF_SlotError (L, 7, "string");
       Item->History = check_utf8_string (L, -1, NULL); // +1 --> Item->History and Item->Mask are aliases (union members)
@@ -2513,8 +2515,16 @@ void SetFarDialogItem(lua_State *L, struct FarDialogItem* Item, int itemindex,
       lua_rawseti (L, historyindex, len+1); // +0; put into "histories" table to avoid being gc'ed
     }
   }
-
-  Item->DefaultButton = GetIntFromArray(L, 9);
+  else if (Item->Type == DI_FIXEDIT) {
+    if (Item->Flags & DIF_MASKEDIT) {
+      lua_rawgeti(L, -1, 8);      // +1
+      if (!lua_isstring(L,-1))
+        luaLF_SlotError (L, 8, "string");
+      Item->Mask = check_utf8_string (L, -1, NULL); // +1 --> Item->History and Item->Mask are aliases (union members)
+      size_t len = lua_objlen(L, historyindex);
+      lua_rawseti (L, historyindex, len+1); // +0; put into "histories" table to avoid being gc'ed
+    }
+  }
 
   Item->MaxLen = GetOptIntFromArray(L, 11, 0);
   lua_pushinteger(L, 10); // +1
@@ -2547,7 +2557,7 @@ void PushDlgItem (lua_State *L, const struct FarDialogItem* pItem, BOOL table_ex
     lua_createtable(L, 11, 0);
     if (pItem->Type == DI_LISTBOX || pItem->Type == DI_COMBOBOX) {
       lua_createtable(L, 0, 1);
-      lua_rawseti(L, -2, 7);
+      lua_rawseti(L, -2, 6);
     }
   }
   PutIntToArray  (L, 1, pItem->Type);
@@ -2555,10 +2565,9 @@ void PushDlgItem (lua_State *L, const struct FarDialogItem* pItem, BOOL table_ex
   PutIntToArray  (L, 3, pItem->Y1);
   PutIntToArray  (L, 4, pItem->X2);
   PutIntToArray  (L, 5, pItem->Y2);
-  PutIntToArray  (L, 6, pItem->Focus);
 
   if (pItem->Type == DI_LISTBOX || pItem->Type == DI_COMBOBOX) {
-    lua_rawgeti(L, -1, 7);
+    lua_rawgeti(L, -1, 6);
     lua_pushinteger(L, pItem->ListPos+1);
     lua_setfield(L, -2, "SelectIndex");
     lua_pop(L,1);
@@ -2566,18 +2575,17 @@ void PushDlgItem (lua_State *L, const struct FarDialogItem* pItem, BOOL table_ex
   else if (pItem->Type == DI_USERCONTROL)
   {
     lua_pushlightuserdata(L, pItem->VBuf);
-    lua_rawseti(L, -2, 7);
+    lua_rawseti(L, -2, 6);
   }
   else if (pItem->Type == DI_CHECKBOX || pItem->Type == DI_RADIOBUTTON)
   {
     PushCheckbox(L, pItem->Selected);
-    lua_rawseti(L, -2, 7);
+    lua_rawseti(L, -2, 6);
   }
   else
-    PutIntToArray(L, 7, pItem->Selected);
+    PutIntToArray(L, 6, pItem->Selected);
 
-  PutIntToArray  (L, 8, pItem->Flags);
-  PutIntToArray  (L, 9, pItem->DefaultButton);
+  PutIntToArray  (L, 9, pItem->Flags);
   lua_pushinteger(L, 10);
   push_utf8_string(L, pItem->PtrData, -1);
   lua_settable(L, -3);
@@ -3541,7 +3549,7 @@ int far_DialogInit(lua_State *L)
 {
   int ItemsNumber, i;
   struct FarDialogItem *Items;
-  DWORD Flags;
+  flags_t Flags;
   TDialogData *dd;
   FARAPIDEFDLGPROC Proc;
   LONG_PTR Param;
@@ -3843,7 +3851,7 @@ int far_InputBox(lua_State *L)
   const wchar_t *SrcText     = opt_utf8_string (L, 5, L"");
   int DestLength             = luaL_optinteger (L, 6, 1024);
   const wchar_t *HelpTopic   = opt_utf8_string (L, 7, NULL);
-  DWORD Flags = OptFlags (L, 8, FIB_ENABLEEMPTY|FIB_BUTTONS|FIB_NOAMPERSAND);
+  flags_t Flags = OptFlags (L, 8, FIB_ENABLEEMPTY|FIB_BUTTONS|FIB_NOAMPERSAND);
 
   if (DestLength < 1) DestLength = 1;
   wchar_t *DestText = (wchar_t*) malloc(sizeof(wchar_t)*DestLength);
@@ -4128,7 +4136,7 @@ int far_MkLink (lua_State *L)
   const wchar_t* src = check_utf8_string(L, 1, NULL);
   const wchar_t* dst = check_utf8_string(L, 2, NULL);
   DWORD link_type = OptFlags(L, 3, FLINK_SYMLINK);
-  DWORD flags = CheckFlags(L, 4);
+  flags_t flags = CheckFlags(L, 4);
   flags = (link_type & 0x0000FFFF) | (flags & 0xFFFF0000);
   lua_pushboolean(L, FSF.MkLink(src, dst, flags));
   return 1;
@@ -4192,7 +4200,7 @@ int WINAPI FrsUserFunc (const struct FAR_FIND_DATA *FData, const wchar_t *FullNa
 
 int far_RecursiveSearch (lua_State *L)
 {
-  DWORD Flags;
+  flags_t Flags;
   FrsData Data = { L,0,0 };
   const wchar_t *InitDir = check_utf8_string(L, 1, NULL);
   wchar_t *Mask = check_utf8_string(L, 2, NULL);

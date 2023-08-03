@@ -1,4 +1,5 @@
 //---------------------------------------------------------------------------
+#define FAR_DONT_USE_INTERNALS
 #include "luafar.h"
 
 #ifndef LUAPLUG
