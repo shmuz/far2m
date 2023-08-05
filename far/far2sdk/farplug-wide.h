@@ -1520,6 +1520,14 @@ struct FarTrueColorForeAndBack
 	struct FarTrueColor Back;
 };
 
+struct DialogItemTrueColors
+{
+	struct FarTrueColorForeAndBack Normal;
+	struct FarTrueColorForeAndBack Hilighted;
+	struct FarTrueColorForeAndBack Frame;
+	struct FarTrueColorForeAndBack Reserved;
+};
+
 enum WINDOWINFO_TYPE
 {
 #ifdef FAR_USE_INTERNALS
