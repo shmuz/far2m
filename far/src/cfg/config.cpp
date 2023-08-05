@@ -1043,10 +1043,8 @@ static struct FARConfig
 	{1, REG_DWORD,  NSecDescriptions, "AnsiByDefault",&Opt.Diz.AnsiByDefault,0, 0},
 	{1, REG_DWORD,  NSecDescriptions, "SaveInUTF",&Opt.Diz.SaveInUTF,0, 0},
 
-	{0, REG_DWORD,  NSecKeyMacros, "MacroReuseRules",&Opt.Macro.MacroReuseRules,0, 0},
 	{0, REG_SZ,     NSecKeyMacros, "DateFormat",&Opt.Macro.strDateFormat, 0, L"%a %b %d %H:%M:%S %Z %Y"},
 	{0, REG_SZ,     NSecKeyMacros, "CONVFMT",&Opt.Macro.strMacroCONVFMT, 0, L"%.6g"},
-	{0, REG_DWORD,  NSecKeyMacros, "CallPluginRules",&Opt.Macro.CallPluginRules,0, 0},
 
 	{0, REG_DWORD,  NSecPolicies, "ShowHiddenDrives",&Opt.Policies.ShowHiddenDrives,1, 0},
 	{0, REG_DWORD,  NSecPolicies, "DisabledOptions",&Opt.Policies.DisabledOptions,0, 0},

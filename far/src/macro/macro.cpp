@@ -778,10 +778,10 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 
 		case MCODE_F_GETOPTIONS:
 		{
-			DWORD Options = Opt.OnlyEditorViewerUsed; // bits 0x1 and 0x2
-			if (Opt.Macro.DisableMacro&MDOL_ALL)       Options |= 0x4;
-			if (Opt.Macro.DisableMacro&MDOL_AUTOSTART) Options |= 0x8;
-			//### if (Opt.ReadOnlyConfig)              Options |= 0x10;
+			DWORD Options = Opt.OnlyEditorViewerUsed;
+			//### if (Opt.Macro.DisableMacro&MDOL_ALL)       Options |= 0x4;
+			//### if (Opt.Macro.DisableMacro&MDOL_AUTOSTART) Options |= 0x8;
+			//### if (Opt.ReadOnlyConfig)                    Options |= 0x10;
 			api.PassNumber(Options);
 			break;
 		}

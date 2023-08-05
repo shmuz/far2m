@@ -57,7 +57,7 @@ local function GetAreaCode(Area)     return AllAreaNames[Area:lower()] end
 local MCODE_F_CHECKALL     = op.MCODE_F_CHECKALL
 local MCODE_F_GETOPTIONS   = op.MCODE_F_GETOPTIONS
 local MCODE_F_MACROSETTINGS = op.MCODE_F_MACROSETTINGS
-Shared.OnlyEditorViewerUsed = band(MacroCallFar(MCODE_F_GETOPTIONS),0x3) ~= 0
+Shared.OnlyEditorViewerUsed = MacroCallFar(MCODE_F_GETOPTIONS) ~= 0
 
 local Areas
 local LoadedMacros
@@ -658,7 +658,7 @@ local function LoadMacros (unload, paths)
   export.GetContentFields = nil
   export.GetContentData = nil
 
-  local allAreas = band(MacroCallFar(MCODE_F_GETOPTIONS),0x3) == 0
+  local allAreas = MacroCallFar(MCODE_F_GETOPTIONS) == 0
   local numerrors=0
   local newAreas = {}
   Events = {}
@@ -1132,9 +1132,9 @@ local function RunStartMacro()
   if not LoadMacrosDone then return end
 
   local mode = far.MacroGetArea()
-  local opt = band(MacroCallFar(MCODE_F_GETOPTIONS),0x3)
-  local mtable = opt==1 and Areas.editor or opt==2 and Areas.viewer or Areas.shell
-
+  local opt = MacroCallFar(MCODE_F_GETOPTIONS)
+  local mtable = (opt==1 or opt==3) and Areas.editor or
+                 (opt==2 or opt==4) and Areas.viewer or Areas.shell
   for k=1,2 do
     if k==2 then mtable = Areas.common end
     for _,macros in pairs(mtable) do
