@@ -502,6 +502,10 @@ int FarAppMain(int argc, char **argv)
 							I++;
 						}
 					}
+					else { // -e without filename => new file to editor
+						Opt.OnlyEditorViewerUsed = Options::ONLY_EDITOR;
+						strEditViewArg = "";
+					}
 
 					break;
 
@@ -642,6 +646,11 @@ int FarAppMain(int argc, char **argv)
 	setenv("FARLANG", Opt.strLanguage.GetMB().c_str(), 1);
 
 	CheckForImportLegacyShortcuts();
+
+	// (!!!) temporary STUB because now Editor can not input filename "", see: fileedit.cpp -> FileEditor::Init()
+	// default Editor file name for new empty file
+	if ( Opt.OnlyEditorViewerUsed == Options::ONLY_EDITOR && strEditViewArg.IsEmpty() )
+		strEditViewArg = Msg::NewFileName;
 
 	int Result = MainProcess(strEditViewArg,DestNames[0],DestNames[1],StartLine,StartChar);
 
