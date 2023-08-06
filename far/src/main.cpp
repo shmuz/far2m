@@ -104,8 +104,8 @@ static void print_help(const char *self)
 		"      View the specified file.\n"
 		" -v - command line\n"
 		"      Executes given command line and opens viewer with its output.\n"
-		" -e[<line>[:<pos>]] <filename>\n"
-		"      Edit the specified file with optional cursor position specification.\n"
+		" -e[<line>[:<pos>]] [filename]\n"
+		"      Edit the specified file with optional cursor position specification or empty new file.\n"
 		" -e[<line>[:<pos>]] - command line\n"
 		"      Executes given command line and opens editor with its output.\n"
 		"\n",
@@ -438,9 +438,9 @@ int FarAppMain(int argc, char **argv)
 	if (strstr(argv[0], "far2medit") != NULL) {
 		Opt.OnlyEditorViewerUsed = Options::ONLY_EDITOR;
 		if (argc > 1) {
-			strEditViewArg = argv[argc - 1]; // use last argument
+			strEditViewArg = argv[argc - 1];	// use last argument
 		} else {
-			strEditViewArg = "NewFile.txt";
+			strEditViewArg = "";
 		}
 	}
 
