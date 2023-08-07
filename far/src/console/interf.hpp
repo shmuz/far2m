@@ -101,10 +101,16 @@ void SetScreen(int X1,int Y1,int X2,int Y2,wchar_t Ch,int Color);
 void MakeShadow(int X1,int Y1,int X2,int Y2);
 void ChangeBlockColor(int X1,int Y1,int X2,int Y2,int Color);
 void SetColor(int Color, bool ApplyToConsole = false);
+void FarTrueColorFromRGB(FarTrueColor &out, DWORD rgb, bool used);
+void FarTrueColorFromRGB(FarTrueColor &out, DWORD rgb);
+void FarTrueColorFromAttributes(FarTrueColorForeAndBack &TFB, DWORD64 Attrs);
+void FarTrueColorToAttributes(DWORD64 &Attrs, const FarTrueColorForeAndBack &TFB);
+DWORD64 ComposeColor(WORD BaseColor, const FarTrueColorForeAndBack *TFB);
+void ComposeAndSetColor(WORD BaseColor, const FarTrueColorForeAndBack *TFB, bool ApplyToConsole = false);
 void SetRealColor(DWORD64 wAttributes, bool ApplyToConsole = false);
 DWORD64 GetRealColor();
 void ClearScreen(int Color);
-int GetColor();
+DWORD64 GetColor();
 
 void Box(int x1,int y1,int x2,int y2,int Color,int Type);
 void ScrollBar(int X1,int Y1,int Length, unsigned int Current,unsigned int Total);

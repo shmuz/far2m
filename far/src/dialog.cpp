@@ -33,7 +33,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
-
 #include "dialog.hpp"
 #include "lang.hpp"
 #include "keyboard.hpp"
@@ -57,6 +56,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "strmix.hpp"
 #include "history.hpp"
 #include "InterThreadCall.hpp"
+#include <VT256ColorTable.h>
 #include <cwctype>
 #include <atomic>
 
@@ -98,8 +98,7 @@ const wchar_t *fmtSavedDialogHistory=L"SavedDialogHistory/";
 */
 static inline bool CanGetFocus(int Type)
 {
-	switch (Type)
-	{
+	switch (Type) {
 		case DI_EDIT:
 		case DI_FIXEDIT:
 		case DI_PSWEDIT:
@@ -118,15 +117,12 @@ static inline bool CanGetFocus(int Type)
 
 bool IsKeyHighlighted(const wchar_t *Str,int Key,int Translate,int AmpPos)
 {
-	if (AmpPos == -1)
-	{
+	if (AmpPos == -1) {
 		if (!(Str=wcschr(Str,L'&')))
 			return false;
 
 		AmpPos=1;
-	}
-	else
-	{
+	} else {
 		if (AmpPos >= StrLength(Str))
 			return false;
 
@@ -139,17 +135,14 @@ bool IsKeyHighlighted(const wchar_t *Str,int Key,int Translate,int AmpPos)
 
 	wchar_t UpperStrKey=Upper(Str[AmpPos]);
 
-	if (Key < 0xFFFF)
-	{
-		return UpperStrKey == Upper(Key) || (Translate && KeyToKeyLayoutCompare(Key,UpperStrKey));
+	if (Key < 0xFFFF) {
+		return UpperStrKey == Upper(Key) || (Translate && KeyToKeyLayoutCompare(Key, UpperStrKey));
 	}
 
-	if (Key&KEY_ALT)
-	{
+	if (Key & KEY_ALT) {
 		uint32_t AltKey=Key&(~KEY_ALT);
 
-		if (AltKey < 0xFFFF)
-		{
+		if (AltKey < 0xFFFF) {
 			if ( iswdigit(AltKey) != 0 )
 				return(AltKey==(uint32_t)UpperStrKey);
 
@@ -158,7 +151,8 @@ bool IsKeyHighlighted(const wchar_t *Str,int Key,int Translate,int AmpPos)
 				//          AltKey=='\\' || AltKey=='=' || AltKey=='['  || AltKey==']' ||
 				//          AltKey==':'  || AltKey=='"' || AltKey=='~'))
 			{
-				return(UpperStrKey==Upper(AltKey) || (Translate && KeyToKeyLayoutCompare(AltKey,UpperStrKey)));
+				return (UpperStrKey == Upper(AltKey)
+						|| (Translate && KeyToKeyLayoutCompare(AltKey, UpperStrKey)));
 			}
 		}
 	}
@@ -207,20 +201,14 @@ void ConvertItemSmall(FarDialogItem *Item,DialogItemEx *Data)
 	Item->PtrData = nullptr;
 
 	Item->Param.History = nullptr;
-	if (Data->Type==DI_LISTBOX || Data->Type==DI_COMBOBOX)
-	{
+	if (Data->Type == DI_LISTBOX || Data->Type == DI_COMBOBOX) {
 		Item->Param.ListPos = Data->ListPtr?Data->ListPtr->GetSelectPos():0;
 	}
-	if((Data->Type == DI_EDIT || Data->Type == DI_FIXEDIT) && Data->Flags&DIF_HISTORY)
-	{
+	if ((Data->Type == DI_EDIT || Data->Type == DI_FIXEDIT) && Data->Flags & DIF_HISTORY) {
 		Item->Param.History = Data->strHistory;
-	}
-	else if(Data->Type == DI_FIXEDIT && Data->Flags&DIF_MASKEDIT)
-	{
+	} else if (Data->Type == DI_FIXEDIT && Data->Flags & DIF_MASKEDIT) {
 		Item->Param.Mask = Data->strMask;
-	}
-	else
-	{
+	} else {
 		Item->Param.Reserved = Data->Reserved;
 	}
 }
@@ -253,17 +241,14 @@ bool ConvertItemEx(
 	if (!Item || !Data)
 		return false;
 
-	switch (FromPlugin)
-	{
+	switch (FromPlugin) {
 		case CVTITEM_TOPLUGIN:
 		case CVTITEM_TOPLUGINSHORT:
 
-			for (I=0; I < Count; I++, ++Item, ++Data)
-			{
+			for (I = 0; I < Count; I++, ++Item, ++Data) {
 				ConvertItemSmall(Item,Data);
 
-				if (FromPlugin==CVTITEM_TOPLUGIN)
-				{
+				if (FromPlugin == CVTITEM_TOPLUGIN) {
 					FARString str;
 					size_t sz = ItemStringAndSize(Data,str);
 					{
@@ -283,8 +268,7 @@ bool ConvertItemEx(
 		case CVTITEM_FROMPLUGIN:
 		case CVTITEM_FROMPLUGINSHORT:
 
-			for (I=0; I < Count; I++, ++Item, ++Data)
-			{
+			for (I = 0; I < Count; I++, ++Item, ++Data) {
 				Data->X1 = Item->X1;
 				Data->Y1 = Item->Y1;
 				Data->X2 = Item->X2;
@@ -307,8 +291,7 @@ bool ConvertItemEx(
 				Data->DefaultButton = Item->DefaultButton;
 				Data->Type = Item->Type;
 
-				if (FromPlugin==CVTITEM_FROMPLUGIN)
-				{
+				if (FromPlugin == CVTITEM_FROMPLUGIN) {
 					Data->strData = Item->PtrData;
 					Data->nMaxLength = Item->MaxLen;
 
@@ -318,9 +301,11 @@ bool ConvertItemEx(
 
 				Data->ListItems = Item->Param.ListItems;
 
-				if (Data->X2 < Data->X1) Data->X2=Data->X1;
+				if (Data->X2 < Data->X1)
+					Data->X2 = Data->X1;
 
-				if (Data->Y2 < Data->Y1) Data->Y2=Data->Y1;
+				if (Data->Y2 < Data->Y1)
+					Data->Y2 = Data->Y1;
 
 				if ((Data->Type == DI_COMBOBOX || Data->Type == DI_LISTBOX) && !IsPtr(Item->Param.ListItems))
 					Data->ListItems=nullptr;
@@ -339,8 +324,7 @@ size_t ConvertItemEx2(FarDialogItem *Item,DialogItemEx *Data)
 	size_t sz = ItemStringAndSize(Data,str);
 	size+=(sz+1)*sizeof(wchar_t);
 
-	if (Item)
-	{
+	if (Item) {
 		ConvertItemSmall(Item,Data);
 
 		wchar_t* p=(wchar_t*)(Item+1);
@@ -357,8 +341,7 @@ void DataToItemEx(const DialogDataEx *Data,DialogItemEx *Item,int Count)
 	if (!Item || !Data)
 		return;
 
-	for (int i=0; i < Count; i++)
-	{
+	for (int i = 0; i < Count; i++) {
 		Item[i].Clear();
 		Item[i].ID=static_cast<WORD>(i);
 		Item[i].Type=Data[i].Type;
@@ -367,9 +350,11 @@ void DataToItemEx(const DialogDataEx *Data,DialogItemEx *Item,int Count)
 		Item[i].X2=Data[i].X2;
 		Item[i].Y2=Data[i].Y2;
 
-		if (Item[i].X2 < Item[i].X1) Item[i].X2=Item[i].X1;
+		if (Item[i].X2 < Item[i].X1)
+			Item[i].X2 = Item[i].X1;
 
-		if (Item[i].Y2 < Item[i].Y1) Item[i].Y2=Item[i].Y1;
+		if (Item[i].Y2 < Item[i].Y1)
+			Item[i].Y2 = Item[i].Y1;
 
 		Item[i].Focus=Item[i].Type!=DI_SINGLEBOX && Item[i].Type!=DI_DOUBLEBOX && (Data[i].Flags&DIF_FOCUS);
 		if((Data[i].Type == DI_EDIT || Data[i].Type == DI_FIXEDIT) && Data[i].Flags&DIF_HISTORY)
@@ -452,6 +437,7 @@ void Dialog::Init(FARWINDOWPROC DlgProc,      // Диалоговая проце
 	DialogMode.Set(DMODE_ISCANMOVE);
 	SetDropDownOpened(FALSE);
 	m_EnableRedraw=1;
+	InCtlColorDlgItem = 0;
 	FocusPos=(unsigned)-1;
 	PrevFocusPos=(unsigned)-1;
 
@@ -1677,7 +1663,20 @@ LONG_PTR Dialog::CtlColorDlgItem(int ItemPos,int Type,int Focus,int Default,DWOR
 		}
 	}
 
-	return DlgProc((HANDLE)this,DN_CTLCOLORDLGITEM,ItemPos,Attr);
+	++InCtlColorDlgItem;
+	LONG_PTR out = DlgProc((HANDLE)this,DN_CTLCOLORDLGITEM,ItemPos,Attr);
+	--InCtlColorDlgItem;
+	return out;
+}
+
+static void SetColorNormal(DWORD Attr, const std::unique_ptr<DialogItemTrueColors> &TrueColors)
+{
+	ComposeAndSetColor(Attr & 0xff, TrueColors ? &TrueColors->Normal : nullptr);
+}
+
+static void SetColorFrame(DWORD Attr, const std::unique_ptr<DialogItemTrueColors> &TrueColors)
+{
+	ComposeAndSetColor(LOBYTE(HIWORD(Attr)), TrueColors ? &TrueColors->Frame : nullptr);
 }
 
 
@@ -1806,7 +1805,7 @@ void Dialog::ShowDialog(unsigned ID)
 			{
 				BOOL IsDrawTitle=TRUE;
 				GotoXY(X1+CX1,Y1+CY1);
-				SetColor(LOBYTE(HIWORD(Attr)));
+				SetColorFrame(Attr, CurItem->TrueColors);
 
 				if (CY1 == CY2)
 				{
@@ -1848,11 +1847,13 @@ void Dialog::ShowDialog(unsigned ID)
 					if ((CurItem->Flags & DIF_LEFTTEXT) && X1+CX1+1 < X)
 						X=X1+CX1+1;
 
-					SetColor(Attr&0xFF);
+					SetColorNormal(Attr, CurItem->TrueColors);
 					GotoXY(X,Y1+CY1);
 
 					if (CurItem->Flags & DIF_SHOWAMPERSAND)
 						Text(strStr);
+					else if (CurItem->TrueColors)
+						HiText(strStr, ComposeColor(HIBYTE(LOWORD(Attr)), &CurItem->TrueColors->Hilighted));
 					else
 						HiText(strStr,HIBYTE(LOWORD(Attr)));
 				}
@@ -1893,7 +1894,7 @@ void Dialog::ShowDialog(unsigned ID)
 				if (CX1 > -1 && CX2 > CX1 && !(CurItem->Flags & (DIF_SEPARATORUSER|DIF_SEPARATOR|DIF_SEPARATOR2))) //половинчатое решение
 				{
 					int CntChr=CX2-CX1+1;
-					SetColor(Attr&0xFF);
+					SetColorNormal(Attr, CurItem->TrueColors);
 					GotoXY(X1+X,Y1+Y);
 
 					if (X1+X+CntChr-1 > X2)
@@ -1907,7 +1908,7 @@ void Dialog::ShowDialog(unsigned ID)
 
 				if (CurItem->Flags & (DIF_SEPARATORUSER|DIF_SEPARATOR|DIF_SEPARATOR2))
 				{
-					SetColor(LOBYTE(HIWORD(Attr)));
+					SetColorFrame(Attr, CurItem->TrueColors);
 					GotoXY(X1+((CurItem->Flags&DIF_SEPARATORUSER)?X:(!DialogMode.Check(DMODE_SMALLDIALOG)?3:0)),Y1+Y); //????
 					ShowUserSeparator((CurItem->Flags&DIF_SEPARATORUSER)?X2-X1+1:RealWidth-(!DialogMode.Check(DMODE_SMALLDIALOG)?6:0/* -1 */),
 					                  (CurItem->Flags&DIF_SEPARATORUSER)?12:(CurItem->Flags&DIF_SEPARATOR2?3:1),
@@ -1915,7 +1916,7 @@ void Dialog::ShowDialog(unsigned ID)
 					                 );
 				}
 
-				SetColor(Attr&0xFF);
+				SetColorNormal(Attr, CurItem->TrueColors);
 				GotoXY(X1+X,Y1+Y);
 
 				if (CurItem->Flags & DIF_SHOWAMPERSAND)
@@ -1965,7 +1966,7 @@ void Dialog::ShowDialog(unsigned ID)
 				if (CY1 > -1 && CY2 > 0 && CY2 > CY1 && !(CurItem->Flags & (DIF_SEPARATORUSER|DIF_SEPARATOR|DIF_SEPARATOR2))) //половинчатое решение
 				{
 					int CntChr=CY2-CY1+1;
-					SetColor(Attr&0xFF);
+					SetColorNormal(Attr, CurItem->TrueColors);
 					GotoXY(X1+X,Y1+Y);
 
 					if (Y1+Y+CntChr-1 > Y2)
@@ -1976,9 +1977,8 @@ void Dialog::ShowDialog(unsigned ID)
 
 #if defined(VTEXT_ADN_SEPARATORS)
 
-				if (CurItem->Flags & (DIF_SEPARATORUSER|DIF_SEPARATOR|DIF_SEPARATOR2))
-				{
-					SetColor(LOBYTE(HIWORD(Attr)));
+				if (CurItem->Flags & (DIF_SEPARATORUSER | DIF_SEPARATOR | DIF_SEPARATOR2)) {
+					SetColorFrame(Attr, CurItem->TrueColors);
 					GotoXY(X1+X,Y1+ ((CurItem->Flags&DIF_SEPARATORUSER)?Y:(!DialogMode.Check(DMODE_SMALLDIALOG)?1:0)));  //????
 					ShowUserSeparator((CurItem->Flags&DIF_SEPARATORUSER)?Y2-Y1+1:RealHeight-(!DialogMode.Check(DMODE_SMALLDIALOG)?2:0),
 					                  (CurItem->Flags&DIF_SEPARATORUSER)?13:(CurItem->Flags&DIF_SEPARATOR2?7:5),
@@ -1987,7 +1987,7 @@ void Dialog::ShowDialog(unsigned ID)
 				}
 
 #endif
-				SetColor(Attr&0xFF);
+				SetColorNormal(Attr, CurItem->TrueColors);
 				GotoXY(X1+X,Y1+Y);
 
 				if (CurItem->Flags & DIF_SHOWAMPERSAND)
@@ -1999,9 +1999,8 @@ void Dialog::ShowDialog(unsigned ID)
 			}
 			/* ***************************************************************** */
 			case DI_CHECKBOX:
-			case DI_RADIOBUTTON:
-			{
-				SetColor(Attr&0xFF);
+			case DI_RADIOBUTTON: {
+				SetColorNormal(Attr, CurItem->TrueColors);
 				GotoXY(X1+CX1,Y1+CY1);
 
 				if (CurItem->Type==DI_CHECKBOX)
@@ -2057,7 +2056,7 @@ void Dialog::ShowDialog(unsigned ID)
 			case DI_BUTTON:
 			{
 				strStr = CurItem->strData;
-				SetColor(Attr&0xFF);
+				SetColorNormal(Attr, CurItem->TrueColors);
 				GotoXY(X1+CX1,Y1+CY1);
 
 				if (CurItem->Flags & DIF_SHOWAMPERSAND)
@@ -6257,6 +6256,27 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2)
 				ScrBuf.Flush();
 			}
 
+			return TRUE;
+		}
+
+		case DM_GETTRUECOLOR: {
+			if (!CurItem->TrueColors) {
+				memset((DialogItemTrueColors *)Param2, 0, sizeof(DialogItemTrueColors));
+			} else {
+				*(DialogItemTrueColors *)Param2 = *CurItem->TrueColors;
+			}
+			return TRUE;
+		}
+
+		case DM_SETTRUECOLOR: {
+			if (!CurItem->TrueColors) {
+				CurItem->TrueColors.reset(new DialogItemTrueColors);
+			}
+			*CurItem->TrueColors = *(const DialogItemTrueColors *)Param2;
+			if (Dlg->InCtlColorDlgItem == 0 && Dlg->DialogMode.Check(DMODE_SHOW)) {		//???
+				Dlg->ShowDialog(Param1);
+				ScrBuf.Flush();
+			}
 			return TRUE;
 		}
 

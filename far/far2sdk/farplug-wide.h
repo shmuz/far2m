@@ -357,6 +357,9 @@ enum FarMessagesProc
 
 	DM_SETREADONLY,
 
+	DM_GETTRUECOLOR,	// Param1 - Item ID, Param2 - DialogItemTrueColors *
+	DM_SETTRUECOLOR,	// Param1 - Item ID, Param2 - const DialogItemTrueColors *
+
 
 	DN_FIRST=0x1000,
 	DN_BTNCLICK,

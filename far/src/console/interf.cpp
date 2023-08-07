@@ -34,6 +34,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "headers.hpp"
 
 #include <stdarg.h>
+#include <VT256ColorTable.h>
 
 #include "interf.hpp"
 #include "keyboard.hpp"
@@ -778,6 +779,52 @@ void SetColor(int Color, bool ApplyToConsole)
 	}
 }
 
+void FarTrueColorFromRGB(FarTrueColor &out, DWORD rgb, bool used)
+{
+	out.Flags = used ? 1 : 0;
+	out.R = rgb & 0xff;
+	out.G = (rgb >> 8) & 0xff;
+	out.B = (rgb >> 16) & 0xff;
+}
+
+void FarTrueColorFromAttributes(FarTrueColorForeAndBack &TFB, DWORD64 Attrs)
+{
+	FarTrueColorFromRGB(TFB.Fore, (Attrs >> 16) & 0xffffff, (Attrs & FOREGROUND_TRUECOLOR) != 0);
+	FarTrueColorFromRGB(TFB.Back, (Attrs >> 40) & 0xffffff, (Attrs & BACKGROUND_TRUECOLOR) != 0);
+}
+
+void FarTrueColorToAttributes(DWORD64 &Attrs, const FarTrueColorForeAndBack &TFB)
+{
+	if (TFB.Fore.Flags & 1) {
+		SET_RGB_FORE(Attrs, COMPOSE_RGB(TFB.Fore.R, TFB.Fore.G, TFB.Fore.B));
+	}
+	if (TFB.Back.Flags & 1) {
+		SET_RGB_BACK(Attrs, COMPOSE_RGB(TFB.Back.R, TFB.Back.G, TFB.Back.B));
+	}
+}
+
+void FarTrueColorFromRGB(FarTrueColor &out, DWORD rgb)
+{
+	FarTrueColorFromRGB(out, rgb, rgb != 0);
+}
+
+DWORD64 ComposeColor(WORD BaseColor, const FarTrueColorForeAndBack *TFB)
+{
+	DWORD64 Attrs = FarColorToReal(BaseColor);
+	if (TFB) {
+		FarTrueColorToAttributes(Attrs, *TFB);
+	}
+	return Attrs;
+}
+
+void ComposeAndSetColor(WORD BaseColor, const FarTrueColorForeAndBack *TrueColor, bool ApplyToConsole)
+{
+	CurColor = ComposeColor(BaseColor, TrueColor);
+	if (ApplyToConsole) {
+		Console.SetTextAttributes(CurColor);
+	}
+}
+
 void SetRealColor(DWORD64 wAttributes, bool ApplyToConsole)
 {
 	CurColor = wAttributes;
@@ -804,7 +851,7 @@ void ClearScreen(int Color)
 	Console.SetTextAttributes(Color);
 }
 
-int GetColor()
+DWORD64 GetColor()
 {
 	return(CurColor);
 }

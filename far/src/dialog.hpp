@@ -125,6 +125,7 @@ struct DialogItemEx
 	};
 	FARString strHistory;
 	FARString strMask;
+	std::unique_ptr<DialogItemTrueColors> TrueColors;
 	DWORD Flags;
 	int DefaultButton;
 
@@ -268,6 +269,7 @@ class Dialog: public Frame
 		unsigned FocusPos;               // всегда известно какой элемент в фокусе
 		unsigned PrevFocusPos;           // всегда известно какой элемент был в фокусе
 		int m_EnableRedraw;         // Разрешена перерисовка диалога?
+		int InCtlColorDlgItem;
 		BitFlags DialogMode;        // Флаги текущего режима диалога
 
 		LONG_PTR DataDialog;        // Данные, специфические для конкретного экземпляра диалога (первоначально здесь параметр, переданный в конструктор)

@@ -2672,6 +2672,7 @@ int Is_DM_DialogItem(int Msg)
     case DM_GETSELECTION:
     case DM_GETTEXT:
     case DM_GETTEXTLENGTH:
+    case DM_GETTRUECOLOR:
     case DM_LISTADD:
     case DM_LISTADDSTR:
     case DM_LISTDELETE:
@@ -2707,6 +2708,7 @@ int Is_DM_DialogItem(int Msg)
     case DM_SETSELECTION:
     case DM_SETTEXT:
     case DM_SETTEXTPTR:
+    case DM_SETTRUECOLOR:
     case DM_SHOWITEM:
     case DM_SETREADONLY:
       return 1;
@@ -2743,6 +2745,27 @@ LONG_PTR GetEnableFromLua (lua_State *L, int pos)
   else
     ret = lua_toboolean(L, pos);
   return ret;
+}
+
+void SetColorForeAndBack(lua_State *L, const struct FarTrueColorForeAndBack *fb, const char *name)
+{
+  lua_createtable(L,0,2);
+
+  lua_createtable(L,0,4);
+  PutIntToTable(L, "R", fb->Fore.R);
+  PutIntToTable(L, "G", fb->Fore.G);
+  PutIntToTable(L, "B", fb->Fore.B);
+  PutIntToTable(L, "Flags", fb->Fore.Flags);
+  lua_setfield(L, -2, "Fore");
+
+  lua_createtable(L,0,4);
+  PutIntToTable(L, "R", fb->Back.R);
+  PutIntToTable(L, "G", fb->Back.G);
+  PutIntToTable(L, "B", fb->Back.B);
+  PutIntToTable(L, "Flags", fb->Back.Flags);
+  lua_setfield(L, -2, "Back");
+
+  lua_setfield(L, -2, name);
 }
 
 int DoSendDlgMessage (lua_State *L, int Msg, int delta)
@@ -2839,6 +2862,16 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
       PSInfo.SendDlgMessage (hDlg, Msg, Param1, (LONG_PTR)&dword);
       lua_pushinteger (L, dword);
       return 1;
+
+    case DM_GETTRUECOLOR: {
+      struct DialogItemTrueColors tc;
+      PSInfo.SendDlgMessage (hDlg, Msg, Param1, (LONG_PTR)&tc);
+      lua_createtable(L, 0, 3);
+      SetColorForeAndBack(L, &tc.Normal,    "Normal");
+      SetColorForeAndBack(L, &tc.Hilighted, "Hilighted");
+      SetColorForeAndBack(L, &tc.Frame,     "Frame");
+      return 1;
+    }
 
     case DM_SETCOLOR:
       Param2 = luaL_checkinteger(L, pos4);
