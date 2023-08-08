@@ -2768,6 +2768,36 @@ void SetColorForeAndBack(lua_State *L, const struct FarTrueColorForeAndBack *fb,
   lua_setfield(L, -2, name);
 }
 
+void FillOneTrueColor(lua_State *L, struct FarTrueColor *tc, const char *Name, const char *Subname)
+{
+  lua_getfield(L,-1,Name);          //+1
+  if (lua_istable(L,-1)) {
+    lua_getfield(L,-1,Subname);     //+2
+    if (lua_istable(L,-1)) {
+      lua_getfield(L,-1,"R");       //+3
+      if (lua_isnumber(L,-1))
+        tc->R = lua_tointeger(L,-1);
+      lua_pop(L,1);                 //+2
+
+      lua_getfield(L,-1,"G");       //+3
+      if (lua_isnumber(L,-1))
+        tc->G = lua_tointeger(L,-1);
+      lua_pop(L,1);                 //+2
+
+      lua_getfield(L,-1,"B");       //+3
+      if (lua_isnumber(L,-1))
+        tc->B = lua_tointeger(L,-1);
+      lua_pop(L,1);                 //+2
+
+      lua_getfield(L,-1,"Flags");   //+3
+      tc->Flags = lua_isnumber(L,-1) ? lua_tointeger(L,-1) : 0x01;
+      lua_pop(L,1);                 //+2
+    }
+    lua_pop(L,1);                   //+1
+  }
+  lua_pop(L,1);                     //+0
+}
+
 int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 {
   typedef struct { void *Id; int Ref; } listdata_t;
@@ -2792,6 +2822,7 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
   struct FarListTitles       flt;
   struct FarListUpdate       flu;
   struct FarListItemData     flid;
+  struct DialogItemTrueColors ditc;
   SMALL_RECT                 small_rect;
   //---------------------------------------------------------------------------
   lua_settop(L, pos4); //many cases below rely on top==pos4
@@ -2860,21 +2891,34 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 
     case DM_GETCOLOR:
       PSInfo.SendDlgMessage (hDlg, Msg, Param1, (LONG_PTR)&dword);
-      lua_pushinteger (L, dword);
+      lua_pushinteger (L, dword & DIF_COLORMASK);
       return 1;
-
-    case DM_GETTRUECOLOR: {
-      struct DialogItemTrueColors tc;
-      PSInfo.SendDlgMessage (hDlg, Msg, Param1, (LONG_PTR)&tc);
-      lua_createtable(L, 0, 3);
-      SetColorForeAndBack(L, &tc.Normal,    "Normal");
-      SetColorForeAndBack(L, &tc.Hilighted, "Hilighted");
-      SetColorForeAndBack(L, &tc.Frame,     "Frame");
-      return 1;
-    }
 
     case DM_SETCOLOR:
-      Param2 = luaL_checkinteger(L, pos4);
+      Param2 = luaL_checkinteger(L, pos4) | DIF_SETCOLOR;
+      break;
+
+    case DM_GETTRUECOLOR:
+      PSInfo.SendDlgMessage (hDlg, Msg, Param1, (LONG_PTR)&ditc);
+      lua_createtable(L, 0, 3);
+      SetColorForeAndBack(L, &ditc.Normal,    "Normal");
+      SetColorForeAndBack(L, &ditc.Hilighted, "Hilighted");
+      SetColorForeAndBack(L, &ditc.Frame,     "Frame");
+      return 1;
+
+    case DM_SETTRUECOLOR:
+      Param2 = (LONG_PTR)&ditc;
+      memset(&ditc, 0, sizeof(ditc));
+      if (lua_istable(L, pos4)) {
+        lua_pushvalue(L, pos4);
+        FillOneTrueColor(L, &ditc.Normal.Fore,    "Normal",    "Fore");
+        FillOneTrueColor(L, &ditc.Normal.Back,    "Normal",    "Back");
+        FillOneTrueColor(L, &ditc.Hilighted.Fore, "Hilighted", "Fore");
+        FillOneTrueColor(L, &ditc.Hilighted.Back, "Hilighted", "Back");
+        FillOneTrueColor(L, &ditc.Frame.Fore,     "Frame",     "Fore");
+        FillOneTrueColor(L, &ditc.Frame.Back,     "Frame",     "Back");
+        lua_pop(L,1);
+      }
       break;
 
     case DM_LISTADDSTR:
@@ -3250,6 +3294,7 @@ DlgMethod( GetSelection,           DM_GETSELECTION, 1)
 DlgMethod( GetText,                DM_GETTEXT, 1)
 DlgMethod( GetTextLength,          DM_GETTEXTLENGTH, 1)
 DlgMethod( GetTextPtr,             DM_GETTEXTPTR, 1)
+DlgMethod( GetTrueColor,           DM_GETTRUECOLOR, 1)
 DlgMethod( Key,                    DM_KEY, 1)
 DlgMethod( ListAdd,                DM_LISTADD, 1)
 DlgMethod( ListAddStr,             DM_LISTADDSTR, 1)
@@ -3291,6 +3336,7 @@ DlgMethod( SetReadOnly,            DM_SETREADONLY, 1)
 DlgMethod( SetSelection,           DM_SETSELECTION, 1)
 DlgMethod( SetText,                DM_SETTEXT, 1)
 DlgMethod( SetTextPtr,             DM_SETTEXTPTR, 1)
+DlgMethod( SetTrueColor,           DM_SETTRUECOLOR, 1)
 DlgMethod( ShowDialog,             DM_SHOWDIALOG, 1)
 DlgMethod( ShowItem,               DM_SHOWITEM, 1)
 DlgMethod( User,                   DM_USER, 1)
@@ -5768,6 +5814,7 @@ static const luaL_Reg dialog_methods[] = {
   {"GetText",              dlg_GetText},
   {"GetTextLength",        dlg_GetTextLength},
   {"GetTextPtr",           dlg_GetTextPtr},
+  {"GetTrueColor",         dlg_GetTrueColor},
   {"Key",                  dlg_Key},
   {"ListAdd",              dlg_ListAdd},
   {"ListAddStr",           dlg_ListAddStr},
@@ -5809,6 +5856,7 @@ static const luaL_Reg dialog_methods[] = {
   {"SetSelection",         dlg_SetSelection},
   {"SetText",              dlg_SetText},
   {"SetTextPtr",           dlg_SetTextPtr},
+  {"SetTrueColor",         dlg_SetTrueColor},
   {"ShowDialog",           dlg_ShowDialog},
   {"ShowItem",             dlg_ShowItem},
   {"User",                 dlg_User},

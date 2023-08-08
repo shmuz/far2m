@@ -1443,134 +1443,144 @@ void Dialog::GetDialogObjectsData()
 	}
 }
 
-
 // Функция формирования и запроса цветов.
-LONG_PTR Dialog::CtlColorDlgItem(int ItemPos,int Type,int Focus,int Default,DWORD Flags)
+DWORD Dialog::CtlColorDlgItem(int ItemPos, const DialogItemEx *CurItem)
 {
 	CriticalSectionLock Lock(CS);
-	BOOL DisabledItem=Flags&DIF_DISABLE?TRUE:FALSE;
-	DWORD Attr=0;
+	const int Type = CurItem->Type;
+	const int Focus = CurItem->Focus;
+	const int Default = CurItem->DefaultButton;
+	const DWORD Flags = CurItem->Flags;
 
-	switch (Type)
-	{
+	const bool DisabledItem = (Flags & DIF_DISABLE) != 0;
+	DWORD Attr = 0;
+
+	switch (Type) {
 		case DI_SINGLEBOX:
-		case DI_DOUBLEBOX:
-		{
+		case DI_DOUBLEBOX: {
 			if (Flags & DIF_SETCOLOR)
-				Attr=Flags & DIF_COLORMASK;
-			else
-			{
-				Attr=DialogMode.Check(DMODE_WARNINGSTYLE) ?
-				     (DisabledItem?COL_WARNDIALOGDISABLED:COL_WARNDIALOGBOX):
-						     (DisabledItem?COL_DIALOGDISABLED:COL_DIALOGBOX);
+				Attr = Flags & DIF_COLORMASK;
+			else {
+				Attr = DialogMode.Check(DMODE_WARNINGSTYLE)
+						? (DisabledItem ? COL_WARNDIALOGDISABLED : COL_WARNDIALOGBOX)
+						: (DisabledItem ? COL_DIALOGDISABLED : COL_DIALOGBOX);
 			}
 
-			Attr=MAKELONG(
-			         MAKEWORD(FarColorToReal(DialogMode.Check(DMODE_WARNINGSTYLE) ?
-			                                 (DisabledItem?COL_WARNDIALOGDISABLED:COL_WARNDIALOGBOXTITLE):
-					                                 (DisabledItem?COL_DIALOGDISABLED:COL_DIALOGBOXTITLE)
-					                                ), // Title LOBYTE
-					                  FarColorToReal(DialogMode.Check(DMODE_WARNINGSTYLE) ?
-					                                 (DisabledItem?COL_WARNDIALOGDISABLED:COL_WARNDIALOGHIGHLIGHTBOXTITLE):
-					                                 (DisabledItem?COL_DIALOGDISABLED:COL_DIALOGHIGHLIGHTBOXTITLE)
-					                                )
-					                 ),// HiText HIBYTE
-					         MAKEWORD(FarColorToReal(Attr), // Box LOBYTE
-					                  0)                     // HIBYTE
-					     );
+			Attr = MAKELONG(MAKEWORD(FarColorToReal(DialogMode.Check(DMODE_WARNINGSTYLE)
+													? (DisabledItem ? COL_WARNDIALOGDISABLED : COL_WARNDIALOGBOXTITLE)
+													: (DisabledItem ? COL_DIALOGDISABLED
+																	: COL_DIALOGBOXTITLE)),		// Title LOBYTE
+									FarColorToReal(DialogMode.Check(DMODE_WARNINGSTYLE)
+													? (DisabledItem ? COL_WARNDIALOGDISABLED
+																	: COL_WARNDIALOGHIGHLIGHTBOXTITLE)
+													: (DisabledItem ? COL_DIALOGDISABLED
+																	: COL_DIALOGHIGHLIGHTBOXTITLE))),		// HiText HIBYTE
+					MAKEWORD(FarColorToReal(Attr),															// Box LOBYTE
+							0)																				// HIBYTE
+			);
 			break;
 		}
 #if defined(VTEXT_ADN_SEPARATORS)
 		case DI_VTEXT:
 #endif
-		case DI_TEXT:
-{
+		case DI_TEXT: {
 			if (Flags & DIF_SETCOLOR)
-				Attr=Flags & DIF_COLORMASK;
-			else
-			{
+				Attr = Flags & DIF_COLORMASK;
+			else {
 				if (Flags & DIF_BOXCOLOR)
-					Attr=DialogMode.Check(DMODE_WARNINGSTYLE) ?
-					     (DisabledItem?COL_WARNDIALOGDISABLED:COL_WARNDIALOGBOX):
-							     (DisabledItem?COL_DIALOGDISABLED:COL_DIALOGBOX);
+					Attr = DialogMode.Check(DMODE_WARNINGSTYLE)
+							? (DisabledItem ? COL_WARNDIALOGDISABLED : COL_WARNDIALOGBOX)
+							: (DisabledItem ? COL_DIALOGDISABLED : COL_DIALOGBOX);
 				else
-					Attr=DialogMode.Check(DMODE_WARNINGSTYLE) ?
-					     (DisabledItem?COL_WARNDIALOGDISABLED:COL_WARNDIALOGTEXT):
-							     (DisabledItem?COL_DIALOGDISABLED:COL_DIALOGTEXT);
+					Attr = DialogMode.Check(DMODE_WARNINGSTYLE)
+							? (DisabledItem ? COL_WARNDIALOGDISABLED : COL_WARNDIALOGTEXT)
+							: (DisabledItem ? COL_DIALOGDISABLED : COL_DIALOGTEXT);
 			}
 
-			Attr=MAKELONG(
-			         MAKEWORD(FarColorToReal(Attr),
-			                  FarColorToReal(DialogMode.Check(DMODE_WARNINGSTYLE) ?
-			                                 (DisabledItem?COL_WARNDIALOGDISABLED:COL_WARNDIALOGHIGHLIGHTTEXT):
-					                                 (DisabledItem?COL_DIALOGDISABLED:COL_DIALOGHIGHLIGHTTEXT))), // HIBYTE HiText
-					         ((Flags & (DIF_SEPARATORUSER|DIF_SEPARATOR|DIF_SEPARATOR2))?
-					          (MAKEWORD(FarColorToReal(DialogMode.Check(DMODE_WARNINGSTYLE) ?
-					                                   (DisabledItem?COL_WARNDIALOGDISABLED:COL_WARNDIALOGBOX):
-					                                   (DisabledItem?COL_DIALOGDISABLED:COL_DIALOGBOX)), // Box LOBYTE
-					                    0))
-					          :
-					          0));
+			Attr = MAKELONG(MAKEWORD(FarColorToReal(Attr),
+									FarColorToReal(DialogMode.Check(DMODE_WARNINGSTYLE)
+													? (DisabledItem ? COL_WARNDIALOGDISABLED : COL_WARNDIALOGHIGHLIGHTTEXT)
+													: (DisabledItem ? COL_DIALOGDISABLED
+																	: COL_DIALOGHIGHLIGHTTEXT)		// HIBYTE HiText
+											)),
+					((Flags & (DIF_SEPARATORUSER | DIF_SEPARATOR | DIF_SEPARATOR2)) ? (
+								MAKEWORD(FarColorToReal(DialogMode.Check(DMODE_WARNINGSTYLE)
+														? (DisabledItem ? COL_WARNDIALOGDISABLED : COL_WARNDIALOGBOX)
+														: (DisabledItem ? COL_DIALOGDISABLED
+																		: COL_DIALOGBOX)	// Box LOBYTE
+												),
+										0))
+																					: 0));
 			break;
 		}
 #if !defined(VTEXT_ADN_SEPARATORS)
-		case DI_VTEXT:
-{
+		case DI_VTEXT: {
 			if (Flags & DIF_BOXCOLOR)
-				Attr=DialogMode.Check(DMODE_WARNINGSTYLE) ?
-				     (DisabledItem?COL_WARNDIALOGDISABLED:COL_WARNDIALOGBOX):
-						     (DisabledItem?COL_DIALOGDISABLED:COL_DIALOGBOX);
+				Attr = DialogMode.Check(DMODE_WARNINGSTYLE)
+						? (DisabledItem ? COL_WARNDIALOGDISABLED : COL_WARNDIALOGBOX)
+						: (DisabledItem ? COL_DIALOGDISABLED : COL_DIALOGBOX);
 			else if (Flags & DIF_SETCOLOR)
-				Attr=(Flags & DIF_COLORMASK);
+				Attr = (Flags & DIF_COLORMASK);
 			else
-				Attr=(DialogMode.Check(DMODE_WARNINGSTYLE) ?
-				      (DisabledItem?COL_WARNDIALOGDISABLED:COL_WARNDIALOGTEXT):
-						      (DisabledItem?COL_DIALOGDISABLED:COL_DIALOGTEXT));
+				Attr = (DialogMode.Check(DMODE_WARNINGSTYLE)
+								? (DisabledItem ? COL_WARNDIALOGDISABLED : COL_WARNDIALOGTEXT)
+								: (DisabledItem ? COL_DIALOGDISABLED : COL_DIALOGTEXT));
 
-			Attr=MAKEWORD(MAKEWORD(FarColorToReal(Attr),0),MAKEWORD(0,0));
+			Attr = MAKEWORD(MAKEWORD(FarColorToReal(Attr), 0), MAKEWORD(0, 0));
 			break;
 		}
 #endif
 		case DI_CHECKBOX:
-		case DI_RADIOBUTTON:
-{
+		case DI_RADIOBUTTON: {
 			if (Flags & DIF_SETCOLOR)
-				Attr=(Flags & DIF_COLORMASK);
+				Attr = (Flags & DIF_COLORMASK);
 			else
-				Attr=(DialogMode.Check(DMODE_WARNINGSTYLE) ?
-				      (DisabledItem?COL_WARNDIALOGDISABLED:COL_WARNDIALOGTEXT):
-						      (DisabledItem?COL_DIALOGDISABLED:COL_DIALOGTEXT));
+				Attr = (DialogMode.Check(DMODE_WARNINGSTYLE)
+								? (DisabledItem ? COL_WARNDIALOGDISABLED : COL_WARNDIALOGTEXT)
+								: (DisabledItem ? COL_DIALOGDISABLED : COL_DIALOGTEXT));
 
-			Attr=MAKEWORD(FarColorToReal(Attr),
-			              FarColorToReal(DialogMode.Check(DMODE_WARNINGSTYLE) ?
-			                             (DisabledItem?COL_WARNDIALOGDISABLED:COL_WARNDIALOGHIGHLIGHTTEXT):
-					                             (DisabledItem?COL_DIALOGDISABLED:COL_DIALOGHIGHLIGHTTEXT))); // HiText
+			Attr = MAKEWORD(FarColorToReal(Attr),
+					FarColorToReal(DialogMode.Check(DMODE_WARNINGSTYLE)
+									? (DisabledItem ? COL_WARNDIALOGDISABLED : COL_WARNDIALOGHIGHLIGHTTEXT)
+									: (DisabledItem ? COL_DIALOGDISABLED : COL_DIALOGHIGHLIGHTTEXT)));		// HiText
 			break;
 		}
-		case DI_BUTTON:
-{
-			if (Focus)
-			{
-				SetCursorType(0,10);
-				Attr=MAKEWORD(
-				         (Flags & DIF_SETCOLOR)?(Flags & DIF_COLORMASK):
-				         FarColorToReal(DialogMode.Check(DMODE_WARNINGSTYLE) ?
-				                        (DisabledItem?COL_WARNDIALOGDISABLED:(Default?COL_WARNDIALOGSELECTEDDEFAULTBUTTON:COL_WARNDIALOGSELECTEDBUTTON)):
-						                        (DisabledItem?COL_DIALOGDISABLED:(Default?COL_DIALOGSELECTEDDEFAULTBUTTON:COL_DIALOGSELECTEDBUTTON))), // TEXT
-						         FarColorToReal(DialogMode.Check(DMODE_WARNINGSTYLE) ?
-						                        (DisabledItem?COL_WARNDIALOGDISABLED:(Default?COL_WARNDIALOGHIGHLIGHTSELECTEDDEFAULTBUTTON:COL_WARNDIALOGHIGHLIGHTSELECTEDBUTTON)):
-						                        (DisabledItem?COL_DIALOGDISABLED:(Default?COL_DIALOGHIGHLIGHTSELECTEDDEFAULTBUTTON:COL_DIALOGHIGHLIGHTSELECTEDBUTTON)))); // HiText
-			}
-			else
-	{
-				Attr=MAKEWORD(
-				         (Flags & DIF_SETCOLOR)?(Flags & DIF_COLORMASK):
-				         FarColorToReal(DialogMode.Check(DMODE_WARNINGSTYLE) ?
-				                        (DisabledItem?COL_WARNDIALOGDISABLED:(Default?COL_WARNDIALOGDEFAULTBUTTON:COL_WARNDIALOGBUTTON)):
-						                        (DisabledItem?COL_DIALOGDISABLED:(Default?COL_DIALOGDEFAULTBUTTON:COL_DIALOGBUTTON))), // TEXT
-						         FarColorToReal(DialogMode.Check(DMODE_WARNINGSTYLE) ?
-						                        (DisabledItem?COL_WARNDIALOGDISABLED:(Default?COL_WARNDIALOGHIGHLIGHTDEFAULTBUTTON:COL_WARNDIALOGHIGHLIGHTBUTTON)):
-						                        (DisabledItem?COL_DIALOGDISABLED:(Default?COL_DIALOGHIGHLIGHTDEFAULTBUTTON:COL_DIALOGHIGHLIGHTBUTTON)))); // HiText
+		case DI_BUTTON: {
+			if (Focus) {
+				SetCursorType(0, 10);
+				Attr = MAKEWORD((Flags & DIF_SETCOLOR)
+								? (Flags & DIF_COLORMASK)
+								: FarColorToReal(DialogMode.Check(DMODE_WARNINGSTYLE)
+												? (DisabledItem ? COL_WARNDIALOGDISABLED
+																: (Default ? COL_WARNDIALOGSELECTEDDEFAULTBUTTON
+																			: COL_WARNDIALOGSELECTEDBUTTON))
+												: (DisabledItem ? COL_DIALOGDISABLED
+																: (Default ? COL_DIALOGSELECTEDDEFAULTBUTTON
+																			: COL_DIALOGSELECTEDBUTTON))),		// TEXT
+						FarColorToReal(DialogMode.Check(DMODE_WARNINGSTYLE)
+										? (DisabledItem ? COL_WARNDIALOGDISABLED
+														: (Default ? COL_WARNDIALOGHIGHLIGHTSELECTEDDEFAULTBUTTON
+																	: COL_WARNDIALOGHIGHLIGHTSELECTEDBUTTON))
+										: (DisabledItem ? COL_DIALOGDISABLED
+														: (Default ? COL_DIALOGHIGHLIGHTSELECTEDDEFAULTBUTTON
+																	: COL_DIALOGHIGHLIGHTSELECTEDBUTTON))));	// HiText
+			} else {
+				Attr = MAKEWORD((Flags & DIF_SETCOLOR)
+								? (Flags & DIF_COLORMASK)
+								: FarColorToReal(DialogMode.Check(DMODE_WARNINGSTYLE)
+												? (DisabledItem ? COL_WARNDIALOGDISABLED
+																: (Default ? COL_WARNDIALOGDEFAULTBUTTON
+																			: COL_WARNDIALOGBUTTON))
+												: (DisabledItem ? COL_DIALOGDISABLED
+																: (Default ? COL_DIALOGDEFAULTBUTTON
+																			: COL_DIALOGBUTTON))),		// TEXT
+						FarColorToReal(DialogMode.Check(DMODE_WARNINGSTYLE)
+										? (DisabledItem ? COL_WARNDIALOGDISABLED
+														: (Default ? COL_WARNDIALOGHIGHLIGHTDEFAULTBUTTON
+																	: COL_WARNDIALOGHIGHLIGHTBUTTON))
+										: (DisabledItem ? COL_DIALOGDISABLED
+														: (Default ? COL_DIALOGHIGHLIGHTDEFAULTBUTTON
+																	: COL_DIALOGHIGHLIGHTBUTTON))));	// HiText
 			}
 
 			break;
@@ -1579,92 +1589,90 @@ LONG_PTR Dialog::CtlColorDlgItem(int ItemPos,int Type,int Focus,int Default,DWOR
 		case DI_FIXEDIT:
 		case DI_PSWEDIT:
 		case DI_COMBOBOX:
-		case DI_MEMOEDIT:
-{
-			if (Type == DI_COMBOBOX && (Flags & DIF_DROPDOWNLIST))
-			{
+		case DI_MEMOEDIT: {
+			if (Type == DI_COMBOBOX && (Flags & DIF_DROPDOWNLIST)) {
 				if (DialogMode.Check(DMODE_WARNINGSTYLE))
-					Attr=MAKELONG(
-					         MAKEWORD( //LOWORD
-					             // LOLO (Text)
-					             FarColorToReal(DisabledItem?COL_WARNDIALOGEDITDISABLED:COL_WARNDIALOGEDIT),
-					             // LOHI (Select)
-					             FarColorToReal(DisabledItem?COL_DIALOGEDITDISABLED:COL_DIALOGEDITSELECTED)
-					         ),
-					         MAKEWORD( //HIWORD
-					             // HILO (Unchanged)
-					             FarColorToReal(DisabledItem?COL_WARNDIALOGEDITDISABLED:COL_DIALOGEDITUNCHANGED), //???
-					             // HIHI (History)
-					             FarColorToReal(DisabledItem?COL_WARNDIALOGDISABLED:COL_WARNDIALOGTEXT)
-					         )
-					     );
+					Attr = MAKELONG(MAKEWORD(		// LOWORD
+													//  LOLO (Text)
+											FarColorToReal(DisabledItem ? COL_WARNDIALOGEDITDISABLED
+																		: COL_WARNDIALOGEDIT),
+											// LOHI (Select)
+											FarColorToReal(DisabledItem ? COL_DIALOGEDITDISABLED
+																		: COL_DIALOGEDITSELECTED)),
+							MAKEWORD(		// HIWORD
+											//  HILO (Unchanged)
+									FarColorToReal(DisabledItem ? COL_WARNDIALOGEDITDISABLED
+																: COL_DIALOGEDITUNCHANGED),		//???
+									// HIHI (History)
+									FarColorToReal(
+											DisabledItem ? COL_WARNDIALOGDISABLED : COL_WARNDIALOGTEXT)));
 				else
-					Attr=MAKELONG(
-					         MAKEWORD( //LOWORD
-					             // LOLO (Text)
-					             FarColorToReal(DisabledItem?COL_DIALOGEDITDISABLED:(!Focus?COL_DIALOGEDIT:COL_DIALOGEDITSELECTED)),
-					             // LOHI (Select)
-					             FarColorToReal(DisabledItem?COL_DIALOGEDITDISABLED:(!Focus?COL_DIALOGEDIT:COL_DIALOGEDITSELECTED))
-					         ),
-					         MAKEWORD( //HIWORD
-					             // HILO (Unchanged)
-					             FarColorToReal(DisabledItem?COL_DIALOGEDITDISABLED:COL_DIALOGEDITUNCHANGED), //???
-					             // HIHI (History)
-					             FarColorToReal(DisabledItem?COL_DIALOGDISABLED:COL_DIALOGTEXT)
-					         )
-					     );
-			}
-			else
-			{
+					Attr = MAKELONG(MAKEWORD(		// LOWORD
+													//  LOLO (Text)
+											FarColorToReal(DisabledItem
+															? COL_DIALOGEDITDISABLED
+															: (!Focus ? COL_DIALOGEDIT
+																		: COL_DIALOGEDITSELECTED)),
+											// LOHI (Select)
+											FarColorToReal(DisabledItem
+															? COL_DIALOGEDITDISABLED
+															: (!Focus ? COL_DIALOGEDIT
+																		: COL_DIALOGEDITSELECTED))),
+							MAKEWORD(		// HIWORD
+											//  HILO (Unchanged)
+									FarColorToReal(DisabledItem ? COL_DIALOGEDITDISABLED
+																: COL_DIALOGEDITUNCHANGED),		//???
+									// HIHI (History)
+									FarColorToReal(DisabledItem ? COL_DIALOGDISABLED : COL_DIALOGTEXT)));
+			} else {
 				if (DialogMode.Check(DMODE_WARNINGSTYLE))
-					Attr=MAKELONG(
-					         MAKEWORD( //LOWORD
-					             // LOLO (Text)
-					             FarColorToReal(DisabledItem?COL_WARNDIALOGEDITDISABLED:
-					                            (Flags&DIF_NOFOCUS?COL_DIALOGEDITUNCHANGED:COL_WARNDIALOGEDIT)),
-					             // LOHI (Select)
-					             FarColorToReal(DisabledItem?COL_DIALOGEDITDISABLED:COL_DIALOGEDITSELECTED)
-					         ),
-					         MAKEWORD( //HIWORD
-					             // HILO (Unchanged)
-					             FarColorToReal(DisabledItem?COL_WARNDIALOGEDITDISABLED:COL_DIALOGEDITUNCHANGED), //???
-					             // HIHI (History)
-					             FarColorToReal(DisabledItem?COL_WARNDIALOGDISABLED:COL_WARNDIALOGTEXT)
-					         )
-					     );
+					Attr = MAKELONG(MAKEWORD(		// LOWORD
+													//  LOLO (Text)
+											FarColorToReal(DisabledItem
+															? COL_WARNDIALOGEDITDISABLED
+															: (Flags & DIF_NOFOCUS ? COL_DIALOGEDITUNCHANGED
+																				: COL_WARNDIALOGEDIT)),
+											// LOHI (Select)
+											FarColorToReal(DisabledItem ? COL_DIALOGEDITDISABLED
+																		: COL_DIALOGEDITSELECTED)),
+							MAKEWORD(		// HIWORD
+											//  HILO (Unchanged)
+									FarColorToReal(DisabledItem ? COL_WARNDIALOGEDITDISABLED
+																: COL_DIALOGEDITUNCHANGED),		//???
+									// HIHI (History)
+									FarColorToReal(
+											DisabledItem ? COL_WARNDIALOGDISABLED : COL_WARNDIALOGTEXT)));
 				else
-					Attr=MAKELONG(
-					         MAKEWORD( //LOWORD
-					             // LOLO (Text)
-					             FarColorToReal(DisabledItem?COL_DIALOGEDITDISABLED:
-					                            (Flags&DIF_NOFOCUS?COL_DIALOGEDITUNCHANGED:COL_DIALOGEDIT)),
-					             // LOHI (Select)
-					             FarColorToReal(DisabledItem?COL_DIALOGEDITDISABLED:COL_DIALOGEDITSELECTED)
-					         ),
-					         MAKEWORD( //HIWORD
-					             // HILO (Unchanged)
-					             FarColorToReal(DisabledItem?COL_DIALOGEDITDISABLED:COL_DIALOGEDITUNCHANGED), //???
-					             // HIHI (History)
-					             FarColorToReal(DisabledItem?COL_DIALOGDISABLED:COL_DIALOGTEXT)
-					         )
-					     );
+					Attr = MAKELONG(MAKEWORD(		// LOWORD
+													//  LOLO (Text)
+											FarColorToReal(DisabledItem
+															? COL_DIALOGEDITDISABLED
+															: (Flags & DIF_NOFOCUS ? COL_DIALOGEDITUNCHANGED
+																				: COL_DIALOGEDIT)),
+											// LOHI (Select)
+											FarColorToReal(DisabledItem ? COL_DIALOGEDITDISABLED
+																		: COL_DIALOGEDITSELECTED)),
+							MAKEWORD(		// HIWORD
+											//  HILO (Unchanged)
+									FarColorToReal(DisabledItem ? COL_DIALOGEDITDISABLED
+																: COL_DIALOGEDITUNCHANGED),		//???
+									// HIHI (History)
+									FarColorToReal(DisabledItem ? COL_DIALOGDISABLED : COL_DIALOGTEXT)));
 			}
 
 			break;
 		}
-		case DI_LISTBOX:
-		{
+		case DI_LISTBOX: {
 			Item[ItemPos]->ListPtr->SetColors(nullptr);
 			return 0;
 		}
-		default:
-		{
+		default: {
 			return 0;
 		}
 	}
 
 	++InCtlColorDlgItem;
-	LONG_PTR out = DlgProc((HANDLE)this,DN_CTLCOLORDLGITEM,ItemPos,Attr);
+	DWORD out = DlgProc((HANDLE)this, DN_CTLCOLORDLGITEM, ItemPos, Attr);
 	--InCtlColorDlgItem;
 	return out;
 }
@@ -1787,7 +1795,7 @@ void Dialog::ShowDialog(unsigned ID)
 
 		short CW=CX2-CX1+1;
 		short CH=CY2-CY1+1;
-		Attr=(DWORD)CtlColorDlgItem(I,CurItem->Type,CurItem->Focus,CurItem->DefaultButton,CurItem->Flags);
+		Attr = CtlColorDlgItem(I, CurItem);
 #if 0
 
 		// TODO: прежде чем эту строку применять... нужно проверить _ВСЕ_ диалоги на предмет X2, Y2. !!!
@@ -6237,10 +6245,8 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2)
 			return (PrevFlags&DIF_DISABLE)?FALSE:TRUE;
 		}
 
-		case DM_GETCOLOR:
-		{
-			*(DWORD*)Param2=(DWORD)Dlg->CtlColorDlgItem(Param1, CurItem->Type,
-				CurItem->Focus, CurItem->DefaultButton, CurItem->Flags);
+		case DM_GETCOLOR: {
+			*(DWORD *)Param2 = (DWORD)Dlg->CtlColorDlgItem(Param1, CurItem);
 			*(DWORD*)Param2|= (CurItem->Flags & DIF_SETCOLOR);
 			return TRUE;
 		}
