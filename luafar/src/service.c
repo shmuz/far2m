@@ -3420,6 +3420,16 @@ int PushDNParams (lua_State *L, int Msg, int Param1, LONG_PTR Param2)
       break;
     }
 
+    case DN_CTLCOLORDLGITEM: {
+      int i;
+      lua_createtable(L, 4, 0);
+      for(i=0; i < 4; i++) {
+        lua_pushinteger(L, (Param2 >> i*8) & 0xFF);
+        lua_rawseti(L, -2, i+1);
+      }
+      break;
+    }
+
     default:
       lua_pushinteger(L, Param2);  //+3
       break;
@@ -3452,6 +3462,20 @@ int ProcessDNResult(lua_State *L, int Msg, LONG_PTR Param2)
       break;
 
     case DN_CTLCOLORDLGITEM:
+      ret = Param2;
+      if (lua_istable(L,-1))
+      {
+        int i;
+        ret = 0;
+        for(i = 0; i < 4; i++)
+        {
+          lua_rawgeti(L, -1, i+1);
+          ret |= (lua_tointeger(L,-1) & 0xFF) << i*8;
+          lua_pop(L, 1);
+        }
+      }
+      break;
+
     case DN_CTLCOLORDIALOG:
       if(lua_isnumber(L, -1))
         ret = lua_tointeger(L, -1);
@@ -3577,6 +3601,12 @@ LONG_PTR LF_DlgProc(lua_State *L, HANDLE hDlg, int Msg, int Param1, LONG_PTR Par
     PutIntToTable(L, "Y", coord->Y);
   }
 
+  else if (Msg == DN_CTLCOLORDLGITEM) {
+    PushDNParams(L, Msg, Param1, Param2);
+    lua_remove(L,-2);
+    lua_remove(L,-2);
+  }
+
   else
     lua_pushinteger (L, Param2); //+6
 
@@ -3616,6 +3646,9 @@ LONG_PTR LF_DlgProc(lua_State *L, HANDLE hDlg, int Msg, int Param1, LONG_PTR Par
       lua_setfield(L, -3, "helpstring");   // protect from garbage collector
     }
   }
+
+  else if (Msg == DN_CTLCOLORDLGITEM)
+    ret = ProcessDNResult(L, Msg, Param2);
 
   else {
     ret = lua_isnumber(L,-1) ? lua_tointeger(L,-1) : lua_toboolean(L,-1);
