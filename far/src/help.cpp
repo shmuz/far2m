@@ -110,8 +110,6 @@ static const wchar_t *PluginContents=L"__PluginContents__";
 static const wchar_t *HelpOnHelpTopic=L":Help";
 static const wchar_t *HelpContents=L"Contents";
 
-static int RunURL(const wchar_t *Protocol, wchar_t *URLPath);
-
 Help::Help(const wchar_t *Topic, const wchar_t *Mask,DWORD Flags):
 	Cma(MACROAREA_HELP),
 	ErrorHelp(TRUE),
@@ -1409,25 +1407,10 @@ int Help::JumpTopic(const wchar_t *JumpTopic)
 	// URL активатор - это ведь так просто :-)))
 	{
 		strNewTopic = StackData.strSelTopic;
-
-		if (strNewTopic.Pos(pos,L':') && strNewTopic.At(0) != L':') // наверное подразумевается URL
-		{
-			wchar_t *lpwszNewTopic = strNewTopic.GetBuffer();
-			lpwszNewTopic[pos] = 0;
-			wchar_t *lpwszTopic = StackData.strSelTopic.GetBuffer();
-
-			if (RunURL(lpwszNewTopic, lpwszTopic))
-			{
-				StackData.strSelTopic.ReleaseBuffer();
-				return FALSE;
-			}
-			else
-			{
-				StackData.strSelTopic.ReleaseBuffer();
-			}
-
-			lpwszNewTopic[pos] = L':';
-			//strNewTopic.ReleaseBuffer (); не надо, так как строка не поменялась
+		if (strNewTopic.Begins("http:") || strNewTopic.Begins("https:")
+				|| strNewTopic.Begins("mailto:")) {		// наверное подразумевается URL
+			farExecuteA(strNewTopic.GetMB().c_str(), EF_NOWAIT | EF_HIDEOUT | EF_NOCMDPRINT | EF_OPEN);
+			return FALSE;
 		}
 	}
 	// а вот теперь попробуем...

@@ -70,6 +70,7 @@ class CommandLine:public ScreenObject
 		bool IntChDir(const wchar_t *CmdLine,bool ClosePlugin,bool Silent=false);
 		bool ProcessOSCommands(const wchar_t *CmdLine, bool SeparateWindow, bool &PrintCommand);
 		void ProcessCompletion(bool possibilities);
+		void DrawComboBoxMark(wchar_t MarkChar);
 
 	public:
 		CommandLine();
@@ -117,4 +118,6 @@ class CommandLine:public ScreenObject
 		void EnableAC(){return CmdStr.EnableAC();}
 		void DisableAC(){return CmdStr.DisableAC();}
 		void RevertAC(){return CmdStr.RevertAC();}
+
+		void RedrawWithoutComboBoxMark();
 };

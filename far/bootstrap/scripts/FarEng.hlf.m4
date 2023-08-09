@@ -110,7 +110,7 @@ transforms your commands into the corresponding external archiver calls.
     #FAR2M# offers a number of service functions as well.
 
   - FAR2M official site
-    ~http://github.com/elfmz/far2m~@http://github.com/elfmz/far2m@
+    ~http://github.com/shmuz/far2m~@http://github.com/shmuz/far2m@
   - Original FAR Manager official site
     ~http://www.farmanager.com~@http://www.farmanager.com@
 

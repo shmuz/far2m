@@ -125,6 +125,13 @@ void CommandLine::DisplayObject()
 	Text(L"\x2191");
 }
 
+void CommandLine::DrawComboBoxMark(wchar_t MarkChar)
+{
+	wchar_t MarkWz[2] = {MarkChar, 0};
+	GotoXY(X2 + 1, Y1);
+	SetColor(COL_COMMANDLINEPREFIX);
+	Text(MarkWz);
+}
 
 void CommandLine::SetCurPos(int Pos, int LeftPos)
 {
@@ -838,4 +845,11 @@ void CommandLine::ResizeConsole()
 {
 	BackgroundScreen->Resize(ScrX+1,ScrY+1,2,Opt.WindowMode!=FALSE);
 //  this->DisplayObject();
+}
+
+void CommandLine::RedrawWithoutComboBoxMark()
+{
+	Redraw();
+	// erase \x2191 character...
+	DrawComboBoxMark(L' ');
 }

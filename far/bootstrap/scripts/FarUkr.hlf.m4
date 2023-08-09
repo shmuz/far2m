@@ -112,7 +112,7 @@ $ # FAR: що це таке #
  #FAR2M# також забезпечує значну кількість сервісних функцій.
 
  - FAR2M офіційний сайт
-~http://github.com/elfmz/far2m~@http://github.com/elfmz/far2m@
+~http://github.com/shmuz/far2m~@http://github.com/shmuz/far2m@
  - Офіційний сайт вихідного проекту FAR Manager
 ~http://www.farmanager.com~@http://www.farmanager.com@
 

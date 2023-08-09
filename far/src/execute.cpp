@@ -162,6 +162,14 @@ public:
 	bool IsExecutable() const {return _executable; }
 };
 
+static std::string GetOpenShVerb(const char *verb)
+{
+	std::string out = GetMyScriptQuoted("open.sh");
+	out+= ' ';
+	out+= verb;
+	out+= ' ';
+	return out;
+}
 
 bool IsDirectExecutableFilePath(const char *path)
 {
@@ -227,43 +235,50 @@ static int NotVTExecute(const char *CmdStr, bool NoWait, bool NeedSudo)
 
 static int farExecuteASynched(const char *CmdStr, unsigned int ExecFlags)
 {
-//	fprintf(stderr, "TODO: Execute('%ls')\n", CmdStr);
+	//	fprintf(stderr, "TODO: Execute('%ls')\n", CmdStr);
 	int r;
+	if (ExecFlags & EF_OPEN) {
+		std::string OpenCmd = GetOpenShVerb("other");
+		OpenCmd+= ' ';
+		OpenCmd+= CmdStr;
+		return farExecuteASynched(OpenCmd.c_str(), ExecFlags & (~EF_OPEN));
+	}
+
 	if (ExecFlags & EF_HIDEOUT) {
 		r = NotVTExecute(CmdStr, (ExecFlags & EF_NOWAIT) != 0, (ExecFlags & EF_SUDO) != 0);
-//		CtrlObject->CmdLine->SetString(L"", TRUE);//otherwise command remain in cmdline
+		//		CtrlObject->CmdLine->SetString(L"", TRUE);//otherwise command remain in cmdline
 
 	} else {
 		ProcessShowClock++;
 		if (CtrlObject && CtrlObject->CmdLine) {
 			CtrlObject->CmdLine->ShowBackground();
-			CtrlObject->CmdLine->Redraw();
+			CtrlObject->CmdLine->RedrawWithoutComboBoxMark();
 		}
-//		CtrlObject->CmdLine->SetString(L"", TRUE);
-		ScrBuf.SetLockCount(0);
+		//		CtrlObject->CmdLine->SetString(L"", TRUE);
 		ScrBuf.Flush();
 		DWORD saved_mode = 0, dw;
 		WINPORT(GetConsoleMode)(NULL, &saved_mode);
-		WINPORT(SetConsoleMode)(NULL, saved_mode | ENABLE_PROCESSED_OUTPUT | ENABLE_WRAP_AT_EOL_OUTPUT
-			| ENABLE_EXTENDED_FLAGS | ENABLE_MOUSE_INPUT | ENABLE_INSERT_MODE | WINDOW_BUFFER_SIZE_EVENT);//ENABLE_QUICK_EDIT_MODE
+		WINPORT(SetConsoleMode)
+		(NULL,
+				saved_mode | ENABLE_PROCESSED_OUTPUT | ENABLE_WRAP_AT_EOL_OUTPUT | ENABLE_EXTENDED_FLAGS | ENABLE_MOUSE_INPUT
+						| ENABLE_INSERT_MODE | WINDOW_BUFFER_SIZE_EVENT);	// ENABLE_QUICK_EDIT_MODE
 		if ((ExecFlags & EF_NOCMDPRINT) == 0) {
 			const std::wstring &ws = MB2Wide(CmdStr);
-			WINPORT(WriteConsole)( NULL, ws.c_str(), ws.size(), &dw, NULL );
+			WINPORT(WriteConsole)(NULL, ws.c_str(), ws.size(), &dw, NULL);
 		}
-		WINPORT(WriteConsole)( NULL, &eol[0], ARRAYSIZE(eol), &dw, NULL );
+		WINPORT(WriteConsole)(NULL, &eol[0], ARRAYSIZE(eol), &dw, NULL);
 		WINPORT(SetConsoleFKeyTitles)(NULL);
 
-		if (ExecFlags & (EF_NOWAIT|EF_HIDEOUT) ) {
+		if (ExecFlags & (EF_NOWAIT | EF_HIDEOUT)) {
 			r = NotVTExecute(CmdStr, (ExecFlags & EF_NOWAIT) != 0, (ExecFlags & EF_SUDO) != 0);
 		} else {
 			r = VTShell_Execute(CmdStr, (ExecFlags & EF_SUDO) != 0);
 		}
 		if ((ExecFlags & EF_NOTIFY) && Opt.NotifOpt.OnConsole) {
-			DisplayNotification( (r == 0) ? Msg::ConsoleCommandComplete : Msg::ConsoleCommandFailed, CmdStr);
+			DisplayNotification((r == 0) ? Msg::ConsoleCommandComplete : Msg::ConsoleCommandFailed, CmdStr);
 		}
-		WINPORT(SetConsoleMode)( NULL, saved_mode |
-			ENABLE_PROCESSED_OUTPUT | ENABLE_WRAP_AT_EOL_OUTPUT );
-		WINPORT(WriteConsole)( NULL, &eol[0], ARRAYSIZE(eol), &dw, NULL );
+		WINPORT(SetConsoleMode)(NULL, saved_mode | ENABLE_PROCESSED_OUTPUT | ENABLE_WRAP_AT_EOL_OUTPUT);
+		WINPORT(WriteConsole)(NULL, &eol[0], ARRAYSIZE(eol), &dw, NULL);
 		WINPORT(SetConsoleMode)(NULL, saved_mode);
 		ScrBuf.FillBuf();
 		if (CtrlObject && CtrlObject->CmdLine) {
@@ -322,15 +337,6 @@ void QueueDeleteOnClose(const wchar_t *Name)
 	cmd.insert(0, GetMyScriptQuoted("closewait.sh"));
 
 	farExecuteA(cmd.c_str(), EF_NOWAIT | EF_HIDEOUT);
-}
-
-static std::string GetOpenShVerb(const char *verb)
-{
-	std::string out = GetMyScriptQuoted("open.sh");
-	out+= ' ';
-	out+= verb;
-	out+= ' ';
-	return out;
 }
 
 static int ExecuteA(const char *CmdStr, bool SeparateWindow, bool DirectRun, bool FolderRun , bool WaitForIdle , bool Silent , bool RunAs)
