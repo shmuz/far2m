@@ -3451,24 +3451,15 @@ int PushDNParams (lua_State *L, int Msg, int Param1, LONG_PTR Param2)
 
 int ProcessDNResult(lua_State *L, int Msg, LONG_PTR Param2)
 {
-  int ret = 0;
+  int ret = 0, i;
   switch(Msg)
   {
     case DN_CTLCOLORDLGLIST:
-      if((ret = lua_istable(L,-1)) != 0)
-      {
+      ret = lua_istable(L,-1);
+      if (ret) {
         struct FarListColors* flc = (struct FarListColors*) Param2;
-        int i;
-        size_t len = lua_objlen(L, -1);
-
-        if(len > flc->ColorCount) len = flc->ColorCount;
-
-        for(i = 0; i < (int)len; i++)
-        {
-          lua_rawgeti(L, -1, i+1);
-          flc->Colors[i] = lua_tointeger(L, -1);
-          lua_pop(L, 1);
-        }
+        for (i=0; i < flc->ColorCount; i++)
+          flc->Colors[i] = GetIntFromArray(L, i+1);
       }
       break;
 
@@ -3476,7 +3467,6 @@ int ProcessDNResult(lua_State *L, int Msg, LONG_PTR Param2)
       ret = Param2;
       if (lua_istable(L,-1))
       {
-        int i;
         ret = 0;
         for(i = 0; i < 4; i++)
         {
@@ -3611,43 +3601,30 @@ LONG_PTR LF_DlgProc(lua_State *L, HANDLE hDlg, int Msg, int Param1, LONG_PTR Par
   }
   //---------------------------------------------------------------------------
 
-  if (lua_isnil(L, -1))
-    ret = PSInfo.DefDlgProc(hDlg, Msg, Param1, Param2);
-
-  else if (Msg == DN_CTLCOLORDLGLIST) {
-    struct FarListColors* flc = (struct FarListColors*) Param2;
-    if ((ret = lua_istable(L,-1)) != 0) {
-      int i;
-      for (i=0; i < flc->ColorCount; i++)
-        flc->Colors[i] = GetIntFromArray(L, i+1);
-    }
+  if (lua_isnil(L, -1)) {
+    lua_pop(L, 2);
+    return PSInfo.DefDlgProc(hDlg, Msg, Param1, Param2);
   }
 
-  else if (Msg == DN_GETDIALOGINFO) {
-    ret = lua_isstring(L,-1) && lua_objlen(L,-1) >= 16;
-    if (ret) {
-      struct DialogInfo* di = (struct DialogInfo*) Param2;
-      memcpy(&di->Id, lua_tostring(L,-1), 16);
-    }
-  }
+  switch (Msg) {
+    case DN_CTLCOLORDLGITEM:
+    case DN_CTLCOLORDLGLIST:
+    case DN_HELP:
+      ret = ProcessDNResult(L, Msg, Param2);
+      break;
 
-  else if (Msg == DN_HELP) {
-    if ((ret = (LONG_PTR)utf8_to_wcstring(L, -1, NULL)) != 0) {
-      lua_pushvalue(L, -1);                // keep stack balanced
-      lua_setfield(L, -3, "helpstring");   // protect from garbage collector
-    }
-  }
+    case DN_CLOSE:
+      ret = lua_isnumber(L,-1) ? lua_tointeger(L,-1) : lua_toboolean(L,-1);
+      if (ret && NonModal(dd))
+      {
+        PSInfo.SendDlgMessage(hDlg, DM_SETDLGDATA, 0, 0);
+        RemoveDialogFromRegistry(dd);
+      }
+      break;
 
-  else if (Msg == DN_CTLCOLORDLGITEM)
-    ret = ProcessDNResult(L, Msg, Param2);
-
-  else {
-    ret = lua_isnumber(L,-1) ? lua_tointeger(L,-1) : lua_toboolean(L,-1);
-    if (Msg == DN_CLOSE && ret && NonModal(dd))
-    {
-      PSInfo.SendDlgMessage(hDlg, DM_SETDLGDATA, 0, 0);
-      RemoveDialogFromRegistry(dd);
-    }
+    default:
+      ret = lua_isnumber(L,-1) ? lua_tointeger(L,-1) : lua_toboolean(L,-1);
+      break;
   }
 
   lua_pop (L, 2);
