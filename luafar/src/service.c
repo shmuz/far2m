@@ -3357,21 +3357,22 @@ int PushDNParams (lua_State *L, int Msg, int Param1, LONG_PTR Param2)
     case DN_RESIZECONSOLE:
       break;
 
-    case DN_BTNCLICK:
     case DN_CLOSE:
+    case DN_MOUSECLICK:
+    case DN_GOTFOCUS:
+    case DN_KILLFOCUS:
+
+    case DN_BTNCLICK:
     case DN_CTLCOLORDLGITEM:
     case DN_CTLCOLORDLGLIST:
     case DN_DRAWDLGITEM:
     case DN_EDITCHANGE:
-    case DN_GOTFOCUS:
     case DN_HELP:
     case DN_HOTKEY:
     case DN_INITDIALOG:
     case DN_KEY:
-    case DN_KILLFOCUS:
     case DN_LISTCHANGE:
     case DN_LISTHOTKEY:
-    case DN_MOUSECLICK:
       if (Param1 >= 0)  // dialog element position
         ++Param1;
       break;
@@ -3408,7 +3409,7 @@ int PushDNParams (lua_State *L, int Msg, int Param1, LONG_PTR Param2)
 
     case DN_MOUSECLICK:
     case DN_MOUSEEVENT:
-      PutMouseEvent(L, (MOUSE_EVENT_RECORD*)Param2, FALSE);
+      PutMouseEvent(L, (const MOUSE_EVENT_RECORD*)Param2, FALSE);
       break;
 
     case DN_RESIZECONSOLE:
@@ -3427,6 +3428,16 @@ int PushDNParams (lua_State *L, int Msg, int Param1, LONG_PTR Param2)
         lua_pushinteger(L, (Param2 >> i*8) & 0xFF);
         lua_rawseti(L, -2, i+1);
       }
+      break;
+    }
+
+    case DN_CTLCOLORDLGLIST: {
+      int i;
+      struct FarListColors* flc = (struct FarListColors*) Param2;
+      lua_createtable(L, flc->ColorCount, 1);
+      PutIntToTable(L, "Flags", flc->Flags);
+      for (i=0; i < flc->ColorCount; i++)
+        PutIntToArray(L, i+1, flc->Colors[i]);
       break;
     }
 
@@ -3564,51 +3575,31 @@ LONG_PTR LF_DlgProc(lua_State *L, HANDLE hDlg, int Msg, int Param1, LONG_PTR Par
   lua_pushinteger (L, Msg);            //+4
   lua_pushinteger (L, Param1_mod);     //+5
 
-  if (Msg == DN_INITDIALOG) {
-    lua_pushnil(L);
-    if (NonModal(dd))
-      dd->hDlg = hDlg;
+  switch(Msg) {
+    case DN_INITDIALOG:
+      lua_pushnil(L);
+      if (NonModal(dd))
+        dd->hDlg = hDlg;
+      break;
+
+    case DN_CTLCOLORDLGITEM:
+    case DN_CTLCOLORDLGLIST:
+    case DN_DRAWDLGITEM:
+    case DN_EDITCHANGE:
+    case DN_HELP:
+    case DN_LISTCHANGE:
+    case DN_LISTHOTKEY:
+    case DN_MOUSECLICK:
+    case DN_MOUSEEVENT:
+    case DN_RESIZECONSOLE:
+      lua_pop(L,2);
+      PushDNParams(L, Msg, Param1, Param2);
+      break;
+
+    default:
+      lua_pushinteger (L, Param2); //+6
+      break;
   }
-
-  else if (Msg == DN_CTLCOLORDLGLIST) {
-    struct FarListColors* flc = (struct FarListColors*) Param2;
-    lua_createtable(L, flc->ColorCount, 1);
-    PutIntToTable(L, "Flags", flc->Flags);
-    int i;
-    for (i=0; i < flc->ColorCount; i++)
-      PutIntToArray(L, i+1, flc->Colors[i]);
-  }
-
-  else if (Msg == DN_DRAWDLGITEM)
-    PushDlgItem (L, (struct FarDialogItem*)Param2, FALSE);
-
-  else if (Msg == DN_EDITCHANGE)
-    PushDlgItem (L, (struct FarDialogItem*)Param2, FALSE);
-
-  else if (Msg == DN_HELP)
-    push_utf8_string (L, Param2 ? (wchar_t*)Param2 : L"", -1);
-
-  else if (Msg == DN_LISTCHANGE || Msg == DN_LISTHOTKEY)
-    lua_pushinteger (L, Param2+1); // make list positions 1-based
-
-  else if (Msg == DN_MOUSECLICK || Msg == DN_MOUSEEVENT)
-    PutMouseEvent (L, (const MOUSE_EVENT_RECORD*)Param2, FALSE);
-
-  else if (Msg == DN_RESIZECONSOLE) {
-    COORD* coord = (COORD*)Param2;
-    lua_createtable(L, 0, 2);
-    PutIntToTable(L, "X", coord->X);
-    PutIntToTable(L, "Y", coord->Y);
-  }
-
-  else if (Msg == DN_CTLCOLORDLGITEM) {
-    PushDNParams(L, Msg, Param1, Param2);
-    lua_remove(L,-2);
-    lua_remove(L,-2);
-  }
-
-  else
-    lua_pushinteger (L, Param2); //+6
 
   //---------------------------------------------------------------------------
   LONG_PTR ret = pcall_msg (L, 4, 1); //+2
