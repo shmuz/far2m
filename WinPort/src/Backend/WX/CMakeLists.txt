@@ -18,6 +18,7 @@ set(SOURCES
 	wxClipboardBackend.cpp
 	ExclusiveHotkeys.cpp
 	wxWinTranslations.cpp
+	wxConsoleInputShim.cpp
 )
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -28,35 +29,6 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 		Mac/pasteboard.mm
 		Mac/hide.mm
 	)
-endif()
-
-if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
-	if (DEFINED wxWidgets_CONFIG_EXECUTABLE)
-		message(STATUS "Using pre-defined wx config: ${wxWidgets_CONFIG_EXECUTABLE}")
-
-	elseif(EXISTS "/usr/local/bin/wxgtk3u-3.1-config")
-		set(wxWidgets_CONFIG_EXECUTABLE "/usr/local/bin/wxgtk3u-3.1-config")
-		set(wxWidgets_wxrc_EXECUTABLE "/usr/local/bin/wxrc-gtk3u-3.1")
-		message(STATUS "Using known location of wx-config 3.1")
-
-	elseif (EXISTS "/usr/local/bin/wxgtk3u-3.0-config")
-		set(wxWidgets_CONFIG_EXECUTABLE "/usr/local/bin/wxgtk3u-3.0-config")
-		set(wxWidgets_wxrc_EXECUTABLE "/usr/local/bin/wxrc-gtk3u-3.0")
-		message(STATUS "Using known location of wx-config 3.0")
-
-	else()
-		message(STATUS "No wxgtk3u-3.*-config in expected locations")
-	endif()
-
-elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-	if (EXISTS "/opt/local/Library/Frameworks/wxWidgets.framework/Versions/wxWidgets/3.1/bin/wx-config")
-		# MacPorts
-		set(wxWidgets_CONFIG_EXECUTABLE "/opt/local/Library/Frameworks/wxWidgets.framework/Versions/wxWidgets/3.1/bin/wx-config")
-		set(wxWidgets_wxrc_EXECUTABLE "/opt/local/Library/Frameworks/wxWidgets.framework/Versions/wxWidgets/3.1/bin/wxrc")
-		message(STATUS "Using known location of wx-config 3.1")
-	else()
-		message(STATUS "No wx-config in expected locations")
-	endif()
 endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -97,6 +69,16 @@ endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	set_property (TARGET far2m_gui APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+endif()
+
+find_package(X11)
+if(X11_FOUND)
+    link_directories(${X11_LIBRARIES})
+    include_directories(${X11_INCLUDE_DIR})
+    target_link_libraries(far2m_gui ${X11_LIBRARIES})
+
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__HASX11__")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__HASX11__")
 endif()
 
 set_target_properties(far2m_gui

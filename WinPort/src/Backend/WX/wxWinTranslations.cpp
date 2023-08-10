@@ -1,11 +1,21 @@
 #include "wxWinTranslations.h"
+#include "wxConsoleInputShim.h"
 #include "KeyFileHelper.h"
 #include "utils.h"
 #include "WinPort.h"
 #include "Backend.h"
+#include <mutex>
+#include <map>
 
 #include <wx/wx.h>
 #include <wx/display.h>
+
+#if defined (__WXGTK__) && defined (__HASX11__)
+#include <X11/Xlib.h>
+#include <X11/keysym.h>
+
+#include <X11/XKBlib.h>
+#endif
 
 #if defined(wxHAS_RAW_KEY_CODES)
 # ifdef __WXMAC__
@@ -27,19 +37,23 @@
 // RAW_RCTRL is unneeded for macos cuz under macos VK_CONTROL
 // represented by Command keys while VK_RCONTROL - by Control keys
 # else
+//#define GDK_KEY_Alt_L 0xffe9
+//#define GDK_KEY_Alt_R 0xffea
 //#define GDK_KEY_Control_L 0xffe3
 //#define GDK_KEY_Control_R 0xffe4
+//#define GDK_KEY_Shift_L 0xffe1
+//#define GDK_KEY_Shift_R 0xffe2
 #  define RAW_ALTGR    0xffea
 #  define RAW_RCTRL    0xffe4
+#  define RAW_RSHIFT   0xffe2
 # endif
 #endif
-
 
 extern bool g_broadway;
 extern bool g_remote;
 
 WinPortPalette g_wx_palette;
-
+bool g_wx_norgb = false;
 
 static const WinPortRGB &InternalConsoleForeground2RGB(USHORT attributes)
 {
@@ -53,12 +67,14 @@ static const WinPortRGB &InternalConsoleBackground2RGB(USHORT attributes)
 
 WinPortRGB ConsoleForeground2RGB(DWORD64 attributes)
 {
-	if ( (attributes & (FOREGROUND_TRUECOLOR | COMMON_LVB_REVERSE_VIDEO)) == FOREGROUND_TRUECOLOR) {
-		return GET_RGB_FORE(attributes);
-	}
+	if (!g_wx_norgb) {
+		if ( (attributes & (FOREGROUND_TRUECOLOR | COMMON_LVB_REVERSE_VIDEO)) == FOREGROUND_TRUECOLOR) {
+			return GET_RGB_FORE(attributes);
+		}
 
-	if ( (attributes & (BACKGROUND_TRUECOLOR | COMMON_LVB_REVERSE_VIDEO)) == (BACKGROUND_TRUECOLOR | COMMON_LVB_REVERSE_VIDEO)) {
-		return GET_RGB_BACK(attributes);
+		if ( (attributes & (BACKGROUND_TRUECOLOR | COMMON_LVB_REVERSE_VIDEO)) == (BACKGROUND_TRUECOLOR | COMMON_LVB_REVERSE_VIDEO)) {
+			return GET_RGB_BACK(attributes);
+		}
 	}
 
 	return (attributes & COMMON_LVB_REVERSE_VIDEO)
@@ -68,12 +84,14 @@ WinPortRGB ConsoleForeground2RGB(DWORD64 attributes)
 
 WinPortRGB ConsoleBackground2RGB(DWORD64 attributes)
 {
-	if ( (attributes & (BACKGROUND_TRUECOLOR | COMMON_LVB_REVERSE_VIDEO)) == BACKGROUND_TRUECOLOR) {
-		return GET_RGB_BACK(attributes);
-	}
+	if (!g_wx_norgb) {
+		if ( (attributes & (BACKGROUND_TRUECOLOR | COMMON_LVB_REVERSE_VIDEO)) == BACKGROUND_TRUECOLOR) {
+			return GET_RGB_BACK(attributes);
+		}
 
-	if ( (attributes & (FOREGROUND_TRUECOLOR | COMMON_LVB_REVERSE_VIDEO)) == (FOREGROUND_TRUECOLOR | COMMON_LVB_REVERSE_VIDEO)) {
-		return GET_RGB_FORE(attributes);
+		if ( (attributes & (FOREGROUND_TRUECOLOR | COMMON_LVB_REVERSE_VIDEO)) == (FOREGROUND_TRUECOLOR | COMMON_LVB_REVERSE_VIDEO)) {
+			return GET_RGB_FORE(attributes);
+		}
 	}
 
 	return (attributes & COMMON_LVB_REVERSE_VIDEO)
@@ -87,7 +105,7 @@ WinPortRGB ConsoleBackground2RGB(DWORD64 attributes)
 static int wxKeyCode2WinKeyCode(int code)
 {
 	switch (code) {
-	case WXK_BACK: return  VK_BACK;
+	case WXK_BACK: return VK_BACK;
 	case WXK_TAB: return VK_TAB;
 	case WXK_RETURN: return VK_RETURN;
 	case WXK_ESCAPE: return VK_ESCAPE;
@@ -223,10 +241,47 @@ static int wxKeyCode2WinKeyCode(int code)
 	return code;
 }
 
-static int IsEnhancedKey(int code)
+static int wxKeyCode2WinScanCode(int code, int code_raw)
 {
-	return (code==WXK_LEFT || code==WXK_RIGHT || code==WXK_UP || code==WXK_DOWN
-		|| code==WXK_HOME || code==WXK_END || code==WXK_PAGEDOWN || code==WXK_PAGEUP );
+
+	// Left and right Shift keys share the same Virtual Key Code and both have no ENHANCED_KEY flag,
+	// so the only difference between left and right keys is in Scan Code field.
+	// wxKeyCode2WinKeyCode() can not do the job right here, as it receives VK_SHIFT
+	// so have no information left or right one it was.
+
+#if defined (__WXGTK__)
+	if (code_raw == RAW_RSHIFT) return RIGHT_SHIFT_VSC;
+#endif
+
+	// FixMe: detect right Shift on MacOS
+
+	return WINPORT(MapVirtualKey)(wxKeyCode2WinKeyCode(code), MAPVK_VK_TO_VSC);
+}
+
+static int IsEnhancedKey(int code, int code_raw)
+{
+	// As defined in MS docs https://learn.microsoft.com/en-us/windows/console/key-event-record-str
+	// Enhanced keys for the IBM® 101- and 102-key keyboards are the
+	// INS, DEL, HOME, END, PAGE UP, PAGE DOWN,
+	// and direction keys in the clusters to the left of the keypad;
+	// and the divide (/) and ENTER keys in the keypad.
+	//
+	// Wine also reports as enhanced the PrintScreen, WinLeft, WinRight, WinMenu,
+	// NumLock, RightControl and AltGr keys. Let's follow its behavior.
+	if ( code==WXK_LEFT || code==WXK_RIGHT || code==WXK_UP || code==WXK_DOWN
+		|| code==WXK_HOME || code==WXK_END || code==WXK_PAGEDOWN || code==WXK_PAGEUP
+		|| code==WXK_NUMPAD_ENTER || code==WXK_SNAPSHOT || code==WXK_INSERT || code==WXK_DELETE
+		|| code==WXK_WINDOWS_LEFT || code==WXK_WINDOWS_RIGHT || code==WXK_WINDOWS_MENU || code==WXK_NUMPAD_DIVIDE
+		|| code==WXK_NUMLOCK || code==WXK_RAW_CONTROL )
+			return true;
+	
+#if defined (__WXGTK__)
+	if (code_raw == RAW_ALTGR || code_raw == RAW_RCTRL) return true;
+#endif
+
+	// FixMe: detect AltGr (right Option) on MacOS
+
+	return false;
 }
 
 void KeyTracker::OnKeyDown(wxKeyEvent& event, DWORD ticks)
@@ -302,7 +357,7 @@ bool KeyTracker::CheckForSuddenModifierUp(wxKeyCode keycode)
 	ir.Event.KeyEvent.bKeyDown = FALSE;
 	ir.Event.KeyEvent.wRepeatCount = 1;
 	ir.Event.KeyEvent.wVirtualKeyCode = wxKeyCode2WinKeyCode(keycode);
-	ir.Event.KeyEvent.wVirtualScanCode = 0;
+	ir.Event.KeyEvent.wVirtualScanCode = WINPORT(MapVirtualKey)(ir.Event.KeyEvent.wVirtualKeyCode, MAPVK_VK_TO_VSC);
 	ir.Event.KeyEvent.uChar.UnicodeChar = 0;
 	ir.Event.KeyEvent.dwControlKeyState = 0;
 #ifndef __WXMAC__
@@ -315,7 +370,14 @@ bool KeyTracker::CheckForSuddenModifierUp(wxKeyCode keycode)
 		ir.Event.KeyEvent.wVirtualKeyCode = VK_CONTROL;
 		ir.Event.KeyEvent.dwControlKeyState|= ENHANCED_KEY;
 	}
-	g_winport_con_in->Enqueue(&ir, 1);
+	wxConsoleInputShim::Enqueue(&ir, 1);
+
+	if (ir.Event.KeyEvent.wVirtualKeyCode == VK_SHIFT) {
+		// MapVirtualKey() knows nothing about right Shift. Let's fire right Shift KeyUp just to be sure
+		ir.Event.KeyEvent.wVirtualScanCode = RIGHT_SHIFT_VSC;
+		wxConsoleInputShim::Enqueue(&ir, 1);
+	}
+
 	return true;
 }
 
@@ -348,11 +410,11 @@ void KeyTracker::ForceAllUp()
 			ir.Event.KeyEvent.wVirtualKeyCode = VK_CONTROL;
 			ir.Event.KeyEvent.dwControlKeyState|= ENHANCED_KEY;
 		}
-		g_winport_con_in->Enqueue(&ir, 1);
+		wxConsoleInputShim::Enqueue(&ir, 1);
 #ifndef __WXMAC__
 		if (ir.Event.KeyEvent.wVirtualKeyCode == VK_CONTROL && _right_control) {
 			ir.Event.KeyEvent.dwControlKeyState|= ENHANCED_KEY;
-			g_winport_con_in->Enqueue(&ir, 1);
+			wxConsoleInputShim::Enqueue(&ir, 1);
 		}
 #endif
 	}
@@ -407,9 +469,99 @@ bool KeyTracker::RightControl() const
 
 static DWORD s_cached_led_state = 0;
 
+#if defined (__WXGTK__) && defined (__HASX11__)
+static int X11KeyCodeLookupUncached(wxUint32 keyflags)
+{
+	int key_code = 0;
+	Display *display = XOpenDisplay(NULL);
+
+	if (!display) {
+		return 0;	
+	}
+
+	char keycodes[] = "evdev";
+	char types[] = "complete";
+	char compat[] = "complete";
+	char symbols[] = "pc+us+inet(evdev)";
+
+	XkbComponentNamesRec component_names = {0};
+	component_names.keycodes = keycodes;
+	component_names.types = types;
+	component_names.compat = compat;
+	component_names.symbols = symbols;
+
+	XkbDescPtr xkb = XkbGetKeyboardByName(
+		display, XkbUseCoreKbd, &component_names, XkbGBN_AllComponentsMask, XkbGBN_AllComponentsMask, False);
+
+	if (!xkb) {
+		XCloseDisplay(display);
+		return 0;	
+	}
+
+	XkbGetControls(display, XkbGroupsWrapMask, xkb);
+	XkbGetNames(display, XkbGroupNamesMask, xkb);
+
+	const char *keysymstr = nullptr;
+
+	KeySym ks;
+	unsigned int mods;
+	if (XkbTranslateKeyCode(xkb, keyflags, 0, &mods, &ks)) {
+		keysymstr = XKeysymToString(ks);
+	}
+
+	if (keysymstr && keysymstr[0] && !keysymstr[1]) {
+		// char key
+		key_code = toupper(*keysymstr);
+	}
+	switch (ks) {
+		case XK_minus:        key_code = '-';   break;
+		case XK_equal:        key_code = '=';   break;
+		case XK_bracketleft:  key_code = '[';   break;
+		case XK_bracketright: key_code = ']';   break;
+		case XK_semicolon:    key_code = ';';   break;
+		case XK_apostrophe:   key_code = '\'';  break;
+		case XK_grave:        key_code = '`';   break;
+		case XK_backslash:    key_code = '\\';  break;
+		case XK_comma:        key_code = ',';   break;
+		case XK_period:       key_code = '.';   break;
+		case XK_slash:        key_code = '/';   break;
+	}
+
+	XkbFreeKeyboard(xkb, 0, True);
+	XCloseDisplay(display);
+	
+	return key_code;
+}
+
+static struct KF2KC : std::map<wxUint32, int>
+{
+	std::mutex mtx;
+} s_keyflags2keycode;
+
+static int X11KeyCodeLookup(wxUint32 keyflags)
+{
+	std::lock_guard<std::mutex> lock(s_keyflags2keycode.mtx);
+	auto it = s_keyflags2keycode.find(keyflags);
+	if (it != s_keyflags2keycode.end()) {
+		return it->second;
+	}
+
+	const int keycode = X11KeyCodeLookupUncached(keyflags);
+	s_keyflags2keycode.emplace(keyflags, keycode);
+	return keycode;
+}
+
+#endif
 wx2INPUT_RECORD::wx2INPUT_RECORD(BOOL KeyDown, const wxKeyEvent& event, const KeyTracker &key_tracker)
 {
 	auto key_code = event.GetKeyCode();
+//event.GetRawKeyFlags()
+#if defined (__WXGTK__) && defined (__HASX11__)
+	if (!key_code) {
+		key_code = X11KeyCodeLookup(event.GetRawKeyFlags());
+	}
+#endif
+
 #ifdef __linux__
 	// Recent KDEs put into keycode non-latin characters in case of
 	// non-latin input layout configured as first in the list of layouts.
@@ -431,7 +583,7 @@ wx2INPUT_RECORD::wx2INPUT_RECORD(BOOL KeyDown, const wxKeyEvent& event, const Ke
 	Event.KeyEvent.bKeyDown = KeyDown;
 	Event.KeyEvent.wRepeatCount = 1;
 	Event.KeyEvent.wVirtualKeyCode = wxKeyCode2WinKeyCode(key_code);
-	Event.KeyEvent.wVirtualScanCode = 0;
+	Event.KeyEvent.wVirtualScanCode = wxKeyCode2WinScanCode(event.GetKeyCode(), event.GetRawKeyCode());
 	Event.KeyEvent.uChar.UnicodeChar = event.GetUnicodeKey();
 	Event.KeyEvent.dwControlKeyState = 0;
 
@@ -441,7 +593,7 @@ wx2INPUT_RECORD::wx2INPUT_RECORD(BOOL KeyDown, const wxKeyEvent& event, const Ke
 	}
 #endif
 
-	if (IsEnhancedKey(event.GetKeyCode())) {
+	if (IsEnhancedKey(event.GetKeyCode(), event.GetRawKeyCode())) {
 		Event.KeyEvent.dwControlKeyState|= ENHANCED_KEY;
 	}
 
