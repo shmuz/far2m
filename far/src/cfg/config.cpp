@@ -929,7 +929,6 @@ static struct FARConfig
 	{0, REG_DWORD,  NSecSystem, "QuotedName",&Opt.QuotedName,QUOTEDNAME_INSERT, 0},
 	//{0, REG_DWORD,  NSecSystem, "CPAJHefuayor",&Opt.strCPAJHefuayor,0, 0},
 	{0, REG_DWORD,  NSecSystem, "PluginMaxReadData",&Opt.PluginMaxReadData,0x40000, 0},
-	{0, REG_DWORD,  NSecSystem, "UseNumPad",&Opt.UseNumPad,1, 0},
 	{0, REG_DWORD,  NSecSystem, "CASRule",&Opt.CASRule,0xFFFFFFFFU, 0},
 	{0, REG_DWORD,  NSecSystem, "AllCtrlAltShiftRule",&Opt.AllCtrlAltShiftRule,0x0000FFFF, 0},
 	{1, REG_DWORD,  NSecSystem, "ScanJunction",&Opt.ScanJunction,1, 0},

@@ -567,7 +567,6 @@ struct Options
 	FARString strExecuteBatchType;
 
 	DWORD PluginMaxReadData;
-	int UseNumPad;
 	int ScanJunction;
 	int OnlyFilesSize;
 
