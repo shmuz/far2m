@@ -2598,6 +2598,21 @@ void PushDlgItem (lua_State *L, const struct FarDialogItem* pItem, BOOL table_ex
   PutIntToArray  (L, 11, pItem->MaxLen);
 }
 
+void PushDlgItemNum(lua_State *L, HANDLE hDlg, int numitem, int pos_table)
+{
+  int size = PSInfo.SendDlgMessage(hDlg, DM_GETDLGITEM, numitem, 0);
+  if (size > 0) {
+    BOOL table_exist = lua_istable(L, pos_table);
+    struct FarDialogItem* pItem = (struct FarDialogItem*) lua_newuserdata(L, size);
+    PSInfo.SendDlgMessage(hDlg, DM_GETDLGITEM, numitem, (LONG_PTR)pItem);
+    if (table_exist)
+      lua_pushvalue(L, pos_table);
+    PushDlgItem(L, pItem, table_exist);
+  }
+  else
+    lua_pushnil(L);
+}
+
 int SetDlgItem (lua_State *L, HANDLE hDlg, int numitem, int pos_table)
 {
   struct FarDialogItem DialogItem;
@@ -3195,20 +3210,9 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
       return 1;
     }
 
-    case DM_GETDLGITEM: {
-      int size = PSInfo.SendDlgMessage(hDlg, DM_GETDLGITEM, Param1, 0);
-      if (size > 0) {
-        BOOL table_exist = lua_istable(L, pos4);
-        struct FarDialogItem* pItem = (struct FarDialogItem*) lua_newuserdata(L, size);
-        PSInfo.SendDlgMessage(hDlg, DM_GETDLGITEM, Param1, (LONG_PTR)pItem);
-        if (table_exist)
-          lua_pushvalue(L, pos4);
-        PushDlgItem(L, pItem, table_exist);
-      }
-      else
-        lua_pushnil(L);
+    case DM_GETDLGITEM:
+      PushDlgItemNum(L, hDlg, Param1, pos4);
       return 1;
-    }
 
     case DM_SETDLGITEM:
       return SetDlgItem(L, hDlg, Param1, pos4);
@@ -3753,6 +3757,21 @@ int dialog_rawhandle(lua_State *L)
   else
     lua_pushnil(L);
   return 1;
+}
+
+int far_GetDlgItem(lua_State *L)
+{
+  HANDLE hDlg = CheckDialogHandle(L,1);
+  int numitem = (int)luaL_checkinteger(L,2) - 1;
+  PushDlgItemNum(L, hDlg, numitem, 3);
+  return 1;
+}
+
+int far_SetDlgItem(lua_State *L)
+{
+  HANDLE hDlg = CheckDialogHandle(L,1);
+  int numitem = (int)luaL_checkinteger(L,2) - 1;
+  return SetDlgItem(L, hDlg, numitem, 3);
 }
 
 int far_DefDlgProc(lua_State *L)
@@ -6058,6 +6077,8 @@ static const luaL_Reg far_funcs[] = {
   {"DialogRun",           far_DialogRun},
   {"DialogFree",          far_DialogFree},
   {"SendDlgMessage",      far_SendDlgMessage},
+  {"GetDlgItem",          far_GetDlgItem},
+  {"SetDlgItem",          far_SetDlgItem},
   {"GetDirList",          far_GetDirList},
   {"GetMsg",              far_GetMsg},
   {"GetPluginDirList",    far_GetPluginDirList},

@@ -35,7 +35,7 @@ local function add_enums (src, trg)
         if line:find("^%s*};") then
           enum = false
         else
-          local c = line:match("[%w_]+")
+          local c = line:match("^%s*([%w_]+)")
           if c then table.insert(trg, c) end
         end
       end
