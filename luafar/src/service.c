@@ -3774,20 +3774,6 @@ int far_SetDlgItem(lua_State *L)
   return SetDlgItem(L, hDlg, numitem, 3);
 }
 
-int far_DefDlgProc(lua_State *L)
-{
-  int Msg, Param1, Param2;
-
-  luaL_checktype(L, 1, LUA_TLIGHTUSERDATA);
-  HANDLE hDlg = lua_touserdata(L, 1);
-  Msg = GetFlags(L, 2, NULL);
-  Param1 = luaL_checkinteger(L, 3);
-  Param2 = luaL_checkinteger(L, 4);
-
-  lua_pushinteger(L, PSInfo.DefDlgProc(hDlg, Msg, Param1, Param2));
-  return 1;
-}
-
 int editor_Editor(lua_State *L)
 {
   const wchar_t* FileName = check_utf8_string(L, 1, NULL);
@@ -6091,7 +6077,6 @@ static const luaL_Reg far_funcs[] = {
   {"ShowHelp",            far_ShowHelp},
   {"InputBox",            far_InputBox},
   {"AdvControl",          far_AdvControl},
-  {"DefDlgProc",          far_DefDlgProc},
   {"CreateFileFilter",    far_CreateFileFilter},
   {"LoadPlugin",          far_LoadPlugin},
   {"ForcedLoadPlugin",    far_ForcedLoadPlugin},
