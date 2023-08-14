@@ -5,6 +5,7 @@
 
 #include "Backend.h"
 #include "wxWinTranslations.h"
+#include "wxConsoleInputShim.h"
 #include "CallInMain.h"
 #include "PathHelpers.h"
 #include "Paint.h"
@@ -84,13 +85,15 @@ class WinPortPanel: public wxPanel, protected IConsoleOutputBackend
 	wxMouseEvent _last_mouse_event;
 	std::wstring _text2clip;
 	ExclusiveHotkeys _exclusive_hotkeys;
-	std::atomic<bool> _has_focus{true};
+	std::atomic<DWORD> _focused_ts{1};
 	MOUSE_EVENT_RECORD _prev_mouse_event{};
 	DWORD _prev_mouse_event_ts{0};
 
 	wxTimer* _periodic_timer{nullptr};
 	unsigned int _timer_idling_counter{0};
 	std::atomic<unsigned int> _last_title_ticks{0};
+	wxSize _initial_size{};
+	unsigned char _force_size_on_paint_state{0};
 	bool _extra_refresh{false};
 	bool _last_keydown_enqueued{false};
 	bool _app_entry_started{false};
@@ -111,6 +114,7 @@ class WinPortPanel: public wxPanel, protected IConsoleOutputBackend
 	void SetConsoleSizeFromWindow();
 	void CheckForResizePending();
 	void CheckPutText2CLip();
+	void SetInitialSize();
 	void OnInitialized( wxCommandEvent& event );
 	void OnTimerPeriodic(wxTimerEvent& event);
 	void OnWindowMovedSync( wxCommandEvent& event );
@@ -158,19 +162,21 @@ class WinPortPanel: public wxPanel, protected IConsoleOutputBackend
 	virtual void OnConsoleOverrideColor(DWORD Index, DWORD *ColorFG, DWORD *ColorBK);
 
 public:
-    WinPortPanel(WinPortFrame *frame, const wxPoint& pos, const wxSize& size);
+	WinPortPanel(WinPortFrame *frame, const wxPoint& pos, const wxSize& size);
 	virtual ~WinPortPanel();
 	void GetAlignmentGaps(int &horz, int &vert);
 	void OnChar( wxKeyEvent& event );
 	virtual void OnTouchbarKey(bool alternate, int index);
+	void SetClientCharSize(int cw, int ch);
 };
 
 ///////////////////////////////////////////
 
 struct WinState
 {
-	wxPoint pos {40, 40};
+	wxPoint pos = wxDefaultPosition;
 	wxSize size {800, 440};
+	wxSize charSize {-1,-1};
 	bool maximized{false};
 	bool fullscreen{false};
 
@@ -180,7 +186,7 @@ struct WinState
 
 class WinPortFrame: public wxFrame
 {
-    wxDECLARE_EVENT_TABLE();
+	wxDECLARE_EVENT_TABLE();
 
 	enum {
 		ID_CTRL_BASE = 1,
@@ -212,6 +218,6 @@ public:
 	WinPortFrame(const wxString& title);
 	virtual ~WinPortFrame();
 
-	void OnInitialized();
+	void SetInitialSize();
 	void SaveWindowState();
 };
