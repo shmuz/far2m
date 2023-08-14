@@ -504,10 +504,6 @@ void Dialog::CheckDialogCoord()
 	{             //   Y2 при этом = высоте диалога.
 		Y1=(ScrY-Y2+1)/2;
 
-		if (!DialogMode.Check(DMODE_SMALLDIALOG)) //????
-			if (Y1>5)
-				Y1--;
-
 		if (Y1<0)
 		{
 			Y1=0;
@@ -4816,70 +4812,70 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2)
 			/*****************************************************************/
 		case DM_RESIZEDIALOG:
 			// изменим вызов RESIZE.
-			Param1=-1;
+			Param1 = -1;
 			/*****************************************************************/
 		case DM_MOVEDIALOG:
 		{
-			int W1,H1;
-			W1=Dlg->X2-Dlg->X1+1;
-			H1=Dlg->Y2-Dlg->Y1+1;
-			Dlg->OldX1=Dlg->X1;
-			Dlg->OldY1=Dlg->Y1;
-			Dlg->OldX2=Dlg->X2;
-			Dlg->OldY2=Dlg->Y2;
+			int W1, H1;
+			W1 = Dlg->X2 - Dlg->X1+1;
+			H1 = Dlg->Y2 - Dlg->Y1+1;
+			Dlg->OldX1 = Dlg->X1;
+			Dlg->OldY1 = Dlg->Y1;
+			Dlg->OldX2 = Dlg->X2;
+			Dlg->OldY2 = Dlg->Y2;
 
 			// переместили
-			if (Param1>0)  // абсолютно?
+			if (Param1 > 0)  // абсолютно?
 			{
-				Dlg->X1=((COORD*)Param2)->X;
-				Dlg->Y1=((COORD*)Param2)->Y;
-				Dlg->X2=W1;
-				Dlg->Y2=H1;
+				Dlg->X1 = ((COORD*)Param2)->X;
+				Dlg->Y1 = ((COORD*)Param2)->Y;
+				Dlg->X2 = W1;
+				Dlg->Y2 = H1;
 				Dlg->CheckDialogCoord();
 			}
 			else if (!Param1)  // значит относительно
 			{
-				Dlg->X1+=((COORD*)Param2)->X;
-				Dlg->Y1+=((COORD*)Param2)->Y;
+				Dlg->X1 += ((COORD*)Param2)->X;
+				Dlg->Y1 += ((COORD*)Param2)->Y;
 			}
 			else // Resize, Param2=width/height
 			{
-				int OldW1,OldH1;
-				OldW1=W1;
-				OldH1=H1;
-				W1=((COORD*)Param2)->X;
-				H1=((COORD*)Param2)->Y;
+				int OldW1, OldH1;
+				OldW1 = W1;
+				OldH1 = H1;
+				W1 = ((COORD*)Param2)->X;
+				H1 = ((COORD*)Param2)->Y;
 				Dlg->RealWidth = W1;
 				Dlg->RealHeight = H1;
 
-				if (W1<OldW1 || H1<OldH1)
+				if (W1 < OldW1 || H1 < OldH1)
 				{
 					Dlg->DialogMode.Set(DMODE_DRAWING);
 					DialogItemEx *Item;
 					SMALL_RECT Rect;
 
-					for (unsigned int I=0; I<Dlg->ItemCount; I++)
+					for (unsigned int I=0; I < Dlg->ItemCount; I++)
 					{
-						Item=Dlg->Item[I];
+						Item = Dlg->Item[I];
 
-						if (Item->Flags&DIF_HIDDEN)
+						if (Item->Flags & DIF_HIDDEN)
 							continue;
 
-						Rect.Left=Item->X1;
-						Rect.Top=Item->Y1;
+						Rect.Left = Item->X1;
+						Rect.Top = Item->Y1;
 
-						if (Item->X2>=W1)
+						if (Item->X2 >= W1)
 						{
-							Rect.Right=Item->X2-(OldW1-W1);
-							Rect.Bottom=Item->Y2;
-							Dlg->SetItemRect(I,&Rect);
+							Rect.Right = Item->X2 - (OldW1-W1);
+							Rect.Bottom = Item->Y2;
+							Dlg->SetItemRect(I, &Rect);
 						}
 
-						if (Item->Y2>=H1)
+						if (Item->Y2 >= H1)
 						{
-							Rect.Right=Item->X2;
-							Rect.Bottom=Item->Y2-(OldH1-H1);
-							Dlg->SetItemRect(I,&Rect);
+							Rect.Right = Item->X2;
+							Rect.Bottom = Item->Y2 - (OldH1-H1);
+							Dlg->SetItemRect(I, &Rect);
 						}
 					}
 
@@ -4888,43 +4884,43 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2)
 			}
 
 			// проверили и скорректировали
-			if (Dlg->X1+W1<0)
-				Dlg->X1=-W1+1;
+			if (Dlg->X1 + W1 < 0)
+				Dlg->X1 = -W1 + 1;
 
-			if (Dlg->Y1+H1<0)
-				Dlg->Y1=-H1+1;
+			if (Dlg->Y1 + H1 < 0)
+				Dlg->Y1 = -H1 + 1;
 
-			if (Dlg->X1>ScrX)
-				Dlg->X1=ScrX;
+			if (Dlg->X1 > ScrX)
+				Dlg->X1 = ScrX;
 
-			if (Dlg->Y1>ScrY)
-				Dlg->Y1=ScrY;
+			if (Dlg->Y1 > ScrY)
+				Dlg->Y1 = ScrY;
 
-			Dlg->X2=Dlg->X1+W1-1;
-			Dlg->Y2=Dlg->Y1+H1-1;
+			Dlg->X2 = Dlg->X1 + W1 - 1;
+			Dlg->Y2 = Dlg->Y1 + H1 - 1;
 
-			if (Param1>0)  // абсолютно?
+			if (Param1 > 0)  // абсолютно?
 			{
 				Dlg->CheckDialogCoord();
 			}
 
 			if (Param1 < 0)  // размер?
 			{
-				((COORD*)Param2)->X=Dlg->X2-Dlg->X1+1;
-				((COORD*)Param2)->Y=Dlg->Y2-Dlg->Y1+1;
+				((COORD*)Param2)->X = Dlg->X2 - Dlg->X1 + 1;
+				((COORD*)Param2)->Y = Dlg->Y2 - Dlg->Y1 + 1;
 			}
 			else
 			{
-				((COORD*)Param2)->X=Dlg->X1;
-				((COORD*)Param2)->Y=Dlg->Y1;
+				((COORD*)Param2)->X = Dlg->X1;
+				((COORD*)Param2)->Y = Dlg->Y1;
 			}
 
-			int I=Dlg->IsVisible();// && Dlg->DialogMode.Check(DMODE_INITOBJECTS);
+			int I = Dlg->IsVisible();// && Dlg->DialogMode.Check(DMODE_INITOBJECTS);
 
 			if (I) Dlg->Hide();
 
 			// приняли.
-			Dlg->AdjustEditPos(Dlg->X1-Dlg->OldX1,Dlg->Y1-Dlg->OldY1);
+			Dlg->AdjustEditPos(Dlg->X1 - Dlg->OldX1, Dlg->Y1 - Dlg->OldY1);
 
 			if (I) Dlg->Show(); // только если диалог был виден
 
