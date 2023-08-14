@@ -2690,7 +2690,6 @@ int Is_DM_DialogItem(int Msg)
     case DM_GETITEMPOSITION:
     case DM_GETSELECTION:
     case DM_GETTEXT:
-    case DM_GETTEXTLENGTH:
     case DM_GETTRUECOLOR:
     case DM_LISTADD:
     case DM_LISTADDSTR:
@@ -2873,7 +2872,6 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
     case DM_GETCURSORSIZE:
     case DM_GETDROPDOWNOPENED:
     case DM_GETITEMDATA:
-    case DM_GETTEXTLENGTH:
     case DM_LISTSORT:
     case DM_REDRAW:               // alias: DM_SETREDRAW
     case DM_SET3STATE:
@@ -3265,8 +3263,6 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
     case DM_SETREADONLY:
       Param2 = lua_isnumber(L, pos4) ? lua_tointeger(L, pos4) : lua_toboolean(L, pos4);
       break;
-
-    //~ case DM_GETTEXTPTR:
   }
   res = PSInfo.SendDlgMessage (hDlg, Msg, Param1, Param2);
   lua_pushinteger (L, res + res_incr);
@@ -3300,8 +3296,6 @@ DlgMethod( GetItemData,            DM_GETITEMDATA, 1)
 DlgMethod( GetItemPosition,        DM_GETITEMPOSITION, 1)
 DlgMethod( GetSelection,           DM_GETSELECTION, 1)
 DlgMethod( GetText,                DM_GETTEXT, 1)
-DlgMethod( GetTextLength,          DM_GETTEXTLENGTH, 1)
-DlgMethod( GetTextPtr,             DM_GETTEXTPTR, 1)
 DlgMethod( GetTrueColor,           DM_GETTRUECOLOR, 1)
 DlgMethod( Key,                    DM_KEY, 1)
 DlgMethod( ListAdd,                DM_LISTADD, 1)
@@ -5822,8 +5816,6 @@ static const luaL_Reg dialog_methods[] = {
   {"GetItemPosition",      dlg_GetItemPosition},
   {"GetSelection",         dlg_GetSelection},
   {"GetText",              dlg_GetText},
-  {"GetTextLength",        dlg_GetTextLength},
-  {"GetTextPtr",           dlg_GetTextPtr},
   {"GetTrueColor",         dlg_GetTrueColor},
   {"Key",                  dlg_Key},
   {"ListAdd",              dlg_ListAdd},
