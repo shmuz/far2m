@@ -468,49 +468,63 @@ void ViewSettingsToText(const std::vector<Column> &Columns, FARString &strColumn
 	}
 }
 
-const FARString FormatStr_Attribute( DWORD FileAttributes, DWORD UnixMode, int Width)
+const FARString FormatStr_Attribute(DWORD FileAttributes, DWORD UnixMode, int Width)
 {
 	FormatString strResult;
-	wchar_t OutStr[16] = { };
-	if (UnixMode!=0) {
-			if (FileAttributes&FILE_ATTRIBUTE_BROKEN)
-				OutStr[0] = L'B';
-			else if (FileAttributes&FILE_ATTRIBUTE_DEVICE)
-				OutStr[0] = L'V';
-			else if (FileAttributes&FILE_ATTRIBUTE_REPARSE_POINT)
-				OutStr[0] = L'L';
-			else if (FileAttributes&FILE_ATTRIBUTE_DIRECTORY)
-				OutStr[0] = L'D';
-			else
-				OutStr[0] = L'F';
+	wchar_t OutStr[16] = {};
+	if (UnixMode != 0) {
+		if (FileAttributes & FILE_ATTRIBUTE_BROKEN)
+			OutStr[0] = L'B';
+		else if (FileAttributes & FILE_ATTRIBUTE_DEVICE_CHAR)
+			OutStr[0] = L'c';
+		else if (FileAttributes & FILE_ATTRIBUTE_DEVICE_BLOCK)
+			OutStr[0] = L'b';
+		else if (FileAttributes & FILE_ATTRIBUTE_DEVICE_FIFO)
+			OutStr[0] = L'p';
+		else if (FileAttributes & FILE_ATTRIBUTE_DEVICE_SOCK)
+			OutStr[0] = L's';
+		/*else if (FileAttributes & FILE_ATTRIBUTE_DEVICE)
+			OutStr[0] = L'V';*/
+		else if (FileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
+			OutStr[0] = L'l';
+		else if (FileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+			OutStr[0] = L'd';
+		else
+			OutStr[0] = L'-';
 
-			OutStr[1] = UnixMode&S_IRUSR? L'r' : L'-';
-			OutStr[2] = UnixMode&S_IWUSR? L'w' : L'-';
-			OutStr[3] = UnixMode&S_IXUSR? L'x' : L'-';
-			OutStr[4] = UnixMode&S_IRGRP? L'r' : L'-';
-			OutStr[5] = UnixMode&S_IWGRP? L'w' : L'-';
-			OutStr[6] = UnixMode&S_IXGRP? L'x' : L'-';
-			OutStr[7] = UnixMode&S_IROTH? L'r' : L'-';
-			OutStr[8] = UnixMode&S_IWOTH? L'w' : L'-';
-			OutStr[9] = UnixMode&S_IXOTH? L'x' : L'-';
+		OutStr[1] = UnixMode & S_IRUSR ? L'r' : L'-';
+		OutStr[2] = UnixMode & S_IWUSR ? L'w' : L'-';
+		OutStr[3] = UnixMode & S_IXUSR ? (UnixMode & S_ISUID ? L's' : L'x') : (UnixMode & S_ISUID ? L'S' : L'-');
+		OutStr[4] = UnixMode & S_IRGRP ? L'r' : L'-';
+		OutStr[5] = UnixMode & S_IWGRP ? L'w' : L'-';
+		OutStr[6] = UnixMode & S_IXGRP ? (UnixMode & S_ISGID ? L's' : L'x') : (UnixMode & S_ISGID ? L'S' : L'-');
+		OutStr[7] = UnixMode & S_IROTH ? L'r' : L'-';
+		OutStr[8] = UnixMode & S_IWOTH ? L'w' : L'-';
+		OutStr[9] = UnixMode & S_IXOTH ? (UnixMode & S_ISVTX ? L't' : L'x') : (UnixMode & S_ISVTX ? L'T' : L'-');
 	} else {
-			OutStr[0] = FileAttributes&FILE_ATTRIBUTE_EXECUTABLE ? L'X' : L' ';
-			OutStr[1] = FileAttributes&FILE_ATTRIBUTE_READONLY ? L'R' : L' ';
-			OutStr[2] = FileAttributes&FILE_ATTRIBUTE_SYSTEM ? L'S' : L' ';
-			OutStr[3] = FileAttributes&FILE_ATTRIBUTE_HIDDEN ? L'H' : L' ';
-			OutStr[4] = FileAttributes&FILE_ATTRIBUTE_ARCHIVE ? L'A' : L' ';
-			OutStr[5] = FileAttributes&FILE_ATTRIBUTE_REPARSE_POINT ? L'L' : FileAttributes&FILE_ATTRIBUTE_SPARSE_FILE ? L'$' : L' ';
-			OutStr[6] = FileAttributes&FILE_ATTRIBUTE_COMPRESSED ? L'C' : FileAttributes&FILE_ATTRIBUTE_ENCRYPTED ? L'E' : L' ';
-			OutStr[7] = FileAttributes&FILE_ATTRIBUTE_TEMPORARY ? L'T' : L' ';
-			OutStr[8] = FileAttributes&FILE_ATTRIBUTE_NOT_CONTENT_INDEXED ? L'I' : L' ';
-			OutStr[9] = FileAttributes&FILE_ATTRIBUTE_OFFLINE ? L'O' : L' ';
-			OutStr[10] = FileAttributes&FILE_ATTRIBUTE_VIRTUAL ? L'V' : L' ';
+		OutStr[0] = FileAttributes & FILE_ATTRIBUTE_EXECUTABLE ? L'X' : L' ';
+		OutStr[1] = FileAttributes & FILE_ATTRIBUTE_READONLY ? L'R' : L' ';
+		OutStr[2] = FileAttributes & FILE_ATTRIBUTE_SYSTEM ? L'S' : L' ';
+		OutStr[3] = FileAttributes & FILE_ATTRIBUTE_HIDDEN ? L'H' : L' ';
+		OutStr[4] = FileAttributes & FILE_ATTRIBUTE_ARCHIVE ? L'A' : L' ';
+		OutStr[5] = FileAttributes & FILE_ATTRIBUTE_REPARSE_POINT ? L'L'
+				: FileAttributes & FILE_ATTRIBUTE_SPARSE_FILE
+				? L'$'
+				: L' ';
+		OutStr[6] = FileAttributes & FILE_ATTRIBUTE_COMPRESSED ? L'C'
+				: FileAttributes & FILE_ATTRIBUTE_ENCRYPTED
+				? L'E'
+				: L' ';
+		OutStr[7] = FileAttributes & FILE_ATTRIBUTE_TEMPORARY ? L'T' : L' ';
+		OutStr[8] = FileAttributes & FILE_ATTRIBUTE_NOT_CONTENT_INDEXED ? L'I' : L' ';
+		OutStr[9] = FileAttributes & FILE_ATTRIBUTE_OFFLINE ? L'O' : L' ';
+		OutStr[10] = FileAttributes & FILE_ATTRIBUTE_VIRTUAL ? L'V' : L' ';
 	}
 
 	if (Width > 0)
-		strResult<<fmt::Expand(Width)<<fmt::Truncate(Width);
+		strResult << fmt::Size(Width);
 
-	strResult<<OutStr;
+	strResult << OutStr;
 
 	return std::move(strResult.strValue());
 }
