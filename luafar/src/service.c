@@ -2508,9 +2508,7 @@ void SetFarDialogItem(lua_State *L, struct FarDialogItem* Item, int itemindex, i
   else if (Item->Type == DI_EDIT) {
     if (Item->Flags & DIF_HISTORY) {
       lua_rawgeti(L, -1, 7);      // +1
-      if (!lua_isstring(L,-1))
-        luaLF_SlotError (L, 7, "string");
-      Item->History = check_utf8_string (L, -1, NULL); // +1 --> Item->History and Item->Mask are aliases (union members)
+      Item->History = opt_utf8_string (L, -1, NULL); // +1 --> Item->History and Item->Mask are aliases (union members)
       size_t len = lua_objlen(L, historyindex);
       lua_rawseti (L, historyindex, len+1); // +0; put into "histories" table to avoid being gc'ed
     }
@@ -2518,9 +2516,7 @@ void SetFarDialogItem(lua_State *L, struct FarDialogItem* Item, int itemindex, i
   else if (Item->Type == DI_FIXEDIT) {
     if (Item->Flags & DIF_MASKEDIT) {
       lua_rawgeti(L, -1, 8);      // +1
-      if (!lua_isstring(L,-1))
-        luaLF_SlotError (L, 8, "string");
-      Item->Mask = check_utf8_string (L, -1, NULL); // +1 --> Item->History and Item->Mask are aliases (union members)
+      Item->Mask = opt_utf8_string (L, -1, NULL); // +1 --> Item->History and Item->Mask are aliases (union members)
       size_t len = lua_objlen(L, historyindex);
       lua_rawseti (L, historyindex, len+1); // +0; put into "histories" table to avoid being gc'ed
     }
@@ -2583,6 +2579,14 @@ void PushDlgItem (lua_State *L, const struct FarDialogItem* pItem, BOOL table_ex
   {
     PushCheckbox(L, pItem->Selected);
     lua_rawseti(L, -2, 6);
+  }
+  else if (pItem->Type == DI_EDIT && (pItem->Flags & DIF_HISTORY))
+  {
+    PutWStrToArray(L, 7, pItem->History, -1);
+  }
+  else if (pItem->Type == DI_FIXEDIT && (pItem->Flags & DIF_MASKEDIT))
+  {
+    PutWStrToArray(L, 8, pItem->Mask, -1);
   }
   else
     PutIntToArray(L, 6, pItem->Selected);
