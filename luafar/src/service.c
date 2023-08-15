@@ -2637,7 +2637,6 @@ TDialogData* NewDialogData(lua_State* L, HANDLE hDlg, BOOL isOwned)
   dd->isOwned  = isOwned;
   dd->wasError = FALSE;
   dd->isModal  = TRUE;
-  memset(&dd->Guid, 0, sizeof(GUID));
   luaL_getmetatable(L, FarDialogType);
   lua_setmetatable(L, -2);
   if (isOwned) {
@@ -3552,10 +3551,8 @@ LONG_PTR LF_DlgProc(lua_State *L, HANDLE hDlg, int Msg, int Param1, LONG_PTR Par
   if (dd->wasError)
     return PSInfo.DefDlgProc(hDlg, Msg, Param1, Param2);
 
-  if (Msg == DN_GETDIALOGINFO) {
-     ((struct DialogInfo*)(Param2))->Id = dd->Guid;
-     return TRUE;
-  }
+  if (Msg == DN_GETDIALOGINFO)
+     return FALSE;
 
   L = dd->L; // the dialog may be called from a lua_State other than the main one
   int Param1_mod = DN_ConvertParam1(Msg, Param1);
@@ -3673,7 +3670,6 @@ int far_DialogInit(lua_State *L)
   Flags = OptFlags(L,8,0);
   dd = NewDialogData(L, INVALID_HANDLE_VALUE, TRUE);
   dd->isModal = (Flags&FDLG_NONMODAL) == 0;
-  dd->Guid = Id;
 
   // 9-th parameter (DlgProc function)
   Proc = NULL;
@@ -3699,8 +3695,8 @@ int far_DialogInit(lua_State *L)
 
   lua_rawset (L, LUA_REGISTRYINDEX);
 
-  dd->hDlg = PSInfo.DialogInit(pd->ModuleNumber, X1, Y1, X2, Y2, HelpTopic,
-                              Items, ItemsNumber, 0, Flags, Proc, Param);
+  dd->hDlg = PSInfo.DialogInitV3(pd->ModuleNumber, &Id, X1, Y1, X2, Y2, HelpTopic,
+                                 Items, ItemsNumber, 0, Flags, Proc, Param);
 
   if (dd->hDlg == INVALID_HANDLE_VALUE) {
     RemoveDialogFromRegistry(dd);

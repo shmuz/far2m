@@ -121,6 +121,10 @@ HANDLE WINAPI FarDialogInit(INT_PTR PluginNumber, int X1, int Y1, int X2, int Y2
                             const wchar_t *HelpTopic, struct FarDialogItem *Item,
                             unsigned int ItemsNumber, DWORD Reserved, DWORD Flags,
                             FARWINDOWPROC Proc, LONG_PTR Param);
+HANDLE WINAPI FarDialogInitV3(INT_PTR PluginNumber, const GUID *Id, int X1, int Y1, int X2, int Y2,
+                            const wchar_t *HelpTopic, struct FarDialogItem *Item,
+                            unsigned int ItemsNumber, DWORD Reserved, DWORD Flags,
+                            FARWINDOWPROC Proc, LONG_PTR Param);
 int WINAPI FarDialogRun(HANDLE hDlg);
 void WINAPI FarDialogFree(HANDLE hDlg);
 //  Функция обработки диалога по умолчанию

@@ -661,6 +661,22 @@ typedef HANDLE(WINAPI *FARAPIDIALOGINIT)(
     LONG_PTR              Param
 );
 
+typedef HANDLE(WINAPI *FARAPIDIALOGINITV3)(
+    INT_PTR               PluginNumber,
+    const GUID           *Id,
+    int                   X1,
+    int                   Y1,
+    int                   X2,
+    int                   Y2,
+    const wchar_t        *HelpTopic,
+    struct FarDialogItem *Item,
+    unsigned int          ItemsNumber,
+    DWORD                 Reserved,
+    DWORD                 Flags,
+    FARWINDOWPROC         DlgProc,
+    LONG_PTR              Param
+);
+
 typedef int (WINAPI *FARAPIDIALOGRUN)(
     HANDLE hDlg
 );
@@ -2379,6 +2395,7 @@ struct PluginStartupInfo
 	FARAPIFREESCREEN       FreeScreen;
 	const void*            Private;
 	void*                  LuafarHandle;
+	FARAPIDIALOGINITV3     DialogInitV3;
 };
 
 

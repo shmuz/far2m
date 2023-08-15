@@ -545,6 +545,7 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 		StartupInfo.ShowHelp=FarShowHelp;
 		StartupInfo.AdvControl=FarAdvControl;
 		StartupInfo.DialogInit=FarDialogInit;
+		StartupInfo.DialogInitV3=FarDialogInitV3;
 		StartupInfo.DialogRun=FarDialogRun;
 		StartupInfo.DialogFree=FarDialogFree;
 		StartupInfo.SendDlgMessage=FarSendDlgMessage;

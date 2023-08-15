@@ -977,7 +977,7 @@ LONG_PTR WINAPI FarSendDlgMessage(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2
 	return 0;
 }
 
-static HANDLE FarDialogInitSynched(INT_PTR PluginNumber, int X1, int Y1, int X2, int Y2,
+static HANDLE FarDialogInitSynched(INT_PTR PluginNumber, const GUID *Id, int X1, int Y1, int X2, int Y2,
                             const wchar_t *HelpTopic, FarDialogItem *Item,
                             unsigned int ItemsNumber, DWORD Reserved, DWORD Flags,
                             FARWINDOWPROC DlgProc, LONG_PTR Param)
@@ -1032,6 +1032,9 @@ static HANDLE FarDialogInitSynched(INT_PTR PluginNumber, int X1, int Y1, int X2,
 		   Запомним номер плагина - сейчас в основном для формирования HelpTopic
 		*/
 		FarDialog->SetPluginNumber(PluginNumber);
+
+		if (Id)
+			FarDialog->SetId(*Id);
 
 		if (FarDialog->GetCanLoseFocus())
 			FarDialog->Process();
@@ -1090,7 +1093,18 @@ HANDLE WINAPI FarDialogInit(INT_PTR PluginNumber, int X1, int Y1, int X2, int Y2
                             FARWINDOWPROC DlgProc, LONG_PTR Param)
 {
 	HANDLE out = InterThreadCall<HANDLE, nullptr>(std::bind(FarDialogInitSynched,
-		PluginNumber, X1, Y1, X2, Y2, HelpTopic, Item, ItemsNumber, Reserved, Flags, DlgProc, Param));
+		PluginNumber, nullptr, X1, Y1, X2, Y2, HelpTopic, Item, ItemsNumber, Reserved, Flags, DlgProc, Param));
+
+	return (out != nullptr) ? out : INVALID_HANDLE_VALUE;
+}
+
+HANDLE WINAPI FarDialogInitV3(INT_PTR PluginNumber, const GUID *Id, int X1, int Y1, int X2, int Y2,
+                            const wchar_t *HelpTopic, FarDialogItem *Item,
+                            unsigned int ItemsNumber, DWORD Reserved, DWORD Flags,
+                            FARWINDOWPROC DlgProc, LONG_PTR Param)
+{
+	HANDLE out = InterThreadCall<HANDLE, nullptr>(std::bind(FarDialogInitSynched,
+		PluginNumber, Id, X1, Y1, X2, Y2, HelpTopic, Item, ItemsNumber, Reserved, Flags, DlgProc, Param));
 
 	return (out != nullptr) ? out : INVALID_HANDLE_VALUE;
 }
