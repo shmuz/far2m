@@ -921,7 +921,7 @@ local function GetFromMenu (menuitems, area, key)
       return
     elseif item.macro then
       return item.macro
-    elseif item.action == "edit" then
+    elseif item.BreakKey and item.action == "edit" then
       props.SelectIndex = pos
       local m = menuitems[pos].macro
       if m.FileName then
