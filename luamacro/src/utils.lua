@@ -896,7 +896,7 @@ local function GetFromMenu (menuitems, area, key)
     end
   end
 
-  local bkeys = { {BreakKey="A+F4"} }
+  local bkeys = { {BreakKey="F4"; action="edit"; } }
   for i,item in ipairs(menuitems) do
     local ch = i<10 and tostring(i) or i<36 and string.char(i+55)
     if ch then
@@ -921,7 +921,7 @@ local function GetFromMenu (menuitems, area, key)
       return
     elseif item.macro then
       return item.macro
-    elseif item.BreakKey == "A+F4" then
+    elseif item.action == "edit" then
       props.SelectIndex = pos
       local m = menuitems[pos].macro
       if m.FileName then
