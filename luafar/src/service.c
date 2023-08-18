@@ -2637,6 +2637,7 @@ TDialogData* NewDialogData(lua_State* L, HANDLE hDlg, BOOL isOwned)
   dd->isOwned  = isOwned;
   dd->wasError = FALSE;
   dd->isModal  = TRUE;
+  dd->dataRef  = LUA_REFNIL;
   luaL_getmetatable(L, FarDialogType);
   lua_setmetatable(L, -2);
   if (isOwned) {
@@ -2819,7 +2820,7 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 {
   typedef struct { void *Id; int Ref; } listdata_t;
   TPluginData *pd = GetPluginData(L);
-  int Param1, res, res_incr=0;
+  int Param1=0, res=0, res_incr=0;
   LONG_PTR Param2=0;
   wchar_t buf[512];
   int pos2 = 2-delta, pos3 = 3-delta, pos4 = 4-delta;
@@ -2846,20 +2847,29 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
   HANDLE hDlg = CheckDialogHandle(L, 1);
   if (delta == 0)
     Msg = check_env_flag (L, 2);
-  if (Msg == DM_CLOSE) {
-    Param1 = luaL_optinteger(L,pos3,-1);
-    if (Param1>0) --Param1;
+
+  //Param1
+  switch(Msg) {
+    case DM_CLOSE:
+      Param1 = luaL_optinteger(L,pos3,-1);
+      if (Param1>0) --Param1;
+      break;
+
+    case DM_ENABLEREDRAW:
+      Param1 = GetEnableFromLua(L,pos3);
+      break;
+
+    case DM_SETDLGDATA:
+      break;
+
+    default:
+      Param1 = Is_DM_DialogItem(Msg) ? luaL_optinteger(L,pos3,1)-1 : luaL_optinteger(L,pos3,0);
+      break;
   }
-  else if (Msg == DM_ENABLEREDRAW)
-    Param1 = GetEnableFromLua(L,pos3);
-  else
-    Param1 = Is_DM_DialogItem(Msg) ? luaL_optinteger(L,pos3,1)-1 : luaL_optinteger(L,pos3,0);
 
   //Param2 and the rest
   switch(Msg) {
     default:
-    case DM_GETDLGDATA: //Not supported as used internally by LuaFAR
-    case DM_SETDLGDATA: //+++
       luaL_argerror(L, pos2, "operation not implemented");
       break;
 
@@ -2888,6 +2898,19 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 
     case DM_ENABLEREDRAW:
       break;
+
+    case DM_GETDLGDATA: {
+      TDialogData *dd = (TDialogData*) PSInfo.SendDlgMessage(hDlg,DM_GETDLGDATA,0,0);
+      lua_rawgeti(L, LUA_REGISTRYINDEX, dd->dataRef);
+      return 1;
+    }
+
+    case DM_SETDLGDATA: {
+      TDialogData *dd = (TDialogData*) PSInfo.SendDlgMessage(hDlg,DM_GETDLGDATA,0,0);
+      lua_settop(L, pos3);
+      lua_rawseti(L, LUA_REGISTRYINDEX, dd->dataRef);
+      return 0;
+    }
 
     case DM_ENABLE:
       Param2 = GetEnableFromLua(L, pos4);
@@ -3286,6 +3309,7 @@ DlgMethod( GetConstTextPtr,        DM_GETCONSTTEXTPTR, 1)
 DlgMethod( GetCursorPos,           DM_GETCURSORPOS, 1)
 DlgMethod( GetCursorSize,          DM_GETCURSORSIZE, 1)
 DlgMethod( GetDialogInfo,          DM_GETDIALOGINFO, 1)
+DlgMethod( GetDlgData,             DM_GETDLGDATA, 1)
 DlgMethod( GetDlgItem,             DM_GETDLGITEM, 1)
 DlgMethod( GetDlgRect,             DM_GETDLGRECT, 1)
 DlgMethod( GetDropdownOpened,      DM_GETDROPDOWNOPENED, 1)
@@ -3324,6 +3348,7 @@ DlgMethod( SetColor,               DM_SETCOLOR, 1)
 DlgMethod( SetComboboxEvent,       DM_SETCOMBOBOXEVENT, 1)
 DlgMethod( SetCursorPos,           DM_SETCURSORPOS, 1)
 DlgMethod( SetCursorSize,          DM_SETCURSORSIZE, 1)
+DlgMethod( SetDlgData,             DM_SETDLGDATA, 1)
 DlgMethod( SetDlgItem,             DM_SETDLGITEM, 1)
 DlgMethod( SetDropdownOpened,      DM_SETDROPDOWNOPENED, 1)
 DlgMethod( SetEditPosition,        DM_SETEDITPOSITION, 1)
@@ -3534,6 +3559,7 @@ int DN_ConvertParam1(int Msg, int Param1)
 
 void RemoveDialogFromRegistry(TDialogData *dd)
 {
+  luaL_unref(dd->L, LUA_REGISTRYINDEX, dd->dataRef);
   dd->hDlg = INVALID_HANDLE_VALUE;
   lua_pushlightuserdata(dd->L, dd);
   lua_pushnil(dd->L);
@@ -3566,7 +3592,7 @@ LONG_PTR LF_DlgProc(lua_State *L, HANDLE hDlg, int Msg, int Param1, LONG_PTR Par
 
   switch(Msg) {
     case DN_INITDIALOG:
-      lua_pushnil(L);
+      lua_rawgeti(L, LUA_REGISTRYINDEX, dd->dataRef);
       if (NonModal(dd))
         dd->hDlg = hDlg;
       break;
@@ -3632,6 +3658,7 @@ LONG_PTR LF_DlgProc(lua_State *L, HANDLE hDlg, int Msg, int Param1, LONG_PTR Par
 
 int far_DialogInit(lua_State *L)
 {
+  enum { POS_HISTORIES=1, POS_ITEMS=2 };
   int ItemsNumber, i;
   struct FarDialogItem *Items;
   flags_t Flags;
@@ -3650,16 +3677,16 @@ int far_DialogInit(lua_State *L)
   luaL_checktype(L, 7, LUA_TTABLE);
   lua_newtable (L); // create a "histories" table, to prevent history strings
                     // from being garbage collected too early
-  lua_replace (L, 1);
+  lua_replace (L, POS_HISTORIES);
   ItemsNumber = lua_objlen(L, 7);
   Items = (struct FarDialogItem*)lua_newuserdata (L, ItemsNumber * sizeof(struct FarDialogItem));
-  lua_replace (L, 2);
+  lua_replace (L, POS_ITEMS);
 
   for(i=0; i < ItemsNumber; i++) {
     lua_pushinteger(L, i+1);
     lua_gettable(L, 7);
     if (lua_type(L, -1) == LUA_TTABLE) {
-      SetFarDialogItem(L, Items+i, i, 1);
+      SetFarDialogItem(L, Items+i, i, POS_HISTORIES);
       lua_pop(L, 1);
     }
     else
@@ -3677,12 +3704,16 @@ int far_DialogInit(lua_State *L)
   if (lua_isfunction(L, 9)) {
     Proc = pd->DlgProc;
     Param = (LONG_PTR)dd;
+    if (lua_gettop(L) >= 10) {
+      lua_pushvalue(L,10);
+      dd->dataRef = luaL_ref(L, LUA_REGISTRYINDEX);
+    }
   }
 
   // Put some values into the registry
   lua_pushlightuserdata(L, dd); // important: index it with dd
   lua_createtable(L, 3, 0);
-  lua_pushvalue(L, 1);      // store the "histories" table
+  lua_pushvalue(L, POS_HISTORIES); // store the "histories" table
   lua_rawseti(L, -2, 1);
 
   if(lua_isfunction(L, 9))
@@ -5803,6 +5834,7 @@ static const luaL_Reg dialog_methods[] = {
   {"GetCursorPos",         dlg_GetCursorPos},
   {"GetCursorSize",        dlg_GetCursorSize},
   {"GetDialogInfo",        dlg_GetDialogInfo},
+  {"GetDlgData",           dlg_GetDlgData},
   {"GetDlgItem",           dlg_GetDlgItem},
   {"GetDlgRect",           dlg_GetDlgRect},
   {"GetDropdownOpened",    dlg_GetDropdownOpened},
@@ -5841,6 +5873,7 @@ static const luaL_Reg dialog_methods[] = {
   {"SetComboboxEvent",     dlg_SetComboboxEvent},
   {"SetCursorPos",         dlg_SetCursorPos},
   {"SetCursorSize",        dlg_SetCursorSize},
+  {"SetDlgData",           dlg_SetDlgData},
   {"SetDlgItem",           dlg_SetDlgItem},
   {"SetDropdownOpened",    dlg_SetDropdownOpened},
   {"SetEditPosition",      dlg_SetEditPosition},
@@ -6139,8 +6172,8 @@ static const luaL_Reg far_funcs[] = {
 };
 
 const char far_Dialog[] =
-"function far.Dialog (Guid,X1,Y1,X2,Y2,HelpTopic,Items,Flags,DlgProc)\n\
-  local hDlg = far.DialogInit(Guid,X1,Y1,X2,Y2,HelpTopic,Items,Flags,DlgProc)\n\
+"function far.Dialog (Guid,X1,Y1,X2,Y2,HelpTopic,Items,Flags,DlgProc,Param)\n\
+  local hDlg = far.DialogInit(Guid,X1,Y1,X2,Y2,HelpTopic,Items,Flags,DlgProc,Param)\n\
   if hDlg == nil then return nil end\n\
 \n\
   local ret = far.DialogRun(hDlg)\n\
