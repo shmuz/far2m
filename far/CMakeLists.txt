@@ -174,6 +174,10 @@ else()
         RUNTIME_OUTPUT_DIRECTORY "${INSTALL_DIR}")
 endif()
 
+if (${USELUA})
+	target_compile_definitions(far2m PRIVATE -DUSELUA)
+endif()
+
 if (NOT DEFINED USEUCD)
 	set(USEUCD "YES")
 endif()
