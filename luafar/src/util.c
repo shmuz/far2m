@@ -119,6 +119,12 @@ int DecodeAttributes(const char* str)
     else if(c == 't' || c == 'T') attr |= FILE_ATTRIBUTE_TEMPORARY;
     else if(c == 'u' || c == 'U') attr |= FILE_ATTRIBUTE_NO_SCRUB_DATA;
     else if(c == 'v' || c == 'V') attr |= FILE_ATTRIBUTE_VIRTUAL;
+
+    else if(c == 'b' || c == 'B') attr |= FILE_ATTRIBUTE_BROKEN;
+    else if(c == 'x' || c == 'X') attr |= FILE_ATTRIBUTE_EXECUTABLE;
+    else if(c == 'g' || c == 'G') attr |= FILE_ATTRIBUTE_DEVICE_CHAR;
+    else if(c == 'f' || c == 'F') attr |= FILE_ATTRIBUTE_DEVICE_FIFO;
+    else if(c == 'k' || c == 'K') attr |= FILE_ATTRIBUTE_DEVICE_SOCK;
   }
   return attr;
 }
@@ -150,6 +156,13 @@ void PushAttrString(lua_State *L, int attr)
   if (attr & FILE_ATTRIBUTE_TEMPORARY)           *p++ = 't';
   if (attr & FILE_ATTRIBUTE_NO_SCRUB_DATA)       *p++ = 'u';
   if (attr & FILE_ATTRIBUTE_VIRTUAL)             *p++ = 'v';
+
+  if (attr & FILE_ATTRIBUTE_BROKEN)              *p++ = 'b';
+  if (attr & FILE_ATTRIBUTE_EXECUTABLE)          *p++ = 'x';
+  if (attr & FILE_ATTRIBUTE_DEVICE_CHAR)         *p++ = 'g';
+  if (attr & FILE_ATTRIBUTE_DEVICE_FIFO)         *p++ = 'f';
+  if (attr & FILE_ATTRIBUTE_DEVICE_SOCK)         *p++ = 'k';
+
   lua_pushlstring(L, buf, p-buf);
 }
 
