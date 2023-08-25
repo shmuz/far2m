@@ -709,7 +709,7 @@ static int libexec(const char *lib, const char *symbol, int argc, char *argv[])
 static void SetCustomSettings(const char *arg)
 {
 	std::string refined;
-	if (arg[0] == '.' && arg[1] == '/') {
+	if (arg[0] == '.' && arg[1] == GOOD_SLASH) {
 		char cwdbuf[MAX_PATH + 1];
 		const char *cwd = getcwd(cwdbuf, MAX_PATH);
 		if (cwd) {
@@ -721,8 +721,8 @@ static void SetCustomSettings(const char *arg)
 		refined = arg;
 	}
 
-	while (!refined.empty() && refined.back() == '/') {
-		refined.resize(refined.size() - 1);
+	while (!refined.empty() && refined.back() == GOOD_SLASH) {
+		refined.pop_back();
 	}
 
 	fprintf(stderr, "%s: '%s'\n", __FUNCTION__, refined.c_str());
@@ -760,9 +760,8 @@ int _cdecl main(int argc, char *argv[])
 	for (int i = 1; i + 1 < argc; ++i) {
 		if (!strcasecmp(argv[i],"-u") || !strcasecmp(argv[i],"/u")) {
 			++i;
-			if (argv[i][0]) {
+			if (*argv[i]) {
 				SetCustomSettings(argv[i]);
-				break;
 			}
 		}
 	}

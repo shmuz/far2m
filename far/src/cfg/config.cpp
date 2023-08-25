@@ -506,7 +506,7 @@ void CmdlineSettings()
 	Builder.AddOKCancel();
 
 	int oldUseShell = Opt.CmdLine.UseShell;
-	FARString oldShell = FARString(Opt.CmdLine.strShell);
+	FARString oldShell = Opt.CmdLine.strShell;
 
 	if (Builder.ShowDialog()) {
 		SanitizeHistoryCounts();
@@ -742,7 +742,7 @@ static struct FARConfig
 	const wchar_t *DefStr;   // строка/данные по умолчанию
 } CFG[]=
 {
-	{1, REG_BINARY, NSecColors, "CurrentPalette",(char*)Palette,SIZE_ARRAY_PALETTE,(wchar_t*)DefaultPalette},
+	{1, REG_BINARY, NSecColors, "CurrentPalette", Palette, SIZE_ARRAY_PALETTE, (wchar_t*)DefaultPalette},
 
 	{1, REG_DWORD,  NSecScreen, "Clock", &Opt.Clock, 1, 0},
 	{1, REG_DWORD,  NSecScreen, "ViewerEditorClock",&Opt.ViewerEditorClock,0, 0},
