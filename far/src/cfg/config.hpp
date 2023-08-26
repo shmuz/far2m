@@ -564,7 +564,6 @@ struct Options
 	int ExecuteUseAppPath;
 	int ExecuteFullTitle;
 	int ExecuteSilentExternal;
-	FARString strExecuteBatchType;
 
 	DWORD PluginMaxReadData;
 	int ScanJunction;
