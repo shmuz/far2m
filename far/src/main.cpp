@@ -425,9 +425,6 @@ int FarAppMain(int argc, char **argv)
 
 	AddEndSlash(g_strFarPath);
 
-	// don't inherit from parent process in any case
-	unsetenv("FARUSER");
-
 	if (Opt.IsUserAdmin) {
 		setenv("FARADMINMODE", "1", 1);
 	} else {
