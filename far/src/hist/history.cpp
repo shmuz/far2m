@@ -327,9 +327,9 @@ void History::SyncChanges()
 			|| LoadedStat.st_size != CurrentStat.st_size
 			|| LoadedStat.st_mtime != CurrentStat.st_mtime) {
 		fprintf(stderr, "History::SyncChanges: %s\n", strRegKey.c_str());
-		CurrentItem = HistoryList.end();
 		HistoryList.clear();
 		ReadHistory();
+		CurrentItem = HistoryList.end();
 	}
 }
 
@@ -398,12 +398,12 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 	int RetCode=1;
 	bool Done=false;
 	bool SetUpMenuPos=false;
-	std::vector<Iter> IterVector(HistoryList.size());
 
 	SyncChanges();
 	if (TypeHistory == HISTORYTYPE_DIALOG && HistoryList.empty())
 		return 0;
 
+	std::vector<Iter> IterVector(HistoryList.size());
 	while (!Done)
 	{
 		int IterIndex=0;
