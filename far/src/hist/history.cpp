@@ -328,8 +328,8 @@ void History::SyncChanges()
 			|| LoadedStat.st_mtime != CurrentStat.st_mtime) {
 		fprintf(stderr, "History::SyncChanges: %s\n", strRegKey.c_str());
 		HistoryList.clear();
-		ReadHistory();
 		CurrentItem = HistoryList.end();
+		ReadHistory();
 	}
 }
 
