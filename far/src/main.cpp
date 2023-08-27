@@ -34,6 +34,12 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "headers.hpp"
 #include <sys/ioctl.h>
 #include <signal.h>
+#include <string>
+#include <sys/stat.h>
+#include <locale.h>
+#include <fcntl.h>
+#include <dlfcn.h>
+#include <unistd.h>
 
 #include "lang.hpp"
 #include "keys.hpp"
@@ -51,7 +57,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "scrbuf.hpp"
 #include "language.hpp"
 #include "syslog.hpp"
-//#include "localOEM.hpp"
 #include "interf.hpp"
 #include "keyboard.hpp"
 #include "clipboard.hpp"
@@ -64,12 +69,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "vtshell.h"
 #include "execute.hpp"
 #include "mix.hpp"
-#include <string>
-#include <sys/stat.h>
-#include <locale.h>
-#include <fcntl.h>
-#include <dlfcn.h>
-#include <unistd.h>
 #include "InterThreadCall.hpp"
 #include "SafeMMap.hpp"
 #include "ConfigRW.hpp"
@@ -754,6 +753,7 @@ int _cdecl main(int argc, char *argv[])
 		}
 	}
 
+	unsetenv("FARSETTINGS"); // don't inherit from parent process in any case
 	for (int i = 1; i + 1 < argc; ++i) {
 		if (!strcasecmp(argv[i],"-u") || !strcasecmp(argv[i],"/u")) {
 			++i;
