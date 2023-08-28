@@ -15741,26 +15741,6 @@ SetConfirmRemoveConnection
 "Desconectar u&nidad de red"
 "&Відключення мережного пристрою"
 
-SetConfirmRemoveSUBST
-"Отключение SUBST-диска"
-"Disconnect &SUBST-disk"
-"Odpojení SUBST-d&isku"
-"Trennen von &Substlaufwerken"
-"Virt&uális meghajtó törlése"
-"Odłączenie dysku &SUBST"
-"Desconectar disco &sustituido"
-"Відключення SUBST-диска"
-
-SetConfirmDetachVHD
-"Отсоедиение виртуального диска"
-"Detach virtual disk"
-upd:"Detach virtual disk"
-upd:"Detach virtual disk"
-upd:"Detach virtual disk"
-upd:"Detach virtual disk"
-upd:"Detach virtual disk"
-"Від'єднання віртуального диска"
-
 SetConfirmRemoveHotPlug
 "Отключение HotPlug-у&стройства"
 "Hot&Plug-device removal"

@@ -155,9 +155,7 @@ struct Confirmation
 	    */
 	int AllowReedit;
 	int HistoryClear;
-	int RemoveSUBST;
 	int RemoveHotPlug;
-	int DetachVHD;
 };
 
 struct DizOptions

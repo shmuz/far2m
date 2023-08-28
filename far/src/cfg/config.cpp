@@ -528,8 +528,6 @@ void SetConfirmations()
 	Builder.AddCheckbox(Msg::SetConfirmDeleteFolders, &Opt.Confirm.DeleteFolder);
 	Builder.AddCheckbox(Msg::SetConfirmEsc, &Opt.Confirm.Esc);
 	Builder.AddCheckbox(Msg::SetConfirmRemoveConnection, &Opt.Confirm.RemoveConnection);
-	Builder.AddCheckbox(Msg::SetConfirmRemoveSUBST, &Opt.Confirm.RemoveSUBST);
-	Builder.AddCheckbox(Msg::SetConfirmDetachVHD, &Opt.Confirm.DetachVHD);
 	Builder.AddCheckbox(Msg::SetConfirmRemoveHotPlug, &Opt.Confirm.RemoveHotPlug);
 	Builder.AddCheckbox(Msg::SetConfirmAllowReedit, &Opt.Confirm.AllowReedit);
 	Builder.AddCheckbox(Msg::SetConfirmHistoryClear, &Opt.Confirm.HistoryClear);
@@ -975,8 +973,6 @@ static struct FARConfig
 	{1, NSecConfirmations, "DeleteFolder",          &Opt.Confirm.DeleteFolder, 1},
 	{1, NSecConfirmations, "Esc",                   &Opt.Confirm.Esc, 1},
 	{1, NSecConfirmations, "RemoveConnection",      &Opt.Confirm.RemoveConnection, 1},
-	{1, NSecConfirmations, "RemoveSUBST",           &Opt.Confirm.RemoveSUBST, 1},
-	{1, NSecConfirmations, "DetachVHD",             &Opt.Confirm.DetachVHD, 1},
 	{1, NSecConfirmations, "RemoveHotPlug",         &Opt.Confirm.RemoveHotPlug, 1},
 	{1, NSecConfirmations, "AllowReedit",           &Opt.Confirm.AllowReedit, 1},
 	{1, NSecConfirmations, "HistoryClear",          &Opt.Confirm.HistoryClear, 1},
