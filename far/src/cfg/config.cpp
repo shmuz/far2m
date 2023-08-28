@@ -543,7 +543,6 @@ void PluginsManagerSettings()
 {
 	DialogBuilder Builder(Msg::PluginsManagerSettingsTitle, L"PluginsManagerSettings");
 
-	Builder.AddCheckbox(Msg::PluginsManagerOEMPluginsSupport, &Opt.LoadPlug.OEMPluginsSupport);
 	Builder.AddCheckbox(Msg::PluginsManagerScanSymlinks, &Opt.LoadPlug.ScanSymlinks);
 	Builder.AddText(Msg::PluginsManagerPersonalPath);
 	Builder.AddEditField(&Opt.LoadPlug.strPersonalPluginsPath, 45, L"PersPath", DIF_EDITPATH);
@@ -924,7 +923,6 @@ static struct FARConfig
 	{0, NSecSystem, "MaxPositionCache",             &Opt.MaxPositionCache, POSCACHE_MAX_ELEMENTS},
 	{0, NSecSystem, "ConsoleDetachKey",             &strKeyNameConsoleDetachKey, L"CtrlAltTab"},
 	{0, NSecSystem, "SilentLoadPlugin",             &Opt.LoadPlug.SilentLoadPlugin, 0},
-	{1, NSecSystem, "OEMPluginsSupport",            &Opt.LoadPlug.OEMPluginsSupport, 1},
 	{1, NSecSystem, "ScanSymlinks",                 &Opt.LoadPlug.ScanSymlinks, 1},
 	{1, NSecSystem, "MultiMakeDir",                 &Opt.MultiMakeDir, 0},
 	{0, NSecSystem, "MsWheelDelta",                 &Opt.MsWheelDelta, 1},

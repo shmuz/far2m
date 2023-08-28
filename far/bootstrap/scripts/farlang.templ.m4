@@ -15812,16 +15812,6 @@ upd:"Plugins manager settings"
 upd:"Plugins manager settings"
 "Параметри менеджера зовнішніх модулів"
 
-PluginsManagerOEMPluginsSupport
-"Поддержка OEM-плагинов"
-"OEM plugins support"
-upd:"OEM plugins support"
-upd:"OEM plugins support"
-upd:"OEM plugins support"
-upd:"OEM plugins support"
-upd:"OEM plugins support"
-"Підтримка OEM-плагінів"
-
 PluginsManagerScanSymlinks
 "Ск&анировать символические ссылки"
 "Scan s&ymbolic links"

@@ -308,7 +308,6 @@ struct LoadPluginsOptions
 	FARString strCustomPluginsPath;  // путь для поиска плагинов, указанный в /p
 	FARString strPersonalPluginsPath;
 	int SilentLoadPlugin; // при загрузке плагина с кривым...
-	int OEMPluginsSupport;
 	int ScanSymlinks;
 };
 
