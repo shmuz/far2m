@@ -434,7 +434,9 @@ bool FileFilter::FilterEdit()
 				FilterList.ProcessInput();
 
 				//заставляем хоткеи позиционировать курсор на пункте но не закрывать меню
-				if (Key!=KEY_NUMENTER && Key!=KEY_ENTER && Key!=KEY_ESC && Key!=KEY_F10 && (IsAlphaNum(Key) || Key&(KEY_ALT|KEY_RALT)))
+				if (Key!=KEY_NUMENTER && Key!=KEY_ENTER && Key!=KEY_ESC && Key!=KEY_F10 &&
+						Key!=KEY_NONE && Key!= KEY_IDLE && // an ugly patch for outside mouse click to close the menu
+						(IsAlphaNum(Key) || Key&(KEY_ALT|KEY_RALT)))
 					FilterList.ClearDone();
 			}
 		}
