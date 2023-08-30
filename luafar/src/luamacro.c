@@ -45,21 +45,21 @@ HANDLE Open_Luamacro (lua_State* L, INT_PTR Item)
 	size_t argc = om_info->Data ? om_info->Data->Count : 0; // store Data->Count: 'Data' will be invalid after FL_PushParams()
 	TPluginData *pd = GetPluginData(L);
 
-	if (pd->PluginId != LuamacroId)                //+1 (function export.OpenPlugin)
+	if (pd->PluginId != LuamacroId)                //+2 (export.Open, OpenFrom)
 	{
-		lua_pop(L, 1);
+		lua_pop(L, 2);
 		return NULL;
 	}
 
 	lua_pushinteger(L, calltype);                  //+2
 	if (om_info->Data && !FL_PushParams(L, om_info->Data))
 	{
-		lua_pop(L, 2);
+		lua_pop(L, 3);
 		LF_Message(L, L"too many values to place onto Lua stack", L"LuaMacro", L"OK", "wl", NULL);
 		return NULL;
 	}
 
-	if(pcall_msg(L, 1+(int)argc, 2) == 0)
+	if (pcall_msg(L, 2+(int)argc, 2) == 0)
 	{
 		intptr_t ReturnType;
 		if (!lua_toboolean(L,-2))

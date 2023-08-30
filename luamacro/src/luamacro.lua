@@ -496,7 +496,7 @@ local function PanelModuleExist(mod)
   end
 end
 
-function export.OpenLuaMacro (calltype, ...)
+local function OpenLuaMacro (calltype, ...)
   if     calltype==F.MCT_KEYMACRO       then return keymacro.Dispatch(...)
   elseif calltype==F.MCT_MACROPARSE     then return MacroParse(...)
   elseif calltype==F.MCT_DELMACRO       then return utils.DelMacro(...)
@@ -534,12 +534,12 @@ local CanCreatePanel = {
   [F.OPEN_PLUGINSMENU]   = true;
 }
 
-function export.OpenCommandLine (CmdLine)
+local function OpenCommandLine (CmdLine)
   local mod, obj = Open_CommandLine(CmdLine)
   return mod and obj and PanelModuleExist(mod) and { module=mod; object=obj }
 end
 
-function export.OpenShortcut (Item)
+local function OpenShortcut (Item)
   if Item then
     local mod_guid, data = Item:match(
       "^(%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x)/(.*)")
@@ -553,7 +553,7 @@ function export.OpenShortcut (Item)
   end
 end
 
-function export.OpenFromMacro (argtable)
+local function OpenFromMacro (argtable)
   if argtable[1]=="argtest" then -- argtest: return received arguments
     return unpack(argtable, 2, argtable.n)
   elseif argtable[1]=="macropost" then -- test Mantis # 2222
@@ -563,11 +563,23 @@ function export.OpenFromMacro (argtable)
   end
 end
 
-function export.OpenPlugin (OpenFrom, Item, ...)
-  if OpenFrom == F.OPEN_FINDLIST then
+function export.Open (OpenFrom, Item, ...)
+  if OpenFrom == F.OPEN_LUAMACRO then
+    return OpenLuaMacro(Item, ...)
+
+  elseif OpenFrom == F.OPEN_FROMMACRO then
+    return OpenFromMacro(Item)
+
+  elseif OpenFrom == F.OPEN_SHORTCUT then
+    return OpenShortcut(Item)
+
+  elseif OpenFrom == F.OPEN_COMMANDLINE then
+    return OpenCommandLine(Item)
+
+  elseif OpenFrom == F.OPEN_FINDLIST then
     for _,mod in ipairs(utils.GetPanelModules()) do
-      if type(mod.OpenPlugin) == "function" then
-        local obj = mod.OpenPlugin(OpenFrom, Item, ...)
+      if type(mod.Open) == "function" then
+        local obj = mod.Open(OpenFrom, Item, ...)
         if obj then return { module=mod; object=obj } end
       end
     end
@@ -729,10 +741,10 @@ function export.OpenFilePlugin (Name, Data, OpMode)
   end
 end
 
-function export.GetOpenPluginInfo (wrapped_obj, handle, ...)
+function export.GetOpenPanelInfo (wrapped_obj, handle, ...)
   local mod, obj = wrapped_obj.module, wrapped_obj.object
-  if type(mod.GetOpenPluginInfo) == "function" then
-    local op_info = mod.GetOpenPluginInfo(obj, handle, ...)
+  if type(mod.GetOpenPanelInfo) == "function" then
+    local op_info = mod.GetOpenPanelInfo(obj, handle, ...)
     if type(op_info) == "table" then
       if type(op_info.ShortcutData) == "string"
          and type(mod.Info) == "table"

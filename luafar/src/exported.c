@@ -468,10 +468,10 @@ HANDLE LF_OpenFilePlugin(lua_State* L, const wchar_t *aName,
 }
 //---------------------------------------------------------------------------
 
-void LF_GetOpenPluginInfo(lua_State* L, HANDLE hPlugin, struct OpenPluginInfo *aInfo)
+void LF_GetOpenPanelInfo(lua_State* L, HANDLE hPlugin, struct OpenPluginInfo *aInfo)
 {
   aInfo->StructSize = sizeof (struct OpenPluginInfo);
-  if (!GetExportFunction(L, "GetOpenPluginInfo"))    //+1
+  if (!GetExportFunction(L, "GetOpenPanelInfo"))     //+1
     return;
 
   PushPluginPair(L, hPlugin);                        //+3
@@ -731,29 +731,27 @@ static HANDLE FillFarMacroCall (lua_State* L, int narg)
 	return (HANDLE)fmc;
 }
 
-HANDLE LF_OpenPlugin (lua_State* L, int OpenFrom, INT_PTR Item)
+HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 {
-  if (!CheckReloadDefaultScript(L))
+  if (!CheckReloadDefaultScript(L) || !GetExportFunction(L, "Open"))
     return INVALID_HANDLE_VALUE;
+
+	lua_pushinteger(L, OpenFrom); // 1-st argument
 
   switch(OpenFrom)
   {
     case OPEN_LUAMACRO:
-      if (!GetExportFunction(L, "OpenLuaMacro"))
-        break;
       return Open_Luamacro(L, Item);
 
     case OPEN_FROMMACRO:
     {
       int top;
       struct OpenMacroInfo* data = (struct OpenMacroInfo*)Item;
-      if (!GetExportFunction(L, "OpenFromMacro"))
-        break;
       PackMacroValues(L, data->Count, data->Values);
       top = lua_gettop(L);
-      if (pcall_msg(L, 1, LUA_MULTRET) == 0)
+      if (pcall_msg(L, 2, LUA_MULTRET) == 0)
       {
-        int nret = lua_gettop(L) - top + 2; // nret
+        int nret = lua_gettop(L) - top + 3; // nret
         if (nret > 0 && lua_istable(L, -nret))
         {
           lua_getfield(L, -nret, "type"); // nret+1
@@ -792,10 +790,8 @@ HANDLE LF_OpenPlugin (lua_State* L, int OpenFrom, INT_PTR Item)
     }
 
     case OPEN_SHORTCUT:
-      if (!GetExportFunction(L, "OpenShortcut"))
-        break;
       push_utf8_string(L, (const wchar_t*)Item, -1);
-      if (pcall_msg(L, 1, 1) == 0) {
+      if (pcall_msg(L, 2, 1) == 0) {
         if (lua_toboolean(L, -1))        //+1: Obj
           return RegisterObject(L);      //+0
         lua_pop(L,1);
@@ -803,10 +799,8 @@ HANDLE LF_OpenPlugin (lua_State* L, int OpenFrom, INT_PTR Item)
       break;
 
     case OPEN_COMMANDLINE:
-      if (!GetExportFunction(L, "OpenCommandLine"))
-        break;
       push_utf8_string(L, (const wchar_t*)Item, -1);
-      if (pcall_msg(L, 1, 1) == 0) {
+      if (pcall_msg(L, 2, 1) == 0) {
         if (lua_toboolean(L, -1))        //+1: Obj
           return RegisterObject(L);      //+0
         lua_pop(L,1);
@@ -816,11 +810,9 @@ HANDLE LF_OpenPlugin (lua_State* L, int OpenFrom, INT_PTR Item)
     case OPEN_DIALOG:
     {
       struct OpenDlgPluginData *data = (struct OpenDlgPluginData*)Item;
-      if (!GetExportFunction(L, "OpenDialog"))
-        break;
       lua_pushinteger(L, data->ItemNumber);
       NewDialogData(L, data->hDlg, FALSE);
-      if (pcall_msg(L, 2, 1) == 0) {
+      if (pcall_msg(L, 3, 1) == 0) {
         if (lua_toboolean(L, -1))        //+1: Obj
           return RegisterObject(L);      //+0
         lua_pop(L,1);
@@ -834,9 +826,6 @@ HANDLE LF_OpenPlugin (lua_State* L, int OpenFrom, INT_PTR Item)
     case OPEN_EDITOR:
     case OPEN_VIEWER:
     case OPEN_FILEPANEL:
-      if (!GetExportFunction(L, "OpenPlugin"))
-        break;
-      lua_pushinteger(L, OpenFrom); // 1-st argument
       lua_pushinteger(L, Item);
       if (pcall_msg(L, 2, 1) == 0) {
         if (lua_toboolean(L, -1))        //+1: Obj
@@ -847,6 +836,7 @@ HANDLE LF_OpenPlugin (lua_State* L, int OpenFrom, INT_PTR Item)
 
     default:
     case OPEN_ANALYSE: //currently not supported
+      lua_pop(L, 1);
       break;
   }
 

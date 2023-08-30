@@ -85,7 +85,7 @@ void LUAPLUG GetPluginInfoW(struct PluginInfo *aInfo)
 #if defined(EXPORT_OPENPLUGIN) || defined(EXPORT_ALL)
 HANDLE LUAPLUG OpenPluginW(int OpenFrom, INT_PTR Item)
 {
-  return LS ? LF_OpenPlugin(LS, OpenFrom, Item) : INVALID_HANDLE_VALUE;
+  return LS ? LF_Open(LS, OpenFrom, Item) : INVALID_HANDLE_VALUE;
 }
 #endif
 //---------------------------------------------------------------------------
@@ -135,7 +135,7 @@ int LUAPLUG GetFilesW(HANDLE hPlugin, struct PluginPanelItem *PanelItem,
 #if defined(EXPORT_GETOPENPLUGININFO) || defined(EXPORT_ALL)
 void LUAPLUG GetOpenPluginInfoW(HANDLE hPlugin, struct OpenPluginInfo *Info)
 {
-  if(LS) LF_GetOpenPluginInfo(LS, hPlugin, Info);
+  if(LS) LF_GetOpenPanelInfo(LS, hPlugin, Info);
 }
 #endif
 //---------------------------------------------------------------------------
