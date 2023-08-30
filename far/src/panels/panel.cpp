@@ -410,6 +410,7 @@ int Panel::ChangeDiskMenu(int Pos,int FirstCall)
 		VMenu ChDisk(Msg::ChangeDriveTitle,nullptr,0,ScrY-Y1-3);
 		ChDisk.SetBottomTitle(Msg::ChangeDriveMenuFooter);
 		ChDisk.SetFlags(VMENU_NOTCENTER);
+		ChDisk.SetId(ChangeDiskMenuId);
 
 		if (this == CtrlObject->Cp()->LeftPanel)
 			ChDisk.SetFlags(VMENU_LEFTMOST);
