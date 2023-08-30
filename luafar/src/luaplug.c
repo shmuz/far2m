@@ -118,7 +118,7 @@ void LUAPLUG FreeFindDataW(HANDLE hPlugin, struct PluginPanelItem *PanelItem,
 #if defined(EXPORT_CLOSEPLUGIN) || defined(EXPORT_ALL)
 void LUAPLUG ClosePluginW(HANDLE hPlugin)
 {
-  if(LS) LF_ClosePlugin(LS, hPlugin);
+  if(LS) LF_ClosePanel(LS, hPlugin);
 }
 #endif
 //---------------------------------------------------------------------------

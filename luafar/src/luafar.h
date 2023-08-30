@@ -43,7 +43,7 @@ DLLFUNC BOOL LF_RunDefaultScript(lua_State* L);
 DLLFUNC const wchar_t *LF_Gsub (lua_State *L, const wchar_t *s, const wchar_t *p, const wchar_t *r);
 DLLFUNC LONG_PTR LF_DlgProc(lua_State *L, HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2);
 
-DLLFUNC void   LF_ClosePlugin (lua_State* L, HANDLE hPlugin);
+DLLFUNC void   LF_ClosePanel (lua_State* L, HANDLE hPlugin);
 DLLFUNC int    LF_Compare (lua_State* L, HANDLE hPlugin,const struct PluginPanelItem *Item1,const struct PluginPanelItem *Item2,unsigned int Mode);
 DLLFUNC int    LF_Configure (lua_State* L, int ItemNumber);
 DLLFUNC int    LF_DeleteFiles (lua_State* L, HANDLE hPlugin,struct PluginPanelItem *PanelItem,int ItemsNumber,int OpMode);

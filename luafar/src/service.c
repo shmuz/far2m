@@ -1948,7 +1948,7 @@ int panel_CheckPanelsExist(lua_State *L)
   return 1;
 }
 
-int panel_ClosePlugin(lua_State *L)
+int panel_ClosePanel(lua_State *L)
 {
   HANDLE handle = OptHandle(L);
   const wchar_t *dir = opt_utf8_string(L, 2, NULL);
@@ -5998,7 +5998,7 @@ static const luaL_Reg panel_funcs[] =
   {"BeginSelection",          panel_BeginSelection},
   {"CheckPanelsExist",        panel_CheckPanelsExist},
   {"ClearSelection",          panel_ClearSelection},
-  {"ClosePlugin",             panel_ClosePlugin},
+  {"ClosePanel",              panel_ClosePanel},
   {"EndSelection",            panel_EndSelection},
   {"GetCmdLine",              panel_GetCmdLine},
   {"GetCmdLinePos",           panel_GetCmdLinePos},

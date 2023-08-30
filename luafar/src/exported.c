@@ -853,9 +853,9 @@ HANDLE LF_OpenPlugin (lua_State* L, int OpenFrom, INT_PTR Item)
   return INVALID_HANDLE_VALUE;
 }
 
-void LF_ClosePlugin(lua_State* L, HANDLE hPlugin)
+void LF_ClosePanel(lua_State* L, HANDLE hPlugin)
 {
-  if (GetExportFunction(L, "ClosePlugin")) { //+1: Func
+  if (GetExportFunction(L, "ClosePanel")) {  //+1: Func
     PushPluginPair(L, hPlugin);              //+3: Func,Pair
     pcall_msg(L, 2, 0);
   }
