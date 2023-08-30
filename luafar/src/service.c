@@ -6,6 +6,7 @@
 #include <dirent.h> //opendir
 #include <ctype.h>
 #include <math.h>
+#include <stdlib.h>
 
 #include <lua.h>
 #include <lauxlib.h>
@@ -5770,6 +5771,13 @@ int win_IsProcess64bit(lua_State *L)
   return 1;
 }
 
+int win_system(lua_State *L)
+{
+  const char *str = luaL_optstring(L, 1, NULL);
+  lua_pushinteger(L, system(str));
+  return 1;
+}
+
 int ustring_sub(lua_State *L)
 {
   size_t len;
@@ -6056,6 +6064,7 @@ static const luaL_Reg win_funcs[] = {
   {"GetCurrentDir",              win_GetCurrentDir},
   {"SetCurrentDir",              win_SetCurrentDir},
   {"IsProcess64bit",             win_IsProcess64bit},
+  {"system",                     win_system},
 
   {"EnumSystemCodePages",        ustring_EnumSystemCodePages },
   {"GetACP",                     ustring_GetACP},
