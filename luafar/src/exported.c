@@ -736,7 +736,7 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
   if (!CheckReloadDefaultScript(L) || !GetExportFunction(L, "Open"))
     return INVALID_HANDLE_VALUE;
 
-	lua_pushinteger(L, OpenFrom); // 1-st argument
+  lua_pushinteger(L, OpenFrom); // 1-st argument
 
   switch(OpenFrom)
   {
