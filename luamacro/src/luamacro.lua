@@ -34,8 +34,10 @@ local utils, macrobrowser, panelsort, keymacro
 local ExpandEnv = win.ExpandEnv
 
 local RegexExpandEnv = regex.new( [[ \$ \( (\w+) \) | \$ (\w+) ]], "x")
+local HomeDir = far.GetMyHome()
+
 local function FullExpand(text)
-  text = text:gsub("^%~", function() return win.GetEnv("HOME") end)
+  text = text:gsub("^%~", HomeDir)
   text = RegexExpandEnv:gsub(text, function(a,b) return win.GetEnv(a or b) end)
   return text
 end
