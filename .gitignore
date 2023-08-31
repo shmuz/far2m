@@ -2,3 +2,4 @@ _build/
 SciTE*.properties
 assa.diff
 .clang-format
+.luacheckrc

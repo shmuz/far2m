@@ -18,10 +18,6 @@ local GlobalInfo = {
   Author        = "Shmuel Zeigerman & Far Group",
 }
 
-local function LOG (fmt, ...)
-  far.Log(fmt:format(...))
-end
-
 local F, Msg = far.Flags, nil
 local bor = bit64.bor
 local co_yield, co_resume, co_status = coroutine.yield, coroutine.resume, coroutine.status
@@ -36,6 +32,13 @@ local TableExecString -- must be separate from LastMessage, otherwise Far crashe
 local utils, macrobrowser, panelsort, keymacro
 
 local ExpandEnv = win.ExpandEnv
+
+local RegexExpandEnv = regex.new( [[ \$ \( (\w+) \) | \$ (\w+) ]], "x")
+local function FullExpand(text)
+  text = text:gsub("^%~", function() return win.GetEnv("HOME") end)
+  text = RegexExpandEnv:gsub(text, function(a,b) return win.GetEnv(a or b) end)
+  return text
+end
 
 local function Unquote(text)
   text = text:gsub('^"(.+)"$', "%1") -- remove double quotes
@@ -183,7 +186,7 @@ local function GetFileParams (Text)
     if from2 then
       local space,params = Text:match("^(%s*)(.*)", to2+1)
       if space~="" or params=="" then
-        return ExpandEnv(fname), params
+        return FullExpand(fname), params
       end
     end
     error("Invalid macrosequence specification")
@@ -409,7 +412,7 @@ local function Open_CommandLine (strCmdLine)
     if redir == nil then
       return
     end
-    cmd = ExpandEnv(Unquote(cmd))
+    cmd = FullExpand(Unquote(cmd))
     local flags = bor(F.EF_NONMODAL, F.EF_IMMEDIATERETURN, F.EF_ENABLE_F6)
     if redir == "<" then
       local tmpname = Redirect(cmd)
@@ -430,7 +433,7 @@ local function Open_CommandLine (strCmdLine)
     if redir == nil then
       return
     end
-    cmd = ExpandEnv(Unquote(cmd))
+    cmd = FullExpand(Unquote(cmd))
     local flags = bor(F.VF_NONMODAL, F.VF_IMMEDIATERETURN, F.VF_ENABLE_F6)
     if redir == "<" then
       local tmpname = Redirect(cmd)
@@ -443,20 +446,20 @@ local function Open_CommandLine (strCmdLine)
     end
   ----------------------------------------------------------------------------
   elseif prefix == "load" then
-    text = ExpandEnv(Unquote(text))
+    text = FullExpand(Unquote(text))
     if text ~= "" then
       far.LoadPlugin("PLT_PATH", text)
     end
   ----------------------------------------------------------------------------
   elseif prefix == "unload" then
-    text = ExpandEnv(Unquote(text))
+    text = FullExpand(Unquote(text))
     if text ~= "" then
       local plug = far.FindPlugin("PFM_MODULENAME", text)
       if plug then far.UnloadPlugin(plug) end
     end
   ----------------------------------------------------------------------------
   elseif prefix == "goto" then
-    text = ExpandEnv(Unquote(text))
+    text = FullExpand(Unquote(text))
     if text ~= "" then
       local path_ok = true
       local path,filename = text:match("(.*/)(.*)")
