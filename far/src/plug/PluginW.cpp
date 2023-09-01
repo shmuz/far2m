@@ -427,7 +427,7 @@ static void *LoadLuafar()
 #ifdef USELUA
 	// 1. Load Lua
 	const char *libs[] = {"libluajit-5.1.so", "liblua5.1.so", nullptr};
-	void *handle;
+	void *handle = nullptr;
 
 	if (getenv("FARPLAINLUA"))
 	{

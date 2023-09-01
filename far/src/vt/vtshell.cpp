@@ -156,7 +156,7 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 		const auto color_bpp = WINPORT(GetConsoleColorPalette)();
 		std::string askpass_app;
 		if (Opt.SudoEnabled) {
-			askpass_app = GetHelperPathName("far2l_askpass");
+			askpass_app = GetHelperPathName("far2m_askpass");
 		}
 
 		int r = fork();
