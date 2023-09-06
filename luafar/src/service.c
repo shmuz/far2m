@@ -5554,8 +5554,8 @@ int far_MacroExecute(lua_State* L)
 int far_Log(lua_State *L)
 {
   const char* txt = luaL_optstring(L, 1, "log message");
-  Log("%s", txt);
-  return 0;
+  lua_pushinteger(L, Log("%s", txt));
+  return 1;
 }
 
 int far_ColorDialog(lua_State *L)

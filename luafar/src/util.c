@@ -4,7 +4,7 @@
 #include "ustring.h"
 #include "util.h"
 
-void Log(const char* Format, ...)
+int Log(const char* Format, ...)
 {
   va_list valist;
   va_start(valist, Format);
@@ -32,6 +32,7 @@ void Log(const char* Format, ...)
     }
   }
   va_end(valist);
+  return N;
 }
 
 // stack[-2] - table

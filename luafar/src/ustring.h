@@ -6,7 +6,7 @@
 
 #include "luafar.h"
 
-void Log(const char* Format, ...);
+int  Log(const char* Format, ...);
 int  SysErrorReturn (lua_State *L);
 
 BOOL   GetBoolFromTable   (lua_State *L, const char* key);
