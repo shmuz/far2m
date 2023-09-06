@@ -176,7 +176,7 @@ inline const T Round(const T &a, const T &b) { return a/b+(a%b*2>b?1:0); }
 #define SELF_TEST(code)
 #endif
 
-void Log(const char* Format, ...);
+int Log(const char* Format, ...);
 
 #include <algorithm>
 #include <string>

@@ -75,7 +75,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "dirmix.hpp"
 #include "console.hpp"
 
-void Log(const char* Format, ...)
+int Log(const char* Format, ...)
 {
 	va_list valist;
 	va_start(valist, Format);
@@ -103,6 +103,7 @@ void Log(const char* Format, ...)
 		}
 	}
 	va_end(valist);
+	return N;
 }
 
 
