@@ -16,10 +16,11 @@ src/ConnectionsPool.cpp
 src/ImportFarFtpSites.cpp
 src/Host/HostLocal.cpp
 src/Host/HostRemote.cpp
+src/Host/InitDeinitCmd.cpp
 src/UI/DialogUtils.cpp
 src/UI/Settings/ConfigurePlugin.cpp
 src/UI/Settings/SiteConnectionEditor.cpp
-src/UI/Settings/ConfigureProtocolFile.cpp
+src/UI/Settings/ExtraSiteSettings.cpp
 src/UI/Settings/ConfigureProtocolSFTPSCP.cpp
 src/UI/Settings/ConfigureProtocolFTP.cpp
 src/UI/Settings/ConfigureProtocolSMB.cpp
