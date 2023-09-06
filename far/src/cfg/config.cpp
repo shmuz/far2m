@@ -482,6 +482,7 @@ void CmdlineSettings()
 	Builder.AddCheckbox(Msg::ConfigCmdlineEditBlock, &Opt.CmdLine.EditBlock);
 	Builder.AddCheckbox(Msg::ConfigCmdlineDelRemovesBlocks, &Opt.CmdLine.DelRemovesBlocks);
 	Builder.AddCheckbox(Msg::ConfigCmdlineAutoComplete, &Opt.CmdLine.AutoComplete);
+	Builder.AddCheckbox(Msg::ConfigCmdlineSplitter, &Opt.CmdLine.Splitter);
 
 	DialogItemEx *LimitEdit = Builder.AddIntEditField(&Opt.CmdLine.VTLogLimit, 6);
 	Builder.AddTextBefore(LimitEdit, Msg::ConfigCmdlineVTLogLimit);
@@ -765,6 +766,7 @@ static struct FARConfig
 	{1, NSecCmdline, "DelRemovesBlocks",            &Opt.CmdLine.DelRemovesBlocks, 1},
 	{1, NSecCmdline, "EditBlock",                   &Opt.CmdLine.EditBlock, 0},
 	{1, NSecCmdline, "AutoComplete",                &Opt.CmdLine.AutoComplete, 1},
+	{1, NSecCmdline, "Splitter",                    &Opt.CmdLine.Splitter, 1},
 	{1, NSecCmdline, "WaitKeypress",                &Opt.CmdLine.WaitKeypress, 1},
 	{1, NSecCmdline, "VTLogLimit",                  &Opt.CmdLine.VTLogLimit, 5000},
 

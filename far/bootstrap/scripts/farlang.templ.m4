@@ -2300,6 +2300,16 @@ upd:"AutoComplete"
 "&AutoCompletar"
 "&Автозавершення"
 
+ConfigCmdlineSplitter
+"&Разделитель вывода команд"
+"Command &output splitter"
+upd:"Command &output splitter"
+upd:"Command &output splitter"
+upd:"Command &output splitter"
+upd:"Command &output splitter"
+upd:"Command &output splitter"
+"&Розділювач виведення команд"
+
 ConfigCmdlineVTLogLimit
 "Максимум строк в &логе вывода:"
 "Maximum terminal &log lines:"
