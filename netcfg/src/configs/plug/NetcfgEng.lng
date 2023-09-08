@@ -1,0 +1,53 @@
+.Language=English,English
+
+""
+""
+"Network Interfaces Configuration"
+"Network Routes Configuration"
+"Network config"
+"Network config"
+"Network Interfaces Configuration"
+"Ipv4 Routes Configuration"
+"Ipv6 Routes Configuration"
+"ARP Routes Configuration"
+"Multicast Ipv4 Routes Configuration"
+"Multicast Ipv6 Routes Configuration"
+
+"Route rules"
+
+"Settings"
+"Refresh"
+"Change"
+
+"tcpdump"
+"stopdmp"
+"Routing"
+
+"SwitchRt"
+"Ipv4"
+"Ipv6"
+"Arp"
+"McIpv4"
+"McIpv6"
+"Ifaces"
+"Delete"
+
+"Create"
+"Rules"
+"Routes"
+
+"Interface: "
+"Name:"
+
+"Ok"
+"Cancel"
+
+"Network config plugin configuration "
+"Add to &Disks menu"
+"Add to &Plugins menu"
+"Enable &log:"
+
+"No any tcpdump task"
+
+"Network config plugin settings"
+"&Save network config plugin settings"

@@ -1,0 +1,62 @@
+.Language=English,English
+.PluginContents=Panel for configuring network interfaces and routes
+
+@Contents
+$ #Panel for configuring network interfaces and routes#
+
+   ~Panel for configuring network interfaces~@InterfacePanel@
+   ~Panel for configuring network routes~@RoutePanel@
+   ~Configuration~@Config@
+
+@InterfacePanel
+$^#Panel for configuring network interfaces:#
+   The panel allows:
+
+  - view information (#name, ip addresses, bytes received/sent, MAC address (+permanent), ipv6 addresses#, etc.) about network interfaces
+
+  - edit (#F4#) information (#name (linux only), ip addresses, MAC address, ipv6 addresses, enable/disable, flags#, etc.) of the network interface
+
+  - save/stop (#F5#)/(#F6#) #network interface traffic# to a file 
+
+   Plugin use OS command:
+
+  - linux (ip)
+
+  - macos (ifconfig)
+
+@RoutePanel
+$^#Panel for configuring network routes:#
+   The panel allows:
+
+  - view information (use (#F6#) for switch) (#ipv4/ipv6, arp, multicast ipv4/ipv6#) about network routes.
+
+  - view (#F3#), create (#SHIFT+F4#), delete (#F8#) and edit (#F4#) rules for ipv4/ipv6, multicast ipv4/ipv6 routes (policy routing)
+
+  - create (#SHIFT+F4#), remove (#F8#) and edit (#F4#) information about (#ipv4/ipv6, arp#) routes and rules (#F3#)
+
+   Plugin use OS command:
+
+  - linux (ip)
+
+  - macos (route, arp, npd)
+
+
+@Config
+$^#Panel for configuring network interfaces and routes: Configuration#
+   In this dialog, you can change the following options:
+
+  #Add to disc menu#
+    Allows adding "Network Interface Configuration" "Network Route Configuration" to the disk menu.
+
+  #Add to plugins menu#
+    Allows adding "Network Interfaces Configuration" "Network Routes Configuration" items to the plug-in menu.
+
+  #Display logs#
+    Allows, prohibits the output of logs to a file (set file path).
+
+  #Display multicast route panels#
+    Enables, disables display of multicast ipv4/ipv6 route panels.
+
+  #Save configuration to file#
+    Saves the configuration to a file ($HOME/.config/far2l/plugins/netcfg/config.ini), additionally allows you to manually fine-tune the columns (width, display names, etc.).
+

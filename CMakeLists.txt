@@ -440,6 +440,16 @@ else()
         " COMPONENT system)
 endif()
 
+if (NOT DEFINED NETCFG OR NETCFG)
+    message(STATUS "NETCFG plugin enabled")
+    add_subdirectory (netcfg)
+else()
+    message(STATUS "${ColorRed}NETCFG plugin disabled due to NETCFG=${NETCFG}${ColorNormal}")
+    install(CODE "
+        execute_process(COMMAND ${CMAKE_COMMAND} -E rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/netcfg/plug/netcfg.far-plug-wide)
+        " COMPONENT system)
+endif()
+
 if (NOT DEFINED NETROCKS OR NETROCKS)
     message(STATUS "NETROCKS plugin enabled")
     find_package(OpenSSL)
