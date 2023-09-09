@@ -1,6 +1,5 @@
 #include <farplug-wide.h>
 
-#ifdef FAR_MANAGER_FAR2M
 SHAREDSYMBOL void WINAPI EXP_NAME(GetGlobalInfo)(struct GlobalInfo *aInfo)
 {
   struct VersionInfo Version = { 2,1,0,0 };
@@ -11,4 +10,3 @@ SHAREDSYMBOL void WINAPI EXP_NAME(GetGlobalInfo)(struct GlobalInfo *aInfo)
   aInfo->Description   = L"Incremental Search";
   aInfo->Author        = L"Stanislav Mekhanoshin, FAR People";
 }
-#endif

@@ -132,8 +132,6 @@ other possible license with no implications from the above license on them.
 //#define _FAR_NO_NAMELESS_UNIONS
 #endif // END FAR_USE_INTERNALS
 
-#define FAR_MANAGER_FAR2M
-
 #ifndef _WINCON_
 typedef struct _INPUT_RECORD INPUT_RECORD;
 typedef struct _CHAR_INFO    CHAR_INFO;
