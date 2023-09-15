@@ -455,10 +455,8 @@ Menu.Show = function (Items, TitleAndFooter, Flags, SelectOrFilter, X, Y)
   if 0 ~= band(Flags, 0x200) then
     local cur = 0
     for _,v in ipairs(rows) do
-      if not v.separator then
-        cur = cur + 1
-        v.text = cur..". "..v.text
-      end
+      cur = cur + 1
+      v.text = cur..". "..v.text
     end
   end
 
