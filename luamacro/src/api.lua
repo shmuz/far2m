@@ -1,14 +1,15 @@
 -- coding: utf-8
+-- luacheck: no global
 
 local Shared = ...
-local checkarg, utils, yieldcall = Shared.checkarg, Shared.utils, Shared.yieldcall
+local utils, yieldcall = Shared.utils, Shared.yieldcall
 local Sett = Shared.Settings
 local op = Shared.OpCodes
 
 local MCODE_F_USERMENU = op.MCODE_F_USERMENU
 local MCODE_F_FAR_GETCONFIG = op.MCODE_F_FAR_GETCONFIG
 local F=far.Flags
-local band, bor = bit64.band, bit64.bor
+local band = bit64.band
 local MacroCallFar = Shared.MacroCallFar
 
 local function SetProperties (namespace, proptable)
@@ -414,25 +415,50 @@ Menu = {
 Menu.Show = function (Items, TitleAndFooter, Flags, SelectOrFilter, X, Y)
   local props,rows = {},{}
 
+  Flags = tonumber(Flags) or 0
+  props.Flags = 0 ~= band(Flags,0x80) and F.FMENU_AUTOHIGHLIGHT or 0
+  props.X, props.Y = tonumber(X), tonumber(Y)
+
+  local remdups  = 0 ~= band(Flags, 0x40) and {}
+  local separators = {}
+
   if Items then
     for v,eol in tostring(Items):gmatch("([^\r\n]*)(\r?\n?)") do
       if v=="" and eol=="" then break end
-      local txt = v:gsub("[\1\2\3\4]\32?", "")
-      local a1 = v:find("\1")
-      local a2 = v:find("\2")
-      local a3 = v:find("\3")
-      local a4 = v:find("\4")
-      table.insert(rows, {text=txt; separator=a1; checked=a2; disable=a3; grayed=a4; })
+      local txt = v:gsub("[\1\2\3\4]%s?", "")
+      local sep = v:find("\1")
+      local a2  = v:find("\2")
+      local a3  = v:find("\3")
+      local a4  = v:find("\4")
+      if sep then
+        table.insert(separators, {text=txt; separator=true; checked=a2; disable=a3; grayed=a4;
+                     Pos=#rows+#separators+1; })
+      else
+        if not (remdups and remdups[txt]) then
+          table.insert(rows, {text=txt; checked=a2; disable=a3; grayed=a4; })
+        end
+        if remdups then remdups[txt] = true end
+      end
     end
+  end
+
+  -- sort flag
+  if 0 ~= band(Flags, 0x20) then
+    table.sort(rows, function(a,b)
+        local n1,n2 = tonumber(a.text,10), tonumber(b.text,10)
+        if n1 and n2 then return n1 < n2 end
+        return a.text < b.text
+      end)
+  end
+
+  -- insert separators (they neither participate in sort nor in removing duplicates)
+  for _, sep in ipairs(separators) do
+    table.insert(rows, sep.Pos, sep); sep.Pos=nil
   end
 
   if TitleAndFooter then
     props.Title, props.Bottom = tostring(TitleAndFooter):match("([^\r\n]*)[\r\n]*([^\r\n]*)")
   end
-
-  Flags = tonumber(Flags) or 0
-  props.Flags = 0 ~= band(Flags,0x80) and F.FMENU_AUTOHIGHLIGHT or 0
-  props.X, props.Y = tonumber(X), tonumber(Y)
 
   if type(SelectOrFilter) == "number" then
     props.SelectIndex = SelectOrFilter
@@ -634,11 +660,11 @@ mf.mload = Sett.mload
 
 function mf.printconsole(...)
   local narg = select("#", ...)
-  panel.GetUserScreen()
   for i=1,narg do
-    win.WriteConsole(select(i, ...), i<narg and "\t" or "")
+    local text = select(i, ...)
+    if i > 1 then far.WriteConsole("\t") end
+    far.WriteConsole(text)
   end
-  panel.SetUserScreen()
 end
 --------------------------------------------------------------------------------
 

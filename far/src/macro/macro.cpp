@@ -609,16 +609,16 @@ static std::vector<TVar> parseParams(size_t Count, FarMacroCall* Data)
 		const FarMacroValue& val = Data->Values[i];
 		switch(val.Type)
 		{
-			case FMVT_INTEGER: Params.push_back(val.Integer); break;
-			case FMVT_BOOLEAN: Params.push_back(val.Boolean); break;
-			case FMVT_DOUBLE:  Params.push_back(val.Double);  break;
-			case FMVT_STRING:  Params.push_back(val.String);  break;
-			case FMVT_POINTER: Params.push_back((intptr_t)val.Pointer); break;
-			default:           Params.push_back(TVar());      break;
+			case FMVT_INTEGER: Params.emplace_back(val.Integer); break;
+			case FMVT_BOOLEAN: Params.emplace_back(val.Boolean); break;
+			case FMVT_DOUBLE:  Params.emplace_back(val.Double);  break;
+			case FMVT_STRING:  Params.emplace_back(val.String);  break;
+			case FMVT_POINTER: Params.emplace_back((intptr_t)val.Pointer); break;
+			default:           Params.emplace_back();            break;
 		}
 	}
 	while (argNum++ < Count)
-		Params.push_back(TVar());
+		Params.emplace_back();
 
 	return Params;
 }
@@ -645,7 +645,6 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 	// проверка на область
 	if (CheckCode == 0)
 	{
-		//return api.PassNumber (FrameManager->GetCurrentFrame()->GetMacroArea());
 		return GetArea();
 	}
 
