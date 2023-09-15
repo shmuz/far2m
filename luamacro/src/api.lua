@@ -451,6 +451,17 @@ Menu.Show = function (Items, TitleAndFooter, Flags, SelectOrFilter, X, Y)
       end)
   end
 
+  -- number menu items
+  if 0 ~= band(Flags, 0x200) then
+    local cur = 0
+    for _,v in ipairs(rows) do
+      if not v.separator then
+        cur = cur + 1
+        v.text = cur..". "..v.text
+      end
+    end
+  end
+
   -- insert separators (they neither participate in sort nor in removing duplicates)
   for _, sep in ipairs(separators) do
     table.insert(rows, sep.Pos, sep); sep.Pos=nil
