@@ -924,10 +924,10 @@ int LF_MakeDirectory (lua_State* L, HANDLE hPlugin, const wchar_t **Name, int Op
   return res;
 }
 
-int LF_ProcessEvent(lua_State* L, HANDLE hPlugin, int Event, void *Param)
+int LF_ProcessPanelEvent(lua_State* L, HANDLE hPlugin, int Event, void *Param)
 {
   int res = FALSE;
-  if (GetExportFunction(L, "ProcessEvent")) { //+1: Func
+  if (GetExportFunction(L, "ProcessPanelEvent")) { //+1: Func
     PushPluginPair(L, hPlugin);        //+3
     lua_pushinteger(L, Event);         //+4
     if (Event == FE_CHANGEVIEWMODE || Event == FE_COMMAND)

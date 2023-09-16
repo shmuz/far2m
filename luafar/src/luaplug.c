@@ -213,7 +213,7 @@ int LUAPLUG MakeDirectoryW(HANDLE hPlugin, const wchar_t **Name, int OpMode)
 #if defined(EXPORT_PROCESSEVENT) || defined(EXPORT_ALL)
 int LUAPLUG ProcessEventW(HANDLE hPlugin, int Event, void *Param)
 {
-  return LS ? LF_ProcessEvent(LS, hPlugin, Event, Param) : FALSE;
+  return LS ? LF_ProcessPanelEvent(LS, hPlugin, Event, Param) : FALSE;
 }
 #endif
 //---------------------------------------------------------------------------

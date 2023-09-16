@@ -63,7 +63,7 @@ endforeach()
 
 add_custom_command(TARGET ${PROJECT_NAME}
   POST_BUILD
-  COMMAND "cp" "-rf" "${CMAKE_CURRENT_SOURCE_DIR}/lua_share" "${INSTALL_DIR}/Plugins/luafar/lua_share"
+  COMMAND "cp" "-rf" "${CMAKE_CURRENT_SOURCE_DIR}/lua_share" "${INSTALL_DIR}/Plugins/luafar/"
 )
 
 set(LUAFAR_OK "OK" PARENT_SCOPE)

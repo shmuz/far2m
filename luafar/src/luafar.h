@@ -62,7 +62,7 @@ DLLFUNC HANDLE LF_Open (lua_State* L, int OpenFrom,INT_PTR Item);
 DLLFUNC int    LF_ProcessDialogEvent (lua_State* L, int Event,void *Param);
 DLLFUNC int    LF_ProcessEditorEvent (lua_State* L, int Event,void *Param);
 DLLFUNC int    LF_ProcessEditorInput (lua_State* L, const INPUT_RECORD *Rec);
-DLLFUNC int    LF_ProcessEvent (lua_State* L, HANDLE hPlugin,int Event,void *Param);
+DLLFUNC int    LF_ProcessPanelEvent (lua_State* L, HANDLE hPlugin,int Event,void *Param);
 DLLFUNC int    LF_ProcessHostFile (lua_State* L, HANDLE hPlugin,struct PluginPanelItem *PanelItem,int ItemsNumber,int OpMode);
 DLLFUNC int    LF_ProcessKey (lua_State* L, HANDLE hPlugin,int Key,unsigned int ControlState);
 DLLFUNC int    LF_ProcessSynchroEvent (lua_State* L, int Event,void *Param);
