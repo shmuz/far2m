@@ -292,7 +292,6 @@ if (${USELUA})
   add_subdirectory (luafar)
   if (DEFINED LUAFAR_OK)
     add_subdirectory (luamacro)
-    # add_subdirectory (lua_share)
   else()
     message(STATUS "${ColorRed}LuaMacro plugin disabled due to missing LuaFAR${ColorNormal}")
   endif()
@@ -598,5 +597,4 @@ install(DIRECTORY "${INSTALL_DIR}/" DESTINATION "share/far2m" USE_SOURCE_PERMISS
 install(CODE "
     execute_process(COMMAND ln -sf ../../bin/far2m ${CMAKE_INSTALL_PREFIX}/lib/far2m/far2m_askpass)
     execute_process(COMMAND ln -sf ../../bin/far2m ${CMAKE_INSTALL_PREFIX}/lib/far2m/far2m_sudoapp)
-    execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/objinfo/plug/objinfo.far-plug-mb)
     " COMPONENT system)

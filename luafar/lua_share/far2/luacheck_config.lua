@@ -1,10 +1,10 @@
 -- This file was automatically generated
 local luafar = {globals = {export = {fields = {  "ClosePanel", "Compare", "Configure", "DeleteFiles", "ExitFAR", "GetCustomData",
   "GetFiles", "GetFindData", "GetOpenPanelInfo", "GetPluginInfo", "GetVirtualFindData",
-  "MakeDirectory", "OnError", "OpenCommandLine", "OpenDialog", "OpenFilePlugin",
-  "OpenFromMacro", "Open", "OpenShortcut", "ProcessConsoleInput", "ProcessDialogEvent",
-  "ProcessEditorEvent", "ProcessEditorInput", "ProcessEvent", "ProcessHostFile", "ProcessKey",
-  "ProcessViewerEvent", "PutFiles", "SetDirectory", "SetFindList",
+  "MakeDirectory", "MayExitFAR", "OnError", "Open", "OpenFilePlugin", "ProcessConsoleInput",
+  "ProcessDialogEvent", "ProcessEditorEvent", "ProcessEditorInput", "ProcessEvent",
+  "ProcessHostFile", "ProcessKey", "ProcessViewerEvent", "PutFiles", "SetDirectory",
+  "SetFindList",
 };};};read_globals = {"_luaplug";
 ["actl"    ] = {fields = {"Commit";"EjectMedia";"GetArrayColor";"GetColor";"GetConfirmations";"GetCursorPos";"GetDescSettings";"GetDialogSettings";"GetFarHwnd";"GetFarRect";"GetFarVersion";"GetInterfaceSettings";"GetPanelSettings";"GetPluginMaxReadData";"GetShortWindowInfo";"GetSystemSettings";"GetSysWordDiv";"GetWindowCount";"GetWindowInfo";"Quit";"RedrawAll";"SetArrayColor";"SetCurrentWindow";"SetCursorPos";"WaitKey";"WinPortBackend";};};
 ["bit64"   ] = {fields = {"add";"arshift";"band";"bnot";"bor";"bxor";"div";"eq";"le";"lshift";"lt";"mod";"mul";"new";"rshift";"sub";"type";};};

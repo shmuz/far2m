@@ -16,10 +16,10 @@ local exports = osWindows and [[
 ]] or [[
   "ClosePanel", "Compare", "Configure", "DeleteFiles", "ExitFAR", "GetCustomData",
   "GetFiles", "GetFindData", "GetOpenPanelInfo", "GetPluginInfo", "GetVirtualFindData",
-  "MakeDirectory", "OnError", "OpenCommandLine", "OpenDialog", "OpenFilePlugin",
-  "OpenFromMacro", "Open", "OpenShortcut", "ProcessConsoleInput", "ProcessDialogEvent",
-  "ProcessEditorEvent", "ProcessEditorInput", "ProcessEvent", "ProcessHostFile", "ProcessKey",
-  "ProcessViewerEvent", "PutFiles", "SetDirectory", "SetFindList",
+  "MakeDirectory", "MayExitFAR", "OnError", "Open", "OpenFilePlugin", "ProcessConsoleInput",
+  "ProcessDialogEvent", "ProcessEditorEvent", "ProcessEditorInput", "ProcessEvent",
+  "ProcessHostFile", "ProcessKey", "ProcessViewerEvent", "PutFiles", "SetDirectory",
+  "SetFindList",
 ]]
 
 local globals_luafar = osWindows and
