@@ -61,4 +61,9 @@ foreach(elem "luafar2m_manual.chm" "macroapi_manual_linux.chm")
   configure_file("manuals/${elem}" "${INSTALL_DIR}/Manuals/${elem}" COPYONLY)
 endforeach()
 
+add_custom_command(TARGET ${PROJECT_NAME}
+  POST_BUILD
+  COMMAND "cp" "-rf" "${CMAKE_CURRENT_SOURCE_DIR}/lua_share" "${INSTALL_DIR}/Plugins/luafar/lua_share"
+)
+
 set(LUAFAR_OK "OK" PARENT_SCOPE)

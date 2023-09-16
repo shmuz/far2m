@@ -59,7 +59,7 @@ void LUAPLUG SetStartupInfoW(const struct PluginStartupInfo *aInfo)
   PluginData.DlgProc       = DlgProc;
   PluginData.PluginId      = SYS_ID;
   PluginData.GetGlobalInfo = GetGlobalInfoW;
-#ifdef SETPACKAGEPATH
+#ifndef NOSETPACKAGEPATH
   PluginData.Flags |= LPF_SETPACKAGEPATH;
 #endif
 

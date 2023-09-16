@@ -292,6 +292,7 @@ if (${USELUA})
   add_subdirectory (luafar)
   if (DEFINED LUAFAR_OK)
     add_subdirectory (luamacro)
+    # add_subdirectory (lua_share)
   else()
     message(STATUS "${ColorRed}LuaMacro plugin disabled due to missing LuaFAR${ColorNormal}")
   endif()
@@ -577,6 +578,7 @@ install(PROGRAMS "${INSTALL_DIR}/${EXECUTABLE_NAME}" DESTINATION "bin" RENAME fa
 install(DIRECTORY "${INSTALL_DIR}/" DESTINATION "lib/far2m" USE_SOURCE_PERMISSIONS COMPONENT base FILES_MATCHING
     PATTERN "colorer/base" EXCLUDE
     PATTERN "Manuals" EXCLUDE
+    PATTERN "lua_share" EXCLUDE
     PATTERN "far2m_gui.so"
     PATTERN "far2m_ttyx.broker"
     PATTERN "plug/*.far-plug-*"

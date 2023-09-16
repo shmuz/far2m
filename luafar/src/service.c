@@ -6328,7 +6328,7 @@ BOOL LF_RunDefaultScript(lua_State* L)
 
 void InitLuaState (lua_State *L, TPluginData *aPlugData, lua_CFunction aOpenLibs)
 {
-  int idx, len;
+  int idx;
   lua_CFunction func_arr[] = { luaopen_far, luaopen_bit64, luaopen_unicode, luaopen_utf8 };
 
   // open Lua libraries
@@ -6352,21 +6352,21 @@ void InitLuaState (lua_State *L, TPluginData *aPlugData, lua_CFunction aOpenLibs
   lua_setfield(L, -2, "__index");
   lua_pop(L, 2);
 
-  // If the plugin was built with -DSETPACKAGEPATH in its CFLAGS then
-  //   package.path = <plugin_dir>/?.lua;<lua_share>/?.lua;<package.path>
   if (aPlugData->Flags & LPF_SETPACKAGEPATH) {
-    const char *p = strrchr(aPlugData->ShareDir, '/');   // ../
-    do { --p; } while(*p != '/');                        // ../..
-    len = p - aPlugData->ShareDir;
-    lua_getglobal   (L, "package");                   //+1
-    lua_pushstring  (L, aPlugData->ShareDir);         //+2
-    lua_pushstring  (L, "/?.lua;");                   //+3
-    lua_pushlstring (L, aPlugData->ShareDir, len);    //+4
-    lua_pushstring  (L, "/lua_share/?.lua;");         //+5
-    lua_getfield    (L, -5, "path");                  //+6
-    lua_concat      (L, 5);                           //+2
-    lua_setfield    (L, -2, "path");                  //+1
-    lua_pop         (L, 1);                           //+0
+    const char *farhome;
+    int pos = 3;
+    lua_getglobal  (L, "package");                             //+1
+    lua_pushstring (L, aPlugData->ShareDir);                   //+2
+    lua_pushstring (L, "/?.lua;");                             //+3
+    if ((farhome = getenv("FARHOME"))) {
+      pos = 5;
+      lua_pushstring (L, farhome);                             //+4
+      lua_pushstring (L, "/Plugins/luafar/lua_share/?.lua;");  //+5
+    }
+    lua_getfield (L, -pos, "path");                            //+pos+1
+    lua_concat   (L, pos);                                     //+2
+    lua_setfield (L, -2, "path");                              //+1
+    lua_pop      (L, 1);                                       //+0
   }
 }
 
