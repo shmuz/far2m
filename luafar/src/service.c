@@ -6280,7 +6280,6 @@ BOOL LF_RunDefaultScript(lua_State* L)
 {
   int pos = lua_gettop (L);
 
-  Log("LF_RunDefaultScript entered");
   // First: try to load the default script embedded into the plugin
   lua_getglobal(L, "require");
   lua_pushliteral(L, "<boot");
@@ -6292,13 +6291,11 @@ BOOL LF_RunDefaultScript(lua_State* L)
   }
 
   // Second: try to load the default script from a disk file
-  Log("LF_RunDefaultScript: try to load the default script from a disk file");
   TPluginData* pd = GetPluginData(L);
   lua_pushstring(L, pd->ShareDir);
   lua_pushstring(L, "/");
   push_utf8_string(L, wcsrchr(pd->ModuleName,L'/')+1, -1);
   lua_concat(L,3);
-  Log("LF_RunDefaultScript: concatted value is: %s", lua_tostring(L,-1));
 
   char* defscript = (char*)lua_newuserdata (L, lua_objlen(L,-1) + 8);
   strcpy(defscript, lua_tostring(L, -2));
@@ -6310,27 +6307,21 @@ BOOL LF_RunDefaultScript(lua_State* L)
     char *end = strrchr(defscript, delims[i]);
     if (end) {
       strcpy(end, ".lua");
-      Log("LF_RunDefaultScript: default script is: %s", defscript);
       if ((fp = fopen(defscript, "r")) != NULL)
         break;
     }
   }
   if (fp) {
-    Log("LF_RunDefaultScript: default script FOUND");
     fclose(fp);
     status = luaL_loadfile(L, defscript);
     if (status == 0)
-      Log("LF_RunDefaultScript: default script LOADED"),
       status = pcall_msg(L,0,0);
     else
-      Log("LF_RunDefaultScript: default script FAILED to LOAD: %s", lua_tostring(L,-1)),
       LF_Error(L, utf8_to_wcstring (L, -1, NULL));
   }
   else
-    Log("LF_RunDefaultScript: default script NOT FOUND"),
     LF_Error(L, L"Default script not found");
 
-  Log("LF_RunDefaultScript: exit status = %d", status);
   lua_settop (L, pos);
   return (status == 0);
 }
@@ -6340,7 +6331,6 @@ void InitLuaState (lua_State *L, TPluginData *aPlugData, lua_CFunction aOpenLibs
   int idx;
   lua_CFunction func_arr[] = { luaopen_far, luaopen_bit64, luaopen_unicode, luaopen_utf8 };
 
-  Log("InitLuaState entered");
   // open Lua libraries
   luaL_openlibs(L);
 
@@ -6365,7 +6355,6 @@ void InitLuaState (lua_State *L, TPluginData *aPlugData, lua_CFunction aOpenLibs
   if (aPlugData->Flags & LPF_SETPACKAGEPATH) {
     const char *farhome;
     int pos = 3;
-    Log("Modifying package.path");
     lua_getglobal  (L, "package");                             //+1
     lua_pushstring (L, aPlugData->ShareDir);                   //+2
     lua_pushstring (L, "/?.lua;");                             //+3
@@ -6376,17 +6365,14 @@ void InitLuaState (lua_State *L, TPluginData *aPlugData, lua_CFunction aOpenLibs
     }
     lua_getfield (L, -pos, "path");                            //+pos+1
     lua_concat   (L, pos);                                     //+2
-    Log("package.path set to: %s", lua_tostring(L,-1));
     lua_setfield (L, -2, "path");                              //+1
     lua_pop      (L, 1);                                       //+0
   }
-  else Log("NOT modifying package.path");
 }
 
 // Initialize the interpreter
 int LF_LuaOpen (const struct PluginStartupInfo *aInfo, TPluginData* aPlugData, lua_CFunction aOpenLibs)
 {
-  Log("LF_LuaOpen entered");
   if (PSInfo.StructSize == 0) {
     PSInfo = *aInfo;
     FSF = *aInfo->FSF;
@@ -6396,7 +6382,6 @@ int LF_LuaOpen (const struct PluginStartupInfo *aInfo, TPluginData* aPlugData, l
   // create Lua State
   lua_State *L = lua_open();
   if (L) {
-    Log("lua_State successfully created");
     // place pointer to plugin data in the L's registry -
     aPlugData->MainLuaState = L;
     lua_pushlightuserdata(L, aPlugData);
@@ -6407,21 +6392,16 @@ int LF_LuaOpen (const struct PluginStartupInfo *aInfo, TPluginData* aPlugData, l
     const char *s1=  "/lib/far2m/Plugins/luafar/";
     const char *s2="/share/far2m/Plugins/luafar/";
     push_utf8_string(L, aPlugData->ModuleName, -1);                  //+1
-    Log("aPlugData->ModuleName: %s", lua_tostring(L,-1));
     aPlugData->ShareDir = (char*) malloc(lua_objlen(L,-1) + 8);
     strcpy(aPlugData->ShareDir, luaL_gsub(L, lua_tostring(L,-1), s1, s2)); //+2
     strrchr(aPlugData->ShareDir,'/')[0] = '\0';
-    Log("aPlugData->ShareDir: %s", aPlugData->ShareDir);
 
     DIR* dir = opendir(aPlugData->ShareDir); // a "patch" for PPA installations
     if (dir)
-      Log("aPlugData->ShareDir check is OK"),
       closedir(dir);
     else {
-      Log("aPlugData->ShareDir check FAILED");
       strcpy(aPlugData->ShareDir, lua_tostring(L,-2));
       strrchr(aPlugData->ShareDir,'/')[0] = '\0';
-      Log("CORRECTED aPlugData->ShareDir: %s", aPlugData->ShareDir);
     }
     lua_pop(L,2);                                                    //+0
 
@@ -6429,7 +6409,6 @@ int LF_LuaOpen (const struct PluginStartupInfo *aInfo, TPluginData* aPlugData, l
     return 1;
   }
 
-  Log("lua_State creation failed");
   return 0;
 }
 
