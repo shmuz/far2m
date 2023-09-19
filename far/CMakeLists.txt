@@ -238,7 +238,8 @@ endif()
 
 add_custom_command(TARGET far2m POST_BUILD
     COMMAND ln -sf ${EXECUTABLE_NAME} ${INSTALL_DIR}/far2m_askpass
-    COMMAND ln -sf ${EXECUTABLE_NAME} ${INSTALL_DIR}/far2m_sudoapp)
+    COMMAND ln -sf ${EXECUTABLE_NAME} ${INSTALL_DIR}/far2m_sudoapp
+    COMMAND ln -sf ${EXECUTABLE_NAME} ${INSTALL_DIR}/far2medit)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 #TODO

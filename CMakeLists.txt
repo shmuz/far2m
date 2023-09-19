@@ -576,16 +576,17 @@ install(PROGRAMS "${INSTALL_DIR}/${EXECUTABLE_NAME}" DESTINATION "bin" RENAME fa
 
 install(DIRECTORY "${INSTALL_DIR}/" DESTINATION "lib/far2m" USE_SOURCE_PERMISSIONS COMPONENT base FILES_MATCHING
     PATTERN "colorer/base" EXCLUDE
-    PATTERN "Manuals" EXCLUDE
-    PATTERN "lua_share" EXCLUDE
     PATTERN "far2m_gui.so"
     PATTERN "far2m_ttyx.broker"
     PATTERN "plug/*.far-plug-*"
     PATTERN "plug/*.broker"
-    PATTERN "luafar/luafar.so")
+    PATTERN "luafar/luafar.so"
+    PATTERN "Manuals" EXCLUDE
+    PATTERN "lua_share" EXCLUDE)
 
 install(DIRECTORY "${INSTALL_DIR}/" DESTINATION "share/far2m" USE_SOURCE_PERMISSIONS COMPONENT base FILES_MATCHING
     PATTERN "${EXECUTABLE_NAME}" EXCLUDE
+    PATTERN "far2medit" EXCLUDE
     PATTERN "far2m_*" EXCLUDE
     PATTERN "*.far-plug-*" EXCLUDE
     PATTERN "*.broker" EXCLUDE
@@ -593,8 +594,10 @@ install(DIRECTORY "${INSTALL_DIR}/" DESTINATION "share/far2m" USE_SOURCE_PERMISS
     PATTERN "luafar/luafar.so" EXCLUDE
     PATTERN "*")
 
-# setup some symlinks and remove deprecated stuff from previous installation
-install(CODE "
-    execute_process(COMMAND ln -sf ../../bin/far2m ${CMAKE_INSTALL_PREFIX}/lib/far2m/far2m_askpass)
-    execute_process(COMMAND ln -sf ../../bin/far2m ${CMAKE_INSTALL_PREFIX}/lib/far2m/far2m_sudoapp)
-    " COMPONENT system)
+# setup some symlinks
+execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ../../bin/far2m ${PROJECT_BINARY_DIR}/far/far2m_askpass)
+execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ../../bin/far2m ${PROJECT_BINARY_DIR}/far/far2m_sudoapp)
+execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink far2m ${PROJECT_BINARY_DIR}/far/far2medit)
+install(FILES "${PROJECT_BINARY_DIR}/far/far2m_askpass" DESTINATION "lib/far2m" COMPONENT system)
+install(FILES "${PROJECT_BINARY_DIR}/far/far2m_sudoapp" DESTINATION "lib/far2m" COMPONENT system)
+install(FILES "${PROJECT_BINARY_DIR}/far/far2medit" DESTINATION "bin" COMPONENT base)
