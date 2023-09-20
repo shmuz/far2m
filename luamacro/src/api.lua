@@ -675,14 +675,23 @@ function mf.printconsole(...)
     far.WriteConsole(text)
   end
 end
+
+local Persistent = {}
+function mf.GetPersistent(field)
+  assert(type(field)=="string", "arg #1 must be a string")
+  local t = Persistent[field]
+  if t == nil then
+    t = {}
+    Persistent[field] = t
+  end
+  return t
+end
 --------------------------------------------------------------------------------
 
 _G.band, _G.bnot, _G.bor, _G.bxor, _G.lshift, _G.rshift =
   bit64.band, bit64.bnot, bit64.bor, bit64.bxor, bit64.lshift, bit64.rshift
 
 _G.eval, _G.msgbox, _G.prompt = mf.eval, mf.msgbox, mf.prompt
-
-_G.MacroData = {} -- a global table for scripts' data
 
 mf.Keys, mf.exit, mf.print = _G.Keys, _G.exit, _G.print
 --------------------------------------------------------------------------------
