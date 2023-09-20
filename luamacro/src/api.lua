@@ -682,5 +682,7 @@ _G.band, _G.bnot, _G.bor, _G.bxor, _G.lshift, _G.rshift =
 
 _G.eval, _G.msgbox, _G.prompt = mf.eval, mf.msgbox, mf.prompt
 
+_G.MacroData = {} -- a global table for scripts' data
+
 mf.Keys, mf.exit, mf.print = _G.Keys, _G.exit, _G.print
 --------------------------------------------------------------------------------

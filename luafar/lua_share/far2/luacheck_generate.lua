@@ -108,6 +108,7 @@ local function Generate (outname)
 
   self:Insert("\n\n")
   self:Insert("local luamacro = {")
+  self:Insert("globals = { [[MacroData]] };")
   self:Insert("read_globals = {")
   table.sort(globals_luamacro, NoCaseCmp)
   for _,name in ipairs(globals_luamacro) do
