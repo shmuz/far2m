@@ -59,11 +59,19 @@ src/Erroring.cpp
 src/Host/HostRemoteBroker.cpp
 )
 
-
 add_executable (NetRocks-FILE
     ${PROTOCOL_SOURCES}
     src/Protocol/File/ProtocolFile.cpp
     src/Host/HostLocal.cpp
+)
+
+add_executable (NetRocks-SHELL
+    ${PROTOCOL_SOURCES}
+    src/Protocol/SHELL/ProtocolSHELL.cpp
+    src/Protocol/SHELL/ProtocolSHELL_ExecCmd.cpp
+    src/Protocol/SHELL/ClientApp.cpp
+    src/Protocol/SHELL/Parse.cpp
+    src/Protocol/ShellParseUtils.cpp
 )
 
 # get rid of warning: dynamic exception specifications are deprecated in C++11
@@ -78,6 +86,21 @@ set_target_properties(NetRocks-FILE
     SUFFIX ".broker")
 target_compile_options(NetRocks-FILE PUBLIC -DNETROCKS_PROTOCOL)
 
+target_link_libraries(NetRocks-SHELL utils)
+target_include_directories(NetRocks-SHELL PRIVATE src)
+set_target_properties(NetRocks-SHELL
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${INSTALL_DIR}/Plugins/NetRocks/plug"
+    PREFIX ""
+    SUFFIX ".broker")
+target_compile_options(NetRocks-SHELL PUBLIC -DNETROCKS_PROTOCOL)
+
+add_custom_command(TARGET NetRocks-SHELL POST_BUILD
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/Protocol/SHELL/Helpers
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/src/Protocol/SHELL/Helpers "${INSTALL_DIR}/Plugins/NetRocks/plug/SHELL"
+)
+
+
 if (LIBSSH_FOUND AND ((NOT DEFINED NR_SFTP) OR NR_SFTP))
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_SFTP")
     add_executable (NetRocks-SFTP
@@ -86,6 +109,7 @@ if (LIBSSH_FOUND AND ((NOT DEFINED NR_SFTP) OR NR_SFTP))
         src/Protocol/SSH/ProtocolSFTP.cpp
         src/Protocol/SSH/ProtocolSCP.cpp
         src/Protocol/FileStatsOverride.cpp
+        src/Protocol/ShellParseUtils.cpp
     )
     target_link_libraries(NetRocks-SFTP utils ${LIBSSH_LIBRARIES})
     target_include_directories(NetRocks-SFTP PRIVATE src ${LIBSSH_INCLUDE_DIRS})
