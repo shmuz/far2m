@@ -44,6 +44,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "interf.hpp"
 #include "palette.hpp"
 #include "config.hpp"
+#include "mix.hpp"
 #include "InterThreadCall.hpp"
 
 static int MessageX1,MessageY1,MessageX2,MessageY2;
@@ -173,6 +174,13 @@ static int ShowMessageSynched(
 
 	// теперь обработаем MSG_ERRORTYPE
 	DWORD CountErrorLine=0;
+
+	if ((Flags & MSG_DISPLAYNOTIFY) != 0) {
+		FARString strTitle(APP_BASENAME);
+		if (Title && *Title)
+			strTitle = Title;
+		DisplayNotification(strTitle.CPtr(), ItemsNumber ? Items[0] : L"???");
+	}
 
 	if ((Flags & MSG_ERRORTYPE) && ErrorSets)
 	{
@@ -558,6 +566,57 @@ int FN_NOINLINE Messager::Show(DWORD Flags, int Buttons, const GUID *Guid)
 int FN_NOINLINE Messager::Show(int Buttons)
 {
 	return Show(0, Buttons, -1);
+}
+
+///////////////////////////////////
+
+ExMessager::ExMessager(FarLangMsg title) : Messager(title)
+{
+}
+
+ExMessager::ExMessager(const wchar_t *title) : Messager(title)
+{
+}
+
+ExMessager::ExMessager()
+{
+}
+
+ExMessager::~ExMessager()
+{
+}
+
+Messager &FN_NOINLINE ExMessager::AddFormat(FarLangMsg fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	AddFormatV(fmt.CPtr(), args);
+	va_end(args);
+	return *this;
+}
+
+Messager &FN_NOINLINE ExMessager::AddFormat(const wchar_t *fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	AddFormatV(fmt, args);
+	va_end(args);
+	return *this;
+}
+
+Messager &FN_NOINLINE ExMessager::AddFormatV(const wchar_t *fmt, va_list args)
+{
+	_owneds.emplace_back();
+	FARStringFmtV(_owneds.back(), false, fmt, args);
+	Add(_owneds.back().CPtr());
+	return *this;
+}
+
+Messager &FN_NOINLINE ExMessager::AddDup(const wchar_t *v)
+{
+	_owneds.emplace_back(v);
+	Add(_owneds.back().CPtr());
+	return *this;
 }
 
 ///////////////////////////////////

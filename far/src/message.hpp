@@ -49,7 +49,9 @@ enum
 	MSG_KEEPBACKGROUND =0x00000004,
 	MSG_LEFTALIGN      =0x00000010,
 	MSG_KILLSAVESCREEN =0x00000020,
+	MSG_DISPLAYNOTIFY  =0x00000080
 };
+
 
 struct Messager : protected std::vector<const wchar_t *>
 {
@@ -72,6 +74,24 @@ struct Messager : protected std::vector<const wchar_t *>
 	int Show(DWORD Flags, int Buttons, INT_PTR PluginNumber, const GUID *Guid=nullptr);
 	int Show(DWORD Flags, int Buttons, const GUID *Guid=nullptr);
 	int Show(int Buttons = 0);
+
+};
+
+struct ExMessager : Messager
+{
+	ExMessager(FarLangMsg title);
+	ExMessager(const wchar_t *title);
+	ExMessager();		// title supposed to be set by very first Add()
+
+	~ExMessager();
+
+	Messager &AddFormatV(const wchar_t *fmt, va_list args);
+	Messager &AddFormat(FarLangMsg fmt, ...);
+	Messager &AddFormat(const wchar_t *fmt, ...);
+	Messager &AddDup(const wchar_t *v);
+
+private:
+	std::vector<FARString> _owneds;
 };
 
 template <class TitleT, class ... ItemsT>
