@@ -2089,10 +2089,11 @@ static int FarEditorControlSynchedV2(int EditorID,int Command,void *Param)
 		return 0;
 
 	FileEditor *Editor = nullptr;
+	FileEditor *CurEditor = CtrlObject->Plugins.CurEditor;
 
-	if (EditorID==-1)
+	if (EditorID == -1 || (CurEditor && CurEditor->GetEditorID() == EditorID))
 	{
-		Editor = CtrlObject->Plugins.CurEditor;
+		Editor = CurEditor;
 	}
 	else
 	{
@@ -2140,11 +2141,11 @@ static int FarViewerControlSynchedV2(int ViewerID,int Command,void *Param)
 		return 0;
 
 	FileViewer *viewer = nullptr;
+	Viewer *CurViewer = CtrlObject->Plugins.CurViewer;
 
-	if (ViewerID==-1)
+	if (ViewerID == -1 || (CurViewer && CurViewer->GetViewerID() == ViewerID))
 	{
-		auto view = CtrlObject->Plugins.CurViewer;
-		return view ? view->ViewerControl(Command,Param) : 0;
+		return CurViewer ? CurViewer->ViewerControl(Command,Param) : 0;
 	}
 	else
 	{

@@ -269,4 +269,6 @@ class Viewer:public ScreenObject
 		int ProcessHexMode(int newMode, bool isRedraw=TRUE);
 		int ProcessWrapMode(int newMode, bool isRedraw=TRUE);
 		int ProcessTypeWrapMode(int newMode, bool isRedraw=TRUE);
+
+		int GetViewerID() const { return ViewerID; }
 };
