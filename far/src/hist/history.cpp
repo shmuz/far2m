@@ -33,7 +33,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
-
 #include "history.hpp"
 #include "keys.hpp"
 #include "vmenu.hpp"
@@ -86,7 +85,7 @@ static bool IsAllowedForHistory(const wchar_t *Str)
    SaveForbid - принудительно запретить запись добавляемой строки.
                 Используется на панели плагина
 */
-void History::AddToHistory(const wchar_t *Str, int Type, const wchar_t *Prefix, bool SaveForbid)
+void History::AddToHistoryExtra(const wchar_t *Str, const wchar_t *Extra, int Type, const wchar_t *Prefix, bool SaveForbid)
 {
 	if (!EnableAdd)
 		return;
@@ -100,14 +99,18 @@ void History::AddToHistory(const wchar_t *Str, int Type, const wchar_t *Prefix, 
 	}
 
 	SyncChanges();
-	AddToHistoryLocal(Str,Prefix,Type);
+	AddToHistoryLocal(Str, Extra, Prefix, Type);
 
 	if (*EnableSave && !SaveForbid)
 		SaveHistory();
 }
 
+void History::AddToHistory(const wchar_t *Str, int Type, const wchar_t *Prefix, bool SaveForbid)
+{
+	AddToHistoryExtra(Str, nullptr, Type, Prefix, SaveForbid);
+}
 
-void History::AddToHistoryLocal(const wchar_t *Str, const wchar_t *Prefix, int Type)
+void History::AddToHistoryLocal(const wchar_t *Str, const wchar_t *Extra, const wchar_t *Prefix, int Type)
 {
 	if (!Str)
 		return;
@@ -122,6 +125,9 @@ void History::AddToHistoryLocal(const wchar_t *Str, const wchar_t *Prefix, int T
 
 	AddRecord.strName += Str;
 	AddRecord.Type=Type;
+	if (Extra) {
+		AddRecord.strExtra = Extra;
+	}
 
 	if (RemoveDups) // удалять дубликаты?
 	{
@@ -156,6 +162,19 @@ void History::AddToHistoryLocal(const wchar_t *Str, const wchar_t *Prefix, int T
 	ResetPosition();
 }
 
+static void AppendWithLFSeparator(std::wstring &str, const FARString &ap, bool first)
+{
+	if (!first) {
+		str+= L'\n';
+	}
+	size_t p = str.size();
+	str.append(ap.CPtr(), ap.GetLength());
+	for (; p < str.size(); ++p) {
+		if (str[p] == L'\n') {
+			str[p] = L'\r';
+		}
+	}
+}
 bool History::SaveHistory()
 {
 	if (!*EnableSave)
@@ -187,22 +206,18 @@ bool History::SaveHistory()
 
 	bool ret = false;
 	try {
-		std::wstring strTypes, strLines, strLocks;
+		bool HasExtras = false;
+		std::wstring strTypes, strLines, strLocks, strExtras;
 		std::vector<FILETIME> vTimes;
 		int Position = -1;
 		size_t i = HistoryList.size();
+
 		for (auto HistoryItem = --HistoryList.cend(); HistoryItem!=HistoryList.cend(); HistoryItem--)
 		{
-			if (i != HistoryList.size())
-				strLines+= L'\n';
-
-			size_t p = strLines.size();
-
-			strLines.append(HistoryItem->strName.CPtr(), HistoryItem->strName.GetLength());
-
-			for (; p < strLines.size(); ++p) {
-				if (strLines[p] == L'\n')
-					strLines[p] = L'\r';
+			AppendWithLFSeparator(strLines, HistoryItem->strName, i == HistoryList.size());
+			AppendWithLFSeparator(strExtras, HistoryItem->strExtra, i == HistoryList.size());
+			if (!HistoryItem->strExtra.IsEmpty()) {
+				HasExtras = true;
 			}
 
 			if (SaveType)
@@ -219,6 +234,11 @@ bool History::SaveHistory()
 
 		ConfigWriter cfg_writer(strRegKey);
 		cfg_writer.SetString("Lines", strLines.c_str());
+		if (HasExtras) {
+			cfg_writer.SetString("Extras", strExtras.c_str());
+		} else {
+			cfg_writer.RemoveKey("Extras");
+		}
 		if (SaveType) {
 			cfg_writer.SetString("Types", strTypes.c_str());
 		}
@@ -259,7 +279,7 @@ bool History::ReadLastItem(const char *RegKey, FARString &strStr)
 bool History::ReadHistory(bool bOnlyLines)
 {
 	int Position = -1;
-	FARString strLines, strLocks, strTypes;
+	FARString strLines, strExtras, strLocks, strTypes;
 	std::vector<unsigned char> vTimes;
 
 	ConfigReader cfg_reader(strRegKey);
@@ -273,40 +293,41 @@ bool History::ReadHistory(bool bOnlyLines)
 		cfg_reader.GetBytes(vTimes, "Times");
 		cfg_reader.GetString(strLocks, "Locks", L"");
 		cfg_reader.GetString(strTypes, "Types", L"");
+		cfg_reader.GetString(strExtras, "Extras", L"");
 	}
 
-	size_t StrPos = 0, LinesPos = 0, TypesPos = 0, LocksPos = 0, TimePos = 0;
+	size_t StrPos = 0, LinesPos = 0, TypesPos = 0, LocksPos = 0, TimePos = 0, ExtrasPos = 0;
 	while (LinesPos < strLines.GetLength() && StrPos < HistoryCount)
 	{
-		size_t LineEnd;
+		size_t LineEnd, ExtraEnd;
 		if (!strLines.Pos(LineEnd, L'\n', LinesPos))
 			LineEnd = strLines.GetLength();
+
+		if (!strExtras.Pos(ExtraEnd, L'\n', ExtrasPos))
+			ExtraEnd = strExtras.GetLength();
 
 		HistoryList.push_front(HistoryRecord());
 		auto& AddRecord = HistoryList.front();
 		AddRecord.strName = strLines.SubStr(LinesPos, LineEnd - LinesPos);
 		LinesPos = LineEnd + 1;
+		AddRecord.strExtra = strExtras.SubStr(ExtrasPos, ExtraEnd - ExtrasPos);
+		ExtrasPos = ExtraEnd + 1;
 
-		if (TypesPos < strTypes.GetLength())
-		{
-			if (iswdigit(strTypes[TypesPos]))
-			{
+		if (TypesPos < strTypes.GetLength()) {
+			if (iswdigit(strTypes[TypesPos])) {
 				AddRecord.Type = strTypes[TypesPos] - L'0';
 			}
 			++TypesPos;
 		}
 
-		if (LocksPos < strLocks.GetLength())
-		{
-			if (iswdigit(strLocks[LocksPos]))
-			{
+		if (LocksPos < strLocks.GetLength()) {
+			if (iswdigit(strLocks[LocksPos])) {
 				AddRecord.Lock = (strLocks[LocksPos] != L'0');
 			}
 			++LocksPos;
 		}
 
-		if (TimePos + sizeof(FILETIME) <= vTimes.size())
-		{
+		if (TimePos + sizeof(FILETIME) <= vTimes.size()) {
 			AddRecord.Timestamp = *(const FILETIME *)(vTimes.data() + TimePos);
 			TimePos += sizeof(FILETIME);
 		}
