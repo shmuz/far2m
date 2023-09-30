@@ -785,8 +785,8 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
           lua_pop(L,nret); // +0
           return hndl;
         }
-        break;
       }
+      break;
     }
 
     case OPEN_SHORTCUT:
