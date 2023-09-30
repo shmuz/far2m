@@ -1713,17 +1713,17 @@ int FileList::ProcessKey(int Key)
 						                    (Key==KEY_ALTF4 && !Opt.EdOpt.UseExternalEditor)) && !Opt.strExternalEditor.IsEmpty();
 						/* $ 02.08.2001 IS обработаем ассоциации для alt-f4 */
 
-						if (Key==KEY_ALTF4 && ProcessLocalFileTypes(strFileName,FILETYPE_ALTEDIT, !PluginMode))
+						if (Key==KEY_ALTF4 && ProcessLocalFileTypes(strFileName,FILETYPE_ALTEDIT, !PluginMode, strCurDir))
 							Processed=TRUE;
 
-						else if (Key==KEY_F4 && ProcessLocalFileTypes(strFileName,FILETYPE_EDIT, !PluginMode))
+						else if (Key==KEY_F4 && ProcessLocalFileTypes(strFileName,FILETYPE_EDIT, !PluginMode, strCurDir))
 							Processed=TRUE;
 
 						if (!Processed || Key==KEY_CTRLSHIFTF4)
 						{
 							if (EnableExternal)
 							{
-								ProcessExternal(Opt.strExternalEditor, strFileName, !PluginMode);
+								ProcessExternal(Opt.strExternalEditor, strFileName, !PluginMode, strCurDir);
 								Processed=TRUE;
 							}
 							else
@@ -1769,17 +1769,17 @@ int FileList::ProcessKey(int Key)
 						                   !Opt.strExternalViewer.IsEmpty();
 						/* $ 02.08.2001 IS обработаем ассоциации для alt-f3 */
 
-						if (Key==KEY_ALTF3 && ProcessLocalFileTypes(strFileName, FILETYPE_ALTVIEW, !PluginMode))
+						if (Key==KEY_ALTF3 && ProcessLocalFileTypes(strFileName, FILETYPE_ALTVIEW, !PluginMode, strCurDir))
 							Processed=TRUE;
 
-						else if (Key==KEY_F3 && ProcessLocalFileTypes(strFileName, FILETYPE_VIEW, !PluginMode))
+						else if (Key==KEY_F3 && ProcessLocalFileTypes(strFileName, FILETYPE_VIEW, !PluginMode, strCurDir))
 							Processed=TRUE;
 
 						if (!Processed || Key==KEY_CTRLSHIFTF3)
 						{
 							if (EnableExternal)
 							{
-								ProcessExternal(Opt.strExternalViewer, strFileName, !PluginMode);
+								ProcessExternal(Opt.strExternalViewer, strFileName, !PluginMode, strCurDir);
 								Processed = TRUE;
 							}
 							else
@@ -2387,7 +2387,7 @@ void FileList::ProcessEnter(bool EnableExec,bool SeparateWindow,bool EnableAssoc
 			}
 
 			EscapeSpace(strFullPath);
-			Execute(strFullPath, SeparateWindow, true, (CurPtr->FileAttr&FILE_ATTRIBUTE_DIRECTORY)!=0);
+			Execute(strFullPath, SeparateWindow, true);
 		}
 		else
 		{
@@ -2431,7 +2431,7 @@ void FileList::ProcessEnter(bool EnableExec,bool SeparateWindow,bool EnableAssoc
 		}
 
 		if (EnableExec && SetCurPath() && !SeparateWindow &&
-		        ProcessLocalFileTypes(strFileName, FILETYPE_EXEC, !PluginMode)) //?? is was var!
+		        ProcessLocalFileTypes(strFileName, FILETYPE_EXEC, !PluginMode, strCurDir)) //?? is was var!
 		{
 			if (PluginMode)
 				QueueDeleteOnClose(strFileName);
@@ -2447,7 +2447,7 @@ void FileList::ProcessEnter(bool EnableExec,bool SeparateWindow,bool EnableAssoc
 			EnsurePathHasParentPrefix(strFileName);
 
 			if (!(Opt.ExcludeCmdHistory&EXCLUDECMDHISTORY_NOTPANEL) && !PluginMode) //AN
-				CtrlObject->CmdHistory->AddToHistory(strFileName);
+				CtrlObject->CmdHistory->AddToHistoryExtra(strFileName, strCurDir);
 
 			CtrlObject->CmdLine->ExecString(strFileName,
 				SeparateWindow, true, false, false, RunAs);
@@ -2463,7 +2463,7 @@ void FileList::ProcessEnter(bool EnableExec,bool SeparateWindow,bool EnableAssoc
 			if (EnableAssoc &&
 			        !EnableExec &&     // не запускаем и не в отдельном окне,
 			        !SeparateWindow && // следовательно это Ctrl-PgDn
-			        ProcessLocalFileTypes(strFileName, FILETYPE_ALTEXEC, !PluginMode) )
+			        ProcessLocalFileTypes(strFileName, FILETYPE_ALTEXEC, !PluginMode, strCurDir) )
 			{
 				if (PluginMode)
 					QueueDeleteOnClose(strFileName);
@@ -2478,7 +2478,7 @@ void FileList::ProcessEnter(bool EnableExec,bool SeparateWindow,bool EnableAssoc
 //					if (SeparateWindow || Opt.UseRegisteredTypes)
 					{
 						SetCurPath(); // OpenFilePlugin can change current path
-						ProcessGlobalFileTypes(strFileName, RunAs, !PluginMode);
+						ProcessGlobalFileTypes(strFileName, RunAs, !PluginMode, strCurDir);
 					}
 
 				if (PluginMode)
@@ -4619,8 +4619,6 @@ bool FileList::ApplyCommand()
 
 			if (!strConvertedCommand.IsEmpty())
 			{
-				ProcessOSAliases(strConvertedCommand);
-
 				if (!isSilent)   // TODO: Здесь не isSilent!
 				{
 					CtrlObject->CmdLine->ExecString(strConvertedCommand,FALSE, 0, 0, ListFileUsed); // Param2 == TRUE?
@@ -4631,7 +4629,7 @@ bool FileList::ApplyCommand()
 				{
 					CtrlObject->Cp()->LeftPanel->CloseFile();
 					CtrlObject->Cp()->RightPanel->CloseFile();
-					Execute(strConvertedCommand,FALSE, 0, 0, ListFileUsed, true);
+					Execute(strConvertedCommand,FALSE, 0, ListFileUsed, true);
 				}
 			}
 

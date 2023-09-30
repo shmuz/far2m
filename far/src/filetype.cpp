@@ -33,7 +33,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
-
 #include "filetype.hpp"
 #include "lang.hpp"
 #include "keys.hpp"
@@ -134,7 +133,7 @@ static int GetDescriptionWidth(ConfigReader &cfg_reader, const wchar_t *Name=nul
    - Убрал непонятный мне запрет на использование маски файлов типа "*.*"
      (был когда-то, вроде, такой баг-репорт)
 */
-bool ProcessLocalFileTypes(const wchar_t *Name, int Mode, bool CanAddHistory)
+bool ProcessLocalFileTypes(const wchar_t *Name, int Mode, bool CanAddHistory, FARString &strCurDir)
 {
 	ConfigReader cfg_reader;
 	//RenumKeyRecord(FTS.Associations,FTS.TypeFmt,FTS.Type0);
@@ -270,33 +269,27 @@ bool ProcessLocalFileTypes(const wchar_t *Name, int Mode, bool CanAddHistory)
 		{
 			bool isSilent=(strCommand.At(0)==L'@');
 
-			if (isSilent)
-			{
-				strCommand.LShift(1);
-			}
-
-			ProcessOSAliases(strCommand);
-
 			if (!isSilent)
 			{
 				CtrlObject->CmdLine->ExecString(strCommand, false, false, ListFileUsed);
 				if (CanAddHistory && !(Opt.ExcludeCmdHistory&EXCLUDECMDHISTORY_NOTFARASS)) //AN
-					CtrlObject->CmdHistory->AddToHistory(strCommand);
+					CtrlObject->CmdHistory->AddToHistoryExtra(strCommand, strCurDir);
 			}
 			else
 			{
+				strCommand.LShift(1);
 #if 1
 				SaveScreen SaveScr;
 				CtrlObject->Cp()->LeftPanel->CloseFile();
 				CtrlObject->Cp()->RightPanel->CloseFile();
-				Execute(strCommand, 0, 0, 0, ListFileUsed, true);
+				Execute(strCommand, 0, 0, ListFileUsed, true);
 #else
 				// здесь была бага с прорисовкой (и... вывод данных
 				// на команду "@type !@!" пропадал с экрана)
 				// сделаем по аналогии с CommandLine::CmdExecute()
 				{
 					RedrawDesktop RdrwDesktop(TRUE);
-					Execute(strCommand, 0, 0, 0, ListFileUsed);
+					Execute(strCommand, 0, 0, ListFileUsed);
 					ScrollScreen(1); // обязательно, иначе деструктор RedrawDesktop
 					// проредравив экран забьет последнюю строку вывода.
 				}
@@ -321,8 +314,7 @@ bool ProcessLocalFileTypes(const wchar_t *Name, int Mode, bool CanAddHistory)
 	return true;
 }
 
-
-void ProcessGlobalFileTypes(const wchar_t *Name, bool RunAs, bool CanAddHistory)
+void ProcessGlobalFileTypes(const wchar_t *Name, bool RunAs, bool CanAddHistory, FARString &strCurDir)
 {
 	FARString strName(Name);
 	EscapeSpace(strName);
@@ -330,14 +322,14 @@ void ProcessGlobalFileTypes(const wchar_t *Name, bool RunAs, bool CanAddHistory)
 
 	if (CanAddHistory && !(Opt.ExcludeCmdHistory&EXCLUDECMDHISTORY_NOTWINASS))
 	{
-		CtrlObject->CmdHistory->AddToHistory(strName);
+		CtrlObject->CmdHistory->AddToHistoryExtra(strName,strCurDir);
 	}
 }
 
 /*
   Используется для запуска внешнего редактора и вьювера
 */
-void ProcessExternal(const wchar_t *Command, const wchar_t *Name, bool CanAddHistory)
+void ProcessExternal(const wchar_t *Command, const wchar_t *Name, bool CanAddHistory, FARString &strCurDir)
 {
 	FARString strListName, strAnotherListName;
 	FARString strFullName;
@@ -365,7 +357,7 @@ void ProcessExternal(const wchar_t *Command, const wchar_t *Name, bool CanAddHis
 			SaveScreen SaveScr;
 			CtrlObject->Cp()->LeftPanel->CloseFile();
 			CtrlObject->Cp()->RightPanel->CloseFile();
-			Execute(strExecStr.CPtr()+1, 0, 0, 0, ListFileUsed);
+			Execute(strExecStr.CPtr()+1, 0, 0, ListFileUsed);
 		}
 	}
 

@@ -339,14 +339,16 @@ void QueueDeleteOnClose(const wchar_t *Name)
 	farExecuteA(cmd.c_str(), EF_NOWAIT | EF_HIDEOUT);
 }
 
-static int ExecuteA(const char *CmdStr, bool SeparateWindow, bool DirectRun, bool FolderRun , bool WaitForIdle , bool Silent , bool RunAs)
+static int
+ExecuteA(const char *CmdStr, bool SeparateWindow, bool DirectRun, bool WaitForIdle, bool Silent, bool RunAs)
 {
-	fprintf(stderr, "ExecuteA: SeparateWindow=%d DirectRun=%d FolderRun=%d WaitForIdle=%d Silent=%d RunAs=%d CmdStr='%s'\n",
-			SeparateWindow, DirectRun, FolderRun, WaitForIdle, Silent, RunAs, CmdStr);
+	fprintf(stderr,
+			"ExecuteA: SeparateWindow=%d DirectRun=%d WaitForIdle=%d Silent=%d RunAs=%d CmdStr='%s'\n",
+			SeparateWindow, DirectRun, WaitForIdle, Silent, RunAs, CmdStr);
 
 	int r = -1;
 	ExecClassifier ec(CmdStr, DirectRun);
-	unsigned int flags = ( (Silent || SeparateWindow) ? 0 : EF_NOTIFY );
+	unsigned int flags = ((Silent || SeparateWindow) ? 0 : EF_NOTIFY);
 	std::string tmp;
 	if (ec.IsDir() && SeparateWindow) {
 		tmp = GetOpenShVerb("dir");
@@ -364,26 +366,25 @@ static int ExecuteA(const char *CmdStr, bool SeparateWindow, bool DirectRun, boo
 		return farExecuteA(CmdStr, flags);
 
 	if (!tmp.empty()) {
-		flags|= EF_NOWAIT | EF_HIDEOUT; //open.sh doesnt print anything
+		flags|= EF_NOWAIT | EF_HIDEOUT;		// open.sh doesnt print anything
 	}
-	if ( (ec.IsFile() || ec.IsDir()) && DirectRun && !ec.IsPrefixed()) {
-		tmp+= "./"; // it is ok to prefix ./ even to a quoted string
+	if ((ec.IsFile() || ec.IsDir()) && DirectRun && !ec.IsPrefixed()) {
+		tmp+= "./";		// it is ok to prefix ./ even to a quoted string
 	}
 	tmp+= CmdStr;
 
 	r = farExecuteA(tmp.c_str(), flags);
-	if (r!=0) {
-		fprintf(stderr, "ClassifyAndRun: status %d errno %d for %s\n", r, errno, tmp.c_str() );
-		//TODO: nicely report if xdg-open exec failed
+	if (r != 0) {
+		fprintf(stderr, "ClassifyAndRun: status %d errno %d for %s\n", r, errno, tmp.c_str());
+		// TODO: nicely report if xdg-open exec failed
 	}
 
 	return r;
 }
 
-
-int Execute(const wchar_t *CmdStr, bool SeparateWindow, bool DirectRun, bool FolderRun , bool WaitForIdle , bool Silent , bool RunAs)
+int Execute(const wchar_t *CmdStr, bool SeparateWindow, bool DirectRun, bool WaitForIdle, bool Silent, bool RunAs)
 {
-	return ExecuteA(Wide2MB(CmdStr).c_str(), SeparateWindow, DirectRun, FolderRun , WaitForIdle , Silent , RunAs);
+	return ExecuteA(Wide2MB(CmdStr).c_str(), SeparateWindow, DirectRun, WaitForIdle, Silent, RunAs);
 }
 
 int CommandLine::CmdExecute(const wchar_t *CmdLine, bool SeparateWindow, bool DirectRun, bool WaitForIdle, bool Silent, bool RunAs)
@@ -432,7 +433,7 @@ int CommandLine::CmdExecute(const wchar_t *CmdLine, bool SeparateWindow, bool Di
 			cd_prev[0] = 0;
 		}
 
-		r = Execute(CmdLine, SeparateWindow, DirectRun, false , WaitForIdle , Silent , RunAs);
+		r = Execute(CmdLine, SeparateWindow, DirectRun, WaitForIdle , Silent , RunAs);
 
 		char cd[MAX_PATH + 1] = {'.', 0};
 		if (sdc_getcwd(cd, MAX_PATH)) {
@@ -482,10 +483,5 @@ int CommandLine::CmdExecute(const wchar_t *CmdLine, bool SeparateWindow, bool Di
 const wchar_t *PrepareOSIfExist(const wchar_t *CmdLine)
 {
 	return L"";
-}
-
-bool ProcessOSAliases(FARString &strStr)
-{
-	return false;
 }
 

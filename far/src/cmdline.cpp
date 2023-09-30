@@ -467,15 +467,14 @@ int CommandLine::ProcessKey(int Key)
 
 			ActivePanel->SetCurPath();
 
-			if (!(Opt.ExcludeCmdHistory&EXCLUDECMDHISTORY_NOTCMDLINE))
-				CtrlObject->CmdHistory->AddToHistory(strStr);
-
-			ProcessOSAliases(strStr);
+			if (!(Opt.ExcludeCmdHistory & EXCLUDECMDHISTORY_NOTCMDLINE)) {
+				FARString curDir;
+				ActivePanel->GetCurDirPluginAware(curDir);
+				CtrlObject->CmdHistory->AddToHistoryExtra(strStr, curDir);
+			}
 
 			if (ActivePanel->ProcessPluginEvent(FE_COMMAND,(void *)strStr.CPtr())) {
-				FARString strCurDirFromPanel;
-				ActivePanel->GetCurDirPluginAware(strCurDirFromPanel);
-				strCurDir = strCurDirFromPanel;
+				ActivePanel->GetCurDirPluginAware(strCurDir);
 				Show();
 				ActivePanel->SetTitle();
 
