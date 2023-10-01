@@ -1,10 +1,11 @@
 -- coding: utf-8
--- Minimal Far version:     3.0.3300
+-- Minimal Far3 version:     3.0.3300
+-- Minimal far2m version:    2.5.0
 
 -- http://forum.farmanager.com/viewtopic.php?p=141965#p141965
 -- Исходный скрипт был написан для плагина LuaFAR for Editor.
 -- Первоначальный автор: Максим Гончар ("maxdrfl" в форуме Far Manager).
--- Адаптация к Far3 API, плагину LuaMacro и некоторые изменения в коде: Shmuel Zeigerman.
+-- Адаптация к Far3 и far2m API, плагину LuaMacro и некоторые изменения в коде: Shmuel Zeigerman.
 
 --[[
         ОРИГИНАЛЬНАЯ СПРАВКА (адаптировано):
@@ -77,8 +78,7 @@ local python  -- Lunatic Python module
 local py_globals
 local py_help
 
-local function init_python(py)
-  python = py
+local function init_python()
   python.execute "import math"
   python.execute "from math import *"
   python.execute "from inspect import getmembers"
@@ -94,8 +94,8 @@ def get_math_list():
     for tup in getmembers(math):
         if tup[0][0] != "_":
             if   ind % 8 == 0: tb.append("  " + tup[0] + ", ")
-            elif ind % 8 != 7: tb.append(tup[0] + ", ")
-            else:              tb.append(tup[0] + ",\n")
+            elif ind % 8 == 7: tb.append(tup[0] + ",\n")
+            else:              tb.append(tup[0] + ", ")
             ind += 1
     return "".join(tb)
 ]]
@@ -390,12 +390,14 @@ local function calculator()
         elseif btn.name:find("^lng") then
           if btn.name == "lng_py" and not python then
             local ok, ret = pcall(require, Lib_Python)
-            if not ok then
+            if ok then
+              python = ret
+              init_python()
+            else
               far.Message(ret:match("[^\n]+"), M.mError, nil, "w")
               SetFocusOnInput(hDlg)
               return DISABLE_CHANGE
             end
-            init_python(ret)
           end
           curlang = get_language(hDlg)
           SetFocusOnInput(hDlg)
