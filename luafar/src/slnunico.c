@@ -262,7 +262,7 @@ static void addquoted(lua_State *L, luaL_Buffer *b, int arg)
 
 
 static const char *scanformat(lua_State *L, const char *strfrmt, char *form,
-                              int *hasprecision)
+															int *hasprecision)
 {
 	const char *p = strfrmt;
 

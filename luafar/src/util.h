@@ -19,32 +19,32 @@ extern struct PluginStartupInfo PSInfo;
 extern struct FarStandardFunctions FSF;
 
 typedef struct {
-  TPluginData *plugin_data;
-  size_t    timer_id;
-  unsigned  interval;
-  int       objRef;
-  int       funcRef;
-  int       threadRef;
-  int       closeStage;
-  int       enabled;
-  int       interval_changed; //TODO
+	TPluginData *plugin_data;
+	size_t    timer_id;
+	unsigned  interval;
+	int       objRef;
+	int       funcRef;
+	int       threadRef;
+	int       closeStage;
+	int       enabled;
+	int       interval_changed; //TODO
 }
 TTimerData;
 
 typedef struct {
-  lua_State         *L;
-  HANDLE            hDlg;
-  BOOL              isOwned;
-  BOOL              wasError;
-  BOOL              isModal;
-  int               dataRef;
+	lua_State         *L;
+	HANDLE            hDlg;
+	BOOL              isOwned;
+	BOOL              wasError;
+	BOOL              isModal;
+	int               dataRef;
 } TDialogData;
 
 typedef struct
 {
-  intptr_t X,Y;
-  intptr_t Size;
-  CHAR_INFO VBuf[1];
+	intptr_t X,Y;
+	intptr_t Size;
+	CHAR_INFO VBuf[1];
 } TFarUserControl;
 
 int   DecodeAttributes(const char* str);

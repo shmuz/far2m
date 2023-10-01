@@ -226,7 +226,7 @@ int far_MacroCallFar(lua_State *L)
 
 int far_MacroCallToLua(lua_State *L)
 {
-  if (lua_type(L,1) == LUA_TLIGHTUSERDATA)
+	if (lua_type(L,1) == LUA_TLIGHTUSERDATA)
 	{
 		struct FarMacroCall* Data = (struct FarMacroCall*)lua_touserdata(L, 1);
 		lua_settop(L, 0);

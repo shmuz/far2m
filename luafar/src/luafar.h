@@ -17,22 +17,22 @@ extern "C" {
 
 typedef struct
 {
-  const wchar_t* ModuleName;   // copied from PluginStartupInfo
-  INT_PTR        ModuleNumber; // +
-  const wchar_t* RootKey;      // +
-  const void*    Private;      // +
+	const wchar_t* ModuleName;   // copied from PluginStartupInfo
+	INT_PTR        ModuleNumber; // +
+	const wchar_t* RootKey;      // +
+	const void*    Private;      // +
 
-  DWORD          PluginId;
-  FARWINDOWPROC  DlgProc;
-  lua_State*     MainLuaState;
-  char*          ShareDir;
-  DWORD          Flags;
-  void         (*GetGlobalInfo)(struct GlobalInfo *aInfo);
+	DWORD          PluginId;
+	FARWINDOWPROC  DlgProc;
+	lua_State*     MainLuaState;
+	char*          ShareDir;
+	DWORD          Flags;
+	void         (*GetGlobalInfo)(struct GlobalInfo *aInfo);
 } TPluginData;
 
 enum LF_PLUGIN_FLAGS
 {
-  LPF_SETPACKAGEPATH = 0x00000001,
+	LPF_SETPACKAGEPATH = 0x00000001,
 };
 
 DLLFUNC int  LF_LuaOpen(const struct PluginStartupInfo *aInfo, TPluginData* aPlugData, lua_CFunction aOpenLibs);
