@@ -41,9 +41,6 @@ bool CheckStructSize(const T* s)
 	return s && (s->StructSize >= sizeof(T));
 }
 
-#define ALIGNAS(value, alignment) ((value+(alignment-1))&~(alignment-1))
-#define ALIGN(value) ALIGNAS(value, sizeof(void*))
-
 // Macro Const
 enum
 {

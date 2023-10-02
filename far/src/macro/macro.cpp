@@ -3012,39 +3012,18 @@ int FarMacroApi::replaceFunc()
 	auto& Find  = Params[1];
 	auto& Src   = Params[0];
 	// TODO: Здесь нужно проверить в соответствии с УНИХОДОМ!
-	FARString strStr;
-	int lenS=StrLength(Src.s());
-	int lenF=StrLength(Find.s());
-	int lenR=StrLength(Repl.s());
 	int cnt=0;
 
-	if( lenF )
+	if( StrLength(Find.s()) )
 	{
-		const wchar_t *Ptr=Src.s();
-		if( !Mode )
-		{
-			while ((Ptr=StrStrI(Ptr,Find.s())) )
-			{
-				cnt++;
-				Ptr+=lenF;
-			}
-		}
-		else
-		{
-			while ((Ptr=StrStr(Ptr,Find.s())) )
-			{
-				cnt++;
-				Ptr+=lenF;
-			}
-		}
+		auto func = Mode ? StrStr : StrStrI;
+		if (func(Src.s(), Find.s()) )
+			cnt++;
 	}
 
 	if (cnt)
 	{
-		if (lenR > lenF)
-			lenS+=cnt*(lenR-lenF+1); //???
-
-		strStr=Src.s();
+		FARString strStr=Src.s();
 		cnt=(int)Count.i();
 
 		if (cnt <= 0)
@@ -3054,7 +3033,7 @@ int FarMacroApi::replaceFunc()
 		PassString(strStr);
 	}
 	else
-		PassValue(Src);
+		PassString(Src.s());
 
 	return 0;
 }

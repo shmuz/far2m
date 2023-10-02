@@ -74,6 +74,9 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "InterThreadCall.hpp"
 #include "filestr.hpp"
 
+#define ALIGNAS(value, alignment) ((value+(alignment-1))&~(alignment-1))
+#define ALIGN(value) ALIGNAS(value, sizeof(void*))
+
 wchar_t *WINAPI FarItoa(int value, wchar_t *string, int radix)
 {
 	if (string)
