@@ -1216,6 +1216,7 @@ int LF_ProcessDialogEvent (lua_State* L, int Event, void *Param)
 
 int LF_ProcessSynchroEvent (lua_State* L, int Event, void *Param)
 {
+#ifndef __FreeBSD__
 	if (Event == SE_COMMONSYNCHRO) {
 		TTimerData *td = (TTimerData*)Param;
 		switch (td->closeStage) {
@@ -1238,6 +1239,7 @@ int LF_ProcessSynchroEvent (lua_State* L, int Event, void *Param)
 				break;
 		}
 	}
+#endif
 	return 0;
 }
 

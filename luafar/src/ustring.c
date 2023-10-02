@@ -1,4 +1,8 @@
+#ifdef __FreeBSD__
+#include <uuid.h>
+#else
 #include <uuid/uuid.h>
+#endif
 
 #include <lua.h>
 #include <lauxlib.h>
@@ -417,6 +421,55 @@ void shuffle_uuid(void* uuid)
 	}
 }
 
+#ifdef __FreeBSD__
+int ustring_Uuid(lua_State* L)
+{
+	uint32_t status;
+	uuid_t uuid;
+
+	if(lua_gettop(L) == 0 || !lua_toboolean(L, 1))
+	{
+		// generate new UUID
+		uuid_create(&uuid, &status);
+		if (status == uuid_s_ok) {
+			//shuffle_uuid(uuid);
+			lua_pushlstring(L, (const char*)&uuid, sizeof(uuid));
+			return 1;
+		}
+	}
+	else
+	{
+		size_t len;
+		const char* arg1 = luaL_checklstring(L, 1, &len);
+
+		if(len == sizeof(uuid))
+		{
+			// convert given UUID to string
+			char *str;
+			uuid_to_string((const uuid_t*)arg1, &str, &status);
+			if (status == uuid_s_ok) {
+				//shuffle_uuid(uuid);
+				lua_pushstring(L, str);
+				free(str);
+				return 1;
+			}
+		}
+		else if (len >= 2*sizeof(uuid))
+		{
+			// convert string UUID representation to UUID
+			uuid_from_string(arg1, &uuid, &status);
+			if (status == uuid_s_ok) {
+				//shuffle_uuid(uuid);
+				lua_pushlstring(L, (char*)&uuid, sizeof(uuid));
+				return 1;
+			}
+		}
+	}
+
+	lua_pushnil(L);
+	return 1;
+}
+#else
 int ustring_Uuid(lua_State* L)
 {
 	uuid_t uuid;
@@ -427,7 +480,7 @@ int ustring_Uuid(lua_State* L)
 		// generate new UUID
 		uuid_generate(uuid);
 		shuffle_uuid(uuid);
-		lua_pushlstring(L, (const char*)&uuid, sizeof(uuid));
+		lua_pushlstring(L, (const char*)&uuid, sizeof(uuid)); //TODO check for a bug in this line
 		return 1;
 	}
 	else
@@ -459,6 +512,7 @@ int ustring_Uuid(lua_State* L)
 	lua_pushnil(L);
 	return 1;
 }
+#endif // __FreeBSD__
 
 int ustring_GetFileAttr(lua_State *L)
 {

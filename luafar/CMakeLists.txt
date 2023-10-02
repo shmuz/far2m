@@ -34,17 +34,24 @@ set(SOURCES
   src/luamacro.c
   src/lusercontrol.c
   src/lutf8lib.c
-  src/mytimer.c
   src/service.c
   src/slnunico.c
   src/ustring.c
   src/util.c
   src/farhost.cpp
 )
+if (NOT ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+  list(APPEND ${SOURCES} src/mytimer.c)
+endif()
 
 add_library (${PROJECT_NAME} SHARED ${SOURCES})
 set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 11)
-target_link_libraries(${PROJECT_NAME} uuid utils)
+
+if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+  target_link_libraries(${PROJECT_NAME} utils)
+else()
+  target_link_libraries(${PROJECT_NAME} uuid utils)
+endif()
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE -DWINPORT_DIRECT -DFAR_DONT_USE_INTERNALS)
 
