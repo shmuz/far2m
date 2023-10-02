@@ -480,7 +480,7 @@ int ustring_Uuid(lua_State* L)
 		// generate new UUID
 		uuid_generate(uuid);
 		shuffle_uuid(uuid);
-		lua_pushlstring(L, (const char*)&uuid, sizeof(uuid)); //TODO check for a bug in this line
+		lua_pushlstring(L, (const char*)uuid, sizeof(uuid));
 		return 1;
 	}
 	else
