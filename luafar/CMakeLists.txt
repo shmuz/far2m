@@ -41,7 +41,7 @@ set(SOURCES
   src/farhost.cpp
 )
 if (NOT ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
-  list(APPEND ${SOURCES} src/mytimer.c)
+  list(APPEND SOURCES src/mytimer.c)
 endif()
 
 add_library (${PROJECT_NAME} SHARED ${SOURCES})
