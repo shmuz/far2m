@@ -279,24 +279,18 @@ static TVar addStr(const wchar_t *a, const wchar_t *b)
 	return r;
 }
 
-TVar& TVar::AppendStr(const TVar& appStr)
-{
-	vType = vtString;
-	return operator=(addStr(str,appStr.str));
-}
-
-TVar& TVar::AppendStr(wchar_t addChr)
-{
-	wchar_t tmp[2]={0,0};
-	tmp[0]=addChr;
-	vType = vtString;
-	return operator=(addStr(str,tmp));
-}
-
 TVar::~TVar()
 {
 	if (str)
 		delete [] str;
+}
+
+TVar::TVar() :
+	vType(vtUnknown),
+	inum(0),
+	dnum(0.0),
+	str(nullptr)
+{
 }
 
 TVar::TVar(int64_t v) :
@@ -405,6 +399,9 @@ double TVar::d() const
 
 const wchar_t *TVar::s() const
 {
+	if (isUnknown())
+		return L"";
+
 	if (isString())
 		return  str ? str : L"";
 
@@ -413,7 +410,7 @@ const wchar_t *TVar::s() const
 
 const wchar_t *TVar::toString()
 {
-	wchar_t s[256];
+	wchar_t s[256] = {0};
 
 	switch (vType)
 	{
@@ -423,8 +420,10 @@ const wchar_t *TVar::toString()
 		case vtInteger:
 			far_wcsncpy(s, ::toString(inum),ARRAYSIZE(s));
 			break;
-		default:
+		case vtString:
 			return str;
+		case vtUnknown:
+			break;
 	}
 
 	if (str)
@@ -1726,109 +1725,5 @@ double TVar::asDouble() const
 
 	default:
 		return 0;
-	}
-}
-
-//---------------------------------------------------------------
-// Работа с таблицами имен переменных
-//---------------------------------------------------------------
-int hash(const wchar_t *p)
-{
-	int i = 0;
-	wchar_t *pp = (wchar_t*)p;
-
-	while (*pp)
-		i = i << (1^*(pp++));
-
-	if (i < 0)
-		i = -i;
-
-	i %= V_TABLE_SIZE;
-	return i;
-}
-
-int isVar(TVarTable table, const wchar_t *p)
-{
-	int i = hash(p);
-
-	for (TVarSet *n = table[i] ; n ; n = ((TVarSet*)n->next))
-		if (!StrCmpI(n->str, p))
-			return 1;
-
-	return 0;
-}
-
-TVarSet *varLook(TVarTable table, const wchar_t *p, bool ins)
-{
-	int i = hash(p);
-
-	for (TVarSet *n = table[i] ; n ; n = ((TVarSet*)n->next))
-		if (!StrCmpI(n->str, p))
-			return n;
-
-	if (ins)
-	{
-		TVarSet *nn = new TVarSet(p);
-		nn->next = table[i];
-		table[i] = nn;
-		return nn;
-	}
-
-	return nullptr;
-}
-
-TVarSet *varEnum(TVarTable table,int NumTable, int Index)
-{
-	if (NumTable >= V_TABLE_SIZE)
-		return nullptr;
-
-	TVarSet *n = table[NumTable];
-
-	for (int I=0; I < Index && n; ++I)
-		n = ((TVarSet*)n->next);
-
-	return n;
-}
-
-void varKill(TVarTable table, const wchar_t *p)
-{
-	int i = hash(p);
-	TVarSet *nn = table[i];
-
-	for (TVarSet *n = table[i] ; n ; n = ((TVarSet*)n->next))
-	{
-		if (!StrCmpI(n->str, p))
-		{
-			if (n == table[i])
-				table[i]=((TVarSet*)n->next);
-			else
-				nn->next= n->next;
-
-			//( ( n == table[i] ) ? table[i] : nn->next ) = n->next;
-			delete n;
-			return;
-		}
-
-		nn = n;
-	}
-}
-
-void initVTable(TVarTable table)
-{
-	for (int i = 0 ; i < V_TABLE_SIZE ; i++)
-		table[i] = nullptr;
-}
-
-void deleteVTable(TVarTable table)
-{
-	for (int i = 0 ; i < V_TABLE_SIZE ; i++)
-	{
-		while (table[i] )
-		{
-			TVarSet *n = ((TVarSet*)(table[i]->next));
-			table[i]->next = nullptr;
-			delete table[i];
-			table[i] = n;
-		}
 	}
 }

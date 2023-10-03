@@ -70,7 +70,8 @@ class TVar
 		static int CompAB(const TVar& a, const TVar& b, TVarFuncCmp fcmp);
 
 	public:
-		TVar(int64_t = 0);
+		TVar();
+		TVar(int64_t);
 		TVar(const wchar_t*);
 		TVar(int);
 		TVar(double);
@@ -99,9 +100,6 @@ class TVar
 		TVar& operator=(const int64_t&);
 		TVar& operator=(const double&);
 
-		// TVar operator==(const TVar &) const = delete;
-		// TVar(TVar&&) = delete;
-
 		TVar& operator+=(const TVar& b)  { return *this = *this+b;  }
 		TVar& operator-=(const TVar& b)  { return *this = *this-b;  }
 		TVar& operator*=(const TVar& b)  { return *this = *this*b;  }
@@ -125,11 +123,7 @@ class TVar
 		friend int operator>(const TVar&, const TVar&);
 		friend int operator>=(const TVar&, const TVar&);
 
-		TVar& AppendStr(wchar_t);
-		TVar& AppendStr(const TVar&);
-
-		TVarType type() { return vType; }
-		void SetType(TVarType newType) {vType=newType;}
+		TVarType type() const { return vType; }
 
 		int isString()   const { return vType == vtString;  }
 		int isInteger()  const { return vType == vtInteger; }
@@ -151,54 +145,3 @@ class TVar
 		double asDouble() const;
 		int64_t asInteger() const;
 };
-
-//---------------------------------------------------------------
-// Работа с таблицами имен переменных
-//---------------------------------------------------------------
-
-class TAbstractSet
-{
-	public:
-		wchar_t *str;
-		TAbstractSet *next;
-
-	public:
-		TAbstractSet(const wchar_t *s)
-		{
-			str = nullptr;
-			next = nullptr;
-
-			if (s)
-			{
-				str = new wchar_t[StrLength(s)+1];
-				wcscpy(str, s);
-			}
-		}
-
-		~TAbstractSet()
-		{
-			if (str)
-				delete [] str;
-		}
-};
-
-class TVarSet : public TAbstractSet
-{
-	public:
-		TVar value;
-
-	public:
-		TVarSet(const wchar_t *s) : TAbstractSet(s), value() {}
-};
-
-extern int isVar(TVarTable, const wchar_t*);
-extern TVarSet *varEnum(TVarTable, int, int);
-extern TVarSet *varLook(TVarTable worktable, const wchar_t* name, bool ins=false);
-extern void varKill(TVarTable, const wchar_t*);
-extern void initVTable(TVarTable);
-extern void deleteVTable(TVarTable);
-
-inline TVarSet *varInsert(TVarTable t, const wchar_t *s)
-{
-	return varLook(t, s, true);
-}
