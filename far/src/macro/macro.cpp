@@ -1934,7 +1934,7 @@ int FarMacroApi::modFunc()
 		PassNumber(0);
 	}
 	else
-		PassValue(Params[0] % Params[1]);
+		PassValue(Params[0].i() % Params[1].i());
 	return 0;
 }
 

@@ -53,11 +53,6 @@ enum TVarType
 
 typedef int (*TVarFuncCmp)(TVarType vt,const void *, const void *);
 
-class TVarSet;
-class TAbstractSet;
-const int V_TABLE_SIZE = 23;
-typedef TVarSet *(TVarTable)[V_TABLE_SIZE];
-
 class TVar
 {
 	private:
@@ -79,37 +74,10 @@ class TVar
 		~TVar();
 
 	public:
-		friend TVar operator+(const TVar&, const TVar&);
-		friend TVar operator-(const TVar&, const TVar&);
-		friend TVar operator*(const TVar&, const TVar&);
-		friend TVar operator/(const TVar&, const TVar&);
-		friend TVar operator%(const TVar&, const TVar&);
-
-		friend TVar operator&(const TVar&, const TVar&);
-		friend TVar operator|(const TVar&, const TVar&);
-		friend TVar operator^(const TVar&, const TVar&);
-		friend TVar operator>>(const TVar&, const TVar&);
-		friend TVar operator<<(const TVar&, const TVar&);
-
-		friend TVar operator&&(const TVar&, const TVar&);
-		friend TVar operator||(const TVar&, const TVar&);
-		friend TVar xor_op(const TVar&, const TVar&);
-
 		TVar& operator=(const TVar&);
 		TVar& operator=(const int&);
 		TVar& operator=(const int64_t&);
 		TVar& operator=(const double&);
-
-		TVar& operator+=(const TVar& b)  { return *this = *this+b;  }
-		TVar& operator-=(const TVar& b)  { return *this = *this-b;  }
-		TVar& operator*=(const TVar& b)  { return *this = *this*b;  }
-		TVar& operator/=(const TVar& b)  { return *this = *this/b;  }
-		TVar& operator%=(const TVar& b)  { return *this = *this%b;  }
-		TVar& operator&=(const TVar& b)  { return *this = *this&b;  }
-		TVar& operator|=(const TVar& b)  { return *this = *this|b;  }
-		TVar& operator^=(const TVar& b)  { return *this = *this^b;  }
-		TVar& operator>>=(const TVar& b) { return *this = *this>>b; }
-		TVar& operator<<=(const TVar& b) { return *this = *this<<b; }
 
 		TVar operator+();
 		TVar operator-();
