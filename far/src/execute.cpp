@@ -68,8 +68,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ScopeHelpers.h"
 #include <set>
 #include <sys/wait.h>
-#ifdef __FreeBSD__
-# include <signal.h>
+#if defined(__FreeBSD__) || defined(__DragonFly__)
+#include <signal.h>
 #endif
 
 static WCHAR eol[2] = {'\r', '\n'};

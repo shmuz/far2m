@@ -8,6 +8,11 @@
 
 #include "FSFileFlags.h"
 
+#ifdef __DragonFly__
+/* This is the same as the MacOS X definition of UF_HIDDEN. */
+#define UF_HIDDEN      0x00008000      /* file is hidden */
+#endif
+
 FSFileFlags::FSFileFlags(const std::string &path)
 {
 	if (sdc_fs_flags_get(path.c_str(), &_flags) == 0) {
@@ -47,7 +52,7 @@ void FSFileFlags::SetImmutable(bool v)
 	if (v && !FS_FLAGS_CONTAIN_IMMUTABLE(_flags)) {
 		_flags = FS_FLAGS_WITH_IMMUTABLE(_flags);
 
-	}  else if (!v && FS_FLAGS_CONTAIN_IMMUTABLE(_flags)) {
+	} else if (!v && FS_FLAGS_CONTAIN_IMMUTABLE(_flags)) {
 		_flags = FS_FLAGS_WITHOUT_IMMUTABLE(_flags);
 	}
 }
@@ -67,7 +72,7 @@ void FSFileFlags::SetAppend(bool v)
 	}
 }
 
-#if defined(__APPLE__) || defined(__FreeBSD__)
+#if defined(__APPLE__) || defined(__FreeBSD__)  || defined(__DragonFly__)
 
 bool FSFileFlags::Hidden() const
 {

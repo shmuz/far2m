@@ -21,13 +21,13 @@ public:
 	bool Append() const;
 	void SetAppend(bool v);
 
-#if defined(__APPLE__) || defined(__FreeBSD__)
+#if defined(__APPLE__) || defined(__FreeBSD__) || defined(__DragonFly__)
 	bool Hidden() const;
 	void SetHidden(bool v);
 #endif
 };
 
-#if defined(__APPLE__) || defined(__FreeBSD__)
+#if defined(__APPLE__) || defined(__FreeBSD__) || defined(__DragonFly__)
 # define FS_FLAGS_CONTAIN_IMMUTABLE(flags) (((flags) & (UF_IMMUTABLE | SF_IMMUTABLE)) != 0)
 # define FS_FLAGS_WITHOUT_IMMUTABLE(flags) ((flags) & (~(UF_IMMUTABLE | SF_IMMUTABLE)))
 # define FS_FLAGS_WITH_IMMUTABLE(flags) ((flags) | (UF_IMMUTABLE))
@@ -40,6 +40,15 @@ public:
 # define FS_FLAGS_WITHOUT_HIDDEN(flags) ((flags) & (~(UF_HIDDEN)))
 # define FS_FLAGS_WITH_HIDDEN(flags) ((flags) | (UF_HIDDEN))
 
+#elif defined(__HAIKU__)
+// TODO ?
+# define FS_FLAGS_CONTAIN_IMMUTABLE(flags) false
+# define FS_FLAGS_WITHOUT_IMMUTABLE(flags) false
+# define FS_FLAGS_WITH_IMMUTABLE(flags) false
+
+# define FS_FLAGS_CONTAIN_APPEND(flags) false
+# define FS_FLAGS_WITHOUT_APPEND(flags) false
+# define FS_FLAGS_WITH_APPEND(flags) false
 #else
 # define FS_FLAGS_CONTAIN_IMMUTABLE(flags) (((flags) & FS_IMMUTABLE_FL) != 0)
 # define FS_FLAGS_WITHOUT_IMMUTABLE(flags) ((flags) & (~FS_IMMUTABLE_FL))

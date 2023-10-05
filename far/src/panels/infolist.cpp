@@ -59,7 +59,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //# include <sys/sysctl.h>
 # include <mach/mach_host.h>
 # include <mach/vm_statistics.h>
-#elif !defined(__FreeBSD__) && !defined(__HAIKU__)
+#elif !defined(__FreeBSD__) && !defined(__DragonFly__) && !defined(__HAIKU__)
 # include <sys/sysinfo.h>
 #endif
 
@@ -255,8 +255,7 @@ void InfoList::DisplayObject()
 		PrintInfo(strOutStr);
 	}
 
-
-#elif !defined(__FreeBSD__) && !defined(__HAIKU__)
+#elif !defined(__FreeBSD__) && !defined(__DragonFly__) && !defined(__HAIKU__)
 	struct sysinfo si = {};
 	if (sysinfo(&si) == 0)
 	{

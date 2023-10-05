@@ -6247,7 +6247,7 @@ int luaopen_far (lua_State *L)
 	lua_setfield(L, -2, "__index");
 	luaL_register(L, NULL, filefilter_methods);
 
-#ifndef __FreeBSD__
+#if !defined(__FreeBSD__) && !defined(__DragonFly__)
 	lua_getglobal(L, "far");
 	lua_pushcfunction(L, luaopen_timer);
 	lua_call(L, 0, 1);

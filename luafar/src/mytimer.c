@@ -1,3 +1,5 @@
+#if !defined(__FreeBSD__) && !defined(__DragonFly__)
+
 //initial source: https://qnaplus.com/implement-periodic-timer-linux/
 
 #include <stdint.h>
@@ -343,3 +345,5 @@ int luaopen_timer(lua_State *L)
 		lua_pushnil(L);
 	return 1;
 }
+
+#endif // #if !defined(__FreeBSD__) && !defined(__DragonFly__)

@@ -1,4 +1,4 @@
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) || defined(__DragonFly__)
 #include <uuid.h>
 #else
 #include <uuid/uuid.h>
@@ -421,7 +421,7 @@ void shuffle_uuid(void* uuid)
 	}
 }
 
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) || defined(__DragonFly__)
 int ustring_Uuid(lua_State* L)
 {
 	uint32_t status;
@@ -512,7 +512,7 @@ int ustring_Uuid(lua_State* L)
 	lua_pushnil(L);
 	return 1;
 }
-#endif // __FreeBSD__
+#endif
 
 int ustring_GetFileAttr(lua_State *L)
 {

@@ -34,15 +34,13 @@ set(SOURCES
   src/luamacro.c
   src/lusercontrol.c
   src/lutf8lib.c
+  src/mytimer.c
   src/service.c
   src/slnunico.c
   src/ustring.c
   src/util.c
   src/farhost.cpp
 )
-if (NOT ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
-  list(APPEND SOURCES src/mytimer.c)
-endif()
 
 add_library (${PROJECT_NAME} SHARED ${SOURCES})
 set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 11)
