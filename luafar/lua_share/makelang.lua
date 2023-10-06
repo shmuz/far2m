@@ -39,7 +39,11 @@ local function get_quoted (s)
   return s:sub(1, len)
 end
 
-local function MakeLang (aFileName)
+local function join(dir, file)
+  return dir:gsub("/?$", "/", 1) .. file
+end
+
+local function MakeLang (aFileName, aOutDir)
   assert ( type(aFileName) == "string" )
 
   local bom_utf8 = "\239\187\191"
@@ -134,7 +138,7 @@ local function MakeLang (aFileName)
     map[name] = true
   end
   ----------------------------------------------------------------------------
-  local fp = assert(io.open(msgfile, "w"))
+  local fp = assert(io.open(join(aOutDir, msgfile), "w"))
   fp:write("-- This file is auto-generated. Don't edit.\n\n")
   fp:write("local indexes = {\n")
   for k,name in ipairs(t_out[1]) do
@@ -152,11 +156,13 @@ return setmetatable( {},
     local lang = assert( v:match("%.Language=(%w+)") )
     local suffix = lang:lower()=="slovak" and "sky" or lang:sub(1,3)
     local fname = lngfile.."_"..suffix:lower()..".lng"
-    fp = assert(io.open(fname, "w"))
+    fp = assert(io.open(join(aOutDir, fname), "w"))
     fp:write(bom_utf8, v, "\n\n")
     fp:write(table.concat(t_out[k+1], "\n"), "\n")
     fp:close()
   end
 end
 
-return MakeLang
+--return MakeLang
+MakeLang(...)
+
