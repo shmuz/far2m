@@ -1,4 +1,4 @@
-#if defined(__FreeBSD__) || defined(__DragonFly__)
+#if defined(__FreeBSD__) // || defined(__DragonFly__)
 #include <uuid.h>
 #else
 #include <uuid/uuid.h>
