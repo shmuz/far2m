@@ -132,7 +132,7 @@ find_program(M4_PROG NAMES ${M4_NAME})
 if(NOT M4_PROG)
     message(FATAL_ERROR "${ColorRed}${M4_NAME} not found - please install it${ColorNormal}")
 endif ()
-set(M4 ${M4_PROG} -P "-DARCH=${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR}" "-DMAJOR=${VERSION_MAJOR}" "-DMINOR=${VERSION_MINOR}" "-DPATCH=${VERSION_PATCH}")
+set(M4 ${M4_PROG} -Pg "-DARCH=${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR}" "-DMAJOR=${VERSION_MAJOR}" "-DMINOR=${VERSION_MINOR}" "-DPATCH=${VERSION_PATCH}")
 
 # set(RM rm) actually not needed: use $(CMAKE_COMMAND) -E remove
 find_program (GAWK NAMES gawk)
