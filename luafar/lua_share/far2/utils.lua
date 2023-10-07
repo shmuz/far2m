@@ -3,7 +3,7 @@
 local F = far.Flags
 local bor = bit64.bor
 local dirsep = package.config:sub(1,1)
-local PluginDir = far.PluginStartupInfo().ModuleDir .. dirsep
+local PluginDir = far.PluginStartupInfo().ShareDir .. dirsep
 
 local function CheckLuafarVersion (reqVersion, msgTitle)
   local v1, v2 = far.LuafarVersion(true)
