@@ -1,9 +1,10 @@
-#if defined(__FreeBSD__) // || defined(__DragonFly__)
-#include <uuid.h>
+#if defined(__FreeBSD__) || defined(__DragonFly__)
+// #include <uuid.h>
 #else
 #include <uuid/uuid.h>
 #endif
 
+#include <stdio.h>
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
@@ -424,45 +425,53 @@ void shuffle_uuid(void* uuid)
 #if defined(__FreeBSD__) || defined(__DragonFly__)
 int ustring_Uuid(lua_State* L)
 {
-	uint32_t status;
-	uuid_t uuid;
+	char buf[64];
+	GUID uuid;
+	memset(&uuid, 0, sizeof(uuid));
 
-	if(lua_gettop(L) == 0 || !lua_toboolean(L, 1))
+	if(lua_gettop(L) == 0 || !lua_toboolean(L, 1)) // generate new UUID
 	{
-		// generate new UUID
-		uuid_create(&uuid, &status);
-		if (status == uuid_s_ok) {
-			//shuffle_uuid(uuid);
-			lua_pushlstring(L, (const char*)&uuid, sizeof(uuid));
-			return 1;
-		}
+		// TODO (currently it is a nil uuid)
+		lua_pushlstring(L, (const char*)&uuid, sizeof(uuid));
+		return 1;
 	}
 	else
 	{
 		size_t len;
 		const char* arg1 = luaL_checklstring(L, 1, &len);
 
-		if(len == sizeof(uuid))
+		if(len == sizeof(uuid)) // convert given UUID to string
 		{
-			// convert given UUID to string
-			char *str;
-			uuid_to_string((const uuid_t*)arg1, &str, &status);
-			if (status == uuid_s_ok) {
-				//shuffle_uuid(uuid);
-				lua_pushstring(L, str);
-				free(str);
-				return 1;
-			}
+			memcpy(&uuid, arg1, sizeof(uuid));
+			sprintf(buf, "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+				uuid.Data1, (uint32_t)uuid.Data2, (uint32_t)uuid.Data3,
+				(uint32_t)uuid.Data4[0], (uint32_t)uuid.Data4[1], (uint32_t)uuid.Data4[2], (uint32_t)uuid.Data4[3],
+				(uint32_t)uuid.Data4[4], (uint32_t)uuid.Data4[5], (uint32_t)uuid.Data4[6], (uint32_t)uuid.Data4[7]);
+			lua_pushstring(L, buf);
+			return 1;
 		}
-		else if (len >= 2*sizeof(uuid))
+		else if (len >= 36) // convert string UUID representation to UUID
 		{
-			// convert string UUID representation to UUID
-			uuid_from_string(arg1, &uuid, &status);
-			if (status == uuid_s_ok) {
-				//shuffle_uuid(uuid);
-				lua_pushlstring(L, (char*)&uuid, sizeof(uuid));
-				return 1;
+			int i=0, j=0;
+			char tmp[] = {0,0,0};
+			unsigned char *uch = (unsigned char*) buf;
+
+			memset(buf, 0, sizeof(buf));
+			for (; i < 36; i += 2) {
+				uint32_t ui = 0;
+				if (arg1[i] == '-')
+					i++;
+				memcpy(tmp, arg1+i, 2);
+				sscanf(tmp, "%X", &ui);
+				buf[j++] = ui;
 			}
+
+			uuid.Data1 = (uch[0]<<24) + (uch[1]<<16) + (uch[2]<<8) + uch[3];
+			uuid.Data2 = (uch[4]<<8) + uch[5];
+			uuid.Data3 = (uch[6]<<8) + uch[7];
+			memcpy(uuid.Data4, uch+8, 8);
+			lua_pushlstring(L, (char*)&uuid, sizeof(uuid));
+			return 1;
 		}
 	}
 
