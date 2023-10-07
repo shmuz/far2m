@@ -45,7 +45,7 @@ set(SOURCES
 add_library (${PROJECT_NAME} SHARED ${SOURCES})
 set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 11)
 
-if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD" OR ${CMAKE_SYSTEM_NAME} MATCHES "DragonFly")
   target_link_libraries(${PROJECT_NAME} utils)
 else()
   target_link_libraries(${PROJECT_NAME} uuid utils)
