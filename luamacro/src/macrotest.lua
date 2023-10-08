@@ -1747,7 +1747,9 @@ function MT.test_luafar()
   test_FarStandardFunctions()
 
   test_far_GetMsg()
-  test_far_timer()
+  if far.Timer then -- TODO (FreeBSD, DragonFly BSD)
+    test_far_timer()
+  end
   test_gmatch_coro()
   test_issue_3129()
 end
