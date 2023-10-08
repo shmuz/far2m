@@ -32,6 +32,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "headers.hpp"
+#include <cinttypes>
 
 #include <ctype.h>
 #include "viewer.hpp"
@@ -1199,7 +1200,7 @@ int Viewer::ProcessKey(int Key)
 			int64_t NewSelectPos = SelectPos;
 			if (Key == KEY_SHIFTLEFT)
 				--NewSelectPos;
-			fprintf(stderr, "SELECTIO CHANGE: [%lld +%lld)\n", NewSelectPos, NewSelectSize);
+			fprintf(stderr, "SELECTIO CHANGE: [%" PRIi64 " + %" PRIi64 "]\n", NewSelectPos, NewSelectSize);
 			SelectText(NewSelectPos, NewSelectSize, SelectFlags);
 		}
 		return TRUE;
