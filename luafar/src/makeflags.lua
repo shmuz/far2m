@@ -1,6 +1,6 @@
 -- This script is intended to generate the "flags.cpp" file
 
-local function add_defines (src, trg_int)
+local function add_defines (src, trg_int, trg_ptr)
   local skip = false
   for line in src:gmatch("[^\r\n]+") do
     if line:find("^%s*//") then
@@ -12,7 +12,11 @@ local function add_defines (src, trg_int)
     else
       local c, v = line:match("#define%s+([A-Z][A-Z0-9_]*)%s+(.+)")
       if c then
-        table.insert(trg_int, c)
+        if v:find("%(%s*void%s*%*%s*%)") or v:find("%(%s*HANDLE%s*%)") then
+	  table.insert(trg_ptr, c)
+	else
+          table.insert(trg_int, c)
+	end
       end
     end
   end
@@ -55,10 +59,16 @@ local function write_target (trg_int, trg_ptr)
 static const flag_pair flags[] = {
 ]]
   table.sort(trg_int)
+  table.sort(trg_ptr)
   for k,v in ipairs(trg_int) do
     local len = math.max(1, 40 - #v)
     local space = (" "):rep(len)
-    io.write(string.format('  {"%s",%s(int64_t) %s },\n', v, space, v))
+    io.write(string.format('  {"%s",%s%s },\n', v, space, v))
+  end
+  for k,v in ipairs(trg_ptr) do
+    local len = math.max(1, 40 - #v)
+    local space = (" "):rep(len)
+    io.write(string.format('  {"%s",%s(intptr_t) %s },\n', v, space, v))
   end
   io.write("};\n\n")
 end
@@ -125,7 +135,7 @@ do
   local dir = ...
   assert (dir, "input directory not specified")
 
-  local trg_int = {}
+  local trg_int, trg_ptr = {}, {}
   for _,v in ipairs(t_winapi) do table.insert(trg_int, v) end
 
   for _,fname in ipairs { "farplug-wide.h", "farcolor.h", "farkeys.h" } do
@@ -133,14 +143,14 @@ do
     local src = fp:read ("*all")
     fp:close()
     if fname == "farplug-wide.h" then
-      add_defines(src, trg_int)
+      add_defines(src, trg_int, trg_ptr)
       add_static(src, trg_int)
     end
     add_enums(src, trg_int)
   end
 
   io.write(file_top)
-  write_target(trg_int)
+  write_target(trg_int, trg_ptr)
   io.write(file_bottom)
 end
 
