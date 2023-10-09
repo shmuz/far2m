@@ -185,20 +185,15 @@ void ControlObject::ShowStartupBanner(LPCWSTR EmergencyMsg)
 {
 	std::vector<FARString> Lines;
 
-	char Xor = 17;
-	std::string tmp_mb;
-	for (const char *p = Copyright; *p; ++p) {
-		const char c = (*p & 0x7f) ^ Xor;
-		Xor^= c;
-		if (c == '\n') {
-			Lines.emplace_back(tmp_mb);
-			tmp_mb.clear();
+	for (const char *p = Copyright; *p; ) {
+		const char *q = strchr(p, '\n');
+		if (q) {
+			Lines.emplace_back(std::string(p, q-p));
+			p = q+1;
 		} else {
-			tmp_mb+= c;
+			Lines.emplace_back(std::string(p));
+			break;
 		}
-	}
-	if (!tmp_mb.empty()) {
-		Lines.emplace_back(tmp_mb);
 	}
 
 	COORD Size{}, CursorPosition{};

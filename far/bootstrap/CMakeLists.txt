@@ -6,8 +6,8 @@ cmake_minimum_required (VERSION 3.0.2)
 set(TOOLS "${CMAKE_BINARY_DIR}/tools" CACHE STRING "")
 set(FARLNGTOOL "${TOOLS}/farlng")
 
-add_custom_target(bootstrap 
-  DEPENDS farlng copyright.inc farversion.inc farlang.templ 
+add_custom_target(bootstrap
+  DEPENDS farlng copyright.inc farversion.inc farlang.templ
 )
 
 message(STATUS "generating headers and languages")
@@ -40,7 +40,7 @@ set(LNGFILES
 )
 
 add_custom_command(OUTPUT "${BOOTSTRAP}/copyright.inc"
-    COMMAND ${M4} "${SCRIPTS}/copyright.inc.m4" | ${GAWK} -f "${SCRIPTS}/enc.awk" > "${BOOTSTRAP}/copyright.inc"
+    COMMAND ${M4} "${SCRIPTS}/copyright.inc.m4" > "${BOOTSTRAP}/copyright.inc"
     WORKING_DIRECTORY "${SCRIPTS}"
     DEPENDS ${DEPENDENCIES}
     COMMENT generating header
