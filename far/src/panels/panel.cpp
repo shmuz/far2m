@@ -1742,8 +1742,6 @@ int Panel::SetPluginCommand(int Command,int Param1,LONG_PTR Param2)
 		case FCTL_CLOSEPLUGIN:
 			strPluginParam = (const wchar_t *)Param2;
 			Result=TRUE;
-			//if(Opt.CPAJHefuayor)
-			//  CtrlObject->Plugins.ProcessCommandLine((char *)PluginParam);
 			break;
 
 		case FCTL_GETPANELINFO:

@@ -2148,6 +2148,32 @@ int panel_SetPanelDirectory(lua_State *L)
 	return 1;
 }
 
+int panel_SetPanelLocation(lua_State *L)
+{
+	HANDLE handle = OptHandle(L);
+	struct FarPanelLocation fpl = {};
+	int ret;
+	luaL_checktype(L, 2, LUA_TTABLE);
+
+	lua_getfield(L, 2, "PluginName");
+	if (lua_isstring(L,-1)) fpl.PluginName = check_utf8_string(L,-1,NULL);
+
+	lua_getfield(L, 2, "HostFile");
+	if (lua_isstring(L,-1)) fpl.HostFile = check_utf8_string(L,-1,NULL);
+
+	lua_getfield(L, 2, "Item");
+	fpl.Item = (LONG_PTR)lua_tointeger(L,-1);
+
+	lua_getfield(L, 2, "Path");
+	if (lua_isstring(L,-1)) fpl.Path = check_utf8_string(L,-1,NULL);
+
+	ret = PSInfo.Control(handle, FCTL_SETPANELLOCATION, 0, (LONG_PTR)&fpl);
+	if (ret)
+		PSInfo.Control(handle, FCTL_REDRAWPANEL, 0, 0); //not required in Far3
+	lua_pushboolean(L, ret);
+	return 1;
+}
+
 int panel_GetCmdLine(lua_State *L)
 {
 	int size = PSInfo.Control(PANEL_ACTIVE, FCTL_GETCMDLINE, 0, 0);
@@ -6026,6 +6052,7 @@ static const luaL_Reg panel_funcs[] =
 	{"SetDirectoriesFirst",     panel_SetDirectoriesFirst},
 	{"SetNumericSort",          panel_SetNumericSort},
 	{"SetPanelDirectory",       panel_SetPanelDirectory},
+	{"SetPanelLocation",        panel_SetPanelLocation},
 	{"SetSelection",            panel_SetSelection},
 	{"SetSortMode",             panel_SetSortMode},
 	{"SetSortOrder",            panel_SetSortOrder},

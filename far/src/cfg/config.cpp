@@ -936,7 +936,6 @@ static struct FARConfig
 	{0, NSecSystem, "DelThreadPriority",            &Opt.DelThreadPriority, 0},
 	{0, NSecSystem, "QuotedSymbols",                &Opt.strQuotedSymbols, L" $&()[]{};|*?!'`\"\\\xA0"}, //xA0 => 160 =>oem(0xFF)
 	{0, NSecSystem, "QuotedName",                   &Opt.QuotedName, QUOTEDNAME_INSERT},
-	//{0, NSecSystem, "CPAJHefuayor",               &Opt.strCPAJHefuayor, 0},
 	{0, NSecSystem, "PluginMaxReadData",            &Opt.PluginMaxReadData, 0x40000},
 	{0, NSecSystem, "CASRule",                      &Opt.CASRule, 0xFFFFFFFFU},
 	{0, NSecSystem, "AllCtrlAltShiftRule",          &Opt.AllCtrlAltShiftRule, 0x0000FFFF},
