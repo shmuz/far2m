@@ -35,7 +35,7 @@ function lib.New(fname, nocomment)
   setmetatable(self, mt_lib)
   local cursection
   for line in fp:lines() do
-    if not (line:find("^%s*;") or line:find("^%s*$")) then -- not comment or empty line
+    if line:find("^%s*[^;%s]") then -- not comment or empty line
       local secname = get_secname(line)
       if secname then
         cursection = self:add_section(secname) -- this allows a section to appear multiple times in the file
