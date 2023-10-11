@@ -702,7 +702,8 @@ int editor_GetInfo(lua_State *L)
 	PutNumToTable(L, "BlockStartLine", ei.BlockStartLine + 1);
 	PutNumToTable(L, "Options", ei.Options);
 	PutNumToTable(L, "TabSize", ei.TabSize);
-	PutNumToTable(L, "BookMarkCount", ei.BookMarkCount);
+	PutNumToTable(L, "BookmarkCount", ei.BookMarkCount);
+	PutNumToTable(L, "SessionBookmarkCount", ei.SessionBookmarkCount);
 	PutNumToTable(L, "CurState", ei.CurState);
 	PutNumToTable(L, "CodePage", ei.CodePage);
 	return 1;

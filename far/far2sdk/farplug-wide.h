@@ -1915,7 +1915,9 @@ struct EditorInfo
 	int BookMarkCount;
 	DWORD CurState;
 	UINT CodePage;
-	DWORD Reserved[5];
+
+	DWORD Reserved[4];
+	int SessionBookmarkCount;
 };
 
 struct EditorBookMarks

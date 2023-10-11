@@ -5518,6 +5518,7 @@ int Editor::EditorControl(int Command,void *Param)
 
 				Info->TabSize=EdOpt.TabSize;
 				Info->BookMarkCount=POSCACHE_BOOKMARK_COUNT;
+				Info->SessionBookmarkCount=GetStackBookmarks(nullptr);
 				Info->CurState=Flags.Check(FEDITOR_LOCKMODE)?ECSTATE_LOCKED:0;
 				Info->CurState|=!Flags.Check(FEDITOR_MODIFIED)?ECSTATE_SAVED:0;
 				Info->CurState|=Flags.Check(FEDITOR_MODIFIED|FEDITOR_WASCHANGED)?ECSTATE_MODIFIED:0;
