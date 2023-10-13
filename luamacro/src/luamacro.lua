@@ -423,7 +423,7 @@ local function Open_CommandLine (strCmdLine)
         editor.Editor(tmpname,nil,nil,nil,nil,nil,flags)
       end
     else
-      local line,col,fname = regex.match(cmd, [=[ \[ (\d+)? (?: ,(\d+))? \] \s+ (.+) ]=], nil, "x")
+      local line,col,fname = regex.match(cmd, [=[ \[ (\d+)? (?: ,(\d+))? \] \s* (.+) ]=], nil, "x")
       line  = line or (col and 1) or nil
       col   = col or nil
       fname = fname or cmd
