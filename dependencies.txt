@@ -12,5 +12,4 @@ libssh-dev
 python3
 
 libluajit-5.1-dev
-luajit
 uuid-dev

@@ -4,5 +4,4 @@ libspdlog-dev
 libxerces-c-dev
 
 libluajit-5.1-dev
-luajit
 uuid-dev
