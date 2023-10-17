@@ -1,6 +1,5 @@
 libwxgtk3.0-gtk3-dev
 libuchardet-dev
-libspdlog-dev
 libxerces-c-dev
 
 libluajit-5.1-dev
