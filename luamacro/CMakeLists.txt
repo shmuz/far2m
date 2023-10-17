@@ -1,12 +1,7 @@
 
 project(luamacro)
 
-FindLuaIncludes()
-if (DEFINED LUAINC)
-  include_directories(${LUAINC})
-else()
-  return()
-endif()
+include_directories(${LIBLUA_INCLUDE_DIRS})
 
 set(SOURCES
   ${CMAKE_SOURCE_DIR}/luafar/src/luaplug.c

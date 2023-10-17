@@ -1,21 +1,11 @@
 
 project(luafar)
 
-find_library(LUALIB NAMES luajit-5.1 lua5.1)
-if (${LUALIB} STREQUAL LUALIB-NOTFOUND)
-  message(STATUS "${ColorRed}Neither luajit nor lua5.1 was found${ColorNormal}")
-  return()
-endif()
-
-FindLuaIncludes()
-if (DEFINED LUAINC)
-  include_directories(${LUAINC})
-else()
-  return()
-endif()
+include_directories(${LIBLUA_INCLUDE_DIRS})
 
 add_executable (minilua src/minilua.c)
-target_link_libraries(minilua PRIVATE ${LUALIB})
+# target_link_libraries(minilua PRIVATE ${LUALIB})
+target_link_libraries(minilua PRIVATE ${LIBLUA_LIBRARIES})
 
 set(SDK "${CMAKE_SOURCE_DIR}/far/far2sdk")
 set(MAKEFLAGS "${CMAKE_CURRENT_SOURCE_DIR}/src/makeflags.lua")
