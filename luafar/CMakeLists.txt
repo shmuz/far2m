@@ -1,10 +1,8 @@
 
 project(luafar)
 
-include_directories(${LIBLUA_INCLUDE_DIRS})
-
 add_executable (minilua src/minilua.c)
-# target_link_libraries(minilua PRIVATE ${LUALIB})
+target_include_directories(minilua PRIVATE ${LIBLUA_INCLUDE_DIRS})
 target_link_libraries(minilua PRIVATE ${LIBLUA_LIBRARIES})
 
 set(SDK "${CMAKE_SOURCE_DIR}/far/far2sdk")
@@ -34,11 +32,14 @@ set(SOURCES
 
 add_library (${PROJECT_NAME} SHARED ${SOURCES})
 set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 11)
+target_include_directories(${PROJECT_NAME} PRIVATE ${LIBLUA_INCLUDE_DIRS})
 
-if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD" OR ${CMAKE_SYSTEM_NAME} MATCHES "DragonFly")
-  target_link_libraries(${PROJECT_NAME} utils)
+if (LibUuid_FOUND)
+  set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DHAS_UUID")
+  target_include_directories(${PROJECT_NAME} PRIVATE ${LIBUUID_INCLUDE_DIRS})
+  target_link_libraries(${PROJECT_NAME} ${LIBUUID_LIBRARIES} utils)
 else()
-  target_link_libraries(${PROJECT_NAME} uuid utils)
+  target_link_libraries(${PROJECT_NAME} utils)
 endif()
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE -DWINPORT_DIRECT -DFAR_DONT_USE_INTERNALS)
