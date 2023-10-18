@@ -481,22 +481,29 @@ int ustring_Uuid(lua_State* L)
 {
 	uuid_t uuid;
 	char out[64]; // size must be >= 36 + 1
+	enum { GEN_BIN, GEN_UPPER, GEN_LOWER, GEN_CONVERT };
+	int Op = !lua_toboolean(L,1) ? GEN_BIN :
+		(lua_isstring(L,1) && !strcasecmp(lua_tostring(L,1),"U")) ? GEN_UPPER :
+		(lua_isstring(L,1) && !strcasecmp(lua_tostring(L,1),"L")) ? GEN_LOWER : GEN_CONVERT;
 
-	if(lua_gettop(L) == 0 || !lua_toboolean(L, 1))
-	{
+	if (Op != GEN_CONVERT) {
 		// generate new UUID
 		uuid_generate(uuid);
-		shuffle_uuid(uuid);
-		lua_pushlstring(L, (const char*)uuid, sizeof(uuid));
+		if (Op == GEN_BIN) {
+			shuffle_uuid(uuid);
+			lua_pushlstring(L, (const char*)uuid, sizeof(uuid));
+		}
+		else {
+			Op==GEN_UPPER ? uuid_unparse_upper(uuid,out) : uuid_unparse_lower(uuid,out);
+			lua_pushstring(L, out);
+		}
 		return 1;
 	}
-	else
-	{
+	else {
 		size_t len;
 		const char* arg1 = luaL_checklstring(L, 1, &len);
 
-		if(len == sizeof(uuid))
-		{
+		if(len == sizeof(uuid)) {
 			// convert given UUID to string
 			memcpy(uuid, arg1, len);
 			shuffle_uuid(uuid);
@@ -504,11 +511,9 @@ int ustring_Uuid(lua_State* L)
 			lua_pushstring(L, out);
 			return 1;
 		}
-		else if (len >= 2*sizeof(uuid))
-		{
+		else if (len >= 2*sizeof(uuid)) {
 			// convert string UUID representation to UUID
-			if(0 == uuid_parse(arg1, uuid))
-			{
+			if(0 == uuid_parse(arg1, uuid)) {
 				shuffle_uuid(uuid);
 				lua_pushlstring(L, (const char*)uuid, sizeof(uuid));
 				return 1;
