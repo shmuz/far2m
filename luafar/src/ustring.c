@@ -411,10 +411,15 @@ int ustring_Uuid(lua_State* L)
 	GUID uuid;
 	memset(&uuid, 0, sizeof(uuid));
 
-	if(lua_gettop(L) == 0 || !lua_toboolean(L, 1)) // generate new UUID
+	if (!lua_toboolean(L, 1)) // generate new UUID
 	{
 		// TODO (currently it is a nil uuid)
 		lua_pushlstring(L, (const char*)&uuid, sizeof(uuid));
+		return 1;
+	}
+	else if (lua_isstring(L,1) && (!strcasecmp(lua_tostring(L,1),"U") || !strcasecmp(lua_tostring(L,1),"L")))
+	{
+		lua_pushstring(L, "00000000-0000-0000-0000-000000000000");
 		return 1;
 	}
 	else
