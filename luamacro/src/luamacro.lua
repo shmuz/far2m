@@ -343,7 +343,10 @@ local function About()
   local ok,lib = pcall(require, "moonscript.version")
   if ok then
     text = text.."\nMoonScript "..lib.version
-    if lpeg then text = text.."\nLPeg "..lpeg.version() end
+    if lpeg then
+      local v = lpeg.version
+      text = text.."\nLPeg "..(type(v)=="function" and v() or v) -- depends on LPeg version
+    end
   end
 
   -- All together
