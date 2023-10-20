@@ -345,7 +345,7 @@ local function About()
     text = text.."\nMoonScript "..lib.version
     if lpeg then
       local v = lpeg.version
-      text = text.."\nLPeg "..(type(v)=="function" and v() or v) -- depends on LPeg version
+      text = text.."\n"..(type(v)=="function" and "LPeg "..v() or v) -- depends on LPeg version
     end
   end
 
