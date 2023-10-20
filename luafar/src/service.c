@@ -1293,9 +1293,10 @@ int editor_AddColor(lua_State *L)
 	etc.Base.StringNumber = luaL_optinteger(L,2,0) - 1;
 	etc.Base.StartPos     = luaL_checkinteger(L,3) - 1;
 	etc.Base.EndPos       = luaL_checkinteger(L,4) - 1;
-	if (lua_istable(L,5))
+	Flags                 = CheckFlags(L,5) & 0xFFFF0000;
+	if (lua_istable(L,6))
 	{
-		lua_pushvalue(L,5);
+		lua_pushvalue(L,6);
 		{
 			etc.Base.Color = GetOptIntFromTable(L,"BaseColor",0) & 0x0000FFFF;
 			fg = GetOptIntFromTable(L,"TrueFore",0xFFFFFF);
@@ -1312,9 +1313,8 @@ int editor_AddColor(lua_State *L)
 		lua_pop(L,1);
 	}
 	else
-		etc.Base.Color = luaL_optinteger(L,5,0) & 0x0000FFFF;
+		etc.Base.Color = luaL_optinteger(L,6,0) & 0x0000FFFF;
 
-	Flags = CheckFlags(L,6) & 0xFFFF0000;
 	etc.Base.Color |= Flags;
 
 	if (etc.Base.Color) // prevent color deletion
