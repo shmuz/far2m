@@ -209,7 +209,7 @@ char* push_multibyte_string(lua_State* L, UINT CodePage, const wchar_t* str, int
 
 	if(str == NULL) { lua_pushnil(L); return NULL; }
 
-	targetSize = WINPORT(WideCharToMultiByte)(
+	targetSize = WideCharToMultiByte(
 									 CodePage, // UINT CodePage,
 									 dwFlags,  // DWORD dwFlags,
 									 str,      // LPCWSTR lpWideCharStr,
