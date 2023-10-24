@@ -1376,48 +1376,14 @@ int editor_SaveFile(lua_State *L)
 
 int editor_ReadInput(lua_State *L)
 {
+	int EditorId = luaL_optinteger(L, 1, -1);
 	INPUT_RECORD ir;
-	int editorId = luaL_optinteger(L,1,-1);
-	lua_pushnil(L); // prepare to return nil
-	if (!PSInfo.EditorControlV2(editorId, ECTL_READINPUT, &ir))
-		return 1;
-	lua_newtable(L);
-	switch(ir.EventType) {
-		case KEY_EVENT:
-			PutStrToTable(L, "EventType", "KEY_EVENT");
-			PutBoolToTable(L,"KeyDown", ir.Event.KeyEvent.bKeyDown);
-			PutNumToTable(L, "RepeatCount", ir.Event.KeyEvent.wRepeatCount);
-			PutNumToTable(L, "VirtualKeyCode", ir.Event.KeyEvent.wVirtualKeyCode);
-			PutNumToTable(L, "VirtualScanCode", ir.Event.KeyEvent.wVirtualScanCode);
-			PutWStrToTable(L, "UnicodeChar", &ir.Event.KeyEvent.uChar.UnicodeChar, 1);
-			PutNumToTable(L, "AsciiChar", ir.Event.KeyEvent.uChar.AsciiChar);
-			PutNumToTable(L, "ControlKeyState", ir.Event.KeyEvent.dwControlKeyState);
-			break;
 
-		case MOUSE_EVENT:
-			PutStrToTable(L, "EventType", "MOUSE_EVENT");
-			PutMouseEvent(L, &ir.Event.MouseEvent, TRUE);
-			break;
+	if (PSInfo.EditorControlV2(EditorId, ECTL_READINPUT, &ir))
+		PushInputRecord(L, &ir);
+	else
+		lua_pushnil(L);
 
-		case WINDOW_BUFFER_SIZE_EVENT:
-			PutStrToTable(L, "EventType", "WINDOW_BUFFER_SIZE_EVENT");
-			PutNumToTable(L, "SizeX", ir.Event.WindowBufferSizeEvent.dwSize.X);
-			PutNumToTable(L, "SizeY", ir.Event.WindowBufferSizeEvent.dwSize.Y);
-			break;
-
-		case MENU_EVENT:
-			PutStrToTable(L, "EventType", "MENU_EVENT");
-			PutNumToTable(L, "CommandId", ir.Event.MenuEvent.dwCommandId);
-			break;
-
-		case FOCUS_EVENT:
-			PutStrToTable(L, "EventType", "FOCUS_EVENT");
-			PutBoolToTable(L,"SetFocus", ir.Event.FocusEvent.bSetFocus);
-			break;
-
-		default:
-			lua_pushnil(L);
-	}
 	return 1;
 }
 

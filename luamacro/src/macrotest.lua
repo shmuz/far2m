@@ -727,7 +727,7 @@ function MT.test_Far()
   local temp = Far.UpTime
   mf.sleep(50)
   temp = Far.UpTime - temp
-  assert(temp > 40 and temp < 80)
+  assert(temp > 40 and temp < 80, temp)
   assert_num (Far.Cfg_Get("Editor","defaultcodepage"))
   assert_func (Far.DisableHistory)
   assert_num (Far.KbdLayout(0))
