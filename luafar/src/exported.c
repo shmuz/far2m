@@ -981,16 +981,18 @@ int LF_ProcessKey(lua_State* L, HANDLE hPlugin, int Key, unsigned int ControlSta
 }
 
 int LF_PutFiles(lua_State* L, HANDLE hPlugin, struct PluginPanelItem *PanelItems,
-	int ItemsNumber, int Move, int OpMode)
+	int ItemsNumber, int Move, const wchar_t *SrcPath, int OpMode)
 {
 	if (GetExportFunction(L, "PutFiles")) {   //+1: Func
+		int ret;
 		PushPanelItems(L, hPlugin, PanelItems, ItemsNumber); //+2: Func,Items
 		lua_insert(L,-2);                  //+2: Items,Func
 		PushPluginPair(L, hPlugin);        //+4: Items,Func,Pair
 		lua_pushvalue(L,-4);               //+5: Items,Func,Pair,Item
 		lua_pushboolean(L, Move);          //+6: Items,Func,Pair,Item,Move
-		lua_pushinteger(L, OpMode);        //+7: Items,Func,Pair,Item,Move,OpMode
-		int ret = pcall_msg(L, 5, 1);      //+2: Items,Res
+		push_utf8_string(L, SrcPath, -1);  //+7: Items,Func,Pair,Item,Move,SrcPath
+		lua_pushinteger(L, OpMode);        //+8: Items,Func,Pair,Item,Move,SrcPath,OpMode
+		ret = pcall_msg(L, 6, 1);          //+2: Items,Res
 		if (ret == 0) {
 			ret = lua_tointeger(L,-1);
 			lua_pop(L,1);                    //+1: Items

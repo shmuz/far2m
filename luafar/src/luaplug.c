@@ -239,7 +239,7 @@ int LUAPLUG ProcessKeyW(HANDLE hPlugin, int Key, unsigned int ControlState)
 int LUAPLUG PutFilesW(HANDLE hPlugin, struct PluginPanelItem *PanelItem,
 	int ItemsNumber, int Move, const wchar_t *SrcPath, int OpMode)
 {
-	return LS ? LF_PutFiles(LS, hPlugin, PanelItem, ItemsNumber, Move, OpMode) : 0;
+	return LS ? LF_PutFiles(LS, hPlugin, PanelItem, ItemsNumber, Move, SrcPath, OpMode) : 0;
 }
 #endif
 //---------------------------------------------------------------------------

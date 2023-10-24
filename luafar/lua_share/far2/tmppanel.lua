@@ -742,17 +742,17 @@ function Panel:CommitPutFiles (hRestoreScreen)
 end
 
 
-function Panel:PutFiles (Handle, PanelItems, Move, OpMode)
+function Panel:PutFiles (Handle, PanelItems, Move, SrcPath, OpMode)
+  local was_error
   local hScreen = self:BeginPutFiles()
   for _,v in ipairs (PanelItems) do
-    if not self:PutOneFile(v) then
-      self:CommitPutFiles (hScreen)
-      return false
+    if not self:PutOneFile(SrcPath, v) then
+      was_error = true
     end
   end
   collectgarbage "collect"
   self:CommitPutFiles (hScreen)
-  return true
+  return not was_error
 end
 
 
@@ -764,7 +764,7 @@ function Panel:BeginPutFiles()
 end
 
 
-function Panel:PutOneFile (PanelItem)
+function Panel:PutOneFile (_SrcPath, PanelItem)
   local CurName = PanelItem.FileName
   PanelItem = CheckForCorrect(CurName)
   if not PanelItem then return false end
@@ -779,8 +779,7 @@ function Panel:PutOneFile (PanelItem)
 
   if self.SelectedCopyContents ~= 0 and NameOnly and IsDirectory(PanelItem) then
     if self.SelectedCopyContents == 2 then
-      local res = far.Message (M.MCopyContentsMsg, M.MWarning,
-                            "Yes;No", "", "Config")
+      local res = far.Message (M.MCopyContentsMsg, M.MWarning, ";YesNo", "", "Config")
       self.SelectedCopyContents = (res == 1) and 1 or 0
     end
     if self.SelectedCopyContents ~= 0 then

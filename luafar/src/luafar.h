@@ -67,7 +67,7 @@ DLLFUNC int    LF_ProcessHostFile (lua_State* L, HANDLE hPlugin,struct PluginPan
 DLLFUNC int    LF_ProcessKey (lua_State* L, HANDLE hPlugin,int Key,unsigned int ControlState);
 DLLFUNC int    LF_ProcessSynchroEvent (lua_State* L, int Event,void *Param);
 DLLFUNC int    LF_ProcessViewerEvent (lua_State* L, int Event,void *Param);
-DLLFUNC int    LF_PutFiles (lua_State* L, HANDLE hPlugin,struct PluginPanelItem *PanelItem,int ItemsNumber,int Move,int OpMode);
+DLLFUNC int    LF_PutFiles (lua_State* L, HANDLE hPlugin,struct PluginPanelItem *PanelItem,int ItemsNumber,int Move,const wchar_t *SrcPath,int OpMode);
 DLLFUNC int    LF_SetDirectory (lua_State* L, HANDLE hPlugin,const wchar_t *Dir,int OpMode);
 DLLFUNC int    LF_SetFindList (lua_State* L, HANDLE hPlugin,const struct PluginPanelItem *PanelItem,int ItemsNumber);
 DLLFUNC int    LF_GetCustomData(lua_State* L, const wchar_t *FilePath, wchar_t **CustomData);
