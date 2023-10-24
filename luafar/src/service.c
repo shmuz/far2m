@@ -5425,7 +5425,7 @@ typedef struct
 	int funcref;
 } MacroAddData;
 
-intptr_t WINAPI MacroAddCallback (void* Id, FARADDKEYMACROFLAGS Flags)
+intptr_t WINAPI MacroAddCallback (void* Id, DWORD Flags)
 {
 	lua_State *L;
 	int result = TRUE;

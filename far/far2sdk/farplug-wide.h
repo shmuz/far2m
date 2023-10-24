@@ -255,10 +255,8 @@ enum FarDialogItemFlags
 };
 
 #ifdef LUAFAR_INTERNALS    // luafar only; use 53 bits at most
-typedef int64_t FarDialogItemFlags64;
-static const FarDialogItemFlags64
-	DIF_DEFAULTBUTTON         = 0x000100000000LL,
-	DIF_FOCUS                 = 0x000200000000LL;
+#define	DIF_DEFAULTBUTTON  (1LL << 32)
+#define	DIF_FOCUS          (1LL << 33)
 #endif
 
 enum FarMessagesProc
@@ -1341,11 +1339,12 @@ struct MacroSendMacroText
 	const wchar_t *SequenceText;
 };
 
-typedef DWORD FARADDKEYMACROFLAGS;
-static const FARADDKEYMACROFLAGS
-	AKMFLAGS_NONE                = 0;
+enum FARADDKEYMACROFLAGS
+{
+	AKMFLAGS_NONE = 0,
+};
 
-typedef intptr_t (WINAPI *FARMACROCALLBACK)(void* Id,FARADDKEYMACROFLAGS Flags);
+typedef intptr_t (WINAPI *FARMACROCALLBACK)(void* Id,DWORD Flags);
 
 struct MacroAddMacro
 {
