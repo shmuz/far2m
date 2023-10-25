@@ -810,7 +810,7 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 		case OPEN_DIALOG:
 		{
 			struct OpenDlgPluginData *data = (struct OpenDlgPluginData*)Item;
-			lua_pushinteger(L, data->ItemNumber + 1);
+			lua_pushinteger(L, data->ItemNumber);
 			NewDialogData(L, data->hDlg, FALSE);
 			if (pcall_msg(L, 3, 1) == 0) {
 				if (lua_toboolean(L, -1))        //+1: Obj
@@ -826,7 +826,7 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 		case OPEN_EDITOR:
 		case OPEN_VIEWER:
 		case OPEN_FILEPANEL:
-			lua_pushinteger(L, Item + 1);
+			lua_pushinteger(L, Item);
 			if (pcall_msg(L, 2, 1) == 0) {
 				if (lua_toboolean(L, -1))        //+1: Obj
 					return RegisterObject(L);      //+0
@@ -874,7 +874,7 @@ int LF_Configure(lua_State* L, int ItemNumber)
 {
 	int res = FALSE;
 	if (GetExportFunction(L, "Configure")) { //+1: Func
-		lua_pushinteger(L, ItemNumber + 1);
+		lua_pushinteger(L, ItemNumber);
 		if(0 == pcall_msg(L, 1, 1)) {        //+1
 			res = lua_toboolean(L,-1);
 			lua_pop(L,1);
