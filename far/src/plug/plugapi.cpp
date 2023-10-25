@@ -1129,6 +1129,10 @@ static CriticalSection s_get_msg_cs;
 const wchar_t* FarGetMsgFn(INT_PTR PluginHandle,FarLangMsgID MsgId)
 {
 	//BUGBUG, надо проверять, что PluginHandle - плагин
+	Plugin *plug = (Plugin*)PluginHandle;
+	if (plug->IsOemPlugin()) // LuaFAR _may_ call this function for OEM plugins
+		return nullptr;
+
 	PluginW *pPlugin = (PluginW*)PluginHandle;
 	std::wstring strPath = pPlugin->GetModuleName().CPtr();
 	CutToSlash(strPath);

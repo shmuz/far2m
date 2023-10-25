@@ -3977,10 +3977,15 @@ int far_InputBox(lua_State *L)
 
 int far_GetMsg(lua_State *L)
 {
-	TPluginData *pd = GetPluginData(L);
-	int MsgId = luaL_checkinteger(L, 1);
-	const wchar_t* msg = (MsgId < 0) ? NULL : PSInfo.GetMsg(pd->ModuleNumber, MsgId);
-	msg ? push_utf8_string(L,msg,-1) : lua_pushnil(L);
+	const wchar_t* Msg = NULL;
+	int MsgId = (int)luaL_checkinteger(L, 1);
+	DWORD SysId = (DWORD)luaL_optinteger(L, 2, 0);
+	if (MsgId >= 0) {
+		intptr_t Hnd = SysId ? PSInfo.PluginsControlV3(NULL, PCTL_FINDPLUGIN, PFM_SYSID, &SysId)
+			: GetPluginData(L)->ModuleNumber;
+		Msg = Hnd ? PSInfo.GetMsg(Hnd, MsgId) : NULL;
+	}
+	Msg ? push_utf8_string(L, Msg, -1) : lua_pushnil(L);
 	return 1;
 }
 
