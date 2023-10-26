@@ -1927,7 +1927,6 @@ int panel_ClosePanel(lua_State *L)
 int panel_GetPanelInfo(lua_State *L)
 {
 	HANDLE input_handle = OptHandle(L);
-	HANDLE panel_handle;
 	struct PanelInfo pi;
 	if (!PSInfo.Control(input_handle, FCTL_GETPANELINFO, 0, (LONG_PTR)&pi))
 		return lua_pushnil(L), 1;
@@ -1953,19 +1952,16 @@ int panel_GetPanelInfo(lua_State *L)
 	PutIntToTable (L, "ViewMode",     pi.ViewMode);
 	PutIntToTable (L, "SortMode",     pi.SortMode);
 	PutIntToTable (L, "Flags",        pi.Flags);
-	PutNumToTable (L, "PluginID",     pi.PluginID);
+	PutNumToTable (L, "OwnerID",      pi.OwnerID);
 	//-------------------------------------------------------------------------
 	if (pi.PluginHandle) {
 		lua_pushlightuserdata(L, pi.PluginHandle);
 		lua_setfield(L, -2, "PluginHandle");
 	}
-	//-------------------------------------------------------------------------
-	PSInfo.Control(input_handle, FCTL_GETPANELPLUGINHANDLE, 0, (LONG_PTR)&panel_handle);
-	if (panel_handle != INVALID_HANDLE_VALUE) {
-		lua_pushlightuserdata(L, panel_handle);
-		lua_setfield(L, -2, "PanelHandle");
+	if (pi.OwnerHandle) {
+		lua_pushlightuserdata(L, pi.OwnerHandle);
+		lua_setfield(L, -2, "OwnerHandle");
 	}
-	//-------------------------------------------------------------------------
 	return 1;
 }
 
@@ -2334,11 +2330,11 @@ int far_GetPluginDirList (lua_State *L)
 	HANDLE hPanel = OptHandle(L);
 	const wchar_t *Dir = opt_utf8_string (L, 2, NULL);
 
-	if (PSInfo.Control(hPanel, FCTL_GETPANELINFO, 0, (LONG_PTR)&pInfo) && pInfo.PluginHandle)
+	if (PSInfo.Control(hPanel, FCTL_GETPANELINFO, 0, (LONG_PTR)&pInfo) && pInfo.OwnerHandle)
 	{
 		struct PluginPanelItem *PanelItems;
 		int ItemsNumber;
-		if (PSInfo.GetPluginDirList((INT_PTR)pInfo.PluginHandle, hPanel, Dir, &PanelItems, &ItemsNumber))
+		if (PSInfo.GetPluginDirList((INT_PTR)pInfo.OwnerHandle, hPanel, Dir, &PanelItems, &ItemsNumber))
 		{
 			PushPanelItems (L, hPanel, PanelItems, ItemsNumber);
 			PSInfo.FreePluginDirList (PanelItems, ItemsNumber);
