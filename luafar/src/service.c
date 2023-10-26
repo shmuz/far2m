@@ -2325,22 +2325,25 @@ int far_GetDirList (lua_State *L)
 	return lua_pushnil(L), 1;
 }
 
-// GetPluginDirList (PluginNumber, hPlugin, Dir)
-//   PluginNumber:    Number of plugin module.
-//   hPlugin:         Current plugin instance handle.
-//   Dir:             Name of the directory to scan (full pathname).
+// GetPluginDirList (hPanel, Dir)
+//   hPanel:    panel handle
+//   Dir:       name of the directory to scan (full pathname)
 int far_GetPluginDirList (lua_State *L)
 {
-	INT_PTR PluginNumber = (INT_PTR)lua_touserdata(L, 1);
-	HANDLE handle = OptHandlePos(L, 2);
-	const wchar_t *Dir = check_utf8_string (L, 3, NULL);
-	struct PluginPanelItem *PanelItems;
-	int ItemsNumber;
-	int ret = PSInfo.GetPluginDirList (PluginNumber, handle, Dir, &PanelItems, &ItemsNumber);
-	if(ret) {
-		PushPanelItems (L, handle, PanelItems, ItemsNumber);
-		PSInfo.FreePluginDirList (PanelItems, ItemsNumber);
-		return 1;
+	struct PanelInfo pInfo;
+	HANDLE hPanel = OptHandle(L);
+	const wchar_t *Dir = opt_utf8_string (L, 2, NULL);
+
+	if (PSInfo.Control(hPanel, FCTL_GETPANELINFO, 0, (LONG_PTR)&pInfo) && pInfo.PluginHandle)
+	{
+		struct PluginPanelItem *PanelItems;
+		int ItemsNumber;
+		if (PSInfo.GetPluginDirList((INT_PTR)pInfo.PluginHandle, hPanel, Dir, &PanelItems, &ItemsNumber))
+		{
+			PushPanelItems (L, hPanel, PanelItems, ItemsNumber);
+			PSInfo.FreePluginDirList (PanelItems, ItemsNumber);
+			return 1;
+		}
 	}
 	return lua_pushnil(L), 1;
 }
