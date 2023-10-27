@@ -15,6 +15,12 @@ extern "C" {
 #define DLLFUNC __attribute__ ((visibility ("default")))
 #endif
 
+enum PLUGINDATAFLAGS
+{
+	PDF_SETPACKAGEPATH        = 0x0001,
+	PDF_DIALOGEVENTDRAWENABLE = 0x0002,
+};
+
 typedef struct
 {
 	const wchar_t* ModuleName;   // copied from PluginStartupInfo
@@ -29,11 +35,6 @@ typedef struct
 	DWORD          Flags;
 	void         (*GetGlobalInfo)(struct GlobalInfo *aInfo);
 } TPluginData;
-
-enum LF_PLUGIN_FLAGS
-{
-	LPF_SETPACKAGEPATH = 0x00000001,
-};
 
 DLLFUNC int  LF_LuaOpen(const struct PluginStartupInfo *aInfo, TPluginData* aPlugData, lua_CFunction aOpenLibs);
 DLLFUNC int  LF_InitOtherLuaState (lua_State *L, lua_State *Lplug, lua_CFunction aOpenLibs);

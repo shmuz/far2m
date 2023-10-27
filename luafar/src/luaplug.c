@@ -60,7 +60,7 @@ void LUAPLUG SetStartupInfoW(const struct PluginStartupInfo *aInfo)
 	PluginData.PluginId      = SYS_ID;
 	PluginData.GetGlobalInfo = GetGlobalInfoW;
 #ifndef NOSETPACKAGEPATH
-	PluginData.Flags |= LPF_SETPACKAGEPATH;
+	PluginData.Flags |= PDF_SETPACKAGEPATH;
 #endif
 
 	if (!LS && LF_LuaOpen(aInfo, &PluginData, FUNC_OPENLIBS)) //includes opening "far" library

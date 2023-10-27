@@ -1168,12 +1168,23 @@ int LF_ProcessDialogEvent (lua_State* L, int Event, void *Param)
 {
 	int ret = 0;
 	struct FarDialogEvent *fde = (struct FarDialogEvent*) Param;
+	DWORD *Flags = &GetPluginData(L)->Flags;
 	BOOL PushDN = FALSE;
 
-#ifdef LOGGING_ON
-	Log("%s: Event=0x%X, fde=%p, fde->Msg=0x%X, fde->Param1=0x%X, fde->Param2=0x%lX",
-			__func__, Event, fde,    fde->Msg,      fde->Param1,      fde->Param2);
-#endif
+	if (Event == DE_DLGPROCINIT && fde->Msg == DN_INITDIALOG)
+	{
+		*Flags &= ~PDF_DIALOGEVENTDRAWENABLE;
+	}
+	else if (!(*Flags & PDF_DIALOGEVENTDRAWENABLE) && (
+		fde->Msg == DN_CTLCOLORDIALOG  ||
+		fde->Msg == DN_CTLCOLORDLGITEM ||
+		fde->Msg == DN_CTLCOLORDLGLIST ||
+		fde->Msg == DN_DRAWDIALOG      ||
+		fde->Msg == DN_DRAWDIALOGDONE  ||
+		fde->Msg == DN_DRAWDLGITEM))
+	{
+		return 0;
+	}
 
 	if (!GetExportFunction(L, "ProcessDialogEvent")) //+1: Func
 		return 0;

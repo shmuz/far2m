@@ -3793,6 +3793,12 @@ int far_SetDlgItem(lua_State *L)
 	return SetDlgItem(L, hDlg, numitem, 3);
 }
 
+int far_SubscribeDialogDrawEvents(lua_State *L)
+{
+	GetPluginData(L)->Flags |= PDF_DIALOGEVENTDRAWENABLE;
+	return 0;
+}
+
 int editor_Editor(lua_State *L)
 {
 	const wchar_t* FileName = check_utf8_string(L, 1, NULL);
@@ -6098,6 +6104,7 @@ static const luaL_Reg far_funcs[] = {
 	{"SendDlgMessage",      far_SendDlgMessage},
 	{"GetDlgItem",          far_GetDlgItem},
 	{"SetDlgItem",          far_SetDlgItem},
+	{"SubscribeDialogDrawEvents", far_SubscribeDialogDrawEvents},
 	{"GetDirList",          far_GetDirList},
 	{"GetMsg",              far_GetMsg},
 	{"GetPluginDirList",    far_GetPluginDirList},
@@ -6353,7 +6360,7 @@ void InitLuaState (lua_State *L, TPluginData *aPlugData, lua_CFunction aOpenLibs
 	lua_setfield(L, -2, "__index");
 	lua_pop(L, 2);
 
-	if (aPlugData->Flags & LPF_SETPACKAGEPATH) {
+	if (aPlugData->Flags & PDF_SETPACKAGEPATH) {
 		const char *farhome;
 		int pos = 3;
 		lua_getglobal  (L, "package");                             //+1
