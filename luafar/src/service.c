@@ -1931,10 +1931,13 @@ int panel_GetPanelInfo(lua_State *L)
 	if (!PSInfo.Control(input_handle, FCTL_GETPANELINFO, 0, (LONG_PTR)&pi))
 		return lua_pushnil(L), 1;
 
-	lua_createtable(L, 0, 15);
+	if (pi.Plugin)   pi.Flags |= PFLAGS_PLUGIN;
+	if (pi.Visible)  pi.Flags |= PFLAGS_VISIBLE;
+	if (pi.Focus)    pi.Flags |= PFLAGS_FOCUS;
+
+	lua_createtable(L, 0, 12);
 	//-------------------------------------------------------------------------
 	PutIntToTable (L, "PanelType", pi.PanelType);
-	PutBoolToTable(L, "Plugin",    pi.Plugin != 0);
 	//-------------------------------------------------------------------------
 	lua_createtable(L, 0, 4); // "PanelRect"
 	PutIntToTable (L, "left",   pi.PanelRect.left);
@@ -1947,8 +1950,6 @@ int panel_GetPanelInfo(lua_State *L)
 	PutIntToTable (L, "SelectedItemsNumber", pi.SelectedItemsNumber);
 	PutIntToTable (L, "CurrentItem",  pi.CurrentItem + 1);
 	PutIntToTable (L, "TopPanelItem", pi.TopPanelItem + 1);
-	PutBoolToTable(L, "Visible",      pi.Visible);
-	PutBoolToTable(L, "Focus",        pi.Focus);
 	PutIntToTable (L, "ViewMode",     pi.ViewMode);
 	PutIntToTable (L, "SortMode",     pi.SortMode);
 	PutIntToTable (L, "Flags",        pi.Flags);
