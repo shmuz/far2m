@@ -1527,7 +1527,7 @@ static int FarGetDirListSynched(const wchar_t *Dir,FAR_FIND_DATA **pPanelItem,in
 		ScTree.SetFindPath(strDirName,L"*");
 		*pItemsNumber=0;
 		*pPanelItem=nullptr;
-		FAR_FIND_DATA *ItemsList=nullptr;
+		FAR_FIND_DATA *ItemsList=nullptr, *TmpList;
 		int ItemsNumber=0;
 
 		while (ScTree.GetNextName(&FindData,strFullName))
@@ -1536,9 +1536,7 @@ static int FarGetDirListSynched(const wchar_t *Dir,FAR_FIND_DATA **pPanelItem,in
 			{
 				if (CheckForEsc())
 				{
-					if (ItemsList)
-						FarFreeDirList(ItemsList,ItemsNumber);
-
+					FarFreeDirList(ItemsList,ItemsNumber);
 					return FALSE;
 				}
 
@@ -1549,10 +1547,12 @@ static int FarGetDirListSynched(const wchar_t *Dir,FAR_FIND_DATA **pPanelItem,in
 					MsgOut=1;
 				}
 
-				ItemsList=(FAR_FIND_DATA*)realloc(ItemsList,sizeof(*ItemsList)*(ItemsNumber+32+1));
+				TmpList=(FAR_FIND_DATA*)realloc(ItemsList,sizeof(*ItemsList)*(ItemsNumber+32+1));
 
-				if (!ItemsList)
-				{
+				if (TmpList)
+					ItemsList = TmpList;
+				else {
+					FarFreeDirList(ItemsList,ItemsNumber);
 					return FALSE;
 				}
 			}
@@ -1822,13 +1822,12 @@ static void ScanPluginDir()
 
 void WINAPI FarFreeDirList(FAR_FIND_DATA *PanelItem, int nItemsNumber)
 {
-	for (int I=0; I<nItemsNumber; I++)
-	{
-		FAR_FIND_DATA *CurPanelItem=PanelItem+I;
-		apiFreeFindData(CurPanelItem);
+	if (PanelItem) {
+		for (int I=0; I<nItemsNumber; I++) {
+			apiFreeFindData(PanelItem+I);
+		}
+		free(PanelItem);
 	}
-
-	free(PanelItem);
 }
 
 
