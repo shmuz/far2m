@@ -1736,6 +1736,33 @@ local function test_utf8()
   test_utf8_lower_upper()
 end
 
+local function test_dialog_1()
+  local sd = require"far2.simpledialog"
+  local tt = {"foo","bar","baz"}
+
+  local Items =  {
+    data = tt[1];
+    {tp="dbox"}, {tp="edit"}, {tp="edit"},
+  }
+  Items.proc = function(hDlg,Msg,P1,P2)
+    if Msg == F.DN_INITDIALOG then
+      assert(P1==2 and P2==Items.data)
+      assert(hDlg:send("DM_GETDLGDATA") == P2)
+      hDlg:send("DM_SETDLGDATA", tt[2])
+      assert(hDlg:send("DM_GETDLGDATA") == tt[2])
+      hDlg:send("DM_CLOSE")
+      Items.data = tt[3]
+    end
+  end
+
+  sd.New(Items):Run()
+  assert(Items.data == tt[3])
+end
+
+local function test_dialog()
+  test_dialog_1()
+end
+
 function MT.test_luafar()
   test_bit64()
   test_utf8()
@@ -1745,6 +1772,7 @@ function MT.test_luafar()
   test_PluginsControl()
   test_RegexControl()
   test_FarStandardFunctions()
+  test_dialog()
 
   test_far_GetMsg()
   if far.Timer then -- TODO (FreeBSD, DragonFly BSD)

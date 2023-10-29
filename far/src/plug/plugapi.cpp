@@ -1563,6 +1563,7 @@ static int FarGetDirListSynched(const wchar_t *Dir,FAR_FIND_DATA **pPanelItem,in
 			ItemsList[ItemsNumber].ftCreationTime = FindData.ftCreationTime;
 			ItemsList[ItemsNumber].ftLastAccessTime = FindData.ftLastAccessTime;
 			ItemsList[ItemsNumber].ftLastWriteTime = FindData.ftLastWriteTime;
+			ItemsList[ItemsNumber].dwUnixMode = FindData.dwUnixMode;
 			ItemsList[ItemsNumber].lpwszFileName = wcsdup(strFullName.CPtr());
 			ItemsNumber++;
 		}
