@@ -4428,10 +4428,6 @@ int DoAdvControl (lua_State *L, int Command, int Delta)
 		default:
 			return luaL_argerror(L, 1, "command not supported");
 
-		case ACTL_GETFARHWND:
-			int1 = PSInfo.AdvControl(pd->ModuleNumber, Command, NULL);
-			return lua_pushlightuserdata(L, (void*)int1), 1;
-
 		case ACTL_GETCONFIRMATIONS:
 		case ACTL_GETDESCSETTINGS:
 		case ACTL_GETDIALOGSETTINGS:
@@ -4475,17 +4471,6 @@ int DoAdvControl (lua_State *L, int Command, int Delta)
 		case ACTL_GETSYSWORDDIV:
 			PSInfo.AdvControl(pd->ModuleNumber, Command, buf);
 			return push_utf8_string(L,buf,-1), 1;
-
-		case ACTL_EJECTMEDIA: {
-			struct ActlEjectMedia em;
-			luaL_checktype(L, pos2, LUA_TTABLE);
-			lua_getfield(L, pos2, "Letter");
-			em.Letter = lua_isstring(L,-1) ? lua_tostring(L,-1)[0] : '\0';
-			lua_getfield(L, pos2, "Flags");
-			em.Flags = CheckFlags(L,-1);
-			lua_pushboolean(L, PSInfo.AdvControl(pd->ModuleNumber, Command, &em));
-			return 1;
-		}
 
 		case ACTL_GETARRAYCOLOR: {
 			int i;
@@ -4612,14 +4597,12 @@ int adv_##name(lua_State *L) { return DoAdvControl(L,command,delta); }
 int far_AdvControl(lua_State *L) { return DoAdvControl(L,0,0); }
 
 AdvCommand( Commit,                 ACTL_COMMIT, 1)
-AdvCommand( EjectMedia,             ACTL_EJECTMEDIA, 1)
 AdvCommand( GetArrayColor,          ACTL_GETARRAYCOLOR, 1)
 AdvCommand( GetColor,               ACTL_GETCOLOR, 1)
 AdvCommand( GetConfirmations,       ACTL_GETCONFIRMATIONS, 1)
 AdvCommand( GetCursorPos,           ACTL_GETCURSORPOS, 1)
 AdvCommand( GetDescSettings,        ACTL_GETDESCSETTINGS, 1)
 AdvCommand( GetDialogSettings,      ACTL_GETDIALOGSETTINGS, 1)
-AdvCommand( GetFarHwnd,             ACTL_GETFARHWND, 1)
 AdvCommand( GetFarRect,             ACTL_GETFARRECT, 1)
 AdvCommand( GetFarVersion,          ACTL_GETFARVERSION, 1)
 AdvCommand( GetInterfaceSettings,   ACTL_GETINTERFACESETTINGS, 1)
@@ -5909,14 +5892,12 @@ static const luaL_Reg dialog_methods[] = {
 static const luaL_Reg actl_funcs[] =
 {
 	{"Commit",                adv_Commit},
-	{"EjectMedia",            adv_EjectMedia},
 	{"GetArrayColor",         adv_GetArrayColor},
 	{"GetColor",              adv_GetColor},
 	{"GetConfirmations",      adv_GetConfirmations},
 	{"GetCursorPos",          adv_GetCursorPos},
 	{"GetDescSettings",       adv_GetDescSettings},
 	{"GetDialogSettings",     adv_GetDialogSettings},
-	{"GetFarHwnd",            adv_GetFarHwnd},
 	{"GetFarRect",            adv_GetFarRect},
 	{"GetFarVersion",         adv_GetFarVersion},
 	{"GetInterfaceSettings",  adv_GetInterfaceSettings},

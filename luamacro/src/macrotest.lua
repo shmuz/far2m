@@ -1427,8 +1427,6 @@ end
 local function test_AdvControl_Misc()
   local t
 
-  assert_udata(far.AdvControl("ACTL_GETFARHWND"))
-
   assert_eq (far.AdvControl("ACTL_GETFARVERSION"):sub(1,1), "2")
   assert_eq (far.AdvControl("ACTL_GETFARVERSION",true), 2)
 
@@ -1450,7 +1448,6 @@ end
 
 local function test_ACTL()
   assert_func  ( actl.Commit)
-  assert_func  ( actl.EjectMedia)
   assert_table ( actl.GetArrayColor())
   assert_range ( #actl.GetArrayColor(),142,152)
   assert_num   ( actl.GetColor("COL_DIALOGBOXTITLE"))
@@ -1458,7 +1455,6 @@ local function test_ACTL()
   assert_table ( actl.GetCursorPos())
   assert_num   ( actl.GetDescSettings())
   assert_num   ( actl.GetDialogSettings())
-  assert_udata ( actl.GetFarHwnd())
   assert_table ( actl.GetFarRect())
   assert_str   ( actl.GetFarVersion())
   assert_num   ( actl.GetFarVersion(true))
