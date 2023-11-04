@@ -4475,13 +4475,12 @@ int DoAdvControl (lua_State *L, int Command, int Delta)
 		case ACTL_GETARRAYCOLOR: {
 			int i;
 			int size = PSInfo.AdvControl(pd->ModuleNumber, Command, NULL);
-			void *p = lua_newuserdata(L, size);
+			BYTE *p = (BYTE*) lua_newuserdata(L, size);
 			PSInfo.AdvControl(pd->ModuleNumber, Command, p);
 			lua_createtable(L, size, 0);
 			for (i=0; i < size; i++) {
-				lua_pushinteger(L, i+1);
-				lua_pushinteger(L, ((BYTE*)p)[i]);
-				lua_rawset(L,-3);
+				lua_pushinteger(L, p[i]);
+				lua_rawseti(L, -2, i+1);
 			}
 			return 1;
 		}
