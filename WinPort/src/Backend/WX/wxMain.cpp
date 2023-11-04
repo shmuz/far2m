@@ -94,6 +94,9 @@ static void DetectHostAbilities()
 	}
 }
 
+#ifdef __APPLE__
+void MacInit();
+#endif
 
 extern "C" __attribute__ ((visibility("default"))) bool WinPortMainBackend(WinPortMainBackendArg *a)
 {
@@ -101,6 +104,9 @@ extern "C" __attribute__ ((visibility("default"))) bool WinPortMainBackend(WinPo
 		fprintf(stderr, "This far2m_gui is not compatible and cannot be used\n");
 		return false;
 	}
+#ifdef __APPLE__
+	MacInit();
+#endif
 
 	g_wx_norgb = a->norgb;
 	g_winport_con_out = a->winport_con_out;
@@ -1064,7 +1070,7 @@ static void TitleChangeCallback(PVOID ctx)
 // Another level of workaround for #1303 #1454:
 // Problem happens if window title change happened just before repaint but
 // it doesn't happen if title changed after repaint even if just after repaint.
-// So instead of appling new title just when application wanted it to apply
+// So instead of applying new title just when application wanted it to apply
 // - wait until application will invoke some console readout function, meaning
 // it entered idle state and risk of upcoming repaints is much lowered then.
 // Do this by using CALLBACK_EVENT functionality that was added exactly for this.

@@ -159,6 +159,10 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 			askpass_app = GetHelperPathName("far2m_askpass");
 		}
 
+		std::cin.sync();
+		std::cout.flush();
+		std::cerr.flush();
+		std::clog.flush();
 		int r = fork();
 		if (r != 0) {
 			return r;
@@ -218,7 +222,7 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 	void UpdateTerminalSize(int fd_term)
 	{
 		CONSOLE_SCREEN_BUFFER_INFO csbi = { };
-		if (WINPORT(GetConsoleScreenBufferInfo)( NULL, &csbi )  
+		if (WINPORT(GetConsoleScreenBufferInfo)( NULL, &csbi )
 					&& csbi.dwSize.X && csbi.dwSize.Y) {
 			fprintf(stderr, "UpdateTerminalSize: %u x %u\n", csbi.dwSize.X, csbi.dwSize.Y);
 			struct winsize ws = {(unsigned short)csbi.dwSize.Y, 
@@ -283,7 +287,11 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 				//ts.c_lflag&= ~ECHO;
 				ts.c_cc[VINTR] = 003;
 				// ts.c_cc[VQUIT] = 034;
-				tcsetattr( fd_term, TCSAFLUSH, &ts );
+				if (tcsetattr( fd_term, TCSAFLUSH, &ts ) == -1) {
+					perror("InitTerminal: tcsetattr");
+				}
+			} else {
+				perror("InitTerminal: tcgetattr");
 			}
 			_fd_in = fd_term;
 			_fd_out = dup(fd_term);
@@ -338,6 +346,8 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 	{
 		if (!_slavename.empty())
 			UpdateTerminalSize(_fd_out);
+		if (_far2l_exts)
+			_far2l_exts->OnTerminalResized();
 	}
 
 	virtual void OnInputResized(const INPUT_RECORD &ir) //called from worker thread
@@ -488,6 +498,8 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 
 		if (!_slavename.empty())
 			UpdateTerminalSize(_fd_out);
+		if (_far2l_exts)
+			_far2l_exts->OnTerminalResized();
 	}
 
 	virtual void OnKeypadChange(unsigned char keypad)
@@ -544,10 +556,10 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 						try {
 							stk_ser.FromBase64(str + 6, strlen(str + 6));
 							id = stk_ser.PopU8();
-							_far2l_exts->OnInterract(stk_ser);
+							_far2l_exts->OnInteract(stk_ser);
 
 						} catch (std::exception &e) {
-							fprintf(stderr, "_far2l_exts->OnInterract: %s\n", e.what());
+							fprintf(stderr, "_far2l_exts->OnInteract: %s\n", e.what());
 							stk_ser.Clear();
 						}
 
@@ -835,6 +847,8 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 
 		if (!_slavename.empty())
 			UpdateTerminalSize(_fd_out);
+		if (_far2l_exts)
+			_far2l_exts->OnTerminalResized();
 
 		std::string cmd_str;
 		if (!_slavename.empty()) {
