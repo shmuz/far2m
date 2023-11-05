@@ -203,7 +203,6 @@ end
 
 -- calculate index of the upper element shown
 function List:SetUpperItem ()
-  self.sel = self.sel or 1
   if self.selignore and self.selalign ~= "center" then
     local item = self.sel and self.drawitems[self.sel]
     if not item or item.separator then
@@ -211,17 +210,17 @@ function List:SetUpperItem ()
     end
   end
   if self.selalign == "top" then
-    if self.selignore then
+    if self.selignore or not self.sel then
       self.sel = self:FindUpperItem()
     end
     self.upper = max(1, self.sel-self.h+1)
   elseif self.selalign == "bottom" then
-    if self.selignore then
+    if self.selignore or not self.sel then
       self.sel = self:FindLowerItem()
     end
     self.upper = max(1, self.sel - self.h + 1)
   else -- "center"
-    if self.selignore then
+    if self.selignore or not self.sel then
       self.sel = ceil(#self.drawitems / 2)
     end
     self.upper = self.sel - floor(self.h / 2)
