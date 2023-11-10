@@ -145,7 +145,11 @@ struct DlgParam
 	DWORD Key;
 	int Area;
 	int Recurse;
-	bool Changed;
+	bool Deleted;
+};
+
+enum ASSIGN_MACRO_KEY {
+	AMK_CANCEL, AMK_MODIFY, AMK_DELETE
 };
 
 enum {
@@ -3568,19 +3572,16 @@ bool KeyMacro::ProcessKey(DWORD dwKey)
 			DWORD Flags = 0;
 			int AssignRet = AssignMacroKey(MacroKey,Flags);
 
-			if (AssignRet && AssignRet!=2 && !m_RecCode.IsEmpty())
+			if (AssignRet == AMK_MODIFY && !m_RecCode.IsEmpty())
 			{
 				m_RecCode = L"Keys(\"" + m_RecCode + L"\")";
-				// добавим проверку на удаление
-				// если удаляем или был вызван диалог изменения, то не нужно выдавать диалог настройки.
-				//if (MacroKey != (DWORD)-1 && (Key==KEY_CTRLSHIFTDOT || Recording==2) && RecBufferSize)
 				if (ctrlshiftdot && !GetMacroSettings(MacroKey,Flags))
 				{
-					AssignRet=0;
+					AssignRet = AMK_CANCEL;
 				}
 			}
 			m_InternalInput=0;
-			if (AssignRet)
+			if (AssignRet == AMK_MODIFY || AssignRet == AMK_DELETE)
 			{
 				FARString strKey;
 				KeyToText(MacroKey, strKey);
@@ -3802,11 +3803,11 @@ bool KeyMacro::DelMacro(DWORD PluginId, void* Id)
 // обработчик диалогового окна назначения клавиши
 LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2)
 {
+	DWORD dw;
 	FARString strKeyText;
 	static int LastKey=0;
 	static DlgParam *KMParam=nullptr;
 
-	//_SVS(SysLog(L"LastKey=%d Msg=%ls",LastKey,_DLGMSG_ToName(Msg)));
 	if (Msg == DN_INITDIALOG)
 	{
 		KMParam=reinterpret_cast<DlgParam*>(Param2);
@@ -3853,19 +3854,17 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG
 	else if (Param1 == 2 && Msg == DN_EDITCHANGE)
 	{
 		LastKey = 0;
-		_SVS(SysLog(L"[%d] ((FarDialogItem*)Param2)->PtrData='%ls'",__LINE__,((FarDialogItem*)Param2)->PtrData));
 		auto KeyCode = KeyNameToKey(((FarDialogItem*)Param2)->PtrData);
 
-		if (KeyCode != KEY_INVALID && KMParam != nullptr && !KMParam->Recurse)
+		if (KeyCode != KEY_INVALID && KMParam && !KMParam->Recurse)
 		{
 			Param2 = KeyCode;
 			goto M1;
 		}
 	}
-	else if (Msg == DN_KEY && (((Param2&KEY_END_SKEY) < KEY_END_FKEY) ||
-	                           (((Param2&KEY_END_SKEY) > INTERNAL_KEY_BASE) && (Param2&KEY_END_SKEY) < INTERNAL_KEY_BASE_2)))
+	else if (Msg == DN_KEY && (dw = (Param2 & KEY_END_SKEY), dw < KEY_END_FKEY ||
+	                           (dw > INTERNAL_KEY_BASE && dw < INTERNAL_KEY_BASE_2)))
 	{
-		//_SVS(SysLog(L"Macro: Key=%ls",_FARKEY_ToName(Param2)));
 		// <Обработка особых клавиш: F1 & Enter>
 		// Esc & (Enter и предыдущий Enter) - не обрабатываем
 		if (Param2 == KEY_ESC ||
@@ -3877,8 +3876,6 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG
 		}
 
 		// Было что-то уже нажато и Enter`ом подтверждаем
-		_SVS(SysLog(L"[%d] Assign ==> Param2='%ls',LastKey='%ls'",__LINE__,_FARKEY_ToName((DWORD)Param2),(LastKey?_FARKEY_ToName(LastKey):L"")));
-
 		if ((Param2 == KEY_ENTER||Param2 == KEY_NUMENTER) && LastKey && !(LastKey == KEY_ENTER||LastKey == KEY_NUMENTER))
 			return FALSE;
 
@@ -3890,7 +3887,6 @@ M1:
 		if (Param2<0xFFFF)
 			Param2=Upper((wchar_t)Param2);
 
-		_SVS(SysLog(L"[%d] Assign ==> Param2='%ls',LastKey='%ls'",__LINE__,_FARKEY_ToName((DWORD)Param2),LastKey?_FARKEY_ToName(LastKey):L""));
 		KMParam->Key=(DWORD)Param2;
 		KeyToText((uint32_t)Param2,strKeyText);
 
@@ -3902,7 +3898,7 @@ M1:
 			if (m_RecCode.IsEmpty() || Data.Area!=MACROAREA_COMMON)
 			{
 				FARString strBufKey;
-				bool SetChange = m_RecCode.IsEmpty();
+				bool SetDelete = m_RecCode.IsEmpty();
 				if (Data.Code)
 				{
 					strBufKey=Data.Code;
@@ -3911,11 +3907,11 @@ M1:
 
 				FARString strBuf;
 				if (Data.Area==MACROAREA_COMMON)
-					strBuf.Format(SetChange ? Msg::MacroCommonDeleteKey : Msg::MacroCommonReDefinedKey, strKeyText.CPtr());
+					strBuf.Format(SetDelete ? Msg::MacroCommonDeleteKey : Msg::MacroCommonReDefinedKey, strKeyText.CPtr());
 				else
-					strBuf.Format(SetChange ? Msg::MacroDeleteKey : Msg::MacroReDefinedKey, strKeyText.CPtr());
+					strBuf.Format(SetDelete ? Msg::MacroDeleteKey : Msg::MacroReDefinedKey, strKeyText.CPtr());
 
-				int	Result = SetChange ?
+				int	Result = SetDelete ?
 					Message(MSG_WARNING,3,Msg::Warning,strBuf,Msg::MacroSequence,strBufKey,
 							Msg::MacroDeleteKey2,
 							Msg::Yes, Msg::MacroEditKey, Msg::No) :
@@ -3925,12 +3921,11 @@ M1:
 
 				if (Result == 0)
 				{
-					// в любом случае - вываливаемся
 					SendDlgMessage(hDlg,DM_CLOSE,1,0);
 					return TRUE;
 				}
 
-				if (SetChange && Result == 1)
+				if (SetDelete && Result == 1)
 				{
 					auto key = (DWORD)Param2;
 					FARString strDescription;
@@ -3944,8 +3939,7 @@ M1:
 					if (GetMacroSettings(key, Data.Flags, strBufKey, strDescription))
 					{
 						KMParam->Flags = Data.Flags;
-						KMParam->Changed = true;
-						// в любом случае - вываливаемся
+						KMParam->Deleted = true;
 						SendDlgMessage(hDlg, DM_CLOSE, 1, 0);
 						return TRUE;
 					}
@@ -3982,7 +3976,6 @@ int KeyMacro::AssignMacroKey(DWORD& MacroKey, DWORD& Flags)
 	};
 	MakeDialogItemsEx(MacroAssignDlgData,MacroAssignDlg);
 	DlgParam Param={Flags, 0, m_StartMode, false};
-	//_SVS(SysLog(L"StartMode=%d",m_StartMode));
 	IsProcessAssignMacroKey++;
 	Dialog Dlg(MacroAssignDlg,ARRAYSIZE(MacroAssignDlg),AssignMacroDlgProc,(LONG_PTR)&Param);
 	Dlg.SetPosition(-1,-1,34,6);
@@ -3991,11 +3984,11 @@ int KeyMacro::AssignMacroKey(DWORD& MacroKey, DWORD& Flags)
 	IsProcessAssignMacroKey--;
 
 	if (Dlg.GetExitCode() == -1)
-		return 0;
+		return AMK_CANCEL;
 
 	MacroKey = Param.Key;
 	Flags = Param.Flags;
-	return Param.Changed ? 2 : 1;
+	return Param.Deleted ? AMK_DELETE : AMK_MODIFY;
 }
 
 static int Set3State(DWORD Flags,DWORD Chk1,DWORD Chk2)
