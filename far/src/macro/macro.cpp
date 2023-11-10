@@ -3993,12 +3993,9 @@ int KeyMacro::AssignMacroKey(DWORD& MacroKey, DWORD& Flags)
 
 static int Set3State(DWORD Flags,DWORD Chk1,DWORD Chk2)
 {
-	DWORD Chk12=Chk1|Chk2, FlagsChk12=Flags&Chk12;
-
-	if (FlagsChk12 == Chk12 || !FlagsChk12)
-		return (2);
-	else
-		return (Flags&Chk1?1:0);
+	bool b1 = (Flags & Chk1) != 0;
+	bool b2 = (Flags & Chk2) != 0;
+		return b1==b2 ? 2 : b1 ? 1 : 0;
 }
 
 enum MACROSETTINGSDLG
@@ -4101,13 +4098,13 @@ int KeyMacro::GetMacroSettings(uint32_t Key,DWORD &Flags, const wchar_t* Src, co
 		{DI_CHECKBOX,5,8,0,8,{},0,Msg::MacroSettingsRunAfterStart},
 		{DI_TEXT,3,9,0,9,{},DIF_SEPARATOR,L""},
 		{DI_CHECKBOX,5,10,0,10,{},0,Msg::MacroSettingsActivePanel},
-		{DI_CHECKBOX,7,11,0,11,{2},DIF_3STATE|DIF_DISABLE,Msg::MacroSettingsPluginPanel},
-		{DI_CHECKBOX,7,12,0,12,{2},DIF_3STATE|DIF_DISABLE,Msg::MacroSettingsFolders},
-		{DI_CHECKBOX,7,13,0,13,{2},DIF_3STATE|DIF_DISABLE,Msg::MacroSettingsSelectionPresent},
+		{DI_CHECKBOX,7,11,0,11,{2},DIF_3STATE,Msg::MacroSettingsPluginPanel},
+		{DI_CHECKBOX,7,12,0,12,{2},DIF_3STATE,Msg::MacroSettingsFolders},
+		{DI_CHECKBOX,7,13,0,13,{2},DIF_3STATE,Msg::MacroSettingsSelectionPresent},
 		{DI_CHECKBOX,37,10,0,10,{},0,Msg::MacroSettingsPassivePanel},
-		{DI_CHECKBOX,39,11,0,11,{2},DIF_3STATE|DIF_DISABLE,Msg::MacroSettingsPluginPanel},
-		{DI_CHECKBOX,39,12,0,12,{2},DIF_3STATE|DIF_DISABLE,Msg::MacroSettingsFolders},
-		{DI_CHECKBOX,39,13,0,13,{2},DIF_3STATE|DIF_DISABLE,Msg::MacroSettingsSelectionPresent},
+		{DI_CHECKBOX,39,11,0,11,{2},DIF_3STATE,Msg::MacroSettingsPluginPanel},
+		{DI_CHECKBOX,39,12,0,12,{2},DIF_3STATE,Msg::MacroSettingsFolders},
+		{DI_CHECKBOX,39,13,0,13,{2},DIF_3STATE,Msg::MacroSettingsSelectionPresent},
 		{DI_TEXT,3,14,0,14,{},DIF_SEPARATOR,L""},
 		{DI_CHECKBOX,5,15,0,15,{2},DIF_3STATE,Msg::MacroSettingsCommandLine},
 		{DI_CHECKBOX,5,16,0,16,{2},DIF_3STATE,Msg::MacroSettingsSelectionBlockPresent},
@@ -4123,12 +4120,35 @@ int KeyMacro::GetMacroSettings(uint32_t Key,DWORD &Flags, const wchar_t* Src, co
 	//MacroSettingsDlg[3].Flags|=DIF_DISABLE;
 	MacroSettingsDlg[MS_CHECKBOX_OUTPUT].Selected=Flags&MFLAGS_ENABLEOUTPUT?1:0;
 	MacroSettingsDlg[MS_CHECKBOX_START].Selected=Flags&MFLAGS_RUNAFTERFARSTART?1:0;
-	MacroSettingsDlg[MS_CHECKBOX_A_PLUGINPANEL].Selected=Set3State(Flags,MFLAGS_NOFILEPANELS,MFLAGS_NOPLUGINPANELS);
-	MacroSettingsDlg[MS_CHECKBOX_A_FOLDERS].Selected=Set3State(Flags,MFLAGS_NOFILES,MFLAGS_NOFOLDERS);
-	MacroSettingsDlg[MS_CHECKBOX_A_SELECTION].Selected=Set3State(Flags,MFLAGS_SELECTION,MFLAGS_NOSELECTION);
-	MacroSettingsDlg[MS_CHECKBOX_P_PLUGINPANEL].Selected=Set3State(Flags,MFLAGS_PNOFILEPANELS,MFLAGS_PNOPLUGINPANELS);
-	MacroSettingsDlg[MS_CHECKBOX_P_FOLDERS].Selected=Set3State(Flags,MFLAGS_PNOFILES,MFLAGS_PNOFOLDERS);
-	MacroSettingsDlg[MS_CHECKBOX_P_SELECTION].Selected=Set3State(Flags,MFLAGS_PSELECTION,MFLAGS_PNOSELECTION);
+
+	int a = Set3State(Flags,MFLAGS_NOFILEPANELS,MFLAGS_NOPLUGINPANELS);
+	int b = Set3State(Flags,MFLAGS_NOFILES,MFLAGS_NOFOLDERS);
+	int c = Set3State(Flags,MFLAGS_SELECTION,MFLAGS_NOSELECTION);
+	MacroSettingsDlg[MS_CHECKBOX_A_PLUGINPANEL].Selected = a;
+	MacroSettingsDlg[MS_CHECKBOX_A_FOLDERS].Selected = b;
+	MacroSettingsDlg[MS_CHECKBOX_A_SELECTION].Selected = c;
+	MacroSettingsDlg[MS_CHECKBOX_A_PANEL].Selected = (a!=2 || b!=2 || c!= 2) ? 1 : 0;
+	if (0 == MacroSettingsDlg[MS_CHECKBOX_A_PANEL].Selected)
+	{
+		MacroSettingsDlg[MS_CHECKBOX_A_PLUGINPANEL].Flags |= DIF_DISABLE;
+		MacroSettingsDlg[MS_CHECKBOX_A_FOLDERS].Flags |= DIF_DISABLE;
+		MacroSettingsDlg[MS_CHECKBOX_A_SELECTION].Flags |= DIF_DISABLE;
+	}
+
+	a = Set3State(Flags,MFLAGS_PNOFILEPANELS,MFLAGS_PNOPLUGINPANELS);
+	b = Set3State(Flags,MFLAGS_PNOFILES,MFLAGS_PNOFOLDERS);
+	c = Set3State(Flags,MFLAGS_PSELECTION,MFLAGS_PNOSELECTION);
+	MacroSettingsDlg[MS_CHECKBOX_P_PLUGINPANEL].Selected = a;
+	MacroSettingsDlg[MS_CHECKBOX_P_FOLDERS].Selected = b;
+	MacroSettingsDlg[MS_CHECKBOX_P_SELECTION].Selected = c;
+	MacroSettingsDlg[MS_CHECKBOX_P_PANEL].Selected = (a!=2 || b!=2 || c!= 2) ? 1 : 0;
+	if (0 == MacroSettingsDlg[MS_CHECKBOX_P_PANEL].Selected)
+	{
+		MacroSettingsDlg[MS_CHECKBOX_P_PLUGINPANEL].Flags |= DIF_DISABLE;
+		MacroSettingsDlg[MS_CHECKBOX_P_FOLDERS].Flags |= DIF_DISABLE;
+		MacroSettingsDlg[MS_CHECKBOX_P_SELECTION].Flags |= DIF_DISABLE;
+	}
+
 	MacroSettingsDlg[MS_CHECKBOX_CMDLINE].Selected=Set3State(Flags,MFLAGS_EMPTYCOMMANDLINE,MFLAGS_NOTEMPTYCOMMANDLINE);
 	MacroSettingsDlg[MS_CHECKBOX_SELBLOCK].Selected=Set3State(Flags,MFLAGS_EDITSELECTION,MFLAGS_EDITNOSELECTION);
 	MacroSettingsDlg[MS_EDIT_SEQUENCE].strData = *Src ? Src : m_RecCode.CPtr();
