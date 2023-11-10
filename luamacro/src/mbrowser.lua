@@ -1,5 +1,8 @@
 -- encoding: UTF-8
 
+local SETTINGS_KEY  = ("%08X"):format(far.GetPluginId())
+local SETTINGS_NAME = "MacroBrowser"
+
 local Shared = ...
 local Msg, utils = Shared.Msg, Shared.utils
 local op = Shared.OpCodes
@@ -229,7 +232,7 @@ local CmpFuncs = {
                function (a,b) return LStricmp(a.description,b.description) > 0 end, "3↑", "3↓" },
 }
 
-local Data = mf.mload("LuaMacro", "MacroBrowser")
+local Data = mf.mload(SETTINGS_KEY, SETTINGS_NAME)
 local SortKey = Data and Data.SortKey or "C+F1"
 local InvSort = Data and Data.InvSort or 1
 local ShowOnlyActive = Data and Data.ShowOnlyActive
@@ -594,7 +597,7 @@ local function MenuLoop()
     ----------------------------------------------------------------------------
     end
   end
-  mf.msave("LuaMacro", "MacroBrowser",
+  mf.msave(SETTINGS_KEY, SETTINGS_NAME,
     { SortKey=SortKey, InvSort=InvSort, ShowOnlyActive=ShowOnlyActive })
 end
 

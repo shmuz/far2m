@@ -98,7 +98,7 @@ end
 
 local function get_work_dir(key)
   work_dir = work_dir or far.InMyConfig("plugins/luafar/")
-  return work_dir..key:lower().."/"
+  return work_dir..key.."/"
 end
 
 local function mdelete (key, name)
@@ -106,7 +106,7 @@ local function mdelete (key, name)
   checkarg(name, 2, "string")
   local dir = get_work_dir(key)
   if name ~= "*" then
-    return win.DeleteFile(dir..name:lower())
+    return win.DeleteFile(dir..name)
   else
     far.RecursiveSearch(dir, "*", function(item, fullname) win.DeleteFile(fullname) end)
     return win.RemoveDir(dir)
@@ -120,7 +120,7 @@ local function msave (key, name, value)
   if str then
     local dir = get_work_dir(key)
     if win.CreateDir(dir, true) then
-      local fp = io.open(dir..name:lower(), "w")
+      local fp = io.open(dir..name, "w")
       if fp then
         fp:write(str)
         fp:close()
@@ -134,7 +134,7 @@ end
 local function mload (key, name)
   checkarg(key, 1, "string")
   checkarg(name, 2, "string")
-  return deserialize(get_work_dir(key)..name:lower(), true)
+  return deserialize(get_work_dir(key)..name, true)
 end
 
 local function field (t, seq)
