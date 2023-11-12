@@ -33,6 +33,12 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+template <typename T>
+bool CheckStructSize(const T* s)
+{
+	return s && (s->StructSize >= sizeof(T));
+}
+
 //----------- PLUGIN API/FSF ---------------------------------------------------
 //все эти функции, за исключение sprintf/sscanf имеют тип вызова __stdcall
 

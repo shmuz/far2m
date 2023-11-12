@@ -35,12 +35,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "farplug-wide.h"
 
-template <typename T>
-bool CheckStructSize(const T* s)
-{
-	return s && (s->StructSize >= sizeof(T));
-}
-
 // Macro Const
 enum
 {
