@@ -3485,7 +3485,7 @@ int FarMacroApi::UDList_Split()
 	auto Subj = Params[1].toString();
 
 	UserDefinedList udl(Flags);
-	if (udl.Set(Subj))
+	if (udl.Set(Subj) && udl.Size())
 	{
 		const wchar_t* str;
 		for (int i=0; (str=udl.Get(i)); i++)

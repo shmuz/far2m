@@ -1152,7 +1152,7 @@ ShellCopy::ShellCopy(Panel *SrcPanel,        // исходная панель (�
 			const wchar_t *NamePtr;
 			FARString strNameTmp;
 			// посчитаем количество целей.
-			CountTarget=DestList.GetTotal();
+			CountTarget=DestList.Size();
 			TotalFiles=0;
 			TotalCopySize=TotalCopiedSize=TotalSkippedSize=0;
 			ProgressUpdateTime=0;

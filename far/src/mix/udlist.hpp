@@ -128,5 +128,5 @@ class UserDefinedList : private NonCopyable
 		bool IsLastElement(size_t Index) const { return Index + 1 == Array.size(); }
 
 		// Вернуть количество элементов в списке
-		size_t GetTotal() const { return Array.size(); }
+		size_t Size() const { return Array.size(); }
 };
