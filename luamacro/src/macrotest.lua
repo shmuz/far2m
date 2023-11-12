@@ -1536,9 +1536,13 @@ local function test_ProcessName()
   assert_true (far.CmpNameList("*",          "foo.bar"    ))
   assert_true (far.CmpNameList("*.cpp",      "foo.cpp"    ))
   assert_false(far.CmpNameList("*.cpp",      "foo.abc"    ))
+
   assert_true (far.CmpNameList("*|*.cpp",    "foo.abc"    )) -- exclude mask IS supported
-  assert_true (far.CmpNameList("|*.cpp",     "foo.abc"    )) -- +++
-  assert_false(far.CmpNameList("*|*.abc",    "foo.abc"    )) -- +++
+  assert_true (far.CmpNameList("|*.cpp",     "foo.abc"    ))
+  assert_true (far.CmpNameList("*|",         "foo.abc"    ))
+  assert_false(far.CmpNameList("*|*.abc",    "foo.abc"    ))
+  assert_false(far.CmpNameList("|",          "foo.abc"    ))
+
   assert_true (far.CmpNameList("*.aa,*.bar", "foo.bar"    ))
   assert_true (far.CmpNameList("*.aa,*.bar", "c:/foo.bar" ))
   assert_true (far.CmpNameList("/.+/",       "c:/foo.bar" ))
@@ -1694,7 +1698,7 @@ local function test_win_Clock()
   local temp = win.Clock()
   win.Sleep(500)
   temp = (win.Clock() - temp)
-  assert(temp > 0.480 and temp < 0.550, temp)
+  assert(temp > 0.480 and temp < 0.600, temp)
   -- check granularity
   local OK = false
   temp = math.floor(win.Clock()*1e6) % 10

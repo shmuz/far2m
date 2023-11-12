@@ -201,29 +201,38 @@ bool FileMasksProcessor::Set(const wchar_t *masks, DWORD Flags)
 
 	if (!*masks) return false;
 
-	bool rc=false;
-	wchar_t *MasksStr=wcsdup(masks);
+	bool rc = false;
+	wchar_t *MasksStr = wcsdup(masks);
 
 	if (MasksStr)
 	{
-		rc=true;
-		wchar_t *pExclude = (wchar_t *) FindExcludeChar(MasksStr);
+		rc = true;
+
+		wchar_t *pInclude = MasksStr;
+		while (iswspace(*pInclude))
+			pInclude++;
+
+		wchar_t *pExclude = (wchar_t*) FindExcludeChar(pInclude);
 
 		if (pExclude)
 		{
 			*pExclude++ = 0;
+			while (iswspace(*pExclude))
+				pExclude++;
 
-			if (*pExclude!=L'/' && wcschr(pExclude, EXCLUDEMASKSEPARATOR))
-				rc=false;
+			if (*pInclude == 0 && *pExclude == 0)
+				rc = false;
+			else if (*pExclude == 0)
+				pExclude = nullptr;
+			else if (*pExclude != L'/' && wcschr(pExclude, EXCLUDEMASKSEPARATOR)) // FIXME
+				rc = false;
 		}
 
 		if (rc)
-		{
-			rc = SetPart(*MasksStr ? MasksStr:L"*", Flags&FMPF_ADDASTERISK, IncludeMasks);
+			rc = SetPart(*pInclude ? pInclude:L"*", Flags&FMPF_ADDASTERISK, IncludeMasks);
 
-			if (rc && pExclude)
-				rc = SetPart(pExclude, 0, ExcludeMasks);
-		}
+		if (rc && pExclude)
+			rc = SetPart(pExclude, 0, ExcludeMasks);
 
 		free(MasksStr);
 	}
