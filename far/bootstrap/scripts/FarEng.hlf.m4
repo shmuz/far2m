@@ -3583,63 +3583,60 @@ files will be placed lower than those not included.
 
 @FileMasks
 $ #File masks#
-    File masks are frequently used in FAR2M commands to select single files and
-folders or groups of them. Masks may contain common valid file name symbols,
-wildcards ('*' and '?') and special expressions:
+ File masks are frequently used in Far commands to select single file or
+folder, or group of items. Masks can contain common valid file name characters,
+wildcards (‘*’ and ‘?’) and special expressions:
 
-    #*#           zero or more characters;
+ #*#           zero or more characters;
 
-    #?#           any single character;
+ #?#           any single character;
 
-    #[c,x-z]#     any character enclosed by the brackets.
-                Both separate characters and character intervals
-                are allowed.
+ #[cx-z]#      any character enclosed by the brackets.
+             Both separate characters and character intervals
+             are allowed.
 
-    For example, files ftp.exe, fc.exe and f.ext may be selected using mask
-f*.ex?, mask *co* will select both color.ini and edit.com, mask [c-f,t]*.txt
+ For example, files ftp.exe, fc.exe and f.ext can be selected using mask
+f*.ex?, mask *co* will select both color.ini and edit.com, mask [c-ft]*.txt
 can select config.txt, demo.txt, faq.txt and tips.txt.
 
-    In many FAR2M commands you may enter several file masks separated with commas
+ In many Far commands you can enter several file masks separated with commas
 or semicolons. For example, to select all the documents, you can enter
 #*.doc,*.txt,*.wri# in the "Select" command.
 
-    It is allowed to put any of the masks in quotes but not the whole list. For
+ It is allowed to put any of the masks in quotes but not the whole list. For
 example, you have to do this when a mask contains any of the delimiter
 characters (a comma or a semicolon), so that the mask doesn't get confused with
 a list.
 
-    File mask surrounded with slashes #/# is treated as ~Perl regular expression~@RegExp@.
+ File mask surrounded with slashes #/# is treated as ~Perl regular expression~@RegExp@.
 
-    Example:
-    #/(eng|rus)/i#  any files with filenames containing string “eng” or “rus”,
-                  the character case is not taken into account.
+ Example:
+ #/(eng|rus)/i# - any files with filenames containing string “eng” or “rus”,
+the character case is not taken into account.
 
-    In some commands (~find files~@FindFile@, ~filter~@Filter@,
-~filters menu~@FiltersMenu@, file ~selection~@SelectFiles@,
-file ~associations~@FileAssoc@ and
-~file highlighting and sort groups~@Highlight@) you may use exclude masks. An
-#exclude mask# is one or multiple file masks that must not be matched by the
+ An #exclude mask# is one or multiple file masks that must not be matched by the
 files matching the mask. The exclude mask is delimited from the main mask by
-the character '#|#'.
+the character ‘#|#’.
 
-^Usage examples of exclude masks:
+ Usage examples of exclude masks:
+
  1. *.cpp
     All files with the extension #cpp#.
  2. *|*.bak,*.tmp
     All files except for the files with extensions #bak# and #tmp#.
  3. *|
-    This mask has an error - the character | is entered, but the
-    mask itself is not specified.
+    The character | is entered, but the mask itself is not specified,
+    expression treated as *
  4. *|*.bak|*.tmp
-    Also an error - the character | may not be contained in the mask
-    more than once.
+    The character | can be used in the mask only once,
+    expression treated as *|*.bak
  5. |*.bak
     The same as *|*.bak
  6. *|/^pict\d{1,3}\.gif$/i
     All files except for pict0.gif — pict999.gif, disregard the character case.
 
-    The comma (or semicolon) is used for separating file masks from each other,
-and the '|' character separates include masks from exclude masks.
+ The comma (or semicolon) is used for separating file masks from each other,
+and the ‘|’ character separates include masks from exclude masks.
 
  File masks can be joined into ~groups~@MaskGroupsSettings@.
 

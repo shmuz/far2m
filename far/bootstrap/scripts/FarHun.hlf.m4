@@ -3305,57 +3305,62 @@ szabályokat hozhatunk létre a ~Beállítások menü~@OptMenu@
 
 @FileMasks
 $ #Fájlmaszkok#
-    A fájlmaszkokat a FAR parancsaiban gyakran használjuk fájlok, mappák vagy
+ A fájlmaszkokat a Far parancsaiban gyakran használjuk fájlok, mappák vagy
 ezek csoportjainak kijelölésére. A maszkok egyaránt tartalmazhatnak általános
-érvényű fájlnév szimbólumokat, joker (* és ?) karaktereket és különleges
-kifejezéseket:
+érvényű fájlnév szimbólumokat, joker (* és ?) karaktereket és különleges kifejezéseket:
 
-    #*#           ^<wrap>bármilyen hosszúságú és tartalmú karaktersor (vagy
-akár semmilyen karakter);
+ #*#           ^<wrap>bármilyen hosszúságú és tartalmú karaktersor (vagy akár semmilyen karakter);
 
-    #?#           egyetlen helyiértéknyi karakter;
+ #?#           egyetlen helyiértéknyi karakter;
 
-    #[c,x-z]#     ^<wrap>a szögletes zárójelek közt álló bármelyik karakter.
-Lehet egyedüli, lehet tartomány vagy a kettő kombinációja.
+ #[cx-z]#     ^<wrap>a szögletes zárójelek közt álló bármelyik karakter.
+Lehet egyedüli, lehet tartomány vagy a kettő
+kombinációja.
 
-    Például az ftp.exe, fc.exe és az f.ext fájl az f*.ex? maszkkal írható le,
-a *co* maszba belefér a color.ini és az edit.com is, a [c-f,t]*.txt maszknak
+ Például az ftp.exe, fc.exe és az f.ext fájl az f*.ex? maszkkal írható le,
+a *co* maszba belefér a color.ini és az edit.com is, a [c-ft]*.txt maszknak
 pedig a config.txt, demo.txt, faq.txt és a tips.txt egyaránt megfelel.
 
-    Sok FAR parancs megengedi egyidejűleg több különféle maszk használatát,
+ Sok Far parancs megengedi egyidejűleg több különféle maszk használatát,
 vesszővel vagy pontosvesszővel elválasztva. Például a "Fájlok" menü "Csoport
 kijelölése" parancsával kiválaszthatjuk a dokumentumokat, ha a
 #*.doc,*.txt,*.wri# maszkot használjuk.
 
-    Bármelyik maszkot idézőjelek közé lehet tenni, de a maszkok listáját nem.
+ Bármelyik maszkot idézőjelek közé lehet tenni, de a maszkok listáját nem.
 Például ha a maszkban elválasztó karaktert szeretnénk használni ("," vagy ";"),
-az idézőjelek használata elkerülhetetlen, nehogy a FAR maszkok listájaként
+az idézőjelek használata elkerülhetetlen, nehogy a Far maszkok listájaként
 próbálja meg értelmezni a definíciót.
 
-    Néhány parancsban (ilyen a ~fájlkeresés~@FindFile@, a ~szűrő~@Filter@,a
-~szűrők menü~@FiltersMenu@, a fájlok ~kijelölése~@SelectFiles@, a fájlok
-~társítása~@FileAssoc@ és a ~fájlkiemelések, rendezési csoportok~@Highlight@)
-használhatunk kizáró maszkokat is. A #kizáró maszk# olyan fájlmaszk (vagy
-maszkok csoportja), amivel a befoglaló maszknak megfelelő fájlok közül
-kizárhatjuk egy másik maszk vagy maszkrendszer fájljait. A kizáró maszkoknak a
-befoglaló maszkok után kell állniuk, #|# karakterrel elválasztva.
+ File mask surrounded with slashes #/# is treated as ~Perl regular expression~@RegExp@.
 
-    Néhány példa a befoglaló és kizáró maszkok használatára:
+ Example:
+ #/(eng|rus)/i# - any files with filenames containing string “eng” or “rus”,
+the character case is not taken into account.
 
-    1. *.cpp
-       Minden #cpp# kiterjesztésű fájl.
-    2. *.*|*.bak,*.tmp
-       Minden fájl, a #bak# és #tmp# kiterjesztésűeket kivéve.
-    3. *.*|
-       Ez a maszk hibát generál, mert a | karakter után nincs maszk.
-    4. *.*|*.bak|*.tmp
-       ^<wrap>Szintén hibás szintakszis, mert a | karakter egy sorban csak
+ A #kizáró maszk# olyan fájlmaszk (vagy maszkok csoportja), amivel a befoglaló
+maszknak megfelelő fájlok közül kizárhatjuk egy másik maszk vagy maszkrendszer fájljait.
+A kizáró maszkoknak a befoglaló maszkok után kell állniuk, #|# karakterrel elválasztva.
+
+ Néhány példa a befoglaló és kizáró maszkok használatára:
+
+ 1. *.cpp
+    Minden #cpp# kiterjesztésű fájl.
+ 2. *|*.bak,*.tmp
+    Minden fájl, a #bak# és #tmp# kiterjesztésűeket kivéve.
+ 3. *|
+    Ez a maszk hibát generál, mert a | karakter után nincs maszk.
+ 4. *|*.bak|*.tmp
+    ^<wrap>Szintén hibás szintakszis, mert a | karakter egy sorban csak
 egyszer szerepelhet.
-    5. |*.bak
-       Ugyanaz, mint a *|*.bak
+ 5. |*.bak
+    Ugyanaz, mint a *|*.bak
+ 6. *|/^pict\d{1,3}\.gif$/i
+    All files except for pict0.gif — pict999.gif, disregard the character case.
 
-    A "," (vagy ";") az egyes maszkokat, a "|" karakter pedig a befoglaló és a
+ A "," (vagy ";") az egyes maszkokat, a "|" karakter pedig a befoglaló és a
 kizáró maszkok csoportját választja el egymástól.
+
+ File masks can be joined into ~groups~@MaskGroupsSettings@.
 
 
 @SelectFiles
