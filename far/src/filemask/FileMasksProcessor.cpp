@@ -47,7 +47,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // This method was chosen due to its simplicity.
 #define MAXCALLDEPTH 64
 
-static const wchar_t *FindExcludeChar(const wchar_t *masks)
+static wchar_t *FindExcludeChar(wchar_t *masks)
 {
 	for (bool regexp=false; *masks; masks++)
 	{
@@ -70,11 +70,6 @@ static const wchar_t *FindExcludeChar(const wchar_t *masks)
 		}
 	}
 	return nullptr;
-}
-
-static bool IsExcludeMask(const wchar_t *masks)
-{
-	return FindExcludeChar(masks)!=nullptr;
 }
 
 bool SingleFileMask::Set(const wchar_t *Masks, DWORD Flags)
@@ -204,28 +199,28 @@ bool FileMasksProcessor::Set(const wchar_t *masks, DWORD Flags)
 	bool rc = false;
 	wchar_t *MasksStr = wcsdup(masks);
 
-	if (MasksStr)
-	{
+	if (MasksStr) {
 		rc = true;
 
 		wchar_t *pInclude = MasksStr;
 		while (iswspace(*pInclude))
 			pInclude++;
 
-		wchar_t *pExclude = (wchar_t*) FindExcludeChar(pInclude);
+		wchar_t *pExclude = FindExcludeChar(pInclude);
 
-		if (pExclude)
-		{
+		if (pExclude) {
 			*pExclude++ = 0;
 			while (iswspace(*pExclude))
 				pExclude++;
 
 			if (*pInclude == 0 && *pExclude == 0)
 				rc = false;
-			else if (*pExclude == 0)
+			else if (*pExclude == 0) // treat empty exclude mask as no exclude mask
 				pExclude = nullptr;
-			else if (*pExclude != L'/' && wcschr(pExclude, EXCLUDEMASKSEPARATOR)) // FIXME
-				rc = false;
+			else {
+				wchar_t *ptr = FindExcludeChar(pExclude);
+				if (ptr) *ptr = 0; // ignore all starting from the 2-nd exclude char
+			}
 		}
 
 		if (rc)

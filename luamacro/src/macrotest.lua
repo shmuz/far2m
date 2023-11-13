@@ -1540,6 +1540,7 @@ local function test_ProcessName()
   assert_true (far.CmpNameList("*|*.cpp",    "foo.abc"    )) -- exclude mask IS supported
   assert_true (far.CmpNameList("|*.cpp",     "foo.abc"    ))
   assert_true (far.CmpNameList("*|",         "foo.abc"    ))
+  assert_true (far.CmpNameList("*|bar|*",    "foo.abc"    ))
   assert_false(far.CmpNameList("*|*.abc",    "foo.abc"    ))
   assert_false(far.CmpNameList("|",          "foo.abc"    ))
 
