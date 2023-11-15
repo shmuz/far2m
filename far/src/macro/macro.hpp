@@ -112,12 +112,12 @@ private:
 	FARString m_StringToPrint;
 
 private:
-	BOOL CheckEditSelected(DWORD CurFlags);
-	BOOL CheckInsidePlugin(DWORD CurFlags);
-	BOOL CheckPanel(int PanelMode,DWORD CurFlags, BOOL IsPassivePanel);
-	BOOL CheckCmdLine(int CmdLength,DWORD Flags);
-	BOOL CheckFileFolder(Panel *ActivePanel,DWORD CurFlags, BOOL IsPassivePanel);
-	BOOL CheckAll(int CheckMode,DWORD CurFlags);
+	bool CheckEditSelected(DWORD CurFlags);
+	bool CheckInsidePlugin(DWORD CurFlags);
+	bool CheckPanel(int PanelMode,DWORD CurFlags, bool IsPassivePanel);
+	bool CheckCmdLine(int CmdLength,DWORD Flags);
+	bool CheckFileFolder(Panel *ActivePanel,DWORD CurFlags, bool IsPassivePanel);
+	bool CheckAll(int CheckMode,DWORD CurFlags);
 
 	static LONG_PTR WINAPI AssignMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2);
 	static LONG_PTR WINAPI ParamMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2);

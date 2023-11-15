@@ -4122,8 +4122,6 @@ int KeyMacro::GetMacroSettings(uint32_t Key,DWORD &Flags, const wchar_t* Src, co
 	FARString strKeyText;
 	KeyToText(Key,strKeyText);
 	MacroSettingsDlg[MS_DOUBLEBOX].strData.Format(Msg::MacroSettingsTitle, strKeyText.CPtr());
-	//if(!(Key&0x7F000000))
-	//MacroSettingsDlg[3].Flags|=DIF_DISABLE;
 	MacroSettingsDlg[MS_CHECKBOX_OUTPUT].Selected=Flags&MFLAGS_ENABLEOUTPUT?1:0;
 	MacroSettingsDlg[MS_CHECKBOX_START].Selected=Flags&MFLAGS_RUNAFTERFARSTART?1:0;
 
@@ -4221,7 +4219,7 @@ bool KeyMacro::PostNewMacro(const wchar_t* Sequence,DWORD InputFlags,DWORD AKey)
 	return CallMacroPlugin(&info);
 }
 
-BOOL KeyMacro::CheckEditSelected(DWORD CurFlags)
+bool KeyMacro::CheckEditSelected(DWORD CurFlags)
 {
 	if (m_Area==MACROAREA_EDITOR || m_Area==MACROAREA_DIALOG || m_Area==MACROAREA_VIEWER ||
 		(m_Area==MACROAREA_SHELL && CtrlObject->CmdLine->IsVisible()))
@@ -4241,47 +4239,47 @@ BOOL KeyMacro::CheckEditSelected(DWORD CurFlags)
 				CurSelected=(int)CurFrame->VMProcess(MCODE_C_SELECTED);
 
 			if (((CurFlags&MFLAGS_EDITSELECTION) && !CurSelected) ||	((CurFlags&MFLAGS_EDITNOSELECTION) && CurSelected))
-				return FALSE;
+				return false;
 		}
 	}
 
-	return TRUE;
+	return true;
 }
 
-BOOL KeyMacro::CheckInsidePlugin(DWORD CurFlags)
+bool KeyMacro::CheckInsidePlugin(DWORD CurFlags)
 {
 	if (CtrlObject && CtrlObject->Plugins.CurPluginItem && (CurFlags&MFLAGS_NOSENDKEYSTOPLUGINS)) // ?????
 		//if(CtrlObject && CtrlObject->Plugins.CurEditor && (CurFlags&MFLAGS_NOSENDKEYSTOPLUGINS))
-		return FALSE;
+		return false;
 
-	return TRUE;
+	return true;
 }
 
-BOOL KeyMacro::CheckCmdLine(int CmdLength,DWORD CurFlags)
+bool KeyMacro::CheckCmdLine(int CmdLength,DWORD CurFlags)
 {
 	if (((CurFlags&MFLAGS_EMPTYCOMMANDLINE) && CmdLength) || ((CurFlags&MFLAGS_NOTEMPTYCOMMANDLINE) && CmdLength==0))
-		return FALSE;
+		return false;
 
-	return TRUE;
+	return true;
 }
 
-BOOL KeyMacro::CheckPanel(int PanelMode,DWORD CurFlags,BOOL IsPassivePanel)
+bool KeyMacro::CheckPanel(int PanelMode,DWORD CurFlags,bool IsPassivePanel)
 {
 	if (IsPassivePanel)
 	{
 		if ((PanelMode == PLUGIN_PANEL && (CurFlags&MFLAGS_PNOPLUGINPANELS)) || (PanelMode == NORMAL_PANEL && (CurFlags&MFLAGS_PNOFILEPANELS)))
-			return FALSE;
+			return false;
 	}
 	else
 	{
 		if ((PanelMode == PLUGIN_PANEL && (CurFlags&MFLAGS_NOPLUGINPANELS)) || (PanelMode == NORMAL_PANEL && (CurFlags&MFLAGS_NOFILEPANELS)))
-			return FALSE;
+			return false;
 	}
 
-	return TRUE;
+	return true;
 }
 
-BOOL KeyMacro::CheckFileFolder(Panel *CheckPanel,DWORD CurFlags, BOOL IsPassivePanel)
+bool KeyMacro::CheckFileFolder(Panel *CheckPanel,DWORD CurFlags, bool IsPassivePanel)
 {
 	FARString strFileName;
 	DWORD FileAttr=INVALID_FILE_ATTRIBUTES;
@@ -4292,36 +4290,36 @@ BOOL KeyMacro::CheckFileFolder(Panel *CheckPanel,DWORD CurFlags, BOOL IsPassiveP
 		if (IsPassivePanel)
 		{
 			if (((FileAttr&FILE_ATTRIBUTE_DIRECTORY) && (CurFlags&MFLAGS_PNOFOLDERS)) || (!(FileAttr&FILE_ATTRIBUTE_DIRECTORY) && (CurFlags&MFLAGS_PNOFILES)))
-				return FALSE;
+				return false;
 		}
 		else
 		{
 			if (((FileAttr&FILE_ATTRIBUTE_DIRECTORY) && (CurFlags&MFLAGS_NOFOLDERS)) || (!(FileAttr&FILE_ATTRIBUTE_DIRECTORY) && (CurFlags&MFLAGS_NOFILES)))
-				return FALSE;
+				return false;
 		}
 	}
 
-	return TRUE;
+	return true;
 }
 
-BOOL KeyMacro::CheckAll(int /*CheckMode*/,DWORD CurFlags)
+bool KeyMacro::CheckAll(int /*CheckMode*/,DWORD CurFlags)
 {
 	/* $TODO:
 		Здесь вместо Check*() попробовать заюзать IfCondition()
 		для исключения повторяющегося кода.
 	*/
 	if (!CheckInsidePlugin(CurFlags))
-		return FALSE;
+		return false;
 
 	// проверка на пусто/не пусто в ком.строке (а в редакторе? :-)
 	if (CurFlags&(MFLAGS_EMPTYCOMMANDLINE|MFLAGS_NOTEMPTYCOMMANDLINE))
 		if (CtrlObject->CmdLine && !CheckCmdLine(CtrlObject->CmdLine->GetLength(),CurFlags))
-			return FALSE;
+			return false;
 
 	FilePanels *Cp=CtrlObject->Cp();
 
 	if (!Cp)
-		return FALSE;
+		return false;
 
 	// проверки панели и типа файла
 	Panel *ActivePanel=Cp->ActivePanel;
@@ -4330,20 +4328,20 @@ BOOL KeyMacro::CheckAll(int /*CheckMode*/,DWORD CurFlags)
 	if (ActivePanel && PassivePanel)// && (CurFlags&MFLAGS_MODEMASK)==MACROAREA_SHELL)
 	{
 		if (CurFlags&(MFLAGS_NOPLUGINPANELS|MFLAGS_NOFILEPANELS))
-			if (!CheckPanel(ActivePanel->GetMode(),CurFlags,FALSE))
-				return FALSE;
+			if (!CheckPanel(ActivePanel->GetMode(),CurFlags,false))
+				return false;
 
 		if (CurFlags&(MFLAGS_PNOPLUGINPANELS|MFLAGS_PNOFILEPANELS))
-			if (!CheckPanel(PassivePanel->GetMode(),CurFlags,TRUE))
-				return FALSE;
+			if (!CheckPanel(PassivePanel->GetMode(),CurFlags,true))
+				return false;
 
 		if (CurFlags&(MFLAGS_NOFOLDERS|MFLAGS_NOFILES))
-			if (!CheckFileFolder(ActivePanel,CurFlags,FALSE))
-				return FALSE;
+			if (!CheckFileFolder(ActivePanel,CurFlags,false))
+				return false;
 
 		if (CurFlags&(MFLAGS_PNOFOLDERS|MFLAGS_PNOFILES))
-			if (!CheckFileFolder(PassivePanel,CurFlags,TRUE))
-				return FALSE;
+			if (!CheckFileFolder(PassivePanel,CurFlags,true))
+				return false;
 
 		if (CurFlags&(MFLAGS_SELECTION|MFLAGS_NOSELECTION|MFLAGS_PSELECTION|MFLAGS_PNOSELECTION))
 			if (m_Area!=MACROAREA_EDITOR && m_Area != MACROAREA_DIALOG && m_Area!=MACROAREA_VIEWER)
@@ -4351,19 +4349,19 @@ BOOL KeyMacro::CheckAll(int /*CheckMode*/,DWORD CurFlags)
 				int SelCount=ActivePanel->GetRealSelCount();
 
 				if (((CurFlags&MFLAGS_SELECTION) && SelCount < 1) || ((CurFlags&MFLAGS_NOSELECTION) && SelCount >= 1))
-					return FALSE;
+					return false;
 
 				SelCount=PassivePanel->GetRealSelCount();
 
 				if (((CurFlags&MFLAGS_PSELECTION) && SelCount < 1) || ((CurFlags&MFLAGS_PNOSELECTION) && SelCount >= 1))
-					return FALSE;
+					return false;
 			}
 	}
 
 	if (!CheckEditSelected(CurFlags))
-		return FALSE;
+		return false;
 
-	return TRUE;
+	return true;
 }
 
 bool KeyMacro::CheckWaitKeyFunc() const

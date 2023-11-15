@@ -15819,7 +15819,7 @@ PluginsManagerPersonalPath
 "&Pfad für eigene Plugins:"
 "Saját plu&ginek útvonala:"
 "Ś&cieżka do własnych pluginów:"
-"Ruta para pl&ugins personales:
+"Ruta para pl&ugins personales:"
 "Шлях до персональних п&лагінів:"
 
 PluginsManagerOFP
