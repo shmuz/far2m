@@ -75,10 +75,10 @@ local function ColorDialogBackRGBMask()
 end
 
 local function GetColorDialog(aColor)
+  aColor = aColor or 0x0F
   ColorDialogForeRGB = ("%06X"):format( ReverseColorBytes(band(rshift(aColor,16), 0xffffff)) )
   ColorDialogBackRGB = ("%06X"):format( ReverseColorBytes(band(rshift(aColor,40), 0xffffff)) )
 
-  aColor = aColor or 0x0F
   local FRB = bor(F.DIF_SETCOLOR, F.DIF_MOVESELECT)
   local TextSample = ("Text "):rep(7)
 
@@ -140,7 +140,7 @@ local function GetColorDialog(aColor)
   }
 
   local Dlg = sd.New(Items)
-  local Pos = Dlg:Indexes()
+  local Pos, Elem = Dlg:Indexes()
 
   local CurColor = band(aColor, 0xFFFF)
 
@@ -155,6 +155,9 @@ local function GetColorDialog(aColor)
       Items[i].val=1; break
     end
   end
+
+  Elem.transpFore.val = (0 ~= band(aColor, 0x0F00))
+  Elem.transpBack.val = (0 ~= band(aColor, 0xF000))
 
   for i = Pos.sample, Pos.sample+2 do -- TextSample
     Items[i].flags = bor(band(Items[i].flags, bnot(F.DIF_COLORMASK)), CurColor)
