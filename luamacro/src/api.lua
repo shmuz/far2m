@@ -7,7 +7,6 @@ local Sett = Shared.Settings
 local op = Shared.OpCodes
 
 local MCODE_F_USERMENU = op.MCODE_F_USERMENU
-local MCODE_F_FAR_GETCONFIG = op.MCODE_F_FAR_GETCONFIG
 local F=far.Flags
 local band = bit64.band
 local MacroCallFar = Shared.MacroCallFar
@@ -512,7 +511,7 @@ SetProperties(Menu, {
 --------------------------------------------------------------------------------
 
 Far = {
-  Cfg_Get        = function(...) return MacroCallFar(op.MCODE_F_FAR_CFG_GET, ...) end,
+  GetConfig      = function(...) return MacroCallFar(op.MCODE_F_FAR_GETCONFIG, ...) end,
   DisableHistory = function(...) return Shared.keymacro.DisableHistory(...) end,
   KbdLayout      = function(...) return MacroCallFar(op.MCODE_F_KBDLAYOUT, ...) end,
   KeyBar_Show    = function(...) return MacroCallFar(op.MCODE_F_KEYBAR_SHOW, ...) end,

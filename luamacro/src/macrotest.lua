@@ -55,7 +55,7 @@ function MT.test_areas()
   Keys "F12 0"               TestArea "Shell"
   Keys "ShiftF4 CtrlY Enter" TestArea "Editor"     Keys "Esc"
   Keys "F7"                  TestArea "Dialog"     Keys "Esc"
-  Keys "Alt/"                TestArea "Search"     Keys "Esc"
+  Keys "Alt?"                TestArea "Search"     Keys "Esc"
   Keys "AltF1"               TestArea "Disks"      Keys "Esc"
   Keys "AltF2"               TestArea "Disks"      Keys "Esc"
   Keys "F9"                  TestArea "MainMenu"   Keys "Esc"

@@ -474,7 +474,7 @@ public:
 	int editorsettitleFunc();
 	int editorundoFunc();
 	int environFunc();
-	int farcfggetFunc();
+	int farcfggetFunc();           //not implemented
 	int fargetconfigFunc();
 	int fattrFunc();
 	int fexistFunc();
@@ -1240,9 +1240,9 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		//case MCODE_F_EDITOR_DELLINE:   implemented_in_lua;
 		//case MCODE_F_EDITOR_INSSTR:    implemented_in_lua;
 		//case MCODE_F_EDITOR_SETSTR:    implemented_in_lua;
-		//case MCODE_F_FAR_GETCONFIG:    not_implemented;
 		//case MCODE_F_MENU_SHOW:        implemented_in_lua_partially;
 		//case MCODE_F_USERMENU:         not_implemented;
+		//case MCODE_F_FAR_CFG_GET:      not implemented
 
 		case MCODE_F_SETCUSTOMSORTMODE:
 			if (Data->Count>=3 && Data->Values[0].Type==FMVT_DOUBLE  &&
@@ -1358,7 +1358,6 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		case MCODE_F_EDITOR_SETTITLE:    return api.editorsettitleFunc();
 		case MCODE_F_EDITOR_UNDO:        return api.editorundoFunc();
 		case MCODE_F_ENVIRON:            return api.environFunc();
-		case MCODE_F_FAR_CFG_GET:        return api.farcfggetFunc();
 		case MCODE_F_FATTR:              return api.fattrFunc();
 		case MCODE_F_FEXIST:             return api.fexistFunc();
 		case MCODE_F_FLOAT:              return api.floatFunc();
@@ -1407,6 +1406,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		}
 		case MCODE_F_WINDOW_SCROLL:      return api.windowscrollFunc();
 		case MCODE_F_XLAT:               return api.xlatFunc();
+		case MCODE_F_FAR_GETCONFIG:      return api.fargetconfigFunc();
 
 		case MCODE_F_BM_ADD:              // N=BM.Add()
 		case MCODE_F_BM_CLEAR:            // N=BM.Clear()
@@ -2338,23 +2338,42 @@ int FarMacroApi::dlgsetfocusFunc()
 	return 0;
 }
 
-// V=Far.Cfg_Get(Key,Name)
-int FarMacroApi::farcfggetFunc()
+// V=Far.GetConfig(Key.Name)
+int FarMacroApi::fargetconfigFunc()
 {
-	auto Params = parseParams(2);
-	const auto& Key(Params[0]);
-	const auto& Name(Params[1]);
+	const wchar_t *Keyname = (mData->Count >= 1 && mData->Values[0].Type==FMVT_STRING) ?
+		mData->Values[0].String : L"";
 
-	DWORD dwValue;
-	FARString strValue;
-	const void *binValue;
-	switch( GetConfigValue(Key.s(), Name.s(), dwValue, strValue, &binValue) )
+	auto Dot = wcschr(Keyname, L'.');
+	if (Dot)
 	{
-		default:           PassBoolean(0); break;
-		case REG_DWORD:    PassNumber(dwValue); break;
-		case REG_SZ:       PassString(strValue); break;
-		case REG_BINARY:   PassBinary(binValue, dwValue); break;
+		DWORD dwValue;
+		FARString strValue;
+		const void *binValue;
+
+		FARString Key(Keyname, Dot - Keyname);
+		switch( GetConfigValue(Key.CPtr(), Dot+1, dwValue, strValue, &binValue) )
+		{
+			default:
+				PassError(L"setting doesn't exist");
+				break;
+			case REG_DWORD:
+				PassNumber(dwValue);
+				PassString(L"integer");
+				break;
+			case REG_SZ:
+				PassString(strValue);
+				PassString(L"string");
+				break;
+			case REG_BINARY:
+				PassBinary(binValue, dwValue);
+				PassString(L"binary");
+				break;
+		}
 	}
+	else
+		PassError(L"invalid argument #1");
+
 	return 0;
 }
 
