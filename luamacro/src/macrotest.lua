@@ -1,6 +1,21 @@
 -- encoding: utf-8
 -- Started: 2012-08-20.
 
+--[[
+-- The following macro can be used to run all the tests.
+
+Macro {
+  description="Macro-engine test";
+  area="Shell"; key="CtrlShiftF12";
+  action = function()
+    Far.DisableHistory(0x0F)
+    local f = assert(loadfile(far.PluginStartupInfo().ShareDir.."/macrotest.lua"))
+    setfenv(f, getfenv())().test_all()
+    far.Message("All tests OK", "LuaMacro")
+  end;
+}
+--]]
+
 local function assert_eq(a,b)      assert(a == b)               return true; end
 local function assert_neq(a,b)     assert(a ~= b)               return true; end
 local function assert_num(v)       assert(type(v)=="number")    return v; end
