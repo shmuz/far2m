@@ -728,7 +728,8 @@ function MT.test_Far()
   mf.sleep(50)
   temp = Far.UpTime - temp
   assert(temp > 40 and temp < 80, temp)
-  assert_num (Far.Cfg_Get("Editor","defaultcodepage"))
+
+  assert_num (Far.GetConfig("Editor.defaultcodepage"))
   assert_func (Far.DisableHistory)
   assert_num (Far.KbdLayout(0))
   assert_num (Far.KeyBar_Show(0))
@@ -909,7 +910,7 @@ local function Test_Panel_Select()
   local RM,ADD,INV,RST = 0,1,2,3 -- Action
   local MODE
 
-  local dir = assert_str(os.getenv("FARHOME"))
+  local dir = assert_str(win.GetEnv("FARHOME"))
   assert_true(panel.SetPanelDirectory(1,dir))
   local pi = assert_table(panel.GetPanelInfo(1))
   local ItemsCount = assert_num(pi.ItemsNumber)-1 -- don't count ".."
