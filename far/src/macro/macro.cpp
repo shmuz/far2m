@@ -2344,7 +2344,7 @@ int FarMacroApi::fargetconfigFunc()
 	const wchar_t *Keyname = (mData->Count >= 1 && mData->Values[0].Type==FMVT_STRING) ?
 		mData->Values[0].String : L"";
 
-	auto Dot = wcschr(Keyname, L'.');
+	auto Dot = wcsrchr(Keyname, L'.');
 	if (Dot)
 	{
 		DWORD dwValue;
