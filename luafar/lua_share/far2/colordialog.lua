@@ -59,11 +59,11 @@ local function ReverseColorBytes(Color)
 end
 
 local function ColorDialogForeRGBValue()
-  return ReverseColorBytes(tonumber(ColorDialogForeRGB, 16))
+  return ReverseColorBytes(tonumber(ColorDialogForeRGB, 16) or 0)
 end
 
 local function ColorDialogBackRGBValue()
-  return ReverseColorBytes(tonumber(ColorDialogBackRGB, 16))
+  return ReverseColorBytes(tonumber(ColorDialogBackRGB, 16) or 0)
 end
 
 local function ColorDialogForeRGBMask()
