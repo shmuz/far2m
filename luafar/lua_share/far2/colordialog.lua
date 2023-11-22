@@ -200,8 +200,8 @@ local function GetColorDialog(aColor)
     if UseTrueColor then
       local ditc = {
         Normal = {
-          Fore = FarTrueColorFromRGB(ColorDialogForeRGBValue());
-          Back = FarTrueColorFromRGB(ColorDialogBackRGBValue());
+          ForegroundColor = ColorDialogForeRGBValue();
+          BackgroundColor = ColorDialogBackRGBValue();
         }}
       hDlg:send(F.DM_SETTRUECOLOR, ID, ditc);
     end

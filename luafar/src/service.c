@@ -1282,6 +1282,19 @@ int editor_TurnOffMarkingBlock(lua_State *L)
 	return 0;
 }
 
+void FarTrueColorFromRGB(struct FarTrueColor *trg, uint32_t src)
+{
+	trg->R = (src >>  0) & 0xFF;
+	trg->G = (src >>  8) & 0xFF;
+	trg->B = (src >> 16) & 0xFF;
+	trg->Flags = 0x01; // (src >> 24);
+}
+
+uint32_t FarTrueColorToRGB(const struct FarTrueColor *src)
+{
+	return src->R | (src->G << 8) | (src->B << 16) | (src->Flags << 24);
+}
+
 int editor_AddColor(lua_State *L)
 {
 	struct EditorTrueColor etc;
@@ -1299,16 +1312,10 @@ int editor_AddColor(lua_State *L)
 		lua_pushvalue(L,6);
 		{
 			etc.Base.Color = GetOptIntFromTable(L,"BaseColor",0) & 0x0000FFFF;
-			fg = GetOptIntFromTable(L,"TrueFore",0xFFFFFF);
-			bg = GetOptIntFromTable(L,"TrueBack",0x000000);
-			etc.TrueColor.Fore.R = (fg >>  0) & 0xFF;
-			etc.TrueColor.Fore.G = (fg >>  8) & 0xFF;
-			etc.TrueColor.Fore.B = (fg >> 16) & 0xFF;
-			etc.TrueColor.Fore.Flags = 0x1;
-			etc.TrueColor.Back.R = (bg >>  0) & 0xFF;
-			etc.TrueColor.Back.G = (bg >>  8) & 0xFF;
-			etc.TrueColor.Back.B = (bg >> 16) & 0xFF;
-			etc.TrueColor.Back.Flags = 0x1;
+			fg = GetOptIntFromTable(L,"TrueFore",0xFFFFFF) | (0x1 << 24);
+			bg = GetOptIntFromTable(L,"TrueBack",0x000000) | (0x1 << 24);
+			FarTrueColorFromRGB(&etc.TrueColor.Fore, fg);
+			FarTrueColorFromRGB(&etc.TrueColor.Back, bg);
 		}
 		lua_pop(L,1);
 	}
@@ -2762,50 +2769,25 @@ LONG_PTR GetEnableFromLua (lua_State *L, int pos)
 void SetColorForeAndBack(lua_State *L, const struct FarTrueColorForeAndBack *fb, const char *name)
 {
 	lua_createtable(L,0,2);
-
-	lua_createtable(L,0,4);
-	PutIntToTable(L, "R", fb->Fore.R);
-	PutIntToTable(L, "G", fb->Fore.G);
-	PutIntToTable(L, "B", fb->Fore.B);
-	PutIntToTable(L, "Flags", fb->Fore.Flags);
-	lua_setfield(L, -2, "Fore");
-
-	lua_createtable(L,0,4);
-	PutIntToTable(L, "R", fb->Back.R);
-	PutIntToTable(L, "G", fb->Back.G);
-	PutIntToTable(L, "B", fb->Back.B);
-	PutIntToTable(L, "Flags", fb->Back.Flags);
-	lua_setfield(L, -2, "Back");
-
+	PutIntToTable(L, "ForegroundColor", FarTrueColorToRGB(&fb->Fore));
+	PutIntToTable(L, "BackgroundColor", FarTrueColorToRGB(&fb->Back));
 	lua_setfield(L, -2, name);
 }
 
-void FillOneTrueColor(lua_State *L, struct FarTrueColor *tc, const char *Name, const char *Subname)
+void FillColorForeAndBack(lua_State *L, struct FarTrueColorForeAndBack *fb, const char *Name)
 {
-	lua_getfield(L,-1,Name);          //+1
+	uint32_t val;
+	lua_getfield(L, -1, Name);        //+1
 	if (lua_istable(L,-1)) {
-		lua_getfield(L,-1,Subname);     //+2
-		if (lua_istable(L,-1)) {
-			lua_getfield(L,-1,"R");       //+3
-			if (lua_isnumber(L,-1))
-				tc->R = lua_tointeger(L,-1);
-			lua_pop(L,1);                 //+2
+		lua_getfield(L, -1, "ForegroundColor");
+		val = (uint32_t) lua_tointeger(L,-1);
+		FarTrueColorFromRGB(&fb->Fore, val);
+		lua_pop(L,1);
 
-			lua_getfield(L,-1,"G");       //+3
-			if (lua_isnumber(L,-1))
-				tc->G = lua_tointeger(L,-1);
-			lua_pop(L,1);                 //+2
-
-			lua_getfield(L,-1,"B");       //+3
-			if (lua_isnumber(L,-1))
-				tc->B = lua_tointeger(L,-1);
-			lua_pop(L,1);                 //+2
-
-			lua_getfield(L,-1,"Flags");   //+3
-			tc->Flags = lua_isnumber(L,-1) ? lua_tointeger(L,-1) : 0x01;
-			lua_pop(L,1);                 //+2
-		}
-		lua_pop(L,1);                   //+1
+		lua_getfield(L, -1, "BackgroundColor");
+		val = (uint32_t) lua_tointeger(L,-1);
+		FarTrueColorFromRGB(&fb->Back, val);
+		lua_pop(L,1);
 	}
 	lua_pop(L,1);                     //+0
 }
@@ -2944,12 +2926,9 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			memset(&ditc, 0, sizeof(ditc));
 			if (lua_istable(L, pos4)) {
 				lua_pushvalue(L, pos4);
-				FillOneTrueColor(L, &ditc.Normal.Fore,    "Normal",    "Fore");
-				FillOneTrueColor(L, &ditc.Normal.Back,    "Normal",    "Back");
-				FillOneTrueColor(L, &ditc.Hilighted.Fore, "Hilighted", "Fore");
-				FillOneTrueColor(L, &ditc.Hilighted.Back, "Hilighted", "Back");
-				FillOneTrueColor(L, &ditc.Frame.Fore,     "Frame",     "Fore");
-				FillOneTrueColor(L, &ditc.Frame.Back,     "Frame",     "Back");
+				FillColorForeAndBack(L, &ditc.Normal,    "Normal");
+				FillColorForeAndBack(L, &ditc.Hilighted, "Hilighted");
+				FillColorForeAndBack(L, &ditc.Frame,     "Frame");
 				lua_pop(L,1);
 			}
 			break;
