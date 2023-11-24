@@ -1141,7 +1141,7 @@ int TreeList::ProcessKey(int Key)
 }
 
 
-int TreeList::GetNextNavPos() const
+int TreeList::GetNextNavPos()
 {
 	int NextPos=CurFile;
 
@@ -1160,7 +1160,7 @@ int TreeList::GetNextNavPos() const
 	return NextPos;
 }
 
-int TreeList::GetPrevNavPos() const
+int TreeList::GetPrevNavPos()
 {
 	int PrevPos=CurFile;
 
@@ -1566,7 +1566,7 @@ bool TreeList::FindPartName(const wchar_t *Name,int Next,int Direct,int ExcludeS
 }
 
 
-int TreeList::GetSelCount() const
+int TreeList::GetSelCount()
 {
 	return 1;
 }
@@ -1574,7 +1574,7 @@ int TreeList::GetSelCount() const
 
 int TreeList::GetSelName(FARString *strName,DWORD &FileAttr,DWORD &FileMode,FAR_FIND_DATA_EX *fd)
 {
-	FileMode = 0640;
+        FileMode = 0640;
 
 	if (!strName)
 	{
@@ -1900,7 +1900,7 @@ long TreeList::FindNext(int StartPos, const wchar_t *Name)
 	return -1;
 }
 
-int TreeList::GetFileName(FARString &strName,int Pos,DWORD &FileAttr) const
+int TreeList::GetFileName(FARString &strName,int Pos,DWORD &FileAttr)
 {
 	if (Pos < 0 || Pos >= TreeCount)
 		return FALSE;
@@ -2141,7 +2141,7 @@ FARString &TreeList::CreateTreeFileName(const wchar_t *Path,FARString &strDest)
 		return strDest;
 }
 
-const TreeItem* TreeList::GetItem(int Index) const
+const TreeItem* TreeList::GetItem(int Index)
 {
 	if (Index == -1 || Index == -2)
 		Index = GetCurrentPos();
@@ -2152,7 +2152,7 @@ const TreeItem* TreeList::GetItem(int Index) const
 	return ListData[Index];
 }
 
-int TreeList::GetCurrentPos() const
+int TreeList::GetCurrentPos()
 {
 	return CurFile;
 }

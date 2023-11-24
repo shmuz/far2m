@@ -1389,7 +1389,7 @@ void FileList::ShowList(int ShowStatus,int StartColumn)
 }
 
 
-int FileList::IsFullScreen() const
+int FileList::IsFullScreen()
 {
 	return this->ViewSettings.FullScreen;
 }
@@ -1401,13 +1401,13 @@ int FileList::IsModeFullScreen(int Mode)
 }
 
 
-int FileList::IsDizDisplayed() const
+int FileList::IsDizDisplayed()
 {
 	return(IsColumnDisplayed(DIZ_COLUMN));
 }
 
 
-int FileList::IsColumnDisplayed(int Type) const
+int FileList::IsColumnDisplayed(int Type)
 {
 
 	for (size_t i=0; i<ViewSettings.PanelColumns.size(); i++)

@@ -141,9 +141,9 @@ class Panel:public ScreenObject
 	protected:
 		void FastFind(int FirstKey);
 		void DrawSeparator(int Y);
-		void ShowScreensCount() const;
-		int  IsDragging() const;
-		virtual void ClearAllItem(){}
+		void ShowScreensCount();
+		int  IsDragging();
+		virtual void ClearAllItem(){};
 
 	public:
 		Panel();
@@ -158,8 +158,8 @@ class Panel:public ScreenObject
 
 		virtual int GetCurDirPluginAware(FARString &strCurDir);
 
-		virtual int GetSelCount() const {return 0;};
-		virtual int GetRealSelCount() const {return 0;};
+		virtual int GetSelCount() {return 0;};
+		virtual int GetRealSelCount() {return 0;};
 		virtual int GetSelName(FARString *strName,DWORD &FileAttr,DWORD &FileMode,FAR_FIND_DATA_EX *fd=nullptr) {return FALSE;};
 
 		int GetSelNameCompat(FARString *strName,DWORD &FileAttr,FAR_FIND_DATA_EX *fd=nullptr)
@@ -168,18 +168,18 @@ class Panel:public ScreenObject
 			return GetSelName(strName, FileAttr, FileMode, fd);
 		}
 
-		virtual void UngetSelName() {}
-		virtual void ClearLastGetSelection() {}
+		virtual void UngetSelName() {};
+		virtual void ClearLastGetSelection() {};
 		virtual uint64_t GetLastSelectedSize() {return (uint64_t)(-1);};
 
 		virtual int GetCurName(FARString &strName);
 		virtual int GetCurBaseName(FARString &strName);
-		virtual int GetFileName(FARString &strName,int Pos,DWORD &FileAttr) const {return FALSE;};
+		virtual int GetFileName(FARString &strName,int Pos,DWORD &FileAttr) {return FALSE;};
 
-		virtual int GetCurrentPos() const {return 0;};
+		virtual int GetCurrentPos() {return 0;};
 		virtual void SetFocus();
 		virtual void KillFocus();
-		virtual void Update(int Mode) {}
+		virtual void Update(int Mode) {};
 		/*$ 22.06.2001 SKV
 		  Параметр для игнорирования времени последнего Update.
 		  Используется для Update после исполнения команды.
@@ -189,9 +189,9 @@ class Panel:public ScreenObject
 		   UpdateIfRequired() - обновить, если апдейт был пропущен из-за того,
 		   что панель невидима
 		*/
-		virtual void UpdateIfRequired() {}
+		virtual void UpdateIfRequired() {};
 
-		virtual void CloseChangeNotification() {}
+		virtual void CloseChangeNotification() {};
 		virtual bool FindPartName(const wchar_t *Name,int Next,int Direct=1,int ExcludeSets=0) { return false; };
 		bool FindPartNameXLat(const wchar_t *Name,int Next,int Direct=1,int ExcludeSets=0);
 
@@ -205,7 +205,7 @@ class Panel:public ScreenObject
 		virtual long FindFirst(const wchar_t *Name) {return -1;}
 		virtual long FindNext(int StartPos, const wchar_t *Name) {return -1;}
 
-		virtual void SetSelectedFirstMode(int) {}
+		virtual void SetSelectedFirstMode(int) {};
 		virtual int GetSelectedFirstMode() {return 0;};
 		int GetMode() {return(PanelMode);};
 		void SetMode(int Mode) {PanelMode=Mode;};
@@ -238,30 +238,30 @@ class Panel:public ScreenObject
 		int GetSortGroups() {return(SortGroups);};
 		void SetSortGroups(int SortGroups) {Panel::SortGroups=SortGroups;};
 		void InitCurDir(const wchar_t *CurDir);
-		virtual void CloseFile() {}
-		virtual void UpdateViewPanel() {}
-		virtual void CompareDir() {}
-		virtual void MoveToMouse(MOUSE_EVENT_RECORD *MouseEvent) {}
-		virtual void ClearSelection() {}
-		virtual void SaveSelection() {}
-		virtual void RestoreSelection() {}
-		virtual void SortFileList(int KeepPosition) {}
-		virtual void EditFilter() {}
-		virtual bool FileInFilter(long idxItem) {return true;}
-		virtual void ReadDiz(struct PluginPanelItem *ItemList=nullptr,int ItemLength=0, DWORD dwFlags=0) {}
-		virtual void DeleteDiz(const wchar_t *Name) {}
-		virtual void GetDizName(FARString &strDizName) {}
-		virtual void FlushDiz() {}
-		virtual void CopyDiz(const wchar_t *Name,const wchar_t *DestName, DizList *DestDiz) {}
-		virtual int IsFullScreen() const {return ViewSettings.FullScreen;}
-		virtual int IsDizDisplayed() const {return FALSE;}
-		virtual int IsColumnDisplayed(int Type) const {return FALSE;}
-		virtual int GetColumnsCount() const { return 1;}
-		virtual void SetReturnCurrentFile(int Mode) {}
-		virtual void QViewDelTempName() {}
-		virtual void GetOpenPluginInfo(struct OpenPluginInfo *Info) {}
-		virtual void SetPluginMode(PHPTR hPlugin,const wchar_t *PluginFile,bool SendOnFocus=false) {}
-		virtual void SetPluginModified() {}
+		virtual void CloseFile() {};
+		virtual void UpdateViewPanel() {};
+		virtual void CompareDir() {};
+		virtual void MoveToMouse(MOUSE_EVENT_RECORD *MouseEvent) {};
+		virtual void ClearSelection() {};
+		virtual void SaveSelection() {};
+		virtual void RestoreSelection() {};
+		virtual void SortFileList(int KeepPosition) {};
+		virtual void EditFilter() {};
+		virtual bool FileInFilter(long idxItem) {return true;};
+		virtual void ReadDiz(struct PluginPanelItem *ItemList=nullptr,int ItemLength=0, DWORD dwFlags=0) {};
+		virtual void DeleteDiz(const wchar_t *Name) {};
+		virtual void GetDizName(FARString &strDizName) {};
+		virtual void FlushDiz() {};
+		virtual void CopyDiz(const wchar_t *Name,const wchar_t *DestName, DizList *DestDiz) {};
+		virtual int IsFullScreen() {return ViewSettings.FullScreen;};
+		virtual int IsDizDisplayed() {return FALSE;};
+		virtual int IsColumnDisplayed(int Type) {return FALSE;};
+		virtual int GetColumnsCount() { return 1;};
+		virtual void SetReturnCurrentFile(int Mode) {};
+		virtual void QViewDelTempName() {};
+		virtual void GetOpenPluginInfo(struct OpenPluginInfo *Info) {};
+		virtual void SetPluginMode(PHPTR hPlugin,const wchar_t *PluginFile,bool SendOnFocus=false) {};
+		virtual void SetPluginModified() {};
 		virtual int ProcessPluginEvent(int Event,void *Param) {return FALSE;};
 		virtual PHPTR GetPluginHandle() {return nullptr;};
 		virtual void SetTitle();
@@ -275,7 +275,7 @@ class Panel:public ScreenObject
 		*/
 		virtual BOOL UpdateKeyBar() { return FALSE; };
 
-		virtual long GetFileCount() const {return 0;}
+		virtual long GetFileCount() {return 0;}
 
 		bool ExecShortcutFolder(int Pos);
 		bool SaveShortcutFolder(int Pos);

@@ -1310,7 +1310,7 @@ int  Panel::PanelProcessMouse(MOUSE_EVENT_RECORD *MouseEvent,int &RetCode)
 }
 
 
-int  Panel::IsDragging() const
+int  Panel::IsDragging()
 {
 	return DragSaveScr!=nullptr;
 }
@@ -1567,7 +1567,7 @@ void Panel::DrawSeparator(int Y)
 }
 
 
-void Panel::ShowScreensCount() const
+void Panel::ShowScreensCount()
 {
 	if (Opt.ShowScreensNumber && !X1)
 	{
