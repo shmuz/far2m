@@ -104,10 +104,10 @@ class TreeList: public Panel
 		void SyncDir();
 		void SaveTreeFile();
 		int ReadTreeFile();
-		virtual int GetSelCount();
+		virtual int GetSelCount() const;
 		void DynamicUpdateKeyBar();
-		int GetNextNavPos();
-		int GetPrevNavPos();
+		int GetNextNavPos() const;
+		int GetPrevNavPos() const;
 		static FARString &MkTreeFileName(const wchar_t *RootDir,FARString &strDest);
 		static FARString &MkTreeCacheFolderName(const wchar_t *RootDir,FARString &strDest);
 		static FARString &CreateTreeFileName(const wchar_t *Path,FARString &strDest);
@@ -152,17 +152,17 @@ class TreeList: public Panel
 		virtual long FindFirst(const wchar_t *Name);
 		virtual long FindNext(int StartPos, const wchar_t *Name);
 
-		int GetExitCode() {return ExitCode;}
-		virtual long GetFileCount() {return TreeCount;}
-		virtual int GetFileName(FARString &strName,int Pos,DWORD &FileAttr);
+		int GetExitCode() const {return ExitCode;}
+		virtual long GetFileCount() const {return TreeCount;}
+		virtual int GetFileName(FARString &strName,int Pos,DWORD &FileAttr) const;
 
 		virtual void SetTitle();
 		virtual FARString &GetTitle(FARString &Title,int SubLen=-1,int TruncSize=0);
 		virtual void SetFocus();
 		virtual void KillFocus();
 		virtual BOOL UpdateKeyBar();
-		const TreeItem* GetItem(int Index);
-		virtual int GetCurrentPos();
+		const TreeItem* GetItem(int Index) const;
+		virtual int GetCurrentPos() const;
 
 		virtual int GetSelName(FARString *strName,DWORD &FileAttr,DWORD &FileMode,FAR_FIND_DATA_EX *fd=nullptr);
 
