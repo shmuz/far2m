@@ -960,9 +960,9 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		case MCODE_V_PPANEL_FORMAT:           // PPanel.Format
 		{
 			const auto SelPanel =
-					CheckCode == MCODE_V_APANEL_OPIFLAGS ||
-					CheckCode == MCODE_V_APANEL_HOSTFILE ||
-					CheckCode == MCODE_V_APANEL_FORMAT? ActivePanel : PassivePanel;
+				CheckCode == MCODE_V_APANEL_OPIFLAGS ||
+				CheckCode == MCODE_V_APANEL_HOSTFILE ||
+				CheckCode == MCODE_V_APANEL_FORMAT? ActivePanel : PassivePanel;
 
 			const wchar_t* ptr = nullptr;
 			if (CheckCode == MCODE_V_APANEL_HOSTFILE || CheckCode == MCODE_V_PPANEL_HOSTFILE ||
@@ -1159,7 +1159,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 
 			if (f && f->GetType()==MODALTYPE_VMENU)
 			{
-			  return api.PassString( reinterpret_cast<LPCWSTR>(f->VMProcess(CheckCode)) );
+				return api.PassString( reinterpret_cast<LPCWSTR>(f->VMProcess(CheckCode)) );
 			}
 			return api.PassString(L"");
 		}
@@ -1223,7 +1223,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		case MCODE_V_VIEWERSTATE: // Viewer.State
 		{
 			if ((GetArea()==MACROAREA_VIEWER || GetArea()==MACROAREA_QVIEWPANEL) &&
-							CtrlObject->Plugins.CurViewer && CtrlObject->Plugins.CurViewer->IsVisible())
+				CtrlObject->Plugins.CurViewer && CtrlObject->Plugins.CurViewer->IsVisible())
 			{
 				if (CheckCode == MCODE_V_VIEWERFILENAME)
 				{
@@ -3127,56 +3127,56 @@ int FarMacroApi::panelitemFunc()
 				ConvertDate(filelistItem->CreationTime,strDate,strTime,8,FALSE,FALSE,TRUE,TRUE);
 				strDate += L" ";
 				strDate += strTime;
-			  return PassString(strDate);
+				return PassString(strDate);
 
 			case 4:  // AccessTime
 				ConvertDate(filelistItem->AccessTime,strDate,strTime,8,FALSE,FALSE,TRUE,TRUE);
 				strDate += L" ";
 				strDate += strTime;
-			  return PassString(strDate);
+				return PassString(strDate);
 
 			case 5:  // WriteTime
 				ConvertDate(filelistItem->WriteTime,strDate,strTime,8,FALSE,FALSE,TRUE,TRUE);
 				strDate += L" ";
 				strDate += strTime;
-			  return PassString(strDate);
+				return PassString(strDate);
 
 			case 6:  // FileSize
-			  return PassNumber(filelistItem->FileSize);
+				return PassNumber(filelistItem->FileSize);
 
 			case 7:  // PhysicalSize
-			  return PassNumber(filelistItem->PhysicalSize);
+				return PassNumber(filelistItem->PhysicalSize);
 
 			case 8:  // Selected
-			  return PassBoolean(filelistItem->Selected);
+				return PassBoolean(filelistItem->Selected);
 
 			case 9:  // NumberOfLinks
-			  return PassNumber(filelistItem->NumberOfLinks);
+				return PassNumber(filelistItem->NumberOfLinks);
 
 			case 10:  // SortGroup
-			  return PassNumber(filelistItem->SortGroup);
+				return PassNumber(filelistItem->SortGroup);
 
 			case 11:  // DizText
 				fileList->ReadDiz();
 				return PassString(filelistItem->DizText);
 
 			case 12:  // Owner
-			  return PassString(filelistItem->strOwner);
+				return PassString(filelistItem->strOwner);
 
 			case 13:  // CRC32
-			  return PassNumber(filelistItem->CRC32);
+				return PassNumber(filelistItem->CRC32);
 
 			case 14:  // Position
-			  return PassNumber(filelistItem->Position);
+				return PassNumber(filelistItem->Position);
 
 			case 15:  // CreationTime (FILETIME)
-			  return PassInteger((int64_t)FileTimeToUI64(&filelistItem->CreationTime));
+				return PassInteger((int64_t)FileTimeToUI64(&filelistItem->CreationTime));
 
 			case 16:  // AccessTime (FILETIME)
-			  return PassInteger((int64_t)FileTimeToUI64(&filelistItem->AccessTime));
+				return PassInteger((int64_t)FileTimeToUI64(&filelistItem->AccessTime));
 
 			case 17:  // WriteTime (FILETIME)
-			  return PassInteger((int64_t)FileTimeToUI64(&filelistItem->WriteTime));
+				return PassInteger((int64_t)FileTimeToUI64(&filelistItem->WriteTime));
 
 			case 18: // NumberOfStreams (deprecated)
 				return (filelistItem->FileAttr & FILE_ATTRIBUTE_DIRECTORY) ? 0 : 1;
@@ -3191,7 +3191,7 @@ int FarMacroApi::panelitemFunc()
 				return PassString(strDate);
 
 			case 21:  // ChangeTime (FILETIME)
-			  return PassInteger((int64_t)FileTimeToUI64(&filelistItem->ChangeTime));
+				return PassInteger((int64_t)FileTimeToUI64(&filelistItem->ChangeTime));
 		}
 	}
 
@@ -3649,9 +3649,9 @@ int KeyMacro::GetKey()
 
 			case MPRT_HASNOMACRO:
 				if (m_Area==MACROAREA_EDITOR &&
-								CtrlObject->Plugins.CurEditor &&
-								CtrlObject->Plugins.CurEditor->IsVisible() &&
-								ScrBuf.GetLockCount())
+					CtrlObject->Plugins.CurEditor &&
+					CtrlObject->Plugins.CurEditor->IsVisible() &&
+					ScrBuf.GetLockCount())
 				{
 					CtrlObject->Plugins.CurEditor->Show();
 				}
