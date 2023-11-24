@@ -2141,16 +2141,15 @@ FARString &TreeList::CreateTreeFileName(const wchar_t *Path,FARString &strDest)
 		return strDest;
 }
 
-BOOL TreeList::GetItem(int Index,void *Dest)
+const TreeItem* TreeList::GetItem(int Index)
 {
 	if (Index == -1 || Index == -2)
-		Index=GetCurrentPos();
+		Index = GetCurrentPos();
 
-	if (Index >= (int)TreeCount)
-		return FALSE;
+	if (Index < 0 || Index >= (int)TreeCount)
+		return nullptr;
 
-	*((TreeItem *)Dest) = *ListData[Index];
-	return TRUE;
+	return ListData[Index];
 }
 
 int TreeList::GetCurrentPos()

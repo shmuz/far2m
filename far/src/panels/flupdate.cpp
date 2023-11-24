@@ -266,7 +266,6 @@ void FileList::ReadFileNames(int KeepSelection, int IgnoreVisible, int DrawMessa
 			}
 
 			ListData[FileCount] = new FileListItem;
-			ListData[FileCount]->Clear();
 			NewPtr=ListData[FileCount];
 			NewPtr->FileAttr = fdata.dwFileAttributes;
 			NewPtr->FileMode = fdata.dwUnixMode;
@@ -377,8 +376,6 @@ void FileList::ReadFileNames(int KeepSelection, int IgnoreVisible, int DrawMessa
 
 		if (ListData)
 		{
-			ListData[FileCount] = new FileListItem;
-
 			FARString TwoDotsOwner, TwoDotsGroup;
 			if (ReadOwners)
 			{
@@ -399,7 +396,7 @@ void FileList::ReadFileNames(int KeepSelection, int IgnoreVisible, int DrawMessa
 				TwoDotsTimes[3]=fdata.ftChangeTime;
 			}
 
-			AddParentPoint(ListData[FileCount],FileCount,TwoDotsTimes,TwoDotsOwner,TwoDotsGroup);
+			AddParentPoint(FileCount,TwoDotsTimes,TwoDotsOwner,TwoDotsGroup);
 
 			//if (NeedHighlight)
 			//	CtrlObject->HiFiles->GetHiColor(&ListData[FileCount],1);
@@ -710,7 +707,6 @@ void FileList::UpdatePlugin(int KeepSelection, int IgnoreVisible)
 	{
 		ListData[FileListCount] = new FileListItem;
 		FileListItem *CurListData=ListData[FileListCount];
-		CurListData->Clear();
 
 		if (UseFilter && (Info.Flags & OPIF_USEFILTER))
 			//if (!(CurPanelData->FindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
@@ -756,10 +752,7 @@ void FileList::UpdatePlugin(int KeepSelection, int IgnoreVisible)
 
 	if ((Info.Flags & OPIF_ADDDOTS) && !DotsPresent)
 	{
-		ListData[FileCount] = new FileListItem;
-		FileListItem *CurPtr = ListData[FileCount];
-		CurPtr->Clear();
-		AddParentPoint(CurPtr,FileCount);
+		FileListItem *CurPtr = AddParentPoint(FileCount);
 
 		if ((Info.Flags & OPIF_USEHIGHLIGHTING) || (Info.Flags & OPIF_USEATTRHIGHLIGHTING))
 			CtrlObject->HiFiles->GetHiColor(&CurPtr,1,(Info.Flags&OPIF_USEATTRHIGHLIGHTING)!=0);
@@ -918,9 +911,10 @@ void FileList::ReadSortGroups(bool UpdateFilterCurrentTime)
 }
 
 // Обнулить текущий CurPtr и занести предопределенные данные для каталога ".."
-void FileList::AddParentPoint(FileListItem *CurPtr,long CurFilePos,FILETIME* Times,FARString Owner,FARString Group)
+FileListItem* FileList::AddParentPoint(long CurFilePos,FILETIME* Times,FARString Owner,FARString Group)
 {
-	CurPtr->Clear();
+	FileListItem *CurPtr = new FileListItem;
+	ListData[FileCount] = CurPtr;
 	CurPtr->FileAttr = FILE_ATTRIBUTE_DIRECTORY;
 	CurPtr->FileMode = S_IFDIR | S_IXUSR | S_IXGRP | S_IXOTH;
 	CurPtr->strName = L"..";
@@ -936,4 +930,5 @@ void FileList::AddParentPoint(FileListItem *CurPtr,long CurFilePos,FILETIME* Tim
 	CurPtr->strOwner = Owner;
 	CurPtr->strGroup = Group;
 	CurPtr->Position = CurFilePos;
+	return CurPtr;
 }

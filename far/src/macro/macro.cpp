@@ -3075,7 +3075,6 @@ int FarMacroApi::panelitemFunc()
 	if (ActivePanel)
 		PassivePanel=CtrlObject->Cp()->GetAnotherPanel(ActivePanel);
 
-	//Frame* CurFrame=FrameManager->GetCurrentFrame();
 	Panel *SelPanel = typePanel? (typePanel == 1?PassivePanel:nullptr):ActivePanel;
 
 	if (!SelPanel)
@@ -3092,107 +3091,107 @@ int FarMacroApi::panelitemFunc()
 
 	int Index=(int)(P1.toInteger())-1;
 	int TypeInfo=(int)P2.toInteger();
-	FileListItem filelistItem;
+	FileList *fileList;
+	TreeList *treeList;
 
-	if (TypePanel == TREE_PANEL)
+	if ((treeList = dynamic_cast<TreeList*>(SelPanel)))
 	{
-		TreeItem treeItem;
+		const TreeItem *treeItem = treeList->GetItem(Index);
 
-		if (SelPanel->GetItem(Index,&treeItem) && !TypeInfo)
+		if (treeItem && !TypeInfo)
 		{
-			PassString(treeItem.strName);
-			return 1;
+			PassString(treeItem->strName);
+			return 0;
 		}
 	}
-	else
+	else if ((fileList = dynamic_cast<FileList*>(SelPanel)))
 	{
+		const FileListItem *filelistItem;
 		FARString strDate, strTime;
 
-		if (TypeInfo == 11)
-			SelPanel->ReadDiz();
-
-		if (!SelPanel->GetItem(Index,&filelistItem))
-			TypeInfo=-1;
+		if (nullptr == (filelistItem = fileList->GetItem(Index)))
+			return 0;
 
 		switch (TypeInfo)
 		{
 			case 0:  // Name
-				return PassString(filelistItem.strName);
+				return PassString(filelistItem->strName);
 
 			case 1:  // ShortName obsolete, use Name
-				return PassString(filelistItem.strName);
+				return PassString(filelistItem->strName);
 
 			case 2:  // FileAttr
-				return PassNumber(filelistItem.FileAttr);
+				return PassNumber(filelistItem->FileAttr);
 
 			case 3:  // CreationTime
-				ConvertDate(filelistItem.CreationTime,strDate,strTime,8,FALSE,FALSE,TRUE,TRUE);
+				ConvertDate(filelistItem->CreationTime,strDate,strTime,8,FALSE,FALSE,TRUE,TRUE);
 				strDate += L" ";
 				strDate += strTime;
 			  return PassString(strDate);
 
 			case 4:  // AccessTime
-				ConvertDate(filelistItem.AccessTime,strDate,strTime,8,FALSE,FALSE,TRUE,TRUE);
+				ConvertDate(filelistItem->AccessTime,strDate,strTime,8,FALSE,FALSE,TRUE,TRUE);
 				strDate += L" ";
 				strDate += strTime;
 			  return PassString(strDate);
 
 			case 5:  // WriteTime
-				ConvertDate(filelistItem.WriteTime,strDate,strTime,8,FALSE,FALSE,TRUE,TRUE);
+				ConvertDate(filelistItem->WriteTime,strDate,strTime,8,FALSE,FALSE,TRUE,TRUE);
 				strDate += L" ";
 				strDate += strTime;
 			  return PassString(strDate);
 
 			case 6:  // FileSize
-			  return PassNumber(filelistItem.FileSize);
+			  return PassNumber(filelistItem->FileSize);
 
 			case 7:  // PhysicalSize
-			  return PassNumber(filelistItem.PhysicalSize);
+			  return PassNumber(filelistItem->PhysicalSize);
 
 			case 8:  // Selected
-			  return PassBoolean(filelistItem.Selected);
+			  return PassBoolean(filelistItem->Selected);
 
 			case 9:  // NumberOfLinks
-			  return PassNumber(filelistItem.NumberOfLinks);
+			  return PassNumber(filelistItem->NumberOfLinks);
 
 			case 10:  // SortGroup
-			  return PassNumber(filelistItem.SortGroup);
+			  return PassNumber(filelistItem->SortGroup);
 
 			case 11:  // DizText
-			  return PassString(filelistItem.DizText);
+				fileList->ReadDiz();
+				return PassString(filelistItem->DizText);
 
 			case 12:  // Owner
-			  return PassString(filelistItem.strOwner);
+			  return PassString(filelistItem->strOwner);
 
 			case 13:  // CRC32
-			  return PassNumber(filelistItem.CRC32);
+			  return PassNumber(filelistItem->CRC32);
 
 			case 14:  // Position
-			  return PassNumber(filelistItem.Position);
+			  return PassNumber(filelistItem->Position);
 
 			case 15:  // CreationTime (FILETIME)
-			  return PassInteger((int64_t)FileTimeToUI64(&filelistItem.CreationTime));
+			  return PassInteger((int64_t)FileTimeToUI64(&filelistItem->CreationTime));
 
 			case 16:  // AccessTime (FILETIME)
-			  return PassInteger((int64_t)FileTimeToUI64(&filelistItem.AccessTime));
+			  return PassInteger((int64_t)FileTimeToUI64(&filelistItem->AccessTime));
 
 			case 17:  // WriteTime (FILETIME)
-			  return PassInteger((int64_t)FileTimeToUI64(&filelistItem.WriteTime));
+			  return PassInteger((int64_t)FileTimeToUI64(&filelistItem->WriteTime));
 
 			case 18: // NumberOfStreams (deprecated)
-				return (filelistItem.FileAttr & FILE_ATTRIBUTE_DIRECTORY) ? 0 : 1;
+				return (filelistItem->FileAttr & FILE_ATTRIBUTE_DIRECTORY) ? 0 : 1;
 
 			case 19: // StreamsSize (deprecated)
 				return 0;
 
 			case 20:  // ChangeTime
-				ConvertDate(filelistItem.ChangeTime,strDate,strTime,8,FALSE,FALSE,TRUE,TRUE);
+				ConvertDate(filelistItem->ChangeTime,strDate,strTime,8,FALSE,FALSE,TRUE,TRUE);
 				strDate += L" ";
 				strDate += strTime;
 				return PassString(strDate);
 
 			case 21:  // ChangeTime (FILETIME)
-			  return PassInteger((int64_t)FileTimeToUI64(&filelistItem.ChangeTime));
+			  return PassInteger((int64_t)FileTimeToUI64(&filelistItem->ChangeTime));
 		}
 	}
 

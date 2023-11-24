@@ -161,7 +161,7 @@ class TreeList: public Panel
 		virtual void SetFocus();
 		virtual void KillFocus();
 		virtual BOOL UpdateKeyBar();
-		virtual BOOL GetItem(int Index,void *Dest);
+		const TreeItem* GetItem(int Index);
 		virtual int GetCurrentPos();
 
 		virtual int GetSelName(FARString *strName,DWORD &FileAttr,DWORD &FileMode,FAR_FIND_DATA_EX *fd=nullptr);

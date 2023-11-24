@@ -3435,15 +3435,12 @@ uint64_t FileList::GetLastSelectedSize()
 }
 
 
-int FileList::GetLastSelectedItem(FileListItem *LastItem)
+const FileListItem* FileList::GetLastSelectedItem()
 {
 	if (LastSelPosition>=0 && LastSelPosition<FileCount)
-	{
-		*LastItem=*ListData[LastSelPosition];
-		return TRUE;
-	}
+		return ListData[LastSelPosition];
 
-	return FALSE;
+	return nullptr;
 }
 
 int FileList::GetCurName(FARString &strName)
@@ -4997,16 +4994,15 @@ int FileList::PluginPanelHelp(PHPTR ph)
 	return TRUE;
 }
 
-BOOL FileList::GetItem(int Index,void *Dest)
+const FileListItem* FileList::GetItem(int Index)
 {
 	if (Index == -1 || Index == -2)
 		Index=GetCurrentPos();
 
-	if ((DWORD)Index >= (DWORD)FileCount)
-		return FALSE;
+	if (Index < 0 || Index >= FileCount)
+		return nullptr;
 
-	*((FileListItem *)Dest)=*ListData[Index];
-	return TRUE;
+	return ListData[Index];
 }
 
 void FileList::ClearAllItem()
