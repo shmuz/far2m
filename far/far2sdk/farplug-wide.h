@@ -2193,6 +2193,19 @@ typedef int (WINAPI *FARCONVERTPATH)(enum CONVERTPATHMODES Mode, const wchar_t *
 
 typedef DWORD (WINAPI *FARGETCURRENTDIRECTORY)(DWORD Size,wchar_t* Buffer);
 
+enum FARFORMATFILESIZEFLAGS
+{
+	FFFS_COMMAS                 = 0x01000000,
+	FFFS_FLOATSIZE              = 0x02000000,
+	FFFS_SHOWBYTESINDEX         = 0x04000000,
+	FFFS_ECONOMIC               = 0x08000000,
+	FFFS_THOUSAND               = 0x10000000,
+	FFFS_MINSIZEINDEX           = 0x20000000,
+	FFFS_MINSIZEINDEX_MASK      = 0x00000003,
+	FFFS_NONE                   = 0,
+};
+
+typedef size_t (WINAPI *FARFORMATFILESIZE)(uint64_t Size, int Width, DWORD Flags, wchar_t *Dest, size_t DestSize);
 
 enum EXECUTEFLAGS
 {
@@ -2352,6 +2365,7 @@ typedef struct FarStandardFunctions
 	FARAPIGETFILEENCODING      GetFileEncoding;
 	FARSTDKEYNAMETOINPUTRECORD FarNameToInputRecord;
 	FARSTDGETFILEGROUP         GetFileGroup;
+	FARFORMATFILESIZE          FormatFileSize;
 } FARSTANDARDFUNCTIONS;
 
 struct PluginStartupInfo

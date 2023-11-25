@@ -525,6 +525,7 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 		StandardFunctions.GetFileEncoding = farGetFileEncoding;
 		StandardFunctions.FarNameToInputRecord = FarNameToInputRecord;
 		StandardFunctions.GetFileGroup = farGetFileGroup;
+		StandardFunctions.FormatFileSize = farFormatFileSize;
 	}
 
 	if (!StartupInfo.StructSize)

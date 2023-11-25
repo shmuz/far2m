@@ -1585,8 +1585,8 @@ local function test_FarStandardFunctions()
 
   assert_eq(far.ConvertPath([[/foo/bar/../../abc]], "CPM_FULL"), [[/abc]])
 
---  assert(far.FormatFileSize(123456, 8)  == "  123456")
---  assert(far.FormatFileSize(123456, -8) == "123456  ")
+  assert_eq(far.FormatFileSize(123456, 8), "  123456")
+  assert_eq(far.FormatFileSize(123456, -8), "123456  ")
 
   assert_str (far.GetCurrentDirectory())
 

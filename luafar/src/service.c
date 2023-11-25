@@ -5220,6 +5220,21 @@ int far_XLat (lua_State *L)
 	return 1;
 }
 
+int far_FormatFileSize(lua_State *L)
+{
+	wchar_t buf[256];
+	uint64_t Size = (uint64_t) luaL_checknumber(L, 1);
+	int Width = luaL_checkinteger(L, 2);
+	flags_t Flags = OptFlags(L, 3, 0);
+
+	if(Flags & FFFS_MINSIZEINDEX)
+		Flags |= (luaL_optinteger(L, 4, 0) & FFFS_MINSIZEINDEX_MASK);
+
+	FSF.FormatFileSize(Size, Width, Flags, buf, ARRAYSIZE(buf));
+	push_utf8_string(L, buf, -1);
+	return 1;
+}
+
 int far_Execute(lua_State *L)
 {
 	const wchar_t *CmdStr = check_utf8_string(L, 1, NULL);
@@ -6146,6 +6161,7 @@ static const luaL_Reg far_funcs[] = {
 	{"DisplayNotification", far_DisplayNotification},
 	{"DispatchInterThreadCalls", far_DispatchInterThreadCalls},
 	{"BackgroundTask",      far_BackgroundTask},
+	{"FormatFileSize",      far_FormatFileSize},
 
 	{"ColorDialog",         far_ColorDialog},
 	{"CPluginStartupInfo",  far_CPluginStartupInfo},
