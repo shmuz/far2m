@@ -42,6 +42,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FSNotify.h"
 #include <memory>
 
+extern const HighlightDataColor DefaultStartingColors;
+
 class FileFilter;
 
 enum sort_order
@@ -80,7 +82,7 @@ struct FileListItem
 
 	DWORD_PTR UserData{};
 
-	HighlightDataColor Colors{}; // 5 DWORDs
+	const HighlightDataColor *ColorsPtr = &DefaultStartingColors;
 
 	DWORD NumberOfLinks{};
 	DWORD UserFlags{};
@@ -187,8 +189,8 @@ class FileList:public Panel
 		void CorrectPosition();
 		void ShowFileList(int Fast);
 		void ShowList(int ShowStatus,int StartColumn);
-		void SetShowColor(int Position, int ColorType=HIGHLIGHTCOLORTYPE_FILE);
-		int  GetShowColor(int Position, int ColorType);
+		void SetShowColor(int Position, int ColorType = HIGHLIGHTCOLORTYPE_FILE);
+		DWORD64 GetShowColor(int Position, int ColorType);
 		void ShowSelectedSize();
 		void ShowTotalSize(OpenPluginInfo &Info);
 		int ConvertName(const wchar_t *SrcName, FARString &strDest, int MaxLength, int RightAlign, int ShowStatus, DWORD dwFileAttr);

@@ -33,7 +33,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
-
 #include "manager.hpp"
 #include "lang.hpp"
 #include "keys.hpp"
@@ -830,7 +829,7 @@ int Manager::ProcessKey(DWORD Key)
 				case KEY_ALTF9:
 				{
 					WINPORT(Sleep)(10);
-					SetVideoMode();
+					ToggleVideoMode();
 					WINPORT(Sleep)(10);
 
 					/* В процессе исполнения Alt-F9 (в нормальном режиме) в очередь

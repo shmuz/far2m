@@ -454,27 +454,25 @@ void FileList::ShowFileList(int Fast)
 		CtrlObject->Cp()->RedrawKeyBar();
 }
 
-
-int FileList::GetShowColor(int Position, int ColorType)
+DWORD64 FileList::GetShowColor(int Position, int ColorType)
 {
-	DWORD ColorAttr=COL_PANELTEXT;
-	const DWORD FarColor[] = {COL_PANELTEXT,COL_PANELSELECTEDTEXT,COL_PANELCURSOR,COL_PANELSELECTEDCURSOR};
+	DWORD64 ColorAttr = COL_PANELTEXT;
+	const DWORD FarColor[] = {COL_PANELTEXT, COL_PANELSELECTEDTEXT, COL_PANELCURSOR, COL_PANELSELECTEDCURSOR};
 
-	if (ListData && Position < FileCount)
-	{
+	if (ListData && Position < FileCount) {
 		int Pos = HIGHLIGHTCOLOR_NORMAL;
 
-		if (CurFile==Position && Focus && FileCount > 0)
-		{
-			Pos=ListData[Position]->Selected?HIGHLIGHTCOLOR_SELECTEDUNDERCURSOR:HIGHLIGHTCOLOR_UNDERCURSOR;
-		}
-		else if (ListData[Position]->Selected)
+		if (CurFile == Position && Focus && FileCount > 0) {
+			Pos = ListData[Position]->Selected
+					? HIGHLIGHTCOLOR_SELECTEDUNDERCURSOR
+					: HIGHLIGHTCOLOR_UNDERCURSOR;
+		} else if (ListData[Position]->Selected)
 			Pos = HIGHLIGHTCOLOR_SELECTED;
 
-		ColorAttr=ListData[Position]->Colors.Color[ColorType][Pos];
+		ColorAttr = ListData[Position]->ColorsPtr->Color[ColorType][Pos];
 
 		if (!ColorAttr || !Opt.Highlight)
-			ColorAttr=FarColor[Pos];
+			ColorAttr = FarColor[Pos];
 	}
 
 	return ColorAttr;
@@ -1036,10 +1034,10 @@ void FileList::ShowList(int ShowStatus,int StartColumn)
 								Width-=2;
 							}
 
-							if (ListData[ListPos]->Colors.MarkChar && Opt.Highlight && Width>1)
+							if (ListData[ListPos]->ColorsPtr->MarkChar && Opt.Highlight && Width>1)
 							{
 								Width--;
-								OutCharacter[0]=(wchar_t)(ListData[ListPos]->Colors.MarkChar & 0xffff);
+								OutCharacter[0]=(wchar_t)(ListData[ListPos]->ColorsPtr->MarkChar & 0xffff);
 								int OldColor=GetColor();
 
 								if (!ShowStatus)

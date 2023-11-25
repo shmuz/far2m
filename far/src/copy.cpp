@@ -560,39 +560,6 @@ void PR_ShellCopyMsg()
 	}
 }
 
-BOOL CheckAndUpdateConsole(BOOL IsChangeConsole)
-{
-	BOOL curZoomedState = Console.IsZoomed();
-	BOOL curIconicState = Console.IsIconic();
-
-	if (ZoomedState!=curZoomedState && IconicState==curIconicState)
-	{
-		ZoomedState=curZoomedState;
-		ChangeVideoMode(ZoomedState);
-		Frame *frame=FrameManager->GetBottomFrame();
-		int LockCount=-1;
-
-		while (frame->Locked())
-		{
-			LockCount++;
-			frame->Unlock();
-		}
-
-		FrameManager->ResizeAllFrame();
-		FrameManager->PluginCommit();
-
-		while (LockCount > 0)
-		{
-			frame->Lock();
-			LockCount--;
-		}
-
-		IsChangeConsole=TRUE;
-	}
-
-	return IsChangeConsole;
-}
-
 #define USE_PAGE_SIZE 0x1000
 template <class T> static T AlignPageUp(T v)
 {
@@ -2765,12 +2732,7 @@ void ShellFileTransfer::Do()
 	{
 		ProgressUpdate(false, _SrcData, _strDestName);
 
-		BOOL IsChangeConsole = OrigScrX != ScrX || OrigScrY != ScrY;
-
-		IsChangeConsole = CheckAndUpdateConsole(IsChangeConsole);
-
-		if (IsChangeConsole)
-		{
+		if (OrigScrX != ScrX || OrigScrY != ScrY) {
 			OrigScrX = ScrX;
 			OrigScrY = ScrY;
 			PR_ShellCopyMsg();

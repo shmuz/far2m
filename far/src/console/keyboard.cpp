@@ -33,7 +33,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
-
 #include <ctype.h>
 #include "keyboard.hpp"
 #include "keys.hpp"
@@ -521,7 +520,7 @@ DWORD GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,b
 {
 	_KEYMACRO(CleverSysLog Clev(L"GetInputRecord()"));
 	static int LastEventIdle=FALSE;
-	DWORD LoopCount=0,CalcKey;
+	DWORD CalcKey;
 	DWORD ReadKey=0;
 	int NotMacros=FALSE;
 	static int LastMsClickMacroKey=0;
@@ -617,41 +616,22 @@ DWORD GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,b
 	ScrBuf.Flush();
 
 	if (!LastEventIdle)
-		StartIdleTime=GetProcessUptimeMSec();
+		StartIdleTime = GetProcessUptimeMSec();
 
-	LastEventIdle=FALSE;
+	LastEventIdle = FALSE;
 	SetFarConsoleMode();
-	BOOL ZoomedState=Console.IsZoomed();
-	BOOL IconicState=Console.IsIconic();
 
-	bool FullscreenState=IsFullscreen();
-
-	for (;;)
-	{
-		// "Реакция" на максимизацию/восстановление окна консоли
-		if (ZoomedState!=Console.IsZoomed() && IconicState==Console.IsIconic())
-		{
-			ZoomedState=!ZoomedState;
-			ChangeVideoMode(ZoomedState);
-		}
-
-		bool CurrentFullscreenState=IsFullscreen();
-		if(CurrentFullscreenState && !FullscreenState)
-		{
-			ChangeVideoMode(25,80);
-		}
-		FullscreenState=CurrentFullscreenState;
-
-		/* $ 26.04.2001 VVM
-		   ! Убрал подмену колесика */
-		if (Console.PeekInput(*rec))
-		{
-			//cheat for flock
-			if (rec->EventType==KEY_EVENT && !rec->Event.KeyEvent.wVirtualScanCode
-				&& (rec->Event.KeyEvent.wVirtualKeyCode==VK_NUMLOCK
-					||rec->Event.KeyEvent.wVirtualKeyCode==VK_CAPITAL
-					||rec->Event.KeyEvent.wVirtualKeyCode==VK_SCROLL))
-			{
+	for (DWORD LoopCount = 0;;) {
+		/*
+			$ 26.04.2001 VVM
+			! Убрал подмену колесика
+		*/
+		if (Console.PeekInput(*rec)) {
+			// cheat for flock
+			if (rec->EventType == KEY_EVENT
+					&& (rec->Event.KeyEvent.wVirtualKeyCode == VK_NUMLOCK
+							|| rec->Event.KeyEvent.wVirtualKeyCode == VK_CAPITAL
+							|| rec->Event.KeyEvent.wVirtualKeyCode == VK_SCROLL)) {
 				INPUT_RECORD pinp;
 				Console.ReadInput(pinp);
 				continue;

@@ -687,7 +687,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 			return api.PassNumber(GetArea());
 
 		case MCODE_C_FULLSCREENMODE: // Fullscreen?
-			return api.PassBoolean(IsFullscreen());
+			return api.PassBoolean(0);
 
 		case MCODE_C_ISUSERADMIN:
 			return api.PassBoolean(Opt.IsUserAdmin);

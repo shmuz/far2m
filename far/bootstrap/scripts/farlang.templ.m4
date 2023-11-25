@@ -22493,6 +22493,46 @@ upd:"&Broken"
 upd:"&Broken"
 "Несправний"
 
+FileFilterAttrDevChar
+"Симв.устройство"
+"Char device"
+upd:"Char device"
+upd:"Char device"
+upd:"Char device"
+upd:"Char device"
+upd:"Char device"
+"Симв.пристрій"
+
+FileFilterAttrDevBlock
+"Блоч.устройство"
+"Block device"
+upd:"Block device"
+upd:"Block device"
+upd:"Block device"
+upd:"Block device"
+upd:"Block device"
+"Блок.пристрій"
+
+FileFilterAttrDevFIFO
+"FIFO"
+"FIFO"
+"FIFO"
+"FIFO"
+"FIFO"
+"FIFO"
+"FIFO"
+"FIFO"
+
+FileFilterAttrDevSock
+"Сокет"
+"Socket"
+upd:"Socket"
+upd:"Socket"
+upd:"Socket"
+upd:"Socket"
+upd:"Socket"
+"Сокет"
+
 FileFilterReset
 "Очистит&ь"
 "Reset"

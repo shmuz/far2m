@@ -33,7 +33,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
-
 #include "edit.hpp"
 #include "keyboard.hpp"
 #include "macroopcode.hpp"
@@ -230,22 +229,14 @@ void Edit::DisplayObject()
 	   при DropDownBox курсор выключаем
 	   не знаю даже - попробовал но не очень красиво вышло */
 	if (Flags.Check(FEDITLINE_DROPDOWNBOX))
-		::SetCursorType(0,10);
-	else
-	{
-		if (Flags.Check(FEDITLINE_OVERTYPE))
-		{
-			int NewCursorSize=IsFullscreen()?
-			                  (Opt.CursorSize[3]?Opt.CursorSize[3]:99):
-					                  (Opt.CursorSize[2]?Opt.CursorSize[2]:99);
-			::SetCursorType(1,CursorSize==-1?NewCursorSize:CursorSize);
-		}
-		else
-{
-			int NewCursorSize=IsFullscreen()?
-			                  (Opt.CursorSize[1]?Opt.CursorSize[1]:10):
-					                  (Opt.CursorSize[0]?Opt.CursorSize[0]:10);
-			::SetCursorType(1,CursorSize==-1?NewCursorSize:CursorSize);
+		::SetCursorType(0, 10);
+	else {
+		if (Flags.Check(FEDITLINE_OVERTYPE)) {
+			int NewCursorSize = (Opt.CursorSize[2] ? Opt.CursorSize[2] : 99);
+			::SetCursorType(1, CursorSize == -1 ? NewCursorSize : CursorSize);
+		} else {
+			int NewCursorSize = (Opt.CursorSize[0] ? Opt.CursorSize[0] : 10);
+			::SetCursorType(1, CursorSize == -1 ? NewCursorSize : CursorSize);
 		}
 	}
 
