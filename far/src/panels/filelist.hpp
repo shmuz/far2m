@@ -206,7 +206,7 @@ class FileList:public Panel
 		void UpdatePlugin(int KeepSelection, int IgnoreVisible);
 
 		void MoveSelection(FileListItem **FileList,long FileCount,FileListItem **OldList,long OldFileCount);
-		virtual int GetSelCount();
+		virtual int GetSelCount() const;
 		virtual int GetSelName(FARString *strName,DWORD &FileAttr,DWORD &FileMode,FAR_FIND_DATA_EX *fde=nullptr);
 		virtual void UngetSelName();
 		virtual void ClearLastGetSelection();
@@ -295,8 +295,8 @@ class FileList:public Panel
 		virtual int GetPrevDirectoriesFirst();
 
 		PHPTR OpenFilePlugin(const wchar_t *FileName,int PushPrev, OPENFILEPLUGINTYPE Type);
-		virtual int GetFileName(FARString &strName,int Pos,DWORD &FileAttr);
-		virtual int GetCurrentPos();
+		virtual int GetFileName(FARString &strName,int Pos,DWORD &FileAttr) const;
+		virtual int GetCurrentPos() const;
 		virtual bool FindPartName(const wchar_t *Name,int Next,int Direct=1,int ExcludeSets=0);
 		long FindFile(const char *Name,BOOL OnlyPartName=FALSE);
 
@@ -324,10 +324,10 @@ class FileList:public Panel
 		virtual void FlushDiz();
 		virtual void GetDizName(FARString &strDizName);
 		virtual void CopyDiz(const wchar_t *Name, const wchar_t *DestName, DizList *DestDiz);
-		virtual int IsFullScreen();
-		virtual int IsDizDisplayed();
-		virtual int IsColumnDisplayed(int Type);
-		virtual int GetColumnsCount() { return Columns;}
+		virtual int IsFullScreen() const;
+		virtual int IsDizDisplayed() const;
+		virtual int IsColumnDisplayed(int Type) const;
+		virtual int GetColumnsCount() const { return Columns;}
 		virtual void SetReturnCurrentFile(int Mode);
 		virtual void GetOpenPluginInfo(OpenPluginInfo *Info);
 		virtual void SetPluginMode(PHPTR hPlugin,const wchar_t *PluginFile,bool SendOnFocus=false);
@@ -347,17 +347,17 @@ class FileList:public Panel
 		virtual void SetTitle();
 		//virtual FARString &GetTitle(FARString &Title,int SubLen=-1,int TruncSize=0);
 		int PluginPanelHelp(PHPTR ph);
-		virtual long GetFileCount() {return FileCount;}
+		virtual long GetFileCount() const {return FileCount;}
 
 		FARString &CreateFullPathName(const wchar_t *Name,DWORD FileAttr, FARString &strDest,int UNC);
 
 
-		const FileListItem* GetItem(int Index);
+		const FileListItem* GetItem(int Index) const;
 		virtual BOOL UpdateKeyBar();
 
 		void ResetLastUpdateTime() {LastUpdateTime = 0;}
-		virtual PHPTR GetPluginHandle();
-		virtual int GetRealSelCount();
+		virtual PHPTR GetPluginHandle() const;
+		virtual int GetRealSelCount() const;
 		static void SetFilePanelModes();
 		static void SavePanelModes(ConfigWriter &cfg_writer);
 		static void ReadPanelModes(ConfigReader &cfg_reader);

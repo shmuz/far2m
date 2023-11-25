@@ -1185,7 +1185,7 @@ void FileList::SetPluginModified()
 }
 
 
-PHPTR FileList::GetPluginHandle()
+PHPTR FileList::GetPluginHandle() const
 {
 	return(hPlugin);
 }

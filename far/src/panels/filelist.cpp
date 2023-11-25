@@ -3333,13 +3333,13 @@ bool FileList::FindPartName(const wchar_t *Name,int Next,int Direct,int ExcludeS
 }
 
 
-int FileList::GetSelCount()
+int FileList::GetSelCount() const
 {
 	assert(!FileCount || !(ReturnCurrentFile||!SelFileCount) || (CurFile<FileCount));
 	return FileCount?((ReturnCurrentFile||!SelFileCount)?(TestParentFolderName(ListData[CurFile]->strName)?0:1):SelFileCount):0;
 }
 
-int FileList::GetRealSelCount()
+int FileList::GetRealSelCount() const
 {
 	return FileCount?SelFileCount:0;
 }
@@ -4181,7 +4181,7 @@ void FileList::RestoreSelection()
 
 
 
-int FileList::GetFileName(FARString &strName,int Pos,DWORD &FileAttr)
+int FileList::GetFileName(FARString &strName,int Pos,DWORD &FileAttr) const
 {
 	if (Pos>=FileCount)
 		return FALSE;
@@ -4192,7 +4192,7 @@ int FileList::GetFileName(FARString &strName,int Pos,DWORD &FileAttr)
 }
 
 
-int FileList::GetCurrentPos()
+int FileList::GetCurrentPos() const
 {
 	return(CurFile);
 }
@@ -4994,7 +4994,7 @@ int FileList::PluginPanelHelp(PHPTR ph)
 	return TRUE;
 }
 
-const FileListItem* FileList::GetItem(int Index)
+const FileListItem* FileList::GetItem(int Index) const
 {
 	if (Index == -1 || Index == -2)
 		Index=GetCurrentPos();
