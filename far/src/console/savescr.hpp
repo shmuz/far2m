@@ -49,7 +49,7 @@ private:
 	void CleanupBuffer(PCHAR_INFO Buffer, size_t BufSize);
 	int ScreenBufCharCount();
 	void CharCopy(PCHAR_INFO ToBuffer, PCHAR_INFO FromBuffer, int Count);
-	CHAR_INFO *GetBufferAddress() { return ScreenBuf; };
+	CHAR_INFO *GetBufferAddress() { return ScreenBuf; }
 
 public:
 	SaveScreen();

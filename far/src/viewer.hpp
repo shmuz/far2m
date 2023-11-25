@@ -230,15 +230,15 @@ class Viewer:public ScreenObject
 		std::shared_ptr<IFileHolder> &GetFileHolder() { return FileHolder;}
 
 		void SetFilePos(int64_t Pos); // $ 18.07.2000 tran - change 'long' to 'unsigned long'
-		int64_t GetFilePos() const { return FilePos; };
-		int64_t GetViewFilePos() const { return FilePos; };
-		int64_t GetViewFileSize() const { return FileSize; };
+		int64_t GetFilePos() const { return FilePos; }
+		int64_t GetViewFilePos() const { return FilePos; }
+		int64_t GetViewFileSize() const { return FileSize; }
 
 		void SetPluginData(const wchar_t *PluginData);
 		void SetNamesList(NamesList *List);
 
 		int  ViewerControl(int Command,void *Param);
-		void SetHostFileViewer(FileViewer *Viewer) {HostFileViewer=Viewer;};
+		void SetHostFileViewer(FileViewer *Viewer) {HostFileViewer=Viewer;}
 
 		void GoTo(int ShowDlg=TRUE,int64_t NewPos=0,DWORD Flags=0);
 		void GetSelectedParam(int64_t &Pos, int64_t &Length, DWORD &Flags);

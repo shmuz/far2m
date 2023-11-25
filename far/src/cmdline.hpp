@@ -87,8 +87,8 @@ class CommandLine:public ScreenObject
 		int GetCurDir(FARString &strCurDir);
 		BOOL SetCurDir(const wchar_t *CurDir);
 
-		void GetString(FARString &strStr) { CmdStr.GetString(strStr); };
-		int GetLength() { return CmdStr.GetLength(); };
+		void GetString(FARString &strStr) { CmdStr.GetString(strStr); }
+		int GetLength() { return CmdStr.GetLength(); }
 		void SetString(const wchar_t *Str,bool Redraw=true);
 		void InsertString(const wchar_t *Str);
 
@@ -97,23 +97,23 @@ class CommandLine:public ScreenObject
 		void ShowViewEditHistory();
 
 		void SetCurPos(int Pos, int LeftPos=0);
-		int GetCurPos() { return CmdStr.GetCurPos(); };
-		int GetLeftPos() { return CmdStr.GetLeftPos(); };
+		int GetCurPos() { return CmdStr.GetCurPos(); }
+		int GetLeftPos() { return CmdStr.GetLeftPos(); }
 
 		void SetPersistentBlocks(int Mode);
 		void SetDelRemovesBlocks(int Mode);
 		void SetAutoComplete(int Mode);
 		void SetWaitKeypress(int Mode);
 
-		void GetSelString(FARString &strStr) { CmdStr.GetSelString(strStr); };
-		void GetSelection(int &Start,int &End) { CmdStr.GetSelection(Start,End); };
-		void Select(int Start, int End) { CmdStr.Select(Start,End); };
+		void GetSelString(FARString &strStr) { CmdStr.GetSelString(strStr); }
+		void GetSelection(int &Start,int &End) { CmdStr.GetSelection(Start,End); }
+		void Select(int Start, int End) { CmdStr.Select(Start,End); }
 
 		void SaveBackground(int X1,int Y1,int X2,int Y2);
 		void SaveBackground();
 		void ShowBackground();
 		void CorrectRealScreenCoord();
-		void LockUpdatePanel(int Mode) {Flags.Change(FCMDOBJ_LOCKUPDATEPANEL,Mode);};
+		void LockUpdatePanel(int Mode) {Flags.Change(FCMDOBJ_LOCKUPDATEPANEL,Mode);}
 
 		void EnableAC(){return CmdStr.EnableAC();}
 		void DisableAC(){return CmdStr.DisableAC();}

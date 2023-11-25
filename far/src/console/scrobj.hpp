@@ -70,8 +70,8 @@ public:
 	virtual ~ScreenObject();
 
 public:
-	virtual int ProcessKey(int Key) { return 0; };
-	virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent) { return 0; };
+	virtual int ProcessKey(int Key) { return 0; }
+	virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent) { return 0; }
 
 	virtual void Hide();
 	virtual void Hide0();	// 15.07.2000 tran - dirty hack :(
@@ -82,7 +82,7 @@ public:
 	virtual void SetScreenPosition();
 	virtual void ResizeConsole(){};
 
-	virtual int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0) { return 0; };
+	virtual int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0) { return 0; }
 
 	void Lock();
 	void Unlock();
@@ -93,9 +93,9 @@ public:
 
 	void SavePrevScreen();
 	void Redraw();
-	int IsVisible() const { return Flags.Check(FSCROBJ_VISIBLE); };
-	void SetVisible(int Visible) { Flags.Change(FSCROBJ_VISIBLE, Visible); };
-	void SetRestoreScreenMode(int Mode) { Flags.Change(FSCROBJ_ENABLERESTORESCREEN, Mode); };
+	int IsVisible() const { return Flags.Check(FSCROBJ_VISIBLE); }
+	void SetVisible(int Visible) { Flags.Change(FSCROBJ_VISIBLE, Visible); }
+	void SetRestoreScreenMode(int Mode) { Flags.Change(FSCROBJ_ENABLERESTORESCREEN, Mode); }
 	void Shadow(bool Full = false);
 
 	static void SetCapture(ScreenObject *Obj);

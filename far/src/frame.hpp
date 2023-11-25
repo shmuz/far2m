@@ -77,40 +77,40 @@ class Frame: public ScreenObject
 		Frame();
 		virtual ~Frame();
 
-		virtual bool GetCanLoseFocus(bool DynamicMode=false) { return(CanLoseFocus); };
-		void SetCanLoseFocus(bool Mode) { CanLoseFocus=Mode; };
+		virtual bool GetCanLoseFocus(bool DynamicMode=false) { return(CanLoseFocus); }
+		void SetCanLoseFocus(bool Mode) { CanLoseFocus=Mode; }
 		void SetRegularIdle(bool enabled);
-		int  GetExitCode() const { return ExitCode; };
-		virtual void SetExitCode(int Code) { ExitCode=Code; };
+		int  GetExitCode() const { return ExitCode; }
+		virtual void SetExitCode(int Code) { ExitCode=Code; }
 
-		virtual bool IsFileModified() const { return false; };
+		virtual bool IsFileModified() const { return false; }
 
-		virtual const wchar_t *GetTypeName() {return L"[FarModal]";};
-		virtual int GetTypeAndName(FARString &strType, FARString &strName) {return(MODALTYPE_VIRTUAL);};
+		virtual const wchar_t *GetTypeName() {return L"[FarModal]";}
+		virtual int GetTypeAndName(FARString &strType, FARString &strName) {return(MODALTYPE_VIRTUAL);}
 		virtual int GetType() { return MODALTYPE_VIRTUAL; }
 
 		virtual void OnDestroy();  // вызывается перед уничтожением окна
 		virtual void OnCreate() {};   // вызывается перед созданием окна
 		virtual void OnChangeFocus(int focus); // вызывается при смене фокуса
-		virtual void Refresh() {OnChangeFocus(1);};  // Просто перерисоваться :)
+		virtual void Refresh() {OnChangeFocus(1);}  // Просто перерисоваться :)
 
 		virtual void InitKeyBar() {}
 		void SetKeyBar(KeyBar *FrameKeyBar);
 		void UpdateKeyBar();
-		virtual void RedrawKeyBar() { Frame::UpdateKeyBar(); };
+		virtual void RedrawKeyBar() { Frame::UpdateKeyBar(); }
 
-		int IsTitleBarVisible() const {return TitleBarVisible;};
+		int IsTitleBarVisible() const {return TitleBarVisible;}
 
 		int IsTopFrame();
 		virtual int GetMacroArea() { return MacroArea; }
 		void PushFrame(Frame* Modalized);
 		void DestroyAllModal();
 		void SetDynamicallyBorn(bool Born) {DynamicallyBorn=Born;}
-		bool GetDynamicallyBorn() const {return DynamicallyBorn;};
+		bool GetDynamicallyBorn() const {return DynamicallyBorn;}
 		virtual int FastHide();
 		bool RemoveModal(Frame *aFrame);
 		virtual void ResizeConsole();
 		bool HasSaveScreen();
-		virtual FARString &GetTitle(FARString &Title,int SubLen=-1,int TruncSize=0) { return Title; };
-		virtual bool ProcessEvents() {return true;};
+		virtual FARString &GetTitle(FARString &Title,int SubLen=-1,int TruncSize=0) { return Title; }
+		virtual bool ProcessEvents() {return true;}
 };

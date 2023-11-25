@@ -37,7 +37,7 @@ public:
 
 	std::vector<std::string> EnumKeys();
 	std::vector<std::string> EnumSectionsAt();
-	inline bool HasSection() const { return _has_section; };
+	inline bool HasSection() const { return _has_section; }
 	bool HasKey(const std::string &name) const;
 	FARString GetString(const std::string &name, const wchar_t *def = L"") const;
 	bool GetString(FARString &out, const std::string &name, const wchar_t *def) const;

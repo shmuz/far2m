@@ -104,15 +104,15 @@ class FileEditor : public Frame
 		// Добавлено для поиска по AltF7. При редактировании найденного файла из
 		// архива для клавиши F2 сделать вызов ShiftF2.
 		void SetSaveToSaveAs(int ToSaveAs) { Flags.Change(FFILEEDIT_SAVETOSAVEAS,ToSaveAs); InitKeyBar(); }
-		virtual bool IsFileModified() const { return m_editor->IsFileModified(); };
+		virtual bool IsFileModified() const { return m_editor->IsFileModified(); }
 		virtual int GetTypeAndName(FARString &strType, FARString &strName);
 		int EditorControl(int Command,void *Param);
 		void SetCodePage(UINT codepage);  //BUGBUG
-		bool IsFileChanged() const { return m_editor->IsFileChanged(); };
+		bool IsFileChanged() const { return m_editor->IsFileChanged(); }
 		virtual int64_t VMProcess(int OpCode,void *vParam=nullptr,int64_t iParam=0);
 		void GetEditorOptions(EditorOptions& EdOpt);
 		void SetEditorOptions(EditorOptions& EdOpt);
-		void CodepageChangedByUser() {Flags.Set(FFILEEDIT_CODEPAGECHANGEDBYUSER);};
+		void CodepageChangedByUser() {Flags.Set(FFILEEDIT_CODEPAGECHANGEDBYUSER);}
 		virtual void Show();
 		void SetPluginTitle(const wchar_t *PluginTitle);
 		void AutoDeleteColors() const { m_editor->AutoDeleteColors(); }
@@ -156,7 +156,7 @@ class FileEditor : public Frame
 		virtual void ShowConsoleTitle();
 		virtual void OnChangeFocus(int focus);
 		virtual void SetScreenPosition();
-		virtual const wchar_t *GetTypeName() {return L"[FileEdit]";};
+		virtual const wchar_t *GetTypeName() {return L"[FileEdit]";}
 		virtual int GetType() { return MODALTYPE_EDITOR; }
 		virtual void OnDestroy();
 		virtual bool GetCanLoseFocus(bool DynamicMode=false);

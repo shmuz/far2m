@@ -98,7 +98,7 @@ class TPreRedrawFunc
 
 
 	private:
-		//TPreRedrawFunc& operator=(const TPreRedrawFunc&){return *this;}; /* чтобы не генерировалось */
+		//TPreRedrawFunc& operator=(const TPreRedrawFunc&){return *this;} /* чтобы не генерировалось */
 		//TPreRedrawFunc(const TPreRedrawFunc&){};            /* по умолчанию            */
 
 		//PREREDRAWFUNC Set(PREREDRAWFUNC fn);

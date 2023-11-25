@@ -52,7 +52,7 @@ public:
 
 	void SetPointer(INT64 Ptr, int Whence = SEEK_SET);
 	inline void GetPointer(INT64 &Ptr) const { Ptr = CurPtr; }
-	inline bool GetSize(UINT64& Size) const { Size = FileSize; return Opened(); };
+	inline bool GetSize(UINT64& Size) const { Size = FileSize; return Opened(); }
 	inline bool Eof() const { return CurPtr >= FileSize; }
 
 	void Clear();

@@ -67,7 +67,7 @@ class OldGetFileString
 
 	public:
 		int GetString(wchar_t **DestStr, int nCodePage, int &Length);
-		bool IsConversionValid() { return !SomeDataLost; };
+		bool IsConversionValid() { return !SomeDataLost; }
 };
 
 bool DetectFileMagic(FILE *file, UINT &nCodePage);

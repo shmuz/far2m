@@ -105,7 +105,7 @@ class ScanTree
 
 		void SkipDir();
 
-		bool IsDirSearchDone() const { return Flags.Check(FSCANTREE_SECONDDIRNAME); };
-		bool IsInsideSymlink() const { return !ScanDirStack.empty() && ScanDirStack.back().InsideSymlink;};
+		bool IsDirSearchDone() const { return Flags.Check(FSCANTREE_SECONDDIRNAME); }
+		bool IsInsideSymlink() const { return !ScanDirStack.empty() && ScanDirStack.back().InsideSymlink;}
 		bool IsSymlinksScanEnabled() const { return Flags.Check(FSCANTREE_SCANSYMLINK); }
 };

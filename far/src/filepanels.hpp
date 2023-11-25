@@ -93,7 +93,7 @@ class FilePanels:public Frame
 
 		virtual int GetTypeAndName(FARString &strType, FARString &strName);
 		virtual int GetType() { return MODALTYPE_PANELS; }
-		virtual const wchar_t *GetTypeName() {return L"[FilePanels]";};
+		virtual const wchar_t *GetTypeName() {return L"[FilePanels]";}
 
 		virtual void OnChangeFocus(int focus);
 
