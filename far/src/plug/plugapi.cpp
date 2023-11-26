@@ -2280,16 +2280,17 @@ int WINAPI farGetFileGroup(const wchar_t *Computer,const wchar_t *Name, wchar_t 
 
 size_t WINAPI farFormatFileSize(uint64_t Size, int Width, DWORD Flags, wchar_t *Dest, size_t DestSize)
 {
-	DWORD NewFlags = 0;
-	if (Flags & FFFS_COMMAS)         NewFlags |= COLUMN_COMMAS;         // Вставлять разделитель между тысячами
-	if (Flags & FFFS_THOUSAND)       NewFlags |= COLUMN_THOUSAND;       // Вместо делителя 1024 использовать делитель 1000
-	if (Flags & FFFS_FLOATSIZE)      NewFlags |= COLUMN_FLOATSIZE;      // Показывать размер в виде десятичной дроби, используя наиболее подходящую единицу измерения, например 0,97 К, 1,44 М, 53,2 Г.
-	if (Flags & FFFS_ECONOMIC)       NewFlags |= COLUMN_ECONOMIC;       // Экономичный режим, не показывать пробел перед суффиксом размера файла (т.е. 0.97K)
-	if (Flags & FFFS_MINSIZEINDEX)   NewFlags |= COLUMN_MINSIZEINDEX;   // Минимально допустимая единица измерения при форматировании
-	if (Flags & FFFS_SHOWBYTESINDEX) NewFlags |= COLUMN_SHOWBYTESINDEX; // Показывать суффиксы B,K,M,G,T,P,E
+	DWORD InternalFlags = (Flags & FFFS_MINSIZEINDEX_MASK);
+
+	if (Flags & FFFS_COMMAS)         InternalFlags |= COLUMN_COMMAS;         // Вставлять разделитель между тысячами
+	if (Flags & FFFS_THOUSAND)       InternalFlags |= COLUMN_THOUSAND;       // Вместо делителя 1024 использовать делитель 1000
+	if (Flags & FFFS_FLOATSIZE)      InternalFlags |= COLUMN_FLOATSIZE;      // Показывать размер в виде десятичной дроби, используя наиболее подходящую единицу измерения, например 0,97 К, 1,44 М, 53,2 Г.
+	if (Flags & FFFS_ECONOMIC)       InternalFlags |= COLUMN_ECONOMIC;       // Экономичный режим, не показывать пробел перед суффиксом размера файла (т.е. 0.97K)
+	if (Flags & FFFS_MINSIZEINDEX)   InternalFlags |= COLUMN_MINSIZEINDEX;   // Минимально допустимая единица измерения при форматировании
+	if (Flags & FFFS_SHOWBYTESINDEX) InternalFlags |= COLUMN_SHOWBYTESINDEX; // Показывать суффиксы B,K,M,G,T,P,E
 
 	FARString DestStr;
-	FileSizeToStr(DestStr, Size, Width, NewFlags);
+	FileSizeToStr(DestStr, Size, Width, InternalFlags);
 
 	if (Dest && DestSize)
 	{

@@ -1966,14 +1966,17 @@ int FarMacroApi::rindexFunc()
 }
 
 // S=Size2Str(Size,Flags[,Width])
+// @param Flags: FARFORMATFILESIZEFLAGS values are used
 int FarMacroApi::size2strFunc()
 {
 	const auto Params = parseParams(3);
 	const auto Size = static_cast<uint64_t> (Params[0].asInteger());
-	const auto Flags = static_cast<int>     (Params[1].asInteger());
+	const auto Flags = static_cast<DWORD>   (Params[1].asInteger());
 	const auto Width = static_cast<int>     (Params[2].asInteger());
-	FARString Dest;
-	PassString(FileSizeToStr(Dest, Size, Width, Flags));
+
+	wchar_t Dest[256];
+	farFormatFileSize(Size, Width, Flags, Dest, ARRAYSIZE(Dest));
+	PassString(Dest);
 	return 0;
 }
 
