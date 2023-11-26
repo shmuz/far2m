@@ -2294,7 +2294,8 @@ size_t WINAPI farFormatFileSize(uint64_t Size, int Width, DWORD Flags, wchar_t *
 
 	if (Dest && DestSize)
 	{
-		wcsncpy(Dest, DestStr.CPtr(), DestSize);
+		wcsncpy(Dest, DestStr.CPtr(), DestSize-1);
+		Dest[DestSize-1] = 0;
 	}
 
 	return DestStr.GetLength() + 1;

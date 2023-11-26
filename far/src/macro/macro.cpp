@@ -508,7 +508,7 @@ public:
 	int promptFunc();
 	int replaceFunc();
 	int rindexFunc();
-	int size2strFunc();
+	int size2strFunc();            //implemented in Lua
 	int sleepFunc();
 	int stringFunc();
 	int strpadFunc();              //implemented in Lua
@@ -1386,7 +1386,6 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		case MCODE_F_PROMPT:             return api.promptFunc();
 		case MCODE_F_REPLACE:            return api.replaceFunc();
 		case MCODE_F_RINDEX:             return api.rindexFunc();
-		case MCODE_F_SIZE2STR:           return api.size2strFunc();
 		case MCODE_F_SLEEP:              return api.sleepFunc();
 		case MCODE_F_STRING:             return api.stringFunc();
 		case MCODE_F_STRWRAP:            return api.strwrapFunc();
@@ -1962,21 +1961,6 @@ int FarMacroApi::rindexFunc()
 	const wchar_t *p = Params[1].toString();
 	const wchar_t *i = !Params[2].getInteger() ? RevStrStrI(s,p) : RevStrStr(s,p);
 	PassNumber(i ? i-s : -1);
-	return 0;
-}
-
-// S=Size2Str(Size,Flags[,Width])
-// @param Flags: FARFORMATFILESIZEFLAGS values are used
-int FarMacroApi::size2strFunc()
-{
-	const auto Params = parseParams(3);
-	const auto Size = static_cast<uint64_t> (Params[0].asInteger());
-	const auto Flags = static_cast<DWORD>   (Params[1].asInteger());
-	const auto Width = static_cast<int>     (Params[2].asInteger());
-
-	wchar_t Dest[256];
-	farFormatFileSize(Size, Width, Flags, Dest, ARRAYSIZE(Dest));
-	PassString(Dest);
 	return 0;
 }
 

@@ -53,7 +53,7 @@ mf = {
   prompt          = function(...) return MacroCallFar( op.MCODE_F_PROMPT    , ...) end,
   replace         = function(...) return MacroCallFar( op.MCODE_F_REPLACE   , ...) end,
   rindex          = function(...) return MacroCallFar( op.MCODE_F_RINDEX    , ...) end,
-  size2str        = function(...) return MacroCallFar( op.MCODE_F_SIZE2STR  , ...) end,
+--size2str        -- implemented in this file
   sleep           = function(...) return MacroCallFar( op.MCODE_F_SLEEP     , ...) end,
   string          = function(...) return MacroCallFar( op.MCODE_F_STRING    , ...) end,
   strwrap         = function(...) return MacroCallFar( op.MCODE_F_STRWRAP   , ...) end,
@@ -130,6 +130,14 @@ mf.strpad = function(V, Size, Fill, Op)
   end
 
   return strDest
+end
+
+-- S = Size2Str(Size, Flags [,Width])
+-- @param Flags: FARFORMATFILESIZEFLAGS values are used
+mf.size2str = function(Size, Flags, Width)
+  Flags = type(Flags)=="number" and Flags or 0
+  Width = type(Width)=="number" and Width or 0
+  return far.FormatFileSize(Size, Width, Flags, band(Flags, F.FFFS_MINSIZEINDEX_MASK))
 end
 
 --[=[

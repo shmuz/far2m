@@ -5222,15 +5222,18 @@ int far_XLat (lua_State *L)
 
 int far_FormatFileSize(lua_State *L)
 {
-	wchar_t buf[256];
 	uint64_t Size = (uint64_t) luaL_checknumber(L, 1);
-	int Width = luaL_checkinteger(L, 2);
-	flags_t Flags = OptFlags(L, 3, 0);
+	int Width = (int) luaL_checkinteger(L, 2);
+	if (abs(Width) > 0x20000)
+		return luaL_error(L, "the 'Width' argument exceeds 128 KBytes");
 
-	if(Flags & FFFS_MINSIZEINDEX)
-		Flags |= (luaL_optinteger(L, 4, 0) & FFFS_MINSIZEINDEX_MASK);
+	flags_t Flags = OptFlags(L, 3, 0) & ~FFFS_MINSIZEINDEX_MASK;
+	Flags |= luaL_optinteger(L, 4, 0) & FFFS_MINSIZEINDEX_MASK;
 
-	FSF.FormatFileSize(Size, Width, Flags, buf, ARRAYSIZE(buf));
+	size_t bufsize = FSF.FormatFileSize(Size, Width, Flags, NULL, 0);
+	wchar_t *buf = (wchar_t*) lua_newuserdata(L, bufsize*sizeof(wchar_t));
+
+	FSF.FormatFileSize(Size, Width, Flags, buf, bufsize);
 	push_utf8_string(L, buf, -1);
 	return 1;
 }
