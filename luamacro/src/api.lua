@@ -137,7 +137,7 @@ end
 mf.size2str = function(Size, Flags, Width)
   Flags = type(Flags)=="number" and Flags or 0
   Width = type(Width)=="number" and Width or 0
-  return far.FormatFileSize(Size, Width, Flags, band(Flags, F.FFFS_MINSIZEINDEX_MASK))
+  return far.FormatFileSize(Size, Width, Flags, Flags)
 end
 
 --[=[
