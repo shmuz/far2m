@@ -2089,6 +2089,7 @@ int Editor::ProcessKey(int Key)
 			{
 				Lock();
 				Undo(Key==KEY_CTRLSHIFTZ);
+				Flags.Set(FEDITOR_NEWUNDO);
 				Unlock();
 				Show();
 			}
