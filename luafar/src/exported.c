@@ -736,22 +736,23 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 	if (!CheckReloadDefaultScript(L) || !GetExportFunction(L, "Open"))
 		return INVALID_HANDLE_VALUE;
 
+	if (OpenFrom == OPEN_LUAMACRO)
+		return Open_Luamacro(L, Item);
+
 	lua_pushinteger(L, OpenFrom); // 1-st argument
+	lua_pushinteger(L, 0);        // 2-nd argument (dummy Id)
 
 	switch(OpenFrom)
 	{
-		case OPEN_LUAMACRO:
-			return Open_Luamacro(L, Item);
-
 		case OPEN_FROMMACRO:
 		{
 			int top;
 			struct OpenMacroInfo* data = (struct OpenMacroInfo*)Item;
 			PackMacroValues(L, data->Count, data->Values);
 			top = lua_gettop(L);
-			if (pcall_msg(L, 2, LUA_MULTRET) == 0)
+			if (pcall_msg(L, 3, LUA_MULTRET) == 0)
 			{
-				int nret = lua_gettop(L) - top + 3; // nret
+				int nret = lua_gettop(L) - top + 4; // nret
 				if (nret > 0 && lua_istable(L, -nret))
 				{
 					lua_getfield(L, -nret, "type"); // nret+1
@@ -791,7 +792,7 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 
 		case OPEN_SHORTCUT:
 			push_utf8_string(L, (const wchar_t*)Item, -1);
-			if (pcall_msg(L, 2, 1) == 0) {
+			if (pcall_msg(L, 3, 1) == 0) {
 				if (lua_toboolean(L, -1))        //+1: Obj
 					return RegisterObject(L);      //+0
 				lua_pop(L,1);
@@ -800,7 +801,7 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 
 		case OPEN_COMMANDLINE:
 			push_utf8_string(L, (const wchar_t*)Item, -1);
-			if (pcall_msg(L, 2, 1) == 0) {
+			if (pcall_msg(L, 3, 1) == 0) {
 				if (lua_toboolean(L, -1))        //+1: Obj
 					return RegisterObject(L);      //+0
 				lua_pop(L,1);
@@ -810,8 +811,11 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 		case OPEN_DIALOG:
 		{
 			struct OpenDlgPluginData *data = (struct OpenDlgPluginData*)Item;
+			lua_pop(L, 1);  //pop dummy Id
 			lua_pushinteger(L, data->ItemNumber);
+			lua_createtable(L, 0, 1);
 			NewDialogData(L, data->hDlg, FALSE);
+			lua_setfield(L, -2, "hDlg");
 			if (pcall_msg(L, 3, 1) == 0) {
 				if (lua_toboolean(L, -1))        //+1: Obj
 					return RegisterObject(L);      //+0
@@ -827,7 +831,8 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 		case OPEN_VIEWER:
 		case OPEN_FILEPANEL:
 			lua_pushinteger(L, Item);
-			if (pcall_msg(L, 2, 1) == 0) {
+			lua_insert(L, -2);
+			if (pcall_msg(L, 3, 1) == 0) {
 				if (lua_toboolean(L, -1))        //+1: Obj
 					return RegisterObject(L);      //+0
 				lua_pop(L,1);
@@ -836,7 +841,7 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 
 		default:
 		case OPEN_ANALYSE: //currently not supported
-			lua_pop(L, 1);
+			lua_pop(L, 2);
 			break;
 	}
 

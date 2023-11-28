@@ -571,33 +571,33 @@ local function OpenFromMacro (argtable)
   end
 end
 
-function export.Open (OpenFrom, Item, ...)
+function export.Open (OpenFrom, Id, ...)
   if OpenFrom == F.OPEN_LUAMACRO then
-    return OpenLuaMacro(Item, ...)
+    return OpenLuaMacro(Id, ...)
 
   elseif OpenFrom == F.OPEN_FROMMACRO then
-    return OpenFromMacro(Item)
+    return OpenFromMacro(...)
 
   elseif OpenFrom == F.OPEN_SHORTCUT then
-    return OpenShortcut(Item)
+    return OpenShortcut(...)
 
   elseif OpenFrom == F.OPEN_COMMANDLINE then
-    return OpenCommandLine(Item)
+    return OpenCommandLine(...)
 
   elseif OpenFrom == F.OPEN_FINDLIST then
     for _,mod in ipairs(utils.GetPanelModules()) do
       if type(mod.Open) == "function" then
-        local obj = mod.Open(OpenFrom, Item, ...)
+        local obj = mod.Open(OpenFrom, Id, ...)
         if obj then return { module=mod; object=obj } end
       end
     end
 
   else
     local items = utils.GetMenuItems()
-    if Item == 0 then
+    if Id == 0 then
       macrobrowser()
-    elseif type(Item) == "number" then
-      local guid = PluginInfo[OpenFrom==F.OPEN_DISKMENU and "DiskMenuGuids" or "PluginMenuGuids"][Item+1]
+    elseif type(Id) == "number" then
+      local guid = PluginInfo[OpenFrom==F.OPEN_DISKMENU and "DiskMenuGuids" or "PluginMenuGuids"][Id+1]
       if guid and items[guid] then
         local mod, obj = items[guid].action(OpenFrom, ...)
         if CanCreatePanel[OpenFrom] and mod and obj and PanelModuleExist(mod) then
