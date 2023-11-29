@@ -19,13 +19,13 @@ static lua_State* LS;
 static TPluginData PluginData;
 //---------------------------------------------------------------------------
 
-lua_State* GetLuaState()
+LUAPLUG lua_State* GetLuaState()
 {
 	return LS;
 }
 //---------------------------------------------------------------------------
 
-int LUAPLUG luaopen_luaplug (lua_State *L)
+LUAPLUG int luaopen_luaplug (lua_State *L)
 {
 	return LF_InitOtherLuaState(L, LS, FUNC_OPENLIBS);
 }
@@ -36,7 +36,7 @@ static LONG_PTR WINAPI DlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 	return LF_DlgProc(LS, hDlg, Msg, Param1, Param2);
 }
 
-void LUAPLUG GetGlobalInfoW(struct GlobalInfo *aInfo)
+LUAPLUG void GetGlobalInfoW(struct GlobalInfo *aInfo)
 {
 	struct VersionInfo Version = { PLUG_VERSION };
 	aInfo->StructSize    = sizeof(*aInfo);
@@ -47,7 +47,7 @@ void LUAPLUG GetGlobalInfoW(struct GlobalInfo *aInfo)
 	aInfo->Author        = WIDEN(PLUG_AUTHOR);
 }
 
-void LUAPLUG SetStartupInfoW(const struct PluginStartupInfo *aInfo)
+LUAPLUG void SetStartupInfoW(const struct PluginStartupInfo *aInfo)
 {
 	if (!aInfo->LuafarHandle)
 		return; // luafar.so is not loaded
@@ -73,7 +73,7 @@ void LUAPLUG SetStartupInfoW(const struct PluginStartupInfo *aInfo)
 }
 //---------------------------------------------------------------------------
 
-void LUAPLUG GetPluginInfoW(struct PluginInfo *aInfo)
+LUAPLUG void GetPluginInfoW(struct PluginInfo *aInfo)
 {
 	if(LS) {
 		LF_GetPluginInfo (LS, aInfo);
@@ -83,7 +83,7 @@ void LUAPLUG GetPluginInfoW(struct PluginInfo *aInfo)
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_OPENPLUGIN) || defined(EXPORT_ALL)
-HANDLE LUAPLUG OpenPluginW(int OpenFrom, INT_PTR Item)
+LUAPLUG HANDLE OpenPluginW(int OpenFrom, INT_PTR Item)
 {
 	return LS ? LF_Open(LS, OpenFrom, Item) : INVALID_HANDLE_VALUE;
 }
@@ -91,7 +91,7 @@ HANDLE LUAPLUG OpenPluginW(int OpenFrom, INT_PTR Item)
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_OPENFILEPLUGIN) || defined(EXPORT_ALL)
-HANDLE LUAPLUG OpenFilePluginW(const wchar_t *Name, const unsigned char *Data,
+LUAPLUG HANDLE OpenFilePluginW(const wchar_t *Name, const unsigned char *Data,
 	int DataSize, int OpMode)
 {
 	return LS ? LF_OpenFilePlugin(LS, Name, Data, DataSize, OpMode) : INVALID_HANDLE_VALUE;
@@ -100,14 +100,14 @@ HANDLE LUAPLUG OpenFilePluginW(const wchar_t *Name, const unsigned char *Data,
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_GETFINDDATA) || defined(EXPORT_ALL)
-int LUAPLUG GetFindDataW(HANDLE hPlugin, struct PluginPanelItem **pPanelItem,
+LUAPLUG int GetFindDataW(HANDLE hPlugin, struct PluginPanelItem **pPanelItem,
 												int *pItemsNumber, int OpMode)
 {
 	return LS ? LF_GetFindData(LS, hPlugin, pPanelItem, pItemsNumber, OpMode) : FALSE;
 }
 //---------------------------------------------------------------------------
 
-void LUAPLUG FreeFindDataW(HANDLE hPlugin, struct PluginPanelItem *PanelItem,
+LUAPLUG void FreeFindDataW(HANDLE hPlugin, struct PluginPanelItem *PanelItem,
 												 int ItemsNumber)
 {
 	if(LS) LF_FreeFindData(LS, hPlugin, PanelItem, ItemsNumber);
@@ -116,7 +116,7 @@ void LUAPLUG FreeFindDataW(HANDLE hPlugin, struct PluginPanelItem *PanelItem,
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_CLOSEPLUGIN) || defined(EXPORT_ALL)
-void LUAPLUG ClosePluginW(HANDLE hPlugin)
+LUAPLUG void ClosePluginW(HANDLE hPlugin)
 {
 	if(LS) LF_ClosePanel(LS, hPlugin);
 }
@@ -124,7 +124,7 @@ void LUAPLUG ClosePluginW(HANDLE hPlugin)
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_GETFILES) || defined(EXPORT_ALL)
-int LUAPLUG GetFilesW(HANDLE hPlugin, struct PluginPanelItem *PanelItem,
+LUAPLUG int GetFilesW(HANDLE hPlugin, struct PluginPanelItem *PanelItem,
 	int ItemsNumber, int Move, const wchar_t **DestPath, int OpMode)
 {
 	return LS ? LF_GetFiles(LS,hPlugin,PanelItem,ItemsNumber,Move,DestPath,OpMode) : 0;
@@ -133,7 +133,7 @@ int LUAPLUG GetFilesW(HANDLE hPlugin, struct PluginPanelItem *PanelItem,
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_GETOPENPLUGININFO) || defined(EXPORT_ALL)
-void LUAPLUG GetOpenPluginInfoW(HANDLE hPlugin, struct OpenPluginInfo *Info)
+LUAPLUG void GetOpenPluginInfoW(HANDLE hPlugin, struct OpenPluginInfo *Info)
 {
 	if(LS) LF_GetOpenPanelInfo(LS, hPlugin, Info);
 }
@@ -141,7 +141,7 @@ void LUAPLUG GetOpenPluginInfoW(HANDLE hPlugin, struct OpenPluginInfo *Info)
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_EXITFAR) || defined(EXPORT_ALL)
-void LUAPLUG ExitFARW()
+LUAPLUG void ExitFARW()
 {
 	if(LS) {
 		LF_ExitFAR(LS);
@@ -153,7 +153,7 @@ void LUAPLUG ExitFARW()
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_MAYEXITFAR) || defined(EXPORT_ALL)
-int LUAPLUG MayExitFARW()
+LUAPLUG int MayExitFARW()
 {
 	return LS ? LF_MayExitFAR(LS) : 1;
 }
@@ -161,7 +161,7 @@ int LUAPLUG MayExitFARW()
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_COMPARE) || defined(EXPORT_ALL)
-int LUAPLUG CompareW(HANDLE hPlugin, const struct PluginPanelItem *Item1,
+LUAPLUG int CompareW(HANDLE hPlugin, const struct PluginPanelItem *Item1,
 										const struct PluginPanelItem *Item2, unsigned int Mode)
 {
 	return LS ? LF_Compare(LS, hPlugin, Item1, Item2, Mode) : 0;
@@ -170,7 +170,7 @@ int LUAPLUG CompareW(HANDLE hPlugin, const struct PluginPanelItem *Item1,
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_CONFIGURE) || defined(EXPORT_ALL)
-int LUAPLUG ConfigureW(int ItemNumber)
+LUAPLUG int ConfigureW(int ItemNumber)
 {
 	return LS ? LF_Configure(LS, ItemNumber) : FALSE;
 }
@@ -178,7 +178,7 @@ int LUAPLUG ConfigureW(int ItemNumber)
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_DELETEFILES) || defined(EXPORT_ALL)
-int LUAPLUG DeleteFilesW(HANDLE hPlugin, struct PluginPanelItem *PanelItem,
+LUAPLUG int DeleteFilesW(HANDLE hPlugin, struct PluginPanelItem *PanelItem,
 	int ItemsNumber, int OpMode)
 {
 	return LS ? LF_DeleteFiles(LS, hPlugin, PanelItem, ItemsNumber, OpMode) : FALSE;
@@ -187,14 +187,14 @@ int LUAPLUG DeleteFilesW(HANDLE hPlugin, struct PluginPanelItem *PanelItem,
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_GETVIRTUALFINDDATA) || defined(EXPORT_ALL)
-int LUAPLUG GetVirtualFindDataW(HANDLE hPlugin,
+LUAPLUG int GetVirtualFindDataW(HANDLE hPlugin,
 	struct PluginPanelItem **pPanelItem, int *pItemsNumber, const wchar_t *Path)
 {
 	if(LS) return LF_GetVirtualFindData(LS,hPlugin,pPanelItem,pItemsNumber,Path);
 	return FALSE;
 }
 
-void LUAPLUG FreeVirtualFindDataW(HANDLE hPlugin,
+LUAPLUG void FreeVirtualFindDataW(HANDLE hPlugin,
 	struct PluginPanelItem *PanelItem, int ItemsNumber)
 {
 	if(LS) LF_FreeVirtualFindData(LS, hPlugin, PanelItem, ItemsNumber);
@@ -203,7 +203,7 @@ void LUAPLUG FreeVirtualFindDataW(HANDLE hPlugin,
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_MAKEDIRECTORY) || defined(EXPORT_ALL)
-int LUAPLUG MakeDirectoryW(HANDLE hPlugin, const wchar_t **Name, int OpMode)
+LUAPLUG int MakeDirectoryW(HANDLE hPlugin, const wchar_t **Name, int OpMode)
 {
 	return LS ? LF_MakeDirectory(LS, hPlugin, Name, OpMode) : 0;
 }
@@ -211,7 +211,7 @@ int LUAPLUG MakeDirectoryW(HANDLE hPlugin, const wchar_t **Name, int OpMode)
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_PROCESSEVENT) || defined(EXPORT_ALL)
-int LUAPLUG ProcessEventW(HANDLE hPlugin, int Event, void *Param)
+LUAPLUG int ProcessEventW(HANDLE hPlugin, int Event, void *Param)
 {
 	return LS ? LF_ProcessPanelEvent(LS, hPlugin, Event, Param) : FALSE;
 }
@@ -219,7 +219,7 @@ int LUAPLUG ProcessEventW(HANDLE hPlugin, int Event, void *Param)
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_PROCESSHOSTFILE) || defined(EXPORT_ALL)
-int LUAPLUG ProcessHostFileW(HANDLE hPlugin, struct PluginPanelItem *PanelItem,
+LUAPLUG int ProcessHostFileW(HANDLE hPlugin, struct PluginPanelItem *PanelItem,
 	int ItemsNumber, int OpMode)
 {
 	return LS ? LF_ProcessHostFile(LS, hPlugin, PanelItem, ItemsNumber, OpMode) : FALSE;
@@ -228,7 +228,7 @@ int LUAPLUG ProcessHostFileW(HANDLE hPlugin, struct PluginPanelItem *PanelItem,
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_PROCESSKEY) || defined(EXPORT_ALL)
-int LUAPLUG ProcessKeyW(HANDLE hPlugin, int Key, unsigned int ControlState)
+LUAPLUG int ProcessKeyW(HANDLE hPlugin, int Key, unsigned int ControlState)
 {
 	return LS ? LF_ProcessKey(LS, hPlugin, Key, ControlState) : FALSE;
 }
@@ -236,7 +236,7 @@ int LUAPLUG ProcessKeyW(HANDLE hPlugin, int Key, unsigned int ControlState)
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_PUTFILES) || defined(EXPORT_ALL)
-int LUAPLUG PutFilesW(HANDLE hPlugin, struct PluginPanelItem *PanelItem,
+LUAPLUG int PutFilesW(HANDLE hPlugin, struct PluginPanelItem *PanelItem,
 	int ItemsNumber, int Move, const wchar_t *SrcPath, int OpMode)
 {
 	return LS ? LF_PutFiles(LS, hPlugin, PanelItem, ItemsNumber, Move, SrcPath, OpMode) : 0;
@@ -245,7 +245,7 @@ int LUAPLUG PutFilesW(HANDLE hPlugin, struct PluginPanelItem *PanelItem,
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_SETDIRECTORY) || defined(EXPORT_ALL)
-int LUAPLUG SetDirectoryW(HANDLE hPlugin, const wchar_t *Dir, int OpMode)
+LUAPLUG int SetDirectoryW(HANDLE hPlugin, const wchar_t *Dir, int OpMode)
 {
 	return LS ? LF_SetDirectory(LS, hPlugin, Dir, OpMode) : FALSE;
 }
@@ -253,7 +253,7 @@ int LUAPLUG SetDirectoryW(HANDLE hPlugin, const wchar_t *Dir, int OpMode)
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_SETFINDLIST) || defined(EXPORT_ALL)
-int LUAPLUG SetFindListW(HANDLE hPlugin, const struct PluginPanelItem *PanelItem, int ItemsNumber)
+LUAPLUG int SetFindListW(HANDLE hPlugin, const struct PluginPanelItem *PanelItem, int ItemsNumber)
 {
 	return LS ? LF_SetFindList(LS, hPlugin, PanelItem, ItemsNumber) : FALSE;
 }
@@ -261,7 +261,7 @@ int LUAPLUG SetFindListW(HANDLE hPlugin, const struct PluginPanelItem *PanelItem
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_GETMINFARVERSION) || defined(EXPORT_ALL)
-int LUAPLUG GetMinFarVersionW (void)
+LUAPLUG int GetMinFarVersionW (void)
 {
 	return PLUG_MINFARVERSION;
 }
@@ -269,7 +269,7 @@ int LUAPLUG GetMinFarVersionW (void)
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_PROCESSEDITORINPUT) || defined(EXPORT_ALL)
-int LUAPLUG ProcessEditorInputW(const INPUT_RECORD *Rec)
+LUAPLUG int ProcessEditorInputW(const INPUT_RECORD *Rec)
 {
 	return LS ? LF_ProcessEditorInput(LS, Rec) : 0;
 }
@@ -277,7 +277,7 @@ int LUAPLUG ProcessEditorInputW(const INPUT_RECORD *Rec)
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_PROCESSEDITOREVENT) || defined(EXPORT_ALL)
-int LUAPLUG ProcessEditorEventW(int Event, void *Param)
+LUAPLUG int ProcessEditorEventW(int Event, void *Param)
 {
 	return LS ? LF_ProcessEditorEvent(LS, Event, Param) : 0;
 }
@@ -285,7 +285,7 @@ int LUAPLUG ProcessEditorEventW(int Event, void *Param)
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_PROCESSVIEWEREVENT) || defined(EXPORT_ALL)
-int LUAPLUG ProcessViewerEventW(int Event, void *Param)
+LUAPLUG int ProcessViewerEventW(int Event, void *Param)
 {
 	return LS ? LF_ProcessViewerEvent(LS, Event, Param) : 0;
 }
@@ -293,14 +293,14 @@ int LUAPLUG ProcessViewerEventW(int Event, void *Param)
 //---------------------------------------------------------------------------
 
 //exported unconditionally to enable far.Timer's work
-int LUAPLUG ProcessSynchroEventW(int Event, void *Param)
+LUAPLUG int ProcessSynchroEventW(int Event, void *Param)
 {
 	return LS ? LF_ProcessSynchroEvent(LS, Event, Param) : 0;
 }
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_PROCESSDIALOGEVENT) || defined(EXPORT_ALL)
-int LUAPLUG ProcessDialogEventW(int Event, void *Param)
+LUAPLUG int ProcessDialogEventW(int Event, void *Param)
 {
 	return LS ? LF_ProcessDialogEvent(LS, Event, Param) : 0;
 }
@@ -308,12 +308,12 @@ int LUAPLUG ProcessDialogEventW(int Event, void *Param)
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_GETCUSTOMDATA) || defined(EXPORT_ALL)
-int LUAPLUG GetCustomDataW(const wchar_t *FilePath, wchar_t **CustomData)
+LUAPLUG int GetCustomDataW(const wchar_t *FilePath, wchar_t **CustomData)
 {
 	return LS ? LF_GetCustomData(LS, FilePath, CustomData) : 0;
 }
 
-void LUAPLUG FreeCustomDataW(wchar_t *CustomData)
+LUAPLUG void FreeCustomDataW(wchar_t *CustomData)
 {
 	if(LS) LF_FreeCustomData(LS, CustomData);
 }
@@ -321,7 +321,7 @@ void LUAPLUG FreeCustomDataW(wchar_t *CustomData)
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_PROCESSCONSOLEINPUT) || defined(EXPORT_ALL)
-int LUAPLUG ProcessConsoleInputW(INPUT_RECORD *Rec)
+LUAPLUG int ProcessConsoleInputW(INPUT_RECORD *Rec)
 {
 	return LS ? LF_ProcessConsoleInput(LS, Rec) : 0;
 }
