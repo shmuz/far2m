@@ -2091,6 +2091,31 @@ void WINAPI FarText(int X,int Y,int Color,const wchar_t *Str)
 	InterThreadCall<bool>(std::bind(FarTextSynched, X, Y, Color, Str));
 }
 
+static bool FarTextV2Synched(int X,int Y,const FarTrueColorForeAndBack *Color,const wchar_t *Str)
+{
+	if (DisablePluginsOutput || FrameManager->ManagerIsDown())
+		return false;
+
+	if (!Str)
+	{
+		int PrevLockCount=ScrBuf.GetLockCount();
+		ScrBuf.SetLockCount(0);
+		ScrBuf.Flush();
+		ScrBuf.SetLockCount(PrevLockCount);
+	}
+	else
+	{
+		Text(X,Y,Color,Str);
+	}
+	return true;
+}
+
+
+void WINAPI FarTextV2(int X,int Y,const FarTrueColorForeAndBack *Color,const wchar_t *Str)
+{
+	InterThreadCall<bool>(std::bind(FarTextV2Synched, X, Y, Color, Str));
+}
+
 static int FarEditorControlSynchedV2(int EditorID,int Command,void *Param)
 {
 	if (FrameManager->ManagerIsDown())

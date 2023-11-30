@@ -2774,22 +2774,35 @@ void SetColorForeAndBack(lua_State *L, const struct FarTrueColorForeAndBack *fb,
 	lua_setfield(L, -2, name);
 }
 
-void FillColorForeAndBack(lua_State *L, struct FarTrueColorForeAndBack *fb, const char *Name)
+uint32_t GetColorFromTable(lua_State *L, const char *field, int index)
 {
 	uint32_t val;
-	lua_getfield(L, -1, Name);        //+1
-	if (lua_istable(L,-1)) {
-		lua_getfield(L, -1, "ForegroundColor");
-		val = (uint32_t) lua_tointeger(L,-1);
-		FarTrueColorFromRGB(&fb->Fore, val);
-		lua_pop(L,1);
-
-		lua_getfield(L, -1, "BackgroundColor");
-		val = (uint32_t) lua_tointeger(L,-1);
-		FarTrueColorFromRGB(&fb->Back, val);
-		lua_pop(L,1);
+	lua_getfield(L, -1, field);
+	if (lua_isnil(L, -1)) {
+		lua_pop(L, 1);
+		lua_pushinteger(L, index);
+		lua_gettable(L, -2);
 	}
-	lua_pop(L,1);                     //+0
+	val = (uint32_t) lua_tointeger(L, -1);
+	lua_pop(L, 1);
+	return val;
+}
+
+void FillColor(lua_State *L, struct FarTrueColorForeAndBack *fb)
+{
+	if (lua_istable(L, -1)) {
+		uint32_t val = GetColorFromTable(L, "ForegroundColor", 1);
+		FarTrueColorFromRGB(&fb->Fore, val);
+		val = GetColorFromTable(L, "BackgroundColor", 2);
+		FarTrueColorFromRGB(&fb->Back, val);
+	}
+}
+
+void FillColorForeAndBack(lua_State *L, struct FarTrueColorForeAndBack *fb, const char *Name)
+{
+	lua_getfield(L, -1, Name);
+	FillColor(L, fb);
+	lua_pop(L,1);
 }
 
 int DoSendDlgMessage (lua_State *L, int Msg, int delta)
@@ -3976,11 +3989,25 @@ int far_GetMsg(lua_State *L)
 
 int far_Text(lua_State *L)
 {
+	int Color = 0;
+	const wchar_t* Str;
+
 	int X = luaL_optinteger(L, 1, 0);
 	int Y = luaL_optinteger(L, 2, 0);
-	int Color = luaL_optinteger(L, 3, 0x0F);
-	const wchar_t* Str = opt_utf8_string(L, 4, NULL);
-	PSInfo.Text(X, Y, Color, Str);
+	if (!lua_istable(L, 3))
+		Color = luaL_optinteger(L, 3, 0x0F);
+	Str = opt_utf8_string(L, 4, NULL);
+
+	if (lua_istable(L, 3)) {
+		struct FarTrueColorForeAndBack fb;
+		memset(&fb, 0, sizeof(fb));
+		lua_pushvalue(L, 3);
+		FillColor(L, &fb);
+		PSInfo.TextV2(X, Y, &fb, Str);
+	}
+	else
+		PSInfo.Text(X, Y, Color, Str);
+
 	return 0;
 }
 
@@ -6395,6 +6422,8 @@ int LF_LuaOpen (const struct PluginStartupInfo *aInfo, TPluginData* aPlugData, l
 		PSInfo = *aInfo;
 		FSF = *aInfo->FSF;
 		PSInfo.FSF = &FSF;
+		PSInfo.ModuleName = NULL;
+		PSInfo.ModuleNumber = 0;
 	}
 
 	// create Lua State

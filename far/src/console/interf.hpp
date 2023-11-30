@@ -84,6 +84,7 @@ void MoveRealCursor(int X, int Y);
 void GetRealCursorPos(SHORT &X, SHORT &Y);
 void ScrollScreen(int Count);
 
+void Text(int X, int Y, const FarTrueColorForeAndBack *Color, const WCHAR *Str);
 void Text(int X, int Y, int Color, const WCHAR *Str);
 void Text(const WCHAR *Str, size_t Length = (size_t)-1);
 void Text(FarLangMsg MsgId);
@@ -121,8 +122,6 @@ void DrawLine(int Length, int Type, const wchar_t *UserSep = nullptr);
 WCHAR *MakeSeparator(int Length, WCHAR *DestStr, int Type = 1, const wchar_t *UserSep = nullptr);
 
 void InitRecodeOutTable();
-
-int WINAPI TextToCharInfo(const char *Text, WORD Attr, CHAR_INFO *CharInfo, int Length, DWORD Reserved);
 
 inline void SetVidChar(CHAR_INFO &CI, COMP_CHAR Chr)
 {

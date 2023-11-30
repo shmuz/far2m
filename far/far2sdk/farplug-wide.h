@@ -1552,6 +1552,13 @@ struct DialogItemTrueColors
 	struct FarTrueColorForeAndBack Reserved;
 };
 
+typedef void (WINAPI *FARAPITEXTV2)(
+	int X,
+	int Y,
+	const struct FarTrueColorForeAndBack *Color,
+	const wchar_t *Str
+);
+
 enum WINDOWINFO_TYPE
 {
 #ifdef FAR_USE_INTERNALS
@@ -2417,6 +2424,7 @@ struct PluginStartupInfo
 	const void*            Private;
 	void*                  LuafarHandle;
 	FARAPIDIALOGINITV3     DialogInitV3;
+	FARAPITEXTV2           TextV2;
 };
 
 

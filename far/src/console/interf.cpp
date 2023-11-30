@@ -487,6 +487,16 @@ void InitRecodeOutTable()
 	//_SVS(SysLogDump("Oem2Unicode",0,(LPBYTE)Oem2Unicode,sizeof(Oem2Unicode),nullptr));
 }
 
+void Text(int X, int Y, const FarTrueColorForeAndBack *Color, const WCHAR *Str)
+{
+	DWORD64 Color64;
+	FarTrueColorToAttributes(Color64, *Color);
+	SetColor(Color64);
+	CurX = X;
+	CurY = Y;
+	Text(Str);
+}
+
 void Text(int X, int Y, int Color, const WCHAR *Str)
 {
 	CurColor = FarColorToReal(Color);
