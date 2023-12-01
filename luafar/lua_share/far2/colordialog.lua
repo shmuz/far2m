@@ -74,6 +74,14 @@ local function ColorDialogBackRGBMask()
   return lshift(ColorDialogBackRGBValue(), 40)
 end
 
+local function SetByMask(Trg, Src, Mask)
+  return bor(band(Trg,bnot(Mask)), band(Src,Mask))
+end
+
+local function EqualByMask(A1, A2, Mask)
+  return band(A1,Mask) == band(A2,Mask)
+end
+
 local function GetColorDialog(aColor)
   aColor = aColor or 0x0F
   ColorDialogForeRGB = ("%06X"):format( ReverseColorBytes(band(rshift(aColor,16), 0xffffff)) )
@@ -83,7 +91,6 @@ local function GetColorDialog(aColor)
   local TextSample = ("Text "):rep(7)
 
   local Items = {
-    data=aColor;
     width=0;
     --[[   1 ]] {tp="dbox",   text="Color"},
 
@@ -145,13 +152,13 @@ local function GetColorDialog(aColor)
   local CurColor = band(aColor, 0xFFFF)
 
   for i = Pos.fore, Pos.fore+15 do -- Foreground
-    if rshift(band(Items[i].flags, B_MASK), 4) == band(aColor, F_MASK) then
+    if EqualByMask(rshift(Items[i].flags,4), aColor, F_MASK) then
       Items[i].val=1; Items[i].focus=1; break
     end
   end
 
   for i = Pos.back, Pos.back+15 do -- Background
-    if band(Items[i].flags, B_MASK) == band(aColor, B_MASK) then
+    if EqualByMask(Items[i].flags, aColor, B_MASK) then
       Items[i].val=1; break
     end
   end
@@ -160,12 +167,12 @@ local function GetColorDialog(aColor)
   Elem.transpBack.val = (0 ~= band(aColor, 0xF000))
 
   for i = Pos.sample, Pos.sample+2 do -- TextSample
-    Items[i].flags = bor(band(Items[i].flags, bnot(F.DIF_COLORMASK)), CurColor)
+    Items[i].flags = SetByMask(Items[i].flags, CurColor, F.DIF_COLORMASK)
   end
 
   local function UpdateRGBFromDialog(hDlg)
-    ColorDialogForeRGB = hDlg:send(F.DM_GETTEXT, Pos.rgbFore)
-    ColorDialogBackRGB = hDlg:send(F.DM_GETTEXT, Pos.rgbBack)
+    ColorDialogForeRGB = hDlg:GetText(Pos.rgbFore)
+    ColorDialogBackRGB = hDlg:GetText(Pos.rgbBack)
   end
 
   local function OnDrawn(hDlg)
@@ -178,10 +185,10 @@ local function GetColorDialog(aColor)
     -- Ensure everything is on screen and will use console API then
     far.Text() -- original: ScrBuf.Flush()
 
-    local DlgRect = hDlg:send(F.DM_GETDLGRECT)
+    local DlgRect = hDlg:GetDlgRect()
 
     for ID = Pos.fore, Pos.fore+15 do
-      local ItemRect = hDlg:send(F.DM_GETITEMPOSITION, ID)
+      local ItemRect = hDlg:GetItemPosition(ID)
       if ItemRect then
         ItemRect.Left   = ItemRect.Left   + DlgRect.Left
         ItemRect.Right  = ItemRect.Right  + DlgRect.Left
@@ -202,12 +209,11 @@ local function GetColorDialog(aColor)
         Normal = {
           ForegroundColor = ColorDialogForeRGBValue();
           BackgroundColor = ColorDialogBackRGBValue();
-        }}
-      hDlg:send(F.DM_SETTRUECOLOR, ID, ditc);
+      }}
+      hDlg:SetTrueColor(ID, ditc);
     end
 
-    local Color = hDlg:send(F.DM_GETDLGDATA)
-    return band(Color,0xFF)
+    return band(CurColor,0xFF)
   end
 
   Items.proc = function(hDlg, Msg, Par1, Par2)
@@ -219,21 +225,11 @@ local function GetColorDialog(aColor)
 
     elseif Msg == F.DN_BTNCLICK then
       if Par1 >= Pos.fore and Par1 <= Pos.back+15 then
-        local color = hDlg:send(F.DM_GETDLGDATA)
-        local DlgItem = hDlg:send(F.DM_GETDLGITEM, Par1)
-        local NewColor = color
-
+        local DlgItem = hDlg:GetDlgItem(Par1)
         if Par1 <= Pos.fore+15 then   -- Fore
-          NewColor = band(NewColor, bnot(0x0F))
-          NewColor = bor(NewColor, rshift(band(DlgItem[9],B_MASK), 4))
+          CurColor = SetByMask(CurColor, rshift(DlgItem[9],4), F_MASK)
         elseif Par1 >= Pos.back then  -- Back
-          NewColor = band(NewColor, bnot(0xF0))
-          NewColor = bor(NewColor, band(DlgItem[9],B_MASK))
-        end
-
-        if NewColor ~= CurColor then
-          CurColor = NewColor
-          hDlg:send(F.DM_SETDLGDATA, CurColor)
+          CurColor = SetByMask(CurColor, DlgItem[9], B_MASK)
         end
       end
 

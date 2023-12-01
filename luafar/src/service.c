@@ -1282,15 +1282,15 @@ int editor_TurnOffMarkingBlock(lua_State *L)
 	return 0;
 }
 
-void FarTrueColorFromRGB(struct FarTrueColor *trg, uint32_t src)
+void FarTrueColorFromRGB(struct FarTrueColor *out, DWORD rgb, int used)
 {
-	trg->R = (src >>  0) & 0xFF;
-	trg->G = (src >>  8) & 0xFF;
-	trg->B = (src >> 16) & 0xFF;
-	trg->Flags = 0x01; // (src >> 24);
+	out->Flags = used ? 1 : 0;
+	out->R = rgb & 0xff;
+	out->G = (rgb >> 8) & 0xff;
+	out->B = (rgb >> 16) & 0xff;
 }
 
-uint32_t FarTrueColorToRGB(const struct FarTrueColor *src)
+DWORD FarTrueColorToRGB(const struct FarTrueColor *src)
 {
 	return src->R | (src->G << 8) | (src->B << 16) | (src->Flags << 24);
 }
@@ -1299,7 +1299,7 @@ int editor_AddColor(lua_State *L)
 {
 	struct EditorTrueColor etc;
 	int Flags;
-	uint32_t fg, bg;
+	DWORD fg, bg;
 	int editorId = luaL_optinteger(L,1,-1);
 
 	memset(&etc, 0, sizeof(etc));
@@ -1314,8 +1314,8 @@ int editor_AddColor(lua_State *L)
 			etc.Base.Color = GetOptIntFromTable(L,"BaseColor",0) & 0x0000FFFF;
 			fg = GetOptIntFromTable(L,"TrueFore",0xFFFFFF) | (0x1 << 24);
 			bg = GetOptIntFromTable(L,"TrueBack",0x000000) | (0x1 << 24);
-			FarTrueColorFromRGB(&etc.TrueColor.Fore, fg);
-			FarTrueColorFromRGB(&etc.TrueColor.Back, bg);
+			FarTrueColorFromRGB(&etc.TrueColor.Fore, fg, 1);
+			FarTrueColorFromRGB(&etc.TrueColor.Back, bg, 1);
 		}
 		lua_pop(L,1);
 	}
@@ -2774,16 +2774,16 @@ void SetColorForeAndBack(lua_State *L, const struct FarTrueColorForeAndBack *fb,
 	lua_setfield(L, -2, name);
 }
 
-uint32_t GetColorFromTable(lua_State *L, const char *field, int index)
+DWORD GetColorFromTable(lua_State *L, const char *field, int index)
 {
-	uint32_t val;
+	DWORD val;
 	lua_getfield(L, -1, field);
 	if (lua_isnil(L, -1)) {
 		lua_pop(L, 1);
 		lua_pushinteger(L, index);
 		lua_gettable(L, -2);
 	}
-	val = (uint32_t) lua_tointeger(L, -1);
+	val = (DWORD) lua_tointeger(L, -1);
 	lua_pop(L, 1);
 	return val;
 }
@@ -2791,10 +2791,10 @@ uint32_t GetColorFromTable(lua_State *L, const char *field, int index)
 void FillColor(lua_State *L, struct FarTrueColorForeAndBack *fb)
 {
 	if (lua_istable(L, -1)) {
-		uint32_t val = GetColorFromTable(L, "ForegroundColor", 1);
-		FarTrueColorFromRGB(&fb->Fore, val);
+		DWORD val = GetColorFromTable(L, "ForegroundColor", 1);
+		FarTrueColorFromRGB(&fb->Fore, val, 1);
 		val = GetColorFromTable(L, "BackgroundColor", 2);
-		FarTrueColorFromRGB(&fb->Back, val);
+		FarTrueColorFromRGB(&fb->Back, val, 1);
 	}
 }
 
