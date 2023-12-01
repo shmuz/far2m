@@ -5571,10 +5571,27 @@ int far_Log(lua_State *L)
 int far_ColorDialog(lua_State *L)
 {
 	TPluginData* pd = GetPluginData(L);
-	WORD Color = (WORD)luaL_optinteger(L,1,0x0F);
-	int Transparent = lua_toboolean(L,2);
-	if (PSInfo.ColorDialog(pd->ModuleNumber, &Color, Transparent))
-		lua_pushinteger(L, Color);
+	struct ColorDialogData Data = { 0, 0, 0x0F, 0 };
+
+	if (lua_isnumber (L, 1))
+		Data.PaletteColor = (unsigned char)lua_tointeger(L, 1);
+	else if (lua_istable(L, 1)) {
+		lua_settop(L, 1);
+		Data.ForeColor = GetColorFromTable(L, "ForegroundColor", 1);
+		Data.BackColor = GetColorFromTable(L, "BackgroundColor", 2);
+		Data.PaletteColor = GetColorFromTable(L, "PaletteColor", 3);
+		Data.Transparency = GetColorFromTable(L, "Transparency", 4);
+	}
+	else if (!lua_isnoneornil(L, 1))
+		return luaL_argerror(L, 1, "table or integer expected");
+
+	if (PSInfo.ColorDialog(pd->ModuleNumber, &Data)) {
+		lua_createtable(L, 0, 4);
+		PutIntToTable(L, "ForegroundColor", Data.ForeColor);
+		PutIntToTable(L, "BackgroundColor", Data.BackColor);
+		PutIntToTable(L, "PaletteColor", Data.PaletteColor);
+		PutIntToTable(L, "Transparency", Data.Transparency);
+	}
 	else
 		lua_pushnil(L);
 	return 1;

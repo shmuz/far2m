@@ -38,3 +38,4 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 void SetColors();
 bool GetColorDialogForFileFilter(DWORD64 &Color, INT_PTR PluginNumber=-1);
 bool GetColorDialog(WORD &Color, bool bCentered=false, bool bAddTransparent=false, INT_PTR PluginNumber=-1);
+bool GetColorDialog(ColorDialogData *Data, INT_PTR PluginNumber=-1);

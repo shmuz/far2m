@@ -1552,6 +1552,14 @@ struct DialogItemTrueColors
 	struct FarTrueColorForeAndBack Reserved;
 };
 
+struct ColorDialogData
+{
+	DWORD ForeColor;
+	DWORD BackColor;
+	unsigned char PaletteColor;
+	unsigned char Transparency;
+};
+
 typedef void (WINAPI *FARAPITEXTV2)(
 	int X,
 	int Y,
@@ -2074,8 +2082,7 @@ typedef int (WINAPI *FARAPIMACROCONTROL)(
 
 typedef int (WINAPI *FARAPICOLORDIALOG)(
 	INT_PTR PluginNumber,
-	WORD*   Color,
-	int     bAddTransparent
+	struct ColorDialogData *Data
 );
 
 typedef int (WINAPI *FARAPIGETFILEENCODING)(

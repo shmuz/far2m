@@ -2778,18 +2778,9 @@ int WINAPI farMacroControl(DWORD PluginId, int Command, int Param1, void* Param2
 	return 0;
 }
 
-int WINAPI farColorDialog(INT_PTR PluginNumber, WORD* Color, int bAddTransparent)
+int WINAPI farColorDialog(INT_PTR PluginNumber, ColorDialogData *Data)
 {
-	if (Color)
-	{
-		WORD tmpColor = *Color;
-		if (GetColorDialog(tmpColor, true, bAddTransparent, PluginNumber))
-		{
-			*Color = tmpColor;
-			return TRUE;
-		}
-	}
-	return FALSE;
+	return GetColorDialog(Data, PluginNumber) ? TRUE : FALSE;
 }
 
 int WINAPI farGetFileEncoding(const wchar_t *FileName)

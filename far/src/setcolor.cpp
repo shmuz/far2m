@@ -776,3 +776,22 @@ bool GetColorDialog(WORD &Color, bool bCentered, bool bAddTransparent, INT_PTR P
 	return out;
 }
 
+bool GetColorDialog(ColorDialogData *Data, INT_PTR PluginNumber)
+{
+	if (Data) {
+		DWORD64 Color =
+			((DWORD64)(Data->BackColor & 0xFFFFFF) << 40) |
+			((DWORD64)(Data->ForeColor & 0xFFFFFF) << 16) |
+			(Data->Transparency << 8) |
+			Data->PaletteColor;
+
+		if (GetColorDialogInner(true, Color, true, false, PluginNumber)) {
+			Data->BackColor = (Color >> 40) & 0xFFFFFF;
+			Data->ForeColor = (Color >> 16) & 0xFFFFFF;
+			Data->Transparency = (Color >> 8) & 0xFF;
+			Data->PaletteColor = Color & 0xFF;
+			return true;
+		}
+	}
+	return false;
+}
