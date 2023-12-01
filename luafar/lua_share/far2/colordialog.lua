@@ -1,5 +1,3 @@
--- luacheck: ignore 211 (unused variable)
-
 local sd = require "far2.simpledialog"
 
 local F = far.Flags
@@ -7,23 +5,8 @@ local band, bor, lshift, rshift = bit64.band, bit64.bor, bit64.lshift, bit64.rsh
 local bnot = function(arg) return band(bit64.bnot(arg), 0xFFFFFFFF) end
 
 -- Стандартные цвета FAR Manager
-local F_BLACK        = 0
-local F_BLUE         = F.FOREGROUND_BLUE
-local F_GREEN        = F.FOREGROUND_GREEN
-local F_CYAN         = F.FOREGROUND_BLUE + F.FOREGROUND_GREEN
-local F_RED          = F.FOREGROUND_RED
-local F_MAGENTA      = F.FOREGROUND_BLUE + F.FOREGROUND_RED
-local F_BROWN        = F.FOREGROUND_GREEN + F.FOREGROUND_RED
 local F_LIGHTGRAY    = F.FOREGROUND_BLUE + F.FOREGROUND_GREEN + F.FOREGROUND_RED
-local F_DARKGRAY     = F.FOREGROUND_INTENSITY
-local F_LIGHTBLUE    = F.FOREGROUND_BLUE + F.FOREGROUND_INTENSITY
-local F_LIGHTGREEN   = F.FOREGROUND_GREEN + F.FOREGROUND_INTENSITY
-local F_LIGHTCYAN    = F.FOREGROUND_BLUE + F.FOREGROUND_GREEN + F.FOREGROUND_INTENSITY
-local F_LIGHTRED     = F.FOREGROUND_RED + F.FOREGROUND_INTENSITY
-local F_LIGHTMAGENTA = F.FOREGROUND_BLUE + F.FOREGROUND_RED + F.FOREGROUND_INTENSITY
-local F_YELLOW       = F.FOREGROUND_GREEN + F.FOREGROUND_RED + F.FOREGROUND_INTENSITY
 local F_WHITE        = F.FOREGROUND_BLUE + F.FOREGROUND_GREEN + F.FOREGROUND_RED + F.FOREGROUND_INTENSITY
-local B_BLACK        = 0
 local B_BLUE         = F.BACKGROUND_BLUE
 local B_GREEN        = F.BACKGROUND_GREEN
 local B_CYAN         = F.BACKGROUND_BLUE + F.BACKGROUND_GREEN
@@ -42,15 +25,6 @@ local B_WHITE        = F.BACKGROUND_BLUE + F.BACKGROUND_GREEN + F.BACKGROUND_RED
 local F_MASK         = F_WHITE
 local B_MASK         = B_WHITE
 ----------------------------------------------------------------------------------------------------
-local function FarTrueColorFromRGB(rgb, used)
-  return {
-    Flags = used or (used==nil and rgb~=0) and 1 or 0;
-    R = band(rgb, 0xff);
-    G = band(rshift(rgb, 8), 0xff);
-    B = band(rshift(rgb, 16), 0xff);
-  }
-end
-----------------------------------------------------------------------------------------------------
 
 local ColorDialogForeRGB, ColorDialogBackRGB
 
@@ -64,14 +38,6 @@ end
 
 local function ColorDialogBackRGBValue()
   return ReverseColorBytes(tonumber(ColorDialogBackRGB, 16) or 0)
-end
-
-local function ColorDialogForeRGBMask()
-  return lshift(ColorDialogForeRGBValue(), 16)
-end
-
-local function ColorDialogBackRGBMask()
-  return lshift(ColorDialogBackRGBValue(), 40)
 end
 
 local function SetByMask(Trg, Src, Mask)
@@ -95,40 +61,40 @@ local function GetColorDialog(aColor)
     --[[   1 ]] {tp="dbox",   text="Color"},
 
     --[[   2 ]] {tp="sbox",  x1= 5, y1=2, x2=20, y2=8, text="Foreground"},
-    --[[   3 ]] {tp="rbutt", x1= 7, y1=3, flags=FRB+F_LIGHTGRAY+B_BLACK+F.DIF_GROUP, name="fore"},
-    --[[   4 ]] {tp="rbutt", x1="", y1=4, flags=FRB+F_BLACK+B_RED},
+    --[[   3 ]] {tp="rbutt", x1= 7, y1=3, flags=FRB+F_LIGHTGRAY+F.DIF_GROUP, name="fore"},
+    --[[   4 ]] {tp="rbutt", x1="", y1=4, flags=FRB+B_RED},
     --[[   5 ]] {tp="rbutt", x1="", y1=5, flags=FRB+F_LIGHTGRAY+B_DARKGRAY},
-    --[[   6 ]] {tp="rbutt", x1="", y1=6, flags=FRB+F_BLACK+B_LIGHTRED},
+    --[[   6 ]] {tp="rbutt", x1="", y1=6, flags=FRB+B_LIGHTRED},
     --[[   7 ]] {tp="rbutt", x1=10, y1=3, flags=FRB+F_LIGHTGRAY+B_BLUE},
-    --[[   8 ]] {tp="rbutt", x1="", y1=4, flags=FRB+F_BLACK+B_MAGENTA},
-    --[[   9 ]] {tp="rbutt", x1="", y1=5, flags=FRB+F_BLACK+B_LIGHTBLUE},
-    --[[  10 ]] {tp="rbutt", x1="", y1=6, flags=FRB+F_BLACK+B_LIGHTMAGENTA},
-    --[[  11 ]] {tp="rbutt", x1=13, y1=3, flags=FRB+F_BLACK+B_GREEN},
-    --[[  12 ]] {tp="rbutt", x1="", y1=4, flags=FRB+F_BLACK+B_BROWN},
-    --[[  13 ]] {tp="rbutt", x1="", y1=5, flags=FRB+F_BLACK+B_LIGHTGREEN},
-    --[[  14 ]] {tp="rbutt", x1="", y1=6, flags=FRB+F_BLACK+B_YELLOW},
-    --[[  15 ]] {tp="rbutt", x1=16, y1=3, flags=FRB+F_BLACK+B_CYAN},
-    --[[  16 ]] {tp="rbutt", x1="", y1=4, flags=FRB+F_BLACK+B_LIGHTGRAY},
-    --[[  17 ]] {tp="rbutt", x1="", y1=5, flags=FRB+F_BLACK+B_LIGHTCYAN},
-    --[[  18 ]] {tp="rbutt", x1="", y1=6, flags=FRB+F_BLACK+B_WHITE},
+    --[[   8 ]] {tp="rbutt", x1="", y1=4, flags=FRB+B_MAGENTA},
+    --[[   9 ]] {tp="rbutt", x1="", y1=5, flags=FRB+B_LIGHTBLUE},
+    --[[  10 ]] {tp="rbutt", x1="", y1=6, flags=FRB+B_LIGHTMAGENTA},
+    --[[  11 ]] {tp="rbutt", x1=13, y1=3, flags=FRB+B_GREEN},
+    --[[  12 ]] {tp="rbutt", x1="", y1=4, flags=FRB+B_BROWN},
+    --[[  13 ]] {tp="rbutt", x1="", y1=5, flags=FRB+B_LIGHTGREEN},
+    --[[  14 ]] {tp="rbutt", x1="", y1=6, flags=FRB+B_YELLOW},
+    --[[  15 ]] {tp="rbutt", x1=16, y1=3, flags=FRB+B_CYAN},
+    --[[  16 ]] {tp="rbutt", x1="", y1=4, flags=FRB+B_LIGHTGRAY},
+    --[[  17 ]] {tp="rbutt", x1="", y1=5, flags=FRB+B_LIGHTCYAN},
+    --[[  18 ]] {tp="rbutt", x1="", y1=6, flags=FRB+B_WHITE},
 
     --[[  19 ]] {tp="sbox",  x1=22, y1=2, x2=37, y2=8, text="Background"},
-    --[[  20 ]] {tp="rbutt", x1=24, y1=3, flags=FRB+F_LIGHTGRAY+B_BLACK+F.DIF_GROUP, name="back"},
-    --[[  21 ]] {tp="rbutt", x1="", y1=4, flags=FRB+F_BLACK+B_RED},
+    --[[  20 ]] {tp="rbutt", x1=24, y1=3, flags=FRB+F_LIGHTGRAY+F.DIF_GROUP, name="back"},
+    --[[  21 ]] {tp="rbutt", x1="", y1=4, flags=FRB+B_RED},
     --[[  22 ]] {tp="rbutt", x1="", y1=5, flags=FRB+F_LIGHTGRAY+B_DARKGRAY},
-    --[[  23 ]] {tp="rbutt", x1="", y1=6, flags=FRB+F_BLACK+B_LIGHTRED},
+    --[[  23 ]] {tp="rbutt", x1="", y1=6, flags=FRB+B_LIGHTRED},
     --[[  24 ]] {tp="rbutt", x1=27, y1=3, flags=FRB+F_LIGHTGRAY+B_BLUE},
-    --[[  25 ]] {tp="rbutt", x1="", y1=4, flags=FRB+F_BLACK+B_MAGENTA},
-    --[[  26 ]] {tp="rbutt", x1="", y1=5, flags=FRB+F_BLACK+B_LIGHTBLUE},
-    --[[  27 ]] {tp="rbutt", x1="", y1=6, flags=FRB+F_BLACK+B_LIGHTMAGENTA},
-    --[[  28 ]] {tp="rbutt", x1=30, y1=3, flags=FRB+F_BLACK+B_GREEN},
-    --[[  29 ]] {tp="rbutt", x1="", y1=4, flags=FRB+F_BLACK+B_BROWN},
-    --[[  30 ]] {tp="rbutt", x1="", y1=5, flags=FRB+F_BLACK+B_LIGHTGREEN},
-    --[[  31 ]] {tp="rbutt", x1="", y1=6, flags=FRB+F_BLACK+B_YELLOW},
-    --[[  32 ]] {tp="rbutt", x1=33, y1=3, flags=FRB+F_BLACK+B_CYAN},
-    --[[  33 ]] {tp="rbutt", x1="", y1=4, flags=FRB+F_BLACK+B_LIGHTGRAY},
-    --[[  34 ]] {tp="rbutt", x1="", y1=5, flags=FRB+F_BLACK+B_LIGHTCYAN},
-    --[[  35 ]] {tp="rbutt", x1="", y1=6, flags=FRB+F_BLACK+B_WHITE},
+    --[[  25 ]] {tp="rbutt", x1="", y1=4, flags=FRB+B_MAGENTA},
+    --[[  26 ]] {tp="rbutt", x1="", y1=5, flags=FRB+B_LIGHTBLUE},
+    --[[  27 ]] {tp="rbutt", x1="", y1=6, flags=FRB+B_LIGHTMAGENTA},
+    --[[  28 ]] {tp="rbutt", x1=30, y1=3, flags=FRB+B_GREEN},
+    --[[  29 ]] {tp="rbutt", x1="", y1=4, flags=FRB+B_BROWN},
+    --[[  30 ]] {tp="rbutt", x1="", y1=5, flags=FRB+B_LIGHTGREEN},
+    --[[  31 ]] {tp="rbutt", x1="", y1=6, flags=FRB+B_YELLOW},
+    --[[  32 ]] {tp="rbutt", x1=33, y1=3, flags=FRB+B_CYAN},
+    --[[  33 ]] {tp="rbutt", x1="", y1=4, flags=FRB+B_LIGHTGRAY},
+    --[[  34 ]] {tp="rbutt", x1="", y1=5, flags=FRB+B_LIGHTCYAN},
+    --[[  35 ]] {tp="rbutt", x1="", y1=6, flags=FRB+B_WHITE},
 
     --[[  36 ]] {tp="text";    x1=7;         width=5; text="RGB#:"},
     --[[  37 ]] {tp="fixedit"; x1=13; y1=""; width=6; mask="HHHHHH"; text=ColorDialogForeRGB, name="rgbFore"},
@@ -205,21 +171,18 @@ local function GetColorDialog(aColor)
 
   local function CtlColorDlgItem(hDlg, ID, UseTrueColor)
     if UseTrueColor then
-      local ditc = {
-        Normal = {
-          ForegroundColor = ColorDialogForeRGBValue();
-          BackgroundColor = ColorDialogBackRGBValue();
-      }}
-      hDlg:SetTrueColor(ID, ditc);
+      local colorset = {
+        Normal = { ColorDialogForeRGBValue(); ColorDialogBackRGBValue(); }
+      }
+      hDlg:SetTrueColor(ID, colorset);
     end
-
-    return band(CurColor,0xFF)
   end
 
   Items.proc = function(hDlg, Msg, Par1, Par2)
     if Msg == F.DN_CTLCOLORDLGITEM then
       if Par1 >= Pos.sample and Par1 <= Pos.sample+2 then
-        Par2[1] = CtlColorDlgItem(hDlg, Par1, Par1 >= Pos.sample+1)
+        CtlColorDlgItem(hDlg, Par1, Par1 >= Pos.sample+1)
+        Par2[1] = band(CurColor,0xFF)
         return Par2
       end
 
@@ -263,8 +226,8 @@ local function GetColorDialog(aColor)
       Color = band(Color, 0x0FFF)
     end
 
-    Color = bor(Color, ColorDialogForeRGBMask())
-    Color = bor(Color, ColorDialogBackRGBMask())
+    Color = bor(Color, lshift(ColorDialogForeRGBValue(), 16))
+    Color = bor(Color, lshift(ColorDialogBackRGBValue(), 40))
 
     return Color
   end
