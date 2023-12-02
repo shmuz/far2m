@@ -2778,9 +2778,14 @@ int WINAPI farMacroControl(DWORD PluginId, int Command, int Param1, void* Param2
 	return 0;
 }
 
-int WINAPI farColorDialog(INT_PTR PluginNumber, ColorDialogData *Data)
+static int farColorDialogSynched(INT_PTR PluginNumber, ColorDialogData *Data)
 {
 	return GetColorDialog(Data, PluginNumber) ? TRUE : FALSE;
+}
+
+int WINAPI farColorDialog(INT_PTR PluginNumber, ColorDialogData *Data)
+{
+	return InterThreadCall<int, 0>(std::bind(farColorDialogSynched, PluginNumber, Data));
 }
 
 int WINAPI farGetFileEncoding(const wchar_t *FileName)
