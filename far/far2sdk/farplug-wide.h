@@ -1552,6 +1552,11 @@ struct DialogItemTrueColors
 	struct FarTrueColorForeAndBack Reserved;
 };
 
+enum FARCOLORDIALOGFLAGS
+{
+	FCD_ALLCONTROLS     = 0x00000001,
+};
+
 struct ColorDialogData
 {
 	DWORD ForeColor;
@@ -2082,7 +2087,8 @@ typedef int (WINAPI *FARAPIMACROCONTROL)(
 
 typedef int (WINAPI *FARAPICOLORDIALOG)(
 	INT_PTR PluginNumber,
-	struct ColorDialogData *Data
+	struct ColorDialogData *Data,
+	DWORD Flags
 );
 
 typedef int (WINAPI *FARAPIGETFILEENCODING)(

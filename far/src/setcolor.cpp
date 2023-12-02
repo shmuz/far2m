@@ -621,8 +621,7 @@ static LONG_PTR WINAPI GetColorDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PT
 	return DefDlgProc(hDlg, Msg, Param1, Param2);
 }
 
-static bool GetColorDialogInner(bool bForFileFilter, DWORD64 &Color, bool bCentered,
-	bool bAddTransparent, INT_PTR PluginNumber)
+static bool GetColorDialogInner(bool bForFileFilter, DWORD64 &Color, bool bCentered, INT_PTR PluginNumber)
 {
 	const wchar_t *HexMask = L"HHHHHH";
 	swprintf(ColorDialogForeRGB, ARRAYSIZE(ColorDialogForeRGB), L"%06X", ReverseColorBytes((Color >> 16) & 0xffffff));
@@ -685,8 +684,6 @@ static bool GetColorDialogInner(bool bForFileFilter, DWORD64 &Color, bool bCente
 	MakeDialogItemsEx(ColorDlgData, ColorDlg);
 	int ExitCode;
 	WORD CurColor = Color;
-	if (bForFileFilter)
-		bAddTransparent = true;
 
 	for (size_t i = 2; i <= 17; i++) {
 		if (static_cast<WORD>((ColorDlg[i].Flags & B_MASK) >> 4) == (Color & F_MASK)) {
@@ -707,15 +704,13 @@ static bool GetColorDialogInner(bool bForFileFilter, DWORD64 &Color, bool bCente
 		ColorDlg[i].Flags = (ColorDlg[i].Flags & ~DIF_COLORMASK) | (Color & 0xffff);
 	}
 
-	if (bAddTransparent) {
+	if (bForFileFilter) {
 		ColorDlg[0].Y2+= 2;
 		ColorDlg[1].Y2++;
 		ColorDlg[18].Y2++;
 
-		if (bForFileFilter) {
-			for (size_t i = 35; i <= 38; ++i) {
-				ColorDlg[i].Flags&= ~DIF_HIDDEN;
-			}
+		for (size_t i = 35; i <= 38; ++i) {
+			ColorDlg[i].Flags&= ~DIF_HIDDEN;
 		}
 		for (size_t i = 39; i <= 40; ++i) {
 			ColorDlg[i].Flags&= ~DIF_HIDDEN;
@@ -732,9 +727,9 @@ static bool GetColorDialogInner(bool bForFileFilter, DWORD64 &Color, bool bCente
 		Dialog Dlg(ColorDlg, ARRAYSIZE(ColorDlg), GetColorDlgProc, (LONG_PTR)&CurColor);
 
 		if (bCentered)
-			Dlg.SetPosition(-1, -1, 39 + 4, 15 + (bAddTransparent ? 3 : 1));
+			Dlg.SetPosition(-1, -1, 39 + 4, 15 + (bForFileFilter ? 3 : 1));
 		else
-			Dlg.SetPosition(37, 2, 75 + 4, 16 + (bAddTransparent ? 3 : 1));
+			Dlg.SetPosition(37, 2, 75 + 4, 16 + (bForFileFilter ? 3 : 1));
 
 		Dlg.SetPluginNumber(PluginNumber);
 		Dlg.Process();
@@ -765,18 +760,18 @@ static bool GetColorDialogInner(bool bForFileFilter, DWORD64 &Color, bool bCente
 
 bool GetColorDialogForFileFilter(DWORD64 &Color, INT_PTR PluginNumber)
 {
-	return GetColorDialogInner(true, Color, true, false, PluginNumber);
+	return GetColorDialogInner(true, Color, true, PluginNumber);
 }
 
-bool GetColorDialog(WORD &Color, bool bCentered, bool bAddTransparent, INT_PTR PluginNumber)
+bool GetColorDialog(WORD &Color, bool bCentered, INT_PTR PluginNumber)
 {
 	DWORD64 ColorRGB = Color;
-	bool out = GetColorDialogInner(false, ColorRGB, bCentered, bAddTransparent, PluginNumber);
+	bool out = GetColorDialogInner(false, ColorRGB, bCentered, PluginNumber);
 	Color = ColorRGB & 0xffff;
 	return out;
 }
 
-bool GetColorDialog(ColorDialogData *Data, INT_PTR PluginNumber)
+bool GetColorDialog(INT_PTR PluginNumber, ColorDialogData *Data, DWORD Flags)
 {
 	if (Data) {
 		DWORD64 Color =
@@ -785,7 +780,7 @@ bool GetColorDialog(ColorDialogData *Data, INT_PTR PluginNumber)
 			((Data->Transparency & 0xFF) << 8) |
 			(Data->PaletteColor & 0xFF);
 
-		if (GetColorDialogInner(true, Color, true, false, PluginNumber)) {
+		if (GetColorDialogInner(Flags & FCD_ALLCONTROLS, Color, true, PluginNumber)) {
 			Data->BackColor = (Color >> 40) & 0xFFFFFF;
 			Data->ForeColor = (Color >> 16) & 0xFFFFFF;
 			Data->Transparency = (Color >> 8) & 0xFF;

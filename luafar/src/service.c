@@ -5572,11 +5572,13 @@ int far_ColorDialog(lua_State *L)
 {
 	TPluginData* pd = GetPluginData(L);
 	struct ColorDialogData Data = { 0, 0, 0x0F, 0 };
+	flags_t Flags;
 
+	lua_settop(L, 2);
 	if (lua_isnumber (L, 1))
 		Data.PaletteColor = (unsigned char)lua_tointeger(L, 1);
 	else if (lua_istable(L, 1)) {
-		lua_settop(L, 1);
+		lua_pushvalue(L, 1);
 		Data.ForeColor = GetColorFromTable(L, "ForegroundColor", 1);
 		Data.BackColor = GetColorFromTable(L, "BackgroundColor", 2);
 		Data.PaletteColor = GetColorFromTable(L, "PaletteColor", 3);
@@ -5585,7 +5587,8 @@ int far_ColorDialog(lua_State *L)
 	else if (!lua_isnoneornil(L, 1))
 		return luaL_argerror(L, 1, "table or integer expected");
 
-	if (PSInfo.ColorDialog(pd->ModuleNumber, &Data)) {
+	Flags = OptFlags(L, 2, 0);
+	if (PSInfo.ColorDialog(pd->ModuleNumber, &Data, Flags)) {
 		lua_createtable(L, 0, 4);
 		PutIntToTable(L, "ForegroundColor", Data.ForeColor);
 		PutIntToTable(L, "BackgroundColor", Data.BackColor);
