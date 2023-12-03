@@ -827,7 +827,7 @@ static struct FARConfig
 	{0, NSecDialog, "EditLine",                     &Opt.Dialogs.EditLine, 0},
 	{1, NSecDialog, "MouseButton",                  &Opt.Dialogs.MouseButton, 0xFFFF},
 	{1, NSecDialog, "DelRemovesBlocks",             &Opt.Dialogs.DelRemovesBlocks, 1},
-	{0, NSecDialog, "CBoxMaxHeight",                &Opt.Dialogs.CBoxMaxHeight, 24},
+	{0, NSecDialog, "CBoxMaxHeight",                &Opt.Dialogs.CBoxMaxHeight, 8},
 
 	{1, NSecEditor, "ExternalEditorName",           &Opt.strExternalEditor, L""},
 	{1, NSecEditor, "UseExternalEditor",            &Opt.EdOpt.UseExternalEditor, 0},
