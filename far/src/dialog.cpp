@@ -504,6 +504,9 @@ void Dialog::CheckDialogCoord()
 	{             //   Y2 при этом = высоте диалога.
 		Y1=(ScrY-Y2+1)/2;
 
+		if (!DialogMode.Check(DMODE_SMALLDIALOG) && (Y1 > 5))
+			Y1--;
+
 		if (Y1<0)
 		{
 			Y1=0;
