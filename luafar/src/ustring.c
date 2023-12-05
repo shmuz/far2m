@@ -269,7 +269,7 @@ const wchar_t* opt_wcstring(lua_State *L, int pos, const wchar_t *dflt)
 	return s;
 }
 
-int ustring_WideCharToMultiByte(lua_State *L)
+static int ustring_WideCharToMultiByte(lua_State *L)
 {
 	size_t numchars;
 	const wchar_t* src = (const wchar_t*)luaL_checklstring(L, 1, &numchars);
@@ -295,7 +295,7 @@ int ustring_WideCharToMultiByte(lua_State *L)
 	return 1;
 }
 
-int ustring_MultiByteToWideChar (lua_State *L)
+static int ustring_MultiByteToWideChar (lua_State *L)
 {
 	wchar_t* Trg;
 	size_t TrgSize;
@@ -319,7 +319,7 @@ int ustring_MultiByteToWideChar (lua_State *L)
 	return SysErrorReturn(L);
 }
 
-int ustring_OemToUtf8 (lua_State *L)
+static int ustring_OemToUtf8 (lua_State *L)
 {
 	size_t len;
 	(void) luaL_checklstring(L, 1, &len);
@@ -328,7 +328,7 @@ int ustring_OemToUtf8 (lua_State *L)
 	return 1;
 }
 
-int ustring_Utf8ToOem (lua_State *L)
+static int ustring_Utf8ToOem (lua_State *L)
 {
 	size_t len;
 	const wchar_t* buf = check_utf8_string(L, 1, &len);
@@ -336,7 +336,7 @@ int ustring_Utf8ToOem (lua_State *L)
 	return 1;
 }
 
-int ustring_Utf32ToUtf8 (lua_State *L)
+static int ustring_Utf32ToUtf8 (lua_State *L)
 {
 	size_t len;
 	const wchar_t *ws = (const wchar_t*) luaL_checklstring(L, 1, &len);
@@ -344,7 +344,7 @@ int ustring_Utf32ToUtf8 (lua_State *L)
 	return 1;
 }
 
-int ustring_Utf8ToUtf32 (lua_State *L)
+static int ustring_Utf8ToUtf32 (lua_State *L)
 {
 	size_t len;
 	const wchar_t *ws = check_utf8_string(L, 1, &len);
@@ -352,11 +352,11 @@ int ustring_Utf8ToUtf32 (lua_State *L)
 	return 1;
 }
 
-int ustring_GetACP (lua_State* L) {
+static int ustring_GetACP (lua_State* L) {
 	return lua_pushinteger (L, WINPORT(GetACP)()), 1;
 }
 
-int ustring_GetOEMCP (lua_State* L) {
+static int ustring_GetOEMCP (lua_State* L) {
 	return lua_pushinteger (L, WINPORT(GetOEMCP)()), 1;
 }
 
@@ -375,7 +375,7 @@ BOOL CALLBACK EnumCodePagesProc(wchar_t* CodePageString)
 	return TRUE;
 }
 
-int ustring_EnumSystemCodePages(lua_State *L)
+static int ustring_EnumSystemCodePages(lua_State *L)
 {
 	DWORD flags = lua_toboolean(L,1) ? CP_SUPPORTED : CP_INSTALLED;
 	lua_newtable(L);
@@ -386,7 +386,7 @@ int ustring_EnumSystemCodePages(lua_State *L)
 	return SysErrorReturn(L);
 }
 
-int ustring_GetCPInfo(lua_State *L)
+static int ustring_GetCPInfo(lua_State *L)
 {
 	UINT codepage;
 	CPINFOEX info;
@@ -482,7 +482,7 @@ static void shuffle_uuid(void* uuid)
 	}
 }
 
-int ustring_Uuid(lua_State* L)
+static int ustring_Uuid(lua_State* L)
 {
 	uuid_t uuid;
 	char out[64]; // size must be >= 36 + 1
@@ -531,7 +531,7 @@ int ustring_Uuid(lua_State* L)
 }
 #endif
 
-int ustring_GetFileAttr(lua_State *L)
+static int ustring_GetFileAttr(lua_State *L)
 {
 	DWORD attr = WINPORT(GetFileAttributes)(check_utf8_string(L,1,NULL));
 
@@ -550,7 +550,7 @@ static int SetAttr(lua_State *L, const wchar_t* fname, unsigned attr)
 	return SysErrorReturn(L);
 }
 
-int ustring_SetFileAttr(lua_State *L)
+static int ustring_SetFileAttr(lua_State *L)
 {
 	return SetAttr(L, check_utf8_string(L,1,NULL), DecodeAttributes(luaL_checkstring(L,2)));
 }

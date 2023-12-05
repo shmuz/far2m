@@ -39,18 +39,4 @@ void push_wcstring(lua_State* L, const wchar_t* str, int numchars);
 const wchar_t* check_wcstring(lua_State *L, int pos, size_t *len);
 const wchar_t* opt_wcstring(lua_State *L, int pos, const wchar_t *dflt);
 
-int ustring_EnumSystemCodePages (lua_State *L);
-int ustring_GetACP (lua_State* L);
-int ustring_GetCPInfo (lua_State *L);
-int ustring_GetOEMCP (lua_State* L);
-int ustring_MultiByteToWideChar (lua_State *L);
-int ustring_WideCharToMultiByte (lua_State *L);
-int ustring_OemToUtf8 (lua_State *L);
-int ustring_Utf32ToUtf8 (lua_State *L);
-int ustring_Utf8ToOem (lua_State *L);
-int ustring_Utf8ToUtf32 (lua_State *L);
-int ustring_Uuid(lua_State* L);
-int ustring_GetFileAttr(lua_State *L);
-int ustring_SetFileAttr(lua_State *L);
-
 #endif // #ifndef LUAFAR_USTRING_H
