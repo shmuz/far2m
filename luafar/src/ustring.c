@@ -11,7 +11,7 @@
 #include "util.h"
 
 // This function was initially taken from Lua 5.0.2 (loadlib.c)
-void pusherrorcode(lua_State *L, int error)
+static void pusherrorcode(lua_State *L, int error)
 {
 #if 0
 	const int BUFSZ = 256;
@@ -405,7 +405,7 @@ int ustring_GetCPInfo(lua_State *L)
 }
 
 #ifndef HAS_UUID
-int ustring_Uuid(lua_State* L)
+static int ustring_Uuid(lua_State* L)
 {
 	char buf[64];
 	GUID uuid;
@@ -468,7 +468,7 @@ int ustring_Uuid(lua_State* L)
 #else
 // This function is used to achieve compatibility between Windows' GUID's and uuid_t values
 // (uuid_t is just a byte array, i.e. always big-endian)
-void shuffle_uuid(void* uuid)
+static void shuffle_uuid(void* uuid)
 {
 	const unsigned char map[16] = {3,2,1,0,5,4,7,6,8,9,10,11,12,13,14,15};
 	unsigned char buf[16];
@@ -542,7 +542,7 @@ int ustring_GetFileAttr(lua_State *L)
 }
 
 // for reusing code
-int SetAttr(lua_State *L, const wchar_t* fname, unsigned attr)
+static int SetAttr(lua_State *L, const wchar_t* fname, unsigned attr)
 {
 	if (WINPORT(SetFileAttributes)(fname, attr))
 		return lua_pushboolean(L, 1), 1;
@@ -555,3 +555,60 @@ int ustring_SetFileAttr(lua_State *L)
 	return SetAttr(L, check_utf8_string(L,1,NULL), DecodeAttributes(luaL_checkstring(L,2)));
 }
 
+static int ustring_sub(lua_State *L)
+{
+	size_t len;
+	intptr_t from, to;
+	const char* s = luaL_checklstring(L, 1, &len);
+	len /= sizeof(wchar_t);
+	from = luaL_optinteger(L, 2, 1);
+
+	if(from < 0) from += len+1;
+
+	if(--from < 0) from = 0;
+	else if((size_t)from > len) from = len;
+
+	to = luaL_optinteger(L, 3, -1);
+
+	if(to < 0) to += len+1;
+
+	if(to < from) to = from;
+	else if((size_t)to > len) to = len;
+
+	lua_pushlstring(L, s + from*sizeof(wchar_t), (to-from)*sizeof(wchar_t));
+	return 1;
+}
+
+static int ustring_len(lua_State *L)
+{
+	size_t len;
+	(void) luaL_checklstring(L, 1, &len);
+	lua_pushinteger(L, len / sizeof(wchar_t));
+	return 1;
+}
+
+static const luaL_Reg ustring_funcs[] = {
+	{"EnumSystemCodePages",        ustring_EnumSystemCodePages },
+	{"GetACP",                     ustring_GetACP},
+	{"GetCPInfo",                  ustring_GetCPInfo},
+	{"GetOEMCP",                   ustring_GetOEMCP},
+	{"MultiByteToWideChar",        ustring_MultiByteToWideChar },
+	{"WideCharToMultiByte",        ustring_WideCharToMultiByte },
+	{"OemToUtf8",                  ustring_OemToUtf8},
+	{"Utf32ToUtf8",                ustring_Utf32ToUtf8},
+	{"Utf8ToOem",                  ustring_Utf8ToOem},
+	{"Utf8ToUtf32",                ustring_Utf8ToUtf32},
+	{"lenW",                       ustring_len},
+	{"subW",                       ustring_sub},
+	{"Uuid",                       ustring_Uuid},
+	{"GetFileAttr",                ustring_GetFileAttr},
+	{"SetFileAttr",                ustring_SetFileAttr},
+	{NULL, NULL},
+};
+
+LUALIB_API int luaopen_ustring(lua_State *L)
+{
+	const char *libname = lua_istable(L,1) ? (lua_settop(L,1), NULL) : luaL_optstring(L, 1, "ustring");
+	luaL_register(L, libname, ustring_funcs);
+	return 1;
+}

@@ -5359,38 +5359,6 @@ BOOL dir_exist(const wchar_t* path)
 	return (attr != 0xFFFFFFFF) && (attr & FILE_ATTRIBUTE_DIRECTORY);
 }
 
-int ustring_sub(lua_State *L)
-{
-	size_t len;
-	intptr_t from, to;
-	const char* s = luaL_checklstring(L, 1, &len);
-	len /= sizeof(wchar_t);
-	from = luaL_optinteger(L, 2, 1);
-
-	if(from < 0) from += len+1;
-
-	if(--from < 0) from = 0;
-	else if((size_t)from > len) from = len;
-
-	to = luaL_optinteger(L, 3, -1);
-
-	if(to < 0) to += len+1;
-
-	if(to < from) to = from;
-	else if((size_t)to > len) to = len;
-
-	lua_pushlstring(L, s + from*sizeof(wchar_t), (to-from)*sizeof(wchar_t));
-	return 1;
-}
-
-int ustring_len(lua_State *L)
-{
-	size_t len;
-	(void) luaL_checklstring(L, 1, &len);
-	lua_pushinteger(L, len / sizeof(wchar_t));
-	return 1;
-}
-
 typedef intptr_t WINAPI UDList_Create(unsigned Flags, const wchar_t* Subj);
 typedef intptr_t WINAPI UDList_Get(void* udlist, int index);
 
@@ -5615,25 +5583,6 @@ static const luaL_Reg panel_funcs[] =
 	{NULL, NULL},
 };
 
-static const luaL_Reg ustring_funcs[] = {
-	{"EnumSystemCodePages",        ustring_EnumSystemCodePages },
-	{"GetACP",                     ustring_GetACP},
-	{"GetCPInfo",                  ustring_GetCPInfo},
-	{"GetOEMCP",                   ustring_GetOEMCP},
-	{"MultiByteToWideChar",        ustring_MultiByteToWideChar },
-	{"WideCharToMultiByte",        ustring_WideCharToMultiByte },
-	{"OemToUtf8",                  ustring_OemToUtf8},
-	{"Utf32ToUtf8",                ustring_Utf32ToUtf8},
-	{"Utf8ToOem",                  ustring_Utf8ToOem},
-	{"Utf8ToUtf32",                ustring_Utf8ToUtf32},
-	{"lenW",                       ustring_len},
-	{"subW",                       ustring_sub},
-	{"Uuid",                       ustring_Uuid},
-	{"GetFileAttr",                ustring_GetFileAttr},
-	{"SetFileAttr",                ustring_SetFileAttr},
-	{NULL, NULL},
-};
-
 static const luaL_Reg far_funcs[] = {
 	{"PluginStartupInfo",   far_PluginStartupInfo},
 	{"GetPluginId",         far_GetPluginId},
@@ -5791,7 +5740,6 @@ int luaopen_far (lua_State *L)
 	luaL_register(L, "editor", editor_funcs);
 	luaL_register(L, "viewer", viewer_funcs);
 	luaL_register(L, "panel",  panel_funcs);
-	luaL_register(L, "win",    ustring_funcs);
 	luaL_register(L, "actl",   actl_funcs);
 
 	luaL_newmetatable(L, FarFileFilterType);

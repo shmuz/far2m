@@ -527,9 +527,9 @@ LUALIB_API int luaopen_win(lua_State *L)
 	const char *libname = lua_istable(L,1) ? (lua_settop(L,1), NULL) : luaL_optstring(L, 1, "win");
 	luaL_register(L, libname, win_funcs);
 
-	//lua_pushcfunction(L, luaopen_ustring);
-	//lua_pushvalue(L, -2);
-	//lua_call(L, 1, 0);
+	lua_pushcfunction(L, luaopen_ustring);
+	lua_pushvalue(L, -2);
+	lua_call(L, 1, 0);
 
 	return 1;
 }

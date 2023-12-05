@@ -6,6 +6,8 @@
 
 #include "luafar.h"
 
+LUALIB_API int luaopen_ustring(lua_State *L);
+
 int  Log(const char* Format, ...);
 int  SysErrorReturn (lua_State *L);
 
