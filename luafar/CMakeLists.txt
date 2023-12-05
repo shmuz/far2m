@@ -27,6 +27,7 @@ set(SOURCES
   src/slnunico.c
   src/ustring.c
   src/util.c
+  src/win.c
   src/farhost.cpp
 )
 
