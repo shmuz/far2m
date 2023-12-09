@@ -1775,7 +1775,7 @@ local function test_ACTL()
   assert_func  ( actl.SetArrayColor)
   assert_func  ( actl.SetCurrentWindow)
   assert_func  ( actl.SetCursorPos)
-  assert_nil   ( actl.Synchro)
+  assert_func  ( actl.Synchro)
   assert_func  ( actl.WaitKey)
 end
 

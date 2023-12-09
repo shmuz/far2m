@@ -244,6 +244,14 @@ const char far_Guids[] = "far.Guids = {"
 //  "WipeHardLinkId                   = '5297DDFE-0A37-4465-85EF-CBF9006D65C6';"
 "}";
 
+TSynchroData* CreateSynchroData(TTimerData *td, int data)
+{
+	TSynchroData* SD = (TSynchroData*) malloc(sizeof(TSynchroData));
+	SD->timerData = td;
+	SD->data = data;
+	return SD;
+}
+
 HANDLE OptHandlePos(lua_State *L, int pos)
 {
 	switch(lua_type(L,pos))
@@ -4367,6 +4375,13 @@ int DoAdvControl (lua_State *L, int Command, int Delta)
 			int1 >= 0 ? lua_pushinteger(L, int1) : lua_pushnil(L);
 			return 1;
 
+		case ACTL_SYNCHRO: {
+			int p = (int)luaL_checkinteger(L, pos2);
+			TSynchroData *synchroData = CreateSynchroData(NULL, p);
+			lua_pushinteger(L, PSInfo.AdvControl(pd->ModuleNumber, Command, synchroData));
+			return 1;
+		}
+
 		case ACTL_WAITKEY:
 			if (lua_isnumber(L, pos2))
 				int1 = lua_tointeger(L, pos2);
@@ -4501,7 +4516,6 @@ int DoAdvControl (lua_State *L, int Command, int Delta)
 			PSInfo.AdvControl(pd->ModuleNumber, Command, buf);
 			return push_utf8_string(L,buf,-1), 1;
 
-		//case ACTL_SYNCHRO:   //  not supported as it is used in far.Timer
 		//case ACTL_KEYMACRO:  //  not supported as it's replaced by separate functions far.MacroXxx
 	}
 }
@@ -4533,6 +4547,7 @@ AdvCommand( RedrawAll,              ACTL_REDRAWALL, 1)
 AdvCommand( SetArrayColor,          ACTL_SETARRAYCOLOR, 1)
 AdvCommand( SetCurrentWindow,       ACTL_SETCURRENTWINDOW, 1)
 AdvCommand( SetCursorPos,           ACTL_SETCURSORPOS, 1)
+AdvCommand( Synchro,                ACTL_SYNCHRO, 1)
 AdvCommand( WaitKey,                ACTL_WAITKEY, 1)
 AdvCommand( WinPortBackend,         ACTL_WINPORTBACKEND, 1)
 
@@ -5485,6 +5500,7 @@ static const luaL_Reg actl_funcs[] =
 	{"SetArrayColor",         adv_SetArrayColor},
 	{"SetCurrentWindow",      adv_SetCurrentWindow},
 	{"SetCursorPos",          adv_SetCursorPos},
+	{"Synchro",               adv_Synchro},
 	{"WaitKey",               adv_WaitKey},
 	{"WinPortBackend",        adv_WinPortBackend},
 	{NULL, NULL},

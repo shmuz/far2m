@@ -196,17 +196,21 @@ const char FarTimerType[] = "FarTimer";
 
 void timer_handler(size_t timer_id, void *user_data)
 {
+	TSynchroData *sd;
 	TTimerData *td = (TTimerData*) user_data;
 	switch(td->closeStage) {
 		case 0:
-			if (td->enabled)
-				PSInfo.AdvControl(td->plugin_data->ModuleNumber, ACTL_SYNCHRO, td);
+			if (td->enabled) {
+				sd = CreateSynchroData(td, 0);
+				PSInfo.AdvControl(td->plugin_data->ModuleNumber, ACTL_SYNCHRO, sd);
+			}
 			break;
 
 		case 1:
 			stop_timer(td->timer_id);
 			td->closeStage++;
-			PSInfo.AdvControl(td->plugin_data->ModuleNumber, ACTL_SYNCHRO, td);
+			sd = CreateSynchroData(td, 0);
+			PSInfo.AdvControl(td->plugin_data->ModuleNumber, ACTL_SYNCHRO, sd);
 			break;
 
 		case 2:

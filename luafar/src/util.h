@@ -28,8 +28,13 @@ typedef struct {
 	int       closeStage;
 	int       enabled;
 	int       interval_changed; //TODO
-}
-TTimerData;
+} TTimerData;
+
+typedef struct
+{
+	TTimerData *timerData;
+	int data;
+} TSynchroData;
 
 typedef struct {
 	lua_State         *L;
@@ -47,6 +52,7 @@ typedef struct
 	CHAR_INFO VBuf[1];
 } TFarUserControl;
 
+TSynchroData* CreateSynchroData(TTimerData *td, int data);
 int   DecodeAttributes(const char* str);
 int   GetAttrFromTable(lua_State *L);
 int   GetIntFromArray(lua_State *L, int index);

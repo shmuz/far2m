@@ -1232,29 +1232,54 @@ int LF_ProcessDialogEvent (lua_State* L, int Event, void *Param)
 	return ret;
 }
 
+static int Common_ProcessSynchroEvent(lua_State* L, int Event, int Data)
+{
+	int ret = 0;
+	if (GetExportFunction(L, "ProcessSynchroEvent"))     //+1: Func
+	{
+		lua_pushinteger(L, Event);     //+2
+		lua_pushinteger(L, Data);      //+3
+		if (pcall_msg(L, 2, 1) == 0)   //+1
+		{
+			if (lua_isnumber(L,-1))
+				ret = (int)lua_tointeger(L,-1);
+			lua_pop(L,1);
+		}
+	}
+	return ret;
+}
+
 int LF_ProcessSynchroEvent (lua_State* L, int Event, void *Param)
 {
 #if !defined(__FreeBSD__) && !defined(__DragonFly__)
 	if (Event == SE_COMMONSYNCHRO) {
-		TTimerData *td = (TTimerData*)Param;
-		switch (td->closeStage) {
-			case 0:
-				lua_rawgeti(L, LUA_REGISTRYINDEX, td->funcRef);  //+1: Func
-				if (lua_type(L, -1) == LUA_TFUNCTION) {
-					lua_rawgeti(L, LUA_REGISTRYINDEX, td->objRef); //+2: Obj
-					pcall_msg(L, 1, 0);  //+0
-				}
-				else lua_pop(L, 1);
-				break;
+		TSynchroData sd = *(TSynchroData*)Param; // copy
+		free(Param);
 
-			case 1:
-				break;
+		if (sd.timerData) {
+			TTimerData *td = sd.timerData;
+			switch (td->closeStage) {
+				case 0:
+					lua_rawgeti(L, LUA_REGISTRYINDEX, td->funcRef);  //+1: Func
+					if (lua_type(L, -1) == LUA_TFUNCTION) {
+						lua_rawgeti(L, LUA_REGISTRYINDEX, td->objRef); //+2: Obj
+						pcall_msg(L, 1, 0);  //+0
+					}
+					else lua_pop(L, 1);
+					break;
 
-			case 2:
-				luaL_unref(L, LUA_REGISTRYINDEX, td->funcRef);
-				luaL_unref(L, LUA_REGISTRYINDEX, td->threadRef);
-				luaL_unref(L, LUA_REGISTRYINDEX, td->objRef);
-				break;
+				case 1:
+					break;
+
+				case 2:
+					luaL_unref(L, LUA_REGISTRYINDEX, td->funcRef);
+					luaL_unref(L, LUA_REGISTRYINDEX, td->threadRef);
+					luaL_unref(L, LUA_REGISTRYINDEX, td->objRef);
+					break;
+			}
+		}
+		else {
+			Common_ProcessSynchroEvent(L, Event, sd.data);
 		}
 	}
 #endif
