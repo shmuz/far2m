@@ -1257,24 +1257,27 @@ int LF_ProcessSynchroEvent (lua_State* L, int Event, void *Param)
 		free(Param);
 
 		if (sd.timerData) {
+			int narg, index, posTab;
 			TTimerData *td = sd.timerData;
 			switch (td->closeStage) {
 				case 0:
-					lua_rawgeti(L, LUA_REGISTRYINDEX, td->funcRef);  //+1: Func
-					if (lua_type(L, -1) == LUA_TFUNCTION) {
-						lua_rawgeti(L, LUA_REGISTRYINDEX, td->objRef); //+2: Obj
-						pcall_msg(L, 1, 0);  //+0
-					}
-					else lua_pop(L, 1);
+					lua_rawgeti(L, LUA_REGISTRYINDEX, td->tabRef);  //+1: Table
+					posTab = lua_gettop(L);
+					lua_getfield(L, -1, "n");                       //+2
+					narg = (int)lua_tointeger(L, -1);
+					for (index=1; index <= 2+narg; index++)         //+2+2+narg
+						lua_rawgeti(L, posTab, index);
+					lua_remove(L, posTab);
+					lua_remove(L, posTab);                          //+2+narg
+					if (pcall_msg(L, 1+narg, 0) != 0)               //+0 or +1
+						lua_pop(L,1);
 					break;
 
 				case 1:
 					break;
 
 				case 2:
-					luaL_unref(L, LUA_REGISTRYINDEX, td->funcRef);
-					luaL_unref(L, LUA_REGISTRYINDEX, td->threadRef);
-					luaL_unref(L, LUA_REGISTRYINDEX, td->objRef);
+					luaL_unref(L, LUA_REGISTRYINDEX, td->tabRef);
 					break;
 			}
 		}

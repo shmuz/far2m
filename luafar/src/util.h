@@ -22,9 +22,7 @@ typedef struct {
 	TPluginData *plugin_data;
 	size_t    timer_id;
 	unsigned  interval;
-	int       objRef;
-	int       funcRef;
-	int       threadRef;
+	int       tabRef;
 	int       closeStage;
 	int       enabled;
 	int       interval_changed; //TODO
