@@ -305,7 +305,7 @@ int timer_index (lua_State *L)
 	else if (!strcmp(method, "Enabled"))     lua_pushboolean(L, td->enabled);
 	else if (!strcmp(method, "Interval"))    lua_pushinteger(L, td->interval);
 	else if (!strcmp(method, "OnTimer")) {
-    lua_rawgeti(L, LUA_REGISTRYINDEX, td->tabRef);
+		lua_rawgeti(L, LUA_REGISTRYINDEX, td->tabRef);
 		lua_rawgeti(L, -1, 1);
 	}
 	else if (!strcmp(method, "Closed"))      lua_pushboolean(L, td->closeStage);
@@ -323,7 +323,7 @@ int timer_newindex (lua_State *L)
 	}
 	else if (!strcmp(method, "OnTimer")) {
 		luaL_checktype(L, 3, LUA_TFUNCTION);
-    lua_rawgeti(L, LUA_REGISTRYINDEX, td->tabRef);
+		lua_rawgeti(L, LUA_REGISTRYINDEX, td->tabRef);
 		lua_pushvalue(L, 3);
 		lua_rawseti(L, -2, 1);
 	}
