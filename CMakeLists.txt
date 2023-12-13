@@ -274,6 +274,22 @@ endif()
 ##############################
 # plugins directives
 
+function(AddPlugin Var Name Suffix Active)
+  if ((DEFINED ${Var} AND ${Var}) OR (NOT DEFINED ${Var} AND ${Active}))
+      message(STATUS "${Var} plugin enabled")
+      add_subdirectory (${Name})
+  else()
+      if (${Active})
+          message(STATUS "${ColorRed}${Var} plugin disabled due to ${Var}=${${Var}}${ColorNormal}")
+      else()
+          message(STATUS "${ColorRed}${Var} plugin disabled, use -D${Var}=yes if you need it${ColorNormal}")
+      endif()
+      install(CODE "
+          execute_process(COMMAND ${CMAKE_COMMAND} -E rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/${Name}/plug/${Name}.far-plug-${Suffix})
+          " COMPONENT system)
+  endif()
+endfunction()
+
 if (${USELUA})
   find_package(LibLua REQUIRED)
   find_package(LibUuid)
@@ -287,124 +303,27 @@ else()
   message(STATUS "${ColorRed}LuaFAR and LuaMacro disabled due to -DUSELUA=${USELUA}${ColorNormal}")
 endif()
 
-if (NOT DEFINED ALIGN OR ALIGN)
-    message(STATUS "ALIGN plugin enabled")
-    add_subdirectory (align)
-else()
-    message(STATUS "${ColorRed}ALIGN plugin disabled due to ALIGN=${ALIGN}${ColorNormal}")
-    install(CODE "
-        execute_process(COMMAND ${CMAKE_COMMAND} -E rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/align/plug/align.far-plug-wide)
-        " COMPONENT system)
-endif()
-
-if (NOT DEFINED AUTOWRAP OR AUTOWRAP)
-    message(STATUS "AUTOWRAP plugin enabled")
-    add_subdirectory (autowrap)
-else()
-    message(STATUS "${ColorRed}AUTOWRAP plugin disabled due to AUTOWRAP=${AUTOWRAP}${ColorNormal}")
-    install(CODE "
-        execute_process(COMMAND ${CMAKE_COMMAND} -E rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/autowrap/plug/autowrap.far-plug-wide)
-        " COMPONENT system)
-endif()
-
-if (NOT DEFINED CALC OR CALC)
-    message(STATUS "CALC plugin enabled")
-    add_subdirectory (calc)
-else()
-    message(STATUS "${ColorRed}CALC plugin disabled due to CALC=${CALC}${ColorNormal}")
-    install(CODE "
-        execute_process(COMMAND ${CMAKE_COMMAND} -E rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/calc/plug/calc.far-plug-wide)
-        " COMPONENT system)
-endif()
-
-if (NOT DEFINED COLORER OR COLORER)
-    message(STATUS "COLORER plugin enabled")
-    add_subdirectory (colorer)
-else()
-    message(STATUS "${ColorRed}COLORER plugin disabled due to COLORER=${COLORER}${ColorNormal}")
-    install(CODE "
-        execute_process(COMMAND ${CMAKE_COMMAND} -E rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/colorer/plug/colorer.far-plug-wide)
-        " COMPONENT system)
-endif()
-
-if (NOT DEFINED COMPARE OR COMPARE)
-    message(STATUS "COMPARE plugin enabled")
-    add_subdirectory (compare)
-else()
-    message(STATUS "${ColorRed}COMPARE plugin disabled due to COMPARE=${COMPARE}${ColorNormal}")
-    install(CODE "
-        execute_process(COMMAND ${CMAKE_COMMAND} -E rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/compare/plug/compare.far-plug-wide)
-        " COMPONENT system)
-endif()
-
-if (NOT DEFINED DRAWLINE OR DRAWLINE)
-    message(STATUS "DRAWLINE plugin enabled")
-    add_subdirectory (drawline)
-else()
-    message(STATUS "${ColorRed}DRAWLINE plugin disabled due to DRAWLINE=${DRAWLINE}${ColorNormal}")
-    install(CODE "
-        execute_process(COMMAND ${CMAKE_COMMAND} -E rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/drawline/plug/drawline.far-plug-wide)
-        " COMPONENT system)
-endif()
-
-if (NOT DEFINED EDITCASE OR EDITCASE)
-    message(STATUS "EDITCASE plugin enabled")
-    add_subdirectory (editcase)
-else()
-    message(STATUS "${ColorRed}EDITCASE plugin disabled due to EDITCASE=${EDITCASE}${ColorNormal}")
-    install(CODE "
-        execute_process(COMMAND ${CMAKE_COMMAND} -E rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/editcase/plug/editcase.far-plug-wide)
-        " COMPONENT system)
-endif()
-
-if (NOT DEFINED EDITORCOMP OR EDITORCOMP)
-    message(STATUS "EDITORCOMP plugin enabled")
-    add_subdirectory (editorcomp)
-else()
-    message(STATUS "${ColorRed}EDITORCOMP plugin disabled due to EDITORCOMP=${EDITORCOMP}${ColorNormal}")
-    install(CODE "
-        execute_process(COMMAND ${CMAKE_COMMAND} -E rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/editorcomp/plug/editorcomp.far-plug-wide)
-        " COMPONENT system)
-endif()
+AddPlugin(ALIGN         align         wide  1)
+AddPlugin(AUTOWRAP      autowrap      wide  1)
+AddPlugin(CALC          calc          wide  1)
+AddPlugin(COLORER       colorer       wide  1)
+AddPlugin(COMPARE       compare       wide  1)
+AddPlugin(DRAWLINE      drawline      wide  1)
+AddPlugin(EDITCASE      editcase      wide  1)
+AddPlugin(EDITORCOMP    editorcomp    wide  1)
+AddPlugin(FILECASE      filecase      wide  1)
+AddPlugin(INCSRCH       incsrch       wide  1)
+AddPlugin(INSIDE        inside        mb    1)
+AddPlugin(NETCFG        netcfg        wide  1)
+AddPlugin(SIMPLEINDENT  SimpleIndent  wide  1)
+AddPlugin(TMPPANEL      tmppanel      wide  1)
 
 if (DEFINED FARFTP AND FARFTP)
     message(STATUS "FARFTP plugin enabled (obsolete)")
     add_subdirectory (FARStdlib)
     add_subdirectory (farftp)
 else()
-    install(CODE "
-        execute_process(COMMAND ${CMAKE_COMMAND} -E rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/farftp/plug/farftp.far-plug-mb)
-        " COMPONENT system)
-endif()
-
-if (NOT DEFINED FILECASE OR FILECASE)
-    message(STATUS "FILECASE plugin enabled")
-    add_subdirectory (filecase)
-else()
-    message(STATUS "${ColorRed}FILECASE plugin disabled due to FILECASE=${FILECASE}${ColorNormal}")
-    install(CODE "
-        execute_process(COMMAND ${CMAKE_COMMAND} -E rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/filecase/plug/filecase.far-plug-wide)
-        " COMPONENT system)
-endif()
-
-if (NOT DEFINED INCSRCH OR INCSRCH)
-    message(STATUS "INCSRCH plugin enabled")
-    add_subdirectory (incsrch)
-else()
-    message(STATUS "${ColorRed}Building without <INCSRCH> plugin due to INCSRCH=${INCSRCH}${ColorNormal}")
-    install(CODE "
-        execute_process(COMMAND ${CMAKE_COMMAND} -E rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/incsrch/plug/incsrch.far-plug-wide)
-        " COMPONENT system)
-endif()
-
-if (NOT DEFINED INSIDE OR INSIDE)
-    message(STATUS "INSIDE plugin enabled")
-    add_subdirectory (inside)
-else()
-    message(STATUS "${ColorRed}INSIDE plugin disabled due to INSIDE=${INSIDE}${ColorNormal}")
-    install(CODE "
-        execute_process(COMMAND ${CMAKE_COMMAND} -E rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/inside/plug/inside.far-plug-mb)
-        " COMPONENT system)
+    AddPlugin(FARFTP farftp mb 0)
 endif()
 
 if (NOT DEFINED MULTIARC OR MULTIARC)
@@ -422,20 +341,7 @@ if (NOT DEFINED MULTIARC OR MULTIARC)
 
     add_subdirectory (multiarc)
 else()
-    message(STATUS "${ColorRed}MULTIARC plugin disabled due to MULTIARC=${MULTIARC}${ColorNormal}")
-    install(CODE "
-        execute_process(COMMAND ${CMAKE_COMMAND} -E rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/multiarc/plug/multiarc.far-plug-mb)
-        " COMPONENT system)
-endif()
-
-if (NOT DEFINED NETCFG OR NETCFG)
-    message(STATUS "NETCFG plugin enabled")
-    add_subdirectory (netcfg)
-else()
-    message(STATUS "${ColorRed}NETCFG plugin disabled due to NETCFG=${NETCFG}${ColorNormal}")
-    install(CODE "
-        execute_process(COMMAND ${CMAKE_COMMAND} -E rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/netcfg/plug/netcfg.far-plug-wide)
-        " COMPONENT system)
+    AddPlugin(MULTIARC multiarc mb 0)
 endif()
 
 if (NOT DEFINED NETROCKS OR NETROCKS)
@@ -477,10 +383,7 @@ if (NOT DEFINED NETROCKS OR NETROCKS)
 
     add_subdirectory (NetRocks)
 else()
-    message(STATUS "${ColorRed}NETROCKS plugin disabled due to NETROCKS=${NETROCKS}${ColorNormal}")
-    install(CODE "
-        execute_process(COMMAND ${CMAKE_COMMAND} -E rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/NetRocks/plug/NetRocks.far-plug-wide)
-        " COMPONENT system)
+    AddPlugin(NETROCKS NetRocks wide 0)
 endif()
 
 if (DEFINED VIRTUAL_PYTHON)
@@ -521,31 +424,8 @@ else()
         endif ()
 
     else()
-        message(STATUS "${ColorRed}PYTHON plugin disabled, use -DPYTHON=yes if you need it${ColorNormal}")
-        install(CODE "
-            execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/python/plug/python.far-plug-wide)
-            " COMPONENT system)
+        AddPlugin(PYTHON python wide 0)
     endif()
-endif()
-
-if (NOT DEFINED SIMPLEINDENT OR SIMPLEINDENT)
-    message(STATUS "SIMPLEINDENT plugin enabled")
-    add_subdirectory (SimpleIndent)
-else()
-    message(STATUS "${ColorRed}SIMPLEINDENT plugin disabled due to SIMPLEINDENT=${SIMPLEINDENT}${ColorNormal}")
-    install(CODE "
-        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/SimpleIndent/plug/SimpleIndent.far-plug-wide)
-        " COMPONENT system)
-endif()
-
-if (NOT DEFINED TMPPANEL OR TMPPANEL)
-    message(STATUS "TMPPANEL plugin enabled")
-    add_subdirectory (tmppanel)
-else()
-    message(STATUS "${ColorRed}TMPPANEL plugin disabled due to TMPPANEL=${TMPPANEL}${ColorNormal}")
-    install(CODE "
-        execute_process(COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/tmppanel/plug/tmppanel.far-plug-wide)
-        " COMPONENT system)
 endif()
 
 ##############################
