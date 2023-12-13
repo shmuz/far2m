@@ -110,9 +110,6 @@ if (NOT DEFINED LEGACY)
     # TODO: default it to NO  somewhere in 2022, after all obsolete settings
     # registry-upgrade-to-ini stuff will be safe to remove
     set(LEGACY "YES")
-elseif(FARFTP)
-    set(LEGACY "YES")
-    message(STATUS "Force-enable LEGACY due to enabled FARFTP")
 endif()
 
 #if (NOT EACP)
@@ -317,14 +314,6 @@ AddPlugin(INSIDE        inside        mb    1)
 AddPlugin(NETCFG        netcfg        wide  1)
 AddPlugin(SIMPLEINDENT  SimpleIndent  wide  1)
 AddPlugin(TMPPANEL      tmppanel      wide  1)
-
-if (DEFINED FARFTP AND FARFTP)
-    message(STATUS "FARFTP plugin enabled (obsolete)")
-    add_subdirectory (FARStdlib)
-    add_subdirectory (farftp)
-else()
-    AddPlugin(FARFTP farftp mb 0)
-endif()
 
 if (NOT DEFINED MULTIARC OR MULTIARC)
     message(STATUS "MULTIARC plugin enabled")
