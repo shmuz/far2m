@@ -153,8 +153,11 @@ enum OPENFILEPLUGINTYPE
 struct PanelHandle
 {
 	HANDLE hPanel;
-	class Plugin *pPlugin;
-	unsigned int RefCnt = 1;
+	Plugin *pPlugin;
+	unsigned int RefCnt;
+
+	PanelHandle() : hPanel(nullptr), pPlugin(nullptr), RefCnt(1) {}
+	PanelHandle(HANDLE panel, Plugin *plugin) : hPanel(panel), pPlugin(plugin), RefCnt(1) {}
 };
 
 typedef PanelHandle * PHPTR;
