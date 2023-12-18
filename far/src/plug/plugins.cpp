@@ -609,7 +609,8 @@ PHPTR PluginManager::OpenFilePlugin(
 
 	if (!items.empty() && (hResult != PHPTR_STOP))
 	{
-		bool OnlyOne = (items.size() == 1) && !(Name && Opt.PluginConfirm.OpenFilePlugin && Opt.PluginConfirm.StandardAssociation && Opt.PluginConfirm.EvenIfOnlyOnePlugin);
+		bool OnlyOne = (items.size() == 1) && !(Name && Opt.PluginConfirm.OpenFilePlugin &&
+			Opt.PluginConfirm.StandardAssociation && Opt.PluginConfirm.EvenIfOnlyOnePlugin);
 
 		if(!OnlyOne && ShowMenu)
 		{
@@ -2236,10 +2237,7 @@ PHPTR PluginManager::OpenPlugin(Plugin *pPlugin,int OpenFrom,INT_PTR Item)
 
 	if (hPlugin != INVALID_HANDLE_VALUE)
 	{
-		PanelHandle *handle = new PanelHandle;
-		handle->hPanel = hPlugin;
-		handle->pPlugin = pPlugin;
-		return handle;
+		return new PanelHandle(hPlugin, pPlugin);
 	}
 
 	return nullptr;

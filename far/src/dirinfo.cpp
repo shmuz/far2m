@@ -255,14 +255,14 @@ int GetDirInfo(const wchar_t *Title,
 }
 
 
-int GetPluginDirInfo(HANDLE hPlugin,const wchar_t *DirName, uint32_t &DirCount,
-                     uint32_t &FileCount,uint64_t &FileSize, uint64_t &PhysicalSize)
+int GetPluginDirInfo(PanelHandle* hPlugin, const wchar_t *DirName, uint32_t &DirCount,
+                     uint32_t &FileCount, uint64_t &FileSize, uint64_t &PhysicalSize)
 {
 	PluginPanelItem *PanelItem=nullptr;
 	int ItemsNumber,ExitCode;
 	DirCount=FileCount=0;
 	FileSize=PhysicalSize=0;
-	PanelHandle *ph = (PanelHandle*)hPlugin;
+	PanelHandle *ph = hPlugin;
 
 	if ((ExitCode=FarGetPluginDirList((INT_PTR)ph->pPlugin, ph->hPanel, DirName, &PanelItem,&ItemsNumber))==TRUE) //INT_PTR - BUGBUG
 	{

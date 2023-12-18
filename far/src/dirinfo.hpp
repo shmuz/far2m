@@ -34,6 +34,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 class FileFilter;
+struct PanelHandle;
 
 enum GETDIRINFOFLAGS
 {
@@ -49,5 +50,5 @@ int GetDirInfo(const wchar_t *Title,const wchar_t *DirName,uint32_t&DirCount,
                uint32_t &ClusterSize,clock_t MsgWaitTime, FileFilter *Filter,
                DWORD Flags=GETDIRINFO_SCANSYMLINKDEF);
 
-int GetPluginDirInfo(HANDLE hPlugin,const wchar_t *DirName, uint32_t &DirCount,
-                     uint32_t &FileCount,uint64_t &FileSize, uint64_t &PhysicalSize);
+int GetPluginDirInfo(PanelHandle *hPlugin, const wchar_t *DirName, uint32_t &DirCount,
+                     uint32_t &FileCount, uint64_t &FileSize, uint64_t &PhysicalSize);

@@ -38,6 +38,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FARString.hpp"
 
 class Viewer;
+struct PanelHandle;
 
 class QuickView:public Panel
 {
@@ -74,7 +75,7 @@ class QuickView:public Panel
 		virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
 		virtual int64_t VMProcess(int OpCode,void *vParam=nullptr,int64_t iParam=0);
 		virtual void Update(int Mode);
-		void ShowFile(const wchar_t *FileName,int TempFile,HANDLE hDirPlugin);
+		void ShowFile(const wchar_t *FileName, int TempFile, PanelHandle *hDirPlugin);
 		virtual void CloseFile();
 		virtual void QViewDelTempName();
 

@@ -1135,10 +1135,8 @@ int FileList::ProcessKey(int Key)
 		}
 		case KEY_ALTSHIFTF9:
 		{
-			PanelHandle *ph = (PanelHandle*)hPlugin;
-
 			if (PanelMode==PLUGIN_PANEL)
-				CtrlObject->Plugins.ConfigureCurrent(ph->pPlugin, 0);
+				CtrlObject->Plugins.ConfigureCurrent(hPlugin->pPlugin, 0);
 			else
 				CtrlObject->Plugins.Configure();
 

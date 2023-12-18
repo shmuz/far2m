@@ -2091,7 +2091,7 @@ bool Panel::SaveShortcutFolder(int Pos)
 	if (PanelMode==PLUGIN_PANEL)
 	{
 		PHPTR hPlugin=GetPluginHandle();
-		PanelHandle *ph = (PanelHandle*)hPlugin;
+		PanelHandle *ph = hPlugin;
 		strPluginModule = ph->pPlugin->GetModuleName();
 		OpenPluginInfo Info;
 		CtrlObject->Plugins.GetOpenPluginInfo(hPlugin,&Info);

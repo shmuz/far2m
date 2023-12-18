@@ -1312,7 +1312,7 @@ static int FarControlSynched(HANDLE hPlugin,int Command,int Param1,LONG_PTR Para
 
 			if (LeftPanel && LeftPanel->GetMode()==PLUGIN_PANEL)
 			{
-				PlHandle=(PanelHandle *)LeftPanel->GetPluginHandle();
+				PlHandle = LeftPanel->GetPluginHandle();
 
 				if (PlHandle)
 				{
@@ -1327,7 +1327,7 @@ static int FarControlSynched(HANDLE hPlugin,int Command,int Param1,LONG_PTR Para
 
 			if (RightPanel && RightPanel->GetMode()==PLUGIN_PANEL)
 			{
-				PlHandle=(PanelHandle *)RightPanel->GetPluginHandle();
+				PlHandle = RightPanel->GetPluginHandle();
 
 				if (PlHandle)
 				{
@@ -1450,7 +1450,7 @@ static int FarControlSynched(HANDLE hPlugin,int Command,int Param1,LONG_PTR Para
 
 			if (pPanel && (pPanel->GetMode() == PLUGIN_PANEL))
 			{
-				PlHandle = (PanelHandle *)pPanel->GetPluginHandle();
+				PlHandle = pPanel->GetPluginHandle();
 
 				if (PlHandle)
 				{

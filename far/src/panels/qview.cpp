@@ -331,7 +331,7 @@ void QuickView::Update(int Mode)
 	Redraw();
 }
 
-void QuickView::ShowFile(const wchar_t *FileName,int TempFile,HANDLE hDirPlugin)
+void QuickView::ShowFile(const wchar_t *FileName, int TempFile, PanelHandle *hDirPlugin)
 {
 	DWORD FileAttr=0;
 	CloseFile();
