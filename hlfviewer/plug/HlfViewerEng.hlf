@@ -1,0 +1,102 @@
+﻿.Language=English,English
+.PluginContents=HlfViewer
+.Options CtrlStartPosChar=^<wrap>
+
+@Contents
+$ #HlfViewer#
+   The HlfViewer plugin was created to help those who create or edit
+HLF files or just want to view some HLF files.
+
+   ~Using HlfViewer in the editor~@editor@
+   ~Invoking HlfViewer from the command line~@cmd@
+   ~Использование плагина в макросах~@MacroCallPlugin@
+   ~Settings~@Config@
+
+
+@cmd
+$ #HlfViewer: command line syntax
+
+   #hlf:filename# [#topic#]
+   #hlf:topic#
+
+   #filename# - ^<wrap>имя hlf-файла.
+              ^<wrap>Если имя файла содержит пробелы, то оно должно заключаться в кавычки.
+              ^<wrap>Если имя файла указано без пути, то порядок поиска следущий:
+              - Текущий каталог
+              - %FARHOME%
+              - пути плагинов "в этой сессии" Far Manager
+
+   #topic#    - ^<wrap>показать топик с именем "topic", если этот параметр не
+указан, то показывается "Contents"
+              ^<wrap>Имя топика может предваряться символом "@@".
+              ^<wrap>Для вызова справки самого Far Manager допустимо указывать
+только топик (без имени файла).
+
+   ~Contents~@Contents@
+
+
+@editor
+$ #HlfViewer: work in editor#
+   Вызов команды из меню плагинов в редакторе покажет #текущий редактируемый# топик,
+если файл в редакторе является файлом помощи для Far.
+
+   Примечание 1:
+
+     ^<wrap>Файл проверяется на наличие ключевых компонентов hlf-формата:
+     - ^<wrap>в начале файла ищется строка, начинающаяся с ".Language="
+     - ^<wrap>производится поиск на наличие любого вхождения последовательности
+"@@буква-цифры", не содержащее символ "=".
+
+     ^<wrap>Кроме того, в ~настройках~@Config@ можно ограничить перечень обрабатываемых
+файлов задав маску.
+
+   Примечание 2:
+
+     ^<wrap>Плагин можно настроить так, чтобы топик показывался не командой меню,
+а при нажатии #F1# (или другой комбинации клавиш, заданной в
+~настройках~@Config@).
+
+     ^<wrap>В этом случае пункт вызова #HlfViewer# в меню плагинов не добавляется.
+
+   ~Contents~@Contents@
+
+
+@Config
+$ #HlfViewer: Settings#
+   If you enable the "#Process editor hotkey#" option, then pressing
+the assigned key combination in the editor will show the current topic
+of the HLF file being edited. The hotkey works only if a HLF file is
+being edited. The default hotkey is #F1#.
+   Also if this option is enabled, the HlfViewer item is not added to
+the plugins menu (F11), because it is no longer needed.
+
+   Опция #Check by file mask# предназначена для ограничения работы
+плагина с файлами отличными от перечисленных. По умолчанию опция включена.
+
+   To control whether the help file is saved before showing the help
+topic, the option "#Show the help file opened in the editor:#" can be
+used. It can have one of the following values:
+
+   #Show last saved# - the last saved version of the topic will
+   #file#              be shown (as in previous versions of
+                     HlfViewer)
+
+   #Show modified#   - all unsaved changes in the current topic
+   #file#              will be shown (the HLF file will be saved
+                     to a temporary directory)
+
+   #Save and show#   - before showing the HLF file, all changes
+   #modified file#     will be saved
+
+   ~Contents~@Contents@
+
+
+@MacroCallPlugin
+$ #Использование плагина в макросах#
+   Находясь в редакторе плагин можно вызывать из макросов, используя макрофункцию Plugin.Call:
+
+      #Plugin.Call(0x1AF0754D)#
+
+   Действие равнозначно ~вызову плагина из меню~@editor@.
+
+   ~Contents~@Contents@

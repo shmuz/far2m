@@ -32,9 +32,8 @@ target_compile_definitions(${PROJECT_NAME}
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ../far/far2sdk)
-target_include_directories(${PROJECT_NAME} PRIVATE ../WinPort)
 
-set(INSTALL_DIR "${INSTALL_DIR}/Plugins/luafar/luamacro")
+set(INSTALL_DIR "${INSTALL_DIR}/Plugins/luafar/${PROJECT_NAME}")
 
 set_target_properties(${PROJECT_NAME}
   PROPERTIES
