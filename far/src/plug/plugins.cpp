@@ -799,16 +799,10 @@ void PluginManager::RetainPanel(PHPTR ph)
 	ph->RefCnt = RefCnt + 1;
 }
 
-HANDLE PluginManager::GetRealPanelHandle(PHPTR ph)
-{
-	return ph->hPanel;
-}
-
 FARString PluginManager::GetPluginModuleName(PHPTR ph)
 {
 	return ph->pPlugin->GetModuleName();
 }
-
 
 int PluginManager::ProcessEditorInput(INPUT_RECORD *Rec)
 {

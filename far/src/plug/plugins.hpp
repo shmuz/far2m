@@ -284,7 +284,6 @@ class PluginManager
 		PHPTR OpenPlugin(Plugin *pPlugin,int OpenFrom,INT_PTR Item);
 		PHPTR OpenFilePlugin(const wchar_t *Name, int OpMode, OPENFILEPLUGINTYPE Type, Plugin *pDesiredPlugin = nullptr);
 		PHPTR OpenFindListPlugin(const PluginPanelItem *PanelItem,int ItemsNumber);
-		HANDLE GetRealPanelHandle(PHPTR ph);
 		FARString GetPluginModuleName(PHPTR ph);
 		void ClosePanel(PHPTR ph); // decreases refcnt and actually closes plugin if refcnt reached zero
 		void RetainPanel(PHPTR ph); // increments refcnt

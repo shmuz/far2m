@@ -1714,7 +1714,8 @@ int Panel::SetPluginCommand(int Command,int Param1,LONG_PTR Param2)
 
 		case FCTL_GETPANELPLUGINHANDLE:
 		{
-			*(HANDLE *)Param2 = GetPluginHandle() ? CtrlObject->Plugins.GetRealPanelHandle(GetPluginHandle()) : INVALID_HANDLE_VALUE;
+			PHPTR PlugHandle = GetPluginHandle();
+			*(HANDLE*)Param2 = PlugHandle ? PlugHandle->hPanel : INVALID_HANDLE_VALUE;
 			Result=TRUE;
 			break;
 		}
