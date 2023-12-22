@@ -33,86 +33,73 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
-
 #include "cvtname.hpp"
 #include "cddrv.hpp"
 #include "syslog.hpp"
 #include "pathmix.hpp"
 #include "drivemix.hpp"
 #include "strmix.hpp"
+#include <errno.h>
 #include <set>
 
-#define IsDot(str)           (str == L'.')
+#define IsDot(str) (str == L'.')
 
-void MixToFullPath(FARString& strPath)
+void MixToFullPath(FARString &strPath)
 {
-	//Skip all path to root (with slash if exists)
-	LPWSTR pstPath=strPath.GetBuffer();
-	//size_t PathOffset=0;
-//	Point2Root(pstPath,PathOffset);
-//	pstPath+=PathOffset;
+	// Skip all path to root (with slash if exists)
+	LPWSTR pstPath = strPath.GetBuffer();
+	// size_t PathOffset=0;
+	//	Point2Root(pstPath,PathOffset);
+	//	pstPath+=PathOffset;
 
-	//Process "." and ".." if exists
-	for (int m = 0; pstPath[m];)
-	{
-		//fragment "."
-		if (IsDot(pstPath[m]) && (!m || IsSlash(pstPath[m - 1])))
-		{
+	// Process "." and ".." if exists
+	for (int m = 0; pstPath[m];) {
+		// fragment "."
+		if (IsDot(pstPath[m]) && (!m || IsSlash(pstPath[m - 1]))) {
 			LPCWSTR pstSrc;
 			LPWSTR pstDst;
 
-			switch (pstPath[m + 1])
-			{
-					//fragment ".\"
-				//case L'\\':
-					//fragment "./"
-				case L'/':
-				{
-					for (pstSrc = pstPath + m + 2, pstDst = pstPath + m; *pstSrc; pstSrc++, pstDst++)
-					{
+			switch (pstPath[m + 1]) {
+					// fragment ".\"
+				// case L'\\':
+				// fragment "./"
+				case LGOOD_SLASH: {
+					for (pstSrc = pstPath + m + 2, pstDst = pstPath + m; *pstSrc; pstSrc++, pstDst++) {
 						*pstDst = *pstSrc;
 					}
 
 					*pstDst = 0;
 					continue;
-				}
-				break;
-				//fragment "." at the end
-				case 0:
-				{
+				} break;
+				// fragment "." at the end
+				case 0: {
 					pstPath[m] = 0;
 					continue;
-				}
-				break;
-				//fragment "..\" or "../" or ".." at the end
-				case L'.':
-				{
-					if (IsSlash(pstPath[m + 2]) || !pstPath[m + 2])
-					{
+				} break;
+				// fragment "..\" or "../" or ".." at the end
+				case L'.': {
+					if (IsSlash(pstPath[m + 2]) || !pstPath[m + 2]) {
 						int n;
 
-						//Calculate subdir name offset
-						for (n = m - 2; (n >= 0) && (!IsSlash(pstPath[n])); n--);
+						// Calculate subdir name offset
+						for (n = m - 2; (n >= 0) && (!IsSlash(pstPath[n])); n--)
+							;
 
 						n = (n < 0) ? 0 : n + 1;
 
-						//fragment "..\" or "../"
-						if (pstPath[m + 2])
-						{
-							for (pstSrc = pstPath + m + 3, pstDst = pstPath + n; *pstSrc; pstSrc++, pstDst++)
-							{
+						// fragment "..\" or "../"
+						if (pstPath[m + 2]) {
+							for (pstSrc = pstPath + m + 3, pstDst = pstPath + n; *pstSrc; pstSrc++,
+								pstDst++) {
 								*pstDst = *pstSrc;
 							}
 
 							*pstDst = 0;
 						}
-						//fragment ".." at the end
-						else if (n > 0)
-						{
+						// fragment ".." at the end
+						else if (n > 0) {
 							pstPath[n] = 0;
-						}
-						else
-						{//dont go to nowhere
+						} else {	// dont go to nowhere
 							pstPath[0] = GOOD_SLASH;
 							pstPath[1] = 0;
 						}
@@ -120,8 +107,7 @@ void MixToFullPath(FARString& strPath)
 						m = n;
 						continue;
 					}
-				}
-				break;
+				} break;
 			}
 		}
 
@@ -129,10 +115,10 @@ void MixToFullPath(FARString& strPath)
 	}
 	strPath.ReleaseBuffer();
 	if (strPath.GetLength() > 1 && strPath[strPath.GetLength() - 1] == GOOD_SLASH)
-		strPath.Truncate(strPath.GetLength() - 1);// #249
+		strPath.Truncate(strPath.GetLength() - 1);	// #249
 }
 
-bool MixToFullPath(LPCWSTR stPath, FARString& strDest, LPCWSTR stCurrentDir)
+bool MixToFullPath(LPCWSTR stPath, FARString &strDest, LPCWSTR stCurrentDir)
 {
 	if (stPath && *stPath == GOOD_SLASH) {
 		strDest = stPath;
@@ -148,7 +134,7 @@ bool MixToFullPath(LPCWSTR stPath, FARString& strDest, LPCWSTR stCurrentDir)
 
 	if (strDest.IsEmpty()) {
 		apiGetCurrentDirectory(strDest);
-		if (strDest.IsEmpty()) { //wtf
+		if (strDest.IsEmpty()) {	// wtf
 			strDest = L"." WGOOD_SLASH;
 		}
 	}
@@ -157,9 +143,9 @@ bool MixToFullPath(LPCWSTR stPath, FARString& strDest, LPCWSTR stCurrentDir)
 		strDest+= GOOD_SLASH;
 
 	if (stPath) {
-		while (stPath[0]=='.' && (!stPath[1] || stPath[1]==GOOD_SLASH)) {
+		while (stPath[0] == '.' && (!stPath[1] || stPath[1] == GOOD_SLASH)) {
 			++stPath;
-			if (*stPath==GOOD_SLASH)
+			if (*stPath == GOOD_SLASH)
 				++stPath;
 		}
 		strDest+= stPath;
@@ -168,14 +154,10 @@ bool MixToFullPath(LPCWSTR stPath, FARString& strDest, LPCWSTR stCurrentDir)
 	MixToFullPath(strDest);
 	return true;
 
-
-
-
-
 	/*
 	size_t lPath=wcslen(NullToEmpty(stPath)),
-	       lCurrentDir=wcslen(NullToEmpty(stCurrentDir)),
-	       lFullPath=lPath+lCurrentDir;
+		lCurrentDir=wcslen(NullToEmpty(stCurrentDir)),
+		lFullPath=lPath+lCurrentDir;
 
 	if (lFullPath > 0)
 	{
@@ -263,21 +245,20 @@ bool MixToFullPath(LPCWSTR stPath, FARString& strDest, LPCWSTR stCurrentDir)
 	return false;*/
 }
 
-
 /*
-  Преобразует Src в полный РЕАЛЬНЫЙ путь с учетом reparse point.
-  Note that Src can be partially non-existent.
+	Преобразует Src в полный РЕАЛЬНЫЙ путь с учетом reparse point.
+	Note that Src can be partially non-existent.
 */
 void ConvertNameToReal(const wchar_t *Src, FARString &strDest)
 {
 	char buf[PATH_MAX + 1];
 	std::string s = Wide2MB(Src);
-	if (*Src==GOOD_SLASH) {
+	if (*Src == GOOD_SLASH) {
 		std::string cutoff;
 		for (;;) {
 			if (sdc_realpath(s.c_str(), buf)) {
-				buf[sizeof(buf)-1] = 0;
-				if (strcmp(buf, s.c_str())!=0) {
+				buf[sizeof(buf) - 1] = 0;
+				if (strcmp(buf, s.c_str()) != 0) {
 					strDest = buf;
 					if (!cutoff.empty())
 						strDest.Append(cutoff.c_str());
@@ -287,7 +268,8 @@ void ConvertNameToReal(const wchar_t *Src, FARString &strDest)
 			}
 
 			size_t p = s.rfind(GOOD_SLASH);
-			if (p==std::string::npos || p==0) break;
+			if (p == std::string::npos || p == 0)
+				break;
 			cutoff.insert(0, s.c_str() + p);
 			s.resize(p);
 		}
@@ -301,9 +283,9 @@ void ConvertNameToReal(const wchar_t *Src, FARString &strDest)
 			ssize_t r = sdc_readlink(s.c_str(), buf, sizeof(buf) - 1);
 			if (r > 0 && r < (ssize_t)sizeof(buf) && buf[0]) {
 				buf[r] = 0;
-				if (buf[0] != GOOD_SLASH && strchr(buf,GOOD_SLASH)) {
+				if (buf[0] != GOOD_SLASH) {
 					strDest = s;
-					CutToSlash(strDest,true);
+					CutToSlash(strDest, true);
 					strDest+= buf;
 				} else
 					strDest = buf;
@@ -315,25 +297,37 @@ void ConvertNameToReal(const wchar_t *Src, FARString &strDest)
 	strDest = Src;
 }
 
+bool ReadSymlink(const wchar_t *lnk, FARString &dest)
+{
+	char buf[PATH_MAX + 1];
+	const auto &lnk_mb = Wide2MB(lnk);
+	ssize_t r = sdc_readlink(lnk_mb.c_str(), buf, sizeof(buf) - 1);
+	if (r < 0 || r >= (ssize_t)sizeof(buf)) {
+		fprintf(stderr, "%s(%ls): error %u\n", __FUNCTION__, lnk, errno);
+		return false;
+	}
+	buf[r] = 0;
+	dest = buf;
+	return true;
+}
+
 void ConvertNameToFull(const wchar_t *lpwszSrc, FARString &strDest)
 {
 	if (*lpwszSrc != GOOD_SLASH) {
 		FARString strCurDir;
 		apiGetCurrentDirectory(strCurDir);
 		FARString strSrc = lpwszSrc;
-		MixToFullPath(strSrc,strDest,strCurDir);
+		MixToFullPath(strSrc, strDest, strCurDir);
 	} else {
 		strDest = lpwszSrc;
 		MixToFullPath(strDest);
 	}
 }
 
-
 void ConvertNameToFull(FARString &strSrcDest)
 {
 	ConvertNameToFull(strSrcDest, strSrcDest);
 }
-
 
 void ConvertHomePrefixInPath(FARString &strFileName)
 {
@@ -341,4 +335,3 @@ void ConvertHomePrefixInPath(FARString &strFileName)
 		strFileName.Replace(0, 1, FARString(GetMyHome()));
 	}
 }
-

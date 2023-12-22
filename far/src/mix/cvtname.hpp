@@ -35,8 +35,9 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FARString.hpp"
 
-bool MixToFullPath(LPCWSTR stPath, FARString& strDest, LPCWSTR stCurrentDir);
+bool MixToFullPath(LPCWSTR stPath, FARString &strDest, LPCWSTR stCurrentDir);
 void ConvertNameToReal(const wchar_t *Src, FARString &strDest);
+bool ReadSymlink(const wchar_t *lnk, FARString &dest);
 void ConvertNameToFull(const wchar_t *Src, FARString &strDest);
 void ConvertNameToFull(FARString &strSrcDest);
 
