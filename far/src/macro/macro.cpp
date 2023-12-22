@@ -523,15 +523,21 @@ public:
 	int UDList_Split();
 
 private:
+	void SendValue(FarMacroValue &Value);
 	int fattrFuncImpl(int Type);
 
 	FarMacroCall* mData;
 };
 
+void FarMacroApi::SendValue(FarMacroValue &Value)
+{
+	mData->Callback(mData->CallbackData, &Value, 1);
+}
+
 int FarMacroApi::PassString(const wchar_t *str)
 {
 	FarMacroValue val = NullToEmpty(str);
-	mData->Callback(mData->CallbackData, &val, 1);
+	SendValue(val);
 	return 0;
 }
 
@@ -544,28 +550,28 @@ int FarMacroApi::PassError(const wchar_t *str)
 {
 	FarMacroValue val = NullToEmpty(str);
 	val.Type = FMVT_ERROR;
-	mData->Callback(mData->CallbackData, &val, 1);
+	SendValue(val);
 	return 0;
 }
 
 int FarMacroApi::PassNumber(double dbl)
 {
 	FarMacroValue val = dbl;
-	mData->Callback(mData->CallbackData, &val, 1);
+	SendValue(val);
 	return 0;
 }
 
 int FarMacroApi::PassInteger(int64_t Int)
 {
 	FarMacroValue val = Int;
-	mData->Callback(mData->CallbackData, &val, 1);
+	SendValue(val);
 	return 0;
 }
 
 int FarMacroApi::PassBoolean(int b)
 {
 	FarMacroValue val = (b != 0);
-	mData->Callback(mData->CallbackData, &val, 1);
+	SendValue(val);
 	return 0;
 }
 
@@ -583,7 +589,7 @@ int FarMacroApi::PassValue(const TVar& Var)
 	else
 		val = Var.asInteger();
 
-	mData->Callback(mData->CallbackData, &val, 1);
+	SendValue(val);
 	return 0;
 }
 
@@ -593,14 +599,14 @@ int FarMacroApi::PassBinary(const void* data, size_t size)
 	val.Type = FMVT_BINARY;
 	val.Binary.Data = data;
 	val.Binary.Size = size;
-	mData->Callback(mData->CallbackData, &val, 1);
+	SendValue(val);
 	return 0;
 }
 
 int FarMacroApi::PassPointer(void* ptr)
 {
 	FarMacroValue val(ptr);
-	mData->Callback(mData->CallbackData, &val, 1);
+	SendValue(val);
 	return 0;
 }
 
