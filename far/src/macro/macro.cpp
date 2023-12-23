@@ -523,22 +523,22 @@ public:
 	int UDList_Split();
 
 private:
-	void SendValue(FarMacroValue &Value);
+	int SendValue(FarMacroValue &Value);
 	int fattrFuncImpl(int Type);
 
 	FarMacroCall* mData;
 };
 
-void FarMacroApi::SendValue(FarMacroValue &Value)
+int FarMacroApi::SendValue(FarMacroValue &Value)
 {
 	mData->Callback(mData->CallbackData, &Value, 1);
+	return 0;
 }
 
 int FarMacroApi::PassString(const wchar_t *str)
 {
 	FarMacroValue val = NullToEmpty(str);
-	SendValue(val);
-	return 0;
+	return SendValue(val);
 }
 
 int FarMacroApi::PassString(const FARString& str)
@@ -550,29 +550,25 @@ int FarMacroApi::PassError(const wchar_t *str)
 {
 	FarMacroValue val = NullToEmpty(str);
 	val.Type = FMVT_ERROR;
-	SendValue(val);
-	return 0;
+	return SendValue(val);
 }
 
 int FarMacroApi::PassNumber(double dbl)
 {
 	FarMacroValue val = dbl;
-	SendValue(val);
-	return 0;
+	return SendValue(val);
 }
 
 int FarMacroApi::PassInteger(int64_t Int)
 {
 	FarMacroValue val = Int;
-	SendValue(val);
-	return 0;
+	return SendValue(val);
 }
 
 int FarMacroApi::PassBoolean(int b)
 {
 	FarMacroValue val = (b != 0);
-	SendValue(val);
-	return 0;
+	return SendValue(val);
 }
 
 int FarMacroApi::PassValue(const TVar& Var)
@@ -589,8 +585,7 @@ int FarMacroApi::PassValue(const TVar& Var)
 	else
 		val = Var.asInteger();
 
-	SendValue(val);
-	return 0;
+	return SendValue(val);
 }
 
 int FarMacroApi::PassBinary(const void* data, size_t size)
@@ -599,15 +594,13 @@ int FarMacroApi::PassBinary(const void* data, size_t size)
 	val.Type = FMVT_BINARY;
 	val.Binary.Data = data;
 	val.Binary.Size = size;
-	SendValue(val);
-	return 0;
+	return SendValue(val);
 }
 
 int FarMacroApi::PassPointer(void* ptr)
 {
 	FarMacroValue val(ptr);
-	SendValue(val);
-	return 0;
+	return SendValue(val);
 }
 
 std::vector<TVar> FarMacroApi::parseParams(size_t Count)
@@ -1290,8 +1283,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 				const auto CallbackId = (Data->Count >= 4 && Data->Values[3].Type == FMVT_POINTER)? Data->Values[3].Pointer : nullptr;
 				Result = CheckAll(Area, Flags) && (!Callback || Callback(CallbackId, AKMFLAGS_NONE));
 			}
-			api.PassBoolean(Result);
-			return 0;
+			return api.PassBoolean(Result);
 		}
 
 		case MCODE_F_MACROSETTINGS:
@@ -1333,18 +1325,14 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 
 					//в windows гарантируется, что не бывает указателей меньше 0x10000
 					if (reinterpret_cast<uintptr_t>(ResultCallPlugin) >= 0x10000 && ResultCallPlugin != INVALID_HANDLE_VALUE)
-					{
-						FarMacroValue Result(ResultCallPlugin);
-						Data->Callback(Data->CallbackData, &Result, 1);
-					}
+						api.PassPointer(ResultCallPlugin);
 					else
 						api.PassBoolean(ResultCallPlugin != nullptr && ResultCallPlugin != INVALID_HANDLE_VALUE);
 
 					return 0;
 				}
 			}
-			api.PassBoolean(false);
-			return 0;
+			return api.PassBoolean(false);
 
 		case MCODE_F_PLUGIN_EXIST:       return api.pluginexistFunc();
 		case MCODE_F_ABS:                return api.absFunc();
@@ -1479,8 +1467,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 				}
 			}
 
-			api.PassValue(Out);
-			return 0;
+			return api.PassValue(Out);
 		}
 
 		case MCODE_F_MENU_SELECT:      // N=Menu.Select(S[,N[,Dir]])
@@ -1565,8 +1552,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 					tmpVar = L"";
 			}
 
-			api.PassValue(tmpVar);
-			return success;
+			return api.PassValue(tmpVar);
 		}
 
 		case MCODE_UDLIST_SPLIT:
@@ -1649,8 +1635,7 @@ int FarMacroApi::substrFunc()
 		}
 	}
 
-	PassString(length ? FARString(p+start,length).CPtr() : L"");
-	return 0;
+	return PassString(length ? FARString(p+start,length).CPtr() : L"");
 }
 
 static bool SplitFileName(const wchar_t *lpFullName,FARString &strDest,int nFlags)
@@ -1773,8 +1758,7 @@ int FarMacroApi::fsplitFunc()
 	if (!SplitFileName(Params[0].toString(), strPath, Params[1].asInteger()))
 		strPath.Clear();
 
-	PassString(strPath);
-	return 0;
+	return PassString(strPath);
 }
 
 // N=atoi(S[,radix])
@@ -1783,8 +1767,7 @@ int FarMacroApi::atoiFunc()
 	auto Params = parseParams(2);
 	wchar_t *endptr;
 	const auto Ret = _wcstoi64(Params[0].toString(), &endptr, Params[1].toInteger());
-	PassInteger(Ret);
-	return 0;
+	return PassInteger(Ret);
 }
 
 // N=Window.Scroll(Lines[,Axis])
@@ -1808,8 +1791,7 @@ int FarMacroApi::windowscrollFunc()
 		}
 	}
 
-	PassBoolean(Ret);
-	return 0;
+	return PassBoolean(Ret);
 }
 
 // S=itoa(N[,radix])
@@ -1828,8 +1810,7 @@ int FarMacroApi::itowFunc()
 		Params[0]=TVar(_i64tow(Params[0].toInteger(),value,Radix));
 	}
 
-	PassValue(Params[0]);
-	return 0;
+	return PassValue(Params[0]);
 }
 
 // os::chrono::sleep_for(Nms)
@@ -1887,8 +1868,7 @@ int FarMacroApi::keyFunc()
 		}
 	}
 
-	PassString(strKeyText);
-	return 0;
+	return PassString(strKeyText);
 }
 
 // V=waitkey([N,[T]])
@@ -1906,31 +1886,27 @@ int FarMacroApi::waitkeyFunc()
 		if (Key != KEY_NONE)
 			KeyToText(Key, strKeyText);
 
-		PassString(strKeyText);
-		return 0;
+		return PassString(strKeyText);
 	}
 
 	if (Key == KEY_NONE)
 		Key=-1;
 
-	PassNumber(Key);
-	return 0;
+	return PassNumber(Key);
 }
 
 // n=min(n1,n2)
 int FarMacroApi::minFunc()
 {
 	auto Params = parseParams(2);
-	PassValue(std::min(Params[0], Params[1]));
-	return 0;
+	return PassValue(std::min(Params[0], Params[1]));
 }
 
 // n=max(n1,n2)
 int FarMacroApi::maxFunc()
 {
 	auto Params = parseParams(2);
-	PassValue(std::max(Params[0], Params[1]));
-	return 0;
+	return PassValue(std::max(Params[0], Params[1]));
 }
 
 // n=mod(n1,n2)
@@ -1955,8 +1931,7 @@ int FarMacroApi::indexFunc()
 	const wchar_t *s = Params[0].toString();
 	const wchar_t *p = Params[1].toString();
 	const wchar_t *i = !Params[2].getInteger() ? StrStrI(s,p) : StrStr(s,p);
-	PassNumber(i ? i-s : -1);
-	return 0;
+	return PassNumber(i ? i-s : -1);
 }
 
 // S=rindex(S1,S2[,Mode])
@@ -1966,8 +1941,7 @@ int FarMacroApi::rindexFunc()
 	const wchar_t *s = Params[0].toString();
 	const wchar_t *p = Params[1].toString();
 	const wchar_t *i = !Params[2].getInteger() ? RevStrStrI(s,p) : RevStrStr(s,p);
-	PassNumber(i ? i-s : -1);
-	return 0;
+	return PassNumber(i ? i-s : -1);
 }
 
 // S=date([S])
@@ -1980,8 +1954,7 @@ int FarMacroApi::dateFunc()
 
 	FARString strTStr;
 	MkStrFTime(strTStr, Params[0].toString());
-	PassString(strTStr);
-	return 0;
+	return PassString(strTStr);
 }
 
 // S=xlat(S[,Flags])
@@ -2063,8 +2036,7 @@ int FarMacroApi::msgBoxFunc()
 	TempBuf += L"\n";
 	TempBuf += text;
 	auto Result=FarMessageFn(-1,Flags,nullptr,(const wchar_t * const *)TempBuf.CPtr(),0,0)+1;
-	PassNumber(Result);
-	return 0;
+	return PassNumber(Result);
 }
 
 // S=env(S)
@@ -2076,8 +2048,7 @@ int FarMacroApi::environFunc()
 	if (!apiGetEnvironmentVariable(Params[0].toString(), strEnv))
 		strEnv.Clear();
 
-	PassString(strEnv);
-	return 0;
+	return PassString(strEnv);
 }
 
 // V=Panel.Select(panelType,Action[,Mode[,Items]])
@@ -2130,8 +2101,7 @@ int FarMacroApi::panelselectFunc()
 
 	if (Result < 0)
 		Result = 0;
-	PassNumber(Result);
-	return 0;
+	return PassNumber(Result);
 }
 
 // N=panel.SetPath(panelType,pathName[,fileName])
@@ -2183,8 +2153,7 @@ int FarMacroApi::panelsetpathFunc()
 		}
 	}
 
-	PassBoolean(Ret);
-	return 0;
+	return PassBoolean(Ret);
 }
 
 int FarMacroApi::fattrFuncImpl(int Type)
@@ -2230,15 +2199,13 @@ int FarMacroApi::fattrFuncImpl(int Type)
 
 	if (Type == 2) // fexist(2)
 	{
-		PassBoolean(FileAttr!=INVALID_FILE_ATTRIBUTES);
-		return 0;
+		return PassBoolean(FileAttr!=INVALID_FILE_ATTRIBUTES);
 	}
 
 	if (Type == 3) // panel.fexist(3)
 		FileAttr=(DWORD)Pos+1;
 
-	PassNumber(static_cast<int32_t>(FileAttr));
-	return 0;
+	return PassNumber(static_cast<int32_t>(FileAttr));
 }
 
 // N=fattr(S)
@@ -2304,8 +2271,7 @@ int FarMacroApi::flockFunc()
 	if (vkKey)
 		Ret=SetFLockState(vkKey,stateFLock);
 
-	PassNumber(Ret);
-	return 0;
+	return PassNumber(Ret);
 }
 
 // N=Dlg->SetFocus([ID])
@@ -2327,8 +2293,7 @@ int FarMacroApi::dlgsetfocusFunc()
 				Ret = 0;
 		}
 	}
-	PassValue(Ret);
-	return 0;
+	return PassValue(Ret);
 }
 
 // V=Far.GetConfig(Key.Name)
@@ -2480,8 +2445,7 @@ int FarMacroApi::dlggetvalueFunc()
 		}
 	}
 
-	PassValue(Ret);
-	return 0;
+	return PassValue(Ret);
 }
 
 // N=Editor.Pos(Op,What[,Where])
@@ -2594,8 +2558,7 @@ int FarMacroApi::editorposFunc()
 		}
 	}
 
-	PassValue(Ret);
-	return 0;
+	return PassValue(Ret);
 }
 
 // OldVar=Editor.Set(Idx,Var)
@@ -2720,8 +2683,7 @@ int FarMacroApi::editorsetFunc()
 		}
 	}
 
-	PassValue(Ret);
-	return 0;
+	return PassValue(Ret);
 }
 
 // V=Clip(N[,V])
@@ -2749,16 +2711,14 @@ int FarMacroApi::clipFunc()
 			{
 				TVar varClip(ClipText);
 				free(ClipText);
-				PassValue(varClip);
-				return 0;
+				return PassValue(varClip);
 			}
 			break;
 		}
 		case 1: // Put "S" into Clipboard
 		{
 			Ret=CopyToClipboard(Val.s());
-			PassNumber(Ret);
-			return 0;
+			return PassNumber(Ret);
 		}
 		case 2: // Add "S" into Clipboard
 		{
@@ -2793,8 +2753,7 @@ int FarMacroApi::clipFunc()
 
 				clip.Close();
 			}
-			PassNumber(Ret);
-			return 0;
+			return PassNumber(Ret);
 		}
 		case 3: // Copy Win to internal, "S" - ignore
 		case 4: // Copy internal to Win, "S" - ignore
@@ -2814,8 +2773,7 @@ int FarMacroApi::clipFunc()
 			Ret=CopyToClipboard(varClip.s());
 
 			Clipboard::SetUseInternalClipboardState(OldUseInternalClipboard);
-			PassNumber(Ret); // 0!  ???
-			return 0;
+			return PassNumber(Ret); // 0!  ???
 		}
 		case 5: // ClipMode
 		{
@@ -2960,8 +2918,7 @@ int FarMacroApi::panelsetposidxFunc()
 		}
 	}
 
-	PassNumber(Ret);
-	return 0;
+	return PassNumber(Ret);
 }
 
 // N=Panel.SetPos(panelType,fileName)
@@ -3005,8 +2962,7 @@ int FarMacroApi::panelsetposFunc()
 		}
 	}
 
-	PassNumber(Ret);
-	return 0;
+	return PassNumber(Ret);
 }
 
 // Result=replace(Str,Find,Replace[,Cnt[,Mode]])
@@ -3093,8 +3049,7 @@ int FarMacroApi::panelitemFunc()
 
 		if (treeItem && !TypeInfo)
 		{
-			PassString(treeItem->strName);
-			return 0;
+			return PassString(treeItem->strName);
 		}
 	}
 	else if ((fileList = dynamic_cast<FileList*>(SelPanel)))
@@ -3195,8 +3150,7 @@ int FarMacroApi::panelitemFunc()
 int FarMacroApi::lenFunc()
 {
 	auto Params = parseParams(1);
-	PassNumber(StrLength(Params[0].toString()));
-	return 0;
+	return PassNumber(StrLength(Params[0].toString()));
 }
 
 int FarMacroApi::ucaseFunc()
@@ -3224,8 +3178,7 @@ int FarMacroApi::stringFunc()
 	auto Params = parseParams(1);
 	auto& Val = Params[0];
 	Val.toString();
-	PassValue(Val);
-	return 0;
+	return PassValue(Val);
 }
 
 // S=StrWrap(Text,Width[,Break[,Flags]])
@@ -3246,8 +3199,7 @@ int FarMacroApi::strwrapFunc()
 	const wchar_t* pBreak = *Break.s()==0 ? L"\n" : Break.s();
 	FARString strDest;
 	FarFormatText(Text.toString(), Width,strDest, pBreak, 1); // 1 == FFTM_BREAKLONGWORD
-	PassString(strDest);
-	return 0;
+	return PassString(strDest);
 }
 
 int FarMacroApi::intFunc()
@@ -3255,8 +3207,7 @@ int FarMacroApi::intFunc()
 	auto Params = parseParams(1);
 	auto& Val = Params[0];
 	Val.toInteger();
-	PassValue(Val);
-	return 0;
+	return PassValue(Val);
 }
 
 int FarMacroApi::floatFunc()
@@ -3264,8 +3215,7 @@ int FarMacroApi::floatFunc()
 	auto Params = parseParams(1);
 	auto& Val = Params[0];
 	Val.toDouble();
-	PassValue(Val);
-	return 0;
+	return PassValue(Val);
 }
 
 int FarMacroApi::absFunc()
@@ -3300,8 +3250,7 @@ int FarMacroApi::absFunc()
 		break;
 	}
 
-	PassValue(Result);
-	return 0;
+	return PassValue(Result);
 }
 
 int FarMacroApi::ascFunc()
@@ -3314,8 +3263,7 @@ int FarMacroApi::ascFunc()
 		tmpVar = (int64_t)((DWORD)((WORD)*tmpVar.toString()));
 		tmpVar.toInteger();
 	}
-	PassValue(tmpVar);
-	return 0;
+	return PassValue(tmpVar);
 }
 
 // N=FMatch(S,Mask)
@@ -3380,8 +3328,7 @@ int FarMacroApi::editorselFunc()
 			Ret=CurFrame->VMProcess(MCODE_F_EDITOR_SEL,(void*)Action.toInteger(),Opt.i());
 	}
 
-	PassValue(Ret);
-	return 0;
+	return PassValue(Ret);
 }
 
 // V=Editor.Undo(N)
@@ -3430,8 +3377,7 @@ int FarMacroApi::pluginexistFunc()
 		if (CtrlObject->Plugins.FindPlugin(static_cast<DWORD>(mData->Values[0].Double)))
 			Ret = true;
 	}
-	PassBoolean(Ret);
-	return 0;
+	return PassBoolean(Ret);
 }
 
 // N=testfolder(S)
@@ -3483,9 +3429,7 @@ int FarMacroApi::kbdLayoutFunc()
 	BOOL Ret=TRUE;
 	HKL  RetLayout=(HKL)0; //Layout=(HKL)0,
 
-	PassValue(Ret?TVar(static_cast<INT64>(reinterpret_cast<INT_PTR>(RetLayout))):0);
-
-	return 0;
+	return PassValue(Ret?TVar(static_cast<INT64>(reinterpret_cast<INT_PTR>(RetLayout))):0);
 }
 
 //### temporary function, for test only
