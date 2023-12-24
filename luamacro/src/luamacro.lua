@@ -9,14 +9,7 @@ if not far.MacroCallFar then
   return
 end
 
-local GlobalInfo = {
-  Version       = { 3, 0, 0, 765 },
-  MinFarVersion = { 3, 0, 0, 5171 },
-  Guid          = win.Uuid("4EBBEFC8-2084-4B7F-94C0-692CE136894D"),
-  Title         = "LuaMacro",
-  Description   = "Far macros in Lua",
-  Author        = "Shmuel Zeigerman & Far Group",
-}
+local GlobalInfo = far.GetPluginGlobalInfo()
 
 local F, Msg = far.Flags, nil
 local bor = bit64.bor

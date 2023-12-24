@@ -624,7 +624,7 @@ int far_GetPluginGlobalInfo(lua_State *L)
 	PutIntToArray(L, 2, info.Version.Minor);
 	PutIntToArray(L, 3, info.Version.Revision);
 	PutIntToArray(L, 4, info.Version.Build);
-	lua_setfield(L, -1, "Version");
+	lua_setfield(L, -2, "Version");
 	return 1;
 }
 
