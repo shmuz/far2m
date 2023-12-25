@@ -34,6 +34,7 @@ extern int  luaopen_win (lua_State *L);
 extern void PackMacroValues(lua_State* L, size_t Count, const struct FarMacroValue* Values);
 extern int  pcall_msg (lua_State* L, int narg, int nret);
 extern void PushPluginTable(lua_State* L, HANDLE hPlugin);
+extern BOOL RunDefaultScript(lua_State* L, int ForFirstTime);
 
 struct PluginStartupInfo PSInfo; // DON'T ever use fields ModuleName and ModuleNumber of PSInfo
 																 // because they contain data of the 1-st loaded LuaFAR plugin.
@@ -5378,6 +5379,12 @@ int far_WriteConsole(lua_State *L)
 	return 1;
 }
 
+int far_RunDefaultScript(lua_State *L)
+{
+	lua_pushboolean(L, RunDefaultScript(L, 0));
+	return 1;
+}
+
 BOOL dir_exist(const wchar_t* path)
 {
 	DWORD attr = WINPORT(GetFileAttributes)(path);
@@ -5686,6 +5693,7 @@ static const luaL_Reg far_funcs[] = {
 	{"GetNumberOfLinks",    far_GetNumberOfLinks},
 	{"LuafarVersion",       far_LuafarVersion},
 	{"MakeMenuItems",       far_MakeMenuItems},
+	{"RunDefaultScript",    far_RunDefaultScript},
 	{"Show",                far_Show},
 	{"MacroAdd",            far_MacroAdd},
 	{"MacroDelete",         far_MacroDelete},
@@ -5801,57 +5809,6 @@ int luaopen_far (lua_State *L)
 	lua_setfield(L, -2, "__gc");
 
 	return 0;
-}
-
-// Run default script
-BOOL LF_RunDefaultScript(lua_State* L)
-{
-	int pos = lua_gettop (L);
-
-	// First: try to load the default script embedded into the plugin
-	lua_getglobal(L, "require");
-	lua_pushliteral(L, "<boot");
-	int status = lua_pcall(L,1,1,0);
-	if (status == 0) {
-		status = pcall_msg(L,0,0);
-		lua_settop (L, pos);
-		return (status == 0);
-	}
-
-	// Second: try to load the default script from a disk file
-	TPluginData* pd = GetPluginData(L);
-	lua_pushstring(L, pd->ShareDir);
-	lua_pushstring(L, "/");
-	push_utf8_string(L, wcsrchr(pd->ModuleName,L'/')+1, -1);
-	lua_concat(L,3);
-
-	char* defscript = (char*)lua_newuserdata (L, lua_objlen(L,-1) + 8);
-	strcpy(defscript, lua_tostring(L, -2));
-
-	FILE *fp = NULL;
-	const char delims[] = ".-";
-	int i;
-	for (i=0; delims[i]; i++) {
-		char *end = strrchr(defscript, delims[i]);
-		if (end) {
-			strcpy(end, ".lua");
-			if ((fp = fopen(defscript, "r")) != NULL)
-				break;
-		}
-	}
-	if (fp) {
-		fclose(fp);
-		status = luaL_loadfile(L, defscript);
-		if (status == 0)
-			status = pcall_msg(L,0,0);
-		else
-			LF_Error(L, utf8_to_wcstring (L, -1, NULL));
-	}
-	else
-		LF_Error(L, L"Default script not found");
-
-	lua_settop (L, pos);
-	return (status == 0);
 }
 
 void InitLuaState (lua_State *L, TPluginData *aPlugData, lua_CFunction aOpenLibs)

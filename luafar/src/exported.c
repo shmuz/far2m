@@ -405,6 +405,65 @@ int LF_GetFiles (lua_State* L, HANDLE hPlugin, struct PluginPanelItem *PanelItem
 }
 //---------------------------------------------------------------------------
 
+// Run default script
+BOOL RunDefaultScript(lua_State* L, int ForFirstTime)
+{
+	int pos = lua_gettop (L);
+
+	// First: try to load the default script embedded into the plugin
+	lua_getglobal(L, "require");
+	lua_pushliteral(L, "<boot");
+	int status = lua_pcall(L,1,1,0);
+	if (status == 0) {
+		lua_pushboolean(L, ForFirstTime);
+		status = pcall_msg(L,1,0);
+		lua_settop (L, pos);
+		return (status == 0);
+	}
+
+	// Second: try to load the default script from a disk file
+	TPluginData* pd = GetPluginData(L);
+	lua_pushstring(L, pd->ShareDir);
+	lua_pushstring(L, "/");
+	push_utf8_string(L, wcsrchr(pd->ModuleName,L'/')+1, -1);
+	lua_concat(L,3);
+
+	char* defscript = (char*)lua_newuserdata (L, lua_objlen(L,-1) + 8);
+	strcpy(defscript, lua_tostring(L, -2));
+
+	FILE *fp = NULL;
+	const char delims[] = ".-";
+	int i;
+	for (i=0; delims[i]; i++) {
+		char *end = strrchr(defscript, delims[i]);
+		if (end) {
+			strcpy(end, ".lua");
+			if ((fp = fopen(defscript, "r")) != NULL)
+				break;
+		}
+	}
+	if (fp) {
+		fclose(fp);
+		status = luaL_loadfile(L, defscript);
+		if (status == 0) {
+			lua_pushboolean(L, ForFirstTime);
+			status = pcall_msg(L,1,0);
+		}
+		else
+			LF_Error(L, utf8_to_wcstring (L, -1, NULL));
+	}
+	else
+		LF_Error(L, L"Default script not found");
+
+	lua_settop (L, pos);
+	return (status == 0);
+}
+
+BOOL LF_RunDefaultScript(lua_State* L)
+{
+	return RunDefaultScript(L, 1);
+}
+
 // return FALSE only if error occurred
 BOOL CheckReloadDefaultScript (lua_State *L)
 {
@@ -418,7 +477,7 @@ BOOL CheckReloadDefaultScript (lua_State *L)
 		lua_pop(L, 1);
 	}
 	lua_pop(L, 1);
-	return !reload || LF_RunDefaultScript(L);
+	return !reload || RunDefaultScript(L, 0);
 }
 
 // -- an object (any non-nil value) is on stack top;

@@ -2,12 +2,7 @@
 -- started: 2012-04-20
 
 -- This plugin does not support reloading the default script on the fly.
---## if not (...) then return end
-
-if not far.MacroCallFar then
-  far.Message("Newer versions of Far/LuaFAR required", "LuaMacro", nil, "w")
-  return
-end
+if not (...) then return end
 
 local GlobalInfo = far.GetPluginGlobalInfo()
 
