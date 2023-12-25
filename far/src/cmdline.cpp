@@ -474,7 +474,7 @@ int CommandLine::ProcessKey(int Key)
 			}
 
 			if (ActivePanel->ProcessPluginEvent(FE_COMMAND,(void *)strStr.CPtr())) {
-				ActivePanel->GetCurDirPluginAware(strCurDir);
+				ActivePanel->GetCurDirPluginAware(strCurDir, false);
 				Show();
 				ActivePanel->SetTitle();
 

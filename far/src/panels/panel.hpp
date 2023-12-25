@@ -156,7 +156,7 @@ class Panel:public ScreenObject
 
 		virtual int GetCurDir(FARString &strCurDir);
 
-		virtual int GetCurDirPluginAware(FARString &strCurDir);
+		virtual int GetCurDirPluginAware(FARString &strCurDir, bool AppendHostFile=true);
 
 		virtual int GetSelCount() const {return 0;}
 		virtual int GetRealSelCount() const {return 0;}

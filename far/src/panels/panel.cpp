@@ -1380,7 +1380,7 @@ int Panel::GetCurDir(FARString &strCurDir)
 	return (int)strCurDir.GetLength();
 }
 
-int Panel::GetCurDirPluginAware(FARString &strCurDir)
+int Panel::GetCurDirPluginAware(FARString &strCurDir, bool AppendHostFile)
 {
 	if (PanelMode==PLUGIN_PANEL)
 	{
@@ -1390,7 +1390,7 @@ int Panel::GetCurDirPluginAware(FARString &strCurDir)
 
 		strCurDir.Clear();
 
-		if (Info.HostFile && *Info.HostFile)
+		if (AppendHostFile && Info.HostFile && *Info.HostFile)
 		{
 			strCurDir += Info.HostFile;
 			strCurDir += L"/";
