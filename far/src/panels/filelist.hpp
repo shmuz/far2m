@@ -42,7 +42,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FSNotify.h"
 #include <memory>
 
-extern const HighlightDataColor DefaultStartingColors;
+extern const HighlightDataColor ZeroColors;
 
 class FileFilter;
 
@@ -82,7 +82,7 @@ struct FileListItem
 
 	DWORD_PTR UserData{};
 
-	const HighlightDataColor *ColorsPtr = &DefaultStartingColors;
+	const HighlightDataColor *ColorsPtr = &ZeroColors;
 
 	DWORD NumberOfLinks{};
 	DWORD UserFlags{};
