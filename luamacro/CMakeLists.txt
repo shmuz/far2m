@@ -4,6 +4,7 @@ project(luamacro)
 include_directories(${LIBLUA_INCLUDE_DIRS})
 
 set(SOURCES
+  src/GlobalInfo.c
   ${CMAKE_SOURCE_DIR}/luafar/src/luaplug.c
 )
 
@@ -24,11 +25,6 @@ endforeach()
 
 target_compile_definitions(${PROJECT_NAME}
   PRIVATE ${EXPORTS}
-  PRIVATE "-DSYS_ID=0x4EBBEFC8"
-  PRIVATE "-DPLUG_VERSION=3,0,0,799"
-  PRIVATE "-DPLUG_TITLE=\"LuaMacro\""
-  PRIVATE "-DPLUG_DESCRIPTION=\"Far macros in Lua\""
-  PRIVATE "-DPLUG_AUTHOR=\"Shmuel Zeigerman & Far Group\""
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ../far/far2sdk)

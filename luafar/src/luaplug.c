@@ -6,9 +6,6 @@
 #define LUAPLUG __attribute__ ((visibility ("default")))
 #endif
 
-#define WIDEN2(x) L ## x
-#define WIDEN(x) WIDEN2(x)
-
 #ifdef FUNC_OPENLIBS
 extern int FUNC_OPENLIBS (lua_State*);
 #else
@@ -36,28 +33,20 @@ static LONG_PTR WINAPI DlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 	return LF_DlgProc(LS, hDlg, Msg, Param1, Param2);
 }
 
-LUAPLUG void GetGlobalInfoW(struct GlobalInfo *aInfo)
-{
-	struct VersionInfo Version = { PLUG_VERSION };
-	aInfo->StructSize    = sizeof(*aInfo);
-	aInfo->SysID         = SYS_ID;
-	aInfo->Version       = Version;
-	aInfo->Title         = WIDEN(PLUG_TITLE);
-	aInfo->Description   = WIDEN(PLUG_DESCRIPTION);
-	aInfo->Author        = WIDEN(PLUG_AUTHOR);
-}
-
 LUAPLUG void SetStartupInfoW(const struct PluginStartupInfo *aInfo)
 {
 	if (!aInfo->LuafarHandle)
 		return; // luafar.so is not loaded
+
+	struct GlobalInfo globInfo;
+	GetGlobalInfoW(&globInfo);
 
 	PluginData.ModuleName    = aInfo->ModuleName;
 	PluginData.ModuleNumber  = aInfo->ModuleNumber;
 	PluginData.RootKey       = aInfo->RootKey;
 	PluginData.Private       = aInfo->Private;
 	PluginData.DlgProc       = DlgProc;
-	PluginData.PluginId      = SYS_ID;
+	PluginData.PluginId      = globInfo.SysID;
 	PluginData.GetGlobalInfo = GetGlobalInfoW;
 #ifndef NOSETPACKAGEPATH
 	PluginData.Flags |= PDF_SETPACKAGEPATH;
@@ -77,7 +66,7 @@ LUAPLUG void GetPluginInfoW(struct PluginInfo *aInfo)
 {
 	if(LS) {
 		LF_GetPluginInfo (LS, aInfo);
-		aInfo->SysID = SYS_ID;
+		aInfo->SysID = PluginData.PluginId;
 	}
 }
 //---------------------------------------------------------------------------

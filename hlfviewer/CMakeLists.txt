@@ -3,6 +3,7 @@ project(hlfviewer)
 include_directories(${LIBLUA_INCLUDE_DIRS})
 
 set(SOURCES
+  plug/GlobalInfo.c
   ${CMAKE_SOURCE_DIR}/luafar/src/luaplug.c
 )
 
@@ -20,12 +21,7 @@ endforeach()
 
 target_compile_definitions(${PROJECT_NAME}
   PRIVATE ${EXPORTS}
-  PRIVATE "-DSYS_ID=0x1AF0754D"
   PRIVATE "-DPLUG_MINFARVERSION=MAKEFARVERSION(2,4)"
-  PRIVATE "-DPLUG_VERSION=3,0,0,49"
-  PRIVATE "-DPLUG_TITLE=\"HlfViewer\""
-  PRIVATE "-DPLUG_DESCRIPTION=\"Hlf-file Viewer for Far Manager\""
-  PRIVATE "-DPLUG_AUTHOR=\"Far Group, Shmuel Zeigerman\""
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ../far/far2sdk)
