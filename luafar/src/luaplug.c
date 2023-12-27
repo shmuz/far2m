@@ -249,14 +249,6 @@ LUAPLUG int SetFindListW(HANDLE hPlugin, const struct PluginPanelItem *PanelItem
 #endif
 //---------------------------------------------------------------------------
 
-#if defined(EXPORT_GETMINFARVERSION) || defined(EXPORT_ALL)
-LUAPLUG int GetMinFarVersionW (void)
-{
-	return PLUG_MINFARVERSION;
-}
-#endif
-//---------------------------------------------------------------------------
-
 #if defined(EXPORT_PROCESSEDITORINPUT) || defined(EXPORT_ALL)
 LUAPLUG int ProcessEditorInputW(const INPUT_RECORD *Rec)
 {

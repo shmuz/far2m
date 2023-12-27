@@ -1,6 +1,6 @@
 #include <farplug-wide.h>
 
-SHAREDSYMBOL void WINAPI EXP_NAME(GetGlobalInfo)(struct GlobalInfo *aInfo)
+SHAREDSYMBOL void WINAPI GetGlobalInfoW(struct GlobalInfo *aInfo)
 {
   struct VersionInfo Version = { 3,0,0,799 };
   aInfo->StructSize    = sizeof(*aInfo);
@@ -10,3 +10,10 @@ SHAREDSYMBOL void WINAPI EXP_NAME(GetGlobalInfo)(struct GlobalInfo *aInfo)
   aInfo->Description   = L"Far macros in Lua";
   aInfo->Author        = L"Shmuel Zeigerman & Far Group";
 }
+//---------------------------------------------------------------------------
+
+SHAREDSYMBOL int WINAPI GetMinFarVersionW(void)
+{
+  return MAKEFARVERSION(2,4);
+}
+//---------------------------------------------------------------------------
