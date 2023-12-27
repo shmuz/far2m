@@ -225,6 +225,7 @@ local function OpenCommandLine(cmdbuf)
 
   if cmdbuf:find("%S") then
     cmdbuf = Trim(cmdbuf)
+    cmdbuf = cmdbuf:gsub("\\", "") -- far2l/far2m insert a backslash before whitespace etc.
 
     local ptrName,ptrTopic = cmdbuf:match('"([^"]+)"(.*)')
     if ptrName == nil then
