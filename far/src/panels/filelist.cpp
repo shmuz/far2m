@@ -2439,9 +2439,10 @@ void FileList::ProcessEnter(bool EnableExec,bool SeparateWindow,bool EnableAssoc
 
 		//ExtPtr=wcsrchr(strFileName,L'.');
 
-		if (EnableExec && IsDirectExecutableFilePath(strFileName.GetMB().c_str()))
-		{
-			EscapeSpace(strFileName);
+		FARString strFileNameEscaped = strFileName;
+		EscapeSpace(strFileNameEscaped);
+		if (EnableExec && IsDirectExecutableFilePath(strFileNameEscaped.GetMB().c_str())) {
+			strFileName = strFileNameEscaped;
 			EnsurePathHasParentPrefix(strFileName);
 
 			if (!(Opt.ExcludeCmdHistory&EXCLUDECMDHISTORY_NOTPANEL) && !PluginMode) //AN
