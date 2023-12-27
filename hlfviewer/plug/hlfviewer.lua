@@ -220,19 +220,24 @@ local function FindPluginHelp(Name)
 end
 
 local function OpenCommandLine(cmdbuf)
-  -- разбор "параметров ком.строки"
+  -- разбор параметров ком.строки
   local ModuleName = far.PluginStartupInfo().ModuleName
 
   if cmdbuf:find("%S") then
     cmdbuf = Trim(cmdbuf)
-    cmdbuf = cmdbuf:gsub("\\", "") -- far2l/far2m insert a backslash before whitespace etc.
-
-    local ptrName,ptrTopic = cmdbuf:match('"([^"]+)"(.*)')
-    if ptrName == nil then
-      ptrName,ptrTopic = cmdbuf:match('(%S+)(.*)')
-    end
-    if ptrName == nil then
-      return
+    local ptrTopic
+    local ptrName = regex.match(cmdbuf, [[^"(?:\\.|[^"])+"]])
+    if ptrName then -- quoted
+      ptrTopic = cmdbuf:sub(ptrName:len()+1)
+      ptrName = ptrName:sub(2,-2):gsub("\\","") -- remove quotes and backslashes
+    else -- not quoted
+      ptrName = regex.match(cmdbuf, [[^(?:\\.|\S)+]])
+      if ptrName then
+        ptrTopic = cmdbuf:sub(ptrName:len()+1)
+        ptrName = ptrName:gsub("\\","") -- remove backslashes
+      else
+        return
+      end
     end
 
     ptrTopic = ptrTopic:match("%S.*")
@@ -246,7 +251,7 @@ local function OpenCommandLine(cmdbuf)
       ptrName = nil
     end
 
-    -- Здесь: ptrName - тмя файла/GUID, ptrTopic - имя темы
+    -- Здесь: ptrName - имя файла/GUID, ptrTopic - имя темы
 
     -- по GUID`у не найдено, пробуем имя файла
     if not ptrName then
