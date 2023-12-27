@@ -1,41 +1,42 @@
 project(far2m_gui)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-	find_program(LSB_RELEASE_EXEC lsb_release)
-	execute_process(COMMAND ${LSB_RELEASE_EXEC} -ds
-	    OUTPUT_VARIABLE LSB_RELEASE
-	    OUTPUT_STRIP_TRAILING_WHITESPACE
-	)
-	if (LSB_RELEASE MATCHES "Ubuntu 20|Linux Mint 20")
-	  add_compile_definitions(WX304PATCH)
-	endif()
+    find_program(LSB_RELEASE_EXEC lsb_release)
+    execute_process(COMMAND ${LSB_RELEASE_EXEC} -ds
+        OUTPUT_VARIABLE LSB_RELEASE
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    if (LSB_RELEASE MATCHES "Ubuntu 20|Linux Mint 20")
+        add_compile_definitions(WX304PATCH)
+    endif()
 endif()
 
 set(SOURCES
-	Paint.cpp
-	CustomDrawChar.cpp
-	wxMain.cpp
-	wxClipboardBackend.cpp
-	ExclusiveHotkeys.cpp
-	wxWinTranslations.cpp
-	wxConsoleInputShim.cpp
+    Paint.cpp
+    CustomDrawChar.cpp
+    wxMain.cpp
+    wxClipboardBackend.cpp
+    ExclusiveHotkeys.cpp
+    wxWinTranslations.cpp
+    wxConsoleInputShim.cpp
 )
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-	set(SOURCES
-		${SOURCES}
-		Mac/touchbar.mm
-		Mac/dockicon.cpp
-		Mac/pasteboard.mm
-		Mac/hide.mm
-		Mac/init.mm
-	)
+    set(SOURCES
+        ${SOURCES}
+        Mac/touchbar.mm
+        Mac/dockicon.cpp
+        Mac/pasteboard.mm
+        Mac/hide.mm
+        Mac/init.mm
+        Mac/displaynotify.mm
+    )
 endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-	find_package(wxWidgets REQUIRED core base adv)
+    find_package(wxWidgets REQUIRED core base adv)
 else()
-	find_package(wxWidgets REQUIRED core base)
+    find_package(wxWidgets REQUIRED core base)
 endif()
 
 include(${wxWidgets_USE_FILE})
@@ -52,9 +53,9 @@ target_include_directories(far2m_gui PRIVATE ${wxWidgets_INCLUDE_DIRS})
 #${wxWidgets_CXX_FLAGS}
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-	target_link_libraries(far2m_gui utils far2m "-framework IOKit -framework Carbon -framework Cocoa -framework AudioToolbox -framework System -framework OpenGL" ${wxWidgets_LIBRARIES})
+    target_link_libraries(far2m_gui utils far2m "-framework IOKit -framework Carbon -framework Cocoa -framework AudioToolbox -framework System -framework OpenGL" ${wxWidgets_LIBRARIES})
 else()
-	target_link_libraries(far2m_gui utils far2m ${wxWidgets_LIBRARIES})
+    target_link_libraries(far2m_gui utils far2m ${wxWidgets_LIBRARIES})
 endif()
 
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${wxWidgets_CXX_FLAGS}")
@@ -69,7 +70,7 @@ if(CMAKE_THREAD_LIBS_INIT)
 endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-	set_property (TARGET far2m_gui APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+    set_property (TARGET far2m_gui APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 endif()
 
 find_package(X11)
@@ -83,7 +84,7 @@ if(X11_FOUND)
 endif()
 
 set_target_properties(far2m_gui
-  PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY "${INSTALL_DIR}"
-    PREFIX ""
-    SUFFIX ".so")
+    PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY "${INSTALL_DIR}"
+        PREFIX ""
+        SUFFIX ".so")
