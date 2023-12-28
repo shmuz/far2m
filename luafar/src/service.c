@@ -5385,6 +5385,49 @@ int far_RunDefaultScript(lua_State *L)
 	return 1;
 }
 
+int far_SplitCmdLine(lua_State *L)
+{
+	const int MAXARGS = 64;
+	int numargs = 0;
+	const char *str = luaL_checkstring(L,1), *p=str;
+	char *arg;
+
+	lua_settop(L, 1);
+	arg = (char*)lua_newuserdata(L, strlen(str)+1);
+	lua_checkstack(L, MAXARGS);
+
+	for (const char *q=p; *p && (numargs < MAXARGS); p=q,numargs++)
+	{
+		int quoted;
+		char *trg = arg;
+		while (isspace(*q))
+			q++;
+		if (*q == 0)
+			break;
+		quoted = *q == '\"';
+		if (quoted)
+			q++;
+		for (p=q; ; q++)
+		{
+			if (*q == '\\')
+			{
+				if (*++q == 0)
+					break;
+			}
+			else if (!quoted && (*q==0 || isspace(*q)))
+				break;
+			else if (quoted && (*q==0 || *q == '\"'))
+			{
+				if (*q == '\"') q++;
+				break;
+			}
+			*trg++ = *q;
+		}
+		lua_pushlstring(L, arg, trg-arg);
+	}
+	return numargs;
+}
+
 BOOL dir_exist(const wchar_t* path)
 {
 	DWORD attr = WINPORT(GetFileAttributes)(path);
@@ -5711,6 +5754,7 @@ static const luaL_Reg far_funcs[] = {
 	{"InMyTemp",            far_InMyTemp},
 	{"GetMyHome",           far_GetMyHome},
 	{"WriteConsole",        far_WriteConsole},
+	{"SplitCmdLine",        far_SplitCmdLine},
 
 	{NULL, NULL}
 };

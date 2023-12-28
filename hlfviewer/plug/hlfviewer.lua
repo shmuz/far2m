@@ -224,23 +224,9 @@ local function OpenCommandLine(cmdbuf)
   local ModuleName = far.PluginStartupInfo().ModuleName
 
   if cmdbuf:find("%S") then
-    cmdbuf = Trim(cmdbuf)
-    local ptrTopic
-    local ptrName = regex.match(cmdbuf, [[^"(?:\\.|[^"])+"]])
-    if ptrName then -- quoted
-      ptrTopic = cmdbuf:sub(ptrName:len()+1)
-      ptrName = ptrName:sub(2,-2):gsub("\\","") -- remove quotes and backslashes
-    else -- not quoted
-      ptrName = regex.match(cmdbuf, [[^(?:\\.|\S)+]])
-      if ptrName then
-        ptrTopic = cmdbuf:sub(ptrName:len()+1)
-        ptrName = ptrName:gsub("\\","") -- remove backslashes
-      else
-        return
-      end
-    end
+    local ptrName, ptrTopic = far.SplitCmdLine(cmdbuf)
 
-    ptrTopic = ptrTopic:match("%S.*")
+    ptrTopic = ptrTopic and ptrTopic:match("%S.*")
     if ptrTopic then
       ptrTopic = ptrTopic:gsub("^@", "")
       ptrTopic = ptrTopic:find("%S") and Trim(ptrTopic)
