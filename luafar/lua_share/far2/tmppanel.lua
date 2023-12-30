@@ -383,9 +383,6 @@ end
 
 
 function Env:Open (OpenFrom, Item)
-  -- if IsOldFAR then return nil end
-  --  GetOptions (PluginRootKey)
-
   self.StartupOpenFrom = OpenFrom
   if OpenFrom == F.OPEN_COMMANDLINE then
     local newOpt = setmetatable({}, {__index=self.Opt})
@@ -393,11 +390,11 @@ function Env:Open (OpenFrom, Item)
       safe="SafeModePanel", replace="ReplaceMode", menu="MenuForFilelist",
       full="FullScreenPanel" }
 
-    local argv = Item
-    while argv ~= "" do
-      local switch, param, rest = argv:match "^%s*([+%-])(%S*)(.*)"
-      if not switch then break end
-      argv = rest
+    local args = { far.SplitCmdLine(Item) }
+    local nextstart = 1
+    for i,arg in ipairs(args) do
+      local switch, param = arg:match "^([+%-])(%S*)"
+      if not switch then nextstart = i; break; end
       param = param:lower()
       if ParamsTable[param] then
         newOpt[ParamsTable[param]] = (switch == "+")
@@ -409,14 +406,13 @@ function Env:Open (OpenFrom, Item)
       end
     end
 
-    argv = Trim(argv)
-    if argv ~= "" then
-      if argv:sub(1,1) == "<" then
-        argv = argv:sub(2)
-        return self:OpenPanelFromOutput (argv)
+    local arg = args[nextstart]
+    if arg and arg ~= "" then
+      if arg:sub(1,1) == "<" then
+        arg = arg:sub(2)
+        return self:OpenPanelFromOutput(arg)
       else
-        argv = Unquote(argv)
-        local PathName = ExpandEnvironmentStr(argv)
+        local PathName = ExpandEnvironmentStr(arg)
         local attr = win.GetFileAttr(PathName)
         if attr and not attr:find("d") then
           if newOpt.MenuForFilelist then
@@ -428,7 +424,8 @@ function Env:Open (OpenFrom, Item)
             pan.HostFile = PathName
             return pan
           end
-        else return
+        else
+          return
         end
       end
     end
@@ -532,11 +529,13 @@ function Panel:ProcessList (aList, aReplaceMode)
   if aReplaceMode then self:ReplaceFiles {} end
   local items = self:GetItems()
   for _,v in ipairs(aList) do
-    local dir, name = v:match("^(.*[\\/])(.*)$")
+    local dir, name = v:match("(.*/)(.*)$")
     if not dir then dir, name = ".", v end
     far.RecursiveSearch(dir, name,
       function(_, fullname)
-        if fullname:sub(-1) ~= "." then items[#items+1] = fullname end
+        if fullname ~= "." and fullname ~= ".." then
+          items[#items+1] = fullname
+        end
       end)
   end
 end
