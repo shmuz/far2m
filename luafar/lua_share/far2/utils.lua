@@ -362,30 +362,10 @@ Available commands:
   far.Message(syn, sTitle, ";Ok", "l")
 end
 
--- Split command line into separate arguments.
--- * An argument is any sequence of (a) and (b):
---     a) a sequence of 0 or more characters enclosed within a pair of non-escaped
---        double quotes; can contain spaces; enclosing double quotes are stripped
---        from the argument.
---     b) a sequence of 1 or more non-space characters.
--- * Backslashes only escape double quotes.
--- * The function does not raise errors.
-local function SplitCommandLine (str)
-  local quoted   = [[" (?: \\" | [^"]   )* "? ]]
-  local unquoted = [[  (?: \\" | [^"\s] )+    ]]
-  local pat = ("(?: %s|%s )+"):format(quoted, unquoted)
-  local out = {}
-  local rep = { ['\\"']='"', ['"']='' }
-  for arg in regex.gmatch(str, pat, "x") do
-    out[#out+1] = arg:gsub('(\\?")', rep)
-  end
-  return out
-end
-
 local function CompileCommandLine (sCommandLine, tCommands)
   local actions = {}
   local opt
-  local args = SplitCommandLine(sCommandLine)
+  local args = { far.SplitCmdLine(sCommandLine) }
   for i,v in ipairs(args) do
     local curropt, param
     if opt then

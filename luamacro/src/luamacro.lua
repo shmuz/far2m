@@ -169,13 +169,16 @@ end
 local function GetFileParams (Text)
   local from,to = Text:find("^%s*@%s*")
   if from then
-    local from2,to2,fname = Text:find("^\"([^\"]+)\"", to+1) -- test for quoted file name
-    if not from2 then
-      from2,to2,fname = Text:find("^(%S+)", to+1) -- test for unquoted file name
+    local fname
+    if Text:sub(to+1,to+1) == "\"" then -- quoted file name
+      from, to, fname = regex.find(Text, [["((?:\\.|[^"])+)"]], to+1)
+    else -- unquoted file name
+      from, to, fname = regex.find(Text, [[((?:\\.|\S)+)]], to+1)
     end
-    if from2 then
-      local space,params = Text:match("^(%s*)(.*)", to2+1)
+    if from then
+      local space,params = Text:match("^(%s*)(.*)", to+1)
       if space~="" or params=="" then
+        fname = far.SplitCmdLine(fname)
         return FullExpand(fname), params
       end
     end
