@@ -529,14 +529,9 @@ function Panel:ProcessList (aList, aReplaceMode)
   if aReplaceMode then self:ReplaceFiles {} end
   local items = self:GetItems()
   for _,v in ipairs(aList) do
-    local dir, name = v:match("(.*/)(.*)$")
-    if not dir then dir, name = ".", v end
-    far.RecursiveSearch(dir, name,
-      function(_, fullname)
-        if fullname ~= "." and fullname ~= ".." then
-          items[#items+1] = fullname
-        end
-      end)
+    if win.GetFileAttr(v) then
+      items[#items+1] = v
+    end
   end
 end
 
