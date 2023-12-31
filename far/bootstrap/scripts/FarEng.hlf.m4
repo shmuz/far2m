@@ -3608,6 +3608,8 @@ example, you have to do this when a mask contains any of the delimiter
 characters (a comma or a semicolon), so that the mask doesn't get confused with
 a list.
 
+ If a mask is put in quotes then each quote within the mask should be doubled.
+
  File mask surrounded with slashes #/# is treated as ~Perl regular expression~@RegExp@.
 
  Example:

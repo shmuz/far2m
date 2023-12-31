@@ -80,7 +80,7 @@ class UserDefinedList : private NonCopyable
 	private:
 		bool CheckSeparators() const; // проверка разделителей на корректность
 		void SetDefaultSeparators();
-		const wchar_t *Skip(const wchar_t *Str, int &Length, int &RealLength, bool &Error);
+		const wchar_t *Skip(const wchar_t *Str, int &Length, int &RealLength, bool &Error, bool &InQuotes);
 
 	public:
 		// по умолчанию разделителем считается ';' и ',', а

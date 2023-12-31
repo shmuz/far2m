@@ -175,8 +175,9 @@ bool UserDefinedList::Set(const wchar_t* List, bool AddToList)
 		int Length, RealLength;
 		bool Error=false;
 		const wchar_t *CurList=List;
+		bool InQuotes=false;
 
-		while (!Error && (CurList=Skip(CurList, Length, RealLength, Error)))
+		while (!Error && (CurList=Skip(CurList, Length, RealLength, Error, InQuotes)))
 		{
 			if (Length > 0)
 			{
@@ -189,7 +190,8 @@ bool UserDefinedList::Set(const wchar_t* List, bool AddToList)
 						if (mPackAsterisks)
 							item.Compact(L'*', false);
 
-						item.Compact(L'\"', true);
+						if (InQuotes)
+							item.Compact(L'\"', true);
 
 						if (mAddAsterisk && !FindAnyOfChars(item.Str.CPtr(), "?*."))
 						{
@@ -249,8 +251,10 @@ bool UserDefinedList::Set(const wchar_t* List, bool AddToList)
 	return rc;
 }
 
-const wchar_t *UserDefinedList::Skip(const wchar_t *Str, int &Length, int &RealLength, bool &Error)
+const wchar_t *UserDefinedList::Skip(const wchar_t *Str, int &Length, int &RealLength, bool &Error,
+	bool &InQuotes)
 {
+	InQuotes = false;
 	Length=RealLength=0;
 	Error=false;
 
@@ -271,7 +275,7 @@ const wchar_t *UserDefinedList::Skip(const wchar_t *Str, int &Length, int &RealL
 		return Str;
 
 	const wchar_t *cur=Str;
-	bool InQuotes = (*cur==L'\"');
+	InQuotes = (*cur==L'\"');
 	bool IsRegexp = mProcessRegexp && (*cur==L'/');
 
 	if (InQuotes)

@@ -3331,6 +3331,9 @@ Például ha a maszkban elválasztó karaktert szeretnénk használni ("," vagy 
 az idézőjelek használata elkerülhetetlen, nehogy a Far maszkok listájaként
 próbálja meg értelmezni a definíciót.
 
+ Ha a maszk idézőjelek között van, akkor a maszkon belüli minden idézőjelet meg
+kell duplázni.
+
  File mask surrounded with slashes #/# is treated as ~Perl regular expression~@RegExp@.
 
  Example:
