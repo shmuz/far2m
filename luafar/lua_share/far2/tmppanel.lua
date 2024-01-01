@@ -266,7 +266,7 @@ end
 --------------------------------------------------------------------------------
 
 
-function Env:OpenPanelFromOutput (command)
+function Env:OpenPanelFromOutput (command, options)
   local h = io.popen (command, "r")
   if h then
     local list = {}
@@ -274,7 +274,7 @@ function Env:OpenPanelFromOutput (command)
       table.insert (list, line)
     end
     h:close()
-    local newpanel = self:NewPanel()
+    local newpanel = self:NewPanel(options)
     newpanel:ProcessList (list, newpanel.Opt.ReplaceMode)
     return newpanel
   end
@@ -285,7 +285,6 @@ function Env:GetPluginInfo()
   local opt = self.Opt
   local Info = {}
   Info.Flags = 0
-  -- Info.Flags.preload = true
   Info.CommandPrefix = opt.Prefix;
   if opt.AddToPluginsMenu then
     Info.PluginMenuStrings = { M.MTempPanel }
@@ -387,50 +386,52 @@ function Env:Open (OpenFrom, Item)
   if OpenFrom == F.OPEN_COMMANDLINE then
     local newOpt = setmetatable({}, {__index=self.Opt})
     local ParamsTable = {
-      safe="SafeModePanel", replace="ReplaceMode", menu="MenuForFilelist",
-      full="FullScreenPanel" }
+      full    = "FullScreenPanel";
+      menu    = "MenuForFilelist";
+      replace = "ReplaceMode";
+      safe    = "SafeModePanel";
+    }
 
-    local args = { far.SplitCmdLine(Item) }
-    local nextstart = 1
-    for i,arg in ipairs(args) do
-      local switch, param = arg:match "^([+%-])(%S*)"
-      if not switch then nextstart = i; break; end
+    -- handle options
+    local argv = Item
+    while argv ~= "" do
+      local switch, param, rest = argv:match "^%s*([+%-])(%S*)(.*)"
+      if not switch then
+        break
+      end
       param = param:lower()
       if ParamsTable[param] then
         newOpt[ParamsTable[param]] = (switch == "+")
-      else
-        local digit = param:match "^%d"
-        if digit then
-          self.CurrentCommonPanel = tonumber(digit) + 1
-        end
+      elseif param:match("^%d$") then
+        self.CurrentCommonPanel = tonumber(param) + 1
       end
+      argv = rest
     end
 
-    local arg = args[nextstart]
-    if arg and arg ~= "" then
-      if arg:sub(1,1) == "<" then
-        arg = arg:sub(2)
-        return self:OpenPanelFromOutput(arg)
-      else
-        local PathName = ExpandEnvironmentStr(arg)
-        local attr = win.GetFileAttr(PathName)
-        if attr and not attr:find("d") then
-          if newOpt.MenuForFilelist then
-            ShowMenuFromFile (PathName)
-            return nil
-          else
-            local pan = self:NewPanel(newOpt)
-            pan:ProcessList (ListFromFile(PathName), newOpt.ReplaceMode)
-            pan.HostFile = PathName
-            return pan
-          end
+    -- handle next arguments
+    argv = Trim(argv)
+    if argv == "" then
+      return self:NewPanel(newOpt)
+    elseif argv:sub(1,1) == "<" then
+      return self:OpenPanelFromOutput(argv:sub(2), newOpt)
+    else
+      argv = far.SplitCmdLine(argv)
+      local PathName = ExpandEnvironmentStr(argv)
+      local attr = win.GetFileAttr(PathName)
+      if attr and not attr:find("d") then
+        if newOpt.MenuForFilelist then
+          ShowMenuFromFile (PathName)
         else
-          return
+          local pan = self:NewPanel(newOpt)
+          pan:ProcessList (ListFromFile(PathName), newOpt.ReplaceMode)
+          pan.HostFile = PathName
+          return pan
         end
       end
     end
+  else
+    return self:NewPanel()
   end
-  return self:NewPanel()
 end
 
 

@@ -2133,6 +2133,7 @@ function MT.test_UserDefinedList()
     {0,                    "abc",                      "abc"},
     {PACKASTERISKS,        "***abc***",                "*abc*"},
     ----------------------------------------------------------------------------
+    {0,                    [[ab""c]],                  [[ab""c]]},        --double quotes inside mask
     {0,                    [["abc"]],                  "abc"},            --removing double quotes
     {0,                    [["ab""c"]],                [[ab"c]]},         --double quote inside double quotes
     {0,                    [["abc; def,",123]],        "abc; def,","123"},--spaces and delims inside dbl quotes
