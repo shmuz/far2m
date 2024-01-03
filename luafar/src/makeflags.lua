@@ -1,37 +1,53 @@
--- This script is intended to generate the "flags.cpp" file
+-- This script is intended to generate the "farflags.c" file
+
+local Skip = {}
+local SkipMt = { __index=Skip; }
+
+local function NewSkip()
+  return setmetatable( { mLevel=0 }, SkipMt)
+end
+
+function Skip:Process(line)
+  if line:find("^%s*//") then
+    return true
+  elseif self.mLevel == 0 then
+    if line:find("^%s*#ifdef%s+FAR_USE_INTERNALS")
+    or line:find("^%s*#if.-_WIN32_WINNT")
+    or line:find("^%s*#if%s+0") then
+      self.mLevel = 1
+    end
+    return self.mLevel > 0
+  else
+    if line:find("^%s*#if") then
+      self.mLevel = self.mLevel + 1
+    elseif line:find("^%s*#endif") then
+      self.mLevel = self.mLevel - 1
+    end
+    return true
+  end
+end
 
 local function add_defines (src, trg_int, trg_ptr)
-  local skip = false
+  local skip = NewSkip()
   for line in src:gmatch("[^\r\n]+") do
-    if line:find("^%s*//") then
-      skip = skip
-    elseif line:find("#ifdef%s+FAR_USE_INTERNALS") then
-      skip = true
-    elseif skip then
-      if line:find("#else") or line:find("#endif") then skip = false end
-    else
+    if not skip:Process(line) then
       local c, v = line:match("#define%s+([A-Z][A-Z0-9_]*)%s+(.+)")
       if c then
         if v:find("%(%s*void%s*%*%s*%)") or v:find("%(%s*HANDLE%s*%)") then
-	  table.insert(trg_ptr, c)
-	else
+          table.insert(trg_ptr, c)
+        else
           table.insert(trg_int, c)
-	end
+        end
       end
     end
   end
 end
 
 local function add_enums (src, trg)
-  local enum, skip = false, false
+  local skip = NewSkip()
+  local enum = false
   for line in src:gmatch("[^\r\n]+") do
-    if line:find("^%s*//") then
-      skip = skip
-    elseif line:find("#ifdef%s+FAR_USE_INTERNALS") or line:find("#if.-_WIN32_WINNT") then
-      skip = true
-    elseif skip then
-      if line:find("#else") or line:find("#endif") then skip = false end
-    else
+    if not skip:Process(line) then
       if line:find("^%s*enum%s*[%w_]*%s*$") then
         enum = true
       elseif enum then
@@ -46,26 +62,18 @@ local function add_enums (src, trg)
   end
 end
 
-local function add_static  (src, trg)
-  for chunk in src:gmatch("static%s+const%s+[^;]-;") do
-    for k,v in chunk:gmatch("\n%s*([%w_]+)%s*=%s*(%w+)") do
-      table.insert(trg, k)
-    end
-  end
-end
-
 local function write_target (trg_int, trg_ptr)
   io.write [[
 static const flag_pair flags[] = {
 ]]
   table.sort(trg_int)
   table.sort(trg_ptr)
-  for k,v in ipairs(trg_int) do
+  for _,v in ipairs(trg_int) do
     local len = math.max(1, 40 - #v)
     local space = (" "):rep(len)
     io.write(string.format('  {"%s",%s%s },\n', v, space, v))
   end
-  for k,v in ipairs(trg_ptr) do
+  for _,v in ipairs(trg_ptr) do
     local len = math.max(1, 40 - #v)
     local space = (" "):rep(len)
     io.write(string.format('  {"%s",%s(intptr_t) %s },\n', v, space, v))
@@ -93,7 +101,7 @@ local t_winapi = {
 
 
 local file_top = [[
-// flags.c
+// farflags.c
 // DON'T EDIT: THIS FILE IS AUTO-GENERATED.
 
 #ifdef __cplusplus
@@ -144,7 +152,6 @@ do
     fp:close()
     if fname == "farplug-wide.h" then
       add_defines(src, trg_int, trg_ptr)
-      add_static(src, trg_int)
     end
     add_enums(src, trg_int)
   end
