@@ -118,6 +118,7 @@ class Plugin
 		virtual bool HasDeleteFiles() = 0;
 		virtual bool HasPutFiles() = 0;
 		virtual bool HasGetFiles() = 0;
+		virtual bool HasGetLinkTarget() = 0;
 		virtual bool HasSetStartupInfo() = 0;
 		virtual bool HasOpenFilePlugin() = 0;
 		virtual bool HasClosePlugin() = 0;
@@ -167,6 +168,7 @@ class Plugin
 		virtual int GetFindData(HANDLE hPlugin, PluginPanelItem **pPanelItem, int *pItemsNumber, int OpMode) = 0;
 		virtual int GetVirtualFindData(HANDLE hPlugin, PluginPanelItem **pPanelItem, int *pItemsNumber, const wchar_t *Path) = 0;
 		virtual int SetDirectory(HANDLE hPlugin, const wchar_t *Dir, int OpMode) = 0;
+		virtual bool GetLinkTarget(HANDLE hPlugin, PluginPanelItem *PanelItem, FARString &result, int OpMode) = 0;
 		virtual int GetFiles(HANDLE hPlugin, PluginPanelItem *PanelItem, int ItemsNumber, int Move, const wchar_t **DestPath, int OpMode) = 0;
 		virtual int PutFiles(HANDLE hPlugin, PluginPanelItem *PanelItem, int ItemsNumber, int Move, int OpMode) = 0;
 		virtual int DeleteFiles(HANDLE hPlugin, PluginPanelItem *PanelItem, int ItemsNumber, int OpMode) = 0;
@@ -250,6 +252,7 @@ enum ExceptFunctionsType
 	EXCEPT_FREEFINDDATA,
 	EXCEPT_FREEVIRTUALFINDDATA,
 	EXCEPT_SETDIRECTORY,
+	EXCEPT_GETLINKTARGET,
 	EXCEPT_GETFILES,
 	EXCEPT_PUTFILES,
 	EXCEPT_DELETEFILES,

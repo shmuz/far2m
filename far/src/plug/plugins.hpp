@@ -278,7 +278,6 @@ class PluginManager
 //api functions
 
 	public:
-
 		Plugin *Analyse(const AnalyseData *pData);
 
 		PHPTR OpenPlugin(Plugin *pPlugin,int OpenFrom,INT_PTR Item);
@@ -294,6 +293,7 @@ class PluginManager
 		void FreeVirtualFindData(PHPTR ph,PluginPanelItem *PanelItem,int ItemsNumber);
 		int SetDirectory(PHPTR ph,const wchar_t *Dir,int OpMode);
 		int GetFile(PHPTR ph,PluginPanelItem *PanelItem,const wchar_t *DestPath,FARString &strResultName,int OpMode);
+		bool GetLinkTarget(PHPTR ph,PluginPanelItem *PanelItem,FARString &result,int OpMode);
 		int GetFiles(PHPTR ph,PluginPanelItem *PanelItem,int ItemsNumber,int Move,const wchar_t **DestPath,int OpMode);
 		int PutFiles(PHPTR ph,PluginPanelItem *PanelItem,int ItemsNumber,int Move,int OpMode);
 		int DeleteFiles(PHPTR ph,PluginPanelItem *PanelItem,int ItemsNumber,int OpMode);

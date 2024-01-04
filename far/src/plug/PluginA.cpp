@@ -798,7 +798,10 @@ void PluginA::FreeVirtualFindData(
 	}
 }
 
-
+bool PluginA::GetLinkTarget(HANDLE hPlugin, PluginPanelItem *PanelItem, FARString &result, int OpMode)
+{
+	return false;
+}
 
 int PluginA::GetFiles(
     HANDLE hPlugin,

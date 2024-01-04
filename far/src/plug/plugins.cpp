@@ -33,7 +33,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
-
 #include "plugins.hpp"
 #include "lang.hpp"
 #include "keys.hpp"
@@ -1062,6 +1061,11 @@ int PluginManager::ProcessHostFile(
 	return Code;
 }
 
+bool PluginManager::GetLinkTarget(PHPTR ph, PluginPanelItem *PanelItem, FARString &result, int OpMode)
+{
+	ChangePriority ChPriority(ChangePriority::NORMAL);
+	return ph->pPlugin->GetLinkTarget(ph->hPanel, PanelItem, result, OpMode);
+}
 
 int PluginManager::GetFiles(
     PHPTR ph,

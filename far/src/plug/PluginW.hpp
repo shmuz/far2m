@@ -42,6 +42,7 @@ typedef void (WINAPI *PLUGINEXITFARW)();
 typedef void (WINAPI *PLUGINFREEFINDDATAW)(HANDLE hPlugin,PluginPanelItem *PanelItem,int ItemsNumber);
 typedef void (WINAPI *PLUGINFREEVIRTUALFINDDATAW)(HANDLE hPlugin,PluginPanelItem *PanelItem,int ItemsNumber);
 typedef int (WINAPI *PLUGINGETFILESW)(HANDLE hPlugin,PluginPanelItem *PanelItem,int ItemsNumber,int Move,const wchar_t **DestPath,int OpMode);
+typedef int (WINAPI *PLUGINGETLINKTARGETW)(HANDLE hPlugin, PluginPanelItem *PanelItem, wchar_t *Target, size_t TargetSize, int OpMode);
 typedef int (WINAPI *PLUGINGETFINDDATAW)(HANDLE hPlugin,PluginPanelItem **pPanelItem,int *pItemsNumber,int OpMode);
 typedef int (WINAPI *PLUGINMINFARVERSIONW)();
 typedef void (WINAPI *PLUGINGETOPENPLUGININFOW)(HANDLE hPlugin,OpenPluginInfo *Info);
@@ -82,6 +83,7 @@ class PluginW: public Plugin
 		PLUGINGETVIRTUALFINDDATAW    pGetVirtualFindDataW;
 		PLUGINFREEVIRTUALFINDDATAW   pFreeVirtualFindDataW;
 		PLUGINSETDIRECTORYW          pSetDirectoryW;
+		PLUGINGETLINKTARGETW         pGetLinkTargetW;
 		PLUGINGETFILESW              pGetFilesW;
 		PLUGINPUTFILESW              pPutFilesW;
 		PLUGINDELETEFILESW           pDeleteFilesW;
@@ -127,6 +129,7 @@ class PluginW: public Plugin
 		bool HasOpenPlugin() { return pOpenPluginW!=nullptr; }
 		bool HasMakeDirectory() { return pMakeDirectoryW!=nullptr; }
 		bool HasDeleteFiles() { return pDeleteFilesW!=nullptr; }
+		bool HasGetLinkTarget() { return pGetLinkTargetW != nullptr; }
 		bool HasPutFiles() { return pPutFilesW!=nullptr; }
 		bool HasGetFiles() { return pGetFilesW!=nullptr; }
 		bool HasSetStartupInfo() { return pSetStartupInfoW!=nullptr; }
@@ -182,6 +185,7 @@ class PluginW: public Plugin
 		int GetFindData(HANDLE hPlugin, PluginPanelItem **pPanelItem, int *pItemsNumber, int OpMode);
 		int GetVirtualFindData(HANDLE hPlugin, PluginPanelItem **pPanelItem, int *pItemsNumber, const wchar_t *Path);
 		int SetDirectory(HANDLE hPlugin, const wchar_t *Dir, int OpMode);
+		bool GetLinkTarget(HANDLE hPlugin, PluginPanelItem *PanelItem, FARString &result, int OpMode);
 		int GetFiles(HANDLE hPlugin, PluginPanelItem *PanelItem, int ItemsNumber, int Move, const wchar_t **DestPath, int OpMode);
 		int PutFiles(HANDLE hPlugin, PluginPanelItem *PanelItem, int ItemsNumber, int Move, int OpMode);
 		int DeleteFiles(HANDLE hPlugin, PluginPanelItem *PanelItem, int ItemsNumber, int OpMode);
