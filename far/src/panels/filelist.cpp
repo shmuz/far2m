@@ -5011,5 +5011,5 @@ void FileList::ClearAllItem()
 	{
 		DeleteListData((*i)->PrevListData,(*i)->PrevFileCount); //???
 	}
+	SymlinksCache.clear();
 }
-

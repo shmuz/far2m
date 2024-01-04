@@ -211,6 +211,8 @@ void FileList::ReadFileNames(int KeepSelection, int IgnoreVisible, int DrawMessa
 		DeleteListData(ListData,FileCount);
 
 	ListData=nullptr;
+	SymlinksCache.clear();
+
 	int ReadOwners=IsColumnDisplayed(OWNER_COLUMN);
 	int ReadGroups=IsColumnDisplayed(GROUP_COLUMN);
 	FARString strComputerName;
@@ -631,6 +633,7 @@ void FileList::UpdatePlugin(int KeepSelection, int IgnoreVisible)
 	if (!CtrlObject->Plugins.GetFindData(hPlugin,&PanelData,&PluginFileCount,0))
 	{
 		DeleteListData(ListData,FileCount);
+		SymlinksCache.clear();
 		PopPlugin(TRUE);
 		Update(KeepSelection);
 
@@ -684,6 +687,7 @@ void FileList::UpdatePlugin(int KeepSelection, int IgnoreVisible)
 		DeleteListData(ListData,FileCount);
 	}
 
+	SymlinksCache.clear();
 	FileCount=PluginFileCount;
 	ListData=(FileListItem**)malloc(sizeof(FileListItem*)*(FileCount+1));
 
