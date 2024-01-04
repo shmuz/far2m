@@ -14506,14 +14506,14 @@ upd:"Group:"
 "Група:"
 
 SetAttrAccessUser
-"Права пользователя"
-"User's access"
-upd:"User's access"
-upd:"User's access"
-upd:"User's access"
-upd:"User's access"
-upd:"User's access"
-"Права користувача"
+"Права владельца"
+"Owner's access"
+upd:"Owner's access"
+upd:"Owner's access"
+upd:"Owner's access"
+upd:"Owner's access"
+upd:"Owner's access"
+"Права власника"
 
 SetAttrAccessGroup
 "Права группы"
