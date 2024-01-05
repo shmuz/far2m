@@ -3600,7 +3600,6 @@ LONG_PTR LF_DlgProc(lua_State *L, HANDLE hDlg, int Msg, int Param1, LONG_PTR Par
 	//---------------------------------------------------------------------------
 	LONG_PTR ret = pcall_msg (L, 4, 1); //+2
 	if (ret) {
-		lua_pop(L, 1);
 		dd->wasError = TRUE;
 		PSInfo.SendDlgMessage(hDlg, DM_CLOSE, -1, 0);
 		return PSInfo.DefDlgProc(hDlg, Msg, Param1, Param2);
