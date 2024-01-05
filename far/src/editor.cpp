@@ -60,6 +60,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "DialogBuilder.hpp"
 #include "wakeful.hpp"
 #include "codepage.hpp"
+#include "DlgGuid.hpp"
 
 static int ReplaceMode,ReplaceAll;
 
@@ -3726,7 +3727,7 @@ BOOL Editor::Search(int Next)
 						InsertQuote(strQSearchStr);
 						InsertQuote(strQReplaceStr);
 						PreRedrawItem pitem=PreRedraw.Pop();
-						MsgCode=Message(0,4,Msg::EditReplaceTitle,Msg::EditAskReplace,
+						MsgCode=Message(0,4,&EditorConfirmReplaceId,Msg::EditReplaceTitle,Msg::EditAskReplace,
 						                strQSearchStr,Msg::EditAskReplaceWith,strQReplaceStr,
 						                Msg::EditReplace,Msg::EditReplaceAll,Msg::EditSkip,Msg::EditCancel);
 						PreRedraw.Push(pitem);
