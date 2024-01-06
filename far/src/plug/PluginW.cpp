@@ -424,7 +424,7 @@ static const MacroPrivateInfo MacroInfo
 };
 
 // This seems to prevent irregular segfaults related to unloading luafar.so in the process of Far termination.
-static void *LoadLuafar()
+static BOOL LoadLuafar()
 {
 #ifdef USELUA
 	// 1. Load Lua
@@ -443,20 +443,20 @@ static void *LoadLuafar()
 	if (!handle)
 	{
 		Message(MSG_WARNING, 1, Msg::Error, L"Neither LuaJIT nor Lua5.1 library was found", Msg::Ok);
-		return nullptr;
+		return FALSE;
 	}
 
 	// 2. Load LuaFAR
 	FARString strLuaFar = g_strFarPath + PluginsFolderName + L"/luafar/luafar.so";
 	TranslateFarString<TranslateInstallPath_Share2Lib>(strLuaFar);
-	handle = dlopen(strLuaFar.GetMB().c_str(), RTLD_LAZY|RTLD_GLOBAL);
-	if (!handle)
+	LuafarLoaded = dlopen(strLuaFar.GetMB().c_str(), RTLD_LAZY|RTLD_GLOBAL) != nullptr;
+	if (!LuafarLoaded)
 	{
 		Message(MSG_WARNING, 1, Msg::Error, L"Cannot load luafar.so", Msg::Ok);
 	}
-	return handle;
+	return LuafarLoaded;
 #else
-	return nullptr;
+	return FALSE;
 #endif // #ifdef USELUA
 }
 
@@ -568,7 +568,7 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 		StartupInfo.EditorControlV2=FarEditorControlV2;
 		StartupInfo.ViewerControlV2=FarViewerControlV2;
 		StartupInfo.TextV2=FarTextV2;
-		StartupInfo.LuafarHandle=LoadLuafar();
+		StartupInfo.LuafarLoaded=LoadLuafar();
 	}
 
 	*PSI=StartupInfo;

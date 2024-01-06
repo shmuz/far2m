@@ -95,3 +95,5 @@ extern DWORD RedrawTimeout;
 extern FormatScreen FS;
 
 extern DWORD ErrorMode;
+
+extern BOOL LuafarLoaded;

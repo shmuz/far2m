@@ -35,7 +35,7 @@ static LONG_PTR WINAPI DlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 
 LUAPLUG void SetStartupInfoW(const struct PluginStartupInfo *aInfo)
 {
-	if (!aInfo->LuafarHandle)
+	if (!aInfo->LuafarLoaded)
 		return; // luafar.so is not loaded
 
 	struct GlobalInfo globInfo;

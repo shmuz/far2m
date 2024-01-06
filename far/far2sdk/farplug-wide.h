@@ -2435,7 +2435,7 @@ struct PluginStartupInfo
 	FARAPICOLORDIALOG      ColorDialog;
 	FARAPIFREESCREEN       FreeScreen;
 	const void*            Private;
-	void*                  LuafarHandle;
+	int                    LuafarLoaded;
 	FARAPIDIALOGINITV3     DialogInitV3;
 	FARAPITEXTV2           TextV2;
 };

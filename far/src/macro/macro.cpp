@@ -3477,8 +3477,7 @@ bool KeyMacro::ProcessKey(DWORD dwKey)
 	{
 		if ((ctrldot||ctrlshiftdot) && !IsExecuting())
 		{
-			const Plugin* LuaMacro = CtrlObject->Plugins.FindPlugin(SYSID_LUAMACRO);
-			if (!LuaMacro) //###  || LuaMacro->IsPendingRemove())
+			if (!LuafarLoaded || !CtrlObject->Plugins.FindPlugin(SYSID_LUAMACRO)) //### || LuaMacro->IsPendingRemove())
 			{
 					Message(MSG_WARNING,1,Msg::Error,
 					   Msg::MacroPluginLuamacroNotLoaded,

@@ -108,3 +108,5 @@ DWORD RedrawTimeout=200;
 FormatScreen FS;
 
 DWORD ErrorMode;
+
+BOOL LuafarLoaded=FALSE;
