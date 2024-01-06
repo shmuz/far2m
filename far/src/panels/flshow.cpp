@@ -628,46 +628,50 @@ int FileList::ConvertName(FARString &strDest, const wchar_t *SrcName, int MaxLen
 		}
 	}
 
-	wchar_t *lpwszDest = strDest.GetBuffer(MaxLength+1);
-	wmemset(lpwszDest,L' ',MaxLength);
-	int SrcLength=StrLength(SrcName);
+	int SrcLength = StrLength(SrcName);
+	int SrcVisualLength = StrCellsCount(SrcName, SrcLength);
 
-	if (RightAlign && SrcLength>MaxLength)
-	{
-		wmemcpy(lpwszDest,SrcName+SrcLength-MaxLength,MaxLength);
-		strDest.ReleaseBuffer(MaxLength);
+	if (RightAlign && SrcVisualLength > MaxLength) {
+		size_t SkipCells = SrcVisualLength - MaxLength;
+		size_t SkipOfs = StrSizeOfCells(SrcName, SrcLength, SkipCells, true);
+		strDest.Copy(SrcName + SkipOfs, SrcLength - SkipOfs);
 		return TRUE;
 	}
 
 	const wchar_t *DotPtr;
 
-	if (!ShowStatus &&
-	        ((!(FileAttr&FILE_ATTRIBUTE_DIRECTORY) && ViewSettings.AlignExtensions) || ((FileAttr&FILE_ATTRIBUTE_DIRECTORY) && ViewSettings.FolderAlignExtensions))
-	        && SrcLength<=MaxLength &&
-	        (DotPtr=wcsrchr(SrcName,L'.')) && DotPtr!=SrcName &&
-	        (SrcName[0]!=L'.' || SrcName[2]) && !wcschr(DotPtr+1,L' '))
-	{
-		int DotLength=StrLength(DotPtr+1);
-		int NameLength=DotLength?(int)(DotPtr-SrcName):SrcLength;
-		int DotPos=MaxLength-Max(DotLength,3);
+	if (!ShowStatus
+			&& ((!(FileAttr & FILE_ATTRIBUTE_DIRECTORY) && ViewSettings.AlignExtensions)
+					|| ((FileAttr & FILE_ATTRIBUTE_DIRECTORY) && ViewSettings.FolderAlignExtensions))
+			&& SrcVisualLength <= MaxLength && (DotPtr = wcsrchr(SrcName, L'.')) && DotPtr != SrcName
+			&& (SrcName[0] != L'.' || SrcName[2]) && !wcschr(DotPtr + 1, L' ')) {
+		int DotLength = StrLength(DotPtr + 1);
+		int NameLength = DotLength ? (int)(DotPtr - SrcName) : SrcLength;
+		int DotPos = MaxLength - Max(DotLength, 3);
 
-		if (DotPos<=NameLength)
-			DotPos=NameLength+1;
+		if (DotPos <= NameLength)
+			DotPos = NameLength + 1;
 
-		if (DotPos>0 && NameLength>0 && SrcName[NameLength-1]==L' ')
-			lpwszDest[NameLength]=L'.';
-
-		wmemcpy(lpwszDest,SrcName,NameLength);
-		wmemcpy(lpwszDest+DotPos,DotPtr+1,DotLength);
+		strDest.Copy(SrcName, NameLength);
+		if (DotPos > 0 && NameLength > 0 && SrcName[NameLength - 1] == L' ') {
+			strDest.Append(L'.');
+		}
+		if (DotPos > NameLength) {
+			strDest.Append(L' ', DotPos - NameLength);
+		}
+		strDest.Append(DotPtr + 1, DotLength);
+	} else {
+		size_t CellsCount = MaxLength;
+		size_t CopyLen = StrSizeOfCells(SrcName, SrcLength, CellsCount, false);
+		strDest.Copy(SrcName, CopyLen);
 	}
-	else
-	{
-		wmemcpy(lpwszDest,SrcName,Min(SrcLength, MaxLength));
+
+	const size_t CopiedCellsCount = strDest.CellsCount();
+	if (CopiedCellsCount < size_t(MaxLength)) {
+		strDest.Append(L' ', size_t(MaxLength - CopiedCellsCount));
 	}
 
-	strDest.ReleaseBuffer(MaxLength);
-
-	return(SrcLength>MaxLength);
+	return (SrcVisualLength > MaxLength);
 }
 
 void FileList::PrepareViewSettings(int ViewMode,OpenPluginInfo *PlugInfo)
