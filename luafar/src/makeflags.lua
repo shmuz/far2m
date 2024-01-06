@@ -108,6 +108,7 @@ local file_top = [[
 extern "C" {
 #endif
 #include "lua.h"
+#include "lauxlib.h"
 #ifdef __cplusplus
 }
 #endif
@@ -135,9 +136,32 @@ void add_flags (lua_State *L)
     lua_pushnumber(L, flags[i].val);
     lua_setfield(L, -2, flags[i].key);
   }
+  (void)luaL_dostring(L, far_Guids);
 }
 
 ]]
+
+local function write_guids(fname)
+  local fp = assert(io.open(fname))
+  io.write("const char far_Guids[] = \"far.Guids = {\"", "\n")
+  for line in fp:lines() do
+    local name,rest = line:match("^%s*DEFINE_GUID%s*%(%s*(%w+)(.+)")
+    if name then
+      local t = {}
+      rest = rest:gsub("0[xX]", "")
+      for v in rest:gmatch("%x%x?") do t[#t+1] = ("%02X"):format(tonumber(v,16)) end
+      assert(#t == 16, name)
+      io.write("  \"", name, "='",
+        table.concat(t, nil,  1,  4), "-",
+        table.concat(t, nil,  5,  6), "-",
+        table.concat(t, nil,  7,  8), "-",
+        table.concat(t, nil,  9, 10), "-",
+        table.concat(t, nil, 11, 16), "';\"", "\n")
+    end
+  end
+  io.write("\"}\";", "\n\n")
+  fp:close()
+end
 
 do
   local dir = ...
@@ -158,6 +182,7 @@ do
 
   io.write(file_top)
   write_target(trg_int, trg_ptr)
+  write_guids(dir .. "/../src/DlgGuid.hpp")
   io.write(file_bottom)
 end
 
