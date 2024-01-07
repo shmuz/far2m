@@ -420,7 +420,7 @@ local function Open_CommandLine (strCmdLine)
       local line,col,fname = regex.match(cmd, [=[ \[ (\d+)? (?: ,(\d+))? \] \s* (.+) ]=], nil, "x")
       line  = line or (col and 1) or nil
       col   = col or nil
-      fname = fname or cmd
+      fname = far.SplitCmdLine(fname or cmd)
       editor.Editor(fname,nil,nil,nil,nil,nil,flags,line,col)
     end
   ----------------------------------------------------------------------------
@@ -438,6 +438,7 @@ local function Open_CommandLine (strCmdLine)
         viewer.Viewer(tmpname,nil,nil,nil,nil,nil,flags)
       end
     else
+      cmd = far.SplitCmdLine(cmd)
       viewer.Viewer(cmd,nil,nil,nil,nil,nil,flags)
     end
   ----------------------------------------------------------------------------

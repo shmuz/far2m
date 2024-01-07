@@ -3715,8 +3715,7 @@ int editor_Editor(lua_State *L)
 	int StartLine = luaL_optinteger(L, 8, -1);
 	int StartChar = luaL_optinteger(L, 9, -1);
 	int CodePage  = luaL_optinteger(L, 10, CP_AUTODETECT);
-	int ret = PSInfo.Editor(FileName, Title, X1, Y1, X2, Y2, Flags,
-												 StartLine, StartChar, CodePage);
+	int ret = PSInfo.Editor(FileName, Title, X1, Y1, X2, Y2, Flags, StartLine, StartChar, CodePage);
 	lua_pushinteger(L, ret);
 	return 1;
 }
@@ -5333,12 +5332,6 @@ int far_SplitCmdLine(lua_State *L)
 		lua_pushlstring(L, arg, trg-arg);
 	}
 	return numargs;
-}
-
-BOOL dir_exist(const wchar_t* path)
-{
-	DWORD attr = WINPORT(GetFileAttributes)(path);
-	return (attr != 0xFFFFFFFF) && (attr & FILE_ATTRIBUTE_DIRECTORY);
 }
 
 typedef intptr_t WINAPI UDList_Create(unsigned Flags, const wchar_t* Subj);

@@ -7,7 +7,12 @@
 
 extern const char* VirtualKeyStrings[256];
 extern void NewVirtualKeyTable(lua_State* L, BOOL twoways);
-extern BOOL dir_exist(const wchar_t* path);
+
+static BOOL dir_exist(const wchar_t* path)
+{
+	DWORD attr = WINPORT(GetFileAttributes)(path);
+	return (attr != 0xFFFFFFFF) && (attr & FILE_ATTRIBUTE_DIRECTORY);
+}
 
 // os.getenv does not always work correctly, hence the following.
 static int win_GetEnv (lua_State *L)
