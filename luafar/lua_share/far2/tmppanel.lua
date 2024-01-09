@@ -61,7 +61,7 @@ local Opt = {
   SafeModePanel             = false,
   CopyContents              = 2,
   ReplaceMode               = true,
-  MenuForFilelist           = true,
+  MenuForFilelist           = false,
   NewPanelForSearchResults  = true,
   FullScreenPanel           = false,
   ColumnTypes               = "N,S",
@@ -70,7 +70,7 @@ local Opt = {
   StatusColumnWidths        = "0,8,0,5",
   Mask                      = "*.tmp2",
   Prefix                    = "tmp2",
-  SavePanels                = true, --> new
+  SavePanels                = false,
 }
 
 local Env, Panel = {}, {}
@@ -814,7 +814,7 @@ function Panel:RemoveMarkedItems (RemoveTable)
 end
 
 
-function Panel:ProcessEvent (Handle, Event, Param)
+function Panel:ProcessPanelEvent (Handle, Event, Param)
   if Event == F.FE_CHANGEVIEWMODE then
     local types = panel.GetColumnTypes (Handle)
     local UpdateOwners = IsOwnersDisplayed (types) and not self.LastOwnersRead

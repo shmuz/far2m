@@ -869,7 +869,7 @@ int SetKeyBar(lua_State *L, BOOL editor)
 	else
 		argfail = TRUE;
 	if (argfail)
-		return luaL_argerror(L, 1, "must be 'redraw', 'restore', or table");
+		return luaL_argerror(L, 2, "must be 'redraw', 'restore', or table");
 
 	int result = editor ? PSInfo.EditorControlV2(frameId, ECTL_SETKEYBAR, param) :
 												PSInfo.ViewerControlV2(frameId, VCTL_SETKEYBAR, param);
