@@ -45,7 +45,7 @@ endif()
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE -DWINPORT_DIRECT -DFAR_DONT_USE_INTERNALS)
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/far/far2sdk)
+target_include_directories(${PROJECT_NAME} PRIVATE ${SDK})
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/WinPort)
 
 set_target_properties(${PROJECT_NAME}
