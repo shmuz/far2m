@@ -207,7 +207,7 @@ class Viewer:public ScreenObject
 		int OpenFile(const wchar_t *Name,int warning);
 		void SetViewKeyBar(KeyBar *ViewKeyBar);
 
-		virtual int ProcessKey(int Key);
+		virtual int ProcessKey(FarKey Key);
 		virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
 		virtual int64_t VMProcess(int OpCode,void *vParam=nullptr,int64_t iParam=0);
 

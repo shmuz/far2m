@@ -79,7 +79,7 @@ class FilePanels:public Frame
 
 		void   SetupKeyBar();
 
-		virtual int ProcessKey(int Key);
+		virtual int ProcessKey(FarKey Key);
 		virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
 		virtual int64_t VMProcess(int OpCode,void *vParam=nullptr,int64_t iParam=0);
 

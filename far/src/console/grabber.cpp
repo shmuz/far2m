@@ -268,7 +268,7 @@ void Grabber::DisplayObject()
 }
 
 
-int Grabber::ProcessKey(int Key)
+int Grabber::ProcessKey(FarKey Key)
 {
 	/* $ 14.03.2001 SVS
 	  [-] Неправильно воспроизводился макрос в режиме грабления экрана.

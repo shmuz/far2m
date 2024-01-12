@@ -2,6 +2,8 @@
 #ifndef __FAR2SDK_FARPLUG_MB_H__
 #define __FAR2SDK_FARPLUG_MB_H__
 
+#include "farcommon.h"
+
 namespace oldfar
 {
 #ifndef _WIN64
@@ -11,10 +13,7 @@ namespace oldfar
 #pragma pack(push,2)
 #endif
 #endif
-
 	const int NM=MAX_PATH;
-
-	typedef int FarLangMsgID;
 
 	enum FARMESSAGEFLAGS
 	{
@@ -1485,7 +1484,7 @@ namespace oldfar
 	typedef BOOL (WINAPI *FARSTDADDENDSLASH)(char *Path);
 	typedef int (WINAPI *FARSTDCOPYTOCLIPBOARD)(const char *Data);
 	typedef char   *(WINAPI *FARSTDPASTEFROMCLIPBOARD)(void);
-	typedef int (WINAPI *FARSTDINPUTRECORDTOKEY)(const INPUT_RECORD *r);
+	typedef FarKey (WINAPI *FARSTDINPUTRECORDTOKEY)(const INPUT_RECORD *r);
 	typedef int (WINAPI *FARSTDLOCALISLOWER)(unsigned Ch);
 	typedef int (WINAPI *FARSTDLOCALISUPPER)(unsigned Ch);
 	typedef int (WINAPI *FARSTDLOCALISALPHA)(unsigned Ch);

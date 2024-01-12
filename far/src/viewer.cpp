@@ -1175,7 +1175,7 @@ int64_t Viewer::VMProcess(int OpCode,void *vParam,int64_t iParam)
 /* $ 28.01.2001
    - Путем проверки ViewFile на nullptr избавляемся от падения
 */
-int Viewer::ProcessKey(int Key)
+int Viewer::ProcessKey(FarKey Key)
 {
 	// Pressing Alt together with PageDown/PageUp allows to smoothly
 	// boost scrolling speed, releasing Alt while keeping PageDown/PageUp

@@ -1172,7 +1172,7 @@ bool VMenu::AddToFilter(const wchar_t *str)
 	return false;
 }
 
-int VMenu::ProcessKey(int Key)
+int VMenu::ProcessKey(FarKey Key)
 {
 	CriticalSectionLock Lock(CS);
 

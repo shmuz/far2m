@@ -3,8 +3,8 @@
    the file opcodes.cpp
 --]]--------------------------------------------------------------------------------
 
-local Far2lSource = os.getenv("HOME") .. "/far2l"
-local InputFile   = Far2lSource .. "/far2l/src/macro/macroopcode.hpp"
+local FarSource   = os.getenv("HOME") .. "/far2m"
+local InputFile   = FarSource .. "/far/src/macro/macroopcode.hpp"
 local OutputFile  = "opcodes.cpp"
 
 local Header = [[

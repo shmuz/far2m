@@ -137,10 +137,9 @@ typedef struct _INPUT_RECORD INPUT_RECORD;
 typedef struct _CHAR_INFO    CHAR_INFO;
 #endif
 
-typedef int FarLangMsgID;
-#define FARLANGMSGID_BAD ((FarLangMsgID)-1)
-
 #define CP_AUTODETECT ((UINT)-1)
+
+#include "farcommon.h"
 
 enum FARMESSAGEFLAGS
 {
@@ -2120,7 +2119,7 @@ typedef int (WINAPI *FARSTDGETPATHROOT)(const wchar_t *Path,wchar_t *Root, int D
 typedef BOOL (WINAPI *FARSTDADDENDSLASH)(wchar_t *Path);
 typedef int (WINAPI *FARSTDCOPYTOCLIPBOARD)(const wchar_t *Data);
 typedef wchar_t *(WINAPI *FARSTDPASTEFROMCLIPBOARD)(void);
-typedef int (WINAPI *FARSTDINPUTRECORDTOKEY)(const INPUT_RECORD *r);
+typedef FarKey (WINAPI *FARSTDINPUTRECORDTOKEY)(const INPUT_RECORD *r);
 typedef int (WINAPI *FARSTDLOCALISLOWER)(wchar_t Ch);
 typedef int (WINAPI *FARSTDLOCALISUPPER)(wchar_t Ch);
 typedef int (WINAPI *FARSTDLOCALISALPHA)(wchar_t Ch);

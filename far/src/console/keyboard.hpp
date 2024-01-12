@@ -36,6 +36,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "farqueue.hpp"
 #include <WinCompat.h>
 #include "FARString.hpp"
+#include "keys.hpp"
 
 enum
 {
@@ -55,19 +56,19 @@ extern int PreMouseEventFlags,MouseEventFlags;
 extern int ReturnAltValue;
 
 void InitKeysArray();
-bool KeyToKeyLayoutCompare(int Key, int CompareKey);
-int KeyToKeyLayout(int Key);
+bool KeyToKeyLayoutCompare(FarKey Key, FarKey CompareKey);
+FarKey KeyToKeyLayout(FarKey Key);
 
 // возвращает: 1 - LeftPressed, 2 - Right Pressed, 3 - Middle Pressed, 0 - none
 DWORD IsMouseButtonPressed();
-bool TranslateKeyToVK(int Key,int &VirtKey,int &ControlState,INPUT_RECORD *rec=nullptr);
-uint32_t WINAPI KeyNameToKey(const wchar_t *Name);
-BOOL WINAPI KeyToText(uint32_t Key, FARString &strKeyText);
-int WINAPI InputRecordToKey(const INPUT_RECORD *Rec);
+bool TranslateKeyToVK(FarKey Key,int &VirtKey,int &ControlState,INPUT_RECORD *rec=nullptr);
+FarKey WINAPI KeyNameToKey(const wchar_t *Name);
+BOOL WINAPI KeyToText(FarKey Key, FARString &strKeyText);
+FarKey WINAPI InputRecordToKey(const INPUT_RECORD *Rec);
 DWORD GetInputRecord(INPUT_RECORD *rec,bool ExcludeMacro=false,bool ProcessMouse=false,bool AllowSynchro=true);
 DWORD PeekInputRecord(INPUT_RECORD *rec,bool ExcludeMacro=true);
-DWORD CalcKeyCode(INPUT_RECORD *rec,int RealKey,int *NotMacros=nullptr);
-DWORD WaitKey(DWORD KeyWait=(DWORD)-1,DWORD delayMS=0,bool ExcludeMacro=true,bool EnableQuickEdit=true);
+FarKey CalcKeyCode(INPUT_RECORD *rec,int RealKey,int *NotMacros=nullptr);
+FarKey WaitKey(FarKey KeyWait=KEY_INVALID,DWORD delayMS=0,bool ExcludeMacro=true,bool EnableQuickEdit=true);
 int SetFLockState(UINT vkKey, int State);
 int WriteInput(int Key,DWORD Flags=0);
 int IsNavKey(DWORD Key);

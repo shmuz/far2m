@@ -164,7 +164,7 @@ class Help:public Frame
 
 	public:
 		virtual void Hide();
-		virtual int  ProcessKey(int Key);
+		virtual int  ProcessKey(FarKey Key);
 		virtual int  ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
 		virtual void InitKeyBar();
 		BOOL GetError() {return ErrorHelp;}

@@ -703,7 +703,7 @@ static void Test_EXCEPTION_STACK_OVERFLOW(char* target)
 #endif
 
 
-int Manager::ProcessKey(DWORD Key)
+int Manager::ProcessKey(FarKey Key)
 {
 	int ret=FALSE;
 

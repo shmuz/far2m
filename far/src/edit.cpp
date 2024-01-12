@@ -511,7 +511,7 @@ void Edit::FastShow()
 }
 
 
-int Edit::RecurseProcessKey(int Key)
+int Edit::RecurseProcessKey(FarKey Key)
 {
 	Recurse++;
 	int RetCode=ProcessKey(Key);
@@ -521,7 +521,7 @@ int Edit::RecurseProcessKey(int Key)
 
 
 // Функция вставки всякой хреновени - от шорткатов до имен файлов
-int Edit::ProcessInsPath(int Key,int PrevSelStart,int PrevSelEnd)
+int Edit::ProcessInsPath(FarKey Key,int PrevSelStart,int PrevSelEnd)
 {
 	int RetCode=FALSE;
 	FARString strPathName;
@@ -707,7 +707,7 @@ int Edit::CalcPosBwdTo(int Pos) const
 	return Pos;
 }
 
-int Edit::ProcessKey(int Key)
+int Edit::ProcessKey(FarKey Key)
 {
 	switch (Key)
 	{
@@ -1444,10 +1444,9 @@ int Edit::ProcessKey(int Key)
 		}
 		case KEY_SHIFTSPACE:
 			Key = KEY_SPACE;
-		default:
-		{
-//      _D(SysLog(L"Key=0x%08X",Key));
-			if (Key==KEY_ENTER || Key>=EXTENDED_KEY_BASE) // KEY_NUMENTER,KEY_IDLE,KEY_NONE covered by >=EXTENDED_KEY_BASE
+		default: {
+			// D(SysLog(L"Key=0x%08X",Key));
+			if (Key == KEY_ENTER || !IS_KEY_NORMAL(Key))	// KEY_NUMENTER,KEY_IDLE,KEY_NONE covered by !IS_KEY_NORMAL
 				break;
 
 			if (!Flags.Check(FEDITLINE_PERSISTENTBLOCKS))
@@ -3005,7 +3004,7 @@ void EditControl::AutoCompleteProcMenu(int &Result,bool Manual,bool DelBlock,int
 				}
 				else if(ir.EventType==KEY_EVENT)
 				{
-					int MenuKey=InputRecordToKey(&ir);
+					FarKey MenuKey=InputRecordToKey(&ir);
 
 					// ввод
 					if((MenuKey>=int(L' ') && MenuKey<=MAX_VKEY_CODE) || MenuKey==KEY_BS || MenuKey==KEY_DEL || MenuKey==KEY_NUMDEL)

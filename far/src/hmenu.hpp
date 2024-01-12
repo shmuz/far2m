@@ -72,7 +72,7 @@ class HMenu: public Modal
 		virtual ~HMenu();
 
 	public:
-		virtual int ProcessKey(int Key);
+		virtual int ProcessKey(FarKey Key);
 		virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
 		virtual int64_t VMProcess(int OpCode,void *vParam=nullptr,int64_t iParam=0);
 

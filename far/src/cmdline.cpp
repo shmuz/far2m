@@ -204,12 +204,12 @@ std::string CommandLine::GetConsoleLog(bool colored)
 	return histfile;
 }
 
-int CommandLine::ProcessKey(int Key)
+int CommandLine::ProcessKey(FarKey Key)
 {
 	const wchar_t *PStr;
 	FARString strStr;
 
-	int SavedLastKey = LastKey;
+	FarKey SavedLastKey = LastKey;
 
 	if ( Key!=KEY_NONE)
 		LastKey = Key;
@@ -513,7 +513,7 @@ int CommandLine::ProcessKey(int Key)
 			//   Сбрасываем выделение на некоторых клавишах
 			if (!Opt.CmdLine.EditBlock)
 			{
-				static int UnmarkKeys[]=
+				static FarKey UnmarkKeys[]=
 				{
 					KEY_LEFT,       KEY_NUMPAD4,
 					KEY_CTRLS,

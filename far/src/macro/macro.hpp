@@ -78,17 +78,17 @@ public:
 	static void RunStartMacro();
 	static bool SaveMacros(bool always);
 	static void SetMacroConst(int ConstIndex, long long Value);
-	static bool PostNewMacro(const wchar_t* Sequence, DWORD InputFlags, DWORD AKey = 0);
+	static bool PostNewMacro(const wchar_t* Sequence, DWORD InputFlags, FarKey AKey = 0);
 	static DWORD GetMacroParseError(COORD& ErrPos, FARString& ErrSrc);
 	static bool ParseMacroString(const wchar_t* Sequence,DWORD Flags,bool skipFile);
 
 	int  CallFar(int CheckCode, FarMacroCall* Data);
 	bool CheckWaitKeyFunc() const;
 	int  GetState() const;
-	int  PeekKey() const;
+	FarKey PeekKey() const;
 	int  GetArea() const { return m_Area; }
-	int  GetKey();
-	bool ProcessKey(DWORD Key);
+	FarKey GetKey();
+	bool ProcessKey(FarKey Key);
 	const wchar_t* GetStringToPrint() const { return m_StringToPrint.CPtr(); }
 	bool IsRecording() const { return m_Recording != MACROSTATE_NOMACRO; }
 	bool LoadMacros(bool FromFar, bool InitedRAM=true, const FarMacroLoad *Data=nullptr);
@@ -97,9 +97,9 @@ public:
 
 private:
 	static int GetExecutingState();
-	static int GetMacroSettings(uint32_t Key,DWORD &Flags, const wchar_t* Src=L"", const wchar_t* Descr=L"");
+	static int GetMacroSettings(FarKey Key,DWORD &Flags, const wchar_t* Src=L"", const wchar_t* Descr=L"");
 
-	int AssignMacroKey(DWORD& MacroKey, DWORD& Flags);
+	int AssignMacroKey(FarKey& MacroKey, DWORD& Flags);
 	void RestoreMacroChar() const;
 
 	static FARString m_RecCode;

@@ -147,11 +147,11 @@ class FileEditor : public Frame
 		int  ProcessQuitKey(int FirstSave,BOOL NeedQuestion=TRUE);
 		BOOL UpdateFileList();
 		bool DecideAboutSignature();
-		int ReProcessKey(int Key,int CalledFromControl=TRUE);
+		int ReProcessKey(FarKey Key,int CalledFromControl=TRUE);
 		bool AskOverwrite(const FARString& FileName);
 		void Init(const wchar_t *Name, UINT codepage, const wchar_t *Title, DWORD InitFlags, int StartLine, int StartChar, const wchar_t *PluginData, int OpenModeExstFile);
 		virtual void InitKeyBar();
-		virtual int ProcessKey(int Key);
+		virtual int ProcessKey(FarKey Key);
 		virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
 		virtual void ShowConsoleTitle();
 		virtual void OnChangeFocus(int focus);

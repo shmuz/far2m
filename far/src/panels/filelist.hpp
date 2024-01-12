@@ -262,7 +262,7 @@ class FileList:public Panel
 		virtual ~FileList();
 
 	public:
-		virtual int ProcessKey(int Key);
+		virtual int ProcessKey(FarKey Key);
 		virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
 		virtual int64_t VMProcess(int OpCode,void *vParam=nullptr,int64_t iParam=0);
 		virtual void MoveToMouse(MOUSE_EVENT_RECORD *MouseEvent);

@@ -65,7 +65,7 @@ class DlgEdit: public ScreenObject
 		DlgEdit(Dialog* pOwner,unsigned Index,DLGEDITTYPE Type);
 		virtual ~DlgEdit();
 
-		virtual int  ProcessKey(int Key);
+		virtual int  ProcessKey(FarKey Key);
 		virtual int  ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
 
 		virtual void Show();

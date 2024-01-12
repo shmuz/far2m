@@ -237,7 +237,7 @@ int64_t QuickView::VMProcess(int OpCode,void *vParam,int64_t iParam)
 	return 0;
 }
 
-int QuickView::ProcessKey(int Key)
+int QuickView::ProcessKey(FarKey Key)
 {
 	if (!IsVisible())
 		return FALSE;

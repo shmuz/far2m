@@ -427,7 +427,7 @@ int64_t FilePanels::VMProcess(int OpCode,void *vParam,int64_t iParam)
 	return ActivePanel->VMProcess(OpCode,vParam,iParam);
 }
 
-int FilePanels::ProcessKey(int Key)
+int FilePanels::ProcessKey(FarKey Key)
 {
 	if (!Key)
 		return TRUE;

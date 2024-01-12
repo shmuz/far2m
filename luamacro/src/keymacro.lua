@@ -24,7 +24,7 @@ local MACROSTATE_NOMACRO, MACROSTATE_EXECUTING, MACROSTATE_EXECUTING_COMMON =
 local MFLAGS_ENABLEOUTPUT, MFLAGS_NOSENDKEYSTOPLUGINS, MFLAGS_POSTFROMPLUGIN =
       0x1, 0x2, 0x10000000
 
-local KEY_NONE = 0x30001
+local KEY_NONE = F.KEY_NONE
 
 local type, setmetatable = type, setmetatable
 local band, bor, bxor, lshift = bit64.band, bit64.bor, bit64.bxor, bit64.lshift

@@ -1089,7 +1089,7 @@ int64_t Help::VMProcess(int OpCode,void *vParam,int64_t iParam)
 	return 1;
 }
 
-int Help::ProcessKey(int Key)
+int Help::ProcessKey(FarKey Key)
 {
 	if (StackData.strSelTopic.IsEmpty())
 		StackData.CurX=StackData.CurY=0;

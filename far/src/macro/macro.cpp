@@ -142,7 +142,7 @@ static const MACROFLAGS_MFLAGS
 struct DlgParam
 {
 	DWORD Flags;
-	DWORD Key;
+	FarKey Key;
 	int Area;
 	int Recurse;
 	bool Deleted;
@@ -3461,7 +3461,7 @@ static DWORD LayoutKey(DWORD key)
 	return key;
 }
 
-bool KeyMacro::ProcessKey(DWORD dwKey)
+bool KeyMacro::ProcessKey(FarKey dwKey)
 {
 	if (m_InternalInput || dwKey==KEY_IDLE || dwKey==KEY_NONE || !FrameManager->GetCurrentFrame())
 		return false;
@@ -3571,7 +3571,7 @@ bool KeyMacro::ProcessKey(DWORD dwKey)
 	return false;
 }
 
-int KeyMacro::GetKey()
+FarKey KeyMacro::GetKey()
 {
 	if (m_InternalInput || !FrameManager->GetCurrentFrame())
 		return 0;
@@ -3608,7 +3608,7 @@ int KeyMacro::GetKey()
 					case 2:
 						return KEY_OP_XLAT;
 					default:
-						return static_cast<int>(mpr.Values[1].Double);
+						return static_cast<FarKey>(mpr.Values[1].Double);
 				}
 			}
 
@@ -3674,7 +3674,7 @@ int KeyMacro::GetKey()
 }
 
 // Проверить - есть ли еще клавиша?
-int KeyMacro::PeekKey() const
+FarKey KeyMacro::PeekKey() const
 {
 	return !m_InternalInput && IsExecuting();
 }
@@ -3916,7 +3916,7 @@ M1:
 	return DefDlgProc(hDlg,Msg,Param1,Param2);
 }
 
-int KeyMacro::AssignMacroKey(DWORD& MacroKey, DWORD& Flags)
+int KeyMacro::AssignMacroKey(FarKey& MacroKey, DWORD& Flags)
 {
 	/*
 	  +------ Define macro ------+
@@ -4021,7 +4021,7 @@ LONG_PTR WINAPI KeyMacro::ParamMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_
 	return DefDlgProc(hDlg,Msg,Param1,Param2);
 }
 
-int KeyMacro::GetMacroSettings(uint32_t Key,DWORD &Flags, const wchar_t* Src, const wchar_t* Descr)
+int KeyMacro::GetMacroSettings(FarKey Key,DWORD &Flags, const wchar_t* Src, const wchar_t* Descr)
 {
 	/*
 	          1         2         3         4         5         6
@@ -4160,7 +4160,7 @@ int KeyMacro::GetMacroSettings(uint32_t Key,DWORD &Flags, const wchar_t* Src, co
 	return TRUE;
 }
 
-bool KeyMacro::PostNewMacro(const wchar_t* Sequence,DWORD InputFlags,DWORD AKey)
+bool KeyMacro::PostNewMacro(const wchar_t* Sequence, DWORD InputFlags, FarKey AKey)
 {
 	const wchar_t* Lang = GetMacroLanguage(InputFlags);
 	const auto onlyCheck = (InputFlags & KMFLAGS_SILENTCHECK) != 0;

@@ -322,7 +322,7 @@ void KeyBar::SetAllGroup(int Group, FarLangMsg BaseMsg, int Count)
 	KeyCounts [Group] = Count;
 }
 
-int KeyBar::ProcessKey(int Key)
+int KeyBar::ProcessKey(FarKey Key)
 {
 	switch (Key)
 	{

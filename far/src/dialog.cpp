@@ -115,7 +115,7 @@ static inline bool CanGetFocus(int Type)
 	}
 }
 
-bool IsKeyHighlighted(const wchar_t *Str,int Key,int Translate,int AmpPos)
+bool IsKeyHighlighted(const wchar_t *Str, FarKey Key, int Translate, int AmpPos)
 {
 	if (AmpPos == -1) {
 		if (!(Str=wcschr(Str,L'&')))
@@ -2520,7 +2520,7 @@ int64_t Dialog::VMProcess(int OpCode,void *vParam,int64_t iParam)
    Обработка данных от клавиатуры.
    Перекрывает BaseInput::ProcessKey.
 */
-int Dialog::ProcessKey(int Key)
+int Dialog::ProcessKey(FarKey Key)
 {
 	CriticalSectionLock Lock(CS);
 	_DIALOG(CleverSysLog CL(L"Dialog::ProcessKey"));
@@ -3173,7 +3173,7 @@ int Dialog::ProcessKey(int Key)
 	return FALSE;
 }
 
-void Dialog::ProcessKey(int Key, unsigned ItemPos)
+void Dialog::ProcessKey(FarKey Key, unsigned ItemPos)
 {
 	unsigned SavedFocusPos = FocusPos;
 	FocusPos = ItemPos;

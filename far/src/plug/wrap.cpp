@@ -237,19 +237,14 @@ static DWORD OldKeyToKey(DWORD dOldKey)
 	return dOldKey;
 }
 
-DWORD KeyToOldKey(DWORD dKey)
+FarKey KeyToOldKey(DWORD dKey)
 {
-	if (dKey&EXTENDED_KEY_BASE)
-	{
-		dKey=(dKey^EXTENDED_KEY_BASE)|0x100;
-	}
-	else if (dKey&INTERNAL_KEY_BASE)
-	{
-		dKey=(dKey^INTERNAL_KEY_BASE)|0x200;
-	}
-	else
-	{
-		DWORD CleanKey=dKey&~KEY_CTRLMASK;
+	if (IS_KEY_EXTENDED(dKey)) {
+		dKey = (dKey - EXTENDED_KEY_BASE) | 0x100;
+	} else if (IS_KEY_INTERNAL(dKey)) {
+		dKey = (dKey - INTERNAL_KEY_BASE) | 0x200;
+	} else {
+		DWORD CleanKey = dKey & ~KEY_CTRLMASK;
 
 		if (CleanKey>0x80 && CleanKey<0x10000)
 		{
@@ -877,7 +872,7 @@ BOOL WINAPI FarKeyToNameA(int Key,char *KeyText,int Size)
 	return ret;
 }
 
-int WINAPI InputRecordToKeyA(const INPUT_RECORD *r)
+FarKey WINAPI InputRecordToKeyA(const INPUT_RECORD *r)
 {
 	return KeyToOldKey(InputRecordToKey(r));
 }
@@ -1875,7 +1870,7 @@ LONG_PTR WINAPI DlgProcA(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 		case DN_ACTIVATEAPP:    Msg=oldfar::DN_ACTIVATEAPP; break;
 		case DN_KEY:
 			Msg=oldfar::DN_KEY;
-			Param2=KeyToOldKey((DWORD)Param2);
+			Param2=KeyToOldKey((FarKey)Param2);
 			break;
 	}
 

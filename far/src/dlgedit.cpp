@@ -107,7 +107,7 @@ DlgEdit::~DlgEdit()
 #endif
 }
 
-int DlgEdit::ProcessKey(int Key)
+int DlgEdit::ProcessKey(FarKey Key)
 {
 #if defined(PROJECT_DI_MEMOEDIT)
 

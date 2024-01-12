@@ -356,7 +356,7 @@ class Dialog: public Frame
 
 		LONG_PTR CallDlgProc(int nMsg, int nParam1, LONG_PTR nParam2);
 
-		void ProcessKey(int Key, unsigned ItemPos);
+		void ProcessKey(FarKey Key, unsigned ItemPos);
 
 	public:
 		Dialog(DialogItemEx *SrcItem, unsigned SrcItemCount,
@@ -366,7 +366,7 @@ class Dialog: public Frame
 		virtual ~Dialog();
 
 	public:
-		virtual int ProcessKey(int Key);
+		virtual int ProcessKey(FarKey Key);
 		virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
 		virtual int64_t VMProcess(int OpCode,void *vParam=nullptr,int64_t iParam=0);
 		virtual void Show();
@@ -441,7 +441,7 @@ LONG_PTR WINAPI SendDlgMessage(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2);
 
 LONG_PTR WINAPI DefDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2);
 
-bool IsKeyHighlighted(const wchar_t *Str,int Key,int Translate,int AmpPos=-1);
+bool IsKeyHighlighted(const wchar_t *Str,FarKey Key,int Translate,int AmpPos=-1);
 
 void DataToItemEx(const DialogDataEx *Data,DialogItemEx *Item,int Count);
 

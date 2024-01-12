@@ -107,8 +107,8 @@ end
 local function test_mf_akey()
   assert_eq(akey, mf.akey)
   local k0,k1 = akey(0),akey(1)
-  assert(k0==0x0501007B and k1=="CtrlShiftF12" or
-         k0==0x1401007B and k1=="RCtrlShiftF12")
+  assert(k0==0x1420007B and k1=="CtrlShiftF12" or
+         k0==0x3020007B and k1=="RCtrlShiftF12")
   -- (the 2nd parameter is tested in function test_mf_eval).
 end
 
@@ -375,13 +375,13 @@ local function test_mf_itoa()
 end
 
 local function test_mf_key()
-  assert_eq (mf.key(0x01000000), "Ctrl")
-  assert_eq (mf.key(0x02000000), "Alt")
-  assert_eq (mf.key(0x04000000), "Shift")
-  assert_eq (mf.key(0x10000000), "RCtrl")
-  assert_eq (mf.key(0x20000000), "RAlt")
+  assert_eq (mf.key(0x04000000), "Ctrl")
+  assert_eq (mf.key(0x08000000), "Alt")
+  assert_eq (mf.key(0x10000000), "Shift")
+  assert_eq (mf.key(0x20000000), "RCtrl")
+  assert_eq (mf.key(0x40000000), "RAlt")
 
-  assert_eq (mf.key(0x0501007B), "CtrlShiftF12")
+  assert_eq (mf.key(0x1420007B), "CtrlShiftF12")
   assert_eq (mf.key("CtrlShiftF12"), "CtrlShiftF12")
 
   assert_eq (mf.key("foobar"), "")

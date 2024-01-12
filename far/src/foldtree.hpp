@@ -66,7 +66,7 @@ class FolderTree:public Frame
 		virtual ~FolderTree();
 
 	public:
-		virtual int ProcessKey(int Key);
+		virtual int ProcessKey(FarKey Key);
 		virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
 
 		virtual void InitKeyBar();

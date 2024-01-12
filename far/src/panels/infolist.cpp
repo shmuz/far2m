@@ -319,7 +319,7 @@ int64_t InfoList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 	return 0;
 }
 
-int InfoList::ProcessKey(int Key)
+int InfoList::ProcessKey(FarKey Key)
 {
 	if (!IsVisible())
 		return FALSE;

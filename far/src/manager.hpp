@@ -144,7 +144,7 @@ class Manager
 		void EnterMainLoop();
 		void ProcessMainLoop();
 		void ExitMainLoop(bool Ask);
-		int ProcessKey(DWORD key);
+		int ProcessKey(FarKey key);
 		int ProcessMouse(MOUSE_EVENT_RECORD *me);
 
 		void PluginsMenu(); // вызываем меню по F11

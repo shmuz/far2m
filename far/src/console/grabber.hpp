@@ -53,7 +53,7 @@ class Grabber:Modal
 
 	private:
 		virtual void DisplayObject();
-		virtual int ProcessKey(int Key);
+		virtual int ProcessKey(FarKey Key);
 		virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
 		void CopyGrabbedArea(int Append);
 		void Reset();

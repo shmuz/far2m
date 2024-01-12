@@ -960,7 +960,7 @@ void Panel::FastFind(int FirstKey)
 	// // _SVS(CleverSysLog Clev(L"Panel::FastFind"));
 	INPUT_RECORD rec;
 	FARString strLastName, strName;
-	int Key,KeyToProcess=0;
+	FarKey Key,KeyToProcess=0;
 	WaitInFastFind++;
 	{
 		int FindX=Min(X1+9,ScrX-22);

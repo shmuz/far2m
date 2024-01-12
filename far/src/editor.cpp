@@ -827,7 +827,7 @@ void Editor::ProcessPasteEvent()
 	Show();
 }
 
-int Editor::ProcessKey(int Key)
+int Editor::ProcessKey(FarKey Key)
 {
 	if (Key==KEY_IDLE)
 	{
@@ -865,7 +865,7 @@ int Editor::ProcessKey(int Key)
 
 			if (!EdOpt.PersistentBlocks)
 			{
-				static int UnmarkKeys[]=
+				static FarKey UnmarkKeys[]=
 				{
 					KEY_LEFT,      KEY_NUMPAD4,
 					KEY_RIGHT,     KEY_NUMPAD6,

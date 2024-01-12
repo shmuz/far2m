@@ -70,7 +70,7 @@ public:
 	virtual ~ScreenObject();
 
 public:
-	virtual int ProcessKey(int Key) { return 0; }
+	virtual int ProcessKey(FarKey Key) { return 0; }
 	virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent) { return 0; }
 
 	virtual void Hide();

@@ -192,7 +192,7 @@ int FolderTree::GetTypeAndName(FARString &strType, FARString &strName)
 }
 
 
-int FolderTree::ProcessKey(int Key)
+int FolderTree::ProcessKey(FarKey Key)
 {
 	if (Key>=KEY_ALT_BASE+0x01 && Key<=KEY_ALT_BASE+255)
 		Key=Lower(Key-KEY_ALT_BASE);

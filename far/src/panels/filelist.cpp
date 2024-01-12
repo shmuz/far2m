@@ -1022,7 +1022,7 @@ public:
 };
 
 
-int FileList::ProcessKey(int Key)
+int FileList::ProcessKey(FarKey Key)
 {
 
 	FileListItem *CurPtr=nullptr;
@@ -2283,13 +2283,11 @@ int FileList::ProcessKey(int Key)
 			ProcessEnter(0,0,!(Key&KEY_SHIFT), false, OFP_ALTERNATIVE);
 			return TRUE;
 		default:
-
-			if (((Key>=KEY_ALT_BASE+0x01 && Key<=KEY_ALT_BASE+65535) ||
-			        (Key>=KEY_ALTSHIFT_BASE+0x01 && Key<=KEY_ALTSHIFT_BASE+65535)) &&
-			        (Key&~KEY_ALTSHIFT_BASE)!=KEY_BS && (Key&~KEY_ALTSHIFT_BASE)!=KEY_TAB &&
-			        (Key&~KEY_ALTSHIFT_BASE)!=KEY_ENTER && (Key&~KEY_ALTSHIFT_BASE)!=KEY_ESC &&
-			        !(Key&EXTENDED_KEY_BASE)
-			   )
+			if (((Key >= KEY_ALT_BASE + 0x01 && Key <= KEY_ALT_BASE + 65535)
+						|| (Key >= KEY_ALTSHIFT_BASE + 0x01 && Key <= KEY_ALTSHIFT_BASE + 65535))
+					&& (Key & ~KEY_ALTSHIFT_BASE) != KEY_BS && (Key & ~KEY_ALTSHIFT_BASE) != KEY_TAB
+					&& (Key & ~KEY_ALTSHIFT_BASE) != KEY_ENTER && (Key & ~KEY_ALTSHIFT_BASE) != KEY_ESC
+					&& !IS_KEY_EXTENDED(Key))
 			{
 				//_SVS(SysLog(L">FastFind: Key=%ls",_FARKEY_ToName(Key)));
 				// Скорректирем уже здесь нужные клавиши, т.к. WaitInFastFind

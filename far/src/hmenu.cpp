@@ -172,7 +172,7 @@ int64_t HMenu::VMProcess(int OpCode,void *vParam,int64_t iParam)
 	return 0;
 }
 
-int HMenu::ProcessKey(int Key)
+int HMenu::ProcessKey(FarKey Key)
 {
 	SelectPos=0;
 	for (int i=0; i<ItemCount; i++)

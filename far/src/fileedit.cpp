@@ -819,12 +819,12 @@ int64_t FileEditor::VMProcess(int OpCode,void *vParam,int64_t iParam)
 }
 
 
-int FileEditor::ProcessKey(int Key)
+int FileEditor::ProcessKey(FarKey Key)
 {
 	return ReProcessKey(Key,FALSE);
 }
 
-int FileEditor::ReProcessKey(int Key,int CalledFromControl)
+int FileEditor::ReProcessKey(FarKey Key,int CalledFromControl)
 {
 	SudoClientRegion sdc_rgn;
 	if (Key!=KEY_F4 && Key!=KEY_IDLE)
@@ -832,7 +832,7 @@ int FileEditor::ReProcessKey(int Key,int CalledFromControl)
 
 	DWORD FNAttr;
 
-	if (Flags.Check(FFILEEDIT_REDRAWTITLE) && (((unsigned int)Key & 0x00ffffff) < KEY_END_FKEY || IsInternalKeyReal((unsigned int)Key & 0x00ffffff)))
+	if (Flags.Check(FFILEEDIT_REDRAWTITLE) && (((unsigned int)Key & 0x00ffffff) < KEY_END_FKEY || IS_INTERNAL_KEY_REAL(Key & 0x00ffffff)))
 		ShowConsoleTitle();
 
 	// BugZ#488 - Shift=enter
@@ -2704,7 +2704,7 @@ int FileEditor::EditorControl(int Command, void *Param)
 					}
 
 #endif
-					int Key=CalcKeyCode(rec,FALSE);
+					FarKey Key=CalcKeyCode(rec,FALSE);
 					ReProcessKey(Key);
 				}
 

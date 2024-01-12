@@ -319,7 +319,7 @@ class Editor:public ScreenObject
 		int SetRawData(const wchar_t *SrcBuf,int SizeSrcBuf,int TextFormat); // преобразование из буфера в список
 		int GetRawData(wchar_t **DestBuf,int& SizeDestBuf,int TextFormat=0);   // преобразование из списка в буфер
 
-		virtual int ProcessKey(int Key);
+		virtual int ProcessKey(FarKey Key);
 		virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
 		virtual int64_t VMProcess(int OpCode,void *vParam=nullptr,int64_t iParam=0);
 

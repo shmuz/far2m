@@ -182,7 +182,7 @@ class Edit:public ScreenObject
 	private:
 		virtual void   DisplayObject();
 		int    InsertKey(int Key);
-		int    RecurseProcessKey(int Key);
+		int    RecurseProcessKey(FarKey Key);
 		void   DeleteBlock();
 		void   ApplyColor();
 		int    GetNextCursorPos(int Position,int Where);
@@ -195,7 +195,7 @@ class Edit:public ScreenObject
 		int ProcessInsPlainText(const wchar_t *Str);
 
 		int CheckCharMask(wchar_t Chr);
-		int ProcessInsPath(int Key,int PrevSelStart=-1,int PrevSelEnd=0);
+		int ProcessInsPath(FarKey Key,int PrevSelStart=-1,int PrevSelEnd=0);
 
 		int RealPosToCell(int PrevLength, int PrevPos, int Pos, int* CorrectPos);
 		void SanitizeSelectionRange();
@@ -220,7 +220,7 @@ class Edit:public ScreenObject
 		UINT GetCodePage();  //BUGBUG
 
 		virtual void  FastShow();
-		virtual int   ProcessKey(int Key);
+		virtual int   ProcessKey(FarKey Key);
 		virtual int   ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
 		virtual int64_t VMProcess(int OpCode,void *vParam=nullptr,int64_t iParam=0);
 

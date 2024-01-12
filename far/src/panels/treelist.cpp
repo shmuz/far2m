@@ -813,7 +813,7 @@ int64_t TreeList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 	return 0;
 }
 
-int TreeList::ProcessKey(int Key)
+int TreeList::ProcessKey(FarKey Key)
 {
 	if (!IsVisible())
 		return FALSE;

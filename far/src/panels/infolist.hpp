@@ -49,7 +49,7 @@ class DizViewer: public Viewer
 		int InRecursion;
 		DizViewer():InRecursion(0) {}
 		virtual ~DizViewer() {}
-		virtual int ProcessKey(int Key)
+		virtual int ProcessKey(FarKey Key)
 		{
 			InRecursion++;
 			int res=Viewer::ProcessKey(Key);
@@ -94,7 +94,7 @@ class InfoList:public Panel
 		virtual ~InfoList();
 
 	public:
-		virtual int ProcessKey(int Key);
+		virtual int ProcessKey(FarKey Key);
 		virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
 		virtual int64_t VMProcess(int OpCode,void *vParam=nullptr,int64_t iParam=0);
 		virtual void Update(int Mode);

@@ -3944,26 +3944,32 @@ void PushInputRecord (lua_State* L, const INPUT_RECORD *Rec)
 {
 	lua_newtable(L);                   //+2: Func,Tbl
 	PutNumToTable(L, "EventType", Rec->EventType);
-	if (Rec->EventType == KEY_EVENT) {
-		PutBoolToTable(L,"KeyDown",         Rec->Event.KeyEvent.bKeyDown);
-		PutNumToTable(L, "RepeatCount",     Rec->Event.KeyEvent.wRepeatCount);
-		PutNumToTable(L, "VirtualKeyCode",  Rec->Event.KeyEvent.wVirtualKeyCode);
-		PutNumToTable(L, "VirtualScanCode", Rec->Event.KeyEvent.wVirtualScanCode);
-		PutWStrToTable(L, "UnicodeChar",   &Rec->Event.KeyEvent.uChar.UnicodeChar, 1);
-		PutNumToTable(L, "ControlKeyState", Rec->Event.KeyEvent.dwControlKeyState);
-	}
-	else if (Rec->EventType == MOUSE_EVENT) {
-		PutMouseEvent(L, &Rec->Event.MouseEvent, TRUE);
-	}
-	else if (Rec->EventType == WINDOW_BUFFER_SIZE_EVENT) {
-		PutNumToTable(L, "SizeX", Rec->Event.WindowBufferSizeEvent.dwSize.X);
-		PutNumToTable(L, "SizeY", Rec->Event.WindowBufferSizeEvent.dwSize.Y);
-	}
-	else if (Rec->EventType == MENU_EVENT) {
-		PutNumToTable(L, "CommandId", Rec->Event.MenuEvent.dwCommandId);
-	}
-	else if (Rec->EventType == FOCUS_EVENT) {
-		PutBoolToTable(L, "SetFocus", Rec->Event.FocusEvent.bSetFocus);
+	switch (Rec->EventType) {
+		case KEY_EVENT:
+			PutBoolToTable(L,"KeyDown",         Rec->Event.KeyEvent.bKeyDown);
+			PutNumToTable(L, "RepeatCount",     Rec->Event.KeyEvent.wRepeatCount);
+			PutNumToTable(L, "VirtualKeyCode",  Rec->Event.KeyEvent.wVirtualKeyCode);
+			PutNumToTable(L, "VirtualScanCode", Rec->Event.KeyEvent.wVirtualScanCode);
+			PutWStrToTable(L, "UnicodeChar",   &Rec->Event.KeyEvent.uChar.UnicodeChar, 1);
+			PutNumToTable(L, "ControlKeyState", Rec->Event.KeyEvent.dwControlKeyState);
+			break;
+
+		case MOUSE_EVENT:
+			PutMouseEvent(L, &Rec->Event.MouseEvent, TRUE);
+			break;
+
+		case WINDOW_BUFFER_SIZE_EVENT:
+			PutNumToTable(L, "SizeX", Rec->Event.WindowBufferSizeEvent.dwSize.X);
+			PutNumToTable(L, "SizeY", Rec->Event.WindowBufferSizeEvent.dwSize.Y);
+			break;
+
+		case MENU_EVENT:
+			PutNumToTable(L, "CommandId", Rec->Event.MenuEvent.dwCommandId);
+			break;
+
+		case FOCUS_EVENT:
+			PutBoolToTable(L, "SetFocus", Rec->Event.FocusEvent.bSetFocus);
+			break;
 	}
 }
 
