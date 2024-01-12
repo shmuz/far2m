@@ -328,15 +328,20 @@ local function test_mf_fmatch()
 end
 
 local function test_mf_fsplit()
-  local path="C:/Program Files/Far/Far.exe"
-  assert_eq (mf.fsplit(path,0x01), "C:/")
-  assert_eq (mf.fsplit(path,0x02), "/Program Files/Far/")
-  assert_eq (mf.fsplit(path,0x04), "Far")
-  assert_eq (mf.fsplit(path,0x08), ".exe")
+  local bRoot = 0x01
+  local bPath = 0x02
+  local bName = 0x04
+  local bExt  = 0x08
 
-  assert_eq (mf.fsplit(path,0x03), "C:/Program Files/Far/")
-  assert_eq (mf.fsplit(path,0x0C), "Far.exe")
-  assert_eq (mf.fsplit(path,0x0F), path)
+  local path = "C:/Program Files/Far/Far.exe"
+  assert_eq (mf.fsplit(path, bRoot), "C:/")
+  assert_eq (mf.fsplit(path, bPath), "/Program Files/Far/")
+  assert_eq (mf.fsplit(path, bName), "Far")
+  assert_eq (mf.fsplit(path, bExt),  ".exe")
+
+  assert_eq (mf.fsplit(path, bRoot + bPath), "C:/Program Files/Far/")
+  assert_eq (mf.fsplit(path, bName + bExt),  "Far.exe")
+  assert_eq (mf.fsplit(path, bRoot + bPath + bName + bExt), path)
 end
 
 local function test_mf_iif()
@@ -550,7 +555,7 @@ end
 
 local function test_mf_waitkey()
   assert_eq (mf.waitkey(50,0), "")
-  assert_eq (mf.waitkey(50,1), 0xFFFFFFFF)
+  assert_eq (mf.waitkey(50,1), F.KEY_INVALID)
 end
 
 local function test_mf_size2str()

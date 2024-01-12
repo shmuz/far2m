@@ -416,17 +416,26 @@ Menu = {
   GetValue   = function(...) return MacroCallFar(op.MCODE_F_MENU_GETVALUE, ...) end,
   ItemStatus = function(...) return MacroCallFar(op.MCODE_F_MENU_ITEMSTATUS, ...) end,
   Select     = function(...) return MacroCallFar(op.MCODE_F_MENU_SELECT, ...) end,
---Show       = function(...) return MacroCallFar(0x80C1C, ...) end,
+--Show       = function(...) return MacroCallFar(op.MCODE_F_MENU_SHOW, ...) end,
 }
 
 Menu.Show = function (Items, TitleAndFooter, Flags, SelectOrFilter, X, Y)
-  local props,rows = {},{}
-
   Flags = tonumber(Flags) or 0
-  props.Flags = 0 ~= band(Flags,0x80) and F.FMENU_AUTOHIGHLIGHT or 0
+
+  local bResultAsIndex     = band(Flags, 0x008) ~= 0
+  local bMultiSelect       = band(Flags, 0x010) ~= 0
+  local bSorting           = band(Flags, 0x020) ~= 0
+  local bPacking           = band(Flags, 0x040) ~= 0
+  local bAutohighlight     = band(Flags, 0x080) ~= 0
+--local bSetMenuFilter     = band(Flags, 0x100) ~= 0
+  local bAutoNumbering     = band(Flags, 0x200) ~= 0
+--local bExitAfterNavigate = band(Flags, 0x400) ~= 0
+
+  local props, rows = {}, {}
+  props.Flags = bAutohighlight and F.FMENU_AUTOHIGHLIGHT or 0
   props.X, props.Y = tonumber(X), tonumber(Y)
 
-  local remdups  = 0 ~= band(Flags, 0x40) and {}
+  local remdups = bPacking and {}
   local separators = {}
 
   if Items then
@@ -449,8 +458,7 @@ Menu.Show = function (Items, TitleAndFooter, Flags, SelectOrFilter, X, Y)
     end
   end
 
-  -- sort flag
-  if 0 ~= band(Flags, 0x20) then
+  if bSorting then
     table.sort(rows, function(a,b)
         local n1,n2 = tonumber(a.text,10), tonumber(b.text,10)
         if n1 and n2 then return n1 < n2 end
@@ -458,8 +466,7 @@ Menu.Show = function (Items, TitleAndFooter, Flags, SelectOrFilter, X, Y)
       end)
   end
 
-  -- number menu items
-  if 0 ~= band(Flags, 0x200) then
+  if bAutoNumbering then
     local cur = 0
     for _,v in ipairs(rows) do
       cur = cur + 1
@@ -487,27 +494,25 @@ Menu.Show = function (Items, TitleAndFooter, Flags, SelectOrFilter, X, Y)
     end
   end
 
-  local as_index = 0 ~= band(Flags,0x8)
-  local as_list  = 0 ~= band(Flags,0x10)
-  local bkeys = as_list and {{BreakKey="INSERT"}}
+  local bkeys = bMultiSelect and {{BreakKey="INSERT"}}
 
   while true do
     local item,pos = far.Menu(props,rows,bkeys)
     if not item then
-      return as_index and 0 or ""
+      return bResultAsIndex and 0 or ""
     elseif item.BreakKey == "INSERT" then
       rows[pos].checked = not rows[pos].checked
       props.SelectIndex = pos
-    elseif as_list then
+    elseif bMultiSelect then
       local t = {}
       for i,r in ipairs(rows) do
         if r.checked then
-          table.insert(t, as_index and tostring(i) or r.text)
+          table.insert(t, bResultAsIndex and tostring(i) or r.text)
         end
       end
-      return t[1] and table.concat(t,"\n") or as_index and pos or item.text
+      return t[1] and table.concat(t,"\n") or bResultAsIndex and pos or item.text
     else
-      return as_index and pos or item.text
+      return bResultAsIndex and pos or item.text
     end
   end
 end
