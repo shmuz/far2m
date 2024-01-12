@@ -17,7 +17,7 @@ local strParseError = ""
 local Shared
 local TablePanelSort -- must be separate from LastMessage, otherwise Far crashes after a macro is called from CtrlF12.
 local TableExecString -- must be separate from LastMessage, otherwise Far crashes
-local utils, macrobrowser, panelsort, keymacro
+local utils, macrobrowser, panelsort, keymacro, farcmds
 
 local ExpandEnv = win.ExpandEnv
 
@@ -346,21 +346,6 @@ end
 
 local function ShowAndPass(...) far.Show(...) return ... end
 
-local function Redirect(command)
-  local fp = io.popen(command)
-  if fp then
-    local fname = far.MkTemp()
-    local fp2 = io.open(fname, "w")
-    if fp2 then
-      for line in fp:lines() do fp2:write(line,"\n") end
-      fp2:close()
-      fp:close()
-      return fname
-    end
-    fp:close()
-  end
-end
-
 local function Open_CommandLine (strCmdLine)
   local prefix, text = strCmdLine:match("^%s*([^:%s]+):%s*(.-)%s*$")
   if not prefix then return end -- this can occur with Plugin.Command()
@@ -403,86 +388,8 @@ local function Open_CommandLine (strCmdLine)
       ErrMsg(f2)
     end
   ----------------------------------------------------------------------------
-  elseif prefix == "edit" then
-    local redir, cmd = text:match("^(<?)%s*(.+)")
-    if redir == nil then
-      return
-    end
-    cmd = FullExpand(Unquote(cmd))
-    local flags = bor(F.EF_NONMODAL, F.EF_IMMEDIATERETURN, F.EF_ENABLE_F6)
-    if redir == "<" then
-      local tmpname = Redirect(cmd)
-      if tmpname then
-        flags = bor(flags, F.EF_DELETEONLYFILEONCLOSE, F.EF_DISABLEHISTORY)
-        editor.Editor(tmpname,nil,nil,nil,nil,nil,flags)
-      end
-    else
-      local line,col,fname = regex.match(cmd, [=[ \[ (\d+)? (?: ,(\d+))? \] \s* (.+) ]=], nil, "x")
-      line  = line or (col and 1) or nil
-      col   = col or nil
-      fname = far.SplitCmdLine(fname or cmd)
-      editor.Editor(fname,nil,nil,nil,nil,nil,flags,line,col)
-    end
-  ----------------------------------------------------------------------------
-  elseif prefix == "view" then
-    local redir, cmd = text:match("^(<?)%s*(.+)")
-    if redir == nil then
-      return
-    end
-    cmd = FullExpand(Unquote(cmd))
-    local flags = bor(F.VF_NONMODAL, F.VF_IMMEDIATERETURN, F.VF_ENABLE_F6)
-    if redir == "<" then
-      local tmpname = Redirect(cmd)
-      if tmpname then
-        flags = bor(flags, F.VF_DELETEONLYFILEONCLOSE, F.VF_DISABLEHISTORY)
-        viewer.Viewer(tmpname,nil,nil,nil,nil,nil,flags)
-      end
-    else
-      cmd = far.SplitCmdLine(cmd)
-      viewer.Viewer(cmd,nil,nil,nil,nil,nil,flags)
-    end
-  ----------------------------------------------------------------------------
-  elseif prefix == "load" then
-    text = FullExpand(Unquote(text))
-    if text ~= "" then
-      far.LoadPlugin("PLT_PATH", text)
-    end
-  ----------------------------------------------------------------------------
-  elseif prefix == "unload" then
-    text = FullExpand(Unquote(text))
-    if text ~= "" then
-      local plug = far.FindPlugin("PFM_MODULENAME", text)
-      if plug then far.UnloadPlugin(plug) end
-    end
-  ----------------------------------------------------------------------------
-  elseif prefix == "goto" then
-    text = FullExpand(Unquote(text))
-    if text ~= "" then
-      local path_ok = true
-      local path,filename = text:match("(.*/)(.*)")
-      if path == nil then
-        filename = text
-      else
-        if path:sub(1,1) ~= "/" then
-          path = panel.GetPanelDirectory(1).."/"..path
-        end
-        path_ok = panel.SetPanelDirectory(1,path)
-      end
-      if path_ok and filename ~= "" then
-        local info=panel.GetPanelInfo(1)
-        if info then
-          filename=filename:lower()
-          for ii=1,info.ItemsNumber do
-            local item=panel.GetPanelItem(1,ii)
-            if not item then break end
-            if filename==item.FileName:lower() then
-              panel.RedrawPanel(1,{TopPanelItem=1,CurrentItem=ii})
-              break
-            end
-          end
-        end
-      end
-    end
+  elseif prefix=="edit" or prefix=="view" or prefix=="load" or prefix=="unload" or prefix=="goto" then
+    farcmds.Process(prefix, text)
   ----------------------------------------------------------------------------
   else
     local item = utils.GetPrefixes()[prefix]
@@ -662,14 +569,16 @@ end
 
 local function Init()
   Shared = {
-    ErrMsg            = ErrMsg,
-    GetLastParseError = GetLastParseError,
-    MacroStep         = MacroStep,
     checkarg          = checkarg,
+    ErrMsg            = ErrMsg,
+    FullExpand        = FullExpand,
+    GetLastParseError = GetLastParseError,
     loadmacro         = loadmacro,
-    pack              = pack,
-    yieldcall         = yieldcall,
     MacroDirs         = GetMacroDirs(),
+    MacroStep         = MacroStep,
+    pack              = pack,
+    Unquote           = Unquote,
+    yieldcall         = yieldcall,
   }
   Shared.MacroCallFar, far.MacroCallFar = far.MacroCallFar, nil
   Shared.MacroCallToLua, far.MacroCallToLua = far.MacroCallToLua, nil
@@ -702,6 +611,7 @@ local function Init()
   mf.akey, _G.akey = keymacro.akey, keymacro.akey
   mf.AddExitHandler = keymacro.AddExitHandler
 
+  farcmds = RunPluginFile("farcmds.lua", Shared)
   macrobrowser = RunPluginFile("mbrowser.lua", Shared)
 
   do

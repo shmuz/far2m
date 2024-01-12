@@ -48,6 +48,7 @@ set(MY_LIST
   lm_spa.lng
   api.lua
   farapi.lua
+  farcmds.lua
   keymacro.lua
   lang.lua
   luamacro.lua
