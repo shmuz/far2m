@@ -144,6 +144,7 @@ enum LanguageID
 	MEnumDirProgressTitle,
 	MCreateDirProgressTitle,
 	MExecuteProgressTitle,
+	MGetLinkProgressTitle,
 
 	MAbortTitle,
 	MAbortText,
@@ -264,6 +265,7 @@ enum LanguageID
 	MConfirmChangeModeTitle,
 	MConfirmChangeModeTextOne,
 	MConfirmChangeModeTextMany,
+	MThatIsSymlink,
 	MRecurseSubdirs,
 	MModeUser,
 	MModeGroup,
