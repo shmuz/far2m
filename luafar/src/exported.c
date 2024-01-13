@@ -1367,7 +1367,7 @@ int LF_GetCustomData(lua_State* L, const wchar_t *FilePath, wchar_t **CustomData
 	return FALSE;
 }
 
-void  LF_FreeCustomData(lua_State* L, wchar_t *CustomData)
+void LF_FreeCustomData(lua_State* L, wchar_t *CustomData)
 {
 	(void) L;
 	if (CustomData) free(CustomData);
@@ -1398,4 +1398,37 @@ int LF_ProcessConsoleInput(lua_State* L, INPUT_RECORD *Rec)
 	}
 
 	return ret;
+}
+
+int LF_GetLinkTarget(
+	lua_State *L,
+	HANDLE hPlugin,
+	struct PluginPanelItem *PanelItem,
+	wchar_t *Target,
+	size_t TargetSize,
+	int OpMode)
+{
+	if (GetExportFunction(L, "GetLinkTarget"))  //+1: Func
+	{
+		PushPluginPair(L, hPlugin);               //+3: Func,Pair
+		PushPanelItem(L, PanelItem);              //+4: Func,Pair,Item
+		lua_pushinteger(L, OpMode);               //+5  Func,Pair,Item,OpMode
+		int ret = pcall_msg(L, 4, 1);             //+1: Res
+		if (ret == 0)
+		{
+			if (lua_type(L,-1) == LUA_TSTRING)
+			{
+				size_t size = 0;
+				wchar_t* ptr = utf8_to_wcstring(L,-1,&size); //+1 (conversion in place)
+				if (Target && TargetSize)
+				{
+					wcsncpy(Target, ptr, TargetSize);
+				}
+				lua_pop(L, 1);                        //+0
+				return (int)size + 1;
+			}
+			lua_pop(L, 1);                          //+0
+		}
+	}
+	return 0;
 }

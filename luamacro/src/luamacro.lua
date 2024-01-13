@@ -674,7 +674,7 @@ function export.MakeDirectory (wrapped_obj, ...)
   end
 end
 
-for _,name in ipairs {"ClosePanel","Compare","DeleteFiles","GetFiles","GetFindData",
+for _,name in ipairs {"ClosePanel","Compare","DeleteFiles","GetFiles","GetFindData","GetLinkTarget",
       "ProcessHostFile","ProcessPanelEvent","ProcessKey","PutFiles","SetDirectory",
       "SetFindList"} do
   export[name] =

@@ -308,3 +308,13 @@ LUAPLUG int ProcessConsoleInputW(INPUT_RECORD *Rec)
 }
 #endif
 //---------------------------------------------------------------------------
+
+#if defined(EXPORT_GETLINKTARGET) || defined(EXPORT_ALL)
+LUAPLUG int GetLinkTargetW(
+	HANDLE hPlugin, struct PluginPanelItem *PanelItem, wchar_t *Target,
+	size_t TargetSize, int OpMode)
+{
+	return LS ? LF_GetLinkTarget(LS, hPlugin, PanelItem, Target, TargetSize, OpMode) : 0;
+}
+#endif
+//---------------------------------------------------------------------------
