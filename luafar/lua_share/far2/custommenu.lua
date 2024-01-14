@@ -532,7 +532,7 @@ local function ProcessSearchMethod (method, pattern)
         p = p:gsub("(%%?)(.)", function(a,b) return a=="" and b:lower() or map[b] end)
         local ok, fr, to = pcall(("").find, s:lower(), p, init)
         if ok then return fr, to end
-        return fr, to
+        return nil
       end
     else -- Selene Unicode library (prior to 30-Aug-2019)
       return function(s, p, init)
