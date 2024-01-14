@@ -320,7 +320,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 		*/
 		case ACTL_WAITKEY:
 		{
-			return WaitKey(Param?(DWORD)(DWORD_PTR)Param:(DWORD)-1,0,false,false);
+			return WaitKey(Param ? (FarKey)(DWORD_PTR)Param : KEY_INVALID, 0, false, false);
 		}
 		/* $ 04.12.2000 SVS
 		  ACTL_GETCOLOR - получить определенный цвет по индекс, определенному
@@ -886,7 +886,7 @@ static int FarMenuFnSynched(
 		while (!FarMenu.Done() && !CloseFARMenu)
 		{
 			INPUT_RECORD ReadRec;
-			int ReadKey=GetInputRecord(&ReadRec);
+			FarKey ReadKey = GetInputRecord(&ReadRec);
 
 			if (ReadKey==KEY_CONSOLE_BUFFER_RESIZE)
 			{

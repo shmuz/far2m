@@ -594,10 +594,10 @@ int UserMenu::ProcessSingleMenu(const wchar_t *MenuKey,int MenuPos,const wchar_t
 					MenuNeedRefresh=false;
 				}
 
-				int Key=UserMenu.ReadInput();
+				FarKey Key = UserMenu.ReadInput();
 				MenuPos=UserMenu.GetSelectPos();
 
-				if ((unsigned int)Key>=KEY_F1 && (unsigned int)Key<=KEY_F24)
+				if (Key>=KEY_F1 && Key<=KEY_F24)
 				{
 					int FuncItemPos;
 

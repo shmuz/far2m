@@ -1516,7 +1516,7 @@ int Edit::ProcessInsPlainText(const wchar_t *str)
 	return FALSE;
 }
 
-int Edit::InsertKey(int Key)
+int Edit::InsertKey(FarKey Key)
 {
 	bool changed=false;
 	wchar_t *NewStr;
@@ -2940,7 +2940,7 @@ void EditControl::RemoveSelectedCompletionMenuItem(VMenu &ComplMenu)
 	}
 }
 
-void EditControl::AutoCompleteProcMenu(int &Result,bool Manual,bool DelBlock,int& BackKey)
+void EditControl::AutoCompleteProcMenu(int &Result, bool Manual, bool DelBlock, FarKey& BackKey)
 {
 	VMenu ComplMenu(nullptr,nullptr,0,0);
 	FARString strTemp = Str;
@@ -3165,7 +3165,7 @@ void EditControl::AutoCompleteProcMenu(int &Result,bool Manual,bool DelBlock,int
 	}
 }
 
-int EditControl::AutoCompleteProc(bool Manual,bool DelBlock,int& BackKey)
+int EditControl::AutoCompleteProc(bool Manual, bool DelBlock, FarKey& BackKey)
 {
 	int Result=0;
 	static int Reenter=0;
@@ -3181,7 +3181,7 @@ int EditControl::AutoCompleteProc(bool Manual,bool DelBlock,int& BackKey)
 
 void EditControl::AutoComplete(bool Manual,bool DelBlock)
 {
-	int Key=0;
+	FarKey Key = 0;
 	if(AutoCompleteProc(Manual,DelBlock,Key))
 	{
 		// BUGBUG, hack

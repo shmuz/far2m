@@ -65,14 +65,14 @@ bool TranslateKeyToVK(FarKey Key,int &VirtKey,int &ControlState,INPUT_RECORD *re
 FarKey WINAPI KeyNameToKey(const wchar_t *Name);
 BOOL WINAPI KeyToText(FarKey Key, FARString &strKeyText);
 FarKey WINAPI InputRecordToKey(const INPUT_RECORD *Rec);
-DWORD GetInputRecord(INPUT_RECORD *rec,bool ExcludeMacro=false,bool ProcessMouse=false,bool AllowSynchro=true);
+FarKey GetInputRecord(INPUT_RECORD *rec,bool ExcludeMacro=false,bool ProcessMouse=false,bool AllowSynchro=true);
 DWORD PeekInputRecord(INPUT_RECORD *rec,bool ExcludeMacro=true);
 FarKey CalcKeyCode(INPUT_RECORD *rec,int RealKey,int *NotMacros=nullptr);
 FarKey WaitKey(FarKey KeyWait=KEY_INVALID,DWORD delayMS=0,bool ExcludeMacro=true,bool EnableQuickEdit=true);
 int SetFLockState(UINT vkKey, int State);
 int WriteInput(int Key,DWORD Flags=0);
-int IsNavKey(DWORD Key);
-int IsShiftKey(DWORD Key);
+int IsNavKey(FarKey Key);
+int IsShiftKey(FarKey Key);
 int CheckForEsc();
 int CheckForEscSilent();
 int ConfirmAbortOp();

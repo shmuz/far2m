@@ -135,7 +135,7 @@ bool IsKeyHighlighted(const wchar_t *Str, FarKey Key, int Translate, int AmpPos)
 
 	wchar_t UpperStrKey=Upper(Str[AmpPos]);
 
-	if (Key < 0xFFFF) {
+	if (WCHAR_IS_VALID(Key)) {
 		return UpperStrKey == Upper(Key) || (Translate && KeyToKeyLayoutCompare(Key, UpperStrKey));
 	}
 
@@ -4114,7 +4114,7 @@ int Dialog::SelectFromComboBox(
 			}
 
 			INPUT_RECORD ReadRec;
-			int Key=ComboBox->ReadInput(&ReadRec);
+			FarKey Key = ComboBox->ReadInput(&ReadRec);
 
 			if (CurItem->IFlags.Check(DLGIIF_COMBOBOXEVENTKEY) && ReadRec.EventType == KEY_EVENT)
 			{
@@ -4300,7 +4300,7 @@ int Dialog::CheckHighlights(WORD CheckSymbol,int StartPos)
 /* Private:
    Если жмакнули Alt-???
 */
-int Dialog::ProcessHighlighting(int Key,unsigned FocusPos,int Translate)
+int Dialog::ProcessHighlighting(FarKey Key, unsigned FocusPos, int Translate)
 {
 	CriticalSectionLock Lock(CS);
 	int Type;

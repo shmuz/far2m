@@ -404,7 +404,7 @@ void HMenu::ProcessSubMenu(MenuDataEx *Data,int DataCount,
 	while (!SubMenu->Done() && !CloseFARMenu)
 	{
 		INPUT_RECORD rec;
-		int Key;
+		FarKey Key;
 		Key=GetInputRecord(&rec);
 
 		if (Key==KEY_CONSOLE_BUFFER_RESIZE)

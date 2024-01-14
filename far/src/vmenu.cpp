@@ -813,12 +813,12 @@ void VMenu::FilterUpdateHeight(bool bShrink)
 	}
 }
 
-bool VMenu::IsFilterEditKey(int Key)
+bool VMenu::IsFilterEditKey(FarKey Key)
 {
-	return (Key>=(int)KEY_SPACE && Key<0xffff) || Key==KEY_BS;
+	return (Key >= KEY_SPACE && WCHAR_IS_VALID(Key)) || Key == KEY_BS;
 }
 
-bool VMenu::ShouldSendKeyToFilter(int Key)
+bool VMenu::ShouldSendKeyToFilter(FarKey Key)
 {
 	if (Key==KEY_CTRLALTF)
 		return true;
@@ -1151,7 +1151,7 @@ int64_t VMenu::VMProcess(int OpCode,void *vParam,int64_t iParam)
 
 bool VMenu::AddToFilter(const wchar_t *str)
 {
-	int Key;
+	FarKey Key;
 
 	if (bFilterEnabled && !bFilterLocked)
 	{

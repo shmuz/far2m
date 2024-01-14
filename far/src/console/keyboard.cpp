@@ -96,7 +96,7 @@ static int LastShiftEnterPressed=FALSE;
 /* ----------------------------------------------------------------- */
 static struct TTable_KeyToVK
 {
-	unsigned int Key;
+	FarKey Key;
 	unsigned int VK;
 } Table_KeyToVK[]=
 {
@@ -516,7 +516,7 @@ static DWORD KeyMsClick2ButtonState(DWORD Key,DWORD& Event)
 	return 0;
 }
 
-DWORD GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,bool AllowSynchro)
+FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,bool AllowSynchro)
 {
 	_KEYMACRO(CleverSysLog Clev(L"GetInputRecord()"));
 	static int LastEventIdle=FALSE;
@@ -687,9 +687,9 @@ DWORD GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,b
 							for (;;)
 							{
 								INPUT_RECORD tmprec;
-								int Key=GetInputRecord(&tmprec);
+								FarKey Key = GetInputRecord(&tmprec);
 
-								if ((DWORD)Key==KEY_NONE || ((DWORD)Key!=KEY_SHIFT && tmprec.Event.KeyEvent.bKeyDown))
+								if (Key==KEY_NONE || (Key!=KEY_SHIFT && tmprec.Event.KeyEvent.bKeyDown))
 									break;
 							}
 
@@ -1281,7 +1281,7 @@ DWORD GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,b
 //	Log("---------------");
 //}
 
-DWORD GetInputRecord(INPUT_RECORD *rec, bool ExcludeMacro, bool ProcessMouse, bool AllowSynchro)
+FarKey GetInputRecord(INPUT_RECORD *rec, bool ExcludeMacro, bool ProcessMouse, bool AllowSynchro)
 {
 	*rec = {};
 
@@ -1421,7 +1421,7 @@ int WriteInput(int Key,DWORD Flags)
 int CheckForEscSilent()
 {
 	INPUT_RECORD rec;
-	int Key;
+	FarKey Key;
 	BOOL Processed=TRUE;
 	/* TODO: Здесь, в общем то - ХЗ, т.к.
 	         по хорошему нужно проверять CtrlObject->Macro.PeekKey() на ESC или BREAK
@@ -1787,7 +1787,7 @@ bool TranslateKeyToVK(FarKey Key,int &VirtKey,int &ControlState,INPUT_RECORD *Re
 }
 
 
-int IsNavKey(DWORD Key)
+int IsNavKey(FarKey Key)
 {
 	static DWORD NavKeys[][2]=
 	{
@@ -1814,9 +1814,9 @@ int IsNavKey(DWORD Key)
 	return FALSE;
 }
 
-int IsShiftKey(DWORD Key)
+int IsShiftKey(FarKey Key)
 {
-	static DWORD ShiftKeys[]=
+	static FarKey ShiftKeys[]=
 	{
 		KEY_SHIFTLEFT,          KEY_SHIFTNUMPAD4,
 		KEY_SHIFTRIGHT,         KEY_SHIFTNUMPAD6,

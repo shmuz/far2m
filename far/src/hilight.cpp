@@ -567,7 +567,7 @@ void HighlightFiles::HiEdit(int MenuPos)
 
 	while (1) {
 		while (!HiMenu.Done()) {
-			int Key = HiMenu.ReadInput();
+			FarKey Key = HiMenu.ReadInput();
 			int SelectPos = HiMenu.GetSelectPos();
 			NeedUpdate = FALSE;
 

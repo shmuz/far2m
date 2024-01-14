@@ -215,7 +215,7 @@ bool FileFilter::FilterEdit()
 
 	while (!FilterList.Done())
 	{
-		int Key=FilterList.ReadInput();
+		FarKey Key = FilterList.ReadInput();
 
 		if (Key==KEY_ADD)
 			Key=L'+';
@@ -240,8 +240,8 @@ bool FileFilter::FilterEdit()
 				if (SelPos<0 || SelPos==(int)FilterData.getCount())
 					break;
 
-				int Check=FilterList.GetCheck(SelPos);
-				int NewCheck;
+				uint32_t Check=FilterList.GetCheck(SelPos);
+				uint32_t NewCheck;
 
 				if (Key==KEY_BS)
 					NewCheck = 0;
@@ -495,7 +495,7 @@ enumFileFilterFlagsType FileFilter::GetFFFT()
 	return FFFT_CUSTOM;
 }
 
-int FileFilter::GetCheck(FileFilterParams *FFP)
+wchar_t FileFilter::GetCheck(FileFilterParams *FFP)
 {
 	DWORD Flags = FFP->GetFlags(GetFFFT());
 

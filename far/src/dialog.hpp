@@ -319,7 +319,7 @@ class Dialog: public Frame
 
 		void ProcessLastHistory(DialogItemEx *CurItem, int MsgIndex);  // обработка DIF_USELASTHISTORY
 
-		int ProcessHighlighting(int Key,unsigned FocusPos,int Translate);
+		int ProcessHighlighting(FarKey Key, unsigned FocusPos, int Translate);
 		int CheckHighlights(WORD Chr,int StartPos=0);
 
 		void SelectOnEntry(unsigned Pos,BOOL Selected);

@@ -181,7 +181,7 @@ class Edit:public ScreenObject
 
 	private:
 		virtual void   DisplayObject();
-		int    InsertKey(int Key);
+		int    InsertKey(FarKey Key);
 		int    RecurseProcessKey(FarKey Key);
 		void   DeleteBlock();
 		void   ApplyColor();
@@ -340,8 +340,8 @@ class EditControl:public Edit
 	bool ACState;
 
 	void SetMenuPos(VMenu& menu);
-	void AutoCompleteProcMenu(int &Result,bool Manual,bool DelBlock,int& BackKey);
-	int AutoCompleteProc(bool Manual,bool DelBlock,int& BackKey);
+	void AutoCompleteProcMenu(int &Result,bool Manual,bool DelBlock,FarKey& BackKey);
+	int AutoCompleteProc(bool Manual,bool DelBlock,FarKey& BackKey);
 	void PopulateCompletionMenu(VMenu &ComplMenu, const FARString &strFilter);
 	void RemoveSelectedCompletionMenuItem(VMenu &ComplMenu);
 

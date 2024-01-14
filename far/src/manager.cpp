@@ -609,7 +609,7 @@ void Manager::ProcessMainLoop()
 		// Mantis#0000073: Не работает автоскролинг в QView
 		WaitInMainLoop=IsPanelsActive() && ((FilePanels*)CurrentFrame)->ActivePanel->GetType()!=QVIEW_PANEL;
 		//WaitInFastFind++;
-		int Key=GetInputRecord(&LastInputRecord);
+		FarKey Key = GetInputRecord(&LastInputRecord);
 		//WaitInFastFind--;
 		WaitInMainLoop=FALSE;
 

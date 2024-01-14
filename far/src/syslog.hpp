@@ -43,7 +43,7 @@ void SysLogLastError();
 void ShowHeap();
 void CheckHeap(int NumLine);
 
-FARString __FARKEY_ToName(int Key);
+FARString __FARKEY_ToName(FarKey Key);
 #define _FARKEY_ToName(K) __FARKEY_ToName(K).CPtr()
 FARString __MCODE_ToName(int OpCode);
 #define _MCODE_ToName(K) __MCODE_ToName(K).CPtr()
