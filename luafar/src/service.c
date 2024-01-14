@@ -480,7 +480,7 @@ void PushPanelItems(lua_State *L, HANDLE handle, const struct PluginPanelItem *P
 {
 	int i;
 	lua_createtable(L, ItemsNumber, 0);    //+1 "PanelItems"
-	PushOptPluginTable(L, handle);   //+2
+	PushOptPluginTable(L, handle);         //+2
 	for(i=0; i < ItemsNumber; i++) {
 		PushPanelItem (L, PanelItems + i);
 		lua_rawseti(L, -3, i+1);
@@ -1588,11 +1588,11 @@ int far_Menu(lua_State *L)
 
 // Return:   -1 if escape pressed, else - button number chosen (0 based).
 int LF_Message(lua_State* L,
-							 const wchar_t* aMsg,      // if multiline, then lines must be separated by '\n'
-							 const wchar_t* aTitle,
-							 const wchar_t* aButtons,  // if multiple, then captions must be separated by ';'
-							 const char*    aFlags,
-							 const wchar_t* aHelpTopic)
+	const wchar_t* aMsg,      // if multiline, then lines must be separated by '\n'
+	const wchar_t* aTitle,
+	const wchar_t* aButtons,  // if multiple, then captions must be separated by ';'
+	const char*    aFlags,
+	const wchar_t* aHelpTopic)
 {
 	TPluginData *pd = GetPluginData(L);
 	const wchar_t **items, **pItems;
@@ -4742,7 +4742,7 @@ int plugin_load(lua_State *L, enum FAR_PLUGINS_CONTROL_COMMANDS command)
 	return 1;
 }
 
-int far_LoadPlugin(lua_State *L) { return plugin_load(L, PCTL_LOADPLUGIN); }
+int far_LoadPlugin(lua_State *L)       { return plugin_load(L, PCTL_LOADPLUGIN); }
 int far_ForcedLoadPlugin(lua_State *L) { return plugin_load(L, PCTL_FORCEDLOADPLUGIN); }
 
 int far_UnloadPlugin(lua_State *L)
