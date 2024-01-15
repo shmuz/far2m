@@ -43,7 +43,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "InterThreadCall.hpp"
 
 Modal::Modal():
-	WriteKey(-1),
+	WriteKey(KEY_INVALID),
 	ExitCode(-1),
 	EndLoop(0)
 {
@@ -70,10 +70,10 @@ int Modal::ReadInput(INPUT_RECORD *GetReadRec)
 	if (GetReadRec)
 		memset(GetReadRec,0,sizeof(INPUT_RECORD));
 
-	if (WriteKey>=0)
+	if (WriteKey != KEY_INVALID)
 	{
 		ReadKey=WriteKey;
-		WriteKey=-1;
+		WriteKey=KEY_INVALID;
 	}
 	else
 	{
@@ -101,7 +101,7 @@ int Modal::ReadInput(INPUT_RECORD *GetReadRec)
 }
 
 
-void Modal::WriteInput(int Key)
+void Modal::WriteInput(FarKey Key)
 {
 	WriteKey=Key;
 }

@@ -2856,7 +2856,7 @@ int FileList::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 
 	if(MouseEvent->dwButtonState&FROM_LEFT_2ND_BUTTON_PRESSED && MouseEvent->dwEventFlags!=MOUSE_MOVED)
 	{
-		int Key = KEY_ENTER;
+		FarKey Key = KEY_ENTER;
 		if(MouseEvent->dwControlKeyState&SHIFT_PRESSED)
 		{
 			Key |= KEY_SHIFT;
@@ -4353,7 +4353,7 @@ void FileList::SelectSortMode()
 				MenuNeedRefresh=false;
 			}
 
-			int Key=SortModeMenu.ReadInput();
+			FarKey Key=SortModeMenu.ReadInput();
 			int MenuPos=SortModeMenu.GetSelectPos();
 
 			if (Key == KEY_SUBTRACT)
@@ -4835,7 +4835,7 @@ PHPTR FileList::OpenFilePlugin(const wchar_t *FileName, int PushPrev, OPENFILEPL
 }
 
 
-void FileList::ProcessCopyKeys(int Key)
+void FileList::ProcessCopyKeys(FarKey Key)
 {
 	if (FileCount>0)
 	{

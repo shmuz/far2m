@@ -1525,8 +1525,8 @@ namespace oldfar
 	};
 
 	typedef char*(WINAPI *FARSTDXLAT)(char *Line,int StartPos,int EndPos,const struct CharTableSet *TableSet,DWORD Flags);
-	typedef BOOL (WINAPI *FARSTDKEYTOKEYNAME)(int Key,char *KeyText,int Size);
-	typedef int (WINAPI *FARSTDKEYNAMETOKEY)(const char *Name);
+	typedef BOOL (WINAPI *FARSTDKEYTOKEYNAME)(FarKey Key,char *KeyText,int Size);
+	typedef FarKey (WINAPI *FARSTDKEYNAMETOKEY)(const char *Name);
 
 	typedef int (WINAPI *FRSUSERFUNC)(
 		const WIN32_FIND_DATAA *FData,

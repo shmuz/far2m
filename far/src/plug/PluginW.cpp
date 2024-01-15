@@ -140,7 +140,7 @@ static void CheckScreenLock()
 	}
 }
 
-static size_t WINAPI FarKeyToName(int Key,wchar_t *KeyText,size_t Size)
+static size_t WINAPI FarKeyToName(FarKey Key,wchar_t *KeyText,size_t Size)
 {
 	FARString strKT;
 
@@ -172,9 +172,9 @@ static BOOL WINAPI FarNameToInputRecord(const wchar_t *Name,INPUT_RECORD* Rec)
 	return FALSE;
 }
 
-int WINAPI KeyNameToKeyW(const wchar_t *Name)
+FarKey WINAPI KeyNameToKeyW(const wchar_t *Name)
 {
-	return Name ? KeyNameToKey(Name) : -1;
+	return Name ? KeyNameToKey(Name) : KEY_INVALID;
 }
 
 PluginW::PluginW(PluginManager *owner, const FARString &strModuleName,

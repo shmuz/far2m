@@ -237,7 +237,7 @@ static DWORD OldKeyToKey(DWORD dOldKey)
 	return dOldKey;
 }
 
-FarKey KeyToOldKey(DWORD dKey)
+static DWORD KeyToOldKey(DWORD dKey)
 {
 	if (IS_KEY_EXTENDED(dKey)) {
 		dKey = (dKey - EXTENDED_KEY_BASE) | 0x100;
@@ -855,13 +855,13 @@ int WINAPI ProcessNameA(const char *Param1,char *Param2,DWORD Flags)
 	return ret;
 }
 
-int WINAPI KeyNameToKeyA(const char *Name)
+FarKey WINAPI KeyNameToKeyA(const char *Name)
 {
 	FARString strN(Name);
 	return KeyToOldKey(KeyNameToKey(strN));
 }
 
-BOOL WINAPI FarKeyToNameA(int Key,char *KeyText,int Size)
+BOOL WINAPI FarKeyToNameA(FarKey Key,char *KeyText,int Size)
 {
 	FARString strKT;
 	int ret=KeyToText(OldKeyToKey(Key),strKT);

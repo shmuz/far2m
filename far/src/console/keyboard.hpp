@@ -70,7 +70,7 @@ DWORD PeekInputRecord(INPUT_RECORD *rec,bool ExcludeMacro=true);
 FarKey CalcKeyCode(INPUT_RECORD *rec,int RealKey,int *NotMacros=nullptr);
 FarKey WaitKey(FarKey KeyWait=KEY_INVALID,DWORD delayMS=0,bool ExcludeMacro=true,bool EnableQuickEdit=true);
 int SetFLockState(UINT vkKey, int State);
-int WriteInput(int Key,DWORD Flags=0);
+int WriteInput(wchar_t Key,DWORD Flags=0);
 int IsNavKey(FarKey Key);
 int IsShiftKey(FarKey Key);
 int CheckForEsc();

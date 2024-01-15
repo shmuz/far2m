@@ -492,7 +492,7 @@ int Panel::ChangeDiskMenu(int Pos,int FirstCall)
 
 		while (!ChDisk.Done())
 		{
-			int Key;
+			FarKey Key;
 			/*if(Events.DeviceArivalEvent.Signaled() || Events.DeviceRemoveEvent.Signaled() || Events.MediaArivalEvent.Signaled() || Events.MediaRemoveEvent.Signaled())
 			{
 				Key=KEY_CTRLR;

@@ -2161,11 +2161,11 @@ enum XLATMODE
 	XLAT_CONVERTALLCMDLINE = 0x00010000UL, // deprecated
 };
 
-typedef size_t (WINAPI *FARSTDKEYTOKEYNAME)(int Key,wchar_t *KeyText,size_t Size);
+typedef size_t (WINAPI *FARSTDKEYTOKEYNAME)(FarKey Key,wchar_t *KeyText,size_t Size);
 
 typedef wchar_t*(WINAPI *FARSTDXLAT)(wchar_t *Line,int StartPos,int EndPos,DWORD Flags);
 
-typedef int (WINAPI *FARSTDKEYNAMETOKEY)(const wchar_t *Name);
+typedef FarKey (WINAPI *FARSTDKEYNAMETOKEY)(const wchar_t *Name);
 
 typedef BOOL (WINAPI *FARSTDKEYNAMETOINPUTRECORD)(const wchar_t *Name,INPUT_RECORD* Key);
 

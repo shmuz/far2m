@@ -1380,7 +1380,7 @@ FarKey WaitKey(FarKey KeyWait, DWORD delayMS, bool ExcludeMacro, bool EnableQuic
 	return Key;
 }
 
-int WriteInput(int Key,DWORD Flags)
+int WriteInput(wchar_t Key,DWORD Flags)
 {
 	if (Flags&(SKEY_VK_KEYS|SKEY_IDLE))
 	{

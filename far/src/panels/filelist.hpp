@@ -249,7 +249,7 @@ class FileList:public Panel
 		int PluginPutFilesToAnother(int Move,Panel *AnotherPanel);
 		void ProcessPluginCommand();
 		void PluginClearSelection(PluginPanelItem *ItemList,int ItemNumber);
-		void ProcessCopyKeys(int Key);
+		void ProcessCopyKeys(FarKey Key);
 		void ReadSortGroups(bool UpdateFilterCurrentTime=true);
 		FileListItem* AddParentPoint(long CurFilePos,FILETIME* Times=nullptr,FARString Owner=L"",FARString Group=L"");
 		int  ProcessOneHostFile(int Idx);
