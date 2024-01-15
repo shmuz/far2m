@@ -3976,19 +3976,22 @@ void PushInputRecord (lua_State* L, const INPUT_RECORD *Rec)
 int far_KeyToName (lua_State *L)
 {
 	wchar_t buf[256];
-	int Key = luaL_checkinteger(L,1);
-	BOOL result = FSF.FarKeyToName(Key, buf, ARRAYSIZE(buf)-1);
-	if (result) push_utf8_string(L, buf, -1);
-	else lua_pushnil(L);
+	FarKey Key = (FarKey)luaL_checkinteger(L,1);
+	if (FSF.FarKeyToName(Key, buf, ARRAYSIZE(buf)-1))
+		push_utf8_string(L, buf, -1);
+	else
+		lua_pushnil(L);
 	return 1;
 }
 
 int far_NameToKey (lua_State *L)
 {
 	const wchar_t* str = check_utf8_string(L,1,NULL);
-	int Key = FSF.FarNameToKey(str);
-	if (Key == -1) lua_pushnil(L);
-	else lua_pushinteger(L, Key);
+	FarKey Key = FSF.FarNameToKey(str);
+	if (Key == KEY_INVALID)
+		lua_pushnil(L);
+	else
+		lua_pushinteger(L, Key);
 	return 1;
 }
 

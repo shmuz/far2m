@@ -4,6 +4,7 @@
 #define LUAFAR_INTERNALS
 
 #include <farplug-wide.h>
+#include <farkeys.h>
 
 #ifdef __cplusplus
 extern "C" {
