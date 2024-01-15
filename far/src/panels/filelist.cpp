@@ -728,7 +728,7 @@ void FileList::SetFocus()
 		SetTitle();
 }
 
-int FileList::SendKeyToPlugin(DWORD Key,BOOL Pred)
+int FileList::SendKeyToPlugin(FarKey Key,BOOL Pred)
 {
 	_ALGO(CleverSysLog clv(L"FileList::SendKeyToPlugin()"));
 	_ALGO(SysLog(L"Key=%ls Pred=%d",_FARKEY_ToName(Key),Pred));

@@ -280,7 +280,7 @@ class FileList:public Panel
 		*/
 		virtual void UpdateIfRequired();
 
-		virtual int SendKeyToPlugin(DWORD Key,BOOL Pred=FALSE);
+		virtual int SendKeyToPlugin(FarKey Key,BOOL Pred=FALSE);
 		void CreateChangeNotification(int CheckTree);
 		virtual void CloseChangeNotification();
 		virtual void SortFileList(int KeepPosition);

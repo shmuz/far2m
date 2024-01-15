@@ -235,9 +235,9 @@ void KeyBar::ReadRegGroup(const wchar_t *RegGroup, const wchar_t *Language)
 		for (const auto &strValueName : ValueNames)
 		{
 			FARString strValue = cfg_reader.GetString(strValueName);
-			DWORD Key = KeyNameToKey(StrMB2Wide(strValueName).c_str());
-			DWORD Key0 = Key & (~KEY_CTRLMASK);
-			DWORD Ctrl = Key & KEY_CTRLMASK;
+			FarKey Key = KeyNameToKey(StrMB2Wide(strValueName).c_str());
+			FarKey Key0 = Key & (~KEY_CTRLMASK);
+			FarKey Ctrl = Key & KEY_CTRLMASK;
 
 			if (Key0 >= KEY_F1 && Key0 <= KEY_F24)
 			{
@@ -310,7 +310,7 @@ void KeyBar::Change(int Group,const wchar_t *NewStr,int Pos)
 }
 
 
-// Групповая установка идущих подряд строк LNG для указанной группы 
+// Групповая установка идущих подряд строк LNG для указанной группы
 void KeyBar::SetAllGroup(int Group, FarLangMsg BaseMsg, int Count)
 {
 	if (Count > KEY_COUNT)
@@ -343,7 +343,8 @@ int KeyBar::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 	if (!IsVisible())
 		return FALSE;
 
-	if (!(MouseEvent->dwButtonState & 3) || MouseEvent->dwEventFlags)
+	if (!(MouseEvent->dwButtonState & (FROM_LEFT_1ST_BUTTON_PRESSED | RIGHTMOST_BUTTON_PRESSED))
+			|| MouseEvent->dwEventFlags)
 		return FALSE;
 
 	if (MouseEvent->dwMousePosition.X<X1 || MouseEvent->dwMousePosition.X>X2 ||
@@ -366,7 +367,8 @@ int KeyBar::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 	{
 		GetInputRecord(&rec);
 
-		if (rec.EventType==MOUSE_EVENT && !(rec.Event.MouseEvent.dwButtonState & 3))
+		if ((rec.EventType == MOUSE_EVENT) && !(rec.Event.MouseEvent.dwButtonState &
+				(FROM_LEFT_1ST_BUTTON_PRESSED | RIGHTMOST_BUTTON_PRESSED)))
 			break;
 	}
 

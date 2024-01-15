@@ -835,9 +835,9 @@ bool VMenu::ShouldSendKeyToFilter(FarKey Key)
 	return false;
 }
 
-int VMenu::ReadInput(INPUT_RECORD *GetReadRec)
+FarKey VMenu::ReadInput(INPUT_RECORD *GetReadRec)
 {
-	int ReadKey;
+	FarKey ReadKey;
 
 	for (;;)
 	{

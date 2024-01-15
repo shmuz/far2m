@@ -65,7 +65,7 @@ void Modal::Process()
 }
 
 
-int Modal::ReadInput(INPUT_RECORD *GetReadRec)
+FarKey Modal::ReadInput(INPUT_RECORD *GetReadRec)
 {
 	if (GetReadRec)
 		memset(GetReadRec,0,sizeof(INPUT_RECORD));

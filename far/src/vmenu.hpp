@@ -320,7 +320,7 @@ class VMenu: public Modal
 		virtual int ProcessKey(FarKey Key);
 		virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
 		virtual int64_t VMProcess(int OpCode,void *vParam=nullptr,int64_t iParam=0);
-		virtual int ReadInput(INPUT_RECORD *GetReadRec=nullptr);
+		virtual FarKey ReadInput(INPUT_RECORD *GetReadRec=nullptr);
 
 		void DeleteItems();
 		int  DeleteItem(int ID,int Count=1);

@@ -932,7 +932,7 @@ int64_t Panel::VMProcess(int OpCode,void *vParam,int64_t iParam)
 }
 
 // корректировка букв
-static DWORD _CorrectFastFindKbdLayout(INPUT_RECORD *rec,DWORD Key)
+static FarKey _CorrectFastFindKbdLayout(INPUT_RECORD *rec,FarKey Key)
 {
 	if ((Key&KEY_ALT))// && Key!=(KEY_ALT|0x3C))
 	{

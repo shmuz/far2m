@@ -2238,7 +2238,7 @@ int Dialog::LenStrItem(int ID, const wchar_t *lpwszStr)
 }
 
 
-int Dialog::ProcessMoveDialog(DWORD Key)
+int Dialog::ProcessMoveDialog(FarKey Key)
 {
 	CriticalSectionLock Lock(CS);
 

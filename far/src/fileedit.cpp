@@ -2647,7 +2647,7 @@ int FileEditor::EditorControl(int Command, void *Param)
 			if (Param)
 			{
 				INPUT_RECORD *rec=(INPUT_RECORD *)Param;
-				DWORD Key;
+				FarKey Key;
 
 				for (;;)
 				{

@@ -1474,7 +1474,7 @@ int Edit::ProcessKey(FarKey Key)
 int Edit::ProcessCtrlQ()
 {
 	INPUT_RECORD rec;
-	DWORD Key;
+	FarKey Key;
 
 	for (;;)
 	{

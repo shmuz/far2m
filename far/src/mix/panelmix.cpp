@@ -148,7 +148,7 @@ int CheckUpdateAnotherPanel(Panel *SrcPanel,const wchar_t *SelName)
 	return FALSE;
 }
 
-int _MakePath1(DWORD Key, FARString &strPathName, const wchar_t *Param2)
+int _MakePath1(FarKey Key, FARString &strPathName, const wchar_t *Param2)
 {
 	int RetCode=FALSE;
 	int NeedRealName=FALSE;

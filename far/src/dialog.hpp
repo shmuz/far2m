@@ -346,7 +346,7 @@ class Dialog: public Frame
 		unsigned InitDialogObjects(unsigned ID=(unsigned)-1);
 
 		int ProcessOpenComboBox(int Type,DialogItemEx *CurItem,unsigned CurFocusPos);
-		int ProcessMoveDialog(DWORD Key);
+		int ProcessMoveDialog(FarKey Key);
 
 		int Do_ProcessTab(int Next);
 		int Do_ProcessNextCtrl(int Next,BOOL IsRedraw=TRUE);

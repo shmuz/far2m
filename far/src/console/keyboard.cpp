@@ -142,7 +142,7 @@ static struct TTable_KeyToVK
 
 struct TFKey3
 {
-	DWORD Key;
+	FarKey Key;
 	int   Len;
 	const wchar_t *Name;
 	const wchar_t *UName;
@@ -1285,7 +1285,7 @@ FarKey GetInputRecord(INPUT_RECORD *rec, bool ExcludeMacro, bool ProcessMouse, b
 {
 	*rec = {};
 
-	DWORD Key = GetInputRecordImpl(rec, ExcludeMacro, ProcessMouse, AllowSynchro);
+	FarKey Key = GetInputRecordImpl(rec, ExcludeMacro, ProcessMouse, AllowSynchro);
 
 	if (CtrlObject && Key && !(Key >= KEY_OP_BASE && Key <= KEY_OP_ENDBASE))
 	{
@@ -1305,7 +1305,7 @@ FarKey GetInputRecord(INPUT_RECORD *rec, bool ExcludeMacro, bool ProcessMouse, b
 
 DWORD PeekInputRecord(INPUT_RECORD *rec,bool ExcludeMacro)
 {
-	DWORD Key;
+	FarKey Key;
 	ScrBuf.Flush();
 
 	if (KeyQueue && (Key=KeyQueue->Peek()) )
@@ -1505,7 +1505,7 @@ int CheckForEsc()
    ! дополнительный параметра у KeyToText - размер данных
    Size=0 - по максимуму!
 */
-static FARString &GetShiftKeyName(FARString &strName, DWORD Key,int& Len)
+static FARString &GetShiftKeyName(FARString &strName, FarKey Key,int& Len)
 {
 	if ((Key&KEY_RCTRL) == KEY_RCTRL)   strName += ModifKeyName[0].Name;
 	else if (Key&KEY_CTRL)              strName += ModifKeyName[2].Name;

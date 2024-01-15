@@ -632,7 +632,7 @@ void EditFileTypes()
 				MenuModified=false;
 			}
 
-			DWORD Key=TypesMenu.ReadInput();
+			FarKey Key=TypesMenu.ReadInput();
 			MenuPos=TypesMenu.GetSelectPos();
 
 			switch (Key)
