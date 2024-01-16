@@ -5760,43 +5760,41 @@ int Editor::EditorControl(int Command,void *Param)
 		}
 		// TODO: Если DI_MEMOEDIT не будет юзать раскаску, то должно выполняется в FileEditor::EditorControl(), в диалоге - нафиг ненать
 		case ECTL_ADDTRUECOLOR:
-		case ECTL_ADDCOLOR:
-		{
-			if (Param)
-			{
-				const EditorColor *col=(EditorColor *)Param;
+		case ECTL_ADDCOLOR: {
+			if (Param) {
+				const EditorColor *col = (EditorColor *)Param;
 				_ECTLLOG(SysLog(L"EditorColor{"));
-				_ECTLLOG(SysLog(L"  StringNumber=%d",col->StringNumber));
-				_ECTLLOG(SysLog(L"  ColorItem   =%d (0x%08X)",col->ColorItem,col->ColorItem));
-				_ECTLLOG(SysLog(L"  StartPos    =%d",col->StartPos));
-				_ECTLLOG(SysLog(L"  EndPos      =%d",col->EndPos));
-				_ECTLLOG(SysLog(L"  Color       =%d (0x%08X)",col->Color,col->Color));
+				_ECTLLOG(SysLog(L"  StringNumber=%d", col->StringNumber));
+				_ECTLLOG(SysLog(L"  ColorItem   =%d (0x%08X)", col->ColorItem, col->ColorItem));
+				_ECTLLOG(SysLog(L"  StartPos    =%d", col->StartPos));
+				_ECTLLOG(SysLog(L"  EndPos      =%d", col->EndPos));
+				_ECTLLOG(SysLog(L"  Color       =%d (0x%08X)", col->Color, col->Color));
 				_ECTLLOG(SysLog(L"}"));
-				ColorItem newcol{0};
-				newcol.StartPos=col->StartPos+(col->StartPos!=-1?X1:0);
-				newcol.EndPos=col->EndPos+X1;
-				newcol.Color=col->Color;
-				newcol.Flags=col->Color & 0xFFFF0000;
-				Edit *CurPtr=GetStringByNumber(col->StringNumber);
-
-				if (!CurPtr)
-				{
-					_ECTLLOG(SysLog(L"GetStringByNumber(%d) return nullptr",col->StringNumber));
+				Edit *CurPtr = GetStringByNumber(col->StringNumber);
+				if (!CurPtr) {
+					_ECTLLOG(SysLog(L"GetStringByNumber(%d) return nullptr", col->StringNumber));
 					return FALSE;
 				}
 
+				ColorItem newcol{0};
+				newcol.StartPos = col->StartPos + (col->StartPos != -1 ? X1 : 0);
 				if (!col->Color)
-					return(CurPtr->DeleteColor(newcol.StartPos));
+					return (CurPtr->DeleteColor(newcol.StartPos));
 
-				if (Command == ECTL_ADDTRUECOLOR)
-				{
+				if (col->EndPos >= 0) {
+					newcol.EndPos = col->EndPos + X1;
+				} else {
+					newcol.EndPos = CurPtr->GetLeftPos() + CurPtr->CellPosToReal(X2 - X1);//CurPtr->GetLength();
+				}
+				newcol.Color = col->Color;
+
+
+
+				if (Command == ECTL_ADDTRUECOLOR) {
 					const EditorTrueColor *tcol = (EditorTrueColor *)Param;
-					newcol.TrueFore = tcol->TrueColor.Fore;
-					newcol.TrueBack = tcol->TrueColor.Back;
+					FarTrueColorToAttributes(newcol.Color, tcol->TrueColor);
 				}
 				CurPtr->AddColor(&newcol);
-				if (col->Color&ECF_AUTODELETE)
-					m_AutoDeletedColors.emplace(&*CurPtr);
 				return TRUE;
 			}
 
@@ -5804,42 +5802,36 @@ int Editor::EditorControl(int Command,void *Param)
 		}
 		// TODO: Если DI_MEMOEDIT не будет юзать раскаску, то должно выполняется в FileEditor::EditorControl(), в диалоге - нафиг ненать
 		case ECTL_GETTRUECOLOR:
-		case ECTL_GETCOLOR:
-		{
-			if (Param)
-			{
-				EditorColor *col=(EditorColor *)Param;
-				Edit *CurPtr=GetStringByNumber(col->StringNumber);
+		case ECTL_GETCOLOR: {
+			if (Param) {
+				EditorColor *col = (EditorColor *)Param;
+				Edit *CurPtr = GetStringByNumber(col->StringNumber);
 
-				if (!CurPtr)
-				{
-					_ECTLLOG(SysLog(L"GetStringByNumber(%d) return nullptr",col->StringNumber));
+				if (!CurPtr) {
+					_ECTLLOG(SysLog(L"GetStringByNumber(%d) return nullptr", col->StringNumber));
 					return FALSE;
 				}
 
 				ColorItem curcol;
 
-				if (!CurPtr->GetColor(&curcol,col->ColorItem))
-				{
+				if (!CurPtr->GetColor(&curcol, col->ColorItem)) {
 					_ECTLLOG(SysLog(L"GetColor() return nullptr"));
 					return FALSE;
 				}
 
-				col->StartPos=curcol.StartPos-X1;
-				col->EndPos=curcol.EndPos-X1;
-				col->Color=curcol.Color;
-				if (Command == ECTL_GETTRUECOLOR)
-				{
+				col->StartPos = curcol.StartPos - X1;
+				col->EndPos = curcol.EndPos - X1;
+				col->Color = curcol.Color & 0xffff;
+				if (Command == ECTL_GETTRUECOLOR) {
 					EditorTrueColor *tcol = (EditorTrueColor *)Param;
-					tcol->TrueColor.Fore = curcol.TrueFore;
-					tcol->TrueColor.Back = curcol.TrueBack;
+					FarTrueColorFromAttributes(tcol->TrueColor, curcol.Color);
 				}
 				_ECTLLOG(SysLog(L"EditorColor{"));
-				_ECTLLOG(SysLog(L"  StringNumber=%d",col->StringNumber));
-				_ECTLLOG(SysLog(L"  ColorItem   =%d (0x%08X)",col->ColorItem,col->ColorItem));
-				_ECTLLOG(SysLog(L"  StartPos    =%d",col->StartPos));
-				_ECTLLOG(SysLog(L"  EndPos      =%d",col->EndPos));
-				_ECTLLOG(SysLog(L"  Color       =%d (0x%08X)",col->Color,col->Color));
+				_ECTLLOG(SysLog(L"  StringNumber=%d", col->StringNumber));
+				_ECTLLOG(SysLog(L"  ColorItem   =%d (0x%08X)", col->ColorItem, col->ColorItem));
+				_ECTLLOG(SysLog(L"  StartPos    =%d", col->StartPos));
+				_ECTLLOG(SysLog(L"  EndPos      =%d", col->EndPos));
+				_ECTLLOG(SysLog(L"  Color       =%d (0x%08X)", col->Color, col->Color));
 				_ECTLLOG(SysLog(L"}"));
 				return TRUE;
 			}

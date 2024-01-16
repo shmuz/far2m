@@ -66,7 +66,7 @@ struct ColorItem
 {
 	int StartPos;
 	int EndPos;
-	int Color;
+	DWORD64 Color;
 	FarTrueColor TrueFore;
 	FarTrueColor TrueBack;
 	bool TrueColorDefined;
