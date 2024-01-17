@@ -5787,8 +5787,7 @@ int Editor::EditorControl(int Command,void *Param)
 					newcol.EndPos = CurPtr->GetLeftPos() + CurPtr->CellPosToReal(X2 - X1);//CurPtr->GetLength();
 				}
 				newcol.Color = col->Color;
-
-
+				newcol.Flags = col->Color & 0xFFFF0000;
 
 				if (Command == ECTL_ADDTRUECOLOR) {
 					const EditorTrueColor *tcol = (EditorTrueColor *)Param;
