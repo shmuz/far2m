@@ -5795,6 +5795,8 @@ int Editor::EditorControl(int Command,void *Param)
 					FarTrueColorToAttributes(newcol.Color, tcol->TrueColor);
 				}
 				CurPtr->AddColor(&newcol);
+				if (col->Color & ECF_AUTODELETE)
+					m_AutoDeletedColors.emplace(&*CurPtr);
 				return TRUE;
 			}
 

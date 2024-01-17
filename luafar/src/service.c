@@ -1201,6 +1201,13 @@ DWORD FarTrueColorToRGB(const struct FarTrueColor *src)
 
 int editor_AddColor(lua_State *L)
 {
+	const uint32_t
+		MASK_COLOR  = 0x0000FFFF,
+		MASK_FLAGS  = ~MASK_COLOR,
+		MASK_ACTIVE = (0x1 << 24),
+		COLOR_WHITE = 0xFFFFFF,
+		COLOR_BLACK = 0x000000;
+
 	struct EditorTrueColor etc;
 	int Flags;
 	DWORD fg, bg;
@@ -1210,21 +1217,21 @@ int editor_AddColor(lua_State *L)
 	etc.Base.StringNumber = luaL_optinteger(L,2,0) - 1;
 	etc.Base.StartPos     = luaL_checkinteger(L,3) - 1;
 	etc.Base.EndPos       = luaL_checkinteger(L,4) - 1;
-	Flags                 = CheckFlags(L,5) & 0xFFFF0000;
+	Flags                 = CheckFlags(L,5) & MASK_FLAGS;
 	if (lua_istable(L,6))
 	{
 		lua_pushvalue(L,6);
 		{
-			etc.Base.Color = GetOptIntFromTable(L,"BaseColor",0) & 0x0000FFFF;
-			fg = GetOptIntFromTable(L,"TrueFore",0xFFFFFF) | (0x1 << 24);
-			bg = GetOptIntFromTable(L,"TrueBack",0x000000) | (0x1 << 24);
+			etc.Base.Color = GetOptIntFromTable(L,"BaseColor",0) & MASK_COLOR;
+			fg = GetOptIntFromTable(L,"TrueFore",COLOR_WHITE) | MASK_ACTIVE;
+			bg = GetOptIntFromTable(L,"TrueBack",COLOR_BLACK) | MASK_ACTIVE;
 			FarTrueColorFromRGB(&etc.TrueColor.Fore, fg, 1);
 			FarTrueColorFromRGB(&etc.TrueColor.Back, bg, 1);
 		}
 		lua_pop(L,1);
 	}
 	else
-		etc.Base.Color = luaL_optinteger(L,6,0) & 0x0000FFFF;
+		etc.Base.Color = luaL_optinteger(L,6,0) & MASK_COLOR;
 
 	etc.Base.Color |= Flags;
 
