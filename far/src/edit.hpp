@@ -67,9 +67,6 @@ struct ColorItem
 	int StartPos;
 	int EndPos;
 	DWORD64 Color;
-	FarTrueColor TrueFore;
-	FarTrueColor TrueBack;
-	bool TrueColorDefined;
 	unsigned int Flags;
 };
 

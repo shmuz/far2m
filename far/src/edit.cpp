@@ -2504,27 +2504,17 @@ void Edit::ApplyColor()
 	int Pos = INT_MIN, TabPos = INT_MIN, TabEditorPos = INT_MIN;
 
 	// Обрабатываем элементы ракраски
-	for (auto &CurItem : ColorList)
-	{
+	for (auto &CurItem : ColorList) {
 		// Пропускаем элементы у которых начало больше конца
 		if (CurItem.StartPos > CurItem.EndPos)
 			continue;
 
 		// Отсекаем элементы заведомо не попадающие на экран
-		if (CurItem.StartPos-LeftPos > X2 && CurItem.EndPos-LeftPos < X1)
+		if (CurItem.StartPos - LeftPos > X2 && CurItem.EndPos - LeftPos < X1)
 			continue;
 
 		DWORD64 Attr = CurItem.Color;
-		if (CurItem.TrueFore.Flags & 1)
-		{
-			SET_RGB_FORE(Attr, COMPOSE_RGB(CurItem.TrueFore.R, CurItem.TrueFore.G, CurItem.TrueFore.B));
-		}
-		if (CurItem.TrueBack.Flags & 1)
-		{
-			SET_RGB_BACK(Attr, COMPOSE_RGB(CurItem.TrueBack.R, CurItem.TrueBack.G, CurItem.TrueBack.B));
-		}
-
-		int Length = CurItem.EndPos - CurItem.StartPos+1;
+		int Length = CurItem.EndPos - CurItem.StartPos + 1;
 
 		if (CurItem.StartPos + Length >= StrSize)
 			Length = StrSize - CurItem.StartPos;
@@ -2532,25 +2522,26 @@ void Edit::ApplyColor()
 		// Получаем начальную позицию
 		int RealStart, Start;
 
-		// Если предыдущая позиция равна текущей, то ничего не вычисляем
-		// и сразу берём ранее вычисленное значение
-		if (Pos == CurItem.StartPos)
-		{
+		/*
+			Если предыдущая позиция равна текущей, то ничего не вычисляем
+			и сразу берём ранее вычисленное значение
+		*/
+		if (Pos == CurItem.StartPos) {
 			RealStart = TabPos;
 			Start = TabEditorPos;
 		}
-		// Если вычисление идёт первый раз или предыдущая позиция больше текущей,
-		// то производим вычисление с начала строки
-		else if (Pos == INT_MIN || CurItem.StartPos < Pos)
-		{
+		/*
+			Если вычисление идёт первый раз или предыдущая позиция больше текущей,
+			то производим вычисление с начала строки
+		*/
+		else if (Pos == INT_MIN || CurItem.StartPos < Pos) {
 			RealStart = RealPosToCell(CurItem.StartPos);
-			Start = RealStart-LeftPos;
+			Start = RealStart - LeftPos;
 		}
-		// Для отптимизации делаем вычисление относительно предыдущей позиции
-		else
-		{
+		// Для оптимизации делаем вычисление относительно предыдущей позиции
+		else {
 			RealStart = RealPosToCell(TabPos, Pos, CurItem.StartPos, nullptr);
-			Start = RealStart-LeftPos;
+			Start = RealStart - LeftPos;
 		}
 
 		// Запоминаем вычисленные значения для их дальнейшего повторного использования
@@ -2566,46 +2557,48 @@ void Edit::ApplyColor()
 		int CorrectPos = Attr & ECF_TAB1 ? 0 : 1;
 
 		if (!CorrectPos)
-			Attr &= ~ECF_TAB1;
+			Attr&= ~ECF_TAB1;
 
 		// Получаем конечную позицию
 		int EndPos = CurItem.EndPos;
 		int RealEnd, End;
 
-		// Обрабатываем случай, когда предыдущая позиция равна текущей, то есть
-		// длина раскрашиваемой строкии равна 1
-		if (Pos == EndPos)
-		{
-			// Если необходимо делать корректироку относительно табов и единственный
-			// символ строки -- это таб, то делаем расчёт с учтом корректировки,
-			// иначе ничего не вычисялем и берём старые значения
-			if (CorrectPos && EndPos < StrSize && Str[EndPos] == L'\t')
-			{
+		/*
+			Обрабатываем случай, когда предыдущая позиция равна текущей, то есть
+			длина раскрашиваемой строкии равна 1
+		*/
+		if (Pos == EndPos) {
+			/*
+				Если необходимо делать корректироку относительно табов и единственный
+				символ строки -- это таб, то делаем расчёт с учтом корректировки,
+				иначе ничего не вычисялем и берём старые значения
+			*/
+			if (CorrectPos && EndPos < StrSize && Str[EndPos] == L'\t') {
 				RealEnd = RealPosToCell(TabPos, Pos, ++EndPos, nullptr);
-				End = RealEnd-LeftPos;
-			}
-			else
-			{
+				End = RealEnd - LeftPos;
+			} else {
 				RealEnd = TabPos;
 				CorrectPos = 0;
 				End = TabEditorPos;
 			}
 		}
-		// Если предыдущая позиция больше текущей, то производим вычисление
-		// с начала строки (с учётом корректировки относительно табов)
-		else if (EndPos < Pos)
-		{
+		/*
+			Если предыдущая позиция больше текущей, то производим вычисление
+			с начала строки (с учётом корректировки относительно табов)
+		*/
+		else if (EndPos < Pos) {
 			RealEnd = RealPosToCell(0, 0, EndPos, &CorrectPos);
-			EndPos += CorrectPos;
-			End = RealEnd-LeftPos;
+			EndPos+= CorrectPos;
+			End = RealEnd - LeftPos;
 		}
-		// Для отптимизации делаем вычисление относительно предыдущей позиции (с учётом
-		// корректировки относительно табов)
-		else
-		{
+		/*
+			Для оптимизации делаем вычисление относительно предыдущей позиции (с учётом
+			корректировки относительно табов)
+		*/
+		else {
 			RealEnd = RealPosToCell(TabPos, Pos, EndPos, &CorrectPos);
-			EndPos += CorrectPos;
-			End = RealEnd-LeftPos;
+			EndPos+= CorrectPos;
+			End = RealEnd - LeftPos;
 		}
 
 		// Запоминаем вычисленные значения для их дальнейшего повторного использования
@@ -2625,23 +2618,16 @@ void Edit::ApplyColor()
 			End = X2;
 
 		// Устанавливаем длину раскрашиваемого элемента
-		Length = End-Start+1;
+		Length = End - Start + 1;
 
 		if (Length < X2)
-			Length -= CorrectPos;
+			Length-= CorrectPos;
 
 		// Раскрашиваем элемент, если есть что раскрашивать
-		if (Length > 0)
-		{
-			ScrBuf.ApplyColor(
-			    Start,
-			    Y1,
-			    Start+Length-1,
-			    Y1,
-			    Attr,
-			    // Не раскрашиваем выделение
-			    SelColor >= COL_FIRSTPALETTECOLOR ? Palette[SelColor-COL_FIRSTPALETTECOLOR] : SelColor
-			);
+		if (Length > 0) {
+			ScrBuf.ApplyColor(Start, Y1, Start + Length - 1, Y1, Attr,
+					// Не раскрашиваем выделение
+					SelColor >= COL_FIRSTPALETTECOLOR ? Palette[SelColor - COL_FIRSTPALETTECOLOR] : SelColor);
 		}
 	}
 }
