@@ -3235,17 +3235,17 @@ void EditControl::ShowCustomCompletionList(const std::vector<std::string> &list)
 
 void Edit::AutoDeleteColors()
 {
-	if (ColorList.empty())
-		return;
-
 	size_t Dest=0;
-
 	for (size_t Src=0; Src<ColorList.size(); Src++)
+	{
 		if (!(ColorList[Src].Flags & ECF_AUTODELETE))
 		{
-			ColorList[Dest++] = ColorList[Src];
-		}
+			if (Dest != Src)
+				ColorList[Dest] = ColorList[Src];
 
+			Dest++;
+		}
+	}
 	ColorList.resize(Dest);
 }
 

@@ -3173,7 +3173,7 @@ void Editor::DeleteString(Edit *DelPtr, int LineNumber, int DeleteLast,int UndoL
 	if (UndoLine!=-1)
 		AddUndoData(UNDO_DELSTR,DelPtr->GetStringAddr(),DelPtr->GetEOL(),UndoLine,0,DelPtr->GetLength());
 
-	m_AutoDeletedColors.erase(&*DelPtr); // why &* ?
+	m_AutoDeletedColors.erase(DelPtr);
 
 	delete DelPtr;
 }
@@ -5795,7 +5795,7 @@ int Editor::EditorControl(int Command,void *Param)
 				}
 				CurPtr->AddColor(&newcol);
 				if (col->Color & ECF_AUTODELETE)
-					m_AutoDeletedColors.emplace(&*CurPtr);
+					m_AutoDeletedColors.insert(CurPtr);
 				return TRUE;
 			}
 
@@ -7017,9 +7017,9 @@ void Editor::DrawScrollbar()
 
 void Editor::AutoDeleteColors()
 {
-	for (auto i=m_AutoDeletedColors.begin(); i != m_AutoDeletedColors.end(); i++)
+	for (auto line: m_AutoDeletedColors)
 	{
-		(*i)->AutoDeleteColors();
+		line->AutoDeleteColors();
 	}
 	m_AutoDeletedColors.clear();
 }
