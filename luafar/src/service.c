@@ -1203,42 +1203,49 @@ int editor_AddColor(lua_State *L)
 {
 	const uint32_t
 		MASK_COLOR  = 0x0000FFFF,
-		MASK_FLAGS  = ~MASK_COLOR,
 		MASK_ACTIVE = (0x1 << 24),
 		COLOR_WHITE = 0xFFFFFF,
 		COLOR_BLACK = 0x000000;
 
 	struct EditorTrueColor etc;
-	int Flags;
-	DWORD fg, bg;
-	int editorId = luaL_optinteger(L,1,-1);
+	int editorId, Flags, isTrueColor;
 
 	memset(&etc, 0, sizeof(etc));
+	editorId              = luaL_optinteger(L,1,-1);
 	etc.Base.StringNumber = luaL_optinteger(L,2,0) - 1;
 	etc.Base.StartPos     = luaL_checkinteger(L,3) - 1;
 	etc.Base.EndPos       = luaL_checkinteger(L,4) - 1;
-	Flags                 = CheckFlags(L,5) & MASK_FLAGS;
-	if (lua_istable(L,6))
+	Flags                 = CheckFlags(L,5);
+	isTrueColor           = lua_istable(L,6);
+
+	if (isTrueColor)
 	{
+		etc.Base.Color = 0x0F;
 		lua_pushvalue(L,6);
 		{
-			etc.Base.Color = GetOptIntFromTable(L,"BaseColor",0) & MASK_COLOR;
-			fg = GetOptIntFromTable(L,"TrueFore",COLOR_WHITE) | MASK_ACTIVE;
-			bg = GetOptIntFromTable(L,"TrueBack",COLOR_BLACK) | MASK_ACTIVE;
+			DWORD fg = GetOptIntFromTable(L,"TrueFore",COLOR_WHITE) | MASK_ACTIVE;
+			DWORD bg = GetOptIntFromTable(L,"TrueBack",COLOR_BLACK) | MASK_ACTIVE;
 			FarTrueColorFromRGB(&etc.TrueColor.Fore, fg, 1);
 			FarTrueColorFromRGB(&etc.TrueColor.Back, bg, 1);
 		}
 		lua_pop(L,1);
 	}
 	else
-		etc.Base.Color = luaL_optinteger(L,6,0) & MASK_COLOR;
+		etc.Base.Color = luaL_optinteger(L,6,0);
 
-	etc.Base.Color |= Flags;
+	etc.Base.Color &= MASK_COLOR;
+	etc.Base.Color |= (Flags & ~MASK_COLOR);
 
 	if (etc.Base.Color) // prevent color deletion
-		lua_pushboolean(L, PSInfo.EditorControlV2(editorId, ECTL_ADDTRUECOLOR, &etc));
+	{
+		if (isTrueColor)
+			lua_pushboolean(L, PSInfo.EditorControlV2(editorId, ECTL_ADDTRUECOLOR, &etc));
+		else
+			lua_pushboolean(L, PSInfo.EditorControlV2(editorId, ECTL_ADDCOLOR, &etc.Base));
+	}
 	else
 		lua_pushboolean(L,0);
+
 	return 1;
 }
 
