@@ -1231,11 +1231,10 @@ int editor_AddColor(lua_State *L)
 		lua_pop(L,1);
 	}
 	else
-		etc.Base.Color = luaL_optinteger(L,6,0);
+		etc.Base.Color = luaL_optinteger(L,6,0) & MASK_COLOR;
 
 	if (etc.Base.Color) // prevent color deletion
 	{
-		etc.Base.Color &= MASK_COLOR;
 		etc.Base.Color |= (Flags & ~MASK_COLOR);
 
 		if (isTrueColor)
