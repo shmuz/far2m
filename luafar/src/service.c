@@ -1233,11 +1233,11 @@ int editor_AddColor(lua_State *L)
 	else
 		etc.Base.Color = luaL_optinteger(L,6,0);
 
-	etc.Base.Color &= MASK_COLOR;
-	etc.Base.Color |= (Flags & ~MASK_COLOR);
-
 	if (etc.Base.Color) // prevent color deletion
 	{
+		etc.Base.Color &= MASK_COLOR;
+		etc.Base.Color |= (Flags & ~MASK_COLOR);
+
 		if (isTrueColor)
 			lua_pushboolean(L, PSInfo.EditorControlV2(editorId, ECTL_ADDTRUECOLOR, &etc));
 		else
