@@ -1220,11 +1220,13 @@ int editor_AddColor(lua_State *L)
 
 	if (isTrueColor)
 	{
-		etc.Base.Color = 0x0F;
+		DWORD fg, bg;
 		lua_pushvalue(L,6);
 		{
-			DWORD fg = GetOptIntFromTable(L,"TrueFore",COLOR_WHITE) | MASK_ACTIVE;
-			DWORD bg = GetOptIntFromTable(L,"TrueBack",COLOR_BLACK) | MASK_ACTIVE;
+			etc.Base.Color // may contain COMMON_LVB_UNDERSCORE, etc.
+			   = GetOptIntFromTable(L,"Attr",0) & MASK_COLOR;
+			fg = GetOptIntFromTable(L,"Fore",COLOR_WHITE) | MASK_ACTIVE;
+			bg = GetOptIntFromTable(L,"Back",COLOR_BLACK) | MASK_ACTIVE;
 			FarTrueColorFromRGB(&etc.TrueColor.Fore, fg, 1);
 			FarTrueColorFromRGB(&etc.TrueColor.Back, bg, 1);
 		}
@@ -1233,17 +1235,15 @@ int editor_AddColor(lua_State *L)
 	else
 		etc.Base.Color = luaL_optinteger(L,6,0) & MASK_COLOR;
 
-	if (etc.Base.Color) // prevent color deletion
-	{
-		etc.Base.Color |= (Flags & ~MASK_COLOR);
+	if (etc.Base.Color == 0) // prevent color deletion
+		etc.Base.Color = 0x0F;
 
-		if (isTrueColor)
-			lua_pushboolean(L, PSInfo.EditorControlV2(editorId, ECTL_ADDTRUECOLOR, &etc));
-		else
-			lua_pushboolean(L, PSInfo.EditorControlV2(editorId, ECTL_ADDCOLOR, &etc.Base));
-	}
+	etc.Base.Color |= (Flags & ~MASK_COLOR);
+
+	if (isTrueColor)
+		lua_pushboolean(L, PSInfo.EditorControlV2(editorId, ECTL_ADDTRUECOLOR, &etc));
 	else
-		lua_pushboolean(L,0);
+		lua_pushboolean(L, PSInfo.EditorControlV2(editorId, ECTL_ADDCOLOR, &etc.Base));
 
 	return 1;
 }
