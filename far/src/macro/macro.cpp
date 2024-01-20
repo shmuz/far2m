@@ -475,6 +475,7 @@ public:
 	int editorundoFunc();
 	int environFunc();
 	int farcfggetFunc();           //not implemented
+	int farcfgsetFunc();           //not implemented
 	int fargetconfigFunc();
 	int fattrFunc();
 	int fexistFunc();
@@ -1244,6 +1245,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		//case MCODE_F_USERMENU:         not_implemented;
 
 		case MCODE_F_FAR_CFG_GET:        return api.farcfggetFunc();
+		case MCODE_F_CHR:                return api.farcfgsetFunc();
 
 		case MCODE_F_SETCUSTOMSORTMODE:
 			if (Data->Count>=3 && Data->Values[0].Type==FMVT_DOUBLE  &&
@@ -2337,45 +2339,66 @@ int FarMacroApi::fargetconfigFunc()
 	return 0;
 }
 
-// V=Far.CfgGet(Index)
+// V=Far.Cfg_Get(Index)
 int FarMacroApi::farcfggetFunc()
 {
 	auto Params = parseParams(1);
-	const auto Index = static_cast<unsigned>(Params[0].asInteger()) - 1;
+	auto Index = static_cast<size_t>(Params[0].asInteger()) - 1;
+	GetConfig Data;
 
-	DWORD dwValue0, dwValue;
-	const void *binValue;
-	FARString Key, Name;
-	FARString strValue0, strValue;
-
-	int Ret = GetConfigValue(Index, Key, Name, dwValue0, strValue0, dwValue, strValue, &binValue);
-	if (Ret == REG_NONE)
+	bool Ret = GetConfigValue(Index, Data);
+	if (!Ret)
 	{
 		PassBoolean(0);
 		return 0;
 	}
 
-	PassString(Key);
-	PassString(Name);
+	PassString(Data.Key);
+	PassString(Data.Name);
 
-	switch(Ret)
+	switch(Data.Type)
 	{
 		case REG_DWORD:
 			PassString(L"integer");
-			PassNumber(dwValue0);
-			PassNumber(dwValue);
+			PassNumber(Data.dwDefault);
+			PassNumber(Data.dwValue);
 			break;
 		case REG_SZ:
 			PassString(L"string");
-			PassString(strValue0);
-			PassString(strValue);
+			PassString(Data.strDefault);
+			PassString(Data.strValue);
 			break;
 		case REG_BINARY:
 			PassString(L"binary");
-			PassBinary(binValue, dwValue);
+			PassBinary(Data.binData, Data.dwValue);
 			break;
 	}
 
+	return 0;
+}
+
+// Ok=Far.Cfg_Set(Index,Value)
+int FarMacroApi::farcfgsetFunc()
+{
+	bool Res = false;
+
+	if (mData->Count >= 2 && mData->Values[0].Type==FMVT_DOUBLE)
+	{
+		auto Index = static_cast<size_t>(mData->Values[0].Double - 1);
+		switch (mData->Values[1].Type)
+		{
+			case FMVT_DOUBLE:
+				Res = SetConfigValue(Index, static_cast<DWORD>(mData->Values[1].Double));
+				break;
+			case FMVT_STRING:
+				Res = SetConfigValue(Index, mData->Values[1].String);
+				break;
+			default:
+				break;
+		}
+	}
+
+	PassBoolean(Res ? 1 : 0);
 	return 0;
 }
 

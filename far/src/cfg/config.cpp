@@ -1373,29 +1373,49 @@ int GetConfigValue(const wchar_t *wKey, const wchar_t *wName, DWORD &dwValue, FA
 	return REG_NONE;
 }
 
-int GetConfigValue(size_t I, FARString& wKey, FARString& wName,
-	DWORD &dwValue0, FARString &strValue0, DWORD &dwValue, FARString &strValue,
-	const void **binData)
+bool GetConfigValue(size_t I, GetConfig& Data)
 {
 	if (I < ARRAYSIZE(CFG))
 	{
-		wKey = CFG[I].KeyName;
-		wName = CFG[I].ValName;
+		Data.Type = CFG[I].ValType;
+		Data.Key = CFG[I].KeyName;
+		Data.Name = CFG[I].ValName;
 		switch (CFG[I].ValType)
 		{
 			case REG_DWORD:
-				dwValue0 = CFG[I].DefDWord;
-				dwValue = *(unsigned int *)CFG[I].ValPtr;
-				return REG_DWORD;
+				Data.dwDefault = CFG[I].DefDWord;
+				Data.dwValue = *(unsigned int *)CFG[I].ValPtr;
+				break;
 			case REG_SZ:
-				strValue0 = *CFG[I].DefStr;
-				strValue = *CFG[I].StrPtr;
-				return REG_SZ;
+				Data.strDefault = CFG[I].DefStr;
+				Data.strValue = *CFG[I].StrPtr;
+				break;
 			case REG_BINARY:
-				*binData = CFG[I].ValPtr;
-				dwValue = CFG[I].DefDWord;
-				return REG_BINARY;
+				Data.binData = CFG[I].ValPtr;
+				Data.dwValue = CFG[I].DefDWord;
+				break;
 		}
+		return true;
 	}
-	return REG_NONE;
+	return false;
+}
+
+bool SetConfigValue(size_t I, DWORD Value)
+{
+	if (I < ARRAYSIZE(CFG) && CFG[I].ValType == REG_DWORD)
+	{
+		*(unsigned int *)CFG[I].ValPtr = Value;
+		return true;
+	}
+	return false;
+}
+
+bool SetConfigValue(size_t I, const wchar_t *Value)
+{
+	if (I < ARRAYSIZE(CFG) && CFG[I].ValType == REG_SZ)
+	{
+		*CFG[I].StrPtr = Value;
+		return true;
+	}
+	return false;
 }
