@@ -618,3 +618,7 @@ void InfoPanelSettings();
 void AutoCompleteSettings();
 void LanguageSettings();
 int GetConfigValue(const wchar_t *wKey, const wchar_t *wName, DWORD &dwValue, FARString &strValue, const void **binData);
+//int GetConfigValue(size_t I, const char **wKey, const char **wName,	DWORD &dwValue, FARString &strValue, const void **binData);
+int GetConfigValue(size_t I, FARString& wKey, FARString& wName,
+	DWORD &dwValue0, FARString &strValue0, DWORD &dwValue, FARString &strValue,
+	const void **binData);

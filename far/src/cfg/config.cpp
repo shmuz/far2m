@@ -1372,3 +1372,30 @@ int GetConfigValue(const wchar_t *wKey, const wchar_t *wName, DWORD &dwValue, FA
 	}
 	return REG_NONE;
 }
+
+int GetConfigValue(size_t I, FARString& wKey, FARString& wName,
+	DWORD &dwValue0, FARString &strValue0, DWORD &dwValue, FARString &strValue,
+	const void **binData)
+{
+	if (I < ARRAYSIZE(CFG))
+	{
+		wKey = CFG[I].KeyName;
+		wName = CFG[I].ValName;
+		switch (CFG[I].ValType)
+		{
+			case REG_DWORD:
+				dwValue0 = CFG[I].DefDWord;
+				dwValue = *(unsigned int *)CFG[I].ValPtr;
+				return REG_DWORD;
+			case REG_SZ:
+				strValue0 = *CFG[I].DefStr;
+				strValue = *CFG[I].StrPtr;
+				return REG_SZ;
+			case REG_BINARY:
+				*binData = CFG[I].ValPtr;
+				dwValue = CFG[I].DefDWord;
+				return REG_BINARY;
+		}
+	}
+	return REG_NONE;
+}

@@ -524,6 +524,7 @@ SetProperties(Menu, {
 --------------------------------------------------------------------------------
 
 Far = {
+  Cfg_Get        = function(...) return MacroCallFar(op.MCODE_F_FAR_CFG_GET, ...) end,
   GetConfig      = function(...) return MacroCallFar(op.MCODE_F_FAR_GETCONFIG, ...) end,
   DisableHistory = function(...) return Shared.keymacro.DisableHistory(...) end,
   KbdLayout      = function(...) return MacroCallFar(op.MCODE_F_KBDLAYOUT, ...) end,

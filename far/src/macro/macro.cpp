@@ -1242,7 +1242,8 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		//case MCODE_F_EDITOR_SETSTR:    implemented_in_lua;
 		//case MCODE_F_MENU_SHOW:        implemented_in_lua_partially;
 		//case MCODE_F_USERMENU:         not_implemented;
-		//case MCODE_F_FAR_CFG_GET:      not implemented
+
+		case MCODE_F_FAR_CFG_GET:        return api.farcfggetFunc();
 
 		case MCODE_F_SETCUSTOMSORTMODE:
 			if (Data->Count>=3 && Data->Values[0].Type==FMVT_DOUBLE  &&
@@ -2332,6 +2333,48 @@ int FarMacroApi::fargetconfigFunc()
 	}
 	else
 		PassError(L"invalid argument #1");
+
+	return 0;
+}
+
+// V=Far.CfgGet(Index)
+int FarMacroApi::farcfggetFunc()
+{
+	auto Params = parseParams(1);
+	const auto Index = static_cast<unsigned>(Params[0].asInteger()) - 1;
+
+	DWORD dwValue0, dwValue;
+	const void *binValue;
+	FARString Key, Name;
+	FARString strValue0, strValue;
+
+	int Ret = GetConfigValue(Index, Key, Name, dwValue0, strValue0, dwValue, strValue, &binValue);
+	if (Ret == REG_NONE)
+	{
+		PassBoolean(0);
+		return 0;
+	}
+
+	PassString(Key);
+	PassString(Name);
+
+	switch(Ret)
+	{
+		case REG_DWORD:
+			PassString(L"integer");
+			PassNumber(dwValue0);
+			PassNumber(dwValue);
+			break;
+		case REG_SZ:
+			PassString(L"string");
+			PassString(strValue0);
+			PassString(strValue);
+			break;
+		case REG_BINARY:
+			PassString(L"binary");
+			PassBinary(binValue, dwValue);
+			break;
+	}
 
 	return 0;
 }
