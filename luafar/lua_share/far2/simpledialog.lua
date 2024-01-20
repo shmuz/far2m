@@ -278,7 +278,8 @@ function mod:Run()
   local inData = self.Items
   inData.flags = inData.flags or 0
   assert(type(inData.flags)=="number", "'Data.flags' must be a number")
-  local HMARGIN = (0 == band(inData.flags,F.FDLG_SMALLDIALOG)) and 3 or 0 -- horisontal margin
+  local HMARGIN = (0 ~= band(inData.flags,F.FDLG_SMALLDIALOG)) and 0
+    or (#inData==1 and inData[1].tp=="listbox") and 1 or 3              -- horisontal margin
   local VMARGIN = (0 == band(inData.flags,F.FDLG_SMALLDIALOG)) and 1 or 0 -- vertical margin
   local guid = inData.guid and win.Uuid(inData.guid) or ("\0"):rep(16)
   local W = inData.width or 76
