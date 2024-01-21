@@ -257,7 +257,6 @@ struct DialogsOptions
 	int   EditHistory;          // Добавлять в историю?
 	int   AutoComplete;         // Разрешено автодополнение?
 	int   EULBsClear;           // = 1 - BS в диалогах для UnChanged строки удаляет такую строку также, как и Del
-	int   SelectFromHistory;    // = 0 then (ctrl-down в строке с историей курсор устанавливался на самую верхнюю строку)
 	DWORD EditLine;             // общая информация о строке ввода (сейчас это пока... позволяет управлять выделением)
 	int   MouseButton;          // Отключение восприятия правой/левой кнопки мыши как команд закрытия окна диалога
 	int   DelRemovesBlocks;
@@ -288,13 +287,6 @@ struct CommandLineOptions
 struct NowellOptions
 {
 	int MoveRO;               // перед операцией Move снимать R/S/H атрибуты, после переноса - выставлять обратно
-};
-
-struct ScreenSizes
-{
-	COORD DeltaXY;            // на сколько поз. изменить размеры для распахнутого экрана
-	int WScreenSizeSet;
-	COORD WScreenSize[4];
 };
 
 struct LoadPluginsOptions
@@ -578,7 +570,6 @@ struct Options
 	CommandLineOptions CmdLine;
 	PoliciesOptions Policies;
 	NowellOptions Nowell;
-	ScreenSizes ScrSize;
 	MacroOptions Macro;
 
 	int FindCodePage;

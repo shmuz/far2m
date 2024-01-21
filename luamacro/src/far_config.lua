@@ -1,5 +1,7 @@
 local sd = require"far2.simpledialog"
 local F = far.Flags
+local band, bor, bnot = bit64.band, bit64.bor, bit64.bnot
+local Hidden -- the options having default values are hidden
 local items = {
   guid=far.Guids.AdvancedConfigId;
   { tp="dbox"; text="Configuration editor"; },
@@ -53,11 +55,13 @@ items.proc = function(hDlg, msg, p1, p2)
   elseif msg == F.DN_RESIZECONSOLE then
     --hDlg:MoveDialog(true, {X=-1, Y=-1}) -- crashes Far when pressing Esc
     hDlg:MoveDialog(1, {X=-1, Y=-1})
-  elseif msg == F.DN_KEY and (p2 == F.KEY_ENTER or p2 == F.KEY_NUMENTER)  or
+  elseif msg == F.DN_KEY and (p2 == F.KEY_ENTER or p2 == F.KEY_NUMENTER or p2 == F.KEY_F4)  or
          msg == F.DN_MOUSECLICK and p2.EventFlags == F.DOUBLE_CLICK then
     Op = "edit"
   elseif msg == F.DN_KEY and p2 == F.KEY_DEL then
     Op = "reset"
+  elseif msg == F.DN_KEY and p2 == F.KEY_CTRLH then
+    Op = "hide"
   end
   if Op == "edit" or Op == "reset" then
     local data = hDlg:ListGetCurPos(posList)
@@ -90,6 +94,33 @@ items.proc = function(hDlg, msg, p1, p2)
         hDlg:ListSetCurPos(posList, data)
       end
     end
+  elseif Op == "hide" then
+    Hidden = not Hidden
+    hDlg:EnableRedraw(false)
+    for i=1,math.huge do
+      local item = hDlg:ListGetItem(posList, i)
+      if not item then break end
+      local updating = false
+      if Hidden and 0==band(item.Flags, F.LIF_CHECKED) then
+        updating = true
+        item.Flags = bor(item.Flags, F.LIF_HIDDEN)
+      elseif not Hidden and 0~=band(item.Flags, F.LIF_HIDDEN) then
+        updating = true
+        item.Flags = band(item.Flags, bnot(F.LIF_HIDDEN))
+      end
+      if updating then
+        item.Index = i
+        hDlg:ListUpdate(posList, item)
+      end
+    end
+    ----------------------------------------------------------------------------------
+    -- a workaround for case when the listbox has enough height to show all the itens
+    -- but shows only part of them due to trying to preserve the old TopPos
+    local data = hDlg:ListGetCurPos(posList)
+    data.TopPos = 1
+    hDlg:ListSetCurPos(posList, data)
+    ----------------------------------------------------------------------------------
+    hDlg:EnableRedraw(true)
   end
 end
 
