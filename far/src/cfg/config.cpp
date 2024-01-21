@@ -745,6 +745,8 @@ static struct FARConfig
 		IsSave(save),ValType(REG_BINARY),KeyName(key),ValName(val),ValPtr(trg),DefDWord(size),DefArr(dflt) {}
 	constexpr FARConfig(int save, const char *key, const char *val, void *trg, DWORD dflt) :
 		IsSave(save),ValType(REG_DWORD),KeyName(key),ValName(val),ValPtr(trg),DefDWord(dflt),DefStr(nullptr) {}
+	constexpr FARConfig(int save, const char *key, const char *val, void *trg, DWORD dflt, DWORD Type) :
+		IsSave(save),ValType(Type),KeyName(key),ValName(val),ValPtr(trg),DefDWord(dflt),DefStr(nullptr) {}
 	constexpr FARConfig(int save, const char *key, const char *val, FARString *trg, const wchar_t *dflt) :
 		IsSave(save),ValType(REG_SZ),KeyName(key),ValName(val),StrPtr(trg),DefDWord(0),DefStr(dflt) {}
 
@@ -759,14 +761,14 @@ static struct FARConfig
 	{1, NSecScreen, "ScreenSaverTime",              &Opt.ScreenSaverTime, 5},
 	{0, NSecScreen, "DeltaXY",                      &Opt.ScrSize.DeltaXY, 0},
 
-	{1, NSecCmdline, "UsePromptFormat",             &Opt.CmdLine.UsePromptFormat, 0},
+	{1, NSecCmdline, "UsePromptFormat",             &Opt.CmdLine.UsePromptFormat, 0, REG_BOOLEAN},
 	{1, NSecCmdline, "PromptFormat",                &Opt.CmdLine.strPromptFormat, L"$p$# "},
-	{1, NSecCmdline, "UseShell",                    &Opt.CmdLine.UseShell, 0},
+	{1, NSecCmdline, "UseShell",                    &Opt.CmdLine.UseShell, 0, REG_BOOLEAN},
 	{1, NSecCmdline, "Shell",                       &Opt.CmdLine.strShell, L"/bin/bash"},
-	{1, NSecCmdline, "DelRemovesBlocks",            &Opt.CmdLine.DelRemovesBlocks, 1},
-	{1, NSecCmdline, "EditBlock",                   &Opt.CmdLine.EditBlock, 0},
-	{1, NSecCmdline, "AutoComplete",                &Opt.CmdLine.AutoComplete, 1},
-	{1, NSecCmdline, "Splitter",                    &Opt.CmdLine.Splitter, 1},
+	{1, NSecCmdline, "DelRemovesBlocks",            &Opt.CmdLine.DelRemovesBlocks, 1, REG_BOOLEAN},
+	{1, NSecCmdline, "EditBlock",                   &Opt.CmdLine.EditBlock, 0, REG_BOOLEAN},
+	{1, NSecCmdline, "AutoComplete",                &Opt.CmdLine.AutoComplete, 1, REG_BOOLEAN},
+	{1, NSecCmdline, "Splitter",                    &Opt.CmdLine.Splitter, 1, REG_BOOLEAN},
 	{1, NSecCmdline, "WaitKeypress",                &Opt.CmdLine.WaitKeypress, 1},
 	{1, NSecCmdline, "VTLogLimit",                  &Opt.CmdLine.VTLogLimit, 5000},
 
@@ -1088,6 +1090,8 @@ void ReadConfig()
 		switch (CFG[I].ValType)
 		{
 			case REG_DWORD:
+			case REG_BOOLEAN:
+			case REG_3STATE:
 				if ((int *)CFG[I].ValPtr == &Opt.Confirm.Exit) {
 					// when background mode available then exit dialog allows also switch to background
 					// so saved settings must differ for that two modes
@@ -1294,6 +1298,8 @@ void SaveConfig(int Ask)
 			switch (CFG[I].ValType)
 			{
 				case REG_DWORD:
+				case REG_BOOLEAN:
+				case REG_3STATE:
 					cfg_writer.SetUInt(CFG[I].ValName, *(unsigned int *)CFG[I].ValPtr);
 					break;
 				case REG_SZ:
@@ -1358,6 +1364,8 @@ int GetConfigValue(const wchar_t *wKey, const wchar_t *wName, DWORD &dwValue, FA
 			switch (CFG[I].ValType)
 			{
 				case REG_DWORD:
+				case REG_BOOLEAN:
+				case REG_3STATE:
 					dwValue = *(unsigned int *)CFG[I].ValPtr;
 					return REG_DWORD;
 				case REG_SZ:
@@ -1383,6 +1391,8 @@ bool GetConfigValue(size_t I, GetConfig& Data)
 		switch (CFG[I].ValType)
 		{
 			case REG_DWORD:
+			case REG_BOOLEAN:
+			case REG_3STATE:
 				Data.dwDefault = CFG[I].DefDWord;
 				Data.dwValue = *(unsigned int *)CFG[I].ValPtr;
 				break;
@@ -1402,10 +1412,16 @@ bool GetConfigValue(size_t I, GetConfig& Data)
 
 bool SetConfigValue(size_t I, DWORD Value)
 {
-	if (I < ARRAYSIZE(CFG) && CFG[I].ValType == REG_DWORD)
+	if (I < ARRAYSIZE(CFG))
 	{
-		*(unsigned int *)CFG[I].ValPtr = Value;
-		return true;
+		switch(CFG[I].ValType)
+		{
+			case REG_DWORD:
+			case REG_BOOLEAN:
+			case REG_3STATE:
+				*(unsigned int *)CFG[I].ValPtr = Value;
+				return true;
+		}
 	}
 	return false;
 }

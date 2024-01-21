@@ -2363,6 +2363,16 @@ int FarMacroApi::farcfggetFunc()
 			PassNumber(Data.dwDefault);
 			PassNumber(Data.dwValue);
 			break;
+		case REG_BOOLEAN:
+			PassString(L"boolean");
+			PassNumber(Data.dwDefault);
+			PassNumber(Data.dwValue);
+			break;
+		case REG_3STATE:
+			PassString(L"3-state");
+			PassNumber(Data.dwDefault);
+			PassNumber(Data.dwValue);
+			break;
 		case REG_SZ:
 			PassString(L"string");
 			PassString(Data.strDefault);

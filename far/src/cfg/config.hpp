@@ -619,8 +619,11 @@ void AutoCompleteSettings();
 void LanguageSettings();
 int GetConfigValue(const wchar_t *wKey, const wchar_t *wName, DWORD &dwValue, FARString &strValue, const void **binData);
 
+#define REG_BOOLEAN 0x100
+#define REG_3STATE  0x101
+
 struct GetConfig {
-	int Type;
+	DWORD Type;
 	FARString Key;
 	FARString Name;
 	DWORD dwDefault;
