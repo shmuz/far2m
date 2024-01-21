@@ -2,18 +2,17 @@ local sd = require"far2.simpledialog"
 local F = far.Flags
 local band, bor, bnot = bit64.band, bit64.bor, bit64.bnot
 local Hidden -- the options having default values are hidden
+
 local items = {
   guid=far.Guids.AdvancedConfigId;
-  { tp="dbox"; text="Configuration editor"; },
-  { tp="listbox"; y1=2; x1=4; list={}; listnoclose=1; listnobox=1; },
+  { tp="listbox"; list={}; listnoclose=1; text="Configuration editor"; },
 }
-local posBox, posList = 1, 2
+local posList = 1
 
 local r = actl.GetFarRect()
-items.width = r.Right - r.Left - 5
-items[posBox].width = r.Right - r.Left - 9
-items[posBox].height = r.Bottom - r.Top - 4
-items[posList].height = items[posBox].height - 2
+items.width = r.Right - r.Left - 4
+--items[posList].width = r.Right - r.Left - 9
+items[posList].height = r.Bottom - r.Top - 4
 
 local list = items[posList].list
 
@@ -21,27 +20,31 @@ local function MakeItem(idx)
   local key,name,tp,val0,val = Far.Cfg_Get(idx)
   if key then
     local txt = ("%-42s│%-8s│"):format(key.."."..name, tp)
-    if tp == "integer" or tp == "string" or tp == "boolean" then
+    if tp == "integer" or tp == "string" or tp == "boolean" or tp == "3-state" then
       if tp == "integer" then
         txt = ("%s%d = 0x%X"):format(txt, val, val)
       elseif tp == "string" then
         txt = txt .. val
       elseif tp == "boolean" then
         txt = txt .. (val == 0 and "false" or "true")
+      elseif tp == "3-state" then
+        local num = val % 3
+        txt = txt .. (num==0 and "false" or num==1 and "true" or "other")
       end
       local item = { Text=txt; configIndex=idx; Flags=0; }
       if val ~= val0 then item.Flags = F.LIF_CHECKED + string.byte"*"; end
       return item
     else
-      return "other"
+      return "none"
     end
   end
 end
 
 for i=1,math.huge do
   local item = MakeItem(i)
-  if not item then break end
-  if type(item) == "table" then
+  if not item then
+    break
+  elseif type(item) == "table" then
     table.insert(list, item)
   end
 end
@@ -73,6 +76,8 @@ items.proc = function(hDlg, msg, p1, p2)
       if Op == "edit" then
         if tp == "boolean" then
           ok = Far.Cfg_Set(idx, val==0 and 1 or 0)
+        elseif tp == "3-state" then
+          ok = Far.Cfg_Set(idx, (val + 1) % 3)
         else
           local str = far.InputBox (nil, "", ("%s.%s (%s)"):format(key,name,tp),
             nil, tostring(val), nil, "HelpTopic", nil)

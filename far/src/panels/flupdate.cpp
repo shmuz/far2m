@@ -547,7 +547,7 @@ void FileList::CreateChangeNotification(int CheckTree)
 		DriveType=FAR_GetDriveType(RootDir);
 	}
 
-	if (Opt.AutoUpdateRemoteDrive || (!Opt.AutoUpdateRemoteDrive && DriveType != DRIVE_REMOTE))
+	if (Opt.AutoUpdateRemoteDrive || (DriveType != DRIVE_REMOTE))
 	{
 		ListChange.reset();
 		ListChange.reset(IFSNotify_Create(strCurDir.GetMB(), CheckTree != FALSE, FSNW_NAMES_AND_STATS));

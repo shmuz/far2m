@@ -284,11 +284,6 @@ struct CommandLineOptions
 	FARString strShell;
 };
 
-struct NowellOptions
-{
-	int MoveRO;               // перед операцией Move снимать R/S/H атрибуты, после переноса - выставлять обратно
-};
-
 struct LoadPluginsOptions
 {
 //  DWORD TypeLoadPlugins;       // see TYPELOADPLUGINSOPTIONS
@@ -424,7 +419,7 @@ struct Options
 	int AutoSaveSetup;
 	int SetupArgv; // количество каталогов в ком.строке ФАРа
 	int ChangeDriveMode;
-	int ChangeDriveDisconnetMode;
+	int ChangeDriveDisconnectMode;
 	FARString ChangeDriveExceptions;
 	FARString ChangeDriveColumn2, ChangeDriveColumn3;
 
@@ -548,13 +543,6 @@ struct Options
 	int PgUpChangeDisk;
 	int ShowCheckingFile;
 
-	DWORD LCIDSort;
-	int RestoreCPAfterExecute;
-	int ExecuteShowErrorMessage;
-	int ExecuteUseAppPath;
-	int ExecuteFullTitle;
-	int ExecuteSilentExternal;
-
 	DWORD PluginMaxReadData;
 	int ScanJunction;
 	int OnlyFilesSize;
@@ -569,7 +557,6 @@ struct Options
 	VMenuOptions VMenu;
 	CommandLineOptions CmdLine;
 	PoliciesOptions Policies;
-	NowellOptions Nowell;
 	MacroOptions Macro;
 
 	int FindCodePage;
