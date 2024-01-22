@@ -43,7 +43,7 @@ local function EditValue(asHex, key, name, tp, val0, val)
     {tp="butt"; centergroup=1;            text="Reset"; },   -- 6
     {tp="butt"; centergroup=1; cancel=1;  text="Cancel"; },  -- 7
   }
-  local posEdit, posOK, posReset = 3, 5, 6
+  local posEdit, posOK = 3, 5
 
   if asHex and tp == "integer" then
     items[posEdit] = {tp="fixedit"; mask="0xHHHHHHHH"; val=("%X"):format(val); }
@@ -184,4 +184,4 @@ local function FarConfig()
   sd.New(items):Run()
 end
 
-FarConfig()
+return FarConfig

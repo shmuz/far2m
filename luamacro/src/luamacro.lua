@@ -361,6 +361,7 @@ local function Open_CommandLine (strCmdLine)
     elseif cmd == "save" then utils.WriteMacros()
     elseif cmd == "unload" then utils.UnloadMacros()
     elseif cmd == "about" then About()
+    elseif cmd == "farconfig" then require("far2.far_config")()
     elseif cmd ~= "" then ErrMsg(Msg.CL_UnsupportedCommand .. cmd) end
   ----------------------------------------------------------------------------
   elseif prefix == "lua" or prefix == "moon" or prefix == "luas" or prefix == "moons" then
