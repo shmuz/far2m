@@ -2309,26 +2309,23 @@ int FarMacroApi::fargetconfigFunc()
 	auto Dot = wcsrchr(Keyname, L'.');
 	if (Dot)
 	{
-		DWORD dwValue;
-		FARString strValue;
-		const void *binValue;
-
 		FARString Key(Keyname, Dot - Keyname);
-		switch( GetConfigValue(Key.CPtr(), Dot+1, dwValue, strValue, &binValue) )
+		GetConfig Data;
+		switch( GetConfigValue(Key.CPtr(), Dot+1, Data) )
 		{
 			default:
 				PassError(L"setting doesn't exist");
 				break;
 			case REG_DWORD:
-				PassNumber(dwValue);
+				PassNumber(Data.dwValue);
 				PassString(L"integer");
 				break;
 			case REG_SZ:
-				PassString(strValue);
+				PassString(Data.strValue);
 				PassString(L"string");
 				break;
 			case REG_BINARY:
-				PassBinary(binValue, dwValue);
+				PassBinary(Data.binData, Data.binSize);
 				PassString(L"binary");
 				break;
 		}
@@ -2380,7 +2377,8 @@ int FarMacroApi::farcfggetFunc()
 			break;
 		case REG_BINARY:
 			PassString(L"binary");
-			PassBinary(Data.binData, Data.dwValue);
+			PassBinary(Data.binDefault, Data.binSize);
+			PassBinary(Data.binData, Data.binSize);
 			break;
 	}
 
@@ -2402,6 +2400,9 @@ int FarMacroApi::farcfgsetFunc()
 				break;
 			case FMVT_STRING:
 				Res = SetConfigValue(Index, mData->Values[1].String);
+				break;
+			case FMVT_BINARY:
+				Res = SetConfigValue(Index, mData->Values[1].Binary.Data, mData->Values[1].Binary.Size);
 				break;
 			default:
 				break;

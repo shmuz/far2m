@@ -595,7 +595,6 @@ void SetFolderInfoFiles();
 void InfoPanelSettings();
 void AutoCompleteSettings();
 void LanguageSettings();
-int GetConfigValue(const wchar_t *wKey, const wchar_t *wName, DWORD &dwValue, FARString &strValue, const void **binData);
 
 #define REG_BOOLEAN 0x100
 #define REG_3STATE  0x101
@@ -604,13 +603,20 @@ struct GetConfig {
 	DWORD Type;
 	FARString Key;
 	FARString Name;
+
 	DWORD dwDefault;
 	DWORD dwValue;
+
 	FARString strDefault;
 	FARString strValue;
+
+	const void *binDefault;
 	const void *binData;
+	DWORD binSize;
 };
 
+int  GetConfigValue(const wchar_t *wKey, const wchar_t *wName, GetConfig& Data);
 bool GetConfigValue(size_t Index, GetConfig& Data);
 bool SetConfigValue(size_t Index, DWORD Value);
 bool SetConfigValue(size_t Index, const wchar_t *Value);
+bool SetConfigValue(size_t Index, const void *Data, DWORD Size);

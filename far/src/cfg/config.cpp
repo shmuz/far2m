@@ -1337,7 +1337,7 @@ void LanguageSettings()
 	delete LangMenu; //???? BUGBUG
 }
 
-int GetConfigValue(const wchar_t *wKey, const wchar_t *wName, DWORD &dwValue, FARString &strValue, const void **binData)
+int GetConfigValue(const wchar_t *wKey, const wchar_t *wName, GetConfig& Data)
 {
 	std::string sKey = FARString(wKey).GetMB();
 	std::string sName = FARString(wName).GetMB();
@@ -1352,14 +1352,14 @@ int GetConfigValue(const wchar_t *wKey, const wchar_t *wName, DWORD &dwValue, FA
 				case REG_DWORD:
 				case REG_BOOLEAN:
 				case REG_3STATE:
-					dwValue = *(unsigned int *)CFG[I].ValPtr;
+					Data.dwValue = *(unsigned int *)CFG[I].ValPtr;
 					return REG_DWORD;
 				case REG_SZ:
-					strValue = *CFG[I].StrPtr;
+					Data.strValue = *CFG[I].StrPtr;
 					return REG_SZ;
 				case REG_BINARY:
-					*binData = CFG[I].ValPtr;
-					dwValue = CFG[I].DefDWord;
+					Data.binData = CFG[I].ValPtr;
+					Data.binSize = CFG[I].DefDWord;
 					return REG_BINARY;
 			}
 		}
@@ -1387,8 +1387,9 @@ bool GetConfigValue(size_t I, GetConfig& Data)
 				Data.strValue = *CFG[I].StrPtr;
 				break;
 			case REG_BINARY:
+				Data.binDefault = CFG[I].DefArr;
 				Data.binData = CFG[I].ValPtr;
-				Data.dwValue = CFG[I].DefDWord;
+				Data.binSize = CFG[I].DefDWord;
 				break;
 		}
 		return true;
@@ -1414,9 +1415,20 @@ bool SetConfigValue(size_t I, DWORD Value)
 
 bool SetConfigValue(size_t I, const wchar_t *Value)
 {
-	if (I < ARRAYSIZE(CFG) && CFG[I].ValType == REG_SZ)
+	if ((I < ARRAYSIZE(CFG)) && (CFG[I].ValType == REG_SZ) && Value)
 	{
 		*CFG[I].StrPtr = Value;
+		return true;
+	}
+	return false;
+}
+
+bool SetConfigValue(size_t I, const void *Data, DWORD Size)
+{
+	if ((I < ARRAYSIZE(CFG)) && (CFG[I].ValType == REG_BINARY) && Data)
+	{
+		Size = std::min(Size, CFG[I].DefDWord);
+		memcpy(CFG[I].ValPtr, Data, Size);
 		return true;
 	}
 	return false;
