@@ -1245,7 +1245,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		//case MCODE_F_USERMENU:         not_implemented;
 
 		case MCODE_F_FAR_CFG_GET:        return api.farcfggetFunc();
-		case MCODE_F_CHR:                return api.farcfgsetFunc();
+		case MCODE_F_FAR_CFG_SET:        return api.farcfgsetFunc();
 
 		case MCODE_F_SETCUSTOMSORTMODE:
 			if (Data->Count>=3 && Data->Values[0].Type==FMVT_DOUBLE  &&

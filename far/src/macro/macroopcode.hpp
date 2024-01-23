@@ -52,7 +52,6 @@ enum MACRO_OP_CODE
 	MCODE_F_ASC,                      // N=asc(S)
 	MCODE_F_ATOI,                     // N=atoi(S[,radix])
 	MCODE_F_CLIP,                     // V=clip(N[,V])
-	MCODE_F_CHR,                      // S=chr(N)
 	MCODE_F_DATE,                     // S=date([S])
 	MCODE_F_DLG_GETVALUE,             // V=Dlg.GetValue(ID,N)
 	MCODE_F_EDITOR_SEL,               // V=Editor.Sel(Action[,Opt])
@@ -139,7 +138,8 @@ enum MACRO_OP_CODE
 	MCODE_F_PLUGIN_CALL,              //
 	MCODE_F_PLUGIN_EXIST,             // N=Plugin.Exist(SysId)
 	MCODE_F_KEYBAR_SHOW,              // N=keybar.show([Mode])
-	MCODE_F_FAR_CFG_GET,              // V=Far.Cfg_Get(Key,Name)
+	MCODE_F_FAR_CFG_GET,              //
+	MCODE_F_FAR_CFG_SET,              //
 
 	/* ************************************************************************* */
 	// булевые переменные - различные состояния
