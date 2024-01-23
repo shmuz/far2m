@@ -1311,6 +1311,7 @@ int FileEditor::ReProcessKey(FarKey Key,int CalledFromControl)
 					if (!IsFileModified() || !need_reload) {
 						Flags.Set(FFILEEDIT_CODEPAGECHANGEDBYUSER);
 						if (need_reload) {
+							m_editor->ProcessKey(KEY_CTRLU);
 							m_codepage = codepage;
 							int UserBreak = 0;
 							SaveToCache();
