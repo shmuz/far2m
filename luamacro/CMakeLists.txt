@@ -39,18 +39,10 @@ set_target_properties(${PROJECT_NAME}
 
 set(MY_LIST
   luamacro.example.ini
-  lm_bel.lng
-  lm_eng.lng
-  lm_ita.lng
-  lm_pol.lng
-  lm_rus.lng
-  lm_sky.lng
-  lm_spa.lng
   api.lua
   farapi.lua
   farcmds.lua
   keymacro.lua
-  lang.lua
   luamacro.lua
   macrotest.lua
   mbrowser.lua
@@ -64,3 +56,9 @@ set(MY_LIST
 foreach(elem ${MY_LIST})
   configure_file("src/${elem}" "${INSTALL_DIR}/plug/${elem}" COPYONLY)
 endforeach()
+
+set (MAKELANG minilua ${CMAKE_SOURCE_DIR}/luafar/lua_share/makelang.lua)
+set (TEMPL    ${CMAKE_CURRENT_SOURCE_DIR}/src/lm_lang.templ)
+add_custom_target(${PROJECT_NAME}_lang ALL
+  ${MAKELANG} ${TEMPL} ${INSTALL_DIR}/plug
+)
