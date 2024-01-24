@@ -52,29 +52,33 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 BOOL FarChDir(const wchar_t *NewDir, BOOL ChangeDir)
 {
-	if (!NewDir || !*NewDir)
+	if (!NewDir || !*NewDir || !ChangeDir)
 		return FALSE;
 
 	BOOL rc=FALSE;
 	FARString strCurDir;
 
-	{
-		if (ChangeDir)
-		{
-			if (*NewDir=='/') {
-				strCurDir = NewDir;
-				rc = apiSetCurrentDirectory(strCurDir); // здесь берем корень
-			} else {
-				apiGetCurrentDirectory(strCurDir);
-				ConvertNameToFull(NewDir,strCurDir);
-				rc = apiSetCurrentDirectory(strCurDir);
-			}
-			if (!rc)
-			{
-				fprintf(stderr, "FarChDir: FAILED - '%ls'\n", NewDir);
-			}
-		}
+	// remove redundant slashes
+	wchar_t *Str = wcsdup(NewDir), *q=Str;
+	for (auto p = NewDir; *p; ) {
+		*q++ = *p;
+		do p++; while (*p==L'/' && *(p-1)==L'/');
 	}
+	*q = 0;
+	NewDir = Str;
+
+	if (*NewDir=='/') {
+		strCurDir = NewDir;
+		rc = apiSetCurrentDirectory(strCurDir); // здесь берем корень
+	} else {
+		apiGetCurrentDirectory(strCurDir);
+		ConvertNameToFull(NewDir,strCurDir);
+		rc = apiSetCurrentDirectory(strCurDir);
+	}
+	if (!rc) {
+		fprintf(stderr, "FarChDir: FAILED - '%ls'\n", NewDir);
+	}
+	free(Str);
 
 	return rc;
 }
