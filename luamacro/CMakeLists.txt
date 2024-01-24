@@ -8,6 +8,8 @@ set(SOURCES
   ${CMAKE_SOURCE_DIR}/luafar/src/luaplug.c
 )
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNOSETPACKAGEPATH")
+
 add_library (${PROJECT_NAME} MODULE ${SOURCES})
 set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 11)
 

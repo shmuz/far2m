@@ -45,10 +45,12 @@ local function EditValue(asHex, key, name, tp, val0, val)
   }
   local posEdit, posOK = 3, 5
 
-  if asHex and tp == "integer" then
-    items[posEdit] = {tp="fixedit"; mask="0xHHHHHHHH"; val=("%X"):format(val); }
-  elseif tp == "integer" then
-    items[posEdit] = {tp="fixedit"; mask="9999999999"; val=tostring(val); }
+  if tp == "integer" then
+    if asHex then
+      items[posEdit] = {tp="fixedit"; mask="0xHHHHHHHH"; val=("%X"):format(val); }
+    else
+      items[posEdit] = {tp="fixedit"; mask="9999999999"; val=tostring(val); }
+    end
   end
   items[posEdit].name = "result"
 

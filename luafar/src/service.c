@@ -5777,7 +5777,8 @@ int luaopen_far (lua_State *L)
 
 void InitLuaState (lua_State *L, TPluginData *aPlugData, lua_CFunction aOpenLibs)
 {
-	int idx;
+	int idx, pos;
+
 	lua_CFunction func_arr[] = {
 		luaopen_far,
 		luaopen_bit64,
@@ -5815,21 +5816,24 @@ void InitLuaState (lua_State *L, TPluginData *aPlugData, lua_CFunction aOpenLibs
 	lua_setfield(L, -2, "__index");	            //+4
 	lua_pop(L, 4);                              //+0
 
-	if (aPlugData->Flags & PDF_SETPACKAGEPATH) {
+	{ // modify package.path
 		const char *farhome;
-		int pos = 3;
-		lua_getglobal  (L, "package");                             //+1
-		lua_pushstring (L, aPlugData->ShareDir);                   //+2
-		lua_pushstring (L, "/?.lua;");                             //+3
-		if ((farhome = getenv("FARHOME"))) {
-			pos = 5;
-			lua_pushstring (L, farhome);                             //+4
-			lua_pushstring (L, "/Plugins/luafar/lua_share/?.lua;");  //+5
+		lua_getglobal  (L, "package");            //+1
+		pos = lua_gettop(L);
+		if (aPlugData->Flags & PDF_SETPACKAGEPATH) {
+			lua_pushstring (L, aPlugData->ShareDir);
+			lua_pushstring (L, "/?.lua;");
 		}
-		lua_getfield (L, -pos, "path");                            //+pos+1
-		lua_concat   (L, pos);                                     //+2
-		lua_setfield (L, -2, "path");                              //+1
-		lua_pop      (L, 1);                                       //+0
+		if ((farhome = getenv("FARHOME"))) {
+			lua_pushstring (L, farhome);
+			lua_pushstring (L, "/Plugins/luafar/lua_share/?.lua;");
+			lua_pushstring (L, farhome);
+			lua_pushstring (L, "/Plugins/luafar/lua_share/?/init.lua;");
+		}
+		lua_getfield (L, pos, "path");
+		lua_concat   (L, lua_gettop(L) - pos);    //+2
+		lua_setfield (L, pos, "path");            //+1
+		lua_pop      (L, 1);                      //+0
 	}
 }
 
