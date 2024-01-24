@@ -1114,10 +1114,12 @@ int FileEditor::ReProcessKey(FarKey Key,int CalledFromControl)
 					{
 						//здесь идет полная жопа, проверка на ошибки вообще пока отсутствует
 						{
-							bool bInPlace = /*(!IsUnicodeOrUtfCodePage(m_codepage) && !IsUnicodeOrUtfCodePage(codepage)) || */(m_codepage == codepage);
+							bool bInPlace = /*(!IsUnicodeOrUtfCodePage(m_codepage) && !IsUnicodeOrUtfCodePage(codepage)) || */
+								(m_codepage == codepage);
 
 							if (!bInPlace)
 							{
+								m_editor->ProcessKey(KEY_CTRLU);
 								m_editor->FreeAllocatedData();
 								m_editor->InsertString(nullptr, 0);
 							}
