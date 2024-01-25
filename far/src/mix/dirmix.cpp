@@ -50,9 +50,9 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <atomic>
 
 
-BOOL FarChDir(const wchar_t *NewDir, BOOL ChangeDir)
+BOOL FarChDir(const wchar_t *NewDir)
 {
-	if (!NewDir || !*NewDir || !ChangeDir)
+	if (!NewDir || !*NewDir)
 		return FALSE;
 
 	BOOL rc=FALSE;
@@ -61,8 +61,8 @@ BOOL FarChDir(const wchar_t *NewDir, BOOL ChangeDir)
 	// remove redundant slashes
 	wchar_t *Str = wcsdup(NewDir), *q=Str;
 	for (auto p = NewDir; *p; ) {
-		*q++ = *p;
-		do p++; while (*p==L'/' && *(p-1)==L'/');
+		*q++ = *p++;
+		if (*(p-1)==L'/') while (*p==L'/') p++;
 	}
 	*q = 0;
 	NewDir = Str;
