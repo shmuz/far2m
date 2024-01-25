@@ -1044,7 +1044,7 @@ static struct FARConfig
 
 	{0, NSecSystem, "ExcludeCmdHistory",            &Opt.ExcludeCmdHistory, 0}, //AN
 
-	{1, NSecCodePages, "CPMenuMode2",               &Opt.CPMenuMode, 1, REG_BOOLEAN},
+	{1, NSecCodePages, "CPMenuMode",                &Opt.CPMenuMode, 0, REG_BOOLEAN},
 
 	{1, NSecSystem, "FolderInfo",                   &Opt.InfoPanel.strFolderInfoFiles, L"DirInfo,File_Id.diz,Descript.ion,ReadMe.*,Read.Me"},
 

@@ -283,9 +283,10 @@ end
 
 function Env:GetPluginInfo()
   local opt = self.Opt
-  local Info = {}
-  Info.Flags = 0
-  Info.CommandPrefix = opt.Prefix;
+  local Info = {
+    Flags = 0;
+    CommandPrefix = opt.Prefix;
+  }
   if opt.AddToPluginsMenu then
     Info.PluginMenuStrings = { M.MTempPanel }
   end

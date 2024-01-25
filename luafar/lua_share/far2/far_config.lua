@@ -100,7 +100,7 @@ local function FarConfig()
     end
   end
 
-  table.sort(list, function(a,b) return a.Text < b.Text end)
+  table.sort(list, function(a,b) return far.LStricmp(a.Text, b.Text) < 0; end)
 
   items.proc = function(hDlg, msg, p1, p2)
     local Op, AsHex

@@ -389,7 +389,7 @@ static BOOL __stdcall EnumCodePagesProc(const wchar_t *lpwszCodePage)
 
 	// Формируем имя таблиц символов
 	bool IsCodePageNameCustom = false;
-	wchar_t *codePageName = FormatCodePageName(_wtoi(lpwszCodePage), cpiex.CodePageName, sizeof(cpiex.CodePageName)/sizeof(wchar_t), IsCodePageNameCustom);
+	wchar_t *codePageName = FormatCodePageName(codePage, cpiex.CodePageName, ARRAYSIZE(cpiex.CodePageName), IsCodePageNameCustom);
 	// Получаем признак выбранности таблицы символов
 	s_cfg_reader->SelectSection(FavoriteCodePagesKey);
 	int selectType = s_cfg_reader->GetInt(Wide2MB(lpwszCodePage), 0);
