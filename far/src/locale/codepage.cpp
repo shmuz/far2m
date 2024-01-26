@@ -706,7 +706,7 @@ static LONG_PTR WINAPI EditDialogProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR
 			{
 				// Формируем имя таблиц символов
 				bool IsCodePageNameCustom = false;
-				wchar_t *CodePageName = FormatCodePageName(CodePage, cpiex.CodePageName, sizeof(cpiex.CodePageName)/sizeof(wchar_t), IsCodePageNameCustom);
+				wchar_t *CodePageName = FormatCodePageName(CodePage, cpiex.CodePageName, ARRAYSIZE(cpiex.CodePageName), IsCodePageNameCustom);
 				// Формируем строку представления
 				FormatString strCodePageF;
 				FormatCodePageString(CodePage, CodePageName, strCodePageF, IsCodePageNameCustom);

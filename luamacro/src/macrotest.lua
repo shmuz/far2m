@@ -998,7 +998,7 @@ local function test_Far_GetConfig()
     "Policies.ShowHiddenDrives",                 "integer",
     "Policies.DisabledOptions",                  "integer",
     "System.ExcludeCmdHistory",                  "integer",
-    "CodePages.CPMenuMode2",                     "integer",
+    "CodePages.CPMenuMode",                      "integer",
     "System.FolderInfo",                         "string",
     "VMenu.LBtnClick",                           "integer",
     "VMenu.RBtnClick",                           "integer",

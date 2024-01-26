@@ -2309,12 +2309,13 @@ int FarMacroApi::fargetconfigFunc()
 	auto Dot = wcsrchr(Keyname, L'.');
 	if (Dot)
 	{
-		FARString Key(Keyname, Dot - Keyname);
+		FARString Key(Keyname, Dot - Keyname), Msg;
 		GetConfig Data;
 		switch( GetConfigValue(Key.CPtr(), Dot+1, Data) )
 		{
 			default:
-				PassError(L"setting doesn't exist");
+				Msg = L"setting doesn't exist: " + FARString(Keyname);
+				PassError(Msg.CPtr());
 				break;
 			case REG_DWORD:
 				PassNumber(Data.dwValue);
