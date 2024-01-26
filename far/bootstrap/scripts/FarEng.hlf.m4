@@ -4621,6 +4621,33 @@ $ #Макросы: Остальные области#
 <!Macro:Common!>
 <!Macro:Other!>
 
+@FarConfig
+$ #Configuration editor#
+ Starts with the command #lm:farconfig#
+
+ Allows to view and edit all Far Manager’s options.
+ Most options can be changed from the ~Options menu~@OptMenu@, however some options are available only here or using configuration import.
+The options are displayed in a list with three fields per item: the name in the SectionName.ParamName format (for example, Editor.TabSize),
+the type (boolean, 3-state, integer, string), and the value (for the integer type, hexadecimal and symbolic representations additionally displayed).
+If current value of an option is other than the default, the option is marked with the ‘*’ character to the left of the name.
+
+ Besides the list navigation keys, the following key combinations are supported:
+
+ #Enter# or #F4#
+ Toggle or edit the value.
+
+ #Shift+F4#
+ Edit the integer value as a hexadecimal number. For other types works as #F4#.
+
+ #Del#
+ Reset the option to its default value.
+
+ #Ctrl+H#
+ Toggle display of unchanged options.
+
+ #Ctrl+Alt+F#
+ Toggle quick filtering mode.
+
 @Index
 $ #Index help file#
 <%INDEX%>

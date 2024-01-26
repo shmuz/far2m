@@ -82,6 +82,7 @@ local function FarConfig()
 
   local items = {
     guid=far.Guids.AdvancedConfigId;
+    help=":FarConfig";
     { tp="listbox"; list={}; listnoclose=1; },
   }
   local posList = 1
