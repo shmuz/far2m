@@ -600,6 +600,7 @@ void LanguageSettings();
 #define REG_3STATE  0x101
 
 struct GetConfig {
+	int IsSave;
 	DWORD Type;
 	FARString Key;
 	FARString Name;

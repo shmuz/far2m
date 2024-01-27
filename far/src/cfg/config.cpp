@@ -1347,6 +1347,7 @@ int GetConfigValue(const wchar_t *wKey, const wchar_t *wName, GetConfig& Data)
 	{
 		if (!strcasecmp(CFG[I].KeyName,Key) && !strcasecmp(CFG[I].ValName,Name))
 		{
+			Data.IsSave = CFG[I].IsSave;
 			switch (CFG[I].ValType)
 			{
 				case REG_DWORD:
@@ -1371,6 +1372,7 @@ bool GetConfigValue(size_t I, GetConfig& Data)
 {
 	if (I < ARRAYSIZE(CFG))
 	{
+		Data.IsSave = CFG[I].IsSave;
 		Data.Type = CFG[I].ValType;
 		Data.Key = CFG[I].KeyName;
 		Data.Name = CFG[I].ValName;

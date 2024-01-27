@@ -9,9 +9,9 @@ local F = far.Flags
 local band, bor, bnot = bit64.band, bit64.bor, bit64.bnot
 
 local function MakeItem(idx)
-  local key,name,tp,val0,val = Far.Cfg_Get(idx)
+  local key,name,saved,tp,val0,val = Far.Cfg_Get(idx)
   if key then
-    local txt = ("%-42s│%-8s│"):format(key.."."..name, tp)
+    local txt = ("%-42s│%-8s│%s │"):format(key.."."..name, tp, saved and "s" or "-")
     if tp == "integer" or tp == "string" or tp == "boolean" or tp == "3-state" then
       if tp == "integer" then
         txt = ("%s%d = 0x%X"):format(txt, val, val)
@@ -129,7 +129,7 @@ local function FarConfig()
         local ok = false
         local pos = data.SelectPos
         local idx = list[pos].configIndex
-        local key,name,tp,val0,val = Far.Cfg_Get(idx)
+        local key,name,saved,tp,val0,val = Far.Cfg_Get(idx) -- luacheck: no unused (saved)
 
         if Op == "edit" then
           if tp == "boolean" then

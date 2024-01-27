@@ -2353,6 +2353,7 @@ int FarMacroApi::farcfggetFunc()
 
 	PassString(Data.Key);
 	PassString(Data.Name);
+	PassBoolean(Data.IsSave);
 
 	switch(Data.Type)
 	{
