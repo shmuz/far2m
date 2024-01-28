@@ -4632,7 +4632,7 @@ The options are displayed in a list with four fields per item:
   #-# The name in the SectionName.ParamName format (for example, Editor.TabSize)
   #-# The type (boolean, 3-state, integer, string)
   #-# Whether the option is saved when Far configuration is saved (s) or not (-)
-  #-# The value (for the integer type, hexadecimal and symbolic representations additionally displayed).
+  #-# The value (for the integer type, a hexadecimal representation additionally displayed)
  If current value of an option is other than the default, the option is marked with the ‘*’ character
 to the left of the name.
 

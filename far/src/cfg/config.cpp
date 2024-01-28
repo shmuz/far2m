@@ -1337,40 +1337,27 @@ void LanguageSettings()
 	delete LangMenu; //???? BUGBUG
 }
 
-int GetConfigValue(const wchar_t *wKey, const wchar_t *wName, GetConfig& Data)
+int GetConfigIndex(const wchar_t *KeyName)
 {
-	std::string sKey = FARString(wKey).GetMB();
-	std::string sName = FARString(wName).GetMB();
-	const char *Key=sKey.c_str(), *Name=sName.c_str();
-
-	for (size_t I=0; I < ARRAYSIZE(CFG); ++I)
+	auto Dot = wcsrchr(KeyName, L'.');
+	if (Dot)
 	{
-		if (!strcasecmp(CFG[I].KeyName,Key) && !strcasecmp(CFG[I].ValName,Name))
+		std::string sKey = FARString(KeyName, Dot-KeyName).GetMB();
+		std::string sName = FARString(Dot+1).GetMB();
+		const char *Key=sKey.c_str(), *Name=sName.c_str();
+
+		for (int I=0; I < (int)ARRAYSIZE(CFG); ++I)
 		{
-			Data.IsSave = CFG[I].IsSave;
-			switch (CFG[I].ValType)
-			{
-				case REG_DWORD:
-				case REG_BOOLEAN:
-				case REG_3STATE:
-					Data.dwValue = *(unsigned int *)CFG[I].ValPtr;
-					return REG_DWORD;
-				case REG_SZ:
-					Data.strValue = *CFG[I].StrPtr;
-					return REG_SZ;
-				case REG_BINARY:
-					Data.binData = CFG[I].ValPtr;
-					Data.binSize = CFG[I].DefDWord;
-					return REG_BINARY;
-			}
+			if (!strcasecmp(CFG[I].KeyName,Key) && !strcasecmp(CFG[I].ValName,Name))
+				return I;
 		}
 	}
-	return REG_NONE;
+	return -1;
 }
 
-bool GetConfigValue(size_t I, GetConfig& Data)
+bool GetConfigValue(int I, GetConfig& Data)
 {
-	if (I < ARRAYSIZE(CFG))
+	if (I >= 0 && I < (int)ARRAYSIZE(CFG))
 	{
 		Data.IsSave = CFG[I].IsSave;
 		Data.Type = CFG[I].ValType;
@@ -1378,9 +1365,7 @@ bool GetConfigValue(size_t I, GetConfig& Data)
 		Data.Name = CFG[I].ValName;
 		switch (CFG[I].ValType)
 		{
-			case REG_DWORD:
-			case REG_BOOLEAN:
-			case REG_3STATE:
+			default:
 				Data.dwDefault = CFG[I].DefDWord;
 				Data.dwValue = *(unsigned int *)CFG[I].ValPtr;
 				break;
@@ -1399,9 +1384,9 @@ bool GetConfigValue(size_t I, GetConfig& Data)
 	return false;
 }
 
-bool SetConfigValue(size_t I, DWORD Value)
+bool SetConfigValue(int I, DWORD Value)
 {
-	if (I < ARRAYSIZE(CFG))
+	if (I >= 0 && I < (int)ARRAYSIZE(CFG))
 	{
 		switch(CFG[I].ValType)
 		{
@@ -1415,9 +1400,9 @@ bool SetConfigValue(size_t I, DWORD Value)
 	return false;
 }
 
-bool SetConfigValue(size_t I, const wchar_t *Value)
+bool SetConfigValue(int I, const wchar_t *Value)
 {
-	if ((I < ARRAYSIZE(CFG)) && (CFG[I].ValType == REG_SZ) && Value)
+	if (I >= 0 && I < (int)ARRAYSIZE(CFG) && CFG[I].ValType == REG_SZ && Value)
 	{
 		*CFG[I].StrPtr = Value;
 		return true;
@@ -1425,9 +1410,9 @@ bool SetConfigValue(size_t I, const wchar_t *Value)
 	return false;
 }
 
-bool SetConfigValue(size_t I, const void *Data, DWORD Size)
+bool SetConfigValue(int I, const void *Data, DWORD Size)
 {
-	if ((I < ARRAYSIZE(CFG)) && (CFG[I].ValType == REG_BINARY) && Data)
+	if (I >= 0 && I < (int)ARRAYSIZE(CFG) && CFG[I].ValType == REG_BINARY && Data)
 	{
 		Size = std::min(Size, CFG[I].DefDWord);
 		memcpy(CFG[I].ValPtr, Data, Size);

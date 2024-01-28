@@ -474,9 +474,9 @@ public:
 	int editorsettitleFunc();
 	int editorundoFunc();
 	int environFunc();
-	int farcfggetFunc();           //not implemented
-	int farcfgsetFunc();           //not implemented
-	int fargetconfigFunc();
+	int farcfggetFunc();           //API differs from Far3
+	int farcfgsetFunc();           //not present in Far3
+	int fargetconfigFunc();        //API compatible with Far3
 	int fattrFunc();
 	int fexistFunc();
 	int floatFunc();
@@ -2304,36 +2304,35 @@ int FarMacroApi::dlgsetfocusFunc()
 int FarMacroApi::fargetconfigFunc()
 {
 	const wchar_t *Keyname = (mData->Count >= 1 && mData->Values[0].Type==FMVT_STRING) ?
-		mData->Values[0].String : L"";
+		mData->Values[0].String : nullptr;
 
-	auto Dot = wcsrchr(Keyname, L'.');
-	if (Dot)
-	{
-		FARString Key(Keyname, Dot - Keyname), Msg;
-		GetConfig Data;
-		switch( GetConfigValue(Key.CPtr(), Dot+1, Data) )
-		{
-			default:
-				Msg = L"setting doesn't exist: " + FARString(Keyname);
-				PassError(Msg.CPtr());
-				break;
-			case REG_DWORD:
-				PassNumber(Data.dwValue);
-				PassString(L"integer");
-				break;
-			case REG_SZ:
-				PassString(Data.strValue);
-				PassString(L"string");
-				break;
-			case REG_BINARY:
-				PassBinary(Data.binData, Data.binSize);
-				PassString(L"binary");
-				break;
-		}
+	if (!Keyname) {
+		PassError(L"argument #1: string expected");
+		return 0;
 	}
-	else
-		PassError(L"invalid argument #1");
 
+	GetConfig Data;
+	int Index = GetConfigIndex(Keyname);
+	if (!GetConfigValue(Index, Data)) {
+		FARString Msg = FARString(L"setting doesn't exist: ") + Keyname;
+		PassError(Msg.CPtr());
+		return 0;
+	}
+
+	switch (Data.Type) {
+		default:
+			PassNumber(Data.dwValue);
+			PassString(L"integer");
+			break;
+		case REG_SZ:
+			PassString(Data.strValue);
+			PassString(L"string");
+			break;
+		case REG_BINARY:
+			PassBinary(Data.binData, Data.binSize);
+			PassString(L"binary");
+			break;
+	}
 	return 0;
 }
 
@@ -2387,30 +2386,41 @@ int FarMacroApi::farcfggetFunc()
 	return 0;
 }
 
-// Ok=Far.Cfg_Set(Index,Value)
+static bool _SetConfig(int Index, const FarMacroValue *Value)
+{
+	switch (Value->Type)
+	{
+		case FMVT_DOUBLE:
+			return SetConfigValue(Index, static_cast<DWORD>(Value->Double));
+		case FMVT_STRING:
+			return SetConfigValue(Index, Value->String);
+		case FMVT_BINARY:
+			return SetConfigValue(Index, Value->Binary.Data, Value->Binary.Size);
+		default:
+			return false;
+	}
+}
+
+// Ok = Far.Cfg_Set(Index, Value)
+//   or
+// Ok = Far.Cfg_Set(Key.Name, Value)
 int FarMacroApi::farcfgsetFunc()
 {
 	bool Res = false;
 
-	if (mData->Count >= 2 && mData->Values[0].Type==FMVT_DOUBLE)
+	if (mData->Count >= 2)
 	{
-		auto Index = static_cast<size_t>(mData->Values[0].Double - 1);
-		switch (mData->Values[1].Type)
+		if (mData->Values[0].Type==FMVT_DOUBLE)
 		{
-			case FMVT_DOUBLE:
-				Res = SetConfigValue(Index, static_cast<DWORD>(mData->Values[1].Double));
-				break;
-			case FMVT_STRING:
-				Res = SetConfigValue(Index, mData->Values[1].String);
-				break;
-			case FMVT_BINARY:
-				Res = SetConfigValue(Index, mData->Values[1].Binary.Data, mData->Values[1].Binary.Size);
-				break;
-			default:
-				break;
+			int Index = static_cast<int>(mData->Values[0].Double) - 1;
+			Res = _SetConfig(Index, &mData->Values[1]);
+		}
+		else if (mData->Values[0].Type==FMVT_STRING)
+		{
+			int Index = GetConfigIndex(mData->Values[0].String);
+			Res = _SetConfig(Index, &mData->Values[1]);
 		}
 	}
-
 	PassBoolean(Res ? 1 : 0);
 	return 0;
 }

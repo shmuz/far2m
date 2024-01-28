@@ -616,8 +616,8 @@ struct GetConfig {
 	DWORD binSize;
 };
 
-int  GetConfigValue(const wchar_t *wKey, const wchar_t *wName, GetConfig& Data);
-bool GetConfigValue(size_t Index, GetConfig& Data);
-bool SetConfigValue(size_t Index, DWORD Value);
-bool SetConfigValue(size_t Index, const wchar_t *Value);
-bool SetConfigValue(size_t Index, const void *Data, DWORD Size);
+int  GetConfigIndex(const wchar_t *wKeyName);
+bool GetConfigValue(int Index, GetConfig& Data);
+bool SetConfigValue(int Index, DWORD Value);
+bool SetConfigValue(int Index, const wchar_t *Value);
+bool SetConfigValue(int Index, const void *Data, DWORD Size);
