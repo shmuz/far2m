@@ -131,6 +131,7 @@ enum MACRO_OP_CODE
 	MCODE_F_SETCUSTOMSORTMODE,        //
 	MCODE_F_KEYMACRO,                 //
 	MCODE_F_FAR_GETCONFIG,            //
+	MCODE_F_FAR_SETCONFIG,            //
 	MCODE_F_MACROSETTINGS,            //
 	MCODE_F_SIZE2STR,                 // S=Size2Str(Size,Flags[,Width])
 	MCODE_F_STRWRAP,                  // S=StrWrap(Text,Width[,Break[,Flags]])
@@ -138,8 +139,6 @@ enum MACRO_OP_CODE
 	MCODE_F_PLUGIN_CALL,              //
 	MCODE_F_PLUGIN_EXIST,             // N=Plugin.Exist(SysId)
 	MCODE_F_KEYBAR_SHOW,              // N=keybar.show([Mode])
-	MCODE_F_FAR_CFG_GET,              //
-	MCODE_F_FAR_CFG_SET,              //
 
 	/* ************************************************************************* */
 	// булевые переменные - различные состояния

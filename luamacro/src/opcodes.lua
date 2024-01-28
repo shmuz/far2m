@@ -83,15 +83,14 @@ return {
   MCODE_F_SETCUSTOMSORTMODE=0x380C51;
   MCODE_F_KEYMACRO=0x380C52;
   MCODE_F_FAR_GETCONFIG=0x380C53;
-  MCODE_F_MACROSETTINGS=0x380C54;
-  MCODE_F_SIZE2STR=0x380C55; -- S=Size2Str(Size,Flags[,Width])
-  MCODE_F_STRWRAP=0x380C56; -- S=StrWrap(Text,Width[,Break[,Flags]])
-  MCODE_F_DLG_SETFOCUS=0x380C57; -- N=Dlg->SetFocus([ID])
-  MCODE_F_PLUGIN_CALL=0x380C58;
-  MCODE_F_PLUGIN_EXIST=0x380C59; -- N=Plugin.Exist(SysId)
-  MCODE_F_KEYBAR_SHOW=0x380C5A; -- N=keybar.show([Mode])
-  MCODE_F_FAR_CFG_GET=0x380C5B;
-  MCODE_F_FAR_CFG_SET=0x380C5C;
+  MCODE_F_FAR_SETCONFIG=0x380C54;
+  MCODE_F_MACROSETTINGS=0x380C55;
+  MCODE_F_SIZE2STR=0x380C56; -- S=Size2Str(Size,Flags[,Width])
+  MCODE_F_STRWRAP=0x380C57; -- S=StrWrap(Text,Width[,Break[,Flags]])
+  MCODE_F_DLG_SETFOCUS=0x380C58; -- N=Dlg->SetFocus([ID])
+  MCODE_F_PLUGIN_CALL=0x380C59;
+  MCODE_F_PLUGIN_EXIST=0x380C5A; -- N=Plugin.Exist(SysId)
+  MCODE_F_KEYBAR_SHOW=0x380C5B; -- N=keybar.show([Mode])
   MCODE_C_AREA_OTHER=0x380400; -- Режим копирования текста с экрана, вертикальные меню
   MCODE_C_AREA_SHELL=0x380401; -- Файловые панели
   MCODE_C_AREA_VIEWER=0x380402; -- Внутренняя программа просмотра

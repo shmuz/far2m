@@ -524,12 +524,11 @@ SetProperties(Menu, {
 --------------------------------------------------------------------------------
 
 Far = {
-  Cfg_Get        = function(...) return MacroCallFar(op.MCODE_F_FAR_CFG_GET, ...) end,
-  Cfg_Set        = function(...) return MacroCallFar(op.MCODE_F_FAR_CFG_SET, ...) end,
   GetConfig      = function(...) return MacroCallFar(op.MCODE_F_FAR_GETCONFIG, ...) end,
   DisableHistory = function(...) return Shared.keymacro.DisableHistory(...) end,
   KbdLayout      = function(...) return MacroCallFar(op.MCODE_F_KBDLAYOUT, ...) end,
   KeyBar_Show    = function(...) return MacroCallFar(op.MCODE_F_KEYBAR_SHOW, ...) end,
+  SetConfig      = function(...) return MacroCallFar(op.MCODE_F_FAR_SETCONFIG, ...) end,
   Window_Scroll  = function(...) return MacroCallFar(op.MCODE_F_WINDOW_SCROLL, ...) end,
 }
 

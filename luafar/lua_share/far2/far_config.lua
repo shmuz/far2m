@@ -9,8 +9,8 @@ local F = far.Flags
 local band, bor, bnot = bit64.band, bit64.bor, bit64.bnot
 
 local function MakeItem(idx)
-  local key,name,saved,tp,val0,val = Far.Cfg_Get(idx)
-  if key then
+  local val,tp,val0,key,name,saved = Far.GetConfig(idx)
+  if val then
     local txt = ("%-42s│%-8s│%s │"):format(key.."."..name, tp, saved and "s" or "-")
     if tp == "integer" or tp == "string" or tp == "boolean" or tp == "3-state" then
       if tp == "integer" then
@@ -129,21 +129,21 @@ local function FarConfig()
         local ok = false
         local pos = data.SelectPos
         local idx = list[pos].configIndex
-        local key,name,saved,tp,val0,val = Far.Cfg_Get(idx) -- luacheck: no unused (saved)
+        local val,tp,val0,key,name = Far.GetConfig(idx)
 
         if Op == "edit" then
           if tp == "boolean" then
-            ok = Far.Cfg_Set(idx, val==0 and 1 or 0)
+            ok = Far.SetConfig(idx, val==0 and 1 or 0)
           elseif tp == "3-state" then
-            ok = Far.Cfg_Set(idx, (val + 1) % 3)
+            ok = Far.SetConfig(idx, (val + 1) % 3)
           else
             local what, ret = EditValue(AsHex,key,name,tp,val0,val)
             if what then
-              ok = Far.Cfg_Set(idx, what=="ok" and ret or what=="reset" and val0)
+              ok = Far.SetConfig(idx, what=="ok" and ret or what=="reset" and val0)
             end
           end
         elseif Op == "reset" then
-          ok = Far.Cfg_Set(idx, val0)
+          ok = Far.SetConfig(idx, val0)
         end
 
         if ok then

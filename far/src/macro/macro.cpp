@@ -474,9 +474,8 @@ public:
 	int editorsettitleFunc();
 	int editorundoFunc();
 	int environFunc();
-	int farcfggetFunc();           //API differs from Far3
-	int farcfgsetFunc();           //not present in Far3
-	int fargetconfigFunc();        //API compatible with Far3
+	int fargetconfigFunc();
+	int farsetconfigFunc();
 	int fattrFunc();
 	int fexistFunc();
 	int floatFunc();
@@ -1244,8 +1243,8 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		//case MCODE_F_MENU_SHOW:        implemented_in_lua_partially;
 		//case MCODE_F_USERMENU:         not_implemented;
 
-		case MCODE_F_FAR_CFG_GET:        return api.farcfggetFunc();
-		case MCODE_F_FAR_CFG_SET:        return api.farcfgsetFunc();
+		case MCODE_F_FAR_GETCONFIG:        return api.fargetconfigFunc();
+		case MCODE_F_FAR_SETCONFIG:        return api.farsetconfigFunc();
 
 		case MCODE_F_SETCUSTOMSORTMODE:
 			if (Data->Count>=3 && Data->Values[0].Type==FMVT_DOUBLE  &&
@@ -1403,7 +1402,6 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		}
 		case MCODE_F_WINDOW_SCROLL:      return api.windowscrollFunc();
 		case MCODE_F_XLAT:               return api.xlatFunc();
-		case MCODE_F_FAR_GETCONFIG:      return api.fargetconfigFunc();
 
 		case MCODE_F_BM_ADD:              // N=BM.Add()
 		case MCODE_F_BM_CLEAR:            // N=BM.Clear()
@@ -2300,89 +2298,59 @@ int FarMacroApi::dlgsetfocusFunc()
 	return PassValue(Ret);
 }
 
-// V=Far.GetConfig(Key.Name)
+// val,type,val0,key,name,saved = Far.GetConfig(Index)
+//   where Index may be integer or string (Key.Name)
 int FarMacroApi::fargetconfigFunc()
 {
-	const wchar_t *Keyname = (mData->Count >= 1 && mData->Values[0].Type==FMVT_STRING) ?
-		mData->Values[0].String : nullptr;
-
-	if (!Keyname) {
-		PassError(L"argument #1: string expected");
-		return 0;
-	}
-
-	GetConfig Data;
-	int Index = GetConfigIndex(Keyname);
-	if (!GetConfigValue(Index, Data)) {
-		FARString Msg = FARString(L"setting doesn't exist: ") + Keyname;
-		PassError(Msg.CPtr());
-		return 0;
-	}
-
-	switch (Data.Type) {
-		default:
-			PassNumber(Data.dwValue);
-			PassString(L"integer");
-			break;
-		case REG_SZ:
-			PassString(Data.strValue);
-			PassString(L"string");
-			break;
-		case REG_BINARY:
-			PassBinary(Data.binData, Data.binSize);
-			PassString(L"binary");
-			break;
-	}
-	return 0;
-}
-
-// V=Far.Cfg_Get(Index)
-int FarMacroApi::farcfggetFunc()
-{
-	auto Params = parseParams(1);
-	auto Index = static_cast<size_t>(Params[0].asInteger()) - 1;
+	int Index = -1;
 	GetConfig Data;
 
-	bool Ret = GetConfigValue(Index, Data);
-	if (!Ret)
+	if (mData->Count >= 1)
+	{
+		if (mData->Values[0].Type == FMVT_DOUBLE)
+			Index = static_cast<int>(mData->Values[0].Double) - 1;
+		else if (mData->Values[0].Type == FMVT_STRING)
+			Index = GetConfigIndex(mData->Values[0].String);
+	}
+
+	if (!GetConfigValue(Index, Data))
 	{
 		PassBoolean(0);
 		return 0;
 	}
 
-	PassString(Data.Key);
-	PassString(Data.Name);
-	PassBoolean(Data.IsSave);
-
 	switch(Data.Type)
 	{
 		case REG_DWORD:
+			PassNumber(Data.dwValue);
 			PassString(L"integer");
 			PassNumber(Data.dwDefault);
-			PassNumber(Data.dwValue);
 			break;
 		case REG_BOOLEAN:
+			PassNumber(Data.dwValue);
 			PassString(L"boolean");
 			PassNumber(Data.dwDefault);
-			PassNumber(Data.dwValue);
 			break;
 		case REG_3STATE:
+			PassNumber(Data.dwValue);
 			PassString(L"3-state");
 			PassNumber(Data.dwDefault);
-			PassNumber(Data.dwValue);
 			break;
 		case REG_SZ:
+			PassString(Data.strValue);
 			PassString(L"string");
 			PassString(Data.strDefault);
-			PassString(Data.strValue);
 			break;
 		case REG_BINARY:
+			PassBinary(Data.binData, Data.binSize);
 			PassString(L"binary");
 			PassBinary(Data.binDefault, Data.binSize);
-			PassBinary(Data.binData, Data.binSize);
 			break;
 	}
 
+	PassString(Data.Key);
+	PassString(Data.Name);
+	PassBoolean(Data.IsSave);
 	return 0;
 }
 
@@ -2401,10 +2369,9 @@ static bool _SetConfig(int Index, const FarMacroValue *Value)
 	}
 }
 
-// Ok = Far.Cfg_Set(Index, Value)
-//   or
-// Ok = Far.Cfg_Set(Key.Name, Value)
-int FarMacroApi::farcfgsetFunc()
+// Ok = Far.SetConfig(Index, Value)
+//   where Index may be integer or string (Key.Name)
+int FarMacroApi::farsetconfigFunc()
 {
 	bool Res = false;
 
