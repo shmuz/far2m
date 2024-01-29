@@ -554,7 +554,7 @@ void VTFar2lExtensios::OnInteract_SetFKeyTitles(StackSerializer &stk_ser)
 void VTFar2lExtensios::OnInteract_GetColorPalette(StackSerializer &stk_ser)
 {
 	stk_ser.Clear();
-	const uint8_t bits = WINPORT(GetConsoleColorPalette)();
+	const uint8_t bits = WINPORT(GetConsoleColorPalette)(nullptr);
 	const uint8_t reserved = 0;
 	stk_ser.PushNum(reserved);
 	stk_ser.PushNum(bits);

@@ -196,7 +196,7 @@ struct VTAnsiState
 		memset(&csbi, 0, sizeof(csbi));
 		memset(&cci, 0, sizeof(cci));
 	}
-	
+
 	void InitFromConsole(HANDLE con)
 	{
 		WINPORT(GetConsoleScreenBufferInfo)( con, &csbi );
@@ -329,7 +329,7 @@ static void ApplyConsoleTitle()
 	std::wstring title(1, L'[');
 	title+= StrMB2Wide(g_title);
 	title+= L']';
-	WINPORT(SetConsoleTitle)(title.c_str() );
+	WINPORT(SetConsoleTitle)(nullptr, title.c_str());
 }
 
 //-----------------------------------------------------------------------------
@@ -391,7 +391,7 @@ static void FlushBuffer( void )
 			} while (++b, --nCharInBuffer);
 		} else {
 			fprintf(stderr, "TODODODODO\n");
-			
+
 
 			// To detect wrapping of multiple characters, create a new buffer, write
 			// to the top of it and see if the cursor changes line. This doesn't
@@ -504,7 +504,7 @@ void SendSequence( const char *seq )
 {
 	if (!*seq)
 		return;
-	
+
 	fprintf(stderr, "VT: SendSequence - '%s'\n", seq);
 	if (g_vt_shell) {
 		g_vt_shell->InjectInput(seq);
@@ -801,7 +801,7 @@ static void InterpretEscSeq( void )
 		// Ignore any other private sequences.
 		if (prefix2 != 0) {
 			fprintf(stderr, "Ignoring: %c %c %u %u\n", prefix2, suffix, es_argc, es_argv[0]);
-			return;			
+			return;
 		}
 
 		WINPORT(GetConsoleScreenBufferInfo)( hConOut, &Info );
@@ -905,7 +905,7 @@ static void InterpretEscSeq( void )
 				WINPORT(ScrollConsoleScreenBuffer)( hConOut, &Rect, &Info.srWindow, Pos, &CharInfo );
 			}
 			return;
-			
+
 		case 'T':                 // ESC[#T Scroll down
 			if (es_argc == 0) es_argv[es_argc++] = 1; // ESC[T == ESC[1T
 			if (es_argc != 1) return;
@@ -916,7 +916,7 @@ static void InterpretEscSeq( void )
 				Rect.Right  = Info.srWindow.Right = (Info.dwSize.X - 1);
 				Rect.Top    = Info.srWindow.Top;
 				Rect.Bottom = Info.srWindow.Bottom - es_argv[0];
-				
+
 				Pos.X = 0;
 				Pos.Y = Rect.Top + es_argv[0];
 
@@ -924,8 +924,8 @@ static void InterpretEscSeq( void )
 				WINPORT(ScrollConsoleScreenBuffer)( hConOut, &Rect, &Info.srWindow, Pos, &CharInfo );
 			}
 			return;
-			
-			
+
+
 		case 'M':                 // ESC[#M Delete # lines.
 			if (es_argc == 0) es_argv[es_argc++] = 1; // ESC[M == ESC[1M
 			if (es_argc != 1) return;
@@ -1155,14 +1155,14 @@ static void InterpretEscSeq( void )
 		case 'r':
 			if (es_argc < 2) {
 				es_argv[1] = MAXSHORT;
-				if (es_argc < 1) 
+				if (es_argc < 1)
 					es_argv[0] = 1;
 			}
-			fprintf(stderr, "VTAnsi: SET SCROLL REGION: %d %d (limits %d %d)\n", 
+			fprintf(stderr, "VTAnsi: SET SCROLL REGION: %d %d (limits %d %d)\n",
 				es_argv[0] - 1, es_argv[1] - 1, Info.srWindow.Top, Info.srWindow.Bottom);
 			WINPORT(SetConsoleScrollRegion)(NULL, es_argv[0] - 1, es_argv[1] - 1);
 			return;
-		
+
 		default:
 			fprintf(stderr, "VTAnsi: unknown suffix %c\n", suffix);
 			return;
@@ -1252,32 +1252,32 @@ static void PartialLineUp()
 static void ForwardIndex()
 {
 	fprintf(stderr, "ANSI: ForwardIndex\n");
-	FlushBuffer();	
+	FlushBuffer();
 }
 
 static void ReverseIndex()
 {
 	fprintf(stderr, "ANSI: ReverseIndex\n");
 	FlushBuffer();
-	
+
 	CONSOLE_SCREEN_BUFFER_INFO info;
 	WINPORT(GetConsoleScreenBufferInfo)( hConOut, &info );
 	SHORT scroll_top = 0, scroll_bottom = 0x7fff;
 	WINPORT(GetConsoleScrollRegion)(NULL, &scroll_top, &scroll_bottom);
-	
+
 	if (scroll_top < info.srWindow.Top) scroll_top = info.srWindow.Top;
 	if (scroll_bottom < info.srWindow.Top) scroll_bottom = info.srWindow.Top;
-	
+
 	if (scroll_top > info.srWindow.Bottom) scroll_top = info.srWindow.Bottom;
-	
+
 	if (scroll_bottom > info.srWindow.Bottom) scroll_bottom = info.srWindow.Bottom;
-		
-	if (info.dwCursorPosition.Y != scroll_top) { 
+
+	if (info.dwCursorPosition.Y != scroll_top) {
 		info.dwCursorPosition.Y--;
 		WINPORT(SetConsoleCursorPosition)(hConOut, info.dwCursorPosition);
 		return;
 	}
-	
+
 	if (scroll_top>=scroll_bottom)
 		return;
 
@@ -1460,8 +1460,8 @@ void ParseAndPrintString(
 			}
 
 			if (done) {
-				if (state == 6) 
-					InterpretControlString();					
+				if (state == 6)
+					InterpretControlString();
 				else
 					InterpretEscSeq();
 				state = 1;
@@ -1507,14 +1507,14 @@ void ParseAndPrintString(
 
 VTAnsi::VTAnsi(IVTShell *vt_shell)
 {
-	g_vt_ansi_mutex.lock();	
+	g_vt_ansi_mutex.lock();
 	g_vt_shell = vt_shell;
 	ResetTerminal();
 	g_saved_state.InitFromConsole(NULL);
 	ansiState.font_state.FromConsoleAttributes(g_saved_state.csbi.wAttributes);
-	
+
 	VTLog::Start();
-	
+
 //	get_state();
 }
 
@@ -1561,7 +1561,7 @@ void VTAnsi::Resume(struct VTAnsiState* state)
 void VTAnsi::OnStart()
 {
 	TCHAR buf[MAX_PATH*2] = {0};
-	WINPORT(GetConsoleTitle)( buf, ARRAYSIZE(buf) - 1 );
+	WINPORT(GetConsoleTitle)(nullptr, buf, ARRAYSIZE(buf) - 1 );
 	_saved_title = buf;
 }
 
@@ -1577,7 +1577,7 @@ void VTAnsi::OnStop()
 	ansiState.font_state.FromConsoleAttributes(g_saved_state.csbi.wAttributes);
 	WINPORT(SetConsoleScrollRegion)(NULL, 0, MAXSHORT);
 	_incomplete.tail.clear();
-	WINPORT(SetConsoleTitle)( _saved_title.c_str());
+	WINPORT(SetConsoleTitle)(nullptr, _saved_title.c_str());
 }
 
 void VTAnsi::Write(const char *str, size_t len)

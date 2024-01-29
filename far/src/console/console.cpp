@@ -155,7 +155,7 @@ bool console::GetTitle(FARString &strTitle)
 		if (!buf.Get())
 			break;
 
-		if (WINPORT(GetConsoleTitle)(buf.Get(), Size) < Size)
+		if (WINPORT(GetConsoleTitle)(nullptr, buf.Get(), Size) < Size)
 		{
 			strTitle = buf.Get();
 			return true;
@@ -167,7 +167,7 @@ bool console::GetTitle(FARString &strTitle)
 
 bool console::SetTitle(LPCWSTR Title)
 {
-	return WINPORT(SetConsoleTitle)(Title)!=FALSE;
+	return WINPORT(SetConsoleTitle)(nullptr, Title) != FALSE;
 }
 
 UINT console::GetInputCodepage()

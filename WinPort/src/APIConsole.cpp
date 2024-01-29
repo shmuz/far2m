@@ -22,13 +22,13 @@ extern "C" {
 		return TRUE;
 	}
 
-	WINPORT_DECL(SetConsoleTitle,BOOL,(const WCHAR *title))
+	WINPORT_DECL(SetConsoleTitle,BOOL,(HANDLE hConsoleOutput, const WCHAR *title))
 	{
 		g_winport_con_out->SetTitle(title);
 		return TRUE;
 	}
 
-	WINPORT_DECL(GetConsoleTitle,DWORD,(WCHAR *title, DWORD max_size))
+	WINPORT_DECL(GetConsoleTitle,DWORD,(HANDLE hConsoleOutput, WCHAR *title, DWORD max_size))
 	{
 		const std::wstring &s = g_winport_con_out->GetTitle();
 		wcsncpy(title, s.c_str(), max_size);
@@ -246,7 +246,7 @@ extern "C" {
 		return out;
 	}
 
-	WINPORT_DECL(WaitConsoleInput,BOOL,(DWORD dwTimeout))
+	WINPORT_DECL(WaitConsoleInput,BOOL,(HANDLE hConsoleInput, DWORD dwTimeout))
 	{
 		if (dwTimeout == INFINITE) {
 			g_winport_con_in->WaitForNonEmpty();
@@ -355,7 +355,7 @@ extern "C" {
 		return g_winport_con_out->SetFKeyTitles(titles) ? TRUE : FALSE;
 	}
 
-	WINPORT_DECL(GetConsoleColorPalette,BYTE,())
+	WINPORT_DECL(GetConsoleColorPalette,BYTE,(HANDLE hConsoleOutput))
 	{
 		return g_winport_con_out->GetColorPalette();
 	}

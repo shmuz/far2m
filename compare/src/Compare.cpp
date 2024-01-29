@@ -1160,10 +1160,10 @@ SHAREDSYMBOL HANDLE WINAPI EXP_NAME(OpenPlugin)(int OpenFrom, INT_PTR Item)
 
 	//
 	HANDLE hScreen = Info.SaveScreen(0, 0, -1, -1);
-	hConInp = CreateFile(_T("CONIN$"), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+	hConInp = NULL;
 
 	//
-	HANDLE hConOut = CreateFile(_T("CONOUT$"), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+	HANDLE hConOut = NULL;
 	CONSOLE_SCREEN_BUFFER_INFO csbiNfo;
 	if (GetConsoleScreenBufferInfo(hConOut, &csbiNfo)) {
 		if ((iTruncLen = csbiNfo.dwSize.X - 20) > MAX_PATH - 2)
@@ -1172,11 +1172,10 @@ SHAREDSYMBOL HANDLE WINAPI EXP_NAME(OpenPlugin)(int OpenFrom, INT_PTR Item)
 			iTruncLen = csbiNfo.dwSize.X - csbiNfo.dwSize.X / 4;
 	} else
 		iTruncLen = 60;
-	CloseHandle(hConOut);
 
 	//
 	TCHAR cConsoleTitle[MAX_PATH], cBuffer[MAX_PATH];
-	DWORD dwTitleSaved = GetConsoleTitle(cConsoleTitle, ARRAYSIZE(cConsoleTitle));
+	DWORD dwTitleSaved = GetConsoleTitle(NULL, cConsoleTitle, ARRAYSIZE(cConsoleTitle));
 #ifndef UNICODE
 	OSVERSIONINFO ovi;
 	ovi.dwOSVersionInfoSize = sizeof(ovi);
@@ -1185,7 +1184,7 @@ SHAREDSYMBOL HANDLE WINAPI EXP_NAME(OpenPlugin)(int OpenFrom, INT_PTR Item)
 	else
 #endif
 		lstrcpy(cBuffer, GetMsg(MComparingFiles));
-	SetConsoleTitle(cBuffer);
+	SetConsoleTitle(NULL, cBuffer);
 
 	//
 
@@ -1228,7 +1227,6 @@ SHAREDSYMBOL HANDLE WINAPI EXP_NAME(OpenPlugin)(int OpenFrom, INT_PTR Item)
 
 	free(ABuf);
 	free(PBuf);
-	CloseHandle(hConInp);
 	Info.RestoreScreen(hScreen);
 
 	//
@@ -1270,7 +1268,7 @@ SHAREDSYMBOL HANDLE WINAPI EXP_NAME(OpenPlugin)(int OpenFrom, INT_PTR Item)
 	}
 	//
 	if (dwTitleSaved)
-		SetConsoleTitle(cConsoleTitle);
+		SetConsoleTitle(NULL, cConsoleTitle);
 	FreePanelItems(AInfo, PInfo);
 	return INVALID_HANDLE_VALUE;
 }
