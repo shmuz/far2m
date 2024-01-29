@@ -55,11 +55,10 @@ local function GetAreaCode(Area)     return AllAreaNames[Area:lower()] end
 --------------------------------------------------------------------------------
 
 local MCODE_F_CHECKALL     = op.MCODE_F_CHECKALL
-local MCODE_F_GETOPTIONS   = op.MCODE_F_GETOPTIONS
 local MCODE_F_MACROSETTINGS = op.MCODE_F_MACROSETTINGS
 
-Shared.OnlyEditorViewerUsed = band(MacroCallFar(MCODE_F_GETOPTIONS),0x3) ~= 0
-local ReadOnlyConfig = false -- band(MacroCallFar(MCODE_F_GETOPTIONS),0x10) ~= 0
+Shared.OnlyEditorViewerUsed = band(MacroCallFar(op.MCODE_F_GETOPTIONS),0x1) ~= 0
+local ReadOnlyConfig = false -- band(MacroCallFar(op.MCODE_F_GETOPTIONS),0x10) ~= 0
 
 local Areas
 local LoadedMacros

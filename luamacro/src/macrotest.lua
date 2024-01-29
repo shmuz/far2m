@@ -694,7 +694,7 @@ function MT.test_mf()
   test_mf_testfolder()
   test_mf_trim()
   test_mf_ucase()
---test_mf_usermenu()
+  test_mf_usermenu()
   test_mf_waitkey()
   test_mf_xlat()
 end

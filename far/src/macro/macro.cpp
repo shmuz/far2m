@@ -74,6 +74,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "constitle.hpp"
 #include "dirmix.hpp"
 #include "console.hpp"
+#include "usermenu.hpp"
 
 int Log(const char* Format, ...)
 {
@@ -166,6 +167,16 @@ enum {
 
 FARString KeyMacro::m_RecCode;
 FARString KeyMacro::m_RecDescription;
+
+static void ShowUserMenu(size_t Count, const FarMacroValue *Values)
+{
+	if (Count==0)
+		UserMenu(false);
+	else if (Values[0].Type==FMVT_BOOLEAN)
+		UserMenu(Values[0].Boolean != 0);
+	else if (Values[0].Type==FMVT_STRING)
+		UserMenu(Values[0].String);
+}
 
 static bool ToDouble(long long v, double *d)
 {
@@ -1241,7 +1252,10 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		//case MCODE_F_EDITOR_INSSTR:    implemented_in_lua;
 		//case MCODE_F_EDITOR_SETSTR:    implemented_in_lua;
 		//case MCODE_F_MENU_SHOW:        implemented_in_lua_partially;
-		//case MCODE_F_USERMENU:         not_implemented;
+
+		case MCODE_F_USERMENU:
+			ShowUserMenu(Data->Count, Data->Values);
+			return 0;
 
 		case MCODE_F_FAR_GETCONFIG:        return api.fargetconfigFunc();
 		case MCODE_F_FAR_SETCONFIG:        return api.farsetconfigFunc();
@@ -3720,9 +3734,9 @@ FarKey KeyMacro::GetKey()
 				break;
 			}
 
-			//~ case MPRT_USERMENU:
-				//~ ShowUserMenu(mpr.Count,mpr.Values);
-				//~ break;
+			case MPRT_USERMENU:
+				ShowUserMenu(mpr.Count,mpr.Values);
+				break;
 		}
 	}
 

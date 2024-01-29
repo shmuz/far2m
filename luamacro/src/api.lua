@@ -140,7 +140,6 @@ mf.size2str = function(Size, Flags, Width)
   return far.FormatFileSize(Size, Width, Flags, Flags)
 end
 
---[=[
 mf.usermenu = function(mode, filename)
   if Shared.OnlyEditorViewerUsed then return end -- mantis #2986 (crash)
   if mode and type(mode)~="number" then return end
@@ -162,7 +161,6 @@ mf.usermenu = function(mode, filename)
     end
   end
 end
---]=]
 
 mf.GetMacroCopy = utils.GetMacroCopy
 mf.EnumScripts = utils.EnumScripts
