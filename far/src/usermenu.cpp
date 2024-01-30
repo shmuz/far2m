@@ -302,7 +302,7 @@ void UserMenu::ProcessUserMenu(bool ChoiceMenuType, const FARString &MenuFileNam
 		AddEndSlash(strMenuFileFullPath);
 		strMenuFileFullPath += LocalMenuFileName;
 
-		if (MenuMode != MM_USER)
+		if (MenuMode == MM_LOCAL || MenuMode == MM_FAR)
 		{
 			// Пытаемся открыть файл на локальном диске
 			File MenuFile;
@@ -322,7 +322,7 @@ void UserMenu::ProcessUserMenu(bool ChoiceMenuType, const FARString &MenuFileNam
 				{
 					MenuMode=MM_USER; // ...реестр
 				}
-				else
+				else // MM_LOCAL
 				{
 					if (!ChoiceMenuType)
 					{
@@ -333,9 +333,9 @@ void UserMenu::ProcessUserMenu(bool ChoiceMenuType, const FARString &MenuFileNam
 
 							if (FindLastSlash(pos,strMenuFilePath))
 							{
-								strMenuFilePath.Truncate(pos--);
+								strMenuFilePath.Truncate(pos);
 
-								if (strMenuFilePath.At(pos) != L':')
+								if (!strMenuFilePath.IsEmpty())
 									continue;
 							}
 						}
@@ -360,7 +360,7 @@ void UserMenu::ProcessUserMenu(bool ChoiceMenuType, const FARString &MenuFileNam
 			CtrlObject->Macro.SetArea(PrevMacroArea);
 
 		// обработка локального меню...
-		if (MenuMode != MM_USER)
+		if (MenuMode == MM_LOCAL || MenuMode == MM_FAR)
 		{
 			// ...запишем изменения обратно в файл
 			if (MenuModified)
@@ -383,8 +383,9 @@ void UserMenu::ProcessUserMenu(bool ChoiceMenuType, const FARString &MenuFileNam
 				}
 
 				File MenuFile;
-				// Don't use CreationDisposition=CREATE_ALWAYS here - it's kills alternate streams
-				if (MenuFile.Open(strMenuFileFullPath,GENERIC_WRITE, FILE_SHARE_READ, nullptr, FileAttr==INVALID_FILE_ATTRIBUTES?CREATE_NEW:TRUNCATE_EXISTING))
+				// Don't use CreationDisposition=CREATE_ALWAYS here - it kills alternate streams
+				if (MenuFile.Open(strMenuFileFullPath, GENERIC_WRITE, FILE_SHARE_READ, nullptr,
+					FileAttr == INVALID_FILE_ATTRIBUTES ? CREATE_NEW : TRUNCATE_EXISTING))
 				{
 					CachedWrite CW(MenuFile);
 					WCHAR Data = SIGN_WIDE_LE;
@@ -396,7 +397,7 @@ void UserMenu::ProcessUserMenu(bool ChoiceMenuType, const FARString &MenuFileNam
 					MenuFile.Close();
 
 					// если файл FarMenu.ini пуст, то удалим его
-					if (Size<3) // 2 for BOM
+					if (Size <= 4) // 4 for BOM
 					{
 						apiDeleteFile(strMenuFileFullPath);
 					}
@@ -415,7 +416,7 @@ void UserMenu::ProcessUserMenu(bool ChoiceMenuType, const FARString &MenuFileNam
 		// что было после вызова меню?
 		switch (ExitCode)
 		{
-				// Показать меню родительского каталога
+			// Показать меню родительского каталога
 			case EC_PARENT_MENU:
 			{
 				if (MenuMode == MM_LOCAL)
@@ -424,9 +425,9 @@ void UserMenu::ProcessUserMenu(bool ChoiceMenuType, const FARString &MenuFileNam
 
 					if (FindLastSlash(pos,strMenuFilePath))
 					{
-						strMenuFilePath.Truncate(pos--);
+						strMenuFilePath.Truncate(pos);
 
-						if (strMenuFilePath.At(pos)!=L':')
+						if (!strMenuFilePath.IsEmpty())
 							continue;
 					}
 
@@ -443,21 +444,21 @@ void UserMenu::ProcessUserMenu(bool ChoiceMenuType, const FARString &MenuFileNam
 			// Показать главное меню
 			case EC_MAIN_MENU:
 			{
-				// $ 14.07.2000 VVM: Shift+F2 переключает Главное меню/локальное в цикле
+				// Shift+F2 переключает тип меню в цикле
 				switch (MenuMode)
 				{
 					case MM_LOCAL:
 						strMenuFilePath = g_strFarPath;
-						MenuMode=MM_FAR;
+						MenuMode = MM_FAR;
 						break;
 
 					case MM_FAR:
-						MenuMode=MM_USER;
+						MenuMode = MM_USER;
 						break;
 
 					default: // MM_USER
 						CtrlObject->CmdLine->GetCurDir(strMenuFilePath);
-						MenuMode=MM_LOCAL;
+						MenuMode = MM_LOCAL;
 						break;
 				}
 
