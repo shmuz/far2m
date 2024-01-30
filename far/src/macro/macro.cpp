@@ -175,7 +175,7 @@ static void ShowUserMenu(size_t Count, const FarMacroValue *Values)
 	else if (Values[0].Type==FMVT_BOOLEAN)
 		UserMenu(Values[0].Boolean != 0);
 	else if (Values[0].Type==FMVT_STRING)
-		UserMenu(Values[0].String);
+		UserMenu(FARString(Values[0].String));
 }
 
 static bool ToDouble(long long v, double *d)

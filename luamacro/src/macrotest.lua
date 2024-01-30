@@ -644,7 +644,9 @@ local function test_mf_sleep()
 end
 
 local function test_mf_usermenu()
-  assert_func (mf.usermenu)
+  mf.usermenu()
+  TestArea("UserMenu")
+  Keys("Esc")
 end
 
 function MT.test_mf()

@@ -42,7 +42,7 @@ class UserMenu
 		{
 			MM_LOCAL, // Локальное меню
 			MM_FAR, // Меню из каталога ФАРа
-			MM_MAIN, // Главное меню
+			MM_USER, // Пользовательское меню
 		};
 		ConfigReaderScope grs;
 
@@ -50,7 +50,7 @@ class UserMenu
 		bool MenuModified;
 		bool MenuNeedRefresh;
 
-		void ProcessUserMenu(bool ChoiceMenuType);
+		void ProcessUserMenu(bool ChooseMenuType, const FARString& MenuFileName);
 		int DeleteMenuRecord(const wchar_t *MenuKey,int DeletePos);
 		bool EditMenu(const wchar_t *MenuKey,int EditPos,int TotalRecords,bool Create);
 		int ProcessSingleMenu(const wchar_t *MenuKey,int MenuPos,const wchar_t *MenuRootKey,const wchar_t *Title=nullptr);
@@ -58,5 +58,6 @@ class UserMenu
 
 	public:
 		UserMenu(bool ChoiceMenuType); //	true - выбор типа меню (основное или локальное), false - зависит от наличия FarMenu.Ini в текущем каталоге
+		UserMenu(const FARString& MenuFileName);
 		~UserMenu();
 };

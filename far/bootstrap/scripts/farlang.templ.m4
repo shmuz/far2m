@@ -16185,17 +16185,17 @@ MainMenuFAR
 "Directorio FAR"
 "Тека FAR"
 
-MainMenuREG
+MainMenuUser
 l:
-l:// <...menu (Registry)>
-"Реестр"
-"Registry"
-"Registry"
-"Reg."
-"Registry"
-"Rejestr"
-"Registro"
-"Реєстр"
+l:// <...menu (User)>
+"Пользовательское"
+"User"
+"Uživatel"
+"Benutzermenü"
+upd:"User"
+"Użytkownika"
+"Usuario"
+"Меню користувача"
 
 LocalMenuTitle
 "Местное меню"

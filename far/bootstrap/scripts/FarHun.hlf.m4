@@ -1782,7 +1782,7 @@ a nevét (ami majd a menüben jelenik meg) és a végrehajtandó parancs sorát.
 
     Almenü szerkesztésénél csak a gyorsbillentyűt és a nevet kell megadni.
 
-    A helyi felhasználói menü az adott mappában egy #FarMenu.Ini# nevű fájlba
+    A helyi felhasználói menü az adott mappában egy #FarMenu.ini# nevű fájlba
 mentődik. A főmenüt a FAR alaphelyzetben a regisztrációs adatbázisba menti, de
 fájlba is menthető. Ha helyi menüt készítettünk a FAR mappájában, a FAR ezt
 fogja használni a registrybe mentett főmenü helyett.

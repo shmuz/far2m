@@ -61,14 +61,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "cache.hpp"
 #include "DlgGuid.hpp"
 
-#if defined(PROJECT_DI_MEMOEDIT)
-/*
-  Идея в следующем.
-  1. Строки в реестре храняться как и раньше, т.к. CommandXXX
-  2. Для DI_MEMOEDIT мы из только преобразовываем в один массив
-*/
-#endif
-
 static std::unique_ptr<ConfigReader> s_cfg_reader;
 
 // Коды выхода из меню (Exit codes)
@@ -106,7 +98,11 @@ static int PrepareHotKey(FARString &strHotKey)
 	return FuncNum;
 }
 
-static void MenuRegToFile(const wchar_t *MenuKey, File& MenuFile, CachedWrite& CW, bool SingleItemMenu=false)
+static void MenuRegToFile(
+	const wchar_t *MenuKey,
+	File& MenuFile,
+	CachedWrite& CW,
+	bool SingleItemMenu = false)
 {
 	for (int i=0;;i++)
 	{
@@ -147,7 +143,12 @@ static void MenuRegToFile(const wchar_t *MenuKey, File& MenuFile, CachedWrite& C
 	}
 }
 
-void MenuFileToReg(const wchar_t *MenuKey, File& MenuFile, GetFileString& GetStr, bool SingleItemMenu = false, UINT MenuCP = CP_WIDE_LE)
+void MenuFileToReg(
+	const wchar_t *MenuKey,
+	File& MenuFile,
+	GetFileString& GetStr,
+	bool SingleItemMenu = false,
+	UINT MenuCP = CP_WIDE_LE)
 {
 	INT64 Pos = 0;
 	MenuFile.GetPointer(Pos);
@@ -240,14 +241,20 @@ void MenuFileToReg(const wchar_t *MenuKey, File& MenuFile, GetFileString& GetStr
 UserMenu::UserMenu(bool ChoiceMenuType)
 	: grs(s_cfg_reader)
 {
-	ProcessUserMenu(ChoiceMenuType);
+	ProcessUserMenu(ChoiceMenuType, L"");
+}
+
+UserMenu::UserMenu(const FARString& MenuFileName)
+	: grs(s_cfg_reader)
+{
+	ProcessUserMenu(false, MenuFileName);
 }
 
 UserMenu::~UserMenu()
 {
 }
 
-void UserMenu::ProcessUserMenu(bool ChoiceMenuType)
+void UserMenu::ProcessUserMenu(bool ChoiceMenuType, const FARString &MenuFileName)
 {
 	// Путь к текущему каталогу с файлом LocalMenuFileName
 	FARString strMenuFilePath;
@@ -281,15 +288,26 @@ void UserMenu::ProcessUserMenu(bool ChoiceMenuType)
 
 	while ((ExitCode != EC_CLOSE_LEVEL) && (ExitCode != EC_CLOSE_MENU) && (ExitCode != EC_COMMAND_SELECTED))
 	{
+		//	FARString strMenuFileFullPath;
+		//	if (!MenuFileName.IsEmpty())
+		//		strMenuFileFullPath = MenuFileName;
+		//	else
+		//	{
+		//		strMenuFileFullPath = strMenuFilePath;
+		//		AddEndSlash(strMenuFileFullPath);
+		//		strMenuFileFullPath += LocalMenuFileName;
+		//	}
+
 		FARString strMenuFileFullPath = strMenuFilePath;
 		AddEndSlash(strMenuFileFullPath);
 		strMenuFileFullPath += LocalMenuFileName;
 
-		if (MenuMode != MM_MAIN)
+		if (MenuMode != MM_USER)
 		{
 			// Пытаемся открыть файл на локальном диске
 			File MenuFile;
-			bool FileOpened = PathCanHoldRegularFile(strMenuFilePath) ? MenuFile.Open(strMenuFileFullPath,GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING) : false;
+			bool FileOpened = PathCanHoldRegularFile(strMenuFilePath) &&
+				MenuFile.Open(strMenuFileFullPath,GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING);
 			if (FileOpened)
 			{
 				// сливаем содержимое в реестр "на запасной путь" и оттуда будем пользовать
@@ -302,7 +320,7 @@ void UserMenu::ProcessUserMenu(bool ChoiceMenuType)
 				// Файл не открылся. Смотрим дальше.
 				if (MenuMode == MM_FAR) // был в %FARHOME%?
 				{
-					MenuMode=MM_MAIN; // ...реестр
+					MenuMode=MM_USER; // ...реестр
 				}
 				else
 				{
@@ -331,7 +349,7 @@ void UserMenu::ProcessUserMenu(bool ChoiceMenuType)
 			}
 		}
 
-		FARString strMenuRootKey = (MenuMode==MM_MAIN) ? L"UserMenu/MainMenu" : strLocalMenuKey;
+		FARString strMenuRootKey = (MenuMode==MM_USER) ? L"UserMenu/MainMenu" : strLocalMenuKey;
 		int PrevMacroArea=CtrlObject->Macro.GetArea();
 		int _CurrentFrame=FrameManager->GetCurrentFrame()->GetType();
 		CtrlObject->Macro.SetArea(MACROAREA_USERMENU);
@@ -342,7 +360,7 @@ void UserMenu::ProcessUserMenu(bool ChoiceMenuType)
 			CtrlObject->Macro.SetArea(PrevMacroArea);
 
 		// обработка локального меню...
-		if (MenuMode != MM_MAIN)
+		if (MenuMode != MM_USER)
 		{
 			// ...запишем изменения обратно в файл
 			if (MenuModified)
@@ -417,7 +435,7 @@ void UserMenu::ProcessUserMenu(bool ChoiceMenuType)
 				}
 				else
 				{
-					MenuMode=MM_MAIN;
+					MenuMode=MM_USER;
 				}
 
 				break;
@@ -429,21 +447,18 @@ void UserMenu::ProcessUserMenu(bool ChoiceMenuType)
 				switch (MenuMode)
 				{
 					case MM_LOCAL:
-					{
 						strMenuFilePath = g_strFarPath;
 						MenuMode=MM_FAR;
 						break;
-					}
+
 					case MM_FAR:
-					{
-						MenuMode=MM_MAIN;
+						MenuMode=MM_USER;
 						break;
-					}
-					default: // MM_MAIN
-					{
+
+					default: // MM_USER
 						CtrlObject->CmdLine->GetCurDir(strMenuFilePath);
 						MenuMode=MM_LOCAL;
-					}
+						break;
 				}
 
 				break;
@@ -548,26 +563,16 @@ int UserMenu::ProcessSingleMenu(const wchar_t *MenuKey,int MenuPos,const wchar_t
 				case MM_LOCAL:
 					strMenuTitle = Msg::LocalMenuTitle;
 					break;
-				case MM_FAR:
-				{
-					strMenuTitle=Msg::MainMenuTitle;
-					strMenuTitle+=L" (";
-					strMenuTitle+=Msg::MainMenuFAR;
-					strMenuTitle+=L")";
-				}
-				break;
-				default:
-				{
-					strMenuTitle=Msg::MainMenuTitle;
-					const wchar_t *Ptr=Msg::MainMenuREG;
 
-					if (*Ptr)
-					{
-						strMenuTitle+=L" (";
-						strMenuTitle+=Ptr;
-						strMenuTitle+=L")";
-					}
-				}
+				case MM_FAR:
+					strMenuTitle = Msg::MainMenuTitle;
+					strMenuTitle += L" (" + Msg::MainMenuFAR + L")";
+					break;
+
+				default: // MM_USER
+					strMenuTitle = Msg::MainMenuTitle;
+					strMenuTitle += L" (" + Msg::MainMenuUser + L")";
+					break;
 			}
 		}
 
@@ -730,7 +735,7 @@ int UserMenu::ProcessSingleMenu(const wchar_t *MenuKey,int MenuPos,const wchar_t
 						return(EC_MAIN_MENU);
 					case KEY_BS: // Показать меню из родительского каталога только в MM_LOCAL режиме
 
-						if (MenuMode != MM_MAIN)
+						if (MenuMode != MM_USER)
 							return(EC_PARENT_MENU);
 
 					default:
@@ -924,9 +929,6 @@ enum EditMenuItems
 	EM_LABEL_EDIT,
 	EM_SEPARATOR1,
 	EM_COMMANDS_TEXT,
-#ifdef PROJECT_DI_MEMOEDIT
-	EM_MEMOEDIT,
-#else
 	EM_EDITLINE_0,
 	EM_EDITLINE_1,
 	EM_EDITLINE_2,
@@ -937,7 +939,6 @@ enum EditMenuItems
 	EM_EDITLINE_7,
 	EM_EDITLINE_8,
 	EM_EDITLINE_9,
-#endif
 	EM_SEPARATOR2,
 	EM_BUTTON_OK,
 	EM_BUTTON_CANCEL,
@@ -945,19 +946,6 @@ enum EditMenuItems
 
 LONG_PTR WINAPI EditMenuDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2)
 {
-#if defined(PROJECT_DI_MEMOEDIT)
-	Dialog* Dlg=(Dialog*)hDlg;
-
-	switch (Msg)
-	{
-		case DN_INITDIALOG:
-		{
-			break;
-		}
-	}
-
-#endif
-
 	switch (Msg)
 	{
 		case DN_CLOSE:
@@ -1046,9 +1034,6 @@ bool UserMenu::EditMenu(const wchar_t *MenuKey,int EditPos,int TotalRecords,bool
 
 			{DI_TEXT,3,6,0,6,{},DIF_SEPARATOR|State,L""},
 			{DI_TEXT,5,7,0,7,{},State,Msg::EditMenuCommands},
-#ifdef PROJECT_DI_MEMOEDIT
-			{DI_MEMOEDIT,5, 8,DLG_X-6,17,{},DIF_EDITPATH,L""},
-#else
 			{DI_EDIT,5, 8,DLG_X-6,8,{},DIF_EDITPATH|DIF_EDITOR|State,L""},
 			{DI_EDIT,5, 9,DLG_X-6,9,{},DIF_EDITPATH|DIF_EDITOR|State,L""},
 			{DI_EDIT,5,10,DLG_X-6,10,{},DIF_EDITPATH|DIF_EDITOR|State,L""},
@@ -1059,39 +1044,18 @@ bool UserMenu::EditMenu(const wchar_t *MenuKey,int EditPos,int TotalRecords,bool
 			{DI_EDIT,5,15,DLG_X-6,15,{},DIF_EDITPATH|DIF_EDITOR|State,L""},
 			{DI_EDIT,5,16,DLG_X-6,16,{},DIF_EDITPATH|DIF_EDITOR|State,L""},
 			{DI_EDIT,5,17,DLG_X-6,17,{},DIF_EDITPATH|DIF_EDITOR|State,L""},
-#endif
 
 			{DI_TEXT,3,(short)(DLG_Y-4),0,(short)(DLG_Y-4),{},DIF_SEPARATOR,L""},
 			{DI_BUTTON,0,(short)(DLG_Y-3),0,(short)(DLG_Y-3),{},DIF_DEFAULT|DIF_CENTERGROUP,Msg::Ok},
 			{DI_BUTTON,0,(short)(DLG_Y-3),0,(short)(DLG_Y-3),{},DIF_CENTERGROUP,Msg::Cancel}
 		};
 		MakeDialogItemsEx(EditDlgData,EditDlg);
-#ifndef PROJECT_DI_MEMOEDIT
 		enum {DI_EDIT_COUNT=EM_SEPARATOR2-EM_COMMANDS_TEXT-1};
-#endif
 
 		if (!Create)
 		{
 			EditDlg[EM_HOTKEY_EDIT].strData = s_cfg_reader->GetString("HotKey", L"");
 			EditDlg[EM_LABEL_EDIT].strData = s_cfg_reader->GetString("Label", L"");
-#if defined(PROJECT_DI_MEMOEDIT)
-			/*
-				...
-				здесь добавка строк из "Command%d" в EMR_MEMOEDIT
-				...
-			*/
-			FARString strBuffer, strCommand;
-			int CommandNumber=0;
-
-			while (s_cfg_reader->GetString(strCommand, StrPrintf("Command%d", CommandNumber), L""))
-			{
-				strBuffer+=strCommand;
-				strBuffer+=L"\n";    //??? "\n\r"
-				CommandNumber++;
-			}
-
-			EditDlg[EM_MEMOEDIT].strData = strBuffer; //???
-#else
 			int CommandNumber=0;
 
 			while (CommandNumber < DI_EDIT_COUNT)
@@ -1103,8 +1067,6 @@ bool UserMenu::EditMenu(const wchar_t *MenuKey,int EditPos,int TotalRecords,bool
 				EditDlg[EM_EDITLINE_0+CommandNumber].strData = strCommand;
 				CommandNumber++;
 			}
-
-#endif
 		}
 
 		Dialog Dlg(EditDlg,ARRAYSIZE(EditDlg),EditMenuDlgProc);
@@ -1132,13 +1094,6 @@ bool UserMenu::EditMenu(const wchar_t *MenuKey,int EditPos,int TotalRecords,bool
 
 				if (!SubMenu)
 				{
-#if defined(PROJECT_DI_MEMOEDIT)
-					/*
-					...
-					здесь преобразование содержимого итема EMR_MEMOEDIT в "Command%d"
-					...
-					*/
-#else
 					int CommandNumber=0;
 
 					for (int i=0 ; i < DI_EDIT_COUNT ; i++)
@@ -1154,7 +1109,6 @@ bool UserMenu::EditMenu(const wchar_t *MenuKey,int EditPos,int TotalRecords,bool
 						else
 							cfg_writer.SetString(strCommandName, EditDlg[i+EM_EDITLINE_0].strData.CPtr());
 					}
-#endif
 				}
 			}
 
