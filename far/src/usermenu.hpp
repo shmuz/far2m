@@ -51,9 +51,10 @@ class UserMenu
 		bool MenuNeedRefresh;
 
 		void ProcessUserMenu(bool ChooseMenuType, const FARString& MenuFileName);
-		int DeleteMenuRecord(const wchar_t *MenuKey,int DeletePos);
-		bool EditMenu(const wchar_t *MenuKey,int EditPos,int TotalRecords,bool Create);
-		int ProcessSingleMenu(const wchar_t *MenuKey,int MenuPos,const wchar_t *MenuRootKey,const wchar_t *Title=nullptr);
+		int DeleteMenuRecord(const wchar_t *MenuKey, int DeletePos);
+		bool EditMenu(const wchar_t *MenuKey, int EditPos, int TotalRecords, bool Create);
+		int ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar_t *RootMenuKey,
+			const wchar_t *Title=nullptr);
 		bool MoveMenuItem(const wchar_t *MenuKey,int Pos,int NewPos);
 
 	public:
