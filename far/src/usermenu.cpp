@@ -246,12 +246,14 @@ void MenuFileToReg(
 UserMenu::UserMenu(bool ChooseMenuType)
 	: grs(s_cfg_reader)
 {
+	MenuFromMacro = false;
 	ProcessUserMenu(ChooseMenuType, L"");
 }
 
 UserMenu::UserMenu(const FARString& MenuFileName)
 	: grs(s_cfg_reader)
 {
+	MenuFromMacro = !MenuFileName.IsEmpty();
 	ProcessUserMenu(false, MenuFileName);
 }
 
@@ -297,7 +299,7 @@ void UserMenu::ProcessUserMenu(bool ChooseMenuType, const FARString &MenuFileNam
 	while ((ExitCode != EC_CLOSE_LEVEL) && (ExitCode != EC_CLOSE_MENU) && (ExitCode != EC_COMMAND_SELECTED))
 	{
 		FARString strMenuFileFullPath;
-		if (false && !MenuFileName.IsEmpty())
+		if (MenuFromMacro)
 		{
 			strMenuFileFullPath = MenuFileName;
 		}
@@ -330,7 +332,7 @@ void UserMenu::ProcessUserMenu(bool ChooseMenuType, const FARString &MenuFileNam
 				}
 				else // MM_LOCAL
 				{
-					if (!ChooseMenuType)
+					if (!ChooseMenuType && !MenuFromMacro)
 					{
 						if (!FirstRun && SetToParentPath(strMenuFilePath))
 							continue; // подымаемся выше...
@@ -553,6 +555,7 @@ int UserMenu::ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar
 			{
 				case MM_LOCAL:
 					strMenuTitle = Msg::LocalMenuTitle;
+					if (MenuFromMacro) strMenuTitle += L" *";
 					break;
 
 				case MM_FAR:
@@ -693,7 +696,7 @@ int UserMenu::ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar
 							{
 								apiDeleteFile(strMenuFileName);
 
-								if (Key == KEY_ALTSHIFTF4) // для тукущего пункта меню закрывать ненадо
+								if (Key == KEY_ALTSHIFTF4) // для текущего пункта меню закрывать не надо
 									break;
 
 								return 0;
@@ -714,18 +717,19 @@ int UserMenu::ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar
 						return 0; // Закрыть меню
 					}
 
-					/* $ 28.06.2000 tran
-					выход из пользовательского меню по ShiftF10 из любого уровня
-					вложенности просто задаем ExitCode -1, и возвращаем FALSE -
-					по FALSE оно и выйдет откуда угодно */
 					case KEY_SHIFTF10:
-						//UserMenu.SetExitCode(-1);
 						return(EC_CLOSE_MENU);
 
 					case KEY_SHIFTF2: // Показать главное меню
+						if (MenuFromMacro)
+							break;
+
 						return(EC_MAIN_MENU);
 
 					case KEY_BS: // Показать меню из родительского каталога только в MM_LOCAL режиме
+						if (MenuFromMacro)
+							break;
+
 						if (MenuMode != MM_USER)
 							return(EC_PARENT_MENU);
 
@@ -784,8 +788,6 @@ int UserMenu::ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar
 			continue;
 		}
 
-		/* $ 01.05.2001 IS Отключим до лучших времен */
-		//int LeftVisible,RightVisible,PanelsHidden=0;
 		int CurLine = 0;
 		FARString strCmdLineDir;
 		CtrlObject->CmdLine->GetCurDir(strCmdLineDir);
@@ -802,13 +804,13 @@ int UserMenu::ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar
 		{
 			FormatString strLineName;
 			FARString strCommand, strListName, strAnotherListName;
-			strLineName<<L"Command"<<CurLine;
+			strLineName << L"Command" << CurLine;
 
 			s_cfg_reader->SelectSection(strCurrentKey);
 			if (!s_cfg_reader->GetString(strCommand, FARString(strLineName).GetMB(), L""))
 				break;
 
-			if (!((!StrCmpNI(strCommand,L"REM",3) && IsSpaceOrEos(strCommand.At(3))) || !StrCmpNI(strCommand,L"::",2)))
+			if ((StrCmpNI(strCommand,L"REM",3) || !IsSpaceOrEos(strCommand.At(3))) && StrCmpNI(strCommand,L"::",2))
 			{
 				/*
 				  Осталось корректно обработать ситуацию, например:
@@ -820,39 +822,35 @@ int UserMenu::ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar
 				  ЭТО выполняется всегда, т.к. парсинг всей строки идет, а надо
 				  проверить фазу "if exist ..\a.bat", а уж потом делать выводы...
 				*/
+				SubstFileName(strCommand, strName, &strListName, &strAnotherListName, FALSE, strCmdLineDir);
+				bool ListFileUsed=!strListName.IsEmpty()||!strAnotherListName.IsEmpty();
+
+				RemoveExternalSpaces(strCommand);
+
+				if (!strCommand.IsEmpty())
 				{
-					SubstFileName(strCommand, strName, &strListName, &strAnotherListName, FALSE, strCmdLineDir);
-					bool ListFileUsed=!strListName.IsEmpty()||!strAnotherListName.IsEmpty();
+					bool isSilent = false;
 
+					if (strCommand.At(0) == L'@')
 					{
-						RemoveExternalSpaces(strCommand);
+						strCommand.LShift(1);
+						isSilent = true;
+					}
 
-						if (!strCommand.IsEmpty())
-						{
-							bool isSilent = false;
+					// TODO: Ахтунг. В режиме isSilent имеем проблемы с командами, которые выводят что-то на экран
+					//       Здесь необходимо переделка, например, перед исполнением подсунуть временный экранный
+					//       буфер, а потом его содержимое подсунуть в ScreenBuf...
 
-							if (strCommand.At(0) == L'@')
-							{
-								strCommand.LShift(1);
-								isSilent = true;
-							}
-
-							// TODO: Ахтунг. В режиме isSilent имеем проблемы с командами, которые выводят что-то на экран
-							//       Здесь необходимо переделка, например, перед исполнением подсунуть временный экранный буфер, а потом его содержимое подсунуть в ScreenBuf...
-
-							if (!isSilent)
-							{
-								CtrlObject->CmdLine->ExecString(strCommand,FALSE, 0, 0, ListFileUsed);
-							}
-							else
-							{
-								SaveScreen SaveScr;
-								CtrlObject->Cp()->LeftPanel->CloseFile();
-								CtrlObject->Cp()->RightPanel->CloseFile();
-								Execute(strCommand, 0, 0, ListFileUsed, true);
-							}
-//							WaitForClose(strName);
-						}
+					if (!isSilent)
+					{
+						CtrlObject->CmdLine->ExecString(strCommand,FALSE, 0, 0, ListFileUsed);
+					}
+					else
+					{
+						SaveScreen SaveScr;
+						CtrlObject->Cp()->LeftPanel->CloseFile();
+						CtrlObject->Cp()->RightPanel->CloseFile();
+						Execute(strCommand, 0, 0, ListFileUsed, true);
 					}
 				}
 			} // strCommand != "REM"
@@ -864,7 +862,7 @@ int UserMenu::ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar
 				QueueDeleteOnClose(strAnotherListName);
 
 			CurLine++;
-		} // while (1)
+		} // for (;;)
 
 		CtrlObject->CmdLine->LockUpdatePanel(FALSE);
 
@@ -875,22 +873,6 @@ int UserMenu::ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar
 			CtrlObject->CmdLine->Select(OldCmdLineSelStart, OldCmdLineSelEnd);
 		}
 
-		/* $ 01.05.2001 IS Отключим до лучших времен */
-		/*
-		if (PanelsHidden)
-		{
-			CtrlObject->Cp()->LeftPanel->SetUpdateMode(TRUE);
-			CtrlObject->Cp()->RightPanel->SetUpdateMode(TRUE);
-			CtrlObject->Cp()->LeftPanel->Update(UPDATE_KEEP_SELECTION);
-			CtrlObject->Cp()->RightPanel->Update(UPDATE_KEEP_SELECTION);
-			if (RightVisible)
-				CtrlObject->Cp()->RightPanel->Show();
-			if (LeftVisible)
-				CtrlObject->Cp()->LeftPanel->Show();
-		}
-		*/
-		/* $ 14.07.2000 VVM ! Закрыть меню */
-		/* $ 25.04.2001 DJ - сообщаем, что была выполнена команда (нужно перерисовать панели) */
 		return(EC_COMMAND_SELECTED);
 	}
 }
