@@ -57,7 +57,7 @@ class UserMenu
 		bool MoveMenuItem(const wchar_t *MenuKey,int Pos,int NewPos);
 
 	public:
-		UserMenu(bool ChoiceMenuType); //	true - выбор типа меню (основное или локальное), false - зависит от наличия FarMenu.Ini в текущем каталоге
+		UserMenu(bool ChooseMenuType); //	true - выбор типа меню (основное или локальное), false - зависит от наличия FarMenu.Ini в текущем каталоге
 		UserMenu(const FARString& MenuFileName);
 		~UserMenu();
 };

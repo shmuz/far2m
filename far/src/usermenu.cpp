@@ -238,10 +238,10 @@ void MenuFileToReg(
 	}
 }
 
-UserMenu::UserMenu(bool ChoiceMenuType)
+UserMenu::UserMenu(bool ChooseMenuType)
 	: grs(s_cfg_reader)
 {
-	ProcessUserMenu(ChoiceMenuType, L"");
+	ProcessUserMenu(ChooseMenuType, L"");
 }
 
 UserMenu::UserMenu(const FARString& MenuFileName)
@@ -254,7 +254,7 @@ UserMenu::~UserMenu()
 {
 }
 
-void UserMenu::ProcessUserMenu(bool ChoiceMenuType, const FARString &MenuFileName)
+void UserMenu::ProcessUserMenu(bool ChooseMenuType, const FARString &MenuFileName)
 {
 	// Путь к текущему каталогу с файлом LocalMenuFileName
 	FARString strMenuFilePath;
@@ -267,7 +267,7 @@ void UserMenu::ProcessUserMenu(bool ChoiceMenuType, const FARString &MenuFileNam
 	ConfigReaderScope::Update(s_cfg_reader);
 	MenuModified=MenuNeedRefresh=false;
 
-	if (ChoiceMenuType)
+	if (ChooseMenuType)
 	{
 		int EditChoice=Message(0,3,Msg::UserMenuTitle,Msg::ChooseMenuType,Msg::ChooseMenuMain,Msg::ChooseMenuLocal,Msg::Cancel);
 
@@ -288,19 +288,17 @@ void UserMenu::ProcessUserMenu(bool ChoiceMenuType, const FARString &MenuFileNam
 
 	while ((ExitCode != EC_CLOSE_LEVEL) && (ExitCode != EC_CLOSE_MENU) && (ExitCode != EC_COMMAND_SELECTED))
 	{
-		//	FARString strMenuFileFullPath;
-		//	if (!MenuFileName.IsEmpty())
-		//		strMenuFileFullPath = MenuFileName;
-		//	else
-		//	{
-		//		strMenuFileFullPath = strMenuFilePath;
-		//		AddEndSlash(strMenuFileFullPath);
-		//		strMenuFileFullPath += LocalMenuFileName;
-		//	}
-
-		FARString strMenuFileFullPath = strMenuFilePath;
-		AddEndSlash(strMenuFileFullPath);
-		strMenuFileFullPath += LocalMenuFileName;
+		FARString strMenuFileFullPath;
+		if (false && !MenuFileName.IsEmpty())
+		{
+			strMenuFileFullPath = MenuFileName;
+		}
+		else
+		{
+			strMenuFileFullPath = strMenuFilePath;
+			AddEndSlash(strMenuFileFullPath);
+			strMenuFileFullPath += LocalMenuFileName;
+		}
 
 		if (MenuMode == MM_LOCAL || MenuMode == MM_FAR)
 		{
@@ -324,7 +322,7 @@ void UserMenu::ProcessUserMenu(bool ChoiceMenuType, const FARString &MenuFileNam
 				}
 				else // MM_LOCAL
 				{
-					if (!ChoiceMenuType)
+					if (!ChooseMenuType)
 					{
 						if (!FirstRun)
 						{
@@ -720,7 +718,7 @@ int UserMenu::ProcessSingleMenu(const wchar_t *MenuKey,int MenuPos,const wchar_t
 						MenuModified=true;
 						UserMenu.Hide();
 
-						if (Key == KEY_ALTSHIFTF4) // для тукущего пункта меню закрывать ненадо
+						if (Key == KEY_ALTSHIFTF4) // для текущего пункта меню закрывать не надо
 							break;
 
 						return 0; // Закрыть меню
