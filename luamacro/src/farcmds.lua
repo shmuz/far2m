@@ -77,6 +77,7 @@ local function Process(prefix, text)
     text = FullExpand(Unquote(text))
     if text ~= "" then
       local path_ok = true
+      text = far.SplitCmdLine(text)
       local path,filename = text:match("(.*/)(.*)")
       if path == nil then
         filename = text
