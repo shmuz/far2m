@@ -364,7 +364,6 @@ GetOut
 "&Get out"
 "&Вибратися"
 
-
 CommandBackgrounded
 " *** Команда отправлена в фон, используйте меню Экранов F12 для переключения на нее"
 " *** Command put to background, use Screen menu (F12) to switch back to it"

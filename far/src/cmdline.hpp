@@ -87,7 +87,7 @@ class CommandLine:public ScreenObject
 
 		virtual void ResizeConsole();
 
-	std::string GetConsoleLog(HANDLE con_hnd, bool colored);
+		std::string GetConsoleLog(HANDLE con_hnd, bool colored);
 		int GetCurDir(FARString &strCurDir);
 		BOOL SetCurDir(const wchar_t *CurDir);
 
