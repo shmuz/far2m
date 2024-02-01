@@ -246,14 +246,14 @@ void MenuFileToReg(
 UserMenu::UserMenu(bool ChooseMenuType)
 	: grs(s_cfg_reader)
 {
-	MenuFromMacro = false;
+	MenuFromAnyFile = false;
 	ProcessUserMenu(ChooseMenuType, L"");
 }
 
 UserMenu::UserMenu(const FARString& MenuFileName)
 	: grs(s_cfg_reader)
 {
-	MenuFromMacro = !MenuFileName.IsEmpty();
+	MenuFromAnyFile = !MenuFileName.IsEmpty();
 	ProcessUserMenu(false, MenuFileName);
 }
 
@@ -299,7 +299,7 @@ void UserMenu::ProcessUserMenu(bool ChooseMenuType, const FARString &MenuFileNam
 	while ((ExitCode != EC_CLOSE_LEVEL) && (ExitCode != EC_CLOSE_MENU) && (ExitCode != EC_COMMAND_SELECTED))
 	{
 		FARString strMenuFileFullPath;
-		if (MenuFromMacro)
+		if (MenuFromAnyFile)
 		{
 			strMenuFileFullPath = MenuFileName;
 		}
@@ -332,7 +332,7 @@ void UserMenu::ProcessUserMenu(bool ChooseMenuType, const FARString &MenuFileNam
 				}
 				else // MM_LOCAL
 				{
-					if (!ChooseMenuType && !MenuFromMacro)
+					if (!ChooseMenuType && !MenuFromAnyFile)
 					{
 						if (!FirstRun && SetToParentPath(strMenuFilePath))
 							continue; // подымаемся выше...
@@ -357,7 +357,6 @@ void UserMenu::ProcessUserMenu(bool ChooseMenuType, const FARString &MenuFileNam
 		if (_CurrentFrame == FrameManager->GetCurrentFrame()->GetType()) //???
 			CtrlObject->Macro.SetArea(PrevMacroArea);
 
-		// обработка локального меню...
 		if (MenuMode == MM_LOCAL || MenuMode == MM_FAR)
 		{
 			// ...запишем изменения обратно в файл
@@ -555,7 +554,7 @@ int UserMenu::ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar
 			{
 				case MM_LOCAL:
 					strMenuTitle = Msg::LocalMenuTitle;
-					if (MenuFromMacro) strMenuTitle += L" *";
+					if (MenuFromAnyFile) strMenuTitle += L" *";
 					break;
 
 				case MM_FAR:
@@ -721,17 +720,13 @@ int UserMenu::ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar
 						return(EC_CLOSE_MENU);
 
 					case KEY_SHIFTF2: // Показать главное меню
-						if (MenuFromMacro)
-							break;
-
 						return(EC_MAIN_MENU);
 
 					case KEY_BS: // Показать меню из родительского каталога только в MM_LOCAL режиме
-						if (MenuFromMacro)
-							break;
-
-						if (MenuMode != MM_USER)
+						if (MenuMode == MM_LOCAL && !MenuFromAnyFile)
 							return(EC_PARENT_MENU);
+
+						break;
 
 					default:
 						UserMenu.ProcessInput();

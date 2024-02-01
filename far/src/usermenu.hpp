@@ -49,7 +49,7 @@ class UserMenu
 		MENUMODE MenuMode;
 		bool MenuModified;
 		bool MenuNeedRefresh;
-		bool MenuFromMacro;
+		bool MenuFromAnyFile;
 
 		void ProcessUserMenu(bool ChooseMenuType, const FARString& MenuFileName);
 		int DeleteMenuRecord(const wchar_t *MenuKey, int DeletePos);
