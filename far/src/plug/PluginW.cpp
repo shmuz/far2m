@@ -431,7 +431,8 @@ static BOOL LoadLuafar()
 	const char *libs[] = {"libluajit-5.1.so", "liblua5.1.so", nullptr};
 	void *handle = nullptr;
 
-	if (getenv("FARPLAINLUA"))
+	auto str = getenv("FARPLAINLUA");
+	if (str && !strcmp(str, "1"))
 	{
 		std::swap(libs[0], libs[1]);
 	}
