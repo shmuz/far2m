@@ -8,6 +8,7 @@
 #include "interf.hpp"
 #include "clipboard.hpp"
 #include "message.hpp"
+#include "mix.hpp"
 #include <signal.h>
 #include <mutex>
 #include <list>
@@ -26,6 +27,7 @@
 #include "dirmix.hpp"
 #include "vtansi.h"
 #include "vtlog.h"
+#include "vtshell.h"
 #include "VTFar2lExtensios.h"
 #include "InterThreadCall.hpp"
 #include "vtshell_compose.h"
@@ -83,6 +85,10 @@ std::string VTSanitizeHistcontrol()
 
 class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 {
+	HANDLE _console_handle = NULL;
+	std::atomic<bool> _console_switch_requested{false};
+	std::atomic<bool> _console_kill_requested{false};
+
 	VTAnsi _vta;
 	VTInputReader _input_reader;
 	VTOutputReader _output_reader;
@@ -98,11 +104,13 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 	std::unique_ptr<VTFar2lExtensios> _far2l_exts;
 	std::unique_ptr<VTMouse> _mouse;
 	std::mutex _read_state_mutex, _write_term_mutex;
+	uint32_t _mouse_expectations{0};
 
 	std::string _start_marker, _exit_marker;
 	std::string _host_id;
 	unsigned int _exit_code;
-	bool _allow_osc_clipset{false};
+	bool _may_notify{false};
+	std::atomic<bool> _allow_osc_clipset{false};
 	std::string _init_user_profile;
 
 	static const char *GetSystemShell()
@@ -155,7 +163,7 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 			AnsiEsc::ConsoleColorToAnsi(col & 0xf),
 			AnsiEsc::ConsoleColorToAnsi((col >> 4) & 0xf));
 
-		const auto color_bpp = WINPORT(GetConsoleColorPalette)(nullptr);
+		const auto color_bpp = WINPORT(GetConsoleColorPalette)(ConsoleHandle());
 		std::string askpass_app;
 		if (Opt.SudoEnabled) {
 			askpass_app = GetHelperPathName("far2m_askpass");
@@ -230,7 +238,7 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 	void UpdateTerminalSize(int fd_term)
 	{
 		CONSOLE_SCREEN_BUFFER_INFO csbi = { };
-		if (WINPORT(GetConsoleScreenBufferInfo)( NULL, &csbi )
+		if (WINPORT(GetConsoleScreenBufferInfo)(ConsoleHandle(), &csbi )
 					&& csbi.dwSize.X && csbi.dwSize.Y) {
 			fprintf(stderr, "UpdateTerminalSize: %u x %u\n", csbi.dwSize.X, csbi.dwSize.Y);
 			struct winsize ws = {(unsigned short)csbi.dwSize.Y,
@@ -434,7 +442,7 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 
 		if (!translated.empty()) {
 			if (_slavename.empty() && KeyEvent.uChar.UnicodeChar) {//pipes fallback
-				WINPORT(WriteConsole)( NULL, &KeyEvent.uChar.UnicodeChar, 1, &dw, NULL );
+				WINPORT(WriteConsole)(ConsoleHandle(), &KeyEvent.uChar.UnicodeChar, 1, &dw, NULL );
 			}
 			DbgPrintEscaped("INPUT", translated.c_str(), translated.size());
 			if (!WriteTerm(translated.c_str(), translated.size())) {
@@ -450,6 +458,7 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 	void OnCtrlC(bool alt)
 	{
 		if (alt) {
+			_console_kill_requested = true;
 			fprintf(stderr, "VT: Ctrl+Alt+C - killing them hardly...\n");
 			SendSignalToVT(SIGKILL);
 			DetachTerminal();
@@ -476,9 +485,9 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 
 		SetFarConsoleMode(TRUE);
 		if (kind == CLK_EDIT)
-			EditConsoleHistory(true);
+			EditConsoleHistory(NULL, true);
 		else
-			ViewConsoleHistory(true, kind == CLK_VIEW_AUTOCLOSE);
+			ViewConsoleHistory(NULL, true, kind == CLK_VIEW_AUTOCLOSE);
 
 		CtrlObject->CmdLine->ShowBackground();
 		ScrBuf.Flush();
@@ -510,20 +519,33 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 			_far2l_exts->OnTerminalResized();
 	}
 
+	void OnConsoleSwitch()
+	{
+		InterThreadLockAndWake ittlaw;
+//		_console_handle = WINPORT(ForkConsole)();
+		_console_switch_requested = true;
+	}
+
 	virtual void OnKeypadChange(unsigned char keypad)
 	{
 //		fprintf(stderr, "VTShell::OnKeypadChange: %u\n", keypad);
 		_keypad = keypad;
 	}
 
-	virtual void OnMouseExpectation(MouseExpectation mex)
+	virtual void OnMouseExpectation(MouseExpectation mex, bool enable)
 	{
 		fprintf(stderr, "VT::OnMouseExpectation: %u\n", mex);
 
 		std::lock_guard<std::mutex> lock(_read_state_mutex);
-		_mouse.reset();
-		if (mex != MEX_NONE) {
-			_mouse.reset(new VTMouse(this, mex));
+		const auto prev_mouse_expectations = _mouse_expectations;
+		if (enable) {
+			_mouse_expectations|= mex;
+		} else {
+			_mouse_expectations&= ~(uint32_t)mex;
+		}
+		if (prev_mouse_expectations != _mouse_expectations) {
+			_mouse.reset();
+			_mouse.reset(new VTMouse(this, _mouse_expectations));
 		}
 	}
 
@@ -602,6 +624,11 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 					{
 						_exit_code = atoi(&str[6 + _exit_marker.size()]);
 						_exit_marker.clear();
+						if (_may_notify) {
+							DisplayNotification(
+								_exit_code ? Msg::ConsoleCommandFailed : Msg::ConsoleCommandComplete,
+									GetTitle().c_str());
+						}
 //						fprintf(stderr, "_exit_marker=%s _exit_code=%d\n", &str[6], _exit_code);
 					} else {
 						fprintf(stderr,
@@ -726,7 +753,8 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 				}
 
 				if (ctrl && !shift && alt && KeyEvent.wVirtualKeyCode=='Z') {
-					WINPORT(ConsoleBackgroundMode)(TRUE);
+					OnConsoleSwitch();
+//					WINPORT(ConsoleBackgroundMode)(TRUE);
 					return "";
 				}
 
@@ -822,33 +850,35 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 	{
 		if (_last_window_info_ir.EventType == WINDOW_BUFFER_SIZE_EVENT) {
 			DWORD dw = 0;
-			WINPORT(WriteConsoleInput)(NULL, &_last_window_info_ir, 1, &dw);
+			WINPORT(WriteConsoleInput)(ConsoleHandle(), &_last_window_info_ir, 1, &dw);
 			_last_window_info_ir.EventType = 0;
 		}
 	}
 
-	void TerminalIOLoop()
+	std::unique_ptr<VT_ComposeCommandExec> _cce;
+
+
+	void StartIOReaders()
 	{
-		{
-			std::lock_guard<std::mutex> lock(_inout_control_mutex);
-			_output_reader.Start(_fd_out);
-			_input_reader.Start();
-		}
-
-		_output_reader.WaitDeactivation();
-
 		std::lock_guard<std::mutex> lock(_inout_control_mutex);
-		_input_reader.Stop();
-		_output_reader.Stop();
+		_output_reader.Start(_fd_out);
+		_input_reader.Start(_console_handle);
 	}
 
-	bool ExecuteCommandInner(const char *cd, const char *cmd, bool force_sudo)
+	void StopIOReaders()
 	{
-		VT_ComposeCommandExec cce(cd, cmd, force_sudo, _start_marker);
-		if (!cce.Created()) {
+		std::lock_guard<std::mutex> lock(_inout_control_mutex);
+		_output_reader.Stop();
+		_input_reader.Stop();
+	}
+
+	bool ExecuteCommandBegin(const char *cd, const char *cmd, bool force_sudo) // return false on failure
+	{
+		_cce.reset(new VT_ComposeCommandExec(cd, cmd, force_sudo, _start_marker));
+		if (!_cce->Created()) {
 			const std::string &error_str =
 				StrPrintf("Far2l::VT: error %u creating: '%s'\n",
-					errno, cce.ScriptFile().c_str());
+					errno, _cce->ScriptFile().c_str());
 			_vta.Write(error_str.c_str(), error_str.size());
 			return false;
 		}
@@ -876,7 +906,7 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 			}
 			_init_user_profile.clear();
 		}
-		cmd_str+= EscapeCmdStr(cce.ScriptFile());
+		cmd_str+= EscapeCmdStr(_cce->ScriptFile());
 		cmd_str+= ';';
 		cmd_str+= VT_ComposeMarkerCommand(_exit_marker + "$FARVTRESULT");
 		cmd_str+= '\n';
@@ -889,20 +919,22 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 
 		_vta.DisableOutput(); // will enable on start marker arrival
 
-		TerminalIOLoop();
+		return true;
+	}
 
+	void ExecuteCommandEnd()
+	{
 		_vta.EnableOutput(); // just in case start marker didnt arrive
 
-
 		struct stat s;
-		if (stat(cce.ScriptFile().c_str(), &s) == -1) {
+		if (stat(_cce->ScriptFile().c_str(), &s) == -1) {
 			const std::string &error_str =
 				StrPrintf("\nFar2l::VT: Script disappeared: '%s'\n",
-					cce.ScriptFile().c_str());
+					_cce->ScriptFile().c_str());
 			_vta.Write(error_str.c_str(), error_str.size());
 
 		} else {
-			const std::string &pwd = cce.ResultedWorkingDirectory();
+			const std::string &pwd = _cce->ResultedWorkingDirectory();
 			if (!pwd.empty()) {
 				if (sdc_chdir(pwd.c_str()) == -1) {
 					StrPrintf("\nFar2l::VT: error %u changing dir to: '%s'\n",
@@ -910,8 +942,6 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 				}
 			}
 		}
-
-		return true;
 	}
 
 	public:
@@ -926,20 +956,29 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 
 	virtual ~VTShell()
 	{
-		fprintf(stderr, "~VTShell\n");
+		fprintf(stderr, "~VTShell this=%p\n", this);
+		StopIOReaders();
 		Shutdown();
 		CheckedCloseFD(_pipes_fallback_in);
 		CheckedCloseFD(_pipes_fallback_out);
 	}
 
-	int ExecuteCommand(const char *cmd, bool force_sudo)
+	virtual HANDLE ConsoleHandle()
 	{
+		return _console_handle;
+	}
+
+	bool ExecuteCommand(const char *cmd, bool force_sudo, bool may_bgnd, bool may_notify)
+	{
+		ASSERT(!_console_handle);
 		_host_id.clear();
 		CheckLeaderAlive();
 		if (_leader_pid == -1) {
 			fprintf(stderr, "%s: no leader\n", __FUNCTION__);
-			return -1;
+			_exit_code = -1;
+			return true;
 		}
+		_may_notify = may_notify;
 
 		char cd[MAX_PATH + 1] = {'.', 0};
 		if (!sdc_getcwd(cd, MAX_PATH)) {
@@ -951,10 +990,56 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 		_exit_marker+= ':';
 
 		_vta.OnStart();
-
-		if (!ExecuteCommandInner(cd, cmd, force_sudo)) {
+		if (!ExecuteCommandBegin(cd, cmd, force_sudo)) {
 			_exit_code = -1;
 		}
+
+		return ExecuteCommandCommonTail(may_bgnd);
+	}
+
+	bool ExecuteCommandContinue()
+	{
+		StopIOReaders();
+		VTLog::ConsoleJoined(_console_handle);
+		WINPORT(JoinConsole)(_console_handle);
+		_console_handle = NULL;
+		OnTerminalResized();
+
+		return ExecuteCommandCommonTail(true);
+	}
+
+	void PrintNoticeOnPrimaryConsole(const FarLangMsg &m)
+	{
+		FARString msg(m);
+		msg.Insert(0, L'\n');
+		msg.Append(L'\n');
+		const DWORD64 saved_color = GetColor();
+		SetColor(COL_HELPTOPIC, true);
+		DWORD dw;
+		WINPORT(WriteConsole)(NULL, msg.CPtr(), msg.GetLength(), &dw, NULL );
+		SetColor(saved_color, true);
+	}
+
+	bool ExecuteCommandCommonTail(bool may_bgnd)
+	{
+		_console_kill_requested = false;
+		StartIOReaders();
+		WAIT_FOR_AND_DISPATCH_INTER_THREAD_CALLS(_output_reader.IsDeactivated() || (_console_switch_requested && may_bgnd));
+		StopIOReaders();
+
+		if (_console_switch_requested) {
+			_console_switch_requested = false;
+			if (may_bgnd) {
+				_vta.OnDetached();
+				DeliverPendingWindowInfo();
+				_console_handle = WINPORT(ForkConsole)();//CommandTerminated
+				PrintNoticeOnPrimaryConsole(Msg::CommandBackgrounded);
+				StartIOReaders();
+				return false;
+			}
+		}
+
+		ExecuteCommandEnd();
 
 		CheckLeaderAlive();
 
@@ -963,11 +1048,22 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 		_allow_osc_clipset = false;
 		_bracketed_paste_expected = false;
 		DeliverPendingWindowInfo();
+		if (_console_kill_requested) {
+			_console_kill_requested = false;
+			PrintNoticeOnPrimaryConsole(Msg::CommandTerminated);
+		}
 
 		std::lock_guard<std::mutex> lock(_read_state_mutex);
 		_far2l_exts.reset();
 		_host_id.clear();
 		_mouse.reset();
+		_mouse_expectations = 0;
+		return true;
+	}
+
+
+	int CommandExitCode() const
+	{
 		return _exit_code;
 	}
 
@@ -984,43 +1080,124 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 
 		return _leader_pid != -1;
 	}
+
+	std::string GetTitle()
+	{
+		return _vta.GetTitle();
+	}
+
+	bool IsDone()
+	{
+		return _exit_marker.empty();
+	}
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static std::unique_ptr<VTShell> g_vts;
 static std::mutex g_vts_mutex;
+static std::vector<std::unique_ptr<VTShell> > g_vts;
+static std::unique_ptr<VTShell> g_vt;
+static std::atomic<int> g_vt_busy{0};
 
-int VTShell_Execute(const char *cmd, bool need_sudo)
+struct VTShell_BusyScope
 {
-	std::lock_guard<std::mutex> lock(g_vts_mutex);
-	if (g_vts && !g_vts->CheckLeaderAlive()) {
-		g_vts.reset();
+	bool owner;
+	VTShell_BusyScope()
+	{
+		owner = (1 == ++g_vt_busy);
 	}
-	if (!g_vts) {
-		g_vts.reset(new VTShell);
+	~VTShell_BusyScope()
+	{
+		--g_vt_busy;
+	}
+};
+
+static int VTShell_ExecuteCommonTail(bool completed)
+{
+	if (!completed) {
+		std::lock_guard<std::mutex> lock(g_vts_mutex);
+		g_vts.emplace_back(std::move(g_vt));
+		g_vt.reset();
+		return 0;
 	}
 
-	int r = g_vts->ExecuteCommand(cmd, need_sudo);
+	int r = g_vt->CommandExitCode();
 
-	if (!g_vts->CheckLeaderAlive()) {
-		g_vts.reset();
+	if (!g_vt->CheckLeaderAlive()) {
+		g_vt.reset();
 	}
 
 	return r;
 }
 
+int VTShell_Execute(const char *cmd, bool need_sudo, bool may_bgnd, bool may_notify)
+{
+	VTShell_BusyScope vts_bs;
+	if (!vts_bs.owner) {
+		fprintf(stderr, "%s('%s') - not owner\n", __FUNCTION__, cmd);
+		return -1;
+	}
+
+	if (g_vt && !g_vt->CheckLeaderAlive()) {
+		g_vt.reset();
+	}
+	if (!g_vt) {
+		g_vt.reset(new VTShell);
+	}
+
+	return VTShell_ExecuteCommonTail(g_vt->ExecuteCommand(cmd, need_sudo, may_bgnd, may_notify));
+}
+
+int VTShell_Switch(size_t index)
+{
+	VTShell_BusyScope vts_bs;
+	if (!vts_bs.owner) {
+		fprintf(stderr, "%s(%lu) - not owner\n", __FUNCTION__, (unsigned long)index);
+		return -1;
+	}
+
+	{
+		std::lock_guard<std::mutex> lock(g_vts_mutex);
+		if (index >= g_vts.size()) {
+			fprintf(stderr, "%s: wrong index: %lu >= %lu\n", __FUNCTION__,
+				(unsigned long)index, (unsigned long)g_vts.size());
+			return -1;
+		}
+		g_vt = std::move(g_vts[index]);
+		g_vts.erase(g_vts.begin() + index);
+	}
+
+	return VTShell_ExecuteCommonTail(g_vt->ExecuteCommandContinue());
+}
+
+
 void VTShell_Shutdown()
 {
 	std::lock_guard<std::mutex> lock(g_vts_mutex);
-	g_vts.reset();
+	g_vts.clear();
+	g_vt.reset();
 }
 
 bool VTShell_Busy()
 {
-	if (!g_vts_mutex.try_lock())
-		return true;
+	return g_vt_busy != 0;
+}
 
-	g_vts_mutex.unlock();
-	return false;
+void VTShell_Enum(VTInfos &vts)
+{
+	std::lock_guard<std::mutex> lock(g_vts_mutex);
+	for (const auto &vt : g_vts) {
+		vts.emplace_back();
+		auto &vti = vts.back();
+		vti.con_hnd = vt->ConsoleHandle();
+		vti.title = vt->GetTitle();
+		vti.done = vt->IsDone();
+		vti.exit_code = vt->CommandExitCode();
+	}
+}
+
+size_t VTShell_Count()
+{
+	std::lock_guard<std::mutex> lock(g_vts_mutex);
+	return g_vts.size();
 }

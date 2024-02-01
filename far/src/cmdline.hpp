@@ -48,9 +48,12 @@ struct PushPopRecord
 {
 	FARString strName;
 
-	const PushPopRecord& operator=(const PushPopRecord &rhs) {strName=rhs.strName; return *this;}
+	const PushPopRecord &operator=(const PushPopRecord &rhs)
+	{
+		strName = rhs.strName;
+		return *this;
+	}
 };
-
 
 class CommandLine:public ScreenObject
 {
@@ -71,6 +74,7 @@ class CommandLine:public ScreenObject
 		bool ProcessOSCommands(const wchar_t *CmdLine, bool SeparateWindow, bool &PrintCommand);
 		void ProcessCompletion(bool possibilities);
 		void DrawComboBoxMark(wchar_t MarkChar);
+		void CheckForKeyPressAfterCmd(int r);
 
 	public:
 		CommandLine();
@@ -83,7 +87,7 @@ class CommandLine:public ScreenObject
 
 		virtual void ResizeConsole();
 
-		std::string GetConsoleLog(bool colored);
+	std::string GetConsoleLog(HANDLE con_hnd, bool colored);
 		int GetCurDir(FARString &strCurDir);
 		BOOL SetCurDir(const wchar_t *CurDir);
 
@@ -93,6 +97,8 @@ class CommandLine:public ScreenObject
 		void InsertString(const wchar_t *Str);
 
 		void ExecString(const wchar_t *Str, bool SeparateWindow = false, bool DirectRun = false, bool WaitForIdle = false, bool Silent = false, bool RunAs = false);
+
+		void SwitchToBackgroundTerminal(size_t vt_index);
 
 		void ShowViewEditHistory();
 

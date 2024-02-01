@@ -183,4 +183,4 @@ class FileEditor : public Frame
 };
 
 bool dlgOpenEditor(FARString &strFileName, UINT &codepage);
-void EditConsoleHistory(bool Modal);
+void EditConsoleHistory(HANDLE con_hnd, bool modal);

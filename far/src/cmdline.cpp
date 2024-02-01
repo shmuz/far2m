@@ -184,19 +184,17 @@ void CommandLine::ProcessCompletion(bool possibilities)
 	}
 }
 
-std::string CommandLine::GetConsoleLog(bool colored)
+std::string CommandLine::GetConsoleLog(HANDLE con_hnd, bool colored)
 {
 	bool vtshell_busy = VTShell_Busy();
-	if (!vtshell_busy)
-	{
+	if (!vtshell_busy) {
 		++ProcessShowClock;
 		ShowBackground();
 		Redraw();
 		ScrBuf.Flush();
 	}
-	const std::string &histfile = VTLog::GetAsFile(colored);
-	if (!vtshell_busy)
-	{
+	const std::string &histfile = VTLog::GetAsFile(con_hnd, colored);
+	if (!vtshell_busy) {
 		--ProcessShowClock;
 		Redraw();
 		ScrBuf.Flush();
@@ -221,17 +219,17 @@ int CommandLine::ProcessKey(FarKey Key)
 
 	if (Key == (KEY_MSWHEEL_UP | KEY_CTRL | KEY_SHIFT))
 	{
-		ViewConsoleHistory(false, true);
+		ViewConsoleHistory(NULL, false, true);
 		return TRUE;
 	}
 
 	if ( Key==KEY_CTRLSHIFTF3 || Key==KEY_F3) {
-		ViewConsoleHistory(false, false);
+		ViewConsoleHistory(NULL, false, false);
 		return TRUE;
 	}
 
 	if ( Key==KEY_CTRLSHIFTF4 || Key==KEY_F4) {
-		EditConsoleHistory(false);
+		EditConsoleHistory(NULL, false);
 		return TRUE;
 	}
 

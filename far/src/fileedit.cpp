@@ -2881,9 +2881,9 @@ int FileEditor::GetEditorID() const
 	return m_editor->EditorID;
 }
 
-void EditConsoleHistory(bool Modal)
+void EditConsoleHistory(HANDLE con_hnd, bool Modal)
 {
-	const std::string &histfile = CtrlObject->CmdLine->GetConsoleLog(false);
+	const std::string &histfile = CtrlObject->CmdLine->GetConsoleLog(con_hnd, false);
 	if (histfile.empty())
 		return;
 

@@ -28,4 +28,7 @@ public:
 
 	virtual unsigned int RaiseRequestorPriority();
 	virtual void LowerRequestorPriority(unsigned int released_priority);
+
+	virtual IConsoleInput *ForkConsoleInput(HANDLE con_handle);
+	virtual void JoinConsoleInput(IConsoleInput *con_in);
 };

@@ -217,7 +217,7 @@ void KeyBar::RefreshObject(bool Render)
 			}
 		}
 
-		WINPORT(SetConsoleFKeyTitles)(titles);
+		WINPORT(SetConsoleFKeyTitles)(NULL, titles);
 	}
 }
 

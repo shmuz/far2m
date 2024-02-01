@@ -364,6 +364,27 @@ GetOut
 "&Get out"
 "&Вибратися"
 
+
+CommandBackgrounded
+" *** Команда отправлена в фон, используйте меню Экранов F12 для переключения на нее"
+" *** Command put to background, use Screen menu (F12) to switch back to it"
+upd:" *** Command put to background, use Screen menu (F12) to switch back to it"
+upd:" *** Command put to background, use Screen menu (F12) to switch back to it"
+upd:" *** Command put to background, use Screen menu (F12) to switch back to it"
+upd:" *** Command put to background, use Screen menu (F12) to switch back to it"
+upd:" *** Command put to background, use Screen menu (F12) to switch back to it"
+" *** Команда відправлена у фон, використовуйте меню Екранів F12 для перемикання на неї"
+
+CommandTerminated
+" *** Команда завершена принудительно"
+" *** Command forcefully terminated"
+upd:" *** Command forcefully terminated"
+upd:" *** Command forcefully terminated"
+upd:" *** Command forcefully terminated"
+upd:" *** Command forcefully terminated"
+upd:" *** Command forcefully terminated"
+" *** Команда завершена примусово"
+
 F1
 l:
 l://functional keys - 6 characters max

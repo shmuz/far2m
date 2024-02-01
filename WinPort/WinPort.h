@@ -22,6 +22,9 @@ extern "C" {
 	const wchar_t *WinPortBackend();
 
 	///console API
+	WINPORT_DECL(ForkConsole,HANDLE,(VOID));
+	WINPORT_DECL(JoinConsole,VOID,(HANDLE hConsole));
+
 	WINPORT_DECL(GetLargestConsoleWindowSize,COORD,(HANDLE hConsoleOutput));
 	WINPORT_DECL(SetConsoleWindowInfo,BOOL,(HANDLE hConsoleOutput, BOOL bAbsolute, const SMALL_RECT *lpConsoleWindow));
 	WINPORT_DECL(SetConsoleTitle,BOOL,(HANDLE hConsoleOutput, const WCHAR *title));
@@ -98,9 +101,9 @@ extern "C" {
 	WINPORT_DECL(IsConsoleActive, BOOL, ());
 	WINPORT_DECL(ConsoleDisplayNotification, VOID, (const WCHAR *title, const WCHAR *text));
 	WINPORT_DECL(ConsoleBackgroundMode, BOOL, (BOOL TryEnterBackgroundMode));
-	WINPORT_DECL(SetConsoleFKeyTitles, BOOL, (const CHAR **titles));
-	WINPORT_DECL(OverrideConsoleColor, VOID, (DWORD Index, DWORD *ColorFG, DWORD *ColorBK)); // 0xffffffff - to apply default color
-	WINPORT_DECL(SetConsoleRepaintsDefer, VOID, (BOOL Deferring));
+	WINPORT_DECL(SetConsoleFKeyTitles, BOOL, (HANDLE hConsoleOutput, const CHAR **titles));
+	WINPORT_DECL(OverrideConsoleColor, VOID, (HANDLE hConsoleOutput, DWORD Index, DWORD *ColorFG, DWORD *ColorBK)); // 0xffffffff - to apply default color
+	WINPORT_DECL(SetConsoleRepaintsDefer, VOID, (HANDLE hConsoleOutput, BOOL Deferring));
 
 #ifdef WINPORT_REGISTRY
 	///registry API
@@ -322,13 +325,15 @@ template <class CHAR_T>
 
 struct ConsoleRepaintsDeferScope
 {
-	ConsoleRepaintsDeferScope()
+	HANDLE _con_out;
+
+	ConsoleRepaintsDeferScope(HANDLE hConOut) : _con_out(hConOut)
 	{
-		WINPORT(SetConsoleRepaintsDefer)(TRUE);
+		WINPORT(SetConsoleRepaintsDefer)(_con_out, TRUE);
 	}
 	~ConsoleRepaintsDeferScope()
 	{
-		WINPORT(SetConsoleRepaintsDefer)(FALSE);
+		WINPORT(SetConsoleRepaintsDefer)(_con_out, FALSE);
 	}
 };
 
