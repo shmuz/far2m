@@ -299,7 +299,7 @@ void UserMenu::ProcessUserMenu(bool ChooseMenuType, const FARString &MenuFileNam
 	while ((ExitCode != EC_CLOSE_LEVEL) && (ExitCode != EC_CLOSE_MENU) && (ExitCode != EC_COMMAND_SELECTED))
 	{
 		FARString strMenuFileFullPath;
-		if (MenuFromAnyFile)
+		if (MenuMode == MM_LOCAL && MenuFromAnyFile)
 		{
 			strMenuFileFullPath = MenuFileName;
 		}
