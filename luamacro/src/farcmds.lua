@@ -20,7 +20,7 @@ local function Redirect(command)
   end
 end
 
-local function Process(prefix, text)
+local function Command(prefix, text)
   if prefix == "edit" then
     local redir, cmd = text:match("^(<?)%s*(.+)")
     if redir == nil then
@@ -106,5 +106,5 @@ local function Process(prefix, text)
 end
 
 return {
-  Process = Process;
+  Command = Command;
 }

@@ -390,7 +390,7 @@ local function Open_CommandLine (strCmdLine)
     end
   ----------------------------------------------------------------------------
   elseif prefix=="edit" or prefix=="view" or prefix=="load" or prefix=="unload" or prefix=="goto" then
-    farcmds.Process(prefix, text)
+    farcmds.Command(prefix, text)
   ----------------------------------------------------------------------------
   else
     local item = utils.GetPrefixes()[prefix]
