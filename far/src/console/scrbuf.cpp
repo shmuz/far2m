@@ -315,6 +315,8 @@ void ScreenBuf::FillRect(int X1,int Y1,int X2,int Y2,WCHAR Ch,DWORD64 Color)
 */
 void ScreenBuf::Flush(bool Force)
 {
+	ConsoleRepaintsDeferScope crds(NULL);
+
 	CriticalSectionLock Lock(CS);
 
 	if (!LockCount)

@@ -83,9 +83,8 @@ function MT.test_areas()
   Keys "AltF10"              TestArea "FindFolder" Keys "Esc"
   Keys "F2"                  TestArea "UserMenu"   Keys "Esc"
 
-  assert_eq    (Area.Current, "Shell")
+  TestArea("Shell")
   assert_false (Area.Other)
-  assert_true  (Area.Shell)
   assert_false (Area.Viewer)
   assert_false (Area.Editor)
   assert_false (Area.Dialog)
@@ -107,7 +106,7 @@ end
 local function test_mf_akey()
   assert_eq(akey, mf.akey)
   local k0,k1 = akey(0),akey(1)
-  assert(k0==0x1420007B and k1=="CtrlShiftF12" or
+  assert(k0==F.KEY_CTRLSHIFTF12 and k1=="CtrlShiftF12" or
          k0==0x3020007B and k1=="RCtrlShiftF12")
   -- (the 2nd parameter is tested in function test_mf_eval).
 end
@@ -217,6 +216,7 @@ local function test_mf_acall()
   local a,b,c,d = mf.acall(function(p) return 3, nil, p, "foo" end, 77)
   assert_true (a==3 and b==nil and c==77 and d=="foo")
   assert_true (mf.acall(far.Show))
+  TestArea("Menu")
   Keys"Esc"
 end
 
@@ -226,14 +226,18 @@ local function test_mf_asc()
 end
 
 local function test_mf_atoi()
-  assert_eq (mf.atoi("0"), 0)
-  assert_eq (mf.atoi("-10"), -10)
-  assert_eq (mf.atoi("0x11"), 17)
-  assert_eq (mf.atoi("1011",2), 11)
-  assert_eq (mf.atoi("123456789123456789"),  bit64.new("123456789123456789"))
-  assert_eq (mf.atoi("-123456789123456789"), bit64.new("-123456789123456789"))
-  assert_eq (mf.atoi("0x1B69B4BACD05F15"),   bit64.new("0x1B69B4BACD05F15"))
-  assert_eq (mf.atoi("-0x1B69B4BACD05F15"),  bit64.new("-0x1B69B4BACD05F15"))
+  for _,v in ipairs { "0", "-10", "0x11" } do
+    assert_eq(mf.atoi(v), tonumber(v))
+  end
+
+  assert_eq (mf.atoi("1011",2),  tonumber("1011",2))
+  assert_eq (mf.atoi("1234",5),  tonumber("1234",5))
+  assert_eq (mf.atoi("-1234",5), tonumber("-1234",5))
+
+  for _,v in ipairs { "123456789123456789", "-123456789123456789",
+                      "0x1B69B4BACD05F15", "-0x1B69B4BACD05F15" } do
+    assert_eq(mf.atoi(v), bit64.new(v))
+  end
 end
 
 local function test_mf_chr()
@@ -309,9 +313,9 @@ end
 
 local function test_mf_prompt()
   assert_eq (prompt, mf.prompt)
-  mf.postmacro(function() Keys("a b c Esc") end)
+  mf.postmacro(Keys, "a b c Esc")
   assert_false (prompt())
-  mf.postmacro(function() Keys("a b c Enter") end)
+  mf.postmacro(Keys, "a b c Enter")
   assert_eq ("abc", prompt())
 end
 
@@ -323,8 +327,8 @@ end
 local function test_mf_fmatch()
   assert_eq (mf.fmatch("Readme.txt", "*.txt"), 1)
   assert_eq (mf.fmatch("Readme.txt", "Readme.*|*.txt"), 0)
-  assert_eq (mf.fmatch("c:\\Readme.txt", "/txt$/i"), 1)
-  assert_eq (mf.fmatch("c:\\Readme.txt", "/txt$"), -1)
+  assert_eq (mf.fmatch("/dir/Readme.txt", "/txt$/i"), 1)
+  assert_eq (mf.fmatch("/dir/Readme.txt", "/txt$"), -1)
 end
 
 local function test_mf_fsplit()
@@ -365,30 +369,36 @@ local function test_mf_int()
   assert_eq (mf.int("2.99"), 2)
   assert_eq (mf.int("-2.99"), -2)
   assert_eq (mf.int("0x10"), 0)
-  assert_eq (mf.int("123456789123456789"), bit64.new("123456789123456789"))
-  assert_eq (mf.int("-123456789123456789"), bit64.new("-123456789123456789"))
+  for _,v in ipairs { "123456789123456789", "-123456789123456789" } do
+    assert_eq(mf.int(v), bit64.new(v))
+  end
 end
 
 local function test_mf_itoa()
-  assert_eq (mf.itoa(100), "100")
+  assert_eq (mf.itoa(100),    "100")
   assert_eq (mf.itoa(100,10), "100")
-  assert_eq (mf.itoa(bit64.new("123456789123456789")), "123456789123456789")
-  assert_eq (mf.itoa(bit64.new("-123456789123456789")), "-123456789123456789")
-  assert_eq (mf.itoa(100,2), "1100100")
+  assert_eq (mf.itoa(100,2),  "1100100")
   assert_eq (mf.itoa(100,16), "64")
   assert_eq (mf.itoa(100,36), "2s")
+  for _,v in ipairs { "123456789123456789", "-123456789123456789" } do
+    assert_eq(mf.itoa(bit64.new(v)), v)
+  end
 end
 
 local function test_mf_key()
-  assert_eq (mf.key(0x04000000), "Ctrl")
-  assert_eq (mf.key(0x08000000), "Alt")
-  assert_eq (mf.key(0x10000000), "Shift")
-  assert_eq (mf.key(0x20000000), "RCtrl")
-  assert_eq (mf.key(0x40000000), "RAlt")
-
-  assert_eq (mf.key(0x1420007B), "CtrlShiftF12")
+  local ref = {
+    F.KEY_CTRL,         "Ctrl",
+    F.KEY_ALT,          "Alt",
+    F.KEY_SHIFT,        "Shift",
+    F.KEY_RCTRL,        "RCtrl",
+    F.KEY_RALT,         "RAlt",
+    F.KEY_CTRLSHIFTF12, "CtrlShiftF12",
+  }
+  for i=1,#ref,2 do
+    assert_eq (mf.key        (ref[i]), ref[i+1])
+    assert_eq (far.KeyToName (ref[i]), ref[i+1])
+  end
   assert_eq (mf.key("CtrlShiftF12"), "CtrlShiftF12")
-
   assert_eq (mf.key("foobar"), "")
 end
 
@@ -578,13 +588,12 @@ local function test_mf_flock()
 end
 
 local function test_mf_GetMacroCopy()
-  assert_func (mf.GetMacroCopy)
+  assert_table (mf.GetMacroCopy(1))
+  assert_nil   (mf.GetMacroCopy(1e9))
 end
 
 local function test_mf_Keys()
   assert_eq (Keys, mf.Keys)
-  assert_func (Keys)
-
   Keys("Esc F a r Space M a n a g e r Space Ф А Р")
   assert_eq (panel.GetCmdLine(), "Far Manager ФАР")
   Keys("Esc")
@@ -599,7 +608,7 @@ local function test_mf_exit()
       local function f() N=50; exit(); end
       f(); N=100
     end)
-  mf.postmacro(function() Keys"Esc" end)
+  mf.postmacro(Keys, "Esc")
   far.Message("dummy")
   assert_eq (N, 50)
 end
@@ -649,6 +658,13 @@ local function test_mf_usermenu()
   Keys("Esc")
 end
 
+local function test_mf_EnumScripts()
+  local f = assert_func(mf.EnumScripts("Macro"))
+  local s,i = f()
+  assert_table(s)
+  assert_num(i)
+end
+
 function MT.test_mf()
   test_mf_abs()
   test_mf_acall()
@@ -659,6 +675,7 @@ function MT.test_mf()
   test_mf_chr()
   test_mf_clip()
   test_mf_date()
+  test_mf_EnumScripts()
   test_mf_env()
   test_mf_eval()
   test_mf_exit()
