@@ -134,7 +134,12 @@ struct Confirmation
 	int Drag;
 	int Delete;
 	int DeleteFolder;
-	int Exit;
+
+	int Exit;			// see ExitEffective()
+	int ExitOrBknd;		// see ExitEffective()
+	/// returns reference to Exit or ExitOrBknd - depending of background mode availability
+	int &ExitEffective();
+
 	int Esc;  // Для CheckForEsc
 	/* $ 12.03.2002 VVM
 	  + Opt.EscTwiceToInterrupt

@@ -123,6 +123,11 @@ struct AllXlats : std::vector<std::string>
 	}
 };
 
+int &Confirmation::ExitEffective()
+{
+	return WINPORT(ConsoleBackgroundMode)(FALSE) ? ExitOrBknd : Exit;
+}
+
 static DWORD ApplyConsoleTweaks()
 {
 	DWORD64 tweaks = 0;
@@ -529,7 +534,7 @@ void SetConfirmations()
 	Builder.AddCheckbox(Msg::SetConfirmRemoveHotPlug, &Opt.Confirm.RemoveHotPlug);
 	Builder.AddCheckbox(Msg::SetConfirmAllowReedit, &Opt.Confirm.AllowReedit);
 	Builder.AddCheckbox(Msg::SetConfirmHistoryClear, &Opt.Confirm.HistoryClear);
-	Builder.AddCheckbox(Msg::SetConfirmExit, &Opt.Confirm.Exit);
+	Builder.AddCheckbox(Msg::SetConfirmExit, &Opt.Confirm.ExitEffective());
 	Builder.AddOKCancel();
 
 	Builder.ShowDialog();
@@ -965,6 +970,7 @@ static struct FARConfig
 	{1, NSecConfirmations, "AllowReedit",           &Opt.Confirm.AllowReedit, 1, REG_BOOLEAN},
 	{1, NSecConfirmations, "HistoryClear",          &Opt.Confirm.HistoryClear, 1, REG_BOOLEAN},
 	{1, NSecConfirmations, "Exit",                  &Opt.Confirm.Exit, 1, REG_BOOLEAN},
+	{1, NSecConfirmations, "ExitOrBknd",            &Opt.Confirm.ExitOrBknd, 1, REG_BOOLEAN},
 	{0, NSecConfirmations, "EscTwiceToInterrupt",   &Opt.Confirm.EscTwiceToInterrupt, 0, REG_BOOLEAN},
 
 	{1, NSecPluginConfirmations, "OpenFilePlugin",  &Opt.PluginConfirm.OpenFilePlugin, 0, REG_3STATE},
@@ -1078,11 +1084,6 @@ void ReadConfig()
 			case REG_DWORD:
 			case REG_BOOLEAN:
 			case REG_3STATE:
-				if ((int *)CFG[I].ValPtr == &Opt.Confirm.Exit) {
-					// when background mode available then exit dialog allows also switch to background
-					// so saved settings must differ for that two modes
-					CFG[I].ValName = WINPORT(ConsoleBackgroundMode)(FALSE) ? "ExitOrBknd" : "Exit";
-				}
 				*(unsigned int *)CFG[I].ValPtr = cfg_reader.GetUInt(CFG[I].ValName, (unsigned int)CFG[I].DefDWord);
 				break;
 			case REG_SZ:
