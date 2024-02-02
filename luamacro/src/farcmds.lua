@@ -74,7 +74,7 @@ local function Command(prefix, text)
     end
   ----------------------------------------------------------------------------
   elseif prefix == "goto" then
-    text = FullExpand(Unquote(text))
+    text = FullExpand(text)
     if text ~= "" then
       local path_ok = true
       text = far.SplitCmdLine(text)
