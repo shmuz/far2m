@@ -1893,7 +1893,7 @@ int FarMacroApi::waitkeyFunc()
 	auto Params = parseParams(2);
 	const auto Type = static_cast<long>(Params[1].asInteger());
 	const auto Period = static_cast<long>(Params[0].asInteger());
-	auto Key = WaitKey(static_cast<DWORD>(-1), Period, true, false);
+	auto Key = WaitKey(KEY_INVALID, Period, true, false);
 
 	if (!Type)
 	{
@@ -3531,10 +3531,22 @@ static DWORD LayoutKey(DWORD key)
 	return key;
 }
 
-bool KeyMacro::ProcessKey(FarKey dwKey)
+bool KeyMacro::ProcessKey(FarKey dwKey, const INPUT_RECORD *Rec)
 {
 	if (m_InternalInput || dwKey==KEY_IDLE || dwKey==KEY_NONE || !FrameManager->GetCurrentFrame())
 		return false;
+
+	if (Rec && (Rec->EventType == KEY_EVENT || Rec->EventType == MOUSE_EVENT))
+	{
+		DWORD CState = (Rec->EventType == KEY_EVENT) ?
+			Rec->Event.KeyEvent.dwControlKeyState : Rec->Event.MouseEvent.dwControlKeyState;
+
+		if (CState & RIGHT_CTRL_PRESSED)
+			dwKey = (dwKey & ~KEY_CTRL) | KEY_RCTRL;
+
+		if (CState & RIGHT_ALT_PRESSED)
+			dwKey = (dwKey & ~KEY_ALT) | KEY_RALT;
+	}
 
 	FARString textKey;
 	if (!KeyToText(dwKey, textKey) || textKey.IsEmpty())

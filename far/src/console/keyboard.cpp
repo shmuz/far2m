@@ -598,7 +598,7 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 		{
 			_KEYMACRO(SysLog(L"[%d] CALL CtrlObject->Macro.ProcessKey(%ls)",__LINE__,_FARKEY_ToName(CalcKey)));
 			FrameManager->SetLastInputRecord(rec);
-			if (!ExcludeMacro && CtrlObject && CtrlObject->Macro.ProcessKey(CalcKey))
+			if (!ExcludeMacro && CtrlObject && CtrlObject->Macro.ProcessKey(CalcKey,rec))
 			{
 				rec->EventType=0;
 				CalcKey=KEY_NONE;
@@ -861,7 +861,7 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 	{
 		_KEYMACRO(SysLog(L"[%d] CALL CtrlObject->Macro.ProcessKey(%ls)",__LINE__,_FARKEY_ToName(CalcKey)));
 		FrameManager->SetLastInputRecord(rec);
-		if (CtrlObject && CtrlObject->Macro.ProcessKey(CalcKey))
+		if (CtrlObject && CtrlObject->Macro.ProcessKey(CalcKey,rec))
 		{
 			rec->EventType=0;
 			CalcKey=KEY_NONE;
@@ -1003,7 +1003,7 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 				{
 					FrameManager->SetLastInputRecord(rec);
 				}
-				if (Key!=std::numeric_limits<uint32_t>::max() && !NotMacros && CtrlObject && CtrlObject->Macro.ProcessKey(Key))
+				if (Key!=std::numeric_limits<uint32_t>::max() && !NotMacros && CtrlObject && CtrlObject->Macro.ProcessKey(Key,rec))
 				{
 					rec->EventType=0;
 					Key=KEY_NONE;
@@ -1237,7 +1237,7 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 					{
 						_KEYMACRO(SysLog(L"[%d] CALL CtrlObject->Macro.ProcessKey(%ls)",__LINE__,_FARKEY_ToName(MsCalcKey)));
 						FrameManager->SetLastInputRecord(rec);
-						if (CtrlObject->Macro.ProcessKey(MsCalcKey))
+						if (CtrlObject->Macro.ProcessKey(MsCalcKey,rec))
 						{
 							memset(rec,0,sizeof(*rec));
 							return KEY_NONE;
@@ -1259,7 +1259,7 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 		{
 			FrameManager->SetLastInputRecord(rec);
 		}
-		if (!NotMacros && CtrlObject && CtrlObject->Macro.ProcessKey(CalcKey))
+		if (!NotMacros && CtrlObject && CtrlObject->Macro.ProcessKey(CalcKey,rec))
 		{
 			rec->EventType=0;
 			CalcKey=KEY_NONE;
@@ -1359,7 +1359,8 @@ FarKey WaitKey(FarKey KeyWait, DWORD delayMS, bool ExcludeMacro, bool EnableQuic
 
 		if (KeyWait == KEY_INVALID)
 		{
-			if ((Key&(~KEY_CTRLMASK)) < KEY_END_FKEY || IS_INTERNAL_KEY_REAL(Key&(~KEY_CTRLMASK)))
+			auto Key2 = Key & ~KEY_CTRLMASK;
+			if (Key2 < KEY_END_FKEY || IS_INTERNAL_KEY_REAL(Key2))
 				break;
 		}
 		else if (Key == KeyWait)

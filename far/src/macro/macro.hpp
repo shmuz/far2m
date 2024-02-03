@@ -88,7 +88,7 @@ public:
 	FarKey PeekKey() const;
 	int  GetArea() const { return m_Area; }
 	FarKey GetKey();
-	bool ProcessKey(FarKey Key);
+	bool ProcessKey(FarKey Key, const INPUT_RECORD *Rec=nullptr);
 	const wchar_t* GetStringToPrint() const { return m_StringToPrint.CPtr(); }
 	bool IsRecording() const { return m_Recording != MACROSTATE_NOMACRO; }
 	bool LoadMacros(bool FromFar, bool InitedRAM=true, const FarMacroLoad *Data=nullptr);
