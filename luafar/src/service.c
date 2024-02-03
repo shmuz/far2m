@@ -5270,7 +5270,7 @@ int far_ColorDialog(lua_State *L)
 
 int far_WriteConsole(lua_State *L)
 {
-	HANDLE h_out = stdout; //GetStdHandle(STD_OUTPUT_HANDLE);
+	HANDLE h_out = NULL; //stdout; //GetStdHandle(STD_OUTPUT_HANDLE);
 	const wchar_t* src = opt_utf8_string(L, 1, L"");
 
 	TPluginData* pd = GetPluginData(L);
