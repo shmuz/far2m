@@ -736,8 +736,7 @@ int FileList::SendKeyToPlugin(FarKey Key,BOOL Pred)
 	if (PanelMode != PLUGIN_PANEL)
 		return FALSE;
 
-	const auto MacroState = CtrlObject->Macro.GetState();
-	if (MacroState == MACROSTATE_RECORDING || MacroState == MACROSTATE_EXECUTING)
+	if (!CtrlObject->Macro.CanSendKeysToPlugin())
 		return FALSE;
 
 	int VirtKey,ControlState;

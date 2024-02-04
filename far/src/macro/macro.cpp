@@ -315,7 +315,7 @@ bool KeyMacro::LoadMacros(bool FromFar, bool InitedRAM, const FarMacroLoad *Data
 	return CallMacroPlugin(&info);
 }
 
-bool KeyMacro::SaveMacros(bool /*always*/)
+bool KeyMacro::SaveMacros()
 {
 	OpenMacroPluginInfo info={MCT_WRITEMACROS,nullptr};
 	return CallMacroPlugin(&info);
@@ -324,6 +324,12 @@ bool KeyMacro::SaveMacros(bool /*always*/)
 int KeyMacro::GetState() const
 {
 	return (m_Recording != MACROSTATE_NOMACRO) ? m_Recording : GetExecutingState();
+}
+
+bool KeyMacro::CanSendKeysToPlugin() const
+{
+	int state = GetState();
+	return state != MACROSTATE_RECORDING && state != MACROSTATE_EXECUTING;
 }
 
 static bool GetInputFromMacro(MacroPluginReturn *mpr)
@@ -1222,7 +1228,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		case MCODE_V_HELPSELTOPIC:  // Help.SelTopic
 		{
 			const wchar_t *ptr=L"";
-			if (CtrlObject->Macro.GetArea() == MACROAREA_HELP)
+			if (GetArea() == MACROAREA_HELP)
 			{
 				FrameManager->GetCurrentFrame()->VMProcess(CheckCode,&tmpStr,0);
 				ptr=tmpStr.CPtr();
@@ -1508,7 +1514,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 			}
 
 			auto& tmpVar = Params[0];
-			int CurMMode=CtrlObject->Macro.GetArea();
+			int CurMMode = GetArea();
 
 			if (IsMenuArea(CurMMode) || CurMMode == MACROAREA_DIALOG)
 			{
@@ -1531,7 +1537,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 			if (tmpAction.isUnknown())
 				tmpAction=CheckCode == MCODE_F_MENU_FILTER ? 4 : 0;
 
-			int CurMMode=CtrlObject->Macro.GetArea();
+			int CurMMode = GetArea();
 
 			if (IsMenuArea(CurMMode) || CurMMode == MACROAREA_DIALOG)
 			{
@@ -3623,7 +3629,7 @@ bool KeyMacro::ProcessKey(FarKey dwKey, const INPUT_RECORD *Rec)
 			ScrBuf.Flush(true);
 
 			if (Opt.AutoSaveSetup)
-				SaveMacros(false); // записать только изменения!
+				SaveMacros();
 
 			return true;
 		}

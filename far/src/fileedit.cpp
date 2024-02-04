@@ -942,8 +942,7 @@ int FileEditor::ReProcessKey(FarKey Key,int CalledFromControl)
 	_SVS(if (Key=='n' || Key=='m'))
 		_SVS(SysLog(L"%d Key='%c'",__LINE__,Key));
 
-	const auto MacroState = CtrlObject->Macro.GetState();
-	if (!CalledFromControl && !(MacroState == MACROSTATE_RECORDING || MacroState == MACROSTATE_EXECUTING))
+	if (!CalledFromControl && CtrlObject->Macro.CanSendKeysToPlugin())
 	{
 		ProcessedNext = !ProcessEditorInput(FrameManager->GetLastInputRecord());
 	}
@@ -2641,11 +2640,10 @@ int FileEditor::EditorControl(int Command, void *Param)
 		}
 		case ECTL_READINPUT:
 		{
-			const auto MacroState = CtrlObject->Macro.GetState();
-			if (MacroState == MACROSTATE_RECORDING || MacroState == MACROSTATE_EXECUTING)
-			{
-				//return FALSE;
-			}
+			//	if (!CtrlObject->Macro.CanSendKeysToPlugin())
+			//	{
+			//		return FALSE;
+			//	}
 
 			if (Param)
 			{

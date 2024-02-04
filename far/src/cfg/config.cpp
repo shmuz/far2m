@@ -1304,7 +1304,7 @@ void SaveConfig(int Ask)
 	FileList::SavePanelModes(cfg_writer);
 
 	if (Ask)
-		CtrlObject->Macro.SaveMacros(false);
+		CtrlObject->Macro.SaveMacros();
 
 	/* *************************************************** </ПОСТПРОЦЕССЫ> */
 }

@@ -3156,7 +3156,7 @@ int EditControl::AutoCompleteProc(bool Manual, bool DelBlock, FarKey& BackKey)
 	int Result=0;
 	static int Reenter=0;
 
-	if(ECFlags.Check(EC_ENABLEAUTOCOMPLETE) && *Str && !Reenter && (CtrlObject->Macro.GetState() == MACROSTATE_NOMACRO || Manual))
+	if(ECFlags.Check(EC_ENABLEAUTOCOMPLETE) && *Str && !Reenter && (Manual || CtrlObject->Macro.GetState() == MACROSTATE_NOMACRO))
 	{
 		Reenter++;
 		AutoCompleteProcMenu(Result,Manual,DelBlock,BackKey);

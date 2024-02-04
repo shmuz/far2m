@@ -76,7 +76,7 @@ public:
 	static bool IsExecuting() { return GetExecutingState() != MACROSTATE_NOMACRO; }
 	static bool IsHistoryDisabled(int TypeHistory);
 	static void RunStartMacro();
-	static bool SaveMacros(bool always);
+	static bool SaveMacros();
 	static void SetMacroConst(int ConstIndex, long long Value);
 	static bool PostNewMacro(const wchar_t* Sequence, DWORD InputFlags, FarKey AKey = 0);
 	static DWORD GetMacroParseError(COORD& ErrPos, FARString& ErrSrc);
@@ -94,6 +94,7 @@ public:
 	bool LoadMacros(bool FromFar, bool InitedRAM=true, const FarMacroLoad *Data=nullptr);
 	void SetArea(int Area) { m_Area=Area; }
 	void SuspendMacros(bool Suspend) { Suspend ? ++m_InternalInput : --m_InternalInput; }
+	bool CanSendKeysToPlugin() const;
 
 private:
 	static int GetExecutingState();

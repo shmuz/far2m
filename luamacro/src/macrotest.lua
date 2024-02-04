@@ -1088,16 +1088,25 @@ end
 function MT.test_Menu()
   Keys("F11")
   assert_str(Menu.Value)
+  assert_eq (Menu.Value, Menu.GetValue())
+
   assert_eq(Menu.Id, far.Guids.PluginsMenuId)
   assert_eq(Menu.Id, "937F0B1C-7690-4F85-8469-AA935517F202")
-  Keys("Esc")
 
-  assert_func(Menu.Filter)
+  assert_num(Menu.ItemStatus())
+
+  assert_eq(0, Menu.Filter(0))     -- get status
+  assert_eq(0, Menu.Filter(0,-1))  -- get status
+  assert_eq(1, Menu.Filter(0, 1))  -- turn filter on
+  assert_eq(1, Menu.Filter(0))     -- get status
+  assert_eq(1, Menu.Filter(0, 0))  -- turn filter off
+  assert_eq(0, Menu.Filter(0))     -- get status
+
   assert_func(Menu.FilterStr)
-  assert_func(Menu.GetValue)
-  assert_func(Menu.ItemStatus)
   assert_func(Menu.Select)
   assert_func(Menu.Show)
+
+  Keys("Esc")
 end
 
 function MT.test_Object()
@@ -1619,6 +1628,7 @@ end
 local function test_utf8_len()
   assert_eq ((""):len(), 0)
   assert_eq (("FOo БАр"):len(), 7)
+  assert_nil (("\239"):len()) -- invalid UTF-8
 end
 
 local function test_utf8_sub()
