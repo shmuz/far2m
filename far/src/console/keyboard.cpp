@@ -1350,6 +1350,7 @@ FarKey WaitKey(FarKey KeyWait, DWORD delayMS, bool ExcludeMacro, bool EnableQuic
 		if (PeekInputRecord(&rec,ExcludeMacro))
 		{
 			Key=GetInputRecord(&rec,ExcludeMacro,true);
+			Key=CorrectKey(Key,&rec);
 		}
 
 		if (AdHocQuickEdit && (Key&(~KEY_CTRLMASK)) == KEY_MSLCLICK) {
@@ -2852,4 +2853,21 @@ FarKey CalcKeyCode(INPUT_RECORD *rec, int RealKey, int *NotMacros)
 	}
 
 	return Char?Char:KEY_NONE;
+}
+
+FarKey CorrectKey(FarKey dwKey, const INPUT_RECORD *Rec)
+{
+	if (Rec && (Rec->EventType == KEY_EVENT || Rec->EventType == MOUSE_EVENT))
+	{
+		DWORD CState = (Rec->EventType == KEY_EVENT) ?
+			Rec->Event.KeyEvent.dwControlKeyState : Rec->Event.MouseEvent.dwControlKeyState;
+
+		if (CState & RIGHT_CTRL_PRESSED)
+			dwKey = (dwKey & ~KEY_CTRL) | KEY_RCTRL;
+
+		if (CState & RIGHT_ALT_PRESSED)
+			dwKey = (dwKey & ~KEY_ALT) | KEY_RALT;
+	}
+
+	return dwKey;
 }

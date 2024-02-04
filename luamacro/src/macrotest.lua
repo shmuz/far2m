@@ -107,7 +107,7 @@ local function test_mf_akey()
   assert_eq(akey, mf.akey)
   local k0,k1 = akey(0),akey(1)
   assert(k0==F.KEY_CTRLSHIFTF12 and k1=="CtrlShiftF12" or
-         k0==0x3020007B and k1=="RCtrlShiftF12")
+         k0==bor(F.KEY_RCTRL,F.KEY_SHIFTF12) and k1=="RCtrlShiftF12")
   -- (the 2nd parameter is tested in function test_mf_eval).
 end
 

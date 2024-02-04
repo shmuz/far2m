@@ -76,3 +76,4 @@ int IsShiftKey(FarKey Key);
 int CheckForEsc();
 int CheckForEscSilent();
 int ConfirmAbortOp();
+FarKey CorrectKey(FarKey dwKey, const INPUT_RECORD *Rec);
