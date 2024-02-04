@@ -2751,7 +2751,7 @@ int WINAPI farMacroControl(DWORD PluginId, int Command, int Param1, void* Param2
 		{
 			COORD ErrPos;
 			FARString ErrSrc;
-			auto ErrCode = Macro.GetMacroParseError(ErrPos, ErrSrc);
+			bool Ok = Macro.GetMacroParseError(ErrPos, ErrSrc);
 
 			int Size = ALIGN(sizeof(MacroParseResult));
 			size_t stringOffset = Size;
@@ -2762,7 +2762,7 @@ int WINAPI farMacroControl(DWORD PluginId, int Command, int Param1, void* Param2
 			if (Param1 >= Size && CheckStructSize(Result))
 			{
 				Result->StructSize = sizeof(MacroParseResult);
-				Result->ErrCode = ErrCode;
+				Result->ErrCode = Ok ? MPEC_SUCCESS : MPEC_ERROR;
 				Result->ErrPos = ErrPos;
 				Result->ErrSrc = (const wchar_t *)((char*)Param2+stringOffset);
 				wmemcpy((wchar_t*)Result->ErrSrc,ErrSrc,ErrSrc.GetLength()+1);

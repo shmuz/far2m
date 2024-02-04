@@ -57,7 +57,6 @@ class Panel;
 
 struct MacroPanelSelect {
 	int     Action;
-	DWORD   ActionFlags;
 	int     Mode;
 	int64_t Index;
 	const wchar_t *Item;
@@ -79,7 +78,7 @@ public:
 	static bool SaveMacros();
 	static void SetMacroConst(int ConstIndex, long long Value);
 	static bool PostNewMacro(const wchar_t* Sequence, DWORD InputFlags, FarKey AKey = 0);
-	static DWORD GetMacroParseError(COORD& ErrPos, FARString& ErrSrc);
+	static bool GetMacroParseError(COORD& ErrPos, FARString& ErrSrc);
 	static bool ParseMacroString(const wchar_t* Sequence,DWORD Flags,bool skipFile);
 
 	int  CallFar(int CheckCode, FarMacroCall* Data);
@@ -114,7 +113,6 @@ private:
 
 private:
 	bool CheckEditSelected(DWORD CurFlags);
-	bool CheckInsidePlugin(DWORD CurFlags);
 	bool CheckPanel(int PanelMode,DWORD CurFlags, bool IsPassivePanel);
 	bool CheckCmdLine(int CmdLength,DWORD Flags);
 	bool CheckFileFolder(Panel *ActivePanel,DWORD CurFlags, bool IsPassivePanel);

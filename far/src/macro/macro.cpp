@@ -439,7 +439,7 @@ bool KeyMacro::ExecuteString(MacroExecuteString *Data)
 	return false;
 }
 
-DWORD KeyMacro::GetMacroParseError(COORD& ErrPos, FARString& ErrSrc)
+bool KeyMacro::GetMacroParseError(COORD& ErrPos, FARString& ErrSrc)
 {
 	MacroPluginReturn Ret;
 	if (MacroPluginOp(OP_GETLASTERROR, false, &Ret))
@@ -447,13 +447,13 @@ DWORD KeyMacro::GetMacroParseError(COORD& ErrPos, FARString& ErrSrc)
 		ErrSrc = Ret.Values[0].String;
 		ErrPos.Y = static_cast<int>(Ret.Values[1].Double);
 		ErrPos.X = static_cast<int>(Ret.Values[2].Double);
-		return ErrSrc.IsEmpty() ? MPEC_SUCCESS : MPEC_ERROR;
+		return ErrSrc.IsEmpty();
 	}
 	else
 	{
 		ErrSrc = L"No response from macro plugin";
 		ErrPos = {};
-		return MPEC_ERROR;
+		return false;
 	}
 }
 
@@ -2078,11 +2078,11 @@ int FarMacroApi::panelselectFunc()
 {
 	auto Params = parseParams(4);
 
-	auto& ValItems = Params[3];
-	int Mode       = Params[2].getInt32();
-	DWORD Action   = (int)Params[1].getInteger();
 	int typePanel  = Params[0].getInt32();
-	int64_t Result=-1;
+	int Action     = (int)Params[1].getInteger();
+	int Mode       = Params[2].getInt32();
+	auto& ValItems = Params[3];
+	int64_t Result = -1;
 
 	Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
 	Panel *PassivePanel=nullptr;
@@ -2113,8 +2113,7 @@ int FarMacroApi::panelselectFunc()
 		}
 
 		MacroPanelSelect mps;
-		mps.Action      = Action & 0xF;
-		mps.ActionFlags = (Action & (~0xF)) >> 4;
+		mps.Action      = Action;
 		mps.Mode        = Mode;
 		mps.Index       = Index;
 		mps.Item        = strStr.CPtr();
@@ -4279,15 +4278,6 @@ bool KeyMacro::CheckEditSelected(DWORD CurFlags)
 	return true;
 }
 
-bool KeyMacro::CheckInsidePlugin(DWORD CurFlags)
-{
-	if (CtrlObject && CtrlObject->Plugins.CurPluginItem && (CurFlags&MFLAGS_NOSENDKEYSTOPLUGINS)) // ?????
-		//if(CtrlObject && CtrlObject->Plugins.CurEditor && (CurFlags&MFLAGS_NOSENDKEYSTOPLUGINS))
-		return false;
-
-	return true;
-}
-
 bool KeyMacro::CheckCmdLine(int CmdLength,DWORD CurFlags)
 {
 	if (((CurFlags&MFLAGS_EMPTYCOMMANDLINE) && CmdLength) || ((CurFlags&MFLAGS_NOTEMPTYCOMMANDLINE) && CmdLength==0))
@@ -4337,11 +4327,7 @@ bool KeyMacro::CheckFileFolder(Panel *CheckPanel,DWORD CurFlags, bool IsPassiveP
 
 bool KeyMacro::CheckAll(int /*CheckMode*/,DWORD CurFlags)
 {
-	/* $TODO:
-		Здесь вместо Check*() попробовать заюзать IfCondition()
-		для исключения повторяющегося кода.
-	*/
-	if (!CheckInsidePlugin(CurFlags))
+	if (CtrlObject && CtrlObject->Plugins.CurPluginItem && (CurFlags&MFLAGS_NOSENDKEYSTOPLUGINS))
 		return false;
 
 	// проверка на пусто/не пусто в ком.строке (а в редакторе? :-)
