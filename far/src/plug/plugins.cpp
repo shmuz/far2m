@@ -136,7 +136,6 @@ PluginManager::PluginManager():
 	PluginsData(nullptr),
 	PluginsCount(0),
 	OemPluginsCount(0),
-	CurPluginItem(nullptr),
 	CurEditor(nullptr),
 	CurViewer(nullptr)
 {
@@ -317,8 +316,6 @@ int PluginManager::UnloadPlugin(Plugin *pPlugin, DWORD dwException, bool bRemove
 
 	if (pPlugin && (dwException != EXCEPT_EXITFAR))   //схитрим, если упали в EXITFAR, не полезем в рекурсию, мы и так в Unload
 	{
-		//какие-то непонятные действия...
-		CurPluginItem=nullptr;
 		Frame *frame;
 
 		if ((frame = FrameManager->GetBottomFrame()) )

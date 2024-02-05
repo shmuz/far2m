@@ -463,7 +463,7 @@ public:
 	explicit FarMacroApi(FarMacroCall* Data) : mData(Data) {}
 
 	std::vector<TVar> parseParams(size_t Count);
-	int PassBoolean(int b);
+	int PassBoolean(bool b);
 	int PassError(const wchar_t* str);
 	int PassInteger(int64_t Int);
 	int PassNumber(double dbl);
@@ -582,9 +582,9 @@ int FarMacroApi::PassInteger(int64_t Int)
 	return SendValue(val);
 }
 
-int FarMacroApi::PassBoolean(int b)
+int FarMacroApi::PassBoolean(bool b)
 {
-	FarMacroValue val = (b != 0);
+	FarMacroValue val = b;
 	return SendValue(val);
 }
 
@@ -703,7 +703,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 			return api.PassNumber(GetArea());
 
 		case MCODE_C_FULLSCREENMODE: // Fullscreen?
-			return api.PassBoolean(0);
+			return api.PassBoolean(false);
 
 		case MCODE_C_ISUSERADMIN:
 			return api.PassBoolean(Opt.IsUserAdmin);
@@ -739,7 +739,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		case MCODE_C_PPANEL_ROOT:  // PPanel.Root
 		{
 			const auto SelPanel = (CheckCode == MCODE_C_APANEL_ROOT) ? ActivePanel:PassivePanel;
-			return api.PassBoolean((SelPanel ? SelPanel->VMProcess(MCODE_C_ROOTFOLDER) ? 1:0:0));
+			return api.PassBoolean(SelPanel && SelPanel->VMProcess(MCODE_C_ROOTFOLDER));
 		}
 
 		case MCODE_C_APANEL_BOF:
@@ -749,7 +749,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		{
 			const auto SelPanel = (CheckCode == MCODE_C_APANEL_BOF || CheckCode == MCODE_C_APANEL_EOF)?ActivePanel:PassivePanel;
 			if (SelPanel)
-				ret=SelPanel->VMProcess(CheckCode==MCODE_C_APANEL_BOF || CheckCode==MCODE_C_PPANEL_BOF?MCODE_C_BOF:MCODE_C_EOF)?1:0;
+				ret=SelPanel->VMProcess(CheckCode==MCODE_C_APANEL_BOF || CheckCode==MCODE_C_PPANEL_BOF?MCODE_C_BOF:MCODE_C_EOF);
 			return api.PassBoolean(ret);
 		}
 
@@ -871,7 +871,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 			{
 				SelPanel->GetFileName(tmpStr,SelPanel->GetCurrentPos(),FileAttr);
 				size_t GetFileCount=SelPanel->GetFileCount();
-				ret=(!GetFileCount || (GetFileCount == 1 && TestParentFolderName(tmpStr))) ? 1:0;
+				ret=(!GetFileCount || (GetFileCount == 1 && TestParentFolderName(tmpStr)));
 			}
 			return api.PassBoolean(ret);
 		}
@@ -1297,14 +1297,16 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 
 		case MCODE_F_CHECKALL:
 		{
-			auto Result = false;
+			bool Result = false;
 			if (Data->Count >= 2)
 			{
-				const auto Area = static_cast<int>(Data->Values[0].Double);
-				const auto Flags = static_cast<DWORD>(Data->Values[1].Double);
-				const auto Callback = (Data->Count >= 3 && Data->Values[2].Type == FMVT_POINTER)? reinterpret_cast<FARMACROCALLBACK>(Data->Values[2].Pointer) : nullptr;
-				const auto CallbackId = (Data->Count >= 4 && Data->Values[3].Type == FMVT_POINTER)? Data->Values[3].Pointer : nullptr;
-				Result = CheckAll(Area, Flags) && (!Callback || Callback(CallbackId, AKMFLAGS_NONE));
+				// auto Area = static_cast<int>(Data->Values[0].Double);
+				auto Flags = static_cast<DWORD>(Data->Values[1].Double);
+				auto Callback = (Data->Count >= 3 && Data->Values[2].Type == FMVT_POINTER) ?
+					reinterpret_cast<FARMACROCALLBACK>(Data->Values[2].Pointer) : nullptr;
+				auto CallbackId = (Data->Count >= 4 && Data->Values[3].Type == FMVT_POINTER) ?
+					Data->Values[3].Pointer : nullptr;
+				Result = CheckAll(Flags) && (!Callback || Callback(CallbackId, AKMFLAGS_NONE));
 			}
 			return api.PassBoolean(Result);
 		}
@@ -1796,7 +1798,7 @@ int FarMacroApi::atoiFunc()
 int FarMacroApi::windowscrollFunc()
 {
 	auto Params = parseParams(2);
-	int Ret=0;
+	bool Ret = false;
 
 	if (Opt.WindowMode)
 	{
@@ -1809,7 +1811,7 @@ int FarMacroApi::windowscrollFunc()
 
 		if (Console.ScrollWindow(Lines, Columns))
 		{
-			Ret=1;
+			Ret=true;
 		}
 	}
 
@@ -2022,7 +2024,7 @@ int FarMacroApi::promptFunc()
 		PassString(strDest);
 	}
 	else
-		PassBoolean(0);
+		PassBoolean(false);
 
 	SetHistoryDisableMask(oldHistoryDisable);
 
@@ -2132,7 +2134,7 @@ int FarMacroApi::panelsetpathFunc()
 	int typePanel     = Params[0].getInt32();
 	auto& Val         = Params[1];
 	auto& ValFileName = Params[2];
-	int Ret=0;
+	bool Ret = false;
 
 	if (Val.isString())
 	{
@@ -2169,7 +2171,7 @@ int FarMacroApi::panelsetpathFunc()
 				SelPanel->UpdateIfChanged(UIC_UPDATE_NORMAL);
 				FrameManager->RefreshFrame(FrameManager->GetTopModal());
 				// </Mantis#0000289>
-				Ret=1;
+				Ret = true;
 			}
 		}
 	}
@@ -2334,7 +2336,7 @@ int FarMacroApi::fargetconfigFunc()
 
 	if (!GetConfigValue(Index, Data))
 	{
-		PassBoolean(0);
+		PassBoolean(false);
 		return 0;
 	}
 
@@ -2407,7 +2409,7 @@ int FarMacroApi::farsetconfigFunc()
 			Res = _SetConfig(Index, &mData->Values[1]);
 		}
 	}
-	PassBoolean(Res ? 1 : 0);
+	PassBoolean(Res);
 	return 0;
 }
 
@@ -3524,7 +3526,7 @@ int FarMacroApi::UDList_Split()
 	}
 	else
 	{
-		PassBoolean(0);
+		PassBoolean(false);
 	}
 	return 0;
 }
@@ -4310,26 +4312,17 @@ bool KeyMacro::CheckFileFolder(Panel *CheckPanel,DWORD CurFlags, bool IsPassiveP
 
 	if (FileAttr != INVALID_FILE_ATTRIBUTES)
 	{
-		if (IsPassivePanel)
-		{
-			if (((FileAttr&FILE_ATTRIBUTE_DIRECTORY) && (CurFlags&MFLAGS_PNOFOLDERS)) || (!(FileAttr&FILE_ATTRIBUTE_DIRECTORY) && (CurFlags&MFLAGS_PNOFILES)))
-				return false;
-		}
-		else
-		{
-			if (((FileAttr&FILE_ATTRIBUTE_DIRECTORY) && (CurFlags&MFLAGS_NOFOLDERS)) || (!(FileAttr&FILE_ATTRIBUTE_DIRECTORY) && (CurFlags&MFLAGS_NOFILES)))
-				return false;
-		}
+		bool IsDir = (FileAttr&FILE_ATTRIBUTE_DIRECTORY) != 0;
+		return IsPassivePanel ?
+			(IsDir ? !(CurFlags&MFLAGS_PNOFOLDERS) : !(CurFlags&MFLAGS_PNOFILES)) :
+			(IsDir ? !(CurFlags&MFLAGS_NOFOLDERS) : !(CurFlags&MFLAGS_NOFILES));
 	}
 
 	return true;
 }
 
-bool KeyMacro::CheckAll(int /*CheckMode*/,DWORD CurFlags)
+bool KeyMacro::CheckAll(DWORD CurFlags)
 {
-	if (CtrlObject && CtrlObject->Plugins.CurPluginItem && (CurFlags&MFLAGS_NOSENDKEYSTOPLUGINS))
-		return false;
-
 	// проверка на пусто/не пусто в ком.строке (а в редакторе? :-)
 	if (CurFlags&(MFLAGS_EMPTYCOMMANDLINE|MFLAGS_NOTEMPTYCOMMANDLINE))
 		if (CtrlObject->CmdLine && !CheckCmdLine(CtrlObject->CmdLine->GetLength(),CurFlags))

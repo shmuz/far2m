@@ -201,8 +201,6 @@ class PluginManager
 
 		BitFlags Flags;        // флаги манагера плагинов
 
-		Plugin *CurPluginItem;
-
 		FileEditor *CurEditor;
 		Viewer *CurViewer;     // 27.09.2000 SVS: Указатель на текущий Viewer
 

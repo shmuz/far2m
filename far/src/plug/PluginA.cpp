@@ -566,7 +566,6 @@ HANDLE PluginA::OpenPlugin(int OpenFrom, INT_PTR Item)
 
 	if (Load() && pOpenPlugin)
 	{
-		//CurPluginItem=this; //BUGBUG
 		ExecuteStruct es(EXCEPT_OPENPLUGIN);
 		es.hDefaultResult = INVALID_HANDLE_VALUE;
 		es.hResult = INVALID_HANDLE_VALUE;
@@ -583,7 +582,6 @@ HANDLE PluginA::OpenPlugin(int OpenFrom, INT_PTR Item)
 		if (ItemA) free(ItemA);
 
 		hResult = es.hResult;
-		//CurPluginItem=nullptr; //BUGBUG
 		/*    CtrlObject->Macro.SetRedrawEditor(TRUE); //BUGBUG
 
 		    if ( !es.bUnloaded )

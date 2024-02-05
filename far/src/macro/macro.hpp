@@ -116,7 +116,7 @@ private:
 	bool CheckPanel(int PanelMode,DWORD CurFlags, bool IsPassivePanel);
 	bool CheckCmdLine(int CmdLength,DWORD Flags);
 	bool CheckFileFolder(Panel *ActivePanel,DWORD CurFlags, bool IsPassivePanel);
-	bool CheckAll(int CheckMode,DWORD CurFlags);
+	bool CheckAll(DWORD CurFlags);
 
 	static LONG_PTR WINAPI AssignMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2);
 	static LONG_PTR WINAPI ParamMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2);

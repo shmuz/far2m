@@ -702,13 +702,11 @@ HANDLE PluginW::OpenPlugin(int OpenFrom, INT_PTR Item)
 
 	if (Load() && pOpenPluginW)
 	{
-		//CurPluginItem=this; //BUGBUG
 		ExecuteStruct es(EXCEPT_OPENPLUGIN);
 		es.hDefaultResult = INVALID_HANDLE_VALUE;
 		es.hResult = INVALID_HANDLE_VALUE;
 		EXECUTE_FUNCTION_EX(pOpenPluginW(OpenFrom,Item), es);
 		hResult = es.hResult;
-		//CurPluginItem=nullptr; //BUGBUG
 		/*    CtrlObject->Macro.SetRedrawEditor(TRUE); //BUGBUG
 
 		    if ( !es.bUnloaded )
