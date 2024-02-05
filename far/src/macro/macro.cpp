@@ -223,13 +223,13 @@ static bool MacroPluginOp(int OpCode, const FarMacroValue& Param, MacroPluginRet
 int KeyMacro::GetExecutingState()
 {
 	MacroPluginReturn Ret;
-	return MacroPluginOp(OP_ISEXECUTING,false,&Ret) ? Ret.ReturnType : static_cast<int>(MACROSTATE_NOMACRO);
+	return MacroPluginOp(OP_ISEXECUTING,false,&Ret) ? Ret.ReturnType : MACROSTATE_NOMACRO;
 }
 
 bool KeyMacro::IsOutputDisabled()
 {
 	MacroPluginReturn Ret;
-	return MacroPluginOp(OP_ISDISABLEOUTPUT,false,&Ret)? Ret.ReturnType != 0 : false;
+	return MacroPluginOp(OP_ISDISABLEOUTPUT,false,&Ret) && Ret.ReturnType;
 }
 
 static DWORD SetHistoryDisableMask(DWORD Mask)
@@ -247,19 +247,19 @@ static DWORD GetHistoryDisableMask()
 bool KeyMacro::IsHistoryDisabled(int TypeHistory)
 {
 	MacroPluginReturn Ret;
-	return MacroPluginOp(OP_ISHISTORYDISABLE, static_cast<double>(TypeHistory), &Ret)? !!Ret.ReturnType : false;
+	return MacroPluginOp(OP_ISHISTORYDISABLE, static_cast<double>(TypeHistory), &Ret) && Ret.ReturnType;
 }
 
 static bool IsTopMacroOutputDisabled()
 {
 	MacroPluginReturn Ret;
-	return MacroPluginOp(OP_ISTOPMACROOUTPUTDISABLED,false,&Ret) ? !!Ret.ReturnType : false;
+	return MacroPluginOp(OP_ISTOPMACROOUTPUTDISABLED,false,&Ret) && Ret.ReturnType;
 }
 
 static bool IsPostMacroEnabled()
 {
 	MacroPluginReturn Ret;
-	return MacroPluginOp(OP_ISPOSTMACROENABLED,false,&Ret) && Ret.ReturnType==1;
+	return MacroPluginOp(OP_ISPOSTMACROENABLED,false,&Ret) && Ret.ReturnType;
 }
 
 static void SetMacroValue(bool Value)
@@ -277,9 +277,16 @@ static bool TryToPostMacro(int Area,const FARString& TextKey,DWORD IntKey)
 
 static inline Panel* SelectPanel(int Type)
 {
-	Panel* ActivePanel = CtrlObject->Cp()->ActivePanel;
-	Panel* PassivePanel = CtrlObject->Cp()->GetAnotherPanel(ActivePanel);
-	return Type == 0 ? ActivePanel : (Type == 1 ? PassivePanel : nullptr);
+	if (CtrlObject->Cp()) {
+		Panel* ActivePanel = CtrlObject->Cp()->ActivePanel;
+		if (ActivePanel) {
+			switch(Type) {
+				case 0: return ActivePanel;
+				case 1: return CtrlObject->Cp()->GetAnotherPanel(ActivePanel);
+			}
+		}
+	}
+	return nullptr;
 }
 
 KeyMacro::KeyMacro():
@@ -669,8 +676,8 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		return GetArea();
 	}
 
-	const auto ActivePanel = CtrlObject->Cp() ? CtrlObject->Cp()->ActivePanel : nullptr;
-	const auto PassivePanel = CtrlObject->Cp() ? CtrlObject->Cp()->GetAnotherPanel(ActivePanel) : nullptr;
+	const auto ActivePanel = SelectPanel(0);
+	const auto PassivePanel = SelectPanel(1);
 
 	auto CurrentWindow = FrameManager->GetCurrentFrame();
 
@@ -1270,10 +1277,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 			if (Data->Count>=3 && Data->Values[0].Type==FMVT_DOUBLE  &&
 				Data->Values[1].Type==FMVT_DOUBLE && Data->Values[2].Type==FMVT_BOOLEAN)
 			{
-				auto panel = CtrlObject->Cp()->ActivePanel;
-				if (panel && Data->Values[0].Double == 1)
-					panel = CtrlObject->Cp()->GetAnotherPanel(panel);
-
+				auto panel = SelectPanel((int)(Data->Values[0].Double));
 				if (panel)
 				{
 					int SortMode = (int)Data->Values[1].Double;
@@ -1300,13 +1304,13 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 			bool Result = false;
 			if (Data->Count >= 2)
 			{
-				// auto Area = static_cast<int>(Data->Values[0].Double);
+				auto Area = static_cast<FARMACROAREA>(Data->Values[0].Double);
 				auto Flags = static_cast<DWORD>(Data->Values[1].Double);
 				auto Callback = (Data->Count >= 3 && Data->Values[2].Type == FMVT_POINTER) ?
 					reinterpret_cast<FARMACROCALLBACK>(Data->Values[2].Pointer) : nullptr;
 				auto CallbackId = (Data->Count >= 4 && Data->Values[3].Type == FMVT_POINTER) ?
 					Data->Values[3].Pointer : nullptr;
-				Result = CheckAll(Flags) && (!Callback || Callback(CallbackId, AKMFLAGS_NONE));
+				Result = CheckAll(Area, Flags) && (!Callback || Callback(CallbackId, AKMFLAGS_NONE));
 			}
 			return api.PassBoolean(Result);
 		}
@@ -2086,14 +2090,7 @@ int FarMacroApi::panelselectFunc()
 	auto& ValItems = Params[3];
 	int64_t Result = -1;
 
-	Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
-	Panel *PassivePanel=nullptr;
-
-	if (ActivePanel)
-		PassivePanel=CtrlObject->Cp()->GetAnotherPanel(ActivePanel);
-
-	Panel *SelPanel = !typePanel ? ActivePanel : (typePanel == 1?PassivePanel:nullptr);
-
+	Panel *SelPanel = SelectPanel(typePanel);
 	if (SelPanel)
 	{
 		int64_t Index=-1;
@@ -2196,15 +2193,8 @@ int FarMacroApi::fattrFuncImpl(int Type)
 		auto Params = parseParams(2);
 		int typePanel = Params[0].getInt32();
 		const wchar_t *Str = Params[1].toString();
-		Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
-		Panel *PassivePanel=nullptr;
 
-		if (ActivePanel)
-			PassivePanel=CtrlObject->Cp()->GetAnotherPanel(ActivePanel);
-
-		//Frame* CurFrame=FrameManager->GetCurrentFrame();
-		Panel *SelPanel = !typePanel ? ActivePanel : (typePanel == 1?PassivePanel:nullptr);
-
+		Panel *SelPanel = SelectPanel(typePanel);
 		if (SelPanel)
 		{
 			if (FindAnyOfChars(Str, "*?") )
@@ -2882,18 +2872,11 @@ int FarMacroApi::clipFunc()
 int FarMacroApi::panelsetposidxFunc()
 {
 	auto Params = parseParams(3);
-	int InSelection = Params[2].getInt32();
-	long idxItem=(long)Params[1].getInteger();
 	int typePanel = Params[0].getInt32();
+	long idxItem=(long)Params[1].getInteger();
+	int InSelection = Params[2].getInt32();
 
-	Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
-	Panel *PassivePanel=nullptr;
-
-	if (ActivePanel)
-		PassivePanel=CtrlObject->Cp()->GetAnotherPanel(ActivePanel);
-
-	//Frame* CurFrame=FrameManager->GetCurrentFrame();
-	Panel *SelPanel = typePanel? (typePanel == 1?PassivePanel:nullptr):ActivePanel;
+	Panel *SelPanel = SelectPanel(typePanel);
 	int64_t Ret=0;
 
 	if (SelPanel)
@@ -3010,14 +2993,7 @@ int FarMacroApi::panelsetposFunc()
 	if (!fileName || !*fileName)
 		fileName=L"";
 
-	Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
-	Panel *PassivePanel=nullptr;
-
-	if (ActivePanel)
-		PassivePanel=CtrlObject->Cp()->GetAnotherPanel(ActivePanel);
-
-	//Frame* CurFrame=FrameManager->GetCurrentFrame();
-	Panel *SelPanel = typePanel? (typePanel == 1?PassivePanel:nullptr):ActivePanel;
+	Panel *SelPanel = SelectPanel(typePanel);
 	int64_t Ret=0;
 
 	if (SelPanel)
@@ -3096,14 +3072,8 @@ int FarMacroApi::panelitemFunc()
 	auto& P2 = Params[2];
 	auto& P1 = Params[1];
 	int typePanel = Params[0].getInt32();
-	Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
-	Panel *PassivePanel=nullptr;
 
-	if (ActivePanel)
-		PassivePanel=CtrlObject->Cp()->GetAnotherPanel(ActivePanel);
-
-	Panel *SelPanel = typePanel? (typePanel == 1?PassivePanel:nullptr):ActivePanel;
-
+	Panel *SelPanel = SelectPanel(typePanel);
 	if (!SelPanel)
 	{
 		return 0;
@@ -4253,21 +4223,21 @@ bool KeyMacro::PostNewMacro(const wchar_t* Sequence, DWORD InputFlags, FarKey AK
 	return CallMacroPlugin(&info);
 }
 
-bool KeyMacro::CheckEditSelected(DWORD CurFlags)
+bool KeyMacro::CheckEditSelected(FARMACROAREA Area, DWORD CurFlags)
 {
-	if (m_Area==MACROAREA_EDITOR || m_Area==MACROAREA_DIALOG || m_Area==MACROAREA_VIEWER ||
-		(m_Area==MACROAREA_SHELL && CtrlObject->CmdLine->IsVisible()))
+	if (Area==MACROAREA_EDITOR || Area==MACROAREA_DIALOG || Area==MACROAREA_VIEWER ||
+		(Area==MACROAREA_SHELL && CtrlObject->CmdLine->IsVisible()))
 	{
-		int NeedType = m_Area == MACROAREA_EDITOR ? MODALTYPE_EDITOR :
-			(m_Area == MACROAREA_VIEWER ? MODALTYPE_VIEWER :
-			(m_Area == MACROAREA_DIALOG ? MODALTYPE_DIALOG : MODALTYPE_PANELS));
+		int NeedType = Area == MACROAREA_EDITOR ? MODALTYPE_EDITOR :
+			(Area == MACROAREA_VIEWER ? MODALTYPE_VIEWER :
+			(Area == MACROAREA_DIALOG ? MODALTYPE_DIALOG : MODALTYPE_PANELS));
 		Frame* CurFrame=FrameManager->GetCurrentFrame();
 
 		if (CurFrame && CurFrame->GetType()==NeedType)
 		{
 			int CurSelected;
 
-			if (m_Area==MACROAREA_SHELL && CtrlObject->CmdLine->IsVisible())
+			if (Area==MACROAREA_SHELL && CtrlObject->CmdLine->IsVisible())
 				CurSelected=(int)CtrlObject->CmdLine->VMProcess(MCODE_C_SELECTED);
 			else
 				CurSelected=(int)CurFrame->VMProcess(MCODE_C_SELECTED);
@@ -4304,15 +4274,15 @@ bool KeyMacro::CheckPanel(int PanelMode,DWORD CurFlags,bool IsPassivePanel)
 	return true;
 }
 
-bool KeyMacro::CheckFileFolder(Panel *CheckPanel,DWORD CurFlags, bool IsPassivePanel)
+bool KeyMacro::CheckFileFolder(Panel *PanelToTest, DWORD CurFlags, bool IsPassivePanel)
 {
 	FARString strFileName;
-	DWORD FileAttr=INVALID_FILE_ATTRIBUTES;
-	CheckPanel->GetFileName(strFileName,CheckPanel->GetCurrentPos(),FileAttr);
+	DWORD FileAttr = INVALID_FILE_ATTRIBUTES;
+	PanelToTest->GetFileName(strFileName, PanelToTest->GetCurrentPos(), FileAttr);
 
 	if (FileAttr != INVALID_FILE_ATTRIBUTES)
 	{
-		bool IsDir = (FileAttr&FILE_ATTRIBUTE_DIRECTORY) != 0;
+		bool IsDir = (FileAttr & FILE_ATTRIBUTE_DIRECTORY) != 0;
 		return IsPassivePanel ?
 			(IsDir ? !(CurFlags&MFLAGS_PNOFOLDERS) : !(CurFlags&MFLAGS_PNOFILES)) :
 			(IsDir ? !(CurFlags&MFLAGS_NOFOLDERS) : !(CurFlags&MFLAGS_NOFILES));
@@ -4321,7 +4291,7 @@ bool KeyMacro::CheckFileFolder(Panel *CheckPanel,DWORD CurFlags, bool IsPassiveP
 	return true;
 }
 
-bool KeyMacro::CheckAll(DWORD CurFlags)
+bool KeyMacro::CheckAll(FARMACROAREA Area, DWORD CurFlags)
 {
 	// проверка на пусто/не пусто в ком.строке (а в редакторе? :-)
 	if (CurFlags&(MFLAGS_EMPTYCOMMANDLINE|MFLAGS_NOTEMPTYCOMMANDLINE))
@@ -4356,7 +4326,7 @@ bool KeyMacro::CheckAll(DWORD CurFlags)
 				return false;
 
 		if (CurFlags&(MFLAGS_SELECTION|MFLAGS_NOSELECTION|MFLAGS_PSELECTION|MFLAGS_PNOSELECTION))
-			if (m_Area!=MACROAREA_EDITOR && m_Area != MACROAREA_DIALOG && m_Area!=MACROAREA_VIEWER)
+			if (Area!=MACROAREA_EDITOR && Area != MACROAREA_DIALOG && Area!=MACROAREA_VIEWER)
 			{
 				int SelCount=ActivePanel->GetRealSelCount();
 
@@ -4370,7 +4340,7 @@ bool KeyMacro::CheckAll(DWORD CurFlags)
 			}
 	}
 
-	if (!CheckEditSelected(CurFlags))
+	if (!CheckEditSelected(Area, CurFlags))
 		return false;
 
 	return true;

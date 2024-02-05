@@ -112,11 +112,11 @@ private:
 	FARString m_StringToPrint;
 
 private:
-	bool CheckEditSelected(DWORD CurFlags);
-	bool CheckPanel(int PanelMode,DWORD CurFlags, bool IsPassivePanel);
-	bool CheckCmdLine(int CmdLength,DWORD Flags);
-	bool CheckFileFolder(Panel *ActivePanel,DWORD CurFlags, bool IsPassivePanel);
-	bool CheckAll(DWORD CurFlags);
+	static bool CheckEditSelected(FARMACROAREA Area, DWORD CurFlags);
+	static bool CheckPanel(int PanelMode,DWORD CurFlags, bool IsPassivePanel);
+	static bool CheckCmdLine(int CmdLength,DWORD Flags);
+	static bool CheckFileFolder(Panel *PanelToTest, DWORD CurFlags, bool IsPassivePanel);
+	static bool CheckAll(FARMACROAREA Area, DWORD CurFlags);
 
 	static LONG_PTR WINAPI AssignMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2);
 	static LONG_PTR WINAPI ParamMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2);
