@@ -53,8 +53,6 @@ enum MACRODISABLEONLOAD
 	MDOL_AUTOSTART      = 0x00000001, // дисаблим автостартующие макросы
 };
 
-class Panel;
-
 struct MacroPanelSelect {
 	int     Action;
 	int     Mode;
@@ -115,7 +113,7 @@ private:
 	static bool CheckEditSelected(FARMACROAREA Area, DWORD CurFlags);
 	static bool CheckPanel(int PanelMode,DWORD CurFlags, bool IsPassivePanel);
 	static bool CheckCmdLine(int CmdLength,DWORD Flags);
-	static bool CheckFileFolder(Panel *PanelToTest, DWORD CurFlags, bool IsPassivePanel);
+	static bool CheckFileFolder(DWORD CurFlags, bool IsPassivePanel);
 	static bool CheckAll(FARMACROAREA Area, DWORD CurFlags);
 
 	static LONG_PTR WINAPI AssignMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2);

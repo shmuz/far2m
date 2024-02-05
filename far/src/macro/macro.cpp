@@ -275,7 +275,7 @@ static bool TryToPostMacro(int Area,const FARString& TextKey,DWORD IntKey)
 	return CallMacroPlugin(&info);
 }
 
-static inline Panel* SelectPanel(int Type)
+static Panel* SelectPanel(int Type)
 {
 	if (CtrlObject->Cp()) {
 		Panel* ActivePanel = CtrlObject->Cp()->ActivePanel;
@@ -1668,10 +1668,12 @@ int FarMacroApi::substrFunc()
 
 static bool SplitFileName(const wchar_t *lpFullName,FARString &strDest,int nFlags)
 {
-#define FLAG_DISK   1
-#define FLAG_PATH   2
-#define FLAG_NAME   4
-#define FLAG_EXT    8
+	enum {
+		FLAG_DISK = 0x01,
+		FLAG_PATH = 0x02,
+		FLAG_NAME = 0x04,
+		FLAG_EXT  = 0x08,
+	};
 	const wchar_t *s = lpFullName; //start of sub-string
 	const wchar_t *p = s; //current FARString pointer
 	const wchar_t *es = s+StrLength(s); //end of string
@@ -1944,7 +1946,6 @@ int FarMacroApi::modFunc()
 
 	if (!Params[1].asInteger())
 	{
-		_KEYMACRO(___FILEFUNCLINE___;SysLog(L"Error: Divide (mod) by zero"));
 		PassNumber(0);
 	}
 	else
@@ -2058,8 +2059,6 @@ int FarMacroApi::msgBoxFunc()
 	if (!HIWORD(Flags) || HIWORD(Flags) > HIWORD(FMSG_MB_RETRYCANCEL))
 		Flags|=FMSG_MB_OK;
 
-	//_KEYMACRO(SysLog(L"title='%ls'",title));
-	//_KEYMACRO(SysLog(L"text='%ls'",text));
 	FARString TempBuf = title;
 	TempBuf += L"\n";
 	TempBuf += text;
@@ -2132,44 +2131,31 @@ int FarMacroApi::panelsetpathFunc()
 	auto& Val         = Params[1];
 	auto& ValFileName = Params[2];
 	bool Ret = false;
+	Panel *SelPanel = SelectPanel(typePanel);
 
-	if (Val.isString())
+	if (SelPanel && Val.isString())
 	{
 		const wchar_t *pathName=Val.s();
-		const wchar_t *fileName=ValFileName.isString() ? ValFileName.s():L"";
+		const wchar_t *fileName=ValFileName.isString() ? ValFileName.s() : L"";
 
-		Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
-		Panel *PassivePanel=nullptr;
+		FARString strPath;
+		if (apiExpandEnvironmentStrings(pathName, strPath))
+			pathName = strPath.CPtr();
 
-		if (ActivePanel)
-			PassivePanel=CtrlObject->Cp()->GetAnotherPanel(ActivePanel);
-
-		Panel *SelPanel = typePanel==0 ? ActivePanel : typePanel==1 ? PassivePanel : nullptr;
-
-		if (SelPanel)
+		if (SelPanel->SetCurDir(pathName,SelPanel->GetMode()==PLUGIN_PANEL && IsAbsolutePath(pathName),false))
 		{
-			FARString strPath;
-			if (apiExpandEnvironmentStrings(pathName, strPath))
-				pathName = strPath.CPtr();
-
-			if (SelPanel->SetCurDir(pathName,SelPanel->GetMode()==PLUGIN_PANEL && IsAbsolutePath(pathName),false))
-			{
-				ActivePanel=CtrlObject->Cp()->ActivePanel;
-				PassivePanel=ActivePanel?CtrlObject->Cp()->GetAnotherPanel(ActivePanel):nullptr;
-				SelPanel = typePanel? (typePanel == 1?PassivePanel:nullptr):ActivePanel;
-
-				//восстановим текущую папку из активной панели.
-				ActivePanel->SetCurPath();
-				// Need PointToName()?
-				SelPanel->GoToFile(fileName); // здесь без проверки, т.к. параметр fileName аля опциональный
-				//SelPanel->Show();
-				// <Mantis#0000289> - грозно, но со вкусом :-)
-				//ShellUpdatePanels(SelPanel);
-				SelPanel->UpdateIfChanged(UIC_UPDATE_NORMAL);
-				FrameManager->RefreshFrame(FrameManager->GetTopModal());
-				// </Mantis#0000289>
-				Ret = true;
-			}
+			//восстановим текущую папку из активной панели.
+			CtrlObject->Cp()->ActivePanel->SetCurPath();
+			// Need PointToName()?
+			if (*fileName)
+				SelPanel->GoToFile(fileName);
+			//SelPanel->Show();
+			// <Mantis#0000289> - грозно, но со вкусом :-)
+			//ShellUpdatePanels(SelPanel);
+			SelPanel->UpdateIfChanged(UIC_UPDATE_NORMAL);
+			FrameManager->RefreshFrame(FrameManager->GetTopModal());
+			// </Mantis#0000289>
+			Ret = true;
 		}
 	}
 
@@ -4274,11 +4260,12 @@ bool KeyMacro::CheckPanel(int PanelMode,DWORD CurFlags,bool IsPassivePanel)
 	return true;
 }
 
-bool KeyMacro::CheckFileFolder(Panel *PanelToTest, DWORD CurFlags, bool IsPassivePanel)
+bool KeyMacro::CheckFileFolder(DWORD CurFlags, bool IsPassivePanel)
 {
 	FARString strFileName;
 	DWORD FileAttr = INVALID_FILE_ATTRIBUTES;
-	PanelToTest->GetFileName(strFileName, PanelToTest->GetCurrentPos(), FileAttr);
+	Panel *SelPanel = SelectPanel(IsPassivePanel ? 1 : 0);
+	SelPanel->GetFileName(strFileName, SelPanel->GetCurrentPos(), FileAttr);
 
 	if (FileAttr != INVALID_FILE_ATTRIBUTES)
 	{
@@ -4318,11 +4305,11 @@ bool KeyMacro::CheckAll(FARMACROAREA Area, DWORD CurFlags)
 				return false;
 
 		if (CurFlags&(MFLAGS_NOFOLDERS|MFLAGS_NOFILES))
-			if (!CheckFileFolder(ActivePanel,CurFlags,false))
+			if (!CheckFileFolder(CurFlags,false))
 				return false;
 
 		if (CurFlags&(MFLAGS_PNOFOLDERS|MFLAGS_PNOFILES))
-			if (!CheckFileFolder(PassivePanel,CurFlags,true))
+			if (!CheckFileFolder(CurFlags,true))
 				return false;
 
 		if (CurFlags&(MFLAGS_SELECTION|MFLAGS_NOSELECTION|MFLAGS_PSELECTION|MFLAGS_PNOSELECTION))

@@ -330,8 +330,9 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 		*/
 		case ACTL_GETCOLOR:
 		{
-			if ((int)(INT_PTR)Param < SIZE_ARRAY_PALETTE && (int)(INT_PTR)Param >= 0)
-				return (int)((unsigned int)Palette[(int)(INT_PTR)Param]);
+			auto Index = reinterpret_cast<INT_PTR>(Param);
+			if (Index < SIZE_ARRAY_PALETTE && Index >= 0)
+				return Palette[Index];
 
 			return -1;
 		}
