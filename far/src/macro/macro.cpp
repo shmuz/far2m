@@ -180,7 +180,8 @@ static void ShowUserMenu(size_t Count, const FarMacroValue *Values)
 
 static bool ToDouble(long long v, double *d)
 {
-	if ((v >= 0 && v <= 0x1FFFFFFFFFFFFFLL) || (v < 0 && v >= -0x1FFFFFFFFFFFFFLL))
+	long long Limit = 1LL << 52;
+	if ((v >= 0 && v < Limit) || (v < 0 && v >= -Limit))
 	{
 		*d = (double)v;
 		return true;
@@ -277,7 +278,7 @@ static bool TryToPostMacro(int Area,const FARString& TextKey,DWORD IntKey)
 
 static Panel* SelectPanel(int Type)
 {
-	if (CtrlObject->Cp()) {
+	if (CtrlObject && CtrlObject->Cp()) {
 		Panel* ActivePanel = CtrlObject->Cp()->ActivePanel;
 		if (ActivePanel) {
 			switch(Type) {
@@ -2142,7 +2143,8 @@ int FarMacroApi::panelsetpathFunc()
 		if (apiExpandEnvironmentStrings(pathName, strPath))
 			pathName = strPath.CPtr();
 
-		if (SelPanel->SetCurDir(pathName,SelPanel->GetMode()==PLUGIN_PANEL && IsAbsolutePath(pathName),false))
+		if (// SelPanel->SetCurDir(pathName,false,false) ||
+			SelPanel->SetCurDir(pathName,SelPanel->GetMode()==PLUGIN_PANEL && IsAbsolutePath(pathName),false))
 		{
 			//восстановим текущую папку из активной панели.
 			CtrlObject->Cp()->ActivePanel->SetCurPath();

@@ -7,7 +7,9 @@
 
 #include "bit64.h"
 
-#define MAX52 0xFFFFFFFFFFFFFLL
+#define MAX52 (1LL << 52)
+#define FIT52(v) ((v >= 0 && v < MAX52) || (v < 0 && v >= -MAX52))
+
 static int f_new(lua_State *L); /* forward declaration */
 
 const char metatable_name[] = "64 bit integer";
@@ -22,7 +24,7 @@ int bit64_pushuserdata(lua_State *L, int64_t v)
 
 int bit64_push(lua_State *L, int64_t v)
 {
-	if((v >= 0 && v <= MAX52) || (v < 0 && v >= -MAX52-1))
+	if (FIT52(v))
 		lua_pushnumber(L, (double)v);
 	else
 		bit64_pushuserdata(L, v);
@@ -62,7 +64,7 @@ int64_t check64(lua_State *L, int pos, int* success)
 	if(tp == LUA_TNUMBER)
 	{
 		double dd = lua_tonumber(L, pos);
-		if ((dd >= 0 && dd <= MAX52) || (dd < 0 && dd >= -MAX52-1))
+		if (FIT52(dd))
 			return (int64_t)dd;
 	}
 	else
