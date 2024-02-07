@@ -1147,9 +1147,14 @@ const wchar_t* FarGetMsgFn(INT_PTR PluginHandle,FarLangMsgID MsgId)
 	return pPlugin->GetMsg(MsgId);
 }
 
-static int FarMessageFnSynched(INT_PTR PluginNumber,DWORD Flags,const wchar_t *HelpTopic,
-                        const wchar_t * const *Items,int ItemsNumber,
-                        int ButtonsNumber)
+static int FarMessageFnSynched(
+	INT_PTR PluginNumber,
+	const GUID *Id,
+	DWORD Flags,
+	const wchar_t *HelpTopic,
+	const wchar_t * const *Items,
+	int ItemsNumber,
+	int ButtonsNumber)
 {
 	if (FrameManager->ManagerIsDown())
 		return -1;
@@ -1230,14 +1235,21 @@ static int FarMessageFnSynched(INT_PTR PluginNumber,DWORD Flags,const wchar_t *H
 
 	// непосредственно... вывод
 	LockBottomFrame lbf; // временно отменим прорисовку фрейма
-	return m.Show(Flags, ButtonsNumber, PluginNumber);
+	return m.Show(Flags, ButtonsNumber, PluginNumber, Id);
 }
 
 int WINAPI FarMessageFn(INT_PTR PluginNumber,DWORD Flags,const wchar_t *HelpTopic,
                         const wchar_t * const *Items,int ItemsNumber,
                         int ButtonsNumber)
 {
-	return InterThreadCall<int, -1>(std::bind(FarMessageFnSynched, PluginNumber, Flags, HelpTopic, Items, ItemsNumber, ButtonsNumber));
+	return InterThreadCall<int, -1>(std::bind(FarMessageFnSynched, PluginNumber, nullptr, Flags, HelpTopic, Items, ItemsNumber, ButtonsNumber));
+}
+
+int WINAPI FarMessageV3Fn(INT_PTR PluginNumber,const GUID *Id,DWORD Flags,const wchar_t *HelpTopic,
+                        const wchar_t * const *Items,int ItemsNumber,
+                        int ButtonsNumber)
+{
+	return InterThreadCall<int, -1>(std::bind(FarMessageFnSynched, PluginNumber, Id, Flags, HelpTopic, Items, ItemsNumber, ButtonsNumber));
 }
 
 static int FarControlSynched(HANDLE hPlugin,int Command,int Param1,LONG_PTR Param2)

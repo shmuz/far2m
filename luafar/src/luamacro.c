@@ -56,7 +56,7 @@ HANDLE Open_Luamacro (lua_State* L, INT_PTR Item)
 	if (om_info->Data && !FL_PushParams(L, om_info->Data))
 	{
 		lua_pop(L, 3);
-		LF_Message(L, L"too many values to place onto Lua stack", L"LuaMacro", L"OK", "wl", NULL);
+		LF_Message(L, L"too many values to place onto Lua stack", L"LuaMacro", L"OK", "wl", NULL, NULL);
 		return NULL;
 	}
 
@@ -233,7 +233,7 @@ int far_MacroCallToLua(lua_State *L)
 		lua_settop(L, 0);
 		if (Data && !FL_PushParams(L, Data))
 		{
-			LF_Message(L, L"too many values to place onto Lua stack", L"LuaMacro", L"OK", "wl", NULL);
+			LF_Message(L, L"too many values to place onto Lua stack", L"LuaMacro", L"OK", "wl", NULL, NULL);
 		}
 		return lua_gettop(L);
 	}

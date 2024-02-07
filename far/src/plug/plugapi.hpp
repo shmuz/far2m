@@ -85,9 +85,14 @@ int WINAPI FarMenuFn(INT_PTR PluginNumber,int X,int Y,int MaxHeight,
                      const wchar_t *HelpTopic,const int *BreakKeys,int *BreakCode,
                      const struct FarMenuItem *Item, int ItemsNumber);
 const wchar_t* WINAPI FarGetMsgFn(INT_PTR PluginHandle,FarLangMsgID MsgId);
+
 int WINAPI FarMessageFn(INT_PTR PluginNumber,DWORD Flags,
                         const wchar_t *HelpTopic,const wchar_t * const *Items,int ItemsNumber,
                         int ButtonsNumber);
+int WINAPI FarMessageV3Fn(INT_PTR PluginNumber,const GUID *Id,DWORD Flags,
+                        const wchar_t *HelpTopic,const wchar_t * const *Items,int ItemsNumber,
+                        int ButtonsNumber);
+
 int WINAPI FarControl(HANDLE hPlugin,int Command,int Param1,LONG_PTR Param2);
 HANDLE WINAPI FarSaveScreen(int X1,int Y1,int X2,int Y2);
 void WINAPI FarRestoreScreen(HANDLE hScreen);

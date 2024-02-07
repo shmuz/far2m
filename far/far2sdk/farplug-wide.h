@@ -161,7 +161,7 @@ enum FARMESSAGEFLAGS
 	FMSG_MB_RETRYCANCEL      = 0x00060000,
 };
 
-typedef int ( *FARAPIMESSAGE)(
+typedef int (WINAPI *FARAPIMESSAGE)(
 	INT_PTR PluginNumber,
 	DWORD Flags,
 	const wchar_t *HelpTopic,
@@ -170,6 +170,15 @@ typedef int ( *FARAPIMESSAGE)(
 	int ButtonsNumber
 );
 
+typedef int (WINAPI *FARAPIMESSAGEV3)(
+	INT_PTR PluginNumber,
+	const GUID* Id,
+	DWORD Flags,
+	const wchar_t *HelpTopic,
+	const wchar_t * const *Items,
+	int ItemsNumber,
+	int ButtonsNumber
+);
 
 enum DialogItemTypes
 {
@@ -2437,6 +2446,7 @@ struct PluginStartupInfo
 	int                    LuafarLoaded;
 	FARAPIDIALOGINITV3     DialogInitV3;
 	FARAPITEXTV2           TextV2;
+	FARAPIMESSAGEV3        MessageV3;
 };
 
 

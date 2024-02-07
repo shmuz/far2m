@@ -1605,7 +1605,8 @@ int LF_Message(lua_State* L,
 	const wchar_t* aTitle,
 	const wchar_t* aButtons,  // if multiple, then captions must be separated by ';'
 	const char*    aFlags,
-	const wchar_t* aHelpTopic)
+	const wchar_t* aHelpTopic,
+	const GUID*    aMessageGuid)
 {
 	TPluginData *pd = GetPluginData(L);
 	const wchar_t **items, **pItems;
@@ -1742,7 +1743,7 @@ int LF_Message(lua_State* L,
 		if(strchr(aFlags, 'l')) Flags |= FMSG_LEFTALIGN;
 	}
 
-	ret = PSInfo.Message(pd->ModuleNumber, Flags, aHelpTopic, items, 1+num_lines+num_buttons, num_buttons);
+	ret = PSInfo.MessageV3(pd->ModuleNumber, aMessageGuid, Flags, aHelpTopic, items, 1+num_lines+num_buttons, num_buttons);
 	free(BtnCopy);
 
 	while(nAlloc) free(allocLines[--nAlloc]);
@@ -1780,7 +1781,7 @@ void LF_Error(lua_State *L, const wchar_t* aMsg)
 	lua_pushlstring(L, (void*)L":\n", sizeof(wchar_t) * 2);
 	LF_Gsub(L, aMsg, L"\n\t", L"\n   ");
 	lua_concat(L, 3);
-	LF_Message(L, (void*)lua_tostring(L,-1), L"Error", L"OK", "w", NULL);
+	LF_Message(L, (void*)lua_tostring(L,-1), L"Error", L"OK", "w", NULL, NULL);
 	lua_pop(L, 1);
 }
 
@@ -1808,9 +1809,14 @@ int SplitToTable(lua_State *L, const wchar_t *Text, wchar_t Delim, int StartInde
 // Return: -1 if escape pressed, else - button number chosen (1 based).
 int far_Message(lua_State *L)
 {
+	int ret;
+	const wchar_t *Msg, *Title, *Buttons, *HelpTopic;
+	const char *Flags;
+	const GUID *Id;
 	luaL_checkany(L,1);
-	lua_settop(L,5);
-	const wchar_t *Msg = NULL;
+	lua_settop(L,6);
+	Msg = NULL;
+
 	if (lua_isstring(L, 1))
 		Msg = check_utf8_string(L, 1, NULL);
 	else {
@@ -1823,12 +1829,15 @@ int far_Message(lua_State *L)
 		if (Msg == NULL) luaL_argerror(L, 1, "cannot convert to string");
 		lua_replace(L,1);
 	}
-	const wchar_t *Title   = opt_utf8_string(L, 2, L"Message");
-	const wchar_t *Buttons = opt_utf8_string(L, 3, L";OK");
-	const char    *Flags   = luaL_optstring(L, 4, "");
-	const wchar_t *HelpTopic = opt_utf8_string(L, 5, NULL);
 
-	int ret = LF_Message(L, Msg, Title, Buttons, Flags, HelpTopic);
+	Title   = opt_utf8_string(L, 2, L"Message");
+	Buttons = opt_utf8_string(L, 3, L";OK");
+	Flags   = luaL_optstring(L, 4, "");
+	HelpTopic = opt_utf8_string(L, 5, NULL);
+	Id = (lua_type(L,6)==LUA_TSTRING && lua_objlen(L,6)==sizeof(GUID)) ?
+	     (const GUID*)lua_tostring(L,6) : NULL;
+
+	ret = LF_Message(L, Msg, Title, Buttons, Flags, HelpTopic, Id);
 	lua_pushinteger(L, ret<0 ? ret : ret+1);
 	return 1;
 }
