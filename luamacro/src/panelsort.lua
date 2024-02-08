@@ -150,7 +150,7 @@ local function CustomSortMenu()
     { BreakKey="C+SUBTRACT",  order="reverse" },
     { BreakKey="CS+SUBTRACT", order="reverse" },
   }
-  local pinfo = panel.GetPanelInfo(1)
+  local pinfo = panel.GetPanelInfo(nil,1)
   for k,v in pairs(CustomSortModes) do
     local item = { text=v.Description and tostring(v.Description) or Msg.PSDefaultMenuItemText..k; Mode=k; }
     if pinfo.SortMode == k then

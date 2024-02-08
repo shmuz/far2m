@@ -204,15 +204,15 @@ local function LocateFile (fname)
   local attr = win.GetFileAttr(fname)
   if attr and not attr:find"d" then
     local dir, name = fname:match("^(.*/)([^/]*)$")
-    if panel.SetPanelDirectory(1, dir) then
-      local pinfo = panel.GetPanelInfo(1)
+    if panel.SetPanelDirectory(nil, 1, dir) then
+      local pinfo = panel.GetPanelInfo(nil, 1)
       for i=1, pinfo.ItemsNumber do
-        local item = panel.GetPanelItem(1, i)
+        local item = panel.GetPanelItem(nil, 1, i)
         if item.FileName == name then
           local rect = pinfo.PanelRect
           local hheight = math.floor((rect.bottom - rect.top - 4) / 2)
           local topitem = pinfo.TopPanelItem
-          panel.RedrawPanel(1, { CurrentItem = i,
+          panel.RedrawPanel(nil, 1, { CurrentItem = i,
             TopPanelItem = i>=topitem and i<topitem+hheight and topitem or
                            i>hheight and i-hheight or 0 })
           return true

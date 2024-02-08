@@ -1214,17 +1214,17 @@ end
 
 local function test_Panel_SetPath()
   -- store
-  local adir_old = panel.GetPanelDirectory(1)
-  local pdir_old = panel.GetPanelDirectory(0)
+  local adir_old = panel.GetPanelDirectory(nil,1)
+  local pdir_old = panel.GetPanelDirectory(nil,0)
   --test
   local pdir = "/bin"
   local adir = "/usr/bin"
   local afile = "ldd"
   assert_true(Panel.SetPath(1, pdir))
   assert_true(Panel.SetPath(0, adir, afile))
-  assert_eq (pdir, panel.GetPanelDirectory(0))
-  assert_eq (adir, panel.GetPanelDirectory(1))
-  assert_eq (panel.GetCurrentPanelItem(1).FileName, afile)
+  assert_eq (pdir, panel.GetPanelDirectory(nil,0))
+  assert_eq (adir, panel.GetPanelDirectory(nil,1))
+  assert_eq (panel.GetCurrentPanelItem(nil,1).FileName, afile)
   -- restore
   assert_true(Panel.SetPath(1, pdir_old))
   assert_true(Panel.SetPath(0, adir_old))
@@ -1233,71 +1233,71 @@ end
 
 -- N=Panel.Select(panelType,Action[,Mode[,Items]])
 local function Test_Panel_Select()
-  local adir_old = panel.GetPanelDirectory(1) -- store active panel directory
+  local adir_old = panel.GetPanelDirectory(nil,1) -- store active panel directory
 
   local PS = assert_func(Panel.Select)
   local RM,ADD,INV,RST = 0,1,2,3 -- Action
   local MODE
 
   local dir = assert_str(win.GetEnv("FARHOME"))
-  assert_true(panel.SetPanelDirectory(1,dir))
-  local pi = assert_table(panel.GetPanelInfo(1))
+  assert_true(panel.SetPanelDirectory(nil,1,dir))
+  local pi = assert_table(panel.GetPanelInfo(nil,1))
   local ItemsCount = assert_num(pi.ItemsNumber)-1 -- don't count ".."
   assert(ItemsCount>=10, "not enough files to test")
 
   --------------------------------------------------------------
   MODE = 0
   assert_eq(ItemsCount,PS(0,ADD,MODE)) -- select all
-  pi = assert_table(panel.GetPanelInfo(1))
+  pi = assert_table(panel.GetPanelInfo(nil,1))
   assert_eq(ItemsCount, pi.SelectedItemsNumber)
 
   assert_eq(ItemsCount,PS(0,RM,MODE)) -- clear all
-  pi = assert_table(panel.GetPanelInfo(1))
+  pi = assert_table(panel.GetPanelInfo(nil,1))
   assert_eq(0, pi.SelectedItemsNumber)
 
   assert_eq(ItemsCount,PS(0,INV,MODE)) -- invert
-  pi = assert_table(panel.GetPanelInfo(1))
+  pi = assert_table(panel.GetPanelInfo(nil,1))
   assert_eq(ItemsCount, pi.SelectedItemsNumber)
 
   assert_eq(0,PS(0,INV,MODE)) -- invert again (return value is the selection count, contrary to docs)
-  pi = assert_table(panel.GetPanelInfo(1))
+  pi = assert_table(panel.GetPanelInfo(nil,1))
   assert_eq(0, pi.SelectedItemsNumber)
 
   --------------------------------------------------------------
   MODE = 1
   assert_eq(1,PS(0,ADD,MODE,5))
-  pi = assert_table(panel.GetPanelInfo(1))
+  pi = assert_table(panel.GetPanelInfo(nil,1))
   assert_eq(1, pi.SelectedItemsNumber)
 
   assert_eq(1,PS(0,RM,MODE,5))
-  pi = assert_table(panel.GetPanelInfo(1))
+  pi = assert_table(panel.GetPanelInfo(nil,1))
   assert_eq(0, pi.SelectedItemsNumber)
 
   assert_eq(1,PS(0,INV,MODE,5))
-  pi = assert_table(panel.GetPanelInfo(1))
+  pi = assert_table(panel.GetPanelInfo(nil,1))
   assert_eq(1, pi.SelectedItemsNumber)
 
   assert_eq(1,PS(0,INV,MODE,5))
-  pi = assert_table(panel.GetPanelInfo(1))
+  pi = assert_table(panel.GetPanelInfo(nil,1))
   assert_eq(0, pi.SelectedItemsNumber)
 
   --------------------------------------------------------------
   MODE = 2
   local list = dir.."/FarEng.hlf\nFarEng.lng" -- the 1-st file with path, the 2-nd without
   assert_eq(2,PS(0,ADD,MODE,list))
-  pi = assert_table(panel.GetPanelInfo(1))
+  pi = assert_table(panel.GetPanelInfo(nil,1))
   assert_eq(2, pi.SelectedItemsNumber)
 
   assert_eq(2,PS(0,RM,MODE,list))
-  pi = assert_table(panel.GetPanelInfo(1))
+  pi = assert_table(panel.GetPanelInfo(nil,1))
   assert_eq(0, pi.SelectedItemsNumber)
 
   assert_eq(2,PS(0,INV,MODE,list))
-  pi = assert_table(panel.GetPanelInfo(1))
+  pi = assert_table(panel.GetPanelInfo(nil,1))
   assert_eq(2, pi.SelectedItemsNumber)
 
   assert_eq(2,PS(0,INV,MODE,list))
-  pi = assert_table(panel.GetPanelInfo(1))
+  pi = assert_table(panel.GetPanelInfo(nil,1))
   assert_eq(0, pi.SelectedItemsNumber)
 
   --------------------------------------------------------------
@@ -1305,28 +1305,28 @@ local function Test_Panel_Select()
   local mask = "*.hlf;*.lng"
   local count = 0
   for i=1,pi.ItemsNumber do
-    local item = assert_table(panel.GetPanelItem(1,i))
+    local item = assert_table(panel.GetPanelItem(nil,1,i))
     if far.CmpNameList(mask, item.FileName) then count=count+1 end
   end
   assert(count>1, "not enough files to test")
 
   assert_eq(count,PS(0,ADD,MODE,mask))
-  pi = assert_table(panel.GetPanelInfo(1))
+  pi = assert_table(panel.GetPanelInfo(nil,1))
   assert_eq(count, pi.SelectedItemsNumber)
 
   assert_eq(count,PS(0,RM,MODE,mask))
-  pi = assert_table(panel.GetPanelInfo(1))
+  pi = assert_table(panel.GetPanelInfo(nil,1))
   assert_eq(0, pi.SelectedItemsNumber)
 
   assert_eq(count,PS(0,INV,MODE,mask))
-  pi = assert_table(panel.GetPanelInfo(1))
+  pi = assert_table(panel.GetPanelInfo(nil,1))
   assert_eq(count, pi.SelectedItemsNumber)
 
   assert_eq(count,PS(0,INV,MODE,mask))
-  pi = assert_table(panel.GetPanelInfo(1))
+  pi = assert_table(panel.GetPanelInfo(nil,1))
   assert_eq(0, pi.SelectedItemsNumber)
 
-  panel.SetPanelDirectory(1, adir_old) -- restore active panel directory
+  panel.SetPanelDirectory(nil, 1, adir_old) -- restore active panel directory
 end
 
 function MT.test_Panel()

@@ -83,19 +83,19 @@ local function Command(prefix, text)
         filename = text
       else
         if path:sub(1,1) ~= "/" then
-          path = panel.GetPanelDirectory(1).."/"..path
+          path = panel.GetPanelDirectory(nil,1).."/"..path
         end
-        path_ok = panel.SetPanelDirectory(1,path)
+        path_ok = panel.SetPanelDirectory(nil,1,path)
       end
       if path_ok and filename ~= "" then
-        local info = panel.GetPanelInfo(1)
+        local info = panel.GetPanelInfo(nil,1)
         if info then
           filename = filename:lower()
           for ii=1,info.ItemsNumber do
-            local item = panel.GetPanelItem(1,ii)
+            local item = panel.GetPanelItem(nil,1,ii)
             if not item then break end
             if filename == item.FileName:lower() then
-              panel.RedrawPanel(1,{TopPanelItem=1,CurrentItem=ii})
+              panel.RedrawPanel(nil,1,{TopPanelItem=1,CurrentItem=ii})
               break
             end
           end

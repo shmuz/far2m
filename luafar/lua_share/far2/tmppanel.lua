@@ -182,7 +182,7 @@ end
 
 
 local function IsCurrentFileCorrect (Handle)
-  local fname = panel.GetCurrentPanelItem(Handle).FileName
+  local fname = panel.GetCurrentPanelItem(Handle, 1).FileName
   return (fname == ".." or CheckForCorrect(fname)) and fname
 end
 
@@ -190,15 +190,15 @@ end
 local function GoToFile (Target, PanelNumber)
   local Dir  = Unquote (Trim (ExtractFileDir (Target)))
   if Dir ~= "" then
-    panel.SetPanelDirectory (PanelNumber, Dir)
+    panel.SetPanelDirectory (nil, PanelNumber, Dir)
   end
 
-  local PInfo = assert(panel.GetPanelInfo (PanelNumber))
+  local PInfo = assert(panel.GetPanelInfo (nil, PanelNumber))
   local Name = Unquote (Trim (ExtractFileName (Target))):upper()
   for i=1, PInfo.ItemsNumber do
-    local item = panel.GetPanelItem (PanelNumber, i)
+    local item = panel.GetPanelItem (nil, PanelNumber, i)
     if Name == ExtractFileName (item.FileName):upper() then
-      panel.RedrawPanel (PanelNumber, { CurrentItem=i, TopPanelItem=i })
+      panel.RedrawPanel (nil, PanelNumber, { CurrentItem=i, TopPanelItem=i })
       return
     end
   end
@@ -229,10 +229,10 @@ local function ShowMenuFromFile (FileName)
   local panelitem = CheckForCorrect (Item.action)
   if panelitem then
     if IsDirectory (panelitem) then
-      panel.SetPanelDirectory (1, Item.action)
+      panel.SetPanelDirectory (nil, 1, Item.action)
     end
   else
-    panel.SetCmdLine (Item.action)
+    panel.SetCmdLine (nil, Item.action)
   end
 end
 
@@ -576,13 +576,13 @@ end
 
 
 function Panel:ProcessRemoveKey (Handle)
-  local PInfo = assert(panel.GetPanelInfo (Handle))
+  local PInfo = assert(panel.GetPanelInfo (Handle, 1))
   if PInfo.SelectedItemsNumber == 0 then
     return
   end
   local tb_out, tb_dict = {}, {}
   for i=1, PInfo.SelectedItemsNumber do
-    local item = panel.GetSelectedPanelItem (Handle, i)
+    local item = panel.GetSelectedPanelItem (Handle, 1, i)
     tb_dict[item.FileName] = true
   end
   for _,v in ipairs(self:GetItems()) do
@@ -592,13 +592,13 @@ function Panel:ProcessRemoveKey (Handle)
   end
   self:ReplaceFiles (tb_out)
 
-  panel.UpdatePanel (Handle, true)
-  panel.RedrawPanel (Handle)
+  panel.UpdatePanel (Handle, 1, true)
+  panel.RedrawPanel (Handle, 1)
 
-  PInfo = assert(panel.GetPanelInfo (0))
+  PInfo = assert(panel.GetPanelInfo (nil, 0))
   if PInfo.PanelType == F.PTYPE_QVIEWPANEL then
-    panel.UpdatePanel (0, true)
-    panel.RedrawPanel (0)
+    panel.UpdatePanel (nil, 0, true)
+    panel.RedrawPanel (nil, 0)
   end
 end
 
@@ -620,7 +620,7 @@ function Panel:ProcessSaveListKey (Handle)
   if #self:GetItems() == 0 then return end
 
   -- default path: opposite panel directory\panel<index>.<mask extension>
-  local CurDir = panel.GetPanelDirectory(0)
+  local CurDir = panel.GetPanelDirectory(nil, 0)
   local ListPath = AddEndSlash (CurDir) .. "panel"
   if self.Index then
     ListPath = ListPath .. (self.Index - 1)
@@ -636,8 +636,8 @@ function Panel:ProcessSaveListKey (Handle)
       "TmpPanel.SaveList", ListPath, nil, nil, F.FIB_BUTTONS)
   if ListPath then
     self:SaveListFile (ListPath)
-    panel.UpdatePanel (0, true)
-    panel.RedrawPanel (0)
+    panel.UpdatePanel (nil, 0, true)
+    panel.RedrawPanel (nil, 0)
   end
 end
 
@@ -668,11 +668,11 @@ do
       if CurFileName and CurFileName ~= ".." then
         local currItem = assert(panel.GetCurrentPanelItem (Handle))
         if IsDirectory (currItem) then
-          panel.SetPanelDirectory (0, CurFileName)
+          panel.SetPanelDirectory (nil, 0, CurFileName)
         else
           GoToFile(CurFileName, 0)
         end
-        panel.RedrawPanel (0)
+        panel.RedrawPanel (nil, 0)
         return true
       end
     end
@@ -823,8 +823,8 @@ function Panel:ProcessPanelEvent (Handle, Event, Param)
     local UpdateGroups = IsGroupsDisplayed (types) and not self.LastGroupsRead
     if UpdateOwners or UpdateLinks or UpdateGroups then
       self:UpdateItems (UpdateOwners, UpdateLinks, UpdateGroups)
-      panel.UpdatePanel (Handle, true)
-      panel.RedrawPanel (Handle)
+      panel.UpdatePanel (Handle, 1, true)
+      panel.RedrawPanel (Handle, 1)
     end
   end
   return false
@@ -850,7 +850,7 @@ function Panel:GetOpenPanelInfo (Handle)
     CurDir = "",
   }
   if self.HostFile then
-    local cur = panel.GetCurrentPanelItem(1)
+    local cur = panel.GetCurrentPanelItem(nil, 1)
     if cur and cur.FileName==".." then Info.HostFile=self.HostFile; end
   end
   -----------------------------------------------------------------------------
@@ -915,8 +915,8 @@ function Panel:SwitchToPanel (Handle, Index)
   if Index and Index ~= self.Index then
     self.Index = Index
     self.Env.CurrentCommonPanel = Index
-    panel.UpdatePanel(Handle, true)
-    panel.RedrawPanel(Handle)
+    panel.UpdatePanel(Handle, 1, true)
+    panel.RedrawPanel(Handle, 1)
   end
 end
 

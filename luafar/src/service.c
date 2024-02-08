@@ -161,27 +161,30 @@ TSynchroData* CreateSynchroData(TTimerData *td, int data)
 	return SD;
 }
 
-HANDLE OptHandlePos(lua_State *L, int pos)
+HANDLE OptHandle(lua_State *L)
 {
-	switch(lua_type(L,pos))
+	switch(lua_type(L,1))
 	{
+		case LUA_TNONE:
+		case LUA_TNIL:
+			break;
 		case LUA_TNUMBER:
 		{
-			lua_Integer whatPanel = lua_tointeger(L,pos);
+			lua_Integer whatPanel = lua_tointeger(L,1);
 			HANDLE hh = (HANDLE)whatPanel;
 			return (hh==PANEL_PASSIVE || hh==PANEL_ACTIVE) ? hh : whatPanel%2 ? PANEL_ACTIVE:PANEL_PASSIVE;
 		}
 		case LUA_TLIGHTUSERDATA:
-			return lua_touserdata(L,pos);
+			return lua_touserdata(L,1);
 		default:
-			luaL_typerror(L, pos, "integer or light userdata");
-			return NULL;
+			luaL_typerror(L, 1, "integer or light userdata");
 	}
+	return NULL;
 }
 
-HANDLE OptHandle(lua_State *L)
+static HANDLE OptHandle2(lua_State *L)
 {
-	return OptHandlePos(L,1);
+	return lua_isnoneornil(L,1) ? (luaL_checkinteger(L,2) % 2 ? PANEL_ACTIVE:PANEL_PASSIVE) : OptHandle(L);
 }
 
 flags_t GetFlags (lua_State *L, int stack_pos, int *success)
@@ -1844,7 +1847,8 @@ int far_Message(lua_State *L)
 
 int panel_CheckPanelsExist(lua_State *L)
 {
-	lua_pushboolean(L, (int)PSInfo.Control(PANEL_ACTIVE, FCTL_CHECKPANELSEXIST, 0, 0));
+	HANDLE handle = OptHandle(L);
+	lua_pushboolean(L, (int)PSInfo.Control(handle, FCTL_CHECKPANELSEXIST, 0, 0));
 	return 1;
 }
 
@@ -1859,9 +1863,9 @@ int panel_ClosePanel(lua_State *L)
 
 int panel_GetPanelInfo(lua_State *L)
 {
-	HANDLE input_handle = OptHandle(L);
+	HANDLE handle = OptHandle2(L);
 	struct PanelInfo pi;
-	if (!PSInfo.Control(input_handle, FCTL_GETPANELINFO, 0, (LONG_PTR)&pi))
+	if (!PSInfo.Control(handle, FCTL_GETPANELINFO, 0, (LONG_PTR)&pi))
 		return lua_pushnil(L), 1;
 
 	if (pi.Plugin)   pi.Flags |= PFLAGS_PLUGIN;
@@ -1901,8 +1905,8 @@ int panel_GetPanelInfo(lua_State *L)
 
 int get_panel_item(lua_State *L, int command)
 {
-	HANDLE handle = OptHandle(L);
-	int index = luaL_optinteger(L,2,1) - 1;
+	HANDLE handle = OptHandle2(L);
+	int index = luaL_optinteger(L,3,1) - 1;
 	if(index >= 0 || command == FCTL_GETCURRENTPANELITEM)
 	{
 		int size = PSInfo.Control(handle, command, index, 0);
@@ -1932,7 +1936,7 @@ int panel_GetCurrentPanelItem(lua_State *L) {
 
 int get_string_info(lua_State *L, int command)
 {
-	HANDLE handle = OptHandle(L);
+	HANDLE handle = OptHandle2(L);
 	int size = PSInfo.Control(handle, command, 0, 0);
 	if (size) {
 		wchar_t *buf = (wchar_t*)lua_newuserdata(L, size * sizeof(wchar_t));
@@ -1970,14 +1974,14 @@ int panel_GetPanelPrefix(lua_State *L) {
 
 int panel_RedrawPanel(lua_State *L)
 {
-	HANDLE handle = OptHandle(L);
+	HANDLE handle = OptHandle2(L);
 	LONG_PTR param2 = 0;
 	struct PanelRedrawInfo pri;
-	if (lua_istable(L, 2)) {
+	if (lua_istable(L, 3)) {
 		param2 = (LONG_PTR)&pri;
-		lua_getfield(L, 2, "CurrentItem");
+		lua_getfield(L, 3, "CurrentItem");
 		pri.CurrentItem = lua_tointeger(L, -1) - 1;
-		lua_getfield(L, 2, "TopPanelItem");
+		lua_getfield(L, 3, "TopPanelItem");
 		pri.TopPanelItem = lua_tointeger(L, -1) - 1;
 	}
 	lua_pushboolean(L, PSInfo.Control(handle, FCTL_REDRAWPANEL, 0, param2));
@@ -1986,16 +1990,16 @@ int panel_RedrawPanel(lua_State *L)
 
 int SetPanelBooleanProperty(lua_State *L, int command)
 {
-	HANDLE handle = OptHandle(L);
-	int param1 = lua_toboolean(L,2);
+	HANDLE handle = OptHandle2(L);
+	int param1 = lua_toboolean(L,3);
 	lua_pushboolean(L, PSInfo.Control(handle, command, param1, 0));
 	return 1;
 }
 
 int SetPanelIntegerProperty(lua_State *L, int command)
 {
-	HANDLE handle = OptHandle(L);
-	int param1 = check_env_flag(L,2);
+	HANDLE handle = OptHandle2(L);
+	int param1 = check_env_flag(L,3);
 	lua_pushboolean(L, PSInfo.Control(handle, command, param1, 0));
 	return 1;
 }
@@ -2031,11 +2035,11 @@ int panel_SetViewMode(lua_State *L) {
 
 int panel_SetPanelDirectory(lua_State *L)
 {
-	HANDLE handle = OptHandle(L);
+	HANDLE handle = OptHandle2(L);
 	LONG_PTR param2 = 0;
 	int ret;
-	if (lua_isstring(L, 2)) {
-		const wchar_t* dir = check_utf8_string(L, 2, NULL);
+	if (lua_isstring(L, 3)) {
+		const wchar_t* dir = check_utf8_string(L, 3, NULL);
 		param2 = (LONG_PTR)dir;
 	}
 	ret = PSInfo.Control(handle, FCTL_SETPANELDIR, 0, param2);
@@ -2047,21 +2051,21 @@ int panel_SetPanelDirectory(lua_State *L)
 
 int panel_SetPanelLocation(lua_State *L)
 {
-	HANDLE handle = OptHandle(L);
+	HANDLE handle = OptHandle2(L);
 	struct FarPanelLocation fpl = {};
 	int ret;
-	luaL_checktype(L, 2, LUA_TTABLE);
+	luaL_checktype(L, 3, LUA_TTABLE);
 
-	lua_getfield(L, 2, "PluginName");
+	lua_getfield(L, 3, "PluginName");
 	if (lua_isstring(L,-1)) fpl.PluginName = check_utf8_string(L,-1,NULL);
 
-	lua_getfield(L, 2, "HostFile");
+	lua_getfield(L, 3, "HostFile");
 	if (lua_isstring(L,-1)) fpl.HostFile = check_utf8_string(L,-1,NULL);
 
-	lua_getfield(L, 2, "Item");
+	lua_getfield(L, 3, "Item");
 	fpl.Item = (LONG_PTR)lua_tointeger(L,-1);
 
-	lua_getfield(L, 2, "Path");
+	lua_getfield(L, 3, "Path");
 	if (lua_isstring(L,-1)) fpl.Path = check_utf8_string(L,-1,NULL);
 
 	ret = PSInfo.Control(handle, FCTL_SETPANELLOCATION, 0, (LONG_PTR)&fpl);
@@ -2073,9 +2077,10 @@ int panel_SetPanelLocation(lua_State *L)
 
 int panel_GetCmdLine(lua_State *L)
 {
-	int size = PSInfo.Control(PANEL_ACTIVE, FCTL_GETCMDLINE, 0, 0);
+	HANDLE handle = OptHandle(L);
+	int size = PSInfo.Control(handle, FCTL_GETCMDLINE, 0, 0);
 	wchar_t *buf = (wchar_t*) malloc(size*sizeof(wchar_t));
-	PSInfo.Control(PANEL_ACTIVE, FCTL_GETCMDLINE, size, (LONG_PTR)buf);
+	PSInfo.Control(handle, FCTL_GETCMDLINE, size, (LONG_PTR)buf);
 	push_utf8_string(L, buf, -1);
 	free(buf);
 	return 1;
@@ -2083,37 +2088,42 @@ int panel_GetCmdLine(lua_State *L)
 
 int panel_SetCmdLine(lua_State *L)
 {
-	const wchar_t* str = check_utf8_string(L, 1, NULL);
-	lua_pushboolean(L, PSInfo.Control(PANEL_ACTIVE, FCTL_SETCMDLINE, 0, (LONG_PTR)str));
+	HANDLE handle = OptHandle(L);
+	const wchar_t* str = check_utf8_string(L, 2, NULL);
+	lua_pushboolean(L, PSInfo.Control(handle, FCTL_SETCMDLINE, 0, (LONG_PTR)str));
 	return 1;
 }
 
 int panel_GetCmdLinePos(lua_State *L)
 {
+	HANDLE handle = OptHandle(L);
 	int pos;
-	PSInfo.Control(PANEL_ACTIVE, FCTL_GETCMDLINEPOS, 0, (LONG_PTR)&pos) ?
+	PSInfo.Control(handle, FCTL_GETCMDLINEPOS, 0, (LONG_PTR)&pos) ?
 		lua_pushinteger(L, pos+1) : lua_pushnil(L);
 	return 1;
 }
 
 int panel_SetCmdLinePos(lua_State *L)
 {
-	int pos = luaL_checkinteger(L, 1) - 1;
-	int ret = PSInfo.Control(PANEL_ACTIVE, FCTL_SETCMDLINEPOS, pos, 0);
+	HANDLE handle = OptHandle(L);
+	int pos = luaL_checkinteger(L, 2) - 1;
+	int ret = PSInfo.Control(handle, FCTL_SETCMDLINEPOS, pos, 0);
 	return lua_pushboolean(L, ret), 1;
 }
 
 int panel_InsertCmdLine(lua_State *L)
 {
-	const wchar_t* str = check_utf8_string(L, 1, NULL);
-	lua_pushboolean(L, PSInfo.Control(PANEL_ACTIVE, FCTL_INSERTCMDLINE, 0, (LONG_PTR)str));
+	HANDLE handle = OptHandle(L);
+	const wchar_t* str = check_utf8_string(L, 2, NULL);
+	lua_pushboolean(L, PSInfo.Control(handle, FCTL_INSERTCMDLINE, 0, (LONG_PTR)str));
 	return 1;
 }
 
 int panel_GetCmdLineSelection(lua_State *L)
 {
+	HANDLE handle = OptHandle(L);
 	struct CmdLineSelect cms;
-	if (PSInfo.Control(PANEL_ACTIVE, FCTL_GETCMDLINESELECTION, 0, (LONG_PTR)&cms)) {
+	if (PSInfo.Control(handle, FCTL_GETCMDLINESELECTION, 0, (LONG_PTR)&cms)) {
 		if (cms.SelStart < 0) cms.SelStart = 0;
 		if (cms.SelEnd < 0) cms.SelEnd = 0;
 		lua_pushinteger(L, cms.SelStart + 1);
@@ -2125,12 +2135,13 @@ int panel_GetCmdLineSelection(lua_State *L)
 
 int panel_SetCmdLineSelection(lua_State *L)
 {
+	HANDLE handle = OptHandle(L);
 	struct CmdLineSelect cms;
-	cms.SelStart = luaL_checkinteger(L, 1) - 1;
-	cms.SelEnd = luaL_checkinteger(L, 2);
+	cms.SelStart = luaL_checkinteger(L, 2) - 1;
+	cms.SelEnd = luaL_checkinteger(L, 3);
 	if (cms.SelStart < -1) cms.SelStart = -1;
 	if (cms.SelEnd < -1) cms.SelEnd = -1;
-	int ret = PSInfo.Control(PANEL_ACTIVE, FCTL_SETCMDLINESELECTION, 0, (LONG_PTR)&cms);
+	int ret = PSInfo.Control(handle, FCTL_SETCMDLINESELECTION, 0, (LONG_PTR)&cms);
 	return lua_pushboolean(L, ret), 1;
 }
 
@@ -2141,15 +2152,15 @@ int panel_SetCmdLineSelection(lua_State *L)
 //   selection:    boolean
 int ChangePanelSelection(lua_State *L, BOOL op_set)
 {
-	HANDLE handle = OptHandle(L);
+	HANDLE handle = OptHandle2(L);
 	int itemindex = -1;
-	if (lua_isnumber(L,2)) {
-		itemindex = lua_tointeger(L,2) - 1;
-		if (itemindex < 0) return luaL_argerror(L, 2, "non-positive index");
+	if (lua_isnumber(L,3)) {
+		itemindex = lua_tointeger(L,3) - 1;
+		if (itemindex < 0) return luaL_argerror(L, 3, "non-positive index");
 	}
-	else if (!lua_istable(L,2))
-		return luaL_typerror(L, 2, "number or table");
-	int state = op_set ? lua_toboolean(L,3) : 0;
+	else if (!lua_istable(L,3))
+		return luaL_typerror(L, 3, "number or table");
+	int state = op_set ? lua_toboolean(L,4) : 0;
 
 	// get panel info
 	struct PanelInfo pi;
@@ -2162,10 +2173,10 @@ int ChangePanelSelection(lua_State *L, BOOL op_set)
 	if (itemindex >= 0 && itemindex < numItems)
 		PSInfo.Control(handle, command, itemindex, state);
 	else {
-		int i, len = lua_objlen(L,2);
+		int i, len = lua_objlen(L,3);
 		for (i=1; i<=len; i++) {
 			lua_pushinteger(L, i);
-			lua_gettable(L,2);
+			lua_gettable(L,3);
 			if (lua_isnumber(L,-1)) {
 				itemindex = lua_tointeger(L,-1) - 1;
 				if (itemindex >= 0 && itemindex < numItems)
@@ -2188,25 +2199,27 @@ int panel_ClearSelection(lua_State *L) {
 
 int panel_BeginSelection(lua_State *L)
 {
-	int res = PSInfo.Control(OptHandle(L), FCTL_BEGINSELECTION, 0, 0);
+	int res = PSInfo.Control(OptHandle2(L), FCTL_BEGINSELECTION, 0, 0);
 	return lua_pushboolean(L, res), 1;
 }
 
 int panel_EndSelection(lua_State *L)
 {
-	int res = PSInfo.Control(OptHandle(L), FCTL_ENDSELECTION, 0, 0);
+	int res = PSInfo.Control(OptHandle2(L), FCTL_ENDSELECTION, 0, 0);
 	return lua_pushboolean(L, res), 1;
 }
 
 int panel_SetUserScreen(lua_State *L)
 {
-	int ret = PSInfo.Control(PANEL_ACTIVE, FCTL_SETUSERSCREEN, 0, 0);
+	HANDLE handle = OptHandle(L);
+	int ret = PSInfo.Control(handle, FCTL_SETUSERSCREEN, 0, 0);
 	return lua_pushboolean(L, ret), 1;
 }
 
 int panel_GetUserScreen(lua_State *L)
 {
-	int ret = PSInfo.Control(PANEL_ACTIVE, FCTL_GETUSERSCREEN, 0, 0);
+	HANDLE handle = OptHandle(L);
+	int ret = PSInfo.Control(handle, FCTL_GETUSERSCREEN, 0, 0);
 	return lua_pushboolean(L, ret), 1;
 }
 
@@ -2218,14 +2231,14 @@ int panel_IsActivePanel(lua_State *L)
 
 int panel_SetActivePanel(lua_State *L)
 {
-	HANDLE handle = OptHandle(L);
+	HANDLE handle = OptHandle2(L);
 	return lua_pushboolean(L, PSInfo.Control(handle, FCTL_SETACTIVEPANEL, 0, 0)), 1;
 }
 
 int panel_GetPanelPluginHandle(lua_State *L)
 {
 	HANDLE plug_handle;
-	PSInfo.Control(OptHandle(L), FCTL_GETPANELPLUGINHANDLE, 0, (LONG_PTR)&plug_handle);
+	PSInfo.Control(OptHandle2(L), FCTL_GETPANELPLUGINHANDLE, 0, (LONG_PTR)&plug_handle);
 	if (plug_handle == INVALID_HANDLE_VALUE)
 		lua_pushnil(L);
 	else
