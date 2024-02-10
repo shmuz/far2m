@@ -452,6 +452,11 @@ int FarAppMain(int argc, char **argv)
 		if ((arg_w[0]==L'/' || arg_w[0]==L'-') && arg_w[1])
 		{
 			switchHandled = true;
+			if (!StrCmpNI(arg_w.c_str() + 1, L"SET:", 4))
+			{
+				Opt.CmdLineStrings.emplace_back(arg_w.c_str() + 5);
+				continue;
+			}
 			switch (Upper(arg_w[1]))
 			{
 				case L'A':

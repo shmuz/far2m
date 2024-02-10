@@ -575,6 +575,7 @@ struct Options
 	FARString strWindowTitle;
 
 	BOOL WindowMode;
+	std::vector<std::wstring> CmdLineStrings;
 };
 
 extern Options Opt;

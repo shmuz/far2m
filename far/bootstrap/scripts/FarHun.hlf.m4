@@ -216,6 +216,9 @@ egy későbbi verziójában a szerzők valószínűleg ki fogják javítani.
 a szerzők a pluginek fejlesztői részére tervezték, ezért nem ajánlott normál
 használat közben alkalmazni.
 
+  #/set:<parameter>=<value>#
+  Override the configuration parameter, see ~lm:farconfig~@FarConfig@ for details.
+
     A parancssorban megadható legfeljebb két olyan elérési út, ami mappára,
 fájlra vagy tömörített fájlra mutat. Az első elérési út az aktív, a második a
 passzív panelre vonatkozik:

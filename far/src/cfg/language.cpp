@@ -96,7 +96,10 @@ static FILE* TryOpenLangFile(const wchar_t *Path,const wchar_t *Mask,const wchar
 	if (!LangFile)
 	{
 		if (!strEngFileName.IsEmpty())
+		{
 			strFileName = std::move(strEngFileName);
+			strLangName = L"English";
+		}
 
 		if (!strFileName.IsEmpty())
 		{

@@ -213,6 +213,9 @@ in the input stream. This will probably be fixed in a later version of FAR2M.
   Disable exception handling. This option has been designed for plugin developers,
 and it is not recommended to specify it during normal operation.
 
+  #/set:<parameter>=<value>#
+  Override the configuration parameter, see ~lm:farconfig~@FarConfig@ for details.
+
 
   It is possible to specify at most two paths (to folders, files or archives;
 use #-cd <path>#) or two commands with plugin prefix in the command line. The

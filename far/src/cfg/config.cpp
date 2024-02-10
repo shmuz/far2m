@@ -1098,6 +1098,34 @@ void ReadConfig()
 		}
 	}
 
+	/* Command line directives */
+	for (auto Str: Opt.CmdLineStrings)
+	{
+		auto Ptr = Str.c_str();
+		auto eq_sign = wcschr(Ptr, L'=');
+		if (eq_sign)
+		{
+			FARString strName(Ptr, eq_sign - Ptr);
+			GetConfig cfg;
+			int Index = GetConfigIndex(strName.CPtr());
+			if (GetConfigValue(Index, cfg))
+			{
+				switch (cfg.Type)
+				{
+					default:
+						SetConfigValue(Index, _wtoi(eq_sign+1));
+						break;
+					case REG_SZ:
+						SetConfigValue(Index, eq_sign+1);
+						break;
+					case REG_BINARY:
+						break;
+				}
+			}
+		}
+	}
+	Opt.CmdLineStrings.clear();
+
 	/* <ПОСТПРОЦЕССЫ> *************************************************** */
 
 	SanitizeHistoryCounts();
