@@ -1101,11 +1101,12 @@ void ReadConfig()
 	/* Command line directives */
 	for (auto Str: Opt.CmdLineStrings)
 	{
-		auto Ptr = Str.c_str();
-		auto eq_sign = wcschr(Ptr, L'=');
-		if (eq_sign)
+		auto pName = Str.c_str();
+		auto pVal = wcschr(pName, L'=');
+		if (pVal)
 		{
-			FARString strName(Ptr, eq_sign - Ptr);
+			FARString strName(pName, pVal - pName);
+			pVal++;
 			GetConfig cfg;
 			int Index = GetConfigIndex(strName.CPtr());
 			if (GetConfigValue(Index, cfg))
@@ -1113,10 +1114,11 @@ void ReadConfig()
 				switch (cfg.Type)
 				{
 					default:
-						SetConfigValue(Index, _wtoi(eq_sign+1));
+						if (iswdigit(*pVal) || (*pVal == L'-' && iswdigit(pVal[1])))
+							SetConfigValue(Index, _wtoi(pVal));
 						break;
 					case REG_SZ:
-						SetConfigValue(Index, eq_sign+1);
+						SetConfigValue(Index, pVal);
 						break;
 					case REG_BINARY:
 						break;
