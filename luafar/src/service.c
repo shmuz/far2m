@@ -2,10 +2,8 @@
 //---------------------------------------------------------------------------
 
 #include <windows.h>
-#include <dlfcn.h> //dlopen
 #include <dirent.h> //opendir
 #include <ctype.h>
-#include <math.h>
 #include <stdlib.h>
 
 #include <lua.h>
