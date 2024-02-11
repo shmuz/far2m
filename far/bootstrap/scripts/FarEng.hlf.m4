@@ -150,26 +150,26 @@ runs inside.
   Use PRIMARY selection instead of CLIPBOARD X11 selection. This argument applies only to far2m
 that runs with WX backend.
 
-  #/a#
+  #-a#
   Disable display of characters with codes 0 - 31 and 255. May be useful when
 executing FAR2M under telnet.
 
-  #/ag#
+  #-ag#
   Disable display of pseudographics with codes > 127.
 
-  #/an#
+  #-an#
   Disable display of pseudographics characters completely.
 
-  #/e[<line>[:<pos>]] <filename>#
+  #-e[<line>[:<pos>]] <filename>#
   Edit the specified file. After /e you may optionally specify editor start line
 and line position.
   For example: far /e70:2 readme.
 
-  #/p[<path>]#
+  #-p[<path>]#
   Search for "main" plugins in the folder given in <path>.
   Several search paths may be given separated by ';'.
 
-  #/co#
+  #-co#
   Forces FAR2M to load plugins from cache only. Plugins are loaded faster this way,
 but new or changed plugins are not discovered. Should be used ONLY with a stable
 list of plugins. After adding, replacing or deleting a plugin FAR2M should be loaded
@@ -185,19 +185,19 @@ will be loaded from cache;
   - ^<wrap>if /p and /co are not given, then plugins will be loaded from the main folder,
 and from the path given at the "~Path for personal plugins~@PluginsManagerSettings@" parameter.
 
-  #/m#
+  #-m#
   FAR2M will not load macros from the registry when started.
 
-  #/ma#
+  #-ma#
   Macros with the "Run after FAR2M start" option set will not be run when FAR2M is started.
 
-  #/u <username>#
+  #-u <username>#
   Allows to have separate settings for different users.
   For example: far /u guest
 
   FAR2M will set the ~environment variable~@FAREnv@ "FARUSER" to the value <username>.
 
-  #/v <filename>#
+  #-v <filename>#
   View the specified file. If <filename> is `#-#', data is read from the stdin.
 
   For example, "dir|far /v -" will view dir command output.
@@ -206,14 +206,10 @@ and from the path given at the "~Path for personal plugins~@PluginsManagerSettin
 the "dir" command in the provided example), FAR2M will wait forever for the end of data
 in the input stream. This will probably be fixed in a later version of FAR2M.
 
-  #/w#
+  #-w#
   Stretch to console window instead of console buffer.
 
-  #/x#
-  Disable exception handling. This option has been designed for plugin developers,
-and it is not recommended to specify it during normal operation.
-
-  #/set:<parameter>=<value>#
+  #-set:<parameter>=<value>#
   Override the configuration parameter, see ~lm:farconfig~@FarConfig@ for details.
 
 

@@ -144,27 +144,27 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 $ # FAR: a FAR parancssori kapcsolói#
   A FAR a következő parancssori kapcsolókkal indítható:
 
-  #/a#    ^<wrap>Letiltja a 0-31-ig terjedő és a 255-ös ASCII kódú
+  #-a#    ^<wrap>Letiltja a 0-31-ig terjedő és a 255-ös ASCII kódú
 karakterek megjelenítését. Hasznos lehet, ha a FAR-t telnet alól használjuk.
 
-  #/ag#   Letiltja a pszeudografikus karakterek megjelenítését.
+  #-ag#   Letiltja a pszeudografikus karakterek megjelenítését.
         ^<wrap>
-  #/e[<sor>[:<pozíció>]] <fájlnév>#  A megadott fájlt szerkesztésre
+  #-e[<sor>[:<pozíció>]] <fájlnév>#  A megadott fájlt szerkesztésre
 nyitja meg. A /e után megadható, hogy melyik sor hányadik karakterhelyére
 álljon a kurzor.
 
           Például: far /e70:2 readme.
 
-  #/i#    ^<wrap>Kicsi, 16x16-os ikont állít be a FAR konzolhoz. Néhány
+  #-i#    ^<wrap>Kicsi, 16x16-os ikont állít be a FAR konzolhoz. Néhány
 konfigurációnál a kapcsoló használata instabil működést eredményezhet.
           ^<wrap>
-  #/p[<path>]#  A "fő" plugineket a <path>-ben megadott elérési út
+  #-p[<path>]#  A "fő" plugineket a <path>-ben megadott elérési út
           ^<wrap>mappáiban keresi. Több keresési útvonal is megadható,
 ";"-vel elválasztva.
 
           Példa: far /p%SystemRoot%\\Profiles\\%USERNAME%\\FAR
 
-  #/co#   ^<wrap>A FAR pluginjei csak a gyorsítótárból töltődhetnek be.
+  #-co#   ^<wrap>A FAR pluginjei csak a gyorsítótárból töltődhetnek be.
 Bár így a betöltésük gyorsabb, az új vagy megváltozott plugineket a FAR nem
 érzékeli. CSAK állandó pluginek esetén használjuk! Pluginek hozzáadása,
 cseréje vagy törlése után a FAR-t a kapcsoló nélkül kell elindítani. Ha a
@@ -185,12 +185,12 @@ akkor a pluginek csak az alapértelmezett plugin mappából, valamint a
 ~saját pluginek elérési útvonala~@SystemSettings@ által meghatározott
 mappákból töltődnek be.
 
-  #/m#    ^<wrap>A FAR induláskor nem tölti be a registryből a makróit.
+  #-m#    ^<wrap>A FAR induláskor nem tölti be a registryből a makróit.
 
-  #/ma#   ^<wrap>A "Futtatás a FAR indítása után" opciójú makrók nem
+  #-ma#   ^<wrap>A "Futtatás a FAR indítása után" opciójú makrók nem
 indulnak el a FAR-ral.
           ^<wrap>
-  #/u <felhasználónév>#  Lehetővé teszi, hogy a felhasználóknak saját
+  #-u <felhasználónév>#  Lehetővé teszi, hogy a felhasználóknak saját
 FAR beállításaik legyenek.
 
           Például: far /u guest
@@ -198,7 +198,7 @@ FAR beállításaik legyenek.
         ^<wrap>A FAR Manager a "FARUSER" ~környezeti változónak~@FAREnv@
 a <felhasználónév> értéket adja.
         ^<wrap>
-  #/v <fájlnév>#  Megnézi a megadott fájlt. Ha a <fájlnév> #-#, akkor az
+  #-v <fájlnév>#  Megnézi a megadott fájlt. Ha a <fájlnév> #-#, akkor az
 stdin adatát olvassa ki.
 
         ^<wrap>Például a "dir|far /v -" a dir parancs kimenetét fogja
@@ -209,14 +209,10 @@ az előző példánál maradva a "dir" parancsot elhagyjuk), akkor a FAR a
 végtelenségig fog várakozni a bemenő adatfolyam végére. Ezt a hibát a FAR
 egy későbbi verziójában a szerzők valószínűleg ki fogják javítani.
 
-  #/w#
+  #-w#
   Stretch to console window instead of console buffer.
 
-  #/x#    ^<wrap>Letiltja a kivételek kezelését. Ezt a lehetőséget
-a szerzők a pluginek fejlesztői részére tervezték, ezért nem ajánlott normál
-használat közben alkalmazni.
-
-  #/set:<parameter>=<value>#
+  #-set:<parameter>=<value>#
   Override the configuration parameter, see ~lm:farconfig~@FarConfig@ for details.
 
     A parancssorban megadható legfeljebb két olyan elérési út, ami mappára,
