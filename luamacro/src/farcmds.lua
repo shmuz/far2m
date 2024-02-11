@@ -74,10 +74,10 @@ local function Command(prefix, text)
     end
   ----------------------------------------------------------------------------
   elseif prefix == "goto" then
-    text = FullExpand(text)
+    text = FullExpand(Unquote(text))
     if text ~= "" then
       local path_ok = true
-      text = far.SplitCmdLine(text)
+      text = text:gsub("\\(.)", "%1")
       local path,filename = text:match("(.*/)(.*)")
       if path == nil then
         filename = text

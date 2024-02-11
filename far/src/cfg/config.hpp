@@ -624,6 +624,6 @@ struct GetConfig {
 
 int  GetConfigIndex(const wchar_t *wKeyName);
 bool GetConfigValue(int Index, GetConfig& Data);
-bool SetConfigValue(int Index, DWORD Value);
-bool SetConfigValue(int Index, const wchar_t *Value);
-bool SetConfigValue(int Index, const void *Data, DWORD Size);
+bool SetConfigInteger(int Index, DWORD Value);
+bool SetConfigString(int Index, const wchar_t *Value);
+bool SetConfigBinary(int Index, const void *Data, DWORD Size);

@@ -1078,9 +1078,9 @@ void ConfigFromCmdLine()
 				switch (cfg.Type)
 				{
 					default:
-						if (!StrCmpI(pVal, L"false"))        SetConfigValue(Index, (int)0);
-						else if (!StrCmpI(pVal, L"true"))    SetConfigValue(Index, (int)1);
-						else if (!StrCmpI(pVal, L"other"))   SetConfigValue(Index, (int)2);
+						if (!StrCmpI(pVal, L"false"))        SetConfigInteger(Index, 0);
+						else if (!StrCmpI(pVal, L"true"))    SetConfigInteger(Index, 1);
+						else if (!StrCmpI(pVal, L"other"))   SetConfigInteger(Index, 2);
 						else {
 							static auto Formats = { L"%d%lc", L"0x%x%lc", L"0X%x%lc" };
 							for (auto Fmt: Formats)
@@ -1088,7 +1088,7 @@ void ConfigFromCmdLine()
 								int Int; wchar_t wc;
 								if (1 == swscanf(pVal, Fmt, &Int, &wc))
 								{
-									SetConfigValue(Index, Int);
+									SetConfigInteger(Index, Int);
 									break;
 								}
 							}
@@ -1096,7 +1096,7 @@ void ConfigFromCmdLine()
 						break;
 
 					case REG_SZ:
-						SetConfigValue(Index, pVal);
+						SetConfigString(Index, pVal);
 						break;
 
 					case REG_BINARY:
@@ -1435,7 +1435,7 @@ bool GetConfigValue(int I, GetConfig& Data)
 	return false;
 }
 
-bool SetConfigValue(int I, DWORD Value)
+bool SetConfigInteger(int I, DWORD Value)
 {
 	if (I >= 0 && I < (int)ARRAYSIZE(CFG))
 	{
@@ -1451,7 +1451,7 @@ bool SetConfigValue(int I, DWORD Value)
 	return false;
 }
 
-bool SetConfigValue(int I, const wchar_t *Value)
+bool SetConfigString(int I, const wchar_t *Value)
 {
 	if (I >= 0 && I < (int)ARRAYSIZE(CFG) && CFG[I].ValType == REG_SZ && Value)
 	{
@@ -1461,7 +1461,7 @@ bool SetConfigValue(int I, const wchar_t *Value)
 	return false;
 }
 
-bool SetConfigValue(int I, const void *Data, DWORD Size)
+bool SetConfigBinary(int I, const void *Data, DWORD Size)
 {
 	if (I >= 0 && I < (int)ARRAYSIZE(CFG) && CFG[I].ValType == REG_BINARY && Data)
 	{
