@@ -1061,6 +1061,48 @@ static struct FARConfig
 
 static bool g_config_ready = false;
 
+void ConfigFromCmdLine()
+{
+	for (auto Str: Opt.CmdLineStrings)
+	{
+		auto pName = Str.c_str();
+		auto pVal = wcschr(pName, L'=');
+		if (pVal)
+		{
+			FARString strName(pName, pVal - pName);
+			pVal++;
+			GetConfig cfg;
+			int Index = GetConfigIndex(strName.CPtr());
+			if (GetConfigValue(Index, cfg))
+			{
+				static auto Formats = { L"%d%lc", L"0x%x%lc", L"0X%x%lc" };
+				switch (cfg.Type)
+				{
+					default:
+						for (auto Fmt: Formats)
+						{
+							int Int; wchar_t wc;
+							if (1 == swscanf(pVal, Fmt, &Int, &wc))
+							{
+								SetConfigValue(Index, Int);
+								break;
+							}
+						}
+						break;
+
+					case REG_SZ:
+						SetConfigValue(Index, pVal);
+						break;
+
+					case REG_BINARY:
+						break; // not supported
+				}
+			}
+		}
+	}
+	Opt.CmdLineStrings.clear();
+}
+
 void ReadConfig()
 {
 	FARString strKeyNameFromReg;
@@ -1098,35 +1140,8 @@ void ReadConfig()
 		}
 	}
 
-	/* Command line directives */
-	for (auto Str: Opt.CmdLineStrings)
-	{
-		auto pName = Str.c_str();
-		auto pVal = wcschr(pName, L'=');
-		if (pVal)
-		{
-			FARString strName(pName, pVal - pName);
-			pVal++;
-			GetConfig cfg;
-			int Index = GetConfigIndex(strName.CPtr());
-			if (GetConfigValue(Index, cfg))
-			{
-				switch (cfg.Type)
-				{
-					default:
-						if (iswdigit(*pVal) || (*pVal == L'-' && iswdigit(pVal[1])))
-							SetConfigValue(Index, _wtoi(pVal));
-						break;
-					case REG_SZ:
-						SetConfigValue(Index, pVal);
-						break;
-					case REG_BINARY:
-						break;
-				}
-			}
-		}
-	}
-	Opt.CmdLineStrings.clear();
+	/* Command line config modifiers */
+	ConfigFromCmdLine();
 
 	/* <ПОСТПРОЦЕССЫ> *************************************************** */
 
