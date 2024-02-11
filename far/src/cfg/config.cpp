@@ -1075,17 +1075,22 @@ void ConfigFromCmdLine()
 			int Index = GetConfigIndex(strName.CPtr());
 			if (GetConfigValue(Index, cfg))
 			{
-				static auto Formats = { L"%d%lc", L"0x%x%lc", L"0X%x%lc" };
 				switch (cfg.Type)
 				{
 					default:
-						for (auto Fmt: Formats)
-						{
-							int Int; wchar_t wc;
-							if (1 == swscanf(pVal, Fmt, &Int, &wc))
+						if (!StrCmpI(pVal, L"false"))        SetConfigValue(Index, (int)0);
+						else if (!StrCmpI(pVal, L"true"))    SetConfigValue(Index, (int)1);
+						else if (!StrCmpI(pVal, L"other"))   SetConfigValue(Index, (int)2);
+						else {
+							static auto Formats = { L"%d%lc", L"0x%x%lc", L"0X%x%lc" };
+							for (auto Fmt: Formats)
 							{
-								SetConfigValue(Index, Int);
-								break;
+								int Int; wchar_t wc;
+								if (1 == swscanf(pVal, Fmt, &Int, &wc))
+								{
+									SetConfigValue(Index, Int);
+									break;
+								}
 							}
 						}
 						break;

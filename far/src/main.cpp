@@ -107,6 +107,9 @@ static void print_help(const char *self)
 		"      Edit the specified file with optional cursor position specification or empty new file.\n"
 		" -e[<line>[:<pos>]] - command line\n"
 		"      Executes given command line and opens editor with its output.\n"
+		" -set:<parameter>=<value>\n"
+		"      Override the configuration parameter, see lm:farconfig for details.\n"
+		"      Example: far2m -set:Language.Main=English -set:Screen.Clock=false -set:XLat.Flags=0xff\n"
 		"\n",
 		self);
 	WinPortHelp();

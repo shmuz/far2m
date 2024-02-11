@@ -2015,6 +2015,10 @@ local function test_PluginsControl()
     assert_udata(plug)
   end
 
+  assert_true(far.IsPluginLoaded(far.GetPluginId()))
+  assert_false(far.IsPluginLoaded(far.GetPluginId() + 1))
+  assert_false(far.IsPluginLoaded(0))
+
   assert_func(far.ClearPluginCache)
   assert_func(far.LoadPlugin)
   assert_func(far.ForcedLoadPlugin)
