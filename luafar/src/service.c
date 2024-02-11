@@ -4923,6 +4923,30 @@ int far_GetPlugins(lua_State *L)
 	return 1;
 }
 
+int far_IsPluginLoaded(lua_State *L)
+{
+	DWORD SysId = (DWORD)luaL_checkinteger(L, 1);;
+	int result = 0;
+
+	intptr_t ret = PSInfo.PluginsControlV3(NULL, PCTL_FINDPLUGIN, PFM_SYSID, &SysId);
+	if (ret)
+	{
+		HANDLE handle = (HANDLE)ret;
+		size_t size = PSInfo.PluginsControlV3(handle, PCTL_GETPLUGININFORMATION, 0, 0);
+		if (size)
+		{
+			struct FarGetPluginInformation *pi = (struct FarGetPluginInformation *)malloc(size);
+			pi->StructSize = sizeof(*pi);
+			if (PSInfo.PluginsControlV3(handle, PCTL_GETPLUGININFORMATION, size, pi))
+				result = (pi->Flags & FPF_LOADED) ? 1:0;
+
+			free(pi);
+		}
+	}
+	lua_pushboolean(L, result);
+	return 1;
+}
+
 int far_XLat (lua_State *L)
 {
 	size_t size;
@@ -5637,6 +5661,7 @@ static const luaL_Reg far_funcs[] = {
 	{"FindPlugin",          far_FindPlugin},
 	{"GetPlugins",          far_GetPlugins},
 	{"GetPluginInformation",far_GetPluginInformation},
+	{"IsPluginLoaded",      far_IsPluginLoaded},
 
 	{"CopyToClipboard",     far_CopyToClipboard},
 	{"PasteFromClipboard",  far_PasteFromClipboard},
