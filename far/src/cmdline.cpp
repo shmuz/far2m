@@ -236,7 +236,7 @@ int CommandLine::ProcessKey(FarKey Key)
 	if ( Key==KEY_F8) {
 		ClearScreen(COL_COMMANDLINEUSERSCREEN);
 		SaveBackground();
-		VTLog::Reset();
+		VTLog::Reset(NULL);
 		ShowBackground();
 		Redraw();
 //		ShellUpdatePanels(CtrlObject->Cp()->ActivePanel, FALSE);
