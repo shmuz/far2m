@@ -232,7 +232,7 @@ local function test_mf_atoi()
 
   assert_eq (mf.atoi("1011",2),  tonumber("1011",2))
   assert_eq (mf.atoi("1234",5),  tonumber("1234",5))
-  assert_eq (mf.atoi("-1234",5), tonumber("-1234",5))
+  assert_eq (mf.atoi("-1234",5), -194)
 
   for _,v in ipairs { "123456789123456789", "-123456789123456789",
                       "0x1B69B4BACD05F15", "-0x1B69B4BACD05F15" } do

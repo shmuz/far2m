@@ -5,7 +5,7 @@
 
 local bit, MAXBITS
 if _VERSION < "Lua 5.3" then
-  bit = require "bit"
+  bit = _G.bit or _G.bit64 or require "bit" -- bit64 is part of luafar library
   MAXBITS = 32
 else
   bit = {}
