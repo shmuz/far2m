@@ -82,8 +82,7 @@ int Log(const char* Format, ...)
 	va_start(valist, Format);
 
 	static int N = 0;
-	const char* home = getenv("HOME");
-	if (home) {
+	if (const char* home = getenv("HOME")) {
 		char* buf = (char*) malloc(strlen(home) + 64);
 		if (buf) {
 			strcpy(buf, home);
@@ -108,7 +107,7 @@ int Log(const char* Format, ...)
 }
 
 
-static Frame* GetCurrentWindow()
+static Frame* GetTopModal()
 {
 	return FrameManager->GetTopModal();
 }
@@ -767,21 +766,17 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 				(m_Area == MACROAREA_VIEWER ? MODALTYPE_VIEWER :
 				(m_Area == MACROAREA_DIALOG ? MODALTYPE_DIALOG : MODALTYPE_PANELS));
 
-			if (!(m_Area == MACROAREA_USERMENU || m_Area == MACROAREA_MAINMENU || m_Area == MACROAREA_MENU) && CurrentWindow && CurrentWindow->GetType()==NeedType)
+			if (!(m_Area == MACROAREA_USERMENU || m_Area == MACROAREA_MAINMENU || m_Area == MACROAREA_MENU)
+				&& CurrentWindow && CurrentWindow->GetType()==NeedType)
 			{
-				int CurSelected;
-
-				if (m_Area==MACROAREA_SHELL && CtrlObject->CmdLine->IsVisible())
-					CurSelected=(int)CtrlObject->CmdLine->VMProcess(CheckCode);
-				else
-					CurSelected=(int)CurrentWindow->VMProcess(CheckCode);
+				auto CurSelected = (m_Area==MACROAREA_SHELL && CtrlObject->CmdLine->IsVisible()) ?
+					CtrlObject->CmdLine->VMProcess(CheckCode) : CurrentWindow->VMProcess(CheckCode);
 
 				return api.PassBoolean(CurSelected);
 			}
 			else
 			{
-				auto f = GetCurrentWindow();
-				if (f)
+				if (auto f = GetTopModal())
 					ret = f->VMProcess(CheckCode);
 			}
 			return api.PassBoolean(ret);
@@ -802,8 +797,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 			}
 			else
 			{
-				auto f = GetCurrentWindow();
-				if (f)
+				if (auto f = GetTopModal())
 					ret = f->VMProcess(CheckCode);
 			}
 			return api.PassBoolean(ret);
@@ -874,7 +868,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		case MCODE_C_APANEL_ISEMPTY: // APanel.Empty
 		case MCODE_C_PPANEL_ISEMPTY: // PPanel.Empty
 		{
-			Panel *SelPanel=CheckCode==MCODE_C_APANEL_ISEMPTY?ActivePanel:PassivePanel;
+			Panel *SelPanel = CheckCode==MCODE_C_APANEL_ISEMPTY ? ActivePanel : PassivePanel;
 			if (SelPanel)
 			{
 				SelPanel->GetFileName(tmpStr,SelPanel->GetCurrentPos(),FileAttr);
@@ -1117,8 +1111,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 
 		case MCODE_V_TITLE: // Title
 		{
-			Frame *f=FrameManager->GetTopModal();
-			if (f)
+			if (auto *f = GetTopModal())
 			{
 				if (CtrlObject->Cp() == f)
 				{
@@ -1143,9 +1136,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		case MCODE_V_HEIGHT:  // Height - высота текущего объекта
 		case MCODE_V_WIDTH:   // Width - ширина текущего объекта
 		{
-			Frame *f = FrameManager->GetTopModal();
-
-			if (f)
+			if (auto *f = GetTopModal())
 			{
 				int X1, Y1, X2, Y2;
 				f->GetPosition(X1,Y1,X2,Y2);
@@ -1163,7 +1154,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		{
 			const wchar_t *ptr = L"";
 			int CurArea = GetArea();
-			auto f = GetCurrentWindow();
+			auto f = GetTopModal();
 
 			if (f && (IsMenuArea(CurArea) || CurArea == MACROAREA_DIALOG))
 			{
@@ -1180,7 +1171,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 
 		case MCODE_V_MENUINFOID: // Menu.Id
 		{
-			auto f = GetCurrentWindow();
+			auto f = GetTopModal();
 
 			if (f && f->GetType()==MODALTYPE_VMENU)
 			{
@@ -1192,8 +1183,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		case MCODE_V_ITEMCOUNT: // ItemCount - число элементов в текущем объекте
 		case MCODE_V_CURPOS: // CurPos - текущий индекс в текущем объекте
 		{
-			auto f = GetCurrentWindow();
-			if (f)
+			if (auto f = GetTopModal())
 			{
 				ret=f->VMProcess(CheckCode);
 			}
@@ -1447,8 +1437,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 			auto& p2 = Params[1];
 			int Result = 0;
 
-			auto f = GetCurrentWindow();
-			if (f)
+			if (auto f = GetTopModal())
 				Result = f->VMProcess(CheckCode,(void*)(LONG_PTR)p2.i(),p1.i());
 
 			return Result;
@@ -1466,8 +1455,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 
 			if (IsMenuArea(CurMMode) || CurMMode == MACROAREA_DIALOG)
 			{
-				auto f = GetCurrentWindow();
-				if (f)
+				if (auto f = GetTopModal())
 				{
 					if (CheckCode == MCODE_F_MENU_GETHOTKEY)
 					{
@@ -1525,8 +1513,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 
 			if (IsMenuArea(CurMMode) || CurMMode == MACROAREA_DIALOG)
 			{
-				auto f = GetCurrentWindow();
-				if (f)
+				if (auto f = GetTopModal())
 					Result=f->VMProcess(CheckCode,(void*)tmpVar.toString(),tmpMode);
 			}
 
@@ -1548,9 +1535,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 
 			if (IsMenuArea(CurMMode) || CurMMode == MACROAREA_DIALOG)
 			{
-				Frame *f=GetCurrentWindow();
-
-				if (f)
+				if (auto *f = GetTopModal())
 				{
 					if (CheckCode == MCODE_F_MENU_FILTER)
 					{
@@ -1873,7 +1858,7 @@ int FarMacroApi::keybarshowFunc()
 		ret: prev mode or -1 - KeyBar not found
     */
 	auto Params = parseParams(1);
-	const auto f = GetCurrentWindow();
+	const auto f = GetTopModal();
 
 	return f ? f->VMProcess(MCODE_F_KEYBAR_SHOW,nullptr,Params[0].asInteger())-1 : -1;
 }
@@ -2155,7 +2140,7 @@ int FarMacroApi::panelsetpathFunc()
 			// <Mantis#0000289> - грозно, но со вкусом :-)
 			//ShellUpdatePanels(SelPanel);
 			SelPanel->UpdateIfChanged(UIC_UPDATE_NORMAL);
-			FrameManager->RefreshFrame(FrameManager->GetTopModal());
+			FrameManager->RefreshFrame(GetTopModal());
 			// </Mantis#0000289>
 			Ret = true;
 		}
@@ -2933,7 +2918,7 @@ int FarMacroApi::panelsetposidxFunc()
 						// <Mantis#0000289> - грозно, но со вкусом :-)
 						//ShellUpdatePanels(SelPanel);
 						SelPanel->UpdateIfChanged(UIC_UPDATE_NORMAL);
-						FrameManager->RefreshFrame(FrameManager->GetTopModal());
+						FrameManager->RefreshFrame(GetTopModal());
 						// </Mantis#0000289>
 
 						if ( !InSelection )
@@ -2997,7 +2982,7 @@ int FarMacroApi::panelsetposFunc()
 				// <Mantis#0000289> - грозно, но со вкусом :-)
 				//ShellUpdatePanels(SelPanel);
 				SelPanel->UpdateIfChanged(UIC_UPDATE_NORMAL);
-				FrameManager->RefreshFrame(FrameManager->GetTopModal());
+				FrameManager->RefreshFrame(GetTopModal());
 				// </Mantis#0000289>
 				Ret=(int64_t)(SelPanel->GetCurrentPos()+1);
 			}
