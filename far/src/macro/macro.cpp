@@ -467,7 +467,7 @@ bool KeyMacro::GetMacroParseError(COORD& ErrPos, FARString& ErrSrc)
 class FarMacroApi
 {
 public:
-	explicit FarMacroApi(FarMacroCall* Data) : mData(Data) {}
+	FarMacroApi(const FarMacroCall* Data) : mData(Data) {}
 
 	std::vector<TVar> parseParams(size_t Count);
 	int PassBoolean(bool b);
@@ -550,7 +550,7 @@ private:
 	int SendValue(FarMacroValue &Value);
 	int fattrFuncImpl(int Type);
 
-	FarMacroCall* mData;
+	const FarMacroCall* mData;
 };
 
 int FarMacroApi::SendValue(FarMacroValue &Value)
@@ -663,21 +663,16 @@ private:
 	const bool m_Lock;
 };
 
-int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
+int KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 {
 	int ret=0;
 	DWORD FileAttr = INVALID_FILE_ATTRIBUTES;
 	FarMacroApi api(Data);
 	FARString tmpStr;
 
-	// проверка на область
-	if (CheckCode == 0)
-	{
-		return GetArea();
-	}
-
 	const auto ActivePanel = SelectPanel(0);
 	const auto PassivePanel = SelectPanel(1);
+	Panel *SelPanel = nullptr;
 
 	auto CurrentWindow = FrameManager->GetCurrentFrame();
 
@@ -707,7 +702,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 			return api.PassNumber(GetProcessUptimeMSec());
 
 		case MCODE_V_MACRO_AREA:
-			return api.PassNumber(GetArea());
+			return GetArea();
 
 		case MCODE_C_FULLSCREENMODE: // Fullscreen?
 			return api.PassBoolean(false);
@@ -745,7 +740,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		case MCODE_C_APANEL_ROOT:  // APanel.Root
 		case MCODE_C_PPANEL_ROOT:  // PPanel.Root
 		{
-			const auto SelPanel = (CheckCode == MCODE_C_APANEL_ROOT) ? ActivePanel:PassivePanel;
+			SelPanel = (CheckCode == MCODE_C_APANEL_ROOT) ? ActivePanel:PassivePanel;
 			return api.PassBoolean(SelPanel && SelPanel->VMProcess(MCODE_C_ROOTFOLDER));
 		}
 
@@ -754,7 +749,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		case MCODE_C_APANEL_EOF:
 		case MCODE_C_PPANEL_EOF:
 		{
-			const auto SelPanel = (CheckCode == MCODE_C_APANEL_BOF || CheckCode == MCODE_C_APANEL_EOF)?ActivePanel:PassivePanel;
+			SelPanel = (CheckCode == MCODE_C_APANEL_BOF || CheckCode == MCODE_C_APANEL_EOF)?ActivePanel:PassivePanel;
 			if (SelPanel)
 				ret=SelPanel->VMProcess(CheckCode==MCODE_C_APANEL_BOF || CheckCode==MCODE_C_PPANEL_BOF?MCODE_C_BOF:MCODE_C_EOF);
 			return api.PassBoolean(ret);
@@ -861,14 +856,14 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		case MCODE_C_APANEL_VISIBLE:  // APanel.Visible
 		case MCODE_C_PPANEL_VISIBLE:  // PPanel.Visible
 		{
-			const auto SelPanel = CheckCode == MCODE_C_APANEL_VISIBLE?ActivePanel:PassivePanel;
+			SelPanel = CheckCode == MCODE_C_APANEL_VISIBLE?ActivePanel:PassivePanel;
 			return api.PassBoolean(SelPanel && SelPanel->IsVisible());
 		}
 
 		case MCODE_C_APANEL_ISEMPTY: // APanel.Empty
 		case MCODE_C_PPANEL_ISEMPTY: // PPanel.Empty
 		{
-			Panel *SelPanel = CheckCode==MCODE_C_APANEL_ISEMPTY ? ActivePanel : PassivePanel;
+			SelPanel = CheckCode==MCODE_C_APANEL_ISEMPTY ? ActivePanel : PassivePanel;
 			if (SelPanel)
 			{
 				SelPanel->GetFileName(tmpStr,SelPanel->GetCurrentPos(),FileAttr);
@@ -881,35 +876,35 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		case MCODE_C_APANEL_FILTER:
 		case MCODE_C_PPANEL_FILTER:
 		{
-			const auto SelPanel = (CheckCode == MCODE_C_APANEL_FILTER)?ActivePanel:PassivePanel;
+			SelPanel = (CheckCode == MCODE_C_APANEL_FILTER)?ActivePanel:PassivePanel;
 			return api.PassBoolean(SelPanel && SelPanel->VMProcess(MCODE_C_APANEL_FILTER));
 		}
 
 		case MCODE_C_APANEL_LEFT: // APanel.Left
 		case MCODE_C_PPANEL_LEFT: // PPanel.Left
 		{
-			const auto SelPanel = CheckCode == MCODE_C_APANEL_LEFT ? ActivePanel : PassivePanel;
+			SelPanel = CheckCode == MCODE_C_APANEL_LEFT ? ActivePanel : PassivePanel;
 			return api.PassBoolean(SelPanel && SelPanel==CtrlObject->Cp()->LeftPanel);
 		}
 
 		case MCODE_C_APANEL_FILEPANEL: // APanel.FilePanel
 		case MCODE_C_PPANEL_FILEPANEL: // PPanel.FilePanel
 		{
-			const auto SelPanel = CheckCode == MCODE_C_APANEL_FILEPANEL ? ActivePanel : PassivePanel;
+			SelPanel = CheckCode == MCODE_C_APANEL_FILEPANEL ? ActivePanel : PassivePanel;
 			return api.PassBoolean(SelPanel && SelPanel->GetType() == FILE_PANEL);
 		}
 
 		case MCODE_C_APANEL_PLUGIN: // APanel.Plugin
 		case MCODE_C_PPANEL_PLUGIN: // PPanel.Plugin
 		{
-			const auto SelPanel = CheckCode == MCODE_C_APANEL_PLUGIN?ActivePanel:PassivePanel;
+			SelPanel = CheckCode == MCODE_C_APANEL_PLUGIN?ActivePanel:PassivePanel;
 			return api.PassBoolean(SelPanel && SelPanel->GetMode() == PLUGIN_PANEL);
 		}
 
 		case MCODE_C_APANEL_FOLDER: // APanel.Folder
 		case MCODE_C_PPANEL_FOLDER: // PPanel.Folder
 		{
-			const auto SelPanel = CheckCode == MCODE_C_APANEL_FOLDER?ActivePanel:PassivePanel;
+			SelPanel = CheckCode == MCODE_C_APANEL_FOLDER?ActivePanel:PassivePanel;
 			if (SelPanel)
 			{
 				SelPanel->GetFileName(tmpStr, SelPanel->GetCurrentPos(), FileAttr);
@@ -923,14 +918,14 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		case MCODE_C_APANEL_SELECTED: // APanel.Selected
 		case MCODE_C_PPANEL_SELECTED: // PPanel.Selected
 		{
-			const auto SelPanel = CheckCode == MCODE_C_APANEL_SELECTED?ActivePanel:PassivePanel;
+			SelPanel = CheckCode == MCODE_C_APANEL_SELECTED?ActivePanel:PassivePanel;
 			return api.PassBoolean(SelPanel && SelPanel->GetRealSelCount() > 0);
 		}
 
 		case MCODE_V_APANEL_CURRENT: // APanel.Current
 		case MCODE_V_PPANEL_CURRENT: // PPanel.Current
 		{
-			const auto SelPanel = CheckCode == MCODE_V_APANEL_CURRENT ? ActivePanel : PassivePanel;
+			SelPanel = CheckCode == MCODE_V_APANEL_CURRENT ? ActivePanel : PassivePanel;
 			if (SelPanel)
 			{
 				SelPanel->GetFileName(tmpStr, SelPanel->GetCurrentPos(), FileAttr);
@@ -941,14 +936,14 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		case MCODE_V_APANEL_SELCOUNT: // APanel.SelCount
 		case MCODE_V_PPANEL_SELCOUNT: // PPanel.SelCount
 		{
-			const auto SelPanel = CheckCode == MCODE_V_APANEL_SELCOUNT ? ActivePanel : PassivePanel;
+			SelPanel = CheckCode == MCODE_V_APANEL_SELCOUNT ? ActivePanel : PassivePanel;
 			return SelPanel ? SelPanel->GetRealSelCount() : 0;
 		}
 
 		case MCODE_V_APANEL_COLUMNCOUNT:       // APanel.ColumnCount - активная панель:  количество колонок
 		case MCODE_V_PPANEL_COLUMNCOUNT:       // PPanel.ColumnCount - пассивная панель: количество колонок
 		{
-			const auto SelPanel = CheckCode == MCODE_V_APANEL_COLUMNCOUNT ? ActivePanel : PassivePanel;
+			SelPanel = CheckCode == MCODE_V_APANEL_COLUMNCOUNT ? ActivePanel : PassivePanel;
 			return SelPanel ? SelPanel->GetColumnsCount() : 0;
 		}
 
@@ -957,7 +952,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		case MCODE_V_APANEL_HEIGHT: // APanel.Height
 		case MCODE_V_PPANEL_HEIGHT: // PPanel.Height
 		{
-			Panel *SelPanel = CheckCode == MCODE_V_APANEL_WIDTH || CheckCode == MCODE_V_APANEL_HEIGHT? ActivePanel : PassivePanel;
+			SelPanel = CheckCode == MCODE_V_APANEL_WIDTH || CheckCode == MCODE_V_APANEL_HEIGHT? ActivePanel : PassivePanel;
 			if (SelPanel )
 			{
 				int X1, Y1, X2, Y2;
@@ -978,7 +973,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		case MCODE_V_APANEL_FORMAT:           // APanel.Format
 		case MCODE_V_PPANEL_FORMAT:           // PPanel.Format
 		{
-			const auto SelPanel =
+			SelPanel =
 				CheckCode == MCODE_V_APANEL_OPIFLAGS ||
 				CheckCode == MCODE_V_APANEL_HOSTFILE ||
 				CheckCode == MCODE_V_APANEL_FORMAT? ActivePanel : PassivePanel;
@@ -1016,7 +1011,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		case MCODE_V_APANEL_PREFIX:           // APanel.Prefix
 		case MCODE_V_PPANEL_PREFIX:           // PPanel.Prefix
 		{
-			const auto SelPanel = CheckCode == MCODE_V_APANEL_PREFIX ? ActivePanel : PassivePanel;
+			SelPanel = CheckCode == MCODE_V_APANEL_PREFIX ? ActivePanel : PassivePanel;
 			const wchar_t *ptr = L"";
 			if (SelPanel)
 			{
@@ -1030,7 +1025,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		case MCODE_V_APANEL_PATH0:           // APanel.Path0
 		case MCODE_V_PPANEL_PATH0:           // PPanel.Path0
 		{
-			const auto SelPanel = CheckCode == MCODE_V_APANEL_PATH0? ActivePanel : PassivePanel;
+			SelPanel = CheckCode == MCODE_V_APANEL_PATH0? ActivePanel : PassivePanel;
 			if (SelPanel)
 			{
 				SelPanel->GetCurDir(tmpStr);
@@ -1041,7 +1036,7 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		case MCODE_V_APANEL_PATH: // APanel.Path
 		case MCODE_V_PPANEL_PATH: // PPanel.Path
 		{
-			const auto SelPanel = CheckCode == MCODE_V_APANEL_PATH? ActivePanel : PassivePanel;
+			SelPanel = CheckCode == MCODE_V_APANEL_PATH? ActivePanel : PassivePanel;
 			if (SelPanel)
 			{
 				if (SelPanel->GetMode() == PLUGIN_PANEL)
@@ -1076,14 +1071,14 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		case MCODE_V_APANEL_TYPE: // APanel.Type
 		case MCODE_V_PPANEL_TYPE: // PPanel.Type
 		{
-			const auto SelPanel = CheckCode == MCODE_V_APANEL_TYPE ? ActivePanel : PassivePanel;
+			SelPanel = CheckCode == MCODE_V_APANEL_TYPE ? ActivePanel : PassivePanel;
 			return SelPanel? SelPanel->GetType() : FILE_PANEL;
 		}
 
 		case MCODE_V_APANEL_DRIVETYPE: // APanel.DriveType - активная панель: тип привода
 		case MCODE_V_PPANEL_DRIVETYPE: // PPanel.DriveType - пассивная панель: тип привода
 		{
-			Panel *SelPanel = CheckCode == MCODE_V_APANEL_DRIVETYPE ? ActivePanel : PassivePanel;
+			SelPanel = CheckCode == MCODE_V_APANEL_DRIVETYPE ? ActivePanel : PassivePanel;
 			ret=-1;
 
 			if (SelPanel  && SelPanel->GetMode() != PLUGIN_PANEL)
@@ -1098,14 +1093,14 @@ int KeyMacro::CallFar(int CheckCode, FarMacroCall* Data)
 		case MCODE_V_APANEL_ITEMCOUNT: // APanel.ItemCount
 		case MCODE_V_PPANEL_ITEMCOUNT: // PPanel.ItemCount
 		{
-			const auto SelPanel = CheckCode == MCODE_V_APANEL_ITEMCOUNT ? ActivePanel : PassivePanel;
+			SelPanel = CheckCode == MCODE_V_APANEL_ITEMCOUNT ? ActivePanel : PassivePanel;
 			return SelPanel ? SelPanel->GetFileCount() : 0;
 		}
 
 		case MCODE_V_APANEL_CURPOS: // APanel.CurPos
 		case MCODE_V_PPANEL_CURPOS: // PPanel.CurPos
 		{
-			const auto SelPanel = CheckCode == MCODE_V_APANEL_CURPOS ? ActivePanel : PassivePanel;
+			SelPanel = CheckCode == MCODE_V_APANEL_CURPOS ? ActivePanel : PassivePanel;
 			return SelPanel ? SelPanel->GetCurrentPos()+(SelPanel->GetFileCount()>0?1:0) : 0;
 		}
 
@@ -3339,7 +3334,9 @@ int FarMacroApi::editorselFunc()
 	auto& Action = Params[0];
 	int Mode=CtrlObject->Macro.GetArea();
 	Frame* CurFrame=FrameManager->GetCurrentFrame();
-	int NeedType = Mode == MACROAREA_EDITOR?MODALTYPE_EDITOR:(Mode == MACROAREA_VIEWER?MODALTYPE_VIEWER:(Mode == MACROAREA_DIALOG?MODALTYPE_DIALOG:MODALTYPE_PANELS)); // MACROAREA_SHELL?
+	int NeedType = Mode == MACROAREA_EDITOR ? MODALTYPE_EDITOR :
+		Mode == MACROAREA_VIEWER ? MODALTYPE_VIEWER :
+		Mode == MACROAREA_DIALOG ? MODALTYPE_DIALOG : MODALTYPE_PANELS; // MACROAREA_SHELL?
 
 	if (CurFrame && CurFrame->GetType()==NeedType)
 	{
@@ -3477,7 +3474,7 @@ int FarMacroApi::UDList_Split()
 static DWORD LayoutKey(DWORD key)
 {
 	if ((key&0x00FFFFFF) > 0x7F && (key&0x00FFFFFF) < 0xFFFF)
-		key = KeyToKeyLayout(key&0x0000FFFF) | (key&(~0x0000FFFF));
+		key = KeyToKeyLayout(key&0x0000FFFF) | (key&0xFFFF0000);
 	return key;
 }
 

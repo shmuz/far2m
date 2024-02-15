@@ -7,6 +7,7 @@ local Sett = Shared.Settings
 local op = Shared.OpCodes
 
 local MCODE_F_USERMENU = op.MCODE_F_USERMENU
+local MCODE_V_MACRO_AREA = op.MCODE_V_MACRO_AREA
 local F=far.Flags
 local band = bit64.band
 local MacroCallFar = Shared.MacroCallFar
@@ -185,25 +186,25 @@ SetProperties(Object, {
 --------------------------------------------------------------------------------
 
 local prop_Area = {
-  Current    = function() return utils.GetTrueAreaName(MacroCallFar(op.MCODE_V_MACRO_AREA)) end,
-  Other      = function() return MacroCallFar(0)==0  end,
-  Shell      = function() return MacroCallFar(0)==1  end,
-  Viewer     = function() return MacroCallFar(0)==2  end,
-  Editor     = function() return MacroCallFar(0)==3  end,
-  Dialog     = function() return MacroCallFar(0)==4  end,
-  Search     = function() return MacroCallFar(0)==5  end,
-  Disks      = function() return MacroCallFar(0)==6  end,
-  MainMenu   = function() return MacroCallFar(0)==7  end,
-  Menu       = function() return MacroCallFar(0)==8  end,
-  Help       = function() return MacroCallFar(0)==9  end,
-  Info       = function() return MacroCallFar(0)==10 end,
-  QView      = function() return MacroCallFar(0)==11 end,
-  Tree       = function() return MacroCallFar(0)==12 end,
-  FindFolder = function() return MacroCallFar(0)==13 end,
-  UserMenu   = function() return MacroCallFar(0)==14 end,
-  ShellAutoCompletion  = function() return MacroCallFar(0)==15 end,
-  DialogAutoCompletion = function() return MacroCallFar(0)==16 end,
-  Grabber    = function() return MacroCallFar(0)==17 end,
+  Current    = function() return utils.GetTrueAreaName(MacroCallFar(MCODE_V_MACRO_AREA)) end,
+  Other      = function() return MacroCallFar(MCODE_V_MACRO_AREA)==0  end,
+  Shell      = function() return MacroCallFar(MCODE_V_MACRO_AREA)==1  end,
+  Viewer     = function() return MacroCallFar(MCODE_V_MACRO_AREA)==2  end,
+  Editor     = function() return MacroCallFar(MCODE_V_MACRO_AREA)==3  end,
+  Dialog     = function() return MacroCallFar(MCODE_V_MACRO_AREA)==4  end,
+  Search     = function() return MacroCallFar(MCODE_V_MACRO_AREA)==5  end,
+  Disks      = function() return MacroCallFar(MCODE_V_MACRO_AREA)==6  end,
+  MainMenu   = function() return MacroCallFar(MCODE_V_MACRO_AREA)==7  end,
+  Menu       = function() return MacroCallFar(MCODE_V_MACRO_AREA)==8  end,
+  Help       = function() return MacroCallFar(MCODE_V_MACRO_AREA)==9  end,
+  Info       = function() return MacroCallFar(MCODE_V_MACRO_AREA)==10 end,
+  QView      = function() return MacroCallFar(MCODE_V_MACRO_AREA)==11 end,
+  Tree       = function() return MacroCallFar(MCODE_V_MACRO_AREA)==12 end,
+  FindFolder = function() return MacroCallFar(MCODE_V_MACRO_AREA)==13 end,
+  UserMenu   = function() return MacroCallFar(MCODE_V_MACRO_AREA)==14 end,
+  ShellAutoCompletion  = function() return MacroCallFar(MCODE_V_MACRO_AREA)==15 end,
+  DialogAutoCompletion = function() return MacroCallFar(MCODE_V_MACRO_AREA)==16 end,
+  Grabber    = function() return MacroCallFar(MCODE_V_MACRO_AREA)==17 end,
 }
 
 local prop_APanel = {
