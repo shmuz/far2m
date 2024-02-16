@@ -968,58 +968,50 @@ int KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 
 		case MCODE_V_APANEL_OPIFLAGS:  // APanel.OPIFlags
 		case MCODE_V_PPANEL_OPIFLAGS:  // PPanel.OPIFlags
-		case MCODE_V_APANEL_HOSTFILE: // APanel.HostFile
-		case MCODE_V_PPANEL_HOSTFILE: // PPanel.HostFile
-		case MCODE_V_APANEL_FORMAT:           // APanel.Format
-		case MCODE_V_PPANEL_FORMAT:           // PPanel.Format
+		case MCODE_V_APANEL_HOSTFILE:  // APanel.HostFile
+		case MCODE_V_PPANEL_HOSTFILE:  // PPanel.HostFile
+		case MCODE_V_APANEL_FORMAT:    // APanel.Format
+		case MCODE_V_PPANEL_FORMAT:    // PPanel.Format
 		{
 			SelPanel =
 				CheckCode == MCODE_V_APANEL_OPIFLAGS ||
 				CheckCode == MCODE_V_APANEL_HOSTFILE ||
 				CheckCode == MCODE_V_APANEL_FORMAT? ActivePanel : PassivePanel;
 
-			const wchar_t* ptr = nullptr;
-			if (CheckCode == MCODE_V_APANEL_HOSTFILE || CheckCode == MCODE_V_PPANEL_HOSTFILE ||
-				CheckCode == MCODE_V_APANEL_FORMAT || CheckCode == MCODE_V_PPANEL_FORMAT)
-				ptr = L"";
-
-			if (SelPanel )
+			if (SelPanel && SelPanel->GetMode() == PLUGIN_PANEL)
 			{
-				if (SelPanel->GetMode() == PLUGIN_PANEL)
+				OpenPluginInfo Info={};
+				Info.StructSize=sizeof(OpenPluginInfo);
+				SelPanel->GetOpenPluginInfo(&Info);
+				switch (CheckCode)
 				{
-					OpenPluginInfo Info={};
-					Info.StructSize=sizeof(OpenPluginInfo);
-					SelPanel->GetOpenPluginInfo(&Info);
-					switch (CheckCode)
-					{
-						case MCODE_V_APANEL_OPIFLAGS:
-						case MCODE_V_PPANEL_OPIFLAGS:
-							return Info.Flags;
-						case MCODE_V_APANEL_HOSTFILE:
-						case MCODE_V_PPANEL_HOSTFILE:
-							return api.PassString(Info.HostFile);
-						case MCODE_V_APANEL_FORMAT:
-						case MCODE_V_PPANEL_FORMAT:
-							return api.PassString(Info.Format);
-					}
+					case MCODE_V_APANEL_OPIFLAGS:
+					case MCODE_V_PPANEL_OPIFLAGS:
+						return Info.Flags;
+					case MCODE_V_APANEL_HOSTFILE:
+					case MCODE_V_PPANEL_HOSTFILE:
+						return api.PassString(Info.HostFile);
+					case MCODE_V_APANEL_FORMAT:
+					case MCODE_V_PPANEL_FORMAT:
+						return api.PassString(Info.Format);
 				}
 			}
 
-			return ptr ? api.PassString(ptr) : 0;
+			return CheckCode == MCODE_V_APANEL_OPIFLAGS || CheckCode == MCODE_V_PPANEL_OPIFLAGS ?
+				0 : api.PassString(tmpStr);
 		}
 
 		case MCODE_V_APANEL_PREFIX:           // APanel.Prefix
 		case MCODE_V_PPANEL_PREFIX:           // PPanel.Prefix
 		{
 			SelPanel = CheckCode == MCODE_V_APANEL_PREFIX ? ActivePanel : PassivePanel;
-			const wchar_t *ptr = L"";
 			if (SelPanel)
 			{
 				PluginInfo PInfo = {sizeof(PInfo)};
 				if (SelPanel->VMProcess(MCODE_V_APANEL_PREFIX,&PInfo))
-					ptr = PInfo.CommandPrefix;
+					return api.PassString(PInfo.CommandPrefix);
 			}
-			return api.PassString(ptr);
+			return api.PassString(tmpStr);
 		}
 
 		case MCODE_V_APANEL_PATH0:           // APanel.Path0
@@ -1147,7 +1139,6 @@ int KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 
 		case MCODE_V_MENU_VALUE: // Menu.Value
 		{
-			const wchar_t *ptr = L"";
 			int CurArea = GetArea();
 			auto f = GetTopModal();
 
@@ -1158,10 +1149,9 @@ int KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 				{
 					HiText2Str(tmpStr, NewStr);
 					RemoveExternalSpaces(tmpStr);
-					ptr = tmpStr.CPtr();
 				}
 			}
-			return api.PassString(ptr);
+			return api.PassString(tmpStr);
 		}
 
 		case MCODE_V_MENUINFOID: // Menu.Id
@@ -1193,40 +1183,35 @@ int KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 		case MCODE_V_EDITORFILENAME: // Editor.FileName
 		case MCODE_V_EDITORSELVALUE: // Editor.SelValue
 		{
-			const wchar_t* ptr = nullptr;
-			if (CheckCode == MCODE_V_EDITORSELVALUE)
-				ptr=L"";
-
 			if (GetArea()==MACROAREA_EDITOR && CtrlObject->Plugins.CurEditor && CtrlObject->Plugins.CurEditor->IsVisible())
 			{
 				if (CheckCode == MCODE_V_EDITORFILENAME)
 				{
 					FARString strType;
 					CtrlObject->Plugins.CurEditor->GetTypeAndName(strType, tmpStr);
-					ptr=tmpStr.CPtr();
+					return api.PassString(tmpStr);
 				}
 				else if (CheckCode == MCODE_V_EDITORSELVALUE)
 				{
 					CtrlObject->Plugins.CurEditor->VMProcess(CheckCode,&tmpStr);
-					ptr=tmpStr.CPtr();
+					return api.PassString(tmpStr);
 				}
 				else
 					return CtrlObject->Plugins.CurEditor->VMProcess(CheckCode);
 			}
-			return ptr ? api.PassString(ptr) : 0;
+			return (CheckCode == MCODE_V_EDITORFILENAME || CheckCode == MCODE_V_EDITORSELVALUE) ?
+				api.PassString(tmpStr) : 0;
 		}
 
 		case MCODE_V_HELPFILENAME:  // Help.FileName
 		case MCODE_V_HELPTOPIC:     // Help.Topic
 		case MCODE_V_HELPSELTOPIC:  // Help.SelTopic
 		{
-			const wchar_t *ptr=L"";
 			if (GetArea() == MACROAREA_HELP)
 			{
 				FrameManager->GetCurrentFrame()->VMProcess(CheckCode,&tmpStr,0);
-				ptr=tmpStr.CPtr();
 			}
-			return api.PassString(ptr);
+			return api.PassString(tmpStr);
 		}
 
 		case MCODE_V_VIEWERFILENAME: // Viewer.FileName
@@ -1243,7 +1228,7 @@ int KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 				else
 					return api.PassNumber(CtrlObject->Plugins.CurViewer->VMProcess(MCODE_V_VIEWERSTATE));
 			}
-			return (CheckCode == MCODE_V_VIEWERFILENAME) ? api.PassString(L"") : 0;
+			return (CheckCode == MCODE_V_VIEWERFILENAME) ? api.PassString(tmpStr) : 0;
 		}
 
 		//case MCODE_F_BEEP:             not_implemented;
