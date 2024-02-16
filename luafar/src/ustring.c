@@ -587,22 +587,25 @@ static int ustring_len(lua_State *L)
 	return 1;
 }
 
+#define PAIR(prefix,txt) {#txt, prefix ## _ ## txt}
+
 static const luaL_Reg ustring_funcs[] = {
-	{"EnumSystemCodePages",        ustring_EnumSystemCodePages },
-	{"GetACP",                     ustring_GetACP},
-	{"GetCPInfo",                  ustring_GetCPInfo},
-	{"GetOEMCP",                   ustring_GetOEMCP},
-	{"MultiByteToWideChar",        ustring_MultiByteToWideChar },
-	{"WideCharToMultiByte",        ustring_WideCharToMultiByte },
-	{"OemToUtf8",                  ustring_OemToUtf8},
-	{"Utf32ToUtf8",                ustring_Utf32ToUtf8},
-	{"Utf8ToOem",                  ustring_Utf8ToOem},
-	{"Utf8ToUtf32",                ustring_Utf8ToUtf32},
-	{"lenW",                       ustring_len},
-	{"subW",                       ustring_sub},
-	{"Uuid",                       ustring_Uuid},
-	{"GetFileAttr",                ustring_GetFileAttr},
-	{"SetFileAttr",                ustring_SetFileAttr},
+	PAIR( ustring, EnumSystemCodePages),
+	PAIR( ustring, GetACP),
+	PAIR( ustring, GetCPInfo),
+	PAIR( ustring, GetFileAttr),
+	PAIR( ustring, GetOEMCP),
+	PAIR( ustring, len),
+	PAIR( ustring, MultiByteToWideChar),
+	PAIR( ustring, OemToUtf8),
+	PAIR( ustring, SetFileAttr),
+	PAIR( ustring, sub),
+	PAIR( ustring, Utf32ToUtf8),
+	PAIR( ustring, Utf8ToOem),
+	PAIR( ustring, Utf8ToUtf32),
+	PAIR( ustring, Uuid),
+	PAIR( ustring, WideCharToMultiByte),
+
 	{NULL, NULL},
 };
 
