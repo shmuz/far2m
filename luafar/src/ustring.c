@@ -555,7 +555,7 @@ static int ustring_SetFileAttr(lua_State *L)
 	return SetAttr(L, check_utf8_string(L,1,NULL), DecodeAttributes(luaL_checkstring(L,2)));
 }
 
-static int ustring_sub(lua_State *L)
+static int ustring_subW(lua_State *L)
 {
 	size_t len;
 	intptr_t from, to;
@@ -579,7 +579,7 @@ static int ustring_sub(lua_State *L)
 	return 1;
 }
 
-static int ustring_len(lua_State *L)
+static int ustring_lenW(lua_State *L)
 {
 	size_t len;
 	(void) luaL_checklstring(L, 1, &len);
@@ -595,11 +595,11 @@ static const luaL_Reg ustring_funcs[] = {
 	PAIR( ustring, GetCPInfo),
 	PAIR( ustring, GetFileAttr),
 	PAIR( ustring, GetOEMCP),
-	PAIR( ustring, len),
+	PAIR( ustring, lenW),
 	PAIR( ustring, MultiByteToWideChar),
 	PAIR( ustring, OemToUtf8),
 	PAIR( ustring, SetFileAttr),
-	PAIR( ustring, sub),
+	PAIR( ustring, subW),
 	PAIR( ustring, Utf32ToUtf8),
 	PAIR( ustring, Utf8ToOem),
 	PAIR( ustring, Utf8ToUtf32),
