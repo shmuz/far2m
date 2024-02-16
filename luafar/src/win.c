@@ -318,6 +318,11 @@ static int win_MoveFile (lua_State *L)
 	return SysErrorReturn(L);
 }
 
+static int win_RenameFile (lua_State *L)
+{
+	return win_MoveFile(L);
+}
+
 static int win_DeleteFile (lua_State *L)
 {
 	if (WINPORT(DeleteFile)(check_utf8_string(L, 1, NULL)))
@@ -517,8 +522,8 @@ static const luaL_Reg win_funcs[] = {
 	PAIR( win, GetVirtualKeys),
 	PAIR( win, IsProcess64bit),
 	PAIR( win, MoveFile),
-	PAIR( win, MoveFile), // alias
 	PAIR( win, RemoveDir),
+	PAIR( win, RenameFile),
 	PAIR( win, SetCurrentDir),
 	PAIR( win, SetEnv),
 	PAIR( win, Sleep),
