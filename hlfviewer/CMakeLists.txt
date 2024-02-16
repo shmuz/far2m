@@ -3,7 +3,7 @@ project(hlfviewer)
 include_directories(${LIBLUA_INCLUDE_DIRS})
 
 set(SOURCES
-  plug/GlobalInfo.c
+  src/GlobalInfo.c
   ${CMAKE_SOURCE_DIR}/luafar/src/luaplug.c
 )
 
@@ -43,11 +43,11 @@ set(MY_LIST
 )
 
 foreach(elem ${MY_LIST})
-  configure_file("plug/${elem}" "${INSTALL_DIR}/plug/${elem}" COPYONLY)
+  configure_file("src/${elem}" "${INSTALL_DIR}/plug/${elem}" COPYONLY)
 endforeach()
 
 set (MAKELANG minilua ${CMAKE_SOURCE_DIR}/luafar/lua_share/makelang.lua)
-set (TEMPL    ${CMAKE_CURRENT_SOURCE_DIR}/plug/hv_lang.templ)
+set (TEMPL    ${CMAKE_CURRENT_SOURCE_DIR}/src/hv_lang.templ)
 add_custom_target(${PROJECT_NAME}_lang ALL
   ${MAKELANG} ${TEMPL} ${INSTALL_DIR}/plug
 )
