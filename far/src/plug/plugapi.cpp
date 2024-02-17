@@ -1925,13 +1925,14 @@ static int FarViewerSynched(const wchar_t *FileName,const wchar_t *Title,
 	{
 		/* 09.09.2001 IS ! Добавим имя файла в историю, если потребуется */
 		FileViewer Viewer(FileName,FALSE,DisableHistory,Title,X1,Y1,X2,Y2,CodePage);
+
+		Viewer.SetEnableF6(Flags & VF_ENABLE_F6);
+
 		/* $ 28.05.2001 По умолчанию Вьюер, поэтому нужно здесь признак выставиль явно */
 		Viewer.SetDynamicallyBorn(false);
 		FrameManager->ExecuteModalEV();
 
 		ApplyViewerDeleteOnClose(&Viewer, FileName, Flags);
-
-		Viewer.SetEnableF6((Flags & VF_ENABLE_F6) );
 
 		if (!Viewer.GetExitCode())
 		{
