@@ -451,7 +451,7 @@ static int win_GetTimeZoneInformation (lua_State *L)
 
 static int win_Sleep (lua_State *L)
 {
-	unsigned usec = (unsigned) luaL_checknumber(L,1) * 1000; // msec -> mcsec
+	unsigned usec = (unsigned) (luaL_checknumber(L,1) * 1000); // msec -> mcsec
 	usleep(usec);
 	return 0;
 }
