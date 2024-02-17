@@ -4,6 +4,7 @@
 
 #include "util.h"
 #include "ustring.h"
+#include "service.h"
 
 extern const char* VirtualKeyStrings[256];
 extern void NewVirtualKeyTable(lua_State* L, BOOL twoways);
@@ -34,15 +35,16 @@ static int win_SetEnv (lua_State *L)
 }
 
 // Based on "CheckForEsc" function, by Ivan Sintyurin (spinoza@mail.ru)
-static WORD ExtractKey()
+static WORD ExtractKey(INPUT_RECORD* rec)
 {
-	INPUT_RECORD rec;
 	DWORD ReadCount;
 	HANDLE hConInp = NULL; //GetStdHandle(STD_INPUT_HANDLE);
-	while (WINPORT(PeekConsoleInput)(hConInp,&rec,1,&ReadCount), ReadCount) {
-		WINPORT(ReadConsoleInput)(hConInp,&rec,1,&ReadCount);
-		if (rec.EventType==KEY_EVENT && rec.Event.KeyEvent.bKeyDown)
-			return rec.Event.KeyEvent.wVirtualKeyCode;
+
+	if (WINPORT(PeekConsoleInput)(hConInp,rec,1,&ReadCount), ReadCount)
+	{
+		WINPORT(ReadConsoleInput)(hConInp,rec,1,&ReadCount);
+		if(rec->EventType==KEY_EVENT)
+			return 1;
 	}
 	return 0;
 }
@@ -51,11 +53,29 @@ static WORD ExtractKey()
 // -- general purpose function; not FAR dependent
 static int win_ExtractKey(lua_State *L)
 {
-	WORD vKey = ExtractKey() & 0xff;
-	if (vKey && VirtualKeyStrings[vKey])
-		lua_pushstring(L, VirtualKeyStrings[vKey]);
-	else
-		lua_pushnil(L);
+	INPUT_RECORD rec;
+	if (ExtractKey(&rec) && rec.Event.KeyEvent.bKeyDown)
+	{
+		WORD vKey = rec.Event.KeyEvent.wVirtualKeyCode & 0xff;
+		if(vKey && VirtualKeyStrings[vKey])
+		{
+			lua_pushstring(L, VirtualKeyStrings[vKey]);
+			return 1;
+		}
+	}
+	lua_pushnil(L);
+	return 1;
+}
+
+static int win_ExtractKeyEx(lua_State *L)
+{
+	INPUT_RECORD rec;
+	if (ExtractKey(&rec))
+	{
+		PushInputRecord(L, &rec);
+		return 1;
+	}
+	lua_pushnil(L);
 	return 1;
 }
 
@@ -509,6 +529,7 @@ static const luaL_Reg win_funcs[] = {
 	PAIR( win, EnsureColorsAreInverted),
 	PAIR( win, ExpandEnv),
 	PAIR( win, ExtractKey),
+	PAIR( win, ExtractKeyEx),
 	PAIR( win, FileTimeToLocalFileTime),
 	PAIR( win, FileTimeToSystemTime),
 	PAIR( win, GetConsoleScreenBufferInfo),
