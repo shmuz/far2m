@@ -745,6 +745,7 @@ void FileEditor::DisplayObject()
 {
 	if (!m_editor->Locked())
 	{
+		WaitInMainLoop = FALSE;
 		if (m_editor->Flags.Check(FEDITOR_ISRESIZEDCONSOLE))
 		{
 			m_editor->Flags.Clear(FEDITOR_ISRESIZEDCONSOLE);

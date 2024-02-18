@@ -211,6 +211,7 @@ void FileViewer::Show()
 
 void FileViewer::DisplayObject()
 {
+	WaitInMainLoop = FALSE;
 	View.Show();
 }
 
