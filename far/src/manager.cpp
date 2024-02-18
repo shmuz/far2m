@@ -1292,10 +1292,10 @@ void Manager::RefreshCommit(Frame *aFrame)
 		CtrlObject->Macro.SetArea(aFrame->GetMacroArea());
 	}
 
-	if ((Opt.ViewerEditorClock &&
-	        (aFrame->GetType() == MODALTYPE_EDITOR ||
-	         aFrame->GetType() == MODALTYPE_VIEWER))
-	        || (WaitInMainLoop && Opt.Clock))
+	bool bShowTime = (aFrame->GetType() == MODALTYPE_EDITOR || aFrame->GetType() == MODALTYPE_VIEWER) ?
+		Opt.ViewerEditorClock : (WaitInMainLoop && Opt.Clock);
+
+	if (bShowTime)
 		ShowTime(1);
 }
 
