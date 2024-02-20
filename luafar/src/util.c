@@ -105,27 +105,28 @@ int DecodeAttributes(const char* str)
 	int attr = 0;
 	for(; *str; str++)
 	{
-		char c = *str;
-		if     (c == 'a' || c == 'A') attr |= FILE_ATTRIBUTE_ARCHIVE;
-		else if(c == 'c' || c == 'C') attr |= FILE_ATTRIBUTE_COMPRESSED;
-		else if(c == 'd' || c == 'D') attr |= FILE_ATTRIBUTE_DIRECTORY;
-		else if(c == 'e' || c == 'E') attr |= FILE_ATTRIBUTE_REPARSE_POINT;
-		else if(c == 'h' || c == 'H') attr |= FILE_ATTRIBUTE_HIDDEN;
-		else if(c == 'i' || c == 'I') attr |= FILE_ATTRIBUTE_NOT_CONTENT_INDEXED;
-		else if(c == 'n' || c == 'N') attr |= FILE_ATTRIBUTE_ENCRYPTED;
-		else if(c == 'o' || c == 'O') attr |= FILE_ATTRIBUTE_OFFLINE;
-		else if(c == 'p' || c == 'P') attr |= FILE_ATTRIBUTE_SPARSE_FILE;
-		else if(c == 'r' || c == 'R') attr |= FILE_ATTRIBUTE_READONLY;
-		else if(c == 's' || c == 'S') attr |= FILE_ATTRIBUTE_SYSTEM;
-		else if(c == 't' || c == 'T') attr |= FILE_ATTRIBUTE_TEMPORARY;
-		else if(c == 'u' || c == 'U') attr |= FILE_ATTRIBUTE_NO_SCRUB_DATA;
-		else if(c == 'v' || c == 'V') attr |= FILE_ATTRIBUTE_VIRTUAL;
+		char c = (*str >= 'a') ? (*str-'a'+'A') : *str;
+		if      (c == 'A') attr |= FILE_ATTRIBUTE_ARCHIVE;
+		else if (c == 'C') attr |= FILE_ATTRIBUTE_COMPRESSED;
+		else if (c == 'D') attr |= FILE_ATTRIBUTE_DIRECTORY;
+		else if (c == 'E') attr |= FILE_ATTRIBUTE_REPARSE_POINT;
+		else if (c == 'H') attr |= FILE_ATTRIBUTE_HIDDEN;
+		else if (c == 'I') attr |= FILE_ATTRIBUTE_NOT_CONTENT_INDEXED;
+		else if (c == 'N') attr |= FILE_ATTRIBUTE_ENCRYPTED;
+		else if (c == 'O') attr |= FILE_ATTRIBUTE_OFFLINE;
+		else if (c == 'P') attr |= FILE_ATTRIBUTE_SPARSE_FILE;
+		else if (c == 'R') attr |= FILE_ATTRIBUTE_READONLY;
+		else if (c == 'S') attr |= FILE_ATTRIBUTE_SYSTEM;
+		else if (c == 'T') attr |= FILE_ATTRIBUTE_TEMPORARY;
+		else if (c == 'U') attr |= FILE_ATTRIBUTE_NO_SCRUB_DATA;
+		else if (c == 'V') attr |= FILE_ATTRIBUTE_VIRTUAL;
 
-		else if(c == 'b' || c == 'B') attr |= FILE_ATTRIBUTE_BROKEN;
-		else if(c == 'x' || c == 'X') attr |= FILE_ATTRIBUTE_EXECUTABLE;
-		else if(c == 'g' || c == 'G') attr |= FILE_ATTRIBUTE_DEVICE_CHAR;
-		else if(c == 'f' || c == 'F') attr |= FILE_ATTRIBUTE_DEVICE_FIFO;
-		else if(c == 'k' || c == 'K') attr |= FILE_ATTRIBUTE_DEVICE_SOCK;
+		else if (c == 'B') attr |= FILE_ATTRIBUTE_BROKEN;
+		else if (c == 'X') attr |= FILE_ATTRIBUTE_EXECUTABLE;
+		else if (c == 'J') attr |= FILE_ATTRIBUTE_DEVICE_BLOCK;
+		else if (c == 'G') attr |= FILE_ATTRIBUTE_DEVICE_CHAR;
+		else if (c == 'F') attr |= FILE_ATTRIBUTE_DEVICE_FIFO;
+		else if (c == 'K') attr |= FILE_ATTRIBUTE_DEVICE_SOCK;
 	}
 	return attr;
 }
@@ -160,6 +161,7 @@ void PushAttrString(lua_State *L, int attr)
 
 	if (attr & FILE_ATTRIBUTE_BROKEN)              *p++ = 'b';
 	if (attr & FILE_ATTRIBUTE_EXECUTABLE)          *p++ = 'x';
+	if (attr & FILE_ATTRIBUTE_DEVICE_BLOCK)        *p++ = 'j';
 	if (attr & FILE_ATTRIBUTE_DEVICE_CHAR)         *p++ = 'g';
 	if (attr & FILE_ATTRIBUTE_DEVICE_FIFO)         *p++ = 'f';
 	if (attr & FILE_ATTRIBUTE_DEVICE_SOCK)         *p++ = 'k';
