@@ -1027,7 +1027,7 @@ int64_t VMenu::VMProcess(int OpCode,void *vParam,int64_t iParam)
 
 		case MCODE_F_MENU_FILTER:
 		{
-			int64_t RetValue = 0;
+			long long RetValue = 0;
 			/*
 			Action
 			  0 - фильтр
@@ -1044,47 +1044,46 @@ int64_t VMenu::VMProcess(int OpCode,void *vParam,int64_t iParam)
 			  3 - вернуть количество отфильтрованных (невидимых) строк\
 			  4 - (по умолчанию) подправить высоту списка под количество элементов
 			*/
+			const auto Parameter = reinterpret_cast<intptr_t>(vParam);
 			switch (iParam)
 			{
 				case 0:
-					switch ((intptr_t)vParam)
+					switch (Parameter)
 					{
 						case 0:
 						case 1:
-							if (bFilterEnabled != ((intptr_t)vParam == 1))
+							if (bFilterEnabled != (Parameter == 1))
 							{
-								bFilterEnabled=((intptr_t)vParam == 1);
-								bFilterLocked=false;
-								strFilter.Clear();
-								if (!vParam)
-									RestoreFilteredItems();
+								EnableFilter(Parameter == 1);
 								DisplayObject();
 							}
 							RetValue = 1;
 							break;
+
 						case -1:
-							RetValue = bFilterEnabled ? 1 : 0;
+							RetValue = bFilterEnabled;
 							break;
 					}
 					break;
 
 				case 1:
-					switch ((intptr_t)vParam)
+					switch (Parameter)
 					{
 						case 0:
 						case 1:
-							bFilterLocked=((intptr_t)vParam == 1);
+							bFilterLocked = Parameter == 1;
 							DisplayObject();
 							RetValue = 1;
 							break;
+
 						case -1:
-							RetValue = bFilterLocked ? 1 : 0;
+							RetValue = bFilterLocked;
 							break;
 					}
 					break;
 
 				case 2:
-					RetValue = (bFilterEnabled && !strFilter.IsEmpty()) ? 1 : 0;
+					RetValue = bFilterEnabled && !strFilter.IsEmpty();
 					break;
 
 				case 3:
@@ -1258,6 +1257,8 @@ int VMenu::ProcessKey(FarKey Key)
 		case KEY_ESC:
 		case KEY_F10:
 		{
+			EnableFilter(false);
+
 			if (!ParentDialog || CheckFlags(VMENU_COMBOBOX))
 			{
 				EndLoop = TRUE;
@@ -1376,13 +1377,7 @@ int VMenu::ProcessKey(FarKey Key)
 		}
 		case KEY_CTRLALTF:
 		{
-			bFilterEnabled=!bFilterEnabled;
-			bFilterLocked=false;
-			strFilter.Clear();
-
-			if (!bFilterEnabled)
-				RestoreFilteredItems();
-
+			EnableFilter(!bFilterEnabled);
 			DisplayObject();
 			break;
 		}
@@ -3151,3 +3146,13 @@ void VMenu::SortItems(int Direction, int Offset, BOOL SortForDataDWORD)
 	SetFlags(VMENU_UPDATEREQUIRED);
 }
 
+
+void VMenu::EnableFilter(bool Enable)
+{
+	bFilterEnabled = Enable;
+	bFilterLocked = false;
+	strFilter.Clear();
+
+	if (!Enable)
+		RestoreFilteredItems();
+}

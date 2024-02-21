@@ -276,6 +276,7 @@ class VMenu: public Modal
 		bool AddToFilter(const wchar_t *str);
 		//коректировка текущей позиции и флагов SELECTED
 		void UpdateSelectPos();
+		void EnableFilter(bool Enable);
 
 	public:
 
