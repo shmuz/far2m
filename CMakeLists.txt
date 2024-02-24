@@ -45,19 +45,21 @@ endif()
 
 if(NOT "${GIT_TAG}" STREQUAL "v_${VERSION}")
     if(GIT_FOUND)
-        execute_process(COMMAND "${GIT_EXECUTABLE}" show --no-patch --format=%ci HEAD
-            WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-            OUTPUT_VARIABLE GIT_DATE
-            OUTPUT_STRIP_TRAILING_WHITESPACE)
-        string(SUBSTRING ${GIT_DATE} 0 10 GIT_DATE)
-        execute_process(COMMAND "${GIT_EXECUTABLE}" rev-parse --short HEAD
-            WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-            OUTPUT_VARIABLE GIT_HASH
-            OUTPUT_STRIP_TRAILING_WHITESPACE)
-    endif()
-    if(NOT "${GIT_DATE}" STREQUAL "")
-        message(STATUS "git date: ${GIT_DATE}")
-        set(VERSION_PATCH "${VERSION_PATCH}-${GIT_DATE}")
+        if(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
+            execute_process(COMMAND "${GIT_EXECUTABLE}" show --no-patch --format=%ci HEAD
+                WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+                OUTPUT_VARIABLE GIT_DATE
+                OUTPUT_STRIP_TRAILING_WHITESPACE)
+            if(NOT "${GIT_DATE}" STREQUAL "")
+                string(SUBSTRING ${GIT_DATE} 0 10 GIT_DATE)
+                message(STATUS "git date: ${GIT_DATE}")
+                set(VERSION_PATCH "${VERSION_PATCH}-${GIT_DATE}")
+            endif()
+            execute_process(COMMAND "${GIT_EXECUTABLE}" rev-parse --short HEAD
+                WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+                OUTPUT_VARIABLE GIT_HASH
+                OUTPUT_STRIP_TRAILING_WHITESPACE)
+        endif()
     endif()
     if(NOT "${GIT_HASH}" STREQUAL "")
         message(STATUS "git hash: ${GIT_HASH}")
