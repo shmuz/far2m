@@ -346,8 +346,8 @@ local function calculator()
   end
 
   local function get_language(hDlg)
-    return hDlg:GetCheck(dPos.lng_lua) and "Lua" or
-           hDlg:GetCheck(dPos.lng_c) and "C" or "Python"
+    return hDlg:GetCheck(dPos.lng_lua)==1 and "Lua" or
+           hDlg:GetCheck(dPos.lng_c)==1 and "C" or "Python"
   end
 
   local function SetFocusOnInput(hDlg)
@@ -357,7 +357,7 @@ local function calculator()
 
   items.keyaction = function(hDlg,p1,key)
     if key == "F1" then
-      local txt = hDlg:GetCheck(dPos.lng_py) and py_help or strhelp
+      local txt = hDlg:GetCheck(dPos.lng_py)==1 and py_help or strhelp
       far.Message(txt, M.mHelpDlgTitle, nil, 'l')
     else
       local name = keys[key]
