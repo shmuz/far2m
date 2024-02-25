@@ -153,6 +153,7 @@ function mod:SetDialogState(hDlg, Data)
         local tp = elem.tp
 
         if tp=="chbox" then
+          val = (val==2 or val==0) and val or (val and 1) or 0
           Send(hDlg, "DM_SETCHECK", pos, val)
 
         elseif tp=="rbutt" then
