@@ -2472,19 +2472,6 @@ void SetFarDialogItem(lua_State *L, struct FarDialogItem* Item, int itemindex, i
 		lua_pop(L, 1);
 }
 
-void PushCheckbox (lua_State *L, int value)
-{
-	switch (value) {
-		case BSTATE_3STATE:
-			lua_pushinteger(L,2); break;
-		case BSTATE_UNCHECKED:
-			lua_pushboolean(L,0); break;
-		default:
-		case BSTATE_CHECKED:
-			lua_pushboolean(L,1); break;
-	}
-}
-
 void PushDlgItem (lua_State *L, const struct FarDialogItem* pItem, BOOL table_exist)
 {
 	flags_t Flags;
@@ -2515,7 +2502,7 @@ void PushDlgItem (lua_State *L, const struct FarDialogItem* pItem, BOOL table_ex
 	}
 	else if (pItem->Type == DI_CHECKBOX || pItem->Type == DI_RADIOBUTTON)
 	{
-		PushCheckbox(L, pItem->Selected);
+		lua_pushinteger(L, pItem->Selected);
 		lua_rawseti(L, -2, 6);
 	}
 	else if (pItem->Type == DI_EDIT && (pItem->Flags & DIF_HISTORY))
@@ -2844,7 +2831,7 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			return 1;
 
 		case DM_GETCHECK:
-			PushCheckbox(L, PSInfo.SendDlgMessage(hDlg, Msg, Param1, 0));
+			lua_pushinteger(L, PSInfo.SendDlgMessage(hDlg, Msg, Param1, 0));
 			return 1;
 
 		case DM_SETCHECK:

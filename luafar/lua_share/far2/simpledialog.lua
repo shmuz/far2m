@@ -125,15 +125,11 @@ function mod:GetDialogState(hDlg)
 
         if tp==F.DI_CHECKBOX then
           local val = item[IND_SELECTED]
-          if FarVer == 2 then out[elem.name] = val
-          else                out[elem.name] = (val==2) and 2 or (val ~= 0) -- false,true,2
-          end
+          out[elem.name] = (val==2) and 2 or (val ~= 0) -- false,true,2
 
         elseif tp==F.DI_RADIOBUTTON then
           local val = item[IND_SELECTED]
-          if FarVer == 2 then out[elem.name] = val
-          else                out[elem.name] = (val ~= 0) -- false,true
-          end
+          out[elem.name] = (val ~= 0) -- false,true
 
         elseif tp==F.DI_EDIT or tp==F.DI_FIXEDIT or tp==F.DI_PSWEDIT then
           out[elem.name] = item[IND_DATA] -- string
@@ -157,9 +153,6 @@ function mod:SetDialogState(hDlg, Data)
         local tp = elem.tp
 
         if tp=="chbox" then
-          if FarVer == 3 then
-            val = (val==2 or val==0) and val or (val and 1) or 0
-          end
           Send(hDlg, "DM_SETCHECK", pos, val)
 
         elseif tp=="rbutt" then
