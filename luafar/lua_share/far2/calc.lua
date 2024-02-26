@@ -5,7 +5,7 @@
 -- http://forum.farmanager.com/viewtopic.php?p=141965#p141965
 -- Исходный скрипт был написан для плагина LuaFAR for Editor.
 -- Первоначальный автор: Максим Гончар ("maxdrfl" в форуме Far Manager).
--- Адаптация к Far3 и far2m API, плагину LuaMacro и некоторые изменения в коде: Shmuel Zeigerman.
+-- Адаптация к Far3 и far2m API, плагину LuaMacro и изменения в коде: Shmuel Zeigerman.
 
 --[[
         ОРИГИНАЛЬНАЯ СПРАВКА (адаптировано):
@@ -24,12 +24,14 @@
 Для справки см. уже определённые функции fib, fact, mean, sum.
 --]]
 
+local FAR3 = package.config:sub(1,1)=="\\"
+
 ----------------------------------------------------------------------------
 -->> SETTINGS START
 ----------------------------------------------------------------------------
 -- @@ Lunatic Python library
 -- Set to nil if the library is not available.
-local Lib_Python = "python"
+local Lib_Python = FAR3 and "312-python" or "python"
 --<< SETTINGS END
 ----------------------------------------------------------------------------
 
@@ -71,14 +73,20 @@ local F = far.Flags
 local KEEP_DIALOG_OPEN = 0
 local DISABLE_CHANGE = 0
 local HOTKEY_IS_DONE = 0
+local Send = far.SendDlgMessage
 
-local enable_custom_hotkeys = true -- for Far2 it's OK
+local enable_custom_hotkeys = true
+if FAR3 then
+  local farbuild = select(4, far.AdvControl("ACTL_GETFARMANAGERVERSION", true))
+  enable_custom_hotkeys = (farbuild >= 4269)  -- DN_HOTKEY was fixed in LuaFAR build 483
+end
 
 local python  -- Lunatic Python module
 local py_globals
 local py_help
 
-local function init_python()
+local function init_python(py)
+  python = py
   python.execute "import math"
   python.execute "from math import *"
   python.execute "from inspect import getmembers"
@@ -220,11 +228,11 @@ local function calculator()
       end
     })
   local cfunction = function(c) return environ[c] end
-  local keys = { Enter="btnCalc"; Num0="btnIns"; F5 = "btnCopy"; } -- "Num0" for Linux, "Ins" for Windows
+  local keys = { Enter="btnCalc"; Ins="btnIns"; F5 = "btnCopy"; }
 
   function dItems.btnCalc.Action(hDlg)
     if tonumber(result) then
-      hDlg:SetText(dPos.calc, result)
+      Send(hDlg, F.DM_SETTEXT, dPos.calc, result)
     end
     return KEEP_DIALOG_OPEN
   end
@@ -272,17 +280,18 @@ local function calculator()
   end
 
   local function compile(hDlg)
-    local str = hDlg:GetText(dPos.calc)
+    local str = Send(hDlg, F.DM_GETTEXT, dPos.calc)
     if not str:find("%S") then str = "0" end
 
     if curlang == "Lua" then
        -- add parentheses to avoid tail call (that gives better error messages)
       compiled = loadstring('return ('..str..')') or loadstring(str)
     elseif curlang == "C" then
+      local lib = FAR3 and "shmuz.c_calc" or "c_calc"
       compiled = loadstring(( [[
         local getvar = ...
-        local calc = require "c_calc"
-        return calc.expr("%s", getvar)]] ):format(str))
+        local calc = require(%q)
+        return calc.expr("%s", getvar)]] ):format(lib, str))
     elseif curlang == "Python" then
       local txt = ("str(%s)"):format(str)
       local res = py_globals.my_eval(txt)
@@ -341,27 +350,33 @@ local function calculator()
       setdata(dItems.status, msg)
     end
     for i,v in ipairs(items) do
-      if v.Update then hDlg:SetText(i, getdata(items[i])) end
+      if v.Update then Send(hDlg, F.DM_SETTEXT, i, getdata(items[i])) end
     end
   end
 
   local function get_language(hDlg)
-    return hDlg:GetCheck(dPos.lng_lua)==1 and "Lua" or
-           hDlg:GetCheck(dPos.lng_c)==1 and "C" or "Python"
+    return Send(hDlg,F.DM_GETCHECK,dPos.lng_lua)==1 and "Lua" or
+           Send(hDlg,F.DM_GETCHECK,dPos.lng_c)==1 and "C" or "Python"
   end
 
   local function SetFocusOnInput(hDlg)
-    far.Timer(10, function(h) -- timer is used due to FAR2 bug
-      h:Close() hDlg:SetFocus(dPos.calc) end)
+    if FAR3 then
+      Send(hDlg, F.DM_SETFOCUS, dPos.calc)
+    else
+      far.Timer(10, function(h) -- timer is used due to FAR2 bug
+          h:Close()
+          Send(hDlg, F.DM_SETFOCUS, dPos.calc)
+        end)
+    end
   end
-
+  
   items.keyaction = function(hDlg,p1,key)
     if key == "F1" then
-      local txt = hDlg:GetCheck(dPos.lng_py)==1 and py_help or strhelp
+      local txt = Send(hDlg, F.DM_GETCHECK, dPos.lng_py)==1 and py_help or strhelp
       far.Message(txt, M.mHelpDlgTitle, nil, 'l')
     else
       local name = keys[key]
-      if name then hDlg:Close(dPos[name]) end
+      if name then Send(hDlg, F.DM_CLOSE, dPos[name]) end
     end
   end
 
@@ -378,7 +393,7 @@ local function calculator()
         local fmt=items[p1].Fmt
         if fmt then
           format(dItems[fmt], result)
-          hDlg:SetText(dPos[fmt], getdata(dItems[fmt]))
+          Send(hDlg, F.DM_SETTEXT, dPos[fmt], getdata(dItems[fmt]))
         end
       end
     ----------------------------------------------------------------------------
@@ -389,10 +404,9 @@ local function calculator()
           active_item = dItems[btn.Item]
         elseif btn.name:find("^lng") then
           if btn.name == "lng_py" and not python then
-            local ok, ret = pcall(require, Lib_Python)
+            local ok, py = pcall(require, Lib_Python)
             if ok then
-              python = ret
-              init_python()
+              init_python(py)
             else
               far.Message(ret:match("[^\n]+"), M.mError, nil, "w")
               SetFocusOnInput(hDlg)
@@ -407,13 +421,18 @@ local function calculator()
     ----------------------------------------------------------------------------
     elseif msg==F.DN_HOTKEY then
       if enable_custom_hotkeys then
-        local n = p2 - 0x2000030 -- 0x2000000 = Alt, 0x30 = '0'
-        if n>=0 and n<=4 then
+        local n
+        if FAR3 then
+          n = tonumber(p2.UnicodeChar)
+        else
+          n = p2 - F.KEY_ALT - ("0"):byte()
+        end
+        if n and n>=0 and n<=4 then
           if n==0 then
-            hDlg:SetFocus(dPos.calc)
+            Send(hDlg, F.DM_SETFOCUS, dPos.calc)
           else
-            hDlg:SetCheck(dPos.decrad+n-1, 1)
-            hDlg:SetFocus(dPos.decfmt+n-1)
+            Send(hDlg, F.DM_SETCHECK, dPos.decrad+n-1, 1)
+            Send(hDlg, F.DM_SETFOCUS, dPos.decfmt+n-1)
           end
           return HOTKEY_IS_DONE
         end
