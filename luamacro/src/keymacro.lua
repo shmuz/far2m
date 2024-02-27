@@ -24,8 +24,6 @@ local MACROSTATE_NOMACRO, MACROSTATE_EXECUTING, MACROSTATE_EXECUTING_COMMON =
 local MFLAGS_ENABLEOUTPUT, MFLAGS_NOSENDKEYSTOPLUGINS, MFLAGS_POSTFROMPLUGIN =
       0x1, 0x2, 0x10000000
 
-local KEY_NONE = F.KEY_NONE
-
 local type, setmetatable = type, setmetatable
 local band, bor, bxor, lshift = bit64.band, bit64.bor, bit64.bxor, bit64.lshift
 --------------------------------------------------------------------------------
@@ -396,7 +394,7 @@ function KeyMacro.TransformKey (key)
     return 3, k > 0 and k or 0
   else
     local iKey = Import.KeyNameToKey(key)
-    return 3, (iKey==-1 or iKey==0xFFFFFFFF) and KEY_NONE or iKey
+    return 3, iKey
   end
 end
 
