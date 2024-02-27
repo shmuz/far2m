@@ -13,7 +13,7 @@
 Небольшой калькулятор. Написан в первую очередь для проверки работы диалогов и скорости сборки скриптов lua.
 Свойства:
     - синтаксис lua
-    - функции из math находятся в _G
+    - функции из math и константы из far.Flags находятся в _G
     - сборка на лету. Указание этапа работы на котором произошла ошибки
     - 4 строки вывода с настраиваемым форматом (см. lua:string.format)
     - если в строке есть команда return, результатом вычисления считается возвращаемое значение
@@ -224,7 +224,7 @@ local function calculator()
   local environ = setmetatable({},
     {
       __index = function(t,k)
-          return userlib and userlib[k] or math[k] or _G[k]
+          return userlib and userlib[k] or math[k] or _G[k] or far.Flags[k]
       end
     })
   local cfunction = function(c) return environ[c] end
@@ -369,7 +369,7 @@ local function calculator()
         end)
     end
   end
-  
+
   items.keyaction = function(hDlg,p1,key)
     if key == "F1" then
       local txt = Send(hDlg, F.DM_GETCHECK, dPos.lng_py)==1 and py_help or strhelp
@@ -425,7 +425,7 @@ local function calculator()
         if FAR3 then
           n = tonumber(p2.UnicodeChar)
         else
-          n = p2 - F.KEY_ALT - ("0"):byte()
+          n = p2 - F.KEY_ALT0
         end
         if n and n>=0 and n<=4 then
           if n==0 then
