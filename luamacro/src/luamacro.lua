@@ -362,7 +362,21 @@ local function Open_CommandLine (strCmdLine)
     elseif cmd == "unload" then utils.UnloadMacros()
     elseif cmd == "about" then About()
     elseif cmd == "farconfig" then require("far2.far_config")()
-    elseif cmd ~= "" then ErrMsg(Msg.CL_UnsupportedCommand .. cmd) end
+    elseif cmd == "test" then
+      far.MacroPost( [[
+        local function Quit(n) actl.Quit(n) Keys("Esc") end
+        local OK, R
+        R = far.PluginStartupInfo().ShareDir.."/macrotest.lua"
+        R = loadfile(R) or Quit(1)
+        OK, R = pcall(R)
+        OK = OK or Quit(2)
+        R.test_all = R.test_all or Quit(3)
+        OK = pcall(R.test_all)
+        Quit(OK and 0 or 4)
+      ]], 0, "CtrlShiftF12")
+    elseif cmd ~= "" then
+      ErrMsg(Msg.CL_UnsupportedCommand .. cmd)
+    end
   ----------------------------------------------------------------------------
   elseif prefix == "lua" or prefix == "moon" or prefix == "luas" or prefix == "moons" then
     if text=="" then return end
