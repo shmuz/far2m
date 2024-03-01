@@ -353,7 +353,7 @@ static int MainProcess(
 		MoveRealCursor(0,0);
 	}
 	CloseConsole();
-	return 0;
+	return FarExitCode;
 }
 
 static void SetupFarPath(const char *Arg0)

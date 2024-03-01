@@ -684,7 +684,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 		case ACTL_QUIT:
 		{
 			CloseFARMenu=TRUE;
-			FrameManager->ExitMainLoop(false);
+			FrameManager->ExitMainLoop(false, reinterpret_cast<intptr_t>(Param));
 			return TRUE;
 		}
 

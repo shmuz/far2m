@@ -643,8 +643,10 @@ static bool ConfirmExit()
 	return r == 0;
 }
 
-void Manager::ExitMainLoop(bool Ask)
+void Manager::ExitMainLoop(bool Ask, int ExitCode)
 {
+	FarExitCode = ExitCode;
+
 	if (CloseFAR)
 	{
 		CloseFAR=FALSE;

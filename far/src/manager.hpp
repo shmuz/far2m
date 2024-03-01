@@ -143,7 +143,7 @@ class Manager
 
 		void EnterMainLoop();
 		void ProcessMainLoop();
-		void ExitMainLoop(bool Ask);
+		void ExitMainLoop(bool Ask, int ExitCode = 0);
 		int ProcessKey(FarKey key);
 		int ProcessMouse(MOUSE_EVENT_RECORD *me);
 
