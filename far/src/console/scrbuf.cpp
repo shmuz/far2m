@@ -33,7 +33,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
-#include <list>
+#include <vector>
 #include "scrbuf.hpp"
 #include "colors.hpp"
 #include "ctrlobj.hpp"
@@ -323,24 +323,24 @@ void ScreenBuf::Flush(bool Force)
 	{
 		if (CtrlObject && (CtrlObject->Macro.IsRecording() || CtrlObject->Macro.IsExecuting()))
 		{
-			MacroChar=Buf[0];
-			MacroCharUsed=true;
+			MacroChar = Buf[0];
+			MacroCharUsed = true;
 
 			if(CtrlObject->Macro.IsRecording())
 			{
-				Buf[0].Char.UnicodeChar=L'R';
-				Buf[0].Attributes=0xCF;
+				Buf[0].Char.UnicodeChar = L'R';
+				Buf[0].Attributes = 0xCF;
 			}
 			else
 			{
-				Buf[0].Char.UnicodeChar=L'P';
-				Buf[0].Attributes=0x2F;
+				Buf[0].Char.UnicodeChar = L'P';
+				Buf[0].Attributes = 0x2F;
 			}
 		}
 
 		if (!SBFlags.Check(SBFLAGS_FLUSHEDCURTYPE) && !CurVisible)
 		{
-			CONSOLE_CURSOR_INFO cci={CurSize,CurVisible};
+			CONSOLE_CURSOR_INFO cci = {CurSize, CurVisible};
 			Console.SetCursorInfo(cci);
 			SBFlags.Set(SBFLAGS_FLUSHEDCURTYPE);
 		}
@@ -354,112 +354,111 @@ void ScreenBuf::Flush(bool Force)
 				ShowTime(FALSE);
 			}
 
-			std::list<SMALL_RECT>WriteList;
-			bool Changes=false;
+			std::vector<SMALL_RECT> WriteList;
+			bool Changes = false;
 
 			if (SBFlags.Check(SBFLAGS_USESHADOW))
 			{
-				PCHAR_INFO PtrBuf=Buf,PtrShadow=Shadow;
+				const CHAR_INFO *PtrBuf=Buf, *PtrShadow=Shadow;
+				bool Started = false;
+				SMALL_RECT WriteRegion = {(SHORT)(BufX-1), (SHORT)(BufY-1), 0, 0};
 
+				for (SHORT Y=0; Y < BufY; Y++)
 				{
-					bool Started=false;
-					SMALL_RECT WriteRegion={(SHORT)(BufX-1),(SHORT)(BufY-1),0,0};
-
-					for (SHORT I=0; I<BufY; I++)
+					for (SHORT X=0; X < BufX; X++,++PtrBuf,++PtrShadow)
 					{
-						for (SHORT J=0; J<BufX; J++,++PtrBuf,++PtrShadow)
+						if (!AreSameCharInfoBuffers(PtrBuf, PtrShadow, 1))
 						{
-							if (!AreSameCharInfoBuffers(PtrBuf, PtrShadow, 1))
-							{
-								WriteRegion.Left=Min(WriteRegion.Left,J);
-								WriteRegion.Top=Min(WriteRegion.Top,I);
-								WriteRegion.Right=Max(WriteRegion.Right,J);
-								WriteRegion.Bottom=Max(WriteRegion.Bottom,I);
-								Changes=true;
-								Started=true;
-							}
-							else if (Started && I>WriteRegion.Bottom && J>=WriteRegion.Left)
-							{
-								//BUGBUG: при включенном СlearType-сглаживании на экране остаётся "мусор" - тонкие вертикальные полосы
-								// кстати, и при выключенном тоже (но реже).
-								// баг, конечно, не наш, но что делать.
-								// расширяем область прорисовки влево-вправо на 1 символ:
-								WriteRegion.Left=Max(static_cast<SHORT>(0),static_cast<SHORT>(WriteRegion.Left-1));
-								WriteRegion.Right=Min(static_cast<SHORT>(WriteRegion.Right+1),static_cast<SHORT>(BufX-1));
-								bool Merge=false;
+							WriteRegion.Left = Min(WriteRegion.Left, X);
+							WriteRegion.Top = Min(WriteRegion.Top, Y);
+							WriteRegion.Right = Max(WriteRegion.Right, X);
+							WriteRegion.Bottom = Max(WriteRegion.Bottom, Y);
+							Changes = true;
+							Started = true;
+						}
+						else if (Started && Y > WriteRegion.Bottom && X >= WriteRegion.Left)
+						{
+							//BUGBUG: при включенном СlearType-сглаживании на экране остаётся "мусор" - тонкие вертикальные полосы
+							// кстати, и при выключенном тоже (но реже).
+							// баг, конечно, не наш, но что делать.
+							// расширяем область прорисовки влево-вправо на 1 символ:
+							WriteRegion.Left = Max(static_cast<SHORT>(0), static_cast<SHORT>(WriteRegion.Left-1));
+							WriteRegion.Right = Min(static_cast<SHORT>(WriteRegion.Right+1), static_cast<SHORT>(BufX-1));
+							bool Merge = false;
 
-								if (!WriteList.empty())
+							if (!WriteList.empty())
+							{
+								const int MAX_DELTA = 5;
+								SMALL_RECT& Last = WriteList.back();
+
+								if (WriteRegion.Top - 1 == Last.Bottom &&
+									((WriteRegion.Left >= Last.Left && WriteRegion.Left - Last.Left < MAX_DELTA) ||
+									(Last.Right >= WriteRegion.Right && Last.Right - WriteRegion.Right < MAX_DELTA)))
 								{
-#define MAX_DELTA 5
-									SMALL_RECT& Last=WriteList.back();
-
-									if (WriteRegion.Top-1==Last.Bottom && ((WriteRegion.Left>=Last.Left && WriteRegion.Left-Last.Left<MAX_DELTA) || (Last.Right>=WriteRegion.Right && Last.Right-WriteRegion.Right<MAX_DELTA)))
-									{
-										Last.Bottom=WriteRegion.Bottom;
-										Last.Left=Min(Last.Left,WriteRegion.Left);
-										Last.Right=Max(Last.Right,WriteRegion.Right);
-										Merge=true;
-									}
+									Last.Bottom = WriteRegion.Bottom;
+									Last.Left = Min(Last.Left, WriteRegion.Left);
+									Last.Right = Max(Last.Right, WriteRegion.Right);
+									Merge = true;
 								}
-
-								if (!Merge)
-									WriteList.push_back(WriteRegion);
-
-								WriteRegion.Left=BufX-1;
-								WriteRegion.Top=BufY-1;
-								WriteRegion.Right=0;
-								WriteRegion.Bottom=0;
-								Started=false;
 							}
+
+							if (!Merge)
+								WriteList.push_back(WriteRegion);
+
+							WriteRegion.Left = BufX - 1;
+							WriteRegion.Top = BufY - 1;
+							WriteRegion.Right = 0;
+							WriteRegion.Bottom = 0;
+							Started = false;
 						}
 					}
+				}
 
-					if (Started)
-					{
-						WriteList.push_back(WriteRegion);
-					}
+				if (Started)
+				{
+					WriteList.push_back(WriteRegion);
 				}
 			}
 			else
 			{
-				Changes=true;
-				SMALL_RECT WriteRegion={0,0,(SHORT)(BufX-1),(SHORT)(BufY-1)};
+				Changes = true;
+				SMALL_RECT WriteRegion = {0, 0, (SHORT)(BufX-1), (SHORT)(BufY-1)};
 				WriteList.push_back(WriteRegion);
 			}
 
 			if (Changes)
 			{
-				for (auto PtrRect=WriteList.begin(); PtrRect!=WriteList.end(); PtrRect++)
+				for (const auto& Region: WriteList)
 				{
-					COORD BufferSize={BufX, BufY}, BufferCoord={PtrRect->Left,PtrRect->Top};
-					SMALL_RECT WriteRegion=*PtrRect;
+					COORD BufferSize = {BufX, BufY}, BufferCoord = {Region.Left, Region.Top};
+					auto WriteRegion = Region;
 					Console.WriteOutput(*Buf, BufferSize, BufferCoord, WriteRegion);
 				}
-				memcpy(Shadow,Buf,BufX*BufY*sizeof(CHAR_INFO));
+				memcpy(Shadow, Buf, BufX*BufY*sizeof(CHAR_INFO));
 			}
 		}
 
 		if (MacroCharUsed)
 		{
-			Buf[0]=MacroChar;
-			MacroCharUsed=false;
+			Buf[0] = MacroChar;
+			MacroCharUsed = false;
 		}
 
 		if (ElevationCharUsed)
 		{
-			Buf[BufX*BufY-1]=ElevationChar;
+			Buf[BufX*BufY-1] = ElevationChar;
 		}
 
 		if (!SBFlags.Check(SBFLAGS_FLUSHEDCURPOS))
 		{
-			COORD C={CurX,CurY};
+			COORD C = {CurX,CurY};
 			Console.SetCursorPosition(C);
 			SBFlags.Set(SBFLAGS_FLUSHEDCURPOS);
 		}
 
 		if (!SBFlags.Check(SBFLAGS_FLUSHEDCURTYPE) && CurVisible)
 		{
-			CONSOLE_CURSOR_INFO cci={CurSize,CurVisible};
+			CONSOLE_CURSOR_INFO cci = {CurSize,CurVisible};
 			Console.SetCursorInfo(cci);
 			SBFlags.Set(SBFLAGS_FLUSHEDCURTYPE);
 		}
