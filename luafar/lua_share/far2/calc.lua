@@ -404,9 +404,9 @@ local function calculator()
           active_item = dItems[btn.Item]
         elseif btn.name:find("^lng") then
           if btn.name == "lng_py" and not python then
-            local ok, py = pcall(require, Lib_Python)
+            local ok, ret = pcall(require, Lib_Python)
             if ok then
-              init_python(py)
+              init_python(ret)
             else
               far.Message(ret:match("[^\n]+"), M.mError, nil, "w")
               SetFocusOnInput(hDlg)

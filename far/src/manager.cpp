@@ -645,8 +645,6 @@ static bool ConfirmExit()
 
 void Manager::ExitMainLoop(bool Ask, int ExitCode)
 {
-	FarExitCode = ExitCode;
-
 	if (CloseFAR)
 	{
 		CloseFAR=FALSE;
@@ -661,6 +659,8 @@ void Manager::ExitMainLoop(bool Ask, int ExitCode)
 		*/
 		if (ExitAll())
 		{
+			FarExitCode = ExitCode;
+
 			//TODO: при закрытии по x нужно делать форсированный выход. Иначе могут быть
 			//      глюки, например, при перезагрузке
 			FilePanels *cp = CtrlObject->Cp();
