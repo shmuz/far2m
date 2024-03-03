@@ -550,6 +550,7 @@ public:
 private:
 	int SendValue(FarMacroValue &Value);
 	int fattrFuncImpl(int Type);
+	int panelsetpathFuncImpl(bool Plugin);
 
 	const FarMacroCall* mData;
 };
@@ -2091,8 +2092,9 @@ int FarMacroApi::panelselectFunc()
 	return PassNumber(Result);
 }
 
-// N=panel.SetPath(panelType,pathName[,fileName])
-int FarMacroApi::panelsetpathFunc()
+// N=panel.SetPath       (panelType,pathName[,fileName])
+// N=panel.SetPluginPath (panelType,pathName[,fileName])
+int FarMacroApi::panelsetpathFuncImpl(bool Plugin)
 {
 	auto Params = parseParams(3);
 	int typePanel     = Params[0].getInt32();
@@ -2110,8 +2112,11 @@ int FarMacroApi::panelsetpathFunc()
 		if (apiExpandEnvironmentStrings(pathName, strPath))
 			pathName = strPath.CPtr();
 
-		if (// SelPanel->SetCurDir(pathName,false,false) ||
-			SelPanel->SetCurDir(pathName,SelPanel->GetMode()==PLUGIN_PANEL && IsAbsolutePath(pathName),false))
+		Ret = Plugin ?
+			SelPanel->GetMode()==PLUGIN_PANEL && SelPanel->SetCurDir(pathName,false,false) :
+			SelPanel->SetCurDir(pathName,SelPanel->GetMode()==PLUGIN_PANEL && IsAbsolutePath(pathName),false);
+
+		if (Ret)
 		{
 			//восстановим текущую папку из активной панели.
 			CtrlObject->Cp()->ActivePanel->SetCurPath();
@@ -2124,50 +2129,20 @@ int FarMacroApi::panelsetpathFunc()
 			SelPanel->UpdateIfChanged(UIC_UPDATE_NORMAL);
 			FrameManager->RefreshFrame(GetTopModal());
 			// </Mantis#0000289>
-			Ret = true;
 		}
 	}
 
 	return PassBoolean(Ret);
 }
 
-// N=panel.SetPath(panelType,pathName[,fileName])
+int FarMacroApi::panelsetpathFunc()
+{
+	return panelsetpathFuncImpl(false);
+}
+
 int FarMacroApi::panelsetpluginpathFunc()
 {
-	auto Params = parseParams(3);
-	int typePanel     = Params[0].getInt32();
-	auto& Val         = Params[1];
-	auto& ValFileName = Params[2];
-	bool Ret = false;
-	Panel *SelPanel = SelectPanel(typePanel);
-
-	if (SelPanel && Val.isString())
-	{
-		const wchar_t *pathName=Val.s();
-		const wchar_t *fileName=ValFileName.isString() ? ValFileName.s() : L"";
-
-		FARString strPath;
-		if (apiExpandEnvironmentStrings(pathName, strPath))
-			pathName = strPath.CPtr();
-
-		if (SelPanel->GetMode()==PLUGIN_PANEL && SelPanel->SetCurDir(pathName,false,false))
-		{
-			//восстановим текущую папку из активной панели.
-			CtrlObject->Cp()->ActivePanel->SetCurPath();
-			// Need PointToName()?
-			if (*fileName)
-				SelPanel->GoToFile(fileName);
-			//SelPanel->Show();
-			// <Mantis#0000289> - грозно, но со вкусом :-)
-			//ShellUpdatePanels(SelPanel);
-			SelPanel->UpdateIfChanged(UIC_UPDATE_NORMAL);
-			FrameManager->RefreshFrame(GetTopModal());
-			// </Mantis#0000289>
-			Ret = true;
-		}
-	}
-
-	return PassBoolean(Ret);
+	return panelsetpathFuncImpl(true);
 }
 
 int FarMacroApi::fattrFuncImpl(int Type)
