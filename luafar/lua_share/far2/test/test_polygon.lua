@@ -128,9 +128,8 @@ local function test_r2837()
   assert_farpanel()
   assert(Plugin.Call(SysId_Plugin, "open", DbFileName, ""), "Plugin.Call() failed")
   assert_plugpanel()
-  --Plugin.Command(SysId_Plugin, DbFileName)
-  local param = { Name="test"; PluginId=win.Uuid(Guid_Plugin); File=DbFileName; }
-  assert(panel.SetPanelDirectory(nil, 1, param), "failed to set panel directory")
+  assert(Plugin.Command(SysId_Plugin, DbFileName))
+  assert(Panel.SetPath(0, "test"))
 
   local sel = {}
   for k=1,nselrows do sel[k]=k+1; end -- add 1 to skip ".."
@@ -224,7 +223,7 @@ local function test_query_from_editor()
   assert(APanel.ItemCount == 2*N+1)
 
   -- test from a view
-  assert(Panel.SetPath(0, "/main/MyView"))
+  assert(Panel.SetPluginPath(0, "/main/MyView"))
   assert(APanel.Path=="/main/MyView")
   assert(APanel.ItemCount == 2*N+1)
   EnterEditor()
