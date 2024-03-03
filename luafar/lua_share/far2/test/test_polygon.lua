@@ -8,8 +8,9 @@ local Guid_ConfirmClose  = "27224BE2-EEF4-4240-808F-38095BCEF7B2"
 local Guid_ConfirmDelete = "4472C7D8-E2B2-46A0-A005-B10B4141EBBD"
 local Guid_EditRow       = "866927E1-60F1-4C87-A09D-D481D4189534"
 local Guid_Export        = "E9F91B4F-82B2-4B36-9C4B-240D7EE7BF59"
-local Guid_Plugin        = 0xD4BC5EA7
+local Guid_Plugin        = "D4BC5EA7-8229-4FFE-AAC1-5A4F51A0986A"
 local Guid_Pragmas       = "FF769EE0-2643-48F1-A8A2-239CD3C6691F"
+local SysId_Plugin       = 0xD4BC5EA7
 
 -- known mechanisms for loading user modules
 -- local USERMOD_DIR = win.GetEnv("farprofile").."\\PluginsData\\Polygon"
@@ -63,7 +64,7 @@ end
 local function PluginOpenInMemory()
   assert(Area.Shell)
   assert_farpanel()
-  assert(Plugin.SyncCall(Guid_Plugin, "open", ":memory:", ""), "open :memory: failed")
+  assert(Plugin.SyncCall(SysId_Plugin, "open", ":memory:", ""), "open :memory: failed")
   assert_plugpanel()
   assert(APanel.Current=="..")
   assert(APanel.ItemCount==2)
@@ -72,7 +73,7 @@ end
 local function PluginOpenFile(filename, flags)
   assert(Area.Shell)
   assert_farpanel()
-  assert(Plugin.SyncCall(Guid_Plugin, "open", filename, flags), "open file failed")
+  assert(Plugin.SyncCall(SysId_Plugin, "open", filename, flags), "open file failed")
   assert_plugpanel()
   assert(APanel.Current=="..")
 end
@@ -125,9 +126,9 @@ local function test_r2837()
   assert(DB:close()==sqlite3.OK, "could not close DB")
 
   assert_farpanel()
-  assert(Plugin.Call(Guid_Plugin, "open", DbFileName, ""), "Plugin.Call() failed")
+  assert(Plugin.Call(SysId_Plugin, "open", DbFileName, ""), "Plugin.Call() failed")
   assert_plugpanel()
-  --Plugin.Command(Guid_Plugin, DbFileName)
+  --Plugin.Command(SysId_Plugin, DbFileName)
   local param = { Name="test"; PluginId=win.Uuid(Guid_Plugin); File=DbFileName; }
   assert(panel.SetPanelDirectory(nil, 1, param), "failed to set panel directory")
 
@@ -355,7 +356,7 @@ end
 local function test_edit_row()
   assert_farpanel()
   local DB, DbFileName = CreateNewDB()
-  assert(Plugin.Call(Guid_Plugin, "open", DbFileName, ""), "Plugin.Call() failed")
+  assert(Plugin.Call(SysId_Plugin, "open", DbFileName, ""), "Plugin.Call() failed")
   assert_plugpanel()
 
   ExecCmdLine("CREATE TABLE test1(a,b,c)")

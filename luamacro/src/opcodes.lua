@@ -36,61 +36,62 @@ return {
   MCODE_F_MSGBOX=0x380C22; -- N=msgbox(["Title"[,"Text"[,flags]]])
   MCODE_F_PANEL_FATTR=0x380C23; -- N=Panel.FAttr(panelType,fileMask)
   MCODE_F_PANEL_SETPATH=0x380C24; -- N=panel.SetPath(panelType,pathName[,fileName])
-  MCODE_F_PANEL_FEXIST=0x380C25; -- N=Panel.FExist(panelType,fileMask)
-  MCODE_F_PANEL_SETPOS=0x380C26; -- N=Panel.SetPos(panelType,fileName)
-  MCODE_F_PANEL_SETPOSIDX=0x380C27; -- N=Panel.SetPosIdx(panelType,Idx[,InSelection])
-  MCODE_F_PANEL_SELECT=0x380C28; -- V=Panel.Select(panelType,Action[,Mode[,Items]])
-  MCODE_F_PANELITEM=0x380C29; -- V=Panel.Item(Panel,Index,TypeInfo)
-  MCODE_F_EVAL=0x380C2A; -- N=eval(S[,N])
-  MCODE_F_RINDEX=0x380C2B; -- S=rindex(S1,S2[,Mode])
-  MCODE_F_SLEEP=0x380C2C; -- Sleep(N)
-  MCODE_F_STRING=0x380C2D; -- S=string(V)
-  MCODE_F_SUBSTR=0x380C2E; -- S=substr(S,start[,length])
-  MCODE_F_UCASE=0x380C2F; -- S=ucase(S1)
-  MCODE_F_WAITKEY=0x380C30; -- V=waitkey([N,[T]])
-  MCODE_F_XLAT=0x380C31; -- S=xlat(S)
-  MCODE_F_FLOCK=0x380C32; -- N=FLock(N,N)
-  MCODE_F_CALLPLUGIN=0x380C33; -- V=callplugin(SysID[,param])
-  MCODE_F_REPLACE=0x380C34; -- S=replace(sS,sF,sR[,Count[,Mode]])
-  MCODE_F_PROMPT=0x380C35; -- S=prompt("Title"[,"Prompt"[,flags[, "Src"[, "History"]]]])
-  MCODE_F_BM_ADD=0x380C36; -- N=BM.Add()  - добавить текущие координаты и обрезать хвост
-  MCODE_F_BM_CLEAR=0x380C37; -- N=BM.Clear() - очистить все закладки
-  MCODE_F_BM_DEL=0x380C38; -- N=BM.Del([Idx]) - удаляет закладку с указанным индексом (x=1...), 0 - удаляет текущую закладку
-  MCODE_F_BM_GET=0x380C39; -- N=BM.Get(Idx,M) - возвращает координаты строки (M==0) или колонки (M==1) закладки с индексом (Idx=1...)
-  MCODE_F_BM_GOTO=0x380C3A; -- N=BM.Goto([n]) - переход на закладку с указанным индексом (0 --> текущую)
-  MCODE_F_BM_NEXT=0x380C3B; -- N=BM.Next() - перейти на следующую закладку
-  MCODE_F_BM_POP=0x380C3C; -- N=BM.Pop() - восстановить текущую позицию из закладки в конце стека и удалить закладку
-  MCODE_F_BM_PREV=0x380C3D; -- N=BM.Prev() - перейти на предыдущую закладку
-  MCODE_F_BM_BACK=0x380C3E; -- N=BM.Back() - перейти на предыдущую закладку с возможным сохранением текущей позиции
-  MCODE_F_BM_PUSH=0x380C3F; -- N=BM.Push() - сохранить текущую позицию в виде закладки в конце стека
-  MCODE_F_BM_STAT=0x380C40; -- N=BM.Stat([M]) - возвращает информацию о закладках, N=0 - текущее количество закладок	MCODE_F_TRIM,                     // S=trim(S[,N])
-  MCODE_F_TRIM=0x380C41; -- S=trim(S[,N])
-  MCODE_F_FLOAT=0x380C42; -- N=float(V)
-  MCODE_F_TESTFOLDER=0x380C43; -- N=testfolder(S)
-  MCODE_F_PRINT=0x380C44; -- N=Print(Str)
-  MCODE_F_MMODE=0x380C45; -- N=MMode(Action[,Value])
-  MCODE_F_EDITOR_SETTITLE=0x380C46; -- N=Editor.SetTitle([Title])
-  MCODE_F_MENU_GETVALUE=0x380C47; -- S=Menu.GetValue([N])
-  MCODE_F_MENU_ITEMSTATUS=0x380C48; -- N=Menu.ItemStatus([N])
-  MCODE_F_MENU_FILTER=0x380C49; -- N=Menu.Filter(Action[,Mode])
-  MCODE_F_MENU_FILTERSTR=0x380C4A; -- S=Menu.FilterStr([Action[,S]])
-  MCODE_F_BEEP=0x380C4B; -- N=beep([N])
-  MCODE_F_KBDLAYOUT=0x380C4C; -- N=kbdLayout([N])
-  MCODE_F_WINDOW_SCROLL=0x380C4D; -- N=Window.Scroll(Lines[,Axis])
-  MCODE_F_CHECKALL=0x380C4E; -- B=CheckAll(Area,Flags[,Callback[,CallbackId]])
-  MCODE_F_GETOPTIONS=0x380C4F; -- N=GetOptions()
-  MCODE_F_USERMENU=0x380C50; -- UserMenu([Param])
-  MCODE_F_SETCUSTOMSORTMODE=0x380C51;
-  MCODE_F_KEYMACRO=0x380C52;
-  MCODE_F_FAR_GETCONFIG=0x380C53;
-  MCODE_F_FAR_SETCONFIG=0x380C54;
-  MCODE_F_MACROSETTINGS=0x380C55;
-  MCODE_F_SIZE2STR=0x380C56; -- S=Size2Str(Size,Flags[,Width])
-  MCODE_F_STRWRAP=0x380C57; -- S=StrWrap(Text,Width[,Break[,Flags]])
-  MCODE_F_DLG_SETFOCUS=0x380C58; -- N=Dlg->SetFocus([ID])
-  MCODE_F_PLUGIN_CALL=0x380C59;
-  MCODE_F_PLUGIN_EXIST=0x380C5A; -- N=Plugin.Exist(SysId)
-  MCODE_F_KEYBAR_SHOW=0x380C5B; -- N=keybar.show([Mode])
+  MCODE_F_PANEL_SETPLUGINPATH=0x380C25; -- N=panel.SetPluginPath(panelType,pathName[,fileName])
+  MCODE_F_PANEL_FEXIST=0x380C26; -- N=Panel.FExist(panelType,fileMask)
+  MCODE_F_PANEL_SETPOS=0x380C27; -- N=Panel.SetPos(panelType,fileName)
+  MCODE_F_PANEL_SETPOSIDX=0x380C28; -- N=Panel.SetPosIdx(panelType,Idx[,InSelection])
+  MCODE_F_PANEL_SELECT=0x380C29; -- V=Panel.Select(panelType,Action[,Mode[,Items]])
+  MCODE_F_PANELITEM=0x380C2A; -- V=Panel.Item(Panel,Index,TypeInfo)
+  MCODE_F_EVAL=0x380C2B; -- N=eval(S[,N])
+  MCODE_F_RINDEX=0x380C2C; -- S=rindex(S1,S2[,Mode])
+  MCODE_F_SLEEP=0x380C2D; -- Sleep(N)
+  MCODE_F_STRING=0x380C2E; -- S=string(V)
+  MCODE_F_SUBSTR=0x380C2F; -- S=substr(S,start[,length])
+  MCODE_F_UCASE=0x380C30; -- S=ucase(S1)
+  MCODE_F_WAITKEY=0x380C31; -- V=waitkey([N,[T]])
+  MCODE_F_XLAT=0x380C32; -- S=xlat(S)
+  MCODE_F_FLOCK=0x380C33; -- N=FLock(N,N)
+  MCODE_F_CALLPLUGIN=0x380C34; -- V=callplugin(SysID[,param])
+  MCODE_F_REPLACE=0x380C35; -- S=replace(sS,sF,sR[,Count[,Mode]])
+  MCODE_F_PROMPT=0x380C36; -- S=prompt("Title"[,"Prompt"[,flags[, "Src"[, "History"]]]])
+  MCODE_F_BM_ADD=0x380C37; -- N=BM.Add()  - добавить текущие координаты и обрезать хвост
+  MCODE_F_BM_CLEAR=0x380C38; -- N=BM.Clear() - очистить все закладки
+  MCODE_F_BM_DEL=0x380C39; -- N=BM.Del([Idx]) - удаляет закладку с указанным индексом (x=1...), 0 - удаляет текущую закладку
+  MCODE_F_BM_GET=0x380C3A; -- N=BM.Get(Idx,M) - возвращает координаты строки (M==0) или колонки (M==1) закладки с индексом (Idx=1...)
+  MCODE_F_BM_GOTO=0x380C3B; -- N=BM.Goto([n]) - переход на закладку с указанным индексом (0 --> текущую)
+  MCODE_F_BM_NEXT=0x380C3C; -- N=BM.Next() - перейти на следующую закладку
+  MCODE_F_BM_POP=0x380C3D; -- N=BM.Pop() - восстановить текущую позицию из закладки в конце стека и удалить закладку
+  MCODE_F_BM_PREV=0x380C3E; -- N=BM.Prev() - перейти на предыдущую закладку
+  MCODE_F_BM_BACK=0x380C3F; -- N=BM.Back() - перейти на предыдущую закладку с возможным сохранением текущей позиции
+  MCODE_F_BM_PUSH=0x380C40; -- N=BM.Push() - сохранить текущую позицию в виде закладки в конце стека
+  MCODE_F_BM_STAT=0x380C41; -- N=BM.Stat([M]) - возвращает информацию о закладках, N=0 - текущее количество закладок	MCODE_F_TRIM,                     // S=trim(S[,N])
+  MCODE_F_TRIM=0x380C42; -- S=trim(S[,N])
+  MCODE_F_FLOAT=0x380C43; -- N=float(V)
+  MCODE_F_TESTFOLDER=0x380C44; -- N=testfolder(S)
+  MCODE_F_PRINT=0x380C45; -- N=Print(Str)
+  MCODE_F_MMODE=0x380C46; -- N=MMode(Action[,Value])
+  MCODE_F_EDITOR_SETTITLE=0x380C47; -- N=Editor.SetTitle([Title])
+  MCODE_F_MENU_GETVALUE=0x380C48; -- S=Menu.GetValue([N])
+  MCODE_F_MENU_ITEMSTATUS=0x380C49; -- N=Menu.ItemStatus([N])
+  MCODE_F_MENU_FILTER=0x380C4A; -- N=Menu.Filter(Action[,Mode])
+  MCODE_F_MENU_FILTERSTR=0x380C4B; -- S=Menu.FilterStr([Action[,S]])
+  MCODE_F_BEEP=0x380C4C; -- N=beep([N])
+  MCODE_F_KBDLAYOUT=0x380C4D; -- N=kbdLayout([N])
+  MCODE_F_WINDOW_SCROLL=0x380C4E; -- N=Window.Scroll(Lines[,Axis])
+  MCODE_F_CHECKALL=0x380C4F; -- B=CheckAll(Area,Flags[,Callback[,CallbackId]])
+  MCODE_F_GETOPTIONS=0x380C50; -- N=GetOptions()
+  MCODE_F_USERMENU=0x380C51; -- UserMenu([Param])
+  MCODE_F_SETCUSTOMSORTMODE=0x380C52;
+  MCODE_F_KEYMACRO=0x380C53;
+  MCODE_F_FAR_GETCONFIG=0x380C54;
+  MCODE_F_FAR_SETCONFIG=0x380C55;
+  MCODE_F_MACROSETTINGS=0x380C56;
+  MCODE_F_SIZE2STR=0x380C57; -- S=Size2Str(Size,Flags[,Width])
+  MCODE_F_STRWRAP=0x380C58; -- S=StrWrap(Text,Width[,Break[,Flags]])
+  MCODE_F_DLG_SETFOCUS=0x380C59; -- N=Dlg->SetFocus([ID])
+  MCODE_F_PLUGIN_CALL=0x380C5A;
+  MCODE_F_PLUGIN_EXIST=0x380C5B; -- N=Plugin.Exist(SysId)
+  MCODE_F_KEYBAR_SHOW=0x380C5C; -- N=keybar.show([Mode])
   MCODE_C_AREA_OTHER=0x380400; -- Режим копирования текста с экрана, вертикальные меню
   MCODE_C_AREA_SHELL=0x380401; -- Файловые панели
   MCODE_C_AREA_VIEWER=0x380402; -- Внутренняя программа просмотра

@@ -588,6 +588,8 @@ Panel = {
   end,
   Select    = function(...) return MacroCallFar(op.MCODE_F_PANEL_SELECT, ...) end,
   SetPath   = function(...) return MacroCallFar(op.MCODE_F_PANEL_SETPATH, ...) end,
+  SetPluginPath
+            = function(...) return MacroCallFar(op.MCODE_F_PANEL_SETPLUGINPATH, ...) end,
   SetPos    = function(...) return MacroCallFar(op.MCODE_F_PANEL_SETPOS, ...) end,
   SetPosIdx = function(...) return MacroCallFar(op.MCODE_F_PANEL_SETPOSIDX, ...) end,
 }

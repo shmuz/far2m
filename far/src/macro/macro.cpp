@@ -524,6 +524,7 @@ public:
 	int panelitemFunc();
 	int panelselectFunc();
 	int panelsetpathFunc();
+	int panelsetpluginpathFunc();
 	int panelsetposFunc();
 	int panelsetposidxFunc();
 	int pluginexistFunc();
@@ -1375,6 +1376,7 @@ int KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 		case MCODE_F_PANELITEM:          return api.panelitemFunc();
 		case MCODE_F_PANEL_SELECT:       return api.panelselectFunc();
 		case MCODE_F_PANEL_SETPATH:      return api.panelsetpathFunc();
+		case MCODE_F_PANEL_SETPLUGINPATH: return api.panelsetpluginpathFunc();
 		case MCODE_F_PANEL_SETPOS:       return api.panelsetposFunc();
 		case MCODE_F_PANEL_SETPOSIDX:    return api.panelsetposidxFunc();
 		case MCODE_F_PROMPT:             return api.promptFunc();
@@ -2110,6 +2112,45 @@ int FarMacroApi::panelsetpathFunc()
 
 		if (// SelPanel->SetCurDir(pathName,false,false) ||
 			SelPanel->SetCurDir(pathName,SelPanel->GetMode()==PLUGIN_PANEL && IsAbsolutePath(pathName),false))
+		{
+			//восстановим текущую папку из активной панели.
+			CtrlObject->Cp()->ActivePanel->SetCurPath();
+			// Need PointToName()?
+			if (*fileName)
+				SelPanel->GoToFile(fileName);
+			//SelPanel->Show();
+			// <Mantis#0000289> - грозно, но со вкусом :-)
+			//ShellUpdatePanels(SelPanel);
+			SelPanel->UpdateIfChanged(UIC_UPDATE_NORMAL);
+			FrameManager->RefreshFrame(GetTopModal());
+			// </Mantis#0000289>
+			Ret = true;
+		}
+	}
+
+	return PassBoolean(Ret);
+}
+
+// N=panel.SetPath(panelType,pathName[,fileName])
+int FarMacroApi::panelsetpluginpathFunc()
+{
+	auto Params = parseParams(3);
+	int typePanel     = Params[0].getInt32();
+	auto& Val         = Params[1];
+	auto& ValFileName = Params[2];
+	bool Ret = false;
+	Panel *SelPanel = SelectPanel(typePanel);
+
+	if (SelPanel && Val.isString())
+	{
+		const wchar_t *pathName=Val.s();
+		const wchar_t *fileName=ValFileName.isString() ? ValFileName.s() : L"";
+
+		FARString strPath;
+		if (apiExpandEnvironmentStrings(pathName, strPath))
+			pathName = strPath.CPtr();
+
+		if (SelPanel->GetMode()==PLUGIN_PANEL && SelPanel->SetCurDir(pathName,false,false))
 		{
 			//восстановим текущую папку из активной панели.
 			CtrlObject->Cp()->ActivePanel->SetCurPath();
