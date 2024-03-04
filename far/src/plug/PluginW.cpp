@@ -130,16 +130,6 @@ static const char NFMP_GetGlobalInfo[] = "GetGlobalInfoW";
 static const char NFMP_ProcessConsoleInput[] = "ProcessConsoleInputW";
 
 
-static void CheckScreenLock()
-{
-//if (ScrBuf.GetLockCount() > 0 && !CtrlObject->Macro.PeekKey()) ### THIS CAUSES RECURSION AND STACK OVERFLOW
-	if (ScrBuf.GetLockCount() > 0)
-	{
-		ScrBuf.SetLockCount(0);
-		ScrBuf.Flush();
-	}
-}
-
 static size_t WINAPI FarKeyToName(FarKey Key,wchar_t *KeyText,size_t Size)
 {
 	FARString strKT;
@@ -688,9 +678,6 @@ int PluginW::Analyse(const AnalyseData *pData)
 HANDLE PluginW::OpenPlugin(int OpenFrom, INT_PTR Item)
 {
 	ChangePriority *ChPriority = new ChangePriority(ChangePriority::NORMAL);
-
-	if (OpenFrom != OPEN_LUAMACRO)
-		CheckScreenLock(); //??
 
 	{
 //		FARString strCurDir;
