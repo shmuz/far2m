@@ -54,7 +54,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "udlist.hpp"
 #include "filelist.hpp"
 #include "treelist.hpp"
-#include "TStack.hpp"
 #include "syslog.hpp"
 #include "ConfigRW.hpp"
 #include "plugapi.hpp"
