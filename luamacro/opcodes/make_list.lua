@@ -27,14 +27,13 @@ local Footer = [[
 }
 ]]
 
-local rex = require "rex_pcre"
-
 local fp = io.open(InputFile)
 local out = io.open(OutputFile, "w")
 
 out:write(Header)
 for line in fp:lines() do
-  local name, comment = rex.match(line, [[^\s+(MCODE_\w+)(?:\s*=\w+)?\s*,\s*(//.*\S)?]])
+  local name, comment = line:match( "^%s+(MCODE_[%w_]+).-(//.-%S.*)" )
+  name = name or line:match( "^%s+(MCODE_[%w_]+)" )
   if name then
     if comment then
       comment = '"' .. comment:gsub("^//%s*", " -- "):gsub('"', '\\"') .. '"'
