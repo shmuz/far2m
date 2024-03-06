@@ -6,7 +6,8 @@ FAR = $(ROOT)/far
 SCRIPT = make_list.lua
 LUA = lua
 TRG = opcodes.lua
-INP = $(FAR)/src/macro/macroopcode.hpp
+INP = $(FAR)/src/macro/macroopcode.hpp \
+      $(FAR)/src/macro/macrovalues.hpp
 INC = -I$(FAR) -I$(FAR)/src/console -I$(FAR)/src/macro -I$(ROOT)/WinPort
 CPPFLAGS = $(INC)
 
@@ -21,7 +22,7 @@ $(GEN): $(OBJ)
 	g++ -o$@ $^
 
 $(SRC): $(INP)
-	$(LUA) $(SCRIPT) $< $@
+	$(LUA) $(SCRIPT) $@ $^
 
 clean:
 	rm $(TRG) $(GEN) $(OBJ) $(SRC)

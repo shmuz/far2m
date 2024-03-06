@@ -12,17 +12,14 @@ Shared = nil
 
 local F = far.Flags
 
--- enum MACROPLUGINRETURNTYPE
 local MPRT_NORMALFINISH, MPRT_ERRORFINISH, MPRT_HASNOMACRO, MPRT_PLUGINCALL =
       F.MPRT_NORMALFINISH, F.MPRT_ERRORFINISH, F.MPRT_HASNOMACRO, F.MPRT_PLUGINCALL
 
--- enum FARMACROSTATE
 local MACROSTATE_NOMACRO, MACROSTATE_EXECUTING, MACROSTATE_EXECUTING_COMMON =
       F.MACROSTATE_NOMACRO, F.MACROSTATE_EXECUTING, F.MACROSTATE_EXECUTING_COMMON
 
--- unsigned __int64 MACROFLAGS_MFLAGS
 local MFLAGS_ENABLEOUTPUT, MFLAGS_NOSENDKEYSTOPLUGINS, MFLAGS_POSTFROMPLUGIN =
-      0x1, 0x2, 0x10000000
+      op.MFLAGS_ENABLEOUTPUT, op.MFLAGS_NOSENDKEYSTOPLUGINS, op.MFLAGS_POSTFROMPLUGIN
 
 local type, setmetatable = type, setmetatable
 local band, bor, bxor, lshift = bit64.band, bit64.bor, bit64.bxor, bit64.lshift
@@ -30,16 +27,16 @@ local band, bor, bxor, lshift = bit64.band, bit64.bor, bit64.bxor, bit64.lshift
 
 local MCODE_F_KEYMACRO = op.MCODE_F_KEYMACRO
 local Import = {
-  RestoreMacroChar        = function()  return MacroCallFar(MCODE_F_KEYMACRO, 1) end,
-  ScrBufLock              = function()  return MacroCallFar(MCODE_F_KEYMACRO, 2) end,
-  ScrBufUnlock            = function()  return MacroCallFar(MCODE_F_KEYMACRO, 3) end,
-  ScrBufResetLockCount    = function()  return MacroCallFar(MCODE_F_KEYMACRO, 4) end,
-  ScrBufGetLockCount      = function()  return MacroCallFar(MCODE_F_KEYMACRO, 5) end,
-  ScrBufSetLockCount      = function(v) return MacroCallFar(MCODE_F_KEYMACRO, 6, v) end,
-  GetUseInternalClipboard = function()  return MacroCallFar(MCODE_F_KEYMACRO, 7) end,
-  SetUseInternalClipboard = function(v) return MacroCallFar(MCODE_F_KEYMACRO, 8, v) end,
-  KeyNameToKey            = function(v) return MacroCallFar(MCODE_F_KEYMACRO, 9, v) end,
-  KeyToText               = function(v) return MacroCallFar(MCODE_F_KEYMACRO, 10, v) end,
+  RestoreMacroChar        = function()  return MacroCallFar(MCODE_F_KEYMACRO, op.IMP_RESTORE_MACROCHAR) end,
+  ScrBufLock              = function()  return MacroCallFar(MCODE_F_KEYMACRO, op.IMP_SCRBUF_LOCK) end,
+  ScrBufUnlock            = function()  return MacroCallFar(MCODE_F_KEYMACRO, op.IMP_SCRBUF_UNLOCK) end,
+  ScrBufResetLockCount    = function()  return MacroCallFar(MCODE_F_KEYMACRO, op.IMP_SCRBUF_RESETLOCKCOUNT) end,
+  ScrBufGetLockCount      = function()  return MacroCallFar(MCODE_F_KEYMACRO, op.IMP_SCRBUF_GETLOCKCOUNT) end,
+  ScrBufSetLockCount      = function(v) return MacroCallFar(MCODE_F_KEYMACRO, op.IMP_SCRBUF_SETLOCKCOUNT, v) end,
+  GetUseInternalClipboard = function()  return MacroCallFar(MCODE_F_KEYMACRO, op.IMP_GET_USEINTERNALCLIPBOARD) end,
+  SetUseInternalClipboard = function(v) return MacroCallFar(MCODE_F_KEYMACRO, op.IMP_SET_USEINTERNALCLIPBOARD, v) end,
+  KeyNameToKey            = function(v) return MacroCallFar(MCODE_F_KEYMACRO, op.IMP_KEYNAMETOKEY, v) end,
+  KeyToText               = function(v) return MacroCallFar(MCODE_F_KEYMACRO, op.IMP_KEYTOTEXT, v) end,
 }
 --------------------------------------------------------------------------------
 
@@ -443,38 +440,26 @@ function KeyMacro.AddExitHandler (func, ...)
   end
 end
 
-local OP_ISEXECUTING              = 1
-local OP_ISDISABLEOUTPUT          = 2
-local OP_HISTORYDISABLEMASK       = 3
-local OP_ISHISTORYDISABLE         = 4
-local OP_ISTOPMACROOUTPUTDISABLED = 5
-local OP_ISPOSTMACROENABLED       = 6
-local OP_POSTNEWMACRO             = 7 -- comes not from Far
-local OP_SETMACROVALUE            = 8
-local OP_GETINPUTFROMMACRO        = 9
-local OP_TRYTOPOSTMACRO           = 10 -- comes not from Far
-local OP_GETLASTERROR             = 11
-
 function KeyMacro.Dispatch (opcode, ...)
   local p1 = (...)
-  if opcode == OP_ISEXECUTING then
+  if opcode == op.OP_ISEXECUTING then
     return IsExecuting()
-  elseif opcode == OP_GETINPUTFROMMACRO then
+  elseif opcode == op.OP_GETINPUTFROMMACRO then
     if not utils.LoadingInProgress() then return GetInputFromMacro() end
-  elseif opcode == OP_ISDISABLEOUTPUT then
+  elseif opcode == op.OP_ISDISABLEOUTPUT then
     return IsDisableOutput()
-  elseif opcode == OP_HISTORYDISABLEMASK then
+  elseif opcode == op.OP_HISTORYDISABLEMASK then
     local OldMask = CurState.HistoryDisableMask
     if p1 then CurState.HistoryDisableMask = p1 end
     return OldMask
-  elseif opcode == OP_ISHISTORYDISABLE then
+  elseif opcode == op.OP_ISHISTORYDISABLE then
     return IsHistoryDisable(p1)
-  elseif opcode==OP_ISTOPMACROOUTPUTDISABLED then
+  elseif opcode==op.OP_ISTOPMACROOUTPUTDISABLED then
     local mr = GetTopMacro()
     return mr and 0==band(mr:GetFlags(),MFLAGS_ENABLEOUTPUT) and 1 or 0
-  elseif opcode == OP_ISPOSTMACROENABLED then
+  elseif opcode == op.OP_ISPOSTMACROENABLED then
     return not (IsExecuting() and GetCurMacro()) and 1 or 0
-  elseif opcode == OP_POSTNEWMACRO then -- from API MacroControl(MSSC_POST)
+  elseif opcode == op.OP_POSTNEWMACRO then -- from API MacroControl(MSSC_POST)
     local Lang,Code,Flags,AKey,onlyCheck = ...
     local f1,f2 = loadmacro(Lang,Code)
     if f1 then
@@ -483,12 +468,12 @@ function KeyMacro.Dispatch (opcode, ...)
     elseif not onlyCheck then
       ErrMsg(f2, Msg.MMacroParseErrorTitle)
     end
-  elseif opcode == OP_SETMACROVALUE then
+  elseif opcode == op.OP_SETMACROVALUE then
     local m = GetCurMacro()
     if m then m:SetValue(p1) end
-  elseif opcode == OP_TRYTOPOSTMACRO then
+  elseif opcode == op.OP_TRYTOPOSTMACRO then
     return TryToPostMacro(...)
-  elseif opcode == OP_GETLASTERROR then
+  elseif opcode == op.OP_GETLASTERROR then
     return GetLastParseError()
   end
 end

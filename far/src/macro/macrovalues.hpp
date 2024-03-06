@@ -29,7 +29,8 @@ static const MACROFLAGS_MFLAGS
 	// private flags, for runtime purposes only
 	MFLAGS_POSTFROMPLUGIN          = (1 << 28); // последовательность пришла от АПИ
 
-enum {
+enum MACRO_OP
+{
 	OP_ISEXECUTING                 = 1,
 	OP_ISDISABLEOUTPUT             = 2,
 	OP_HISTORYDISABLEMASK          = 3,
@@ -43,17 +44,18 @@ enum {
 	OP_GETLASTERROR                = 11,
 };
 
-enum {
-  IMP_RESTORE_MACROCHAR          = 1,
-  IMP_SCRBUF_LOCK                = 2,
-  IMP_SCRBUF_UNLOCK              = 3,
-  IMP_SCRBUF_RESETLOCKCOUNT      = 4,
-  IMP_SCRBUF_GETLOCKCOUNT        = 5,
-  IMP_SCRBUF_SETLOCKCOUNT        = 6,
-  IMP_GET_USEINTERNALCLIPBOARD   = 7,
-  IMP_SET_USEINTERNALCLIPBOARD   = 8,
-  IMP_KEYNAMETOKEY               = 9,
-  IMP_KEYTOTEXT                  = 10,
+enum MACRO_IMPORT
+{
+	IMP_RESTORE_MACROCHAR          = 1,
+	IMP_SCRBUF_LOCK                = 2,
+	IMP_SCRBUF_UNLOCK              = 3,
+	IMP_SCRBUF_RESETLOCKCOUNT      = 4,
+	IMP_SCRBUF_GETLOCKCOUNT        = 5,
+	IMP_SCRBUF_SETLOCKCOUNT        = 6,
+	IMP_GET_USEINTERNALCLIPBOARD   = 7,
+	IMP_SET_USEINTERNALCLIPBOARD   = 8,
+	IMP_KEYNAMETOKEY               = 9,
+	IMP_KEYTOTEXT                  = 10,
 };
 
 #endif
