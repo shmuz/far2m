@@ -34,6 +34,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "headers.hpp"
 
 #include "macro.hpp"
+#include "macrovalues.hpp"
 #include "tvar.hpp"
 #include "macroopcode.hpp"
 #include "keys.hpp"
@@ -111,32 +112,6 @@ static Frame* GetTopModal()
 	return FrameManager->GetTopModal();
 }
 
-typedef unsigned int MACROFLAGS_MFLAGS;
-static const MACROFLAGS_MFLAGS
-	MFLAGS_NONE                    = 0,
-	// public flags, read from/saved to config
-	MFLAGS_ENABLEOUTPUT            = (1 <<  0), // не подавлять обновление экрана во время выполнения макроса
-	MFLAGS_NOSENDKEYSTOPLUGINS     = (1 <<  1), // НЕ передавать плагинам клавиши во время записи/воспроизведения макроса
-	MFLAGS_RUNAFTERFARSTART        = (1 <<  3), // этот макрос запускается при старте ФАРа
-	MFLAGS_EMPTYCOMMANDLINE        = (1 <<  4), // запускать, если командная линия пуста
-	MFLAGS_NOTEMPTYCOMMANDLINE     = (1 <<  5), // запускать, если командная линия не пуста
-	MFLAGS_EDITSELECTION           = (1 <<  6), // запускать, если есть выделение в редакторе
-	MFLAGS_EDITNOSELECTION         = (1 <<  7), // запускать, если есть нет выделения в редакторе
-	MFLAGS_SELECTION               = (1 <<  8), // активная:  запускать, если есть выделение
-	MFLAGS_PSELECTION              = (1 <<  9), // пассивная: запускать, если есть выделение
-	MFLAGS_NOSELECTION             = (1 << 10), // активная:  запускать, если есть нет выделения
-	MFLAGS_PNOSELECTION            = (1 << 11), // пассивная: запускать, если есть нет выделения
-	MFLAGS_NOFILEPANELS            = (1 << 12), // активная:  запускать, если это плагиновая панель
-	MFLAGS_PNOFILEPANELS           = (1 << 13), // пассивная: запускать, если это плагиновая панель
-	MFLAGS_NOPLUGINPANELS          = (1 << 14), // активная:  запускать, если это файловая панель
-	MFLAGS_PNOPLUGINPANELS         = (1 << 15), // пассивная: запускать, если это файловая панель
-	MFLAGS_NOFOLDERS               = (1 << 16), // активная:  запускать, если текущий объект "файл"
-	MFLAGS_PNOFOLDERS              = (1 << 17), // пассивная: запускать, если текущий объект "файл"
-	MFLAGS_NOFILES                 = (1 << 18), // активная:  запускать, если текущий объект "папка"
-	MFLAGS_PNOFILES                = (1 << 19), // пассивная: запускать, если текущий объект "папка"
-	// private flags, for runtime purposes only
-	MFLAGS_POSTFROMPLUGIN          = (1 << 28); // последовательность пришла от АПИ
-
 // для диалога назначения клавиши
 struct DlgParam
 {
@@ -149,18 +124,6 @@ struct DlgParam
 
 enum ASSIGN_MACRO_KEY {
 	AMK_CANCEL, AMK_MODIFY, AMK_DELETE
-};
-
-enum {
-	OP_ISEXECUTING              = 1,
-	OP_ISDISABLEOUTPUT          = 2,
-	OP_HISTORYDISABLEMASK       = 3,
-	OP_ISHISTORYDISABLE         = 4,
-	OP_ISTOPMACROOUTPUTDISABLED = 5,
-	OP_ISPOSTMACROENABLED       = 6,
-	OP_SETMACROVALUE            = 8,
-	OP_GETINPUTFROMMACRO        = 9,
-	OP_GETLASTERROR             = 11,
 };
 
 FARString KeyMacro::m_RecCode;
@@ -268,7 +231,8 @@ static void SetMacroValue(bool Value)
 
 static bool TryToPostMacro(int Area,const FARString& TextKey,DWORD IntKey)
 {
-	FarMacroValue values[] = { 10.0, static_cast<double>(Area), TextKey.CPtr(), static_cast<double>(IntKey) };
+	FarMacroValue values[] = { static_cast<double>(OP_TRYTOPOSTMACRO), static_cast<double>(Area),
+		TextKey.CPtr(), static_cast<double>(IntKey) };
 	FarMacroCall fmc={sizeof(FarMacroCall),ARRAYSIZE(values),values,nullptr,nullptr};
 	OpenMacroPluginInfo info={MCT_KEYMACRO,&fmc};
 	return CallMacroPlugin(&info);
@@ -815,16 +779,34 @@ int KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 			{
 				switch (static_cast<int>(Data->Values[0].Double))
 				{
-					case 1: RestoreMacroChar(); break;
-					case 2: ScrBuf.Lock(); break;
-					case 3: ScrBuf.Unlock(); break;
-					case 4: ScrBuf.ResetLockCount(); break;
-					case 5: api.PassNumber(ScrBuf.GetLockCount()); break;
-					case 6: if (Data->Count > 1) ScrBuf.SetLockCount(Data->Values[1].Double); break;
-					case 7: api.PassBoolean(Clipboard::GetUseInternalClipboardState()); break;
-					case 8: if (Data->Count > 1) Clipboard::SetUseInternalClipboardState(Data->Values[1].Boolean != 0); break;
-					case 9: if (Data->Count > 1) api.PassNumber(KeyNameToKey(Data->Values[1].String)); break;
-					case 10:
+					case IMP_RESTORE_MACROCHAR:
+						RestoreMacroChar();
+						break;
+					case IMP_SCRBUF_LOCK:
+						ScrBuf.Lock();
+						break;
+					case IMP_SCRBUF_UNLOCK:
+						ScrBuf.Unlock();
+						break;
+					case IMP_SCRBUF_RESETLOCKCOUNT:
+						ScrBuf.ResetLockCount();
+						break;
+					case IMP_SCRBUF_GETLOCKCOUNT:
+						api.PassNumber(ScrBuf.GetLockCount());
+						break;
+					case IMP_SCRBUF_SETLOCKCOUNT:
+						if (Data->Count > 1) ScrBuf.SetLockCount(Data->Values[1].Double);
+						break;
+					case IMP_GET_USEINTERNALCLIPBOARD:
+						api.PassBoolean(Clipboard::GetUseInternalClipboardState());
+						break;
+					case IMP_SET_USEINTERNALCLIPBOARD:
+						if (Data->Count > 1) Clipboard::SetUseInternalClipboardState(Data->Values[1].Boolean != 0);
+						break;
+					case IMP_KEYNAMETOKEY:
+						if (Data->Count > 1) api.PassNumber(KeyNameToKey(Data->Values[1].String));
+						break;
+					case IMP_KEYTOTEXT:
 						if (Data->Count > 1)
 						{
 							FARString str;
@@ -1297,7 +1279,7 @@ int KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 				const auto Descr = Data->Values[3].String;
 				if (Key && GetMacroSettings(Key, Flags, Src, Descr))
 				{
-					api.PassNumber(static_cast<double>(Flags));
+					api.PassNumber(Flags);
 					api.PassString(m_RecCode);
 					api.PassString(m_RecDescription);
 					return 0;
@@ -4187,7 +4169,8 @@ bool KeyMacro::PostNewMacro(const wchar_t* Sequence, DWORD InputFlags, FarKey AK
 	if (InputFlags & KMFLAGS_ENABLEOUTPUT)        Flags |= MFLAGS_ENABLEOUTPUT;
 	if (InputFlags & KMFLAGS_NOSENDKEYSTOPLUGINS) Flags |= MFLAGS_NOSENDKEYSTOPLUGINS;
 
-	FarMacroValue values[] = { 7.0, Lang, Sequence, static_cast<double>(Flags), static_cast<double>(AKey), onlyCheck };
+	FarMacroValue values[] = { static_cast<double>(OP_POSTNEWMACRO), Lang, Sequence,
+		static_cast<double>(Flags), static_cast<double>(AKey), onlyCheck };
 	FarMacroCall fmc={sizeof(FarMacroCall),ARRAYSIZE(values),values,nullptr,nullptr};
 	OpenMacroPluginInfo info={MCT_KEYMACRO,&fmc};
 	return CallMacroPlugin(&info);
