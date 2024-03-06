@@ -5,10 +5,10 @@ local SETTINGS_NAME = "MacroBrowser"
 
 local Shared = ...
 local Msg, utils = Shared.Msg, Shared.utils
-local op = Shared.OpCodes
+local mc = Shared.Constants
 
 local F = far.Flags
-local MCODE_F_CHECKALL = op.MCODE_F_CHECKALL
+local MCODE_F_CHECKALL = mc.MCODE_F_CHECKALL
 local ceil, max = math.ceil, math.max
 local LStricmp = far.LStricmp -- consider win.CompareString ?
 local Title = "Macro Browser"

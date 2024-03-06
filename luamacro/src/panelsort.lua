@@ -2,13 +2,13 @@
 
 local Shared = ...
 local Msg = Shared.Msg
-local op = Shared.OpCodes
+local mc = Shared.Constants
 local ffi = require "ffi"
 local C = ffi.C
 local F = far.Flags
 local PPIF_SELECTED = F.PPIF_SELECTED
 local FILE_ATTRIBUTE_DIRECTORY = 0x00000010
-local MCODE_F_SETCUSTOMSORTMODE = op.MCODE_F_SETCUSTOMSORTMODE
+local MCODE_F_SETCUSTOMSORTMODE = mc.MCODE_F_SETCUSTOMSORTMODE
 local band, bor = bit.band, bit.bor -- 32 bits, be careful
 local tonumber = tonumber
 

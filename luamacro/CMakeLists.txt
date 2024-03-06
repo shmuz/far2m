@@ -48,7 +48,7 @@ set(MY_LIST
   luamacro.lua
   macrotest.lua
   mbrowser.lua
-  opcodes.lua
+  constants.lua
   panelsort.lua
   settings.lua
   utils.lua

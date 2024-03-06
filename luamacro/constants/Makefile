@@ -5,7 +5,7 @@ FAR = $(ROOT)/far
 
 SCRIPT = make_list.lua
 LUA = lua
-TRG = opcodes.lua
+TRG = constants.lua
 INP = $(FAR)/src/macro/macroopcode.hpp \
       $(FAR)/src/macro/macrovalues.hpp
 INC = -I$(FAR) -I$(FAR)/src/console -I$(FAR)/src/macro -I$(ROOT)/WinPort

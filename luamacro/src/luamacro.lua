@@ -608,7 +608,7 @@ local function Init()
   Shared.Msg = Msg
 
   Shared.Settings = RunPluginFile("settings.lua")
-  Shared.OpCodes = RunPluginFile("opcodes.lua")
+  Shared.Constants = RunPluginFile("constants.lua")
 
   utils = RunPluginFile("utils.lua", Shared)
   Shared.utils = utils

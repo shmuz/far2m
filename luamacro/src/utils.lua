@@ -1,7 +1,7 @@
 -- coding: utf-8
 
 local Shared = ...
-local op = Shared.OpCodes
+local mc = Shared.Constants
 local Msg, ErrMsg, pack = Shared.Msg, Shared.ErrMsg, Shared.pack
 local MacroDirs = Shared.MacroDirs
 
@@ -54,11 +54,11 @@ local function GetAreaName(Mode)     return AllAreaNames[Mode] end
 local function GetAreaCode(Area)     return AllAreaNames[Area:lower()] end
 --------------------------------------------------------------------------------
 
-local MCODE_F_CHECKALL     = op.MCODE_F_CHECKALL
-local MCODE_F_MACROSETTINGS = op.MCODE_F_MACROSETTINGS
+local MCODE_F_CHECKALL     = mc.MCODE_F_CHECKALL
+local MCODE_F_MACROSETTINGS = mc.MCODE_F_MACROSETTINGS
 
-Shared.OnlyEditorViewerUsed = band(MacroCallFar(op.MCODE_F_GETOPTIONS),0x1) ~= 0
-local ReadOnlyConfig = false -- band(MacroCallFar(op.MCODE_F_GETOPTIONS),0x10) ~= 0
+Shared.OnlyEditorViewerUsed = band(MacroCallFar(mc.MCODE_F_GETOPTIONS),0x1) ~= 0
+local ReadOnlyConfig = false -- band(MacroCallFar(mc.MCODE_F_GETOPTIONS),0x10) ~= 0
 
 local Areas
 local LoadedMacros
