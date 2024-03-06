@@ -3,18 +3,19 @@
    the file opcodes.cpp
 --]]--------------------------------------------------------------------------------
 
-local FarSource   = os.getenv("HOME") .. "/far2m"
-local InputFile   = FarSource .. "/far/src/macro/macroopcode.hpp"
-local OutputFile  = "opcodes.cpp"
+local InputFile, OutputFile = ...
+assert(OutputFile)
 
 local Header = [[
 #include <stdio.h>
 #include "macroopcode.hpp"
 
-int main()
+int main(int argc, char **argv)
 {
-	FILE* fp=fopen("opcodes.lua", "w");
-	if (!fp) return 1;
+    if (argc < 2) return 1;
+
+	FILE* fp = fopen(argv[1], "w");
+	if (!fp) return 2;
 
 	fprintf(fp, "return {\n");
 ]]
@@ -27,8 +28,8 @@ local Footer = [[
 }
 ]]
 
-local fp = io.open(InputFile)
-local out = io.open(OutputFile, "w")
+local fp = assert(io.open(InputFile))
+local out = assert(io.open(OutputFile, "w"))
 
 out:write(Header)
 for line in fp:lines() do
