@@ -1957,7 +1957,7 @@ end
 
 -- "Several lines are merged into one".
 local function test_issue_3129()
-  local fname = "/tmp/far2l-"..win.Uuid(win.Uuid()):sub(1,8)
+  local fname = "/tmp/far2m-"..win.Uuid("L"):sub(1,8)
   local fp = assert(io.open(fname, "w"))
   fp:close()
   local flags = {EF_NONMODAL=1, EF_IMMEDIATERETURN=1, EF_DISABLEHISTORY=1}

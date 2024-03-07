@@ -708,7 +708,7 @@ local function LoadMacros (unload, paths)
       for _,v in ipairs {"scripts", "modules", "lib32", "lib64"} do
         win.CreateDir(MacroDirs.MainPath.."/"..v)
       end
-      --win.CreateDir(win.GetEnv("HOME").."/.config/far2l/Menus")
+      win.CreateDir(far.InMyConfig("Menus"))
     end
 
     local ok1, moonscript = pcall(require, "moonscript")
