@@ -39,6 +39,28 @@ set_target_properties(${PROJECT_NAME}
     PREFIX ""
     SUFFIX ".far-plug-wide")
 
+###  Generate constants.lua ----------------------------------------------------
+set(TRG    "${INSTALL_DIR}/plug/constants.lua")
+set(SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/generators/make_const.lua)
+set(FAR    ${CMAKE_SOURCE_DIR}/far)
+set(MACR   ${FAR}/src/macro)
+set(INCL   ${FAR} ${MACR} ${FAR}/src/console ${CMAKE_SOURCE_DIR}/WinPort)
+set(INPUT  ${MACR}/macroopcode.hpp ${MACR}/macrovalues.hpp)
+
+set(GEN gen_const)
+set(SRC ${GEN}.cpp)
+
+add_custom_command(OUTPUT ${SRC}
+                   COMMAND minilua ${SCRIPT} ${SRC} ${INPUT}
+                   DEPENDS ${INPUT}
+                   )
+
+add_executable(${GEN} ${SRC})
+target_include_directories(${GEN} PRIVATE ${INCL})
+
+add_custom_target(luamacro_const ALL ${GEN} ${TRG})
+###-----------------------------------------------------------------------------
+
 set(MY_LIST
   luamacro.example.ini
   api.lua
@@ -48,7 +70,6 @@ set(MY_LIST
   luamacro.lua
   macrotest.lua
   mbrowser.lua
-  constants.lua
   panelsort.lua
   settings.lua
   utils.lua
