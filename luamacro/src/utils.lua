@@ -86,25 +86,25 @@ end
 
 local StringToFlags, FlagsToString do
   local MacroFlagsByInt = {
-    [0x00000001] = "EnableOutput",
-    [0x00000002] = "NoSendKeysToPlugins",
-    [0x00000008] = "RunAfterFARStart",
-    [0x00000010] = "EmptyCommandLine",
-    [0x00000020] = "NotEmptyCommandLine",
-    [0x00000040] = "EVSelection",
-    [0x00000080] = "NoEVSelection",
-    [0x00000100] = "Selection",
-    [0x00000200] = "PSelection",
-    [0x00000400] = "NoSelection",
-    [0x00000800] = "NoPSelection",
-    [0x00001000] = "NoFilePanels",
-    [0x00002000] = "NoFilePPanels",
-    [0x00004000] = "NoPluginPanels",
-    [0x00008000] = "NoPluginPPanels",
-    [0x00010000] = "NoFolders",
-    [0x00020000] = "NoPFolders",
-    [0x00040000] = "NoFiles",
-    [0x00080000] = "NoPFiles",
+    [ mc.MFLAGS_ENABLEOUTPUT        ] = "EnableOutput",
+    [ mc.MFLAGS_NOSENDKEYSTOPLUGINS ] = "NoSendKeysToPlugins",
+    [ mc.MFLAGS_RUNAFTERFARSTART    ] = "RunAfterFARStart",
+    [ mc.MFLAGS_EMPTYCOMMANDLINE    ] = "EmptyCommandLine",
+    [ mc.MFLAGS_NOTEMPTYCOMMANDLINE ] = "NotEmptyCommandLine",
+    [ mc.MFLAGS_EDITSELECTION       ] = "EVSelection",
+    [ mc.MFLAGS_EDITNOSELECTION     ] = "NoEVSelection",
+    [ mc.MFLAGS_SELECTION           ] = "Selection",
+    [ mc.MFLAGS_PSELECTION          ] = "PSelection",
+    [ mc.MFLAGS_NOSELECTION         ] = "NoSelection",
+    [ mc.MFLAGS_PNOSELECTION        ] = "NoPSelection",
+    [ mc.MFLAGS_NOFILEPANELS        ] = "NoFilePanels",
+    [ mc.MFLAGS_PNOFILEPANELS       ] = "NoFilePPanels",
+    [ mc.MFLAGS_NOPLUGINPANELS      ] = "NoPluginPanels",
+    [ mc.MFLAGS_PNOPLUGINPANELS     ] = "NoPluginPPanels",
+    [ mc.MFLAGS_NOFOLDERS           ] = "NoFolders",
+    [ mc.MFLAGS_PNOFOLDERS          ] = "NoPFolders",
+    [ mc.MFLAGS_NOFILES             ] = "NoFiles",
+    [ mc.MFLAGS_PNOFILES            ] = "NoPFiles",
   }
   local MacroFlagsByStr={}
   for k,v in pairs(MacroFlagsByInt) do MacroFlagsByStr[v:lower()]=k end
@@ -1139,14 +1139,14 @@ local function RunStartMacro()
     if k==2 then mtable = Areas.common end
     for _,macros in pairs(mtable) do
       local m = macros.recorded
-      if m and not m.disabled and m.flags and band(m.flags,0x8)~=0 and not m.autostartdone then
+      if m and not m.disabled and m.flags and band(m.flags,mc.MFLAGS_RUNAFTERFARSTART)~=0 and not m.autostartdone then
         m.autostartdone=true
         if MacroCallFar(MCODE_F_CHECKALL, mode, m.flags) then
           Shared.keymacro.PostNewMacro(m, m.flags, nil, true)
         end
       end
       for _,m in ipairs(macros) do
-        if not m.disabled and m.flags and band(m.flags,0x8)~=0 and not m.autostartdone then
+        if not m.disabled and m.flags and band(m.flags,mc.MFLAGS_RUNAFTERFARSTART)~=0 and not m.autostartdone then
           m.autostartdone=true
           if MacroCallFar(MCODE_F_CHECKALL, mode, m.flags) then
             if not m.condition or m.condition(nil, m.data) then
