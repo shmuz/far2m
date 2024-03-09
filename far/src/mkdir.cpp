@@ -126,11 +126,10 @@ void ShellMakeDir(Panel *SrcPanel)
 			{
 				if (IsSlash(*ChPtr))
 				{
-					WCHAR Ch = ChPtr[1];
+					wchar_t Ch = ChPtr[1];
 					ChPtr[1] = 0;
 
-					if (*lpwszDirName &&
-						(apiGetFileAttributes(lpwszDirName) == INVALID_FILE_ATTRIBUTES) &&
+					if ((apiGetFileAttributes(lpwszDirName) == INVALID_FILE_ATTRIBUTES) &&
 						apiCreateDirectory(lpwszDirName,nullptr))
 					{
 						TreeList::AddTreeName(lpwszDirName);
@@ -155,11 +154,15 @@ void ShellMakeDir(Panel *SrcPanel)
 					int ret;
 
 					if (DirList.IsLastElement(DI))
-						ret=Message(MSG_WARNING|MSG_ERRORTYPE,1,Msg::Error,Msg::CannotCreateFolder,strOriginalDirName,Msg::Cancel);
+					{
+						ret=Message(MSG_WARNING|MSG_ERRORTYPE,1,Msg::Error,Msg::CannotCreateFolder,strOriginalDirName,Msg::Ok);
+						bSkip = false;
+					}
 					else
-						ret=Message(MSG_WARNING|MSG_ERRORTYPE,2,Msg::Error,Msg::CannotCreateFolder,strOriginalDirName,Msg::Ok,Msg::Skip);
-
-					bSkip = ret==1;
+					{
+						ret=Message(MSG_WARNING|MSG_ERRORTYPE,2,Msg::Error,Msg::CannotCreateFolder,strOriginalDirName,Msg::Skip,Msg::Cancel);
+						bSkip = ret==0;
+					}
 
 					if (bSuccess || bSkip)
 						break;
