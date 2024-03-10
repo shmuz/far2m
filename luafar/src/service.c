@@ -5665,6 +5665,8 @@ static const luaL_Reg far_funcs[] = {
 	PAIR( far, InMyCache),
 	PAIR( far, InMyConfig),
 	PAIR( far, InMyTemp),
+	PAIR( far, NewSudoClientRegion),
+	PAIR( far, DeleteSudoClientRegion),
 	PAIR( far, InputBox),
 	PAIR( far, InputRecordToKey),
 	PAIR( far, InputRecordToName),

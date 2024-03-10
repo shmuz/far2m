@@ -71,5 +71,7 @@ int far_InMyConfig(lua_State *L);
 int far_InMyCache(lua_State *L);
 int far_InMyTemp(lua_State *L);
 int far_GetMyHome(lua_State *L);
+int far_NewSudoClientRegion(lua_State *L);
+int far_DeleteSudoClientRegion(lua_State *L);
 
 #endif // LUAFAR_UTIL_H
