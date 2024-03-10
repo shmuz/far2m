@@ -11,6 +11,7 @@
 #include <lualib.h>
 
 #include "bit64.h"
+#include "farlibs.h"
 #include "ustring.h"
 #include "util.h"
 #include "version.h"

@@ -29,6 +29,7 @@ set(SOURCES
   src/util.c
   src/win.c
   src/farhost.cpp
+  src/farlibs.cpp
 )
 
 add_library (${PROJECT_NAME} SHARED ${SOURCES})
