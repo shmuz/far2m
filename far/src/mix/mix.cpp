@@ -88,11 +88,12 @@ void WINAPI FarRecursiveSearch(const wchar_t *InitDir,const wchar_t *Mask,FRSUSE
 {
 	if (Func && InitDir && *InitDir && Mask && *Mask)
 	{
+		SudoClientRegion scr;
 		CFileMask FMask;
 
 		if (!FMask.Set(Mask, FMF_SILENT)) return;
 
-		Flags=Flags&0x000000FF; // только младший байт!
+		Flags &= 0x000000FF; // только младший байт!
 		ScanTree ScTree(Flags & FRS_RETUPDIR,Flags & FRS_RECUR, Flags & FRS_SCANSYMLINK);
 		FAR_FIND_DATA_EX FindData;
 		FARString strFullName;
