@@ -12,7 +12,10 @@ if [ -x ~/.config/far2m/trash.sh ]; then
 . ~/.config/far2m/trash.sh
 fi
 
-if command -v gio >/dev/null 2>&1; then
+if command -v kioclient >/dev/null 2>&1; then
+	kioclient move "$1" trash:/ 2>"$2"
+
+elif command -v gio >/dev/null 2>&1; then
 	gio trash -f -- "$1" 2>"$2"
 
 elif command -v gvfs-trash >/dev/null 2>&1; then
