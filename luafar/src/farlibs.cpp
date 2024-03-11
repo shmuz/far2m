@@ -1,6 +1,8 @@
 #include <utils.h>
 #include <sudo.h>
 
+const char SudoClientRegionType[] = "SudoClientRegion";
+
 extern "C"
 {
 #include <lua.h>
@@ -39,17 +41,51 @@ int far_GetMyHome(lua_State *L)
 	return 1;
 }
 
+SudoClientRegion ** CheckSudoClientRegion(lua_State* L, int pos)
+{
+	return (SudoClientRegion **)luaL_checkudata(L, pos, SudoClientRegionType);
+}
+
+int SudoClientRegion_Free(lua_State *L)
+{
+	SudoClientRegion **scr = CheckSudoClientRegion(L, 1);
+	if (*scr) {
+		delete(*scr);
+		*scr = NULL;
+	}
+	return 0;
+}
+
+int SudoClientRegion_tostring (lua_State *L)
+{
+	SudoClientRegion **scr = CheckSudoClientRegion(L, 1);
+	if (*scr)
+		lua_pushfstring(L, "%s (%p)", SudoClientRegionType, *scr);
+	else
+		lua_pushfstring(L, "%s (closed)", SudoClientRegionType);
+	return 1;
+}
+
 int far_NewSudoClientRegion(lua_State *L)
 {
-	lua_pushlightuserdata(L, new SudoClientRegion());
+	SudoClientRegion **scr = (SudoClientRegion**) lua_newuserdata(L, sizeof(SudoClientRegion*));
+	*scr = new SudoClientRegion();
+	luaL_getmetatable(L, SudoClientRegionType);
+	if (lua_isnil(L, -1)) {
+		lua_pop(L, 1);
+		luaL_newmetatable(L, SudoClientRegionType);
+		lua_pushcfunction(L, SudoClientRegion_Free);
+		lua_setfield(L, -2, "__gc");
+		lua_pushcfunction(L, SudoClientRegion_tostring);
+		lua_setfield(L, -2, "__tostring");
+	}
+	lua_setmetatable(L, -2);
 	return 1;
 }
 
 int far_DeleteSudoClientRegion(lua_State *L)
 {
-	luaL_checktype(L, 1, LUA_TLIGHTUSERDATA);
-	delete reinterpret_cast<SudoClientRegion*>(lua_touserdata(L,1));
-	return 0;
+	return SudoClientRegion_Free(L);
 }
 
 } // extern "C"
