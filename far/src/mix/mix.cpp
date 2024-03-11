@@ -89,6 +89,7 @@ void WINAPI FarRecursiveSearch(const wchar_t *InitDir,const wchar_t *Mask,FRSUSE
 	if (Func && InitDir && *InitDir && Mask && *Mask)
 	{
 		SudoClientRegion scr;
+		//SudoSilentQueryRegion ssqr;
 		CFileMask FMask;
 
 		if (!FMask.Set(Mask, FMF_SILENT)) return;

@@ -41,12 +41,12 @@ int far_GetMyHome(lua_State *L)
 	return 1;
 }
 
-SudoClientRegion ** CheckSudoClientRegion(lua_State* L, int pos)
+static SudoClientRegion ** CheckSudoClientRegion(lua_State* L, int pos)
 {
 	return (SudoClientRegion **)luaL_checkudata(L, pos, SudoClientRegionType);
 }
 
-int SudoClientRegion_Free(lua_State *L)
+static int SudoClientRegion_Free(lua_State *L)
 {
 	SudoClientRegion **scr = CheckSudoClientRegion(L, 1);
 	if (*scr) {
@@ -56,7 +56,7 @@ int SudoClientRegion_Free(lua_State *L)
 	return 0;
 }
 
-int SudoClientRegion_tostring (lua_State *L)
+static int SudoClientRegion_tostring (lua_State *L)
 {
 	SudoClientRegion **scr = CheckSudoClientRegion(L, 1);
 	if (*scr)
