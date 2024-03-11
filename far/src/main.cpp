@@ -778,6 +778,11 @@ int _cdecl main(int argc, char *argv[])
 
 	setlocale(LC_ALL, "");//otherwise non-latin keys missing with XIM input method
 
+	const char *lcc = getenv("LC_COLLATE");
+	if (lcc && *lcc) {
+		setlocale(LC_COLLATE, lcc);
+	}
+
 	SetupFarPath(argv[0]);
 
 	SafeMMap::SignalHandlerRegistrar smm_shr;
