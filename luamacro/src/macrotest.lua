@@ -931,6 +931,7 @@ local function test_Far_GetConfig()
     "SavedHistory.HistoryCount",
     "SavedViewHistory.HistoryCount",
     "Screen.Clock",
+    "Screen.CursorBlinkInterval",
     "Screen.KeyBar",
     "Screen.ScreenSaver",
     "Screen.ScreenSaverTime",

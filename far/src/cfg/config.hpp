@@ -50,7 +50,6 @@ enum
 	DRIVE_SHOW_REMOTE     = 0x00000200,
 };
 
-
 //  +CASR_* Поведение Ctrl-Alt-Shift для AllCtrlAltShiftRule
 enum
 {
@@ -115,7 +114,6 @@ struct AutoCompleteOptions
 	int AppendCompletion;
 	FARString Exceptions;
 };
-
 
 struct PluginConfirmation
 {
@@ -373,6 +371,7 @@ struct Options
 	int InactivityExitTime;
 	int ShowHidden;
 	int Highlight;
+	int CursorBlinkTime;
 
 	FARString strLeftFolder;
 	FARString strRightFolder;

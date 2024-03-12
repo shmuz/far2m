@@ -275,7 +275,6 @@ void PanelSettings()
 	}
 }
 
-
 void InputSettings()
 {
 	const DWORD supported_tweaks = ApplyConsoleTweaks();
@@ -352,8 +351,13 @@ void InterfaceSettings()
 		Builder.AddCheckbox(Msg::ConfigDeleteTotal, &Opt.DelOpt.DelShowTotal);
 		Builder.AddCheckbox(Msg::ConfigPgUpChangeDisk, &Opt.PgUpChangeDisk);
 
-
 		const DWORD supported_tweaks = ApplyConsoleTweaks();
+		if (supported_tweaks & TWEAK_STATUS_SUPPORT_BLINK_RATE) {
+
+			DialogItemEx *CursorEdit = Builder.AddIntEditField(&Opt.CursorBlinkTime, 3);
+			Builder.AddTextAfter(CursorEdit, Msg::ConfigCursorBlinkInt);
+		}
+
 		int ChangeFontID = -1;
 		DialogItemEx *ChangeFontItem = nullptr;
 		if (supported_tweaks & TWEAK_STATUS_SUPPORT_PAINT_SHARP) {
@@ -383,7 +387,6 @@ void InterfaceSettings()
 		//OKButton->Y1 = OKButton->Y2 = NextY++;
 		//OKButtonID = DialogItemsCount-1;
 
-
 		Builder.AddOKCancel();
 
 		int clicked_id = -1;
@@ -406,6 +409,8 @@ void InterfaceSettings()
 
 		WINPORT(ConsoleChangeFont)();
 	}
+
+	WINPORT(SetConsoleCursorBlinkTime)(NULL, Opt.CursorBlinkTime);
 }
 
 void AutoCompleteSettings()
@@ -760,6 +765,7 @@ static struct FARConfig
 	{1, NSecScreen, "KeyBar",                       &Opt.ShowKeyBar, 1, REG_BOOLEAN},
 	{1, NSecScreen, "ScreenSaver",                  &Opt.ScreenSaver, 0, REG_BOOLEAN},
 	{1, NSecScreen, "ScreenSaverTime",              &Opt.ScreenSaverTime, 5},
+	{1, NSecScreen, "CursorBlinkInterval",          &Opt.CursorBlinkTime, 500},
 
 	{1, NSecCmdline, "UsePromptFormat",             &Opt.CmdLine.UsePromptFormat, 0, REG_BOOLEAN},
 	{1, NSecCmdline, "PromptFormat",                &Opt.CmdLine.strPromptFormat, L"$p$# "},
@@ -1151,6 +1157,12 @@ void ReadConfig()
 	/* <ПОСТПРОЦЕССЫ> *************************************************** */
 
 	SanitizeHistoryCounts();
+
+	if (Opt.CursorBlinkTime < 100)
+		Opt.CursorBlinkTime = 100;
+
+	if (Opt.CursorBlinkTime > 500)
+		Opt.CursorBlinkTime = 500;
 
 	if (Opt.ShowMenuBar)
 		Opt.ShowMenuBar=1;
