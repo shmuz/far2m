@@ -1135,6 +1135,8 @@ local function RunStartMacro()
   local mtable = (mode==F.MACROAREA_EDITOR and Areas.editor)
     or (mode==F.MACROAREA_VIEWER and Areas.viewer) or Areas.shell
 
+  if mtable == nil then return end
+
   for k=1,2 do
     if k==2 then mtable = Areas.common end
     for _,macros in pairs(mtable) do
