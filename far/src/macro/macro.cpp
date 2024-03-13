@@ -2271,10 +2271,10 @@ int FarMacroApi::fargetconfigFunc()
 		if (mData->Values[0].Type == FMVT_DOUBLE)
 			Index = static_cast<int>(mData->Values[0].Double) - 1;
 		else if (mData->Values[0].Type == FMVT_STRING)
-			Index = GetConfigIndex(mData->Values[0].String);
+			Index = ConfigOptGetIndex(mData->Values[0].String);
 	}
 
-	if (!GetConfigValue(Index, Data))
+	if (!ConfigOptGetValue(Index, Data))
 	{
 		PassBoolean(false);
 		return 0;
@@ -2345,7 +2345,7 @@ int FarMacroApi::farsetconfigFunc()
 		}
 		else if (mData->Values[0].Type==FMVT_STRING)
 		{
-			int Index = GetConfigIndex(mData->Values[0].String);
+			int Index = ConfigOptGetIndex(mData->Values[0].String);
 			Res = _SetConfig(Index, &mData->Values[1]);
 		}
 	}

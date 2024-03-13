@@ -592,10 +592,10 @@ void SetDizConfig();
 void ViewerConfig(ViewerOptions &ViOpt,bool Local=false);
 void EditorConfig(EditorOptions &EdOpt,bool Local=false);
 void NotificationsConfig(NotificationsOptions &NotifOpt);
-void ReadConfig();
+void ConfigOptLoad();
 void ApplyConfig();
-void AssertConfigLoaded();
-void SaveConfig(int Ask);
+void ConfigOptAssertLoaded();
+void ConfigOptSave(bool Ask);
 void SetFolderInfoFiles();
 void InfoPanelSettings();
 void AutoCompleteSettings();
@@ -621,8 +621,8 @@ struct GetConfig {
 	DWORD binSize;
 };
 
-int  GetConfigIndex(const wchar_t *wKeyName);
-bool GetConfigValue(int Index, GetConfig& Data);
+int  ConfigOptGetIndex(const wchar_t *wKeyName);
+bool ConfigOptGetValue(int Index, GetConfig& Data);
 bool SetConfigInteger(int Index, DWORD Value);
 bool SetConfigString(int Index, const wchar_t *Value);
 bool SetConfigBinary(int Index, const void *Data, DWORD Size);

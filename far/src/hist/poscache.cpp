@@ -50,7 +50,7 @@ FilePositionCache::~FilePositionCache()
 
 void FilePositionCache::ApplyElementsLimit()
 {
-	AssertConfigLoaded();
+	ConfigOptAssertLoaded();
 	int MaxPositionCache = Opt.MaxPositionCache;
 
 	if ((int)_kfh->SectionsCount() > MaxPositionCache + MaxPositionCache / 4 + 16)

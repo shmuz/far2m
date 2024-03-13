@@ -624,7 +624,7 @@ int FarAppMain(int argc, char **argv)
 		Opt.LoadPlug.PluginsPersonal=FALSE;
 	}
 
-	ReadConfig();
+	ConfigOptLoad();
 	InitConsole();
 	WINPORT(SetConsoleCursorBlinkTime)(NULL, Opt.CursorBlinkTime);
 

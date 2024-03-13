@@ -358,7 +358,7 @@ int CommandLine::ProcessKey(FarKey Key)
 		}
 		return TRUE;
 		case KEY_SHIFTF9:
-			SaveConfig(1);
+			ConfigOptSave(true);
 			return TRUE;
 		case KEY_F10:
 			FrameManager->ExitMainLoop(true);

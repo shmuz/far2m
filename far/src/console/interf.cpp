@@ -89,7 +89,7 @@ void InitConsole()
 	CONSOLE_CURSOR_INFO InitCursorInfo;
 	Console.GetCursorInfo(InitCursorInfo);
 
-	AssertConfigLoaded();
+	ConfigOptAssertLoaded();
 
 	// размер клавиатурной очереди = 1024 кода клавиши
 	if (!KeyQueue)

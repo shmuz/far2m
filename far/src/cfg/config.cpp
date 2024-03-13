@@ -735,7 +735,7 @@ void SetFolderInfoFiles()
 // Структура, описывающая всю конфигурацию(!)
 static struct FARConfig
 {
-	int   IsSave;   // =1 - будет записываться в SaveConfig()
+	int   IsSave;   // =1 - будет записываться в ConfigOptSave()
 	DWORD ValType;  // REG_DWORD, REG_SZ, REG_BINARY
 	const char *KeyName;
 	const char *ValName;
@@ -1067,7 +1067,7 @@ static struct FARConfig
 
 static bool g_config_ready = false;
 
-void ConfigFromCmdLine()
+static void ConfigOptFromCmdLine()
 {
 	for (auto Str: Opt.CmdLineStrings)
 	{
@@ -1078,8 +1078,8 @@ void ConfigFromCmdLine()
 			FARString strName(pName, pVal - pName);
 			pVal++;
 			GetConfig cfg;
-			int Index = GetConfigIndex(strName.CPtr());
-			if (GetConfigValue(Index, cfg))
+			int Index = ConfigOptGetIndex(strName.CPtr());
+			if (ConfigOptGetValue(Index, cfg))
 			{
 				switch (cfg.Type)
 				{
@@ -1114,7 +1114,7 @@ void ConfigFromCmdLine()
 	Opt.CmdLineStrings.clear();
 }
 
-void ReadConfig()
+void ConfigOptLoad()
 {
 	FARString strKeyNameFromReg;
 	FARString strPersonalPluginsPath;
@@ -1152,7 +1152,7 @@ void ReadConfig()
 	}
 
 	/* Command line config modifiers */
-	ConfigFromCmdLine();
+	ConfigOptFromCmdLine();
 
 	/* <ПОСТПРОЦЕССЫ> *************************************************** */
 
@@ -1272,7 +1272,7 @@ void ApplyConfig()
 	ApplyConsoleTweaks();
 }
 
-void AssertConfigLoaded()
+void ConfigOptAssertLoaded()
 {
 	if (!g_config_ready)
 	{
@@ -1281,7 +1281,7 @@ void AssertConfigLoaded()
 	}
 }
 
-void SaveConfig(int Ask)
+void ConfigOptSave(bool Ask)
 {
 	if (Opt.Policies.DisabledOptions&0x20000) // Bit 17 - Сохранить параметры
 		return;
@@ -1400,7 +1400,7 @@ void LanguageSettings()
 	delete LangMenu; //???? BUGBUG
 }
 
-int GetConfigIndex(const wchar_t *KeyName)
+int ConfigOptGetIndex(const wchar_t *KeyName)
 {
 	auto Dot = wcsrchr(KeyName, L'.');
 	if (Dot)
@@ -1418,7 +1418,7 @@ int GetConfigIndex(const wchar_t *KeyName)
 	return -1;
 }
 
-bool GetConfigValue(int I, GetConfig& Data)
+bool ConfigOptGetValue(int I, GetConfig& Data)
 {
 	if (I >= 0 && I < (int)ARRAYSIZE(CFG))
 	{
