@@ -477,7 +477,7 @@ bool ConfigOptGetValue(int I, GetConfig& Data)
 	return false;
 }
 
-bool SetConfigInteger(int I, DWORD Value)
+bool ConfigOptSetInteger(int I, DWORD Value)
 {
 	if (I >= 0 && I < (int)ARRAYSIZE(CFG))
 	{
@@ -493,7 +493,7 @@ bool SetConfigInteger(int I, DWORD Value)
 	return false;
 }
 
-bool SetConfigString(int I, const wchar_t *Value)
+bool ConfigOptSetString(int I, const wchar_t *Value)
 {
 	if (I >= 0 && I < (int)ARRAYSIZE(CFG) && CFG[I].ValType == REG_SZ && Value)
 	{
@@ -503,7 +503,7 @@ bool SetConfigString(int I, const wchar_t *Value)
 	return false;
 }
 
-bool SetConfigBinary(int I, const void *Data, DWORD Size)
+bool ConfigOptSetBinary(int I, const void *Data, DWORD Size)
 {
 	if (I >= 0 && I < (int)ARRAYSIZE(CFG) && CFG[I].ValType == REG_BINARY && Data)
 	{
@@ -531,9 +531,9 @@ static void ConfigOptFromCmdLine()
 				switch (cfg.Type)
 				{
 					default:
-						if (!StrCmpI(pVal, L"false"))        SetConfigInteger(Index, 0);
-						else if (!StrCmpI(pVal, L"true"))    SetConfigInteger(Index, 1);
-						else if (!StrCmpI(pVal, L"other"))   SetConfigInteger(Index, 2);
+						if (!StrCmpI(pVal, L"false"))        ConfigOptSetInteger(Index, 0);
+						else if (!StrCmpI(pVal, L"true"))    ConfigOptSetInteger(Index, 1);
+						else if (!StrCmpI(pVal, L"other"))   ConfigOptSetInteger(Index, 2);
 						else {
 							static auto Formats = { L"%d%lc", L"0x%x%lc", L"0X%x%lc" };
 							for (auto Fmt: Formats)
@@ -541,7 +541,7 @@ static void ConfigOptFromCmdLine()
 								int Int; wchar_t wc;
 								if (1 == swscanf(pVal, Fmt, &Int, &wc))
 								{
-									SetConfigInteger(Index, Int);
+									ConfigOptSetInteger(Index, Int);
 									break;
 								}
 							}
@@ -549,7 +549,7 @@ static void ConfigOptFromCmdLine()
 						break;
 
 					case REG_SZ:
-						SetConfigString(Index, pVal);
+						ConfigOptSetString(Index, pVal);
 						break;
 
 					case REG_BINARY:

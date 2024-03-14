@@ -2321,11 +2321,11 @@ static bool _SetConfig(int Index, const FarMacroValue *Value)
 	switch (Value->Type)
 	{
 		case FMVT_DOUBLE:
-			return SetConfigInteger(Index, static_cast<DWORD>(Value->Double));
+			return ConfigOptSetInteger(Index, static_cast<DWORD>(Value->Double));
 		case FMVT_STRING:
-			return SetConfigString(Index, Value->String);
+			return ConfigOptSetString(Index, Value->String);
 		case FMVT_BINARY:
-			return SetConfigBinary(Index, Value->Binary.Data, Value->Binary.Size);
+			return ConfigOptSetBinary(Index, Value->Binary.Data, Value->Binary.Size);
 		default:
 			return false;
 	}
