@@ -50,6 +50,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "palette.hpp"
 #include "strmix.hpp"
 #include "console.hpp"
+#include "ConfigOpt.hpp"
 #include "vtshell.h"
 
 BOOL WINAPI CtrlHandler(DWORD CtrlType);

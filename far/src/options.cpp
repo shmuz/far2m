@@ -59,6 +59,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "strmix.hpp"
 #include "interf.hpp"
 #include "codepage.hpp"
+#include "ConfigOpt.hpp"
 
 enum enumMenus
 {

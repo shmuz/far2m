@@ -75,6 +75,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "dirmix.hpp"
 #include "console.hpp"
 #include "usermenu.hpp"
+#include "ConfigOpt.hpp"
 
 int Log(const char* Format, ...)
 {

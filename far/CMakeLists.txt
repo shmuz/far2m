@@ -99,6 +99,8 @@ src/cfg/config.cpp
 src/cfg/ConfigRW.cpp
 src/cfg/HotkeyLetterDialog.cpp
 src/cfg/language.cpp
+src/cfg/AllXLats.cpp
+src/cfg/ConfigOpt.cpp
 
 src/hist/history.cpp
 src/hist/poscache.cpp

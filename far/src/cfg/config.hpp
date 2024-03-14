@@ -592,37 +592,8 @@ void SetDizConfig();
 void ViewerConfig(ViewerOptions &ViOpt,bool Local=false);
 void EditorConfig(EditorOptions &EdOpt,bool Local=false);
 void NotificationsConfig(NotificationsOptions &NotifOpt);
-void ConfigOptLoad();
 void ApplyConfig();
-void ConfigOptAssertLoaded();
-void ConfigOptSave(bool Ask);
 void SetFolderInfoFiles();
 void InfoPanelSettings();
 void AutoCompleteSettings();
 void LanguageSettings();
-
-#define REG_BOOLEAN 0x100
-#define REG_3STATE  0x101
-
-struct GetConfig {
-	int IsSave;
-	DWORD Type;
-	FARString Key;
-	FARString Name;
-
-	DWORD dwDefault;
-	DWORD dwValue;
-
-	FARString strDefault;
-	FARString strValue;
-
-	const void *binDefault;
-	const void *binData;
-	DWORD binSize;
-};
-
-int  ConfigOptGetIndex(const wchar_t *wKeyName);
-bool ConfigOptGetValue(int Index, GetConfig& Data);
-bool SetConfigInteger(int Index, DWORD Value);
-bool SetConfigString(int Index, const wchar_t *Value);
-bool SetConfigBinary(int Index, const void *Data, DWORD Size);

@@ -52,7 +52,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "scrbuf.hpp"
 #include "interf.hpp"
 #include "syslog.hpp"
-#include "config.hpp"
+#include "ConfigOpt.hpp"
 #include "usermenu.hpp"
 #include "datetime.hpp"
 #include "pathmix.hpp"

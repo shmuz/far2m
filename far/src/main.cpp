@@ -72,6 +72,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "InterThreadCall.hpp"
 #include "SafeMMap.hpp"
 #include "ConfigRW.hpp"
+#include "ConfigOpt.hpp"
 
 #ifdef DIRECT_RT
 int DirectRT=0;
