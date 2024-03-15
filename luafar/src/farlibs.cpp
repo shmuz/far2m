@@ -8,6 +8,8 @@ extern "C"
 #include <lua.h>
 #include <lauxlib.h>
 
+extern int traceback (lua_State *L);
+
 int far_InMyConfig(lua_State *L)
 {
 	const char *subpath = luaL_optstring(L, 1, NULL);
@@ -87,6 +89,25 @@ int far_SudoClientRegion(lua_State *L)
 	}
 	lua_setmetatable(L, -2);
 	return 1;
+}
+
+int far_SudoCRCall(lua_State *L) // sudo client region call
+{
+	luaL_checktype(L, 1, LUA_TFUNCTION);
+
+	const int TRACE_POS = 1;
+	lua_pushcfunction(L, traceback);
+	lua_insert(L, TRACE_POS);
+
+	SudoClientRegion scr;
+	if ( !lua_pcall(L, lua_gettop(L)-2, LUA_MULTRET, TRACE_POS) ) {
+		lua_pushboolean(L, 1);
+		lua_replace(L, TRACE_POS);
+		return lua_gettop(L);
+	}
+	lua_pushboolean(L, 0);
+	lua_pushvalue(L, -2);
+	return 2;
 }
 
 } // extern "C"

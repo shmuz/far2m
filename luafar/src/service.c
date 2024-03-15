@@ -5667,6 +5667,7 @@ static const luaL_Reg far_funcs[] = {
 	PAIR( far, InMyConfig),
 	PAIR( far, InMyTemp),
 	PAIR( far, SudoClientRegion),
+	PAIR( far, SudoCRCall),
 	PAIR( far, InputBox),
 	PAIR( far, InputRecordToKey),
 	PAIR( far, InputRecordToName),

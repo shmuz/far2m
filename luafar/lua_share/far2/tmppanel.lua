@@ -795,11 +795,14 @@ end
 
 
 function Panel:GetFindData (Handle, OpMode)
---### far.Show("GetFindData")
-  self:RemoveDuplicates()
-  local types = panel.GetColumnTypes (Handle)
-  local PanelItems = self:UpdateItems (IsOwnersDisplayed (types), IsLinksDisplayed (types), IsGroupsDisplayed (types))
-  return PanelItems
+  local OK, Items = far.SudoCRCall(
+    function()
+      self:RemoveDuplicates()
+      local types = panel.GetColumnTypes (Handle)
+      return self:UpdateItems (IsOwnersDisplayed (types), IsLinksDisplayed (types), IsGroupsDisplayed (types))
+    end)
+  if OK then return Items end
+  far.Message(Items, M.MError, nil, "wl")
 end
 
 
