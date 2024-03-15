@@ -66,7 +66,14 @@ static int SudoClientRegion_tostring (lua_State *L)
 	return 1;
 }
 
-int far_NewSudoClientRegion(lua_State *L)
+static const luaL_Reg SudoClientRegion_methods[] = {
+	{ "Close",        SudoClientRegion_Free },
+	{ "__gc",         SudoClientRegion_Free },
+	{ "__tostring",   SudoClientRegion_tostring },
+	{ NULL, NULL },
+};
+
+int far_SudoClientRegion(lua_State *L)
 {
 	SudoClientRegion **scr = (SudoClientRegion**) lua_newuserdata(L, sizeof(SudoClientRegion*));
 	*scr = new SudoClientRegion();
@@ -74,18 +81,12 @@ int far_NewSudoClientRegion(lua_State *L)
 	if (lua_isnil(L, -1)) {
 		lua_pop(L, 1);
 		luaL_newmetatable(L, SudoClientRegionType);
-		lua_pushcfunction(L, SudoClientRegion_Free);
-		lua_setfield(L, -2, "__gc");
-		lua_pushcfunction(L, SudoClientRegion_tostring);
-		lua_setfield(L, -2, "__tostring");
+		lua_pushvalue(L, -1);
+		lua_setfield(L, -2, "__index");
+		luaL_register(L, NULL, SudoClientRegion_methods);
 	}
 	lua_setmetatable(L, -2);
 	return 1;
-}
-
-int far_DeleteSudoClientRegion(lua_State *L)
-{
-	return SudoClientRegion_Free(L);
 }
 
 } // extern "C"
