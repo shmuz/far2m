@@ -770,6 +770,7 @@ int _cdecl main(int argc, char *argv[])
 	}
 
 	unsetenv("FARSETTINGS"); // don't inherit from parent process in any case
+	unsetenv("SUDO_ASKPASS"); // +
 	for (int i = 1; i + 1 < argc; ++i) {
 		if (!strcasecmp(argv[i],"-u") || !strcasecmp(argv[i],"/u")) {
 			++i;
