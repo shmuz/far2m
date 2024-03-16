@@ -331,10 +331,15 @@ int far_GetNumberOfLinks (lua_State *L)
 
 int far_DetectCodePage(lua_State *L)
 {
+	int codepage;
 	struct DetectCodePageInfo Info;
 	Info.StructSize = sizeof(Info);
 	Info.FileName = check_utf8_string(L, 1, NULL);
-	lua_pushinteger(L, FSF.DetectCodePage(&Info));
+	codepage = FSF.DetectCodePage(&Info);
+	if (codepage)
+		lua_pushinteger(L, codepage);
+	else
+		lua_pushnil(L);
 	return 1;
 }
 
