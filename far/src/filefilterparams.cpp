@@ -687,6 +687,7 @@ LONG_PTR WINAPI FileFilterConfigDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_P
 	switch (Msg) {
 		case DN_INITDIALOG: {
 			FilterDlgRelativeDateItemsUpdate(hDlg, false);
+			SendDlgMessage(hDlg, DM_SETTEXTLENGTH, ID_HER_MARKEDIT, HIGHLIGHT_MAX_MARK_LENGTH + 8);
 			return TRUE;
 		}
 
@@ -846,6 +847,7 @@ LONG_PTR WINAPI FileFilterConfigDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_P
 				}
 
 //				HighlightDlgUpdateUserControl(fphlstate);
+				SendDlgMessage(hDlg, DM_REDRAW, 0, 0);
 				return TRUE;
 			}
 
@@ -864,6 +866,8 @@ LONG_PTR WINAPI FileFilterConfigDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_P
 				}
 
 //				HighlightDlgUpdateUserControl(fphlstate);
+				SendDlgMessage(hDlg, DM_REDRAW, 0, 0);
+
 				return TRUE;
 			}
 
