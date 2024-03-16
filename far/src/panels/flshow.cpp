@@ -52,7 +52,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 extern PanelViewSettings ViewSettingsArray[];
 
-static wchar_t OutCharacter[8]={0,0,0,0,0,0,0,0};
+static wchar_t OutCharacter[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 static FarLangMsg __FormatEndSelectedPhrase(int Count)
 {
@@ -1064,21 +1064,24 @@ void FileList::ShowList(int ShowStatus,int StartColumn)
 								Width-=2;
 							}
 
-							if (ListData[ListPos]->ColorsPtr->MarkChar && Opt.Highlight && Width>1)
-							{
-								Width--;
-								OutCharacter[0]=(wchar_t)(ListData[ListPos]->ColorsPtr->MarkChar & 0xffff);
-								int OldColor=GetColor();
+							{ // Draw mark str
+								const HighlightDataColor *const hl = ListData[ListPos]->ColorsPtr;
+								if ( Opt.Highlight && Width > 2 && hl->MarkLen ) {
+									int OldColor=GetColor();
+									size_t	ng = Width, outlen;
 
-								if (!ShowStatus)
-									SetShowColor(ListPos,HIGHLIGHTCOLORTYPE_MARKCHAR);
+									outlen = StrSizeOfCells(hl->Mark, hl->MarkLen, ng, false);
+									Width -= ng;
 
-								Text(OutCharacter);
-								SetColor(OldColor);
+									if (!ShowStatus)
+										SetShowColor(ListPos,HIGHLIGHTCOLORTYPE_MARKCHAR);
+
+									Text(hl->Mark, outlen);
+									SetColor(OldColor);
+								}
 							}
 
 							const wchar_t *NamePtr = ListData[ListPos]->strName;
-
 							const wchar_t *NameCopy = NamePtr;
 
 							if (ViewFlags & COLUMN_NAMEONLY)

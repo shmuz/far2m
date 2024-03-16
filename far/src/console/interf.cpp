@@ -498,6 +498,14 @@ void Text(int X, int Y, const FarTrueColorForeAndBack *Color, const WCHAR *Str)
 	Text(Str);
 }
 
+void Text(int X, int Y, int Color, const WCHAR *Str, size_t Length)
+{
+	CurColor = FarColorToReal(Color);
+	CurX = X;
+	CurY = Y;
+	Text(Str, Length);
+}
+
 void Text(int X, int Y, int Color, const WCHAR *Str)
 {
 	CurColor = FarColorToReal(Color);

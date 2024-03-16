@@ -40,8 +40,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "udlist.hpp"
 #include "KeyFileHelper.h"
 
-#define EXCLUDEMASKSEPARATOR (L'|')
-
 // Protect against cases like a=<a> or a=<b>, b=<a>, etc.
 // It also restricts valid nesting depth but the limit is high enough to cover all practical cases.
 // This method was chosen due to its simplicity.

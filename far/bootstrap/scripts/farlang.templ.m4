@@ -11121,25 +11121,25 @@ l:
 "Editar resaltado de archivos"
 "Редагування розмальовки файлів"
 
-HighlightMarkChar
-"Оп&циональный символ пометки,"
-"Optional markin&g character,"
-"Volitelný &znak pro označení určených souborů,"
-"Optionale Markierun&g mit Zeichen,"
-"Megadható &jelölő karakter"
-"Opcjonalny znak &wyróżniający zaznaczone pliki,"
-"Ca&racter opcional para marcar archivos específicos"
-"Оп&ціональний символ позначки,"
+HighlightMarking
+"Ма&ркировка"
+"Markin&g"
+"O&značení"
+"Markierun&g"
+"&Jelzés"
+"Cecho&wanie"
+"Ma&rcado"
+"Ма&ркування"
 
 HighlightTransparentMarkChar
-"прозра&чный"
-"tra&nsparent"
-"průh&ledný"
-"tra&nsparent"
+"Прозра&чный"
+"Tra&nsparent"
+"Průh&ledný"
+"Tra&nsparent"
 "át&látszó"
-"prze&zroczyste"
-"tra&nsparente"
-"проз&орий"
+"Prze&zroczyste"
+"Tra&nsparente"
+"Проз&орий"
 
 HighlightColors
 " Цвета файлов (\"чёрный на чёрном\" - цвет по умолчанию) "
@@ -11249,7 +11249,7 @@ HighlightExample2
 "║ fájlneve.kit│"
 "║ nazwa.roz   │"
 "║ nombre.ext  │"
-"║filename.ext │"
+"║ filename.ext│"
 
 HighlightContinueProcessing
 "Продолжать &обработку"
@@ -22601,6 +22601,16 @@ FileFilterAttrSparse
 "S&parse"
 "Escaso"
 "&Розріджений"
+
+FileFilterAttrHardLinks
+"Болee одной жёсткой ссылки"
+"Has more than one hard &link"
+"Má více než jeden pevný link"
+"Mehr als ein harder Link"
+upd:"Has more than one hardlink"
+"Ma &więcej niż jeden link"
+"Tiene mas de un enlace duro"
+"Понад одне жорстке посилання"
 
 FileFilterAttrT
 "&Временный"

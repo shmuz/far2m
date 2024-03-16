@@ -37,6 +37,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <WinCompat.h>
 
+#define EXCLUDEMASKSEPARATOR (L'|')
+
 class BaseFileMask : private NonCopyable
 {
 	protected:
