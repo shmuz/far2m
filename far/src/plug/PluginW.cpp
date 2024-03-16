@@ -515,7 +515,7 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 		StandardFunctions.BackgroundTask = farBackgroundTaskW;
 		StandardFunctions.StrCellsCount = farStrCellsCount;
 		StandardFunctions.StrSizeOfCells = farStrSizeOfCells;
-		StandardFunctions.GetFileEncoding = farGetFileEncoding;
+		StandardFunctions.DetectCodePage = farDetectCodePage;
 		StandardFunctions.FarNameToInputRecord = FarNameToInputRecord;
 		StandardFunctions.GetFileGroup = farGetFileGroup;
 		StandardFunctions.FormatFileSize = farFormatFileSize;

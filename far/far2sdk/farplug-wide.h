@@ -2098,9 +2098,13 @@ typedef int (WINAPI *FARAPICOLORDIALOG)(
 	DWORD Flags
 );
 
-typedef int (WINAPI *FARAPIGETFILEENCODING)(
-	const wchar_t *FileName
-);
+struct DetectCodePageInfo
+{
+	size_t StructSize;
+	const wchar_t* FileName;
+};
+
+typedef int (WINAPI *FARSTDDETECTCODEPAGE)(struct DetectCodePageInfo* Info);
 
 // <C&C++>
 typedef int (WINAPIV *FARSTDSNPRINTF)(wchar_t *Buffer,size_t Sizebuf,const wchar_t *Format,...);
@@ -2390,7 +2394,7 @@ typedef struct FarStandardFunctions
 	FARSTRSIZEOFCELLS          StrSizeOfCells;
 	void*                      RESERVED[2];
 
-	FARAPIGETFILEENCODING      GetFileEncoding;
+	FARSTDDETECTCODEPAGE       DetectCodePage;
 	FARSTDKEYNAMETOINPUTRECORD FarNameToInputRecord;
 	FARSTDGETFILEGROUP         GetFileGroup;
 	FARFORMATFILESIZE          FormatFileSize;

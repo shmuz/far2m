@@ -160,4 +160,4 @@ DWORD WINAPI farGetCurrentDirectory(DWORD Size,wchar_t* Buffer);
 
 int WINAPI farCallFar(int CheckCode, FarMacroCall* Data);
 
-int WINAPI farGetFileEncoding(const wchar_t *FileName);
+int WINAPI farDetectCodePage(DetectCodePageInfo *Info);

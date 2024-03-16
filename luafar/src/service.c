@@ -329,16 +329,12 @@ int far_GetNumberOfLinks (lua_State *L)
 	return lua_pushinteger (L, num), 1;
 }
 
-int far_GetFileEncoding (lua_State *L)
+int far_DetectCodePage(lua_State *L)
 {
-	int codepage;
-	if (FSF.StructSize <= offsetof(struct FarStandardFunctions, GetFileEncoding))
-		luaL_error(L, "This version of FAR doesn't support FSF.GetFileEncoding()");
-	codepage = FSF.GetFileEncoding(check_utf8_string(L,1,NULL));
-	if (codepage)
-		lua_pushinteger(L, codepage);
-	else
-		lua_pushnil(L);
+	struct DetectCodePageInfo Info;
+	Info.StructSize = sizeof(Info);
+	Info.FileName = check_utf8_string(L, 1, NULL);
+	lua_pushinteger(L, FSF.DetectCodePage(&Info));
 	return 1;
 }
 
@@ -5636,6 +5632,7 @@ static const luaL_Reg far_funcs[] = {
 	PAIR( far, CopyToClipboard),
 	PAIR( far, CPluginStartupInfo),
 	PAIR( far, CreateFileFilter),
+	PAIR( far, DetectCodePage),
 	PAIR( far, DialogFree),
 	PAIR( far, DialogInit),
 	PAIR( far, DialogRun),
@@ -5651,7 +5648,6 @@ static const luaL_Reg far_funcs[] = {
 	PAIR( far, GetCurrentDirectory),
 	PAIR( far, GetDirList),
 	PAIR( far, GetDlgItem),
-	PAIR( far, GetFileEncoding),
 	PAIR( far, GetFileGroup),
 	PAIR( far, GetFileOwner),
 	PAIR( far, GetMsg),

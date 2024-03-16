@@ -6,7 +6,7 @@ local function test(dir)
         local ref = item.FileName:match("^%d+")
         if ref and ref ~= "65000" then -- exclude UTF-7 from test
           total = total + 1
-          local cp = far.GetFileEncoding(fullpath)
+          local cp = far.DetectCodePage(fullpath)
           if cp == tonumber(ref) then pass = pass+1 end
         end
       end

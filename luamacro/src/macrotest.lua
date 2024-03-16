@@ -2196,7 +2196,7 @@ function MT.test_far_regex(printfunc, verbose)
   assert_eq (numerr, 0)
 end
 
-function MT.test_far_GetFileEncoding()
+function MT.test_far_DetectCodePage()
   local test = require "far2.test.codepage.test_codepage"
   local dir = os.getenv("FARHOME").."/Plugins/luafar/lua_share/far2/test/codepage"
   local pass, total = test(dir)
@@ -2285,7 +2285,7 @@ function MT.test_all()
   MT.test_coroutine()
   MT.test_UserDefinedList()
   MT.test_far_regex( --[[far.Log, true]] ) -- external test files
-  MT.test_far_GetFileEncoding() -- external
+  MT.test_far_DetectCodePage() -- external
   actl.RedrawAll()
 end
 

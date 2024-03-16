@@ -2802,12 +2802,12 @@ int WINAPI farColorDialog(INT_PTR PluginNumber, ColorDialogData *Data, DWORD Fla
 	return InterThreadCall<int, 0>(std::bind(farColorDialogSynched, PluginNumber, Data, Flags));
 }
 
-int WINAPI farGetFileEncoding(const wchar_t *FileName)
+int WINAPI farDetectCodePage(DetectCodePageInfo *Info)
 {
-	if (FileName && *FileName)
+	if (Info && Info->FileName && *Info->FileName)
 	{
 		UINT nCodePage;
-		return GetFileFormat2(FileName,nCodePage,nullptr,true,false) ? (int)nCodePage : 0;
+		return GetFileFormat2(Info->FileName,nCodePage,nullptr,true,false) ? (int)nCodePage : 0;
 	}
 	return 0;
 }
