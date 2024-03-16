@@ -57,6 +57,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "console.hpp"
 #include "InterThreadCall.hpp"
 #include "DlgGuid.hpp"
+#include "vtshell.h"
 
 // #define DEBUG_MANAGER
 #ifdef DEBUG_MANAGER
@@ -627,17 +628,24 @@ void Manager::ProcessMainLoop()
 	}
 }
 
-static bool ConfirmExit()
+static bool ConfirmExit(size_t vts_cnt)
 {
 	int r;
+	ExMessager m(Msg::Quit);
+	m.Add(Msg::AskQuit);
+	if (vts_cnt) {
+		m.AddFormat(Msg::AskQuitVTS, (unsigned int)vts_cnt);
+	}
+	m.Add(Msg::Yes);
+	m.Add(Msg::No);
 	if (WINPORT(ConsoleBackgroundMode)(FALSE)) {
-		r = Message(0,3,&FarAskQuitId,Msg::Quit,Msg::AskQuit,Msg::Yes,Msg::No,Msg::Background);
+		m.Add(Msg::Background);
+		r = m.Show(vts_cnt ? MSG_WARNING : 0, 3);
 		if (r == 2) {
 			WINPORT(ConsoleBackgroundMode)(TRUE);
 		}
-
 	} else {
-		r = Message(0,2,&FarAskQuitId,Msg::Quit,Msg::AskQuit,Msg::Yes,Msg::No);
+		r = m.Show(vts_cnt ? MSG_WARNING : 0, 2);
 	}
 
 	return r == 0;
@@ -651,7 +659,17 @@ void Manager::ExitMainLoop(bool Ask, int ExitCode)
 		CloseFARMenu=TRUE;
 	}
 
-	if (!Ask || ((!Opt.Confirm.ExitEffective() || ConfirmExit()) && CtrlObject->Plugins.MayExitFar()))
+	bool Exiting = true;
+	if (Ask)
+	{
+		size_t vts_cnt = VTShell_Count();
+		if (Opt.Confirm.ExitEffective() || vts_cnt)
+			Exiting = ConfirmExit(vts_cnt);
+		if (Exiting)
+			Exiting = CtrlObject->Plugins.MayExitFar();
+	}
+
+	if (Exiting)
 	{
 		/* $ 29.12.2000 IS
 		   + Проверяем, сохранены ли все измененные файлы. Если нет, то не выходим

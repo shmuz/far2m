@@ -344,6 +344,16 @@ AskQuit
 "Desea salir de FAR?"
 "Ви хочете завершити роботу в FAR?"
 
+AskQuitVTS
+"ЭТО ТАК ЖЕ ЗАВЕРШИТ ИСПОЛНЕНИЕ %u ФОНОВЫХ КОМАНД"
+"THIS WILL ALSO TERMINATE %u BACKGROUND COMMAND(S)"
+upd:"THIS WILL ALSO TERMINATE %u BACKGROUND COMMAND(S)"
+upd:"THIS WILL ALSO TERMINATE %u BACKGROUND COMMAND(S)"
+upd:"THIS WILL ALSO TERMINATE %u BACKGROUND COMMAND(S)"
+upd:"THIS WILL ALSO TERMINATE %u BACKGROUND COMMAND(S)"
+upd:"THIS WILL ALSO TERMINATE %u BACKGROUND COMMAND(S)"
+"ЦЕ ТАКОЖ ЗАВЕРШИТЬ ВИКОНАННЯ %u ФОНОВИХ КОМАНД"
+
 Background
 "&В фон"
 "&Background"
