@@ -2196,6 +2196,15 @@ function MT.test_far_regex(printfunc, verbose)
   assert_eq (numerr, 0)
 end
 
+function MT.test_far_GetFileEncoding()
+  local test = require "far2.test.codepage.test_codepage"
+  local dir = os.getenv("FARHOME").."/Plugins/luafar/lua_share/far2/test/codepage"
+  local pass, total = test(dir)
+  assert_num(pass)
+  assert_num(total)
+  assert(pass > 0 and pass == total)
+end
+
 function MT.test_UserDefinedList()
   local ADDASTERISK      = 0x001
   local PACKASTERISKS    = 0x002
@@ -2276,6 +2285,7 @@ function MT.test_all()
   MT.test_coroutine()
   MT.test_UserDefinedList()
   MT.test_far_regex( --[[far.Log, true]] ) -- external test files
+  MT.test_far_GetFileEncoding() -- external
   actl.RedrawAll()
 end
 
