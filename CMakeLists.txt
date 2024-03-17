@@ -462,6 +462,7 @@ install(DIRECTORY "${INSTALL_DIR}/" DESTINATION "share/far2m" USE_SOURCE_PERMISS
     PATTERN "*.broker" EXCLUDE
     PATTERN "python/plug/python" EXCLUDE
     PATTERN "luafar/luafar.so" EXCLUDE
+    PATTERN "lua_share/far2/test" EXCLUDE
     PATTERN "*")
 
 # setup some symlinks
