@@ -201,14 +201,25 @@ void *wxClipboardBackend::OnClipboardSetData(UINT format, void *data)
 	if (!g_wx_data_to_clipboard) {
 		g_wx_data_to_clipboard = new wxDataObjectComposite;
 	}
+
 	if (format==CF_UNICODETEXT) {
-		g_wx_data_to_clipboard->Add(new wxTextDataObjectTweaked(wxString((const wchar_t *)data)));
+		wxCustomDataObject *cdo = new wxCustomDataObject(wxT("text/plain;charset=utf-8"));
+		wxString wx_str((const wchar_t *)data);
+		const std::string &tmp = wx_str.ToStdString();
+		cdo->SetData(tmp.size() + 1, tmp.c_str()); // including ending NUL char
+		g_wx_data_to_clipboard->Add(cdo);
+
+		g_wx_data_to_clipboard->Add(new wxTextDataObjectTweaked(wx_str));
 
 #if (CLIPBOARD_HACK)
 		CopyToPasteboard((const wchar_t *)data);
 #endif
 
 	} else if (format==CF_TEXT) {
+		wxCustomDataObject *cdo = new wxCustomDataObject(wxT("text/plain;charset=utf-8"));
+		cdo->SetData(strlen((const char *)data) + 1, data); // including ending NUL char
+		g_wx_data_to_clipboard->Add(cdo);
+
 		g_wx_data_to_clipboard->Add(new wxTextDataObjectTweaked(wxString::FromUTF8((const char *)data)));
 #if (CLIPBOARD_HACK)
 		CopyToPasteboard((const char *)data);
@@ -239,11 +250,33 @@ void *wxClipboardBackend::OnClipboardGetData(UINT format)
 
 	PVOID p = nullptr;		
 	if (format==CF_UNICODETEXT || format==CF_TEXT) {
-		wxTextDataObject data;
-		if (!wxTheClipboard->GetData( data ))
-			return nullptr;
 
-		const wxString &wx_str = data.GetText();
+		wxString wx_str;
+		bool data_found = false;
+
+		wxTextDataObject data;
+		if (wxTheClipboard->GetData( data )) {
+			fprintf(stderr, "OnClipboardGetData(%u) - found wx-compatible text format\n", format);
+			wx_str = data.GetText();
+			data_found = true;
+		}
+
+		wxCustomDataObject cdo_utf8(wxT("text/plain;charset=utf-8"));
+		if (!data_found && wxTheClipboard->GetData(cdo_utf8)) {
+			const void* cdo_data = cdo_utf8.GetData();
+			size_t cdo_size = cdo_utf8.GetSize();
+			if (cdo_size > 0) {
+				fprintf(stderr, "OnClipboardGetData(%u) - found MIME-compatible text format\n", format);
+				const char *str = static_cast<const char*>(cdo_data);
+				wx_str = wxString::FromUTF8(str, strnlen(str, cdo_size));
+				data_found = true;
+			}
+		}
+
+		if (!data_found) {
+			fprintf(stderr, "OnClipboardGetData(%u) - no supported text format found\n", format);
+			return nullptr;
+		}
 
 		if (format == CF_UNICODETEXT) {
 			const auto &wc = wx_str.wc_str();
