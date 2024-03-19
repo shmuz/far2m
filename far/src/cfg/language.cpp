@@ -196,8 +196,11 @@ int Select(int HelpLanguage,VMenu **MenuPtr)
 		strDest=&Opt.strLanguage;
 	}
 
-	MenuItemEx LangMenuItem;
-	LangMenuItem.Clear();
+	struct Less {
+		bool operator()(const FARString& A, const FARString& B) const { return StrCmpI(A,B) < 0; }
+	};
+	std::map<FARString, FARString, Less> Map;
+
 	VMenu *LangMenu=new VMenu(Title,nullptr,0,ScrY-4);
 	*MenuPtr=LangMenu;
 	LangMenu->SetFlags(VMENU_WRAPMODE);
@@ -225,22 +228,26 @@ int Select(int HelpLanguage,VMenu **MenuPtr)
 			if (!HelpLanguage || (!GetLangParam(LangFile,L"PluginContents",&strEntryName,nullptr,nCodePage) &&
 			                      !GetLangParam(LangFile,L"DocumentContents",&strEntryName,nullptr,nCodePage)))
 			{
-				LangMenuItem.strName.Format(L"%.40ls", !strLangDescr.IsEmpty() ? strLangDescr.CPtr():strLangName.CPtr());
-
 				/* $ 01.08.2001 SVS
 				   Не допускаем дубликатов!
 				   Если в каталог с ФАРом положить еще один HLF с одноименным
 				   языком, то... фигня получается при выборе языка.
 				*/
-				if (LangMenu->FindItem(0,LangMenuItem.strName,LIFIND_EXACTMATCH) == -1)
-				{
-					LangMenuItem.SetSelect(!StrCmpI(*strDest,strLangName));
-					LangMenu->SetUserData(strLangName.CPtr(),0,LangMenu->AddItem(&LangMenuItem));
-				}
+				FARString strItemText;
+				strItemText.Format(L"%.40ls", !strLangDescr.IsEmpty() ? strLangDescr.CPtr():strLangName.CPtr());
+				Map[strItemText] = strLangName;
 			}
 		}
 
 		fclose(LangFile);
+	}
+
+	MenuItemEx LangMenuItem;
+	for (auto it = Map.cbegin(); it != Map.cend(); ++it)
+	{
+		LangMenuItem.strName = it->first;
+		LangMenuItem.SetSelect(!StrCmpI(*strDest, it->second));
+		LangMenu->SetUserData(it->second.CPtr(), 0, LangMenu->AddItem(&LangMenuItem));
 	}
 
 	LangMenu->AssignHighlights(FALSE);
