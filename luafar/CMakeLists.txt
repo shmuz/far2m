@@ -25,6 +25,7 @@ set(SOURCES
   src/mytimer.c
   src/service.c
   src/slnunico.c
+  src/sysutils.c
   src/ustring.c
   src/util.c
   src/win.c

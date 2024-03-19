@@ -29,6 +29,7 @@ extern int  luaopen_unicode (lua_State *L);
 extern int  luaopen_usercontrol (lua_State *L);
 extern int  luaopen_utf8 (lua_State *L);
 extern int  luaopen_win (lua_State *L);
+extern int  luaopen_sysutils (lua_State *L);
 
 extern void PackMacroValues(lua_State* L, size_t Count, const struct FarMacroValue* Values);
 extern int  pcall_msg (lua_State* L, int narg, int nret);
@@ -5828,7 +5829,8 @@ void InitLuaState (lua_State *L, TPluginData *aPlugData, lua_CFunction aOpenLibs
 		luaopen_bit64,
 		luaopen_unicode,
 		luaopen_utf8,
-		luaopen_win
+		luaopen_win,
+		luaopen_sysutils,
 	};
 
 	// open Lua libraries
