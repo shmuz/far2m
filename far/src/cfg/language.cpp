@@ -233,9 +233,12 @@ int Select(int HelpLanguage,VMenu **MenuPtr)
 				   Если в каталог с ФАРом положить еще один HLF с одноименным
 				   языком, то... фигня получается при выборе языка.
 				*/
-				FARString strItemText;
-				strItemText.Format(L"%.40ls", !strLangDescr.IsEmpty() ? strLangDescr.CPtr():strLangName.CPtr());
-				Map[strItemText] = strLangName;
+				if (0 == Map.count(strLangName))
+				{
+					FARString strItemText;
+					strItemText.Format(L"%.40ls", !strLangDescr.IsEmpty() ? strLangDescr.CPtr():strLangName.CPtr());
+					Map[strLangName] = strItemText;
+				}
 			}
 		}
 
@@ -245,9 +248,9 @@ int Select(int HelpLanguage,VMenu **MenuPtr)
 	MenuItemEx LangMenuItem;
 	for (auto it = Map.cbegin(); it != Map.cend(); ++it)
 	{
-		LangMenuItem.strName = it->first;
-		LangMenuItem.SetSelect(!StrCmpI(*strDest, it->second));
-		LangMenu->SetUserData(it->second.CPtr(), 0, LangMenu->AddItem(&LangMenuItem));
+		LangMenuItem.strName = it->second;
+		LangMenuItem.SetSelect(!StrCmpI(*strDest, it->first));
+		LangMenu->SetUserData(it->first.CPtr(), 0, LangMenu->AddItem(&LangMenuItem));
 	}
 
 	LangMenu->AssignHighlights(FALSE);
