@@ -30,75 +30,90 @@ void registerFileHandle(lua_State *L, HANDLE handle)
 
 static BOOL GetAccessAndShare(const char* str, DWORD *access, DWORD *share)
 {
-	BOOL ok = TRUE;
+	*share = FILE_SHARE_READ; // default
+
 	const char *p = str;
-	if     (!strcasecmp(p, "r"))  *access = GENERIC_READ;
-	else if(!strcasecmp(p, "w"))  *access = GENERIC_WRITE;
-	else if(!strcasecmp(p, "rw")) *access = GENERIC_READ | GENERIC_WRITE;
+	if      (!strcmp(p, "r" ))  { *access = GENERIC_READ; *share |= FILE_SHARE_WRITE; }
+	else if (!strcmp(p, "w" ))    *access = GENERIC_WRITE;
+	else if (!strcmp(p, "rw"))    *access = GENERIC_READ | GENERIC_WRITE;
 	else
 	{
-		if     (!strncasecmp(p, "r+", 2))  { *access = GENERIC_READ;  p += 2; }
-		else if(!strncasecmp(p, "w+", 2))  { *access = GENERIC_WRITE; p += 2; }
-		else if(!strncasecmp(p, "rw+", 3)) { *access = GENERIC_READ | GENERIC_WRITE; p += 3; }
-		else ok = FALSE;
+		if      (!strncmp(p, "r+",  2))  { *access = GENERIC_READ;  p += 2; }
+		else if (!strncmp(p, "w+",  2))  { *access = GENERIC_WRITE; p += 2; }
+		else if (!strncmp(p, "rw+", 3))  { *access = GENERIC_READ | GENERIC_WRITE; p += 3; }
+		else return FALSE;
 
-		if (ok)
-		{
-			if     (!strcasecmp(p, "co")) *share = FILE_SHARE_READ | FILE_SHARE_WRITE;
-			else if(!strcasecmp(p, "ex")) *share = 0;
-			else if(!strcasecmp(p, "dw")) *share = FILE_SHARE_READ;
-			else if(!strcasecmp(p, "dr")) *share = FILE_SHARE_WRITE;
-			else if(!strcasecmp(p, "dn")) *share = FILE_SHARE_READ | FILE_SHARE_WRITE;
-			else ok = FALSE;
-		}
+		if      (!strcmp(p, "co"))  *share = FILE_SHARE_READ | FILE_SHARE_WRITE; // compatibility mode
+		else if (!strcmp(p, "ex"))  *share = 0;                                  // exclusive access
+		else if (!strcmp(p, "dw"))  *share = FILE_SHARE_READ;                    // deny write
+		else if (!strcmp(p, "dr"))  *share = FILE_SHARE_WRITE;                   // deny read
+		else if (!strcmp(p, "dn"))  *share = FILE_SHARE_READ | FILE_SHARE_WRITE; // deny none
+		else return FALSE;
 	}
-	return ok;
-}
-
-static BOOL DecodeDisposition(const char* str, DWORD *disposition)
-{
-	if      (!strcasecmp(str,"ca") || !strcasecmp(str,"CREATE_ALWAYS"))     *disposition=CREATE_ALWAYS;
-	else if (!strcasecmp(str,"cn") || !strcasecmp(str,"CREATE_NEW"))        *disposition=CREATE_NEW;
-	else if (!strcasecmp(str,"oa") || !strcasecmp(str,"OPEN_ALWAYS"))       *disposition=OPEN_ALWAYS;
-	else if (!strcasecmp(str,"oe") || !strcasecmp(str,"OPEN_EXISTING"))     *disposition=OPEN_EXISTING;
-	else if (!strcasecmp(str,"te") || !strcasecmp(str,"TRUNCATE_EXISTING")) *disposition=TRUNCATE_EXISTING;
-	else return FALSE;
 	return TRUE;
 }
 
-static int _CreateFile(lua_State *L, DWORD access, DWORD share, const char* dflt_disposition)
+static BOOL DecodeDisposition(const char* str, DWORD access, DWORD *disposition)
 {
-	DWORD dispos = OPEN_EXISTING;
-	LPCWSTR fname = check_utf8_string(L,1,NULL);
-
-	if (!lua_isnoneornil(L,2))
-	{
-		const char* p = luaL_checkstring(L,2);
-		if (!GetAccessAndShare(p, &access, &share))
-			luaL_argerror(L, 2, "must be: r|w|rw[+co|ex|dw|dr|dn]");
+	if (*str == 0) {
+		if (access & GENERIC_WRITE)
+			*disposition = CREATE_ALWAYS;
+		else
+			*disposition = OPEN_EXISTING;
 	}
+	else if (!strcmp(str, "ca"))  *disposition = CREATE_ALWAYS;
+	else if (!strcmp(str, "cn"))  *disposition = CREATE_NEW;
+	else if (!strcmp(str, "oa"))  *disposition = OPEN_ALWAYS;
+	else if (!strcmp(str, "oe"))  *disposition = OPEN_EXISTING;
+	else if (!strcmp(str, "te"))  *disposition = TRUNCATE_EXISTING;
+	else return FALSE;
 
-	if (!DecodeDisposition(luaL_optstring(L,3,dflt_disposition), &dispos))
+	return TRUE;
+}
+
+//		HANDLE CreateFileA(
+//		  [in]           LPCSTR                lpFileName,
+//		  [in]           DWORD                 dwDesiredAccess,
+//		  [in]           DWORD                 dwShareMode,
+//		  [in, optional] LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+//		  [in]           DWORD                 dwCreationDisposition,
+//		  [in]           DWORD                 dwFlagsAndAttributes,
+//		  [in, optional] HANDLE                hTemplateFile
+//		);
+
+//		HANDLE WINPORT(CreateFile)(
+//			               LPCWSTR               lpFileName,
+//			               DWORD                 dwDesiredAccess,
+//			               DWORD                 dwShareMode,
+//			               const DWORD*          UnixMode,
+//			               DWORD                 dwCreationDisposition,
+//			               DWORD                 dwFlagsAndAttributes,
+//			               HANDLE                hTemplateFile
+//		);
+
+static int su_OpenFile(lua_State *L)
+{
+	DWORD access=0, share=0, dispos=0;
+
+	const wchar_t *fname = check_utf8_string(L, 1, NULL);
+
+	const char* strAS = luaL_optstring(L, 2, "r");
+	if (!GetAccessAndShare(strAS, &access, &share))
+		luaL_argerror(L, 2, "must be: r|w|rw[+co|ex|dw|dr|dn]");
+
+	const char *strDis = luaL_optstring(L, 3, "");
+	if (!DecodeDisposition(strDis, access, &dispos))
 		luaL_argerror(L, 3, "invalid 'disposition'");
 
-	DWORD attr = DecodeAttributes(luaL_optstring(L,4,""));
+	const char *strAttr = luaL_optstring(L, 4, "");
+	DWORD attr = DecodeAttributes(strAttr);
 
 	HANDLE handle = WINPORT(CreateFile)(fname, access, share, NULL, dispos, attr, NULL);
-	if(handle != INVALID_HANDLE_VALUE)
-		registerFileHandle(L, handle);
-	else
+	if(handle == INVALID_HANDLE_VALUE)
 		return SysErrorReturn(L);
+
+	registerFileHandle(L, handle);
 	return 1;
-}
-
-int su_FileOpen (lua_State *L)
-{
-	return _CreateFile(L, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE, "OPEN_EXISTING");
-}
-
-int su_FileCreate (lua_State *L)
-{
-	return _CreateFile(L, GENERIC_WRITE, FILE_SHARE_READ, "OPEN_ALWAYS");
 }
 
 int su_FileClose (lua_State *L)
@@ -212,8 +227,7 @@ double L64toDouble (unsigned low, unsigned high)
 
 const luaL_Reg su_funcs[] = {
 	// operations on a single file
-	{"FileCreate",        su_FileCreate},        //unicode
-	{"FileOpen",          su_FileOpen},          //unicode
+	{"OpenFile", su_OpenFile},          //unicode
 
 	{NULL, NULL}
 };
