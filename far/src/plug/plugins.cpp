@@ -2262,18 +2262,15 @@ void PluginManager::GetCustomData(FileListItem *ListItem)
 
 bool PluginManager::MayExitFar()
 {
-	bool out = true;
 	for (int i=0; i<PluginsCount; i++)
 	{
 		Plugin *pPlugin = PluginsData[i];
 
 		if (pPlugin->HasMayExitFAR() && !pPlugin->MayExitFAR())
-		{
-			out = false;
-		}
+			return false;
 	}
 
-	return out;
+	return true;
 }
 
 static void OnBackgroundTasksChangedSynched()
