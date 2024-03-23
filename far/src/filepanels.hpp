@@ -104,5 +104,5 @@ class FilePanels:public Frame
 		virtual void Refresh();
 		void GoToFile(const wchar_t *FileName);
 
-		virtual int GetMacroArea();
+		virtual FARMACROAREA GetMacroArea();
 };

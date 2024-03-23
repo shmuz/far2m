@@ -58,7 +58,7 @@ static int LastWrapType = -1;
 QuickView::QuickView():
 	QView(nullptr),
 	Directory(0),
-	PrevMacroArea(-1)
+	PrevMacroArea(MACROAREA_LAST)
 {
 	Type=QVIEW_PANEL;
 	if (LastWrapMode < 0)
@@ -524,7 +524,7 @@ void QuickView::SetMacroArea(int Restore)
 	if (!CtrlObject)
 		return;
 
-	if (PrevMacroArea == -1)
+	if (PrevMacroArea == MACROAREA_LAST)
 		PrevMacroArea = CtrlObject->Macro.GetArea();
 
 	CtrlObject->Macro.SetArea(Restore ? PrevMacroArea:MACROAREA_QVIEWPANEL);

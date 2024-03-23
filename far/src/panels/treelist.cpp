@@ -169,7 +169,7 @@ static struct TreeListCache
 
 
 TreeList::TreeList(int IsPanel):
-	PrevMacroArea(-1),
+	PrevMacroArea(MACROAREA_LAST),
 	ListData(nullptr),
 	TreeCount(0),
 	WorkDir(0),
@@ -2020,7 +2020,7 @@ void TreeList::SetMacroArea(int Restore)
 	if (!CtrlObject)
 		return;
 
-	if (PrevMacroArea == -1)
+	if (PrevMacroArea == MACROAREA_LAST)
 		PrevMacroArea = CtrlObject->Macro.GetArea();
 
 	CtrlObject->Macro.SetArea(Restore ? PrevMacroArea:MACROAREA_TREEPANEL);

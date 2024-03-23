@@ -114,7 +114,7 @@ void FileViewer::Init(const wchar_t *name,int EnableSwitch,int disableHistory, /
 	ViewKeyBar.SetPosition(X1,Y2,X2,Y2);
 	KeyBarVisible = Opt.ViOpt.ShowKeyBar;
 	TitleBarVisible = Opt.ViOpt.ShowTitleBar;
-	int OldMacroArea=CtrlObject->Macro.GetArea();
+	FARMACROAREA OldMacroArea=CtrlObject->Macro.GetArea();
 	MacroArea = MACROAREA_VIEWER;
 	CtrlObject->Macro.SetArea(MACROAREA_VIEWER);
 	View.SetPluginData(PluginData);

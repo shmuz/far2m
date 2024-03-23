@@ -346,7 +346,7 @@ void UserMenu::ProcessUserMenu(bool ChooseMenuType, const FARString &MenuFileNam
 			}
 		}
 
-		int PrevMacroArea = CtrlObject->Macro.GetArea();
+		FARMACROAREA PrevMacroArea = CtrlObject->Macro.GetArea();
 		int _CurrentFrame = FrameManager->GetCurrentFrame()->GetType();
 		CtrlObject->Macro.SetArea(MACROAREA_USERMENU);
 

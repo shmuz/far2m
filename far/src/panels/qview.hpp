@@ -52,7 +52,7 @@ class QuickView:public Panel
 		CriticalSection CS;
 
 		int Directory;
-		int PrevMacroArea;
+		FARMACROAREA PrevMacroArea;
 		uint32_t DirCount,FileCount,ClusterSize;
 		uint64_t FileSize,PhysicalSize;
 		int OldWrapMode;

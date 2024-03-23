@@ -71,7 +71,7 @@ class Frame: public ScreenObject
 		int  KeyBarVisible;
 		int  TitleBarVisible;
 		KeyBar *FrameKeyBar;
-		int MacroArea;
+		FARMACROAREA MacroArea;
 
 	public:
 		Frame();
@@ -102,7 +102,7 @@ class Frame: public ScreenObject
 		int IsTitleBarVisible() const {return TitleBarVisible;}
 
 		int IsTopFrame();
-		virtual int GetMacroArea() { return MacroArea; }
+		virtual FARMACROAREA GetMacroArea() { return MacroArea; }
 		void PushFrame(Frame* Modalized);
 		void DestroyAllModal();
 		void SetDynamicallyBorn(bool Born) {DynamicallyBorn=Born;}

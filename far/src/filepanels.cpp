@@ -1210,7 +1210,7 @@ void FilePanels::GoToFile(const wchar_t *FileName)
 }
 
 
-int  FilePanels::GetMacroArea()
+FARMACROAREA FilePanels::GetMacroArea()
 {
 	switch (ActivePanel->GetType())
 	{

@@ -73,7 +73,7 @@ enum TREELIST_FLAGS
 class TreeList: public Panel
 {
 	private:
-		int PrevMacroArea;
+		FARMACROAREA PrevMacroArea;
 		TreeItem **ListData;
 		FARString strRoot;
 		long TreeCount;

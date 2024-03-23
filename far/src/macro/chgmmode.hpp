@@ -36,11 +36,11 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class ChangeMacroArea
 {
 	private:
-		int PrevMacroArea;
-		int CurMacroArea;
+		FARMACROAREA PrevMacroArea;
+		FARMACROAREA CurMacroArea;
 
 	public:
-		ChangeMacroArea(int NewArea);
+		ChangeMacroArea(FARMACROAREA NewArea);
 		~ChangeMacroArea();
 		void SetPrevArea();
 		void SetCurArea();

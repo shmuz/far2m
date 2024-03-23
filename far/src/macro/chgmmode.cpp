@@ -36,7 +36,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "chgmmode.hpp"
 #include "ctrlobj.hpp"
 
-ChangeMacroArea::ChangeMacroArea(int NewArea) :
+ChangeMacroArea::ChangeMacroArea(FARMACROAREA NewArea) :
 	PrevMacroArea( CtrlObject ? CtrlObject->Macro.GetArea() : MACROAREA_SHELL)
 {
 	CurMacroArea = NewArea;

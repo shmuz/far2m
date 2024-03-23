@@ -83,13 +83,13 @@ public:
 	bool CheckWaitKeyFunc() const;
 	int  GetState() const;
 	FarKey PeekKey() const;
-	int  GetArea() const { return m_Area; }
+	FARMACROAREA GetArea() const { return m_Area; }
 	FarKey GetKey();
 	bool ProcessKey(FarKey Key, const INPUT_RECORD *Rec=nullptr);
 	const wchar_t* GetStringToPrint() const { return m_StringToPrint.CPtr(); }
 	bool IsRecording() const { return m_Recording != MACROSTATE_NOMACRO; }
 	bool LoadMacros(bool FromFar, bool InitedRAM=true, const FarMacroLoad *Data=nullptr);
-	void SetArea(int Area) { m_Area=Area; }
+	void SetArea(FARMACROAREA Area) { m_Area=Area; }
 	void SuspendMacros(bool Suspend) { Suspend ? ++m_InternalInput : --m_InternalInput; }
 	bool CanSendKeysToPlugin() const;
 
@@ -102,8 +102,8 @@ private:
 
 	static FARString m_RecCode;
 	static FARString m_RecDescription;
-	int m_Area;
-	int m_StartMode;
+	FARMACROAREA m_Area;
+	FARMACROAREA m_StartMode;
 	int m_Recording;
 	int m_InternalInput;
 	int m_WaitKey;

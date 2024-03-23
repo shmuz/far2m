@@ -4602,7 +4602,7 @@ int Dialog::GetTypeAndName(FARString &strType, FARString &strName)
 }
 
 
-int Dialog::GetMacroArea()
+FARMACROAREA Dialog::GetMacroArea()
 {
 	return MACROAREA_DIALOG;
 }

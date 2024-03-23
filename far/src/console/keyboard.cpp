@@ -1451,7 +1451,7 @@ int CheckForEscSilent()
 
 	if (Processed && PeekInputRecord(&rec))
 	{
-		int MMode=CtrlObject->Macro.GetArea();
+		FARMACROAREA MMode=CtrlObject->Macro.GetArea();
 		CtrlObject->Macro.SetArea(MACROAREA_LAST); // чтобы не срабатывали макросы :-)
 		Key=GetInputRecord(&rec,false,false,false);
 		CtrlObject->Macro.SetArea(MMode);

@@ -71,7 +71,7 @@ static int LastDizShowScrollbar = -1;
 
 InfoList::InfoList():
 	DizView(nullptr),
-	PrevMacroArea(-1)
+	PrevMacroArea(MACROAREA_LAST)
 {
 	Type=INFO_PANEL;
 	if (LastDizWrapMode < 0)
@@ -719,7 +719,7 @@ void InfoList::SetMacroArea(int Restore)
 	if (!CtrlObject)
 		return;
 
-	if (PrevMacroArea == -1)
+	if (PrevMacroArea == MACROAREA_LAST)
 		PrevMacroArea = CtrlObject->Macro.GetArea();
 
 	CtrlObject->Macro.SetArea(Restore ? PrevMacroArea:MACROAREA_INFOPANEL);

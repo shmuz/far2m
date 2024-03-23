@@ -404,7 +404,7 @@ class Dialog: public Frame
 		virtual int GetType() { return MODALTYPE_DIALOG; }
 		virtual const wchar_t *GetTypeName() {return L"[Dialog]";}
 
-		virtual int GetMacroArea();
+		virtual FARMACROAREA GetMacroArea();
 
 		/* $ Введена для нужд CtrlAltShift OT */
 		virtual int FastHide();

@@ -118,7 +118,7 @@ struct DlgParam
 {
 	DWORD Flags;
 	FarKey Key;
-	int Area;
+	FARMACROAREA Area;
 	int Recurse;
 	bool Deleted;
 };
