@@ -117,10 +117,12 @@ static Frame* GetTopModal()
 struct DlgParam
 {
 	DWORD Flags;
-	FarKey Key;
 	FARMACROAREA Area;
-	int Recurse;
-	bool Deleted;
+	FarKey MacroKey = KEY_INVALID;
+	int Recurse = 0;
+	bool Deleted = false;
+
+	DlgParam(DWORD aFlags, FARMACROAREA aArea) : Flags(aFlags), Area(aArea) {}
 };
 
 enum ASSIGN_MACRO_KEY {
@@ -3763,8 +3765,9 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG
 {
 	DWORD dw;
 	FARString strKeyText;
-	static int LastKey=0;
+	static FarKey LastKey=0;
 	static DlgParam *KMParam=nullptr;
+	bool KeyIsValid = false;
 
 	if (Msg == DN_INITDIALOG)
 	{
@@ -3814,16 +3817,16 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG
 		LastKey = 0;
 		auto KeyCode = KeyNameToKey(((FarDialogItem*)Param2)->PtrData);
 
-		if (KeyCode != KEY_INVALID && KMParam && !KMParam->Recurse)
+		if (KeyCode != KEY_INVALID && !KMParam->Recurse)
 		{
 			Param2 = KeyCode;
-			goto M1;
+			KeyIsValid = true;
 		}
 	}
-	else if (Msg == DN_KEY && (dw = (Param2 & KEY_END_SKEY), dw < KEY_END_FKEY ||
+	else if (Msg == DN_KEY && (dw = (Param2 & KEY_END_SKEY), (dw < KEY_END_FKEY) ||
 	                           (dw > INTERNAL_KEY_BASE && dw < INTERNAL_KEY_BASE_2)))
 	{
-		// <Обработка особых клавиш: F1 & Enter>
+		// Обработка особых клавиш: F1 & Enter
 		// Esc & (Enter и предыдущий Enter) - не обрабатываем
 		if (Param2 == KEY_ESC ||
 		        ((Param2 == KEY_ENTER||Param2 == KEY_NUMENTER) && (LastKey == KEY_ENTER||LastKey == KEY_NUMENTER)) ||
@@ -3837,16 +3840,19 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG
 		if ((Param2 == KEY_ENTER||Param2 == KEY_NUMENTER) && LastKey && !(LastKey == KEY_ENTER||LastKey == KEY_NUMENTER))
 			return FALSE;
 
-		// </Обработка особых клавиш: F1 & Enter>
-M1:
+		KeyIsValid = true;
+	}
+
+	if (KeyIsValid)
+	{
 		Param2 = LayoutKey(Param2);
 
 		//косметика
 		if (Param2<0xFFFF)
 			Param2=Upper((wchar_t)Param2);
 
-		KMParam->Key=(DWORD)Param2;
-		KeyToText((uint32_t)Param2,strKeyText);
+		KMParam->MacroKey = (FarKey)Param2;
+		KeyToText((FarKey)Param2, strKeyText);
 
 		// если УЖЕ есть такой макрос...
 		GetMacroData Data;
@@ -3912,7 +3918,7 @@ M1:
 		KMParam->Recurse++;
 		SendDlgMessage(hDlg,DM_SETTEXTPTR,2,(LONG_PTR)strKeyText.CPtr());
 		KMParam->Recurse--;
-		LastKey=(int)Param2;
+		LastKey=(FarKey)Param2;
 		return TRUE;
 	}
 	return DefDlgProc(hDlg,Msg,Param1,Param2);
@@ -3933,7 +3939,7 @@ int KeyMacro::AssignMacroKey(FarKey& MacroKey, DWORD& Flags)
 		{DI_COMBOBOX,5,3,28,3,{},DIF_FOCUS|DIF_DEFAULT,L""}
 	};
 	MakeDialogItemsEx(MacroAssignDlgData,MacroAssignDlg);
-	DlgParam Param={Flags, 0, m_StartMode, false};
+	DlgParam Param(Flags, m_StartMode);
 	IsProcessAssignMacroKey++;
 	Dialog Dlg(MacroAssignDlg,ARRAYSIZE(MacroAssignDlg),AssignMacroDlgProc,(LONG_PTR)&Param);
 	Dlg.SetPosition(-1,-1,34,6);
@@ -3944,7 +3950,7 @@ int KeyMacro::AssignMacroKey(FarKey& MacroKey, DWORD& Flags)
 	if (Dlg.GetExitCode() == -1)
 		return AMK_CANCEL;
 
-	MacroKey = Param.Key;
+	MacroKey = Param.MacroKey;
 	Flags = Param.Flags;
 	return Param.Deleted ? AMK_DELETE : AMK_MODIFY;
 }
@@ -4114,7 +4120,7 @@ int KeyMacro::GetMacroSettings(FarKey Key,DWORD &Flags, const wchar_t* Src, cons
 	MacroSettingsDlg[MS_CHECKBOX_SELBLOCK].Selected=Set3State(Flags,MFLAGS_EDITSELECTION,MFLAGS_EDITNOSELECTION);
 	MacroSettingsDlg[MS_EDIT_SEQUENCE].strData = *Src ? Src : m_RecCode.CPtr();
 	MacroSettingsDlg[MS_EDIT_DESCR].strData = *Descr ? Descr : m_RecDescription.CPtr();
-	DlgParam Param={0, 0, MACROAREA_OTHER, 0, false};
+	DlgParam Param(0, MACROAREA_OTHER);
 	Dialog Dlg(MacroSettingsDlg,ARRAYSIZE(MacroSettingsDlg),ParamMacroDlgProc,(LONG_PTR)&Param);
 	Dlg.SetPosition(-1,-1,73,21);
 	Dlg.SetHelp(L"KeyMacroSetting");
