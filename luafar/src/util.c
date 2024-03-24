@@ -21,9 +21,9 @@ int Log(const char* Format, ...)
 				if (++N == 1) {
 					time_t rtime;
 					time (&rtime);
-					fprintf(fp, "\n%s------------------------------\n", ctime(&rtime));
+					fprintf(fp, "\nLF %s------------------------------\n", ctime(&rtime));
 				}
-				fprintf(fp, "%d: ", N);
+				fprintf(fp, "LF %d: ", N);
 				vfprintf(fp, Format, valist);
 				fprintf(fp, "\n");
 				fclose(fp);
