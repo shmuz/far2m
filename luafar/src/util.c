@@ -4,7 +4,7 @@
 #include "ustring.h"
 #include "util.h"
 
-int Log(const char* Format, ...)
+int Log(lua_State *L, const char* Format, ...)
 {
 	va_list valist;
 	va_start(valist, Format);
@@ -18,12 +18,13 @@ int Log(const char* Format, ...)
 			strcat(buf, "/luafar_log.txt");
 			FILE* fp = fopen(buf, "a");
 			if (fp) {
+				TPluginData* pData = GetPluginData(L);
 				if (++N == 1) {
 					time_t rtime;
 					time (&rtime);
-					fprintf(fp, "\nLF %s------------------------------\n", ctime(&rtime));
+					fprintf(fp, "\n%s------------------------\n", ctime(&rtime));
 				}
-				fprintf(fp, "LF %d: ", N);
+				fprintf(fp, "%08X %d: ", pData->PluginId, N);
 				vfprintf(fp, Format, valist);
 				fprintf(fp, "\n");
 				fclose(fp);

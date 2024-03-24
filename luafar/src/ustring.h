@@ -8,7 +8,6 @@
 
 LUALIB_API int luaopen_ustring(lua_State *L);
 
-int  Log(const char* Format, ...);
 int  SysErrorReturn (lua_State *L);
 
 BOOL   GetBoolFromTable   (lua_State *L, const char* key);

@@ -5269,7 +5269,7 @@ int far_MacroExecute(lua_State* L)
 int far_Log(lua_State *L)
 {
 	const char* txt = luaL_optstring(L, 1, "log message");
-	lua_pushinteger(L, Log("%s", txt));
+	lua_pushinteger(L, Log(L, "%s", txt));
 	return 1;
 }
 

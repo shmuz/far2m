@@ -51,6 +51,7 @@ typedef struct
 } TFarUserControl;
 
 TSynchroData* CreateSynchroData(TTimerData *td, int data);
+int   Log(lua_State *L, const char* Format, ...);
 int   DecodeAttributes(const char* str);
 int   GetAttrFromTable(lua_State *L);
 int   GetIntFromArray(lua_State *L, int index);
