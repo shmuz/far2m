@@ -18,13 +18,12 @@ int Log(lua_State *L, const char* Format, ...)
 			strcat(buf, "/luafar_log.txt");
 			FILE* fp = fopen(buf, "a");
 			if (fp) {
-				TPluginData* pData = GetPluginData(L);
 				if (++N == 1) {
 					time_t rtime;
 					time (&rtime);
 					fprintf(fp, "\n%s------------------------\n", ctime(&rtime));
 				}
-				fprintf(fp, "%08X %d: ", pData->PluginId, N);
+				fprintf(fp, "%08X %d: ", GetPluginData(L)->PluginId, N);
 				vfprintf(fp, Format, valist);
 				fprintf(fp, "\n");
 				fclose(fp);
