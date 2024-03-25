@@ -120,13 +120,8 @@ struct DlgParam
 	FARMACROAREA Area;
 	FarKey MacroKey = KEY_INVALID;
 	int Recurse = 0;
-	bool Deleted = false;
 
 	DlgParam(DWORD aFlags, FARMACROAREA aArea) : Flags(aFlags), Area(aArea) {}
-};
-
-enum ASSIGN_MACRO_KEY {
-	AMK_CANCEL, AMK_MODIFY, AMK_DELETE
 };
 
 FARString KeyMacro::m_RecCode;
@@ -257,7 +252,7 @@ static Panel* SelectPanel(int Type)
 
 KeyMacro::KeyMacro():
 	m_Area(MACROAREA_SHELL),
-	m_StartMode(MACROAREA_OTHER),
+	m_StartArea(MACROAREA_OTHER),
 	m_Recording(MACROSTATE_NOMACRO),
 	m_InternalInput(0),
 	m_WaitKey(0)
@@ -3491,7 +3486,7 @@ bool KeyMacro::ProcessKey(FarKey dwKey, const INPUT_RECORD *Rec)
 			}
 
 			// Где мы?
-			m_StartMode=m_Area;
+			m_StartArea=m_Area;
 			// В зависимости от того, КАК НАЧАЛИ писать макрос, различаем общий режим (Ctrl-.
 			// с передачей плагину кеев) или специальный (Ctrl-Shift-. - без передачи клавиш плагину)
 			m_Recording=ctrldot?MACROSTATE_RECORDING_COMMON:MACROSTATE_RECORDING;
@@ -3527,26 +3522,26 @@ bool KeyMacro::ProcessKey(FarKey dwKey, const INPUT_RECORD *Rec)
 		if (ctrldot||ctrlshiftdot) // признак конца записи?
 		{
 			m_InternalInput=1;
-			DWORD MacroKey;
+			FarKey MacroKey;
 			// выставляем флаги по умолчанию.
 			DWORD Flags = 0;
-			int AssignRet = AssignMacroKey(MacroKey,Flags);
+			bool AssignRet = AssignMacroKey(MacroKey,Flags);
 
-			if (AssignRet == AMK_MODIFY && !m_RecCode.IsEmpty())
+			if (AssignRet && !m_RecCode.IsEmpty())
 			{
 				m_RecCode = L"Keys(\"" + m_RecCode + L"\")";
 				if (ctrlshiftdot && !GetMacroSettings(MacroKey,Flags))
 				{
-					AssignRet = AMK_CANCEL;
+					AssignRet = false;
 				}
 			}
 			m_InternalInput=0;
-			if (AssignRet == AMK_MODIFY || AssignRet == AMK_DELETE)
+			if (AssignRet)
 			{
 				FARString strKey;
 				KeyToText(MacroKey, strKey);
 				Flags |= m_Recording == MACROSTATE_RECORDING_COMMON? MFLAGS_NONE : MFLAGS_NOSENDKEYSTOPLUGINS;
-				LM_ProcessRecordedMacro(m_StartMode, strKey, m_RecCode, Flags, m_RecDescription);
+				LM_ProcessRecordedMacro(m_StartArea, strKey, m_RecCode, Flags, m_RecDescription);
 			}
 
 			m_Recording=MACROSTATE_NOMACRO;
@@ -3903,7 +3898,6 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG
 					if (GetMacroSettings(key, Data.Flags, strBufKey, strDescription))
 					{
 						KMParam->Flags = Data.Flags;
-						KMParam->Deleted = true;
 						SendDlgMessage(hDlg, DM_CLOSE, 1, 0);
 						return TRUE;
 					}
@@ -3924,7 +3918,7 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG
 	return DefDlgProc(hDlg,Msg,Param1,Param2);
 }
 
-int KeyMacro::AssignMacroKey(FarKey& MacroKey, DWORD& Flags)
+bool KeyMacro::AssignMacroKey(FarKey& MacroKey, DWORD& Flags)
 {
 	/*
 	  +------ Define macro ------+
@@ -3939,7 +3933,7 @@ int KeyMacro::AssignMacroKey(FarKey& MacroKey, DWORD& Flags)
 		{DI_COMBOBOX,5,3,28,3,{},DIF_FOCUS|DIF_DEFAULT,L""}
 	};
 	MakeDialogItemsEx(MacroAssignDlgData,MacroAssignDlg);
-	DlgParam Param(Flags, m_StartMode);
+	DlgParam Param(Flags, m_StartArea);
 	IsProcessAssignMacroKey++;
 	Dialog Dlg(MacroAssignDlg,ARRAYSIZE(MacroAssignDlg),AssignMacroDlgProc,(LONG_PTR)&Param);
 	Dlg.SetPosition(-1,-1,34,6);
@@ -3948,11 +3942,11 @@ int KeyMacro::AssignMacroKey(FarKey& MacroKey, DWORD& Flags)
 	IsProcessAssignMacroKey--;
 
 	if (Dlg.GetExitCode() == -1)
-		return AMK_CANCEL;
+		return false;
 
 	MacroKey = Param.MacroKey;
 	Flags = Param.Flags;
-	return Param.Deleted ? AMK_DELETE : AMK_MODIFY;
+	return true;
 }
 
 static int Set3State(DWORD Flags,DWORD Chk1,DWORD Chk2)
@@ -4029,7 +4023,7 @@ LONG_PTR WINAPI KeyMacro::ParamMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_
 	return DefDlgProc(hDlg,Msg,Param1,Param2);
 }
 
-int KeyMacro::GetMacroSettings(FarKey Key,DWORD &Flags, const wchar_t* Src, const wchar_t* Descr)
+bool KeyMacro::GetMacroSettings(FarKey Key,DWORD &Flags, const wchar_t* Src, const wchar_t* Descr)
 {
 	/*
 	          1         2         3         4         5         6
@@ -4136,7 +4130,7 @@ int KeyMacro::GetMacroSettings(FarKey Key,DWORD &Flags, const wchar_t* Src, cons
 	}
 
 	if (Dlg.GetExitCode()!=MS_BUTTON_OK)
-		return FALSE;
+		return false;
 
 	Flags=MacroSettingsDlg[MS_CHECKBOX_OUTPUT].Selected?MFLAGS_ENABLEOUTPUT:0;
 	Flags|=MacroSettingsDlg[MS_CHECKBOX_START].Selected?MFLAGS_RUNAFTERFARSTART:0;
@@ -4165,7 +4159,7 @@ int KeyMacro::GetMacroSettings(FarKey Key,DWORD &Flags, const wchar_t* Src, cons
 	         MFLAGS_NOTEMPTYCOMMANDLINE, MFLAGS_EMPTYCOMMANDLINE);
 	Flags |= Get3State(MacroSettingsDlg[MS_CHECKBOX_SELBLOCK].Selected,
 	         MFLAGS_EDITNOSELECTION, MFLAGS_EDITSELECTION);
-	return TRUE;
+	return true;
 }
 
 bool KeyMacro::PostNewMacro(const wchar_t* Sequence, DWORD InputFlags, FarKey AKey)

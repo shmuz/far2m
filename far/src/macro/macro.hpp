@@ -95,15 +95,15 @@ public:
 
 private:
 	static int GetExecutingState();
-	static int GetMacroSettings(FarKey Key,DWORD &Flags, const wchar_t* Src=L"", const wchar_t* Descr=L"");
+	static bool GetMacroSettings(FarKey Key,DWORD &Flags, const wchar_t* Src=L"", const wchar_t* Descr=L"");
 
-	int AssignMacroKey(FarKey& MacroKey, DWORD& Flags);
+	bool AssignMacroKey(FarKey& MacroKey, DWORD& Flags);
 	void RestoreMacroChar() const;
 
 	static FARString m_RecCode;
 	static FARString m_RecDescription;
 	FARMACROAREA m_Area;
-	FARMACROAREA m_StartMode;
+	FARMACROAREA m_StartArea;
 	int m_Recording;
 	int m_InternalInput;
 	int m_WaitKey;
