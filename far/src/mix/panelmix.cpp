@@ -148,92 +148,86 @@ int CheckUpdateAnotherPanel(Panel *SrcPanel,const wchar_t *SelName)
 	return FALSE;
 }
 
-int _MakePath1(FarKey Key, FARString &strPathName, const wchar_t *Param2)
+int _MakePath1(DWORD Key, FARString &strPathName, const wchar_t *Param2, int escaping)
 {
-	int RetCode=FALSE;
-	int NeedRealName=FALSE;
+	int RetCode = FALSE;
+	int NeedRealName = FALSE;
 	strPathName.Clear();
 
-	switch (Key)
-	{
-		case KEY_CTRLALTBRACKET:       // Вставить сетевое (UNC) путь из левой панели
-		case KEY_CTRLALTBACKBRACKET:   // Вставить сетевое (UNC) путь из правой панели
-		case KEY_ALTSHIFTBRACKET:      // Вставить сетевое (UNC) путь из активной панели
-		case KEY_ALTSHIFTBACKBRACKET:  // Вставить сетевое (UNC) путь из пассивной панели
-			NeedRealName=TRUE;
-		case KEY_CTRLBRACKET:          // Вставить путь из левой панели
-		case KEY_CTRLBACKBRACKET:      // Вставить путь из правой панели
-		case KEY_CTRLSHIFTBRACKET:     // Вставить путь из активной панели
-		case KEY_CTRLSHIFTBACKBRACKET: // Вставить путь из пассивной панели
-		case KEY_CTRLSHIFTNUMENTER:    // Текущий файл с пасс.панели
-		case KEY_SHIFTNUMENTER:        // Текущий файл с актив.панели
-		case KEY_CTRLSHIFTENTER:       // Текущий файл с пасс.панели
-		case KEY_SHIFTENTER:           // Текущий файл с актив.панели
+	switch (Key) {
+		case KEY_CTRLALTBRACKET:		// Вставить сетевое (UNC) путь из левой панели
+		case KEY_CTRLALTBACKBRACKET:	// Вставить сетевое (UNC) путь из правой панели
+		case KEY_ALTSHIFTBRACKET:		// Вставить сетевое (UNC) путь из активной панели
+		case KEY_ALTSHIFTBACKBRACKET:	// Вставить сетевое (UNC) путь из пассивной панели
+			NeedRealName = TRUE;
+		case KEY_CTRLBRACKET:			// Вставить путь из левой панели
+		case KEY_CTRLBACKBRACKET:		// Вставить путь из правой панели
+		case KEY_CTRLSHIFTBRACKET:		// Вставить путь из активной панели
+		case KEY_CTRLSHIFTBACKBRACKET:	// Вставить путь из пассивной панели
+		case KEY_CTRLSHIFTNUMENTER:		// Текущий файл с пасс.панели
+		case KEY_SHIFTNUMENTER:			// Текущий файл с актив.панели
+		case KEY_CTRLSHIFTENTER:		// Текущий файл с пасс.панели
+		case KEY_SHIFTENTER:			// Текущий файл с актив.панели
 		{
-			Panel *SrcPanel=nullptr;
-			FilePanels *Cp=CtrlObject->Cp();
+			Panel *SrcPanel = nullptr;
+			FilePanels *Cp = CtrlObject->Cp();
 
-			switch (Key)
-			{
+			switch (Key) {
 				case KEY_CTRLALTBRACKET:
 				case KEY_CTRLBRACKET:
-					SrcPanel=Cp->LeftPanel;
+					SrcPanel = Cp->LeftPanel;
 					break;
 				case KEY_CTRLALTBACKBRACKET:
 				case KEY_CTRLBACKBRACKET:
-					SrcPanel=Cp->RightPanel;
+					SrcPanel = Cp->RightPanel;
 					break;
 				case KEY_SHIFTNUMENTER:
 				case KEY_SHIFTENTER:
 				case KEY_ALTSHIFTBRACKET:
 				case KEY_CTRLSHIFTBRACKET:
-					SrcPanel=Cp->ActivePanel;
+					SrcPanel = Cp->ActivePanel;
 					break;
 				case KEY_CTRLSHIFTNUMENTER:
 				case KEY_CTRLSHIFTENTER:
 				case KEY_ALTSHIFTBACKBRACKET:
 				case KEY_CTRLSHIFTBACKBRACKET:
-					SrcPanel=Cp->GetAnotherPanel(Cp->ActivePanel);
+					SrcPanel = Cp->GetAnotherPanel(Cp->ActivePanel);
 					break;
 			}
 
-			if (SrcPanel)
-			{
-				if (Key == KEY_SHIFTENTER || Key == KEY_CTRLSHIFTENTER || Key == KEY_SHIFTNUMENTER || Key == KEY_CTRLSHIFTNUMENTER)
-				{
+			if (SrcPanel) {
+				if (Key == KEY_SHIFTENTER || Key == KEY_CTRLSHIFTENTER || Key == KEY_SHIFTNUMENTER
+						|| Key == KEY_CTRLSHIFTNUMENTER) {
 					SrcPanel->GetCurName(strPathName);
-				}
-				else
-				{
+				} else {
 					/* TODO: Здесь нужно учесть, что у TreeList тоже есть путь :-) */
-					if (!(SrcPanel->GetType()==FILE_PANEL || SrcPanel->GetType()==TREE_PANEL))
+					if (!(SrcPanel->GetType() == FILE_PANEL || SrcPanel->GetType() == TREE_PANEL))
 						return FALSE;
 
 					SrcPanel->GetCurDirPluginAware(strPathName);
-					if (NeedRealName && SrcPanel->GetType()==FILE_PANEL && SrcPanel->GetMode() != PLUGIN_PANEL)
-					{
+					if (NeedRealName && SrcPanel->GetType() == FILE_PANEL
+							&& SrcPanel->GetMode() != PLUGIN_PANEL) {
 						FileList *SrcFilePanel = (FileList *)SrcPanel;
-						SrcFilePanel->CreateFullPathName(strPathName, FILE_ATTRIBUTE_DIRECTORY, strPathName,TRUE);
+						SrcFilePanel->CreateFullPathName(strPathName, FILE_ATTRIBUTE_DIRECTORY, strPathName,
+								TRUE);
 					}
 
 					AddEndSlash(strPathName);
 				}
 
-				if (Opt.QuotedName&QUOTEDNAME_INSERT)
+				if (escaping & Opt.QuotedName & QUOTEDNAME_INSERT)
 					EscapeSpace(strPathName);
 
 				if (Param2)
-					strPathName += Param2;
+					strPathName+= Param2;
 
-				RetCode=TRUE;
+				RetCode = TRUE;
 			}
-		}
-		break;
+		} break;
 	}
 
 	return RetCode;
 }
-
 
 void TextToViewSettings(const wchar_t *ColumnTitles, const wchar_t *ColumnWidths, std::vector<Column> &Columns)
 {

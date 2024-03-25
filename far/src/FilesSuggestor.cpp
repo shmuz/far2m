@@ -46,16 +46,16 @@ void FilesSuggestor::Suggest(const std::string &filter, std::vector<Suggestion> 
 {
 	std::string dir_path, name_prefix;
 
-	size_t last_slash = filter.rfind('/');
+	size_t last_slash = filter.rfind(GOOD_SLASH);
 	if (last_slash != std::string::npos) {
 		name_prefix = filter.substr(last_slash + 1);
 		if (last_slash > 0) {
 			dir_path = filter.substr(0, last_slash);
-			if (dir_path[0] != '/') {
+			if (dir_path[0] != GOOD_SLASH) {
 				dir_path.insert(0, "./");
 			}
 		} else {
-			dir_path = '/';
+			dir_path = GOOD_SLASH;
 		}
 
 	} else {
@@ -74,14 +74,9 @@ void FilesSuggestor::Suggest(const std::string &filter, std::vector<Suggestion> 
 	{
 		std::lock_guard<std::mutex> lock(_mtx);
 		need_reenumerate = (dir_path != _dir_path
-			  || dir_st.st_dev != _dir_st.st_dev || dir_st.st_ino != _dir_st.st_ino
-#ifdef __APPLE__
-			  || memcmp(&dir_st.st_mtimespec, &_dir_st.st_mtimespec, sizeof(dir_st.st_mtimespec)) != 0
-			  || memcmp(&dir_st.st_ctimespec, &_dir_st.st_ctimespec, sizeof(dir_st.st_ctimespec)) != 0
-#else
-			  || memcmp(&dir_st.st_mtim, &_dir_st.st_mtim, sizeof(dir_st.st_mtim)) != 0
-			  || memcmp(&dir_st.st_ctim, &_dir_st.st_ctim, sizeof(dir_st.st_ctim)) != 0
-#endif
+				|| dir_st.st_dev != _dir_st.st_dev || dir_st.st_ino != _dir_st.st_ino
+				|| memcmp(&dir_st.st_mtim, &_dir_st.st_mtim, sizeof(dir_st.st_mtim)) != 0
+				|| memcmp(&dir_st.st_ctim, &_dir_st.st_ctim, sizeof(dir_st.st_ctim)) != 0
 			);
 
 		if (need_reenumerate) {
@@ -122,7 +117,7 @@ void *FilesSuggestor::ThreadProc()
 		try {
 			std::string stat_path = _dir_path;
 			if (!stat_path.empty() && stat_path.back() != GOOD_SLASH) {
-				stat_path+= '/';
+				stat_path+= GOOD_SLASH;
 			}
 			size_t stat_path_len = stat_path.size();
 			for (;;) {
@@ -132,6 +127,7 @@ void *FilesSuggestor::ThreadProc()
 				}
 				if (de->d_name[0] && strcmp(de->d_name, ".") && strcmp(de->d_name, "..")) {
 					bool dir = false;
+#ifndef __HAIKU__
 					switch (de->d_type) {
 						case DT_DIR:
 							dir = true;
@@ -146,10 +142,16 @@ void *FilesSuggestor::ThreadProc()
 							break;
 
 						default:
+#endif
 							stat_path.resize(stat_path_len);
 							stat_path+= de->d_name;
 							dir = (sdc_stat(stat_path.c_str(), &s) == 0 && S_ISDIR(s.st_mode));
+#ifndef __HAIKU__
 					}
+#endif
+					stat_path.resize(stat_path_len);
+					stat_path+= de->d_name;
+					dir = (sdc_stat(stat_path.c_str(), &s) == 0 && S_ISDIR(s.st_mode));
 
 					std::lock_guard<std::mutex> lock(_mtx);
 					_suggestions.emplace_back(Suggestion{de->d_name, dir});
@@ -172,14 +174,20 @@ void *FilesSuggestor::ThreadProc()
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-void MenuFilesSuggestor::Suggest(const wchar_t *filter, VMenu& menu)
+void MenuFilesSuggestor::Suggest(const wchar_t *filter, VMenu& menu, int escaping)
 {
 	if (!filter || !*filter) {
 		return;
 	}
 
 	std::string filter_mb;
-	Wide2MB(filter, filter_mb);
+	if (!escaping) {
+		FARString filter_escaping = filter;
+		EscapeSpace(filter_escaping);
+		Wide2MB(filter_escaping, filter_mb);
+	}
+	else
+		Wide2MB(filter, filter_mb);
 	std::string orig_filter_mb = filter_mb;
 
 	Environment::Arguments args;
@@ -251,6 +259,9 @@ void MenuFilesSuggestor::Suggest(const wchar_t *filter, VMenu& menu)
 		} else if (last_arg.quot == Environment::QUOT_SINGLE
 				|| last_arg.quot == Environment::QUOT_DOLLAR_SINGLE) {
 			str_tmp+= L'\'';
+		}
+		if (!escaping) {
+			UnEscapeSpace(str_tmp);
 		}
 		menu.AddItem(str_tmp);
 	}

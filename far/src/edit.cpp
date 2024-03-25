@@ -535,7 +535,7 @@ int Edit::ProcessInsPath(FarKey Key,int PrevSelStart,int PrevSelEnd)
 	}
 	else // Пути/имена?
 	{
-		RetCode=_MakePath1(Key,strPathName,L"");
+		RetCode = _MakePath1(Key, strPathName, L"", 0); // 0 - always not escaping path names
 	}
 
 	// Если что-нить получилось, именно его и вставим (PathName)
@@ -2907,7 +2907,7 @@ void EditControl::PopulateCompletionMenu(VMenu &ComplMenu, const FARString &strF
 			if (!m_pSuggestor)
 				m_pSuggestor.reset(new MenuFilesSuggestor);
 
-			m_pSuggestor->Suggest(strFilter, ComplMenu);
+			m_pSuggestor->Suggest(strFilter, ComplMenu, 0); // 0 - always not escaping path names
 		}
 	}
 }
