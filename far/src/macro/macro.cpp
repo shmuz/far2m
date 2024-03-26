@@ -116,13 +116,13 @@ static Frame* GetTopModal()
 // для диалога назначения клавиши
 struct DlgParam
 {
-	DWORD Flags;
+	DWORD Flags = 0;
 	FARMACROAREA Area;
 	FarKey MacroKey = KEY_INVALID;
 	int Recurse = 0;
 	bool Deleted = false;
 
-	DlgParam(DWORD aFlags, FARMACROAREA aArea) : Flags(aFlags), Area(aArea) {}
+	DlgParam(FARMACROAREA aArea) : Area(aArea) {}
 };
 
 enum ASSIGN_MACRO_KEY {
@@ -3939,7 +3939,7 @@ int KeyMacro::AssignMacroKey(FarKey& MacroKey, DWORD& Flags)
 		{DI_COMBOBOX,5,3,28,3,{},DIF_FOCUS|DIF_DEFAULT,L""}
 	};
 	MakeDialogItemsEx(MacroAssignDlgData,MacroAssignDlg);
-	DlgParam Param(Flags, m_StartMode);
+	DlgParam Param(m_StartMode);
 	IsProcessAssignMacroKey++;
 	Dialog Dlg(MacroAssignDlg,ARRAYSIZE(MacroAssignDlg),AssignMacroDlgProc,(LONG_PTR)&Param);
 	Dlg.SetPosition(-1,-1,34,6);
@@ -4120,8 +4120,7 @@ int KeyMacro::GetMacroSettings(FarKey Key,DWORD &Flags, const wchar_t* Src, cons
 	MacroSettingsDlg[MS_CHECKBOX_SELBLOCK].Selected=Set3State(Flags,MFLAGS_EDITSELECTION,MFLAGS_EDITNOSELECTION);
 	MacroSettingsDlg[MS_EDIT_SEQUENCE].strData = *Src ? Src : m_RecCode.CPtr();
 	MacroSettingsDlg[MS_EDIT_DESCR].strData = *Descr ? Descr : m_RecDescription.CPtr();
-	DlgParam Param(0, MACROAREA_OTHER);
-	Dialog Dlg(MacroSettingsDlg,ARRAYSIZE(MacroSettingsDlg),ParamMacroDlgProc,(LONG_PTR)&Param);
+	Dialog Dlg(MacroSettingsDlg,ARRAYSIZE(MacroSettingsDlg),ParamMacroDlgProc,0);
 	Dlg.SetPosition(-1,-1,73,21);
 	Dlg.SetHelp(L"KeyMacroSetting");
 	Frame* BottomFrame = FrameManager->GetBottomFrame();
