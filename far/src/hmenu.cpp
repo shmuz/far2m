@@ -461,6 +461,7 @@ void HMenu::ResizeConsole()
 	Hide();
 	Frame::ResizeConsole();
 	SetPosition(0,0,::ScrX,0);
+	Show();
 }
 
 void HMenu::Process()
