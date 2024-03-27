@@ -440,7 +440,7 @@ static BOOL LoadLuafar()
 	// 2. Load LuaFAR
 	FARString strLuaFar = g_strFarPath + PluginsFolderName + L"/luafar/luafar.so";
 	TranslateFarString<TranslateInstallPath_Share2Lib>(strLuaFar);
-	LuafarLoaded = dlopen(strLuaFar.GetMB().c_str(), RTLD_LAZY|RTLD_GLOBAL) != nullptr;
+	BOOL LuafarLoaded = dlopen(strLuaFar.GetMB().c_str(), RTLD_LAZY|RTLD_GLOBAL) ? TRUE : FALSE;
 	if (!LuafarLoaded)
 	{
 		Message(MSG_WARNING, 1, Msg::Error, L"Cannot load luafar.so", Msg::Ok);

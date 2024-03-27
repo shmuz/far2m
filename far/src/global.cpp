@@ -109,6 +109,4 @@ FormatScreen FS;
 
 DWORD ErrorMode;
 
-BOOL LuafarLoaded=FALSE;
-
 int FarExitCode;

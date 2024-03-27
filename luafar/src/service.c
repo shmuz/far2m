@@ -5887,6 +5887,9 @@ void InitLuaState (lua_State *L, TPluginData *aPlugData, lua_CFunction aOpenLibs
 int LF_LuaOpen (const struct PluginStartupInfo *aInfo, TPluginData* aPlugData, lua_CFunction aOpenLibs)
 {
 	if (PSInfo.StructSize == 0) {
+		if (aInfo->StructSize < sizeof(*aInfo) || aInfo->FSF->StructSize < sizeof(*aInfo->FSF)) {
+			return 0; // Far is too old
+		}
 		PSInfo = *aInfo;
 		FSF = *aInfo->FSF;
 		PSInfo.FSF = &FSF;

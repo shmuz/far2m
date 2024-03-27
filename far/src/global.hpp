@@ -96,6 +96,4 @@ extern FormatScreen FS;
 
 extern DWORD ErrorMode;
 
-extern BOOL LuafarLoaded;
-
 extern int FarExitCode;

@@ -3482,13 +3482,20 @@ bool KeyMacro::ProcessKey(FarKey dwKey, const INPUT_RECORD *Rec)
 	{
 		if ((ctrldot||ctrlshiftdot) && !IsExecuting())
 		{
-			if (!LuafarLoaded || !CtrlObject->Plugins.FindPlugin(SYSID_LUAMACRO)) //### || LuaMacro->IsPendingRemove())
-			{
-					Message(MSG_WARNING,1,Msg::Error,
-					   Msg::MacroPluginLuamacroNotLoaded,
-					   Msg::MacroRecordingIsDisabled,
-					   Msg::HOk);
-					return false;
+			bool OK = false;
+			if (auto Plug = CtrlObject->Plugins.FindPlugin(SYSID_LUAMACRO)) { //### && !IsPendingRemove())
+				PluginInfo Info{};
+				Plug->GetPluginInfo(&Info);
+				OK = Info.StructSize && Info.CommandPrefix;
+			}
+			if (!OK) {
+				m_InternalInput = true; //prevent multiple message boxes
+				Message(MSG_WARNING,1,Msg::Error,
+				   Msg::MacroPluginLuamacroNotLoaded,
+				   Msg::MacroRecordingIsDisabled,
+				   Msg::HOk);
+				m_InternalInput = false;
+				return false;
 			}
 
 			// Где мы?
