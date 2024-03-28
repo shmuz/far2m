@@ -456,15 +456,18 @@ function mod:Run()
         return inData.closeaction(hDlg, Par1, self:GetDialogState(hDlg))
       end
 
-    elseif (FarVer == 2) and Msg == F.DN_KEY then
-      if inData.keyaction and inData.keyaction(hDlg, Par1, far.KeyToName(Par2)) then
+    elseif FarVer == 2 and Msg == F.DN_KEY or
+      FarVer == 3 and Msg==F.DN_CONTROLINPUT and Par2.EventType==F.KEY_EVENT and Par2.KeyDown
+    then
+      local keyname = FarVer==2 and far.KeyToName(Par2) or FarVer==3 and far.InputRecordToName(Par2)
+      if inData.keyaction and inData.keyaction(hDlg, Par1, keyname) then
         return true
       end
-      if Par2 == F.KEY_F1 then
+      if keyname == "F1" then
         if type(inData.help) == "function" then
           inData.help()
         end
-      elseif Par2 == F.KEY_F4 then
+      elseif keyname == "F4" then
         if outData[Par1][IND_TYPE] == F.DI_EDIT and not inData[Par1].skipF4 then
           local txt = Send(hDlg, "DM_GETTEXT", Par1)
           txt = mod.OpenInEditor(txt, inData[Par1].ext)
@@ -477,23 +480,6 @@ function mod:Run()
       if inData.mouseaction then
         if Par1 <= 0 then Par1 = nil; end
         if inData.mouseaction(hDlg, Par1, Par2) then return true end
-      end
-
-    elseif (FarVer == 3) and Msg==F.DN_CONTROLINPUT and Par2.EventType==F.KEY_EVENT and Par2.KeyDown then
-      if inData.keyaction and inData.keyaction(hDlg, Par1, far.InputRecordToName(Par2)) then
-        return true
-      end
-      local modif = band(Par2.ControlKeyState,0x1F) ~= 0
-      if Par2.VirtualKeyCode == VK.F1 and not modif then
-        if type(inData.help) == "function" then
-          inData.help()
-        end
-      elseif Par2.VirtualKeyCode == VK.F4 and not modif then
-        if outData[Par1][IND_TYPE] == F.DI_EDIT then
-          local txt = Send(hDlg, "DM_GETTEXT", Par1)
-          txt = mod.OpenInEditor(txt, inData[Par1].ext)
-          if txt then Send(hDlg, "DM_SETTEXT", Par1, txt); end
-        end
       end
 
     elseif Msg == F.DN_BTNCLICK then
