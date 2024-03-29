@@ -398,11 +398,7 @@ local function calculator()
       end
     ----------------------------------------------------------------------------
     elseif msg==F.DN_BTNCLICK then
-      if     p1 == dPos.btnCalc then  return btnCalc_Action(hDlg)
-      elseif p1 == dPos.btnCopy then  return btnCopy_Action(hDlg)
-      elseif p1 == dPos.btnIns  then  return btnIns_Action(hDlg)
-    ----------------------------------------------------------------------------
-      elseif p2 ~= 0 then
+      if p2 ~= 0 then
         local btn = items[p1]
         if btn.Item then
           active_item = dItems[btn.Item]
