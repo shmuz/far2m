@@ -54,7 +54,7 @@ local function EditValue(asHex, key, name, tp, val0, val)
   end
   items[posEdit].name = "result"
 
-  items.closeaction = function(hDlg, Par1, tOut)
+  local closeaction = function(hDlg, Par1, tOut)
     if Par1 == posOK and tp == "integer" then
       local v = tonumber(tOut.result)
       if v == nil then
@@ -64,6 +64,12 @@ local function EditValue(asHex, key, name, tp, val0, val)
         far.Message("The value must be < 2^32", "Error", nil, "w")
         return 0
       end
+    end
+  end
+
+  function items.proc (hDlg, Msg, Par1, Par2)
+    if Msg == F.DN_CLOSE then
+      return closeaction(hDlg, Par1, Par2)
     end
   end
 
@@ -112,15 +118,17 @@ local function FarConfig()
     elseif msg == F.DN_RESIZECONSOLE then
       --hDlg:MoveDialog(true, {X=-1, Y=-1}) -- crashes Far when pressing Esc
       hDlg:MoveDialog(1, {X=-1, Y=-1})
-    elseif msg == F.DN_KEY
-           and (p2==F.KEY_ENTER or p2==F.KEY_NUMENTER or p2==F.KEY_F4 or p2==F.KEY_SHIFTF4)
-           or msg == F.DN_MOUSECLICK and (p2.EventFlags == F.DOUBLE_CLICK) then
-      Op = "edit"
-      AsHex = (p2 == F.KEY_SHIFTF4)
-    elseif msg == F.DN_KEY and p2 == F.KEY_DEL then
-      Op = "reset"
-    elseif msg == F.DN_KEY and p2 == F.KEY_CTRLH then
-      Op = "hide"
+    elseif msg == "EVENT_KEY" then
+      if p2=="Enter" or p2=="NumEnter" or p2=="F4" or p2=="ShiftF4" then
+        Op = "edit"
+        AsHex = (p2 == "ShiftF4")
+      else
+        Op = p2=="Del" and "reset" or p2=="CtrlH" and "hide"
+      end
+    elseif msg == "EVENT_MOUSE" then
+      if p2.EventFlags == F.DOUBLE_CLICK then
+        Op = "edit"
+      end
     end
 
     if Op == "edit" or Op == "reset" then

@@ -230,19 +230,19 @@ local function calculator()
   local cfunction = function(c) return environ[c] end
   local keys = { Enter="btnCalc"; Ins="btnIns"; F5 = "btnCopy"; }
 
-  function dItems.btnCalc.Action(hDlg)
+  local function btnCalc_Action(hDlg)
     if tonumber(result) then
       Send(hDlg, F.DM_SETTEXT, dPos.calc, result)
     end
     return KEEP_DIALOG_OPEN
   end
 
-  function dItems.btnCopy.Action()
+  local function btnCopy_Action()
     far.CopyToClipboard(getdata(active_item))
     return KEEP_DIALOG_OPEN
   end
 
-  function dItems.btnIns.Action(hDlg)
+  local function btnIns_Action(hDlg)
     local txt = getdata(active_item)
     if txt ~= "" then
       far.MacroPost(("print(%q)"):format(txt))
@@ -370,7 +370,7 @@ local function calculator()
     end
   end
 
-  items.keyaction = function(hDlg,p1,key)
+  local keyaction = function(hDlg,p1,key)
     if key == "F1" then
       local txt = Send(hDlg, F.DM_GETCHECK, dPos.lng_py)==1 and py_help or strhelp
       far.Message(txt, M.mHelpDlgTitle, nil, 'l')
@@ -398,7 +398,11 @@ local function calculator()
       end
     ----------------------------------------------------------------------------
     elseif msg==F.DN_BTNCLICK then
-      if p2 ~= 0 then
+      if     p1 == dPos.btnCalc then  return btnCalc_Action(hDlg)
+      elseif p1 == dPos.btnCopy then  return btnCopy_Action(hDlg)
+      elseif p1 == dPos.btnIns  then  return btnIns_Action(hDlg)
+    ----------------------------------------------------------------------------
+      elseif p2 ~= 0 then
         local btn = items[p1]
         if btn.Item then
           active_item = dItems[btn.Item]
@@ -438,9 +442,14 @@ local function calculator()
         end
       end
     ----------------------------------------------------------------------------
-    elseif msg==F.DN_CLOSE and p1>=1 then
-      local btn=items[p1]
-      if btn.Action then return btn.Action(hDlg) end
+    elseif msg=="EVENT_KEY" then
+      return keyaction(hDlg, p1, p2)
+    ----------------------------------------------------------------------------
+    elseif msg==F.DN_CLOSE then
+      if     p1 == dPos.btnCalc then  return btnCalc_Action(hDlg)
+      elseif p1 == dPos.btnCopy then  return btnCopy_Action(hDlg)
+      elseif p1 == dPos.btnIns  then  return btnIns_Action(hDlg)
+      end
     end
   end
 

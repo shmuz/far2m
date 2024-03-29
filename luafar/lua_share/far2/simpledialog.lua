@@ -444,23 +444,19 @@ function mod:Run()
     end
   end
   ----------------------------------------------------------------------------------------------
+  local UserProc = inData.proc
+
   local function DlgProc(hDlg, Msg, Par1, Par2)
-    local r = inData.proc and inData.proc(hDlg, Msg, Par1, Par2)
-    if r then return r; end
-
-    if Msg == F.DN_INITDIALOG then
-      if inData.initaction then inData.initaction(hDlg); end
-
-    elseif Msg == F.DN_CLOSE then
-      if inData.closeaction and inData[Par1] and not inData[Par1].cancel then
-        return inData.closeaction(hDlg, Par1, self:GetDialogState(hDlg))
+    if Msg == F.DN_CLOSE then
+      if inData[Par1] and not inData[Par1].cancel then
+        return UserProc(hDlg, Msg, Par1, self:GetDialogState(hDlg))
       end
 
     elseif FarVer == 2 and Msg == F.DN_KEY or
       FarVer == 3 and Msg==F.DN_CONTROLINPUT and Par2.EventType==F.KEY_EVENT and Par2.KeyDown
     then
       local keyname = FarVer==2 and far.KeyToName(Par2) or FarVer==3 and far.InputRecordToName(Par2)
-      if inData.keyaction and inData.keyaction(hDlg, Par1, keyname) then
+      if UserProc(hDlg, "EVENT_KEY", Par1, keyname) then
         return true
       end
       if keyname == "F1" then
@@ -475,19 +471,14 @@ function mod:Run()
         end
       end
 
-    elseif (FarVer == 2) and (Msg == F.DN_MOUSECLICK or Msg == F.DN_MOUSEEVENT)
-    or     (FarVer == 3) and (Msg == F.DN_CONTROLINPUT and Par2.EventType == F.MOUSE_EVENT) then
-      if inData.mouseaction then
-        if Par1 <= 0 then Par1 = nil; end
-        if inData.mouseaction(hDlg, Par1, Par2) then return true end
-      end
+    elseif (FarVer == 2) and (Msg == F.DN_MOUSECLICK or Msg == F.DN_MOUSEEVENT) or
+           (FarVer == 3) and (Msg == F.DN_CONTROLINPUT and Par2.EventType == F.MOUSE_EVENT)
+    then
+      if Par1 <= 0 then Par1 = nil; end
+      if UserProc(hDlg, "EVENT_MOUSE", Par1, Par2) then return true end
 
-    elseif Msg == F.DN_BTNCLICK then
-      if inData[Par1].action then inData[Par1].action(hDlg,Par1,Par2); end
-
-    elseif Msg == F.DN_CTLCOLORDLGITEM then
-      local colors = outData[Par1].colors
-      if colors then return colors end
+    else
+      return UserProc(hDlg, Msg, Par1, Par2)
 
     end
 
@@ -497,6 +488,8 @@ function mod:Run()
   local x1, y1 = inData.x1 or -1, inData.y1 or -1
   local x2 = x1==-1 and W or x1+W-1
   local y2 = y1==-1 and H or y1+H-1
+  DlgProc = UserProc and DlgProc or nil
+
   local hDlg = far.DialogInit(guid, x1,y1,x2,y2, help, outData, inData.flags, DlgProc, inData.data)
   if hDlg then
     if F.FDLG_NONMODAL and 0 ~= band(inData.flags, F.FDLG_NONMODAL) then
