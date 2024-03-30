@@ -1,4 +1,6 @@
 #include <strings.h>
+#include <cstring>
+#include <map>
 
 #include <WinCompat.h>
 #include "../WinPort/WinPort.h"
@@ -18,75 +20,93 @@ static bool IsDecimalNumber(const char *s)
 	return true;
 }
 
-static int TranslateUDCharset(const char *cs)
+static int CheckForEncodedInName(const char *cs)
 {
 	if (strncasecmp(cs, "windows-", 8) == 0) {
 		if (IsDecimalNumber(cs + 8)) {
 			return atoi(cs + 8);
 		}
 		if (strcasecmp(cs + 8, "31j") == 0) {
-				return 932;
+			return 932;
 		}
 	}
 
 	if (strncasecmp(cs, "CP", 2) == 0 && IsDecimalNumber(cs + 2)) {
-		return atoi(cs + 2);
+		cs+= 2;
+	} else if (strncasecmp(cs, "IBM", 3) == 0 && IsDecimalNumber(cs + 3)) {
+		cs+= 3;
+	} else {
+		return -1;
 	}
 
-	if (strncasecmp(cs, "IBM", 3) == 0 && IsDecimalNumber(cs + 3)) {
-		return atoi(cs + 3);
+	int r = atoi(cs);
+	if (r == 878) {   // IBM KOI8-R
+		return 20866; // MS KOI8-R
 	}
 
-	if (!strcasecmp(cs, "UTF16-LE") || !strcasecmp(cs, "UTF16"))
-		return CP_UTF16LE;
-	if (!strcasecmp(cs, "UTF16-BE"))
-		return CP_UTF16BE;
-	if (!strcasecmp(cs, "UTF32-LE") || !strcasecmp(cs, "UTF32"))
-		return CP_UTF32LE;
-	if (!strcasecmp(cs, "UTF32-BE"))
-		return CP_UTF32BE;
-	if (!strcasecmp(cs, "UTF-8"))
-		return CP_UTF8;
-	if (!strcasecmp(cs, "UTF-7"))
-		return CP_UTF7;
-	if (!strcasecmp(cs, "ASCII"))
-		return CP_UTF8;   //it's 20127 but CP_UTF8 is better in the editor
-	if (!strcasecmp(cs, "KOI8-R"))
-		return 20866;
-	if (!strcasecmp(cs, "KOI8-U"))
-		return 21866;
-	if (!strncasecmp(cs, "ISO-8859-", 9) && IsDecimalNumber(cs + 9))
-		return 28590 + atoi(cs + 9);
-	if (!strcasecmp(cs, "ISO-8859-8-I"))
-		return 38598;
-	if (!strcasecmp(cs, "x-mac-hebrew") || !strcasecmp(cs, "MS-MAC-HEBREW"))
-		return 10005;
-	if (!strcasecmp(cs, "mac-cyrillic") || !strcasecmp(cs, "x-mac-cyrillic") || !strcasecmp(cs, "MS-MAC-CYRILLIC"))
-		return 10007;
-	if (!strcasecmp(cs, "EUC-JP"))
-		return 20932;
-	if (!strcasecmp(cs, "EUC-KR"))
-		return 51949;
-	if (!strcasecmp(cs, "ISO-2022-KR"))
-		return 50225;
-	if (!strcasecmp(cs, "GB18030"))
-		return 54936;
-	if (!strcasecmp(cs, "Shift_JIS"))
-		return 932;
+	return r;
+}
 
-	fprintf(stderr, "TranslateUDCharset: unknown charset '%s'\n", cs);
+static int CheckForHardcodedByName(const char *cs)
+{
+    struct cmp_str
+    {
+        bool operator()(char const *a, char const *b) const
+        {
+            return std::strcmp(a, b) < 0;
+        }
+    };
 
-	/*
-		and the rest:
-		"Big5"
-		"x-euc-tw"
-		"X-ISO-10646-UCS-4-3412" - UCS-4, unusual octet order BOM (3412)
-		"X-ISO-10646-UCS-4-2143" - UCS-4, unusual octet order BOM (2143)
-		ISO-2022-CN
-		ISO-2022-JP
-		"TIS-620"
-		*/
-	return -1;
+    std::map<const char*, int, cmp_str> encodings
+        {
+            {"UTF-16",CP_UTF16LE},
+            {"UTF-32",CP_UTF32LE},
+            {"UTF-8",CP_UTF8},
+            {"ISO-8859-1",28591},          // Latin 1; Western European
+            {"ISO-8859-2",28592},          // Latin 2; Central European
+            {"ISO-8859-3",28593},          // Latin 3; South European
+            {"ISO-8859-4",28594},          // Latin 4; Baltic
+            {"ISO-8859-5",28595},          // Cyrillic
+            {"ISO-8859-6",28596},          // Arabic
+            {"ISO-8859-7",28597},          // Greek
+            {"ISO-8859-8",28598},          // Hebrew
+            {"ISO-8859-9",28599},          // Latin-5; Turkish
+            {"ISO-8859-10",28600},         // Latin-6; Nordic
+            {"ISO-8859-11",28601},         // Thai
+            {"ISO-8859-13",28603},         // Latin-7; Baltic Rim (Estonian)
+            {"ISO-8859-15",28605},         // Latin-9; Western European
+            {"ISO-8859-16",28606},         // Latin-10; South-Eastern European
+            {"TIS-620",28601},             // Thai
+            {"MAC-CYRILLIC",10007},        // Cyrillic (Mac)
+            {"MAC-CENTRALEUROPE",10029},   // Mac OS Central European
+            {"KOI8-R",20866},              // Cyrillic
+            {"EUC-JP",20932},              // Japanese
+            {"ISO-2022-JP",50220},         // Japanese
+            {"Johab",1361},                // Korean
+            {"SHIFT_JIS",932},             // Japanese
+            {"EUC-KR",51949},              // Korean
+            {"UHC",949},                   // Korean
+            {"ISO-2022-KR",50225},         // Korean
+            {"BIG5",950},                  // Traditional Chinese
+            {"GB18030",54936}              // Chinese Simplified
+        };
+
+    // the rest:
+    // ASCII, EUC-TW, GEORGIAN-ACADEMY, GEORGIAN-PS, HZ-GB-2312, ISO-2022-CN, VISCII
+
+    auto r= encodings.find(cs);
+    return r==encodings.end() ? -1 : r->second;
+}
+
+static int TranslateUDCharset(const char *cs)
+{
+	int r = CheckForEncodedInName(cs);
+	if (r == -1)
+		r = CheckForHardcodedByName(cs);
+	if (r == -1)
+		fprintf(stderr, "TranslateUDCharset: unknown charset '%s'\n", cs);
+
+    return r;
 }
 
 int DetectCodePage(const char *data, size_t len)

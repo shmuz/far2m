@@ -243,7 +243,6 @@ bool ConfigDialog()
 	FarDialogItem *dlg = new FarDialogItem[num];
 	if (!dlg)
 		return false;
-
 	memset(dlg, 0, num * sizeof(FarDialogItem));
 	int Y1 = 0;
 	for (int i = 0; i < num; i++)
