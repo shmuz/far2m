@@ -2891,8 +2891,8 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 		case DM_GETCURSORPOS:
 			if (PSInfo.SendDlgMessage (hDlg, Msg, Param1, (LONG_PTR)&coord)) {
 				lua_createtable(L,0,2);
-				PutNumToTable(L, "X", coord.X + 1);
-				PutNumToTable(L, "Y", coord.Y + 1);
+				PutNumToTable(L, "X", coord.X);
+				PutNumToTable(L, "Y", coord.Y);
 				return 1;
 			}
 			return lua_pushnil(L), 1;
@@ -3155,25 +3155,26 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			return SetDlgItem(L, hDlg, Param1, pos4);
 
 		case DM_MOVEDIALOG:
-		case DM_RESIZEDIALOG: {
+		case DM_RESIZEDIALOG:
+		case DM_SETCURSORPOS:
+		{
 			COORD* c;
 			luaL_checktype(L, pos4, LUA_TTABLE);
 			coord.X = GetOptIntFromTable(L, "X", 0);
 			coord.Y = GetOptIntFromTable(L, "Y", 0);
+
+			if(Msg == DM_SETCURSORPOS)
+			{
+				lua_pushinteger(L, PSInfo.SendDlgMessage(hDlg, Msg, Param1, (LONG_PTR)&coord));
+				return 1;
+			}
+
 			c = (COORD*) PSInfo.SendDlgMessage (hDlg, Msg, Param1, (LONG_PTR)&coord);
 			lua_createtable(L, 0, 2);
 			PutIntToTable(L, "X", c->X);
 			PutIntToTable(L, "Y", c->Y);
 			return 1;
 		}
-
-		case DM_SETCURSORPOS:
-			luaL_checktype(L, pos4, LUA_TTABLE);
-			coord.X = GetOptIntFromTable(L, "X", 1) - 1;
-			coord.Y = GetOptIntFromTable(L, "Y", 1) - 1;
-			Param2 = (LONG_PTR)&coord;
-			lua_pushboolean(L, PSInfo.SendDlgMessage (hDlg, Msg, Param1, Param2));
-			return 1;
 
 		case DM_SETITEMPOSITION:
 			luaL_checktype(L, pos4, LUA_TTABLE);
