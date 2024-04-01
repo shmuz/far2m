@@ -2743,19 +2743,8 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 	//---------------------------------------------------------------------------
 	DWORD                      dword;
 	COORD                      coord;
-	struct DialogInfo          dlg_info;
 	struct EditorSelect        es;
 	struct EditorSetPosition   esp;
-	struct FarDialogItemData   fdid;
-	struct FarListDelete       fld;
-	struct FarListFind         flf;
-	struct FarListGetItem      flgi;
-	struct FarListInfo         fli;
-	struct FarListInsert       flins;
-	struct FarListPos          flp;
-	struct FarListTitles       flt;
-	struct FarListUpdate       flu;
-	struct FarListItemData     flid;
 	struct DialogItemTrueColors ditc;
 	SMALL_RECT                 small_rect;
 	//---------------------------------------------------------------------------
@@ -2783,6 +2772,15 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			break;
 	}
 
+	// res_incr
+	switch(Msg)
+	{
+		case DM_GETFOCUS:
+		case DM_LISTADDSTR:
+			res_incr=1;
+			break;
+	}
+
 	//Param2 and the rest
 	switch(Msg) {
 		default:
@@ -2790,7 +2788,6 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			break;
 
 		case DM_GETFOCUS:
-			res_incr = 1; // fall through
 		case DM_CLOSE:
 		case DM_EDITUNCHANGEDFLAG:
 		case DM_GETCOMBOBOXEVENT:
@@ -2874,7 +2871,6 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			break;
 
 		case DM_LISTADDSTR:
-			res_incr=1;
 		case DM_ADDHISTORY:
 		case DM_SETTEXTPTR:
 			Param2 = (LONG_PTR) check_utf8_string(L, pos4, NULL);
@@ -2898,14 +2894,18 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			return lua_pushnil(L), 1;
 
 		case DM_GETDIALOGINFO:
+		{
+			struct DialogInfo dlg_info;
 			dlg_info.StructSize = sizeof(dlg_info);
-			if (PSInfo.SendDlgMessage (hDlg, Msg, Param1, (LONG_PTR)&dlg_info)) {
+			if (PSInfo.SendDlgMessage (hDlg, Msg, Param1, (LONG_PTR)&dlg_info))
+			{
 				lua_createtable(L,0,2);
 				PutLStrToTable(L, "Id", &dlg_info.Id, 16);
 				PutNumToTable(L, "Owner", dlg_info.Owner);
 				return 1;
 			}
 			return lua_pushnil(L), 1;
+		}
 
 		case DM_GETDLGRECT:
 		case DM_GETITEMPOSITION:
@@ -2944,7 +2944,9 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			}
 			return lua_pushinteger(L,0), 1;
 
-		case DM_GETTEXT: {
+		case DM_GETTEXT:
+		{
+			struct FarDialogItemData fdid;
 			size_t size;
 			fdid.PtrLength = (size_t) PSInfo.SendDlgMessage(hDlg, Msg, Param1, 0);
 			fdid.PtrData = (wchar_t*) malloc((fdid.PtrLength+1) * sizeof(wchar_t));
@@ -2961,10 +2963,13 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 		}
 
 		case DM_SETTEXT:
-			fdid.PtrData = check_utf8_string(L, pos4, NULL);
-			fdid.PtrLength = 0; // wcslen(fdid.PtrData);
-			Param2 = (LONG_PTR)&fdid;
-			break;
+		{
+			struct FarDialogItemData fdid;
+			fdid.PtrLength = 0;
+			fdid.PtrData = check_utf8_string(L, pos4, &fdid.PtrLength);
+			lua_pushinteger(L, PSInfo.SendDlgMessage(hDlg, Msg, Param1, (LONG_PTR)&fdid));
+			return 1;
+		}
 
 		case DM_KEY: {
 			luaL_checktype(L, pos4, LUA_TTABLE);
@@ -2994,71 +2999,93 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 		}
 
 		case DM_LISTDELETE:
+		{
+			struct FarListDelete fld;
 			if (lua_isnoneornil(L, pos4))
-				Param2 = 0;
-			else {
+				lua_pushinteger(L, PSInfo.SendDlgMessage(hDlg, Msg, Param1, 0));
+			else
+			{
 				luaL_checktype(L, pos4, LUA_TTABLE);
 				fld.StartIndex = GetOptIntFromTable(L, "StartIndex", 1) - 1;
 				fld.Count = GetOptIntFromTable(L, "Count", 1);
-				Param2 = (LONG_PTR)&fld;
+				lua_pushinteger(L, PSInfo.SendDlgMessage(hDlg, Msg, Param1, (LONG_PTR)&fld));
 			}
-			break;
+			return 1;
+		}
 
 		case DM_LISTFINDSTRING:
+		{
+			struct FarListFind flf;
 			luaL_checktype(L, pos4, LUA_TTABLE);
 			flf.StartIndex = GetOptIntFromTable(L, "StartIndex", 1) - 1;
 			lua_getfield(L, pos4, "Pattern");
 			flf.Pattern = check_utf8_string(L, -1, NULL);
 			lua_getfield(L, pos4, "Flags");
 			flf.Flags = GetFlags(L, -1, NULL);
-			res = PSInfo.SendDlgMessage (hDlg, Msg, Param1, (LONG_PTR)&flf);
-			res < 0 ? lua_pushnil(L) : lua_pushinteger (L, res+1);
+			res = PSInfo.SendDlgMessage(hDlg, Msg, Param1, (LONG_PTR)&flf);
+			res < 0 ? lua_pushnil(L) : lua_pushinteger(L, res+1);
 			return 1;
+		}
 
 		case DM_LISTGETCURPOS:
-			PSInfo.SendDlgMessage (hDlg, Msg, Param1, (LONG_PTR)&flp);
+		{
+			struct FarListPos flp;
+			PSInfo.SendDlgMessage(hDlg, Msg, Param1, (LONG_PTR)&flp);
 			lua_createtable(L,0,2);
 			PutIntToTable(L, "SelectPos", flp.SelectPos+1);
 			PutIntToTable(L, "TopPos", flp.TopPos+1);
 			return 1;
+		}
 
 		case DM_LISTGETITEM:
+		{
+			struct FarListGetItem flgi;
 			flgi.ItemIndex = luaL_checkinteger(L, pos4) - 1;
-			res = PSInfo.SendDlgMessage (hDlg, Msg, Param1, (LONG_PTR)&flgi);
-			if (res) {
+			if (PSInfo.SendDlgMessage(hDlg, Msg, Param1, (LONG_PTR)&flgi))
+			{
 				lua_createtable(L,0,2);
 				PutIntToTable(L, "Flags", flgi.Item.Flags);
 				PutWStrToTable(L, "Text", flgi.Item.Text, -1);
 				return 1;
 			}
 			return lua_pushnil(L), 1;
+		}
 
 		case DM_LISTGETTITLES:
+		{
+			struct FarListTitles flt;
 			flt.Title = buf;
 			flt.Bottom = buf + ARRAYSIZE(buf)/2;
 			flt.TitleLen = ARRAYSIZE(buf)/2;
 			flt.BottomLen = ARRAYSIZE(buf)/2;
-			res = PSInfo.SendDlgMessage (hDlg, Msg, Param1, (LONG_PTR)&flt);
-			if (res) {
+			if (PSInfo.SendDlgMessage (hDlg, Msg, Param1, (LONG_PTR)&flt))
+			{
 				lua_createtable(L,0,2);
 				PutWStrToTable(L, "Title", flt.Title, -1);
 				PutWStrToTable(L, "Bottom", flt.Bottom, -1);
 				return 1;
 			}
+
 			return lua_pushnil(L), 1;
+		}
 
 		case DM_LISTSETTITLES:
+		{
+			struct FarListTitles flt;
 			luaL_checktype(L, pos4, LUA_TTABLE);
 			lua_getfield(L, pos4, "Title");
 			flt.Title = lua_isstring(L,-1) ? check_utf8_string(L,-1,NULL) : NULL;
 			lua_getfield(L, pos4, "Bottom");
 			flt.Bottom = lua_isstring(L,-1) ? check_utf8_string(L,-1,NULL) : NULL;
-			Param2 = (LONG_PTR)&flt;
-			break;
+			lua_pushinteger(L, PSInfo.SendDlgMessage(hDlg, Msg, Param1, (LONG_PTR)&flt));
+			return 1;
+		}
 
 		case DM_LISTINFO:
-			res = PSInfo.SendDlgMessage (hDlg, Msg, Param1, (LONG_PTR)&fli);
-			if (res) {
+		{
+			struct FarListInfo fli;
+			if (PSInfo.SendDlgMessage(hDlg, Msg, Param1, (LONG_PTR)&fli))
+			{
 				lua_createtable(L,0,6);
 				PutIntToTable(L, "Flags", fli.Flags);
 				PutIntToTable(L, "ItemsNumber", fli.ItemsNumber);
@@ -3069,8 +3096,11 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 				return 1;
 			}
 			return lua_pushnil(L), 1;
+		}
 
 		case DM_LISTINSERT:
+		{
+			struct FarListInsert flins;
 			luaL_checktype(L, pos4, LUA_TTABLE);
 			flins.Index = GetOptIntFromTable(L, "Index", 1) - 1;
 			lua_getfield(L, pos4, "Text");
@@ -3078,32 +3108,40 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			lua_getfield(L, pos4, "Flags"); //+1
 			flins.Item.Flags = CheckFlags(L, -1);
 			res = PSInfo.SendDlgMessage (hDlg, Msg, Param1, (LONG_PTR)&flins);
-			res < 0 ? lua_pushnil(L) : lua_pushinteger (L, res);
+			res < 0 ? lua_pushnil(L) : lua_pushinteger(L, res);
 			return 1;
+		}
 
 		case DM_LISTUPDATE:
+		{
+			struct FarListUpdate flu;
 			luaL_checktype(L, pos4, LUA_TTABLE);
 			flu.Index = GetOptIntFromTable(L, "Index", 1) - 1;
 			lua_getfield(L, pos4, "Text");
 			flu.Item.Text = lua_isstring(L,-1) ? check_utf8_string(L,-1,NULL) : NULL;
 			lua_getfield(L, pos4, "Flags"); //+1
 			flu.Item.Flags = CheckFlags(L, -1);
-			lua_pushboolean(L, PSInfo.SendDlgMessage (hDlg, Msg, Param1, (LONG_PTR)&flu));
+			lua_pushboolean(L, PSInfo.SendDlgMessage (hDlg, Msg, Param1, (LONG_PTR)&flu) != 0);
 			return 1;
+		}
 
 		case DM_LISTSETCURPOS:
-			res_incr = 1;
+		{
+			struct FarListPos flp;
 			luaL_checktype(L, pos4, LUA_TTABLE);
 			flp.SelectPos = GetOptIntFromTable(L, "SelectPos", 1) - 1;
 			flp.TopPos = GetOptIntFromTable(L, "TopPos", 1) - 1;
-			Param2 = (LONG_PTR)&flp;
-			break;
+			lua_pushinteger(L, 1 + PSInfo.SendDlgMessage(hDlg, Msg, Param1, (LONG_PTR)&flp));
+			return 1;
+		}
 
 		case DM_LISTGETDATASIZE:
 			Param2 = luaL_checkinteger(L, pos4) - 1;
 			break;
 
-		case DM_LISTSETDATA: {
+		case DM_LISTSETDATA:
+		{
+			struct FarListItemData flid;
 			listdata_t Data, *oldData;
 			int Index;
 			luaL_checktype(L, pos4, LUA_TTABLE);
