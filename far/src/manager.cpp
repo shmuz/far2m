@@ -640,12 +640,12 @@ static bool ConfirmExit(size_t vts_cnt)
 	m.Add(Msg::No);
 	if (WINPORT(ConsoleBackgroundMode)(FALSE)) {
 		m.Add(Msg::Background);
-		r = m.Show(vts_cnt ? MSG_WARNING : 0, 3);
+		r = m.Show(vts_cnt ? MSG_WARNING : 0, 3, &FarAskQuitId);
 		if (r == 2) {
 			WINPORT(ConsoleBackgroundMode)(TRUE);
 		}
 	} else {
-		r = m.Show(vts_cnt ? MSG_WARNING : 0, 2);
+		r = m.Show(vts_cnt ? MSG_WARNING : 0, 2, &FarAskQuitId);
 	}
 
 	return r == 0;

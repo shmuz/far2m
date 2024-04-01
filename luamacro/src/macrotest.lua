@@ -1348,7 +1348,8 @@ end
 function MT.test_Dlg()
   Keys"F7 a b c"
   assert_true(Area.Dialog)
-  assert_eq(Dlg.Id, "FAD00DBE-3FFF-4095-9232-E1CC70C67737")
+  assert_str(Dlg.Id)
+  assert_eq(Dlg.Id, far.Guids.MakeFolderId)
   assert_eq(Dlg.Owner, 0)
   assert(Dlg.ItemCount > 6)
   assert_eq(Dlg.ItemType, 4)
@@ -1363,6 +1364,12 @@ function MT.test_Dlg()
   assert_eq(pos, Dlg.PrevPos)
 
   assert_eq(Dlg.GetValue(0,0), Dlg.ItemCount)
+  Keys"Esc"
+
+  Keys"F10"
+  assert_true(Area.Dialog)
+  assert_str(Dlg.Id)
+  assert_eq(Dlg.Id, far.Guids.FarAskQuitId)
   Keys"Esc"
 end
 
