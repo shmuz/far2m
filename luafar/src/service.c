@@ -2900,8 +2900,9 @@ int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 		case DM_GETDIALOGINFO:
 			dlg_info.StructSize = sizeof(dlg_info);
 			if (PSInfo.SendDlgMessage (hDlg, Msg, Param1, (LONG_PTR)&dlg_info)) {
-				lua_createtable(L,0,1);
+				lua_createtable(L,0,2);
 				PutLStrToTable(L, "Id", &dlg_info.Id, 16);
+				PutNumToTable(L, "Owner", dlg_info.Owner);
 				return 1;
 			}
 			return lua_pushnil(L), 1;

@@ -586,6 +586,7 @@ struct DialogInfo
 {
 	int StructSize;
 	GUID Id;
+	DWORD Owner;
 };
 
 #define Dlg_RedrawDialog(Info,hDlg)            Info.SendDlgMessage(hDlg,DM_REDRAW,0,0)
