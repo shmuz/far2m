@@ -158,6 +158,6 @@ int WINAPI farColorDialog(INT_PTR PluginNumber, ColorDialogData *Data, DWORD Fla
 
 DWORD WINAPI farGetCurrentDirectory(DWORD Size,wchar_t* Buffer);
 
-int WINAPI farCallFar(int CheckCode, FarMacroCall* Data);
+int64_t WINAPI farCallFar(int CheckCode, FarMacroCall* Data);
 
 int WINAPI farDetectCodePage(DetectCodePageInfo *Info);

@@ -1516,7 +1516,7 @@ struct OpenMacroInfo
 	struct FarMacroValue *Values;
 };
 
-typedef int (WINAPI *FARAPICALLFAR)(int CheckCode, struct FarMacroCall* Data);
+typedef int64_t (WINAPI *FARAPICALLFAR)(int CheckCode, struct FarMacroCall* Data);
 
 struct MacroPrivateInfo
 {

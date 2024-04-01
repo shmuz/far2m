@@ -631,9 +631,9 @@ private:
 	const bool m_Lock;
 };
 
-int KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
+int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 {
-	int ret=0;
+	int64_t ret=0;
 	DWORD FileAttr = INVALID_FILE_ATTRIBUTES;
 	FarMacroApi api(Data);
 	FARString tmpStr;

@@ -79,7 +79,7 @@ public:
 	static bool GetMacroParseError(COORD& ErrPos, FARString& ErrSrc);
 	static bool ParseMacroString(const wchar_t* Sequence,DWORD Flags,bool skipFile);
 
-	int  CallFar(int CheckCode, const FarMacroCall* Data);
+	int64_t CallFar(int CheckCode, const FarMacroCall* Data);
 	bool CheckWaitKeyFunc() const;
 	int  GetState() const;
 	FarKey PeekKey() const;
