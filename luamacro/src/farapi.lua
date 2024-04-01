@@ -413,8 +413,9 @@ struct OpenDlgPluginData
 
 struct DialogInfo
 {
-	int StructSize;
+	size_t StructSize;
 	GUID Id;
+	DWORD Owner;
 };
 
 enum FARDIALOGFLAGS
@@ -1194,7 +1195,7 @@ struct OpenMacroInfo
 	struct FarMacroValue *Values;
 };
 
-typedef int (__stdcall *FARAPICALLFAR)(int CheckCode, struct FarMacroCall* Data);
+typedef int64_t (__stdcall *FARAPICALLFAR)(int CheckCode, struct FarMacroCall* Data);
 
 struct MacroPrivateInfo
 {
@@ -1375,7 +1376,7 @@ struct ViewerMode
 
 struct ViewerInfo
 {
-	int    StructSize;
+	size_t StructSize;
 	int    ViewerID;
 	const wchar_t *FileName;
 	int64_t FileSize;
@@ -1746,9 +1747,13 @@ typedef int (__stdcall *FARAPICOLORDIALOG)(
 	DWORD Flags
 );
 
-typedef int (__stdcall *FARAPIGETFILEENCODING)(
-	const wchar_t *FileName
-);
+struct DetectCodePageInfo
+{
+	size_t StructSize;
+	const wchar_t* FileName;
+};
+
+typedef int (__stdcall *FARSTDDETECTCODEPAGE)(struct DetectCodePageInfo* Info);
 typedef int (__cdecl *FARSTDSNPRINTF)(wchar_t *Buffer,size_t Sizebuf,const wchar_t *Format,...);
 typedef int (__cdecl *FARSTDSSCANF)(const wchar_t *Buffer, const wchar_t *Format,...);
 typedef void (__stdcall *FARSTDQSORT)(void *base, size_t nelem, size_t width, int (__cdecl *fcmp)(const void *, const void *));
@@ -1950,7 +1955,7 @@ enum BOX_DEF_SYMBOLS
 
 typedef struct FarStandardFunctions
 {
-	int StructSize;
+	size_t StructSize;
 
 	FARSTDATOI                 atoi;
 	FARSTDATOI64               atoi64;
@@ -2013,7 +2018,7 @@ typedef struct FarStandardFunctions
 	FARSTRSIZEOFCELLS          StrSizeOfCells;
 	void*                      RESERVED[2];
 
-	FARAPIGETFILEENCODING      GetFileEncoding;
+	FARSTDDETECTCODEPAGE       DetectCodePage;
 	FARSTDKEYNAMETOINPUTRECORD FarNameToInputRecord;
 	FARSTDGETFILEGROUP         GetFileGroup;
 	FARFORMATFILESIZE          FormatFileSize;
@@ -2021,7 +2026,7 @@ typedef struct FarStandardFunctions
 
 struct PluginStartupInfo
 {
-	int StructSize;
+	size_t StructSize;
 	const wchar_t *ModuleName;
 	INT_PTR ModuleNumber;
 	const wchar_t *RootKey;
@@ -2086,7 +2091,7 @@ enum PLUGIN_FLAGS
 
 struct PluginInfo
 {
-	int StructSize;
+	size_t StructSize;
 	DWORD Flags;
 	const wchar_t * const *DiskMenuStrings;
 	int *Reserved0;
@@ -2195,7 +2200,7 @@ enum OPERATION_MODES
 
 struct OpenPluginInfo
 {
-	int                           StructSize;
+	size_t                        StructSize;
 	DWORD                         Flags;
 	const wchar_t*                HostFile;
 	const wchar_t*                CurDir;
