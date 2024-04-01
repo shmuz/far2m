@@ -34,6 +34,8 @@
 #include "../sudo/sudo_askpass_ipc.h"
 #include "SudoAskpassImpl.h"
 
+#include <memory>
+
 IConsoleOutput *g_winport_con_out = nullptr;
 IConsoleInput *g_winport_con_in = nullptr;
 const wchar_t *g_winport_backend = L"";
@@ -239,6 +241,8 @@ extern "C" void WinPortHelp()
 	printf("\t--maximize - force maximize window upon launch (only for GUI backend)\n");
 	printf("\t--nomaximize - dont maximize window upon launch even if its has saved maximized state (only for GUI backend)\n");
 	printf("\t--clipboard=SCRIPT - use external clipboard handler script that implements get/set text clipboard data via its stdin/stdout\n");
+	printf("    Backend-specific options also can be set via the FAR_ARGS environment variable\n");
+	printf("     (for example: export FAR_ARGS=\"--tty --nodetect --ee\" and then simple far2m to force start only TTY backend)\n");
 }
 
 struct ArgOptions
@@ -365,7 +369,7 @@ extern "C" int WinPortMain(const char *full_exe_path, int argc, char **argv, int
 	//const char *xdg_st = getenv("XDG_SESSION_TYPE");
 	//bool on_wayland = ((xdg_st && strcasecmp(xdg_st, "wayland") == 0) || getenv("WAYLAND_DISPLAY"));
 	if (arg_opts.x11) {
-	//if (((on_wayland && getenv("WSL_DISTRO_NAME")) && !arg_opts.wayland && !getenv("FAR2L_WSL_NATIVE")) || arg_opts.x11) {
+	//if (((on_wayland && getenv("WSL_DISTRO_NAME")) && !arg_opts.wayland && !getenv("FAR_WSL_NATIVE")) || arg_opts.x11) {
 		// on wslg stay on x11 by default until remaining upstream wayland-related clipboard bug is fixed
 		// https://github.com/microsoft/wslg/issues/1216
 		setenv("GDK_BACKEND", "x11", TRUE);
@@ -443,7 +447,7 @@ extern "C" int WinPortMain(const char *full_exe_path, int argc, char **argv, int
 
 				bool wsl_clipboard_workaround = (arg_opts.ext_clipboard.empty()
 					&& getenv("WSL_DISTRO_NAME")
-					&& !getenv("FAR2L_WSL_NATIVE"));
+					&& !getenv("FAR_WSL_NATIVE"));
 				if (wsl_clipboard_workaround) {
 					arg_opts.ext_clipboard = full_exe_path;
 					if (TranslateInstallPath_Bin2Share(arg_opts.ext_clipboard)) {
