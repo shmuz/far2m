@@ -2934,9 +2934,10 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 
 		case DM_SETDLGDATA: {
 			TDialogData *dd = (TDialogData*) PSInfo.SendDlgMessage(hDlg,DM_GETDLGDATA,0,0);
-			lua_settop(L, pos3);
+			lua_rawgeti(L, LUA_REGISTRYINDEX, dd->dataRef);
+			lua_pushvalue(L, pos3);
 			lua_rawseti(L, LUA_REGISTRYINDEX, dd->dataRef);
-			return 0;
+			return 1;
 		}
 
 		case DM_GETDLGRECT:

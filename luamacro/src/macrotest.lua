@@ -2150,10 +2150,10 @@ local function test_dialog_1()
   Items.proc = function(hDlg, Msg, Par1, Par2)
     if Msg == F.DN_INITDIALOG then
       assert(Par1==3 and Par2==Items.data)
-      assert(hDlg:send("DM_GETDLGDATA") == Par2)
 
-      hDlg:send("DM_SETDLGDATA", tt[2])
-      assert(hDlg:send("DM_GETDLGDATA") == tt[2])
+      assert_eq(hDlg:send("DM_GETDLGDATA"), Par2)
+      assert_eq(hDlg:send("DM_SETDLGDATA", tt[2]), tt[1])
+      assert_eq(hDlg:send("DM_GETDLGDATA"), tt[2])
 
       local info = assert_table(hDlg:send("DM_GETDIALOGINFO"))
       assert_eq(info.Id, win.Uuid(Items.guid))
