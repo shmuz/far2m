@@ -2139,15 +2139,34 @@ local function test_dialog_1()
   local tt = {"foo","bar","baz"}
 
   local Items =  {
+    guid="7C5407A5-7F41-47AD-9F7E-CBD78E60438C";
     data = tt[1];
-    {tp="dbox"}, {tp="edit"}, {tp="edit"},
+
+    {tp="dbox"; val="Text";    },
+    {tp="text"; val="Text1";   },
+    {tp="edit"; val="Text20";  },
+    {tp="butt"; val="Text300"; },
   }
-  Items.proc = function(hDlg,Msg,P1,P2)
+  Items.proc = function(hDlg, Msg, Par1, Par2)
     if Msg == F.DN_INITDIALOG then
-      assert(P1==2 and P2==Items.data)
-      assert(hDlg:send("DM_GETDLGDATA") == P2)
+      assert(Par1==3 and Par2==Items.data)
+      assert(hDlg:send("DM_GETDLGDATA") == Par2)
+
       hDlg:send("DM_SETDLGDATA", tt[2])
       assert(hDlg:send("DM_GETDLGDATA") == tt[2])
+
+      local info = assert_table(hDlg:send("DM_GETDIALOGINFO"))
+      assert_eq(info.Id, win.Uuid(Items.guid))
+      assert_eq(info.Owner, far.GetPluginId())
+
+      for k,item in ipairs(Items) do
+        assert_eq(hDlg:send("DM_GETTEXT", k), item.val)
+        local newtext = "---" .. item.val
+        local ref = newtext:len()
+        if item.tp == "butt" then ref = ref+4 end
+        assert_eq(ref, hDlg:send("DM_SETTEXT", k, newtext))
+      end
+
       hDlg:send("DM_CLOSE")
       Items.data = tt[3]
     end
