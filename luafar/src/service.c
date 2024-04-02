@@ -1302,6 +1302,39 @@ static int editor_SaveFile(lua_State *L)
 	return 1;
 }
 
+void PushInputRecord (lua_State* L, const INPUT_RECORD *Rec)
+{
+	lua_newtable(L);                   //+2: Func,Tbl
+	PutNumToTable(L, "EventType", Rec->EventType);
+	switch (Rec->EventType) {
+		case KEY_EVENT:
+			PutBoolToTable(L,"KeyDown",         Rec->Event.KeyEvent.bKeyDown);
+			PutNumToTable(L, "RepeatCount",     Rec->Event.KeyEvent.wRepeatCount);
+			PutNumToTable(L, "VirtualKeyCode",  Rec->Event.KeyEvent.wVirtualKeyCode);
+			PutNumToTable(L, "VirtualScanCode", Rec->Event.KeyEvent.wVirtualScanCode);
+			PutWStrToTable(L, "UnicodeChar",   &Rec->Event.KeyEvent.uChar.UnicodeChar, 1);
+			PutNumToTable(L, "ControlKeyState", Rec->Event.KeyEvent.dwControlKeyState);
+			break;
+
+		case MOUSE_EVENT:
+			PutMouseEvent(L, &Rec->Event.MouseEvent, TRUE);
+			break;
+
+		case WINDOW_BUFFER_SIZE_EVENT:
+			PutNumToTable(L, "SizeX", Rec->Event.WindowBufferSizeEvent.dwSize.X);
+			PutNumToTable(L, "SizeY", Rec->Event.WindowBufferSizeEvent.dwSize.Y);
+			break;
+
+		case MENU_EVENT:
+			PutNumToTable(L, "CommandId", Rec->Event.MenuEvent.dwCommandId);
+			break;
+
+		case FOCUS_EVENT:
+			PutBoolToTable(L, "SetFocus", Rec->Event.FocusEvent.bSetFocus);
+			break;
+	}
+}
+
 static int editor_ReadInput(lua_State *L)
 {
 	int EditorId = luaL_optinteger(L, 1, -1);
@@ -2530,7 +2563,7 @@ static void PushDlgItem (lua_State *L, const struct FarDialogItem* pItem, BOOL t
 	PutIntToArray  (L, 11, pItem->MaxLen);
 }
 
-LONG_PTR SendDlgMessage(HANDLE hDlg, int Msg, int Param1,	void *Param2)
+LONG_PTR SendDlgMessage(HANDLE hDlg, int Msg, int Param1, void *Param2)
 {
 	return PSInfo.SendDlgMessage(hDlg, Msg, Param1, (LONG_PTR)Param2);
 }
@@ -4031,39 +4064,6 @@ static int far_PasteFromClipboard (lua_State *L)
 	}
 	else lua_pushnil(L);
 	return 1;
-}
-
-void PushInputRecord (lua_State* L, const INPUT_RECORD *Rec)
-{
-	lua_newtable(L);                   //+2: Func,Tbl
-	PutNumToTable(L, "EventType", Rec->EventType);
-	switch (Rec->EventType) {
-		case KEY_EVENT:
-			PutBoolToTable(L,"KeyDown",         Rec->Event.KeyEvent.bKeyDown);
-			PutNumToTable(L, "RepeatCount",     Rec->Event.KeyEvent.wRepeatCount);
-			PutNumToTable(L, "VirtualKeyCode",  Rec->Event.KeyEvent.wVirtualKeyCode);
-			PutNumToTable(L, "VirtualScanCode", Rec->Event.KeyEvent.wVirtualScanCode);
-			PutWStrToTable(L, "UnicodeChar",   &Rec->Event.KeyEvent.uChar.UnicodeChar, 1);
-			PutNumToTable(L, "ControlKeyState", Rec->Event.KeyEvent.dwControlKeyState);
-			break;
-
-		case MOUSE_EVENT:
-			PutMouseEvent(L, &Rec->Event.MouseEvent, TRUE);
-			break;
-
-		case WINDOW_BUFFER_SIZE_EVENT:
-			PutNumToTable(L, "SizeX", Rec->Event.WindowBufferSizeEvent.dwSize.X);
-			PutNumToTable(L, "SizeY", Rec->Event.WindowBufferSizeEvent.dwSize.Y);
-			break;
-
-		case MENU_EVENT:
-			PutNumToTable(L, "CommandId", Rec->Event.MenuEvent.dwCommandId);
-			break;
-
-		case FOCUS_EVENT:
-			PutBoolToTable(L, "SetFocus", Rec->Event.FocusEvent.bSetFocus);
-			break;
-	}
 }
 
 static int far_KeyToName (lua_State *L)
