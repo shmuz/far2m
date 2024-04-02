@@ -2961,7 +2961,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			return lua_pushnil(L), 1;
 		}
 
-		case DM_GETSELECTION+100:
+		case DM_GETSELECTION:
 		{
 			struct EditorSelect es;
 
