@@ -2,12 +2,9 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
-#include "util.h"
-#include "ustring.h"
 #include "service.h"
-
-extern const char* VirtualKeyStrings[256];
-extern void NewVirtualKeyTable(lua_State* L, BOOL twoways);
+#include "ustring.h"
+#include "util.h"
 
 static BOOL dir_exist(const wchar_t* path)
 {

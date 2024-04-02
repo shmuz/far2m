@@ -14,6 +14,7 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
+#include "service.h"
 #include "util.h"
 
 #define MAX_TIMER_COUNT 1000

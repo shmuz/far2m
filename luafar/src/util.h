@@ -15,9 +15,6 @@
 
 #define COLLECTOR_UD "Collector_UserData"
 
-extern struct PluginStartupInfo PSInfo;
-extern struct FarStandardFunctions FSF;
-
 typedef struct {
 	TPluginData *plugin_data;
 	size_t    timer_id;

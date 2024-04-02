@@ -4,8 +4,8 @@
 #include <lua.h>
 #include <lauxlib.h>
 
+#include "service.h"
 #include "ustring.h"
-#include "util.h"
 
 #define TYPE_REGEX "far_regex"
 
