@@ -190,95 +190,124 @@ static HANDLE OptHandle2(lua_State *L)
 	return lua_isnoneornil(L,1) ? (luaL_checkinteger(L,2) % 2 ? PANEL_ACTIVE:PANEL_PASSIVE) : OptHandle(L);
 }
 
-flags_t GetFlags (lua_State *L, int stack_pos, int *success)
+static flags_t get_env_flag(lua_State *L, int pos, int *success)
 {
-	int dummy, ok;
-	flags_t trg = 0, flag;
+	int dummy;
+	const char *str;
+	flags_t ret = 0;
 
-	success = success ? success : &dummy;
-	*success = TRUE;
+	if (success)
+		*success = TRUE;
+	else
+		success = &dummy;
 
-	switch(lua_type(L,stack_pos))
+	switch(lua_type(L, pos))
 	{
 		case LUA_TNONE:
 		case LUA_TNIL:
 			break;
 
 		case LUA_TNUMBER:
-			trg = (flags_t)lua_tonumber(L, stack_pos);
+			ret = (flags_t)lua_tonumber(L, pos); // IMPORTANT: cast to signed integer.
 			break;
 
 		case LUA_TSTRING:
-		{
-			const char *p = lua_tostring(L, stack_pos), *q;
-			for (; *p; p=q)
-			{
-				while (isspace(*p) || *p=='+') p++;
-				if (*p == 0) break;
-				for (q=p+1; *q && !isspace(*q) && *q!='+'; ) q++;
-				lua_pushlstring(L, p, q-p);
-				lua_getfield (L, LUA_ENVIRONINDEX, lua_tostring(L, -1));
-				if (lua_isnumber(L, -1))
-					trg |= (flags_t)lua_tonumber(L, -1);
-				else
-					*success = FALSE;
-				lua_pop(L, 2);
-			}
-			break;
-		}
-
-		case LUA_TTABLE:
-			stack_pos = abs_index (L, stack_pos);
-			lua_pushnil(L);
-			while (lua_next(L, stack_pos)) {
-				if (lua_type(L,-2)==LUA_TSTRING && lua_toboolean(L,-1)) {
-					flag = GetFlags (L, -2, &ok); // recursion
-					if (ok)
-						trg |= flag;
-					else
-						*success = FALSE;
-				}
-				lua_pop(L, 1);
-			}
+			str = lua_tostring(L, pos);
+			lua_getfield (L, LUA_ENVIRONINDEX, str);
+			if (lua_type(L, -1) == LUA_TNUMBER)
+				ret = (flags_t)lua_tonumber(L, -1); // IMPORTANT: cast to signed integer.
+			else if (!bit64_getvalue(L, -1, &ret))
+				*success = FALSE;
+			lua_pop(L, 1);
 			break;
 
 		default:
-			*success = FALSE;
+			if (!bit64_getvalue(L, pos, &ret))
+				*success = FALSE;
 			break;
 	}
 
-	return trg;
+	return ret;
 }
 
-flags_t check_env_flag (lua_State *L, int stack_pos)
+static flags_t check_env_flag(lua_State *L, int pos)
 {
-	flags_t trg = 0;
 	int success = FALSE;
-	if (!lua_isnoneornil(L,stack_pos))
-		trg = GetFlags(L,stack_pos,&success);
-	if (!success)
-		luaL_argerror(L, stack_pos, "invalid flag");
-	return trg;
-}
+	flags_t ret = lua_isnoneornil(L, pos) ? 0 : get_env_flag(L, pos, &success);
 
-flags_t opt_env_flag (lua_State *L, int stack_pos, flags_t dflt)
-{
-	flags_t trg = dflt;
-	if (!lua_isnoneornil(L,stack_pos)) {
-		int success;
-		trg = GetFlags(L,stack_pos,&success);
-		if (!success)
-			luaL_argerror(L, stack_pos, "invalid flag");
+	if (!success)
+	{
+		if (lua_isstring(L, pos))
+		{
+			lua_pushfstring(L, "invalid flag: \"%s\"", lua_tostring(L, pos));
+			luaL_argerror(L, pos, lua_tostring(L, -1));
+		}
+		else
+			luaL_argerror(L, pos, "invalid flag");
 	}
-	return trg;
+
+	return ret;
 }
 
-flags_t CheckFlags(lua_State* L, int stackpos)
+flags_t GetFlagCombination(lua_State *L, int pos, int *success)
 {
-	int success;
-	flags_t Flags = GetFlags(L, stackpos, &success);
-	if (!success)
+	flags_t ret = 0;
+	flags_t flag;
+	pos = abs_index(L, pos);
+	if (success)
+		*success = TRUE;
+
+	if(lua_type(L, pos) == LUA_TTABLE)
+	{
+		lua_pushnil(L);
+
+		while(lua_next(L, pos))
+		{
+			if(lua_type(L,-2)==LUA_TSTRING && lua_toboolean(L,-1))
+			{
+				flag = get_env_flag(L, -2, success);
+
+				if(success == NULL || *success)
+					ret |= flag;
+				else
+					{ lua_pop(L,2); return ret; }
+			}
+
+			lua_pop(L, 1);
+		}
+	}
+	else if (lua_type(L, pos) == LUA_TSTRING)
+	{
+		const char *p = lua_tostring(L, pos), *q;
+		for (; *p; p=q)
+		{
+			int ok;
+			while (isspace(*p)) p++;
+			if (*p == 0) break;
+			for (q=p+1; *q && !isspace(*q); ) q++;
+			lua_pushlstring(L, p, q-p);
+			flag = get_env_flag(L, -1, &ok);
+			lua_pop(L, 1);
+			if (ok)
+				ret |= flag;
+			else if (success)
+				*success = FALSE;
+		}
+	}
+	else
+		ret = get_env_flag(L, pos, success);
+
+	return ret;
+}
+
+static flags_t CheckFlags(lua_State* L, int pos)
+{
+	int success = FALSE;
+	flags_t Flags = lua_isnoneornil(L, pos) ? 0 : GetFlagCombination(L, pos, &success);
+
+	if(!success)
 		luaL_error(L, "invalid flag combination");
+
 	return Flags;
 }
 
@@ -287,11 +316,21 @@ flags_t OptFlags(lua_State* L, int pos, flags_t dflt)
 	return lua_isnoneornil(L, pos) ? dflt : CheckFlags(L, pos);
 }
 
+static flags_t CheckFlagsFromTable(lua_State *L, int pos, const char* key)
+{
+	flags_t f = 0;
+	lua_getfield(L, pos, key);
+	if (!lua_isnil(L, -1))
+		f = CheckFlags(L, -1);
+	lua_pop(L, 1);
+	return f;
+}
+
 flags_t GetFlagsFromTable(lua_State *L, int pos, const char* key)
 {
 	flags_t f;
 	lua_getfield(L, pos, key);
-	f = GetFlags(L, -1, NULL);
+	f = GetFlagCombination(L, -1, NULL);
 	lua_pop(L, 1);
 	return f;
 }
@@ -938,7 +977,7 @@ static int editor_SetParam(lua_State *L)
 		esp.Size = ARRAYSIZE(buf);
 	}
 	//-----------------------------------------------------
-	esp.Flags = GetFlags (L, 4, NULL);
+	esp.Flags = GetFlagCombination (L, 4, NULL);
 	//-----------------------------------------------------
 	int result = PSInfo.EditorControlV2(editorId, ECTL_SETPARAM, &esp);
 	lua_pushboolean(L, result);
@@ -1093,7 +1132,7 @@ static int FillEditorSelect(lua_State *L, int pos_table, struct EditorSelect *es
 {
 	int OK;
 	lua_getfield(L, pos_table, "BlockType");
-	es->BlockType = GetFlags(L, -1, &OK);
+	es->BlockType = GetFlagCombination(L, -1, &OK);
 	if (!OK) {
 		lua_pop(L,1);
 		return 0;
@@ -1115,7 +1154,7 @@ static int editor_Select(lua_State *L)
 	if (lua_istable(L, 2))
 		result = FillEditorSelect(L, 2, &es);
 	else {
-		es.BlockType = GetFlags(L, 2, &result);
+		es.BlockType = GetFlagCombination(L, 2, &result);
 		if (result) {
 			es.BlockStartLine = luaL_optinteger(L, 3, 0) - 1;
 			es.BlockStartPos  = luaL_optinteger(L, 4, 0) - 1;
@@ -1258,7 +1297,7 @@ static int editor_AddColor(lua_State *L)
 	etc.Base.StringNumber = luaL_optinteger(L,2,0) - 1;
 	etc.Base.StartPos     = luaL_checkinteger(L,3) - 1;
 	etc.Base.EndPos       = luaL_checkinteger(L,4) - 1;
-	Flags                 = CheckFlags(L,5);
+	Flags                 = OptFlags(L,5,0);
 	isTrueColor           = lua_istable(L,6);
 
 	if (isTrueColor)
@@ -1398,7 +1437,7 @@ void FillInputRecord(lua_State *L, int pos, INPUT_RECORD *ir)
 
 	// determine event type
 	lua_getfield(L, pos, "EventType");
-	ir->EventType = GetFlags(L, -1, &ok);
+	ir->EventType = GetFlagCombination(L, -1, &ok);
 	if (!ok)
 		luaL_argerror(L, pos, "EventType field is missing or invalid");
 	lua_pop(L, 1);
@@ -1496,7 +1535,7 @@ static int far_Menu(lua_State *L)
 	Y = GetOptIntFromTable(L, "Y", -1);
 	MaxHeight = GetOptIntFromTable(L, "MaxHeight", 0);
 	lua_getfield(L, 1, "Flags");
-	Flags = CheckFlags(L, -1);
+	Flags = OptFlags(L, -1, 0);
 	lua_getfield(L, 1, "Title");
 	if(lua_isstring(L,-1))    Title = StoreTempString(L, 4, &store);
 	lua_getfield(L, 1, "Bottom");
@@ -2437,7 +2476,7 @@ static int GetDialogItemType(lua_State* L, int key, int item)
 	int ok;
 	lua_pushinteger(L, key);
 	lua_gettable(L, -2);
-	int iType = GetFlags(L, -1, &ok);
+	int iType = GetFlagCombination(L, -1, &ok);
 	if (!ok) {
 		const char* sType = lua_tostring(L, -1);
 		return luaL_error(L, "%s - unsupported type in dialog item %d", sType, item);
@@ -2453,7 +2492,7 @@ flags_t GetItemFlags(lua_State* L, int flag_index, int item_index)
 	int ok;
 	lua_pushinteger(L, flag_index);
 	lua_gettable(L, -2);
-	flags = GetFlags (L, -1, &ok);
+	flags = GetFlagCombination (L, -1, &ok);
 	if (!ok)
 		return luaL_error(L, "unsupported flag in dialog item %d", item_index);
 	lua_pop(L, 1);
@@ -2486,9 +2525,8 @@ struct FarList* CreateList(lua_State *L, int historyindex)
 			lua_rawseti(L, historyindex, ++len);     // +3
 		}
 		lua_pop(L, 1);                 // +2
-		lua_getfield(L, -1, "Flags");  // +3
-		p->Flags = CheckFlags(L,-1);
-		lua_pop(L,2);                  // +1
+		p->Flags = CheckFlagsFromTable(L, -1, "Flags");
+		lua_pop(L, 1);                 // +1
 	}
 	return list;
 }
@@ -2976,7 +3014,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			break;
 
 		case DM_LISTSETMOUSEREACTION:
-			Param2 = GetFlags (L, pos4, NULL);
+			Param2 = GetFlagCombination (L, pos4, NULL);
 			break;
 
 		case DM_GETCURSORPOS:
@@ -3145,7 +3183,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			lua_getfield(L, pos4, "Pattern");
 			flf.Pattern = check_utf8_string(L, -1, NULL);
 			lua_getfield(L, pos4, "Flags");
-			flf.Flags = GetFlags(L, -1, NULL);
+			flf.Flags = GetFlagCombination(L, -1, NULL);
 			res = SendDlgMessage(hDlg, Msg, Param1, &flf);
 			res < 0 ? lua_pushnil(L) : lua_pushinteger(L, res+1);
 			return 1;
@@ -3230,7 +3268,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			lua_getfield(L, pos4, "Text");
 			flins.Item.Text = lua_isstring(L,-1) ? check_utf8_string(L,-1,NULL) : NULL;
 			lua_getfield(L, pos4, "Flags"); //+1
-			flins.Item.Flags = CheckFlags(L, -1);
+			flins.Item.Flags = OptFlags(L, -1, 0);
 			res = SendDlgMessage(hDlg, Msg, Param1, &flins);
 			res < 0 ? lua_pushnil(L) : lua_pushinteger(L, res);
 			return 1;
@@ -3243,8 +3281,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			flu.Index = GetOptIntFromTable(L, "Index", 1) - 1;
 			lua_getfield(L, pos4, "Text");
 			flu.Item.Text = lua_isstring(L,-1) ? check_utf8_string(L,-1,NULL) : NULL;
-			lua_getfield(L, pos4, "Flags"); //+1
-			flu.Item.Flags = CheckFlags(L, -1);
+			flu.Item.Flags = CheckFlagsFromTable(L, pos4, "Flags");
 			lua_pushboolean(L, SendDlgMessage(hDlg, Msg, Param1, &flu) != 0);
 			return 1;
 		}
@@ -3903,7 +3940,7 @@ static int editor_Editor(lua_State *L)
 	int Y1 = luaL_optinteger(L, 4, 0);
 	int X2 = luaL_optinteger(L, 5, -1);
 	int Y2 = luaL_optinteger(L, 6, -1);
-	int Flags = CheckFlags(L,7);
+	int Flags = OptFlags(L,7,0);
 	int StartLine = luaL_optinteger(L, 8, -1);
 	int StartChar = luaL_optinteger(L, 9, -1);
 	int CodePage  = luaL_optinteger(L, 10, CP_AUTODETECT);
@@ -3920,7 +3957,7 @@ static int viewer_Viewer(lua_State *L)
 	int Y1 = luaL_optinteger(L, 4, 0);
 	int X2 = luaL_optinteger(L, 5, -1);
 	int Y2 = luaL_optinteger(L, 6, -1);
-	int Flags = CheckFlags(L, 7);
+	int Flags = OptFlags(L, 7, 0);
 	int CodePage = luaL_optinteger(L, 8, CP_AUTODETECT);
 	int ret = PSInfo.Viewer(FileName, Title, X1, Y1, X2, Y2, Flags, CodePage);
 	lua_pushboolean(L, ret);
@@ -4023,7 +4060,7 @@ static int viewer_SetMode(lua_State *L)
 	luaL_checktype(L, 2, LUA_TTABLE);
 
 	lua_getfield(L, 2, "Type");
-	vsm.Type = GetFlags (L, -1, &ok);
+	vsm.Type = GetFlagCombination (L, -1, &ok);
 	if (!ok)
 		return lua_pushboolean(L,0), 1;
 
@@ -4034,7 +4071,7 @@ static int viewer_SetMode(lua_State *L)
 		return lua_pushboolean(L,0), 1;
 
 	lua_getfield(L, 2, "Flags");
-	vsm.Flags = GetFlags (L, -1, &ok);
+	vsm.Flags = GetFlagCombination (L, -1, &ok);
 	if (!ok)
 		return lua_pushboolean(L,0), 1;
 
@@ -4046,7 +4083,7 @@ static int far_ShowHelp(lua_State *L)
 {
 	const wchar_t *ModuleName = check_utf8_string (L,1,NULL);
 	const wchar_t *HelpTopic = opt_utf8_string (L,2,NULL);
-	int Flags = CheckFlags(L,3);
+	int Flags = OptFlags(L,3,0);
 	BOOL ret = PSInfo.ShowHelp (ModuleName, HelpTopic, Flags);
 	return lua_pushboolean(L, ret), 1;
 }
@@ -4318,7 +4355,7 @@ static int far_MkLink(lua_State *L)
 	const wchar_t* src = check_utf8_string(L, 1, NULL);
 	const wchar_t* dst = check_utf8_string(L, 2, NULL);
 	DWORD link_type = OptFlags(L, 3, FLINK_SYMLINK);
-	flags_t flags = CheckFlags(L, 4);
+	flags_t flags = OptFlags(L, 4, 0);
 	flags = (link_type & 0x0000FFFF) | (flags & 0xFFFF0000);
 	lua_pushboolean(L, FSF.MkLink(src, dst, flags));
 	return 1;
@@ -4388,7 +4425,7 @@ static int far_RecursiveSearch(lua_State *L)
 	wchar_t *Mask = check_utf8_string(L, 2, NULL);
 
 	luaL_checktype(L, 3, LUA_TFUNCTION);
-	Flags = CheckFlags(L,4);
+	Flags = OptFlags(L, 4, 0);
 	if (lua_gettop(L) == 3)
 		lua_pushnil(L);
 
@@ -4466,7 +4503,7 @@ static int DoAdvControl (lua_State *L, int Command, int Delta)
 			if (lua_isnumber(L, pos2))
 				int1 = lua_tointeger(L, pos2);
 			else
-				int1 = opt_env_flag(L, pos2, -1);
+				int1 = OptFlags(L, pos2, -1);
 			if (int1 < -1) //this prevents program freeze
 				int1 = -1;
 			lua_pushinteger(L, PSInfo.AdvControl(pd->ModuleNumber, Command, (void*)int1));
@@ -4546,7 +4583,7 @@ static int DoAdvControl (lua_State *L, int Command, int Delta)
 			lua_settop(L, pos2);
 			fsc.StartIndex = GetOptIntFromTable(L, "StartIndex", 0);
 			lua_getfield(L, pos2, "Flags");
-			fsc.Flags = GetFlags(L, -1, NULL);
+			fsc.Flags = GetFlagCombination(L, -1, NULL);
 			fsc.ColorCount = lua_objlen(L, pos2);
 			fsc.Colors = (BYTE*)lua_newuserdata(L, fsc.ColorCount);
 			for (i=0; i < fsc.ColorCount; i++) {
@@ -4955,7 +4992,7 @@ static int far_InputRecordToName(lua_State* L)
 	lua_settop(L, 1);
 
 	lua_getfield(L, 1, "EventType");
-	event = GetFlags(L, -1, NULL);
+	event = GetFlagCombination(L, -1, NULL);
 	if (! (event==0 || event==KEY_EVENT))
 		return lua_pushnil(L), 1;
 
@@ -5319,7 +5356,7 @@ static int far_FormatFileSize(lua_State *L)
 static int far_Execute(lua_State *L)
 {
 	const wchar_t *CmdStr = check_utf8_string(L, 1, NULL);
-	int ExecFlags = CheckFlags(L, 2);
+	int ExecFlags = OptFlags(L, 2, 0);
 	lua_pushinteger(L, FSF.Execute(CmdStr, ExecFlags));
 	return 1;
 }
@@ -5329,7 +5366,7 @@ static int far_ExecuteLibrary(lua_State *L)
 	const wchar_t *Library = check_utf8_string(L, 1, NULL);
 	const wchar_t *Symbol  = check_utf8_string(L, 2, NULL);
 	const wchar_t *CmdStr  = check_utf8_string(L, 3, NULL);
-	int ExecFlags = CheckFlags(L, 4);
+	int ExecFlags = OptFlags(L, 4, 0);
 	lua_pushinteger(L, FSF.ExecuteLibrary(Library, Symbol, CmdStr, ExecFlags));
 	return 1;
 }
