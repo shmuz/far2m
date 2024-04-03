@@ -3387,7 +3387,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			break;
 
 		case DM_SETCOMBOBOXEVENT:
-			Param2 = CheckFlags(L, pos4);
+			Param2 = OptFlags(L, pos4, 0);
 			break;
 
 		case DM_SETEDITPOSITION:
