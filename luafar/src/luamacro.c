@@ -9,8 +9,6 @@
 extern int pcall_msg(lua_State* L, int narg, int nret);
 extern void PushFarMacroValue(lua_State* L, const struct FarMacroValue* val);
 
-static const DWORD LuamacroId = 0x4EBBEFC8;
-
 static int FL_PushParams(lua_State* L, const struct FarMacroCall* Data)
 {
 	int ret = lua_checkstack(L, 2 + (int)Data->Count);

@@ -5,6 +5,8 @@
 
 #include "luafar.h"
 
+static const DWORD LuamacroId = 0x4EBBEFC8;
+
 typedef int64_t flags_t;
 
 void          ConvertLuaValue (lua_State *L, int pos, struct FarMacroValue *target);
@@ -22,7 +24,6 @@ void          PushInputRecord (lua_State* L, const INPUT_RECORD *Rec);
 
 extern const char* VirtualKeyStrings[256];
 extern struct PluginStartupInfo PSInfo;
-extern struct FarStandardFunctions FSF;
 
 #endif // #ifndef LUAFAR_SERVICE_H
 

@@ -420,7 +420,7 @@ static int far_GetNumberOfLinks (lua_State *L)
 	return lua_pushinteger (L, num), 1;
 }
 
-static int far_LuafarVersion (lua_State *L)
+static int far_GetLuafarVersion(lua_State *L)
 {
 	if (lua_toboolean(L, 1))
 	{
@@ -3041,7 +3041,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 		}
 
 		case DM_GETDLGDATA: {
-			TDialogData *dd = (TDialogData*) PSInfo.SendDlgMessage(hDlg,DM_GETDLGDATA,0,0);
+			TDialogData *dd = (TDialogData*) PSInfo.SendDlgMessage(hDlg,Msg,0,0);
 			lua_rawgeti(L, LUA_REGISTRYINDEX, dd->dataRef);
 			return 1;
 		}
@@ -3049,8 +3049,9 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 		case DM_SETDLGDATA: {
 			TDialogData *dd = (TDialogData*) PSInfo.SendDlgMessage(hDlg,DM_GETDLGDATA,0,0);
 			lua_rawgeti(L, LUA_REGISTRYINDEX, dd->dataRef);
+			luaL_unref(L, LUA_REGISTRYINDEX, dd->dataRef);
 			lua_pushvalue(L, pos3);
-			lua_rawseti(L, LUA_REGISTRYINDEX, dd->dataRef);
+			dd->dataRef = luaL_ref(L, LUA_REGISTRYINDEX);
 			return 1;
 		}
 
@@ -5797,6 +5798,7 @@ static const luaL_Reg far_funcs[] = {
 	PAIR( far, GetDlgItem),
 	PAIR( far, GetFileGroup),
 	PAIR( far, GetFileOwner),
+	PAIR( far, GetLuafarVersion),
 	PAIR( far, GetMsg),
 	PAIR( far, GetMyHome),
 	PAIR( far, GetNumberOfLinks),
@@ -5825,7 +5827,6 @@ static const luaL_Reg far_funcs[] = {
 	PAIR( far, Log),
 	PAIR( far, LStricmp),
 	PAIR( far, LStrnicmp),
-	PAIR( far, LuafarVersion),
 	PAIR( far, LUpperBuf),
 	PAIR( far, MacroAdd),
 	PAIR( far, MacroCheck),
@@ -5909,7 +5910,7 @@ static int luaopen_far (lua_State *L)
 	luaopen_far_host(L);
 	lua_setfield(L, -2, "Host");
 
-	if (pd->Private)
+	if (pd->Private && pd->PluginId == LuamacroId)
 	{
 		lua_pushcfunction(L, far_MacroCallFar);
 		lua_setfield(L, -2, "MacroCallFar");
