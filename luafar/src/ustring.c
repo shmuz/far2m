@@ -100,7 +100,7 @@ double GetOptNumFromTable(lua_State *L, const char* key, double dflt)
 {
 	double ret = dflt;
 	lua_getfield(L, -1, key);
-	if(lua_isnumber(L,-1))
+	if (lua_isnumber(L,-1))
 		ret = lua_tonumber(L, -1);
 	lua_pop(L, 1);
 	return ret;
@@ -110,7 +110,7 @@ int GetOptIntFromTable(lua_State *L, const char* key, int dflt)
 {
 	int ret = dflt;
 	lua_getfield(L, -1, key);
-	if(lua_isnumber(L,-1))
+	if (lua_isnumber(L,-1))
 		ret = lua_tointeger(L, -1);
 	lua_pop(L, 1);
 	return ret;
@@ -121,7 +121,7 @@ int GetOptIntFromArray(lua_State *L, int key, int dflt)
 	int ret = dflt;
 	lua_pushinteger(L, key);
 	lua_gettable(L, -2);
-	if(lua_isnumber(L,-1))
+	if (lua_isnumber(L,-1))
 		ret = lua_tointeger(L, -1);
 	lua_pop(L, 1);
 	return ret;
@@ -207,7 +207,7 @@ char* push_multibyte_string(lua_State* L, UINT CodePage, const wchar_t* str, int
 	int targetSize;
 	char *target;
 
-	if(str == NULL) { lua_pushnil(L); return NULL; }
+	if (str == NULL) { lua_pushnil(L); return NULL; }
 
 	targetSize = WideCharToMultiByte(
 									 CodePage, // UINT CodePage,
@@ -220,7 +220,7 @@ char* push_multibyte_string(lua_State* L, UINT CodePage, const wchar_t* str, int
 									 NULL      // LPBOOL lpUsedDefaultChar
 							 );
 
-	if(targetSize == 0 && numchars == -1 && str[0])
+	if (targetSize == 0 && numchars == -1 && str[0])
 	{
 		luaL_error(L, "invalid UTF-32 string");
 	}
@@ -228,7 +228,7 @@ char* push_multibyte_string(lua_State* L, UINT CodePage, const wchar_t* str, int
 	target = (char*)lua_newuserdata(L, targetSize+1);
 	WideCharToMultiByte(CodePage, dwFlags, str, (int)numchars, target, targetSize, NULL, NULL);
 
-	if(numchars == -1)
+	if (numchars == -1)
 		--targetSize;
 
 	lua_pushlstring(L, target, targetSize);
@@ -248,7 +248,7 @@ void push_oem_string (lua_State* L, const wchar_t* str, int numchars)
 
 void push_wcstring(lua_State* L, const wchar_t* str, int numchars)
 {
-	if(numchars < 0)
+	if (numchars < 0)
 		numchars = wcslen(str);
 	lua_pushlstring(L, (const char*)str, numchars*sizeof(wchar_t));
 }
@@ -258,7 +258,7 @@ const wchar_t* check_wcstring(lua_State *L, int pos, size_t *len)
 	size_t ln;
 	const wchar_t* s = (const wchar_t*)luaL_checklstring(L, pos, &ln);
 
-	if(len) *len = ln / sizeof(wchar_t);
+	if (len) *len = ln / sizeof(wchar_t);
 
 	return s;
 }
@@ -278,7 +278,7 @@ static int ustring_WideCharToMultiByte(lua_State *L)
 	numchars /= sizeof(wchar_t);
 	codepage = (UINT)luaL_checkinteger(L, 2);
 
-	if(lua_isstring(L, 3))
+	if (lua_isstring(L, 3))
 	{
 		const char *s = lua_tostring(L, 3);
 
@@ -427,7 +427,7 @@ static int ustring_Uuid(lua_State* L)
 		size_t len;
 		const char* arg1 = luaL_checklstring(L, 1, &len);
 
-		if(len == sizeof(uuid)) // convert given UUID to string
+		if (len == sizeof(uuid)) // convert given UUID to string
 		{
 			memcpy(&uuid, arg1, sizeof(uuid));
 			sprintf(buf, "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
@@ -508,7 +508,7 @@ static int ustring_Uuid(lua_State* L)
 		size_t len;
 		const char* arg1 = luaL_checklstring(L, 1, &len);
 
-		if(len == sizeof(uuid)) {
+		if (len == sizeof(uuid)) {
 			// convert given UUID to string
 			memcpy(uuid, arg1, len);
 			shuffle_uuid(uuid);
@@ -518,7 +518,7 @@ static int ustring_Uuid(lua_State* L)
 		}
 		else if (len >= 2*sizeof(uuid)) {
 			// convert string UUID representation to UUID
-			if(0 == uuid_parse(arg1, uuid)) {
+			if (0 == uuid_parse(arg1, uuid)) {
 				shuffle_uuid(uuid);
 				lua_pushlstring(L, (const char*)uuid, sizeof(uuid));
 				return 1;
@@ -535,7 +535,7 @@ static int ustring_GetFileAttr(lua_State *L)
 {
 	DWORD attr = WINPORT(GetFileAttributes)(check_utf8_string(L,1,NULL));
 
-	if(attr == 0xFFFFFFFF) return SysErrorReturn(L);
+	if (attr == 0xFFFFFFFF) return SysErrorReturn(L);
 
 	PushAttrString(L, attr);
 	return 1;
@@ -563,17 +563,17 @@ static int ustring_subW(lua_State *L)
 	len /= sizeof(wchar_t);
 	from = luaL_optinteger(L, 2, 1);
 
-	if(from < 0) from += len+1;
+	if (from < 0) from += len+1;
 
-	if(--from < 0) from = 0;
-	else if((size_t)from > len) from = len;
+	if (--from < 0) from = 0;
+	else if ((size_t)from > len) from = len;
 
 	to = luaL_optinteger(L, 3, -1);
 
-	if(to < 0) to += len+1;
+	if (to < 0) to += len+1;
 
-	if(to < from) to = from;
-	else if((size_t)to > len) to = len;
+	if (to < from) to = from;
+	else if ((size_t)to > len) to = len;
 
 	lua_pushlstring(L, s + from*sizeof(wchar_t), (to-from)*sizeof(wchar_t));
 	return 1;

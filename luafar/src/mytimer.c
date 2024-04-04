@@ -43,7 +43,7 @@ static struct timer_node *g_head = NULL;
 
 int initialize()
 {
-		if(pthread_create(&g_thread_id, NULL, _timer_thread, NULL))
+		if (pthread_create(&g_thread_id, NULL, _timer_thread, NULL))
 		{
 				/*Thread creation failed*/
 				return 0;
@@ -59,7 +59,7 @@ size_t start_timer(unsigned int interval, time_handler handler, t_timer type, vo
 
 		new_node = (struct timer_node *)malloc(sizeof(struct timer_node));
 
-		if(new_node == NULL) return 0;
+		if (new_node == NULL) return 0;
 
 		new_node->callback  = handler;
 		new_node->user_data = user_data;
@@ -106,7 +106,7 @@ void stop_timer(size_t timer_id)
 
 		close(node->fd);
 
-		if(node == g_head)
+		if (node == g_head)
 		{
 				g_head = g_head->next;
 		} else {
@@ -115,13 +115,13 @@ void stop_timer(size_t timer_id)
 
 				while(tmp && tmp->next != node) tmp = tmp->next;
 
-				if(tmp)
+				if (tmp)
 				{
 						/*tmp->next can not be NULL here.*/
 						tmp->next = tmp->next->next;
 				}
 		}
-		if(node) free(node);
+		if (node) free(node);
 }
 
 void finalize()
@@ -138,7 +138,7 @@ struct timer_node * _get_timer_from_fd(int fd)
 
 		while(tmp)
 		{
-				if(tmp->fd == fd) return tmp;
+				if (tmp->fd == fd) return tmp;
 
 				tmp = tmp->next;
 		}
@@ -185,7 +185,7 @@ void * _timer_thread(void * data)
 
 								tmp = _get_timer_from_fd(ufds[i].fd);
 
-								if(tmp && tmp->callback) tmp->callback((size_t)tmp, tmp->user_data);
+								if (tmp && tmp->callback) tmp->callback((size_t)tmp, tmp->user_data);
 						}
 				}
 		}

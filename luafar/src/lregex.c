@@ -27,7 +27,7 @@ int method_gc(lua_State *L)
 {
 	TFarRegex* fr = CheckFarRegex(L, 1);
 
-	if(fr->hnd != INVALID_HANDLE_VALUE)
+	if (fr->hnd != INVALID_HANDLE_VALUE)
 	{
 		PSInfo.RegExpControl(fr->hnd, RECTL_FREE, 0);
 		fr->hnd = INVALID_HANDLE_VALUE;
@@ -47,14 +47,14 @@ const wchar_t* check_regex_pattern (lua_State *L, int pos_pat, int pos_cflags)
 {
 	const char* pat = luaL_checkstring(L, pos_pat);
 
-	if(*pat != '/')
+	if (*pat != '/')
 	{
 		const char* cflags = pos_cflags ? luaL_optstring(L, pos_cflags, NULL) : NULL;
 		lua_pushliteral(L, "/");
 		lua_pushvalue(L, pos_pat);
 		lua_pushliteral(L, "/");
 
-		if(cflags) lua_pushvalue(L, pos_cflags);
+		if (cflags) lua_pushvalue(L, pos_cflags);
 
 		lua_concat(L, 3 + (cflags?1:0));
 		lua_replace(L, pos_pat);
@@ -67,10 +67,10 @@ TFarRegex* push_far_regex(lua_State *L, const wchar_t* pat)
 {
 	TFarRegex* fr = (TFarRegex*)lua_newuserdata(L, sizeof(TFarRegex));
 
-	if(!PSInfo.RegExpControl(NULL, RECTL_CREATE, (LONG_PTR)&fr->hnd))
+	if (!PSInfo.RegExpControl(NULL, RECTL_CREATE, (LONG_PTR)&fr->hnd))
 		luaL_error(L, "RECTL_CREATE failed");
 
-	if(!PSInfo.RegExpControl(fr->hnd, RECTL_COMPILE, (LONG_PTR)pat))
+	if (!PSInfo.RegExpControl(fr->hnd, RECTL_COMPILE, (LONG_PTR)pat))
 		luaL_error(L, "invalid regular expression");
 
 //(void)PSInfo.RegExpControl(fr->hnd, RECTL_OPTIMIZE, 0, 0); // very slow operation
@@ -84,15 +84,15 @@ int _regex_gmatch_closure(lua_State *L, int is_wide)
 	TFarRegex* fr = (TFarRegex*)lua_touserdata(L, lua_upvalueindex(1));
 	struct RegExpSearch* pData = (struct RegExpSearch*)lua_touserdata(L, lua_upvalueindex(2));
 
-	if((pData->Position <= pData->Length) && PSInfo.RegExpControl(fr->hnd, RECTL_SEARCHEX, (LONG_PTR)pData))
+	if ((pData->Position <= pData->Length) && PSInfo.RegExpControl(fr->hnd, RECTL_SEARCHEX, (LONG_PTR)pData))
 	{
 		int i, skip = pData->Count>1 ? 1 : 0;
 
 		for(i=skip; i<pData->Count; i++)
 		{
-			if(pData->Match[i].start >= 0 && pData->Match[i].end >= pData->Match[i].start)
+			if (pData->Match[i].start >= 0 && pData->Match[i].end >= pData->Match[i].start)
 			{
-				if(is_wide)
+				if (is_wide)
 					push_wcstring(L, pData->Text+pData->Match[i].start, pData->Match[i].end-pData->Match[i].start);
 				else
 					push_utf8_string(L, pData->Text+pData->Match[i].start, pData->Match[i].end-pData->Match[i].start);
@@ -101,7 +101,7 @@ int _regex_gmatch_closure(lua_State *L, int is_wide)
 				lua_pushboolean(L, 0);
 		}
 
-		if(pData->Position < pData->Match[0].end)
+		if (pData->Position < pData->Match[0].end)
 			pData->Position = pData->Match[0].end;
 		else
 			pData->Position++;
@@ -162,9 +162,9 @@ int rx_find_match(lua_State *L, int Op, int is_function, int is_wide)
 	struct RegExpSearch data;
 	memset(&data, 0, sizeof(data));
 
-	if(is_function)
+	if (is_function)
 	{
-		if(is_wide)
+		if (is_wide)
 			data.Text = check_wcstring(L, 1, &len);
 		else
 			data.Text = check_utf8_string(L, 1, &len);
@@ -176,7 +176,7 @@ int rx_find_match(lua_State *L, int Op, int is_function, int is_wide)
 	{
 		fr = CheckFarRegex(L, 1);
 
-		if(is_wide)
+		if (is_wide)
 			data.Text = check_wcstring(L, 2, &len);
 		else
 			data.Text = check_utf8_string(L, 2, &len);
@@ -185,16 +185,16 @@ int rx_find_match(lua_State *L, int Op, int is_function, int is_wide)
 	data.Length = len;
 	data.Position = luaL_optinteger(L, 3, 1);
 
-	if(data.Position > 0 && --data.Position > data.Length)
+	if (data.Position > 0 && --data.Position > data.Length)
 		data.Position = data.Length;
 
-	if(data.Position < 0 && (data.Position += data.Length) < 0)
+	if (data.Position < 0 && (data.Position += data.Length) < 0)
 		data.Position = 0;
 
 	data.Count = PSInfo.RegExpControl(fr->hnd, RECTL_BRACKETSCOUNT, 0);
 	data.Match = (struct RegExpMatch*)lua_newuserdata(L, data.Count*sizeof(struct RegExpMatch));
 
-	if(PSInfo.RegExpControl(fr->hnd, RECTL_SEARCHEX, (LONG_PTR)&data))
+	if (PSInfo.RegExpControl(fr->hnd, RECTL_SEARCHEX, (LONG_PTR)&data))
 	{
 		int i;
 		int skip = (Op != OP_MATCH || data.Count>1) ? 1 : 0;
@@ -210,7 +210,7 @@ int rx_find_match(lua_State *L, int Op, int is_function, int is_wide)
 			for(i=skip; i<data.Count; i++)
 			{
 				int k = (i-skip)*2 + 1;
-				if(data.Match[i].start >= 0 && data.Match[i].end >= data.Match[i].start)
+				if (data.Match[i].start >= 0 && data.Match[i].end >= data.Match[i].start)
 				{
 					lua_pushinteger(L, data.Match[i].start+1);
 					lua_rawseti(L, -2, k);
@@ -235,9 +235,9 @@ int rx_find_match(lua_State *L, int Op, int is_function, int is_wide)
 				luaL_error(L, "cannot add %d stack slots", i);
 			for(i=skip; i<data.Count; i++)
 			{
-				if(data.Match[i].start >= 0 && data.Match[i].end >= data.Match[i].start)
+				if (data.Match[i].start >= 0 && data.Match[i].end >= data.Match[i].start)
 				{
-					if(is_wide)
+					if (is_wide)
 						push_wcstring(L, data.Text+data.Match[i].start, data.Match[i].end-data.Match[i].start);
 					else
 						push_utf8_string(L, data.Text+data.Match[i].start, data.Match[i].end-data.Match[i].start);
@@ -278,9 +278,9 @@ int rx_gsub(lua_State *L, int is_function, int is_wide)
 	struct RegExpSearch data;
 	memset(&data, 0, sizeof(data));
 
-	if(is_function)
+	if (is_function)
 	{
-		if(is_wide)
+		if (is_wide)
 			data.Text = check_wcstring(L, 1, &len);
 		else
 			data.Text = check_utf8_string(L, 1, &len);
@@ -292,7 +292,7 @@ int rx_gsub(lua_State *L, int is_function, int is_wide)
 	{
 		fr = CheckFarRegex(L, 1);
 
-		if(is_wide)
+		if (is_wide)
 			data.Text = check_wcstring(L, 2, &len);
 		else
 			data.Text = check_utf8_string(L, 2, &len);
@@ -305,42 +305,42 @@ int rx_gsub(lua_State *L, int is_function, int is_wide)
 	max_rep_capture = 0;
 	ftype = lua_type(L, 3);
 
-	if(ftype == LUA_TSTRING)
+	if (ftype == LUA_TSTRING)
 	{
 		const wchar_t* p;
 		f = check_utf8_string(L, 3, &flen);
 
 		for(p=f; *p; p++)
 		{
-			if(*p == L'%')
+			if (*p == L'%')
 			{
 				int n, ch;
 
-				if((ch = *++p) == 0) break;
+				if ((ch = *++p) == 0) break;
 
 				n = (ch >= L'0' && ch <= L'9') ? ch - L'0' :
 						(ch >= L'A' && ch <= L'Z') ? ch - L'A' + 10 :
 						(ch >= L'a' && ch <= L'z') ? ch - L'a' + 10 : -1;
 
-				if(max_rep_capture < n) max_rep_capture = n;
+				if (max_rep_capture < n) max_rep_capture = n;
 			}
 		}
 	}
-	else if(ftype != LUA_TTABLE && ftype != LUA_TFUNCTION)
+	else if (ftype != LUA_TTABLE && ftype != LUA_TFUNCTION)
 		luaL_argerror(L, 3, "string or table or function");
 
-	if(lua_isnoneornil(L, 4)) n = -1;
+	if (lua_isnoneornil(L, 4)) n = -1;
 	else
 	{
 		n = (int)luaL_checkinteger(L, 4);
 
-		if(n < 0) n = 0;
+		if (n < 0) n = 0;
 	}
 
 	lua_settop(L, 3);
 	data.Count = PSInfo.RegExpControl(fr->hnd, RECTL_BRACKETSCOUNT, 0);
 
-	if((ftype == LUA_TSTRING) &&
+	if ((ftype == LUA_TSTRING) &&
 					!(max_rep_capture == 1 && data.Count == 1) &&
 					(data.Count <= max_rep_capture))
 		luaL_error(L, "replace string: invalid capture index");
@@ -356,12 +356,12 @@ int rx_gsub(lua_State *L, int is_function, int is_wide)
 		intptr_t from, to;
 		intptr_t prev_end = data.Match[0].end;
 
-		if(!PSInfo.RegExpControl(fr->hnd, RECTL_SEARCHEX, (LONG_PTR)&data))
+		if (!PSInfo.RegExpControl(fr->hnd, RECTL_SEARCHEX, (LONG_PTR)&data))
 			break;
 
-		if(data.Match[0].end == prev_end)
+		if (data.Match[0].end == prev_end)
 		{
-			if(data.Position < data.Length)
+			if (data.Position < data.Length)
 			{
 				luaL_addlstring(&out, (const char*)(s+data.Position), sizeof(wchar_t));
 				data.Position++;
@@ -378,28 +378,28 @@ int rx_gsub(lua_State *L, int is_function, int is_wide)
 		luaL_addlstring(&out, (const char*)(s + data.Position),
 										(from - data.Position) * sizeof(wchar_t));
 
-		if(ftype == LUA_TSTRING)
+		if (ftype == LUA_TSTRING)
 		{
 			size_t i, start = 0;
 
 			for(i=0; i<flen; i++)
 			{
-				if(f[i] == L'%')
+				if (f[i] == L'%')
 				{
-					if(++i < flen)
+					if (++i < flen)
 					{
 						int ch = f[i];
 						int n = (ch >= L'0' && ch <= L'9') ? ch - L'0' :
 										(ch >= L'A' && ch <= L'Z') ? ch - L'A' + 10 :
 										(ch >= L'a' && ch <= L'z') ? ch - L'a' + 10 : -1;
 
-						if(n >= 0)
+						if (n >= 0)
 						{
-							if(n==1 && data.Count==1) n = 0;
+							if (n==1 && data.Count==1) n = 0;
 
 							luaL_addlstring(&out, (const char*)(f+start), (i-1-start)*sizeof(wchar_t));
 
-							if(data.Match[n].start >= 0)
+							if (data.Match[n].start >= 0)
 							{
 								luaL_addlstring(&out, (const char*)(s + data.Match[n].start),
 																(data.Match[n].end - data.Match[n].start) * sizeof(wchar_t));
@@ -425,22 +425,22 @@ int rx_gsub(lua_State *L, int is_function, int is_wide)
 			rep++;
 			luaL_addlstring(&out, (const char*)(f+start), (flen-start)*sizeof(wchar_t));
 		}
-		else if(ftype == LUA_TTABLE)
+		else if (ftype == LUA_TTABLE)
 		{
 			int n = data.Count==1 ? 0:1;
 
-			if(data.Match[n].start >= 0)
+			if (data.Match[n].start >= 0)
 			{
-				if(is_wide)
+				if (is_wide)
 					push_wcstring(L, s + data.Match[n].start, (data.Match[n].end - data.Match[n].start));
 				else
 					push_utf8_string(L, s + data.Match[n].start, (data.Match[n].end - data.Match[n].start));
 
 				lua_gettable(L, 3);
 
-				if(lua_isstring(L, -1))
+				if (lua_isstring(L, -1))
 				{
-					if(!is_wide)
+					if (!is_wide)
 					{
 						size_t len;
 						const wchar_t* ws = check_utf8_string(L, -1, &len);
@@ -451,7 +451,7 @@ int rx_gsub(lua_State *L, int is_function, int is_wide)
 					luaL_addvalue(&out);
 					rep++;
 				}
-				else if(lua_toboolean(L,-1))
+				else if (lua_toboolean(L,-1))
 					luaL_error(L, "invalid replacement type");
 				else
 					lua_pop(L, 1);
@@ -465,9 +465,9 @@ int rx_gsub(lua_State *L, int is_function, int is_wide)
 
 			for(i=skip; i<data.Count; i++)
 			{
-				if(data.Match[i].start >= 0 && data.Match[i].end >= data.Match[i].start)
+				if (data.Match[i].start >= 0 && data.Match[i].end >= data.Match[i].start)
 				{
-					if(is_wide)
+					if (is_wide)
 						push_wcstring(L, s + data.Match[i].start, (data.Match[i].end - data.Match[i].start));
 					else
 						push_utf8_string(L, s + data.Match[i].start, (data.Match[i].end - data.Match[i].start));
@@ -476,11 +476,11 @@ int rx_gsub(lua_State *L, int is_function, int is_wide)
 					lua_pushboolean(L, 0);
 			}
 
-			if(lua_pcall(L, (int)(data.Count-skip), 1, 0) == 0)
+			if (lua_pcall(L, (int)(data.Count-skip), 1, 0) == 0)
 			{
-				if(lua_isstring(L, -1))
+				if (lua_isstring(L, -1))
 				{
-					if(!is_wide)
+					if (!is_wide)
 					{
 						size_t len;
 						const wchar_t* ws = check_utf8_string(L, -1, &len);
@@ -491,7 +491,7 @@ int rx_gsub(lua_State *L, int is_function, int is_wide)
 					luaL_addvalue(&out);
 					rep++;
 				}
-				else if(lua_toboolean(L,-1))
+				else if (lua_toboolean(L,-1))
 					luaL_error(L, "invalid return type");
 				else
 					lua_pop(L, 1);
@@ -500,14 +500,14 @@ int rx_gsub(lua_State *L, int is_function, int is_wide)
 				luaL_error(L, lua_tostring(L, -1));
 		}
 
-		if(rep)
+		if (rep)
 			reps++;
 		else
 			luaL_addlstring(&out, (const char*)(s+from), (to-from)*sizeof(wchar_t));
 
-		if(data.Position < to)
+		if (data.Position < to)
 			data.Position = to;
-		else if(data.Position < data.Length)
+		else if (data.Position < data.Length)
 		{
 			luaL_addlstring(&out, (const char*)(s + data.Position), sizeof(wchar_t));
 			data.Position++;
@@ -520,7 +520,7 @@ int rx_gsub(lua_State *L, int is_function, int is_wide)
 									(data.Length - data.Position) * sizeof(wchar_t));
 	luaL_pushresult(&out);
 
-	if(!is_wide)
+	if (!is_wide)
 	{
 		push_utf8_string(L, (const wchar_t*)lua_tostring(L, -1), lua_objlen(L, -1) / sizeof(wchar_t));
 	}

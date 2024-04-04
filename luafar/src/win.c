@@ -40,7 +40,7 @@ static WORD ExtractKey(INPUT_RECORD* rec)
 	if (WINPORT(PeekConsoleInput)(hConInp,rec,1,&ReadCount), ReadCount)
 	{
 		WINPORT(ReadConsoleInput)(hConInp,rec,1,&ReadCount);
-		if(rec->EventType==KEY_EVENT)
+		if (rec->EventType==KEY_EVENT)
 			return 1;
 	}
 	return 0;
@@ -54,7 +54,7 @@ static int win_ExtractKey(lua_State *L)
 	if (ExtractKey(&rec) && rec.Event.KeyEvent.bKeyDown)
 	{
 		WORD vKey = rec.Event.KeyEvent.wVirtualKeyCode & 0xff;
-		if(vKey && VirtualKeyStrings[vKey])
+		if (vKey && VirtualKeyStrings[vKey])
 		{
 			lua_pushstring(L, VirtualKeyStrings[vKey]);
 			return 1;
@@ -190,7 +190,7 @@ static int win_FileTimeToLocalFileTime(lua_State *L)
 	ft.dwLowDateTime = llFileTime & 0xFFFFFFFF;
 	ft.dwHighDateTime = llFileTime >> 32;
 
-	if(WINPORT(FileTimeToLocalFileTime)(&ft, &local_ft))
+	if (WINPORT(FileTimeToLocalFileTime)(&ft, &local_ft))
 		pushFileTime(L, &local_ft);
 	else
 		return SysErrorReturn(L);
@@ -274,7 +274,7 @@ static int win_CopyFile (lua_State *L)
 		return 2;
 	}
 
-	if(lua_gettop(L) > 2) {
+	if (lua_gettop(L) > 2) {
 		int fail_if_exists = lua_toboolean(L,3);
 		if (fail_if_exists && (out=fopen(trg,"r"))) {
 			fclose(out);

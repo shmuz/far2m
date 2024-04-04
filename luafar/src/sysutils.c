@@ -15,7 +15,7 @@ const char strFileHandle[] = "sysutils.file_handle";
 HANDLE* checkFileHandle(lua_State *L)
 {
 	HANDLE* pHandle = (HANDLE*)luaL_checkudata(L, 1, strFileHandle);
-	if(*pHandle == INVALID_HANDLE_VALUE)
+	if (*pHandle == INVALID_HANDLE_VALUE)
 		luaL_error(L, "operation on closed file handle");
 	return pHandle;
 }
@@ -81,7 +81,7 @@ static int su_OpenFile(lua_State *L)
 	DWORD attr = DecodeAttributes(strAttr);
 
 	HANDLE handle = WINPORT(CreateFile)(fname, access, share, NULL, dispos, attr, NULL);
-	if(handle == INVALID_HANDLE_VALUE)
+	if (handle == INVALID_HANDLE_VALUE)
 		return SysErrorReturn(L);
 
 	if (strMode[0] == 'a') // append
@@ -95,7 +95,7 @@ int su_FileClose (lua_State *L)
 {
 	HANDLE *pHandle = checkFileHandle(L);
 	BOOL res = WINPORT(CloseHandle)(*pHandle);
-	if(res) {
+	if (res) {
 		*pHandle = INVALID_HANDLE_VALUE;
 		// prevent: a) 2nd closing by garbage collection handler;
 		//          b) repetitive closings by bad Lua scripts.
@@ -113,7 +113,7 @@ int su_FileRead (lua_State *L)
 	if (buf) {
 		DWORD nRead;
 		BOOL res = WINPORT(ReadFile)(*pHandle, buf, count, &nRead, NULL);
-		if(res)
+		if (res)
 			nRead ? lua_pushlstring(L, buf, nRead) : lua_pushnil(L);
 		free(buf);
 		if (res) return 1;
@@ -190,7 +190,7 @@ int su_FlushFileBuffers(lua_State *L)
 double L64toDouble (unsigned low, unsigned high)
 {
 	double result = low;
-	if(high)
+	if (high)
 	{
 		LARGE_INTEGER large;
 		large.LowPart = low;
@@ -210,7 +210,7 @@ const luaL_Reg su_funcs[] = {
 int gc_FileHandle (lua_State *L)
 {
 	HANDLE *pHandle = (HANDLE*)lua_touserdata(L, 1); // no need to check here, IMO
-	if(*pHandle != INVALID_HANDLE_VALUE)
+	if (*pHandle != INVALID_HANDLE_VALUE)
 		WINPORT(CloseHandle)(*pHandle);
 	return 0;
 }

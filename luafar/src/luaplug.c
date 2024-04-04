@@ -64,7 +64,7 @@ LUAPLUG void SetStartupInfoW(const struct PluginStartupInfo *aInfo)
 
 LUAPLUG void GetPluginInfoW(struct PluginInfo *aInfo)
 {
-	if(LS) {
+	if (LS) {
 		LF_GetPluginInfo (LS, aInfo);
 		aInfo->SysID = PluginData.PluginId;
 	}
@@ -99,7 +99,7 @@ LUAPLUG int GetFindDataW(HANDLE hPlugin, struct PluginPanelItem **pPanelItem,
 LUAPLUG void FreeFindDataW(HANDLE hPlugin, struct PluginPanelItem *PanelItem,
 												 int ItemsNumber)
 {
-	if(LS) LF_FreeFindData(LS, hPlugin, PanelItem, ItemsNumber);
+	if (LS) LF_FreeFindData(LS, hPlugin, PanelItem, ItemsNumber);
 }
 #endif
 //---------------------------------------------------------------------------
@@ -107,7 +107,7 @@ LUAPLUG void FreeFindDataW(HANDLE hPlugin, struct PluginPanelItem *PanelItem,
 #if defined(EXPORT_CLOSEPLUGIN) || defined(EXPORT_ALL)
 LUAPLUG void ClosePluginW(HANDLE hPlugin)
 {
-	if(LS) LF_ClosePanel(LS, hPlugin);
+	if (LS) LF_ClosePanel(LS, hPlugin);
 }
 #endif
 //---------------------------------------------------------------------------
@@ -124,7 +124,7 @@ LUAPLUG int GetFilesW(HANDLE hPlugin, struct PluginPanelItem *PanelItem,
 #if defined(EXPORT_GETOPENPLUGININFO) || defined(EXPORT_ALL)
 LUAPLUG void GetOpenPluginInfoW(HANDLE hPlugin, struct OpenPluginInfo *Info)
 {
-	if(LS) LF_GetOpenPanelInfo(LS, hPlugin, Info);
+	if (LS) LF_GetOpenPanelInfo(LS, hPlugin, Info);
 }
 #endif
 //---------------------------------------------------------------------------
@@ -132,7 +132,7 @@ LUAPLUG void GetOpenPluginInfoW(HANDLE hPlugin, struct OpenPluginInfo *Info)
 #if defined(EXPORT_EXITFAR) || defined(EXPORT_ALL)
 LUAPLUG void ExitFARW()
 {
-	if(LS) {
+	if (LS) {
 		LF_ExitFAR(LS);
 		LF_LuaClose(&PluginData);
 		LS = NULL;
@@ -179,14 +179,14 @@ LUAPLUG int DeleteFilesW(HANDLE hPlugin, struct PluginPanelItem *PanelItem,
 LUAPLUG int GetVirtualFindDataW(HANDLE hPlugin,
 	struct PluginPanelItem **pPanelItem, int *pItemsNumber, const wchar_t *Path)
 {
-	if(LS) return LF_GetVirtualFindData(LS,hPlugin,pPanelItem,pItemsNumber,Path);
+	if (LS) return LF_GetVirtualFindData(LS,hPlugin,pPanelItem,pItemsNumber,Path);
 	return FALSE;
 }
 
 LUAPLUG void FreeVirtualFindDataW(HANDLE hPlugin,
 	struct PluginPanelItem *PanelItem, int ItemsNumber)
 {
-	if(LS) LF_FreeVirtualFindData(LS, hPlugin, PanelItem, ItemsNumber);
+	if (LS) LF_FreeVirtualFindData(LS, hPlugin, PanelItem, ItemsNumber);
 }
 #endif
 //---------------------------------------------------------------------------
@@ -296,7 +296,7 @@ LUAPLUG int GetCustomDataW(const wchar_t *FilePath, wchar_t **CustomData)
 
 LUAPLUG void FreeCustomDataW(wchar_t *CustomData)
 {
-	if(LS) LF_FreeCustomData(LS, CustomData);
+	if (LS) LF_FreeCustomData(LS, CustomData);
 }
 #endif
 //---------------------------------------------------------------------------

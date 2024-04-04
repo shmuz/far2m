@@ -34,7 +34,7 @@ int bit64_push(lua_State *L, int64_t v)
 
 int bit64_getvalue(lua_State *L, int pos, int64_t *target)
 {
-	if(lua_type(L,pos)==LUA_TUSERDATA)
+	if (lua_type(L,pos)==LUA_TUSERDATA)
 	{
 		int equal;
 		lua_getmetatable(L, pos);
@@ -42,7 +42,7 @@ int bit64_getvalue(lua_State *L, int pos, int64_t *target)
 		equal = lua_rawequal(L,-1,-2);
 		lua_pop(L,2);
 
-		if(equal && target)
+		if (equal && target)
 		{
 			*target = *(int64_t*)lua_touserdata(L,pos);
 		}
@@ -58,10 +58,10 @@ int64_t check64(lua_State *L, int pos, int* success)
 	int64_t ret;
 	int tp = lua_type(L, pos);
 
-	if(success) *success = 1;
-	if(pos < 0) pos += lua_gettop(L) + 1; /* mandatory in this function */
+	if (success) *success = 1;
+	if (pos < 0) pos += lua_gettop(L) + 1; /* mandatory in this function */
 
-	if(tp == LUA_TNUMBER)
+	if (tp == LUA_TNUMBER)
 	{
 		double dd = lua_tonumber(L, pos);
 		if (FIT52(dd))
@@ -69,14 +69,14 @@ int64_t check64(lua_State *L, int pos, int* success)
 	}
 	else
 	{
-		if(tp == LUA_TSTRING)
+		if (tp == LUA_TSTRING)
 		{
 			lua_pushcfunction(L, f_new);
 			lua_pushvalue(L, pos);
 			lua_call(L, 1, 1);
 			lua_replace(L, pos);
 		}
-		if(bit64_getvalue(L, pos, &ret))
+		if (bit64_getvalue(L, pos, &ret))
 			return ret;
 	}
 
@@ -152,17 +152,17 @@ static int f_new(lua_State *L)
 {
 	int type = lua_type(L, 1);
 
-	if(type == LUA_TSTRING)
+	if (type == LUA_TSTRING)
 	{
 		int64_t v = 0;
 		size_t i = 0;
 		size_t len;
 		const char* s = lua_tolstring(L, 1, &len);
 
-		if(s[0]=='-')
+		if (s[0]=='-')
 			i++;
 
-		if(len-i > 2 && len-i <= 18 && s[i]=='0' && (s[i+1]=='x' || s[i+1]=='X'))
+		if (len-i > 2 && len-i <= 18 && s[i]=='0' && (s[i+1]=='x' || s[i+1]=='X'))
 		{
 			i += 2;
 
@@ -170,31 +170,31 @@ static int f_new(lua_State *L)
 			{
 				int a;
 
-				if(s[i] >= '0' && s[i] <= '9')      a = s[i] - '0';
-				else if(s[i] >= 'A' && s[i] <= 'F') a = s[i] + 10 - 'A';
-				else if(s[i] >= 'a' && s[i] <= 'f') a = s[i] + 10 - 'a';
+				if (s[i] >= '0' && s[i] <= '9')      a = s[i] - '0';
+				else if (s[i] >= 'A' && s[i] <= 'F') a = s[i] + 10 - 'A';
+				else if (s[i] >= 'a' && s[i] <= 'f') a = s[i] + 10 - 'a';
 				else break;
 
 				v = (v << 4) | a;
 			}
 
-			if(i == len)
+			if (i == len)
 				return bit64_pushuserdata(L, s[0] == '-' ? -v : v);
 		}
-		else if(len-i > 0)
+		else if (len-i > 0)
 		{
 			for(; i<len; i++)
 			{
-				if(s[i] >= '0' && s[i] <= '9')
+				if (s[i] >= '0' && s[i] <= '9')
 					v = (v * 10) + s[i] - '0';
 				else break;
 			}
 
-			if(i == len)
+			if (i == len)
 				return bit64_pushuserdata(L, s[0] == '-' ? -v : v);
 		}
 	}
-	else if(type == LUA_TNUMBER)
+	else if (type == LUA_TNUMBER)
 	{
 		double d = lua_tonumber(L, 1);
 		int64_t v = (int64_t)lua_tonumber(L, 1);
@@ -205,7 +205,7 @@ static int f_new(lua_State *L)
 	{
 		int64_t v;
 
-		if(bit64_getvalue(L, 1, &v))
+		if (bit64_getvalue(L, 1, &v))
 			return bit64_pushuserdata(L, v);
 	}
 
@@ -263,12 +263,12 @@ static int f_div(lua_State *L)
 	int64_t a1 = check64(L,1,NULL);
 	int64_t a2 = check64(L,2,NULL);
 
-	if(a2 != 0)
+	if (a2 != 0)
 		bit64_push(L, a1/a2);
 	else
 	{
-		if(a1 > 0)      bit64_push(L, 0x7FFFFFFFFFFFFFFFll);
-		else if(a1 < 0) bit64_push(L, 0x8000000000000000ll);
+		if (a1 > 0)      bit64_push(L, 0x7FFFFFFFFFFFFFFFll);
+		else if (a1 < 0) bit64_push(L, 0x8000000000000000ll);
 		else             bit64_push(L, 1);
 	}
 
@@ -280,7 +280,7 @@ static int f_mod(lua_State *L)
 	int64_t a1 = check64(L,1,NULL);
 	int64_t a2 = check64(L,2,NULL);
 
-	if(a2==0) a2=1;
+	if (a2==0) a2=1;
 
 	return bit64_push(L, a1%a2);
 }

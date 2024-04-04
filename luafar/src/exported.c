@@ -63,7 +63,7 @@ int GetExportFunction(lua_State* L, const char* FuncName)
 	if (lua_istable(L,-1))
 	{
 		lua_getfield(L, -1, FuncName);
-		if(lua_isfunction(L,-1))
+		if (lua_isfunction(L,-1))
 			return lua_remove(L,-2), 1;
 		lua_pop(L,1);
 	}
@@ -176,9 +176,9 @@ void* AddBufToCollector(lua_State *L, int pos, size_t size)
 const wchar_t** CreateStringsArray(lua_State* L, int cpos, const char* field, int *numstrings)
 {
 	const wchar_t **buf = NULL;
-	if(numstrings) *numstrings = 0;
+	if (numstrings) *numstrings = 0;
 	lua_getfield(L, -1, field);
-	if(lua_istable(L, -1)) {
+	if (lua_istable(L, -1)) {
 		int n = lua_objlen(L, -1);
 		if (numstrings) *numstrings = n;
 		if (n > 0) {
@@ -358,14 +358,14 @@ void UpdateFileSelection(lua_State* L, struct PluginPanelItem *PanelItems, int I
 	for(i=0; i<(int)ItemsNumber; i++)
 	{
 		lua_rawgeti(L, -1, i+1);           //+1
-		if(lua_istable(L,-1))
+		if (lua_istable(L,-1))
 		{
 			lua_getfield(L,-1,"Flags");      //+2
-			if(lua_toboolean(L,-1))
+			if (lua_toboolean(L,-1))
 			{
 				int success = 0;
 				DWORD Flags = GetFlagCombination(L,-1,&success);
-				if(success && ((Flags & PPIF_SELECTED) == 0))
+				if (success && ((Flags & PPIF_SELECTED) == 0))
 					PanelItems[i].Flags &= ~PPIF_SELECTED;
 			}
 			lua_pop(L,1);         //+1
@@ -505,7 +505,7 @@ HANDLE LF_OpenFilePlugin(lua_State* L, const wchar_t *aName,
 		return INVALID_HANDLE_VALUE;
 
 	if (GetExportFunction(L, "OpenFilePlugin")) {           //+1
-		if(aName) {
+		if (aName) {
 			push_utf8_string(L, aName, -1);                     //+2
 			lua_pushlstring(L, (const char*)aData, aDataSize);  //+3
 		}
@@ -534,10 +534,10 @@ void LF_GetOpenPanelInfo(lua_State* L, HANDLE hPlugin, struct OpenPluginInfo *aI
 		return;
 
 	PushPluginPair(L, hPlugin);                        //+3
-	if(pcall_msg(L, 2, 1) != 0)
+	if (pcall_msg(L, 2, 1) != 0)
 		return;
 
-	if(!lua_istable(L, -1)) {                          //+1: Info
+	if (!lua_istable(L, -1)) {                          //+1: Info
 		lua_pop(L, 1);
 		return;
 	}
@@ -574,7 +574,7 @@ void LF_GetOpenPanelInfo(lua_State* L, HANDLE hPlugin, struct OpenPluginInfo *aI
 			for (i=0; i<InfoLinesNumber; ++i,++pl,lua_pop(L,1)) {
 				lua_pushinteger(L, i+1);
 				lua_gettable(L, -2);
-				if(lua_istable(L, -1)) {          //+6: Info,Tbl,Coll,Info,Lines,Line
+				if (lua_istable(L, -1)) {          //+6: Info,Tbl,Coll,Info,Lines,Line
 					pl->Text = AddStringToCollectorField(L, cpos, "Text");
 					pl->Data = AddStringToCollectorField(L, cpos, "Data");
 					pl->Separator = GetOptIntFromTable(L, "Separator", 0);
@@ -601,7 +601,7 @@ void LF_GetOpenPanelInfo(lua_State* L, HANDLE hPlugin, struct OpenPluginInfo *aI
 			for (i=0; i<PanelModesNumber; ++i,++pm,lua_pop(L,1)) {
 				lua_pushinteger(L, i+1);
 				lua_gettable(L, -2);
-				if(lua_istable(L, -1)) {                //+6: Info,Tbl,Coll,Info,Modes,Mode
+				if (lua_istable(L, -1)) {                //+6: Info,Tbl,Coll,Info,Modes,Mode
 					pm->ColumnTypes  = (wchar_t*)AddStringToCollectorField(L, cpos, "ColumnTypes");
 					pm->ColumnWidths = (wchar_t*)AddStringToCollectorField(L, cpos, "ColumnWidths");
 					pm->FullScreen   = (int)GetOptBoolFromTable(L, "FullScreen", FALSE);
@@ -819,7 +819,7 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 					{
 						lua_pop(L,1); // nret
 						lua_rawgeti(L,-nret,1); // nret+1
-						if(lua_toboolean(L, -1))
+						if (lua_toboolean(L, -1))
 						{
 							struct FarMacroCall* fmc = (struct FarMacroCall*)
 								malloc(sizeof(struct FarMacroCall)+sizeof(struct FarMacroValue));
@@ -939,7 +939,7 @@ int LF_Configure(lua_State* L, int ItemNumber)
 	int res = FALSE;
 	if (GetExportFunction(L, "Configure")) { //+1: Func
 		lua_pushinteger(L, ItemNumber);
-		if(0 == pcall_msg(L, 1, 1)) {        //+1
+		if (0 == pcall_msg(L, 1, 1)) {        //+1
 			res = lua_toboolean(L,-1);
 			lua_pop(L,1);
 		}
@@ -955,7 +955,7 @@ int LF_DeleteFiles(lua_State* L, HANDLE hPlugin, struct PluginPanelItem *PanelIt
 		PushPluginPair(L, hPlugin);                //+3: Func,Pair
 		PushPanelItems(L, hPlugin, PanelItem, ItemsNumber); //+4
 		lua_pushinteger(L, OpMode);                //+5
-		if(0 == pcall_msg(L, 4, 1))    {           //+1
+		if (0 == pcall_msg(L, 4, 1))    {           //+1
 			res = lua_toboolean(L,-1);
 			lua_pop(L,1);
 		}
@@ -973,7 +973,7 @@ int LF_MakeDirectory (lua_State* L, HANDLE hPlugin, const wchar_t **Name, int Op
 		PushPluginPair(L, hPlugin);                //+3: Func,Pair
 		push_utf8_string(L, *Name, -1);            //+4
 		lua_pushinteger(L, OpMode);                //+5
-		if(0 == pcall_msg(L, 4, 2)) {              //+2
+		if (0 == pcall_msg(L, 4, 2)) {              //+2
 			res = lua_tointeger(L,-2);
 			if (res == 1 && lua_isstring(L,-1)) {
 				*Name = check_utf8_string(L,-1,NULL);
@@ -998,7 +998,7 @@ int LF_ProcessPanelEvent(lua_State* L, HANDLE hPlugin, int Event, void *Param)
 			push_utf8_string(L, (wchar_t*)Param, -1); //+5
 		else
 			lua_pushnil(L);                  //+5
-		if(0 == pcall_msg(L, 4, 1))  {     //+1
+		if (0 == pcall_msg(L, 4, 1))  {     //+1
 			res = lua_toboolean(L,-1);
 			lua_pop(L,1);                    //+0
 		}
@@ -1278,9 +1278,9 @@ int LF_ProcessDialogEvent (lua_State* L, int Event, void *Param)
 		PutIntToTable(L, "Param2", fde->Param2);
 	}
 
-	if(pcall_msg(L, 2, 1) == 0)      //+1
+	if (pcall_msg(L, 2, 1) == 0)      //+1
 	{
-		if((ret=lua_toboolean(L,-1)) != 0)
+		if ((ret=lua_toboolean(L,-1)) != 0)
 		{
 			fde->Result = PushDN ? ProcessDNResult(L, fde->Msg, fde->Param2) : lua_tointeger(L,-1);
 		}
@@ -1377,15 +1377,15 @@ int LF_ProcessConsoleInput(lua_State* L, INPUT_RECORD *Rec)
 {
 	int ret = 0;
 
-	if(GetExportFunction(L, "ProcessConsoleInput"))    //+1: Func
+	if (GetExportFunction(L, "ProcessConsoleInput"))    //+1: Func
 	{
 		PushInputRecord(L, Rec);                         //+2
 
-		if(pcall_msg(L, 1, 1) == 0)                      //+1: Res
+		if (pcall_msg(L, 1, 1) == 0)                      //+1: Res
 		{
-			if(lua_type(L,-1) == LUA_TNUMBER && lua_tonumber(L,-1) == 0)
+			if (lua_type(L,-1) == LUA_TNUMBER && lua_tonumber(L,-1) == 0)
 				ret = 0;
-			else if(lua_type(L,-1) == LUA_TTABLE)
+			else if (lua_type(L,-1) == LUA_TTABLE)
 			{
 				FillInputRecord(L, -1, Rec);
 				ret = 2;
