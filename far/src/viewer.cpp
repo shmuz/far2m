@@ -3437,6 +3437,16 @@ int Viewer::ViewerControl(int Command,void *Param)
 {
 	switch (Command)
 	{
+		case VCTL_GETFILENAME:
+		{
+			if (Param)
+			{
+				wcscpy(reinterpret_cast<LPWSTR>(Param), strFullFileName);
+			}
+
+			return static_cast<int>(strFullFileName.GetLength()+1);
+		}
+
 		case VCTL_GETINFO:
 		{
 			if (Param)

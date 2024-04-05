@@ -628,24 +628,37 @@ static int far_GetCurrentDirectory (lua_State *L)
 	return 1;
 }
 
-static int push_editor_filename(lua_State *L, int editorId)
+static int push_ev_filename(lua_State *L, int isEditor, int Id)
 {
-	int size = PSInfo.EditorControlV2(editorId, ECTL_GETFILENAME, 0);
+	wchar_t* fname;
+	int size = isEditor ?
+	       PSInfo.EditorControlV2(Id, ECTL_GETFILENAME, NULL) :
+	       PSInfo.ViewerControlV2(Id, VCTL_GETFILENAME, NULL);
+
 	if (!size) return 0;
 
-	wchar_t* fname = (wchar_t*)lua_newuserdata(L, size * sizeof(wchar_t));
-	if (PSInfo.EditorControlV2(editorId, ECTL_GETFILENAME, fname)) {
+	fname = (wchar_t*)lua_newuserdata(L, size * sizeof(wchar_t));
+	size = isEditor ?
+	       PSInfo.EditorControlV2(Id, ECTL_GETFILENAME, fname) :
+	       PSInfo.ViewerControlV2(Id, VCTL_GETFILENAME, fname);
+
+	if (size)
+	{
 		push_utf8_string(L, fname, -1);
 		lua_remove(L, -2);
 		return 1;
 	}
+
 	lua_pop(L,1);
 	return 0;
 }
 
-static int editor_GetFileName(lua_State *L) {
+static int editor_GetFileName(lua_State *L)
+{
 	int editorId = luaL_optinteger(L,1,-1);
-	if (!push_editor_filename(L, editorId)) lua_pushnil(L);
+
+	if (!push_ev_filename(L, 1, editorId)) lua_pushnil(L);
+
 	return 1;
 }
 
@@ -659,7 +672,7 @@ static int editor_GetInfo(lua_State *L)
 	lua_createtable(L, 0, 18);
 	PutNumToTable(L, "EditorID", ei.EditorID);
 
-	if (push_editor_filename(L, editorId))
+	if (push_ev_filename(L, 1, editorId))
 		lua_setfield(L, -2, "FileName");
 
 	PutNumToTable(L, "WindowSizeX", ei.WindowSizeX);
@@ -3968,12 +3981,9 @@ static int viewer_Viewer(lua_State *L)
 static int viewer_GetFileName(lua_State *L)
 {
 	int viewerId = luaL_optinteger(L,1,-1);
-	struct ViewerInfo vi;
-	vi.StructSize = sizeof(vi);
-	if (PSInfo.ViewerControlV2(viewerId, VCTL_GETINFO, &vi))
-		push_utf8_string(L, vi.FileName, -1);
-	else
-		lua_pushnil(L);
+
+	if (!push_ev_filename(L, 0, viewerId)) lua_pushnil(L);
+
 	return 1;
 }
 
@@ -3982,18 +3992,22 @@ static int viewer_GetInfo(lua_State *L)
 	int viewerId = luaL_optinteger(L,1,-1);
 	struct ViewerInfo vi;
 	vi.StructSize = sizeof(vi);
+
 	if (PSInfo.ViewerControlV2(viewerId, VCTL_GETINFO, &vi)) {
 		lua_createtable(L, 0, 10);
 		PutNumToTable(L,  "ViewerID",    vi.ViewerID);
-		PutWStrToTable(L, "FileName",    vi.FileName, -1);
-		PutNumToTable(L,  "FileSize",    vi.FileSize);
-		PutNumToTable(L,  "FilePos",     vi.FilePos);
+
+		if (push_ev_filename(L, 0, viewerId))
+			lua_setfield(L, -2, "FileName");
+
+		PutNumToTable(L,  "FileSize",    (double) vi.FileSize);
+		PutNumToTable(L,  "FilePos",     (double) vi.FilePos);
 		PutNumToTable(L,  "WindowSizeX", vi.WindowSizeX);
 		PutNumToTable(L,  "WindowSizeY", vi.WindowSizeY);
 		PutNumToTable(L,  "Options",     vi.Options);
 		PutNumToTable(L,  "TabSize",     vi.TabSize);
 		PutNumToTable(L,  "LeftPos",     vi.LeftPos + 1);
-		lua_createtable(L, 0, 4);
+		lua_createtable(L, 0, 5);
 		PutNumToTable (L, "CodePage",    vi.CurMode.CodePage);
 		PutBoolToTable(L, "Wrap",        vi.CurMode.Wrap);
 		PutNumToTable (L, "WordWrap",    vi.CurMode.WordWrap);
