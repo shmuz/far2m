@@ -444,7 +444,7 @@ function mod:Run()
     end
   end
   ----------------------------------------------------------------------------------------------
-  local UserProc = inData.proc
+  local UserProc = inData.proc or function() end
 
   local function DlgProc(hDlg, Msg, Par1, Par2)
     if Msg == F.DN_CLOSE then
@@ -452,14 +452,12 @@ function mod:Run()
         return UserProc(hDlg, Msg, Par1, self:GetDialogState(hDlg))
       end
 
-    elseif FarVer == 2 and Msg == F.DN_KEY or
-      FarVer == 3 and Msg==F.DN_CONTROLINPUT and Par2.EventType==F.KEY_EVENT and Par2.KeyDown
-    then
+    elseif FarVer == 2 and Msg==F.DN_KEY or
+           FarVer == 3 and Msg==F.DN_CONTROLINPUT and Par2.EventType==F.KEY_EVENT and Par2.KeyDown then
       local keyname = FarVer==2 and far.KeyToName(Par2) or FarVer==3 and far.InputRecordToName(Par2)
       if UserProc(hDlg, "EVENT_KEY", Par1, keyname) then
         return true
-      end
-      if keyname == "F1" then
+      elseif keyname == "F1" then
         if type(inData.help) == "function" then
           inData.help()
         end
@@ -472,8 +470,7 @@ function mod:Run()
       end
 
     elseif (FarVer == 2) and (Msg == F.DN_MOUSECLICK or Msg == F.DN_MOUSEEVENT) or
-           (FarVer == 3) and (Msg == F.DN_CONTROLINPUT and Par2.EventType == F.MOUSE_EVENT)
-    then
+           (FarVer == 3) and (Msg == F.DN_CONTROLINPUT and Par2.EventType == F.MOUSE_EVENT) then
       if Par1 <= 0 then Par1 = nil; end
       if UserProc(hDlg, "EVENT_MOUSE", Par1, Par2) then return true end
 
@@ -488,7 +485,6 @@ function mod:Run()
   local x1, y1 = inData.x1 or -1, inData.y1 or -1
   local x2 = x1==-1 and W or x1+W-1
   local y2 = y1==-1 and H or y1+H-1
-  DlgProc = UserProc and DlgProc or nil
 
   local hDlg = far.DialogInit(guid, x1,y1,x2,y2, help, outData, inData.flags, DlgProc, inData.data)
   if hDlg then
