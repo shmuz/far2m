@@ -628,7 +628,7 @@ static int far_GetCurrentDirectory (lua_State *L)
 	return 1;
 }
 
-static int push_ev_filename(lua_State *L, int isEditor, int Id)
+static int push_ev_filename(lua_State *L, BOOL isEditor, int Id)
 {
 	wchar_t* fname;
 	int size = isEditor ?
@@ -657,7 +657,7 @@ static int editor_GetFileName(lua_State *L)
 {
 	int editorId = luaL_optinteger(L,1,-1);
 
-	if (!push_ev_filename(L, 1, editorId)) lua_pushnil(L);
+	if (!push_ev_filename(L, TRUE, editorId)) lua_pushnil(L);
 
 	return 1;
 }
@@ -672,7 +672,7 @@ static int editor_GetInfo(lua_State *L)
 	lua_createtable(L, 0, 18);
 	PutNumToTable(L, "EditorID", ei.EditorID);
 
-	if (push_ev_filename(L, 1, editorId))
+	if (push_ev_filename(L, TRUE, editorId))
 		lua_setfield(L, -2, "FileName");
 
 	PutNumToTable(L, "WindowSizeX", ei.WindowSizeX);
@@ -3697,7 +3697,7 @@ static void RemoveDialogFromRegistry(TDialogData *dd)
 	lua_rawset(dd->L, LUA_REGISTRYINDEX);
 }
 
-BOOL NonModal(TDialogData *dd)
+static BOOL NonModal(TDialogData *dd)
 {
 	return dd && !dd->isModal;
 }
@@ -3982,7 +3982,7 @@ static int viewer_GetFileName(lua_State *L)
 {
 	int viewerId = luaL_optinteger(L,1,-1);
 
-	if (!push_ev_filename(L, 0, viewerId)) lua_pushnil(L);
+	if (!push_ev_filename(L, FALSE, viewerId)) lua_pushnil(L);
 
 	return 1;
 }
@@ -3997,7 +3997,7 @@ static int viewer_GetInfo(lua_State *L)
 		lua_createtable(L, 0, 10);
 		PutNumToTable(L,  "ViewerID",    vi.ViewerID);
 
-		if (push_ev_filename(L, 0, viewerId))
+		if (push_ev_filename(L, FALSE, viewerId))
 			lua_setfield(L, -2, "FileName");
 
 		PutNumToTable(L,  "FileSize",    (double) vi.FileSize);
@@ -5554,7 +5554,8 @@ static int far_DetectCodePage(lua_State *L)
 
 #define PAIR(prefix,txt) {#txt, prefix ## _ ## txt}
 
-static const luaL_Reg filefilter_methods[] = {
+static const luaL_Reg filefilter_methods[] =
+{
 	{"__gc",             filefilter_gc},
 	{"__tostring",       filefilter_tostring},
 	{"FreeFileFilter",   filefilter_Free},
@@ -5565,7 +5566,8 @@ static const luaL_Reg filefilter_methods[] = {
 	{NULL, NULL},
 };
 
-static const luaL_Reg dialog_methods[] = {
+static const luaL_Reg dialog_methods[] =
+{
 	{"__gc",                 far_DialogFree},
 	{"__tostring",           dialog_tostring},
 	{"rawhandle",            dialog_rawhandle},
@@ -5782,7 +5784,8 @@ static const luaL_Reg panel_funcs[] =
 	{NULL, NULL},
 };
 
-static const luaL_Reg far_funcs[] = {
+static const luaL_Reg far_funcs[] =
+{
 	PAIR( far, AdvControl),
 	PAIR( far, BackgroundTask),
 	PAIR( far, CheckMask),

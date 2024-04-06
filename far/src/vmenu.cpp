@@ -1911,7 +1911,7 @@ void VMenu::DisplayObject()
 	ClearFlags(VMENU_UPDATEREQUIRED);
 	Modal::ExitCode = -1;
 
-	SetCursorType(0,10);
+	SetCursorType(false,10);
 
 	if (!CheckFlags(VMENU_LISTBOX) && !SaveScr)
 	{

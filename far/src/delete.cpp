@@ -235,7 +235,7 @@ void ShellDelete(Panel *SrcPanel,int Wipe)
 	if (Opt.Confirm.Delete && SelCount>1)
 	{
 		//SaveScreen SaveScr;
-		SetCursorType(FALSE,0);
+		SetCursorType(false,0);
 		SetMessageHelp(L"DeleteFile");
 		const GUID *MsgId = Wipe ? &DeleteWipeId:&DeleteFileFolderId;
 
@@ -264,7 +264,7 @@ void ShellDelete(Panel *SrcPanel,int Wipe)
 		wakeful W;
 		bool Cancel=false;
 		//SaveScreen SaveScr;
-		SetCursorType(FALSE,0);
+		SetCursorType(false,0);
 		ReadOnlyDeleteMode=-1;
 		SkipMode=-1;
 		SkipWipeMode=-1;

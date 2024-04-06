@@ -149,7 +149,7 @@ void DizList::Read(const wchar_t *Path, const wchar_t *DizName)
 			{
 				if (!(DizCount & 127) && GetProcessUptimeMSec()-StartTime>1000)
 				{
-					SetCursorType(FALSE,0);
+					SetCursorType(false,0);
 					PR_ReadingMsg();
 
 					if (CheckForEsc())

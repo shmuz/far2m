@@ -63,7 +63,7 @@ HMenu::HMenu(HMenuData *Item,int ItemCount):
 void HMenu::DisplayObject()
 {
 	SetScreen(X1,Y1,X2,Y2,L' ',COL_HMENUTEXT);
-	SetCursorType(0,10);
+	SetCursorType(false,10);
 	ShowMenu();
 }
 

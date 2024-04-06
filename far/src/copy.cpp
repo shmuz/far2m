@@ -1520,7 +1520,7 @@ COPY_CODES ShellCopy::CopyFileTree(const wchar_t *Dest)
 	if (!(Length=StrLength(Dest)) || !StrCmp(Dest,L"."))
 		return COPY_FAILURE; //????
 
-	SetCursorType(FALSE,0);
+	SetCursorType(false,0);
 
 	if (!TotalCopySize)
 	{

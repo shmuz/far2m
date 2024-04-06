@@ -997,7 +997,7 @@ int FileEditor::ReProcessKey(FarKey Key,int CalledFromControl)
 
 					if (FrameManager->ShowBackground())
 					{
-						SetCursorType(FALSE,0);
+						SetCursorType(false,0);
 						WaitKey();
 					}
 
@@ -1587,7 +1587,7 @@ int FileEditor::LoadFile(const wchar_t *Name,int &UserBreak)
 				}
 			}
 
-			SetCursorType(FALSE,0);
+			SetCursorType(false,0);
 			INT64 CurPos=0;
 			EditFile.GetPointer(CurPos);
 			int Percent=static_cast<int>(CurPos*100/FileSize);
@@ -2018,7 +2018,7 @@ int FileEditor::SaveFile(const wchar_t *Name,int Ask, bool bSaveAs, int TextForm
 		      goto end;
 		    }
 		*/
-		SetCursorType(FALSE,0);
+		SetCursorType(false,0);
 		TPreRedrawFuncGuard preRedrawFuncGuard(Editor::PR_EditorShowMsg);
 
 		try

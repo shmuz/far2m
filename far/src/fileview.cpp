@@ -316,7 +316,7 @@ int FileViewer::ProcessKey(FarKey Key)
 			{
 				if (FrameManager->ShowBackground())
 				{
-					SetCursorType(FALSE,0);
+					SetCursorType(false,0);
 					WaitKey();
 					FrameManager->RefreshFrame();
 				}

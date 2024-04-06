@@ -531,7 +531,7 @@ void Viewer::ShowPage(int nMode)
 	}
 
 	if (HideCursor)
-		SetCursorType(0,10);
+		SetCursorType(false,10);
 
 	vseek(FilePos,SEEK_SET);
 
@@ -2589,7 +2589,7 @@ void Viewer::Search(int Next,int FirstChar)
 	{
 		TPreRedrawFuncGuard preRedrawFuncGuard(PR_ViewerSearchMsg);
 		//SaveScreen SaveScr;
-		SetCursorType(FALSE,0);
+		SetCursorType(false,0);
 		strMsgStr = strSearchStr;
 
 		if (strMsgStr.GetLength()+18 > static_cast<DWORD>(ObjWidth))

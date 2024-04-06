@@ -93,7 +93,7 @@ int GetDirInfo(const wchar_t *Title,
 	ScanTree ScTree(FALSE,TRUE, ( (Flags&GETDIRINFO_SCANSYMLINKDEF) ? -1 : ((Flags&GETDIRINFO_SCANSYMLINK) != 0) ) );
 	FAR_FIND_DATA_EX FindData;
 	clock_t StartTime=GetProcessUptimeMSec();
-	SetCursorType(FALSE,0);
+	SetCursorType(false,0);
 	/* $ 20.03.2002 DJ
 	   для . - покажем имя родительского каталога
 	*/
@@ -181,7 +181,7 @@ int GetDirInfo(const wchar_t *Title,
 			StartTime=CurTime;
 			MsgWaitTime=500;
 			OldTitle.Set(L"%ls %ls", Msg::ScanningFolder.CPtr(), ShowDirName); // покажем заголовок консоли
-			SetCursorType(FALSE,0);
+			SetCursorType(false,0);
 			DrawGetDirInfoMsg(Title,ShowDirName,FileSize);
 		}
 		if (FindData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {

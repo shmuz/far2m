@@ -1561,7 +1561,7 @@ static int FarGetDirListSynched(const wchar_t *Dir,FAR_FIND_DATA **pPanelItem,in
 
 				if (!MsgOut && GetProcessUptimeMSec()-StartTime > 500)
 				{
-					SetCursorType(FALSE,0);
+					SetCursorType(false,0);
 					PR_FarGetDirListMsg();
 					MsgOut=1;
 				}
@@ -1662,7 +1662,7 @@ int FarGetPluginDirListSynched(INT_PTR PluginNumber,
 				strDirName = Dir;
 				TruncStr(strDirName,30);
 				CenterStr(strDirName,strDirName,30);
-				SetCursorType(FALSE,0);
+				SetCursorType(false,0);
 				FarGetPluginDirListMsg(strDirName,0);
 				PluginSearchMsgOut=FALSE;
 				hDirListPlugin=&DirListPlugin;

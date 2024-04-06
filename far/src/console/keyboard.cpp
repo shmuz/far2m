@@ -1336,7 +1336,7 @@ FarKey WaitKey(FarKey KeyWait, DWORD delayMS, bool ExcludeMacro, bool EnableQuic
 	if (KeyWait == KEY_CTRLALTSHIFTRELEASE || KeyWait == KEY_RCTRLALTSHIFTRELEASE)
 	{
 		GetCursorType(Visible,Size);
-		SetCursorType(0,10);
+		SetCursorType(false,10);
 	}
 
 	clock_t CheckTime=GetProcessUptimeMSec()+delayMS;

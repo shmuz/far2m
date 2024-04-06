@@ -1556,7 +1556,7 @@ DWORD Dialog::CtlColorDlgItem(int ItemPos, const DialogItemEx *CurItem)
 		}
 		case DI_BUTTON: {
 			if (Focus) {
-				SetCursorType(0, 10);
+				SetCursorType(false, 10);
 				Attr = MAKEWORD((Flags & DIF_SETCOLOR)
 								? (Flags & DIF_COLORMASK)
 								: FarColorToReal(DialogMode.Check(DMODE_WARNINGSTYLE)
@@ -2062,7 +2062,7 @@ void Dialog::ShowDialog(unsigned ID)
 				{
 					//   Отключение мигающего курсора при перемещении диалога
 					if (!DialogMode.Check(DMODE_DRAGGED))
-						SetCursorType(1,-1);
+						SetCursorType(true,-1);
 
 					MoveCursor(X1+CX1+1,Y1+CY1);
 				}
@@ -2106,7 +2106,7 @@ void Dialog::ShowDialog(unsigned ID)
 				{
 					//   Отключение мигающего курсора при перемещении диалога
 					if (!DialogMode.Check(DMODE_DRAGGED))
-						SetCursorType(1,-1);
+						SetCursorType(true,-1);
 
 					EditPtr->Show();
 				}
@@ -2118,7 +2118,7 @@ void Dialog::ShowDialog(unsigned ID)
 
 				//   Отключение мигающего курсора при перемещении диалога
 				if (DialogMode.Check(DMODE_DRAGGED))
-					SetCursorType(0,0);
+					SetCursorType(false,0);
 
 				if (ItemHasDropDownArrow(CurItem))
 				{
@@ -2182,7 +2182,7 @@ void Dialog::ShowDialog(unsigned ID)
 							SetCursorType(CurItem->UCData->CursorVisible,CurItem->UCData->CursorSize);
 						}
 						else
-							SetCursorType(0,-1);
+							SetCursorType(false,-1);
 					}
 				}
 

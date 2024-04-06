@@ -194,7 +194,7 @@ int ScreenSaver(int EnableExit)
 	Console.GetCursorInfo(CursorInfo);
 	{
 		SaveScreen SaveScr;
-		SetCursorType(0, 10);
+		SetCursorType(false, 10);
 		randomize();
 		SetScreen(0, 0, ScrX, ScrY, L' ', F_LIGHTGRAY | B_BLACK);
 

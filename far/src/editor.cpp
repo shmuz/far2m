@@ -3607,7 +3607,7 @@ BOOL Editor::Search(int Next)
 		TPreRedrawFuncGuard preRedrawFuncGuard(Editor::PR_EditorShowMsg);
 		strMsgStr=strSearchStr;
 		InsertQuote(strMsgStr);
-		SetCursorType(FALSE,-1);
+		SetCursorType(false,-1);
 		Match=0;
 		UserBreak=0;
 		CurPos=CurLine->GetCurPos();
@@ -3659,7 +3659,7 @@ BOOL Editor::Search(int Next)
 
 				strMsgStr=strSearchStr;
 				InsertQuote(strMsgStr);
-				SetCursorType(FALSE,-1);
+				SetCursorType(false,-1);
 				int Total=ReverseSearch?StartLine:NumLastLine-StartLine;
 				int Current=abs(NewNumLine-StartLine);
 				EditorShowMsg(Msg::EditSearchTitle,Msg::EditSearchingFor,strMsgStr,Current*100/Total);

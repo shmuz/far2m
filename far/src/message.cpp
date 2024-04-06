@@ -415,7 +415,7 @@ static int ShowMessageSynched(
 	}
 
 	// *** Без Диалога! ***
-	SetCursorType(0,0);
+	SetCursorType(false,0);
 
 	if (!(Flags & MSG_KEEPBACKGROUND))
 	{

@@ -229,14 +229,14 @@ void Edit::DisplayObject()
 	   при DropDownBox курсор выключаем
 	   не знаю даже - попробовал но не очень красиво вышло */
 	if (Flags.Check(FEDITLINE_DROPDOWNBOX))
-		::SetCursorType(0, 10);
+		::SetCursorType(false, 10);
 	else {
 		if (Flags.Check(FEDITLINE_OVERTYPE)) {
 			int NewCursorSize = (Opt.CursorSize[2] ? Opt.CursorSize[2] : 99);
-			::SetCursorType(1, CursorSize == -1 ? NewCursorSize : CursorSize);
+			::SetCursorType(true, CursorSize == -1 ? NewCursorSize : CursorSize);
 		} else {
 			int NewCursorSize = (Opt.CursorSize[0] ? Opt.CursorSize[0] : 10);
-			::SetCursorType(1, CursorSize == -1 ? NewCursorSize : CursorSize);
+			::SetCursorType(true, CursorSize == -1 ? NewCursorSize : CursorSize);
 		}
 	}
 

@@ -703,7 +703,7 @@ void Help::DisplayObject()
 		return;
 	}
 
-	SetCursorType(0,10);
+	SetCursorType(false,10);
 
 	if (StackData.strSelTopic.IsEmpty())
 		MoveToReference(1,1);
