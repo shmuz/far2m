@@ -10,26 +10,19 @@
 #include "ustring.h"
 #include "util.h"
 
-// This function was initially taken from Lua 5.0.2 (loadlib.c)
-static void pusherrorcode(lua_State *L, int error)
-{
-#if 0
-	const int BUFSZ = 256;
-	wchar_t buffer[BUFSZ];
-	int num = FormatMessageW(FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_FROM_SYSTEM,
-		0, error, 0, buffer, BUFSZ, 0);
-	if (num)
-		push_utf8_string(L, buffer, num);
-	else
-#endif
-		lua_pushfstring(L, "system error %d\n", error);
-}
-
 int SysErrorReturn(lua_State *L)
 {
+	int err = errno;
+	const char *str = strerror(err);
+
 	lua_pushnil(L);
-	pusherrorcode(L, WINPORT(GetLastError)());
-	return 2;
+	if (str)
+		lua_pushfstring(L, "%s (%d)", str, err);
+	else
+		lua_pushfstring(L, "Error %d", err);
+
+	lua_pushinteger(L, err);
+	return 3;
 }
 
 void PutIntToArray(lua_State *L, int key, int val)
