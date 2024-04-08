@@ -14,7 +14,6 @@
 #include "farlibs.h"
 #include "ustring.h"
 #include "util.h"
-#include "version.h"
 #include "service.h"
 
 extern void add_flags (lua_State *L); // from generated file farflags.c
@@ -420,19 +419,6 @@ static int far_GetNumberOfLinks (lua_State *L)
 	return lua_pushinteger (L, num), 1;
 }
 
-static int far_GetLuafarVersion(lua_State *L)
-{
-	if (lua_toboolean(L, 1))
-	{
-		lua_pushinteger(L, VER_MAJOR);
-		lua_pushinteger(L, VER_MINOR);
-		lua_pushinteger(L, VER_MICRO);
-		return 3;
-	}
-	lua_pushfstring(L, "%d.%d.%d", (int)VER_MAJOR, (int)VER_MINOR, (int)VER_MICRO);
-	return 1;
-}
-
 static void GetMouseEvent(lua_State *L, MOUSE_EVENT_RECORD* rec)
 {
 	rec->dwMousePosition.X = GetOptIntFromTable(L, "MousePositionX", 0);
@@ -535,6 +521,7 @@ void PushPanelItem(lua_State *L, const struct PluginPanelItem *PanelItem)
 	PushFarFindData(L, &PanelItem->FindData);
 	PutNumToTable(L, "Flags", PanelItem->Flags);
 	PutNumToTable(L, "NumberOfLinks", PanelItem->NumberOfLinks);
+	PutNumToTable(L, "CRC32", PanelItem->CRC32);
 
 	if (PanelItem->Description)    PutWStrToTable(L, "Description",  PanelItem->Description, -1);
 	if (PanelItem->Owner)          PutWStrToTable(L, "Owner",  PanelItem->Owner, -1);
@@ -5815,7 +5802,6 @@ static const luaL_Reg far_funcs[] =
 	PAIR( far, GetDlgItem),
 	PAIR( far, GetFileGroup),
 	PAIR( far, GetFileOwner),
-	PAIR( far, GetLuafarVersion),
 	PAIR( far, GetMsg),
 	PAIR( far, GetMyHome),
 	PAIR( far, GetNumberOfLinks),
