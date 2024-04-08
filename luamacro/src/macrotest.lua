@@ -2002,10 +2002,9 @@ end
 
 local function test_PluginsControl()
   local mod = assert(far.PluginStartupInfo().ModuleName)
-  local hnd1 = far.FindPlugin("PFM_MODULENAME", mod)
-  assert_udata(hnd1)
-  local hnd2 = far.FindPlugin("PFM_SYSID", luamacroId)
-  assert_eq(hnd1, hnd2)
+  local hnd1 = assert_udata(far.FindPlugin("PFM_MODULENAME", mod))
+  local hnd2 = assert_udata(far.FindPlugin("PFM_SYSID", luamacroId))
+  assert_eq(hnd1:rawhandle(), hnd2:rawhandle())
 
   local info = far.GetPluginInformation(hnd1)
   assert_table(info)

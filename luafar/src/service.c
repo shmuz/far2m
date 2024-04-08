@@ -41,6 +41,7 @@ struct FarStandardFunctions FSF;
 
 const char FarFileFilterType[] = "FarFileFilter";
 const char FarDialogType[]     = "FarDialog";
+const char PluginHandleType[]  = "FarPluginHandle";
 const char AddMacroDataType[]  = "FarAddMacroData";
 const char SavedScreenType[]   = "FarSavedScreen";
 
@@ -343,6 +344,26 @@ TPluginData* GetPluginData(lua_State* L)
 	else
 		luaL_error (L, "TPluginData is not available.");
 	return pd;
+}
+
+static void PushPluginHandle(lua_State *L, HANDLE Handle)
+{
+	if (Handle)
+	{
+		HANDLE *p = (HANDLE*)lua_newuserdata(L, sizeof(HANDLE));
+		*p = Handle;
+		luaL_getmetatable(L, PluginHandleType);
+		lua_setmetatable(L, -2);
+	}
+	else
+		lua_pushnil(L);
+}
+
+static int PluginHandle_rawhandle(lua_State *L)
+{
+	void* Handle = *(void**)luaL_checkudata(L, 1, PluginHandleType);
+	lua_pushlightuserdata(L, Handle);
+	return 1;
 }
 
 void ConvertLuaValue (lua_State *L, int pos, struct FarMacroValue *target)
@@ -5150,19 +5171,19 @@ static int plugin_load(lua_State *L, enum FAR_PLUGINS_CONTROL_COMMANDS command)
 	void *param2 = check_utf8_string(L, 2, NULL);
 	intptr_t result = PSInfo.PluginsControlV3(INVALID_HANDLE_VALUE, command, param1, param2);
 
-	if (result) lua_pushlightuserdata(L, (void*)result);
+	if (result) PushPluginHandle(L, (void*)result);
 	else lua_pushnil(L);
 
 	return 1;
 }
 
-static int far_LoadPlugin(lua_State *L)       { return plugin_load(L, PCTL_LOADPLUGIN); }
+static int far_LoadPlugin(lua_State *L) { return plugin_load(L, PCTL_LOADPLUGIN); }
 static int far_ForcedLoadPlugin(lua_State *L) { return plugin_load(L, PCTL_FORCEDLOADPLUGIN); }
 
 static int far_UnloadPlugin(lua_State *L)
 {
-	void* Handle = lua_touserdata(L, 1);
-	lua_pushboolean(L, Handle ? PSInfo.PluginsControlV3(Handle, PCTL_UNLOADPLUGIN, 0, 0) : 0);
+	void* Handle = *(void**)luaL_checkudata(L, 1, PluginHandleType);
+	lua_pushboolean(L, PSInfo.PluginsControlV3(Handle, PCTL_UNLOADPLUGIN, 0, 0) != 0);
 	return 1;
 }
 
@@ -5188,7 +5209,7 @@ static int far_FindPlugin(lua_State *L)
 
 		if (handle)
 		{
-			lua_pushlightuserdata(L, (void*)handle);
+			PushPluginHandle(L, (void*)handle);
 			return 1;
 		}
 	}
@@ -5223,12 +5244,8 @@ static void PutPluginMenuItemToTable(lua_State *L, const char* Field, const wcha
 static int far_GetPluginInformation(lua_State *L)
 {
 	struct FarGetPluginInformation *pi;
-	HANDLE Handle;
-	size_t size;
-
-	luaL_checktype(L, 1, LUA_TLIGHTUSERDATA);
-	Handle = lua_touserdata(L, 1);
-	size = PSInfo.PluginsControlV3(Handle, PCTL_GETPLUGININFORMATION, 0, 0);
+	HANDLE Handle = *(HANDLE*)luaL_checkudata(L, 1, PluginHandleType);
+	size_t size = PSInfo.PluginsControlV3(Handle, PCTL_GETPLUGININFORMATION, 0, 0);
 
 	if (size == 0) return lua_pushnil(L), 1;
 
@@ -5291,7 +5308,7 @@ static int far_GetPlugins(lua_State *L)
 
 		for(i=0; i<count; i++)
 		{
-			lua_pushlightuserdata(L, handles[i]);
+			PushPluginHandle(L, handles[i]);
 			lua_rawseti(L, -3, i+1);
 		}
 
@@ -5952,6 +5969,12 @@ static int luaopen_far (lua_State *L)
 	luaL_register(L, NULL, dialog_methods);
 
 	(void) luaL_dostring(L, far_Dialog);
+
+	luaL_newmetatable(L, PluginHandleType);
+	lua_pushvalue(L, -1);
+	lua_setfield(L, -2, "__index");
+	lua_pushcfunction(L, PluginHandle_rawhandle);
+	lua_setfield(L, -2, "rawhandle");
 
 	luaL_newmetatable(L, AddMacroDataType);
 	lua_pushcfunction(L, AddMacroData_gc);
