@@ -191,9 +191,9 @@ static void UpdatePathOptions(const FARString &strDestName)
 		else {
 			*outCurFile = PointToName(strDestName);
 			*outFolder = strDestName;
-			CutToSlash(*outFolder, true);
-			if (*outFolder != L"/")
-				CutToSlash(*outFolder, false);
+			CutToSlash(*outFolder, false);
+			if (outFolder->IsEmpty())
+				*outFolder = L"/";
 		}
 	}
 }
