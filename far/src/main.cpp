@@ -162,7 +162,7 @@ static FARString ExecuteCommandAndGrabItsOutput(FARString cmd)
 }
 
 
-void UpdatePathOptions(const FARString &strDestName)
+static void UpdatePathOptions(const FARString &strDestName)
 {
 	Opt.SetupArgv++;
 
