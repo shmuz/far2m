@@ -24,8 +24,8 @@ RM="/bin/rm"
 
 case "$1" in
     remove|upgrade|deconfigure)
-    $RM -f "$bin_dir/far2l" "$lib_dir/far2l_askpass"
-    $RM -f "$bin_dir/far2l" "$lib_dir/far2l_sudoapp"
+    $RM -f "$bin_dir/far2l" "$lib_dir/far2m_askpass"
+    $RM -f "$bin_dir/far2l" "$lib_dir/far2m_sudoapp"
     ;;
 
     failed-upgrade)
