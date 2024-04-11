@@ -113,109 +113,36 @@ void FilePanels::Init()
 	LeftPanel->SetDirectoriesFirst(Opt.LeftPanel.DirectoriesFirst);
 	RightPanel->SetDirectoriesFirst(Opt.RightPanel.DirectoriesFirst);
 	SetCanLoseFocus(true);
-	Panel *PassivePanel=nullptr;
-	int PassiveIsLeftFlag=TRUE;
 
-	if (Opt.LeftPanel.Focus)
-	{
-		ActivePanel=LeftPanel;
-		PassivePanel=RightPanel;
-		PassiveIsLeftFlag=FALSE;
-	}
-	else
-	{
-		ActivePanel=RightPanel;
-		PassivePanel=LeftPanel;
-		PassiveIsLeftFlag=TRUE;
-	}
-
+	ActivePanel = Opt.LeftPanel.Focus ? LeftPanel : RightPanel;
 	ActivePanel->SetFocus();
-	// пытаемся избавится от зависания при запуске
+
+	// пытаемся избавиться от зависания при запуске
 	int IsLocalPath_FarPath=IsLocalPath(g_strFarPath);
 	PrepareOptFolder(Opt.strLeftFolder,IsLocalPath_FarPath);
 	PrepareOptFolder(Opt.strRightFolder,IsLocalPath_FarPath);
 
-	if (Opt.AutoSaveSetup || !Opt.SetupArgv)
-	{
-		if (apiGetFileAttributes(Opt.strLeftFolder)!=INVALID_FILE_ATTRIBUTES)
-			LeftPanel->InitCurDir(Opt.strLeftFolder);
+	if (apiGetFileAttributes(Opt.strLeftFolder)!=INVALID_FILE_ATTRIBUTES)
+		LeftPanel->InitCurDir(Opt.strLeftFolder);
 
-		if (apiGetFileAttributes(Opt.strRightFolder)!=INVALID_FILE_ATTRIBUTES)
-			RightPanel->InitCurDir(Opt.strRightFolder);
-	}
-
-	if (!Opt.AutoSaveSetup)
-	{
-		if (Opt.SetupArgv >= 1)
-		{
-			if (ActivePanel==RightPanel)
-			{
-				if (apiGetFileAttributes(Opt.strRightFolder)!=INVALID_FILE_ATTRIBUTES)
-					RightPanel->InitCurDir(Opt.strRightFolder);
-			}
-			else
-			{
-				if (apiGetFileAttributes(Opt.strLeftFolder)!=INVALID_FILE_ATTRIBUTES)
-					LeftPanel->InitCurDir(Opt.strLeftFolder);
-			}
-
-			if (Opt.SetupArgv == 2)
-			{
-				if (ActivePanel==LeftPanel)
-				{
-					if (apiGetFileAttributes(Opt.strRightFolder)!=INVALID_FILE_ATTRIBUTES)
-						RightPanel->InitCurDir(Opt.strRightFolder);
-				}
-				else
-				{
-					if (apiGetFileAttributes(Opt.strLeftFolder)!=INVALID_FILE_ATTRIBUTES)
-						LeftPanel->InitCurDir(Opt.strLeftFolder);
-				}
-			}
-		}
-
-		const wchar_t *PassiveFolder=PassiveIsLeftFlag?Opt.strLeftFolder:Opt.strRightFolder;
-
-		if (Opt.SetupArgv < 2 && *PassiveFolder && (apiGetFileAttributes(PassiveFolder)!=INVALID_FILE_ATTRIBUTES))
-		{
-			PassivePanel->InitCurDir(PassiveFolder);
-		}
-	}
-
-#if 1
+	if (apiGetFileAttributes(Opt.strRightFolder)!=INVALID_FILE_ATTRIBUTES)
+		RightPanel->InitCurDir(Opt.strRightFolder);
 
 	//! Вначале "показываем" пассивную панель
-	if (PassiveIsLeftFlag)
+	Panel *PassivePanel = Opt.LeftPanel.Focus ? RightPanel : LeftPanel;
+	if ((PassivePanel==LeftPanel && Opt.LeftPanel.Visible) || (PassivePanel==RightPanel && Opt.RightPanel.Visible))
 	{
-		if (Opt.LeftPanel.Visible)
-		{
-			LeftPanel->Show();
-		}
-
-		if (Opt.RightPanel.Visible)
-		{
-			RightPanel->Show();
-		}
+		PassivePanel->Show();
 	}
-	else
+	if ((ActivePanel==LeftPanel && Opt.LeftPanel.Visible) || (ActivePanel==RightPanel && Opt.RightPanel.Visible))
 	{
-		if (Opt.RightPanel.Visible)
-		{
-			RightPanel->Show();
-		}
-
-		if (Opt.LeftPanel.Visible)
-		{
-			LeftPanel->Show();
-		}
+		ActivePanel->Show();
 	}
 
-#endif
-
-	// при понашенных панелях не забыть бы выставить корректно каталог в CmdLine
+	// при погашенных панелях не забыть бы выставить корректно каталог в CmdLine
 	if (!Opt.RightPanel.Visible && !Opt.LeftPanel.Visible)
 	{
-		CtrlObject->CmdLine->SetCurDir(PassiveIsLeftFlag?Opt.strRightFolder:Opt.strLeftFolder);
+		CtrlObject->CmdLine->SetCurDir(ActivePanel==LeftPanel ? Opt.strLeftFolder:Opt.strRightFolder);
 	}
 
 	SetKeyBar(&MainKeyBar);
