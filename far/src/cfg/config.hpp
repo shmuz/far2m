@@ -421,7 +421,6 @@ struct Options
 	FARString strQuotedSymbols;
 	DWORD QuotedName;
 	int AutoSaveSetup;
-	int SetupArgv; // количество каталогов в ком.строке ФАРа
 	int ChangeDriveMode;
 	int ChangeDriveDisconnectMode;
 	FARString ChangeDriveExceptions;

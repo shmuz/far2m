@@ -162,14 +162,12 @@ static FARString ExecuteCommandAndGrabItsOutput(FARString cmd)
 }
 
 
-static void UpdatePathOptions(const FARString &strDestName)
+static void UpdatePathOptions(const FARString &strDestName, bool IsActivePanel)
 {
-	Opt.SetupArgv++;
-
 	FARString *outFolder, *outCurFile;
 
 	// Та панель, которая имеет фокус - активна (начнем по традиции с Левой Панели ;-)
-	if ((Opt.SetupArgv == 1 && Opt.LeftPanel.Focus) || (Opt.SetupArgv == 2 && !Opt.LeftPanel.Focus)) {
+	if ((IsActivePanel && Opt.LeftPanel.Focus) || (!IsActivePanel && !Opt.LeftPanel.Focus)) {
 		Opt.LeftPanel.Type = FILE_PANEL;  // сменим моду панели
 		Opt.LeftPanel.Visible = TRUE;     // и включим ее
 		outFolder = &Opt.strLeftFolder;
@@ -269,17 +267,16 @@ static int MainProcess(
 		else
 		{
 			Opt.OnlyEditorViewerUsed=Options::NOT_ONLY_EDITOR_VIEWER;
-			Opt.SetupArgv=0;
 			FARString strPath;
 
 			// воспользуемся тем, что ControlObject::Init() создает панели
 			// юзая Opt.*
 			if (strDestName1.GetLength())  // активная панель
 			{
-				UpdatePathOptions(strDestName1);
+				UpdatePathOptions(strDestName1, true);
 
 				if (strDestName2.GetLength())  // пассивная панель
-					UpdatePathOptions(strDestName2);
+					UpdatePathOptions(strDestName2, false);
 			}
 
 			// теперь все готово - создаем панели!
