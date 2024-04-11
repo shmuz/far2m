@@ -25,8 +25,8 @@ LN="/bin/ln"
 
 case "$1" in
     configure)
-    $LN -s "$bin_dir/far2l" "$lib_dir/far2m_askpass"
-    $LN -s "$bin_dir/far2l" "$lib_dir/far2m_sudoapp"
+    $LN -s "$bin_dir/far2m" "$lib_dir/far2m_askpass"
+    $LN -s "$bin_dir/far2m" "$lib_dir/far2m_sudoapp"
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
