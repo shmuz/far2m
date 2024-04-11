@@ -169,7 +169,7 @@ static void UpdatePathOptions(const FARString &strDestName)
 	FARString *outFolder, *outCurFile;
 
 	// Та панель, которая имеет фокус - активна (начнем по традиции с Левой Панели ;-)
-	if (Opt.SetupArgv == 1 && Opt.LeftPanel.Focus) || (Opt.SetupArgv == 2 && !Opt.LeftPanel.Focus) {
+	if ((Opt.SetupArgv == 1 && Opt.LeftPanel.Focus) || (Opt.SetupArgv == 2 && !Opt.LeftPanel.Focus)) {
 		Opt.LeftPanel.Type = FILE_PANEL;  // сменим моду панели
 		Opt.LeftPanel.Visible = TRUE;     // и включим ее
 		outFolder = &Opt.strLeftFolder;
