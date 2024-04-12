@@ -18,6 +18,7 @@ local Shared
 local TablePanelSort -- must be separate from LastMessage, otherwise Far crashes after a macro is called from CtrlF12.
 local TableExecString -- must be separate from LastMessage, otherwise Far crashes
 local utils, macrobrowser, panelsort, keymacro, farcmds
+local PluginIsReady
 
 local ExpandEnv = win.ExpandEnv
 
@@ -419,7 +420,8 @@ local function PanelModuleExist(mod)
 end
 
 local function OpenLuaMacro (calltype, ...)
-  if     calltype==F.MCT_KEYMACRO       then return keymacro.Dispatch(...)
+  if not PluginIsReady                  then return
+  elseif calltype==F.MCT_KEYMACRO       then return keymacro.Dispatch(...)
   elseif calltype==F.MCT_MACROPARSE     then return MacroParse(...)
   elseif calltype==F.MCT_DELMACRO       then return utils.DelMacro(...)
   elseif calltype==F.MCT_ENUMMACROS     then return utils.EnumMacros(...)
@@ -653,6 +655,7 @@ local function Init()
     package.moonpath = ("%s/?.moon;%s/?/init.moon;%s"):format(modules, modules, package.moonpath)
   end
   package.cpath = mainpath..(win.IsProcess64bit() and "/lib64" or "/lib32").."/?.so;"..package.cpath
+  PluginIsReady = true
 end
 
 function export.OpenFilePlugin (Name, Data, OpMode)
