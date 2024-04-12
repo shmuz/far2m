@@ -420,8 +420,7 @@ local function PanelModuleExist(mod)
 end
 
 local function OpenLuaMacro (calltype, ...)
-  if not PluginIsReady                  then return
-  elseif calltype==F.MCT_KEYMACRO       then return keymacro.Dispatch(...)
+  if     calltype==F.MCT_KEYMACRO       then return keymacro.Dispatch(...)
   elseif calltype==F.MCT_MACROPARSE     then return MacroParse(...)
   elseif calltype==F.MCT_DELMACRO       then return utils.DelMacro(...)
   elseif calltype==F.MCT_ENUMMACROS     then return utils.EnumMacros(...)
@@ -488,7 +487,10 @@ local function OpenFromMacro (argtable)
 end
 
 function export.Open (OpenFrom, Id, ...)
-  if OpenFrom == F.OPEN_LUAMACRO then
+  if not PluginIsReady then
+    return
+
+  elseif OpenFrom == F.OPEN_LUAMACRO then
     return OpenLuaMacro(Id, ...)
 
   elseif OpenFrom == F.OPEN_FROMMACRO then
