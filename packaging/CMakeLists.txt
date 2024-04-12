@@ -59,7 +59,7 @@ ENDIF(DPKG_CMD)
 
 # CPack components:
 # -- app, base, system (main project);
-# -- desktop (far2m subproject).
+# -- desktop (far subproject).
 #
 SET(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -68,7 +68,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(CPACK_DMG_VOLUME_NAME ${CPACK_PACKAGE_NAME}-${VERSION})
     set(CPACK_DMG_DS_STORE_SETUP_SCRIPT ${CMAKE_BINARY_DIR}/packaging/osx/Setup.scpt)
     set(CPACK_DMG_BACKGROUND_IMAGE ${PROJECT_SOURCE_DIR}/packaging/osx/Background.png)
-    set(CPACK_PACKAGE_ICON ${PROJECT_SOURCE_DIR}/far2m/DE/Far.icns)
+    set(CPACK_PACKAGE_ICON ${PROJECT_SOURCE_DIR}/far/DE/Far.icns)
 
     configure_file(${PROJECT_SOURCE_DIR}/packaging/osx/Setup.scpt.in ${CMAKE_BINARY_DIR}/packaging/osx/Setup.scpt)
 else ()
