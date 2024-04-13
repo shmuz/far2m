@@ -666,7 +666,7 @@ static void ApplyFSFileFlags(DialogItemEx *AttrDlg, const FARString &strSelName,
 }
 
 class ListPwGrEnt {
-	std::set<FARString> Set; // prevents duplicates
+	std::set<FARString> Set; // sorts and prevents duplicates
 	std::vector<FarListItem> Items;
 	FarList List;
 	void Append(const wchar_t *s) { Set.emplace(s); }
@@ -701,7 +701,7 @@ ListPwGrEnt::ListPwGrEnt(bool bGroups, int SelCount)
 		endgrent();
 	}
 
-	for (auto Str: Set) {
+	for (const auto &Str: Set) {
 		Items.emplace_back();
 		Items.back().Flags = 0;
 		Items.back().Text = Str.CPtr();
