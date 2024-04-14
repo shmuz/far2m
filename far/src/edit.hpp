@@ -342,13 +342,12 @@ class EditControl:public Edit
 	void PopulateCompletionMenu(VMenu &ComplMenu, const FARString &strFilter);
 	void RemoveSelectedCompletionMenuItem(VMenu &ComplMenu);
 
-
 public:
-
 	enum ECFLAGS
 	{
-		EC_ENABLEAUTOCOMPLETE=0x1,
-		EC_ENABLEFNCOMPLETE=0x2,
+		EC_ENABLEAUTOCOMPLETE       = 0x1,
+		EC_ENABLEFNCOMPLETE         = 0x2,
+		EC_ENABLEFNCOMPLETE_ESCAPED = 0x4,
 	};
 
 	EditControl(ScreenObject *pOwner=nullptr,Callback* aCallback=nullptr,bool bAllocateData=true,History* iHistory=0,FarList* iList=0,DWORD iFlags=0);

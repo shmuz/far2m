@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <utils.h>
+#include <algorithm>
 
 #include <sudo.h>
 
@@ -174,7 +175,7 @@ void *FilesSuggestor::ThreadProc()
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-void MenuFilesSuggestor::Suggest(const wchar_t *filter, VMenu& menu, int escaping)
+void MenuFilesSuggestor::Suggest(const wchar_t *filter, VMenu& menu, bool escaping)
 {
 	if (!filter || !*filter) {
 		return;
