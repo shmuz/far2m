@@ -145,6 +145,8 @@ protected:
 	virtual void Unlock() = 0;
 
 public:
+	virtual unsigned int WaitForChange(unsigned int prev_change_id, unsigned int timeout_msec = -1) = 0;
+
 	virtual IConsoleOutput *ForkConsoleOutput(HANDLE con_handle) = 0;
 	virtual void JoinConsoleOutput(IConsoleOutput *con_out) = 0;
 
