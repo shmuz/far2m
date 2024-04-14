@@ -161,7 +161,7 @@ static struct FARConfig
 	{1, NSecInterface, "ExclusiveWinLeft",          &Opt.ExclusiveWinLeft, 0, REG_BOOLEAN},
 	{1, NSecInterface, "ExclusiveWinRight",         &Opt.ExclusiveWinRight, 0, REG_BOOLEAN},
 
-	{1, NSecInterface, "OSC52ClipSet",              &Opt.OSC52ClipSet, 0, REG_BOOLEAN},
+	{1, NSecInterface, "OSC52ClipSet",              &Opt.OSC52ClipSet, 1, REG_BOOLEAN},
 	{1, NSecInterface, "TTYPaletteOverride",        &Opt.TTYPaletteOverride, 1, REG_BOOLEAN},
 
 	{0, NSecInterface, "ShowTimeoutDelFiles",       &Opt.ShowTimeoutDelFiles, 50},

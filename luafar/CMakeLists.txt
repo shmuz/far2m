@@ -22,7 +22,7 @@ set(SOURCES
   src/luamacro.c
   src/lusercontrol.c
   src/lutf8lib.c
-  src/mytimer.c
+#  src/mytimer.c
   src/service.c
   src/slnunico.c
   src/sysutils.c
@@ -44,6 +44,8 @@ if (LibUuid_FOUND)
 else()
   target_link_libraries(${PROJECT_NAME} utils)
 endif()
+
+target_link_libraries(${PROJECT_NAME} lua5.1)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE -DWINPORT_DIRECT -DFAR_DONT_USE_INTERNALS)
 

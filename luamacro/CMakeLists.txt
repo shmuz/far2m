@@ -29,6 +29,8 @@ target_compile_definitions(${PROJECT_NAME}
   PRIVATE ${EXPORTS}
 )
 
+target_link_libraries(${PROJECT_NAME} PUBLIC luafar)
+
 target_include_directories(${PROJECT_NAME} PRIVATE ../far/far2sdk)
 
 set(INSTALL_DIR "${INSTALL_DIR}/Plugins/luafar/${PROJECT_NAME}")
@@ -36,6 +38,7 @@ set(INSTALL_DIR "${INSTALL_DIR}/Plugins/luafar/${PROJECT_NAME}")
 set_target_properties(${PROJECT_NAME}
   PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${INSTALL_DIR}/plug"
+    LINK_FLAGS "-Wl,-rpath,../../"
     PREFIX ""
     SUFFIX ".far-plug-wide")
 

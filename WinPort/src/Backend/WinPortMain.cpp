@@ -259,7 +259,7 @@ struct ArgOptions
 	bool wayland = false;
 	std::string ext_clipboard;
 	std::string test_id;
-	unsigned int esc_expiration = 0;
+	unsigned int esc_expiration = 100;
 	std::vector<char *> filtered_argv;
 
 	ArgOptions() = default;
