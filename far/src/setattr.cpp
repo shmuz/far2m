@@ -680,7 +680,6 @@ public:
 
 ListPwGrEnt::ListPwGrEnt(bool bGroups, int SelCount)
 {
-	Items.reserve(128);
 	if (SelCount >= 2)
 		Append(Msg::SetAttrOwnerMultiple);
 
@@ -701,6 +700,7 @@ ListPwGrEnt::ListPwGrEnt(bool bGroups, int SelCount)
 		endgrent();
 	}
 
+	Items.reserve(Set.size());
 	for (const auto &Str: Set) {
 		Items.emplace_back();
 		Items.back().Flags = 0;

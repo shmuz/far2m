@@ -43,8 +43,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tvar.hpp"
 #include "config.hpp"
 
-//#define TVAR_USE_STRMUN
-
 enum TypeString
 {
 	tsStr,
@@ -640,36 +638,7 @@ int TVar::CompAB(const TVar& a, const TVar& b, TVarFuncCmp fcmp)
 			break;
 		case vtString:
 		{
-#if defined(TVAR_USE_STRMUN)
-			int64_t bi;
-			double bd;
-			TypeString tsA=checkTypeString(a.str), tsB;
-
-			if (b.vType == vtInteger)
-				tsB=tsInt;
-			else if (b.vType == vtDouble)
-				tsB=tsFloat;
-			else
-				tsB=checkTypeString(b.str);
-
-			if ((tsA == tsStr && tsB == tsStr) || (tsA != tsStr && tsB == tsStr) || (tsA == tsStr && tsB != tsStr))
-				r = fcmp(vtString,a.s(),b.s());
-			else if (tsA == tsInt && tsB == tsInt)
-			{
-				ai=a.i();
-				bi=b.i();
-				r = fcmp(vtInteger,&ai,&bi);
-			}
-			else
-			{
-				ad=a.d();
-				bd=b.d();
-				r = fcmp(vtDouble,&ad,&bd);
-			}
-
-#else
 			r = fcmp(vtString,a.s(),b.s());
-#endif
 			break;
 		}
 		case vtUnknown: break;
