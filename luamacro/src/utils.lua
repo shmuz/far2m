@@ -604,8 +604,7 @@ local function ErrMsgLoad (msg, filename, isMoonScript, mode)
           --   if fname:utf8valid() then break end
           --   fname = string_sub(fname,2)
           -- end
-          fname = fname:gsub("/", "\\")
-          local middle = fname:match([=[^[^\\]*\[^\\]+\]=])
+          local middle = fname:match("^[^/]*/[^/]+/")
           if middle then
             local from = string_find(filename:lower(), middle:lower(), 1, true)
             if from then
@@ -706,7 +705,7 @@ local function LoadMacros (unload, paths)
     local DummyFunc = function() end
     if not ReadOnlyConfig then
       for _,v in ipairs {"scripts", "modules", "lib32", "lib64"} do
-        win.CreateDir(MacroDirs.MainPath.."/"..v)
+        win.CreateDir(win.JoinPath(MacroDirs.MainPath, v))
       end
       win.CreateDir(far.InMyConfig("Menus"))
     end
@@ -785,7 +784,7 @@ local function LoadMacros (unload, paths)
       end
     end
 
-    paths = paths and win.ExpandEnv(paths) or MacroDirs.MainPath.."/scripts;"..MacroDirs.LoadPathList
+    paths = paths and win.ExpandEnv(paths) or win.JoinPath(MacroDirs.MainPath,"scripts;")..MacroDirs.LoadPathList
 
     local filemask = moonscript and "*.lua,*.moon" or "*.lua"
     for p in paths:gmatch("[^;]+") do
@@ -800,7 +799,7 @@ local function LoadMacros (unload, paths)
       far.RecursiveSearch (p, filemask, LoadRegularFile, bor(F.FRS_RECUR,F.FRS_SCANSYMLINK), macroinit)
     end
 
-    far.RecursiveSearch (MacroDirs.MainPath.."/internal", "*.lua", LoadRecordedFile, 0)
+    far.RecursiveSearch (win.JoinPath(MacroDirs.MainPath, "internal"), "*.lua", LoadRecordedFile, 0)
 
     export.ExitFAR             = Events.exitfar[1]      and export_ExitFAR
     export.MayExitFAR          = Events.mayexitfar[1]   and export_MayExitFAR
@@ -854,7 +853,7 @@ end
 local function WriteMacros()
   if ReadOnlyConfig then return end
 
-  local dir = MacroDirs.MainPath.."/internal"
+  local dir = win.JoinPath(MacroDirs.MainPath, "internal")
   if not win.CreateDir(dir, true) then return end
 
   for areaname,area in pairs(Areas) do

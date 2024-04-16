@@ -52,7 +52,7 @@ local function assert_close(keys)
 end
 
 local function assert_tmpdir()
-  return "/tmp"
+  return far.InMyTemp()
 end
 
 local function ExecCmdLine(command)
@@ -81,10 +81,10 @@ end
 local function CreateNewDB (subdir)
   local tmp = assert_tmpdir()
   if subdir then
-    tmp = tmp .. "/" .. subdir
+    tmp = win.JoinPath(tmp, subdir)
     assert(win.CreateDir(tmp, "t"))
   end
-  local DbFileName = tmp.."/".."polygon-test.sqlite3"
+  local DbFileName = win.JoinPath(tmp, "polygon-test.sqlite3")
   if win.GetFileAttr(DbFileName) and not win.DeleteFile(DbFileName) then
     error("could not delete "..DbFileName)
   end
@@ -436,7 +436,7 @@ local function test_panel_position_on_exit()
   local F = far.Flags
 
   local tmp = assert_tmpdir()
-  local workdir = tmp.."/"..win.Uuid(win.Uuid())
+  local workdir = win.JoinPath(tmp, win.Uuid("L"))
   assert(win.CreateDir(workdir))
   assert(panel.SetPanelDirectory(nil,1,workdir))
 

@@ -49,7 +49,7 @@ local function IsNumOrInt(v)
   return type(v)=="number" or bit64.type(v)
 end
 
-local TmpFileName = "/tmp/tmp.tmp"
+local TmpFileName = far.InMyTemp("tmp.tmp")
 
 local function WriteTmpFile(...)
   local fp = assert(io.open(TmpFileName,"w"))
@@ -1965,7 +1965,7 @@ end
 
 -- "Several lines are merged into one".
 local function test_issue_3129()
-  local fname = "/tmp/far2m-"..win.Uuid("L"):sub(1,8)
+  local fname = far.InMyTemp("far2m-"..win.Uuid("L"):sub(1,8))
   local fp = assert(io.open(fname, "w"))
   fp:close()
   local flags = {EF_NONMODAL=1, EF_IMMEDIATERETURN=1, EF_DISABLEHISTORY=1}

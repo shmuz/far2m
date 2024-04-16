@@ -251,7 +251,7 @@ local function OpenCommandLine(cmdbuf)
         local ptrCurDir = far.GetCurrentDirectory()
 
         if ptrCurDir then
-          ptrCurDir = ptrCurDir.."/"..ptrName
+          ptrCurDir = win.JoinPath(ptrCurDir, ptrName)
           if FileExists(ptrCurDir) then
             ptrName = ptrCurDir
           end
@@ -260,7 +260,7 @@ local function OpenCommandLine(cmdbuf)
         -- ...в текущем нет...
         if not ptrName:find("/") then
           -- ...смотрим в %FARHOME%
-          local ExpFileName = win.GetEnv("FARHOME").."/"..ptrName
+          local ExpFileName = win.JoinPath(win.GetEnv("FARHOME"), ptrName)
           if not FileExists(ExpFileName) then
             -- ...в %FARHOME% нет, поищем по путям плагинов.
             ExpFileName = FindPluginHelp(ptrName)

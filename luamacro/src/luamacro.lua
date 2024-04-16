@@ -602,9 +602,9 @@ local function Init()
   Shared.MacroCallFar, far.MacroCallFar = far.MacroCallFar, nil
   Shared.MacroCallToLua, far.MacroCallToLua = far.MacroCallToLua, nil
 
-  local ShareDirSlash = far.PluginStartupInfo().ShareDir .. "/"
+  local ShareDir = far.PluginStartupInfo().ShareDir
   local function RunPluginFile (fname, param)
-    local func = assert(loadfile(ShareDirSlash..fname))
+    local func = assert(loadfile(win.JoinPath(ShareDir, fname)))
     return func(param)
   end
 
@@ -651,12 +651,12 @@ local function Init()
   utils.FixInitialModules()
   utils.InitMacroSystem()
   local mainpath = Shared.MacroDirs.MainPath
-  local modules = mainpath .. "/modules"
+  local modules = win.JoinPath(mainpath, "modules")
   package.path = ("%s/?.lua;%s/?/init.lua;%s"):format(modules, modules, package.path)
   if package.moonpath then
     package.moonpath = ("%s/?.moon;%s/?/init.moon;%s"):format(modules, modules, package.moonpath)
   end
-  package.cpath = mainpath..(win.IsProcess64bit() and "/lib64" or "/lib32").."/?.so;"..package.cpath
+  package.cpath = win.JoinPath(mainpath, win.IsProcess64bit() and "lib64" or "lib32", "?.so;")..package.cpath
   PluginIsReady = true
 end
 
@@ -680,7 +680,7 @@ function export.GetOpenPanelInfo (wrapped_obj, handle, ...)
          and type(mod.Info) == "table"
          and type(mod.Info.Guid) == "string"
       then
-        op_info._ModuleShortcutData = win.Uuid(mod.Info.Guid) .. "/" .. op_info.ShortcutData
+        op_info._ModuleShortcutData = win.JoinPath(win.Uuid(mod.Info.Guid), op_info.ShortcutData)
       end
       return op_info
     end

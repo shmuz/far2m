@@ -83,7 +83,7 @@ local function Command(prefix, text)
         filename = text
       else
         if path:sub(1,1) ~= "/" then
-          path = panel.GetPanelDirectory(nil,1).."/"..path
+          path = win.JoinPath(panel.GetPanelDirectory(nil,1), path)
         end
         path_ok = panel.SetPanelDirectory(nil,1,path)
       end
