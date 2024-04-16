@@ -154,7 +154,7 @@ mf.usermenu = function(mode, filename)
   elseif (mode==2 or mode==3) and type(filename)=="string" then
     if mode==3 then
       if not filename:find("^/") then
-        filename = far.InMyConfig("Menus/"..filename)
+        filename = far.InMyConfig(win.JoinPath("Menus",filename))
       end
     end
     if sync_call then MacroCallFar(MCODE_F_USERMENU, filename)

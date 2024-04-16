@@ -9,6 +9,7 @@ local F = far.Flags
 local type = type
 local string_find, string_sub = string.find, string.sub
 local band, bor = bit64.band, bit64.bor
+local JoinPath = win.JoinPath
 local MacroCallFar = Shared.MacroCallFar
 local gmeta = { __index=_G }
 local LastMessage = {}
@@ -705,7 +706,7 @@ local function LoadMacros (unload, paths)
     local DummyFunc = function() end
     if not ReadOnlyConfig then
       for _,v in ipairs {"scripts", "modules", "lib32", "lib64"} do
-        win.CreateDir(win.JoinPath(MacroDirs.MainPath, v))
+        win.CreateDir(JoinPath(MacroDirs.MainPath, v))
       end
       win.CreateDir(far.InMyConfig("Menus"))
     end
@@ -784,12 +785,12 @@ local function LoadMacros (unload, paths)
       end
     end
 
-    paths = paths and win.ExpandEnv(paths) or win.JoinPath(MacroDirs.MainPath,"scripts;")..MacroDirs.LoadPathList
+    paths = paths and win.ExpandEnv(paths) or JoinPath(MacroDirs.MainPath,"scripts;")..MacroDirs.LoadPathList
 
     local filemask = moonscript and "*.lua,*.moon" or "*.lua"
     for p in paths:gmatch("[^;]+") do
       p = far.ConvertPath(p, F.CPM_FULL) -- needed for relative paths
-      local macroinit = p:gsub("/*$", "/_macroinit.lua")
+      local macroinit = JoinPath(p, "_macroinit.lua")
       local info = win.GetFileInfo(macroinit)
       if info and not info.FileAttributes:find("d") then
         LoadRegularFile(info, macroinit, nil)
@@ -799,7 +800,7 @@ local function LoadMacros (unload, paths)
       far.RecursiveSearch (p, filemask, LoadRegularFile, bor(F.FRS_RECUR,F.FRS_SCANSYMLINK), macroinit)
     end
 
-    far.RecursiveSearch (win.JoinPath(MacroDirs.MainPath, "internal"), "*.lua", LoadRecordedFile, 0)
+    far.RecursiveSearch (JoinPath(MacroDirs.MainPath, "internal"), "*.lua", LoadRecordedFile, 0)
 
     export.ExitFAR             = Events.exitfar[1]      and export_ExitFAR
     export.MayExitFAR          = Events.mayexitfar[1]   and export_MayExitFAR
@@ -853,7 +854,7 @@ end
 local function WriteMacros()
   if ReadOnlyConfig then return end
 
-  local dir = win.JoinPath(MacroDirs.MainPath, "internal")
+  local dir = JoinPath(MacroDirs.MainPath, "internal")
   if not win.CreateDir(dir, true) then return end
 
   for areaname,area in pairs(Areas) do

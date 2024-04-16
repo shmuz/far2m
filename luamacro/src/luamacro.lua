@@ -5,9 +5,11 @@
 if not (...) then return end
 
 local GlobalInfo = far.GetPluginGlobalInfo()
+local ShareDir = far.PluginStartupInfo().ShareDir
 
 local F, Msg = far.Flags, nil
 local bor = bit64.bor
+local JoinPath = win.JoinPath
 local co_yield, co_resume, co_status = coroutine.yield, coroutine.resume, coroutine.status
 
 local PROPAGATE={} -- a unique value, inaccessible to scripts.
@@ -367,7 +369,7 @@ local function Open_CommandLine (strCmdLine)
       far.MacroPost( [[
         local function Quit(n) actl.Quit(n) Keys("Esc") end
         local OK, R
-        R = far.PluginStartupInfo().ShareDir.."/macrotest.lua"
+        R = win.JoinPath(far.PluginStartupInfo().ShareDir, "macrotest.lua")
         R = loadfile(R) or Quit(1)
         OK, R = pcall(R)
         OK = OK or Quit(2)
@@ -569,7 +571,7 @@ end
 
 local function GetMacroDirs()
   local mainpath, loadpathlist
-  local cfg, msg = ReadIniFile(far.PluginStartupInfo().ShareDir.."/luamacro.ini")
+  local cfg, msg = ReadIniFile(JoinPath(ShareDir, "luamacro.ini"))
   if cfg then
     local sect = cfg["General"]
     if sect then
@@ -602,9 +604,8 @@ local function Init()
   Shared.MacroCallFar, far.MacroCallFar = far.MacroCallFar, nil
   Shared.MacroCallToLua, far.MacroCallToLua = far.MacroCallToLua, nil
 
-  local ShareDir = far.PluginStartupInfo().ShareDir
   local function RunPluginFile (fname, param)
-    local func = assert(loadfile(win.JoinPath(ShareDir, fname)))
+    local func = assert(loadfile(JoinPath(ShareDir, fname)))
     return func(param)
   end
 
@@ -651,12 +652,12 @@ local function Init()
   utils.FixInitialModules()
   utils.InitMacroSystem()
   local mainpath = Shared.MacroDirs.MainPath
-  local modules = win.JoinPath(mainpath, "modules")
+  local modules = JoinPath(mainpath, "modules")
   package.path = ("%s/?.lua;%s/?/init.lua;%s"):format(modules, modules, package.path)
   if package.moonpath then
     package.moonpath = ("%s/?.moon;%s/?/init.moon;%s"):format(modules, modules, package.moonpath)
   end
-  package.cpath = win.JoinPath(mainpath, win.IsProcess64bit() and "lib64" or "lib32", "?.so;")..package.cpath
+  package.cpath = JoinPath(mainpath, win.IsProcess64bit() and "lib64" or "lib32", "?.so;")..package.cpath
   PluginIsReady = true
 end
 
@@ -680,7 +681,7 @@ function export.GetOpenPanelInfo (wrapped_obj, handle, ...)
          and type(mod.Info) == "table"
          and type(mod.Info.Guid) == "string"
       then
-        op_info._ModuleShortcutData = win.JoinPath(win.Uuid(mod.Info.Guid), op_info.ShortcutData)
+        op_info._ModuleShortcutData = JoinPath(win.Uuid(mod.Info.Guid), op_info.ShortcutData)
       end
       return op_info
     end

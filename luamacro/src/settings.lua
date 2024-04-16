@@ -3,6 +3,8 @@
 -- The module's exported functions (serialize, deserialize, mdelete, mload, msave)
 -- are described in macroapi_manual.<lang>.chm.
 
+local JoinPath = win.JoinPath
+
 local work_dir
 
 local function checkarg (arg, argnum, reftype)
@@ -97,8 +99,8 @@ local function deserialize (str, isfile)
 end
 
 local function get_work_dir(key)
-  work_dir = work_dir or far.InMyConfig("plugins/luafar/")
-  return work_dir..key.."/"
+  work_dir = work_dir or far.InMyConfig("plugins/luafar")
+  return JoinPath(work_dir, key)
 end
 
 local function mdelete (key, name)
@@ -106,7 +108,7 @@ local function mdelete (key, name)
   checkarg(name, 2, "string")
   local dir = get_work_dir(key)
   if name ~= "*" then
-    return win.DeleteFile(dir..name)
+    return win.DeleteFile(JoinPath(dir, name))
   else
     far.RecursiveSearch(dir, "*", function(item, fullname) win.DeleteFile(fullname) end)
     return win.RemoveDir(dir)
@@ -120,7 +122,7 @@ local function msave (key, name, value)
   if str then
     local dir = get_work_dir(key)
     if win.CreateDir(dir, true) then
-      local fp = io.open(dir..name, "w")
+      local fp = io.open(JoinPath(dir,name), "w")
       if fp then
         fp:write(str)
         fp:close()
@@ -134,7 +136,7 @@ end
 local function mload (key, name)
   checkarg(key, 1, "string")
   checkarg(name, 2, "string")
-  return deserialize(get_work_dir(key)..name, true)
+  return deserialize(JoinPath(get_work_dir(key),name), true)
 end
 
 local function field (t, seq)
