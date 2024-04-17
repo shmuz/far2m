@@ -70,7 +70,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "synchro.hpp"
 #include "RegExp.hpp"
 #include "console.hpp"
-#include "setcolor.hpp"
+#include "pick_color.hpp"
 #include "InterThreadCall.hpp"
 #include "filestr.hpp"
 #include "strmix.hpp"

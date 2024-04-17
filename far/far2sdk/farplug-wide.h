@@ -1563,7 +1563,9 @@ struct DialogItemTrueColors
 
 enum FARCOLORDIALOGFLAGS
 {
-	FCD_ALLCONTROLS     = 0x00000001,
+	FCD_RGB             = 0x00000001,
+	FCD_FONTSTYLES      = 0x00000002,
+	FCD_ALLCONTROLS     = (FCD_RGB | FCD_FONTSTYLES),
 };
 
 struct ColorDialogData

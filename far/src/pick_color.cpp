@@ -737,7 +737,8 @@ static LONG_PTR WINAPI GetColorDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PT
 	return DefDlgProc(hDlg, Msg, Param1, Param2);
 }
 
-static bool GetColorDialogInner(uint64_t *color, uint64_t *mask, bool bRGB, bool bFontStyles, bool bCentered)
+static bool GetColorDialogInner(uint64_t *color, uint64_t *mask, bool bRGB, bool bFontStyles, bool bCentered,
+	INT_PTR PluginNumber = -1)
 {
 	const wchar_t VerticalLine[] = { BoxSymbols[BS_T_H2V1], BoxSymbols[BS_V1], BoxSymbols[BS_V1],BoxSymbols[BS_V1],
 			BoxSymbols[BS_V1],BoxSymbols[BS_V1], BoxSymbols[BS_V1], BoxSymbols[BS_V1], BoxSymbols[BS_V1], BoxSymbols[BS_V1],
@@ -874,6 +875,7 @@ static bool GetColorDialogInner(uint64_t *color, uint64_t *mask, bool bRGB, bool
 		Dlg.SetAutomation(ID_ST_CHECKBOX_STYLE_ENABLE, sup_styles[i].id, DIF_DISABLE, DIF_NONE, DIF_NONE, DIF_DISABLE);
 	}
 
+	Dlg.SetPluginNumber(PluginNumber);
 	Dlg.Process();
 	int ExitCode = Dlg.GetExitCode();
 
@@ -904,4 +906,27 @@ bool GetColorDialog16(uint16_t *color, bool bCentered)
 	*color = (uint16_t)(color64 & 0xFFFF);
 
 	return out;
+}
+
+bool GetColorDialog(INT_PTR PluginNumber, ColorDialogData *Data, DWORD Flags)
+{
+	if (Data)
+	{
+		uint64_t Color =
+			((uint64_t)(Data->BackColor & 0xFFFFFF) << 40) |
+			((uint64_t)(Data->ForeColor & 0xFFFFFF) << 16) |
+			((Data->Transparency & 0xFF) << 8) |
+			(Data->PaletteColor & 0xFF);
+
+		//TODO: 2-nd parameter
+		if (GetColorDialogInner(&Color, nullptr, Flags&FCD_RGB, Flags&FCD_FONTSTYLES, true, PluginNumber))
+		{
+			Data->BackColor = (Color >> 40) & 0xFFFFFF;
+			Data->ForeColor = (Color >> 16) & 0xFFFFFF;
+			Data->Transparency = (Color >> 8) & 0xFF;
+			Data->PaletteColor = Color & 0xFF;
+			return true;
+		}
+	}
+	return false;
 }
