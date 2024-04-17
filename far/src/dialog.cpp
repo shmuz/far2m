@@ -476,8 +476,10 @@ Dialog::~Dialog()
 		delete Item[i];
 
 	free(Item);
-	INPUT_RECORD rec;
-	PeekInputRecord(&rec);
+	if (!WinPortTesting()) {
+		INPUT_RECORD rec;
+		PeekInputRecord(&rec);
+	}
 	delete OldTitle;
 	_DIALOG(CleverSysLog CL(L"Destroy Dialog"));
 }
@@ -5974,6 +5976,22 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2)
 			FarDialogItemData IData={(size_t)StrLength((wchar_t *)Param2),(wchar_t *)Param2};
 			return SendDlgMessage(hDlg,DM_SETTEXT,Param1,(LONG_PTR)&IData);
 		}
+
+		case DM_SETTEXTPTRSILENT: {
+			if (!Param2)
+				return 0;
+
+			if (CurItem->Type != DI_FIXEDIT && CurItem->Type != DI_EDIT)
+				return 0;
+
+			reinterpret_cast<DlgEdit *>(CurItem->ObjPtr)->SetCallbackState(false);
+			FarDialogItemData IData = {(size_t)StrLength((wchar_t *)Param2), (wchar_t *)Param2};
+			intptr_t rv = SendDlgMessage(hDlg, DM_SETTEXT, Param1, (LONG_PTR)&IData);
+			reinterpret_cast<DlgEdit *>(CurItem->ObjPtr)->SetCallbackState(true);
+
+			return rv;
+		}
+
 		/*****************************************************************/
 		case DM_SETTEXT:
 		{

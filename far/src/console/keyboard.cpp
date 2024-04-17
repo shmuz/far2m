@@ -1924,7 +1924,8 @@ FarKey CalcKeyCode(INPUT_RECORD *rec, int RealKey, int *NotMacros)
 
 		if (KeyCode==VK_MENU && AltValue)
 		{
-			//FlushInputBuffer();//???
+			//if (!WinPortTesting())
+			//	FlushInputBuffer();//???
 			INPUT_RECORD TempRec;
 			Console.ReadInput(TempRec);
 			ReturnAltValue=TRUE;

@@ -2892,7 +2892,8 @@ int FileList::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 		{
 			if (PanelMode==PLUGIN_PANEL)
 			{
-				FlushInputBuffer(); // !!!
+				if (!WinPortTesting())
+					FlushInputBuffer(); // !!!
 				int ProcessCode=CtrlObject->Plugins.ProcessKey(hPlugin,VK_RETURN,ShiftPressed ? PKF_SHIFT:0);
 				ProcessPluginCommand();
 
@@ -2910,7 +2911,8 @@ int FileList::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 			  Вроде всё должно быть ок.
 			*/
 			ShowFileList(TRUE);
-			FlushInputBuffer();
+			if (!WinPortTesting())
+				FlushInputBuffer();
 			ProcessEnter(true,ShiftPressed!=0);
 			return TRUE;
 		}

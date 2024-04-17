@@ -49,6 +49,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "palette.hpp"
 #include "panelmix.hpp"
 #include "poscache.hpp"
+#include "pick_color256.hpp"
+#include "pick_colorRGB.hpp"
 
 void SanitizeHistoryCounts();
 
@@ -116,14 +118,18 @@ static struct FARConfig
 
 	constexpr FARConfig(int save, const char *key, const char *val, BYTE *trg, DWORD size, const BYTE *dflt) :
 		IsSave(save),ValType(REG_BINARY),KeyName(key),ValName(val),ValPtr(trg),DefDWord(size),DefArr(dflt) {}
+
 	constexpr FARConfig(int save, const char *key, const char *val, void *trg, DWORD dflt, DWORD Type=REG_DWORD) :
 		IsSave(save),ValType(Type),KeyName(key),ValName(val),ValPtr(trg),DefDWord(dflt),DefStr(nullptr) {}
+
 	constexpr FARConfig(int save, const char *key, const char *val, FARString *trg, const wchar_t *dflt) :
 		IsSave(save),ValType(REG_SZ),KeyName(key),ValName(val),StrPtr(trg),DefDWord(0),DefStr(dflt) {}
 
 } CFG[]=
 {
 	{1, NSecColors, "CurrentPalette",               Palette, SIZE_ARRAY_PALETTE, DefaultPalette},
+	{1, NSecColors, "TempColors256", g_tempcolors256,         TEMP_COLORS256_SIZE, g_tempcolors256},
+	{1, NSecColors, "TempColorsRGB", (BYTE *)g_tempcolorsRGB, TEMP_COLORSRGB_SIZE, (BYTE *)g_tempcolorsRGB},
 
 	{1, NSecScreen, "Clock",                        &Opt.Clock, 1, REG_BOOLEAN},
 	{1, NSecScreen, "ViewerEditorClock",            &Opt.ViewerEditorClock, 0, REG_BOOLEAN},

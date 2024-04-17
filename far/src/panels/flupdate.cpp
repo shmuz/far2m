@@ -33,7 +33,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
-
 #include "filelist.hpp"
 #include "colors.hpp"
 #include "lang.hpp"
@@ -153,9 +152,9 @@ void FileList::ReadFileNames(int KeepSelection, int IgnoreVisible, int DrawMessa
 	FARString strSaveDir;
 	apiGetCurrentDirectory(strSaveDir);
 	{
-		if (!SetCurPath())
-		{
-			FlushInputBuffer(); // Очистим буффер ввода, т.к. мы уже можем быть в другом месте...
+		if (!SetCurPath()) {
+			if (!WinPortTesting())
+				FlushInputBuffer(); // Очистим буффер ввода, т.к. мы уже можем быть в другом месте...
 			return;
 		}
 	}

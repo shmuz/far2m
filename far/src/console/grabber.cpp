@@ -490,7 +490,8 @@ bool RunGraber()
 	{
 		InGrabber=true;
 		WaitInMainLoop=FALSE;
-		FlushInputBuffer();
+		if (!WinPortTesting())
+			FlushInputBuffer();
 		Grabber Grabber;
 		InGrabber=false;
 		return true;
