@@ -12229,16 +12229,16 @@ HighlightMarking
 "Ма&ркування"
 "М&аркіроўка"
 
-HighlightTransparentMarkChar
-"Прозра&чный"
-"Tra&nsparent"
-"Průh&ledný"
-"Tra&nsparent"
-"át&látszó"
-"Prze&zroczyste"
-"Tra&nsparente"
-"Проз&орий"
-"Празр&ысты"
+HighlightMarkStrInherit
+"Наследовать"
+"Inherit"
+"Dědit"
+"Erben"
+"Örököl"
+"Dziedziczyć"
+"Heredar"
+"Спадкувати"
+"Падзярэваць"
 
 HighlightColors
 " Цвета файлов (\"чёрный на чёрном\" - цвет по умолчанию) "
@@ -12340,15 +12340,15 @@ HighlightMarking4
 "&8. Адзнака"
 
 HighlightExample1
-"║filename.ext │"
-"║filename.ext │"
-"║filename.ext │"
-"║dateinam.erw │"
-"║fájlneve.kit │"
-"║nazwa.roz    │"
-"║nombre.ext   │"
-"║filename.ext │"
-"║filename.ext │"
+"filename.ext"
+"filename.ext"
+"filename.ext"
+"dateinam.erw"
+"fájlneve.kit"
+"nazwa.roz"
+"nombre.ext"
+"filename.ext"
+"filename.ext"
 
 HighlightExample2
 "║ filename.ext│"
@@ -17303,6 +17303,72 @@ SetColorItemsTitle
 "Елементи групи"
 "Элемент суполкі"
 
+SetColorBlackOnBlack
+"Черный на черном"
+"Black on black"
+"Černá na černém"
+"Schwarz auf Schwarz"
+"Fekete a feketén"
+"Czarny na czarnym"
+"Negro sobre negro"
+"Чорний на чорному"
+"Чорны на чорным"
+
+SetColorDefaultColor
+"Цвет по умолчанию"
+"Default color"
+"Výchozí barva"
+"Standardfarbe"
+"Alapértelmezett szín"
+"Domyślny kolor"
+"Color predeterminado"
+"Колір за замовчуванням"
+"Стандартныя колер"
+
+PickColorHue
+"&Оттенок"
+"H&ue"
+"&Odstín"
+"&Farbton"
+"&Árnyalat"
+"&Odcień"
+"&Tono"
+"&Відтінок"
+"&Адзін"
+
+PickColorUseGray
+"Использовать первые 16 и оттенки серого"
+"Use the first 16 and shades of gray"
+"Použijte první 16 a odstíny šedi"
+"Verwenden Sie die ersten 16 und Grautöne"
+"Használja az első 16 és a szürke árnyalatokat"
+"Użyj pierwszych 16 i odcieni szarości"
+"Usar los primeros 16 y tonos grises"
+"Використовуйте перші 16 та відтінки сірого"
+"Выкарыстоўвайце першыя 16 і адзінцы сірого"
+
+PickColorSat
+"&Насыщенность"
+"&Saturation"
+"&Saturace"
+"&Sättigung"
+"&Telítettség"
+"&Nasycenie"
+"&Saturación"
+"&Насиченість"
+"&Насыцэнне"
+
+PickColorColors
+"&Цвета"
+"&Colors"
+"&Barvy"
+"&Farben"
+"&Színek"
+"&Kolory"
+"&Colores"
+"&Кольори"
+"&Колеры"
+
 SetColorTitle
 l:
 "Цвет"
@@ -17314,6 +17380,105 @@ l:
 "Color"
 "Колір"
 "Колер"
+
+PickColorStyle
+"Стиль:"
+"Style:"
+"Styl:"
+"Stil:"
+"Stílus:"
+"Styl:"
+"Estilo:"
+"Стиль:"
+"Стыль:"
+
+PickColorEnableStyle
+"Включить"
+"Enable"
+"Povolit"
+"Aktivieren"
+"Engedélyez"
+"Włącz"
+"Habilitar"
+"Увімкнути"
+"Уключыць"
+
+PickColorStyleBold
+"Жирный"
+"Bold"
+"Tučné"
+"Fett"
+"Félkövér"
+"Pogrubienie"
+"Negrita"
+"Жирний"
+"Жирны"
+
+PickColorStyleItalic
+"Курсив"
+"Italic"
+"Kurzíva"
+"Kursiv"
+"Dőlt"
+"Kursywa"
+"Cursiva"
+"Курсив"
+"Курсіў"
+
+PickColorStyleUnderline
+"Подчеркнутый"
+"Underline"
+"Podtržené"
+"Unterstrichen"
+"Aláhúzott"
+"Podkreślony"
+"Subrayado"
+"Підкреслений"
+"Падкрэслены"
+
+PickColorStyleOverline
+"Надчеркнутый"
+"Overline"
+"Nadtržené"
+"Überstrichen"
+"Felsővonalas"
+"Nadkreślenie"
+"Tachado"
+"Надрядкований"
+"Надрынкаваны"
+
+PickColorStyleStrikeout
+"Зачеркнутый"
+"Strikeout"
+"Přeškrtnuté"
+"Durchgestrichen"
+"Áthúzott"
+"Przekreślony"
+"Tachado"
+"Закреслений"
+"Закрэслены"
+
+PickColorStyleBlinking
+"Мигающий"
+"Blinking"
+"Mrkající"
+"Blinzelnd"
+"Pislogó"
+"Mrugający"
+"Parpadeante"
+"Блимаючий"
+"Мігаючы"
+
+PickColorStyleInverse
+"Инверсия"
+"Inverse"
+"Inverzní"
+"Umgekehrt"
+"Inverz"
+"Odwrotny"
+"Inverso"
+"Інверсний"
+"Інверсны"
 
 SetColorForeground
 "Текст"
@@ -17380,6 +17545,17 @@ SetColorSet
 "Poner"
 "Встановити"
 "Ужыць"
+
+SetColorReset
+"&Сбросить"
+"&Reset"
+upd:"&Reset"
+upd:"&Reset"
+upd:"&Reset"
+upd:"&Reset"
+"&Reiniciar"
+"&Скинути"
+"&Зкінуць"
 
 SetColorCancel
 "Отменить"
