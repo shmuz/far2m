@@ -850,14 +850,6 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 		}
 
 		case OPEN_SHORTCUT:
-			push_utf8_string(L, (const wchar_t*)Item, -1);
-			if (pcall_msg(L, 3, 1) == 0) {
-				if (lua_toboolean(L, -1))        //+1: Obj
-					return RegisterObject(L);      //+0
-				lua_pop(L,1);
-			}
-			break;
-
 		case OPEN_COMMANDLINE:
 			push_utf8_string(L, (const wchar_t*)Item, -1);
 			if (pcall_msg(L, 3, 1) == 0) {
