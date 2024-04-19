@@ -915,7 +915,7 @@ bool GetColorDialog(INT_PTR PluginNumber, ColorDialogData *Data, DWORD Flags)
 		uint64_t Color =
 			((uint64_t)(Data->BackColor & 0xFFFFFF) << 40) |
 			((uint64_t)(Data->ForeColor & 0xFFFFFF) << 16) |
-			((Data->Transparency & 0xFF) << 8) |
+			((Data->Flags & 0xFF) << 8) |
 			(Data->PaletteColor & 0xFF);
 
 		//TODO: 2-nd parameter
@@ -923,7 +923,7 @@ bool GetColorDialog(INT_PTR PluginNumber, ColorDialogData *Data, DWORD Flags)
 		{
 			Data->BackColor = (Color >> 40) & 0xFFFFFF;
 			Data->ForeColor = (Color >> 16) & 0xFFFFFF;
-			Data->Transparency = (Color >> 8) & 0xFF;
+			Data->Flags = (Color >> 8) & 0xFF;
 			Data->PaletteColor = Color & 0xFF;
 			return true;
 		}

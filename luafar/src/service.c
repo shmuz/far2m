@@ -5440,7 +5440,7 @@ static int far_ColorDialog(lua_State *L)
 		Data.ForeColor = GetColorFromTable(L, "ForegroundColor", 1);
 		Data.BackColor = GetColorFromTable(L, "BackgroundColor", 2);
 		Data.PaletteColor = GetColorFromTable(L, "PaletteColor", 3);
-		Data.Transparency = GetColorFromTable(L, "Transparency", 4);
+		Data.Flags = GetColorFromTable(L, "Flags", 4);
 	}
 	else if (!lua_isnoneornil(L, 1))
 		return luaL_argerror(L, 1, "table or integer expected");
@@ -5451,7 +5451,7 @@ static int far_ColorDialog(lua_State *L)
 		PutIntToTable(L, "ForegroundColor", Data.ForeColor);
 		PutIntToTable(L, "BackgroundColor", Data.BackColor);
 		PutIntToTable(L, "PaletteColor", Data.PaletteColor);
-		PutIntToTable(L, "Transparency", Data.Transparency);
+		PutIntToTable(L, "Flags", Data.Flags);
 	}
 	else
 		lua_pushnil(L);

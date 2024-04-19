@@ -498,20 +498,12 @@ void Text64(int X, int Y, uint64_t Color, const WCHAR *Str, size_t Length)
 
 void Text(int X, int Y, const FarTrueColorForeAndBack *Color, const WCHAR *Str)
 {
-	DWORD64 Color64;
+	DWORD64 Color64 = 0;
 	FarTrueColorToAttributes(Color64, *Color);
 	SetColor(Color64);
 	CurX = X;
 	CurY = Y;
 	Text(Str);
-}
-
-void Text(int X, int Y, int Color, const WCHAR *Str, size_t Length)
-{
-	CurColor = FarColorToReal(Color);
-	CurX = X;
-	CurY = Y;
-	Text(Str, Length);
 }
 
 void Text(int X, int Y, int Color, const WCHAR *Str)

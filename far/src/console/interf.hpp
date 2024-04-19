@@ -85,7 +85,6 @@ void GetRealCursorPos(SHORT &X, SHORT &Y);
 void ScrollScreen(int Count);
 
 void Text(int X, int Y, const FarTrueColorForeAndBack *Color, const WCHAR *Str);
-void Text(int X, int Y, int Color, const WCHAR *Str, size_t Length);
 void Text(int X, int Y, int Color, const WCHAR *Str);
 void Text64(int X, int Y, uint64_t Color, const WCHAR *Str, size_t Length);
 void Text(const WCHAR *Str, size_t Length = (size_t)-1);

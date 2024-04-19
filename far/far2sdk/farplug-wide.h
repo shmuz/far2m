@@ -1573,7 +1573,7 @@ struct ColorDialogData
 	DWORD ForeColor;
 	DWORD BackColor;
 	unsigned char PaletteColor;
-	unsigned char Transparency;
+	unsigned char Flags;
 };
 
 typedef void (WINAPI *FARAPITEXTV2)(
