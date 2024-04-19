@@ -209,10 +209,10 @@ void FillPluginPanelItem (lua_State *L, struct PluginPanelItem *pi, int index)
 	pi->FindData.dwUnixMode       = GetOptIntFromTable  (L, "UnixMode", 0);
 	pi->NumberOfLinks             = GetOptIntFromTable  (L, "NumberOfLinks", 0);
 
-	pi->FindData.lpwszFileName = (wchar_t*)AddStringToCollectorField(L, Collector, "FileName");
-	pi->Description            = (wchar_t*)AddStringToCollectorField(L, Collector, "Description");
-	pi->Owner                  = (wchar_t*)AddStringToCollectorField(L, Collector, "Owner");
-	pi->Group                  = (wchar_t*)AddStringToCollectorField(L, Collector, "Group");
+	pi->FindData.lpwszFileName = AddStringToCollectorField(L, Collector, "FileName");
+	pi->Description            = AddStringToCollectorField(L, Collector, "Description");
+	pi->Owner                  = AddStringToCollectorField(L, Collector, "Owner");
+	pi->Group                  = AddStringToCollectorField(L, Collector, "Group");
 
 	// custom column data
 	lua_getfield(L, -1, "CustomColumnData");
@@ -602,14 +602,14 @@ void LF_GetOpenPanelInfo(lua_State* L, HANDLE hPlugin, struct OpenPluginInfo *aI
 				lua_pushinteger(L, i+1);
 				lua_gettable(L, -2);
 				if (lua_istable(L, -1)) {                //+6: Info,Tbl,Coll,Info,Modes,Mode
-					pm->ColumnTypes  = (wchar_t*)AddStringToCollectorField(L, cpos, "ColumnTypes");
-					pm->ColumnWidths = (wchar_t*)AddStringToCollectorField(L, cpos, "ColumnWidths");
+					pm->ColumnTypes  = AddStringToCollectorField(L, cpos, "ColumnTypes");
+					pm->ColumnWidths = AddStringToCollectorField(L, cpos, "ColumnWidths");
 					pm->FullScreen   = (int)GetOptBoolFromTable(L, "FullScreen", FALSE);
 					pm->DetailedStatus  = GetOptIntFromTable(L, "DetailedStatus", 0);
 					pm->AlignExtensions = GetOptIntFromTable(L, "AlignExtensions", 0);
 					pm->CaseConversion  = (int)GetOptBoolFromTable(L, "CaseConversion", FALSE);
-					pm->StatusColumnTypes  = (wchar_t*)AddStringToCollectorField(L, cpos, "StatusColumnTypes");
-					pm->StatusColumnWidths = (wchar_t*)AddStringToCollectorField(L, cpos, "StatusColumnWidths");
+					pm->StatusColumnTypes  = AddStringToCollectorField(L, cpos, "StatusColumnTypes");
+					pm->StatusColumnWidths = AddStringToCollectorField(L, cpos, "StatusColumnWidths");
 					pm->ColumnTitles = (const wchar_t* const*)CreateStringsArray(L, cpos, "ColumnTitles", NULL);
 				}
 			}
@@ -641,7 +641,7 @@ void LF_GetOpenPanelInfo(lua_State* L, HANDLE hPlugin, struct OpenPluginInfo *aI
 		for (i=0; i < ARRAYSIZE(pairs); i++) {
 			lua_getfield (L, -1, pairs[i].key);
 			if (lua_istable (L, -1)) {
-				for (j=0; j<12; j++)
+				for (j=0; j < ARRAYSIZE(kbt->Titles); j++)
 					pairs[i].trg[j] = (wchar_t*)AddStringToCollectorSlot(L, cpos, j+1);
 			}
 			lua_pop (L, 1);
@@ -995,7 +995,7 @@ int LF_ProcessPanelEvent(lua_State* L, HANDLE hPlugin, int Event, void *Param)
 		PushPluginPair(L, hPlugin);        //+3
 		lua_pushinteger(L, Event);         //+4
 		if (Event == FE_CHANGEVIEWMODE || Event == FE_COMMAND)
-			push_utf8_string(L, (wchar_t*)Param, -1); //+5
+			push_utf8_string(L, (const wchar_t*)Param, -1); //+5
 		else
 			lua_pushnil(L);                  //+5
 		if (0 == pcall_msg(L, 4, 1))  {     //+1
