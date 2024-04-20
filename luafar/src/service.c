@@ -2901,10 +2901,11 @@ static void FillColorForeAndBack(lua_State *L, struct FarTrueColorForeAndBack *f
 
 static void FillDialogColors(lua_State *L, struct ColorDialogData *Data)
 {
-	Data->ForeColor    = GetColorFromTable(L, "ForegroundColor", 1);
-	Data->BackColor    = GetColorFromTable(L, "BackgroundColor", 2);
-	Data->PaletteColor = GetColorFromTable(L, "PaletteColor", 3);
-	Data->Flags        = GetColorFromTable(L, "Flags", 4);
+	Data->ForeColor    = GetColorFromTable  (L, "ForegroundColor", 1);
+	Data->BackColor    = GetColorFromTable  (L, "BackgroundColor", 2);
+	Data->PaletteColor = GetColorFromTable  (L, "PaletteColor", 3);
+	Data->Flags        = GetColorFromTable  (L, "Flags", 4);
+	Data->Mask         = GetOptIntFromTable (L, "Mask", 0); //NOTE: Data->Mask is a 64-bit value
 }
 
 static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
@@ -5457,6 +5458,7 @@ static int far_ColorDialog(lua_State *L)
 		PutIntToTable(L, "BackgroundColor", Data.BackColor);
 		PutIntToTable(L, "PaletteColor", Data.PaletteColor);
 		PutIntToTable(L, "Flags", Data.Flags);
+		PutIntToTable(L, "Mask", Data.Mask & 0xFFFFFFFF); //NOTE: Data.Mask is a 64-bit value
 	}
 	else
 		lua_pushnil(L);

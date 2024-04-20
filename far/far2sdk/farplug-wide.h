@@ -1565,7 +1565,8 @@ enum FARCOLORDIALOGFLAGS
 {
 	FCD_RGB             = 0x00000001,
 	FCD_FONTSTYLES      = 0x00000002,
-	FCD_ALLCONTROLS     = (FCD_RGB | FCD_FONTSTYLES),
+	FCD_USEMASK         = 0x00000004,
+	FCD_ALLCONTROLS     = (FCD_RGB | FCD_FONTSTYLES | FCD_USEMASK),
 };
 
 struct ColorDialogData
@@ -1574,6 +1575,7 @@ struct ColorDialogData
 	DWORD BackColor;
 	unsigned char PaletteColor;
 	unsigned char Flags;
+	uint64_t Mask;
 };
 
 typedef void (WINAPI *FARAPITEXTV2)(
