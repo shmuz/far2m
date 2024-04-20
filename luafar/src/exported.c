@@ -799,7 +799,6 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 		return Open_Luamacro(L, Item);
 
 	lua_pushinteger(L, OpenFrom); // 1-st argument
-	lua_pushinteger(L, 0);        // 2-nd argument (dummy Id)
 
 	switch(OpenFrom)
 	{
@@ -807,6 +806,7 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 		{
 			int top;
 			struct OpenMacroInfo* data = (struct OpenMacroInfo*)Item;
+			lua_pushinteger(L, 0);        // dummy menuitem Id
 			PackMacroValues(L, data->Count, data->Values);
 			top = lua_gettop(L);
 			if (pcall_msg(L, 3, LUA_MULTRET) == 0)
@@ -851,6 +851,7 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 
 		case OPEN_SHORTCUT:
 		case OPEN_COMMANDLINE:
+			lua_pushinteger(L, 0);        // dummy menuitem Id
 			push_utf8_string(L, (const wchar_t*)Item, -1);
 			if (pcall_msg(L, 3, 1) == 0) {
 				if (lua_toboolean(L, -1))        //+1: Obj
@@ -862,7 +863,6 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 		case OPEN_DIALOG:
 		{
 			struct OpenDlgPluginData *data = (struct OpenDlgPluginData*)Item;
-			lua_pop(L, 1);  //pop dummy Id
 			lua_pushinteger(L, data->ItemNumber);
 			lua_createtable(L, 0, 1);
 			NewDialogData(L, data->hDlg, FALSE);
@@ -882,7 +882,7 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 		case OPEN_VIEWER:
 		case OPEN_FILEPANEL:
 			lua_pushinteger(L, Item);
-			lua_insert(L, -2);
+			lua_pushinteger(L, 0);        // dummy Data
 			if (pcall_msg(L, 3, 1) == 0) {
 				if (lua_toboolean(L, -1))        //+1: Obj
 					return RegisterObject(L);      //+0
@@ -892,7 +892,7 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 
 		default:
 		case OPEN_ANALYSE: //currently not supported
-			lua_pop(L, 2);
+			lua_pop(L, 1);
 			break;
 	}
 
