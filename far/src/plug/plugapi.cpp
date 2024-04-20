@@ -2110,7 +2110,7 @@ void WINAPI FarText(int X,int Y,int Color,const wchar_t *Str)
 	InterThreadCall<bool>(std::bind(FarTextSynched, X, Y, Color, Str));
 }
 
-static bool FarTextV2Synched(int X,int Y,const FarTrueColorForeAndBack *Color,const wchar_t *Str)
+static bool FarTextV2Synched(int X,int Y,const ColorDialogData *Color,const wchar_t *Str)
 {
 	if (DisablePluginsOutput || FrameManager->ManagerIsDown())
 		return false;
@@ -2130,7 +2130,7 @@ static bool FarTextV2Synched(int X,int Y,const FarTrueColorForeAndBack *Color,co
 }
 
 
-void WINAPI FarTextV2(int X,int Y,const FarTrueColorForeAndBack *Color,const wchar_t *Str)
+void WINAPI FarTextV2(int X,int Y,const ColorDialogData *Color,const wchar_t *Str)
 {
 	InterThreadCall<bool>(std::bind(FarTextV2Synched, X, Y, Color, Str));
 }

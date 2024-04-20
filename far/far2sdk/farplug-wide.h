@@ -1579,7 +1579,7 @@ struct ColorDialogData
 typedef void (WINAPI *FARAPITEXTV2)(
 	int X,
 	int Y,
-	const struct FarTrueColorForeAndBack *Color,
+	const struct ColorDialogData *Color,
 	const wchar_t *Str
 );
 

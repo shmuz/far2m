@@ -2899,6 +2899,14 @@ static void FillColorForeAndBack(lua_State *L, struct FarTrueColorForeAndBack *f
 	lua_pop(L,1);
 }
 
+static void FillDialogColors(lua_State *L, struct ColorDialogData *Data)
+{
+	Data->ForeColor    = GetColorFromTable(L, "ForegroundColor", 1);
+	Data->BackColor    = GetColorFromTable(L, "BackgroundColor", 2);
+	Data->PaletteColor = GetColorFromTable(L, "PaletteColor", 3);
+	Data->Flags        = GetColorFromTable(L, "Flags", 4);
+}
+
 static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 {
 	typedef struct { void *Id; int Ref; } listdata_t;
@@ -4169,11 +4177,11 @@ static int far_Text(lua_State *L)
 	Str = opt_utf8_string(L, 4, NULL);
 
 	if (lua_istable(L, 3)) {
-		struct FarTrueColorForeAndBack fb;
-		memset(&fb, 0, sizeof(fb));
-		lua_pushvalue(L, 3);
-		FillColor(L, &fb);
-		PSInfo.TextV2(X, Y, &fb, Str);
+		struct ColorDialogData Data;
+		memset(&Data, 0, sizeof(Data));
+		lua_settop(L, 3);
+		FillDialogColors(L, &Data);
+		PSInfo.TextV2(X, Y, &Data, Str);
 	}
 	else
 		PSInfo.Text(X, Y, Color, Str);
@@ -5437,10 +5445,7 @@ static int far_ColorDialog(lua_State *L)
 		Data.PaletteColor = (unsigned char)lua_tointeger(L, 1);
 	else if (lua_istable(L, 1)) {
 		lua_pushvalue(L, 1);
-		Data.ForeColor = GetColorFromTable(L, "ForegroundColor", 1);
-		Data.BackColor = GetColorFromTable(L, "BackgroundColor", 2);
-		Data.PaletteColor = GetColorFromTable(L, "PaletteColor", 3);
-		Data.Flags = GetColorFromTable(L, "Flags", 4);
+		FillDialogColors(L, &Data);
 	}
 	else if (!lua_isnoneornil(L, 1))
 		return luaL_argerror(L, 1, "table or integer expected");

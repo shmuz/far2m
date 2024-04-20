@@ -108,7 +108,7 @@ int WINAPI FarEditor(const wchar_t *FileName,const wchar_t *Title,
                      int StartLine,int StartChar, UINT CodePage);
 int WINAPI FarCmpName(const wchar_t *pattern,const wchar_t *string,int skippath);
 void WINAPI FarText(int X,int Y,int Color,const wchar_t *Str);
-void WINAPI FarTextV2(int X,int Y,const FarTrueColorForeAndBack *Color,const wchar_t *Str);
+void WINAPI FarTextV2(int X,int Y,const ColorDialogData *Color,const wchar_t *Str);
 int WINAPI FarEditorControl(int Command,void *Param);
 int WINAPI FarEditorControlV2(int EditorId,int Command,void *Param);
 

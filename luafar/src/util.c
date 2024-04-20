@@ -23,7 +23,7 @@ int Log(lua_State *L, const char* Format, ...)
 					time (&rtime);
 					fprintf(fp, "\n%s------------------------\n", ctime(&rtime));
 				}
-				fprintf(fp, "%08X %d: ", GetPluginData(L)->PluginId, N);
+				fprintf(fp, "%d: %08X: ", N, GetPluginData(L)->PluginId);
 				vfprintf(fp, Format, valist);
 				fprintf(fp, "\n");
 				fclose(fp);

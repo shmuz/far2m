@@ -496,11 +496,13 @@ void Text64(int X, int Y, uint64_t Color, const WCHAR *Str, size_t Length)
 	Text(Str, Length);
 }
 
-void Text(int X, int Y, const FarTrueColorForeAndBack *Color, const WCHAR *Str)
+void Text(int X, int Y, const ColorDialogData *Color, const WCHAR *Str)
 {
-	DWORD64 Color64 = 0;
-	FarTrueColorToAttributes(Color64, *Color);
-	SetColor(Color64);
+	CurColor =
+		((uint64_t) (Color->BackColor & 0x00FFFFFF) << 40) |
+		((uint64_t) (Color->ForeColor & 0x00FFFFFF) << 16) |
+		((uint64_t) (Color->Flags                 ) <<  8) |
+		((uint64_t) (Color->PaletteColor          ) <<  0);
 	CurX = X;
 	CurY = Y;
 	Text(Str);
