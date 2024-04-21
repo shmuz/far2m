@@ -1403,7 +1403,9 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 
 		while (!Done)
 		{
+			Cma.SetPrevArea(); // for plugins: set the right macro area in GetPluginInfo()
 			bool HotKeysPresent = CheckIfHotkeyPresent(false);
+			Cma.SetCurArea();
 
 			if (NeedUpdateItems)
 			{
