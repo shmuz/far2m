@@ -283,7 +283,7 @@ void FileList::SetFilePanelModes()
 			{DI_EDIT,     38, 3,70, 3,{},0,L""},
 			{DI_TEXT,     38, 4, 0, 4,{},0,Msg::EditPanelModeStatusWidths},
 			{DI_EDIT,     38, 5,70, 5,{},0,L""},
-			{DI_TEXT,      3, 6, 0, 6,{},DIF_SEPARATOR,Msg::EditPanelReadHelp},
+			{DI_TEXT,      3, 6, 0, 6,{},DIF_SEPARATOR,L""},
 			{DI_CHECKBOX,  5, 7, 0, 7,{},0,Msg::EditPanelModeFullscreen},
 			{DI_CHECKBOX,  5, 8, 0, 8,{},0,Msg::EditPanelModeAlignExtensions},
 			{DI_CHECKBOX,  5, 9, 0, 9,{},0,Msg::EditPanelModeAlignFolderExtensions},
