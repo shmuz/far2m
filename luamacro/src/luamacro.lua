@@ -4,7 +4,6 @@
 -- This plugin does not support reloading the default script on the fly.
 if not (...) then return end
 
-local GlobalInfo = far.GetPluginGlobalInfo()
 local ShareDir = far.PluginStartupInfo().ShareDir
 
 local F, Msg = far.Flags, nil
@@ -86,7 +85,7 @@ function _G.Keys (...)
         elseif lname == "enout"  then keymacro.mmode(1,0)
         else
           local R1,R2 = keymacro.TransformKey(name)
-          for _=1,cnt do co_yield(PROPAGATE, F.MPRT_KEYS, R1, R2) end
+          for k=1,cnt do co_yield(PROPAGATE, F.MPRT_KEYS, R1, R2) end
         end
       end
     end
@@ -117,11 +116,12 @@ function export.GetPluginInfo()
   local out = {
     Flags = bor(F.PF_PRELOAD,F.PF_FULLCMDLINE,F.PF_EDITOR,F.PF_VIEWER,F.PF_DIALOG),
     CommandPrefix = "lm:macro:lua:moon:luas:moons:edit:view:load:unload:goto"..utils.GetPrefixes()[1],
-    PluginMenuStrings = { "Macro Browser" },
     PluginMenuGuids = { win.Uuid("EF6D67A2-59F7-4DF3-952E-F9049877B492") },
     PluginConfigGuids = {},
     DiskMenuGuids = {},
+    PluginMenuStrings = { "Macro Browser" },
   }
+  PluginInfo = out
 
   local mode = far.MacroGetArea()
   local area = utils.GetTrueAreaName(mode)
@@ -165,7 +165,6 @@ function export.GetPluginInfo()
       end
     end
   end
-  PluginInfo = out
   return out
 end
 
@@ -284,7 +283,7 @@ local function MacroParse (Lang, Text, onlyCheck, skipFile)
     _loadstring, _loadfile = ms.loadstring, ms.loadfile
   end
 
-  local ok,msg
+  local ok,msg = true,nil
   local fname,params = GetFileParams(Text)
   if fname then
     ok,msg = _loadstring("return "..params)
@@ -328,7 +327,8 @@ end
 
 local function About()
   -- LuaMacro
-  local text = ("%s %d.%d.%d build %d"):format(GlobalInfo.Title, unpack(GlobalInfo.Version))
+  local GInfo = far.GetPluginGlobalInfo()
+  local text = ("%s %d.%d.%d build %d"):format(GInfo.Title, unpack(GInfo.Version))
 
   -- Lua/LuaJIT
   text = text.."\n"..(jit and jit.version or _VERSION)
@@ -353,7 +353,6 @@ local function Open_CommandLine (strCmdLine)
   local prefix, text = strCmdLine:match("^%s*([^:%s]+):%s*(.-)%s*$")
   if not prefix then return end -- this can occur with Plugin.Command()
   prefix = prefix:lower()
-  ----------------------------------------------------------------------------
   if prefix == "lm" or prefix == "macro" then
     if text=="" then return end
     local cmd = text:match("%S*"):lower()
@@ -387,7 +386,7 @@ local function Open_CommandLine (strCmdLine)
     if text:find("^=") then
       show, text = true, text:sub(2)
     end
-    local fname = GetFileParams(text)
+    local fname, params = GetFileParams(text)
     if show and not fname then
       text = "return "..text
     end
@@ -421,7 +420,7 @@ local function PanelModuleExist(mod)
   end
 end
 
-local function OpenLuaMacro (calltype, ...)
+local function Open_LuaMacro (calltype, ...)
   if     calltype==F.MCT_KEYMACRO       then return keymacro.Dispatch(...)
   elseif calltype==F.MCT_MACROPARSE     then return MacroParse(...)
   elseif calltype==F.MCT_DELMACRO       then return utils.DelMacro(...)
@@ -464,7 +463,7 @@ function export.Open (OpenFrom, Id, ...)
     return
 
   elseif OpenFrom == F.OPEN_LUAMACRO then
-    return OpenLuaMacro(Id, ...)
+    return Open_LuaMacro(Id, ...)
 
   elseif OpenFrom == F.OPEN_COMMANDLINE then
     local mod, obj = Open_CommandLine(...)
@@ -492,7 +491,7 @@ function export.Open (OpenFrom, Id, ...)
       end
     end
 
-  elseif OpenFrom == F.OPEN_FROMMACRO then
+  elseif OpenFrom == F.OPEN_FROMMACRO then -- TODO: add panel modules support
     local argtable =  ...
     if argtable[1]=="argtest" then -- argtest: return received arguments
       return unpack(argtable, 2, argtable.n)
@@ -580,16 +579,16 @@ end
 
 local function Init()
   Shared = {
-    checkarg          = checkarg,
     ErrMsg            = ErrMsg,
     FullExpand        = FullExpand,
     GetLastParseError = GetLastParseError,
-    loadmacro         = loadmacro,
-    MacroDirs         = GetMacroDirs(),
     MacroStep         = MacroStep,
+    checkarg          = checkarg,
+    loadmacro         = loadmacro,
     pack              = pack,
-    Unquote           = Unquote,
     yieldcall         = yieldcall,
+    MacroDirs         = GetMacroDirs(),
+    Unquote           = Unquote,
   }
   Shared.MacroCallFar, far.MacroCallFar = far.MacroCallFar, nil
   Shared.MacroCallToLua, far.MacroCallToLua = far.MacroCallToLua, nil
