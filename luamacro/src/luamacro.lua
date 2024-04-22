@@ -459,35 +459,6 @@ local CanCreatePanel = {
   [F.OPEN_PLUGINSMENU]   = true;
 }
 
-local function OpenCommandLine (CmdLine)
-  local mod, obj = Open_CommandLine(CmdLine)
-  return mod and obj and PanelModuleExist(mod) and { module=mod; object=obj }
-end
-
-local function OpenShortcut (Item)
-  if Item then
-    local mod_guid, data = Item:match(
-      "^(%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x)/(.*)")
-    if mod_guid then
-      local mod = utils.GetPanelModules()[win.Uuid(mod_guid)]
-      if mod and type(mod.OpenShortcut) == "function" then
-        local obj = mod.OpenShortcut(Item)
-        return obj and { module=mod; object=obj }
-      end
-    end
-  end
-end
-
-local function OpenFromMacro (argtable)
-  if argtable[1]=="argtest" then -- argtest: return received arguments
-    return unpack(argtable, 2, argtable.n)
-  elseif argtable[1]=="macropost" then -- test Mantis # 2222
-    return far.MacroPost([[far.Message"macropost"]])
-  elseif argtable[1]=="browser" then
-    macrobrowser()
-  end
-end
-
 function export.Open (OpenFrom, Id, ...)
   if not PluginIsReady then
     return
@@ -495,14 +466,9 @@ function export.Open (OpenFrom, Id, ...)
   elseif OpenFrom == F.OPEN_LUAMACRO then
     return OpenLuaMacro(Id, ...)
 
-  elseif OpenFrom == F.OPEN_FROMMACRO then
-    return OpenFromMacro(...)
-
-  elseif OpenFrom == F.OPEN_SHORTCUT then
-    return OpenShortcut(...)
-
   elseif OpenFrom == F.OPEN_COMMANDLINE then
-    return OpenCommandLine(...)
+    local mod, obj = Open_CommandLine(...)
+    return mod and obj and PanelModuleExist(mod) and { module=mod; object=obj }
 
   elseif OpenFrom == F.OPEN_FINDLIST then
     for _,mod in ipairs(utils.GetPanelModules()) do
@@ -510,6 +476,30 @@ function export.Open (OpenFrom, Id, ...)
         local obj = mod.Open(OpenFrom, Id, ...)
         if obj then return { module=mod; object=obj } end
       end
+    end
+
+  elseif OpenFrom == F.OPEN_SHORTCUT then
+    local Item = ...
+    if Item then
+      local mod_guid, data = Item:match(
+        "^(%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x)/(.*)")
+      if mod_guid then
+        local mod = utils.GetPanelModules()[win.Uuid(mod_guid)]
+        if mod and type(mod.Open) == "function" then
+          local obj = mod.Open(OpenFrom, Id, Item)
+          return obj and { module=mod; object=obj }
+        end
+      end
+    end
+
+  elseif OpenFrom == F.OPEN_FROMMACRO then
+    local argtable =  ...
+    if argtable[1]=="argtest" then -- argtest: return received arguments
+      return unpack(argtable, 2, argtable.n)
+    elseif argtable[1]=="macropost" then -- test Mantis # 2222
+      return far.MacroPost([[far.Message"macropost"]])
+    elseif argtable[1]=="browser" then
+      macrobrowser()
     end
 
   else
