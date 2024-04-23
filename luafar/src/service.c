@@ -5660,6 +5660,7 @@ static const luaL_Reg dialog_methods[] =
 	PAIR( dlg, SetSelection),
 	PAIR( dlg, SetText),
 	PAIR( dlg, SetTextPtr),
+	PAIR( dlg, SetTextPtrSilent),
 	PAIR( dlg, SetTrueColor),
 	PAIR( dlg, ShowDialog),
 	PAIR( dlg, ShowItem),
