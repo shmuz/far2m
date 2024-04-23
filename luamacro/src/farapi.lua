@@ -200,6 +200,7 @@ enum FarMessagesProc
 	DM_GETTRUECOLOR,	// Param1 - Item ID, Param2 - DialogItemTrueColors *
 	DM_SETTRUECOLOR,	// Param1 - Item ID, Param2 - const DialogItemTrueColors *
 
+	DM_SETTEXTPTRSILENT,
 
 	DN_FIRST=0x1000,
 	DN_BTNCLICK,
@@ -1240,7 +1241,10 @@ struct DialogItemTrueColors
 
 enum FARCOLORDIALOGFLAGS
 {
-	FCD_ALLCONTROLS     = 0x00000001,
+	FCD_RGB             = 0x00000001,
+	FCD_FONTSTYLES      = 0x00000002,
+	FCD_USEMASK         = 0x00000004,
+	FCD_ALLCONTROLS     = (FCD_RGB | FCD_FONTSTYLES | FCD_USEMASK),
 };
 
 struct ColorDialogData
@@ -1249,12 +1253,13 @@ struct ColorDialogData
 	DWORD BackColor;
 	unsigned char PaletteColor;
 	unsigned char Flags;
+	uint64_t Mask;
 };
 
 typedef void (__stdcall *FARAPITEXTV2)(
 	int X,
 	int Y,
-	const struct FarTrueColorForeAndBack *Color,
+	const struct ColorDialogData *Color,
 	const wchar_t *Str
 );
 
@@ -1311,6 +1316,7 @@ enum VIEWER_CONTROL_COMMANDS
 	VCTL_SETPOSITION,
 	VCTL_SELECT,
 	VCTL_SETMODE,
+	VCTL_GETFILENAME,
 };
 
 enum VIEWER_OPTIONS

@@ -2821,6 +2821,7 @@ static int Is_DM_DialogItem(int Msg)
 		case DM_SETSELECTION:
 		case DM_SETTEXT:
 		case DM_SETTEXTPTR:
+		case DM_SETTEXTPTRSILENT:
 		case DM_SETTRUECOLOR:
 		case DM_SHOWITEM:
 		case DM_SETREADONLY:
@@ -3043,6 +3044,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 		case DM_LISTADDSTR:
 		case DM_ADDHISTORY:
 		case DM_SETTEXTPTR:
+		case DM_SETTEXTPTRSILENT:
 			Param2 = (LONG_PTR) check_utf8_string(L, pos4, NULL);
 			break;
 
@@ -3518,6 +3520,7 @@ DlgMethod( SetReadOnly,            DM_SETREADONLY, 1)
 DlgMethod( SetSelection,           DM_SETSELECTION, 1)
 DlgMethod( SetText,                DM_SETTEXT, 1)
 DlgMethod( SetTextPtr,             DM_SETTEXTPTR, 1)
+DlgMethod( SetTextPtrSilent,       DM_SETTEXTPTRSILENT, 1)
 DlgMethod( SetTrueColor,           DM_SETTRUECOLOR, 1)
 DlgMethod( ShowDialog,             DM_SHOWDIALOG, 1)
 DlgMethod( ShowItem,               DM_SHOWITEM, 1)

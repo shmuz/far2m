@@ -283,7 +283,7 @@ local function MacroParse (Lang, Text, onlyCheck, skipFile)
     _loadstring, _loadfile = ms.loadstring, ms.loadfile
   end
 
-  local ok,msg = true,nil
+  local ok,msg
   local fname,params = GetFileParams(Text)
   if fname then
     ok,msg = _loadstring("return "..params)
@@ -386,7 +386,7 @@ local function Open_CommandLine (strCmdLine)
     if text:find("^=") then
       show, text = true, text:sub(2)
     end
-    local fname, params = GetFileParams(text)
+    local fname = GetFileParams(text)
     if show and not fname then
       text = "return "..text
     end
