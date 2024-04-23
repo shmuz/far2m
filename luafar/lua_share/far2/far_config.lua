@@ -115,9 +115,21 @@ local function FarConfig()
     if msg == F.DN_INITDIALOG then
       hDlg:ListSetMouseReaction(posList, F.LMRT_NEVER)
       hDlg:ListSetTitles(posList, { Title=TopTitle; Bottom=BottomTitle; })
+
     elseif msg == F.DN_RESIZECONSOLE then
-      --hDlg:MoveDialog(true, {X=-1, Y=-1}) -- crashes Far when pressing Esc
-      hDlg:MoveDialog(1, {X=-1, Y=-1})
+      local r = actl.GetFarRect()
+      local W = r.Right - r.Left - 4
+      local H = r.Bottom - r.Top - 4
+
+      hDlg:ResizeDialog(1, {X = W, Y = H})
+      local item = hDlg:GetDlgItem(posList)
+      item[4] = W - 4 -- x2
+      item[5] = H - 2 -- y2
+      hDlg:SetDlgItem(posList, item)
+
+      hDlg:MoveDialog(1, {X = -1, Y = -1})
+      hDlg:ListSetMouseReaction(posList, F.LMRT_NEVER)
+
     elseif msg == "EVENT_KEY" then
       if p2=="Enter" or p2=="NumEnter" or p2=="F4" or p2=="ShiftF4" then
         Op = "edit"
@@ -125,6 +137,7 @@ local function FarConfig()
       else
         Op = p2=="Del" and "reset" or p2=="CtrlH" and "hide"
       end
+
     elseif msg == "EVENT_MOUSE" then
       if p2.EventFlags == F.DOUBLE_CLICK then
         Op = "edit"
