@@ -117,7 +117,8 @@ static bool ShowTotalCopySize;
 static FARString strTotalCopySizeText;
 
 static FileFilter *Filter;
-static int UseFilter=FALSE;
+static int UseFilter=FALSE;     // Use in the current dialog invocation
+static int LastUseFilter=FALSE; // Use between dialog invocations
 
 static BOOL ZoomedState,IconicState;
 static clock_t ProgressUpdateTime;              // Last progress bar update time
@@ -597,6 +598,7 @@ ShellCopy::ShellCopy(Panel *SrcPanel,        // исходная панель (�
                      bool ToSubdir):
 	RPT(RP_EXACTCOPY)
 {
+	UseFilter=LastUseFilter;
 	Filter=nullptr;
 	UserDefinedList DestList(ULF_UNIQUE|ULF_CASESENSITIVE);
 	CopyDlgParam CDP{};
@@ -976,7 +978,7 @@ ShellCopy::ShellCopy(Panel *SrcPanel,        // исходная панель (�
 				if (CopyDlg[ID_SC_MULTITARGET].Selected ? DestList.Set(strCopyDlgValue) : DestList.SetAsIs(strCopyDlgValue))
 				{
 					// Запомнить признак использования фильтра. KM
-					UseFilter=CopyDlg[ID_SC_USEFILTER].Selected;
+					LastUseFilter = UseFilter = CopyDlg[ID_SC_USEFILTER].Selected;
 					break;
 				}
 				else
