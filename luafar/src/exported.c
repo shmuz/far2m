@@ -541,7 +541,7 @@ void LF_GetOpenPanelInfo(lua_State* L, HANDLE hPlugin, struct OpenPluginInfo *aI
 		lua_pop(L, 1);
 		return;
 	}
-	DestroyCollector(L, hPlugin, COLLECTOR_OPI);
+
 	PushPluginTable(L, hPlugin);                       //+2: Info,Tbl
 	lua_newtable(L);                                   //+3: Info,Tbl,Coll
 	int cpos = lua_gettop (L);  // collector stack position
@@ -905,8 +905,9 @@ void LF_ClosePanel(lua_State* L, HANDLE hPlugin)
 		PushPluginPair(L, hPlugin);              //+3: Func,Pair
 		pcall_msg(L, 2, 0);
 	}
-	DestroyCollector(L, hPlugin, COLLECTOR_OPI);
-	luaL_unref(L, LUA_REGISTRYINDEX, (INT_PTR)hPlugin);
+	lua_pushlightuserdata(L, hPlugin);
+	lua_pushnil(L);
+	lua_rawset(L, LUA_REGISTRYINDEX);
 }
 
 int LF_Compare(lua_State* L, HANDLE hPlugin, const struct PluginPanelItem *Item1,
