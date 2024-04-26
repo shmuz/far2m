@@ -833,11 +833,11 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 		}
 
 		case MCODE_V_DLGINFOID:      // Dlg->Info.Id
-		if (CurrentWindow && CurrentWindow->GetType()==MODALTYPE_DIALOG) // ?? Mode == MACROAREA_DIALOG ??
-		{
-			api.PassString( reinterpret_cast<LPCWSTR>(CurrentWindow->VMProcess(CheckCode)) );
-		}
-		break;
+			if (CurrentWindow && CurrentWindow->GetType()==MODALTYPE_DIALOG) // ?? Mode == MACROAREA_DIALOG ??
+			{
+				return api.PassString( reinterpret_cast<LPCWSTR>(CurrentWindow->VMProcess(CheckCode)) );
+			}
+			return api.PassString(L"");
 
 		case MCODE_C_APANEL_VISIBLE:  // APanel.Visible
 		case MCODE_C_PPANEL_VISIBLE:  // PPanel.Visible
