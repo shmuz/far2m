@@ -47,6 +47,7 @@ const char SavedScreenType[]   = "FarSavedScreen";
 
 const char FAR_KEYINFO[]       = "far.info";
 const char FAR_VIRTUALKEYS[]   = "far.virtualkeys";
+const char FAR_FLAGSTABLE[]    = "far.Flags";
 const char FAR_DN_STORAGE[]    = "FAR_DN_STORAGE";
 
 const char* VirtualKeyStrings[256] =
@@ -213,12 +214,13 @@ static flags_t get_env_flag(lua_State *L, int pos, int *success)
 
 		case LUA_TSTRING:
 			str = lua_tostring(L, pos);
-			lua_getfield (L, LUA_ENVIRONINDEX, str);
+			lua_getfield(L, LUA_REGISTRYINDEX, FAR_FLAGSTABLE);
+			lua_getfield(L, -1, str);
 			if (lua_type(L, -1) == LUA_TNUMBER)
 				ret = (flags_t)lua_tonumber(L, -1); // IMPORTANT: cast to signed integer.
 			else if (!bit64_getvalue(L, -1, &ret))
 				*success = FALSE;
-			lua_pop(L, 1);
+			lua_pop(L, 2);
 			break;
 
 		default:
@@ -5948,14 +5950,12 @@ static int luaopen_far (lua_State *L)
 	NewVirtualKeyTable(L, FALSE);
 	lua_setfield(L, LUA_REGISTRYINDEX, FAR_VIRTUALKEYS);
 
-	lua_createtable(L, 0, 1600);
-	lua_pushvalue(L, -1);
-	lua_replace (L, LUA_ENVIRONINDEX);
-
 	luaL_register(L, "far", far_funcs);
-	lua_insert(L, -2);
+	lua_createtable(L, 0, 1600);
 	add_flags(L);
-	lua_setfield(L, -2, "Flags");
+	lua_pushvalue(L, -1);
+	lua_setfield(L, -3, "Flags");
+	lua_setfield(L, LUA_REGISTRYINDEX, FAR_FLAGSTABLE);
 
 	luaopen_far_host(L);
 	lua_setfield(L, -2, "Host");
