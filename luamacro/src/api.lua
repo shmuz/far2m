@@ -67,10 +67,10 @@ mf = {
   xlat            = function(...) return MacroCallFar( mc.MCODE_F_XLAT      , ...) end,
 }
 
-mf.associations = function() yieldcall(F.MPRT_FILEASSOCIATIONS) end
-mf.fhighlight   = function() yieldcall(F.MPRT_FILEHIGHLIGHT) end
-mf.fpanelmodes  = function() yieldcall(F.MPRT_FILEPANELMODES) end
-mf.fshortcuts   = function() yieldcall(F.MPRT_FOLDERSHORTCUTS) end
+mf.fileassociations = function() yieldcall(F.MPRT_FILEASSOCIATIONS) end
+mf.filehighlight    = function() yieldcall(F.MPRT_FILEHIGHLIGHT) end
+mf.filepanelmodes   = function() yieldcall(F.MPRT_FILEPANELMODES) end
+mf.foldershortcuts  = function() yieldcall(F.MPRT_FOLDERSHORTCUTS) end
 
 mf.env = function(Name, Mode, Value)
   local oldvalue = win.GetEnv(Name)
