@@ -76,6 +76,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "console.hpp"
 #include "usermenu.hpp"
 #include "ConfigOpt.hpp"
+#include "Bookmarks.hpp"
+#include "filetype.hpp"
 
 int Log(const char* Format, ...)
 {
@@ -3678,6 +3680,30 @@ FarKey KeyMacro::GetKey()
 
 			case MPRT_USERMENU:
 				ShowUserMenu(mpr.Count,mpr.Values);
+				break;
+
+			case MPRT_FOLDERSHORTCUTS:
+				if (IsPanelsArea(m_Area)) {
+					ShowBookmarksMenu();
+				}
+				break;
+
+			case MPRT_FILEASSOCIATIONS:
+				if (IsPanelsArea(m_Area)) {
+					EditFileTypes();
+				}
+				break;
+
+			case MPRT_FILEHIGHLIGHT:
+				if (IsPanelsArea(m_Area)) {
+					CtrlObject->HiFiles->HiEdit(0);
+				}
+				break;
+
+			case MPRT_FILEPANELMODES:
+				if (IsPanelsArea(m_Area)) {
+					FileList::SetFilePanelModes();
+				}
 				break;
 		}
 	}
