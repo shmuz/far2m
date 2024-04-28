@@ -1458,7 +1458,7 @@ static int editor_ReadInput(lua_State *L)
 
 void FillInputRecord(lua_State *L, int pos, INPUT_RECORD *ir)
 {
-	int ok;
+	int success = 0;
 	size_t size;
 
 	pos = abs_index(L, pos);
@@ -1467,9 +1467,22 @@ void FillInputRecord(lua_State *L, int pos, INPUT_RECORD *ir)
 
 	// determine event type
 	lua_getfield(L, pos, "EventType");
-	ir->EventType = GetFlagCombination(L, -1, &ok);
-	if (!ok)
-		luaL_argerror(L, pos, "EventType field is missing or invalid");
+	ir->EventType = GetFlagCombination(L, -1, &success);
+	if (success)
+	{
+		if (ir->EventType == 0)
+		{
+			ir->EventType = KEY_EVENT;
+		}
+		success = ir->EventType == KEY_EVENT
+			|| ir->EventType == MOUSE_EVENT
+			|| ir->EventType == WINDOW_BUFFER_SIZE_EVENT
+			|| ir->EventType == MENU_EVENT
+			|| ir->EventType == FOCUS_EVENT;
+	}
+	if (!success)
+		luaL_error(L, "invalid 'EventType' specified");
+
 	lua_pop(L, 1);
 
 	lua_pushvalue(L, pos);
