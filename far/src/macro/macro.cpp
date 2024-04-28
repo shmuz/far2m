@@ -1751,7 +1751,12 @@ int FarMacroApi::atoiFunc()
 {
 	auto Params = parseParams(2);
 	wchar_t *endptr;
-	const auto Ret = _wcstoi64(Params[0].toString(), &endptr, Params[1].toInteger());
+	int64_t Ret = 0;
+	int radix = static_cast<int>(Params[1].toInteger());
+	if (radix == 0 || (radix >= 2 && radix <= 36))
+	{
+		Ret = _wcstoi64(Params[0].toString(), &endptr, radix);
+	}
 	return PassInteger(Ret);
 }
 
@@ -1789,8 +1794,8 @@ int FarMacroApi::itowFunc()
 		wchar_t value[80];
 		int Radix = static_cast<int>(Params[1].toInteger());
 
-		if (!Radix)
-			Radix=10;
+		if (Radix < 2 || Radix > 36)
+			Radix = 10;
 
 		Params[0]=TVar(_i64tow(Params[0].toInteger(),value,Radix));
 	}
