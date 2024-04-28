@@ -67,10 +67,18 @@ mf = {
   xlat            = function(...) return MacroCallFar( mc.MCODE_F_XLAT      , ...) end,
 }
 
-mf.fileassociations = function() yieldcall(F.MPRT_FILEASSOCIATIONS) end
-mf.filehighlight    = function() yieldcall(F.MPRT_FILEHIGHLIGHT) end
-mf.filepanelmodes   = function() yieldcall(F.MPRT_FILEPANELMODES) end
-mf.foldershortcuts  = function() yieldcall(F.MPRT_FOLDERSHORTCUTS) end
+mf.mainmenu = function(param)
+  local mprt =
+    param == "fileassociations" and F.MPRT_FILEASSOCIATIONS or
+    param == "filehighlight"    and F.MPRT_FILEHIGHLIGHT    or
+    param == "filepanelmodes"   and F.MPRT_FILEPANELMODES   or
+    param == "foldershortcuts"  and F.MPRT_FOLDERSHORTCUTS
+  if mprt then
+    yieldcall(mprt)
+  else
+    error("parameter not supported: "..tostring(param), 2)
+  end
+end
 
 mf.env = function(Name, Mode, Value)
   local oldvalue = win.GetEnv(Name)
