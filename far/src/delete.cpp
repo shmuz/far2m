@@ -33,7 +33,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
-
 #include "lang.hpp"
 #include "panel.hpp"
 #include "chgprior.hpp"
@@ -61,9 +60,16 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "execute.hpp"
 #include "DlgGuid.hpp"
 
-#if defined(__APPLE__) || defined(__FreeBSD__)
-  #include <errno.h>
-#endif
+#include <errno.h>
+
+enum DeletionResult
+{
+	DELETE_SUCCESS,
+	DELETE_YES,
+	DELETE_SKIP,
+	DELETE_CANCEL,
+	DELETE_NO_RECYCLE_BIN
+};
 
 static void ShellDeleteMsg(const wchar_t *Name,int Wipe,int Percent);
 static int ShellRemoveFile(const wchar_t *Name,int Wipe);
@@ -77,8 +83,6 @@ static int ReadOnlyDeleteMode,SkipMode,SkipWipeMode,SkipFoldersMode,DeleteAllFol
 ULONG ProcessedItems;
 
 ConsoleTitle *DeleteTitle=nullptr;
-
-enum {DELETE_SUCCESS,DELETE_YES,DELETE_SKIP,DELETE_CANCEL};
 
 struct AskDeleteReadOnly
 {
@@ -825,11 +829,15 @@ static int RemoveToRecycleBin(const wchar_t *Name)
 	FARString err_file;
 	FarMkTempEx(err_file, L"trash");
 
-	std::string name_arg = Wide2MB(Name);
+	FARString FullName;
+	ConvertNameToFull(Name, FullName);
+	std::string name_arg = FullName.GetMB();
 	std::string err_file_arg = err_file.GetMB();
 
+
 	unsigned int flags = EF_HIDEOUT;
-	if (sudo_client_is_required_for(name_arg.c_str(), true))
+	if (sudo_client_is_required_for(ExtractFilePath(name_arg).c_str(), true)
+		|| (apiPathIsDir(FullName) && sudo_client_is_required_for(name_arg.c_str(), true)))
 		flags|= EF_SUDO;
 
 	QuoteCmdArgIfNeed(name_arg);
