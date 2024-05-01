@@ -13943,6 +13943,17 @@ upd:"AutoComplete settings"
 "На&лаштування автозавершення"
 "На&лады аўтазаканчэння"
 
+MenuMaskGroups
+"Группы масок файлов"
+"Groups of file mas&ks"
+"Skupiny masek souborů"
+"Gruppe der Datenmasken"
+upd:"Groups of file masks"
+"Grupy masek p&lików"
+"Grupos de máscara de archivos"
+"Групи масок файлів"
+"Суполкі масак файлаў"
+
 MenuInfoPanelSettings
 "Нас&тройки информационной панели"
 "Inf&oPanel settings"
@@ -14152,6 +14163,61 @@ MenuRightTitle
 "&Derecho"
 "&Права"
 "&Правая"
+
+MaskGroupTitle
+"Группы масок файлов"
+"Groups of file masks"
+"Skupiny masek souborů"
+"Gruppe der Datenmasken"
+upd:"Groups of file masks"
+"Grupy masek plików"
+"Grupos de máscara de archivos"
+"Групи масок файлів"
+"Суполкі масак файлаў"
+
+MaskGroupName
+"&Имя:"
+"&Name:"
+"Jmé&no:"
+"&Name:"
+"&Neve:"
+"&Nazwa:"
+"&Nombre:"
+"&Ім'я:"
+"&Імя:"
+
+MaskGroupMasks
+"Одна или несколько &масок файлов:"
+"A file &mask or several file masks:"
+"&Maska nebo masky souborů:"
+"Datei&maske (mehrere getrennt mit Komma):"
+"F&ájlmaszk(ok, vesszővel elválasztva):"
+"&Maska pliku lub kilka masek oddzielonych przecinkami:"
+"&Máscara de archivo o múltiples máscaras de archivos:"
+"Одна або декілька &масок файлів:"
+"Адна ці некалькі &масак файлаў"
+
+MaskGroupAskDelete
+"Вы хотите удалить"
+"Do you wish to delete"
+"Přejete si smazat"
+"Wollen Sie folgendes Objekt löschen"
+"Törölni akar"
+"Czy chcesz usunąć"
+"Quiere borrar"
+"Ви бажаєте видалити"
+"Вы жадаеце выдаліць"
+
+MaskGroupRestore
+"Вы хотите восстановить наборы масок по умолчанию?"
+"Do you wish to restore default mask sets?"
+"Přejete si obnovit výchozí sestavy masek?"
+"Wollen Sie voreingestellte Maskensets zurückstellen?"
+upd:"Do you wish to restore default mask sets?"
+"Chcesz przywrócić domyślne ustawienia masek?"
+"Quiere restablecer por defecto máscaras?"
+"Ви бажаєте відновити набори масок за замовчуванням?"
+"Вы жадаеце узнавіць прадвызначаны набор масак?"
 
 MenuSortTitle
 l:

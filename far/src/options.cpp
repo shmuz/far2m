@@ -60,6 +60,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "interf.hpp"
 #include "codepage.hpp"
 #include "ConfigOpt.hpp"
+#include "MaskGroups.hpp"
 
 enum enumMenus
 {
@@ -156,6 +157,7 @@ enum enumOptionsMenu
 	MENU_OPTIONS_VMENUSETTINGS,
 	MENU_OPTIONS_CMDLINESETTINGS,
 	MENU_OPTIONS_AUTOCOMPLETESETTINGS,
+	MENU_OPTIONS_MASKGROUPS,
 //	MENU_OPTIONS_INFOPANELSETTINGS,
 	MENU_OPTIONS_SEPARATOR1,
 	MENU_OPTIONS_CONFIRMATIONS,
@@ -289,6 +291,7 @@ void ShellOptions(int LastCommand,MOUSE_EVENT_RECORD *MouseEvent)
 		{Msg::MenuVMenuSettings,0,0},
 		{Msg::MenuCmdlineSettings,0,0},
 		{Msg::MenuAutoCompleteSettings,0,0},
+		{Msg::MenuMaskGroups,0,0},
 //		{Msg::MenuInfoPanelSettings,0,0},
 		{L"",LIF_SEPARATOR,0},
 		{Msg::MenuConfirmation,0,0},
@@ -611,6 +614,9 @@ void ShellOptions(int LastCommand,MOUSE_EVENT_RECORD *MouseEvent)
 //				case MENU_OPTIONS_INFOPANELSETTINGS: // InfoPanel Settings
 //					InfoPanelSettings();
 //					break;
+				case MENU_OPTIONS_MASKGROUPS:
+					EditMaskTypes();
+					break;
 				case MENU_OPTIONS_CONFIRMATIONS:   // Confirmations
 					SetConfirmations();
 					break;

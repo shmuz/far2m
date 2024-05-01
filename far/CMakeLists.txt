@@ -104,6 +104,7 @@ src/cfg/HotkeyLetterDialog.cpp
 src/cfg/language.cpp
 src/cfg/AllXLats.cpp
 src/cfg/ConfigOpt.cpp
+src/cfg/MaskGroups.cpp
 
 src/hist/history.cpp
 src/hist/poscache.cpp
