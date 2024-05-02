@@ -6,23 +6,14 @@ Groups of file masks
 
 #include "headers.hpp"
 
-#include "filetype.hpp"
 #include "lang.hpp"
 #include "keys.hpp"
 #include "dialog.hpp"
 #include "vmenu.hpp"
-#include "ctrlobj.hpp"
-#include "cmdline.hpp"
-#include "history.hpp"
-#include "filepanels.hpp"
-#include "panel.hpp"
-#include "rdrwdsk.hpp"
-#include "savescr.hpp"
 #include "CFileMask.hpp"
 #include "message.hpp"
 #include "interf.hpp"
 #include "config.hpp"
-#include "execute.hpp"
 #include "fnparce.hpp"
 #include "strmix.hpp"
 #include "dirmix.hpp"
@@ -32,18 +23,16 @@ Groups of file masks
 
 struct FileTypeStrings
 {
-	const char *Help, *HelpModify, *State,
+	const char *Help, *HelpModify,
 	*MaskGroups, *TypeFmt, *Type0,
-	*Execute, *Desc, *Mask, *View, *Edit,
-	*AltExec, *AltView, *AltEdit;
+	*Desc, *Mask;
 };
 
 const FileTypeStrings FTS=
 {
-	"FileAssoc", "FileAssocModify", "State",
+	"FileAssoc", "FileAssocModify",
 	"MaskGroups", "MaskGroups/Type%d", "MaskGroups/Type",
-	"Execute", "Description", "Mask", "View", "Edit",
-	"AltExec", "AltView", "AltEdit"
+	"Description", "Mask",
 };
 
 static int GetDescriptionWidth(ConfigReader &cfg_reader, const wchar_t *Name=nullptr)
@@ -134,46 +123,17 @@ static int FillFileTypesMenu(VMenu *TypesMenu,int MenuPos)
 	return NumLine;
 }
 
-enum EDITTYPERECORD
-{
-	ETR_DOUBLEBOX,
-	ETR_TEXT_MASKS,
-	ETR_EDIT_MASKS,
-	ETR_TEXT_DESCR,
-	ETR_EDIT_DESCR,
-	ETR_SEPARATOR1,
-	ETR_COMBO_EXEC,
-	ETR_EDIT_EXEC,
-	ETR_COMBO_ALTEXEC,
-	ETR_EDIT_ALTEXEC,
-	ETR_COMBO_VIEW,
-	ETR_EDIT_VIEW,
-	ETR_COMBO_ALTVIEW,
-	ETR_EDIT_ALTVIEW,
-	ETR_COMBO_EDIT,
-	ETR_EDIT_EDIT,
-	ETR_COMBO_ALTEDIT,
-	ETR_EDIT_ALTEDIT,
-	ETR_SEPARATOR2,
-	ETR_BUTTON_OK,
-	ETR_BUTTON_CANCEL,
-};
-
-enum EDITMASKRECORD
-{
-	EMR_DOUBLEBOX,
-	EMR_TEXT_NAME,
-	EMR_EDIT_NAME,
-	EMR_TEXT_MASKS,
-	EMR_EDIT_MASKS,
-	EMR_SEPARATOR,
-	EMR_BUTTON_OK,
-	EMR_BUTTON_CANCEL,
-};
-
 static bool EditTypeRecord (int EditPos, int TotalRecords, bool NewRec)
 {
 	FARString strName, strMasks;
+
+	if (!NewRec)
+	{
+		ConfigReader cfg_reader;
+		cfg_reader.SelectSectionFmt(FTS.TypeFmt, EditPos);
+		strMasks = cfg_reader.GetString(FTS.Mask, L"");
+		strName = cfg_reader.GetString(FTS.Desc, L"");
+	}
 
 	DialogBuilder Builder(Msg::MaskGroupTitle, L"MaskGroupsSettings");
 	Builder.AddText(Msg::MaskGroupName);
@@ -184,72 +144,6 @@ static bool EditTypeRecord (int EditPos, int TotalRecords, bool NewRec)
 
 	if (Builder.ShowDialog())
 	{
-	}
-	return false;
-}
-
-static bool EditTypeRecord2(int EditPos, int TotalRecords, bool NewRec)
-{
-	bool Result = false;
-	const int DlgX = 76, DlgY = 23;
-	DialogDataEx EditDlgData[]=
-	{
-		{DI_DOUBLEBOX,3, 1,DlgX-4,DlgY-2,{},0,Msg::FileAssocTitle},
-		{DI_TEXT,     5, 2, 0, 2,{},0,Msg::FileAssocMasks},
-		{DI_EDIT,     5, 3,DlgX-6, 3,{(DWORD_PTR)L"Masks"},DIF_FOCUS|DIF_HISTORY,L""},
-		{DI_TEXT,     5, 4, 0, 4,{},0,Msg::FileAssocDescr},
-		{DI_EDIT,     5, 5,DlgX-6, 5,{},0,L""},
-		{DI_TEXT,     3, 6, 0, 6,{},DIF_SEPARATOR,L""},
-		{DI_CHECKBOX, 5, 7, 0, 7,{1},0,Msg::FileAssocExec},
-		{DI_EDIT,     9, 8,DlgX-6, 8,{},DIF_EDITPATH,L""},
-		{DI_CHECKBOX, 5, 9, 0, 9,{1},0,Msg::FileAssocAltExec},
-		{DI_EDIT,     9,10,DlgX-6,10,{},DIF_EDITPATH,L""},
-		{DI_CHECKBOX, 5,11, 0,11,{1},0,Msg::FileAssocView},
-		{DI_EDIT,     9,12,DlgX-6,12,{},DIF_EDITPATH,L""},
-		{DI_CHECKBOX, 5,13, 0,13,{1},0,Msg::FileAssocAltView},
-		{DI_EDIT,     9,14,DlgX-6,14,{},DIF_EDITPATH,L""},
-		{DI_CHECKBOX, 5,15, 0,15,{1},0,Msg::FileAssocEdit},
-		{DI_EDIT,     9,16,DlgX-6,16,{},DIF_EDITPATH,L""},
-		{DI_CHECKBOX, 5,17, 0,17,{1},0,Msg::FileAssocAltEdit},
-		{DI_EDIT,     9,18,DlgX-6,18,{},DIF_EDITPATH,L""},
-		{DI_TEXT,     3,DlgY-4, 0,DlgY-4,{},DIF_SEPARATOR,L""},
-		{DI_BUTTON,   0,DlgY-3, 0,DlgY-3,{},DIF_DEFAULT|DIF_CENTERGROUP,Msg::Ok},
-		{DI_BUTTON,   0,DlgY-3, 0,DlgY-3,{},DIF_CENTERGROUP,Msg::Cancel}
-	};
-	MakeDialogItemsEx(EditDlgData,EditDlg);
-
-	if (!NewRec)
-	{
-		ConfigReader cfg_reader;
-		cfg_reader.SelectSectionFmt(FTS.TypeFmt, EditPos);
-		EditDlg[ETR_EDIT_MASKS].strData = cfg_reader.GetString(FTS.Mask, L"");
-		EditDlg[ETR_EDIT_DESCR].strData = cfg_reader.GetString(FTS.Desc, L"");
-		EditDlg[ETR_EDIT_EXEC].strData = cfg_reader.GetString(FTS.Execute, L"");
-		EditDlg[ETR_EDIT_ALTEXEC].strData = cfg_reader.GetString(FTS.AltExec, L"");
-		EditDlg[ETR_EDIT_VIEW].strData = cfg_reader.GetString(FTS.View, L"");
-		EditDlg[ETR_EDIT_ALTVIEW].strData = cfg_reader.GetString(FTS.AltView, L"");
-		EditDlg[ETR_EDIT_EDIT].strData = cfg_reader.GetString(FTS.Edit, L"");
-		EditDlg[ETR_EDIT_ALTEDIT].strData = cfg_reader.GetString(FTS.AltEdit, L"");
-		DWORD State = cfg_reader.GetUInt(FTS.State, 0xffffffff);
-
-		for (int i = FILETYPE_EXEC, Item = ETR_COMBO_EXEC; i <= FILETYPE_ALTEDIT; i++, Item+= 2)
-		{
-			if (!(State&(1<<i)))
-			{
-				EditDlg[Item].Selected = BSTATE_UNCHECKED;
-				EditDlg[Item+1].Flags|= DIF_DISABLE;
-			}
-		}
-	}
-
-	Dialog Dlg(EditDlg, ARRAYSIZE(EditDlg), nullptr); //EditTypeRecordDlgProc);
-	Dlg.SetHelp(FARString(FTS.HelpModify));
-	Dlg.SetPosition(-1, -1, DlgX, DlgY);
-	Dlg.SetId(FileAssocModifyId);
-	Dlg.Process();
-
-	if (Dlg.GetExitCode() == ETR_BUTTON_OK)
-	{
 		ConfigWriter cfg_writer;
 		cfg_writer.SelectSectionFmt(FTS.TypeFmt, EditPos);
 
@@ -258,29 +152,12 @@ static bool EditTypeRecord2(int EditPos, int TotalRecords, bool NewRec)
 			cfg_writer.ReserveIndexedSection(FTS.Type0, (unsigned int)EditPos);
 		}
 
-		cfg_writer.SetString(FTS.Mask, EditDlg[ETR_EDIT_MASKS].strData);
-		cfg_writer.SetString(FTS.Desc, EditDlg[ETR_EDIT_DESCR].strData);
-		cfg_writer.SetString(FTS.Execute, EditDlg[ETR_EDIT_EXEC].strData);
-		cfg_writer.SetString(FTS.AltExec, EditDlg[ETR_EDIT_ALTEXEC].strData);
-		cfg_writer.SetString(FTS.View, EditDlg[ETR_EDIT_VIEW].strData);
-		cfg_writer.SetString(FTS.AltView, EditDlg[ETR_EDIT_ALTVIEW].strData);
-		cfg_writer.SetString(FTS.Edit, EditDlg[ETR_EDIT_EDIT].strData);
-		cfg_writer.SetString(FTS.AltEdit, EditDlg[ETR_EDIT_ALTEDIT].strData);
-		DWORD State = 0;
-
-		for (int i = FILETYPE_EXEC,Item=ETR_COMBO_EXEC; i <= FILETYPE_ALTEDIT; i++, Item+= 2)
-		{
-			if (EditDlg[Item].Selected == BSTATE_CHECKED)
-			{
-				State|= (1<<i);
-			}
-		}
-
-		cfg_writer.SetUInt(FTS.State, State);
-		Result = true;
+		cfg_writer.SetString(FTS.Mask, strMasks);
+		cfg_writer.SetString(FTS.Desc, strName);
+		return true;
 	}
 
-	return Result;
+	return false;
 }
 
 static bool DeleteTypeRecord(int DeletePos)
@@ -291,11 +168,10 @@ static bool DeleteTypeRecord(int DeletePos)
 	{
 		ConfigReader cfg_reader;
 		cfg_reader.SelectSectionFmt(FTS.TypeFmt, DeletePos);
-		strItemName = cfg_reader.GetString(FTS.Mask, L"");
-		InsertQuote(strItemName);
+		strItemName = cfg_reader.GetString(FTS.Desc, L"");
 	}
 
-	if (!Message(MSG_WARNING,2,Msg::AssocTitle,Msg::AskDelAssoc,strItemName,Msg::Delete,Msg::Cancel))
+	if (!Message(MSG_WARNING,2,Msg::MaskGroupTitle,Msg::MaskGroupAskDelete,strItemName,Msg::Delete,Msg::Cancel))
 	{
 		ConfigWriter cfg_writer;
 		cfg_writer.SelectSectionFmt(FTS.TypeFmt, DeletePos);
@@ -312,7 +188,7 @@ void EditMaskTypes()
 	int NumLine=0;
 	int MenuPos=0;
 	//RenumKeyRecord(FTS.MaskGroups,FTS.TypeFmt,FTS.Type0);
-	VMenu TypesMenu(Msg::AssocTitle,nullptr,0,ScrY-4);
+	VMenu TypesMenu(Msg::MaskGroupTitle,nullptr,0,ScrY-4);
 	TypesMenu.SetHelp(FARString(FTS.Help));
 	TypesMenu.SetFlags(VMENU_WRAPMODE);
 	TypesMenu.SetPosition(-1,-1,0,0);
@@ -340,26 +216,27 @@ void EditMaskTypes()
 			{
 				case KEY_NUMDEL:
 				case KEY_DEL:
-
 					if (MenuPos<NumLine)
 						DeleteTypeRecord(MenuPos);
 
 					MenuModified=true;
 					break;
+
 				case KEY_NUMPAD0:
 				case KEY_INS:
 					EditTypeRecord(MenuPos,NumLine,true);
 					MenuModified=true;
 					break;
+
 				case KEY_NUMENTER:
 				case KEY_ENTER:
 				case KEY_F4:
-
 					if (MenuPos<NumLine)
 						EditTypeRecord(MenuPos,NumLine,false);
 
 					MenuModified=true;
 					break;
+
 				default:
 					TypesMenu.ProcessInput();
 					break;
