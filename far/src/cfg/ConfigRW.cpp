@@ -8,54 +8,34 @@
 static bool IsSectionOrSubsection(const std::string &haystack, const char *needle)
 {
 	size_t l = strlen(needle);
-	if (haystack.size() < l) {
-		return false;
-	}
-	if (memcmp(haystack.c_str(), needle, l) != 0) {
-		return false;
-	}
-	if (haystack.size() > l && haystack[l] != '/') {
-		return false;
-	}
-	return true;
+	return (haystack.size() >= l)
+		&& !memcmp(haystack.c_str(), needle, l)
+		&& (haystack.size() == l || haystack[l] == '/');
 }
+
+static const struct { const char *section, *filename; } SEC2INI[] =
+{
+	{"KeyMacros",            "settings/key_macros.ini"},
+	{"Associations",         "settings/associations.ini"},
+	{"Panel",                "settings/panel.ini"},
+	{"CodePages",            "settings/codepages.ini"},
+	{"XLat",                 "settings/xlat.ini"},
+	{"MaskGroups",           "settings/maskgroups.ini"},
+	{"Colors",               "settings/colors.ini"},
+	{"SortGroups",           "settings/colors.ini"},
+	{"UserMenu",             "settings/user_menu.ini"},
+	{"SavedDialogHistory",   "history/dialogs.hst"},
+	{"SavedHistory",         "history/commands.hst"},
+	{"SavedFolderHistory",   "history/folders.hst"},
+	{"SavedViewHistory",     "history/view.hst"},
+};
 
 static const char *Section2Ini(const std::string &section)
 {
-	if (IsSectionOrSubsection(section, "KeyMacros"))
-		return "settings/key_macros.ini";
-
-	if (IsSectionOrSubsection(section, "Associations"))
-		return "settings/associations.ini";
-
-	if (IsSectionOrSubsection(section, "Panel"))
-		return "settings/panel.ini";
-
-	if (IsSectionOrSubsection(section, "CodePages"))
-		return "settings/codepages.ini";
-
-	if (IsSectionOrSubsection(section, "XLat"))
-		return "settings/xlat.ini";
-
-	if (IsSectionOrSubsection(section, "Colors")
-		|| IsSectionOrSubsection(section, "SortGroups") )
-		return "settings/colors.ini";
-
-	if (IsSectionOrSubsection(section, "UserMenu"))
-		return "settings/user_menu.ini";
-
-	if (IsSectionOrSubsection(section, "SavedDialogHistory"))
-		return "history/dialogs.hst";
-
-	if (IsSectionOrSubsection(section, "SavedHistory"))
-		return "history/commands.hst";
-
-	if (IsSectionOrSubsection(section, "SavedFolderHistory"))
-		return "history/folders.hst";
-
-	if (IsSectionOrSubsection(section, "SavedViewHistory"))
-		return "history/view.hst";
-
+	for (const auto &item: SEC2INI) {
+		if (IsSectionOrSubsection(section, item.section))
+			return item.filename;
+	}
 	return CONFIG_INI;
 }
 

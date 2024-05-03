@@ -1244,6 +1244,8 @@ $ #Menus: options menu#
 
    #Command line settings# Shows ~command line settings~@CmdlineSettings@ dialog.
 
+   #Groups of file masks#  Shows ~Groups of file masks~@MaskGroupsSettings@ menu.
+
    #Languages#             Select main and help language.
                          Use "Save setup" to save selected languages.
 
@@ -3653,11 +3655,15 @@ $ #Groups of file masks#
  For example, the #<arc># group contains the "*.rar,*.zip,*.[zj],*.[bg7]z,*.[bg]zip,*.tar" masks.
 To ~highlight~@Highlight@ all archives except "*.rar" #<arc>|*.rar# should be used.
 
- These settings are found in #~~/.config/far2m/settings/masks.ini# file under the #[Masks]# section, e.g.
- [Masks]
- arc=*.rar,*.zip,*.[zj],*.[bg7]z,*.[bg]zip,*.tar
+ Control keys:
 
- Currently there is no user interface, please create and maintain this file yourselves.
+ #Ins#         - ^<wrap>add a new group
+
+ #Del#         - ^<wrap>remove the current group
+
+ #Enter#/#F4#  - ^<wrap>edit the current group
+
+ Also see ~Options menu~@OptMenu@.
 
 
 @SelectFiles

@@ -97,11 +97,9 @@ class FileMasksProcessor : public BaseFileMask
 		std::vector<BaseFileMask*> IncludeMasks;
 		std::vector<BaseFileMask*> ExcludeMasks;
 		const int CallDepth;
-		KeyFileReadSection *IniReader;
 
 	private:
-		FileMasksProcessor(bool aCaseSens, int aCallDepth, KeyFileReadSection *aIniReader);
+		FileMasksProcessor(bool aCaseSens, int aCallDepth);
 		bool SetPart(const wchar_t *Masks, DWORD Flags, std::vector<BaseFileMask*>& Target);
-		FARString GetNamedMask(const wchar_t *Name);
 };
 

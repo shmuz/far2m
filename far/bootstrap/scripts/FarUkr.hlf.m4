@@ -1274,6 +1274,8 @@ $ #Меню параметрів#
 #Налаштування командної# Викликає ~діалог налаштувань командного рядка~@CmdlineSettings@
  #рядки#
 
+ #Groups of file masks#  Shows ~Groups of file masks~@MaskGroupsSettings@ menu.
+
  # Мови # Вибір основної мови та мови допомоги.
  Використовуйте команду "Зберегти параметри",
  щоб зберегти вибрані мови.
@@ -3730,21 +3732,25 @@ the character case is not taken into account.
 
 
 @MaskGroupsSettings
-$ #Groups of file masks#
- An arbirtary number of ~file masks~@FileMasks@ can be joined into a named group.
+$ #Групи масок файлів#
+ Довільне число ~масок файлів~@FileMasks@ може бути об'єднано у іменовану групу.
 
- Hereinafter the group name, enclosed in angle brackets (i.e. #<#name#>#), can be used wherever masks can be used.
+ Надалі ім'я групи в кутових дужках (тобто #<#name#>#) може використовуватися усюди, де можуть використовуватися маски.
 
- Groups can contain other groups.
+ Групи можуть містити інші групи.
 
- For example, the #<arc># group contains the "*.rar,*.zip,*.[zj],*.[bg7]z,*.[bg]zip,*.tar" masks.
-To ~highlight~@Highlight@ all archives except "*.rar" #<arc>|*.rar# should be used.
+ Наприклад, група #<arc># містить маски "*.rar,*.zip,*.[zj],*.[bg7]z,*.[bg]zip,*.tar".
+Щоб ~підсвітити~@Highlight@ всі архіви, окрім "*.rar", можна використати #<arc>|*.rar#.
 
- These settings are found in #~~/.config/far2m/settings/masks.ini# file under the #[Masks]# section, e.g.
- [Masks]
- arc=*.rar,*.zip,*.[zj],*.[bg7]z,*.[bg]zip,*.tar
+ Клавіши керування:
 
- Currently there is no user interface, please create and maintain this file yourselves.
+ #Ins#         - ^<wrap>додати групу
+
+ #Del#         - ^<wrap>видалити поточну групу
+
+ #Enter#/#F4#  - ^<wrap>редагувати поточну групу
+
+ Дивіться також: ~Меню параметрів~@OptMenu@.
 
 
 @SelectFiles

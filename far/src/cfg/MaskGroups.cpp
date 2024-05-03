@@ -10,13 +10,9 @@ Groups of file masks
 #include "keys.hpp"
 #include "dialog.hpp"
 #include "vmenu.hpp"
-#include "CFileMask.hpp"
 #include "message.hpp"
 #include "interf.hpp"
 #include "config.hpp"
-#include "fnparce.hpp"
-#include "strmix.hpp"
-#include "dirmix.hpp"
 #include "ConfigRW.hpp"
 #include "DlgGuid.hpp"
 #include "DialogBuilder.hpp"
@@ -53,49 +49,45 @@ MaskGroupRestore
 "Do you wish to restore default mask sets?"
 */
 
-struct FileTypeStrings
+static const wchar_t *Help = L"MaskGroupsSettings";
+
+struct FileMaskStrings
 {
 		const char
-	*Help,
-	*MaskGroups,
 	*TypeFmt,
 	*Type0,
 	*MaskName,
 	*MaskValue;
 };
 
-static const FileTypeStrings FTS=
+static const FileMaskStrings FMS=
 {
-	"MaskGroupsSettings",
-	"MaskGroups",
 	"MaskGroups/Type%d",
 	"MaskGroups/Type",
 	"Name",
 	"Value",
 };
 
-static int FillFileTypesMenu(VMenu *TypesMenu,int MenuPos)
+static int FillMasksMenu(VMenu *TypesMenu, int MenuPos)
 {
 	ConfigReader cfg_reader;
-	int DizWidth=10;
+	int DizWidth = 10;
 	MenuItemEx TypesMenuItem;
 	TypesMenu->DeleteItems();
-	int NumLine=0;
+	int NumLine = 0;
 
 	for (;; NumLine++)
 	{
-		cfg_reader.SelectSectionFmt(FTS.TypeFmt, NumLine);
+		cfg_reader.SelectSectionFmt(FMS.TypeFmt, NumLine);
 		FARString strMask;
-		if (!cfg_reader.GetString(strMask, FTS.MaskValue, L""))
+		if (!cfg_reader.GetString(strMask, FMS.MaskValue))
 			break;
-
-		TypesMenuItem.Clear();
 
 		FARString strMenuText;
 
 		if (DizWidth)
 		{
-			FARString strName = cfg_reader.GetString(FTS.MaskName, L"");
+			FARString strName = cfg_reader.GetString(FMS.MaskName);
 			if (static_cast<int>(strName.GetLength()) > DizWidth)
 			{
 				strName.Truncate(DizWidth - (Opt.NoGraphics ? 3 : 1));
@@ -105,30 +97,31 @@ static int FillFileTypesMenu(VMenu *TypesMenu,int MenuPos)
 		}
 
 		strMenuText += strMask;
+		TypesMenuItem.Clear();
 		TypesMenuItem.strName = strMenuText;
-		TypesMenuItem.SetSelect(NumLine==MenuPos);
+		TypesMenuItem.SetSelect(NumLine == MenuPos);
 		TypesMenu->AddItem(&TypesMenuItem);
 	}
 
 	TypesMenuItem.strName.Clear();
-	TypesMenuItem.SetSelect(NumLine==MenuPos);
+	TypesMenuItem.SetSelect(NumLine == MenuPos);
 	TypesMenu->AddItem(&TypesMenuItem);
 	return NumLine;
 }
 
-static bool EditTypeRecord (int EditPos, int TotalRecords, bool NewRec)
+static bool EditMaskRecord (int EditPos, bool NewRec)
 {
 	FARString strName, strMasks;
 
 	if (!NewRec)
 	{
 		ConfigReader cfg_reader;
-		cfg_reader.SelectSectionFmt(FTS.TypeFmt, EditPos);
-		strMasks = cfg_reader.GetString(FTS.MaskValue, L"");
-		strName = cfg_reader.GetString(FTS.MaskName, L"");
+		cfg_reader.SelectSectionFmt(FMS.TypeFmt, EditPos);
+		strMasks = cfg_reader.GetString(FMS.MaskValue);
+		strName = cfg_reader.GetString(FMS.MaskName);
 	}
 
-	DialogBuilder Builder(Msg::MaskGroupTitle, L"MaskGroupsSettings");
+	DialogBuilder Builder(Msg::MaskGroupTitle, Help);
 	Builder.SetId(EditMaskGroupId);
 	Builder.AddText(Msg::MaskGroupName);
 	Builder.AddEditField(&strName, 60);
@@ -139,39 +132,39 @@ static bool EditTypeRecord (int EditPos, int TotalRecords, bool NewRec)
 	if (Builder.ShowDialog() && !strName.IsEmpty() && !strMasks.IsEmpty())
 	{
 		ConfigWriter cfg_writer;
-		cfg_writer.SelectSectionFmt(FTS.TypeFmt, EditPos);
+		cfg_writer.SelectSectionFmt(FMS.TypeFmt, EditPos);
 
 		if (NewRec)
 		{
-			cfg_writer.ReserveIndexedSection(FTS.Type0, (unsigned int)EditPos);
+			cfg_writer.ReserveIndexedSection(FMS.Type0, (unsigned int)EditPos);
 		}
 
-		cfg_writer.SetString(FTS.MaskValue, strMasks);
-		cfg_writer.SetString(FTS.MaskName, strName);
+		cfg_writer.SetString(FMS.MaskValue, strMasks);
+		cfg_writer.SetString(FMS.MaskName, strName);
 		return true;
 	}
 
 	return false;
 }
 
-static bool DeleteTypeRecord(int DeletePos)
+static bool DeleteMaskRecord(int DeletePos)
 {
-	bool Result=false;
+	bool Result = false;
 	FARString strItemName;
 
 	{
 		ConfigReader cfg_reader;
-		cfg_reader.SelectSectionFmt(FTS.TypeFmt, DeletePos);
-		strItemName = cfg_reader.GetString(FTS.MaskName, L"");
+		cfg_reader.SelectSectionFmt(FMS.TypeFmt, DeletePos);
+		strItemName = cfg_reader.GetString(FMS.MaskName);
 	}
 
-	if (!Message(MSG_WARNING,2,Msg::MaskGroupTitle,Msg::MaskGroupAskDelete,strItemName,Msg::Delete,Msg::Cancel))
+	if (!Message(MSG_WARNING, 2, Msg::MaskGroupTitle, Msg::MaskGroupAskDelete, strItemName, Msg::Delete, Msg::Cancel))
 	{
 		ConfigWriter cfg_writer;
-		cfg_writer.SelectSectionFmt(FTS.TypeFmt, DeletePos);
+		cfg_writer.SelectSectionFmt(FMS.TypeFmt, DeletePos);
 		cfg_writer.RemoveSection();
-		cfg_writer.DefragIndexedSections(FTS.Type0);
-		Result=true;
+		cfg_writer.DefragIndexedSections(FMS.Type0);
+		Result = true;
 	}
 
 	return Result;
@@ -179,74 +172,90 @@ static bool DeleteTypeRecord(int DeletePos)
 
 void EditMaskTypes()
 {
-	int NumLine=0;
-	int MenuPos=0;
-	//RenumKeyRecord(FTS.MaskGroups,FTS.TypeFmt,FTS.Type0);
-	VMenu TypesMenu(Msg::MaskGroupTitle,nullptr,0,ScrY-4);
-	TypesMenu.SetHelp(FARString(FTS.Help));
-	TypesMenu.SetFlags(VMENU_WRAPMODE);
-	TypesMenu.SetPosition(-1,-1,0,0);
-	TypesMenu.SetId(MaskGroupsMenuId);
-	TypesMenu.SetBottomTitle(L"Ins Del F4 F7 Ctrl+R");
+	int NumLine = 0;
+	int MenuPos = 0;
+	VMenu MasksMenu(Msg::MaskGroupTitle, nullptr, 0, ScrY-4);
+	MasksMenu.SetHelp(Help);
+	MasksMenu.SetFlags(VMENU_WRAPMODE);
+	MasksMenu.SetPosition(-1, -1, 0, 0);
+	MasksMenu.SetId(MaskGroupsMenuId);
+	//MasksMenu.SetBottomTitle(L"Ins Del F4 F7 Ctrl+R");
+	MasksMenu.SetBottomTitle(L"Ins Del F4");
 	while (1)
 	{
-		bool MenuModified=true;
+		bool MenuModified = true;
 
-		while (!TypesMenu.Done())
+		while (!MasksMenu.Done())
 		{
 			if (MenuModified)
 			{
-				TypesMenu.Hide();
-				NumLine=FillFileTypesMenu(&TypesMenu,MenuPos);
-				TypesMenu.SetPosition(-1,-1,-1,-1);
-				TypesMenu.Show();
-				MenuModified=false;
+				MasksMenu.Hide();
+				NumLine = FillMasksMenu(&MasksMenu, MenuPos);
+				MasksMenu.SetPosition(-1, -1, -1, -1);
+				MasksMenu.Show();
+				MenuModified = false;
 			}
 
-			FarKey Key=TypesMenu.ReadInput();
-			MenuPos=TypesMenu.GetSelectPos();
+			FarKey Key = MasksMenu.ReadInput();
+			MenuPos = MasksMenu.GetSelectPos();
 
 			switch (Key)
 			{
 				case KEY_NUMDEL:
 				case KEY_DEL:
 					if (MenuPos<NumLine)
-						DeleteTypeRecord(MenuPos);
+						DeleteMaskRecord(MenuPos);
 
-					MenuModified=true;
+					MenuModified = true;
 					break;
 
 				case KEY_NUMPAD0:
 				case KEY_INS:
-					EditTypeRecord(MenuPos,NumLine,true);
-					MenuModified=true;
+					EditMaskRecord(MenuPos, true);
+					MenuModified = true;
 					break;
 
 				case KEY_NUMENTER:
 				case KEY_ENTER:
 				case KEY_F4:
 					if (MenuPos<NumLine)
-						EditTypeRecord(MenuPos,NumLine,false);
+						EditMaskRecord(MenuPos, false);
 
-					MenuModified=true;
+					MenuModified = true;
 					break;
 
 				default:
-					TypesMenu.ProcessInput();
+					MasksMenu.ProcessInput();
 					break;
 			}
 		}
 
-		int ExitCode=TypesMenu.Modal::GetExitCode();
+		int ExitCode = MasksMenu.Modal::GetExitCode();
 
-		if (ExitCode!=-1)
+		if (ExitCode != -1)
 		{
-			MenuPos=ExitCode;
-			TypesMenu.ClearDone();
-			TypesMenu.WriteInput(KEY_F4);
+			MenuPos = ExitCode;
+			MasksMenu.ClearDone();
+			MasksMenu.WriteInput(KEY_F4);
 			continue;
 		}
 
 		break;
 	}
+}
+
+bool GetMaskGroup(const FARString &MaskName, FARString &MaskValue)
+{
+	ConfigReader cfg_reader;
+	FARString strMaskName;
+
+	for (int Num = 0;
+		cfg_reader.SelectSectionFmt(FMS.TypeFmt, Num),
+		cfg_reader.GetString(strMaskName, FMS.MaskName);
+			Num++)
+	{
+		if (!StrCmpI(strMaskName, MaskName))
+			return cfg_reader.GetString(MaskValue, FMS.MaskValue);
+	}
+	return false;
 }

@@ -38,7 +38,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "processname.hpp"
 #include "StackHeapArray.hpp"
 #include "udlist.hpp"
-#include "KeyFileHelper.h"
+#include "MaskGroups.hpp"
 
 // Protect against cases like a=<a> or a=<b>, b=<a>, etc.
 // It also restricts valid nesting depth but the limit is high enough to cover all practical cases.
@@ -147,19 +147,16 @@ bool RegexMask::Compare(const wchar_t *FileName) const
 FileMasksProcessor::FileMasksProcessor(bool aCaseSens)
 	: BaseFileMask(aCaseSens), CallDepth(0)
 {
-	IniReader = new KeyFileReadSection(InMyConfig("settings/masks.ini"), "Masks");
 }
 
-FileMasksProcessor::FileMasksProcessor(bool aCaseSens, int aCallDepth, KeyFileReadSection *aIniReader)
-	: BaseFileMask(aCaseSens), CallDepth(aCallDepth), IniReader(aIniReader)
+FileMasksProcessor::FileMasksProcessor(bool aCaseSens, int aCallDepth)
+	: BaseFileMask(aCaseSens), CallDepth(aCallDepth)
 {
 }
 
 FileMasksProcessor::~FileMasksProcessor()
 {
 	Reset();
-	if (CallDepth==0)
-		delete IniReader;
 }
 
 void FileMasksProcessor::Reset()
@@ -174,11 +171,6 @@ void FileMasksProcessor::Reset()
 bool FileMasksProcessor::IsEmpty() const
 {
 	return IncludeMasks.empty();
-}
-
-FARString FileMasksProcessor::GetNamedMask(const wchar_t *Name)
-{
-	return IniReader->SectionLoaded() ? IniReader->GetString(Wide2MB(Name)) : "";
 }
 
 /*
@@ -268,11 +260,9 @@ bool FileMasksProcessor::SetPart(const wchar_t *masks, DWORD Flags, std::vector<
 				if (pEnd && pEnd!=pStart && pEnd[1]==0)
 				{
 					FARString strKey(pStart, pEnd-pStart);
-					strMask = GetNamedMask(strKey);
-
-					if (!strMask.IsEmpty())
+					if (GetMaskGroup(strKey, strMask))
 					{
-						baseMask = new(std::nothrow) FileMasksProcessor(CaseSens,CallDepth+1,IniReader);
+						baseMask = new(std::nothrow) FileMasksProcessor(CaseSens, CallDepth+1);
 						onemask = strMask.CPtr();
 					}
 				}
