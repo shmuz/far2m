@@ -984,6 +984,25 @@ void HighlightFiles::SaveHiData()
 	}
 }
 
+void HighlightFiles::UpdateHighlighting(bool RefreshMasks)
+{
+	ScrBuf.Lock();	// отменяем всякую прорисовку
+
+	ProcessGroups();
+
+	if (RefreshMasks) {
+		for (size_t i = 0; i < HiData.getCount(); i++) {
+			HiData.getItem(i)->RefreshMask();
+		}
+	}
+
+	CtrlObject->Cp()->LeftPanel->Update(UPDATE_KEEP_SELECTION);
+	CtrlObject->Cp()->LeftPanel->Redraw();
+	CtrlObject->Cp()->RightPanel->Update(UPDATE_KEEP_SELECTION);
+	CtrlObject->Cp()->RightPanel->Redraw();
+
+	ScrBuf.Unlock();	// разрешаем прорисовку
+}
 
 ////////
 

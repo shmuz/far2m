@@ -6,43 +6,25 @@ Groups of file masks
 
 #include "headers.hpp"
 
-#include "lang.hpp"
-#include "keys.hpp"
-#include "dialog.hpp"
-#include "vmenu.hpp"
-#include "message.hpp"
-#include "interf.hpp"
 #include "config.hpp"
 #include "ConfigRW.hpp"
-#include "DlgGuid.hpp"
+#include "ctrlobj.hpp"
 #include "DialogBuilder.hpp"
+#include "dialog.hpp"
+#include "DlgGuid.hpp"
+#include "hilight.hpp"
+#include "interf.hpp"
+#include "keys.hpp"
+#include "lang.hpp"
+#include "message.hpp"
+#include "vmenu.hpp"
 #include "MaskGroups.hpp"
 
 /*
-MMaskGroupTitle
-MMaskGroupName
-MMaskGroupMasks
-MMaskGroupAskDelete
 MMaskGroupRestore
 MMaskGroupFindMask
 MMaskGroupTotal
 ========================================
-
-MaskGroupTitle
-"Группы масок файлов"
-"Groups of file masks"
-
-MaskGroupName
-"&Имя:"
-"&Name:"
-
-MaskGroupMasks
-"Одна или несколько &масок файлов:"
-"A file &mask or several file masks:"
-
-MaskGroupAskDelete
-"Вы хотите удалить"
-"Do you wish to delete"
 
 MaskGroupRestore
 "Вы хотите восстановить наборы масок по умолчанию?"
@@ -111,6 +93,7 @@ static int FillMasksMenu(VMenu *TypesMenu, int MenuPos)
 
 static bool EditMaskRecord (int EditPos, bool NewRec)
 {
+	bool Result = false;
 	FARString strName, strMasks;
 
 	if (!NewRec)
@@ -141,10 +124,10 @@ static bool EditMaskRecord (int EditPos, bool NewRec)
 
 		cfg_writer.SetString(FMS.MaskValue, strMasks);
 		cfg_writer.SetString(FMS.MaskName, strName);
-		return true;
+		Result = true;
 	}
 
-	return false;
+	return Result;
 }
 
 static bool DeleteMaskRecord(int DeletePos)
@@ -183,17 +166,23 @@ void EditMaskTypes()
 	MasksMenu.SetBottomTitle(L"Ins Del F4");
 	while (1)
 	{
-		bool MenuModified = true;
+		bool OuterLoop = true;
+		bool MenuModified = false;
 
 		while (!MasksMenu.Done())
 		{
-			if (MenuModified)
+			if (OuterLoop || MenuModified)
 			{
+				if (MenuModified)
+				{
+					CtrlObject->HiFiles->UpdateHighlighting(true);
+				}
 				MasksMenu.Hide();
 				NumLine = FillMasksMenu(&MasksMenu, MenuPos);
 				MasksMenu.SetPosition(-1, -1, -1, -1);
 				MasksMenu.Show();
 				MenuModified = false;
+				OuterLoop = false;
 			}
 
 			FarKey Key = MasksMenu.ReadInput();
@@ -203,25 +192,18 @@ void EditMaskTypes()
 			{
 				case KEY_NUMDEL:
 				case KEY_DEL:
-					if (MenuPos<NumLine)
-						DeleteMaskRecord(MenuPos);
-
-					MenuModified = true;
+					MenuModified = (MenuPos < NumLine) && DeleteMaskRecord(MenuPos);
 					break;
 
 				case KEY_NUMPAD0:
 				case KEY_INS:
-					EditMaskRecord(MenuPos, true);
-					MenuModified = true;
+					MenuModified = EditMaskRecord(MenuPos, true);
 					break;
 
 				case KEY_NUMENTER:
 				case KEY_ENTER:
 				case KEY_F4:
-					if (MenuPos<NumLine)
-						EditMaskRecord(MenuPos, false);
-
-					MenuModified = true;
+					MenuModified = (MenuPos < NumLine) && EditMaskRecord(MenuPos, false);
 					break;
 
 				default:

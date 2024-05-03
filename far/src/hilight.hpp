@@ -87,6 +87,7 @@ public:
 	void GetHiColor(FileListItem **FileItem, int FileCount, bool UseAttrHighlighting = false);
 	int GetGroup(const FileListItem *fli);
 	void HiEdit(int MenuPos);
+	void UpdateHighlighting(bool RefreshMasks = false);
 
 	void SaveHiData();
 };

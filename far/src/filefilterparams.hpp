@@ -168,6 +168,8 @@ public:
 	bool FileInFilter(const FileListItem &fli, uint64_t CurrentTime) const;
 	bool FileInFilter(const FAR_FIND_DATA_EX &fde, uint64_t CurrentTime) const;
 	bool FileInFilter(const FAR_FIND_DATA &fd, uint64_t CurrentTime) const;
+
+	void RefreshMask() { if(FMask.Used) FMask.FilterMask.Set(FMask.strMask, FMF_SILENT); }
 };
 
 bool FileFilterConfig(FileFilterParams *FF, bool ColorConfig = false);
