@@ -1,4 +1,4 @@
 #pragma once
 
-void EditMaskTypes();
+void MaskGroupsSettings();
 bool GetMaskGroup(const FARString &MaskName, FARString &MaskValue);

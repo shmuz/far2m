@@ -153,7 +153,7 @@ static bool DeleteMaskRecord(int DeletePos)
 	return Result;
 }
 
-void EditMaskTypes()
+void MaskGroupsSettings()
 {
 	int NumLine = 0;
 	int MenuPos = 0;

@@ -78,6 +78,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ConfigOpt.hpp"
 #include "Bookmarks.hpp"
 #include "filetype.hpp"
+#include "MaskGroups.hpp"
 
 int Log(const char* Format, ...)
 {
@@ -3708,6 +3709,12 @@ FarKey KeyMacro::GetKey()
 			case MPRT_FILEPANELMODES:
 				if (IsPanelsArea(m_Area)) {
 					FileList::SetFilePanelModes();
+				}
+				break;
+
+			case MPRT_FILEMASKGROUPS:
+				if (IsPanelsArea(m_Area)) {
+					MaskGroupsSettings();
 				}
 				break;
 		}

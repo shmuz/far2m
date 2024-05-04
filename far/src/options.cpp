@@ -615,7 +615,7 @@ void ShellOptions(int LastCommand,MOUSE_EVENT_RECORD *MouseEvent)
 //					InfoPanelSettings();
 //					break;
 				case MENU_OPTIONS_MASKGROUPS:
-					EditMaskTypes();
+					MaskGroupsSettings();
 					break;
 				case MENU_OPTIONS_CONFIRMATIONS:   // Confirmations
 					SetConfirmations();
