@@ -1,4 +1,3 @@
 _build/
 .clang-format
 .luacheckrc
-.vscode
