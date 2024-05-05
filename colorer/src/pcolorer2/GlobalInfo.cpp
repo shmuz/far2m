@@ -8,5 +8,5 @@ SHAREDSYMBOL void WINAPI EXP_NAME(GetGlobalInfo)(struct GlobalInfo *aInfo)
   aInfo->Version       = Version;
   aInfo->Title         = L"FarColorer";
   aInfo->Description   = L"Syntax highlighting in Far editor";
-  aInfo->Author        = L"Igor Ruskih, Dobrunov Aleksey, FAR People";
+  aInfo->Author        = L"Igor Ruskih, Dobrunov Aleksey, Eugene Efremov, FAR People";
 }
