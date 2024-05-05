@@ -2733,11 +2733,14 @@ bool FileList::ChangeDir(const wchar_t *NewDir, bool ShowMessage)
 					if (!strSetDir.IsEmpty())
 						break;
 				}
-			}
-			else
-			{
-				r = Message(MSG_WARNING | MSG_ERRORTYPE, 2,
-						Msg::Error, (dot2Present?L"..":strSetDir),
+			} else {
+				FARString msg_dir;
+				if (PanelMode != PLUGIN_PANEL) {
+					MixToFullPath(strSetDir,msg_dir,strOrigCurDir);
+				} else {
+					msg_dir=strSetDir;
+				}
+				r = Message(MSG_WARNING | MSG_ERRORTYPE, 2, Msg::Error, (dot2Present ? L".." : msg_dir),
 							Msg::Ignore, Msg::HRetry);
 			}
 
