@@ -631,8 +631,11 @@ local function Eval_GetData (str) -- Получение данных макро�
   local UseCommon = false
   str = str:match("^%s*(.-)%s*$")
 
-  local strArea,strKey = str:match("^(.-)/(.+)$")
-  if strArea then
+  local slash, strArea, strKey = str:match("^(/?)(.-)/(.+)$")
+  if slash == '/' then
+    strKey = str:sub(2)
+    UseCommon = true
+  elseif strArea then
     if strArea ~= "." then -- вариант "./Key" не подразумевает поиск в макрообласти Common
       local SpecifiedMode = utils.GetAreaCode(strArea)
       if SpecifiedMode then
