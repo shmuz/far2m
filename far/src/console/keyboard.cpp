@@ -875,28 +875,14 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 	if (EnableShowTime)
 		ShowTime(1);
 
-	bool SizeChanged=false;
-	if(Opt.WindowMode)
-	{
-		SMALL_RECT CurConRect;
-		Console.GetWindowRect(CurConRect);
-		if(CurConRect.Bottom-CurConRect.Top!=ScrY || CurConRect.Right-CurConRect.Left!=ScrX)
-		{
-			SizeChanged=true;
-		}
-	}
-
 	/*& 17.05.2001 OT Изменился размер консоли, генерим клавишу*/
-	if (rec->EventType==WINDOW_BUFFER_SIZE_EVENT || SizeChanged)
-	{
-		int PScrX=ScrX;
-		int PScrY=ScrY;
+	if (rec->EventType == WINDOW_BUFFER_SIZE_EVENT) {
+		int PScrX = ScrX;
+		int PScrY = ScrY;
 		//// // _SVS(SysLog(1,"GetInputRecord(WINDOW_BUFFER_SIZE_EVENT)"));
 		WINPORT(Sleep)(10);
 		GetVideoMode(CurSize);
-		bool NotIgnore=Opt.WindowMode && (rec->Event.WindowBufferSizeEvent.dwSize.X!=CurSize.X || rec->Event.WindowBufferSizeEvent.dwSize.Y!=CurSize.Y);
-		if (PScrX+1 == CurSize.X && PScrY+1 == CurSize.Y && !NotIgnore)
-		{
+		if (!rec->Event.WindowBufferSizeEvent.bDamaged && (PScrX + 1 == CurSize.X && PScrY + 1 == CurSize.Y)) {
 			return KEY_NONE;
 		}
 		else

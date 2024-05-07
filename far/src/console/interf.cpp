@@ -41,6 +41,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "keys.hpp"
 #include "colors.hpp"
 #include "ctrlobj.hpp"
+#include "ConfigOpt.hpp"
 #include "filepanels.hpp"
 #include "panel.hpp"
 #include "fileedit.hpp"
@@ -50,7 +51,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "palette.hpp"
 #include "strmix.hpp"
 #include "console.hpp"
-#include "ConfigOpt.hpp"
 #include "vtshell.h"
 
 BOOL WINAPI CtrlHandler(DWORD CtrlType);
@@ -192,7 +192,7 @@ void ToggleVideoMode()
 	WINPORT(SetConsoleWindowMaximized)(LargestSize.X != CurSize.X || LargestSize.Y != CurSize.Y);
 }
 
-void GenerateWINDOW_BUFFER_SIZE_EVENT(int Sx, int Sy)
+void GenerateWINDOW_BUFFER_SIZE_EVENT(int Sx, int Sy, bool Damaged)
 {
 	COORD Size;
 	if (Sx == -1 || Sy == -1) {
@@ -202,6 +202,7 @@ void GenerateWINDOW_BUFFER_SIZE_EVENT(int Sx, int Sy)
 	Rec.EventType = WINDOW_BUFFER_SIZE_EVENT;
 	Rec.Event.WindowBufferSizeEvent.dwSize.X = Sx == -1 ? Size.X : Sx;
 	Rec.Event.WindowBufferSizeEvent.dwSize.Y = Sy == -1 ? Size.Y : Sy;
+	Rec.Event.WindowBufferSizeEvent.bDamaged = Damaged ? TRUE : FALSE;
 	DWORD Writes;
 	Console.WriteInput(Rec, 1, Writes);
 }
