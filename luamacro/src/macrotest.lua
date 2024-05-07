@@ -2305,6 +2305,29 @@ local function test_Guids()
   -- test_one_guid( "WipeHardLinkId", nil, "")
 end
 
+local function test_far_Menu()
+  local items = {
+    { text="line1" }, { text="line2" },
+  }
+
+  local bkeys1 = {
+    {BreakKey="F1"}, {BreakKey="F2"},
+    {BreakKey="1" }, {BreakKey="2" },
+    {BreakKey="A" }, {BreakKey="B" },
+  }
+
+  local bkeys2 = "F1 F2 1 2 A B"
+
+  for _, BK in ipairs { bkeys1,bkeys2 } do
+    for _, item  in ipairs(bkeys1) do
+      mf.acall(far.Menu, {}, items, BK)
+      assert(Area.Menu)
+      Keys(item.BreakKey)
+      assert(Area.Shell)
+    end
+  end
+end
+
 function MT.test_luafar()
   test_bit64()
   test_utf8()
@@ -2315,6 +2338,7 @@ function MT.test_luafar()
   test_RegexControl()
   test_FarStandardFunctions()
   test_dialog()
+  test_far_Menu()
 
   test_far_GetMsg()
   if far.Timer then -- TODO (FreeBSD, DragonFly BSD)
