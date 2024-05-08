@@ -119,7 +119,7 @@ local function FarConfig()
     elseif msg == F.DN_RESIZECONSOLE then
       local r = actl.GetFarRect()
       local W = r.Right - r.Left - 4
-      local H = r.Bottom - r.Top - 4
+      local H = r.Bottom - r.Top - 2
 
       hDlg:ResizeDialog(1, {X = W, Y = H})
       local item = hDlg:GetDlgItem(posList)
