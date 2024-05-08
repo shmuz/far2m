@@ -454,6 +454,7 @@ struct Options
 	int NoBoxes;
 	int ConsolePaintSharp, ExclusiveCtrlLeft, ExclusiveCtrlRight, ExclusiveAltLeft, ExclusiveAltRight,
 			ExclusiveWinLeft, ExclusiveWinRight;
+	int UseStickyKeyEvent; // 0 = enable CtrlSpace,AltSpace,CtrlShiftSpace,etc., 1 = original far2l behavior;
 	int OSC52ClipSet;
 	int TTYPaletteOverride;
 

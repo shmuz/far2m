@@ -172,6 +172,9 @@ bool console::SetMode(HANDLE ConsoleHandle, DWORD Mode)
 
 bool console::InspectStickyKeyEvent(INPUT_RECORD &ir)
 {
+	if (!Opt.UseStickyKeyEvent)
+		return false;
+
 	if (ir.EventType != KEY_EVENT)
 		return false;
 

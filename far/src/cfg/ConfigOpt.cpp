@@ -166,6 +166,7 @@ static struct FARConfig
 	{1, NSecInterface, "ExclusiveAltRight",         &Opt.ExclusiveAltRight, 0, REG_BOOLEAN},
 	{1, NSecInterface, "ExclusiveWinLeft",          &Opt.ExclusiveWinLeft, 0, REG_BOOLEAN},
 	{1, NSecInterface, "ExclusiveWinRight",         &Opt.ExclusiveWinRight, 0, REG_BOOLEAN},
+	{1, NSecInterface, "UseStickyKeyEvent",         &Opt.UseStickyKeyEvent, 0, REG_BOOLEAN},
 
 	{1, NSecInterface, "OSC52ClipSet",              &Opt.OSC52ClipSet, 0, REG_BOOLEAN},
 	{1, NSecInterface, "TTYPaletteOverride",        &Opt.TTYPaletteOverride, 1, REG_BOOLEAN},
