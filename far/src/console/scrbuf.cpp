@@ -322,7 +322,7 @@ void ScreenBuf::Flush(bool Force)
 	if (!LockCount)
 	{
 		if (CtrlObject && (CtrlObject->Macro.IsRecording() ||
-			(CtrlObject->Macro.IsExecuting() && Opt.Macro.ShowPlayIndicator)))
+			(Opt.Macro.ShowPlayIndicator && CtrlObject->Macro.IsExecuting())))
 		{
 			MacroChar = Buf[0];
 			MacroCharUsed = true;
