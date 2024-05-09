@@ -89,7 +89,7 @@ static const char NSecPanelLayout[]="Panel/Layout";
 static const char NSecPanelTree[]="Panel/Tree";
 static const char NSecLayout[]="Layout";
 static const char NSecDescriptions[]="Descriptions";
-static const char NSecKeyMacros[]="KeyMacros";
+static const char NSecMacros[]="Macros";
 static const char NSecPolicies[]="Policies";
 static const char NSecSavedHistory[]="SavedHistory";
 static const char NSecSavedViewHistory[]="SavedViewHistory";
@@ -419,9 +419,9 @@ static struct FARConfig
 	{1, NSecDescriptions, "AnsiByDefault",          &Opt.Diz.AnsiByDefault, 0, REG_BOOLEAN},
 	{1, NSecDescriptions, "SaveInUTF",              &Opt.Diz.SaveInUTF, 0, REG_BOOLEAN},
 
-	{0, NSecKeyMacros, "DateFormat",                &Opt.Macro.strDateFormat, L"%a %b %d %H:%M:%S %Z %Y"},
-	{0, NSecKeyMacros, "CONVFMT",                   &Opt.Macro.strMacroCONVFMT, L"%.6g"},
-	{1, NSecKeyMacros, "ShowPlayIndicator",         &Opt.Macro.ShowPlayIndicator, 1, REG_BOOLEAN},
+	{0, NSecMacros, "DateFormat",                   &Opt.Macro.strDateFormat, L"%a %b %d %H:%M:%S %Z %Y"},
+	{0, NSecMacros, "CONVFMT",                      &Opt.Macro.strMacroCONVFMT, L"%.6g"},
+	{1, NSecMacros, "ShowPlayIndicator",            &Opt.Macro.ShowPlayIndicator, 1, REG_BOOLEAN},
 
 	{0, NSecPolicies, "ShowHiddenDrives",           &Opt.Policies.ShowHiddenDrives, 1, REG_BOOLEAN},
 	{0, NSecPolicies, "DisabledOptions",            &Opt.Policies.DisabledOptions, 0},
@@ -672,7 +672,7 @@ void ConfigOptLoad()
 	if (Opt.ViOpt.TabSize<1 || Opt.ViOpt.TabSize>512)
 		Opt.ViOpt.TabSize=8;
 
-	cfg_reader.SelectSection(NSecKeyMacros);
+	cfg_reader.SelectSection(NSecMacros);
 
 	strKeyNameFromReg = cfg_reader.GetString("KeyRecordCtrlDot", szCtrlDot);
 
