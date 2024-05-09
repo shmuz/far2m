@@ -421,6 +421,7 @@ static struct FARConfig
 
 	{0, NSecKeyMacros, "DateFormat",                &Opt.Macro.strDateFormat, L"%a %b %d %H:%M:%S %Z %Y"},
 	{0, NSecKeyMacros, "CONVFMT",                   &Opt.Macro.strMacroCONVFMT, L"%.6g"},
+	{1, NSecKeyMacros, "ShowPlayIndicator",         &Opt.Macro.ShowPlayIndicator, 1, REG_BOOLEAN},
 
 	{0, NSecPolicies, "ShowHiddenDrives",           &Opt.Policies.ShowHiddenDrives, 1, REG_BOOLEAN},
 	{0, NSecPolicies, "DisabledOptions",            &Opt.Policies.DisabledOptions, 0},
