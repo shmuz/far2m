@@ -39,6 +39,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ConfigOpt.hpp"
 #include "ConfigRW.hpp"
 #include "ctrlobj.hpp"
+#include "datetime.hpp"
 #include "dialog.hpp"
 #include "filefilter.hpp"
 #include "filelist.hpp"
@@ -51,6 +52,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "poscache.hpp"
 #include "pick_color256.hpp"
 #include "pick_colorRGB.hpp"
+#include "strmix.hpp"
 
 void SanitizeHistoryCounts();
 
@@ -168,6 +170,11 @@ static struct FARConfig
 	{1, NSecInterface, "ExclusiveWinRight",         &Opt.ExclusiveWinRight, 0, REG_BOOLEAN},
 	{1, NSecInterface, "UseStickyKeyEvent",         &Opt.UseStickyKeyEvent, 0, REG_BOOLEAN},
 
+	{1, NSecInterface, "DateFormat",                &Opt.DateFormat, (DWORD) GetDateFormatDefault()},
+	{1, NSecInterface, "DateSeparator",             &Opt.strDateSeparator, GetDateSeparatorDefaultStr()},
+	{1, NSecInterface, "TimeSeparator",             &Opt.strTimeSeparator, GetTimeSeparatorDefaultStr()},
+	{1, NSecInterface, "DecimalSeparator",          &Opt.strDecimalSeparator, GetDecimalSeparatorDefaultStr()},
+
 	{1, NSecInterface, "OSC52ClipSet",              &Opt.OSC52ClipSet, 0, REG_BOOLEAN},
 	{1, NSecInterface, "TTYPaletteOverride",        &Opt.TTYPaletteOverride, 1, REG_BOOLEAN},
 
@@ -257,6 +264,7 @@ static struct FARConfig
 	{1, NSecSystem, "SaveFoldersHistory",           &Opt.SaveFoldersHistory, 1, REG_BOOLEAN},
 	{0, NSecSystem, "SavePluginFoldersHistory",     &Opt.SavePluginFoldersHistory, 0, REG_BOOLEAN},
 	{1, NSecSystem, "SaveViewHistory",              &Opt.SaveViewHistory, 1, REG_BOOLEAN},
+	{1, NSecSystem, "AutoHighlightHistory",         &Opt.AutoHighlightHistory, 0, REG_BOOLEAN},
 	{1, NSecSystem, "AutoSaveSetup",                &Opt.AutoSaveSetup, 0, REG_BOOLEAN},
 	{1, NSecSystem, "DeleteToRecycleBin",           &Opt.DeleteToRecycleBin, 0, REG_BOOLEAN},
 	{1, NSecSystem, "DeleteToRecycleBinKillLink",   &Opt.DeleteToRecycleBinKillLink, 1, REG_BOOLEAN},

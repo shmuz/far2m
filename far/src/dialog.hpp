@@ -148,6 +148,7 @@ struct DialogItemEx
 
 	void Clear()
 	{
+		TrueColors.reset();
 		Type=0;
 		X1=0;
 		Y1=0;

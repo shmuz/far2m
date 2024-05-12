@@ -43,7 +43,7 @@ enum
 	DRIVE_SHOW_LABEL      = 0x00000004,
 	DRIVE_SHOW_FILESYSTEM = 0x00000008,
 	DRIVE_SHOW_SIZE       = 0x00000010,
-	DRIVE_SHOW_MOUNTS  = 0x00000020,
+	DRIVE_SHOW_MOUNTS     = 0x00000020,
 	DRIVE_SHOW_PLUGINS    = 0x00000040,
 	DRIVE_SHOW_BOOKMARKS  = 0x00000080,
 	DRIVE_SHOW_SIZE_FLOAT = 0x00000100,
@@ -433,6 +433,7 @@ struct Options
 	int SavePluginFoldersHistory;
 	int FoldersHistoryCount;
 	int DialogsHistoryCount;
+	int AutoHighlightHistory;
 
 	FindFileOptions FindOpt;
 
@@ -573,6 +574,11 @@ struct Options
 
 	bool IsUserAdmin;
 	FARString strWindowTitle;
+
+	int DateFormat;
+	FARString strDateSeparator;
+	FARString strTimeSeparator;
+	FARString strDecimalSeparator;
 
 	BOOL WindowMode;
 	std::vector<std::wstring> CmdLineStrings;

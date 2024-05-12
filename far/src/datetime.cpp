@@ -58,89 +58,98 @@ DWORD ConvertYearToFull(DWORD ShortYear)
 
 int GetDateFormat()
 {
-	int Result = 1;
-//	GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_IDATE|LOCALE_RETURN_NUMBER,reinterpret_cast<LPWSTR>(&Result),sizeof(Result)/sizeof(WCHAR));
-	return Result;
+	// 0 = month-day-year
+	// 1 = day-month-year
+	// 2 = year-month-day
+	// other = 2
+
+	//int Result = 1;
+	//	GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_IDATE|LOCALE_RETURN_NUMBER,reinterpret_cast<LPWSTR>(&Result),sizeof(Result)/sizeof(WCHAR));
+	//return Result;
+	return (Opt.DateFormat >= 0 && Opt.DateFormat <= 2) ? Opt.DateFormat : GetDateFormatDefault();
 }
 
 wchar_t GetDateSeparator()
 {
-//	wchar_t Info[100];
-//	GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_SDATE,Info,ARRAYSIZE(Info));
-//	return *Info;
-	return L'/';
+	//	wchar_t Info[100];
+	//	GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_SDATE,Info,ARRAYSIZE(Info));
+	//	return *Info;
+	//return L'/';
+	return Opt.strDateSeparator.IsEmpty() ? GetDateSeparatorDefault() : Opt.strDateSeparator.At(0);
 }
 
 wchar_t GetTimeSeparator()
 {
-//	wchar_t Info[100];
-//	GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_STIME,Info,ARRAYSIZE(Info));
-//	return *Info;
-	return L':';
+	//	wchar_t Info[100];
+	//	GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_STIME,Info,ARRAYSIZE(Info));
+	//	return *Info;
+	//return L':';
+	return Opt.strTimeSeparator.IsEmpty() ? GetTimeSeparatorDefault() : Opt.strTimeSeparator.At(0);
 }
 
 void PrepareStrFTime()
 {
-	//DWORD Loc[]={LANG_ENGLISH,LANG_NEUTRAL},ID;
+	// DWORD Loc[]={LANG_ENGLISH,LANG_NEUTRAL},ID;
 
-//	GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_IFIRSTDAYOFWEEK|LOCALE_RETURN_NUMBER,reinterpret_cast<LPWSTR>(&WeekFirst),sizeof(WeekFirst)/sizeof(WCHAR));
+	//	GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_IFIRSTDAYOFWEEK|LOCALE_RETURN_NUMBER,reinterpret_cast<LPWSTR>(&WeekFirst),sizeof(WeekFirst)/sizeof(WCHAR));
 
-	for (int i=0; i<2; i++)
-	{
-		const wchar_t *months[12] = {L"January", L"February", L"March", L"April", L"May", L"June", L"July", L"August", L"September", L"October", L"November", L"December"};
-		const wchar_t *amonths[12] = {L"Jan", L"Feb", L"Mar", L"Apr", L"May", L"Jun", L"Jul", L"Aug", L"Sep", L"Oct", L"Nov", L"Dec"};
-		for (int j = 0; j<12; ++j) {
+	for (int i = 0; i < 2; i++) {
+		const wchar_t *months[12] = {L"January", L"February", L"March", L"April", L"May", L"June", L"July",
+				L"August", L"September", L"October", L"November", L"December"};
+		const wchar_t *amonths[12] = {L"Jan", L"Feb", L"Mar", L"Apr", L"May", L"Jun", L"Jul", L"Aug", L"Sep",
+				L"Oct", L"Nov", L"Dec"};
+		for (int j = 0; j < 12; ++j) {
 			Month[i][j] = months[j];
 			AMonth[i][j] = amonths[j];
 		}
 
-		const wchar_t *days[7] = {L"Monday", L"Tuesday", L"Wednesday", L"Thursday", L"Friday", L"Saturday", L"Sunday"};
+		const wchar_t *days[7] = {L"Monday", L"Tuesday", L"Wednesday", L"Thursday", L"Friday", L"Saturday",
+				L"Sunday"};
 		const wchar_t *adays[7] = {L"Mon", L"Tue", L"Wed", L"Thu", L"Fri", L"Sat", L"Sun"};
-		for (int j = 0; j<7; ++j) {
+		for (int j = 0; j < 7; ++j) {
 			Weekday[i][j] = days[j];
 			AWeekday[i][j] = adays[j];
 		}
-/*		LCID CurLCID=MAKELCID(MAKELANGID(Loc[i],SUBLANG_DEFAULT),SORT_DEFAULT);
+		/*		LCID CurLCID=MAKELCID(MAKELANGID(Loc[i],SUBLANG_DEFAULT),SORT_DEFAULT);
 
-		for (ID=LOCALE_SMONTHNAME1; ID<=LOCALE_SMONTHNAME12; ID++)
-		{
-			int size=GetLocaleInfo(CurLCID,ID,nullptr,0);
-			LPWSTR lpwszTemp=Month[i][ID-LOCALE_SMONTHNAME1].GetBuffer(size);
-			GetLocaleInfo(CurLCID,ID,lpwszTemp,size);
-			*lpwszTemp=Upper(*lpwszTemp);
-			Month[i][ID-LOCALE_SMONTHNAME1].ReleaseBuffer();
-		}
+				for (ID=LOCALE_SMONTHNAME1; ID<=LOCALE_SMONTHNAME12; ID++)
+				{
+					int size=GetLocaleInfo(CurLCID,ID,nullptr,0);
+					LPWSTR lpwszTemp=Month[i][ID-LOCALE_SMONTHNAME1].GetBuffer(size);
+					GetLocaleInfo(CurLCID,ID,lpwszTemp,size);
+					*lpwszTemp=Upper(*lpwszTemp);
+					Month[i][ID-LOCALE_SMONTHNAME1].ReleaseBuffer();
+				}
 
-		for (ID=LOCALE_SABBREVMONTHNAME1; ID<=LOCALE_SABBREVMONTHNAME12; ID++)
-		{
-			int size=GetLocaleInfo(CurLCID,ID,nullptr,0);
-			LPWSTR lpwszTemp=AMonth[i][ID-LOCALE_SABBREVMONTHNAME1].GetBuffer(size);
-			GetLocaleInfo(CurLCID,ID,lpwszTemp,size);
-			*lpwszTemp=Upper(*lpwszTemp);
-			AMonth[i][ID-LOCALE_SABBREVMONTHNAME1].ReleaseBuffer();
-		}
+				for (ID=LOCALE_SABBREVMONTHNAME1; ID<=LOCALE_SABBREVMONTHNAME12; ID++)
+				{
+					int size=GetLocaleInfo(CurLCID,ID,nullptr,0);
+					LPWSTR lpwszTemp=AMonth[i][ID-LOCALE_SABBREVMONTHNAME1].GetBuffer(size);
+					GetLocaleInfo(CurLCID,ID,lpwszTemp,size);
+					*lpwszTemp=Upper(*lpwszTemp);
+					AMonth[i][ID-LOCALE_SABBREVMONTHNAME1].ReleaseBuffer();
+				}
 
-		for (ID=LOCALE_SDAYNAME1; ID<=LOCALE_SDAYNAME7; ID++)
-		{
-			int size=GetLocaleInfo(CurLCID,ID,nullptr,0);
-			LPWSTR lpwszTemp=Weekday[i][ID-LOCALE_SDAYNAME1].GetBuffer(size);
-			GetLocaleInfo(CurLCID,ID,lpwszTemp,size);
-			*lpwszTemp=Upper(*lpwszTemp);
-			Weekday[i][ID-LOCALE_SDAYNAME1].ReleaseBuffer();
-		}
+				for (ID=LOCALE_SDAYNAME1; ID<=LOCALE_SDAYNAME7; ID++)
+				{
+					int size=GetLocaleInfo(CurLCID,ID,nullptr,0);
+					LPWSTR lpwszTemp=Weekday[i][ID-LOCALE_SDAYNAME1].GetBuffer(size);
+					GetLocaleInfo(CurLCID,ID,lpwszTemp,size);
+					*lpwszTemp=Upper(*lpwszTemp);
+					Weekday[i][ID-LOCALE_SDAYNAME1].ReleaseBuffer();
+				}
 
-		for (ID=LOCALE_SABBREVDAYNAME1; ID<=LOCALE_SABBREVDAYNAME7; ID++)
-		{
-			int size=GetLocaleInfo(CurLCID,ID,nullptr,0);
-			LPWSTR lpwszTemp=AWeekday[i][ID-LOCALE_SABBREVDAYNAME1].GetBuffer(size);
-			GetLocaleInfo(CurLCID,ID,lpwszTemp,size);
-			*lpwszTemp=Upper(*lpwszTemp);
-			AWeekday[i][ID-LOCALE_SABBREVDAYNAME1].ReleaseBuffer();
-		}*/
+				for (ID=LOCALE_SABBREVDAYNAME1; ID<=LOCALE_SABBREVDAYNAME7; ID++)
+				{
+					int size=GetLocaleInfo(CurLCID,ID,nullptr,0);
+					LPWSTR lpwszTemp=AWeekday[i][ID-LOCALE_SABBREVDAYNAME1].GetBuffer(size);
+					GetLocaleInfo(CurLCID,ID,lpwszTemp,size);
+					*lpwszTemp=Upper(*lpwszTemp);
+					AWeekday[i][ID-LOCALE_SABBREVDAYNAME1].ReleaseBuffer();
+				}*/
 	}
 
-
-	CurLang=0;
+	CurLang = 0;
 }
 
 static void atime(FARString &strDest, const tm *tmPtr)
@@ -673,139 +682,137 @@ void StrToDateTime(const wchar_t *CDate, const wchar_t *CTime, FILETIME &ft, int
 	}
 }
 
-void ConvertDate(const FILETIME &ft,FARString &strDateText, FARString &strTimeText,int TimeLength,
-                 int Brief,int TextMonth,int FullYear,int DynInit)
+static bool Init = false; // for ConvertDate()
+
+void ConvertDate_ResetInit()
+{
+	Init = false;
+}
+
+void ConvertDate(const FILETIME &ft, FARString &strDateText, FARString &strTimeText, int TimeLength,
+		int Brief, int TextMonth, int FullYear, int DynInit)
 {
 	static int WDateFormat;
-	static wchar_t WDateSeparator,WTimeSeparator,WDecimalSeparator;
-	static bool Init=false;
+	static wchar_t WDateSeparator, WTimeSeparator, WDecimalSeparator;
+	//static bool Init = false;
 	static SYSTEMTIME lt;
 	int DateFormat;
-	wchar_t DateSeparator,TimeSeparator,DecimalSeparator;
+	wchar_t DateSeparator, TimeSeparator, DecimalSeparator;
 
-	if (!Init)
-	{
-		WDateFormat=GetDateFormat();
-		WDateSeparator=GetDateSeparator();
-		WTimeSeparator=GetTimeSeparator();
-		WDecimalSeparator=GetDecimalSeparator();
+	if (!Init) {
+		WDateFormat = GetDateFormat();
+		WDateSeparator = GetDateSeparator();
+		WTimeSeparator = GetTimeSeparator();
+		WDecimalSeparator = GetDecimalSeparator();
 		WINPORT(GetLocalTime)(&lt);
-		Init=true;
+		Init = true;
 	}
 
-	DateFormat=DynInit?GetDateFormat():WDateFormat;
-	DateSeparator=DynInit?GetDateSeparator():WDateSeparator;
-	TimeSeparator=DynInit?GetTimeSeparator():WTimeSeparator;
-	DecimalSeparator=DynInit?GetDecimalSeparator():WDecimalSeparator;
-	int CurDateFormat=DateFormat;
+	DateFormat = DynInit ? GetDateFormat() : WDateFormat;
+	DateSeparator = DynInit ? GetDateSeparator() : WDateSeparator;
+	TimeSeparator = DynInit ? GetTimeSeparator() : WTimeSeparator;
+	DecimalSeparator = DynInit ? GetDecimalSeparator() : WDecimalSeparator;
+	int CurDateFormat = DateFormat;
 
-	if (Brief && CurDateFormat==2)
-		CurDateFormat=0;
+	if (Brief && CurDateFormat == 2)
+		CurDateFormat = 0;
 
 	SYSTEMTIME st;
 	FILETIME ct;
 
-	if (!ft.dwHighDateTime)
-	{
+	if (!ft.dwHighDateTime) {
 		strDateText.Clear();
 		strTimeText.Clear();
 		return;
 	}
 
-	WINPORT(FileTimeToLocalFileTime)(&ft,&ct);
-	WINPORT(FileTimeToSystemTime)(&ct,&st);
-	//if ( !strTimeText.IsEmpty() )
+	WINPORT(FileTimeToLocalFileTime)(&ft, &ct);
+	WINPORT(FileTimeToSystemTime)(&ct, &st);
+	// if ( !strTimeText.IsEmpty() )
 	{
-		const wchar_t *Letter=L"";
+		const wchar_t *Letter = L"";
 
-		if (TimeLength==6)
-		{
-			Letter=(st.wHour<12) ? L"a":L"p";
+		if (TimeLength == 6) {
+			Letter = (st.wHour < 12) ? L"a" : L"p";
 
-			if (st.wHour>12)
-				st.wHour-=12;
+			if (st.wHour > 12)
+				st.wHour-= 12;
 
 			if (!st.wHour)
-				st.wHour=12;
+				st.wHour = 12;
 		}
 
-		if (TimeLength<7)
-			strTimeText.Format(L"%02d%c%02d%ls",st.wHour,TimeSeparator,st.wMinute,Letter);
-		else
-		{
+		if (TimeLength < 7)
+			strTimeText.Format(L"%02d%c%02d%ls", st.wHour, TimeSeparator, st.wMinute, Letter);
+		else {
 			FARString strFullTime;
-			strFullTime.Format(L"%02d%c%02d%c%02d%c%03d",st.wHour,TimeSeparator,
-			                   st.wMinute,TimeSeparator,st.wSecond,DecimalSeparator,st.wMilliseconds);
-			strTimeText.Format(L"%.*ls",TimeLength, strFullTime.CPtr());
+			strFullTime.Format(L"%02d%c%02d%c%02d%c%03d", st.wHour, TimeSeparator, st.wMinute, TimeSeparator,
+					st.wSecond, DecimalSeparator, st.wMilliseconds);
+			strTimeText.Format(L"%.*ls", TimeLength, strFullTime.CPtr());
 		}
 	}
-	//if ( !strDateText.IsEmpty() )
+	// if ( !strDateText.IsEmpty() )
 	{
-		int Year=st.wYear;
+		int Year = st.wYear;
 
 		if (!FullYear)
-			Year%=100;
+			Year%= 100;
 
-		if (TextMonth)
-		{
-			const wchar_t *Month=(Msg::MonthJan+st.wMonth-1);
+		if (TextMonth) {
+			const wchar_t *Month = (Msg::MonthJan + st.wMonth - 1);
 
-			switch (CurDateFormat)
-			{
+			switch (CurDateFormat) {
 				case 0:
-					strDateText.Format(L"%3.3ls %2d %02d",Month,st.wDay,Year);
+					strDateText.Format(L"%3.3ls %2d %02d", Month, st.wDay, Year);
 					break;
 				case 1:
-					strDateText.Format(L"%2d %3.3ls %02d",st.wDay,Month,Year);
+					strDateText.Format(L"%2d %3.3ls %02d", st.wDay, Month, Year);
 					break;
 				default:
-					strDateText.Format(L"%02d %3.3ls %2d",Year,Month,st.wDay);
+					strDateText.Format(L"%02d %3.3ls %2d", Year, Month, st.wDay);
 					break;
 			}
-		}
-		else
-		{
-			int p1,p2,p3=Year;
-			int w1=2, w2=2, w3=2;
-			wchar_t f1=L'0', f2=L'0', f3=FullYear==2?L' ':L'0';
-			switch (CurDateFormat)
-			{
+		} else {
+			int p1, p2, p3 = Year;
+			int w1 = 2, w2 = 2, w3 = 2;
+			wchar_t f1 = L'0', f2 = L'0', f3 = FullYear == 2 ? L' ' : L'0';
+			switch (CurDateFormat) {
 				case 0:
-					p1=st.wMonth;
-					p2=st.wDay;
+					p1 = st.wMonth;
+					p2 = st.wDay;
 					break;
 				case 1:
-					p1=st.wDay;
-					p2=st.wMonth;
+					p1 = st.wDay;
+					p2 = st.wMonth;
 					break;
 				default:
-					p1=Year;
-					w1=FullYear==2?5:2;
-					f3=f1;
-					f1=L' ';
-					p2=st.wMonth;
-					p3=st.wDay;
+					p1 = Year;
+					w1 = FullYear == 2 ? 5 : 2;
+					f3 = f1;
+					f1 = L' ';
+					p2 = st.wMonth;
+					p3 = st.wDay;
 					break;
 			}
 			FormatString Fmt;
-			Fmt<<fmt::FillChar(f1)<<fmt::Expand(w1)<<p1<<DateSeparator<<fmt::FillChar(f2)<<fmt::Expand(w2)<<p2<<DateSeparator<<fmt::FillChar(f3)<<fmt::Expand(w3)<<p3;
-			strDateText=std::move(Fmt.strValue());
+			Fmt << fmt::FillChar(f1) << fmt::Expand(w1) << p1 << DateSeparator << fmt::FillChar(f2)
+				<< fmt::Expand(w2) << p2 << DateSeparator << fmt::FillChar(f3) << fmt::Expand(w3) << p3;
+			strDateText = std::move(Fmt.strValue());
 		}
 	}
 
-	if (Brief)
-	{
+	if (Brief) {
 		strDateText.Truncate(TextMonth ? 6 : 5);
 
-		if (lt.wYear!=st.wYear)
-			strTimeText.Format(L"%5d",st.wYear);
+		if (lt.wYear != st.wYear)
+			strTimeText.Format(L"%5d", st.wYear);
 	}
 }
 
 void ConvertRelativeDate(const FILETIME &ft,FARString &strDaysText,FARString &strTimeText)
 {
 	ULARGE_INTEGER time={{ft.dwLowDateTime,ft.dwHighDateTime}};
-	
+
 	UINT64 ms = (time.QuadPart/=10000)%1000;
 	UINT64 s = (time.QuadPart/=1000)%60;
 	UINT64 m = (time.QuadPart/=60)%60;
