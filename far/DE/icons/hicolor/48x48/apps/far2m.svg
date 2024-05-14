@@ -1,54 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
-<svg version="1.2" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="48px" height="48px" viewBox="0 0 48 48" xml:space="preserve">
-	<defs>
-		<linearGradient id="far">
-			<stop style="stop-color:#00f" offset="0"/>
-			<stop style="stop-color:#008" offset="1"/>
-		</linearGradient>
-		<linearGradient	xlink:href="#far" id="gradient" x1="1" y1="1" x2="47" y2="47" gradientUnits="userSpaceOnUse"/>
-	</defs>
-	<rect style="fill:url(#gradient)" width="48" height="48" x="0" y="0"/>
-	<rect style="fill:#0ff" width="1" height="44" x="0" y="0"/>
-	<rect style="fill:#ff0" width="6" height="1" x="5" y="4"/>
-	<rect style="fill:#0ff" width="10" height="1" x="3" y="8"/>
-	<rect style="fill:#0ff" width="10" height="1" x="3" y="10"/>
-	<rect style="fill:#0ff" width="10" height="1" x="3" y="12"/>
-	<rect style="fill:#0ff" width="10" height="1" x="3" y="14"/>
-	<rect style="fill:#0ff" width="10" height="1" x="3" y="16"/>
-	<rect style="fill:#0ff" width="1" height="40" x="16" y="0"/>
-	<rect style="fill:#ff0" width="3" height="1" x="19" y="4"/>
-	<rect style="fill:#0ff" width="3" height="1" x="19" y="8"/>
-	<rect style="fill:#0ff" width="3" height="1" x="19" y="10"/>
-	<rect style="fill:#0ff" width="3" height="1" x="19" y="12"/>
-	<rect style="fill:#0ff" width="3" height="1" x="19" y="14"/>
-	<rect style="fill:#0ff" width="3" height="1" x="19" y="16"/>
-	<rect style="fill:#0ff" width="1" height="44" x="24" y="0"/>
-	<rect style="fill:#ff0" width="6" height="1" x="29" y="4"/>
-	<rect style="fill:#0ff" width="10" height="1" x="27" y="8"/>
-	<rect style="fill:#0ff" width="10" height="1" x="27" y="10"/>
-	<rect style="fill:#0ff" width="10" height="1" x="27" y="12"/>
-	<rect style="fill:#0ff" width="1" height="40" x="39" y="0"/>
-	<rect style="fill:#ff0" width="3" height="1" x="42" y="4"/>
-	<rect style="fill:#0ff" width="3" height="1" x="42" y="8"/>
-	<rect style="fill:#0ff" width="3" height="1" x="42" y="10"/>
-	<rect style="fill:#0ff" width="3" height="1" x="42" y="12"/>
-	<rect style="fill:#0ff" width="1" height="44" x="47" y="0"/>
-	<rect style="fill:#0ff" width="48" height="1" x="0" y="0"/>
-	<rect style="fill:#0ff" width="48" height="1" x="0" y="39"/>
-	<rect style="fill:#0ff" width="11" height="1" x="2" y="41"/>
-	<rect style="fill:#0ff" width="2" height="1" x="14" y="41"/>
-	<rect style="fill:#0ff" width="6" height="1" x="17" y="41"/>
-	<rect style="fill:#0ff" width="10" height="1" x="26" y="41"/>
-	<rect style="fill:#0ff" width="2" height="1" x="37" y="41"/>
-	<rect style="fill:#0ff" width="6" height="1" x="40" y="41"/>
-	<rect style="fill:#0ff" width="48" height="1" x="0" y="43"/>
-	<rect style="fill:#000" width="48" height="4" x="0" y="44"/>
-	<rect style="fill:#088" width="7" height="2" x="1" y="46"/>
-	<rect style="fill:#088" width="7" height="2" x="9" y="46"/>
-	<rect style="fill:#088" width="7" height="2" x="17" y="46"/>
-	<rect style="fill:#088" width="7" height="2" x="25" y="46"/>
-	<rect style="fill:#088" width="7" height="2" x="33" y="46"/>
-	<rect style="fill:#088" width="7" height="2" x="41" y="46"/>
-	<rect style="fill:#fff" width="1" height="2" x="0" y="44"/>
-	<rect style="fill:#fff" width="2" height="1" x="0" y="45"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48">
+    <path d="M0 0h128v128H0Z" style="display:inline;fill:#00c;fill-opacity:1;stroke-width:1.28001" transform="scale(.375)"/>
+    <path d="M0 109.39V128h128v-18.61z" style="fill:#2b0000;fill-opacity:1;stroke-width:1.30435" transform="scale(.375)"/>
+    <path d="M30.72 121.866V128H51.2v-6.133zm25.6 0V128H76.8v-6.133zm25.601 0V128h20.48v-6.133zm-76.8.06V128h20.48v-6.074zm102.399 0V128H128v-6.074z" style="display:inline;fill:teal;fill-opacity:1;stroke-width:1.0539" transform="scale(.375)"/>
+    <path d="M0 109.657v8.925h10.24v-4.461H5.12v-4.464z" style="display:inline;fill:#e6e6e6;fill-opacity:1;stroke-width:1.27755" transform="scale(.375)"/>
+    <path d="M0 0v109.657h128V0Zm5.121 5.099H40.96V87.98H5.12Zm39.68 0H61.44V87.98H44.8Zm21.76 0H102.4V87.98H66.56Zm39.679 0h16.64V87.98h-16.64ZM8.96 21.677v3.827h28.16v-3.83zm39.68 0v3.827h8.96v-3.83zm21.76 0v3.827h28.16v-3.83zm39.679 0v3.827h8.96v-3.83zM8.96 30.603v3.827h28.16v-3.827zm39.68 0v3.827h8.96v-3.827zm21.76 0v3.827h28.16v-3.827zm39.679 0v3.827h8.96v-3.827ZM8.96 39.527v3.824h28.16v-3.824zm39.68 0v3.824h8.96v-3.824zm21.76 0v3.824h28.16v-3.824zm39.679 0v3.824h8.96v-3.824ZM8.96 48.453v3.824h28.16v-3.824zm39.68 0v3.824h8.96v-3.824ZM8.96 57.38v3.824h28.16V57.38Zm39.68 0v3.824h8.96V57.38ZM5.12 91.808h56.318v12.75H5.12Zm61.44 0h56.32v12.75H66.56ZM7.68 96.27v3.824h25.598V96.27Zm29.44 0v3.824h3.838V96.27Zm7.68 0v3.824h11.52V96.27Zm24.319 0v3.824h25.6V96.27Zm29.44 0v3.824h3.841V96.27Zm7.68 0v3.824h11.52V96.27Z" style="display:inline;fill:#5df;fill-opacity:1;stroke-width:1.27755" transform="scale(.375)"/>
+    <path d="M14.078 8.926v3.824h20.483V8.926Zm34.56 0v3.824h10.243V8.926H48.639Zm26.882 0v3.824H96V8.926Zm34.558 0v3.824h10.242V8.926Z" style="fill:#ff0;fill-opacity:1;stroke-width:1.27755" transform="scale(.375)"/>
+    <path d="M44 40C19.7 40 0 59.7 0 84c0 24.298 19.7 44 44 44s44-19.702 44-44a43.793 43.793 0 0 0-7.268-24.23 8.903 8.903 0 0 0 1.732-5.285c0-4.99-4.11-9.036-9.181-9.036a9.24 9.24 0 0 0-5.302 1.655A43.79 43.79 0 0 0 44 40Zm0 3.305a40.5 40.5 0 0 1 21.612 6.21 8.89 8.89 0 0 0-1.511 4.97c0 4.99 4.112 9.04 9.182 9.04a9.246 9.246 0 0 0 4.998-1.458A40.499 40.499 0 0 1 84.691 84c0 22.471-18.218 40.695-40.691 40.695-22.475 0-40.695-18.223-40.695-40.695C3.305 61.525 21.53 43.305 44 43.305Zm.5 15.638c-14.112.003-25.556 11.264-25.556 25.155 0 13.892 11.443 25.156 25.557 25.156 6.779.003 13.28-2.646 18.075-7.365 4.795-4.718 7.488-11.118 7.488-17.79 0-6.674-2.693-13.075-7.488-17.79-4.795-4.719-11.297-7.366-18.075-7.366Zm7.329 7.553h.002a9.258 9.258 0 0 1 6.495 2.646 8.967 8.967 0 0 1 2.691 6.396c-.004 4.99-4.117 9.03-9.186 9.03-5.066-.002-9.172-4.045-9.177-9.032 0-4.99 4.106-9.039 9.175-9.039z" style="fill:#ff0;fill-opacity:.75;stroke-width:1.26905" transform="scale(.375)"/>
 </svg>
