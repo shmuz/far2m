@@ -376,6 +376,8 @@ local function Open_CommandLine (strCmdLine)
         OK = pcall(R.test_all)
         Quit(OK and 0 or 4)
       ]], 0, "CtrlShiftF12")
+    elseif cmd == "browser" then
+      macrobrowser()
     elseif cmd ~= "" then
       ErrMsg(Msg.CL_UnsupportedCommand .. cmd)
     end
