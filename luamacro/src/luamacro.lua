@@ -21,8 +21,6 @@ local TableExecString -- must be separate from LastMessage, otherwise Far crashe
 local utils, macrobrowser, panelsort, keymacro, farcmds
 local PluginIsReady
 
-local ExpandEnv = win.ExpandEnv
-
 local RegexExpandEnv = regex.new( [[ \$ \( (\w+) \) | \$ (\w+) ]], "x")
 local HomeDir = far.GetMyHome()
 
@@ -354,16 +352,22 @@ local function Open_CommandLine (strCmdLine)
   if not prefix then return end -- this can occur with Plugin.Command()
   prefix = prefix:lower()
   if prefix == "lm" or prefix == "macro" then
-    if text=="" then return end
+    if text == "" then
+      return
+    end
     local cmd = text:match("%S*"):lower()
     if cmd == "load" then
       local paths = text:match("%S.*",5)
       paths = paths and paths:gsub([[^"(.+)"$]], "%1")
       far.MacroLoadAll(paths)
-    elseif cmd == "save" then utils.WriteMacros()
-    elseif cmd == "unload" then utils.UnloadMacros()
-    elseif cmd == "about" then About()
-    elseif cmd == "farconfig" then require("far2.far_config")()
+    elseif cmd == "save" then
+      utils.WriteMacros()
+    elseif cmd == "unload" then
+      utils.UnloadMacros()
+    elseif cmd == "about" then
+      About()
+    elseif cmd == "farconfig" then
+      require("far2.far_config")()
     elseif cmd == "test" then
       far.MacroPost( [[
         local function Quit(n) actl.Quit(n) Keys("Esc") end
