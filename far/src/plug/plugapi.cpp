@@ -782,7 +782,9 @@ static int FarMenuFnSynched(
     const int *BreakKeys,
     int *BreakCode,
     const FarMenuItem *Item,
-    int ItemsNumber
+    int ItemsNumber,
+    FARMENUCALLBACK Callback,
+    void *CallbackData
 )
 {
 	if (FrameManager->ManagerIsDown())
@@ -906,6 +908,15 @@ static int FarMenuFnSynched(
 			}
 			else if (ReadKey!=KEY_NONE)
 			{
+				if (Callback)
+				{
+					switch (Callback(CallbackData, FarMenu.GetSelectPos(), ReadKey))
+					{
+						case  0:  break;
+						case -1:  return -1;
+						default:  return FarMenu.GetSelectPos();
+					}
+				}
 				if (BreakKeys)
 				{
 					for (int I=0; BreakKeys[I]; I++)
@@ -950,6 +961,27 @@ static int FarMenuFnSynched(
 	return(ExitCode);
 }
 
+int WINAPI FarMenuV2Fn(
+    INT_PTR PluginNumber,
+    int X,
+    int Y,
+    int MaxHeight,
+    DWORD Flags,
+    const wchar_t *Title,
+    const wchar_t *Bottom,
+    const wchar_t *HelpTopic,
+    const int *BreakKeys,
+    int *BreakCode,
+    const FarMenuItem *Item,
+    int ItemsNumber,
+    FARMENUCALLBACK Callback,
+		void *CallbackData
+)
+{
+	return InterThreadCall<int, -1>(std::bind(FarMenuFnSynched, PluginNumber, X, Y,
+		MaxHeight, Flags, Title, Bottom, HelpTopic, BreakKeys, BreakCode, Item, ItemsNumber, Callback, CallbackData));
+}
+
 int WINAPI FarMenuFn(
     INT_PTR PluginNumber,
     int X,
@@ -965,8 +997,8 @@ int WINAPI FarMenuFn(
     int ItemsNumber
 )
 {
-	return InterThreadCall<int, -1>(std::bind(FarMenuFnSynched, PluginNumber, X, Y,
-		MaxHeight, Flags, Title, Bottom, HelpTopic, BreakKeys, BreakCode, Item, ItemsNumber));
+	return FarMenuV2Fn(PluginNumber, X, Y, MaxHeight, Flags, Title, Bottom, HelpTopic, BreakKeys,
+		BreakCode, Item, ItemsNumber, nullptr, nullptr);
 }
 
 // Функция FarDefDlgProc обработки диалога по умолчанию

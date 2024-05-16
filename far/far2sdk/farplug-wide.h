@@ -750,6 +750,25 @@ typedef int (WINAPI *FARAPIMENU)(
 	int                 ItemsNumber
 );
 
+typedef int (*FARMENUCALLBACK)(void *CallbackData, int Pos, FarKey Key);
+
+typedef int (WINAPI *FARAPIMENUV2)(
+	INT_PTR             PluginNumber,
+	int                 X,
+	int                 Y,
+	int                 MaxHeight,
+	DWORD               Flags,
+	const wchar_t      *Title,
+	const wchar_t      *Bottom,
+	const wchar_t      *HelpTopic,
+	const int          *BreakKeys,
+	int                *BreakCode,
+	const struct FarMenuItem *Item,
+	int                 ItemsNumber,
+	FARMENUCALLBACK     Callback,
+	void               *CallbackData
+);
+
 
 enum PLUGINPANELITEMFLAGS
 {
@@ -2464,6 +2483,7 @@ struct PluginStartupInfo
 	FARAPIDIALOGINITV3     DialogInitV3;
 	FARAPITEXTV2           TextV2;
 	FARAPIMESSAGEV3        MessageV3;
+	FARAPIMENUV2           MenuV2;
 };
 
 

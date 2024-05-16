@@ -560,6 +560,7 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 		StartupInfo.ViewerControlV2=FarViewerControlV2;
 		StartupInfo.TextV2=FarTextV2;
 		StartupInfo.MessageV3=FarMessageV3Fn;
+		StartupInfo.MenuV2=FarMenuV2Fn;
 		StartupInfo.LuafarLoaded=LoadLuafar();
 	}
 

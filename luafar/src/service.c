@@ -1544,11 +1544,35 @@ static int editor_ProcessKey(lua_State *L)
 	return 0;
 }
 
+static int far_KeyToName (lua_State *L);
+
+static int FarMenuCallback(void *Data, int MenuPos, FarKey Key)
+{
+	if (Key != KEY_IDLE) {
+		lua_State *L = (lua_State*)Data;
+		lua_pushvalue(L, -1);
+		lua_pushinteger(L, MenuPos + 1);
+
+		lua_pushcfunction(L, far_KeyToName);
+		lua_pushinteger(L, Key);
+		lua_call(L, 1, 1);
+
+		if (0 == lua_pcall(L, 2, 1, 0)) {
+			int ret = lua_tointeger(L,-1) == -1 ? -1 : lua_toboolean(L,-1);
+			lua_pop(L, 1);
+			return ret;
+		}
+		return -1; // tell Far to cancel the menu
+	}
+	return 0;
+}
+
 // Item, Position = Menu (Properties, Items [, Breakkeys])
 // Parameters:
 //   Properties -- a table
 //   Items      -- an array of tables
 //   BreakKeys  -- an array of strings with special syntax
+//   Callback   -- a callback function
 // Return value:
 //   Item:
 //     a table  -- the table of selected item (or of breakkey) is returned
@@ -1558,38 +1582,58 @@ static int editor_ProcessKey(lua_State *L)
 //     a nil    -- menu canceled by the user
 static int far_Menu(lua_State *L)
 {
+	enum {
+		POS_PROPS = 1, // properties
+		POS_ITEMS = 2, // items
+		POS_BKEYS = 3, // break keys
+		POS_CBACK = 4, // callback
+		POS_STORE = 5, // temporary store
+	};
+
 	TPluginData *pd = GetPluginData(L);
 	int X = -1, Y = -1, MaxHeight = 0;
 	int Flags;
 	const wchar_t *Title = L"Menu", *Bottom = NULL, *HelpTopic = NULL;
 
-	lua_settop (L, 3);    // cut unneeded parameters; make stack predictable
-	luaL_checktype(L, 1, LUA_TTABLE);
-	luaL_checktype(L, 2, LUA_TTABLE);
-	if (lua_toboolean(L,3) && !lua_istable(L,3) && !lua_isstring(L,3))
-		return luaL_argerror(L, 3, "must be table, string or nil");
+	lua_settop (L, POS_STORE);    // cut unneeded parameters; make stack predictable
+	luaL_checktype(L, POS_PROPS, LUA_TTABLE);
+	luaL_checktype(L, POS_ITEMS, LUA_TTABLE);
+	if (lua_toboolean(L,POS_BKEYS) && !lua_istable(L,POS_BKEYS) && !lua_isstring(L,POS_BKEYS))
+		return luaL_argerror(L, POS_BKEYS, "must be table, string or nil");
 
-	lua_newtable(L); // temporary store; at stack position 4
+	if (lua_toboolean(L,POS_CBACK) && !lua_isfunction(L,POS_CBACK))
+		return luaL_argerror(L, POS_CBACK, "must be function or nil");
+
+	lua_newtable(L); // temporary store; at stack position POS_STORE
+	lua_replace(L, POS_STORE);
 	int store = 0;
 
 	// Properties
-	lua_pushvalue (L,1);  // push Properties on top (stack index 5)
+	lua_pushvalue (L,POS_PROPS);  // push Properties on top
 	X = GetOptIntFromTable(L, "X", -1);
 	Y = GetOptIntFromTable(L, "Y", -1);
 	MaxHeight = GetOptIntFromTable(L, "MaxHeight", 0);
-	lua_getfield(L, 1, "Flags");
+
+	lua_getfield(L, POS_PROPS, "Flags");
 	Flags = OptFlags(L, -1, 0);
-	lua_getfield(L, 1, "Title");
-	if (lua_isstring(L,-1))    Title = StoreTempString(L, 4, &store);
-	lua_getfield(L, 1, "Bottom");
-	if (lua_isstring(L,-1))    Bottom = StoreTempString(L, 4, &store);
-	lua_getfield(L, 1, "HelpTopic");
-	if (lua_isstring(L,-1))    HelpTopic = StoreTempString(L, 4, &store);
-	lua_getfield(L, 1, "SelectIndex");
-	int ItemsNumber = lua_objlen(L, 2);
+
+	lua_getfield(L, POS_PROPS, "Title");
+	if (lua_isstring(L,-1))    Title = StoreTempString(L, POS_STORE, &store);
+
+	lua_getfield(L, POS_PROPS, "Bottom");
+	if (lua_isstring(L,-1))    Bottom = StoreTempString(L, POS_STORE, &store);
+
+	lua_getfield(L, POS_PROPS, "HelpTopic");
+	if (lua_isstring(L,-1))    HelpTopic = StoreTempString(L, POS_STORE, &store);
+
+	lua_getfield(L, POS_PROPS, "SelectIndex");
 	int SelectIndex = lua_tointeger(L,-1) - 1;
+
+	int ItemsNumber = lua_objlen(L, POS_ITEMS);
 	if (!(SelectIndex >= 0 && SelectIndex < ItemsNumber))
 		SelectIndex = -1;
+
+	lua_settop (L, POS_STORE);
 
 	// Items
 	int i;
@@ -1599,13 +1643,13 @@ static int far_Menu(lua_State *L)
 	struct FarMenuItemEx* pItem = Items;
 	for(i=0; i < ItemsNumber; i++,pItem++,lua_pop(L,1)) {
 		lua_pushinteger(L, i+1);
-		lua_gettable(L, 2);
+		lua_gettable(L, POS_ITEMS);
 		if (!lua_istable(L, -1))
 			return luaLF_SlotError (L, i+1, "table");
 		//-------------------------------------------------------------------------
 		const char *key = "text";
 		lua_getfield(L, -1, key);
-		if (lua_isstring(L,-1))  pItem->Text = StoreTempString(L, 4, &store);
+		if (lua_isstring(L,-1))  pItem->Text = StoreTempString(L, POS_STORE, &store);
 		else if (!lua_isnil(L,-1)) return luaLF_FieldError (L, key, "string");
 		if (!pItem->Text)
 			lua_pop(L, 1);
@@ -1643,7 +1687,7 @@ static int far_Menu(lua_State *L)
 	int BreakCode;
 	int *pBreakKeys=NULL, *pBreakCode=NULL;
 	int NumBreakCodes = 0;
-	if (lua_isstring(L,3))
+	if (lua_isstring(L,POS_BKEYS))
 	{
 		const char *q, *ptr = lua_tostring(L,3);
 		lua_newtable(L);
@@ -1658,10 +1702,10 @@ static int far_Menu(lua_State *L)
 			lua_setfield(L,-2,"BreakKey");
 			lua_rawseti(L,-2,++NumBreakCodes);
 		}
-		lua_replace(L,3);
+		lua_replace(L,POS_BKEYS);
 	}
 	else
-		NumBreakCodes = lua_istable(L,3) ? (int)lua_objlen(L,3) : 0;
+		NumBreakCodes = lua_istable(L,POS_BKEYS) ? (int)lua_objlen(L,POS_BKEYS) : 0;
 
 	if (NumBreakCodes) {
 		int* BreakKeys = (int*)lua_newuserdata(L, (1+NumBreakCodes)*sizeof(int));
@@ -1669,7 +1713,7 @@ static int far_Menu(lua_State *L)
 		lua_pushstring(L, FAR_VIRTUALKEYS);
 		lua_rawget(L, LUA_REGISTRYINDEX);
 		// push breakkeys table on top
-		lua_pushvalue(L, 3);              // vk=-2; bk=-1;
+		lua_pushvalue(L, POS_BKEYS);      // vk=-2; bk=-1;
 		char buf[32];
 		int ind, out; // used outside the following loop
 
@@ -1738,12 +1782,21 @@ static int far_Menu(lua_State *L)
 		pBreakCode = &BreakCode;
 	}
 
-	int ret = PSInfo.Menu(
+	FARMENUCALLBACK callback = NULL;
+	if (lua_isfunction(L,POS_CBACK)) {
+		callback = FarMenuCallback;
+		lua_pushvalue(L, POS_CBACK);
+	}
+
+	int ret = PSInfo.MenuV2(
 		pd->ModuleNumber, X, Y, MaxHeight, Flags|FMENU_USEEXT,
 		Title, Bottom, HelpTopic, pBreakKeys, pBreakCode,
-		(const struct FarMenuItem *)Items, ItemsNumber);
+		(const struct FarMenuItem *)Items, ItemsNumber, callback, L);
 
-	if (NumBreakCodes && (BreakCode != -1)) {
+	if (ret == -1 && callback && !lua_rawequal(L, -1, POS_CBACK)) {
+		return luaL_error(L, lua_tostring(L, -1));
+	}
+	else if (NumBreakCodes && (BreakCode != -1)) {
 		lua_pushinteger(L, BreakCode+1);
 		lua_gettable(L, 3);
 	}
