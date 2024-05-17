@@ -85,7 +85,7 @@ int WINAPI FarMenuFn(INT_PTR PluginNumber,int X,int Y,int MaxHeight,
                      const wchar_t *HelpTopic,const int *BreakKeys,int *BreakCode,
                      const struct FarMenuItem *Item, int ItemsNumber);
 
-int WINAPI FarMenuV2Fn(INT_PTR PluginNumber,int X,int Y,int MaxHeight,
+int WINAPI FarMenuV2Fn(INT_PTR PluginNumber,const GUID *Id,int X,int Y,int MaxHeight,
                      DWORD Flags,const wchar_t *Title,const wchar_t *Bottom,
                      const wchar_t *HelpTopic,const int *BreakKeys,int *BreakCode,
                      const struct FarMenuItem *Item, int ItemsNumber,

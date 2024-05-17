@@ -772,6 +772,7 @@ INT_PTR WINAPI FarAdvControl(INT_PTR ModuleNumber, int Command, void *Param)
 
 static int FarMenuFnSynched(
     INT_PTR PluginNumber,
+    const GUID *Id,
     int X,
     int Y,
     int MaxHeight,
@@ -888,6 +889,9 @@ static int FarMenuFnSynched(
 		if (Flags & FMENU_REVERSEAUTOHIGHLIGHT)
 			FarMenu.AssignHighlights(TRUE);
 
+		if (Id)
+			FarMenu.SetId(*Id);
+
 		FarMenu.SetTitle(Title);
 		FarMenu.Show();
 
@@ -963,6 +967,7 @@ static int FarMenuFnSynched(
 
 int WINAPI FarMenuV2Fn(
     INT_PTR PluginNumber,
+    const GUID *Id,
     int X,
     int Y,
     int MaxHeight,
@@ -978,7 +983,7 @@ int WINAPI FarMenuV2Fn(
 		void *CallbackData
 )
 {
-	return InterThreadCall<int, -1>(std::bind(FarMenuFnSynched, PluginNumber, X, Y,
+	return InterThreadCall<int, -1>(std::bind(FarMenuFnSynched, PluginNumber, Id, X, Y,
 		MaxHeight, Flags, Title, Bottom, HelpTopic, BreakKeys, BreakCode, Item, ItemsNumber, Callback, CallbackData));
 }
 
@@ -997,7 +1002,7 @@ int WINAPI FarMenuFn(
     int ItemsNumber
 )
 {
-	return FarMenuV2Fn(PluginNumber, X, Y, MaxHeight, Flags, Title, Bottom, HelpTopic, BreakKeys,
+	return FarMenuV2Fn(PluginNumber, nullptr, X, Y, MaxHeight, Flags, Title, Bottom, HelpTopic, BreakKeys,
 		BreakCode, Item, ItemsNumber, nullptr, nullptr);
 }
 

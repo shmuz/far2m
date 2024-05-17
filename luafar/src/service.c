@@ -1592,8 +1592,16 @@ static int far_Menu(lua_State *L)
 
 	TPluginData *pd = GetPluginData(L);
 	int X = -1, Y = -1, MaxHeight = 0;
-	int Flags;
+	int Flags = FMENU_WRAPMODE;
 	const wchar_t *Title = L"Menu", *Bottom = NULL, *HelpTopic = NULL;
+	int SelectIndex = 0, ItemsNumber, ret;
+	int store = 0, i;
+	int BreakCode = 0, *pBreakCode = NULL;
+	int NumBreakCodes = 0;
+	const GUID* MenuGuid = NULL;
+	struct FarMenuItemEx *Items, *pItem;
+	int *pBreakKeys = NULL;
+	FARMENUCALLBACK callback = NULL;
 
 	lua_settop (L, POS_STORE);    // cut unneeded parameters; make stack predictable
 	luaL_checktype(L, POS_PROPS, LUA_TTABLE);
@@ -1606,7 +1614,6 @@ static int far_Menu(lua_State *L)
 
 	lua_newtable(L); // temporary store; at stack position POS_STORE
 	lua_replace(L, POS_STORE);
-	int store = 0;
 
 	// Properties
 	lua_pushvalue (L,POS_PROPS);  // push Properties on top
@@ -1627,20 +1634,22 @@ static int far_Menu(lua_State *L)
 	if (lua_isstring(L,-1))    HelpTopic = StoreTempString(L, POS_STORE, &store);
 
 	lua_getfield(L, POS_PROPS, "SelectIndex");
-	int SelectIndex = lua_tointeger(L,-1) - 1;
+	SelectIndex = lua_tointeger(L,-1) - 1;
 
-	int ItemsNumber = lua_objlen(L, POS_ITEMS);
+	lua_getfield(L, POS_PROPS, "Id");
+	if (lua_type(L,-1)==LUA_TSTRING && lua_objlen(L,-1)==sizeof(GUID))
+		MenuGuid = (const GUID*)lua_tostring(L, -1);
+
+	ItemsNumber = lua_objlen(L, POS_ITEMS);
 	if (!(SelectIndex >= 0 && SelectIndex < ItemsNumber))
 		SelectIndex = -1;
 
 	lua_settop (L, POS_STORE);
 
 	// Items
-	int i;
-	struct FarMenuItemEx* Items = (struct FarMenuItemEx*)
-		lua_newuserdata(L, ItemsNumber*sizeof(struct FarMenuItemEx));
+	Items = (struct FarMenuItemEx*) lua_newuserdata(L, ItemsNumber*sizeof(struct FarMenuItemEx));
 	memset(Items, 0, ItemsNumber*sizeof(struct FarMenuItemEx));
-	struct FarMenuItemEx* pItem = Items;
+	pItem = Items;
 	for(i=0; i < ItemsNumber; i++,pItem++,lua_pop(L,1)) {
 		lua_pushinteger(L, i+1);
 		lua_gettable(L, POS_ITEMS);
@@ -1684,9 +1693,6 @@ static int far_Menu(lua_State *L)
 		Items[SelectIndex].Flags |= MIF_SELECTED;
 
 	// Break Keys
-	int BreakCode;
-	int *pBreakKeys=NULL, *pBreakCode=NULL;
-	int NumBreakCodes = 0;
 	if (lua_isstring(L,POS_BKEYS))
 	{
 		const char *q, *ptr = lua_tostring(L,3);
@@ -1782,14 +1788,13 @@ static int far_Menu(lua_State *L)
 		pBreakCode = &BreakCode;
 	}
 
-	FARMENUCALLBACK callback = NULL;
 	if (lua_isfunction(L,POS_CBACK)) {
 		callback = FarMenuCallback;
 		lua_pushvalue(L, POS_CBACK);
 	}
 
-	int ret = PSInfo.MenuV2(
-		pd->ModuleNumber, X, Y, MaxHeight, Flags|FMENU_USEEXT,
+	ret = PSInfo.MenuV2(
+		pd->ModuleNumber, MenuGuid, X, Y, MaxHeight, Flags|FMENU_USEEXT,
 		Title, Bottom, HelpTopic, pBreakKeys, pBreakCode,
 		(const struct FarMenuItem *)Items, ItemsNumber, callback, L);
 

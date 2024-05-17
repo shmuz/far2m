@@ -754,6 +754,7 @@ typedef int (*FARMENUCALLBACK)(void *CallbackData, int Pos, FarKey Key);
 
 typedef int (WINAPI *FARAPIMENUV2)(
 	INT_PTR             PluginNumber,
+	const GUID         *Id,
 	int                 X,
 	int                 Y,
 	int                 MaxHeight,
