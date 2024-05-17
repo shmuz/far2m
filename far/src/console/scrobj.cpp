@@ -88,7 +88,7 @@ void ScreenObject::Unlock()
 
 bool ScreenObject::Locked()
 {
-	return (nLockCount > 0) || (pOwner ? pOwner->Locked() : false);
+	return (nLockCount > 0) || (pOwner && pOwner->Locked());
 }
 
 void ScreenObject::SetOwner(ScreenObject *pOwner)

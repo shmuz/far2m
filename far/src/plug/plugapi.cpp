@@ -897,6 +897,8 @@ static int FarMenuFnSynched(
 
 		while (!FarMenu.Done() && !CloseFARMenu)
 		{
+			CtrlObject->Macro.SetArea(MACROAREA_MENU);
+
 			INPUT_RECORD ReadRec;
 			FarKey ReadKey = GetInputRecord(&ReadRec);
 
