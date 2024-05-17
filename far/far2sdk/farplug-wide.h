@@ -752,6 +752,14 @@ typedef int (WINAPI *FARAPIMENU)(
 
 typedef int (*FARMENUCALLBACK)(void *CallbackData, int Pos, FarKey Key);
 
+enum FARMENUCALLBACKRETURN
+{
+	FMCB_CANCELMENU     = -1,
+	FMCB_PROCESSKEY     = 0,
+	FMCB_DONTPROCESSKEY = 1,
+	FMCB_RETURNCURPOS   = 2,
+};
+
 typedef int (WINAPI *FARAPIMENUV2)(
 	INT_PTR             PluginNumber,
 	const GUID         *Id,

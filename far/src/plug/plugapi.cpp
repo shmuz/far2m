@@ -918,9 +918,11 @@ static int FarMenuFnSynched(
 				{
 					switch (Callback(CallbackData, FarMenu.GetSelectPos(), ReadKey))
 					{
-						case  0:  break;
-						case -1:  return -1;
-						default:  return FarMenu.GetSelectPos();
+						case FMCB_CANCELMENU:      return -1;
+						case FMCB_RETURNCURPOS:    return FarMenu.GetSelectPos();
+						case FMCB_DONTPROCESSKEY:  continue;
+						case FMCB_PROCESSKEY:
+						default:                   break;
 					}
 				}
 				if (BreakKeys)

@@ -1558,13 +1558,13 @@ static int FarMenuCallback(void *Data, int MenuPos, FarKey Key)
 		lua_call(L, 1, 1);
 
 		if (0 == lua_pcall(L, 2, 1, 0)) {
-			int ret = lua_tointeger(L,-1) == -1 ? -1 : lua_toboolean(L,-1);
+			int ret = lua_toboolean(L,-1) ? lua_tointeger(L,-1) : FMCB_PROCESSKEY;
 			lua_pop(L, 1);
 			return ret;
 		}
-		return -1; // tell Far to cancel the menu
+		return FMCB_CANCELMENU; // error occured
 	}
-	return 0;
+	return FMCB_PROCESSKEY;
 }
 
 // Item, Position = Menu (Properties, Items [, Breakkeys])
@@ -1799,7 +1799,9 @@ static int far_Menu(lua_State *L)
 		(const struct FarMenuItem *)Items, ItemsNumber, callback, L);
 
 	if (ret == -1 && callback && !lua_rawequal(L, -1, POS_CBACK)) {
-		return luaL_error(L, lua_tostring(L, -1));
+		const char *msg = lua_tostring(L, -1);
+		msg = msg ? msg : "error occured in callback";
+		return luaL_error(L, msg);
 	}
 	else if (NumBreakCodes && (BreakCode != -1)) {
 		lua_pushinteger(L, BreakCode+1);
