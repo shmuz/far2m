@@ -476,18 +476,12 @@ local function MenuLoop()
   local function Callback(Pos, Key)
     if Key == "F1" then
       ShowHelp()
-    else
-      if items[Pos] then
-        if Key == "F3" then
-          ShowInfo(items[Pos].macro)
-        elseif Key == "ShiftF4" then
-          Edit(items[Pos], true)
-        end
-      else
-        if Key == "F4" then
-          return F.FMCB_DONTPROCESSKEY -- break key will not be processed
-        end
-      end
+    elseif Key == "F3" and items[Pos] then
+      ShowInfo(items[Pos].macro)
+    elseif Key == "ShiftF4" and items[Pos] then
+      Edit(items[Pos], true)
+    elseif Key == "F4" and not items[Pos] then
+      return F.FMCB_DONTPROCESSKEY -- break key will not be processed
     end
   end
 
