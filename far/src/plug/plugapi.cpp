@@ -2107,8 +2107,14 @@ int FarEditorSynched( const wchar_t *FileName, const wchar_t *Title,
 					ExitCode = Editor.IsFileChanged()?XC_MODIFIED:XC_NOT_MODIFIED;
 			}
 
+#if 0
+// -- This was added (far2l, 2024-05-06, commit fa01a507)
+// -- Commented out  (far2m, 2024-05-18) because of unsolicited resizing of menus
+//    containing filtered out items after calling Editor() from their callbacks.
+
 			// workaround for non-repained background of (if) pending modal dialogs
 			GenerateWINDOW_BUFFER_SIZE_EVENT(-1, -1, true);
+#endif
 		}
 	}
 
