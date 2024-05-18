@@ -1586,8 +1586,9 @@ static int FarMenuCallback(void *Data, int MenuPos, FarKey Key)
 // Parameters:
 //   Properties -- a table
 //   Items      -- an array of tables
-//   BreakKeys  -- an array of strings with special syntax
-//   Callback   -- a callback function
+//   BreakKeys  -- (optional) an array of strings with special syntax
+//   Callback   -- (optional) a callback function
+//   ...        -- (optional) extra parameters of any type
 // Return value:
 //   Item:
 //     a table  -- the table of selected item (or of breakkey) is returned
@@ -1612,9 +1613,9 @@ static int far_Menu(lua_State *L)
 	int store = 0, i;
 	int BreakCode = 0, *pBreakCode = NULL;
 	int NumBreakCodes = 0;
-	const GUID* MenuGuid = NULL;
 	struct FarMenuItemEx *Items, *pItem;
 	int *pBreakKeys = NULL;
+	const GUID* MenuGuid = NULL;
 	FARMENUCALLBACK callback = NULL;
 	MENU_DATA mdata = { L, lua_gettop(L) - POS_CBACK, 0 };
 	const int POS_STORE = lua_gettop(L) + 1;
@@ -1709,7 +1710,7 @@ static int far_Menu(lua_State *L)
 	// Break Keys
 	if (lua_isstring(L,POS_BKEYS))
 	{
-		const char *q, *ptr = lua_tostring(L,3);
+		const char *q, *ptr = lua_tostring(L,POS_BKEYS);
 		lua_newtable(L);
 		while (*ptr)
 		{
@@ -1820,13 +1821,13 @@ static int far_Menu(lua_State *L)
 	}
 	else if (NumBreakCodes && (BreakCode != -1)) {
 		lua_pushinteger(L, BreakCode+1);
-		lua_gettable(L, 3);
+		lua_gettable(L, POS_BKEYS);
 	}
 	else if (ret == -1)
 		return lua_pushnil(L), 1;
 	else {
 		lua_pushinteger(L, ret+1);
-		lua_gettable(L, 2);
+		lua_gettable(L, POS_ITEMS);
 	}
 	lua_pushinteger(L, ret+1);
 	return 2;
