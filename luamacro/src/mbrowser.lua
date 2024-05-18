@@ -441,16 +441,59 @@ local function MenuLoop()
   }
 
   local bkeys = {
-    {BreakKey="F1"}, {BreakKey="F3"}, {BreakKey="F4"}, {BreakKey="S+F4"}, {BreakKey="C+H"},
-    {BreakKey="C+PRIOR"}, {BreakKey="C+R"},
+    {BreakKey="F4"}, {BreakKey="C+H"}, {BreakKey="C+PRIOR"}, {BreakKey="C+R"},
   }
   for k in pairs(CmpFuncs) do bkeys[#bkeys+1] = {BreakKey=k} end
 
   assert(CmpFuncs[SortKey][InvSort])
 
+  local function Edit(MenuItem, IsModalEditor)
+    local m = MenuItem.macro
+    if m.FileName then
+      local isMoonScript = string.find(m.FileName, "[nN]", -1)
+      local startline = m.action and debug.getinfo(m.action,"S").linedefined
+      if isMoonScript then
+        startline = utils.GetMoonscriptLineNumber(m.FileName,startline) or startline
+      end
+      if IsModalEditor then
+        editor.Editor(m.FileName,nil,nil,nil,nil,nil,nil,startline,nil,65001)
+      else
+        local a = far.MacroGetArea()
+        if a==F.MACROAREA_SHELL or a==F.MACROAREA_EDITOR or a==F.MACROAREA_VIEWER then
+          local flags = {EF_NONMODAL=1,EF_IMMEDIATERETURN=1}
+          editor.Editor(m.FileName,nil,nil,nil,nil,nil,flags,startline,nil,65001)
+        end
+      end
+    else
+      if m.code then utils.EditUnsavedMacro(m.LoadedMacrosIndex)
+      else mf.postmacro(mf.acall, Message, Msg.MBNoFileNameAvail)
+      end
+    end
+  end
+
+  local items
+
+  local function Callback(Pos, Key)
+    if Key == "F1" then
+      ShowHelp()
+    else
+      if items[Pos] then
+        if Key == "F3" then
+          ShowInfo(items[Pos].macro)
+        elseif Key == "ShiftF4" then
+          Edit(items[Pos], true)
+        end
+      else
+        if Key == "F4" then
+          return F.FMCB_DONTPROCESSKEY -- break key will not be processed
+        end
+      end
+    end
+  end
+
   while true do
-    local items = GetItems(CmpFuncs[SortKey][InvSort], CmpFuncs[SortKey][InvSort+2], ShowOnlyActive)
-    local item, pos = far.Menu(props, items, bkeys)
+    items = GetItems(CmpFuncs[SortKey][InvSort], CmpFuncs[SortKey][InvSort+2], ShowOnlyActive)
+    local item, pos = far.Menu(props, items, bkeys, Callback)
     if not item then break end
     props.SelectIndex = pos
     local BrKey = item.BreakKey
@@ -544,39 +587,13 @@ local function MenuLoop()
       end
       props.SelectIndex = 1
     ----------------------------------------------------------------------------
-    elseif BrKey=="F1" then
-      mf.postmacro(mf.acall, ShowHelp)
-    ----------------------------------------------------------------------------
-    elseif BrKey=="F3" and items[pos] then
-      mf.postmacro(mf.acall, ShowInfo, items[pos].macro)
-    ----------------------------------------------------------------------------
     elseif BrKey=="C+H" then -- hide inactive macros
       ShowOnlyActive = not ShowOnlyActive
       props.SelectIndex = nil
     ----------------------------------------------------------------------------
-    elseif (BrKey=="F4" or BrKey=="S+F4") and items[pos] then -- edit
-      local m = items[pos].macro
-      if m.FileName then
-        local isMoonScript = string.find(m.FileName, "[nN]", -1)
-        local startline = m.action and debug.getinfo(m.action,"S").linedefined
-        if isMoonScript then
-          startline = utils.GetMoonscriptLineNumber(m.FileName,startline) or startline
-        end
-        if BrKey=="S+F4" then -- modal editor
-          editor.Editor(m.FileName,nil,nil,nil,nil,nil,nil,startline,nil,65001)
-        elseif BrKey=="F4" then -- non-modal editor
-          local a = far.MacroGetArea()
-          if a==F.MACROAREA_SHELL or a==F.MACROAREA_EDITOR or a==F.MACROAREA_VIEWER then
-            local flags = {EF_NONMODAL=1,EF_IMMEDIATERETURN=1}
-            editor.Editor(m.FileName,nil,nil,nil,nil,nil,flags,startline,nil,65001)
-            break
-          end
-        end
-      else
-        if m.code then utils.EditUnsavedMacro(m.LoadedMacrosIndex)
-        else mf.postmacro(mf.acall, Message, Msg.MBNoFileNameAvail)
-        end
-      end
+    elseif BrKey=="F4" and items[pos] then -- edit
+      Edit(items[pos], false)
+      break
     ----------------------------------------------------------------------------
     elseif BrKey=="C+PRIOR" and items[pos] then -- CtrlPgUp - locate the file in active panel
       local m = items[pos].macro
