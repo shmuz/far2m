@@ -1546,23 +1546,38 @@ static int editor_ProcessKey(lua_State *L)
 
 static int far_KeyToName (lua_State *L);
 
+typedef struct {
+	lua_State *L;
+	int nargs;
+	int was_error;
+} MENU_DATA;
+
 static int FarMenuCallback(void *Data, int MenuPos, FarKey Key)
 {
 	if (Key != KEY_IDLE) {
-		lua_State *L = (lua_State*)Data;
-		lua_pushvalue(L, -1);
-		lua_pushinteger(L, MenuPos + 1);
+		MENU_DATA *mdata = (MENU_DATA*) Data;
+		lua_State *L = mdata->L;
+		int pos_func = lua_gettop(L) - mdata->nargs;
+		int idx;
 
-		lua_pushcfunction(L, far_KeyToName);
+		lua_pushvalue(L, pos_func);          // Callback function
+		lua_pushinteger(L, MenuPos + 1);     // MenuPos
+
+		lua_pushcfunction(L, far_KeyToName); // Key
 		lua_pushinteger(L, Key);
 		lua_call(L, 1, 1);
 
-		if (0 == lua_pcall(L, 2, 1, 0)) {
+		for (idx = 1; idx <= mdata->nargs; idx++)
+			lua_pushvalue(L, pos_func + idx);
+
+		if (0 == lua_pcall(L, 2 + mdata->nargs, 1, 0)) {
 			int ret = lua_toboolean(L,-1) ? lua_tointeger(L,-1) : FMCB_PROCESSKEY;
 			lua_pop(L, 1);
 			return ret;
 		}
-		return FMCB_CANCELMENU; // error occured
+
+		mdata->was_error = 1;
+		return FMCB_CANCELMENU;
 	}
 	return FMCB_PROCESSKEY;
 }
@@ -1587,7 +1602,6 @@ static int far_Menu(lua_State *L)
 		POS_ITEMS = 2, // items
 		POS_BKEYS = 3, // break keys
 		POS_CBACK = 4, // callback
-		POS_STORE = 5, // temporary store
 	};
 
 	TPluginData *pd = GetPluginData(L);
@@ -1602,8 +1616,9 @@ static int far_Menu(lua_State *L)
 	struct FarMenuItemEx *Items, *pItem;
 	int *pBreakKeys = NULL;
 	FARMENUCALLBACK callback = NULL;
+	MENU_DATA mdata = { L, lua_gettop(L) - POS_CBACK, 0 };
+	const int POS_STORE = lua_gettop(L) + 1;
 
-	lua_settop (L, POS_STORE);    // cut unneeded parameters; make stack predictable
 	luaL_checktype(L, POS_PROPS, LUA_TTABLE);
 	luaL_checktype(L, POS_ITEMS, LUA_TTABLE);
 	if (lua_toboolean(L,POS_BKEYS) && !lua_istable(L,POS_BKEYS) && !lua_isstring(L,POS_BKEYS))
@@ -1613,7 +1628,6 @@ static int far_Menu(lua_State *L)
 		return luaL_argerror(L, POS_CBACK, "must be function or nil");
 
 	lua_newtable(L); // temporary store; at stack position POS_STORE
-	lua_replace(L, POS_STORE);
 
 	// Properties
 	lua_pushvalue (L,POS_PROPS);  // push Properties on top
@@ -1788,17 +1802,18 @@ static int far_Menu(lua_State *L)
 		pBreakCode = &BreakCode;
 	}
 
-	if (lua_isfunction(L,POS_CBACK)) {
+	if (lua_isfunction(L, POS_CBACK)) {
 		callback = FarMenuCallback;
-		lua_pushvalue(L, POS_CBACK);
+		lua_settop(L, POS_STORE);
+		lua_replace(L, POS_PROPS);
 	}
 
 	ret = PSInfo.MenuV2(
 		pd->ModuleNumber, MenuGuid, X, Y, MaxHeight, Flags|FMENU_USEEXT,
 		Title, Bottom, HelpTopic, pBreakKeys, pBreakCode,
-		(const struct FarMenuItem *)Items, ItemsNumber, callback, L);
+		(const struct FarMenuItem *)Items, ItemsNumber, callback, &mdata);
 
-	if (ret == -1 && callback && !lua_rawequal(L, -1, POS_CBACK)) {
+	if (mdata.was_error) {
 		const char *msg = lua_tostring(L, -1);
 		msg = msg ? msg : "error occured in callback";
 		return luaL_error(L, msg);

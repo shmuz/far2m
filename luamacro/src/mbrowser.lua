@@ -471,23 +471,21 @@ local function MenuLoop()
     end
   end
 
-  local items
-
-  local function Callback(Pos, Key)
+  local function Callback(Pos, Key, Items)
     if Key == "F1" then
       ShowHelp()
-    elseif Key == "F3" and items[Pos] then
-      ShowInfo(items[Pos].macro)
-    elseif Key == "ShiftF4" and items[Pos] then
-      Edit(items[Pos], true)
-    elseif Key == "F4" and not items[Pos] then
+    elseif Key == "F3" and Items[Pos] then
+      ShowInfo(Items[Pos].macro)
+    elseif Key == "ShiftF4" and Items[Pos] then
+      Edit(Items[Pos], true)
+    elseif Key == "F4" and not Items[Pos] then
       return F.FMCB_DONTPROCESSKEY -- break key will not be processed
     end
   end
 
   while true do
-    items = GetItems(CmpFuncs[SortKey][InvSort], CmpFuncs[SortKey][InvSort+2], ShowOnlyActive)
-    local item, pos = far.Menu(props, items, bkeys, Callback)
+    local items = GetItems(CmpFuncs[SortKey][InvSort], CmpFuncs[SortKey][InvSort+2], ShowOnlyActive)
+    local item, pos = far.Menu(props, items, bkeys, Callback, items)
     if not item then break end
     props.SelectIndex = pos
     local BrKey = item.BreakKey
