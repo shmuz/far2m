@@ -356,13 +356,16 @@ enum FarMessagesProc
 
 	DM_GETDIALOGINFO,
 
-	DM_GETCOLOR,
-	DM_SETCOLOR,
-
 	DM_SETREADONLY,
 
-	DM_GETTRUECOLOR,	// Param1 - Item ID, Param2 - DialogItemTrueColors *
-	DM_SETTRUECOLOR,	// Param1 - Item ID, Param2 - const DialogItemTrueColors *
+//	DM_GETCOLOR,
+//	DM_SETCOLOR,
+	DM_GETDEFAULTCOLOR, // Param1 - Item ID, Param2 - uint64_t * -> uint64_t ItemColors[4]
+
+	DM_GETTRUECOLOR,	// Param1 - Item ID, Param2 - uint64_t * -> uint64_t ItemColors[4]
+	DM_GETCOLOR = DM_GETTRUECOLOR,
+	DM_SETTRUECOLOR,	// Param1 - Item ID, Param2 - uint64_t * -> uint64_t ItemColors[4]
+	DM_SETCOLOR = DM_SETTRUECOLOR,
 
 	DM_SETTEXTPTRSILENT,
 
@@ -532,9 +535,8 @@ struct FarListColors
 	DWORD  Flags;
 	DWORD  Reserved;
 	int    ColorCount;
-	LPBYTE Colors;
+	uint64_t *Colors;
 };
-
 
 struct FarDialogItem
 {
@@ -1570,7 +1572,7 @@ struct FarSetColors
 	DWORD Flags;
 	int StartIndex;
 	int ColorCount;
-	LPBYTE Colors;
+	uint64_t *Colors;
 };
 
 struct FarTrueColor
