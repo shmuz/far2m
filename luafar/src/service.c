@@ -465,10 +465,10 @@ void PutMouseEvent(lua_State *L, const MOUSE_EVENT_RECORD* rec, BOOL table_exist
 
 // convert a string from utf-8 to wide char and put it into a table,
 // to prevent stack overflow and garbage collection
-const wchar_t* StoreTempString(lua_State *L, int store_stack_pos, int* index)
+static const wchar_t* StoreTempString(lua_State *L, int store_stack_pos)
 {
 	const wchar_t *s = check_utf8_string(L,-1,NULL);
-	lua_rawseti(L, store_stack_pos, ++(*index));
+	luaL_ref(L, store_stack_pos);
 	return s;
 }
 
@@ -919,21 +919,35 @@ static int editor_UndoRedo(lua_State *L)
 	return lua_pushboolean (L, PSInfo.EditorControlV2(editorId, ECTL_UNDOREDO, &eur)), 1;
 }
 
-static int SetKeyBar(lua_State *L, BOOL editor)
+static int SetKeyBar(lua_State *L, BOOL IsEditor)
 {
+	enum {
+		POS_FRAME = 1,
+		POS_PARAM = 2,
+		POS_STORE = 3,
+	}; // stack positions
+
+	enum {
+		REDRAW  = -1,
+		RESTORE = 0
+	}; // corresponds to FAR API
+
 	void* param;
 	struct KeyBarTitles kbt;
-	int frameId = luaL_optinteger(L,1,-1);
-
-	enum { REDRAW=-1, RESTORE=0 }; // corresponds to FAR API
+	int frameId = luaL_optinteger(L, POS_FRAME, -1);
 	BOOL argfail = FALSE;
-	if (lua_isstring(L,2)) {
-		const char* p = lua_tostring(L,2);
-		if (0 == strcmp("redraw", p)) param = (void*)REDRAW;
-		else if (0 == strcmp("restore", p)) param = (void*)RESTORE;
-		else argfail = TRUE;
+
+	if (lua_isstring(L, POS_PARAM)) {
+		const char* p = lua_tostring(L, POS_PARAM);
+		if (0 == strcmp("redraw", p))
+			param = (void*)REDRAW;
+		else if (0 == strcmp("restore", p))
+			param = (void*)RESTORE;
+		else
+			argfail = TRUE;
 	}
-	else if (lua_istable(L,2)) {
+	else if (lua_istable(L, POS_PARAM)) {
+		size_t i, j;
 		param = &kbt;
 		memset(&kbt, 0, sizeof(kbt));
 		struct { const char* key; wchar_t** trg; } pairs[] = {
@@ -945,19 +959,16 @@ static int SetKeyBar(lua_State *L, BOOL editor)
 			{"AltShiftTitles",  kbt.AltShiftTitles},
 			{"CtrlAltTitles",   kbt.CtrlAltTitles},
 		};
-		lua_settop(L, 2);
-		lua_newtable(L);
-		int store = 0;
-		size_t i;
-		int j;
+		lua_settop(L, POS_PARAM);
+		lua_newtable(L); // POS_STORE
 		for (i=0; i < ARRAYSIZE(pairs); i++) {
-			lua_getfield (L, 2, pairs[i].key);
+			lua_getfield (L, POS_PARAM, pairs[i].key);
 			if (lua_istable (L, -1)) {
 				for (j=0; j < ARRAYSIZE(kbt.Titles); j++) {
 					lua_pushinteger(L,j+1);
 					lua_gettable(L,-2);
 					if (lua_isstring(L,-1))
-						pairs[i].trg[j] = (wchar_t*)StoreTempString(L, 3, &store);
+						pairs[i].trg[j] = (wchar_t*)StoreTempString(L, POS_STORE);
 					else
 						lua_pop(L,1);
 				}
@@ -967,11 +978,12 @@ static int SetKeyBar(lua_State *L, BOOL editor)
 	}
 	else
 		argfail = TRUE;
-	if (argfail)
-		return luaL_argerror(L, 2, "must be 'redraw', 'restore', or table");
 
-	int result = editor ? PSInfo.EditorControlV2(frameId, ECTL_SETKEYBAR, param) :
-	                      PSInfo.ViewerControlV2(frameId, VCTL_SETKEYBAR, param);
+	if (argfail)
+		return luaL_argerror(L, POS_PARAM, "must be 'redraw', 'restore', or table");
+
+	int result = IsEditor ? PSInfo.EditorControlV2(frameId, ECTL_SETKEYBAR, param) :
+	                        PSInfo.ViewerControlV2(frameId, VCTL_SETKEYBAR, param);
 	lua_pushboolean(L, result);
 	return 1;
 }
@@ -1610,7 +1622,7 @@ static int far_Menu(lua_State *L)
 	int Flags = FMENU_WRAPMODE;
 	const wchar_t *Title = L"Menu", *Bottom = NULL, *HelpTopic = NULL;
 	int SelectIndex = 0, ItemsNumber, ret;
-	int store = 0, i;
+	int i;
 	int BreakCode = 0, *pBreakCode = NULL;
 	int NumBreakCodes = 0;
 	struct FarMenuItemEx *Items, *pItem;
@@ -1640,13 +1652,13 @@ static int far_Menu(lua_State *L)
 	Flags = OptFlags(L, -1, 0);
 
 	lua_getfield(L, POS_PROPS, "Title");
-	if (lua_isstring(L,-1))    Title = StoreTempString(L, POS_STORE, &store);
+	if (lua_isstring(L,-1))    Title = StoreTempString(L, POS_STORE);
 
 	lua_getfield(L, POS_PROPS, "Bottom");
-	if (lua_isstring(L,-1))    Bottom = StoreTempString(L, POS_STORE, &store);
+	if (lua_isstring(L,-1))    Bottom = StoreTempString(L, POS_STORE);
 
 	lua_getfield(L, POS_PROPS, "HelpTopic");
-	if (lua_isstring(L,-1))    HelpTopic = StoreTempString(L, POS_STORE, &store);
+	if (lua_isstring(L,-1))    HelpTopic = StoreTempString(L, POS_STORE);
 
 	lua_getfield(L, POS_PROPS, "SelectIndex");
 	SelectIndex = lua_tointeger(L,-1) - 1;
@@ -1663,6 +1675,7 @@ static int far_Menu(lua_State *L)
 
 	// Items
 	Items = (struct FarMenuItemEx*) lua_newuserdata(L, ItemsNumber*sizeof(struct FarMenuItemEx));
+	luaL_ref(L, POS_STORE);
 	memset(Items, 0, ItemsNumber*sizeof(struct FarMenuItemEx));
 	pItem = Items;
 	for(i=0; i < ItemsNumber; i++,pItem++,lua_pop(L,1)) {
@@ -1673,7 +1686,7 @@ static int far_Menu(lua_State *L)
 		//-------------------------------------------------------------------------
 		const char *key = "text";
 		lua_getfield(L, -1, key);
-		if (lua_isstring(L,-1))  pItem->Text = StoreTempString(L, POS_STORE, &store);
+		if (lua_isstring(L,-1))  pItem->Text = StoreTempString(L, POS_STORE);
 		else if (!lua_isnil(L,-1)) return luaLF_FieldError (L, key, "string");
 		if (!pItem->Text)
 			lua_pop(L, 1);
@@ -1730,6 +1743,7 @@ static int far_Menu(lua_State *L)
 
 	if (NumBreakCodes) {
 		int* BreakKeys = (int*)lua_newuserdata(L, (1+NumBreakCodes)*sizeof(int));
+		luaL_ref(L, POS_STORE);
 		// get virtualkeys table from the registry; push it on top
 		lua_pushstring(L, FAR_VIRTUALKEYS);
 		lua_rawget(L, LUA_REGISTRYINDEX);
