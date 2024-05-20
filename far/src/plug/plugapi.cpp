@@ -344,7 +344,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 		case ACTL_GETARRAYCOLOR:
 		{
 			if (Param)
-				memcpy(Param,Palette,SIZE_ARRAY_PALETTE);
+				memcpy(Param, Palette, SIZE_ARRAY_PALETTE * sizeof(Palette[0]));
 
 			return SIZE_ARRAY_PALETTE;
 		}

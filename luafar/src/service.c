@@ -3726,7 +3726,7 @@ int PushDNParams (lua_State *L, int Msg, int Param1, LONG_PTR Param2)
 			lua_createtable(L, flc->ColorCount, 1);
 			PutIntToTable(L, "Flags", flc->Flags);
 			for (i=0; i < flc->ColorCount; i++)
-				PutIntToArray(L, i+1, flc->Colors[i]);
+				PutIntToArray(L, i+1, flc->Colors[i]); // TODO: handle 64-bit values
 			break;
 		}
 
@@ -3748,7 +3748,7 @@ int ProcessDNResult(lua_State *L, int Msg, LONG_PTR Param2)
 			if (ret) {
 				struct FarListColors* flc = (struct FarListColors*) Param2;
 				for (i=0; i < flc->ColorCount; i++)
-					flc->Colors[i] = GetIntFromArray(L, i+1);
+					flc->Colors[i] = GetIntFromArray(L, i+1); // TODO: handle 64-bit values
 			}
 			break;
 
@@ -4670,7 +4670,7 @@ static int DoAdvControl (lua_State *L, int Command, int Delta)
 		case ACTL_GETARRAYCOLOR: {
 			int i;
 			int size = PSInfo.AdvControl(pd->ModuleNumber, Command, NULL);
-			BYTE *p = (BYTE*) lua_newuserdata(L, size);
+			uint64_t *p = (uint64_t*) lua_newuserdata(L, size * sizeof(uint64_t));
 			PSInfo.AdvControl(pd->ModuleNumber, Command, p);
 			lua_createtable(L, size, 0);
 			for (i=0; i < size; i++) {
@@ -4732,11 +4732,11 @@ static int DoAdvControl (lua_State *L, int Command, int Delta)
 			lua_getfield(L, pos2, "Flags");
 			fsc.Flags = GetFlagCombination(L, -1, NULL);
 			fsc.ColorCount = lua_objlen(L, pos2);
-			fsc.Colors = (BYTE*)lua_newuserdata(L, fsc.ColorCount);
+			fsc.Colors = (uint64_t*)lua_newuserdata(L, fsc.ColorCount * sizeof(uint64_t));
 			for (i=0; i < fsc.ColorCount; i++) {
 				lua_pushinteger(L,i+1);
 				lua_gettable(L,pos2);
-				fsc.Colors[i] = lua_tointeger(L,-1);
+				fsc.Colors[i] = lua_tointeger(L,-1); // TODO: handle 64-bit values
 				lua_pop(L,1);
 			}
 			lua_pushboolean(L, PSInfo.AdvControl(pd->ModuleNumber, Command, &fsc));

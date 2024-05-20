@@ -448,6 +448,7 @@ public:
 	int PassValue(const TVar& Var);
 	int PassBinary(const void* data, size_t size);
 	int PassPointer(void* ptr);
+	int PassNil();
 
 	int absFunc();
 	int ascFunc();
@@ -595,6 +596,12 @@ int FarMacroApi::PassBinary(const void* data, size_t size)
 int FarMacroApi::PassPointer(void* ptr)
 {
 	FarMacroValue val(ptr);
+	return SendValue(val);
+}
+
+int FarMacroApi::PassNil()
+{
+	FarMacroValue val;
 	return SendValue(val);
 }
 
@@ -2316,7 +2323,10 @@ int FarMacroApi::fargetconfigFunc()
 		case REG_BINARY:
 			PassBinary(Data.binData, Data.binSize);
 			PassString(L"binary");
-			PassBinary(Data.binDefault, Data.binSize);
+			if (Data.binDefault != nullptr)
+				PassBinary(Data.binDefault, Data.binSize);
+			else
+				PassNil();
 			break;
 	}
 
