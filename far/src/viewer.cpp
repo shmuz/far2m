@@ -522,7 +522,7 @@ void Viewer::ShowPage(int nMode)
 		{
 			SetScreen(X1,Y1,X2,Y2,L' ',COL_VIEWERTEXT);
 			GotoXY(X1,Y1);
-			SetColor(COL_WARNDIALOGTEXT);
+			SetFarColor(COL_WARNDIALOGTEXT);
 			FS << fmt::Cells() << fmt::Truncate(XX2 - X1 + 1) << Msg::ViewerCannotOpenFile;
 			ShowStatus();
 		}
@@ -647,14 +647,14 @@ void Viewer::ShowPage(int nMode)
 			if (StrLen > LeftPos + Width && ViOpt.ShowArrows)
 			{
 				GotoXY(XX2,Y);
-				SetColor(COL_VIEWERARROWS);
+				SetFarColor(COL_VIEWERARROWS);
 				BoxText(0xbb);
 			}
 
 			if (LeftPos>0 && *Strings[I]->lpData  && ViOpt.ShowArrows)
 			{
 				GotoXY(X1,Y);
-				SetColor(COL_VIEWERARROWS);
+				SetFarColor(COL_VIEWERARROWS);
 				BoxText(0xab);
 			}
 		}
@@ -685,7 +685,7 @@ void Viewer::ShowHex()
 		bSelStartFound = false;
 		bSelEndFound = false;
 //		SelSize=0;
-		SetColor(COL_VIEWERTEXT);
+		SetFarColor(COL_VIEWERTEXT);
 		GotoXY(X1,Y);
 
 		if (EndFile)
@@ -876,7 +876,7 @@ void Viewer::ShowHex()
 
 		if (bSelStartFound && bSelEndFound)
 		{
-			SetColor(COL_VIEWERSELECTEDTEXT);
+			SetFarColor(COL_VIEWERSELECTEDTEXT);
 			GotoXY((int)((int64_t)X1+SelStart-HexLeftPos),Y);
 			FS << fmt::Cells() << fmt::Truncate(SelEnd - SelStart + 1) << OutStr + static_cast<size_t>(SelStart);
 //			SelSize = 0;
@@ -893,9 +893,9 @@ void Viewer::DrawScrollbar()
 	if (ViOpt.ShowScrollbar)
 	{
 		if (m_bQuickView)
-			SetColor(COL_PANELSCROLLBAR);
+			SetFarColor(COL_PANELSCROLLBAR);
 		else
-			SetColor(COL_VIEWERSCROLLBAR);
+			SetFarColor(COL_VIEWERSCROLLBAR);
 
 		if (!VM.Hex)
 		{

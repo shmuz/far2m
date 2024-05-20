@@ -455,6 +455,7 @@ public:
 	bool ProcessEvents();
 
 	void SetId(const GUID &Id);
+	bool IsRedrawEnabled() const { return IsEnableRedraw > 0; }
 
 	friend class History;
 };

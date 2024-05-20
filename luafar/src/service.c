@@ -2879,7 +2879,7 @@ static int Is_DM_DialogItem(int Msg)
 		case DM_EDITUNCHANGEDFLAG:
 		case DM_ENABLE:
 		case DM_GETCHECK:
-		case DM_GETCOLOR:
+//		case DM_GETCOLOR:
 		case DM_GETCOMBOBOXEVENT:
 		case DM_GETCONSTTEXTPTR:
 		case DM_GETCURSORPOS:
@@ -2890,7 +2890,7 @@ static int Is_DM_DialogItem(int Msg)
 		case DM_GETITEMPOSITION:
 		case DM_GETSELECTION:
 		case DM_GETTEXT:
-		case DM_GETTRUECOLOR:
+//		case DM_GETTRUECOLOR:
 		case DM_LISTADD:
 		case DM_LISTADDSTR:
 		case DM_LISTDELETE:
@@ -2911,7 +2911,7 @@ static int Is_DM_DialogItem(int Msg)
 		case DM_LISTUPDATE:
 		case DM_SET3STATE:
 		case DM_SETCHECK:
-		case DM_SETCOLOR:
+//		case DM_SETCOLOR:
 		case DM_SETCOMBOBOXEVENT:
 		case DM_SETCURSORPOS:
 		case DM_SETCURSORSIZE:
@@ -2927,7 +2927,7 @@ static int Is_DM_DialogItem(int Msg)
 		case DM_SETTEXT:
 		case DM_SETTEXTPTR:
 		case DM_SETTEXTPTRSILENT:
-		case DM_SETTRUECOLOR:
+//		case DM_SETTRUECOLOR:
 		case DM_SHOWITEM:
 		case DM_SETREADONLY:
 			return 1;
@@ -3108,43 +3108,43 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 				Param2 = lua_toboolean(L,pos4) ? BSTATE_CHECKED : BSTATE_UNCHECKED;
 			break;
 
-		case DM_GETCOLOR:
-		{
-			DWORD dword;
-			SendDlgMessage(hDlg, Msg, Param1, &dword);
-			lua_pushinteger (L, dword & DIF_COLORMASK);
-			return 1;
-		}
-
-		case DM_SETCOLOR:
-			Param2 = luaL_checkinteger(L, pos4) | DIF_SETCOLOR;
-			break;
-
-		case DM_GETTRUECOLOR:
-		{
-			struct DialogItemTrueColors ditc;
-			SendDlgMessage(hDlg, Msg, Param1, &ditc);
-			lua_createtable(L, 0, 3);
-			SetColorForeAndBack(L, &ditc.Normal,    "Normal");
-			SetColorForeAndBack(L, &ditc.Hilighted, "Hilighted");
-			SetColorForeAndBack(L, &ditc.Frame,     "Frame");
-			return 1;
-		}
-
-		case DM_SETTRUECOLOR:
-		{
-			struct DialogItemTrueColors ditc;
-			memset(&ditc, 0, sizeof(ditc));
-			if (lua_istable(L, pos4)) {
-				lua_pushvalue(L, pos4);
-				FillColorForeAndBack(L, &ditc.Normal,    "Normal");
-				FillColorForeAndBack(L, &ditc.Hilighted, "Hilighted");
-				FillColorForeAndBack(L, &ditc.Frame,     "Frame");
-				lua_pop(L,1);
-			}
-			lua_pushinteger (L, SendDlgMessage(hDlg, Msg, Param1, &ditc));
-			return 1;
-		}
+		//	case DM_GETCOLOR:
+		//	{
+		//		DWORD dword;
+		//		SendDlgMessage(hDlg, Msg, Param1, &dword);
+		//		lua_pushinteger (L, dword & DIF_COLORMASK);
+		//		return 1;
+		//	}
+        //
+		//	case DM_SETCOLOR:
+		//		Param2 = luaL_checkinteger(L, pos4) | DIF_SETCOLOR;
+		//		break;
+        //
+		//	case DM_GETTRUECOLOR:
+		//	{
+		//		struct DialogItemTrueColors ditc;
+		//		SendDlgMessage(hDlg, Msg, Param1, &ditc);
+		//		lua_createtable(L, 0, 3);
+		//		SetColorForeAndBack(L, &ditc.Normal,    "Normal");
+		//		SetColorForeAndBack(L, &ditc.Hilighted, "Hilighted");
+		//		SetColorForeAndBack(L, &ditc.Frame,     "Frame");
+		//		return 1;
+		//	}
+        //
+		//	case DM_SETTRUECOLOR:
+		//	{
+		//		struct DialogItemTrueColors ditc;
+		//		memset(&ditc, 0, sizeof(ditc));
+		//		if (lua_istable(L, pos4)) {
+		//			lua_pushvalue(L, pos4);
+		//			FillColorForeAndBack(L, &ditc.Normal,    "Normal");
+		//			FillColorForeAndBack(L, &ditc.Hilighted, "Hilighted");
+		//			FillColorForeAndBack(L, &ditc.Frame,     "Frame");
+		//			lua_pop(L,1);
+		//		}
+		//		lua_pushinteger (L, SendDlgMessage(hDlg, Msg, Param1, &ditc));
+		//		return 1;
+		//	}
 
 		case DM_LISTADDSTR:
 		case DM_ADDHISTORY:

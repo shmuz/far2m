@@ -118,7 +118,7 @@ void CommandLine::DisplayObject()
 	GetPrompt(strTruncDir);
 	TruncPathStr(strTruncDir,(X2-X1)/2);
 	GotoXY(X1,Y1);
-	SetColor(COL_COMMANDLINEPREFIX);
+	SetFarColor(COL_COMMANDLINEPREFIX);
 	Text(strTruncDir);
 	CmdStr.SetObjectColor(COL_COMMANDLINE,COL_COMMANDLINESELECTED);
 	CmdStr.SetPosition(X1+(int)strTruncDir.CellsCount(),Y1,X2,Y2);
@@ -126,7 +126,7 @@ void CommandLine::DisplayObject()
 	CmdStr.Show();
 
 	GotoXY(X2+1,Y1);
-	SetColor(COL_COMMANDLINEPREFIX);
+	SetFarColor(COL_COMMANDLINEPREFIX);
 	Text(L"\x2191");
 }
 
@@ -134,7 +134,7 @@ void CommandLine::DrawComboBoxMark(wchar_t MarkChar)
 {
 	wchar_t MarkWz[2] = {MarkChar, 0};
 	GotoXY(X2 + 1, Y1);
-	SetColor(COL_COMMANDLINEPREFIX);
+	SetFarColor(COL_COMMANDLINEPREFIX);
 	Text(MarkWz);
 }
 

@@ -294,7 +294,7 @@ void TreeList::DisplayTree(int Fast)
 	for (int I=Y1+1,J=CurTopFile; I<Y2-2-(ModalMode); I++,J++)
 	{
 		GotoXY(X1+1,I);
-		SetColor(COL_PANELTEXT);
+		SetFarColor(COL_PANELTEXT);
 		Text(L" ");
 
 		if (J<TreeCount && Flags.Check(FTREELIST_TREEISPREPARED))
@@ -323,7 +323,7 @@ void TreeList::DisplayTree(int Fast)
 			}
 		}
 
-		SetColor(COL_PANELTEXT);
+		SetFarColor(COL_PANELTEXT);
 
 		if (WhereX()<X2)
 		{
@@ -333,11 +333,11 @@ void TreeList::DisplayTree(int Fast)
 
 	if (Opt.ShowPanelScrollbar)
 	{
-		SetColor(COL_PANELSCROLLBAR);
+		SetFarColor(COL_PANELSCROLLBAR);
 		ScrollBarEx(X2,Y1+1,Y2-Y1-3,CurTopFile,TreeCount);
 	}
 
-	SetColor(COL_PANELTEXT);
+	SetFarColor(COL_PANELTEXT);
 	SetScreen(X1+1,Y2-(ModalMode?2:1),X2-1,Y2-1,L' ',COL_PANELTEXT);
 
 	if (TreeCount>0)

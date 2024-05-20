@@ -78,9 +78,9 @@ void HMenu::ShowMenu()
 		ItemX[i]=WhereX();
 
 		if (Item[i].Selected)
-			SetColor(COL_HMENUSELECTEDTEXT);
+			SetFarColor(COL_HMENUSELECTEDTEXT);
 		else
-			SetColor(COL_HMENUTEXT);
+			SetFarColor(COL_HMENUTEXT);
 
 		strTmpStr=L"  ";
 		strTmpStr+=Item[i].Name;

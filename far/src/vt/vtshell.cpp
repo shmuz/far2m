@@ -1014,7 +1014,7 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 		msg.Insert(0, L'\n');
 		msg.Append(L'\n');
 		const DWORD64 saved_color = GetColor();
-		SetColor(COL_HELPTOPIC, true);
+		SetFarColor(COL_HELPTOPIC, true);
 		DWORD dw;
 		WINPORT(WriteConsole)(NULL, msg.CPtr(), msg.GetLength(), &dw, NULL );
 		SetColor(saved_color, true);

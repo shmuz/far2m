@@ -545,7 +545,7 @@ void FileViewer::ShowStatus()
 	    Opt.ViewerEditorClock ? L"":L" ",
 	    (View.LastPage ? 100:ToPercent64(View.FilePos,View.FileSize))
 	);
-	SetColor(COL_VIEWERSTATUS);
+	SetFarColor(COL_VIEWERSTATUS);
 	GotoXY(X1,Y1);
 	FS << fmt::Cells() << fmt::LeftAlign() << fmt::Size(View.Width+(View.ViOpt.ShowScrollbar?1:0)) << strStatus;
 

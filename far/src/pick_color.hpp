@@ -36,5 +36,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <WinCompat.h>
 
 bool GetColorDialogForFileFilter(uint64_t *color, uint64_t *mask);
+bool GetColorDialog(uint64_t *color, bool bCentered = true);
 bool GetColorDialog16(uint16_t *color, bool bCentered = true);
 bool GetColorDialog(INT_PTR PluginNumber, ColorDialogData *Data, DWORD Flags);

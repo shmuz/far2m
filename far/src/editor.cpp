@@ -7010,7 +7010,7 @@ void Editor::DrawScrollbar()
 {
 	if (EdOpt.ShowScrollBar)
 	{
-		SetColor(COL_EDITORSCROLLBAR);
+		SetFarColor(COL_EDITORSCROLLBAR);
 		XX2=X2-(ScrollBarEx(X2,Y1,Y2-Y1+1,NumLine-CalcDistance(TopScreen,CurLine,-1),NumLastLine)?1:0);
 	}
 }

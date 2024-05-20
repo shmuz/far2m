@@ -2277,7 +2277,7 @@ void FileEditor::ShowStatus()
 	if (m_editor->Locked() || !Opt.EdOpt.ShowTitleBar)
 		return;
 
-	SetColor(COL_EDITORSTATUS);
+	SetFarColor(COL_EDITORSTATUS);
 	GotoXY(X1,Y1); //??
 	FARString strLineStr;
 	FARString strLocalTitle;
@@ -2329,7 +2329,7 @@ void FileEditor::ShowStatus()
 		if (CurPos<Length)
 		{
 			GotoXY(X2-(Opt.ViewerEditorClock && Flags.Check(FFILEEDIT_FULLSCREEN) ? 16:10),Y1);
-			SetColor(COL_EDITORSTATUS);
+			SetFarColor(COL_EDITORSTATUS);
 			/* $ 27.02.2001 SVS
 			Показываем в зависимости от базы */
 			static const wchar_t *FmtWCharCode[]={L"%05o",L"%5d",L"%04Xh"};

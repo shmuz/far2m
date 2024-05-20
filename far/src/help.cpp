@@ -748,7 +748,7 @@ void Help::FastShow()
 			if (!Locked())
 			{
 				GotoXY(X1,Y1+i+1);
-				SetColor(COL_HELPBOX);
+				SetFarColor(COL_HELPBOX);
 				ShowSeparator(X2-X1+1,1);
 			}
 
@@ -790,7 +790,7 @@ void Help::FastShow()
 
 	if (!Locked())
 	{
-		SetColor(COL_HELPSCROLLBAR);
+		SetFarColor(COL_HELPSCROLLBAR);
 		ScrollBarEx(X2,Y1+FixSize+1,Y2-Y1-FixSize-1,StackData.TopStr,StrCount-FixCount);
 	}
 }
@@ -799,7 +799,7 @@ void Help::DrawWindowFrame()
 {
 	SetScreen(X1,Y1,X2,Y2,L' ',COL_HELPTEXT);
 	Box(X1,Y1,X2,Y2,COL_HELPBOX,DOUBLE_BOX);
-	SetColor(COL_HELPBOXTITLE);
+	SetFarColor(COL_HELPBOXTITLE);
 	FARString strHelpTitleBuf;
 	strHelpTitleBuf = Msg::HelpTitle;
 	strHelpTitleBuf += L" - ";
@@ -849,7 +849,7 @@ void Help::OutString(const wchar_t *Str)
 				if (WhereY()==RealCurY && RealCurX>=WhereX() &&
 				        RealCurX<WhereX()+(Str-StartTopic)-1)
 				{
-					SetColor(COL_HELPSELECTEDTOPIC);
+					SetFarColor(COL_HELPSELECTEDTOPIC);
 
 					if (Str[1]==L'@')
 					{
@@ -881,13 +881,13 @@ void Help::OutString(const wchar_t *Str)
 				}
 				else
 				{
-					SetColor(COL_HELPTOPIC);
+					SetFarColor(COL_HELPTOPIC);
 				}
 			}
 			else
 			{
 				if (Highlight)
-					SetColor(COL_HELPHIGHLIGHTTEXT);
+					SetFarColor(COL_HELPHIGHLIGHTTEXT);
 				else
 					SetColor(CurColor);
 			}

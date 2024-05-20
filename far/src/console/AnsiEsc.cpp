@@ -229,44 +229,44 @@ void FontState::FromConsoleAttributes(DWORD64 qAttributes)
 
 DWORD64 FontState::ToConsoleAttributes()
 {
-	DWORD64 attribut = 0;
+	DWORD64 attribute = 0;
 
 	if (concealed) {
-		attribut = g_palette_foreground[background] | g_palette_background[background];
+		attribute = g_palette_foreground[background] | g_palette_background[background];
 
 		if (use_rgb_background) {
-			SET_RGB_BOTH(attribut, rgb_background, rgb_background);
+			SET_RGB_BOTH(attribute, rgb_background, rgb_background);
 		}
 
 	} else {
-		attribut = g_palette_foreground[foreground] | g_palette_background[background];
+		attribute = g_palette_foreground[foreground] | g_palette_background[background];
 
 		if (use_rgb_foreground) {
-			SET_RGB_FORE(attribut, rgb_foreground);
+			SET_RGB_FORE(attribute, rgb_foreground);
 		}
 
 		if (use_rgb_background) {
-			SET_RGB_BACK(attribut, rgb_background);
+			SET_RGB_BACK(attribute, rgb_background);
 		}
 	}
 
 	if (bold) {
-		attribut|= FOREGROUND_INTENSITY;
+		attribute|= FOREGROUND_INTENSITY;
 	}
 
 	if (rvideo) {
-		attribut|= COMMON_LVB_REVERSE_VIDEO;
+		attribute|= COMMON_LVB_REVERSE_VIDEO;
 	}
 
 	if (underline) {
-		attribut|= COMMON_LVB_UNDERSCORE;
+		attribute|= COMMON_LVB_UNDERSCORE;
 	}
 
 	if (strikeout) {
-		attribut|= COMMON_LVB_STRIKEOUT;
+		attribute|= COMMON_LVB_STRIKEOUT;
 	}
 
-	return attribut;
+	return attribute;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -306,14 +306,14 @@ const wchar_t *Parser::Parse(const wchar_t *str)
 
 Printer::Printer(WORD wAttributes)
 	:
-	_initial_attr(GetRealColor())
+	_initial_attr(GetColor())
 {
 	_font_state.FromConsoleAttributes(wAttributes);
 }
 
 Printer::~Printer()
 {
-	SetRealColor(_initial_attr);
+	SetColor(_initial_attr);
 }
 
 int Printer::Length(const wchar_t *str, int limit)
@@ -348,9 +348,9 @@ int Printer::Length(const wchar_t *str, int limit)
 void Printer::EnforceStateColor()
 {
 	if (_selection)
-		SetColor(COL_VIEWERSELECTEDTEXT);
+		SetFarColor(COL_VIEWERSELECTEDTEXT);
 	else
-		SetRealColor(_font_state.ToConsoleAttributes());
+		SetColor(_font_state.ToConsoleAttributes());
 }
 
 void Printer::Print(int skip_len, int print_len, const wchar_t *str)
