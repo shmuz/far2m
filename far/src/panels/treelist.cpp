@@ -277,15 +277,13 @@ void TreeList::DisplayTree(int Fast)
 	if (TreeCount>0)
 		strCurDir = ListData[CurFile]->strName; //BUGBUG
 
-	if (!Fast)
-	{
-		Box(X1,Y1,X2,Y2,COL_PANELBOX,DOUBLE_BOX);
+	if (!Fast) {
+		Box(X1, Y1, X2, Y2, FarColorToReal(COL_PANELBOX), DOUBLE_BOX);
 		DrawSeparator(Y2-2-(ModalMode));
 		GetTitle(strTitle);
 
-		if (!strTitle.IsEmpty())
-		{
-			SetColor((Focus || ModalMode) ? COL_PANELSELECTEDTITLE:COL_PANELTITLE);
+		if (!strTitle.IsEmpty()) {
+			SetFarColor((Focus || ModalMode) ? COL_PANELSELECTEDTITLE : COL_PANELTITLE);
 			GotoXY(X1+(X2-X1+1-(int)strTitle.GetLength())/2,Y1);
 			Text(strTitle);
 		}
@@ -363,20 +361,15 @@ void TreeList::DisplayTreeName(const wchar_t *Name,int Pos)
 	{
 		GotoXY(WhereX()-1,WhereY());
 
-		if (Focus || ModalMode)
-		{
-			SetColor((Pos==WorkDir) ? COL_PANELSELECTEDCURSOR:COL_PANELCURSOR);
+		if (Focus || ModalMode) {
+			SetFarColor((Pos == WorkDir) ? COL_PANELSELECTEDCURSOR : COL_PANELCURSOR);
 			FS << L" " << fmt::Cells() << fmt::Truncate(X2 - WhereX() - 3) << Name << L" ";
-		}
-		else
-		{
-			SetColor((Pos==WorkDir) ? COL_PANELSELECTEDTEXT:COL_PANELTEXT);
+		} else {
+			SetFarColor((Pos == WorkDir) ? COL_PANELSELECTEDTEXT : COL_PANELTEXT);
 			FS << L"[" << fmt::Cells() << fmt::Truncate(X2 - WhereX() - 3) << Name << L"]";
 		}
-	}
-	else
-	{
-		SetColor((Pos==WorkDir) ? COL_PANELSELECTEDTEXT:COL_PANELTEXT);
+	} else {
+		SetFarColor((Pos == WorkDir) ? COL_PANELSELECTEDTEXT : COL_PANELTEXT);
 		FS << fmt::Cells() << fmt::Truncate(X2 - WhereX() - 1) << Name;
 	}
 }

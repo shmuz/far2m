@@ -2829,12 +2829,14 @@ void VMenu::GetColors(FarListColors *ColorsOut)
 	memmove(ColorsOut->Colors, Colors, Min(sizeof(Colors), ColorsOut->ColorCount*sizeof(Colors[0])));
 }
 
-void VMenu::SetOneColor(int Index, short Color)
+void VMenu::SetOneColor(int Index, uint64_t Color)
 {
 	CriticalSectionLock Lock(CS);
 
 	if (Index < (int)ARRAYSIZE(Colors))
-		Colors[Index] = FarColorToReal(Color);
+		Colors[Index] = Color;
+
+//		Colors[Index] = FarColorToReal(Color);
 }
 
 BOOL VMenu::GetVMenuInfo(FarListInfo* Info)

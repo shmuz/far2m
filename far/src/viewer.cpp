@@ -41,6 +41,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "keyboard.hpp"
 #include "lang.hpp"
 #include "colors.hpp"
+#include "palette.hpp"
 #include "keys.hpp"
 #include "help.hpp"
 #include "dialog.hpp"
@@ -520,7 +521,7 @@ void Viewer::ShowPage(int nMode)
 	{
 		if (!strFileName.IsEmpty() && ((nMode == SHOW_RELOAD) || (nMode == SHOW_HEX)))
 		{
-			SetScreen(X1,Y1,X2,Y2,L' ',COL_VIEWERTEXT);
+			SetScreen(X1, Y1, X2, Y2, L' ', FarColorToReal(COL_VIEWERTEXT));
 			GotoXY(X1,Y1);
 			SetFarColor(COL_WARNDIALOGTEXT);
 			FS << fmt::Cells() << fmt::Truncate(XX2 - X1 + 1) << Msg::ViewerCannotOpenFile;
@@ -599,7 +600,7 @@ void Viewer::ShowPage(int nMode)
 		if (VM.Processed)
 			printer.reset(new AnsiEsc::Printer(B_BLACK | F_WHITE));
 		else
-			printer.reset(new PlainViewerPrinter(COL_VIEWERTEXT));
+			printer.reset(new PlainViewerPrinter(FarColorToReal(COL_VIEWERTEXT)));
 		if (IsUnicodeOrUtfCodePage(VM.CodePage))
 			printer->EnableBOMSkip();
 

@@ -99,9 +99,9 @@ void QuickView::DisplayObject()
 	if (QView)
 		QView->SetPosition(X1+1,Y1+1,X2-1,Y2-3);
 
-	Box(X1,Y1,X2,Y2,COL_PANELBOX,DOUBLE_BOX);
-	SetScreen(X1+1,Y1+1,X2-1,Y2-1,L' ',COL_PANELTEXT);
-	SetColor(Focus ? COL_PANELSELECTEDTITLE:COL_PANELTITLE);
+	Box(X1, Y1, X2, Y2, FarColorToReal(COL_PANELBOX), DOUBLE_BOX);
+	SetScreen(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1, L' ', FarColorToReal(COL_PANELTEXT));
+	SetFarColor(Focus ? COL_PANELSELECTEDTITLE : COL_PANELTITLE);
 	GetTitle(strTitle);
 
 	if (!strTitle.IsEmpty())

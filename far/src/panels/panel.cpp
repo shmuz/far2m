@@ -305,6 +305,7 @@ static void ConfigureChangeDriveMode()
 	}
 }
 
+/*
 
 LONG_PTR WINAPI ChDiskDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2)
 {
@@ -322,6 +323,8 @@ LONG_PTR WINAPI ChDiskDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2)
 	}
 	return DefDlgProc(hDlg,Msg,Param1,Param2);
 }
+
+*/
 
 static void AddBookmarkItems(VMenu &ChDisk, int Pos)
 {
@@ -971,7 +974,7 @@ void Panel::FastFind(int FirstKey)
 		Edit FindEdit;
 		FindEdit.SetPosition(FindX+2,FindY+1,FindX+19,FindY+1);
 		FindEdit.SetEditBeyondEnd(FALSE);
-		FindEdit.SetObjectColor(COL_DIALOGEDIT);
+		FindEdit.SetObjectColor(FarColorToReal(COL_DIALOGEDIT));
 		FindEdit.Show();
 
 		while (!KeyToProcess)
@@ -1165,7 +1168,7 @@ void Panel::FastFindShow(int FindX,int FindY)
 	Text(L" ");
 	GotoXY(FindX+20,FindY+1);
 	Text(L" ");
-	Box(FindX,FindY,FindX+21,FindY+2,COL_DIALOGBOX,DOUBLE_BOX);
+	Box(FindX, FindY, FindX + 21, FindY + 2, FarColorToReal(COL_DIALOGBOX), DOUBLE_BOX);
 	GotoXY(FindX+7,FindY);
 	SetFarColor(COL_DIALOGBOXTITLE);
 	Text(Msg::SearchFileTitle);
