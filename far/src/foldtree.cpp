@@ -352,7 +352,7 @@ void FolderTree::DrawEdit()
 	SetFarColor(COL_PANELTEXT);
 	FS<<SearchTxt<<L"  ";
 	FindEdit->SetPosition(X1+StrLength(SearchTxt)+2,FindY,Min(X2-1,X1+25),FindY);
-	FindEdit->SetObjectColor(COL_DIALOGEDIT);
+	FindEdit->SetObjectColor(FarColorToReal(COL_DIALOGEDIT));
 	FindEdit->Show();
 
 	if (WhereX()<X2)

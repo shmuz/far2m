@@ -40,6 +40,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lang.hpp"
 #include "ctrlobj.hpp"
 #include "manager.hpp"
+#include "palette.hpp"
 #include "history.hpp"
 #include "filepanels.hpp"
 #include "panel.hpp"
@@ -120,7 +121,7 @@ void CommandLine::DisplayObject()
 	GotoXY(X1,Y1);
 	SetFarColor(COL_COMMANDLINEPREFIX);
 	Text(strTruncDir);
-	CmdStr.SetObjectColor(COL_COMMANDLINE,COL_COMMANDLINESELECTED);
+	CmdStr.SetObjectColor(FarColorToReal(COL_COMMANDLINE), FarColorToReal(COL_COMMANDLINESELECTED));
 	CmdStr.SetPosition(X1+(int)strTruncDir.CellsCount(),Y1,X2,Y2);
 
 	CmdStr.Show();
@@ -238,7 +239,7 @@ int CommandLine::ProcessKey(FarKey Key)
 	}
 
 	if ( Key==KEY_F8) {
-		ClearScreen(COL_COMMANDLINEUSERSCREEN);
+		ClearScreen(FarColorToReal(COL_COMMANDLINEUSERSCREEN));
 		SaveBackground();
 		VTLog::Reset(NULL);
 		ShowBackground();

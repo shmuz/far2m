@@ -129,7 +129,8 @@ static struct FARConfig
 
 } CFG[]=
 {
-	{1, NSecColors, "CurrentPalette",               Palette, SIZE_ARRAY_PALETTE, DefaultPalette},
+	{1, NSecColors, "CurrentPalette", (BYTE *)Palette8bit, SIZE_ARRAY_PALETTE, (BYTE *)DefaultPalette8bit},
+	{1, NSecColors, "CurrentPaletteRGB", (BYTE *)Palette, SIZE_ARRAY_PALETTE * 8, nullptr},
 	{1, NSecColors, "TempColors256", g_tempcolors256,         TEMP_COLORS256_SIZE, g_tempcolors256},
 	{1, NSecColors, "TempColorsRGB", (BYTE *)g_tempcolorsRGB, TEMP_COLORSRGB_SIZE, (BYTE *)g_tempcolorsRGB},
 
@@ -530,6 +531,15 @@ bool ConfigOptSetBinary(int I, const void *Data, DWORD Size)
 	return false;
 }
 
+static void MergePalette()
+{
+	for(size_t i = 0; i < SIZE_ARRAY_PALETTE; i++) {
+
+		Palette[i] &= 0xFFFFFFFFFFFFFF00;
+		Palette[i] |= Palette8bit[i];
+	}
+}
+
 static void ConfigOptFromCmdLine()
 {
 	for (auto Str: Opt.CmdLineStrings)
@@ -639,25 +649,8 @@ void ConfigOptLoad()
 	}
 
 	Opt.HelpTabSize=8; // пока жестко пропишем...
-	//   Уточняем алгоритм "взятия" палитры.
-	for (I=COL_PRIVATEPOSITION_FOR_DIF165ABOVE-COL_FIRSTPALETTECOLOR+1;
-	        I < (COL_LASTPALETTECOLOR-COL_FIRSTPALETTECOLOR);
-	        ++I)
-	{
-		if (!Palette[I])
-		{
-			if (!Palette[COL_PRIVATEPOSITION_FOR_DIF165ABOVE-COL_FIRSTPALETTECOLOR])
-				Palette[I]=DefaultPalette[I];
-			else if (Palette[COL_PRIVATEPOSITION_FOR_DIF165ABOVE-COL_FIRSTPALETTECOLOR] == 1)
-				Palette[I]=BlackPalette[I];
-
-			/*
-			else
-			  в других случаях нифига ничего не делаем, т.к.
-			  есть другие палитры...
-			*/
-		}
-	}
+//	SanitizePalette();
+	MergePalette();
 
 	Opt.ViOpt.ViewerIsWrap&=1;
 	Opt.ViOpt.ViewerWrap&=1;

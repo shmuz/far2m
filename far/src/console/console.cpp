@@ -321,7 +321,7 @@ bool console::Write(LPCWSTR Buffer, DWORD NumberOfCharsToWrite)
 			!= FALSE;
 }
 
-bool console::GetTextAttributes(WORD &Attributes)
+bool console::GetTextAttributes(uint64_t &Attributes)
 {
 	bool Result = false;
 	CONSOLE_SCREEN_BUFFER_INFO ConsoleScreenBufferInfo;
@@ -332,7 +332,7 @@ bool console::GetTextAttributes(WORD &Attributes)
 	return Result;
 }
 
-bool console::SetTextAttributes(WORD Attributes)
+bool console::SetTextAttributes(uint64_t Attributes)
 {
 	return WINPORT(SetConsoleTextAttribute)(GetOutputHandle(), Attributes) != FALSE;
 }

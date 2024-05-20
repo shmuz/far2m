@@ -211,7 +211,7 @@ static int MainProcess(
 		clock_t cl_start = clock();
 		ChangePriority ChPriority(ChangePriority::NORMAL);
 		ControlObject CtrlObj;
-		WORD InitAttributes=0;
+		uint64_t InitAttributes = 0;
 		Console.GetTextAttributes(InitAttributes);
 		SetFarColor(COL_COMMANDLINEUSERSCREEN, true);
 
@@ -341,7 +341,7 @@ static int MainProcess(
 		}
 
 		// очистим за собой!
-		SetScreen(0,0,ScrX,ScrY,L' ',COL_COMMANDLINEUSERSCREEN);
+		SetScreen(0, 0, ScrX, ScrY, L' ', FarColorToReal(COL_COMMANDLINEUSERSCREEN));
 		Console.SetTextAttributes(InitAttributes);
 		ScrBuf.ResetShadow();
 		ScrBuf.Flush();

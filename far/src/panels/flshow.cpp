@@ -113,8 +113,8 @@ void FileList::ShowFileList(int Fast)
 		CtrlObject->Cp()->GetAnotherPanel(this)->Update(UPDATE_KEEP_SELECTION | UPDATE_SECONDARY);
 	}
 
-	SetScreen(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1, L' ', COL_PANELTEXT);
-	Box(X1, Y1, X2, Y2, COL_PANELBOX, DOUBLE_BOX);
+	SetScreen(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1, L' ', FarColorToReal(COL_PANELTEXT));
+	Box(X1, Y1, X2, Y2, FarColorToReal(COL_PANELBOX), DOUBLE_BOX);
 
 	if (Opt.ShowColumnTitles) {
 		//    SetScreen(X1+1,Y1+1,X2-1,Y1+1,' ',COL_PANELTEXT);
@@ -346,12 +346,12 @@ void FileList::ShowFileList(int Fast)
 	if (TitleX <= X1)
 		TitleX = X1 + 1;
 
-	SetColor(Focus ? COL_PANELSELECTEDTITLE : COL_PANELTITLE);
+	SetFarColor(Focus ? COL_PANELSELECTEDTITLE : COL_PANELTITLE);
 	GotoXY(TitleX, Y1);
 	Text(strTitle);
 
 	if (!FileCount) {
-		SetScreen(X1 + 1, Y2 - 1, X2 - 1, Y2 - 1, L' ', COL_PANELTEXT);
+		SetScreen(X1 + 1, Y2 - 1, X2 - 1, Y2 - 1, L' ', FarColorToReal(COL_PANELTEXT));
 		SetFarColor(COL_PANELTEXT);    //???
 									   // GotoXY(X1+1,Y2-1);
 		// FS<<fmt::Expand(X2-X1-1)<<L"";
@@ -882,6 +882,25 @@ void FileList::ShowList(int ShowStatus, int StartColumn)
 			GotoXY(X1 + 1, I);
 		}
 
+//		if (ShowStatus) {
+//			SetFarColor(COL_PANELTEXT);
+//			GotoXY(X1 + 1, Y2 - 1);
+//		} else {
+
+//			uint64_t color = GetShowColor(J, HIGHLIGHTCOLORTYPE_FILE);
+//			if (ColumnType != NAME_COLUMN)
+//			SetColor64(color);
+
+//			SetColor64( color & (0xFFFFFFFFFFFFFFFF ^ (COMMON_LVB_STRIKEOUT | COMMON_LVB_UNDERSCORE)) );
+
+//			GotoXY(X1 + 1, I);
+//		}
+
+//	SetColor64(GetShowColor(Position, ColorType));
+//			color &= (0xFFFFFFFFFFFFFFFF ^ (COMMON_LVB_STRIKEOUT | COMMON_LVB_UNDERSCORE));
+
+///ColumnType != NAME_COLUMN
+
 		int StatusLine = FALSE;
 		int Level = 1;
 
@@ -920,6 +939,8 @@ void FileList::ShowList(int ShowStatus, int StartColumn)
 					StatusShown = TRUE;
 					SetShowColor(ListPos);
 				}
+
+				//uint64_t color = GetShowColor(ListPos, HIGHLIGHTCOLORTYPE_FILE);
 
 				if (!ShowStatus)
 					SetShowColor(ListPos);
@@ -1060,6 +1081,7 @@ void FileList::ShowList(int ShowStatus, int StartColumn)
 							}
 
 							Text(strName);
+//							Text(NamePtr);
 							int NameX = WhereX();
 
 							if (!ShowStatus) {
@@ -1273,7 +1295,7 @@ void FileList::ShowList(int ShowStatus, int StartColumn)
 	}
 
 	if (!ShowStatus && !StatusShown && Opt.ShowPanelStatus) {
-		SetScreen(X1 + 1, Y2 - 1, X2 - 1, Y2 - 1, L' ', COL_PANELTEXT);
+		SetScreen(X1 + 1, Y2 - 1, X2 - 1, Y2 - 1, L' ', FarColorToReal(COL_PANELTEXT));
 		SetFarColor(COL_PANELTEXT);    //???
 									   // GotoXY(X1+1,Y2-1);
 		// FS<<fmt::Expand(X2-X1-1)<<L"";

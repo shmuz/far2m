@@ -44,6 +44,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "bitflags.hpp"
 #include "edit.hpp"
 #include "editor.hpp"
+#include "palette.hpp"
 
 enum DLGEDITTYPE
 {
@@ -118,7 +119,7 @@ class DlgEdit: public ScreenObject
 		void  SetDelRemovesBlocks(int NewMode);
 		int   GetDelRemovesBlocks();
 
-		void  SetObjectColor(int Color,int SelColor=0xf,int ColorUnChanged=COL_DIALOGEDITUNCHANGED);
+	void SetObjectColor(uint64_t Color, uint64_t SelColor = 0xf, uint64_t ColorUnChanged = FarColorToReal(COL_DIALOGEDITUNCHANGED));
 		long  GetObjectColor();
 		int   GetObjectColorUnChanged();
 

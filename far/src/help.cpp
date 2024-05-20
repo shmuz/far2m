@@ -38,6 +38,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lang.hpp"
 #include "keys.hpp"
 #include "colors.hpp"
+#include "palette.hpp"
 #include "scantree.hpp"
 #include "savescr.hpp"
 #include "manager.hpp"
@@ -115,7 +116,7 @@ Help::Help(const wchar_t *Topic, const wchar_t *Mask,DWORD Flags):
 	ErrorHelp(TRUE),
 	IsNewTopic(TRUE),
 	MouseDown(FALSE),
-	CurColor(COL_HELPTEXT),
+	CurColor(FarColorToReal(COL_HELPTEXT)),
 	CtrlTabSize(8)
 {
 	CanLoseFocus=false;
@@ -733,7 +734,7 @@ void Help::FastShow()
 	   Установим по умолчанию текущий цвет отрисовки...
 	   чтобы новая тема начиналась с нормальными атрибутами
 	*/
-	CurColor=COL_HELPTEXT;
+	CurColor = FarColorToReal(COL_HELPTEXT);
 
 	for (int i=0; i<Y2-Y1-1; i++)
 	{
@@ -797,8 +798,8 @@ void Help::FastShow()
 
 void Help::DrawWindowFrame()
 {
-	SetScreen(X1,Y1,X2,Y2,L' ',COL_HELPTEXT);
-	Box(X1,Y1,X2,Y2,COL_HELPBOX,DOUBLE_BOX);
+	SetScreen(X1, Y1, X2, Y2, L' ', FarColorToReal(COL_HELPTEXT));
+	Box(X1, Y1, X2, Y2, FarColorToReal(COL_HELPBOX), DOUBLE_BOX);
 	SetFarColor(COL_HELPBOXTITLE);
 	FARString strHelpTitleBuf;
 	strHelpTitleBuf = Msg::HelpTitle;
@@ -947,7 +948,7 @@ void Help::OutString(const wchar_t *Str)
 			if (Chr == L'-') // "\-" - установить дефолтовый цвет
 			{
 				Str+=2;
-				CurColor=COL_HELPTEXT;
+				CurColor = FarColorToReal(COL_HELPTEXT);
 				continue;
 			}
 

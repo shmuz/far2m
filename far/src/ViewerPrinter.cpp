@@ -1,7 +1,9 @@
 #include "headers.hpp"
+#include <algorithm>
 #include "ViewerPrinter.hpp"
 #include "interf.hpp"
 #include "colors.hpp"
+#include "palette.hpp"
 
 static const wchar_t s_many_spaces[] = L"                                                                ";
 
@@ -24,18 +26,9 @@ void ViewerPrinter::SetSelection(bool selection)
 	_selection = selection;
 }
 
-bool ViewerPrinter::ShouldSkip(wchar_t ch)
-{
-	if (_bom_skip && ch == 0xFEFF) {
-		return true;
-	}
-
-	return false;
-}
-
 //
 
-PlainViewerPrinter::PlainViewerPrinter(int color)
+PlainViewerPrinter::PlainViewerPrinter(uint64_t color)
 	: _color(color)
 {
 }
@@ -60,7 +53,7 @@ int PlainViewerPrinter::Length(const wchar_t *str, int limit)
 
 void PlainViewerPrinter::Print(int skip_len, int print_len, const wchar_t *str)
 {
-	SetColor(_selection ? COL_VIEWERSELECTEDTEXT : _color);
+	SetColor(_selection ? FarColorToReal(COL_VIEWERSELECTEDTEXT) : _color);
 
 	for(; skip_len > 0 && *str; ++str) {
 		if (ShouldSkip(*str))
@@ -71,7 +64,7 @@ void PlainViewerPrinter::Print(int skip_len, int print_len, const wchar_t *str)
 			skip_len--;
 	}
 
-	for (;;) {
+	while (print_len > 0) {
 		size_t piece = 0;
 		while (str[piece] && !ShouldSkip(str[piece])) {
 			++piece;

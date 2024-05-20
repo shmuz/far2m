@@ -193,7 +193,7 @@ void ControlObject::ShowStartupBanner(LPCWSTR EmergencyMsg)
 	}
 
 	COORD Size{}, CursorPosition{};
-	WORD SavedAttr{};
+	uint64_t SavedAttr{};
 	Console.GetSize(Size);
 	Console.GetCursorPosition(CursorPosition);
 	Console.GetTextAttributes(SavedAttr);
