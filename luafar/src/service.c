@@ -3768,7 +3768,10 @@ int ProcessDNResult(lua_State *L, int Msg, LONG_PTR Param2)
 
 		case DN_CTLCOLORDIALOG:
 			if (lua_isnumber(L, -1))
-				ret = lua_tointeger(L, -1);
+			{
+				*(uint64_t*)Param2 = lua_tointeger(L, -1);
+				ret = 1;
+			}
 			break;
 
 		case DN_HELP:
@@ -3894,6 +3897,7 @@ LONG_PTR LF_DlgProc(lua_State *L, HANDLE hDlg, int Msg, int Param1, LONG_PTR Par
 	}
 
 	switch (Msg) {
+		case DN_CTLCOLORDIALOG:
 		case DN_CTLCOLORDLGITEM:
 		case DN_CTLCOLORDLGLIST:
 		case DN_HELP:

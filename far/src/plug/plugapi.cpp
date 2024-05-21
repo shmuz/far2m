@@ -2150,7 +2150,8 @@ static bool FarTextSynched(int X,int Y,int Color,const wchar_t *Str)
 	}
 	else
 	{
-		Text(X, Y, FarColorToReal(Color), Str);
+		// Text(X, Y, FarColorToReal(Color), Str);
+		Text(X, Y, Color, Str);
 	}
 	return true;
 }
