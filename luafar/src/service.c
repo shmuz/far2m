@@ -3753,23 +3753,24 @@ int ProcessDNResult(lua_State *L, int Msg, LONG_PTR Param2)
 			break;
 
 		case DN_CTLCOLORDLGITEM:
-			ret = Param2;
 			if (lua_istable(L,-1))
 			{
-				ret = 0;
+				uint64_t *ItemColor = (uint64_t*) Param2;
 				for(i = 0; i < 4; i++)
 				{
 					lua_rawgeti(L, -1, i+1);
-					ret |= (lua_tointeger(L,-1) & 0xFF) << i*8;
+					ItemColor[i] = lua_tointeger(L,-1);
 					lua_pop(L, 1);
 				}
+				ret = 1;
 			}
 			break;
 
 		case DN_CTLCOLORDIALOG:
 			if (lua_isnumber(L, -1))
 			{
-				*(uint64_t*)Param2 = lua_tointeger(L, -1);
+				uint64_t *Color = (uint64_t*) Param2;
+				Color[0] = lua_tointeger(L, -1);
 				ret = 1;
 			}
 			break;

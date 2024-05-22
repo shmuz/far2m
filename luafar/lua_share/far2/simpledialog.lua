@@ -474,6 +474,9 @@ function mod:Run()
       if Par1 <= 0 then Par1 = nil; end
       if UserProc(hDlg, "EVENT_MOUSE", Par1, Par2) then return true end
 
+    elseif Msg == F.DN_CTLCOLORDLGITEM then
+      return UserProc(hDlg, Msg, Par1, Par2) or outData[Par1].colors
+
     else
       return UserProc(hDlg, Msg, Par1, Par2)
 
