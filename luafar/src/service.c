@@ -3685,7 +3685,8 @@ int PushDNParams (lua_State *L, int Msg, int Param1, LONG_PTR Param2)
 			push_utf8_string(L, Param2 ? (wchar_t*)Param2 : L"", -1);
 			break;
 
-		case DN_GETDIALOGINFO: {
+		case DN_GETDIALOGINFO:
+		{
 			struct DialogInfo* di = (struct DialogInfo*) Param2;
 			lua_pushlstring(L, (const char*) &di->Id, 16);
 			break;
@@ -3710,17 +3711,21 @@ int PushDNParams (lua_State *L, int Msg, int Param1, LONG_PTR Param2)
 			break;
 		}
 
-		case DN_CTLCOLORDLGITEM: {
+		case DN_CTLCOLORDIALOG:
+		case DN_CTLCOLORDLGITEM:
+		{
 			int i;
+			uint64_t *ItemColor = (uint64_t*) Param2;
 			lua_createtable(L, 4, 0);
 			for(i=0; i < 4; i++) {
-				lua_pushinteger(L, (Param2 >> i*8) & 0xFF);
+				lua_pushinteger(L, ItemColor[i]);
 				lua_rawseti(L, -2, i+1);
 			}
 			break;
 		}
 
-		case DN_CTLCOLORDLGLIST: {
+		case DN_CTLCOLORDLGLIST:
+		{
 			int i;
 			struct FarListColors* flc = (struct FarListColors*) Param2;
 			lua_createtable(L, flc->ColorCount, 1);
@@ -3864,6 +3869,7 @@ LONG_PTR LF_DlgProc(lua_State *L, HANDLE hDlg, int Msg, int Param1, LONG_PTR Par
 				dd->hDlg = hDlg;
 			break;
 
+		case DN_CTLCOLORDIALOG:
 		case DN_CTLCOLORDLGITEM:
 		case DN_CTLCOLORDLGLIST:
 		case DN_DRAWDLGITEM:

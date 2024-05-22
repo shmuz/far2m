@@ -53,7 +53,7 @@ local function GetColorDialog(aColor)
   ColorDialogForeRGB = ("%06X"):format( ReverseColorBytes(band(rshift(aColor,16), 0xffffff)) )
   ColorDialogBackRGB = ("%06X"):format( ReverseColorBytes(band(rshift(aColor,40), 0xffffff)) )
 
-  local FRB = bor(F.DIF_SETCOLOR, F.DIF_MOVESELECT)
+  local FRB = bor(F.DIF_SETCOLOR, F.DIF_MOVESELECT) -- DIF_SETCOLOR is ignored by current far2l / far2m
   local TextSample = ("Text "):rep(7)
 
   local Items = {
@@ -169,20 +169,28 @@ local function GetColorDialog(aColor)
     end
   end
 
-  local function CtlColorDlgItem(hDlg, ID, UseTrueColor)
-    if UseTrueColor then
-      local colorset = {
-        Normal = { ColorDialogForeRGBValue(); ColorDialogBackRGBValue(); }
-      }
-      hDlg:SetTrueColor(ID, colorset);
-    end
+  local function CtlColorDlgItem(hDlg, ID)
+    local colorset = {
+      Normal = { ColorDialogForeRGBValue(); ColorDialogBackRGBValue(); }
+    }
+    hDlg:SetTrueColor(ID, colorset);
   end
 
   Items.proc = function(hDlg, Msg, Par1, Par2)
     if Msg == F.DN_CTLCOLORDLGITEM then
-      if Par1 >= Pos.sample and Par1 <= Pos.sample+2 then
-        CtlColorDlgItem(hDlg, Par1, Par1 >= Pos.sample+1)
-        Par2[1] = band(CurColor,0xFF)
+      if Par1 >= Pos.fore and Par1 < Pos.fore+16 or Par1 >= Pos.back and Par1 < Pos.back+16 then
+        Par2[1] = band(Items[Par1].flags, F.DIF_COLORMASK)
+        return Par2
+      elseif Par1 == Pos.sample then
+        Par2[1] = band(CurColor, 0xFF)
+        return Par2
+      elseif Par1 >= Pos.sample+1 and Par1 <= Pos.sample+2 then
+        -- CtlColorDlgItem(hDlg, Par1)
+        -- Par2[1] = band(CurColor,0xFF)
+        Par2[1] = bor(
+          lshift(ColorDialogForeRGBValue(), 16),
+          lshift(ColorDialogBackRGBValue(), 40)
+        )
         return Par2
       end
 
