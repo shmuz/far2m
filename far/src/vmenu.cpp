@@ -1967,6 +1967,9 @@ void VMenu::DrawTitles()
 	int MaxTitleLength = X2-X1-2;
 	int WidthTitle;
 
+	if (MaxTitleLength < 1) // prevent crashes
+		return;
+
 	if (!strTitle.IsEmpty() || bFilterEnabled)
 	{
 		FARString strDisplayTitle = strTitle;
