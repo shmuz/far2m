@@ -1910,8 +1910,8 @@ static bool InSameDirectory(const wchar_t *ExistingName, const wchar_t *NewName)
 	FARString strExistingDir, strNewDir;
 	ConvertNameToFull(ExistingName, strExistingDir);
 	ConvertNameToFull(NewName, strNewDir);
-	CutToSlash(strExistingDir, true);
-	CutToSlash(strNewDir, true);
+	CutToSlash(strExistingDir);
+	CutToSlash(strNewDir);
 	return strExistingDir == strNewDir;
 }
 

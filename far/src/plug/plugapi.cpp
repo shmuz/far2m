@@ -1184,7 +1184,7 @@ const wchar_t* FarGetMsgFn(INT_PTR PluginHandle,FarLangMsgID MsgId)
 
 	PluginW *pPlugin = (PluginW*)PluginHandle;
 	std::wstring strPath = pPlugin->GetModuleName().CPtr();
-	CutToSlash(strPath, true);
+	CutToSlash(strPath);
 
 	CriticalSectionLock lock(s_get_msg_cs);
 	if (!pPlugin->InitLang(strPath.c_str())) {

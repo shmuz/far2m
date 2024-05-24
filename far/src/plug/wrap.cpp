@@ -1077,7 +1077,7 @@ const char * WINAPI FarGetMsgFnA(INT_PTR PluginHandle, FarLangMsgID MsgId)
 	PluginA *pPlugin = (PluginA*)PluginHandle;
 
 	std::wstring strPath = pPlugin->GetModuleName().CPtr();
-	CutToSlash(strPath, true);
+	CutToSlash(strPath);
 
 	CriticalSectionLock lock(s_get_msga_cs);
 //	fprintf(stderr,"FarGetMsgFnA: strPath=%ls\n", strPath.CPtr());
