@@ -2838,7 +2838,7 @@ static bool FindFilesProcess(Vars &v)
 						}
 
 						FARString strArcPath = strArcName;
-						CutToSlash(strArcPath, true);
+						CutToSlash(strArcPath);
 						FindPanel->SetCurDir(strArcPath, true);
 						ArcItem.hPlugin =
 								((FileList *)FindPanel)->OpenFilePlugin(strArcName, FALSE, OFP_SEARCH);

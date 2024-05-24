@@ -189,7 +189,7 @@ static void UpdatePathOptions(const FARString &strDestName, bool IsActivePanel)
 		else {
 			*outCurFile = PointToName(strDestName);
 			*outFolder = strDestName;
-			CutToSlash(*outFolder, false);
+			CutToSlash(*outFolder, true);
 			if (outFolder->IsEmpty())
 				*outFolder = L"/";
 		}
@@ -367,10 +367,10 @@ static void SetupFarPath(const char *Arg0)
 	}
 
 	FARString dir = g_strFarModuleName; // e.g. /usr/local/bin/far2m
-	CutToSlash(dir, false);
+	CutToSlash(dir, true);
 	const wchar_t *last_element = PointToName(dir);
 	if (last_element && wcscmp(last_element, L"bin") == 0) {
-		CutToSlash(dir, true);
+		CutToSlash(dir);
 		SetPathTranslationPrefix(dir);
 	}
 }
@@ -412,7 +412,7 @@ int FarAppMain(int argc, char **argv)
 	g_strFarPath = g_strFarModuleName;
 
 	bool translated = TranslateFarString<TranslateInstallPath_Bin2Share>(g_strFarPath);
-	CutToSlash(g_strFarPath, false);
+	CutToSlash(g_strFarPath, true);
 	if (translated) {
 		// /usr/bin/something -> /usr/share/far2m
 		g_strFarPath.Append("/" APP_BASENAME);

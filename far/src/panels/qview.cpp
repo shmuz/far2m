@@ -454,7 +454,7 @@ void QuickView::QViewDelTempName()
 
 		apiSetFileAttributes(strTempName, FILE_ATTRIBUTE_ARCHIVE);
 		apiDeleteFile(strTempName);  //BUGBUG
-		CutToSlash(strTempName,true);
+		CutToSlash(strTempName);
 		apiRemoveDirectory(strTempName);
 		strTempName.Clear();
 	}

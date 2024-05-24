@@ -75,7 +75,7 @@ enum
 
 static bool SetToParentPath(FARString &Path)
 {
-	return CutToSlash(Path,false) && !Path.IsEmpty();
+	return CutToSlash(Path, true) && !Path.IsEmpty();
 }
 
 static int PrepareHotKey(FARString &strHotKey)

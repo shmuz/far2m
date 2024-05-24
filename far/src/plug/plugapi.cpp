@@ -216,7 +216,7 @@ BOOL WINAPI FarShowHelpSynched(
 					else
 						strMask.Clear();
 
-					CutToSlash(strPath,true);
+					CutToSlash(strPath);
 				}
 			}
 			else
@@ -1184,7 +1184,7 @@ const wchar_t* FarGetMsgFn(INT_PTR PluginHandle,FarLangMsgID MsgId)
 
 	PluginW *pPlugin = (PluginW*)PluginHandle;
 	std::wstring strPath = pPlugin->GetModuleName().CPtr();
-	CutToSlash(strPath);
+	CutToSlash(strPath, true);
 
 	CriticalSectionLock lock(s_get_msg_cs);
 	if (!pPlugin->InitLang(strPath.c_str())) {

@@ -1886,7 +1886,7 @@ int FileEditor::SaveFile(const wchar_t *Name,int Ask, bool bSaveAs, int TextForm
 
 		if (Ptr)
 		{
-			CutToSlash(strCreatedPath,true);
+			CutToSlash(strCreatedPath);
 			DWORD FAttr=0;
 
 			if (apiGetFileAttributes(strCreatedPath) == INVALID_FILE_ATTRIBUTES)
@@ -2216,7 +2216,7 @@ BOOL FileEditor::SetFileName(const wchar_t *NewFileName)
 		ConvertNameToFull(strFileName, strFullFileName);
 		FARString strFilePath=strFullFileName;
 
-		if (CutToSlash(strFilePath,false))
+		if (CutToSlash(strFilePath, true))
 		{
 			FARString strCurPath;
 

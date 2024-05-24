@@ -335,12 +335,11 @@ bool CutToSlash(FARString &strStr, bool bInclude)
 {
 	size_t pos;
 
-	if (FindLastSlash(pos,strStr))
-	{
+	if (FindLastSlash(pos, strStr)) {
 		if (bInclude)
-			strStr.Truncate(pos+1);
-		else
 			strStr.Truncate(pos);
+		else
+			strStr.Truncate(pos + 1);
 
 		return true;
 	}

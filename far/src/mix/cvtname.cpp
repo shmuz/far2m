@@ -285,7 +285,7 @@ void ConvertNameToReal(const wchar_t *Src, FARString &strDest)
 				buf[r] = 0;
 				if (buf[0] != GOOD_SLASH) {
 					strDest = s;
-					CutToSlash(strDest, true);
+					CutToSlash(strDest);
 					strDest+= buf;
 				} else
 					strDest = buf;

@@ -181,7 +181,7 @@ int CheckShortcutFolder(FARString *pTestPath,int IsHostFile, BOOL Silent)
 
 				for (;;)
 				{
-					if (!CutToSlash(strTestPathTemp,false))
+					if (!CutToSlash(strTestPathTemp, true))
 						break;
 
 					if (apiGetFileAttributes(strTestPathTemp) != INVALID_FILE_ATTRIBUTES)

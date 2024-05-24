@@ -868,7 +868,7 @@ static int RemoveToRecycleBin(const wchar_t *Name)
 static FARString WipingRename(const wchar_t *Name)
 {
 	FARString strTempName = Name;
-	CutToSlash(strTempName, true);
+	CutToSlash(strTempName);
 	for (size_t i = 0, ii = 3 + (rand() % 4);
 			(i < ii || apiGetFileAttributes(strTempName) != INVALID_FILE_ATTRIBUTES); ++i)
 	{
@@ -937,7 +937,7 @@ int WipeDirectory(const wchar_t *Name)
 	{
 		strPath = Name;
 		DeleteEndSlash(strPath);
-		CutToSlash(strPath,true);
+		CutToSlash(strPath);
 	}
 
 	FARString strRemoveName = WipingRename(Name);
@@ -952,7 +952,7 @@ int DeleteFileWithFolder(const wchar_t *FileName)
 	Unquote(strFileOrFolderName);
 
 	strParentFolder = strFileOrFolderName;
-	CutToSlash(strParentFolder, false);
+	CutToSlash(strParentFolder, true);
 	if (!strParentFolder.IsEmpty())
 		apiMakeWritable(strParentFolder);
 	apiMakeWritable(strFileOrFolderName);

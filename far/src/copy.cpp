@@ -500,7 +500,7 @@ static int CmpFullNames(const wchar_t *Src, const wchar_t *Dest)
 static FARString &GetParentFolder(const wchar_t *Src, FARString &strDest)
 {
 	strDest = Src;
-	CutToSlash(strDest, false);
+	CutToSlash(strDest, true);
 	return strDest;
 }
 
@@ -1910,8 +1910,8 @@ static bool InSameDirectory(const wchar_t *ExistingName, const wchar_t *NewName)
 	FARString strExistingDir, strNewDir;
 	ConvertNameToFull(ExistingName, strExistingDir);
 	ConvertNameToFull(NewName, strNewDir);
-	CutToSlash(strExistingDir);
-	CutToSlash(strNewDir);
+	CutToSlash(strExistingDir, true);
+	CutToSlash(strNewDir, true);
 	return strExistingDir == strNewDir;
 }
 
@@ -2202,7 +2202,7 @@ COPY_CODES ShellCopy::ShellCopyOneFileNoRetry(const wchar_t *Src, const FAR_FIND
 		if (RetCode == COPY_RETRY) {
 			strDest = strNewName;
 
-			if (CutToSlash(strNewName, true) && apiGetFileAttributes(strNewName) == INVALID_FILE_ATTRIBUTES) {
+			if (CutToSlash(strNewName) && apiGetFileAttributes(strNewName) == INVALID_FILE_ATTRIBUTES) {
 				CreatePath(strNewName);
 			}
 
@@ -2335,7 +2335,7 @@ COPY_CODES ShellCopy::ShellCopyOneFileNoRetry(const wchar_t *Src, const FAR_FIND
 		if (RetCode == COPY_RETRY) {
 			strDest = strNewName;
 
-			if (CutToSlash(strNewName, true) && apiGetFileAttributes(strNewName) == INVALID_FILE_ATTRIBUTES) {
+			if (CutToSlash(strNewName) && apiGetFileAttributes(strNewName) == INVALID_FILE_ATTRIBUTES) {
 				CreatePath(strNewName);
 			}
 
@@ -2787,7 +2787,7 @@ void ShellCopy::SetDestDizPath(const wchar_t *DestPath)
 {
 	if (!Flags.DIZREAD) {
 		ConvertNameToFull(DestPath, strDestDizPath);
-		CutToSlash(strDestDizPath, true);
+		CutToSlash(strDestDizPath);
 
 		if (strDestDizPath.IsEmpty())
 			strDestDizPath = L".";
@@ -2878,7 +2878,7 @@ LONG_PTR WINAPI WarnDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 									Msg::CopyRememberChoice)) {
 							if (All != BSTATE_UNCHECKED) {
 								*WFN[2] = *WFN[1];
-								CutToSlash(*WFN[2], true);
+								CutToSlash(*WFN[2]);
 							}
 
 							SendDlgMessage(hDlg, DM_SETCHECK, WDLG_CHECKBOX, All);
