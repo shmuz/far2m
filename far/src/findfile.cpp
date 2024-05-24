@@ -1916,9 +1916,13 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 									// FindFileArcIndex нельзя здесь использовать
 									// Он может быть уже другой.
 									if (FindItem.ArcIndex != LIST_INDEX_NONE) {
-										TFH = std::make_shared<FindDlg_TempFileHolder>(strSearchFileName,
-												FindItem.ArcIndex, FindItem.FindData);
-										ShellEditor.SetFileHolder(TFH);
+										ARCLIST Item;
+										itd.GetArcListItem(FindItem.ArcIndex, Item);
+										if (0 == (Item.Flags & OPIF_REALNAMES)) { // see https://github.com/elfmz/far2l/issues/2223
+											TFH = std::make_shared<FindDlg_TempFileHolder>(strSearchFileName,
+													FindItem.ArcIndex, FindItem.FindData);
+											ShellEditor.SetFileHolder(TFH);
+										}
 									}
 									FrameManager->ExecuteModalEV();
 									if (TFH) {
