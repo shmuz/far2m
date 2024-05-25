@@ -4632,13 +4632,10 @@ static int DoAdvControl (lua_State *L, int Command, int Delta)
 		case ACTL_GETPLUGINMAXREADDATA:
 		case ACTL_GETSYSTEMSETTINGS:
 		case ACTL_GETWINDOWCOUNT:
-			int1 = PSInfo.AdvControl(pd->ModuleNumber, Command, NULL);
-			return lua_pushinteger(L, int1), 1;
-
 		case ACTL_COMMIT:
 		case ACTL_REDRAWALL:
 			int1 = PSInfo.AdvControl(pd->ModuleNumber, Command, NULL);
-			return lua_pushboolean(L, int1), 1;
+			return lua_pushinteger(L, int1), 1;
 
 		case ACTL_QUIT:
 			int1 = PSInfo.AdvControl(pd->ModuleNumber, Command, (void*)luaL_optinteger(L,pos2,0));
@@ -4750,7 +4747,7 @@ static int DoAdvControl (lua_State *L, int Command, int Delta)
 				fsc.Colors[i] = lua_tointeger(L,-1); // TODO: handle 64-bit values
 				lua_pop(L,1);
 			}
-			lua_pushboolean(L, PSInfo.AdvControl(pd->ModuleNumber, Command, &fsc));
+			lua_pushinteger(L, PSInfo.AdvControl(pd->ModuleNumber, Command, &fsc));
 			return 1;
 		}
 
@@ -4785,7 +4782,7 @@ static int DoAdvControl (lua_State *L, int Command, int Delta)
 			coord.X = lua_tointeger(L, -1);
 			lua_getfield(L, pos2, "Y");
 			coord.Y = lua_tointeger(L, -1);
-			lua_pushboolean(L, PSInfo.AdvControl(pd->ModuleNumber, Command, &coord));
+			lua_pushinteger(L, PSInfo.AdvControl(pd->ModuleNumber, Command, &coord));
 			return 1;
 
 		case ACTL_WINPORTBACKEND:

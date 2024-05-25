@@ -1767,13 +1767,13 @@ local function test_AdvControl_Colors()
   -- change the colors
   local arr, elem = {StartIndex=0; Flags=0}, 123
   for n=1,#allcolors do arr[n]=elem end
-  assert_bool(far.AdvControl("ACTL_SETARRAYCOLOR", arr))
+  assert_eq(1, far.AdvControl("ACTL_SETARRAYCOLOR", arr))
   for n=1,#allcolors do
     assert_eq(elem, far.AdvControl("ACTL_GETCOLOR", n-1))
   end
 
   -- restore the colors
-  assert_true(far.AdvControl("ACTL_SETARRAYCOLOR", allcolors))
+  assert_eq(1, far.AdvControl("ACTL_SETARRAYCOLOR", allcolors))
 end
 
 local function test_AdvControl_Misc()
@@ -1785,9 +1785,9 @@ local function test_AdvControl_Misc()
   t = far.AdvControl("ACTL_GETFARRECT")
   assert(t.Left>=0 and t.Top>=0 and t.Right>t.Left and t.Bottom>t.Top)
 
-  assert_true(far.AdvControl("ACTL_SETCURSORPOS", {X=-1,Y=0}))
+  assert_eq(1, far.AdvControl("ACTL_SETCURSORPOS", {X=-1,Y=0}))
   for k=0,2 do
-    assert_true(far.AdvControl("ACTL_SETCURSORPOS", {X=k,Y=k+1}))
+    assert_eq(1, far.AdvControl("ACTL_SETCURSORPOS", {X=k,Y=k+1}))
     t = assert_table(far.AdvControl("ACTL_GETCURSORPOS"))
     assert(t.X==k and t.Y==k+1)
   end
