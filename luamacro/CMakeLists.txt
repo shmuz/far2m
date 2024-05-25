@@ -1,4 +1,3 @@
-
 project(luamacro)
 
 include_directories(${LIBLUA_INCLUDE_DIRS})
@@ -7,8 +6,6 @@ set(SOURCES
   src/GlobalInfo.c
   ${CMAKE_SOURCE_DIR}/luafar/src/luaplug.c
 )
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNOSETPACKAGEPATH")
 
 add_library (${PROJECT_NAME} MODULE ${SOURCES})
 set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 11)
@@ -27,6 +24,7 @@ endforeach()
 
 target_compile_definitions(${PROJECT_NAME}
   PRIVATE ${EXPORTS}
+  PRIVATE -DNOSETPACKAGEPATH
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ../far/far2sdk)
@@ -37,29 +35,32 @@ set_target_properties(${PROJECT_NAME}
   PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${INSTALL_DIR}/plug"
     PREFIX ""
-    SUFFIX ".far-plug-wide")
+    SUFFIX ".far-plug-wide"
+)
 
-###  Generate constants.lua ----------------------------------------------------
-set(TRG    "${INSTALL_DIR}/plug/constants.lua")
-set(SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/generators/make_const.lua)
-set(FAR    ${CMAKE_SOURCE_DIR}/far)
-set(MACR   ${FAR}/src/macro)
-set(INCL   ${FAR} ${MACR} ${FAR}/src/console ${CMAKE_SOURCE_DIR}/WinPort)
-set(INPUT  ${MACR}/macroopcode.hpp ${MACR}/macrovalues.hpp)
+function(Generate_Constants)
+  set(TRG    "${INSTALL_DIR}/plug/constants.lua")
+  set(SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/generators/make_const.lua)
+  set(FAR    ${CMAKE_SOURCE_DIR}/far)
+  set(MACR   ${FAR}/src/macro)
+  set(INCL   ${FAR} ${MACR} ${FAR}/src/console ${CMAKE_SOURCE_DIR}/WinPort)
+  set(INPUT  ${MACR}/macroopcode.hpp ${MACR}/macrovalues.hpp)
 
-set(GEN gen_const)
-set(SRC ${GEN}.cpp)
+  set(GEN gen_const)
+  set(SRC ${GEN}.cpp)
 
-add_custom_command(OUTPUT ${SRC}
-                   COMMAND minilua ${SCRIPT} ${SRC} ${INPUT}
-                   DEPENDS ${INPUT}
-                   )
+  add_custom_command(OUTPUT ${SRC}
+                     COMMAND minilua ${SCRIPT} ${SRC} ${INPUT}
+                     DEPENDS ${INPUT}
+                     )
 
-add_executable(${GEN} ${SRC})
-target_include_directories(${GEN} PRIVATE ${INCL})
+  add_executable(${GEN} ${SRC})
+  target_include_directories(${GEN} PRIVATE ${INCL})
 
-add_custom_target(luamacro_const ALL ${GEN} ${TRG})
-###-----------------------------------------------------------------------------
+  add_custom_target(luamacro_const ALL ${GEN} ${TRG})
+endfunction()
+
+Generate_Constants()
 
 set(MY_LIST
   luamacro.example.ini
