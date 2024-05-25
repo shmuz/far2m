@@ -4672,7 +4672,7 @@ static int DoAdvControl (lua_State *L, int Command, int Delta)
 			int1 = PSInfo.AdvControl(pd->ModuleNumber, ACTL_SETCURRENTWINDOW, (void*)int1);
 			if (int1 && lua_toboolean(L, pos3))
 				PSInfo.AdvControl(pd->ModuleNumber, ACTL_COMMIT, NULL);
-			return lua_pushboolean(L, int1), 1;
+			return lua_pushinteger(L, int1), 1;
 
 		case ACTL_GETSYSWORDDIV:
 			PSInfo.AdvControl(pd->ModuleNumber, Command, buf);
