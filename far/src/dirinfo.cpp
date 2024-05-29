@@ -55,8 +55,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 static void DrawGetDirInfoMsg(const wchar_t *Title,const wchar_t *Name,const UINT64 Size)
 {
-	Title = NullToEmpty(Title);
-	Name = NullToEmpty(Name);
+	Title = NullToEmpty(Title);  // see https://github.com/elfmz/far2l/issues/2207
+	Name = NullToEmpty(Name);    // +
 
 	FARString strSize;
 	FileSizeToStr(strSize,Size,8,COLUMN_FLOATSIZE|COLUMN_COMMAS);

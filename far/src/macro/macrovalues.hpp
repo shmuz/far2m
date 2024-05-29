@@ -89,4 +89,9 @@ enum MACRO_IMPORT
 	IMP_KEYTOTEXT                  = 10,
 };
 
+enum MACRO_OPTIONS
+{
+	MOPT_ONLYEDITORVIEWERUSED = 0x01,
+};
+
 #endif
