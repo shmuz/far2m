@@ -156,7 +156,7 @@ mf.size2str = function(Size, Flags, Width)
 end
 
 mf.usermenu = function(mode, filename)
-  if Shared.OnlyEditorViewerUsed then return end -- mantis #2986 (crash)
+  if not panel.CheckPanelsExist() then return end -- mantis #2986 (crash)
   if mode and type(mode)~="number" then return end
   mode = mode or 0
   local sync_call = band(mode,0x100) ~= 0

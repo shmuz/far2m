@@ -58,8 +58,6 @@ local function GetAreaCode(Area)     return AllAreaNames[Area:lower()] end
 local MCODE_F_CHECKALL     = mc.MCODE_F_CHECKALL
 local MCODE_F_MACROSETTINGS = mc.MCODE_F_MACROSETTINGS
 
-local Options = MacroCallFar(mc.MCODE_F_GETOPTIONS)
-Shared.OnlyEditorViewerUsed = band(Options, mc.MOPT_ONLYEDITORVIEWERUSED) ~= 0
 local ReadOnlyConfig = false
 
 local Areas
@@ -672,7 +670,7 @@ local function LoadMacros (unload, paths)
   ContentColumns = {}
   if Shared.panelsort then Shared.panelsort.DeleteSortModes() end
 
-  local AreaNames = Shared.OnlyEditorViewerUsed and SomeAreaNames or AllAreaNames
+  local AreaNames = panel.CheckPanelsExist() and AllAreaNames or SomeAreaNames
   for _,name in pairs(AreaNames) do newAreas[name]={} end
   for _,name in ipairs(EventGroups) do Events[name]={} end
   for k in pairs(package.loaded) do
