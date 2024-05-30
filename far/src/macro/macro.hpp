@@ -75,6 +75,7 @@ public:
 	static void RunStartMacro();
 	static bool SaveMacros();
 	static void SetMacroConst(int ConstIndex, long long Value);
+	static long long GetMacroConst(int ConstIndex);
 	static bool PostNewMacro(const wchar_t* Sequence, DWORD InputFlags, FarKey AKey = 0);
 	static bool GetMacroParseError(COORD& ErrPos, FARString& ErrSrc);
 	static bool ParseMacroString(const wchar_t* Sequence,DWORD Flags,bool skipFile);
@@ -128,3 +129,8 @@ inline bool IsMenuArea(int Area) { return
 inline bool IsPanelsArea(int Area) { return
 	Area==MACROAREA_SHELL || Area==MACROAREA_INFOPANEL || Area==MACROAREA_QVIEWPANEL ||
 	Area==MACROAREA_TREEPANEL; }
+
+DWORD GetHistoryDisableMask();
+DWORD SetHistoryDisableMask(DWORD Mask);
+bool IsTopMacroOutputDisabled();
+void ShowUserMenu(size_t Count, const FarMacroValue *Values);
