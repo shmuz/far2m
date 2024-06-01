@@ -478,7 +478,7 @@ bool KeyMacro::ProcessKey(FarKey dwKey, const INPUT_RECORD *Rec)
 			if (AssignRet == AMK_MODIFY && !m_RecCode.IsEmpty())
 			{
 				m_RecCode = L"Keys(\"" + m_RecCode + L"\")";
-				if (ctrlshiftdot && !GetMacroSettings(MacroKey,Flags))
+				if (ctrlshiftdot && !GetMacroSettings(MacroKey, Flags, m_RecCode, m_RecDescription))
 				{
 					AssignRet = AMK_CANCEL;
 				}
@@ -1007,7 +1007,7 @@ LONG_PTR WINAPI KeyMacro::ParamMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_
 	return DefDlgProc(hDlg,Msg,Param1,Param2);
 }
 
-int KeyMacro::GetMacroSettings(FarKey Key,DWORD &Flags, const wchar_t* Src, const wchar_t* Descr)
+bool KeyMacro::GetMacroSettings(FarKey Key,DWORD &Flags, const wchar_t* Src, const wchar_t* Descr)
 {
 	/*
 	          1         2         3         4         5         6
@@ -1096,8 +1096,8 @@ int KeyMacro::GetMacroSettings(FarKey Key,DWORD &Flags, const wchar_t* Src, cons
 
 	MacroSettingsDlg[MS_CHECKBOX_CMDLINE].Selected=Set3State(Flags,MFLAGS_EMPTYCOMMANDLINE,MFLAGS_NOTEMPTYCOMMANDLINE);
 	MacroSettingsDlg[MS_CHECKBOX_SELBLOCK].Selected=Set3State(Flags,MFLAGS_EDITSELECTION,MFLAGS_EDITNOSELECTION);
-	MacroSettingsDlg[MS_EDIT_SEQUENCE].strData = *Src ? Src : m_RecCode.CPtr();
-	MacroSettingsDlg[MS_EDIT_DESCR].strData = *Descr ? Descr : m_RecDescription.CPtr();
+	MacroSettingsDlg[MS_EDIT_SEQUENCE].strData = Src;
+	MacroSettingsDlg[MS_EDIT_DESCR].strData = Descr;
 	Dialog Dlg(MacroSettingsDlg,ARRAYSIZE(MacroSettingsDlg),ParamMacroDlgProc,0);
 	Dlg.SetPosition(-1,-1,73,21);
 	Dlg.SetHelp(L"KeyMacroSetting");
@@ -1113,7 +1113,7 @@ int KeyMacro::GetMacroSettings(FarKey Key,DWORD &Flags, const wchar_t* Src, cons
 	}
 
 	if (Dlg.GetExitCode()!=MS_BUTTON_OK)
-		return FALSE;
+		return false;
 
 	Flags=MacroSettingsDlg[MS_CHECKBOX_OUTPUT].Selected?MFLAGS_ENABLEOUTPUT:0;
 	Flags|=MacroSettingsDlg[MS_CHECKBOX_START].Selected?MFLAGS_RUNAFTERFARSTART:0;
@@ -1142,7 +1142,7 @@ int KeyMacro::GetMacroSettings(FarKey Key,DWORD &Flags, const wchar_t* Src, cons
 	         MFLAGS_NOTEMPTYCOMMANDLINE, MFLAGS_EMPTYCOMMANDLINE);
 	Flags |= Get3State(MacroSettingsDlg[MS_CHECKBOX_SELBLOCK].Selected,
 	         MFLAGS_EDITNOSELECTION, MFLAGS_EDITSELECTION);
-	return TRUE;
+	return true;
 }
 
 bool KeyMacro::PostNewMacro(const wchar_t* Sequence, DWORD InputFlags, FarKey AKey)

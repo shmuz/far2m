@@ -96,7 +96,7 @@ public:
 
 private:
 	static int GetExecutingState();
-	static int GetMacroSettings(FarKey Key,DWORD &Flags, const wchar_t* Src=L"", const wchar_t* Descr=L"");
+	static bool GetMacroSettings(FarKey Key,DWORD &Flags, const wchar_t* Src, const wchar_t* Descr);
 
 	int AssignMacroKey(FarKey& MacroKey, DWORD& Flags);
 	void RestoreMacroChar() const;
