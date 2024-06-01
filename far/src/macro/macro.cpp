@@ -93,13 +93,15 @@ struct DlgParam
 	FARMACROAREA Area;
 	FarKey MacroKey = KEY_INVALID;
 	int Recurse = 0;
-	bool Deleted = false;
+	bool Done = false;
 
 	DlgParam(FARMACROAREA aArea) : Area(aArea) {}
 };
 
 enum ASSIGN_MACRO_KEY {
-	AMK_CANCEL, AMK_MODIFY, AMK_DELETE
+	AMK_CANCEL,  // operation was canceled
+	AMK_NOTDONE, // Macro Settings dialog was not called
+	AMK_DONE     // Macro Settings dialog was called
 };
 
 FARString KeyMacro::m_RecCode;
@@ -475,7 +477,7 @@ bool KeyMacro::ProcessKey(FarKey dwKey, const INPUT_RECORD *Rec)
 			DWORD Flags = 0;
 			int AssignRet = AssignMacroKey(MacroKey,Flags);
 
-			if (AssignRet == AMK_MODIFY && !m_RecCode.IsEmpty())
+			if (AssignRet == AMK_NOTDONE && !m_RecCode.IsEmpty())
 			{
 				m_RecCode = L"Keys(\"" + m_RecCode + L"\")";
 				if (ctrlshiftdot && !GetMacroSettings(MacroKey, Flags, m_RecCode, m_RecDescription))
@@ -484,7 +486,8 @@ bool KeyMacro::ProcessKey(FarKey dwKey, const INPUT_RECORD *Rec)
 				}
 			}
 			m_InternalInput=0;
-			if (AssignRet == AMK_MODIFY || AssignRet == AMK_DELETE)
+
+			if (AssignRet != AMK_CANCEL)
 			{
 				FARString strKey;
 				KeyToText(MacroKey, strKey);
@@ -881,7 +884,7 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG
 					if (GetMacroSettings(key, Data.Flags, strBufKey, strDescription))
 					{
 						KMParam->Flags = Data.Flags;
-						KMParam->Deleted = true;
+						KMParam->Done = true;
 						SendDlgMessage(hDlg, DM_CLOSE, 1, 0);
 						return TRUE;
 					}
@@ -930,7 +933,7 @@ int KeyMacro::AssignMacroKey(FarKey& MacroKey, DWORD& Flags)
 
 	MacroKey = Param.MacroKey;
 	Flags = Param.Flags;
-	return Param.Deleted ? AMK_DELETE : AMK_MODIFY;
+	return Param.Done ? AMK_DONE : AMK_NOTDONE;
 }
 
 static int Set3State(DWORD Flags,DWORD Chk1,DWORD Chk2)
