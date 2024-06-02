@@ -56,53 +56,33 @@ struct PreRedrawItem
 class TPreRedrawFunc
 {
 	private:
-		unsigned int Total;
+		std::vector<PreRedrawItem> Items;
 
-		struct OneItem
-		{
-			PreRedrawItem Item;
-			OneItem *Next;
-
-			OneItem(struct PreRedrawItem NewItem,OneItem *NextItem) : Item(NewItem), Next(NextItem) {}
-		};
-
-		struct OneItem *Top, *current;
+		static PreRedrawItem errorStack;
 
 	public:
-		static struct PreRedrawItem errorStack;
+		TPreRedrawFunc() {}
+		~TPreRedrawFunc() {}
 
-	public:
-		TPreRedrawFunc() : Total(0), Top(nullptr) {}
-		~TPreRedrawFunc() { Free(); }
-
-	public:
 		// вернуть количество элементов на стеке
-		unsigned int Size() const { return Total; }
+		unsigned int Size() const { return Items.size(); }
 
 		// взять элемент со стека
 		PreRedrawItem Pop();
 
 		// взять элемент со стека без изменения стека
-		PreRedrawItem Peek();
+		PreRedrawItem Peek() const;
 
 		// положить элемент на стек
 		PreRedrawItem Push(const PreRedrawItem &Source);
-		PreRedrawItem Push(PREREDRAWFUNC Func,PreRedrawParamStruct *Param=nullptr);
+		PreRedrawItem Push(PREREDRAWFUNC Func, PreRedrawParamStruct *Param=nullptr);
 
 		PreRedrawItem SetParam(const PreRedrawParamStruct &Param);
 
 		// очистить стек
-		void Free();
+		void Free() { Items.clear(); }
 
-		bool isEmpty() const {return !Total;}
-
-
-	private:
-		//TPreRedrawFunc& operator=(const TPreRedrawFunc&){return *this;} /* чтобы не генерировалось */
-		//TPreRedrawFunc(const TPreRedrawFunc&){};            /* по умолчанию            */
-
-		//PREREDRAWFUNC Set(PREREDRAWFUNC fn);
-
+		bool isEmpty() const { return Items.empty(); }
 };
 
 extern TPreRedrawFunc PreRedraw;

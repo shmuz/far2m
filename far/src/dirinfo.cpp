@@ -55,8 +55,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 static void DrawGetDirInfoMsg(const wchar_t *Title,const wchar_t *Name,const UINT64 Size)
 {
-	Title = NullToEmpty(Title);  // see https://github.com/elfmz/far2l/issues/2207
-	Name = NullToEmpty(Name);    // +
+	if (Title == nullptr) // see https://github.com/elfmz/far2l/issues/2207
+		return;
 
 	FARString strSize;
 	FileSizeToStr(strSize,Size,8,COLUMN_FLOATSIZE|COLUMN_COMMAS);
@@ -65,14 +65,17 @@ static void DrawGetDirInfoMsg(const wchar_t *Title,const wchar_t *Name,const UIN
 	PreRedrawItem preRedrawItem=PreRedraw.Peek();
 	preRedrawItem.Param.Param1=(void*)Title;
 	preRedrawItem.Param.Param2=(void*)Name;
-	preRedrawItem.Param.Param3=reinterpret_cast<LPCVOID>(Size);
+	preRedrawItem.Param.Param5=Size;
 	PreRedraw.SetParam(preRedrawItem.Param);
 }
 
 static void PR_DrawGetDirInfoMsg()
 {
 	PreRedrawItem preRedrawItem=PreRedraw.Peek();
-	DrawGetDirInfoMsg((const wchar_t*)preRedrawItem.Param.Param1,(const wchar_t *)preRedrawItem.Param.Param2,reinterpret_cast<const UINT64>(preRedrawItem.Param.Param3));
+	DrawGetDirInfoMsg(
+		(const wchar_t*)preRedrawItem.Param.Param1,
+		(const wchar_t*)preRedrawItem.Param.Param2,
+		preRedrawItem.Param.Param5);
 }
 
 int GetDirInfo(const wchar_t *Title,

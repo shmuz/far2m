@@ -43,77 +43,49 @@ PreRedrawItem TPreRedrawFunc::errorStack{};
 
 PreRedrawItem TPreRedrawFunc::Pop()
 {
-	if (Top)
+	if (!Items.empty())
 	{
-		--Total;
-		PreRedrawItem Destination=Top->Item;
-		current=Top->Next;
-		delete Top;
-		Top=current;
+		PreRedrawItem Destination = Items.back();
+		Items.pop_back();
 		return Destination;
 	}
-
-	return TPreRedrawFunc::errorStack;
+	return errorStack;
 }
 
-PreRedrawItem TPreRedrawFunc::Peek()
+PreRedrawItem TPreRedrawFunc::Peek() const
 {
-	if (Top)
-		return Top->Item;
+	if (!Items.empty())
+		return Items.back();
 
-	return TPreRedrawFunc::errorStack;
+	return errorStack;
 }
 
 PreRedrawItem TPreRedrawFunc::SetParam(const PreRedrawParamStruct &Param)
 {
-	if (Top)
+	if (!Items.empty())
 	{
-		Top->Item.Param=Param;
-		return Top->Item;
+		Items.back().Param = Param;
+		return Items.back();
 	}
-
-	return TPreRedrawFunc::errorStack;
+	return errorStack;
 }
 
 PreRedrawItem TPreRedrawFunc::Push(const PreRedrawItem &Source)
 {
-	current=new(std::nothrow) OneItem(Source,Top);
-
-	if (current)
-	{
-		Top=current;
-		++Total;
-		return Top->Item;
-	}
-
-	return TPreRedrawFunc::errorStack;
+	Items.push_back(Source);
+	return Items.back();
 }
 
-PreRedrawItem TPreRedrawFunc::Push(PREREDRAWFUNC Func,PreRedrawParamStruct *Param)
+PreRedrawItem TPreRedrawFunc::Push(PREREDRAWFUNC Func, PreRedrawParamStruct *Param)
 {
-	PreRedrawItem Source;
-	Source.PreRedrawFunc=Func;
+	PreRedrawItem Source{};
+	Source.PreRedrawFunc = Func;
 
 	if (Param)
-		Source.Param=*Param;
-	else
-		memset(&Source.Param,0,sizeof(PreRedrawParamStruct));
+		Source.Param = *Param;
 
 	return Push(Source);
 }
-
-void TPreRedrawFunc::Free()
-{
-	while (Top)
-	{
-		current=Top->Next;
-		delete Top;
-		Top=current;
-	}
-
-	Total=0;
-}
-
 
 TPreRedrawFuncGuard::TPreRedrawFuncGuard(PREREDRAWFUNC Func)
 {
