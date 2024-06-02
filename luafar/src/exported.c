@@ -881,7 +881,7 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 		case OPEN_EDITOR:
 		case OPEN_VIEWER:
 		case OPEN_FILEPANEL:
-			lua_pushinteger(L, Item);
+			lua_pushinteger(L, Item + 1); // make 1-based
 			lua_pushinteger(L, 0);        // dummy Data
 			if (pcall_msg(L, 3, 1) == 0) {
 				if (lua_toboolean(L, -1))        //+1: Obj
@@ -931,7 +931,7 @@ int LF_Configure(lua_State* L, int ItemNumber)
 {
 	int res = FALSE;
 	if (GetExportFunction(L, "Configure")) { //+1: Func
-		lua_pushinteger(L, ItemNumber);
+		lua_pushinteger(L, ItemNumber + 1);
 		if (0 == pcall_msg(L, 1, 1)) {        //+1
 			res = lua_toboolean(L,-1);
 			lua_pop(L,1);

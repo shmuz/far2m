@@ -509,10 +509,10 @@ function export.Open (OpenFrom, Id, ...)
 
   else
     local items = utils.GetMenuItems()
-    if Id == 0 then
+    if Id == 1 then
       macrobrowser()
     elseif type(Id) == "number" then
-      local guid = PluginInfo[OpenFrom==F.OPEN_DISKMENU and "DiskMenuGuids" or "PluginMenuGuids"][Id+1]
+      local guid = PluginInfo[OpenFrom==F.OPEN_DISKMENU and "DiskMenuGuids" or "PluginMenuGuids"][Id]
       if guid and items[guid] then
         local mod, obj = items[guid].action(OpenFrom, ...)
         if CanCreatePanel[OpenFrom] and mod and obj and PanelModuleExist(mod) then
@@ -529,7 +529,7 @@ end
 -- TODO: when called from a module's panel, call that module's Configure()
 function export.Configure (Item)
   local items = utils.GetMenuItems()
-  local guid = PluginInfo.PluginConfigGuids[Item+1]
+  local guid = PluginInfo.PluginConfigGuids[Item]
   if guid and items[guid] then
     return items[guid].action()
   end
