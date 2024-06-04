@@ -33,7 +33,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
-#include <langinfo.h> // for nl_langinfo
+#include <langinfo.h>    // for nl_langinfo
 #include "AllXLats.hpp"
 #include "cmdline.hpp"
 #include "colors.hpp"
@@ -49,7 +49,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "stddlg.hpp"
 #include "vtshell.h"
 
-Options Opt={0};
+Options Opt = {0};
 
 int &Confirmation::ExitEffective()
 {
@@ -82,7 +82,7 @@ static DWORD ApplyConsoleTweaks()
 
 static void ApplySudoConfiguration()
 {
- 	const std::string &sudo_app = GetHelperPathName("far2m_sudoapp");
+	const std::string &sudo_app = GetHelperPathName("far2m_sudoapp");
 	const std::string &askpass_app = GetHelperPathName("far2m_askpass");
 
 	SudoClientMode mode;
@@ -91,7 +91,8 @@ static void ApplySudoConfiguration()
 	} else
 		mode = SCM_DISABLE;
 	sudo_client_configure(mode, Opt.SudoPasswordExpiration, sudo_app.c_str(), askpass_app.c_str(),
-		Wide2MB(Msg::SudoTitle).c_str(), Wide2MB(Msg::SudoPrompt).c_str(), Wide2MB(Msg::SudoConfirm).c_str());
+			Wide2MB(Msg::SudoTitle).c_str(), Wide2MB(Msg::SudoPrompt).c_str(),
+			Wide2MB(Msg::SudoConfirm).c_str());
 }
 
 static void AddHistorySettings(DialogBuilder &Builder, FarLangMsg MTitle, int *OptEnabled, int *OptCount)
@@ -119,24 +120,27 @@ void SystemSettings()
 
 	DialogItemEx *SudoEnabledItem = Builder.AddCheckbox(Msg::ConfigSudoEnabled, &Opt.SudoEnabled);
 	DialogItemEx *SudoPasswordExpirationEdit = Builder.AddIntEditField(&Opt.SudoPasswordExpiration, 4);
-	DialogItemEx *SudoPasswordExpirationText = Builder.AddTextBefore(SudoPasswordExpirationEdit, Msg::ConfigSudoPasswordExpiration);
+	DialogItemEx *SudoPasswordExpirationText =
+			Builder.AddTextBefore(SudoPasswordExpirationEdit, Msg::ConfigSudoPasswordExpiration);
 
 	SudoPasswordExpirationText->Indent(4);
 	SudoPasswordExpirationEdit->Indent(4);
 
-	DialogItemEx *SudoConfirmModifyItem = Builder.AddCheckbox(Msg::ConfigSudoConfirmModify, &Opt.SudoConfirmModify);
+	DialogItemEx *SudoConfirmModifyItem =
+			Builder.AddCheckbox(Msg::ConfigSudoConfirmModify, &Opt.SudoConfirmModify);
 	SudoConfirmModifyItem->Indent(4);
 
 	Builder.LinkFlags(SudoEnabledItem, SudoConfirmModifyItem, DIF_DISABLE);
 	Builder.LinkFlags(SudoEnabledItem, SudoPasswordExpirationEdit, DIF_DISABLE);
 
 	DialogItemEx *DeleteToRecycleBin = Builder.AddCheckbox(Msg::ConfigRecycleBin, &Opt.DeleteToRecycleBin);
-	DialogItemEx *DeleteLinks = Builder.AddCheckbox(Msg::ConfigRecycleBinLink, &Opt.DeleteToRecycleBinKillLink);
+	DialogItemEx *DeleteLinks =
+			Builder.AddCheckbox(Msg::ConfigRecycleBinLink, &Opt.DeleteToRecycleBinKillLink);
 	DeleteLinks->Indent(4);
 	Builder.LinkFlags(DeleteToRecycleBin, DeleteLinks, DIF_DISABLE);
 
-//	Builder.AddCheckbox(MSudoParanoic, &Opt.SudoParanoic);
-//	Builder.AddCheckbox(CopyWriteThrough, &Opt.CMOpt.WriteThrough);
+	//	Builder.AddCheckbox(MSudoParanoic, &Opt.SudoParanoic);
+	//	Builder.AddCheckbox(CopyWriteThrough, &Opt.CMOpt.WriteThrough);
 	Builder.AddCheckbox(Msg::ConfigScanJunction, &Opt.ScanJunction);
 	Builder.AddCheckbox(Msg::ConfigOnlyFilesSize, &Opt.OnlyFilesSize);
 
@@ -147,25 +151,24 @@ void SystemSettings()
 	Builder.LinkFlags(InactivityExit, InactivityExitTime, DIF_DISABLE);
 
 	AddHistorySettings(Builder, Msg::ConfigSaveHistory, &Opt.SaveHistory, &Opt.HistoryCount);
-	AddHistorySettings(Builder, Msg::ConfigSaveFoldersHistory, &Opt.SaveFoldersHistory, &Opt.FoldersHistoryCount);
+	AddHistorySettings(Builder, Msg::ConfigSaveFoldersHistory, &Opt.SaveFoldersHistory,
+			&Opt.FoldersHistoryCount);
 	AddHistorySettings(Builder, Msg::ConfigSaveViewHistory, &Opt.SaveViewHistory, &Opt.ViewHistoryCount);
 	Builder.AddCheckbox(Msg::ConfigAutoHighlightHistory, &Opt.AutoHighlightHistory);
 
 	Builder.AddCheckbox(Msg::ConfigAutoSave, &Opt.AutoSaveSetup);
 	Builder.AddOKCancel();
 
-	if (Builder.ShowDialog())
-	{
+	if (Builder.ShowDialog()) {
 		SanitizeHistoryCounts();
 		ApplySudoConfiguration();
 	}
 }
 
-
 void PanelSettings()
 {
 	DialogBuilder Builder(Msg::ConfigPanelTitle, L"PanelSettings");
-	BOOL AutoUpdate = (Opt.AutoUpdateLimit );
+	BOOL AutoUpdate = (Opt.AutoUpdateLimit);
 
 	Builder.AddCheckbox(Msg::ConfigHidden, &Opt.ShowHidden);
 	Builder.AddCheckbox(Msg::ConfigHighlight, &Opt.Highlight);
@@ -175,7 +178,7 @@ void PanelSettings()
 	Builder.AddCheckbox(Msg::ConfigReverseSort, &Opt.ReverseSort);
 
 	DialogItemEx *AutoUpdateEnabled = Builder.AddCheckbox(Msg::ConfigAutoUpdateLimit, &AutoUpdate);
-	DialogItemEx *AutoUpdateLimit = Builder.AddIntEditField((int *) &Opt.AutoUpdateLimit, 6);
+	DialogItemEx *AutoUpdateLimit = Builder.AddIntEditField((int *)&Opt.AutoUpdateLimit, 6);
 	Builder.LinkFlags(AutoUpdateEnabled, AutoUpdateLimit, DIF_DISABLE, false);
 	DialogItemEx *AutoUpdateText = Builder.AddTextBefore(AutoUpdateLimit, Msg::ConfigAutoUpdateLimit2);
 	AutoUpdateLimit->Indent(4);
@@ -192,12 +195,11 @@ void PanelSettings()
 	Builder.AddCheckbox(Msg::ConfigShowSortMode, &Opt.ShowSortMode);
 	Builder.AddOKCancel();
 
-	if (Builder.ShowDialog())
-	{
+	if (Builder.ShowDialog()) {
 		if (!AutoUpdate)
 			Opt.AutoUpdateLimit = 0;
 
-	//  FrameManager->RefreshFrame();
+		//  FrameManager->RefreshFrame();
 		CtrlObject->Cp()->LeftPanel->Update(UPDATE_KEEP_SELECTION);
 		CtrlObject->Cp()->RightPanel->Update(UPDATE_KEEP_SELECTION);
 		CtrlObject->Cp()->Redraw();
@@ -216,15 +218,15 @@ void InputSettings()
 		if (Opt.XLat.XLat == xlats[i]) {
 			SelectedXLat = i;
 		}
-		XLatItems.emplace_back(DialogBuilderListItem{ FarLangMsg{::Lang.InternMsg(xlats[i].c_str())}, i});
+		XLatItems.emplace_back(DialogBuilderListItem{FarLangMsg{::Lang.InternMsg(xlats[i].c_str())}, i});
 	}
 
 	DialogBuilder Builder(Msg::ConfigInputTitle, L"InputSettings");
 	Builder.AddCheckbox(Msg::ConfigMouse, &Opt.Mouse);
 
 	Builder.AddText(Msg::ConfigXLats);
-	DialogItemEx *Item = Builder.AddComboBox(&SelectedXLat, 40,
-		XLatItems.data(), XLatItems.size(), DIF_DROPDOWNLIST|DIF_LISTAUTOHIGHLIGHT|DIF_LISTWRAPMODE);
+	DialogItemEx *Item = Builder.AddComboBox(&SelectedXLat, 40, XLatItems.data(), XLatItems.size(),
+			DIF_DROPDOWNLIST | DIF_LISTAUTOHIGHLIGHT | DIF_LISTWRAPMODE);
 	Item->Indent(4);
 
 	Builder.AddCheckbox(Msg::ConfigXLatFastFileFind, &Opt.XLat.EnableForFastFileFind);
@@ -262,10 +264,10 @@ void InputSettings()
 */
 void InterfaceSettings()
 {
-	int DateFormatIndex = GetDateFormat(); //Opt.DateFormat
-	FARString strDateSeparator; //Opt.strDateSeparator
-	FARString strTimeSeparator; //Opt.strTimeSeparator
-	FARString strDecimalSeparator; //Opt.strDecimalSeparator
+	int DateFormatIndex = GetDateFormat();    // Opt.DateFormat
+	FARString strDateSeparator;               // Opt.strDateSeparator
+	FARString strTimeSeparator;               // Opt.strTimeSeparator
+	FARString strDecimalSeparator;            // Opt.strDecimalSeparator
 	strDateSeparator = GetDateSeparator();
 	strTimeSeparator = GetTimeSeparator();
 	strDecimalSeparator = GetDecimalSeparator();
@@ -309,19 +311,19 @@ void InterfaceSettings()
 		Builder.StartColumns();
 		DialogItemEx *DateSeparatorEdit = Builder.AddEditField(&strDateSeparator, 0);
 		DateSeparatorEdit->Type = DI_FIXEDIT;
-		DateSeparatorEdit->Flags |= DIF_MASKEDIT;
+		DateSeparatorEdit->Flags|= DIF_MASKEDIT;
 		DateSeparatorEdit->strMask = L"X";
 		Builder.AddTextAfter(DateSeparatorEdit, Msg::ConfigDateSeparator);
 
 		DialogItemEx *TimeSeparatorEdit = Builder.AddEditField(&strTimeSeparator, 0);
 		TimeSeparatorEdit->Type = DI_FIXEDIT;
-		TimeSeparatorEdit->Flags |= DIF_MASKEDIT;
+		TimeSeparatorEdit->Flags|= DIF_MASKEDIT;
 		TimeSeparatorEdit->strMask = L"X";
 		Builder.AddTextAfter(TimeSeparatorEdit, Msg::ConfigTimeSeparator);
 
 		DialogItemEx *DecimalSeparatorEdit = Builder.AddEditField(&strDecimalSeparator, 0);
 		DecimalSeparatorEdit->Type = DI_FIXEDIT;
-		DecimalSeparatorEdit->Flags |= DIF_MASKEDIT;
+		DecimalSeparatorEdit->Flags|= DIF_MASKEDIT;
 		DecimalSeparatorEdit->strMask = L"X";
 		Builder.AddTextAfter(DecimalSeparatorEdit, Msg::ConfigDecimalSeparator);
 
@@ -419,67 +421,71 @@ void InterfaceSettings()
 			// parcing part of possible https://help.gnome.org/users/gthumb/stable/gthumb-date-formats.html
 			std::string::size_type
 					pos_date_2 = std::string::npos,
-					pos_day = std::string::npos,
-					pos_month = std::string::npos,
-					pos_year = std::string::npos,
+					pos_day = std::string::npos, pos_month = std::string::npos, pos_year = std::string::npos,
 					pos_time_2 = std::string::npos;
 			size_t length_decimal;
 			std::string format_date = nl_langinfo(D_FMT);
 			std::string format_time = nl_langinfo(T_FMT);
-			std::string format_decimal = nl_langinfo(RADIXCHAR/*DECIMAL_POINT*/);
-			if (format_date=="%D") { // %D Equivalent to %m/%d/%y
+			std::string format_decimal = nl_langinfo(RADIXCHAR /*DECIMAL_POINT*/);
+			if (format_date == "%D") {    // %D Equivalent to %m/%d/%y
 				DateFormatIndex = 0;
 				strTimeSeparator = "/";
-				pos_date_2 = 0; // for not error in message
+				pos_date_2 = 0;           // for not error in message
 			}
-			if (format_date=="%F") { // %F Equivalent to %Y-%m-%d
+			if (format_date == "%F") {    // %F Equivalent to %Y-%m-%d
 				DateFormatIndex = 2;
 				strTimeSeparator = "-";
-				pos_date_2 = 0; // for not error in message
-			}
-			else if (format_date.length() >= 8) {
-				std::vector<const char*> codes_day = { "%d", "%e", "%Ed", "%Ee", "%Od", "%Oe" };
+				pos_date_2 = 0;    // for not error in message
+			} else if (format_date.length() >= 8) {
+				std::vector<const char *> codes_day = {"%d", "%e", "%Ed", "%Ee", "%Od", "%Oe"};
 				for (const auto &code : codes_day) {
 					pos_day = format_date.find(code);
 					if (pos_day != std::string::npos)
 						break;
 				}
-				std::vector<const char*> codes_month = {
-					"%m", "%B", "%b", "%h", "%Em", "%EB", "%Eb", "%Eh", "%Om", "%OB", "%Ob", "%Oh" };
+				std::vector<const char *> codes_month = {"%m", "%B", "%b", "%h", "%Em", "%EB", "%Eb", "%Eh",
+						"%Om", "%OB", "%Ob", "%Oh"};
 				for (const auto &code : codes_month) {
 					pos_month = format_date.find(code);
 					if (pos_month != std::string::npos)
 						break;
 				}
-				std::vector<const char*> codes_year = {
-					"%Y", "%y", "%G", "%g", "%EY", "%Ey", "%EG", "%Eg", "%OY", "%Oy", "%OG", "%Og" };
+				std::vector<const char *> codes_year = {"%Y", "%y", "%G", "%g", "%EY", "%Ey", "%EG", "%Eg",
+						"%OY", "%Oy", "%OG", "%Og"};
 				for (const auto &code : codes_year) {
 					pos_year = format_date.find(code);
 					if (pos_year != std::string::npos)
 						break;
 				}
-				if (pos_day != std::string::npos && pos_month != std::string::npos && pos_year != std::string::npos) {
-					if (pos_day < pos_month && pos_month < pos_year) // day-month-year
-					{ DateFormatIndex = 1; pos_date_2 = pos_month; }
-					else if (pos_year < pos_month && pos_month < pos_day) // year-month-day
-					{ DateFormatIndex = 2; pos_date_2 = pos_month; }
-					else if (pos_month < pos_day  && pos_month < pos_year) // month-day-year
-					{ DateFormatIndex = 0; pos_date_2 = pos_day; }
+				if (pos_day != std::string::npos && pos_month != std::string::npos
+						&& pos_year != std::string::npos) {
+					if (pos_day < pos_month && pos_month < pos_year)    // day-month-year
+					{
+						DateFormatIndex = 1;
+						pos_date_2 = pos_month;
+					} else if (pos_year < pos_month && pos_month < pos_day)    // year-month-day
+					{
+						DateFormatIndex = 2;
+						pos_date_2 = pos_month;
+					} else if (pos_month < pos_day && pos_month < pos_year)    // month-day-year
+					{
+						DateFormatIndex = 0;
+						pos_date_2 = pos_day;
+					}
 				}
 			}
 			if (pos_date_2 != std::string::npos)
-				strDateSeparator = format_date[pos_date_2-1];
+				strDateSeparator = format_date[pos_date_2 - 1];
 
-			if (format_time=="%T") { // %T The time in 24-hour notation (%H:%M:%S).
+			if (format_time == "%T") {    // %T The time in 24-hour notation (%H:%M:%S).
 				strTimeSeparator = ":";
-				pos_time_2 = 0; // for not error in message
-			}
-			else {
+				pos_time_2 = 0;           // for not error in message
+			} else {
 				pos_day = format_time.find("%");
 				if (pos_day != std::string::npos) {
-					pos_time_2 = format_time.find("%", pos_day+2);
+					pos_time_2 = format_time.find("%", pos_day + 2);
 					if (pos_time_2 != std::string::npos)
-						strTimeSeparator = format_time[pos_time_2-1];
+						strTimeSeparator = format_time[pos_time_2 - 1];
 				}
 			}
 
@@ -491,28 +497,25 @@ void InterfaceSettings()
 			em.Add(L"From system locale");
 			em.AddFormat(L"Date format from locale:      \"%s\"", format_date.c_str());
 			em.AddFormat(L"  Date order:        %s (order %d)",
-				(pos_date_2 != std::string::npos) ? "imported" : "did not changed",
-				DateFormatIndex);
+					(pos_date_2 != std::string::npos) ? "imported" : "did not changed", DateFormatIndex);
 			em.AddFormat(L"  Date separator:    %s (\'%ls\')",
-				(pos_date_2 != std::string::npos) ? "imported" : "did not changed",
-				strDateSeparator.CPtr());
+					(pos_date_2 != std::string::npos) ? "imported" : "did not changed",
+					strDateSeparator.CPtr());
 			em.AddFormat(L"Time format from locale:      \"%s\"", format_time.c_str());
 			em.AddFormat(L"  Time separator:    %s (\'%ls\')",
-				(pos_time_2 != std::string::npos) ? "imported" : "did not changed",
-				 strTimeSeparator.CPtr());
+					(pos_time_2 != std::string::npos) ? "imported" : "did not changed",
+					strTimeSeparator.CPtr());
 			em.AddFormat(L"DecimalSeparator from locale: \"%s\"", format_decimal.c_str());
 			em.AddFormat(L"  Decimal separator: %s (\'%ls\')",
-				length_decimal>0 ? "imported" : "did not changed",
-				strDecimalSeparator.CPtr());
+					length_decimal > 0 ? "imported" : "did not changed", strDecimalSeparator.CPtr());
 			em.Add(Msg::Ok);
-			em.Show(MSG_LEFTALIGN |
-					( (pos_date_2 == std::string::npos
-						|| pos_time_2 == std::string::npos
-						|| length_decimal<=0 )
-					? MSG_WARNING : 0),
-				1);
-		}
-		else
+			em.Show(MSG_LEFTALIGN
+							| ((pos_date_2 == std::string::npos || pos_time_2 == std::string::npos
+									   || length_decimal <= 0)
+											? MSG_WARNING
+											: 0),
+					1);
+		} else
 			break;
 	}
 }
@@ -520,8 +523,10 @@ void InterfaceSettings()
 void AutoCompleteSettings()
 {
 	DialogBuilder Builder(Msg::ConfigAutoCompleteTitle, L"AutoCompleteSettings");
-	DialogItemEx *ListCheck=Builder.AddCheckbox(Msg::ConfigAutoCompleteShowList, &Opt.AutoComplete.ShowList);
-	DialogItemEx *ModalModeCheck=Builder.AddCheckbox(Msg::ConfigAutoCompleteModalList, &Opt.AutoComplete.ModalList);
+	DialogItemEx *ListCheck =
+			Builder.AddCheckbox(Msg::ConfigAutoCompleteShowList, &Opt.AutoComplete.ShowList);
+	DialogItemEx *ModalModeCheck =
+			Builder.AddCheckbox(Msg::ConfigAutoCompleteModalList, &Opt.AutoComplete.ModalList);
 	ModalModeCheck->Indent(4);
 	Builder.AddCheckbox(Msg::ConfigAutoCompleteAutoAppend, &Opt.AutoComplete.AppendCompletion);
 	Builder.LinkFlags(ListCheck, ModalModeCheck, DIF_DISABLE);
@@ -545,7 +550,8 @@ void DialogSettings()
 {
 	DialogBuilder Builder(Msg::ConfigDlgSetsTitle, L"DialogSettings");
 
-	AddHistorySettings(Builder, Msg::ConfigDialogsEditHistory, &Opt.Dialogs.EditHistory, &Opt.DialogsHistoryCount);
+	AddHistorySettings(Builder, Msg::ConfigDialogsEditHistory, &Opt.Dialogs.EditHistory,
+			&Opt.DialogsHistoryCount);
 	Builder.AddCheckbox(Msg::ConfigDialogsEditBlock, &Opt.Dialogs.EditBlock);
 	Builder.AddCheckbox(Msg::ConfigDialogsDelRemovesBlocks, &Opt.Dialogs.DelRemovesBlocks);
 	Builder.AddCheckbox(Msg::ConfigDialogsAutoComplete, &Opt.Dialogs.AutoComplete);
@@ -553,31 +559,35 @@ void DialogSettings()
 	Builder.AddCheckbox(Msg::ConfigDialogsMouseButton, &Opt.Dialogs.MouseButton);
 	Builder.AddOKCancel();
 
-	if (Builder.ShowDialog())
-	{
+	if (Builder.ShowDialog()) {
 		SanitizeHistoryCounts();
-		if (Opt.Dialogs.MouseButton )
+		if (Opt.Dialogs.MouseButton)
 			Opt.Dialogs.MouseButton = 0xFFFF;
 	}
 }
 
 void VMenuSettings()
 {
-	DialogBuilderListItem CAListItems[]=
-	{
-		{ Msg::ConfigVMenuClickCancel, VMENUCLICK_CANCEL },  // Cancel menu
-		{ Msg::ConfigVMenuClickApply,  VMENUCLICK_APPLY  },  // Execute selected item
-		{ Msg::ConfigVMenuClickIgnore, VMENUCLICK_IGNORE },  // Do nothing
+	DialogBuilderListItem CAListItems[] = {
+			{Msg::ConfigVMenuClickCancel, VMENUCLICK_CANCEL},    // Cancel menu
+			{Msg::ConfigVMenuClickApply, VMENUCLICK_APPLY},      // Execute selected item
+			{Msg::ConfigVMenuClickIgnore, VMENUCLICK_IGNORE},    // Do nothing
 	};
 
 	DialogBuilder Builder(Msg::ConfigVMenuTitle, L"VMenuSettings");
 
 	Builder.AddText(Msg::ConfigVMenuLBtnClick);
-	Builder.AddComboBox((int *) &Opt.VMenu.LBtnClick, 40, CAListItems, ARRAYSIZE(CAListItems), DIF_DROPDOWNLIST|DIF_LISTAUTOHIGHLIGHT|DIF_LISTWRAPMODE);
+	Builder.AddComboBox((int *)&Opt.VMenu.LBtnClick, 40, CAListItems, ARRAYSIZE(CAListItems),
+			DIF_DROPDOWNLIST | DIF_LISTAUTOHIGHLIGHT | DIF_LISTWRAPMODE);
 	Builder.AddText(Msg::ConfigVMenuRBtnClick);
-	Builder.AddComboBox((int *) &Opt.VMenu.RBtnClick, 40, CAListItems, ARRAYSIZE(CAListItems), DIF_DROPDOWNLIST|DIF_LISTAUTOHIGHLIGHT|DIF_LISTWRAPMODE);
+	Builder.AddComboBox((int *)&Opt.VMenu.RBtnClick, 40, CAListItems, ARRAYSIZE(CAListItems),
+			DIF_DROPDOWNLIST | DIF_LISTAUTOHIGHLIGHT | DIF_LISTWRAPMODE);
 	Builder.AddText(Msg::ConfigVMenuMBtnClick);
-	Builder.AddComboBox((int *) &Opt.VMenu.MBtnClick, 40, CAListItems, ARRAYSIZE(CAListItems), DIF_DROPDOWNLIST|DIF_LISTAUTOHIGHLIGHT|DIF_LISTWRAPMODE);
+	Builder.AddComboBox((int *)&Opt.VMenu.MBtnClick, 40, CAListItems, ARRAYSIZE(CAListItems),
+			DIF_DROPDOWNLIST | DIF_LISTAUTOHIGHLIGHT | DIF_LISTWRAPMODE);
+
+	Builder.AddCheckbox(Msg::ConfigVMenuStopEdge, (BOOL *)&Opt.VMenu.StopOnEdge);
+
 	Builder.AddOKCancel();
 	Builder.ShowDialog();
 }
@@ -585,9 +595,9 @@ void VMenuSettings()
 void CmdlineSettings()
 {
 	DialogBuilderListItem CMWListItems[] = {
-		{ Msg::ConfigCmdlineWaitKeypress_Never,   0 },
-		{ Msg::ConfigCmdlineWaitKeypress_OnError, 1 },
-		{ Msg::ConfigCmdlineWaitKeypress_Always,  2 },
+			{Msg::ConfigCmdlineWaitKeypress_Never,   0},
+			{Msg::ConfigCmdlineWaitKeypress_OnError, 1},
+			{Msg::ConfigCmdlineWaitKeypress_Always,  2},
 	};
 
 	DialogBuilder Builder(Msg::ConfigCmdlineTitle, L"CmdlineSettings");
@@ -659,9 +669,11 @@ void PluginsManagerSettings()
 
 	Builder.AddSeparator(Msg::PluginConfirmationTitle);
 	DialogItemEx *ConfirmOFP = Builder.AddCheckbox(Msg::PluginsManagerOFP, &Opt.PluginConfirm.OpenFilePlugin);
-	ConfirmOFP->Flags|=DIF_3STATE;
-	DialogItemEx *StandardAssoc = Builder.AddCheckbox(Msg::PluginsManagerStdAssoc, &Opt.PluginConfirm.StandardAssociation);
-	DialogItemEx *EvenIfOnlyOne = Builder.AddCheckbox(Msg::PluginsManagerEvenOne, &Opt.PluginConfirm.EvenIfOnlyOnePlugin);
+	ConfirmOFP->Flags|= DIF_3STATE;
+	DialogItemEx *StandardAssoc =
+			Builder.AddCheckbox(Msg::PluginsManagerStdAssoc, &Opt.PluginConfirm.StandardAssociation);
+	DialogItemEx *EvenIfOnlyOne =
+			Builder.AddCheckbox(Msg::PluginsManagerEvenOne, &Opt.PluginConfirm.EvenIfOnlyOnePlugin);
 	StandardAssoc->Indent(2);
 	EvenIfOnlyOne->Indent(4);
 
@@ -671,7 +683,6 @@ void PluginsManagerSettings()
 
 	Builder.ShowDialog();
 }
-
 
 void SetDizConfig()
 {
@@ -687,7 +698,8 @@ void SetDizConfig()
 	Builder.AddTextAfter(StartPos, Msg::CfgDizStartPos);
 	Builder.AddSeparator();
 
-	static FarLangMsg DizOptions[] = { Msg::CfgDizNotUpdate, Msg::CfgDizUpdateIfDisplayed, Msg::CfgDizAlwaysUpdate };
+	static FarLangMsg DizOptions[] = {Msg::CfgDizNotUpdate, Msg::CfgDizUpdateIfDisplayed,
+			Msg::CfgDizAlwaysUpdate};
 	Builder.AddRadioButtons(&Opt.Diz.UpdateMode, 3, DizOptions);
 	Builder.AddSeparator();
 
@@ -697,12 +709,11 @@ void SetDizConfig()
 	Builder.ShowDialog();
 }
 
-void ViewerConfig(ViewerOptions &ViOpt,bool Local)
+void ViewerConfig(ViewerOptions &ViOpt, bool Local)
 {
 	DialogBuilder Builder(Msg::ViewConfigTitle, L"ViewerSettings");
 
-	if (!Local)
-	{
+	if (!Local) {
 		Builder.AddCheckbox(Msg::ViewConfigExternalF3, &Opt.ViOpt.UseExternalViewer);
 		Builder.AddText(Msg::ViewConfigExternalCommand);
 		Builder.AddEditField(&Opt.strExternalViewer, 64, L"ExternalViewer", DIF_EDITPATH);
@@ -726,26 +737,23 @@ void ViewerConfig(ViewerOptions &ViOpt,bool Local)
 		Builder.AddCheckbox(Msg::ViewShowTitleBar, &ViOpt.ShowTitleBar);
 	Builder.EndColumns();
 
-	if (!Local)
-	{
+	if (!Local) {
 		Builder.AddEmptyLine();
 		Builder.AddCheckbox(Msg::ViewAutoDetectCodePage, &ViOpt.AutoDetectCodePage);
 		Builder.AddText(Msg::ViewConfigDefaultCodePage);
 		Builder.AddCodePagesBox(&ViOpt.DefaultCodePage, 40, false, false);
 	}
 	Builder.AddOKCancel();
-	if (Builder.ShowDialog())
-	{
-		if (ViOpt.TabSize<1 || ViOpt.TabSize>512)
-			ViOpt.TabSize=8;
+	if (Builder.ShowDialog()) {
+		if (ViOpt.TabSize < 1 || ViOpt.TabSize > 512)
+			ViOpt.TabSize = 8;
 	}
 }
 
-void EditorConfig(EditorOptions &EdOpt,bool Local)
+void EditorConfig(EditorOptions &EdOpt, bool Local)
 {
 	DialogBuilder Builder(Msg::EditConfigTitle, L"EditorSettings");
-	if (!Local)
-	{
+	if (!Local) {
 		Builder.AddCheckbox(Msg::EditConfigEditorF4, &Opt.EdOpt.UseExternalEditor);
 		Builder.AddText(Msg::EditConfigEditorCommand);
 		Builder.AddEditField(&Opt.strExternalEditor, 64, L"ExternalEditor", DIF_EDITPATH);
@@ -754,11 +762,12 @@ void EditorConfig(EditorOptions &EdOpt,bool Local)
 
 	Builder.AddText(Msg::EditConfigExpandTabsTitle);
 	DialogBuilderListItem ExpandTabsItems[] = {
-		{ Msg::EditConfigDoNotExpandTabs, EXPAND_NOTABS },
-		{ Msg::EditConfigExpandTabs, EXPAND_NEWTABS },
-		{ Msg::EditConfigConvertAllTabsToSpaces, EXPAND_ALLTABS }
-	};
-	Builder.AddComboBox(&EdOpt.ExpandTabs, 64, ExpandTabsItems, 3, DIF_DROPDOWNLIST|DIF_LISTAUTOHIGHLIGHT|DIF_LISTWRAPMODE);
+			{Msg::EditConfigDoNotExpandTabs,        EXPAND_NOTABS },
+            {Msg::EditConfigExpandTabs,             EXPAND_NEWTABS},
+			{Msg::EditConfigConvertAllTabsToSpaces, EXPAND_ALLTABS}
+    };
+	Builder.AddComboBox(&EdOpt.ExpandTabs, 64, ExpandTabsItems, 3,
+			DIF_DROPDOWNLIST | DIF_LISTAUTOHIGHLIGHT | DIF_LISTWRAPMODE);
 
 	Builder.StartColumns();
 	Builder.AddCheckbox(Msg::EditConfigPersistentBlocks, &EdOpt.PersistentBlocks);
@@ -781,8 +790,7 @@ void EditorConfig(EditorOptions &EdOpt,bool Local)
 		Builder.AddCheckbox(Msg::EditShowTitleBar, &EdOpt.ShowTitleBar);
 	Builder.EndColumns();
 
-	if (!Local)
-	{
+	if (!Local) {
 		Builder.AddEmptyLine();
 		Builder.AddCheckbox(Msg::EditShareWrite, &EdOpt.EditOpenedForWrite);
 		Builder.AddCheckbox(Msg::EditLockROFileModification, &EdOpt.ReadOnlyLock, 1);
@@ -794,13 +802,11 @@ void EditorConfig(EditorOptions &EdOpt,bool Local)
 
 	Builder.AddOKCancel();
 
-	if (Builder.ShowDialog())
-	{
-		if (EdOpt.TabSize<1 || EdOpt.TabSize>512)
-			EdOpt.TabSize=8;
+	if (Builder.ShowDialog()) {
+		if (EdOpt.TabSize < 1 || EdOpt.TabSize > 512)
+			EdOpt.TabSize = 8;
 	}
 }
-
 
 void NotificationsConfig(NotificationsOptions &NotifOpt)
 {
@@ -812,8 +818,7 @@ void NotificationsConfig(NotificationsOptions &NotifOpt)
 	Builder.AddCheckbox(Msg::NotifConfigOnlyIfBackground, &NotifOpt.OnlyIfBackground);
 	Builder.AddOKCancel();
 
-	if (Builder.ShowDialog())
-	{
+	if (Builder.ShowDialog()) {
 	}
 }
 
@@ -821,9 +826,9 @@ void SetFolderInfoFiles()
 {
 	FARString strFolderInfoFiles;
 
-	if (GetString(Msg::SetFolderInfoTitle,Msg::SetFolderInfoNames,L"FolderInfoFiles",
-	              Opt.InfoPanel.strFolderInfoFiles,strFolderInfoFiles,L"OptMenu",FIB_ENABLEEMPTY|FIB_BUTTONS))
-	{
+	if (GetString(Msg::SetFolderInfoTitle, Msg::SetFolderInfoNames, L"FolderInfoFiles",
+				Opt.InfoPanel.strFolderInfoFiles, strFolderInfoFiles, L"OptMenu",
+				FIB_ENABLEEMPTY | FIB_BUTTONS)) {
 		Opt.InfoPanel.strFolderInfoFiles = strFolderInfoFiles;
 
 		if (CtrlObject->Cp()->LeftPanel->GetType() == INFO_PANEL)
@@ -844,17 +849,15 @@ void LanguageSettings()
 {
 	VMenu *LangMenu, *HelpMenu;
 
-	if (Select(FALSE, &LangMenu))
-	{
+	if (Select(FALSE, &LangMenu)) {
 		Lang.Close();
 
-		if (!Lang.Init(g_strFarPath, true, Msg::NewFileName.ID()))
-		{
+		if (!Lang.Init(g_strFarPath, true, Msg::NewFileName.ID())) {
 			Message(MSG_WARNING, 1, L"Error", L"Cannot load language data", L"Ok");
 			exit(0);
 		}
 
-		Select(TRUE,&HelpMenu);
+		Select(TRUE, &HelpMenu);
 		delete HelpMenu;
 		LangMenu->Hide();
 		CtrlObject->Plugins.ReloadLanguage();
@@ -866,5 +869,5 @@ void LanguageSettings()
 		CtrlObject->Cp()->SetScreenPosition();
 		ApplySudoConfiguration();
 	}
-	delete LangMenu; //???? BUGBUG
+	delete LangMenu;    //???? BUGBUG
 }

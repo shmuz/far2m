@@ -76,4 +76,5 @@ int IsShiftKey(FarKey Key);
 int CheckForEsc();
 int CheckForEscSilent();
 int ConfirmAbortOp();
+bool IsRepeatedKey();
 FarKey CorrectKey(FarKey dwKey, const INPUT_RECORD *Rec);

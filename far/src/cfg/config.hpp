@@ -268,9 +268,10 @@ struct DialogsOptions
 
 struct VMenuOptions
 {
-	int   LBtnClick;
-	int   RBtnClick;
-	int   MBtnClick;
+	int LBtnClick;
+	int RBtnClick;
+	int MBtnClick;
+	bool StopOnEdge;
 };
 
 struct CommandLineOptions

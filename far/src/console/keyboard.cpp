@@ -93,6 +93,14 @@ static clock_t PressedLastTime,KeyPressedLastTime;
 static int ShiftState=0;
 static int LastShiftEnterPressed=FALSE;
 
+static auto was_repeat = false;
+static auto last_pressed_keycode = static_cast<WORD>(-1);
+
+bool IsRepeatedKey()
+{
+	return was_repeat;
+}
+
 /* ----------------------------------------------------------------- */
 static struct TTable_KeyToVK
 {
@@ -633,6 +641,8 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 							|| rec->Event.KeyEvent.wVirtualKeyCode == VK_CAPITAL
 							|| rec->Event.KeyEvent.wVirtualKeyCode == VK_SCROLL)) {
 				INPUT_RECORD pinp;
+				was_repeat = false;
+				last_pressed_keycode = static_cast<WORD>(-1);
 				Console.ReadInput(pinp);
 				continue;
 			}
@@ -928,6 +938,18 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 		AltPressed=(CtrlState & (LEFT_ALT_PRESSED|RIGHT_ALT_PRESSED));
 		RightCtrlPressed=(CtrlState & RIGHT_CTRL_PRESSED);
 		RightAltPressed=(CtrlState & RIGHT_ALT_PRESSED);
+
+		if (!rec->Event.KeyEvent.bKeyDown)
+		{
+			was_repeat = false;
+			last_pressed_keycode = static_cast<WORD>(-1);
+		}
+		else
+		{
+			was_repeat = (last_pressed_keycode == rec->Event.KeyEvent.wVirtualKeyCode);
+			last_pressed_keycode = rec->Event.KeyEvent.wVirtualKeyCode;
+
+		}
 
 		KeyMacro::SetMacroConst(constMsLastCtrlState,CtrlState);
 

@@ -44,7 +44,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "bitflags.hpp"
 #include "CriticalSections.hpp"
 
-
 // Цветовые атрибуты - индексы в массиве цветов
 enum
 {
@@ -94,21 +93,19 @@ enum VMENU_FLAGS
 class Dialog;
 class SaveScreen;
 
-
 struct MenuItemEx
 {
 	DWORD  Flags;                  // Флаги пункта
-
+	DWORD AccelKey;
 	FARString strName;
 
-	DWORD  AccelKey;
-	int    UserDataSize;           // Размер пользовательских данных
 	union                          // Пользовательские данные:
 	{
 		char  *UserData;             // - указатель!
 		char   Str4[sizeof(char*)];  // - strlen(строка)+1 <= sizeof(char*)
 	};
 
+	int UserDataSize;              // Размер пользовательских данных
 	short AmpPos;                  // Позиция автоназначенной подсветки
 	short Len[2];                  // размеры 2-х частей
 	short Idx2;                    // начало 2-й части
@@ -347,7 +344,7 @@ class VMenu: public Modal
 		int  GetSelectPos() { return SelectPos; }
 		int  GetSelectPos(struct FarListPos *ListPos);
 		int  SetSelectPos(struct FarListPos *ListPos);
-		int  SetSelectPos(int Pos, int Direct);
+		int SetSelectPos(int Pos, int Direct, bool stop_on_edge = false);
 		int  GetCheck(int Position=-1);
 		void SetCheck(int Check, int Position=-1);
 
