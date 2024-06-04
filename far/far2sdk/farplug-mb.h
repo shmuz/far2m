@@ -13,7 +13,7 @@ namespace oldfar
 #pragma pack(push,2)
 #endif
 #endif
-	const int NM=MAX_PATH;
+	const int NM = MAX_PATH;
 
 	enum FARMESSAGEFLAGS
 	{

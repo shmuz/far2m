@@ -2022,7 +2022,7 @@ int FarMacroApi::farsetconfigFunc()
 			int Index = ConfigOptGetIndex(mData->Values[0].String);
 			Res = _SetConfig(Index, &mData->Values[1]);
 		}
-		FarAdvControl(0, ACTL_REDRAWALL, nullptr);
+		FarAdvControl(0, ACTL_REDRAWALL, nullptr, nullptr);
 	}
 	PassBoolean(Res);
 	return 0;
