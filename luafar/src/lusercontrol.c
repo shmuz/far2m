@@ -6,6 +6,7 @@
 
 #include "ustring.h"
 #include "util.h"
+#include "bit64.h"
 
 #define TYPE_USERCONTROL "far_usercontrol"
 
@@ -50,7 +51,7 @@ static int uc_index(lua_State* L)
 		wchar_t UnicodeChar = fuc->VBuf[index].Char.UnicodeChar & 0xFFFFFFFF;
 		lua_createtable(L, 0, 2);
 		PutWStrToTable(L, "Char", &UnicodeChar, 1);
-		lua_pushinteger(L, fuc->VBuf[index].Attributes);
+		bit64_push(L, fuc->VBuf[index].Attributes);
 		lua_setfield(L, -2, "Attributes");
 	}
 	return 1;
@@ -73,7 +74,7 @@ static int uc_newindex(lua_State* L)
 	}
 	lua_pop(L, 1);
 	lua_getfield(L, 3, "Attributes");
-	fuc->VBuf[index].Attributes = lua_tointeger(L, -1);
+	fuc->VBuf[index].Attributes = check64(L, -1, NULL);
 	lua_pop(L, 1);
 	return 0;
 }

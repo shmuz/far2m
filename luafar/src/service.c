@@ -3718,7 +3718,7 @@ int PushDNParams (lua_State *L, int Msg, int Param1, LONG_PTR Param2)
 			uint64_t *ItemColor = (uint64_t*) Param2;
 			lua_createtable(L, 4, 0);
 			for(i=0; i < 4; i++) {
-				lua_pushinteger(L, ItemColor[i]);
+				bit64_push(L, ItemColor[i]);
 				lua_rawseti(L, -2, i+1);
 			}
 			break;
@@ -3764,7 +3764,9 @@ int ProcessDNResult(lua_State *L, int Msg, LONG_PTR Param2)
 				for(i = 0; i < 4; i++)
 				{
 					lua_rawgeti(L, -1, i+1);
-					ItemColor[i] = lua_tointeger(L,-1);
+					if (!lua_isnil(L, -1)) {
+						ItemColor[i] = check64(L, -1, NULL);
+					}
 					lua_pop(L, 1);
 				}
 				ret = 1;
@@ -3772,10 +3774,9 @@ int ProcessDNResult(lua_State *L, int Msg, LONG_PTR Param2)
 			break;
 
 		case DN_CTLCOLORDIALOG:
-			if (lua_isnumber(L, -1))
-			{
+			if (!lua_isnil(L, -1)) {
 				uint64_t *Color = (uint64_t*) Param2;
-				Color[0] = lua_tointeger(L, -1);
+				Color[0] = check64(L, -1, NULL);
 				ret = 1;
 			}
 			break;
@@ -4287,13 +4288,14 @@ static int far_GetMsg(lua_State *L)
 
 static int far_Text(lua_State *L)
 {
-	int Color = 0;
+	uint64_t Color = 0;
 	const wchar_t* Str;
 
 	int X = luaL_optinteger(L, 1, 0);
 	int Y = luaL_optinteger(L, 2, 0);
-	if (!lua_istable(L, 3))
-		Color = luaL_optinteger(L, 3, 0x0F);
+	if (lua_toboolean(L,3) && !lua_istable(L,3)) {
+		Color = check64(L, 3, NULL);
+	}
 	Str = opt_utf8_string(L, 4, NULL);
 
 	if (lua_istable(L, 3)) {
@@ -4679,12 +4681,12 @@ static int DoAdvControl (lua_State *L, int Command, int Delta)
 
 		case ACTL_GETARRAYCOLOR: {
 			int i;
-			int size = PSInfo.AdvControl(pd->ModuleNumber, Command, NULL, NULL);
+			intptr_t size = PSInfo.AdvControl(pd->ModuleNumber, Command, NULL, NULL);
 			uint64_t *p = (uint64_t*) lua_newuserdata(L, size * sizeof(uint64_t));
-			PSInfo.AdvControl(pd->ModuleNumber, Command, p, NULL);
+			PSInfo.AdvControl(pd->ModuleNumber, Command, (void*)size, p);
 			lua_createtable(L, size, 0);
 			for (i=0; i < size; i++) {
-				lua_pushinteger(L, p[i]);
+				bit64_push(L, p[i]);
 				lua_rawseti(L, -2, i+1);
 			}
 			return 1;
@@ -4746,7 +4748,7 @@ static int DoAdvControl (lua_State *L, int Command, int Delta)
 			for (i=0; i < fsc.ColorCount; i++) {
 				lua_pushinteger(L,i+1);
 				lua_gettable(L,pos2);
-				fsc.Colors[i] = lua_tointeger(L,-1); // TODO: handle 64-bit values
+				fsc.Colors[i] = check64(L, -1, NULL);
 				lua_pop(L,1);
 			}
 			lua_pushinteger(L, PSInfo.AdvControl(pd->ModuleNumber, Command, &fsc, NULL));

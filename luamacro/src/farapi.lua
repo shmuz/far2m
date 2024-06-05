@@ -192,13 +192,13 @@ enum FarMessagesProc
 
 	DM_GETDIALOGINFO,
 
-	DM_GETCOLOR,
-	DM_SETCOLOR,
-
 	DM_SETREADONLY,
+	DM_GETDEFAULTCOLOR, // Param1 - Item ID, Param2 - uint64_t * -> uint64_t ItemColors[4]
 
-	DM_GETTRUECOLOR,	// Param1 - Item ID, Param2 - DialogItemTrueColors *
-	DM_SETTRUECOLOR,	// Param1 - Item ID, Param2 - const DialogItemTrueColors *
+	DM_GETTRUECOLOR,	// Param1 - Item ID, Param2 - uint64_t * -> uint64_t ItemColors[4]
+	DM_GETCOLOR = DM_GETTRUECOLOR,
+	DM_SETTRUECOLOR,	// Param1 - Item ID, Param2 - uint64_t * -> uint64_t ItemColors[4]
+	DM_SETCOLOR = DM_SETTRUECOLOR,
 
 	DM_SETTEXTPTRSILENT,
 
@@ -363,9 +363,8 @@ struct FarListColors
 	DWORD  Flags;
 	DWORD  Reserved;
 	int    ColorCount;
-	LPBYTE Colors;
+	uint64_t *Colors;
 };
-
 
 struct FarDialogItem
 {
@@ -541,6 +540,34 @@ typedef int (__stdcall *FARAPIMENU)(
 	int                *BreakCode,
 	const struct FarMenuItem *Item,
 	int                 ItemsNumber
+);
+
+typedef int (*FARMENUCALLBACK)(void *CallbackData, int Pos, FarKey Key);
+
+enum FARMENUCALLBACKRETURN
+{
+	FMCB_CANCELMENU     = -1,
+	FMCB_PROCESSKEY     = 0,
+	FMCB_DONTPROCESSKEY = 1,
+	FMCB_RETURNCURPOS   = 2,
+};
+
+typedef int (__stdcall *FARAPIMENUV2)(
+	INT_PTR             PluginNumber,
+	const GUID         *Id,
+	int                 X,
+	int                 Y,
+	int                 MaxHeight,
+	DWORD               Flags,
+	const wchar_t      *Title,
+	const wchar_t      *Bottom,
+	const wchar_t      *HelpTopic,
+	const int          *BreakKeys,
+	int                *BreakCode,
+	const struct FarMenuItem *Item,
+	int                 ItemsNumber,
+	FARMENUCALLBACK     Callback,
+	void               *CallbackData
 );
 
 
@@ -723,7 +750,7 @@ typedef int (__stdcall *FARAPICONTROL)(
 typedef void (__stdcall *FARAPITEXT)(
 	int X,
 	int Y,
-	int Color,
+	uint64_t Color,
 	const wchar_t *Str
 );
 
@@ -1185,6 +1212,7 @@ enum MACROPLUGINRETURNTYPE
 	MPRT_FILEHIGHLIGHT,
 	MPRT_FILEPANELMODES,
 	MPRT_FOLDERSHORTCUTS,
+	MPRT_FILEMASKGROUPS,
 };
 
 struct OpenMacroPluginInfo
@@ -1219,7 +1247,7 @@ struct FarSetColors
 	DWORD Flags;
 	int StartIndex;
 	int ColorCount;
-	LPBYTE Colors;
+	uint64_t *Colors;
 };
 
 struct FarTrueColor
@@ -1308,9 +1336,9 @@ struct PROGRESSVALUE
 typedef INT_PTR(__stdcall *FARAPIADVCONTROL)(
 	INT_PTR ModuleNumber,
 	int Command,
-	void *Param
+	void *Param1,
+	void *Param2
 );
-
 
 enum VIEWER_CONTROL_COMMANDS
 {
@@ -2086,6 +2114,7 @@ struct PluginStartupInfo
 	FARAPIDIALOGINITV3     DialogInitV3;
 	FARAPITEXTV2           TextV2;
 	FARAPIMESSAGEV3        MessageV3;
+	FARAPIMENUV2           MenuV2;
 };
 
 
