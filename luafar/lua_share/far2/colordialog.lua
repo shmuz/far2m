@@ -169,13 +169,6 @@ local function GetColorDialog(aColor)
     end
   end
 
-  local function CtlColorDlgItem(hDlg, ID)
-    local colorset = {
-      Normal = { ColorDialogForeRGBValue(); ColorDialogBackRGBValue(); }
-    }
-    hDlg:SetTrueColor(ID, colorset);
-  end
-
   Items.proc = function(hDlg, Msg, Par1, Par2)
     if Msg == F.DN_CTLCOLORDLGITEM then
       if Par1 >= Pos.fore and Par1 < Pos.fore+16 or Par1 >= Pos.back and Par1 < Pos.back+16 then
@@ -185,11 +178,10 @@ local function GetColorDialog(aColor)
         Par2[1] = band(CurColor, 0xFF)
         return Par2
       elseif Par1 >= Pos.sample+1 and Par1 <= Pos.sample+2 then
-        -- CtlColorDlgItem(hDlg, Par1)
-        -- Par2[1] = band(CurColor,0xFF)
         Par2[1] = bor(
           lshift(ColorDialogForeRGBValue(), 16),
-          lshift(ColorDialogBackRGBValue(), 40)
+          lshift(ColorDialogBackRGBValue(), 40),
+          0x0300 -- enable "truecolor" background and foreground
         )
         return Par2
       end
