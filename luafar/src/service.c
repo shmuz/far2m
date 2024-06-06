@@ -1357,7 +1357,7 @@ static int editor_AddColor(lua_State *L)
 		lua_pop(L,1);
 	}
 	else
-		etc.Base.Color = luaL_optinteger(L,6,0) & MASK_COLOR;
+		etc.Base.Color = check64(L,6,NULL) & MASK_COLOR;
 
 	if (etc.Base.Color == 0) // prevent color deletion
 		etc.Base.Color = 0x0F;
