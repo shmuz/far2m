@@ -847,7 +847,7 @@ void ComposeAndSetColor(WORD BaseColor, const FarTrueColorForeAndBack *TrueColor
 
 void ClearScreen(uint64_t Color)
 {
-	Color = FarColorToReal(Color);
+	//Color = FarColorToReal(Color);
 	ScrBuf.FillRect(0, 0, ScrX, ScrY, L' ', Color);
 	ScrBuf.ResetShadow();
 	ScrBuf.Flush();
