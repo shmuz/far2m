@@ -2883,6 +2883,7 @@ static int Is_DM_DialogItem(int Msg)
 		case DM_GETCONSTTEXTPTR:
 		case DM_GETCURSORPOS:
 		case DM_GETCURSORSIZE:
+		case DM_GETDEFAULTCOLOR:
 		case DM_GETDLGITEM:
 		case DM_GETEDITPOSITION:
 		case DM_GETITEMDATA:
@@ -3106,7 +3107,9 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 				Param2 = lua_toboolean(L,pos4) ? BSTATE_CHECKED : BSTATE_UNCHECKED;
 			break;
 
-		case DM_GETTRUECOLOR: {  //same as DM_GETCOLOR
+		case DM_GETDEFAULTCOLOR:
+		case DM_GETTRUECOLOR: //same as DM_GETCOLOR
+		{
 			uint64_t Colors[4];
 			SendDlgMessage(hDlg, Msg, Param1, Colors);
 			lua_createtable(L, 4, 0);
@@ -3557,6 +3560,7 @@ DlgMethod( GetComboboxEvent,       DM_GETCOMBOBOXEVENT, 1)
 DlgMethod( GetConstTextPtr,        DM_GETCONSTTEXTPTR, 1)
 DlgMethod( GetCursorPos,           DM_GETCURSORPOS, 1)
 DlgMethod( GetCursorSize,          DM_GETCURSORSIZE, 1)
+DlgMethod( GetDefaultColor,        DM_GETDEFAULTCOLOR, 1)
 DlgMethod( GetDialogInfo,          DM_GETDIALOGINFO, 1)
 DlgMethod( GetDlgData,             DM_GETDLGDATA, 1)
 DlgMethod( GetDlgItem,             DM_GETDLGITEM, 1)
