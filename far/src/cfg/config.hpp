@@ -271,7 +271,7 @@ struct VMenuOptions
 	int LBtnClick;
 	int RBtnClick;
 	int MBtnClick;
-	bool StopOnEdge;
+	bool MenuLoopScroll;
 };
 
 struct CommandLineOptions

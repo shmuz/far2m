@@ -442,7 +442,7 @@ static struct FARConfig
 
 	{1, NSecSystem, "FolderInfo",                   &Opt.InfoPanel.strFolderInfoFiles, L"DirInfo,File_Id.diz,Descript.ion,ReadMe.*,Read.Me"},
 
-	{1, NSecVMenu, "MenuStopWrapOnEdge",            &Opt.VMenu.StopOnEdge, 1, REG_BOOLEAN},
+	{1, NSecVMenu, "MenuLoopScroll",                &Opt.VMenu.MenuLoopScroll, 0, REG_BOOLEAN},
 
 	{1, NSecVMenu, "LBtnClick",                     &Opt.VMenu.LBtnClick, VMENUCLICK_CANCEL},
 	{1, NSecVMenu, "RBtnClick",                     &Opt.VMenu.RBtnClick, VMENUCLICK_CANCEL},
@@ -535,15 +535,16 @@ bool ConfigOptSetBinary(int I, const void *Data, DWORD Size)
 
 static void MergePalette()
 {
-//	for(size_t i = 0; i < SIZE_ARRAY_PALETTE; i++) {
-//
-//		Palette[i] &= 0xFFFFFFFFFFFFFF00;
-//		Palette[i] |= Palette8bit[i];
-//	}
+	for(size_t i = 0; i < SIZE_ARRAY_PALETTE; i++) {
 
-	uint32_t basepalette[32];
-	WINPORT(GetConsoleBasePalette)(NULL, basepalette);
+		Palette[i] &= 0xFFFFFFFFFFFFFF00;
+		Palette[i] |= Palette8bit[i];
+	}
 
+//	uint32_t basepalette[32];
+//	WINPORT(GetConsoleBasePalette)(NULL, basepalette);
+
+/*
 	for(size_t i = 0; i < SIZE_ARRAY_PALETTE; i++) {
 		uint8_t color = Palette8bit[i];
 
@@ -562,6 +563,7 @@ static void MergePalette()
 
 		Palette[i] += color;
 	}
+*/
 }
 
 static void ConfigOptFromCmdLine()

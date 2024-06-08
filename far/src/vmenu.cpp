@@ -1263,7 +1263,7 @@ int VMenu::ProcessKey(FarKey Key)
 		case KEY_NUMPAD4:
 		case KEY_UP:
 		case KEY_NUMPAD8: {
-			SetSelectPos(SelectPos - 1, -1, IsRepeatedKey() && Opt.VMenu.StopOnEdge);
+			SetSelectPos(SelectPos - 1, -1, IsRepeatedKey() && !Opt.VMenu.MenuLoopScroll);
 			ShowMenu(true);
 			break;
 		}
@@ -1271,7 +1271,7 @@ int VMenu::ProcessKey(FarKey Key)
 		case KEY_NUMPAD6:
 		case KEY_DOWN:
 		case KEY_NUMPAD2: {
-			SetSelectPos(SelectPos + 1, 1, IsRepeatedKey() && Opt.VMenu.StopOnEdge);
+			SetSelectPos(SelectPos + 1, 1, IsRepeatedKey() && !Opt.VMenu.MenuLoopScroll);
 			ShowMenu(true);
 			break;
 		}
