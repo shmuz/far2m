@@ -216,7 +216,7 @@ static int f_new(lua_State *L)
 static int f_tostring(lua_State *L)
 {
 	char buf[32];
-	sprintf(buf, "%" PRId64, check64(L,1,NULL));
+	sprintf(buf, "0x%" PRIX64, check64(L,1,NULL));
 	lua_pushstring(L, buf);
 	return 1;
 }

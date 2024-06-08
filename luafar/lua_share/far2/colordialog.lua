@@ -101,8 +101,8 @@ local function GetColorDialog(aColor)
     --[[  38 ]] {tp="text";    x1=24; y1=""; width=5; text="RGB#:"},
     --[[  39 ]] {tp="fixedit"; x1=30; y1=""; width=6; mask="HHHHHH"; text=ColorDialogBackRGB, name="rgbBack"},
 
-    --[[  40 ]] {tp="chbox", x1= 5, y1=9,  text="&Transparent"; name="transpFore"; },
-    --[[  41 ]] {tp="chbox", x1=22, y1="", text="T&ransparent"; name="transpBack"; },
+    --[[  40 ]] {tp="chbox", x1= 5, y1=9,  text="RGB Foregr."; name="rgbFore_Enb"; },
+    --[[  41 ]] {tp="chbox", x1=22, y1="", text="RGB Backgr."; name="rgbBack_Enb"; },
 
     --[[  42 ]] {tp="text",  x1=5,  x2=37, flags=F.DIF_SETCOLOR, text=TextSample, ystep=2, name="sample"},
     --[[  43 ]] {tp="text",  x1="", x2="", flags=F.DIF_SETCOLOR, text=TextSample},
@@ -129,8 +129,8 @@ local function GetColorDialog(aColor)
     end
   end
 
-  Elem.transpFore.val = (0 ~= band(aColor, 0x0F00))
-  Elem.transpBack.val = (0 ~= band(aColor, 0xF000))
+  Elem.rgbFore_Enb.val = (0 ~= band(aColor, 0x0100))
+  Elem.rgbBack_Enb.val = (0 ~= band(aColor, 0x0200))
 
   for i = Pos.sample, Pos.sample+2 do -- TextSample
     Items[i].flags = SetByMask(Items[i].flags, CurColor, F.DIF_COLORMASK)
@@ -212,22 +212,15 @@ local function GetColorDialog(aColor)
 
   local out = Dlg:Run()
   if out then
-    local Color = band(CurColor, 0xffff)
+    local Color = band(CurColor, 0xFCFF)
 
-    if out.transpFore then
-      Color = bor(Color, 0x0F00)
-    else
-      Color = band(Color, 0xF0FF)
+    if out.rgbFore_Enb then
+      Color = bor(Color, 0x0100, lshift(ColorDialogForeRGBValue(), 16))
     end
 
-    if out.transpBack then
-      Color = bor(Color, 0xF000)
-    else
-      Color = band(Color, 0x0FFF)
+    if out.rgbBack_Enb then
+      Color = bor(Color, 0x0200, lshift(ColorDialogBackRGBValue(), 40))
     end
-
-    Color = bor(Color, lshift(ColorDialogForeRGBValue(), 16))
-    Color = bor(Color, lshift(ColorDialogBackRGBValue(), 40))
 
     return Color
   end
