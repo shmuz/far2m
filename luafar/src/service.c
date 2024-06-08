@@ -1332,7 +1332,9 @@ static int editor_AddColor(lua_State *L)
 		COLOR_BLACK = 0x000000;
 
 	struct EditorTrueColor etc;
-	int editorId, Flags, isTrueColor;
+	int editorId, Flags, isTrueColor = 0;
+	int64_t Color64;
+	DWORD fg, bg;
 
 	memset(&etc, 0, sizeof(etc));
 	editorId              = luaL_optinteger(L,1,-1);
@@ -1340,11 +1342,10 @@ static int editor_AddColor(lua_State *L)
 	etc.Base.StartPos     = luaL_checkinteger(L,3) - 1;
 	etc.Base.EndPos       = luaL_checkinteger(L,4) - 1;
 	Flags                 = OptFlags(L,5,0);
-	isTrueColor           = lua_istable(L,6);
 
-	if (isTrueColor)
+	if (lua_istable(L,6))
 	{
-		DWORD fg, bg;
+		isTrueColor = 1;
 		lua_pushvalue(L,6);
 		{
 			etc.Base.Color // may contain COMMON_LVB_UNDERSCORE, etc.
@@ -1355,6 +1356,14 @@ static int editor_AddColor(lua_State *L)
 			FarTrueColorFromRGB(&etc.TrueColor.Back, bg, 1);
 		}
 		lua_pop(L,1);
+	}
+	else if (bit64_getvalue(L, 6, &Color64))
+	{
+		isTrueColor = 1;
+		fg = (Color64 >> 16) & 0xFFFFFF;
+		bg = (Color64 >> 40) & 0xFFFFFF;
+		FarTrueColorFromRGB(&etc.TrueColor.Fore, fg, 1);
+		FarTrueColorFromRGB(&etc.TrueColor.Back, bg, 1);
 	}
 	else
 		etc.Base.Color = check64(L,6,NULL) & MASK_COLOR;
