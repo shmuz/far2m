@@ -5548,30 +5548,39 @@ static int far_Log(lua_State *L)
 static int far_ColorDialog(lua_State *L)
 {
 	TPluginData* pd = GetPluginData(L);
-	struct ColorDialogData Data = { 0, 0, 0x0F, 0 };
-	flags_t Flags;
+	struct ColorDialogData Data = { 0, 0, 0x0F, 0, 0, 0 };
+	int success;
 
-	lua_settop(L, 2);
-	if (lua_isnumber (L, 1))
-		Data.PaletteColor = (unsigned char)lua_tointeger(L, 1);
+	uint64_t Color = check64(L, 1, &success);
+	if (success) {
+		Data.BackColor    = (Color >> 40) & 0xFFFFFF;
+		Data.ForeColor    = (Color >> 16) & 0xFFFFFF;
+		Data.Flags        = (Color >>  8) & 0xFF;
+		Data.PaletteColor = (Color >>  0) & 0xFF;
+	}
 	else if (lua_istable(L, 1)) {
 		lua_pushvalue(L, 1);
 		FillDialogColors(L, &Data);
+		lua_pop(L, 1);
 	}
 	else if (!lua_isnoneornil(L, 1))
-		return luaL_argerror(L, 1, "table or integer expected");
+		return luaL_argerror(L, 1, "wrong type for Color");
 
-	Flags = OptFlags(L, 2, 0);
+	flags_t Flags = OptFlags(L, 2, 0);
+
 	if (PSInfo.ColorDialog(pd->ModuleNumber, &Data, Flags)) {
 		lua_createtable(L, 0, 4);
 		PutIntToTable(L, "ForegroundColor", Data.ForeColor);
 		PutIntToTable(L, "BackgroundColor", Data.BackColor);
 		PutIntToTable(L, "PaletteColor", Data.PaletteColor);
 		PutIntToTable(L, "Flags", Data.Flags);
-		PutIntToTable(L, "Mask", Data.Mask & 0xFFFFFFFF); //NOTE: Data.Mask is a 64-bit value
+
+		bit64_push(L, Data.Mask);  lua_setfield(L, -2, "Mask");
+		bit64_push(L, Data.Color); lua_setfield(L, -2, "Color");
 	}
 	else
 		lua_pushnil(L);
+
 	return 1;
 }
 

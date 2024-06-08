@@ -1611,6 +1611,7 @@ struct ColorDialogData
 	DWORD BackColor;
 	unsigned char PaletteColor;
 	unsigned char Flags;
+	uint64_t Color;
 	uint64_t Mask;
 };
 

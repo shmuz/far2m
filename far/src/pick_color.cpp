@@ -965,6 +965,7 @@ bool GetColorDialog(INT_PTR PluginNumber, ColorDialogData *Data, DWORD Flags)
 			Data->ForeColor = (Color >> 16) & 0xFFFFFF;
 			Data->Flags = (Color >> 8) & 0xFF;
 			Data->PaletteColor = Color & 0xFF;
+			Data->Color = Color;
 			if (pMask)
 				Data->Mask = *pMask;
 
