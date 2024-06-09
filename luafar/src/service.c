@@ -3908,6 +3908,7 @@ LONG_PTR LF_DlgProc(lua_State *L, HANDLE hDlg, int Msg, int Param1, LONG_PTR Par
 		case DN_CTLCOLORDLGITEM:
 		case DN_CTLCOLORDLGLIST:
 		case DN_HELP:
+		case DN_KILLFOCUS:
 			ret = ProcessDNResult(L, Msg, Param2);
 			break;
 
