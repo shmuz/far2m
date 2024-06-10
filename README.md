@@ -8,8 +8,11 @@ Works also on OSX/MacOS and BSD (but later not tested on regular manner)
 BETA VERSION.
 **Use at your own risk!**
 
-Plug-ins that are currently working: NetRocks (SFTP/SCP/FTP/FTPS/SMB/NFS/WebDAV), LuaMacro, colorer,
-multiarc, tmppanel, align, autowrap, drawline, editcase, SimpleIndent, Calculator, Python (optional scripting support)
+#### Included plug-ins
+Advanced compare, Align block, Auto wrap, Calculator, Draw lines, EditCase,
+Editor autocomplete, FarColorer, FileCase, HlfViewer, Incremental search,
+Inside, LuaMacro, MultiArc, NetCfg, NetRocks (SFTP/SCP/FTP/FTPS/SMB/NFS/WebDAV),
+Python (optional scripting support), SimpleIndent, TmpPanel.
 
 #### License: GNU/GPLv2
 
