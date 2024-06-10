@@ -5548,6 +5548,34 @@ static int far_BackgroundTask(lua_State *L)
 	return 0;
 }
 
+static int far_StrCellsCount(lua_State *L)
+{
+	size_t Len;
+	const wchar_t *Str = check_utf8_string(L, 1, &Len);
+	size_t CharsCount = luaL_optinteger(L, 2, Len);
+
+	if (CharsCount > Len)
+		CharsCount = Len;
+
+	lua_pushinteger(L, FSF.StrCellsCount(Str, CharsCount));
+	return 1;
+}
+
+static int far_StrSizeOfCells(lua_State *L)
+{
+	size_t Len, CellsCount;
+	const wchar_t *Str = check_utf8_string(L, 1, &Len);
+	size_t CharsCount = luaL_optinteger(L, 2, Len);
+	int RoundUp = lua_toboolean(L, 3);
+
+	if (CharsCount > Len)
+		CharsCount = Len;
+
+	lua_pushinteger(L, FSF.StrSizeOfCells(Str, CharsCount, &CellsCount, RoundUp));
+	lua_pushinteger(L, CellsCount);
+	return 2;
+}
+
 static int far_Log(lua_State *L)
 {
 	const char* txt = luaL_optstring(L, 1, "log message");
@@ -6019,6 +6047,8 @@ static const luaL_Reg far_funcs[] =
 	PAIR( far, Show),
 	PAIR( far, ShowHelp),
 	PAIR( far, SplitCmdLine),
+	PAIR( far, StrCellsCount),
+	PAIR( far, StrSizeOfCells),
 	PAIR( far, SubscribeDialogDrawEvents),
 	PAIR( far, SudoCRCall),
 	PAIR( far, Text),

@@ -1968,6 +1968,15 @@ local function test_FarStandardFunctions()
   assert(far.LStrnicmp("ABC","abc",3) == 0)
   assert(far.LStrnicmp("111abc","111def",3) == 0)
   assert(far.LStrnicmp("111abc","111def",4) < 0)
+
+  assert(6 == far.StrCellsCount("🔥🔥🔥"))
+  assert(4 == far.StrCellsCount("🔥🔥🔥", 2))
+
+  local a, b
+  a, b = far.StrSizeOfCells("🔥🔥🔥")
+  assert(a == 3 and b == 6)
+  a, b = far.StrSizeOfCells("🔥🔥🔥", nil, true)
+  assert(a == 3 and b == 6)
 end
 
 -- "Several lines are merged into one".
