@@ -1025,6 +1025,7 @@ local function test_Far_GetConfig()
     "Viewer.Wrap",
     "VMenu.LBtnClick",
     "VMenu.MBtnClick",
+    "VMenu.MenuLoopScroll",
     "VMenu.RBtnClick",
     "XLat.EnableForDialogs",
     "XLat.EnableForFastFileFind",
