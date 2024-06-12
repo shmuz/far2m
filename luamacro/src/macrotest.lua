@@ -66,6 +66,8 @@ local function TestArea (area, msg)
 end
 
 function MT.test_areas()
+  TestArea("Shell")
+
   Keys "AltIns"              TestArea "Grabber"    Keys "Esc"
   Keys "F12 0"               TestArea "Shell"
   Keys "ShiftF4 CtrlY Enter" TestArea "Editor"     Keys "Esc"
@@ -2210,6 +2212,9 @@ local function test_one_guid(val, func, keys, numEsc)
 end
 
 local function test_Guids()
+  assert(0 ~= Far.GetConfig("Confirmations.Delete"), "Confirmations.Delete must be set")
+  assert(0 ~= Far.GetConfig("Confirmations.DeleteFolder"), "Confirmations.DeleteFolder must be set")
+
   assert_table(far.Guids)
 
   Keys("Esc"); print("lm:farconfig"); Keys("Enter")
@@ -2220,14 +2225,31 @@ local function test_Guids()
   test_one_guid( "ChangeDiskMenuId",         nil, "AltF1")
   test_one_guid( "ChangeDiskMenuId",         nil, "AltF2")
   test_one_guid( "CodePagesMenuId",          nil, "F9 Home 3*Right Enter End 4*Up Enter")
+
+  local was_empty = APanel.Empty
+  if was_empty then
+    Keys("F7 1 Enter")
+    assert_false(APanel.Empty)
+  end
   test_one_guid( "CopyCurrentOnlyFileId",    nil, "End ShiftF5")
   test_one_guid( "CopyFilesId",              nil, "End F5")
   test_one_guid( "DeleteFileFolderId",       nil, "End F8")
   test_one_guid( "DeleteWipeId",             nil, "End AltDel")
   test_one_guid( "DescribeFileId",           nil, "End CtrlZ")
+  test_one_guid( "FileAttrDlgId",            nil, "End CtrlA")
+  test_one_guid( "HardSymLinkId",            nil, "End AltF6")
+  test_one_guid( "MoveCurrentOnlyFileId",    nil, "End ShiftF6")
+  test_one_guid( "MoveFilesId",              nil, "End F6")
+  if was_empty then
+    assert_eq(APanel.Current, "1")
+    Keys("F8")
+    if Area.Dialog then Keys("Enter") end
+    assert_true(APanel.Empty)
+  end
+
   test_one_guid( "EditUserMenuId",           nil, "F2 Ins Enter", 2)
-  test_one_guid( "EditorReplaceId",          nil, "End F4 CtrlF7", 2)
-  test_one_guid( "EditorSearchId",           nil, "End F4 F7", 2)
+  test_one_guid( "EditorReplaceId",          nil, "ShiftF4 Del Enter CtrlF7", 2)
+  test_one_guid( "EditorSearchId",           nil, "ShiftF4 Del Enter F7", 2)
   test_one_guid( "FarAskQuitId",             nil, "F10")
 
   local myMenu
@@ -2251,20 +2273,16 @@ local function test_Guids()
   test_one_guid( "MaskGroupsMenuId",         myMenu)
   test_one_guid( "EditMaskGroupId",          myMenu, "Ins", 2)
 
-  test_one_guid( "FileAttrDlgId",            nil, "End CtrlA")
   test_one_guid( "FileOpenCreateId",         nil, "ShiftF4")
-  test_one_guid( "FileSaveAsId",             nil, "End F4 ShiftF2", 2)
+  test_one_guid( "FileSaveAsId",             nil, "ShiftF4 Del Enter ShiftF2", 2)
   test_one_guid( "FiltersConfigId",          nil, "CtrlI Ins", 2)
   test_one_guid( "FiltersMenuId",            nil, "CtrlI")
   test_one_guid( "FindFileId",               nil, "AltF7")
-  test_one_guid( "HardSymLinkId",            nil, "End AltF6")
   test_one_guid( "HelpSearchId",             nil, "F1 F7", 2)
   test_one_guid( "HistoryCmdId",             nil, "AltF8")
   test_one_guid( "HistoryEditViewId",        nil, "AltF11")
   test_one_guid( "HistoryFolderId",          nil, "AltF12")
   test_one_guid( "MakeFolderId",             nil, "F7")
-  test_one_guid( "MoveCurrentOnlyFileId",    nil, "End ShiftF6")
-  test_one_guid( "MoveFilesId",              nil, "End F6")
   test_one_guid( "PluginInformationId",      nil, "F11 F3", 2)
   test_one_guid( "PluginsConfigMenuId",      nil, "AltShiftF9")
   test_one_guid( "PluginsMenuId",            nil, "F11")
@@ -2272,7 +2290,10 @@ local function test_Guids()
   test_one_guid( "SelectDialogId",           nil, "Add")
   test_one_guid( "SelectSortModeId",         nil, "CtrlF12")
   test_one_guid( "UnSelectDialogId",         nil, "Subtract")
-  test_one_guid( "ViewerSearchId",           nil, "End F3 F7", 2)
+
+  Plugin.Command(far.GetPluginId(), "view:$FARHOME/FarEng.lng")
+  assert_true(Area.Viewer)
+  test_one_guid( "ViewerSearchId",           nil, "F7", 2)
 
   -- test_one_guid( "BadEditorCodePageId", nil, "")
   -- test_one_guid( "CannotRecycleFileId", nil, "")
@@ -2456,7 +2477,7 @@ function MT.test_UserDefinedList()
 end
 
 function MT.test_all()
-  TestArea("Shell", "Run these tests from the Shell area.")
+  assert(Area.Shell, "Run these tests from the Shell area.")
   assert(not APanel.Plugin and not PPanel.Plugin, "Run these tests when neither of panels is a plugin panel.")
 
   MT.test_areas()
