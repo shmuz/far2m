@@ -126,7 +126,7 @@ public:
 	int editorsetstrFunc();
 	int editorsettitleFunc();
 	int editorundoFunc();
-	int environFunc();
+	int environFunc();             //implemented in Lua
 	int fargetconfigFunc();
 	int farsetconfigFunc();
 	int fattrFunc();
@@ -1000,7 +1000,6 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 		case MCODE_F_EDITOR_SET:         return api.editorsetFunc();
 		case MCODE_F_EDITOR_SETTITLE:    return api.editorsettitleFunc();
 		case MCODE_F_EDITOR_UNDO:        return api.editorundoFunc();
-		case MCODE_F_ENVIRON:            return api.environFunc();
 		case MCODE_F_FATTR:              return api.fattrFunc();
 		case MCODE_F_FEXIST:             return api.fexistFunc();
 		case MCODE_F_FLOAT:              return api.floatFunc();
@@ -1685,18 +1684,6 @@ int FarMacroApi::msgBoxFunc()
 	TempBuf += text;
 	auto Result=FarMessageFn(-1,Flags,nullptr,(const wchar_t * const *)TempBuf.CPtr(),0,0)+1;
 	return PassNumber(Result);
-}
-
-// S=env(S)
-int FarMacroApi::environFunc()
-{
-	auto Params = parseParams(1);
-	FARString strEnv;
-
-	if (!apiGetEnvironmentVariable(Params[0].toString(), strEnv))
-		strEnv.Clear();
-
-	return PassString(strEnv);
 }
 
 // V=Panel.Select(panelType,Action[,Mode[,Items]])

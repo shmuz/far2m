@@ -287,6 +287,8 @@ local function test_mf_env()
   assert_eq (mf.env("Foo"), "Bar")
   mf.env("Foo",1,"")
   assert_eq (mf.env("Foo"), "")
+  mf.env("Foo",1,nil)
+  assert_nil(win.GetEnv("Foo"))
 end
 
 local function test_mf_fattr()
