@@ -433,13 +433,6 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 			return api.PassBoolean(ret);
 		}
 
-		case MCODE_F_GETOPTIONS:
-		{
-			DWORD Options = 0;
-			api.PassNumber(Options);
-			break;
-		}
-
 		case MCODE_F_KEYMACRO:
 			if (Data->Count && Data->Values[0].Type==FMVT_DOUBLE)
 			{
