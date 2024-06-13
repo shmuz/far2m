@@ -1321,8 +1321,7 @@ int LF_ProcessSynchroEvent (lua_State* L, int Event, void *Param)
 						lua_rawgeti(L, posTab, index);
 					lua_remove(L, posTab);
 					lua_remove(L, posTab);                          //+2+narg
-					if (pcall_msg(L, 1+narg, 0) != 0)               //+0 or +1
-						lua_pop(L,1);
+					pcall_msg(L, 1+narg, 0);                        //+0
 					break;
 
 				case 1:
