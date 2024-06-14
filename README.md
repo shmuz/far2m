@@ -30,22 +30,22 @@ Python (optional scripting support), SimpleIndent, TmpPanel.
 
 * gawk
 * m4
-* libwxgtk3.0-gtk3-dev (or in older distributives - libwxgtk3.0-dev)  (needed for GUI backend, not needed with -DUSEWX=no)
+* libwxgtk3.0-gtk3-dev (or libwxgtk3.2-dev in newer distributions, or libwxgtk3.0-dev in older ones, optional - needed for GUI backend, not needed with -DUSEWX=no)
 * libx11-dev (optional - needed for X11 extension that provides better UX for TTY backend wherever X11 is available)
 * libxi-dev (optional - needed for X11/Xi extension that provides best UX for TTY backend wherever X11 Xi extension is available)
-* libxerces-c-dev
-* libspdlog-dev
+* libxerces-c-dev (optional - needed for Colorer plugin, not needed with -DCOLORER=no)
 * libuchardet-dev
-* libssh-dev (needed for NetRocks/SFTP)
-* libssl-dev (needed for NetRocks/FTPS)
-* libsmbclient-dev (needed for NetRocks/SMB)
-* libnfs-dev (needed for NetRocks/NFS)
-* libneon27-dev (or later, needed for NetRocks/WebDAV)
-* libarchive-dev (needed for better archives support in multiarc)
+* libssh-dev (optional - needed for NetRocks/SFTP)
+* libssl-dev (optional - needed for NetRocks/FTPS)
+* libsmbclient-dev (optional - needed for NetRocks/SMB)
+* libnfs-dev (optional - needed for NetRocks/NFS)
+* libneon27-dev (or later, optional - needed for NetRocks/WebDAV)
+* libarchive-dev (optional - needed for better archives support in multiarc)
 * libpcre3-dev (or in older distributives - libpcre2-dev) (needed for custom archives support in multiarc)
 * libluajit-5.1-dev
 * uuid-dev
 * cmake ( >= 3.2.2 )
+* pkg-config
 * g++
 * git (needed for downloading source code)
 
