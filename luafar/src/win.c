@@ -5,6 +5,7 @@
 #include "service.h"
 #include "ustring.h"
 #include "util.h"
+#include "bit64.h"
 
 static BOOL dir_exist(const wchar_t* path)
 {
@@ -539,6 +540,95 @@ static int win_JoinPath(lua_State *L)
 	return 1;
 }
 
+static void PutFileTimeToTableEx(lua_State *L, const FILETIME *FT, const char *key)
+{
+	INT64 FileTime = FT->dwLowDateTime + 0x100000000LL * FT->dwHighDateTime;
+	bit64_push(L, FileTime);
+	lua_setfield(L, -2, key);
+}
+
+static int win_GetFileTimes(lua_State *L)
+{
+	int res = 0;
+	const wchar_t* FileName = check_utf8_string(L, 1, NULL);
+	DWORD attr = GetFileAttributes(FileName);
+	if (attr != INVALID_FILE_ATTRIBUTES)
+	{
+		DWORD flags = (attr & FILE_ATTRIBUTE_DIRECTORY) ? FILE_FLAG_BACKUP_SEMANTICS : 0;
+		HANDLE hFile = CreateFile(FileName,GENERIC_READ,FILE_SHARE_READ,NULL,OPEN_EXISTING,flags,NULL);
+		if (hFile != INVALID_HANDLE_VALUE)
+		{
+			FILETIME t_create, t_access, t_write;
+			if (GetFileTime(hFile, &t_create, &t_access, &t_write))
+			{
+				lua_createtable(L, 0, 3);
+				PutFileTimeToTableEx(L, &t_create, "CreationTime");
+				PutFileTimeToTableEx(L, &t_access, "LastAccessTime");
+				PutFileTimeToTableEx(L, &t_write,  "LastWriteTime");
+				res = 1;
+			}
+			CloseHandle(hFile);
+		}
+	}
+	if (res == 0)
+		lua_pushnil(L);
+	return 1;
+}
+
+static int ExtractFileTime(lua_State *L, const char *key, FILETIME* target, HANDLE hFile)
+{
+	int success = 0;
+	lua_getfield(L, -1, key);
+	if (!lua_isnil(L, -1))
+	{
+		INT64 DateTime = check64(L, -1, &success);
+		if (success)
+		{
+			target->dwLowDateTime = DateTime & 0xFFFFFFFF;
+			target->dwHighDateTime = DateTime >> 32;
+		}
+		else
+		{
+			CloseHandle(hFile);
+			lua_pushfstring(L, "invalid value at key '%s'", key);
+			return luaL_error(L, lua_tostring(L, -1));
+		}
+	}
+	lua_pop(L, 1);
+	return success;
+}
+
+static int win_SetFileTimes(lua_State *L)
+{
+	int res = 0;
+	const wchar_t* FileName = check_utf8_string(L, 1, NULL);
+	DWORD attr = GetFileAttributes(FileName);
+	luaL_checktype(L, 2, LUA_TTABLE);
+	if (attr != INVALID_FILE_ATTRIBUTES)
+	{
+		DWORD flags = (attr & FILE_ATTRIBUTE_DIRECTORY) ? FILE_FLAG_BACKUP_SEMANTICS : 0;
+		HANDLE hFile = CreateFile(FileName,GENERIC_WRITE,FILE_SHARE_READ,NULL,OPEN_EXISTING,flags,NULL);
+		if (hFile != INVALID_HANDLE_VALUE)
+		{
+			FILETIME t_create, t_access, t_write;
+			FILETIME *p_create=NULL, *p_access=NULL, *p_write=NULL;
+			lua_pushvalue(L, 2);
+			if (ExtractFileTime(L, "CreationTime", &t_create, hFile))
+				p_create = &t_create;
+			if (ExtractFileTime(L, "LastAccessTime", &t_access, hFile))
+				p_access = &t_access;
+			if (ExtractFileTime(L, "LastWriteTime", &t_write, hFile))
+				p_write = &t_write;
+			lua_pushboolean(L, (p_create||p_access||p_write) && SetFileTime(hFile,p_create,p_access,p_write));
+			CloseHandle(hFile);
+			res = 1;
+		}
+	}
+	if (res == 0)
+		lua_pushboolean(L, 0);
+	return 1;
+}
+
 #define PAIR(prefix,txt) {#txt, prefix ## _ ## txt}
 
 static const luaL_Reg win_funcs[] = {
@@ -557,6 +647,7 @@ static const luaL_Reg win_funcs[] = {
 	PAIR( win, GetCurrentDir),
 	PAIR( win, GetEnv),
 	PAIR( win, GetFileInfo),
+	PAIR( win, GetFileTimes),
 	PAIR( win, GetLocalTime),
 	PAIR( win, GetSystemTime),
 	PAIR( win, GetSystemTimeAsFileTime),
@@ -569,6 +660,7 @@ static const luaL_Reg win_funcs[] = {
 	PAIR( win, RenameFile),
 	PAIR( win, SetCurrentDir),
 	PAIR( win, SetEnv),
+	PAIR( win, SetFileTimes),
 	PAIR( win, Sleep),
 	PAIR( win, system),
 	PAIR( win, SystemTimeToFileTime),
