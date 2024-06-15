@@ -546,6 +546,9 @@ PHPTR PluginManager::OpenFilePlugin(
 		if (!pPlugin->HasOpenFilePlugin() && !(pPlugin->HasAnalyse() && pPlugin->HasOpenPlugin()))
 			continue;
 
+		if (Type == OFP_EXTRACT && !pPlugin->HasGetFiles())
+			continue;
+
 		if(Name && !smm)
 		{
 			try
