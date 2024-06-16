@@ -158,8 +158,7 @@ static int FarInputBoxSynched(INT_PTR PluginNumber, const GUID* Id,
 int WINAPI FarInputBox(const wchar_t *Title, const wchar_t *Prompt, const wchar_t *HistoryName,
 		const wchar_t *SrcText, wchar_t *DestText, int DestLength, const wchar_t *HelpTopic, DWORD Flags)
 {
-	return InterThreadCall<int, 0>(std::bind(FarInputBoxSynched, 0, nullptr, Title, Prompt, HistoryName, SrcText,
-			DestText, DestLength, HelpTopic, Flags));
+	return FarInputBoxV3(0,nullptr,Title,Prompt,HistoryName,SrcText,DestText,DestLength,HelpTopic,Flags);
 }
 
 int WINAPI FarInputBoxV3(INT_PTR PluginNumber, const GUID* Id,
@@ -1026,10 +1025,8 @@ HANDLE WINAPI FarDialogInit(INT_PTR PluginNumber, int X1, int Y1, int X2, int Y2
 		FarDialogItem *Item, unsigned int ItemsNumber, DWORD Reserved, DWORD Flags, FARWINDOWPROC DlgProc,
 		LONG_PTR Param)
 {
-	HANDLE out = InterThreadCall<HANDLE, nullptr>(std::bind(FarDialogInitSynched, PluginNumber, nullptr, X1,
-			Y1, X2, Y2, HelpTopic, Item, ItemsNumber, Reserved, Flags, DlgProc, Param));
-
-	return (out != nullptr) ? out : INVALID_HANDLE_VALUE;
+	return FarDialogInitV3(PluginNumber, nullptr, X1, Y1, X2, Y2, HelpTopic, Item, ItemsNumber,
+			Reserved, Flags, DlgProc, Param);
 }
 
 HANDLE WINAPI FarDialogInitV3(INT_PTR PluginNumber, const GUID *Id, int X1, int Y1, int X2, int Y2,
@@ -1156,8 +1153,7 @@ static int FarMessageFnSynched(INT_PTR PluginNumber, const GUID *Id, DWORD Flags
 int WINAPI FarMessageFn(INT_PTR PluginNumber, DWORD Flags, const wchar_t *HelpTopic,
 		const wchar_t *const *Items, int ItemsNumber, int ButtonsNumber)
 {
-	return InterThreadCall<int, -1>(std::bind(FarMessageFnSynched, PluginNumber, nullptr, Flags, HelpTopic,
-			Items, ItemsNumber, ButtonsNumber));
+	return FarMessageV3Fn(PluginNumber, nullptr, Flags, HelpTopic, Items, ItemsNumber, ButtonsNumber);
 }
 
 int WINAPI FarMessageV3Fn(INT_PTR PluginNumber, const GUID *Id, DWORD Flags, const wchar_t *HelpTopic,
@@ -2024,7 +2020,7 @@ static int FarEditorControlSynchedV2(int EditorID, int Command, void *Param)
 
 int WINAPI FarEditorControl(int Command, void *Param)
 {
-	return InterThreadCall<int, 0>(std::bind(FarEditorControlSynchedV2, -1, Command, Param));
+	return FarEditorControlV2(-1, Command, Param);
 }
 
 int WINAPI FarEditorControlV2(int EditorID, int Command, void *Param)
@@ -2068,7 +2064,7 @@ static int FarViewerControlSynchedV2(int ViewerID, int Command, void *Param)
 
 int WINAPI FarViewerControl(int Command, void *Param)
 {
-	return InterThreadCall<int, 0>(std::bind(FarViewerControlSynchedV2, -1, Command, Param));
+	return FarViewerControlV2(-1, Command, Param);
 }
 
 int WINAPI FarViewerControlV2(int ViewerId, int Command, void *Param)

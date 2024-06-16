@@ -368,12 +368,6 @@ static int PluginHandle_rawhandle(lua_State *L)
 	return 1;
 }
 
-static const GUID *GetGuid(lua_State *L, int pos)
-{
-	return lua_type(L,pos) == LUA_TSTRING && lua_objlen(L,pos) == sizeof(GUID) ?
-			(const GUID*)lua_tostring(L,pos) : NULL;
-}
-
 void ConvertLuaValue (lua_State *L, int pos, struct FarMacroValue *target)
 {
 	int64_t val64;
@@ -420,6 +414,12 @@ void ConvertLuaValue (lua_State *L, int pos, struct FarMacroValue *target)
 		target->Type = FMVT_INTEGER;
 		target->Value.Integer = val64;
 	}
+}
+
+static const GUID *GetGuid(lua_State *L, int pos)
+{
+	return lua_type(L,pos) == LUA_TSTRING && lua_objlen(L,pos) == sizeof(GUID) ?
+			(const GUID*)lua_tostring(L,pos) : NULL;
 }
 
 static int _GetFileProperty (lua_State *L, int Owner)

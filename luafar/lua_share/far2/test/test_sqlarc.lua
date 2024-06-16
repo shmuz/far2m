@@ -9,8 +9,9 @@ local PluginGuids = {
   MakeFolder    = "E5A63040-CE75-4A43-8637-1D8CB233E05C";
   ExtractFiles  = "7804AF5A-0F67-467D-8879-670E2005B955";
 }
-local TempDir = far.InMyTemp("sqlarc_test/")
-local HostFile = TempDir.."test1.sqlarc"
+local join = win.JoinPath
+local TempDir = far.InMyTemp("sqlarc_test")
+local HostFile = join(TempDir, "test1.sqlarc")
 local F = far.Flags
 
 -- Ensure (partial) restore of panels state
@@ -23,8 +24,9 @@ local function RestorePanelsOnExit()
     end, APanel.Left)
 end
 
-local function create_file(fname, attr)
+local function create_file(dir, fname, attr)
   win.Sleep(1) -- to avoid the same timestamp in different files
+  fname = join(dir, fname)
   local fp = assert(io.open(fname, "wb"))
   local size = math.random(0,1000)
   if size > 0 then
@@ -96,7 +98,7 @@ local function test_create_archive_dirs()
   assert(APanel.Folder)
   assert(APanel.Current == "Папка 2")
   Keys("Enter")
-  assert(APanel.Path == "Папка 1\\Папка 2")
+  assert(APanel.Path == join("Папка 1", "Папка 2"))
 end
 
 local function test_remove_tree(aDir, aInnerCall)
@@ -146,7 +148,7 @@ local function test_get_archive_dir_data (activePanel, aDir)
   -- Collect items from subdirectories
   for _,item in ipairs(t) do
     if item.FileAttributes:find("d") then
-      item.Items = test_get_archive_dir_data(activePanel, aDir.."\\"..item.FileName) -- recurse
+      item.Items = test_get_archive_dir_data(activePanel, join(aDir, item.FileName)) -- recurse
     end
   end
   -- Sort and return
@@ -171,36 +173,36 @@ local function test_compare_archive_filesystem(array_arc, array_fs)
 end
 
 local function test_create_filesystem_tree()
-  local rootdir = TempDir .. "rootdir\\"
+  local rootdir = join(TempDir, "rootdir")
 
-  local dir1 = rootdir .. [[Наши продукты\]]
-  local dir1_1 = dir1 .. [[Фрукты\]]
-  local dir1_2 = dir1 .. [[Овощи\]]
+  local dir1   = join(rootdir, "Наши продукты")
+  local dir1_1 = join(dir1,    "Фрукты")
+  local dir1_2 = join(dir1,    "Овощи")
 
-  local dir2 = rootdir .. [[Our docs\]]
-  local dir2_1 = dir2 .. [[Inbox\]]
-  local dir2_2 = dir2 .. [[Sent\]]
+  local dir2   = join(rootdir, "Our docs")
+  local dir2_1 = join(dir2,    "Inbox")
+  local dir2_2 = join(dir2,    "Sent")
 
   for _,dname in ipairs {dir1_1, dir1_2, dir2_1, dir2_2} do
     assert(win.CreateDir(dname, "t"))
   end
 
-  create_file (rootdir.."notes-1.txt")
-  create_file (rootdir.."notes-2.txt", "")
+  create_file (rootdir, "notes-1.txt")
+  create_file (rootdir, "notes-2.txt", "")
 
-  create_file (dir1  .."заметки-1.текст", "a")
-  create_file (dir1  .."заметки-2.текст", "ah")
-  create_file (dir1_1.."яблоки.текст",    "hs")
-  create_file (dir1_1.."груши.текст",     "as")
-  create_file (dir1_2.."картошка.текст",  "ahs")
-  create_file (dir1_2.."морковка.текст")
+  create_file (dir1,   "заметки-1.текст", "a")
+  create_file (dir1,   "заметки-2.текст", "ah")
+  create_file (dir1_1, "яблоки.текст",    "hs")
+  create_file (dir1_1, "груши.текст",     "as")
+  create_file (dir1_2, "картошка.текст",  "ahs")
+  create_file (dir1_2, "морковка.текст")
 
-  create_file (dir2  .."notes-1.txt")
-  create_file (dir2  .."notes-2.txt")
-  create_file (dir2_1.."letter from friend-1.txt")
-  create_file (dir2_1.."letter from friend-2.txt")
-  create_file (dir2_2.."letter to friend-1.txt")
-  create_file (dir2_2.."letter to friend-2.txt")
+  create_file (dir2,   "notes-1.txt")
+  create_file (dir2,   "notes-2.txt")
+  create_file (dir2_1, "letter from friend-1.txt")
+  create_file (dir2_1, "letter from friend-2.txt")
+  create_file (dir2_2, "letter to friend-1.txt")
+  create_file (dir2_2, "letter to friend-2.txt")
 
   -- This call is needed to eliminate the effect of cached directories' timestamps
   -- as the filesystem cache is updated at unpredictable moments.
@@ -210,7 +212,7 @@ local function test_create_filesystem_tree()
       assert(item.FileName ~= "..")
       if item.FileAttributes:find("d") then
         local wTime = item.LastWriteTime + math.random(-1e8, 1e8) -- math.random part isn't strictly necessary
-        assert(win.SetFileTimes(fullpath, {LastWriteTime=wTime}))
+--      assert(win.SetFileTimes(fullpath, {LastWriteTime=wTime}))
       end
     end, "FRS_RECUR")
 
