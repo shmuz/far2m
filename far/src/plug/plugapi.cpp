@@ -141,7 +141,8 @@ static void ScanPluginDir();
 	Обертка вокруг GetString для плагинов - с меньшей функциональностью.
 	Сделано для того, чтобы не дублировать код GetString.
 */
-static int FarInputBoxSynched(const wchar_t *Title, const wchar_t *Prompt, const wchar_t *HistoryName,
+static int FarInputBoxSynched(INT_PTR PluginNumber, const GUID* Id,
+		const wchar_t *Title, const wchar_t *Prompt, const wchar_t *HistoryName,
 		const wchar_t *SrcText, wchar_t *DestText, int DestLength, const wchar_t *HelpTopic, DWORD Flags)
 {
 	if (FrameManager->ManagerIsDown())
@@ -149,7 +150,7 @@ static int FarInputBoxSynched(const wchar_t *Title, const wchar_t *Prompt, const
 
 	FARString strDest;
 	int nResult = GetString(Title, Prompt, HistoryName, SrcText, strDest, HelpTopic, Flags & ~FIB_CHECKBOX,
-			nullptr, nullptr);
+			nullptr, nullptr, Id);
 	far_wcsncpy(DestText, strDest, DestLength + 1);
 	return nResult;
 }
@@ -157,8 +158,16 @@ static int FarInputBoxSynched(const wchar_t *Title, const wchar_t *Prompt, const
 int WINAPI FarInputBox(const wchar_t *Title, const wchar_t *Prompt, const wchar_t *HistoryName,
 		const wchar_t *SrcText, wchar_t *DestText, int DestLength, const wchar_t *HelpTopic, DWORD Flags)
 {
-	return InterThreadCall<int, 0>(std::bind(FarInputBoxSynched, Title, Prompt, HistoryName, SrcText,
+	return InterThreadCall<int, 0>(std::bind(FarInputBoxSynched, 0, nullptr, Title, Prompt, HistoryName, SrcText,
 			DestText, DestLength, HelpTopic, Flags));
+}
+
+int WINAPI FarInputBoxV3(INT_PTR PluginNumber, const GUID* Id,
+		const wchar_t *Title, const wchar_t *Prompt, const wchar_t *HistoryName,
+		const wchar_t *SrcText, wchar_t *DestText, int DestLength, const wchar_t *HelpTopic, DWORD Flags)
+{
+	return InterThreadCall<int, 0>(std::bind(FarInputBoxSynched, PluginNumber, Id, Title, Prompt,
+			HistoryName, SrcText, DestText, DestLength, HelpTopic, Flags));
 }
 
 /* Функция вывода помощи */

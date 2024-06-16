@@ -2102,6 +2102,19 @@ typedef int (WINAPI *FARAPIINPUTBOX)(
 	DWORD Flags
 );
 
+typedef int (WINAPI *FARAPIINPUTBOXV3)(
+	INT_PTR PluginNumber,
+	const GUID *Id,
+	const wchar_t *Title,
+	const wchar_t *SubTitle,
+	const wchar_t *HistoryName,
+	const wchar_t *SrcText,
+	wchar_t *DestText,
+	int   DestLength,
+	const wchar_t *HelpTopic,
+	DWORD Flags
+);
+
 typedef int (WINAPI *FARAPIPLUGINSCONTROL)(
 	HANDLE hHandle,
 	int Command,
@@ -2496,6 +2509,7 @@ struct PluginStartupInfo
 	FARAPITEXTV2           TextV2;
 	FARAPIMESSAGEV3        MessageV3;
 	FARAPIMENUV2           MenuV2;
+	FARAPIINPUTBOXV3       InputBoxV3;
 };
 
 

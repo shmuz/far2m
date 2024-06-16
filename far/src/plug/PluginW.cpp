@@ -555,6 +555,7 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 		StartupInfo.SendDlgMessage=FarSendDlgMessage;
 		StartupInfo.DefDlgProc=FarDefDlgProc;
 		StartupInfo.InputBox=FarInputBox;
+		StartupInfo.InputBoxV3=FarInputBoxV3;
 		StartupInfo.PluginsControl=farPluginsControl;
 		StartupInfo.FileFilterControl=farFileFilterControl;
 		StartupInfo.RegExpControl=farRegExpControl;
