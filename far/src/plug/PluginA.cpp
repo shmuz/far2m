@@ -86,6 +86,7 @@ static const char szCache_ProcessViewerEvent[] = "ProcessViewerEvent";
 static const char szCache_ProcessDialogEvent[] = "ProcessDialogEvent";
 static const char szCache_Configure[] = "Configure";
 static const char szCache_GetFiles[] = "GetFiles";
+static const char szCache_ProcessHostFile[] = "ProcessHostFile";
 
 static const char NFMP_OpenPlugin[] = "OpenPlugin";
 static const char NFMP_OpenFilePlugin[] = "OpenFilePlugin";
@@ -180,6 +181,7 @@ bool PluginA::LoadFromCache()
 	pProcessDialogEvent = (PLUGINPROCESSDIALOGEVENT)(INT_PTR)kfh.GetUInt(szCache_ProcessDialogEvent, 0);
 	pConfigure = (PLUGINCONFIGURE)(INT_PTR)kfh.GetUInt(szCache_Configure, 0);
 	pGetFiles = (PLUGINGETFILES)(INT_PTR)kfh.GetUInt(szCache_GetFiles, 0);
+	pProcessHostFile = (PLUGINPROCESSHOSTFILE)(INT_PTR)kfh.GetUInt(szCache_ProcessHostFile, 0);
 	WorkFlags.Set(PIWF_CACHED); //too much "cached" flags
 
 	if (kfh.GetInt(szCache_Preopen) != 0)
@@ -267,6 +269,7 @@ bool PluginA::SaveToCache()
 	kfh.SetUInt(GetSettingsName(), szCache_ProcessDialogEvent, pProcessDialogEvent!=nullptr);
 	kfh.SetUInt(GetSettingsName(), szCache_Configure, pConfigure!=nullptr);
 	kfh.SetUInt(GetSettingsName(), szCache_GetFiles, pGetFiles!=nullptr);
+	kfh.SetUInt(GetSettingsName(), szCache_ProcessHostFile, pProcessHostFile!=nullptr);
 
 	kfh.SetBytes (GetSettingsName(), szCache_Version, (unsigned char*)&m_PlugVersion, sizeof(m_PlugVersion), 1);
 	kfh.SetString(GetSettingsName(), szCache_Title, strTitle);
