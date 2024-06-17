@@ -416,10 +416,13 @@ void ConvertLuaValue (lua_State *L, int pos, struct FarMacroValue *target)
 	}
 }
 
-static const GUID *GetGuid(lua_State *L, int pos)
+static GUID OptGuid(lua_State *L, int pos)
 {
-	return lua_type(L,pos) == LUA_TSTRING && lua_objlen(L,pos) == sizeof(GUID) ?
-			(const GUID*)lua_tostring(L,pos) : NULL;
+	GUID guid = {};
+	if (lua_type(L,pos) == LUA_TSTRING && lua_objlen(L,pos) == sizeof(GUID))
+		return *(const GUID*)lua_tostring(L,pos);
+	else
+		return guid;
 }
 
 static int _GetFileProperty (lua_State *L, int Owner)
@@ -1642,7 +1645,7 @@ static int far_Menu(lua_State *L)
 	int NumBreakCodes = 0;
 	struct FarMenuItemEx *Items, *pItem;
 	int *pBreakKeys = NULL;
-	const GUID* MenuGuid = NULL;
+	GUID MenuGuid;
 	FARMENUCALLBACK callback = NULL;
 	MENU_DATA mdata = { L, lua_gettop(L) - POS_CBACK, 0 };
 	const int POS_STORE = lua_gettop(L) + 1;
@@ -1679,7 +1682,7 @@ static int far_Menu(lua_State *L)
 	SelectIndex = lua_tointeger(L,-1) - 1;
 
 	lua_getfield(L, POS_PROPS, "Id");
-	MenuGuid = GetGuid(L,-1);
+	MenuGuid = OptGuid(L,-1);
 
 	ItemsNumber = lua_objlen(L, POS_ITEMS);
 	if (!(SelectIndex >= 0 && SelectIndex < ItemsNumber))
@@ -1838,7 +1841,7 @@ static int far_Menu(lua_State *L)
 	}
 
 	ret = PSInfo.MenuV2(
-		pd->ModuleNumber, MenuGuid, X, Y, MaxHeight, Flags|FMENU_USEEXT,
+		pd->ModuleNumber, &MenuGuid, X, Y, MaxHeight, Flags|FMENU_USEEXT,
 		Title, Bottom, HelpTopic, pBreakKeys, pBreakCode,
 		(const struct FarMenuItem *)Items, ItemsNumber, callback, &mdata);
 
@@ -2074,7 +2077,7 @@ static int far_Message(lua_State *L)
 	int ret;
 	const wchar_t *Msg, *Title, *Buttons, *HelpTopic;
 	const char *Flags;
-	const GUID *Id;
+	GUID Id;
 	luaL_checkany(L,1);
 	lua_settop(L,6);
 	Msg = NULL;
@@ -2096,9 +2099,9 @@ static int far_Message(lua_State *L)
 	Buttons = opt_utf8_string(L, 3, L";OK");
 	Flags   = luaL_optstring(L, 4, "");
 	HelpTopic = opt_utf8_string(L, 5, NULL);
-	Id = GetGuid(L, 6);
+	Id = OptGuid(L, 6);
 
-	ret = LF_Message(L, Msg, Title, Buttons, Flags, HelpTopic, Id);
+	ret = LF_Message(L, Msg, Title, Buttons, Flags, HelpTopic, &Id);
 	lua_pushinteger(L, ret<0 ? ret : ret+1);
 	return 1;
 }
@@ -3945,18 +3948,10 @@ static int far_DialogInit(lua_State *L)
 	LONG_PTR Param;
 	TPluginData *pd = GetPluginData(L);
 	GUID Id;
-	const GUID *pGuid;
 	int X1, Y1, X2, Y2;
 	const wchar_t *HelpTopic;
 
-	pGuid = GetGuid(L, 1);
-	if (pGuid)
-		Id = *pGuid;
-	else if (lua_isnoneornil(L, 1))
-		memset(&Id, 0, sizeof(Id));
-	else
-		return luaL_typerror(L, 1, "optional string");
-
+	Id = OptGuid(L, 1);
 	X1 = luaL_checkinteger(L, 2);
 	Y1 = luaL_checkinteger(L, 3);
 	X2 = luaL_checkinteger(L, 4);
@@ -4256,7 +4251,7 @@ static int far_ShowHelp(lua_State *L)
 // all arguments are optional
 static int far_InputBox(lua_State *L)
 {
-	const GUID    *Guid        = GetGuid(L, 1);
+	GUID Guid                  = OptGuid(L, 1);
 	const wchar_t *Title       = opt_utf8_string (L, 2, L"Input Box");
 	const wchar_t *Prompt      = opt_utf8_string (L, 3, L"Enter the text:");
 	const wchar_t *HistoryName = opt_utf8_string (L, 4, NULL);
@@ -4267,7 +4262,7 @@ static int far_InputBox(lua_State *L)
 
 	if (DestLength < 1) DestLength = 1;
 	wchar_t *DestText = (wchar_t*) malloc(sizeof(wchar_t)*DestLength);
-	int res = PSInfo.InputBoxV3(GetPluginData(L)->ModuleNumber, Guid, Title, Prompt, HistoryName,
+	int res = PSInfo.InputBoxV3(GetPluginData(L)->ModuleNumber, &Guid, Title, Prompt, HistoryName,
 			SrcText, DestText, DestLength, HelpTopic, Flags);
 
 	if (res) push_utf8_string (L, DestText, -1);
