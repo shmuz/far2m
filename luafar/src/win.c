@@ -6,6 +6,7 @@
 #include "ustring.h"
 #include "util.h"
 #include "bit64.h"
+#include "farlibs.h"
 
 static BOOL dir_exist(const wchar_t* path)
 {
@@ -589,7 +590,8 @@ static int ExtractFileTime(lua_State *L, const char *key, FILETIME* target, HAND
 		}
 		else
 		{
-			CloseHandle(hFile);
+			if (hFile != INVALID_HANDLE_VALUE)
+				CloseHandle(hFile);
 			lua_pushfstring(L, "invalid value at key '%s'", key);
 			return luaL_error(L, lua_tostring(L, -1));
 		}
@@ -600,26 +602,56 @@ static int ExtractFileTime(lua_State *L, const char *key, FILETIME* target, HAND
 
 static int win_SetFileTimes(lua_State *L)
 {
+	luaL_checktype(L, 1, LUA_TSTRING);
+	luaL_checktype(L, 2, LUA_TTABLE);
+	lua_pushvalue(L, 1); //duplicate as check_utf8_string() will destroy it
+
 	int res = 0;
+	FILETIME t_create, t_access, t_write;
+	FILETIME *p_create=NULL, *p_access=NULL, *p_write=NULL;
 	const wchar_t* FileName = check_utf8_string(L, 1, NULL);
 	DWORD attr = GetFileAttributes(FileName);
-	luaL_checktype(L, 2, LUA_TTABLE);
-	if (attr != INVALID_FILE_ATTRIBUTES)
+
+	if (attr == INVALID_FILE_ATTRIBUTES)
 	{
-		DWORD flags = (attr & FILE_ATTRIBUTE_DIRECTORY) ? FILE_FLAG_BACKUP_SEMANTICS : 0;
+		res = 0;
+	}
+	else if (attr & FILE_ATTRIBUTE_DIRECTORY)
+	{
+		struct timespec ts[2] = {};
+		const char *path = lua_tostring(L, -1);
+		lua_pushvalue(L, 2);
+		if (ExtractFileTime(L, "LastAccessTime", &t_access, INVALID_HANDLE_VALUE)) {
+			p_access = &t_access;
+		}
+		if (ExtractFileTime(L, "LastWriteTime", &t_write, INVALID_HANDLE_VALUE)) {
+			p_write = &t_write;
+		}
+		if (p_access) {
+			WINPORT(FileTime_Win32ToUnix)(p_access, &ts[0]);
+		}
+		if (p_write) {
+			WINPORT(FileTime_Win32ToUnix)(p_write, &ts[1]);
+		}
+		res = (p_access||p_write) && (wrap_sdc_utimens(path, ts) != -1);
+	}
+	else
+	{
+		DWORD flags = 0;
 		HANDLE hFile = CreateFile(FileName,GENERIC_WRITE,FILE_SHARE_READ,NULL,OPEN_EXISTING,flags,NULL);
 		if (hFile != INVALID_HANDLE_VALUE)
 		{
-			FILETIME t_create, t_access, t_write;
-			FILETIME *p_create=NULL, *p_access=NULL, *p_write=NULL;
 			lua_pushvalue(L, 2);
-			if (ExtractFileTime(L, "CreationTime", &t_create, hFile))
+			if (ExtractFileTime(L, "CreationTime", &t_create, hFile)) {
 				p_create = &t_create;
-			if (ExtractFileTime(L, "LastAccessTime", &t_access, hFile))
+			}
+			if (ExtractFileTime(L, "LastAccessTime", &t_access, hFile)) {
 				p_access = &t_access;
-			if (ExtractFileTime(L, "LastWriteTime", &t_write, hFile))
+			}
+			if (ExtractFileTime(L, "LastWriteTime", &t_write, hFile)) {
 				p_write = &t_write;
-			res = (p_create||p_access||p_write) && SetFileTime(hFile,p_create,p_access,p_write);
+			}
+			res = (p_create||p_access||p_write) && WINPORT(SetFileTime)(hFile,p_create,p_access,p_write);
 			CloseHandle(hFile);
 		}
 	}

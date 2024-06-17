@@ -60,4 +60,9 @@ int far_SudoCRCall(lua_State *L) // sudo client region call
 	return 2;
 }
 
+int wrap_sdc_utimens(const char *filename, const struct timespec times[2])
+{
+	return sdc_utimens(filename, times);
+}
+
 } // extern "C"
