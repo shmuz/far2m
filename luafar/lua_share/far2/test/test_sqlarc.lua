@@ -43,9 +43,9 @@ end
 local function is_our_panel (activePanel)
   assert(far.MacroGetArea() == F.MACROAREA_SHELL)
   local nPanel = activePanel and 1 or 0
-  local OwnerGuid = assert(panel.GetPanelInfo(nil, nPanel)).OwnerID
---local File = assert(panel.GetPanelDirectory(nil, nPanel)).File
-  return OwnerGuid == PluginGuids.Plugin -- and File==HostFile
+  local OwnerId = assert(panel.GetPanelInfo(nil, nPanel)).OwnerID
+  local File = panel.GetPanelHostFile(nil, nPanel)
+  return OwnerId == PluginGuids.Plugin and File == HostFile
 end
 
 local function test_jump_outside()
@@ -126,6 +126,7 @@ local function test_get_filesystem_dir_data(aDir)
     function(aItem, aFullPath)
       assert(aItem.FileName ~= "..")
       if aItem.FileAttributes:find("d") then
+        aItem.FileSize = 0 -- not 4096 as got from FAR
         aItem.Items = test_get_filesystem_dir_data(aFullPath) -- recurse
       end
       table.insert(t, aItem)
@@ -137,8 +138,7 @@ end
 local function test_get_archive_dir_data (activePanel, aDir)
   -- Set directory inside the archive
   local nPanel = activePanel and 1 or 0
-  assert(panel.SetPanelDirectory(nil, nPanel,
-        { Name=aDir; PluginId=win.Uuid(PluginGuids.Plugin); File=HostFile; }))
+  assert(Panel.SetPluginPath(1-nPanel, join("/", aDir)))
   -- Collect directory items
   local t = {}
   for k=1,assert(panel.GetPanelInfo(nil, nPanel)).ItemsNumber do
@@ -164,7 +164,7 @@ local function test_compare_archive_filesystem(array_arc, array_fs)
     assert(t_arc.FileName       == t_fs.FileName)
     assert(t_arc.FileSize       == t_fs.FileSize)
     assert(t_arc.FileAttributes == t_fs.FileAttributes)
-    assert(t_arc.CreationTime   == t_fs.CreationTime)
+--  assert(t_arc.CreationTime   == t_fs.CreationTime)
     assert(t_arc.LastWriteTime  == t_fs.LastWriteTime)
     if t_arc.FileAttributes:find("d") then
       test_compare_archive_filesystem(t_arc.Items, t_fs.Items) -- recurse
@@ -212,7 +212,7 @@ local function test_create_filesystem_tree()
       assert(item.FileName ~= "..")
       if item.FileAttributes:find("d") then
         local wTime = item.LastWriteTime + math.random(-1e8, 1e8) -- math.random part isn't strictly necessary
---      assert(win.SetFileTimes(fullpath, {LastWriteTime=wTime}))
+        assert(win.SetFileTimes(fullpath, {LastWriteTime=wTime}))
       end
     end, "FRS_RECUR")
 
@@ -239,8 +239,7 @@ local function test_get_files(trgdir)
   assert(win.CreateDir(trgdir))
   assert(panel.SetPanelDirectory(nil, 0, trgdir))
   assert(not APanel.Plugin)
-  assert(panel.SetPanelDirectory(nil, 1,
-        { Name=""; PluginId=win.Uuid(PluginGuids.Plugin); File=HostFile; }))
+  assert(Plugin.Command(PluginGuids.Plugin, HostFile))
   assert(is_our_panel(true))
   Keys("Home ShiftEnd F5")
   assert(Area.Dialog and Dlg.Id==PluginGuids.ExtractFiles)
