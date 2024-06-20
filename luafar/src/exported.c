@@ -21,7 +21,6 @@ void PackMacroValues(lua_State* L, size_t Count, const struct FarMacroValue* Val
 // chars.
 const char COLLECTOR_OPI[] = "Collector_OpenPluginInfo";
 const char COLLECTOR_PI[]  = "Collector_PluginInfo";
-const char COLLECTOR_FD[]  = "Collector_FindData";
 const char KEY_OBJECT[]    = "Panel_Object";
 
 // taken from lua.c v5.1.2
@@ -256,8 +255,9 @@ void FillFindData(lua_State* L, struct PluginPanelItem **pPanelItems, int *pItem
 		lua_setfield(L, -4, COLLECTOR_UD);   //+3: Tbl,FindData,UData
 
 		lua_newtable(L);                     //+4  Tbl,FindData,UData,Coll
-		lua_pushvalue(L,-1);                 //+5: Tbl,FindData,UData,Coll,Coll
-		lua_setfield(L, -5, COLLECTOR_FD);   //+4: Tbl,FindData,UData,Coll
+		lua_pushlightuserdata(L, ppi);       //+5  Tbl,FindData,UData,Coll,ppi
+		lua_pushvalue(L,-2);                 //+6: Tbl,FindData,UData,Coll,ppi,Coll
+		lua_rawset(L, -6);                   //+4: Tbl,FindData,UData,Coll
 
 		for (i=1; i<=numLines; i++) {
 			lua_rawgeti(L, -3, i);             //+5: Tbl,FindData,UData,Coll,FindData[i]
@@ -334,8 +334,9 @@ void free_find_data(lua_State* L, HANDLE hPlugin, struct PluginPanelItem *PanelI
 		free((void*)PanelItems[i].CustomColumnData);
 	}
 	PushPluginTable(L, hPlugin);
+	lua_pushlightuserdata(L, PanelItems);
 	lua_pushnil(L);
-	lua_setfield(L, -2, COLLECTOR_FD); //free the collector
+	lua_rawset(L, -3); //free the collector
 	lua_pop(L, 1);
 	lua_gc(L, LUA_GCCOLLECT, 0); //free memory taken by Collector
 	free(PanelItems);
