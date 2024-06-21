@@ -2799,6 +2799,15 @@ struct FarGetPluginInformation
 	struct GlobalInfo *GInfo;
 };
 
+struct AnalyseData
+{
+	size_t          StructSize;
+	const wchar_t  *FileName;
+	const void     *Buffer;
+	size_t          BufferSize;
+	int             OpMode;
+};
+
 #if defined(__BORLANDC__) || defined(_MSC_VER) || defined(__GNUC__) || defined(__WATCOMC__)
 #ifdef __cplusplus
 extern "C"
@@ -2838,6 +2847,8 @@ extern "C"
 	void   WINAPI _export SetStartupInfoW(const struct PluginStartupInfo *Info);
 	void   WINAPI _export GetGlobalInfoW(struct GlobalInfo *Info);
 	int    WINAPI _export ProcessConsoleInputW(INPUT_RECORD *Rec);
+	int    WINAPI _export AnalyseW(const struct AnalyseData *pData);
+
 
 #ifdef __cplusplus
 };

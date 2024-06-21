@@ -36,16 +36,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 typedef void (WINAPI *PLUGINGETGLOBALINFOW)(GlobalInfo *gi);
 
-struct AnalyseData
-{
-	int StructSize;
-	const wchar_t *lpwszFileName;
-	const unsigned char *pBuffer;
-	DWORD dwBufferSize;
-	int OpMode;
-};
-
-
 class PluginManager;
 
 class Plugin

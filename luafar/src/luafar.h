@@ -76,6 +76,7 @@ DLLFUNC int    LF_GetCustomData(lua_State* L, const wchar_t *FilePath, wchar_t *
 DLLFUNC void   LF_FreeCustomData(lua_State* L, wchar_t *CustomData);
 DLLFUNC int    LF_ProcessConsoleInput(lua_State* L, INPUT_RECORD *Rec);
 DLLFUNC int    LF_GetLinkTarget(lua_State *L, HANDLE hPlugin,	struct PluginPanelItem *PanelItem, wchar_t *Target, size_t TargetSize, int OpMode);
+DLLFUNC int    LF_Analyse(lua_State *L, const struct AnalyseData *Data);
 
 #ifdef __cplusplus
 }

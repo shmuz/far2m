@@ -891,8 +891,17 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 			}
 			break;
 
+		case OPEN_ANALYSE:
+			lua_pushnil(L); // dummy
+			push_utf8_string(L, (wchar_t*)Item, -1);
+			if (pcall_msg(L, 3, 1) == 0) {
+				if (lua_toboolean(L, -1))        //+1: Obj
+					return RegisterObject(L);      //+0
+				lua_pop(L,1);
+			}
+			break;
+
 		default:
-		case OPEN_ANALYSE: //currently not supported
 			lua_pop(L, 1);
 			break;
 	}
@@ -1419,4 +1428,30 @@ int LF_GetLinkTarget(
 		}
 	}
 	return 0;
+}
+
+static void PushAnalyseData(lua_State* L, const struct AnalyseData *Data)
+{
+	lua_createtable(L, 0, 4);
+	PutIntToTable(L,  "StructSize", Data->StructSize);
+	PutWStrToTable(L, "FileName",   Data->FileName, -1);
+	PutLStrToTable(L, "Buffer",     Data->Buffer, Data->BufferSize);
+	PutIntToTable(L,  "OpMode",     Data->OpMode);
+}
+
+int LF_Analyse(lua_State* L, const struct AnalyseData *Data)
+{
+	int result = 0;
+
+	if (GetExportFunction(L, "Analyse"))    //+1
+	{
+		PushAnalyseData(L, Data);            //+2
+
+		if (!pcall_msg(L, 1, 1))             //+1
+		{
+			result = lua_toboolean(L, -1);
+			lua_pop(L, 1);                   //+0
+		}
+	}
+	return result;
 }

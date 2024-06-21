@@ -530,7 +530,8 @@ PHPTR PluginManager::OpenFilePlugin(
 		Name = strFullName;
 	}
 
-	bool ShowMenu = Opt.PluginConfirm.OpenFilePlugin==BSTATE_3STATE? !(Type == OFP_NORMAL || Type == OFP_SEARCH) : Opt.PluginConfirm.OpenFilePlugin != 0;
+	bool ShowMenu = Opt.PluginConfirm.OpenFilePlugin == BSTATE_3STATE ?
+			!(Type == OFP_NORMAL || Type == OFP_SEARCH) : Opt.PluginConfirm.OpenFilePlugin != 0;
 	if (Type==OFP_ALTERNATIVE) OpMode|= OPM_PGDN;
 	if (Type==OFP_COMMANDS) OpMode|= OPM_COMMANDS;
 
@@ -594,9 +595,9 @@ PHPTR PluginManager::OpenFilePlugin(
 		else
 		{
 			AnalyseData AData;
-			AData.lpwszFileName = Name;
-			AData.pBuffer = smm ? (const unsigned char *)smm->View() : nullptr;
-			AData.dwBufferSize = smm ? (DWORD)smm->Length() : 0;
+			AData.FileName = Name;
+			AData.Buffer = smm ? smm->View() : nullptr;
+			AData.BufferSize = smm ? smm->Length() : 0;
 			AData.OpMode = OpMode;
 
 			if (pPlugin->Analyse(&AData))
@@ -662,7 +663,7 @@ PHPTR PluginManager::OpenFilePlugin(
 
 		if (pResult && pResult->hPanel == INVALID_HANDLE_VALUE)
 		{
-			HANDLE h = pResult->pPlugin->OpenPlugin(OPEN_ANALYSE, 0);
+			HANDLE h = pResult->pPlugin->OpenPlugin(OPEN_ANALYSE, reinterpret_cast<INT_PTR>(Name));
 
 			if (h != INVALID_HANDLE_VALUE)
 				pResult->hPanel = h;
@@ -671,15 +672,10 @@ PHPTR PluginManager::OpenFilePlugin(
 		}
 	}
 
-	for (size_t i = 0; i < items.size(); i++)
+	for (const auto& PH: items)
 	{
-		PanelHandle *handle = &items[i];
-
-		if (handle != pResult)
-		{
-			if (handle->hPanel != INVALID_HANDLE_VALUE)
-				handle->pPlugin->ClosePlugin(handle->hPanel);
-		}
+		if (&PH != pResult && PH.hPanel != INVALID_HANDLE_VALUE)
+			PH.pPlugin->ClosePlugin(PH.hPanel);
 	}
 
 	if (pResult)

@@ -319,3 +319,11 @@ LUAPLUG int GetLinkTargetW(
 }
 #endif
 //---------------------------------------------------------------------------
+
+#ifdef EXPORT_ANALYSE
+LUAPLUG int AnalyseW(const struct AnalyseData *Data)
+{
+	return LS ? LF_Analyse(LS, Data) : 0;
+}
+#endif
+//---------------------------------------------------------------------------
