@@ -6701,6 +6701,9 @@ void Editor::SetSavePosMode(int SavePos, int SaveShortPos)
 
 void Editor::EditorShowMsg(const wchar_t *Title,const wchar_t *Msg, const wchar_t* Name,int Percent)
 {
+	if (Title == nullptr)
+		return;
+
 	FARString strProgress;
 
 	if (Percent!=-1)
