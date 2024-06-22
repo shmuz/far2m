@@ -901,8 +901,7 @@ static LONG_PTR WINAPI MainDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 									&& Position.SelectPos < FavoritesIndex
 													+ (favoriteCodePages ? favoriteCodePages + 1 : 0)) {
 								// Преобразуем номер таблицы символов к строке
-								const std::string &strCodePageName = StrPrintf("%u", SelectedCodePage);
-								// strCodePageName.Format(L"%u", SelectedCodePage);
+								const std::string &strCodePageName = ToDec(SelectedCodePage);
 								//  Получаем текущее состояние флага в реестре
 								int SelectType =
 										ConfigReader(FavoriteCodePagesKey).GetInt(strCodePageName, 0);

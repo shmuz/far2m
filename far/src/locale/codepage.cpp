@@ -480,7 +480,7 @@ static void ProcessSelected(bool select)
 		//FormatString strCPName;
 		//strCPName<<codePage;
 		// Получаем текущее состояние флага в реестре
-		std::string strCPName = StrPrintf("%u", codePage);
+		std::string strCPName = ToDec(codePage);
 		s_cfg_reader->SelectSection(FavoriteCodePagesKey);
 		int selectType = s_cfg_reader->GetInt(strCPName, 0);
 
@@ -631,7 +631,7 @@ static wchar_t *FormatCodePageName(UINT CodePage, wchar_t *CodePageName, size_t 
 	//strCodePage<<CodePage;
 	s_cfg_reader->SelectSection(NamesOfCodePagesKey);
 	FARString strCodePageName;
-	const std::string &strCodePage = StrPrintf("%u", CodePage);
+	const std::string &strCodePage = ToDec(CodePage);
 	if (s_cfg_reader->GetString(strCodePageName, strCodePage, L""))
 	{
 		Length = Min(Length-1, strCodePageName.GetLength());
@@ -683,7 +683,7 @@ static LONG_PTR WINAPI EditDialogProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR
 			UINT CodePage = GetMenuItemCodePage();
 			//FormatString strCodePage;
 			//strCodePage<<CodePage;
-			const std::string &strCodePage = StrPrintf("%u", CodePage);
+			const std::string &strCodePage = ToDec(CodePage);
 			if (Param1==EDITCP_OK)
 			{
 				wchar_t *CodePageName = strCodePageName.GetBuffer(SendDlgMessage(hDlg, DM_GETTEXTPTR, EDITCP_EDIT, 0)+1);
