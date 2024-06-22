@@ -220,7 +220,6 @@ int CheckShortcutFolder(FARString *pTestPath,int IsHostFile, BOOL Silent)
 void CreatePath(FARString &strPath)
 {
 	wchar_t *ChPtr = strPath.GetBuffer();
-//	wchar_t *DirPart = ChPtr;
 	BOOL bEnd = FALSE;
 
 	for (;;)
@@ -239,7 +238,6 @@ void CreatePath(FARString &strPath)
 				break;
 
 			*ChPtr = GOOD_SLASH;
-//			DirPart = ChPtr+1;
 		}
 
 		ChPtr++;
@@ -277,7 +275,6 @@ std::string GetMyScriptQuoted(const char *name)
 	return out;
 }
 
-
 void PrepareTemporaryOpenPath(FARString &Path)
 {
 	Path = InMyTemp("open");
@@ -308,13 +305,11 @@ void PrepareTemporaryOpenPath(FARString &Path)
 	}
 	apiCreateDirectory(Path, nullptr);
 
-	static std::atomic<unsigned short>	s_counter{0};
-	char tmp[64]; sprintf(tmp, "%c%u_%u", GOOD_SLASH, (unsigned int)getpid(), (unsigned int)++s_counter);
-
-	Path+= tmp;
+	static std::atomic<unsigned short> s_counter{0};
+	const unsigned int cnt = ++s_counter;
+	Path.AppendFormat(L"%c%u_%u", GOOD_SLASH, (unsigned int)getpid(), cnt);
 	apiCreateDirectory(Path, nullptr);
 }
-
 
 FARString DefaultPanelInitialDirectory()
 {
