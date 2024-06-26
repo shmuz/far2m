@@ -1286,6 +1286,7 @@ struct ColorDialogData
 	DWORD BackColor;
 	unsigned char PaletteColor;
 	unsigned char Flags;
+	uint64_t Color;
 	uint64_t Mask;
 };
 
@@ -1746,6 +1747,19 @@ typedef int (__stdcall *FARAPIINPUTBOX)(
 	DWORD Flags
 );
 
+typedef int (__stdcall *FARAPIINPUTBOXV3)(
+	INT_PTR PluginNumber,
+	const GUID *Id,
+	const wchar_t *Title,
+	const wchar_t *SubTitle,
+	const wchar_t *HistoryName,
+	const wchar_t *SrcText,
+	wchar_t *DestText,
+	int   DestLength,
+	const wchar_t *HelpTopic,
+	DWORD Flags
+);
+
 typedef int (__stdcall *FARAPIPLUGINSCONTROL)(
 	HANDLE hHandle,
 	int Command,
@@ -2115,6 +2129,7 @@ struct PluginStartupInfo
 	FARAPITEXTV2           TextV2;
 	FARAPIMESSAGEV3        MessageV3;
 	FARAPIMENUV2           MenuV2;
+	FARAPIINPUTBOXV3       InputBoxV3;
 };
 
 
@@ -2401,6 +2416,15 @@ struct FarGetPluginInformation
 	struct PluginInfo *PInfo;
 	struct GlobalInfo *GInfo;
 };
+
+struct AnalyseData
+{
+	size_t          StructSize;
+	const wchar_t  *FileName;
+	const void     *Buffer;
+	size_t          BufferSize;
+	int             OpMode;
+};
 	void   __stdcall  PluginModuleOpen(const char *path);
 	void   __stdcall  ClosePluginW(HANDLE hPlugin);
 	int    __stdcall  CompareW(HANDLE hPlugin,const struct PluginPanelItem *Item1,const struct PluginPanelItem *Item2,unsigned int Mode);
@@ -2434,5 +2458,6 @@ struct FarGetPluginInformation
 	void   __stdcall  SetStartupInfoW(const struct PluginStartupInfo *Info);
 	void   __stdcall  GetGlobalInfoW(struct GlobalInfo *Info);
 	int    __stdcall  ProcessConsoleInputW(INPUT_RECORD *Rec);
+	int    __stdcall  AnalyseW(const struct AnalyseData *pData);
 
 ]=]
