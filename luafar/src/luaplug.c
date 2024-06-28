@@ -130,7 +130,6 @@ LUAPLUG void GetOpenPluginInfoW(HANDLE hPlugin, struct OpenPluginInfo *Info)
 #endif
 //---------------------------------------------------------------------------
 
-#if defined(EXPORT_EXITFAR) || defined(EXPORT_ALL)
 LUAPLUG void ExitFARW()
 {
 	if (LS) {
@@ -139,7 +138,6 @@ LUAPLUG void ExitFARW()
 		LS = NULL;
 	}
 }
-#endif
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_MAYEXITFAR) || defined(EXPORT_ALL)
