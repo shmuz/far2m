@@ -17,7 +17,7 @@ TPluginData*  GetPluginData (lua_State* L);
 void          LF_Error (lua_State *L, const wchar_t* aMsg);
 void          NewVirtualKeyTable(lua_State* L, BOOL twoways);
 HANDLE        OptHandle (lua_State *L);
-int           ProcessDNResult (lua_State *L, int Msg, LONG_PTR Param2);
+LONG_PTR      ProcessDNResult (lua_State *L, int Msg, LONG_PTR Param2);
 int           PushDMParams (lua_State *L, int Msg, int Param1);
 int           PushDNParams (lua_State *L, int Msg, int Param1, LONG_PTR Param2);
 void          PushInputRecord (lua_State* L, const INPUT_RECORD *Rec);

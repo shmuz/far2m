@@ -2778,18 +2778,15 @@ int Dialog::ProcessKey(FarKey Key)
 
 	switch (Key) {
 		case KEY_F1:
-
+		{
 			// Перед выводом диалога посылаем сообщение в обработчик
 			//   и если вернули что надо, то выводим подсказку
-			if (!Help::MkTopic(PluginNumber,
-						(const wchar_t *)DlgProc((HANDLE)this, DN_HELP, FocusPos,
-								(HelpTopic ? (LONG_PTR)HelpTopic : 0)),
-						strStr)
-							.IsEmpty()) {
+			auto Topic = (const wchar_t*) DlgProc(this, DN_HELP, FocusPos, (LONG_PTR)HelpTopic);
+			if (!Help::MkTopic(PluginNumber, Topic, strStr).IsEmpty()) {
 				Help Hlp(strStr);
 			}
-
 			return TRUE;
+		}
 		case KEY_ESC:
 		case KEY_BREAK:
 		case KEY_F10:

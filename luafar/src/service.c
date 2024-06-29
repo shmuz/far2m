@@ -3749,16 +3749,16 @@ int PushDNParams (lua_State *L, int Msg, int Param1, LONG_PTR Param2)
 	return TRUE;
 }
 
-int ProcessDNResult(lua_State *L, int Msg, LONG_PTR Param2)
+LONG_PTR ProcessDNResult(lua_State *L, int Msg, LONG_PTR Param2)
 {
-	int ret = 0, i;
+	LONG_PTR ret = 0;
 	switch(Msg)
 	{
 		case DN_CTLCOLORDLGLIST:
 			ret = lua_istable(L,-1);
 			if (ret) {
 				struct FarListColors* flc = (struct FarListColors*) Param2;
-				for (i=0; i < flc->ColorCount; i++)
+				for (int i=0; i < flc->ColorCount; i++)
 					flc->Colors[i] = GetIntFromArray(L, i+1); // TODO: handle 64-bit values
 			}
 			break;
@@ -3767,7 +3767,7 @@ int ProcessDNResult(lua_State *L, int Msg, LONG_PTR Param2)
 			if (lua_istable(L,-1))
 			{
 				uint64_t *ItemColor = (uint64_t*) Param2;
-				for(i = 0; i < 4; i++)
+				for(int i = 0; i < 4; i++)
 				{
 					lua_rawgeti(L, -1, i+1);
 					if (!lua_isnil(L, -1)) {
@@ -3788,13 +3788,15 @@ int ProcessDNResult(lua_State *L, int Msg, LONG_PTR Param2)
 			break;
 
 		case DN_HELP:
-			ret = (utf8_to_wcstring(L, -1, NULL) != NULL);
-			if (ret)
-			{
-				lua_getfield(L, LUA_REGISTRYINDEX, FAR_DN_STORAGE);
-				lua_pushvalue(L, -2);                // keep stack balanced
-				lua_setfield(L, -2, "helpstring");   // protect from garbage collector
-				lua_pop(L, 1);
+			if (lua_type(L, -1) == LUA_TSTRING) {
+				ret = (LONG_PTR) utf8_to_wcstring(L, -1, NULL);
+				if (ret)
+				{
+					lua_getfield(L, LUA_REGISTRYINDEX, FAR_DN_STORAGE);
+					lua_pushvalue(L, -2);                // keep stack balanced
+					lua_setfield(L, -2, "helpstring");   // protect from garbage collector
+					lua_pop(L, 1);
+				}
 			}
 			break;
 
