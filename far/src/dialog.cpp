@@ -4798,34 +4798,7 @@ LONG_PTR WINAPI DefDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 		case DN_ENTERIDLE:
 			return 0;	// always 0
 		case DM_GETDIALOGINFO:
-		{
-			auto Result=FALSE;
-
-			if (Param2)
-			{
-				DialogInfo *di=reinterpret_cast<DialogInfo*>(Param2);
-				if (Dlg->IdExist)
-				{
-					if (di->StructSize >= offsetof(DialogInfo,Id)+sizeof(di->Id))
-					{
-						di->Id=Dlg->Id;
-						Result=TRUE;
-					}
-				}
-
-				if (di->StructSize >= offsetof(DialogInfo,Owner)+sizeof(di->Owner))
-				{
-					di->Owner = 0;
-					if (Dlg->PluginNumber != -1)
-					{
-						auto Plug = reinterpret_cast<Plugin*>(Dlg->PluginNumber);
-						di->Owner = Plug->GetSysID();
-					}
-				}
-			}
-
-			return Result;
-		}
+			return FALSE;
 	}
 
 	// предварительно проверим...
@@ -5131,7 +5104,32 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 			return Dlg->CallDlgProc(Msg, Param1, Param2);
 		}
 		case DM_GETDIALOGINFO: {
-			return DefDlgProc(hDlg, DM_GETDIALOGINFO, Param1, Param2);
+			auto Result=FALSE;
+
+			if (Param2)
+			{
+				DialogInfo *di=reinterpret_cast<DialogInfo*>(Param2);
+				if (Dlg->IdExist)
+				{
+					if (di->StructSize >= offsetof(DialogInfo,Id)+sizeof(di->Id))
+					{
+						di->Id=Dlg->Id;
+						Result=TRUE;
+					}
+				}
+
+				if (di->StructSize >= offsetof(DialogInfo,Owner)+sizeof(di->Owner))
+				{
+					di->Owner = 0;
+					if (Dlg->PluginNumber != -1)
+					{
+						auto Plug = reinterpret_cast<Plugin*>(Dlg->PluginNumber);
+						di->Owner = Plug->GetSysID();
+					}
+				}
+			}
+
+			return Result;
 		}
 	}
 
