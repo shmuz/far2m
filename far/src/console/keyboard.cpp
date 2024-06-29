@@ -1352,7 +1352,7 @@ FarKey WaitKey(FarKey KeyWait, DWORD delayMS, bool ExcludeMacro, bool EnableQuic
 
 	for (;;)
 	{
-		INPUT_RECORD rec;
+		INPUT_RECORD rec = {};
 		Key=KEY_NONE;
 
 		if (PeekInputRecord(&rec,ExcludeMacro))

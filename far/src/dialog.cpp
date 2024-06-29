@@ -1812,7 +1812,7 @@ void Dialog::ShowDialog(unsigned ID)
 
 		if (!DialogMode.Check(DMODE_NODRAWPANEL)) {
 
-			uint64_t Color[4];
+			uint64_t Color[4] = {};
 
 			Color[0] = FarColorToReal(DialogMode.Check(DMODE_WARNINGSTYLE) ? COL_WARNDIALOGTEXT:COL_DIALOGTEXT);
 			DlgProc((HANDLE)this, DN_CTLCOLORDIALOG, 0, (LONG_PTR)Color);
