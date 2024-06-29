@@ -1978,9 +1978,9 @@ local function test_FarStandardFunctions()
   assert(4 == far.StrCellsCount("🔥🔥🔥", 2))
 
   local a, b
-  a, b = far.StrSizeOfCells("🔥🔥🔥")
+  a, b = far.StrSizeOfCells("🔥🔥🔥", 100)
   assert(a == 3 and b == 6)
-  a, b = far.StrSizeOfCells("🔥🔥🔥", nil, true)
+  a, b = far.StrSizeOfCells("🔥🔥🔥", 100, true)
   assert(a == 3 and b == 6)
 end
 
