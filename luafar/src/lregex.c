@@ -71,7 +71,10 @@ TFarRegex* push_far_regex(lua_State *L, const wchar_t* pat)
 		luaL_error(L, "RECTL_CREATE failed");
 
 	if (!PSInfo.RegExpControl(fr->hnd, RECTL_COMPILE, (LONG_PTR)pat))
+	{
+		PSInfo.RegExpControl(fr->hnd, RECTL_FREE, 0);
 		luaL_error(L, "invalid regular expression");
+	}
 
 //(void)PSInfo.RegExpControl(fr->hnd, RECTL_OPTIMIZE, 0, 0); // very slow operation
 	luaL_getmetatable(L, TYPE_REGEX);
