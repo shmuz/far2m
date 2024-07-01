@@ -21,8 +21,8 @@
 
 typedef enum
 {
-TIMER_SINGLE_SHOT = 0,
-TIMER_PERIODIC
+    TIMER_SINGLE_SHOT = 0,
+    TIMER_PERIODIC
 } t_timer;
 
 struct _timer_node;
@@ -45,7 +45,7 @@ static void * _timer_thread(void * data);
 static pthread_t g_thread_id;
 static timer_node *g_head = NULL;
 
-int initialize()
+static int initialize()
 {
 		if (pthread_create(&g_thread_id, NULL, _timer_thread, NULL))
 		{
@@ -56,7 +56,7 @@ int initialize()
 		return 1;
 }
 
-timer_node * start_timer(unsigned int interval, time_handler handler, t_timer type, void * user_data)
+static timer_node * start_timer(unsigned int interval, time_handler handler, t_timer type, void * user_data)
 {
 		timer_node * new_node = NULL;
 		struct itimerspec new_value;
@@ -101,7 +101,7 @@ timer_node * start_timer(unsigned int interval, time_handler handler, t_timer ty
 		return new_node;
 }
 
-void stop_timer(timer_node * timer_id)
+static void stop_timer(timer_node * timer_id)
 {
 		timer_node * tmp = NULL;
 		timer_node * node = (timer_node *)timer_id;
@@ -128,7 +128,7 @@ void stop_timer(timer_node * timer_id)
 		if (node) free(node);
 }
 
-void finalize()
+static void finalize()
 {
 		while(g_head) stop_timer(g_head);
 
@@ -136,7 +136,7 @@ void finalize()
 		pthread_join(g_thread_id, NULL);
 }
 
-timer_node * _get_timer_from_fd(int fd)
+static timer_node * _get_timer_from_fd(int fd)
 {
 		timer_node * tmp = g_head;
 
@@ -149,7 +149,7 @@ timer_node * _get_timer_from_fd(int fd)
 		return NULL;
 }
 
-void * _timer_thread(void * data)
+static void * _timer_thread(void * data)
 {
 		struct pollfd ufds[MAX_TIMER_COUNT] = {{0}};
 		int iMaxCount = 0;
@@ -197,9 +197,9 @@ void * _timer_thread(void * data)
 		return NULL;
 }
 
-const char FarTimerType[] = "FarTimer";
+static const char FarTimerType[] = "FarTimer";
 
-void timer_handler(timer_node *timer_id, void *user_data)
+static void timer_handler(timer_node *timer_id, void *user_data)
 {
 	TSynchroData *sd;
 	TTimerData *td = (TTimerData*) user_data;
@@ -223,7 +223,7 @@ void timer_handler(timer_node *timer_id, void *user_data)
 	}
 }
 
-int far_Timer (lua_State *L)
+static int far_Timer (lua_State *L)
 {
 	TTimerData *td;
 	int index;
@@ -272,19 +272,19 @@ int far_Timer (lua_State *L)
 	}
 }
 
-TTimerData* CheckTimer(lua_State* L, int pos)
+static TTimerData* CheckTimer(lua_State* L, int pos)
 {
 	return (TTimerData*)luaL_checkudata(L, pos, FarTimerType);
 }
 
-TTimerData* CheckValidTimer(lua_State* L, int pos)
+static TTimerData* CheckValidTimer(lua_State* L, int pos)
 {
 	TTimerData* td = CheckTimer(L, pos);
 	luaL_argcheck(L, td->closeStage == 0, pos, "attempt to access closed timer");
 	return td;
 }
 
-int timer_Close (lua_State *L)
+static int timer_Close (lua_State *L)
 {
 	TTimerData* td = CheckTimer(L, 1);
 	if (td->closeStage == 0)
@@ -292,7 +292,7 @@ int timer_Close (lua_State *L)
 	return 0;
 }
 
-int timer_tostring (lua_State *L)
+static int timer_tostring (lua_State *L)
 {
 	TTimerData* td = CheckTimer(L, 1);
 	if (td->closeStage == 0)
@@ -302,7 +302,7 @@ int timer_tostring (lua_State *L)
 	return 1;
 }
 
-int timer_index (lua_State *L)
+static int timer_index (lua_State *L)
 {
 	TTimerData* td = CheckTimer(L, 1);
 	const char* method = luaL_checkstring(L, 2);
@@ -318,7 +318,7 @@ int timer_index (lua_State *L)
 	return 1;
 }
 
-int timer_newindex (lua_State *L)
+static int timer_newindex (lua_State *L)
 {
 	TTimerData* td = CheckValidTimer(L, 1);
 	const char* method = luaL_checkstring(L, 2);
@@ -344,7 +344,7 @@ static const luaL_Reg timer_methods[] = {
 	{NULL, NULL},
 };
 
-int finalize_timer_system(lua_State *L)
+static int finalize_timer_system(lua_State *L)
 {
 	(void)L;
 	finalize();
