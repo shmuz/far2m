@@ -25,21 +25,25 @@ TIMER_SINGLE_SHOT = 0,
 TIMER_PERIODIC
 } t_timer;
 
-typedef void (*time_handler)(size_t timer_id, void * user_data);
+struct _timer_node;
 
-struct timer_node
+typedef void (*time_handler)(struct _timer_node * timer_id, void * user_data);
+
+struct _timer_node
 {
 		int                 fd;
 		time_handler        callback;
 		void *              user_data;
 		unsigned int        interval;
 		t_timer             type;
-		struct timer_node * next;
+		struct _timer_node *next;
 };
+
+typedef struct _timer_node timer_node;
 
 static void * _timer_thread(void * data);
 static pthread_t g_thread_id;
-static struct timer_node *g_head = NULL;
+static timer_node *g_head = NULL;
 
 int initialize()
 {
@@ -52,12 +56,12 @@ int initialize()
 		return 1;
 }
 
-size_t start_timer(unsigned int interval, time_handler handler, t_timer type, void * user_data)
+timer_node * start_timer(unsigned int interval, time_handler handler, t_timer type, void * user_data)
 {
-		struct timer_node * new_node = NULL;
+		timer_node * new_node = NULL;
 		struct itimerspec new_value;
 
-		new_node = (struct timer_node *)malloc(sizeof(struct timer_node));
+		new_node = (timer_node *)malloc(sizeof(timer_node));
 
 		if (new_node == NULL) return 0;
 
@@ -94,13 +98,13 @@ size_t start_timer(unsigned int interval, time_handler handler, t_timer type, vo
 		new_node->next = g_head;
 		g_head = new_node;
 
-		return (size_t)new_node;
+		return new_node;
 }
 
-void stop_timer(size_t timer_id)
+void stop_timer(timer_node * timer_id)
 {
-		struct timer_node * tmp = NULL;
-		struct timer_node * node = (struct timer_node *)timer_id;
+		timer_node * tmp = NULL;
+		timer_node * node = (timer_node *)timer_id;
 
 		if (node == NULL) return;
 
@@ -126,15 +130,15 @@ void stop_timer(size_t timer_id)
 
 void finalize()
 {
-		while(g_head) stop_timer((size_t)g_head);
+		while(g_head) stop_timer(g_head);
 
 		pthread_cancel(g_thread_id);
 		pthread_join(g_thread_id, NULL);
 }
 
-struct timer_node * _get_timer_from_fd(int fd)
+timer_node * _get_timer_from_fd(int fd)
 {
-		struct timer_node * tmp = g_head;
+		timer_node * tmp = g_head;
 
 		while(tmp)
 		{
@@ -149,7 +153,7 @@ void * _timer_thread(void * data)
 {
 		struct pollfd ufds[MAX_TIMER_COUNT] = {{0}};
 		int iMaxCount = 0;
-		struct timer_node * tmp = NULL;
+		timer_node * tmp = NULL;
 		int read_fds = 0, i, s;
 		uint64_t exp;
 
@@ -185,7 +189,7 @@ void * _timer_thread(void * data)
 
 								tmp = _get_timer_from_fd(ufds[i].fd);
 
-								if (tmp && tmp->callback) tmp->callback((size_t)tmp, tmp->user_data);
+								if (tmp && tmp->callback) tmp->callback(tmp, tmp->user_data);
 						}
 				}
 		}
@@ -195,7 +199,7 @@ void * _timer_thread(void * data)
 
 const char FarTimerType[] = "FarTimer";
 
-void timer_handler(size_t timer_id, void *user_data)
+void timer_handler(timer_node *timer_id, void *user_data)
 {
 	TSynchroData *sd;
 	TTimerData *td = (TTimerData*) user_data;

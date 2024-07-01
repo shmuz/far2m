@@ -17,7 +17,7 @@
 
 typedef struct {
 	TPluginData *plugin_data;
-	size_t    timer_id;
+	void     *timer_id;
 	unsigned  interval;
 	int       tabRef;
 	int       closeStage;
