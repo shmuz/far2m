@@ -34,6 +34,7 @@ struct _timer_node
 		int                 fd;
 		time_handler        callback;
 		void *              user_data;
+		void *              plugin_id;
 		unsigned int        interval;
 		t_timer             type;
 		struct _timer_node *next;
@@ -44,19 +45,25 @@ typedef struct _timer_node timer_node;
 static void * _timer_thread(void * data);
 static pthread_t g_thread_id;
 static timer_node *g_head = NULL;
+static int g_ref_cnt = 0;
 
 static int initialize()
 {
+	if (g_ref_cnt == 0)
+	{
 		if (pthread_create(&g_thread_id, NULL, _timer_thread, NULL))
 		{
-				/*Thread creation failed*/
-				return 0;
+			/*Thread creation failed*/
+			return 0;
 		}
+	}
 
-		return 1;
+	++g_ref_cnt;
+	return 1;
 }
 
-static timer_node * start_timer(unsigned int interval, time_handler handler, t_timer type, void * user_data)
+static timer_node * start_timer(unsigned int interval, time_handler handler, t_timer type,
+		void *user_data, void *plugin_id)
 {
 		timer_node * new_node = NULL;
 		struct itimerspec new_value;
@@ -69,6 +76,7 @@ static timer_node * start_timer(unsigned int interval, time_handler handler, t_t
 		new_node->user_data = user_data;
 		new_node->interval  = interval;
 		new_node->type      = type;
+		new_node->plugin_id = plugin_id;
 
 		new_node->fd = timerfd_create(CLOCK_REALTIME, 0);
 
@@ -101,11 +109,8 @@ static timer_node * start_timer(unsigned int interval, time_handler handler, t_t
 		return new_node;
 }
 
-static void stop_timer(timer_node * timer_id)
+static void stop_timer(timer_node * node)
 {
-		timer_node * tmp = NULL;
-		timer_node * node = (timer_node *)timer_id;
-
 		if (node == NULL) return;
 
 		close(node->fd);
@@ -115,7 +120,7 @@ static void stop_timer(timer_node * timer_id)
 				g_head = g_head->next;
 		} else {
 
-				tmp = g_head;
+				timer_node * tmp = g_head;
 
 				while(tmp && tmp->next != node) tmp = tmp->next;
 
@@ -125,15 +130,36 @@ static void stop_timer(timer_node * timer_id)
 						tmp->next = tmp->next->next;
 				}
 		}
-		if (node) free(node);
+		free(node);
 }
 
-static void finalize()
+static void finalize(void *plugin_id)
 {
-		while(g_head) stop_timer(g_head);
+	timer_node extra;
+	timer_node * tmp = &extra;
 
+	for(tmp->next = g_head; tmp->next; )
+	{
+		timer_node *node = tmp->next;
+		if (node->plugin_id == plugin_id)
+		{
+			close(node->fd);
+			if (g_head == node)
+			{
+				g_head = node->next;
+			}
+			tmp->next = node->next;
+			free(node);
+		}
+		else
+			tmp = node;
+	}
+
+	if (g_ref_cnt && --g_ref_cnt == 0)
+	{
 		pthread_cancel(g_thread_id);
 		pthread_join(g_thread_id, NULL);
+	}
 }
 
 static timer_node * _get_timer_from_fd(int fd)
@@ -259,7 +285,7 @@ static int far_Timer (lua_State *L)
 	lua_pushvalue(L, -2);
 	td->tabRef = luaL_ref(L, LUA_REGISTRYINDEX); // put the table in the registry
 
-	td->timer_id = start_timer(td->interval, timer_handler, TIMER_PERIODIC, td);
+	td->timer_id = start_timer(td->interval, timer_handler, TIMER_PERIODIC, td, td->plugin_data);
 	if (td->timer_id) {
 		luaL_getmetatable(L, FarTimerType);
 		lua_setmetatable(L, -2);
@@ -346,8 +372,7 @@ static const luaL_Reg timer_methods[] = {
 
 static int finalize_timer_system(lua_State *L)
 {
-	(void)L;
-	finalize();
+	finalize(GetPluginData(L));
 	return 0;
 }
 
