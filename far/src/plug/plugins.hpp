@@ -248,6 +248,7 @@ class PluginManager
 		Plugin *GetPlugin(int PluginNumber);
 		Plugin *FindPlugin(const wchar_t *lpwszModuleName);
 		Plugin *FindPlugin(DWORD SysID);
+		Plugin *FindPlugin(Plugin *pPlugin);
 
 		int GetPluginsCount() { return PluginsCount; }
 		int GetOemPluginsCount() { return OemPluginsCount; }

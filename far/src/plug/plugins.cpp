@@ -397,6 +397,16 @@ Plugin *PluginManager::FindPlugin(const wchar_t *lpwszModuleName)
 	return nullptr;
 }
 
+Plugin *PluginManager::FindPlugin(Plugin *pPlugin)
+{
+	for (int i = 0; i < PluginsCount; i++)
+	{
+		if (pPlugin == PluginsData[i])
+			return pPlugin;
+	}
+	return nullptr;
+}
+
 Plugin *PluginManager::GetPlugin(int PluginNumber)
 {
 	if (PluginNumber < PluginsCount && PluginNumber >= 0)

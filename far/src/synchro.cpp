@@ -32,6 +32,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "headers.hpp"
 
 
+#include "ctrlobj.hpp"
 #include "synchro.hpp"
 #include "plclass.hpp"
 #include <farplug-wide.h>
@@ -82,7 +83,7 @@ bool PluginSynchro::Process(void)
 	{
 		if(plugin)
 		{
-			if (pPlugin)
+			if (pPlugin && CtrlObject->Plugins.FindPlugin(pPlugin)) //check if plugin is still loaded
 			{
 				pPlugin->ProcessSynchroEvent(SE_COMMONSYNCHRO,param);
 				res=true;
