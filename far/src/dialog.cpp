@@ -1785,7 +1785,7 @@ void Dialog::ShowDialog(unsigned ID)
 	int X, Y;
 //	size_t I, DrawItemCount;
 	unsigned I, DrawItemCount;
-	uint64_t ItemColor[4];
+	uint64_t ItemColor[4] = {};
 
 	// Если не разрешена отрисовка, то вываливаем.
 	if (IsEnableRedraw < 1 ||						// разрешена прорисовка ?

@@ -509,7 +509,7 @@ int _cdecl SortList(const void *el1,const void *el2)
 		SaveFlags1=SPtr1->UserFlags;
 		SaveFlags2=SPtr2->UserFlags;
 		SPtr1->UserFlags=SPtr2->UserFlags=0;
-		PluginPanelItem pi1,pi2;
+		PluginPanelItem pi1={}, pi2={};
 		FileList::FileListToPluginItem(SPtr1,&pi1);
 		FileList::FileListToPluginItem(SPtr2,&pi2);
 		SPtr1->UserFlags=SaveFlags1;
