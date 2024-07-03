@@ -40,60 +40,38 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 PluginSynchro PluginSynchroManager;
 
-PluginSynchro::PluginSynchro()
-{
-}
-
-PluginSynchro::~PluginSynchro()
-{
-}
-
-void PluginSynchro::Synchro(bool Plugin, INT_PTR ModuleNumber,void* Param)
+void PluginSynchro::Synchro(INT_PTR ModuleNumber, void* Param)
 {
 	RecursiveMutex.lock();
 	SynchroData item;
-	item.Plugin=Plugin;
-	item.ModuleNumber=ModuleNumber;
-	item.Param=Param;
+	item.ModuleNumber = ModuleNumber;
+	item.Param = Param;
 	Data.push_back(item);
 	RecursiveMutex.unlock();
 }
 
 bool PluginSynchro::Process(void)
 {
-	bool res=false;
-
-	bool process=false; bool plugin=false; Plugin* pPlugin=nullptr; void* param=nullptr;
+	Plugin* pPlugin = nullptr;
+	void* param = nullptr;
 
 	RecursiveMutex.lock();
 
 	if (!Data.empty())
 	{
-		process=true;
-		const auto& item=Data.front();
-		plugin=item.Plugin;
-		pPlugin=(Plugin*)item.ModuleNumber;
-		param=item.Param;
+		const auto& item = Data.front();
+		pPlugin = (Plugin*)item.ModuleNumber;
+		param = item.Param;
 		Data.erase(Data.begin());
 	}
 
 	RecursiveMutex.unlock();
 
-	if (process)
+	if (pPlugin && CtrlObject->Plugins.FindPlugin(pPlugin)) //check if plugin is still loaded
 	{
-		if(plugin)
-		{
-			if (pPlugin && CtrlObject->Plugins.FindPlugin(pPlugin)) //check if plugin is still loaded
-			{
-				pPlugin->ProcessSynchroEvent(SE_COMMONSYNCHRO,param);
-				res=true;
-			}
-		}
-		else
-		{
-			res=true;
-		}
+		pPlugin->ProcessSynchroEvent(SE_COMMONSYNCHRO, param);
+		return true;
 	}
 
-	return res;
+	return false;
 }

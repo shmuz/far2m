@@ -39,7 +39,6 @@ class PluginSynchro
 	private:
 		struct SynchroData
 		{
-			bool Plugin;
 			INT_PTR ModuleNumber;
 			void* Param;
 		};
@@ -47,9 +46,9 @@ class PluginSynchro
 		std::recursive_mutex RecursiveMutex;
 		std::list<SynchroData> Data;
 	public:
-		PluginSynchro();
-		~PluginSynchro();
-		void Synchro(bool Plugin, INT_PTR ModuleNumber,void* Param);
+		PluginSynchro() {}
+		~PluginSynchro() {}
+		void Synchro(INT_PTR ModuleNumber,void* Param);
 		bool Process(void);
 };
 
