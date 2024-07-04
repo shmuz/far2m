@@ -370,25 +370,20 @@ int PluginManager::UnloadPluginExternal(const wchar_t *lpwszModuleName)
 
 int PluginManager::UnloadPluginExternalV3(Plugin* pPlugin)
 {
-	for (int i=0; i < PluginsCount; i++)
+	if (FindPlugin(pPlugin))
 	{
-		if (PluginsData[i] == pPlugin)
-		{
-			int nResult = pPlugin->Unload(true);
-			RemovePlugin(pPlugin);
-			return nResult;
-		}
+		int nResult = pPlugin->Unload(true);
+		RemovePlugin(pPlugin);
+		return nResult;
 	}
 	return FALSE;
 }
 
 Plugin *PluginManager::FindPlugin(const wchar_t *lpwszModuleName)
 {
-	Plugin *pPlugin;
-
 	for (int i = 0; i < PluginsCount; i++)
 	{
-		pPlugin = PluginsData[i];
+		Plugin *pPlugin = PluginsData[i];
 
 		if (!StrCmp(lpwszModuleName, pPlugin->GetModuleName()))
 			return pPlugin;
@@ -2407,6 +2402,9 @@ static void ItemsToBuf(const wchar_t* const* &Strings, int& Count,
 
 size_t PluginManager::GetPluginInformation(Plugin *pPlugin, FarGetPluginInformation *pInfo, size_t BufferSize)
 {
+	if (!FindPlugin(pPlugin))
+		return 0;
+
 	// if(IsPluginUnloaded(pPlugin)) return 0;
 	FARString Prefix;
 	DWORD Flags=0, SysID=0;
