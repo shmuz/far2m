@@ -604,8 +604,6 @@ static int far_PluginStartupInfo(lua_State *L)
 	lua_pushlightuserdata(L, (void*)pd->ModuleNumber);
 	lua_setfield(L, -2, "ModuleNumber");
 
-	PutWStrToTable(L, "RootKey", pd->RootKey, -1);
-
 	lua_pushinteger(L, pd->PluginId);
 	lua_setfield(L, -2, "PluginId");
 

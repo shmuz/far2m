@@ -27,8 +27,8 @@ local function assert_udata(v)     assert(type(v)=="userdata")  return v; end
 local function assert_nil(v)       assert(v==nil)               return v; end
 local function assert_false(v)     assert(v==false)             return v; end
 local function assert_true(v)      assert(v==true)              return v; end
-local function assert_falsy(v)     assert(not v == true)        return v; end
-local function assert_truthy(v)    assert(not v == false)       return v; end
+local function assert_falsy(v)     assert((not v) == true)      return v; end
+local function assert_truthy(v)    assert((not v) == false)     return v; end
 
 local function assert_range(val, low, high)
   if low then assert(val >= low) end
@@ -2368,6 +2368,25 @@ local function test_far_Menu()
   end
 end
 
+local function test_SplitCmdLine()
+  local a,b,c,d
+
+  a,b,c,d = far.SplitCmdLine("ab cd ef gh")
+  assert(a=="ab" and b=="cd" and c=="ef" and d=="gh")
+
+  a,b,c,d = far.SplitCmdLine("  ab  cd  ef gh  ")
+  assert(a=="ab" and b=="cd" and c=="ef" and d=="gh")
+
+  a,b,c,d = far.SplitCmdLine("\"ab  cd\"  ef \"gh  \"")
+  assert(a=="ab  cd" and b=="ef" and c=="gh  " and d==nil)
+
+  a,b,c,d = far.SplitCmdLine("-r\"\"")
+  assert(a=="-r" and b=="" and c==nil and d==nil)
+
+  a,b,c,d = far.SplitCmdLine("-e  \"far.Show(4 + 7)\"")
+  assert(a=="-e" and b=="far.Show(4 + 7)" and c==nil and d==nil)
+end
+
 function MT.test_luafar()
   test_bit64()
   test_utf8()
@@ -2379,6 +2398,7 @@ function MT.test_luafar()
   test_FarStandardFunctions()
   test_dialog()
   test_far_Menu()
+  test_SplitCmdLine()
 
   test_far_GetMsg()
   if far.Timer then -- TODO (FreeBSD, DragonFly BSD)
