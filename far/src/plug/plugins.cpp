@@ -190,6 +190,7 @@ bool PluginManager::RemovePlugin(Plugin *pPlugin)
 	{
 		if (PluginsData[i] == pPlugin)
 		{
+			SysIdMap.erase(pPlugin->SysID);
 			if(pPlugin->IsOemPlugin())
 			{
 				OemPluginsCount--;
@@ -266,6 +267,10 @@ Plugin* PluginManager::LoadPlugin(
 
 		if (!bResult)
 			RemovePlugin(pPlugin);
+	}
+
+	if (bResult && pPlugin->SysID) {
+		SysIdMap.emplace(pPlugin->SysID, pPlugin);
 	}
 
 	return bResult ? pPlugin : nullptr;
@@ -2217,22 +2222,9 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 	return Result;
 }
 
-Plugin *PluginManager::FindPlugin(DWORD SysID)
+Plugin *PluginManager::FindPlugin(DWORD SysId)
 {
-	if (SysID  && SysID != 0xFFFFFFFFUl) // не допускается 0 и -1
-	{
-		Plugin *PData;
-
-		for (int I=0; I<PluginsCount; I++)
-		{
-			PData = PluginsData[I];
-
-			if (PData->GetSysID() == SysID)
-				return PData;
-		}
-	}
-
-	return nullptr;
+	return SysIdMap.count(SysId) ? SysIdMap[SysId] : nullptr;
 }
 
 PHPTR PluginManager::OpenPlugin(Plugin *pPlugin,int OpenFrom,INT_PTR Item)

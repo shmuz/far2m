@@ -6246,6 +6246,7 @@ int LF_LuaOpen (const struct PluginStartupInfo *aInfo, TPluginData* aPlugData, l
 		PSInfo.FSF = &FSF;
 		PSInfo.ModuleName = NULL;
 		PSInfo.ModuleNumber = 0;
+		PSInfo.Private = NULL;
 	}
 
 	// create Lua State

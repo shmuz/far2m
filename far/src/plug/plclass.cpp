@@ -6,6 +6,7 @@
 #include "dirmix.hpp"
 #include "message.hpp"
 #include "plugins.hpp"
+#include "ctrlobj.hpp"
 
 #include <errno.h>
 #include <dlfcn.h>
@@ -100,24 +101,33 @@ void Plugin::CloseModule()
 	}
 }
 
-void Plugin::GetGlobalInfo()
+bool Plugin::GetGlobalInfo()
 {
-	if (pGetGlobalInfoW)
-	{
-		ExecuteStruct es(EXCEPT_GETGLOBALINFO);
-		GlobalInfo gi {};
-		gi.StructSize = sizeof(GlobalInfo);
-		EXECUTE_FUNCTION(pGetGlobalInfoW(&gi), es);
+	GetModuleFN(pGetGlobalInfoW, NFMP_GetGlobalInfo);
+	if (!pGetGlobalInfoW)
+		return true;
 
-		if (gi.StructSize && gi.Title && *gi.Title && gi.Description && *gi.Description && gi.Author && *gi.Author)
-		{
+	ExecuteStruct es(EXCEPT_GETGLOBALINFO);
+	GlobalInfo gi { sizeof(GlobalInfo) };
+	EXECUTE_FUNCTION(pGetGlobalInfoW(&gi), es);
+
+	if (gi.StructSize && gi.Title && *gi.Title && gi.Description && *gi.Description
+			&& gi.Author && *gi.Author && gi.SysID)
+	{
+		auto pPlugin = CtrlObject->Plugins.FindPlugin(gi.SysID);
+		if (!pPlugin || pPlugin == this) { // check for duplicate SysID's
 			SysID = gi.SysID;
 			strTitle = gi.Title;
 			strDescription = gi.Description;
 			strAuthor= gi.Author;
 			m_PlugVersion = gi.Version;
+			return true;
 		}
 	}
+
+	Unload();
+	WorkFlags.Set(PIWF_DONTLOADAGAIN);
+	return false;
 }
 
 void Plugin::ShowMessageAboutIllegalPluginVersion(const wchar_t* plg,int required)

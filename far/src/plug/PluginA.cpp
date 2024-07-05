@@ -116,7 +116,6 @@ static const char NFMP_ProcessKey[] = "ProcessKey";
 static const char NFMP_ProcessEvent[] = "ProcessEvent";
 static const char NFMP_Compare[] = "Compare";
 static const char NFMP_GetMinFarVersion[] = "GetMinFarVersion";
-static const char NFMP_GetGlobalInfo[] = "GetGlobalInfoW";
 
 
 static void CheckScreenLock()
@@ -165,13 +164,19 @@ bool PluginA::LoadFromCache()
 	if (kfh.GetString("ID") != m_strModuleID)
 		return false;
 
+	SysID = kfh.GetUInt(szCache_SysID, 0);
+	if (SysID && CtrlObject->Plugins.FindPlugin(SysID))
+	{
+		SysID = 0;
+		return false;
+	}
+
 	if (kfh.GetBytes((unsigned char*)&m_PlugVersion, sizeof(m_PlugVersion), szCache_Version) != sizeof(m_PlugVersion))
 		memset(&m_PlugVersion, 0, sizeof(m_PlugVersion));
 	strTitle = kfh.GetString(szCache_Title);
 	strDescription = kfh.GetString(szCache_Description);
 	strAuthor = kfh.GetString(szCache_Author);
 
-	SysID = kfh.GetUInt(szCache_SysID,0);
 	pOpenPlugin = (PLUGINOPENPLUGIN)(INT_PTR)kfh.GetUInt(szCache_OpenPlugin, 0);
 	pOpenFilePlugin = (PLUGINOPENFILEPLUGIN)(INT_PTR)kfh.GetUInt(szCache_OpenFilePlugin, 0);
 	pSetFindList = (PLUGINSETFINDLIST)(INT_PTR)kfh.GetUInt(szCache_SetFindList, 0);
@@ -290,6 +295,10 @@ bool PluginA::Load()
 	m_Loaded = true;
 
 	WorkFlags.Clear(PIWF_CACHED);
+
+	if (!GetGlobalInfo())
+		return false;
+
 	GetModuleFN(pSetStartupInfo, NFMP_SetStartupInfo);
 	GetModuleFN(pOpenPlugin, NFMP_OpenPlugin);
 	GetModuleFN(pOpenFilePlugin, NFMP_OpenFilePlugin);
@@ -318,14 +327,11 @@ bool PluginA::Load()
 	GetModuleFN(pProcessViewerEvent, NFMP_ProcessViewerEvent);
 	GetModuleFN(pProcessDialogEvent, NFMP_ProcessDialogEvent);
 	GetModuleFN(pMinFarVersion, NFMP_GetMinFarVersion);
-	GetModuleFN(pGetGlobalInfoW, NFMP_GetGlobalInfo);
 
 	bool bUnloaded = false;
 
 	if (CheckMinFarVersion(bUnloaded))
 	{
-		GetGlobalInfo();
-
 		if (SetStartupInfo(bUnloaded))
 		{
 			FuncFlags.Set(PICFF_LOADED);

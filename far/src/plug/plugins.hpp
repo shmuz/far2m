@@ -40,6 +40,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "PluginW.hpp"
 #include <string>
 #include <map>
+#include <unordered_map>
 #include <mutex>
 
 extern const char *FmtDiskMenuStringD;
@@ -182,6 +183,7 @@ class PluginManager
 		int PluginsCount;
 		int OemPluginsCount;
 		struct BackgroundTasks : std::map<std::wstring, unsigned int>, std::mutex {} BgTasks;
+		std::unordered_map<DWORD, Plugin*> SysIdMap;
 
 	public:
 

@@ -46,6 +46,7 @@ class Plugin
 		void *GetModulePFN(const char *fn);
 
 	protected:
+		static constexpr const char *NFMP_GetGlobalInfo = "GetGlobalInfoW";
 		PLUGINGETGLOBALINFOW pGetGlobalInfoW;
 
 		PluginManager *m_owner; //BUGBUG
@@ -191,7 +192,7 @@ class Plugin
 		virtual bool MayExitFAR() = 0;
 		virtual void ExitFAR() = 0;
 
-		void GetGlobalInfo();
+		bool GetGlobalInfo();
 		bool IsLoaded() { return m_hModule != nullptr; }
 		static void ShowMessageAboutIllegalPluginVersion(const wchar_t* plg,int required);
 };

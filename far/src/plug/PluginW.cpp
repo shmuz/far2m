@@ -128,7 +128,6 @@ static const char NFMP_GetMinFarVersion[] = "GetMinFarVersionW";
 static const char NFMP_Analyse[] = "AnalyseW";
 static const char NFMP_GetCustomData[] = "GetCustomDataW";
 static const char NFMP_FreeCustomData[] = "FreeCustomDataW";
-static const char NFMP_GetGlobalInfo[] = "GetGlobalInfoW";
 static const char NFMP_ProcessConsoleInput[] = "ProcessConsoleInputW";
 
 
@@ -196,13 +195,19 @@ bool PluginW::LoadFromCache()
 	if (kfh.GetString("ID") != m_strModuleID)
 		return false;
 
+	SysID = kfh.GetUInt(szCache_SysID, 0);
+	if (SysID && CtrlObject->Plugins.FindPlugin(SysID))
+	{
+		SysID = 0;
+		return false;
+	}
+
 	if (kfh.GetBytes((unsigned char*)&m_PlugVersion, sizeof(m_PlugVersion), szCache_Version) != sizeof(m_PlugVersion))
 		memset(&m_PlugVersion, 0, sizeof(m_PlugVersion));
 	strTitle = kfh.GetString(szCache_Title);
 	strDescription = kfh.GetString(szCache_Description);
 	strAuthor = kfh.GetString(szCache_Author);
 
-	SysID = kfh.GetUInt(szCache_SysID, 0);
 	pOpenPluginW = (PLUGINOPENPLUGINW)(INT_PTR)kfh.GetUInt(szCache_OpenPlugin, 0);
 	pOpenFilePluginW = (PLUGINOPENFILEPLUGINW)(INT_PTR)kfh.GetUInt(szCache_OpenFilePlugin, 0);
 	pSetFindListW = (PLUGINSETFINDLISTW)(INT_PTR)kfh.GetUInt(szCache_SetFindList, 0);
@@ -316,6 +321,10 @@ bool PluginW::Load()
 	m_Loaded = true;
 
 	WorkFlags.Clear(PIWF_CACHED);
+
+	if (!GetGlobalInfo())
+		return false;
+
 	GetModuleFN(pSetStartupInfoW, NFMP_SetStartupInfo);
 	GetModuleFN(pOpenPluginW, NFMP_OpenPlugin);
 	GetModuleFN(pOpenFilePluginW, NFMP_OpenFilePlugin);
@@ -349,15 +358,12 @@ bool PluginW::Load()
 	GetModuleFN(pAnalyseW, NFMP_Analyse);
 	GetModuleFN(pGetCustomDataW, NFMP_GetCustomData);
 	GetModuleFN(pFreeCustomDataW, NFMP_FreeCustomData);
-	GetModuleFN(pGetGlobalInfoW, NFMP_GetGlobalInfo);
 	GetModuleFN(pProcessConsoleInputW, NFMP_ProcessConsoleInput);
 
 	bool bUnloaded = false;
 
 	if (CheckMinFarVersion(bUnloaded))
 	{
-		GetGlobalInfo();
-
 		if (SetStartupInfo(bUnloaded))
 		{
 			FuncFlags.Set(PICFF_LOADED);
