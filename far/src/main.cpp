@@ -577,7 +577,6 @@ int FarAppMain(int argc, char **argv)
 					if (Upper(arg_w[2])==L'O' && !arg_w[3])
 					{
 						Opt.LoadPlug.PluginsCacheOnly=TRUE;
-						Opt.LoadPlug.PluginsPersonal=FALSE;
 					}
 					else if (Upper(arg_w[2]) == L'D' && !arg_w[3]) {
 						if (I + 1 < argc) {
@@ -617,12 +616,6 @@ int FarAppMain(int argc, char **argv)
 		}
 	}
 
-	if (bCustomPlugins) {
-		Opt.LoadPlug.MainPluginDir = FALSE;
-		Opt.LoadPlug.PluginsCacheOnly = FALSE;
-		Opt.LoadPlug.PluginsPersonal = FALSE;
-	}
-
 	std::unique_ptr<KeyFileHelper> KeyboardLayouts;
 	wchar_t *far2l_path = (wchar_t*)g_strFarPath.CPtr();
 	std::string kblo_path = StrPrintf("%lskblayouts.ini", far2l_path);
@@ -639,14 +632,14 @@ int FarAppMain(int argc, char **argv)
 	//WaitForInputIdle(GetCurrentProcess(),0);
 	std::set_new_handler(nullptr);
 
-	if (!Opt.LoadPlug.MainPluginDir) //если есть ключ /p то он отменяет /co
-		Opt.LoadPlug.PluginsCacheOnly=FALSE;
-
-	if (Opt.LoadPlug.PluginsCacheOnly)
-	{
-		Opt.LoadPlug.strCustomPluginsPath.Clear();
-		Opt.LoadPlug.MainPluginDir=FALSE;
-		Opt.LoadPlug.PluginsPersonal=FALSE;
+	if (bCustomPlugins) { //если есть ключ /p то он отменяет /co
+		Opt.LoadPlug.MainPluginDir = FALSE;
+		Opt.LoadPlug.PluginsPersonal = FALSE;
+		Opt.LoadPlug.PluginsCacheOnly = FALSE;
+	}
+	else if (Opt.LoadPlug.PluginsCacheOnly) {
+		Opt.LoadPlug.MainPluginDir = FALSE;
+		Opt.LoadPlug.PluginsPersonal = FALSE;
 	}
 
 	ConfigOptLoad();
