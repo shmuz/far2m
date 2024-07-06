@@ -160,7 +160,7 @@ konfigurációnál a kapcsoló használata instabil működést eredményezhet.
           ^<wrap>
   #-p[<path>]#  A "fő" plugineket a <path>-ben megadott elérési út
           ^<wrap>mappáiban keresi. Több keresési útvonal is megadható,
-";"-vel elválasztva.
+":"-vel elválasztva.
 
           Példa: far /p%SystemRoot%\\Profiles\\%USERNAME%\\FAR
 

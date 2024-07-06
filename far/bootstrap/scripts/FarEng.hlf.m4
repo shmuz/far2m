@@ -167,7 +167,7 @@ and line position.
 
   #-p[<path>]#
   Search for "main" plugins in the folder given in <path>.
-  Several search paths may be given separated by ';'.
+  Several search paths may be given separated by ':'.
 
   #-co#
   Forces FAR2M to load plugins from cache only. Plugins are loaded faster this way,
@@ -1368,7 +1368,7 @@ $ #Plugins manager#
 
   #Path for personal plugins#
   Enter here the full path, where FAR2M will search for "personal" plugins in addition to the "main"
-plugins. Several search paths may be given separated by ';'. Environment variables can be entered in the
+plugins. Several search paths may be given separated by ':' or ';'. Environment variables can be entered in the
 search path. Personal plugins will not be loaded, if the switches /p or /co are given in the
 ~command line~@CmdLine@.
 

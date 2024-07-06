@@ -423,10 +423,12 @@ void PluginManager::LoadPlugins()
 	{
 		LoadPluginsFromCache();
 	}
-	else if (Opt.LoadPlug.MainPluginDir || !Opt.LoadPlug.strCustomPluginsPath.IsEmpty() || (Opt.LoadPlug.PluginsPersonal && !Opt.LoadPlug.strPersonalPluginsPath.IsEmpty()))
+	else if (Opt.LoadPlug.MainPluginDir
+			|| !Opt.LoadPlug.strCustomPluginsPath.IsEmpty()
+			|| (Opt.LoadPlug.PluginsPersonal && !Opt.LoadPlug.strPersonalPluginsPath.IsEmpty()))
 	{
 		ScanTree ScTree(FALSE,TRUE,Opt.LoadPlug.ScanSymlinks);
-		UserDefinedList PluginPathList(ULF_UNIQUE | ULF_CASESENSITIVE);  // хранение списка каталогов
+		UserDefinedList PluginPathList(ULF_UNIQUE | ULF_CASESENSITIVE, L':', L';');  // хранение списка каталогов
 		FARString strPluginsDir;
 		FARString strFullName;
 		FAR_FIND_DATA_EX FindData;
@@ -442,8 +444,12 @@ void PluginManager::LoadPlugins()
 			}
 
 			// ...а персональные есть?
-			if (Opt.LoadPlug.PluginsPersonal && !Opt.LoadPlug.strPersonalPluginsPath.IsEmpty() && !(Opt.Policies.DisabledOptions&FFPOL_PERSONALPATH))
+			if (Opt.LoadPlug.PluginsPersonal
+					&& !Opt.LoadPlug.strPersonalPluginsPath.IsEmpty()
+					&& !(Opt.Policies.DisabledOptions & FFPOL_PERSONALPATH))
+			{
 				PluginPathList.AddItem(Opt.LoadPlug.strPersonalPluginsPath);
+			}
 		}
 		else if (!Opt.LoadPlug.strCustomPluginsPath.IsEmpty())  // только "заказные" пути?
 		{

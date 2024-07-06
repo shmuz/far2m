@@ -73,6 +73,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "SafeMMap.hpp"
 #include "ConfigRW.hpp"
 #include "ConfigOpt.hpp"
+#include "udlist.hpp"
 
 #ifdef DIRECT_RT
 int DirectRT=0;
@@ -438,6 +439,8 @@ int FarAppMain(int argc, char **argv)
 
 	// макросы не дисаблим
 	Opt.Macro.DisableMacro=0;
+	bool bCustomPlugins = false;
+
 	for (int I=1; I<argc; I++)
 	{
 		std::wstring arg_w = MB2Wide(argv[I]);
@@ -546,12 +549,35 @@ int FarAppMain(int argc, char **argv)
 					fprintf(stderr, "Unsupported in far2m\n");
 					break;
 
+				case L'P':
+					if (!(Opt.Policies.DisabledOptions & FFPOL_USEPSWITCH)) {
+						bCustomPlugins = true;
+						if (arg_w[2])
+						{
+							UserDefinedList Udl(ULF_UNIQUE | ULF_CASESENSITIVE, L':', 0);
+							if (Udl.Set(arg_w.data() + 2))
+							{
+								for (size_t i=0; i < Udl.Size(); i++)
+								{
+									FARString path = Udl.Get(i);
+									apiExpandEnvironmentStrings(path, path);
+									// Unquote(path);
+									ConvertNameToFull(path, path);
+									if (!Opt.LoadPlug.strCustomPluginsPath.IsEmpty()) {
+										Opt.LoadPlug.strCustomPluginsPath += L':';
+									}
+									Opt.LoadPlug.strCustomPluginsPath += path;
+								}
+							}
+						}
+					}
+					break;
+
 				case L'C':
 					if (Upper(arg_w[2])==L'O' && !arg_w[3])
 					{
 						Opt.LoadPlug.PluginsCacheOnly=TRUE;
 						Opt.LoadPlug.PluginsPersonal=FALSE;
-
 					}
 					else if (Upper(arg_w[2]) == L'D' && !arg_w[3]) {
 						if (I + 1 < argc) {
@@ -589,6 +615,12 @@ int FarAppMain(int argc, char **argv)
 				}
 			}
 		}
+	}
+
+	if (bCustomPlugins) {
+		Opt.LoadPlug.MainPluginDir = FALSE;
+		Opt.LoadPlug.PluginsCacheOnly = FALSE;
+		Opt.LoadPlug.PluginsPersonal = FALSE;
 	}
 
 	std::unique_ptr<KeyFileHelper> KeyboardLayouts;
