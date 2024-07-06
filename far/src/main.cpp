@@ -445,7 +445,7 @@ int FarAppMain(int argc, char **argv)
 	{
 		std::wstring arg_w = MB2Wide(argv[I]);
 		if (arg_w.find(L"--") == 0) {
-			arg_w.erase(0, 1);
+			continue; // 2024-Jul-06: --primary-selection, --maximize and --nomaximize may appear here
 		}
 		bool switchHandled = false;
 		if ((arg_w[0]==L'/' || arg_w[0]==L'-') && arg_w[1])
