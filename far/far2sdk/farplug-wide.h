@@ -2201,6 +2201,8 @@ typedef void (WINAPI *FARSTDLOCALSTRUPR)(wchar_t *s1);
 typedef void (WINAPI *FARSTDLOCALSTRLWR)(wchar_t *s1);
 typedef int (WINAPI *FARSTDLOCALSTRICMP)(const wchar_t *s1,const wchar_t *s2);
 typedef int (WINAPI *FARSTDLOCALSTRNICMP)(const wchar_t *s1,const wchar_t *s2,int n);
+typedef int (WINAPI *FARSTDLOCALSTRCMP)(const wchar_t *s1,const wchar_t *s2);
+typedef int (WINAPI *FARSTDLOCALSTRNCMP)(const wchar_t *s1,const wchar_t *s2,int n);
 
 enum PROCESSNAME_FLAGS
 {
@@ -2455,6 +2457,8 @@ typedef struct FarStandardFunctions
 	FARSTDKEYNAMETOINPUTRECORD FarNameToInputRecord;
 	FARSTDGETFILEGROUP         GetFileGroup;
 	FARFORMATFILESIZE          FormatFileSize;
+	FARSTDLOCALSTRICMP         LStrcmp;
+	FARSTDLOCALSTRNICMP        LStrncmp;
 } FARSTANDARDFUNCTIONS;
 
 struct PluginStartupInfo
