@@ -4390,6 +4390,24 @@ static int far_LStrnicmp(lua_State *L)
 	return 1;
 }
 
+static int far_LStrcmp(lua_State *L)
+{
+	const wchar_t* s1 = check_utf8_string(L, 1, NULL);
+	const wchar_t* s2 = check_utf8_string(L, 2, NULL);
+	lua_pushinteger(L, FSF.LStrcmp(s1, s2));
+	return 1;
+}
+
+static int far_LStrncmp(lua_State *L)
+{
+	const wchar_t* s1 = check_utf8_string(L, 1, NULL);
+	const wchar_t* s2 = check_utf8_string(L, 2, NULL);
+	int num = luaL_checkinteger(L, 3);
+	if (num < 0) num = 0;
+	lua_pushinteger(L, FSF.LStrncmp(s1, s2, num));
+	return 1;
+}
+
 static int _ProcessName (lua_State *L, int Op)
 {
 	int pos2=2, pos3=3, pos4=4;
@@ -6014,6 +6032,8 @@ static const luaL_Reg far_funcs[] =
 	PAIR( far, Log),
 	PAIR( far, LStricmp),
 	PAIR( far, LStrnicmp),
+	PAIR( far, LStrcmp),
+	PAIR( far, LStrncmp),
 	PAIR( far, LUpperBuf),
 	PAIR( far, MacroAdd),
 	PAIR( far, MacroCheck),

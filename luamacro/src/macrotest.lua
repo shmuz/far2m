@@ -1974,6 +1974,22 @@ local function test_FarStandardFunctions()
   assert(far.LStrnicmp("111abc","111def",3) == 0)
   assert(far.LStrnicmp("111abc","111def",4) < 0)
 
+  assert(far.LStrcmp("abc","def") < 0)
+  assert(far.LStrcmp("def","abc") > 0)
+  assert(far.LStrcmp("abc","abc") == 0)
+  assert(far.LStrcmp("ABC","def") < 0)
+  assert(far.LStrcmp("DEF","abc") < 0)
+  assert(far.LStrcmp("ABC","abc") < 0)
+
+  assert(far.LStrncmp("abc","def",3) < 0)
+  assert(far.LStrncmp("def","abc",3) > 0)
+  assert(far.LStrncmp("abc","abc",3) == 0)
+  assert(far.LStrncmp("ABC","def",3) < 0)
+  assert(far.LStrncmp("DEF","abc",3) < 0)
+  assert(far.LStrncmp("ABC","abc",3) < 0)
+  assert(far.LStrncmp("111abc","111def",3) == 0)
+  assert(far.LStrncmp("111abc","111def",4) < 0)
+
   assert(6 == far.StrCellsCount("🔥🔥🔥"))
   assert(4 == far.StrCellsCount("🔥🔥🔥", 2))
 
