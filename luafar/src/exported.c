@@ -109,18 +109,6 @@ void PushPluginPair(lua_State* L, HANDLE hPlugin)
 	lua_pushlightuserdata(L, hPlugin);
 }
 
-void CreatePluginInfoCollector (lua_State* L)
-{
-	lua_newtable(L);
-	lua_setfield(L, LUA_REGISTRYINDEX, COLLECTOR_PI);
-}
-
-void DestroyPluginInfoCollector(lua_State* L)
-{
-	lua_pushnil(L);
-	lua_setfield(L, LUA_REGISTRYINDEX, COLLECTOR_PI);
-}
-
 void DestroyCollector(lua_State* L, HANDLE hPlugin, const char* Collector)
 {
 	PushPluginTable(L, hPlugin);      //+1: Tbl
@@ -1106,7 +1094,6 @@ void LF_LuaClose(TPluginData* aPlugData)
 
 void LF_ExitFAR(lua_State* L)
 {
-	DestroyPluginInfoCollector(L);
 	if (GetExportFunction(L, "ExitFAR"))   //+1: Func
 		pcall_msg(L, 0, 0);                  //+0
 }
@@ -1123,6 +1110,19 @@ int LF_MayExitFAR(lua_State* L)
 	return ret;
 }
 
+static void SetMenuGuids(lua_State *L, const char *Field, size_t Count, const GUID** Target, int CPos)
+{
+	if (Count) {
+		lua_getfield(L, -1, Field);
+		if (lua_type(L,-1) == LUA_TSTRING && lua_objlen(L,-1) >= Count*sizeof(GUID)) {
+			*Target = (const GUID*)lua_tostring(L,-1);
+			lua_rawseti(L, CPos, lua_objlen(L, CPos) + 1);
+		}
+		else Log(L,"guids problem"),
+			lua_pop(L,1);
+	}
+}
+
 void LF_GetPluginInfo(lua_State* L, struct PluginInfo *aPI)
 {
 	aPI->StructSize = sizeof (struct PluginInfo);
@@ -1135,9 +1135,9 @@ void LF_GetPluginInfo(lua_State* L, struct PluginInfo *aPI)
 		return;
 	}
 	//--------------------------------------------------------------------------
-	DestroyPluginInfoCollector (L);
-	CreatePluginInfoCollector (L);
-	lua_getfield(L, LUA_REGISTRYINDEX, COLLECTOR_PI);  //+2: Info,Coll
+	lua_newtable(L);                                   //+2: Info,Coll
+	lua_pushvalue(L, -1);
+	lua_setfield(L, LUA_REGISTRYINDEX, COLLECTOR_PI);
 	int cpos = lua_gettop(L);  // collector position
 	lua_pushvalue(L, -2);                              //+3: Info,Coll,Info
 	//--------------------------------------------------------------------------
@@ -1151,6 +1151,10 @@ void LF_GetPluginInfo(lua_State* L, struct PluginInfo *aPI)
 	PI->PluginMenuStrings = CreateStringsArray (L, cpos, "PluginMenuStrings", &PI->PluginMenuStringsNumber);
 	PI->PluginConfigStrings = CreateStringsArray (L, cpos, "PluginConfigStrings", &PI->PluginConfigStringsNumber);
 	PI->CommandPrefix = AddStringToCollectorField(L, cpos, "CommandPrefix");
+	//--------------------------------------------------------------------------
+	SetMenuGuids(L, "DiskMenuGuids", PI->DiskMenuStringsNumber, &PI->DiskMenuGuids, cpos);
+	SetMenuGuids(L, "PluginMenuGuids", PI->PluginMenuStringsNumber, &PI->PluginMenuGuids, cpos);
+	SetMenuGuids(L, "PluginConfigGuids", PI->PluginConfigStringsNumber, &PI->PluginConfigGuids, cpos);
 	//--------------------------------------------------------------------------
 	lua_pop(L, 3);
 	*aPI = *PI;

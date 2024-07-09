@@ -175,6 +175,13 @@ enum CALLPLUGINFLAGS
 	CPT_CHECKONLY   = 0x10000000,
 };
 
+enum MENUTYPE
+{
+	MTYPE_COMMANDSMENU,
+	MTYPE_CONFIGSMENU,
+	MTYPE_DISKSMENU,
+};
+
 class PluginManager
 {
 	private:
@@ -211,11 +218,12 @@ class PluginManager
 		void LoadIfCacheAbsent();
 		void ReadUserBackgound(SaveScreen *SaveScr);
 
-		void GetPluginHotKey(Plugin *pPlugin, int ItemNumber, const char *HotKeyType, FARString &strHotKey);
+		void GetPluginHotKey(Plugin *pPlugin, int ItemNumber, MENUTYPE MenuType, FARString &strHotKey);
+		std::string GetHotKeySettingName(Plugin *pPlugin, int ItemNumber, MENUTYPE MenuType);
 
 		bool TestPluginInfo(Plugin *Item,PluginInfo *Info);
 		bool TestOpenPluginInfo(Plugin *Item,OpenPluginInfo *Info);
-		bool CheckIfHotkeyPresent(bool IsConfig);
+		bool CheckIfHotkeyPresent(MENUTYPE MenuType);
 
 		Plugin* LoadPlugin(const FARString &strModuleName, bool LoadUncached);
 
@@ -269,8 +277,7 @@ class PluginManager
 		void DiscardCache();
 		int ProcessCommandLine(const wchar_t *Command,Panel *Target=nullptr);
 
-		bool SetHotKeyDialog(const wchar_t *DlgPluginTitle, const std::string &SettingName);
-		std::string GetHotKeySettingName(Plugin *pPlugin, int ItemNumber, const char *HotKeyType);
+		bool SetHotKeyDialog(const wchar_t *DlgPluginTitle, Plugin *pPlugin, int ItemNumber, MENUTYPE MenuType);
 
 		// $ .09.2000 SVS - Функция CallPlugin - найти плагин по ID и запустить OpenFrom = OPEN_*
 		int CallPlugin(DWORD SysID,int OpenFrom, void *Data, void **Ret=nullptr);

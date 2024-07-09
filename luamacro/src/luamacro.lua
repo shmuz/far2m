@@ -108,18 +108,13 @@ end
 -- END: Functions implemented via "returning a key" to Far
 -------------------------------------------------------------------------------
 
-local PluginInfo
-
 function export.GetPluginInfo()
   local out = {
     Flags = bor(F.PF_PRELOAD,F.PF_FULLCMDLINE,F.PF_EDITOR,F.PF_VIEWER,F.PF_DIALOG),
     CommandPrefix = "lm:macro:lua:moon:luas:moons:edit:view:load:unload:goto"..utils.GetPrefixes()[1],
-    PluginMenuGuids = { win.Uuid("EF6D67A2-59F7-4DF3-952E-F9049877B492") },
-    PluginConfigGuids = {},
-    DiskMenuGuids = {},
+    PluginMenuGuids = win.Uuid("EF6D67A2-59F7-4DF3-952E-F9049877B492"),
     PluginMenuStrings = { "Macro Browser" },
   }
-  PluginInfo = out
 
   local mode = far.MacroGetArea()
   local area = utils.GetTrueAreaName(mode)
@@ -132,7 +127,7 @@ function export.GetPluginInfo()
         if type(text) == "string" then
           out.PluginConfigStrings = out.PluginConfigStrings or {}
           table.insert(out.PluginConfigStrings, text)
-          table.insert(out.PluginConfigGuids, item.guid)
+          out.PluginConfigGuids = out.PluginConfigGuids and out.PluginConfigGuids..item.guid or item.guid
         end
       else
         ErrMsg(text)
@@ -144,7 +139,7 @@ function export.GetPluginInfo()
         if type(text) == "string" then
           out.DiskMenuStrings = out.DiskMenuStrings or {}
           table.insert(out.DiskMenuStrings, text)
-          table.insert(out.DiskMenuGuids, item.guid)
+          out.DiskMenuGuids = out.DiskMenuGuids and out.DiskMenuGuids..item.guid or item.guid
         end
       else
         ErrMsg(text)
@@ -156,7 +151,7 @@ function export.GetPluginInfo()
         if type(text) == "string" then
           out.PluginMenuStrings = out.PluginMenuStrings or {}
           table.insert(out.PluginMenuStrings, text)
-          table.insert(out.PluginMenuGuids, item.guid)
+          out.PluginMenuGuids = out.PluginMenuGuids and out.PluginMenuGuids..item.guid or item.guid
         end
       else
         ErrMsg(text)
