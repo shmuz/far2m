@@ -89,6 +89,7 @@ static const char szCache_ProcessViewerEvent[] = "ProcessViewerEventW";
 static const char szCache_ProcessDialogEvent[] = "ProcessDialogEventW";
 static const char szCache_ProcessSynchroEvent[] = "ProcessSynchroEventW";
 static const char szCache_Configure[] = "ConfigureW";
+static const char szCache_ConfigureV3[] = "ConfigureV3W";
 static const char szCache_Analyse[] = "AnalyseW";
 static const char szCache_GetCustomData[] = "GetCustomDataW";
 static const char szCache_ProcessConsoleInput[] = "ProcessConsoleInputW";
@@ -119,6 +120,7 @@ static const char NFMP_DeleteFiles[] = "DeleteFilesW";
 static const char NFMP_MakeDirectory[] = "MakeDirectoryW";
 static const char NFMP_ProcessHostFile[] = "ProcessHostFileW";
 static const char NFMP_Configure[] = "ConfigureW";
+static const char NFMP_ConfigureV3[] = "ConfigureV3W";
 static const char NFMP_MayExitFAR[] = "MayExitFARW";
 static const char NFMP_ExitFAR[] = "ExitFARW";
 static const char NFMP_ProcessKey[] = "ProcessKeyW";
@@ -217,6 +219,7 @@ bool PluginW::LoadFromCache()
 	pProcessDialogEventW = (PLUGINPROCESSDIALOGEVENTW)(INT_PTR)kfh.GetUInt(szCache_ProcessDialogEvent, 0);
 	pProcessSynchroEventW = (PLUGINPROCESSSYNCHROEVENTW)(INT_PTR)kfh.GetUInt(szCache_ProcessSynchroEvent, 0);
 	pConfigureW = (PLUGINCONFIGUREW)(INT_PTR)kfh.GetUInt(szCache_Configure, 0);
+	pConfigureV3W = (PLUGINCONFIGUREV3W)(INT_PTR)kfh.GetUInt(szCache_ConfigureV3, 0);
 	pAnalyseW = (PLUGINANALYSEW)(INT_PTR)kfh.GetUInt(szCache_Analyse, 0);
 	pGetCustomDataW = (PLUGINGETCUSTOMDATAW)(INT_PTR)kfh.GetUInt(szCache_GetCustomData, 0);
 	pProcessConsoleInputW = (PLUGINPROCESSCONSOLEINPUTW)(INT_PTR)kfh.GetUInt(szCache_ProcessConsoleInput, 0);
@@ -296,6 +299,7 @@ bool PluginW::SaveToCache()
 	kfh.SetUInt(GetSettingsName(), szCache_ProcessDialogEvent, pProcessDialogEventW!=nullptr);
 	kfh.SetUInt(GetSettingsName(), szCache_ProcessSynchroEvent, pProcessSynchroEventW!=nullptr);
 	kfh.SetUInt(GetSettingsName(), szCache_Configure, pConfigureW!=nullptr);
+	kfh.SetUInt(GetSettingsName(), szCache_ConfigureV3, pConfigureV3W!=nullptr);
 	kfh.SetUInt(GetSettingsName(), szCache_Analyse, pAnalyseW!=nullptr);
 	kfh.SetUInt(GetSettingsName(), szCache_GetCustomData, pGetCustomDataW!=nullptr);
 	kfh.SetUInt(GetSettingsName(), szCache_ProcessConsoleInput, pProcessConsoleInputW!=nullptr);
@@ -344,6 +348,7 @@ bool PluginW::Load()
 	GetModuleFN(pProcessHostFileW, NFMP_ProcessHostFile);
 	GetModuleFN(pSetFindListW, NFMP_SetFindList);
 	GetModuleFN(pConfigureW, NFMP_Configure);
+	GetModuleFN(pConfigureV3W, NFMP_ConfigureV3);
 	GetModuleFN(pExitFARW, NFMP_ExitFAR);
 	GetModuleFN(pMayExitFARW, NFMP_MayExitFAR);
 	GetModuleFN(pProcessKeyW, NFMP_ProcessKey);
@@ -1185,6 +1190,20 @@ int PluginW::Configure(
 	return bResult;
 }
 
+int PluginW::ConfigureV3(const ConfigureInfo *Info)
+{
+	BOOL bResult = FALSE;
+
+	if (Load() && pConfigureV3W)
+	{
+		ExecuteStruct es(EXCEPT_CONFIGUREV3);
+		es.bDefaultResult = FALSE;
+		EXECUTE_FUNCTION_EX(pConfigureV3W(Info), es);
+		bResult = es.bResult;
+	}
+	return bResult;
+}
+
 
 bool PluginW::GetPluginInfo(PluginInfo *pi)
 {
@@ -1288,6 +1307,7 @@ void PluginW::ClearExports()
 	pProcessHostFileW = nullptr;
 	pSetFindListW = nullptr;
 	pConfigureW = nullptr;
+	pConfigureV3W = nullptr;
 	pExitFARW = nullptr;
 	pMayExitFARW = nullptr;
 	pProcessKeyW = nullptr;

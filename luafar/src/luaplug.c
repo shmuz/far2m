@@ -165,6 +165,14 @@ LUAPLUG int ConfigureW(int ItemNumber)
 #endif
 //---------------------------------------------------------------------------
 
+#if defined(EXPORT_CONFIGUREV3) || defined(EXPORT_ALL)
+LUAPLUG int ConfigureV3W(const struct ConfigureInfo *Info)
+{
+	return LS ? LF_ConfigureV3(LS, Info) : FALSE;
+}
+#endif
+//---------------------------------------------------------------------------
+
 #if defined(EXPORT_DELETEFILES) || defined(EXPORT_ALL)
 LUAPLUG int DeleteFilesW(HANDLE hPlugin, struct PluginPanelItem *PanelItem,
 	int ItemsNumber, int OpMode)

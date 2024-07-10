@@ -48,6 +48,7 @@ DLLFUNC LONG_PTR LF_DlgProc(lua_State *L, HANDLE hDlg, int Msg, int Param1, LONG
 DLLFUNC void   LF_ClosePanel (lua_State* L, HANDLE hPlugin);
 DLLFUNC int    LF_Compare (lua_State* L, HANDLE hPlugin,const struct PluginPanelItem *Item1,const struct PluginPanelItem *Item2,unsigned int Mode);
 DLLFUNC int    LF_Configure (lua_State* L, int ItemNumber);
+DLLFUNC int    LF_ConfigureV3(lua_State* L, const struct ConfigureInfo *Info);
 DLLFUNC int    LF_DeleteFiles (lua_State* L, HANDLE hPlugin,struct PluginPanelItem *PanelItem,int ItemsNumber,int OpMode);
 DLLFUNC void   LF_ExitFAR (lua_State* L);
 DLLFUNC void   LF_FreeFindData (lua_State* L, HANDLE hPlugin,struct PluginPanelItem *PanelItem,int ItemsNumber);

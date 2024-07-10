@@ -36,6 +36,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 typedef void (WINAPI *PLUGINCLOSEPLUGINW)(HANDLE hPlugin);
 typedef int (WINAPI *PLUGINCOMPAREW)(HANDLE hPlugin,const PluginPanelItem *Item1,const PluginPanelItem *Item2,unsigned int Mode);
 typedef int (WINAPI *PLUGINCONFIGUREW)(int ItemNumber);
+typedef int (WINAPI *PLUGINCONFIGUREV3W)(const ConfigureInfo *Info);
 typedef int (WINAPI *PLUGINDELETEFILESW)(HANDLE hPlugin,PluginPanelItem *PanelItem,int ItemsNumber,int OpMode);
 typedef int (WINAPI *PLUGINMAYEXITFARW)();
 typedef void (WINAPI *PLUGINEXITFARW)();
@@ -91,6 +92,7 @@ class PluginW: public Plugin
 		PLUGINPROCESSHOSTFILEW       pProcessHostFileW;
 		PLUGINSETFINDLISTW           pSetFindListW;
 		PLUGINCONFIGUREW             pConfigureW;
+		PLUGINCONFIGUREV3W           pConfigureV3W;
 		PLUGINMAYEXITFARW            pMayExitFARW;
 		PLUGINEXITFARW               pExitFARW;
 		PLUGINPROCESSKEYW            pProcessKeyW;
@@ -145,6 +147,7 @@ class PluginW: public Plugin
 		bool HasProcessHostFile() { return pProcessHostFileW!=nullptr; }
 		bool HasSetFindList() { return pSetFindListW!=nullptr; }
 		bool HasConfigure() { return pConfigureW!=nullptr; }
+		bool HasConfigureV3() { return pConfigureV3W!=nullptr; }
 		bool HasMayExitFAR() { return pMayExitFARW!=nullptr; }
 		bool HasExitFAR() { return pExitFARW!=nullptr; }
 		bool HasProcessKey() { return pProcessKeyW!=nullptr; }
@@ -212,6 +215,7 @@ class PluginW: public Plugin
 
 		bool GetPluginInfo(PluginInfo *pi);
 		int Configure(int MenuItem);
+		int ConfigureV3(const ConfigureInfo *Info);
 
 		bool MayExitFAR();
 		void ExitFAR();

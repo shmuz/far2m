@@ -2816,6 +2816,12 @@ struct AnalyseData
 	int             OpMode;
 };
 
+struct ConfigureInfo
+{
+	size_t StructSize;
+	const GUID* Guid;
+};
+
 #if defined(__BORLANDC__) || defined(_MSC_VER) || defined(__GNUC__) || defined(__WATCOMC__)
 #ifdef __cplusplus
 extern "C"
@@ -2826,6 +2832,7 @@ extern "C"
 	void   WINAPI _export ClosePluginW(HANDLE hPlugin);
 	int    WINAPI _export CompareW(HANDLE hPlugin,const struct PluginPanelItem *Item1,const struct PluginPanelItem *Item2,unsigned int Mode);
 	int    WINAPI _export ConfigureW(int ItemNumber);
+	int    WINAPI _export ConfigureV3W(const struct ConfigureInfo *Info);
 	int    WINAPI _export DeleteFilesW(HANDLE hPlugin,struct PluginPanelItem *PanelItem,int ItemsNumber,int OpMode);
 	void   WINAPI _export ExitFARW(void);
 	int    WINAPI _export MayExitFARW(void);

@@ -506,21 +506,6 @@ function export.Open (OpenFrom, Id, ...)
     end
 
   else
-    -- local items = utils.GetMenuItems()
-    -- require 'far2.lua_explorer' (items)
-    -- if Id == 1 then
-    --   macrobrowser()
-    -- elseif type(Id) == "number" then
-    --   local guid = PluginInfo[OpenFrom==F.OPEN_DISKMENU and "DiskMenuGuids" or "PluginMenuGuids"][Id]
-    --   if guid and items[guid] then
-    --     local mod, obj = items[guid].action(OpenFrom, ...)
-    --     if CanCreatePanel[OpenFrom] and mod and obj and PanelModuleExist(mod) then
-    --       return { module=mod; object=obj }
-    --     end
-    --   end
-    -- else
-    --   macrobrowser()
-    -- end
     local items = utils.GetMenuItems()
     if items[Id] then
       local mod, obj = items[Id].action(OpenFrom, ...)
@@ -535,12 +520,14 @@ function export.Open (OpenFrom, Id, ...)
 end
 
 -- TODO: when called from a module's panel, call that module's Configure()
-function export.Configure (Item)
+function export.Configure (guid)
+--  local items = utils.GetMenuItems()
+--  local guid = PluginInfo.PluginConfigGuids[Item]
+--  if guid and items[guid] then
+--    return items[guid].action()
+--  end
   local items = utils.GetMenuItems()
-  local guid = PluginInfo.PluginConfigGuids[Item]
-  if guid and items[guid] then
-    return items[guid].action()
-  end
+  if items[guid] then items[guid].action() end
 end
 
 local function ReadIniFile (filename)

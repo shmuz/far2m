@@ -1185,9 +1185,18 @@ int PluginManager::Compare(
 	return ph->pPlugin->Compare(ph->hPanel, Item1, Item2, Mode);
 }
 
-void PluginManager::ConfigureCurrent(Plugin *pPlugin, int INum)
+void PluginManager::ConfigureCurrent(Plugin *pPlugin, int INum, const GUID *Guid)
 {
-	if (pPlugin->Configure(INum))
+	int Result;
+	if (pPlugin->SysID == SYSID_LUAMACRO && Guid) {
+		ConfigureInfo Info = { sizeof(ConfigureInfo), Guid };
+		Result = dynamic_cast<PluginW*>(pPlugin)->ConfigureV3(&Info);
+	}
+	else {
+		Result = pPlugin->Configure(INum);
+	}
+
+	if (Result)
 	{
 		int PMode[2];
 		PMode[0]=CtrlObject->Cp()->LeftPanel->GetMode();
@@ -1336,6 +1345,9 @@ void PluginManager::Configure(int StartPos)
 						PluginMenuItemData item;
 						item.pPlugin = pPlugin;
 						item.nItem = J;
+						if (pPlugin->SysID == SYSID_LUAMACRO && Info.PluginMenuGuids) {
+							item.Guid = Info.PluginMenuGuids[J];
+						}
 						PluginList.SetUserData(&item, sizeof(PluginMenuItemData),PluginList.AddItem(&ListItem));
 					}
 				}
@@ -1412,7 +1424,7 @@ void PluginManager::Configure(int StartPos)
 					break;
 
 				PluginMenuItemData *item = (PluginMenuItemData*)PluginList.GetUserData(nullptr,0,StartPos);
-				ConfigureCurrent(item->pPlugin, item->nItem);
+				ConfigureCurrent(item->pPlugin, item->nItem, &item->Guid);
 			}
 		}
 	}
@@ -1598,7 +1610,7 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 							StartPos=SelPos;
 
 							if (item->pPlugin->HasConfigure())
-								ConfigureCurrent(item->pPlugin, item->nItem);
+								ConfigureCurrent(item->pPlugin, item->nItem, &item->Guid);
 
 							PluginList.SetExitCode(SelPos);
 							PluginList.Show();
@@ -2232,7 +2244,7 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 		break;
 
 	case CPT_CONFIGURE:
-		CtrlObject->Plugins.ConfigureCurrent(Data->pPlugin,Data->FoundUuid);
+		ConfigureCurrent(Data->pPlugin,Data->FoundUuid);
 		return true;
 
 	case CPT_CMDLINE:

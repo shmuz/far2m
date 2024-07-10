@@ -955,6 +955,19 @@ int LF_Configure(lua_State* L, int ItemNumber)
 	return res;
 }
 
+int LF_ConfigureV3(lua_State* L, const struct ConfigureInfo *Info)
+{
+	int res = FALSE;
+	if (GetExportFunction(L, "Configure")) { //+1: Func
+		lua_pushlstring(L, (const char*)Info->Guid, sizeof(GUID));
+		if (0 == pcall_msg(L, 1, 1)) {        //+1
+			res = lua_toboolean(L,-1);
+			lua_pop(L,1);
+		}
+	}
+	return res;
+}
+
 int LF_DeleteFiles(lua_State* L, HANDLE hPlugin, struct PluginPanelItem *PanelItem,
 	int ItemsNumber, int OpMode)
 {
