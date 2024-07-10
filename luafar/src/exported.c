@@ -852,7 +852,11 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 		case OPEN_DIALOG:
 		{
 			struct OpenDlgPluginData *data = (struct OpenDlgPluginData*)Item;
-			lua_pushinteger(L, data->ItemNumber);
+			if (GetPluginData(L)->PluginId == LuamacroId)
+				lua_pushlstring(L, (const char*)&data->ItemGuid, sizeof(GUID));
+			else
+				lua_pushinteger(L, data->ItemNumber);
+
 			lua_createtable(L, 0, 1);
 			NewDialogData(L, data->hDlg, FALSE);
 			lua_setfield(L, -2, "hDlg");
@@ -864,11 +868,24 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 			break;
 		}
 
-		case OPEN_FINDLIST:
 		case OPEN_DISKMENU:
 		case OPEN_PLUGINSMENU:
 		case OPEN_EDITOR:
 		case OPEN_VIEWER:
+			if (GetPluginData(L)->PluginId == LuamacroId)
+				lua_pushlstring(L, (const char*)Item, sizeof(GUID));
+			else
+				lua_pushinteger(L, Item + 1); // make 1-based
+
+			lua_pushinteger(L, 0);        // dummy Data
+			if (pcall_msg(L, 3, 1) == 0) {
+				if (lua_toboolean(L, -1))        //+1: Obj
+					return RegisterObject(L);      //+0
+				lua_pop(L,1);
+			}
+			break;
+
+		case OPEN_FINDLIST:
 		case OPEN_FILEPANEL:
 			lua_pushinteger(L, Item + 1); // make 1-based
 			lua_pushinteger(L, 0);        // dummy Data

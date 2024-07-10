@@ -583,6 +583,7 @@ struct OpenDlgPluginData
 {
 	int ItemNumber;
 	HANDLE hDlg;
+	GUID ItemGuid;
 };
 
 struct DialogInfo

@@ -1211,6 +1211,7 @@ struct PluginMenuItemData
 {
 	Plugin *pPlugin;
 	int nItem;
+	GUID Guid;
 };
 
 /* $ 29.05.2001 IS
@@ -1517,9 +1518,12 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 
 						//ListItem.SetSelect(MenuItemNumber++ == StartPos);
 						MenuItemNumber++;
-						PluginMenuItemData item;
+						PluginMenuItemData item {};
 						item.pPlugin = pPlugin;
 						item.nItem = J;
+						if (pPlugin->SysID == SYSID_LUAMACRO && Info.PluginMenuGuids) {
+							item.Guid = Info.PluginMenuGuids[J];
+						}
 						PluginList.SetUserData(&item, sizeof(PluginMenuItemData),PluginList.AddItem(&ListItem));
 					}
 				}
@@ -1623,10 +1627,13 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 		item = *(PluginMenuItemData*)PluginList.GetUserData(nullptr,0,ExitCode);
 	}
 
-	Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
-	int OpenCode=OPEN_PLUGINSMENU;
-	INT_PTR Item=item.nItem;
-	OpenDlgPluginData pd;
+	Panel *ActivePanel = CtrlObject->Cp()->ActivePanel;
+	int OpenCode = OPEN_PLUGINSMENU;
+	INT_PTR Item = item.nItem;
+	if (item.pPlugin->SysID == SYSID_LUAMACRO) {
+		Item = (INT_PTR)&item.Guid;
+	}
+	OpenDlgPluginData pd {};
 
 	if (Editor)
 	{
@@ -1640,8 +1647,12 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 	{
 		OpenCode=OPEN_DIALOG;
 		pd.hDlg=(HANDLE)FrameManager->GetCurrentFrame();
-		pd.ItemNumber=item.nItem;
-		Item=(INT_PTR)&pd;
+		if (item.pPlugin->SysID == SYSID_LUAMACRO)
+			pd.ItemGuid = item.Guid;
+		else
+			pd.ItemNumber = item.nItem;
+
+		Item = (INT_PTR)&pd;
 	}
 
 	PHPTR hPlugin=OpenPlugin(item.pPlugin,OpenCode,Item);

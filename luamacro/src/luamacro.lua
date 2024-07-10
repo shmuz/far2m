@@ -506,16 +506,26 @@ function export.Open (OpenFrom, Id, ...)
     end
 
   else
+    -- local items = utils.GetMenuItems()
+    -- require 'far2.lua_explorer' (items)
+    -- if Id == 1 then
+    --   macrobrowser()
+    -- elseif type(Id) == "number" then
+    --   local guid = PluginInfo[OpenFrom==F.OPEN_DISKMENU and "DiskMenuGuids" or "PluginMenuGuids"][Id]
+    --   if guid and items[guid] then
+    --     local mod, obj = items[guid].action(OpenFrom, ...)
+    --     if CanCreatePanel[OpenFrom] and mod and obj and PanelModuleExist(mod) then
+    --       return { module=mod; object=obj }
+    --     end
+    --   end
+    -- else
+    --   macrobrowser()
+    -- end
     local items = utils.GetMenuItems()
-    if Id == 1 then
-      macrobrowser()
-    elseif type(Id) == "number" then
-      local guid = PluginInfo[OpenFrom==F.OPEN_DISKMENU and "DiskMenuGuids" or "PluginMenuGuids"][Id]
-      if guid and items[guid] then
-        local mod, obj = items[guid].action(OpenFrom, ...)
-        if CanCreatePanel[OpenFrom] and mod and obj and PanelModuleExist(mod) then
-          return { module=mod; object=obj }
-        end
+    if items[Id] then
+      local mod, obj = items[Id].action(OpenFrom, ...)
+      if CanCreatePanel[OpenFrom] and mod and obj and PanelModuleExist(mod) then
+        return { module=mod; object=obj }
       end
     else
       macrobrowser()
