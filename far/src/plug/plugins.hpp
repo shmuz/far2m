@@ -191,6 +191,8 @@ class PluginManager
 		int OemPluginsCount;
 		struct BackgroundTasks : std::map<std::wstring, unsigned int>, std::mutex {} BgTasks;
 		std::unordered_map<DWORD, Plugin*> SysIdMap;
+		PluginInfo LMInfo; // luamacro
+		PluginInfo *ptrLMInfo;
 
 	public:
 
@@ -282,6 +284,8 @@ class PluginManager
 		// $ .09.2000 SVS - Функция CallPlugin - найти плагин по ID и запустить OpenFrom = OPEN_*
 		int CallPlugin(DWORD SysID,int OpenFrom, void *Data, void **Ret=nullptr);
 		bool CallPluginItem(DWORD SysID, CallPluginInfo* Data);
+
+		void UpdateLMInfo(); //luamacro
 
 //api functions
 

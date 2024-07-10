@@ -94,6 +94,17 @@ static const char *HotKeyType(int Type)
 	}
 }
 
+static const GUID *MenuItemGuids(int Type, const PluginInfo *Info)
+{
+	switch(Type)
+	{
+		default:
+		case MTYPE_COMMANDSMENU: return Info->PluginMenuGuids;
+		case MTYPE_CONFIGSMENU:  return Info->PluginConfigGuids;
+		case MTYPE_DISKSMENU:    return Info->DiskMenuGuids;
+	}
+}
+
 const char *PluginsIni()
 {
 	static std::string s_out(InMyConfig("plugins/state.ini"));
@@ -145,6 +156,7 @@ PluginManager::PluginManager():
 	PluginsData(nullptr),
 	PluginsCount(0),
 	OemPluginsCount(0),
+	ptrLMInfo(nullptr),
 	CurEditor(nullptr),
 	CurViewer(nullptr)
 {
@@ -1251,6 +1263,8 @@ void PluginManager::Configure(int StartPos)
 	if (Opt.Policies.DisabledOptions&FFPOL_MAINMENUPLUGINS)
 		return;
 
+	UpdateLMInfo(); // do this before macro area changes
+
 	{
 		VMenu PluginList(Msg::PluginConfigTitle,nullptr,0,ScrY-4);
 		PluginList.SetFlags(VMENU_WRAPMODE);
@@ -1412,6 +1426,8 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 			return 0;
 		}
 	}
+
+	UpdateLMInfo(); // do this before macro area changes
 
 	int MenuItemNumber=0;
 	int Editor = ModalType==MODALTYPE_EDITOR,
@@ -1655,6 +1671,21 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 
 std::string PluginManager::GetHotKeySettingName(Plugin *pPlugin, int ItemNumber, MENUTYPE MenuType)
 {
+	if (pPlugin->SysID == SYSID_LUAMACRO && ptrLMInfo)
+	{
+		const GUID *Guid = MenuItemGuids(MenuType, ptrLMInfo);
+		if (Guid) {
+			auto Array = reinterpret_cast<const unsigned char*>(Guid + ItemNumber);
+			char Buf[2 * sizeof(GUID) + 1];
+			char *Trg = Buf;
+
+			for (size_t I=0; I < sizeof(GUID); I++) {
+				Trg += sprintf(Trg, "%02X", (unsigned int)Array[I]);
+			}
+			std::string out = StrPrintf("luamacro:%s#%s", HotKeyType(MenuType), Buf);
+			return out;
+		}
+	}
 	std::string out = pPlugin->GetSettingsName();
 	out+= StrPrintf(":%s#%d", HotKeyType(MenuType), ItemNumber);
 	return out;
@@ -1662,12 +1693,12 @@ std::string PluginManager::GetHotKeySettingName(Plugin *pPlugin, int ItemNumber,
 
 void PluginManager::GetPluginHotKey(Plugin *pPlugin, int ItemNumber, MENUTYPE MenuType, FARString &strHotKey)
 {
-	strHotKey = KeyFileReadSection(PluginsIni(), SettingsSection).GetString(
-		GetHotKeySettingName(pPlugin, ItemNumber, MenuType));
+	KeyFileReadSection kfh(PluginsIni(), SettingsSection);
+	strHotKey = kfh.GetString(GetHotKeySettingName(pPlugin, ItemNumber, MenuType));
 }
 
 bool PluginManager::SetHotKeyDialog(
-		const wchar_t *DlgPluginTitle,		// имя плагина
+		const wchar_t *DlgPluginTitle,    // имя плагина
 		Plugin *pPlugin,                  // ключ, откуда берем значение в state.ini/Settings
 		int ItemNumber,                   // +
 		MENUTYPE MenuType)                // +
@@ -2552,3 +2583,13 @@ void PluginManager::ShowPluginInfo(Plugin* pPlugin)
 	Builder.AddOK();
 	Builder.ShowDialog();
 }
+
+void PluginManager::UpdateLMInfo()
+{
+	ptrLMInfo = nullptr;
+	if (auto pPlugin = FindPlugin(SYSID_LUAMACRO)) {
+		if (pPlugin->GetPluginInfo(&LMInfo))
+			ptrLMInfo = &LMInfo;
+	}
+}
+

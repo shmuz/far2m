@@ -1114,12 +1114,14 @@ static void SetMenuGuids(lua_State *L, const char *Field, size_t Count, const GU
 {
 	if (Count) {
 		lua_getfield(L, -1, Field);
-		if (lua_type(L,-1) == LUA_TSTRING && lua_objlen(L,-1) >= Count*sizeof(GUID)) {
-			*Target = (const GUID*)lua_tostring(L,-1);
-			lua_rawseti(L, CPos, lua_objlen(L, CPos) + 1);
+		if (lua_type(L,-1) == LUA_TSTRING) {
+			if (lua_objlen(L,-1) >= Count*sizeof(GUID)) {
+				*Target = (const GUID*)lua_tostring(L,-1);
+				lua_rawseti(L, CPos, lua_objlen(L, CPos) + 1);
+				return;
+			}
 		}
-		else Log(L,"guids problem"),
-			lua_pop(L,1);
+		lua_pop(L, 1);
 	}
 }
 

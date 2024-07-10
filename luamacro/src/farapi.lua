@@ -2161,6 +2161,9 @@ struct PluginInfo
 	int PluginConfigStringsNumber;
 	const wchar_t *CommandPrefix;
 	DWORD SysID;
+	const GUID *DiskMenuGuids;
+	const GUID *PluginMenuGuids;
+	const GUID *PluginConfigGuids;
 };
 
 

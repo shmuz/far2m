@@ -382,6 +382,8 @@ static void AddBookmarkItems(VMenu &ChDisk, int Pos)
 
 int Panel::ChangeDiskMenu(int Pos,int FirstCall)
 {
+	CtrlObject->Plugins.UpdateLMInfo(); // do this before macro area changes
+
 	/*Events.DeviceArivalEvent.Reset();
 	Events.DeviceRemoveEvent.Reset();
 	Events.MediaArivalEvent.Reset();
