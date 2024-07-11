@@ -2153,12 +2153,6 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 				return false;
 			break;
 
-		case CPT_INTERNAL:
-			//TODO: Уточнить функцию
-			if (!Data->pPlugin->HasOpenPlugin())
-				return false;
-			break;
-
 		default:
 			break;
 		}
@@ -2193,9 +2187,6 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 				return false;
 			break;
 
-		case CPT_INTERNAL:
-			break;
-
 		default:
 			break;
 		}
@@ -2208,12 +2199,11 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 			auto ItemFound = false;
 			if (IsLuamacro ? !Data->ItemUuid : !Data->ItemNumber) // 0 means "not specified"
 			{
-				if (MenuItemsCount)
+				if (MenuItemsCount == 1)
 				{
 					if (IsLuamacro) {
 						Data->FoundItemNumber = 0;
 						Data->FoundUuid = Guids[0];
-						Data->ItemUuid = &Data->FoundUuid;
 					}
 					else {
 						Data->FoundItemNumber = 0;
@@ -2234,7 +2224,6 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 					for (int ii=0; ii < MenuItemsCount; ii++) {
 						if (!memcmp(Data->ItemUuid, &Guids[ii], sizeof(GUID))) {
 							Data->FoundUuid = *Data->ItemUuid;
-							Data->ItemUuid = &Data->FoundUuid;
 							Data->FoundItemNumber = ii;
 							ItemFound = true;
 							break;
@@ -2305,11 +2294,6 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 			hPlugin = OpenPlugin(Data->pPlugin, OPEN_COMMANDLINE, reinterpret_cast<INT_PTR>(command.CPtr()));
 			Result = true;
 		}
-		break;
-
-	case CPT_INTERNAL:
-		//TODO: бывший CallPlugin
-		//WARNING: учесть, что он срабатывает без переключения MacroState
 		break;
 
 	default:

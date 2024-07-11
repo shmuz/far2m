@@ -164,14 +164,13 @@ struct PanelHandle
 typedef PanelHandle * PHPTR;
 #define PHPTR_STOP ((PHPTR)(-2))
 
-// параметры вызова макрофункций plugin.call и т.п.
+// параметры вызова макрофункций Plugin.Menu и т.п.
 enum CALLPLUGINFLAGS
 {
 	CPT_MENU        = 0x01,
 	CPT_CONFIGURE   = 0x02,
 	CPT_CMDLINE     = 0x04,
-	CPT_INTERNAL    = 0x08,
-	CPT_MASK        = 0x0F,
+	CPT_MASK        = 0x07,
 	CPT_CHECKONLY   = 0x10000000,
 };
 

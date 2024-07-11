@@ -625,12 +625,16 @@ FarKey KeyMacro::GetKey()
 				if (mpr.ReturnType == MPRT_PLUGINMENU || mpr.ReturnType == MPRT_PLUGINCONFIG)
 				{
 					if (!IsLuamacro) {
-						cpInfo.ItemNumber = mpr.Count > 1 && mpr.Values[1].Type == FMVT_DOUBLE ?
-							static_cast<DWORD>(mpr.Values[1].Double) : 0;
+						if (mpr.Count > 1) {
+							if (mpr.Values[1].Type == FMVT_DOUBLE)
+								cpInfo.ItemNumber = static_cast<DWORD>(mpr.Values[1].Double);
+							else
+								break;
+						}
 					}
 					else {
-						if (mpr.Count > 1 && mpr.Values[1].Type == FMVT_STRING) {
-							if (StrToGuid(mpr.Values[1].String, Guid))
+						if (mpr.Count > 1) {
+							if (mpr.Values[1].Type == FMVT_STRING && StrToGuid(mpr.Values[1].String, Guid))
 								cpInfo.ItemUuid = &Guid;
 							else
 								break;
