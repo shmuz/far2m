@@ -142,6 +142,7 @@ class PluginA: public Plugin
 		bool HasProcessHostFile() { return pProcessHostFile!=nullptr; }
 		bool HasSetFindList() { return pSetFindList!=nullptr; }
 		bool HasConfigure() { return pConfigure!=nullptr; }
+		bool HasConfigureV3() { return false; }
 		bool HasMayExitFAR() { return pMayExitFAR!=nullptr; }
 		bool HasExitFAR() { return pExitFAR!=nullptr; }
 		bool HasProcessKey() { return pProcessKey!=nullptr; }

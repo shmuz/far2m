@@ -123,6 +123,7 @@ class Plugin
 		virtual bool HasProcessHostFile() = 0;
 		virtual bool HasSetFindList() = 0;
 		virtual bool HasConfigure() = 0;
+		virtual bool HasConfigureV3() = 0;
 		virtual bool HasMayExitFAR() = 0;
 		virtual bool HasExitFAR() = 0;
 		virtual bool HasProcessKey() = 0;

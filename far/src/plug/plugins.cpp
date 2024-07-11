@@ -2107,6 +2107,7 @@ int PluginManager::CallPlugin(DWORD SysID, int OpenFrom, void *Data, void **Ret)
 // поддержка макрофункций plugin.call, plugin.cmd, plugin.config и т.п
 bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 {
+	auto IsLuamacro = (SysID == SYSID_LUAMACRO);
 	auto Result = false;
 
 	Frame *TopFrame = FrameManager->GetTopModal();
@@ -2138,7 +2139,7 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 			if (curType!=MODALTYPE_PANELS)
 				return false;
 
-			if (!Data->pPlugin->HasConfigure())
+			if (IsLuamacro ? !Data->pPlugin->HasConfigureV3() : !Data->pPlugin->HasConfigure())
 				return false;
 			break;
 
@@ -2201,20 +2202,45 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 
 		if ((Data->CallFlags & CPT_MASK)==CPT_MENU || (Data->CallFlags & CPT_MASK)==CPT_CONFIGURE)
 		{
+			int Type = (Data->CallFlags & CPT_MASK)==CPT_MENU ? MTYPE_COMMANDSMENU : MTYPE_CONFIGSMENU;
+			const GUID *Guids = MenuItemGuids(Type, &Info);
+
 			auto ItemFound = false;
-			if (Data->ItemUuid == 0) // 0 means "not specified"
+			if (IsLuamacro ? !Data->ItemUuid : !Data->ItemNumber) // 0 means "not specified"
 			{
-				if (MenuItemsCount == 1)
+				if (MenuItemsCount)
 				{
-					Data->FoundUuid = 0;
-					Data->ItemUuid = 0;
+					if (IsLuamacro) {
+						Data->FoundItemNumber = 0;
+						Data->FoundUuid = Guids[0];
+						Data->ItemUuid = &Data->FoundUuid;
+					}
+					else {
+						Data->FoundItemNumber = 0;
+						Data->ItemNumber = 0;
+					}
 					ItemFound = true;
 				}
 			}
-			else if (Data->ItemUuid <= MenuItemsCount)
+			else
 			{
-				Data->FoundUuid = Data->ItemUuid - 1; // 1-based on the user side
-				ItemFound = true;
+				if (!IsLuamacro) {
+					if (Data->ItemNumber <= MenuItemsCount) {
+						Data->FoundItemNumber = Data->ItemNumber - 1; // 1-based on the user side
+						ItemFound = true;
+					}
+				}
+				else {
+					for (int ii=0; ii < MenuItemsCount; ii++) {
+						if (!memcmp(Data->ItemUuid, &Guids[ii], sizeof(GUID))) {
+							Data->FoundUuid = *Data->ItemUuid;
+							Data->ItemUuid = &Data->FoundUuid;
+							Data->FoundItemNumber = ii;
+							ItemFound = true;
+							break;
+						}
+					}
+				}
 			}
 			if (!ItemFound)
 				return false;
@@ -2234,7 +2260,10 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 	case CPT_MENU:
 		{
 			auto OpenCode = OPEN_PLUGINSMENU;
-			INT_PTR Item = Data->FoundUuid;
+			INT_PTR Item = Data->FoundItemNumber;
+			if (IsLuamacro) {
+				Item = reinterpret_cast<INT_PTR>(&Data->FoundUuid);
+			}
 			OpenDlgPluginData pd { sizeof(pd) };
 
 			if (IsEditor)
@@ -2248,7 +2277,12 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 			else if (IsDialog)
 			{
 				OpenCode = OPEN_DIALOG;
-				pd.ItemNumber = Data->FoundUuid;
+				if (!IsLuamacro) {
+					pd.ItemNumber = Data->FoundItemNumber;
+				}
+				else {
+					pd.ItemGuid = Data->FoundUuid;
+				}
 				pd.hDlg = reinterpret_cast<Dialog*>(TopFrame);
 				Item = reinterpret_cast<intptr_t>(&pd);
 			}
@@ -2259,7 +2293,10 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 		break;
 
 	case CPT_CONFIGURE:
-		ConfigureCurrent(Data->pPlugin,Data->FoundUuid);
+		if (IsLuamacro) {
+			UpdateLMInfo();
+		}
+		ConfigureCurrent(Data->pPlugin,Data->FoundItemNumber);
 		return true;
 
 	case CPT_CMDLINE:

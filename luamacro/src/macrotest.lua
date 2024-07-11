@@ -1387,6 +1387,10 @@ end
 
 function MT.test_Plugin()
   assert_false(Plugin.Menu())
+  assert_true(Plugin.Menu(luamacroId, "EF6D67A2-59F7-4DF3-952E-F9049877B492"))
+  assert_true(Area.Menu)
+  Keys("Esc")
+
   assert_false(Plugin.Config())
   assert_false(Plugin.Command())
   assert_true(Plugin.Command(luamacroId))

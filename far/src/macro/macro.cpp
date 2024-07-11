@@ -86,6 +86,43 @@ int Log(const char* Format, ...)
 	return N;
 }
 
+static bool StrToGuid(const wchar_t *Str, GUID& Guid)
+{
+	const char tmpl[] = "HHHHHHHH-HHHH-HHHH-HHHH-HHHHHHHHHHHH";
+
+	for (int i=0; ; i++) {
+		if (tmpl[i] == 'H') {
+			if (!iswxdigit(Str[i]))
+				return false;
+		}
+		else if (tmpl[i] != Str[i])
+			return false;
+
+		if (!tmpl[i])
+			break;
+	}
+
+	uint32_t val;
+	uint8_t buf[20];
+	wchar_t tmp[] = {0,0,0};
+
+	for (int i=0,j=0; tmpl[i]; ) {
+		if (Str[i] == L'-') {
+			i++;
+		}
+		tmp[0] = Str[i++];
+		tmp[1] = Str[i++];
+		swscanf(tmp, L"%X", &val);
+		buf[j++] = val;
+	}
+
+	Guid.Data1 = (buf[0]<<24) + (buf[1]<<16) + (buf[2]<<8) + buf[3];
+	Guid.Data2 = (buf[4]<<8) + buf[5];
+	Guid.Data3 = (buf[6]<<8) + buf[7];
+	memcpy(Guid.Data4, buf+8, 8);
+	return true;
+}
+
 // для диалога назначения клавиши
 struct DlgParam
 {
@@ -581,11 +618,24 @@ FarKey KeyMacro::GetKey()
 				if (!CtrlObject->Plugins.FindPlugin(SysID))
 					break;
 
+				bool IsLuamacro = (SysID == SYSID_LUAMACRO);
+				GUID Guid;
+
 				PluginManager::CallPluginInfo cpInfo = { CPT_CHECKONLY };
 				if (mpr.ReturnType == MPRT_PLUGINMENU || mpr.ReturnType == MPRT_PLUGINCONFIG)
 				{
-					cpInfo.ItemUuid = mpr.Count > 1 && mpr.Values[1].Type == FMVT_DOUBLE ?
-						static_cast<DWORD>(mpr.Values[1].Double) : 0;
+					if (!IsLuamacro) {
+						cpInfo.ItemNumber = mpr.Count > 1 && mpr.Values[1].Type == FMVT_DOUBLE ?
+							static_cast<DWORD>(mpr.Values[1].Double) : 0;
+					}
+					else {
+						if (mpr.Count > 1 && mpr.Values[1].Type == FMVT_STRING) {
+							if (StrToGuid(mpr.Values[1].String, Guid))
+								cpInfo.ItemUuid = &Guid;
+							else
+								break;
+						}
+					}
 				}
 
 				if (mpr.ReturnType == MPRT_PLUGINMENU)

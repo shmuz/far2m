@@ -202,12 +202,14 @@ class PluginManager
 			int OpenFrom;
 			union
 			{
-				int ItemUuid;
+				int ItemNumber;
+				GUID *ItemUuid;
 				const wchar_t *Command;
 			};
 			// Используется в функции CallPluginItem для внутренних нужд
 			Plugin *pPlugin;
-			int FoundUuid;
+			GUID FoundUuid;
+			int FoundItemNumber;
 		};
 
 		BitFlags Flags;        // флаги манагера плагинов
