@@ -185,6 +185,7 @@ struct PanelMenuItem
 	Plugin *pPlugin = nullptr;
 
 	INT_PTR nItem = -1; // plugin item or shortcut index
+	GUID Guid = {}; // luamacro
 
 	struct {
 		wchar_t path[0x1000];
@@ -203,9 +204,10 @@ static void AddPluginItems(VMenu &ChDisk, int Pos)
 		Plugin *pPlugin = CtrlObject->Plugins.GetPlugin(PluginNumber);
 		FARString strPluginText;
 		WCHAR HotKey = 0;
+		GUID Guid;
 
 		for (int PluginItem=0;
-			CtrlObject->Plugins.GetDiskMenuItem(pPlugin, PluginItem, HotKey, strPluginText);
+			CtrlObject->Plugins.GetDiskMenuItem(pPlugin, PluginItem, HotKey, strPluginText, Guid);
 			++PluginItem)
 		{
 			const auto& strMenuText = strPluginText;
@@ -219,6 +221,7 @@ static void AddPluginItems(VMenu &ChDisk, int Pos)
 				item->kind = PanelMenuItem::PLUGIN;
 				item->pPlugin = pPlugin;
 				item->nItem = PluginItem;
+				item->Guid = Guid;
 
 				if (pPlugin->IsOemPlugin())
 					OneItem.Item.Flags=LIF_CHECKED|L'A';
@@ -761,6 +764,9 @@ int Panel::ChangeDiskMenu(int Pos,int FirstCall)
 			}
 
 		} else {
+			if (mitem->pPlugin->GetSysID() == SYSID_LUAMACRO) {
+				nItem = reinterpret_cast<INT_PTR>(&mitem->Guid);
+			}
 			SetLocation_Plugin(false, mitem->pPlugin, nullptr, nullptr, nItem);
 		}
 	}

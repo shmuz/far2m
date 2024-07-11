@@ -1185,12 +1185,14 @@ int PluginManager::Compare(
 	return ph->pPlugin->Compare(ph->hPanel, Item1, Item2, Mode);
 }
 
-void PluginManager::ConfigureCurrent(Plugin *pPlugin, int INum, const GUID *Guid)
+void PluginManager::ConfigureCurrent(Plugin *pPlugin, int INum)
 {
-	int Result;
-	if (pPlugin->SysID == SYSID_LUAMACRO && Guid) {
-		ConfigureInfo Info = { sizeof(ConfigureInfo), Guid };
-		Result = dynamic_cast<PluginW*>(pPlugin)->ConfigureV3(&Info);
+	int Result = FALSE;
+	if (pPlugin->SysID == SYSID_LUAMACRO) {
+		if (ptrLMInfo) {
+			ConfigureInfo Info = { sizeof(ConfigureInfo), ptrLMInfo->PluginConfigGuids + INum };
+			Result = dynamic_cast<PluginW*>(pPlugin)->ConfigureV3(&Info);
+		}
 	}
 	else {
 		Result = pPlugin->Configure(INum);
@@ -1424,7 +1426,7 @@ void PluginManager::Configure(int StartPos)
 					break;
 
 				PluginMenuItemData *item = (PluginMenuItemData*)PluginList.GetUserData(nullptr,0,StartPos);
-				ConfigureCurrent(item->pPlugin, item->nItem, &item->Guid);
+				ConfigureCurrent(item->pPlugin, item->nItem);
 			}
 		}
 	}
@@ -1610,7 +1612,7 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 							StartPos=SelPos;
 
 							if (item->pPlugin->HasConfigure())
-								ConfigureCurrent(item->pPlugin, item->nItem, &item->Guid);
+								ConfigureCurrent(item->pPlugin, item->nItem);
 
 							PluginList.SetExitCode(SelPos);
 							PluginList.Show();
@@ -1741,10 +1743,11 @@ bool PluginManager::SetHotKeyDialog(
 }
 
 bool PluginManager::GetDiskMenuItem(
-     Plugin *pPlugin,
-     int PluginItem,
-     wchar_t& PluginHotkey,
-     FARString &strPluginText
+		Plugin *pPlugin,
+		int PluginItem,
+		wchar_t& PluginHotkey,
+		FARString &strPluginText,
+		GUID &Guid
 )
 {
 	LoadIfCacheAbsent();
@@ -1760,12 +1763,24 @@ bool PluginManager::GetDiskMenuItem(
 		return !strPluginText.IsEmpty();
 	}
 
-	PluginInfo Info;
-
-	if (pPlugin->GetPluginInfo(&Info) && Info.DiskMenuStringsNumber > PluginItem)
+	if (pPlugin->SysID == SYSID_LUAMACRO)
 	{
-		strPluginText = Info.DiskMenuStrings[PluginItem];
-		return true;
+		if (ptrLMInfo && ptrLMInfo->DiskMenuStringsNumber > PluginItem)
+		{
+			strPluginText = ptrLMInfo->DiskMenuStrings[PluginItem];
+			Guid = ptrLMInfo->DiskMenuGuids[PluginItem];
+			return true;
+		}
+	}
+	else
+	{
+		PluginInfo Info;
+
+		if (pPlugin->GetPluginInfo(&Info) && Info.DiskMenuStringsNumber > PluginItem)
+		{
+			strPluginText = Info.DiskMenuStrings[PluginItem];
+			return true;
+		}
 	}
 
 	return false;

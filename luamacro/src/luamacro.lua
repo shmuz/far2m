@@ -108,8 +108,6 @@ end
 -- END: Functions implemented via "returning a key" to Far
 -------------------------------------------------------------------------------
 
-local PluginInfo
-
 function export.GetPluginInfo()
   local out = {
     Flags = bor(F.PF_PRELOAD,F.PF_FULLCMDLINE,F.PF_EDITOR,F.PF_VIEWER,F.PF_DIALOG),
@@ -117,7 +115,6 @@ function export.GetPluginInfo()
     PluginMenuGuids = win.Uuid("EF6D67A2-59F7-4DF3-952E-F9049877B492"),
     PluginMenuStrings = { "Macro Browser" },
   }
-  PluginInfo = out
 
   local mode = far.MacroGetArea()
   local area = utils.GetTrueAreaName(mode)
@@ -521,11 +518,6 @@ end
 
 -- TODO: when called from a module's panel, call that module's Configure()
 function export.Configure (guid)
---  local items = utils.GetMenuItems()
---  local guid = PluginInfo.PluginConfigGuids[Item]
---  if guid and items[guid] then
---    return items[guid].action()
---  end
   local items = utils.GetMenuItems()
   if items[guid] then items[guid].action() end
 end
