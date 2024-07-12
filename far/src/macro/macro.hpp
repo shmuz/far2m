@@ -133,4 +133,8 @@ inline bool IsPanelsArea(int Area) { return
 DWORD GetHistoryDisableMask();
 DWORD SetHistoryDisableMask(DWORD Mask);
 bool IsTopMacroOutputDisabled();
+
 void ShowUserMenu(size_t Count, const FarMacroValue *Values);
+
+bool StrToGuid(const wchar_t *Str, GUID& Guid);
+std::string GuidToString(const GUID& Guid);

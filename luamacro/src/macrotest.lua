@@ -40,6 +40,7 @@ local MT = {} -- "macrotest", this module
 local F = far.Flags
 local band, bor, bnot = bit64.band, bit64.bor, bit64.bnot
 local luamacroId = far.GetPluginId()
+local hlfviewerId = 0x1AF0754D
 
 local function pack (...)
   return { n=select("#",...), ... }
@@ -1386,19 +1387,37 @@ function MT.test_Dlg()
 end
 
 function MT.test_Plugin()
+  -- Plugin.Menu
   assert_false(Plugin.Menu())
-  assert_true(Plugin.Menu(luamacroId, "EF6D67A2-59F7-4DF3-952E-F9049877B492"))
+  assert_true(Plugin.Menu(luamacroId, "EF6D67A2-59F7-4DF3-952E-F9049877B492")) -- call macrobrowser
   assert_true(Area.Menu)
+  assert_eq(Menu.Id, "03DEFB28-8734-4EC0-8B25-C879846F0BE5")
   Keys("Esc")
+  assert_true(Area.Shell)
 
+  -- Plugin.Config
   assert_false(Plugin.Config())
+  if Plugin.Exist(hlfviewerId) then
+    assert_true(Plugin.Config(hlfviewerId))
+    assert_true(Area.Dialog)
+    Keys("Esc")
+    assert_true(Area.Shell)
+  end
+
+  -- Plugin.Command
   assert_false(Plugin.Command())
   assert_true(Plugin.Command(luamacroId))
+  assert_true(Plugin.Command(luamacroId, "view:$FARHOME/FarEng.lng"))
+  assert_true(Area.Viewer)
+  Keys("Esc")
+  assert_true(Area.Shell)
 
+  -- Plugin.Exist
   assert_true(Plugin.Exist(luamacroId))
   assert_false(Plugin.Exist(luamacroId+1))
 
-  local function test (func, N) -- Plugin.Call, Plugin.SyncCall: test arguments and returns
+  -- Plugin.Call, Plugin.SyncCall
+  local function test (func, N) -- test arguments and return
     local i1 = bit64.new("0x8765876587658765")
     local r1,r2,r3,r4,r5 = func(luamacroId, "argtest", "foo", i1, -2.34, false, {"foo\0bar"})
     assert(r1=="foo" and r2==i1 and r3==-2.34 and r4==false and type(r5)=="table" and r5[1]=="foo\0bar")
@@ -2063,8 +2082,8 @@ local function test_PluginsControl()
     assert_udata(plug)
   end
 
-  assert_true(far.IsPluginLoaded(far.GetPluginId()))
-  assert_false(far.IsPluginLoaded(far.GetPluginId() + 1))
+  assert_true(far.IsPluginLoaded(luamacroId))
+  assert_false(far.IsPluginLoaded(luamacroId + 1))
   assert_false(far.IsPluginLoaded(0))
 
   assert_func(far.ClearPluginCache)
@@ -2197,7 +2216,7 @@ local function test_dialog_1()
 
       local info = assert_table(hDlg:send("DM_GETDIALOGINFO"))
       assert_eq(info.Id, win.Uuid(Items.guid))
-      assert_eq(info.Owner, far.GetPluginId())
+      assert_eq(info.Owner, luamacroId)
 
       for k,item in ipairs(Items) do
         assert_eq(hDlg:send("DM_GETTEXT", k), item.val)
@@ -2313,7 +2332,7 @@ local function test_Guids()
   test_one_guid( "SelectSortModeId",         nil, "CtrlF12")
   test_one_guid( "UnSelectDialogId",         nil, "Subtract")
 
-  Plugin.Command(far.GetPluginId(), "view:$FARHOME/FarEng.lng")
+  Plugin.Command(luamacroId, "view:$FARHOME/FarEng.lng")
   assert_true(Area.Viewer)
   test_one_guid( "ViewerSearchId",           nil, "F7", 2)
 

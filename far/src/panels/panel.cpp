@@ -764,7 +764,7 @@ int Panel::ChangeDiskMenu(int Pos,int FirstCall)
 			}
 
 		} else {
-			if (mitem->pPlugin->GetSysID() == SYSID_LUAMACRO) {
+			if (mitem->pPlugin->IsLuamacro()) {
 				nItem = reinterpret_cast<INT_PTR>(&mitem->Guid);
 			}
 			SetLocation_Plugin(false, mitem->pPlugin, nullptr, nullptr, nItem);

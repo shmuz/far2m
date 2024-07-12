@@ -86,7 +86,7 @@ int Log(const char* Format, ...)
 	return N;
 }
 
-static bool StrToGuid(const wchar_t *Str, GUID& Guid)
+bool StrToGuid(const wchar_t *Str, GUID& Guid)
 {
 	const char tmpl[] = "HHHHHHHH-HHHH-HHHH-HHHH-HHHHHHHHHHHH";
 
@@ -121,6 +121,18 @@ static bool StrToGuid(const wchar_t *Str, GUID& Guid)
 	Guid.Data3 = (buf[6]<<8) + buf[7];
 	memcpy(Guid.Data4, buf+8, 8);
 	return true;
+}
+
+std::string GuidToString(const GUID& Guid)
+{
+	char buf[64];
+	sprintf(buf, "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
+			Guid.Data1, (uint32_t)Guid.Data2, (uint32_t)Guid.Data3,
+			(uint32_t)Guid.Data4[0], (uint32_t)Guid.Data4[1],
+			(uint32_t)Guid.Data4[2], (uint32_t)Guid.Data4[3],
+			(uint32_t)Guid.Data4[4], (uint32_t)Guid.Data4[5],
+			(uint32_t)Guid.Data4[6], (uint32_t)Guid.Data4[7]);
+	return buf;
 }
 
 // для диалога назначения клавиши
@@ -649,7 +661,13 @@ FarKey KeyMacro::GetKey()
 				else if (mpr.ReturnType == MPRT_PLUGINCOMMAND)
 				{
 					cpInfo.CallFlags |= CPT_CMDLINE;
-					cpInfo.Command = mpr.Count > 1 && mpr.Values[1].Type == FMVT_STRING ? mpr.Values[1].String : L"";
+					cpInfo.Command = L"";
+					if (mpr.Count > 1) {
+						if (mpr.Values[1].Type == FMVT_STRING)
+							cpInfo.Command = mpr.Values[1].String;
+						else
+							break;
+					}
 				}
 
 				// Чтобы вернуть результат "выполнения" нужно проверить наличие плагина/пункта

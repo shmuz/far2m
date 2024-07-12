@@ -34,6 +34,13 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FARString.hpp"
 #include <string>
 
+enum
+{
+	SYSID_PRINTMANAGER      = 0x6E614D50,
+	SYSID_NETWORK           = 0x5774654E,
+	SYSID_LUAMACRO          = 0x4EBBEFC8,
+};
+
 typedef void (WINAPI *PLUGINGETGLOBALINFOW)(GlobalInfo *gi);
 
 class PluginManager;
@@ -142,7 +149,6 @@ class Plugin
 
 		virtual const FARString &GetModuleName() = 0;
 		virtual const char *GetSettingsName() = 0;
-		virtual DWORD GetSysID() = 0;
 		virtual bool CheckWorkFlags(DWORD flags) = 0;
 		virtual DWORD GetWorkFlags() = 0;
 		virtual DWORD GetFuncFlags() = 0;
@@ -193,9 +199,11 @@ class Plugin
 		virtual bool MayExitFAR() = 0;
 		virtual void ExitFAR() = 0;
 
+		DWORD GetSysID() { return SysID; }
 		bool GetGlobalInfo();
 		bool IsLoaded() { return m_hModule != nullptr; }
 		static void ShowMessageAboutIllegalPluginVersion(const wchar_t* plg,int required);
+		bool IsLuamacro() { return SysID == SYSID_LUAMACRO; }
 };
 
 struct ExecuteStruct

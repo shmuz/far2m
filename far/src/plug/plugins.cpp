@@ -169,7 +169,7 @@ PluginManager::~PluginManager()
 	for (int i = 0; i < PluginsCount; i++)
 	{
 		Plugin *pPlugin = PluginsData[i];
-		if (pPlugin->GetSysID() == SYSID_LUAMACRO)
+		if (pPlugin->IsLuamacro())
 			pLuaMacro = pPlugin;
 		else
 		{
@@ -1188,7 +1188,7 @@ int PluginManager::Compare(
 void PluginManager::ConfigureCurrent(Plugin *pPlugin, int INum)
 {
 	int Result = FALSE;
-	if (pPlugin->SysID == SYSID_LUAMACRO) {
+	if (pPlugin->IsLuamacro()) {
 		if (ptrLMInfo) {
 			ConfigureInfo Info = { sizeof(ConfigureInfo), ptrLMInfo->PluginConfigGuids + INum };
 			Result = dynamic_cast<PluginW*>(pPlugin)->ConfigureV3(&Info);
@@ -1347,8 +1347,8 @@ void PluginManager::Configure(int StartPos)
 						PluginMenuItemData item;
 						item.pPlugin = pPlugin;
 						item.nItem = J;
-						if (pPlugin->SysID == SYSID_LUAMACRO && Info.PluginMenuGuids) {
-							item.Guid = Info.PluginMenuGuids[J];
+						if (pPlugin->IsLuamacro() && Info.PluginConfigGuids) {
+							item.Guid = Info.PluginConfigGuids[J];
 						}
 						PluginList.SetUserData(&item, sizeof(PluginMenuItemData),PluginList.AddItem(&ListItem));
 					}
@@ -1535,7 +1535,7 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 						PluginMenuItemData item {};
 						item.pPlugin = pPlugin;
 						item.nItem = J;
-						if (pPlugin->SysID == SYSID_LUAMACRO && Info.PluginMenuGuids) {
+						if (pPlugin->IsLuamacro() && Info.PluginMenuGuids) {
 							item.Guid = Info.PluginMenuGuids[J];
 						}
 						PluginList.SetUserData(&item, sizeof(PluginMenuItemData),PluginList.AddItem(&ListItem));
@@ -1644,7 +1644,7 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 	Panel *ActivePanel = CtrlObject->Cp()->ActivePanel;
 	int OpenCode = OPEN_PLUGINSMENU;
 	INT_PTR Item = item.nItem;
-	if (item.pPlugin->SysID == SYSID_LUAMACRO) {
+	if (item.pPlugin->IsLuamacro()) {
 		Item = (INT_PTR)&item.Guid;
 	}
 	OpenDlgPluginData pd {};
@@ -1661,7 +1661,7 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 	{
 		OpenCode=OPEN_DIALOG;
 		pd.hDlg=(HANDLE)FrameManager->GetCurrentFrame();
-		if (item.pPlugin->SysID == SYSID_LUAMACRO)
+		if (item.pPlugin->IsLuamacro())
 			pd.ItemGuid = item.Guid;
 		else
 			pd.ItemNumber = item.nItem;
@@ -1696,18 +1696,12 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 
 std::string PluginManager::GetHotKeySettingName(Plugin *pPlugin, int ItemNumber, MENUTYPE MenuType)
 {
-	if (pPlugin->SysID == SYSID_LUAMACRO && ptrLMInfo)
+	if (pPlugin->IsLuamacro() && ptrLMInfo)
 	{
 		const GUID *Guid = MenuItemGuids(MenuType, ptrLMInfo);
 		if (Guid) {
-			auto Array = reinterpret_cast<const unsigned char*>(Guid + ItemNumber);
-			char Buf[2 * sizeof(GUID) + 1];
-			char *Trg = Buf;
-
-			for (size_t I=0; I < sizeof(GUID); I++) {
-				Trg += sprintf(Trg, "%02X", (unsigned int)Array[I]);
-			}
-			std::string out = StrPrintf("luamacro:%s#%s", HotKeyType(MenuType), Buf);
+			const std::string &strGuid = GuidToString(Guid[ItemNumber]);
+			std::string out = StrPrintf("luamacro:%s#%s", HotKeyType(MenuType), strGuid.c_str());
 			return out;
 		}
 	}
@@ -1763,7 +1757,7 @@ bool PluginManager::GetDiskMenuItem(
 		return !strPluginText.IsEmpty();
 	}
 
-	if (pPlugin->SysID == SYSID_LUAMACRO)
+	if (pPlugin->IsLuamacro())
 	{
 		if (ptrLMInfo && ptrLMInfo->DiskMenuStringsNumber > PluginItem)
 		{
@@ -2104,7 +2098,7 @@ int PluginManager::CallPlugin(DWORD SysID, int OpenFrom, void *Data, void **Ret)
 	return TRUE;
 }
 
-// поддержка макрофункций plugin.call, plugin.cmd, plugin.config и т.п
+// поддержка макрофункций Plugin.Menu, Plugin.Command, Plugin.Config
 bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 {
 	auto IsLuamacro = (SysID == SYSID_LUAMACRO);
@@ -2201,13 +2195,9 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 			{
 				if (MenuItemsCount == 1)
 				{
+					Data->FoundItemNumber = 0;
 					if (IsLuamacro) {
-						Data->FoundItemNumber = 0;
 						Data->FoundUuid = Guids[0];
-					}
-					else {
-						Data->FoundItemNumber = 0;
-						Data->ItemNumber = 0;
 					}
 					ItemFound = true;
 				}
