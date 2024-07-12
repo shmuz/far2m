@@ -264,7 +264,7 @@ class PluginManager
 		BOOL CheckFlags(DWORD NewFlags) { return Flags.Check(NewFlags); }
 
 		void Configure(int StartPos=0);
-		void ConfigureCurrent(Plugin *pPlugin,int INum);
+		void ConfigureCurrent(Plugin *pPlugin, int INum, const GUID *Guid = nullptr);
 		int CommandsMenu(int ModalType,int StartPos,const wchar_t *HistoryName=nullptr);
 		bool GetDiskMenuItem(Plugin *pPlugin,int PluginItem, wchar_t& PluginHotkey, FARString &strPluginText, GUID &Guid);
 

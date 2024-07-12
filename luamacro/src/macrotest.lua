@@ -2066,6 +2066,10 @@ local function test_PluginsControl()
   local hnd2 = assert_udata(far.FindPlugin("PFM_SYSID", luamacroId))
   assert_eq(hnd1:rawhandle(), hnd2:rawhandle())
 
+  assert_nil(far.LoadPlugin("PLT_PATH", mod:sub(1,-2)))
+  hnd2 = assert_udata(far.LoadPlugin("PLT_PATH", mod))
+  assert_eq(hnd1:rawhandle(), hnd2:rawhandle())
+
   local info = far.GetPluginInformation(hnd1)
   assert_table(info)
   assert_table(info.GInfo)
@@ -2082,12 +2086,25 @@ local function test_PluginsControl()
     assert_udata(plug)
   end
 
+  hnd1 = far.FindPlugin("PFM_SYSID", hlfviewerId)
+  if hnd1 then
+    local info = far.GetPluginInformation(hnd1)
+    assert_table(info)
+    assert_str(info.ModuleName)
+    assert_true  (far.UnloadPlugin(hnd1))
+    assert_nil   (far.FindPlugin("PFM_SYSID", hlfviewerId))
+    assert_udata (far.LoadPlugin("PLT_PATH", info.ModuleName))
+    assert_udata (far.FindPlugin("PFM_SYSID", hlfviewerId))
+    assert_false (far.IsPluginLoaded(hlfviewerId))
+    assert_udata (far.ForcedLoadPlugin("PLT_PATH", info.ModuleName))
+    assert_true  (far.IsPluginLoaded(hlfviewerId))
+  end
+
   assert_true(far.IsPluginLoaded(luamacroId))
   assert_false(far.IsPluginLoaded(luamacroId + 1))
   assert_false(far.IsPluginLoaded(0))
 
   assert_func(far.ClearPluginCache)
-  assert_func(far.LoadPlugin)
   assert_func(far.ForcedLoadPlugin)
   assert_func(far.UnloadPlugin)
 end

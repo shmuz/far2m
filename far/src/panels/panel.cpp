@@ -688,8 +688,8 @@ int Panel::ChangeDiskMenu(int Pos,int FirstCall)
 					return SelPos;
 				case KEY_SHIFTF9:
 
-					if (item && item->pPlugin && item->pPlugin->HasConfigure())
-						CtrlObject->Plugins.ConfigureCurrent(item->pPlugin, item->nItem);
+					if (item && item->pPlugin && (item->pPlugin->HasConfigure() || item->pPlugin->HasConfigureV3()))
+						CtrlObject->Plugins.ConfigureCurrent(item->pPlugin, item->nItem, &item->Guid);
 
 					return SelPos;
 				case KEY_CTRLR:

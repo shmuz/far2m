@@ -1185,12 +1185,13 @@ int PluginManager::Compare(
 	return ph->pPlugin->Compare(ph->hPanel, Item1, Item2, Mode);
 }
 
-void PluginManager::ConfigureCurrent(Plugin *pPlugin, int INum)
+void PluginManager::ConfigureCurrent(Plugin *pPlugin, int INum, const GUID *Guid)
 {
 	int Result = FALSE;
 	if (pPlugin->IsLuamacro()) {
-		if (ptrLMInfo) {
-			ConfigureInfo Info = { sizeof(ConfigureInfo), ptrLMInfo->PluginConfigGuids + INum };
+		if (Guid || ptrLMInfo) {
+			Guid = Guid ? Guid : ptrLMInfo->PluginConfigGuids + INum;
+			ConfigureInfo Info = { sizeof(ConfigureInfo), Guid };
 			Result = dynamic_cast<PluginW*>(pPlugin)->ConfigureV3(&Info);
 		}
 	}
@@ -1426,7 +1427,7 @@ void PluginManager::Configure(int StartPos)
 					break;
 
 				PluginMenuItemData *item = (PluginMenuItemData*)PluginList.GetUserData(nullptr,0,StartPos);
-				ConfigureCurrent(item->pPlugin, item->nItem);
+				ConfigureCurrent(item->pPlugin, item->nItem, &item->Guid);
 			}
 		}
 	}
@@ -1573,12 +1574,8 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 						}
 						break;
 
-					case KEY_ALTF11:
-						//todo WriteEvent(FLOG_PLUGINSINFO);
-						break;
-
 					case KEY_F4:
-						if (item && PluginList.GetItemCount() > 0 && SelPos<MenuItemNumber)
+						if (item && PluginList.GetItemCount() > 0 && SelPos < MenuItemNumber)
 						{
 							FARString strName00;
 							int nOffset = HotKeysPresent?3:0;
@@ -1606,13 +1603,13 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 						break;
 
 					case KEY_SHIFTF9:
-						if (item && PluginList.GetItemCount() > 0 && SelPos<MenuItemNumber)
+						if (item && PluginList.GetItemCount() > 0 && SelPos < MenuItemNumber)
 						{
 							NeedUpdateItems=TRUE;
 							StartPos=SelPos;
 
-							if (item->pPlugin->HasConfigure())
-								ConfigureCurrent(item->pPlugin, item->nItem);
+							if (item->pPlugin->HasConfigure() || item->pPlugin->HasConfigureV3())
+								ConfigureCurrent(item->pPlugin, item->nItem, &item->Guid);
 
 							PluginList.SetExitCode(SelPos);
 							PluginList.Show();
@@ -2275,7 +2272,7 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 		if (IsLuamacro) {
 			UpdateLMInfo();
 		}
-		ConfigureCurrent(Data->pPlugin,Data->FoundItemNumber);
+		ConfigureCurrent(Data->pPlugin, Data->FoundItemNumber, &Data->FoundUuid);
 		return true;
 
 	case CPT_CMDLINE:
