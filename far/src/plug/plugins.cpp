@@ -1189,11 +1189,9 @@ void PluginManager::ConfigureCurrent(Plugin *pPlugin, int INum, const GUID *Guid
 {
 	int Result = FALSE;
 	if (pPlugin->IsLuamacro()) {
-		if (Guid || ptrLMInfo) {
-			Guid = Guid ? Guid : ptrLMInfo->PluginConfigGuids + INum;
-			ConfigureInfo Info = { sizeof(ConfigureInfo), Guid };
-			Result = dynamic_cast<PluginW*>(pPlugin)->ConfigureV3(&Info);
-		}
+		Guid = Guid ? Guid : &FarGuid;
+		ConfigureInfo Info = { sizeof(ConfigureInfo), Guid };
+		Result = dynamic_cast<PluginW*>(pPlugin)->ConfigureV3(&Info);
 	}
 	else {
 		Result = pPlugin->Configure(INum);
@@ -1279,6 +1277,7 @@ void PluginManager::Configure(int StartPos)
 	UpdateLMInfo(); // do this before macro area changes
 
 	{
+		ChangeMacroArea Cma(MACROAREA_MENU);
 		VMenu PluginList(Msg::PluginConfigTitle,nullptr,0,ScrY-4);
 		PluginList.SetFlags(VMENU_WRAPMODE);
 		PluginList.SetHelp(L"PluginsConfig");
@@ -1288,7 +1287,10 @@ void PluginManager::Configure(int StartPos)
 		{
 			BOOL NeedUpdateItems=TRUE;
 			int MenuItemNumber=0;
+
+			Cma.SetPrevArea(); // for plugins: set the right macro area in GetPluginInfo()
 			bool HotKeysPresent = CheckIfHotkeyPresent(MTYPE_CONFIGSMENU);
+			Cma.SetCurArea();
 
 			if (NeedUpdateItems)
 			{
@@ -1300,6 +1302,7 @@ void PluginManager::Configure(int StartPos)
 				FARString strHotKey, strValue, strName;
 				PluginInfo Info{};
 
+				Cma.SetPrevArea(); // for plugins: set the right macro area in GetPluginInfo()
 				for (int I=0; I<PluginsCount; I++)
 				{
 					Plugin *pPlugin = PluginsData[I];
@@ -1354,6 +1357,7 @@ void PluginManager::Configure(int StartPos)
 						PluginList.SetUserData(&item, sizeof(PluginMenuItemData),PluginList.AddItem(&ListItem));
 					}
 				}
+				Cma.SetCurArea();
 
 				PluginList.AssignHighlights(FALSE);
 				PluginList.SetBottomTitle(Msg::PluginHotKeyBottom);

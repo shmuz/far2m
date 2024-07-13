@@ -1135,7 +1135,7 @@ int FileList::ProcessKey(FarKey Key)
 		case KEY_ALTSHIFTF9:
 		{
 			if (PanelMode==PLUGIN_PANEL)
-				CtrlObject->Plugins.ConfigureCurrent(hPlugin->pPlugin, 0);
+				CtrlObject->Plugins.ConfigureCurrent(hPlugin->pPlugin, 0, &FarGuid);
 			else
 				CtrlObject->Plugins.Configure();
 

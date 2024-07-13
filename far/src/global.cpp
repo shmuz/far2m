@@ -110,3 +110,5 @@ FormatScreen FS;
 DWORD ErrorMode;
 
 int FarExitCode;
+
+GUID FarGuid;

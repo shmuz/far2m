@@ -97,3 +97,5 @@ extern FormatScreen FS;
 extern DWORD ErrorMode;
 
 extern int FarExitCode;
+
+extern GUID FarGuid;
