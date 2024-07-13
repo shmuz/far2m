@@ -156,7 +156,6 @@ PluginManager::PluginManager():
 	PluginsData(nullptr),
 	PluginsCount(0),
 	OemPluginsCount(0),
-	ptrLMInfo(nullptr),
 	CurEditor(nullptr),
 	CurViewer(nullptr)
 {
@@ -1258,7 +1257,8 @@ bool PluginManager::CheckIfHotkeyPresent(MENUTYPE MenuType)
 			}
 
 			FARString strHotKey;
-			GetPluginHotKey(pPlugin, J, MenuType, strHotKey);
+			const GUID *Guid = pPlugin->IsLuamacro() ? MenuItemGuids(MenuType, &Info) + J : nullptr;
+			GetPluginHotKey(pPlugin, J, Guid, MenuType, strHotKey);
 			if (!strHotKey.IsEmpty())
 			{
 				return true;
@@ -1273,8 +1273,6 @@ void PluginManager::Configure(int StartPos)
 	// Полиция 4 - Параметры внешних модулей
 	if (Opt.Policies.DisabledOptions&FFPOL_MAINMENUPLUGINS)
 		return;
-
-	UpdateLMInfo(); // do this before macro area changes
 
 	{
 		ChangeMacroArea Cma(MACROAREA_MENU);
@@ -1332,7 +1330,8 @@ void PluginManager::Configure(int StartPos)
 							strName = Info.PluginConfigStrings[J];
 						}
 
-						GetPluginHotKey(pPlugin, J, MTYPE_CONFIGSMENU, strHotKey);
+						const GUID *Guid = pPlugin->IsLuamacro() ? Info.PluginConfigGuids + J : nullptr;
+						GetPluginHotKey(pPlugin, J, Guid, MTYPE_CONFIGSMENU, strHotKey);
 						MenuItemEx ListItem;
 						ListItem.Clear();
 
@@ -1405,7 +1404,7 @@ void PluginManager::Configure(int StartPos)
 							strName00 = PluginList.GetItemPtr()->strName.CPtr()+nOffset;
 							RemoveExternalSpaces(strName00);
 
-							if (SetHotKeyDialog(strName00, item->pPlugin, item->nItem, MTYPE_CONFIGSMENU))
+							if (SetHotKeyDialog(strName00, item->pPlugin, item->nItem, &item->Guid, MTYPE_CONFIGSMENU))
 							{
 								PluginList.Hide();
 								NeedUpdateItems=TRUE;
@@ -1446,8 +1445,6 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 			return 0;
 		}
 	}
-
-	UpdateLMInfo(); // do this before macro area changes
 
 	int MenuItemNumber=0;
 	int Editor = ModalType==MODALTYPE_EDITOR,
@@ -1521,7 +1518,8 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 							strName = Info.PluginMenuStrings[J];
 						}
 
-						GetPluginHotKey(pPlugin, J, MTYPE_COMMANDSMENU, strHotKey);
+						const GUID *Guid = pPlugin->IsLuamacro() ? Info.PluginMenuGuids + J : nullptr;
+						GetPluginHotKey(pPlugin, J, Guid, MTYPE_COMMANDSMENU, strHotKey);
 						MenuItemEx ListItem;
 						ListItem.Clear();
 
@@ -1586,7 +1584,7 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 							strName00 = PluginList.GetItemPtr()->strName.CPtr()+nOffset;
 							RemoveExternalSpaces(strName00);
 
-							if (SetHotKeyDialog(strName00, item->pPlugin, item->nItem, MTYPE_COMMANDSMENU))
+							if (SetHotKeyDialog(strName00, item->pPlugin, item->nItem, &item->Guid, MTYPE_COMMANDSMENU))
 							{
 								PluginList.Hide();
 								NeedUpdateItems=TRUE;
@@ -1695,35 +1693,33 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 	return TRUE;
 }
 
-std::string PluginManager::GetHotKeySettingName(Plugin *pPlugin, int ItemNumber, MENUTYPE MenuType)
+std::string PluginManager::GetHotKeySettingName(Plugin *pPlugin, int ItemNumber, const GUID *Guid, MENUTYPE MenuType)
 {
-	if (pPlugin->IsLuamacro() && ptrLMInfo)
+	if (pPlugin->IsLuamacro())
 	{
-		const GUID *Guid = MenuItemGuids(MenuType, ptrLMInfo);
-		if (Guid) {
-			const std::string &strGuid = GuidToString(Guid[ItemNumber]);
-			std::string out = StrPrintf("luamacro:%s#%s", HotKeyType(MenuType), strGuid.c_str());
-			return out;
-		}
+		const std::string &strGuid = GuidToString(*Guid);
+		std::string out = StrPrintf("luamacro:%s#%s", HotKeyType(MenuType), strGuid.c_str());
+		return out;
 	}
 	std::string out = pPlugin->GetSettingsName();
 	out+= StrPrintf(":%s#%d", HotKeyType(MenuType), ItemNumber);
 	return out;
 }
 
-void PluginManager::GetPluginHotKey(Plugin *pPlugin, int ItemNumber, MENUTYPE MenuType, FARString &strHotKey)
+void PluginManager::GetPluginHotKey(Plugin *pPlugin, int ItemNumber, const GUID *Guid, MENUTYPE MenuType, FARString &strHotKey)
 {
 	KeyFileReadSection kfh(PluginsIni(), SettingsSection);
-	strHotKey = kfh.GetString(GetHotKeySettingName(pPlugin, ItemNumber, MenuType));
+	strHotKey = kfh.GetString(GetHotKeySettingName(pPlugin, ItemNumber, Guid, MenuType));
 }
 
 bool PluginManager::SetHotKeyDialog(
 		const wchar_t *DlgPluginTitle,    // имя плагина
 		Plugin *pPlugin,                  // ключ, откуда берем значение в state.ini/Settings
 		int ItemNumber,                   // +
+		const GUID *Guid,                 // +
 		MENUTYPE MenuType)                // +
 {
-	const std::string &SettingName = GetHotKeySettingName(pPlugin, ItemNumber, MenuType);
+	const std::string &SettingName = GetHotKeySettingName(pPlugin, ItemNumber, Guid, MenuType);
 	KeyFileHelper kfh(PluginsIni());
 	const auto &Setting = kfh.GetString(SettingsSection, SettingName, L"");
 	WCHAR Letter[2] = {Setting.empty() ? 0 : Setting[0], 0};
@@ -1748,8 +1744,10 @@ bool PluginManager::GetDiskMenuItem(
 	LoadIfCacheAbsent();
 
 	FARString strHotKey;
-	GetPluginHotKey(pPlugin, PluginItem, MTYPE_DISKSMENU, strHotKey);
-	PluginHotkey = strHotKey.At(0);
+	if (!pPlugin->IsLuamacro()) {
+		GetPluginHotKey(pPlugin, PluginItem, nullptr, MTYPE_DISKSMENU, strHotKey);
+		PluginHotkey = strHotKey.At(0);
+	}
 
 	if (pPlugin->CheckWorkFlags(PIWF_CACHED))
 	{
@@ -1758,24 +1756,17 @@ bool PluginManager::GetDiskMenuItem(
 		return !strPluginText.IsEmpty();
 	}
 
-	if (pPlugin->IsLuamacro())
-	{
-		if (ptrLMInfo && ptrLMInfo->DiskMenuStringsNumber > PluginItem)
-		{
-			strPluginText = ptrLMInfo->DiskMenuStrings[PluginItem];
-			Guid = ptrLMInfo->DiskMenuGuids[PluginItem];
-			return true;
-		}
-	}
-	else
-	{
-		PluginInfo Info;
+	PluginInfo Info;
 
-		if (pPlugin->GetPluginInfo(&Info) && Info.DiskMenuStringsNumber > PluginItem)
-		{
-			strPluginText = Info.DiskMenuStrings[PluginItem];
-			return true;
+	if (pPlugin->GetPluginInfo(&Info) && Info.DiskMenuStringsNumber > PluginItem)
+	{
+		if (pPlugin->IsLuamacro()) {
+			Guid = Info.DiskMenuGuids[PluginItem];
+			GetPluginHotKey(pPlugin, PluginItem, &Guid, MTYPE_DISKSMENU, strHotKey);
+			PluginHotkey = strHotKey.At(0);
 		}
+		strPluginText = Info.DiskMenuStrings[PluginItem];
+		return true;
 	}
 
 	return false;
@@ -2273,9 +2264,6 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 		break;
 
 	case CPT_CONFIGURE:
-		if (IsLuamacro) {
-			UpdateLMInfo();
-		}
 		ConfigureCurrent(Data->pPlugin, Data->FoundItemNumber, &Data->FoundUuid);
 		return true;
 
@@ -2633,13 +2621,3 @@ void PluginManager::ShowPluginInfo(Plugin* pPlugin)
 	Builder.AddOK();
 	Builder.ShowDialog();
 }
-
-void PluginManager::UpdateLMInfo()
-{
-	ptrLMInfo = nullptr;
-	if (auto pPlugin = FindPlugin(SYSID_LUAMACRO)) {
-		if (pPlugin->GetPluginInfo(&LMInfo))
-			ptrLMInfo = &LMInfo;
-	}
-}
-

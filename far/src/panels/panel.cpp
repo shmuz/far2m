@@ -385,8 +385,6 @@ static void AddBookmarkItems(VMenu &ChDisk, int Pos)
 
 int Panel::ChangeDiskMenu(int Pos,int FirstCall)
 {
-	CtrlObject->Plugins.UpdateLMInfo(); // do this before macro area changes
-
 	/*Events.DeviceArivalEvent.Reset();
 	Events.DeviceRemoveEvent.Reset();
 	Events.MediaArivalEvent.Reset();
@@ -560,7 +558,7 @@ int Panel::ChangeDiskMenu(int Pos,int FirstCall)
 								FARString strName = ChDisk.GetItemPtr(SelPos)->strName.SubStr(3);
 								RemoveExternalSpaces(strName);
 
-								if (CtrlObject->Plugins.SetHotKeyDialog(strName, item->pPlugin, item->nItem, MTYPE_DISKSMENU))
+								if (CtrlObject->Plugins.SetHotKeyDialog(strName, item->pPlugin, item->nItem, &item->Guid, MTYPE_DISKSMENU))
 								{
 									return SelPos;
 								}

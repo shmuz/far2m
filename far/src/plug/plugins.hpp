@@ -183,8 +183,6 @@ class PluginManager
 		int OemPluginsCount;
 		struct BackgroundTasks : std::map<std::wstring, unsigned int>, std::mutex {} BgTasks;
 		std::unordered_map<DWORD, Plugin*> SysIdMap;
-		PluginInfo LMInfo; // luamacro
-		PluginInfo *ptrLMInfo;
 
 	public:
 
@@ -214,8 +212,8 @@ class PluginManager
 		void LoadIfCacheAbsent();
 		void ReadUserBackgound(SaveScreen *SaveScr);
 
-		void GetPluginHotKey(Plugin *pPlugin, int ItemNumber, MENUTYPE MenuType, FARString &strHotKey);
-		std::string GetHotKeySettingName(Plugin *pPlugin, int ItemNumber, MENUTYPE MenuType);
+		void GetPluginHotKey(Plugin *pPlugin, int ItemNumber,  const GUID *Guid, MENUTYPE MenuType, FARString &strHotKey);
+		std::string GetHotKeySettingName(Plugin *pPlugin, int ItemNumber, const GUID *Guid, MENUTYPE MenuType);
 
 		bool TestPluginInfo(Plugin *Item,PluginInfo *Info);
 		bool TestOpenPluginInfo(Plugin *Item,OpenPluginInfo *Info);
@@ -273,13 +271,11 @@ class PluginManager
 		void DiscardCache();
 		int ProcessCommandLine(const wchar_t *Command,Panel *Target=nullptr);
 
-		bool SetHotKeyDialog(const wchar_t *DlgPluginTitle, Plugin *pPlugin, int ItemNumber, MENUTYPE MenuType);
+		bool SetHotKeyDialog(const wchar_t *DlgPluginTitle, Plugin *pPlugin, int ItemNumber, const GUID *Guids, MENUTYPE MenuType);
 
 		// $ .09.2000 SVS - Функция CallPlugin - найти плагин по ID и запустить OpenFrom = OPEN_*
 		int CallPlugin(DWORD SysID,int OpenFrom, void *Data, void **Ret=nullptr);
 		bool CallPluginItem(DWORD SysID, CallPluginInfo* Data);
-
-		void UpdateLMInfo(); //luamacro
 
 //api functions
 
