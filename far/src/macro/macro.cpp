@@ -89,31 +89,26 @@ int Log(const char* Format, ...)
 bool StrToGuid(const wchar_t *Str, GUID& Guid)
 {
 	const char tmpl[] = "HHHHHHHH-HHHH-HHHH-HHHH-HHHHHHHHHHHH";
-
-	for (int i=0; ; i++) {
-		if (tmpl[i] == 'H') {
-			if (!iswxdigit(Str[i]))
-				return false;
-		}
-		else if (tmpl[i] != Str[i])
-			return false;
-
-		if (!tmpl[i])
-			break;
-	}
-
 	uint32_t val;
 	uint8_t buf[20];
-	wchar_t tmp[] = {0,0,0};
+	wchar_t aux[] = {0,0,0};
 
-	for (int i=0,j=0; tmpl[i]; ) {
-		if (Str[i] == L'-') {
-			i++;
+	for (int i=0,j=0; ; ) {
+		if (tmpl[i] == 'H') {
+			if (iswxdigit(aux[0] = Str[i++]) && iswxdigit(aux[1] = Str[i++])) {
+				swscanf(aux, L"%X", &val);
+				buf[j++] = val;
+			}
+			else
+				return false;
 		}
-		tmp[0] = Str[i++];
-		tmp[1] = Str[i++];
-		swscanf(tmp, L"%X", &val);
-		buf[j++] = val;
+		else {
+			if (tmpl[i] != Str[i])
+				return false;
+
+			if (!tmpl[i++])
+				break;
+		}
 	}
 
 	Guid.Data1 = (buf[0]<<24) + (buf[1]<<16) + (buf[2]<<8) + buf[3];
