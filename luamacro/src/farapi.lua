@@ -409,6 +409,7 @@ struct OpenDlgPluginData
 {
 	int ItemNumber;
 	HANDLE hDlg;
+	GUID ItemGuid;
 };
 
 struct DialogInfo
@@ -2432,10 +2433,17 @@ struct AnalyseData
 	size_t          BufferSize;
 	int             OpMode;
 };
+
+struct ConfigureInfo
+{
+	size_t StructSize;
+	const GUID* Guid;
+};
 	void   __stdcall  PluginModuleOpen(const char *path);
 	void   __stdcall  ClosePluginW(HANDLE hPlugin);
 	int    __stdcall  CompareW(HANDLE hPlugin,const struct PluginPanelItem *Item1,const struct PluginPanelItem *Item2,unsigned int Mode);
 	int    __stdcall  ConfigureW(int ItemNumber);
+	int    __stdcall  ConfigureV3W(const struct ConfigureInfo *Info);
 	int    __stdcall  DeleteFilesW(HANDLE hPlugin,struct PluginPanelItem *PanelItem,int ItemsNumber,int OpMode);
 	void   __stdcall  ExitFARW(void);
 	int    __stdcall  MayExitFARW(void);

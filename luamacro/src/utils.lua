@@ -66,7 +66,10 @@ local LoadMacrosDone
 local LoadingInProgress
 local EnumState = {}
 local Events
-local EventGroups = {"dialogevent","editorevent","editorinput","exitfar","viewerevent","consoleinput","mayexitfar"}
+local EventGroups = {
+  "consoleinput", "dialogevent", "editorevent", "editorinput", "exitfar", "mayexitfar",
+  "synchroevent", "viewerevent",
+}
 local AddedMenuItems
 local AddedPrefixes
 local IdSet
@@ -223,6 +226,10 @@ end
 
 local function export_ProcessConsoleInput (Rec)
   return EV_Handler(Events.consoleinput, nil, Rec)
+end
+
+local function export_ProcessSynchroEvent (Event, Param)
+  return EV_Handler(Events.synchroevent, nil, Event, Param)
 end
 
 local function export_GetContentFields (colnames)
@@ -655,6 +662,7 @@ local function LoadMacros (unload, paths)
   export.ProcessEditorInput = nil
   export.ProcessViewerEvent = nil
   export.ProcessConsoleInput = nil
+  export.ProcessSynchroEvent = nil
   export.GetContentFields = nil
   export.GetContentData = nil
 
@@ -808,6 +816,7 @@ local function LoadMacros (unload, paths)
     export.ProcessEditorInput  = Events.editorinput[1]  and export_ProcessEditorInput
     export.ProcessViewerEvent  = Events.viewerevent[1]  and export_ProcessViewerEvent
     export.ProcessConsoleInput = Events.consoleinput[1] and export_ProcessConsoleInput
+    export.ProcessSynchroEvent = Events.synchroevent[1] and export_ProcessSynchroEvent
     if ContentColumns[1] then
       export.GetContentFields = export_GetContentFields
       export.GetContentData   = export_GetContentData
