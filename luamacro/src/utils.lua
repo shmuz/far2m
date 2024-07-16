@@ -188,7 +188,7 @@ local function EV_Handler (macros, filename, ...)
     if priorities[i] < 0 then break end
     local ret = macros[i].action(...)
     if ret then
-      if macros==Events.dialogevent or macros==Events.editorinput then
+      if macros==Events.dialogevent or macros==Events.editorinput or macros==Events.synchroevent then
         return ret
       elseif macros==Events.consoleinput then
         if ret ~= 0 then return ret end
