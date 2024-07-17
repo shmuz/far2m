@@ -18,7 +18,7 @@ set)
     echo "$CONTENT"
 ;;
 "")
-    (far2l --clipboard=$(readlink -f $0) >/dev/null 2>&1 &)
+    (far2m --clipboard=$(readlink -f $0) >/dev/null 2>&1 &)
 ;;
 esac
 
