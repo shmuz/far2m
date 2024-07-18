@@ -2119,7 +2119,15 @@ local function test_far_timer()
   assert_eq (N, 3)
 end
 
+local function test_win_uuid()
+  local uuid = win.Uuid()
+  assert_eq(#uuid, 16)
+  assert_neq(uuid, ("\0"):rep(16))
+end
+
 local function test_win_functions()
+  test_win_uuid()
+
   assert_func( win.Clock)
   assert_func( win.CompareString)
   assert_func( win.CopyFile)
@@ -2160,7 +2168,6 @@ local function test_win_functions()
   assert_func( win.SystemTimeToFileTime)
   assert_func( win.Utf8ToOem)
   assert_func( win.Utf8ToUtf32)
-  assert_func( win.Uuid)
   assert_func( win.wcscmp)
   assert_func( win.WideCharToMultiByte)
 end
