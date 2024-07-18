@@ -347,7 +347,7 @@ if (NOT DEFINED MULTIARC OR MULTIARC)
         endif()
         find_package(LibArchive)
         if(NOT LibArchive_FOUND)
-            message(WARNING "${ColorRed}libarchive not found, multiarc will have weaker archives support. Its recommended to install libarchive-dev and reconfigure far2l.${ColorNormal}")
+            message(WARNING "${ColorRed}libarchive not found, multiarc will have weaker archives support. Its recommended to install libarchive-dev and reconfigure far2m.${ColorNormal}")
         endif()
     endif()
 
