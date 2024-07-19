@@ -2119,37 +2119,16 @@ local function test_far_timer()
   assert_eq (N, 3)
 end
 
-local function test_win_uuid()
-  local uuid = win.Uuid()
-  assert_eq(#uuid, 16)
-  assert_neq(uuid, ("\0"):rep(16))
-end
-
 local function test_win_functions()
-  test_win_uuid()
-
-  assert_func( win.Clock)
-  assert_func( win.CompareString)
   assert_func( win.CopyFile)
   assert_func( win.CreateDir)
   assert_func( win.DeleteFile)
   assert_func( win.EnsureColorsAreInverted)
-  assert_func( win.EnumSystemCodePages)
-  assert_func( win.ExpandEnv)
   assert_func( win.ExtractKey)
   assert_func( win.ExtractKeyEx)
   assert_func( win.FileTimeToLocalFileTime)
   assert_func( win.FileTimeToSystemTime)
-  assert_func( win.GetACP)
   assert_func( win.GetConsoleScreenBufferInfo)
-  assert_func( win.GetCPInfo)
-  assert_func( win.GetCurrentDir)
-  assert_func( win.GetEnv)
-  assert_func( win.GetFileAttr)
-  assert_func( win.GetFileInfo)
-  assert_func( win.GetLocalTime)
-  assert_func( win.GetOEMCP)
-  assert_func( win.GetSystemTime)
   assert_func( win.GetSystemTimeAsFileTime)
   assert_func( win.GetVirtualKeys)
   assert_func( win.IsProcess64bit)
@@ -2195,20 +2174,58 @@ local function test_win_CompareString()
   assert(win.CompareString("b","b") == 0)
 end
 
+local function test_win_ExpandEnv()
+  local s1 = "$(HOME)/abc"
+  local s2 = win.ExpandEnv(s1)
+  assert_neq(s1, s2)
+  assert_num(s2:find("abc$"))
+
+  local s3 = "$(HOME-HOME-HOME)/abc"
+  local s4 = win.ExpandEnv(s3)
+  assert_eq(s3, s4)
+  local s5 = win.ExpandEnv(s3, true)
+  assert_eq(s5, "/abc")
+end
+
+local function test_win_Uuid()
+  local uuid = win.Uuid()
+  assert_eq(#uuid, 16)
+  assert_neq(uuid, ("\0"):rep(16))
+
+  local u1 = win.Uuid(uuid)
+  assert_eq(#u1, 36)
+  assert_eq(win.Uuid(u1), uuid)
+
+  local u2 = win.Uuid("L")
+  assert_eq(#u2, 36)
+  assert_eq(u2, u2:match("^[0-9a-f%-]+$"))
+
+  local u3 = win.Uuid("U")
+  assert_eq(#u3, 36)
+  assert_eq(u3, u3:match("^[0-9A-F%-]+$"))
+end
+
 local function test_win()
   test_win_functions()
 
   test_win_Clock()
   test_win_CompareString()
+  test_win_ExpandEnv()
+  test_win_Uuid()
 
   assert_table (win.EnumSystemCodePages())
   assert_num   (win.GetACP())
   assert_str   (win.GetCurrentDir())
   assert_num   (win.GetOEMCP())
 
-  local dir  = assert_str(win.GetEnv("FARHOME"))
-  local attr = assert_str(win.GetFileAttr(dir))
+  local dir  = assert_str (win.GetEnv("FARHOME"))
+  local attr = assert_str (win.GetFileAttr(dir))
   assert_num(attr:find("d"))
+  assert_table (win.GetFileInfo(dir))
+
+  assert_table (win.GetCPInfo(65001))
+  assert_table (win.GetLocalTime())
+  assert_table (win.GetSystemTime())
 end
 
 local function test_utf8()
