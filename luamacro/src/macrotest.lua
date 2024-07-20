@@ -879,6 +879,7 @@ local function test_Far_GetConfig()
     "Notifications.OnFileOperation",
     "Notifications.OnlyIfBackground",
     "Panel.AutoUpdateLimit",
+    "Panel.CaseSensitiveCompareSelect",
     "Panel.CtrlAltShiftRule",
     "Panel.CtrlFRule",
     "Panel.Highlight",

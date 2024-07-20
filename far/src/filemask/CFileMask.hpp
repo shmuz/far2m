@@ -58,5 +58,6 @@ class CFileMask : private NonCopyable
 		bool Compare(const wchar_t *Name, bool SkipPath=true) const;
 		bool IsEmpty()const;
 		void Reset();
+		void SetCaseSensitive(bool cs) { CaseSens = cs; }
 
 };

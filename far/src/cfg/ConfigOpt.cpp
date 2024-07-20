@@ -371,6 +371,7 @@ static struct FARConfig
 	{1, NSecPanel, "Highlight",                     &Opt.Highlight, 1, REG_BOOLEAN},
 	{1, NSecPanel, "SortFolderExt",                 &Opt.SortFolderExt, 0, REG_BOOLEAN},
 	{1, NSecPanel, "SelectFolders",                 &Opt.SelectFolders, 0, REG_BOOLEAN},
+	{1, NSecPanel, "CaseSensitiveCompareSelect",    &Opt.PanelCaseSensitiveCompareSelect, 0, REG_BOOLEAN},
 	{1, NSecPanel, "ReverseSort",                   &Opt.ReverseSort, 1, REG_BOOLEAN},
 	{0, NSecPanel, "RightClickRule",                &Opt.PanelRightClickRule, 2, REG_3STATE},
 	{0, NSecPanel, "CtrlFRule",                     &Opt.PanelCtrlFRule, 1, REG_BOOLEAN},
