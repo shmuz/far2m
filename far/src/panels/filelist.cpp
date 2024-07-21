@@ -3492,14 +3492,13 @@ enum
 
 long FileList::SelectFiles(int Mode,const wchar_t *Mask)
 {
-	static int iCaseSens = Opt.PanelCaseSensitiveCompareSelect; // used only for dialog
 	CFileMask FileMask(Opt.PanelCaseSensitiveCompareSelect);
 	const wchar_t *HistoryName=L"Masks";
 	DialogDataEx SelectDlgData[]=
 	{
 		{DI_DOUBLEBOX, 3,1,51,6, {},0,L""},
 		{DI_EDIT,      5,2,49,2, {(DWORD_PTR)HistoryName},DIF_FOCUS|DIF_HISTORY,L""},
-		{DI_CHECKBOX,  5,3,49,3, {(DWORD_PTR)iCaseSens}, 0, Msg::SelectCase},
+		{DI_CHECKBOX,  5,3,49,3, {(DWORD_PTR)Opt.PanelCaseSensitiveCompareSelect}, 0, Msg::SelectCase},
 		{DI_TEXT,      0,4, 0,4, {},DIF_SEPARATOR,L""},
 		{DI_BUTTON,    0,5, 0,5, {},DIF_DEFAULT|DIF_CENTERGROUP,Msg::Ok},
 		{DI_BUTTON,    0,5, 0,5, {},DIF_CENTERGROUP,Msg::SelectFilter},
@@ -3602,8 +3601,9 @@ long FileList::SelectFiles(int Mode,const wchar_t *Mask)
 							return 0;
 
 						strMask = SelectDlg[SELFILES_MASK].strData;
-						iCaseSens = SelectDlg[SELFILES_CASESENS].Selected == BSTATE_CHECKED;
-						FileMask.SetCaseSensitive(iCaseSens);
+
+						Opt.PanelCaseSensitiveCompareSelect = SelectDlg[SELFILES_CASESENS].Selected == BSTATE_CHECKED;
+						FileMask.SetCaseSensitive(Opt.PanelCaseSensitiveCompareSelect);
 
 						if (FileMask.Set(strMask, 0)) // Проверим вводимые пользователем маски на ошибки
 						{
