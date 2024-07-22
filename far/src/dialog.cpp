@@ -4166,36 +4166,36 @@ int Dialog::SelectFromComboBox(DialogItemEx *CurItem,
 //		if (EditX2 - EditX1 < 20)
 //			EditX2 = EditX1 + 20;
 
-		SetDropDownOpened(TRUE);	// Установим флаг "открытия" комбобокса.
-		SetComboBoxPos(CurItem);
-		// Перед отрисовкой спросим об изменении цветовых атрибутов
-		uint64_t RealColors[VMENU_COLOR_COUNT];
-		FarListColors ListColors = {0};
-		ListColors.ColorCount = VMENU_COLOR_COUNT;
-		ListColors.Colors = RealColors;
-		ComboBox->SetColors(nullptr);
-		ComboBox->GetColors(&ListColors);
+	SetDropDownOpened(TRUE);	// Установим флаг "открытия" комбобокса.
+	SetComboBoxPos(CurItem);
+	// Перед отрисовкой спросим об изменении цветовых атрибутов
+	uint64_t RealColors[VMENU_COLOR_COUNT];
+	FarListColors ListColors = {0};
+	ListColors.ColorCount = VMENU_COLOR_COUNT;
+	ListColors.Colors = RealColors;
+	ComboBox->SetColors(nullptr);
+	ComboBox->GetColors(&ListColors);
 
-		if (DlgProc((HANDLE)this, DN_CTLCOLORDLGLIST, CurItem->ID, (LONG_PTR)&ListColors))
-			ComboBox->SetColors(&ListColors);
+	if (DlgProc((HANDLE)this, DN_CTLCOLORDLGLIST, CurItem->ID, (LONG_PTR)&ListColors))
+		ComboBox->SetColors(&ListColors);
 
-		// Выставим то, что есть в строке ввода!
-		// if(EditLine->GetDropDownBox()) //???
-		EditLine->GetString(strStr);
+	// Выставим то, что есть в строке ввода!
+	// if(EditLine->GetDropDownBox()) //???
+	EditLine->GetString(strStr);
 
-		if (CurItem->Flags & (DIF_DROPDOWNLIST | DIF_LISTNOAMPERSAND))
-			HiText2Str(strStr, strStr);
+	if (CurItem->Flags & (DIF_DROPDOWNLIST | DIF_LISTNOAMPERSAND))
+		HiText2Str(strStr, strStr);
 
-		ComboBox->SetSelectPos(ComboBox->FindItem(0, strStr, LIFIND_EXACTMATCH), 1);
-		ComboBox->Show();
-		OriginalPos = Dest = ComboBox->GetSelectPos();
-		CurItem->IFlags.Set(DLGIIF_COMBOBOXNOREDRAWEDIT);
+	ComboBox->SetSelectPos(ComboBox->FindItem(0, strStr, LIFIND_EXACTMATCH), 1);
+	ComboBox->Show();
+	OriginalPos = Dest = ComboBox->GetSelectPos();
+	CurItem->IFlags.Set(DLGIIF_COMBOBOXNOREDRAWEDIT);
 
-		while (!ComboBox->Done()) {
-			if (!GetDropDownOpened()) {
-				ComboBox->ProcessKey(KEY_ESC);
-				continue;
-			}
+	while (!ComboBox->Done()) {
+		if (!GetDropDownOpened()) {
+			ComboBox->ProcessKey(KEY_ESC);
+			continue;
+		}
 
 		INPUT_RECORD ReadRec;
 		FarKey Key = ComboBox->ReadInput(&ReadRec);
@@ -4203,9 +4203,11 @@ int Dialog::SelectFromComboBox(DialogItemEx *CurItem,
 		if (CurItem->IFlags.Check(DLGIIF_COMBOBOXEVENTKEY) && ReadRec.EventType == KEY_EVENT) {
 			if (DlgProc((HANDLE)this, DN_KEY, FocusPos, Key))
 				continue;
-		} else if (CurItem->IFlags.Check(DLGIIF_COMBOBOXEVENTMOUSE) && ReadRec.EventType == MOUSE_EVENT)
+		}
+		else if (CurItem->IFlags.Check(DLGIIF_COMBOBOXEVENTMOUSE) && ReadRec.EventType == MOUSE_EVENT) {
 			if (!DlgProc((HANDLE)this, DN_MOUSEEVENT, 0, (LONG_PTR)&ReadRec.Event.MouseEvent))
 				continue;
+		}
 
 		// здесь можно добавить что-то свое, например,
 		I = ComboBox->GetSelectPos();
