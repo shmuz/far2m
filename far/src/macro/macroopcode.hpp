@@ -287,6 +287,7 @@ enum MACRO_OP_CODE
 	MCODE_V_MENUINFOID,               // Menu.Id
 
 	MCODE_UDLIST_SPLIT,               // User defined list
+	MCODE_FAR_GETINFO,                // Misc Far Info
 };
 
 typedef enum MACRO_OP_CODE TMacroOpCode;

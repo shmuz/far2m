@@ -554,6 +554,17 @@ SetProperties(Far, {
   UpTime         = function() return MacroCallFar(mc.MCODE_V_FAR_UPTIME) end,
   Width          = function() return MacroCallFar(mc.MCODE_V_FAR_WIDTH) end,
 })
+
+Far.GetInfo = function()
+  local build, platform, mainlang, helplang, palette = MacroCallFar(mc.MCODE_FAR_GETINFO)
+  return {
+    Build = build;
+    Platform = platform;
+    MainLang = mainlang;
+    HelpLang = helplang;
+    ConsoleColorPalette = palette;
+  }
+end
 --------------------------------------------------------------------------------
 
 BM = {

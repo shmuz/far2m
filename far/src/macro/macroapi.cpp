@@ -128,6 +128,7 @@ public:
 	int editorundoFunc();
 	int environFunc();             //implemented in Lua
 	int fargetconfigFunc();
+	int fargetinfoFunc();
 	int farsetconfigFunc();
 	int fattrFunc();
 	int fexistFunc();
@@ -1193,6 +1194,9 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 
 		case MCODE_UDLIST_SPLIT:
 			return api.UDList_Split();
+
+		case MCODE_FAR_GETINFO:
+			return api.fargetinfoFunc();
 	}
 	return 0;
 }
@@ -3105,5 +3109,15 @@ int FarMacroApi::UDList_Split()
 	{
 		PassBoolean(false);
 	}
+	return 0;
+}
+
+int FarMacroApi::fargetinfoFunc()
+{
+	PassString(FAR_BUILD);
+	PassString(FAR_PLATFORM);
+	PassString(Opt.strLanguage);
+	PassString(Opt.strHelpLanguage);
+	PassNumber(WINPORT(GetConsoleColorPalette)(NULL));
 	return 0;
 }
