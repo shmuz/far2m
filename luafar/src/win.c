@@ -1,4 +1,5 @@
 #include <sys/utsname.h>
+#include <unistd.h>
 
 #include <lua.h>
 #include <lauxlib.h>
@@ -680,6 +681,17 @@ static int win_uname(lua_State *L)
 	return SysErrorReturn(L);
 }
 
+static int win_GetHostName(lua_State *L)
+{
+	char buf[256];
+	if (0 == gethostname(buf, sizeof(buf) - 1)) {
+		buf[sizeof(buf) - 1] = 0;
+		lua_pushstring(L, buf);
+		return 1;
+	}
+	return SysErrorReturn(L);
+}
+
 #define PAIR(prefix,txt) {#txt, prefix ## _ ## txt}
 
 static const luaL_Reg win_funcs[] = {
@@ -699,6 +711,7 @@ static const luaL_Reg win_funcs[] = {
 	PAIR( win, GetEnv),
 	PAIR( win, GetFileInfo),
 	PAIR( win, GetFileTimes),
+	PAIR( win, GetHostName),
 	PAIR( win, GetLocalTime),
 	PAIR( win, GetSystemTime),
 	PAIR( win, GetSystemTimeAsFileTime),
