@@ -7,6 +7,6 @@ SHAREDSYMBOL void WINAPI EXP_NAME(GetGlobalInfo)(struct GlobalInfo *aInfo)
   aInfo->SysID         = 0x894EAABB;
   aInfo->Version       = Version;
   aInfo->Title         = L"Calculator";
-  aInfo->Description   = L"Calculator plugin for FAR manager";
+  aInfo->Description   = L"Calculator plugin";
   aInfo->Author        = L"Igor Ruskih, uncle-vunkis, FAR People";
 }

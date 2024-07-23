@@ -361,6 +361,8 @@ local function Open_CommandLine (strCmdLine)
       utils.UnloadMacros()
     elseif cmd == "about" then
       About()
+    elseif cmd == "farabout" then
+      require("far2.far_about")()
     elseif cmd == "farconfig" then
       require("far2.far_config")()
     elseif cmd == "test" then

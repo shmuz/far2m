@@ -7,6 +7,6 @@ SHAREDSYMBOL void WINAPI EXP_NAME(GetGlobalInfo)(struct GlobalInfo *aInfo)
   aInfo->SysID         = 0x4F6BDE22;
   aInfo->Version       = Version;
   aInfo->Title         = L"Compare";
-  aInfo->Description   = L"Advanced File Compare for Far Manager";
+  aInfo->Description   = L"Advanced File Compare plugin";
   aInfo->Author        = L"Eugene Roshal, FAR Group, FAR People";
 }

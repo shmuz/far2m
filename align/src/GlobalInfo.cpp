@@ -7,6 +7,6 @@ SHAREDSYMBOL void WINAPI EXP_NAME(GetGlobalInfo)(struct GlobalInfo *aInfo)
   aInfo->SysID         = 0xB076F0B0;
   aInfo->Version       = Version;
   aInfo->Title         = L"Align";
-  aInfo->Description   = L"Align block for Far Manager";
+  aInfo->Description   = L"Align blocks in Far editor";
   aInfo->Author        = L"Eugene Roshal, FAR Group, FAR People";
 }

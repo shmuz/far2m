@@ -7,6 +7,6 @@ SHAREDSYMBOL void WINAPI EXP_NAME(GetGlobalInfo)(struct GlobalInfo *aInfo)
   aInfo->SysID         = 0x0E92FC81;
   aInfo->Version       = Version;
   aInfo->Title         = L"EditCase";
-  aInfo->Description   = L"Text case conversion for Far Manager";
+  aInfo->Description   = L"Text case conversion";
   aInfo->Author        = L"Eugene Roshal, FAR Group, FAR People";
 }

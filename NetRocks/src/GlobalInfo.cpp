@@ -7,6 +7,6 @@ SHAREDSYMBOL void WINAPI EXP_NAME(GetGlobalInfo)(struct GlobalInfo *aInfo)
   aInfo->SysID         = 0xAE8CE351;
   aInfo->Version       = Version;
   aInfo->Title         = L"NetRocks";
-  aInfo->Description   = L"Adds SFTP/SCP/NFS/SMB/WebDAV connectivity to far2l";
+  aInfo->Description   = L"Adds SFTP/SCP/NFS/SMB/WebDAV connectivity";
   aInfo->Author        = L"elfmz";
 }

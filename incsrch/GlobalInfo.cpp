@@ -7,6 +7,6 @@ SHAREDSYMBOL void WINAPI EXP_NAME(GetGlobalInfo)(struct GlobalInfo *aInfo)
   aInfo->SysID         = 0x84C0C745;
   aInfo->Version       = Version;
   aInfo->Title         = L"Incremental Search";
-  aInfo->Description   = L"Incremental Search";
+  aInfo->Description   = L"Incremental Search in the editor";
   aInfo->Author        = L"Stanislav Mekhanoshin, FAR People";
 }

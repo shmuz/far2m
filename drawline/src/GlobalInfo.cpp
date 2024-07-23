@@ -7,6 +7,6 @@ SHAREDSYMBOL void WINAPI EXP_NAME(GetGlobalInfo)(struct GlobalInfo *aInfo)
   aInfo->SysID         = 0xC941E865;
   aInfo->Version       = Version;
   aInfo->Title         = L"DrawLine";
-  aInfo->Description   = L"Draw lines for Far Manager";
+  aInfo->Description   = L"Draw lines in Far editor";
   aInfo->Author        = L"Eugene Roshal, FAR Group, FAR People";
 }

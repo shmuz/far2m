@@ -7,6 +7,6 @@ SHAREDSYMBOL void WINAPI EXP_NAME(GetGlobalInfo)(struct GlobalInfo *aInfo)
   aInfo->SysID         = 0xE873426D;
   aInfo->Version       = Version;
   aInfo->Title         = L"NetCfg";
-  aInfo->Description   = L"NetCfg plugin for Far Manager";
+  aInfo->Description   = L"NetCfg plugin";
   aInfo->Author        = L"VPROFi";
 }
