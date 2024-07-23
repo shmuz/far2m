@@ -1,3 +1,5 @@
+#include <sys/utsname.h>
+
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
@@ -659,6 +661,25 @@ static int win_SetFileTimes(lua_State *L)
 	return 1;
 }
 
+static int win_uname(lua_State *L)
+{
+	struct utsname un;
+	if (uname(&un) == 0)
+	{
+		lua_createtable(L, 0, 6);
+		lua_pushstring(L, un.sysname);    lua_setfield(L, -2, "sysname");
+		lua_pushstring(L, un.nodename);   lua_setfield(L, -2, "nodename");
+		lua_pushstring(L, un.release);    lua_setfield(L, -2, "release");
+		lua_pushstring(L, un.version);    lua_setfield(L, -2, "version");
+		lua_pushstring(L, un.machine);    lua_setfield(L, -2, "machine");
+#ifdef _GNU_SOURCE
+		lua_pushstring(L, un.domainname); lua_setfield(L, -2, "domainname");
+#endif
+		return 1;
+	}
+	return SysErrorReturn(L);
+}
+
 #define PAIR(prefix,txt) {#txt, prefix ## _ ## txt}
 
 static const luaL_Reg win_funcs[] = {
@@ -694,6 +715,7 @@ static const luaL_Reg win_funcs[] = {
 	PAIR( win, Sleep),
 	PAIR( win, system),
 	PAIR( win, SystemTimeToFileTime),
+	PAIR( win, uname),
 	PAIR( win, wcscmp),
 
 	{NULL, NULL},
