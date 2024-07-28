@@ -4528,7 +4528,7 @@ void Dialog::Process()
 
 		if (GetCanLoseFocus()) {
 			FrameManager->InsertFrame(this);
-			FrameManager->PluginCommit();
+			FrameManager->Commit();
 		}
 		else {
 			clock_t btm = 0;
@@ -4569,7 +4569,7 @@ void Dialog::CloseDialog()
 
 			if (!GetDynamicallyBorn())  //this condition prevents crash "delete(this)" with non-modal plugin dialogs
 			{
-				FrameManager->PluginCommit(1); // This fixes issues #28 and #58
+				FrameManager->Commit(1); // This fixes issues #28 and #58
 			}
 		}
 

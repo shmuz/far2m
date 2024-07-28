@@ -355,7 +355,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 					if (Pal->Flags & FCLR_REDRAW) {
 						ScrBuf.Lock();                   // отменяем всякую прорисовку
 						FrameManager->ResizeAllFrame();
-						FrameManager->PluginCommit();    // коммитим.
+						FrameManager->Commit();    // коммитим.
 						ScrBuf.Unlock();                 // разрешаем прорисовку
 					}
 
@@ -486,7 +486,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 		*/
 		case ACTL_COMMIT: {
 			if (FrameManager)
-				FrameManager->PluginCommit();
+				FrameManager->Commit();
 			return FALSE;
 		}
 		/*
@@ -624,7 +624,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 		case ACTL_REDRAWALL: {
 			auto Area = CtrlObject->Macro.GetArea();
 			int Ret = FrameManager->ProcessKey(KEY_CONSOLE_BUFFER_RESIZE);
-			FrameManager->PluginCommit();
+			FrameManager->Commit();
 			if (IsMenuArea(Area))    // пока что костыль
 			{
 				CtrlObject->Macro.SetArea(Area);
@@ -1786,7 +1786,7 @@ static int FarViewerSynched(const wchar_t *FileName, const wchar_t *Title, int X
 			if (GlobalSaveScrPtr)
 				GlobalSaveScrPtr->Discard();
 
-			FrameManager->PluginCommit();
+			FrameManager->Commit();
 		}
 	} else {
 		/* 09.09.2001 IS ! Добавим имя файла в историю, если потребуется */
@@ -1878,7 +1878,7 @@ int FarEditorSynched(const wchar_t *FileName, const wchar_t *Title, int X1, int 
 				if (GlobalSaveScrPtr)
 					GlobalSaveScrPtr->Discard();
 
-				FrameManager->PluginCommit();
+				FrameManager->Commit();
 			}
 
 			ExitCode = XC_MODIFIED;

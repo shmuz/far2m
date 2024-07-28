@@ -1331,15 +1331,6 @@ void Manager::ExecuteCommit(Frame *aFrame)
 	ActivatedFrame=aFrame;
 }
 
-/*$ 26.06.2001 SKV
-  Для вызова из плагинов посредством ACTL_COMMIT
-*/
-void Manager::PluginCommit(int Count)
-{
-	_BASICLOG("PluginCommit");
-	Commit(Count);
-}
-
 /* $ Введена для нужд CtrlAltShift OT */
 void Manager::ImmediateHide()
 {

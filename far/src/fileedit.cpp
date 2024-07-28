@@ -2896,7 +2896,7 @@ void EditConsoleHistory(HANDLE con_hnd, bool Modal)
 			if (Modal)
 				FrameManager->ExecuteModalEV();
 			else
-				FrameManager->PluginCommit();
+				FrameManager->Commit();
 		}
 		else
 			delete ShellEditor;

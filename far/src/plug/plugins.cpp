@@ -350,7 +350,7 @@ int PluginManager::UnloadPlugin(Plugin *pPlugin, DWORD dwException, bool bRemove
 		{
 			Flags.Clear(PSIF_DIALOG);
 			FrameManager->DeleteFrame();
-			FrameManager->PluginCommit();
+			FrameManager->Commit();
 		}
 
 		bool bPanelPlugin = pPlugin->IsPanelPlugin();

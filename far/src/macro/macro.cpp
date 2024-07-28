@@ -676,7 +676,7 @@ FarKey KeyMacro::GetKey()
 				FrameManager->RefreshFrame();
 
 				//с текущим переключением окон могут быть проблемы с заголовком консоли.
-				FrameManager->PluginCommit();
+				FrameManager->Commit();
 
 				break;
 			}

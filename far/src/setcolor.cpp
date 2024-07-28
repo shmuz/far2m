@@ -473,7 +473,7 @@ void GetColor(int PaletteIndex)
 		MenuToRedraw2->Hide();			// гасим
 		MenuToRedraw1->Hide();
 		FrameManager->RefreshFrame();	// рефрешим
-		FrameManager->PluginCommit();	// коммитим.
+		FrameManager->Commit();	// коммитим.
 		MenuToRedraw1->SetColors();
 		MenuToRedraw1->Show();			// кажем
 		MenuToRedraw2->SetColors();
@@ -488,6 +488,6 @@ void GetColor(int PaletteIndex)
 			ShowTime(1);
 
 		ScrBuf.Unlock();				// разрешаем прорисовку
-		FrameManager->PluginCommit();	// коммитим.
+		FrameManager->Commit();	// коммитим.
 	}
 }

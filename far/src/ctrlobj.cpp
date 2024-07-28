@@ -122,7 +122,7 @@ void ControlObject::Init()
 	{
 		FARString strOldTitle;
 		Console.GetTitle(strOldTitle);
-		FrameManager->PluginCommit();
+		FrameManager->Commit();
 		Plugins.LoadPlugins();
 		Console.SetTitle(strOldTitle);
 	}
