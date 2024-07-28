@@ -76,7 +76,7 @@ class Manager
 		void StartupMainloop();
 		Frame *FrameMenu(); // show window menu (F12)
 
-		void Commit();         // завершает транзакцию по изменениям в очереди и стеке фреймов
+		void Commit(int Count=0);  // завершает транзакцию по изменениям в очереди и стеке фреймов
 		// Она в цикле вызывает себя, пока хотябы один из указателей отличен от nullptr
 		// Функции, "подмастерья начальника" - Commit'a
 		// Иногда вызываются не только из него и из других мест
@@ -133,7 +133,7 @@ class Manager
 		/*$ 26.06.2001 SKV
 		Для вызова через ACTL_COMMIT
 		*/
-		void PluginCommit();
+		void PluginCommit(int Count=0);
 
 		int CountFramesWithName(const wchar_t *Name, bool IgnoreCase=true) const;
 

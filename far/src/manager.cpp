@@ -1061,7 +1061,7 @@ int Manager::IndexOfList(Frame *Frame) const
 	return -1;
 }
 
-void Manager::Commit()
+void Manager::Commit(int Count)
 {
 	Frame *tmp, *tmp2, *tmp3;
 	while(true)
@@ -1122,6 +1122,10 @@ void Manager::Commit()
 			RefreshCommit(tmp);
 		}
 		else
+		{
+			break;
+		}
+		if (Count > 0 && --Count == 0)
 		{
 			break;
 		}
@@ -1330,10 +1334,10 @@ void Manager::ExecuteCommit(Frame *aFrame)
 /*$ 26.06.2001 SKV
   Для вызова из плагинов посредством ACTL_COMMIT
 */
-void Manager::PluginCommit()
+void Manager::PluginCommit(int Count)
 {
 	_BASICLOG("PluginCommit");
-	Commit();
+	Commit(Count);
 }
 
 /* $ Введена для нужд CtrlAltShift OT */
