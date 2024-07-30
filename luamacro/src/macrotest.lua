@@ -27,8 +27,6 @@ local function assert_udata(v)     assert(type(v)=="userdata")  return v; end
 local function assert_nil(v)       assert(v==nil)               return v; end
 local function assert_false(v)     assert(v==false)             return v; end
 local function assert_true(v)      assert(v==true)              return v; end
-local function assert_falsy(v)     assert((not v) == true)      return v; end
-local function assert_truthy(v)    assert((not v) == false)     return v; end
 
 local function assert_range(val, low, high)
   if low then assert(val >= low) end
@@ -1850,7 +1848,6 @@ local function test_ACTL()
   assert_range ( actl.GetWindowCount(), 1)
   assert_table ( actl.GetWindowInfo(1))
   assert_table ( actl.GetShortWindowInfo(1))
-  assert_nil   ( actl.KeyMacro)
   assert_func  ( actl.Quit)
   assert_func  ( actl.RedrawAll)
   assert_func  ( actl.SetArrayColor)
@@ -2280,8 +2277,34 @@ local function test_dialog_1()
   assert(Items.data == tt[3])
 end
 
+local function test_dialog_issue_28()
+  local sd=require "far2.simpledialog"
+  local checkValue = nil
+  local items = {
+    width=30;
+    {tp="dbox"; text="Issue #28"},
+    {tp="butt"; btnnoclose=1; text="CRASH"; centergroup=1; },
+  }
+  items.proc=function(hDlg,msg,p1,p2)
+    if msg==F.DN_BTNCLICK then
+      hDlg:Close()
+      far.Message("hello") -- USED TO CAUSE CRASH
+      checkValue = true
+      return 1
+    end
+  end
+  local Dlg = sd.New(items)
+  mf.acall(Dlg.Run, Dlg)
+  Keys("Enter")
+  assert_true(Area.Dialog)
+  Keys("Esc")
+  assert_true(Area.Shell)
+  assert_true(checkValue)
+end
+
 local function test_dialog()
   test_dialog_1()
+  test_dialog_issue_28()
 end
 
 local function test_one_guid(val, func, keys, numEsc)
