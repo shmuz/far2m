@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.0.2)
+cmake_minimum_required (VERSION 3.5)
 
 # Make TOOLS folder overridable in command line when configuring build.
 # This will allow specifying host far2m tools location when doing cross-platform builds.
