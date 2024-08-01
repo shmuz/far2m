@@ -447,7 +447,6 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 					wi->TypeName = nullptr;
 					wi->Name = nullptr;
 					wi->NameSize = 0;
-					wi->TypeName = 0;
 				}
 
 				wi->Pos = FrameManager->IndexOfList(f);

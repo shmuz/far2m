@@ -91,7 +91,7 @@ void SingleFileMask::Reset()
 	Mask.Clear();
 }
 
-RegexMask::RegexMask(): BaseFileMask(false), re(nullptr), n(0)
+RegexMask::RegexMask(): BaseFileMask(false), re(nullptr), BrCount(0)
 {
 }
 
@@ -102,13 +102,13 @@ RegexMask::~RegexMask()
 
 bool RegexMask::IsEmpty() const
 {
-	return re ? !n : true;
+	return !re || !BrCount;
 }
 
 void RegexMask::Reset()
 {
 	re.reset();
-	n = 0;
+	BrCount = 0;
 }
 
 bool RegexMask::Set(const wchar_t *masks, DWORD Flags)
@@ -120,7 +120,7 @@ bool RegexMask::Set(const wchar_t *masks, DWORD Flags)
 		re.reset(new(std::nothrow) RegExp);
 		if (re && re->Compile(masks, OP_PERLSTYLE|OP_OPTIMIZE))
 		{
-			n = re->GetBracketsCount();
+			BrCount = re->GetBracketsCount();
 			return true;
 		}
 	}
@@ -129,15 +129,12 @@ bool RegexMask::Set(const wchar_t *masks, DWORD Flags)
 	return false;
 }
 
-/* сравнить имя файла со списком масок
-   Возвращает TRUE в случае успеха.
-   Путь к файлу в FileName НЕ игнорируется */
 bool RegexMask::Compare(const wchar_t *FileName) const
 {
 	if (re)
 	{
-		StackHeapArray<RegExpMatch> m(n);
-		int i = n;
+		StackHeapArray<RegExpMatch> m(BrCount);
+		int i = BrCount;
 		return re->Search(ReStringView(FileName), m.Get(), i);
 	}
 

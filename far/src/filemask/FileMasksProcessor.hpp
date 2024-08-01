@@ -50,13 +50,13 @@ class SingleFileMask : public BaseFileMask
 {
 	public:
 		SingleFileMask(bool aCaseSens) : BaseFileMask(aCaseSens) {}
-		virtual ~SingleFileMask() {}
+		~SingleFileMask() override {}
 
 	public:
-		virtual bool Set(const wchar_t *Masks, DWORD Flags);
-		virtual bool Compare(const wchar_t *Name) const;
-		virtual bool IsEmpty() const;
-		virtual void Reset();
+		bool Set(const wchar_t *Masks, DWORD Flags) override;
+		bool Compare(const wchar_t *Name) const override;
+		bool IsEmpty() const override;
+		void Reset() override;
 
 	private:
 		FARString Mask;
@@ -66,32 +66,30 @@ class RegexMask : public BaseFileMask
 {
 	public:
 		RegexMask();
-		virtual ~RegexMask();
+		~RegexMask() override;
 
 	public:
-		virtual bool Set(const wchar_t *Masks, DWORD Flags);
-		virtual bool Compare(const wchar_t *Name) const;
-		virtual bool IsEmpty() const;
-		virtual void Reset();
+		bool Set(const wchar_t *Masks, DWORD Flags) override;
+		bool Compare(const wchar_t *Name) const override;
+		bool IsEmpty() const override;
+		void Reset() override;
 
 	private:
 		std::unique_ptr<RegExp> re;
-		int n = 0;
+		int BrCount = 0;
 };
-
-class KeyFileReadSection;
 
 class FileMasksProcessor : public BaseFileMask
 {
 	public:
 		FileMasksProcessor(bool aCaseSens);
-		virtual ~FileMasksProcessor();
+		~FileMasksProcessor() override;
 
 	public:
-		virtual bool Set(const wchar_t *Masks, DWORD Flags);
-		virtual bool Compare(const wchar_t *Name) const;
-		virtual bool IsEmpty() const;
-		virtual void Reset();
+		bool Set(const wchar_t *Masks, DWORD Flags) override;
+		bool Compare(const wchar_t *Name) const override;
+		bool IsEmpty() const override;
+		void Reset() override;
 
 	private:
 		std::vector<BaseFileMask*> IncludeMasks;
