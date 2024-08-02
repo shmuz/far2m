@@ -41,11 +41,10 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define EXCLUDEMASKSEPARATOR (L'|')
 
-enum FMP_FLAGS
+enum FM_FLAGS
 {
-	FMPF_ADDASTERISK = 0x00000001 // Добавлять '*', если маска не содержит
-	// ни одного из следующих
-	// символов: '*', '?', '.'
+	FMF_SILENT      = 0x00000001,
+	FMF_ADDASTERISK = 0x00000002, // Добавлять '*', если маска не содержит ни одного из символов: '*', '?', '.'
 };
 
 class BaseFileMask : private NonCopyable

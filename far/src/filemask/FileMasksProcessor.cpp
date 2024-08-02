@@ -211,7 +211,7 @@ bool FileMasksProcessor::Set(const wchar_t *masks, DWORD Flags)
 		}
 
 		if (rc)
-			rc = SetPart(*pInclude ? pInclude:L"*", Flags&FMPF_ADDASTERISK, IncludeMasks);
+			rc = SetPart(*pInclude ? pInclude : L"*", Flags & FMF_ADDASTERISK, IncludeMasks);
 
 		if (rc && pExclude)
 			rc = SetPart(pExclude, 0, ExcludeMasks);
@@ -233,10 +233,10 @@ bool FileMasksProcessor::Set(const wchar_t *masks, DWORD Flags)
 bool FileMasksProcessor::SetPart(const wchar_t *masks, DWORD Flags, std::vector<BaseFileMask*> &Target)
 {
 	// разделителем масок является не только запятая, но и точка с запятой!
-	DWORD flags=ULF_PACKASTERISKS|ULF_PROCESSBRACKETS|ULF_PROCESSREGEXP;
+	DWORD flags = ULF_PACKASTERISKS | ULF_PROCESSBRACKETS | ULF_PROCESSREGEXP;
 
-	if (Flags&FMPF_ADDASTERISK)
-		flags|=ULF_ADDASTERISK;
+	if (Flags & FMF_ADDASTERISK)
+		flags |= ULF_ADDASTERISK;
 
 	UserDefinedList UdList(flags);
 

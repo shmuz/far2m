@@ -72,8 +72,7 @@ bool CFileMask::Set(const wchar_t *Masks, DWORD Flags)
 
 		if (FileMask)
 		{
-			DWORD flags = (Flags & FMF_ADDASTERISK) ? FMPF_ADDASTERISK : 0;
-			Result=FileMask->Set(strMask, flags);
+			Result = FileMask->Set(strMask, Flags & FMF_ADDASTERISK);
 		}
 
 		if (!Result)

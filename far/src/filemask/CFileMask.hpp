@@ -36,12 +36,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FileMasksProcessor.hpp"
 #include "noncopyable.hpp"
 
-enum FM_FLAGS
-{
-	FMF_SILENT        = 0x00000001,
-	FMF_ADDASTERISK   = 0x00000004
-};
-
 class CFileMask : private NonCopyable
 {
 	private:
