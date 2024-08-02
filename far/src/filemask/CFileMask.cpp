@@ -68,13 +68,12 @@ bool CFileMask::Set(const wchar_t *Masks, DWORD Flags)
 
 	if (!strMask.IsEmpty())
 	{
-		Masks = strMask.CPtr();
 		FileMask=new(std::nothrow) FileMasksProcessor(CaseSens);
 
 		if (FileMask)
 		{
 			DWORD flags = (Flags & FMF_ADDASTERISK) ? FMPF_ADDASTERISK : 0;
-			Result=FileMask->Set(Masks, flags);
+			Result=FileMask->Set(strMask, flags);
 		}
 
 		if (!Result)

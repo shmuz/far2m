@@ -35,15 +35,33 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <vector>
-#include "BaseFileMask.hpp"
+#include "noncopyable.hpp"
 #include "RegExp.hpp"
 #include "FARString.hpp"
+
+#define EXCLUDEMASKSEPARATOR (L'|')
 
 enum FMP_FLAGS
 {
 	FMPF_ADDASTERISK = 0x00000001 // Добавлять '*', если маска не содержит
 	// ни одного из следующих
 	// символов: '*', '?', '.'
+};
+
+class BaseFileMask : private NonCopyable
+{
+	protected:
+		bool CaseSens;
+
+	public:
+		BaseFileMask(bool aCaseSens) : CaseSens(aCaseSens) {}
+		virtual ~BaseFileMask() {}
+
+	public:
+		virtual bool Set(const wchar_t *Masks, DWORD Flags) = 0;
+		virtual bool Compare(const wchar_t *Name) const = 0;
+		virtual bool IsEmpty() const = 0;
+		virtual void Reset() = 0;
 };
 
 class SingleFileMask : public BaseFileMask
