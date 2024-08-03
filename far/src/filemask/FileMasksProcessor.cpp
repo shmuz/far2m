@@ -36,7 +36,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FileMasksProcessor.hpp"
 #include "processname.hpp"
-#include "StackHeapArray.hpp"
 #include "udlist.hpp"
 #include "MaskGroups.hpp"
 
@@ -86,19 +85,13 @@ void SingleFileMask::Reset()
 	Mask.Clear();
 }
 
-RegexMask::RegexMask(): BaseFileMask(), re(nullptr), BrCount(0)
+RegexMask::RegexMask(): BaseFileMask(), re(nullptr)
 {
-}
-
-RegexMask::~RegexMask()
-{
-	re.reset();
 }
 
 void RegexMask::Reset()
 {
 	re.reset();
-	BrCount = 0;
 }
 
 bool RegexMask::Set(const wchar_t *masks, DWORD Flags)
@@ -110,12 +103,11 @@ bool RegexMask::Set(const wchar_t *masks, DWORD Flags)
 		re.reset(new(std::nothrow) RegExp);
 		if (re && re->Compile(masks, OP_PERLSTYLE|OP_OPTIMIZE))
 		{
-			BrCount = re->GetBracketsCount();
 			return true;
 		}
+		Reset();
 	}
 
-	Reset();
 	return false;
 }
 
@@ -123,9 +115,9 @@ bool RegexMask::Compare(const wchar_t *FileName, bool CaseSens) const
 {
 	if (re)
 	{
-		StackHeapArray<RegExpMatch> m(BrCount);
-		int i = BrCount;
-		return re->Search(ReStringView(FileName), m.Get(), i);
+		RegExpMatch MatchData[1];
+		int BrCount = ARRAYSIZE(MatchData);
+		return re->Search(ReStringView(FileName), MatchData, BrCount);
 	}
 
 	return false;

@@ -78,7 +78,7 @@ class RegexMask : public BaseFileMask
 {
 	public:
 		RegexMask();
-		~RegexMask() override;
+		~RegexMask() override {}
 
 	public:
 		bool Set(const wchar_t *Masks, DWORD Flags) override;
@@ -87,7 +87,6 @@ class RegexMask : public BaseFileMask
 
 	private:
 		std::unique_ptr<RegExp> re;
-		int BrCount = 0;
 };
 
 class FileMasksProcessor : public BaseFileMask
