@@ -72,18 +72,13 @@ static wchar_t *FindExcludeChar(wchar_t *masks)
 
 bool SingleFileMask::Set(const wchar_t *Masks, DWORD Flags)
 {
-	Mask=Masks;
+	Mask = Masks;
 	return !Mask.IsEmpty();
 }
 
-bool SingleFileMask::Compare(const wchar_t *Name) const
+bool SingleFileMask::Compare(const wchar_t *Name, bool CaseSens) const
 {
 	return CmpName(Mask.CPtr(), Name, false, CaseSens);
-}
-
-bool SingleFileMask::IsEmpty() const
-{
-	return Mask.IsEmpty();
 }
 
 void SingleFileMask::Reset()
@@ -91,18 +86,13 @@ void SingleFileMask::Reset()
 	Mask.Clear();
 }
 
-RegexMask::RegexMask(): BaseFileMask(false), re(nullptr), BrCount(0)
+RegexMask::RegexMask(): BaseFileMask(), re(nullptr), BrCount(0)
 {
 }
 
 RegexMask::~RegexMask()
 {
 	re.reset();
-}
-
-bool RegexMask::IsEmpty() const
-{
-	return !re || !BrCount;
 }
 
 void RegexMask::Reset()
@@ -129,7 +119,7 @@ bool RegexMask::Set(const wchar_t *masks, DWORD Flags)
 	return false;
 }
 
-bool RegexMask::Compare(const wchar_t *FileName) const
+bool RegexMask::Compare(const wchar_t *FileName, bool CaseSens) const
 {
 	if (re)
 	{
@@ -141,19 +131,12 @@ bool RegexMask::Compare(const wchar_t *FileName) const
 	return false;
 }
 
-FileMasksProcessor::FileMasksProcessor(bool aCaseSens)
-	: BaseFileMask(aCaseSens), CallDepth(0)
+FileMasksProcessor::FileMasksProcessor() : BaseFileMask(), CallDepth(0)
 {
 }
 
-FileMasksProcessor::FileMasksProcessor(bool aCaseSens, int aCallDepth)
-	: BaseFileMask(aCaseSens), CallDepth(aCallDepth)
+FileMasksProcessor::FileMasksProcessor(int aCallDepth) : BaseFileMask(), CallDepth(aCallDepth)
 {
-}
-
-FileMasksProcessor::~FileMasksProcessor()
-{
-	Reset();
 }
 
 void FileMasksProcessor::Reset()
@@ -163,11 +146,6 @@ void FileMasksProcessor::Reset()
 
 	IncludeMasks.clear();
 	ExcludeMasks.clear();
-}
-
-bool FileMasksProcessor::IsEmpty() const
-{
-	return IncludeMasks.empty();
 }
 
 /*
@@ -259,7 +237,7 @@ bool FileMasksProcessor::SetPart(const wchar_t *masks, DWORD Flags, std::vector<
 					FARString strKey(pStart, pEnd-pStart);
 					if (GetMaskGroup(strKey, strMask))
 					{
-						baseMask = new(std::nothrow) FileMasksProcessor(CaseSens, CallDepth+1);
+						baseMask = new(std::nothrow) FileMasksProcessor(CallDepth + 1);
 						onemask = strMask.CPtr();
 					}
 				}
@@ -270,7 +248,7 @@ bool FileMasksProcessor::SetPart(const wchar_t *masks, DWORD Flags, std::vector<
 			}
 			else
 			{
-				baseMask = new(std::nothrow) SingleFileMask(CaseSens);
+				baseMask = new(std::nothrow) SingleFileMask();
 			}
 
 			if (baseMask && baseMask->Set(onemask,0))
@@ -293,15 +271,15 @@ bool FileMasksProcessor::SetPart(const wchar_t *masks, DWORD Flags, std::vector<
 /* сравнить имя файла со списком масок
    Возвращает TRUE в случае успеха.
    Путь к файлу в FileName НЕ игнорируется */
-bool FileMasksProcessor::Compare(const wchar_t *FileName) const
+bool FileMasksProcessor::Compare(const wchar_t *FileName, bool CaseSens) const
 {
 	for (auto I: IncludeMasks)
 	{
-		if (I->Compare(FileName))
+		if (I->Compare(FileName, CaseSens))
 		{
 			for (auto J: ExcludeMasks)
 			{
-				if (J->Compare(FileName))	return false;
+				if (J->Compare(FileName, CaseSens))	return false;
 			}
 			return true;
 		}

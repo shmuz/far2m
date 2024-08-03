@@ -2932,7 +2932,7 @@ int FarMacroApi::fmatchFunc()
 	CFileMask FileMask;
 
 	if (FileMask.Set(Mask.toString(), FMF_SILENT))
-		PassNumber(FileMask.Compare(S.toString()));
+		PassNumber(FileMask.Compare(S.toString(), false));
 	else
 		PassNumber(-1);
 	return 0;

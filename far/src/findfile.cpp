@@ -1385,7 +1385,7 @@ static void AnalyzeFileItem(HANDLE hDlg, PluginPanelItem *FileItem, const wchar_
 		return;
 	if ((FindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0 && !Opt.FindOpt.FindFolders)
 		return;
-	if (!FileMaskForFindFile.Compare(FileName))
+	if (!FileMaskForFindFile.Compare(FileName, false))
 		return;
 
 	size_t ArcIndex = itd.GetFindFileArcIndex();
@@ -3127,7 +3127,6 @@ FindFiles::FindFiles()
 
 FindFiles::~FindFiles()
 {
-	FileMaskForFindFile.Reset();
 	itd.ClearAllLists();
 	ScrBuf.ResetShadow();
 

@@ -3492,7 +3492,7 @@ enum
 
 long FileList::SelectFiles(int Mode,const wchar_t *Mask)
 {
-	CFileMask FileMask(Opt.PanelCaseSensitiveCompareSelect);
+	CFileMask FileMask;
 	const wchar_t *HistoryName=L"Masks";
 	DialogDataEx SelectDlgData[]=
 	{
@@ -3603,7 +3603,6 @@ long FileList::SelectFiles(int Mode,const wchar_t *Mask)
 						strMask = SelectDlg[SELFILES_MASK].strData;
 
 						Opt.PanelCaseSensitiveCompareSelect = SelectDlg[SELFILES_CASESENS].Selected == BSTATE_CHECKED;
-						FileMask.SetCaseSensitive(Opt.PanelCaseSensitiveCompareSelect);
 
 						if (FileMask.Set(strMask, 0)) // Проверим вводимые пользователем маски на ошибки
 						{
@@ -3663,7 +3662,7 @@ long FileList::SelectFiles(int Mode,const wchar_t *Mask)
 				if (bUseFilter)
 					Match=Filter.FileInFilter(*CurPtr);
 				else
-					Match=FileMask.Compare(CurPtr->strName, false);
+					Match=FileMask.Compare(CurPtr->strName, Opt.PanelCaseSensitiveCompareSelect, false);
 			}
 
 			if (Match)

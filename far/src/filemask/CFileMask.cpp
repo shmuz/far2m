@@ -40,17 +40,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pathmix.hpp"
 #include "strmix.hpp"
 
-CFileMask::CFileMask(bool aCaseSens):
-	FileMask(nullptr), CaseSens(aCaseSens)
-{
-}
-
-void CFileMask::Reset()
-{
-	delete FileMask;
-	FileMask=nullptr;
-}
-
 /*
  Инициализирует список масок. Принимает список, разделенных запятой или точкой
  с запятой. Разрешается указывать маски исключения, отделив их от основных
@@ -59,42 +48,29 @@ void CFileMask::Reset()
 */
 bool CFileMask::Set(const wchar_t *Masks, DWORD Flags)
 {
-	Reset();
-	bool Result=false;
-	int Silent=Flags & FMF_SILENT;
+	int Silent = Flags & FMF_SILENT;
 
 	FARString strMask(Masks);
 	RemoveTrailingSpaces(strMask);
+	FileMask.Reset();
 
-	if (!strMask.IsEmpty())
+	bool Result = !strMask.IsEmpty() && FileMask.Set(strMask, Flags & FMF_ADDASTERISK);
+
+	if (!Result)
 	{
-		FileMask=new(std::nothrow) FileMasksProcessor(CaseSens);
+		FileMask.Reset();
 
-		if (FileMask)
-		{
-			Result = FileMask->Set(strMask, Flags & FMF_ADDASTERISK);
-		}
-
-		if (!Result)
-			Reset();
+		if (!Silent)
+			Message(MSG_WARNING,1,Msg::Warning,Msg::IncorrectMask, Msg::Ok);
 	}
 
-	if (!Silent && !Result)
-		Message(MSG_WARNING,1,Msg::Warning,Msg::IncorrectMask, Msg::Ok);
-
 	return Result;
-}
-
-// Возвращает TRUE, если список масок пустой
-bool CFileMask::IsEmpty()const
-{
-	return FileMask?FileMask->IsEmpty():true;
 }
 
 /* сравнить имя файла со списком масок
    Возвращает TRUE в случае успеха.
 */
-bool CFileMask::Compare(const wchar_t *FileName, bool SkipPath) const
+bool CFileMask::Compare(const wchar_t *FileName, bool CaseSens, bool SkipPath) const
 {
-	return FileMask ? FileMask->Compare(SkipPath ? PointToName(FileName):FileName) : false;
+	return FileMask.Compare(SkipPath ? PointToName(FileName):FileName, CaseSens);
 }

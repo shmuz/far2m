@@ -49,30 +49,25 @@ enum FM_FLAGS
 
 class BaseFileMask : private NonCopyable
 {
-	protected:
-		bool CaseSens;
-
 	public:
-		BaseFileMask(bool aCaseSens) : CaseSens(aCaseSens) {}
+		BaseFileMask() {}
 		virtual ~BaseFileMask() {}
 
 	public:
 		virtual bool Set(const wchar_t *Masks, DWORD Flags) = 0;
-		virtual bool Compare(const wchar_t *Name) const = 0;
-		virtual bool IsEmpty() const = 0;
+		virtual bool Compare(const wchar_t *Name, bool CaseSens) const = 0;
 		virtual void Reset() = 0;
 };
 
 class SingleFileMask : public BaseFileMask
 {
 	public:
-		SingleFileMask(bool aCaseSens) : BaseFileMask(aCaseSens) {}
+		SingleFileMask() : BaseFileMask() {}
 		~SingleFileMask() override {}
 
 	public:
 		bool Set(const wchar_t *Masks, DWORD Flags) override;
-		bool Compare(const wchar_t *Name) const override;
-		bool IsEmpty() const override;
+		bool Compare(const wchar_t *Name, bool CaseSens) const override;
 		void Reset() override;
 
 	private:
@@ -87,8 +82,7 @@ class RegexMask : public BaseFileMask
 
 	public:
 		bool Set(const wchar_t *Masks, DWORD Flags) override;
-		bool Compare(const wchar_t *Name) const override;
-		bool IsEmpty() const override;
+		bool Compare(const wchar_t *Name, bool CaseSens) const override;
 		void Reset() override;
 
 	private:
@@ -99,13 +93,12 @@ class RegexMask : public BaseFileMask
 class FileMasksProcessor : public BaseFileMask
 {
 	public:
-		FileMasksProcessor(bool aCaseSens);
-		~FileMasksProcessor() override;
+		FileMasksProcessor();
+		~FileMasksProcessor() override {}
 
 	public:
 		bool Set(const wchar_t *Masks, DWORD Flags) override;
-		bool Compare(const wchar_t *Name) const override;
-		bool IsEmpty() const override;
+		bool Compare(const wchar_t *Name, bool CaseSens) const override;
 		void Reset() override;
 
 	private:
@@ -114,7 +107,7 @@ class FileMasksProcessor : public BaseFileMask
 		const int CallDepth;
 
 	private:
-		FileMasksProcessor(bool aCaseSens, int aCallDepth);
+		FileMasksProcessor(int aCallDepth);
 		bool SetPart(const wchar_t *Masks, DWORD Flags, std::vector<BaseFileMask*>& Target);
 };
 

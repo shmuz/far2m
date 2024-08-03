@@ -39,18 +39,13 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class CFileMask : private NonCopyable
 {
 	private:
-		FileMasksProcessor *FileMask;
-		bool CaseSens;
+		FileMasksProcessor FileMask;
 
 	public:
-		CFileMask(bool aCaseSens=false);
-		~CFileMask() { Reset(); }
+		CFileMask() {}
+		~CFileMask() {}
 
 	public:
 		bool Set(const wchar_t *Masks, DWORD Flags);
-		bool Compare(const wchar_t *Name, bool SkipPath=true) const;
-		bool IsEmpty()const;
-		void Reset();
-		void SetCaseSensitive(bool cs) { CaseSens = cs; }
-
+		bool Compare(const wchar_t *Name, bool CaseSens, bool SkipPath=true) const;
 };

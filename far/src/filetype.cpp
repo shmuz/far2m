@@ -100,7 +100,7 @@ static int GetDescriptionWidth(ConfigReader &cfg_reader, const wchar_t *Name=nul
 		}
 		else
 		{
-			if (!FMask.Compare(Name))
+			if (!FMask.Compare(Name, false))
 				continue;
 
 			FARString strExpandedDesc = strDescription;
@@ -158,7 +158,7 @@ bool ProcessLocalFileTypes(const wchar_t *Name, int Mode, bool CanAddHistory, FA
 
 		if (FMask.Set(strMask, FMF_SILENT))
 		{
-			if (FMask.Compare(Name))
+			if (FMask.Compare(Name, false))
 			{
 				LPCSTR Type = nullptr;
 

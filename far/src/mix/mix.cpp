@@ -102,7 +102,7 @@ void WINAPI FarRecursiveSearch(const wchar_t *InitDir,const wchar_t *Mask,FRSUSE
 
 		while (ScTree.GetNextName(&FindData,strFullName))
 		{
-			if (FMask.Compare(FindData.strFileName))
+			if (FMask.Compare(FindData.strFileName, false))
 			{
 				FAR_FIND_DATA fdata;
 				apiFindDataExToData(&FindData, &fdata);
