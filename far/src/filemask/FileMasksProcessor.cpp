@@ -85,7 +85,7 @@ void SingleFileMask::Reset()
 	Mask.Clear();
 }
 
-RegexMask::RegexMask(): BaseFileMask(), re(nullptr)
+RegexMask::RegexMask() : re(nullptr)
 {
 }
 
@@ -123,11 +123,11 @@ bool RegexMask::Compare(const wchar_t *FileName, bool CaseSens) const
 	return false;
 }
 
-FileMasksProcessor::FileMasksProcessor() : BaseFileMask(), CallDepth(0)
+FileMasksProcessor::FileMasksProcessor() : CallDepth(0)
 {
 }
 
-FileMasksProcessor::FileMasksProcessor(int aCallDepth) : BaseFileMask(), CallDepth(aCallDepth)
+FileMasksProcessor::FileMasksProcessor(int aCallDepth) : CallDepth(aCallDepth)
 {
 }
 
@@ -196,13 +196,12 @@ bool FileMasksProcessor::Set(const wchar_t *masks, DWORD Flags)
 }
 
 /*
- Инициализирует список масок. Принимает список, разделенных запятой.
- Возвращает FALSE при неудаче (например, одна из
- длина одной из масок равна 0)
+ Компилирует список масок.
+ Принимает список масок, разделенных запятой или точкой с запятой.
+ Возвращает FALSE при неудаче (например, длина одной из масок равна 0).
 */
 bool FileMasksProcessor::SetPart(const wchar_t *masks, DWORD Flags, std::vector<BaseFileMask*> &Target)
 {
-	// разделителем масок является не только запятая, но и точка с запятой!
 	DWORD flags = ULF_PACKASTERISKS | ULF_PROCESSBRACKETS | ULF_PROCESSREGEXP;
 
 	if (Flags & FMF_ADDASTERISK)
@@ -219,10 +218,9 @@ bool FileMasksProcessor::SetPart(const wchar_t *masks, DWORD Flags, std::vector<
 		{
 			BaseFileMask *baseMask = nullptr;
 
-			auto pStart=onemask;
-
-			if (*pStart == L'<')
+			if (*onemask == L'<')
 			{
+				auto pStart = onemask;
 				auto pEnd = wcschr(++pStart, L'>');
 				if (pEnd && pEnd!=pStart && pEnd[1]==0)
 				{
@@ -234,13 +232,13 @@ bool FileMasksProcessor::SetPart(const wchar_t *masks, DWORD Flags, std::vector<
 					}
 				}
 			}
-			else if (*onemask == L'/')
+
+			if (!baseMask)
 			{
-				baseMask = new(std::nothrow) RegexMask;
-			}
-			else
-			{
-				baseMask = new(std::nothrow) SingleFileMask();
+				if (*onemask == L'/')
+					baseMask = new(std::nothrow) RegexMask;
+				else
+					baseMask = new(std::nothrow) SingleFileMask();
 			}
 
 			if (baseMask && baseMask->Set(onemask,0))
