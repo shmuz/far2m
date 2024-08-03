@@ -94,7 +94,7 @@ class FileMasksProcessor : public BaseFileMask
 {
 	public:
 		FileMasksProcessor();
-		~FileMasksProcessor() override {}
+		~FileMasksProcessor() override { Reset(); }
 
 	public:
 		bool Set(const wchar_t *Masks, DWORD Flags) override;
