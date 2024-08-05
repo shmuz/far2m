@@ -54,6 +54,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "scrbuf.hpp"
 #include "usermenu.hpp"
 
+extern Panel* SelectPanel(int Type);
+
 static long long msValues[constMsLAST];
 
 int Log(const char* Format, ...)
@@ -159,20 +161,6 @@ void ShowUserMenu(size_t Count, const FarMacroValue *Values)
 		UserMenu(Values[0].Boolean != 0);
 	else if (Values[0].Type == FMVT_STRING)
 		UserMenu(FARString(Values[0].String));
-}
-
-static Panel* SelectPanel(int Type)
-{
-	if (CtrlObject && CtrlObject->Cp()) {
-		Panel* ActivePanel = CtrlObject->Cp()->ActivePanel;
-		if (ActivePanel) {
-			switch(Type) {
-				case 0: return ActivePanel;
-				case 1: return CtrlObject->Cp()->GetAnotherPanel(ActivePanel);
-			}
-		}
-	}
-	return nullptr;
 }
 
 static const wchar_t* GetMacroLanguage(DWORD Flags)
