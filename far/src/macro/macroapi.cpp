@@ -3119,5 +3119,6 @@ int FarMacroApi::fargetinfoFunc()
 	PassString(Opt.strLanguage);
 	PassString(Opt.strHelpLanguage);
 	PassNumber(WINPORT(GetConsoleColorPalette)(NULL));
+	PassString(WinPortBackend());
 	return 0;
 }
