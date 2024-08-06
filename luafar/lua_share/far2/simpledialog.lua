@@ -36,14 +36,18 @@ function mod.OpenInEditor(text, ext)
   if OpSys == "windows" then
     tempdir = win.GetEnv("TEMP")
     if not tempdir then
-      far.Message("Environment variable TEMP is not set", "Error", nil, "w"); return nil
+      far.Message("Environment variable TEMP is not set", "Error", nil, "w")
+      return nil
     end
   else
     tempdir = far.InMyTemp()
   end
+  if tempdir:sub(-1) ~= DirSep then tempdir = tempdir..DirSep end
+
   ext = type(ext)=="string" and ext or ".tmp"
   if ext~="" and ext:sub(1,1)~="." then ext = "."..ext; end
-  local fname = ("%s%sFar-%s%s"):format(tempdir, DirSep, win.Uuid(win.Uuid()):sub(1,8), ext)
+
+  local fname = ("%sFar-%s%s"):format(tempdir, win.Uuid(win.Uuid()):sub(1,8), ext)
   local fp = io.open(fname, "wb")
   if fp then
     fp:write(text or "")
