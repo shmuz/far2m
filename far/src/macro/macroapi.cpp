@@ -3114,11 +3114,22 @@ int FarMacroApi::UDList_Split()
 
 int FarMacroApi::fargetinfoFunc()
 {
+	wchar_t buf[64];
+
 	PassString(FAR_BUILD);
 	PassString(FAR_PLATFORM);
 	PassString(Opt.strLanguage);
 	PassString(Opt.strHelpLanguage);
 	PassNumber(WINPORT(GetConsoleColorPalette)(NULL));
 	PassString(WinPortBackend());
+
+#if defined (__GNUC__)
+	swprintf(buf, ARRAYSIZE(buf), L"GCC, version %d.%d.%d", __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__);
+	PassString(buf);
+#elif defined (__clang__)
+	swprintf(buf, ARRAYSIZE(buf), L"Clang, version %d.%d.%d", __clang_major__, __clang_minor__, __clang_patchlevel__);
+	PassString(buf);
+#endif
+
 	return 0;
 }

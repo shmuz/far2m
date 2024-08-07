@@ -25,6 +25,9 @@ local function FarAbout()
   local un = win.uname()
 
   Add("FAR2M version",         Inf.Build)
+  if Inf.Compiler then
+    Add("  Compiler", Inf.Compiler)
+  end
   Add("  Platform",            Inf.Platform)
   Add("  Backend",             Inf.WinPortBackEnd)
   Add("  ConsoleColorPalette", Inf.ConsoleColorPalette)

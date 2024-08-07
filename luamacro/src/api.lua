@@ -556,7 +556,7 @@ SetProperties(Far, {
 })
 
 Far.GetInfo = function()
-  local a1,a2,a3,a4,a5,a6 = MacroCallFar(mc.MCODE_FAR_GETINFO)
+  local a1,a2,a3,a4,a5,a6,a7 = MacroCallFar(mc.MCODE_FAR_GETINFO)
   return {
     Build               = a1;
     Platform            = a2;
@@ -564,6 +564,7 @@ Far.GetInfo = function()
     HelpLang            = a4;
     ConsoleColorPalette = a5;
     WinPortBackEnd      = a6;
+    Compiler            = a7;
   }
 end
 --------------------------------------------------------------------------------
