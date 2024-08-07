@@ -4095,6 +4095,14 @@ adatbázisából kiolvasott leírásaikkal együtt:
 <!Macro:Common!>
 <!Macro:Viewer!>
 
+@FarAbout
+$ #About FAR#
+ Starts with the command #lm:farabout#
+
+ Displays various information about Far Manager, its plugins and system environment.
+
+ #Ctrl+C# copies the information to the clipboard.
+
 @FarConfig
 $ #Configuration editor#
  Starts with the command #lm:farconfig#

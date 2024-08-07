@@ -1,7 +1,7 @@
 -- started: 2024-07-23
 
 local function FarAbout()
-  local Props = { Title="About far2m"; Bottom="CtrlC: Copy"; }
+  local Props = { Title="About far2m"; Bottom="CtrlC: Copy"; HelpTopic=":FarAbout"; }
   local Items, Bkeys = {}, { {BreakKey="CtrlC"} }
   local Array = {}
 
