@@ -45,6 +45,8 @@ local function FarAbout()
   Add("COLORTERM",        os.getenv("COLORTERM"), true)
   Add("GDK_BACKEND",      os.getenv("GDK_BACKEND"), true)
   Add("DESKTOP_SESSION",  os.getenv("DESKTOP_SESSION"), true)
+  Add("WAYLAND_DISPLAY",  os.getenv("WAYLAND_DISPLAY"), true)
+  Add("WSL_DISTRO_NAME",  os.getenv("WSL_DISTRO_NAME"), true)
 
   local plugs = far.GetPlugins()
   Add()
