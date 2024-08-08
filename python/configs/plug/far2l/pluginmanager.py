@@ -38,7 +38,14 @@ def handle_exception(exc_type, exc_value, exc_traceback):
     log.error("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
 
 
-sys.excepthook = handle_exception
+def handle_error(func):
+    def __inner(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception:
+            exc_type, exc_value, exc_tb = sys.exc_info()
+            handle_exception(exc_type, exc_value, exc_tb)
+    return __inner
 
 from .plugin import PluginBase
 
@@ -58,12 +65,22 @@ class PluginManager:
         self.openplugins = {}
         self.plugins = []
 
+    @handle_error
     def SetStartupInfo(self, Info):
         log.debug("SetStartupInfo({0:08X})".format(Info))
         self.info = ffi.cast("struct PluginStartupInfo *", Info)
         self.ffi = ffi
         self.ffic = ffic
+        fname = os.path.join(USERHOME, "plugins.ini")
+        if os.path.isfile(fname):
+            with open(fname, "rt") as fp:
+                ini = configparser.ConfigParser()
+                ini.read_file(fp)
+                if ini.has_section('autoload'):
+                    for name in ini.options('autoload'):
+                        self.pluginInstall(name)
 
+    @handle_error
     def pluginRemove(self, name):
         log.debug("remove plugin: {0}".format(name))
         for i in range(len(self.plugins)):
@@ -75,6 +92,7 @@ class PluginManager:
                 return
         log.error("install plugin: {0} - not installed".format(name))
 
+    @handle_error
     def pluginInstall(self, name):
         log.debug("install plugin: {0}".format(name))
         for i in range(len(self.plugins)):
@@ -112,6 +130,7 @@ class PluginManager:
             log.error("unhandled pluginGet{0}".format(hPlugin))
         return v
 
+    @handle_error
     def pluginGetFrom(self, OpenFrom, Item):
         id2name = {
             ffic.OPEN_DISKMENU: "DISKMENU",
@@ -125,17 +144,20 @@ class PluginManager:
         }
         name = id2name[OpenFrom]
         log.debug("pluginGetFrom({0} ({1}), {2})".format(OpenFrom, name, Item))
-        for plugin in self.plugins:
-            openFrom = plugin.Plugin.openFrom
-            log.debug(
-                "pluginGetFrom(openok={0}, no={1} : {2})".format(
-                    name in openFrom, Item, plugin.Plugin.name
+        if OpenFrom in [ffic.OPEN_DISKMENU, ffic.OPEN_FINDLIST]:
+            for plugin in self.plugins:
+                openFrom = plugin.Plugin.openFrom
+                log.debug(
+                    "pluginGetFrom(openok={0}, no={1} : {2})".format(
+                        name in openFrom, Item, plugin.Plugin.name
+                    )
                 )
-            )
-            if name in openFrom:
-                if not Item:
-                    return plugin
-                Item -= 1
+                if name in openFrom:
+                    if not Item:
+                        return plugin
+                    Item -= 1
+        elif Item < len(self.plugins):
+            return self.plugins[Item]
         return None
 
     def s2f(self, s):
@@ -170,14 +192,17 @@ class PluginManager:
         )
 
     # manager API
+    @handle_error
     def ExitFAR(self):
         log.debug("ExitFAR()")
         for hplugin, plugin in self.openplugins.items():
             plugin.ExitFAR()
 
+    @handle_error
     def GetMinFarVersion(self):
         log.debug("GetMinFarVersion()")
 
+    @handle_error
     def GetPluginInfo(self, Info):
         # log.debug("GetPluginInfo({0:08X})".format(Info))
         Info = self.ffi.cast("struct PluginInfo *", Info)
@@ -206,6 +231,7 @@ class PluginManager:
         self._commandprefix = self.s2f("py")
         Info.CommandPrefix = self._commandprefix
 
+    @handle_error
     def OpenPlugin(self, OpenFrom, Item):
         log.debug("OpenPlugin({0}, {1})".format(OpenFrom, Item))
         if OpenFrom == self.ffic.OPEN_COMMANDLINE:
@@ -256,6 +282,7 @@ class PluginManager:
             rc = None
         return rc
 
+    @handle_error
     def ClosePlugin(self, hPlugin):
         # log.debug("ClosePlugin %08X" % hPlugin)
         plugin = self.openplugins.get(hPlugin, None)
@@ -263,6 +290,7 @@ class PluginManager:
             plugin.Close()
             del self.openplugins[hPlugin]
 
+    @handle_error
     def OpenFilePlugin(self, Name, Data, DataSize, OpMode):
         log.debug(
             "OpenFilePlugin({0}, {1}, {2}, {3})".format(Name, Data, DataSize, OpMode)
@@ -276,6 +304,7 @@ class PluginManager:
                 break
         return rc
 
+    @handle_error
     def ProcessDialogEvent(self, Event, Param):
         for plugin in self.plugins:
             rc = plugin.Plugin.ProcessDialogEvent(self, self.info, ffi, ffic, Event, Param)
@@ -283,6 +312,7 @@ class PluginManager:
                 return rc
         return 0
 
+    @handle_error
     def ProcessEditorEvent(self, Event, Param):
         for plugin in self.plugins:
             rc = plugin.Plugin.ProcessEditorEvent(self, self.info, ffi, ffic, Event, Param)
@@ -290,6 +320,7 @@ class PluginManager:
                 return rc
         return 0
 
+    @handle_error
     def ProcessEditorInput(self, Rec):
         for plugin in self.plugins:
             rc = plugin.Plugin.ProcessEditorInput(self, self.info, ffi, ffic, Rec)
@@ -297,6 +328,7 @@ class PluginManager:
                 return rc
         return 0
 
+    @handle_error
     def ProcessSynchroEvent(self, Event, Param):
         for plugin in self.plugins:
             rc = plugin.Plugin.ProcessSynchroEvent(self, self.info, ffi, ffic, Event, Param)
@@ -304,6 +336,7 @@ class PluginManager:
                 return rc
         return 0
 
+    @handle_error
     def ProcessViewerEvent(self, Event, Param):
         for plugin in self.plugins:
             rc = plugin.Plugin.ProcessViewerEvent(self, self.info, ffi, ffic, Event, Param)
@@ -312,10 +345,12 @@ class PluginManager:
         return 0
 
     # common plugin functions
+    @handle_error
     def GetOpenPluginInfo(self, hPlugin, OpenInfo):
         plugin = self.pluginGet(hPlugin)
         return plugin.GetOpenPluginInfo(OpenInfo)
 
+    @handle_error
     def Configure(self, ItemNumber):
         log.debug("Configure({0})".format(ItemNumber))
         for plugin in self.plugins:
@@ -326,65 +361,80 @@ class PluginManager:
                     return
                 ItemNumber -= 1
 
+    @handle_error
     def ProcessEvent(self, hPlugin, Event, Param):
         # log.debug("ProcessEvent({0}, {1}, {2})".format(hPlugin, Event, Param))
         plugin = self.pluginGet(hPlugin)
         return plugin.ProcessEvent(Event, Param)
 
+    @handle_error
     def ProcessKey(self, hPlugin, Key, ControlState):
         # log.debug("ProcessKey({0}, {1}, {2})".format(hPlugin, Key, ControlState))
         plugin = self.pluginGet(hPlugin)
         return plugin.ProcessKey(Key, ControlState)
 
     # VFS functions
+    @handle_error
     def Compare(self, hPlugin, PanelItem1, PanelItem2, Mode):
         plugin = self.pluginGet(hPlugin)
         return plugin.Compare(PanelItem1, PanelItem2, Mode)
 
+    @handle_error
     def DeleteFiles(self, hPlugin, PanelItem, ItemsNumber, OpMode):
         plugin = self.pluginGet(hPlugin)
         return plugin.DeleteFiles(PanelItem, ItemsNumber, OpMode)
 
+    @handle_error
     def FreeFindData(self, hPlugin, PanelItem, ItemsNumber):
         plugin = self.pluginGet(hPlugin)
         return plugin.FreeFindData(PanelItem, ItemsNumber)
 
+    @handle_error
     def FreeVirtualFindData(self, hPlugin, PanelItem, ItemsNumber):
         plugin = self.pluginGet(hPlugin)
         return plugin.FreeVirtualFindData(PanelItem, ItemsNumber)
 
+    @handle_error
     def GetFiles(self, hPlugin, PanelItem, ItemsNumber, Move, DestPath, OpMode):
         plugin = self.pluginGet(hPlugin)
         return plugin.GetFiles(PanelItem, ItemsNumber, Move, DestPath, OpMode)
 
+    @handle_error
     def GetFindData(self, hPlugin, PanelItem, ItemsNumber, OpMode):
         plugin = self.pluginGet(hPlugin)
         return plugin.GetFindData(PanelItem, ItemsNumber, OpMode)
 
+    @handle_error
     def GetVirtualFindData(self, hPlugin, PanelItem, ItemsNumber, Path):
         plugin = self.pluginGet(hPlugin)
         return plugin.GetVirtualFindData(PanelItem, ItemsNumber, Path)
 
+    @handle_error
     def MakeDirectory(self, hPlugin, Name, OpMode):
         plugin = self.pluginGet(hPlugin)
         return plugin.MakeDirectory(Name, OpMode)
 
+    @handle_error
     def ProcessHostFile(self, hPlugin, PanelItem, ItemsNumber, OpMode):
         plugin = self.pluginGet(hPlugin)
         return plugin.ProcessHostFile(PanelItem, ItemsNumber, OpMode)
 
+    @handle_error
     def PutFiles(self, hPlugin, PanelItem, ItemsNumber, Move, SrcPath, OpMode):
         plugin = self.pluginGet(hPlugin)
         return plugin.PutFiles(PanelItem, ItemsNumber, Move, SrcPath, OpMode)
 
+    @handle_error
     def SetDirectory(self, hPlugin, Dir, OpMode):
         plugin = self.pluginGet(hPlugin)
         return plugin.SetDirectory(Dir, OpMode)
 
+    @handle_error
     def SetFindList(self, hPlugin, PanelItem, ItemsNumber):
         plugin = self.pluginGet(hPlugin)
         return plugin.SetFindList(PanelItem, ItemsNumber)
 
+    @handle_error
     def MayExitFAR(self):
         #log.debug("MayExitFAR(): %s", self.openplugins.items())
         for hplugin, plugin in self.openplugins.items():
@@ -394,14 +444,17 @@ class PluginManager:
         return 1
 
     # not exposed from CPython
+    @handle_error
     def Analyse(self, pData):
         #pData = AnalyseData
         return 0
 
     # not exposed from CPython
+    @handle_error
     def GetCustomData(self, FilePath, CustomData):
         return 0
 
     # not exposed from CPython
+    @handle_error
     def FreeCustomData(self, CustomData):
         pass

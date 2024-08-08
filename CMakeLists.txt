@@ -408,7 +408,7 @@ if (DEFINED VIRTUAL_PYTHON)
     add_subdirectory (python)
     # Copy this explicitly cuz generic copier command excludes 'far2l'
     install(DIRECTORY "${INSTALL_DIR}/Plugins/python/plug/far2l"
-        DESTINATION "share/far2m/Plugins/python/plug/" USE_SOURCE_PERMISSIONS
+        DESTINATION "lib/far2m/Plugins/python/plug/" USE_SOURCE_PERMISSIONS
         COMPONENT base FILES_MATCHING
         PATTERN "*")
 else()
@@ -422,7 +422,7 @@ else()
                 execute_process(COMMAND echo Python: preparing virtual environment)
                 " COMPONENT system)
             install(CODE "
-                execute_process(COMMAND ${PYTHON3} -m venv --system-site-packages ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/python/plug/python)
+                execute_process(COMMAND ${Python3_EXECUTABLE} -m venv --system-site-packages ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/python/plug/python)
                 " COMPONENT system)
             install(CODE "
                 execute_process(COMMAND echo Python: installing packages)
@@ -433,7 +433,7 @@ else()
 
             # Copy this explicitly cuz generic copier command excludes 'far2l'
             install(DIRECTORY "${INSTALL_DIR}/Plugins/python/plug/far2l"
-                DESTINATION "share/far2m/Plugins/python/plug/" USE_SOURCE_PERMISSIONS
+                DESTINATION "lib/far2m/Plugins/python/plug/" USE_SOURCE_PERMISSIONS
                 COMPONENT base FILES_MATCHING
                 PATTERN "*")
         else()
