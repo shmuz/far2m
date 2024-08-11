@@ -1094,6 +1094,11 @@ static int PushBookmarks(lua_State *L, int editorId, int count, int command)
 			return 1;
 		}
 	}
+	else if (count == 0) { // make compatible with Far3 behavior
+		lua_newtable(L);
+		return 1;
+	}
+
 	return lua_pushnil(L), 1;
 }
 
