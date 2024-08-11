@@ -1351,9 +1351,6 @@ void WinPortPanel::OnChar( wxKeyEvent& event )
 		ir.Event.KeyEvent.bKeyDown = TRUE;
 		wxConsoleInputShim::Enqueue(&ir, 1);
 
-		ir.Event.KeyEvent.bKeyDown = FALSE;
-		wxConsoleInputShim::Enqueue(&ir, 1);
-
 	}
 	//event.Skip();
 }
