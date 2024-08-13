@@ -2364,15 +2364,15 @@ upd:"Show total delete progress indicator"
 "Адлюстроўваць агульны індыкатар выдалення"
 
 ConfigPgUpChangeDisk
-"Использовать Ctrl-PgUp для в&ыбора диска"
-"Use Ctrl-Pg&Up to change drive"
-"Použít Ctrl-Pg&Up pro změnu disku"
-"Strg-Pg&Up wechselt das Laufwerk"
-"A Ctrl-Pg&Up meghajtót vált"
-"Użyj Ctrl-Pg&Up do zmiany napędu"
-"Usar Ctrl-Pg&Up para cambiar unidad"
-"Використовувати Ctrl-PgUp для в&ибору диска"
-"Ужываць Ctrl-PgUp для в&ыбору дыска"
+"Использовать Ctrl+PgUp для мен&ю перехода"
+"Use Ctrl+Pg&Up for location menu"
+"Použít Ctrl+Pg&Up pro změnu disku"
+"Strg+Pg&Up wechselt das Laufwerk"
+"A Ctrl+Pg&Up meghajtót vált"
+"Użyj Ctrl+Pg&Up do zmiany napędu"
+"Usar Ctrl+Pg&Up para cambiar unidad"
+"Використовувати Ctrl+PgUp для в&ибору диска"
+"Ужываць Ctrl+PgUp для в&ыбору дыска"
 
 ConfigDateFormat
 " Формат &даты и времени "
@@ -13589,15 +13589,15 @@ MenuReread
 "П&ерачытаць                Ctrl-R"
 
 MenuChangeDrive
-"С&менить диск             Alt-F1"
-"&Change drive       Alt-F1"
-"Z&měnit jednotku          Alt-F1"
-"Laufwerk we&chseln    Alt-F1"
-"Meghajtó&váltás     Alt-F1"
-"Z&mień napęd          Alt-F1"
-"Cambiar &unidad        Alt-F1"
-"З&мінити диск             Alt-F1"
-"З&мяніць дыск              Alt-F1"
+"&Меню перехода             Alt+F1"
+"Lo&cation menu       Alt+F1"
+"Z&měnit jednotku          Alt+F1"
+"Laufwerk we&chseln    Alt+F1"
+"Meghajtó&váltás     Alt+F1"
+"Z&mień napęd          Alt+F1"
+"Cambiar &unidad        Alt+F1"
+"З&мінити диск             Alt+F1"
+"З&мяніць дыск              Alt+F1"
 
 MenuView
 l:
@@ -14252,15 +14252,15 @@ MenuTogglePanelRight
 "Панэль &Укл/Адкл          Ctrl-F2"
 
 MenuChangeDriveRight
-"С&менить диск             Alt-F2"
-"&Change drive       Alt-F2"
-"Z&měnit jednotku          Alt-F2"
-"Laufwerk &wechseln    Alt-F2"
-"Meghajtó&váltás     Alt-F2"
-"Z&mień napęd          Alt-F2"
-"Cambiar &unidad        Alt-F2"
-"З&мінити диск             Alt-F2"
-"З&мяніць дыск             Alt-F2"
+"&Меню перехода             Alt+F2"
+"Lo&cation menu       Alt+F2"
+"Z&měnit jednotku          Alt+F2"
+"Laufwerk &wechseln    Alt+F2"
+"Meghajtó&váltás     Alt+F2"
+"Z&mień napęd          Alt+F2"
+"Cambiar &unidad        Alt+F2"
+"З&мінити диск             Alt+F2"
+"З&мяніць дыск             Alt+F2"
 
 MenuLeftTitle
 l:
