@@ -13485,7 +13485,7 @@ MenuOwnersView
 "Fájl tula&jdonos    BalCtrl-8"
 "&Właściciele          LCtrl-8"
 "Du&eños de archivos    LCtrl-8"
-"Власники файлів           LCtrl-8"
+"Власники файлів          LCtrl-8"
 "Ул&адальнікі файлаў        LCtrl-8"
 
 MenuLinksView
@@ -13496,7 +13496,7 @@ MenuLinksView
 "Fájl li&nkek        BalCtrl-9"
 "Dowiąza&nia           LCtrl-9"
 "En&laces               LCtrl-9"
-"Зв'язки файлів            LCtrl-9"
+"Зв'язки файлів           LCtrl-9"
 "Сувя&зя файлаў             LCtrl-9"
 
 MenuAlternativeView
@@ -13585,19 +13585,19 @@ MenuReread
 "Friss&ítés          Ctrl-R"
 "Odśw&ież              Ctrl-R"
 "&Releer                Ctrl-R"
-"Перечитати                Ctrl-R"
+"Перечитати               Ctrl-R"
 "П&ерачытаць                Ctrl-R"
 
 MenuChangeDrive
-"&Меню перехода             Alt+F1"
-"Lo&cation menu       Alt+F1"
-"Z&měnit jednotku          Alt+F1"
-"Laufwerk we&chseln    Alt+F1"
-"Meghajtó&váltás     Alt+F1"
-"Z&mień napęd          Alt+F1"
-"Cambiar &unidad        Alt+F1"
-"З&мінити диск             Alt+F1"
-"З&мяніць дыск              Alt+F1"
+"&Меню перехода            Alt-F1"
+"Lo&cation menu      Alt-F1"
+"Z&měnit jednotku          Alt-F1"
+"Laufwerk we&chseln    Alt-F1"
+"Meghajtó&váltás     Alt-F1"
+"Z&mień napęd          Alt-F1"
+"Cambiar &unidad        Alt-F1"
+"З&мінити диск             Alt-F1"
+"З&мяніць дыск              Alt-F1"
 
 MenuView
 l:
@@ -14249,18 +14249,18 @@ MenuTogglePanelRight
 "Włącz/wyłącz pane&l   Ctrl-F2"
 "Panel &Si/No           Ctrl-F2"
 "Панель &Ввмк/Вимк         Ctrl-F2"
-"Панэль &Укл/Адкл          Ctrl-F2"
+"Панэль &Укл/Адкл           Ctrl-F2"
 
 MenuChangeDriveRight
-"&Меню перехода             Alt+F2"
-"Lo&cation menu       Alt+F2"
-"Z&měnit jednotku          Alt+F2"
-"Laufwerk &wechseln    Alt+F2"
-"Meghajtó&váltás     Alt+F2"
-"Z&mień napęd          Alt+F2"
-"Cambiar &unidad        Alt+F2"
-"З&мінити диск             Alt+F2"
-"З&мяніць дыск             Alt+F2"
+"&Меню перехода            Alt-F2"
+"Lo&cation menu      Alt-F2"
+"Z&měnit jednotku          Alt-F2"
+"Laufwerk &wechseln    Alt-F2"
+"Meghajtó&váltás     Alt-F2"
+"Z&mień napęd          Alt-F2"
+"Cambiar &unidad        Alt-F2"
+"З&мінити диск             Alt-F2"
+"З&мяніць дыск              Alt-F2"
 
 MenuLeftTitle
 l:
