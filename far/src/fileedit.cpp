@@ -2635,8 +2635,9 @@ int FileEditor::EditorControl(int Command, void *Param)
 		}
 		case ECTL_QUIT:
 		{
-			FrameManager->DeleteFrame(this);
 			SetExitCode(SAVEFILE_ERROR); // что-то меня терзают смутные сомнения ...???
+			FrameManager->DeleteFrame(this);
+			FrameManager->Commit();
 			return TRUE;
 		}
 		case ECTL_READINPUT:
