@@ -373,7 +373,7 @@ end
 
 function List:MouseEvent (hDlg, Ev, x, y)
   if osWindows and Ev.EventFlags == F.MOUSE_WHEELED then
-    self:KeyMsWheel(Ev.ButtonState < 0x80000000 and "down" or "up")
+    self:KeyMsWheel(Ev.ButtonState < 0x80000000 and "up" or "down")
     SendRedrawMessage(hDlg)
     return
   end
@@ -779,7 +779,7 @@ function List:KeyMsWheel (dir)
   local N = #self.drawitems
   if N > 0 then
     for k=1,2 do -- loop to skip a separator
-      if dir == "down" then
+      if dir == "up" then
         if self.sel==1 or self.sel==2 and self.drawitems[1].separator then
           break
         end
