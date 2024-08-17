@@ -73,17 +73,26 @@ int pcall_msg (lua_State* L, int narg, int nret)
 {
 	// int status = lua_pcall(L, narg, nret, 0);
 	int status = docall (L, narg, nret);
+
 	if (status != 0) {
 		int status2 = 1;
+		DWORD *Flags = &GetPluginData(L)->Flags;
+
+		*Flags |= PDF_PROCESSINGERROR;
+
 		if (GetExportFunction(L, "OnError")) {
 			lua_insert(L,-2);
 			status2 = lua_pcall(L,1,0,0);
 		}
+
 		if (status2 != 0) {
 			LF_Error (L, check_utf8_string(L, -1, NULL));
 			lua_pop (L, 1);
 		}
+
+		*Flags &= ~PDF_PROCESSINGERROR;
 	}
+
 	return status;
 }
 
@@ -1012,7 +1021,10 @@ int LF_MakeDirectory (lua_State* L, HANDLE hPlugin, const wchar_t **Name, int Op
 int LF_ProcessPanelEvent(lua_State* L, HANDLE hPlugin, int Event, void *Param)
 {
 	int res = FALSE;
-	if (GetExportFunction(L, "ProcessPanelEvent")) { //+1: Func
+
+	if (!(GetPluginData(L)->Flags & PDF_PROCESSINGERROR) &&
+			GetExportFunction(L, "ProcessPanelEvent"))     //+1: Func
+	{
 		PushPluginPair(L, hPlugin);        //+3
 		lua_pushinteger(L, Event);         //+4
 		if (Event == FE_CHANGEVIEWMODE || Event == FE_COMMAND)
@@ -1208,7 +1220,10 @@ int LF_ProcessEditorInput (lua_State* L, const INPUT_RECORD *Rec)
 int LF_ProcessEditorEvent (lua_State* L, int Event, void *Param)
 {
 	int ret = 0;
-	if (GetExportFunction(L, "ProcessEditorEvent"))  { //+1: Func
+
+	if (!(GetPluginData(L)->Flags & PDF_PROCESSINGERROR) &&
+			GetExportFunction(L, "ProcessEditorEvent"))     //+1: Func
+	{
 		struct EditorInfo ei;
 		if (PSInfo.EditorControlV2(-1, ECTL_GETINFO, &ei))
 			lua_pushinteger(L, ei.EditorID);
@@ -1241,7 +1256,10 @@ int LF_ProcessEditorEvent (lua_State* L, int Event, void *Param)
 int LF_ProcessViewerEvent (lua_State* L, int Event, void* Param)
 {
 	int ret = 0;
-	if (GetExportFunction(L, "ProcessViewerEvent"))  { //+1: Func
+
+	if (!(GetPluginData(L)->Flags & PDF_PROCESSINGERROR) &&
+			GetExportFunction(L, "ProcessViewerEvent"))     //+1: Func
+	{
 		struct ViewerInfo vi;
 		vi.StructSize = sizeof(vi);
 		if (PSInfo.ViewerControlV2(-1, VCTL_GETINFO, &vi))
@@ -1269,6 +1287,9 @@ int LF_ProcessDialogEvent (lua_State* L, int Event, void *Param)
 	struct FarDialogEvent *fde = (struct FarDialogEvent*) Param;
 	DWORD *Flags = &GetPluginData(L)->Flags;
 	BOOL PushDN = FALSE;
+
+	if (*Flags & PDF_PROCESSINGERROR)
+		return 0;
 
 	if (Event == DE_DLGPROCINIT && fde->Msg == DN_INITDIALOG)
 	{
@@ -1411,7 +1432,8 @@ int LF_ProcessConsoleInput(lua_State* L, INPUT_RECORD *Rec)
 {
 	int ret = 0;
 
-	if (GetExportFunction(L, "ProcessConsoleInput"))    //+1: Func
+	if (!(GetPluginData(L)->Flags & PDF_PROCESSINGERROR) &&
+			GetExportFunction(L, "ProcessConsoleInput"))    //+1: Func
 	{
 		PushInputRecord(L, Rec);                         //+2
 
