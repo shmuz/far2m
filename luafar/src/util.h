@@ -55,6 +55,7 @@ int   GetIntFromArray(lua_State *L, int index);
 int   luaLF_FieldError (lua_State *L, const char* key, const char* expected_typename);
 int   luaLF_SlotError (lua_State *L, int key, const char* expected_typename);
 void  PushAttrString(lua_State *L, int attr);
+void  SetAttrWords(const wchar_t* str, DWORD* incl, DWORD* excl);
 void  PushPanelItem(lua_State *L, const struct PluginPanelItem *PanelItem);
 void  PushPanelItems(lua_State *L, HANDLE handle, const struct PluginPanelItem *PanelItems, int ItemsNumber);
 void  PutAttrToTable(lua_State *L, int attr);
