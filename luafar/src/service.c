@@ -6142,6 +6142,8 @@ static int luaopen_far (lua_State *L)
 	add_flags(L);
 	lua_pushvalue(L, -1);
 	lua_setfield(L, -3, "Flags");
+	lua_pushvalue(L, -1);           // for compatibility with Far3 scripts
+	lua_setfield(L, -3, "Colors");  // +++
 	lua_setfield(L, LUA_REGISTRYINDEX, FAR_FLAGSTABLE);
 
 	luaopen_far_host(L);
