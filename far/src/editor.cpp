@@ -3608,7 +3608,7 @@ BOOL Editor::Search(int Next)
 
 	{
 		//SaveScreen SaveScr;
-		TPreRedrawFuncGuard preRedrawFuncGuard(Editor::PR_EditorShowMsg);
+		SCOPED_ACTION(TPreRedrawFuncGuard)(Editor::PR_EditorShowMsg);
 		strMsgStr=strSearchStr;
 		InsertQuote(strMsgStr);
 		SetCursorType(false,-1);

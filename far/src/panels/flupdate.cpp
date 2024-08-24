@@ -122,7 +122,7 @@ static void PR_ReadFileNamesMsg()
 
 void FileList::ReadFileNames(int KeepSelection, int IgnoreVisible, int DrawMessage, int CanBeAnnoying)
 {
-	TPreRedrawFuncGuard preRedrawFuncGuard(PR_ReadFileNamesMsg);
+	SCOPED_ACTION(TPreRedrawFuncGuard)(PR_ReadFileNamesMsg);
 
 	strOriginalCurDir = strCurDir;
 

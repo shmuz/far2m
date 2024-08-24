@@ -66,7 +66,7 @@ RefreshFrameManager::~RefreshFrameManager()
 		return;
 	else if (OScrX != ScrX || OScrY != ScrY || MsgWaitTime!=-1)
 	{
-		LockScreen LckScr;
+		SCOPED_ACTION(LockScreen);
 		FrameManager->ResizeAllFrame();
 		FrameManager->GetCurrentFrame()->Show();
 	}

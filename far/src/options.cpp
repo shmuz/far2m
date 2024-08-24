@@ -381,7 +381,7 @@ void ShellOptions(int LastCommand,MOUSE_EVENT_RECORD *MouseEvent)
 			VMenuTable[HItemToShow][LastVItem].SetSelect(1);
 			HOptMenu.Show();
 			{
-				ChangeMacroArea Cma(MACROAREA_MAINMENU);
+				SCOPED_ACTION(ChangeMacroArea)(MACROAREA_MAINMENU);
 				HOptMenu.ProcessKey(KEY_DOWN);
 			}
 		}
@@ -397,13 +397,13 @@ void ShellOptions(int LastCommand,MOUSE_EVENT_RECORD *MouseEvent)
 
 		if (MouseEvent)
 		{
-			ChangeMacroArea Cma(MACROAREA_MAINMENU);
+			SCOPED_ACTION(ChangeMacroArea)(MACROAREA_MAINMENU);
 			HOptMenu.Show();
 			HOptMenu.ProcessMouse(MouseEvent);
 		}
 
 		{
-			ChangeMacroArea Cma(MACROAREA_MAINMENU);
+			SCOPED_ACTION(ChangeMacroArea)(MACROAREA_MAINMENU);
 			HOptMenu.Process();
 		}
 

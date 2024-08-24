@@ -3631,7 +3631,7 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 
 							// Да, мальчик был. Зачнем...
 							{
-								LockScreen LckScr;
+								SCOPED_ACTION(LockScreen);
 								Hide();
 								X1 = NX1;
 								X2 = NX2;
@@ -3646,7 +3646,7 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 						}
 					} else if (Mb == RIGHTMOST_BUTTON_PRESSED)		// abort
 					{
-						LockScreen LckScr;
+						SCOPED_ACTION(LockScreen);
 						Hide();
 						AdjustEditPos(OldX1 - X1, OldY1 - Y1);
 						X1 = OldX1;
@@ -3663,7 +3663,7 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 					} else		// release key, drop dialog
 					{
 						if (OldX1 != X1 || OldX2 != X2 || OldY1 != Y1 || OldY2 != Y2) {
-							LockScreen LckScr;
+							SCOPED_ACTION(LockScreen);
 							DialogMode.Clear(DMODE_DRAGGED);
 							DlgProc((HANDLE)this, DN_DRAGGED, 1, 0);
 

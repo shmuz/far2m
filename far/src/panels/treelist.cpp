@@ -409,7 +409,7 @@ int TreeList::ReadTree()
 {
 	ChangePriority ChPriority(ChangePriority::NORMAL);
 	// SaveScreen SaveScr;
-	TPreRedrawFuncGuard preRedrawFuncGuard(TreeList::PR_MsgReadTree);
+	SCOPED_ACTION(TPreRedrawFuncGuard)(TreeList::PR_MsgReadTree);
 	ScanTree ScTree(FALSE);
 	FAR_FIND_DATA_EX fdata;
 	FARString strFullName;
@@ -1541,7 +1541,7 @@ void TreeList::ReadSubTree(const wchar_t *Path)
 {
 	ChangePriority ChPriority(ChangePriority::NORMAL);
 	// SaveScreen SaveScr;
-	TPreRedrawFuncGuard preRedrawFuncGuard(TreeList::PR_MsgReadTree);
+	SCOPED_ACTION(TPreRedrawFuncGuard)(TreeList::PR_MsgReadTree);
 	ScanTree ScTree(FALSE);
 	FAR_FIND_DATA_EX fdata;
 	FARString strDirName;

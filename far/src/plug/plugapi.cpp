@@ -822,7 +822,7 @@ static int FarMenuFnSynched(INT_PTR PluginNumber, const GUID *Id, int X, int Y, 
 			FarKey ReadKey = GetInputRecord(&ReadRec);
 
 			if (ReadKey == KEY_CONSOLE_BUFFER_RESIZE) {
-				LockScreen LckScr;
+				SCOPED_ACTION(LockScreen);
 				FarMenu.Hide();
 				FarMenu.Show();
 			} else if (ReadRec.EventType == MOUSE_EVENT) {
@@ -1421,7 +1421,7 @@ static int FarGetDirListSynched(const wchar_t *Dir, FAR_FIND_DATA **pPanelItem, 
 	FARString strDirName;
 	ConvertNameToFull(Dir, strDirName);
 	{
-		TPreRedrawFuncGuard preRedrawFuncGuard(PR_FarGetDirListMsg);
+		SCOPED_ACTION(TPreRedrawFuncGuard)(PR_FarGetDirListMsg);
 		SaveScreen SaveScr;
 		clock_t StartTime = GetProcessUptimeMSec();
 		int MsgOut = 0;
@@ -1535,7 +1535,7 @@ int FarGetPluginDirListSynched(INT_PTR PluginNumber, HANDLE hPlugin, const wchar
 
 		{
 			SaveScreen SaveScr;
-			TPreRedrawFuncGuard preRedrawFuncGuard(PR_FarGetPluginDirListMsg);
+			SCOPED_ACTION(TPreRedrawFuncGuard)(PR_FarGetPluginDirListMsg);
 			{
 				FARString strDirName;
 				strDirName = Dir;

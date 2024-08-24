@@ -410,7 +410,7 @@ void HMenu::ProcessSubMenu(MenuDataEx *Data,int DataCount,
 
 		if (Key==KEY_CONSOLE_BUFFER_RESIZE)
 		{
-			LockScreen LckScr;
+			SCOPED_ACTION(LockScreen);
 			ResizeConsole();
 			Show();
 			SubMenu->Hide();

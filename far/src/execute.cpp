@@ -440,7 +440,7 @@ void CommandLine::CheckForKeyPressAfterCmd(int r)
 				&& (cp->LeftPanel->IsVisible() || cp->RightPanel->IsVisible())) {
 			FarKey Key;
 			{
-				ChangeMacroArea Cma(MACROAREA_OTHER); // prevent macros from intercepting key (#1003)
+				SCOPED_ACTION(ChangeMacroArea)(MACROAREA_OTHER); // prevent macros from intercepting key (#1003)
 				Key = WaitKey();
 			}
 			// allow user to open console log etc directly from pause-on-error state

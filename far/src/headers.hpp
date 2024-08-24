@@ -176,6 +176,16 @@ inline const T Round(const T &a, const T &b) { return a/b+(a%b*2>b?1:0); }
 #define SELF_TEST(code)
 #endif
 
+//------------------------------------------------------------------------------
+#define DETAIL_CONCATENATE_IMPL(s1, s2) s1 ## s2
+#define CONCATENATE(s1, s2) DETAIL_CONCATENATE_IMPL(s1, s2)
+
+#define ANONYMOUS_VARIABLE(str) CONCATENATE(str, __LINE__)
+
+#define SCOPED_ACTION(RAII_type) \
+const RAII_type ANONYMOUS_VARIABLE(scoped_object_)
+//------------------------------------------------------------------------------
+
 int Log(const char* Format, ...);
 
 #include <algorithm>

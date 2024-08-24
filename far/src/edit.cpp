@@ -2958,7 +2958,7 @@ void EditControl::AutoCompleteProcMenu(int &Result, bool Manual, bool DelBlock, 
 		if(Opt.AutoComplete.ShowList)
 		{
 			auto Area = GetOwner()==CtrlObject->Cp() ? MACROAREA_SHELLAUTOCOMPLETION : MACROAREA_DIALOGAUTOCOMPLETION;
-			ChangeMacroArea Cma(Area);
+			SCOPED_ACTION(ChangeMacroArea)(Area);
 			MenuItemEx EmptyItem;
 			ComplMenu.AddItem(&EmptyItem,0);
 			SetMenuPos(ComplMenu);

@@ -94,7 +94,7 @@ int GetDirInfo(const wchar_t *Title,
 	ConvertNameToFull(DirName, strFullDirName);
 	SaveScreen SaveScr;
 	UndoGlobalSaveScrPtr UndSaveScr(&SaveScr);
-	TPreRedrawFuncGuard preRedrawFuncGuard(PR_DrawGetDirInfoMsg);
+	SCOPED_ACTION(TPreRedrawFuncGuard)(PR_DrawGetDirInfoMsg);
 	wakeful W;
 	ScanTree ScTree(FALSE,TRUE, ( (Flags&GETDIRINFO_SCANSYMLINKDEF) ? -1 : ((Flags&GETDIRINFO_SCANSYMLINK) != 0) ) );
 	FAR_FIND_DATA_EX FindData;
@@ -140,7 +140,9 @@ int GetDirInfo(const wchar_t *Title,
 	{
 		SuspendMacros() { CtrlObject->Macro.SuspendMacros(true); }
 		~SuspendMacros() { CtrlObject->Macro.SuspendMacros(false); }
-	} Suspend;
+	};
+
+	SCOPED_ACTION(SuspendMacros);
 
 	while (ScTree.GetNextName(&FindData,strFullName))
 	{

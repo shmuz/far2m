@@ -1422,7 +1422,7 @@ int FileEditor::LoadFile(const wchar_t *Name,int &UserBreak)
 {
 	SudoClientRegion sdc_rgn;
 	ChangePriority ChPriority(ChangePriority::NORMAL);
-	TPreRedrawFuncGuard preRedrawFuncGuard(Editor::PR_EditorShowMsg);
+	SCOPED_ACTION(TPreRedrawFuncGuard)(Editor::PR_EditorShowMsg);
 	wakeful W;
 	int LastLineCR = 0;
 	EditorCacheParams cp;
@@ -2019,7 +2019,7 @@ int FileEditor::SaveFile(const wchar_t *Name,int Ask, bool bSaveAs, int TextForm
 		    }
 		*/
 		SetCursorType(false,0);
-		TPreRedrawFuncGuard preRedrawFuncGuard(Editor::PR_EditorShowMsg);
+		SCOPED_ACTION(TPreRedrawFuncGuard)(Editor::PR_EditorShowMsg);
 
 		try
 		{

@@ -454,7 +454,7 @@ static void SetItemColors(MenuDataEx *Items, int *PaletteItems, int Size, int Ty
 
 void GetColor(int PaletteIndex)
 {
-	ChangeMacroArea chgMacroArea(MACROAREA_MENU);
+	SCOPED_ACTION(ChangeMacroArea)(MACROAREA_MENU);
 	uint64_t NewColor = Palette[PaletteIndex];
 
 	if (GetColorDialog(&NewColor, false)) {

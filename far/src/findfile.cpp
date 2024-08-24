@@ -1418,7 +1418,7 @@ static void AnalyzeFileItem(HANDLE hDlg, PluginPanelItem *FileItem, const wchar_
 
 			bool GetFileResult = false;
 			{
-				PluginLocker Lock;
+				SCOPED_ACTION(PluginLocker);
 				GetFileResult = CtrlObject->Plugins.GetFile(hPlugin, FileItem, strTempDir, FileToScan,
 										OPM_SILENT | OPM_FIND)
 						!= FALSE;
@@ -1461,7 +1461,7 @@ class FindDlg_TempFileHolder : public TempFileUploadHolder
 
 	virtual bool UploadTempFile()
 	{
-		PluginLocker Lock;
+		SCOPED_ACTION(PluginLocker);
 		ARCLIST ArcItem;
 		itd.GetArcListItem(ArcIndex, ArcItem);
 		bool ClosePlugin = false;
@@ -1745,7 +1745,7 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 								int SavePluginsOutput = DisablePluginsOutput;
 								DisablePluginsOutput = TRUE;
 								{
-									PluginLocker Lock;
+									SCOPED_ACTION(PluginLocker);
 									ArcItem.hPlugin = CtrlObject->Plugins.OpenFilePlugin(strFindArcName,
 											OPM_FIND, OFP_SEARCH);
 								}
@@ -1762,7 +1762,7 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 							}
 							FarMkTempEx(strTempDir);
 							apiCreateDirectory(strTempDir, nullptr);
-							PluginLocker Lock;
+							SCOPED_ACTION(PluginLocker);
 							bool bGet = GetPluginFile(FindItem.ArcIndex, FindItem.FindData, strTempDir,
 									strSearchFileName);
 							itd.SetFindListItem(ItemIndex, FindItem);
@@ -2271,7 +2271,7 @@ static void ArchiveSearch(HANDLE hDlg, const wchar_t *ArcName)
 	FARString strArcName = ArcName;
 	PHPTR hArc;
 	{
-		PluginLocker Lock;
+		SCOPED_ACTION(PluginLocker);
 		int SavePluginsOutput = DisablePluginsOutput;
 		DisablePluginsOutput = TRUE;
 		hArc = CtrlObject->Plugins.OpenFilePlugin(strArcName, OPM_FIND, OFP_SEARCH);
@@ -2295,7 +2295,7 @@ static void ArchiveSearch(HANDLE hDlg, const wchar_t *ArcName)
 		SearchMode = FINDAREA_FROM_CURRENT;
 		OpenPluginInfo Info;
 		{
-			PluginLocker Lock;
+			SCOPED_ACTION(PluginLocker);
 			int SavePluginsOutput = DisablePluginsOutput;
 			DisablePluginsOutput = TRUE;
 			CtrlObject->Plugins.GetOpenPluginInfo(hArc, &Info);
@@ -2316,7 +2316,7 @@ static void ArchiveSearch(HANDLE hDlg, const wchar_t *ArcName)
 			ARCLIST ArcItem;
 			itd.GetArcListItem(itd.GetFindFileArcIndex(), ArcItem);
 			{
-				PluginLocker Lock;
+				SCOPED_ACTION(PluginLocker);
 				CtrlObject->Plugins.ClosePanel(ArcItem.hPlugin);
 			}
 			ArcItem.hPlugin = nullptr;
@@ -2423,7 +2423,7 @@ static void ScanPluginTree(HANDLE hDlg, PHPTR hPlugin, DWORD Flags, int &Recurse
 	bool GetFindDataResult = false;
 	{
 		if (!StopFlag) {
-			PluginLocker Lock;
+			SCOPED_ACTION(PluginLocker);
 			GetFindDataResult =
 					CtrlObject->Plugins.GetFindData(hPlugin, &PanelData, &ItemCount, OPM_FIND) != FALSE;
 		}
@@ -2474,7 +2474,7 @@ static void ScanPluginTree(HANDLE hDlg, PHPTR hPlugin, DWORD Flags, int &Recurse
 							|| CtrlObject->Cp()->ActivePanel->IsSelected(strCurName))) {
 				bool SetDirectoryResult = false;
 				{
-					PluginLocker Lock;
+					SCOPED_ACTION(PluginLocker);
 					SetDirectoryResult =
 							CtrlObject->Plugins.SetDirectory(hPlugin, strCurName, OPM_FIND) != FALSE;
 				}
@@ -2494,7 +2494,7 @@ static void ScanPluginTree(HANDLE hDlg, PHPTR hPlugin, DWORD Flags, int &Recurse
 
 					bool SetDirectoryResult = false;
 					{
-						PluginLocker Lock;
+						SCOPED_ACTION(PluginLocker);
 						SetDirectoryResult =
 								CtrlObject->Plugins.SetDirectory(hPlugin, L"..", OPM_FIND) != FALSE;
 					}
@@ -2507,7 +2507,7 @@ static void ScanPluginTree(HANDLE hDlg, PHPTR hPlugin, DWORD Flags, int &Recurse
 	}
 
 	{
-		PluginLocker Lock;
+		SCOPED_ACTION(PluginLocker);
 		CtrlObject->Plugins.FreeFindData(hPlugin, PanelData, ItemCount);
 	}
 	RecurseLevel--;
@@ -2553,7 +2553,7 @@ static void DoPreparePluginList(HANDLE hDlg)
 	OpenPluginInfo Info;
 	FARString strSaveDir;
 	{
-		PluginLocker Lock;
+		SCOPED_ACTION(PluginLocker);
 		CtrlObject->Plugins.GetOpenPluginInfo(ArcItem.hPlugin, &Info);
 		strSaveDir = Info.CurDir;
 		if (SearchMode == FINDAREA_ROOT || SearchMode == FINDAREA_ALL || SearchMode == FINDAREA_ALL_BUTNETWORK
@@ -2573,7 +2573,7 @@ static void DoPreparePluginList(HANDLE hDlg)
 
 	if (SearchMode == FINDAREA_ROOT || SearchMode == FINDAREA_ALL || SearchMode == FINDAREA_ALL_BUTNETWORK
 			|| SearchMode == FINDAREA_INPATH) {
-		PluginLocker Lock;
+		SCOPED_ACTION(PluginLocker);
 		CtrlObject->Plugins.SetDirectory(ArcItem.hPlugin, strSaveDir, OPM_FIND);
 	}
 }
@@ -2698,7 +2698,7 @@ static bool FindFilesProcess(Vars &v)
 		PHPTR hPlugin = ActivePanel->GetPluginHandle();
 		OpenPluginInfo Info;
 		{
-			PluginLocker Lock;
+			SCOPED_ACTION(PluginLocker);
 			CtrlObject->Plugins.GetOpenPluginInfo(hPlugin, &Info);
 			itd.SetFindFileArcIndex(itd.AddArcListItem(Info.HostFile, hPlugin, Info.Flags, Info.CurDir));
 		}
@@ -2714,7 +2714,7 @@ static bool FindFilesProcess(Vars &v)
 
 	AnySetFindList = false;
 	{
-		PluginLocker Lock;
+		SCOPED_ACTION(PluginLocker);
 		for (int i = 0; i < CtrlObject->Plugins.GetPluginsCount(); i++) {
 			if (CtrlObject->Plugins.GetPlugin(i)->HasSetFindList()) {
 				AnySetFindList = true;
@@ -2851,7 +2851,7 @@ static bool FindFilesProcess(Vars &v)
 					}
 
 					if (ArcItem.hPlugin) {
-						PluginLocker Lock;
+						SCOPED_ACTION(PluginLocker);
 						OpenPluginInfo Info;
 						CtrlObject->Plugins.GetOpenPluginInfo(ArcItem.hPlugin, &Info);
 						if (SearchMode == FINDAREA_ROOT || SearchMode == FINDAREA_ALL
@@ -3004,7 +3004,7 @@ FindFiles::FindFiles()
 		FindAskDlg[FAD_COMBOBOX_WHERE].ListItems = &l;
 
 		if (v.PluginMode) {
-			PluginLocker Lock;
+			SCOPED_ACTION(PluginLocker);
 			OpenPluginInfo Info;
 			CtrlObject->Plugins.GetOpenPluginInfo(ActivePanel->GetPluginHandle(), &Info);
 

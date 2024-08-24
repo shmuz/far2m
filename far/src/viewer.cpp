@@ -2419,7 +2419,7 @@ void Viewer::Search(int Next, int FirstChar)
 	int SearchWChars, SearchCodeUnits;
 	bool Match = false;
 	{
-		TPreRedrawFuncGuard preRedrawFuncGuard(PR_ViewerSearchMsg);
+		SCOPED_ACTION(TPreRedrawFuncGuard)(PR_ViewerSearchMsg);
 		// SaveScreen SaveScr;
 		SetCursorType(false, 0);
 		strMsgStr = strSearchStr;

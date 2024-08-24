@@ -910,7 +910,7 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 			{
 				ScrBuf.ResetShadow();
 				// апдейтим панели (именно они сейчас!)
-				LockScreen LckScr;
+				SCOPED_ACTION(LockScreen);
 
 				if (GlobalSaveScrPtr)
 					GlobalSaveScrPtr->Discard();
@@ -1468,7 +1468,7 @@ int CheckForEscSilent()
 		if(Key == KEY_CONSOLE_BUFFER_RESIZE)
 		{
 		  // апдейтим панели (именно они сейчас!)
-		  LockScreen LckScr;
+		  SCOPED_ACTION(LockScreen);
 		  FrameManager->ResizeAllFrame();
 		  FrameManager->GetCurrentFrame()->Show();
 		  PreRedrawItem preRedrawItem=PreRedraw.Peek();

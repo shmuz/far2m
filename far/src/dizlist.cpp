@@ -104,7 +104,7 @@ void DizList::PR_ReadingMsg()
 void DizList::Read(const wchar_t *Path, const wchar_t *DizName)
 {
 	Reset();
-	TPreRedrawFuncGuard preRedrawFuncGuard(DizList::PR_ReadingMsg);
+	SCOPED_ACTION(TPreRedrawFuncGuard)(DizList::PR_ReadingMsg);
 	const wchar_t *NamePtr = Opt.Diz.strListNames;
 
 	for (;;) {

@@ -395,7 +395,7 @@ int Panel::ChangeDiskMenu(int Pos,int FirstCall)
 			Guard_Macro_DskShowPosType(Panel *curPanel) {Macro_DskShowPosType=(curPanel==CtrlObject->Cp()->LeftPanel)?1:2;};
 			~Guard_Macro_DskShowPosType() {Macro_DskShowPosType=0;};
 	};
-	Guard_Macro_DskShowPosType _guard_Macro_DskShowPosType(this);
+	SCOPED_ACTION(Guard_Macro_DskShowPosType)(this);
 	MenuItemEx ChDiskItem;
 	FARString strDiskType, strRootDir, strDiskLetter;
 
@@ -473,7 +473,7 @@ int Panel::ChangeDiskMenu(int Pos,int FirstCall)
 
 		if (Opt.ChangeDriveMode & DRIVE_SHOW_PLUGINS)
 		{
-			ChangeMacroArea Cma(PrevMacroArea); // for plugins: set the right macro area in GetPluginInfo()
+			SCOPED_ACTION(ChangeMacroArea)(PrevMacroArea); // for plugins: set the right macro area in GetPluginInfo()
 			AddPluginItems(ChDisk, Pos);
 		}
 
@@ -506,7 +506,7 @@ int Panel::ChangeDiskMenu(int Pos,int FirstCall)
 			else*/
 			{
 				{
-					ChangeMacroArea Cma(MACROAREA_DISKS);
+					SCOPED_ACTION(ChangeMacroArea)(MACROAREA_DISKS);
 					Key=ChDisk.ReadInput();
 				}
 			}
@@ -973,7 +973,7 @@ void Panel::FastFind(int FirstKey)
 	{
 		int FindX=Min(X1+9,ScrX-22);
 		int FindY=Min(Y2,ScrY-2);
-		ChangeMacroArea Cma(MACROAREA_SEARCH);
+		SCOPED_ACTION(ChangeMacroArea)(MACROAREA_SEARCH);
 		SaveScreen SaveScr(FindX,FindY,FindX+21,FindY+2);
 		FastFindShow(FindX,FindY);
 		Edit FindEdit;

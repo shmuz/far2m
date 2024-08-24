@@ -1305,7 +1305,7 @@ bool ShellSetFileAttributes(Panel *SrcPanel, LPCWSTR Object)
 					AttrDlg[Times[i]].strData.ReleaseBuffer(AttrDlg[Times[i]].strData.GetLength());
 				}
 
-				TPreRedrawFuncGuard preRedrawFuncGuard(PR_ShellSetFileAttributesMsg);
+				SCOPED_ACTION(TPreRedrawFuncGuard)(PR_ShellSetFileAttributesMsg);
 				ShellSetFileAttributesMsg(SelCount == 1 ? strSelName.CPtr() : nullptr);
 				int SkipMode = SETATTR_RET_UNKNOWN;
 

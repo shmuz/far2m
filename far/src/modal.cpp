@@ -87,7 +87,7 @@ FarKey Modal::ReadInput(INPUT_RECORD *GetReadRec)
 
 	if (ReadKey == KEY_CONSOLE_BUFFER_RESIZE)
 	{
-		LockScreen LckScr;
+		SCOPED_ACTION(LockScreen);
 		Hide();
 		Show();
 	}
