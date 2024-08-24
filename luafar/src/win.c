@@ -692,6 +692,41 @@ static int win_GetHostName(lua_State *L)
 	return SysErrorReturn(L);
 }
 
+static int win_chmod(lua_State *L)
+{
+	const char *pathname = luaL_checkstring(L, 1);
+	mode_t mode = (mode_t) luaL_checkinteger(L, 2);
+	if (0 == chmod(pathname, mode)) {
+		lua_pushboolean(L, 1);
+		return 1;
+	}
+	return SysErrorReturn(L);
+}
+
+static int win_stat(lua_State *L)
+{
+	const char *pathname = luaL_checkstring(L, 1);
+	struct stat St;
+	if (0 != stat(pathname, &St)) {
+		return SysErrorReturn(L);
+	}
+	lua_createtable(L, 0, 14);
+	PutNumToTable(L, "dev",     St.st_dev);
+	PutNumToTable(L, "ino",     St.st_ino);
+	PutNumToTable(L, "mode",    St.st_mode);
+	PutNumToTable(L, "nlink",   St.st_nlink);
+	PutNumToTable(L, "uid",     St.st_uid);
+	PutNumToTable(L, "gid",     St.st_gid);
+	PutNumToTable(L, "rdev",    St.st_rdev);
+	PutNumToTable(L, "size",    St.st_size);
+	PutNumToTable(L, "blksize", St.st_blksize);
+	PutNumToTable(L, "blocks",  St.st_blocks);
+	PutNumToTable(L, "atim",    St.st_atim.tv_sec + St.st_atim.tv_nsec/1E9);
+	PutNumToTable(L, "mtim",    St.st_mtim.tv_sec + St.st_mtim.tv_nsec/1E9);
+	PutNumToTable(L, "ctim",    St.st_ctim.tv_sec + St.st_ctim.tv_nsec/1E9);
+	return 1;
+}
+
 #define PAIR(prefix,txt) {#txt, prefix ## _ ## txt}
 
 static const luaL_Reg win_funcs[] = {
@@ -730,6 +765,8 @@ static const luaL_Reg win_funcs[] = {
 	PAIR( win, SystemTimeToFileTime),
 	PAIR( win, uname),
 	PAIR( win, wcscmp),
+	PAIR( win, chmod),
+	PAIR( win, stat),
 
 	{NULL, NULL},
 };
