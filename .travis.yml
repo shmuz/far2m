@@ -17,7 +17,7 @@ matrix:
             - g++-5
             - cmake
             - libwxgtk3.0-dev
-            - libxerces-c-dev
+            - libxml2-dev
             - libspdlog-dev
             - libuchardet-dev 
             - libssh-dev
@@ -43,7 +43,7 @@ matrix:
             - g++-6
             - cmake
             - libwxgtk3.0-dev
-            - libxerces-c-dev
+            - libxml2-dev
             - libspdlog-dev
             - libuchardet-dev 
             - libssh-dev
@@ -70,7 +70,7 @@ matrix:
             - clang-3.6
             - cmake
             - libwxgtk3.0-dev
-            - libxerces-c-dev
+            - libxml2-dev
             - libspdlog-dev
             - libuchardet-dev 
             - libssh-dev
@@ -97,7 +97,7 @@ matrix:
             - clang-3.7
             - cmake
             - libwxgtk3.0-dev
-            - libxerces-c-dev
+            - libxml2-dev
             - libspdlog-dev
             - libuchardet-dev 
             - libssh-dev
@@ -126,4 +126,4 @@ script:
   - mkdir build
   - cd build
   - cmake -G Ninja .. && ninja -v
-  - cd install && zip -r ../far2l-${TRAVIS_COMMIT}.zip * && cd -
+  - cd install && zip -r ../far2m-${TRAVIS_COMMIT}.zip * && cd -

@@ -33,7 +33,7 @@ Python (optional scripting support), SimpleIndent, TmpPanel.
 * libwxgtk3.0-gtk3-dev (or libwxgtk3.2-dev in newer distributions, or libwxgtk3.0-dev in older ones, optional - needed for GUI backend, not needed with -DUSEWX=no)
 * libx11-dev (optional - needed for X11 extension that provides better UX for TTY backend wherever X11 is available)
 * libxi-dev (optional - needed for X11/Xi extension that provides best UX for TTY backend wherever X11 Xi extension is available)
-* libxerces-c-dev (optional - needed for Colorer plugin, not needed with -DCOLORER=no)
+* libxml2-dev (optional - needed for Colorer plugin, not needed with -DCOLORER=no)
 * libuchardet-dev
 * libssh-dev (optional - needed for NetRocks/SFTP)
 * libssl-dev (optional - needed for NetRocks/FTPS)
@@ -51,7 +51,7 @@ Python (optional scripting support), SimpleIndent, TmpPanel.
 
 #### Or simply on Debian/Ubuntu:
 ``` sh
-apt-get install gawk m4 libwxgtk3.0-gtk3-dev libx11-dev libxi-dev libpcre3-dev libxerces-c-dev libspdlog-dev libuchardet-dev libssh-dev libssl-dev libsmbclient-dev libnfs-dev libneon27-dev libarchive-dev libluajit-5.1-dev uuid-dev cmake g++ git
+apt-get install gawk m4 libwxgtk3.0-gtk3-dev libx11-dev libxi-dev libpcre3-dev libxml2-dev libspdlog-dev libuchardet-dev libssh-dev libssl-dev libsmbclient-dev libnfs-dev libneon27-dev libarchive-dev libluajit-5.1-dev uuid-dev cmake g++ git
 
 ```
 In older distributives: use libpcre2-dev and libwxgtk3.0-dev instead of libpcre3-dev and libwxgtk3.0-gtk3-dev

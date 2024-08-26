@@ -1,6 +1,6 @@
 libwxgtk3.0-gtk3-dev
 libuchardet-dev
-libxerces-c-dev
+libxml2-dev
 
 libluajit-5.1-dev
 uuid-dev
