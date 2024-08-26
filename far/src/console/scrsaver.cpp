@@ -180,7 +180,7 @@ int ScreenSaver(int EnableExit)
 	if (ScreenSaverActive)
 		return 1;
 
-	ChangePriority ChPriority(ChangePriority::IDLE);
+	SCOPED_ACTION(ChangePriority)(ChangePriority::IDLE);
 
 	for (WaitTime = GetProcessUptimeMSec(); GetProcessUptimeMSec() - WaitTime < 500;) {
 		if (PeekInputRecord(&rec))

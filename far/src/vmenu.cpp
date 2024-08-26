@@ -1728,7 +1728,7 @@ void VMenu::Show()
 void VMenu::Hide()
 {
 	CriticalSectionLock Lock(CS);
-	ChangePriority ChPriority(ChangePriority::NORMAL);
+	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 
 	if (!CheckFlags(VMENU_LISTBOX) && SaveScr) {
 		delete SaveScr;
@@ -1747,7 +1747,7 @@ void VMenu::Hide()
 void VMenu::DisplayObject()
 {
 	CriticalSectionLock Lock(CS);
-	ChangePriority ChPriority(ChangePriority::NORMAL);
+	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 
 	auto Parent = GetDialog();
 	if (Parent && !Parent->IsRedrawEnabled())
@@ -1850,7 +1850,7 @@ void VMenu::DrawTitles()
 void VMenu::ShowMenu(bool IsParent)
 {
 	CriticalSectionLock Lock(CS);
-	ChangePriority ChPriority(ChangePriority::NORMAL);
+	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 
 	int MaxItemLength = 0;
 	bool HasRightScroll = false;

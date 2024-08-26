@@ -210,7 +210,7 @@ static int MainProcess(
 
 	{
 		clock_t cl_start = clock();
-		ChangePriority ChPriority(ChangePriority::NORMAL);
+		SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 		ControlObject CtrlObj;
 		uint64_t InitAttributes = 0;
 		Console.GetTextAttributes(InitAttributes);

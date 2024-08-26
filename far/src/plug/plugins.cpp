@@ -553,7 +553,7 @@ PHPTR PluginManager::OpenFilePlugin(
     Plugin *pDesiredPlugin
 )
 {
-	ChangePriority ChPriority(ChangePriority::NORMAL);
+	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	ConsoleTitle ct(Opt.ShowCheckingFile ? Msg::CheckingFileInPlugin.CPtr() : nullptr);
 	PHPTR hResult = nullptr;
 	PHPTR pResult = nullptr;
@@ -724,7 +724,7 @@ PHPTR PluginManager::OpenFilePlugin(
 
 PHPTR PluginManager::OpenFindListPlugin(const PluginPanelItem *PanelItem, int ItemsNumber)
 {
-	ChangePriority ChPriority(ChangePriority::NORMAL);
+	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	PanelHandle *pResult = nullptr;
 	std::vector<PanelHandle> items;
 	Plugin *pPlugin=nullptr;
@@ -816,7 +816,7 @@ PHPTR PluginManager::OpenFindListPlugin(const PluginPanelItem *PanelItem, int It
 
 void PluginManager::ClosePanel(PHPTR ph)
 {
-	ChangePriority ChPriority(ChangePriority::NORMAL);
+	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	const auto RefCnt = ph->RefCnt;
 	assert(RefCnt > 0);
 	ph->RefCnt = RefCnt - 1;
@@ -911,7 +911,7 @@ int PluginManager::GetFindData(
     int OpMode
 )
 {
-	ChangePriority ChPriority(ChangePriority::NORMAL);
+	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	*pItemsNumber = 0;
 	return ph->pPlugin->GetFindData(ph->hPanel, pPanelData, pItemsNumber, OpMode);
 }
@@ -934,7 +934,7 @@ int PluginManager::GetVirtualFindData(
     const wchar_t *Path
 )
 {
-	ChangePriority ChPriority(ChangePriority::NORMAL);
+	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	*pItemsNumber=0;
 	return ph->pPlugin->GetVirtualFindData(ph->hPanel, pPanelData, pItemsNumber, Path);
 }
@@ -956,7 +956,7 @@ int PluginManager::SetDirectory(
     int OpMode
 )
 {
-	ChangePriority ChPriority(ChangePriority::NORMAL);
+	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	return ph->pPlugin->SetDirectory(ph->hPanel, Dir, OpMode);
 }
 
@@ -994,7 +994,7 @@ int PluginManager::GetFile(
     int OpMode
 )
 {
-	ChangePriority ChPriority(ChangePriority::NORMAL);
+	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	SaveScreen *SaveScr=nullptr;
 	int Found=FALSE;
 	KeepUserScreen=FALSE;
@@ -1048,7 +1048,7 @@ int PluginManager::DeleteFiles(
     int OpMode
 )
 {
-	ChangePriority ChPriority(ChangePriority::NORMAL);
+	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	SaveScreen SaveScr;
 	KeepUserScreen=FALSE;
 	int Code = ph->pPlugin->DeleteFiles(ph->hPanel, PanelItem, ItemsNumber, OpMode);
@@ -1066,7 +1066,7 @@ int PluginManager::MakeDirectory(
     int OpMode
 )
 {
-	ChangePriority ChPriority(ChangePriority::NORMAL);
+	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	SaveScreen SaveScr;
 	KeepUserScreen=FALSE;
 	int Code = ph->pPlugin->MakeDirectory(ph->hPanel, Name, OpMode);
@@ -1085,7 +1085,7 @@ int PluginManager::ProcessHostFile(
     int OpMode
 )
 {
-	ChangePriority ChPriority(ChangePriority::NORMAL);
+	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	SaveScreen SaveScr;
 	KeepUserScreen=FALSE;
 	int Code = ph->pPlugin->ProcessHostFile(ph->hPanel, PanelItem, ItemsNumber, OpMode);
@@ -1098,7 +1098,7 @@ int PluginManager::ProcessHostFile(
 
 bool PluginManager::GetLinkTarget(PHPTR ph, PluginPanelItem *PanelItem, FARString &result, int OpMode)
 {
-	ChangePriority ChPriority(ChangePriority::NORMAL);
+	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	return ph->pPlugin->GetLinkTarget(ph->hPanel, PanelItem, result, OpMode);
 }
 
@@ -1111,7 +1111,7 @@ int PluginManager::GetFiles(
     int OpMode
 )
 {
-	ChangePriority ChPriority(ChangePriority::NORMAL);
+	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	return ph->pPlugin->GetFiles(ph->hPanel, PanelItem, ItemsNumber, Move, DestPath, OpMode);
 }
 
@@ -1124,7 +1124,7 @@ int PluginManager::PutFiles(
     int OpMode
 )
 {
-	ChangePriority ChPriority(ChangePriority::NORMAL);
+	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	SaveScreen SaveScr;
 	KeepUserScreen=FALSE;
 	int Code = ph->pPlugin->PutFiles(ph->hPanel, PanelItem, ItemsNumber, Move, OpMode);

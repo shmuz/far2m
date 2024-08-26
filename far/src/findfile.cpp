@@ -2691,7 +2691,7 @@ static bool FindFilesProcess(Vars &v)
              Msg::FindStop                                                                                                                                                                                            }
     };
 	MakeDialogItemsEx(FindDlgData, FindDlg);
-	ChangePriority ChPriority(ChangePriority::NORMAL);
+	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 
 	if (v.PluginMode) {
 		Panel *ActivePanel = CtrlObject->Cp()->ActivePanel;

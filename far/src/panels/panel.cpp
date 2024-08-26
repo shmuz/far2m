@@ -1372,7 +1372,7 @@ void Panel::DragMessage(int X,int Y,int Move)
 	else
 		MsgX=X;
 
-	ChangePriority ChPriority(ChangePriority::NORMAL);
+	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	delete DragSaveScr;
 	DragSaveScr=new SaveScreen(MsgX,Y,MsgX+Length-1,Y);
 	GotoXY(MsgX,Y);

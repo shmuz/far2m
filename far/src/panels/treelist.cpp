@@ -407,7 +407,7 @@ void TreeList::Update(int Mode)
 
 int TreeList::ReadTree()
 {
-	ChangePriority ChPriority(ChangePriority::NORMAL);
+	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	// SaveScreen SaveScr;
 	SCOPED_ACTION(TPreRedrawFuncGuard)(TreeList::PR_MsgReadTree);
 	ScanTree ScTree(FALSE);
@@ -1539,7 +1539,7 @@ void TreeList::RenTreeName(const wchar_t *SrcName, const wchar_t *DestName)
 
 void TreeList::ReadSubTree(const wchar_t *Path)
 {
-	ChangePriority ChPriority(ChangePriority::NORMAL);
+	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	// SaveScreen SaveScr;
 	SCOPED_ACTION(TPreRedrawFuncGuard)(TreeList::PR_MsgReadTree);
 	ScanTree ScTree(FALSE);

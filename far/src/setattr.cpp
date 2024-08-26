@@ -850,7 +850,7 @@ bool ShellSetFileAttributes(Panel *SrcPanel, LPCWSTR Object)
 
 	SudoClientRegion scr;
 
-	ChangePriority ChPriority(ChangePriority::NORMAL);
+	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	short DlgX = 70, DlgY = 25;
 
 	int SelCount = SrcPanel ? SrcPanel->GetSelCount() : 1;

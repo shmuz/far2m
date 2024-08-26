@@ -1421,7 +1421,7 @@ int FileEditor::ProcessQuitKey(int FirstSave,BOOL NeedQuestion)
 int FileEditor::LoadFile(const wchar_t *Name,int &UserBreak)
 {
 	SudoClientRegion sdc_rgn;
-	ChangePriority ChPriority(ChangePriority::NORMAL);
+	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	SCOPED_ACTION(TPreRedrawFuncGuard)(Editor::PR_EditorShowMsg);
 	SCOPED_ACTION(wakeful);
 	int LastLineCR = 0;

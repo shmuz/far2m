@@ -1435,7 +1435,7 @@ ShellCopy::~ShellCopy()
 
 COPY_CODES ShellCopy::CopyFileTree(const wchar_t *Dest)
 {
-	ChangePriority ChPriority(ChangePriority::NORMAL);
+	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	// SaveScreen SaveScr;
 	DWORD DestAttr = INVALID_FILE_ATTRIBUTES;
 	FARString strSelName;

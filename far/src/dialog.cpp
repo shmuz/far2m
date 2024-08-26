@@ -618,7 +618,7 @@ void Dialog::DisplayObject()
 	CriticalSectionLock Lock(CS);
 
 	if (DialogMode.Check(DMODE_SHOW)) {
-		ChangePriority ChPriority(ChangePriority::NORMAL);
+		SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 		ShowDialog();	// "нарисуем" диалог
 	}
 }
@@ -1796,7 +1796,7 @@ void Dialog::ShowDialog(unsigned ID)
 		return;
 
 	DialogMode.Set(DMODE_DRAWING);	// диалог рисуется!!!
-	ChangePriority ChPriority(ChangePriority::NORMAL);
+	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 
 	if (ID == (unsigned)-1)		// рисуем все?
 	{
