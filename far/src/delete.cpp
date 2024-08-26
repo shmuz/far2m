@@ -265,7 +265,7 @@ void ShellDelete(Panel *SrcPanel,int Wipe)
 		FarChDir(L"/");
 
 	{
-		wakeful W;
+		SCOPED_ACTION(wakeful);
 		bool Cancel=false;
 		//SaveScreen SaveScr;
 		SetCursorType(false,0);

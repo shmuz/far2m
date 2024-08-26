@@ -193,7 +193,7 @@ enum CopyMode
 class CopyProgress
 {
 	ConsoleTitle CopyTitle;
-	wakeful W;
+	SCOPED_ACTION(wakeful);
 	SMALL_RECT Rect;
 	wchar_t Bar[100];
 	size_t BarSize;

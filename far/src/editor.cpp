@@ -3642,7 +3642,7 @@ BOOL Editor::Search(int Next)
 		CurPtr=CurLine;
 		DWORD StartTime=WINPORT(GetTickCount)();
 		int StartLine=NumLine;
-		wakeful W;
+		SCOPED_ACTION(wakeful);
 
 		while (CurPtr)
 		{

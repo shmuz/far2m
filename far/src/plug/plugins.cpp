@@ -2009,7 +2009,7 @@ void PluginManager::ReadUserBackgound(SaveScreen *SaveScr)
 		if (SaveScr)
 			SaveScr->Discard();
 
-		RedrawDesktop Redraw;
+		SCOPED_ACTION(RedrawDesktop);
 	}
 
 	FPanel->LeftPanel->ProcessingPluginCommand--;

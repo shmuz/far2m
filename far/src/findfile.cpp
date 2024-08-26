@@ -2741,7 +2741,7 @@ static bool FindFilesProcess(Vars &v)
 
 	FindFileThread fft(v.PluginMode, reinterpret_cast<HANDLE>(&Dlg));
 	if (fft.StartThread()) {
-		wakeful W;
+		SCOPED_ACTION(wakeful);
 		Dlg.Process();
 		WAIT_FOR_AND_DISPATCH_INTER_THREAD_CALLS(fft.CheckForDone());
 

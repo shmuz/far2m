@@ -2480,7 +2480,7 @@ void Viewer::Search(int Next, int FirstChar)
 			wchar_t Buf[16384];
 
 			int ReadSize;
-			wakeful W;
+			SCOPED_ACTION(wakeful);
 			INT64 StartPos = vtell();
 			DWORD StartTime = WINPORT(GetTickCount)();
 

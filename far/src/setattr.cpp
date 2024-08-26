@@ -1402,7 +1402,7 @@ bool ShellSetFileAttributes(Panel *SrcPanel, LPCWSTR Object)
 					if (SrcPanel) {
 						SrcPanel->GetSelName(nullptr, FileAttr, FileMode);
 					}
-					wakeful W;
+					SCOPED_ACTION(wakeful);
 					bool Cancel = false;
 					DWORD LastTime = 0;
 

@@ -987,7 +987,7 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 		case MCODE_F_DLG_SETFOCUS:       return api.dlgsetfocusFunc();
 		case MCODE_F_EDITOR_POS:
 		{
-			LockOutput Lock(IsTopMacroOutputDisabled());
+			SCOPED_ACTION(LockOutput)(IsTopMacroOutputDisabled());
 			return api.editorposFunc();
 		}
 		case MCODE_F_EDITOR_SEL:         return api.editorselFunc();
@@ -1032,7 +1032,7 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 		case MCODE_F_UCASE:              return api.ucaseFunc();
 		case MCODE_F_WAITKEY:
 		{
-			LockOutput Lock(IsTopMacroOutputDisabled());
+			SCOPED_ACTION(LockOutput)(IsTopMacroOutputDisabled());
 
 			++m_WaitKey;
 			int result = api.waitkeyFunc();

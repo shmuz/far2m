@@ -994,7 +994,7 @@ static int FarDialogRunSynched(HANDLE hDlg)
 		if (FarDialog->GetCanLoseFocus()) {
 			return -1;
 		}
-		LockBottomFrame lbf;    // временно отменим прорисовку фрейма
+		SCOPED_ACTION(LockBottomFrame);    // временно отменим прорисовку фрейма
 		// CtrlObject->Plugins.Flags.Clear(PSIF_DIALOG);
 		FarDialog->Process();
 		ExitCode = FarDialog->GetExitCode();
@@ -1062,7 +1062,7 @@ const wchar_t *FarGetMsgFn(INT_PTR PluginHandle, FarLangMsgID MsgId)
 	std::wstring strPath = pPlugin->GetModuleName().CPtr();
 	CutToSlash(strPath);
 
-	CriticalSectionLock lock(s_get_msg_cs);
+	SCOPED_ACTION(CriticalSectionLock)(s_get_msg_cs);
 	if (!pPlugin->InitLang(strPath.c_str())) {
 		return nullptr;
 	}
@@ -1145,7 +1145,7 @@ static int FarMessageFnSynched(INT_PTR PluginNumber, const GUID *Id, DWORD Flags
 	}
 
 	// непосредственно... вывод
-	LockBottomFrame lbf;    // временно отменим прорисовку фрейма
+	SCOPED_ACTION(LockBottomFrame);    // временно отменим прорисовку фрейма
 	return m.Show(Flags, ButtonsNumber, PluginNumber, Id);
 }
 
@@ -1270,7 +1270,7 @@ static int FarControlSynched(HANDLE hPlugin, int Command, int Param1, LONG_PTR P
 			ScrollScreen(1);
 			SaveScreen SaveScr;
 			{
-				RedrawDesktop Redraw;
+				SCOPED_ACTION(RedrawDesktop);
 				CmdLine->Hide();
 				SaveScr.RestoreArea(FALSE);
 			}

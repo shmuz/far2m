@@ -1423,7 +1423,7 @@ int FileEditor::LoadFile(const wchar_t *Name,int &UserBreak)
 	SudoClientRegion sdc_rgn;
 	ChangePriority ChPriority(ChangePriority::NORMAL);
 	SCOPED_ACTION(TPreRedrawFuncGuard)(Editor::PR_EditorShowMsg);
-	wakeful W;
+	SCOPED_ACTION(wakeful);
 	int LastLineCR = 0;
 	EditorCacheParams cp;
 	UserBreak = 0;
@@ -1797,7 +1797,7 @@ int FileEditor::SaveFile(const wchar_t *Name,int Ask, bool bSaveAs, int TextForm
 		codepage=m_editor->GetCodePage();
 	}
 
-	wakeful W;
+	SCOPED_ACTION(wakeful);
 
 	if (m_editor->Flags.Check(FEDITOR_LOCKMODE) && !m_editor->Flags.Check(FEDITOR_MODIFIED) && !bSaveAs)
 		return SAVEFILE_SUCCESS;

@@ -95,7 +95,7 @@ int GetDirInfo(const wchar_t *Title,
 	SaveScreen SaveScr;
 	UndoGlobalSaveScrPtr UndSaveScr(&SaveScr);
 	SCOPED_ACTION(TPreRedrawFuncGuard)(PR_DrawGetDirInfoMsg);
-	wakeful W;
+	SCOPED_ACTION(wakeful);
 	ScanTree ScTree(FALSE,TRUE, ( (Flags&GETDIRINFO_SCANSYMLINKDEF) ? -1 : ((Flags&GETDIRINFO_SCANSYMLINK) != 0) ) );
 	FAR_FIND_DATA_EX FindData;
 	clock_t StartTime=GetProcessUptimeMSec();

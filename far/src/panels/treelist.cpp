@@ -446,7 +446,7 @@ int TreeList::ReadTree()
 	ScTree.SetFindPath(strRoot, L"*", FSCANTREE_NOFILES | FSCANTREE_NODEVICES);
 	LastScrX = ScrX;
 	LastScrY = ScrY;
-	wakeful W;
+	SCOPED_ACTION(wakeful);
 	while (ScTree.GetNextName(&fdata, strFullName)) {
 		//    if(TreeCount > 3)
 		TreeList::MsgReadTree(TreeCount, FirstCall);
