@@ -44,7 +44,7 @@ Python (optional scripting support), SimpleIndent, TmpPanel.
 * libpcre3-dev (or in older distributives - libpcre2-dev) (needed for custom archives support in multiarc)
 * libluajit-5.1-dev
 * uuid-dev
-* cmake ( >= 3.2.2 )
+* cmake ( >= 3.5 )
 * pkg-config
 * g++
 * git (needed for downloading source code)

@@ -84,7 +84,7 @@ Panel* SelectPanel(int Type)
 static bool ToDouble(long long v, double *d)
 {
 	long long Limit = 1LL << 52;
-	if ((v >= 0 && v < Limit) || (v < 0 && v >= -Limit))
+	if ((v < Limit) && (v >= -Limit))
 	{
 		*d = (double)v;
 		return true;
