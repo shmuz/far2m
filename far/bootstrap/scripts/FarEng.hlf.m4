@@ -161,9 +161,9 @@ executing FAR2M under telnet.
   Disable display of pseudographics characters completely.
 
   #-e[<line>[:<pos>]] <filename>#
-  Edit the specified file. After /e you may optionally specify editor start line
+  Edit the specified file. After -e you may optionally specify editor start line
 and line position.
-  For example: far /e70:2 readme.
+  For example: far -e70:2 readme.
 
   #-p[<path>]#
   Search for "main" plugins in the folder given in <path>.
@@ -175,14 +175,14 @@ but new or changed plugins are not discovered. Should be used ONLY with a stable
 list of plugins. After adding, replacing or deleting a plugin FAR2M should be loaded
 without this switch. If the cache is empty, no plugins will be loaded.
 
-  Remarks about switches /p and /co:
+  Remarks about switches -p and -co:
 
-  - ^<wrap>if /p is empty, then FAR2M will be loaded with no plugins;
-  - ^<wrap>if /p is given with a <path>, then only plugins from <path> will be loaded;
-  - ^<wrap>if only the /co switch is given and plugins cache is not empty, then plugins
+  - ^<wrap>if -p is empty, then FAR2M will be loaded with no plugins;
+  - ^<wrap>if -p is given with a <path>, then only plugins from <path> will be loaded;
+  - ^<wrap>if only the -co switch is given and plugins cache is not empty, then plugins
 will be loaded from cache;
-  - ^<wrap>/co is ignored, if /p is given;
-  - ^<wrap>if /p and /co are not given, then plugins will be loaded from the main folder,
+  - ^<wrap>-co is ignored, if -p is given;
+  - ^<wrap>if -p and -co are not given, then plugins will be loaded from the main folder,
 and from the path given at the "~Path for personal plugins~@PluginsManagerSettings@" parameter.
 
   #-m#
@@ -193,14 +193,14 @@ and from the path given at the "~Path for personal plugins~@PluginsManagerSettin
 
   #-u <username>#
   Allows to have separate settings for different users.
-  For example: far /u guest
+  For example: far -u guest
 
   FAR2M will set the ~environment variable~@FAREnv@ "FARUSER" to the value <username>.
 
   #-v <filename>#
   View the specified file. If <filename> is `#-#', data is read from the stdin.
 
-  For example, "dir|far /v -" will view dir command output.
+  For example, "dir|far -v -" will view dir command output.
 
   If the input stream is empty when using '-' (for example, you have not specified
 the "dir" command in the provided example), FAR2M will wait forever for the end of data
@@ -1369,7 +1369,7 @@ $ #Plugins manager#
   #Path for personal plugins#
   Enter here the full path, where FAR2M will search for "personal" plugins in addition to the "main"
 plugins. Several search paths may be given separated by ':' or ';'. Environment variables can be entered in the
-search path. Personal plugins will not be loaded, if the switches /p or /co are given in the
+search path. Personal plugins will not be loaded, if the switches -p or -co are given in the
 ~command line~@CmdLine@.
 
 @ChoosePluginMenu
@@ -4025,7 +4025,7 @@ to child processes:
 
     #FARLANG#            the name of the current interface language.
 
-    #FARUSER#            ^<wrap>the name of the current user given by the /u ~command line~@CmdLine@ option.
+    #FARUSER#            ^<wrap>the name of the current user given by the -u ~command line~@CmdLine@ option.
 
     #FARDIRSTACK#        ^<wrap>the contents of directories stack top (the stack is managed with #pushd# and #popd# commands)
 

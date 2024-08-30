@@ -448,7 +448,7 @@ int FarAppMain(int argc, char **argv)
 			continue; // 2024-Jul-06: --primary-selection, --maximize and --nomaximize may appear here
 		}
 		bool switchHandled = false;
-		if ((arg_w[0]==L'/' || arg_w[0]==L'-') && arg_w[1])
+		if (arg_w[0]==L'-' && arg_w[1])
 		{
 			switchHandled = true;
 			if (!StrCmpNI(arg_w.c_str() + 1, L"SET:", 4))
