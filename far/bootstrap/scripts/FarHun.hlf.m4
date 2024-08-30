@@ -153,7 +153,7 @@ karakterek megjelenítését. Hasznos lehet, ha a FAR-t telnet alól használjuk
 nyitja meg. A -e után megadható, hogy melyik sor hányadik karakterhelyére
 álljon a kurzor.
 
-          Például: far /e70:2 readme.
+          Például: far -e70:2 readme.
 
   #-i#    ^<wrap>Kicsi, 16x16-os ikont állít be a FAR konzolhoz. Néhány
 konfigurációnál a kapcsoló használata instabil működést eredményezhet.
