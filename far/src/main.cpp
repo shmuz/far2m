@@ -778,8 +778,7 @@ int _cdecl main(int argc, char *argv[])
 		if (argc > 1 &&
 		(strncasecmp(argv[1], "--h", 3) == 0
 		 || strncasecmp(argv[1], "-h", 2) == 0
-		 || strcasecmp(argv[1], "/h") == 0
-		 || strcasecmp(argv[1], "/?") == 0)) {
+		 || strcmp(argv[1], "-?") == 0)) {
 
 			print_help(name);
 			return 0;
@@ -789,7 +788,7 @@ int _cdecl main(int argc, char *argv[])
 	unsetenv("FARSETTINGS"); // don't inherit from parent process in any case
 	unsetenv("SUDO_ASKPASS"); // +
 	for (int i = 1; i + 1 < argc; ++i) {
-		if (!strcasecmp(argv[i],"-u") || !strcasecmp(argv[i],"/u")) {
+		if (!strcasecmp(argv[i],"-u")) {
 			++i;
 			if (*argv[i]) {
 				SetCustomSettings(argv[i]);
