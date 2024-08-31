@@ -134,35 +134,6 @@ static FARString ReconstructCommandLine(int argc, char **argv)
 	return cmd;
 }
 
-static FARString ExecuteCommandAndGrabItsOutput(FARString cmd)
-{
-
-	FARString strTempName;
-
-	if (!FarMkTempEx(strTempName))
-		return FARString();
-
-	std::string exec_cmd = "echo Waiting command to complete...; " \
-		"echo You can use Ctrl+C to stop it, or Ctrl+Alt+C - to hardly terminate.; ";
-	if (cmd.GetLength() != 0)
-	{
-		exec_cmd+= cmd.GetMB();
-	}
-	else
-	{
-		exec_cmd+= "far2m -h";
-	}
-
-	exec_cmd+= " >";
-	exec_cmd+= strTempName.GetMB();
-	exec_cmd+= " 2>&1";
-
-	farExecuteA(exec_cmd.c_str(), EF_NOCMDPRINT);
-
-	return strTempName;
-}
-
-
 static void UpdatePathOptions(const FARString &strDestName, bool IsActivePanel)
 {
 	FARString *outFolder, *outCurFile;
