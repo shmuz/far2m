@@ -45,7 +45,7 @@ const char PluginHandleType[]  = "FarPluginHandle";
 const char AddMacroDataType[]  = "FarAddMacroData";
 const char SavedScreenType[]   = "FarSavedScreen";
 
-const char FAR_KEYINFO[]       = "far.info";
+const char FAR_PLUGINDATA[]    = "far.plugindata";
 const char FAR_VIRTUALKEYS[]   = "far.virtualkeys";
 const char FAR_FLAGSTABLE[]    = "far.Flags";
 const char FAR_DN_STORAGE[]    = "FAR_DN_STORAGE";
@@ -339,7 +339,7 @@ flags_t GetFlagsFromTable(lua_State *L, int pos, const char* key)
 
 TPluginData* GetPluginData(lua_State* L)
 {
-	lua_getfield(L, LUA_REGISTRYINDEX, FAR_KEYINFO);
+	lua_getfield(L, LUA_REGISTRYINDEX, FAR_PLUGINDATA);
 	TPluginData* pd = (TPluginData*) lua_touserdata(L, -1);
 	if (pd)
 		lua_pop(L, 1);
@@ -460,7 +460,7 @@ static void GetMouseEvent(lua_State *L, MOUSE_EVENT_RECORD* rec)
 	rec->dwEventFlags = GetOptIntFromTable(L, "EventFlags", 0);
 }
 
-void PutMouseEvent(lua_State *L, const MOUSE_EVENT_RECORD* rec, BOOL table_exist)
+static void PutMouseEvent(lua_State *L, const MOUSE_EVENT_RECORD* rec, BOOL table_exist)
 {
 	if (!table_exist)
 		lua_createtable(L, 0, 5);
@@ -1876,11 +1876,11 @@ int LF_Message(lua_State* L,
 	const wchar_t* aHelpTopic,
 	const GUID*    aMessageGuid)
 {
-	TPluginData *pd = GetPluginData(L);
 	const wchar_t **items, **pItems;
 	wchar_t** allocLines;
 	int nAlloc;
 	wchar_t *lastDelim, *MsgCopy, *start, *pos;
+	TPluginData *pd = GetPluginData(L);
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
 	int ret = WINPORT(GetConsoleScreenBufferInfo)(NULL, &csbi);//GetStdHandle(STD_OUTPUT_HANDLE)
 	const int max_len   = ret ? csbi.srWindow.Right - csbi.srWindow.Left+1-14 : 66;
@@ -6293,7 +6293,7 @@ int LF_LuaOpen (const struct PluginStartupInfo *aInfo, TPluginData* aPlugData, l
 		// place pointer to plugin data in the L's registry -
 		aPlugData->MainLuaState = L;
 		lua_pushlightuserdata(L, aPlugData);
-		lua_setfield(L, LUA_REGISTRYINDEX, FAR_KEYINFO);
+		lua_setfield(L, LUA_REGISTRYINDEX, FAR_PLUGINDATA);
 
 		// Evaluate the path where the scripts are (ShareDir)
 		// It may (or may not) be the same as ModuleDir.
@@ -6325,7 +6325,7 @@ int LF_InitOtherLuaState (lua_State *L, lua_State *Lplug, lua_CFunction aOpenLib
 	if (L != Lplug) {
 		TPluginData *PluginData = GetPluginData(Lplug);
 		TPluginData *pd = (TPluginData*)lua_newuserdata(L, sizeof(TPluginData));
-		lua_setfield(L, LUA_REGISTRYINDEX, FAR_KEYINFO);
+		lua_setfield(L, LUA_REGISTRYINDEX, FAR_PLUGINDATA);
 		memcpy(pd, PluginData, sizeof(TPluginData));
 		pd->MainLuaState = L;
 		InitLuaState(L, pd, aOpenLibs);

@@ -59,7 +59,6 @@ void  SetAttrWords(const wchar_t* str, DWORD* incl, DWORD* excl);
 void  PushPanelItem(lua_State *L, const struct PluginPanelItem *PanelItem);
 void  PushPanelItems(lua_State *L, HANDLE handle, const struct PluginPanelItem *PanelItems, int ItemsNumber);
 void  PutAttrToTable(lua_State *L, int attr);
-void  PutMouseEvent(lua_State *L, const MOUSE_EVENT_RECORD* rec, BOOL table_exist);
 uint64_t GetFileSizeFromTable(lua_State *L, const char *key);
 FILETIME GetFileTimeFromTable(lua_State *L, const char *key);
 void  PutFileTimeToTable(lua_State *L, const char* key, FILETIME ft);

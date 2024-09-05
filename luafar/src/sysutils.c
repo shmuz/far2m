@@ -9,10 +9,10 @@
 #include "util.h"
 #include "ustring.h"
 
-const char strFileHandle[] = "sysutils.file_handle";
+static const char strFileHandle[] = "sysutils.file_handle";
 
 // lua stack index of 1 is assumed
-HANDLE* checkFileHandle(lua_State *L)
+static HANDLE* checkFileHandle(lua_State *L)
 {
 	HANDLE* pHandle = (HANDLE*)luaL_checkudata(L, 1, strFileHandle);
 	if (*pHandle == INVALID_HANDLE_VALUE)
@@ -20,7 +20,7 @@ HANDLE* checkFileHandle(lua_State *L)
 	return pHandle;
 }
 
-void registerFileHandle(lua_State *L, HANDLE handle)
+static void registerFileHandle(lua_State *L, HANDLE handle)
 {
 	HANDLE *pHandle = (HANDLE*)lua_newuserdata(L, sizeof(HANDLE));
 	*pHandle = handle;
@@ -91,7 +91,7 @@ static int su_OpenFile(lua_State *L)
 	return 1;
 }
 
-int su_FileClose (lua_State *L)
+static int su_FileClose (lua_State *L)
 {
 	HANDLE *pHandle = checkFileHandle(L);
 	BOOL res = WINPORT(CloseHandle)(*pHandle);
@@ -104,7 +104,7 @@ int su_FileClose (lua_State *L)
 	return SysErrorReturn(L);
 }
 
-int su_FileRead (lua_State *L)
+static int su_FileRead (lua_State *L)
 {
 	HANDLE *pHandle = checkFileHandle(L);
 	DWORD count = luaL_checkinteger(L,2);
@@ -121,7 +121,7 @@ int su_FileRead (lua_State *L)
 	return SysErrorReturn(L);
 }
 
-int su_FileWrite (lua_State *L)
+static int su_FileWrite (lua_State *L)
 {
 	HANDLE *pHandle = checkFileHandle(L);
 	int idx;
@@ -140,7 +140,7 @@ int su_FileWrite (lua_State *L)
 }
 
 // taken from MSDN help
-int64_t myFileSeek (HANDLE hf, int64_t distance, DWORD MoveMethod)
+static int64_t myFileSeek (HANDLE hf, int64_t distance, DWORD MoveMethod)
 {
 	 LARGE_INTEGER li;
 	 li.QuadPart = distance;
@@ -153,7 +153,7 @@ int64_t myFileSeek (HANDLE hf, int64_t distance, DWORD MoveMethod)
 	 return li.QuadPart;
 }
 
-int su_FileSeek (lua_State *L)
+static int su_FileSeek (lua_State *L)
 {
 	HANDLE *pHandle = checkFileHandle(L);
 	DWORD origin;
@@ -170,7 +170,7 @@ int su_FileSeek (lua_State *L)
 	return (pos >= 0) ? (lua_pushnumber(L, pos), 1) : SysErrorReturn(L);
 }
 
-int su_SetEndOfFile(lua_State *L)
+static int su_SetEndOfFile(lua_State *L)
 {
 	HANDLE *pHandle = checkFileHandle(L);
 	BOOL res = WINPORT(SetEndOfFile)(*pHandle);
@@ -178,7 +178,7 @@ int su_SetEndOfFile(lua_State *L)
 	return res ? 1 : SysErrorReturn(L);
 }
 
-int su_FlushFileBuffers(lua_State *L)
+static int su_FlushFileBuffers(lua_State *L)
 {
 	HANDLE *pHandle = checkFileHandle(L);
 	BOOL res = WINPORT(FlushFileBuffers)(*pHandle);
@@ -186,34 +186,20 @@ int su_FlushFileBuffers(lua_State *L)
 	return res ? 1 : SysErrorReturn(L);
 }
 
-// helper function
-double L64toDouble (unsigned low, unsigned high)
-{
-	double result = low;
-	if (high)
-	{
-		LARGE_INTEGER large;
-		large.LowPart = low;
-		large.HighPart = high;
-		result = large.QuadPart;
-	}
-	return result;
-}
-
-const luaL_Reg su_funcs[] = {
-	// operations on a single file
-	{"OpenFile", su_OpenFile},          //unicode
-
-	{NULL, NULL}
-};
-
-int gc_FileHandle (lua_State *L)
+static int gc_FileHandle (lua_State *L)
 {
 	HANDLE *pHandle = (HANDLE*)lua_touserdata(L, 1); // no need to check here, IMO
 	if (*pHandle != INVALID_HANDLE_VALUE)
 		WINPORT(CloseHandle)(*pHandle);
 	return 0;
 }
+
+static const luaL_Reg su_funcs[] = {
+	// operations on a single file
+	{"OpenFile", su_OpenFile},          //unicode
+
+	{NULL, NULL}
+};
 
 static const luaL_Reg FileHandle_funcs[] = {
 	{"close",             su_FileClose},
@@ -226,7 +212,7 @@ static const luaL_Reg FileHandle_funcs[] = {
 	{NULL, NULL}
 };
 
-void createmeta(lua_State *L, const char *name)
+static void createmeta(lua_State *L, const char *name)
 {
 	luaL_newmetatable(L, name);   /* create new metatable */
 	lua_pushliteral(L, "__index");
