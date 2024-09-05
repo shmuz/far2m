@@ -5240,16 +5240,22 @@ static int far_InputRecordToName(lua_State* L)
 void NewVirtualKeyTable(lua_State* L, BOOL twoways)
 {
 	int i;
-	lua_createtable(L, 0, twoways ? 360:180);
-	for (i=0; i<256; i++) {
+	lua_createtable(L, twoways ? 256:0, 200);
+
+	for(i=0; i<256; i++)
+	{
 		const char* str = VirtualKeyStrings[i];
-		if (str != NULL) {
+
+		if (str)
+		{
 			lua_pushinteger(L, i);
 			lua_setfield(L, -2, str);
-			if (twoways) {
-				lua_pushstring(L, str);
-				lua_rawseti(L, -2, i);
-			}
+		}
+
+		if (twoways)
+		{
+			lua_pushstring(L, str ? str : "");
+			lua_rawseti(L, -2, i);
 		}
 	}
 }
@@ -5271,26 +5277,30 @@ static int far_CreateFileFilter(lua_State *L)
 	HANDLE hHandle = (luaL_checkinteger(L,1) % 2) ? PANEL_ACTIVE:PANEL_PASSIVE;
 	int filterType = check_env_flag(L,2);
 	HANDLE* pOutHandle = (HANDLE*)lua_newuserdata(L, sizeof(HANDLE));
-	if (PSInfo.FileFilterControl(hHandle, FFCTL_CREATEFILEFILTER, filterType,
-		(LONG_PTR)pOutHandle))
+
+	if (PSInfo.FileFilterControl(hHandle, FFCTL_CREATEFILEFILTER, filterType, (LONG_PTR)pOutHandle))
 	{
 		luaL_getmetatable(L, FarFileFilterType);
 		lua_setmetatable(L, -2);
 	}
 	else
 		lua_pushnil(L);
+
 	return 1;
 }
 
 static int filefilter_Free(lua_State *L)
 {
 	HANDLE *h = CheckFileFilter(L, 1);
-	if (*h != INVALID_HANDLE_VALUE) {
+
+	if (*h != INVALID_HANDLE_VALUE)
+	{
 		lua_pushboolean(L, PSInfo.FileFilterControl(*h, FFCTL_FREEFILEFILTER, 0, 0));
 		*h = INVALID_HANDLE_VALUE;
 	}
 	else
 		lua_pushboolean(L,0);
+
 	return 1;
 }
 
@@ -5490,19 +5500,19 @@ static int far_GetPlugins(lua_State *L)
 
 static int far_IsPluginLoaded(lua_State *L)
 {
-	DWORD SysId = (DWORD)luaL_checkinteger(L, 1);;
+	intptr_t handle;
 	int result = 0;
+	DWORD SysId = (DWORD)luaL_checkinteger(L, 1);;
 
-	intptr_t ret = PSInfo.PluginsControlV3(NULL, PCTL_FINDPLUGIN, PFM_SYSID, &SysId);
-	if (ret)
+	handle = PSInfo.PluginsControlV3(NULL, PCTL_FINDPLUGIN, PFM_SYSID, &SysId);
+	if (handle)
 	{
-		HANDLE handle = (HANDLE)ret;
-		size_t size = PSInfo.PluginsControlV3(handle, PCTL_GETPLUGININFORMATION, 0, 0);
+		size_t size = PSInfo.PluginsControlV3((HANDLE)handle, PCTL_GETPLUGININFORMATION, 0, 0);
 		if (size)
 		{
 			struct FarGetPluginInformation *pi = (struct FarGetPluginInformation *)malloc(size);
 			pi->StructSize = sizeof(*pi);
-			if (PSInfo.PluginsControlV3(handle, PCTL_GETPLUGININFORMATION, size, pi))
+			if (PSInfo.PluginsControlV3((HANDLE)handle, PCTL_GETPLUGININFORMATION, size, pi))
 				result = (pi->Flags & FPF_LOADED) ? 1:0;
 
 			free(pi);
