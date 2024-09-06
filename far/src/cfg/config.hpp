@@ -354,9 +354,9 @@ struct DeleteOptions
 struct MacroOptions
 {
 	DWORD DisableMacro; // параметры /m или /ma или /m....
-	DWORD KeyMacroCtrlDot; // аля KEY_CTRLDOT
-	DWORD KeyMacroCtrlShiftDot; // аля KEY_CTRLSHIFTDOT
 	DWORD ShowPlayIndicator;
+	FARString strKeyMacroCtrlDot; // аля KEY_CTRLDOT
+	FARString strKeyMacroCtrlShiftDot; // аля KEY_CTRLSHIFTDOT
 	FARString strMacroCONVFMT; // формат преобразования double в строку
 	FARString strDateFormat; // Для $Date
 };

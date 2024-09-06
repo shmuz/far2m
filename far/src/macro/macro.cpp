@@ -444,8 +444,8 @@ bool KeyMacro::ProcessKey(FarKey dwKey, const INPUT_RECORD *Rec)
 	if (!KeyToText(dwKey, textKey) || textKey.IsEmpty())
 		return false;
 
-	const bool ctrldot = dwKey == Opt.Macro.KeyMacroCtrlDot;
-	const bool ctrlshiftdot = dwKey == Opt.Macro.KeyMacroCtrlShiftDot;
+	const bool ctrldot = textKey == Opt.Macro.strKeyMacroCtrlDot;
+	const bool ctrlshiftdot = textKey == Opt.Macro.strKeyMacroCtrlShiftDot;
 
 	if (m_Recording == MACROSTATE_NOMACRO)
 	{
