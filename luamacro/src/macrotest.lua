@@ -873,7 +873,6 @@ local function test_Far_GetConfig()
     "Layout.LeftHeightDecrement",
     "Layout.RightHeightDecrement",
     "Layout.WidthDecrement",
-    "Macros.CONVFMT",
     "Macros.DateFormat",
     "Macros.KeyRecordCtrlDot",
     "Macros.KeyRecordCtrlShiftDot",

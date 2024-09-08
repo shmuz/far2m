@@ -430,7 +430,6 @@ static struct FARConfig
 	{1, NSecDescriptions, "SaveInUTF",              &Opt.Diz.SaveInUTF, 0, REG_BOOLEAN},
 
 	{0, NSecMacros, "DateFormat",                   &Opt.Macro.strDateFormat, L"%a %b %d %H:%M:%S %Z %Y"},
-	{0, NSecMacros, "CONVFMT",                      &Opt.Macro.strMacroCONVFMT, L"%.6g"},
 	{1, NSecMacros, "ShowPlayIndicator",            &Opt.Macro.ShowPlayIndicator, 1, REG_BOOLEAN},
 	{1, NSecMacros, "KeyRecordCtrlDot",             &Opt.Macro.strKeyMacroCtrlDot, szCtrlDot},
 	{1, NSecMacros, "KeyRecordCtrlShiftDot",        &Opt.Macro.strKeyMacroCtrlShiftDot, szCtrlShiftDot},

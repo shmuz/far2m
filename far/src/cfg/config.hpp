@@ -357,7 +357,6 @@ struct MacroOptions
 	DWORD ShowPlayIndicator;
 	FARString strKeyMacroCtrlDot; // аля KEY_CTRLDOT
 	FARString strKeyMacroCtrlShiftDot; // аля KEY_CTRLSHIFTDOT
-	FARString strMacroCONVFMT; // формат преобразования double в строку
 	FARString strDateFormat; // Для $Date
 };
 
