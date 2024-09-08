@@ -88,7 +88,10 @@ To force-disable TTY|X and TTY|Xi backends: add argument -DTTYX=no; to disable o
 
 To eliminate libuchardet requirement to reduce far2m dependencies by cost of losing automatic charset detection functionality: add -DUSEUCD=no
 
-To build with Python plugin: add argument -DPYTHON=yes
+To build with Python plugin: add argument `-DPYTHON=yes`  but you must have installed additional packages within yours system:
+libpython3-dev
+libffi-dev
+python3-venv
 
 There're also options to toggle other plugins build in same way: ALIGN AUTOWRAP CALC COLORER COMPARE DRAWLINE EDITCASE EDITORCOMP FARFTP FILECASE INCSRCH INSIDE MULTIARC NETROCKS SIMPLEINDENT TMPPANEL
 
