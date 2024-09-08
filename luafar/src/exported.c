@@ -1366,12 +1366,12 @@ static int Common_ProcessSynchroEvent(lua_State* L, int Event, int Data)
 
 int LF_ProcessSynchroEvent (lua_State* L, int Event, void *Param)
 {
-#if !defined(__FreeBSD__) && !defined(__DragonFly__)
 	if (Event == SE_COMMONSYNCHRO) {
 		TSynchroData sd = *(TSynchroData*)Param; // copy
 		free(Param);
 
 		if (sd.timerData) {
+#if !defined(__FreeBSD__) && !defined(__DragonFly__)
 			int narg, index, posTab;
 			TTimerData *td = sd.timerData;
 			switch (td->closeStage) {
@@ -1394,12 +1394,12 @@ int LF_ProcessSynchroEvent (lua_State* L, int Event, void *Param)
 					luaL_unref(L, LUA_REGISTRYINDEX, td->tabRef);
 					break;
 			}
+#endif
 		}
 		else {
 			Common_ProcessSynchroEvent(L, Event, sd.data);
 		}
 	}
-#endif
 	return 0;
 }
 
