@@ -410,7 +410,7 @@ local function ExecuteCommandLine (tActions, tCommands, sFrom, fConfig)
       elseif v.opt == "r" then
         local path = v.param
         if not path:find("^/") then
-          local panelDir = panel.GetPanelDirectory(nil, 1)
+          local panelDir = panel.GetPanelDirectory(nil, 1).Name
           path = panelDir:gsub("[^/]$", "%1/") .. path
         end
         local f = assert(loadfile(path))

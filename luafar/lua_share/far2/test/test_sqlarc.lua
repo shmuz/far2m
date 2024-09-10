@@ -16,8 +16,8 @@ local F = far.Flags
 
 -- Ensure (partial) restore of panels state
 local function RestorePanelsOnExit()
-  mf.AddExitHandler(panel.SetPanelDirectory, nil, 1, panel.GetPanelDirectory(nil,1))
-  mf.AddExitHandler(panel.SetPanelDirectory, nil, 0, panel.GetPanelDirectory(nil,0))
+  mf.AddExitHandler(panel.SetPanelDirectory, nil, 1, panel.GetPanelDirectory(nil,1).Name)
+  mf.AddExitHandler(panel.SetPanelDirectory, nil, 0, panel.GetPanelDirectory(nil,0).Name)
   mf.AddExitHandler(
     function(arg)
       if APanel.Left~=arg then panel.SetActivePanel(nil,0); end

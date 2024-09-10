@@ -2220,7 +2220,19 @@ static int get_string_info(lua_State *L, int command)
 
 static int panel_GetPanelDirectory(lua_State *L)
 {
-	return get_string_info(L, FCTL_GETPANELDIR);
+	get_string_info(L, FCTL_GETPANELDIR); //puts either a string or a nil on stack top
+
+	if (lua_isstring(L, -1))
+	{
+		lua_createtable(L, 0, 4);
+		lua_insert(L, -2);
+		lua_setfield(L, -2, "Name");
+
+		PutWStrToTable(L, "Param", L"", -1);
+		PutWStrToTable(L, "File",  L"", -1);
+		PutIntToTable(L, "PluginId", 0);
+	}
+	return 1;
 }
 
 static int panel_GetPanelFormat(lua_State *L)

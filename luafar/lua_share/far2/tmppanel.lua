@@ -620,7 +620,7 @@ function Panel:ProcessSaveListKey (Handle)
   if #self:GetItems() == 0 then return end
 
   -- default path: opposite panel directory\panel<index>.<mask extension>
-  local CurDir = panel.GetPanelDirectory(nil, 0)
+  local CurDir = panel.GetPanelDirectory(nil, 0).Name
   local ListPath = AddEndSlash (CurDir) .. "panel"
   if self.Index then
     ListPath = ListPath .. (self.Index - 1)

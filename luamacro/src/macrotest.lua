@@ -1234,16 +1234,16 @@ end
 
 local function test_Panel_SetPath()
   -- store
-  local adir_old = panel.GetPanelDirectory(nil,1)
-  local pdir_old = panel.GetPanelDirectory(nil,0)
+  local adir_old = panel.GetPanelDirectory(nil,1).Name
+  local pdir_old = panel.GetPanelDirectory(nil,0).Name
   --test
   local pdir = "/bin"
   local adir = "/usr/bin"
   local afile = "ldd"
   assert_true(Panel.SetPath(1, pdir))
   assert_true(Panel.SetPath(0, adir, afile))
-  assert_eq (pdir, panel.GetPanelDirectory(nil,0))
-  assert_eq (adir, panel.GetPanelDirectory(nil,1))
+  assert_eq (pdir, panel.GetPanelDirectory(nil,0).Name)
+  assert_eq (adir, panel.GetPanelDirectory(nil,1).Name)
   assert_eq (panel.GetCurrentPanelItem(nil,1).FileName, afile)
   -- restore
   assert_true(Panel.SetPath(1, pdir_old))
@@ -1253,7 +1253,7 @@ end
 
 -- N=Panel.Select(panelType,Action[,Mode[,Items]])
 local function Test_Panel_Select()
-  local adir_old = panel.GetPanelDirectory(nil,1) -- store active panel directory
+  local adir_old = panel.GetPanelDirectory(nil,1).Name -- store active panel directory
 
   local PS = assert_func(Panel.Select)
   local RM,ADD,INV,RST = 0,1,2,3 -- Action
