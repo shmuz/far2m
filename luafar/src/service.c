@@ -2333,13 +2333,21 @@ static int panel_SetPanelDirectory(lua_State *L)
 	HANDLE handle = OptHandle2(L);
 	LONG_PTR param2 = 0;
 	int ret;
-	if (lua_isstring(L, 3)) {
-		const wchar_t* dir = check_utf8_string(L, 3, NULL);
-		param2 = (LONG_PTR)dir;
+
+	if (lua_istable(L, 3)) {
+		lua_getfield(L, 3, "Name");
+		if (lua_isstring(L, -1)) {
+			param2 = (LONG_PTR)check_utf8_string(L, -1, NULL);
+		}
 	}
-	ret = PSInfo.Control(handle, FCTL_SETPANELDIR, 0, param2);
-	if (ret)
+	else if (lua_isstring(L, 3)) {
+		param2 = (LONG_PTR)check_utf8_string(L, 3, NULL);
+	}
+
+	ret = param2 ? PSInfo.Control(handle, FCTL_SETPANELDIR, 0, param2) : 0;
+	if (ret) {
 		PSInfo.Control(handle, FCTL_REDRAWPANEL, 0, 0); //not required in Far3
+	}
 	lua_pushboolean(L, ret);
 	return 1;
 }

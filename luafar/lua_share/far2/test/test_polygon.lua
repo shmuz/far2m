@@ -27,8 +27,8 @@ local Key_View_Pragmas          = "ShiftF4"
 
 -- Ensure (partial) restore of panels state
 local function RestorePanelsOnExit()
-  mf.AddExitHandler(panel.SetPanelDirectory, nil, 1, panel.GetPanelDirectory(nil,1).Name)
-  mf.AddExitHandler(panel.SetPanelDirectory, nil, 0, panel.GetPanelDirectory(nil,0).Name)
+  mf.AddExitHandler(panel.SetPanelDirectory, nil, 1, panel.GetPanelDirectory(nil,1))
+  mf.AddExitHandler(panel.SetPanelDirectory, nil, 0, panel.GetPanelDirectory(nil,0))
   mf.AddExitHandler(
     function(arg)
       if APanel.Left~=arg then panel.SetActivePanel(nil,0); end
