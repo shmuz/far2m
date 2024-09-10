@@ -2343,6 +2343,8 @@ static int panel_SetPanelDirectory(lua_State *L)
 	else if (lua_isstring(L, 3)) {
 		param2 = (LONG_PTR)check_utf8_string(L, 3, NULL);
 	}
+	else
+		luaL_argerror(L, 3, "table or string");
 
 	ret = param2 ? PSInfo.Control(handle, FCTL_SETPANELDIR, 0, param2) : 0;
 	if (ret) {
