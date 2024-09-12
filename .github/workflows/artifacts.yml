@@ -51,7 +51,7 @@ jobs:
       run: tree
 
     - name: Packing Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: far2m-release${{ matrix.dependencies }}
         path: ${{github.workspace}}/build/install
