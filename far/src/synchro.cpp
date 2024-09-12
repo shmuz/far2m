@@ -31,47 +31,36 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
-
 #include "ctrlobj.hpp"
 #include "synchro.hpp"
 #include "plclass.hpp"
-#include <farplug-wide.h>
-
 
 PluginSynchro PluginSynchroManager;
 
 void PluginSynchro::Synchro(INT_PTR ModuleNumber, void* Param)
 {
-	RecursiveMutex.lock();
-	SynchroData item;
-	item.ModuleNumber = ModuleNumber;
-	item.Param = Param;
-	Data.push_back(item);
-	RecursiveMutex.unlock();
+	SCOPED_ACTION(std::lock_guard<std::recursive_mutex>)(RecursiveMutex);
+	Data.emplace_back(ModuleNumber, Param);
 }
 
-bool PluginSynchro::Process(void)
+bool PluginSynchro::Process()
 {
 	Plugin* pPlugin = nullptr;
 	void* param = nullptr;
 
-	RecursiveMutex.lock();
-
-	if (!Data.empty())
 	{
-		const auto& item = Data.front();
-		pPlugin = (Plugin*)item.ModuleNumber;
-		param = item.Param;
-		Data.erase(Data.begin());
+		SCOPED_ACTION(std::lock_guard<std::recursive_mutex>)(RecursiveMutex);
+		if (!Data.empty()) {
+			const auto& item = Data.front();
+			pPlugin = (Plugin*)item.ModuleNumber;
+			param = item.Param;
+			Data.pop_front();
+		}
 	}
 
-	RecursiveMutex.unlock();
-
-	if (pPlugin && CtrlObject->Plugins.FindPlugin(pPlugin)) //check if plugin is still loaded
-	{
+	if (pPlugin && CtrlObject->Plugins.FindPlugin(pPlugin)) { //check if plugin is still loaded
 		pPlugin->ProcessSynchroEvent(SE_COMMONSYNCHRO, param);
 		return true;
 	}
-
 	return false;
 }

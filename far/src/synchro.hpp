@@ -41,6 +41,7 @@ class PluginSynchro
 		{
 			INT_PTR ModuleNumber;
 			void* Param;
+			SynchroData(INT_PTR mnum, void* param) : ModuleNumber(mnum), Param(param) {}
 		};
 	private:
 		std::recursive_mutex RecursiveMutex;
