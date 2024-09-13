@@ -970,6 +970,7 @@ local function test_Far_GetConfig()
     "System.DriveExceptions",
     "System.DriveMenuMode2",
     "System.ExcludeCmdHistory",
+    "System.FastSynchroEvents",
     "System.FileSearchMode",
     "System.FindAlternateStreams",
     "System.FindCodePage",

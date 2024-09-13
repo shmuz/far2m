@@ -34,6 +34,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ctrlobj.hpp"
 #include "synchro.hpp"
 #include "plclass.hpp"
+#include "config.hpp"
 
 PluginSynchro PluginSynchroManager;
 
@@ -45,22 +46,31 @@ void PluginSynchro::Synchro(INT_PTR ModuleNumber, void* Param)
 
 bool PluginSynchro::Process()
 {
-	Plugin* pPlugin = nullptr;
-	void* param = nullptr;
+	bool Ret = false;
 
-	{
-		SCOPED_ACTION(std::lock_guard<std::recursive_mutex>)(RecursiveMutex);
-		if (!Data.empty()) {
-			const auto& item = Data.front();
-			pPlugin = (Plugin*)item.ModuleNumber;
-			param = item.Param;
-			Data.pop_front();
+	while (true) {
+		Plugin* pPlugin = nullptr;
+		void* param = nullptr;
+
+		{
+			SCOPED_ACTION(std::lock_guard<std::recursive_mutex>)(RecursiveMutex);
+			if (!Data.empty()) {
+				const auto& item = Data.front();
+				pPlugin = (Plugin*)item.ModuleNumber;
+				param = item.Param;
+				Data.pop_front();
+				Ret = true;
+			}
+			else
+				return Ret;
 		}
-	}
 
-	if (pPlugin && CtrlObject->Plugins.FindPlugin(pPlugin)) { //check if plugin is still loaded
-		pPlugin->ProcessSynchroEvent(SE_COMMONSYNCHRO, param);
-		return true;
+		if (pPlugin && CtrlObject->Plugins.FindPlugin(pPlugin)) { //check if plugin is still loaded
+			pPlugin->ProcessSynchroEvent(SE_COMMONSYNCHRO, param);
+			if (!Opt.FastSynchroEvents)
+				return true;
+		}
+		else if (!Opt.FastSynchroEvents)
+			return false;
 	}
-	return false;
 }

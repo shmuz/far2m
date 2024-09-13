@@ -331,6 +331,7 @@ static struct FARConfig
 	{1, NSecSystem, "OnlyFilesSize",                &Opt.OnlyFilesSize, 0, REG_BOOLEAN},
 	{0, NSecSystem, "UsePrintManager",              &Opt.UsePrintManager, 1, REG_BOOLEAN},
 	{0, NSecSystem, "WindowMode",                   &Opt.WindowMode, 0, REG_BOOLEAN},
+	{1, NSecSystem, "FastSynchroEvents",            &Opt.FastSynchroEvents, 1, REG_BOOLEAN},
 
 	{0, NSecPanelTree, "MinTreeCount",              &Opt.Tree.MinTreeCount, 4},
 	{0, NSecPanelTree, "TreeFileAttr",              &Opt.Tree.TreeFileAttr, FILE_ATTRIBUTE_HIDDEN},
