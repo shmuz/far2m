@@ -65,12 +65,10 @@ bool PluginSynchro::Process()
 				return Ret;
 		}
 
-		if (pPlugin && CtrlObject->Plugins.FindPlugin(pPlugin)) { //check if plugin is still loaded
+		if (pPlugin && CtrlObject->Plugins.FindPlugin(pPlugin)) //check if plugin is still loaded
 			pPlugin->ProcessSynchroEvent(SE_COMMONSYNCHRO, param);
-			if (!Opt.FastSynchroEvents)
-				return true;
-		}
-		else if (!Opt.FastSynchroEvents)
-			return false;
+
+		if (!Opt.FastSynchroEvents)
+			return true;
 	}
 }
