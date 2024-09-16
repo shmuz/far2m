@@ -48,6 +48,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "message.hpp"
 #include "stddlg.hpp"
 #include "vtshell.h"
+#include "hilight.hpp"
 
 Options Opt = {0};
 
@@ -114,6 +115,14 @@ void SanitizeHistoryCounts()
 	Opt.DialogsHistoryCount = std::max(Opt.DialogsHistoryCount, 16);
 }
 
+void SanitizeIndentationCounts()
+{
+	if (Opt.MaxFilenameIndentation > HIGHLIGHT_MAX_MARK_LENGTH)
+		Opt.MaxFilenameIndentation = HIGHLIGHT_MAX_MARK_LENGTH;
+	if (Opt.MinFilenameIndentation > HIGHLIGHT_MAX_MARK_LENGTH)
+		Opt.MinFilenameIndentation = HIGHLIGHT_MAX_MARK_LENGTH;
+}
+
 void SystemSettings()
 {
 	DialogBuilder Builder(Msg::ConfigSystemTitle, L"SystemSettings");
@@ -172,6 +181,19 @@ void PanelSettings()
 
 	Builder.AddCheckbox(Msg::ConfigHidden, &Opt.ShowHidden);
 	Builder.AddCheckbox(Msg::ConfigHighlight, &Opt.Highlight);
+	Builder.AddCheckbox(Msg::ConfigFilenameMarks, &Opt.ShowFilenameMarks);
+
+	DialogItemEx *IndentationMinEdit = Builder.AddIntEditField((int *)&Opt.MinFilenameIndentation, 2);
+	DialogItemEx *MinText = Builder.AddTextAfter(IndentationMinEdit, Msg::ConfigFilenameMinIndentation);
+	IndentationMinEdit->Indent(1);
+	MinText->Indent(1);
+
+	Builder.AddCheckbox(Msg::ConfigFilenameMarksAlign, &Opt.FilenameMarksAllign);
+	DialogItemEx *IndentationMaxEdit = Builder.AddIntEditField((int *)&Opt.MaxFilenameIndentation, 2);
+	DialogItemEx *MaxText = Builder.AddTextBefore(IndentationMaxEdit, Msg::ConfigFilenameMaxIndentation);
+	IndentationMaxEdit->Indent(4);
+	MaxText->Indent(4);
+
 	Builder.AddCheckbox(Msg::ConfigAutoChange, &Opt.Tree.AutoChangeFolder);
 	Builder.AddCheckbox(Msg::ConfigSelectFolders, &Opt.SelectFolders);
 	Builder.AddCheckbox(Msg::ConfigCaseSensitiveCompareSelect, &Opt.PanelCaseSensitiveCompareSelect);
@@ -200,7 +222,9 @@ void PanelSettings()
 		if (!AutoUpdate)
 			Opt.AutoUpdateLimit = 0;
 
-		//  FrameManager->RefreshFrame();
+		SanitizeIndentationCounts();
+
+		// FrameManager->RefreshFrame();
 		CtrlObject->Cp()->LeftPanel->Update(UPDATE_KEEP_SELECTION);
 		CtrlObject->Cp()->RightPanel->Update(UPDATE_KEEP_SELECTION);
 		CtrlObject->Cp()->Redraw();

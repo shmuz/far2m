@@ -49,6 +49,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pick_color.hpp"
 #include "datetime.hpp"
 #include "strmix.hpp"
+#include "config.hpp"
 #include "DlgGuid.hpp"
 
 FileFilterParams::FileFilterParams()
@@ -619,7 +620,6 @@ LONG_PTR WINAPI FileFilterConfigDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_P
 			static const DWORD FarColor[] = {COL_PANELTEXT, COL_PANELSELECTEDTEXT, COL_PANELCURSOR, COL_PANELSELECTEDCURSOR};
 			wchar_t VerticalLine0[] = {BoxSymbols[BS_V2], 0};
 			wchar_t VerticalLine1[] = {BoxSymbols[BS_V1], 0};
-			static const wchar_t *wstrSpaces = L"                               ";
 
 			union { SMALL_RECT drect; uint64_t i64drect; };
 			union { SMALL_RECT irect; uint64_t i64irect; };
@@ -632,9 +632,16 @@ LONG_PTR WINAPI FileFilterConfigDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_P
 			HighlightDataColor *hl = &fphlstate->hl;
 			size_t	filenameexamplelen = wcslen(Msg::HighlightExample1);
 			size_t	freespace = irect.Right - irect.Left - filenameexamplelen - 2;
-			size_t	ng = freespace, mcl;
-			mcl = StrSizeOfCells(hl->Mark, hl->MarkLen, ng, false);
+			size_t	ng = freespace;
+			size_t	mcl = StrSizeOfCells(hl->Mark, hl->MarkLen, ng, false);
 			ng = StrCellsCount( hl->Mark, mcl );
+
+			size_t	prews = std::min(Opt.MinFilenameIndentation, Opt.MaxFilenameIndentation);
+			if (ng < prews)
+				prews -= ng;
+			else
+				prews = 0;
+
 			uint64_t ColorB = FarColorToReal(COL_PANELBOX);
 
 			for (int i = 0; i < 4; i++) {
@@ -649,7 +656,7 @@ LONG_PTR WINAPI FileFilterConfigDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_P
 
 				if (!(ColorHF & 0xFF)) {
 					ColorHF = FarColorToReal(FarColor[i]);
-					}
+				}
 				if (!(ColorHM & 0xFF)) {
 					ColorHM = ColorHF;
 					MaskHM = hl->Mask[HIGHLIGHTCOLORTYPE_FILE][i];
@@ -664,11 +671,18 @@ LONG_PTR WINAPI FileFilterConfigDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_P
 				x++;
 				Text(x, y, ColorM, hl->Mark, mcl);
 				x += ng;
+
+				if (prews) {
+					Text(L' ', prews);
+					x += prews;
+				}
+
 				Text(x, y, ColorF, Msg::HighlightExample1, filenameexamplelen);
 				x += filenameexamplelen;
 				ColorF &= (0xFFFFFFFFFFFFFFFF ^ (COMMON_LVB_STRIKEOUT | COMMON_LVB_UNDERSCORE));
-				Text(x, y, ColorF, wstrSpaces, freespace-ng);
-				x += (freespace - ng);
+				Text(L' ', ColorF, freespace-(ng + prews));
+
+				x += (freespace - (ng + prews));
 				Text(x, y, ColorB, VerticalLine1, 1);
 			}
 
@@ -766,7 +780,7 @@ LONG_PTR WINAPI FileFilterConfigDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_P
 				
 				int nLength = (int)SendDlgMessage(hDlg, DM_GETTEXTLENGTH, ID_HER_MARKEDIT, 0);
 				if (nLength > HIGHLIGHT_MAX_MARK_LENGTH ) {
-					SendDlgMessage(hDlg, DM_SETTEXTPTR, ID_HER_MARKEDIT, (LONG_PTR)&fphlstate->hl.Mark[0]);
+					SendDlgMessage(hDlg, DM_SETTEXTPTRSILENT, ID_HER_MARKEDIT, (LONG_PTR)&fphlstate->hl.Mark[0]);
 				}
 				else {
 					SendDlgMessage(hDlg, DM_GETTEXTPTR, ID_HER_MARKEDIT, (LONG_PTR)&fphlstate->hl.Mark[0]);
@@ -791,9 +805,7 @@ LONG_PTR WINAPI FileFilterConfigDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_P
 					fphlstate->hl.MarkLen = nLength;
 				}
 
-//				HighlightDlgUpdateUserControl(fphlstate);
 				SendDlgMessage(hDlg, DM_REDRAW, 0, 0);
-
 				return TRUE;
 			}
 
@@ -996,7 +1008,7 @@ bool FileFilterConfig(FileFilterParams *FF, bool ColorConfig)
 	FilterDlg[ID_HER_COLOREXAMPLE].VBuf = fphlstate.vbuff;
 
 	FilterDlg[ID_HER_MARKEDIT].strData = fphlstate.hl.Mark;
-	FilterDlg[ID_HER_MARKINHERIT].Selected = (fphlstate.hl.bMarkInherit ? 1 : 0);
+	FilterDlg[ID_HER_MARKINHERIT].Selected = ((fphlstate.hl.Flags & HL_FLAGS_MARK_INHERIT) ? 1 : 0);
 
 	FilterDlg[ID_HER_CONTINUEPROCESSING].Selected = (FF->GetContinueProcessing() ? 1 : 0);
 	FilterDlg[ID_FF_NAMEEDIT].strData = FF->GetTitle();
@@ -1176,7 +1188,8 @@ bool FileFilterConfig(FileFilterParams *FF, bool ColorConfig)
 			if (FilterDlg[ID_FF_MATCHMASK].Selected && !FileMask.Set(FilterDlg[ID_FF_MASKEDIT].strData, 0))
 				continue;
 
-			fphlstate.hl.bMarkInherit = FilterDlg[ID_HER_MARKINHERIT].Selected;
+//			fphlstate.hl.Flags = 0;
+			fphlstate.hl.Flags = FilterDlg[ID_HER_MARKINHERIT].Selected; // HL_FLAGS_MARK_INHERIT
 
 			FF->SetColors(&fphlstate.hl);
 			FF->SetContinueProcessing(FilterDlg[ID_HER_CONTINUEPROCESSING].Selected != 0);

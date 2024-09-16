@@ -55,6 +55,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "strmix.hpp"
 
 void SanitizeHistoryCounts();
+void SanitizeIndentationCounts();
 
 static bool g_config_ready = false;
 
@@ -379,6 +380,10 @@ static struct FARConfig
 	{0, NSecPanel, "CtrlAltShiftRule",              &Opt.PanelCtrlAltShiftRule, 0, REG_3STATE},
 	{0, NSecPanel, "RememberLogicalDrives",         &Opt.RememberLogicalDrives, 0},
 	{1, NSecPanel, "AutoUpdateLimit",               &Opt.AutoUpdateLimit, 0},
+	{1, NSecPanel, "ShowFilenameMarks",             &Opt.ShowFilenameMarks, 1, REG_BOOLEAN},
+	{1, NSecPanel, "FilenameMarksAllign",           &Opt.FilenameMarksAllign, 0, REG_BOOLEAN},
+	{1, NSecPanel, "MinFilenameIndentation",        &Opt.MinFilenameIndentation, 0},
+	{1, NSecPanel, "MaxFilenameIndentation",        &Opt.MaxFilenameIndentation, HIGHLIGHT_MAX_MARK_LENGTH},
 
 	{1, NSecPanelLeft, "Type",                      &Opt.LeftPanel.Type, 0},
 	{1, NSecPanelLeft, "Visible",                   &Opt.LeftPanel.Visible, 1, REG_BOOLEAN},
@@ -659,6 +664,7 @@ void ConfigOptLoad()
 	/* <ПОСТПРОЦЕССЫ> *************************************************** */
 
 	SanitizeHistoryCounts();
+	SanitizeIndentationCounts();
 
 	if (Opt.CursorBlinkTime < 100)
 		Opt.CursorBlinkTime = 100;

@@ -335,7 +335,6 @@ void SetColors()
 				for(size_t i = 0; i < SIZE_ARRAY_PALETTE; i++) {
 					Palette[i] = DefaultPalette8bit[i];
 				}
-
 				break;
 			}
 
@@ -473,7 +472,7 @@ void GetColor(int PaletteIndex)
 		MenuToRedraw2->Hide();			// гасим
 		MenuToRedraw1->Hide();
 		FrameManager->RefreshFrame();	// рефрешим
-		FrameManager->Commit();	// коммитим.
+		FrameManager->Commit();			// коммитим.
 		MenuToRedraw1->SetColors();
 		MenuToRedraw1->Show();			// кажем
 		MenuToRedraw2->SetColors();
@@ -488,6 +487,6 @@ void GetColor(int PaletteIndex)
 			ShowTime(1);
 
 		ScrBuf.Unlock();				// разрешаем прорисовку
-		FrameManager->Commit();	// коммитим.
+		FrameManager->Commit();			// коммитим.
 	}
 }

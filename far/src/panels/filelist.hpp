@@ -159,6 +159,7 @@ class FileList:public Panel
 		uint64_t SelFileSize;
 		uint64_t TotalFileSize;
 		uint64_t FreeDiskSize;
+		size_t	MarkLM;
 		clock_t LastUpdateTime;
 		int Height,Columns;
 

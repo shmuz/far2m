@@ -170,6 +170,7 @@ void FileList::ReadFileNames(int KeepSelection, int IgnoreVisible, int DrawMessa
 	TotalFileSize = 0;
 	CacheSelIndex = -1;
 	CacheSelClearIndex = -1;
+	MarkLM = 0;
 
 	if (Opt.ShowPanelFree) {
 		uint64_t TotalSize, TotalFree;
@@ -272,7 +273,7 @@ void FileList::ReadFileNames(int KeepSelection, int IgnoreVisible, int DrawMessa
 
 			if (!(fdata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
 				if ((fdata.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) == 0 || Opt.ScanJunction) {
-					TotalFileSize+= NewPtr->FileSize;
+					TotalFileSize += NewPtr->FileSize;
 				}
 			}
 
@@ -425,7 +426,7 @@ void FileList::ReadFileNames(int KeepSelection, int IgnoreVisible, int DrawMessa
 	}
 
 	if (Opt.Highlight && FileCount)
-		CtrlObject->HiFiles->GetHiColor(&ListData[0], FileCount);
+		CtrlObject->HiFiles->GetHiColor(&ListData[0], FileCount, false, &MarkLM);
 
 	CreateChangeNotification(FALSE);
 	CorrectPosition();
@@ -609,6 +610,8 @@ void FileList::UpdatePlugin(int KeepSelection, int IgnoreVisible)
 	TotalFileSize = 0;
 	CacheSelIndex = -1;
 	CacheSelClearIndex = -1;
+	MarkLM = 0;
+
 	strPluginDizName.Clear();
 
 	if (FileCount > 0) {
@@ -695,7 +698,7 @@ void FileList::UpdatePlugin(int KeepSelection, int IgnoreVisible)
 
 	if ((Info.Flags & OPIF_USEHIGHLIGHTING) || (Info.Flags & OPIF_USEATTRHIGHLIGHTING))
 		CtrlObject->HiFiles->GetHiColor(ListData, FileListCount,
-				(Info.Flags & OPIF_USEATTRHIGHLIGHTING) != 0);
+				(Info.Flags & OPIF_USEATTRHIGHLIGHTING) != 0, &MarkLM);
 
 	FileCount = FileListCount;
 
@@ -703,7 +706,7 @@ void FileList::UpdatePlugin(int KeepSelection, int IgnoreVisible)
 		FileListItem *CurPtr = AddParentPoint(FileCount);
 
 		if ((Info.Flags & OPIF_USEHIGHLIGHTING) || (Info.Flags & OPIF_USEATTRHIGHLIGHTING))
-			CtrlObject->HiFiles->GetHiColor(&CurPtr, 1, (Info.Flags & OPIF_USEATTRHIGHLIGHTING) != 0);
+			CtrlObject->HiFiles->GetHiColor(&CurPtr, 1, (Info.Flags & OPIF_USEATTRHIGHLIGHTING) != 0, &MarkLM );
 
 		if (Info.HostFile && *Info.HostFile) {
 			FAR_FIND_DATA_EX FindData;
