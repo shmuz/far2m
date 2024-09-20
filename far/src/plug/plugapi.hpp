@@ -112,7 +112,7 @@ int WINAPI FarMenuV2Fn(INT_PTR PluginNumber, const GUID *Id, int X, int Y, int M
 int WINAPI FarMessageV3Fn(INT_PTR PluginNumber, const GUID *Id, DWORD Flags, const wchar_t *HelpTopic,
 		const wchar_t *const *Items, int ItemsNumber, int ButtonsNumber);
 void WINAPI FarFreeScreen(HANDLE hScreen);
-void WINAPI FarTextV2(int X, int Y, const ColorDialogData *Color, const wchar_t *Str);
+void WINAPI FarTextV2(int X, int Y, const ColorDialogData *Data, const wchar_t *Str);
 int WINAPI FarEditorControlV2(int EditorId, int Command, void *Param);
 int WINAPI FarViewerControlV2(int ViewerId, int Command, void *Param);
 HANDLE WINAPI FarDialogInitV3(INT_PTR PluginNumber, const GUID *Id, int X1, int Y1, int X2, int Y2,

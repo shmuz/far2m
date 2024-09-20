@@ -951,20 +951,12 @@ bool GetColorDialog(INT_PTR PluginNumber, ColorDialogData *Data, DWORD Flags)
 {
 	if (Data)
 	{
-		uint64_t Color =
-			((uint64_t)(Data->BackColor & 0xFFFFFF) << 40) |
-			((uint64_t)(Data->ForeColor & 0xFFFFFF) << 16) |
-			((Data->Flags & 0xFF) << 8) |
-			(Data->PaletteColor & 0xFF);
-
+		uint64_t Color = Data->Color;
 		uint64_t *pMask = (Flags & FCD_USEMASK) ? &Data->Mask : nullptr;
 
 		if (GetColorDialogInner(&Color, pMask, Flags&FCD_RGB, Flags&FCD_FONTSTYLES, true, PluginNumber))
 		{
-			Data->BackColor = (Color >> 40) & 0xFFFFFF;
-			Data->ForeColor = (Color >> 16) & 0xFFFFFF;
 			Data->Flags = (Color >> 8) & 0xFF;
-			Data->PaletteColor = Color & 0xFF;
 			Data->Color = Color;
 			if (pMask)
 				Data->Mask = *pMask;

@@ -84,7 +84,6 @@ void MoveRealCursor(int X, int Y);
 void GetRealCursorPos(SHORT &X, SHORT &Y);
 void ScrollScreen(int Count);
 
-void Text(int X, int Y, const ColorDialogData *Color, const WCHAR *Str);
 void Text(int X, int Y, uint64_t Color, const WCHAR *Str);
 void Text(int X, int Y, uint64_t Color, const WCHAR *Str, size_t Length);
 void Text(const WCHAR Ch, uint64_t Color, size_t Length);

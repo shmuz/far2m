@@ -1283,10 +1283,7 @@ enum FARCOLORDIALOGFLAGS
 
 struct ColorDialogData
 {
-	DWORD ForeColor;
-	DWORD BackColor;
-	unsigned char PaletteColor;
-	unsigned char Flags;
+	DWORD Flags;
 	uint64_t Color;
 	uint64_t Mask;
 };

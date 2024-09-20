@@ -3046,11 +3046,13 @@ static void FillColorForeAndBack(lua_State *L, struct FarTrueColorForeAndBack *f
 
 static void FillDialogColors(lua_State *L, struct ColorDialogData *Data)
 {
-	Data->ForeColor    = GetColorFromTable  (L, "ForegroundColor", 1);
-	Data->BackColor    = GetColorFromTable  (L, "BackgroundColor", 2);
-	Data->PaletteColor = GetColorFromTable  (L, "PaletteColor", 3);
-	Data->Flags        = GetColorFromTable  (L, "Flags", 4);
+	uint64_t Fore      = GetColorFromTable  (L, "ForegroundColor", 1) & 0xFFFFFF;
+	uint64_t Back      = GetColorFromTable  (L, "BackgroundColor", 2) & 0xFFFFFF;
+	uint64_t Palette   = GetColorFromTable  (L, "PaletteColor", 3) & 0xFF;
+	uint64_t Flags     = GetColorFromTable  (L, "Flags", 4) & 0xFF;
 	Data->Mask         = GetOptIntFromTable (L, "Mask", 0); //NOTE: Data->Mask is a 64-bit value
+	Data->Flags        = (DWORD)Flags;
+	Data->Color        = (Back << 40) | (Fore << 16) | (Flags << 8) | Palette;
 }
 
 static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
@@ -5648,15 +5650,13 @@ static int far_Log(lua_State *L)
 static int far_ColorDialog(lua_State *L)
 {
 	TPluginData* pd = GetPluginData(L);
-	struct ColorDialogData Data = { 0, 0, 0x0F, 0, 0, 0 };
+	struct ColorDialogData Data = { 0, 0x0F, 0 };
 	int success;
 
 	uint64_t Color = check64(L, 1, &success);
 	if (success) {
-		Data.BackColor    = (Color >> 40) & 0xFFFFFF;
-		Data.ForeColor    = (Color >> 16) & 0xFFFFFF;
-		Data.Flags        = (Color >>  8) & 0xFF;
-		Data.PaletteColor = (Color >>  0) & 0xFF;
+		Data.Color = Color;
+		Data.Flags = (Color >>  8) & 0xFF;
 	}
 	else if (lua_istable(L, 1)) {
 		lua_pushvalue(L, 1);
@@ -5670,9 +5670,9 @@ static int far_ColorDialog(lua_State *L)
 
 	if (PSInfo.ColorDialog(pd->ModuleNumber, &Data, Flags)) {
 		lua_createtable(L, 0, 4);
-		PutIntToTable(L, "ForegroundColor", Data.ForeColor);
-		PutIntToTable(L, "BackgroundColor", Data.BackColor);
-		PutIntToTable(L, "PaletteColor", Data.PaletteColor);
+		PutIntToTable(L, "ForegroundColor", (Data.Color >> 16) & 0xFFFFFF);
+		PutIntToTable(L, "BackgroundColor", (Data.Color >> 40) & 0xFFFFFF);
+		PutIntToTable(L, "PaletteColor", Data.Color & 0xFF);
 		PutIntToTable(L, "Flags", Data.Flags);
 
 		bit64_push(L, Data.Mask);  lua_setfield(L, -2, "Mask");

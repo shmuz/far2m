@@ -497,18 +497,6 @@ void Text(int X, int Y, uint64_t Color, const WCHAR *Str, size_t Length)
 	Text(Str, Length);
 }
 
-void Text(int X, int Y, const ColorDialogData *Color, const WCHAR *Str)
-{
-	CurColor =
-		((uint64_t) (Color->BackColor & 0x00FFFFFF) << 40) |
-		((uint64_t) (Color->ForeColor & 0x00FFFFFF) << 16) |
-		((uint64_t) (Color->Flags                 ) <<  8) |
-		((uint64_t) (Color->PaletteColor          ) <<  0);
-	CurX = X;
-	CurY = Y;
-	Text(Str);
-}
-
 void Text(int X, int Y, uint64_t Color, const WCHAR *Str)
 {
 	CurColor = Color;
