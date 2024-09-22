@@ -82,7 +82,7 @@ public:
 
 	int64_t CallFar(int CheckCode, const FarMacroCall* Data);
 	bool CheckWaitKeyFunc() const;
-	int  GetState() const;
+	FARMACROSTATE GetState() const;
 	FarKey PeekKey() const;
 	FARMACROAREA GetArea() const { return m_Area; }
 	FarKey GetKey();
@@ -95,8 +95,8 @@ public:
 	bool CanSendKeysToPlugin() const;
 
 private:
-	static int GetExecutingState();
-	static bool GetMacroSettings(FarKey Key,DWORD &Flags, const wchar_t* Src, const wchar_t* Descr);
+	static FARMACROSTATE GetExecutingState();
+	static bool GetMacroSettings(FarKey Key, DWORD &Flags, const wchar_t* Src, const wchar_t* Descr);
 
 	int AssignMacroKey(FarKey& MacroKey, DWORD& Flags);
 	void RestoreMacroChar() const;
@@ -104,8 +104,8 @@ private:
 	static FARString m_RecCode;
 	static FARString m_RecDescription;
 	FARMACROAREA m_Area;
-	FARMACROAREA m_StartMode;
-	int m_Recording;
+	FARMACROAREA m_StartArea;
+	FARMACROSTATE m_Recording;
 	int m_InternalInput;
 	int m_WaitKey;
 	FARString m_StringToPrint;

@@ -195,10 +195,11 @@ static bool MacroPluginOp(int OpCode, const FarMacroValue& Param, MacroPluginRet
 	return false;
 }
 
-int KeyMacro::GetExecutingState()
+FARMACROSTATE KeyMacro::GetExecutingState()
 {
 	MacroPluginReturn Ret;
-	return MacroPluginOp(OP_ISEXECUTING, false, &Ret) ? Ret.ReturnType : MACROSTATE_NOMACRO;
+	return MacroPluginOp(OP_ISEXECUTING, false, &Ret) ?
+		static_cast<FARMACROSTATE>(Ret.ReturnType) : MACROSTATE_NOMACRO;
 }
 
 bool KeyMacro::IsOutputDisabled()
@@ -253,7 +254,7 @@ static bool TryToPostMacro(int Area, const FARString& TextKey, DWORD IntKey)
 
 KeyMacro::KeyMacro():
 	m_Area(MACROAREA_SHELL),
-	m_StartMode(MACROAREA_OTHER),
+	m_StartArea(MACROAREA_OTHER),
 	m_Recording(MACROSTATE_NOMACRO),
 	m_InternalInput(0),
 	m_WaitKey(0)
@@ -290,7 +291,7 @@ bool KeyMacro::SaveMacros()
 	return CallMacroPlugin(&info);
 }
 
-int KeyMacro::GetState() const
+FARMACROSTATE KeyMacro::GetState() const
 {
 	return (m_Recording != MACROSTATE_NOMACRO) ? m_Recording : GetExecutingState();
 }
@@ -468,7 +469,7 @@ bool KeyMacro::ProcessKey(FarKey dwKey, const INPUT_RECORD *Rec)
 			}
 
 			// Где мы?
-			m_StartMode = m_Area;
+			m_StartArea = m_Area;
 			// В зависимости от того, КАК НАЧАЛИ писать макрос, различаем общий режим (Ctrl-.
 			// с передачей плагину кеев) или специальный (Ctrl-Shift-. - без передачи клавиш плагину)
 			m_Recording = ctrldot?MACROSTATE_RECORDING_COMMON:MACROSTATE_RECORDING;
@@ -524,7 +525,7 @@ bool KeyMacro::ProcessKey(FarKey dwKey, const INPUT_RECORD *Rec)
 				FARString strKey;
 				KeyToText(MacroKey, strKey);
 				Flags |= m_Recording == MACROSTATE_RECORDING_COMMON? MFLAGS_NONE : MFLAGS_NOSENDKEYSTOPLUGINS;
-				LM_ProcessRecordedMacro(m_StartMode, strKey, m_RecCode, Flags, m_RecDescription);
+				LM_ProcessRecordedMacro(m_StartArea, strKey, m_RecCode, Flags, m_RecDescription);
 			}
 
 			m_Recording = MACROSTATE_NOMACRO;
@@ -975,7 +976,7 @@ int KeyMacro::AssignMacroKey(FarKey& MacroKey, DWORD& Flags)
 		{DI_COMBOBOX, 5, 3, 28, 3, {}, DIF_FOCUS|DIF_DEFAULT, L""}
 	};
 	MakeDialogItemsEx(MacroAssignDlgData, MacroAssignDlg);
-	DlgParam Param(m_StartMode);
+	DlgParam Param(m_StartArea);
 	IsProcessAssignMacroKey++;
 	Dialog Dlg(MacroAssignDlg, ARRAYSIZE(MacroAssignDlg), AssignMacroDlgProc, (LONG_PTR)&Param);
 	Dlg.SetPosition(-1, -1, 34, 6);
