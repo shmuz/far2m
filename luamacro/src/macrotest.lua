@@ -884,7 +884,7 @@ local function test_Far_GetConfig()
     "Panel.CaseSensitiveCompareSelect",
     "Panel.CtrlAltShiftRule",
     "Panel.CtrlFRule",
-    "Panel.FilenameMarksAllign",
+    "Panel.FilenameMarksAlign",
     "Panel.Highlight",
     "Panel/Layout.ColumnTitles",
     "Panel/Layout.FreeInfo",

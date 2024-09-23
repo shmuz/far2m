@@ -381,7 +381,7 @@ static struct FARConfig
 	{0, NSecPanel, "RememberLogicalDrives",         &Opt.RememberLogicalDrives, 0},
 	{1, NSecPanel, "AutoUpdateLimit",               &Opt.AutoUpdateLimit, 0},
 	{1, NSecPanel, "ShowFilenameMarks",             &Opt.ShowFilenameMarks, 1, REG_BOOLEAN},
-	{1, NSecPanel, "FilenameMarksAllign",           &Opt.FilenameMarksAllign, 0, REG_BOOLEAN},
+	{1, NSecPanel, "FilenameMarksAlign",            &Opt.FilenameMarksAlign, 1, REG_BOOLEAN},
 	{1, NSecPanel, "MinFilenameIndentation",        &Opt.MinFilenameIndentation, 0},
 	{1, NSecPanel, "MaxFilenameIndentation",        &Opt.MaxFilenameIndentation, HIGHLIGHT_MAX_MARK_LENGTH},
 

@@ -373,7 +373,7 @@ struct Options
 	int ShowHidden;
 
 	int ShowFilenameMarks;
-	int FilenameMarksAllign;
+	int FilenameMarksAlign;
 	DWORD MinFilenameIndentation, MaxFilenameIndentation;
 
 	int Highlight;
