@@ -800,7 +800,6 @@ bool KeyMacro::DelMacro(DWORD PluginId, void* Id)
 // обработчик диалогового окна назначения клавиши
 LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 {
-	DWORD dw;
 	FARString strKeyText;
 	static FarKey LastKey = 0;
 	static DlgParam *KMParam = nullptr;
@@ -811,18 +810,18 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg, int Msg, int Param1, L
 		KMParam = reinterpret_cast<DlgParam*>(Param2);
 		LastKey = 0;
 		// <Клавиши, которые не введешь в диалоге назначения>
-		DWORD PreDefKeyMain[]=
+		FarKey PreDefKeyMain[]=
 		{
 			KEY_CTRLDOWN, KEY_ENTER, KEY_NUMENTER, KEY_ESC, KEY_F1, KEY_CTRLF5,
 		};
 
-		for (size_t i = 0; i < ARRAYSIZE(PreDefKeyMain); i++)
+		for (auto Key: PreDefKeyMain)
 		{
-			KeyToText(PreDefKeyMain[i], strKeyText);
+			KeyToText(Key, strKeyText);
 			SendDlgMessage(hDlg, DM_LISTADDSTR, 2, reinterpret_cast<LONG_PTR>(strKeyText.CPtr()));
 		}
 
-		DWORD PreDefKey[]=
+		FarKey PreDefKey[]=
 		{
 			KEY_MSWHEEL_UP, KEY_MSWHEEL_DOWN, KEY_MSWHEEL_LEFT, KEY_MSWHEEL_RIGHT,
 			KEY_MSLCLICK, KEY_MSRCLICK, KEY_MSM1CLICK, KEY_MSM2CLICK, KEY_MSM3CLICK,
@@ -830,18 +829,18 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg, int Msg, int Param1, L
 			KEY_MSLDBLCLICK, KEY_MSRDBLCLICK, KEY_MSM1DBLCLICK, KEY_MSM2DBLCLICK, KEY_MSM3DBLCLICK,
 #endif
 		};
-		DWORD PreDefModKey[]=
+		FarKey PreDefModKey[]=
 		{
 			0, KEY_CTRL, KEY_SHIFT, KEY_ALT, KEY_CTRLSHIFT, KEY_CTRLALT, KEY_ALTSHIFT,
 		};
 
-		for (size_t i = 0; i < ARRAYSIZE(PreDefKey); i++)
+		for (auto Key: PreDefKey)
 		{
 			SendDlgMessage(hDlg, DM_LISTADDSTR, 2, reinterpret_cast<LONG_PTR>(L"\1"));
 
-			for (size_t j = 0; j < ARRAYSIZE(PreDefModKey); j++)
+			for (auto Mod: PreDefModKey)
 			{
-				KeyToText(PreDefKey[i]|PreDefModKey[j], strKeyText);
+				KeyToText(Key | Mod, strKeyText);
 				SendDlgMessage(hDlg, DM_LISTADDSTR, 2, reinterpret_cast<LONG_PTR>(strKeyText.CPtr()));
 			}
 		}
@@ -852,7 +851,7 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg, int Msg, int Param1, L
 	else if (Param1 == 2 && Msg == DN_EDITCHANGE)
 	{
 		LastKey = 0;
-		auto KeyCode = KeyNameToKey(((FarDialogItem*)Param2)->PtrData);
+		FarKey KeyCode = KeyNameToKey(((FarDialogItem*)Param2)->PtrData);
 
 		if (KeyCode != KEY_INVALID && !KMParam->Recurse)
 		{
@@ -860,24 +859,21 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg, int Msg, int Param1, L
 			KeyIsValid = true;
 		}
 	}
-	else if (Msg == DN_KEY && (dw = (Param2 & KEY_END_SKEY), (dw < KEY_END_FKEY) ||
-	                           (dw > INTERNAL_KEY_BASE && dw < INTERNAL_KEY_BASE_2)))
+	else if (Msg == DN_KEY)
 	{
-		// Обработка особых клавиш: F1 & Enter
-		// Esc & (Enter и предыдущий Enter) - не обрабатываем
-		if (Param2 == KEY_ESC ||
-		        ((Param2 == KEY_ENTER||Param2 == KEY_NUMENTER) && (LastKey == KEY_ENTER||LastKey == KEY_NUMENTER)) ||
-		        Param2 == KEY_CTRLDOWN ||
-		        Param2 == KEY_F1)
+		DWORD dw = Param2 & KEY_END_SKEY;
+		if ((dw < KEY_END_FKEY) || (dw > INTERNAL_KEY_BASE && dw < INTERNAL_KEY_BASE_2))
 		{
-			return FALSE;
+			// Обработка особых клавиш
+			if (Param2 == KEY_ESC || Param2 == KEY_CTRLDOWN || Param2 == KEY_F1)
+				return FALSE;
+
+			// Было что-то уже нажато и Enter`ом подтверждаем
+			if (LastKey && (Param2 == KEY_ENTER || Param2 == KEY_NUMENTER))
+				return FALSE;
+
+			KeyIsValid = true;
 		}
-
-		// Было что-то уже нажато и Enter`ом подтверждаем
-		if ((Param2 == KEY_ENTER||Param2 == KEY_NUMENTER) && LastKey && !(LastKey == KEY_ENTER||LastKey == KEY_NUMENTER))
-			return FALSE;
-
-		KeyIsValid = true;
 	}
 
 	if (KeyIsValid)
