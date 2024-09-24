@@ -138,7 +138,6 @@ struct DlgParam
 	DWORD Flags = 0;
 	FARMACROAREA Area;
 	FarKey MacroKey = KEY_INVALID;
-	int Recurse = 0;
 	bool Done = false;
 
 	DlgParam(FARMACROAREA aArea) : Area(aArea) {}
@@ -801,14 +800,16 @@ bool KeyMacro::DelMacro(DWORD PluginId, void* Id)
 LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 {
 	FARString strKeyText;
-	static FarKey LastKey = 0;
-	static DlgParam *KMParam = nullptr;
+	static int Recurse;
+	static FarKey LastKey;
+	static DlgParam *KMParam;
 	bool KeyIsValid = false;
 
 	if (Msg == DN_INITDIALOG)
 	{
 		KMParam = reinterpret_cast<DlgParam*>(Param2);
 		LastKey = 0;
+		Recurse = 0;
 		// <Клавиши, которые не введешь в диалоге назначения>
 		FarKey PreDefKeyMain[]=
 		{
@@ -853,7 +854,7 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg, int Msg, int Param1, L
 		LastKey = 0;
 		FarKey KeyCode = KeyNameToKey(((FarDialogItem*)Param2)->PtrData);
 
-		if (KeyCode != KEY_INVALID && !KMParam->Recurse)
+		if (KeyCode != KEY_INVALID && !Recurse)
 		{
 			Param2 = KeyCode;
 			KeyIsValid = true;
@@ -948,9 +949,9 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg, int Msg, int Param1, L
 			}
 		}
 
-		KMParam->Recurse++;
+		Recurse++;
 		SendDlgMessage(hDlg, DM_SETTEXTPTR, 2, (LONG_PTR)strKeyText.CPtr());
-		KMParam->Recurse--;
+		Recurse--;
 		LastKey=(FarKey)Param2;
 		return TRUE;
 	}

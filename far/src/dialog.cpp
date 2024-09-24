@@ -4186,7 +4186,9 @@ int Dialog::SelectFromComboBox(DialogItemEx *CurItem,
 	if (CurItem->Flags & (DIF_DROPDOWNLIST | DIF_LISTNOAMPERSAND))
 		HiText2Str(strStr, strStr);
 
-	ComboBox->SetSelectPos(ComboBox->FindItem(0, strStr, LIFIND_EXACTMATCH), 1);
+	if (!strStr.IsEmpty()) {
+		ComboBox->SetSelectPos(ComboBox->FindItem(0, strStr, LIFIND_EXACTMATCH), 1);
+	}
 	ComboBox->Show();
 	OriginalPos = Dest = ComboBox->GetSelectPos();
 	CurItem->IFlags.Set(DLGIIF_COMBOBOXNOREDRAWEDIT);
