@@ -135,15 +135,15 @@ std::string GuidToString(const GUID& Guid)
 struct DlgParam
 {
 	const FARMACROAREA Area;
-	bool Edited;
+	bool Changed;
 	FarKey MacroKey;
 	DWORD Flags;
 };
 
 enum ASSIGN_MACRO_KEY_STATUS {
-	AMK_CANCEL,    // operation was canceled
-	AMK_NOTEDITED, // Macro Settings dialog was not called
-	AMK_EDITED,    // Macro Settings dialog was called
+	AMK_CANCELED,   // operation was canceled
+	AMK_NOTCHANGED, // Macro Settings dialog was not called
+	AMK_CHANGED,    // Macro Settings dialog was called
 };
 
 FARString KeyMacro::m_RecCode;
@@ -506,17 +506,17 @@ bool KeyMacro::ProcessKey(FarKey dwKey, const INPUT_RECORD *Rec)
 			DWORD Flags = 0;
 			int AssignRet = AssignMacroKey(MacroKey, Flags);
 
-			if (AssignRet == AMK_NOTEDITED && !m_RecCode.IsEmpty())
+			if (AssignRet == AMK_NOTCHANGED && !m_RecCode.IsEmpty())
 			{
 				m_RecCode = L"Keys(\"" + m_RecCode + L"\")";
 				if (ctrlshiftdot && !GetMacroSettings(MacroKey, Flags, m_RecCode, m_RecDescription))
 				{
-					AssignRet = AMK_CANCEL;
+					AssignRet = AMK_CANCELED;
 				}
 			}
 			m_InternalInput = 0;
 
-			if (AssignRet != AMK_CANCEL)
+			if (AssignRet != AMK_CANCELED)
 			{
 				FARString strKey;
 				KeyToText(MacroKey, strKey);
@@ -930,7 +930,7 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg, int Msg, int Param1, L
 					if (GetMacroSettings(key, Data.Flags, strBufKey, strDescription))
 					{
 						KMParam->Flags = Data.Flags;
-						KMParam->Edited = true;
+						KMParam->Changed = true;
 						SendDlgMessage(hDlg, DM_CLOSE, 1, 0);
 						return TRUE;
 					}
@@ -975,11 +975,11 @@ int KeyMacro::AssignMacroKey(FarKey& MacroKey, DWORD& Flags)
 	IsProcessAssignMacroKey--;
 
 	if (Dlg.GetExitCode() == -1)
-		return AMK_CANCEL;
+		return AMK_CANCELED;
 
 	MacroKey = Param.MacroKey;
 	Flags = Param.Flags;
-	return Param.Edited ? AMK_EDITED : AMK_NOTEDITED;
+	return Param.Changed ? AMK_CHANGED : AMK_NOTCHANGED;
 }
 
 static int Set3State(DWORD Flags, DWORD Chk1, DWORD Chk2)
