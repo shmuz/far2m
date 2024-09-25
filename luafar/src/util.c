@@ -19,8 +19,7 @@ int Log(lua_State *L, const char* Format, ...)
 			FILE* fp = fopen(buf, "a");
 			if (fp) {
 				if (++N == 1) {
-					time_t rtime;
-					time (&rtime);
+					time_t rtime = time(NULL);
 					fprintf(fp, "\n%s------------------------\n", ctime(&rtime));
 				}
 				fprintf(fp, "%d: %08X: ", N, GetPluginData(L)->PluginId);

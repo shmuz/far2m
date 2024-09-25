@@ -72,8 +72,7 @@ int Log(const char* Format, ...)
 			FILE* fp = fopen(buf, "a");
 			if (fp) {
 				if (++N == 1) {
-					time_t rtime;
-					time (&rtime);
+					time_t rtime = time(nullptr);
 					fprintf(fp, "\n%s------------------------------\n", ctime(&rtime));
 				}
 				fprintf(fp, "%d: ", N);
@@ -135,18 +134,16 @@ std::string GuidToString(const GUID& Guid)
 // для диалога назначения клавиши
 struct DlgParam
 {
-	DWORD Flags = 0;
-	FARMACROAREA Area;
-	FarKey MacroKey = KEY_INVALID;
-	bool Done = false;
-
-	DlgParam(FARMACROAREA aArea) : Area(aArea) {}
+	const FARMACROAREA Area;
+	bool Edited;
+	FarKey MacroKey;
+	DWORD Flags;
 };
 
-enum ASSIGN_MACRO_KEY {
-	AMK_CANCEL,  // operation was canceled
-	AMK_NOTDONE, // Macro Settings dialog was not called
-	AMK_DONE     // Macro Settings dialog was called
+enum ASSIGN_MACRO_KEY_STATUS {
+	AMK_CANCEL,    // operation was canceled
+	AMK_NOTEDITED, // Macro Settings dialog was not called
+	AMK_EDITED,    // Macro Settings dialog was called
 };
 
 FARString KeyMacro::m_RecCode;
@@ -509,7 +506,7 @@ bool KeyMacro::ProcessKey(FarKey dwKey, const INPUT_RECORD *Rec)
 			DWORD Flags = 0;
 			int AssignRet = AssignMacroKey(MacroKey, Flags);
 
-			if (AssignRet == AMK_NOTDONE && !m_RecCode.IsEmpty())
+			if (AssignRet == AMK_NOTEDITED && !m_RecCode.IsEmpty())
 			{
 				m_RecCode = L"Keys(\"" + m_RecCode + L"\")";
 				if (ctrlshiftdot && !GetMacroSettings(MacroKey, Flags, m_RecCode, m_RecDescription))
@@ -523,18 +520,14 @@ bool KeyMacro::ProcessKey(FarKey dwKey, const INPUT_RECORD *Rec)
 			{
 				FARString strKey;
 				KeyToText(MacroKey, strKey);
-				Flags |= m_Recording == MACROSTATE_RECORDING_COMMON? MFLAGS_NONE : MFLAGS_NOSENDKEYSTOPLUGINS;
+				Flags |= m_Recording == MACROSTATE_RECORDING_COMMON ? MFLAGS_NONE : MFLAGS_NOSENDKEYSTOPLUGINS;
 				LM_ProcessRecordedMacro(m_StartArea, strKey, m_RecCode, Flags, m_RecDescription);
+				if (Opt.AutoSaveSetup)
+					SaveMacros();
 			}
 
 			m_Recording = MACROSTATE_NOMACRO;
-			m_RecCode.Clear();
-			m_RecDescription.Clear();
 			ScrBuf.Flush(true);
-
-			if (Opt.AutoSaveSetup)
-				SaveMacros();
-
 			return true;
 		}
 		else
@@ -544,7 +537,7 @@ bool KeyMacro::ProcessKey(FarKey dwKey, const INPUT_RECORD *Rec)
 				if (!m_RecCode.IsEmpty())
 					m_RecCode += L' ';
 
-				m_RecCode += textKey == L"\""? L"\\\"" : textKey;
+				m_RecCode += textKey == L"\"" ? L"\\\"" : textKey;
 			}
 			return false;
 		}
@@ -937,7 +930,7 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg, int Msg, int Param1, L
 					if (GetMacroSettings(key, Data.Flags, strBufKey, strDescription))
 					{
 						KMParam->Flags = Data.Flags;
-						KMParam->Done = true;
+						KMParam->Edited = true;
 						SendDlgMessage(hDlg, DM_CLOSE, 1, 0);
 						return TRUE;
 					}
@@ -973,7 +966,7 @@ int KeyMacro::AssignMacroKey(FarKey& MacroKey, DWORD& Flags)
 		{DI_COMBOBOX, 5, 3, 28, 3, {}, DIF_FOCUS|DIF_DEFAULT, L""}
 	};
 	MakeDialogItemsEx(MacroAssignDlgData, MacroAssignDlg);
-	DlgParam Param(m_StartArea);
+	DlgParam Param {m_StartArea, false, 0, 0};
 	IsProcessAssignMacroKey++;
 	Dialog Dlg(MacroAssignDlg, ARRAYSIZE(MacroAssignDlg), AssignMacroDlgProc, (LONG_PTR)&Param);
 	Dlg.SetPosition(-1, -1, 34, 6);
@@ -986,7 +979,7 @@ int KeyMacro::AssignMacroKey(FarKey& MacroKey, DWORD& Flags)
 
 	MacroKey = Param.MacroKey;
 	Flags = Param.Flags;
-	return Param.Done ? AMK_DONE : AMK_NOTDONE;
+	return Param.Edited ? AMK_EDITED : AMK_NOTEDITED;
 }
 
 static int Set3State(DWORD Flags, DWORD Chk1, DWORD Chk2)
