@@ -134,20 +134,14 @@ std::string GuidToString(const GUID& Guid)
 // для диалога назначения клавиши
 struct DlgParam
 {
-	const FARMACROAREA Area;
 	bool Changed;
 	FarKey MacroKey;
 	DWORD Flags;
 };
 
-enum ASSIGN_MACRO_KEY_STATUS {
-	AMK_CANCELED,   // operation was canceled
-	AMK_NOTCHANGED, // Macro Settings dialog was not called
-	AMK_CHANGED,    // Macro Settings dialog was called
-};
-
 FARString KeyMacro::m_RecCode;
 FARString KeyMacro::m_RecDescription;
+FARMACROAREA KeyMacro::m_StartArea;
 
 void ShowUserMenu(size_t Count, const FarMacroValue *Values)
 {
@@ -250,7 +244,6 @@ static bool TryToPostMacro(int Area, const FARString& TextKey, DWORD IntKey)
 
 KeyMacro::KeyMacro():
 	m_Area(MACROAREA_SHELL),
-	m_StartArea(MACROAREA_OTHER),
 	m_Recording(MACROSTATE_NOMACRO),
 	m_InternalInput(0),
 	m_WaitKey(0)
@@ -501,27 +494,25 @@ bool KeyMacro::ProcessKey(FarKey dwKey, const INPUT_RECORD *Rec)
 		if (ctrldot||ctrlshiftdot) // признак конца записи?
 		{
 			m_InternalInput = 1;
-			DWORD MacroKey;
-			// выставляем флаги по умолчанию.
-			DWORD Flags = 0;
-			int AssignRet = AssignMacroKey(MacroKey, Flags);
+			DlgParam Param {false, 0, 0};
+			bool AssignRet = AssignMacroKey(&Param);
 
-			if (AssignRet == AMK_NOTCHANGED && !m_RecCode.IsEmpty())
+			if (AssignRet && !Param.Changed && !m_RecCode.IsEmpty())
 			{
 				m_RecCode = L"Keys(\"" + m_RecCode + L"\")";
-				if (ctrlshiftdot && !GetMacroSettings(MacroKey, Flags, m_RecCode, m_RecDescription))
+				if (ctrlshiftdot && !GetMacroSettings(Param.MacroKey, Param.Flags, m_RecCode, m_RecDescription))
 				{
-					AssignRet = AMK_CANCELED;
+					AssignRet = false;
 				}
 			}
 			m_InternalInput = 0;
 
-			if (AssignRet != AMK_CANCELED)
+			if (AssignRet)
 			{
 				FARString strKey;
-				KeyToText(MacroKey, strKey);
-				Flags |= m_Recording == MACROSTATE_RECORDING_COMMON ? MFLAGS_NONE : MFLAGS_NOSENDKEYSTOPLUGINS;
-				LM_ProcessRecordedMacro(m_StartArea, strKey, m_RecCode, Flags, m_RecDescription);
+				KeyToText(Param.MacroKey, strKey);
+				Param.Flags |= m_Recording == MACROSTATE_RECORDING_COMMON ? MFLAGS_NONE : MFLAGS_NOSENDKEYSTOPLUGINS;
+				LM_ProcessRecordedMacro(m_StartArea, strKey, m_RecCode, Param.Flags, m_RecDescription);
 				if (Opt.AutoSaveSetup)
 					SaveMacros();
 			}
@@ -883,7 +874,7 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg, int Msg, int Param1, L
 
 		// если УЖЕ есть такой макрос...
 		GetMacroData Data;
-		if (LM_GetMacro(&Data, KMParam->Area, strKeyText, true) && Data.IsKeyboardMacro)
+		if (LM_GetMacro(&Data, m_StartArea, strKeyText, true) && Data.IsKeyboardMacro)
 		{
 			// общие макросы учитываем только при удалении.
 			if (m_RecCode.IsEmpty() || Data.Area != MACROAREA_COMMON)
@@ -951,7 +942,7 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg, int Msg, int Param1, L
 	return DefDlgProc(hDlg, Msg, Param1, Param2);
 }
 
-int KeyMacro::AssignMacroKey(FarKey& MacroKey, DWORD& Flags)
+bool KeyMacro::AssignMacroKey(DlgParam *Param)
 {
 	/*
 	  +------ Define macro ------+
@@ -966,20 +957,14 @@ int KeyMacro::AssignMacroKey(FarKey& MacroKey, DWORD& Flags)
 		{DI_COMBOBOX, 5, 3, 28, 3, {}, DIF_FOCUS|DIF_DEFAULT, L""}
 	};
 	MakeDialogItemsEx(MacroAssignDlgData, MacroAssignDlg);
-	DlgParam Param {m_StartArea, false, 0, 0};
 	IsProcessAssignMacroKey++;
-	Dialog Dlg(MacroAssignDlg, ARRAYSIZE(MacroAssignDlg), AssignMacroDlgProc, (LONG_PTR)&Param);
+	Dialog Dlg(MacroAssignDlg, ARRAYSIZE(MacroAssignDlg), AssignMacroDlgProc, (LONG_PTR)Param);
 	Dlg.SetPosition(-1, -1, 34, 6);
 	Dlg.SetHelp(L"KeyMacro");
 	Dlg.Process();
 	IsProcessAssignMacroKey--;
 
-	if (Dlg.GetExitCode() == -1)
-		return AMK_CANCELED;
-
-	MacroKey = Param.MacroKey;
-	Flags = Param.Flags;
-	return Param.Changed ? AMK_CHANGED : AMK_NOTCHANGED;
+	return (Dlg.GetExitCode() != -1);
 }
 
 static int Set3State(DWORD Flags, DWORD Chk1, DWORD Chk2)
