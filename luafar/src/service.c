@@ -4769,22 +4769,23 @@ static int DoAdvControl (lua_State *L, int Command, int Delta)
 			wi.Pos = luaL_optinteger(L, pos2, 0) - 1;
 
 			if (Command == ACTL_GETWINDOWINFO) {
-				int r = PSInfo.AdvControl(pd->ModuleNumber, Command, &wi, NULL);
-				if (!r)
+				if (!PSInfo.AdvControl(pd->ModuleNumber, Command, &wi, NULL))
 					return lua_pushnil(L), 1;
-				wi.TypeName = (wchar_t*)
-					lua_newuserdata(L, (wi.TypeNameSize + wi.NameSize) * sizeof(wchar_t));
+
+				wi.TypeName = (wchar_t*)lua_newuserdata(L, (wi.TypeNameSize + wi.NameSize) * sizeof(wchar_t));
 				wi.Name = wi.TypeName + wi.TypeNameSize;
 			}
 
-			int r = PSInfo.AdvControl(pd->ModuleNumber, Command, &wi, NULL);
-			if (!r)
+			if (!PSInfo.AdvControl(pd->ModuleNumber, Command, &wi, NULL))
 				return lua_pushnil(L), 1;
+
 			lua_createtable(L,0,4);
 			PutIntToTable(L, "Pos", wi.Pos + 1);
 			PutIntToTable(L, "Type", wi.Type);
 			PutBoolToTable(L, "Modified", wi.Modified);
 			PutBoolToTable(L, "Current", wi.Current);
+			PutIntToTable(L, "Flags", //far3 compatibility
+				(wi.Modified ? WIF_MODIFIED : 0) | (wi.Current ? WIF_CURRENT : 0));
 			if (Command == ACTL_GETWINDOWINFO) {
 				PutWStrToTable(L, "TypeName", wi.TypeName, -1);
 				PutWStrToTable(L, "Name", wi.Name, -1);

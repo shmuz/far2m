@@ -1641,6 +1641,16 @@ enum WINDOWINFO_TYPE
 #endif // END FAR_USE_INTERNALS
 };
 
+#ifdef LUAFAR_INTERNALS    // luafar only; use 53 bits at most
+enum WINDOWINFO_FLAGS
+{
+	WIF_MODIFIED = 0x0001,
+	WIF_CURRENT  = 0x0002,
+	//WIF_MODAL  = 0x0004,
+	WIF_NONE     = 0,
+};
+#endif
+
 struct WindowInfo
 {
 	int  Pos;
