@@ -1305,6 +1305,14 @@ enum WINDOWINFO_TYPE
 	WTYPE_HELP,
 };
 
+enum WINDOWINFO_FLAGS
+{
+	WIF_MODIFIED = 0x0001,
+	WIF_CURRENT  = 0x0002,
+	WIF_MODAL    = 0x0004,
+	WIF_NONE     = 0,
+};
+
 struct WindowInfo
 {
 	int  Pos;
@@ -1315,6 +1323,7 @@ struct WindowInfo
 	int TypeNameSize;
 	wchar_t *Name;
 	int NameSize;
+	DWORD Flags;
 };
 
 enum PROGRESSTATE

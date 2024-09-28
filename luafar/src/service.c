@@ -4779,13 +4779,10 @@ static int DoAdvControl (lua_State *L, int Command, int Delta)
 			if (!PSInfo.AdvControl(pd->ModuleNumber, Command, &wi, NULL))
 				return lua_pushnil(L), 1;
 
-			lua_createtable(L,0,4);
+			lua_createtable(L,0,5);
 			PutIntToTable(L, "Pos", wi.Pos + 1);
 			PutIntToTable(L, "Type", wi.Type);
-			PutBoolToTable(L, "Modified", wi.Modified);
-			PutBoolToTable(L, "Current", wi.Current);
-			PutIntToTable(L, "Flags", //far3 compatibility
-				(wi.Modified ? WIF_MODIFIED : 0) | (wi.Current ? WIF_CURRENT : 0));
+			PutIntToTable(L, "Flags", wi.Flags);
 			if (Command == ACTL_GETWINDOWINFO) {
 				PutWStrToTable(L, "TypeName", wi.TypeName, -1);
 				PutWStrToTable(L, "Name", wi.Name, -1);
