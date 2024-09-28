@@ -4779,7 +4779,20 @@ static int DoAdvControl (lua_State *L, int Command, int Delta)
 			if (!PSInfo.AdvControl(pd->ModuleNumber, Command, &wi, NULL))
 				return lua_pushnil(L), 1;
 
-			lua_createtable(L,0,5);
+			lua_createtable(L, 0, 6);
+
+			switch(wi.Type)
+			{
+				case WTYPE_DIALOG:
+					NewDialogData(L, (HANDLE)wi.Id, FALSE);
+					lua_setfield(L, -2, "Id");
+					break;
+
+				default:
+					PutIntToTable(L, "Id", (int)wi.Id);
+					break;
+			}
+
 			PutIntToTable(L, "Pos", wi.Pos + 1);
 			PutIntToTable(L, "Type", wi.Type);
 			PutIntToTable(L, "Flags", wi.Flags);

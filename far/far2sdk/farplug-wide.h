@@ -1660,6 +1660,7 @@ struct WindowInfo
 	wchar_t *Name;
 	int NameSize;
 	DWORD Flags;
+	intptr_t Id;
 };
 
 enum PROGRESSTATE

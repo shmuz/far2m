@@ -455,6 +455,17 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 				wi->Current = f == FrameManager->GetCurrentFrame();
 				wi->Flags = (wi->Modified ? WIF_MODIFIED : 0) | (wi->Current ? WIF_CURRENT : 0)
 					| (f->GetCanLoseFocus() ? 0 : WIF_MODAL);
+
+				if (auto *editor = dynamic_cast<FileEditor*>(f)) {
+					wi->Id = editor->GetEditorID();
+				}
+				else if (auto *viewer = dynamic_cast<FileViewer*>(f)) {
+					wi->Id = viewer->GetViewerID();
+				}
+				else if (auto *dialog = dynamic_cast<Dialog*>(f)) {
+					wi->Id = reinterpret_cast<intptr_t>(dialog);
+				}
+
 				return TRUE;
 			}
 
