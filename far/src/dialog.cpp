@@ -5111,14 +5111,14 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 				DialogInfo *di=reinterpret_cast<DialogInfo*>(Param2);
 				if (Dlg->IdExist)
 				{
-					if (di->StructSize >= offsetof(DialogInfo,Id)+sizeof(di->Id))
+					if ((size_t)di->StructSize >= offsetof(DialogInfo,Id)+sizeof(di->Id))
 					{
 						di->Id=Dlg->Id;
 						Result=TRUE;
 					}
 				}
 
-				if (di->StructSize >= offsetof(DialogInfo,Owner)+sizeof(di->Owner))
+				if ((size_t)di->StructSize >= offsetof(DialogInfo,Owner)+sizeof(di->Owner))
 				{
 					di->Owner = 0;
 					if (Dlg->PluginNumber != -1)

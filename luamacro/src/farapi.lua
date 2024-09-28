@@ -414,7 +414,7 @@ struct OpenDlgPluginData
 
 struct DialogInfo
 {
-	size_t StructSize;
+	int StructSize;
 	GUID Id;
 	DWORD Owner;
 };
@@ -1423,7 +1423,7 @@ struct ViewerMode
 
 struct ViewerInfo
 {
-	size_t StructSize;
+	int    StructSize;
 	int    ViewerID;
 	const wchar_t *FileName;
 	int64_t FileSize;
@@ -2017,7 +2017,7 @@ enum BOX_DEF_SYMBOLS
 
 typedef struct FarStandardFunctions
 {
-	size_t StructSize;
+	int StructSize;
 
 	FARSTDATOI                 atoi;
 	FARSTDATOI64               atoi64;
@@ -2090,7 +2090,7 @@ typedef struct FarStandardFunctions
 
 struct PluginStartupInfo
 {
-	size_t StructSize;
+	int StructSize;
 	const wchar_t *ModuleName;
 	INT_PTR ModuleNumber;
 	const wchar_t *RootKey;
@@ -2157,7 +2157,7 @@ enum PLUGIN_FLAGS
 
 struct PluginInfo
 {
-	size_t StructSize;
+	int StructSize;
 	DWORD Flags;
 	const wchar_t * const *DiskMenuStrings;
 	int *Reserved0;
@@ -2269,7 +2269,7 @@ enum OPERATION_MODES
 
 struct OpenPluginInfo
 {
-	size_t                        StructSize;
+	int                           StructSize;
 	DWORD                         Flags;
 	const wchar_t*                HostFile;
 	const wchar_t*                CurDir;

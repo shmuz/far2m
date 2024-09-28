@@ -4999,7 +4999,7 @@ BOOL FileList::UpdateKeyBar()
 			KB->SetAlt((const wchar_t **)Info.KeyBar->AltTitles,12);
 			KB->SetCtrl((const wchar_t **)Info.KeyBar->CtrlTitles,12);
 
-			if (Info.StructSize >= sizeof(OpenPluginInfo))
+			if ((size_t)Info.StructSize >= sizeof(OpenPluginInfo))
 			{
 				KB->SetCtrlShift((const wchar_t **)Info.KeyBar->CtrlShiftTitles,12);
 				KB->SetAltShift((const wchar_t **)Info.KeyBar->AltShiftTitles,12);
