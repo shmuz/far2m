@@ -230,6 +230,22 @@ BOOL WINAPI FarShowHelp(const wchar_t *ModuleName, const wchar_t *HelpTopic, DWO
 	return InterThreadCall<BOOL, FALSE>(std::bind(FarShowHelpSynched, ModuleName, HelpTopic, Flags));
 }
 
+static int ModalTypeToWindowType(int ModalType)
+{
+	switch(ModalType) {
+		default:                    return WTYPE_VIRTUAL;
+		case MODALTYPE_PANELS:      return WTYPE_PANELS;
+		case MODALTYPE_VIEWER:      return WTYPE_VIEWER;
+		case MODALTYPE_EDITOR:      return WTYPE_EDITOR;
+		case MODALTYPE_DIALOG:      return WTYPE_DIALOG;
+		case MODALTYPE_VMENU:       return WTYPE_VMENU;
+		case MODALTYPE_HELP:        return WTYPE_HELP;
+		case MODALTYPE_COMBOBOX:    return WTYPE_COMBOBOX;
+		case MODALTYPE_FINDFOLDER:  return WTYPE_FINDFOLDER;
+		case MODALTYPE_USER:        return WTYPE_USER;
+	}
+}
+
 /*
 	$ 05.07.2000 IS
 	Функция, которая будет действовать и в редакторе, и в панелях, и...
@@ -450,7 +466,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 				}
 
 				wi->Pos = FrameManager->IndexOfList(f);
-				wi->Type = f->GetType();
+				wi->Type = ModalTypeToWindowType(f->GetType());
 				wi->Modified = f->IsFileModified() ? 1 : 0;
 				wi->Current = f == FrameManager->GetCurrentFrame();
 				wi->Flags = (wi->Modified ? WIF_MODIFIED : 0) | (wi->Current ? WIF_CURRENT : 0)

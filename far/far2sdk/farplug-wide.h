@@ -1624,9 +1624,6 @@ enum WINDOWINFO_TYPE
 {
 #ifdef FAR_USE_INTERNALS
 	WTYPE_VIRTUAL,
-	// ПРОСЬБА НЕ ЗАБЫВАТЬ СИНХРОНИЗИРОВАТЬ ИЗМЕНЕНИЯ
-	// WTYPE_* и MODALTYPE_* (frame.hpp)!!!
-	// (и не надо убирать этот комментарий, пока ситуация не изменится ;)
 #endif // END FAR_USE_INTERNALS
 	WTYPE_PANELS=1,
 	WTYPE_VIEWER,

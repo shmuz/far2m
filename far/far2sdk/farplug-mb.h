@@ -1037,9 +1037,6 @@ namespace oldfar
 	enum WINDOWINFO_TYPE
 	{
 		WTYPE_VIRTUAL,
-		// ПРОСЬБА НЕ ЗАБЫВАТЬ СИНХРОНИЗИРОВАТЬ ИЗМЕНЕНИЯ
-		// WTYPE_* и MODALTYPE_* (frame.hpp)!!!
-		// (и не надо убирать этот комментарий, пока ситуация не изменится ;)
 		WTYPE_PANELS=1,
 		WTYPE_VIEWER,
 		WTYPE_EDITOR,

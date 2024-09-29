@@ -39,9 +39,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 class KeyBar;
 
-// ПРОСЬБА НЕ ЗАБЫВАТЬ СИНХРОНИЗИРОВАТЬ ИЗМЕНЕНИЯ
-// WTYPE_* (plugin.hpp) и MODALTYPE_*!!!
-// (и не надо убирать этот комментарий, пока ситуация не изменится ;)
 enum
 {
 	MODALTYPE_VIRTUAL,
