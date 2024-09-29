@@ -3909,6 +3909,9 @@ void FileList::CompareDir()
 	if (SelectedFirst)
 		SortFileList(TRUE);
 
+	if (Another->SelectedFirst)
+		Another->SortFileList(TRUE);
+
 	Redraw();
 	Another->Redraw();
 
