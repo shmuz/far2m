@@ -438,7 +438,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 					+ Если Pos == -1 то берем текущий фрейм
 				*/
 				if (wi->Pos == -1)
-					f = FrameManager->GetCurrentFrame();
+					f = FrameManager->GetTopModal();
 				else
 					f = FrameManager->operator[](wi->Pos);
 
