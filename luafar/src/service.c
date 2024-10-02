@@ -32,6 +32,7 @@ extern int  far_MacroCallToLua(lua_State *L);
 extern void PackMacroValues(lua_State* L, size_t Count, const struct FarMacroValue* Values);
 extern int  pcall_msg (lua_State* L, int narg, int nret);
 extern void PushPluginTable(lua_State* L, HANDLE hPlugin);
+extern void PushPluginObject(lua_State* L, HANDLE hPlugin);
 extern BOOL RunDefaultScript(lua_State* L, int ForFirstTime);
 
 struct PluginStartupInfo PSInfo; // DON'T ever use fields ModuleName and ModuleNumber of PSInfo
@@ -2162,6 +2163,10 @@ static int panel_GetPanelInfo(lua_State *L)
 	if (pi.OwnerHandle) {
 		lua_pushlightuserdata(L, pi.OwnerHandle);
 		lua_setfield(L, -2, "OwnerHandle");
+	}
+	if (pi.OwnerID == GetPluginData(L)->PluginId) {
+		PushPluginObject(L, pi.PluginHandle);
+		lua_setfield(L, -2, "PluginObject");
 	}
 	return 1;
 }
