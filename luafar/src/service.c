@@ -2136,7 +2136,7 @@ static int panel_GetPanelInfo(lua_State *L)
 	if (pi.Visible)  pi.Flags |= PFLAGS_VISIBLE;
 	if (pi.Focus)    pi.Flags |= PFLAGS_FOCUS;
 
-	lua_createtable(L, 0, 12);
+	lua_createtable(L, 0, 13);
 	//-------------------------------------------------------------------------
 	PutIntToTable (L, "PanelType", pi.PanelType);
 	//-------------------------------------------------------------------------
