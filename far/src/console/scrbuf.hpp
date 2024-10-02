@@ -93,3 +93,13 @@ class ScreenBuf
 };
 
 extern ScreenBuf ScrBuf;
+
+class UnlockScreen
+{
+	private:
+		int Count;
+	public:
+		UnlockScreen() : Count(ScrBuf.GetLockCount()) { ScrBuf.Unlock(); }
+		~UnlockScreen() { ScrBuf.SetLockCount(Count); }
+};
+
