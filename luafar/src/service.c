@@ -2603,6 +2603,16 @@ static int far_GetPluginDirList (lua_State *L)
 	return lua_pushnil(L), 1;
 }
 
+static int SavedScreen_tostring (lua_State *L)
+{
+	void **pp = (void**)luaL_checkudata(L, 1, SavedScreenType);
+	if (*pp)
+		lua_pushfstring(L, "%s (%p)", SavedScreenType, *pp);
+	else
+		lua_pushfstring(L, "%s (freed)", SavedScreenType);
+	return 1;
+}
+
 // RestoreScreen (handle)
 //   handle:    handle of saved screen.
 static int far_RestoreScreen (lua_State *L)
@@ -2638,13 +2648,17 @@ static int far_FreeScreen(lua_State *L)
 //   handle:    handle of saved screen, [lightuserdata]
 static int far_SaveScreen (lua_State *L)
 {
-	intptr_t X1 = luaL_optinteger(L,1,0);
-	intptr_t Y1 = luaL_optinteger(L,2,0);
-	intptr_t X2 = luaL_optinteger(L,3,-1);
-	intptr_t Y2 = luaL_optinteger(L,4,-1);
+	int X1 = luaL_optinteger(L,1,0);
+	int Y1 = luaL_optinteger(L,2,0);
+	int X2 = luaL_optinteger(L,3,-1);
+	int Y2 = luaL_optinteger(L,4,-1);
 
 	*(void**)lua_newuserdata(L, sizeof(void*)) = PSInfo.SaveScreen(X1,Y1,X2,Y2);
 	luaL_getmetatable(L, SavedScreenType);
+	lua_pushcfunction(L, far_FreeScreen);
+	lua_setfield(L, -2, "__gc");
+	lua_pushcfunction(L, SavedScreen_tostring);
+	lua_setfield(L, -2, "__tostring");
 	lua_setmetatable(L, -2);
 	return 1;
 }
