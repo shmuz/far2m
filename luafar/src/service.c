@@ -1670,7 +1670,7 @@ static int far_Menu(lua_State *L)
 	MaxHeight = GetOptIntFromTable(L, "MaxHeight", 0);
 
 	lua_getfield(L, POS_PROPS, "Flags");
-	Flags = OptFlags(L, -1, 0);
+	if (!lua_isnil(L, -1))     Flags = CheckFlags(L, -1);
 
 	lua_getfield(L, POS_PROPS, "Title");
 	if (lua_isstring(L,-1))    Title = StoreTempString(L, POS_STORE);
