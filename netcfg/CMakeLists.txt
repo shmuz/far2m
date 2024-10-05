@@ -5,7 +5,7 @@ project(netcfg)
 get_directory_property(PROJECT_SOURCE_DIR DIRECTORY ../ DEFINITION PROJECT_SOURCE_DIR)
 get_directory_property(INSTALL_DIR DIRECTORY ${PROJECT_SOURCE_DIR} DEFINITION INSTALL_DIR)
 
-# message("netcfgplugin PROJECT_SOURCE_DIR ${PROJECT_SOURCE_DIR} ${CMAKE_SYSTEM_NAME}")
+message(STATUS "${PROJECT_NAME} PROJECT_SOURCE_DIR ${PROJECT_SOURCE_DIR} ${CMAKE_SYSTEM_NAME}")
 
 set(SOURCES
 src/GlobalInfo.cpp
@@ -58,23 +58,23 @@ if (ARM AND CMAKE_COMPILER_IS_GNUCC)
     endif (GCC_HAS_NO_PSABI)
 endif ()
 
-add_library(netcfg MODULE ${SOURCES})
-target_link_libraries(netcfg utils far2m)
+add_library(${PROJECT_NAME} MODULE ${SOURCES})
+target_link_libraries(${PROJECT_NAME} utils far2m)
 
-target_compile_definitions(netcfg PRIVATE -DUSEUCD=OFF -DWINPORT_DIRECT -DUNICODE -DFAR_DONT_USE_INTERNALS)
+target_compile_definitions(${PROJECT_NAME} PRIVATE -DUSEUCD=OFF -DWINPORT_DIRECT -DUNICODE -DFAR_DONT_USE_INTERNALS)
 
-target_include_directories(netcfg PRIVATE src)
-target_include_directories(netcfg PRIVATE ${PROJECT_SOURCE_DIR}/utils/include)
-target_include_directories(netcfg PRIVATE ${PROJECT_SOURCE_DIR}/far/far2sdk)
-target_include_directories(netcfg PRIVATE ${PROJECT_SOURCE_DIR}/WinPort)
+target_include_directories(${PROJECT_NAME} PRIVATE src)
+target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/utils/include)
+target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/far/far2sdk)
+target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/WinPort)
 
-set_target_properties(netcfg
+set_target_properties(${PROJECT_NAME}
     PROPERTIES
-        LIBRARY_OUTPUT_DIRECTORY "${INSTALL_DIR}/Plugins/netcfg/plug"
+        LIBRARY_OUTPUT_DIRECTORY "${INSTALL_DIR}/Plugins/${PROJECT_NAME}/plug"
         PREFIX ""
         SUFFIX ".far-plug-wide")
 
-add_custom_command(TARGET netcfg POST_BUILD
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/configs
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/src/configs "${INSTALL_DIR}/Plugins/netcfg"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/src/configs "${INSTALL_DIR}/Plugins/${PROJECT_NAME}"
 )
