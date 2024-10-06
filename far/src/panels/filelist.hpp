@@ -191,7 +191,7 @@ class FileList:public Panel
 		void Scroll(int Count);
 		void CorrectPosition();
 		void ShowFileList(int Fast);
-		void ShowList(int ShowStatus,int StartColumn);
+		void ShowList(int ShowStatus, int StartColumn, OpenPluginInfo &Info);
 		void SetShowColor(int Position, int ColorType = HIGHLIGHTCOLORTYPE_FILE);
 		DWORD64 GetShowColor(int Position, int ColorType);
 		void ShowSelectedSize();

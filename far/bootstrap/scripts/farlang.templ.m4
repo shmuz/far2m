@@ -1723,7 +1723,7 @@ upd:"Disable &write cache"
 "Выключыць кэ&шаванне запісу"
 
 CopyXAttr
-"Копировать расширенные а&ттрибуты"
+"Копировать расширенные а&трибуты"
 "Copy extended a&ttributes"
 upd:"Copy extended a&ttributes"
 upd:"Copy extended a&ttributes"
@@ -2309,7 +2309,7 @@ upd:"Override base colors &palette"
 "Ужываць сваю &палітру колераў"
 
 ConfigExclusiveKeys
-"&Экслюзивная обработка нажатий, включающих:"
+"&Эксклюзивная обработка нажатий, включающих:"
 "&Exclusively handle hotkeys that include:"
 upd:"&Exclusively handle hotkeys that include:"
 upd:"&Exclusively handle hotkeys that include:"
@@ -15837,7 +15837,7 @@ upd:"(current target '%ls')"
 upd:"(current target '%ls')"
 
 SetAttrSymlinkWarn4
-"Пропустить или все-равно изменить объект симлинка?"
+"Пропустить или все равно изменить объект симлинка?"
 "Skip or change symlink target anyway?"
 upd:"Skip or change symlink target anyway?"
 upd:"Skip or change symlink target anyway?"
