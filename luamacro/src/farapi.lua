@@ -1,11 +1,11 @@
 local ffi = require "ffi"
 ffi.cdef [=[
 #pragma pack(2)
-typedef struct _INPUT_RECORD INPUT_RECORD;
-typedef struct _CHAR_INFO    CHAR_INFO;
 
 typedef int FarLangMsgID;
 typedef uint32_t FarKey;
+typedef struct _INPUT_RECORD INPUT_RECORD;
+typedef struct _CHAR_INFO    CHAR_INFO;
 
 enum FARMESSAGEFLAGS
 {

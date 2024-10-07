@@ -137,8 +137,6 @@ typedef struct _INPUT_RECORD INPUT_RECORD;
 typedef struct _CHAR_INFO    CHAR_INFO;
 #endif
 
-#define CP_AUTODETECT ((UINT)-1)
-
 #include "farcommon.h"
 
 enum FARMESSAGEFLAGS

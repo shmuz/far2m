@@ -3,11 +3,16 @@
 
 local rex = require "rex_pcre"
 
-local srcfile = os.getenv("HOME").."/far2m/far/far2sdk/farplug-wide.h"
+local srcdir = os.getenv("HOME").."/far2m/far/far2sdk"
+local srcfiles = { srcdir.."/farcommon.h", srcdir.."/farplug-wide.h" }
 local trgfile = "farapi.lua"
-local f_in = assert(io.open(srcfile))
-local txt = f_in:read("*all")
-f_in:close()
+
+local txt = ""
+for _,fname in ipairs(srcfiles) do
+  local f = assert(io.open(fname))
+  txt = txt .. f:read("*all")
+  f:close()
+end
 
 local f_out = assert(io.open(trgfile, "w"))
 
