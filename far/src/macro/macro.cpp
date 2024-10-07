@@ -90,16 +90,13 @@ int Log(const char* Format, ...)
 bool StrToGuid(const wchar_t *Str, GUID& Guid)
 {
 	const char tmpl[] = "HHHHHHHH-HHHH-HHHH-HHHH-HHHHHHHHHHHH";
-	uint32_t val;
 	uint8_t buf[20];
 	wchar_t aux[] = {0,0,0};
 
 	for (int i=0,j=0; ; ) {
 		if (tmpl[i] == 'H') {
-			if (iswxdigit(aux[0] = Str[i++]) && iswxdigit(aux[1] = Str[i++])) {
-				swscanf(aux, L"%X", &val);
-				buf[j++] = val;
-			}
+			if (iswxdigit(aux[0] = Str[i++]) && iswxdigit(aux[1] = Str[i++]))
+				buf[j++] = wcstol(aux, nullptr, 16);
 			else
 				return false;
 		}

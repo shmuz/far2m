@@ -16,10 +16,10 @@ end
 
 local f_out = assert(io.open(trgfile, "w"))
 
-local function Remove_FAR_USE_INTERNALS()
+local function Remove_FAR_USE_INTERNALS(aText)
   local t={}
   local stage="outside"
-  for line in txt:gmatch("([^\n]*)\n") do
+  for line in aText:gmatch("([^\n]*)\n") do
     local insert=true
     if stage=="outside" then
       if line:find("#ifdef%s+FAR_USE_INTERNALS") then
@@ -42,7 +42,7 @@ local function Remove_FAR_USE_INTERNALS()
   return table.concat(t, "\n")
 end
 
-txt = Remove_FAR_USE_INTERNALS() -- must go first
+txt = Remove_FAR_USE_INTERNALS(txt) -- must go first
 txt = rex.gsub(txt, "#ifdef\\s+__cplusplus\\b(.|\n)*?#endif\\b", "")
 txt = rex.gsub(txt, "^\\s*#[^\n]+\n?", "", nil, "m")   -- delete all preprocessor lines
 txt = rex.gsub(txt, "\\bWINAPI\\b", "__stdcall")       -- LuaJIT
