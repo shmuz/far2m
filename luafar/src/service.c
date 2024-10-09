@@ -26,6 +26,7 @@ extern int  luaopen_unicode (lua_State *L);
 extern int  luaopen_utf8 (lua_State *L);
 extern int  luaopen_sysutils (lua_State *L);
 extern int  luaopen_win (lua_State *L);
+extern int  luaopen_lpeg (lua_State *L);
 
 extern int  far_MacroCallFar(lua_State *L);
 extern int  far_MacroCallToLua(lua_State *L);
@@ -6277,6 +6278,7 @@ static void InitLuaState (lua_State *L, TPluginData *aPlugData, lua_CFunction aO
 		luaopen_utf8,
 		luaopen_win,
 		luaopen_sysutils,
+		luaopen_lpeg,
 	};
 
 	// open Lua libraries

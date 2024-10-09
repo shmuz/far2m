@@ -32,6 +32,12 @@ set(SOURCES
   src/win.c
   src/farhost.cpp
   src/farlibs.cpp
+  src/LPeg/lpcap.c
+  src/LPeg/lpcode.c
+  src/LPeg/lpcset.c
+  src/LPeg/lpprint.c
+  src/LPeg/lptree.c
+  src/LPeg/lpvm.c
 )
 
 add_library (${PROJECT_NAME} SHARED ${SOURCES})
