@@ -244,7 +244,7 @@ static const wchar_t *toString(int64_t num)
 static const wchar_t *toString(double num)
 {
 	static wchar_t str[256];
-	swprintf(str, ARRAYSIZE(str)-1, L"%.6g", num);
+	swprintf(str, ARRAYSIZE(str)-1, L"%.14g", num);
 	return str;
 }
 
