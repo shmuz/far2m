@@ -399,7 +399,7 @@ else()
     AddPlugin(NetRocks wide 0)
 endif()
 
-if (DEFINED VIRTUAL_PYTHON)
+if (DEFINED PYTHON AND PYTHON)
     message(STATUS "PYTHON plugin with interpreter from virtualenv enabled")
     add_subdirectory (python)
     # Copy this explicitly cuz generic copier command excludes 'far2l'
@@ -408,37 +408,7 @@ if (DEFINED VIRTUAL_PYTHON)
         COMPONENT base FILES_MATCHING
         PATTERN "*")
 else()
-    if (DEFINED PYTHON AND PYTHON)
-        find_package(Python3 COMPONENTS Interpreter Development)
-
-        if(Python3_FOUND AND Python3_Development_FOUND)
-            message(STATUS "PYTHON plugin enabled")
-            add_subdirectory (python)
-            install(CODE "
-                execute_process(COMMAND echo Python: preparing virtual environment)
-                " COMPONENT system)
-            install(CODE "
-                execute_process(COMMAND ${Python3_EXECUTABLE} -m venv --system-site-packages ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/python/plug/python)
-                " COMPONENT system)
-            install(CODE "
-                execute_process(COMMAND echo Python: installing packages)
-                " COMPONENT system)
-            install(CODE "
-                execute_process(COMMAND ${CMAKE_INSTALL_PREFIX}/lib/far2m/Plugins/python/plug/python/bin/python -m pip install cffi debugpy)
-                " COMPONENT system)
-
-            # Copy this explicitly cuz generic copier command excludes 'far2l'
-            install(DIRECTORY "${INSTALL_DIR}/Plugins/python/plug/far2l"
-                DESTINATION "lib/far2m/Plugins/python/plug/" USE_SOURCE_PERMISSIONS
-                COMPONENT base FILES_MATCHING
-                PATTERN "*")
-        else()
-            message(WARNING "${ColorRed}PYTHON plugin disabled due to missing python3 environment${ColorNormal}")
-        endif ()
-
-    else()
-        AddPlugin(python wide 0)
-    endif()
+    AddPlugin(python wide 0)
 endif()
 
 ##############################
