@@ -407,6 +407,10 @@ if (DEFINED PYTHON AND PYTHON)
         DESTINATION "lib/far2m/Plugins/python/plug/" USE_SOURCE_PERMISSIONS
         COMPONENT base FILES_MATCHING
         PATTERN "*")
+    install(DIRECTORY "${INSTALL_DIR}/Plugins/python/plug/plugins"
+        DESTINATION "lib/far2m/Plugins/python/plug/" USE_SOURCE_PERMISSIONS
+        COMPONENT base FILES_MATCHING
+        PATTERN "*")
 else()
     AddPlugin(python wide 0)
 endif()
