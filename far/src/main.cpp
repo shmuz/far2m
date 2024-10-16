@@ -302,6 +302,10 @@ static int MainProcess(
 					}
 				}
 
+				// Update pointers as the above prefixed plugin calls could recreate one or both panels
+				ActivePanel=CtrlObject->Cp()->ActivePanel;
+				AnotherPanel=CtrlObject->Cp()->GetAnotherPanel(ActivePanel);
+
 				// !!! ВНИМАНИЕ !!!
 				// Сначала редравим пассивную панель, а потом активную!
 				AnotherPanel->Redraw();
