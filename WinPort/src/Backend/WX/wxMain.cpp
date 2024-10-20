@@ -1309,7 +1309,7 @@ void WinPortPanel::OnKeyDown( wxKeyEvent& event )
 	// also it didnt cause problems yet
 	if ( (_key_tracker.Shift() && !event.ShiftDown())
 		|| ((_key_tracker.LeftControl() || _key_tracker.RightControl()) && !event.ControlDown())) {
-		if (_key_tracker.CheckForSuddenModifiersUp()) {
+		if ((!_key_tracker.Alt() || g_wayland) && _key_tracker.CheckForSuddenModifiersUp()) {
 			_exclusive_hotkeys.Reset();
 		}
 	}
@@ -1443,7 +1443,7 @@ void WinPortPanel::OnKeyUp( wxKeyEvent& event )
 #endif
 		wxConsoleInputShim::Enqueue(&ir, 1);
 	}
-	if (_key_tracker.CheckForSuddenModifiersUp()) {
+	if ((!_key_tracker.Alt() || g_wayland) && _key_tracker.CheckForSuddenModifiersUp()) {
 		_exclusive_hotkeys.Reset();
 	}
 	//event.Skip();
