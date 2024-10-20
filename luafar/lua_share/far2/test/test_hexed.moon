@@ -1,14 +1,17 @@
+-- started: 2024-10-19
+guid_editor="02FFA2B9-98F8-4A73-B311-B3431340E272"
+guid_goto="4FEA7612-507B-453F-A83D-53837CAD86ED"
+F=far.Flags
+
 filename=far.InMyTemp "hexed_test"
 filesize=0x10000
 fillchar="-"
-
-F=far.Flags
 textarea=false
 
 GoTo=(addr)->
   Keys "AltF8"
   assert Area.Dialog
-  assert Dlg.Id == "4FEA7612-507B-453F-A83D-53837CAD86ED"
+  assert Dlg.Id == guid_goto
   print string.format "0x%X", addr
   Keys "Enter"
 
@@ -46,7 +49,7 @@ Test=->
   assert Area.Viewer
   mf.eval "CtrlF4",2
   assert Area.Dialog
-  assert Dlg.Id == "02FFA2B9-98F8-4A73-B311-B3431340E272"
+  assert Dlg.Id == guid_editor
 
   -- write pieces
   textarea=false
@@ -54,7 +57,7 @@ Test=->
 
   -- quit hex editor and viewer
   assert Area.Dialog
-  assert Dlg.Id == "02FFA2B9-98F8-4A73-B311-B3431340E272"
+  assert Dlg.Id == guid_editor
   Keys "Esc"
   assert Area.Viewer
   Keys "Esc"
@@ -62,11 +65,11 @@ Test=->
   -- prepare the reference string
   table.sort pieces, (a1,a2)-> a1.addr<a2.addr
   ref=""
-  cur=0
+  offset=0
   for pp in *pieces
-    ref ..= (string.rep fillchar,pp.addr-cur)..pp.text
-    cur = pp.addr+#pp.text
-  ref..=string.rep fillchar,filesize-cur
+    ref ..= (string.rep fillchar,pp.addr-offset)..pp.text
+    offset = pp.addr+#pp.text
+  ref..=string.rep fillchar,filesize-offset
 
   -- read the resulting file and compare with reference
   fp = assert io.open filename
