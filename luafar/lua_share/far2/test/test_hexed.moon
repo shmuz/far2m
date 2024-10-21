@@ -35,7 +35,7 @@ pieces = { -- pieces must not overlap
   {addr:0xD000, text:"abc/ABC"},
 }
 
-Test=->
+Test=(MacroKey)->
   -- Keys "EnOut" -- debugging
 
   -- create a test file
@@ -47,7 +47,7 @@ Test=->
   -- open the viewer and run Hex editor
   viewer.Viewer filename,nil,nil,nil,nil,nil,F.VF_NONMODAL+F.VF_IMMEDIATERETURN+F.VF_DISABLEHISTORY
   assert Area.Viewer
-  mf.eval "CtrlF4",2
+  mf.eval MacroKey,2
   assert Area.Dialog
   assert Dlg.Id == guid_editor
 

@@ -22,7 +22,7 @@ local function FarAbout()
   end
 
   local Inf = Far.GetInfo()
-  local un = win.uname()
+  local uname = win.uname()
 
   Add("FAR2M version",         Inf.Build)
   if Inf.Compiler then
@@ -36,16 +36,18 @@ local function FarAbout()
   Add("  Main and Help languages", Inf.MainLang  ..", ".. Inf.HelpLang)
   Add("  OEM and ANSI codepages", win.GetOEMCP() ..", ".. win.GetACP())
   AddEnv("FARHOME", 2)
+  AddEnv("FARSETTINGS", 2)
+  AddEnv("FAR_ARGS", 2)
   Add("  Config directory", far.InMyConfig())
   Add("  Cache directory",  far.InMyCache())
   Add("  Temp directory",   far.InMyTemp())
 
   Add()
   Add("uname",     "")
-  Add("  sysname", un.sysname)
-  Add("  release", un.release)
-  Add("  version", un.version)
-  Add("  machine", un.machine)
+  Add("  sysname", uname.sysname)
+  Add("  release", uname.release)
+  Add("  version", uname.version)
+  Add("  machine", uname.machine)
 
   Add()
   Add("Host", win.GetHostName())
