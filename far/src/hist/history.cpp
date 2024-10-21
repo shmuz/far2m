@@ -457,9 +457,6 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 			*/
 			strRecord += HistoryItem->strName;
 
-			if (TypeHistory != HISTORYTYPE_DIALOG)
-				ReplaceStrings(strRecord, L"&",L"&&", -1);
-
 			MenuItem.Clear();
 			MenuItem.strName = strRecord;
 			MenuItem.SetCheck(HistoryItem->Lock?1:0);
