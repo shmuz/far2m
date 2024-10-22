@@ -266,7 +266,6 @@ static struct FARConfig
 	{1, NSecSystem, "SaveFoldersHistory",           &Opt.SaveFoldersHistory, 1, REG_BOOLEAN},
 	{0, NSecSystem, "SavePluginFoldersHistory",     &Opt.SavePluginFoldersHistory, 0, REG_BOOLEAN},
 	{1, NSecSystem, "SaveViewHistory",              &Opt.SaveViewHistory, 1, REG_BOOLEAN},
-	{1, NSecSystem, "AutoHighlightHistory",         &Opt.AutoHighlightHistory, 0, REG_BOOLEAN},
 	{1, NSecSystem, "AutoSaveSetup",                &Opt.AutoSaveSetup, 0, REG_BOOLEAN},
 	{1, NSecSystem, "DeleteToRecycleBin",           &Opt.DeleteToRecycleBin, 0, REG_BOOLEAN},
 	{1, NSecSystem, "DeleteToRecycleBinKillLink",   &Opt.DeleteToRecycleBinKillLink, 1, REG_BOOLEAN},

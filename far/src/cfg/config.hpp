@@ -439,7 +439,6 @@ struct Options
 	int SavePluginFoldersHistory;
 	int FoldersHistoryCount;
 	int DialogsHistoryCount;
-	int AutoHighlightHistory;
 
 	FindFileOptions FindOpt;
 
