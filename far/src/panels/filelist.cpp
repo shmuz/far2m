@@ -1001,7 +1001,20 @@ class FileList_TempFileHolder : public TempFileUploadHolder
 		}
 
 		FarChDir(strSaveDir);
+
+		if (out) {
+			CheckPanelUpdate(CtrlObject->Cp()->LeftPanel);
+			CheckPanelUpdate(CtrlObject->Cp()->RightPanel);
+		}
+
 		return out;
+	}
+
+	void CheckPanelUpdate(Panel *panel)
+	{
+		if (panel && panel->GetPluginHandle() == hPlugin) {
+			ShellUpdatePanels(panel, FALSE);
+		}
 	}
 
 public:
