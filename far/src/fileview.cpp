@@ -292,7 +292,8 @@ int FileViewer::ProcessKey(FarKey Key)
 		   + выход по ctrl-f10 с установкой курсора на файл */
 		case KEY_CTRLF10:
 		{
-			if (View.GetFileHolder()->IsTemporary()) {
+			auto FH = View.GetFileHolder();
+			if (FH && FH->IsTemporary()) {
 				// if viewing temporary file - dont allow this
 				return TRUE;
 			}
@@ -469,6 +470,7 @@ void FileViewer::GrepFilter()
 		return;
 	}
 
+	View.SetFileHolder(NewFH);
 	View.SetFilePos(0);
 	Show();
 }
@@ -476,6 +478,7 @@ void FileViewer::GrepFilter()
 void FileViewer::GrepFilterDismiss()
 {
 	View.OpenFile(UngreppedFH->GetPathName(), TRUE);
+	View.SetFileHolder(UngreppedFH);
 	View.SetFilePos(UngreppedPos);
 	UngreppedFH.reset();
 	Show();
