@@ -1501,11 +1501,11 @@ class FindDlg_TempFileHolder : public TempFileUploadHolder
 		//		FARString strTempName = FileName;
 
 		bool out = false;
-		if (FileList::FileNameToPluginItem(TempFileName(), &PanelItem)) {
+		if (FileList::FileNameToPluginItem(GetPathName(), &PanelItem)) {
 			out = (CtrlObject->Plugins.PutFiles(ArcItem.hPlugin, &PanelItem, 1, FALSE, OPM_EDIT) != 0);
 
 			if (!out) {
-				Message(MSG_WARNING, 1, Msg::Error, Msg::CannotSaveFile, Msg::TextSavedToTemp, TempFileName(),
+				Message(MSG_WARNING, 1, Msg::Error, Msg::CannotSaveFile, Msg::TextSavedToTemp, GetPathName(),
 						Msg::Ok);
 			}
 		}
@@ -1925,7 +1925,7 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 									}
 									FrameManager->ExecuteModalEV();
 									if (TFH) {
-										TFH->UploadIfTimestampChanged();
+										TFH->CheckForChanges();
 									}
 									// заставляем рефрешиться экран
 									FrameManager->ProcessKey(KEY_CONSOLE_BUFFER_RESIZE);

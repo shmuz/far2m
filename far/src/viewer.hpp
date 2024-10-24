@@ -163,7 +163,7 @@ private:
 
 	UINT DefCodePage;
 
-	std::shared_ptr<IFileHolder> FileHolder;
+	FileHolderPtr FHP;
 
 private:
 	virtual void DisplayObject();
@@ -229,8 +229,8 @@ public:
 	void SetTitle(const wchar_t *Title);
 	FARString &GetTitle(FARString &Title, int SubLen = -1, int TruncSize = 0);
 
-	void SetFileHolder(std::shared_ptr<IFileHolder> Observer) { FileHolder = Observer; }
-	std::shared_ptr<IFileHolder> &GetFileHolder() { return FileHolder; }
+	void SetFileHolder(FileHolderPtr Observer) { FHP = Observer; }
+	FileHolderPtr &GetFileHolder() { return FHP; }
 
 	void SetFilePos(int64_t Pos);    // $ 18.07.2000 tran - change 'long' to 'unsigned long'
 	int64_t GetFilePos() const { return FilePos; }

@@ -1278,7 +1278,7 @@ int Viewer::ProcessKey(FarKey Key)
 		}
 		case KEY_ADD:
 		case KEY_SUBTRACT: {
-			if (!FileHolder)    // if viewing observed (typically temporary) file - dont allow to switch to another file
+			if (!FHP)    // if viewing observed (typically temporary) file - dont allow to switch to another file
 			{
 				FARString strName;
 				bool NextFileFound;

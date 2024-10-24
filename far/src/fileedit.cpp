@@ -911,7 +911,7 @@ int FileEditor::ReProcessKey(FarKey Key,int CalledFromControl)
 						//объект будет в конце удалён в FrameManager
 						auto *Viewer = new FileViewer(strFullFileName, GetCanLoseFocus(), Flags.Check(FFILEEDIT_DISABLEHISTORY),
 								FALSE, FilePos, nullptr, EditNamesList, Flags.Check(FFILEEDIT_SAVETOSAVEAS), cp);
-						Viewer->SetFileHolder(FileHolder);
+						Viewer->SetFileHolder(FHP);
 						Viewer->SetPluginData(strPluginData);
 					}
 
@@ -2073,8 +2073,8 @@ int FileEditor::SaveFile(const wchar_t *Name,int Ask, bool bSaveAs, int TextForm
 		}
 	}
 
-	if (FileHolder && RetCode != SAVEFILE_ERROR)
-		FileHolder->OnFileEdited(Name);
+	if (FHP && RetCode != SAVEFILE_ERROR)
+		FHP->OnFileEdited(Name);
 
 	if (FileUnmakeWritable)
 	{

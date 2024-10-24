@@ -967,7 +967,7 @@ class FileList_TempFileHolder : public TempFileUploadHolder
 		FARString strSaveDir;
 		apiGetCurrentDirectory(strSaveDir);
 
-		FARString strPath = TempFileName();
+		FARString strPath = GetPathName();
 
 		if (apiGetFileAttributes(strPath) == INVALID_FILE_ATTRIBUTES)
 		{
@@ -1837,7 +1837,7 @@ int FileList::ProcessKey(FarKey Key)
 
 				if (Edit && TFH) // upload file manually in case external editor was used
 				{
-					TFH->UploadIfTimestampChanged();
+					TFH->CheckForChanges();
 					if (TFH->PutCode != -1)
 					{
 						SetPluginModified();

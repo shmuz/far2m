@@ -104,7 +104,7 @@ public:
 		Flags.Change(FFILEEDIT_ENABLEF6, AEnableF6);
 		InitKeyBar();
 	}
-	void SetFileHolder(std::shared_ptr<IFileHolder> Observer) { FileHolder = Observer; }
+	void SetFileHolder(FileHolderPtr Observer) { FHP = Observer; }
 
 	// Добавлено для поиска по AltF7. При редактировании найденного файла из
 	// архива для клавиши F2 сделать вызов ShiftF2.
@@ -150,7 +150,7 @@ private:
 	bool BadConversion;
 	UINT m_codepage;    // BUGBUG
 	int SaveAsTextFormat;
-	std::shared_ptr<IFileHolder> FileHolder;
+	FileHolderPtr FHP;
 
 	virtual void DisplayObject();
 	int ProcessQuitKey(int FirstSave, BOOL NeedQuestion = TRUE);

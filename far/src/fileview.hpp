@@ -90,7 +90,7 @@ public:
 		DisableEdit = !AEnable;
 		InitKeyBar();
 	}
-	void SetFileHolder(std::shared_ptr<IFileHolder> Observer) { View.SetFileHolder(Observer); }
+	void SetFileHolder(FileHolderPtr Observer) { View.SetFileHolder(Observer); }
 	void SetPluginData(const wchar_t *PluginData) { strPluginData = PluginData; }
 
 	/* $ Введена для нужд CtrlAltShift OT */
