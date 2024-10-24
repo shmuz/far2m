@@ -53,6 +53,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "strmix.hpp"
 #include "mix.hpp"
 #include "macroopcode.hpp"
+#include "fileholder.hpp"
+#include "GrepFile.hpp"
 #include "exitcode.hpp"
 
 FileViewer::FileViewer(const wchar_t *Name,int EnableSwitch,int DisableHistory,
@@ -121,6 +123,7 @@ void FileViewer::Init(const wchar_t *name,int EnableSwitch,int disableHistory, /
 	View.SetHostFileViewer(this);
 	DisableHistory=disableHistory; ///
 	strName = name;
+	SetFileHolder(std::make_shared<FileHolder>(strName));
 	SetCanLoseFocus(EnableSwitch);
 	SaveToSaveAs=ToSaveAs;
 	InitKeyBar();
@@ -261,6 +264,11 @@ int FileViewer::ProcessKey(FarKey Key)
 	if (Key!=KEY_F3 && Key!=KEY_IDLE)
 		F3KeyOnly=false;
 
+	if (Key == KEY_ESC && UngreppedFH) {
+		GrepFilterDismiss();
+		return TRUE;
+	}
+
 	switch (Key)
 	{
 #if 0
@@ -276,12 +284,16 @@ int FileViewer::ProcessKey(FarKey Key)
 			return TRUE;
 		}
 #endif
+		case KEY_CTRLF7: {
+			GrepFilter();
+			return (TRUE);
+		}
 		/* $ 22.07.2000 tran
 		   + выход по ctrl-f10 с установкой курсора на файл */
 		case KEY_CTRLF10:
 		{
-			if (View.GetFileHolder())
-			{  // if viewing observed (typically temporary) file - dont allow this
+			if (View.GetFileHolder()->IsTemporary()) {
+				// if viewing temporary file - dont allow this
 				return TRUE;
 			}
 
@@ -445,6 +457,29 @@ int FileViewer::ProcessKey(FarKey Key)
 	}
 }
 
+void FileViewer::GrepFilter()
+{
+	if (!UngreppedFH) {
+		UngreppedFH = View.GetFileHolder();
+		UngreppedPos = View.GetFilePos();
+	}
+	auto NewFH = GrepFile(UngreppedFH);
+	if (!NewFH || !View.OpenFile(NewFH->GetPathName(), TRUE)) {
+		GrepFilterDismiss();
+		return;
+	}
+
+	View.SetFilePos(0);
+	Show();
+}
+
+void FileViewer::GrepFilterDismiss()
+{
+	View.OpenFile(UngreppedFH->GetPathName(), TRUE);
+	View.SetFilePos(UngreppedPos);
+	UngreppedFH.reset();
+	Show();
+}
 
 int FileViewer::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 {

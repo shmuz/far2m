@@ -68,6 +68,7 @@ src/vmenu.cpp
 src/execute_oscmd.cpp
 src/ViewerPrinter.cpp
 src/fileholder.cpp
+src/GrepFile.cpp
 
 src/console/AnsiEsc.cpp
 src/console/keyboard.cpp
