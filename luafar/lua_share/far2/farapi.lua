@@ -6,6 +6,13 @@ ffi.cdef [=[
 
 typedef int FarLangMsgID;
 typedef uint32_t FarKey;
+
+enum VTLogExportFlags
+{
+	VT_LOGEXPORT_COLORED          = 0x00000001,
+	VT_LOGEXPORT_WITH_SCREENLINES = 0x00000002
+};
+typedef SIZE_T (__stdcall *FARAPIVT_ENUM_BACKGROUND)(HANDLE *con_hnds, SIZE_T count);
 typedef struct _INPUT_RECORD INPUT_RECORD;
 typedef struct _CHAR_INFO    CHAR_INFO;
 
@@ -1967,6 +1974,7 @@ typedef int (__stdcall *FARDISPATCHNTRTHRDCALLS)();
 typedef void (__stdcall *FARBACKGROUNDTASK)(const wchar_t *Info, BOOL Started);
 typedef size_t (__stdcall *FARSTRCELLSCOUNT)(const wchar_t *Str, size_t CharsCount);
 typedef size_t (__stdcall *FARSTRSIZEOFCELLS)(const wchar_t *Str, size_t CharsCount, size_t *CellsCount, BOOL RoundUp);
+typedef BOOL (__stdcall *FARAPIVT_LOGEXPORT)(HANDLE con_hnd, DWORD flags, const wchar_t *file);
 
 enum BOX_DEF_SYMBOLS
 {
@@ -2084,14 +2092,18 @@ typedef struct FarStandardFunctions
 	FARBACKGROUNDTASK          BackgroundTask;
 	FARSTRCELLSCOUNT           StrCellsCount;
 	FARSTRSIZEOFCELLS          StrSizeOfCells;
-	void*                      RESERVED[2];
 
+	void*                      RESERVED[2];
 	FARSTDDETECTCODEPAGE       DetectCodePage;
 	FARSTDKEYNAMETOINPUTRECORD FarNameToInputRecord;
 	FARSTDGETFILEGROUP         GetFileGroup;
 	FARFORMATFILESIZE          FormatFileSize;
+
 	FARSTDLOCALSTRICMP         LStrcmp;
 	FARSTDLOCALSTRNICMP        LStrncmp;
+
+	FARAPIVT_ENUM_BACKGROUND   VTEnumBackground;
+	FARAPIVT_LOGEXPORT         VTLogExport;
 } FARSTANDARDFUNCTIONS;
 
 struct PluginStartupInfo

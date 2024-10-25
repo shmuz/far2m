@@ -5816,6 +5816,30 @@ static int far_DetectCodePage(lua_State *L)
 	return 1;
 }
 
+static int far_VTEnumBackground(lua_State *L)
+{
+	size_t count = FSF.VTEnumBackground(NULL, 0);
+	HANDLE *hnds = malloc((count+1) * sizeof(HANDLE));
+	FSF.VTEnumBackground(hnds, count);
+	lua_createtable(L, count, 0);
+	for (size_t i=0; i < count; i++) {
+		lua_pushlightuserdata(L, hnds[i]);
+		lua_rawseti(L, -2, i + 1);
+	}
+	free(hnds);
+	return 1;
+}
+
+static int far_VTLogExport(lua_State *L)
+{
+	HANDLE hnd = lua_isnoneornil(L,1) ? NULL : lua_touserdata(L,1);
+	DWORD flags = CheckFlags(L,2);
+	const wchar_t *file = check_utf8_string(L,3,NULL);
+	luaL_argcheck(L, *file, 3, "empty string not allowed"); //empty string here means a buffer - not needed
+	lua_pushboolean(L, FSF.VTLogExport(hnd, flags, file));
+	return 1;
+}
+
 #define PAIR(prefix,txt) {#txt, prefix ## _ ## txt}
 
 static const luaL_Reg filefilter_methods[] =
@@ -6146,6 +6170,8 @@ static const luaL_Reg far_funcs[] =
 	PAIR( far, TruncPathStr),
 	PAIR( far, TruncStr),
 	PAIR( far, UnloadPlugin),
+	PAIR( far, VTEnumBackground),
+	PAIR( far, VTLogExport),
 	PAIR( far, WriteConsole),
 	PAIR( far, XLat),
 
