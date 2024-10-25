@@ -1,6 +1,6 @@
 -- encoding: UTF-8
 
-local SETTINGS_KEY  = ("%08X"):format(far.GetPluginId())
+local SETTINGS_KEY  = nil
 local SETTINGS_NAME = "MacroBrowser"
 
 local Shared = ...

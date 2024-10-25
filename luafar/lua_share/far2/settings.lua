@@ -5,8 +5,6 @@
 
 local JoinPath = win.JoinPath
 
-local work_dir
-
 local function checkarg (arg, argnum, reftype)
   if type(arg) ~= reftype then
     error(("arg. #%d: %s expected, got %s"):format(argnum, reftype, type(arg)), 3)
@@ -99,11 +97,13 @@ local function deserialize (str, isfile)
 end
 
 local function get_work_dir(key)
-  work_dir = work_dir or far.InMyConfig("plugins/luafar")
-  return JoinPath(work_dir, key)
+  key = key or ""
+  local dir = far.InMyConfig(("plugins/luafar/%08X"):format(far.GetPluginId()))
+  return JoinPath(dir, key)
 end
 
 local function mdelete (key, name)
+  key = key or ""
   checkarg(key, 1, "string")
   checkarg(name, 2, "string")
   local dir = get_work_dir(key)
@@ -116,6 +116,7 @@ local function mdelete (key, name)
 end
 
 local function msave (key, name, value)
+  key = key or ""
   checkarg(key, 1, "string")
   checkarg(name, 2, "string")
   local str = serialize(value)
@@ -134,6 +135,7 @@ local function msave (key, name, value)
 end
 
 local function mload (key, name)
+  key = key or ""
   checkarg(key, 1, "string")
   checkarg(name, 2, "string")
   return deserialize(JoinPath(get_work_dir(key),name), true)
