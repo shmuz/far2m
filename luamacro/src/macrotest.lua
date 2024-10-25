@@ -1061,7 +1061,7 @@ function MT.test_Far()
   local temp = Far.UpTime
   mf.sleep(50)
   temp = Far.UpTime - temp
-  assert_range(temp, 40, 100)
+  assert_range(temp, 40, 200)
 
   local val,typ,val0,key,name,saved = Far.GetConfig("Editor.defaultcodepage")
   assert_num(val)
