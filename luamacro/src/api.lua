@@ -3,7 +3,7 @@
 
 local Shared = ...
 local utils, yieldcall = Shared.utils, Shared.yieldcall
-local Sett = Shared.Settings
+local Sett = require "far2.settings"
 local mc = Shared.Constants
 
 local MCODE_F_USERMENU = mc.MCODE_F_USERMENU

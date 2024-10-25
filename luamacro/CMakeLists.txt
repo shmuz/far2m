@@ -71,7 +71,6 @@ set(MY_LIST
   macrotest.lua
   mbrowser.lua
   panelsort.lua
-  settings.lua
   utils.lua
 )
 
