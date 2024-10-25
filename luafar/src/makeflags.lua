@@ -171,7 +171,7 @@ do
   local trg_int, trg_ptr = {}, {}
   for _,v in ipairs(t_winapi) do table.insert(trg_int, v) end
 
-  for _,fname in ipairs { "farplug-wide.h", "farcolor.h", "farkeys.h" } do
+  for _,fname in ipairs { "farcommon.h", "farplug-wide.h", "farcolor.h", "farkeys.h" } do
     local fp = assert (io.open (dir.."/"..fname))
     local src = fp:read ("*all")
     fp:close()
