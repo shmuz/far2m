@@ -151,7 +151,7 @@ local function GetItems (fcomp, sortmark, onlyactive)
     separator=true,
     text=("%s [ %s ]"):format(onlyactive and Msg.MBSepActiveMacros or Msg.MBSepMacros, sortmark) }
   local fmt = ("%%s %%s │ %%-%ds │ %%s"):format(maxKeyLen)
-  for i,m in ipairs(macros) do
+  for _,m in ipairs(macros) do
     items[#items+1] = { text=fmt:format(m.active and "√" or " ", m.codedArea, m.codedKey, m.description), macro=m }
   end
 
@@ -160,7 +160,7 @@ local function GetItems (fcomp, sortmark, onlyactive)
     text=onlyactive and Msg.MBSepActiveMenuItems or Msg.MBSepMenuItems }
   fmt = ("%%s %%s │ %%s │ %%-%ds │ %%s"):format(maxTitleW)
   local NOAREA = string.rep(" ", 20)
-  for i,m in ipairs(menuitems) do
+  for _,m in ipairs(menuitems) do
     items[#items+1] = {
       text=fmt:format(m.active and "√" or " ", m.codedArea or NOAREA, m.codedMenu, m.shortTitle, m.description),
       macro=m
@@ -168,31 +168,31 @@ local function GetItems (fcomp, sortmark, onlyactive)
   end
 
   items[#items+1] = { separator=true, text=Msg.MBSepPrefixes }
-  for i,m in ipairs(prefixes) do
+  for _,m in ipairs(prefixes) do
     items[#items+1] = { text=("%-22s │ %s"):format(
                         m.prefix, m.description), macro=m }
   end
 
   items[#items+1] = { separator=true, text=Msg.MBSepPanels }
-  for i,m in ipairs(panels) do
+  for _,m in ipairs(panels) do
     items[#items+1] = { text=("%-22s │ %s"):format(
                         m.title, m.Info.Description or ""), macro=m }
   end
 
   items[#items+1] = { separator=true, text=Msg.MBSepColumns }
-  for i,m in ipairs(columns) do
+  for _,m in ipairs(columns) do
     items[#items+1] = { text=("%-22s │ %s"):format(
                         m.filemask or "*", m.description or ""), macro=m }
   end
 
   items[#items+1] = { separator=true, text=Msg.MBSepSortModes }
-  for i,m in ipairs(sortmodes) do
+  for _,m in ipairs(sortmodes) do
     items[#items+1] = { text=("%-22s │ %s"):format(
                         m.mode, m.Description or ""), macro=m }
   end
 
   items[#items+1] = { separator=true, text=Msg.MBSepEvents }
-  for i,m in ipairs(events) do
+  for _,m in ipairs(events) do
     items[#items+1] = { text=("%-19s │ %s"):format(
                         m.group, m.description), macro=m, }
   end
