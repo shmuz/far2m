@@ -866,3 +866,14 @@ void CommandLine::RedrawWithoutComboBoxMark()
 	// erase \x2191 character...
 	DrawComboBoxMark(L' ');
 }
+
+const CHAR_INFO *CommandLine::GetBackgroundScreen(int &W, int &H)
+{
+	if (!BackgroundScreen)
+		return NULL;
+
+	W = (BackgroundScreen->X2 - BackgroundScreen->X1) + 1;
+	H = (BackgroundScreen->Y2 - BackgroundScreen->Y1) + 1;
+	return BackgroundScreen->GetBufferAddress();
+}
+

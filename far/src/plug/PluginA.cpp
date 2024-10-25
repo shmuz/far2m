@@ -436,6 +436,8 @@ static void CreatePluginStartupInfoA(PluginA *pPlugin, oldfar::PluginStartupInfo
 		StandardFunctions.BackgroundTask = farBackgroundTaskA;
 		StandardFunctions.StrCellsCount = farStrCellsCountA;
 		StandardFunctions.StrSizeOfCells = farStrSizeOfCellsA;
+		StandardFunctions.VTEnumBackground = farAPIVTEnumBackground;
+		StandardFunctions.VTLogExport = farAPIVTLogExportA;
 	}
 
 	if (!StartupInfo.StructSize)

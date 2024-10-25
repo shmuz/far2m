@@ -74,6 +74,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "InterThreadCall.hpp"
 #include "filestr.hpp"
 #include "strmix.hpp"
+#include "vtshell.h"
+#include "vtlog.h"
 
 #define ALIGNAS(value, alignment) ((value + (alignment - 1)) & ~(alignment - 1))
 #define ALIGN(value)              ALIGNAS(value, sizeof(void *))
@@ -2513,6 +2515,51 @@ DWORD WINAPI farGetCurrentDirectory(DWORD Size, wchar_t *Buffer)
 	return static_cast<DWORD>(strCurDir.GetLength() + 1);
 }
 
+SIZE_T farAPIVTEnumBackground(HANDLE *con_hnds, SIZE_T count)
+{
+	if (count == 0) {
+		return VTShell_Count();
+	}
+	VTInfos vts;
+	VTShell_Enum(vts);
+	for (size_t i = 0; i < count && i < vts.size(); ++i) {
+		con_hnds[i] = vts[i].con_hnd;
+	}
+	return vts.size();
+}
+
+
+BOOL farAPIVTLogExportA(HANDLE con_hnd, DWORD vth_flags, const char *file)
+{
+	const auto &saved_path = VTLog::GetAsFile(con_hnd,
+		(vth_flags & VT_LOGEXPORT_COLORED) != 0,
+		(vth_flags & VT_LOGEXPORT_WITH_SCREENLINES) != 0,
+		file);
+	if (saved_path.empty())
+		return FALSE;
+
+	if (!*file) {
+		strncpy((char *)file, saved_path.c_str(), MAX_PATH);
+	}
+
+	return TRUE;
+}
+
+BOOL farAPIVTLogExportW(HANDLE con_hnd, DWORD vth_flags, const wchar_t *file)
+{
+	const auto &saved_path = VTLog::GetAsFile(con_hnd,
+		(vth_flags & VT_LOGEXPORT_COLORED) != 0,
+		(vth_flags & VT_LOGEXPORT_WITH_SCREENLINES) != 0,
+		Wide2MB(file).c_str());
+	if (saved_path.empty())
+		return FALSE;
+
+	if (!*file) {
+		wcsncpy((wchar_t *)file, StrMB2Wide(saved_path).c_str(), MAX_PATH);
+	}
+
+	return TRUE;
+}
 int64_t WINAPI farCallFar(int CheckCode, FarMacroCall *Data)
 {
 	if (CtrlObject) {

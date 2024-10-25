@@ -534,6 +534,8 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 		StandardFunctions.BackgroundTask = farBackgroundTaskW;
 		StandardFunctions.StrCellsCount = farStrCellsCount;
 		StandardFunctions.StrSizeOfCells = farStrSizeOfCells;
+		StandardFunctions.VTEnumBackground = farAPIVTEnumBackground;
+		StandardFunctions.VTLogExport = farAPIVTLogExportW;
 		StandardFunctions.DetectCodePage = farDetectCodePage;
 		StandardFunctions.FarNameToInputRecord = FarNameToInputRecord;
 		StandardFunctions.GetFileGroup = farGetFileGroup;
