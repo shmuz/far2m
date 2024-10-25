@@ -65,7 +65,6 @@ Generate_Constants()
 set(MY_LIST
   luamacro.example.ini
   api.lua
-  farapi.lua
   farcmds.lua
   keymacro.lua
   luamacro.lua
@@ -74,7 +73,6 @@ set(MY_LIST
   panelsort.lua
   settings.lua
   utils.lua
-  winapi.lua
 )
 
 foreach(elem ${MY_LIST})

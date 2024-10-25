@@ -3,6 +3,7 @@
 local Shared = ...
 local Msg = Shared.Msg
 local mc = Shared.Constants
+require "far2.farapi"
 local ffi = require "ffi"
 local C = ffi.C
 local F = far.Flags

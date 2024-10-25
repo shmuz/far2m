@@ -1,4 +1,6 @@
 local ffi = require "ffi"
+require "winapi"
+
 ffi.cdef [=[
 #pragma pack(2)
 

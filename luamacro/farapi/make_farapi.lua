@@ -53,6 +53,7 @@ txt = rex.gsub(txt, "\\/\\*.*?\\*\\/", "\n", nil, "s") -- delete multiline comme
 txt = rex.gsub(txt, "^\\s*\\/\\/.*\n?", "", nil, "m")  -- delete line comments
 
 f_out:write("local ffi = require \"ffi\"\n")
+f_out:write("require \"winapi\"\n\n")
 f_out:write("ffi.cdef [=[\n")
 f_out:write("#pragma pack(2)\n")
 f_out:write(txt, "\n]=]\n")

@@ -623,9 +623,6 @@ local function Init()
   end
 
   if bit and jit then
-    RunPluginFile("winapi.lua")
-    RunPluginFile("farapi.lua")
-
     panelsort = RunPluginFile("panelsort.lua", Shared)
     Shared.panelsort = panelsort
     Panel.LoadCustomSortMode = panelsort.LoadCustomSortMode
