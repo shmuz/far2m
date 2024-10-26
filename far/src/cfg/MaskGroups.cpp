@@ -245,7 +245,7 @@ void MaskGroupsSettings()
 			{
 				case KEY_NUMDEL:
 				case KEY_DEL:
-					MenuModified = (MenuPos < NumLine) && DeleteMaskRecord(MenuPos);
+					MenuModified = (MenuPos >= 0) && (MenuPos < NumLine) && DeleteMaskRecord(MenuPos);
 					break;
 
 				case KEY_NUMPAD0:
