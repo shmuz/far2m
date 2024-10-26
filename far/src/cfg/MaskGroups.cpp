@@ -300,7 +300,7 @@ void MaskGroupsSettings()
 							if (!chkFileMask.Set(strMasks.CPtr(), 0))
 								continue;
 
-							if ( !chkFileMask.Compare(Value.CPtr(), (bool)(bCaseSensitive)) ) {
+							if ( !chkFileMask.Compare(Value.CPtr(), (bool)bCaseSensitive) ) {
 								MenuItemEx *item = MasksMenu.GetItemPtr(i);
 								if (!item) continue;
 								MasksMenu.UpdateItemFlags(i, item->Flags | MIF_HIDDEN);
