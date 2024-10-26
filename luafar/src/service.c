@@ -5833,8 +5833,8 @@ static int far_VTEnumBackground(lua_State *L)
 static int far_VTLogExport(lua_State *L)
 {
 	HANDLE hnd = lua_isnoneornil(L,1) ? NULL : lua_touserdata(L,1);
-	DWORD flags = CheckFlags(L,2);
-	const wchar_t *file = check_utf8_string(L,3,NULL);
+	const wchar_t *file = check_utf8_string(L,2,NULL);
+	DWORD flags = OptFlags(L,3,0);
 	luaL_argcheck(L, *file, 3, "empty string not allowed"); //empty string here means a buffer - not needed
 	lua_pushboolean(L, FSF.VTLogExport(hnd, flags, file));
 	return 1;
