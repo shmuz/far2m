@@ -46,9 +46,14 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mix.hpp"
 #include "InterThreadCall.hpp"
 
+struct DlgParam
+{
+	int FirstButtonIndex;
+	int LastButtonIndex;
+};
+
 static int MessageX1, MessageY1, MessageX2, MessageY2;
 static FARString strMsgHelpTopic;
-static int FirstButtonIndex, LastButtonIndex;
 static BOOL IsWarningStyle;
 
 LONG_PTR WINAPI MsgDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
@@ -77,13 +82,14 @@ LONG_PTR WINAPI MsgDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 			}
 		} break;
 		case DN_KEY: {
-			if (Param1 == FirstButtonIndex
+			DlgParam *dp = (DlgParam*) SendDlgMessage(hDlg, DM_GETDLGDATA, 0, 0);
+			if (Param1 == dp->FirstButtonIndex
 					&& (Param2 == KEY_LEFT || Param2 == KEY_NUMPAD4 || Param2 == KEY_SHIFTTAB)) {
-				SendDlgMessage(hDlg, DM_SETFOCUS, LastButtonIndex, 0);
+				SendDlgMessage(hDlg, DM_SETFOCUS, dp->LastButtonIndex, 0);
 				return TRUE;
-			} else if (Param1 == LastButtonIndex
+			} else if (Param1 == dp->LastButtonIndex
 					&& (Param2 == KEY_RIGHT || Param2 == KEY_NUMPAD6 || Param2 == KEY_TAB)) {
-				SendDlgMessage(hDlg, DM_SETFOCUS, FirstButtonIndex, 0);
+				SendDlgMessage(hDlg, DM_SETFOCUS, dp->FirstButtonIndex, 0);
 				return TRUE;
 			}
 		} break;
@@ -279,6 +285,7 @@ static int ShowMessageSynched(DWORD Flags, int Buttons, const wchar_t *Title, co
 		int CurItem = 0;
 		bool StrSeparator = false;
 		bool Separator = false;
+		DlgParam Param {};
 		for (PtrMsgDlg = MsgDlg + 1, I = 1; I < ItemCount; ++I, ++PtrMsgDlg, ++CurItem) {
 			if (I == StrCount + 1 && !StrSeparator && !Separator) {
 				PtrMsgDlg->Type = DI_TEXT;
@@ -295,8 +302,8 @@ static int ShowMessageSynched(DWORD Flags, int Buttons, const wchar_t *Title, co
 				TypeItem = DI_BUTTON;
 				FlagsItem = DIF_CENTERGROUP;
 				IsButton = TRUE;
-				FirstButtonIndex = CurItem + 1;
-				LastButtonIndex = CurItem;
+				Param.FirstButtonIndex = CurItem + 1;
+				Param.LastButtonIndex = CurItem;
 			}
 
 			PtrMsgDlg->Type = TypeItem;
@@ -306,7 +313,7 @@ static int ShowMessageSynched(DWORD Flags, int Buttons, const wchar_t *Title, co
 			if (IsButton) {
 				PtrMsgDlg->Y1 = Y2 - Y1 - 2 + (Separator ? 1 : 0);
 				PtrMsgDlg->strData+= CPtrStr;
-				LastButtonIndex++;
+				Param.LastButtonIndex++;
 			} else {
 				PtrMsgDlg->X1 = (Flags & MSG_LEFTALIGN) ? 5 : -1;
 				PtrMsgDlg->Y1 = I + 1;
@@ -333,15 +340,15 @@ static int ShowMessageSynched(DWORD Flags, int Buttons, const wchar_t *Title, co
 
 		{
 			if (Separator) {
-				FirstButtonIndex++;
-				LastButtonIndex++;
+				Param.FirstButtonIndex++;
+				Param.LastButtonIndex++;
 				MessageY2++;
 				Y2++;
 				MsgDlg[0].Y2++;
 				ItemCount++;
 			}
 			IsWarningStyle = Flags & MSG_WARNING;
-			Dialog Dlg(MsgDlg, ItemCount, MsgDlgProc);
+			Dialog Dlg(MsgDlg, ItemCount, MsgDlgProc, (LONG_PTR)&Param);
 			Dlg.SetPosition(X1, Y1, X2, Y2);
 
 			if (Guid)
