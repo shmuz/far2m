@@ -442,7 +442,6 @@ void Dialog::Init(FARWINDOWPROC DlgProc,	// Диалоговая процеду�
 {
 	SetDynamicallyBorn(false);				// $OT: По умолчанию все диалоги создаются статически
 	CanLoseFocus = false;
-	HelpTopic = nullptr;
 	// Номер плагина, вызвавшего диалог (-1 = Main)
 	PluginNumber = -1;
 	Dialog::DataDialog = InitParam;
@@ -482,9 +481,6 @@ Dialog::~Dialog()
 
 	Hide();
 	ScrBuf.Flush();
-
-	if (HelpTopic)
-		delete[] HelpTopic;
 
 	for (unsigned i = 0; i < ItemCount; i++)
 		delete Item[i];
@@ -2781,7 +2777,7 @@ int Dialog::ProcessKey(FarKey Key)
 		{
 			// Перед выводом диалога посылаем сообщение в обработчик
 			//   и если вернули что надо, то выводим подсказку
-			auto Topic = (const wchar_t*) DlgProc(this, DN_HELP, FocusPos, (LONG_PTR)HelpTopic);
+			auto Topic = (const wchar_t*) DlgProc(this, DN_HELP, FocusPos, (LONG_PTR)HelpTopic.CPtr());
 			if (!Help::MkTopic(PluginNumber, Topic, strStr).IsEmpty()) {
 				Help Hlp(strStr);
 			}
@@ -4588,26 +4584,18 @@ void Dialog::SetHelp(const wchar_t *Topic)
 {
 	CriticalSectionLock Lock(CS);
 
-	if (HelpTopic)
-		delete[] HelpTopic;
-
-	HelpTopic = nullptr;
-
-	if (Topic && *Topic) {
-		HelpTopic = new (std::nothrow) wchar_t[wcslen(Topic) + 1];
-
-		if (HelpTopic)
-			wcscpy(HelpTopic, Topic);
-	}
+	if (Topic)
+		HelpTopic = Topic;
+	else
+		HelpTopic.Clear();
 }
 
 void Dialog::ShowHelp()
 {
 	CriticalSectionLock Lock(CS);
 
-	if (HelpTopic && *HelpTopic) {
+	if (!HelpTopic.IsEmpty())
 		Help Hlp(HelpTopic);
-	}
 }
 
 void Dialog::ClearDone()

@@ -300,7 +300,7 @@ private:
 	// переменные для перемещения диалога
 	int OldX1, OldX2, OldY1, OldY2;
 
-	wchar_t *HelpTopic;
+	FARString HelpTopic;
 
 	volatile int DropDownOpened;	// Содержит статус комбобокса и хистори: TRUE - открыт, FALSE - закрыт.
 
