@@ -83,6 +83,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mix.hpp"
 #include "constitle.hpp"
 #include "plugapi.hpp"
+#include "MountInfo.h"
 #include "DlgGuid.hpp"
 #include "udlist.hpp"
 
@@ -1481,6 +1482,8 @@ int FileList::ProcessKey(FarKey Key)
 			ProcessEnter(1,Key==KEY_SHIFTENTER||Key==KEY_SHIFTNUMENTER, true, Key == KEY_CTRLALTENTER || Key == KEY_CTRLALTNUMENTER);
 			return TRUE;
 		}
+
+		case KEY_CTRLBACKSLASH | KEY_ALT:
 		case KEY_CTRLBACKSLASH:
 		{
 			_ALGO(CleverSysLog clv(L"Ctrl-/"));
@@ -1505,8 +1508,14 @@ int FileList::ProcessKey(FarKey Key)
 				}
 			}
 
-			if (NeedChangeDir)
-				ChangeDir(L"/");
+			if (NeedChangeDir) {
+				if ( (Key & KEY_ALT) && (PanelMode != PLUGIN_PANEL) ) { // to mount point only in local FS
+					FARString strFileSystemMountPoint = MountInfo().GetFileSystemMountPoint(strCurDir);
+					ChangeDir(strFileSystemMountPoint.IsEmpty() ? WGOOD_SLASH : strFileSystemMountPoint);
+				}
+				else // to root dir
+					ChangeDir(WGOOD_SLASH);
+			}
 
 			CtrlObject->Cp()->ActivePanel->Show();
 			return TRUE;

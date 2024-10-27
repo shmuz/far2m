@@ -626,7 +626,11 @@ $ #Panelvezérlő parancsok - rendszerparancsok#
 
   Belépés a gyökérmappába                                     #Ctrl-\\#
 
-  Belépés mappába vagy tömörített fájlba (SFX-be is)       #Ctrl-PgDn#
+  Change to the mount point of the current folder's file system   #Ctrl-Alt-\\#
+
+  Change to the home directory (~~)                            #Ctrl-`#
+
+  Belépés mappába vagy tömörített fájlba (SFX-be is),      #Ctrl-PgDn#
 
     Ha a kurzor mappán áll, a #Ctrl-PgDn# beléptet a mappába. Ha a
     kurzor fájlon áll, a fájl típusához ~társított parancsot~@FileAssoc@ hajtja
