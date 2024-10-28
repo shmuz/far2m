@@ -4211,8 +4211,8 @@ static int viewer_GetInfo(lua_State *L)
 static int viewer_Quit(lua_State *L)
 {
 	int viewerId = luaL_optinteger(L,1,-1);
-	PSInfo.ViewerControlV2(viewerId, VCTL_QUIT, NULL);
-	return 0;
+	lua_pushboolean(L, PSInfo.ViewerControlV2(viewerId, VCTL_QUIT, NULL));
+	return 1;
 }
 
 static int viewer_Redraw(lua_State *L)

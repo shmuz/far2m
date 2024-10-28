@@ -2066,7 +2066,8 @@ static int FarViewerControlSynchedV2(int ViewerID, int Command, void *Param)
 
 	if (ViewerID == -1 || (CurViewer && CurViewer->GetViewerID() == ViewerID)) {
 		return CurViewer ? CurViewer->ViewerControl(Command, Param) : 0;
-	} else {
+	}
+	else {
 		int count = FrameManager->GetFrameCount();
 		for (int i = 0; i < count; i++) {
 			auto fileview = dynamic_cast<FileViewer *>(FrameManager->operator[](i));

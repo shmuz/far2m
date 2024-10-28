@@ -3388,15 +3388,10 @@ int Viewer::ViewerControl(int Command, void *Param)
 			   не является панелью информации и быстрого просмотра (т.е.
 			   фактически панелей на экране не видно)
 			*/
-			if (!FrameManager->IsPanelsActive()) {
-				/* $ 29.09.2002 IS
-				   без этого не закрывался вьюер, а просили именно это
-				*/
+			if (HostFileViewer) {
+				HostFileViewer->SetExitCode(0);
 				FrameManager->DeleteFrame(HostFileViewer);
-
-				if (HostFileViewer)
-					HostFileViewer->SetExitCode(0);
-
+				FrameManager->Commit();
 				return TRUE;
 			}
 		}
