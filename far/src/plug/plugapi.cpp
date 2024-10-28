@@ -494,12 +494,10 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 		}
 		case ACTL_SETCURRENTWINDOW: {
 			// Запретим переключение фрэймов, если находимся в модальном редакторе/вьюере.
-			int Index = (int)(INT_PTR)Param1;
+			auto Index = (INT_PTR)Param1;
 			if (FrameManager && !FrameManager->InModalEV() && FrameManager->operator[](Index)) {
-				int TypeFrame = FrameManager->GetCurrentFrame()->GetType();
-
 				// Запретим переключение фрэймов, если находимся в хелпе или диалоге (тоже модальных)
-				if (TypeFrame != MODALTYPE_HELP && TypeFrame != MODALTYPE_DIALOG) {
+				if (FrameManager->GetTopModal()->GetCanLoseFocus()) {
 					Frame *PrevFrame = FrameManager->GetCurrentFrame();
 					FrameManager->ActivateFrame(Index);
 					FrameManager->DeactivateFrame(PrevFrame, 0);
