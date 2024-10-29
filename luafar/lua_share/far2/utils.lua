@@ -78,7 +78,7 @@ local function OnError (msg)
     end
     if trgInfo then
       if not trgInfo.Current then
-        actl.SetCurrentWindow(trgInfo.Pos, true)
+        actl.SetCurrentWindow(trgInfo.Pos)
       end
     else
       editor.Editor(file, nil,nil,nil,nil,nil, {EF_NONMODAL=1,EF_IMMEDIATERETURN=1})

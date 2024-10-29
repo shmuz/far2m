@@ -4686,7 +4686,7 @@ static int far_ConvertPath(lua_State *L)
 
 static int DoAdvControl (lua_State *L, int Command, int Delta)
 {
-	int pos2 = 2-Delta, pos3 = 3-Delta;
+	int pos2 = 2-Delta;
 	TPluginData* pd = GetPluginData(L);
 	intptr_t int1;
 	wchar_t buf[300];
@@ -4744,7 +4744,7 @@ static int DoAdvControl (lua_State *L, int Command, int Delta)
 		case ACTL_SETCURRENTWINDOW:
 			int1 = luaL_checkinteger(L, pos2) - 1;
 			int1 = PSInfo.AdvControl(pd->ModuleNumber, ACTL_SETCURRENTWINDOW, (void*)int1, NULL);
-			if (int1 && lua_toboolean(L, pos3))
+			if (int1)
 				PSInfo.AdvControl(pd->ModuleNumber, ACTL_COMMIT, NULL, NULL);
 			return lua_pushinteger(L, int1), 1;
 
