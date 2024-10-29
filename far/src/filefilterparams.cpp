@@ -627,21 +627,22 @@ LONG_PTR WINAPI FileFilterConfigDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_P
 			static const DWORD FarColor[] = {COL_PANELTEXT, COL_PANELSELECTEDTEXT, COL_PANELCURSOR, COL_PANELSELECTEDCURSOR};
 			wchar_t VerticalLine0[] = {BoxSymbols[BS_V2], 0};
 			wchar_t VerticalLine1[] = {BoxSymbols[BS_V1], 0};
+			SMALL_RECT drect;
+			SMALL_RECT irect;
 
-			union { SMALL_RECT drect; uint64_t i64drect; };
-			union { SMALL_RECT irect; uint64_t i64irect; };
 			SendDlgMessage(hDlg, DM_GETDLGRECT, 0, (intptr_t)&drect);
-			drect.Right = drect.Left;
-			drect.Bottom = drect.Top;
 			SendDlgMessage(hDlg, DM_GETITEMPOSITION, ID_HER_COLOREXAMPLE, (intptr_t)&irect);
-			i64irect += i64drect;
+
+			irect.Top += drect.Top;
+			irect.Bottom += drect.Top;
+			irect.Right += drect.Left;
+			irect.Left += drect.Left;
 
 			HighlightDataColor *hl = &fphlstate->hl;
 			size_t	filenameexamplelen = wcslen(Msg::HighlightExample1);
 			size_t	freespace = irect.Right - irect.Left - filenameexamplelen - 2;
 			size_t	ng = freespace;
 			size_t	mcl = StrSizeOfCells(hl->Mark, hl->MarkLen, ng, false);
-			ng = StrCellsCount( hl->Mark, mcl );
 
 			size_t	prews = std::min(Opt.MinFilenameIndentation, Opt.MaxFilenameIndentation);
 			if (ng < prews)
