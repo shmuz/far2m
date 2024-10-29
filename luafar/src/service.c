@@ -2985,6 +2985,8 @@ static int Is_DM_DialogItem(int Msg)
 		case DM_SETTRUECOLOR:  //same as DM_SETCOLOR
 		case DM_SHOWITEM:
 		case DM_SETREADONLY:
+		// DN_*
+		case DN_BTNCLICK:
 			return 1;
 	}
 	return 0;
@@ -3143,6 +3145,8 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 		case DM_SHOWDIALOG:
 		case DM_SHOWITEM:
 		case DM_USER:
+		// DN_*
+		case DN_BTNCLICK:
 			Param2 = luaL_optlong(L, pos4, 0);
 			break;
 
