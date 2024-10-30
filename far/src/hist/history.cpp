@@ -128,6 +128,7 @@ void History::AddToHistoryLocal(const wchar_t *Str, const wchar_t *Extra, const 
 	if (Extra) {
 		AddRecord.strExtra = Extra;
 	}
+	ReplaceStrings(AddRecord.strName, L"\n", L"\r");
 
 	if (RemoveDups) // удалять дубликаты?
 	{
@@ -135,10 +136,6 @@ void History::AddToHistoryLocal(const wchar_t *Str, const wchar_t *Extra, const 
 		{
 			if (EqualType(AddRecord.Type,HistoryItem->Type))
 			{
-				if (RemoveDups != 0)
-				{
-					ReplaceStrings(AddRecord.strName, L"\n", L"\r");
-				}
 				if ((RemoveDups==1 && !StrCmp(AddRecord.strName,HistoryItem->strName)) ||
 				        (RemoveDups==2 && !StrCmpI(AddRecord.strName,HistoryItem->strName)))
 				{
