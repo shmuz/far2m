@@ -4085,6 +4085,8 @@ static int far_DialogRun (lua_State *L)
 	if (dd->wasError)
 	{
 		free_dialog(dd);
+		// sometimes parts of the closed dialog are left on the screen; ACTL_COMMIT clears them
+		PSInfo.AdvControl(GetPluginData(L)->ModuleNumber, ACTL_COMMIT, NULL, NULL);
 		luaL_error(L, "error occured in dialog procedure");
 	}
 	lua_pushinteger(L, result);
