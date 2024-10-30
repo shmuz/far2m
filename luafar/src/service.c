@@ -2050,7 +2050,7 @@ void LF_Error(lua_State *L, const wchar_t* aMsg)
 	lua_pushlstring(L, (void*)L":\n", sizeof(wchar_t) * 2);
 	LF_Gsub(L, aMsg, L"\n\t", L"\n   ");
 	lua_concat(L, 3);
-	LF_Message(L, (void*)lua_tostring(L,-1), L"Error", L"OK", "w", NULL, NULL);
+	LF_Message(L, (void*)lua_tostring(L,-1), L"Error", L"OK", "wl", NULL, NULL);
 	lua_pop(L, 1);
 }
 
