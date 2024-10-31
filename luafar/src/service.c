@@ -4900,7 +4900,7 @@ AdvCommand( GetCursorPos,           ACTL_GETCURSORPOS)
 AdvCommand( GetDescSettings,        ACTL_GETDESCSETTINGS)
 AdvCommand( GetDialogSettings,      ACTL_GETDIALOGSETTINGS)
 AdvCommand( GetFarRect,             ACTL_GETFARRECT)
-AdvCommand( GetFarVersion,          ACTL_GETFARVERSION)
+AdvCommand( GetFarManagerVersion,   ACTL_GETFARVERSION)
 AdvCommand( GetInterfaceSettings,   ACTL_GETINTERFACESETTINGS)
 AdvCommand( GetPanelSettings,       ACTL_GETPANELSETTINGS)
 AdvCommand( GetPluginMaxReadData,   ACTL_GETPLUGINMAXREADDATA)
@@ -5952,7 +5952,7 @@ static const luaL_Reg actl_funcs[] =
 	PAIR( adv, GetDescSettings),
 	PAIR( adv, GetDialogSettings),
 	PAIR( adv, GetFarRect),
-	PAIR( adv, GetFarVersion),
+	PAIR( adv, GetFarManagerVersion),
 	PAIR( adv, GetInterfaceSettings),
 	PAIR( adv, GetPanelSettings),
 	PAIR( adv, GetPluginMaxReadData),
