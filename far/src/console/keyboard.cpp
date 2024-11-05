@@ -2834,7 +2834,7 @@ FarKey CalcKeyCode(INPUT_RECORD *rec, int RealKey, int *NotMacros)
 		{
 			if (!Opt.ShiftsKeyRules || WaitInFastFind > 0)
 				return KEY_ALT|Upper(Char);
-			else // if (WaitInMainLoop)
+			else if (WaitInMainLoop)
 				return KEY_ALT|Char;
 		}
 
