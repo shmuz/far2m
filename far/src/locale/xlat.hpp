@@ -63,4 +63,4 @@ public:
 };
 
 wchar_t* WINAPI Xlat(wchar_t *Line, int StartPos, int EndPos, DWORD Flags);
-
+bool Xlat(std::wstring &Target, const wchar_t *Line, DWORD Flags);

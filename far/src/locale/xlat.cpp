@@ -166,3 +166,14 @@ wchar_t* WINAPI Xlat(wchar_t *Line,
 
 	return Line;
 }
+
+bool Xlat(std::wstring &Target, const wchar_t *Line, DWORD Flags)
+{
+	wchar_t *dupLine = Line ? wcsdup(Line) : nullptr;
+	if (dupLine && Xlat(dupLine,0,-1,Flags)) {
+		Target = dupLine;
+		free(dupLine);
+		return true;
+	}
+	return false;
+}

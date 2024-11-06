@@ -3337,18 +3337,11 @@ bool FileList::FindPartName(const wchar_t *Name,int Next,int Direct,int ExcludeS
 		ReplaceStrings(strMask,L"<[%>",L"[[]",-1);
 	}
 
-	struct Free {
-		wchar_t *ptr;
-		Free(wchar_t *aPtr) : ptr(aPtr) {}
-		~Free() { free(ptr); }
-	};
-
-	wchar_t *XMask = nullptr;
-	if (UseXlat) {
-		XMask = wcsdup(strMask);
-		Xlat(XMask, 0, -1, 0);
+	const wchar_t *XMask = nullptr;
+	std::wstring Wstr;
+	if (UseXlat && Xlat(Wstr,strMask,0)) {
+		XMask = Wstr.c_str();
 	}
-	SCOPED_ACTION(Free)(XMask);
 
 	for (int I=CurFile+(Next?Direct:0); I >= 0 && I < FileCount; I+=Direct)
 	{
