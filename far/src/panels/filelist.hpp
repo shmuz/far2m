@@ -304,7 +304,7 @@ class FileList:public Panel
 		PHPTR OpenFilePlugin(const wchar_t *FileName,int PushPrev, OPENFILEPLUGINTYPE Type);
 		virtual int GetFileName(FARString &strName,int Pos,DWORD &FileAttr) const;
 		virtual int GetCurrentPos() const;
-		virtual bool FindPartName(const wchar_t *Name,int Next,int Direct=1,int ExcludeSets=0);
+		virtual bool FindPartName(const wchar_t *Name,int Next,int Direct=1,int ExcludeSets=0,bool UseXlat=false);
 		long FindFile(const char *Name,BOOL OnlyPartName=FALSE);
 
 		virtual int GoToFile(long idxItem);

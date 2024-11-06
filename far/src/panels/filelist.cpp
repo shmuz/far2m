@@ -86,6 +86,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "MountInfo.h"
 #include "DlgGuid.hpp"
 #include "udlist.hpp"
+#include "xlat.hpp"
 
 extern PanelViewSettings ViewSettingsArray[];
 extern size_t SizeViewSettingsArray;
@@ -3314,7 +3315,7 @@ bool FileList::FileInFilter(long idxItem)
 }
 
 // $ 02.08.2000 IG  Wish.Mix #21 - при нажатии '/' или '\' в QuickSerach переходим на директорию
-bool FileList::FindPartName(const wchar_t *Name,int Next,int Direct,int ExcludeSets)
+bool FileList::FindPartName(const wchar_t *Name,int Next,int Direct,int ExcludeSets,bool UseXlat)
 {
 	int DirFind = 0;
 	int Length = StrLength(Name);
@@ -3336,9 +3337,22 @@ bool FileList::FindPartName(const wchar_t *Name,int Next,int Direct,int ExcludeS
 		ReplaceStrings(strMask,L"<[%>",L"[[]",-1);
 	}
 
+	struct Free {
+		wchar_t *ptr;
+		Free(wchar_t *aPtr) : ptr(aPtr) {}
+		~Free() { free(ptr); }
+	};
+
+	wchar_t *XMask = nullptr;
+	if (UseXlat) {
+		XMask = wcsdup(strMask);
+		Xlat(XMask, 0, -1, 0);
+	}
+	SCOPED_ACTION(Free)(XMask);
+
 	for (int I=CurFile+(Next?Direct:0); I >= 0 && I < FileCount; I+=Direct)
 	{
-		if (CmpName(strMask,ListData[I]->strName,true))
+		if (CmpName(strMask,ListData[I]->strName,true) || (XMask && CmpName(XMask,ListData[I]->strName,true)))
 		{
 			if (!TestParentFolderName(ListData[I]->strName))
 			{
@@ -3355,7 +3369,7 @@ bool FileList::FindPartName(const wchar_t *Name,int Next,int Direct,int ExcludeS
 
 	for (int I=(Direct > 0)?0:FileCount-1; (Direct > 0) ? I < CurFile:I > CurFile; I+=Direct)
 	{
-		if (CmpName(strMask,ListData[I]->strName,true))
+		if (CmpName(strMask,ListData[I]->strName,true) || (XMask && CmpName(XMask,ListData[I]->strName,true)))
 		{
 			if (!TestParentFolderName(ListData[I]->strName))
 			{

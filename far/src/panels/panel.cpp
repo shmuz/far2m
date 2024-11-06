@@ -2300,28 +2300,6 @@ bool Panel::ExecShortcutFolder(int Pos)
 // Just as FindPartName(), but with retry support through keyboard layout translation, specially for FastFind
 bool Panel::FindPartNameXLat(const wchar_t *Name,int Next,int Direct,int ExcludeSets)
 {
-    if (FindPartName(Name, Next, Direct, ExcludeSets)) {
-		return true;
-	}
-
-	if (!Opt.XLat.EnableForFastFileFind) {
-		return false;
-	}
-
-	const size_t NameLen = wcslen(Name);
-	StackHeapArray<wchar_t, 0x200> NameXlat(NameLen + 1);
-
-	Xlator xlt(0);
-	for (size_t i = 0; i < NameLen; ++i) {
-		NameXlat[i] = xlt.Transcode(Name[i]);
-		NameXlat[i + 1] = 0;
-		if (!FindPartName(NameXlat.Get(), Next, Direct, ExcludeSets)) {
-			NameXlat[i] = Name[i];
-			if (!FindPartName(NameXlat.Get(), Next, Direct, ExcludeSets)) {
-				return false;
-			}
-		}
-	}
-	return true;
+	return FindPartName(Name, Next, Direct, ExcludeSets, Opt.XLat.EnableForFastFileFind);
 }
 

@@ -1388,7 +1388,7 @@ int TreeList::ReadTreeFile()
 	return FillLastData();
 }
 
-bool TreeList::FindPartName(const wchar_t *Name, int Next, int Direct, int ExcludeSets)
+bool TreeList::FindPartName(const wchar_t *Name, int Next, int Direct, int ExcludeSets, bool UseXlat)
 {
 	FARString strMask;
 	strMask = Name;

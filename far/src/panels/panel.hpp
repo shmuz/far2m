@@ -192,7 +192,7 @@ class Panel:public ScreenObject
 		virtual void UpdateIfRequired() {}
 
 		virtual void CloseChangeNotification() {}
-		virtual bool FindPartName(const wchar_t *Name,int Next,int Direct=1,int ExcludeSets=0) { return false; }
+		virtual bool FindPartName(const wchar_t *Name,int Next,int Direct=1,int ExcludeSets=0,bool UseXlat=false) { return false; }
 		bool FindPartNameXLat(const wchar_t *Name,int Next,int Direct=1,int ExcludeSets=0);
 
 		virtual int GoToFile(long idxItem) {return TRUE;}
