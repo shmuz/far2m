@@ -86,7 +86,10 @@ int pcall_msg (lua_State* L, int narg, int nret)
 		}
 
 		if (status2 != 0) {
-			LF_Error (L, check_utf8_string(L, -1, NULL));
+			if (lua_isstring(L, -1)) // this check prevents crashes
+				LF_Error (L, check_utf8_string(L, -1, NULL));
+			else
+				LF_Error (L, L"error object is not a string");
 			lua_pop (L, 1);
 		}
 
