@@ -1405,13 +1405,13 @@ int LF_ProcessSynchroEvent (lua_State* L, int Event, void *Param)
 		else if (sd.type == SYNCHRO_FUNCTION) {
 			lua_rawgeti(L, LUA_REGISTRYINDEX, sd.ref);
 			luaL_unref(L, LUA_REGISTRYINDEX, sd.ref);
-			if (lua_istable(L,-1) && lua_checkstack(L, 1 + sd.narg)) {
+			if (lua_istable(L,-1) && lua_checkstack(L, sd.narg)) {
 				for (int i=1; i <= sd.narg; i++) {
 					lua_rawgeti(L, -i, i);
 				}
 				pcall_msg(L, sd.narg - 1, 0);
-				lua_pop(L, 1);
 			}
+			lua_pop(L, 1);
 		}
 	}
 	return 0;
