@@ -3606,7 +3606,7 @@ long FileList::SelectFiles(int Mode,const wchar_t *Mask)
 			FARString strTmp = strCurName;
 			size_t pos;
 
-			if (strTmp.RPos(pos,L'.') && pos!=strTmp.GetLength()-1)
+			if (strTmp.RPos(pos,L'.') && pos!=0 && pos!=strTmp.GetLength()-1)
 				strTmp.Truncate(pos);
 
 			strRawMask.Format(L"\"%ls.*\";\"%ls\"", strTmp.CPtr(), strTmp.CPtr());
