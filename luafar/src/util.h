@@ -25,10 +25,19 @@ typedef struct {
 	int       interval_changed; //TODO
 } TTimerData;
 
+enum {
+	SYNCHRO_COMMON,
+	SYNCHRO_TIMER,
+	SYNCHRO_FUNCTION,
+};
+
 typedef struct
 {
-	TTimerData *timerData;
+	int type;
 	int data;
+	int ref;
+	int narg;
+	TTimerData *timerData;
 } TSynchroData;
 
 typedef struct {
@@ -47,7 +56,7 @@ typedef struct
 	CHAR_INFO VBuf[1];
 } TFarUserControl;
 
-TSynchroData* CreateSynchroData(TTimerData *td, int data);
+TSynchroData* CreateSynchroData(int type, int data, TTimerData *td);
 int   Log(lua_State *L, const char* Format, ...);
 int   DecodeAttributes(const char* str);
 int   GetAttrFromTable(lua_State *L);

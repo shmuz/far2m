@@ -156,11 +156,13 @@ const char* FarKeyStrings[] = {
 /* 0x80 */ "F17",   "F18",  "F19",  "F20",               "F21",   "F22",   "F23",   "F24",
 };
 
-TSynchroData* CreateSynchroData(TTimerData *td, int data)
+TSynchroData* CreateSynchroData(int type, int data, TTimerData *td)
 {
 	TSynchroData* SD = (TSynchroData*) malloc(sizeof(TSynchroData));
-	SD->timerData = td;
+	SD->type = type;
 	SD->data = data;
+	SD->ref = LUA_REFNIL;
+	SD->timerData = td;
 	return SD;
 }
 
@@ -4730,12 +4732,26 @@ static int DoAdvControl (lua_State *L, int Command, int Delta)
 			return 1;
 		}
 
-		case ACTL_SYNCHRO: {
-			int p = (int)luaL_checkinteger(L, pos2);
-			TSynchroData *synchroData = CreateSynchroData(NULL, p);
-			lua_pushinteger(L, PSInfo.AdvControl(pd->ModuleNumber, Command, synchroData, NULL));
-			return 1;
-		}
+		case ACTL_SYNCHRO:
+			if (lua_isfunction(L, pos2)) {
+				TSynchroData *sd = CreateSynchroData(SYNCHRO_FUNCTION, 0, NULL);
+				int top = lua_gettop(L);
+				sd->narg = top - pos2 + 1;
+				lua_newtable(L);
+				for (int i=pos2,j=1; i <= top; ) {
+					lua_pushvalue(L, i++);
+					lua_rawseti(L, -2, j++);
+				}
+				sd->ref = luaL_ref(L, LUA_REGISTRYINDEX);
+				lua_pushinteger(L, PSInfo.AdvControl(pd->ModuleNumber, Command, sd, NULL));
+				return 1;
+			}
+			else {
+				luaL_argcheck(L, lua_isnumber(L,pos2), pos2, "integer or function expected");
+				TSynchroData *sd = CreateSynchroData(SYNCHRO_COMMON, lua_tointeger(L,pos2), NULL);
+				lua_pushinteger(L, PSInfo.AdvControl(pd->ModuleNumber, Command, sd, NULL));
+				return 1;
+			}
 
 		case ACTL_WAITKEY:
 			if (lua_isnumber(L, pos2))

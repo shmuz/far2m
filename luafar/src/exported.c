@@ -1373,7 +1373,7 @@ int LF_ProcessSynchroEvent (lua_State* L, int Event, void *Param)
 		TSynchroData sd = *(TSynchroData*)Param; // copy
 		free(Param);
 
-		if (sd.timerData) {
+		if (sd.type == SYNCHRO_TIMER) {
 #if !defined(__FreeBSD__) && !defined(__DragonFly__)
 			int narg, index, posTab;
 			TTimerData *td = sd.timerData;
@@ -1399,8 +1399,19 @@ int LF_ProcessSynchroEvent (lua_State* L, int Event, void *Param)
 			}
 #endif
 		}
-		else {
+		else if (sd.type == SYNCHRO_COMMON) {
 			Common_ProcessSynchroEvent(L, Event, sd.data);
+		}
+		else if (sd.type == SYNCHRO_FUNCTION) {
+			lua_rawgeti(L, LUA_REGISTRYINDEX, sd.ref);
+			luaL_unref(L, LUA_REGISTRYINDEX, sd.ref);
+			if (lua_istable(L,-1) && lua_checkstack(L, 1 + sd.narg)) {
+				for (int i=1; i <= sd.narg; i++) {
+					lua_rawgeti(L, -i, i);
+				}
+				pcall_msg(L, sd.narg - 1, 0);
+				lua_pop(L, 1);
+			}
 		}
 	}
 	return 0;

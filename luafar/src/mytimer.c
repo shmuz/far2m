@@ -232,7 +232,7 @@ static void timer_handler(timer_node *timer_id, void *user_data)
 	switch(td->closeStage) {
 		case 0:
 			if (td->enabled) {
-				sd = CreateSynchroData(td, 0);
+				sd = CreateSynchroData(SYNCHRO_TIMER, 0, td);
 				PSInfo.AdvControl(td->plugin_data->ModuleNumber, ACTL_SYNCHRO, sd, NULL);
 			}
 			break;
@@ -240,7 +240,7 @@ static void timer_handler(timer_node *timer_id, void *user_data)
 		case 1:
 			stop_timer(td->timer_id);
 			td->closeStage++;
-			sd = CreateSynchroData(td, 0);
+			sd = CreateSynchroData(SYNCHRO_TIMER, 0, td);
 			PSInfo.AdvControl(td->plugin_data->ModuleNumber, ACTL_SYNCHRO, sd, NULL);
 			break;
 
