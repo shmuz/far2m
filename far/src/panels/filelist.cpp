@@ -3603,14 +3603,13 @@ long FileList::SelectFiles(int Mode,const wchar_t *Mask)
 		if (Mode==SELECT_ADDNAME || Mode==SELECT_REMOVENAME)
 		{
 			// Учтем тот момент, что имя может содержать символы-разделители
-			strRawMask=L"\"";
-			strRawMask+=strCurName;
+			FARString strTmp = strCurName;
 			size_t pos;
 
-			if (strRawMask.RPos(pos,L'.') && pos!=strRawMask.GetLength()-1)
-				strRawMask.Truncate(pos);
+			if (strTmp.RPos(pos,L'.') && pos!=strTmp.GetLength()-1)
+				strTmp.Truncate(pos);
 
-			strRawMask += L"*\"";
+			strRawMask.Format(L"\"%ls.*\";\"%ls\"", strTmp.CPtr(), strTmp.CPtr());
 			WrapBrackets=true;
 			Mode=(Mode==SELECT_ADDNAME) ? SELECT_ADD:SELECT_REMOVE;
 		}
