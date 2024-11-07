@@ -3610,7 +3610,7 @@ long FileList::SelectFiles(int Mode,const wchar_t *Mask)
 			if (strRawMask.RPos(pos,L'.') && pos!=strRawMask.GetLength()-1)
 				strRawMask.Truncate(pos);
 
-			strRawMask += L".*\"";
+			strRawMask += L"*\"";
 			WrapBrackets=true;
 			Mode=(Mode==SELECT_ADDNAME) ? SELECT_ADD:SELECT_REMOVE;
 		}
