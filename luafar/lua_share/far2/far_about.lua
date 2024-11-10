@@ -5,8 +5,11 @@ local function FarAbout()
   local Items, Bkeys = {}, { {BreakKey="CtrlC"} }
   local Array = {}
 
-  local Add = function(name, val)
+  local Add = function(indent, name, val)
     name = name or ""
+    if indent then
+      name = (" "):rep(indent)..name
+    end
     val = val == nil and "" or tostring(val)
     local text = ("%-30s│ %s"):format(name, val)
     table.insert(Items, { text=text; })
@@ -16,41 +19,52 @@ local function FarAbout()
   local AddEnv = function(name, indent)
     local val = os.getenv(name)
     if val ~= nil then
-      if indent then name = (" "):rep(indent)..name end
-      Add(name, val)
+      Add(indent, name, val)
     end
   end
 
   local Inf = Far.GetInfo()
   local uname = win.uname()
 
-  Add("FAR2M version",         Inf.Build)
+  Add(0, "FAR2M version", Inf.Build)
   if Inf.Compiler then
-    Add("  Compiler", Inf.Compiler)
+    Add(2, "Compiler", Inf.Compiler)
   end
-  Add("  Platform",            Inf.Platform)
-  Add("  Backend",             Inf.WinPortBackEnd)
-  Add("  ConsoleColorPalette", Inf.ConsoleColorPalette)
-  Add("  Admin",               Far.IsUserAdmin and "yes" or "no")
-  Add("  PID",                 Far.PID)
-  Add("  Main and Help languages", Inf.MainLang  ..", ".. Inf.HelpLang)
-  Add("  OEM and ANSI codepages", win.GetOEMCP() ..", ".. win.GetACP())
+  Add(2, "Platform", Inf.Platform)
+
+  if Inf.WinPortBackEnd == "GUI" then
+    local build = os.getenv("FAR2M_WX_BUILD")
+    local use   = os.getenv("FAR2M_WX_USE")
+    if build and use then
+      Add(2, "Backend", ("%s, WX_BUILD: %s, WX_USE: %s"):format(Inf.WinPortBackEnd, build, use))
+    else
+      Add(2, "Backend", Inf.WinPortBackEnd)
+    end
+  else
+    Add(2, "Backend", Inf.WinPortBackEnd)
+  end
+
+  Add(2, "ConsoleColorPalette", Inf.ConsoleColorPalette)
+  Add(2, "Admin",               Far.IsUserAdmin and "yes" or "no")
+  Add(2, "PID",                 Far.PID)
+  Add(2, "Main and Help languages", Inf.MainLang  ..", ".. Inf.HelpLang)
+  Add(2, "OEM and ANSI codepages", win.GetOEMCP() ..", ".. win.GetACP())
   AddEnv("FARHOME", 2)
   AddEnv("FARSETTINGS", 2)
   AddEnv("FAR_ARGS", 2)
-  Add("  Config directory", far.InMyConfig())
-  Add("  Cache directory",  far.InMyCache())
-  Add("  Temp directory",   far.InMyTemp())
+  Add(2, "Config directory", far.InMyConfig())
+  Add(2, "Cache directory",  far.InMyCache())
+  Add(2, "Temp directory",   far.InMyTemp())
 
   Add()
-  Add("uname",     "")
-  Add("  sysname", uname.sysname)
-  Add("  release", uname.release)
-  Add("  version", uname.version)
-  Add("  machine", uname.machine)
+  Add(0, "uname",     "")
+  Add(2, "sysname", uname.sysname)
+  Add(2, "release", uname.release)
+  Add(2, "version", uname.version)
+  Add(2, "machine", uname.machine)
 
   Add()
-  Add("Host", win.GetHostName())
+  Add(0, "Host", win.GetHostName())
   AddEnv("COLORTERM")
   AddEnv("DESKTOP_SESSION")
   AddEnv("GDK_BACKEND")
@@ -62,11 +76,11 @@ local function FarAbout()
 
   local plugs = far.GetPlugins()
   Add()
-  Add("-- Plugins (" ..#plugs.. ")")
+  Add(0, "-- Plugins (" ..#plugs.. ")")
   for _, v in ipairs(plugs) do
    local dt = far.GetPluginInformation(v)
-   --Add(dt.ModuleName:match("[^/]+$"), "")
-   Add(dt.GInfo.Title, dt.GInfo.Description)
+   --Add(0, dt.ModuleName:match("[^/]+$"), "")
+   Add(0, dt.GInfo.Title, dt.GInfo.Description)
   end
 
   local item = far.Menu(Props, Items, Bkeys)
