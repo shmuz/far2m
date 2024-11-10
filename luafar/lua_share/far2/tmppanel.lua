@@ -773,12 +773,12 @@ function Panel:PutOneFile (_SrcPath, PanelItem)
   local items = self:GetItems()
   items[#items+1] = CurName
 
-  if self.SelectedCopyContents ~= 0 and NameOnly and IsDirectory(PanelItem) then
+  if self.SelectedCopyContents and NameOnly and IsDirectory(PanelItem) then
     if self.SelectedCopyContents == 2 then
       local res = far.Message (M.MCopyContentsMsg, M.MWarning, ";YesNo", "", "Config")
-      self.SelectedCopyContents = (res == 1) and 1 or 0
+      self.SelectedCopyContents = (res == 1)
     end
-    if self.SelectedCopyContents ~= 0 then
+    if self.SelectedCopyContents then
       local DirPanelItems = far.GetDirList (CurName)
       if DirPanelItems then
         for _, v in ipairs (DirPanelItems) do
