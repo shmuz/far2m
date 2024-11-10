@@ -3140,7 +3140,7 @@ int FarMacroApi::fargetinfoFunc()
 	}
 	values.reserve(strings.size());
 	for (const auto& str: strings) {
-			values.emplace_back(str.c_str());
+		values.emplace_back(str.c_str());
 	}
 	PassArray(values.data(), values.size());
 
