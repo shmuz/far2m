@@ -107,6 +107,7 @@ public:
 	int PassString(const FARString& str);
 	int PassValue(const TVar& Var);
 	int PassBinary(const void* data, size_t size);
+	int PassArray(FarMacroValue *values, size_t count);
 	int PassPointer(void* ptr);
 	int PassNil();
 
@@ -251,6 +252,12 @@ int FarMacroApi::PassBinary(const void* data, size_t size)
 	val.Type = FMVT_BINARY;
 	val.Binary.Data = data;
 	val.Binary.Size = size;
+	return SendValue(val);
+}
+
+int FarMacroApi::PassArray(FarMacroValue *values, size_t count)
+{
+	FarMacroValue val(values, count);
 	return SendValue(val);
 }
 
@@ -3122,8 +3129,20 @@ int FarMacroApi::fargetinfoFunc()
 	PassString(Opt.strLanguage);
 	PassString(Opt.strHelpLanguage);
 	PassNumber(WINPORT(GetConsoleColorPalette)(NULL));
-	//PassString(WinPortBackend());
-	PassString(MB2Wide(WinPortBackendInfo(-1)));
+
+	std::vector<std::wstring> strings;
+	std::vector<FarMacroValue> values;
+	for (int i=-1; ; i++) {
+		if (const char *str = WinPortBackendInfo(i))
+			strings.emplace_back(MB2Wide(str));
+		else
+			break;
+	}
+	values.reserve(strings.size());
+	for (const auto& str: strings) {
+			values.emplace_back(str.c_str());
+	}
+	PassArray(values.data(), values.size());
 
 #if defined (__clang__)
 	swprintf(buf, ARRAYSIZE(buf), L"Clang, version %d.%d.%d", __clang_major__, __clang_minor__, __clang_patchlevel__);

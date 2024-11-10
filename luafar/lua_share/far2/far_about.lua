@@ -28,33 +28,25 @@ local function FarAbout()
 
   Add(0, "FAR2M version", Inf.Build)
   if Inf.Compiler then
-    Add(2, "Compiler", Inf.Compiler)
+    Add(0, "Compiler", Inf.Compiler)
   end
-  Add(2, "Platform", Inf.Platform)
-
-  if Inf.WinPortBackEnd == "GUI" then
-    local build = os.getenv("FAR2M_WX_BUILD")
-    local use   = os.getenv("FAR2M_WX_USE")
-    if build and use then
-      Add(2, "Backend", ("%s, WX_BUILD: %s, WX_USE: %s"):format(Inf.WinPortBackEnd, build, use))
-    else
-      Add(2, "Backend", Inf.WinPortBackEnd)
-    end
-  else
-    Add(2, "Backend", Inf.WinPortBackEnd)
+  Add(0, "Platform", Inf.Platform)
+  Add(0, "Backend", Inf.WinPortBackEnd[1])
+  for k=2,64 do
+    local s = Inf.WinPortBackEnd[k]
+    if s then Add(2 , "System component", s) else break end
   end
-
-  Add(2, "ConsoleColorPalette", Inf.ConsoleColorPalette)
-  Add(2, "Admin",               Far.IsUserAdmin and "yes" or "no")
-  Add(2, "PID",                 Far.PID)
-  Add(2, "Main and Help languages", Inf.MainLang  ..", ".. Inf.HelpLang)
-  Add(2, "OEM and ANSI codepages", win.GetOEMCP() ..", ".. win.GetACP())
-  AddEnv("FARHOME", 2)
-  AddEnv("FARSETTINGS", 2)
-  AddEnv("FAR_ARGS", 2)
-  Add(2, "Config directory", far.InMyConfig())
-  Add(2, "Cache directory",  far.InMyCache())
-  Add(2, "Temp directory",   far.InMyTemp())
+  Add(0, "ConsoleColorPalette", Inf.ConsoleColorPalette)
+  Add(0, "Admin",               Far.IsUserAdmin and "yes" or "no")
+  Add(0, "PID",                 Far.PID)
+  Add(0, "Main and Help languages", Inf.MainLang  ..", ".. Inf.HelpLang)
+  Add(0, "OEM and ANSI codepages", win.GetOEMCP() ..", ".. win.GetACP())
+  AddEnv("FARHOME", 0)
+  AddEnv("FARSETTINGS", 0)
+  AddEnv("FAR_ARGS", 0)
+  Add(0, "Config directory", far.InMyConfig())
+  Add(0, "Cache directory",  far.InMyCache())
+  Add(0, "Temp directory",   far.InMyTemp())
 
   Add()
   Add(0, "uname",     "")
