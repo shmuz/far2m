@@ -33,7 +33,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
-
 #include "constitle.hpp"
 #include "lang.hpp"
 #include "interf.hpp"
@@ -82,8 +81,7 @@ void ConsoleTitle::SetFarTitle(const wchar_t *Title, bool Force, bool Restoring)
 	static FARString strPlatform(FAR_PLATFORM);
 	FARString strOldFarTitle, strFarState;
 
-	if (Title)
-	{
+	if (Title) {
 		Console.GetTitle(strOldFarTitle);
 
 		strFarState=Title;
@@ -99,9 +97,10 @@ void ConsoleTitle::SetFarTitle(const wchar_t *Title, bool Force, bool Restoring)
 				%Admin    - Msg::FarTitleAddonsAdmin
 			*/
 			strFarTitle=Opt.strWindowTitle;
+			const auto &wsBackend = MB2Wide(WinPortBackendInfo(-1));
 			ReplaceStrings(strFarTitle,L"%Ver",strVer,-1);
 			ReplaceStrings(strFarTitle,L"%Platform", strPlatform, -1);
-			ReplaceStrings(strFarTitle,L"%Backend", WinPortBackend(), -1);
+			ReplaceStrings(strFarTitle, L"%Backend", wsBackend.c_str(), -1);
 			ReplaceStrings(strFarTitle,L"%Admin",Opt.IsUserAdmin?Msg::FarTitleAddonsAdmin:L"",-1);
 
 			FARString hn, un;

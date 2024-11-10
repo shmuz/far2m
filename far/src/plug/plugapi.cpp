@@ -722,12 +722,11 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 		}
 
 		case ACTL_WINPORTBACKEND: {
-			const wchar_t *Backend = WinPortBackend();
-			size_t Size = wcslen(Backend) + 1;
+			std::wstring Backend = MB2Wide(WinPortBackendInfo(-1));
 			if (Param1) {
-				wcscpy((wchar_t *)Param1, Backend);
+				wcscpy((wchar_t *)Param1, Backend.c_str());
 			}
-			return (INT_PTR)Size;
+			return (INT_PTR)(Backend.size() + 1);
 		}
 	}
 

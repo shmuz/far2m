@@ -3122,7 +3122,8 @@ int FarMacroApi::fargetinfoFunc()
 	PassString(Opt.strLanguage);
 	PassString(Opt.strHelpLanguage);
 	PassNumber(WINPORT(GetConsoleColorPalette)(NULL));
-	PassString(WinPortBackend());
+	//PassString(WinPortBackend());
+	PassString(MB2Wide(WinPortBackendInfo(-1)));
 
 #if defined (__clang__)
 	swprintf(buf, ARRAYSIZE(buf), L"Clang, version %d.%d.%d", __clang_major__, __clang_minor__, __clang_patchlevel__);

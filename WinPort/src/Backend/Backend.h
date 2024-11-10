@@ -44,6 +44,7 @@ public:
 	virtual bool OnConsoleSetBasePalette(void *pbuff) = 0;
 	virtual void OnConsoleOverrideColor(DWORD Index, DWORD *ColorFG, DWORD *ColorBK) = 0;
 	virtual void OnConsoleSetCursorBlinkTime(DWORD interval) = 0;
+	virtual const char *OnConsoleBackendInfo(int entity) = 0;
 };
 
 class IClipboardBackend
@@ -215,6 +216,8 @@ public:
 	virtual void RepaintsDeferStart() = 0;
 	virtual void RepaintsDeferFinish() = 0;
 
+	virtual const char *BackendInfo(int entity) = 0;
+
 	inline std::wstring GetTitle()
 	{
 		std::wstring out(LockedGetTitle());
@@ -249,7 +252,6 @@ public:
 
 extern IConsoleOutput *g_winport_con_out;
 extern IConsoleInput *g_winport_con_in;
-extern const wchar_t *g_winport_backend;
 
 //////////////////////////////////////////////////////////////////////////////////
 
