@@ -36,72 +36,80 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "panel.hpp"
 #include "viewer.hpp"
 #include "lang.hpp"
-//class Viewer;
+// class Viewer;
 
 /*
 	$ 12.10.2001 SKV
 	заврапим Viewer что бы отслеживать рекурсивность вызова
 	методов DizView и случайно не удалить его во время вызова.
 */
-class DizViewer: public Viewer
+class DizViewer : public Viewer
 {
-	public:
-		int InRecursion;
-		DizViewer():InRecursion(0) {}
-		virtual ~DizViewer() {}
-		virtual int ProcessKey(FarKey Key)
-		{
-			InRecursion++;
-			int res=Viewer::ProcessKey(Key);
-			InRecursion--;
-			return res;
-		}
-		virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
-		{
-			InRecursion++;
-			int res=Viewer::ProcessMouse(MouseEvent);
-			InRecursion--;
-			return res;
-		}
+public:
+	int InRecursion;
+	DizViewer()
+		:
+		InRecursion(0)
+	{}
+	virtual ~DizViewer() {}
+	virtual int ProcessKey(FarKey Key)
+	{
+		InRecursion++;
+		int res = Viewer::ProcessKey(Key);
+		InRecursion--;
+		return res;
+	}
+	virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
+	{
+		InRecursion++;
+		int res = Viewer::ProcessMouse(MouseEvent);
+		InRecursion--;
+		return res;
+	}
 };
 
-class InfoList:public Panel
+class InfoList : public Panel
 {
-	private:
-		DizViewer *DizView;
-		FARMACROAREA PrevMacroArea;
-		int  OldWrapMode;
-		int  OldWrapType;
-		FARString strDizFileName;
+private:
+	DizViewer *DizView;
+	FARMACROAREA PrevMacroArea;
+	int OldWrapMode;
+	int OldWrapType;
+	FARString strDizFileName;
+	struct InfoListSectionState;
+	std::vector<InfoListSectionState> SectionState;
 
-	private:
-		virtual void DisplayObject();
-		void ShowDirDescription(int YPos);
-		void ShowPluginDescription();
+private:
+	virtual void DisplayObject();
+	void ShowGitStatus(int &YPos);
+	void ShowDirDescription(int YPos);
+	void ShowPluginDescription(int YPos);
 
-		void PrintText(const wchar_t *Str);
-		void PrintText(FarLangMsg MsgID);
-		void PrintInfo(const wchar_t *Str);
-		void PrintInfo(FarLangMsg MsgID);
+	void PrintText(const wchar_t *Str);
+	void PrintText(FarLangMsg MsgID);
+	void PrintInfo(const wchar_t *Str);
+	void PrintInfo(FarLangMsg MsgID);
+	void DrawTitle(const wchar_t *Str, int Id, int CurY);
+	void DrawTitle(FarLangMsg MsgID, int Id, int CurY);
+	void ClearTitles();
 
+	int OpenDizFile(const wchar_t *DizFile, int YPos);
+	void SetMacroArea(int Restore = FALSE);
+	void DynamicUpdateKeyBar();
 
-		int  OpenDizFile(const wchar_t *DizFile,int YPos);
-		void SetMacroArea(int Restore = FALSE);
-		void DynamicUpdateKeyBar();
+public:
+	InfoList();
+	virtual ~InfoList();
 
-	public:
-		InfoList();
-		virtual ~InfoList();
-
-	public:
-		virtual int ProcessKey(FarKey Key);
-		virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
-		virtual int64_t VMProcess(int OpCode,void *vParam=nullptr,int64_t iParam=0);
-		virtual void Update(int Mode);
-		virtual void SetFocus();
-		virtual void KillFocus();
-		virtual FARString &GetTitle(FARString &Title,int SubLen=-1,int TruncSize=0);
-		virtual BOOL UpdateKeyBar();
-		virtual void CloseFile();
-		virtual int GetCurName(FARString &strName);
+public:
+	virtual int ProcessKey(FarKey Key);
+	virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
+	virtual int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0);
+	virtual void Update(int Mode);
+	virtual void SetFocus();
+	virtual void KillFocus();
+	virtual FARString &GetTitle(FARString &Title, int SubLen = -1, int TruncSize = 0);
+	virtual BOOL UpdateKeyBar();
+	virtual void CloseFile();
+	virtual int GetCurName(FARString &strName);
 };
