@@ -5272,7 +5272,7 @@ static int far_InputRecordToName(lua_State* L)
 
 	lua_getfield(L, 1, "VirtualKeyCode");
 	vk_code = lua_tointeger(L,-1);
-	vk_name = (vk_code < ARRAYSIZE(FarKeyStrings)) ? FarKeyStrings[vk_code] : NULL;
+	vk_name = (vk_code < ARRAYSIZE(FarKeyStrings)) ? FarKeyStrings[vk_code] : vk_code==220 ? "BackSlash" : NULL;
 
 	lua_getfield(L, 1, "UnicodeChar");
 	if (lua_isstring(L, -1))
