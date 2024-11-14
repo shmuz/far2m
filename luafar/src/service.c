@@ -5807,7 +5807,7 @@ static int far_SplitCmdLine(lua_State *L)
 				if (*++q == 0)
 					break;
 			}
-			else if (!quoted && (*q==0 || *q == '\"' || isspace(*q)))
+			else if (!quoted && (*q==0 || isspace(*q)))
 				break;
 			else if (quoted && (*q==0 || *q == '\"'))
 			{
