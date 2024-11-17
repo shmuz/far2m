@@ -1559,8 +1559,8 @@ void WinPortPanel::OnKeyUp( wxKeyEvent& event )
 #else
 		{
 #endif
-		wxConsoleInputShim::Enqueue(&ir, 1);
-	}
+			wxConsoleInputShim::Enqueue(&ir, 1);
+		}
 
 	}
 	if (
@@ -1568,9 +1568,8 @@ void WinPortPanel::OnKeyUp( wxKeyEvent& event )
 		(!_key_tracker.Alt() || _key_tracker.Shift() || _key_tracker.LeftControl() || _key_tracker.RightControl()
 		|| !isNumpadNumericKey(event.GetKeyCode()) || g_wayland) && // workaround for #2294, 2464
 #endif
-
-			_key_tracker.CheckForSuddenModifiersUp()) {
-				_exclusive_hotkeys.Reset();
+		_key_tracker.CheckForSuddenModifiersUp()) {
+			_exclusive_hotkeys.Reset();
 	}
 	//event.Skip();
 }
@@ -1638,11 +1637,12 @@ void WinPortPanel::OnChar( wxKeyEvent& event )
 		ir.Event.KeyEvent.bKeyDown = FALSE;
 		wxConsoleInputShim::Enqueue(&ir, 1);
 
+#if !defined(__WXOSX__)
 		// avoid double up event in ResetInputState()
 		wxKeyEvent keyEventCopy = _key_tracker.LastKeydown();
 		_key_tracker.OnKeyUp(keyEventCopy);
-
 		_enqueued_in_onchar = true;
+#endif
 	}
 	//event.Skip();
 }
