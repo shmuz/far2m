@@ -68,7 +68,6 @@ set(MY_LIST
   farcmds.lua
   keymacro.lua
   luamacro.lua
-  macrotest.lua
   mbrowser.lua
   panelsort.lua
   utils.lua
