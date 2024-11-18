@@ -9,12 +9,15 @@ Macro {
   area="Shell"; key="CtrlShiftF12";
   action = function()
     Far.DisableHistory(0x0F)
-    local f = assert(loadfile(far.PluginStartupInfo().ShareDir.."/macrotest.lua"))
-    setfenv(f, getfenv())().test_all()
+    local mod = require "far2.test.macrotest"
+    mod.test_all()
     far.Message("All tests OK", "LuaMacro")
   end;
 }
 --]]
+
+-- The keys that invoke the whole macrotest from a macro. Some tests depend on that.
+local MacroKey1, MacroKey2 = "CtrlShiftF12", "RCtrlShiftF12"
 
 local function assert_eq(a,b)      assert(a == b)               return true; end
 local function assert_neq(a,b)     assert(a ~= b)               return true; end
@@ -107,8 +110,8 @@ end
 local function test_mf_akey()
   assert_eq(akey, mf.akey)
   local k0,k1 = akey(0),akey(1)
-  assert(k0==F.KEY_CTRLSHIFTF12 and k1=="CtrlShiftF12" or
-         k0==bor(F.KEY_RCTRL,F.KEY_SHIFTF12) and k1=="RCtrlShiftF12")
+  assert(k0==far.NameToKey(MacroKey1) and k1==MacroKey1 or
+         k0==far.NameToKey(MacroKey2) and k1==MacroKey2)
   -- (the 2nd parameter is tested in function test_mf_eval).
 end
 
@@ -193,13 +196,14 @@ local function test_mf_eval()
   assert_eq (eval("5 7",1,"moonscript"), 11)
 
   -- test with Mode==2
-  local Id = assert_udata(far.MacroAdd(nil,nil,"CtrlA",[[
+  local code = ([[
     local key = akey(1,0)
-    assert(key=="CtrlShiftF12" or key=="RCtrlShiftF12")
+    assert(key=="%s" or key=="%s")
     assert(akey(1,1)=="CtrlA")
     foobar = (foobar or 0) + 1
     return foobar,false,5,nil,"foo"
-  ]]))
+  ]]):format(MacroKey1, MacroKey2)
+  local Id = assert_udata(far.MacroAdd(nil,nil,"CtrlA",code))
   for k=1,3 do
     local ret1,a,b,c,d,e = eval("CtrlA",2)
     assert_true(ret1==0 and a==k and b==false and c==5 and d==nil and e=="foo")
@@ -395,13 +399,13 @@ local function test_mf_key()
     F.KEY_SHIFT,        "Shift",
     F.KEY_RCTRL,        "RCtrl",
     F.KEY_RALT,         "RAlt",
-    F.KEY_CTRLSHIFTF12, "CtrlShiftF12",
+    F.KEY_CTRLALTF10,   "CtrlAltF10",
   }
   for i=1,#ref,2 do
     assert_eq (mf.key        (ref[i]), ref[i+1])
     assert_eq (far.KeyToName (ref[i]), ref[i+1])
   end
-  assert_eq (mf.key("CtrlShiftF12"), "CtrlShiftF12")
+  assert_eq (mf.key("AltShiftF11"), "AltShiftF11")
   assert_eq (mf.key("foobar"), "")
 end
 
