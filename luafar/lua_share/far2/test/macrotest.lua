@@ -34,7 +34,7 @@ local function assert_true(v)      assert(v==true)              return v; end
 local function assert_range(val, low, high)
   if low then assert(val >= low) end
   if high then assert(val <= high) end
-  return true
+  return val
 end
 
 local MT = {} -- "macrotest", this module
@@ -176,6 +176,8 @@ local function test_mf_eval()
   -- test macro-not-found error
   assert_eq (eval("", 2), -2)
 
+  -- We will modify the global 'temp'. Let it be restored when the macro terminates.
+  mf.AddExitHandler(function(v) temp=v; end, temp)
   temp=3
   assert_eq (eval("temp=5+7"), 0)
   assert_eq (temp, 12)
