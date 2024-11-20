@@ -177,6 +177,7 @@ local function test_mf_eval()
   assert_eq (eval("", 2), -2)
 
   -- We will modify the global 'temp'. Let it be restored when the macro terminates.
+  -- luacheck: globals temp
   mf.AddExitHandler(function(v) temp=v; end, temp)
   temp=3
   assert_eq (eval("temp=5+7"), 0)
@@ -1216,29 +1217,30 @@ MT.test_APanel = function() test_XPanel(APanel) end
 MT.test_PPanel = function() test_XPanel(PPanel) end
 
 local function test_Panel_Item()
+  local index = 0 -- 0 is the current element, otherwise element index
   for pt=0,1 do
-    assert_str (Panel.Item(pt,0,0))
-    assert_str (Panel.Item(pt,0,1))
-    assert_num (Panel.Item(pt,0,2))
-    assert_str (Panel.Item(pt,0,3))
-    assert_str (Panel.Item(pt,0,4))
-    assert_str (Panel.Item(pt,0,5))
-    assert(IsNumOrInt(Panel.Item(pt,0,6)))
-    assert(IsNumOrInt(Panel.Item(pt,0,7)))
-    assert_bool (Panel.Item(pt,0,8))
-    assert_num (Panel.Item(pt,0,9))
-    assert_num (Panel.Item(pt,0,10))
-    assert_str (Panel.Item(pt,0,11))
-    assert_str (Panel.Item(pt,0,12))
-    assert_num (Panel.Item(pt,0,13))
-    assert_num (Panel.Item(pt,0,14))
-    assert(IsNumOrInt(Panel.Item(pt,0,15)))
-    assert(IsNumOrInt(Panel.Item(pt,0,16)))
-    assert(IsNumOrInt(Panel.Item(pt,0,17)))
-    assert_num (Panel.Item(pt,0,18))
-    assert(IsNumOrInt(Panel.Item(pt,0,19)))
-    assert_str (Panel.Item(pt,0,20))
-    assert(IsNumOrInt(Panel.Item(pt,0,21)))
+    assert_str (Panel.Item(pt,index,0))
+    assert_str (Panel.Item(pt,index,1))
+    assert_num (Panel.Item(pt,index,2))
+    assert_str (Panel.Item(pt,index,3))
+    assert_str (Panel.Item(pt,index,4))
+    assert_str (Panel.Item(pt,index,5))
+    assert(IsNumOrInt(Panel.Item(pt,index,6)))
+    assert(IsNumOrInt(Panel.Item(pt,index,7)))
+    assert_bool (Panel.Item(pt,index,8))
+    assert_num (Panel.Item(pt,index,9))
+    assert_num (Panel.Item(pt,index,10))
+    assert_str (Panel.Item(pt,index,11))
+    assert_str (Panel.Item(pt,index,12))
+    assert_num (Panel.Item(pt,index,13))
+    assert_num (Panel.Item(pt,index,14))
+    assert(IsNumOrInt(Panel.Item(pt,index,15)))
+    assert(IsNumOrInt(Panel.Item(pt,index,16)))
+    assert(IsNumOrInt(Panel.Item(pt,index,17)))
+    assert_num (Panel.Item(pt,index,18))
+    assert(IsNumOrInt(Panel.Item(pt,index,19)))
+    assert_str (Panel.Item(pt,index,20))
+    assert(IsNumOrInt(Panel.Item(pt,index,21)))
   end
 end
 
@@ -1262,101 +1264,105 @@ local function test_Panel_SetPath()
 end
 
 -- N=Panel.Select(panelType,Action[,Mode[,Items]])
-local function Test_Panel_Select()
-  local adir_old = panel.GetPanelDirectory(nil,1).Name -- store active panel directory
+local function Test_Panel_Select(pan)
+  local adir_old = panel.GetPanelDirectory(nil,pan).Name -- store panel directory
 
   local PS = assert_func(Panel.Select)
-  local RM,ADD,INV,RST = 0,1,2,3 -- Action
-  local MODE
+  local ACT_RM, ACT_ADD, ACT_INV, ACT_RST = 0,1,2,3       -- Action
+  local MOD_ALL, MOD_INDEX, MOD_LIST, MOD_MASK = 0,1,2,3  -- Mode
 
   local dir = assert_str(win.GetEnv("FARHOME"))
-  assert_true(panel.SetPanelDirectory(nil,1,dir))
-  local pi = assert_table(panel.GetPanelInfo(nil,1))
+  assert_true(panel.SetPanelDirectory(nil,pan,dir))
+  local pi = assert_table(panel.GetPanelInfo(nil,pan))
   local ItemsCount = assert_num(pi.ItemsNumber)-1 -- don't count ".."
   assert(ItemsCount>=10, "not enough files to test")
 
   --------------------------------------------------------------
-  MODE = 0
-  assert_eq(ItemsCount,PS(0,ADD,MODE)) -- select all
-  pi = assert_table(panel.GetPanelInfo(nil,1))
+  assert_eq(ItemsCount, PS(1-pan, ACT_ADD, MOD_ALL)) -- select all
+  pi = assert_table(panel.GetPanelInfo(nil, pan))
   assert_eq(ItemsCount, pi.SelectedItemsNumber)
 
-  assert_eq(ItemsCount,PS(0,RM,MODE)) -- clear all
-  pi = assert_table(panel.GetPanelInfo(nil,1))
+  assert_eq(ItemsCount, PS(1-pan, ACT_RM, MOD_ALL)) -- clear all
+  pi = assert_table(panel.GetPanelInfo(nil, pan))
   assert_eq(0, pi.SelectedItemsNumber)
 
-  assert_eq(ItemsCount,PS(0,INV,MODE)) -- invert
-  pi = assert_table(panel.GetPanelInfo(nil,1))
+  assert_eq(ItemsCount, PS(1-pan, ACT_INV, MOD_ALL)) -- invert
+  pi = assert_table(panel.GetPanelInfo(nil, pan))
   assert_eq(ItemsCount, pi.SelectedItemsNumber)
 
-  assert_eq(0,PS(0,INV,MODE)) -- invert again (return value is the selection count, contrary to docs)
-  pi = assert_table(panel.GetPanelInfo(nil,1))
+  assert_eq(0, PS(1-pan, ACT_INV, MOD_ALL)) -- invert again (return value is the selection count, contrary to docs)
+  pi = assert_table(panel.GetPanelInfo(nil, pan))
+  assert_eq(0, pi.SelectedItemsNumber)
+
+  assert_eq(ItemsCount, PS(1-pan, ACT_RST, MOD_ALL)) -- restore (same as Ctrl+M)
+  pi = assert_table(panel.GetPanelInfo(nil, pan))
+  assert_eq(ItemsCount, pi.SelectedItemsNumber)
+
+  assert_eq(ItemsCount, PS(1-pan, ACT_RM, MOD_ALL)) -- clear all
+  pi = assert_table(panel.GetPanelInfo(nil, pan))
   assert_eq(0, pi.SelectedItemsNumber)
 
   --------------------------------------------------------------
-  MODE = 1
-  assert_eq(1,PS(0,ADD,MODE,5))
-  pi = assert_table(panel.GetPanelInfo(nil,1))
+  assert_eq(1, PS(1-pan, ACT_ADD, MOD_INDEX, 5))
+  pi = assert_table(panel.GetPanelInfo(nil, pan))
   assert_eq(1, pi.SelectedItemsNumber)
 
-  assert_eq(1,PS(0,RM,MODE,5))
-  pi = assert_table(panel.GetPanelInfo(nil,1))
+  assert_eq(1, PS(1-pan, ACT_RM, MOD_INDEX, 5))
+  pi = assert_table(panel.GetPanelInfo(nil, pan))
   assert_eq(0, pi.SelectedItemsNumber)
 
-  assert_eq(1,PS(0,INV,MODE,5))
-  pi = assert_table(panel.GetPanelInfo(nil,1))
+  assert_eq(1, PS(1-pan, ACT_INV, MOD_INDEX, 5))
+  pi = assert_table(panel.GetPanelInfo(nil, pan))
   assert_eq(1, pi.SelectedItemsNumber)
 
-  assert_eq(1,PS(0,INV,MODE,5))
-  pi = assert_table(panel.GetPanelInfo(nil,1))
+  assert_eq(1, PS(1-pan, ACT_INV, MOD_INDEX, 5))
+  pi = assert_table(panel.GetPanelInfo(nil, pan))
   assert_eq(0, pi.SelectedItemsNumber)
 
   --------------------------------------------------------------
-  MODE = 2
   local list = dir.."/FarEng.hlf\nFarEng.lng" -- the 1-st file with path, the 2-nd without
-  assert_eq(2,PS(0,ADD,MODE,list))
-  pi = assert_table(panel.GetPanelInfo(nil,1))
+  assert_eq(2, PS(1-pan, ACT_ADD, MOD_LIST, list))
+  pi = assert_table(panel.GetPanelInfo(nil, pan))
   assert_eq(2, pi.SelectedItemsNumber)
 
-  assert_eq(2,PS(0,RM,MODE,list))
-  pi = assert_table(panel.GetPanelInfo(nil,1))
+  assert_eq(2, PS(1-pan, ACT_RM, MOD_LIST, list))
+  pi = assert_table(panel.GetPanelInfo(nil, pan))
   assert_eq(0, pi.SelectedItemsNumber)
 
-  assert_eq(2,PS(0,INV,MODE,list))
-  pi = assert_table(panel.GetPanelInfo(nil,1))
+  assert_eq(2, PS(1-pan, ACT_INV, MOD_LIST, list))
+  pi = assert_table(panel.GetPanelInfo(nil, pan))
   assert_eq(2, pi.SelectedItemsNumber)
 
-  assert_eq(2,PS(0,INV,MODE,list))
-  pi = assert_table(panel.GetPanelInfo(nil,1))
+  assert_eq(2, PS(1-pan, ACT_INV, MOD_LIST, list))
+  pi = assert_table(panel.GetPanelInfo(nil, pan))
   assert_eq(0, pi.SelectedItemsNumber)
 
   --------------------------------------------------------------
-  MODE = 3
   local mask = "*.hlf;*.lng"
   local count = 0
-  for i=1,pi.ItemsNumber do
-    local item = assert_table(panel.GetPanelItem(nil,1,i))
+  for i=1, pi.ItemsNumber do
+    local item = assert_table(panel.GetPanelItem(nil,pan,i))
     if far.CmpNameList(mask, item.FileName) then count=count+1 end
   end
   assert(count>1, "not enough files to test")
 
-  assert_eq(count,PS(0,ADD,MODE,mask))
-  pi = assert_table(panel.GetPanelInfo(nil,1))
+  assert_eq(count, PS(1-pan, ACT_ADD, MOD_MASK, mask))
+  pi = assert_table(panel.GetPanelInfo(nil, pan))
   assert_eq(count, pi.SelectedItemsNumber)
 
-  assert_eq(count,PS(0,RM,MODE,mask))
-  pi = assert_table(panel.GetPanelInfo(nil,1))
+  assert_eq(count, PS(1-pan, ACT_RM, MOD_MASK, mask))
+  pi = assert_table(panel.GetPanelInfo(nil, pan))
   assert_eq(0, pi.SelectedItemsNumber)
 
-  assert_eq(count,PS(0,INV,MODE,mask))
-  pi = assert_table(panel.GetPanelInfo(nil,1))
+  assert_eq(count, PS(1-pan, ACT_INV, MOD_MASK, mask))
+  pi = assert_table(panel.GetPanelInfo(nil, pan))
   assert_eq(count, pi.SelectedItemsNumber)
 
-  assert_eq(count,PS(0,INV,MODE,mask))
-  pi = assert_table(panel.GetPanelInfo(nil,1))
+  assert_eq(count, PS(1-pan, ACT_INV, MOD_MASK, mask))
+  pi = assert_table(panel.GetPanelInfo(nil, pan))
   assert_eq(0, pi.SelectedItemsNumber)
 
-  panel.SetPanelDirectory(nil, 1, adir_old) -- restore active panel directory
+  panel.SetPanelDirectory(nil, pan, adir_old) -- restore panel directory
 end
 
 function MT.test_Panel()
@@ -1368,7 +1374,8 @@ function MT.test_Panel()
   assert_eq (Panel.FExist(0,":"), 0)
   assert_eq (Panel.FExist(1,":"), 0)
 
-  Test_Panel_Select()
+  Test_Panel_Select(0)
+  Test_Panel_Select(1)
   test_Panel_SetPath()
   assert_func (Panel.SetPos)
   assert_func (Panel.SetPosIdx)
@@ -1641,7 +1648,7 @@ local function test_RegexControl()
   assert_nil(rx:findW(txt))
 
   -- Mantis 3336 (https://bugs.farmanager.com/view.php?id=3336)
-  local fr,to,c1,c2,c3
+  local c1,c2,c3
   fr,to,c1 = regex.find("{}", "\\{(.)?\\}")
   assert(fr==1 and to==2 and c1==false)
   fr,to,c1,c2,c3 = regex.find("bbb", "(b)?b(b)?(b)?b")
@@ -2175,7 +2182,7 @@ local function test_win_Clock()
   -- check granularity
   local OK = false
   temp = math.floor(win.Clock()*1e6) % 10
-  for k=1,10 do
+  for _=1,10 do
     win.Sleep(20)
     local temp2 = math.floor(win.Clock()*1e6) % 10
     if temp ~= temp2 then OK=true; break; end
