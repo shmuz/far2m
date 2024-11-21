@@ -89,7 +89,7 @@ bool Plugin::OpenModule()
 	if (saved_cwd)
 		sdc_chdir(saved_cwd);
 
-	return (!!m_hModule);
+	return (m_hModule != nullptr);
 }
 
 void Plugin::CloseModule()

@@ -37,6 +37,11 @@ local function assert_range(val, low, high)
   return val
 end
 
+local function assert_numint(v)
+  assert(type(v)=="number" or bit64.type(v))
+  return v
+end
+
 local MT = {} -- "macrotest", this module
 local F = far.Flags
 local band, bor, bnot = bit64.band, bit64.bor, bit64.bnot
@@ -45,10 +50,6 @@ local hlfviewerId = 0x1AF0754D
 
 local function pack (...)
   return { n=select("#",...), ... }
-end
-
-local function IsNumOrInt(v)
-  return type(v)=="number" or bit64.type(v)
 end
 
 local TmpFileName = far.InMyTemp("tmp.tmp")
@@ -63,29 +64,30 @@ local function DeleteTmpFile()
   win.DeleteFile(TmpFileName)
 end
 
-local function TestArea (area, msg)
-  assert(Area[area]==true and Area.Current==area, msg or "assertion failed!")
+local function TestArea (area, k_before, k_after)
+  if k_before then Keys(k_before) end
+  assert(Area[area]==true and Area.Current==area)
+  if k_after then Keys(k_after) end
 end
 
 function MT.test_areas()
-  TestArea("Shell")
-
-  Keys "AltIns"              TestArea "Grabber"    Keys "Esc"
-  Keys "F12 0"               TestArea "Shell"
-  Keys "ShiftF4 CtrlY Enter" TestArea "Editor"     Keys "Esc"
-  Keys "F7"                  TestArea "Dialog"     Keys "Esc"
-  Keys "Alt?"                TestArea "Search"     Keys "Esc"
-  Keys "AltF1"               TestArea "Disks"      Keys "Esc"
-  Keys "AltF2"               TestArea "Disks"      Keys "Esc"
-  Keys "F9"                  TestArea "MainMenu"   Keys "Esc"
-  Keys "F9 Enter"            TestArea "MainMenu"   Keys "Esc Esc"
-  Keys "F12"                 TestArea "Menu"       Keys "Esc"
-  Keys "F1"                  TestArea "Help"       Keys "Esc"
-  Keys "CtrlL Tab"           TestArea "Info"       Keys "Tab CtrlL"
-  Keys "CtrlQ Tab"           TestArea "QView"      Keys "Tab CtrlQ"
-  Keys "CtrlT Tab"           TestArea "Tree"       Keys "Tab CtrlT"
-  Keys "AltF10"              TestArea "FindFolder" Keys "Esc"
-  Keys "F2"                  TestArea "UserMenu"   Keys "Esc"
+  TestArea ("Shell")
+  TestArea ("Grabber",    "AltIns",     "Esc")
+  TestArea ("Shell",      "F12 0")
+  TestArea ("Editor",     "ShiftF4 CtrlY Enter", "Esc")
+  TestArea ("Dialog",     "F7",         "Esc")
+  TestArea ("Search",     "Alt?",       "Esc")
+  TestArea ("Disks",      "AltF1",      "Esc")
+  TestArea ("Disks",      "AltF2",      "Esc")
+  TestArea ("MainMenu",   "F9",         "Esc")
+  TestArea ("MainMenu",   "F9 Enter",   "Esc Esc")
+  TestArea ("Menu",       "F12",        "Esc")
+  TestArea ("Help",       "F1",         "Esc")
+  TestArea ("Info",       "CtrlL Tab",  "Tab CtrlL")
+  TestArea ("QView",      "CtrlQ Tab",  "Tab CtrlQ")
+  TestArea ("Tree",       "CtrlT Tab",  "Tab CtrlT")
+  TestArea ("FindFolder", "AltF10",     "Esc")
+  TestArea ("UserMenu",   "F2",         "Esc")
 
   TestArea("Shell")
   assert_false (Area.Other)
@@ -224,8 +226,7 @@ local function test_mf_acall()
   local a,b,c,d = mf.acall(function(p) return 3, nil, p, "foo" end, 77)
   assert_true (a==3 and b==nil and c==77 and d=="foo")
   assert_true (mf.acall(far.Show))
-  TestArea("Menu")
-  Keys"Esc"
+  TestArea("Menu",nil,"Esc")
 end
 
 local function test_mf_asc()
@@ -664,8 +665,7 @@ end
 
 local function test_mf_usermenu()
   mf.usermenu()
-  TestArea("UserMenu")
-  Keys("Esc")
+  TestArea("UserMenu",nil,"Esc")
 end
 
 local function test_mf_EnumScripts()
@@ -1218,29 +1218,29 @@ MT.test_PPanel = function() test_XPanel(PPanel) end
 
 local function test_Panel_Item()
   local index = 0 -- 0 is the current element, otherwise element index
-  for pt=0,1 do
-    assert_str (Panel.Item(pt,index,0))
-    assert_str (Panel.Item(pt,index,1))
-    assert_num (Panel.Item(pt,index,2))
-    assert_str (Panel.Item(pt,index,3))
-    assert_str (Panel.Item(pt,index,4))
-    assert_str (Panel.Item(pt,index,5))
-    assert(IsNumOrInt(Panel.Item(pt,index,6)))
-    assert(IsNumOrInt(Panel.Item(pt,index,7)))
-    assert_bool (Panel.Item(pt,index,8))
-    assert_num (Panel.Item(pt,index,9))
-    assert_num (Panel.Item(pt,index,10))
-    assert_str (Panel.Item(pt,index,11))
-    assert_str (Panel.Item(pt,index,12))
-    assert_num (Panel.Item(pt,index,13))
-    assert_num (Panel.Item(pt,index,14))
-    assert(IsNumOrInt(Panel.Item(pt,index,15)))
-    assert(IsNumOrInt(Panel.Item(pt,index,16)))
-    assert(IsNumOrInt(Panel.Item(pt,index,17)))
-    assert_num (Panel.Item(pt,index,18))
-    assert(IsNumOrInt(Panel.Item(pt,index,19)))
-    assert_str (Panel.Item(pt,index,20))
-    assert(IsNumOrInt(Panel.Item(pt,index,21)))
+  for pan=0,1 do
+    assert_str    (Panel.Item(pan,index,0))  -- file name
+    assert_str    (Panel.Item(pan,index,1))  -- short file name
+    assert_num    (Panel.Item(pan,index,2))  -- file attributes
+    assert_str    (Panel.Item(pan,index,3))  -- creation time
+    assert_str    (Panel.Item(pan,index,4))  -- last access time
+    assert_str    (Panel.Item(pan,index,5))  -- modification time
+    assert_numint (Panel.Item(pan,index,6))  -- size
+    assert_numint (Panel.Item(pan,index,7))  -- packed size
+    assert_bool   (Panel.Item(pan,index,8))  -- selected
+    assert_num    (Panel.Item(pan,index,9))  -- number of links
+    assert_num    (Panel.Item(pan,index,10)) -- sort group
+    assert_str    (Panel.Item(pan,index,11)) -- diz text
+    assert_str    (Panel.Item(pan,index,12)) -- owner
+    assert_num    (Panel.Item(pan,index,13)) -- crc32
+    assert_num    (Panel.Item(pan,index,14)) -- position when read from the file system
+    assert_numint (Panel.Item(pan,index,15)) -- creation time
+    assert_numint (Panel.Item(pan,index,16)) -- last access time
+    assert_numint (Panel.Item(pan,index,17)) -- modification time
+    assert_num    (Panel.Item(pan,index,18)) -- number of streams
+    assert_numint (Panel.Item(pan,index,19)) -- size of streams
+    assert_str    (Panel.Item(pan,index,20)) -- change time
+    assert_numint (Panel.Item(pan,index,21)) -- change time
   end
 end
 
@@ -1847,6 +1847,11 @@ local function test_AdvControl_Misc()
   Keys("F4")
   assert_true(mf.acall(far.AdvControl, "ACTL_WAITKEY"))
   Keys("F2")
+
+  local val = 3
+  far.AdvControl("ACTL_SYNCHRO", function(a) val=a end, 87)
+  Keys("foo")
+  assert_eq(val, 87)
 end
 
 local function test_ACTL()
