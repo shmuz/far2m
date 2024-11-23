@@ -68,14 +68,6 @@ static long long msValues[constMsLAST];
 
 int Log(const char* Format, ...)
 {
-#if defined(USELUA) && defined(__ANDROID__)
-	if (lua_open == nullptr && luaL_openlibs == nullptr) //ensure libluajit.a linkage
-		return 0;
-	// lua_State *L = lua_open();
-	// luaL_openlibs(L);
-	// lua_close(L);
-#endif
-
 	va_list valist;
 	va_start(valist, Format);
 
