@@ -15,6 +15,10 @@ add_custom_command(
     DEPENDS ${SDK}/farplug-wide.h ${SDK}/farcolor.h ${SDK}/farkeys.h ${MAKEFLAGS} ${FARSRC}/DlgGuid.hpp
 )
 
+if (NOT ${CMAKE_SYSTEM_NAME} MATCHES "Android")
+  set(MYTIMER_C src/mytimer.c)
+endif()
+
 set(SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/farflags.c
   src/bit64.c
@@ -23,7 +27,7 @@ set(SOURCES
   src/luamacro.c
   src/lusercontrol.c
   src/lutf8lib.c
-  src/mytimer.c
+  ${MYTIMER_C}
   src/service.c
   src/slnunico.c
   src/sysutils.c

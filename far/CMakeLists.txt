@@ -233,6 +233,11 @@ set_target_properties(far2m
     PROPERTIES
     ENABLE_EXPORTS TRUE)
 
+if (DEFINED USELUA AND ${CMAKE_SYSTEM_NAME} MATCHES "Android")
+    target_include_directories(far2m PRIVATE ${LIBLUA_INCLUDE_DIR})
+    target_link_libraries(far2m PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/libluajit.a)
+endif()
+
 if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
     target_link_libraries(far2m
 	PRIVATE ${WINPORT}

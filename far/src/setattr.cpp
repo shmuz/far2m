@@ -62,6 +62,11 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "interf.hpp" // for BoxSymbols
 
+#if defined __ANDROID__ && __ANDROID_API__ < 26
+#define getpwent() (NULL)
+#define setpwent() ((void)0)
+#endif
+
 struct FSFileFlagsSafe : FSFileFlags
 {
 	FSFileFlagsSafe(const FARString &path, DWORD attrs)

@@ -433,7 +433,11 @@ static const MacroPrivateInfo MacroInfo
 // This seems to prevent irregular segfaults related to unloading luafar.so in the process of Far termination.
 static BOOL LoadLuafar()
 {
-#ifdef USELUA
+#if !defined(USELUA)
+	return FALSE;
+#elif defined(__ANDROID__)
+	return TRUE;
+#else
 	// 1. Load Lua
 	const char *libs[] = {"libluajit-5.1.so", "liblua5.1.so", nullptr};
 	void *handle = nullptr;
@@ -463,9 +467,7 @@ static BOOL LoadLuafar()
 		Message(MSG_WARNING, 1, Msg::Error, L"Cannot load luafar.so", Msg::Ok);
 	}
 	return LuafarLoaded;
-#else
-	return FALSE;
-#endif // #ifdef USELUA
+#endif // #if defined(USELUA)
 }
 
 void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandardFunctions *FSF)

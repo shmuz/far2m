@@ -33,6 +33,14 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
+#if defined(USELUA) && defined(__ANDROID__)
+extern "C" {
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
+}
+#endif
+
 #include "Bookmarks.hpp"
 #include "clipboard.hpp"
 #include "cmdline.hpp"
@@ -60,6 +68,14 @@ static long long msValues[constMsLAST];
 
 int Log(const char* Format, ...)
 {
+#if defined(USELUA) && defined(__ANDROID__)
+	if (lua_open == nullptr && luaL_openlibs == nullptr) //ensure libluajit.a linkage
+		return 0;
+	// lua_State *L = lua_open();
+	// luaL_openlibs(L);
+	// lua_close(L);
+#endif
+
 	va_list valist;
 	va_start(valist, Format);
 

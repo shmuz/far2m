@@ -31,12 +31,19 @@ target_include_directories(${PROJECT_NAME} PRIVATE ../far/far2sdk)
 
 set(INSTALL_DIR "${INSTALL_DIR}/Plugins/luafar/${PROJECT_NAME}")
 
+if (${CMAKE_SYSTEM_NAME} MATCHES "Android")
+    target_link_libraries(${PROJECT_NAME} PUBLIC luafar)
+    set(LINK_FLAGS "-Wl,-rpath,../../")
+else()
+    set(LINK_FLAGS "")
+endif()
+
 set_target_properties(${PROJECT_NAME}
   PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${INSTALL_DIR}/plug"
+    LINK_FLAGS "${LINK_FLAGS}"
     PREFIX ""
-    SUFFIX ".far-plug-wide"
-)
+    SUFFIX ".far-plug-wide")
 
 function(Generate_Constants)
   set(TRG    "${INSTALL_DIR}/plug/constants.lua")
