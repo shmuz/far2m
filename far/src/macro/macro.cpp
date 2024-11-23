@@ -33,14 +33,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
-#if defined(USELUA) && defined(__ANDROID__)
-extern "C" {
-#include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
-}
-#endif
-
 #include "Bookmarks.hpp"
 #include "clipboard.hpp"
 #include "cmdline.hpp"
