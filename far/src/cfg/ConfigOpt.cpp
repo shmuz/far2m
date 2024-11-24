@@ -177,9 +177,13 @@ static struct FARConfig
 	{1, NSecInterface, "TimeSeparator",             &Opt.strTimeSeparator, GetTimeSeparatorDefaultStr()},
 	{1, NSecInterface, "DecimalSeparator",          &Opt.strDecimalSeparator, GetDecimalSeparatorDefaultStr()},
 
+#if defined(__ANDROID__)
+	{1, NSecInterface, "OSC52ClipSet",              &Opt.OSC52ClipSet, 1, REG_BOOLEAN},
+#else
 	{1, NSecInterface, "OSC52ClipSet",              &Opt.OSC52ClipSet, 0, REG_BOOLEAN},
-	{1, NSecInterface, "TTYPaletteOverride",        &Opt.TTYPaletteOverride, 1, REG_BOOLEAN},
+#endif
 
+	{1, NSecInterface, "TTYPaletteOverride",        &Opt.TTYPaletteOverride, 1, REG_BOOLEAN},
 	{0, NSecInterface, "ShowTimeoutDelFiles",       &Opt.ShowTimeoutDelFiles, 50},
 	{0, NSecInterface, "ShowTimeoutDACLFiles",      &Opt.ShowTimeoutDACLFiles, 50},
 	{0, NSecInterface, "FormatNumberSeparators",    &Opt.FormatNumberSeparators, 0},
