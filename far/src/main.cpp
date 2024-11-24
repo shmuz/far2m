@@ -81,33 +81,38 @@ int DirectRT=0;
 
 static void print_help(const char *self)
 {
-	printf("FAR2M - two-panel file manager, with built-in terminal and other usefullness'es\n"
-		"Usage: %s [switches] [-cd apath [-cd ppath]]\n\n"
+	printf("FAR2M - dual-panel file manager with built-in terminal\n"
+		"Usage: %s [switches] [[-cd] apath [[-cd] ppath]]\n\n"
+
 		"where\n"
-		"  apath - path to a folder (or a file or an archive or command with prefix)\n"
+		"  apath - path to folder or file, or plugin command with prefix\n"
 		"          for the active panel\n"
-		"  ppath - path to a folder (or a file or an archive or command with prefix)\n"
+		"  ppath - path to folder or file, or plugin command with prefix\n"
 		"          for the passive panel\n\n"
+
 		"The following switches may be used in the command line:\n\n"
+
 		" -h   This help.\n"
 		" -a   Disable display of characters with codes 0 - 31 and 255.\n"
 		" -ag  Disable display of pseudographics with codes > 127.\n"
 		" -an  Disable display of pseudographics characters completely.\n"
 		" -co  Forces FAR to load plugins from the cache only.\n"
-		" -cd <path> Change panel's directory to specified path.\n"
+		" -cd <path>\n"
+		"      Change panel's directory to specified path.\n"
 		" -m   Do not load macros.\n"
 		" -ma  Do not execute auto run macros.\n"
-//		" -p[<path>]\n"
-//		"      Search for \"common\" plugins in the directory, specified by <path>.\n"
+		" -p[<path>]\n"
+		"      Search for \"common\" plugins in the directory specified by <path>.\n"
+		"      Several search paths can be specified, separated by ‘:’.\n"
 		" -u <identity> OR </path/name>\n"
 		"      Allows to specify separate settings identity or FS location.\n"
 		" -v <filename>\n"
 		"      View the specified file.\n"
-		" -v - command line\n"
+		" -v - <command line>\n"
 		"      Executes given command line and opens viewer with its output.\n"
 		" -e[<line>[:<pos>]] [filename]\n"
 		"      Edit the specified file with optional cursor position specification or empty new file.\n"
-		" -e[<line>[:<pos>]] - command line\n"
+		" -e[<line>[:<pos>]] - <command line>\n"
 		"      Executes given command line and opens editor with its output.\n"
 		" -set:<parameter>=<value>\n"
 		"      Override the configuration parameter, see lm:farconfig for details.\n"
@@ -115,7 +120,6 @@ static void print_help(const char *self)
 		"\n",
 		self);
 	WinPortHelp();
-	//Console.Write(HelpMsg, ARRAYSIZE(HelpMsg)-1);
 }
 
 static FARString ReconstructCommandLine(int argc, char **argv)
