@@ -119,7 +119,7 @@ static struct FARConfig
 	  const BYTE    *DefArr;   // данные по умолчанию
 	};
 
-	constexpr FARConfig(int save, const char *key, const char *val, BYTE *trg, DWORD size, const BYTE *dflt) :
+	constexpr FARConfig(int save, const char *key, const char *val, DWORD size, BYTE *trg, const BYTE *dflt) :
 		IsSave(save),ValType(REG_BINARY),KeyName(key),ValName(val),ValPtr(trg),DefDWord(size),DefArr(dflt) {}
 
 	constexpr FARConfig(int save, const char *key, const char *val, void *trg, DWORD dflt, DWORD Type=REG_DWORD) :
@@ -130,10 +130,10 @@ static struct FARConfig
 
 } CFG[]=
 {
-	{1, NSecColors, "CurrentPalette", (BYTE *)Palette8bit, SIZE_ARRAY_PALETTE, (BYTE *)DefaultPalette8bit},
-	{1, NSecColors, "CurrentPaletteRGB", (BYTE *)Palette, SIZE_ARRAY_PALETTE * 8, nullptr},
-	{1, NSecColors, "TempColors256", g_tempcolors256,         TEMP_COLORS256_SIZE, g_tempcolors256},
-	{1, NSecColors, "TempColorsRGB", (BYTE *)g_tempcolorsRGB, TEMP_COLORSRGB_SIZE, (BYTE *)g_tempcolorsRGB},
+	{0, NSecColors, "CurrentPalette", SIZE_ARRAY_PALETTE, (BYTE *)Palette8bit, nullptr},
+	{1, NSecColors, "CurrentPaletteRGB", SIZE_ARRAY_PALETTE * sizeof(uint64_t), (BYTE *)Palette, nullptr},
+	{1, NSecColors, "TempColors256", TEMP_COLORS256_SIZE, g_tempcolors256, nullptr},
+	{1, NSecColors, "TempColorsRGB", TEMP_COLORSRGB_SIZE, (BYTE *)g_tempcolorsRGB, nullptr},
 
 	{1, NSecScreen, "Clock",                        &Opt.Clock, 1, REG_BOOLEAN},
 	{1, NSecScreen, "ViewerEditorClock",            &Opt.ViewerEditorClock, 0, REG_BOOLEAN},
@@ -376,6 +376,7 @@ static struct FARConfig
 	{1, NSecPanel, "Highlight",                     &Opt.Highlight, 1, REG_BOOLEAN},
 	{1, NSecPanel, "SortFolderExt",                 &Opt.SortFolderExt, 0, REG_BOOLEAN},
 	{1, NSecPanel, "SelectFolders",                 &Opt.SelectFolders, 0, REG_BOOLEAN},
+	{1, NSecPanel, "AttrStrStyle",                  &Opt.AttrStrStyle, 1},
 	{1, NSecPanel, "CaseSensitiveCompareSelect",    &Opt.PanelCaseSensitiveCompareSelect, 0, REG_BOOLEAN},
 	{1, NSecPanel, "ReverseSort",                   &Opt.ReverseSort, 1, REG_BOOLEAN},
 	{0, NSecPanel, "RightClickRule",                &Opt.PanelRightClickRule, 2, REG_3STATE},

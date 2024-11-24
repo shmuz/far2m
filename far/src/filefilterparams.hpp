@@ -153,6 +153,7 @@ public:
 	void ClearAllFlags() { memset(FFlags, 0, sizeof(FFlags)); }
 
 	const wchar_t *GetTitle() const;
+	const size_t GetTitleLen() const;
 	bool GetMask(const wchar_t **Mask) const;
 	bool GetMaskIgnoreCase() const;
 	bool GetDate(DWORD *DateType, FILETIME *DateAfter, FILETIME *DateBefore, bool *bRelative) const;
@@ -178,5 +179,5 @@ public:
 bool FileFilterConfig(FileFilterParams *FF, bool ColorConfig = false);
 
 // Централизованная функция для создания строк меню различных фильтров.
-void MenuString(FARString &strDest, FileFilterParams *FF, bool bHighlightType = false, int Hotkey = 0,
+void MenuString(FARString &strDest, FileFilterParams *FF, uint32_t maskstyle, bool bHighlightType = false, int Hotkey = 0,
 		bool bPanelType = false, const wchar_t *FMask = nullptr, const wchar_t *Title = nullptr);

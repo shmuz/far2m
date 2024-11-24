@@ -388,6 +388,7 @@ struct Options
 	int RightSelectedFirst;
 	int LeftSelectedFirst;
 	int SelectFolders;
+	int AttrStrStyle;
 	int PanelCaseSensitiveCompareSelect;
 	int ReverseSort;
 	int SortFolderExt;

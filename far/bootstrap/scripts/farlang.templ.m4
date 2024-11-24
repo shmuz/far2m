@@ -12427,15 +12427,15 @@ l:
 "Афарбоўка файлаў"
 
 HighlightBottom
-"+ - Пробел Ins Del F4 F5 Ctrl+Up Ctrl+Down Ctrl+R"
-"+ - Space Ins Del F4 F5 Ctrl+Up Ctrl+Down"
-"+ - Mezera Ins Del F4 F5 Ctrl+Nahoru Ctrl+Dolů"
-"+ - Leer Einf Entf F4 F5 StrgUp,StrgDown"
-"+ - Szóköz Ins Del F4 F5 Ctrl+Fel Ctrl+Le"
-"+ - Spacja Ins Del F4 F5 Ctrl+Up Ctrl+Down"
-"+ - Space Ins Del F4 F5 Ctrl+Up Ctrl+Down"
-"+ - Пробіл Ins Del F4 F5 Ctrl+Up Ctrl+Down"
-"+ - Space Ins Del F4 F5 Ctrl+Up Ctrl+Down"
+"+ - Пробел Ins Del F4 F5 Ctrl+Up/Down Ctrl+R Ctrl+M"
+"+ - Space Ins Del F4 F5 Ctrl+Up/Down Ctrl+R Ctrl+M"
+"+ - Mezera Ins Del F4 F5 Ctrl+Nahoru/Dolů Ctrl+M"
+"+ - Leer Einf Entf F4 F5 Strg+Up/Down Strg+R Strg+M"
+"+ - Szóköz Ins Del F4 F5 Ctrl+Fel/Le Ctrl+R Ctrl+M"
+"+ - Spacja Ins Del F4 F5 Ctrl+Up/Down Ctrl+R Ctrl+M"
+"+ - Space Ins Del F4 F5 Ctrl+Up/Down Ctrl+R Ctrl+M"
+"+ - Пробіл Ins Del F4 F5 Ctrl+Up/Down Ctrl+R Ctrl+M"
+"+ - Space Ins Del F4 F5 Ctrl+Up/Down Ctrl+R Ctrl+M"
 
 HighlightUpperSortGroup
 "Верхняя группа сортировки"
@@ -12536,6 +12536,28 @@ HighlightMarkStrInherit
 "Heredar"
 "Спадкувати"
 "Падзярэваць"
+
+HighlightMarkAddInherit
+"Добавить"
+"Add"
+"Přidat"
+"Hinzufügen"
+"Hozzáad"
+"Dodaj"
+"Añadir"
+"Додати"
+"Дадаць"
+
+HighlightCustomIdent
+"Отступ"
+"Indent"
+"Odsazení"
+"Einzug"
+"Behúzás"
+"Wcięcie"
+"Sangría"
+"Відступ"
+"Адступ"
 
 HighlightColors
 " Цвета файлов (\"чёрный на чёрном\" - цвет по умолчанию) "
