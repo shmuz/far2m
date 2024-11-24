@@ -558,9 +558,9 @@ local function test_mf_substr()
 end
 
 local function test_mf_testfolder()
-  assert(mf.testfolder(".") > 0)
-  assert(mf.testfolder("/") == 2)
-  assert(mf.testfolder("@:\\") <= 0)
+  assert_range (mf.testfolder("."), 1, 2)          -- exists
+  assert_eq    (mf.testfolder(far.GetMyHome()), 2) -- exists and not empty
+  assert_range (mf.testfolder("@:\\"), -1, 0)      -- doesn't exist or access denied
 end
 
 local function test_mf_trim()
