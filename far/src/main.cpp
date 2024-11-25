@@ -92,31 +92,35 @@ static void print_help(const char *self)
 
 		"The following switches may be used in the command line:\n\n"
 
-		" -h   This help.\n"
-		" -a   Disable display of characters with codes 0 - 31 and 255.\n"
-		" -ag  Disable display of pseudographics with codes > 127.\n"
-		" -an  Disable display of pseudographics characters completely.\n"
-		" -co  Forces FAR to load plugins from the cache only.\n"
-		" -cd <path>\n"
-		"      Change panel's directory to specified path.\n"
-		" -m   Do not load macros.\n"
-		" -ma  Do not execute auto run macros.\n"
-		" -p[<path>]\n"
-		"      Search for \"common\" plugins in the directory specified by <path>.\n"
-		"      Several search paths can be specified, separated by ‘:’.\n"
-		" -u <identity> OR </path/name>\n"
-		"      Allows to specify separate settings identity or FS location.\n"
-		" -v <filename>\n"
-		"      View the specified file.\n"
-		" -v - <command line>\n"
-		"      Executes given command line and opens viewer with its output.\n"
-		" -e[<line>[:<pos>]] [filename]\n"
-		"      Edit the specified file with optional cursor position specification or empty new file.\n"
-		" -e[<line>[:<pos>]] - <command line>\n"
-		"      Executes given command line and opens editor with its output.\n"
-		" -set:<parameter>=<value>\n"
-		"      Override the configuration parameter, see lm:farconfig for details.\n"
-		"      Example: far2m -set:Language.Main=English -set:Screen.Clock=false -set:XLat.Flags=0xff\n"
+		"  -h                         This help\n"
+		"  -a                         Disable display of characters with codes\n"
+		"                             0 - 31 and 255\n"
+		"  -ag                        Disable display of pseudographics with codes > 127\n"
+		"  -an                        Disable display of pseudographics characters\n"
+		"                             completely\n"
+		"  -co                        Load plugins from the cache only\n"
+		"  -cd <path>                 Change panel's directory to specified path\n"
+		"  -m                         Do not load macros\n"
+		"  -ma                        Do not execute auto run macros\n"
+		"  -p[<path>]                 Search for \"common\" plugins in the directory\n"
+		"                             specified by <path>; several search paths can\n"
+		"                             be specified separated by ‘:’\n"
+		"  -u <identity> OR\n"
+		"  -u </path/name>            Specify separate settings via identity\n"
+		"                             or FS location\n"
+		"  -v <filename>              View the specified file\n"
+		"  -v - <command line>        Execute given command line and open viewer\n"
+		"                             with its output\n"
+		"  -e[<line>[:<pos>]] [filename]\n"
+		"                             Edit the specified file with optional cursor\n"
+		"                             position specification or empty new file\n"
+		"  -e[<line>[:<pos>]] - <command line>\n"
+		"                             Execute given command line and open editor\n"
+		"                             with its output\n"
+		"  -set:<parameter>=<value>   Override the configuration parameter\n"
+		"                             Example: far2m -set:Language.Main=English\n"
+		"                                            -set:Screen.Clock=false\n"
+		"                                            -set:XLat.Flags=0xff\n"
 		"\n",
 		self);
 	WinPortHelp();
@@ -127,7 +131,7 @@ static FARString ReconstructCommandLine(int argc, char **argv)
 	FARString cmd;
 	for (;argc; --argc, ++argv) {
 		if (*argv) {
-			if (cmd.GetLength()) {
+			if (!cmd.IsEmpty()) {
 				cmd+= L" ";
 			}
 			std::string arg = *argv;
@@ -242,7 +246,6 @@ static int MainProcess(
 		}
 		else
 		{
-			Opt.OnlyEditorViewerUsed=Options::NOT_ONLY_EDITOR_VIEWER;
 			FARString strPath;
 
 			// воспользуемся тем, что ControlObject::Init() создает панели
@@ -372,6 +375,7 @@ int FarAppMain(int argc, char **argv)
 	Opt.IsUserAdmin = (geteuid()==0);
 
 	_OT(SysLog(L"[[[[[[[[New Session of FAR]]]]]]]]]"));
+	Opt.OnlyEditorViewerUsed = Options::NOT_ONLY_EDITOR_VIEWER;
 	FARString strEditViewArg;
 	FARString DestNames[2];
 	int StartLine=-1,StartChar=-1;
@@ -407,12 +411,12 @@ int FarAppMain(int argc, char **argv)
 	}
 
 	// run by symlink in editor mode
-	if (strstr(argv[0], "far2medit") != NULL) {
+	if (strcmp(argv[0], "far2medit") == 0) {
 		Opt.OnlyEditorViewerUsed = Options::ONLY_EDITOR;
 		if (argc > 1) {
 			strEditViewArg = argv[argc - 1];	// use last argument
 		} else {
-			strEditViewArg = "";
+			strEditViewArg.Clear();
 		}
 	}
 
@@ -422,10 +426,10 @@ int FarAppMain(int argc, char **argv)
 
 	for (int I=1; I<argc; I++)
 	{
-		std::wstring arg_w = MB2Wide(argv[I]);
-		if (arg_w.find(L"--") == 0) {
+		if (strncmp(argv[I], "--", 2) == 0) {
 			continue; // 2024-Jul-06: --primary-selection, --maximize and --nomaximize may appear here
 		}
+		std::wstring arg_w = MB2Wide(argv[I]);
 		bool switchHandled = false;
 		if (arg_w[0]==L'-' && arg_w[1])
 		{
@@ -457,6 +461,12 @@ int FarAppMain(int argc, char **argv)
 					break;
 
 				case L'E':
+					if (Opt.OnlyEditorViewerUsed != Options::NOT_ONLY_EDITOR_VIEWER) //skip as already handled
+					{
+						I = (strcmp(argv[I+1], "-") == 0) ? argc : I + 1;
+						break;
+					}
+
 					if (iswdigit(arg_w[2]))
 					{
 						auto ptr = arg_w.data() + 2;
@@ -468,8 +478,7 @@ int FarAppMain(int argc, char **argv)
 
 					if (I+1 < argc)
 					{
-						strEditViewArg = argv[I+1];
-						if (strEditViewArg == "-")
+						if (strcmp(argv[I+1], "-") == 0)
 						{
 							Opt.OnlyEditorViewerUsed = Options::ONLY_EDITOR_ON_CMDOUT;
 							strEditViewArg = ReconstructCommandLine(argc - I - 2, &argv[I+2]);
@@ -478,21 +487,26 @@ int FarAppMain(int argc, char **argv)
 						else
 						{
 							Opt.OnlyEditorViewerUsed = Options::ONLY_EDITOR;
+							strEditViewArg = argv[I+1];
 							I++;
 						}
 					}
 					else { // -e without filename => new file to editor
 						Opt.OnlyEditorViewerUsed = Options::ONLY_EDITOR;
-						strEditViewArg = "";
+						strEditViewArg.Clear();
 					}
-
 					break;
 
 				case L'V':
+					if (Opt.OnlyEditorViewerUsed != Options::NOT_ONLY_EDITOR_VIEWER) //skip as already handled
+					{
+						I = (strcmp(argv[I+1], "-") == 0) ? argc : I + 1;
+						break;
+					}
+
 					if (I+1 < argc)
 					{
-						strEditViewArg = argv[I+1];
-						if (strEditViewArg == "-")
+						if (strcmp(argv[I+1], "-") == 0)
 						{
 							Opt.OnlyEditorViewerUsed = Options::ONLY_VIEWER_ON_CMDOUT;
 							strEditViewArg = ReconstructCommandLine(argc - I - 2, &argv[I+2]);
@@ -501,6 +515,7 @@ int FarAppMain(int argc, char **argv)
 						else
 						{
 							Opt.OnlyEditorViewerUsed = Options::ONLY_VIEWER;
+							strEditViewArg = argv[I+1];
 							I++;
 						}
 					}

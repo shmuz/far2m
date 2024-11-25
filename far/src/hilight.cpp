@@ -100,7 +100,7 @@ static void SetDefaultHighlighting()
 											являются родительскими (их имена - две точки).
 										*/
 	static const wchar_t *MasksScripts = L"*.sh,*.py,*.pl,*.cmd,*.exe,*.bat,*.com,*.run,*.elf";
-	static const wchar_t *MasksSoundFiles = 
+	static const wchar_t *MasksSoundFiles =
 			L"*.aif,*.cda,*.mid,*.midi,*.mp3,*.mpa,*.ogg,*.wma,*.flac,*.wav,*.ape,*.wv,*.voc,*.669,*.digi,*.amf,*.ams,*.dbm,*.dmf,*.dsm,*.gdm,*.imf,"
 			L"*.it,*.itg,*.itp,*.j2b,*.mdl,*.med,*.mo3,*.mod,*.mt2,*.mtm,*.okt,*.plm,*.psm,*.ptm,*.s3m,*.sfx,*.stm,*.stp,*.uax,*.ult,*.xm";
 	static const wchar_t *MaskSharedObjects = L"*.dll,*.so,*.dll.*,*.so.*,*.obj,*.o,*.a,*.lib,*.sys,*.pyo,*.vim";
@@ -279,7 +279,7 @@ static void LoadFilter(FileFilterParams *HData, ConfigReader &cfg_reader, const 
 		hl.MarkLen = dwMarkLen;
 	}
 
-#if 0
+#if 1
 	  // FIXME: Temporary code for compatibility with old settings where there are no transparency masks for colors
 
 	for (int j = 0; j < 2; j++) {
