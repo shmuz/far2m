@@ -247,13 +247,6 @@ struct ViewerOptions
 	int SearchRegexp;
 };
 
-// "Полиция"
-struct PoliciesOptions
-{
-	int DisabledOptions;  // разрешенность меню конфигурации
-	int ShowHiddenDrives; // показывать скрытые логические диски
-};
-
 struct DialogsOptions
 {
 	int   EditBlock;            // Постоянные блоки в строках ввода
@@ -568,7 +561,6 @@ struct Options
 	DialogsOptions Dialogs;
 	VMenuOptions VMenu;
 	CommandLineOptions CmdLine;
-	PoliciesOptions Policies;
 	MacroOptions Macro;
 
 	int FindCodePage;

@@ -645,10 +645,6 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 
 			return Options;
 		}
-		case ACTL_GETPOLICIES: {
-			return Opt.Policies.DisabledOptions
-					| (Opt.Policies.ShowHiddenDrives ? FFPOL_SHOWHIDDENDRIVES : 0);
-		}
 		case ACTL_REDRAWALL: {
 			auto Area = CtrlObject->Macro.GetArea();
 			int Ret = FrameManager->ProcessKey(KEY_CONSOLE_BUFFER_RESIZE);

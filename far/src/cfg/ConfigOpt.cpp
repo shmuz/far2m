@@ -93,7 +93,6 @@ static const char NSecPanelTree[]="Panel/Tree";
 static const char NSecLayout[]="Layout";
 static const char NSecDescriptions[]="Descriptions";
 static const char NSecMacros[]="Macros";
-static const char NSecPolicies[]="Policies";
 static const char NSecSavedHistory[]="SavedHistory";
 static const char NSecSavedViewHistory[]="SavedViewHistory";
 static const char NSecSavedFolderHistory[]="SavedFolderHistory";
@@ -444,10 +443,6 @@ static struct FARConfig
 	{1, NSecMacros, "KeyRecordCtrlDot",             &Opt.Macro.strKeyMacroCtrlDot, szCtrlDot},
 	{1, NSecMacros, "KeyRecordCtrlShiftDot",        &Opt.Macro.strKeyMacroCtrlShiftDot, szCtrlShiftDot},
 
-	{0, NSecPolicies, "ShowHiddenDrives",           &Opt.Policies.ShowHiddenDrives, 1, REG_BOOLEAN},
-	{0, NSecPolicies, "DisabledOptions",            &Opt.Policies.DisabledOptions, 0},
-
-
 	{0, NSecSystem, "ExcludeCmdHistory",            &Opt.ExcludeCmdHistory, 0}, //AN
 
 	{1, NSecCodePages, "CPMenuMode",                &Opt.CPMenuMode, 0, REG_BOOLEAN},
@@ -766,9 +761,6 @@ void ConfigOptAssertLoaded()
 
 void ConfigOptSave(bool Ask)
 {
-	if (Opt.Policies.DisabledOptions&0x20000) // Bit 17 - Сохранить параметры
-		return;
-
 	if (Ask && Message(0,2,Msg::SaveSetupTitle,Msg::SaveSetupAsk1,Msg::SaveSetupAsk2,Msg::SaveSetup,Msg::Cancel))
 		return;
 

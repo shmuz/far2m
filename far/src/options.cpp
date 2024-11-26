@@ -342,17 +342,6 @@ void ShellOptions(int LastCommand,MOUSE_EVENT_RECORD *MouseEvent)
 	static int LastHItem=-1,LastVItem=0;
 	int HItem,VItem;
 
-	if (Opt.Policies.DisabledOptions)
-	{
-		for (size_t I = 0; I < ARRAYSIZE(OptionsMenu); ++I)
-		{
-			if (I >= MENU_OPTIONS_CONFIRMATIONS)
-				OptionsMenu[I].SetGrayed((Opt.Policies.DisabledOptions >> (I-1)) & 1);
-			else
-				OptionsMenu[I].SetGrayed((Opt.Policies.DisabledOptions >> I) & 1);
-		}
-	}
-
 	SetLeftRightMenuChecks(LeftMenu, true);
 	SetLeftRightMenuChecks(RightMenu, false);
 	// Навигация по меню

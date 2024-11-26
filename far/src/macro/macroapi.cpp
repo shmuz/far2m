@@ -70,7 +70,7 @@ static Frame* GetTopModal()
 
 Panel* SelectPanel(int Type)
 {
-	if (CtrlObject && CtrlObject->Cp()) {
+	if (CtrlObject->Cp()) {
 		Panel* ActivePanel = CtrlObject->Cp()->ActivePanel;
 		if (ActivePanel) {
 			switch(Type) {

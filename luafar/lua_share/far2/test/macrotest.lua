@@ -950,8 +950,6 @@ local function test_Far_GetConfig()
     "PluginConfirmations.Prefix",
     "PluginConfirmations.SetFindList",
     "PluginConfirmations.StandardAssociation",
-    "Policies.DisabledOptions",
-    "Policies.ShowHiddenDrives",
     "SavedDialogHistory.HistoryCount",
     "SavedFolderHistory.HistoryCount",
     "SavedHistory.HistoryCount",

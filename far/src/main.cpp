@@ -513,29 +513,23 @@ int FarAppMain(int argc, char **argv)
 					Opt.SmallIcon=TRUE;
 					break;
 
-				case L'X':
-					fprintf(stderr, "Unsupported in far2m\n");
-					break;
-
 				case L'P':
-					if (!(Opt.Policies.DisabledOptions & FFPOL_USEPSWITCH)) {
-						bCustomPlugins = true;
-						if (arg_w[2])
+					bCustomPlugins = true;
+					if (arg_w[2])
+					{
+						UserDefinedList Udl(ULF_UNIQUE | ULF_CASESENSITIVE, L':', 0);
+						if (Udl.Set(arg_w.data() + 2))
 						{
-							UserDefinedList Udl(ULF_UNIQUE | ULF_CASESENSITIVE, L':', 0);
-							if (Udl.Set(arg_w.data() + 2))
+							for (size_t i=0; i < Udl.Size(); i++)
 							{
-								for (size_t i=0; i < Udl.Size(); i++)
-								{
-									FARString path = Udl.Get(i);
-									apiExpandEnvironmentStrings(path, path);
-									// Unquote(path);
-									ConvertNameToFull(path, path);
-									if (!Opt.LoadPlug.strCustomPluginsPath.IsEmpty()) {
-										Opt.LoadPlug.strCustomPluginsPath += L':';
-									}
-									Opt.LoadPlug.strCustomPluginsPath += path;
+								FARString path = Udl.Get(i);
+								apiExpandEnvironmentStrings(path, path);
+								// Unquote(path);
+								ConvertNameToFull(path, path);
+								if (!Opt.LoadPlug.strCustomPluginsPath.IsEmpty()) {
+									Opt.LoadPlug.strCustomPluginsPath += L':';
 								}
+								Opt.LoadPlug.strCustomPluginsPath += path;
 							}
 						}
 					}

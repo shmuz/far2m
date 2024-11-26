@@ -465,8 +465,7 @@ void PluginManager::LoadPlugins()
 
 			// ...а персональные есть?
 			if (Opt.LoadPlug.PluginsPersonal
-					&& !Opt.LoadPlug.strPersonalPluginsPath.IsEmpty()
-					&& !(Opt.Policies.DisabledOptions & FFPOL_PERSONALPATH))
+					&& !Opt.LoadPlug.strPersonalPluginsPath.IsEmpty())
 			{
 				PluginPathList.AddItem(Opt.LoadPlug.strPersonalPluginsPath);
 			}
@@ -1270,168 +1269,162 @@ bool PluginManager::CheckIfHotkeyPresent(MENUTYPE MenuType)
 
 void PluginManager::Configure(int StartPos)
 {
-	// Полиция 4 - Параметры внешних модулей
-	if (Opt.Policies.DisabledOptions&FFPOL_MAINMENUPLUGINS)
-		return;
+	ChangeMacroArea Cma(MACROAREA_MENU);
+	VMenu PluginList(Msg::PluginConfigTitle,nullptr,0,ScrY-4);
+	PluginList.SetFlags(VMENU_WRAPMODE);
+	PluginList.SetHelp(L"PluginsConfig");
+	PluginList.SetId(PluginsConfigMenuId);
 
+	for (;;)
 	{
-		ChangeMacroArea Cma(MACROAREA_MENU);
-		VMenu PluginList(Msg::PluginConfigTitle,nullptr,0,ScrY-4);
-		PluginList.SetFlags(VMENU_WRAPMODE);
-		PluginList.SetHelp(L"PluginsConfig");
-		PluginList.SetId(PluginsConfigMenuId);
+		BOOL NeedUpdateItems=TRUE;
+		int MenuItemNumber=0;
 
-		for (;;)
+		Cma.SetPrevArea(); // for plugins: set the right macro area in GetPluginInfo()
+		bool HotKeysPresent = CheckIfHotkeyPresent(MTYPE_CONFIGSMENU);
+		Cma.SetCurArea();
+
+		if (NeedUpdateItems)
 		{
-			BOOL NeedUpdateItems=TRUE;
-			int MenuItemNumber=0;
+			PluginList.ClearDone();
+			PluginList.DeleteItems();
+			PluginList.SetPosition(-1,-1,0,0);
+			MenuItemNumber=0;
+			LoadIfCacheAbsent();
+			FARString strHotKey, strValue, strName;
+			PluginInfo Info{};
 
 			Cma.SetPrevArea(); // for plugins: set the right macro area in GetPluginInfo()
-			bool HotKeysPresent = CheckIfHotkeyPresent(MTYPE_CONFIGSMENU);
+			for (int I=0; I<PluginsCount; I++)
+			{
+				Plugin *pPlugin = PluginsData[I];
+				bool bCached = pPlugin->CheckWorkFlags(PIWF_CACHED)?true:false;
+
+				if (!bCached && !pPlugin->GetPluginInfo(&Info))
+				{
+					continue;
+				}
+
+				for (int J=0; ; J++)
+				{
+					if (bCached)
+					{
+						KeyFileReadSection kfh(PluginsIni(), pPlugin->GetSettingsName());
+						const std::string &key = StrPrintf(FmtPluginConfigStringD, J);
+						if (!kfh.HasKey(key))
+							break;
+
+						strName = kfh.GetString(key, "");
+					}
+					else
+					{
+						if (J >= Info.PluginConfigStringsNumber)
+							break;
+
+						strName = Info.PluginConfigStrings[J];
+					}
+
+					const GUID *Guid = pPlugin->IsLuamacro() ? Info.PluginConfigGuids + J : nullptr;
+					GetPluginHotKey(pPlugin, J, Guid, MTYPE_CONFIGSMENU, strHotKey);
+					MenuItemEx ListItem;
+					ListItem.Clear();
+
+					if (pPlugin->IsOemPlugin())
+						ListItem.Flags=LIF_CHECKED|L'A';
+
+					if (!HotKeysPresent)
+						ListItem.strName = strName;
+					else if (!strHotKey.IsEmpty())
+						ListItem.strName.Format(L"&%lc%ls  %ls",strHotKey.At(0),(strHotKey.At(0)==L'&'?L"&":L""), strName.CPtr());
+					else
+						ListItem.strName.Format(L"   %ls", strName.CPtr());
+
+					//ListItem.SetSelect(MenuItemNumber++ == StartPos);
+					MenuItemNumber++;
+					PluginMenuItemData item;
+					item.pPlugin = pPlugin;
+					item.nItem = J;
+					if (pPlugin->IsLuamacro() && Info.PluginConfigGuids) {
+						item.Guid = Info.PluginConfigGuids[J];
+					}
+					PluginList.SetUserData(&item, sizeof(PluginMenuItemData),PluginList.AddItem(&ListItem));
+				}
+			}
 			Cma.SetCurArea();
 
-			if (NeedUpdateItems)
+			PluginList.AssignHighlights(FALSE);
+			PluginList.SetBottomTitle(Msg::PluginHotKeyBottom);
+			PluginList.ClearDone();
+			PluginList.SortItems(0,HotKeysPresent?3:0);
+			PluginList.SetSelectPos(StartPos,1);
+			NeedUpdateItems=FALSE;
+		}
+
+		FARString strPluginModuleName;
+		PluginList.Show();
+
+		while (!PluginList.Done())
+		{
+			FarKey Key=PluginList.ReadInput();
+			int SelPos=PluginList.GetSelectPos();
+			PluginMenuItemData *item = (PluginMenuItemData*)PluginList.GetUserData(nullptr,0,SelPos);
+
+			switch (Key)
 			{
-				PluginList.ClearDone();
-				PluginList.DeleteItems();
-				PluginList.SetPosition(-1,-1,0,0);
-				MenuItemNumber=0;
-				LoadIfCacheAbsent();
-				FARString strHotKey, strValue, strName;
-				PluginInfo Info{};
-
-				Cma.SetPrevArea(); // for plugins: set the right macro area in GetPluginInfo()
-				for (int I=0; I<PluginsCount; I++)
-				{
-					Plugin *pPlugin = PluginsData[I];
-					bool bCached = pPlugin->CheckWorkFlags(PIWF_CACHED)?true:false;
-
-					if (!bCached && !pPlugin->GetPluginInfo(&Info))
+				case KEY_SHIFTF1:
+					if (item)
 					{
-						continue;
+						strPluginModuleName = item->pPlugin->GetModuleName();
+						if (!FarShowHelp(strPluginModuleName,L"Config",FHELP_SELFHELP|FHELP_NOSHOWERROR) &&
+										!FarShowHelp(strPluginModuleName,L"Configure",FHELP_SELFHELP|FHELP_NOSHOWERROR))
+						{
+							FarShowHelp(strPluginModuleName,nullptr,FHELP_SELFHELP|FHELP_NOSHOWERROR);
+						}
 					}
-
-					for (int J=0; ; J++)
-					{
-						if (bCached)
-						{
-							KeyFileReadSection kfh(PluginsIni(), pPlugin->GetSettingsName());
-							const std::string &key = StrPrintf(FmtPluginConfigStringD, J);
-							if (!kfh.HasKey(key))
-								break;
-
-							strName = kfh.GetString(key, "");
-						}
-						else
-						{
-							if (J >= Info.PluginConfigStringsNumber)
-								break;
-
-							strName = Info.PluginConfigStrings[J];
-						}
-
-						const GUID *Guid = pPlugin->IsLuamacro() ? Info.PluginConfigGuids + J : nullptr;
-						GetPluginHotKey(pPlugin, J, Guid, MTYPE_CONFIGSMENU, strHotKey);
-						MenuItemEx ListItem;
-						ListItem.Clear();
-
-						if (pPlugin->IsOemPlugin())
-							ListItem.Flags=LIF_CHECKED|L'A';
-
-						if (!HotKeysPresent)
-							ListItem.strName = strName;
-						else if (!strHotKey.IsEmpty())
-							ListItem.strName.Format(L"&%lc%ls  %ls",strHotKey.At(0),(strHotKey.At(0)==L'&'?L"&":L""), strName.CPtr());
-						else
-							ListItem.strName.Format(L"   %ls", strName.CPtr());
-
-						//ListItem.SetSelect(MenuItemNumber++ == StartPos);
-						MenuItemNumber++;
-						PluginMenuItemData item;
-						item.pPlugin = pPlugin;
-						item.nItem = J;
-						if (pPlugin->IsLuamacro() && Info.PluginConfigGuids) {
-							item.Guid = Info.PluginConfigGuids[J];
-						}
-						PluginList.SetUserData(&item, sizeof(PluginMenuItemData),PluginList.AddItem(&ListItem));
-					}
-				}
-				Cma.SetCurArea();
-
-				PluginList.AssignHighlights(FALSE);
-				PluginList.SetBottomTitle(Msg::PluginHotKeyBottom);
-				PluginList.ClearDone();
-				PluginList.SortItems(0,HotKeysPresent?3:0);
-				PluginList.SetSelectPos(StartPos,1);
-				NeedUpdateItems=FALSE;
-			}
-
-			FARString strPluginModuleName;
-			PluginList.Show();
-
-			while (!PluginList.Done())
-			{
-				FarKey Key=PluginList.ReadInput();
-				int SelPos=PluginList.GetSelectPos();
-				PluginMenuItemData *item = (PluginMenuItemData*)PluginList.GetUserData(nullptr,0,SelPos);
-
-				switch (Key)
-				{
-					case KEY_SHIFTF1:
-						if (item)
-						{
-							strPluginModuleName = item->pPlugin->GetModuleName();
-							if (!FarShowHelp(strPluginModuleName,L"Config",FHELP_SELFHELP|FHELP_NOSHOWERROR) &&
-											!FarShowHelp(strPluginModuleName,L"Configure",FHELP_SELFHELP|FHELP_NOSHOWERROR))
-							{
-								FarShowHelp(strPluginModuleName,nullptr,FHELP_SELFHELP|FHELP_NOSHOWERROR);
-							}
-						}
-						break;
-
-					case KEY_F3:
-						if (item)
-						{
-							ShowPluginInfo(item->pPlugin);
-						}
-						break;
-
-					case KEY_F4:
-						if (item && PluginList.GetItemCount() > 0 && SelPos<MenuItemNumber)
-						{
-							FARString strName00;
-							int nOffset = HotKeysPresent?3:0;
-							strName00 = PluginList.GetItemPtr()->strName.CPtr()+nOffset;
-							RemoveExternalSpaces(strName00);
-
-							if (SetHotKeyDialog(strName00, item->pPlugin, item->nItem, &item->Guid, MTYPE_CONFIGSMENU))
-							{
-								PluginList.Hide();
-								NeedUpdateItems=TRUE;
-								StartPos=SelPos;
-								PluginList.SetExitCode(SelPos);
-								PluginList.Show();
-							}
-						}
-						break;
-
-					default:
-						PluginList.ProcessInput();
-						break;
-				}
-			}
-
-			if (!NeedUpdateItems)
-			{
-				StartPos=PluginList.Modal::GetExitCode();
-				PluginList.Hide();
-
-				if (StartPos<0)
 					break;
 
-				PluginMenuItemData *item = (PluginMenuItemData*)PluginList.GetUserData(nullptr,0,StartPos);
-				ConfigureCurrent(item->pPlugin, item->nItem, &item->Guid);
+				case KEY_F3:
+					if (item)
+					{
+						ShowPluginInfo(item->pPlugin);
+					}
+					break;
+
+				case KEY_F4:
+					if (item && PluginList.GetItemCount() > 0 && SelPos<MenuItemNumber)
+					{
+						FARString strName00;
+						int nOffset = HotKeysPresent?3:0;
+						strName00 = PluginList.GetItemPtr()->strName.CPtr()+nOffset;
+						RemoveExternalSpaces(strName00);
+
+						if (SetHotKeyDialog(strName00, item->pPlugin, item->nItem, &item->Guid, MTYPE_CONFIGSMENU))
+						{
+							PluginList.Hide();
+							NeedUpdateItems=TRUE;
+							StartPos=SelPos;
+							PluginList.SetExitCode(SelPos);
+							PluginList.Show();
+						}
+					}
+					break;
+
+				default:
+					PluginList.ProcessInput();
+					break;
 			}
+		}
+
+		if (!NeedUpdateItems)
+		{
+			StartPos=PluginList.Modal::GetExitCode();
+			PluginList.Hide();
+
+			if (StartPos<0)
+				break;
+
+			PluginMenuItemData *item = (PluginMenuItemData*)PluginList.GetUserData(nullptr,0,StartPos);
+			ConfigureCurrent(item->pPlugin, item->nItem, &item->Guid);
 		}
 	}
 }
