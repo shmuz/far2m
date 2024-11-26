@@ -121,20 +121,11 @@ bool PathCanHoldRegularFile(const wchar_t *Path)
 
 bool IsPluginPrefixPath(const wchar_t *Path) //Max:
 {
-	if (Path[0] == GOOD_SLASH)
-		return false;
-
-	const wchar_t* pC = wcschr(Path, L':');
-
-	if (!pC)
-		return false;
-
-	const wchar_t* pS = FirstSlash(Path);
-
-	if (pS && pS < pC)
-		return false;
-
-	return true;
+	for (const wchar_t *p=Path; *p && (*p != GOOD_SLASH); p++) {
+		if (*p == L':')
+			return (p-Path >= 2);
+	}
+	return false;
 }
 
 bool TestParentFolderName(const wchar_t *Name)

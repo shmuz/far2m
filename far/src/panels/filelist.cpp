@@ -3267,11 +3267,7 @@ long FileList::FindFile(const wchar_t *Name,BOOL OnlyPartName)
 
 		if (!StrCmp(Name,CurPtrName))
 			return I;
-
-//		if (!StrCmpI(Name,CurPtrName))
-//			return I;
 	}
-
 	return -1;
 }
 

@@ -147,7 +147,7 @@ static void UpdatePathOptions(const FARString &strDestName, bool IsActivePanel)
 	FARString *outFolder, *outCurFile;
 
 	// Та панель, которая имеет фокус - активна (начнем по традиции с Левой Панели ;-)
-	if ((IsActivePanel && Opt.LeftPanel.Focus) || (!IsActivePanel && !Opt.LeftPanel.Focus)) {
+	if (IsActivePanel == (bool)Opt.LeftPanel.Focus) {
 		Opt.LeftPanel.Type = FILE_PANEL;  // сменим моду панели
 		Opt.LeftPanel.Visible = TRUE;     // и включим ее
 		outFolder = &Opt.strLeftFolder;
@@ -182,11 +182,9 @@ static int MainProcess(
     const FARString &strDestName1,
     const FARString &strDestName2,
     int StartLine,
-    int StartChar
-)
+    int StartChar)
 {
-	InterThreadCallsDispatcherThread itc_dispatcher_thread;
-
+	SCOPED_ACTION(InterThreadCallsDispatcherThread);
 	{
 		clock_t cl_start = clock();
 		SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
@@ -200,16 +198,18 @@ static int MainProcess(
 			Panel *DummyPanel=new Panel;
 			_tran(SysLog(L"create dummy panels"));
 			CtrlObj.CreateFilePanels();
-			CtrlObj.Cp()->LeftPanel=CtrlObj.Cp()->RightPanel=CtrlObj.Cp()->ActivePanel=DummyPanel;
+			CtrlObj.Cp()->LeftPanel = CtrlObj.Cp()->RightPanel = CtrlObj.Cp()->ActivePanel = DummyPanel;
 			CtrlObj.Plugins.LoadPlugins();
 			CtrlObj.Macro.LoadMacros(true,false);
 
-			if (Opt.OnlyEditorViewerUsed == Options::ONLY_EDITOR_ON_CMDOUT || Opt.OnlyEditorViewerUsed == Options::ONLY_VIEWER_ON_CMDOUT)
+			if (Opt.OnlyEditorViewerUsed == Options::ONLY_EDITOR_ON_CMDOUT
+				|| Opt.OnlyEditorViewerUsed == Options::ONLY_VIEWER_ON_CMDOUT)
 			{
 				strEditViewArg = ExecuteCommandAndGrabItsOutput(strEditViewArg);
 			}
 
-			if (Opt.OnlyEditorViewerUsed == Options::ONLY_EDITOR || Opt.OnlyEditorViewerUsed == Options::ONLY_EDITOR_ON_CMDOUT)
+			if (Opt.OnlyEditorViewerUsed == Options::ONLY_EDITOR
+				|| Opt.OnlyEditorViewerUsed == Options::ONLY_EDITOR_ON_CMDOUT)
 			{
 				FileEditor *ShellEditor=new FileEditor(strEditViewArg,CP_AUTODETECT,FFILEEDIT_CANNEWFILE|FFILEEDIT_ENABLEF6,StartLine,StartChar);
 				_tran(SysLog(L"make shelleditor %p",ShellEditor));
@@ -235,26 +235,24 @@ static int MainProcess(
 			FrameManager->EnterMainLoop();
 
 			if (Opt.OnlyEditorViewerUsed == Options::ONLY_VIEWER_ON_CMDOUT
-			 || Opt.OnlyEditorViewerUsed == Options::ONLY_EDITOR_ON_CMDOUT)
+				|| Opt.OnlyEditorViewerUsed == Options::ONLY_EDITOR_ON_CMDOUT)
 			{
 				unlink(strEditViewArg.GetMB().c_str());
 			}
 
-			CtrlObj.Cp()->LeftPanel=CtrlObj.Cp()->RightPanel=CtrlObj.Cp()->ActivePanel=nullptr;
+			CtrlObj.Cp()->LeftPanel = CtrlObj.Cp()->RightPanel = CtrlObj.Cp()->ActivePanel = nullptr;
 			delete DummyPanel;
 			_tran(SysLog(L"editor/viewer closed, delete dummy panels"));
 		}
 		else
 		{
-			FARString strPath;
-
 			// воспользуемся тем, что ControlObject::Init() создает панели
 			// юзая Opt.*
-			if (strDestName1.GetLength())  // активная панель
+			if (!strDestName1.IsEmpty())  // активная панель
 			{
 				UpdatePathOptions(strDestName1, true);
 
-				if (strDestName2.GetLength())  // пассивная панель
+				if (!strDestName2.IsEmpty())  // пассивная панель
 					UpdatePathOptions(strDestName2, false);
 			}
 
@@ -262,61 +260,39 @@ static int MainProcess(
 			CtrlObj.Init();
 
 			// а теперь "провалимся" в каталог или хост-файл (если получится ;-)
-			if (strDestName1.GetLength())  // актиная панель
+			if (!strDestName1.IsEmpty())  // активная панель
 			{
-				FARString strCurDir;
-				Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
-				Panel *AnotherPanel=CtrlObject->Cp()->GetAnotherPanel(ActivePanel);
+				// Always update pointers as prefixed plugin calls could recreate one or both panels
+				auto ActivePanel = [&]() { return CtrlObject->Cp()->ActivePanel; };
+				auto AnotherPanel = [&]() { return CtrlObject->Cp()->GetAnotherPanel(ActivePanel()); };
 
-				if (strDestName2.GetLength())  // пассивная панель
+				FARString strCurDir;
+
+				if (!strDestName2.IsEmpty())  // пассивная панель
 				{
-					AnotherPanel->GetCurDir(strCurDir);
+					AnotherPanel()->GetCurDir(strCurDir);
 					FarChDir(strCurDir);
 
 					if (IsPluginPrefixPath(strDestName2))
 					{
-						AnotherPanel->SetFocus();
+						AnotherPanel()->SetFocus();
 						CtrlObject->CmdLine->ExecString(strDestName2,0);
-						ActivePanel->SetFocus();
-					}
-					else
-					{
-						strPath = strDestName2;
-
-						if (!strPath.IsEmpty())
-						{
-							if (AnotherPanel->GoToFile(strPath))
-								AnotherPanel->ProcessKey(KEY_CTRLPGDN);
-						}
+						AnotherPanel()->SetFocus();
 					}
 				}
 
-				ActivePanel->GetCurDir(strCurDir);
+				ActivePanel()->GetCurDir(strCurDir);
 				FarChDir(strCurDir);
 
 				if (IsPluginPrefixPath(strDestName1))
 				{
 					CtrlObject->CmdLine->ExecString(strDestName1,0);
 				}
-				else
-				{
-					strPath = strDestName1;
-
-					if (!strPath.IsEmpty())
-					{
-						if (ActivePanel->GoToFile(strPath))
-							ActivePanel->ProcessKey(KEY_CTRLPGDN);
-					}
-				}
-
-				// Update pointers as the above prefixed plugin calls could recreate one or both panels
-				ActivePanel=CtrlObject->Cp()->ActivePanel;
-				AnotherPanel=CtrlObject->Cp()->GetAnotherPanel(ActivePanel);
 
 				// !!! ВНИМАНИЕ !!!
 				// Сначала редравим пассивную панель, а потом активную!
-				AnotherPanel->Redraw();
-				ActivePanel->Redraw();
+				AnotherPanel()->Redraw();
+				ActivePanel()->Redraw();
 			}
 
 			fprintf(stderr, "STARTUP: %llu\n", (unsigned long long)(clock() - cl_start) );
@@ -415,8 +391,6 @@ int FarAppMain(int argc, char **argv)
 		Opt.OnlyEditorViewerUsed = Options::ONLY_EDITOR;
 		if (argc > 1) {
 			strEditViewArg = argv[argc - 1];	// use last argument
-		} else {
-			strEditViewArg.Clear();
 		}
 	}
 
@@ -794,5 +768,3 @@ int _cdecl main(int argc, char *argv[])
 
 	return WinPortMain(g_strFarModuleName.GetMB().c_str(), argc, argv, FarAppMain);
 }
-
-
