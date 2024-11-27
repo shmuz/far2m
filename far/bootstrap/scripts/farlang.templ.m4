@@ -16851,6 +16851,17 @@ SetBW
 "Чорно-біл&ий режим"
 "Чорна-бел&ы рэжым"
 
+Palette
+"П&алитра"
+"P&alette"
+"P&aleta"
+"P&alette"
+"P&aletta"
+"P&aleta"
+"P&aleta"
+"П&алітра"
+"&алiтра"
+
 SetColorPanelNormal
 l:
 "Обычный текст"

@@ -593,7 +593,10 @@ int FarAppMain(int argc, char **argv)
 		Opt.LoadPlug.PluginsPersonal = FALSE;
 	}
 
+	ZeroFarPalette();
 	ConfigOptLoad();
+	InitFarPalette();
+
 	InitConsole();
 	WINPORT(SetConsoleCursorBlinkTime)(NULL, Opt.CursorBlinkTime);
 

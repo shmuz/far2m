@@ -57,6 +57,7 @@ public:
 	void Close();
 
 	const wchar_t *GetMsgWide(FarLangMsgID id) const;
+	const size_t GetMsgWLen(FarLangMsgID id) const;
 	const char *GetMsgMB(FarLangMsgID id) const;
 
 	inline bool IsLanguageLoaded() const {return _loaded;}
@@ -73,13 +74,16 @@ private:
 	bool _wide = true;
 
 	const void *GetMsg(FarLangMsgID id) const;
+	const size_t GetMsgLen(FarLangMsgID id) const;
 };
 
 extern Language Lang;
 
 class VMenu;
 
-FILE* OpenLangFile(FARString strPath,const wchar_t *Mask,const wchar_t *Language, FARString &strFileName, UINT &nCodePage, BOOL StrongLang=FALSE,FARString *pstrLangName=nullptr);
-int GetLangParam(FILE *SrcFile,const wchar_t *ParamName,FARString *strParam1, FARString *strParam2, UINT nCodePage);
+FILE *OpenLangFile(FARString strPath, const wchar_t *Mask, const wchar_t *Language, FARString &strFileName,
+	UINT &nCodePage, BOOL StrongLang=FALSE,FARString *pstrLangName=nullptr);
+int GetLangParam(FILE *SrcFile, const wchar_t *ParamName, FARString *strParam1, FARString *strParam2,
+	UINT nCodePage);
 int GetOptionsParam(FILE *SrcFile,const wchar_t *KeyName,FARString &strValue, UINT nCodePage);
 int Select(int HelpLanguage,VMenu **MenuPtr);
