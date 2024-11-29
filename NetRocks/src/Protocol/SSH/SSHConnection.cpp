@@ -3,7 +3,7 @@
 #include <sys/ioctl.h>
 #include <time.h>
 #include <unistd.h>
-#if defined __ANDROID__
+#if defined(__ANDROID__)
 #include <netinet/in.h>
 #endif
 #include <netinet/tcp.h>
