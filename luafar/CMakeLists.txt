@@ -15,10 +15,6 @@ add_custom_command(
     DEPENDS ${SDK}/farplug-wide.h ${SDK}/farcolor.h ${SDK}/farkeys.h ${MAKEFLAGS} ${FARSRC}/DlgGuid.hpp
 )
 
-if (NOT ${CMAKE_SYSTEM_NAME} MATCHES "Android")
-  set(MYTIMER_C src/mytimer.c)
-endif()
-
 set(SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/farflags.c
   src/bit64.c
@@ -27,7 +23,6 @@ set(SOURCES
   src/luamacro.c
   src/lusercontrol.c
   src/lutf8lib.c
-  ${MYTIMER_C}
   src/service.c
   src/slnunico.c
   src/sysutils.c
@@ -43,6 +38,12 @@ set(SOURCES
   src/LPeg/lptree.c
   src/LPeg/lpvm.c
 )
+
+if (NOT (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD" OR
+         ${CMAKE_SYSTEM_NAME} MATCHES "DragonFly" OR
+         ${CMAKE_SYSTEM_NAME} MATCHES "Android"))
+  set(SOURCES ${SOURCES} src/mytimer.c)
+endif()
 
 add_library (${PROJECT_NAME} SHARED ${SOURCES})
 set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 11)

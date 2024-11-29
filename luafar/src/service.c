@@ -16,7 +16,7 @@
 #include "util.h"
 #include "service.h"
 
-extern void add_flags (lua_State *L); // from generated file farflags.c
+extern void push_far_flags (lua_State *L); // from generated file farflags.c
 
 extern int  luaopen_far_host(lua_State *L);
 extern int  luaopen_regex (lua_State*);
@@ -6244,8 +6244,7 @@ static int luaopen_far (lua_State *L)
 	lua_setfield(L, LUA_REGISTRYINDEX, FAR_VIRTUALKEYS);
 
 	luaL_register(L, "far", far_funcs);
-	lua_createtable(L, 0, 1600);
-	add_flags(L);
+	push_far_flags(L);
 	lua_pushvalue(L, -1);
 	lua_setfield(L, -3, "Flags");
 	lua_pushvalue(L, -1);           // for compatibility with Far3 scripts
@@ -6254,6 +6253,12 @@ static int luaopen_far (lua_State *L)
 
 	luaopen_far_host(L);
 	lua_setfield(L, -2, "Host");
+
+#if !defined(__FreeBSD__) && !defined(__DragonFly__) && !defined(__ANDROID__)
+	lua_pushcfunction(L, luaopen_timer);
+	lua_call(L, 0, 1);
+	lua_setfield(L, -2, "Timer");
+#endif
 
 	if (pd->Private && pd->PluginId == LuamacroId)
 	{
@@ -6276,13 +6281,6 @@ static int luaopen_far (lua_State *L)
 	lua_pushvalue(L,-1);
 	lua_setfield(L, -2, "__index");
 	luaL_register(L, NULL, filefilter_methods);
-
-#if !defined(__FreeBSD__) && !defined(__DragonFly__) && !defined(__ANDROID__)
-	lua_getglobal(L, "far");
-	lua_pushcfunction(L, luaopen_timer);
-	lua_call(L, 0, 1);
-	lua_setfield(L, -2, "Timer");
-#endif
 
 	lua_pushcfunction(L, luaopen_usercontrol);
 	lua_call(L, 0, 0);

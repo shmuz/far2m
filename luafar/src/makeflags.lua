@@ -129,11 +129,11 @@ typedef struct {
 
 
 local file_bottom = [[
-void add_flags (lua_State *L)
+void push_far_flags (lua_State *L)
 {
-  int i;
   int nelem = sizeof(flags) / sizeof(flags[0]);
-  for (i=0; i<nelem; ++i) {
+  lua_createtable(L, 0, nelem);
+  for (int i=0; i<nelem; ++i) {
     lua_pushnumber(L, flags[i].val);
     lua_setfield(L, -2, flags[i].key);
   }

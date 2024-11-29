@@ -31,10 +31,10 @@ local function assert_nil(v)       assert(v==nil)               return v; end
 local function assert_false(v)     assert(v==false)             return v; end
 local function assert_true(v)      assert(v==true)              return v; end
 
-local function assert_range(val, low, high)
-  if low then assert(val >= low) end
-  if high then assert(val <= high) end
-  return val
+local function assert_range(v, low, high)
+  if low then assert(v >= low) end
+  if high then assert(v <= high) end
+  return v
 end
 
 local function assert_numint(v)
@@ -52,7 +52,7 @@ local function pack (...)
   return { n=select("#",...), ... }
 end
 
-local TmpFileName = far.InMyTemp("tmp.tmp")
+local TmpFileName = far.InMyTemp("macrotest.tmp")
 
 local function WriteTmpFile(...)
   local fp = assert(io.open(TmpFileName,"w"))
@@ -111,9 +111,9 @@ end
 
 local function test_mf_akey()
   assert_eq(akey, mf.akey)
-  local k0,k1 = akey(0),akey(1)
-  assert(k0==far.NameToKey(MacroKey1) and k1==MacroKey1 or
-         k0==far.NameToKey(MacroKey2) and k1==MacroKey2)
+  local key,name = akey(0),akey(1)
+  assert(key==far.NameToKey(MacroKey1) and name==MacroKey1 or
+         key==far.NameToKey(MacroKey2) and name==MacroKey2)
   -- (the 2nd parameter is tested in function test_mf_eval).
 end
 
@@ -413,7 +413,7 @@ local function test_mf_key()
   assert_eq (mf.key("foobar"), "")
 end
 
--- Separate tests for mf.float and mf.string are locale-dependant, thus they are tested together.
+-- Separate tests for mf.float and mf.string are locale-dependent, thus they are tested together.
 local function test_mf_float_and_string()
   local t = { 0, -0, 2.56e1, -5.37, -2.2e100, 2.2e-100 }
   for _,num in ipairs(t) do
