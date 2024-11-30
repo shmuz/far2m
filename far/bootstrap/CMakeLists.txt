@@ -43,28 +43,28 @@ add_custom_command(OUTPUT "${BOOTSTRAP}/copyright.inc"
     COMMAND ${M4} "${SCRIPTS}/copyright.inc.m4" > "${BOOTSTRAP}/copyright.inc"
     WORKING_DIRECTORY "${SCRIPTS}"
     DEPENDS ${DEPENDENCIES}
-    COMMENT generating header
+    COMMENT "generating header"
 )
 
 add_custom_command(OUTPUT "${BOOTSTRAP}/farversion.inc"
     COMMAND ${M4} "${SCRIPTS}/farversion.inc.m4" > "${BOOTSTRAP}/farversion.inc"
     WORKING_DIRECTORY "${SCRIPTS}"
     DEPENDS ${DEPENDENCIES}
-    COMMENT generating header
+    COMMENT "generating header"
 )
 
 add_custom_command(OUTPUT "${BOOTSTRAP}/farlang.templ"
     COMMAND ${M4} "${SCRIPTS}/farlang.templ.m4" > "${BOOTSTRAP}/farlang.templ"
     WORKING_DIRECTORY "${SCRIPTS}"
     DEPENDS ${DEPENDENCIES}
-    COMMENT generating language template
+    COMMENT "generating language template"
 )
 
 add_custom_command(TARGET bootstrap
    COMMAND ${GAWK} -f "${SCRIPTS}/mkhlf.awk" "${SCRIPTS}/FarEng.hlf.m4" | ${M4} > "${BOOTSTRAP}/FarEng.hlf"
    WORKING_DIRECTORY "${SCRIPTS}"
    DEPENDS ${DEPENDENCIES}
-   COMMENT generating lang eng
+   COMMENT "generating lang eng"
 )
 
 
@@ -72,25 +72,25 @@ add_custom_command(TARGET bootstrap
    COMMAND ${GAWK} -f "${SCRIPTS}/mkhlf.awk" "${SCRIPTS}/FarRus.hlf.m4" | ${M4} > "${BOOTSTRAP}/FarRus.hlf"
    WORKING_DIRECTORY "${SCRIPTS}"
    DEPENDS ${DEPENDENCIES}
-   COMMENT generating lang rus
+   COMMENT "generating lang rus"
 )
 add_custom_command(TARGET bootstrap
    COMMAND ${GAWK} -f "${SCRIPTS}/mkhlf.awk" "${SCRIPTS}/FarHun.hlf.m4" | ${M4} > "${BOOTSTRAP}/FarHun.hlf"
    WORKING_DIRECTORY "${SCRIPTS}"
    DEPENDS ${DEPENDENCIES}
-   COMMENT generating lang hun
+   COMMENT "generating lang hun"
 )
 add_custom_command(TARGET bootstrap
    COMMAND ${GAWK} -f "${SCRIPTS}/mkhlf.awk" "${SCRIPTS}/FarUkr.hlf.m4" | ${M4} > "${BOOTSTRAP}/FarUkr.hlf"
    WORKING_DIRECTORY "${SCRIPTS}"
    DEPENDS ${DEPENDENCIES}
-   COMMENT generating lang ukr
+   COMMENT "generating lang ukr"
 )
 add_custom_command(TARGET bootstrap
    COMMAND "${FARLNGTOOL}" generator -nc -i "${BOOTSTRAP}/lang.ini" -ol "${BOOTSTRAP}" "${BOOTSTRAP}/farlang.templ"
    WORKING_DIRECTORY "${BOOTSTRAP}"
    DEPENDS "${BOOTSTRAP}/farlang.templ"
-   COMMENT generating languages
+   COMMENT "generating languages"
 )
 
 # older cmake versions does not support copying of multiple files,
