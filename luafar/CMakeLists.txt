@@ -39,8 +39,7 @@ set(SOURCES
   src/LPeg/lpvm.c
 )
 
-if (NOT (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD" OR
-         ${CMAKE_SYSTEM_NAME} MATCHES "DragonFly" OR
+if (NOT (${CMAKE_SYSTEM_NAME} MATCHES "DragonFly" OR
          ${CMAKE_SYSTEM_NAME} MATCHES "Android"))
   set(SOURCES ${SOURCES} src/mytimer.c)
 endif()

@@ -1374,7 +1374,7 @@ int LF_ProcessSynchroEvent (lua_State* L, int Event, void *Param)
 		free(Param);
 
 		if (sd.type == SYNCHRO_TIMER) {
-#if !defined(__FreeBSD__) && !defined(__DragonFly__)
+#if !defined(__DragonFly__) && !defined(__ANDROID__)
 			int narg, index, posTab;
 			TTimerData *td = sd.timerData;
 			switch (td->closeStage) {
