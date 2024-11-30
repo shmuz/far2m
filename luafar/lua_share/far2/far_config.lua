@@ -135,7 +135,7 @@ local function FarConfig()
         Op = "edit"
         AsHex = (p2 == "ShiftF4")
       else
-        Op = p2=="Del" and "reset" or p2=="CtrlH" and "hide"
+        Op = (p2=="Del" or p2=="NumDel") and "reset" or p2=="CtrlH" and "hide"
       end
 
     elseif msg == "EVENT_MOUSE" then
@@ -170,8 +170,10 @@ local function FarConfig()
         if ok then
           local item = MakeItem(idx)
           item.Index = pos
+          hDlg:EnableRedraw(false)
           hDlg:ListUpdate(posList, item)
           hDlg:ListSetCurPos(posList, data)
+          hDlg:EnableRedraw(true)
         end
       end
     elseif Op == "hide" then
