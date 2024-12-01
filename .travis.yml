@@ -103,7 +103,6 @@ matrix:
             - libarchive-dev
             - gawk
             - m4
-            - libpcre2-dev
             - zlib1g-dev
             - ninja-build
       env: CXX=clang++-3.7

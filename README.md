@@ -41,7 +41,6 @@ Python (optional scripting support), SimpleIndent, TmpPanel.
 * libnfs-dev (optional - needed for NetRocks/NFS)
 * libneon27-dev (or later, optional - needed for NetRocks/WebDAV)
 * libarchive-dev (optional - needed for better archives support in multiarc)
-* libpcre2-dev (needed for custom archives support in multiarc)
 * libluajit-5.1-dev
 * uuid-dev
 * cmake ( >= 3.5 )
@@ -51,7 +50,7 @@ Python (optional scripting support), SimpleIndent, TmpPanel.
 
 #### Or simply on Debian/Ubuntu:
 ``` sh
-apt-get install gawk m4 libwxgtk3.0-gtk3-dev libx11-dev libxi-dev libpcre2-dev libxml2-dev libuchardet-dev libssh-dev libssl-dev libsmbclient-dev libnfs-dev libneon27-dev libarchive-dev libluajit-5.1-dev uuid-dev cmake g++ git
+apt-get install gawk m4 libwxgtk3.0-gtk3-dev libx11-dev libxi-dev libxml2-dev libuchardet-dev libssh-dev libssl-dev libsmbclient-dev libnfs-dev libneon27-dev libarchive-dev libluajit-5.1-dev uuid-dev cmake g++ git
 
 ```
 In older distributives: use libwxgtk3.0-dev instead of libwxgtk3.0-gtk3-dev

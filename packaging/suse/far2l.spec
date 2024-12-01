@@ -15,11 +15,11 @@ BuildRequires:  gcc-c++
 BuildRequires:  pkgconfig
 BuildRequires:  gawk m4 make
 BuildRequires:  wxWidgets-3_2-devel spdlog-devel fmt-devel libxml2-devel libarchive-devel libneon-devel
-BuildRequires:  libnfs-devel libsmbclient-devel libopenssl-devel libssh-devel libuchardet-devel pcre2-devel
+BuildRequires:  libnfs-devel libsmbclient-devel libopenssl-devel libssh-devel libuchardet-devel
 
 AutoReqProv: 	no
 Requires: 		/bin/sh libarchive13 libopenssl1_1 libfmt8 libnfs13 libssh2 libuchardet0 libxml2 libneon27 
-Requires: 		libsmbclient0 libpcre2-32-0 libwx_baseu-suse5_0_0 libwx_gtk2u_core-suse5_0_0 
+Requires: 		libsmbclient0 libwx_baseu-suse5_0_0 libwx_gtk2u_core-suse5_0_0 
 
 %description
 Far 2 Linux is enhanced port of the well-known dual-panel console file manager from the Windows world. Despite to the original, 
