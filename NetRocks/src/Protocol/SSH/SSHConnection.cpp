@@ -3,9 +3,6 @@
 #include <sys/ioctl.h>
 #include <time.h>
 #include <unistd.h>
-#if defined(__ANDROID__)
-#include <netinet/in.h>
-#endif
 #include <netinet/tcp.h>
 #include <fcntl.h>
 #include <signal.h>
@@ -89,6 +86,30 @@ SSHConnection::SSHConnection(const std::string &host, unsigned int port, const s
 		int rc = ssh_options_set(ssh, SSH_OPTIONS_HOSTKEYS, hostkeys.c_str());
 		if (rc != SSH_OK) {
 			fprintf(stderr, "HostKeys set error %u '%s'\n", rc, ssh_get_error(ssh));
+		}
+	}
+
+	const std::string &kex = protocol_options.GetString("KexAlgorithms");
+	if (!kex.empty()) {
+		int rc = ssh_options_set(ssh, SSH_OPTIONS_KEY_EXCHANGE, kex.c_str());
+		if (rc != SSH_OK) {
+			fprintf(stderr, "KexAlgorithms set error %u '%s'\n", rc, ssh_get_error(ssh));
+		}
+	}
+
+	const std::string &hmac_cs = protocol_options.GetString("HmacCS");
+	if (!hmac_cs.empty()) {
+		int rc = ssh_options_set(ssh, SSH_OPTIONS_HMAC_C_S, hmac_cs.c_str());
+		if (rc != SSH_OK) {
+			fprintf(stderr, "HMAC client->server set error %u '%s'\n", rc, ssh_get_error(ssh));
+		}
+	}
+
+	const std::string &hmac_sc = protocol_options.GetString("HmacSC");
+	if (!hmac_sc.empty()) {
+		int rc = ssh_options_set(ssh, SSH_OPTIONS_HMAC_S_C, hmac_sc.c_str());
+		if (rc != SSH_OK) {
+			fprintf(stderr, "HMAC server->client set error %u '%s'\n", rc, ssh_get_error(ssh));
 		}
 	}
 
