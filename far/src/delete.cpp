@@ -284,6 +284,7 @@ void ShellDelete(Panel *SrcPanel,int Wipe)
 
 			while (SrcPanel->GetSelNameCompat(&strSelName,FileAttr) && !Cancel)
 			{
+				ItemsCount++;
 				if (!(FileAttr&FILE_ATTRIBUTE_REPARSE_POINT))
 				{
 					if (FileAttr&FILE_ATTRIBUTE_DIRECTORY)
@@ -309,16 +310,12 @@ void ShellDelete(Panel *SrcPanel,int Wipe)
 
 						if (GetDirInfo(nullptr,strSelName,CurrentDirCount,CurrentFileCount,FileSize,PhysicalSize,ClusterSize,-1,nullptr,0)>0)
 						{
-							ItemsCount+=CurrentFileCount+CurrentDirCount+1;
+							ItemsCount += CurrentFileCount + CurrentDirCount;
 						}
 						else
 						{
 							Cancel=true;
 						}
-					}
-					else
-					{
-						ItemsCount++;
 					}
 				}
 			}
@@ -347,7 +344,11 @@ void ShellDelete(Panel *SrcPanel,int Wipe)
 					break;
 				}
 
-				ShellDeleteMsg(strSelName,Wipe,Opt.DelOpt.DelShowTotal?(ItemsCount?(ProcessedItems*100/ItemsCount):0):-1);
+				int percent = -1;
+				if (Opt.DelOpt.DelShowTotal) {
+					percent = ItemsCount ? ToPercent64(ProcessedItems, ItemsCount) : 0;
+				}
+				ShellDeleteMsg(strSelName, Wipe, percent);
 			}
 
 			if (FileAttr & FILE_ATTRIBUTE_DIRECTORY)
@@ -589,7 +590,7 @@ void ShellDeleteMsg(const wchar_t *Name,int Wipe,int Percent)
 	FARString strProgress;
 	size_t Width=52;
 
-	if (Percent!=-1)
+	if (Percent > -1)
 	{
 		size_t Length=Width-5; // -5 под проценты
 		wchar_t *Progress=strProgress.GetBuffer(Length);

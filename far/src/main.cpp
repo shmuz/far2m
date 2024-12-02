@@ -74,6 +74,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ConfigRW.hpp"
 #include "ConfigOpt.hpp"
 #include "udlist.hpp"
+#include "message.hpp"
 
 #ifdef DIRECT_RT
 int DirectRT=0;
@@ -295,7 +296,24 @@ static int MainProcess(
 				ActivePanel()->Redraw();
 			}
 
-			fprintf(stderr, "STARTUP: %llu\n", (unsigned long long)(clock() - cl_start) );
+			fprintf(stderr, "STARTUP: %llu\n", (unsigned long long)(clock() - cl_start));
+
+			if( Opt.IsFirstStart ) {
+				DWORD tweaks = WINPORT(SetConsoleTweaks)(TWEAKS_ONLY_QUERY_SUPPORTED);
+				if (tweaks & TWEAK_STATUS_SUPPORT_OSC52CLIP_SET) {
+					if (Message(0, 2,
+						Msg::ConfigOSC52ClipSet,
+						Msg::Yes,
+						Msg::No))
+					{
+						Opt.OSC52ClipSet = 0;
+					} else {
+						Opt.OSC52ClipSet = 1;
+					}
+					ConfigOptSave(false);
+				}
+			}
+
 			FrameManager->EnterMainLoop();
 		}
 
@@ -758,6 +776,11 @@ int _cdecl main(int argc, char *argv[])
 	}
 
 	SetupFarPath(argv[0]);
+
+	{	// if CONFIG_INI is not present => first start & opt for show Help "FAR2L features - Getting Started"
+		struct stat stat_buf;
+		Opt.IsFirstStart = stat( InMyConfig(CONFIG_INI).c_str(), &stat_buf ) == -1;
+	}
 
 	SafeMMap::SignalHandlerRegistrar smm_shr;
 

@@ -579,6 +579,8 @@ struct Options
 	FARString strTimeSeparator;
 	FARString strDecimalSeparator;
 
+	bool IsFirstStart;
+
 	BOOL WindowMode;
 	std::vector<std::wstring> CmdLineStrings;
 };

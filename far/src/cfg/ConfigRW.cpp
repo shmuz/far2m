@@ -3,8 +3,6 @@
 #include <assert.h>
 #include <errno.h>
 
-#define CONFIG_INI "settings/config.ini"
-
 static bool IsSectionOrSubsection(const std::string &haystack, const char *needle)
 {
 	size_t l = strlen(needle);
