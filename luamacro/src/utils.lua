@@ -75,6 +75,7 @@ local AddedPrefixes
 local IdSet
 local LoadedPanelModules
 local ContentColumns
+local KeyReplaceTable
 
 package.nounload = {lpeg=true}
 local initial_modules = {}
@@ -308,8 +309,14 @@ local function AddRegularMacro (srctable, FileName)
 
   local macro = {}
   macro.area = srctable.area
-  macro.key = type(srctable.key)=="string" and srctable.key or "none"
-  if not macro.key:find("%S") then macro.key = "none" end
+
+  local key,id = nil,srctable.id
+  if id then
+    id = win.Uuid(id)
+    key = id and KeyReplaceTable[id]
+  end
+  key = key or srctable.key
+  macro.key = type(key)=="string" and key:find("%S") and key or "none"
 
   local keyregex = macro.key:match("^/(.+)/$")
   if keyregex then
@@ -641,6 +648,23 @@ local function ErrMsgLoad (msg, filename, isMoonScript, mode)
   end
 end
 
+-- Example: 908710AB-E08C-43A0-8B63-09F788E55BAC = 'F5 F8'
+local function AddReplacingKeys(filename)
+  local fp = io.open(filename)
+  if fp then
+    for ln in fp:lines() do
+      local guid,key = ln:match("^%s*([^%s=]+)%s*=%s*(%S.-)%s*$")
+      if guid then
+        guid = win.Uuid( guid:match('^"(.+)"$') or guid:match("^'(.+)'$") or guid )
+        if guid then
+          KeyReplaceTable[guid] = key:match('^"(.+)"$') or key:match("^'(.+)'$") or key
+        end
+      end
+    end
+    fp:close()
+  end
+end
+
 local function LoadMacros (unload, paths)
   if LoadingInProgress then return end
   LoadingInProgress = true
@@ -676,6 +700,7 @@ local function LoadMacros (unload, paths)
   IdSet = {}
   LoadedPanelModules = {}
   ContentColumns = {}
+  KeyReplaceTable = {}
   if Shared.panelsort then Shared.panelsort.DeleteSortModes() end
 
   local AreaNames = panel.CheckPanelsExist() and AllAreaNames or SomeAreaNames
@@ -797,6 +822,7 @@ local function LoadMacros (unload, paths)
     local filemask = moonscript and "*.lua,*.moon" or "*.lua"
     for p in paths:gmatch("[^;]+") do
       p = far.ConvertPath(p, F.CPM_FULL) -- needed for relative paths
+      AddReplacingKeys(JoinPath(p, "_keyreplace.cfg"))
       local macroinit = JoinPath(p, "_macroinit.lua")
       local info = win.GetFileInfo(macroinit)
       if info and not info.FileAttributes:find("d") then
