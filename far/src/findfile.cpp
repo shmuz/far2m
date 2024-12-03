@@ -1411,18 +1411,16 @@ static void AnalyzeFileItem(HANDLE hDlg, PluginPanelItem *FileItem, const wchar_
 
 	FARString FileToScan;
 	if (hPlugin) {
+		SCOPED_ACTION(PluginLocker);
 		if (!CtrlObject->Plugins.UseFarCommand(hPlugin, PLUGIN_FARGETFILES)) {
 			FARString strTempDir;
 			FarMkTempEx(strTempDir);
 			apiCreateDirectory(strTempDir, nullptr);
 
 			bool GetFileResult = false;
-			{
-				SCOPED_ACTION(PluginLocker);
-				GetFileResult = CtrlObject->Plugins.GetFile(hPlugin, FileItem, strTempDir, FileToScan,
+			GetFileResult = CtrlObject->Plugins.GetFile(hPlugin, FileItem, strTempDir, FileToScan,
 										OPM_SILENT | OPM_FIND)
 						!= FALSE;
-			}
 			if (!GetFileResult) {
 				apiRemoveDirectory(strTempDir);
 				return;
