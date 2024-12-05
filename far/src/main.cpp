@@ -297,27 +297,6 @@ static int MainProcess(
 			}
 
 			fprintf(stderr, "STARTUP: %llu\n", (unsigned long long)(clock() - cl_start));
-
-			if( Opt.IsFirstStart ) {
-				DWORD tweaks = WINPORT(SetConsoleTweaks)(TWEAKS_ONLY_QUERY_SUPPORTED);
-				if (tweaks & TWEAK_STATUS_SUPPORT_OSC52CLIP_SET) {
-					if (Message(0, 2, // at 1st start always only English and we not need use Msg here
-						L"Use OSC52 to set clipboard data (question at first start)",
-						L"You can toggle use of OSC52 on/off at any time",
-						L"in Menu(F9)->\'Options\"->\"Interface settings\"",
-						L"",
-						L"Use OSC52 to set clipboard data",
-						Msg::Yes,
-						Msg::No))
-					{
-						Opt.OSC52ClipSet = 0;
-					} else {
-						Opt.OSC52ClipSet = 1;
-					}
-					ConfigOptSave(false);
-				}
-			}
-
 			FrameManager->EnterMainLoop();
 		}
 
@@ -780,11 +759,6 @@ int _cdecl main(int argc, char *argv[])
 	}
 
 	SetupFarPath(argv[0]);
-
-	{	// if CONFIG_INI is not present => first start & opt for show Help "FAR2L features - Getting Started"
-		struct stat stat_buf;
-		Opt.IsFirstStart = stat( InMyConfig(CONFIG_INI).c_str(), &stat_buf ) == -1;
-	}
 
 	SafeMMap::SignalHandlerRegistrar smm_shr;
 
