@@ -534,18 +534,10 @@ static int ustring_GetFileAttr(lua_State *L)
 	return 1;
 }
 
-// for reusing code
-static int SetAttr(lua_State *L, const wchar_t* fname, unsigned attr)
-{
-	if (WINPORT(SetFileAttributes)(fname, attr))
-		return lua_pushboolean(L, 1), 1;
-
-	return SysErrorReturn(L);
-}
-
+// a no-op operation on Linux/far2m
 static int ustring_SetFileAttr(lua_State *L)
 {
-	return SetAttr(L, check_utf8_string(L,1,NULL), DecodeAttributes(luaL_checkstring(L,2)));
+	return lua_pushboolean(L, 1), 1;
 }
 
 static int ustring_subW(lua_State *L)

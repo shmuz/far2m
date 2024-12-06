@@ -863,7 +863,7 @@ local function WriteOneMacro (dir, macro, keyname, delete)
   local fname = ("%s/%s_%s.lua"):format(dir, macro.area, (keyname:gsub(".", CharNames)))
   local attr = win.GetFileAttr(fname)
   if attr then
-    win.SetFileAttr(fname, "")
+    win.SetFileAttr(fname, "") --> it is a no-op on Linux/far2m
     win.DeleteFile(fname)
   end
 
