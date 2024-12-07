@@ -732,8 +732,8 @@ int _cdecl main(int argc, char *argv[])
 			}
 		}
 		if (argc > 1 &&
-		(strncasecmp(argv[1], "--h", 3) == 0
-		 || strncasecmp(argv[1], "-h", 2) == 0
+		(strcasecmp(argv[1], "--help") == 0
+		 || strcasecmp(argv[1], "-h") == 0
 		 || strcmp(argv[1], "-?") == 0)) {
 
 			print_help(name);
