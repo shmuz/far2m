@@ -737,7 +737,7 @@ int64_t TVar::asInteger() const
 	case vtString:
 		{
 			long long val;
-			return 1 == wscanf(str, "%ll", &val) ? val : 0;
+			return 1 == swscanf(str, L"%ll", &val) ? val : 0;
 		}
 
 	default:
@@ -759,7 +759,7 @@ double TVar::asDouble() const
 	case vtString:
 		{
 			double val;
-			return 1 == wscanf(str, "%lf", &val) ? val : 0;
+			return 1 == swscanf(str, L"%lf", &val) ? val : 0;
 		}
 
 	default:
