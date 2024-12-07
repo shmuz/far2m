@@ -388,7 +388,8 @@ int FarAppMain(int argc, char **argv)
 	}
 
 	// run by symlink in editor mode
-	if (strcmp(argv[0], "far2medit") == 0) {
+	auto name = strrchr(argv[0], GOOD_SLASH);
+	if (strcmp((name ? name+1 : argv[0]), "far2medit") == 0) {
 		Opt.OnlyEditorViewerUsed = Options::ONLY_EDITOR;
 		if (argc > 1) {
 			strEditViewArg = argv[argc - 1];	// use last argument
