@@ -374,9 +374,9 @@ struct Options
 
 	FARString strLeftFolder;
 	FARString strRightFolder;
-
 	FARString strLeftCurFile;
 	FARString strRightCurFile;
+	FARString strEditViewArg;
 
 	int RightSelectedFirst;
 	int LeftSelectedFirst;

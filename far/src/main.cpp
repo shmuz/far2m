@@ -179,7 +179,6 @@ static void UpdatePathOptions(const FARString &strDestName, bool IsActivePanel)
 
 
 static int MainProcess(
-    FARString strEditViewArg,
     const FARString &strDestName1,
     const FARString &strDestName2,
     int StartLine,
@@ -206,13 +205,13 @@ static int MainProcess(
 			if (Opt.OnlyEditorViewerUsed == Options::ONLY_EDITOR_ON_CMDOUT
 				|| Opt.OnlyEditorViewerUsed == Options::ONLY_VIEWER_ON_CMDOUT)
 			{
-				strEditViewArg = ExecuteCommandAndGrabItsOutput(strEditViewArg);
+				Opt.strEditViewArg = ExecuteCommandAndGrabItsOutput(Opt.strEditViewArg);
 			}
 
 			if (Opt.OnlyEditorViewerUsed == Options::ONLY_EDITOR
 				|| Opt.OnlyEditorViewerUsed == Options::ONLY_EDITOR_ON_CMDOUT)
 			{
-				FileEditor *ShellEditor=new FileEditor(strEditViewArg,CP_AUTODETECT,FFILEEDIT_CANNEWFILE|FFILEEDIT_ENABLEF6,StartLine,StartChar);
+				FileEditor *ShellEditor=new FileEditor(Opt.strEditViewArg,CP_AUTODETECT,FFILEEDIT_CANNEWFILE|FFILEEDIT_ENABLEF6,StartLine,StartChar);
 				_tran(SysLog(L"make shelleditor %p",ShellEditor));
 
 				if (!ShellEditor->GetExitCode())  // ????????????
@@ -222,7 +221,7 @@ static int MainProcess(
 			}
 			else
 			{
-				FileViewer *ShellViewer=new FileViewer(strEditViewArg,FALSE);
+				FileViewer *ShellViewer=new FileViewer(Opt.strEditViewArg,FALSE);
 
 				if (!ShellViewer->GetExitCode())
 				{
@@ -238,7 +237,7 @@ static int MainProcess(
 			if (Opt.OnlyEditorViewerUsed == Options::ONLY_VIEWER_ON_CMDOUT
 				|| Opt.OnlyEditorViewerUsed == Options::ONLY_EDITOR_ON_CMDOUT)
 			{
-				unlink(strEditViewArg.GetMB().c_str());
+				unlink(Opt.strEditViewArg.GetMB().c_str());
 			}
 
 			CtrlObj.Cp()->LeftPanel = CtrlObj.Cp()->RightPanel = CtrlObj.Cp()->ActivePanel = nullptr;
@@ -352,8 +351,6 @@ int FarAppMain(int argc, char **argv)
 	Opt.IsUserAdmin = (geteuid()==0);
 
 	_OT(SysLog(L"[[[[[[[[New Session of FAR]]]]]]]]]"));
-	Opt.OnlyEditorViewerUsed = Options::NOT_ONLY_EDITOR_VIEWER;
-	FARString strEditViewArg;
 	FARString DestNames[2];
 	int StartLine=-1,StartChar=-1;
 	int CntDestName=0; // количество параметров-имен каталогов
@@ -385,15 +382,6 @@ int FarAppMain(int argc, char **argv)
 		setenv("FARADMINMODE", "1", 1);
 	} else {
 		unsetenv("FARADMINMODE");
-	}
-
-	// run by symlink in editor mode
-	auto name = strrchr(argv[0], GOOD_SLASH);
-	if (strcmp((name ? name+1 : argv[0]), "far2medit") == 0) {
-		Opt.OnlyEditorViewerUsed = Options::ONLY_EDITOR;
-		if (argc > 1) {
-			strEditViewArg = argv[argc - 1];	// use last argument
-		}
 	}
 
 	// макросы не дисаблим
@@ -457,19 +445,19 @@ int FarAppMain(int argc, char **argv)
 						if (strcmp(argv[I+1], "-") == 0)
 						{
 							Opt.OnlyEditorViewerUsed = Options::ONLY_EDITOR_ON_CMDOUT;
-							strEditViewArg = ReconstructCommandLine(argc - I - 2, &argv[I+2]);
+							Opt.strEditViewArg = ReconstructCommandLine(argc - I - 2, &argv[I+2]);
 							I = argc;
 						}
 						else
 						{
 							Opt.OnlyEditorViewerUsed = Options::ONLY_EDITOR;
-							strEditViewArg = argv[I+1];
+							Opt.strEditViewArg = argv[I+1];
 							I++;
 						}
 					}
 					else { // -e without filename => new file to editor
 						Opt.OnlyEditorViewerUsed = Options::ONLY_EDITOR;
-						strEditViewArg.Clear();
+						Opt.strEditViewArg.Clear();
 					}
 					break;
 
@@ -485,13 +473,13 @@ int FarAppMain(int argc, char **argv)
 						if (strcmp(argv[I+1], "-") == 0)
 						{
 							Opt.OnlyEditorViewerUsed = Options::ONLY_VIEWER_ON_CMDOUT;
-							strEditViewArg = ReconstructCommandLine(argc - I - 2, &argv[I+2]);
+							Opt.strEditViewArg = ReconstructCommandLine(argc - I - 2, &argv[I+2]);
 							I = argc;
 						}
 						else
 						{
 							Opt.OnlyEditorViewerUsed = Options::ONLY_VIEWER;
-							strEditViewArg = argv[I+1];
+							Opt.strEditViewArg = argv[I+1];
 							I++;
 						}
 					}
@@ -629,10 +617,10 @@ int FarAppMain(int argc, char **argv)
 
 	// (!!!) temporary STUB because now Editor can not input filename "", see: fileedit.cpp -> FileEditor::Init()
 	// default Editor file name for new empty file
-	if ( Opt.OnlyEditorViewerUsed == Options::ONLY_EDITOR && strEditViewArg.IsEmpty() )
-		strEditViewArg = Msg::NewFileName;
+	if ( Opt.OnlyEditorViewerUsed == Options::ONLY_EDITOR && Opt.strEditViewArg.IsEmpty() )
+		Opt.strEditViewArg = Msg::NewFileName;
 
-	int Result = MainProcess(strEditViewArg,DestNames[0],DestNames[1],StartLine,StartChar);
+	int Result = MainProcess(DestNames[0],DestNames[1],StartLine,StartChar);
 
 	EmptyInternalClipboard();
 	VTShell_Shutdown();//ensure VTShell deinitialized before statics destructors called
@@ -719,25 +707,30 @@ static void SetCustomSettings(const char *arg)
 
 int _cdecl main(int argc, char *argv[])
 {
-	char *name = strrchr(argv[0], GOOD_SLASH);
-	if (name) ++name; else name = argv[0];
+	Opt.OnlyEditorViewerUsed = Options::NOT_ONLY_EDITOR_VIEWER;
 	if (argc > 0) {
-		if (strcmp(name, "far2m_askpass")==0)
-			return sudo_main_askpass();
-		if (strcmp(name, "far2m_sudoapp")==0)
-			return sudo_main_dispatcher(argc - 1, argv + 1);
-		if (argc >= 5) {
-			if (strcmp(argv[1], "--libexec") == 0) {
-				return libexec(argv[2], argv[3], argv[4], argc - 5, argv + 5);
-			}
-		}
-		if (argc > 1 &&
-		(strcasecmp(argv[1], "--help") == 0
-		 || strcasecmp(argv[1], "-h") == 0
-		 || strcmp(argv[1], "-?") == 0)) {
+		const char *name = strrchr(argv[0], GOOD_SLASH);
+		name = name ? name+1 : argv[0];
 
-			print_help(name);
-			return 0;
+		if (strcmp(name, "far2medit") == 0) { // run by symlink in editor mode
+			Opt.OnlyEditorViewerUsed = Options::ONLY_EDITOR;
+			if (argc > 1)
+				Opt.strEditViewArg = argv[argc - 1];	// use last argument
+		}
+		else if (strcmp(name, "far2m_askpass") == 0)
+			return sudo_main_askpass();
+		else if (strcmp(name, "far2m_sudoapp") == 0)
+			return sudo_main_dispatcher(argc - 1, argv + 1);
+		else if (argc > 1) {
+			if ((strcasecmp(argv[1], "--help") == 0
+					|| strcasecmp(argv[1], "-h") == 0
+					|| strcasecmp(argv[1], "-?") == 0)) {
+				print_help(name);
+				return 0;
+			}
+			else if (strcmp(argv[1], "--libexec") == 0) {
+				return (argc >= 5) ? libexec(argv[2], argv[3], argv[4], argc - 5, argv + 5) : 0;
+			}
 		}
 	}
 

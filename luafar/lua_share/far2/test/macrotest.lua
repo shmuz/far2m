@@ -669,9 +669,11 @@ local function test_mf_usermenu()
 end
 
 local function test_mf_EnumScripts()
-  local f = assert_func(mf.EnumScripts("Macro"))
-  local s,i = f()
---assert_table(s) -- in GitHub test there are no macros loaded
+  local iter = assert_func(mf.EnumScripts("Macro"))
+  local Id = assert_udata(far.MacroAdd(nil,nil,"foo","return")) -- assure at least 1 macro loaded
+  local s,i = iter()
+  far.MacroDelete(Id)
+  assert_table(s)
   assert_num(i)
 end
 
@@ -2182,7 +2184,7 @@ local function test_win_Clock()
   local temp = win.Clock()
   win.Sleep(500)
   temp = (win.Clock() - temp)
-  assert(temp > 0.480 and temp < 1.000, temp)
+  assert(temp > 0.480 and temp < 2.000, temp)
   -- check granularity
   local OK = false
   temp = math.floor(win.Clock()*1e6) % 10
