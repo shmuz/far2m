@@ -59,7 +59,6 @@ int &Confirmation::ExitEffective()
 
 static DWORD ApplyConsoleTweaks()
 {
-#if !defined NO_CONSOLE_TWEAKS // for GitHub test to not hang
 	DWORD64 tweaks = 0;
 	if (Opt.ExclusiveCtrlLeft)
 		tweaks|= EXCLUSIVE_CTRL_LEFT;
@@ -80,9 +79,6 @@ static DWORD ApplyConsoleTweaks()
 	if (Opt.TTYPaletteOverride)
 		tweaks|= CONSOLE_TTY_PALETTE_OVERRIDE;
 	return WINPORT(SetConsoleTweaks)(tweaks);
-#else
-	return 0;
-#endif
 }
 
 static void ApplySudoConfiguration()

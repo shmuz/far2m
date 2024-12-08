@@ -148,10 +148,6 @@ if(NOT GAWK)
   message(FATAL_ERROR "${ColorRed}gawk not found - please install it${ColorNormal}")
 endif ()
 
-if(${GITHUB_TEST})
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNO_CONSOLE_TWEAKS")
-endif()
-
 if("${ICU_MODE}" STREQUAL "runtime")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DRUNTIME_ICU")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DRUNTIME_ICU")

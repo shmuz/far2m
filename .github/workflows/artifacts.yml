@@ -16,7 +16,7 @@ jobs:
         include:
           - dependencies: "-minimal"
           - dependencies: ""
-            options: "-DPYTHON=yes -DGITHUB_TEST=yes"
+            options: "-DPYTHON=yes"
 
     steps:
     - uses: actions/checkout@v2
