@@ -714,7 +714,7 @@ int _cdecl main(int argc, char *argv[])
 
 		if (strcmp(name, "far2medit") == 0) { // run by symlink in editor mode
 			Opt.OnlyEditorViewerUsed = Options::ONLY_EDITOR;
-			if (argc > 1)
+			if (argc > 1 && *argv[argc - 1] != '-')
 				Opt.strEditViewArg = argv[argc - 1];	// use last argument
 		}
 		else if (strcmp(name, "far2m_askpass") == 0)
