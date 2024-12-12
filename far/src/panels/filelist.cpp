@@ -3581,16 +3581,14 @@ long FileList::SelectFiles(int Mode,const wchar_t *Mask)
 	{
 		size_t pos;
 
-		if (strCurName.RPos(pos,L'.'))
+		if (strCurName.RPos(pos,L'.') && pos != 0)
 		{
 			// Учтем тот момент, что расширение может содержать символы-разделители
 			strRawMask.Format(L"\"*.%ls\"", strCurName.CPtr()+pos+1);
 			WrapBrackets=true;
 		}
 		else
-		{
-			strMask = L"/^[^.]+$/";
-		}
+			strMask = L"/^\\.?[^.]*$/";
 
 		Mode=(Mode==SELECT_ADDEXT) ? SELECT_ADD:SELECT_REMOVE;
 	}
@@ -3598,15 +3596,16 @@ long FileList::SelectFiles(int Mode,const wchar_t *Mask)
 	{
 		if (Mode==SELECT_ADDNAME || Mode==SELECT_REMOVENAME)
 		{
-			// Учтем тот момент, что имя может содержать символы-разделители
-			FARString strTmp = strCurName;
 			size_t pos;
+			FARString strTmp = strCurName;
 
-			if (strTmp.RPos(pos,L'.') && pos!=0 && pos!=strTmp.GetLength()-1)
+			if (strTmp.RPos(pos,L'.') && pos != 0)
 				strTmp.Truncate(pos);
 
-			strRawMask.Format(L"\"%ls.*\";\"%ls\"", strTmp.CPtr(), strTmp.CPtr());
-			WrapBrackets=true;
+			strMask.Format(L"/^\\Q%ls\\E(?=\\.[^.]*$|$)/", strTmp.CPtr());
+			if (!Opt.PanelCaseSensitiveCompareSelect)
+				strMask += L"i";
+
 			Mode=(Mode==SELECT_ADDNAME) ? SELECT_ADD:SELECT_REMOVE;
 		}
 		else
