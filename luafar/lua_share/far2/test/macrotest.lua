@@ -981,7 +981,6 @@ local function test_Far_GetConfig()
     "System.DriveExceptions",
     "System.DriveMenuMode2",
     "System.ExcludeCmdHistory",
-    "System.FastSynchroEvents",
     "System.FileSearchMode",
     "System.FindAlternateStreams",
     "System.FindCodePage",
@@ -1849,10 +1848,13 @@ local function test_AdvControl_Misc()
   assert_true(mf.acall(far.AdvControl, "ACTL_WAITKEY"))
   Keys("F2")
 
-  local val = 3
-  far.AdvControl("ACTL_SYNCHRO", function(a) val=a end, 87)
+  local val=0
+  local incr,count = 2,100
+  for _=1,count do
+    far.AdvControl("ACTL_SYNCHRO", function(a) val=val+a end, incr)
+  end
   Keys("foo")
-  assert_eq(val, 87)
+  assert_eq(val, incr*count)
 end
 
 local function test_ACTL()

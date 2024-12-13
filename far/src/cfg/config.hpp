@@ -569,7 +569,6 @@ struct Options
 	InfoPanelOptions InfoPanel;
 
 	DWORD CPMenuMode;
-	DWORD FastSynchroEvents;
 
 	bool IsUserAdmin;
 	FARString strWindowTitle;
