@@ -559,10 +559,7 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 		CtrlObject->Macro.RunStartMacro();
 		FarKey MacroKey = CtrlObject->Macro.GetKey();
 
-		if (MacroKey == KEY_INVALID)
-			return MacroKey;
-
-		if (MacroKey && MacroKey != KEY_NONE)
+		if (MacroKey)
 		{
 			DWORD EventState,MsClickKey;
 
