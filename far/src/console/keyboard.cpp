@@ -35,7 +35,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ctype.h>
 #include "keyboard.hpp"
-#include "keys.hpp"
 #include "farqueue.hpp"
 #include "lang.hpp"
 #include "ctrlobj.hpp"
@@ -770,11 +769,12 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 		CalcKey=rec->Event.FocusEvent.bSetFocus?KEY_GOTFOCUS:KEY_KILLFOCUS;
 		memset(rec,0,sizeof(*rec));
 		rec->EventType=KEY_EVENT;
-		//чтоб решить баг винды приводящий к появлению скролов и т.п. после потери фокуса
+		/* // чтоб решить баг винды приводящий к появлению скролов и т.п. после потери фокуса
 		if (CalcKey == KEY_GOTFOCUS)
 			RestoreConsoleWindowRect();
 		else
 			SaveConsoleWindowRect();
+   		*/
 
 		return CalcKey;
 	}
