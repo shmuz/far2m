@@ -2145,7 +2145,10 @@ local function test_far_timer()
       N = N+1
       if N==3 then hnd:Close() end
     end)
-  while not timer.Closed do Keys("foobar") end
+  while not timer.Closed do
+    win.Sleep(5) -- prevents "saturation" and hanging of Far
+    Keys("foobar")
+  end
   assert_eq (N, 3)
 end
 
