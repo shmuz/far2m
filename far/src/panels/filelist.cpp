@@ -1793,8 +1793,6 @@ int FileList::ProcessKey(FarKey Key)
 											EditList.SetCurName(strFileName);
 											ShellEditor->SetNamesList(&EditList);
 										}
-
-										FrameManager->ExecuteModal();
 									}
 								}
 							}
