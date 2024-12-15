@@ -282,14 +282,11 @@ void Manager::ExecuteModal(Frame *Executed)
 {
 	_FRAMELOG("ExecuteModal", Executed);
 
-	if (!Executed == !ExecutedFrame)
-	{
-		return;
+	if (Executed) {
+		ExecutedFrame = Executed;
 	}
-
-	if (Executed)
-	{
-		ExecutedFrame=Executed;
+	else if (ExecutedFrame == nullptr) {
+		return;
 	}
 
 	auto ModalStartLevel=ModalStack.size();

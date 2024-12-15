@@ -609,6 +609,10 @@ local function test_mf_Keys()
   assert_eq (panel.GetCmdLine(), "Far Manager ФАР")
   Keys("Esc")
   assert_eq (panel.GetCmdLine(), "")
+  -- test invalid keys; see far2m/commit/1225dbeb2d769ba2da8570c20b0e96fd179a3442
+  Keys("n1 n2 n3 n4 n5 n6 n7 n8 A B C")
+  assert_eq (panel.GetCmdLine(), "ABC")
+  Keys("Esc")
 end
 
 local function test_mf_exit()
