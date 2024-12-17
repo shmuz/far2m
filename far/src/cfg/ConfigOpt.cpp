@@ -286,6 +286,8 @@ static struct FARConfig
 	{1, NSecSystem, "MultiCopy",                    &Opt.CMOpt.MultiCopy, 0, REG_BOOLEAN},
 	{1, NSecSystem, "CopyTimeRule",                 &Opt.CMOpt.CopyTimeRule, 3},
 
+	{1, NSecSystem, "MakeLinkSuggestSymlinkAlways", &Opt.MakeLinkSuggestSymlinkAlways, 1, REG_BOOLEAN},
+
 	{1, NSecSystem, "InactivityExit",               &Opt.InactivityExit, 0, REG_BOOLEAN},
 	{1, NSecSystem, "InactivityExitTime",           &Opt.InactivityExitTime, 15},
 	{1, NSecSystem, "DriveMenuMode2",               &Opt.ChangeDriveMode, (DWORD)-1},

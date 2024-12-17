@@ -994,6 +994,7 @@ local function test_Far_GetConfig()
     "System.HowCopySymlink",
     "System.InactivityExit",
     "System.InactivityExitTime",
+    "System.MakeLinkSuggestSymlinkAlways",
     "System.MaxPositionCache",
     "System.MsHWheelDelta",
     "System.MsHWheelDeltaEdit",
