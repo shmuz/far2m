@@ -1163,7 +1163,7 @@ void Manager::ActivateCommit(Frame *aFrame)
 	if (Index!=-1)
 	{
 		FramePos=Index;
-		if (CurrentFrame && CurrentFrame != aFrame) {
+		if (CurrentFrame && CurrentFrame != aFrame && InList(CurrentFrame)) {
 			aFrame->FrameToBack = CurrentFrame;
 		}
 	}
