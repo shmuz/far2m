@@ -1163,6 +1163,9 @@ void Manager::ActivateCommit(Frame *aFrame)
 	if (Index!=-1)
 	{
 		FramePos=Index;
+		if (CurrentFrame && CurrentFrame != aFrame) {
+			aFrame->FrameToBack = CurrentFrame;
+		}
 	}
 
 	/* 14.05.2002 SKV
