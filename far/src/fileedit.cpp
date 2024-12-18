@@ -2895,7 +2895,7 @@ void EditConsoleHistory(HANDLE con_hnd, bool Modal)
 		DWORD editorExitCode = ShellEditor->GetExitCode();
 		if (editorExitCode != XC_LOADING_INTERRUPTED && editorExitCode != XC_OPEN_ERROR) {
 			if (Modal)
-				FrameManager->ExecuteModalEV();
+				FrameManager->ExecuteModalEV(false);
 			else
 				FrameManager->Commit();
 		}

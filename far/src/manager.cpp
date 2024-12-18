@@ -313,11 +313,14 @@ void Manager::ExecuteModal(Frame *Executed)
   а глобальные счётчики не концептуально,
   то лучше это делать тут.
 */
-void Manager::ExecuteModalEV()
+void Manager::ExecuteModalEV(bool RefreshScreen)
 {
 	ModalEVCount++;
 	ExecuteModal();
 	ModalEVCount--;
+	if (RefreshScreen) {
+		ProcessKey(KEY_CONSOLE_BUFFER_RESIZE); //redraw all
+	}
 }
 
 /* $ 11.10.2001 IS

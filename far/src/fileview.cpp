@@ -609,7 +609,7 @@ void ModalViewFile(const std::string &pathname)
 	FileViewer Viewer(StrMB2Wide(pathname).c_str(),
 		FALSE, FALSE, FALSE, -1, nullptr, nullptr, FALSE, CP_AUTODETECT);
 	Viewer.SetDynamicallyBorn(false);
-	FrameManager->ExecuteModalEV();
+	FrameManager->ExecuteModalEV(false);
 	const int r = Viewer.GetExitCode();
 	if (r != 0)
 		fprintf(stderr, "%s: viewer error %d for '%s'\n", __FUNCTION__, r, pathname.c_str());
@@ -631,7 +631,7 @@ void ViewConsoleHistory(HANDLE con_hnd, bool modal, bool autoclose)
 	if (autoclose)
 		Viewer->SetAutoClose(true);
 	if (modal)
-		FrameManager->ExecuteModalEV();
+		FrameManager->ExecuteModalEV(false);
 	const int r = Viewer->GetExitCode();
 	if (!r || modal)
 		delete Viewer;

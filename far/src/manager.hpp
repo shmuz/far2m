@@ -110,7 +110,7 @@ class Manager
 		// Запускает немодальный фрейм в модальном режиме
 		void ExecuteNonModal();
 
-		void ExecuteModalEV();
+		void ExecuteModalEV(bool RefreshScreen);
 
 		//  Функции, которые работают с очередью немодального фрейма.
 		//  Сейчас используются только для хранения информаци о наличии запущенных объектов типа VFMenu

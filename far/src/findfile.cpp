@@ -1846,9 +1846,7 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 										ShellViewer.SetSaveToSaveAs(true);
 									}
 								}
-								FrameManager->ExecuteModalEV();
-								// заставляем рефрешиться экран
-								FrameManager->ProcessKey(KEY_CONSOLE_BUFFER_RESIZE);
+								FrameManager->ExecuteModalEV(true);
 							}
 							SendDlgMessage(hDlg, DM_ENABLEREDRAW, TRUE, 0);
 							SendDlgMessage(hDlg, DM_SHOWDIALOG, TRUE, 0);
@@ -1921,7 +1919,7 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 											ShellEditor.SetFileHolder(TFH);
 										}
 									}
-									FrameManager->ExecuteModalEV();
+									FrameManager->ExecuteModalEV(false);
 									if (TFH) {
 										TFH->CheckForChanges();
 									}
