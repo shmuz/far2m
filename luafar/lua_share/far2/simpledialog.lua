@@ -61,7 +61,6 @@ function mod.OpenInEditor(text, ext)
         fp:close()
       end
     end
-    if (FarVer==2) then far.AdvControl("ACTL_REDRAWALL") end
     win.DeleteFile(fname)
     return text
   end
