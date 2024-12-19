@@ -1768,8 +1768,8 @@ bool TranslateKeyToVK(FarKey Key,int &VirtKey,int &ControlState,INPUT_RECORD *Re
 			VirtKey = FKey - KEY_FKEY_BEGIN;
 		else if (FKey < ARRAYSIZE(VKeys))
 			VirtKey = VKeys[FKey];
-		else if (FKey < MAX_VKEY_CODE)                    // 0xFFFF
-			VirtKey = WINPORT(VkKeyScan)(FKey);
+		//else if (FKey < MAX_VKEY_CODE)                    // 0xFFFF
+		//	VirtKey = WINPORT(VkKeyScan)(FKey);
 		else
 			VirtKey = FKey;
 	}
