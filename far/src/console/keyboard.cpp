@@ -1515,7 +1515,7 @@ int CheckForEsc()
    ! дополнительный параметра у KeyToText - размер данных
    Size=0 - по максимуму!
 */
-static FARString &GetShiftKeyName(FARString &strName, FarKey Key,int& Len)
+static void GetShiftKeyName(FARString &strName, FarKey Key)
 {
 	if ((Key&KEY_RCTRL) == KEY_RCTRL)   strName += ModifKeyName[0].Name;
 	else if (Key&KEY_CTRL)              strName += ModifKeyName[2].Name;
@@ -1533,9 +1533,6 @@ static FARString &GetShiftKeyName(FARString &strName, FarKey Key,int& Len)
 //  else if(Key&KEY_RSHIFT)  strcat(Name,ModifKeyName[1].Name);
 	if (Key&KEY_M_SPEC)                 strName += ModifKeyName[5].Name;
 	else if (Key&KEY_M_OEM)             strName += ModifKeyName[6].Name;
-
-	Len=(int)strName.GetLength();
-	return strName;
 }
 
 /* $ 24.09.2000 SVS
@@ -1656,7 +1653,7 @@ BOOL WINAPI KeyToText(FarKey Key0, FARString &strKeyText0)
 {
 	FARString strKeyText;
 	FARString strKeyTemp;
-	int I, Len;
+	int I;
 	DWORD Key = Key0, FKey = STRIP_KEY_CODE(Key0);
 	//if(Key >= KEY_MACRO_BASE && Key <= KEY_MACRO_ENDBASE)
 	//  return KeyMacroToText(Key0, strKeyText0);
@@ -1665,7 +1662,7 @@ BOOL WINAPI KeyToText(FarKey Key0, FARString &strKeyText0)
 		strKeyText.Format(L"Alt%05d", Key&FKey);
 	else
 	{
-		GetShiftKeyName(strKeyText,Key,Len);
+		GetShiftKeyName(strKeyText,Key);
 
 		for (I=0; I<int(ARRAYSIZE(FKeys1)); I++)
 		{
@@ -1764,7 +1761,7 @@ bool TranslateKeyToVK(FarKey Key,int &VirtKey,int &ControlState,INPUT_RECORD *Re
 
 	if (!VirtKey)
 	{
-		if (FKey > KEY_FKEY_BEGIN && FKey < KEY_END_FKEY) // [0x10000 - 0x1FFFF]
+		if (FKey > KEY_FKEY_BEGIN && FKey < KEY_END_FKEY) // [0x200000 - 0x280000]
 			VirtKey = FKey - KEY_FKEY_BEGIN;
 		else if (FKey < ARRAYSIZE(VKeys))
 			VirtKey = VKeys[FKey];

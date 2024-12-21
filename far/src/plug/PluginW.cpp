@@ -160,7 +160,7 @@ static BOOL WINAPI FarNameToInputRecord(const wchar_t *Name,INPUT_RECORD* Rec)
 	{
 		int VirtKey, ControlState;
 		auto Key = KeyNameToKey(Name);
-		return Key && Key != KEY_INVALID && TranslateKeyToVK(Key,VirtKey,ControlState,Rec);
+		return Key != KEY_INVALID && TranslateKeyToVK(Key,VirtKey,ControlState,Rec);
 	}
 	return FALSE;
 }
