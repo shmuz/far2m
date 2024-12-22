@@ -102,6 +102,7 @@ enum enumFilesMenu
 	MENU_FILES_EDIT,
 	MENU_FILES_COPY,
 	MENU_FILES_MOVE,
+	MENU_FILES_LINK,
 	MENU_FILES_CREATEFOLDER,
 	MENU_FILES_DELETE,
 	MENU_FILES_WIPE,
@@ -237,6 +238,7 @@ void ShellOptions(int LastCommand,MOUSE_EVENT_RECORD *MouseEvent)
 		{Msg::MenuEdit,0,KEY_F4},
 		{Msg::MenuCopy,0,KEY_F5},
 		{Msg::MenuMove,0,KEY_F6},
+		{Msg::MenuLink,0,KEY_ALTF6},
 		{Msg::MenuCreateFolder,0,KEY_F7},
 		{Msg::MenuDelete,0,KEY_F8},
 		{Msg::MenuWipe,0,KEY_ALTDEL},
@@ -458,6 +460,9 @@ void ShellOptions(int LastCommand,MOUSE_EVENT_RECORD *MouseEvent)
 					break;
 				case MENU_FILES_MOVE:  // Rename or move
 					FrameManager->ProcessKey(KEY_F6);
+					break;
+				case MENU_FILES_LINK:	// Make link
+					FrameManager->ProcessKey(KEY_ALTF6);
 					break;
 				case MENU_FILES_CREATEFOLDER:  // Make folder
 					FrameManager->ProcessKey(KEY_F7);

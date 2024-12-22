@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=Far2m Editor (Terminal)
+Name[ru]=Редактор Far2m (Терминал)
+Comment=Edit text files
+Comment[ru]=Редактирование текстовых файлов
+Exec=far2medit --tty %f
+TryExec=far2medit
+Terminal=true
+MimeType=text/plain;
+Categories=Utility;TextEditor;
+Icon=far2medit
+Keywords=editor;console;text;
