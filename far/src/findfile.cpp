@@ -398,9 +398,11 @@ enum FINDASKDLG
 	FAD_TEXT_CP,
 	FAD_COMBOBOX_CP,
 	FAD_SEPARATOR1,
+	FAD_CHECKBOX_CASEMASK,
 	FAD_CHECKBOX_CASE,
 	FAD_CHECKBOX_WHOLEWORDS,
 	FAD_CHECKBOX_HEX,
+	FAD_CHECKBOX_FILTER,
 	FAD_CHECKBOX_ARC,
 	FAD_CHECKBOX_DIRS,
 	FAD_CHECKBOX_LINKS,
@@ -408,7 +410,6 @@ enum FINDASKDLG
 	FAD_SEPARATOR_3,
 	FAD_TEXT_WHERE,
 	FAD_COMBOBOX_WHERE,
-	FAD_CHECKBOX_FILTER,
 	FAD_SEPARATOR_4,
 	FAD_BUTTON_FIND,
 	FAD_BUTTON_DRIVE,
@@ -1385,7 +1386,8 @@ static void AnalyzeFileItem(HANDLE hDlg, PluginPanelItem *FileItem, const wchar_
 		return;
 	if ((FindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0 && !Opt.FindOpt.FindFolders)
 		return;
-	if (!FileMaskForFindFile.Compare(FileName, false))
+
+	if (!FileMaskForFindFile.Compare(FileName, Opt.FindOpt.FindCaseSensitiveFileMask))
 		return;
 
 	size_t ArcIndex = itd.GetFindFileArcIndex();
@@ -2947,53 +2949,50 @@ FindFiles::FindFiles()
 		const wchar_t *MasksHistoryName = L"Masks", *TextHistoryName = L"SearchText";
 		const wchar_t *HexMask = L"HH HH HH HH HH HH HH HH HH HH HH HH HH HH HH HH HH HH HH HH HH HH HH";
 		const wchar_t VSeparator[] = {BoxSymbols[BS_T_H1V1], BoxSymbols[BS_V1], BoxSymbols[BS_V1],
-				BoxSymbols[BS_V1], BoxSymbols[BS_B_H1V1], 0};
+				BoxSymbols[BS_V1], BoxSymbols[BS_V1], BoxSymbols[BS_B_H1V1], 0};
 		struct DialogDataEx FindAskDlgData[] = {
-				{DI_DOUBLEBOX, 3,  1,  74, 18, {},                                              0,                                      Msg::FindFileTitle     },
-				{DI_TEXT,      5,  2,  0,  2,  {},                                              0,                                      Msg::FindFileMasks     },
-				{DI_EDIT,      5,  3,  72, 3,  {(DWORD_PTR)MasksHistoryName},
-                 DIF_FOCUS | DIF_HISTORY | DIF_USELASTHISTORY,                                                                          L""                    },
-				{DI_TEXT,      3,  4,  0,  4,  {},                                              DIF_SEPARATOR,                          L""                    },
-                {DI_TEXT,      5,  5,  0,  5,  {},                                              0,                                      L""                    },
-				{DI_EDIT,      5,  6,  72, 6,  {(DWORD_PTR)TextHistoryName},                    DIF_HISTORY,                            L""                    },
-				{DI_FIXEDIT,   5,  6,  72, 6,  {(DWORD_PTR)HexMask},                            DIF_MASKEDIT,                           L""                    },
-				{DI_TEXT,      5,  7,  0,  7,  {},                                              0,                                      L""                    },
-				{DI_COMBOBOX,  5,  8,  72, 8,  {},                                              DIF_DROPDOWNLIST | DIF_LISTNOAMPERSAND, L""                    },
-				{DI_TEXT,      3,  9,  0,  9,  {},                                              DIF_SEPARATOR,                          L""                    },
-				{DI_CHECKBOX,  5,  10, 0,  10, {},                                              0,                                      Msg::FindFileCase      },
-				{DI_CHECKBOX,  5,  11, 0,  11, {},                                              0,                                      Msg::FindFileWholeWords},
-				{DI_CHECKBOX,  5,  12, 0,  12, {},                                              0,                                      Msg::SearchForHex      },
-				{DI_CHECKBOX,  40, 10, 0,  10, {},                                              0,                                      Msg::FindArchives      },
-				{DI_CHECKBOX,  40, 11, 0,  11, {},                                              0,                                      Msg::FindFolders       },
-				{DI_CHECKBOX,  40, 12, 0,  12, {},                                              0,                                      Msg::FindSymLinks      },
-				{DI_TEXT,      3,  13, 0,  13, {},                                              DIF_SEPARATOR,                          L""                    },
-				{DI_VTEXT,     38, 9,  0,  9,  {},                                              DIF_BOXCOLOR,                           VSeparator             },
-				{DI_TEXT,      5,  14, 0,  14, {},                                              0,                                      Msg::SearchWhere       },
-				{DI_COMBOBOX,  5,  15, 36, 15, {},                                              DIF_DROPDOWNLIST | DIF_LISTNOAMPERSAND, L""                    },
-				{DI_CHECKBOX,  40, 15, 0,  15, {UseFilter ? BSTATE_CHECKED : BSTATE_UNCHECKED}, DIF_AUTOMATION,
-                 Msg::FindUseFilter                                                                                                                            },
-				{DI_TEXT,      3,  16, 0,  16, {},                                              DIF_SEPARATOR,                          L""                    },
-				{DI_BUTTON,    0,  17, 0,  17, {},                                              DIF_DEFAULT | DIF_CENTERGROUP,          Msg::FindFileFind      },
-				{DI_BUTTON,    0,  17, 0,  17, {},                                              DIF_CENTERGROUP,                        Msg::FindFileDrive     },
-				{DI_BUTTON,    0,  17, 0,  17, {},
-                 DIF_CENTERGROUP | DIF_AUTOMATION | (UseFilter ? 0 : DIF_DISABLE),
-                 Msg::FindFileSetFilter                                                                                                                        },
-				{DI_BUTTON,    0,  17, 0,  17, {},                                              DIF_CENTERGROUP,                        Msg::FindFileAdvanced  },
-				{DI_BUTTON,    0,  17, 0,  17, {},                                              DIF_CENTERGROUP,                        Msg::Cancel            }
-        };
+			{DI_DOUBLEBOX, 3,  1,  74, 18, {}, 0, Msg::FindFileTitle},
+			{DI_TEXT,      5,  2,  0,  2,  {}, 0, Msg::FindFileMasks},
+			{DI_EDIT,      5,  3,  72, 3,  {(DWORD_PTR)MasksHistoryName}, DIF_FOCUS | DIF_HISTORY | DIF_USELASTHISTORY,L""},
+			{DI_TEXT,      3,  4,  0,  5,  {}, DIF_SEPARATOR, L""},
+			{DI_TEXT,      5,  5,  0,  6,  {}, 0, L""},
+			{DI_EDIT,      5,  6,  72, 6,  {(DWORD_PTR)TextHistoryName}, DIF_HISTORY, L""},
+			{DI_FIXEDIT,   5,  6,  72, 6,  {(DWORD_PTR)HexMask}, DIF_MASKEDIT, L""},
+			{DI_TEXT,      5,  7,  0,  7,  {}, 0, L""},
+			{DI_COMBOBOX,  5,  8,  72, 8,  {}, DIF_DROPDOWNLIST | DIF_LISTNOAMPERSAND, L""},
+			{DI_TEXT,      3,  9,  0,  9,  {}, DIF_SEPARATOR, L""},
+			{DI_CHECKBOX,  5,  10, 0,  10, {}, 0, Msg::FindFileCaseFileMask},
+			{DI_CHECKBOX,  5,  11, 0,  11, {}, 0, Msg::FindFileCase},
+			{DI_CHECKBOX,  5,  12, 0,  12, {}, 0, Msg::FindFileWholeWords},
+			{DI_CHECKBOX,  5,  13, 0,  13, {}, 0, Msg::SearchForHex},
+			{DI_CHECKBOX,  40, 10, 0,  10, {UseFilter ? BSTATE_CHECKED : BSTATE_UNCHECKED}, DIF_AUTOMATION, Msg::FindUseFilter},
+			{DI_CHECKBOX,  40, 11, 0,  11, {}, 0, Msg::FindArchives},
+			{DI_CHECKBOX,  40, 12, 0,  12, {}, 0, Msg::FindFolders},
+			{DI_CHECKBOX,  40, 13, 0,  13, {}, 0, Msg::FindSymLinks},
+			{DI_TEXT,      3,  14, 0,  14, {}, DIF_SEPARATOR, L""},
+			{DI_VTEXT,     38, 9,  0,   9, {}, DIF_BOXCOLOR, VSeparator},
+			{DI_TEXT,      5,  15, 37, 15, {}, 0, Msg::SearchWhere},
+			{DI_COMBOBOX,  38, 15, 72, 15, {}, DIF_DROPDOWNLIST | DIF_LISTNOAMPERSAND, L""},
+			{DI_TEXT,      3,  16, 0,  16, {}, DIF_SEPARATOR, L""},
+			{DI_BUTTON,    0,  17, 0,  17, {}, DIF_DEFAULT | DIF_CENTERGROUP, Msg::FindFileFind},
+			{DI_BUTTON,    0,  17, 0,  17, {}, DIF_CENTERGROUP, Msg::FindFileDrive},
+			{DI_BUTTON,    0,  17, 0,  17, {}, DIF_CENTERGROUP | DIF_AUTOMATION | (UseFilter ? 0 : DIF_DISABLE), Msg::FindFileSetFilter},
+			{DI_BUTTON,    0,  17, 0,  17, {}, DIF_CENTERGROUP, Msg::FindFileAdvanced },
+			{DI_BUTTON,    0,  17, 0,  17, {}, DIF_CENTERGROUP, Msg::Cancel}
+		};
 		MakeDialogItemsEx(FindAskDlgData, FindAskDlg);
 
 		if (strFindStr.IsEmpty())
 			FindAskDlg[FAD_CHECKBOX_DIRS].Selected = Opt.FindOpt.FindFolders;
 
 		FarListItem li[] = {
-				{0, Msg::SearchAllDisks,      {}},
-				{0, Msg::SearchAllButNetwork, {}},
-				{0, Msg::SearchInPATH,        {}},
-				{0, strSearchFromRoot,        {}},
-				{0, Msg::SearchFromCurrent,   {}},
-				{0, Msg::SearchInCurrent,     {}},
-				{0, Msg::SearchInSelected,    {}},
+			{0, Msg::SearchAllDisks,      {}},
+			{0, Msg::SearchAllButNetwork, {}},
+			{0, Msg::SearchInPATH,        {}},
+			{0, strSearchFromRoot,        {}},
+			{0, Msg::SearchFromCurrent,   {}},
+			{0, Msg::SearchInCurrent,     {}},
+			{0, Msg::SearchInSelected,    {}},
 		};
 		li[FADC_ALLDISKS + SearchMode].Flags|= LIF_SELECTED;
 		FarList l = {ARRAYSIZE(li), li};
@@ -3024,6 +3023,7 @@ FindFiles::FindFiles()
 			FindAskDlg[FAD_CHECKBOX_ARC].Selected = SearchInArchives;
 
 		FindAskDlg[FAD_EDIT_MASK].strData = strFindMask;
+		FindAskDlg[FAD_CHECKBOX_CASEMASK].Selected = Opt.FindOpt.FindCaseSensitiveFileMask;
 
 		if (SearchHex)
 			FindAskDlg[FAD_EDIT_HEX].strData = strFindStr;
@@ -3048,6 +3048,8 @@ FindFiles::FindFiles()
 		if (ExitCode != FAD_BUTTON_FIND) {
 			return;
 		}
+
+		Opt.FindOpt.FindCaseSensitiveFileMask = (FindAskDlg[FAD_CHECKBOX_CASEMASK].Selected == BSTATE_CHECKED);
 
 		Opt.FindCodePage = CodePage;
 		CmpCase = FindAskDlg[FAD_CHECKBOX_CASE].Selected;

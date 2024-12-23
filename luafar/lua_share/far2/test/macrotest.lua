@@ -987,6 +987,7 @@ local function test_Far_GetConfig()
     "System.ExcludeCmdHistory",
     "System.FileSearchMode",
     "System.FindAlternateStreams",
+    "System.FindCaseSensitiveFileMask",
     "System.FindCodePage",
     "System.FindFolders",
     "System.FindSymLinks",

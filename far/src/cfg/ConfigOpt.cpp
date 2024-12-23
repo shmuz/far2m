@@ -308,6 +308,7 @@ static struct FARConfig
 	{1, NSecSystem, "SearchOutFormatWidth",         &Opt.FindOpt.strSearchOutFormatWidth, L"14,13,0"},
 	{1, NSecSystem, "FindFolders",                  &Opt.FindOpt.FindFolders, 1, REG_BOOLEAN},
 	{1, NSecSystem, "FindSymLinks",                 &Opt.FindOpt.FindSymLinks, 1, REG_BOOLEAN},
+	{1, NSecSystem, "FindCaseSensitiveFileMask",    &Opt.FindOpt.FindCaseSensitiveFileMask, 0, REG_BOOLEAN},
 	{1, NSecSystem, "UseFilterInSearch",            &Opt.FindOpt.UseFilter, 0, REG_BOOLEAN},
 	{1, NSecSystem, "FindCodePage",                 &Opt.FindCodePage, CP_AUTODETECT},
 	{0, NSecSystem, "CmdHistoryRule",               &Opt.CmdHistoryRule, 0, REG_BOOLEAN},
