@@ -70,6 +70,16 @@ src/ViewerPrinter.cpp
 src/fileholder.cpp
 src/GrepFile.cpp
 
+src/panels/panel.cpp
+src/panels/filelist.cpp
+src/panels/flmodes.cpp
+src/panels/flplugin.cpp
+src/panels/flshow.cpp
+src/panels/flupdate.cpp
+src/panels/infolist.cpp
+src/panels/qview.cpp
+src/panels/treelist.cpp
+
 src/console/AnsiEsc.cpp
 src/console/keyboard.cpp
 src/console/console.cpp
@@ -100,26 +110,16 @@ src/bookmarks/Bookmarks.cpp
 src/bookmarks/BookmarksMenu.cpp
 src/bookmarks/BookmarksLegacy.cpp
 
+src/cfg/AllXLats.cpp
 src/cfg/config.cpp
+src/cfg/ConfigOpt.cpp
 src/cfg/ConfigRW.cpp
 src/cfg/HotkeyLetterDialog.cpp
 src/cfg/language.cpp
-src/cfg/AllXLats.cpp
-src/cfg/ConfigOpt.cpp
 src/cfg/MaskGroups.cpp
 
 src/hist/history.cpp
 src/hist/poscache.cpp
-
-src/panels/filelist.cpp
-src/panels/flmodes.cpp
-src/panels/flplugin.cpp
-src/panels/flshow.cpp
-src/panels/flupdate.cpp
-src/panels/infolist.cpp
-src/panels/panel.cpp
-src/panels/qview.cpp
-src/panels/treelist.cpp
 
 src/plug/plugapi.cpp
 src/plug/plugins.cpp
@@ -184,42 +184,42 @@ else()
 endif()
 
 if (${USELUA})
-	target_compile_definitions(far2m PRIVATE -DUSELUA)
+    target_compile_definitions(far2m PRIVATE -DUSELUA)
 endif()
 
 if (NOT DEFINED USEUCD)
-	set(USEUCD "YES")
+    set(USEUCD "YES")
 endif()
 
 if (NOT USEUCD)
-	message(STATUS "Building without libuchardet due to USEUCD=${USEUCD}")
+    message(STATUS "Building without libuchardet due to USEUCD=${USEUCD}")
 else()
-	message(STATUS "Building with libuchardet")
-	find_package(Uchardet REQUIRED)
-	target_compile_definitions(far2m PRIVATE -DUSEUCD)
+    message(STATUS "Building with libuchardet")
+    find_package(Uchardet REQUIRED)
+    target_compile_definitions(far2m PRIVATE -DUSEUCD)
 endif()
 
 target_compile_definitions(far2m PRIVATE -DUNICODE)
 
 target_include_directories(far2m PRIVATE
-	.
-	far2sdk
-	src
-	src/base
-	src/mix
-	src/bookmarks
-	src/cfg
-	src/console
-	src/filemask
-	src/hist
-	src/locale
-	src/macro
-	src/panels
-	src/plug
-	src/vt
-	${CMAKE_CURRENT_BINARY_DIR}
-	${UCHARDET_INCLUDE_DIRS}
-	../WinPort)
+    .
+    far2sdk
+    src
+    src/base
+    src/mix
+    src/bookmarks
+    src/cfg
+    src/console
+    src/panels
+    src/filemask
+    src/hist
+    src/locale
+    src/macro
+    src/plug
+    src/vt
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${UCHARDET_INCLUDE_DIRS}
+    ../WinPort)
 
 add_dependencies(far2m bootstrap WinPort)
 
@@ -240,14 +240,14 @@ endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
     target_link_libraries(far2m
-	PRIVATE ${WINPORT}
-	PRIVATE c
-	PRIVATE ${UCHARDET_LIBRARIES})
+    PRIVATE ${WINPORT}
+    PRIVATE c
+    PRIVATE ${UCHARDET_LIBRARIES})
 else()
     target_link_libraries(far2m
-	PRIVATE ${WINPORT}
-	PRIVATE dl
-	PRIVATE ${UCHARDET_LIBRARIES})
+    PRIVATE ${WINPORT}
+    PRIVATE dl
+    PRIVATE ${UCHARDET_LIBRARIES})
 endif()
 
 add_custom_command(TARGET far2m POST_BUILD
