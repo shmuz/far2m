@@ -92,14 +92,14 @@ FarRecursiveSearch(const wchar_t *InitDir, const wchar_t *Mask, FRSUSERFUNC Func
 		if (!FMask.Set(Mask, FMF_SILENT))
 			return;
 
-		Flags&= 0x000000FF;    // только младший байт!
+		bool CaseSensMask = (Flags & FRS_CASESENSMASK) != 0;
 		ScanTree ScTree(Flags & FRS_RETUPDIR, Flags & FRS_RECUR, Flags & FRS_SCANSYMLINK);
 		FAR_FIND_DATA_EX FindData;
 		FARString strFullName;
 		ScTree.SetFindPath(InitDir, L"*");
 
 		while (ScTree.GetNextName(&FindData, strFullName)) {
-			if (FMask.Compare(FindData.strFileName, false)) {
+			if (FMask.Compare(FindData.strFileName, CaseSensMask)) {
 				FAR_FIND_DATA fdata;
 				apiFindDataExToData(&FindData, &fdata);
 

@@ -2231,6 +2231,7 @@ enum FRSMODE
 	FRS_RETUPDIR             = 0x01,
 	FRS_RECUR                = 0x02,
 	FRS_SCANSYMLINK          = 0x04,
+	FRS_CASESENSMASK         = 0x08,
 };
 
 typedef void (WINAPI *FARSTDRECURSIVESEARCH)(const wchar_t *InitDir,const wchar_t *Mask,FRSUSERFUNC Func,DWORD Flags,void *Param);
