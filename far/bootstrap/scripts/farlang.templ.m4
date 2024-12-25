@@ -195,28 +195,6 @@ Delete
 "Вилучити"
 "Выдаліць"
 
-Split
-"Разделить"
-"Split"
-"Rozdělit"
-"Zerteilen"
-"Feloszt"
-"Podziel"
-"Dividir"
-"Розділити"
-"Падзяліць"
-
-Remove
-"Удалить"
-"Remove"
-"Odstranit"
-"Entfernen"
-"Eltávolít"
-"Usuń"
-"Remover"
-"Видалити"
-"Выдаліць"
-
 HCancel
 l:
 "&Отмена"
@@ -261,61 +239,6 @@ HSkipAll
 "Omitir &Todo"
 "Пропустити &усе"
 "Прапусціць &усе"
-
-HAbort
-"Прер&вать"
-"&Abort"
-"Zr&ušit"
-"&Abbrechen"
-"Megsza&kít"
-"&Zaniechaj"
-"Ab&ortar"
-"Перер&вати"
-"Перап&ыніць"
-
-HIgnore
-"&Игнорировать"
-"&Ignore"
-"&Ignorovat"
-"&Ignorieren"
-"Mé&gis"
-"Z&ignoruj"
-"&Ignorar"
-"&Ігнорувати"
-"Прапусц&іць"
-
-HDelete
-"&Удалить"
-"&Delete"
-"S&mazat"
-"&Löschen"
-"&Töröl"
-"&Usuń"
-"&Borrar"
-"&Вилучити"
-"&Выдаліць"
-
-HRemove
-"&Удалить"
-"R&emove"
-"&Odstranit"
-"Ent&fernen"
-"Eltá&volít"
-"U&suń"
-"R&emover"
-"&Видалити"
-"В&ыдаліць"
-
-HSplit
-"Раз&делить"
-"Sp&lit"
-"&Rozdělit"
-"&Zerteilen"
-"Fel&oszt"
-"Po&dziel"
-"Dividir"
-"Роз&ділити"
-"Па&дзяліць"
 
 HChange
 "&Изменить"
@@ -1711,17 +1634,6 @@ l:
 "Системні параметри"
 "Сістэмныя параметры"
 
-ConfigRO
-"&Снимать атрибут R/O c CD файлов"
-"&Clear R/O attribute from CD files"
-"Z&rušit atribut R/O u souborů na CD"
-"Schreibschutz von CD-Dateien ent&fernen"
-"&Csak olvasható attr. törlése CD fájlokról"
-"Wyczyść atrybut &R/O przy kopiowaniu z CD"
-"&Borrar atributos R/O de archivos de CD"
-"&Зняти атрибут R/O з CD файлів"
-"&Зняць атрыбут R/O з CD файлаў"
-
 ConfigSudoEnabled
 "Разрешить повышение привилегий"
 "Enable s&udo privileges elevation"
@@ -1909,39 +1821,6 @@ ConfigSaveViewHistory
 "Зберігати історію п&ерегляду та редагування"
 "Захоўваць гісторыю п&раглядаў і зменаў"
 
-ConfigRegisteredTypes
-"Использовать стандартные &типы файлов"
-"Use Windows &registered types"
-"Používat regi&strované typy Windows"
-"&Registrierte Windows-Dateitypen verwenden"
-"&Windows reg. fájltípusok használata"
-"Użyj zare&jestrowanych typów Windows"
-"Usar extensiones &registradas de Windows"
-"Використовувати стандартні &типи файлів"
-"Ужываць звычайныя &тыпы файлаў"
-
-ConfigCloseCDGate
-"Автоматически монтироват&ь CDROM"
-"CD drive auto &mount"
-"Automatické př&ipojení CD disků"
-"CD-Laufwerk auto&matisch schließen"
-"CD tálca a&utomatikus behúzása"
-"&Montuj CD automatycznie"
-"CD-ROM: automontar unidad"
-"Автоматично монтуват&и CDROM"
-"Аўтаматычна мантавац&ь CDROM"
-
-ConfigUpdateEnvironment
-"Автообновление переменных окружения"
-"Automatic update of environment variables"
-upd:"Automatic update of environment variables"
-upd:"Automatic update of environment variables"
-upd:"Automatic update of environment variables"
-upd:"Automatic update of environment variables"
-upd:"Automatic update of environment variables"
-"Автооновленння змінних оточення"
-"Аўтабнаўленне зменных асяроддзя"
-
 ConfigAutoSave
 "Автозапись кон&фигурации"
 "Auto &save setup"
@@ -2008,17 +1887,6 @@ ConfigFilenameMarksAlign
 "Alinear nombres de archivos por marcas"
 "Вирівняти імена файлів за маркуваннями"
 "Выраўнаваць імёны файлаў па маркіроўках"
-
-ConfigFilenameMinMaxIndentation
-"Мин - макс отступ имен файлов"
-"Min - max file names indentation"
-"Min - max odsazení názvů souborů"
-"Min - max Abstand von Dateinamen"
-"Min - max fájlnevek behúzása"
-"Min - maks wcięcie nazw plików"
-"Sangrado mín - máx de nombres de archivos"
-"Мін - макс відступ імен файлів"
-"Мін - макс адступ імёнаў файлаў"
 
 ConfigFilenameMinIndentation
 "Фиксированный отступ имен файлов"
@@ -3032,215 +2900,6 @@ upd:"InfoPanel settings"
 "налаштування інформаційної панелі"
 "Налады даведачнай панэлі"
 
-ConfigInfoPanelCNTitle
-"Формат вывода имени &компьютера"
-upd:"ComputerName &format"
-upd:"ComputerName &format"
-upd:"ComputerName &format"
-upd:"ComputerName &format"
-upd:"ComputerName &format"
-"&Formato NombreComputadora"
-"формат виведення імені &комп'ютера"
-"Фармат вываду імене &кампутара"
-
-ConfigInfoPanelCNPhysicalNetBIOS
-upd:"Physical NetBIOS"
-upd:"Physical NetBIOS"
-upd:"Physical NetBIOS"
-upd:"Physical NetBIOS"
-upd:"Physical NetBIOS"
-upd:"Physical NetBIOS"
-"NetBios físico"
-"Фізичний NetBIOS"
-"Фізічны NetBIOS"
-
-ConfigInfoPanelCNPhysicalDnsHostname
-upd:"Physical DNS hostname"
-upd:"Physical DNS hostname"
-upd:"Physical DNS hostname"
-upd:"Physical DNS hostname"
-upd:"Physical DNS hostname"
-upd:"Physical DNS hostname"
-"DNS hostname físico"
-"фізичне ім'я хосту DNS"
-"Фізічнае імя вузла DNS"
-
-ConfigInfoPanelCNPhysicalDnsDomain
-upd:"Physical DNS domain"
-upd:"Physical DNS domain"
-upd:"Physical DNS domain"
-upd:"Physical DNS domain"
-upd:"Physical DNS domain"
-upd:"Physical DNS domain"
-"Dominio DNS físico"
-"фізичний домен DNS"
-"Фізічны дамен DNS"
-
-ConfigInfoPanelCNPhysicalDnsFullyQualified
-upd:"Physical DNS fully-qualified"
-upd:"Physical DNS fully-qualified"
-upd:"Physical DNS fully-qualified"
-upd:"Physical DNS fully-qualified"
-upd:"Physical DNS fully-qualified"
-upd:"Physical DNS fully-qualified"
-"DNS calificado físico"
-"фізичний DNS повністю кваліфікований"
-"Физічны цалкам-кваліфікаваны DNS"
-
-ConfigInfoPanelCNNetBIOS
-upd:"NetBIOS"
-upd:"NetBIOS"
-upd:"NetBIOS"
-upd:"NetBIOS"
-upd:"NetBIOS"
-upd:"NetBIOS"
-"NetBios"
-"NetBios"
-"NetBIOS"
-
-ConfigInfoPanelCNDnsHostname
-upd:"DNS hostname"
-upd:"DNS hostname"
-upd:"DNS hostname"
-upd:"DNS hostname"
-upd:"DNS hostname"
-upd:"DNS hostname"
-"DNS hostname"
-"DNS ім'я хоста"
-"імя вузла DNS"
-
-ConfigInfoPanelCNDnsDomain
-upd:"DNS domain"
-upd:"DNS domain"
-upd:"DNS domain"
-upd:"DNS domain"
-upd:"DNS domain"
-upd:"DNS domain"
-"Dominio DNS"
-"DNS домен"
-"дамен DNS"
-
-ConfigInfoPanelCNDnsFullyQualified
-upd:"DNS fully-qualified"
-upd:"DNS fully-qualified"
-upd:"DNS fully-qualified"
-upd:"DNS fully-qualified"
-upd:"DNS fully-qualified"
-upd:"DNS fully-qualified"
-"DNS Calificado"
-upd:"DNS повністю кваліфікований"
-"цалкам-кваліфікаваны DNS"
-
-ConfigInfoPanelUNTitle
-"Формат вывода имени &пользователя"
-upd:"UserName &format"
-upd:"UserName &format"
-upd:"UserName &format"
-upd:"UserName &format"
-upd:"UserName &format"
-"&Formato nombre de usuario"
-"Формат виводу імені &користувача"
-"Фармат вываду імені &карыстальніка"
-
-ConfigInfoPanelUNUnknown
-"По умолчанию"
-"Default"
-upd:"Default"
-upd:"Default"
-upd:"Default"
-upd:"Default"
-"Por defecto"
-"За замовчуванням"
-"Прадвызначана"
-
-ConfigInfoPanelUNFullyQualifiedDN
-"Полностью определённое имя домена"
-"Fully Qualified Domain Name"
-upd:"Fully Qualified Domain Name"
-upd:"Fully Qualified Domain Name"
-upd:"Fully Qualified Domain Name"
-upd:"Fully Qualified Domain Name"
-"Nombre dominio completamente calificado"
-"повністю визначене ім'я домену"
-"Поўны вызначаны дамен"
-
-ConfigInfoPanelUNSamCompatible
-upd:"Sam Compatible"
-upd:"Sam Compatible"
-upd:"Sam Compatible"
-upd:"Sam Compatible"
-upd:"Sam Compatible"
-upd:"Sam Compatible"
-"Compatible con Sam"
-upd:"Sam Compatible"
-"Sam-сумяшчальны"
-
-ConfigInfoPanelUNDisplay
-upd:"Display Name"
-upd:"Display Name"
-upd:"Display Name"
-upd:"Display Name"
-upd:"Display Name"
-upd:"Display Name"
-"Mostrar Nombre"
-upd:"Display Name"
-"Назва дысплея"
-
-ConfigInfoPanelUNUniqueId
-"Уникальный идентификатор"
-upd:"Unique Id"
-upd:"Unique Id"
-upd:"Unique Id"
-upd:"Unique Id"
-upd:"Unique Id"
-"ID nico"
-"Унікальний ідентифікатор"
-"Адзіны нумар"
-
-ConfigInfoPanelUNCanonical
-"Канонический вид"
-"Canonical Name"
-upd:"Canonical Name"
-upd:"Canonical Name"
-upd:"Canonical Name"
-upd:"Canonical Name"
-"Nombre Cannico"
-"Каноничний вид"
-"Кананічны выгляд"
-
-ConfigInfoPanelUNUserPrincipal
-"Основное имя пользователя"
-upd:"User Principial Name"
-upd:"User Principial Name"
-upd:"User Principial Name"
-upd:"User Principial Name"
-upd:"User Principial Name"
-"Nombre principal usuario"
-"Основне ім'я користувача"
-"Галоўнае імя карыстальніка"
-
-ConfigInfoPanelUNServicePrincipal
-upd:"Service Principal"
-upd:"Service Principal"
-upd:"Service Principal"
-upd:"Service Principal"
-upd:"Service Principal"
-upd:"Service Principal"
-"Servicio principal"
-upd:"Service Principal"
-"Service Principal"
-
-ConfigInfoPanelUNDnsDomain
-upd:"Dns Domain"
-upd:"Dns Domain"
-upd:"Dns Domain"
-upd:"Dns Domain"
-upd:"Dns Domain"
-upd:"Dns Domain"
-"Dominio DNS"
-upd:"Dns Domain"
-"Дамен Dns"
-
 ViewConfigTitle
 l:
 "Программа просмотра"
@@ -3897,17 +3556,6 @@ LinkType
 "&Тип посилання:"
 "&Тып спасылак:"
 
-LinkTypeJunction
-"&связь каталогов"
-"directory &junction"
-"křížení a&dresářů"
-"Ordner&knotenpunkt"
-"Mappa &csomópont"
-"directory &junction"
-"unión de directorio"
-"&зв'язок каталогів"
-"&сувязь каталогаў"
-
 LinkTypeHardlink
 "&жёсткая ссылка"
 "&hard link"
@@ -3929,28 +3577,6 @@ LinkTypeSymlink
 "enlace simbólico"
 "си&мволічне посилання"
 "сі&мвалічны спасылак"
-
-LinkTypeSymlinkFile
-"символическая ссылка (&файл)"
-"symbolic link (&file)"
-"symbolický link (&soubor)"
-"Symbolischer Link (&Datei)"
-"Szimbolikus link (&fájl)"
-"link symboliczny (do &pliku)"
-"enlace simbólico (&archivo)"
-"символічне посилання (&файл)"
-"сімвалічны спасылак (&файл)"
-
-LinkTypeSymlinkDirectory
-"символическая ссылка (&папка)"
-"symbolic link (fol&der)"
-"symbolický link (&adresář)"
-"Symbolischer Link (Or&dner)"
-"Szimbolikus link (&mappa)"
-"link symboliczny (do &folderu)"
-"enlace simbólico (&directorios)"
-"символічна посилання (&тека)"
-"сімвалічны с&пасылак (каталог)"
 
 CopySymLinkText
 "Символические сс&ылки:"
@@ -4377,17 +4003,6 @@ l:
 "Помилка створення папки"
 "Немагчыма стварыць каталог"
 
-CopyCannotChangeFolderAttr
-"Невозможно установить атрибуты для папки"
-"Failed to set folder attributes"
-"Nastavení atributů adresáře selhalo"
-"Fehler beim Setzen der Ordnerattribute"
-"A mappa attribútumok beállítása sikertelen"
-"Nie udało się ustawić atrybutów folderu"
-"Error al poner atributos en directorio"
-"Неможливо встановити атрибути для папки"
-"Немагчыма ўсталяваць атрыбуты для каталога"
-
 CopyCannotRenameFolder
 "Невозможно переименовать папку"
 "Cannot rename the folder"
@@ -4409,17 +4024,6 @@ CopyIgnore
 "&Ignorar"
 "&Ігнорувати"
 "Прапусц&іць"
-
-CopyIgnoreAll
-"Игнорировать &все"
-"Ignore &All"
-"Ignorovat &vše"
-"&Alle ignorieren"
-"Min&d"
-"Ignoruj &wszystko"
-"Ignorar &Todo"
-"Ігнорувати &все"
-"Прапусціць &усе"
 
 CopyRetry
 "&Повторить"
@@ -4465,29 +4069,6 @@ CopyCancel
 "&Скасувати"
 "&Адмена"
 
-CopyCannotCreateLink
-l:
-"Ошибка создания ссылки"
-"Cannot create the link"
-"Nelze vytvořit symbolický link"
-"Folgender Link kann nicht erstellt werden:"
-"A link nem hozható létre:"
-"Nie udało się utworzyć linku"
-"No se puede crear el enlace simbólico"
-"Помилка створення посилання"
-"Немагчыма стварыць спасылак"
-
-CopyFolderNotEmpty
-"Папка назначения должна быть пустой"
-"Target folder must be empty"
-"Cílový adresář musí být prázdný"
-"Zielordner muss leer sein."
-"A célmappának üresnek kell lennie"
-"Folder wynikowy musi być pusty"
-"Directorio destino debe estar vacío"
-"Папка призначення має бути порожньою"
-"Каталог не павінен быць пустым"
-
 CopyCannotCreateJunctionToFile
 "Невозможно создать связь. Файл уже существует:"
 "Cannot create junction. The file already exists:"
@@ -4510,29 +4091,6 @@ upd:"Cannot create symlink. Copy contents instead?"
 "Неможливо створити зв'язок. Копіювати дані замість зв'язків?"
 "Немагчыма стварыць сувязь. Капіяваць дадзеныя замест сувязей?"
 
-CopyCannotCreateVolMount
-l:
-"Ошибка монтирования диска"
-"Volume mount points error"
-"Chyba připojovacích svazků"
-"Fehler im Mountpoint des Datenträgers"
-"Kötet mountpont hiba"
-"Błąd montowania napędu"
-"Error en puntos de montaje de volumen"
-"Помилка монтування диска"
-"Памылка мацавання дыска"
-
-CopyMountVolFailed
-"Ошибка при монтировании диска '%ls'"
-"Attempt to volume mount '%ls'"
-"Pokus o připojení svazku '%ls'"
-"Versuch Datenträger '%ls' zu aktivieren"
-""%ls" kötet mountolása"
-"Nie udało się zamontować woluminu '%ls'"
-"Intento de montaje de volumen '%ls'"
-"Помилка при монтуванні диска '%ls'"
-"Памылка пры мантаванні дыска '%ls'"
-
 CopyMountVolFailed2
 "на '%ls'"
 "at '%ls' failed"
@@ -4543,17 +4101,6 @@ CopyMountVolFailed2
 "a '%ls' ha fallado"
 "на '%ls'"
 "на '%ls'"
-
-CopyMountName
-"disk_%c"
-"Disk_%c"
-"Disk_%c"
-"Disk_%c"
-"Disk_%c"
-"Disk_%c"
-"Disco_%c"
-"disk_%c"
-"disk_%c"
 
 CannotCopyFileToItself1
 l:
@@ -4723,17 +4270,6 @@ CopyAppend
 "A&gregar"
 "&Дописати"
 "&Дапісаць"
-
-CopyResume
-"Возоб&новить"
-"&Resume"
-"Po&kračovat"
-"&Weiter"
-"Fol&ytat"
-"Ponó&w"
-"&Resumir"
-"Від&новити"
-"Уз&навіць"
 
 CopyRename
 "&Имя"
@@ -5025,18 +4561,6 @@ CopyTo
 "в"
 "у"
 
-CopyErrorDiskFull
-l:
-"Диск заполнен. Вставьте следующий"
-"Disk full. Insert next"
-"Disk je plný. Vložte dalšíí"
-"Datenträger voll. Bitte nächsten einlegen"
-"A lemez megtelt, kérem a következőt"
-"Dysk pełny. Włóż następny"
-"Disco lleno. Inserte el próximo"
-"Диск заповнений. Вставте наступний"
-"Дыск запоўнены. Устаўце наступны"
-
 DeleteTitle
 l:
 "Удаление"
@@ -5158,50 +4682,6 @@ AskWipe
 "Desea limpiar"
 "Ви хочете знищити"
 "Вы жадаеце знішчыць"
-
-DeleteLinkTitle
-"Удаление ссылки"
-"Delete link"
-"Smazat link"
-"Link löschen"
-"Link törlése"
-"Usuń link"
-"Borrar enlace"
-"Видалення посилання"
-"Выдаленне спасылкі"
-
-AskDeleteLink
-"является ссылкой на"
-"is a symbolic link to"
-"je symbolicky link na"
-"ist ein symbolischer Link auf"
-"szimlinkelve ide:"
-"jest linkiem symbolicznym do"
-"es un enlace simbólico al"
-"є посиланням на"
-"з'яўляецца спасылкам на"
-
-AskDeleteLinkFolder
-"папку"
-"folder"
-"adresář"
-"Ordner"
-"mappa"
-"folder"
-"directorio"
-"теку"
-"каталогу"
-
-AskDeleteLinkFile
-"файл"
-"file"
-"soubor"
-"Date"
-"fájl"
-"plik"
-"archivo"
-"файл"
-"файл"
 
 AskDeleteItems
 "%d элемент%ls"
@@ -5402,29 +4882,6 @@ DeleteFileCancel
 "&Скасувати"
 "&Адмена"
 
-DeleteLinkDelete
-l:
-"Удалить ссылку"
-"Delete link"
-"Smazat link"
-"Link löschen"
-"Link törlése"
-"Usuń link"
-"Borrar enlace"
-"Видалити посилання"
-"Выдаліць спасылак"
-
-DeleteLinkUnlink
-"Разорвать ссылку"
-"Break link"
-"Poškozený link"
-"Link auflösen"
-"Link megszakítása"
-"Przerwij link"
-"Romper enlace"
-"Розірвати посилання"
-"Разарваць спасылак"
-
 DeletingTitle
 l:
 "Удаление"
@@ -5594,29 +5051,6 @@ DeleteCancel
 "&Cancelar"
 "&Скасувати"
 "&Адмена"
-
-CannotGetSecurity
-l:
-"Ошибка получения прав доступа к файлу"
-"Cannot get file access rights for"
-"Nemohu získat přístupová práva pro"
-"Kann Zugriffsrechte nicht lesen für"
-"A fájlhoz nincs hozzáférési joga:"
-"Nie mogę pobrać praw dostępu dla"
-"No se puede tener permisos de acceso a archivo"
-"Помилка отримання доступу до файлу"
-"Немагчыма атрымаць правы доступа да файлу"
-
-CannotSetSecurity
-"Ошибка установки прав доступа к файлу"
-"Cannot set file access rights for"
-"Nemohu nastavit přístupová práva pro"
-"Kann Zugriffsrechte nicht setzen für"
-"A fájl hozzáférési jogát nem állíthatja:"
-"Nie mogę ustawić praw dostępu dla"
-"No se puede poner permisos de acceso a archivo"
-"Помилка встановлення прав доступу до файлу"
-"Немагчыма надаць правы доступа да файлу"
 
 EditTitle
 l:
@@ -9051,17 +8485,6 @@ ListSymLink
 "Посилання"
 "Спасылак"
 
-ListJunction
-"Связь"
-"Junction"
-"Křížení"
-"Knoten"
-"Csomópt"
-"Dowiązania"
-" Junc "
-"Зв'язок"
-"Злучэнне"
-
 ListBytes
 "Б"
 "B"
@@ -9073,17 +8496,6 @@ ListBytes
 "Б"
 "Б"
 
-ListKb
-"К"
-"K"
-"K"
-"K"
-"k"
-"K"
-"K"
-"К"
-"К"
-
 ListMb
 "М"
 "M"
@@ -9094,50 +8506,6 @@ ListMb
 "M"
 "М"
 "М"
-
-ListGb
-"Г"
-"G"
-"G"
-"G"
-"G"
-"G"
-"G"
-"Г"
-"Г"
-
-ListTb
-"Т"
-"T"
-"T"
-"T"
-"T"
-"T"
-"T"
-"Т"
-"Т"
-
-ListPb
-"П"
-"P"
-"P"
-"P"
-"P"
-"P"
-"P"
-"П"
-"П"
-
-ListEb
-"Э"
-"E"
-"E"
-"E"
-"E"
-"E"
-"E"
-"Э"
-"Э"
 
 ListFileSize
 " %ls байт в 1 файле "
@@ -11979,17 +11347,6 @@ SearchInPATH
 "У PATH-катало&гах"
 "В PATH-катало&гах"
 
-SearchFromRootOfDrive
-"С кор&ня диска"
-"From the &root of"
-"V &kořeni"
-"Ab Wu&rzelverz. von"
-"Meghajtó &gyökerétől:"
-"Od &korzenia"
-"Buscar desde directorio &raíz de"
-"З кор&іння диска"
-"З кора&ня дыска"
-
 SearchFromRootFolder
 "С кор&невой папки"
 "From the &root folder"
@@ -12212,40 +11569,6 @@ l:
 " Файлів: %d, тек: %d "
 " Файлаў: %d, каталогаў: %d "
 
-FindFileFolder
-l:
-"Папка"
-"Folder"
-"Adresář"
-"Ordner"
-"Mappa"
-"Katalog"
-" DIR  "
-"Тека"
-"Каталог"
-
-FindFileSymLink
-"Ссылка"
-"Symlink"
-"Link"
-"Symlink"
-"SzimLnk"
-"LinkSym"
-"SimbEnl"
-"Посилання"
-"Спасылак"
-
-FindFileJunction
-"Связь"
-"Junction"
-"Křížení"
-"Knoten"
-"Csomópt"
-"Dowiązania"
-"Union"
-"Зв'язок"
-"Злучэнне"
-
 FindFileAdvancedTitle
 l:
 "Дополнительные параметры поиска"
@@ -12268,17 +11591,6 @@ FindFileSearchFirst
 "Buscar solamente en el &primer:"
 "Проводити пошук у &перших:"
 "Паспрабаваць пошук у &першых:"
-
-FindFileSearchOutputFormat
-"&Формат вывода:"
-"&Output format:"
-upd:"&Output format:"
-upd:"&Output format:"
-upd:"&Output format:"
-upd:"&Output format:"
-upd:"&Output format:"
-"&Формат виведення:"
-"&Фармат вываду:"
 
 FindAlternateStreams
 "Обрабатывать &альтернативные потоки данных"
@@ -12514,18 +11826,6 @@ HighlightAskRestore
 "Ви хочете відновити забарвлення файлів за замовчуванням?"
 "Вы жадаеце узнавіць прадвызначаную афарбоўку файлаў?"
 
-HighlightEditTitle
-l:
-"Редактирование раскраски файлов"
-"Edit files highlighting"
-"Upravit zvýrazňování souborů"
-"Farbmarkierungen bearbeiten"
-"Fájlkiemelés szerkesztése"
-"Edytuj wyróżnianie plików"
-"Editar resaltado de archivos"
-"Редагування розмальовки файлів"
-"Мяняць афарбоўку файлаў"
-
 HighlightMarking
 "Ма&ркировка"
 "Markin&g"
@@ -12736,50 +12036,6 @@ InfoUserName
 "Им'я користувача"
 "Імя карыстальніка"
 
-InfoRemovable
-"Сменный"
-"Removable"
-"Vyměnitelný"
-"Austauschbares"
-"Kivehető"
-"Wyjmowalny"
-"Removible"
-"Змінний"
-"Зменны"
-
-InfoFixed
-"Жёсткий"
-"Fixed"
-"Pevný"
-"Lokales"
-"Fix"
-"Stały"
-"Rígido"
-"Жорсткий"
-"Замацаваныя"
-
-InfoNetwork
-"Сетевой"
-"Network"
-"Síťový"
-"Netzwerk"
-"Hálózati"
-"Sieciowy"
-"Red"
-"Мережевий"
-"Сеткавы"
-
-InfoCDROM
-"CD-ROM"
-"CD-ROM"
-"CD-ROM"
-"CD-ROM"
-"CD-ROM"
-"CD-ROM"
-"CD-ROM"
-"CD-ROM"
-"CD-ROM"
-
 InfoCD_RW
 "CD-RW"
 "CD-RW"
@@ -12834,39 +12090,6 @@ InfoDVD_RAM
 "DVD-RAM"
 "DVD-RAM"
 "DVD-RAM"
-
-InfoRAM
-"RAM"
-"RAM"
-"RAM"
-"RAM"
-"RAM"
-"RAM"
-"RAM"
-"RAM"
-"RAM"
-
-InfoSUBST
-"SUBST"
-"Subst"
-"SUBST"
-"Subst"
-"Virtuális"
-"Subst"
-"Subst"
-"SUBST"
-"SUBST"
-
-InfoVirtual
-"Виртуальный"
-"Virtual"
-upd:"Virtual"
-upd:"Virtual"
-upd:"Virtual"
-upd:"Virtual"
-upd:"Virtual"
-"Віртуальний"
-"Уяўны"
 
 InfoDisk
 "диск"
@@ -13088,17 +12311,6 @@ InfoMemoryLoad
 "Завантаження пам'яті"
 "Загрузка памяці"
 
-InfoMemoryInstalled
-"Установлено памяти"
-"Installed memory"
-upd:"Installed memory"
-upd:"Installed memory"
-upd:"Installed memory"
-upd:"Installed memory"
-"Memoria instalada"
-"Встановлено пам'яті"
-"Усталявана памяці"
-
 InfoMemoryTotal
 "Всего памяти"
 "Total memory"
@@ -13219,481 +12431,6 @@ upd:"Plugin information is absent"
 upd:"Plugin information is absent"
 upd:"Plugin information is absent"
 upd:"Plugin information is absent"
-
-ErrorInvalidFunction
-l:
-"Некорректная функция"
-"Incorrect function"
-"Nesprávná funkce"
-"Ungültige Funktion"
-"Helytelen funkció"
-"Niewłaściwa funkcja"
-"Función incorrecta"
-"Некоректна функція"
-"Некарэктная функцыя"
-
-ErrorBadCommand
-"Команда не распознана"
-"Command not recognized"
-"Příkaz nebyl rozpoznán"
-"Unbekannter Befehl"
-"Ismeretlen parancs"
-"Nieznane polecenie"
-"Comando no reconocido"
-"Команда не розпізнана"
-"Каманда не распазнаная"
-
-ErrorFileNotFound
-"Файл не найден"
-"File not found"
-"Soubor nenalezen"
-"Datei nicht gefunden"
-"A fájl vagy mappa nem található"
-"Nie odnaleziono pliku"
-"archivo no encontrado"
-"Файл не знайдено"
-"Файл не знойдзены"
-
-ErrorPathNotFound
-"Путь не найден"
-"Path not found"
-"Cesta nenalezena"
-"Pfad nicht gefunden"
-"Az elérési út nem található"
-"Nie odnaleziono ścieżki"
-"Ruta no encontrada"
-"Шлях не знайдено"
-"Шлях не знойдзены"
-
-ErrorTooManyOpenFiles
-"Слишком много открытых файлов"
-"Too many open files"
-"Příliš mnoho otevřených souborů"
-"Zu viele geöffnete Dateien"
-"Túl sok nyitott fájl"
-"Zbyt wiele otwartych plików"
-"Demasiados archivos abiertos"
-"Занадто багато відкритих файлів"
-"Занадта шмат адчыненых файлаў"
-
-ErrorAccessDenied
-"Доступ запрещён"
-"Access denied"
-"Přístup odepřen"
-"Zugriff verweigert"
-"Hozzáférés megtagadva"
-"Dostęp zabroniony"
-"Acceso denegado"
-"Доступ заборонено"
-"Доступ забаронены"
-
-ErrorNotEnoughMemory
-"Недостаточно памяти"
-"Not enough memory"
-"Nedostatek paměti"
-"Nicht genügend Speicher"
-"Nincs elég memória"
-"Za mało pamięci"
-"No hay memoria libre"
-"Недостатньо пам'яті"
-"Недастаткова памяці"
-
-ErrorDiskRO
-"Попытка записи на защищённый от записи диск"
-"Cannot write to write protected disk"
-"Nelze zapisovat na disk chráněný proti zápisu"
-"Der Datenträger ist schreibgeschützt"
-"Írásvédett lemezre nem lehet írni"
-"Nie mogę zapisać na zabezpieczony dysk"
-"No se puede escribir a disco protegido contra escritura"
-"Спроба запису на захищений від запису диск"
-"Спроба запісу на абаронены ад запісу дыск"
-
-ErrorDeviceNotReady
-"Устройство не готово"
-"The device is not ready"
-"Zařízení není připraveno"
-"Das Gerät ist nicht bereit"
-"Az eszköz nem kész"
-"Urządzenie nie jest gotowe"
-"El dispositivo no está listo"
-"Пристрій не готовий"
-"Прылада не гатова"
-
-ErrorCannotAccessDisk
-"Доступ к диску невозможен"
-"Disk cannot be accessed"
-"Na disk nelze přistoupit"
-"Auf Datenträger kann nicht zugegriffen werden"
-"A lemez nem érhető el"
-"Brak dostępu do dysku"
-"Disco no puede ser accedido"
-"Доступ до диска неможливий"
-"Доступ да дыску немагчымы"
-
-ErrorSectorNotFound
-"Сектор не найден"
-"Sector not found"
-"Sektor nenalezen"
-"Sektor nicht gefunden"
-"Szektor nem található"
-"Nie odnaleziono sektora"
-"Sector no encontrado"
-"Сектор не знайдено"
-"Сектар не знойдзены"
-
-ErrorOutOfPaper
-"В принтере нет бумаги"
-"The printer is out of paper"
-"V tiskárně došel papír"
-"Der Drucker hat kein Papier mehr"
-"A nyomtatóban nincs papír"
-"Brak papieru w drukarce"
-"No hay papel en la impresora"
-"У принтері немає паперу"
-"У друкарцы няма паперы"
-
-ErrorWrite
-"Ошибка записи"
-"Write fault error"
-"Chyba zápisu"
-"Fehler beim Schreibzugriff"
-"Írási hiba"
-"Błąd zapisu"
-"Falla de escritura"
-"Помилка запису"
-"Памылка запісу"
-
-ErrorRead
-"Ошибка чтения"
-"Read fault error"
-"Chyba čtení"
-"Fehler beim Lesezugriff"
-"Olvasási hiba"
-"Błąd odczytu"
-"Falla de lectura"
-"Помилка читання"
-"Памылка чытання"
-
-ErrorDeviceGeneral
-"Общая ошибка устройства"
-"Device general failure"
-"Obecná chyba zařízení"
-"Ein Gerätefehler ist aufgetreten"
-"Eszköz általános hiba"
-"Ogólny błąd urządzenia"
-"Falla general en dispositivo"
-"Загальна помилка пристрою"
-"Агульная памылка прылады"
-
-ErrorFileSharing
-"Нарушение совместного доступа к файлу"
-"File sharing violation"
-"Narušeno sdílení souborů"
-"Zugriffsverletzung"
-"Fájlmegosztási hiba"
-"Naruszenie zasad współużytkowania pliku"
-"Violación de archivo compartido"
-"Порушення спільного доступу до файлу"
-"Парушэнне сумеснага доступу да файла"
-
-ErrorNetworkPathNotFound
-"Сетевой путь не найден"
-"The network path was not found"
-"Síťová cesta nebyla nalezena"
-"Der Netzwerkpfad wurde nicht gefunden"
-"Hálózati útvonal nem található"
-"Nie odnaleziono ścieżki sieciowej"
-"La ruta de red no ha sido encontrada"
-"Мережевий шлях не знайдено"
-"Сеткавы шлях не знойдзены"
-
-ErrorNetworkBusy
-"Сеть занята"
-"The network is busy"
-"Síť je zaneprázdněna"
-"Das Netzwerk ist beschäftigt"
-"A hálózat zsúfolt"
-"Sieć jest zajęta"
-"La red está ocupada"
-"Мережа зайнята"
-"Сетка занятая"
-
-ErrorNetworkAccessDenied
-"Сетевой доступ запрещён"
-"Network access is denied"
-"Přístup na síť zakázán"
-"Netzwerkzugriff wurde verweigert"
-"Hálózati hozzáférés megtagadva"
-"Dostęp do sieci zabroniony"
-"Acceso a red es denegado"
-"Мережевий доступ заборонено"
-"Сеткавы доступ забаронены"
-
-ErrorNetworkWrite
-"Ошибка записи в сети"
-"A write fault occurred on the network"
-"Na síti došlo k chybě v zápisu"
-"Fehler beim Schreibzugriff auf das Netzwerk"
-"Írási hiba a hálózaton"
-"Wystąpił błąd zapisu w sieci"
-"Falla de escritura en la red"
-"Помилка запису в мережі"
-"Памылка запісу ў сетцы"
-
-ErrorDiskLocked
-"Диск используется или заблокирован другим процессом"
-"The disk is in use or locked by another process"
-"Disk je používán nebo uzamčen jiným procesem"
-"Datenträger wird verwendet oder ist durch einen anderen Prozess gesperrt"
-"A lemezt használja vagy zárolja egy folyamat"
-"Dysk jest w użyciu lub zablokowany przez inny proces"
-"El disco está en uso o bloqueado por otro proceso"
-"Диск використовується або заблокований іншим процесом"
-"Дыск ужываецца ці заблакаваны іншым працэсам"
-
-ErrorFileExists
-"Файл или папка уже существует"
-"File or folder already exists"
-"Soubor nebo adresář již existuje"
-"Die Datei oder der Ordner existiert bereits."
-"A fájl vagy mappa már létezik"
-"Plik lub katalog już istnieje"
-"archivo o directorio ya existe"
-"Файл або тека вже існує"
-"Файл ці каталог ужо існуе"
-
-ErrorInvalidName
-"Указанное имя неверно"
-"The specified name is invalid"
-"Zadaný název je neplatný"
-"Der angegebene Name ist ungültig"
-"A megadott név érvénytelen"
-"Podana nazwa jest niewłaściwa"
-"El nombre especificado es inválido"
-"Вказане ім'я неправильне"
-"Названае імя неправільнае"
-
-ErrorInsufficientDiskSpace
-"Нет места на диске"
-"Insufficient disk space"
-"Nedostatek místa na disku"
-"Unzureichend Speicherplatz am Datenträger"
-"Nincs elég hely a lemezen"
-"Za mało miejsca na dysku"
-"Insuficiente espacio de disco"
-"Немає місця на диску"
-"Няма месца на дыске"
-
-ErrorFolderNotEmpty
-"Папка не пустая"
-"The folder is not empty"
-"Adresář není prázdný"
-"Der Ordner ist nicht leer"
-"A mappa nem üres"
-"Katalog nie jest pusty"
-"El directorio no está vacío"
-"Тека не порожня"
-"Каталог не пусты"
-
-ErrorIncorrectUserName
-"Неверное имя пользователя"
-"Incorrect user name"
-"Neplatné jméno uživatele"
-"Ungültiger Benutzername"
-"Érvénytelen felhasználói név"
-"Niewłaściwa nazwa użytkownika"
-"Nombre de usuario incorrecto"
-"Неправильне ім'я користувача"
-"Неправільнае імя карыстальніка"
-
-ErrorIncorrectPassword
-"Неверный пароль"
-"Incorrect password"
-"Neplatné heslo"
-"Ungültiges Passwort"
-"Érvénytelen jelszó"
-"Niewłaściwe hasło"
-"Clave incorrecta"
-"Невірний пароль"
-"Неправільны пароль"
-
-ErrorLoginFailure
-"Ошибка регистрации"
-"Login failure"
-"Přihlášení selhalo"
-"Login fehlgeschlagen"
-"Sikertelen bejelentkezés"
-"Logowanie nie powiodło się"
-"Falla en conexión"
-"Помилка реєстрації"
-"Памылка рэгістрацыі"
-
-ErrorConnectionAborted
-"Соединение разорвано"
-"Connection aborted"
-"Spojení přerušeno"
-"Verbindung abgebrochen"
-"Kapcsolat bontva"
-"Połączenie zerwane"
-"Conexión abortada"
-"З'єднання розірвано"
-"Злучэнне разарвана"
-
-ErrorCancelled
-"Операция отменена"
-"Operation cancelled"
-"Operace stornována"
-"Vorgang abgebrochen"
-"A művelet megszakítva"
-"Operacja przerwana"
-"Operación cancelada"
-"Операцію скасовано"
-"Дзея адменена"
-
-ErrorNetAbsent
-"Сеть отсутствует"
-"No network present"
-"Síť není k dispozici"
-"Kein Netzwerk verfügbar"
-"Nincs hálózat"
-"Brak sieci"
-"No hay red presente"
-"Мережа відсутня"
-"Сетка адсутнічае"
-
-ErrorNetDeviceInUse
-"Устройство используется и не может быть отсоединено"
-"Device is in use and cannot be disconnected"
-"Zařízení se používá a nemůže být odpojeno"
-"Gerät wird gerade verwendet oder kann nicht getrennt werden"
-"Az eszköz használatban van, nem választható le"
-"Urządzenie jest w użyciu i nie można go odłączyć"
-"Dispositivo está en uso y no puede ser desconectado"
-"Пристрій використовується і не може бути від'єднаний"
-"Прылада ужываецца і не можа быць адлучана"
-
-ErrorNetOpenFiles
-"На сетевом диске есть открытые файлы"
-"This network connection has open files"
-"Přes toto síťové spojení jsou otevřeny soubory"
-"Diese Netzwerkverbindung hat geöffnete Dateien"
-"A hálózaton nyitott fájlok vannak"
-"To połączenie sieciowe posiada otwarte pliki"
-"Esta conexión de red tiene archivos abiertos"
-"На мережному диску є відкриті файли"
-"На сеткавым дыску ёсць адчыненыя файлы"
-
-ErrorAlreadyAssigned
-"Имя локального устройства уже использовано"
-"The local device name is already in use"
-"Název lokálního zařízení je již používán"
-"Der lokale Gerätename wird bereits verwendet"
-"A helyi eszköznév már foglalt"
-"Nazwa urządzenia lokalnego jest już używana"
-"El nombre del dispositivo local ya está en uso"
-"Ім'я локального пристрою вже використано"
-"Імя лакальнай прылады ўжо ўжыта"
-
-ErrorAlreadyRemebered
-"Имя локального устройства уже находится в профиле пользователя"
-"The local device is already in the user profile"
-"Lokální zařízení je již v uživatelově profilu"
-"Der lokale Datenträger ist bereits Teil des Benutzerprofils"
-"A helyi eszköz már a felhasználói profilban van"
-"Lokalne urządzenie znajduje się już w profilu użytkownika"
-"El dispositivo local ya está en el perfil de usuario"
-"Ім'я локального пристрою вже знаходиться у профілі користувача"
-"Імя лакальнай прылады ўжо знаходзіцца ў профілі карыстальніка"
-
-ErrorNotLoggedOn
-"Пользователь не зарегистрирован в сети"
-"User has not logged on to the network"
-"Uživatel nebyl do sítě přihlášen"
-"Benutzer hat sich nicht am Netzwerk angemeldet"
-"A felhasználó nincs a hálózaton"
-"Użytkownik nie jest zalogowany do sieci"
-"Usuario no está conectado a la red"
-"Користувач не зареєстрований у мережі"
-"Карыстальнык не зарэгістраваны ў сетцы"
-
-ErrorInvalidPassword
-"Неверный пароль пользователя"
-"The user password is invalid"
-"Uživatelovo heslo není správné"
-"Das Benutzerpasswort ist ungültig"
-"Érvénytelen felhasználói jelszó"
-"Hasło użytkownika jest niewłaściwe"
-"La clave de usuario es inválida"
-"Невірний пароль користувача"
-"Неправільны пароль карыстальніка"
-
-ErrorNoRecoveryPolicy
-"Для этой системы отсутствует политика надёжного восстановления шифрования"
-"There is no valid encryption recovery policy configured for this system"
-"V tomto systému není nastaveno žádné platné pravidlo pro dešifrování"
-"Auf diesem System ist keine gültige Richtlinie zum Wiederherstellen der Verschlüsselung konfiguriert."
-"Nincs érvényes titkosítást feloldó szabály a házirendben"
-"Polityka odzyskiwania szyfrowania nie jest skonfigurowana"
-"No hay política de recuperación de encriptación válida en este sistema"
-"Для цієї системи відсутня політика надійного відновлення шифрування"
-"Для гэтай сістэмы адсутнічае палітыка надзейнага аднаўлення шыфроўкі"
-
-ErrorEncryptionFailed
-"Ошибка при попытке шифрования файла"
-"The specified file could not be encrypted"
-"Zadaný soubor nemohl být zašifrován"
-"Die angegebene Datei konnte nicht verschlüsselt werden"
-"A megadott fájl nem titkosítható"
-"Nie udało się zaszyfrować pliku"
-"El archivo especificado no puede ser encriptado"
-"Помилка при спробі шифрування файлу"
-"Памылка пры спробе шыфроўкі файла"
-
-ErrorDecryptionFailed
-"Ошибка при попытке расшифровки файла"
-"The specified file could not be decrypted"
-"Zadaný soubor nemohl být dešifrován"
-"Die angegebene Datei konnte nicht entschlüsselt werden"
-"A megadott fájl titkosítása nem oldható fel"
-"Nie udało się odszyfrować pliku"
-"El archivo especificado no puede ser desencriptado"
-"Помилка при спробі розшифровувати файл"
-"Памылка пры спробе разшыфроўкі файла"
-
-ErrorFileNotEncrypted
-"Указанный файл не зашифрован"
-"The specified file is not encrypted"
-"Zadaný soubor není zašifrován"
-"Die angegebene Datei ist nicht verschlüsselt"
-"A megadott fájl nem titkosított"
-"Plik nie jest zaszyfrowany"
-"El archivo especificado no está encriptado"
-"Вказаний файл не зашифрований"
-"Паказаны файл не зашыфраваны"
-
-ErrorNoAssociation
-"Указанному файлу не сопоставлено ни одно приложение для выполнения данной операции"
-"No application is associated with the specified file for this operation"
-"K zadanému souboru není asociována žádná aplikace pro tuto operaci"
-"Diesem Dateityp und dieser Aktion ist kein Programm zugewiesen."
-"A fájlhoz nincs társítva program"
-"Z tą operacją dla pliku nie jest skojarzona żadna aplikacja"
-"No hay aplicación asociada para esta operación con el archivo especificado"
-"Вказаному файлу не зіставлено жодну програму для виконання цієї операції"
-"Паказанаму файлу не прывязана ні воднай праграмы для выканання дадзенай дзеі"
-
-CannotExecute
-l:
-"Ошибка выполнения"
-"Cannot execute"
-"Nelze provést"
-"Fehler beim Ausführen von"
-"Nem végrehajtható:"
-"Nie mogę wykonać"
-"No se puede ejecutar"
-"Помилка виконання"
-"Немагчыма выканаць"
 
 ScanningFolder
 "Просмотр папки"
@@ -13917,17 +12654,6 @@ MenuSortModes
 "&Ordenar por...        Ctrl+F12"
 "Режим&и сортування        Ctrl+F12"
 "Рэжым&ы парадкавання       Ctrl+F12"
-
-MenuLongNames
-"Показывать длинные &имена Ctrl+N"
-"Show long &names    Ctrl+N"
-"Zobrazit dlouhé názv&y    Ctrl+N"
-"Lange Datei&namen     Strg+N"
-"H&osszú fájlnevek   Ctrl+N"
-"Po&każ długie nazwy   Ctrl+N"
-"Ver &nombres largos    Ctrl+N"
-"Показувати довгі &імена   Ctrl+N"
-"Адлюстроўваць доўгія &імёны Ctrl+N"
 
 MenuTogglePanel
 "Панель &Вкл/Выкл          Ctrl+F1"
@@ -14925,61 +13651,6 @@ l:
 "Перейти"
 "Перайсці"
 
-ChangeDriveRemovable
-"сменный"
-"removable"
-"vyměnitelná"
-"wechsel."
-"kivehető"
-"wyjmowalny"
-"removible"
-"змінний"
-"зменны"
-
-ChangeDriveFixed
-"жёсткий"
-"fixed"
-"pevná"
-"fest"
-"fix"
-"stały"
-"rígido   "
-"жорсткий"
-"замацаваны"
-
-ChangeDriveNetwork
-"сетевой"
-"network"
-"síťová"
-"Netzwerk"
-"hálózati"
-"sieciowy"
-"red      "
-"мережевий"
-"сеткавы"
-
-ChangeDriveDisconnectedNetwork
-"отключенный"
-"disconnected"
-upd:"disconnected"
-upd:"disconnected"
-"leválasztva"
-upd:"disconnected"
-"desconectado"
-"відключений"
-"адключаны"
-
-ChangeDriveCDROM
-"CD-ROM"
-"CD-ROM"
-"CD-ROM"
-"CD-ROM"
-"CD-ROM"
-"CD-ROM"
-"CD-ROM   "
-"CD-ROM"
-"CD-ROM"
-
 ChangeDriveCD_RW
 "CD-RW"
 "CD-RW"
@@ -15079,184 +13750,6 @@ ChangeDriveHDDVD_RW
 "HDDVD-RW"
 "HDDVD-RW"
 
-ChangeDriveRAM
-"RAM диск"
-"RAM disk"
-"RAM disk"
-"RAM-DISK"
-"RAM lemez"
-"RAM-dysk"
-"Disco RAM"
-"RAM диск"
-"RAM дыск"
-
-ChangeDriveSUBST
-"SUBST"
-"subst"
-"SUBST"
-"Subst"
-"virtuális"
-"subst"
-"subst    "
-"SUBST"
-"SUBST"
-
-ChangeDriveVirtual
-"виртуальный"
-"virtual"
-upd:"virtual"
-upd:"virtual"
-upd:"virtual"
-upd:"virtual"
-upd:"virtual"
-"віртуальний"
-"уяўны"
-
-ChangeDriveLabelAbsent
-"недоступен"
-"not available"
-"není k dispozici"
-"nicht vorh."
-"nem elérhető"
-"niedostępny"
-"no disponible"
-"недоступний"
-"недасяжны"
-
-ChangeDriveCannotReadDisk
-"Ошибка чтения диска в дисководе"
-"Cannot read the disk in drive"
-"Nelze přečíst disk v jednotce"
-"Kann nicht gelesen werden datenträge in Laufwerk"
-"Meghajtó lemeze nem olvasható"
-"Nie mogę odczytać dysku w napędzie"
-"No se puede leer el disco en unidad"
-"Помилка читання диска в дисководі"
-"Немагчыма прачытаць дыск"
-
-ChangeDriveCannotDisconnect
-"Не удаётся отсоединиться от %ls"
-"Cannot disconnect from %ls"
-"Nelze se odpojit od %ls"
-"Verbindung zu %ls konnte nicht getrennt werden."
-"Nem lehet leválni innen: %ls"
-"Nie mogę odłączyć się od %ls"
-"No se puede desconectar desde %ls"
-"Неможливо від'єднатися від %ls"
-"Не атрымалася адлучыцца ад %ls"
-
-ChangeDriveCannotDelSubst
-"Не удаётся удалить виртуальный драйвер %ls"
-"Cannot delete a substituted drive %ls"
-"Nelze smazat substnutá jednotka %ls"
-"Substlaufwerk %ls konnte nicht gelöscht werden."
-"%ls virtuális meghajtó nem törölhető"
-"Nie można usunąć dysku SUBST %ls"
-"No se puede borrar una unidad sustituida %ls"
-"Не вдалося видалити віртуальний драйвер %ls"
-"Не атрымалася выдаліць віртуальны драйвер %ls"
-
-ChangeDriveOpenFiles
-"Если вы не закроете открытые файлы, данные могут быть утеряны"
-"If you do not close the open files, data may be lost"
-"Pokud neuzavřete otevřené soubory, mohou být tato data ztracena"
-"Wenn Sie offene Dateien nicht schließen könnten Daten verloren gehen"
-"Ha a nyitott fájlokat nem zárja be, az adatok elveszhetnek"
-"Jeśli nie zamkniesz otwartych plików, możesz utracić dane"
-"Si no cierra los archivos abiertos, los datos se pueden perder."
-"Якщо ви не закриєте відкриті файли, дані можуть бути втрачені"
-"Калі вы не зачыніце адчыненыя файлы, дадзеныя могуць быць згубленыя"
-
-ChangeSUBSTDisconnectDriveTitle
-l:
-"Отключение виртуального устройства"
-"Virtual device disconnection"
-"Odpojování virtuálního zařízení"
-"Virtuelles Gerät trennen"
-"Virtuális meghajtó törlése"
-"Odłączanie napędu wirtualnego"
-"Desconexion de dispositivo virtual"
-"Вимкнення віртуального пристрою"
-"Адключэнне віртуальнай прылады"
-
-ChangeSUBSTDisconnectDriveQuestion
-"Отключить SUBST-диск %c:?"
-"Disconnect SUBST-disk %c:?"
-"Odpojit SUBST-disk %c:?"
-"Substlaufwerk %c: trennen?"
-"Törli %c: virtuális meghajtót?"
-"Odłączyć dysk SUBST %c:?"
-"Desconectarse de disco sustituido %c:?"
-"Вимкнути SUBST-диск %c:?"
-upd:"Disconnect SUBST-disk %c:?"
-
-ChangeVHDDisconnectDriveTitle
-"Отсоединение виртуального диска"
-"Virtual disk detaching"
-upd:"Virtual disk detaching"
-upd:"Virtual disk detaching"
-upd:"Virtual disk detaching"
-upd:"Virtual disk detaching"
-upd:"Virtual disk detaching"
-"Від'єднання віртуального диска"
-upd:"Virtual disk detaching"
-
-ChangeVHDDisconnectDriveQuestion
-"Отсоединить виртуальный диск %c:?"
-"Detach virtual disk %c:?"
-upd:"Detach virtual disk %c:?"
-upd:"Detach virtual disk %c:?"
-upd:"Detach virtual disk %c:?"
-upd:"Detach virtual disk %c:?"
-upd:"Detach virtual disk %c:?"
-"Від'єднати віртуальний диск %c:?"
-upd:"Detach virtual disk %c:?"
-
-ChangeHotPlugDisconnectDriveTitle
-l:
-"Удаление устройства"
-"Device Removal"
-"Odpojování zařízení"
-"Sicheres Entfernen"
-"Eszköz biztonságos eltávolítása"
-"Odłączanie urządzenia"
-"Remover dispositivo"
-"Видалення пристрою"
-"Выдаленне прыстасавання"
-
-ChangeHotPlugDisconnectDriveQuestion
-"Вы хотите удалить устройство"
-"Do you want to remove the device"
-"Opravdu si přejete odpojit zařízení"
-"Wollen Sie folgendes Gerät sicher entfernen? "
-"Eltávolítja az eszközt?"
-"Czy odłączyć urządzenie"
-"Desea remover el dispositivo"
-"Ви хочете видалити пристрій"
-"Вы жадаеце выдаліць прыстасаванне"
-
-HotPlugDisks
-"(диск(и): %ls)"
-"(disk(s): %ls)"
-"(disk(y): %ls)"
-"(Laufwerk(e): %ls)"
-"(%ls meghajtó)"
-"(dysk(i): %ls)"
-"(disco(s): %ls)"
-"(диск(и): %ls)"
-"(дыск(і): %ls)"
-
-ChangeCouldNotEjectHotPlugMedia
-"Невозможно удалить устройство для диска %c:"
-"Cannot remove a device for drive %c:"
-"Zařízení %c: nemůže být odpojeno."
-"Ein Gerät für Laufwerk %c: konnte nicht entfernt werden"
-"%c: eszköz nem távolítható el"
-"Nie udało się odłączyć dysku %c:"
-"No se puede remover dispositivo para unidad %c:"
-"Не можна видалити пристрій для диска %c:"
-"Немагчыма выдаліць прыладу для дыска %c:"
-
 ChangeCouldNotEjectHotPlugMedia2
 "Невозможно удалить устройство:"
 "Cannot remove a device:"
@@ -15290,96 +13783,6 @@ ChangeHotPlugNotify2
 "може бути безпечно вилучено з комп'ютера"
 "можна быспечна выняць з кампутара"
 
-HotPlugListTitle
-"Hotplug-устройства"
-"Hotplug devices list"
-"Seznam vyjímatelných zařízení"
-"Hardware sicher entfernen"
-"Hotplug eszközök"
-"Lista urządzeń Hotplug"
-"Lista de conexión de dispositivos"
-"Hotplug-пристрої"
-"Прылада гарачай ўсталёўкі"
-
-HotPlugListBottom
-"Редактирование: Del,Ctrl+R"
-"Edit: Del,Ctrl+R"
-"Edit: Del,Ctrl+R"
-"Tasten: Entf,Strg+R,F1"
-"Szerkesztés: Del,Ctrl+R"
-"Edycja: Del,Ctrl+R"
-"Editar: Del,Ctrl+R"
-"Редагування: Del,Ctrl+R"
-"Змена: Del,Ctrl+R"
-
-ChangeDriveDisconnectTitle
-l:
-"Отключение сетевого устройства"
-"Disconnect network drive"
-"Odpojit síťovou jednotku"
-"Netzwerklaufwerk trennen"
-"Hálózati meghajtó leválasztása"
-"Odłączanie dysku sieciowego"
-"Desconectar unidad de red"
-"Вимкнення мережного пристрою"
-"Адлучэнне сеткавай прылады"
-
-ChangeDriveDisconnectQuestion
-"Вы хотите удалить соединение с устройством %c:?"
-"Do you want to disconnect from the drive %c:?"
-"Opravdu si přejete odpojit od jednotky %c:?"
-"Wollen Sie die Verbindung zu Laufwerk %c: trennen?"
-"Le akar válni %c: meghajtóról?"
-"Czy odłączyć dysk %c:?"
-"Quiere desconectarse desde la unidad %c:?"
-"Ви хочете видалити з'єднання з пристроєм %c:?"
-"Вы жадаеце выдаліць злучэнне з прыладай %c:?"
-
-ChangeDriveDisconnectMapped
-"На устройство %c: отображена папка"
-"The drive %c: is mapped to..."
-"Jednotka %c: je namapována na..."
-"Laufwerk %c: ist verknüpft zu..."
-"%c: meghajtó hozzárendelve:"
-"Dysk %c: jest skojarzony z..."
-"La unidad %c: es mapeada hacia..."
-"На пристрій %c: відображено папку"
-"На прыладзе  %c: адлюстраваны каталог"
-
-ChangeDriveDisconnectReconnect
-"&Восстанавливать при входе в систему"
-"&Reconnect at Logon"
-"&Znovu připojit při přihlášení"
-"Bei Anmeldung &verbinden"
-"&Bejelentkezésnél újracsatlakoztat"
-"&Podłącz ponownie przy logowaniu"
-"&Reconectar al desconectar"
-"&Відновити при вході в систему"
-"&Аднавіць пры ўваходзе ў сістэму"
-
-ChangeDriveAskDisconnect
-l:
-"Вы хотите в любом случае отключиться от устройства?"
-"Do you want to disconnect the device anyway?"
-"Přejete si přesto zařízení odpojit?"
-"Wollen Sie die Verbindung trotzdem trennen?"
-"Mindenképpen leválasztja az eszközt?"
-"Czy chcesz mimo to odłączyć urządzenie?"
-"Quiere desconectar el dispositivo de cualquier forma?"
-"Ви хочете в будь-якому випадку відключитися від пристрою?"
-"Вы жадаеце ў любым выпадку адлучыцца ад прыстасавання?"
-
-ChangeVolumeInUse
-"Не удаётся извлечь диск из привода %c:"
-"Volume %c: cannot be ejected."
-"Jednotka %c: nemůže být vysunuta."
-"Datenträger %c: kann nicht ausgeworfen werden."
-"%c: kötet nem oldható ki"
-"Nie można wysunąć dysku %c."
-"Volumen %c: no puede ser expulsado."
-"Не вдається вийняти диск із приводу %c:"
-"Не атрымалася выняць дыск з прываду %c:"
-
 ChangeVolumeInUse2
 "Используется другим приложением"
 "It is used by another application"
@@ -15390,28 +13793,6 @@ ChangeVolumeInUse2
 "Es usada por otra aplicación"
 "Використовується іншим додатком"
 "Ужываецца іншай праграмай"
-
-ChangeWaitingLoadDisk
-"Ожидание чтения диска..."
-"Waiting for disk to mount..."
-"Čekám na disk k připojení..."
-"Warte auf Datenträger..."
-"Lemez betöltése..."
-"Trwa montowanie dysku..."
-"Esperando para montar el disco..."
-"Чекання читання диска..."
-"Чаканне чытання дыску..."
-
-ChangeCouldNotEjectMedia
-"Невозможно извлечь диск из привода %c:"
-"Could not eject media from drive %c:"
-"Nelze vysunout médium v jednotce %c:"
-"Konnte Medium in Laufwerk %c: nicht auswerfen"
-"%c: meghajtó lemeze nem oldható ki"
-"Nie można wysunąć dysku z napędu %c:"
-"No se puede expulsar medio de la unidad %c:"
-"Неможливо вилучити диск із приводу %c:"
-"Немагчыма выняць дыск з прываду %c:"
 
 ChangeDriveConfigure
 "Настройки меню перехода"
@@ -15489,17 +13870,6 @@ upd:"Show size in &Windows Explorer style"
 "Mostrar tamaño estilo &Windows Explorer"
 "Показувати ро&змір у стилі Windows Explorer"
 "Адлюстраваць &памер у стылі Windows Explorer"
-
-ChangeDriveShowRemovableDrive
-"Показывать параметры см&енных дисков"
-"Show &removable drive parameters"
-upd:"Show &removable drive parameters"
-upd:"Show &removable drive parameters"
-upd:"Show &removable drive parameters"
-upd:"Show &removable drive parameters"
-"Mostrar parámetros de unidad removible"
-"Показувати параметри зм&інних дисків"
-"Адлюстроўваць налады зм&енных дыскаў"
 
 ChangeDriveShowPlugins
 "Показывать &плагины"
@@ -15724,72 +14094,6 @@ ProcessListBottom
 "Редагування: Del,Ctrl+R"
 "Змена: Del,Ctrl+R"
 
-KillProcessTitle
-"Удаление задачи"
-"Kill task"
-"Zabít úlohu"
-"Task beenden"
-"Programkilövés"
-"Zakończ zadanie"
-"Terminar tarea"
-"Видалення завдання"
-"Забіццё задання"
-
-AskKillProcess
-"Вы хотите удалить выбранную задачу?"
-"Do you wish to kill selected task?"
-"Přejete si zabít vybranou úlohu?"
-"Wollen Sie den ausgewählten Task beenden?"
-"Ki akarja lőni a kijelölt programot?"
-"Czy chcesz zakończyć wybrane zadanie?"
-"Desea terminar la tarea seleccionada?"
-"Ви хочете видалити вибране завдання?"
-"Вы жадаеце выдаліць абранае заданне?"
-
-KillProcessWarning
-"Вы потеряете всю несохраненную информацию этой программы"
-"You will lose any unsaved information in this program"
-"V tomto programu budou ztraceny neuložené informace"
-"Alle ungespeicherten Daten dieses Programmes gehen verloren"
-"A program minden mentetlen adata elvész"
-"Utracisz wszystkie niezapisane dane w tym programie"
-"Usted perder cualquier información no grabada de este programa"
-"Ви втратите всю незбережену інформацію цієї програми"
-"Вы згубіце ўсі незахаваныя звесткі гэтай праграмы"
-
-KillProcessKill
-"Удалить"
-"Kill"
-"Zabít"
-"Beenden"
-"Kilő"
-"Zakończ"
-"Terminar"
-"Вилучити"
-"Забіць"
-
-CannotKillProcess
-"Указанную задачу удалить не удалось"
-"Cannot kill the specified task"
-"Nemohu ukončit zvolenou úlohu"
-"Task konnte nicht beendet werden"
-"A programot nem lehet kilőni"
-"Nie mogę zakończyć wybranego zadania"
-"No se puede terminar la tarea seleccionada"
-"Вказане завдання видалити не вдалося"
-"Немагчыма забіць азначанае заданне"
-
-CannotKillProcessPerm
-"Вы не имеет права удалить этот процесс."
-"You have no permission to kill this process."
-"Nemáte oprávnění zabít tento proces."
-"Sie haben keine Rechte um diesen Prozess zu beenden."
-"Nincs joga a program kilövésére"
-"Nie masz wystarczających uprawnień do zakończenia procesu."
-"Usted no tiene permiso para terminar este proceso."
-"Ви не маєте права видалити цей процес."
-"У вас няма дазволу забіць гэты працэс."
-
 QuickViewTitle
 l:
 "Быстрый просмотр"
@@ -15923,28 +14227,6 @@ QuickViewCluster
 "Розмір кластера     "
 "Памер кластара      "
 
-QuickViewRealSize
-"Реальный размер     "
-"Real files size  "
-"Opravdová velikost "
-"Tatsächlich      "
-"Valódi fájlméret "
-"Właściwy rozmiar    "
-"Tamaño real      "
-"Реальний розмір     "
-"Рэальны памер       "
-
-QuickViewSlack
-"Остатки кластеров   "
-"Files slack      "
-"Mrtvé místo        "
-"Verlust          "
-"Meddő terület    "
-"Przestrzeń stracona "
-"Desperdiciado    "
-"Залишки кластерів   "
-"Рэшткі кластараў    "
-
 SetAttrTitle
 l:
 "Атрибуты"
@@ -15978,28 +14260,6 @@ SetAttrSelectedObjects
 "objetos seleccionados"
 "вибраних об'єктів"
 "Азначаных аб'ектаў"
-
-SetAttrHardLinks
-"жёстких ссылок"
-"hard links"
-"pevné linky"
-"Hardlinks"
-"hardlink"
-"linków trwałych"
-"Enlace rígido"
-"жорстких посилань"
-"жорскіх спасылак"
-
-SetAttrJunction
-"Связь:"
-"Junction:"
-"Křížení:"
-"Knotenpunkte:"
-"Сsomópont:"
-"Powiązanie:"
-"Juntar:"
-"Зв'язок:"
-"Сувязь:"
 
 SetAttrInfoSelAll
 "выбрано %d элементов"
@@ -16056,17 +14316,6 @@ upd:"%lssymlinks to files: %d"
 upd:"%lssymlinks to files: %d"
 upd:"%lssymlinks to files: %d"
 
-SetAttrSymlink
-"Ссылка:"
-"Symlink:"
-"Link:"
-"Symlink:"
-"Szimlink:"
-"Link:"
-"Enlace:"
-"Посилання:"
-"Спасылак:"
-
 SetAttrSymlinkWarn1
 "Для симлинка '%ls'"
 "For symlink '%ls'"
@@ -16121,28 +14370,6 @@ upd:"Error changing symbolic link"
 upd:"Error changing symbolic link"
 "Ошибка зміни символічних посилань"
 "Шыбка змены сімвалічных спасылак"
-
-SetAttrVolMount
-"Том:"
-"Volume:"
-"Svazek:"
-"Datenträger:"
-"Kötet:"
-"Punkt zamontowania:"
-"Volumen:"
-"Том:"
-"Дыск:"
-
-SetAttrUnknownJunction
-"(нет данных)"
-"(data not available)"
-"(data nejsou k dispozici)"
-"(nicht verfügbar)"
-"(adat nem elérhető)"
-"(dane niedostępne)"
-"(dato no disponible)"
-"(немає даних)"
-"(няма дадзеных)"
 
 SetAttrSubfolders
 "Обрабатывать &вложенные папки"
@@ -16264,50 +14491,6 @@ upd:"(multiple values)"
 "(valores múltiples)"
 "(кілька значень)"
 "(некалькі значэнняў)"
-
-SetAttrModification
-"Время последней &записи:"
-"Last &write time:"
-upd:"Last &write time:"
-upd:"Last &write time:"
-upd:"Last &write time:"
-upd:"Last &write time:"
-upd:"Last &write time:"
-"Час останнього &запису:"
-"Час апошняга &запісу:"
-
-SetAttrCreation
-"Время со&здания:"
-"Crea&tion time:"
-"Čas v&ytvoření:"
-"Datei erstell&t:"
-"&Létrehozás dátuma/ideje:"
-"Czas u&tworzenia:"
-"Hora de creación:"
-"Час ст&ворення:"
-"Час &стварэння:"
-
-SetAttrLastAccess
-"Время последнего &доступа:"
-"&Last access time:"
-"Čas posledního pří&stupu:"
-"&Letzter Zugriff:"
-"&Utolsó hozzáférés dátuma/ideje:"
-"Czas ostatniego &dostępu:"
-"Hora de &último acceso:"
-"Час останнього &доступу:"
-"Час апошняга &доступу:"
-
-SetAttrChange
-"Время из&менения:"
-"Chan&ge time:"
-upd:"Change time:"
-upd:"Change time:"
-upd:"Change time:"
-upd:"Change time:"
-upd:"Change time:"
-"Час зм&іни:"
-"Час з&мены:"
 
 SetAttrOriginal
 "Исход&ное"
@@ -16453,39 +14636,6 @@ SetAttrCannotFor
 "No se pueden poner atributos para"
 "Помилка установки атрибутів для"
 "Немагчыма ужыць атрыбуты для"
-
-SetAttrCompressedCannotFor
-"Не удалось установить атрибут СЖАТЫЙ для"
-"Cannot set attribute COMPRESSED for"
-"Nelze nastavit atribut KOMPRIMOVANÝ pro"
-"Konnte Komprimierung nicht setzen für"
-"A TÖMÖRÍTETT attribútum nem állítható be:"
-"Nie mogę ustawić atrybutu SKOMPRESOWANY dla"
-"No se puede poner atributo COMPRIMIDO a"
-"Не вдалося встановити атрибут СТИСНУТИЙ для"
-"Немагчыма ужыць атрыбут ЗХАВАНЫ для"
-
-SetAttrEncryptedCannotFor
-"Не удалось установить атрибут ЗАШИФРОВАННЫЙ для"
-"Cannot set attribute ENCRYPTED for"
-"Nelze nastavit atribut ŠIFROVANÝ pro"
-"Konnte Verschlüsselung nicht setzen für"
-"A TITKOSÍTOTT attribútum nem állítható be:"
-"Nie mogę ustawić atrybutu ZASZYFROWANY dla"
-"No se puede poner atributo CIFRADO a"
-"Не вдалося встановити атрибут ЗАШИФОВАНИЙ для"
-"Немагчыма ужыць атрыбут ТАЙНАПІСНЫ для"
-
-SetAttrSparseCannotFor
-"Не удалось установить атрибут РАЗРЕЖЁННЫЙ для"
-"Cannot set attribute SPARSE for"
-upd:"Cannot set attribute SPARSE for"
-upd:"Cannot set attribute SPARSE for"
-"A RITKÍTOTT attribútum nem állítható be:"
-upd:"Cannot set attribute SPARSE for"
-"No se puede poner atributo SPARSE para"
-"Не вдалося встановити атрибут РОЗРІЖЕНИЙ для"
-"Немагчыма ужыць атрыбут РАЗРЭДЖАНЫ для"
 
 SetAttrTimeCannotFor
 "Не удалось установить время файла для"
@@ -18107,39 +16257,6 @@ SetColorBackground
 "Фон"
 "Фон"
 
-SetColorForeTransparent
-"&Прозрачный"
-"&Transparent"
-"Průhlednos&t"
-"&Transparent"
-"Átlá&tszó"
-"P&rzezroczyste"
-"&Transparente"
-"&Прозорий"
-"&Празрысты"
-
-SetColorBackTransparent
-"П&розрачный"
-"T&ransparent"
-"Průhledno&st"
-"T&ransparent"
-"Átlát&szó"
-"Pr&zezroczyste"
-"T&ransparente"
-"П&розорий"
-"П&разрысты"
-
-SetColorSample
-"Текст Текст Текст Текст Текст Текст"
-"Text Text Text Text Text Text Text"
-"Text Text Text Text Text Text Text"
-"Text Text Text Text Text Text Text"
-"Text Text Text Text Text Text Text"
-"Tekst Tekst Tekst Tekst Tekst Tekst"
-"Texto Texto Texto Texto Texto"
-"Текст Текст Текст Текст Текст Текст"
-"Тэкст Тэкст Тэкст Тэкст Тэкст Тэкст"
-
 SetColorSet
 "Установить"
 "Set"
@@ -18217,17 +16334,6 @@ upd:"&Overwrite and delete R/O files"
 "S&obrescribir y eliminar ficheros Sólo/Lectura"
 "Перезапис та видалення R/O файлів"
 "Перезапісаць і выдаліць &файлы 'толькі для чытання'"
-
-SetConfirmDrag
-"Пере&таскивание"
-"&Drag and drop"
-"&Drag and drop"
-"&Ziehen und Ablegen"
-"&Húzd és ejtsd"
-"P&rzeciąganie i upuszczanie"
-"&Arrastrar y soltar"
-"Пере&тягання"
-"Пера&цягванне"
 
 SetConfirmDelete
 "&Удаление"
@@ -18767,28 +16873,6 @@ l:
 "Редагування позначки вкладеного меню"
 "Змена подпісу укладзенага меню"
 
-EditSubmenuHotKey
-"&Горячая клавиша:"
-"&Hot key:"
-"Klávesová &zkratka:"
-"&Kurztaste:"
-"&Gyorsbillentyű:"
-"&Klawisz skrótu:"
-"&Tecla rápida:"
-"&Гаряча клавіша:"
-"&Хуткая клавіша:"
-
-EditSubmenuLabel
-"&Метка:"
-"&Label:"
-"&Popisek:"
-"&Bezeichnung:"
-"&Név:"
-"&Etykieta:"
-"&Etiqueta:"
-"&Мітка:"
-"&Подпіс:"
-
 ViewerTitle
 l:
 "Просмотр"
@@ -19001,84 +17085,6 @@ ViewSearchFromEnd
 "Продовжити пошук з кінця документа?"
 "Працягнуць пошук ад канца дакумента?"
 
-PrintTitle
-l:
-"Печать"
-"Print"
-"Tisk"
-"Drucken"
-"Nyomtatás"
-"Drukuj"
-"Imprimir"
-"Друк"
-"Друк"
-
-PrintTo
-"Печатать %ls на"
-"Print %ls to"
-"Vytisknout %ls na"
-"Drucke %ls nach"
-"%ls nyomtatása:"
-"Drukuj %ls do"
-"Imprimir %ls a"
-"Друкувати %ls на"
-"Друкаваць %ls на"
-
-PrintFilesTo
-"Печатать %d файлов на"
-"Print %d files to"
-"Vytisknout %d souborů na"
-"Drucke %d Dateien mit"
-"%d fájl nyomtatása:"
-"Drukuj %d pliki(ów) do"
-"Imprimir %d archivos a"
-"Друкувати %d файлів на"
-"Друкаваць %d файлаў на"
-
-PreparingForPrinting
-"Подготовка файлов к печати"
-"Preparing files for printing"
-"Připravuji soubory pro tisk"
-"Vorbereiten der Druckaufträge"
-"Fájlok előkészítése nyomtatáshoz"
-"Przygotowuję plik(i) do drukowania"
-"Preparando archivos para imprimir"
-"Підготовка файлів до друку"
-"Падрыхтоўка файлаў да друку"
-
-CannotEnumeratePrinters
-"Не удалось получить список доступных принтеров"
-"Cannot enumerate available printers list"
-upd:"Cannot enumerate available printers list"
-upd:"Cannot enumerate available printers list"
-"Az elérhető nyomtatók listája nem állítható össze"
-upd:"Cannot enumerate available printers list"
-"trabajos"
-"Не вдалося отримати список доступних принтерів"
-"Немагчыма атрымаць спіс наяўных друкарак"
-
-CannotOpenPrinter
-"Не удалось открыть принтер"
-"Cannot open printer"
-"Nelze otevřít tiskárnu"
-"Fehler beim öffnen des Druckers"
-"Nyomtató nem elérhető"
-"Nie mogę połączyć się z drukarką"
-"No se puede abrir impresora"
-"Не вдалося відкрити принтер"
-"Немагчыма адчыніць друкарку"
-
-CannotPrint
-"Не удалось распечатать"
-"Cannot print"
-"Nelze tisknout"
-"Fehler beim Drucken"
-"Nem nyomtatható"
-"Nie mogę drukować"
-"No se puede imprimir"
-"Не вдалося роздрукувати"
-"Немагчыма надрукаваць"
-
 DescribeFiles
 l:
 "Описание файла"
@@ -19269,17 +17275,6 @@ ReadingFiles
 "Leyendo: %d archivos"
 "Читання: %d файлів"
 "Чытанне: %d файлаў"
-
-OperationNotCompleted
-"Операция не завершена"
-"Operation not completed"
-"Operace není dokončena"
-"Vorgang nicht abgeschlossen"
-"A művelet félbeszakadt"
-"Operacja nie doprowadzona do końca"
-"Operación no completada"
-"Операція не завершена"
-"Дзеянне не закончана"
 
 EditPanelModes
 l:
@@ -19514,17 +17509,6 @@ EditPanelModeUpperToLowerCase
 "archivos en mayúsculas mostrarlos con minús&culas"
 "Показувати імена файлів із великих літер &маленькими літерами"
 "Адлю&строўваць імёны файлаў з вялікімі літарамі як малымі"
-
-EditPanelReadHelp
-" Нажмите F1, чтобы получить информацию по настройке "
-" Read online help for instructions "
-" Pro instrukce si přečtěte online nápovědu "
-" Siehe Hilfe für Anweisungen "
-" Tanácsokat a súgóban talál (F1) "
-" Instrukcje zawarte są w pomocy podręcznej "
-" Para instrucciones leer ayuda en línea "
-" Натисніть F1, щоб отримати інформацію про налаштування "
-" Націсніце F1, каб атрымаць інфармацыю па наладцы "
 
 SetFolderInfoTitle
 l:
@@ -19908,77 +17892,6 @@ MacroSettingsSelectionBlockPresent
 "Відзначений б&лок"
 "Адзначаны б&лок"
 
-MacroOutputFormatForHelpSz
-l:
-l:// for <!Macro:Vars!> and <!Macro:Consts!>, count formats = 1
-"„%ls”"
-"„%ls”"
-"„%ls”"
-"„%ls”"
-"„%ls”"
-"„%ls”"
-"%ls"
-"„%ls”"
-"„%ls”"
-
-MacroOutputFormatForHelpDWord
-l:// for <!Macro:Vars!> and <!Macro:Consts!>, count formats = 2
-"%d / 0x%X"
-"%d / 0x%X"
-"%d / 0x%X"
-"%d / 0x%X"
-"%d / 0x%X"
-"%d / 0x%X"
-"%d / 0x%X"
-"%d / 0x%X"
-"%d / 0x%X"
-
-MacroOutputFormatForHelpQWord
-l:// for <!Macro:Vars!> and <!Macro:Consts!>, count formats = 2
-"%I64d / 0x%I64X"
-"%I64d / 0x%I64X"
-"%I64d / 0x%I64X"
-"%I64d / 0x%I64X"
-"%I64d / 0x%I64X"
-"%I64d / 0x%I64X"
-"%I64d / 0x%I64X"
-"%I64d / 0x%I64X"
-"%I64d / 0x%I64X"
-
-MacroOutputFormatForHelpDouble
-l:// for <!Macro:Vars!> and <!Macro:Consts!>, count formats = 2
-"%g"
-"%g"
-"%g"
-"%g"
-"%g"
-"%g"
-"%g"
-"%g"
-"%g"
-
-MacroPErrorTitle
-"Ошибка при разборе макроса"
-"Error parsing macro"
-upd:"Error parsing macro"
-upd:"Error parsing macro"
-upd:"Error parsing macro"
-upd:"Error parsing macro"
-"Error parsing macro"
-"Помилка при розборі макросу"
-"Памылка пры разборы макраса"
-
-MacroPErrorPosition
-"Строка %d, позиция %d"
-"Line %d, Pos %d"
-upd:"Line %d, Pos %d"
-upd:"Line %d, Pos %d"
-upd:"Line %d, Pos %d"
-upd:"Line %d, Pos %d"
-"Línea %d, Pos %d"
-"Рядок %d, позиція %d"
-"Радок %d, месцазнаходжанне %d"
-
 MacroPErrUnrecognized_keyword
 l:
 "Неизвестное ключевое слово '%ls'"
@@ -20001,17 +17914,6 @@ MacroPErrUnrecognized_function
 "Unrecognized function '%ls'"
 "Невідома функція '%ls'"
 "Невядомая функцыя '%ls'"
-
-MacroPErrFuncParam
-"Неверное количество параметров у функции '%ls'"
-"Incorrect number of arguments for function '%ls'"
-upd:"Incorrect number of arguments for function '%ls'"
-upd:"Incorrect number of arguments for function '%ls'"
-"'%ls' funkció paramétereinek száma helytelen"
-upd:"Incorrect number of arguments for function '%ls'"
-"Incorrect number of arguments for function '%ls'"
-"Неправильна кількість параметрів у функції '%ls'"
-"Неправильная колькасць параметраў у функцыі '%ls'"
 
 MacroPErrNot_expected_ELSE
 "Неожиданное появление $Else"
@@ -20045,17 +17947,6 @@ MacroPErrUnexpected_EOS
 "Unexpected end of source string"
 "Несподіваний кінець рядка"
 "Нечаканы канец радка"
-
-MacroPErrExpected
-"Ожидается '%ls'"
-"Expected '%ls'"
-"Očekávané '%ls'"
-"Erwartet '%ls'"
-"Várható "%ls""
-"Oczekiwano '%ls'"
-"Expected '%ls'"
-"Очікується '%ls'"
-"Чакаецца '%ls'"
 
 MacroPErrBad_Hex_Control_Char
 "Неизвестный шестнадцатеричный управляющий символ"
@@ -20112,28 +18003,6 @@ upd:"Zero-length macro"
 "Порожня макропослідовність"
 "Пустая макрапаслядоўнасць"
 
-MacroPErrIntParserError
-"Внутренняя ошибка парсера"
-"Internal parser error"
-upd:"Internal parser error"
-upd:"Internal parser error"
-upd:"Internal parser error"
-upd:"Internal parser error"
-"Macro parsing error"
-"Внутрішня помилка парсера"
-"Унутраная памылка парсера"
-
-MacroPErrContinueOutsideTheLoop
-"Оператор $Continue вне цикла"
-upd:"$Continue outside the loop"
-upd:"$Continue outside the loop"
-upd:"$Continue outside the loop"
-upd:"$Continue outside the loop"
-upd:"$Continue outside the loop"
-"$Continuar por fuera del loop"
-"Оператор $Continue поза циклом"
-"Аператар $Continue па-за цыклам"
-
 CannotSaveFile
 l:
 "Ошибка сохранения файла"
@@ -20168,127 +18037,6 @@ l:
 "Ene"
 "Січ"
 "Стд"
-
-MonthFeb
-"Фев"
-"Feb"
-"Úno"
-"Feb"
-"Feb"
-"Lut"
-"Feb"
-"Лют"
-"Лют"
-
-MonthMar
-"Мар"
-"Mar"
-"Bře"
-"Mär"
-"Már"
-"Mar"
-"Mar"
-"Бер"
-"Сак"
-
-MonthApr
-"Апр"
-"Apr"
-"Dub"
-"Apr"
-"Ápr"
-"Kwi"
-"Abr"
-"Кві"
-"Кра"
-
-MonthMay
-"Май"
-"May"
-"Kvě"
-"Mai"
-"Máj"
-"Maj"
-"May"
-"Тра"
-"Май"
-
-MonthJun
-"Июн"
-"Jun"
-"Čer"
-"Jun"
-"Jún"
-"Cze"
-"Jun"
-"Чрв"
-"Чрв"
-
-MonthJul
-"Июл"
-"Jul"
-"Čec"
-"Jul"
-"Júl"
-"Lip"
-"Jul"
-"Лип"
-"Ліп"
-
-MonthAug
-"Авг"
-"Aug"
-"Srp"
-"Aug"
-"Aug"
-"Sie"
-"Ago"
-"Срп"
-"Жнв"
-
-MonthSep
-"Сен"
-"Sep"
-"Zář"
-"Sep"
-"Sze"
-"Wrz"
-"Sep"
-"Вер"
-"Вер"
-
-MonthOct
-"Окт"
-"Oct"
-"Říj"
-"Okt"
-"Okt"
-"Paź"
-"Oct"
-"Жов"
-"Кас"
-
-MonthNov
-"Ноя"
-"Nov"
-"Lis"
-"Nov"
-"Nov"
-"Lis"
-"Nov"
-"Лст"
-"Лст"
-
-MonthDec
-"Дек"
-"Dec"
-"Pro"
-"Dez"
-"Dec"
-"Gru"
-"Dic"
-"Гру"
-"Снж"
 
 HelpHotKey
 "Введите горячую клавишу (букву или цифру)"
@@ -20335,17 +18083,6 @@ upd:"Przypisz klawisz skrótu do ???"
 upd:"Asignar tecla rápida a ???"
 "Призначення гарячої клавіші"
 "Прызначэнне гарачай клавішы"
-
-LocationHotKey
-"Введите горячую клавишу (букву или цифру)"
-"Enter hot key (letter or digit)"
-"Zadejte horkou klávesu (písmeno nebo číslici)"
-"Buchstabe oder Ziffer:"
-"Nyomja le a billentyűt (betű vagy szám)"
-"Podaj klawisz skrótu (litera lub cyfra)"
-"Entrar tecla rápida (letra o dígito)"
-"Введіть гарячу клавішу (літеру або цифру)"
-"Увыдзіце хуткую клавішу (літару ці лічбу)"
 
 RightCtrl
 l:
@@ -20403,248 +18140,6 @@ GoToDecimal
 "Dirección &Decimal"
 "10-ічне з&міщення"
 "10-разрадны з&рух"
-
-ExcTrappedException
-"Исключительная ситуация"
-"Exception occurred"
-"Vyskytla se výjimka"
-"Ausnahmefehler aufgetreten"
-"Kivétel történt"
-"Wystąpił wyjątek"
-"Error de excepción"
-"Виняткова ситуація"
-"Выключная сітуацыя"
-
-ExcRAccess
-"Нарушение доступа (чтение из 0x%p)"
-"Access violation (read from 0x%p)"
-"Neplatná adresa (čtení z 0x%p)"
-"Zugriffsverletzung (Lesen von 0x%p)"
-"Hozzáférési jogsértés (olvasás 0x%p címről)"
-"Błąd dostępu (odczyt z 0x%p)"
-"Violación de acceso (leído desde 0x%p)"
-"Порушення доступу (читання 0x%p)"
-"Парушэнне доступу (чытанне з 0x%p)"
-
-ExcWAccess
-"Нарушение доступа (запись в 0x%p)"
-"Access violation (write to 0x%p)"
-"Neplatná adresa (zápis na 0x%p)"
-"Zugriffsverletzung (Schreiben nach 0x%p)"
-"Hozzáférési jogsértés (írás 0x%p címre)"
-"Błąd dostępu (zapis do 0x%p)"
-"Violación de acceso (escrito a 0x%p)"
-"Порушення доступу (запис 0x%p)"
-"Парушэнне доступу (запіс у 0x%p)"
-
-ExcEAccess
-"Нарушение доступа (исполнение кода из 0x%p)"
-"Access violation (execute at 0x%p)"
-"Neplatná adresa (spuštění na 0x%p)"
-"Zugriffsverletzung (Ausführen bei 0x%p)"
-"Hozzáférési jogsértés (végrehajtás 0x%p címen)"
-"Błąd dostępu (wykonanie w 0x%p)"
-"Violación de acceso (ejecutado en 0x%p)"
-"Порушення доступу (виконання коду з 0x%p)"
-"Парушэнне доступу (выкананне коду з 0x%p)"
-
-ExcOutOfBounds
-"Попытка доступа к элементу за границами массива"
-"Array out of bounds"
-"Pole mimo hranice"
-"Arrayüberlauf"
-"A tömb határait meghaladta"
-"Przekroczenie granic tabeli"
-"Array out of bounds"
-"Спроба доступу до елемента за межами масиву"
-"Спроба доступу да элемента па-за межамі масіву"
-
-ExcDivideByZero
-"Деление на нуль"
-"Divide by zero"
-"Dělení nulou"
-"Division durch Null"
-"Nullával osztás"
-"Dzielenie przez zero"
-"División por cero"
-"Поділ на нуль"
-"Дзяленне на нуль"
-
-ExcStackOverflow
-"Переполнение стека"
-"Stack Overflow"
-"Přetečení zásobníku"
-"Stacküberlauf"
-"Verem túlcsordulás"
-"Przepełnienie stosu"
-"Stack overflow"
-"Переповнення стека"
-"Перапаўненее стэку"
-
-ExcBreakPoint
-"Точка останова"
-"Breakpoint exception"
-"Výjimka přerušení"
-"Breakpoint exception"
-"Törésponti kivétel"
-"Wyjątek punktu przerwania"
-"Excepción de punto de quiebre"
-"Точка зупинки"
-"Кропка спынення"
-
-ExcFloatDivideByZero
-"Деление на нуль при операции с плавающей точкой"
-"Floating-point divide by zero"
-"Dělení nulou v pohyblivé čárce"
-"Fließkomma-Division durch Null"
-"Lebegőpontos szám osztása nullával"
-"Błąd zmiennoprzecinkowego dzielenia przez zero"
-"Punto flotante dividido por cero"
-"Поділ на нуль при операції з плаваючою точкою"
-"Дзяленне на нуль пры аперацыі з плаваючай коскай"
-
-ExcFloatOverflow
-"Переполнение при операции с плавающей точкой"
-"Floating point operation overflow"
-"Přetečení při operaci v pohyblivé čárce"
-"Fließkomma-Operation verursachte Überlauf"
-"Lebegőpontos művelet túlcsordulás"
-"Przepełnienie przy operacji zmiennnoprzecinkowej"
-"Operación de punto flotante desbordada"
-"Переповнення при операції з плаваючою точкою"
-"Перапаўненее пры аперацыі з плаваючай коскай"
-
-ExcFloatStackOverflow
-"Стек регистров сопроцессора полон или пуст"
-"Floating point stack empty or full"
-"Prázdný nebo plný zásobník v pohyblivé čárce"
-"Fließkomma-Stack leer bzw. voll"
-"Lebegőpont verem üres vagy megtelt"
-"Stos operacji zmiennoprzecinkowych pusty lub pełny"
-"Pila de punto flotante vacía o llena"
-"Стек регістрів співпроцесора повний або порожній"
-"Стэек рэгістраў сапрацэсара поўны ці пусты"
-
-ExcFloatUnderflow
-"Потеря точности при операции с плавающей точкой"
-"Floating point operation underflow"
-"Podtečení při operaci v pohyblivé čárce"
-"Fließkomma-Operation verursachte Underflow"
-"Lebegőpontos művelet alulcsordulás"
-"Błąd niedomiaru przy operacji zmiennoprzecinkowej"
-"Operación de punto flotante underflow"
-"Втрата точності при операції з плаваючою точкою"
-"Згублена дакладнасць пры аперацыи з плаваючай коскай"
-
-ExcBadInstruction
-"Недопустимая инструкция"
-"Illegal instruction"
-"Neplatná instrukce"
-"Ungültige Anweisung"
-"Érvénytelen utasítás"
-"Błędna instrukcja"
-"Instrucción ilegal"
-"Неприпустима інструкція"
-"Недапушчальная інструкцыя"
-
-ExcDatatypeMisalignment
-"Попытка доступа к невыравненным данным"
-"Alignment fault"
-"Chyba zarovnání"
-"Fehler bei Datenausrichtung"
-"Adattípus illesztési hiba"
-"Błąd ustawienia"
-"Falta de alineamiento"
-"Спроба доступу до невирівняних даних"
-"Спроба доступу да непароўненым дадзеным"
-
-ExcUnknown
-"Неизвестное исключение"
-"Unknown exception"
-"Neznámá výjimka"
-"Unbekannte Ausnahme"
-"Ismeretlen kivétel"
-"Nieznany wyjątek"
-"Excepción desconocida"
-"Невідомий виняток"
-"Невядомае выключэнне"
-
-ExcException
-"Исключение:"
-"Exception:"
-upd:"Exception:"
-upd:"Exception:"
-upd:"Exception:"
-upd:"Exception:"
-"Excepción:"
-"Виняток:"
-"Выключэнне:"
-
-ExcAddress
-"Адрес:"
-"Address:"
-upd:"Address:"
-upd:"Address:"
-upd:"Address:"
-upd:"Address:"
-"Dirección:"
-"Адреса:"
-"Адрас:"
-
-ExcFunction
-"Функция:"
-"Function:"
-upd:"Function:"
-upd:"Function:"
-upd:"Function:"
-upd:"Function:"
-"Función:"
-"Функція:"
-"Функцыя:"
-
-ExcModule
-"Модуль:"
-"Module:"
-upd:"Module:"
-upd:"Module:"
-upd:"Module:"
-upd:"Module:"
-"Módulo:"
-"Модуль:"
-"Модуль:"
-
-ExcTerminate
-"Завершить FAR"
-"Terminate FAR"
-upd:"Terminate FAR"
-upd:"Terminate FAR"
-upd:"Terminate FAR"
-upd:"Terminate FAR"
-"FAR se dará por terminado"
-"Завершити FAR"
-"Выйсці з FAR"
-
-ExcUnload
-"Выгрузить плагин"
-"Unload plugin"
-upd:"Unload plugin"
-upd:"Unload plugin"
-upd:"Unload plugin "
-upd:"Unload plugin"
-"El plugin será descargado"
-"Вивантажити плагін"
-"Выгрузіць дадатак"
-
-ExcDebugger
-"Отладка"
-"Debug"
-upd:"Debug"
-upd:"Debug"
-upd:"Debug"
-upd:"Debug"
-"Depurador"
-"Налагодження"
-"Адладка"
 
 NetUserName
 l:
@@ -20750,39 +18245,6 @@ l:
 "Допомога"
 "Дапамога"
 
-HelpActivatorURL
-"Эта ссылка запускает внешнее приложение:"
-"This reference starts the external application:"
-"Tento odkaz spouští externí aplikaci:"
-"Diese Referenz startet folgendes externes Programm:"
-"A hivatkozás által indított program:"
-"To wywołanie uruchomi aplikację zewnętrzną:"
-"Esta referencia inicia la aplicación externa:"
-"Це посилання запускає зовнішню програму:"
-"Гэты спасылак запускае знешнюю праграму:"
-
-HelpActivatorFormat
-"с параметром:"
-"with parameter:"
-"s parametrem:"
-"mit Parameter:"
-"Paraméterei:"
-"z parametrem:"
-"con parámetro:"
-"з параметром:"
-"з параметрамі:"
-
-HelpActivatorQ
-"Желаете запустить?"
-"Do you wish to start it?"
-"Přejete si ji spustit?"
-"Wollen Sie jetzt starten?"
-"El akarja indítani?"
-"Czy chcesz ją uruchomić?"
-"Desea comenzar la aplicación?"
-"Хочете запустити?"
-"Вы жадаеце запусіць?"
-
 CannotOpenHelp
 "Ошибка открытия файла"
 "Cannot open the file"
@@ -20817,17 +18279,6 @@ l:
 "Зовнішні модулі"
 "Знешнія дадаткі"
 
-DocumentsHelpTitle
-"Документы"
-"Documents help"
-"Nápověda Dokumentů"
-"Dokumentenhilfe"
-"Dokumentumok súgói"
-"Pomoc dla dokumentów"
-"Ayuda documentos"
-"Документи"
-"Дакументы"
-
 HelpSearchTitle
 l:
 "Поиск"
@@ -20850,17 +18301,6 @@ HelpSearchingFor
 "Buscando por"
 "Пошук для"
 "Пошук для"
-
-HelpSearchCannotFind
-"Строка не найдена"
-"Could not find the string"
-"Nelze najít řetězec"
-"Konnte Zeichenkette nicht finden"
-"A szöveg nem található:"
-"Nie mogę odnaleźć ciągu znaków"
-"No se encontró la cadena"
-"Рядок не знайдено"
-"Радок не знойдзены"
 
 HelpF1
 l:
@@ -25277,29 +22717,6 @@ l:
 "{}"
 "{}"
 
-ComspecNotFound
-l:
-"Переменная окружения %COMSPEC% не определена"
-"Environment variable %COMSPEC% not defined"
-"Proměnná prostředí %COMSPEC% není definována"
-"Umgebungsvariable %COMSPEC% nicht definiert"
-"A %COMSPEC% környezeti változó nincs definiálva"
-"Nie zdefiniowano zmiennej środowiskowej %COMSPEC%"
-"Variable de entorno %COMSPEC% no definida"
-"Змінне оточення %COMSPEC% не визначено"
-"Зменная асяроддзя %COMSPEC% не вызначана"
-
-ExecuteErrorMessage
-"'%ls' не является внутренней или внешней командой, исполняемой программой или пакетным файлом.\n"
-"'%ls' is not recognized as an internal or external command, operable program or batch file.\n"
-"'%ls' nebylo nalezeno jako vniřní nebo externí příkaz, spustitelná aplikace nebo dávkový soubor.\n"
-"'%ls' nicht erkannt als interner oder externer Befehl, Programm oder Stapeldatei.\n"
-""%ls" nem azonítható külső vagy belső parancsként, futtatható programként vagy batch fájlként.\n"
-"Nie rozpoznano '%ls' jako polecenia, programu ani skryptu.\n"
-"'%ls' no es reconocida como un comando interno o externo, programa operable o archivo de lotes.\n"
-"'%ls' не є внутрішньою або зовнішньою командою, яку виконує програма або пакетний файл.\n"
-"'%ls' не з'ящляецца ўнутранай ці знешняй камандай, якая выконваецца праграмай ці пакетным файлам.\n"
-
 OpenPluginCannotOpenFile
 l:
 "Ошибка открытия файла"
@@ -25422,39 +22839,6 @@ upd:"&write"
 "&modificación"
 "&записи"
 "&запісу"
-
-FileFilterCreated
-"&создания"
-"&creation"
-"&vytvoření"
-"E&rstellung"
-"&Létrehozás"
-"&utworzenia"
-"&creación"
-"&створення"
-"&стварэння"
-
-FileFilterOpened
-"&доступа"
-"&access"
-"&přístupu"
-"Z&ugriff"
-"&Hozzáférés"
-"&dostępu"
-"&acceso"
-"&доступу"
-"&доступу"
-
-FileFilterChanged
-"&изменения"
-"c&hange"
-upd:"c&hange"
-upd:"c&hange"
-upd:"c&hange"
-upd:"c&hange"
-upd:"c&hange"
-"&зміни"
-"з&мены"
 
 FileFilterDateRelative
 "Относительна&я"
@@ -25797,193 +23181,6 @@ upd:"root"
 "root"
 "root"
 "root"
-
-AdminRequired
-"Нужно обладать правами администратора"
-"You need to provide administrator permission"
-upd:"You need to provide administrator permission"
-upd:"You need to provide administrator permission"
-upd:"You need to provide administrator permission"
-upd:"You need to provide administrator permission"
-"Usted necesita permisos de administrador"
-"Потрібно мати права адміністратора"
-"Вам трэба валодаць правамі адміністратару"
-
-AdminRequiredPrivileges
-"Требуются дополнительные привилегии"
-"Additional privileges required"
-upd:"Additional privileges required"
-upd:"Additional privileges required"
-upd:"Additional privileges required"
-upd:"Additional privileges required"
-"Privilegios adicionales requeridos"
-"Потрібні додаткові привілеї"
-"Патрабуюцца дадатковыя прывілеі"
-
-AdminRequiredProcess
-"для обработки этого объекта:"
-"to process this object:"
-upd:"to process this object:"
-upd:"to process this object:"
-upd:"to process this object:"
-upd:"to process this object:"
-"para procesar este objeto:"
-"для обробки цього об'єкта:"
-"для апрацоўкі гэтага аб'екту:"
-
-AdminRequiredCreate
-"для создания этого объекта:"
-"to create this object:"
-upd:"to create this object:"
-upd:"to create this object:"
-upd:"to create this object:"
-upd:"to create this object:"
-"para crear este objeto:"
-"для створення цього об'єкта:"
-"для стварэння гэтага аб'екту:"
-
-AdminRequiredDelete
-"для удаления этого объекта:"
-"to delete this object:"
-upd:"to delete this object:"
-upd:"to delete this object:"
-upd:"to delete this object:"
-upd:"to delete this object:"
-"para eliminar este objeto:"
-"для видалення цього об'єкта:"
-"для выдалення гэтага аб'екту:"
-
-AdminRequiredCopy
-"для копирования этого объекта:"
-"to copy this object:"
-upd:"to copy this object:"
-upd:"to copy this object:"
-upd:"to copy this object:"
-upd:"to copy this object:"
-"para copiar este objeto:"
-"для копіювання цього об'єкта:"
-"для капіявання гэтага аб'екту:"
-
-AdminRequiredMove
-"для перемещения этого объекта:"
-"to move this object:"
-upd:"to move this object:"
-upd:"to move this object:"
-upd:"to move this object:"
-upd:"to move this object:"
-"para mover este objeto:"
-"для переміщення цього об'єкта:"
-"для пераносу гэтага аб'екту:"
-
-AdminRequiredGetAttributes
-"для получения атрибутов этого объекта:"
-"to get attributes of this object:"
-upd:"to get attributes of this object:"
-upd:"to get attributes of this object:"
-upd:"to get attributes of this object:"
-upd:"to get attributes of this object:"
-"para obtener atributos de este objeto:"
-"для отримання атрибутів цього об'єкта:"
-"для атрымання атрыбутаў гэтага аб'екту:"
-
-AdminRequiredSetAttributes
-"для установки атрибутов этого объекта:"
-"to set attributes of this object:"
-upd:"to set attributes of this object:"
-upd:"to set attributes of this object:"
-upd:"to set attributes of this object:"
-upd:"to set attributes of this object:"
-"para poner atributos a este objeto:"
-"для встановлення атрибутів цього об'єкта:"
-"для стварэння атрыбутаў гэтага аб'екту:"
-
-AdminRequiredHardLink
-"для создания этой жёсткой ссылки:"
-"to create this hard link:"
-upd:"to create this hard link:"
-upd:"to create this hard link:"
-upd:"to create this hard link:"
-upd:"to create this hard link:"
-"para crear este enlace rígido:"
-"для створення цього жорсткого посилання:"
-"для стварэння гэтай жорсткай спасылкі:"
-
-AdminRequiredSymLink
-"для создания этой символической ссылки:"
-"to create this symbolic link:"
-upd:"to create this symbolic link:"
-upd:"to create this symbolic link:"
-upd:"to create this symbolic link:"
-upd:"to create this symbolic link:"
-"para crear este enlace simbólico:"
-"для створення цього символічного посилання:"
-"для стварэння гэтай сімвалічнай спасылкі:"
-
-AdminRequiredRecycle
-"для перемещения этого объекта в корзину:"
-"to move this object to recycle bin:"
-upd:"to move this object to recycle bin:"
-upd:"to move this object to recycle bin:"
-upd:"to move this object to recycle bin:"
-upd:"to move this object to recycle bin:"
-"para mover este objeto a la papelera:"
-"для переміщення цього об'єкта в кошик:"
-"для пераносу гэтага аб'екту ў Сметнік:"
-
-AdminRequiredList
-"для просмотра этого объекта:"
-"to list this object:"
-upd:"to list this object:"
-upd:"to list this object:"
-upd:"to list this object:"
-upd:"to list this object:"
-"para listar este objeto:"
-"для перегляду цього об'єкта:"
-"для прагляду гэтага аб'екту:"
-
-AdminRequiredSetOwner
-"для установки владельца этого объекта:"
-"to set owner of this object:"
-upd:"to set owner of this object:"
-upd:"to set owner of this object:"
-upd:"to set owner of this object:"
-upd:"to set owner of this object:"
-"para poner como dueño de este objeto:"
-"для встановлення власника цього об'єкта:"
-"для усталёўкі ўладальніка гэтага аб'екту:"
-
-AdminRequiredOpen
-"для открытия этого объекта:"
-"to open this object:"
-upd:"to open this object:"
-upd:"to open this object:"
-upd:"to open this object:"
-upd:"to open this object:"
-"para abrir este objeto:"
-"для відкриття цього об'єкта:"
-"для адчынення гэтага аб'екту:"
-
-AdminDoForAll
-"Выполнить это действие для &всех текущих объектов"
-"Do this for &all current objects"
-upd:"Do this for &all current objects"
-upd:"Do this for &all current objects"
-upd:"Do this for &all current objects"
-upd:"Do this for &all current objects"
-"Hacer esto para todos los objetos actuales"
-"Виконати цю дію для &всіх поточних об'єктів"
-"&Выканаць гэтае дзеянне для ўсіх бягучых аб'ектаў:"
-
-AdminDoNotAskAgainInTheCurrentSession
-"Больше не спрашивать в текущей сессии"
-"Do not ask again in the current session"
-upd:"Do not ask again in the current session"
-upd:"Do not ask again in the current session"
-upd:"Do not ask again in the current session"
-upd:"Do not ask again in the current session"
-"No preguntar nuevamente en la sesión actual"
-"Більше не питати у поточній сесії"
-"Больш не пытаць у бягучай сэсіі"
 
 TerminalClipboardAccessTitle
 "Доступ к буферу обмена"
