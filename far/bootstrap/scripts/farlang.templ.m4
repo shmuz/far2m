@@ -1482,7 +1482,7 @@ MaskGroupTargetFilter
 "Target &name for masks:"
 "&Cílové jméno pro masky:"
 "&Zielname für Masken:"
-"&Cél neve a maszkokhoz:
+"&Cél neve a maszkokhoz:"
 "&Nazwa docelowa dla masek:"
 "&Nombre de destino para máscaras:"
 "&Ім'я цілі для масок:"
