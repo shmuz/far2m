@@ -392,8 +392,8 @@ int Panel::ChangeDiskMenu(int Pos,int FirstCall)
 	class Guard_Macro_DskShowPosType
 	{
 		public:
-			Guard_Macro_DskShowPosType(Panel *curPanel) {Macro_DskShowPosType=(curPanel==CtrlObject->Cp()->LeftPanel)?1:2;};
-			~Guard_Macro_DskShowPosType() {Macro_DskShowPosType=0;};
+			Guard_Macro_DskShowPosType(Panel *curPanel) {Macro_DskShowPosType=(curPanel==CtrlObject->Cp()->LeftPanel)?1:2;}
+			~Guard_Macro_DskShowPosType() {Macro_DskShowPosType=0;}
 	};
 	SCOPED_ACTION(Guard_Macro_DskShowPosType)(this);
 	MenuItemEx ChDiskItem;

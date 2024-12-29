@@ -1065,11 +1065,13 @@ end
 
 function MT.test_Far()
   assert_bool (Far.FullScreen)
-  assert_num (Far.Height)
   assert_bool (Far.IsUserAdmin)
   assert_num (Far.PID)
   assert_str (Far.Title)
-  assert_num (Far.Width)
+
+  local R = assert_table(actl.GetFarRect())
+  assert_eq (Far.Height, R.Bottom - R.Top + 1)
+  assert_eq (Far.Width, R.Right - R.Left + 1)
 
   local temp = Far.UpTime
   mf.sleep(50)
@@ -1158,6 +1160,7 @@ function MT.test_Object()
 end
 
 function MT.test_Drv()
+  assert_eq (Drv.ShowPos, 0)
   Keys"AltF1"
   assert_num (Drv.ShowMode)
   assert_eq (Drv.ShowPos, 1)
@@ -1165,6 +1168,7 @@ function MT.test_Drv()
   assert_num (Drv.ShowMode)
   assert_eq (Drv.ShowPos, 2)
   Keys"Esc"
+  assert_eq (Drv.ShowPos, 0)
 end
 
 function MT.test_Help()
@@ -1185,37 +1189,40 @@ function MT.test_Mouse()
 end
 
 local function test_XPanel(pan) -- (@pan: either APanel or PPanel)
+  local Inf = assert_table(panel.GetPanelInfo(nil, pan==APanel and 1 or 0))
+  local R = assert_table(Inf.PanelRect)
+
   assert_bool (pan.Bof)
   assert_num  (pan.ColumnCount)
-  assert_num  (pan.CurPos)
+  assert_eq   (pan.CurPos, Inf.CurrentItem)
   assert_str  (pan.Current)
   assert_num  (pan.DriveType)
-  assert_bool (pan.Empty)
+  assert_eq   (pan.Empty, Inf.ItemsNumber==0)
   assert_bool (pan.Eof)
-  assert_bool (pan.FilePanel)
+  assert_eq   (pan.FilePanel, Inf.PanelType==F.PTYPE_FILEPANEL)
   assert_bool (pan.Filter)
   assert_bool (pan.Folder)
   assert_str  (pan.Format)
-  assert_num  (pan.Height)
+  assert_eq   (pan.Height, R.bottom - R.top + 1)
   assert_str  (pan.HostFile)
-  assert_num  (pan.ItemCount)
-  assert_bool (pan.Left)
+  assert_eq   (pan.ItemCount, Inf.ItemsNumber)
+  assert_eq   (pan.Left, 0 ~= band(Inf.Flags,F.PFLAGS_PANELLEFT))
   assert_num  (pan.OPIFlags)
   assert_str  (pan.Path)
   assert_str  (pan.Path0)
-  assert_bool (pan.Plugin)
+  assert_eq   (pan.Plugin, 0 ~= band(Inf.Flags,F.PFLAGS_PLUGIN))
   assert_str  (pan.Prefix)
   assert_bool (pan.Root)
   assert_num  (pan.SelCount)
   assert_bool (pan.Selected)
-  assert_num  (pan.Type)
+  assert_eq   (pan.Type, Inf.PanelType)
   assert_str  (pan.UNCPath)
-  assert_bool (pan.Visible)
-  assert_num  (pan.Width)
+  assert_eq   (pan.Visible, 0 ~= band(Inf.Flags,F.PFLAGS_VISIBLE))
+  assert_eq   (pan.Width, R.right - R.left + 1)
 
   if pan == APanel then
-    Keys "End"  assert_true(pan.Eof)
-    Keys "Home" assert_true(pan.Bof)
+    Keys "End"  assert_true(pan.Eof); assert_true(pan.Empty or not pan.Bof);
+    Keys "Home" assert_true(pan.Bof); assert_true(pan.Empty or not pan.Eof);
   end
 end
 
