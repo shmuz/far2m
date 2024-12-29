@@ -1,1 +1,0 @@
-../far2sdk/farcolor.h
