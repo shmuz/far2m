@@ -807,8 +807,8 @@ int Editor::ProcessKey(FarKey Key)
 
 	// if ((!isk || CtrlObject->Macro.IsExecuting()) && !isk && !Pasting)
 	if (!isk && !Pasting
-			&& !(((unsigned int)Key >= KEY_MACRO_BASE && (unsigned int)Key <= KEY_MACRO_ENDBASE)
-					|| ((unsigned int)Key >= KEY_OP_BASE && (unsigned int)Key <= KEY_OP_ENDBASE))) {
+			&& !((Key >= KEY_MACRO_BASE && Key <= KEY_MACRO_ENDBASE)
+					|| (Key >= KEY_OP_BASE && Key <= KEY_OP_ENDBASE))) {
 		_SVS(SysLog(L"[%d] BlockStart=(%d,%d)", __LINE__, BlockStart, VBlockStart));
 
 		if (BlockStart || VBlockStart) {

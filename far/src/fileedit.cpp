@@ -833,7 +833,7 @@ int FileEditor::ReProcessKey(FarKey Key,int CalledFromControl)
 
 	DWORD FNAttr;
 
-	if (Flags.Check(FFILEEDIT_REDRAWTITLE) && (((unsigned int)Key & 0x00ffffff) < KEY_END_FKEY || IS_INTERNAL_KEY_REAL(Key & 0x00ffffff)))
+	if (Flags.Check(FFILEEDIT_REDRAWTITLE) && ((Key & 0x00ffffff) < KEY_END_FKEY || IS_INTERNAL_KEY_REAL(Key & 0x00ffffff)))
 		ShowConsoleTitle();
 
 	// BugZ#488 - Shift=enter
@@ -848,7 +848,7 @@ int FileEditor::ReProcessKey(FarKey Key,int CalledFromControl)
 	   никак не соответствует обрабатываемой клавише, возникают разномастные
 	   глюки
 	*/
-	if (((unsigned int)Key >= KEY_MACRO_BASE && (unsigned int)Key <= KEY_MACRO_ENDBASE) || ((unsigned int)Key>=KEY_OP_BASE && (unsigned int)Key <=KEY_OP_ENDBASE)) // исключаем MACRO
+	if ((Key >= KEY_MACRO_BASE && Key <= KEY_MACRO_ENDBASE) || (Key>=KEY_OP_BASE && Key <=KEY_OP_ENDBASE)) // исключаем MACRO
 	{
 		; //
 	}

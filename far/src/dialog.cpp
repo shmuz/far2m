@@ -2691,10 +2691,8 @@ int Dialog::ProcessKey(FarKey Key)
 		Key = Key == KEY_ENTER ? KEY_SHIFTENTER : KEY_SHIFTNUMENTER;
 	}
 
-	if (!(
-				/*(Key>=KEY_MACRO_BASE && Key <=KEY_MACRO_ENDBASE) ||*/
-				((unsigned int)Key >= KEY_OP_BASE && (unsigned int)Key <= KEY_OP_ENDBASE))
-			&& !DialogMode.Check(DMODE_KEY))
+	/*(Key>=KEY_MACRO_BASE && Key <=KEY_MACRO_ENDBASE) ||*/
+	if (!(Key >= KEY_OP_BASE && Key <= KEY_OP_ENDBASE) && !DialogMode.Check(DMODE_KEY))
 		if (DlgProc((HANDLE)this, DN_KEY, FocusPos, Key))
 			return TRUE;
 

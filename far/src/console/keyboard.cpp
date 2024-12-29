@@ -1700,7 +1700,7 @@ BOOL WINAPI KeyToText(FarKey Key0, FARString &strKeyText0)
 				if (I  == ARRAYSIZE(SpecKeyName))
 #endif
 				{
-					FKey=Upper((wchar_t)Key&0xFFFF);
+					FKey=Upper(Key&0xFFFF);
 
 					wchar_t KeyText[2]={0};
 
@@ -1712,7 +1712,7 @@ BOOL WINAPI KeyToText(FarKey Key0, FARString &strKeyText0)
 							KeyText[0]=(wchar_t)(Key&0xFFFF);
 					}
 					else
-						KeyText[0]=(wchar_t)Key&0xFFFF;
+						KeyText[0]=Key&0xFFFF;
 
 					strKeyText += KeyText;
 				}
