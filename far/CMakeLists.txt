@@ -258,19 +258,19 @@ add_custom_command(TARGET far2m POST_BUILD
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 #TODO
 else()
+    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/DE/far2m-tty.desktop" "${CMAKE_CURRENT_BINARY_DIR}/DE/far2m-tty.desktop")
+    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/DE/far2medit-tty.desktop" "${CMAKE_CURRENT_BINARY_DIR}/DE/far2medit-tty.desktop")
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/DE/far2m.desktop" "${CMAKE_CURRENT_BINARY_DIR}/DE/far2m.desktop")
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/DE/far2medit.desktop" "${CMAKE_CURRENT_BINARY_DIR}/DE/far2medit.desktop")
-    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/DE/far2m-wx.desktop" "${CMAKE_CURRENT_BINARY_DIR}/DE/far2m-wx.desktop")
-    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/DE/far2medit-wx.desktop" "${CMAKE_CURRENT_BINARY_DIR}/DE/far2medit-wx.desktop")
 
     install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/DE/icons" DESTINATION "share" USE_SOURCE_PERMISSIONS COMPONENT desktop FILES_MATCHING PATTERN "*")
 
 	# Have to make desktop files executable, see:
 	# https://wiki.ubuntu.com/SecurityTeam/Policies#Execute-Permission_Bit_Required
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/DE/far2m.desktop"
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/DE/far2m-tty.desktop"
+                  "${CMAKE_CURRENT_BINARY_DIR}/DE/far2medit-tty.desktop"
+                  "${CMAKE_CURRENT_BINARY_DIR}/DE/far2m.desktop"
                   "${CMAKE_CURRENT_BINARY_DIR}/DE/far2medit.desktop"
-                  "${CMAKE_CURRENT_BINARY_DIR}/DE/far2m-wx.desktop"
-                  "${CMAKE_CURRENT_BINARY_DIR}/DE/far2medit-wx.desktop"
         DESTINATION "share/applications"
         COMPONENT desktop
         PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_READ WORLD_EXECUTE)

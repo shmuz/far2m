@@ -1,12 +1,12 @@
 [Desktop Entry]
 Type=Application
-Name=Far2m Editor (Terminal)
-Name[ru]=Редактор Far2m (Терминал)
+Name=Far2m Editor (WX GUI)
+Name[ru]=Редактор Far2m (WX GUI)
 Comment=Edit text files
 Comment[ru]=Редактирование текстовых файлов
-Exec=far2medit --tty %f
+Exec=far2medit --notty %f
 TryExec=far2medit
-Terminal=true
+Terminal=false
 MimeType=text/plain;
 Categories=Utility;TextEditor;
 Icon=far2medit
