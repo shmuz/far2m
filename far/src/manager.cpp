@@ -959,9 +959,10 @@ int Manager::ProcessKey(FarKey Key)
 					if (CurrentFrame->GetCanLoseFocus())
 					{
 						DeactivateFrame(CurrentFrame,Key==KEY_CTRLTAB?1:-1);
+						return TRUE;
 					}
 
-					return TRUE;
+					break;
 			}
 		}
 
