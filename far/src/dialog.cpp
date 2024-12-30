@@ -5008,7 +5008,7 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 			int *KeyArray = (int *)Param2;
 			Dlg->DialogMode.Set(DMODE_KEY);
 
-			for (unsigned int I = 0; I < (unsigned)Param1; ++I)
+			for (int I = 0; I < Param1; ++I)
 				Dlg->ProcessKey(KeyArray[I]);
 
 			Dlg->DialogMode.Clear(DMODE_KEY);
@@ -5052,23 +5052,6 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 				Dlg->ShadowSaveScr->Discard();
 
 			return TRUE;
-		}
-		/*****************************************************************/
-		/*
-			Msg=DM_ALLKEYMODE
-			Param1
-				=-1 - получить состояние
-				= 0 - выключить
-				= 1 - включить
-			Ret = состояние
-		*/
-		case DM_ALLKEYMODE: {
-			if (Param1 == -1)
-				return IsProcessAssignMacroKey;
-
-			BOOL OldIsProcessAssignMacroKey = IsProcessAssignMacroKey;
-			IsProcessAssignMacroKey = Param1;
-			return OldIsProcessAssignMacroKey;
 		}
 		/*****************************************************************/
 		case DM_SETMOUSEEVENTNOTIFY:	// Param1 = 1 on, 0 off, -1 - get

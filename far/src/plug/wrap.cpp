@@ -1852,9 +1852,6 @@ LONG_PTR WINAPI DlgProcA(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 		case DM_KILLSAVESCREEN:
 			Msg = oldfar::DM_KILLSAVESCREEN;
 			break;
-		case DM_ALLKEYMODE:
-			Msg = oldfar::DM_ALLKEYMODE;
-			break;
 		case DN_ACTIVATEAPP:
 			Msg = oldfar::DN_ACTIVATEAPP;
 			break;
@@ -2425,7 +2422,6 @@ LONG_PTR WINAPI FarSendDlgMessageA(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 			Msg = DM_GETCOMBOBOXEVENT;
 			break;
 		case oldfar::DM_KILLSAVESCREEN:
-		case oldfar::DM_ALLKEYMODE:
 		case oldfar::DN_ACTIVATEAPP:
 			break;
 	}
