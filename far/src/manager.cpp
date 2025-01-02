@@ -127,7 +127,7 @@ bool Manager::ExitAll()
 	{
 		Frame *iFrame=ModalStack[i];
 
-		if (!iFrame->GetCanLoseFocus(true))
+		if (!iFrame->GetCanLoseFocus(false))
 		{
 			auto PrevFrameCount=ModalStack.size();
 			iFrame->ProcessKey(KEY_ESC);
