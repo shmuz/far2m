@@ -19,26 +19,26 @@ Macro {
 -- The keys that invoke the whole macrotest from a macro. Some tests depend on that.
 local MacroKey1, MacroKey2 = "CtrlShiftF12", "RCtrlShiftF12"
 
-local function assert_eq(a,b)      assert(a == b)               return true; end
-local function assert_neq(a,b)     assert(a ~= b)               return true; end
-local function assert_num(v)       assert(type(v)=="number")    return v; end
-local function assert_str(v)       assert(type(v)=="string")    return v; end
-local function assert_table(v)     assert(type(v)=="table")     return v; end
-local function assert_bool(v)      assert(type(v)=="boolean")   return v; end
-local function assert_func(v)      assert(type(v)=="function")  return v; end
-local function assert_udata(v)     assert(type(v)=="userdata")  return v; end
-local function assert_nil(v)       assert(v==nil)               return v; end
-local function assert_false(v)     assert(v==false)             return v; end
-local function assert_true(v)      assert(v==true)              return v; end
+local function assert_eq(a,b,m)    assert(a == b, m)               return true; end
+local function assert_neq(a,b,m)   assert(a ~= b, m)               return true; end
+local function assert_num(v,m)     assert(type(v)=="number", m)    return v; end
+local function assert_str(v,m)     assert(type(v)=="string", m)    return v; end
+local function assert_table(v,m)   assert(type(v)=="table", m)     return v; end
+local function assert_bool(v,m)    assert(type(v)=="boolean", m)   return true; end
+local function assert_func(v,m)    assert(type(v)=="function", m)  return v; end
+local function assert_udata(v,m)   assert(type(v)=="userdata", m)  return v; end
+local function assert_nil(v,m)     assert(v==nil, m)               return true; end
+local function assert_false(v,m)   assert(v==false, m)             return true; end
+local function assert_true(v,m)    assert(v==true, m)              return true; end
 
 local function assert_range(v, low, high)
-  if low then assert(v >= low) end
-  if high then assert(v <= high) end
+  if low then assert(v >= low, v) end
+  if high then assert(v <= high, v) end
   return v
 end
 
-local function assert_numint(v)
-  assert(type(v)=="number" or bit64.type(v))
+local function assert_numint(v,m)
+  assert(type(v)=="number" or bit64.type(v), m)
   return v
 end
 
@@ -1078,13 +1078,13 @@ function MT.test_Far()
   temp = Far.UpTime - temp
   assert_range(temp, 40, 400)
 
-  local val,typ,val0,key,name,saved = Far.GetConfig("Editor.defaultcodepage")
-  assert_num(val)
-  assert_str(typ)
-  assert_num(val0)
-  assert_str(key)
-  assert_str(name)
-  assert_bool(saved)
+  local val,typ,val0,key,name,saved = Far.GetConfig("EDITOR.defaultcodepage")
+  assert_num  (val)
+  assert_eq   (typ, "integer")
+  assert_num  (val0)
+  assert_eq   (key, "Editor")
+  assert_eq   (name, "DefaultCodePage")
+  assert_true (saved)
 
   assert_func (Far.DisableHistory)
   assert_num (Far.KbdLayout(0))
@@ -1160,15 +1160,15 @@ function MT.test_Object()
 end
 
 function MT.test_Drv()
-  assert_eq (Drv.ShowPos, 0)
+  assert_eq (Drv.ShowPos, 0) -- "Location" is not open
   Keys"AltF1"
   assert_num (Drv.ShowMode)
-  assert_eq (Drv.ShowPos, 1)
+  assert_eq (Drv.ShowPos, 1) -- "Location" is open on the left
   Keys"Esc AltF2"
   assert_num (Drv.ShowMode)
-  assert_eq (Drv.ShowPos, 2)
+  assert_eq (Drv.ShowPos, 2) -- "Location" is open on the right
   Keys"Esc"
-  assert_eq (Drv.ShowPos, 0)
+  assert_eq (Drv.ShowPos, 0) -- "Location" is not open
 end
 
 function MT.test_Help()
