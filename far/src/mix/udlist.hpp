@@ -73,13 +73,12 @@ class UserDefinedList : private NonCopyable
 {
 	private:
 		std::vector<UserDefinedListItem> Array;
-		wchar_t Separator1, Separator2;
+		wchar_t mSeparator[16];
 		bool mProcessBrackets, mAddAsterisk, mPackAsterisks, mUnique, mSort, mTrim;
 		bool mAccountEmptyLine, mCaseSensitive, mProcessRegexp;
 
 	private:
 		bool CheckSeparators() const; // проверка разделителей на корректность
-		void SetDefaultSeparators();
 		const wchar_t *Skip(const wchar_t *Str, int &Length, int &RealLength, bool &Error, bool &InQuotes);
 
 	public:
@@ -87,24 +86,16 @@ class UserDefinedList : private NonCopyable
 		// mProcessBrackets=mAddAsterisk=mPackAsterisks=false
 		// mUnique=mSort=false
 
-		// Явно указываются разделители. См. описание SetParameters
-		UserDefinedList(DWORD Flags=0, wchar_t separator1=0, wchar_t separator2=0);
-		~UserDefinedList() {}
-
-	public:
-		// Сменить символы-разделитель и разрешить или запретить обработку
+		// Установить символы-разделители и разрешить или запретить обработку
 		// квадратных скобок.
-		// Если один из Separator* равен 0x00, то он игнорируется при компиляции
-		// (т.е. в Set)
-		// Если оба разделителя равны 0x00, то восстанавливаются разделители по
+		// Если разделители не заданы, то устанавливаются разделители по
 		// умолчанию (';' & ',').
 		// Если mAddAsterisk равно true, то к концу элемента списка будет
 		// добавляться '*', если этот элемент не содержит '?', '*' и '.'
-		// Возвращает false, если один из разделителей является кавычкой или
-		// включена обработка скобок и один из разделителей является квадратной
-		// скобкой.
-		bool SetParameters(DWORD Flags=0, wchar_t Separator1=L';', wchar_t Separator2=L',');
+		UserDefinedList(DWORD Flags=0, const wchar_t *Separator=nullptr);
+		~UserDefinedList() {}
 
+	public:
 		// Инициализирует список. Принимает список, разделенный разделителями.
 		// Возвращает false при неудаче.
 		bool Set(const wchar_t* List, bool AddToList=false);

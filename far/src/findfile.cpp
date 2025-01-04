@@ -2517,7 +2517,7 @@ static void DoPrepareFileList(HANDLE hDlg)
 	FARString strRoot;
 	CtrlObject->CmdLine->GetCurDir(strRoot);
 
-	UserDefinedList List(ULF_UNIQUE, L';');
+	UserDefinedList List(ULF_UNIQUE, L";");
 
 	if (SearchMode == FINDAREA_INPATH) {
 		FARString strPathEnv;

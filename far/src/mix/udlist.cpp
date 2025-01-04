@@ -99,29 +99,18 @@ static bool __cdecl CmpIndexes(const UserDefinedListItem &el1, const UserDefined
 	return el1.index < el2.index;
 }
 
-UserDefinedList::UserDefinedList(DWORD Flags, wchar_t separator1, wchar_t separator2)
-{
-	SetParameters(Flags, separator1, separator2);
-}
-
-void UserDefinedList::SetDefaultSeparators()
-{
-	Separator1=L';';
-	Separator2=L',';
-}
-
 bool UserDefinedList::CheckSeparators() const
 {
-	return !(Separator1==L'\"' || Separator2==L'\"' ||
-		(mProcessBrackets && (Separator1==L'[' || Separator2==L'[' || Separator1==L']' || Separator2==L']')) ||
-		(mProcessRegexp   && (Separator1==L'/' || Separator2==L'/')));
+	for (auto *S=mSeparator; *S; S++) {
+		if (*S==L'\"' || (mProcessBrackets && (*S==L'[' || *S==L']')) || (mProcessRegexp && *S==L'/'))
+			return false;
+	}
+	return true;
 }
 
-bool UserDefinedList::SetParameters(DWORD Flags, wchar_t separator1, wchar_t separator2)
+UserDefinedList::UserDefinedList(DWORD Flags, const wchar_t *Separator)
 {
-	Array.clear();
-	Separator1 = separator1;
-	Separator2 = separator2;
+	*mSeparator = 0;
 	mProcessBrackets = (Flags & ULF_PROCESSBRACKETS) != 0;
 	mAddAsterisk = (Flags & ULF_ADDASTERISK) != 0;
 	mPackAsterisks = (Flags & ULF_PACKASTERISKS) != 0;
@@ -132,17 +121,13 @@ bool UserDefinedList::SetParameters(DWORD Flags, wchar_t separator1, wchar_t sep
 	mCaseSensitive = (Flags & ULF_CASESENSITIVE) != 0;
 	mProcessRegexp = (Flags & ULF_PROCESSREGEXP) != 0;
 
-	if (!Separator1) {
-		Separator1 = Separator2;
+	if (Separator) {
+		wcsncpy(mSeparator, Separator, ARRAYSIZE(mSeparator));
+		mSeparator[ARRAYSIZE(mSeparator)-1] = 0;
 	}
-	if (Separator1 == Separator2) {
-		Separator2 = 0;
+	if (*mSeparator == 0) {
+		wcscpy(mSeparator, L";,"); // set default separators
 	}
-	if (!Separator1) {
-		SetDefaultSeparators();
-	}
-
-	return CheckSeparators();
 }
 
 bool UserDefinedList::SetAsIs(const wchar_t* List)
@@ -266,7 +251,7 @@ const wchar_t *UserDefinedList::Skip(const wchar_t *Str, int &Length, int &RealL
 	if ( mTrim )
 		while (IsSpace(*Str)) ++Str;
 
-	if (*Str==Separator1 || *Str==Separator2)
+	if (wcschr(mSeparator, *Str))
 	{
 		++Str;
 		if ( mTrim )
@@ -304,7 +289,7 @@ const wchar_t *UserDefinedList::Skip(const wchar_t *Str, int &Length, int &RealL
 			if ( mTrim )
 				while (IsSpace(*RealEnd)) ++RealEnd;
 
-			if (!*RealEnd || *RealEnd==Separator1 || *RealEnd==Separator2)
+			if (!*RealEnd || wcschr(mSeparator, *RealEnd))
 			{
 				Length=(int)(End-cur);
 				RealLength=(int)(RealEnd-cur);
@@ -331,7 +316,7 @@ const wchar_t *UserDefinedList::Skip(const wchar_t *Str, int &Length, int &RealL
 		{
 			++End;
 			for (int i=0; i<4; i++,End++) { // allow up to 4 flags, e.g. "ismx"
-				if (!*End || *End==Separator1 || *End==Separator2 || !IsAlpha(*End))
+				if (!*End || wcschr(mSeparator,*End) || !IsAlpha(*End))
 					break;
 			}
 
@@ -339,7 +324,7 @@ const wchar_t *UserDefinedList::Skip(const wchar_t *Str, int &Length, int &RealL
 			if ( mTrim )
 				while (IsSpace(*RealEnd)) ++RealEnd;
 
-			if (!*RealEnd || *RealEnd==Separator1 || *RealEnd==Separator2)
+			if (!*RealEnd || wcschr(mSeparator,*RealEnd))
 			{
 				Length=(int)(End-cur);
 				RealLength=(int)(RealEnd-cur);
@@ -360,7 +345,7 @@ const wchar_t *UserDefinedList::Skip(const wchar_t *Str, int &Length, int &RealL
 				else if (*cur==L']')
 					InBrackets=false;
 			}
-			if (!InBrackets && (*cur==Separator1 || *cur==Separator2))
+			if (!InBrackets && wcschr(mSeparator,*cur))
 				break;
 		}
 

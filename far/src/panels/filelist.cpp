@@ -837,7 +837,7 @@ int64_t FileList::VMProcess(int OpCode,void *vParam,int64_t iParam)
 			if (mps->Mode == ps_mode::position && (DWORD)mps->Index >= (DWORD)FileCount)
 				return Result;
 
-			UserDefinedList itemsList(ULF_UNIQUE|ULF_CASESENSITIVE, L'\n');
+			UserDefinedList itemsList(ULF_UNIQUE|ULF_CASESENSITIVE, L"\n");
 
 			if (mps->Action != ps_action::restore)
 			{
