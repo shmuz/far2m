@@ -132,13 +132,15 @@ bool UserDefinedList::SetParameters(DWORD Flags, wchar_t separator1, wchar_t sep
 	mCaseSensitive = (Flags & ULF_CASESENSITIVE) != 0;
 	mProcessRegexp = (Flags & ULF_PROCESSREGEXP) != 0;
 
-	if (!Separator1 && Separator2)
-	{
+	if (!Separator1) {
 		Separator1 = Separator2;
+	}
+	if (Separator1 == Separator2) {
 		Separator2 = 0;
 	}
-
-	if (!Separator1 && !Separator2) SetDefaultSeparators();
+	if (!Separator1) {
+		SetDefaultSeparators();
+	}
 
 	return CheckSeparators();
 }
