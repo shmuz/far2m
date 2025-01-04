@@ -507,7 +507,7 @@ int FarAppMain(int argc, char **argv)
 					bCustomPlugins = true;
 					if (arg_w[2])
 					{
-						UserDefinedList Udl(ULF_UNIQUE | ULF_CASESENSITIVE, L':', 0);
+						UserDefinedList Udl(ULF_UNIQUE | ULF_CASESENSITIVE, L':');
 						if (Udl.Set(arg_w.data() + 2))
 						{
 							for (size_t i=0; i < Udl.Size(); i++)

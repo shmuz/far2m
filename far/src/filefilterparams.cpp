@@ -88,75 +88,12 @@ void FileFilterParams::SetTitle(const wchar_t *Title)
 	m_strTitle = Title;
 }
 
-/*
-	Преобразование корявого формата PATHEXT в ФАРовский :-)
-	Функции передается нужные расширения, она лишь добавляет то, что есть
-	в %PATHEXT%
-	IS: Сравнений на совпадение очередной маски с тем, что имеется в Dest
-	IS: не делается, т.к. дубли сами уберутся при компиляции маски
-*/
-FARString &Add_PATHEXT(FARString &strDest)
-{
-	FARString strBuf;
-	size_t curpos = strDest.GetLength() - 1;
-	UserDefinedList MaskList(0, 0, ULF_UNIQUE);
-
-	if (apiGetEnvironmentVariable(L"PATHEXT", strBuf) && MaskList.Set(strBuf)) {
-		/* $ 13.10.2002 IS проверка на '|' (маски исключения) */
-		if (!strDest.IsEmpty() && (strDest.At(curpos) != L',' && strDest.At(curpos) != L';')
-				&& strDest.At(curpos) != L'|')
-			strDest+= L",";
-
-		const wchar_t *Ptr;
-		for (size_t MLI = 0; nullptr != (Ptr = MaskList.Get(MLI)); ++MLI) {
-			strDest+= L"*";
-			strDest+= Ptr;
-			strDest+= L",";
-		}
-	}
-
-	// лишняя запятая - в морг!
-	curpos = strDest.GetLength() - 1;
-
-	if (strDest.At(curpos) == L',' || strDest.At(curpos) == L';')
-		strDest.Truncate(curpos);
-
-	return strDest;
-}
-
 void FileFilterParams::SetMask(bool Used, const wchar_t *Mask, bool IgnoreCase)
 {
 	FMask.Used = Used;
 	FMask.strMask = Mask;
 	FMask.IgnoreCase = IgnoreCase;
-	/* Обработка %PATHEXT% */
 	FARString strMask = FMask.strMask;
-	size_t pos;
-
-	// проверим
-	if (strMask.PosI(pos, L"%PATHEXT%")) {
-		{
-			// Если встречается %pathext%, то допишем в конец...
-			size_t IQ1 = (strMask.At(pos + 9) == L',' || strMask.At(pos + 9) == L';') ? 10 : 9;
-			strMask.Remove(pos, IQ1);
-		}
-		size_t posSeparator;
-
-		if (strMask.Pos(posSeparator, EXCLUDEMASKSEPARATOR)) {
-			if (pos > posSeparator)		// PATHEXT находится в масках исключения
-			{
-				Add_PATHEXT(strMask);	// добавляем то, чего нету.
-			} else {
-				FARString strTmp = strMask;
-				strTmp.LShift(posSeparator + 1);
-				strMask.Truncate(posSeparator);
-				Add_PATHEXT(strMask);
-				strMask+= strTmp;
-			}
-		} else {
-			Add_PATHEXT(strMask);	// добавляем то, чего нету.
-		}
-	}
 
 	// Проверка на валидность текущих настроек фильтра
 	if (!FMask.FilterMask.Set(strMask, FMF_SILENT)) {
