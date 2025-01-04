@@ -1719,8 +1719,8 @@ int FarMacroApi::panelselectFunc()
 		if (Mode == 2 || Mode == 3)
 		{
 			strStr=ValItems.s();
-			ReplaceStrings(strStr,L"\r\n",L";");
-			ReplaceStrings(strStr,L"\n",L";");
+			ReplaceStrings(strStr, L"\r", L"\n");
+			ReplaceStrings(strStr, L"\n\n", L"\n");
 		}
 
 		MacroPanelSelect mps;

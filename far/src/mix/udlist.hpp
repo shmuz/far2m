@@ -88,7 +88,7 @@ class UserDefinedList : private NonCopyable
 		// mUnique=mSort=false
 
 		// Явно указываются разделители. См. описание SetParameters
-		UserDefinedList(DWORD Flags=0, wchar_t separator1=L';', wchar_t separator2=L',');
+		UserDefinedList(DWORD Flags=0, wchar_t separator1=0, wchar_t separator2=0);
 		~UserDefinedList() {}
 
 	public:
