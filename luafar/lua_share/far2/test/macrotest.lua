@@ -2644,7 +2644,7 @@ function MT.test_UserDefinedList()
 
   for cnt,tt in ipairs(cases) do
     local ref = { unpack(tt,3) }
-    local out = { mf.udlsplit(tt[1],tt[2]) }
+    local out = mf.udlsplit(tt[2],nil,tt[1]) or { false }
     assert(#out == #ref)
     for i=1,#ref do
       if out[i]~=ref[i] then
