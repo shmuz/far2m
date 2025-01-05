@@ -177,7 +177,7 @@ public:
 	int waitkeyFunc();
 	int windowscrollFunc();
 	int xlatFunc();
-	int UDList_Split();
+	int udlSplitFunc();
 
 private:
 	int SendValue(FarMacroValue &Value);
@@ -1201,7 +1201,7 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 		}
 
 		case MCODE_UDLIST_SPLIT:
-			return api.UDList_Split();
+			return api.udlSplitFunc();
 
 		case MCODE_FAR_GETINFO:
 			return api.fargetinfoFunc();
@@ -3100,21 +3100,24 @@ int FarMacroApi::kbdLayoutFunc()
 }
 
 //### temporary function, for test only
-int FarMacroApi::UDList_Split()
+int FarMacroApi::udlSplitFunc()
 {
-	auto Params = parseParams(2);
-	auto Flags = (unsigned)Params[0].getInteger();
-	auto Subj = Params[1].toString();
+	auto Params = parseParams(3);
+	auto Subj = Params[0].toString();
+	auto Separ = Params[1].toString();
+	auto Flags = (unsigned)Params[2].getInteger();
 
-	UserDefinedList udl(Flags);
-	if (udl.Set(Subj) && udl.Size())
-	{
-		const wchar_t* str;
-		for (int i=0; (str=udl.Get(i)); i++)
-			PassString(str);
+	UserDefinedList udl(Flags, Separ);
+	if (udl.Set(Subj) && udl.Size()) {
+		auto Values = new FarMacroValue[udl.Size()];
+		for (size_t i=0; i < udl.Size(); i++) {
+			Values[i].Type = FMVT_STRING;
+			Values[i].String = udl.Get(i);
+		}
+		PassArray(Values, udl.Size());
+		delete[] Values;
 	}
-	else
-	{
+	else {
 		PassBoolean(false);
 	}
 	return 0;
