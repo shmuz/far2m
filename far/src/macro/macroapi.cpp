@@ -3109,13 +3109,12 @@ int FarMacroApi::udlSplitFunc()
 
 	UserDefinedList udl(Flags, Separ);
 	if (udl.Set(Subj) && udl.Size()) {
-		auto Values = new FarMacroValue[udl.Size()];
+		std::vector<FarMacroValue> Values;
+		Values.reserve(udl.Size());
 		for (size_t i=0; i < udl.Size(); i++) {
-			Values[i].Type = FMVT_STRING;
-			Values[i].String = udl.Get(i);
+			Values.emplace_back(udl.Get(i));
 		}
-		PassArray(Values, udl.Size());
-		delete[] Values;
+		PassArray(Values.data(), Values.size());
 	}
 	else {
 		PassBoolean(false);
@@ -3125,7 +3124,7 @@ int FarMacroApi::udlSplitFunc()
 
 int FarMacroApi::fargetinfoFunc()
 {
-	wchar_t buf[64];
+	FARString Str;
 
 	PassString(FAR_BUILD);
 	PassString(FAR_PLATFORM);
@@ -3135,24 +3134,26 @@ int FarMacroApi::fargetinfoFunc()
 
 	std::vector<std::wstring> strings;
 	std::vector<FarMacroValue> values;
-	for (int i=-1; ; i++) {
-		if (const char *str = WinPortBackendInfo(i))
-			strings.emplace_back(MB2Wide(str));
-		else
-			break;
+	const char *mbStr;
+	for (int i=-1; (mbStr = WinPortBackendInfo(i)); i++) {
+		strings.emplace_back(MB2Wide(mbStr));
 	}
 	values.reserve(strings.size());
-	for (const auto& str: strings) {
-		values.emplace_back(str.c_str());
+	for (const auto& wStr: strings) {
+		values.emplace_back(wStr.c_str());
 	}
 	PassArray(values.data(), values.size());
 
 #if defined (__clang__)
-	swprintf(buf, ARRAYSIZE(buf), L"Clang, version %d.%d.%d", __clang_major__, __clang_minor__, __clang_patchlevel__);
-	PassString(buf);
+	Str.Format(L"Clang, version %d.%d.%d", __clang_major__, __clang_minor__, __clang_patchlevel__);
+	PassString(Str);
+#elif defined (__INTEL_COMPILER)
+	Str.Format(L"Intel C++ Compiler, version %d.%d.%d",
+		__INTEL_COMPILER / 100, __INTEL_COMPILER % 100, __INTEL_COMPILER_UPDATE);
+	PassString(Str);
 #elif defined (__GNUC__)
-	swprintf(buf, ARRAYSIZE(buf), L"GCC, version %d.%d.%d", __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__);
-	PassString(buf);
+	Str.Format(L"GCC, version %d.%d.%d", __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__);
+	PassString(Str);
 #endif
 
 	return 0;
