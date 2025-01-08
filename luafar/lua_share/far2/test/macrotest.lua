@@ -1201,7 +1201,7 @@ local function test_XPanel(pan) -- (@pan: either APanel or PPanel)
   assert_eq   (pan.CurPos, assert_num(panInfo.CurrentItem))
   assert_eq   (pan.Current, assert_str(curItem.FileName))
   assert_num  (pan.DriveType)
-  assert_eq   (pan.Empty, panInfo.ItemsNumber==0)
+  assert_eq   (pan.Empty, panInfo.ItemsNumber==1) -- an empty panel has a ".." item
   assert_bool (pan.Eof)
   assert_eq   (pan.FilePanel, panInfo.PanelType==F.PTYPE_FILEPANEL)
   assert_bool (pan.Filter)
