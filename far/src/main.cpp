@@ -738,7 +738,12 @@ int _cdecl main(int argc, char *argv[])
 	}
 
 	unsetenv("FARSETTINGS"); // don't inherit from parent process in any case
-	unsetenv("SUDO_ASKPASS"); // +
+
+	const char *askpass = getenv("SUDO_ASKPASS");
+	if (askpass && strstr(askpass, "far2l_askpass")) {
+		unsetenv("SUDO_ASKPASS"); // far2m is run from far2l
+	}
+
 	for (int i = 1; i + 1 < argc; ++i) {
 		if (!strcasecmp(argv[i],"-u")) {
 			++i;
