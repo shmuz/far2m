@@ -98,8 +98,8 @@ static std::string GetStdPath(const char *env1, const char *env2)
 
 static void SetupStdHandles()
 {
-	const std::string &out = GetStdPath("FAR_STDOUT", "FAR_STD");
-	const std::string &err = GetStdPath("FAR_STDERR", "FAR_STD");
+	const std::string &out = GetStdPath("FAR2M_STDOUT", "FAR2M_STD");
+	const std::string &err = GetStdPath("FAR2M_STDERR", "FAR2M_STD");
 	unsigned char reopened = 0;
 	if (!out.empty() && out != "-") {
 		if (freopen(out.c_str(), "a", stdout)) {
@@ -249,8 +249,8 @@ extern "C" void WinPortHelp()
 			"\t--nomaximize - dont maximize window upon launch even if its has saved maximized state (only for GUI backend)\n"
 			"\t--clipboard=SCRIPT - use external clipboard handler script that implements get/set text clipboard data via its stdin/stdout\n"
 			"\n"
-			"All options also can be set via the FAR_ARGS environment variable\n"
-			" (for example: export FAR_ARGS=\"--tty\" to start far2m in tty mode by default)\n");
+			"All options also can be set via the FAR2M_ARGS environment variable\n"
+			" (for example: export FAR2M_ARGS=\"--tty\" to start far2m in tty mode by default)\n");
 }
 
 struct ArgOptions
@@ -368,7 +368,7 @@ extern "C" int WinPortMain(const char *full_exe_path, int argc, char **argv, int
 	}
 #endif
 
-	char *ea = getenv("FAR_ARGS");
+	char *ea = getenv("FAR2M_ARGS");
 	if (ea != nullptr && *ea) {
 		std::string str;
 		for (const char *begin = ea;;) {
@@ -393,7 +393,7 @@ extern "C" int WinPortMain(const char *full_exe_path, int argc, char **argv, int
 	//const char *xdg_st = getenv("XDG_SESSION_TYPE");
 	//bool on_wayland = ((xdg_st && strcasecmp(xdg_st, "wayland") == 0) || getenv("WAYLAND_DISPLAY"));
 	if (arg_opts.x11) {
-	//if (((on_wayland && getenv("WSL_DISTRO_NAME")) && !arg_opts.wayland && !getenv("FAR_WSL_NATIVE")) || arg_opts.x11) {
+	//if (((on_wayland && getenv("WSL_DISTRO_NAME")) && !arg_opts.wayland && !getenv("FAR2M_WSL_NATIVE")) || arg_opts.x11) {
 		// on wslg stay on x11 by default until remaining upstream wayland-related clipboard bug is fixed
 		// https://github.com/microsoft/wslg/issues/1216
 		setenv("GDK_BACKEND", "x11", TRUE);
@@ -482,7 +482,7 @@ extern "C" int WinPortMain(const char *full_exe_path, int argc, char **argv, int
 
 	bool wsl_clipboard_workaround = (arg_opts.ext_clipboard.empty()
 		&& getenv("WSL_DISTRO_NAME")
-		&& !getenv("FAR_WSL_NATIVE"));
+		&& !getenv("FAR2M_WSL_NATIVE"));
 	if (wsl_clipboard_workaround) {
 		arg_opts.ext_clipboard = full_exe_path;
 		if (TranslateInstallPath_Bin2Share(arg_opts.ext_clipboard)) {
