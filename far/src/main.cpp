@@ -542,11 +542,6 @@ int FarAppMain(int argc, char **argv)
 				case L'W':
 					Opt.WindowMode=TRUE;
 					break;
-
-				case L'U':
-					if (!arg_w[2])
-						I++; // skip 2 args as this case is processed in SetCustomSettings()
-					break;
 			}
 		}
 		if (!switchHandled) // простые параметры. Их может быть max две штукА.
@@ -744,13 +739,21 @@ int _cdecl main(int argc, char *argv[])
 		unsetenv("SUDO_ASKPASS"); // far2m is run from far2l
 	}
 
-	for (int i = 1; i + 1 < argc; ++i) {
-		if (!strcasecmp(argv[i],"-u")) {
-			++i;
-			if (*argv[i]) {
-				SetCustomSettings(argv[i]);
+	// Custom settings
+	for (int i = 1; i < argc; ) {
+		if (!strcasecmp(argv[i], "-u")) {
+			if (i < argc - 1) {
+				SetCustomSettings(argv[i+1]);
+				argc -= 2;
+				memmove(argv+i, argv+i+2, (argc+1-i)*sizeof(char*));
+			}
+			else {
+				argv[--argc] = nullptr;
+				break;
 			}
 		}
+		else
+			++i;
 	}
 
 	setlocale(LC_ALL, "");//otherwise non-latin keys missing with XIM input method
