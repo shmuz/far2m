@@ -702,6 +702,11 @@ static void SetCustomSettings(const char *arg)
 
 int _cdecl main(int argc, char *argv[])
 {
+	auto RemoveArgs = [&] (int pos, int count) {
+		argc -= count;
+		memmove(argv+pos, argv+pos+count, (argc+1-pos)*sizeof(char*));
+	};
+
 	Opt.OnlyEditorViewerUsed = Options::NOT_ONLY_EDITOR_VIEWER;
 	if (argc > 0) {
 		const char *name = strrchr(argv[0], GOOD_SLASH);
@@ -711,8 +716,7 @@ int _cdecl main(int argc, char *argv[])
 			Opt.OnlyEditorViewerUsed = Options::ONLY_EDITOR;
 			if (argc > 1 && *argv[1] != '-') {
 				Opt.strEditViewArg = argv[1];	// use the next argument
-				--argc;
-				memmove(argv+1, argv+2, argc*sizeof(char*));
+				RemoveArgs(1, 1);
 			}
 		}
 		else if (strcmp(name, "far2m_askpass") == 0)
@@ -744,11 +748,10 @@ int _cdecl main(int argc, char *argv[])
 		if (!strcasecmp(argv[i], "-u")) {
 			if (i < argc - 1) {
 				SetCustomSettings(argv[i+1]);
-				argc -= 2;
-				memmove(argv+i, argv+i+2, (argc+1-i)*sizeof(char*));
+				RemoveArgs(i, 2);
 			}
 			else {
-				argv[--argc] = nullptr;
+				RemoveArgs(i, 1);
 				break;
 			}
 		}
