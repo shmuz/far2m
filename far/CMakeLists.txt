@@ -108,7 +108,6 @@ src/locale/locale.cpp
 
 src/bookmarks/Bookmarks.cpp
 src/bookmarks/BookmarksMenu.cpp
-src/bookmarks/BookmarksLegacy.cpp
 
 src/cfg/AllXLats.cpp
 src/cfg/config.cpp

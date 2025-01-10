@@ -86,8 +86,6 @@ public:
 	void RemoveKey(const std::string &name);
 };
 
-void CheckForConfigUpgrade();
-
 class ConfigReaderScope
 {
 	std::unique_ptr<ConfigReader> &_cfg_reader;

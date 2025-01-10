@@ -2,8 +2,6 @@
 #include <KeyFileHelper.h>
 #include "FARString.hpp"
 
-void CheckForImportLegacyShortcuts();
-
 class Bookmarks
 {
 	KeyFileHelper _kfh;

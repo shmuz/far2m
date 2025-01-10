@@ -356,7 +356,6 @@ int FarAppMain(int argc, char **argv)
 	int CntDestName=0; // количество параметров-имен каталогов
 
 	Opt.strRegRoot = L"Software/Far2";
-	CheckForConfigUpgrade();
 
 	// По умолчанию - брать плагины из основного каталога
 	Opt.LoadPlug.MainPluginDir=TRUE;
@@ -608,8 +607,6 @@ int FarAppMain(int argc, char **argv)
 	}
 	setenv("FARLANG", Opt.strLanguage.GetMB().c_str(), 1);
 
-	CheckForImportLegacyShortcuts();
-
 	// (!!!) temporary STUB because now Editor can not input filename "", see: fileedit.cpp -> FileEditor::Init()
 	// default Editor file name for new empty file
 	if ( Opt.OnlyEditorViewerUsed == Options::ONLY_EDITOR && Opt.strEditViewArg.IsEmpty() )
@@ -752,7 +749,6 @@ int _cdecl main(int argc, char *argv[])
 			}
 			else {
 				RemoveArgs(i, 1);
-				break;
 			}
 		}
 		else
@@ -768,7 +764,7 @@ int _cdecl main(int argc, char *argv[])
 
 	SetupFarPath(argv[0]);
 
-	SafeMMap::SignalHandlerRegistrar smm_shr;
+	SCOPED_ACTION(SafeMMap::SignalHandlerRegistrar);
 
 	gMainThreadID = GetInterThreadID();
 
