@@ -319,9 +319,8 @@ void Manager::ExecuteModalEV(bool RefreshScreen)
 	ExecuteModal();
 	ModalEVCount--;
 	if (RefreshScreen) {
-		auto top = GetTopModal();
-		if (!(top && top->GetType() == MODALTYPE_VMENU))
-			ProcessKey(KEY_CONSOLE_BUFFER_RESIZE); //redraw all
+		ProcessKey(KEY_CONSOLE_BUFFER_RESIZE); //redraw all
+		Commit();
 	}
 }
 
