@@ -1002,27 +1002,26 @@ int64_t VMenu::VMProcess(int OpCode, void *vParam, int64_t iParam)
 				  Если фильтр не был включен - включает его, режим фиксации не трогается, но игнорируется.
 				  Возвращает предыдущее значение строки фильтра.
 			*/
+			FARString *ptrStr = (FARString*)vParam;
 			switch (iParam) {
 				case 0:
 					if (bFilterEnabled) {
-						*(FARString *)vParam = strFilter;
+						*ptrStr = strFilter;
 						return 1;
 					}
 					break;
 				case 1:
-					if (!bFilterEnabled)
-						bFilterEnabled = true;
+					bFilterEnabled = true;
 					bool prevLocked = bFilterLocked;
 					bFilterLocked = false;
 					RestoreFilteredItems();
 					FARString oldFilter = strFilter;
 					strFilter.Clear();
-					if (vParam != nullptr)
-						AddToFilter(((FARString *)vParam)->CPtr());
+					AddToFilter(ptrStr->CPtr());
 					FilterStringUpdated(true);
 					bFilterLocked = prevLocked;
 					DisplayObject();
-					*(FARString *)vParam = oldFilter;
+					*ptrStr = oldFilter;
 					return 1;
 			}
 

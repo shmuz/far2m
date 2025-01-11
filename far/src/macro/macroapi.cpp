@@ -1162,9 +1162,9 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 			if (tmpAction.isUnknown())
 				tmpAction=CheckCode == MCODE_F_MENU_FILTER ? 4 : 0;
 
-			int CurMMode = GetArea();
+			int CurArea = GetArea();
 
-			if (IsMenuArea(CurMMode) || CurMMode == MACROAREA_DIALOG)
+			if (IsMenuArea(CurArea) || CurArea == MACROAREA_DIALOG)
 			{
 				if (auto *f = GetTopModal())
 				{
@@ -1180,7 +1180,7 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 						FARString NewStr;
 						if (tmpVar.isString())
 							NewStr = tmpVar.toString();
-						if (f->VMProcess(CheckCode,(void*)&NewStr,tmpAction.toInteger()))
+						if (f->VMProcess(CheckCode,&NewStr,tmpAction.toInteger()))
 						{
 							tmpVar=NewStr.CPtr();
 							success=true;
