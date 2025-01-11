@@ -326,7 +326,7 @@ LUAPLUG int GetLinkTargetW(
 #endif
 //---------------------------------------------------------------------------
 
-#ifdef EXPORT_ANALYSE
+#if defined(EXPORT_ANALYSE) || defined(EXPORT_ALL)
 LUAPLUG int AnalyseW(const struct AnalyseData *Data)
 {
 	return LS ? LF_Analyse(LS, Data) : 0;

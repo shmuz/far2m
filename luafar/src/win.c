@@ -616,7 +616,7 @@ static int win_SetFileTimes(lua_State *L)
 
 	int res = 0;
 	FILETIME t_create, t_access, t_write;
-	FILETIME *p_create=NULL, *p_access=NULL, *p_write=NULL;
+	const FILETIME *p_create=NULL, *p_access=NULL, *p_write=NULL;
 	const wchar_t* FileName = check_utf8_string(L, 1, NULL);
 	DWORD attr = GetFileAttributes(FileName);
 

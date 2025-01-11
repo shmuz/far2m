@@ -1334,11 +1334,6 @@ static void FarTrueColorFromRGB(struct FarTrueColor *out, DWORD rgb, int used)
 	out->B = (rgb >> 16) & 0xff;
 }
 
-static DWORD FarTrueColorToRGB(const struct FarTrueColor *src)
-{
-	return src->R | (src->G << 8) | (src->B << 16) | (src->Flags << 24);
-}
-
 static int editor_AddColor(lua_State *L)
 {
 	const uint32_t
@@ -3022,16 +3017,6 @@ DWORD GetColorFromTable(lua_State *L, const char *field, int index)
 	val = (DWORD) lua_tointeger(L, -1);
 	lua_pop(L, 1);
 	return val;
-}
-
-static void FillColor(lua_State *L, struct FarTrueColorForeAndBack *fb)
-{
-	if (lua_istable(L, -1)) {
-		DWORD val = GetColorFromTable(L, "ForegroundColor", 1);
-		FarTrueColorFromRGB(&fb->Fore, val, 1);
-		val = GetColorFromTable(L, "BackgroundColor", 2);
-		FarTrueColorFromRGB(&fb->Back, val, 1);
-	}
 }
 
 static void FillDialogColors(lua_State *L, struct ColorDialogData *Data)
