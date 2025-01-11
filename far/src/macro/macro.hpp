@@ -60,7 +60,7 @@ struct MacroPanelSelect {
 	const wchar_t *Item;
 };
 
-struct DlgParam;
+struct MacroDlgParam;
 
 class KeyMacro
 {
@@ -100,7 +100,7 @@ private:
 	static FARMACROSTATE GetExecutingState();
 	static bool GetMacroSettings(FarKey Key, DWORD &Flags, const wchar_t* Src, const wchar_t* Descr);
 
-	bool AssignMacroKey(DlgParam *Param);
+	bool AssignMacroKey(MacroDlgParam *Param);
 	void RestoreMacroChar() const;
 
 	static FARString m_RecCode;

@@ -125,7 +125,7 @@ std::string GuidToString(const GUID& Guid)
 }
 
 // для диалога назначения клавиши
-struct DlgParam
+struct MacroDlgParam
 {
 	bool Changed;
 	FarKey MacroKey;
@@ -487,7 +487,7 @@ bool KeyMacro::ProcessKey(FarKey dwKey, const INPUT_RECORD *Rec)
 		if (ctrldot||ctrlshiftdot) // признак конца записи?
 		{
 			m_InternalInput = 1;
-			DlgParam Param {false, 0, 0};
+			MacroDlgParam Param {false, 0, 0};
 			bool AssignRet = AssignMacroKey(&Param);
 
 			if (AssignRet && !Param.Changed && !m_RecCode.IsEmpty())
@@ -779,12 +779,12 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg, int Msg, int Param1, L
 	FARString strKeyText;
 	static int Recurse;
 	static FarKey LastKey;
-	static DlgParam *KMParam;
+	static MacroDlgParam *KMParam;
 	bool KeyIsValid = false;
 
 	if (Msg == DN_INITDIALOG)
 	{
-		KMParam = reinterpret_cast<DlgParam*>(Param2);
+		KMParam = reinterpret_cast<MacroDlgParam*>(Param2);
 		LastKey = 0;
 		Recurse = 0;
 		// <Клавиши, которые не введешь в диалоге назначения>
@@ -935,7 +935,7 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg, int Msg, int Param1, L
 	return DefDlgProc(hDlg, Msg, Param1, Param2);
 }
 
-bool KeyMacro::AssignMacroKey(DlgParam *Param)
+bool KeyMacro::AssignMacroKey(MacroDlgParam *Param)
 {
 	/*
 	  +------ Define macro ------+

@@ -442,26 +442,23 @@ void FileEditor::Init(
 		private:
 			Editor *editor;
 		public:
-			SmartLock() {editor=nullptr;}
-			~SmartLock() {if (editor) editor->Unlock();}
-
-			void Set(Editor *e) {editor=e; editor->Lock();}
+			SmartLock(Editor *e) : editor(e) { editor->Lock(); }
+			~SmartLock() { editor->Unlock(); }
 	};
-	SmartLock __smartlock;
 	SysErrorCode=0;
 	int BlankFileName=!StrCmp(Name,Msg::NewFileName);
 	//AY: флаг оповещающий закрытие редактора.
 	m_bClosing = false;
 	bEE_READ_Sent = false;
 	m_AddSignature = FB_NO;
-	m_editor = new Editor;
-	__smartlock.Set(m_editor);
 
+	m_editor = new(std::nothrow) Editor;
 	if (!m_editor)
 	{
 		ExitCode=XC_OPEN_ERROR;
 		return;
 	}
+	SCOPED_ACTION(SmartLock)(m_editor);
 
 	m_codepage = codepage;
 	m_editor->SetOwner(this);
@@ -1807,20 +1804,17 @@ int FileEditor::SaveFile(const wchar_t *Name,int Ask, bool bSaveAs, int TextForm
 		if (!m_editor->Flags.Check(FEDITOR_MODIFIED))
 			return SAVEFILE_SUCCESS;
 
-		if (Ask)
+		switch (Message(MSG_WARNING,3,&EditAskSaveId,Msg::EditTitle,Msg::EditAskSave,Msg::HYes,Msg::HNo,Msg::HCancel))
 		{
-			switch (Message(MSG_WARNING,3,&EditAskSaveId,Msg::EditTitle,Msg::EditAskSave,Msg::HYes,Msg::HNo,Msg::HCancel))
-			{
-				case -1:
-				case -2:
-				case 2:  // Continue Edit
-					return SAVEFILE_CANCEL;
-				case 0:  // Save
-					break;
-				case 1:  // Not Save
-					m_editor->TextChanged(0); // 10.08.2000 skv: TextChanged() support;
-					return SAVEFILE_SUCCESS;
-			}
+			case -1:
+			case -2:
+			case 2:  // Continue Edit
+				return SAVEFILE_CANCEL;
+			case 0:  // Save
+				break;
+			case 1:  // Not Save
+				m_editor->TextChanged(0); // 10.08.2000 skv: TextChanged() support;
+				return SAVEFILE_SUCCESS;
 		}
 	}
 

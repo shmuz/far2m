@@ -66,7 +66,6 @@ typedef void (WINAPI *PLUGINGETGLOBALINFO)(GlobalInfo *gi);
 class PluginA: public Plugin
 {
 	private:
-		FARString strRootKey;
 		std::string mbRootKey;
 
 		PluginInfo PI;
