@@ -596,12 +596,14 @@ const luaL_Reg regex_functions[] =
 	{"gsub",          func_gsub},
 	{"match",         func_match},
 	{"exec",          func_exec},
+	{"tfind",         func_tfind},
 
 	{"findW",         func_findW},
 	{"gmatchW",       func_gmatchW},
 	{"gsubW",         func_gsubW},
 	{"matchW",        func_matchW},
 	{"execW",         func_execW},
+	{"tfindW",        func_tfindW},
 	{NULL, NULL}
 };
 

@@ -2056,21 +2056,6 @@ void LF_Error(lua_State *L, const wchar_t* aMsg)
 	lua_pop(L, 1);
 }
 
-static int SplitToTable(lua_State *L, const wchar_t *Text, wchar_t Delim, int StartIndex)
-{
-	int count = StartIndex;
-	const wchar_t *p = Text;
-	do {
-		const wchar_t *q = wcschr(p, Delim);
-		if (q == NULL) q = wcschr(p, L'\0');
-		lua_pushinteger(L, ++count);
-		lua_pushlstring(L, (const char*)p, (q-p)*sizeof(wchar_t));
-		lua_rawset(L, -3);
-		p = *q ? q+1 : NULL;
-	} while(p);
-	return count - StartIndex;
-}
-
 // 1-st param: message text (if multiline, then lines must be separated by '\n')
 // 2-nd param: message title (if absent or nil, then "Message" is used)
 // 3-rd param: buttons (if multiple, then captions must be separated by ';';
@@ -3025,14 +3010,6 @@ LONG_PTR GetEnableFromLua (lua_State *L, int pos)
 	return ret;
 }
 
-static void SetColorForeAndBack(lua_State *L, const struct FarTrueColorForeAndBack *fb, const char *name)
-{
-	lua_createtable(L,0,2);
-	PutIntToTable(L, "ForegroundColor", FarTrueColorToRGB(&fb->Fore));
-	PutIntToTable(L, "BackgroundColor", FarTrueColorToRGB(&fb->Back));
-	lua_setfield(L, -2, name);
-}
-
 DWORD GetColorFromTable(lua_State *L, const char *field, int index)
 {
 	DWORD val;
@@ -3055,13 +3032,6 @@ static void FillColor(lua_State *L, struct FarTrueColorForeAndBack *fb)
 		val = GetColorFromTable(L, "BackgroundColor", 2);
 		FarTrueColorFromRGB(&fb->Back, val, 1);
 	}
-}
-
-static void FillColorForeAndBack(lua_State *L, struct FarTrueColorForeAndBack *fb, const char *Name)
-{
-	lua_getfield(L, -1, Name);
-	FillColor(L, fb);
-	lua_pop(L,1);
 }
 
 static void FillDialogColors(lua_State *L, struct ColorDialogData *Data)
@@ -5895,6 +5865,7 @@ static const luaL_Reg dialog_methods[] =
 	PAIR( dlg, GetConstTextPtr),
 	PAIR( dlg, GetCursorPos),
 	PAIR( dlg, GetCursorSize),
+	PAIR( dlg, GetDefaultColor),
 	PAIR( dlg, GetDialogInfo),
 	PAIR( dlg, GetDlgData),
 	PAIR( dlg, GetDlgItem),

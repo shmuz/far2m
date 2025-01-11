@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="1">
+    <builddir>far2m-cppcheck-build-dir</builddir>
+    <analyze-all-vs-configs>false</analyze-all-vs-configs>
+    <check-headers>true</check-headers>
+    <check-unused-templates>true</check-unused-templates>
+    <max-ctu-depth>2</max-ctu-depth>
+    <max-template-recursion>100</max-template-recursion>
+    <includedir>
+        <dir name="far/far2sdk/"/>
+        <dir name="far/src/"/>
+        <dir name="far/src/base/"/>
+        <dir name="far/src/mix/"/>
+        <dir name="far/src/bookmarks/"/>
+        <dir name="far/src/cfg/"/>
+        <dir name="far/src/console/"/>
+        <dir name="far/src/panels/"/>
+        <dir name="far/src/filemask/"/>
+        <dir name="far/src/hist/"/>
+        <dir name="far/src/locale/"/>
+        <dir name="far/src/macro/"/>
+        <dir name="far/src/plug/"/>
+        <dir name="far/src/vt/"/>
+        <dir name="WinPort/"/>
+    </includedir>
+    <paths>
+        <dir name="far/src"/>
+        <dir name="luafar/src"/>
+    </paths>
+    <exclude>
+        <path name="/home/shmuel/far2m/luafar/src/slnunico.c"/>
+    </exclude>
+    <project-name>far2m</project-name>
+</project>

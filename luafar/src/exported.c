@@ -121,14 +121,6 @@ void PushPluginPair(lua_State* L, HANDLE hPlugin)
 	lua_pushlightuserdata(L, hPlugin);
 }
 
-void DestroyCollector(lua_State* L, HANDLE hPlugin, const char* Collector)
-{
-	PushPluginTable(L, hPlugin);      //+1: Tbl
-	lua_pushnil(L);                   //+2
-	lua_setfield(L, -2, Collector);   //+1
-	lua_pop(L,1);                     //+0
-}
-
 // the value is on stack top (-1)
 // collector table is under the index 'pos' (this index cannot be a pseudo-index)
 const wchar_t* _AddStringToCollector(lua_State *L, int pos)
@@ -245,7 +237,7 @@ void FillPluginPanelItem (lua_State *L, struct PluginPanelItem *pi, int index)
 void FillFindData(lua_State* L, struct PluginPanelItem **pPanelItems, int *pItemsNumber)
 {
 	struct PluginPanelItem *ppi;
-	int i, num=0;
+	int num = 0;
 	int numLines = lua_objlen(L,-1);
 
 	ppi = (struct PluginPanelItem*) malloc(sizeof(struct PluginPanelItem) * numLines);
@@ -259,7 +251,7 @@ void FillFindData(lua_State* L, struct PluginPanelItem **pPanelItems, int *pItem
 		lua_pushvalue(L,-2);                 //+6: Tbl,FindData,UData,Coll,ppi,Coll
 		lua_rawset(L, -6);                   //+4: Tbl,FindData,UData,Coll
 
-		for (i=1; i<=numLines; i++) {
+		for (int i=1; i<=numLines; i++) {
 			lua_rawgeti(L, -3, i);             //+5: Tbl,FindData,UData,Coll,FindData[i]
 			if (lua_istable(L,-1)) {
 				FillPluginPanelItem(L, ppi+num, num+1);
@@ -806,7 +798,7 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 		case OPEN_FROMMACRO:
 		{
 			int top;
-			struct OpenMacroInfo* data = (struct OpenMacroInfo*)Item;
+			const struct OpenMacroInfo* data = (struct OpenMacroInfo*)Item;
 			lua_pushinteger(L, 0);        // dummy menuitem Id
 			PackMacroValues(L, data->Count, data->Values);
 			top = lua_gettop(L);
@@ -1488,7 +1480,7 @@ int LF_GetLinkTarget(
 			if (lua_type(L,-1) == LUA_TSTRING)
 			{
 				size_t size = 0;
-				wchar_t* ptr = utf8_to_wcstring(L,-1,&size); //+1 (conversion in place)
+				const wchar_t* ptr = utf8_to_wcstring(L,-1,&size); //+1 (conversion in place)
 				if (Target && TargetSize)
 				{
 					wcsncpy(Target, ptr, TargetSize);
