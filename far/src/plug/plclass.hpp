@@ -54,7 +54,7 @@ class Plugin
 
 	protected:
 		static constexpr const char *NFMP_GetGlobalInfo = "GetGlobalInfoW";
-		PLUGINGETGLOBALINFOW pGetGlobalInfoW;
+		PLUGINGETGLOBALINFOW pGetGlobalInfoW = nullptr;
 
 		PluginManager *m_owner; //BUGBUG
 

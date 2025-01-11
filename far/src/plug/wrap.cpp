@@ -136,9 +136,10 @@ static char *UnicodeToAnsiBin(const wchar_t *lpwszUnicodeString, int nLength, UI
 		dst_length = nLength + 1;
 	else
 		++dst_length;
-	char *lpResult = (char *)malloc(dst_length);
 	if (!dst_length)
 		return NULL;
+
+	char *lpResult = (char *)malloc(dst_length);
 	memset(lpResult, 0, dst_length);
 
 	if (nLength) {

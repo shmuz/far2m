@@ -526,17 +526,16 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 					{
 						bool ModifiedHistory=false;
 
-						for (auto HistoryItem=HistoryList.begin(); HistoryItem!=HistoryList.end(); HistoryItem++)
+						for (auto Item = HistoryList.begin(); Item != HistoryList.end(); )
 						{
-							if (HistoryItem->Lock) // залоченные не трогаем
-								continue;
-
-							// убить запись из истории
-							if (apiGetFileAttributes(HistoryItem->strName) == INVALID_FILE_ATTRIBUTES)
+							// залоченные не трогаем
+							if (!Item->Lock && (apiGetFileAttributes(Item->strName) == INVALID_FILE_ATTRIBUTES))
 							{
-								HistoryItem = --HistoryList.erase(HistoryItem);
-								ModifiedHistory=true;
+								Item = HistoryList.erase(Item); // убить запись из истории
+								ModifiedHistory = true;
 							}
+							else
+								Item++;
 						}
 
 						if (ModifiedHistory) // избавляемся от лишних телодвижений

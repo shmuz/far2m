@@ -737,7 +737,7 @@ int64_t TVar::asInteger() const
 	case vtString:
 		{
 			long long val;
-			return 1 == swscanf(str, L"%ll", &val) ? val : 0;
+			return 1 == swscanf(str, L"%lld", &val) ? val : 0;
 		}
 
 	default:

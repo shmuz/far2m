@@ -585,7 +585,7 @@ static void MergePalette()
 
 static void ConfigOptFromCmdLine()
 {
-	for (auto Str: Opt.CmdLineStrings)
+	for (const auto &Str: Opt.CmdLineStrings)
 	{
 		auto pName = Str.c_str();
 		auto pVal = wcschr(pName, L'=');

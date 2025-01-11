@@ -65,22 +65,18 @@ int Log(const char* Format, ...)
 
 	static int N = 0;
 	if (const char* home = getenv("HOME")) {
-		char* buf = (char*) malloc(strlen(home) + 64);
-		if (buf) {
-			strcpy(buf, home);
-			strcat(buf, "/luafar_log.txt");
-			FILE* fp = fopen(buf, "a");
-			if (fp) {
-				if (++N == 1) {
-					time_t rtime = time(nullptr);
-					fprintf(fp, "\n%s------------------------------\n", ctime(&rtime));
-				}
-				fprintf(fp, "%d: ", N);
-				vfprintf(fp, Format, valist);
-				fprintf(fp, "\n");
-				fclose(fp);
+		std::string buf = home;
+		buf += "/luafar_log.txt";
+		FILE* fp = fopen(buf.c_str(), "a");
+		if (fp) {
+			if (++N == 1) {
+				time_t rtime = time(nullptr);
+				fprintf(fp, "\n%s------------------------------\n", ctime(&rtime));
 			}
-			free(buf);
+			fprintf(fp, "%d: ", N);
+			vfprintf(fp, Format, valist);
+			fprintf(fp, "\n");
+			fclose(fp);
 		}
 	}
 	va_end(valist);
@@ -792,7 +788,7 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg, int Msg, int Param1, L
 		LastKey = 0;
 		Recurse = 0;
 		// <Клавиши, которые не введешь в диалоге назначения>
-		FarKey PreDefKeyMain[]=
+		const FarKey PreDefKeyMain[]=
 		{
 			KEY_CTRLDOWN, KEY_ENTER, KEY_NUMENTER, KEY_ESC, KEY_F1, KEY_CTRLF5,
 		};
@@ -803,7 +799,7 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg, int Msg, int Param1, L
 			SendDlgMessage(hDlg, DM_LISTADDSTR, 2, reinterpret_cast<LONG_PTR>(strKeyText.CPtr()));
 		}
 
-		FarKey PreDefKey[]=
+		const FarKey PreDefKey[]=
 		{
 			KEY_MSWHEEL_UP, KEY_MSWHEEL_DOWN, KEY_MSWHEEL_LEFT, KEY_MSWHEEL_RIGHT,
 			KEY_MSLCLICK, KEY_MSRCLICK, KEY_MSM1CLICK, KEY_MSM2CLICK, KEY_MSM3CLICK,
@@ -811,7 +807,7 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg, int Msg, int Param1, L
 			KEY_MSLDBLCLICK, KEY_MSRDBLCLICK, KEY_MSM1DBLCLICK, KEY_MSM2DBLCLICK, KEY_MSM3DBLCLICK,
 #endif
 		};
-		FarKey PreDefModKey[]=
+		const FarKey PreDefModKey[]=
 		{
 			0, KEY_CTRL, KEY_SHIFT, KEY_ALT, KEY_CTRLSHIFT, KEY_CTRLALT, KEY_ALTSHIFT,
 		};

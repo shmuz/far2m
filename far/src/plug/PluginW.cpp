@@ -1328,5 +1328,6 @@ void PluginW::ClearExports()
 	pFreeCustomDataW = nullptr;
 	pGetGlobalInfoW = nullptr;
 	pProcessConsoleInputW = nullptr;
+	pGetLinkTargetW = nullptr;
 }
 
