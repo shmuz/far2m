@@ -46,7 +46,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ConfigRW.hpp"
 
 KeyBar::KeyBar():
-	Owner(nullptr),
 	AltState(0),
 	CtrlState(0),
 	ShiftState(0),
@@ -59,11 +58,6 @@ KeyBar::KeyBar():
 	memset(RegKeyTitles, 0, sizeof(RegKeyTitles));
 }
 
-
-void KeyBar::SetOwner(ScreenObject *Owner)
-{
-	KeyBar::Owner=Owner;
-}
 
 static std::vector<std::wstring> PrevFKeyTitles;
 

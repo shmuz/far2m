@@ -73,6 +73,7 @@ Grabber::Grabber() :
 	DisplayObject();
 	Process();
 	delete SaveScr;
+	SaveScr = nullptr; //prevent repeated deletion in ScreenObject
 	pFrame->Unlock();
 	FrameManager->RefreshFrame();
 }

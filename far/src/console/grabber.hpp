@@ -46,7 +46,6 @@ class Grabber:Modal
 {
 	private:
 		ChangeMacroArea Cma;
-		SaveScreen *SaveScr;
 		GrabberArea PrevArea;
 		GrabberArea GArea;
 		int ResetArea;

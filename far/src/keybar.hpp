@@ -61,7 +61,6 @@ typedef KeyBarTitle KeyBarTitleGroup [KEY_COUNT];
 class KeyBar: public ScreenObject
 {
 	private:
-		ScreenObject *Owner;
 		KeyBarTitleGroup KeyTitles [KBL_GROUP_COUNT];
 		int KeyCounts [KBL_GROUP_COUNT];
 
@@ -87,8 +86,6 @@ class KeyBar: public ScreenObject
 
 		virtual int ProcessKey(FarKey Key);
 		virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
-
-		void SetOwner(ScreenObject *Owner);
 
 		void ReadRegGroup(const wchar_t *RegGroup, const wchar_t *Language);
 		void SetRegGroup(int Group);

@@ -248,19 +248,17 @@ wchar_t *Clipboard::Paste(bool &IsVertical, int MaxChars)
 	if (MaxChars >= 0 && CharsCount < (size_t)MaxChars)
 		CharsCount = (size_t)MaxChars;
 
+	IsVertical = false;
 	wchar_t *ClipText = (wchar_t *)malloc((CharsCount + 1) * sizeof(wchar_t));
-	if (ClipText)
-	{
+	if (ClipText) {
 		wmemcpy(ClipText, (const wchar_t *)ClipData, CharsCount);
 		ClipText[CharsCount] = 0;
-	}
 
-	IsVertical = false;
-
-	if (wcsstr(ClipText, NATIVE_EOLW)) {
-		UINT FormatType = RegisterFormat(FAR_VerticalBlock_Unicode);
-		if (FormatType && IsFormatAvailable(FormatType)) {
-			IsVertical = true;
+		if (wcsstr(ClipText, NATIVE_EOLW)) {
+			UINT FormatType = RegisterFormat(FAR_VerticalBlock_Unicode);
+			if (FormatType && IsFormatAvailable(FormatType)) {
+				IsVertical = true;
+			}
 		}
 	}
 
