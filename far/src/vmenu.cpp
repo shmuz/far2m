@@ -1792,8 +1792,10 @@ void VMenu::DisplayObject()
 		// SetFlags(VMENU_DISABLEDRAWBACKGROUND);
 	}
 
-	if (!CheckFlags(VMENU_LISTBOX))
+	if (!CheckFlags(VMENU_LISTBOX)) {
 		DrawTitles();
+		WaitInMainLoop = FALSE;
+	}
 
 	ShowMenu(true);
 }
