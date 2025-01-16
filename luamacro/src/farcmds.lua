@@ -39,7 +39,12 @@ local function Command(prefix, text)
       line  = line or (col and 1) or nil
       col   = col or nil
       fname = far.SplitCmdLine(fname or cmd)
-      editor.Editor(fname,nil,nil,nil,nil,nil,flags,line,col)
+      local attr = win.GetFileAttr(fname)
+      if attr and attr:find("d") then
+        far.Message("Cannot edit the folder '"..fname.."'", "Error", nil, "w")
+      else
+        editor.Editor(fname,nil,nil,nil,nil,nil,flags,line,col)
+      end
     end
   ----------------------------------------------------------------------------
   elseif prefix == "view" then
@@ -56,8 +61,15 @@ local function Command(prefix, text)
         viewer.Viewer(tmpname,nil,nil,nil,nil,nil,flags)
       end
     else
-      cmd = far.SplitCmdLine(cmd)
-      viewer.Viewer(cmd,nil,nil,nil,nil,nil,flags)
+      local fname = far.SplitCmdLine(cmd)
+      local attr = win.GetFileAttr(fname)
+      if attr and attr:find("d") then
+        far.Message("Cannot view the folder '"..fname.."'", "Error", nil, "w")
+      elseif attr then
+        viewer.Viewer(fname,nil,nil,nil,nil,nil,flags)
+      else
+        far.Message("File not found: '"..fname.."'", "Error", nil, "w")
+      end
     end
   ----------------------------------------------------------------------------
   elseif prefix == "load" then
