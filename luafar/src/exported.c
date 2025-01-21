@@ -1361,49 +1361,58 @@ static int Common_ProcessSynchroEvent(lua_State* L, int Event, int Data)
 
 int LF_ProcessSynchroEvent (lua_State* L, int Event, void *Param)
 {
-	if (Event == SE_COMMONSYNCHRO) {
+	if (Event == SE_COMMONSYNCHRO)
+	{
 		TSynchroData sd = *(TSynchroData*)Param; // copy
 		free(Param);
 
-		if (sd.type == SYNCHRO_TIMER) {
+		switch(sd.type)
+		{
+			case SYNCHRO_TIMER:
+			{
 #if !defined(__DragonFly__) && !defined(__ANDROID__)
-			int narg, index, posTab;
-			TTimerData *td = sd.timerData;
-			switch (td->closeStage) {
-				case 0:
-					lua_rawgeti(L, LUA_REGISTRYINDEX, td->tabRef);  //+1: Table
-					posTab = lua_gettop(L);
-					lua_getfield(L, -1, "n");                       //+2
-					narg = (int)lua_tointeger(L, -1);
-					for (index=1; index <= 2+narg; index++)         //+2+2+narg
-						lua_rawgeti(L, posTab, index);
-					lua_remove(L, posTab);
-					lua_remove(L, posTab);                          //+2+narg
-					pcall_msg(L, 1+narg, 0);                        //+0
-					break;
+				int narg, index, posTab;
+				TTimerData *td = sd.timerData;
+				switch (td->closeStage)
+				{
+					case 0:
+						lua_rawgeti(L, LUA_REGISTRYINDEX, td->tabRef);  //+1: Table
+						posTab = lua_gettop(L);
+						lua_getfield(L, -1, "n");                       //+2
+						narg = (int)lua_tointeger(L, -1);
+						for (index=1; index <= 2+narg; index++)         //+2+2+narg
+							lua_rawgeti(L, posTab, index);
+						lua_remove(L, posTab);
+						lua_remove(L, posTab);                          //+2+narg
+						pcall_msg(L, 1+narg, 0);                        //+0
+						break;
 
-				case 1:
-					break;
+					case 1:
+						break;
 
-				case 2:
-					luaL_unref(L, LUA_REGISTRYINDEX, td->tabRef);
-					break;
-			}
-#endif
-		}
-		else if (sd.type == SYNCHRO_COMMON) {
-			Common_ProcessSynchroEvent(L, Event, sd.data);
-		}
-		else if (sd.type == SYNCHRO_FUNCTION) {
-			lua_rawgeti(L, LUA_REGISTRYINDEX, sd.ref);
-			luaL_unref(L, LUA_REGISTRYINDEX, sd.ref);
-			if (lua_istable(L,-1) && lua_checkstack(L, sd.narg)) {
-				for (int i=1; i <= sd.narg; i++) {
-					lua_rawgeti(L, -i, i);
+					case 2:
+						luaL_unref(L, LUA_REGISTRYINDEX, td->tabRef);
+						break;
 				}
-				pcall_msg(L, sd.narg - 1, 0);
+#endif
+				break;
 			}
-			lua_pop(L, 1);
+
+			case SYNCHRO_COMMON:
+				Common_ProcessSynchroEvent(L, Event, sd.data);
+				break;
+
+			case SYNCHRO_FUNCTION:
+				lua_rawgeti(L, LUA_REGISTRYINDEX, sd.ref);
+				luaL_unref(L, LUA_REGISTRYINDEX, sd.ref);
+				if (lua_istable(L,-1) && lua_checkstack(L, sd.narg)) {
+					for (int i=1; i <= sd.narg; i++) {
+						lua_rawgeti(L, -i, i);
+					}
+					pcall_msg(L, sd.narg - 1, 0);
+				}
+				lua_pop(L, 1);
+				break;
 		}
 	}
 	return 0;

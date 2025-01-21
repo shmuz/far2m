@@ -33,11 +33,11 @@ enum {
 
 typedef struct
 {
+	TTimerData *timerData;
 	int type;
 	int data;
 	int ref;
 	int narg;
-	TTimerData *timerData;
 } TSynchroData;
 
 typedef struct {
