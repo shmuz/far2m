@@ -82,6 +82,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mix.hpp"
 #include "constitle.hpp"
 #include "plugapi.hpp"
+#include "CachedCreds.hpp"
 #include "MountInfo.h"
 #include "DlgGuid.hpp"
 #include "udlist.hpp"
@@ -1420,6 +1421,11 @@ int FileList::ProcessKey(FarKey Key)
 
 			ProcessEnter(1, Key == KEY_SHIFTENTER || Key == KEY_SHIFTNUMENTER, true,
 					Key == KEY_CTRLALTENTER || Key == KEY_CTRLALTNUMENTER);
+			return TRUE;
+		}
+
+		case KEY_CTRL | '`': {
+			SetLocation_Directory(CachedHomeDir());
 			return TRUE;
 		}
 
