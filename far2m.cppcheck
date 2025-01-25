@@ -28,7 +28,7 @@
         <dir name="luafar/src"/>
     </paths>
     <exclude>
-        <path name="/home/shmuel/far2m/luafar/src/slnunico.c"/>
+        <path name="luafar/src/slnunico.c"/>
     </exclude>
     <project-name>far2m</project-name>
 </project>

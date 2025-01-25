@@ -86,7 +86,7 @@ int FileList::PopPlugin(int EnableRestoreViewMode)
 	PluginsListItem *PStack=PluginsList.back();
 
 	// закрываем текущий плагин.
-	PluginsList.erase(--PluginsList.end());
+	PluginsList.pop_back();
 	CtrlObject->Plugins.ClosePanel(hPlugin);
 
 	if (!PluginsList.empty())

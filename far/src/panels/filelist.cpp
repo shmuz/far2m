@@ -254,9 +254,9 @@ FileList::~FileList()
 	_OT(SysLog(L"[%p] FileList::~FileList()", this));
 	CloseChangeNotification();
 
-	for (auto i = PrevDataList.begin(); i != PrevDataList.end(); i++) {
-		DeleteListData((*i)->PrevListData, (*i)->PrevFileCount);
-		delete *i;
+	for (auto i: PrevDataList) {
+		DeleteListData(i->PrevListData, i->PrevFileCount);
+		delete i;
 	}
 
 	PrevDataList.clear();
@@ -839,9 +839,7 @@ int64_t FileList::VMProcess(int OpCode, void *vParam, int64_t iParam)
 					auto arg2 = RegularPanel || !wcschr(name, LGOOD_SLASH);
 					if ((Pos = FindFile(arg1, arg2)) != -1) {
 						Select(ListData[Pos],
-								act == remove        ? FALSE
-										: act == add ? TRUE
-													 : !ListData[Pos]->Selected);
+							act == remove ? false : act == add ? true : !ListData[Pos]->Selected);
 						Result++;
 					}
 				}
@@ -852,12 +850,12 @@ int64_t FileList::VMProcess(int OpCode, void *vParam, int64_t iParam)
 				{
 					switch (mps->Mode) {
 						case ps_mode::all:    // снять со всего?
-							Result = (int64_t)GetRealSelCount();
+							Result = GetRealSelCount();
 							ClearSelection();
 							break;
 						case ps_mode::position:    // по индексу?
 							Result = 1;
-							Select(ListData[mps->Index], FALSE);
+							Select(ListData[mps->Index], false);
 							break;
 						case ps_mode::list_names:    // набор строк
 							SelectByList(ps_action::remove);
@@ -874,12 +872,12 @@ int64_t FileList::VMProcess(int OpCode, void *vParam, int64_t iParam)
 					switch (mps->Mode) {
 						case ps_mode::all:    // выделить все?
 							for (int i = 0; i < FileCount; i++)
-								Select(ListData[i], TRUE);
-							Result = (int64_t)GetRealSelCount();
+								Select(ListData[i], true);
+							Result = GetRealSelCount();
 							break;
 						case ps_mode::position:    // по индексу?
 							Result = 1;
-							Select(ListData[mps->Index], TRUE);
+							Select(ListData[mps->Index], true);
 							break;
 						case ps_mode::list_names:    // набор строк через CRLF
 							SelectByList(ps_action::add);
@@ -896,12 +894,12 @@ int64_t FileList::VMProcess(int OpCode, void *vParam, int64_t iParam)
 					switch (mps->Mode) {
 						case ps_mode::all:    // инвертировать все?
 							for (int i = 0; i < FileCount; i++)
-								Select(ListData[i], ListData[i]->Selected ? FALSE : TRUE);
-							Result = (int64_t)GetRealSelCount();
+								Select(ListData[i], !ListData[i]->Selected);
+							Result = GetRealSelCount();
 							break;
 						case ps_mode::position:    // по индексу?
 							Result = 1;
-							Select(ListData[mps->Index], ListData[mps->Index]->Selected ? FALSE : TRUE);
+							Select(ListData[mps->Index], !ListData[mps->Index]->Selected);
 							break;
 						case ps_mode::list_names:    // набор строк через CRLF
 							SelectByList(ps_action::invert);
@@ -916,7 +914,7 @@ int64_t FileList::VMProcess(int OpCode, void *vParam, int64_t iParam)
 				case ps_action::restore:    // восстановить выделение
 				{
 					RestoreSelection();
-					Result = (int64_t)GetRealSelCount();
+					Result = GetRealSelCount();
 					break;
 				}
 			}
@@ -1008,7 +1006,7 @@ int FileList::ProcessKey(FarKey Key)
 	FileListItem *CurPtr = nullptr;
 	int N;
 	int CmdLength = CtrlObject->CmdLine->GetLength();
-	SudoClientRegion sdc_rgn;
+	SCOPED_ACTION(SudoClientRegion);
 
 	if (IsVisible()) {
 		if (!InternalProcessKey)
@@ -1119,15 +1117,12 @@ int FileList::ProcessKey(FarKey Key)
 		}
 		case KEY_SHIFTADD: {
 			SaveSelection();
-			{
-				FileListItem *CurPtr;
 
-				for (int I = 0; I < FileCount; I++) {
-					CurPtr = ListData[I];
+			for (int I = 0; I < FileCount; I++) {
+				FileListItem *CurPtr = ListData[I];
 
-					if (!(CurPtr->FileAttr & FILE_ATTRIBUTE_DIRECTORY) || Opt.SelectFolders)
-						Select(CurPtr, 1);
-				}
+				if (!(CurPtr->FileAttr & FILE_ATTRIBUTE_DIRECTORY) || Opt.SelectFolders)
+					Select(CurPtr, true);
 			}
 
 			if (SelectedFirst)
@@ -1625,7 +1620,6 @@ int FileList::ProcessKey(FarKey Key)
 				}
 
 				FARString strTempDir, strTempName;
-				int NewFile = FALSE;
 
 				if (PluginMode) {
 					if (!FarMkTempEx(strTempDir))
@@ -1634,13 +1628,14 @@ int FileList::ProcessKey(FarKey Key)
 					apiCreateDirectory(strTempDir, nullptr);
 					strTempName = strTempDir + L"/" + PointToName(strFileName);
 
+					bool NewFile = false;
 					if (Key == KEY_SHIFTF4) {
 						int Pos = FindFile(strFileName);
 
 						if (Pos != -1)
 							CurPtr = ListData[Pos];
 						else {
-							NewFile = TRUE;
+							NewFile = true;
 							strFileName = strTempName;
 						}
 					}
@@ -1666,7 +1661,6 @@ int FileList::ProcessKey(FarKey Key)
 					BOOL Processed = FALSE;
 
 					if (Edit) {
-						int editorExitCode;
 						int EnableExternal =
 								(((Key == KEY_F4 || Key == KEY_SHIFTF4) && Opt.EdOpt.UseExternalEditor)
 										|| (Key == KEY_ALTF4 && !Opt.EdOpt.UseExternalEditor))
@@ -1698,7 +1692,7 @@ int FileList::ProcessKey(FarKey Key)
 
 								if (ShellEditor) {
 									ShellEditor->SetFileHolder(TFH);
-									editorExitCode = ShellEditor->GetExitCode();
+									int editorExitCode = ShellEditor->GetExitCode();
 
 									if (editorExitCode == XC_LOADING_INTERRUPTED
 											|| editorExitCode == XC_OPEN_ERROR) {
@@ -1845,7 +1839,6 @@ int FileList::ProcessKey(FarKey Key)
 				int OldFileCount = FileCount, OldCurFile = CurFile;
 				assert(CurFile < FileCount);
 				bool OldSelection = ListData[CurFile]->Selected;
-				int ToPlugin = 0;
 				int RealName = PanelMode != PLUGIN_PANEL;
 				ReturnCurrentFile = TRUE;
 
@@ -1856,6 +1849,7 @@ int FileList::ProcessKey(FarKey Key)
 				}
 
 				if (RealName) {
+					int ToPlugin = 0;
 					ShellCopy ShCopy(this, Key == KEY_SHIFTF6, FALSE, TRUE, TRUE, ToPlugin, nullptr);
 				} else {
 					ProcessCopyKeys(Key == KEY_SHIFTF5 ? KEY_F5 : KEY_F6);
@@ -1872,7 +1866,7 @@ int FileList::ProcessKey(FarKey Key)
 			}
 
 			return TRUE;
-		}
+			}
 		case KEY_F7: {
 			_ALGO(CleverSysLog clv(L"F7"));
 			_ALGO(SysLog(L"%ls, FileCount=%d", (PanelMode == PLUGIN_PANEL ? "PluginPanel" : "FilePanel"),
@@ -2280,17 +2274,15 @@ void FileList::Select(FileListItem *SelPtr, bool Selection)
 void FileList::ProcessEnter(bool EnableExec, bool SeparateWindow, bool EnableAssoc, bool RunAs,
 		OPENFILEPLUGINTYPE Type)
 {
-	FileListItem *CurPtr;
-	FARString strFileName;
 	// const wchar_t *ExtPtr;
 
 	if (CurFile >= FileCount)
 		return;
 
-	SudoClientRegion sdc_rgn;
+	SCOPED_ACTION(SudoClientRegion);
 
-	CurPtr = ListData[CurFile];
-	strFileName = CurPtr->strName;
+	FileListItem *CurPtr = ListData[CurFile];
+	FARString strFileName = CurPtr->strName;
 
 	if (CurPtr->FileAttr & FILE_ATTRIBUTE_DIRECTORY) {
 		BOOL IsRealName = FALSE;
@@ -2413,10 +2405,8 @@ void FileList::ProcessEnter(bool EnableExec, bool SeparateWindow, bool EnableAss
 
 bool FileList::SetCurDir(const wchar_t *NewDir, bool ClosePlugin, bool ShowMessage)
 {
-	int CheckFullScreen = 0;
-
 	if (ClosePlugin && PanelMode == PLUGIN_PANEL) {
-		CheckFullScreen = IsFullScreen();
+		const int CheckFullScreen = IsFullScreen();
 
 		for (;;) {
 			if (ProcessPluginEvent(FE_CLOSE, nullptr))
@@ -2442,7 +2432,7 @@ bool FileList::SetCurDir(const wchar_t *NewDir, bool ClosePlugin, bool ShowMessa
 
 bool FileList::ChangeDir(const wchar_t *NewDir, bool ShowMessage)
 {
-	SudoClientRegion sdc_rgn;
+	SCOPED_ACTION(SudoClientRegion);
 
 	Panel *AnotherPanel;
 
@@ -2459,9 +2449,9 @@ bool FileList::ChangeDir(const wchar_t *NewDir, bool ShowMessage)
 	if (SelFileCount > 0)
 		ClearSelection();
 
-	int PluginClosed = FALSE, GoToPanelFile = FALSE;
-
 	if (PanelMode == PLUGIN_PANEL) {
+		bool PluginClosed = false, GoToPanelFile = false;
+
 		OpenPluginInfo Info;
 		CtrlObject->Plugins.GetOpenPluginInfo(hPlugin, &Info);
 		/* $ 16.01.2002 VVM
@@ -2480,12 +2470,12 @@ bool FileList::ChangeDir(const wchar_t *NewDir, bool ShowMessage)
 			if (ProcessPluginEvent(FE_CLOSE, nullptr))
 				return true;
 
-			PluginClosed = TRUE;
+			PluginClosed = true;
 			strFindDir = strInfoHostFile;
 
 			if (strFindDir.IsEmpty() && (Info.Flags & OPIF_REALNAMES) && CurFile < FileCount) {
 				strFindDir = ListData[CurFile]->strName;
-				GoToPanelFile = TRUE;
+				GoToPanelFile = true;
 			}
 
 			PopPlugin(TRUE);
@@ -2514,7 +2504,7 @@ bool FileList::ChangeDir(const wchar_t *NewDir, bool ShowMessage)
 
 		if (PluginClosed && !PrevDataList.empty()) {
 			PrevDataItem *Item = PrevDataList.back();
-			PrevDataList.erase(--PrevDataList.end());
+			PrevDataList.pop_back();
 			if (Item->PrevFileCount > 0) {
 				MoveSelection(ListData, FileCount, Item->PrevListData, Item->PrevFileCount);
 				UpperFolderTopFile = Item->PrevTopFile;
@@ -3246,7 +3236,7 @@ int FileList::GetSelName(FARString *strName, DWORD &FileAttr, DWORD &FileMode, F
 void FileList::ClearLastGetSelection()
 {
 	if (LastSelPosition >= 0 && LastSelPosition < FileCount)
-		Select(ListData[LastSelPosition], 0);
+		Select(ListData[LastSelPosition], false);
 }
 
 void FileList::UngetSelName()
@@ -3337,7 +3327,6 @@ long FileList::SelectFiles(int Mode, const wchar_t *Mask)
 	   диктуемая CmpName.
 	*/
 	FARString strMask = L"*", strRawMask;
-	int Selection = 0, I;
 	bool WrapBrackets = false;    // говорит о том, что нужно взять кв.скобки в скобки
 
 	if (CurFile >= FileCount)
@@ -3452,7 +3441,8 @@ long FileList::SelectFiles(int Mode, const wchar_t *Mask)
 
 	if (bUseFilter || FileMask.Set(strMask, FMF_SILENT))    // Скомпилируем маски файлов и работаем
 	{                                                       // дальше в зависимости от успеха компиляции
-		for (I = 0; I < FileCount; I++) {
+		bool Selection = false;
+		for (int I = 0; I < FileCount; I++) {
 			CurPtr = ListData[I];
 			int Match = FALSE;
 
@@ -3469,11 +3459,11 @@ long FileList::SelectFiles(int Mode, const wchar_t *Mask)
 				switch (Mode) {
 					case SELECT_ADD:
 					case SELECT_ADDMASK:
-						Selection = 1;
+						Selection = true;
 						break;
 					case SELECT_REMOVE:
 					case SELECT_REMOVEMASK:
-						Selection = 0;
+						Selection = false;
 						break;
 					case SELECT_INVERT:
 					case SELECT_INVERTALL:
@@ -3566,13 +3556,13 @@ void FileList::CompareDir()
 	// помечаем ВСЕ, кроме каталогов на активной панели
 	for (int I = 0; I < FileCount; I++) {
 		if (!(ListData[I]->FileAttr & FILE_ATTRIBUTE_DIRECTORY))
-			Select(ListData[I], TRUE);
+			Select(ListData[I], true);
 	}
 
 	// помечаем ВСЕ, кроме каталогов на пассивной панели
 	for (int J = 0; J < Another->FileCount; J++) {
 		if (!(Another->ListData[J]->FileAttr & FILE_ATTRIBUTE_DIRECTORY))
-			Another->Select(Another->ListData[J], TRUE);
+			Another->Select(Another->ListData[J], true);
 	}
 
 	int CompareFatTime = FALSE;
@@ -3660,10 +3650,10 @@ void FileList::CompareDir()
 					continue;
 
 				if (Cmp < 1 && ListData[I]->Selected)
-					Select(ListData[I], 0);
+					Select(ListData[I], false);
 
 				if (Cmp > -1 && Another->ListData[J]->Selected)
-					Another->Select(Another->ListData[J], 0);
+					Another->Select(Another->ListData[J], false);
 
 				if (Another->PanelMode != PLUGIN_PANEL)
 					break;
@@ -3905,7 +3895,7 @@ void FileList::SetTitle()
 void FileList::ClearSelection()
 {
 	for (int I = 0; I < FileCount; I++) {
-		Select(ListData[I], 0);
+		Select(ListData[I], false);
 	}
 
 	if (SelectedFirst)
@@ -4523,7 +4513,7 @@ PHPTR FileList::OpenFilePlugin(const wchar_t *FileName, int PushPrev, OPENFILEPL
 void FileList::ProcessCopyKeys(FarKey Key)
 {
 	if (FileCount > 0) {
-		SudoClientRegion sdc_rgn;
+		SCOPED_ACTION(SudoClientRegion);
 		int Drag = Key == KEY_DRAGCOPY || Key == KEY_DRAGMOVE;
 		int Ask = !Drag || Opt.Confirm.Drag;
 		int Move = (Key == KEY_F6 || Key == KEY_DRAGMOVE);
