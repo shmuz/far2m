@@ -1034,7 +1034,7 @@ int PluginManager::GetFile(
 			Found=TRUE;
 	}
 
-	ReadUserBackgound(SaveScr);
+	ReadUserBackground(SaveScr);
 	delete SaveScr;
 	return Found;
 }
@@ -1053,7 +1053,7 @@ int PluginManager::DeleteFiles(
 	int Code = ph->pPlugin->DeleteFiles(ph->hPanel, PanelItem, ItemsNumber, OpMode);
 
 	if (Code)
-		ReadUserBackgound(&SaveScr); //???
+		ReadUserBackground(&SaveScr); //???
 
 	return Code;
 }
@@ -1071,7 +1071,7 @@ int PluginManager::MakeDirectory(
 	int Code = ph->pPlugin->MakeDirectory(ph->hPanel, Name, OpMode);
 
 	if (Code != -1)   //???BUGBUG
-		ReadUserBackgound(&SaveScr);
+		ReadUserBackground(&SaveScr);
 
 	return Code;
 }
@@ -1090,7 +1090,7 @@ int PluginManager::ProcessHostFile(
 	int Code = ph->pPlugin->ProcessHostFile(ph->hPanel, PanelItem, ItemsNumber, OpMode);
 
 	if (Code)   //BUGBUG
-		ReadUserBackgound(&SaveScr);
+		ReadUserBackground(&SaveScr);
 
 	return Code;
 }
@@ -1129,7 +1129,7 @@ int PluginManager::PutFiles(
 	int Code = ph->pPlugin->PutFiles(ph->hPanel, PanelItem, ItemsNumber, Move, OpMode);
 
 	if (Code)   //BUGBUG
-		ReadUserBackgound(&SaveScr);
+		ReadUserBackground(&SaveScr);
 
 	return Code;
 }
@@ -1139,17 +1139,18 @@ void PluginManager::GetOpenPluginInfo(
     OpenPluginInfo *Info
 )
 {
-	if (!Info)
-		return;
-
 	memset(Info, 0, sizeof(*Info));
 	ph->pPlugin->GetOpenPluginInfo(ph->hPanel, Info);
 
-	if (!Info->CurDir)  //хмм...
-		Info->CurDir = L"";
+	Info->CurDir = NullToEmpty(Info->CurDir);
 
-	if ((Info->Flags & OPIF_REALNAMES) && (CtrlObject->Cp()->ActivePanel->GetPluginHandle() == ph) && *Info->CurDir && !IsNetworkServerPath(Info->CurDir))
+	if ((Info->Flags & OPIF_REALNAMES)
+			&& (CtrlObject->Cp()->ActivePanel->GetPluginHandle() == ph)
+			&& *Info->CurDir
+			&& !IsNetworkServerPath(Info->CurDir))
+	{
 		apiSetCurrentDirectory(Info->CurDir, false);
+	}
 }
 
 
@@ -1991,7 +1992,7 @@ int PluginManager::ProcessCommandLine(const wchar_t *CommandParam,Panel *Target)
 }
 
 
-void PluginManager::ReadUserBackgound(SaveScreen *SaveScr)
+void PluginManager::ReadUserBackground(SaveScreen *SaveScr)
 {
 	FilePanels *FPanel=CtrlObject->Cp();
 	FPanel->LeftPanel->ProcessingPluginCommand++;

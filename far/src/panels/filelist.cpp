@@ -2460,7 +2460,7 @@ bool FileList::ChangeDir(const wchar_t *NewDir, bool ShowMessage)
 		FARString strInfoFormat = Info.Format;
 		FARString strInfoHostFile = Info.HostFile;
 		CtrlObject->FolderHistory->AddToHistory(strInfoCurDir, 1, strInfoFormat,
-				(Info.Flags & OPIF_REALNAMES) ? false : (Opt.SavePluginFoldersHistory ? false : true));
+				!((Info.Flags & OPIF_REALNAMES) || Opt.SavePluginFoldersHistory));
 		/* $ 25.04.01 DJ
 		   при неудаче SetDirectory не сбрасываем выделение
 		*/
@@ -3162,10 +3162,15 @@ bool FileList::FindPartName(const wchar_t *Name, int Next, int Direct, int Exclu
 int FileList::GetSelCount() const
 {
 	assert(!FileCount || !(ReturnCurrentFile || !SelFileCount) || (CurFile < FileCount));
-	return FileCount ? ((ReturnCurrentFile || !SelFileCount)
-						   ? (TestParentFolderName(ListData[CurFile]->strName) ? 0 : 1)
-						   : SelFileCount)
-					 : 0;
+
+	int Ret = 0;
+	if (FileCount) {
+		if (ReturnCurrentFile || !SelFileCount)
+			Ret = TestParentFolderName(ListData[CurFile]->strName) ? 0 : 1;
+		else
+			Ret = SelFileCount;
+	}
+	return Ret;
 }
 
 int FileList::GetRealSelCount() const

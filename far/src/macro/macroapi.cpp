@@ -2605,10 +2605,7 @@ int FarMacroApi::panelsetposFunc()
 	auto Params = parseParams(2);
 	auto& Val = Params[1];
 	int typePanel = Params[0].getInt32();
-	const wchar_t *fileName=Val.s();
-
-	if (!fileName || !*fileName)
-		fileName=L"";
+	const wchar_t *fileName = NullToEmpty(Val.s());
 
 	Panel *SelPanel = SelectPanel(typePanel);
 	int64_t Ret=0;

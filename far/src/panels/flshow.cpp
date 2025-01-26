@@ -440,7 +440,6 @@ void FileList::SetShowColor(int Position, int ColorType)
 
 void FileList::ShowSelectedSize()
 {
-	int Length;
 	FARString strSelStr, strFormStr;
 
 	if (Opt.ShowPanelStatus) {
@@ -465,7 +464,7 @@ void FileList::ShowSelectedSize()
 		InsertCommas(SelFileSize, strFormStr);
 		strSelStr.Format(__FormatEndSelectedPhrase(SelFileCount), strFormStr.CPtr(), SelFileCount);
 		TruncStr(strSelStr, X2 - X1 - 1);
-		Length = (int)strSelStr.GetLength();
+		int Length = (int)strSelStr.GetLength();
 		SetFarColor(COL_PANELSELECTEDINFO);
 		GotoXY(X1 + (X2 - X1 + 1 - Length) / 2, Y2 - 2 * Opt.ShowPanelStatus);
 		Text(strSelStr);
@@ -818,12 +817,10 @@ int FileList::PrepareColumnWidths(std::vector<Column> &Columns, int FullScreen)
 
 	ColumnsInGlobal = 1;
 	int GlobalColumns = 0;
-	bool UnEqual;
-	int Remainder;
 
 	for (size_t i = 0; i < ViewSettings.PanelColumns.size(); i++) {
-		UnEqual = false;
-		Remainder = ViewSettings.PanelColumns.size() % ColumnsInGlobal;
+		bool UnEqual = false;
+		int Remainder = ViewSettings.PanelColumns.size() % ColumnsInGlobal;
 		GlobalColumns = ViewSettings.PanelColumns.size() / ColumnsInGlobal;
 
 		if (!Remainder) {
@@ -1130,7 +1127,7 @@ void FileList::ShowList(int ShowStatus, int StartColumn, OpenPluginInfo &Info)
 						case CDATE_COLUMN:
 						case ADATE_COLUMN:
 						case CHDATE_COLUMN: {
-							FILETIME *FileTime;
+							const FILETIME *FileTime;
 
 							switch (ColumnType) {
 								case CDATE_COLUMN:

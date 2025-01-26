@@ -2490,10 +2490,7 @@ int WINAPI FarDialogExA(INT_PTR PluginNumber, int X1, int Y1, int X2, int Y2, co
 			if (pdi) {
 				FarSendDlgMessage(hDlg, DM_GETDLGITEM, i, (LONG_PTR)pdi);
 				UnicodeDialogItemToAnsiSafe(*pdi, Item[i]);
-				const wchar_t *res = pdi->PtrData;
-
-				if (!res)
-					res = L"";
+				const wchar_t *res = NullToEmpty(pdi->PtrData);
 
 				if ((di[i].Type == DI_EDIT || di[i].Type == DI_COMBOBOX)
 						&& Item[i].Flags & oldfar::DIF_VAREDIT)

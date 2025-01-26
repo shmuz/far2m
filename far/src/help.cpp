@@ -766,10 +766,7 @@ void Help::FastShow()
 		if (StrPos<StrCount)
 		{
 			const HelpRecord *rec=GetHelpItem(StrPos);
-			const wchar_t *OutStr=rec?rec->HelpStr.CPtr():nullptr;
-
-			if (!OutStr)
-				OutStr=L"";
+			const wchar_t *OutStr = NullToEmpty(rec ? rec->HelpStr.CPtr() : nullptr);
 
 			if (*OutStr==L'^')
 			{

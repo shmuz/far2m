@@ -210,7 +210,7 @@ class PluginManager
 	private:
 
 		void LoadIfCacheAbsent();
-		void ReadUserBackgound(SaveScreen *SaveScr);
+		void ReadUserBackground(SaveScreen *SaveScr);
 
 		void GetPluginHotKey(Plugin *pPlugin, int ItemNumber,  const GUID *Guid, MENUTYPE MenuType, FARString &strHotKey);
 		std::string GetHotKeySettingName(Plugin *pPlugin, int ItemNumber, const GUID *Guid, MENUTYPE MenuType);
