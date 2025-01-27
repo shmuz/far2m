@@ -33,7 +33,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
-
 #include "filelist.hpp"
 #include "lang.hpp"
 #include "filepanels.hpp"
@@ -206,49 +205,46 @@ PanelViewSettings ViewSettingsArray[]=
 	},
 };
 
-size_t SizeViewSettingsArray=ARRAYSIZE(ViewSettingsArray);
+size_t SizeViewSettingsArray = ARRAYSIZE(ViewSettingsArray);
 
 void FileList::SetFilePanelModes()
 {
-	int CurMode=0;
+	int CurMode = 0;
 
-	if (CtrlObject->Cp()->ActivePanel->GetType()==FILE_PANEL)
-	{
-		CurMode=CtrlObject->Cp()->ActivePanel->GetViewMode();
-		CurMode=CurMode?CurMode-1:9;
+	if (CtrlObject->Cp()->ActivePanel->GetType() == FILE_PANEL) {
+		CurMode = CtrlObject->Cp()->ActivePanel->GetViewMode();
+		CurMode = CurMode ? CurMode - 1 : 9;
 	}
 
-	for(;;)
-	{
-		MenuDataEx ModeListMenu[]=
-		{
-			{Msg::EditPanelModesBrief,0,0},
-			{Msg::EditPanelModesMedium,0,0},
-			{Msg::EditPanelModesFull,0,0},
-			{Msg::EditPanelModesWide,0,0},
-			{Msg::EditPanelModesDetailed,0,0},
-			{Msg::EditPanelModesDiz,0,0},
-			{Msg::EditPanelModesLongDiz,0,0},
-			{Msg::EditPanelModesOwners,0,0},
-			{Msg::EditPanelModesLinks,0,0},
-			{Msg::EditPanelModesAlternative,0,0}
+	for (;;) {
+		MenuDataEx ModeListMenu[] = {
+			{Msg::EditPanelModesBrief,       0, 0},
+			{Msg::EditPanelModesMedium,      0, 0},
+			{Msg::EditPanelModesFull,        0, 0},
+			{Msg::EditPanelModesWide,        0, 0},
+			{Msg::EditPanelModesDetailed,    0, 0},
+			{Msg::EditPanelModesDiz,         0, 0},
+			{Msg::EditPanelModesLongDiz,     0, 0},
+			{Msg::EditPanelModesOwners,      0, 0},
+			{Msg::EditPanelModesLinks,       0, 0},
+			{Msg::EditPanelModesAlternative, 0, 0}
 		};
 		int ModeNumber;
 		ModeListMenu[CurMode].SetSelect(1);
 		{
-			VMenu ModeList(Msg::EditPanelModes,ModeListMenu,ARRAYSIZE(ModeListMenu),ScrY-4);
-			ModeList.SetPosition(-1,-1,0,0);
+			VMenu ModeList(Msg::EditPanelModes, ModeListMenu, ARRAYSIZE(ModeListMenu), ScrY - 4);
+			ModeList.SetPosition(-1, -1, 0, 0);
 			ModeList.SetHelp(L"PanelViewModes");
 			ModeList.SetFlags(VMENU_WRAPMODE);
 			ModeList.SetId(PanelViewModesId);
 			ModeList.Process();
-			ModeNumber=ModeList.Modal::GetExitCode();
+			ModeNumber = ModeList.Modal::GetExitCode();
 		}
 
-		if (ModeNumber<0)
+		if (ModeNumber < 0)
 			return;
 
-		CurMode=ModeNumber;
+		CurMode = ModeNumber;
 
 		enum ModeItems
 		{
@@ -271,74 +267,75 @@ void FileList::SetFilePanelModes()
 			MD_SEPARATOR2,
 			MD_BUTTON_OK,
 			MD_BUTTON_CANCEL,
-		} ;
-		DialogDataEx ModeDlgData[]=
-		{
-			{DI_DOUBLEBOX, 3, 1,72,15,{},0,ModeListMenu[ModeNumber].Name},
-			{DI_TEXT,      5, 2, 0, 2,{},0,Msg::EditPanelModeTypes},
-			{DI_EDIT,      5, 3,35, 3,{},DIF_FOCUS,L""},
-			{DI_TEXT,      5, 4, 0, 4,{},0,Msg::EditPanelModeWidths},
-			{DI_EDIT,      5, 5,35, 5,{},0,L""},
-			{DI_TEXT,     38, 2, 0, 2,{},0,Msg::EditPanelModeStatusTypes},
-			{DI_EDIT,     38, 3,70, 3,{},0,L""},
-			{DI_TEXT,     38, 4, 0, 4,{},0,Msg::EditPanelModeStatusWidths},
-			{DI_EDIT,     38, 5,70, 5,{},0,L""},
-			{DI_TEXT,      3, 6, 0, 6,{},DIF_SEPARATOR,L""},
-			{DI_CHECKBOX,  5, 7, 0, 7,{},0,Msg::EditPanelModeFullscreen},
-			{DI_CHECKBOX,  5, 8, 0, 8,{},0,Msg::EditPanelModeAlignExtensions},
-			{DI_CHECKBOX,  5, 9, 0, 9,{},0,Msg::EditPanelModeAlignFolderExtensions},
-			{DI_CHECKBOX,  5,10, 0,10,{},0,Msg::EditPanelModeFoldersUpperCase},
-			{DI_CHECKBOX,  5,11, 0,11,{},0,Msg::EditPanelModeFilesLowerCase},
-			{DI_CHECKBOX,  5,12, 0,12,{},0,Msg::EditPanelModeUpperToLowerCase},
-			{DI_TEXT,      3,13, 0,13,{},DIF_SEPARATOR,L""},
-			{DI_BUTTON,    0,14, 0,14,{},DIF_DEFAULT|DIF_CENTERGROUP,Msg::Ok},
-			{DI_BUTTON,    0,14, 0,14,{},DIF_CENTERGROUP,Msg::Cancel}
 		};
-		MakeDialogItemsEx(ModeDlgData,ModeDlg);
+		DialogDataEx ModeDlgData[] = {
+			{DI_DOUBLEBOX, 3,  1,  72, 15, {}, 0, ModeListMenu[ModeNumber].Name},
+			{DI_TEXT,      5,  2,  0,  2,  {}, 0, Msg::EditPanelModeTypes},
+			{DI_EDIT,      5,  3,  35, 3,  {}, DIF_FOCUS,                     L""},
+			{DI_TEXT,      5,  4,  0,  4,  {}, 0, Msg::EditPanelModeWidths},
+			{DI_EDIT,      5,  5,  35, 5,  {}, 0, L""},
+			{DI_TEXT,      38, 2,  0,  2,  {}, 0, Msg::EditPanelModeStatusTypes},
+			{DI_EDIT,      38, 3,  70, 3,  {}, 0, L""},
+			{DI_TEXT,      38, 4,  0,  4,  {}, 0, Msg::EditPanelModeStatusWidths},
+			{DI_EDIT,      38, 5,  70, 5,  {}, 0, L""},
+			{DI_TEXT,      3,  6,  0,  6,  {}, DIF_SEPARATOR, L""},
+			{DI_CHECKBOX,  5,  7,  0,  7,  {}, 0, Msg::EditPanelModeFullscreen},
+			{DI_CHECKBOX,  5,  8,  0,  8,  {}, 0, Msg::EditPanelModeAlignExtensions},
+			{DI_CHECKBOX,  5,  9,  0,  9,  {}, 0, Msg::EditPanelModeAlignFolderExtensions},
+			{DI_CHECKBOX,  5,  10, 0,  10, {}, 0, Msg::EditPanelModeFoldersUpperCase},
+			{DI_CHECKBOX,  5,  11, 0,  11, {}, 0, Msg::EditPanelModeFilesLowerCase},
+			{DI_CHECKBOX,  5,  12, 0,  12, {}, 0, Msg::EditPanelModeUpperToLowerCase},
+			{DI_TEXT,      3,  13, 0,  13, {}, DIF_SEPARATOR, L""},
+			{DI_BUTTON,    0,  14, 0,  14, {}, DIF_DEFAULT | DIF_CENTERGROUP, Msg::Ok},
+			{DI_BUTTON,    0,  14, 0,  14, {}, DIF_CENTERGROUP, Msg::Cancel}
+		};
+		MakeDialogItemsEx(ModeDlgData, ModeDlg);
 		int ExitCode;
 		RemoveHighlights(ModeDlg[MD_DOUBLEBOX].strData);
 
-		if (ModeNumber==9)
-			ModeNumber=0;
+		if (ModeNumber == 9)
+			ModeNumber = 0;
 		else
 			ModeNumber++;
 
-		PanelViewSettings &NewSettings=ViewSettingsArray[ModeNumber];
-		ModeDlg[MD_CHECKBOX_FULLSCREEN].Selected=NewSettings.FullScreen;
-		ModeDlg[MD_CHECKBOX_ALIGNFILEEXT].Selected=NewSettings.AlignExtensions;
-		ModeDlg[MD_CHECKBOX_ALIGNFOLDEREXT].Selected=NewSettings.FolderAlignExtensions;
-		ModeDlg[MD_CHECKBOX_FOLDERUPPERCASE].Selected=NewSettings.FolderUpperCase;
-		ModeDlg[MD_CHECKBOX_FILESLOWERCASE].Selected=NewSettings.FileLowerCase;
-		ModeDlg[MD_CHECKBOX_UPPERTOLOWERCASE].Selected=NewSettings.FileUpperToLowerCase;
-		ViewSettingsToText(NewSettings.PanelColumns,ModeDlg[2].strData,ModeDlg[4].strData);
-		ViewSettingsToText(NewSettings.StatusColumns,ModeDlg[6].strData,ModeDlg[8].strData);
+		PanelViewSettings &NewSettings = ViewSettingsArray[ModeNumber];
+		ModeDlg[MD_CHECKBOX_FULLSCREEN].Selected = NewSettings.FullScreen;
+		ModeDlg[MD_CHECKBOX_ALIGNFILEEXT].Selected = NewSettings.AlignExtensions;
+		ModeDlg[MD_CHECKBOX_ALIGNFOLDEREXT].Selected = NewSettings.FolderAlignExtensions;
+		ModeDlg[MD_CHECKBOX_FOLDERUPPERCASE].Selected = NewSettings.FolderUpperCase;
+		ModeDlg[MD_CHECKBOX_FILESLOWERCASE].Selected = NewSettings.FileLowerCase;
+		ModeDlg[MD_CHECKBOX_UPPERTOLOWERCASE].Selected = NewSettings.FileUpperToLowerCase;
+		ViewSettingsToText(NewSettings.PanelColumns, ModeDlg[2].strData, ModeDlg[4].strData);
+		ViewSettingsToText(NewSettings.StatusColumns, ModeDlg[6].strData, ModeDlg[8].strData);
 		{
-			Dialog Dlg(ModeDlg,ARRAYSIZE(ModeDlg));
-			Dlg.SetPosition(-1,-1,76,17);
+			Dialog Dlg(ModeDlg, ARRAYSIZE(ModeDlg));
+			Dlg.SetPosition(-1, -1, 76, 17);
 			Dlg.SetHelp(L"PanelViewModes");
 			Dlg.SetId(PanelViewModesEditId);
 			Dlg.Process();
-			ExitCode=Dlg.GetExitCode();
+			ExitCode = Dlg.GetExitCode();
 		}
 
-		if (ExitCode!=MD_BUTTON_OK)
+		if (ExitCode != MD_BUTTON_OK)
 			continue;
 
-		NewSettings.FullScreen=ModeDlg[MD_CHECKBOX_FULLSCREEN].Selected;
-		NewSettings.AlignExtensions=ModeDlg[MD_CHECKBOX_ALIGNFILEEXT].Selected;
-		NewSettings.FolderAlignExtensions=ModeDlg[MD_CHECKBOX_ALIGNFOLDEREXT].Selected;
-		NewSettings.FolderUpperCase=ModeDlg[MD_CHECKBOX_FOLDERUPPERCASE].Selected;
-		NewSettings.FileLowerCase=ModeDlg[MD_CHECKBOX_FILESLOWERCASE].Selected;
-		NewSettings.FileUpperToLowerCase=ModeDlg[MD_CHECKBOX_UPPERTOLOWERCASE].Selected;
-		TextToViewSettings(ModeDlg[MD_EDITTYPES].strData,ModeDlg[MD_EDITWIDTHS].strData,NewSettings.PanelColumns);
-		TextToViewSettings(ModeDlg[MD_EDITSTATUSTYPES].strData,ModeDlg[MD_EDITSTATUSWIDTHS].strData,NewSettings.StatusColumns);
+		NewSettings.FullScreen = ModeDlg[MD_CHECKBOX_FULLSCREEN].Selected;
+		NewSettings.AlignExtensions = ModeDlg[MD_CHECKBOX_ALIGNFILEEXT].Selected;
+		NewSettings.FolderAlignExtensions = ModeDlg[MD_CHECKBOX_ALIGNFOLDEREXT].Selected;
+		NewSettings.FolderUpperCase = ModeDlg[MD_CHECKBOX_FOLDERUPPERCASE].Selected;
+		NewSettings.FileLowerCase = ModeDlg[MD_CHECKBOX_FILESLOWERCASE].Selected;
+		NewSettings.FileUpperToLowerCase = ModeDlg[MD_CHECKBOX_UPPERTOLOWERCASE].Selected;
+		TextToViewSettings(ModeDlg[MD_EDITTYPES].strData, ModeDlg[MD_EDITWIDTHS].strData,
+				NewSettings.PanelColumns);
+		TextToViewSettings(ModeDlg[MD_EDITSTATUSTYPES].strData, ModeDlg[MD_EDITSTATUSWIDTHS].strData,
+				NewSettings.StatusColumns);
 		CtrlObject->Cp()->LeftPanel->SortFileList(TRUE);
 		CtrlObject->Cp()->RightPanel->SortFileList(TRUE);
 		CtrlObject->Cp()->SetScreenPosition();
-		int LeftMode=CtrlObject->Cp()->LeftPanel->GetViewMode();
-		int RightMode=CtrlObject->Cp()->RightPanel->GetViewMode();
-//    CtrlObject->Cp()->LeftPanel->SetViewMode(ModeNumber);
-//    CtrlObject->Cp()->RightPanel->SetViewMode(ModeNumber);
+		int LeftMode = CtrlObject->Cp()->LeftPanel->GetViewMode();
+		int RightMode = CtrlObject->Cp()->RightPanel->GetViewMode();
+		//    CtrlObject->Cp()->LeftPanel->SetViewMode(ModeNumber);
+		//    CtrlObject->Cp()->RightPanel->SetViewMode(ModeNumber);
 		CtrlObject->Cp()->LeftPanel->SetViewMode(LeftMode);
 		CtrlObject->Cp()->RightPanel->SetViewMode(RightMode);
 		CtrlObject->Cp()->LeftPanel->Redraw();
@@ -346,11 +343,9 @@ void FileList::SetFilePanelModes()
 	}
 }
 
-
 void FileList::ReadPanelModes(ConfigReader &cfg_reader)
 {
-	for (size_t I=0; I<ARRAYSIZE(ViewSettingsArray); I++)
-	{
+	for (size_t I = 0; I < ARRAYSIZE(ViewSettingsArray); I++) {
 		cfg_reader.SelectSectionFmt("Panel/ViewModes/Mode%d", (int)I);
 		FARString strColumnTitles = cfg_reader.GetString("Columns", L"");
 		FARString strColumnWidths = cfg_reader.GetString("ColumnWidths", L"");
@@ -363,10 +358,10 @@ void FileList::ReadPanelModes(ConfigReader &cfg_reader)
 		PanelViewSettings &NewSettings = ViewSettingsArray[I];
 
 		if (!strColumnTitles.IsEmpty())
-			TextToViewSettings(strColumnTitles,strColumnWidths,NewSettings.PanelColumns);
+			TextToViewSettings(strColumnTitles, strColumnWidths, NewSettings.PanelColumns);
 
 		if (!strStatusColumnTitles.IsEmpty())
-			TextToViewSettings(strStatusColumnTitles,strStatusColumnWidths,NewSettings.StatusColumns);
+			TextToViewSettings(strStatusColumnTitles, strStatusColumnWidths, NewSettings.StatusColumns);
 
 		NewSettings.FullScreen = cfg_reader.GetInt("FullScreen", 0);
 		NewSettings.AlignExtensions = cfg_reader.GetInt("AlignExtensions", 1);
@@ -377,18 +372,16 @@ void FileList::ReadPanelModes(ConfigReader &cfg_reader)
 	}
 }
 
-
 void FileList::SavePanelModes(ConfigWriter &cfg_writer)
 {
-	for (size_t I=0; I<ARRAYSIZE(ViewSettingsArray); I++)
-	{
+	for (size_t I = 0; I < ARRAYSIZE(ViewSettingsArray); I++) {
 		cfg_writer.SelectSectionFmt("Panel/ViewModes/Mode%d", (int)I);
 
 		FARString strColumnTitles, strColumnWidths, strStatusColumnTitles, strStatusColumnWidths;
 
 		const PanelViewSettings &NewSettings = ViewSettingsArray[I];
-		ViewSettingsToText(NewSettings.PanelColumns,strColumnTitles,strColumnWidths);
-		ViewSettingsToText(NewSettings.StatusColumns,strStatusColumnTitles,strStatusColumnWidths);
+		ViewSettingsToText(NewSettings.PanelColumns, strColumnTitles, strColumnWidths);
+		ViewSettingsToText(NewSettings.StatusColumns, strStatusColumnTitles, strStatusColumnWidths);
 
 		cfg_writer.SetString("Columns", strColumnTitles.CPtr());
 		cfg_writer.SetString("ColumnWidths", strColumnWidths.CPtr());
