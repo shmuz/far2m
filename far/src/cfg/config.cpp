@@ -370,7 +370,7 @@ void InterfaceSettings()
 
 		int ChangeFontID = -1;
 		DialogItemEx *ChangeFontItem = nullptr;
-		if (supported_tweaks & TWEAK_STATUS_SUPPORT_PAINT_SHARP) {
+		if (supported_tweaks & TWEAK_STATUS_SUPPORT_CHANGE_FONT) {
 			ChangeFontItem = Builder.AddButton(Msg::ConfigConsoleChangeFont, ChangeFontID);
 		}
 
