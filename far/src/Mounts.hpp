@@ -29,7 +29,7 @@ namespace Mounts
 		void AddFavorites(bool &has_rootfs);
 
 	public:
-		Enum(FARString &another_curdir);
+		Enum(const FARString &another_curdir);
 
 		size_t max_path = 4;
 		size_t max_col2 = 0;
