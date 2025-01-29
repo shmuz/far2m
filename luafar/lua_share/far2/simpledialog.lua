@@ -451,9 +451,8 @@ function mod:Run()
 
   local function DlgProc(hDlg, Msg, Par1, Par2)
     if Msg == F.DN_CLOSE then
-      if inData[Par1] and not inData[Par1].cancel then
-        return UserProc(hDlg, Msg, Par1, self:GetDialogState(hDlg))
-      end
+      Msg = (inData[Par1] and not inData[Par1].cancel) and Msg or "EVENT_CANCEL"
+      return UserProc(hDlg, Msg, Par1, self:GetDialogState(hDlg))
 
     elseif FarVer == 2 and Msg==F.DN_KEY or
            FarVer == 3 and Msg==F.DN_CONTROLINPUT and Par2.EventType==F.KEY_EVENT and Par2.KeyDown then

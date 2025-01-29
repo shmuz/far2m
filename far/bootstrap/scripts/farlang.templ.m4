@@ -12784,8 +12784,8 @@ MenuUnselectGroup
 "Jelölést l&evesz      Szürke -"
 "Odz&nacz grupę             Szary -"
 "Deseleccio&nar grupo   Gray -"
-"З&няти позначку         Gray -"
-"З&няць адзнаку          Gray -"
+"З&няти позначку        Gray -"
+"З&няць адзнаку         Gray -"
 
 MenuInvertSelection
 "&Инверсия пометки      Gray *"
@@ -12818,7 +12818,7 @@ l:
 "Fájl&keresés         Alt+F7"
 "&Znajdź plik               Alt+F7"
 "Buscar &archivos       Alt+F7"
-"&Пошук файла              Alt+F7"
+"&Пошук файла               Alt+F7"
 "&Пошук файла              Alt+F7"
 
 MenuHistory
@@ -12829,7 +12829,7 @@ MenuHistory
 "Parancs &előzmények  Alt+F8"
 "&Historia                  Alt+F8"
 "&Historial             Alt+F8"
-"&Історія команд           Alt+F8"
+"&Історія команд            Alt+F8"
 "Г&історыя камандаў        Alt+F8"
 
 MenuVideoMode
@@ -12840,7 +12840,7 @@ MenuVideoMode
 "&Video mód           Alt+F9"
 "&Tryb wyświetlania         Alt+F9"
 "Modo de video         Alt+F9"
-"Відео&режим               Alt+F9"
+"Відео&режим                Alt+F9"
 "Відэа&рэжым               Alt+F9"
 
 MenuFindFolder
@@ -12851,7 +12851,7 @@ MenuFindFolder
 "&Mappakeresés        Alt+F10"
 "Znajdź kata&log            Alt+F10"
 "Buscar &directorios    Alt+F10"
-"Пошу&к теки               Alt+F10"
+"Пошу&к теки                Alt+F10"
 "Пошу&к каталога           Alt+F10"
 
 MenuViewHistory
@@ -12862,7 +12862,7 @@ MenuViewHistory
 "Fáj&l előzmények     Alt+F11"
 "Historia &podglądu plików  Alt+F11"
 "Historial &visor       Alt+F11"
-"Іс&торія перегляду        Alt+F11"
+"Іс&торія перегляду         Alt+F11"
 "Гіс&торыя прагляду        Alt+F11"
 
 MenuFoldersHistory
@@ -12873,7 +12873,7 @@ MenuFoldersHistory
 "Ma&ppa előzmények    Alt+F12"
 "Historia &katalogów        Alt+F12"
 "Histo&rial dir.        Alt+F12"
-"Іст&орія тек              Alt+F12"
+"Іст&орія тек               Alt+F12"
 "Гіст&орыя каталогаў       Alt+F12"
 
 MenuSwapPanels
@@ -12951,7 +12951,7 @@ MenuFilter
 "&Filtr panelu plików       Ctrl+I"
 "F&iltro de paneles     Ctrl+I"
 "&Фільтр панелі файлів      Ctrl+I"
-"&Фільтр панэлі файлаў      Ctrl+I"
+"&Фільтр панэлі файлаў     Ctrl+I"
 
 MenuPluginCommands
 "Команды внешних мо&дулей  F11"
@@ -12972,7 +12972,7 @@ MenuWindowsList
 "Képer&nyők           F12"
 "L&ista ekranów             F12"
 "&Listado ventanas      F12"
-"Список екра&нів           F12"
+"Список екра&нів            F12"
 "Спіс экра&наў             F12"
 
 MenuProcessList
@@ -12983,7 +12983,7 @@ MenuProcessList
 "Futó p&rogramok      Ctrl+W"
 "Lista za&dań               Ctrl+W"
 "Lista de &tareas       Ctrl+W"
-"Список & завдань          Ctrl+W"
+"Список & завдань           Ctrl+W"
 "Спіс &задачаў             Ctrl+W"
 
 MenuHotPlugList
@@ -13054,15 +13054,15 @@ upd:"Параметры &ввода"
 "Налады ў&воду"
 
 MenuPluginsConfig
-"Параметры &внешних модулей"
-"Pl&ugins configuration"
-"Nastavení Plu&ginů"
-"Konfiguration von Pl&ugins"
-"Pl&ugin beállítások"
-"Konfiguracja p&luginów"
-"Configuración de pl&ugins"
-"Параметри &зовнішніх модулів"
-"Налады &знешніх дадаткаў"
+"Параметры &внешних модулей        Alt+Shift+F9"
+"Pl&ugins configuration          Alt+Shift+F9"
+"Nastavení Plu&ginů                 Alt+Shift+F9"
+"Konfiguration von Pl&ugins       Alt+Shift+F9"
+"Pl&ugin beállítások              Alt+Shift+F9"
+"Konfiguracja p&luginów  Alt+Shift+F9"
+"Configuración de pl&ugins  Alt+Shift+F9"
+"Параметри &зовнішніх модулів      Alt+Shift+F9"
+"Налады &знешніх дадаткаў          Alt+Shift+F9"
 
 MenuPluginsManagerSettings
 "Параметры менеджера внешних модулей"
@@ -13257,8 +13257,8 @@ MenuSaveSetup
 "&Uložit nastavení                      Shift+F9"
 "Setup &speichern                     Umsch+F9"
 "Beállítások men&tése                 Shift+F9"
-"&Zapisz ustawienia       Shift+F9"
-"&Guardar configuración     Shift+F9"
+"&Zapisz ustawienia          Shift+F9"
+"&Guardar configuración         Shift+F9"
 "&Зберегти параметри                   Shift+F9"
 "&Захаваць налады                      Shift+F9"
 
