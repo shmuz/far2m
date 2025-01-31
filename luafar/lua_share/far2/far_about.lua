@@ -37,7 +37,7 @@ local function FarAbout()
   if fp then
     local txt = fp:read("*all")
     fp:close()
-    os_pretty_name = txt:match("PRETTY_NAME%s*=%s*\"(.-)\"")
+    os_pretty_name = txt:match("PRETTY_NAME%s*=%s*([^\n]+)")
   end
 
   Add(0, "FAR2M version", Inf.Build)
