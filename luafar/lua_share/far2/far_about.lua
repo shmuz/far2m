@@ -1,5 +1,19 @@
 -- started: 2024-07-23
 
+local function os_release()
+  local name
+  local fp = io.open("/etc/os-release")
+  if fp then
+    local txt = fp:read("*all")
+    fp:close()
+    name = txt:match("PRETTY_NAME%s*=%s*([^\n]+)")
+    if name then
+      name = name:gsub("^\"(.+)\"$", "%1")
+    end
+  end
+  return name
+end
+
 local function FarAbout()
   local Props = { Title="About far2m"; Bottom="CtrlC: Copy"; HelpTopic=":FarAbout"; }
   local Items, Bkeys = {}, { {BreakKey="CtrlC"} }
@@ -29,14 +43,6 @@ local function FarAbout()
   local Inf = Far.GetInfo()
   local uname = win.uname()
 
-  local os_pretty_name
-  local fp = io.open("/etc/os-release")
-  if fp then
-    local txt = fp:read("*all")
-    fp:close()
-    os_pretty_name = txt:match("PRETTY_NAME%s*=%s*([^\n]+)")
-  end
-
   Add(0, "FAR2M version", Inf.Build)
   if Inf.Compiler then
     Add(0, "Compiler", Inf.Compiler)
@@ -60,7 +66,7 @@ local function FarAbout()
   Add(0, "Temp directory",   far.InMyTemp())
 
   AddEmptyLine()
-  Add(0, "os-release", os_pretty_name)
+  Add(0, "os-release", os_release())
   Add(0, "uname",   "")
   Add(2, "sysname", uname.sysname)
   Add(2, "release", uname.release)
