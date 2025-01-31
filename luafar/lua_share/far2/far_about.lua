@@ -26,6 +26,14 @@ local function FarAbout()
   local Inf = Far.GetInfo()
   local uname = win.uname()
 
+  local os_pretty_name
+  local fp = io.open("/etc/os-release")
+  if fp then
+    local txt = fp:read("*all")
+    fp:close()
+    os_pretty_name = txt:match("PRETTY_NAME%s*=%s*\"(.-)\"")
+  end
+
   Add(0, "FAR2M version", Inf.Build)
   if Inf.Compiler then
     Add(0, "Compiler", Inf.Compiler)
@@ -49,6 +57,9 @@ local function FarAbout()
   Add(0, "Temp directory",   far.InMyTemp())
 
   Add()
+  if os_pretty_name then
+    Add(0, "os-release", os_pretty_name)
+  end
   Add(0, "uname",     "")
   Add(2, "sysname", uname.sysname)
   Add(2, "release", uname.release)
