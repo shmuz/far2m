@@ -5,13 +5,19 @@ local function FarAbout()
   local Items, Bkeys = {}, { {BreakKey="CtrlC"} }
   local Array = {}
 
+  local function AddEmptyLine()
+    local text = ("%-30s│"):format("")
+    table.insert(Items, { text=text; })
+    table.insert(Array, text)
+  end
+
   local Add = function(indent, name, val)
+    if not val then return end
     name = name or ""
     if indent then
       name = (" "):rep(indent)..name
     end
-    val = val == nil and "" or tostring(val)
-    local text = ("%-30s│ %s"):format(name, val)
+    local text = ("%-30s│ %s"):format(name, tostring(val))
     table.insert(Items, { text=text; })
     table.insert(Array, text)
   end
@@ -56,17 +62,15 @@ local function FarAbout()
   Add(0, "Cache directory",  far.InMyCache())
   Add(0, "Temp directory",   far.InMyTemp())
 
-  Add()
-  if os_pretty_name then
-    Add(0, "os-release", os_pretty_name)
-  end
-  Add(0, "uname",     "")
+  AddEmptyLine()
+  Add(0, "os-release", os_pretty_name)
+  Add(0, "uname",   "")
   Add(2, "sysname", uname.sysname)
   Add(2, "release", uname.release)
   Add(2, "version", uname.version)
   Add(2, "machine", uname.machine)
 
-  Add()
+  AddEmptyLine()
   Add(0, "Host", win.GetHostName())
   AddEnv("COLORTERM")
   AddEnv("DESKTOP_SESSION")
@@ -78,7 +82,7 @@ local function FarAbout()
   AddEnv("XDG_SESSION_TYPE")
 
   local plugs = far.GetPlugins()
-  Add()
+  AddEmptyLine()
   Add(0, "-- Plugins (" ..#plugs.. ")")
   for _, v in ipairs(plugs) do
    local dt = far.GetPluginInformation(v)
