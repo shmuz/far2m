@@ -5,7 +5,7 @@ local function FarAbout()
   local Items, Bkeys = {}, { {BreakKey="CtrlC"} }
   local Array = {}
 
-  local function AddEmptyLine()
+  local AddEmptyLine = function()
     local text = ("%-30s│"):format("")
     table.insert(Items, { text=text; })
     table.insert(Array, text)
@@ -23,10 +23,7 @@ local function FarAbout()
   end
 
   local AddEnv = function(name, indent)
-    local val = os.getenv(name)
-    if val ~= nil then
-      Add(indent, name, val)
-    end
+    Add(indent, name, os.getenv(name))
   end
 
   local Inf = Far.GetInfo()
@@ -83,7 +80,7 @@ local function FarAbout()
 
   local plugs = far.GetPlugins()
   AddEmptyLine()
-  Add(0, "-- Plugins (" ..#plugs.. ")")
+  Add(0, "-- Plugins (" ..#plugs.. ")", "")
   for _, v in ipairs(plugs) do
    local dt = far.GetPluginInformation(v)
    --Add(0, dt.ModuleName:match("[^/]+$"), "")
