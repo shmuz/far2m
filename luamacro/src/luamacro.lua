@@ -427,7 +427,7 @@ local function Open_LuaMacro (calltype, ...)
   elseif calltype==F.MCT_ENUMMACROS     then return utils.EnumMacros(...)
   elseif calltype==F.MCT_GETMACRO       then return utils.GetMacroWrapper(...)
   elseif calltype==F.MCT_LOADMACROS     then
-    local InitedRAM,Paths = ...
+    local InitedRAM,Paths = ... -- the 3-rd parameter (Flags) is not used
     keymacro.InitInternalVars(InitedRAM)
     return utils.LoadMacros(false,Paths)
   elseif calltype==F.MCT_RECORDEDMACRO  then return utils.ProcessRecordedMacro(...)
