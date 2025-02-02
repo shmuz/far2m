@@ -35,22 +35,21 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "farplug-wide.h"
 
-// Macro Const
-enum
+enum MACROMOUSEINDEX
 {
-	constMsX          = 0,
-	constMsY          = 1,
-	constMsButton     = 2,
-	constMsCtrlState  = 3,
-	constMsEventFlags = 4,
-	constMsLastCtrlState = 5,
-	constMsLAST       = 6,
+	constMsX,
+	constMsY,
+	constMsButton,
+	constMsCtrlState,
+	constMsEventFlags,
+	constMsLastCtrlState,
+	constMsLAST
 };
 
 enum MACRODISABLEONLOAD
 {
-	MDOL_ALL            = 0x00000001, // дисаблим все макросы при загрузке
-	MDOL_AUTOSTART      = 0x00000002, // дисаблим автостартующие макросы
+	MDOL_ALL       = 0x00000001, // дисаблим все макросы при загрузке
+	MDOL_AUTOSTART = 0x00000002, // дисаблим автостартующие макросы
 };
 
 struct MacroPanelSelect {
@@ -59,8 +58,6 @@ struct MacroPanelSelect {
 	int64_t Index;
 	const wchar_t *Item;
 };
-
-struct MacroDlgParam;
 
 class KeyMacro
 {
@@ -76,8 +73,8 @@ public:
 	static bool IsHistoryDisabled(int TypeHistory);
 	static void RunStartMacro();
 	static bool SaveMacros();
-	static void SetMacroConst(int ConstIndex, long long Value);
-	static long long GetMacroConst(int ConstIndex);
+	static void SetMacroConst(MACROMOUSEINDEX ConstIndex, int64_t Value);
+	static int64_t GetMacroConst(MACROMOUSEINDEX ConstIndex);
 	static bool PostNewMacro(const wchar_t* Sequence, DWORD InputFlags, FarKey AKey = 0);
 	static bool GetMacroParseError(COORD& ErrPos, FARString& ErrSrc);
 	static bool ParseMacroString(const wchar_t* Sequence,DWORD Flags,bool skipFile);
@@ -100,7 +97,7 @@ private:
 	static FARMACROSTATE GetExecutingState();
 	static bool GetMacroSettings(FarKey Key, DWORD &Flags, const wchar_t* Src, const wchar_t* Descr);
 
-	bool AssignMacroKey(MacroDlgParam *Param);
+	static bool AssignMacroKey(void *Param);
 	void RestoreMacroChar() const;
 
 	static FARString m_RecCode;

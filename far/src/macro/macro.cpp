@@ -56,7 +56,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 extern Panel* SelectPanel(int Type);
 
-static long long msValues[constMsLAST];
+static int64_t msValues[constMsLAST];
 
 int Log(const char* Format, ...)
 {
@@ -702,12 +702,12 @@ bool KeyMacro::GetMacroKeyInfo(const FARString& StrArea, int Pos, FARString &str
 	return false;
 }
 
-void KeyMacro::SetMacroConst(int ConstIndex, long long Value)
+void KeyMacro::SetMacroConst(MACROMOUSEINDEX ConstIndex, int64_t Value)
 {
 	msValues[ConstIndex] = Value;
 }
 
-long long KeyMacro::GetMacroConst(int ConstIndex)
+int64_t KeyMacro::GetMacroConst(MACROMOUSEINDEX ConstIndex)
 {
 	return msValues[ConstIndex];
 }
@@ -930,7 +930,7 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg, int Msg, int Param1, L
 	return DefDlgProc(hDlg, Msg, Param1, Param2);
 }
 
-bool KeyMacro::AssignMacroKey(MacroDlgParam *Param)
+bool KeyMacro::AssignMacroKey(void *Param)
 {
 	/*
 	  +------ Define macro ------+

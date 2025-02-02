@@ -810,7 +810,7 @@ int64_t FileList::VMProcess(int OpCode, void *vParam, int64_t iParam)
 			};
 
 			int64_t Result = -1;
-			MacroPanelSelect *mps = (MacroPanelSelect *)vParam;
+			const auto mps = static_cast<const MacroPanelSelect*>(vParam);
 
 			if (!ListData)
 				return Result;

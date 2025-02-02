@@ -2554,13 +2554,10 @@ BOOL farAPIVTLogExportW(HANDLE con_hnd, DWORD vth_flags, const wchar_t *file)
 
 	return TRUE;
 }
+
 int64_t WINAPI farCallFar(int CheckCode, FarMacroCall *Data)
 {
-	if (CtrlObject) {
-		KeyMacro &Macro = CtrlObject->Macro;
-		return Macro.CallFar(CheckCode, Data);
-	}
-	return 0;
+	return CtrlObject ? CtrlObject->Macro.CallFar(CheckCode, Data) : 0;
 }
 
 int WINAPI farMacroControl(DWORD PluginId, int Command, int Param1, void *Param2)

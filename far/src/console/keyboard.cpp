@@ -1129,8 +1129,8 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 		PreMouseEventFlags=MouseEventFlags;
 		MouseEventFlags=rec->Event.MouseEvent.dwEventFlags;
 		DWORD CtrlState=rec->Event.MouseEvent.dwControlKeyState;
-		KeyMacro::SetMacroConst(constMsCtrlState,(int64_t)CtrlState);
-		KeyMacro::SetMacroConst(constMsEventFlags,(int64_t)MouseEventFlags);
+		KeyMacro::SetMacroConst(constMsCtrlState, CtrlState);
+		KeyMacro::SetMacroConst(constMsEventFlags, MouseEventFlags);
 		KeyMacro::SetMacroConst(constMsLastCtrlState, CtrlState);
 		/*
 		    // Сигнал на прорисовку ;-) Помогает прорисовать кейбар при движении мышью
@@ -1152,7 +1152,7 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 		RightAltPressed=(CtrlState & RIGHT_ALT_PRESSED);
 		RightShiftPressed=(CtrlState & SHIFT_PRESSED);
 		DWORD BtnState=rec->Event.MouseEvent.dwButtonState;
-		KeyMacro::SetMacroConst(constMsButton,(int64_t)rec->Event.MouseEvent.dwButtonState);
+		KeyMacro::SetMacroConst(constMsButton, rec->Event.MouseEvent.dwButtonState);
 
 		if (MouseEventFlags != MOUSE_MOVED)
 		{
@@ -1166,8 +1166,8 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 		PrevMouseY=MouseY;
 		MouseX=rec->Event.MouseEvent.dwMousePosition.X;
 		MouseY=rec->Event.MouseEvent.dwMousePosition.Y;
-		KeyMacro::SetMacroConst(constMsX,(int64_t)MouseX);
-		KeyMacro::SetMacroConst(constMsY,(int64_t)MouseY);
+		KeyMacro::SetMacroConst(constMsX, MouseX);
+		KeyMacro::SetMacroConst(constMsY, MouseY);
 
 		/* $ 26.04.2001 VVM
 		   + Обработка колесика мышки. */
