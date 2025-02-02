@@ -2575,7 +2575,7 @@ int WINAPI farMacroControl(DWORD PluginId, int Command, int Param1, void *Param2
 			{
 				const auto Data = static_cast<const FarMacroLoad *>(Param2);
 				return !Macro.IsRecording() && (!Data || CheckStructSize(Data))
-						&& Macro.LoadMacros(false, !Macro.IsExecuting(), Data);
+						&& Macro.LoadMacros(false, Data);
 			}
 
 			// Param1=0, Param2 - 0

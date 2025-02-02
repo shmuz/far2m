@@ -91,7 +91,7 @@ public:
 	bool ProcessKey(FarKey Key, const INPUT_RECORD *Rec=nullptr);
 	const wchar_t* GetStringToPrint() const { return m_StringToPrint.CPtr(); }
 	bool IsRecording() const { return m_Recording != MACROSTATE_NOMACRO; }
-	bool LoadMacros(bool FromFar, bool InitedRAM=true, const FarMacroLoad *Data=nullptr);
+	bool LoadMacros(bool FromFar, const FarMacroLoad *Data=nullptr);
 	void SetArea(FARMACROAREA Area) { m_Area=Area; }
 	void SuspendMacros(bool Suspend) { Suspend ? ++m_InternalInput : --m_InternalInput; }
 	bool CanSendKeysToPlugin() const;

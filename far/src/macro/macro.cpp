@@ -243,24 +243,20 @@ KeyMacro::KeyMacro():
 {
 }
 
-bool KeyMacro::LoadMacros(bool FromFar, bool InitedRAM, const FarMacroLoad *Data)
+bool KeyMacro::LoadMacros(bool FromFar, const FarMacroLoad *Data)
 {
-	if (FromFar)
+	if ((FromFar && (Opt.Macro.DisableMacro & MDOL_ALL)) || !CtrlObject->Plugins.IsPluginsLoaded())
 	{
-		if (Opt.Macro.DisableMacro&MDOL_ALL) return false;
-	}
-	else
-	{
-		if (!CtrlObject->Plugins.IsPluginsLoaded()) return false;
+		return false;
 	}
 
 	m_Recording = MACROSTATE_NOMACRO;
 
-	FarMacroValue values[] = {InitedRAM, false, 0.0};
+	FarMacroValue values[] = {false, 0.0};
 	if (Data)
 	{
-		if (Data->Path) values[1] = Data->Path;
-		values[2] = static_cast<double>(Data->Flags);
+		if (Data->Path) values[0] = Data->Path;
+		values[1] = static_cast<double>(Data->Flags);
 	}
 	FarMacroCall fmc = {sizeof(FarMacroCall), ARRAYSIZE(values), values, nullptr, nullptr};
 	OpenMacroPluginInfo info = {MCT_LOADMACROS, &fmc};
@@ -719,20 +715,19 @@ long long KeyMacro::GetMacroConst(int ConstIndex)
 // Функция, запускающая макросы при старте ФАРа
 void KeyMacro::RunStartMacro()
 {
-	if (Opt.Macro.DisableMacro & (MDOL_ALL|MDOL_AUTOSTART))
-		return;
-
-	if (!CtrlObject || !CtrlObject->Cp() || !CtrlObject->Cp()->ActivePanel || !CtrlObject->Plugins.IsPluginsLoaded())
-		return;
-
-	static bool IsRunStartMacro = false, IsInside = false;
-
-	if (!IsRunStartMacro && !IsInside)
+	if (!(Opt.Macro.DisableMacro & (MDOL_ALL | MDOL_AUTOSTART))
+		&& CtrlObject && CtrlObject->Cp() && CtrlObject->Cp()->ActivePanel
+		&& CtrlObject->Plugins.IsPluginsLoaded())
 	{
-		IsInside = true;
-		OpenMacroPluginInfo info = {MCT_RUNSTARTMACRO, nullptr};
-		IsRunStartMacro = CallMacroPlugin(&info);
-		IsInside = false;
+		static bool IsRunStartMacro = false, IsInside = false;
+
+		if (!IsRunStartMacro && !IsInside)
+		{
+			IsInside = true;
+			OpenMacroPluginInfo info = {MCT_RUNSTARTMACRO, nullptr};
+			IsRunStartMacro = CallMacroPlugin(&info);
+			IsInside = false;
+		}
 	}
 }
 

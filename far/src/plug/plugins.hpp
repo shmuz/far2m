@@ -130,7 +130,7 @@ enum PLUGINSETFLAGS
 {
 	PSIF_ENTERTOOPENPLUGIN        = 0x00000001, // ввалились в плагин OpenPlugin
 	PSIF_DIALOG                   = 0x00000002, // была бадяга с диалогом
-	PSIF_PLUGINSLOADDED           = 0x80000000, // плагины загружены
+	PSIF_PLUGINSLOADED            = 0x80000000, // плагины загружены
 };
 
 enum OPENFILEPLUGINTYPE
@@ -257,7 +257,7 @@ class PluginManager
 		int GetPluginsCount() { return PluginsCount; }
 		int GetOemPluginsCount() { return OemPluginsCount; }
 
-		BOOL IsPluginsLoaded() { return Flags.Check(PSIF_PLUGINSLOADDED); }
+		BOOL IsPluginsLoaded() { return Flags.Check(PSIF_PLUGINSLOADED); }
 
 		BOOL CheckFlags(DWORD NewFlags) { return Flags.Check(NewFlags); }
 

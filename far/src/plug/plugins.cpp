@@ -437,7 +437,7 @@ Plugin *PluginManager::GetPlugin(int PluginNumber)
 
 void PluginManager::LoadPlugins()
 {
-	Flags.Clear(PSIF_PLUGINSLOADDED);
+	Flags.Clear(PSIF_PLUGINSLOADED);
 
 	if (Opt.LoadPlug.PluginsCacheOnly)  // $ 01.09.2000 tran  '/co' switch
 	{
@@ -513,7 +513,7 @@ void PluginManager::LoadPlugins()
 		}
 	}
 
-	Flags.Set(PSIF_PLUGINSLOADDED);
+	Flags.Set(PSIF_PLUGINSLOADED);
 
 	far_qsort(PluginsData, PluginsCount, sizeof(*PluginsData), PluginsSort);
 }

@@ -196,10 +196,8 @@ local function PopState (withClip)
   end
 end
 
-function KeyMacro.InitInternalVars (InitedRAM)
-  if InitedRAM then
-    CurState.MacroQueue = NewQueue()
-  end
+function KeyMacro.InitInternalVars()
+  CurState.MacroQueue = NewQueue()
   CurState.HistoryDisableMask = 0
 end
 
