@@ -1495,7 +1495,7 @@ bool ShellSetFileAttributes(Panel *SrcPanel, LPCWSTR Object)
 										}
 									}
 
-									if (!ApplyFileOwnerGroupIfChanged(AttrDlg[SA_COMBO_GROUP], ESetFileOwner,
+									if (!ApplyFileOwnerGroupIfChanged(AttrDlg[SA_COMBO_OWNER], ESetFileOwner,
 												SkipMode, strFullName, strInitOwner,
 												DlgParam.OSubfoldersState))
 										break;
