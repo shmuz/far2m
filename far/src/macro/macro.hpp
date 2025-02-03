@@ -64,76 +64,67 @@ class KeyMacro
 public:
 	KeyMacro();
 
-	static bool AddMacro(DWORD PluginId, const MacroAddMacro* Data);
-	static bool DelMacro(DWORD PluginId, void* Id);
-	static bool ExecuteString(MacroExecuteString *Data);
-	static bool GetMacroKeyInfo(const FARString& StrArea, int Pos, FARString &strKeyName, FARString &strDescription);
-	static bool IsOutputDisabled();
-	static bool IsExecuting() { return GetExecutingState() != MACROSTATE_NOMACRO; }
-	static bool IsHistoryDisabled(int TypeHistory);
-	static void RunStartMacro();
-	static bool SaveMacros();
-	static void SetMacroConst(MACROMOUSEINDEX ConstIndex, int64_t Value);
+	static bool    AddMacro(DWORD PluginId, const MacroAddMacro* Data);
+	static bool    DelMacro(DWORD PluginId, void* Id);
+	static bool    ExecuteString(MacroExecuteString *Data);
 	static int64_t GetMacroConst(MACROMOUSEINDEX ConstIndex);
-	static bool PostNewMacro(const wchar_t* Sequence, DWORD InputFlags, FarKey AKey = 0);
-	static bool GetMacroParseError(COORD& ErrPos, FARString& ErrSrc);
-	static bool ParseMacroString(const wchar_t* Sequence,DWORD Flags,bool skipFile);
+	static bool    GetMacroKeyInfo(const FARString& Area, int Pos, FARString &KeyName, FARString &Description);
+	static bool    GetMacroParseError(COORD& ErrPos, FARString& ErrSrc);
+	static bool    IsExecuting() { return GetExecutingState() != MACROSTATE_NOMACRO; }
+	static bool    IsHistoryDisabled(int TypeHistory);
+	static bool    IsOutputDisabled();
+	static bool    ParseMacroString(const wchar_t* Sequence,DWORD Flags,bool skipFile);
+	static bool    PostNewMacro(const wchar_t* Sequence, DWORD InputFlags, FarKey AKey = 0);
+	static void    RunStartMacro();
+	static bool    SaveMacros();
+	static void    SetMacroConst(MACROMOUSEINDEX ConstIndex, int64_t Value);
 
-	int64_t CallFar(int CheckCode, const FarMacroCall* Data);
-	bool CheckWaitKeyFunc() const;
-	FARMACROSTATE GetState() const;
-	FarKey PeekKey() const;
-	FARMACROAREA GetArea() const { return m_Area; }
-	FarKey GetKey();
-	bool ProcessKey(FarKey Key, const INPUT_RECORD *Rec=nullptr);
+	int64_t        CallFar(int CheckCode, const FarMacroCall* Data);
+	bool           CanSendKeysToPlugin() const;
+	bool           CheckWaitKeyFunc() const;
+	FARMACROAREA   GetArea() const { return m_Area; }
+	FarKey         GetKey();
+	FARMACROSTATE  GetState() const;
 	const wchar_t* GetStringToPrint() const { return m_StringToPrint.CPtr(); }
-	bool IsRecording() const { return m_Recording != MACROSTATE_NOMACRO; }
-	bool LoadMacros(bool FromFar, const FarMacroLoad *Data=nullptr);
-	void SetArea(FARMACROAREA Area) { m_Area=Area; }
-	void SuspendMacros(bool Suspend) { Suspend ? ++m_InternalInput : --m_InternalInput; }
-	bool CanSendKeysToPlugin() const;
+	bool           IsRecording() const { return m_Recording != MACROSTATE_NOMACRO; }
+	bool           LoadMacros(bool FromFar, const FarMacroLoad *Data=nullptr);
+	FarKey         PeekKey() const;
+	bool           ProcessKey(FarKey Key, const INPUT_RECORD *Rec=nullptr);
+	void           SetArea(FARMACROAREA Area) { m_Area=Area; }
+	void           SuspendMacros(bool Suspend) { Suspend ? ++m_InternalInput : --m_InternalInput; }
 
 private:
-	static FARMACROSTATE GetExecutingState();
-	static bool GetMacroSettings(FarKey Key, DWORD &Flags, const wchar_t* Src, const wchar_t* Descr);
+	static FARString    m_RecCode;
+	static FARString    m_RecDescription;
+	static FARMACROAREA m_StartArea;
 
-	static bool AssignMacroKey(void *Param);
+	FARMACROAREA  m_Area;
+	int           m_InternalInput;
+	FARMACROSTATE m_Recording;
+	FARString     m_StringToPrint;
+	int           m_WaitKey;
+
+private:
 	void RestoreMacroChar() const;
 
-	static FARString m_RecCode;
-	static FARString m_RecDescription;
-	static FARMACROAREA m_StartArea;
-	FARMACROAREA m_Area;
-	FARMACROSTATE m_Recording;
-	int m_InternalInput;
-	int m_WaitKey;
-	FARString m_StringToPrint;
-
-private:
-	static bool CheckEditSelected(FARMACROAREA Area, DWORD CurFlags);
-	static bool CheckPanel(int PanelMode,DWORD CurFlags, bool IsPassivePanel);
-	static bool CheckCmdLine(int CmdLength,DWORD Flags);
-	static bool CheckFileFolder(DWORD CurFlags, bool IsPassivePanel);
+	static bool AssignMacroKey(void *Param);
 	static bool CheckAll(FARMACROAREA Area, DWORD CurFlags);
+	static bool CheckCmdLine(int CmdLength,DWORD Flags);
+	static bool CheckEditSelected(FARMACROAREA Area, DWORD CurFlags);
+	static bool CheckFileFolder(DWORD CurFlags, bool IsPassivePanel);
+	static bool CheckPanel(int PanelMode,DWORD CurFlags, bool IsPassivePanel);
+	static FARMACROSTATE GetExecutingState();
+	static bool GetMacroSettings(FarKey Key, DWORD &Flags, const wchar_t* Src, const wchar_t* Descr);
 
 	static LONG_PTR WINAPI AssignMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2);
 	static LONG_PTR WINAPI ParamMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2);
 };
 
-inline bool IsMenuArea(int Area) { return
-	Area==MACROAREA_MAINMENU || Area==MACROAREA_MENU || Area==MACROAREA_DISKS ||
-	Area==MACROAREA_USERMENU || Area==MACROAREA_SHELLAUTOCOMPLETION ||
-	Area==MACROAREA_DIALOGAUTOCOMPLETION; }
-
-inline bool IsPanelsArea(int Area) { return
-	Area==MACROAREA_SHELL || Area==MACROAREA_INFOPANEL || Area==MACROAREA_QVIEWPANEL ||
-	Area==MACROAREA_TREEPANEL; }
-
-DWORD GetHistoryDisableMask();
-DWORD SetHistoryDisableMask(DWORD Mask);
-bool IsTopMacroOutputDisabled();
-
-void ShowUserMenu(size_t Count, const FarMacroValue *Values);
-
-bool StrToGuid(const wchar_t *Str, GUID& Guid);
+DWORD       GetHistoryDisableMask();
 std::string GuidToString(const GUID& Guid);
+bool        IsMenuArea(int Area);
+bool        IsPanelsArea(int Area);
+bool        IsTopMacroOutputDisabled();
+DWORD       SetHistoryDisableMask(DWORD Mask);
+void        ShowUserMenu(size_t Count, const FarMacroValue *Values);
+bool        StrToGuid(const wchar_t *Str, GUID& Guid);

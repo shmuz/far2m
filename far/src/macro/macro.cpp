@@ -83,6 +83,21 @@ int Log(const char* Format, ...)
 	return N;
 }
 
+bool IsMenuArea(int Area)
+{
+	return
+	Area==MACROAREA_MAINMENU || Area==MACROAREA_MENU || Area==MACROAREA_DISKS ||
+	Area==MACROAREA_USERMENU || Area==MACROAREA_SHELLAUTOCOMPLETION ||
+	Area==MACROAREA_DIALOGAUTOCOMPLETION;
+}
+
+bool IsPanelsArea(int Area)
+{
+	return
+	Area==MACROAREA_SHELL || Area==MACROAREA_INFOPANEL || Area==MACROAREA_QVIEWPANEL ||
+	Area==MACROAREA_TREEPANEL;
+}
+
 bool StrToGuid(const wchar_t *Str, GUID& Guid)
 {
 	const char tmpl[] = "HHHHHHHH-HHHH-HHHH-HHHH-HHHHHHHHHHHH";
@@ -237,8 +252,8 @@ static bool TryToPostMacro(int Area, const FARString& TextKey, DWORD IntKey)
 
 KeyMacro::KeyMacro():
 	m_Area(MACROAREA_SHELL),
-	m_Recording(MACROSTATE_NOMACRO),
 	m_InternalInput(0),
+	m_Recording(MACROSTATE_NOMACRO),
 	m_WaitKey(0)
 {
 }
@@ -289,18 +304,17 @@ void KeyMacro::RestoreMacroChar() const
 {
 	ScrBuf.RestoreMacroChar();
 
-	if (m_Area == MACROAREA_EDITOR &&
-					CtrlObject->Plugins.CurEditor &&
-					CtrlObject->Plugins.CurEditor->IsVisible()
-					/* && LockScr*/) // Mantis#0001595
+	if (m_Area == MACROAREA_EDITOR)
 	{
-		CtrlObject->Plugins.CurEditor->Show();
+		auto CurEditor = CtrlObject->Plugins.CurEditor;
+		if (CurEditor && CurEditor->IsVisible()) /* && LockScr*/ // Mantis#0001595
+			CurEditor->Show();
 	}
-	else if (m_Area == MACROAREA_VIEWER &&
-					CtrlObject->Plugins.CurViewer &&
-					CtrlObject->Plugins.CurViewer->IsVisible())
+	else if (m_Area == MACROAREA_VIEWER)
 	{
-		CtrlObject->Plugins.CurViewer->Show(); // иначе может быть неправильный верхний левый символ экрана
+		auto CurViewer = CtrlObject->Plugins.CurViewer;
+		if (CurViewer && CurViewer->IsVisible())
+			CurViewer->Show(); // иначе может быть неправильный верхний левый символ экрана
 	}
 }
 
@@ -715,49 +729,47 @@ int64_t KeyMacro::GetMacroConst(MACROMOUSEINDEX ConstIndex)
 // Функция, запускающая макросы при старте ФАРа
 void KeyMacro::RunStartMacro()
 {
-	if (!(Opt.Macro.DisableMacro & (MDOL_ALL | MDOL_AUTOSTART))
-		&& CtrlObject && CtrlObject->Cp() && CtrlObject->Cp()->ActivePanel
-		&& CtrlObject->Plugins.IsPluginsLoaded())
-	{
-		static bool IsRunStartMacro = false, IsInside = false;
+	static bool IsStartMacroDone = (Opt.Macro.DisableMacro & (MDOL_ALL | MDOL_AUTOSTART)) != 0;
+	static bool IsInside = false;
 
-		if (!IsRunStartMacro && !IsInside)
-		{
-			IsInside = true;
-			OpenMacroPluginInfo info = {MCT_RUNSTARTMACRO, nullptr};
-			IsRunStartMacro = CallMacroPlugin(&info);
-			IsInside = false;
-		}
+	if (!IsStartMacroDone
+		&& CtrlObject && CtrlObject->Cp() && CtrlObject->Cp()->ActivePanel
+		&& CtrlObject->Plugins.IsPluginsLoaded()
+		&& !IsInside)
+	{
+		IsInside = true;
+		OpenMacroPluginInfo info = {MCT_RUNSTARTMACRO, nullptr};
+		IsStartMacroDone = CallMacroPlugin(&info);
+		IsInside = false;
 	}
 }
 
 bool KeyMacro::AddMacro(DWORD PluginId, const MacroAddMacro* Data)
 {
-	if (!(Data->Area >= 0 && (Data->Area < MACROAREA_LAST || Data->Area == MACROAREA_COMMON)))
-		return false;
+	if (((Data->Area >= 0 && Data->Area < MACROAREA_LAST) || Data->Area == MACROAREA_COMMON)
+		&& Data->AKey && *Data->AKey)
+	{
+		MACROFLAGS_MFLAGS Flags = 0;
+		if (Data->Flags & KMFLAGS_ENABLEOUTPUT)        Flags |= MFLAGS_ENABLEOUTPUT;
+		if (Data->Flags & KMFLAGS_NOSENDKEYSTOPLUGINS) Flags |= MFLAGS_NOSENDKEYSTOPLUGINS;
 
-	if (!Data->AKey || !*Data->AKey)
-		return false;
-
-	MACROFLAGS_MFLAGS Flags = 0;
-	if (Data->Flags & KMFLAGS_ENABLEOUTPUT)        Flags |= MFLAGS_ENABLEOUTPUT;
-	if (Data->Flags & KMFLAGS_NOSENDKEYSTOPLUGINS) Flags |= MFLAGS_NOSENDKEYSTOPLUGINS;
-
-	FarMacroValue values[] = {
-		static_cast<double>(Data->Area),
-		Data->AKey,
-		GetMacroLanguage(Data->Flags),
-		Data->SequenceText,
-		Flags,
-		Data->Description,
-		PluginId,
-		reinterpret_cast<void*>(Data->Callback),
-		Data->Id,
-		Data->Priority
-	};
-	FarMacroCall fmc = {sizeof(FarMacroCall), ARRAYSIZE(values), values, nullptr, nullptr};
-	OpenMacroPluginInfo info = {MCT_ADDMACRO, &fmc};
-	return CallMacroPlugin(&info);
+		FarMacroValue values[] = {
+			static_cast<double>(Data->Area),
+			Data->AKey,
+			GetMacroLanguage(Data->Flags),
+			Data->SequenceText,
+			Flags,
+			Data->Description,
+			PluginId,
+			reinterpret_cast<void*>(Data->Callback),
+			Data->Id,
+			Data->Priority
+		};
+		FarMacroCall fmc = {sizeof(FarMacroCall), ARRAYSIZE(values), values, nullptr, nullptr};
+		OpenMacroPluginInfo info = {MCT_ADDMACRO, &fmc};
+		return CallMacroPlugin(&info);
+	}
+	return false;
 }
 
 bool KeyMacro::DelMacro(DWORD PluginId, void* Id)
