@@ -54,7 +54,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "scrbuf.hpp"
 #include "usermenu.hpp"
 
-extern Panel* SelectPanel(int Type);
+extern Panel* SelectPanel(int Which);
 
 static int64_t msValues[constMsLAST];
 
@@ -291,7 +291,7 @@ FARMACROSTATE KeyMacro::GetState() const
 
 bool KeyMacro::CanSendKeysToPlugin() const
 {
-	int state = GetState();
+	auto state = GetState();
 	return state != MACROSTATE_RECORDING && state != MACROSTATE_EXECUTING;
 }
 
@@ -451,12 +451,12 @@ bool KeyMacro::ProcessKey(FarKey dwKey, const INPUT_RECORD *Rec)
 				OK = Info.StructSize && Info.CommandPrefix;
 			}
 			if (!OK) {
-				m_InternalInput = true; //prevent multiple message boxes
+				m_InternalInput = 1; //prevent multiple message boxes
 				Message(MSG_WARNING, 1, Msg::Error,
 				   Msg::MacroPluginLuamacroNotLoaded,
 				   Msg::MacroRecordingIsDisabled,
 				   Msg::HOk);
-				m_InternalInput = false;
+				m_InternalInput = 0;
 				return false;
 			}
 

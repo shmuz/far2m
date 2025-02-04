@@ -1097,13 +1097,10 @@ const wchar_t *FarGetMsgFn(INT_PTR PluginHandle, FarLangMsgID MsgId)
 static int FarMessageFnSynched(INT_PTR PluginNumber, const GUID *Id, DWORD Flags, const wchar_t *HelpTopic,
 		const wchar_t *const *Items, int ItemsNumber, int ButtonsNumber)
 {
-	if (FrameManager->ManagerIsDown())
+	if (FrameManager->ManagerIsDown() || DisablePluginsOutput || !Items)
 		return -1;
 
-	if (DisablePluginsOutput)
-		return -1;
-
-	if ((!(Flags & (FMSG_ALLINONE | FMSG_ERRORTYPE)) && ItemsNumber < 2) || !Items)
+	if (!(Flags & (FMSG_ALLINONE | FMSG_ERRORTYPE)) && ItemsNumber < 2)
 		return -1;
 
 	std::list<std::wstring> AllInOneParts;
@@ -1123,9 +1120,6 @@ static int FarMessageFnSynched(INT_PTR PluginNumber, const GUID *Id, DWORD Flags
 			m.Add(Items[i]);
 	}
 
-	/* $ 22.03.2001 tran
-	   ItemsNumber++ -> ++ItemsNumber
-	   тереялся последний элемент */
 	switch (Flags & 0x000F0000) {
 		case FMSG_MB_OK:
 			ButtonsNumber = 1;

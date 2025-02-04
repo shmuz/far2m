@@ -68,12 +68,12 @@ static Frame* GetTopModal()
 	return FrameManager->GetTopModal();
 }
 
-Panel* SelectPanel(int Type)
+Panel* SelectPanel(int Which)
 {
 	if (CtrlObject->Cp()) {
 		Panel* ActivePanel = CtrlObject->Cp()->ActivePanel;
 		if (ActivePanel) {
-			switch(Type) {
+			switch(Which) {
 				case 0: return ActivePanel;
 				case 1: return CtrlObject->Cp()->GetAnotherPanel(ActivePanel);
 			}
@@ -182,7 +182,7 @@ public:
 private:
 	int SendValue(FarMacroValue &Value);
 	int fattrFuncImpl(int Type);
-	int panelsetpathFuncImpl(bool Plugin);
+	int panelsetpathFuncImpl(bool IsPlugin);
 
 	const FarMacroCall* mData;
 };
@@ -1632,31 +1632,27 @@ int FarMacroApi::xlatFunc()
 int FarMacroApi::promptFunc()
 {
 	auto Params = parseParams(5);
-	auto& ValHistory(Params[4]);
-	auto& ValSrc(Params[3]);
 	const auto Flags = static_cast<DWORD>(Params[2].asInteger());
-	auto& ValPrompt(Params[1]);
-	auto& ValTitle(Params[0]);
 
-	const wchar_t* title   = ValTitle.isString()   ? ValTitle.toString()   : L"";
-	const wchar_t* history = ValHistory.isString() ? ValHistory.toString() : L"";
-	const wchar_t* src     = ValSrc.isString()     ? ValSrc.toString()     : L"";
-	const wchar_t* prompt  = ValPrompt.isString()  ? ValPrompt.toString()  : L"";
-
-	FARString strDest;
+	const wchar_t* title   = Params[0].isString() ? Params[0].toString() : L"";
+	const wchar_t* prompt  = Params[1].isString() ? Params[1].toString() : L"";
+	const wchar_t* src     = Params[3].isString() ? Params[3].toString() : L"";
+	const wchar_t* history = Params[4].isString() ? Params[4].toString() : L"";
 
 	// Mantis#0001743: Возможность отключения истории
 	// если не указан history, то принудительно отключаем историю для ЭТОГО prompt()
-	const DWORD oldHistoryDisable = GetHistoryDisableMask();
+	const DWORD oldMask = GetHistoryDisableMask();
 	if (!history[0])
 		SetHistoryDisableMask(1 << HISTORYTYPE_DIALOG);
 
-	if (GetString(title, prompt, history, src, strDest, {}, (Flags&~FIB_CHECKBOX) | FIB_ENABLEEMPTY))
+	FARString strDest;
+	if (GetString(title, prompt, history, src, strDest, {}, (Flags & ~FIB_CHECKBOX) | FIB_ENABLEEMPTY))
 		PassString(strDest);
 	else
 		PassBoolean(false);
 
-	SetHistoryDisableMask(oldHistoryDisable);
+	if (!history[0])
+		SetHistoryDisableMask(oldMask);
 
 	return 0;
 }
@@ -1673,21 +1669,21 @@ int FarMacroApi::msgBoxFunc()
 	if (!(ValT.isInteger() && !ValT.i()))
 		title=NullToEmpty(ValT.toString());
 
-	const wchar_t *text  = L"";
+	const wchar_t *text = L"";
 
 	if (!(ValB.isInteger() && !ValB.i()))
-		text =NullToEmpty(ValB.toString());
+		text = NullToEmpty(ValB.toString());
 
-	Flags&=~(FMSG_KEEPBACKGROUND|FMSG_ERRORTYPE);
-	Flags|=FMSG_ALLINONE;
+	Flags &= ~(FMSG_KEEPBACKGROUND|FMSG_ERRORTYPE);
+	Flags |= FMSG_ALLINONE;
 
 	if (!HIWORD(Flags) || HIWORD(Flags) > HIWORD(FMSG_MB_RETRYCANCEL))
-		Flags|=FMSG_MB_OK;
+		Flags |= FMSG_MB_OK;
 
 	FARString TempBuf = title;
 	TempBuf += L"\n";
 	TempBuf += text;
-	auto Result=FarMessageFn(-1,Flags,nullptr,(const wchar_t * const *)TempBuf.CPtr(),0,0)+1;
+	auto Result = FarMessageFn(-1, Flags, nullptr, (const wchar_t* const*)TempBuf.CPtr(), 0, 0) + 1;
 	return PassNumber(Result);
 }
 
@@ -1731,14 +1727,12 @@ int FarMacroApi::panelselectFunc()
 		Result=SelPanel->VMProcess(MCODE_F_PANEL_SELECT,&mps,0);
 	}
 
-	if (Result < 0)
-		Result = 0;
-	return PassNumber(Result);
+	return PassNumber(Result < 0 ? 0 : Result);
 }
 
 // N=panel.SetPath       (panelType,pathName[,fileName])
 // N=panel.SetPluginPath (panelType,pathName[,fileName])
-int FarMacroApi::panelsetpathFuncImpl(bool Plugin)
+int FarMacroApi::panelsetpathFuncImpl(bool IsPlugin)
 {
 	auto Params = parseParams(3);
 	int typePanel     = Params[0].getInt32();
@@ -1756,9 +1750,9 @@ int FarMacroApi::panelsetpathFuncImpl(bool Plugin)
 		if (apiExpandEnvironmentStrings(pathName, strPath))
 			pathName = strPath.CPtr();
 
-		Ret = Plugin ?
-			SelPanel->GetMode()==PLUGIN_PANEL && SelPanel->SetCurDir(pathName,false,false) :
-			SelPanel->SetCurDir(pathName,SelPanel->GetMode()==PLUGIN_PANEL && IsAbsolutePath(pathName),false);
+		Ret = IsPlugin
+			? SelPanel->GetMode()==PLUGIN_PANEL && SelPanel->SetCurDir(pathName,false,false)
+			: SelPanel->SetCurDir(pathName,SelPanel->GetMode()==PLUGIN_PANEL && IsAbsolutePath(pathName),false);
 
 		if (Ret)
 		{
@@ -1794,7 +1788,7 @@ int FarMacroApi::fattrFuncImpl(int Type)
 	DWORD FileAttr=INVALID_FILE_ATTRIBUTES;
 	long Pos=-1;
 
-	if (!Type || Type == 2) // не панели: fattr(0) & fexist(2)
+	if (Type == 0 || Type == 2) // не панели: fattr(0) & fexist(2)
 	{
 		auto Params = parseParams(1);
 		FAR_FIND_DATA_EX FindData;
