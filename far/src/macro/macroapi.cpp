@@ -2024,7 +2024,7 @@ int FarMacroApi::dlggetvalueFunc()
 	Frame* CurFrame=FrameManager->GetCurrentFrame();
 	auto Dlg = dynamic_cast<Dialog*>(CurFrame);
 
-	if (Dlg && CtrlObject->Macro.GetArea()==MACROAREA_DIALOG && CurFrame && CurFrame->GetType()==MODALTYPE_DIALOG)
+	if (Dlg && CtrlObject->Macro.GetArea()==MACROAREA_DIALOG)
 	{
 		const auto IndexType = Params[0].type();
 		if (IndexType == vtUnknown || ((IndexType == vtInteger || IndexType == vtDouble) && Index < -1))
@@ -2046,7 +2046,7 @@ int FarMacroApi::dlggetvalueFunc()
 					case 3: Ret=Rect.Top; break;
 					case 4: Ret=Rect.Right; break;
 					case 5: Ret=Rect.Bottom; break;
-					case 6: Ret=(int64_t)(((Dialog*)CurFrame)->GetDlgFocusPos()+1); break;
+					case 6: Ret=(int64_t)Dlg->GetDlgFocusPos()+1; break;
 				}
 			}
 		}
@@ -2115,9 +2115,16 @@ int FarMacroApi::dlggetvalueFunc()
 					Ret=Item->strData.CPtr();
 					if (FarIsEdit(ItemType))
 					{
-						DlgEdit *EditPtr;
-						if ((EditPtr = (DlgEdit *)(Item->ObjPtr)) )
+						if (auto EditPtr = (DlgEdit*)(Item->ObjPtr))
 							Ret=EditPtr->GetStringAddr();
+					}
+					break;
+				}
+				case 11:
+				{
+					if (ItemType == DI_COMBOBOX || ItemType == DI_LISTBOX)
+					{
+						Ret = Item->ListPtr->GetItemCount();
 					}
 					break;
 				}
