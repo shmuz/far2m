@@ -460,8 +460,7 @@ static struct FARConfig
 
 int ConfigOptGetIndex(const wchar_t *KeyName)
 {
-	auto Dot = wcsrchr(KeyName, L'.');
-	if (Dot)
+	if (const wchar_t *Dot = wcsrchr(KeyName, L'.'))
 	{
 		std::string sKey = FARString(KeyName, Dot-KeyName).GetMB();
 		std::string sName = FARString(Dot+1).GetMB();
@@ -481,9 +480,9 @@ bool ConfigOptGetValue(int I, GetConfig& Data)
 	if (I >= 0 && I < (int)ARRAYSIZE(CFG))
 	{
 		Data.IsSave = CFG[I].IsSave;
-		Data.Type = CFG[I].ValType;
-		Data.Key = CFG[I].KeyName;
-		Data.Name = CFG[I].ValName;
+		Data.ValType = CFG[I].ValType;
+		Data.KeyName = CFG[I].KeyName;
+		Data.ValName = CFG[I].ValName;
 		switch (CFG[I].ValType)
 		{
 			case REG_DWORD:
@@ -597,7 +596,7 @@ static void ConfigOptFromCmdLine()
 			int Index = ConfigOptGetIndex(strName.CPtr());
 			if (ConfigOptGetValue(Index, cfg))
 			{
-				switch (cfg.Type)
+				switch (cfg.ValType)
 				{
 					default:
 						if (!StrCmpI(pVal, L"false"))        ConfigOptSetInteger(Index, 0);
@@ -634,7 +633,6 @@ void ConfigOptLoad()
 {
 	FARString strKeyNameFromReg;
 	FARString strPersonalPluginsPath;
-	size_t I;
 
 	ConfigReader cfg_reader;
 
@@ -645,7 +643,7 @@ void ConfigOptLoad()
 	//Opt.LCIDSort=LOCALE_USER_DEFAULT; // проинициализируем на всякий случай
 	/* *************************************************** </ПРЕПРОЦЕССЫ> */
 
-	for (I=0; I < ARRAYSIZE(CFG); ++I)
+	for (size_t I=0; I < ARRAYSIZE(CFG); ++I)
 	{
 		cfg_reader.SelectSection(CFG[I].KeyName);
 		switch (CFG[I].ValType)
@@ -687,7 +685,7 @@ void ConfigOptLoad()
 		Opt.ShowMenuBar=1;
 
 	if (Opt.PluginMaxReadData < 0x1000) // || Opt.PluginMaxReadData > 0x80000)
-		Opt.PluginMaxReadData=0x20000;
+		Opt.PluginMaxReadData=0x1000;
 
 	if(ExplicitWindowMode)
 	{

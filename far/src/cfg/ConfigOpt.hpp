@@ -38,9 +38,9 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 struct GetConfig {
 	bool IsSave;
-	DWORD Type;
-	FARString Key;
-	FARString Name;
+	DWORD ValType;
+	FARString KeyName;
+	FARString ValName;
 
 	DWORD dwDefault;
 	DWORD dwValue;

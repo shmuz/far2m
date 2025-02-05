@@ -834,21 +834,22 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 		case MCODE_V_EDITORFILENAME: // Editor.FileName
 		case MCODE_V_EDITORSELVALUE: // Editor.SelValue
 		{
-			if (GetArea()==MACROAREA_EDITOR && CtrlObject->Plugins.CurEditor && CtrlObject->Plugins.CurEditor->IsVisible())
+			auto CurEditor = CtrlObject->Plugins.CurEditor;
+			if (GetArea()==MACROAREA_EDITOR && CurEditor && CurEditor->IsVisible())
 			{
 				if (CheckCode == MCODE_V_EDITORFILENAME)
 				{
 					FARString strType;
-					CtrlObject->Plugins.CurEditor->GetTypeAndName(strType, tmpStr);
+					CurEditor->GetTypeAndName(strType, tmpStr);
 					return api.PassString(tmpStr);
 				}
 				else if (CheckCode == MCODE_V_EDITORSELVALUE)
 				{
-					CtrlObject->Plugins.CurEditor->VMProcess(CheckCode,&tmpStr);
+					CurEditor->VMProcess(CheckCode,&tmpStr);
 					return api.PassString(tmpStr);
 				}
 				else
-					return CtrlObject->Plugins.CurEditor->VMProcess(CheckCode);
+					return CurEditor->VMProcess(CheckCode);
 			}
 			return (CheckCode == MCODE_V_EDITORFILENAME || CheckCode == MCODE_V_EDITORSELVALUE) ?
 				api.PassString(tmpStr) : 0;
@@ -1545,7 +1546,7 @@ int FarMacroApi::waitkeyFunc()
 	}
 
 	if (Key == KEY_NONE)
-		Key=-1;
+		Key = KEY_INVALID;
 
 	return PassNumber(Key);
 }
@@ -1901,8 +1902,7 @@ int FarMacroApi::dlgsetfocusFunc()
 	TVar Ret(-1);
 	const auto Index = static_cast<unsigned>(Params[0].asInteger()) - 1;
 
-	Frame* CurFrame=FrameManager->GetCurrentFrame();
-	auto Dlg = dynamic_cast<Dialog*>(CurFrame);
+	auto Dlg = dynamic_cast<Dialog*>(FrameManager->GetCurrentFrame());
 	if (Dlg && CtrlObject->Macro.GetArea() == MACROAREA_DIALOG)
 	{
 		Ret = Dlg->VMProcess(MCODE_V_DLGCURPOS);
@@ -1937,7 +1937,7 @@ int FarMacroApi::fargetconfigFunc()
 		return 0;
 	}
 
-	switch(Data.Type)
+	switch(Data.ValType)
 	{
 		case REG_DWORD:
 			PassNumber(Data.dwValue);
@@ -1969,8 +1969,8 @@ int FarMacroApi::fargetconfigFunc()
 			break;
 	}
 
-	PassString(Data.Key);
-	PassString(Data.Name);
+	PassString(Data.KeyName);
+	PassString(Data.ValName);
 	PassBoolean(Data.IsSave);
 	return 0;
 }
@@ -2021,23 +2021,21 @@ int FarMacroApi::dlggetvalueFunc()
 	TVar Ret(-1);
 	int Index=(int)Params[0].getInteger()-1;
 	int InfoID = Params[1].getInt32();
-	Frame* CurFrame=FrameManager->GetCurrentFrame();
-	auto Dlg = dynamic_cast<Dialog*>(CurFrame);
+	auto Dlg = dynamic_cast<Dialog*>(FrameManager->GetCurrentFrame());
 
 	if (Dlg && CtrlObject->Macro.GetArea()==MACROAREA_DIALOG)
 	{
-		const auto IndexType = Params[0].type();
-		if (IndexType == vtUnknown || ((IndexType == vtInteger || IndexType == vtDouble) && Index < -1))
-			Index=Dlg->GetDlgFocusPos();
+		if (Params[0].isUnknown() || ((Params[0].isInteger() || Params[0].isDouble()) && Index < -1))
+			Index = Dlg->GetDlgFocusPos();
 
-		int DlgItemCount=((Dialog*)CurFrame)->GetAllItemCount();
-		const DialogItemEx **DlgItem=((Dialog*)CurFrame)->GetAllItem();
+		int DlgItemCount = Dlg->GetAllItemCount();
+		const DialogItemEx **DlgItem = Dlg->GetAllItem();
 
 		if (Index == -1)
 		{
 			SMALL_RECT Rect;
 
-			if (SendDlgMessage(CurFrame,DM_GETDLGRECT,0,(LONG_PTR)&Rect))
+			if (SendDlgMessage(Dlg,DM_GETDLGRECT,0,(LONG_PTR)&Rect))
 			{
 				switch (InfoID)
 				{
@@ -2067,7 +2065,7 @@ int FarMacroApi::dlggetvalueFunc()
 					FarListGetItem ListItem;
 					ListItem.ItemIndex=Item->ListPtr->GetSelectPos();
 
-					if (SendDlgMessage(CurFrame,DM_LISTGETITEM,Index,(LONG_PTR)&ListItem))
+					if (SendDlgMessage(Dlg,DM_LISTGETITEM,Index,(LONG_PTR)&ListItem))
 					{
 						Ret=ListItem.Item.Text;
 					}
@@ -2141,14 +2139,15 @@ int FarMacroApi::editorposFunc()
 {
 	auto Params = parseParams(3);
 	TVar Ret(-1);
-	int Where = Params[2].getInt32();
-	int What  = Params[1].getInt32();
 	int Op    = Params[0].getInt32();
+	int What  = Params[1].getInt32();
+	int Where = Params[2].getInt32();
 
-	if (CtrlObject->Macro.GetArea()==MACROAREA_EDITOR && CtrlObject->Plugins.CurEditor && CtrlObject->Plugins.CurEditor->IsVisible())
+	auto CurEditor = CtrlObject->Plugins.CurEditor;
+	if (CtrlObject->Macro.GetArea()==MACROAREA_EDITOR && CurEditor && CurEditor->IsVisible())
 	{
 		EditorInfo ei;
-		CtrlObject->Plugins.CurEditor->EditorControl(ECTL_GETINFO,&ei);
+		CurEditor->EditorControl(ECTL_GETINFO,&ei);
 
 		switch (Op)
 		{
@@ -2234,10 +2233,10 @@ int FarMacroApi::editorposFunc()
 						break;
 				}
 
-				int Result=CtrlObject->Plugins.CurEditor->EditorControl(ECTL_SETPOSITION,&esp);
+				int Result=CurEditor->EditorControl(ECTL_SETPOSITION,&esp);
 
 				if (Result)
-					CtrlObject->Plugins.CurEditor->EditorControl(ECTL_REDRAW,nullptr);
+					CurEditor->EditorControl(ECTL_REDRAW,nullptr);
 
 				Ret=Result;
 				break;
@@ -2256,7 +2255,8 @@ int FarMacroApi::editorsetFunc()
 	auto& _longState = Params[1];
 	int Index = Params[0].getInt32();
 
-	if (CtrlObject->Macro.GetArea()==MACROAREA_EDITOR && CtrlObject->Plugins.CurEditor && CtrlObject->Plugins.CurEditor->IsVisible())
+	auto CurEditor = CtrlObject->Plugins.CurEditor;
+	if (CtrlObject->Macro.GetArea()==MACROAREA_EDITOR && CurEditor && CurEditor->IsVisible())
 	{
 		long longState=-1L;
 
@@ -2264,7 +2264,7 @@ int FarMacroApi::editorsetFunc()
 			longState=(long)_longState.toInteger();
 
 		EditorOptions EdOpt;
-		CtrlObject->Plugins.CurEditor->GetEditorOptions(EdOpt);
+		CurEditor->GetEditorOptions(EdOpt);
 
 		switch (Index)
 		{
@@ -2365,8 +2365,8 @@ int FarMacroApi::editorsetFunc()
 					break;
 			}
 
-			CtrlObject->Plugins.CurEditor->SetEditorOptions(EdOpt);
-			CtrlObject->Plugins.CurEditor->ShowStatus();
+			CurEditor->SetEditorOptions(EdOpt);
+			CurEditor->ShowStatus();
 		}
 	}
 
@@ -3004,11 +3004,12 @@ int FarMacroApi::editorundoFunc()
 	auto& Action = Params[0];
 	TVar Ret = 0;
 
-	if (CtrlObject->Macro.GetArea()==MACROAREA_EDITOR && CtrlObject->Plugins.CurEditor && CtrlObject->Plugins.CurEditor->IsVisible())
+	auto CurEditor = CtrlObject->Plugins.CurEditor;
+	if (CtrlObject->Macro.GetArea()==MACROAREA_EDITOR && CurEditor && CurEditor->IsVisible())
 	{
 		EditorUndoRedo eur;
 		eur.Command=(int)Action.toInteger();
-		Ret=CtrlObject->Plugins.CurEditor->EditorControl(ECTL_UNDOREDO,&eur);
+		Ret=CurEditor->EditorControl(ECTL_UNDOREDO,&eur);
 	}
 
 	return Ret.i() ? 1:0;
@@ -3021,14 +3022,15 @@ int FarMacroApi::editorsettitleFunc()
 	auto& Title = Params[0];
 	TVar Ret = 0;
 
-	if (CtrlObject->Macro.GetArea()==MACROAREA_EDITOR && CtrlObject->Plugins.CurEditor && CtrlObject->Plugins.CurEditor->IsVisible())
+	auto CurEditor = CtrlObject->Plugins.CurEditor;
+	if (CtrlObject->Macro.GetArea()==MACROAREA_EDITOR && CurEditor && CurEditor->IsVisible())
 	{
 		if (Title.isInteger() && !Title.i())
 		{
 			Title=L"";
 			Title.toString();
 		}
-		Ret=CtrlObject->Plugins.CurEditor->EditorControl(ECTL_SETTITLE,(void*)Title.s());
+		Ret=CurEditor->EditorControl(ECTL_SETTITLE,(void*)Title.s());
 	}
 
 	return Ret.i() ? 1:0;
