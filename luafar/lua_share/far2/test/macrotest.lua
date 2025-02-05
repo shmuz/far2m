@@ -19,17 +19,18 @@ Macro {
 -- The keys that invoke the whole macrotest from a macro. Some tests depend on that.
 local MacroKey1, MacroKey2 = "CtrlShiftF12", "RCtrlShiftF12"
 
-local function assert_eq(a,b,m)    assert(a == b, m)               return true; end
-local function assert_neq(a,b,m)   assert(a ~= b, m)               return true; end
-local function assert_num(v,m)     assert(type(v)=="number", m)    return v; end
-local function assert_str(v,m)     assert(type(v)=="string", m)    return v; end
-local function assert_table(v,m)   assert(type(v)=="table", m)     return v; end
-local function assert_bool(v,m)    assert(type(v)=="boolean", m)   return true; end
-local function assert_func(v,m)    assert(type(v)=="function", m)  return v; end
-local function assert_udata(v,m)   assert(type(v)=="userdata", m)  return v; end
-local function assert_nil(v,m)     assert(v==nil, m)               return true; end
-local function assert_false(v,m)   assert(v==false, m)             return true; end
-local function assert_true(v,m)    assert(v==true, m)              return true; end
+local AF = "my assertion failed"
+local function assert_eq(a,b,m)    assert(a == b, m or AF)               return true; end
+local function assert_neq(a,b,m)   assert(a ~= b, m or AF)               return true; end
+local function assert_num(v,m)     assert(type(v)=="number", m or AF)    return v; end
+local function assert_str(v,m)     assert(type(v)=="string", m or AF)    return v; end
+local function assert_table(v,m)   assert(type(v)=="table", m or AF)     return v; end
+local function assert_bool(v,m)    assert(type(v)=="boolean", m or AF)   return true; end
+local function assert_func(v,m)    assert(type(v)=="function", m or AF)  return v; end
+local function assert_udata(v,m)   assert(type(v)=="userdata", m or AF)  return v; end
+local function assert_nil(v,m)     assert(v==nil, m or AF)               return true; end
+local function assert_false(v,m)   assert(v==false, m or AF)             return true; end
+local function assert_true(v,m)    assert(v==true, m or AF)              return true; end
 
 local function assert_range(v, low, high)
   if low then assert(v >= low, v) end
@@ -38,7 +39,7 @@ local function assert_range(v, low, high)
 end
 
 local function assert_numint(v,m)
-  assert(type(v)=="number" or bit64.type(v), m)
+  assert(type(v)=="number" or bit64.type(v), m or AF)
   return v
 end
 

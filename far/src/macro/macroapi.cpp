@@ -2014,19 +2014,20 @@ int FarMacroApi::farsetconfigFunc()
 	return 0;
 }
 
-// V=Dlg.GetValue(ID,N)
+// V=Dlg.GetValue([Pos[,Type]])
 int FarMacroApi::dlggetvalueFunc()
 {
 	auto Params = parseParams(2);
 	TVar Ret(-1);
-	int TypeInf = Params[1].getInt32();
 	int Index=(int)Params[0].getInteger()-1;
+	int InfoID = Params[1].getInt32();
 	Frame* CurFrame=FrameManager->GetCurrentFrame();
 	auto Dlg = dynamic_cast<Dialog*>(CurFrame);
 
 	if (Dlg && CtrlObject->Macro.GetArea()==MACROAREA_DIALOG && CurFrame && CurFrame->GetType()==MODALTYPE_DIALOG)
 	{
-		if (Index < -1)
+		const auto IndexType = Params[0].type();
+		if (IndexType == vtUnknown || ((IndexType == vtInteger || IndexType == vtDouble) && Index < -1))
 			Index=Dlg->GetDlgFocusPos();
 
 		int DlgItemCount=((Dialog*)CurFrame)->GetAllItemCount();
@@ -2038,7 +2039,7 @@ int FarMacroApi::dlggetvalueFunc()
 
 			if (SendDlgMessage(CurFrame,DM_GETDLGRECT,0,(LONG_PTR)&Rect))
 			{
-				switch (TypeInf)
+				switch (InfoID)
 				{
 					case 0: Ret=(int64_t)DlgItemCount; break;
 					case 2: Ret=Rect.Left; break;
@@ -2055,11 +2056,11 @@ int FarMacroApi::dlggetvalueFunc()
 			int ItemType=Item->Type;
 			DWORD ItemFlags=Item->Flags;
 
-			if (!TypeInf)
+			if (!InfoID)
 			{
 				if (ItemType == DI_CHECKBOX || ItemType == DI_RADIOBUTTON)
 				{
-					TypeInf=7;
+					InfoID=7;
 				}
 				else if (ItemType == DI_COMBOBOX || ItemType == DI_LISTBOX)
 				{
@@ -2075,15 +2076,15 @@ int FarMacroApi::dlggetvalueFunc()
 						Ret=L"";
 					}
 
-					TypeInf=-1;
+					InfoID=-1;
 				}
 				else
 				{
-					TypeInf=10;
+					InfoID=10;
 				}
 			}
 
-			switch (TypeInf)
+			switch (InfoID)
 			{
 				case 1: Ret=ItemType;    break;
 				case 2: Ret=Item->X1;    break;
