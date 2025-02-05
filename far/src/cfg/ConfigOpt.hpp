@@ -37,7 +37,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define REG_3STATE  0x101
 
 struct GetConfig {
-	int IsSave;
+	bool IsSave;
 	DWORD Type;
 	FARString Key;
 	FARString Name;
