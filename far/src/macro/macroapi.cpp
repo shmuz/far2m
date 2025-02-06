@@ -477,9 +477,8 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 					case IMP_KEYTOTEXT:
 						if (Data->Count > 1)
 						{
-							FARString str;
-							KeyToText(Data->Values[1].Double, str);
-							api.PassString(str.CPtr());
+							KeyToText(Data->Values[1].Double, tmpStr);
+							api.PassString(tmpStr);
 						}
 						break;
 				}
@@ -604,7 +603,7 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 		case MCODE_V_PPANEL_HEIGHT: // PPanel.Height
 		{
 			SelPanel = CheckCode == MCODE_V_APANEL_WIDTH || CheckCode == MCODE_V_APANEL_HEIGHT? ActivePanel : PassivePanel;
-			if (SelPanel )
+			if (SelPanel)
 			{
 				int X1, Y1, X2, Y2;
 				SelPanel->GetPosition(X1,Y1,X2,Y2);
@@ -649,7 +648,7 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 			}
 
 			return CheckCode == MCODE_V_APANEL_OPIFLAGS || CheckCode == MCODE_V_PPANEL_OPIFLAGS ?
-				0 : api.PassString(tmpStr);
+				0 : api.PassString(L"");
 		}
 
 		case MCODE_V_APANEL_PREFIX:           // APanel.Prefix
@@ -662,7 +661,7 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 				if (SelPanel->VMProcess(MCODE_V_APANEL_PREFIX,&PInfo))
 					return api.PassString(PInfo.CommandPrefix);
 			}
-			return api.PassString(tmpStr);
+			return api.PassString(L"");
 		}
 
 		case MCODE_V_APANEL_PATH0:           // APanel.Path0
@@ -790,7 +789,7 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 
 		case MCODE_V_MENU_VALUE: // Menu.Value
 		{
-			int CurArea = GetArea();
+			auto CurArea = GetArea();
 			auto f = GetTopModal();
 
 			if (f && (IsMenuArea(CurArea) || CurArea == MACROAREA_DIALOG))
@@ -852,7 +851,7 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 					return CurEditor->VMProcess(CheckCode);
 			}
 			return (CheckCode == MCODE_V_EDITORFILENAME || CheckCode == MCODE_V_EDITORSELVALUE) ?
-				api.PassString(tmpStr) : 0;
+				api.PassString(L"") : 0;
 		}
 
 		case MCODE_V_HELPFILENAME:  // Help.FileName
@@ -1083,18 +1082,18 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 			auto MenuItemPos = Params[0].toInteger() - 1;
 
 			TVar Out = L"";
-			int CurMMode = GetArea();
+			auto CurArea = GetArea();
+			wchar_t _value[] = { 0,0 };
 
-			if (IsMenuArea(CurMMode) || CurMMode == MACROAREA_DIALOG)
+			if (IsMenuArea(CurArea) || CurArea == MACROAREA_DIALOG)
 			{
 				if (auto f = GetTopModal())
 				{
 					if (CheckCode == MCODE_F_MENU_GETHOTKEY)
 					{
-						int64_t Result;
-						if ((Result=f->VMProcess(CheckCode,nullptr,MenuItemPos)) )
+						if (auto Result=f->VMProcess(CheckCode,nullptr,MenuItemPos) )
 						{
-							const wchar_t _value[]={static_cast<wchar_t>(Result),0};
+							_value[0] = static_cast<wchar_t>(Result);
 							Out=_value;
 						}
 					}
@@ -1103,7 +1102,7 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 						FARString NewStr;
 						if (f->VMProcess(CheckCode,&NewStr,MenuItemPos))
 						{
-							FARString tmpStr = NewStr;
+							tmpStr = NewStr;
 							HiText2Str(tmpStr, NewStr);
 							RemoveExternalSpaces(tmpStr);
 							Out=tmpStr.CPtr();
@@ -1124,13 +1123,12 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 		{
 			auto Params = api.parseParams(3);
 			int Result=-1;
-			int64_t tmpMode=0;
 			int64_t tmpDir=0;
 
 			if (CheckCode == MCODE_F_MENU_SELECT)
 				tmpDir=Params[2].getInteger();
 
-			tmpMode=Params[1].getInteger();
+			int64_t tmpMode=Params[1].getInteger();
 
 			if (CheckCode == MCODE_F_MENU_SELECT)
 				tmpMode |= (tmpDir << 8);
@@ -1141,9 +1139,9 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 			}
 
 			auto& tmpVar = Params[0];
-			int CurMMode = GetArea();
+			auto CurArea = GetArea();
 
-			if (IsMenuArea(CurMMode) || CurMMode == MACROAREA_DIALOG)
+			if (IsMenuArea(CurArea) || CurArea == MACROAREA_DIALOG)
 			{
 				if (auto f = GetTopModal())
 					Result=f->VMProcess(CheckCode,(void*)tmpVar.toString(),tmpMode);
@@ -1157,6 +1155,7 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 		{
 			auto Params = api.parseParams(2);
 			bool success=false;
+			FARString NewStr;
 			TVar& tmpAction(Params[0]);
 
 			TVar tmpVar=Params[1];
@@ -1178,7 +1177,6 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 					}
 					else
 					{
-						FARString NewStr;
 						if (tmpVar.isString())
 							NewStr = tmpVar.toString();
 						if (f->VMProcess(CheckCode,&NewStr,tmpAction.toInteger()))
