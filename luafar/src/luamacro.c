@@ -187,8 +187,6 @@ int far_MacroCallFar(lua_State *L)
 	enum { MAXARG=32, MAXRET=32 };
 	struct FarMacroValue args[MAXARG];
 	struct FarMacroCall fmc;
-	int idx, pushed;
-	int64_t ret;
 	mcfc_data cbdata = { L, MAXRET, 0 };
  	TPluginData *pd = GetPluginData(L);
 	struct MacroPrivateInfo *privateInfo = (struct MacroPrivateInfo*)pd->Private;
@@ -198,7 +196,7 @@ int far_MacroCallFar(lua_State *L)
 	fmc.Callback = MacroCallFarCallback;
 	fmc.CallbackData = &cbdata;
 
-	for(idx=0; idx<(int)fmc.Count; idx++)
+	for(size_t idx=0; idx<fmc.Count; idx++)
 	{
 		ConvertLuaValue(L, idx+2, fmc.Values+idx);
 		if (fmc.Values[idx].Type == FMVT_UNKNOWN)
@@ -214,8 +212,8 @@ int far_MacroCallFar(lua_State *L)
 	}
 
 	lua_checkstack(L, MAXRET);
-	ret = privateInfo->CallFar(opcode, &fmc);
-	pushed = MAXRET - cbdata.ret_avail;
+	int64_t ret = privateInfo->CallFar(opcode, &fmc);
+	int pushed = MAXRET - cbdata.ret_avail;
 	if (fmc.Values != args)
 		free(fmc.Values);
 	if (cbdata.error)
