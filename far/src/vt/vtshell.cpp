@@ -40,8 +40,8 @@
 #include "AnsiEsc.hpp"
 #include "TestPath.h"
 
-#define BRACKETED_PASTE_SEQ_START "\x1b[200~"
-#define BRACKETED_PASTE_SEQ_STOP  "\x1b[201~"
+#define BRACKETED_PASTE_SEQ_START  "\x1b[200~"
+#define BRACKETED_PASTE_SEQ_STOP   "\x1b[201~"
 #define FOCUS_CHANGED_SEQ_ACTIVE   "\x1b[I"
 #define FOCUS_CHANGED_SEQ_INACTIVE "\x1b[O"
 
@@ -126,7 +126,7 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 	std::unique_ptr<VTFar2lExtensios> _far2l_exts;
 	std::unique_ptr<VTMouse> _mouse;
 	std::mutex _read_state_mutex, _write_term_mutex;
-	uint32_t _mouse_expectations{0};
+	uint32_t _mouse_mode{0};
 
 	std::string _start_marker, _exit_marker;
 	std::string _host_id;
@@ -550,20 +550,20 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 		_keypad = keypad;
 	}
 
-	virtual void OnMouseExpectation(MouseExpectation mex, bool enable)
+	virtual void OnMouseExpectation(MouseMode mex, bool enable)
 	{
 		fprintf(stderr, "VT::OnMouseExpectation: %u\n", mex);
 
 		std::lock_guard<std::mutex> lock(_read_state_mutex);
-		const auto prev_mouse_expectations = _mouse_expectations;
+		const auto prev_mouse_mode = _mouse_mode;
 		if (enable) {
-			_mouse_expectations|= mex;
+			_mouse_mode|= mex;
 		} else {
-			_mouse_expectations&= ~(uint32_t)mex;
+			_mouse_mode&= ~(uint32_t)mex;
 		}
-		if (prev_mouse_expectations != _mouse_expectations) {
+		if (prev_mouse_mode != _mouse_mode) {
 			_mouse.reset();
-			_mouse.reset(new VTMouse(this, _mouse_expectations));
+			_mouse.reset(new VTMouse(this, _mouse_mode));
 		}
 	}
 
@@ -1109,7 +1109,7 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 		_win32_input_mode_expected = false;
 		_focus_change_expected = false;
 		_kitty_kb_flags = 0;
-		_mouse_expectations = 0;
+		_mouse_mode = 0;
 		_far2l_exts.reset();
 		_mouse.reset();
 		// cleanup also NetRocks per-session identifier
