@@ -322,12 +322,12 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 
 	switch (CheckCode)
 	{
-		case MCODE_C_MSX:             return api.PassNumber(GetMacroConst(constMsX));
-		case MCODE_C_MSY:             return api.PassNumber(GetMacroConst(constMsY));
-		case MCODE_C_MSBUTTON:        return api.PassNumber(GetMacroConst(constMsButton));
-		case MCODE_C_MSCTRLSTATE:     return api.PassNumber(GetMacroConst(constMsCtrlState));
-		case MCODE_C_MSEVENTFLAGS:    return api.PassNumber(GetMacroConst(constMsEventFlags));
-		case MCODE_C_MSLASTCTRLSTATE: return api.PassNumber(GetMacroConst(constMsLastCtrlState));
+		case MCODE_C_MSX:             return GetMacroConst(constMsX);
+		case MCODE_C_MSY:             return GetMacroConst(constMsY);
+		case MCODE_C_MSBUTTON:        return GetMacroConst(constMsButton);
+		case MCODE_C_MSCTRLSTATE:     return GetMacroConst(constMsCtrlState);
+		case MCODE_C_MSEVENTFLAGS:    return GetMacroConst(constMsEventFlags);
+		case MCODE_C_MSLASTCTRLSTATE: return GetMacroConst(constMsLastCtrlState);
 
 		case MCODE_V_FAR_WIDTH:
 			return ScrX + 1;
@@ -340,10 +340,10 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 			return api.PassString(tmpStr);
 
 		case MCODE_V_FAR_PID:
-			return api.PassNumber(WINPORT(GetCurrentProcessId)());
+			return WINPORT(GetCurrentProcessId)();
 
 		case MCODE_V_FAR_UPTIME:
-			return api.PassNumber(GetProcessUptimeMSec());
+			return GetProcessUptimeMSec();
 
 		case MCODE_V_MACRO_AREA:
 			return GetArea();
@@ -877,7 +877,7 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 					return api.PassString(tmpStr);
 				}
 				else
-					return api.PassNumber(CtrlObject->Plugins.CurViewer->VMProcess(MCODE_V_VIEWERSTATE));
+					return CtrlObject->Plugins.CurViewer->VMProcess(MCODE_V_VIEWERSTATE);
 			}
 			return (CheckCode == MCODE_V_VIEWERFILENAME) ? api.PassString(tmpStr) : 0;
 		}
@@ -1475,10 +1475,8 @@ int64_t FarMacroApi::sleepFunc()
 	if (Period > 0)
 	{
 		WINPORT(Sleep)(Period);
-		PassNumber(1);
+		return 1;
 	}
-	else
-		PassNumber(0);
 	return 0;
 }
 
@@ -2928,10 +2926,9 @@ int64_t FarMacroApi::fmatchFunc()
 	CFileMask FileMask;
 
 	if (FileMask.Set(Mask.toString(), FMF_SILENT))
-		PassNumber(FileMask.Compare(S.toString(), false));
-	else
-		PassNumber(-1);
-	return 0;
+		return FileMask.Compare(S.toString(), false);
+
+	return -1;
 }
 
 // V=Editor.Sel(Action[,Opt])
