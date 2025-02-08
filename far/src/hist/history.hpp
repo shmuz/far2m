@@ -70,38 +70,40 @@ struct HistoryRecord
 class History
 {
 private:
-	std::string strRegKey;
-	bool EnableAdd, KeepSelectedPos, SaveType;
-	int RemoveDups;
-	enumHISTORYTYPE TypeHistory;
-	size_t HistoryCount;
-	const int *EnableSave;
-	std::list<HistoryRecord> HistoryList;
 	typedef std::list<HistoryRecord>::iterator Iter;
-	Iter CurrentItem;
-	struct stat LoadedStat
-	{};
+
+	std::string mStrRegKey;
+	bool mEnableAdd;
+	bool mKeepSelectedPos;
+	bool mSaveType;
+	int mRemoveDups;
+	enumHISTORYTYPE mTypeHistory;
+	size_t mHistoryCount;
+	const int *mEnableSave;
+	std::list<HistoryRecord> mHistoryList;
+	Iter mCurrentItem;
+	struct stat mLoadedStat {};
 
 private:
 	void AddToHistoryLocal(const wchar_t *Str, const wchar_t *Extra, const wchar_t *Prefix, int Type);
 	bool EqualType(int Type1, int Type2);
 	const wchar_t *GetTitle(int Type);
 	int ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &HistoryMenu, int Height, int &Type,
-			Dialog *Dlg);
+		Dialog *Dlg);
 	bool ReadHistory(bool bOnlyLines = false);
 	bool SaveHistory();
 	void SyncChanges();
 
 public:
 	History(enumHISTORYTYPE TypeHistory, size_t HistoryCount, const std::string &RegKey,
-			const int *EnableSave, bool SaveType);
+		const int *EnableSave, bool SaveType);
 	~History();
 
 public:
 	void AddToHistoryExtra(const wchar_t *Str, const wchar_t *Extra, int Type = 0,
-			const wchar_t *Prefix = nullptr, bool SaveForbid = false);
-	void
-	AddToHistory(const wchar_t *Str, int Type = 0, const wchar_t *Prefix = nullptr, bool SaveForbid = false);
+		const wchar_t *Prefix = nullptr, bool SaveForbid = false);
+	void AddToHistory(const wchar_t *Str, int Type = 0, const wchar_t *Prefix = nullptr,
+		bool SaveForbid = false);
 	static bool ReadLastItem(const char *RegKey, FARString &strStr);
 	int Select(const wchar_t *Title, const wchar_t *HelpTopic, FARString &strStr, int &Type);
 	int Select(VMenu &HistoryMenu, int Height, Dialog *Dlg, FARString &strStr);
@@ -111,5 +113,5 @@ public:
 	bool GetAllSimilar(VMenu &HistoryMenu, const wchar_t *Str);
 	bool DeleteMatching(FARString &strStr);
 	void SetAddMode(bool EnableAdd, int RemoveDups, bool KeepSelectedPos);
-	void ResetPosition() { CurrentItem = HistoryList.end(); }
+	void ResetPosition() { mCurrentItem = mHistoryList.end(); }
 };
