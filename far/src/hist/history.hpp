@@ -72,14 +72,14 @@ class History
 private:
 	typedef std::list<HistoryRecord>::iterator Iter;
 
-	std::string mStrRegKey;
+	const enumHISTORYTYPE mTypeHistory;
+	const size_t mHistoryCount;
+	const bool mSaveType;
+	const std::string mStrRegKey;
 	bool mEnableAdd;
 	bool mKeepSelectedPos;
-	bool mSaveType;
-	int mRemoveDups;
-	enumHISTORYTYPE mTypeHistory;
-	size_t mHistoryCount;
 	const int *mEnableSave;
+	int mRemoveDups;
 	std::list<HistoryRecord> mHistoryList;
 	Iter mCurrentItem;
 	struct stat mLoadedStat {};
@@ -88,16 +88,17 @@ private:
 	void AddToHistoryLocal(const wchar_t *Str, const wchar_t *Extra, const wchar_t *Prefix, int Type);
 	bool EqualType(int Type1, int Type2);
 	const wchar_t *GetTitle(int Type);
+	const wchar_t *GetDelTitle();
 	int ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &HistoryMenu, int Height, int &Type,
 		Dialog *Dlg);
-	bool ReadHistory(bool bOnlyLines = false);
+	bool ReadHistory();
 	bool SaveHistory();
 	void SyncChanges();
 
 public:
 	History(enumHISTORYTYPE TypeHistory, size_t HistoryCount, const std::string &RegKey,
 		const int *EnableSave, bool SaveType);
-	~History();
+	~History() {}
 
 public:
 	void AddToHistoryExtra(const wchar_t *Str, const wchar_t *Extra, int Type = 0,

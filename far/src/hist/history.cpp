@@ -52,21 +52,19 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 History::History(enumHISTORYTYPE TypeHistory, size_t HistoryCount, const std::string &RegKey,
 		const int *EnableSave, bool SaveType)
 	:
+	mTypeHistory(TypeHistory),
+	mHistoryCount(HistoryCount),
+	mSaveType(SaveType),
 	mStrRegKey(RegKey),
 	mEnableAdd(true),
 	mKeepSelectedPos(false),
-	mSaveType(SaveType),
-	mRemoveDups(1),
-	mTypeHistory(TypeHistory),
-	mHistoryCount(HistoryCount),
 	mEnableSave(EnableSave),
+	mRemoveDups(1),
 	mCurrentItem(mHistoryList.end())
 {
 	if (*mEnableSave)
 		ReadHistory();
 }
-
-History::~History() {}
 
 static bool IsAllowedForHistory(const wchar_t *Str)
 {
@@ -137,14 +135,12 @@ void History::AddToHistoryLocal(const wchar_t *Str, const wchar_t *Extra, const 
 		}
 	}
 
-	if (mHistoryList.size() >= mHistoryCount) {
-		for (auto Item = mHistoryList.begin();
-				Item != mHistoryList.end() && mHistoryList.size() >= mHistoryCount;) {
-			if (!Item->Lock)
-				Item = mHistoryList.erase(Item);
-			else
-				Item++;
-		}
+	for (auto Item = mHistoryList.begin();
+			Item != mHistoryList.end() && mHistoryList.size() >= mHistoryCount;) {
+		if (!Item->Lock)
+			Item = mHistoryList.erase(Item);
+		else
+			Item++;
 	}
 
 	WINPORT(GetSystemTimeAsFileTime)(&AddRecord.Timestamp);    // in UTC
@@ -263,9 +259,8 @@ bool History::ReadLastItem(const char *RegKey, FARString &strStr)
 	return true;
 }
 
-bool History::ReadHistory(bool bOnlyLines)
+bool History::ReadHistory()
 {
-	int Position = -1;
 	FARString strLines, strExtras, strLocks, strTypes;
 	std::vector<unsigned char> vTimes;
 
@@ -274,16 +269,14 @@ bool History::ReadHistory(bool bOnlyLines)
 	if (!cfg_reader.GetString(strLines, "Lines", L""))
 		return false;
 
-	if (!bOnlyLines) {
-		Position = cfg_reader.GetInt("Position", Position);
-		cfg_reader.GetBytes(vTimes, "Times");
-		cfg_reader.GetString(strLocks, "Locks", L"");
-		cfg_reader.GetString(strTypes, "Types", L"");
-		cfg_reader.GetString(strExtras, "Extras", L"");
-	}
+	int Position = cfg_reader.GetInt("Position", -1);
+	cfg_reader.GetBytes(vTimes, "Times");
+	cfg_reader.GetString(strLocks, "Locks", L"");
+	cfg_reader.GetString(strTypes, "Types", L"");
+	cfg_reader.GetString(strExtras, "Extras", L"");
 
-	size_t StrPos = 0, LinesPos = 0, TypesPos = 0, LocksPos = 0, TimePos = 0, ExtrasPos = 0;
-	while (LinesPos < strLines.GetLength() && StrPos < mHistoryCount) {
+	size_t LinesPos = 0, TypesPos = 0, LocksPos = 0, TimePos = 0, ExtrasPos = 0;
+	for (size_t Count=0; LinesPos < strLines.GetLength() && Count < mHistoryCount; Count++) {
 		size_t LineEnd, ExtraEnd;
 		if (!strLines.Pos(LineEnd, L'\n', LinesPos))
 			LineEnd = strLines.GetLength();
@@ -317,7 +310,7 @@ bool History::ReadHistory(bool bOnlyLines)
 			TimePos+= sizeof(FILETIME);
 		}
 
-		if ((int)StrPos == Position)
+		if ((int)Count == Position)
 			mCurrentItem = mHistoryList.begin();
 	}
 
@@ -352,6 +345,19 @@ const wchar_t *History::GetTitle(int Type)
 	}
 
 	return L"";
+}
+
+const wchar_t *History::GetDelTitle()
+{
+	switch (mTypeHistory) {
+		case HISTORYTYPE_CMD:
+		case HISTORYTYPE_DIALOG:
+			return Msg::HistoryTitle;
+		case HISTORYTYPE_FOLDER:
+			return Msg::FolderHistoryTitle;
+		default:
+			return Msg::ViewHistoryTitle;
+	}
 }
 
 int History::Select(const wchar_t *Title, const wchar_t *HelpTopic, FARString &strStr, int &Type)
@@ -611,18 +617,10 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 				}
 				case KEY_NUMDEL:
 				case KEY_DEL: {
-					if (HistoryMenu.GetItemCount() /* > 1*/
-							&& (!Opt.Confirm.HistoryClear
-									|| (Opt.Confirm.HistoryClear
-											&& !Message(MSG_WARNING, 2,
-													((mTypeHistory == HISTORYTYPE_CMD
-																			|| mTypeHistory
-																					== HISTORYTYPE_DIALOG
-																	? Msg::HistoryTitle
-																	: (mTypeHistory == HISTORYTYPE_FOLDER
-																					? Msg::FolderHistoryTitle
-																					: Msg::ViewHistoryTitle))),
-													Msg::HistoryClear, Msg::Clear, Msg::Cancel)))) {
+					if (HistoryMenu.GetItemCount() &&
+							(!Opt.Confirm.HistoryClear ||
+									!Message(MSG_WARNING, 2, GetDelTitle(), Msg::HistoryClear, Msg::Clear, Msg::Cancel)))
+					{
 						for (auto Item = mHistoryList.begin(); Item != mHistoryList.end();) {
 							if (Item->Lock)    // залоченные не трогаем
 								Item++;
@@ -658,12 +656,13 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 			if (SelectedRecord == mHistoryList.end())
 				return -1;
 
-			// BUGUBUG: eliminate those magic numbers!
+			// BUGBUG: eliminate those magic numbers!
 			if (SelectedRecord->Type != 2 && SelectedRecord->Type != 3    // ignore external
 					&& RetCode != 3
 					&& ((mTypeHistory == HISTORYTYPE_FOLDER && !SelectedRecord->Type)
 							|| mTypeHistory == HISTORYTYPE_VIEW)
-					&& apiGetFileAttributes(SelectedRecord->strName) == INVALID_FILE_ATTRIBUTES) {
+					&& apiGetFileAttributes(SelectedRecord->strName) == INVALID_FILE_ATTRIBUTES)
+			{
 				WINPORT(SetLastError)(ERROR_FILE_NOT_FOUND);
 
 				if (SelectedRecord->Type == 1 && mTypeHistory == HISTORYTYPE_VIEW)    // Edit? тогда спросим и если надо создадим
