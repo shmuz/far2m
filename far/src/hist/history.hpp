@@ -48,16 +48,15 @@ enum enumHISTORYTYPE
 
 struct HistoryRecord
 {
-	int Type = 0;
+	int Type  = 0;
 	bool Lock = false;
 	FARString strName;
 	FARString strExtra;
 	FILETIME Timestamp{};
 
-	const HistoryRecord& operator=(const HistoryRecord &rhs)
+	const HistoryRecord &operator=(const HistoryRecord &rhs)
 	{
-		if (this != &rhs)
-		{
+		if (this != &rhs) {
 			strName = rhs.strName;
 			strExtra = rhs.strExtra;
 			Type = rhs.Type;
@@ -80,7 +79,8 @@ private:
 	std::list<HistoryRecord> HistoryList;
 	typedef std::list<HistoryRecord>::iterator Iter;
 	Iter CurrentItem;
-	struct stat LoadedStat{};
+	struct stat LoadedStat
+	{};
 
 private:
 	void AddToHistoryLocal(const wchar_t *Str, const wchar_t *Extra, const wchar_t *Prefix, int Type);
@@ -98,8 +98,10 @@ public:
 	~History();
 
 public:
-	void AddToHistoryExtra(const wchar_t *Str, const wchar_t *Extra, int Type = 0, const wchar_t *Prefix = nullptr, bool SaveForbid = false);
-	void AddToHistory(const wchar_t *Str, int Type = 0, const wchar_t *Prefix = nullptr, bool SaveForbid = false);
+	void AddToHistoryExtra(const wchar_t *Str, const wchar_t *Extra, int Type = 0,
+			const wchar_t *Prefix = nullptr, bool SaveForbid = false);
+	void
+	AddToHistory(const wchar_t *Str, int Type = 0, const wchar_t *Prefix = nullptr, bool SaveForbid = false);
 	static bool ReadLastItem(const char *RegKey, FARString &strStr);
 	int Select(const wchar_t *Title, const wchar_t *HelpTopic, FARString &strStr, int &Type);
 	int Select(VMenu &HistoryMenu, int Height, Dialog *Dlg, FARString &strStr);
