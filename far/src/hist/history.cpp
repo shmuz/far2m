@@ -334,13 +334,13 @@ void History::SyncChanges()
 const wchar_t *History::GetTitle(int Type)
 {
 	switch (Type) {
-		case 0:    // вьювер
+		case HR_VIEWER:             // вьювер
 			return Msg::HistoryView;
-		case 1:    // обычное открытие в редакторе
-		case 4:    // открытие с локом
+		case HR_EDITOR:             // обычное открытие в редакторе
+		case HR_EDITOR_RO:          // открытие с локом
 			return Msg::HistoryEdit;
-		case 2:    // external - без ожидания
-		case 3:    // external - AlwaysWaitFinish
+		case HR_EXTERNAL:           // external - без ожидания
+		case HR_EXTERNAL_WAIT:      // external - AlwaysWaitFinish
 			return Msg::HistoryExt;
 	}
 
@@ -392,18 +392,6 @@ int History::Select(VMenu &HistoryMenu, int Height, Dialog *Dlg, FARString &strS
 	return ProcessMenu(strStr, nullptr, HistoryMenu, Height, Type, Dlg);
 }
 
-/*
- Return:
-  -1 - Error???
-   0 - Esc
-   1 - Enter
-   2 - Shift-Enter
-   3 - Ctrl-Enter
-   4 - F3
-   5 - F4
-   6 - Ctrl-Shift-Enter
-   7 - Ctrl-Alt-Enter
-*/
 int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &HistoryMenu, int Height, int &Type,
 		Dialog *Dlg)
 {
@@ -411,13 +399,13 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 	auto SelectedRecord = mHistoryList.end();
 	FarListPos Pos = {0, 0};
 	int Code = -1;
-	int RetCode = 1;
+	int RetCode = HRT_ENTER;
 	bool Done = false;
 	bool SetUpMenuPos = false;
 
 	SyncChanges();
 	if (mTypeHistory == HISTORYTYPE_DIALOG && mHistoryList.empty())
-		return 0;
+		return HRT_CANCEL;
 
 	std::vector<Iter> IterVector(mHistoryList.size());
 	while (!Done) {
@@ -553,10 +541,10 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 					HistoryMenu.Modal::SetExitCode(Pos.SelectPos);
 					Done = true;
 					RetCode = Key == KEY_CTRLALTENTER || Key == KEY_CTRLALTNUMENTER
-							? 7
+							? HRT_CTRLALTENTER
 							: (Key == KEY_CTRLSHIFTENTER || Key == KEY_CTRLSHIFTNUMENTER
-											? 6
-											: (Key == KEY_SHIFTENTER || Key == KEY_SHIFTNUMENTER ? 2 : 3));
+											? HRT_CTRLSHIFTENTER
+											: (Key == KEY_SHIFTENTER || Key == KEY_SHIFTNUMENTER ? HRT_SHIFTENTER : HRT_CTRLENTER));
 					break;
 				}
 				case KEY_F3:
@@ -569,7 +557,7 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 
 					HistoryMenu.Modal::SetExitCode(Pos.SelectPos);
 					Done = true;
-					RetCode = (Key == KEY_F4 ? 5 : 4);
+					RetCode = (Key == KEY_F4 ? HRT_F4 : HRT_F3);
 					break;
 				}
 				// $ 09.04.2001 SVS - Фича - копирование из истории строки в Clipboard
@@ -656,16 +644,15 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 			if (SelectedRecord == mHistoryList.end())
 				return -1;
 
-			// BUGBUG: eliminate those magic numbers!
-			if (SelectedRecord->Type != 2 && SelectedRecord->Type != 3    // ignore external
-					&& RetCode != 3
+			if (SelectedRecord->Type != HR_EXTERNAL && SelectedRecord->Type != HR_EXTERNAL_WAIT // ignore external
+					&& RetCode != HRT_CTRLENTER
 					&& ((mTypeHistory == HISTORYTYPE_FOLDER && !SelectedRecord->Type)
 							|| mTypeHistory == HISTORYTYPE_VIEW)
 					&& apiGetFileAttributes(SelectedRecord->strName) == INVALID_FILE_ATTRIBUTES)
 			{
 				WINPORT(SetLastError)(ERROR_FILE_NOT_FOUND);
 
-				if (SelectedRecord->Type == 1 && mTypeHistory == HISTORYTYPE_VIEW)    // Edit? тогда спросим и если надо создадим
+				if (SelectedRecord->Type == HR_EDITOR && mTypeHistory == HISTORYTYPE_VIEW) // Edit? тогда спросим и если надо создадим
 				{
 					if (!Message(MSG_WARNING | MSG_ERRORTYPE, 2, Title, SelectedRecord->strName,
 								Msg::ViewHistoryIsCreate, Msg::HYes, Msg::HNo))
@@ -683,7 +670,7 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 	}
 
 	if (Code < 0 || SelectedRecord == mHistoryList.end())
-		return 0;
+		return HRT_CANCEL;
 
 	if (mKeepSelectedPos) {
 		mCurrentItem = SelectedRecord;
@@ -691,15 +678,29 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 
 	strStr = SelectedRecord->strName;
 
-	if (RetCode < 4 || RetCode == 6 || RetCode == 7) {
-		Type = SelectedRecord->Type;
-	} else {
-		Type = RetCode - 4;
+	switch(RetCode) {
+		case HRT_CANCEL:
+			break;
 
-		if (Type == 1 && SelectedRecord->Type == 4)
-			Type = 4;
+		case HRT_ENTER:
+		case HRT_SHIFTENTER:
+		case HRT_CTRLENTER:
+		case HRT_CTRLSHIFTENTER:
+		case HRT_CTRLALTENTER:
+			Type = SelectedRecord->Type;
+			break;
 
-		RetCode = 1;
+		case HRT_F3:
+			Type = HR_VIEWER;
+			RetCode = HRT_ENTER;
+			break;
+
+		case HRT_F4:
+			Type = HR_EDITOR;
+			if (SelectedRecord->Type == HR_EDITOR_RO)
+				Type = HR_EDITOR_RO;
+			RetCode = HRT_ENTER;
+			break;
 	}
 
 	return RetCode;

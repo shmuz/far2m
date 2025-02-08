@@ -46,6 +46,28 @@ enum enumHISTORYTYPE
 	HISTORYTYPE_DIALOG
 };
 
+enum history_record_type
+{
+	HR_DEFAULT,
+	HR_VIEWER	 = HR_DEFAULT,
+	HR_EDITOR,
+	HR_EXTERNAL,
+	HR_EXTERNAL_WAIT,
+	HR_EDITOR_RO,
+};
+
+enum history_return_type
+{
+	HRT_CANCEL,
+	HRT_ENTER,
+	HRT_SHIFTENTER,
+	HRT_CTRLENTER,
+	HRT_F3, //internal
+	HRT_F4, //internal
+	HRT_CTRLSHIFTENTER,
+	HRT_CTRLALTENTER,
+};
+
 struct HistoryRecord
 {
 	int Type  = 0;

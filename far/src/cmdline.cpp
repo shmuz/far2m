@@ -343,25 +343,26 @@ int CommandLine::ProcessKey(FarKey Key)
 		case KEY_ALTF8:
 		{
 			int Type;
-			// $ 19.09.2000 SVS - При выборе из History (по Alt-F8) плагин не получал управление!
 			int SelectType=CtrlObject->CmdHistory->Select(Msg::HistoryTitle,L"History",strStr,Type);
-			// BUGBUG, magic numbers
-			if ((SelectType > 0 && SelectType <= 3) || SelectType == 7)
+			switch (SelectType)
 			{
-				if(SelectType<3 || SelectType == 7)
-				{
+				case HRT_ENTER:
+				case HRT_SHIFTENTER:
+				case HRT_CTRLALTENTER:
 					CmdStr.DisableAC();
-				}
-				SetString(strStr);
-
-				if (SelectType < 3 || SelectType == 7)
-				{
-					ProcessKey(SelectType==7?static_cast<int>(KEY_CTRLALTENTER):(SelectType==1?static_cast<int>(KEY_ENTER):static_cast<int>(KEY_SHIFTENTER)));
+					SetString(strStr);
+					ProcessKey(SelectType == HRT_CTRLALTENTER ? FarKey(KEY_CTRLALTENTER)
+						: SelectType == HRT_ENTER ? FarKey(KEY_ENTER)
+						: FarKey(KEY_SHIFTENTER));
 					CmdStr.RevertAC();
-				}
+					break;
+
+				case HRT_CTRLENTER:
+					SetString(strStr);
+					break;
 			}
+			return TRUE;
 		}
-		return TRUE;
 		case KEY_SHIFTF9:
 			ConfigOptSave(true);
 			return TRUE;
@@ -412,22 +413,15 @@ int CommandLine::ProcessKey(FarKey Key)
 			int Type;
 			int SelectType=CtrlObject->FolderHistory->Select(Msg::FolderHistoryTitle,L"HistoryFolders",strStr,Type);
 
-			/*
-			   SelectType = 0 - Esc
-			                1 - Enter
-			                2 - Shift-Enter
-			                3 - Ctrl-Enter
-			                6 - Ctrl-Shift-Enter - на пассивную панель со сменой позиции
-			*/
-			if (SelectType == 1 || SelectType == 2 || SelectType == 6)
+			if (SelectType == HRT_ENTER || SelectType == HRT_SHIFTENTER || SelectType == HRT_CTRLSHIFTENTER)
 			{
-				if (SelectType==2)
+				if (SelectType == HRT_SHIFTENTER)
 					CtrlObject->FolderHistory->SetAddMode(false,2,true);
 
 				// пусть плагин сам прыгает... ;-)
 				Panel *Panel=CtrlObject->Cp()->ActivePanel;
 
-				if (SelectType == 6)
+				if (SelectType == HRT_CTRLSHIFTENTER) // на пассивную панель со сменой позиции
 					Panel=CtrlObject->Cp()->GetAnotherPanel(Panel);
 
 				//Type==1 - плагиновый путь
@@ -440,7 +434,7 @@ int CommandLine::ProcessKey(FarKey Key)
 					{
 						Panel->SetCurDir(strStr,Type ? false:true);
 						// restore current directory to active panel path
-						if(SelectType == 6)
+						if(SelectType == HRT_CTRLSHIFTENTER)
 						{
 							CtrlObject->Cp()->ActivePanel->SetCurPath();
 						}
@@ -449,7 +443,7 @@ int CommandLine::ProcessKey(FarKey Key)
 					}
 				}
 			}
-			else if (SelectType==3)
+			else if (SelectType == HRT_CTRLENTER)
 				SetString(strStr);
 		}
 		return TRUE;
@@ -749,46 +743,40 @@ void CommandLine::ShowViewEditHistory()
 	FARString strStr;
 	int Type;
 	int SelectType=CtrlObject->ViewHistory->Select(Msg::ViewHistoryTitle,L"HistoryViews",strStr,Type);
-	/*
-	   SelectType = 0 - Esc
-	                1 - Enter
-	                2 - Shift-Enter
-	                3 - Ctrl-Enter
-	*/
 
-	if (SelectType == 1 || SelectType == 2)
+	if (SelectType == HRT_ENTER || SelectType == HRT_SHIFTENTER)
 	{
-		if (SelectType!=2)
+		if (SelectType == HRT_ENTER)
 			CtrlObject->ViewHistory->AddToHistory(strStr,Type);
 
 		CtrlObject->ViewHistory->SetAddMode(false, 1,true);
 
 		switch (Type)
 		{
-			case 0: // вьювер
+			case HR_VIEWER:
 			{
 				new FileViewer(strStr,TRUE);
 				break;
 			}
-			case 1: // обычное открытие в редакторе
-			case 4: // открытие с локом
+			case HR_EDITOR: // обычное открытие в редакторе
+			case HR_EDITOR_RO: // открытие с локом
 			{
 				// пусть файл создается
 				FileEditor *FEdit=new FileEditor(strStr,CP_AUTODETECT,FFILEEDIT_CANNEWFILE|FFILEEDIT_ENABLEF6);
 
-				if (Type == 4)
+				if (Type == HR_EDITOR_RO)
 					FEdit->SetLockEditor(TRUE);
 
 				break;
 			}
-			// 2 и 3 - заполняется в ProcessExternal
-			case 2:
-			case 3:
+			// заполняется в ProcessExternal
+			case HR_EXTERNAL:
+			case HR_EXTERNAL_WAIT:
 			{
 				if (strStr.At(0) !=L'@')
 				{
 					ExecString(strStr);
-					if (Type>2)
+					if (Type == HR_EXTERNAL_WAIT)
 					{
 						WaitForClose(strStr.CPtr());
 					}
@@ -799,7 +787,7 @@ void CommandLine::ShowViewEditHistory()
 					CtrlObject->Cp()->LeftPanel->CloseFile();
 					CtrlObject->Cp()->RightPanel->CloseFile();
 					Execute(strStr.CPtr()+1);
-					if (Type>2)
+					if (Type == HR_EXTERNAL_WAIT)
 					{
 						WaitForClose(strStr.CPtr()+1);
 					}
@@ -811,7 +799,7 @@ void CommandLine::ShowViewEditHistory()
 
 		CtrlObject->ViewHistory->SetAddMode(true, 1, true);
 	}
-	else if (SelectType==3) // скинуть из истории в ком.строку?
+	else if (SelectType == HRT_CTRLENTER) // скинуть из истории в ком.строку?
 		SetString(strStr);
 }
 
