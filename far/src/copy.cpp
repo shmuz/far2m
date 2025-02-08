@@ -123,7 +123,6 @@ static FileFilter *Filter;
 static int UseFilter = FALSE;        // Use in the current dialog invocation
 static int LastUseFilter = FALSE;    // Use between dialog invocations
 
-static BOOL ZoomedState, IconicState;
 static clock_t ProgressUpdateTime;    // Last progress bar update time
 
 ShellCopyFileExtendedAttributes::ShellCopyFileExtendedAttributes(File &f)
@@ -600,8 +599,6 @@ ShellCopy::ShellCopy(Panel *SrcPanel,    // исходная панель (ак�
 			return;
 	}
 
-	ZoomedState = Console.IsZoomed();
-	IconicState = Console.IsIconic();
 	// Создадим объект фильтра
 	Filter = new FileFilter(SrcPanel, FFT_COPY);
 	// $ 26.05.2001 OT Запретить перерисовку панелей во время копирования

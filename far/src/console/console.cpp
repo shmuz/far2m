@@ -485,16 +485,3 @@ int console::GetDelta()
 	WINPORT(GetConsoleScreenBufferInfo)(GetOutputHandle(), &csbi);
 	return csbi.dwSize.Y - (csbi.srWindow.Bottom - csbi.srWindow.Top + 1);
 }
-
-BOOL console::IsZoomed()
-{
-	//todo
-	return FALSE;
-}
-
-BOOL console::IsIconic()
-{
-	//todo
-	return FALSE;
-}
-

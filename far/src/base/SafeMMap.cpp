@@ -140,7 +140,7 @@ static inline void WriteCrashSigLog(int num, siginfo_t *info, void *ctx)
 			if (dladdr(stk[i], &dli) && dli.dli_fname) {
 				FDWriteStr(fd, dli.dli_fname);
 				char tail[32];
-				sprintf(tail, " + 0x%x\n", unsigned(uintptr_t(stk[i]) - uintptr_t(dli.dli_fbase)));
+				snprintf(tail, sizeof(tail), " + 0x%x\n", unsigned(uintptr_t(stk[i]) - uintptr_t(dli.dli_fbase)));
 				FDWriteStr(fd, tail);
 			}
 		}
