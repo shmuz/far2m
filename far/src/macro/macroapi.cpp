@@ -808,7 +808,7 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 		{
 			auto f = GetTopModal();
 
-			if (f && f->GetType()==MODALTYPE_VMENU)
+			if (dynamic_cast<VMenu*>(f))
 			{
 				return api.PassString( reinterpret_cast<LPCWSTR>(f->VMProcess(CheckCode)) );
 			}

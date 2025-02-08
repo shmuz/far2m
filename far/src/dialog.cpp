@@ -56,6 +56,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "strmix.hpp"
 #include "history.hpp"
 #include "InterThreadCall.hpp"
+#include "DlgGuid.hpp"
 #include <VT256ColorTable.h>
 #include <cwctype>
 #include <atomic>
@@ -4301,6 +4302,7 @@ BOOL Dialog::SelectFromEditHistory(DialogItemEx *CurItem, DlgEdit *EditLine, con
 				VMENU_ALWAYSSCROLLBAR | VMENU_COMBOBOX | VMENU_NOTCHANGE);
 		HistoryMenu.SetFlags(VMENU_SHOWAMPERSAND);
 		HistoryMenu.SetBoxType(SHORT_SINGLE_BOX);
+		HistoryMenu.SetId(SelectFromEditHistoryId);
 		SetDropDownOpened(TRUE);	// Установим флаг "открытия" комбобокса.
 		// запомним (для прорисовки)
 		CurItem->ListPtr = &HistoryMenu;
