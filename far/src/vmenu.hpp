@@ -88,6 +88,7 @@ enum VMENU_FLAGS
 	VMENU_MOUSEREACTION      = 0x02000000,       // реагировать на движение мыши? (перемещать позицию при перемещении курсора мыши?)
 	VMENU_DISABLED           = 0x04000000,       //
 	VMENU_IGNORE_SINGLECLICK = 0x08000000,       // по щелчку не ENTER, а только выбор строки (полезно при снятом VMENU_MOUSEREACTION)
+	VMENU_NODRAWSHADOW       = 0x10000000,       //
 };
 
 class Dialog;

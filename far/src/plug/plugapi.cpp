@@ -774,7 +774,10 @@ static int FarMenuFnSynched(INT_PTR PluginNumber, const GUID *Id, int X, int Y, 
 			MenuFlags|= VMENU_WRAPMODE;
 
 		if (Flags & FMENU_CHANGECONSOLETITLE)
-			MenuFlags|= VMENU_CHANGECONSOLETITLE;
+			MenuFlags|=	 VMENU_CHANGECONSOLETITLE;
+
+		if (Flags & (FMENU_NODRAWSHADOW | FMENU_SHOWNOBOX))
+			MenuFlags|=	VMENU_NODRAWSHADOW;
 
 		FarMenu.SetFlags(MenuFlags);
 		MenuItemEx CurItem;
@@ -837,6 +840,16 @@ static int FarMenuFnSynched(INT_PTR PluginNumber, const GUID *Id, int X, int Y, 
 			FarMenu.SetId(*Id);
 
 		FarMenu.SetTitle(Title);
+
+		int BoxType = DOUBLE_BOX;
+		if (Flags & FMENU_SHOWNOBOX)
+			BoxType = NO_BOX;
+		else if (Flags & FMENU_SHOWSHORTBOX)
+			BoxType = (Flags & FMENU_SHOWSINGLEBOX) ? SHORT_SINGLE_BOX : SHORT_DOUBLE_BOX;
+		else if (Flags & FMENU_SHOWSINGLEBOX)
+			BoxType = SINGLE_BOX;
+
+		FarMenu.SetBoxType(BoxType);
 		FarMenu.Show();
 
 		while (!FarMenu.Done() && !CloseFARMenu) {

@@ -1770,7 +1770,7 @@ void VMenu::DisplayObject()
 			SetScreen(X1, Y1, X2, Y2, L' ', Colors[VMenuColorBody]);
 			Box(X1, Y1, X2, Y2, Colors[VMenuColorBox], BoxType);
 
-			if (!CheckFlags(VMENU_LISTBOX | VMENU_ALWAYSSCROLLBAR)) {
+			if (!CheckFlags(VMENU_LISTBOX | VMENU_ALWAYSSCROLLBAR | VMENU_NODRAWSHADOW)) {
 				MakeShadow(X1 + 2, Y2 + 1, X2, Y2 + 1, SaveScr);
 				MakeShadow(X2 + 1, Y1 + 1, X2 + 2, Y2 + 1, SaveScr);
 			}
@@ -1780,7 +1780,7 @@ void VMenu::DisplayObject()
 			else
 				SetScreen(X1, Y1, X2, Y2, L' ', Colors[VMenuColorBody]);
 
-			if (!CheckFlags(VMENU_LISTBOX | VMENU_ALWAYSSCROLLBAR)) {
+			if (!CheckFlags(VMENU_LISTBOX | VMENU_ALWAYSSCROLLBAR | VMENU_NODRAWSHADOW)) {
 				MakeShadow(X1, Y2 + 2, X2 + 2, Y2 + 2, SaveScr);
 				MakeShadow(X2 + 3, Y1, X2 + 4, Y2 + 2, SaveScr);
 			}

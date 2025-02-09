@@ -16551,15 +16551,15 @@ LocalMenuTitle
 "Мясцовае меню"
 
 MainMenuBottomTitle
-"Del Ins F4 Ctrl+F4 Ctrl+Up Ctrl+Down Ctrl+Alt+F"
-"Del Ins F4 Ctrl+F4 Ctrl+Up Ctrl+Down Ctrl+Alt+F"
-"Del Ins F4 Ctrl+F4 Ctrl+Up Ctrl+Down Ctrl+Alt+F"
-"Entf Einf F4 Ctrl+F4 Ctrl+Up Ctrl+Down Ctrl+Alt+F"
-"Del Ins F4 Ctrl+F4 Ctrl+Up Ctrl+Down Ctrl+Alt+F"
-"Del Ins F4 Ctrl+F4 Ctrl+Up Ctrl+Down Ctrl+Alt+F"
-"Del Ins F4 Ctrl+Up Ctrl+Down Ctrl+Alt+F"
-"Del Ins F4 Ctrl+F4 Ctrl+Up Ctrl+Down Ctrl+Alt+F"
-"Del Ins F4 Ctrl+F4 Ctrl+Up Ctrl+Down Ctrl+Alt+F"
+"Ins Del F4 Ctrl+F4 Ctrl+Up Ctrl+Down"
+"Ins Del F4 Ctrl+F4 Ctrl+Up Ctrl+Down"
+"Ins Del F4 Ctrl+F4 Ctrl+Up Ctrl+Down"
+"Einf Entf F4 Ctrl+F4 Ctrl+Up Ctrl+Down"
+"Ins Del F4 Ctrl+F4 Ctrl+Up Ctrl+Down"
+"Ins Del F4 Ctrl+F4 Ctrl+Up Ctrl+Down"
+"Ins Del F4 Ctrl+F4 Ctrl+Up Ctrl+Down"
+"Ins Del F4 Ctrl+F4 Ctrl+Up Ctrl+Down"
+"Ins Del F4 Ctrl+F4 Ctrl+Up Ctrl+Down"
 
 AskDeleteMenuItem
 "Вы хотите удалить пункт меню"
