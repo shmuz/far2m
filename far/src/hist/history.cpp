@@ -82,7 +82,7 @@ void History::AddToHistoryExtra(const wchar_t *Str, const wchar_t *Extra, int Ty
 	if (!mEnableAdd)
 		return;
 
-	if (CtrlObject->Macro.IsExecuting() && CtrlObject->Macro.IsHistoryDisabled(Type))
+	if (CtrlObject->Macro.IsExecuting() && CtrlObject->Macro.IsHistoryDisabled(mTypeHistory))
 		return;
 
 	if (!IsAllowedForHistory(Str)) {
@@ -104,9 +104,6 @@ void History::AddToHistory(const wchar_t *Str, int Type, const wchar_t *Prefix, 
 
 void History::AddToHistoryLocal(const wchar_t *Str, const wchar_t *Extra, const wchar_t *Prefix, int Type)
 {
-	if (!Str)
-		return;
-
 	HistoryRecord AddRecord;
 
 	if (mTypeHistory == HISTORYTYPE_FOLDER && Prefix && *Prefix) {
@@ -206,7 +203,7 @@ bool History::SaveHistory()
 			if (mSaveType)
 				strTypes+= L'0' + Item->Type;
 
-			strLocks+= L'0' + Item->Lock;
+			strLocks+= (Item->Lock ? L'1' : L'0');
 			vTimes.emplace_back(Item->Timestamp);
 
 			--i;
@@ -400,7 +397,6 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 	FarListPos Pos = {0, 0};
 	int Code = -1;
 	int RetCode = HRT_ENTER;
-	bool Done = false;
 	bool SetUpMenuPos = false;
 
 	SyncChanges();
@@ -408,7 +404,7 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 		return HRT_CANCEL;
 
 	std::vector<Iter> IterVector(mHistoryList.size());
-	while (!Done) {
+	for (bool Done = false; !Done; ) {
 		int IterIndex = 0;
 		bool IsUpdate = false;
 		HistoryMenu.DeleteItems();
@@ -424,7 +420,7 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 			if (mTypeHistory == HISTORYTYPE_VIEW) {
 				strRecord+= GetTitle(Item->Type);
 				strRecord+= L":";
-				strRecord+= (Item->Type == 4 ? L"-" : L" ");
+				strRecord+= (Item->Type == HR_EDITOR_RO ? L"-" : L" ");
 			}
 
 			/*
@@ -574,7 +570,7 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 				case KEY_NUMPAD0: {
 					if (HistoryMenu.GetItemCount() /* > 1*/) {
 						mCurrentItem = CurrentRecord;
-						mCurrentItem->Lock = mCurrentItem->Lock ? false : true;
+						mCurrentItem->Lock = !mCurrentItem->Lock;
 						HistoryMenu.Hide();
 						ResetPosition();
 						SaveHistory();
@@ -696,9 +692,7 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 			break;
 
 		case HRT_F4:
-			Type = HR_EDITOR;
-			if (SelectedRecord->Type == HR_EDITOR_RO)
-				Type = HR_EDITOR_RO;
+			Type = (SelectedRecord->Type == HR_EDITOR_RO) ? HR_EDITOR_RO : HR_EDITOR;
 			RetCode = HRT_ENTER;
 			break;
 	}
@@ -788,7 +782,7 @@ bool History::GetAllSimilar(VMenu &HistoryMenu, const wchar_t *Str)
 {
 	SyncChanges();
 	int Length = StrLength(Str);
-	for (auto Item = --mHistoryList.end(); Item != mHistoryList.end(); Item--) {
+	for (auto Item = mHistoryList.rbegin(); Item != mHistoryList.rend(); Item++) {
 		if (!StrCmpNI(Str, Item->strName, Length)
 			&& StrCmp(Str, Item->strName)
 			&& IsAllowedForHistory(Item->strName)
@@ -810,7 +804,6 @@ void History::SetAddMode(bool EnableAdd, int RemoveDups, bool KeepSelectedPos)
 
 bool History::EqualType(int Type1, int Type2)
 {
-	return (Type1 == Type2)
-			|| (mTypeHistory == HISTORYTYPE_VIEW
-					&& ((Type1 == 4 && Type2 == 1) || (Type1 == 1 && Type2 == 4)));
+	return (Type1 == Type2) || (mTypeHistory == HISTORYTYPE_VIEW &&
+		((Type1 == HR_EDITOR_RO && Type2 == HR_EDITOR) || (Type1 == HR_EDITOR && Type2 == HR_EDITOR_RO)));
 }

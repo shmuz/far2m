@@ -49,7 +49,7 @@ enum enumHISTORYTYPE
 enum history_record_type
 {
 	HR_DEFAULT,
-	HR_VIEWER	 = HR_DEFAULT,
+	HR_VIEWER = HR_DEFAULT,
 	HR_EDITOR,
 	HR_EXTERNAL,
 	HR_EXTERNAL_WAIT,
@@ -70,7 +70,7 @@ enum history_return_type
 
 struct HistoryRecord
 {
-	int Type  = 0;
+	int Type  = HR_DEFAULT;
 	bool Lock = false;
 	FARString strName;
 	FARString strExtra;
@@ -123,9 +123,9 @@ public:
 	~History() {}
 
 public:
-	void AddToHistoryExtra(const wchar_t *Str, const wchar_t *Extra, int Type = 0,
+	void AddToHistoryExtra(const wchar_t *Str, const wchar_t *Extra, int Type = HR_DEFAULT,
 		const wchar_t *Prefix = nullptr, bool SaveForbid = false);
-	void AddToHistory(const wchar_t *Str, int Type = 0, const wchar_t *Prefix = nullptr,
+	void AddToHistory(const wchar_t *Str, int Type = HR_DEFAULT, const wchar_t *Prefix = nullptr,
 		bool SaveForbid = false);
 	static bool ReadLastItem(const char *RegKey, FARString &strStr);
 	int Select(const wchar_t *Title, const wchar_t *HelpTopic, FARString &strStr, int &Type);

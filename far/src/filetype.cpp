@@ -345,7 +345,7 @@ void ProcessExternal(const wchar_t *Command, const wchar_t *Name, bool CanAddHis
 		SubstFileName(strFullExecStr,strFullName,&strListName,&strAnotherListName);
 
 		if (CanAddHistory) {
-			CtrlObject->ViewHistory->AddToHistory(strFullExecStr, 1 | 2);
+			CtrlObject->ViewHistory->AddToHistory(strFullExecStr, HR_EXTERNAL_WAIT);
 		}
 
 		if (strExecStr.At(0) != L'@')

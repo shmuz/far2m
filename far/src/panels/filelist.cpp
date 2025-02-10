@@ -2459,7 +2459,7 @@ bool FileList::ChangeDir(const wchar_t *NewDir, bool ShowMessage)
 		FARString strInfoCurDir = Info.CurDir;
 		FARString strInfoFormat = Info.Format;
 		FARString strInfoHostFile = Info.HostFile;
-		CtrlObject->FolderHistory->AddToHistory(strInfoCurDir, 1, strInfoFormat,
+		CtrlObject->FolderHistory->AddToHistory(strInfoCurDir, HR_DEFAULT, strInfoFormat,
 				!((Info.Flags & OPIF_REALNAMES) || Opt.SavePluginFoldersHistory));
 		/* $ 25.04.01 DJ
 		   при неудаче SetDirectory не сбрасываем выделение

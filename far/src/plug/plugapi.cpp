@@ -774,10 +774,10 @@ static int FarMenuFnSynched(INT_PTR PluginNumber, const GUID *Id, int X, int Y, 
 			MenuFlags|= VMENU_WRAPMODE;
 
 		if (Flags & FMENU_CHANGECONSOLETITLE)
-			MenuFlags|=	 VMENU_CHANGECONSOLETITLE;
+			MenuFlags|= VMENU_CHANGECONSOLETITLE;
 
 		if (Flags & (FMENU_NODRAWSHADOW | FMENU_SHOWNOBOX))
-			MenuFlags|=	VMENU_NODRAWSHADOW;
+			MenuFlags|= VMENU_NODRAWSHADOW;
 
 		FarMenu.SetFlags(MenuFlags);
 		MenuItemEx CurItem;
