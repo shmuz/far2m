@@ -48,14 +48,14 @@ function mod.OpenInEditor(text, ext)
   if ext~="" and ext:sub(1,1)~="." then ext = "."..ext; end
 
   local fname = ("%sFar-%s%s"):format(tempdir, win.Uuid(win.Uuid()):sub(1,8), ext)
-  local fp = io.open(fname, "wb")
+  local fp = io.open(fname, "w")
   if fp then
     fp:write(text or "")
     fp:close()
     text = nil
     local flags = bor(F.EF_DISABLEHISTORY, (FarVer==2) and 0 or F.EF_DISABLESAVEPOS)
     if editor.Editor(fname,nil,nil,nil,nil,nil,flags,nil,nil,65001) == F.EEC_MODIFIED then
-      fp = io.open(fname, "rb")
+      fp = io.open(fname, "r")
       if fp then
         text = fp:read("*all")
         fp:close()
