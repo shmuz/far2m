@@ -109,8 +109,9 @@ private:
 private:
 	void AddToHistoryLocal(const wchar_t *Str, const wchar_t *Extra, const wchar_t *Prefix, int Type);
 	bool EqualType(int Type1, int Type2);
-	const wchar_t *GetTitle(int Type);
-	const wchar_t *GetDelTitle();
+	static const wchar_t *GetTitle(int Type);
+	const wchar_t *GetDelTitle() const;
+	bool IsAllowedForHistory(const wchar_t *Str) const;
 	int ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &HistoryMenu, int Height, int &Type,
 		Dialog *Dlg);
 	bool ReadHistory();

@@ -66,10 +66,13 @@ History::History(enumHISTORYTYPE TypeHistory, size_t HistoryCount, const std::st
 		ReadHistory();
 }
 
-static bool IsAllowedForHistory(const wchar_t *Str)
+bool History::IsAllowedForHistory(const wchar_t *Str) const
 {
-	FileMasksProcessor fmp;
-	return !(fmp.Set(Opt.AutoComplete.Exceptions.CPtr(), FMF_ADDASTERISK) && fmp.Compare(Str, true));
+	if (mTypeHistory == HISTORYTYPE_CMD) {
+		FileMasksProcessor fmp;
+		return !(fmp.Set(Opt.AutoComplete.Exceptions.CPtr(), FMF_ADDASTERISK) && fmp.Compare(Str, true));
+	}
+	return true;
 }
 
 /*
@@ -344,7 +347,7 @@ const wchar_t *History::GetTitle(int Type)
 	return L"";
 }
 
-const wchar_t *History::GetDelTitle()
+const wchar_t *History::GetDelTitle() const
 {
 	switch (mTypeHistory) {
 		case HISTORYTYPE_CMD:
@@ -395,7 +398,7 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 	MenuItemEx MenuItem;
 	auto SelectedRecord = mHistoryList.end();
 	FarListPos Pos = {0, 0};
-	int Code = -1;
+	int MenuExitCode = -1;
 	int RetCode = HRT_ENTER;
 	bool SetUpMenuPos = false;
 
@@ -454,8 +457,8 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 			HistoryMenu.SetPosition(-1, -1, 0, 0);
 
 		if (SetUpMenuPos) {
-			Pos.SelectPos =
-					Pos.SelectPos < (int)mHistoryList.size() ? Pos.SelectPos : (int)mHistoryList.size() - 1;
+			Pos.SelectPos = (Pos.SelectPos < (int)mHistoryList.size()) ?
+					Pos.SelectPos : (int)mHistoryList.size() - 1;
 			Pos.TopPos = Min(Pos.TopPos, HistoryMenu.GetItemCount() - Height);
 			HistoryMenu.SetSelectPos(&Pos);
 			SetUpMenuPos = false;
@@ -536,11 +539,9 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 
 					HistoryMenu.Modal::SetExitCode(Pos.SelectPos);
 					Done = true;
-					RetCode = Key == KEY_CTRLALTENTER || Key == KEY_CTRLALTNUMENTER
-							? HRT_CTRLALTENTER
-							: (Key == KEY_CTRLSHIFTENTER || Key == KEY_CTRLSHIFTNUMENTER
-											? HRT_CTRLSHIFTENTER
-											: (Key == KEY_SHIFTENTER || Key == KEY_SHIFTNUMENTER ? HRT_SHIFTENTER : HRT_CTRLENTER));
+					RetCode = (Key == KEY_CTRLALTENTER || Key == KEY_CTRLALTNUMENTER) ? HRT_CTRLALTENTER
+							: (Key == KEY_CTRLSHIFTENTER || Key == KEY_CTRLSHIFTNUMENTER) ? HRT_CTRLSHIFTENTER
+							: (Key == KEY_SHIFTENTER || Key == KEY_SHIFTNUMENTER) ? HRT_SHIFTENTER : HRT_CTRLENTER;
 					break;
 				}
 				case KEY_F3:
@@ -632,13 +633,13 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 			continue;
 
 		Done = true;
-		Code = HistoryMenu.Modal::GetExitCode();
+		MenuExitCode = HistoryMenu.Modal::GetExitCode();
 
-		if (Code >= 0) {
-			SelectedRecord = *(Iter *)HistoryMenu.GetUserData(nullptr, sizeof(Iter *), Code);
+		if (MenuExitCode >= 0) {
+			SelectedRecord = *(Iter *)HistoryMenu.GetUserData(nullptr, sizeof(Iter *), MenuExitCode);
 
 			if (SelectedRecord == mHistoryList.end())
-				return -1;
+				return HRT_CANCEL;
 
 			if (SelectedRecord->Type != HR_EXTERNAL && SelectedRecord->Type != HR_EXTERNAL_WAIT // ignore external
 					&& RetCode != HRT_CTRLENTER
@@ -659,13 +660,13 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 
 				Done = false;
 				SetUpMenuPos = true;
-				HistoryMenu.Modal::SetExitCode(Pos.SelectPos = Code);
+				HistoryMenu.Modal::SetExitCode(Pos.SelectPos = MenuExitCode);
 				continue;
 			}
 		}
 	}
 
-	if (Code < 0 || SelectedRecord == mHistoryList.end())
+	if (MenuExitCode < 0 || SelectedRecord == mHistoryList.end())
 		return HRT_CANCEL;
 
 	if (mKeepSelectedPos) {
