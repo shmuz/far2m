@@ -408,7 +408,7 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 
 	std::vector<Iter> IterVector(mHistoryList.size());
 	for (bool Done = false; !Done; ) {
-		int IterIndex = 0;
+		uintptr_t IterIndex = 0;
 		bool IsUpdate = false;
 		HistoryMenu.DeleteItems();
 		HistoryMenu.Modal::ClearDone();
@@ -443,10 +443,9 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 				MenuItem.SetSelect(mCurrentItem == Item
 						|| (mCurrentItem == mHistoryList.end() && Item == --mHistoryList.end()));
 
-			// NB: here is really should be used sizeof(Item), not sizeof(*Item)
-			// cuz sizeof(void *) has special meaning in SetUserData!
+			// NB: VMenu just copies userdata pointers, no memory allocation takes place
 			IterVector[IterIndex] = Item;
-			HistoryMenu.SetUserData(IterVector.data() + IterIndex, sizeof(void *),
+			HistoryMenu.SetUserData(reinterpret_cast<void*>(IterIndex), sizeof(void*),
 					HistoryMenu.AddItem(&MenuItem));
 			IterIndex++;
 		}
@@ -494,8 +493,9 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 			}
 
 			HistoryMenu.GetSelectPos(&Pos);
-			Iter *userdata = (Iter *)HistoryMenu.GetUserData(nullptr, sizeof(void *), Pos.SelectPos);
-			auto CurrentRecord = userdata ? *userdata : mHistoryList.end();
+			auto IterIndex = reinterpret_cast<uintptr_t>
+					(HistoryMenu.GetUserData(nullptr, sizeof(void*), Pos.SelectPos));
+			auto CurrentRecord = IterVector[IterIndex];
 
 			switch (Key) {
 				case KEY_CTRLR:    // обновить с удалением недоступных
@@ -636,7 +636,9 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 		MenuExitCode = HistoryMenu.Modal::GetExitCode();
 
 		if (MenuExitCode >= 0) {
-			SelectedRecord = *(Iter *)HistoryMenu.GetUserData(nullptr, sizeof(Iter *), MenuExitCode);
+			auto IterIndex = reinterpret_cast<uintptr_t>
+					(HistoryMenu.GetUserData(nullptr, sizeof(void*), Pos.SelectPos));
+			SelectedRecord = IterVector[IterIndex];
 
 			if (SelectedRecord == mHistoryList.end())
 				return HRT_CANCEL;
