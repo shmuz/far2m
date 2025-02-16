@@ -74,6 +74,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ConfigRW.hpp"
 #include "ConfigOpt.hpp"
 #include "udlist.hpp"
+#include "farcolors.hpp"
 #include "message.hpp"
 
 #ifdef DIRECT_RT
@@ -577,9 +578,8 @@ int FarAppMain(int argc, char **argv)
 		Opt.LoadPlug.PluginsPersonal = FALSE;
 	}
 
-	ZeroFarPalette();
 	ConfigOptLoad();
-	InitFarPalette();
+	FarColors::InitFarColors();
 
 	InitConsole();
 	WINPORT(SetConsoleCursorBlinkTime)(NULL, Opt.CursorBlinkTime);

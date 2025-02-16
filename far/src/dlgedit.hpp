@@ -44,7 +44,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "bitflags.hpp"
 #include "edit.hpp"
 #include "editor.hpp"
-#include "palette.hpp"
+#include "farcolors.hpp"
 
 enum DLGEDITTYPE
 {

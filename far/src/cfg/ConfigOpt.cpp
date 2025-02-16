@@ -47,7 +47,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "findfile.hpp"
 #include "keyboard.hpp"
 #include "message.hpp"
-#include "palette.hpp"
+#include "farcolors.hpp"
 #include "panelmix.hpp"
 #include "poscache.hpp"
 #include "pick_color256.hpp"
@@ -129,8 +129,8 @@ static struct FARConfig
 
 } CFG[]=
 {
-	{false, NSecColors, "CurrentPalette", SIZE_ARRAY_PALETTE, (BYTE *)Palette8bit, nullptr},
-	{true,  NSecColors, "CurrentPaletteRGB", SIZE_ARRAY_PALETTE * sizeof(uint64_t), (BYTE *)Palette, nullptr},
+//	{false, NSecColors, "CurrentPalette", SIZE_ARRAY_PALETTE, (BYTE *)Palette8bit, nullptr},
+//	{true,  NSecColors, "CurrentPaletteRGB", SIZE_ARRAY_PALETTE * sizeof(uint64_t), (BYTE *)Palette, nullptr},
 	{true,  NSecColors, "TempColors256", TEMP_COLORS256_SIZE, g_tempcolors256, nullptr},
 	{true,  NSecColors, "TempColorsRGB", TEMP_COLORSRGB_SIZE, (BYTE *)g_tempcolorsRGB, nullptr},
 
@@ -549,39 +549,6 @@ bool ConfigOptSetBinary(int I, const void *Data, DWORD Size)
 	return false;
 }
 
-static void MergePalette()
-{
-	for(size_t i = 0; i < SIZE_ARRAY_PALETTE; i++) {
-
-		Palette[i] &= 0xFFFFFFFFFFFFFF00;
-		Palette[i] |= Palette8bit[i];
-	}
-
-//	uint32_t basepalette[32];
-//	WINPORT(GetConsoleBasePalette)(NULL, basepalette);
-
-/*
-	for(size_t i = 0; i < SIZE_ARRAY_PALETTE; i++) {
-		uint8_t color = Palette8bit[i];
-
-		Palette[i] &= 0xFFFFFFFFFFFFFF00;
-
-		if (!(Palette[i] & FOREGROUND_TRUECOLOR)) {
-			Palette[i] &= 0xFFFFFF000000FFFF;
-			Palette[i] += ((uint64_t)basepalette[16 + (color & 0xF)] << 16);
-			Palette[i] += FOREGROUND_TRUECOLOR;
-		}
-		if (!(Palette[i] & BACKGROUND_TRUECOLOR)) {
-			Palette[i] &= 0x000000FFFFFFFFFF;
-			Palette[i] += ((uint64_t)basepalette[color >> 4] << 40);
-			Palette[i] += BACKGROUND_TRUECOLOR;
-		}
-
-		Palette[i] += color;
-	}
-*/
-}
-
 static void ConfigOptFromCmdLine()
 {
 	for (const auto &Str: Opt.CmdLineStrings)
@@ -694,7 +661,7 @@ void ConfigOptLoad()
 
 	Opt.HelpTabSize=8; // пока жестко пропишем...
 //	SanitizePalette();
-	MergePalette();
+//	MergePalette();
 
 	Opt.ViOpt.ViewerIsWrap&=1;
 	Opt.ViOpt.ViewerWrap&=1;
@@ -855,5 +822,6 @@ void ConfigOptSave(bool Ask)
 	if (Ask)
 		CtrlObject->Macro.SaveMacros();
 
+	FarColors::SaveFarColors();
 	/* *************************************************** </ПОСТПРОЦЕССЫ> */
 }

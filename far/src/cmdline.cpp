@@ -40,7 +40,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lang.hpp"
 #include "ctrlobj.hpp"
 #include "manager.hpp"
-#include "palette.hpp"
+#include "farcolors.hpp"
 #include "history.hpp"
 #include "filepanels.hpp"
 #include "panel.hpp"
