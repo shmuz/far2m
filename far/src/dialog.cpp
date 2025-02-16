@@ -3337,11 +3337,9 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 						Pos = NewListPos;
 
 						if (!InScroolBar && !(Item[I]->Flags & DIF_LISTNOCLOSE)) {
-							if (MouseEvent->dwEventFlags == DOUBLE_CLICK) {
-								ExitCode = I;
-								CloseDialog();
-								return TRUE;
-							}
+							ExitCode = I;
+							CloseDialog();
+							return TRUE;
 						}
 					}
 
