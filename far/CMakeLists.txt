@@ -4,6 +4,7 @@ add_subdirectory (bootstrap)
 
 set(SOURCES
 src/cache.cpp
+src/chattr.cpp
 src/clipboard.cpp
 src/cmdline.cpp
 src/copy.cpp
