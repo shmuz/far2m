@@ -897,6 +897,7 @@ local function test_Far_GetConfig()
     "Panel.AttrStrStyle",
     "Panel.AutoUpdateLimit",
     "Panel.CaseSensitiveCompareSelect",
+    "Panel.ClassicHotkeyLinkResolving",
     "Panel.CtrlAltShiftRule",
     "Panel.CtrlFRule",
     "Panel.FilenameMarksAlign",

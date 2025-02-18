@@ -229,7 +229,7 @@ private:
 	void PushPlugin(PHPTR hPlugin, const wchar_t *HostFile);
 	int PopPlugin(int EnableRestoreViewMode);
 	void CopyFiles();
-	void CopyNames(bool FullPathName, bool UNC);
+	void CopyNames(bool FullPathName, bool RealName);
 	void SelectSortMode();
 	bool ApplyCommand();
 	void DescribeFiles();
@@ -359,7 +359,7 @@ public:
 	int PluginPanelHelp(PHPTR ph);
 	virtual long GetFileCount() const { return FileCount; }
 
-	FARString &CreateFullPathName(const wchar_t *Name, DWORD FileAttr, FARString &strDest, int UNC);
+	FARString &CreateFullPathName(const wchar_t *Name, DWORD FileAttr, FARString &strDest, bool RealName);
 
 	const FileListItem *GetItem(int Index) const;
 	virtual BOOL UpdateKeyBar();

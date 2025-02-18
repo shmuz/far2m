@@ -389,6 +389,7 @@ static struct FARConfig
 	{true,  NSecPanel, "FilenameMarksAlign",            &Opt.FilenameMarksAlign, 1, REG_BOOLEAN},
 	{true,  NSecPanel, "MinFilenameIndentation",        &Opt.MinFilenameIndentation, 0},
 	{true,  NSecPanel, "MaxFilenameIndentation",        &Opt.MaxFilenameIndentation, HIGHLIGHT_MAX_MARK_LENGTH},
+	{true,  NSecPanel, "ClassicHotkeyLinkResolving",    &Opt.ClassicHotkeyLinkResolving, 1, REG_BOOLEAN},
 
 	{true,  NSecPanelLeft, "Type",                      &Opt.LeftPanel.Type, 0},
 	{true,  NSecPanelLeft, "Visible",                   &Opt.LeftPanel.Visible, 1, REG_BOOLEAN},
