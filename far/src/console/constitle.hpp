@@ -38,18 +38,19 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class ConsoleTitle
 {
 private:
-	FARString strOldTitle;
-	static bool TitleModified;
-	static DWORD ShowTime;
+	FARString m_strOldTitle;
+	static bool m_TitleModified;
+	static DWORD m_ShowTime;
+	static FARString m_strFarTitle;
 
 public:
 	ConsoleTitle(const wchar_t *title = nullptr);
 	~ConsoleTitle();
 
 public:
-	void Set(const wchar_t *fmt, ...);
+	static void Set(const wchar_t *fmt, ...);
 
 public:
+	static void SetFarTitle();
 	static void SetFarTitle(const wchar_t *Title, bool Force = false, bool Restoring = false);
-	static bool WasTitleModified() { return TitleModified; }
 };

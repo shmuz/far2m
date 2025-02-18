@@ -42,24 +42,25 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "console.hpp"
 #include <stdarg.h>
 
-bool ConsoleTitle::TitleModified = false;
-DWORD ConsoleTitle::ShowTime = 0;
+bool ConsoleTitle::m_TitleModified = false;
+DWORD ConsoleTitle::m_ShowTime = 0;
+FARString ConsoleTitle::m_strFarTitle;
 
 CriticalSection TitleCS;
 
 ConsoleTitle::ConsoleTitle(const wchar_t *title)
 {
 	CriticalSectionLock Lock(TitleCS);
-	Console.GetTitle(strOldTitle);
+	Console.GetTitle(m_strOldTitle);
 
 	if (title)
-		ConsoleTitle::SetFarTitle(title, true);
+		SetFarTitle(title, true);
 }
 
 ConsoleTitle::~ConsoleTitle()
 {
 	CriticalSectionLock Lock(TitleCS);
-	ConsoleTitle::SetFarTitle(strOldTitle, true, true);
+	SetFarTitle(m_strOldTitle, true, true);
 }
 
 void ConsoleTitle::Set(const wchar_t *fmt, ...)
@@ -76,68 +77,71 @@ void ConsoleTitle::Set(const wchar_t *fmt, ...)
 void ConsoleTitle::SetFarTitle(const wchar_t *Title, bool Force, bool Restoring)
 {
 	CriticalSectionLock Lock(TitleCS);
-	static FARString strFarTitle;
-	static FARString strVer(FAR_BUILD);
-	static FARString strPlatform(FAR_PLATFORM);
-	FARString strOldFarTitle, strFarState;
+	static const FARString strVer(FAR_BUILD);
+	static const FARString strPlatform(FAR_PLATFORM);
 
-	if (Title) {
-		Console.GetTitle(strOldFarTitle);
+	FARString strFarState = Title;
+	strFarState.Truncate(0x100);
 
-		strFarState=Title;
-		strFarState.Truncate(0x100);
-		if (Restoring) {
-			strFarTitle = strFarState;
-		} else {
-			/*
-				%State    - default window title
-				%Ver      - 2.3.102-beta
-				%Platform - x86
-				%Backend  - gui
-				%Admin    - Msg::FarTitleAddonsAdmin
-			*/
-			strFarTitle=Opt.strWindowTitle;
-			const auto &wsBackend = MB2Wide(WinPortBackendInfo(-1));
-			ReplaceStrings(strFarTitle,L"%Ver",strVer,-1);
-			ReplaceStrings(strFarTitle,L"%Platform", strPlatform, -1);
-			ReplaceStrings(strFarTitle, L"%Backend", wsBackend.c_str(), -1);
-			ReplaceStrings(strFarTitle,L"%Admin",Opt.IsUserAdmin?Msg::FarTitleAddonsAdmin:L"",-1);
+	if (Restoring) {
+		m_strFarTitle = strFarState;
+	}
+	else {
+		/*
+			%State    - default window title
+			%Ver      - 2.3.102-beta
+			%Platform - x86
+			%Backend  - gui
+			%Admin    - Msg::FarTitleAddonsAdmin
+		*/
+		m_strFarTitle = Opt.strWindowTitle;
+		const auto &wsBackend = MB2Wide(WinPortBackendInfo(-1));
+		ReplaceStrings(m_strFarTitle, L"%Ver", strVer);
+		ReplaceStrings(m_strFarTitle, L"%Platform", strPlatform);
+		ReplaceStrings(m_strFarTitle, L"%Backend", wsBackend.c_str());
+		ReplaceStrings(m_strFarTitle, L"%Admin", (Opt.IsUserAdmin ? Msg::FarTitleAddonsAdmin : L""));
 
-			FARString hn, un;
-			apiGetEnvironmentVariable("HOSTNAME", hn);
-			apiGetEnvironmentVariable("USER", un);
-			ReplaceStrings(strFarTitle,L"%Host",hn,-1);
-			ReplaceStrings(strFarTitle,L"%User",un,-1);
+		FARString hostname, username;
+		apiGetEnvironmentVariable("HOSTNAME", hostname);
+		apiGetEnvironmentVariable("USER", username);
+		ReplaceStrings(m_strFarTitle, L"%Host", hostname);
+		ReplaceStrings(m_strFarTitle, L"%User", username);
 
-			// сделаем эту замену последней во избежание случайных совпадений
-			// подстрок из strFarState с другими переменными
-			ReplaceStrings(strFarTitle,L"%State",strFarState,-1);
+		// сделаем эту замену последней во избежание случайных совпадений
+		// подстрок из strFarState с другими переменными
+		ReplaceStrings(m_strFarTitle, L"%State", strFarState);
 
-			RemoveExternalSpaces(strFarTitle);
-		}
-		TitleModified=true;
+		RemoveExternalSpaces(m_strFarTitle);
+	}
+	m_TitleModified = true;
 
-		if (StrCmp(strOldFarTitle, strFarTitle) &&
-			!(CtrlObject->Macro.IsExecuting() && CtrlObject->Macro.IsOutputDisabled()))
+	FARString strOldFarTitle;
+	Console.GetTitle(strOldFarTitle);
+
+	if (strOldFarTitle != m_strFarTitle &&
+		!(CtrlObject->Macro.IsExecuting() && CtrlObject->Macro.IsOutputDisabled()))
+	{
+		DWORD CurTime = WINPORT(GetTickCount)();
+		if (CurTime - m_ShowTime > RedrawTimeout || Force)
 		{
-			DWORD CurTime=WINPORT(GetTickCount)();
-			// if(CurTime-ShowTime > RedrawTimeout || Force)
-			{
-				ShowTime=CurTime;
-				Console.SetTitle(strFarTitle);
-				TitleModified=true;
-			}
+			m_ShowTime = CurTime;
+			Console.SetTitle(m_strFarTitle);
+			m_TitleModified = true;
 		}
 	}
-	else
-	{
-		/*
-			Title=nullptr для случая, когда нужно выставить пред.заголовок
-			SetFarTitle(nullptr) - это не для всех!
-			Этот вызов имеет право делать только макро-движок!
-		*/
-		Console.SetTitle(strFarTitle);
-		TitleModified=false;
+}
+
+/*
+	Title=nullptr для случая, когда нужно выставить пред.заголовок
+	SetFarTitle(nullptr) - это не для всех!
+	Этот вызов имеет право делать только макро-движок!
+*/
+void ConsoleTitle::SetFarTitle()
+{
+	CriticalSectionLock Lock(TitleCS);
+	if (m_TitleModified) {
+		Console.SetTitle(m_strFarTitle);
+		m_TitleModified = false;
 		//_SVS(SysLog(L"  (nullptr)FarTitle='%s'",FarTitle));
 	}
 }

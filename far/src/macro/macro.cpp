@@ -36,6 +36,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Bookmarks.hpp"
 #include "clipboard.hpp"
 #include "cmdline.hpp"
+#include "constitle.hpp"
 #include "ctrlobj.hpp"
 #include "dialog.hpp"
 #include "fileedit.hpp"
@@ -563,9 +564,8 @@ FarKey KeyMacro::GetKey()
 				}
 
 				ScrBuf.Unlock();
-
 				Clipboard::SetUseInternalClipboardState(false);
-
+				ConsoleTitle::SetFarTitle();
 				return 0;
 
 			case MPRT_KEYS:
