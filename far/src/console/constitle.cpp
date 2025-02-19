@@ -122,7 +122,7 @@ void ConsoleTitle::SetFarTitle(const wchar_t *Title, bool Force, bool Restoring)
 		!(CtrlObject->Macro.IsExecuting() && CtrlObject->Macro.IsOutputDisabled()))
 	{
 		DWORD CurTime = WINPORT(GetTickCount)();
-		if (CurTime - m_ShowTime > RedrawTimeout || Force)
+		// if (CurTime - m_ShowTime > RedrawTimeout || Force)
 		{
 			m_ShowTime = CurTime;
 			Console.SetTitle(m_strFarTitle);

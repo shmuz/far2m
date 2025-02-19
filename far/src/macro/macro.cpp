@@ -565,7 +565,7 @@ FarKey KeyMacro::GetKey()
 
 				ScrBuf.Unlock();
 				Clipboard::SetUseInternalClipboardState(false);
-				ConsoleTitle::SetFarTitle();
+				// ConsoleTitle::SetFarTitle();
 				return 0;
 
 			case MPRT_KEYS:
