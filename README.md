@@ -28,8 +28,6 @@ Python (optional scripting support), SimpleIndent, TmpPanel.
 ## Contributing, Hacking
 #### Required dependencies
 
-* gawk
-* m4
 * libwxgtk3.0-gtk3-dev (or libwxgtk3.2-dev in newer distributions, or libwxgtk3.0-dev in older ones, optional - needed for GUI backend, not needed with -DUSEWX=no)
 * libx11-dev (optional - needed for X11 extension that provides better UX for TTY backend wherever X11 is available)
 * libxi-dev (optional - needed for X11/Xi extension that provides best UX for TTY backend wherever X11 Xi extension is available)
@@ -51,7 +49,7 @@ Python (optional scripting support), SimpleIndent, TmpPanel.
 
 #### Or simply on Debian/Ubuntu:
 ``` sh
-apt-get install gawk m4 libwxgtk3.0-gtk3-dev libx11-dev libxi-dev libxml2-dev libuchardet-dev libssh-dev libssl-dev libsmbclient-dev libnfs-dev libneon27-dev libarchive-dev libluajit-5.1-dev uuid-dev cmake g++ git
+apt-get install libwxgtk3.0-gtk3-dev libx11-dev libxi-dev libxml2-dev libuchardet-dev libssh-dev libssl-dev libsmbclient-dev libnfs-dev libneon27-dev libarchive-dev libluajit-5.1-dev uuid-dev cmake g++ git
 
 ```
 In older distributives: use libwxgtk3.0-dev instead of libwxgtk3.0-gtk3-dev

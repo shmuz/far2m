@@ -28,8 +28,6 @@ matrix:
             - libnfs-dev
             - libneon27-dev
             - libarchive-dev
-            - gawk
-            - m4
             - ninja-build
       env: CXX=g++-5
       before_install:
@@ -57,8 +55,6 @@ matrix:
             - libnfs-dev
             - libneon27-dev
             - libarchive-dev
-            - gawk
-            - m4
             - ninja-build
       env: CXX=g++-6
       before_install:
@@ -87,8 +83,6 @@ matrix:
             - libnfs-dev
             - libneon27-dev
             - libarchive-dev
-            - gawk
-            - m4
             - ninja-build
       env: CXX=clang++-3.6
       before_install:
@@ -117,8 +111,6 @@ matrix:
             - libnfs-dev
             - libneon27-dev
             - libarchive-dev
-            - gawk
-            - m4
             - zlib1g-dev
             - ninja-build
       env: CXX=clang++-3.7
