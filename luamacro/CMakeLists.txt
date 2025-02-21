@@ -1,5 +1,8 @@
 project(luamacro)
 
+set(TOOLS "${CMAKE_BINARY_DIR}/tools" CACHE STRING "")
+set(FARLUATOOL "${TOOLS}/lua")
+
 include_directories(${LIBLUA_INCLUDE_DIRS})
 
 set(SOURCES
@@ -57,7 +60,7 @@ function(Generate_Constants)
   set(SRC ${GEN}.cpp)
 
   add_custom_command(OUTPUT ${SRC}
-                     COMMAND minilua ${SCRIPT} ${SRC} ${INPUT}
+                     COMMAND ${FARLUATOOL} ${SCRIPT} ${SRC} ${INPUT}
                      DEPENDS ${INPUT}
                      )
 
@@ -84,7 +87,7 @@ foreach(elem ${MY_LIST})
   configure_file("src/${elem}" "${INSTALL_DIR}/plug/${elem}" COPYONLY)
 endforeach()
 
-set (MAKELANG minilua ${CMAKE_SOURCE_DIR}/luafar/lua_share/makelang.lua)
+set (MAKELANG ${FARLUATOOL} ${CMAKE_SOURCE_DIR}/luafar/lua_share/makelang.lua)
 set (TEMPL    ${CMAKE_CURRENT_SOURCE_DIR}/src/lm_lang.templ)
 add_custom_target(${PROJECT_NAME}_lang ALL
   ${MAKELANG} ${TEMPL} ${INSTALL_DIR}/plug
