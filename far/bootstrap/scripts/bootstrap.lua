@@ -133,7 +133,7 @@ local function MakeHlf(FileName)
       for _, tp in ipairs(atopic) do
         local c1 = tp:sub(1, 1)
         if c1:byte() >= 128 then  -- poor man unicode hack
-         c1 = tp:sub(2, 2)
+         c1 = tp:sub(1, 2)
         end
         if ch ~= c1 then
           ch = c1
