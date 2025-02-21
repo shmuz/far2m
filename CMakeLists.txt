@@ -184,12 +184,13 @@ endif()
 include_directories(utils/include)
 
 add_subdirectory (farlng)
+add_subdirectory (lua)
 add_subdirectory (WinPort)
 add_subdirectory (utils)
 add_subdirectory (far)
-add_dependencies (far2m farlng)
+add_dependencies (far2m farlng lua)
 
-set_target_properties(farlng
+set_target_properties(farlng lua
   PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${TOOLS_DIR}"
 )
