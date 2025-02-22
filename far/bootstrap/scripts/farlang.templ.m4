@@ -1,4 +1,3 @@
-m4_include(`farversion.m4')m4_dnl
 #hpp file name
 lang.inc
 #number of languages
@@ -26,10 +25,14 @@ FarBel.lng Belarusian "Belarusian (Беларуская)"
 #hhead:
 #hhead:
 
+hhead:/* FarLang - start */
+
 #tail of the hpp file
 #htail:
 #htail:
 #and so on as much as needed
+
+htail:/* FarLang - end */
 
 enum:LangMsg
 
