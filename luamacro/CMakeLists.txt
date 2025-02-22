@@ -62,6 +62,7 @@ function(Generate_Constants)
   add_custom_command(OUTPUT ${SRC}
                      COMMAND ${FARLUATOOL} ${SCRIPT} ${SRC} ${INPUT}
                      DEPENDS ${INPUT}
+                     DEPENDS ${FARLUATOOL}
                      )
 
   add_executable(${GEN} ${SRC})
