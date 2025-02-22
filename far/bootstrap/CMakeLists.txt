@@ -7,7 +7,7 @@ set(TOOLS "${CMAKE_BINARY_DIR}/tools" CACHE STRING "")
 set(FARLUATOOL "${TOOLS}/lua")
 
 add_custom_target(bootstrap
-  DEPENDS lua copyright.inc farversion.inc farlang.templ
+  DEPENDS lua farversion.inc
 )
 
 message(STATUS "generating headers and languages")
@@ -21,6 +21,7 @@ set(BOOTSTRAP "${PROJECT_BINARY_DIR}/bootstrap")
 set(SCRIPTS "${CMAKE_CURRENT_SOURCE_DIR}/scripts")
 set(DEPENDENCIES
     "${SCRIPTS}/farlang.templ.m4"
+    "${SCRIPTS}/farlang.lua"
     "${SCRIPTS}/bootstrap.lua"
 )
 
@@ -46,25 +47,11 @@ set(LUACMD
   "${SCRIPTS}/bootstrap.lua"
 )
 
-add_custom_command(OUTPUT "${BOOTSTRAP}/copyright.inc"
-    COMMAND ${LUACMD} --copyright > "${BOOTSTRAP}/copyright.inc"
-    WORKING_DIRECTORY "${SCRIPTS}"
-    DEPENDS ${DEPENDENCIES}
-    COMMENT "generating copyright header"
-)
-
 add_custom_command(OUTPUT "${BOOTSTRAP}/farversion.inc"
     COMMAND ${LUACMD} --farversion > "${BOOTSTRAP}/farversion.inc"
     WORKING_DIRECTORY "${SCRIPTS}"
     DEPENDS ${DEPENDENCIES}
-    COMMENT "generating farversion header"
-)
-
-add_custom_command(OUTPUT "${BOOTSTRAP}/farlang.templ"
-    COMMAND ${LUACMD} --farlang "${SCRIPTS}/farlang.templ.m4" > "${BOOTSTRAP}/farlang.templ"
-    WORKING_DIRECTORY "${SCRIPTS}"
-    DEPENDS ${DEPENDENCIES}
-    COMMENT "generating language template"
+    COMMENT "generating farversion and copyright header"
 )
 
 add_custom_command(TARGET bootstrap
@@ -96,9 +83,9 @@ add_custom_command(TARGET bootstrap
 )
 
 add_custom_command(TARGET bootstrap
-   COMMAND "${FARLUATOOL}" "${SCRIPTS}/farlang.lua" -i "${BOOTSTRAP}/farlang.templ" -o "${BOOTSTRAP}"
+   COMMAND ${LUACMD} --farlang "${SCRIPTS}/farlang.templ.m4" | "${FARLUATOOL}" "${SCRIPTS}/farlang.lua" -o "${BOOTSTRAP}"
    WORKING_DIRECTORY "${BOOTSTRAP}"
-   DEPENDS "${BOOTSTRAP}/farlang.templ"
+   DEPENDS ${DEPENDENCIES}
    COMMENT "generating languages"
 )
 

@@ -43,13 +43,10 @@ const char *Copyright =
   "Copyright (C) %s Far People";
 ]]
 
-local function Copyright()
-  Write(StrCopyright:format(FULLVERSION, COPYRIGHTYEARS))
-end
-
 local function FarVersion()
   Write(("const uint32_t FAR_VERSION = 0x10000 * %s + %s;"):format(MAJOR, MINOR))
   Write(("const char *FAR_BUILD = \"%s.%s.%s\";"):format(MAJOR, MINOR, PATCH))
+  Write(StrCopyright:format(FULLVERSION, COPYRIGHTYEARS))
 end
 
 local function FarLang(FileName)
@@ -147,8 +144,7 @@ local function MakeHlf(FileName)
   fp:close()
 end
 
-if     args[1] == "--copyright"  then Copyright()
-elseif args[1] == "--farversion" then FarVersion()
+if args[1]     == "--farversion" then FarVersion()
 elseif args[1] == "--farlang"    then FarLang(args[2])
 elseif args[1] == "--mkhlf"      then MakeHlf(args[2])
 end

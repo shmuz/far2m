@@ -12,7 +12,7 @@ local function ProcessCmdLine(...)
       error("invalid command line argument #"..tostring(i))
     end
   end
-  assert(OutPath and InFile, "incorrect command line parameters")
+  assert(OutPath, "incorrect command line parameters")
   return OutPath, InFile
 end
 
@@ -27,11 +27,11 @@ local function ReadInputFile(FileName)
   local currecord
   local langindex = 0
 
-  local fp = assert(io.open(FileName))
+  local fp = FileName and assert(io.open(FileName)) or io.stdin
 
   local MyAssert = function(cond, msg)
     if cond then return cond end
-    fp:close()
+    if fp ~= io.stdin then fp:close() end
     msg = ("%s: [line %d]"):format(msg or "Error", linenum)
     error(msg)
   end
@@ -124,7 +124,7 @@ local function ReadInputFile(FileName)
 
   MyAssert(langindex == 0, "bad last record")
 
-  fp:close()
+  if fp ~= io.stdin then fp:close() end
   return Langs, Records
 end
 
