@@ -61,4 +61,5 @@ set (MAKELANG ${FARLUATOOL} ${CMAKE_SOURCE_DIR}/luafar/lua_share/makelang.lua)
 set (TEMPL    ${CMAKE_CURRENT_SOURCE_DIR}/src/hv_lang.templ)
 add_custom_target(${PROJECT_NAME}_lang ALL
   ${MAKELANG} ${TEMPL} ${INSTALL_DIR}/plug
+  DEPENDS ${FARLUATOOL}
 )
