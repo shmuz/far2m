@@ -2673,15 +2673,15 @@ int Dialog::ProcessKey(FarKey Key)
 	unsigned I;
 	FARString strStr;
 
-	//	if ((ShiftPressed != ShiftState || CtrlPressed != CtrlState || AltPressed != AltState) && !DialogMode.Check(DMODE_KEY)) {
-	//		ShiftState = ShiftPressed;
-	//		CtrlState = CtrlPressed;
-	//		AltState = AltPressed;
-	//		FarKey fKey = ShiftState ? KEY_SHIFT : 0;
-	//		fKey |= CtrlPressed ? KEY_CTRL : 0;
-	//		fKey |= AltPressed ? KEY_ALT : 0;
-	//		DlgProc((HANDLE)this, DN_KEY, 0, fKey);
-	//	}
+	if ((ShiftPressed != ShiftState || CtrlPressed != CtrlState || AltPressed != AltState) && !DialogMode.Check(DMODE_KEY)) {
+		ShiftState = ShiftPressed;
+		CtrlState = CtrlPressed;
+		AltState = AltPressed;
+		FarKey fKey = ShiftState ? KEY_SHIFT : 0;
+		fKey |= CtrlPressed ? KEY_CTRL : 0;
+		fKey |= AltPressed ? KEY_ALT : 0;
+		DlgProc((HANDLE)this, DN_KEY, -1, fKey);
+	}
 	if (Key == KEY_NONE || Key == KEY_IDLE) {
 		DlgProc((HANDLE)this, DN_ENTERIDLE, 0, 0);	// $ 28.07.2000 SVS Передадим этот факт в обработчик :-)
 		return FALSE;

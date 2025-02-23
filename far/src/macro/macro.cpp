@@ -844,7 +844,7 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg, int Msg, int Param1, L
 			KeyIsValid = true;
 		}
 	}
-	else if (Msg == DN_KEY)
+	else if (Msg == DN_KEY && Param1 == 2)
 	{
 		DWORD dw = Param2 & KEY_END_SKEY;
 		if ((dw < KEY_END_FKEY) || (dw > INTERNAL_KEY_BASE && dw < INTERNAL_KEY_BASE_2))
