@@ -59,9 +59,7 @@ local function ReadInputFile(FileName)
     elseif State == stLANGDATA then
       local fname, lngname, descr = line:match("(%S+)%s+(%S+)%s+\"(.+)\"$")
       MyAssert(fname, "invalid language description")
-      local lang = { records={} }
-      lang.fname, lang.lngname, lang.descr = fname, lngname, descr
-      Langs[#Langs+1] = lang
+      Langs[#Langs+1] = { fname=fname; lngname=lngname; descr=descr; }
       if #Langs == TotalLangs then
         State = stENUM
       end

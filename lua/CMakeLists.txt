@@ -35,6 +35,8 @@ set(SOURCES
 
 set(CMAKE_C_VISIBILITY_PRESET default)
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLUA_USE_MKSTEMP") # suppress a warning
+
 add_executable (${PROJECT_NAME} ${SOURCES})
 
 target_link_libraries(${PROJECT_NAME} m)
