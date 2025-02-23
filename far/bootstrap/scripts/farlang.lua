@@ -59,7 +59,7 @@ local function ReadInputFile(FileName)
     elseif State == stLANGDATA then
       local fname, lngname, descr = line:match("(%S+)%s+(%S+)%s+\"(.+)\"$")
       MyAssert(fname, "invalid language description")
-      Langs[#Langs+1] = { fname=fname; lngname=lngname; descr=descr; }
+      Langs[#Langs+1] = { fname=fname; lngname=lngname; descr=descr; review=0; }
       if #Langs == TotalLangs then
         State = stENUM
       end
@@ -82,6 +82,17 @@ local function ReadInputFile(FileName)
       end
 
     elseif State == stRECORDS then
+      local AddEntry = function()
+        local entry = line:match("^%s*(\".*\")") or line:match("^%s*(upd:\".*\")")
+        MyAssert(entry, "invalid language entry")
+        currecord[langindex] = entry
+        if entry:match("^upd:") then
+          Langs[langindex].review = Langs[langindex].review + 1
+        end
+        langindex = langindex + 1
+        if langindex > TotalLangs then langindex = 0; end
+      end
+
       if langindex == 0 then
         local id = MyAssert(line:match("^[_a-zA-Z][_a-zA-Z0-9]*$"), "invalid identifier")
         MyAssert(IdMap[id] == nil, "duplicate identifier")
@@ -91,30 +102,20 @@ local function ReadInputFile(FileName)
         langindex = langindex + 1
 
       elseif langindex == 1 then
-        local kind, comment = line:match("^(le?):(.*)")
-        if kind then
+        local prefix, comment = line:match("^(le?):(.*)")
+        if prefix then
           MyAssert(comment=="" or comment:match("^%s*//"), "invalid comment")
-          if kind == "l" then
+          if prefix == "l" then
             currecord.before = AppendLine(currecord.before, comment)
-          else -- if kind == "le" then
+          else -- if prefix == "le" then
             currecord.after = AppendLine(currecord.after, comment)
           end
         else
-          local entry = line:match("^%s*(\".*\")") or line:match("^%s*(upd:\".*\")")
-          if entry then
-            currecord[langindex] = entry
-            langindex = langindex + 1
-          else
-            MyError("Unrecognized line syntax")
-          end
+          AddEntry()
         end
 
       else
-        local langentry = line:match("^%s*(\".*\")") or line:match("^%s*(upd:\".*\")")
-        MyAssert(langentry, "invalid item")
-        currecord[langindex] = langentry
-        langindex = langindex + 1
-        if langindex > TotalLangs then langindex = 0; end
+        AddEntry()
 
       end
     end
@@ -138,6 +139,11 @@ local function WriteOutput(OutPath, Langs, Records)
 
   -- write language files
   for langindex, data in ipairs(Langs) do
+    if data.review > 0 then
+      io.write(("INFO: There are %d strings that require review in %s translation\n")
+               :format(data.review, data.lngname))
+    end
+
     local fp = assert(io.open(OutPath.."/"..data.fname, "w"))
     fp:write("\239\187\191") -- UTF-8 BOM
     fp:write((".Language=%s,%s"):format(data.lngname, data.descr), "\n\n")

@@ -7,7 +7,7 @@ set(TOOLS "${CMAKE_BINARY_DIR}/tools" CACHE STRING "")
 set(FARLUATOOL "${TOOLS}/lua")
 
 add_custom_target(bootstrap
-  DEPENDS lua farversion.inc
+  DEPENDS lua farversion.inc lang.inc
 )
 
 message(STATUS "generating headers and languages")
@@ -50,39 +50,39 @@ set(LUACMD
 add_custom_command(OUTPUT "${BOOTSTRAP}/farversion.inc"
     COMMAND ${LUACMD} --farversion > "${BOOTSTRAP}/farversion.inc"
     WORKING_DIRECTORY "${SCRIPTS}"
-    DEPENDS ${DEPENDENCIES}
+    DEPENDS "${SCRIPTS}/bootstrap.lua"
     COMMENT "generating farversion and copyright header"
 )
 
 add_custom_command(TARGET bootstrap
    COMMAND ${LUACMD} --mkhlf "${SCRIPTS}/FarEng.hlf.m4" > "${BOOTSTRAP}/FarEng.hlf"
    WORKING_DIRECTORY "${SCRIPTS}"
-   DEPENDS ${DEPENDENCIES}
+   DEPENDS "${SCRIPTS}/bootstrap.lua" "${SCRIPTS}/FarEng.hlf.m4"
    COMMENT "generating help eng"
 )
 
 add_custom_command(TARGET bootstrap
    COMMAND ${LUACMD} --mkhlf "${SCRIPTS}/FarRus.hlf.m4" > "${BOOTSTRAP}/FarRus.hlf"
    WORKING_DIRECTORY "${SCRIPTS}"
-   DEPENDS ${DEPENDENCIES}
+   DEPENDS "${SCRIPTS}/bootstrap.lua" "${SCRIPTS}/FarRus.hlf.m4"
    COMMENT "generating help rus"
 )
 
 add_custom_command(TARGET bootstrap
    COMMAND ${LUACMD} --mkhlf "${SCRIPTS}/FarHun.hlf.m4" > "${BOOTSTRAP}/FarHun.hlf"
    WORKING_DIRECTORY "${SCRIPTS}"
-   DEPENDS ${DEPENDENCIES}
+   DEPENDS "${SCRIPTS}/bootstrap.lua" "${SCRIPTS}/FarHun.hlf.m4"
    COMMENT "generating help hun"
 )
 
 add_custom_command(TARGET bootstrap
    COMMAND ${LUACMD} --mkhlf "${SCRIPTS}/FarUkr.hlf.m4" > "${BOOTSTRAP}/FarUkr.hlf"
    WORKING_DIRECTORY "${SCRIPTS}"
-   DEPENDS ${DEPENDENCIES}
+   DEPENDS "${SCRIPTS}/bootstrap.lua" "${BOOTSTRAP}/FarUkr.hlf"
    COMMENT "generating help ukr"
 )
 
-add_custom_command(TARGET bootstrap
+add_custom_command(OUTPUT "${BOOTSTRAP}/lang.inc"
    COMMAND ${LUACMD} --farlang "${SCRIPTS}/farlang.templ.m4" | "${FARLUATOOL}" "${SCRIPTS}/farlang.lua" -o "${BOOTSTRAP}"
    WORKING_DIRECTORY "${BOOTSTRAP}"
    DEPENDS ${DEPENDENCIES}
