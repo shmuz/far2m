@@ -1,22 +1,32 @@
 -- farlang.lua
 
+local HppFile, InFile, OutPath, Verbose
+
 local function ProcessCmdLine(...)
-  local OutPath, InFile
   local params = {...}
-  for i = 1, #params, 2 do
-    if params[i] == "--outdir" or params[i] == "-o" then
-      OutPath = params[i+1]
+  local i = 1
+  while i <= #params do
+    if params[i] == "--hppfile" or params[i] == "-h" then
+      HppFile = params[i+1]
+      i = i + 2
     elseif params[i] == "--inputfile" or params[i] == "-i" then
       InFile = params[i+1]
+      i = i + 2
+    elseif params[i] == "--outdir" or params[i] == "-o" then
+      OutPath = params[i+1]
+      i = i + 2
+    elseif params[i] == "--verbose" or params[i] == "-v" then
+      Verbose = true
+      i = i + 1
     else
       error("invalid command line argument #"..tostring(i))
     end
   end
-  assert(OutPath, "incorrect command line parameters")
-  return OutPath, InFile
+  assert(HppFile, "command line: missing HPP file")
+  assert(OutPath, "command line: missing output path")
 end
 
-local function ReadInputFile(FileName)
+local function ReadInputFile()
   local Langs = {}
   local Records = {}
   local IdMap = {}
@@ -27,7 +37,7 @@ local function ReadInputFile(FileName)
   local currecord
   local langindex = 0
 
-  local fp = FileName and assert(io.open(FileName)) or io.stdin
+  local fp = InFile and assert(io.open(InFile)) or io.stdin
 
   local MyAssert = function(cond, msg)
     if cond then return cond end
@@ -48,8 +58,7 @@ local function ReadInputFile(FileName)
       State = State -- skip empty lines and comments
 
     elseif State == stHPP then
-      Langs.hppfile = line:match("^%s*(.*)")
-      State = stLANGNUM
+      State = stLANGNUM -- ignore: HppFile is taken from the command line
 
     elseif State == stLANGNUM then
       TotalLangs = MyAssert(tonumber(line), "invalid number of languages")
@@ -127,9 +136,10 @@ local function ReadInputFile(FileName)
   return Langs, Records
 end
 
-local function WriteOutput(OutPath, Langs, Records)
+local function WriteOutput(Langs, Records)
   -- write hpp file
-  local fpHpp = assert(io.open(OutPath.."/"..Langs.hppfile, "w"))
+  HppFile = HppFile:match("^/") and HppFile or OutPath.."/"..HppFile
+  local fpHpp = assert(io.open(HppFile, "w"))
   if Langs.hhead then fpHpp:write(Langs.hhead, "\n") end
   for i,rec in ipairs(Records) do
     fpHpp:write(("DECLARE_FARLANGMSG(%s, %d)"):format(rec.id, i-1), "\n")
@@ -139,7 +149,7 @@ local function WriteOutput(OutPath, Langs, Records)
 
   -- write language files
   for langindex, data in ipairs(Langs) do
-    if data.review > 0 then
+    if Verbose and data.review > 0 then
       io.write(("INFO: There are %d strings that require review in %s translation\n")
                :format(data.review, data.lngname))
     end
@@ -167,6 +177,6 @@ local function WriteOutput(OutPath, Langs, Records)
   end
 end
 
-local OutPath, InFile = ProcessCmdLine(...)
-local Langs, Records = ReadInputFile(InFile)
-WriteOutput(OutPath, Langs, Records)
+ProcessCmdLine(...)
+local Langs, Records = ReadInputFile()
+WriteOutput(Langs, Records)

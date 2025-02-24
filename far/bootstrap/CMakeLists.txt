@@ -83,7 +83,8 @@ add_custom_command(TARGET bootstrap
 )
 
 add_custom_command(OUTPUT "${BOOTSTRAP}/lang.inc"
-   COMMAND ${LUACMD} --farlang "${SCRIPTS}/farlang.templ.m4" | "${FARLUATOOL}" "${SCRIPTS}/farlang.lua" -o "${BOOTSTRAP}"
+   COMMAND ${LUACMD} --farlang "${SCRIPTS}/farlang.templ.m4" |
+          "${FARLUATOOL}" "${SCRIPTS}/farlang.lua" -o "${BOOTSTRAP}" -h lang.inc -v
    WORKING_DIRECTORY "${BOOTSTRAP}"
    DEPENDS ${DEPENDENCIES}
    COMMENT "generating languages"
