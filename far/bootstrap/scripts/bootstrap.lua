@@ -18,11 +18,7 @@ local Interpolate_Table = {
   FULLVERSIONNOBRACES = FULLVERSIONNOBRACES;
 }
 
-local function Interpolate(fp, line)
-  if line:match("^%s*m4_include") then -- remove m4 things
-    line = fp:read()
-    if not line then return nil end
-  end
+local function Interpolate(line)
   return (line:gsub("%$%{([A-Z_]+)%}", Interpolate_Table))
 end
 
@@ -47,12 +43,8 @@ end
 local function FarLang(FileName)
   local fp = assert(io.open(FileName))
   for line in fp:lines() do
-    line = Interpolate(fp, line)
-    if line then
-      Write(line)
-    else
-      break
-    end
+    line = Interpolate(line)
+    Write(line)
   end
   fp:close()
 end
@@ -67,19 +59,17 @@ local function MakeHlf(FileName)
   local Contents = ""
 
   local function ltrim(str)
-    return (str:gsub("^[ \t]+", ""))
+    return (str:gsub("^%s+", ""))
   end
 
   local function rtrim(str)
-    return (str:gsub("[ \t]+$", ""))
+    return (str:gsub("%s+$", ""))
   end
 
   -- Read the input file line by line
   for line in fp:lines() do
     line = rtrim(line)
-
-    line = Interpolate(fp, line)
-    if not line then break end
+    line = Interpolate(line)
 
     local _, NF = line:gsub("%S+", "") -- number of fields
 
@@ -109,9 +99,9 @@ local function MakeHlf(FileName)
       then
         topicFound = false
       else
-        -- Extract sorting modes
-        local title = line:gsub("^%$[ %^]#(.+)#", "%1")
-        atopic[#atopic+1] =  title .. "~" .. topic .. "@"
+        -- make an index entry
+        local text = line:gsub("^%$[ %^]#%s*(.+)%s*#", "%1")
+        atopic[#atopic+1] = ("%s~%s@"):format(text, topic) -- ~Text~@Topic@ --> Ссылка на тему
         topicFound = false
       end
     end

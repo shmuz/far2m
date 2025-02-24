@@ -1283,7 +1283,7 @@ $ #Menus: options menu#
 
 
 @Terminal
-$ #Terminal
+$ #Terminal#
     #FAR2M# contains built-in terminal emulator, allowing to execute command line applications see their output and control functionality.
 In order to keep usual shell experience far2m first launches supported user's shell in interactive mode and sends it commands typed
 in its own command line.
@@ -1309,7 +1309,7 @@ You can use this functionality by running TTY far2m inside of ssh client session
 like NetRocks SFTP/SCP protocols to execute remote commands.
 
 @UIBackends
-$ #UI Backends
+$ #UI Backends#
     Depending on build options and available platform features #FAR2M# can render
 its interface using different so-called backends:
 
