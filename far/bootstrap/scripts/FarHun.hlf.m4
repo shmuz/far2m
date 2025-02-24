@@ -1,14 +1,13 @@
-m4_include(`farversion.m4')m4_dnl
 .Language=Hungarian,Hungarian (Magyar)
 .Options CtrlColorChar=\
 .Options CtrlStartPosChar=^<wrap>
 
 @Contents
 $^#Fájl- és archívumkezelő program#
-`$^#'FULLVERSIONNOBRACES`#'
+$^#${FULLVERSIONNOBRACES}#
 $^#Copyright (C) 1996-2000 Eugene Roshal#
 $^#Copyright (C) 2000-2016 FAR Group
-`$^#Copyright (C)' COPYRIGHTYEARS `FAR People'
+$^#Copyright (C) ${COPYRIGHTYEARS} FAR People
 $^(help file last translated for build 882)
    ~A súgó betűrendes tartalomjegyzéke~@Index@
    ~A súgó használata~@Help@

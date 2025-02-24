@@ -63,7 +63,7 @@ enum:LangMsg
 
 
 Yes
-`l://Version: 'MAJOR`.'MINOR` build 'PATCH
+l://Version: ${MAJOR}.${MINOR} build ${PATCH}
 l:
 "Да"
 "Yes"

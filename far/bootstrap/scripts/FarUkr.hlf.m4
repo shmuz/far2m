@@ -1,12 +1,11 @@
-m4_include(`farversion.m4')m4_dnl
 .Language=Ukrainian,Ukrainian (Українська)
 .Options CtrlColorChar=\
 .Options CtrlStartPosChar=^<wrap>
 
 @Contents
 $^#Програма управління файлами та архівами#
-`$^#'FULLVERSIONNOBRACES`#'
-`$^#©1996-2000 Eugene Roshal, ©2000-2016 FAR Group,' ©COPYRIGHTYEARS `FAR People'#
+$^#${FULLVERSIONNOBRACES}#
+$^#©1996-2000 Eugene Roshal, ©2000-2016 FAR Group, ©${COPYRIGHTYEARS} FAR People#
 ~Індекс файлу допомоги~@Index@
 ~Як користуватися допомогою~@Help@
 

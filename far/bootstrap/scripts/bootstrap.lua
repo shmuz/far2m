@@ -6,7 +6,7 @@ local COPYRIGHTYEARS = "2016-" .. os.date("%Y")
 local FULLVERSION = ("%s.%s.%s %s"):format(MAJOR, MINOR, PATCH, ARCH)
 local FULLVERSIONNOBRACES = FULLVERSION:gsub("[()]", "")
 
-local M4_Table = {
+local Interpolate_Table = {
   -- from globals
   ARCH = ARCH;
   MAJOR = MAJOR;
@@ -18,17 +18,12 @@ local M4_Table = {
   FULLVERSIONNOBRACES = FULLVERSIONNOBRACES;
 }
 
-local function M4_Process(fp, line)
+local function Interpolate(fp, line)
   if line:match("^%s*m4_include") then -- remove m4 things
     line = fp:read()
     if not line then return nil end
   end
-
-  local line2 = line:gsub("[A-Z_]+", M4_Table)
-  if line2 ~= line then
-    line = line2:gsub("[`']", "") -- remove m4 things
-  end
-  return line
+  return (line:gsub("%$%{([A-Z_]+)%}", Interpolate_Table))
 end
 
 local function Write(str)
@@ -52,7 +47,7 @@ end
 local function FarLang(FileName)
   local fp = assert(io.open(FileName))
   for line in fp:lines() do
-    line = M4_Process(fp, line)
+    line = Interpolate(fp, line)
     if line then
       Write(line)
     else
@@ -83,7 +78,7 @@ local function MakeHlf(FileName)
   for line in fp:lines() do
     line = rtrim(line)
 
-    line = M4_Process(fp, line)
+    line = Interpolate(fp, line)
     if not line then break end
 
     local _, NF = line:gsub("%S+", "") -- number of fields

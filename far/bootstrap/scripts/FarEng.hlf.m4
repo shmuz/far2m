@@ -1,12 +1,11 @@
-m4_include(`farversion.m4')m4_dnl
 .Language=English,English
 .Options CtrlColorChar=\
 .Options CtrlStartPosChar=^<wrap>
 
 @Contents
 $^#File and archive manager#
-`$^#'FULLVERSIONNOBRACES`#'
-`$^#©1996-2000 Eugene Roshal, ©2000-2016 FAR Group,' ©COPYRIGHTYEARS `FAR People'#
+$^#${FULLVERSIONNOBRACES}#
+$^#©1996-2000 Eugene Roshal, ©2000-2016 FAR Group, ©${COPYRIGHTYEARS} FAR People#
    ~Help file index~@Index@
    ~How to use help~@Help@
 

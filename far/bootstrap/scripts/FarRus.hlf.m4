@@ -1,12 +1,11 @@
-m4_include(`farversion.m4')m4_dnl
 .Language=Russian,Russian (Русский)
 .Options CtrlColorChar=\
 .Options CtrlStartPosChar=^<wrap>
 
 @Contents
 $^#Программа управления файлами и архивами#
-`$^#'FULLVERSIONNOBRACES`#'
-`$^#©1996-2000 Eugene Roshal, ©2000-2016 FAR Group,' ©COPYRIGHTYEARS `FAR People'#
+$^#${FULLVERSIONNOBRACES}#
+$^#©1996-2000 Eugene Roshal, ©2000-2016 FAR Group, ©${COPYRIGHTYEARS} FAR People#
    ~Индекс файла помощи~@Index@
    ~Как пользоваться помощью~@Help@
 
