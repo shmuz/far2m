@@ -99,9 +99,9 @@ local function MakeHlf(FileName)
       then
         topicFound = false
       else
-        -- make an index entry
+        -- make an index item
         local text = line:gsub("^%$[ %^]#%s*(.+)%s*#", "%1")
-        atopic[#atopic+1] = ("%s~%s@"):format(text, topic) -- ~Text~@Topic@ --> Ссылка на тему
+        atopic[#atopic+1] = { text=ltrim(text); topic=topic; } -- will concatenate after sorting
         topicFound = false
       end
     end
@@ -109,19 +109,20 @@ local function MakeHlf(FileName)
     if line == "<%INDEX%>" then
       Write("   ~" .. Contents .. "~@Contents@")
 
-      table.sort(atopic)
+      table.sort(atopic, function(a,b) return a.text < b.text; end)
 
       local ch = ""
-      for _, tp in ipairs(atopic) do
-        local c1 = tp:sub(1, 1)
+      for _, item in ipairs(atopic) do
+        local c1 = item.text:sub(1, 1)
         if c1:byte() >= 128 then  -- poor man unicode hack
-         c1 = tp:sub(1, 2)
+          c1 = item.text:sub(1, 2)
         end
         if ch ~= c1 then
           ch = c1
           Write("") -- insert empty line
         end
-        Write("   ~" .. ltrim(tp))
+        local str = ("   ~%s~%s@"):format(item.text, item.topic)
+        Write(str)
       end
     end
   end
