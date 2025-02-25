@@ -875,7 +875,7 @@ void LanguageSettings()
 	if (Select(FALSE, &LangMenu)) {
 		Lang.Close();
 
-		if (!Lang.Init(g_strFarPath, true, Msg::NewFileName.ID())) {
+		if (!Lang.Init(g_strFarPath, true, Msg::MaxMsgId)) {
 			Message(MSG_WARNING, 1, L"Error", L"Cannot load language data", L"Ok");
 			exit(0);
 		}

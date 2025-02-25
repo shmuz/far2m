@@ -23481,7 +23481,6 @@ upd:"Context (&lines):"
 "&Контекст (рядків):"
 "&Кантэкст (радкоў):"
 
-#Must be the last
 NewFileName
 l:
 "?Новый файл?"

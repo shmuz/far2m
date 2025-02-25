@@ -144,6 +144,7 @@ local function WriteOutput(Langs, Records)
   for i,rec in ipairs(Records) do
     fpHpp:write(("DECLARE_FARLANGMSG(%s, %d)"):format(rec.id, i-1), "\n")
   end
+  fpHpp:write("static const int MaxMsgId = ", tostring(#Records - 1), ";\n")
   if Langs.htail then fpHpp:write(Langs.htail, "\n") end
   fpHpp:close()
 

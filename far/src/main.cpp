@@ -584,10 +584,10 @@ int FarAppMain(int argc, char **argv)
 	InitConsole();
 	WINPORT(SetConsoleCursorBlinkTime)(NULL, Opt.CursorBlinkTime);
 
-	static_assert(!IsPtr(Msg::NewFileName._id),
+	static_assert(!IsPtr(Msg::MaxMsgId),
 		"Too many language messages. Need to refactor code to eliminate use of IsPtr.");
 
-	if (!Lang.Init(g_strFarPath,true,Msg::NewFileName.ID()))
+	if (!Lang.Init(g_strFarPath,true,Msg::MaxMsgId))
 	{
 		LPCWSTR LngMsg;
 		switch (Lang.LastError())
