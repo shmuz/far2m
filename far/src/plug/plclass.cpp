@@ -21,8 +21,7 @@ Plugin::Plugin(PluginManager *owner,
 	m_strSettingsName(settingsName),
 	m_strModuleID(moduleID)
 {
-	strRootKey = Opt.strRegRoot;
-	strRootKey += L"/Plugins";
+	strRootKey = L"Software/Far2/Plugins";
 }
 
 Plugin::~Plugin()

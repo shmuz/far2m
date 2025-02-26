@@ -1,6 +1,7 @@
 -- farlang.lua
 
 local HppFile, InFile, OutPath, Verbose
+local MAX_MSG_ID = "MaxMsgId"
 
 local function ProcessCmdLine(...)
   local params = {...}
@@ -29,7 +30,7 @@ end
 local function ReadInputFile()
   local Langs = {}
   local Records = {}
-  local IdMap = {}
+  local IdMap = { [MAX_MSG_ID] = true }
   local TotalLangs
   local stHPP, stLANGNUM, stLANGDATA, stENUM, stRECORDS = 1,2,3,4,5
   local State = stHPP
@@ -144,7 +145,8 @@ local function WriteOutput(Langs, Records)
   for i,rec in ipairs(Records) do
     fpHpp:write(("DECLARE_FARLANGMSG(%s, %d)"):format(rec.id, i-1), "\n")
   end
-  fpHpp:write("static const int MaxMsgId = ", tostring(#Records - 1), ";\n")
+  local str = ("static const int %s = %d;"):format(MAX_MSG_ID, #Records - 1)
+  fpHpp:write(str, "\n")
   if Langs.htail then fpHpp:write(Langs.htail, "\n") end
   fpHpp:close()
 

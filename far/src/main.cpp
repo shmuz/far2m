@@ -349,44 +349,35 @@ int FarAppMain(int argc, char **argv)
 	// from cloning main strings from current one
 	OverrideInterThreadID(gMainThreadID);
 
-	Opt.IsUserAdmin = (geteuid()==0);
-
 	_OT(SysLog(L"[[[[[[[[New Session of FAR]]]]]]]]]"));
 	FARString DestNames[2];
-	int StartLine=-1,StartChar=-1;
-	int CntDestName=0; // количество параметров-имен каталогов
+	int CntDestName = 0; // количество параметров-имен каталогов
+	int StartLine = -1, StartChar = -1;
+	bool bCustomPlugins = false;
 
-	Opt.strRegRoot = L"Software/Far2";
+	Opt.Macro.DisableMacro = 0;
 
-	// По умолчанию - брать плагины из основного каталога
-	Opt.LoadPlug.MainPluginDir=TRUE;
+	Opt.LoadPlug.MainPluginDir=TRUE; // По умолчанию - брать плагины из основного каталога
 	Opt.LoadPlug.PluginsPersonal=TRUE;
 	Opt.LoadPlug.PluginsCacheOnly=FALSE;
 
-	setenv("FARPID", ToDec(getpid()).c_str(), 1);
-
-	g_strFarPath = g_strFarModuleName;
-
-	bool translated = TranslateFarString<TranslateInstallPath_Bin2Share>(g_strFarPath);
-	CutToSlash(g_strFarPath, true);
-	if (translated) {
-		// /usr/bin/something -> /usr/share/far2m
-		g_strFarPath.Append("/" APP_BASENAME);
-	}
-
-	setenv("FARHOME", g_strFarPath.GetMB().c_str(), 1);
-
-	AddEndSlash(g_strFarPath);
-
+	Opt.IsUserAdmin = (geteuid()==0);
 	if (Opt.IsUserAdmin) {
 		setenv("FARADMINMODE", "1", 1);
 	} else {
 		unsetenv("FARADMINMODE");
 	}
 
-	// макросы не дисаблим
-	Opt.Macro.DisableMacro=0;
-	bool bCustomPlugins = false;
+	setenv("FARPID", ToDec(getpid()).c_str(), 1);
+
+	g_strFarPath = g_strFarModuleName;        // /usr/bin/far2m
+	bool translated = TranslateFarString<TranslateInstallPath_Bin2Share>(g_strFarPath); // /usr/share/far2m
+	CutToSlash(g_strFarPath, true);           // /usr/share
+	if (translated) {
+		g_strFarPath.Append("/" APP_BASENAME);  // /usr/share/far2m
+	}
+	setenv("FARHOME", g_strFarPath.GetMB().c_str(), 1);
+	AddEndSlash(g_strFarPath);
 
 	for (int I=1; I<argc; I++)
 	{
@@ -583,9 +574,6 @@ int FarAppMain(int argc, char **argv)
 
 	InitConsole();
 	WINPORT(SetConsoleCursorBlinkTime)(NULL, Opt.CursorBlinkTime);
-
-	static_assert(!IsPtr(Msg::MaxMsgId),
-		"Too many language messages. Need to refactor code to eliminate use of IsPtr.");
 
 	if (!Lang.Init(g_strFarPath,true,Msg::MaxMsgId))
 	{
