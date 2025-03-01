@@ -82,11 +82,17 @@ add_custom_command(TARGET bootstrap
    COMMENT "generating help ukr"
 )
 
-add_custom_command(OUTPUT "${BOOTSTRAP}/lang.inc"
-   COMMAND ${LUACMD} --farlang "${SCRIPTS}/farlang.templ.m4" |
-          "${FARLUATOOL}" "${SCRIPTS}/farlang.lua" -o "${BOOTSTRAP}" -h lang.inc -v
+add_custom_command(OUTPUT "${BOOTSTRAP}/farlang.templ"
+   COMMAND ${LUACMD} --farlang "${SCRIPTS}/farlang.templ.m4" > "${BOOTSTRAP}/farlang.templ"
    WORKING_DIRECTORY "${BOOTSTRAP}"
    DEPENDS ${DEPENDENCIES}
+   COMMENT "generating language template"
+)
+
+add_custom_command(OUTPUT "${BOOTSTRAP}/lang.inc"
+   COMMAND "${FARLUATOOL}" "${SCRIPTS}/farlang.lua" -i "${BOOTSTRAP}/farlang.templ" -o "${BOOTSTRAP}" -h lang.inc -v
+   WORKING_DIRECTORY "${BOOTSTRAP}"
+   DEPENDS "${BOOTSTRAP}/farlang.templ"
    COMMENT "generating languages"
 )
 
