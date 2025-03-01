@@ -138,40 +138,34 @@ local function ReadInputFile()
 end
 
 local function WriteHeaderFile(Langs, Records)
-  HppFile = HppFile:match("^/") and HppFile or OutPath.."/"..HppFile
-  local TmpFile = HppFile .. ".tmp"
-  local fp = assert(io.open(TmpFile, "w"))
-  if Langs.hhead then fp:write(Langs.hhead, "\n") end
+  local insert = table.insert
+  local tHeader = {}
+  if Langs.hhead then insert(tHeader, Langs.hhead) end
   for i,rec in ipairs(Records) do
-    fp:write(("DECLARE_FARLANGMSG(%s, %d)"):format(rec.id, i-1), "\n")
+    insert(tHeader, ("DECLARE_FARLANGMSG(%s, %d)"):format(rec.id, i-1))
   end
   local str = ("static const int %s = %d;"):format(MAX_MSG_ID, #Records - 1)
-  fp:write(str, "\n")
-  if Langs.htail then fp:write(Langs.htail, "\n") end
-  fp:close()
+  insert(tHeader, str)
+  if Langs.htail then insert(tHeader, Langs.htail) end
+  insert(tHeader, "")
 
   -- The rest of code should prevent rebuilding the whole far2m after a commit.
-  fp = assert(io.open(TmpFile))
-  local strNew = fp:read("*all")
-  fp:close()
+  local strNew = table.concat(tHeader, "\n")
 
+  HppFile = HppFile:match("^/") and HppFile or OutPath.."/"..HppFile
   local needUpdate = true
-  fp = io.open(HppFile)
+  local fp = io.open(HppFile)
   if fp then
     local strOld = fp:read("*all")
     needUpdate = strNew ~= strOld
     fp:close()
   end
 
-  -- Do not use os.rename(TmpFile,HppFile) as it is a separate process
-  -- and the build can fail on "make -j8".
   if needUpdate then
     fp = assert(io.open(HppFile, "w"))
     fp:write(strNew)
     fp:close()
   end
-
-  os.remove(TmpFile)
 end
 
 local function WriteLangFiles(Langs, Records)
