@@ -2144,7 +2144,7 @@ local function test_PluginsControl()
     assert_nil   (far.FindPlugin("PFM_SYSID", hlfviewerId))
     assert_udata (far.LoadPlugin("PLT_PATH", info.ModuleName))
     assert_udata (far.FindPlugin("PFM_SYSID", hlfviewerId))
-    assert_false (far.IsPluginLoaded(hlfviewerId))
+--  assert_false (far.IsPluginLoaded(hlfviewerId)) --> fails if a plugin's cache was empty before the test
     assert_udata (far.ForcedLoadPlugin("PLT_PATH", info.ModuleName))
     assert_true  (far.IsPluginLoaded(hlfviewerId))
   end
