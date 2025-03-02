@@ -194,7 +194,7 @@ FAR beállításaik legyenek.
 
           Például: far -u guest
 
-        ^<wrap>A FAR Manager a "FARUSER" ~környezeti változónak~@FAREnv@
+        ^<wrap>A FAR Manager a "FARSETTINGS" ~környezeti változónak~@FAREnv@
 a <felhasználónév> értéket adja.
         ^<wrap>
   #-v <fájlnév>#  Megnézi a megadott fájlt. Ha a <fájlnév> #-#, akkor az
@@ -3812,7 +3812,7 @@ az utódfolyamatok részére:
 
     #FARLANG#          A kezelőfelület aktuális nyelve.
 
-    #FARUSER#          ^<wrap>A ~parancssorban~@CmdLine@ a -u kapcsolóval
+    #FARSETTINGS#      ^<wrap>A ~parancssorban~@CmdLine@ a -u kapcsolóval
 megadott felhasználói név.
 
 

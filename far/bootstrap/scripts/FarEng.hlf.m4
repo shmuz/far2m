@@ -194,7 +194,7 @@ and from the path given at the "~Path for personal plugins~@PluginsManagerSettin
   Allows to have separate settings for different users.
   For example: far -u guest
 
-  FAR2M will set the ~environment variable~@FAREnv@ "FARUSER" to the value <username>.
+  FAR2M will set the ~environment variable~@FAREnv@ "FARSETTINGS" to the value <username>.
 
   #-v <filename>#
   View the specified file. If <filename> is `#-#', data is read from the stdin.
@@ -4040,9 +4040,7 @@ to child processes:
 
     #FARLANG#            the name of the current interface language.
 
-    #FARUSER#            ^<wrap>the name of the current user given by the -u ~command line~@CmdLine@ option.
-
-    #FARDIRSTACK#        ^<wrap>the contents of directories stack top (the stack is managed with #pushd# and #popd# commands)
+    #FARSETTINGS#        ^<wrap>the name of the current user given by the -u ~command line~@CmdLine@ option.
 
     #FARADMINMODE#       ^<wrap>equals "1" if FAR2M was run by an administrator
 
