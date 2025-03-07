@@ -131,7 +131,7 @@ bool StrToGuid(const wchar_t *Str, GUID& Guid)
 std::string GuidToString(const GUID& Guid)
 {
 	char buf[64];
-	sprintf(buf, "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
+	snprintf(buf, sizeof(buf), "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
 			Guid.Data1, (uint32_t)Guid.Data2, (uint32_t)Guid.Data3,
 			(uint32_t)Guid.Data4[0], (uint32_t)Guid.Data4[1],
 			(uint32_t)Guid.Data4[2], (uint32_t)Guid.Data4[3],

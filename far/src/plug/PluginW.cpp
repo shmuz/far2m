@@ -438,8 +438,14 @@ static BOOL LoadLuafar()
 #elif defined(__ANDROID__)
 	return TRUE;
 #else
+
 	// 1. Load Lua
+#ifdef __APPLE__
+	const char *libs[] = {"libluajit-5.1.dylib", "liblua5.1.dylib", nullptr};
+#else
 	const char *libs[] = {"libluajit-5.1.so", "liblua5.1.so", nullptr};
+#endif
+
 	void *handle = nullptr;
 
 	auto str = getenv("FARPLAINLUA");
@@ -459,12 +465,17 @@ static BOOL LoadLuafar()
 	}
 
 	// 2. Load LuaFAR
+#ifdef __APPLE__
+	FARString strLuaFar = g_strFarPath + PluginsFolderName + L"/luafar/luafar.dylib";
+#else
 	FARString strLuaFar = g_strFarPath + PluginsFolderName + L"/luafar/luafar.so";
+#endif
+
 	TranslateFarString<TranslateInstallPath_Share2Lib>(strLuaFar);
 	BOOL LuafarLoaded = dlopen(strLuaFar.GetMB().c_str(), RTLD_LAZY|RTLD_GLOBAL) ? TRUE : FALSE;
 	if (!LuafarLoaded)
 	{
-		Message(MSG_WARNING, 1, Msg::Error, L"Cannot load luafar.so", Msg::Ok);
+		Message(MSG_WARNING, 1, Msg::Error, L"Cannot load luafar.so/.dylib", Msg::Ok);
 	}
 	return LuafarLoaded;
 #endif // #if defined(USELUA)

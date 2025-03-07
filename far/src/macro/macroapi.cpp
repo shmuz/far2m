@@ -287,7 +287,7 @@ std::vector<TVar> FarMacroApi::parseParams(size_t Count)
 			case FMVT_BOOLEAN: Params.emplace_back(val.Boolean); break;
 			case FMVT_DOUBLE:  Params.emplace_back(val.Double);  break;
 			case FMVT_STRING:  Params.emplace_back(val.String);  break;
-			case FMVT_POINTER: Params.emplace_back((intptr_t)val.Pointer); break;
+			case FMVT_POINTER: Params.emplace_back((int64_t)(intptr_t)val.Pointer); break;
 			default:           Params.emplace_back();            break;
 		}
 	}
