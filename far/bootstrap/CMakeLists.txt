@@ -55,30 +55,34 @@ add_custom_command(OUTPUT "${BOOTSTRAP}/farversion.inc"
 )
 
 add_custom_command(TARGET bootstrap
+   POST_BUILD
    COMMAND ${LUACMD} --mkhlf "${SCRIPTS}/FarEng.hlf.m4" > "${BOOTSTRAP}/FarEng.hlf"
    WORKING_DIRECTORY "${SCRIPTS}"
-   DEPENDS "${SCRIPTS}/bootstrap.lua" "${SCRIPTS}/FarEng.hlf.m4"
+   # DEPENDS "${SCRIPTS}/bootstrap.lua" "${SCRIPTS}/FarEng.hlf.m4"
    COMMENT "generating help eng"
 )
 
 add_custom_command(TARGET bootstrap
+    POST_BUILD
    COMMAND ${LUACMD} --mkhlf "${SCRIPTS}/FarRus.hlf.m4" > "${BOOTSTRAP}/FarRus.hlf"
    WORKING_DIRECTORY "${SCRIPTS}"
-   DEPENDS "${SCRIPTS}/bootstrap.lua" "${SCRIPTS}/FarRus.hlf.m4"
+   # DEPENDS "${SCRIPTS}/bootstrap.lua" "${SCRIPTS}/FarRus.hlf.m4"
    COMMENT "generating help rus"
 )
 
 add_custom_command(TARGET bootstrap
+   POST_BUILD
    COMMAND ${LUACMD} --mkhlf "${SCRIPTS}/FarHun.hlf.m4" > "${BOOTSTRAP}/FarHun.hlf"
    WORKING_DIRECTORY "${SCRIPTS}"
-   DEPENDS "${SCRIPTS}/bootstrap.lua" "${SCRIPTS}/FarHun.hlf.m4"
+   # DEPENDS "${SCRIPTS}/bootstrap.lua" "${SCRIPTS}/FarHun.hlf.m4"
    COMMENT "generating help hun"
 )
 
 add_custom_command(TARGET bootstrap
+   POST_BUILD
    COMMAND ${LUACMD} --mkhlf "${SCRIPTS}/FarUkr.hlf.m4" > "${BOOTSTRAP}/FarUkr.hlf"
    WORKING_DIRECTORY "${SCRIPTS}"
-   DEPENDS "${SCRIPTS}/bootstrap.lua" "${BOOTSTRAP}/FarUkr.hlf"
+   # DEPENDS "${SCRIPTS}/bootstrap.lua" "${BOOTSTRAP}/FarUkr.hlf"
    COMMENT "generating help ukr"
 )
 
