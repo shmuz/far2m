@@ -101,11 +101,13 @@ add_custom_command(OUTPUT "${BOOTSTRAP}/lang.inc"
 
 add_custom_command(TARGET bootstrap
     POST_BUILD
+    # DEPENDS "${LNGFILES}"
     COMMAND "cp" "${BOOTSTRAP}/*.lng" "${INSTALL_DIR}"
 )
 
 add_custom_command(TARGET bootstrap
     POST_BUILD
+    # DEPENDS "${HLFFILES}"
     COMMAND "cp" "${BOOTSTRAP}/*.hlf" "${INSTALL_DIR}"
 )
 

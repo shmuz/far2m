@@ -73,5 +73,6 @@ set_target_properties(${PROJECT_NAME}
         SUFFIX ".far-plug-wide")
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    # DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/configs
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/src/configs "${INSTALL_DIR}/Plugins/${PROJECT_NAME}"
 )
