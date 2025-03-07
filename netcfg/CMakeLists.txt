@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.5)
-
 project(netcfg)
 
 get_directory_property(PROJECT_SOURCE_DIR DIRECTORY ../ DEFINITION PROJECT_SOURCE_DIR)
