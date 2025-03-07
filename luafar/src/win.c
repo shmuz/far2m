@@ -727,9 +727,9 @@ static int win_stat(lua_State *L)
 	PutNumToTable(L, "blksize", St.st_blksize);
 	PutNumToTable(L, "blocks",  St.st_blocks);
 #ifdef __APPLE__
-	PutNumToTable(L, "atim",    St.st_atim.tv_sec + St.st_atimespec.tv_nsec/1E9);
-	PutNumToTable(L, "mtim",    St.st_mtim.tv_sec + St.st_mtimespec.tv_nsec/1E9);
-	PutNumToTable(L, "ctim",    St.st_ctim.tv_sec + St.st_ctimespec.tv_nsec/1E9);
+	PutNumToTable(L, "atim",    St.st_atimespec.tv_sec + St.st_atimespec.tv_nsec/1E9);
+	PutNumToTable(L, "mtim",    St.st_mtimespec.tv_sec + St.st_mtimespec.tv_nsec/1E9);
+	PutNumToTable(L, "ctim",    St.st_ctimespec.tv_sec + St.st_ctimespec.tv_nsec/1E9);
 #else
 	PutNumToTable(L, "atim",    St.st_atim.tv_sec + St.st_atim.tv_nsec/1E9);
 	PutNumToTable(L, "mtim",    St.st_mtim.tv_sec + St.st_mtim.tv_nsec/1E9);
