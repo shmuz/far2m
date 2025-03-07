@@ -40,7 +40,8 @@ set(SOURCES
 )
 
 if (NOT (${CMAKE_SYSTEM_NAME} MATCHES "DragonFly" OR
-         ${CMAKE_SYSTEM_NAME} MATCHES "Android"))
+         ${CMAKE_SYSTEM_NAME} MATCHES "Android" OR
+         ${CMAKE_SYSTEM_NAME} MATCHES "Darwin"))
   set(SOURCES ${SOURCES} src/mytimer.c)
 endif()
 

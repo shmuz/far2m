@@ -6210,7 +6210,7 @@ static int luaopen_far (lua_State *L)
 	luaopen_far_host(L);
 	lua_setfield(L, -2, "Host");
 
-#if !defined(__DragonFly__) && !defined(__ANDROID__)
+#if !defined(__DragonFly__) && !defined(__ANDROID__) && !defined(__APPLE__)
 	lua_pushcfunction(L, luaopen_timer);
 	lua_call(L, 0, 1);
 	lua_setfield(L, -2, "Timer");
