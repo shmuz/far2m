@@ -52,7 +52,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${LIBLUA_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} utils)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  target_link_libraries(${PROJECT_NAME} far2m luajit-5.1)
+  target_link_libraries(${PROJECT_NAME} far2m ${LIBLUA_LIBRARIES})
 endif()
 
 if (LibUuid_FOUND)
