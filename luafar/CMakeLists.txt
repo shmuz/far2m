@@ -49,12 +49,16 @@ add_library (${PROJECT_NAME} SHARED ${SOURCES})
 set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 11)
 target_include_directories(${PROJECT_NAME} PRIVATE ${LIBLUA_INCLUDE_DIRS})
 
+target_link_libraries(${PROJECT_NAME} utils)
+
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  target_link_libraries(${PROJECT_NAME} far2m luajit-5.1)
+endif()
+
 if (LibUuid_FOUND)
   set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DHAS_UUID")
   target_include_directories(${PROJECT_NAME} PRIVATE ${LIBUUID_INCLUDE_DIRS})
-  target_link_libraries(${PROJECT_NAME} ${LIBUUID_LIBRARIES} utils)
-else()
-  target_link_libraries(${PROJECT_NAME} utils)
+  target_link_libraries(${PROJECT_NAME} ${LIBUUID_LIBRARIES})
 endif()
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE -DWINPORT_DIRECT -DFAR_DONT_USE_INTERNALS)

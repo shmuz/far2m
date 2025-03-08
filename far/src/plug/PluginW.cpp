@@ -465,17 +465,12 @@ static BOOL LoadLuafar()
 	}
 
 	// 2. Load LuaFAR
-#ifdef __APPLE__
-	FARString strLuaFar = g_strFarPath + PluginsFolderName + L"/luafar/luafar.dylib";
-#else
 	FARString strLuaFar = g_strFarPath + PluginsFolderName + L"/luafar/luafar.so";
-#endif
-
 	TranslateFarString<TranslateInstallPath_Share2Lib>(strLuaFar);
 	BOOL LuafarLoaded = dlopen(strLuaFar.GetMB().c_str(), RTLD_LAZY|RTLD_GLOBAL) ? TRUE : FALSE;
 	if (!LuafarLoaded)
 	{
-		Message(MSG_WARNING, 1, Msg::Error, L"Cannot load luafar.so/.dylib", Msg::Ok);
+		Message(MSG_WARNING, 1, Msg::Error, L"Cannot load luafar.so", Msg::Ok);
 	}
 	return LuafarLoaded;
 #endif // #if defined(USELUA)
