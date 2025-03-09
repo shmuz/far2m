@@ -235,6 +235,9 @@ set_target_properties(far2m
     PROPERTIES
     ENABLE_EXPORTS TRUE)
 
+add_library(far2m_interface INTERFACE)
+target_link_libraries(far2m_interface INTERFACE far2m)
+
 if (DEFINED USELUA AND ${CMAKE_SYSTEM_NAME} MATCHES "Android")
     set (LIBLUAJIT -Wl,--whole-archive ${CMAKE_CURRENT_SOURCE_DIR}/libluajit.a -Wl,--no-whole-archive)
     target_link_libraries(far2m PUBLIC ${LIBLUAJIT})
