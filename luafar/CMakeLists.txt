@@ -45,7 +45,12 @@ if (NOT (${CMAKE_SYSTEM_NAME} MATCHES "DragonFly" OR
   set(SOURCES ${SOURCES} src/mytimer.c)
 endif()
 
-add_library (${PROJECT_NAME} SHARED ${SOURCES})
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  add_library (${PROJECT_NAME} MODULE ${SOURCES})
+else()
+  add_library (${PROJECT_NAME} SHARED ${SOURCES})
+endif()
+
 set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 11)
 target_include_directories(${PROJECT_NAME} PRIVATE ${LIBLUA_INCLUDE_DIRS})
 
