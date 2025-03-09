@@ -30,11 +30,12 @@ target_include_directories(${PROJECT_NAME} PRIVATE ../far/far2sdk)
 
 set(INSTALL_DIR "${INSTALL_DIR}/Plugins/luafar/${PROJECT_NAME}")
 
-if (${CMAKE_SYSTEM_NAME} MATCHES "Android")
+set(LINK_FLAGS "")
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    target_link_libraries(${PROJECT_NAME} PUBLIC luafar)
+elseif (${CMAKE_SYSTEM_NAME} MATCHES "Android")
     target_link_libraries(${PROJECT_NAME} PUBLIC luafar)
     set(LINK_FLAGS "-Wl,-rpath,../../")
-else()
-    set(LINK_FLAGS "")
 endif()
 
 set_target_properties(${PROJECT_NAME}
