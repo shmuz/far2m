@@ -46,7 +46,7 @@ if (NOT (${CMAKE_SYSTEM_NAME} MATCHES "DragonFly" OR
 endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  add_library (${PROJECT_NAME} MODULE ${SOURCES})
+  add_library (${PROJECT_NAME} SHARED ${SOURCES})
 else()
   add_library (${PROJECT_NAME} SHARED ${SOURCES})
 endif()
