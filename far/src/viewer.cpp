@@ -580,14 +580,17 @@ void Viewer::ShowPage(int nMode)
 				auto visualSelLength = printer->Length(&Strings[I]->lpData[Strings[I]->nSelStart],
 						Strings[I]->nSelEnd - Strings[I]->nSelStart);
 
-				if (!VM.Wrap && AdjustSelPosition
-						&& (visualSelStart < LeftPos
-								|| (visualSelStart > LeftPos
-										&& visualSelStart + visualSelLength > LeftPos + XX2 - X1))) {
-					LeftPos = visualSelStart > 1 ? visualSelStart - 1 : 0;
-					AdjustSelPosition = FALSE;
-					Show();
-					return;
+				if (!VM.Wrap && AdjustSelPosition) {
+					const int correctedWidth = Width - (ViOpt.ShowArrows ? 2 : 0);
+					if (visualSelStart < LeftPos || visualSelStart + visualSelLength > LeftPos + correctedWidth) {
+						int newLeftPos = (visualSelLength <= correctedWidth)
+						? (visualSelStart + visualSelLength / 2 - correctedWidth / 2)
+						: (visualSelStart - (ViOpt.ShowArrows ? 1 : 0));
+						LeftPos = std::clamp(newLeftPos, 0, std::max(StrLen - correctedWidth, 0));
+						AdjustSelPosition = FALSE;
+						Show();
+						return;
+					}
 				}
 
 				int SelX1 = X1, SelSkip = 0;
