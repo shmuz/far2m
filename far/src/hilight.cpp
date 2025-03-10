@@ -770,7 +770,8 @@ void HighlightFiles::HiEdit(int MenuPos)
 						const wchar_t *Mask;
 						HiData.getItem(RealSelectPos)->GetMask(&Mask);
 
-						if (Message(MSG_WARNING, 2, Msg::HighlightTitle, Msg::HighlightAskDel, Mask,
+						if (Message(MSG_WARNING, 2, Msg::HighlightTitle, Msg::HighlightAskDel,
+									HiData.getItem(RealSelectPos)->GetTitle(), Mask,
 									Msg::Delete, Msg::Cancel))
 							break;
 
