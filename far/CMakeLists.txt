@@ -247,7 +247,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
     PRIVATE ${UCHARDET_LIBRARIES})
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     target_link_libraries(far2m
-    PUBLIC ${WINPORT}
+    PRIVATE ${WINPORT}
     PUBLIC dl
     PUBLIC ${UCHARDET_LIBRARIES})
 else()
