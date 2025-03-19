@@ -77,8 +77,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "vtshell.h"
 #include "vtlog.h"
 
-#define ALIGNAS(value, alignment) ((value + (alignment - 1)) & ~(alignment - 1))
-#define ALIGN(value)              ALIGNAS(value, sizeof(void *))
+#define FAR_ALIGNAS(value, alignment) ((value + (alignment - 1)) & ~(alignment - 1))
+#define FAR_ALIGN(value)          FAR_ALIGNAS(value, sizeof(void *))
 
 wchar_t *WINAPI FarItoa(int value, wchar_t *string, int radix)
 {
@@ -2635,7 +2635,7 @@ int WINAPI farMacroControl(DWORD PluginId, int Command, int Param1, void *Param2
 				FARString ErrSrc;
 				bool Ok = Macro.GetMacroParseError(ErrPos, ErrSrc);
 
-				int Size = ALIGN(sizeof(MacroParseResult));
+				int Size = FAR_ALIGN(sizeof(MacroParseResult));
 				size_t stringOffset = Size;
 				Size+= static_cast<int>((ErrSrc.GetLength() + 1) * sizeof(wchar_t));
 

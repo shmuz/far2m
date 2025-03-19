@@ -49,10 +49,10 @@ add_library (${PROJECT_NAME} SHARED ${SOURCES})
 set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 11)
 target_include_directories(${PROJECT_NAME} PRIVATE ${LIBLUA_INCLUDE_DIRS})
 
-target_link_libraries(${PROJECT_NAME} utils)
-
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  target_link_libraries(${PROJECT_NAME} far2m ${LIBLUA_LIBRARIES})
+  target_link_libraries(${PROJECT_NAME} far2m WinPort ${LIBLUA_LIBRARIES})
+else()
+  target_link_libraries(${PROJECT_NAME} utils)
 endif()
 
 if (LibUuid_FOUND)

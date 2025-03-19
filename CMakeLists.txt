@@ -303,9 +303,12 @@ AddPlugin( editorcomp    wide  1 )
 AddPlugin( filecase      wide  1 )
 AddPlugin( incsrch       wide  1 )
 AddPlugin( inside        mb    1 )
-AddPlugin( netcfg        wide  1 )
 AddPlugin( SimpleIndent  wide  1 )
 AddPlugin( tmppanel      wide  1 )
+
+if (NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  AddPlugin( netcfg wide 1 )
+endif()
 
 if (NOT DEFINED MULTIARC OR MULTIARC)
     message(STATUS "MULTIARC plugin enabled")
