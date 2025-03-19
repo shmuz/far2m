@@ -78,6 +78,8 @@ local process, deleteValue, editValue, insertValue
 
 local omit = {}
 local brkeys    = {
+  {BreakKey = 'BACK', goback = true},
+
   {BreakKey = 'Alt+X', exit = true},
 
   {BreakKey = 'F3',    action = function(obj, key, kpath)
@@ -237,27 +239,25 @@ process = function(obj, title, callback)
 
 
   -- show this menu level again after each return from a submenu/function call ...
-  repeat
+  while true do
     local items = makeMenuItems(obj)
     mprops.Title = title .. '  (' .. #items .. ')' .. (omit['function'] and '*' or '')
 
     item, index = far.Menu(mprops, items, brkeys)
     mprops.SelectIndex = index
+    if (not item) or item.goback then break end -- until the user is bored and goes back ;)
 
     -- show submenu/call function ...
-    if item then
-      local key = item.key or (index > 0 and items[index].key) or nil
-      local newtitle = title .. (type(key) == 'number' and '[' .. key .. ']' or '.' .. tostring(key))
-      if item.key ~= nil then
-        if process(obj[key], newtitle, callback) == "exit" then return "exit" end
-      elseif item.action then
-        item.action(obj, key, newtitle, callback)
-      elseif item.exit then
-        return "exit"
-      end
+    local key = item.key or (index > 0 and items[index].key) or nil
+    local newtitle = title .. (type(key) == 'number' and '[' .. key .. ']' or '.' .. tostring(key))
+    if item.key ~= nil then
+      if process(obj[key], newtitle, callback) == "exit" then return "exit" end
+    elseif item.action then
+      item.action(obj, key, newtitle, callback)
+    elseif item.exit then
+      return "exit"
     end
-    -- until the user is bored and goes back ;)
-  until not item
+  end
 end
 
 local function process2(obj, title, callback)
