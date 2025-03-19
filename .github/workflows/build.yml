@@ -124,7 +124,7 @@ jobs:
           # cmake --build _build --config $BUILD_TYPE -j$(sysctl -n hw.logicalcpu)
 
       - name: Test plugin luamacro
-        working-directory: ${{github.workspace}}/_build/install/far.app/Contents/MacOS
+        working-directory: ${{github.workspace}}/_build/install/far2m.app/Contents/MacOS
         shell: bash
         run: FAR2M_STD=- ./far2m --tty lm:test
 
