@@ -441,7 +441,7 @@ static BOOL LoadLuafar()
 
 	// 1. Load Lua
 #ifdef __APPLE__
-	const char *libs[] = {"libluajit-5.1.dylib", "liblua5.1.dylib", nullptr};
+	const char *libs[] = {"/opt/homebrew/lib/libluajit-5.1.dylib", "liblua5.1.dylib", nullptr};
 #else
 	const char *libs[] = {"libluajit-5.1.so", "liblua5.1.so", nullptr};
 #endif
