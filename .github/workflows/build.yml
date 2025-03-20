@@ -80,7 +80,7 @@ jobs:
       - name: Test plugin luamacro
         working-directory: ${{github.workspace}}/_build/install
         shell: bash
-        run: FAR2M_STD=- ./far2m -u ./profile --tty lm:test
+        run: FAR2M_STD=- ./far2m -u ./profile --tty lm:test -set:Panel.Highlight=false
   
   macos14-arm64-clang15:
     if: ${{ !(github.event_name == 'push' && github.ref == 'refs/heads/master' && github.repository != 'shmuz/far2m') }}
@@ -126,5 +126,5 @@ jobs:
       - name: Test plugin luamacro
         working-directory: ${{github.workspace}}/_build/install/far2m.app/Contents/MacOS
         shell: bash
-        run: FAR2M_STD=- ./far2m -u ./profile --tty lm:test
+        run: FAR2M_STD=- ./far2m -u ./profile --tty lm:test -set:Panel.Highlight=false
 
