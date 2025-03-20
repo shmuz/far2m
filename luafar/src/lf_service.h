@@ -3,7 +3,7 @@
 
 #include <windows.h>
 
-#include "luafar.h"
+#include "lf_luafar.h"
 
 static const DWORD LuamacroId = 0x4EBBEFC8;
 

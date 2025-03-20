@@ -10,11 +10,11 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
-#include "bit64.h"
-#include "farlibs.h"
-#include "ustring.h"
-#include "util.h"
-#include "service.h"
+#include "lf_bit64.h"
+#include "lf_farlibs.h"
+#include "lf_string.h"
+#include "lf_util.h"
+#include "lf_service.h"
 
 extern void push_far_flags (lua_State *L); // from generated file farflags.c
 

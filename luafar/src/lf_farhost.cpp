@@ -8,9 +8,9 @@ extern "C"
 #include <lua.h>
 #include <lauxlib.h>
 
-#include "util.h"
-#include "ustring.h"
-#include "service.h"
+#include "lf_util.h"
+#include "lf_string.h"
+#include "lf_service.h"
 
 	void FillPluginPanelItem(lua_State *L, struct PluginPanelItem *pi, int CollectorPos);
 }

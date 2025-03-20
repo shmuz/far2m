@@ -2,9 +2,9 @@
 #include <lua.h>
 #include <lauxlib.h>
 
-#include "service.h"
-#include "ustring.h"
-#include "bit64.h"
+#include "lf_service.h"
+#include "lf_string.h"
+#include "lf_bit64.h"
 
 extern int pcall_msg(lua_State* L, int narg, int nret);
 extern void PushFarMacroValue(lua_State* L, const struct FarMacroValue* val);

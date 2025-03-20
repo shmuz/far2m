@@ -4,7 +4,7 @@
 #include "farplug-wide.h"
 
 #include <lua.h>
-#include "luafar.h"
+#include "lf_luafar.h"
 
 /* convert a stack index to positive */
 #define abs_index(L,i) ((i)>0 || (i)<=LUA_REGISTRYINDEX ? (i):lua_gettop(L)+(i)+1)

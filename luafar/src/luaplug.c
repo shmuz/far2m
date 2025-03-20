@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 #define FAR_DONT_USE_INTERNALS
 #include <lua.h>
-#include "luafar.h"
+#include "lf_luafar.h"
 
 #ifndef LUAPLUG
 #define LUAPLUG __attribute__ ((visibility ("default")))

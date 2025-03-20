@@ -4,9 +4,9 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
-#include "ustring.h"
-#include "util.h"
-#include "bit64.h"
+#include "lf_string.h"
+#include "lf_util.h"
+#include "lf_bit64.h"
 
 #define TYPE_USERCONTROL "far_usercontrol"
 

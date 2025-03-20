@@ -6,8 +6,8 @@
 #include <lua.h>
 #include <lauxlib.h>
 
-#include "util.h"
-#include "ustring.h"
+#include "lf_util.h"
+#include "lf_string.h"
 
 static const char strFileHandle[] = "sysutils.file_handle";
 

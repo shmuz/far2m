@@ -86,7 +86,7 @@ THE SOFTWARE.
 #include <lauxlib.h>
 #include <lualib.h>
 
-#include "ustring.h"
+#include "lf_string.h"
 
 /*
 ** length modifier for integer conversions ** in 'string.format' and

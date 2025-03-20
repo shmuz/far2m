@@ -7,8 +7,8 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
-#include "ustring.h"
-#include "util.h"
+#include "lf_string.h"
+#include "lf_util.h"
 
 int SysErrorReturn(lua_State *L)
 {

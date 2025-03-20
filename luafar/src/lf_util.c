@@ -1,8 +1,8 @@
 #include <lua.h>
 #include <lauxlib.h>
 
-#include "ustring.h"
-#include "util.h"
+#include "lf_string.h"
+#include "lf_util.h"
 
 int Log(lua_State *L, const char* Format, ...)
 {

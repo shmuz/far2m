@@ -4,7 +4,7 @@
 #include <windows.h>
 #include <lua.h>
 
-#include "luafar.h"
+#include "lf_luafar.h"
 
 LUALIB_API int luaopen_ustring(lua_State *L);
 
