@@ -50,7 +50,7 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 11)
 target_include_directories(${PROJECT_NAME} PRIVATE ${LIBLUA_INCLUDE_DIRS})
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  target_link_libraries(${PROJECT_NAME} utils WinPort ${LIBLUA_LIBRARIES})
+  target_link_libraries(${PROJECT_NAME} WinPort ${LIBLUA_LIBRARIES})
 else()
   target_link_libraries(${PROJECT_NAME} utils)
 endif()
