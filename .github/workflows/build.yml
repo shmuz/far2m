@@ -15,7 +15,7 @@ on:
   # run on pull request to master
   pull_request:
     branches:
-      - masters
+      - master
   
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
