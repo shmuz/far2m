@@ -40,11 +40,8 @@ class ConsoleTitle
 private:
 	FARString m_OldTitle;
 	static bool m_TitleModified;
-	static DWORD m_ShowTime;
+	static DWORD m_LastSetTime;
 	static FARString m_FarTitle;
-
-private:
-	static FARString ExpandFormat(const FARString &Format, const FARString &DefaultTitle);
 
 public:
 	ConsoleTitle(const wchar_t *title = nullptr);

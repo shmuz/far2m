@@ -43,10 +43,41 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdarg.h>
 
 bool ConsoleTitle::m_TitleModified = false;
-DWORD ConsoleTitle::m_ShowTime = 0;
+DWORD ConsoleTitle::m_LastSetTime = 0;
 FARString ConsoleTitle::m_FarTitle;
 
 CriticalSection TitleCS;
+
+static FARString FormatFarTitle(const FARString &CurrentTitle)
+{
+	static const FARString strVer(FAR_BUILD);
+	static const FARString strPlatform(FAR_PLATFORM);
+	/*
+		%State    - current window title
+		%Ver      - 2.3.102-beta
+		%Platform - x86
+		%Backend  - gui
+		%Admin    - Msg::FarTitleAddonsAdmin
+	*/
+	const auto &wsBackend = MB2Wide(WinPortBackendInfo(-1));
+	FARString hostname, username;
+	apiGetEnvironmentVariable("HOSTNAME", hostname);
+	apiGetEnvironmentVariable("USER", username);
+
+	FARString Target = Opt.strWindowTitle;
+	ReplaceStrings(Target, L"%Ver", strVer);
+	ReplaceStrings(Target, L"%Platform", strPlatform);
+	ReplaceStrings(Target, L"%Backend", wsBackend.c_str());
+	ReplaceStrings(Target, L"%Admin", (Opt.IsUserAdmin ? Msg::FarTitleAddonsAdmin : L""));
+	ReplaceStrings(Target, L"%Host", hostname);
+	ReplaceStrings(Target, L"%User", username);
+	// сделаем эту замену последней во избежание случайных совпадений
+	// подстрок из CurrentTitle с другими переменными
+	ReplaceStrings(Target, L"%State", CurrentTitle);
+	RemoveExternalSpaces(Target);
+
+	return Target;
+}
 
 ConsoleTitle::ConsoleTitle(const wchar_t *title)
 {
@@ -74,55 +105,23 @@ void ConsoleTitle::Set(const wchar_t *fmt, ...)
 	SetFarTitle(msg);
 }
 
-FARString ConsoleTitle::ExpandFormat(const FARString &Format, const FARString &DefaultTitle)
-{
-	static const FARString strVer(FAR_BUILD);
-	static const FARString strPlatform(FAR_PLATFORM);
-	/*
-		%State    - default window title
-		%Ver      - 2.3.102-beta
-		%Platform - x86
-		%Backend  - gui
-		%Admin    - Msg::FarTitleAddonsAdmin
-	*/
-	const auto &wsBackend = MB2Wide(WinPortBackendInfo(-1));
-	FARString hostname, username;
-	apiGetEnvironmentVariable("HOSTNAME", hostname);
-	apiGetEnvironmentVariable("USER", username);
-
-	FARString Target = Format;
-	ReplaceStrings(Target, L"%Ver", strVer);
-	ReplaceStrings(Target, L"%Platform", strPlatform);
-	ReplaceStrings(Target, L"%Backend", wsBackend.c_str());
-	ReplaceStrings(Target, L"%Admin", (Opt.IsUserAdmin ? Msg::FarTitleAddonsAdmin : L""));
-	ReplaceStrings(Target, L"%Host", hostname);
-	ReplaceStrings(Target, L"%User", username);
-	// сделаем эту замену последней во избежание случайных совпадений
-	// подстрок из DefaultTitle с другими переменными
-	ReplaceStrings(Target, L"%State", DefaultTitle);
-	RemoveExternalSpaces(Target);
-
-	return Target;
-}
-
 void ConsoleTitle::SetFarTitle(const wchar_t *Title, bool Force, bool Restoring)
 {
 	CriticalSectionLock Lock(TitleCS);
 
-	FARString strFarState(NullToEmpty(Title), 0x100);
-	m_FarTitle = Restoring ? strFarState : ExpandFormat(Opt.strWindowTitle, strFarState);
+	FARString CurrentTitle(NullToEmpty(Title), 0x100);
+	m_FarTitle = Restoring ? CurrentTitle : FormatFarTitle(CurrentTitle);
 	m_TitleModified = true;
 
-	FARString CurTitle;
-	Console.GetTitle(CurTitle);
+	FARString ConsTitle;
+	Console.GetTitle(ConsTitle);
 
-	if (CurTitle != m_FarTitle &&
-		!(CtrlObject->Macro.IsExecuting() && CtrlObject->Macro.IsOutputDisabled()))
+	if (ConsTitle != m_FarTitle && !CtrlObject->Macro.IsOutputDisabled())
 	{
 		auto CurTime = WINPORT(GetTickCount)();
-		// if (CurTime - m_ShowTime > RedrawTimeout || Force)
+		// if (CurTime - m_LastSetTime > RedrawTimeout || Force)
 		{
-			m_ShowTime = CurTime;
+			m_LastSetTime = CurTime;
 			Console.SetTitle(m_FarTitle);
 			m_TitleModified = true;
 		}
