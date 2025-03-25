@@ -189,11 +189,6 @@ add_subdirectory (utils)
 add_subdirectory (far)
 add_dependencies (far2m lua)
 
-set_target_properties(lua
-  PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${TOOLS_DIR}"
-)
-
 if (NOT ${USEWX})
     message(STATUS "Building without GUI/wxWidgets backend due to USEWX=${USEWX}")
 else()

@@ -441,22 +441,28 @@ static BOOL LoadLuafar()
 
 	// 1. Load Lua
 #ifdef __APPLE__
-	const char *libs[] = {"/opt/homebrew/lib/libluajit-5.1.dylib", "liblua5.1.dylib", nullptr};
+	const char *jit[] =
+		{ "libluajit-5.1.dylib", "/opt/homebrew/lib/libluajit-5.1.dylib", nullptr };
+	const char *lua[] =
+		{ "liblua5.1.dylib", "/opt/homebrew/lib/liblua5.1.dylib", nullptr };
 #else
-	const char *libs[] = {"libluajit-5.1.so", "liblua5.1.so", nullptr};
+	const char *jit[] =
+		{ "libluajit-5.1.so", "/usr/local/lib/libluajit-5.1.so", "/usr/lib/libluajit-5.1.so", nullptr };
+	const char *lua[] =
+		{ "liblua5.1.so", "/usr/local/lib/liblua5.1.so", "/usr/lib/liblua5.1.so", nullptr };
 #endif
 
-	void *handle = nullptr;
-
+	const char **libs[] { jit, lua };
 	auto str = getenv("FARPLAINLUA");
-	if (str && !strcmp(str, "1"))
-	{
+	if (str && (0 == strcmp(str, "1") || 0 == strcasecmp(str, "yes")))
 		std::swap(libs[0], libs[1]);
-	}
-	for (auto ptr=libs; *ptr; ptr++)
+
+	void *handle = nullptr;
+	for (size_t i=0; i < ARRAYSIZE(libs) && !handle; i++)
 	{
-		if ((handle = dlopen(*ptr, RTLD_LAZY|RTLD_GLOBAL)))
-			break;
+		for (const char **ptr=libs[i]; *ptr; ptr++)
+			if ((handle = dlopen(*ptr, RTLD_LAZY|RTLD_GLOBAL)))
+				break;
 	}
 	if (!handle)
 	{
