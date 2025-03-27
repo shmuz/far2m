@@ -5128,13 +5128,13 @@ static int far_MakeMenuItems (lua_State *L)
 
 			lua_getglobal(L, "tostring");          //+2
 
-			if (i == 1 && lua_type(L,-1) != LUA_TFUNCTION)
+			if (lua_type(L,-1) != LUA_TFUNCTION)
 				luaL_error(L, "global `tostring' is not function");
 
 			lua_pushvalue(L, i);                   //+3
 
 			if (0 != lua_pcall(L, 1, 1, 0))         //+2 (items,str)
-				luaL_error(L, lua_tostring(L, -1));
+				luaL_error(L, lua_tostring(L,-1) ? lua_tostring(L,-1) : "tostring() failed");
 
 			if (lua_type(L, -1) != LUA_TSTRING)
 				luaL_error(L, "tostring() returned a non-string value");
