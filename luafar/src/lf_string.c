@@ -143,16 +143,20 @@ BOOL GetOptBoolFromTable(lua_State *L, const char* key, BOOL dflt)
 wchar_t* convert_multibyte_string (lua_State *L, int pos, UINT codepage,
 	DWORD dwFlags, size_t* pTrgSize, int can_raise)
 {
+Log(L, "%s: %d", __FUNCTION__, __LINE__);
 	if (pos < 0) pos += lua_gettop(L) + 1;
 
+Log(L, "%s: %d", __FUNCTION__, __LINE__);
 	if (!can_raise && !lua_isstring(L, pos))
 		return NULL;
 
 	size_t sourceLen;
+Log(L, "%s: %d", __FUNCTION__, __LINE__);
 	const char* source = luaL_checklstring(L, pos, &sourceLen);
 	if (!pTrgSize)
 		++sourceLen;
 
+Log(L, "%s: %d", __FUNCTION__, __LINE__);
 	int size = WINPORT(MultiByteToWideChar)(
 		codepage,     // code page
 		dwFlags,      // character-type options
@@ -161,22 +165,32 @@ wchar_t* convert_multibyte_string (lua_State *L, int pos, UINT codepage,
 		NULL,         // lpWideCharStr, address of wide-character buffer
 		0             // size of buffer (in wide characters)
 	);
+Log(L, "%s: %d", __FUNCTION__, __LINE__);
 	if (size == 0 && sourceLen != 0) {
+Log(L, "%s: %d", __FUNCTION__, __LINE__);
 		if (can_raise)
+Log(L, "%s: %d", __FUNCTION__, __LINE__),
 			luaL_argerror(L, pos, "invalid multibyte string");
 		return NULL;
 	}
 
+Log(L, "%s: %d", __FUNCTION__, __LINE__);
 	wchar_t* target = (wchar_t*)lua_newuserdata(L, (size+1) * sizeof(wchar_t));
+Log(L, "%s: %d", __FUNCTION__, __LINE__);
 	WINPORT(MultiByteToWideChar)(codepage, dwFlags, source, sourceLen, target, size);
+Log(L, "%s: %d", __FUNCTION__, __LINE__);
 	target[size] = L'\0';
+Log(L, "%s: %d", __FUNCTION__, __LINE__);
 	lua_replace(L, pos);
+Log(L, "%s: %d", __FUNCTION__, __LINE__);
 	if (pTrgSize) *pTrgSize = size;
+Log(L, "%s: %d", __FUNCTION__, __LINE__);
 	return target;
 }
 
 wchar_t* check_utf8_string (lua_State *L, int pos, size_t* pTrgSize)
 {
+	Log(L, "check_utf8_string");
 	return convert_multibyte_string(L, pos, CP_UTF8, 0, pTrgSize, TRUE);
 }
 
