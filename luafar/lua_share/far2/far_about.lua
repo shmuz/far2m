@@ -15,8 +15,8 @@ local function os_release()
 end
 
 local function FarAbout()
-  local Props = { Title="About far2m"; Bottom="CtrlC: Copy"; HelpTopic=":FarAbout"; }
-  local Items, Bkeys = {}, { {BreakKey="CtrlC"} }
+  local Props = { Title="About far2m"; Bottom="CtrlC, CtrlIns: Copy"; HelpTopic=":FarAbout"; }
+  local Items, Bkeys = {}, "CtrlC CtrlIns"
   local Array = {}
 
   local AddEmptyLine = function()
@@ -94,7 +94,7 @@ local function FarAbout()
   end
 
   local item = far.Menu(Props, Items, Bkeys)
-  if item and item.BreakKey == "CtrlC" then
+  if item and item.BreakKey then
     table.insert(Array, "")
     far.CopyToClipboard(table.concat(Array, "\n"))
   end
