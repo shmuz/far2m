@@ -6,7 +6,6 @@
 
 int Log(lua_State *L, const char* Format, ...)
 {
-#ifdef __APPLE__
 	va_list valist;
 	va_start(valist, Format);
 
@@ -33,9 +32,6 @@ int Log(lua_State *L, const char* Format, ...)
 	}
 	va_end(valist);
 	return N;
-#else
-  return 0;
-#endif
 }
 
 // stack[-2] - table
