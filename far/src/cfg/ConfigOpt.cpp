@@ -53,6 +53,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pick_color256.hpp"
 #include "pick_colorRGB.hpp"
 #include "strmix.hpp"
+#include "MaskGroups.hpp"
 
 void SanitizeHistoryCounts();
 void SanitizeIndentationCounts();
@@ -599,9 +600,6 @@ static void ConfigOptFromCmdLine()
 
 void ConfigOptLoad()
 {
-	FARString strKeyNameFromReg;
-	FARString strPersonalPluginsPath;
-
 	ConfigReader cfg_reader;
 
 	/* <ПРЕПРОЦЕССЫ> *************************************************** */
@@ -722,6 +720,7 @@ void ConfigOptLoad()
 		                   Opt.FindOpt.OutColumns);
 	}
 
+	CheckMaskGroups();
 	FileFilter::InitFilter(cfg_reader);
 
 	g_config_ready = true;
