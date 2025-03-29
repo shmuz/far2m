@@ -109,7 +109,7 @@ private:
 
 	static bool AssignMacroKey(void *Param);
 	static bool CheckAll(FARMACROAREA Area, DWORD CurFlags);
-	static bool CheckCmdLine(int CmdLength,DWORD Flags);
+	static bool CheckCmdLine(DWORD Flags);
 	static bool CheckEditSelected(FARMACROAREA Area, DWORD CurFlags);
 	static bool CheckFileFolder(DWORD CurFlags, bool IsPassivePanel);
 	static bool CheckPanel(int PanelMode,DWORD CurFlags, bool IsPassivePanel);

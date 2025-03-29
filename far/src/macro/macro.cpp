@@ -1221,12 +1221,10 @@ bool KeyMacro::CheckEditSelected(FARMACROAREA Area, DWORD CurFlags)
 	return true;
 }
 
-bool KeyMacro::CheckCmdLine(int CmdLength, DWORD CurFlags)
+bool KeyMacro::CheckCmdLine(DWORD CurFlags)
 {
-	if (((CurFlags&MFLAGS_EMPTYCOMMANDLINE) && CmdLength) || ((CurFlags&MFLAGS_NOTEMPTYCOMMANDLINE) && CmdLength == 0))
-		return false;
-
-	return true;
+	auto Len = CtrlObject->CmdLine->GetLength();
+	return !((CurFlags&MFLAGS_EMPTYCOMMANDLINE) && Len) && !((CurFlags&MFLAGS_NOTEMPTYCOMMANDLINE) && !Len);
 }
 
 bool KeyMacro::CheckPanel(int PanelMode, DWORD CurFlags, bool IsPassivePanel)
@@ -1267,7 +1265,7 @@ bool KeyMacro::CheckAll(FARMACROAREA Area, DWORD CurFlags)
 {
 	// проверка на пусто/не пусто в ком.строке (а в редакторе? :-)
 	if (CurFlags&(MFLAGS_EMPTYCOMMANDLINE|MFLAGS_NOTEMPTYCOMMANDLINE))
-		if (CtrlObject->CmdLine && !CheckCmdLine(CtrlObject->CmdLine->GetLength(), CurFlags))
+		if (CtrlObject->CmdLine && !CheckCmdLine(CurFlags))
 			return false;
 
 	FilePanels *Cp = CtrlObject->Cp();
