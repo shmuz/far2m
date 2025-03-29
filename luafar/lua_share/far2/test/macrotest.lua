@@ -777,6 +777,7 @@ local function test_Far_GetConfig()
     "Cmdline.AutoComplete",
     "Cmdline.DelRemovesBlocks",
     "Cmdline.EditBlock",
+    "Cmdline.ImitateNumpadKeys",
     "Cmdline.PromptFormat",
     "Cmdline.Shell",
     "Cmdline.Splitter",

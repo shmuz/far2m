@@ -152,6 +152,7 @@ static struct FARConfig
 	{true,  NSecCmdline, "Splitter",                    &Opt.CmdLine.Splitter, 1, REG_BOOLEAN},
 	{true,  NSecCmdline, "WaitKeypress",                &Opt.CmdLine.WaitKeypress, 1},
 	{true,  NSecCmdline, "VTLogLimit",                  &Opt.CmdLine.VTLogLimit, 5000},
+	{true,  NSecCmdline, "ImitateNumpadKeys",           &Opt.CmdLine.ImitateNumpadKeys, 1, REG_BOOLEAN},
 
 	{true,  NSecInterface, "Mouse",                     &Opt.Mouse, 1, REG_BOOLEAN},
 	{false, NSecInterface, "UseVk_oem_x",               &Opt.UseVk_oem_x, 1, REG_BOOLEAN},

@@ -2235,7 +2235,23 @@ int FileList::ProcessKey(FarKey Key)
 		case KEY_CTRLSHIFTNUMPAD3:
 			ProcessEnter(0, 0, !(Key & KEY_SHIFT), false, OFP_ALTERNATIVE);
 			return TRUE;
+
 		default:
+			if (Opt.CmdLine.ImitateNumpadKeys && !CtrlObject->CmdLine->GetLength()) {
+				if ((Key == L'*') || (Key == L'+') || (Key == L'-')) {
+					if (Key == L'*') {
+						SelectFiles(SELECT_INVERT);
+						return TRUE;
+					} else if (Key == L'+') {
+						SelectFiles(SELECT_ADD);
+						return TRUE;
+					} else if (Key == L'-') {
+						SelectFiles(SELECT_REMOVE);
+						return TRUE;
+					}
+				}
+			}
+
 			if (((Key >= KEY_ALT_BASE + 0x01 && Key <= KEY_ALT_BASE + 65535)
 						|| (Key >= KEY_ALTSHIFT_BASE + 0x01 && Key <= KEY_ALTSHIFT_BASE + 65535))
 					&& (Key & ~KEY_ALTSHIFT_BASE) != KEY_BS && (Key & ~KEY_ALTSHIFT_BASE) != KEY_TAB
