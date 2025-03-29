@@ -1865,6 +1865,206 @@ static int far_Menu(lua_State *L)
 	return 2;
 }
 
+#ifdef __APPLE__
+// Return:   -1 if escape pressed, else - button number chosen (0 based).
+int LF_Message(lua_State* L,
+	const wchar_t* aMsg,      // if multiline, then lines must be separated by '\n'
+	const wchar_t* aTitle,
+	const wchar_t* aButtons,  // if multiple, then captions must be separated by ';'
+	const char*    aFlags,
+	const wchar_t* aHelpTopic,
+	const GUID*    aMessageGuid)
+{
+Log(L, 	"aMsg=%ls, aTitle=%ls, aButtons=%ls, aFlags=%s, aHelpTopic=%ls, aMessageGuid=%p",
+		aMsg       ? aMsg       : L"nullptr",
+    aTitle     ? aTitle     : L"nullptr",
+    aButtons   ? aButtons   : L"nullptr",
+    aFlags     ? aFlags     :  "nullptr",
+    aHelpTopic ? aHelpTopic : L"nullptr",
+    aMessageGuid);
+
+	const wchar_t **items, **pItems;
+	wchar_t** allocLines;
+	int nAlloc;
+	wchar_t *lastDelim, *MsgCopy, *start, *pos;
+
+	TPluginData *pd = GetPluginData(L);
+Log(L, "TPluginData *pd = %p", pd);
+
+	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	int ret = WINPORT(GetConsoleScreenBufferInfo)(NULL, &csbi);//GetStdHandle(STD_OUTPUT_HANDLE)
+Log(L, "GetConsoleScreenBufferInfo() returned: %d", ret);
+
+	const int max_len   = ret ? csbi.srWindow.Right - csbi.srWindow.Left+1-14 : 66;
+	const int max_lines = ret ? csbi.srWindow.Bottom - csbi.srWindow.Top+1-5 : 20;
+Log(L, "max_len=%d, max_lines=%d", max_len, max_lines);
+
+	int num_lines = 0, num_buttons = 0;
+	uint64_t Flags = 0;
+	// Buttons
+	wchar_t *BtnCopy = NULL, *ptr = NULL;
+	int wrap = !(aFlags && strchr(aFlags, 'n'));
+
+	if (*aButtons == L';')
+	{
+		const wchar_t* p = aButtons + 1;
+
+		if (!wcscasecmp(p, L"Ok"))                    Flags = FMSG_MB_OK;
+		else if (!wcscasecmp(p, L"OkCancel"))         Flags = FMSG_MB_OKCANCEL;
+		else if (!wcscasecmp(p, L"AbortRetryIgnore")) Flags = FMSG_MB_ABORTRETRYIGNORE;
+		else if (!wcscasecmp(p, L"YesNo"))            Flags = FMSG_MB_YESNO;
+		else if (!wcscasecmp(p, L"YesNoCancel"))      Flags = FMSG_MB_YESNOCANCEL;
+		else if (!wcscasecmp(p, L"RetryCancel"))      Flags = FMSG_MB_RETRYCANCEL;
+		else
+			while(*aButtons == L';') aButtons++;
+	}
+Log(L, "Flags = 0x%X", (unsigned)Flags);
+
+	if (Flags == 0)
+	{
+		// Buttons: 1-st pass, determining number of buttons
+		BtnCopy = _wcsdup(aButtons);
+		ptr = BtnCopy;
+
+		while(*ptr && (num_buttons < 64))
+		{
+			while(*ptr == L';')
+				ptr++; // skip semicolons
+
+			if (*ptr)
+			{
+				++num_buttons;
+				ptr = wcschr(ptr, L';');
+
+				if (!ptr) break;
+			}
+		}
+	}
+
+	items = (const wchar_t**) malloc((1+max_lines+num_buttons) * sizeof(wchar_t*));
+	allocLines = (wchar_t**) malloc(max_lines * sizeof(wchar_t*)); // array of pointers to allocated lines
+Log(L, "items=%p, allocLines=%p", items, allocLines);
+
+	nAlloc = 0;                                                    // number of allocated lines
+	pItems = items;
+	// Title
+	*pItems++ = aTitle;
+	// Message lines
+	lastDelim = NULL;
+	MsgCopy = _wcsdup(aMsg);
+	start = pos = MsgCopy;
+
+Log(L, "MsgCopy = %ls", MsgCopy);
+
+	while(num_lines < max_lines)
+	{
+Log(L, "while(num_lines < max_lines)");
+		if (*pos == 0)                          // end of the entire message
+		{
+			*pItems++ = start;
+			++num_lines;
+			break;
+		}
+		else if (*pos == L'\n')                 // end of a message line
+		{
+			*pItems++ = start;
+			*pos = L'\0';
+			++num_lines;
+			start = ++pos;
+			lastDelim = NULL;
+		}
+		else if (pos-start < max_len)            // characters inside the line
+		{
+			if (wrap && !iswalnum(*pos) && *pos != L'_' && *pos != L'\'' && *pos != L'\"')
+				lastDelim = pos;
+
+			pos++;
+		}
+		else if (wrap)                          // the 1-st character beyond the line
+		{
+			size_t len;
+			wchar_t **q;
+			pos = lastDelim ? lastDelim+1 : pos;
+			len = pos - start;
+			q = &allocLines[nAlloc++]; // line allocation is needed
+			*pItems++ = *q = (wchar_t*) malloc((len+1)*sizeof(wchar_t));
+			wcsncpy(*q, start, len);
+			(*q)[len] = L'\0';
+			++num_lines;
+			start = pos;
+			lastDelim = NULL;
+		}
+		else
+			pos++;
+	}
+
+	if (*aButtons != L';')
+	{
+Log(L, "if (*aButtons != L';')");
+		// Buttons: 2-nd pass.
+		int i;
+		ptr = BtnCopy;
+
+		for(i=0; i < num_buttons; i++)
+		{
+Log(L, "for(i=0; i < num_buttons; i++)");
+			while(*ptr == L';')
+				++ptr;
+
+			if (*ptr)
+			{
+				*pItems++ = ptr;
+				ptr = wcschr(ptr, L';');
+
+				if (ptr)
+					*ptr++ = 0;
+				else
+					break;
+			}
+			else break;
+		}
+	}
+
+	// Flags
+	if (aFlags)
+	{
+		if (strchr(aFlags, 'w')) Flags |= FMSG_WARNING;
+		if (strchr(aFlags, 'e')) Flags |= FMSG_ERRORTYPE;
+		if (strchr(aFlags, 'k')) Flags |= FMSG_KEEPBACKGROUND;
+		if (strchr(aFlags, 'l')) Flags |= FMSG_LEFTALIGN;
+	}
+
+Log(L, "PluginNumber=%p, Id=%p, Flags=0x%X, HelpTopic=%ls, Items=%p, ItemsNumber=%d, ButtonsNumber=%d",
+	(void*)pd->ModuleNumber,
+	aMessageGuid,
+	Flags,
+	aHelpTopic ? aHelpTopic : L"nullptr",
+	items,
+	1+num_lines+num_buttons,
+	num_buttons);
+
+	ret = PSInfo.MessageV3(pd->ModuleNumber, aMessageGuid, Flags, aHelpTopic, items, 1+num_lines+num_buttons, num_buttons);
+
+Log(L, "MessageV3() returned %d", ret);
+
+	free(BtnCopy);
+Log(L, "free 1");
+
+	while(nAlloc) free(allocLines[--nAlloc]);
+Log(L, "free 2");
+
+	free(allocLines);
+Log(L, "free 3");
+
+	free(MsgCopy);
+Log(L, "free 4");
+
+	free(items);
+Log(L, "free 5");
+
+	return ret;
+}
+#else
 // Return:   -1 if escape pressed, else - button number chosen (0 based).
 int LF_Message(lua_State* L,
 	const wchar_t* aMsg,      // if multiline, then lines must be separated by '\n'
@@ -2019,6 +2219,7 @@ int LF_Message(lua_State* L,
 	free(items);
 	return ret;
 }
+#endif
 
 // Taken from Lua 5.1 (luaL_gsub) and modified
 const wchar_t *LF_Gsub (lua_State *L, const wchar_t *s, const wchar_t *p, const wchar_t *r)
