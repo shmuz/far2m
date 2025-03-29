@@ -2237,8 +2237,8 @@ int FileList::ProcessKey(FarKey Key)
 			return TRUE;
 
 		default:
-			if (Opt.CmdLine.ImitateNumpadKeys && !CtrlObject->CmdLine->GetLength()) {
-				if ((Key == L'*') || (Key == L'+') || (Key == L'-')) {
+			if ((Key == L'*') || (Key == L'+') || (Key == L'-')) {
+				if (Opt.CmdLine.ImitateNumpadKeys && !CtrlObject->CmdLine->GetLength()) {
 					if (Key == L'*') {
 						SelectFiles(SELECT_INVERT);
 						return TRUE;
