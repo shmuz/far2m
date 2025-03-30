@@ -787,6 +787,16 @@ void WinPortPanel::CheckForResizePending()
 	}
 }
 
+
+void WinPortPanel::CheckForUnfreeze(bool force)
+{
+	if (_qedit_unfreeze_start_ticks != 0
+			&& (force || WINPORT(GetTickCount)() - _qedit_unfreeze_start_ticks >= QEDIT_UNFREEZE_DELAY)) {
+		WINPORT(UnfreezeConsoleOutput)();
+		_qedit_unfreeze_start_ticks = 0;
+	}
+}
+
 void WinPortPanel::OnTimerPeriodic(wxTimerEvent& event)
 {
 	if (_extra_refresh) {
@@ -801,11 +811,7 @@ void WinPortPanel::OnTimerPeriodic(wxTimerEvent& event)
 		return;
 	}
 
-	if (_qedit_unfreeze_start_ticks != 0
-			&& WINPORT(GetTickCount)() - _qedit_unfreeze_start_ticks >= QEDIT_UNFREEZE_DELAY) {
-		WINPORT(UnfreezeConsoleOutput)();
-		_qedit_unfreeze_start_ticks = 0;
-	}
+	CheckForUnfreeze(false);
 
 	CheckForResizePending();
 	CheckPutText2CLip();
@@ -1340,6 +1346,7 @@ bool isLayoutDependentKey( wxKeyEvent& event ) {
 void WinPortPanel::OnKeyDown( wxKeyEvent& event )
 {
 	ResetTimerIdling();
+	CheckForUnfreeze(true);
 	DWORD now = WINPORT(GetTickCount)();
 	const auto uni = event.GetUnicodeKey();
 	fprintf(stderr, "\nOnKeyDown: %s %s raw=%x code=%x uni=%x \"%lc\" ts=%lu [now=%u]",
