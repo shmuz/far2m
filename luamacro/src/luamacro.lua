@@ -569,6 +569,31 @@ local function GetMacroDirs()
   return dirs
 end
 
+local function InitPackagePaths()
+  local mainpath = Shared.MacroDirs.MainPath
+  local modules = JoinPath(mainpath, "modules")
+  local dirPat = "/Plugins/luafar/lua_share/"
+  local splitPat = "^(.-);(.-);(.*)"
+
+  local p1, p2, rest = package.path:match(splitPat)
+  if p1 and p1:find(dirPat) and p2:find(dirPat) then
+    package.path = ("%s;%s;%s/?.lua;%s/?/init.lua;%s"):format(p1, p2, modules, modules, rest)
+  else
+    package.path = ("%s/?.lua;%s/?/init.lua;%s"):format(modules, modules, package.path)
+  end
+
+  if package.moonpath then
+    p1, p2, rest = package.moonpath:match(splitPat)
+    if p1 and p1:find(dirPat) and p2:find(dirPat) then
+      package.moonpath = ("%s;%s;%s/?.moon;%s/?/init.moon;%s"):format(p1, p2, modules, modules, rest)
+    else
+      package.moonpath = ("%s/?.moon;%s/?/init.moon;%s"):format(modules, modules, package.moonpath)
+    end
+  end
+
+  package.cpath = JoinPath(mainpath, win.IsProcess64bit() and "lib64" or "lib32", "?.so;")..package.cpath
+end
+
 local function Init()
   Shared = {
     ErrMsg            = ErrMsg,
@@ -628,13 +653,7 @@ local function Init()
 
   utils.FixInitialModules()
   utils.InitMacroSystem()
-  local mainpath = Shared.MacroDirs.MainPath
-  local modules = JoinPath(mainpath, "modules")
-  package.path = ("%s/?.lua;%s/?/init.lua;%s"):format(modules, modules, package.path)
-  if package.moonpath then
-    package.moonpath = ("%s/?.moon;%s/?/init.moon;%s"):format(modules, modules, package.moonpath)
-  end
-  package.cpath = JoinPath(mainpath, win.IsProcess64bit() and "lib64" or "lib32", "?.so;")..package.cpath
+  InitPackagePaths()
   PluginIsReady = true
 end
 
