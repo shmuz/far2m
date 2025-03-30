@@ -68,27 +68,27 @@ enum
 
 enum VMENU_FLAGS
 {
-	VMENU_ALWAYSSCROLLBAR       = 0x00000100,    // всегда показывать скроллбар
-	VMENU_LISTBOX               = 0x00000200,    // Это список в диалоге
-	VMENU_SHOWNOBOX             = 0x00000400,    // показать без рамки
-	VMENU_AUTOHIGHLIGHT         = 0x00000800,    // автоматически выбирать симолы подсветки
-	VMENU_REVERSEHIGHLIGHT      = 0x00001000,    // ... только с конца
-	VMENU_UPDATEREQUIRED        = 0x00002000,    // лист необходимо обновить (перерисовать)
-	VMENU_DISABLEDRAWBACKGROUND = 0x00004000,    // подложку не рисовать
-	VMENU_WRAPMODE              = 0x00008000,    // зацикленный список (при перемещении)
-	VMENU_SHOWAMPERSAND         = 0x00010000,    // символ '&' показывать AS IS
-	VMENU_WARNDIALOG = 0x00020000,               //
-	VMENU_NOTCENTER  = 0x00040000,               // не цитровать
-	VMENU_LEFTMOST   = 0x00080000,               // "крайний слева" - нарисовать на 5 позиций вправо от центра (X1 => (ScrX+1)/2+5)
-	VMENU_NOTCHANGE    = 0x00100000,             //
-	VMENU_LISTHASFOCUS = 0x00200000,             // меню является списком в диалоге и имеет фокус
-	VMENU_COMBOBOX     = 0x00400000,             // меню является комбобоксом и обрабатывается менеджером по-особому.
-	VMENU_MOUSEDOWN          = 0x00800000,       //
-	VMENU_CHANGECONSOLETITLE = 0x01000000,       //
-	VMENU_MOUSEREACTION      = 0x02000000,       // реагировать на движение мыши? (перемещать позицию при перемещении курсора мыши?)
-	VMENU_DISABLED           = 0x04000000,       //
-	VMENU_IGNORE_SINGLECLICK = 0x08000000,       // по щелчку не ENTER, а только выбор строки (полезно при снятом VMENU_MOUSEREACTION)
-	VMENU_NODRAWSHADOW       = 0x10000000,       //
+	VMENU_ALWAYSSCROLLBAR       = (1 <<  8), // всегда показывать скроллбар
+	VMENU_LISTBOX               = (1 <<  9), // Это список в диалоге
+	VMENU_SHOWNOBOX             = (1 << 10), // показать без рамки
+	VMENU_AUTOHIGHLIGHT         = (1 << 11), // автоматически выбирать симолы подсветки
+	VMENU_REVERSEHIGHLIGHT      = (1 << 12), // ... только с конца
+	VMENU_UPDATEREQUIRED        = (1 << 13), // лист необходимо обновить (перерисовать)
+	VMENU_DISABLEDRAWBACKGROUND = (1 << 14), // подложку не рисовать
+	VMENU_WRAPMODE              = (1 << 15), // зацикленный список (при перемещении)
+	VMENU_SHOWAMPERSAND         = (1 << 16), // символ '&' показывать AS IS
+	VMENU_WARNDIALOG            = (1 << 17), //
+	VMENU_NOTCENTER             = (1 << 18), // не центрировать
+	VMENU_LEFTMOST              = (1 << 19), // "крайний слева" - нарисовать на 5 позиций вправо от центра (X1 => (ScrX+1)/2+5)
+	VMENU_NOTCHANGE             = (1 << 20), //
+	VMENU_LISTHASFOCUS          = (1 << 21), // меню является списком в диалоге и имеет фокус
+	VMENU_COMBOBOX              = (1 << 22), // меню является комбобоксом и обрабатывается менеджером по-особому.
+	VMENU_MOUSEDOWN             = (1 << 23), //
+	VMENU_CHANGECONSOLETITLE    = (1 << 24), //
+	VMENU_MOUSEREACTION         = (1 << 25), // реагировать на движение мыши? (перемещать позицию при перемещении курсора мыши?)
+	VMENU_DISABLED              = (1 << 26), //
+	VMENU_IGNORE_SINGLECLICK    = (1 << 27), // по щелчку не ENTER, а только выбор строки (полезно при снятом VMENU_MOUSEREACTION)
+	VMENU_NODRAWSHADOW          = (1 << 28), //
 };
 
 class Dialog;
@@ -102,8 +102,8 @@ struct MenuItemEx
 
 	union                             // Пользовательские данные:
 	{
-		char *UserData;               // - указатель!
-		char Str4[sizeof(char *)];    // - strlen(строка)+1 <= sizeof(char*)
+		void *UserData;               // указатель на данные где-то там
+		char Str4[sizeof(void *)];    // данные прямо здесь
 	};
 
 	int UserDataSize;    // Размер пользовательских данных
@@ -280,7 +280,7 @@ private:
 	void DrawTitles();
 	int GetItemPosition(int Position);
 	static int _SetUserData(MenuItemEx *PItem, const void *Data, int Size);
-	static void *_GetUserData(MenuItemEx *PItem, void *Data, int Size);
+	static void *_GetUserData(MenuItemEx *PItem, void *Data, size_t Size);
 	bool CheckKeyHiOrAcc(DWORD Key, int Type, int Translate);
 	int CheckHighlights(wchar_t Chr, int StartPos = 0);
 	wchar_t GetHighlights(const struct MenuItemEx *_item);
@@ -362,7 +362,7 @@ public:
 
 	void UpdateItemFlags(int Pos, DWORD NewFlags);
 
-	void *GetUserData(void *Data, int Size, int Position = -1);
+	void *GetUserData(void *Data, size_t Size, int Position = -1);
 	int GetUserDataSize(int Position = -1);
 	int SetUserData(LPCVOID Data, int Size = 0, int Position = -1);
 

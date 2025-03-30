@@ -2672,30 +2672,27 @@ MenuItemEx *VMenu::GetItemPtr(int Position)
 	return Item[ItemPos];
 }
 
-void *VMenu::_GetUserData(MenuItemEx *PItem, void *Data, int Size)
+void *VMenu::_GetUserData(MenuItemEx *PItem, void *Data, size_t Size)
 {
-	int DataSize = PItem->UserDataSize;
-	char *PtrData = PItem->UserData;    // PtrData содержит: либо указатель на что-то либо sizeof(void*)!
+	size_t UserDataSize = PItem->UserDataSize;
+	void *UserData = PItem->UserData; // UserData содержит: либо указатель на что-то либо sizeof(void*)!
 
-	if (Size > 0 && Data) {
-		if (PtrData)    // данные есть?
+	if (Size > 0 && Data)
+	{
+		if (UserDataSize > 0)  // данные есть?
 		{
-			// размерчик больше sizeof(void*)?
-			if (DataSize > (int)sizeof(PItem->UserData)) {
-				memmove(Data, PtrData, Min(Size, DataSize));
-			} else if (DataSize > 0)    // а данные то вообще есть? Т.е. если в UserData
-			{                           // есть строка из sizeof(void*) байт (UserDataSize при этом > 0)
-				memmove(Data, PItem->Str4, Min(Size, DataSize));
-			}
-			// else а иначе... в PtrData уже указатель сидит!
-		} else    // ... данных нет, значит лудим имя пункта!
+			if (UserDataSize <= sizeof(void*))
+				memmove(Data, PItem->Str4, Min(Size, UserDataSize));
+			else if (UserData)
+				memmove(Data, UserData, Min(Size, UserDataSize));
+		}
+		else    // ... данных нет, значит лудим имя пункта!
 		{
-			memcpy(Data, PItem->strName.CPtr(),
-					Min(Size, static_cast<int>((PItem->strName.GetLength() + 1) * sizeof(wchar_t))));
+			memcpy(Data, PItem->strName.CPtr(),	Min(Size, (PItem->strName.GetLength() + 1) * sizeof(wchar_t)));
 		}
 	}
 
-	return PtrData;
+	return UserData;
 }
 
 int VMenu::GetUserDataSize(int Position)
@@ -2704,10 +2701,7 @@ int VMenu::GetUserDataSize(int Position)
 
 	int ItemPos = GetItemPosition(Position);
 
-	if (ItemPos < 0)
-		return 0;
-
-	return Item[ItemPos]->UserDataSize;
+	return ItemPos < 0 ? 0 : Item[ItemPos]->UserDataSize;
 }
 
 int VMenu::_SetUserData(MenuItemEx *PItem,
@@ -2767,7 +2761,7 @@ int VMenu::SetUserData(LPCVOID Data,    // Данные
 }
 
 // Получить данные
-void *VMenu::GetUserData(void *Data, int Size, int Position)
+void *VMenu::GetUserData(void *Data, size_t Size, int Position)
 {
 	CriticalSectionLock Lock(CS);
 
