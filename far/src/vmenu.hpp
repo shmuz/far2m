@@ -92,7 +92,7 @@ enum VMENU_FLAGS
 };
 
 class Dialog;
-class SaveScreen;
+class ConsoleTitle;
 
 struct MenuItemEx
 {
@@ -224,8 +224,6 @@ struct MenuDataEx
 		return Flags;
 	}
 };
-
-class ConsoleTitle;
 
 class VMenu : public Modal
 {

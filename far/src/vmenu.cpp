@@ -433,17 +433,14 @@ int VMenu::AddItem(const MenuItemEx *NewItem, int PosAdd)
 	ItemCount++;
 
 	Item[PosAdd] = new MenuItemEx;
-	Item[PosAdd]->Clear();
 	Item[PosAdd]->Flags = 0;
 	Item[PosAdd]->strName = NewItem->strName;
 	Item[PosAdd]->AccelKey = NewItem->AccelKey;
 	_SetUserData(Item[PosAdd], NewItem->UserData, NewItem->UserDataSize);
-	// Item[PosAdd]->AmpPos = NewItem->AmpPos;
 	Item[PosAdd]->AmpPos = -1;
 	Item[PosAdd]->Len[0] = NewItem->Len[0];
 	Item[PosAdd]->Len[1] = NewItem->Len[1];
 	Item[PosAdd]->Idx2 = NewItem->Idx2;
-	// Item[PosAdd]->ShowPos = NewItem->ShowPos;
 	Item[PosAdd]->ShowPos = 0;
 
 	if (CheckFlags(VMENU_SHOWAMPERSAND))
