@@ -245,6 +245,9 @@ static int win_GetVirtualKeys (lua_State *L)
 
 static int win_GetConsoleScreenBufferInfo (lua_State* L)
 {
+#ifdef __APPLE__
+	return luaL_error(L, "not implemented");
+#else
 	CONSOLE_SCREEN_BUFFER_INFO info;
 	HANDLE h = NULL; // GetStdHandle(STD_OUTPUT_HANDLE); //TODO: probably incorrect
 	if (!WINPORT(GetConsoleScreenBufferInfo)(h, &info))
@@ -262,6 +265,7 @@ static int win_GetConsoleScreenBufferInfo (lua_State* L)
 	PutIntToTable(L, "MaximumWindowSizeX", info.dwMaximumWindowSize.X);
 	PutIntToTable(L, "MaximumWindowSizeY", info.dwMaximumWindowSize.Y);
 	return 1;
+#endif
 }
 
 static int win_CopyFile (lua_State *L)
