@@ -63,8 +63,8 @@ VMenu::VMenu(const wchar_t *Title,    // заголовок меню
 		int MaxHeight,                // максимальная высота
 		DWORD Flags,                  // нужен ScrollBar?
 		FARWINDOWPROC Proc,           // обработчик
-		Dialog *ParentDialog)
-	:                                 // родитель для ListBox
+		Dialog *ParentDialog)         // родитель для ListBox
+	:
 	strTitle(Title),
 	SelectPos(-1),
 	TopPos(0),
@@ -74,7 +74,6 @@ VMenu::VMenu(const wchar_t *Title,    // заголовок меню
 	ParentDialog(ParentDialog),
 	VMenuProc(Proc ? Proc : (FARWINDOWPROC)VMenu::DefMenuProc),
 	OldTitle(nullptr),
-	Used(new bool[MAX_VKEY_CODE]),
 	bFilterEnabled(false),
 	bFilterLocked(false),
 	Item(nullptr),
@@ -132,7 +131,6 @@ VMenu::~VMenu()
 	bool WasVisible = Flags.Check(FSCROBJ_VISIBLE) != 0;
 	Hide();
 	DeleteItems();
-	delete[] Used;
 	SetCursorType(PrevCursorVisible, PrevCursorSize);
 
 	if (!CheckFlags(VMENU_LISTBOX)) {
@@ -2238,7 +2236,7 @@ void VMenu::AssignHighlights(int Reverse)
 {
 	CriticalSectionLock Lock(CS);
 
-	memset(Used, 0, MAX_VKEY_CODE);
+	Used.clear();
 
 	/* $ 02.12.2001 KM
 	   + Поелику VMENU_SHOWAMPERSAND сбрасывается для корректной
@@ -2275,12 +2273,10 @@ void VMenu::AssignHighlights(int Reverse)
 			}
 		}
 
-		if (Ch && !Used[Upper(Ch)] && !Used[Lower(Ch)]) {
+		if (Ch && !Used.count(Upper(Ch))) {
 			wchar_t ChKey = KeyToKeyLayout(Ch);
-			Used[Upper(ChKey)] = true;
-			Used[Lower(ChKey)] = true;
-			Used[Upper(Ch)] = true;
-			Used[Lower(Ch)] = true;
+			Used.emplace(Upper(ChKey));
+			Used.emplace(Upper(Ch));
 			Item[I]->AmpPos = static_cast<short>(ChPtr - Name) + static_cast<short>(ShowPos);
 		}
 	}
@@ -2296,13 +2292,10 @@ void VMenu::AssignHighlights(int Reverse)
 			for (int J = 0; Name[J]; J++) {
 				wchar_t Ch = Name[J];
 
-				if ((Ch == L'&' || IsAlpha(Ch) || (Ch >= L'0' && Ch <= L'9')) && !Used[Upper(Ch)]
-						&& !Used[Lower(Ch)]) {
+				if ((Ch == L'&' || IsAlpha(Ch) || (Ch >= L'0' && Ch <= L'9')) && !Used.count(Upper(Ch))) {
 					wchar_t ChKey = KeyToKeyLayout(Ch);
-					Used[Upper(ChKey)] = true;
-					Used[Lower(ChKey)] = true;
-					Used[Upper(Ch)] = true;
-					Used[Lower(Ch)] = true;
+					Used.emplace(Upper(ChKey));
+					Used.emplace(Upper(Ch));
 					Item[I]->AmpPos = J + ShowPos;
 					break;
 				}
@@ -2866,9 +2859,9 @@ void VMenu::SortItems(int Direction, int Offset)
 
 	typedef int(__cdecl * qsortex_fn)(const void *, const void *, void *);
 
-	SortItemParam Param { Direction, Offset};
+	SortItemParam Param { Direction, Offset };
 
-	far_qsortex((char *)Item, ItemCount, sizeof(*Item), (qsortex_fn)SortItem, &Param);
+	far_qsortex(Item, ItemCount, sizeof(*Item), (qsortex_fn)SortItem, &Param);
 
 	// скорректируем SelectPos
 	UpdateSelectPos();
