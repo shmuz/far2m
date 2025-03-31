@@ -787,7 +787,7 @@ int64_t VMenu::VMProcess(int OpCode, void *vParam, int64_t iParam)
 			return GetVisualPos(SelectPos) + 1;
 		case MCODE_F_MENU_CHECKHOTKEY: {
 			const wchar_t *str = (const wchar_t *)vParam;
-			return (int64_t)(GetVisualPos(CheckHighlights(*str, (int)iParam)) + 1);
+			return GetVisualPos(CheckHighlights(*str, (int)iParam)) + 1;
 		}
 		case MCODE_F_MENU_SELECT: {
 			const wchar_t *str = (const wchar_t *)vParam;
@@ -1029,7 +1029,7 @@ int64_t VMenu::VMProcess(int OpCode, void *vParam, int64_t iParam)
 			strId.Format(L"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X", Id.Data1, Id.Data2, Id.Data3,
 					Id.Data4[0], Id.Data4[1], Id.Data4[2], Id.Data4[3], Id.Data4[4], Id.Data4[5], Id.Data4[6],
 					Id.Data4[7]);
-			return reinterpret_cast<INT64>(strId.CPtr());
+			return reinterpret_cast<int64_t>(strId.CPtr());
 		}
 	}
 
@@ -2236,7 +2236,7 @@ void VMenu::AssignHighlights(int Reverse)
 {
 	CriticalSectionLock Lock(CS);
 
-	Used.clear();
+	std::set<wchar_t> Used;
 
 	/* $ 02.12.2001 KM
 	   + Поелику VMENU_SHOWAMPERSAND сбрасывается для корректной
@@ -2251,10 +2251,10 @@ void VMenu::AssignHighlights(int Reverse)
 	if (VMOldFlags.Check(VMENU_SHOWAMPERSAND))
 		SetFlags(VMENU_SHOWAMPERSAND);
 
-	int I, Delta = Reverse ? -1 : 1;
+	int Delta = Reverse ? -1 : 1;
 
 	// проверка заданных хоткеев
-	for (I = Reverse ? ItemCount - 1 : 0; I >= 0 && I < ItemCount; I+= Delta) {
+	for (int I = Reverse ? ItemCount - 1 : 0; I >= 0 && I < ItemCount; I+= Delta) {
 		wchar_t Ch = 0;
 		int ShowPos = HiFindRealPos(Item[I]->strName, Item[I]->ShowPos, CheckFlags(VMENU_SHOWAMPERSAND));
 		const wchar_t *Name = Item[I]->strName.CPtr() + ShowPos;
@@ -2282,7 +2282,7 @@ void VMenu::AssignHighlights(int Reverse)
 	}
 
 	// TODO:  ЭТОТ цикл нужно уточнить - возможно вылезут артефакты (хотя не уверен)
-	for (I = Reverse ? ItemCount - 1 : 0; I >= 0 && I < ItemCount; I+= Delta) {
+	for (int I = Reverse ? ItemCount - 1 : 0; I >= 0 && I < ItemCount; I+= Delta) {
 		int ShowPos = HiFindRealPos(Item[I]->strName, Item[I]->ShowPos, CheckFlags(VMENU_SHOWAMPERSAND));
 		const wchar_t *Name = Item[I]->strName.CPtr() + ShowPos;
 		const wchar_t *ChPtr = wcschr(Name, L'&');

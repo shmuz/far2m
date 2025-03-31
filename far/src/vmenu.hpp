@@ -247,7 +247,6 @@ private:
 	ConsoleTitle *OldTitle;     // предыдущий заголовок
 
 	CriticalSection CS;
-	std::set<wchar_t> Used;
 
 	bool bFilterEnabled;
 	bool bFilterLocked;
