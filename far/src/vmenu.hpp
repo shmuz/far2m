@@ -100,13 +100,8 @@ struct MenuItemEx
 	DWORD AccelKey;
 	FARString strName;
 
-	union                             // Пользовательские данные:
-	{
-		void *UserData;               // указатель на данные где-то там
-		char Str4[sizeof(void *)];    // данные прямо здесь
-	};
-
-	int UserDataSize;    // Размер пользовательских данных
+	void *UserData;      // Либо как указатель, либо содержит данные непосредственно
+	size_t UserDataSize; // Размер пользовательских данных
 	short AmpPos;        // Позиция автоназначенной подсветки
 	short Len[2];        // размеры 2-х частей
 	short Idx2;          // начало 2-й части
@@ -277,7 +272,7 @@ private:
 	void ShowMenu(bool IsParent = false);
 	void DrawTitles();
 	int GetItemPosition(int Position);
-	static int _SetUserData(MenuItemEx *PItem, const void *Data, int Size);
+	static size_t _SetUserData(MenuItemEx *PItem, const void *Data, size_t Size);
 	static void *_GetUserData(MenuItemEx *PItem, void *Data, size_t Size);
 	bool CheckKeyHiOrAcc(DWORD Key, int Type, int Translate);
 	int CheckHighlights(wchar_t Chr, int StartPos = 0);
@@ -361,8 +356,8 @@ public:
 	void UpdateItemFlags(int Pos, DWORD NewFlags);
 
 	void *GetUserData(void *Data, size_t Size, int Position = -1);
-	int GetUserDataSize(int Position = -1);
-	int SetUserData(LPCVOID Data, int Size = 0, int Position = -1);
+	size_t GetUserDataSize(int Position = -1);
+	size_t SetUserData(LPCVOID Data, size_t Size = 0, int Position = -1);
 
 	int GetSelectPos() { return SelectPos; }
 	int GetSelectPos(struct FarListPos *ListPos);
@@ -377,7 +372,7 @@ public:
 
 	struct MenuItemEx *GetItemPtr(int Position = -1);
 
-	void SortItems(int Direction = 0, int Offset = 0, BOOL SortForDataDWORD = FALSE);
+	void SortItems(int Direction = 0, int Offset = 0);
 	BOOL GetVMenuInfo(struct FarListInfo *Info);
 
 	virtual const wchar_t *GetTypeName() { return L"[VMenu]"; }

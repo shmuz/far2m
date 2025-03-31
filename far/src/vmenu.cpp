@@ -461,7 +461,7 @@ int VMenu::UpdateItem(const FarListUpdate *NewItem)
 		// Освободим память... от ранее занятого ;-)
 		MenuItemEx *PItem = Item[NewItem->Index];
 
-		if (PItem->UserDataSize > (int)sizeof(PItem->UserData) && PItem->UserData
+		if (PItem->UserDataSize > sizeof(PItem->UserData) && PItem->UserData
 				&& (NewItem->Item.Flags & LIF_DELETEUSERDATA)) {
 			free(PItem->UserData);
 			PItem->UserData = nullptr;
@@ -506,7 +506,7 @@ int VMenu::DeleteItem(int ID, int Count)
 	for (int I = 0; I < Count; ++I) {
 		MenuItemEx *PtrItem = Item[ID + I];
 
-		if (PtrItem->UserDataSize > (int)sizeof(PtrItem->UserData) && PtrItem->UserData)
+		if (PtrItem->UserDataSize > sizeof(PtrItem->UserData) && PtrItem->UserData)
 			free(PtrItem->UserData);
 
 		UpdateInternalCounters(PtrItem->Flags, 0);
@@ -540,7 +540,7 @@ void VMenu::DeleteItems()
 
 	if (Item) {
 		for (int I = 0; I < ItemCount; ++I) {
-			if (Item[I]->UserDataSize > (int)sizeof(Item[I]->UserData) && Item[I]->UserData)
+			if (Item[I]->UserDataSize > sizeof(Item[I]->UserData) && Item[I]->UserData)
 				free(Item[I]->UserData);
 
 			delete Item[I];
@@ -2679,7 +2679,7 @@ void *VMenu::_GetUserData(MenuItemEx *PItem, void *Data, size_t Size)
 		if (UserDataSize > 0)  // данные есть?
 		{
 			if (UserDataSize <= sizeof(void*))
-				memmove(Data, PItem->Str4, Min(Size, UserDataSize));
+				memmove(Data, &UserData, Min(Size, UserDataSize));
 			else if (UserData)
 				memmove(Data, UserData, Min(Size, UserDataSize));
 		}
@@ -2692,7 +2692,7 @@ void *VMenu::_GetUserData(MenuItemEx *PItem, void *Data, size_t Size)
 	return UserData;
 }
 
-int VMenu::GetUserDataSize(int Position)
+size_t VMenu::GetUserDataSize(int Position)
 {
 	CriticalSectionLock Lock(CS);
 
@@ -2701,41 +2701,41 @@ int VMenu::GetUserDataSize(int Position)
 	return ItemPos < 0 ? 0 : Item[ItemPos]->UserDataSize;
 }
 
-int VMenu::_SetUserData(MenuItemEx *PItem,
+size_t VMenu::_SetUserData(MenuItemEx *PItem,
 		const void *Data,    // Данные
-		int Size)            // Размер, если =0 то предполагается, что в Data-строка
+		size_t Size)         // Размер, если =0 то предполагается, что в Data-строка
 {
-	if (PItem->UserDataSize > (int)sizeof(PItem->UserData) && PItem->UserData)
+	if (PItem->UserDataSize > sizeof(PItem->UserData) && PItem->UserData)
 		free(PItem->UserData);
 
 	PItem->UserDataSize = 0;
 	PItem->UserData = nullptr;
 
 	if (Data) {
-		int SizeReal = Size;
+		size_t SizeReal = Size;
 
 		// Если Size=0, то подразумевается, что в Data находится ASCIIZ строка
 		if (!Size)
-			SizeReal = (int)((StrLength((const wchar_t *)Data) + 1) * sizeof(wchar_t));
+			SizeReal = (StrLength((const wchar_t *)Data) + 1) * sizeof(wchar_t);
 
 		// если размер данных Size=0 или Size больше sizeof(void*)
-		if (!Size || Size > (int)sizeof(PItem->UserData)) {
+		if (!Size || Size > sizeof(PItem->UserData)) {
 			// размер больше sizeof(void*)?
-			if (SizeReal > (int)sizeof(PItem->UserData)) {
+			if (SizeReal > sizeof(PItem->UserData)) {
 				// ...значит выделяем нужную память.
-				if ((PItem->UserData = (char *)malloc(SizeReal))) {
+				if ((PItem->UserData = malloc(SizeReal))) {
 					PItem->UserDataSize = SizeReal;
 					memcpy(PItem->UserData, Data, SizeReal);
 				}
 			} else    // ЭТА СТРОКА ПОМЕЩАЕТСЯ В sizeof(void*)!
 			{
 				PItem->UserDataSize = SizeReal;
-				memcpy(PItem->Str4, Data, SizeReal);
+				memcpy(&PItem->UserData, Data, SizeReal);
 			}
 		} else                                 // Ок. данные помещаются в sizeof(void*)...
 		{
 			PItem->UserDataSize = 0;           // признак того, что данных либо нет, либо
-			PItem->UserData = (char *)Data;    // они помещаются в 4 байта
+			PItem->UserData = (void *)Data;    // они помещаются в 4 байта
 		}
 	}
 
@@ -2743,8 +2743,8 @@ int VMenu::_SetUserData(MenuItemEx *PItem,
 }
 
 // Присовокупить к итему данные.
-int VMenu::SetUserData(LPCVOID Data,    // Данные
-		int Size,                       // Размер, если =0 то предполагается, что в Data-строка
+size_t VMenu::SetUserData(LPCVOID Data,  // Данные
+		size_t Size,                    // Размер, если =0 то предполагается, что в Data-строка
 		int Position)                   // номер итема
 {
 	CriticalSectionLock Lock(CS);
@@ -2858,41 +2858,17 @@ static int __cdecl SortItem(const MenuItemEx **el1, const MenuItemEx **el2, cons
 	return (Param->Direction ? (Res < 0 ? 1 : (Res > 0 ? -1 : 0)) : Res);
 }
 
-static int __cdecl SortItemDataDWORD(const MenuItemEx **el1, const MenuItemEx **el2,
-		const SortItemParam *Param)
-{
-	int Res;
-	DWORD Dw1 = (DWORD)(DWORD_PTR)((*el1)->UserData);
-	DWORD Dw2 = (DWORD)(DWORD_PTR)((*el2)->UserData);
-
-	if (Dw1 == Dw2)
-		Res = 0;
-	else if (Dw1 > Dw2)
-		Res = 1;
-	else
-		Res = -1;
-
-	return (Param->Direction ? (Res < 0 ? 1 : (Res > 0 ? -1 : 0)) : Res);
-}
-
 // Сортировка элементов списка
 // Offset - начало сравнения! по умолчанию =0
-void VMenu::SortItems(int Direction, int Offset, BOOL SortForDataDWORD)
+void VMenu::SortItems(int Direction, int Offset)
 {
 	CriticalSectionLock Lock(CS);
 
 	typedef int(__cdecl * qsortex_fn)(const void *, const void *, void *);
 
-	SortItemParam Param;
-	Param.Direction = Direction;
-	Param.Offset = Offset;
+	SortItemParam Param { Direction, Offset};
 
-	if (!SortForDataDWORD)    // обычная сортировка
-	{
-		far_qsortex((char *)Item, ItemCount, sizeof(*Item), (qsortex_fn)SortItem, &Param);
-	} else {
-		far_qsortex((char *)Item, ItemCount, sizeof(*Item), (qsortex_fn)SortItemDataDWORD, &Param);
-	}
+	far_qsortex((char *)Item, ItemCount, sizeof(*Item), (qsortex_fn)SortItem, &Param);
 
 	// скорректируем SelectPos
 	UpdateSelectPos();
