@@ -24,6 +24,6 @@ set_target_properties(compare
 
 
 add_custom_command(TARGET compare POST_BUILD
-    # DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/configs
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/configs
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/configs "${INSTALL_DIR}/Plugins/compare"
 )
