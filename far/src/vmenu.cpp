@@ -1709,6 +1709,9 @@ void VMenu::Show()
 		}
 	}
 
+	if (bFilterEnabled)
+		FilterStringUpdated(true);
+
 	if (X2 > X1 && Y2 + (CheckFlags(VMENU_SHOWNOBOX) ? 1 : 0) > Y1) {
 		if (!CheckFlags(VMENU_LISTBOX)) {
 			ScreenObject::Show();

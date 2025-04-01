@@ -585,7 +585,7 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 				}
 				case KEY_SHIFTNUMDEL:
 				case KEY_SHIFTDEL: {
-					if (HistoryMenu.GetItemCount() /* > 1*/) {
+					if (HistoryMenu.GetShowItemCount() /* > 1*/) {
 						if (!CurrentRecord->Lock) {
 							HistoryMenu.Hide();
 							mHistoryList.erase(CurrentRecord);
