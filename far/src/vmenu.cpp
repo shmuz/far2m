@@ -1604,7 +1604,7 @@ bool VMenu::ShiftItemShowPos(int Pos, int Direct)
 	int _len;
 	int ItemShowPos = Item[Pos]->ShowPos;
 
-	if (VMFlags.Check(VMENU_SHOWAMPERSAND))
+	if (CheckFlags(VMENU_SHOWAMPERSAND))
 		_len = (int)Item[Pos]->strName.CellsCount();
 	else
 		_len = HiStrCellsCount(Item[Pos]->strName);
@@ -1612,7 +1612,7 @@ bool VMenu::ShiftItemShowPos(int Pos, int Direct)
 	if (_len < MaxLineWidth || (Direct < 0 && !ItemShowPos) || (Direct > 0 && ItemShowPos > _len))
 		return false;
 
-	if (VMFlags.Check(VMENU_SHOWAMPERSAND)) {
+	if (CheckFlags(VMENU_SHOWAMPERSAND)) {
 		if (Direct < 0)
 			ItemShowPos--;
 		else
@@ -1629,7 +1629,7 @@ bool VMenu::ShiftItemShowPos(int Pos, int Direct)
 
 	if (ItemShowPos != Item[Pos]->ShowPos) {
 		Item[Pos]->ShowPos = ItemShowPos;
-		VMFlags.Set(VMENU_UPDATEREQUIRED);
+		SetFlags(VMENU_UPDATEREQUIRED);
 		return true;
 	}
 
@@ -2082,7 +2082,7 @@ void VMenu::ShowMenu(bool IsParent)
 							HiFindRealPos(strMItemPtr, MaxLineWidth, CheckFlags(VMENU_SHOWAMPERSAND)));
 
 				// set highlight
-				if (!VMFlags.Check(VMENU_SHOWAMPERSAND)) {
+				if (!CheckFlags(VMENU_SHOWAMPERSAND)) {
 					int AmpPos = Item[I]->AmpPos - ShowPos;
 
 					if ((AmpPos >= 0) && (static_cast<size_t>(AmpPos) < strMItemPtr.GetLength())
@@ -2268,7 +2268,7 @@ void VMenu::AssignHighlights(int Reverse)
 		if (ChPtr) {
 			Ch = ChPtr[1];
 
-			if (Ch && VMFlags.Check(VMENU_SHOWAMPERSAND)) {
+			if (Ch && CheckFlags(VMENU_SHOWAMPERSAND)) {
 				ChPtr = wcschr(ChPtr + 1, L'&');
 
 				if (ChPtr)
