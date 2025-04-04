@@ -49,15 +49,13 @@ int far_SudoCRCall(lua_State *L) // sudo client region call
 	lua_pushcfunction(L, traceback);
 	lua_insert(L, TRACE_POS);
 
-	SudoClientRegion scr;
-	if ( !lua_pcall(L, lua_gettop(L)-2, LUA_MULTRET, TRACE_POS) ) {
-		lua_pushboolean(L, 1);
-		lua_replace(L, TRACE_POS);
-		return lua_gettop(L);
+	// make a scope for SudoClientRegion to ensure its destruction prior to luaL_error is called
+	{
+		SudoClientRegion scr;
+		if ( !lua_pcall(L, lua_gettop(L)-2, LUA_MULTRET, TRACE_POS) )
+			return lua_gettop(L) - 1;
 	}
-	lua_pushboolean(L, 0);
-	lua_pushvalue(L, -2);
-	return 2;
+	return luaL_error(L, lua_tostring(L, -1));
 }
 
 int wrap_sdc_utimens(const char *filename, const struct timespec times[2])

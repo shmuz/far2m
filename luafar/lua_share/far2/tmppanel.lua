@@ -795,7 +795,7 @@ end
 
 
 function Panel:GetFindData (Handle, OpMode)
-  local OK, Items = far.SudoCRCall(
+  local OK, Items = pcall(far.SudoCRCall,
     function()
       self:RemoveDuplicates()
       local types = panel.GetColumnTypes (Handle)
