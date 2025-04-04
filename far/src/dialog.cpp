@@ -4533,6 +4533,7 @@ void Dialog::Process()
 
 		if (GetCanLoseFocus()) {
 			FrameManager->InsertFrame(this);
+			FrameManager->Commit();
 		}
 		else {
 			clock_t btm = 0;
