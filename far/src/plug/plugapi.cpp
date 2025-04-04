@@ -963,7 +963,7 @@ static HANDLE FarDialogInitSynched(INT_PTR PluginNumber, const GUID *Id, int X1,
 	if (FrameManager->ManagerIsDown())
 		return hDlg;
 
-	if (DisablePluginsOutput || ItemsNumber <= 0 || !Item)
+	if (DisablePluginsOutput || ItemsNumber == 0 || !Item)
 		return hDlg;
 
 	// ФИЧА! нельзя указывать отрицательные X2 и Y2
@@ -994,11 +994,6 @@ static HANDLE FarDialogInitSynched(INT_PTR PluginNumber, const GUID *Id, int X1,
 		if (Flags & FDLG_KEEPCONSOLETITLE)
 			FarDialog->SetDialogMode(DMODE_KEEPCONSOLETITLE);
 
-		if (Flags & FDLG_NONMODAL) {
-			FarDialog->SetCanLoseFocus(true);
-			FarDialog->SetDynamicallyBorn(true);
-		}
-
 		if (Flags & FDLG_REGULARIDLE)
 			FarDialog->SetRegularIdle(true);
 
@@ -1011,8 +1006,11 @@ static HANDLE FarDialogInitSynched(INT_PTR PluginNumber, const GUID *Id, int X1,
 		if (Id)
 			FarDialog->SetId(*Id);
 
-		if (FarDialog->GetCanLoseFocus())
+		if (Flags & FDLG_NONMODAL) {
+			FarDialog->SetCanLoseFocus(true);
+			FarDialog->SetDynamicallyBorn(true);
 			FarDialog->Process();
+		}
 	}
 	return hDlg;
 }

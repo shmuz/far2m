@@ -533,7 +533,7 @@ void FileEditor::Init(
 						SetExitCode(XC_EXISTS);
 						return;
 					default:
-						SetExitCode(MsgCode == -100?XC_EXISTS:XC_QUIT);
+						SetExitCode(XC_QUIT);
 						return;
 				}
 			}
