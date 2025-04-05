@@ -688,7 +688,7 @@ function mf.eval (str, mode, lang)
 
     local macro = utils.GetMacro(area,key,usecommon,false)
     if not macro then return EVAL_MACRONOTFOUND end
-    if macro=="cancel" then return EVAL_MACROCANCELED end
+    if not macro.index then return EVAL_MACROCANCELED end
 
     return Eval_FixReturn(yieldcall("eval", macro, key))
   end
