@@ -109,7 +109,8 @@ void ConsoleTitle::SetFarTitle(const wchar_t *Title, bool Force, bool Restoring)
 {
 	CriticalSectionLock Lock(TitleCS);
 
-	FARString CurrentTitle(NullToEmpty(Title), 0x100);
+	FARString CurrentTitle = Title;
+	CurrentTitle.Truncate(0x100);
 	m_FarTitle = Restoring ? CurrentTitle : FormatFarTitle(CurrentTitle);
 	m_TitleModified = true;
 
