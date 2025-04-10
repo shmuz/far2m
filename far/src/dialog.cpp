@@ -1957,7 +1957,10 @@ void Dialog::ShowDialog(unsigned ID)
 
 				if (!(CurItem->Flags & (DIF_SEPARATORUSER | DIF_SEPARATOR | DIF_SEPARATOR2))
 						&& (CurItem->Flags & DIF_CENTERTEXT) && CX1 != -1)
-					LenText = LenStrItem(I, CenterStr(strStr, strStr, CX2 - CX1 + 1));
+				{
+					if (LenText < CX2 - CX1 + 1) // center text if it's length < calculated length
+						LenText = LenStrItem(I, CenterStr(strStr, strStr, CX2 - CX1 + 1));
+				}
 
 				X = (CX1 == -1 || (CurItem->Flags & (DIF_SEPARATOR | DIF_SEPARATOR2)))
 						? (X2 - X1 + 1 - LenText) / 2
@@ -1967,17 +1970,8 @@ void Dialog::ShowDialog(unsigned ID)
 				if (X < 0)
 					X = 0;
 
-				if ((CX2 <= 0) || (CX2 < CX1))
-					CW = LenText;
-
-				if (X1 + X + LenText > X2) {
-					int tmpCW = ObjWidth;
-
-					if (CW < ObjWidth)
-						tmpCW = CW + 1;
-
-					strStr.TruncateByCells(tmpCW - 1);
-				}
+				if (X1 + X + LenText > X2)
+					strStr.TruncateByCells(X2 - X1 - X);
 
 				// нужно ЭТО
 				// SetScreen(X1+CX1,Y1+CY1,X1+CX2,Y1+CY2,' ',Attr&0xFF);
