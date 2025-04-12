@@ -426,11 +426,9 @@ struct REOpCode_data
 		int min,max;
 	};
 
-	struct SNamedBracket
+	struct SNamedBracket: SBracket
 	{
-		RegExp::REOpCode* nextalt;
 		const wchar_t* name;
-		RegExp::REOpCode* pairindex;
 	};
 
 	struct SAssert
@@ -592,6 +590,8 @@ int RegExp::CalcLength(ReStringView src)
 
 						if (src[i] != L'}' && !(ISWORD(src[i]) || ISSPACE(src[i])))
 							return SetError(errSyntax, i);
+
+						++bracketscount;
 					}
 				}
 				else
@@ -953,7 +953,8 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 					op->op = opNamedBackRef;
 					i++;
 
-					if (src[i] != L'{')return SetError(errSyntax, i + (src - start));
+					if (src[i] != L'{')
+						return SetError(errSyntax, i + (src - start));
 
 					int len = 0; i++;
 
@@ -1168,6 +1169,9 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 								std::memcpy(Name, src + i, len*sizeof(wchar_t));
 								Name[len] = 0;
 								op->nbracket.name = Name;
+								++brcount;
+								closedbrackets.push_back(false);
+								op->nbracket.index = brcount;
 							}
 							else
 							{
@@ -1224,6 +1228,13 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 					{
 						op->nbracket.pairindex = brackets[brdepth];
 						brackets[brdepth]->nbracket.pairindex = op;
+						op->bracket.index = brackets[brdepth]->bracket.index;
+
+						if (op->bracket.index != -1)
+						{
+							closedbrackets[op->bracket.index] = true;
+						}
+
 						op->nbracket.name = brackets[brdepth]->nbracket.name;
 						h.Matches[op->nbracket.name] = m;
 						break;
@@ -1628,7 +1639,11 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 					{
 						op=op->bracket.pairindex;
 
-						if (op->op != opOpenBracket)return SetError(errInvalidQuantifiersCombination, i + (src - start));
+						if (op->op != opOpenBracket && op->op != opNamedBracket)
+							return SetError(errInvalidQuantifiersCombination, i + (src - start));
+
+						if (op->op == opNamedBracket)
+							delete[] op->nbracket.name;
 
 						op->range.min=min;
 						op->range.max=max;

@@ -124,6 +124,6 @@ wchar_t GetDecimalSeparator();
 inline const wchar_t GetDecimalSeparatorDefault() { return L'.'; };
 inline const wchar_t* GetDecimalSeparatorDefaultStr() { return L"."; };
 
-FARString ReplaceBrackets(const wchar_t *SearchStr,const FARString& ReplaceStr,RegExpMatch* Match,int Count);
+//FARString ReplaceBrackets(const wchar_t *SearchStr,const FARString& ReplaceStr,RegExpMatch* Match,int Count,MatchHash* hMatch);
 
 bool SearchString(const wchar_t *Source, int StrSize, const FARString& Str, FARString& ReplaceStr,int& CurPos, int Position,int Case,int WholeWords,int Reverse,int Regexp, int *SearchLength,const wchar_t* WordDiv=nullptr);

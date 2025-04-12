@@ -1238,7 +1238,7 @@ wchar_t GetDecimalSeparator()
 	return Opt.strDecimalSeparator.IsEmpty() ? GetDecimalSeparatorDefault() : Opt.strDecimalSeparator.At(0);
 }
 
-FARString ReplaceBrackets(const wchar_t* SearchStr,const FARString& ReplaceStr,RegExpMatch* Match,int Count)
+FARString ReplaceBrackets(const wchar_t* SearchStr,const FARString& ReplaceStr,RegExpMatch* Match,int Count,MatchHash* hMatch)
 {
 	FARString result;
 	size_t pos=0,length=ReplaceStr.GetLength();
@@ -1249,11 +1249,9 @@ FARString ReplaceBrackets(const wchar_t* SearchStr,const FARString& ReplaceStr,R
 
 		if (ReplaceStr[pos]=='$')
 		{
-			++pos;
+			if (pos+1 > length) break;
 
-			if (pos>length) break;
-
-			wchar_t symbol=Upper(ReplaceStr[pos]);
+			wchar_t symbol=Upper(ReplaceStr[pos+1]);
 			int index=-1;
 
 			if (symbol>='0'&&symbol<='9')
@@ -1263,6 +1261,39 @@ FARString ReplaceBrackets(const wchar_t* SearchStr,const FARString& ReplaceStr,R
 			else if (symbol>='A'&&symbol<='Z')
 			{
 				index=symbol-'A'+10;
+			}
+			else if (symbol == L'{')
+			{
+				size_t EndPos;
+				bool ValidGroup = ReplaceStr.Pos(EndPos, L'}', pos+2) && (EndPos > pos+2);
+				if (ValidGroup)
+				{
+					for (size_t i = pos+2; i < EndPos; i++)
+					{
+						if (!(IsAlphaNum(ReplaceStr[i]) || ReplaceStr[i]==L'_' || ReplaceStr[i]==L' '))
+						{
+							ValidGroup = false;
+							break;
+						}
+					}
+					if (ValidGroup)
+					{
+						std::wstring Name(ReplaceStr+(pos+2), EndPos-(pos+2));
+						const auto found = hMatch->Matches.find(Name);
+						if (found != hMatch->Matches.end())
+						{
+							const auto match = found->second;
+							FARString bracket(SearchStr + match.start, match.end - match.start);
+							result += bracket;
+						}
+						//	else //insert named group "as is"
+						//	{
+						//		result += FARString(ReplaceStr + pos, (EndPos+1) - pos);
+						//	}
+						pos = EndPos + 1;
+						continue;
+					}
+				}
 			}
 
 			if (index>=0)
@@ -1274,6 +1305,7 @@ FARString ReplaceBrackets(const wchar_t* SearchStr,const FARString& ReplaceStr,R
 				}
 
 				common=false;
+				++pos;
 			}
 		}
 
@@ -1356,11 +1388,13 @@ bool SearchString(const wchar_t *Source, int StrSize, const FARString& Str, FARS
 			StackHeapArray<RegExpMatch> m(n);
 			RegExpMatch *pm = m.Get();
 
+			MatchHash hmatch;
+
 			bool found = false;
 			int half = 0;
 			if (!Reverse)
 			{
-				if (re.SearchEx(ReStringView(Source, StrSize),Position,pm,n))
+				if (re.SearchEx(ReStringView(Source, StrSize),Position,pm,n,&hmatch))
 					found = true;
 			}
 			else
@@ -1368,7 +1402,7 @@ bool SearchString(const wchar_t *Source, int StrSize, const FARString& Str, FARS
 				int pos = 0;
 				for (;;)
 				{
-					if (!re.SearchEx(ReStringView(Source, StrSize), pos,pm+half,n))
+					if (!re.SearchEx(ReStringView(Source, StrSize), pos,pm+half,n,&hmatch))
 						break;
 					pos = static_cast<int>(pm[half].start);
 					if (pos > Position)
@@ -1384,7 +1418,7 @@ bool SearchString(const wchar_t *Source, int StrSize, const FARString& Str, FARS
 			{
 				*SearchLength = pm[half].end - pm[half].start;
 				CurPos = pm[half].start;
-				ReplaceStr=ReplaceBrackets(Source,ReplaceStr,pm+half,n);
+				ReplaceStr=ReplaceBrackets(Source,ReplaceStr,pm+half,n,&hmatch);
 			}
 
 			return found;
