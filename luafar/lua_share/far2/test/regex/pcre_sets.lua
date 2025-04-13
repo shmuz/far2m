@@ -108,6 +108,28 @@ local function set_f_gmatchW (lib, flg)
   }
 end
 
+local function set_m_tfind (lib, flg)
+  return {
+    Name = "Method tfind",
+    Method = "tfind",
+  --{patt,cf,lo},           {subj,st,ef}              { results }
+    { {".+"},               {"abcd",5},               { N }    }, -- failing st
+    { {".*?"},              {"abcd"},                 {1,0,{}} }, -- non-greedy
+    { {"aBC","i"},          {"abc"},                  {1,3,{}} }, -- cf
+  }
+end
+
+local function set_m_tfindW (lib, flg)
+  return {
+    Name = "Method tfindW",
+    Method = "tfindW",
+  --{patt,cf,lo},           {subj,st,ef}              { results }
+    { {".+"},               {L"abcd",5},              { N }    }, -- failing st
+    { {".*?"},              {L"abcd"},                {1,0,{}} }, -- non-greedy
+    { {"aBC","i"},          {L"abc"},                 {1,3,{}} }, -- cf
+  }
+end
+
 return function (lib)
 --  local flags = lib.flags ()
   local flags = nil
@@ -120,5 +142,8 @@ return function (lib)
 
     set_f_gmatch  (lib, flags),
     set_f_gmatchW (lib, flags),
+
+    set_m_tfind   (lib, flags),
+    set_m_tfindW  (lib, flags),
   }
 end
