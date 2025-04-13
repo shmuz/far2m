@@ -66,6 +66,9 @@ local function set_f_find (lib, flg)
     { {"abcd", "(.)b.(d)"},     { 1,4,"a","d" }}, -- [captures]
     { {"abc\r\nd", "/$/m"},     { 4,3 } },        -- [Mantis 0002124]
     { {"CtrlShiftG", "^(R?Ctrl)?(R?Alt)?(Shift)?(.*)$"}, {1,10,"Ctrl",false,"Shift","G"} }, -- [Mantis 0002242]
+
+    { {"!!! foo bar foo", "(?{word}\\w+).+?(\\p{word})"}, -- named pattern + back reference
+                                { 5,15,"foo","foo"} },
   }
 end
 

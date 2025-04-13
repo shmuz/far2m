@@ -115,9 +115,8 @@ bool RegexMask::Compare(const wchar_t *FileName, bool CaseSens) const
 {
 	if (re)
 	{
-		RegExpMatch MatchData[1];
-		int BrCount = ARRAYSIZE(MatchData);
-		return re->Search(ReStringView(FileName), MatchData, BrCount);
+		regex_match match;
+		return re->Search(ReStringView(FileName), match);
 	}
 
 	return false;

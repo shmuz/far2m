@@ -1238,7 +1238,7 @@ wchar_t GetDecimalSeparator()
 	return Opt.strDecimalSeparator.IsEmpty() ? GetDecimalSeparatorDefault() : Opt.strDecimalSeparator.At(0);
 }
 
-FARString ReplaceBrackets(const wchar_t* SearchStr,const FARString& ReplaceStr,RegExpMatch* Match,int Count,MatchHash* hMatch)
+FARString ReplaceBrackets(const wchar_t* SearchStr,const FARString& ReplaceStr,regex_match& Match,named_regex_match* NamedMatch)
 {
 	FARString result;
 	size_t pos=0,length=ReplaceStr.GetLength();
@@ -1279,12 +1279,16 @@ FARString ReplaceBrackets(const wchar_t* SearchStr,const FARString& ReplaceStr,R
 					if (ValidGroup)
 					{
 						std::wstring Name(ReplaceStr+(pos+2), EndPos-(pos+2));
-						const auto found = hMatch->Matches.find(Name);
-						if (found != hMatch->Matches.end())
+						const auto found = NamedMatch->Matches.find(Name);
+						if (found != NamedMatch->Matches.end())
 						{
-							const auto match = found->second;
-							FARString bracket(SearchStr + match.start, match.end - match.start);
-							result += bracket;
+							const auto index = found->second;
+							if (index < Match.Matches.size())
+							{
+								const auto& match = Match.Matches[index];
+								FARString bracket(SearchStr + match.start, match.end - match.start);
+								result += bracket;
+							}
 						}
 						//	else //insert named group "as is"
 						//	{
@@ -1298,9 +1302,10 @@ FARString ReplaceBrackets(const wchar_t* SearchStr,const FARString& ReplaceStr,R
 
 			if (index>=0)
 			{
-				if (index<Count)
+				if (index < (int)Match.Matches.size())
 				{
-					FARString bracket(SearchStr+Match[index].start,Match[index].end-Match[index].start);
+					const auto& match = Match.Matches[index];
+					FARString bracket(SearchStr + match.start, match.end - match.start);
 					result+=bracket;
 				}
 
@@ -1355,7 +1360,9 @@ std::string UnescapeUnprintable(const std::string &str)
 	return out;
 }
 
-bool SearchString(const wchar_t *Source, int StrSize, const FARString& Str, FARString& ReplaceStr,int& CurPos, int Position,int Case,int WholeWords,int Reverse,int Regexp, int *SearchLength,const wchar_t* WordDiv)
+bool SearchString(const wchar_t *Source, int StrSize, const FARString& Str, FARString& ReplaceStr,
+		int& CurPos, int Position, int Case, int WholeWords, int Reverse, int Regexp, int *SearchLength,
+		const wchar_t* WordDiv)
 {
 	*SearchLength = 0;
 
@@ -1384,41 +1391,46 @@ bool SearchString(const wchar_t *Source, int StrSize, const FARString& Str, FARS
 			if (!re.Compile(strSlash, OP_PERLSTYLE|OP_OPTIMIZE|(!Case?OP_IGNORECASE:0)))
 				return false;
 
-			int n = re.GetBracketsCount();
-			StackHeapArray<RegExpMatch> m(n);
-			RegExpMatch *pm = m.Get();
+			////	int n = re.GetBracketsCount();
+			////	StackHeapArray<RegExpMatch> m(n);
+			////	RegExpMatch *pm = m.Get();
 
-			MatchHash hmatch;
+			////MatchHash hmatch;
+			regex_match rmatch;
+			named_regex_match nrmatch;
 
 			bool found = false;
-			int half = 0;
+			////	int half = 0;
 			if (!Reverse)
 			{
-				if (re.SearchEx(ReStringView(Source, StrSize),Position,pm,n,&hmatch))
+				if (re.SearchEx(ReStringView(Source, StrSize),Position,rmatch,&nrmatch))
 					found = true;
 			}
 			else
 			{
-				int pos = 0;
-				for (;;)
-				{
-					if (!re.SearchEx(ReStringView(Source, StrSize), pos,pm+half,n,&hmatch))
-						break;
-					pos = static_cast<int>(pm[half].start);
-					if (pos > Position)
-						break;
-
-					found = true;
-					++pos;
-					half = n - half;
-				}
-				half = n - half;
+				////	int pos = 0;
+				////	for (;;)
+				////	{
+				////		if (!re.SearchEx(ReStringView(Source, StrSize), pos,pm+half,n,&hmatch))
+				////			break;
+				////		pos = static_cast<int>(pm[half].start);
+				////		if (pos > Position)
+				////			break;
+				////
+				////		found = true;
+				////		++pos;
+				////		half = n - half;
+				////	}
+				////	half = n - half;
 			}
 			if (found)
 			{
-				*SearchLength = pm[half].end - pm[half].start;
-				CurPos = pm[half].start;
-				ReplaceStr=ReplaceBrackets(Source,ReplaceStr,pm+half,n,&hmatch);
+				////	*SearchLength = pm[half].end - pm[half].start;
+				////	CurPos = pm[half].start;
+				////	ReplaceStr=ReplaceBrackets(Source,ReplaceStr,pm+half,n,&hmatch);
+				*SearchLength = rmatch.Matches[0].end - rmatch.Matches[0].start;
+				CurPos = rmatch.Matches[0].start;
+				ReplaceStr = ReplaceBrackets(Source,ReplaceStr,rmatch,&nrmatch);
 			}
 
 			return found;
