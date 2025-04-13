@@ -2445,59 +2445,51 @@ int WINAPI farFileFilterControl(HANDLE hHandle, int Command, int Param1, LONG_PT
 
 int WINAPI farRegExpControl(HANDLE hHandle, int Command, LONG_PTR Param)
 {
-	RegExp *re = nullptr;
+	if ((Command != RECTL_CREATE) && (!hHandle || hHandle == INVALID_HANDLE_VALUE))
+		return FALSE;
 
-	if (Command != RECTL_CREATE) {
-		if (hHandle == INVALID_HANDLE_VALUE)
-			return FALSE;
-
-		re = (RegExp *)hHandle;
-	}
+	struct regex_handle
+	{
+		RegExp Regex;
+		MatchHash NamedMatch;
+	};
 
 	switch (Command) {
 		case RECTL_CREATE:
-
 			if (!Param)
 				break;
 
-			*((HANDLE *)Param) = INVALID_HANDLE_VALUE;
-			re = new (std::nothrow) RegExp;
-
-			if (re) {
-				*((HANDLE *)Param) = (HANDLE)re;
-				return TRUE;
-			}
-
-			break;
-		case RECTL_FREE:
-			delete re;
+			*reinterpret_cast<regex_handle**>(Param) = std::make_unique<regex_handle>().release();
 			return TRUE;
+
+		case RECTL_FREE:
+			delete static_cast<regex_handle const*>(hHandle);
+			return TRUE;
+
 		case RECTL_COMPILE:
-			return re->Compile((const wchar_t *)Param, OP_PERLSTYLE);
+			return static_cast<regex_handle*>(hHandle)->Regex.Compile(reinterpret_cast<const wchar_t*>(Param), OP_PERLSTYLE);
+
 		case RECTL_OPTIMIZE:
-			return re->Optimize();
+			return static_cast<regex_handle*>(hHandle)->Regex.Optimize();
+
 		case RECTL_MATCHEX: {
-			RegExpSearch *data = (RegExpSearch *)Param;
-			return re->MatchEx(ReStringView(data->Text, data->Length), data->Position, data->Match,
-					data->Count
-#ifdef NAMEDBRACKETS
-					,
-					data->Reserved
-#endif
-			);
+			auto& Handle = *static_cast<regex_handle*>(hHandle);
+			const auto data = reinterpret_cast<RegExpSearch*>(Param);
+			return Handle.Regex.MatchEx(ReStringView(data->Text, data->Length), data->Position, data->Match, data->Count, &Handle.NamedMatch);
 		}
+
 		case RECTL_SEARCHEX: {
-			RegExpSearch *data = (RegExpSearch *)Param;
-			return re->SearchEx(ReStringView(data->Text, data->Length), data->Position, data->Match,
-					data->Count
-#ifdef NAMEDBRACKETS
-					,
-					data->Reserved
-#endif
-			);
+			auto& Handle = *static_cast<regex_handle*>(hHandle);
+			const auto data = reinterpret_cast<RegExpSearch*>(Param);
+			return Handle.Regex.SearchEx(ReStringView(data->Text, data->Length), data->Position, data->Match, data->Count, &Handle.NamedMatch);
 		}
+
 		case RECTL_BRACKETSCOUNT:
-			return re->GetBracketsCount();
+			return static_cast<regex_handle const*>(hHandle)->Regex.GetBracketsCount();
+
+		case RECTL_NAMEDGROUPINDEX: {
+			break;
+		}
 	}
 
 	return FALSE;

@@ -138,6 +138,10 @@ enum REError
 	errInvalidRange,
 	//! Quantifier applied to invalid object. f.e. lookahead assertion
 	errInvalidQuantifiersCombination,
+	//! Incomplete group structure
+	errIncompleteGroupStructure,
+	//! A subpattern name must be unique
+	errSubpatternGroupNameMustBeUnique,
 	//! Size of match array isn't large enough.
 	errNotEnoughMatches,
 	//! Attempt to match RegExp with Named Brackets, and no storage class provided.
@@ -146,8 +150,6 @@ enum REError
 	errReferenceToUndefinedNamedBracket,
 	//! Only fixed length look behind assertions are supported
 	errVariableLengthLookBehind,
-
-	errCancelled
 };
 
 enum

@@ -1163,22 +1163,16 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 
 							while (src[i + len] != L'}')len++;
 
-							if (len > 0)
-							{
-								const auto Name = new wchar_t[len + 1];
-								std::memcpy(Name, src + i, len*sizeof(wchar_t));
-								Name[len] = 0;
-								op->nbracket.name = Name;
-								++brcount;
-								closedbrackets.push_back(false);
-								op->nbracket.index = brcount;
-							}
-							else
-							{
-								op->op = opOpenBracket;
-								op->bracket.index = -1;
-							}
+							if (!len)
+								return SetError(errIncompleteGroupStructure, i + (src - start));
 
+							const auto Name = new wchar_t[len + 1];
+							std::memcpy(Name, src + i, len * sizeof(wchar_t));
+							Name[len] = 0;
+							op->nbracket.name = Name;
+							++brcount;
+							closedbrackets.push_back(false);
+							op->nbracket.index = brcount;
 							i += len;
 						} break;
 						default:
@@ -1242,10 +1236,11 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 					case opLookBehind:
 					case opNotLookBehind:
 					{
-						lookbehind--;
+						//### lookbehind--;
 						int l=CalcPatternLength(brackets[brdepth] + 1, op - 1);
 
-						if (l == -1)return SetError(errVariableLengthLookBehind, i + (src - start));
+						if (l == -1)
+							return SetError(errVariableLengthLookBehind, i + (src - start));
 
 						brackets[brdepth]->assert.length=l;
 					}
