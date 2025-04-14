@@ -2504,7 +2504,10 @@ int WINAPI farRegExpControl(HANDLE hHandle, int Command, LONG_PTR Param)
 			return static_cast<regex_handle const*>(hHandle)->Regex.GetBracketsCount();
 
 		case RECTL_NAMEDGROUPINDEX: {
-			break;
+			const auto& Handle = *static_cast<regex_handle const*>(hHandle);
+			const auto Str = reinterpret_cast<wchar_t const*>(Param);
+			const auto Iterator = Handle.NamedMatch.Matches.find(Str);
+			return Iterator == Handle.NamedMatch.Matches.cend()? 0 : Iterator->second;
 		}
 	}
 
