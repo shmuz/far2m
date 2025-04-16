@@ -2760,8 +2760,7 @@ enum FAR_REGEXP_CONTROL_COMMANDS
 	RECTL_SEARCHEX,
 	RECTL_BRACKETSCOUNT,
 	RECTL_NAMEDGROUPINDEX,
-	RECTL_NAMEDGROUPSCOUNT,
-	RECTL_NAMEDGROUPSINFO,
+	RECTL_GETNAMEDGROUPS,
 };
 
 struct RegExpMatch
@@ -2783,12 +2782,6 @@ struct RegExpNamedGroup
 {
 	size_t Index;
 	const wchar_t *Name;
-};
-
-struct RegExpNamedGroupsInfo
-{
-	size_t Count;
-	struct RegExpNamedGroup *Groups;
 };
 
 struct VersionInfo

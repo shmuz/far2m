@@ -2452,6 +2452,7 @@ int WINAPI farRegExpControl(HANDLE hHandle, int Command, LONG_PTR Param)
 	{
 		RegExp Regex;
 		named_regex_match NamedMatch;
+		std::vector<RegExpNamedGroup> NamedGroupsFlat;
 	};
 
 	switch (Command) {
@@ -2478,6 +2479,8 @@ int WINAPI farRegExpControl(HANDLE hHandle, int Command, LONG_PTR Param)
 			const auto data = reinterpret_cast<RegExpSearch*>(Param);
 			regex_match Match;
 
+			Handle.NamedGroupsFlat.clear();
+
 			ReStringView svText { data->Text, static_cast<size_t>(data->Length) };
 			auto result = (Command == RECTL_MATCHEX)
 				? Handle.Regex.MatchEx(svText, data->Position, Match, &Handle.NamedMatch)
@@ -2501,27 +2504,24 @@ int WINAPI farRegExpControl(HANDLE hHandle, int Command, LONG_PTR Param)
 			return Iterator == Handle.NamedMatch.Matches.cend() ? 0 : Iterator->second;
 		}
 
-		case 	RECTL_NAMEDGROUPSCOUNT: {
-			const auto& Handle = *static_cast<regex_handle const*>(hHandle);
-			return static_cast<int>(Handle.NamedMatch.Matches.size());
-		}
+		case 	RECTL_GETNAMEDGROUPS: {
+			auto& Handle = *static_cast<regex_handle*>(hHandle);
 
-		case 	RECTL_NAMEDGROUPSINFO: {
-			const auto& Handle = *static_cast<regex_handle const*>(hHandle);
-			auto Info = reinterpret_cast<struct RegExpNamedGroupsInfo*>(Param);
-			size_t I = 0;
-			for (const auto &item: Handle.NamedMatch.Matches)
+			if (Handle.NamedGroupsFlat.empty())
 			{
-				if (I < Info->Count)
+				Handle.NamedGroupsFlat.reserve(Handle.NamedMatch.Matches.size());
+				for (const auto &I: Handle.NamedMatch.Matches)
 				{
-					Info->Groups[I].Name = item.first.c_str();
-					Info->Groups[I].Index = item.second;
-					++I;
+					Handle.NamedGroupsFlat.emplace_back(RegExpNamedGroup{ I.second, I.first.c_str() });
 				}
-				else
-					break;
+				std::sort(Handle.NamedGroupsFlat.begin(), Handle.NamedGroupsFlat.end(), [](const auto& i, const auto& j)
+				{
+					return i.Index < j.Index;
+				});
 			}
-			return TRUE;
+
+			*reinterpret_cast<RegExpNamedGroup const**>(Param) = Handle.NamedGroupsFlat.data();
+			return Handle.NamedGroupsFlat.size();
 		}
 	}
 

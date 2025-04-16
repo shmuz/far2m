@@ -173,23 +173,16 @@ static void push_match(lua_State *L, const wchar_t *Text, const struct RegExpMat
 
 static void do_named_subpatterns (lua_State *L, TFarRegex *fr, const struct RegExpSearch *data, int is_wide)
 {
-	int count = PSInfo.RegExpControl(fr->hnd, RECTL_NAMEDGROUPSCOUNT, 0);
-	if (count == 0)
-		return;
-
-	struct RegExpNamedGroupsInfo Info;
-	Info.Count = count;
-	Info.Groups = (struct RegExpNamedGroup*) malloc(count * sizeof(struct RegExpNamedGroup));
-	PSInfo.RegExpControl(fr->hnd, RECTL_NAMEDGROUPSINFO, (LONG_PTR)&Info);
+	const struct RegExpNamedGroup* groups;
+	int count = PSInfo.RegExpControl(fr->hnd, RECTL_GETNAMEDGROUPS, (LONG_PTR)&groups);
 
 	for (int i=0; i < count; i++)
 	{
-		struct RegExpNamedGroup* g = Info.Groups + i;
+		const struct RegExpNamedGroup* g = groups + i;
 		push_utf8_string(L, g->Name, -1);
 		push_match(L, data->Text, data->Match + g->Index, is_wide);
 		lua_rawset(L, -3);
 	}
-	free(Info.Groups);
 }
 
 int rx_find_match(lua_State *L, int Op, int is_function, int is_wide)
