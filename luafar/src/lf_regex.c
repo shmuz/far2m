@@ -158,8 +158,20 @@ int func_gmatchW(lua_State *L)   { return _Gmatch(L, 1, 1); }
 int method_gmatch(lua_State *L)  { return _Gmatch(L, 0, 0); }
 int method_gmatchW(lua_State *L) { return _Gmatch(L, 0, 1); }
 
-// the output table already containing an array of matches is on stack top
-static void do_named_subpatterns (lua_State *L, TFarRegex *fr)
+static void push_match(lua_State *L, const wchar_t *Text, const struct RegExpMatch* Match, int is_wide)
+{
+	if (Match->start >= 0 && Match->end >= Match->start)
+	{
+		if (is_wide)
+			push_wcstring(L, Text + Match->start, Match->end - Match->start);
+		else
+			push_utf8_string(L, Text + Match->start, Match->end - Match->start);
+	}
+	else
+		lua_pushboolean(L, 0);
+}
+
+static void do_named_subpatterns (lua_State *L, TFarRegex *fr, const struct RegExpSearch *data, int is_wide)
 {
 	int count = PSInfo.RegExpControl(fr->hnd, RECTL_NAMEDGROUPSCOUNT, 0);
 	if (count == 0)
@@ -174,7 +186,7 @@ static void do_named_subpatterns (lua_State *L, TFarRegex *fr)
 	{
 		struct RegExpNamedGroup* g = Info.Groups + i;
 		push_utf8_string(L, g->Name, -1);
-		lua_rawgeti(L, -2, g->Index);
+		push_match(L, data->Text, data->Match + g->Index, is_wide);
 		lua_rawset(L, -3);
 	}
 	free(Info.Groups);
@@ -232,9 +244,9 @@ int rx_find_match(lua_State *L, int Op, int is_function, int is_wide)
 		if (Op == OP_EXEC)
 		{
 			lua_createtable(L, 2*(int)data.Count, 0);
-			for(i=skip; i<data.Count; i++)
+			for(i=1; i<data.Count; i++)
 			{
-				int k = (i-skip)*2 + 1;
+				int k = (i-1)*2 + 1;
 				if (data.Match[i].start >= 0 && data.Match[i].end >= data.Match[i].start)
 				{
 					lua_pushinteger(L, data.Match[i].start+1);
@@ -250,7 +262,7 @@ int rx_find_match(lua_State *L, int Op, int is_function, int is_wide)
 					lua_rawseti(L, -2, k+1);
 				}
 			}
-			// do_named_subpatterns(L, fr);
+			do_named_subpatterns(L, fr, &data, is_wide);
 		}
 		else
 		{
@@ -261,21 +273,12 @@ int rx_find_match(lua_State *L, int Op, int is_function, int is_wide)
 				luaL_error(L, "cannot add %d stack slots", i);
 			for(i=skip; i<data.Count; i++)
 			{
-				if (data.Match[i].start >= 0 && data.Match[i].end >= data.Match[i].start)
-				{
-					if (is_wide)
-						push_wcstring(L, data.Text+data.Match[i].start, data.Match[i].end-data.Match[i].start);
-					else
-						push_utf8_string(L, data.Text+data.Match[i].start, data.Match[i].end-data.Match[i].start);
-				}
-				else
-					lua_pushboolean(L, 0);
-
+				push_match(L, data.Text, data.Match+i, is_wide);
 				if (Op == OP_TFIND)
 					lua_rawseti(L, -2, i);
 			}
 			if (Op == OP_TFIND)
-				do_named_subpatterns(L, fr);
+				do_named_subpatterns(L, fr, &data, is_wide);
 		}
 		switch (Op)
 		{
