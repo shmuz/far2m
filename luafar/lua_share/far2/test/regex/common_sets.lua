@@ -129,6 +129,7 @@ local function set_f_tfind (lib, flg)
     { {"abcd", ".*"},            {1,4,{}}  }, -- [none]
     { {"abc", "bc" },            {2,3,{}}  }, -- [none]
     { {"abcd", "(.)b.(d)"},      {1,4,{"a","d"}}},--[captures]
+    { {"foobar", "(?{name1}foo)(?{имя2}bar)"},  {1,6,{"foo";"bar";name1="foo";["имя2"]="bar"}} },
   }
 end
 
@@ -143,6 +144,7 @@ local function set_f_tfindW (lib, flg)
     { {L"abcd", ".*"},           {1,4,{}}  }, -- [none]
     { {L"abc", "bc" },           {2,3,{}}  }, -- [none]
     { {L"abcd", "(.)b.(d)"},     {1,4,{L"a",L"d"}}},--[captures]
+    { {L"foobar", "(?{name1}foo)(?{имя2}bar)"},  {1,6,{L"foo";L"bar";name1=L"foo";["имя2"]=L"bar"}} },
   }
 end
 
@@ -157,6 +159,7 @@ local function set_m_tfind (lib, flg)
     { {".*"},               {"abcd"},            {1,4,{}}  }, -- [none]
     { {"bc"},               {"abc"},             {2,3,{}}  }, -- [none]
     { {"(.)b.(d)"},         {"abcd"},            {1,4,{"a","d"}}},--[captures]
+    { {"(?{name1}foo)(?{имя2}bar)"}, {"foobar"}, {1,6,{"foo";"bar";name1="foo";["имя2"]="bar"}} },
   }
 end
 
@@ -171,6 +174,67 @@ local function set_m_tfindW (lib, flg)
     { {".*"},               {L"abcd"},           {1,4,{}}  }, -- [none]
     { {"bc"},               {L"abc"},            {2,3,{}}  }, -- [none]
     { {"(.)b.(d)"},         {L"abcd"},           {1,4,{L"a",L"d"}}},--[captures]
+    { {"(?{name1}foo)(?{имя2}bar)"}, {L"foobar"}, {1,6,{L"foo";L"bar";name1=L"foo";["имя2"]=L"bar"}} },
+  }
+end
+
+local function set_f_exec (lib, flg)
+  return {
+    Name = "Function exec",
+    Func = lib.exec,
+  --  {subj, patt, st},         { results }
+    { {"abcd", ".+"},            {1,4,{}}  }, -- [none]
+    { {"abcd", ".+", 2},         {2,4,{}}  }, -- positive st
+    { {"abcd", ".+", -2},        {3,4,{}}  }, -- negative st
+    { {"abcd", ".*"},            {1,4,{}}  }, -- [none]
+    { {"abc", "bc" },            {2,3,{}}  }, -- [none]
+    { {"abcd", "(.)b.(d)"},      {1,4,{1,1,4,4}}},
+    { {"foobar", "(?{name1}foo)(?{имя2}bar)"},  {1,6,{1,3,4,6,name1="foo";["имя2"]="bar"}} },
+  }
+end
+
+local function set_f_execW (lib, flg)
+  return {
+    Name = "Function execW",
+    Func = lib.execW,
+  --  {subj, patt, st},         { results }
+    { {L"abcd", ".+"},           {1,4,{}}  }, -- [none]
+    { {L"abcd", ".+", 2},        {2,4,{}}  }, -- positive st
+    { {L"abcd", ".+", -2},       {3,4,{}}  }, -- negative st
+    { {L"abcd", ".*"},           {1,4,{}}  }, -- [none]
+    { {L"abc", "bc" },           {2,3,{}}  }, -- [none]
+    { {L"abcd", "(.)b.(d)"},     {1,4,{1,1,4,4}}},
+    { {L"foobar", "(?{name1}foo)(?{имя2}bar)"},  {1,6,{1,3,4,6,name1=L"foo";["имя2"]=L"bar"}} },
+  }
+end
+
+local function set_m_exec (lib, flg)
+  return {
+    Name = "Method exec",
+    Method = "exec",
+  --{patt},                 {subj, st}           { results }
+    { {".+"},               {"abcd"},            {1,4,{}}  }, -- [none]
+    { {".+"},               {"abcd",2},          {2,4,{}}  }, -- positive st
+    { {".+"},               {"abcd",-2},         {3,4,{}}  }, -- negative st
+    { {".*"},               {"abcd"},            {1,4,{}}  }, -- [none]
+    { {"bc"},               {"abc"},             {2,3,{}}  }, -- [none]
+    { {"(.)b.(d)"},         {"abcd"},            {1,4,{1,1,4,4}}},
+    { {"(?{name1}foo)(?{имя2}bar)"}, {"foobar"}, {1,6,{1,3,4,6,name1="foo";["имя2"]="bar"}} },
+  }
+end
+
+local function set_m_execW (lib, flg)
+  return {
+    Name = "Method execW",
+    Method = "execW",
+  --{patt},                 {subj, st}           { results }
+    { {".+"},               {L"abcd"},           {1,4,{}}  }, -- [none]
+    { {".+"},               {L"abcd",2},         {2,4,{}}  }, -- positive st
+    { {".+"},               {L"abcd",-2},        {3,4,{}}  }, -- negative st
+    { {".*"},               {L"abcd"},           {1,4,{}}  }, -- [none]
+    { {"bc"},               {L"abc"},            {2,3,{}}  }, -- [none]
+    { {"(.)b.(d)"},         {L"abcd"},           {1,4,{1,1,4,4}}},
+    { {"(?{name1}foo)(?{имя2}bar)"}, {L"foobar"}, {1,6,{1,3,4,6,name1=L"foo";["имя2"]=L"bar"}} },
   }
 end
 
@@ -478,6 +542,12 @@ return function (lib)
 
     set_m_tfind   (lib),
     set_m_tfindW  (lib),
+
+    set_f_exec   (lib),
+    set_f_execW  (lib),
+
+    set_m_exec   (lib),
+    set_m_execW  (lib),
 
     set_f_gsub1   (lib),
     set_f_gsubW1  (lib),
