@@ -2472,26 +2472,17 @@ int WINAPI farRegExpControl(HANDLE hHandle, int Command, LONG_PTR Param)
 		case RECTL_OPTIMIZE:
 			return static_cast<regex_handle*>(hHandle)->Regex.Optimize();
 
-		case RECTL_MATCHEX: {
-			auto& Handle = *static_cast<regex_handle*>(hHandle);
-			const auto data = reinterpret_cast<RegExpSearch*>(Param);
-			regex_match Match;
-
-			if (!Handle.Regex.MatchEx({ data->Text, static_cast<size_t>(data->Length) }, data->Position, Match, &Handle.NamedMatch))
-				return FALSE;
-
-			const auto MaxSize = std::min(static_cast<size_t>(data->Count), Match.Matches.size());
-			std::copy_n(Match.Matches.cbegin(), MaxSize, data->Match);
-			data->Count = MaxSize;
-			return TRUE;
-		}
-
+		case RECTL_MATCHEX:
 		case RECTL_SEARCHEX: {
 			auto& Handle = *static_cast<regex_handle*>(hHandle);
 			const auto data = reinterpret_cast<RegExpSearch*>(Param);
 			regex_match Match;
 
-			if (!Handle.Regex.SearchEx({ data->Text, static_cast<size_t>(data->Length) }, data->Position, Match, &Handle.NamedMatch))
+			ReStringView svText { data->Text, static_cast<size_t>(data->Length) };
+			auto result = (Command == RECTL_MATCHEX)
+				? Handle.Regex.MatchEx(svText, data->Position, Match, &Handle.NamedMatch)
+				: Handle.Regex.SearchEx(svText, data->Position, Match, &Handle.NamedMatch);
+			if (!result)
 				return FALSE;
 
 			const auto MaxSize = std::min(static_cast<size_t>(data->Count), Match.Matches.size());
@@ -2507,7 +2498,30 @@ int WINAPI farRegExpControl(HANDLE hHandle, int Command, LONG_PTR Param)
 			const auto& Handle = *static_cast<regex_handle const*>(hHandle);
 			const auto Str = reinterpret_cast<wchar_t const*>(Param);
 			const auto Iterator = Handle.NamedMatch.Matches.find(Str);
-			return Iterator == Handle.NamedMatch.Matches.cend()? 0 : Iterator->second;
+			return Iterator == Handle.NamedMatch.Matches.cend() ? 0 : Iterator->second;
+		}
+
+		case 	RECTL_NAMEDGROUPSCOUNT: {
+			const auto& Handle = *static_cast<regex_handle const*>(hHandle);
+			return static_cast<int>(Handle.NamedMatch.Matches.size());
+		}
+
+		case 	RECTL_NAMEDGROUPSINFO: {
+			const auto& Handle = *static_cast<regex_handle const*>(hHandle);
+			auto Info = reinterpret_cast<struct RegExpNamedGroupsInfo*>(Param);
+			size_t I = 0;
+			for (const auto &item: Handle.NamedMatch.Matches)
+			{
+				if (I < Info->Count)
+				{
+					Info->Groups[I].Name = item.first.c_str();
+					Info->Groups[I].Index = item.second;
+					++I;
+				}
+				else
+					break;
+			}
+			return TRUE;
 		}
 	}
 

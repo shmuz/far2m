@@ -158,6 +158,28 @@ int func_gmatchW(lua_State *L)   { return _Gmatch(L, 1, 1); }
 int method_gmatch(lua_State *L)  { return _Gmatch(L, 0, 0); }
 int method_gmatchW(lua_State *L) { return _Gmatch(L, 0, 1); }
 
+// the output table already containing an array of matches is on stack top
+static void do_named_subpatterns (lua_State *L, TFarRegex *fr)
+{
+	int count = PSInfo.RegExpControl(fr->hnd, RECTL_NAMEDGROUPSCOUNT, 0);
+	if (count == 0)
+		return;
+
+	struct RegExpNamedGroupsInfo Info;
+	Info.Count = count;
+	Info.Groups = (struct RegExpNamedGroup*) malloc(count * sizeof(struct RegExpNamedGroup));
+	PSInfo.RegExpControl(fr->hnd, RECTL_NAMEDGROUPSINFO, (LONG_PTR)&Info);
+
+	for (int i=0; i < count; i++)
+	{
+		struct RegExpNamedGroup* g = Info.Groups + i;
+		push_utf8_string(L, g->Name, -1);
+		lua_rawgeti(L, -2, g->Index);
+		lua_rawset(L, -3);
+	}
+	free(Info.Groups);
+}
+
 int rx_find_match(lua_State *L, int Op, int is_function, int is_wide)
 {
 	size_t len;
@@ -228,6 +250,7 @@ int rx_find_match(lua_State *L, int Op, int is_function, int is_wide)
 					lua_rawseti(L, -2, k+1);
 				}
 			}
+			// do_named_subpatterns(L, fr);
 		}
 		else
 		{
@@ -251,6 +274,8 @@ int rx_find_match(lua_State *L, int Op, int is_function, int is_wide)
 				if (Op == OP_TFIND)
 					lua_rawseti(L, -2, i);
 			}
+			if (Op == OP_TFIND)
+				do_named_subpatterns(L, fr);
 		}
 		switch (Op)
 		{
