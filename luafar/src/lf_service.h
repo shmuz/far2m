@@ -24,6 +24,7 @@ void          PushInputRecord (lua_State* L, const INPUT_RECORD *Rec);
 
 extern const char* VirtualKeyStrings[256];
 extern struct PluginStartupInfo PSInfo;
+extern struct FarStandardFunctions FSF;
 
 #endif // #ifndef LUAFAR_SERVICE_H
 

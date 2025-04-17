@@ -292,13 +292,18 @@ int method_bracketscount(lua_State *L)
 	return 1;
 }
 
+static int wchar_to_int(wchar_t ch)
+{
+	return
+	(ch >= L'0' && ch <= L'9') ? ch - L'0' :
+	(ch >= L'A' && ch <= L'Z') ? ch - L'A' + 10 :
+	(ch >= L'a' && ch <= L'z') ? ch - L'a' + 10 : -1;
+}
+
 int rx_gsub(lua_State *L, int is_function, int is_wide)
 {
-	size_t len, flen;
-	TFarRegex* fr;
-	const wchar_t *s, *f;
-	int max_rep_capture, ftype, n, matches, reps;
-	luaL_Buffer out;
+	size_t len;
+	TFarRegex* fregex;
 	struct RegExpSearch data;
 	memset(&data, 0, sizeof(data));
 
@@ -309,78 +314,75 @@ int rx_gsub(lua_State *L, int is_function, int is_wide)
 		else
 			data.Text = check_utf8_string(L, 1, &len);
 
-		fr = push_far_regex(L, check_regex_pattern(L, 2, 5));
+		fregex = push_far_regex(L, check_regex_pattern(L, 2, 5));
 		lua_replace(L, 2);
 	}
 	else
 	{
-		fr = CheckFarRegex(L, 1);
+		fregex = CheckFarRegex(L, 1);
 
 		if (is_wide)
 			data.Text = check_wcstring(L, 2, &len);
 		else
 			data.Text = check_utf8_string(L, 2, &len);
 	}
-
 	data.Length = len;
-	s = data.Text;
-	f = NULL;
-	flen = 0;
-	max_rep_capture = 0;
-	ftype = lua_type(L, 3);
 
-	if (ftype == LUA_TSTRING)
+	const wchar_t *repstr = NULL;
+	size_t replen = 0;
+	int max_rep_capture = 0;
+
+	int reptype = lua_type(L, 3);
+	if (reptype != LUA_TSTRING && reptype != LUA_TTABLE && reptype != LUA_TFUNCTION)
+		luaL_argerror(L, 3, "string or table or function");
+
+	if (reptype == LUA_TSTRING)
 	{
-		const wchar_t* p;
-		f = check_utf8_string(L, 3, &flen);
+		repstr = check_utf8_string(L, 3, &replen);
 
-		for(p=f; *p; p++)
+		for (const wchar_t *p=repstr; *p; p++)
 		{
 			if (*p == L'%')
 			{
-				int r, ch;
+				if (*++p == 0)
+					break;
 
-				if ((ch = *++p) == 0) break;
+				int r = wchar_to_int(*p);
 
-				r = (ch >= L'0' && ch <= L'9') ? ch - L'0' :
-						(ch >= L'A' && ch <= L'Z') ? ch - L'A' + 10 :
-						(ch >= L'a' && ch <= L'z') ? ch - L'a' + 10 : -1;
-
-				if (max_rep_capture < r) max_rep_capture = r;
+				if (max_rep_capture < r)
+					max_rep_capture = r;
 			}
 		}
 	}
-	else if (ftype != LUA_TTABLE && ftype != LUA_TFUNCTION)
-		luaL_argerror(L, 3, "string or table or function");
 
-	if (lua_isnoneornil(L, 4)) n = -1;
-	else
+	int max_reps = -1;
+	if (!lua_isnoneornil(L, 4))
 	{
-		n = (int)luaL_checkinteger(L, 4);
+		max_reps = (int)luaL_checkinteger(L, 4);
+		if (max_reps < 0)
+			max_reps = 0;
+	}
 
-		if (n < 0) n = 0;
+	data.Count = PSInfo.RegExpControl(fregex->hnd, RECTL_BRACKETSCOUNT, 0);
+
+	if ((reptype == LUA_TSTRING) && (max_rep_capture >= data.Count) && (max_rep_capture >= 2))
+	{
+		luaL_error(L, "replace string: invalid capture index");
 	}
 
 	lua_settop(L, 3);
-	data.Count = PSInfo.RegExpControl(fr->hnd, RECTL_BRACKETSCOUNT, 0);
-
-	if ((ftype == LUA_TSTRING) &&
-					!(max_rep_capture == 1 && data.Count == 1) &&
-					(data.Count <= max_rep_capture))
-		luaL_error(L, "replace string: invalid capture index");
-
 	data.Match = (struct RegExpMatch*)lua_newuserdata(L, data.Count*sizeof(struct RegExpMatch));
 	data.Match[0].end = -1;
-	matches = reps = 0;
+	int matches = 0, reps = 0;
+	const wchar_t * const s = data.Text;
+	luaL_Buffer out;
 	luaL_buffinit(L, &out);
 
-	while(n < 0 || reps < n)
+	while(max_reps < 0 || reps < max_reps)
 	{
-		int rep;
-		intptr_t from, to;
 		intptr_t prev_end = data.Match[0].end;
 
-		if (!PSInfo.RegExpControl(fr->hnd, RECTL_SEARCHEX, (LONG_PTR)&data))
+		if (!PSInfo.RegExpControl(fregex->hnd, RECTL_SEARCHEX, (LONG_PTR)&data))
 			break;
 
 		if (data.Match[0].end == prev_end)
@@ -396,32 +398,29 @@ int rx_gsub(lua_State *L, int is_function, int is_wide)
 		}
 
 		matches++;
-		rep = 0;
-		from = data.Match[0].start;
-		to = data.Match[0].end;
-		luaL_addlstring(&out, (const char*)(s + data.Position),
-										(from - data.Position) * sizeof(wchar_t));
+		int rep = 0;
+		int from = data.Match[0].start;
+		int to = data.Match[0].end;
+		luaL_addlstring(&out, (const char*)(s + data.Position), (from - data.Position) * sizeof(wchar_t));
 
-		if (ftype == LUA_TSTRING)
+		if (reptype == LUA_TSTRING)
 		{
 			size_t i, start = 0;
 
-			for(i=0; i<flen; i++)
+			for(i=0; i<replen; i++)
 			{
-				if (f[i] == L'%')
+				if (repstr[i] == L'%')
 				{
-					if (++i < flen)
+					if (++i < replen)
 					{
-						int ch = f[i];
-						int r = (ch >= L'0' && ch <= L'9') ? ch - L'0' :
-										(ch >= L'A' && ch <= L'Z') ? ch - L'A' + 10 :
-										(ch >= L'a' && ch <= L'z') ? ch - L'a' + 10 : -1;
+						int r = wchar_to_int(repstr[i]);
 
 						if (r >= 0)
 						{
-							if (r==1 && data.Count==1) r = 0;
+							if (r==1 && data.Count==1)
+								r = 0;
 
-							luaL_addlstring(&out, (const char*)(f+start), (i-1-start)*sizeof(wchar_t));
+							luaL_addlstring(&out, (const char*)(repstr+start), (i-1-start)*sizeof(wchar_t));
 
 							if (data.Match[r].start >= 0)
 							{
@@ -431,25 +430,25 @@ int rx_gsub(lua_State *L, int is_function, int is_wide)
 						}
 						else   // delete the percent sign
 						{
-							luaL_addlstring(&out, (const char*)(f+start), (i-1-start)*sizeof(wchar_t));
-							luaL_addlstring(&out, (const char*)(f+i), sizeof(wchar_t));
+							luaL_addlstring(&out, (const char*)(repstr+start), (i-1-start)*sizeof(wchar_t));
+							luaL_addlstring(&out, (const char*)(repstr+i), sizeof(wchar_t));
 						}
 
 						start = i+1;
 					}
 					else
 					{
-						luaL_addlstring(&out, (const char*)(f+start), (i-1-start)*sizeof(wchar_t));
-						start = flen;
+						luaL_addlstring(&out, (const char*)(repstr+start), (i-1-start)*sizeof(wchar_t));
+						start = replen;
 						break;
 					}
 				}
 			}
 
 			rep++;
-			luaL_addlstring(&out, (const char*)(f+start), (flen-start)*sizeof(wchar_t));
+			luaL_addlstring(&out, (const char*)(repstr+start), (replen-start)*sizeof(wchar_t));
 		}
-		else if (ftype == LUA_TTABLE)
+		else if (reptype == LUA_TTABLE)
 		{
 			int r = data.Count==1 ? 0:1;
 
@@ -481,7 +480,7 @@ int rx_gsub(lua_State *L, int is_function, int is_wide)
 					lua_pop(L, 1);
 			}
 		}
-		else   // if (ftype == LUA_TFUNCTION)
+		else   // if (reptype == LUA_TFUNCTION)
 		{
 			intptr_t i, skip = data.Count==1 ? 0:1;
 			lua_checkstack(L, (int)(data.Count+1-skip));
