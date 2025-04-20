@@ -520,6 +520,46 @@ local function set_f_gsubW6 (lib, flg)
   }
 end
 
+local function set_f_gsub7 (lib, flg)
+  local subj = "foobar"
+  local patt = "(?{name1}foo)(?{имя2}bar)"
+  return {
+    Name = "Function gsub, set7",
+    Func = lib.gsub,
+  --{ s,     p,          f, n,                   res1,res2,res3 },
+    { {subj, patt, "%{name1"          },       { "{name1"       , 1, 1} },
+    { {subj, patt, "%{}"              },       { "{}"           , 1, 1} },
+    { {subj, patt, "%{abc-"           },       { "{abc-"        , 1, 1} },
+    { {subj, patt, "%{unknown}==="    },       { "{unknown}===" , 1, 1} },
+    { {subj, patt, "%{имя2}-%{name1}" },       { "bar-foo",       1, 1} },
+    { {subj, patt, "%{name1}"         },       { "foo",           1, 1} },
+    { {subj, patt, "%{имя2"           },       { "{имя2",         1, 1} },
+    { {subj, patt, "%{имя2}"          },       { "bar",           1, 1} },
+    { {subj, patt, "%%{name1"         },       { "%{name1",       1, 1} },
+    { {subj, patt, "%%{name1}"        },       { "%{name1}",      1, 1} },
+  }
+end
+
+local function set_f_gsubW7 (lib, flg)
+  local subj = L"foobar"
+  local patt = "(?{name1}foo)(?{имя2}bar)"
+  return {
+    Name = "Function gsubW, set7",
+    Func = lib.gsubW,
+  --{ s,     p,          f, n,                   res1,res2,res3 },
+    { {subj, patt, "%{name1"          },       { L"{name1"       , 1, 1} },
+    { {subj, patt, "%{}"              },       { L"{}"           , 1, 1} },
+    { {subj, patt, "%{abc-"           },       { L"{abc-"        , 1, 1} },
+    { {subj, patt, "%{unknown}==="    },       { L"{unknown}===" , 1, 1} },
+    { {subj, patt, "%{имя2}-%{name1}" },       { L"bar-foo",       1, 1} },
+    { {subj, patt, "%{name1}"         },       { L"foo",           1, 1} },
+    { {subj, patt, "%{имя2"           },       { L"{имя2",         1, 1} },
+    { {subj, patt, "%{имя2}"          },       { L"bar",           1, 1} },
+    { {subj, patt, "%%{name1"         },       { L"%{name1",       1, 1} },
+    { {subj, patt, "%%{name1}"        },       { L"%{name1}",      1, 1} },
+  }
+end
+
 return function (lib)
   return {
     set_f_gmatch  (lib),
@@ -566,5 +606,8 @@ return function (lib)
 
     set_f_gsub6   (lib),
     set_f_gsubW6  (lib),
+
+    set_f_gsub7   (lib),
+    set_f_gsubW7  (lib),
   }
 end

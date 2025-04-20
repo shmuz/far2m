@@ -6,6 +6,7 @@
 
 #include "lf_service.h"
 #include "lf_string.h"
+#include "lf_util.h"
 
 #define TYPE_REGEX "far_regex"
 
@@ -292,7 +293,7 @@ int method_bracketscount(lua_State *L)
 	return 1;
 }
 
-static int wchar_to_int(wchar_t ch)
+static int char_to_index(wchar_t ch)
 {
 	return
 	(ch >= L'0' && ch <= L'9') ? ch - L'0' :
@@ -347,7 +348,7 @@ int rx_gsub(lua_State *L, int is_function, int is_wide)
 				if (*++p == 0)
 					break;
 
-				int r = wchar_to_int(*p);
+				int r = char_to_index(*p);
 
 				if (max_rep_capture < r)
 					max_rep_capture = r;
@@ -405,48 +406,96 @@ int rx_gsub(lua_State *L, int is_function, int is_wide)
 
 		if (reptype == LUA_TSTRING)
 		{
-			size_t i, start = 0;
+			size_t tail = 0;
 
-			for(i=0; i<replen; i++)
+			for(size_t i=0; i<replen; i++)
 			{
 				if (repstr[i] == L'%')
 				{
-					if (++i < replen)
+					luaL_addlstring(&out, (const char*)(repstr+tail), (i-tail)*sizeof(wchar_t));
+					tail = i;
+					++i;
+
+					if (i < replen && repstr[i] == L'{')
 					{
-						int r = wchar_to_int(repstr[i]);
+						const wchar_t *Name = repstr + i + 1;
+						const wchar_t *p = Name;
+						const wchar_t *End = repstr + replen;
+
+						// find end of name
+						while (p < End && (FSF.LIsAlphanum(*p) || *p==L' ' || *p==L'_'))
+						{
+							++p;
+						}
+						size_t NameLen = p - Name;
+
+						if (p == End)
+						{
+							++tail;   // delete the percent sign
+							break;
+						}
+						else if (NameLen == 0 || *p != L'}')
+						{
+							++tail;   // delete the percent sign
+							continue;
+						}
+						else
+						{
+							lua_pushlstring(L, (const char*)Name, NameLen*sizeof(wchar_t));
+							lua_pushlstring(L, "\0\0\0\0", sizeof(wchar_t));
+							lua_concat(L, 2);
+							int r = PSInfo.RegExpControl(fregex->hnd, RECTL_NAMEDGROUPINDEX, (LONG_PTR)lua_tostring(L,-1));
+							Log(L, "r:%d, Name: %ls", r, lua_tostring(L,-1));
+							lua_pop(L, 1);
+
+							if (r > 0)
+							{
+								const struct RegExpMatch *m = &data.Match[r];
+								if (m->start >= 0)
+								{
+									luaL_addlstring(&out, (const char*)(s + m->start), (m->end - m->start)*sizeof(wchar_t));
+								}
+								i += (1 + NameLen + 1);
+								tail = i;
+							}
+							else   // delete only the percent sign
+							{
+								++tail;
+							}
+						}
+					}
+					else if (i < replen)
+					{
+						int r = char_to_index(repstr[i]);
+						Log(L, "r:%d, Char: %lc", r, repstr[i]);
 
 						if (r >= 0)
 						{
 							if (r==1 && data.Count==1)
 								r = 0;
 
-							luaL_addlstring(&out, (const char*)(repstr+start), (i-1-start)*sizeof(wchar_t));
-
-							if (data.Match[r].start >= 0)
+							const struct RegExpMatch *m = &data.Match[r];
+							if (m->start >= 0)
 							{
-								luaL_addlstring(&out, (const char*)(s + data.Match[r].start),
-																(data.Match[r].end - data.Match[r].start) * sizeof(wchar_t));
+								luaL_addlstring(&out, (const char*)(s + m->start), (m->end - m->start)*sizeof(wchar_t));
 							}
+							tail = i+1;
 						}
-						else   // delete the percent sign
+						else   // delete only the percent sign
 						{
-							luaL_addlstring(&out, (const char*)(repstr+start), (i-1-start)*sizeof(wchar_t));
-							luaL_addlstring(&out, (const char*)(repstr+i), sizeof(wchar_t));
+							tail = i;
 						}
-
-						start = i+1;
 					}
 					else
 					{
-						luaL_addlstring(&out, (const char*)(repstr+start), (i-1-start)*sizeof(wchar_t));
-						start = replen;
+						tail = replen;
 						break;
 					}
 				}
 			}
 
 			rep++;
-			luaL_addlstring(&out, (const char*)(repstr+start), (replen-start)*sizeof(wchar_t));
+			luaL_addlstring(&out, (const char*)(repstr+tail), (replen-tail)*sizeof(wchar_t));
 		}
 		else if (reptype == LUA_TTABLE)
 		{
