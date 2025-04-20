@@ -445,7 +445,6 @@ int rx_gsub(lua_State *L, int is_function, int is_wide)
 							lua_pushlstring(L, "\0\0\0\0", sizeof(wchar_t));
 							lua_concat(L, 2);
 							int r = PSInfo.RegExpControl(fregex->hnd, RECTL_NAMEDGROUPINDEX, (LONG_PTR)lua_tostring(L,-1));
-							Log(L, "r:%d, Name: %ls", r, lua_tostring(L,-1));
 							lua_pop(L, 1);
 
 							if (r > 0)
@@ -467,7 +466,6 @@ int rx_gsub(lua_State *L, int is_function, int is_wide)
 					else if (i < replen)
 					{
 						int r = char_to_index(repstr[i]);
-						Log(L, "r:%d, Char: %lc", r, repstr[i]);
 
 						if (r >= 0)
 						{
