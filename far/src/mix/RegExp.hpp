@@ -180,13 +180,6 @@ public:
 	matches Matches;
 };
 
-class named_regex_match
-{
-public:
-	using matches = std::unordered_map<std::wstring, size_t>;
-	matches Matches;
-};
-
 /*! Regular expressions support class.
 
 Expressions must be Compile'ed first,
@@ -224,6 +217,8 @@ private:
 		int maxbackref{};
 		int havenamedbrackets{};
 
+		std::unordered_map<std::wstring, size_t> NamedGroups;
+
 		bool ignorecase{};
 
 #ifdef RE_DEBUG
@@ -233,7 +228,7 @@ private:
 		int CalcLength(ReStringView src);
 		bool InnerCompile(const wchar_t* start, const wchar_t* src, int srclength, int options);
 
-		bool InnerMatch(const wchar_t* start, const wchar_t* str, const wchar_t* strend, regex_match& RegexMatch, named_regex_match& NamedMatch, state_stack& Statetack) const;
+		bool InnerMatch(const wchar_t* start, const wchar_t* str, const wchar_t* strend, regex_match& RegexMatch, state_stack& Statetack) const;
 
 		void TrimTail(const wchar_t* start, const wchar_t*& strend) const;
 
@@ -277,23 +272,22 @@ private:
 		    \param match - array of SMatch structures that receive brackets positions.
 		    \param matchcount - in/out parameter that indicate number of items in
 		    match array on input, and number of brackets on output.
-		    \param hmatch - storage of named brackets.
 		    \sa SMatch
 		*/
-		bool Match(ReStringView text, regex_match& match, named_regex_match* NamedMatch = nullptr) const;
+		bool Match(ReStringView text, regex_match& match) const;
 		/*! Advanced version of match. Can be used for multiple matches
 		    on one string (to imitate /g modifier of perl regexp
 		*/
-		bool MatchEx(ReStringView text, size_t From, regex_match& match, named_regex_match* NamedMatch = nullptr) const;
+		bool MatchEx(ReStringView text, size_t From, regex_match& match) const;
 		/*! Try to find substring that will match regexp.
 		    Parameters and return value are the same as for Match.
 		    It is highly recommended to call Optimize before Search.
 		*/
-		bool Search(ReStringView text, regex_match& match, named_regex_match* NamedMatch = nullptr) const;
+		bool Search(ReStringView text, regex_match& match) const;
 		/*! Advanced version of search. Can be used for multiple searches
 		    on one string (to imitate /g modifier of perl regexp
 		*/
-		bool SearchEx(ReStringView text, size_t From, regex_match& match, named_regex_match* NamedMatch = nullptr) const;
+		bool SearchEx(ReStringView text, size_t From, regex_match& match) const;
 
 		bool Search(ReStringView Str) const;
 
@@ -314,6 +308,8 @@ private:
 		    and named brackets.
 		*/
 		int GetBracketsCount() const {return bracketscount;}
+
+		const auto& GetNamedGroups() const { return NamedGroups; }
 };
 
 #endif // REGEXP_HPP_18B41BD7_69F8_461A_8A81_069B447D5554

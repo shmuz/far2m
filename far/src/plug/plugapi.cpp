@@ -2451,7 +2451,6 @@ int WINAPI farRegExpControl(HANDLE hHandle, int Command, LONG_PTR Param)
 	struct regex_handle
 	{
 		RegExp Regex;
-		named_regex_match NamedMatch;
 		std::vector<RegExpNamedGroup> NamedGroupsFlat;
 	};
 
@@ -2467,8 +2466,11 @@ int WINAPI farRegExpControl(HANDLE hHandle, int Command, LONG_PTR Param)
 			delete static_cast<regex_handle const*>(hHandle);
 			return TRUE;
 
-		case RECTL_COMPILE:
-			return static_cast<regex_handle*>(hHandle)->Regex.Compile(reinterpret_cast<const wchar_t*>(Param), OP_PERLSTYLE);
+		case RECTL_COMPILE: {
+			auto& Handle = *static_cast<regex_handle*>(hHandle);
+			Handle.NamedGroupsFlat.clear();
+			return Handle.Regex.Compile(reinterpret_cast<const wchar_t*>(Param), OP_PERLSTYLE);
+		}
 
 		case RECTL_OPTIMIZE:
 			return static_cast<regex_handle*>(hHandle)->Regex.Optimize();
@@ -2479,12 +2481,10 @@ int WINAPI farRegExpControl(HANDLE hHandle, int Command, LONG_PTR Param)
 			const auto data = reinterpret_cast<RegExpSearch*>(Param);
 			regex_match Match;
 
-			Handle.NamedGroupsFlat.clear();
-
 			ReStringView svText { data->Text, static_cast<size_t>(data->Length) };
 			auto result = (Command == RECTL_MATCHEX)
-				? Handle.Regex.MatchEx(svText, data->Position, Match, &Handle.NamedMatch)
-				: Handle.Regex.SearchEx(svText, data->Position, Match, &Handle.NamedMatch);
+				? Handle.Regex.MatchEx(svText, data->Position, Match)
+				: Handle.Regex.SearchEx(svText, data->Position, Match);
 			if (!result)
 				return FALSE;
 
@@ -2500,8 +2500,9 @@ int WINAPI farRegExpControl(HANDLE hHandle, int Command, LONG_PTR Param)
 		case RECTL_NAMEDGROUPINDEX: {
 			const auto& Handle = *static_cast<regex_handle const*>(hHandle);
 			const auto Str = reinterpret_cast<wchar_t const*>(Param);
-			const auto Iterator = Handle.NamedMatch.Matches.find(Str);
-			return Iterator == Handle.NamedMatch.Matches.cend() ? 0 : Iterator->second;
+			const auto& NamedGroups = Handle.Regex.GetNamedGroups();
+			const auto Iterator = NamedGroups.find(Str);
+			return Iterator == NamedGroups.cend()? 0 : Iterator->second;
 		}
 
 		case 	RECTL_GETNAMEDGROUPS: {
@@ -2509,8 +2510,9 @@ int WINAPI farRegExpControl(HANDLE hHandle, int Command, LONG_PTR Param)
 
 			if (Handle.NamedGroupsFlat.empty())
 			{
-				Handle.NamedGroupsFlat.reserve(Handle.NamedMatch.Matches.size());
-				for (const auto &I: Handle.NamedMatch.Matches)
+				const auto& NamedGroups = Handle.Regex.GetNamedGroups();
+				Handle.NamedGroupsFlat.reserve(NamedGroups.size());
+				for (const auto &I: NamedGroups)
 				{
 					Handle.NamedGroupsFlat.emplace_back(RegExpNamedGroup{ I.second, I.first.c_str() });
 				}

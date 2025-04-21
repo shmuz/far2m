@@ -1238,12 +1238,16 @@ wchar_t GetDecimalSeparator()
 	return Opt.strDecimalSeparator.IsEmpty() ? GetDecimalSeparatorDefault() : Opt.strDecimalSeparator.At(0);
 }
 
-FARString ReplaceBrackets(const wchar_t* SearchStr,const FARString& ReplaceStr,regex_match& Match,named_regex_match* NamedMatch)
+FARString ReplaceBrackets(
+		const wchar_t* SearchStr,
+		const FARString& ReplaceStr,
+		regex_match& Match,
+		std::unordered_map<std::wstring, size_t> const& NamedGroups)
 {
 	FARString result;
-	size_t pos=0,length=ReplaceStr.GetLength();
+	const size_t length = ReplaceStr.GetLength();
 
-	while (pos<length)
+	for (size_t pos=0; pos < length; )
 	{
 		bool common=true;
 
@@ -1264,39 +1268,35 @@ FARString ReplaceBrackets(const wchar_t* SearchStr,const FARString& ReplaceStr,r
 			}
 			else if (symbol == L'{')
 			{
-				size_t EndPos;
-				bool ValidGroup = ReplaceStr.Pos(EndPos, L'}', pos+2) && (EndPos > pos+2);
-				if (ValidGroup)
+				size_t EndPos = 0;
+				for (size_t i = pos+2; i < length; i++)
 				{
-					for (size_t i = pos+2; i < EndPos; i++)
+					if (!(IsAlphaNum(ReplaceStr[i]) || ReplaceStr[i]==L'_' || ReplaceStr[i]==L' '))
 					{
-						if (!(IsAlphaNum(ReplaceStr[i]) || ReplaceStr[i]==L'_' || ReplaceStr[i]==L' '))
+						EndPos = i;
+						break;
+					}
+				}
+				if ((ReplaceStr[EndPos] == L'}') && (EndPos > pos+2))
+				{
+					std::wstring Name(ReplaceStr+(pos+2), EndPos-(pos+2));
+					const auto found = NamedGroups.find(Name);
+					if (found != NamedGroups.end())
+					{
+						const auto idx = found->second;
+						if (idx < Match.Matches.size())
 						{
-							ValidGroup = false;
-							break;
+							const auto& match = Match.Matches[idx];
+							FARString bracket(SearchStr + match.start, match.end - match.start);
+							result += bracket;
 						}
 					}
-					if (ValidGroup)
-					{
-						std::wstring Name(ReplaceStr+(pos+2), EndPos-(pos+2));
-						const auto found = NamedMatch->Matches.find(Name);
-						if (found != NamedMatch->Matches.end())
-						{
-							const auto index = found->second;
-							if (index < Match.Matches.size())
-							{
-								const auto& match = Match.Matches[index];
-								FARString bracket(SearchStr + match.start, match.end - match.start);
-								result += bracket;
-							}
-						}
-						//	else //insert named group "as is"
-						//	{
-						//		result += FARString(ReplaceStr + pos, (EndPos+1) - pos);
-						//	}
-						pos = EndPos + 1;
-						continue;
-					}
+					//	else //insert named group "as is"
+					//	{
+					//		result += FARString(ReplaceStr + pos, (EndPos+1) - pos);
+					//	}
+					pos = EndPos + 1;
+					continue;
 				}
 			}
 
@@ -1392,19 +1392,18 @@ bool SearchString(const wchar_t *Source, int StrSize, const FARString& Str, FARS
 				return false;
 
 			regex_match rmatch;
-			named_regex_match nrmatch;
 
 			bool found = false;
 			if (!Reverse)
 			{
-				if (re.SearchEx(ReStringView(Source, StrSize),Position,rmatch,&nrmatch))
+				if (re.SearchEx(ReStringView(Source, StrSize),Position,rmatch))
 					found = true;
 			}
 			else
 			{
 				for (int pos=Position; pos >= 0; --pos)
 				{
-					if (re.SearchEx(ReStringView(Source, StrSize), pos, rmatch, &nrmatch))
+					if (re.SearchEx(ReStringView(Source, StrSize), pos, rmatch))
 					{
 						if (rmatch.Matches[0].start <= Position)
 						{
@@ -1418,7 +1417,7 @@ bool SearchString(const wchar_t *Source, int StrSize, const FARString& Str, FARS
 			{
 				*SearchLength = rmatch.Matches[0].end - rmatch.Matches[0].start;
 				CurPos = rmatch.Matches[0].start;
-				ReplaceStr = ReplaceBrackets(Source, ReplaceStr, rmatch, &nrmatch);
+				ReplaceStr = ReplaceBrackets(Source, ReplaceStr, rmatch, re.GetNamedGroups());
 			}
 
 			return found;
