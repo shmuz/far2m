@@ -828,7 +828,6 @@ local function test_Far_GetConfig()
     "Editor.DelRemovesBlocks",
     "Editor.EditOpenedForWrite",
     "Editor.EditorCursorBeyondEOL",
-    "Editor.EditorF7Rules",
     "Editor.EditorUndoSize",
     "Editor.ExpandTabs",
     "Editor.ExternalEditorName",

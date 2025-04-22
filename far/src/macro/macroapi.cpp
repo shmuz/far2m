@@ -2284,8 +2284,6 @@ int64_t FarMacroApi::editorsetFunc()
 				Ret=EdOpt.SaveShortPos; break;
 			case 12: // char WordDiv[256];
 				Ret=TVar(EdOpt.strWordDiv); break;
-			case 13: // F7Rules;
-				Ret=EdOpt.F7Rules; break;
 			case 14: // AllowEmptySpaceAfterEof;
 				Ret=EdOpt.AllowEmptySpaceAfterEof; break;
 			case 15: // ShowScrollBar;
@@ -2334,8 +2332,6 @@ int64_t FarMacroApi::editorsetFunc()
 					EdOpt.SaveShortPos=longState; break;
 				case 12: // char WordDiv[256];
 					EdOpt.strWordDiv = _longState.toString(); break;
-				case 13: // F7Rules;
-					EdOpt.F7Rules=longState; break;
 				case 14: // AllowEmptySpaceAfterEof;
 					EdOpt.AllowEmptySpaceAfterEof=longState; break;
 				case 15: // ShowScrollBar;

@@ -237,7 +237,6 @@ static struct FARConfig
 	{false, NSecEditor, "EditorUndoSize",               &Opt.EdOpt.UndoSize, 0},
 	{false, NSecEditor, "WordDiv",                      &Opt.strWordDiv, WordDiv0},
 	{false, NSecEditor, "BSLikeDel",                    &Opt.EdOpt.BSLikeDel, 1, REG_BOOLEAN},
-	{false, NSecEditor, "EditorF7Rules",                &Opt.EdOpt.F7Rules, 1, REG_BOOLEAN},
 	{false, NSecEditor, "FileSizeLimit",                &Opt.EdOpt.FileSizeLimitLo, 0},
 	{false, NSecEditor, "FileSizeLimitHi",              &Opt.EdOpt.FileSizeLimitHi, 0},
 	{false, NSecEditor, "CharCodeBase",                 &Opt.EdOpt.CharCodeBase, 1},
