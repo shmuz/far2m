@@ -328,7 +328,6 @@ static struct FARConfig
 	{false, NSecSystem, "MsHWheelDeltaEdit",            &Opt.MsHWheelDeltaEdit, 1},
 	{false, NSecSystem, "SubstNameRule",                &Opt.SubstNameRule, 2},
 	{false, NSecSystem, "ShowCheckingFile",             &Opt.ShowCheckingFile, 0, REG_BOOLEAN},
-	{false, NSecSystem, "DelThreadPriority",            &Opt.DelThreadPriority, 0},
 	{false, NSecSystem, "QuotedSymbols",                &Opt.strQuotedSymbols, L" $&()[]{};|*?!'`\"\\\xA0"}, //xA0 => 160 =>oem(0xFF)
 	{false, NSecSystem, "QuotedName",                   &Opt.QuotedName, QUOTEDNAME_INSERT},
 	{false, NSecSystem, "PluginMaxReadData",            &Opt.PluginMaxReadData, 0x40000},

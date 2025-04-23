@@ -980,7 +980,6 @@ local function test_Far_GetConfig()
     "System.CopyXAttr",
     "System.DeleteToRecycleBin",
     "System.DeleteToRecycleBinKillLink",
-    "System.DelThreadPriority",
     "System.DriveColumn2",
     "System.DriveColumn3",
     "System.DriveDisconnectMode",

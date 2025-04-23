@@ -104,7 +104,6 @@ private:
 void ShellDelete(Panel *SrcPanel, bool Wipe)
 {
 	SudoClientRegion scr;
-	// todo SCOPED_ACTION(ChangePriority)(Opt.DelThreadPriority);
 	SCOPED_ACTION(TPreRedrawFuncGuard)(PR_ShellDeleteMsg);
 	FAR_FIND_DATA_EX FindData;
 	FARString strDeleteFilesMsg;

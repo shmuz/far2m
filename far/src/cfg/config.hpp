@@ -557,7 +557,6 @@ struct Options
 
 	DWORD ShowTimeoutDelFiles; // таймаут в процессе удаления (в ms)
 	DWORD ShowTimeoutDACLFiles;
-	int DelThreadPriority; // приоритет процесса удаления, по умолчанию = THREAD_PRIORITY_NORMAL
 
 	LoadPluginsOptions LoadPlug;
 
