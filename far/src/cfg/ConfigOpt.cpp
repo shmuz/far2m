@@ -266,6 +266,7 @@ static struct FARConfig
 	{true,  NSecSavedViewHistory, NParamHistoryCount,   &Opt.ViewHistoryCount, 512},
 	{true,  NSecSavedDialogHistory, NParamHistoryCount, &Opt.DialogsHistoryCount, 512},
 
+	{true,  NSecSystem, "PersonalPluginsPath",          &Opt.LoadPlug.strPersonalPluginsPath, L""},
 	{true,  NSecSystem, "SaveHistory",                  &Opt.SaveHistory, 1, REG_BOOLEAN},
 	{true,  NSecSystem, "SaveFoldersHistory",           &Opt.SaveFoldersHistory, 1, REG_BOOLEAN},
 	{false, NSecSystem, "SavePluginFoldersHistory",     &Opt.SavePluginFoldersHistory, 0, REG_BOOLEAN},
@@ -602,8 +603,6 @@ void ConfigOptLoad()
 	ConfigReader cfg_reader;
 
 	/* <ПРЕПРОЦЕССЫ> *************************************************** */
-	cfg_reader.SelectSection(NSecSystem);
-	Opt.LoadPlug.strPersonalPluginsPath = cfg_reader.GetString("PersonalPluginsPath", L"");
 	bool ExplicitWindowMode=Opt.WindowMode!=FALSE;
 	//Opt.LCIDSort=LOCALE_USER_DEFAULT; // проинициализируем на всякий случай
 	/* *************************************************** </ПРЕПРОЦЕССЫ> */
@@ -786,8 +785,6 @@ void ConfigOptSave(bool Ask)
 	ConfigWriter cfg_writer;
 
 	/* *************************************************** </ПРЕПРОЦЕССЫ> */
-	cfg_writer.SelectSection(NSecSystem);
-	cfg_writer.SetString("PersonalPluginsPath", Opt.LoadPlug.strPersonalPluginsPath);
 //	cfg_writer.SetString(NSecLanguage, "Main", Opt.strLanguage);
 
 	for (size_t I=0; I < ARRAYSIZE(CFG); ++I)

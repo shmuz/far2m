@@ -1008,6 +1008,7 @@ local function test_Far_GetConfig()
     "System.MultiCopy",
     "System.MultiMakeDir",
     "System.OnlyFilesSize",
+    "System.PersonalPluginsPath",
     "System.PluginMaxReadData",
     "System.QuotedName",
     "System.QuotedSymbols",
