@@ -145,7 +145,7 @@ static struct FARConfig
 	{true,  NSecCmdline, "UsePromptFormat",             &Opt.CmdLine.UsePromptFormat, 0, REG_BOOLEAN},
 	{true,  NSecCmdline, "PromptFormat",                &Opt.CmdLine.strPromptFormat, L"$p$# "},
 	{true,  NSecCmdline, "UseShell",                    &Opt.CmdLine.UseShell, 0, REG_BOOLEAN},
-	{true,  NSecCmdline, "Shell",                       &Opt.CmdLine.strShell, L"/bin/bash"},
+	{true,  NSecCmdline, "ShellCmd",                    &Opt.CmdLine.strShell, L"bash -i"},
 	{true,  NSecCmdline, "DelRemovesBlocks",            &Opt.CmdLine.DelRemovesBlocks, 1, REG_BOOLEAN},
 	{true,  NSecCmdline, "EditBlock",                   &Opt.CmdLine.EditBlock, 0, REG_BOOLEAN},
 	{true,  NSecCmdline, "AutoComplete",                &Opt.CmdLine.AutoComplete, 1, REG_BOOLEAN},

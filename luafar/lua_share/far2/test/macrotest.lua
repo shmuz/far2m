@@ -779,7 +779,7 @@ local function test_Far_GetConfig()
     "Cmdline.EditBlock",
     "Cmdline.ImitateNumpadKeys",
     "Cmdline.PromptFormat",
-    "Cmdline.Shell",
+    "Cmdline.ShellCmd",
     "Cmdline.Splitter",
     "Cmdline.UsePromptFormat",
     "Cmdline.UseShell",
