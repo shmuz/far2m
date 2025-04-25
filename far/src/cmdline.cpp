@@ -458,6 +458,7 @@ int CommandLine::ProcessKey(FarKey Key)
 			CmdStr.Select(-1,0);
 			CmdStr.Show();
 			CmdStr.GetString(strStr);
+			RemoveTrailingSpaces(strStr);
 
 			if (strStr.IsEmpty())
 				break;
