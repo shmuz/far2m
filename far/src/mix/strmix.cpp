@@ -369,18 +369,35 @@ wchar_t* WINAPI RemoveTrailingSpaces(wchar_t *Str)
 }
 
 
-FARString& WINAPI RemoveTrailingSpaces(FARString &strStr)
+FARString& WINAPI RemoveTrailingSpaces(FARString &strStr, bool keep_escaping)
 {
 	if (strStr.IsEmpty())
 		return strStr;
 
-	const wchar_t *Str = strStr;
-	const wchar_t *ChPtr = Str + strStr.GetLength() - 1;
+	if (!keep_escaping) {
+		const wchar_t *Str = strStr;
+		const wchar_t *ChPtr = Str + strStr.GetLength() - 1;
 
-	for (; ChPtr >= Str && (IsSpace(*ChPtr) || IsEol(*ChPtr)); ChPtr--)
-		;
+		for (; ChPtr >= Str && (IsSpace(*ChPtr) || IsEol(*ChPtr)); ChPtr--)
+			;
 
-	strStr.Truncate(ChPtr < Str ? 0 : ChPtr-Str+1);
+		strStr.Truncate(ChPtr < Str ? 0 : ChPtr-Str+1);
+	}
+	else {
+		int Pos = -1, Len = strStr.GetLength();
+		for (int I=0; I < Len; ++I) {
+			if (IsSpace(strStr[I]) || IsEol(strStr[I]))
+				Pos = (Pos < 0) ? I : Pos;
+			else {
+				Pos = -1	;
+				if (strStr[I] == L'\\')
+					++I;
+			}
+		}
+		if (Pos >= 0)
+			strStr.Truncate(Pos);
+	}
+
 	return strStr;
 }
 
