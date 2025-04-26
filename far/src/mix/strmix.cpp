@@ -373,21 +373,22 @@ FARString& WINAPI RemoveTrailingSpaces(FARString &strStr, bool keep_escaping)
 {
 	const wchar_t *Str = strStr;
 	const wchar_t *ChPtr = Str + strStr.GetLength() - 1;
-	bool bSpaces = false;
+	int nSpaces = 0;
 
 	for (; ChPtr >= Str && (IsSpace(*ChPtr) || IsEol(*ChPtr)); ChPtr--)
-		bSpaces = true;
+		++nSpaces;
 
-	if (bSpaces) {
+	if (nSpaces) {
 		if (keep_escaping) {
 			bool bEscape = false;
-			for (const auto *p = ChPtr; (p >= Str && *p == L'\\'); --p) {
+			for (; (ChPtr >= Str && *ChPtr == L'\\'); --ChPtr) {
 				bEscape = !bEscape;
 			}
 			if (bEscape)
-				++ChPtr;
+				--nSpaces;
 		}
-		strStr.Truncate(ChPtr + 1 - Str);
+		if (nSpaces)
+			strStr.Truncate(strStr.GetLength() - nSpaces);
 	}
 	return strStr;
 }
