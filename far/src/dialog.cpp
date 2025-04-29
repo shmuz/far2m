@@ -322,16 +322,8 @@ bool ConvertItemEx(CVTITEMFLAGS FromPlugin, FarDialogItem *Item, DialogItemEx *D
 				if (Data->Y2 < Data->Y1)
 					Data->Y2 = Data->Y1;
 
-				if (Data->Type == DI_COMBOBOX || Data->Type == DI_LISTBOX) {
-					if (IsPtr(Item->Param.ListItems)) {
-						for (int I=0; I < Data->ListItems->ItemsNumber; ++I) {
-							auto &Item = Data->ListItems->Items[I];
-							Item.Text = NullToEmpty(Item.Text);
-						}
-					}
-					else
+				if ((Data->Type == DI_COMBOBOX || Data->Type == DI_LISTBOX) && !IsPtr(Item->Param.ListItems))
 						Data->ListItems = nullptr;
-				}
 			}
 
 			break;
@@ -1003,10 +995,12 @@ unsigned Dialog::InitDialogObjects(unsigned ID)
 
 				for (J = 0; J < Length; J++) {
 					if (ListItems[J].Flags & LIF_SELECTED) {
+						const auto Text = NullToEmpty(ListItems[J].Text);
+
 						if (ItemFlags & (DIF_DROPDOWNLIST | DIF_LISTNOAMPERSAND))
-							HiText2Str(CurItem->strData, ListItems[J].Text);
+							HiText2Str(CurItem->strData, Text);
 						else
-							CurItem->strData = ListItems[J].Text;
+							CurItem->strData = Text;
 
 						break;
 					}
