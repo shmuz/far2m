@@ -322,8 +322,16 @@ bool ConvertItemEx(CVTITEMFLAGS FromPlugin, FarDialogItem *Item, DialogItemEx *D
 				if (Data->Y2 < Data->Y1)
 					Data->Y2 = Data->Y1;
 
-				if ((Data->Type == DI_COMBOBOX || Data->Type == DI_LISTBOX) && !IsPtr(Item->Param.ListItems))
-					Data->ListItems = nullptr;
+				if (Data->Type == DI_COMBOBOX || Data->Type == DI_LISTBOX) {
+					if (IsPtr(Item->Param.ListItems)) {
+						for (int I=0; I < Data->ListItems->ItemsNumber; ++I) {
+							auto &Item = Data->ListItems->Items[I];
+							Item.Text = NullToEmpty(Item.Text);
+						}
+					}
+					else
+						Data->ListItems = nullptr;
+				}
 			}
 
 			break;
