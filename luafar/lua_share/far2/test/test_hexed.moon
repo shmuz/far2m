@@ -1,9 +1,12 @@
 -- started: 2024-10-19
+dirsep = package.config\sub 1, 1
+osWindows = dirsep == "\\"
+
 guid_editor="02FFA2B9-98F8-4A73-B311-B3431340E272"
 guid_goto="4FEA7612-507B-453F-A83D-53837CAD86ED"
 F=far.Flags
 
-filename=far.InMyTemp "hexed_test"
+filename=osWindows and win.GetEnv("TEMP").."\\hexed_test" or far.InMyTemp "hexed_test"
 filesize=0x10000
 fillchar="-"
 textarea=false
