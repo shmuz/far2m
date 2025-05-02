@@ -3106,6 +3106,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 		case DM_USER:
 		// DN_*
 		case DN_BTNCLICK:
+		case DN_DROPDOWNOPENED:
 			Param2 = luaL_optlong(L, pos4, 0);
 			break;
 
@@ -3666,6 +3667,7 @@ int PushDNParams (lua_State *L, int Msg, int Param1, LONG_PTR Param2)
 		case DN_CTLCOLORDLGITEM:
 		case DN_CTLCOLORDLGLIST:
 		case DN_DRAWDLGITEM:
+		case DN_DROPDOWNOPENED:
 		case DN_EDITCHANGE:
 		case DN_HELP:
 		case DN_HOTKEY:
@@ -3887,6 +3889,7 @@ LONG_PTR LF_DlgProc(lua_State *L, HANDLE hDlg, int Msg, int Param1, LONG_PTR Par
 		case DN_CTLCOLORDLGITEM:
 		case DN_CTLCOLORDLGLIST:
 		case DN_DRAWDLGITEM:
+		case DN_DROPDOWNOPENED:
 		case DN_EDITCHANGE:
 		case DN_HELP:
 		case DN_LISTCHANGE:
