@@ -241,15 +241,15 @@ extern "C" void WinPortHelp()
 			"\t--norgb - don't use true (24-bit) colors\n"
 			"\t--mortal - terminate instead of going to background on getting SIGHUP (default if in Linux TTY)\n"
 			"\t--immortal - go to background instead of terminating on getting SIGHUP (default if not in Linux TTY)\n"
-			"\t--x11 - force GUI backend to run on X11\n"
-			"\t--wayland - force GUI backend to run on Wayland\n"
+			"\t--x11 - force GUI backend to run on X11/Xwayland (force make GDK_BACKEND=x11)\n"
+			"\t--wayland - force GUI backend to run on Wayland (force make GDK_BACKEND=wayland)\n"
 			"\t--ee=N - ESC expiration in msec (default is 100, 0 to disable) to avoid need for double ESC presses (valid only in TTY mode without FAR2L extensions)\n"
 			"\t--primary-selection - use PRIMARY selection instead of CLIPBOARD X11 selection (only for GUI backend)\n"
 			"\t--maximize - force maximize window upon launch (only for GUI backend)\n"
 			"\t--nomaximize - dont maximize window upon launch even if its has saved maximized state (only for GUI backend)\n"
 			"\t--clipboard=SCRIPT - use external clipboard handler script that implements get/set text clipboard data via its stdin/stdout\n"
 			"\n"
-			"All options also can be set via the FAR2M_ARGS environment variable\n"
+			"All options (except -h and -u) also can be set via the FAR2M_ARGS environment variable\n"
 			" (for example: export FAR2M_ARGS=\"--tty\" to start far2m in tty mode by default)\n");
 }
 
