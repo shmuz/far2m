@@ -397,10 +397,6 @@ if (DEFINED PYTHON AND PYTHON)
         DESTINATION "lib/far2m/Plugins/python/plug/" USE_SOURCE_PERMISSIONS
         COMPONENT base FILES_MATCHING
         PATTERN "*")
-    install(DIRECTORY "${INSTALL_DIR}/Plugins/python/plug/plugins"
-        DESTINATION "lib/far2m/Plugins/python/plug/" USE_SOURCE_PERMISSIONS
-        COMPONENT base FILES_MATCHING
-        PATTERN "*")
 else()
     AddPlugin(python wide 0)
 endif()
@@ -425,6 +421,7 @@ install(DIRECTORY "${INSTALL_DIR}/" DESTINATION "lib/far2m" USE_SOURCE_PERMISSIO
     PATTERN "far2m_ttyx.broker"
     PATTERN "plug/*.far-plug-*"
     PATTERN "plug/*.broker"
+    PATTERN "python/plugins" EXCLUDE
     PATTERN "luafar/luafar.so"
     PATTERN "Manuals" EXCLUDE
     PATTERN "lua_share" EXCLUDE)
@@ -435,7 +432,7 @@ install(DIRECTORY "${INSTALL_DIR}/" DESTINATION "share/far2m" USE_SOURCE_PERMISS
     PATTERN "far2m_*" EXCLUDE
     PATTERN "*.far-plug-*" EXCLUDE
     PATTERN "*.broker" EXCLUDE
-    PATTERN "python/plug/python" EXCLUDE
+    PATTERN "python/plug/far2l" EXCLUDE
     PATTERN "luafar/luafar.so" EXCLUDE
     PATTERN "lua_share/far2/test" EXCLUDE
     PATTERN "*")
