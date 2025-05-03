@@ -189,7 +189,7 @@ void InfoList::DisplayObject()
 
 	/* #1 - computer name/user name */
 
-	{
+	{	/*
 		GotoXY(X1 + 2, CurY++);
 		PrintText(Msg::InfoCompName);
 		PrintInfo(CachedComputerName());
@@ -197,6 +197,13 @@ void InfoList::DisplayObject()
 		GotoXY(X1 + 2, CurY++);
 		PrintText(Msg::InfoUserName);
 		PrintInfo(CachedUserName());
+		*/
+
+		GotoXY(X1 + 2, CurY++);
+		strTitle.Format(L"%ls / %ls", Msg::InfoCompName.CPtr(), Msg::InfoUserName.CPtr());
+		PrintText(strTitle);
+		strTitle = CachedComputerName() + " / " + CachedUserName();
+		PrintInfo(strTitle);
 	}
 
 	/* #2 - disk / plugin info */
@@ -254,15 +261,15 @@ void InfoList::DisplayObject()
 			PrintInfo(strDiskNumber);
 
 			// new fields
-			CurY++; // skip line
-
 			GotoXY(X1 + 2, CurY++);
 			PrintText(Msg::InfoDiskCurDir);
 			PrintInfo(strCurDir);
 
-			GotoXY(X1 + 2, CurY++);
-			PrintText(Msg::InfoDiskRealDir);
-			PrintInfo(strRealDir);
+			if ( strRealDir != strCurDir ) {
+				GotoXY(X1 + 2, CurY++);
+				PrintText(Msg::InfoDiskRealDir);
+				PrintInfo(strRealDir);
+			}
 
 			if (b_info) {
 				GotoXY(X1 + 2, CurY++);
@@ -353,25 +360,35 @@ void InfoList::DisplayObject()
 			OpenPluginInfo Info;
 			AnotherPanel->GetOpenPluginInfo(&Info);
 
-			GotoXY(X1 + 2, CurY++);
-			PrintText(Msg::InfoPluginHostFile);
-			PrintInfo(Info.HostFile);
+			if (Info.HostFile != nullptr && *Info.HostFile != L'\0' ) {
+				GotoXY(X1 + 2, CurY++);
+				PrintText(Msg::InfoPluginHostFile);
+				PrintInfo(Info.HostFile);
+			}
 
-			GotoXY(X1 + 2, CurY++);
-			PrintText(Msg::InfoPluginCurDir);
-			PrintInfo(Info.CurDir);
+			if (Info.CurDir != nullptr && *Info.CurDir != L'\0' ) {
+				GotoXY(X1 + 2, CurY++);
+				PrintText(Msg::InfoPluginCurDir);
+				PrintInfo(Info.CurDir);
+			}
 
-			GotoXY(X1 + 2, CurY++);
-			PrintText(Msg::InfoPluginPanelTitle);
-			PrintInfo(Info.PanelTitle);
+			if (Info.PanelTitle != nullptr && *Info.PanelTitle != L'\0' ) {
+				GotoXY(X1 + 2, CurY++);
+				PrintText(Msg::InfoPluginPanelTitle);
+				PrintInfo(Info.PanelTitle);
+			}
 
-			GotoXY(X1 + 2, CurY++);
-			PrintText(Msg::InfoPluginFormat);
-			PrintInfo(Info.Format);
+			if (Info.Format != nullptr && *Info.Format != L'\0' ) {
+				GotoXY(X1 + 2, CurY++);
+				PrintText(Msg::InfoPluginFormat);
+				PrintInfo(Info.Format);
+			}
 
-			GotoXY(X1 + 2, CurY++);
-			PrintText(Msg::InfoPluginShortcutData);
-			PrintInfo(Info.ShortcutData);
+			if (Info.ShortcutData != nullptr && *Info.ShortcutData != L'\0' ) {
+				GotoXY(X1 + 2, CurY++);
+				PrintText(Msg::InfoPluginShortcutData);
+				PrintInfo(Info.ShortcutData);
+			}
 		}
 	}
 
@@ -458,10 +475,12 @@ void InfoList::DisplayObject()
 			InsertCommas(si.totalswap, strOutStr);
 			PrintInfo(strOutStr);
 
-			GotoXY(X1 + 2, CurY++);
-			PrintText(Msg::InfoPageFileFree);
-			InsertCommas(si.freeswap, strOutStr);
-			PrintInfo(strOutStr);
+			if (si.totalswap != 0 ) {
+				GotoXY(X1 + 2, CurY++);
+				PrintText(Msg::InfoPageFileFree);
+				InsertCommas(si.freeswap, strOutStr);
+				PrintInfo(strOutStr);
+			}
 		}
 #endif
 	}
