@@ -21,10 +21,13 @@ local IND_FLAGS    = 9
 
 local mod = {} -- this module
 local mod_meta = { __index=mod; }
+local Compile -- forward declaration (not exposed as a mod method)
 
 function mod.New(Items)
   assert(type(Items) == "table", "param #1 must be a table")
-  return setmetatable({Items=Items}, mod_meta)
+  local self = setmetatable({Items=Items}, mod_meta)
+  Compile(self)
+  return self
 end
 
 --- Edit some text (e.g. a DI_EDIT dialog field) in Far editor
@@ -247,9 +250,12 @@ end
 --    Supported properties for entire dialog (all are optional):
 --        guid          : string   : a text-form guid
 --        width         : number   : dialog width
---        help          : string   : help topic
---        flags         : flags    : dialog flags
+--        x1            : number   : x1 coordinate (0-based)
+--        y1            : number   : y1 coordinate (0-based)
+--        help          : str|func : string: help topic, function: called on F1 press
+--        flags         : number   : dialog flags
 --        proc          : function : dialog procedure
+--        data          : any      : Param2 on DN_INITFIALOG; get/set via DM_GETDLGDATA/DM_SETDLGDATA
 
 --    Supported properties for a dialog item (all are optional except tp):
 --        tp            : string   : type; mandatory
@@ -272,14 +278,13 @@ end
 -- @return1 out  table : contains final values of dialog items indexed by 'name' field of 'inData' items
 -- @return2 pos number : return value of API far.Dialog()
 ----------------------------------------------------------------------------------------------------
-function mod:Run()
+Compile = function(self)
   local inData = self.Items
-  inData.flags = inData.flags or 0
-  assert(type(inData.flags)=="number", "'Data.flags' must be a number")
-  local HMARGIN = (0 ~= band(inData.flags,F.FDLG_SMALLDIALOG)) and 0
-    or (#inData==1 and inData[1].tp=="listbox") and 1 or 3              -- horisontal margin
-  local VMARGIN = (0 == band(inData.flags,F.FDLG_SMALLDIALOG)) and 1 or 0 -- vertical margin
-  local guid = inData.guid and win.Uuid(inData.guid) or ("\0"):rep(16)
+  local inFlags = inData.flags or 0
+  assert(type(inFlags)=="number", "'Data.flags' must be a number")
+  local HMARGIN = (0 ~= band(inFlags,F.FDLG_SMALLDIALOG)) and 0
+    or (#inData==1 and inData[1].tp=="listbox") and 1 or 3           -- horisontal margin
+  local VMARGIN = (0 == band(inFlags,F.FDLG_SMALLDIALOG)) and 1 or 0 -- vertical margin
   local W = inData.width or 76
   local Y, H = VMARGIN-1, 0
   local outData = {}
@@ -447,7 +452,18 @@ function mod:Run()
       item[IND_X2] = W-HMARGIN-3
     end
   end
-  ----------------------------------------------------------------------------------------------
+
+  self.W = W
+  self.H = H
+  self.outData = outData
+end
+
+function mod:Run()
+  local inData = self.Items
+  local outData = self.outData
+  local inFlags = inData.flags or 0
+  local guid = inData.guid and win.Uuid(inData.guid) or ("\0"):rep(16)
+  local W, H = self.W, self.H
   local UserProc = inData.proc or function() end
 
   local function DlgProc(hDlg, Msg, Par1, Par2)
@@ -492,9 +508,9 @@ function mod:Run()
   local x2 = x1==-1 and W or x1+W-1
   local y2 = y1==-1 and H or y1+H-1
 
-  local hDlg = far.DialogInit(guid, x1,y1,x2,y2, help, outData, inData.flags, DlgProc, inData.data)
+  local hDlg = far.DialogInit(guid, x1,y1,x2,y2, help, outData, inFlags, DlgProc, inData.data)
   if hDlg then
-    if F.FDLG_NONMODAL and 0 ~= band(inData.flags, F.FDLG_NONMODAL) then
+    if F.FDLG_NONMODAL and 0 ~= band(inFlags, F.FDLG_NONMODAL) then
       return hDlg -- non-modal dialogs were introduced in build 3.0.5047
     end
   else
