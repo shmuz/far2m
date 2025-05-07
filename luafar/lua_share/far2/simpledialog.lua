@@ -25,9 +25,7 @@ local Compile -- forward declaration (not exposed as a mod method)
 
 function mod.New(Items)
   assert(type(Items) == "table", "param #1 must be a table")
-  local self = setmetatable({Items=Items}, mod_meta)
-  Compile(self)
-  return self
+  return setmetatable({Items=Items}, mod_meta)
 end
 
 --- Edit some text (e.g. a DI_EDIT dialog field) in Far editor
@@ -459,6 +457,8 @@ Compile = function(self)
 end
 
 function mod:Run()
+  Compile(self)
+
   local inData = self.Items
   local outData = self.outData
   local inFlags = inData.flags or 0
