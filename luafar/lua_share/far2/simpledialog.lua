@@ -21,7 +21,6 @@ local IND_FLAGS    = 9
 
 local mod = {} -- this module
 local mod_meta = { __index=mod; }
-local Compile -- forward declaration (not exposed as a mod method)
 
 function mod.New(Items)
   assert(type(Items) == "table", "param #1 must be a table")
@@ -276,7 +275,7 @@ end
 -- @return1 out  table : contains final values of dialog items indexed by 'name' field of 'inData' items
 -- @return2 pos number : return value of API far.Dialog()
 ----------------------------------------------------------------------------------------------------
-Compile = function(self)
+function mod:Compile()
   local inData = self.Items
   local inFlags = inData.flags or 0
   assert(type(inFlags)=="number", "'Data.flags' must be a number")
@@ -451,19 +450,16 @@ Compile = function(self)
     end
   end
 
-  self.W = W
-  self.H = H
-  self.outData = outData
+  outData.W, outData.H = W, H
+  return outData
 end
 
 function mod:Run()
-  Compile(self)
-
+  local outData = self:Compile()
+  local W, H = outData.W, outData.H
   local inData = self.Items
-  local outData = self.outData
   local inFlags = inData.flags or 0
   local guid = inData.guid and win.Uuid(inData.guid) or ("\0"):rep(16)
-  local W, H = self.W, self.H
   local UserProc = inData.proc or function() end
 
   local function DlgProc(hDlg, Msg, Par1, Par2)
