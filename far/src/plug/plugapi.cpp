@@ -967,7 +967,11 @@ static HANDLE FarDialogInitSynched(INT_PTR PluginNumber, const GUID *Id, int X1,
 		return hDlg;
 
 	// ФИЧА! нельзя указывать отрицательные X2 и Y2
-	if (X2 < 0 || Y2 < 0)
+	const auto fixCoord = [](int first, int second) { return (first < 0 && second == 0) ? 1 : second; };
+	X2 = fixCoord(X1, X2);
+	Y2 = fixCoord(Y1, Y2);
+	const auto checkCoord = [](int first, int second) { return second >= 0 && ((first < 0) ? (second > 0) : (first <= second)); };
+	if (!checkCoord(X1, X2) || !checkCoord(Y1, Y2))
 		return hDlg;
 
 	{
