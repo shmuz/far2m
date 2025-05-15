@@ -136,26 +136,6 @@ const char* VirtualKeyStrings[256] =
 	"NONAME", "PA1", "OEM_CLEAR", NULL,
 };
 
-const char* FarKeyStrings[] = {
-/* 0x00 */ NULL,    NULL,   NULL,   NULL,                NULL,    NULL,    NULL,    NULL,
-/* 0x08 */ "BS",    "Tab",  NULL,   NULL,                NULL,    "Enter", NULL,    NULL,
-/* 0x10 */ NULL,    NULL,   NULL,   NULL,                NULL,    NULL,    NULL,    NULL,
-/* 0x18 */ NULL,    NULL,   NULL,   "Esc",               NULL,    NULL,    NULL,    NULL,
-/* 0x20 */ "Space", "PgUp", "PgDn", "End",               "Home",  "Left",  "Up",    "Right",
-/* 0x28 */ "Down",  NULL,   NULL,   NULL,                NULL,    "Ins",   "Del",   NULL,
-/* 0x30 */ "0",     "1",    "2",    "3",                 "4",     "5",     "6",     "7",
-/* 0x38 */ "8",     "9",    NULL,   NULL,                NULL,    NULL,    NULL,    NULL,
-/* 0x40 */ NULL,    "A",    "B",    "C",                 "D",     "E",     "F",     "G",
-/* 0x48 */ "H",     "I",    "J",    "K",                 "L",     "M",     "N",     "O",
-/* 0x50 */ "P",     "Q",    "R",    "S",                 "T",     "U",     "V",     "W",
-/* 0x58 */ "X",     "Y",    "Z",    NULL,                NULL,    NULL,    NULL,    NULL,
-/* 0x60 */ "Num0",  "Num1", "Num2", "Num3",              "Num4",  "Clear", "Num6",  "Num7",
-/* 0x68 */ "Num8",  "Num9", "Multiply", "Add",           NULL, "Subtract", "NumDel", "Divide",
-/* 0x70 */ "F1",    "F2",   "F3",   "F4",                "F5",    "F6",    "F7",    "F8",
-/* 0x78 */ "F9",    "F10",  "F11",  "F12",               "F13",   "F14",   "F15",   "F16",
-/* 0x80 */ "F17",   "F18",  "F19",  "F20",               "F21",   "F22",   "F23",   "F24",
-};
-
 TSynchroData* CreateSynchroData(int type, int data, TTimerData *td)
 {
 	TSynchroData* SD = (TSynchroData*) malloc(sizeof(TSynchroData));
@@ -1442,6 +1422,22 @@ static int editor_SaveFile(lua_State *L)
 	return 1;
 }
 
+static int far_KeyToName (lua_State *L);
+
+static void PushInputRecordToName(lua_State *L, const INPUT_RECORD *Rec)
+{
+	lua_pushcfunction(L, far_KeyToName);
+	lua_pushinteger(L, FSF.FarInputRecordToKey(Rec));
+	lua_call(L, 1, 1);
+}
+
+static void PushKeyToName(lua_State *L, FarKey Key)
+{
+	lua_pushcfunction(L, far_KeyToName);
+	lua_pushinteger(L, Key);
+	lua_call(L, 1, 1);
+}
+
 void PushInputRecord (lua_State* L, const INPUT_RECORD *Rec)
 {
 	lua_newtable(L);                   //+2: Func,Tbl
@@ -1454,6 +1450,8 @@ void PushInputRecord (lua_State* L, const INPUT_RECORD *Rec)
 			PutNumToTable(L, "VirtualScanCode", Rec->Event.KeyEvent.wVirtualScanCode);
 			PutWStrToTable(L, "UnicodeChar",   &Rec->Event.KeyEvent.uChar.UnicodeChar, 1);
 			PutNumToTable(L, "ControlKeyState", Rec->Event.KeyEvent.dwControlKeyState);
+			PushInputRecordToName(L, Rec);
+			lua_setfield(L, -2, "FarKeyName");
 			break;
 
 		case MOUSE_EVENT:
@@ -1575,8 +1573,6 @@ static int editor_ProcessKey(lua_State *L)
 	return 0;
 }
 
-static int far_KeyToName (lua_State *L);
-
 typedef struct {
 	lua_State *L;
 	int nargs;
@@ -1593,10 +1589,7 @@ static int FarMenuCallback(void *Data, int MenuPos, FarKey Key)
 
 		lua_pushvalue(L, pos_func);          // Callback function
 		lua_pushinteger(L, MenuPos + 1);     // MenuPos
-
-		lua_pushcfunction(L, far_KeyToName); // Key
-		lua_pushinteger(L, Key);
-		lua_call(L, 1, 1);
+		PushKeyToName(L, Key);
 
 		for (idx = 1; idx <= mdata->nargs; idx++)
 			lua_pushvalue(L, pos_func + idx);
@@ -5206,66 +5199,13 @@ static int far_Show(lua_State *L)
 
 static int far_InputRecordToName(lua_State* L)
 {
-	char buf[32] = "";
-	char uchar[8] = "";
-	const char *vk_name;
-	DWORD state;
-	WORD vk_code;
-	int event;
-
-	luaL_checktype(L, 1, LUA_TTABLE);
-	lua_settop(L, 1);
-
-	lua_getfield(L, 1, "EventType");
-	event = GetFlagCombination(L, -1, NULL);
-	if (! (event==0 || event==KEY_EVENT))
-		return lua_pushnil(L), 1;
-
-	lua_getfield(L, 1, "ControlKeyState");
-	state = lua_tointeger(L,-1);
-
-	if      (state & RIGHT_CTRL_PRESSED)  strcat(buf, "RCtrl");
-	else if (state & LEFT_CTRL_PRESSED )  strcat(buf, "Ctrl");
-	if      (state & RIGHT_ALT_PRESSED )  strcat(buf, "RAlt");
-	else if (state & LEFT_ALT_PRESSED  )  strcat(buf, "Alt");
-	if      (state & SHIFT_PRESSED     )  strcat(buf, "Shift");
-
-	lua_getfield(L, 1, "VirtualKeyCode");
-	vk_code = lua_tointeger(L,-1);
-	vk_name = (vk_code < ARRAYSIZE(FarKeyStrings)) ? FarKeyStrings[vk_code] : vk_code==220 ? "BackSlash" : NULL;
-
-	lua_getfield(L, 1, "UnicodeChar");
-	if (lua_isstring(L, -1))
-		strcpy(uchar, lua_tostring(L,-1));
-
-	lua_getfield(L, 1, "KeyDown");
-	if (lua_toboolean(L, -1))
-	{
-		if (vk_name)
-		{
-			DWORD Mask_CA = RIGHT_CTRL_PRESSED | LEFT_CTRL_PRESSED | RIGHT_ALT_PRESSED | LEFT_ALT_PRESSED;
-			if ((state & Mask_CA) || strlen(vk_name) > 1)  // Alt || Ctrl || virtual key is longer than 1 byte
-			{
-				strcat(buf, vk_name);
-				lua_pushstring(L, buf);
-				return 1;
-			}
-		}
-		if (uchar[0])
-		{
-			lua_pushstring(L, uchar);
-			return 1;
-		}
-	}
+	INPUT_RECORD Rec;
+	FillInputRecord(L, 1, &Rec);
+	if (Rec.EventType == 0 || Rec.EventType == KEY_EVENT)
+		PushInputRecordToName(L, &Rec);
 	else
-	{
-		if (!vk_name && *buf && !uchar[0])
-		{
-			lua_pushstring(L, buf);
-			return 1;
-		}
-	}
-	lua_pushnil(L);
+		lua_pushnil(L);
+
 	return 1;
 }
 
