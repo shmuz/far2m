@@ -1513,13 +1513,6 @@ int WINAPI FarGetDirList(const wchar_t *Dir, FAR_FIND_DATA **pPanelItem, int *pI
 	return InterThreadCall<int, 0>(std::bind(FarGetDirListSynched, Dir, pPanelItem, pItemsNumber));
 }
 
-static PluginPanelItem *PluginDirList;
-static int DirListItemsNumber;
-static FARString strPluginSearchPath;
-static int StopSearch;
-static PHPTR hDirListPlugin;
-static int PluginSearchMsgOut;
-
 static void FarGetPluginDirListMsg(const wchar_t *Name, DWORD Flags)
 {
 	Message(Flags, 0, L"", Msg::PreparingList, Name);
@@ -1536,99 +1529,104 @@ static void PR_FarGetPluginDirListMsg()
 			preRedrawItem.Param.Flags & (~MSG_KEEPBACKGROUND));
 }
 
-int FarGetPluginDirListSynched(INT_PTR PluginNumber, HANDLE hPlugin, const wchar_t *Dir,
+class PluginDirList {
+private:
+	PluginPanelItem *mItems;
+	int mItemsNumber;
+	FARString mSearchPath;
+	bool mStopSearch;
+	PHPTR mDirListPlugin;
+
+	void CopyPluginDirItem(PluginPanelItem *CurPanelItem);
+	void ScanPluginDir();
+
+public:
+	int GetList(INT_PTR PluginNumber, HANDLE hPlugin, const wchar_t *Dir,
+			PluginPanelItem **pPanelItem, int *pItemsNumber);
+};
+
+int PluginDirList::GetList(INT_PTR PluginNumber, HANDLE hPlugin, const wchar_t *Dir,
 		PluginPanelItem **pPanelItem, int *pItemsNumber)
 {
 	if (FrameManager->ManagerIsDown() || !Dir || !*Dir || !pItemsNumber || !pPanelItem)
 		return FALSE;
 
-	{
-		if (!StrCmp(Dir, L".") || TestParentFolderName(Dir))
+	if (!StrCmp(Dir, L".") || TestParentFolderName(Dir))
+		return FALSE;
+
+	PanelHandle DirListPlugin;
+
+	// А не хочет ли плагин посмотреть на текущую панель?
+	if (hPlugin == PANEL_ACTIVE || hPlugin == PANEL_PASSIVE) {
+		/* $ 30.11.2001 DJ
+			 А плагиновая ли это панель?
+		*/
+		PHPTR Handle = ((hPlugin == PANEL_ACTIVE)
+						? CtrlObject->Cp()->ActivePanel
+						: CtrlObject->Cp()->GetAnotherPanel(CtrlObject->Cp()->ActivePanel))
+								 ->GetPluginHandle();
+
+		if (!Handle)
 			return FALSE;
 
-		static PanelHandle DirListPlugin;
+		DirListPlugin = *Handle;
+	} else {
+		DirListPlugin.pPlugin = (Plugin *)PluginNumber;
+		DirListPlugin.hPanel = hPlugin;
+	}
 
-		// А не хочет ли плагин посмотреть на текущую панель?
-		if (hPlugin == PANEL_ACTIVE || hPlugin == PANEL_PASSIVE) {
-			/* $ 30.11.2001 DJ
-			   А плагиновая ли это панель?
-			*/
-			PHPTR Handle = ((hPlugin == PANEL_ACTIVE)
-							? CtrlObject->Cp()->ActivePanel
-							: CtrlObject->Cp()->GetAnotherPanel(CtrlObject->Cp()->ActivePanel))
-								   ->GetPluginHandle();
-
-			if (!Handle)
-				return FALSE;
-
-			DirListPlugin = *Handle;
-		} else {
-			DirListPlugin.pPlugin = (Plugin *)PluginNumber;
-			DirListPlugin.hPanel = hPlugin;
-		}
-
+	{
+		SaveScreen SaveScr;
+		SCOPED_ACTION(TPreRedrawFuncGuard)(PR_FarGetPluginDirListMsg);
 		{
-			SaveScreen SaveScr;
-			SCOPED_ACTION(TPreRedrawFuncGuard)(PR_FarGetPluginDirListMsg);
-			{
-				FARString strDirName;
-				strDirName = Dir;
-				TruncStr(strDirName, 30);
-				CenterStr(strDirName, strDirName, 30);
-				SetCursorType(false, 0);
-				FarGetPluginDirListMsg(strDirName, 0);
-				PluginSearchMsgOut = FALSE;
-				hDirListPlugin = &DirListPlugin;
-				StopSearch = FALSE;
-				*pItemsNumber = DirListItemsNumber = 0;
-				*pPanelItem = PluginDirList = nullptr;
-				OpenPluginInfo Info;
-				CtrlObject->Plugins.GetOpenPluginInfo(hDirListPlugin, &Info);
-				FARString strPrevDir = Info.CurDir;
+			FARString strDirName;
+			strDirName = Dir;
+			TruncStr(strDirName, 30);
+			CenterStr(strDirName, strDirName, 30);
+			SetCursorType(false, 0);
+			FarGetPluginDirListMsg(strDirName, 0);
+			mDirListPlugin = &DirListPlugin;
+			mStopSearch = false;
+			*pItemsNumber = mItemsNumber = 0;
+			*pPanelItem = mItems = nullptr;
+			OpenPluginInfo Info;
+			CtrlObject->Plugins.GetOpenPluginInfo(mDirListPlugin, &Info);
+			FARString strPrevDir = Info.CurDir;
 
-				if (CtrlObject->Plugins.SetDirectory(hDirListPlugin, Dir, OPM_SILENT)) {
-					strPluginSearchPath = Dir;
-					strPluginSearchPath+= L"\x1";
-					ScanPluginDir();
-					*pPanelItem = PluginDirList;
-					*pItemsNumber = DirListItemsNumber;
-					CtrlObject->Plugins.SetDirectory(hDirListPlugin, L"..", OPM_SILENT);
-					OpenPluginInfo NewInfo;
-					CtrlObject->Plugins.GetOpenPluginInfo(hDirListPlugin, &NewInfo);
+			if (CtrlObject->Plugins.SetDirectory(mDirListPlugin, Dir, OPM_SILENT)) {
+				mSearchPath = Dir;
+				mSearchPath+= L"\x1";
+				ScanPluginDir();
+				*pPanelItem = mItems;
+				*pItemsNumber = mItemsNumber;
+				CtrlObject->Plugins.SetDirectory(mDirListPlugin, L"..", OPM_SILENT);
+				OpenPluginInfo NewInfo;
+				CtrlObject->Plugins.GetOpenPluginInfo(mDirListPlugin, &NewInfo);
 
-					if (StrCmp(strPrevDir, NewInfo.CurDir)) {
-						PluginPanelItem *PanelData = nullptr;
-						int ItemCount = 0;
+				if (StrCmp(strPrevDir, NewInfo.CurDir)) {
+					PluginPanelItem *PanelData = nullptr;
+					int ItemCount = 0;
 
-						if (CtrlObject->Plugins.GetFindData(hDirListPlugin, &PanelData, &ItemCount,
-									OPM_SILENT)) {
-							CtrlObject->Plugins.FreeFindData(hDirListPlugin, PanelData, ItemCount);
-						}
-
-						CtrlObject->Plugins.SetDirectory(hDirListPlugin, strPrevDir, OPM_SILENT);
+					if (CtrlObject->Plugins.GetFindData(mDirListPlugin, &PanelData, &ItemCount, OPM_SILENT)) {
+						CtrlObject->Plugins.FreeFindData(mDirListPlugin, PanelData, ItemCount);
 					}
+
+					CtrlObject->Plugins.SetDirectory(mDirListPlugin, strPrevDir, OPM_SILENT);
 				}
 			}
 		}
 	}
-	return (!StopSearch);
-}
-
-int WINAPI FarGetPluginDirList(INT_PTR PluginNumber, HANDLE hPlugin, const wchar_t *Dir,
-		PluginPanelItem **pPanelItem, int *pItemsNumber)
-{
-	return InterThreadCall<int, 0>(
-			std::bind(FarGetPluginDirListSynched, PluginNumber, hPlugin, Dir, pPanelItem, pItemsNumber));
+	return mStopSearch ? FALSE : TRUE;
 }
 
 /* $ 30.11.2001 DJ
    вытащим в функцию общий код для копирования айтема в ScanPluginDir()
 */
 
-static void CopyPluginDirItem(PluginPanelItem *CurPanelItem)
+void PluginDirList::CopyPluginDirItem(PluginPanelItem *CurPanelItem)
 {
 	FARString strFullName;
-	strFullName = strPluginSearchPath;
+	strFullName = mSearchPath;
 	strFullName+= CurPanelItem->FindData.lpwszFileName;
 	wchar_t *lpwszFullName = strFullName.GetBuffer();
 
@@ -1637,7 +1635,7 @@ static void CopyPluginDirItem(PluginPanelItem *CurPanelItem)
 			lpwszFullName[I] = GOOD_SLASH;
 
 	strFullName.ReleaseBuffer();
-	PluginPanelItem *DestItem = PluginDirList + DirListItemsNumber;
+	PluginPanelItem *DestItem = mItems + mItemsNumber;
 	*DestItem = *CurPanelItem;
 
 	if (CurPanelItem->UserData && (CurPanelItem->Flags & PPIF_USERDATA)) {
@@ -1647,16 +1645,16 @@ static void CopyPluginDirItem(PluginPanelItem *CurPanelItem)
 	}
 
 	DestItem->FindData.lpwszFileName = wcsdup(strFullName);
-	DirListItemsNumber++;
+	mItemsNumber++;
 }
 
-static void ScanPluginDir()
+void PluginDirList::ScanPluginDir()
 {
 	PluginPanelItem *PanelData = nullptr;
 	int ItemCount = 0;
 	int AbortOp = FALSE;
 	FARString strDirName;
-	strDirName = strPluginSearchPath;
+	strDirName = mSearchPath;
 	wchar_t *lpwszDirName = strDirName.GetBuffer();
 
 	for (int i = 0; lpwszDirName[i]; i++)
@@ -1672,46 +1670,46 @@ static void ScanPluginDir()
 			AbortOp = TRUE;
 
 		if (ConfirmAbortOp())
-			StopSearch = TRUE;
+			mStopSearch = true;
 	}
 
 	FarGetPluginDirListMsg(strDirName, AbortOp ? 0 : MSG_KEEPBACKGROUND);
 
-	if (StopSearch || !CtrlObject->Plugins.GetFindData(hDirListPlugin, &PanelData, &ItemCount, OPM_FIND))
+	if (mStopSearch || !CtrlObject->Plugins.GetFindData(mDirListPlugin, &PanelData, &ItemCount, OPM_FIND))
 		return;
 
-	PluginPanelItem *NewList = (PluginPanelItem *)realloc(PluginDirList,
-			1 + sizeof(*PluginDirList) * (DirListItemsNumber + ItemCount));
+	PluginPanelItem *NewList = (PluginPanelItem *)realloc(mItems,
+			1 + sizeof(*mItems) * (mItemsNumber + ItemCount));
 
 	if (!NewList) {
-		StopSearch = TRUE;
+		mStopSearch = true;
 		return;
 	}
 
-	PluginDirList = NewList;
+	mItems = NewList;
 
-	for (int i = 0; i < ItemCount && !StopSearch; i++) {
+	for (int i = 0; i < ItemCount && !mStopSearch; i++) {
 		PluginPanelItem *CurPanelItem = PanelData + i;
 
 		if (!(CurPanelItem->FindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
 			CopyPluginDirItem(CurPanelItem);
 	}
 
-	for (int i = 0; i < ItemCount && !StopSearch; i++) {
+	for (int i = 0; i < ItemCount && !mStopSearch; i++) {
 		PluginPanelItem *CurPanelItem = PanelData + i;
 
 		if ((CurPanelItem->FindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 				&& StrCmp(CurPanelItem->FindData.lpwszFileName, L".")
 				&& !TestParentFolderName(CurPanelItem->FindData.lpwszFileName)) {
-			PluginPanelItem *NewList = (PluginPanelItem *)realloc(PluginDirList,
-					sizeof(*PluginDirList) * (DirListItemsNumber + 1));
+			PluginPanelItem *NewList = (PluginPanelItem *)realloc(mItems,
+					sizeof(*mItems) * (mItemsNumber + 1));
 
 			if (!NewList) {
-				StopSearch = TRUE;
+				mStopSearch = true;
 				return;
 			}
 
-			PluginDirList = NewList;
+			mItems = NewList;
 			/* $ 30.11.2001 DJ
 					используем общую функцию для копирования FindData (не забываем
 					обработать PPIF_USERDATA)
@@ -1719,28 +1717,41 @@ static void ScanPluginDir()
 			CopyPluginDirItem(CurPanelItem);
 			FARString strFileName = CurPanelItem->FindData.lpwszFileName;
 
-			if (CtrlObject->Plugins.SetDirectory(hDirListPlugin, strFileName, OPM_FIND)) {
-				strPluginSearchPath+= CurPanelItem->FindData.lpwszFileName;
-				strPluginSearchPath+= L"\x1";
+			if (CtrlObject->Plugins.SetDirectory(mDirListPlugin, strFileName, OPM_FIND)) {
+				mSearchPath+= CurPanelItem->FindData.lpwszFileName;
+				mSearchPath+= L"\x1";
 				ScanPluginDir();
 				size_t pos = (size_t)-1;
-				strPluginSearchPath.RPos(pos, L'\x1');
-				strPluginSearchPath.Truncate(pos);
+				mSearchPath.RPos(pos, L'\x1');
+				mSearchPath.Truncate(pos);
 
-				if (strPluginSearchPath.RPos(pos, L'\x1'))
-					strPluginSearchPath.Truncate(pos + 1);
+				if (mSearchPath.RPos(pos, L'\x1'))
+					mSearchPath.Truncate(pos + 1);
 				else
-					strPluginSearchPath.Clear();
+					mSearchPath.Clear();
 
-				if (!CtrlObject->Plugins.SetDirectory(hDirListPlugin, L"..", OPM_FIND)) {
-					StopSearch = TRUE;
+				if (!CtrlObject->Plugins.SetDirectory(mDirListPlugin, L"..", OPM_FIND)) {
+					mStopSearch = true;
 					break;
 				}
 			}
 		}
 	}
 
-	CtrlObject->Plugins.FreeFindData(hDirListPlugin, PanelData, ItemCount);
+	CtrlObject->Plugins.FreeFindData(mDirListPlugin, PanelData, ItemCount);
+}
+
+int FarGetPluginDirListSynched(INT_PTR PluginNumber, HANDLE hPlugin, const wchar_t *Dir,
+		PluginPanelItem **pPanelItem, int *pItemsNumber)
+{
+	return PluginDirList().GetList(PluginNumber, hPlugin, Dir, pPanelItem, pItemsNumber);
+}
+
+int WINAPI FarGetPluginDirList(INT_PTR PluginNumber, HANDLE hPlugin, const wchar_t *Dir,
+		PluginPanelItem **pPanelItem, int *pItemsNumber)
+{
+	return InterThreadCall<int, 0>(
+			std::bind(FarGetPluginDirListSynched, PluginNumber, hPlugin, Dir, pPanelItem, pItemsNumber));
 }
 
 void WINAPI FarFreeDirList(FAR_FIND_DATA *PanelItem, int nItemsNumber)
