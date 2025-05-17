@@ -559,6 +559,10 @@ void PushPanelItem(lua_State *L, const struct PluginPanelItem *PanelItem)
 		}
 		lua_pop(L,1);
 	}
+	else {
+		lua_pushlightuserdata(L, (void*)PanelItem->UserData);
+		lua_setfield(L, -2, "UserData");
+	}
 }
 
 void PushPanelItems(lua_State *L, HANDLE handle, const struct PluginPanelItem *PanelItems, int ItemsNumber)
