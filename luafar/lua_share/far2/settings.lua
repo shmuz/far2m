@@ -151,7 +151,7 @@ local function field (t, seq)
   return t
 end
 
-function setfield (t, seq, val)
+local function setfield (t, seq, val)
   checkarg(t, 1, "table")
   checkarg(seq, 2, "string")
   local part1, part2 = seq:match("^(.-)([^.]*)$")

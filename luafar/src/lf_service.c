@@ -1428,14 +1428,14 @@ static int editor_SaveFile(lua_State *L)
 
 static int far_KeyToName (lua_State *L);
 
-static void PushInputRecordToName(lua_State *L, const INPUT_RECORD *Rec)
+static void PushNameFromInputRecord(lua_State *L, const INPUT_RECORD *Rec)
 {
 	lua_pushcfunction(L, far_KeyToName);
 	lua_pushinteger(L, FSF.FarInputRecordToKey(Rec));
 	lua_call(L, 1, 1);
 }
 
-static void PushKeyToName(lua_State *L, FarKey Key)
+static void PushNameFromKey(lua_State *L, FarKey Key)
 {
 	lua_pushcfunction(L, far_KeyToName);
 	lua_pushinteger(L, Key);
@@ -1454,7 +1454,7 @@ void PushInputRecord (lua_State* L, const INPUT_RECORD *Rec)
 			PutNumToTable(L, "VirtualScanCode", Rec->Event.KeyEvent.wVirtualScanCode);
 			PutWStrToTable(L, "UnicodeChar",   &Rec->Event.KeyEvent.uChar.UnicodeChar, 1);
 			PutNumToTable(L, "ControlKeyState", Rec->Event.KeyEvent.dwControlKeyState);
-			PushInputRecordToName(L, Rec);
+			PushNameFromInputRecord(L, Rec);
 			lua_setfield(L, -2, "FarKeyName");
 			break;
 
@@ -1593,7 +1593,7 @@ static int FarMenuCallback(void *Data, int MenuPos, FarKey Key)
 
 		lua_pushvalue(L, pos_func);          // Callback function
 		lua_pushinteger(L, MenuPos + 1);     // MenuPos
-		PushKeyToName(L, Key);
+		PushNameFromKey(L, Key);
 
 		for (idx = 1; idx <= mdata->nargs; idx++)
 			lua_pushvalue(L, pos_func + idx);
@@ -2205,23 +2205,6 @@ static int get_string_info(lua_State *L, int command)
 	return lua_pushnil(L), 1;
 }
 
-static int panel_GetPanelDirectory(lua_State *L)
-{
-	get_string_info(L, FCTL_GETPANELDIR); //puts either a string or a nil on stack top
-
-	if (lua_isstring(L, -1))
-	{
-		lua_createtable(L, 0, 4);
-		lua_insert(L, -2);
-		lua_setfield(L, -2, "Name");
-
-		PutWStrToTable(L, "Param", L"", -1);
-		PutWStrToTable(L, "File",  L"", -1);
-		PutIntToTable(L, "PluginId", 0);
-	}
-	return 1;
-}
-
 static int panel_GetPanelFormat(lua_State *L)
 {
 	return get_string_info(L, FCTL_GETPANELFORMAT);
@@ -2313,6 +2296,23 @@ static int panel_SetSortMode(lua_State *L)
 static int panel_SetViewMode(lua_State *L)
 {
 	return SetPanelIntegerProperty(L, FCTL_SETVIEWMODE);
+}
+
+static int panel_GetPanelDirectory(lua_State *L)
+{
+	get_string_info(L, FCTL_GETPANELDIR); //puts either a string or a nil on stack top
+
+	if (lua_isstring(L, -1))
+	{
+		lua_createtable(L, 0, 4);
+		lua_insert(L, -2);
+		lua_setfield(L, -2, "Name");
+
+		PutWStrToTable(L, "Param", L"", -1);
+		PutWStrToTable(L, "File",  L"", -1);
+		PutIntToTable(L, "PluginId", 0);
+	}
+	return 1;
 }
 
 static int panel_SetPanelDirectory(lua_State *L)
@@ -5206,7 +5206,7 @@ static int far_InputRecordToName(lua_State* L)
 	INPUT_RECORD Rec;
 	FillInputRecord(L, 1, &Rec);
 	if (Rec.EventType == 0 || Rec.EventType == KEY_EVENT)
-		PushInputRecordToName(L, &Rec);
+		PushNameFromInputRecord(L, &Rec);
 	else
 		lua_pushnil(L);
 
