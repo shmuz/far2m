@@ -1622,12 +1622,9 @@ int PluginDirList::GetList(INT_PTR PluginNumber, HANDLE hPlugin, const wchar_t *
 /* $ 30.11.2001 DJ
    вытащим в функцию общий код для копирования айтема в ScanPluginDir()
 */
-
 void PluginDirList::CopyPluginDirItem(PluginPanelItem *CurPanelItem)
 {
-	FARString strFullName;
-	strFullName = mSearchPath;
-	strFullName+= CurPanelItem->FindData.lpwszFileName;
+	FARString strFullName = mSearchPath + CurPanelItem->FindData.lpwszFileName;
 	wchar_t *lpwszFullName = strFullName.GetBuffer();
 
 	for (int I = 0; lpwszFullName[I]; I++)
@@ -1652,9 +1649,8 @@ void PluginDirList::ScanPluginDir()
 {
 	PluginPanelItem *PanelData = nullptr;
 	int ItemCount = 0;
-	int AbortOp = FALSE;
-	FARString strDirName;
-	strDirName = mSearchPath;
+	bool AbortOp = false;
+	FARString strDirName = mSearchPath;
 	wchar_t *lpwszDirName = strDirName.GetBuffer();
 
 	for (int i = 0; lpwszDirName[i]; i++)
@@ -1667,7 +1663,7 @@ void PluginDirList::ScanPluginDir()
 
 	if (CheckForEscSilent()) {
 		if (Opt.Confirm.Esc)    // Будет выдаваться диалог?
-			AbortOp = TRUE;
+			AbortOp = true;
 
 		if (ConfirmAbortOp())
 			mStopSearch = true;
@@ -1744,7 +1740,8 @@ void PluginDirList::ScanPluginDir()
 int FarGetPluginDirListSynched(INT_PTR PluginNumber, HANDLE hPlugin, const wchar_t *Dir,
 		PluginPanelItem **pPanelItem, int *pItemsNumber)
 {
-	return PluginDirList().GetList(PluginNumber, hPlugin, Dir, pPanelItem, pItemsNumber);
+	static PluginDirList pdList;
+	return pdList.GetList(PluginNumber, hPlugin, Dir, pPanelItem, pItemsNumber);
 }
 
 int WINAPI FarGetPluginDirList(INT_PTR PluginNumber, HANDLE hPlugin, const wchar_t *Dir,
