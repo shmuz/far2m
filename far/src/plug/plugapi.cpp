@@ -1575,48 +1575,45 @@ int PluginDirList::GetList(INT_PTR PluginNumber, HANDLE hPlugin, const wchar_t *
 		DirListPlugin.hPanel = hPlugin;
 	}
 
-	{
-		SaveScreen SaveScr;
-		SCOPED_ACTION(TPreRedrawFuncGuard)(PR_FarGetPluginDirListMsg);
-		{
-			FARString strDirName;
-			strDirName = Dir;
-			TruncStr(strDirName, 30);
-			CenterStr(strDirName, strDirName, 30);
-			SetCursorType(false, 0);
-			FarGetPluginDirListMsg(strDirName, 0);
-			mDirListPlugin = &DirListPlugin;
-			mStopSearch = false;
-			*pItemsNumber = mItemsNumber = 0;
-			*pPanelItem = mItems = nullptr;
-			OpenPluginInfo Info;
-			CtrlObject->Plugins.GetOpenPluginInfo(mDirListPlugin, &Info);
-			FARString strPrevDir = Info.CurDir;
+	SaveScreen SaveScr;
+	SCOPED_ACTION(TPreRedrawFuncGuard)(PR_FarGetPluginDirListMsg);
 
-			if (CtrlObject->Plugins.SetDirectory(mDirListPlugin, Dir, OPM_SILENT)) {
-				mSearchPath = Dir;
-				mSearchPath+= L"\x1";
-				ScanPluginDir();
-				*pPanelItem = mItems;
-				*pItemsNumber = mItemsNumber;
-				CtrlObject->Plugins.SetDirectory(mDirListPlugin, L"..", OPM_SILENT);
-				OpenPluginInfo NewInfo;
-				CtrlObject->Plugins.GetOpenPluginInfo(mDirListPlugin, &NewInfo);
+	FARString strDirName = Dir;
+	TruncStr(strDirName, 30);
+	CenterStr(strDirName, strDirName, 30);
+	SetCursorType(false, 0);
+	FarGetPluginDirListMsg(strDirName, 0);
+	mDirListPlugin = &DirListPlugin;
+	mStopSearch = false;
+	*pItemsNumber = mItemsNumber = 0;
+	*pPanelItem = mItems = nullptr;
+	OpenPluginInfo Info;
+	CtrlObject->Plugins.GetOpenPluginInfo(mDirListPlugin, &Info);
+	FARString strPrevDir = Info.CurDir;
 
-				if (StrCmp(strPrevDir, NewInfo.CurDir)) {
-					PluginPanelItem *PanelData = nullptr;
-					int ItemCount = 0;
+	if (CtrlObject->Plugins.SetDirectory(mDirListPlugin, Dir, OPM_SILENT)) {
+		mSearchPath = Dir;
+		mSearchPath+= L"\x1";
+		ScanPluginDir();
+		*pPanelItem = mItems;
+		*pItemsNumber = mItemsNumber;
+		CtrlObject->Plugins.SetDirectory(mDirListPlugin, L"..", OPM_SILENT);
+		OpenPluginInfo NewInfo;
+		CtrlObject->Plugins.GetOpenPluginInfo(mDirListPlugin, &NewInfo);
 
-					if (CtrlObject->Plugins.GetFindData(mDirListPlugin, &PanelData, &ItemCount, OPM_SILENT)) {
-						CtrlObject->Plugins.FreeFindData(mDirListPlugin, PanelData, ItemCount);
-					}
+		if (StrCmp(strPrevDir, NewInfo.CurDir)) {
+			PluginPanelItem *PanelData = nullptr;
+			int ItemCount = 0;
 
-					CtrlObject->Plugins.SetDirectory(mDirListPlugin, strPrevDir, OPM_SILENT);
-				}
+			if (CtrlObject->Plugins.GetFindData(mDirListPlugin, &PanelData, &ItemCount, OPM_SILENT)) {
+				CtrlObject->Plugins.FreeFindData(mDirListPlugin, PanelData, ItemCount);
 			}
+
+			CtrlObject->Plugins.SetDirectory(mDirListPlugin, strPrevDir, OPM_SILENT);
 		}
+		return mStopSearch ? FALSE : TRUE;
 	}
-	return mStopSearch ? FALSE : TRUE;
+	return FALSE;
 }
 
 /* $ 30.11.2001 DJ
