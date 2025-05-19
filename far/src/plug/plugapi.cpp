@@ -136,8 +136,6 @@ void WINAPI DeleteBuffer(void *Buffer)
 		free(Buffer);
 }
 
-static void ScanPluginDir();
-
 /*
 	$ 07.12.2001 IS
 	Обертка вокруг GetString для плагинов - с меньшей функциональностью.
@@ -1593,7 +1591,7 @@ int PluginDirList::GetList(INT_PTR PluginNumber, HANDLE hPlugin, const wchar_t *
 
 	if (CtrlObject->Plugins.SetDirectory(mPlugin, Dir, OPM_SILENT)) {
 		mSearchPath = Dir;
-		mSearchPath+= L"\x1";
+		mSearchPath+= WGOOD_SLASH;
 		ScanPluginDir();
 		*pPanelItem = mItems;
 		*pItemsNumber = mItemsNumber;
@@ -1622,13 +1620,6 @@ int PluginDirList::GetList(INT_PTR PluginNumber, HANDLE hPlugin, const wchar_t *
 void PluginDirList::CopyPluginDirItem(PluginPanelItem *CurPanelItem)
 {
 	FARString strFullName = mSearchPath + CurPanelItem->FindData.lpwszFileName;
-	wchar_t *lpwszFullName = strFullName.GetBuffer();
-
-	for (int I = 0; lpwszFullName[I]; I++)
-		if (lpwszFullName[I] == L'\x1')
-			lpwszFullName[I] = GOOD_SLASH;
-
-	strFullName.ReleaseBuffer();
 	PluginPanelItem *DestItem = mItems + mItemsNumber;
 	*DestItem = *CurPanelItem;
 
@@ -1648,13 +1639,7 @@ void PluginDirList::ScanPluginDir()
 	int ItemCount = 0;
 	bool AbortOp = false;
 	FARString strDirName = mSearchPath;
-	wchar_t *lpwszDirName = strDirName.GetBuffer();
-
-	for (int i = 0; lpwszDirName[i]; i++)
-		if (lpwszDirName[i] == '\x1')
-			lpwszDirName[i] = lpwszDirName[i + 1] ? GOOD_SLASH : 0;
-
-	strDirName.ReleaseBuffer();
+	DeleteEndSlash(strDirName);
 	TruncStr(strDirName, 30);
 	CenterStr(strDirName, strDirName, 30);
 
@@ -1680,6 +1665,8 @@ void PluginDirList::ScanPluginDir()
 	}
 
 	mItems = NewList;
+
+	FARString strCurDir = mSearchPath;
 
 	for (int i = 0; i < ItemCount && !mStopSearch; i++) {
 		PluginPanelItem *CurPanelItem = PanelItems + i;
@@ -1708,17 +1695,9 @@ void PluginDirList::ScanPluginDir()
 			FARString strFileName = CurPanelItem->FindData.lpwszFileName;
 
 			if (CtrlObject->Plugins.SetDirectory(mPlugin, strFileName, OPM_FIND)) {
-				mSearchPath+= CurPanelItem->FindData.lpwszFileName;
-				mSearchPath+= L"\x1";
+				mSearchPath = strCurDir + CurPanelItem->FindData.lpwszFileName + WGOOD_SLASH;
 				ScanPluginDir();
-				size_t pos = (size_t)-1;
-				mSearchPath.RPos(pos, L'\x1');
-				mSearchPath.Truncate(pos);
-
-				if (mSearchPath.RPos(pos, L'\x1'))
-					mSearchPath.Truncate(pos + 1);
-				else
-					mSearchPath.Clear();
+				mSearchPath = strCurDir;
 
 				if (!CtrlObject->Plugins.SetDirectory(mPlugin, L"..", OPM_FIND)) {
 					mStopSearch = true;
