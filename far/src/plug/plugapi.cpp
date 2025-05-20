@@ -1587,18 +1587,14 @@ int PluginDirList::GetList(INT_PTR PluginNumber, HANDLE hPlugin, const wchar_t *
 	OpenPluginInfo Info;
 	CtrlObject->Plugins.GetOpenPluginInfo(mPlugin, &Info);
 	FARString strPrevDir = Info.CurDir;
+	if (strPrevDir[0] != GOOD_SLASH)
+		strPrevDir = WGOOD_SLASH + strPrevDir;
 
 	if (CtrlObject->Plugins.SetDirectory(mPlugin, Dir, OPM_SILENT)) {
 		ScanPluginDir(Dir);
 		*pPanelItem = mItems;
 		*pItemsNumber = mItemsNumber;
-		CtrlObject->Plugins.SetDirectory(mPlugin, L"..", OPM_SILENT);
-		OpenPluginInfo NewInfo;
-		CtrlObject->Plugins.GetOpenPluginInfo(mPlugin, &NewInfo);
-
-		if (StrCmp(strPrevDir, NewInfo.CurDir)) {
-			CtrlObject->Plugins.SetDirectory(mPlugin, strPrevDir, OPM_SILENT);
-		}
+		CtrlObject->Plugins.SetDirectory(mPlugin, strPrevDir, OPM_SILENT);
 		return mStopSearch ? FALSE : TRUE;
 	}
 	return FALSE;
