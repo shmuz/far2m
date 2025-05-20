@@ -1430,9 +1430,14 @@ static int far_KeyToName (lua_State *L);
 
 static void PushNameFromInputRecord(lua_State *L, const INPUT_RECORD *Rec)
 {
-	lua_pushcfunction(L, far_KeyToName);
-	lua_pushinteger(L, FSF.FarInputRecordToKey(Rec));
-	lua_call(L, 1, 1);
+	FarKey Key = FSF.FarInputRecordToKey(Rec);
+	if (Key == KEY_NONE)
+		lua_pushstring(L, "None"); // because KeyToName(KEY_NONE) produces character \x1
+	else {
+		lua_pushcfunction(L, far_KeyToName);
+		lua_pushinteger(L, Key);
+		lua_call(L, 1, 1);
+	}
 }
 
 static void PushNameFromKey(lua_State *L, FarKey Key)
