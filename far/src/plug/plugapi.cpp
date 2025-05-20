@@ -1545,10 +1545,7 @@ public:
 int PluginDirList::GetList(INT_PTR PluginNumber, HANDLE hPlugin, const wchar_t *Dir,
 		PluginPanelItem **pPanelItem, int *pItemsNumber)
 {
-	if (FrameManager->ManagerIsDown() || !Dir || !*Dir || !pItemsNumber || !pPanelItem)
-		return FALSE;
-
-	if (!StrCmp(Dir, L".") || TestParentFolderName(Dir))
+	if (FrameManager->ManagerIsDown() || !Dir || !pItemsNumber || !pPanelItem)
 		return FALSE;
 
 	PanelHandle DirListPlugin;
@@ -1591,7 +1588,9 @@ int PluginDirList::GetList(INT_PTR PluginNumber, HANDLE hPlugin, const wchar_t *
 		strPrevDir = WGOOD_SLASH + strPrevDir;
 
 	if (CtrlObject->Plugins.SetDirectory(mPlugin, Dir, OPM_SILENT)) {
-		ScanPluginDir(Dir);
+		//ScanPluginDir(Dir);
+		CtrlObject->Plugins.GetOpenPluginInfo(mPlugin, &Info);
+		ScanPluginDir(Info.CurDir);
 		*pPanelItem = mItems;
 		*pItemsNumber = mItemsNumber;
 		CtrlObject->Plugins.SetDirectory(mPlugin, strPrevDir, OPM_SILENT);
