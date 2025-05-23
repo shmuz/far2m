@@ -430,7 +430,7 @@ int CommandLine::ProcessKey(FarKey Key)
 				//ну а если путь не плагиновый то запускать его точно не надо
 				if (!Type || !CtrlObject->Plugins.ProcessCommandLine(strStr,Panel))
 				{
-					if (Panel->GetMode() == PLUGIN_PANEL || CheckShortcutFolder(&strStr,FALSE))
+					if (Panel->GetMode() == PLUGIN_PANEL || CheckShortcutFolder(strStr, false))
 					{
 						Panel->SetCurDir(strStr,Type ? false:true);
 						// restore current directory to active panel path

@@ -54,7 +54,7 @@ enum TESTFOLDERCONST  // for TestFolder()
 BOOL FarChDir(const wchar_t *NewDir);
 
 TESTFOLDERCONST TestFolder(const wchar_t *Name);
-int CheckShortcutFolder(FARString *pTestPath,int IsHostFile, BOOL Silent=FALSE);
+int CheckShortcutFolder(FARString &pTestPath, bool IsHostFile, bool Silent=false);
 
 void CreatePath(FARString &strPath);
 
