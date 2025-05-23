@@ -177,25 +177,18 @@ int CheckShortcutFolder(FARString &pTestPath, bool IsHostFile, bool Silent)
 
 			if (Silent || !Message(MSG_WARNING | MSG_ERRORTYPE, 2, Msg::Error, strTarget, Msg::NeedNearPath, Msg::HYes,Msg::HNo))
 			{
-				FARString strTestPathTemp = pTestPath;
+				FARString strTemp = pTestPath;
 
-				for (;;)
+				for (; CutToSlash(strTemp, false); CutToSlash(strTemp, true))
 				{
-					if (!CutToSlash(strTestPathTemp, true))
-						break;
-
-					if (apiGetFileAttributes(strTestPathTemp) != INVALID_FILE_ATTRIBUTES)
+					if (apiGetFileAttributes(strTemp) != INVALID_FILE_ATTRIBUTES)
 					{
-						int ChkFld=TestFolder(strTestPathTemp);
+						int ChkFld=TestFolder(strTemp);
 
-						if (ChkFld > TSTFLD_ERROR && ChkFld < TSTFLD_NOTFOUND)
+						if (ChkFld == TSTFLD_NOTACCESS || ChkFld == TSTFLD_EMPTY || ChkFld == TSTFLD_NOTEMPTY)
 						{
-							if (!(pTestPath.At(0) == GOOD_SLASH && pTestPath.At(1) == GOOD_SLASH && !strTestPathTemp.At(1)))
-							{
-								pTestPath = strTestPathTemp;
-								FoundPath = true;
-							}
-
+							pTestPath = strTemp;
+							FoundPath = true;
 							break;
 						}
 					}
