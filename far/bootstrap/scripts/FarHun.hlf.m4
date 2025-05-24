@@ -2228,6 +2228,7 @@ jeleníthet meg.
      $q - = karakter
      $s - szóköz
      $t - az aktuális idő óó:pp:mm formátumban
+     $z - A Git ág neve, amelyet '{' és '}' jelek vesznek körül; egyébként üres string
      $$ - $ karakter
 
    Alapértelmezett a #$p$g# formátum - az aktuális meghajtó és az elérési
