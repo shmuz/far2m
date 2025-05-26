@@ -414,6 +414,7 @@ local function ExecuteCommandLine (tActions, tCommands, sFrom, fConfig)
           path = panelDir:gsub("[^/]$", "%1/") .. path
         end
         local f = assert(loadfile(path))
+        env._filename = path
         setfenv(f, env)(unpack(v))
       elseif v.opt == "e" then
         local f = assert(loadstring(v.param))
