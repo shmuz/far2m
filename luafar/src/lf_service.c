@@ -1693,13 +1693,21 @@ static int far_Menu(lua_State *L)
 	luaL_ref(L, POS_STORE);
 	memset(Items, 0, ItemsNumber*sizeof(struct FarMenuItemEx));
 	pItem = Items;
+
 	for(i=0; i < ItemsNumber; i++,pItem++,lua_pop(L,1)) {
+		static const char key[] = "text";
 		lua_pushinteger(L, i+1);
 		lua_gettable(L, POS_ITEMS);
-		if (!lua_istable(L, -1))
-			return luaLF_SlotError (L, i+1, "table");
+
+		if (lua_isstring(L, -1)) { // convert a string to a table element
+			lua_createtable(L, 0, 1);
+			lua_insert(L, -2);
+			lua_setfield(L, -2, key);
+		}
+		else if (!lua_istable(L, -1))
+			return luaLF_SlotError(L, i+1, "string or table");
+
 		//-------------------------------------------------------------------------
-		const char *key = "text";
 		lua_getfield(L, -1, key);
 		if (lua_isstring(L,-1))  pItem->Text = StoreTempString(L, POS_STORE);
 		else if (!lua_isnil(L,-1)) return luaLF_FieldError (L, key, "string");
