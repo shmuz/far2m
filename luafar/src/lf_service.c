@@ -1645,6 +1645,10 @@ static int far_Menu(lua_State *L)
 	int *pBreakKeys = NULL;
 	GUID MenuGuid;
 	FARMENUCALLBACK callback = NULL;
+
+	if (lua_gettop(L) < POS_CBACK) // don't remove this!
+		lua_settop(L, POS_CBACK);
+
 	MENU_DATA mdata = { L, lua_gettop(L) - POS_CBACK, 0 };
 	const int POS_STORE = lua_gettop(L) + 1;
 
