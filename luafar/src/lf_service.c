@@ -1633,19 +1633,6 @@ static int far_Menu(lua_State *L)
 		POS_CBACK = 4, // callback
 	};
 
-	TPluginData *pd = GetPluginData(L);
-	int X = -1, Y = -1, MaxHeight = 0;
-	int Flags = FMENU_WRAPMODE;
-	const wchar_t *Title = L"Menu", *Bottom = NULL, *HelpTopic = NULL;
-	int SelectIndex = 0, ItemsNumber, ret;
-	int i;
-	int BreakCode = 0, *pBreakCode = NULL;
-	int NumBreakCodes = 0;
-	struct FarMenuItemEx *Items, *pItem;
-	int *pBreakKeys = NULL;
-	GUID MenuGuid;
-	FARMENUCALLBACK callback = NULL;
-
 	if (lua_gettop(L) < POS_CBACK) // don't remove this!
 		lua_settop(L, POS_CBACK);
 
@@ -1664,41 +1651,46 @@ static int far_Menu(lua_State *L)
 
 	// Properties
 	lua_pushvalue (L,POS_PROPS);  // push Properties on top
-	X = GetOptIntFromTable(L, "X", -1);
-	Y = GetOptIntFromTable(L, "Y", -1);
-	MaxHeight = GetOptIntFromTable(L, "MaxHeight", 0);
+	int X = GetOptIntFromTable(L, "X", -1);
+	int Y = GetOptIntFromTable(L, "Y", -1);
+	int MaxHeight = GetOptIntFromTable(L, "MaxHeight", 0);
 
+	int Flags = FMENU_WRAPMODE;
 	lua_getfield(L, POS_PROPS, "Flags");
 	if (!lua_isnil(L, -1))     Flags = CheckFlags(L, -1);
 
+	const wchar_t *Title = L"Menu";
 	lua_getfield(L, POS_PROPS, "Title");
 	if (lua_isstring(L,-1))    Title = StoreTempString(L, POS_STORE);
 
+	const wchar_t *Bottom = NULL;
 	lua_getfield(L, POS_PROPS, "Bottom");
 	if (lua_isstring(L,-1))    Bottom = StoreTempString(L, POS_STORE);
 
+	const wchar_t *HelpTopic = NULL;
 	lua_getfield(L, POS_PROPS, "HelpTopic");
 	if (lua_isstring(L,-1))    HelpTopic = StoreTempString(L, POS_STORE);
 
 	lua_getfield(L, POS_PROPS, "SelectIndex");
-	SelectIndex = lua_tointeger(L,-1) - 1;
+	int SelectIndex = lua_tointeger(L,-1) - 1;
 
 	lua_getfield(L, POS_PROPS, "Id");
-	MenuGuid = OptGuid(L,-1);
+	GUID MenuGuid = OptGuid(L,-1);
 
-	ItemsNumber = lua_objlen(L, POS_ITEMS);
+	int ItemsNumber = lua_objlen(L, POS_ITEMS);
 	if (!(SelectIndex >= 0 && SelectIndex < ItemsNumber))
 		SelectIndex = -1;
 
 	lua_settop (L, POS_STORE);
 
 	// Items
-	Items = (struct FarMenuItemEx*) lua_newuserdata(L, ItemsNumber*sizeof(struct FarMenuItemEx));
+	struct FarMenuItemEx *Items =
+			(struct FarMenuItemEx*) lua_newuserdata(L, ItemsNumber*sizeof(struct FarMenuItemEx));
 	luaL_ref(L, POS_STORE);
 	memset(Items, 0, ItemsNumber*sizeof(struct FarMenuItemEx));
-	pItem = Items;
+	struct FarMenuItemEx *pItem = Items;
 
-	for(i=0; i < ItemsNumber; i++,pItem++,lua_pop(L,1)) {
+	for(int i=0; i < ItemsNumber; i++,pItem++,lua_pop(L,1)) {
 		static const char key[] = "text";
 		lua_pushinteger(L, i+1);
 		lua_gettable(L, POS_ITEMS);
@@ -1748,6 +1740,10 @@ static int far_Menu(lua_State *L)
 		Items[SelectIndex].Flags |= MIF_SELECTED;
 
 	// Break Keys
+	int BreakCode = 0, *pBreakCode = NULL;
+	int NumBreakCodes = 0;
+	int *pBreakKeys = NULL;
+
 	if (lua_isstring(L,POS_BKEYS))
 	{
 		const char *q, *ptr = lua_tostring(L,POS_BKEYS);
@@ -1844,13 +1840,15 @@ static int far_Menu(lua_State *L)
 		pBreakCode = &BreakCode;
 	}
 
+	FARMENUCALLBACK callback = NULL;
 	if (lua_isfunction(L, POS_CBACK)) {
 		callback = FarMenuCallback;
 		lua_settop(L, POS_STORE);
 		lua_replace(L, POS_PROPS);
 	}
 
-	ret = PSInfo.MenuV2(
+	TPluginData *pd = GetPluginData(L);
+	int ret = PSInfo.MenuV2(
 		pd->ModuleNumber, &MenuGuid, X, Y, MaxHeight, Flags|FMENU_USEEXT,
 		Title, Bottom, HelpTopic, pBreakKeys, pBreakCode,
 		(const struct FarMenuItem *)Items, ItemsNumber, callback, &mdata);
