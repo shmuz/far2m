@@ -1,4 +1,12 @@
-cmake_minimum_required (VERSION 3.10)
+message(STATUS "generating headers and languages")
+
+if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(LBITS 64)
+    set(DIRBIT 64)
+else ()
+    set(LBITS 32)
+    set(DIRBIT 32)
+endif ()
 
 # Make TOOLS folder overridable in command line when configuring build.
 # This will allow specifying host far2m tools location when doing cross-platform builds.
@@ -6,24 +14,8 @@ cmake_minimum_required (VERSION 3.10)
 set(TOOLS "${CMAKE_BINARY_DIR}/tools" CACHE STRING "")
 set(FARLUATOOL "${TOOLS}/lua")
 
-add_custom_target(bootstrap
-  DEPENDS lua farversion.inc lang.inc
-)
-
-message(STATUS "generating headers and languages")
-
-# todo: detect architecture 64 or 32
-# LBITS := $(shell getconf LONG_BIT)
-
-set(DIRBIT 64)
-
 set(BOOTSTRAP "${PROJECT_BINARY_DIR}/bootstrap")
 set(SCRIPTS "${CMAKE_CURRENT_SOURCE_DIR}/scripts")
-set(DEPENDENCIES
-    "${SCRIPTS}/farlang.templ.m4"
-    "${SCRIPTS}/farlang.lua"
-    "${SCRIPTS}/bootstrap.lua"
-)
 
 set(HLFFILES
     "${BOOTSTRAP}/FarEng.hlf"
@@ -31,11 +23,15 @@ set(HLFFILES
     "${BOOTSTRAP}/FarHun.hlf"
     "${BOOTSTRAP}/FarUkr.hlf"
 )
-set(LNGFILES
-    "${BOOTSTRAP}/FarEng.lng"
-    "${BOOTSTRAP}/FarRus.lng"
-    "${BOOTSTRAP}/FarHun.lng"
-    "${BOOTSTRAP}/FarUkr.lng"
+
+add_custom_target(bootstrap
+  DEPENDS lua farversion.inc lang.inc ${HLFFILES}
+)
+
+set(DEPENDENCIES
+    "${SCRIPTS}/farlang.templ.m4"
+    "${SCRIPTS}/farlang.lua"
+    "${SCRIPTS}/bootstrap.lua"
 )
 
 set(LUACMD
@@ -54,37 +50,16 @@ add_custom_command(OUTPUT "${BOOTSTRAP}/farversion.inc"
     COMMENT "generating farversion and copyright header"
 )
 
-add_custom_command(TARGET bootstrap
-   POST_BUILD
-   COMMAND ${LUACMD} --mkhlf "${SCRIPTS}/FarEng.hlf.m4" > "${BOOTSTRAP}/FarEng.hlf"
-   WORKING_DIRECTORY "${SCRIPTS}"
-   DEPENDS "${SCRIPTS}/bootstrap.lua" "${SCRIPTS}/FarEng.hlf.m4"
-   COMMENT "generating help eng"
-)
-
-add_custom_command(TARGET bootstrap
-    POST_BUILD
-   COMMAND ${LUACMD} --mkhlf "${SCRIPTS}/FarRus.hlf.m4" > "${BOOTSTRAP}/FarRus.hlf"
-   WORKING_DIRECTORY "${SCRIPTS}"
-   DEPENDS "${SCRIPTS}/bootstrap.lua" "${SCRIPTS}/FarRus.hlf.m4"
-   COMMENT "generating help rus"
-)
-
-add_custom_command(TARGET bootstrap
-   POST_BUILD
-   COMMAND ${LUACMD} --mkhlf "${SCRIPTS}/FarHun.hlf.m4" > "${BOOTSTRAP}/FarHun.hlf"
-   WORKING_DIRECTORY "${SCRIPTS}"
-   DEPENDS "${SCRIPTS}/bootstrap.lua" "${SCRIPTS}/FarHun.hlf.m4"
-   COMMENT "generating help hun"
-)
-
-add_custom_command(TARGET bootstrap
-   POST_BUILD
-   COMMAND ${LUACMD} --mkhlf "${SCRIPTS}/FarUkr.hlf.m4" > "${BOOTSTRAP}/FarUkr.hlf"
-   WORKING_DIRECTORY "${SCRIPTS}"
-   DEPENDS "${SCRIPTS}/bootstrap.lua" "${BOOTSTRAP}/FarUkr.hlf"
-   COMMENT "generating help ukr"
-)
+# List of langs for help files
+set(LANGS "Eng" "Rus" "Hun" "Ukr")
+foreach(LANG ${LANGS})
+  add_custom_command(OUTPUT "${BOOTSTRAP}/Far${LANG}.hlf"
+    COMMAND ${LUACMD} --mkhlf "${SCRIPTS}/Far${LANG}.hlf.m4" > "${BOOTSTRAP}/Far${LANG}.hlf"
+    WORKING_DIRECTORY "${SCRIPTS}"
+    DEPENDS "${SCRIPTS}/bootstrap.lua" "${SCRIPTS}/Far${LANG}.hlf.m4"
+    COMMENT "generating help ${LANG}"
+  )
+endforeach()
 
 add_custom_command(OUTPUT "${BOOTSTRAP}/farlang.templ"
    COMMAND ${LUACMD} --farlang "${SCRIPTS}/farlang.templ.m4" > "${BOOTSTRAP}/farlang.templ"
@@ -105,13 +80,11 @@ add_custom_command(OUTPUT "${BOOTSTRAP}/lang.inc"
 
 add_custom_command(TARGET bootstrap
     POST_BUILD
-    DEPENDS "${LNGFILES}"
     COMMAND "cp" "${BOOTSTRAP}/*.lng" "${INSTALL_DIR}"
 )
 
 add_custom_command(TARGET bootstrap
     POST_BUILD
-    DEPENDS "${HLFFILES}"
     COMMAND "cp" "${BOOTSTRAP}/*.hlf" "${INSTALL_DIR}"
 )
 
