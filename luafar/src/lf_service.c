@@ -1610,13 +1610,13 @@ static int FarMenuCallback(void *Data, int MenuPos, FarKey Key)
 	return FMCB_PROCESSKEY;
 }
 
-// Item, Position = Menu (Properties, Items [, Breakkeys])
+// Item, Position = Menu (Properties, Items, Breakkeys, Callback, ...)
 // Parameters:
 //   Properties -- a table
-//   Items      -- an array of tables
-//   BreakKeys  -- (optional) an array of strings with special syntax
+//   Items      -- an array (each array item may be either a table or a string)
+//   BreakKeys  -- (optional) either an array of strings or a string
 //   Callback   -- (optional) a callback function
-//   ...        -- (optional) extra parameters of any type
+//   ...        -- (optional) zero or more callback parameters of any type
 // Return value:
 //   Item:
 //     a table  -- the table of selected item (or of breakkey) is returned
@@ -1637,7 +1637,6 @@ static int far_Menu(lua_State *L)
 		lua_settop(L, POS_CBACK);
 
 	MENU_DATA mdata = { L, lua_gettop(L) - POS_CBACK, 0 };
-	const int POS_STORE = lua_gettop(L) + 1;
 
 	luaL_checktype(L, POS_PROPS, LUA_TTABLE);
 	luaL_checktype(L, POS_ITEMS, LUA_TTABLE);
@@ -1647,7 +1646,8 @@ static int far_Menu(lua_State *L)
 	if (lua_toboolean(L,POS_CBACK) && !lua_isfunction(L,POS_CBACK))
 		return luaL_argerror(L, POS_CBACK, "must be function or nil");
 
-	lua_newtable(L); // temporary store; at stack position POS_STORE
+	lua_newtable(L); // temporary store
+	const int POS_STORE = lua_gettop(L);
 
 	// Properties
 	lua_pushvalue (L,POS_PROPS);  // push Properties on top
@@ -1746,13 +1746,13 @@ static int far_Menu(lua_State *L)
 
 	if (lua_isstring(L,POS_BKEYS))
 	{
-		const char *q, *ptr = lua_tostring(L,POS_BKEYS);
+		const char *ptr = lua_tostring(L,POS_BKEYS);
 		lua_newtable(L);
 		while (*ptr)
 		{
 			while (isspace(*ptr)) ptr++;
 			if (*ptr == 0) break;
-			q = ptr++;
+			const char *q = ptr++;
 			while(*ptr && !isspace(*ptr)) ptr++;
 			lua_createtable(L,0,1);
 			lua_pushlstring(L,q,ptr-q);
@@ -1765,6 +1765,7 @@ static int far_Menu(lua_State *L)
 		NumBreakCodes = lua_istable(L,POS_BKEYS) ? (int)lua_objlen(L,POS_BKEYS) : 0;
 
 	if (NumBreakCodes) {
+		const int INVALID = (0 | PKF_ALT);
 		int* BreakKeys = (int*)lua_newuserdata(L, (1+NumBreakCodes)*sizeof(int));
 		luaL_ref(L, POS_STORE);
 		// get virtualkeys table from the registry; push it on top
@@ -1772,19 +1773,14 @@ static int far_Menu(lua_State *L)
 		lua_rawget(L, LUA_REGISTRYINDEX);
 		// push breakkeys table on top
 		lua_pushvalue(L, POS_BKEYS);      // vk=-2; bk=-1;
-		char buf[32];
-		int ind, out; // used outside the following loop
 
-// Prevent an invalid break key from shifting or invalidating the following ones
-#define INSERT_INVALID() do { BreakKeys[out++] = (0|PKF_ALT); } while (0)
-
-		for(ind=0,out=0; ind < NumBreakCodes; ind++) {
+		for(int ind=0; ind < NumBreakCodes; ind++) {
 			// get next break key (optional modifier plus virtual key)
 			lua_pushinteger(L,ind+1);       // vk=-3; bk=-2;
 			lua_gettable(L,-2);             // vk=-3; bk=-2;
-			if (!lua_istable(L,-1))  { lua_pop(L,1); INSERT_INVALID(); continue; }
+			if (!lua_istable(L,-1))  { lua_pop(L,1); BreakKeys[ind]=INVALID; continue; }
 			lua_getfield(L, -1, "BreakKey");// vk=-4; bk=-3;
-			if (!lua_isstring(L,-1)) { lua_pop(L,2); INSERT_INVALID(); continue; }
+			if (!lua_isstring(L,-1)) { lua_pop(L,2); BreakKeys[ind]=INVALID; continue; }
 
 			// first try to use "Far key names" instead of "virtual key names"
 			if (utf8_to_wcstring(L, -1, NULL))
@@ -1799,7 +1795,7 @@ static int far_Menu(lua_State *L)
 					if (State & (LEFT_CTRL_PRESSED|RIGHT_CTRL_PRESSED)) mod |= PKF_CONTROL;
 					if (State & (LEFT_ALT_PRESSED|RIGHT_ALT_PRESSED))   mod |= PKF_ALT;
 					if (State & SHIFT_PRESSED)                          mod |= PKF_SHIFT;
-					BreakKeys[out++] = (Code & 0xFFFF) | (mod << 16);
+					BreakKeys[ind] = (Code & 0xFFFF) | (mod << 16);
 					lua_pop(L, 2);
 					continue; // success
 				}
@@ -1809,9 +1805,10 @@ static int far_Menu(lua_State *L)
 			}
 
 			// separate modifier and virtual key strings
+			char buf[32];
 			int mod = 0;
 			const char* s = lua_tostring(L,-1);
-			if (strlen(s) >= sizeof(buf)) { lua_pop(L,2); INSERT_INVALID(); continue; }
+			if (strlen(s) >= sizeof(buf)) { lua_pop(L,2); BreakKeys[ind]=INVALID; continue; }
 			char* vk = buf;
 			do *vk++ = toupper(*s); while(*s++); // copy and convert to upper case
 			vk = strchr(buf, '+');  // virtual key
@@ -1828,14 +1825,10 @@ static int far_Menu(lua_State *L)
 			// get virtual key and break key values
 			lua_rawget(L,-4);               // vk=-4; bk=-3;
 			int tmp = lua_tointeger(L,-1) | mod;
-			if (tmp)
-				BreakKeys[out++] = tmp;
-			else
-				INSERT_INVALID();
+			BreakKeys[ind] = tmp ? tmp : INVALID;
 			lua_pop(L,2);                   // vk=-2; bk=-1;
 		}
-#undef INSERT_INVALID
-		BreakKeys[out] = 0; // required by FAR API
+		BreakKeys[NumBreakCodes] = 0; // required by FAR API
 		pBreakKeys = BreakKeys;
 		pBreakCode = &BreakCode;
 	}
