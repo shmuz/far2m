@@ -51,20 +51,16 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "strmix.hpp"
 #include "panelmix.hpp"
 
-extern PanelViewSettings ViewSettingsArray[];
+extern const PanelViewSettings ViewSettingsArray[];
 
-static wchar_t OutCharacter[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static wchar_t OutCharacter[16];
 
 static FarLangMsg __FormatEndSelectedPhrase(int Count)
 {
 	if (Count == 1)
 		return Msg::ListFileSize;
 
-	char StrItems[32];
-	_itoa(Count, StrItems, 10);
-	int LenItems = (int)strlen(StrItems);
-
-	if (StrItems[LenItems - 1] == '1' && Count != 11)
+	if (Count % 10 == 1 && Count != 11)
 		return Msg::ListFilesSize1;
 
 	return Msg::ListFilesSize2;
@@ -72,7 +68,7 @@ static FarLangMsg __FormatEndSelectedPhrase(int Count)
 
 void FileList::DisplayObject()
 {
-	Height = Y2 - Y1 - 4 + !Opt.ShowColumnTitles + (Opt.ShowPanelStatus ? 0 : 2);
+	Height = Y2 - Y1 - 4 + (Opt.ShowColumnTitles ? 0 : 1) + (Opt.ShowPanelStatus ? 0 : 2);
 	_OT(SysLog(L"[%p] FileList::DisplayObject()", this));
 
 	if (UpdateRequired) {
@@ -91,9 +87,7 @@ void FileList::ShowFileList(int Fast)
 		return;
 	}
 
-	FARString strTitle;
 	FARString strInfoCurDir;
-	int Cells;
 	OpenPluginInfo Info;
 
 	if (PanelMode == PLUGIN_PANEL) {
@@ -128,7 +122,6 @@ void FileList::ShowFileList(int Fast)
 			continue;
 
 		if (Opt.ShowColumnTitles) {
-			FARString strTitle;
 			FarLangMsg IDMessage{FARLANGMSGID_BAD};
 
 			switch (ViewSettings.PanelColumns[I].Type & 0xff) {
@@ -176,6 +169,7 @@ void FileList::ShowFileList(int Fast)
 					break;
 			}
 
+			FARString strTitle;
 			if (IDMessage != FARLANGMSGID_BAD)
 				strTitle = IDMessage;
 
@@ -223,17 +217,26 @@ void FileList::ShowFileList(int Fast)
 	if (Opt.ShowSortMode) {
 		wchar_t Ch = 0;
 		if (SortMode < PanelSortMode::COUNT) {
-			static int SortModes[] = {UNSORTED, BY_NAME, BY_EXT, BY_MTIME, BY_CTIME, BY_ATIME, BY_CHTIME,
-					BY_SIZE, BY_DIZ, BY_OWNER, BY_PHYSICALSIZE, BY_NUMLINKS, BY_FULLNAME, BY_CUSTOMDATA};
-			static FarLangMsg SortStrings[] = {Msg::MenuUnsorted, Msg::MenuSortByName, Msg::MenuSortByExt,
-					Msg::MenuSortByWrite, Msg::MenuSortByCreation, Msg::MenuSortByAccess,
-					Msg::MenuSortByChange, Msg::MenuSortBySize, Msg::MenuSortByDiz, Msg::MenuSortByOwner,
-					Msg::MenuSortByPhysicalSize, Msg::MenuSortByNumLinks, Msg::MenuSortByFullName,
-					Msg::MenuSortByCustomData};
+			static const struct { int Mode; FarLangMsg String; } SortModes[] = {
+				{UNSORTED,         Msg::MenuUnsorted},
+				{BY_NAME,          Msg::MenuSortByName},
+				{BY_EXT,           Msg::MenuSortByExt},
+				{BY_MTIME,         Msg::MenuSortByWrite},
+				{BY_CTIME,         Msg::MenuSortByCreation},
+				{BY_ATIME,         Msg::MenuSortByAccess},
+				{BY_CHTIME,        Msg::MenuSortByChange},
+				{BY_SIZE,          Msg::MenuSortBySize},
+				{BY_DIZ,           Msg::MenuSortByDiz},
+				{BY_OWNER,         Msg::MenuSortByOwner},
+				{BY_PHYSICALSIZE,  Msg::MenuSortByPhysicalSize},
+				{BY_NUMLINKS,      Msg::MenuSortByNumLinks},
+				{BY_FULLNAME,      Msg::MenuSortByFullName},
+				{BY_CUSTOMDATA,    Msg::MenuSortByCustomData},
+			};
 
 			for (size_t I = 0; I < ARRAYSIZE(SortModes); I++) {
-				if (SortModes[I] == SortMode) {
-					const wchar_t *p = wcschr(SortStrings[I], L'&');
+				if (SortModes[I].Mode == SortMode) {
+					const wchar_t *p = wcschr(SortModes[I].String, L'&');
 					if (p) {
 						Ch = SortOrder == 1 ? Lower(p[1]) : Upper(p[1]);
 					}
@@ -325,8 +328,9 @@ void FileList::ShowFileList(int Fast)
 	if (!Opt.ShowColumnTitles && Opt.ShowSortMode && Filter && Filter->IsEnabledOnPanel())
 		TruncSize-= 2;
 
+	FARString strTitle;
 	GetTitle(strTitle, TruncSize, 2);    //,(PanelMode==PLUGIN_PANEL?0:2));
-	Cells = (int)strTitle.CellsCount();
+	int Cells = (int)strTitle.CellsCount();
 	int ClockCorrection = FALSE;
 
 	if ((Opt.Clock && !Opt.ShowMenuBar) && TitleX2 == ScrX - 4) {
@@ -842,8 +846,6 @@ int FileList::PrepareColumnWidths(std::vector<Column> &Columns, int FullScreen)
 
 	return (GlobalColumns);
 }
-
-extern void GetColor(int PaletteIndex);
 
 static int MakeCurLeftPos(int ColumnWidth, const wchar_t *Str, int LeftPos, int &MaxLeftPos)
 {
