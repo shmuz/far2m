@@ -77,10 +77,10 @@ void FileList::DisplayObject()
 	}
 
 	ProcessPluginCommand();
-	ShowFileList(FALSE);
+	ShowFileList(false);
 }
 
-void FileList::ShowFileList(int Fast)
+void FileList::ShowFileList(bool Fast)
 {
 	if (Locked()) {
 		CorrectPosition();

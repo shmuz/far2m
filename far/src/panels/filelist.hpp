@@ -191,7 +191,7 @@ private:
 	void Down(int Count);
 	void Scroll(int Count);
 	void CorrectPosition();
-	void ShowFileList(int Fast);
+	void ShowFileList(bool Fast);
 	void ShowList(int ShowStatus, int StartColumn, OpenPluginInfo &Info);
 	void SetShowColor(int Position, int ColorType = HIGHLIGHTCOLORTYPE_FILE);
 	DWORD64 GetShowColor(int Position, int ColorType);

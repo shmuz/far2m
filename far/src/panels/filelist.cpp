@@ -304,7 +304,7 @@ void FileList::Up(int Count)
 	if (CurFile < 0)
 		CurFile = 0;
 
-	ShowFileList(TRUE);
+	ShowFileList(true);
 }
 
 void FileList::Down(int Count)
@@ -314,7 +314,7 @@ void FileList::Down(int Count)
 	if (CurFile >= FileCount)
 		CurFile = FileCount - 1;
 
-	ShowFileList(TRUE);
+	ShowFileList(true);
 }
 
 void FileList::Scroll(int Count)
@@ -1057,7 +1057,7 @@ int FileList::ProcessKey(FarKey Key)
 	if (!ShiftPressed && ShiftSelection != -1) {
 		if (SelectedFirst) {
 			SortFileList(true);
-			ShowFileList(TRUE);
+			ShowFileList(true);
 		}
 
 		ShiftSelection = -1;
@@ -2050,7 +2050,7 @@ int FileList::ProcessKey(FarKey Key)
 			if (SelectedFirst)
 				SortFileList(true);
 
-			ShowFileList(TRUE);
+			ShowFileList(true);
 			return TRUE;
 		}
 		case KEY_SHIFTEND:
@@ -2068,7 +2068,7 @@ int FileList::ProcessKey(FarKey Key)
 			if (SelectedFirst)
 				SortFileList(true);
 
-			ShowFileList(TRUE);
+			ShowFileList(true);
 			return TRUE;
 		}
 		case KEY_SHIFTPGUP:
@@ -2088,7 +2088,7 @@ int FileList::ProcessKey(FarKey Key)
 			if (SelectedFirst)
 				SortFileList(true);
 
-			ShowFileList(TRUE);
+			ShowFileList(true);
 			return TRUE;
 		}
 		case KEY_SHIFTLEFT:
@@ -2118,7 +2118,7 @@ int FileList::ProcessKey(FarKey Key)
 				if (SelectedFirst)
 					SortFileList(true);
 
-				ShowFileList(TRUE);
+				ShowFileList(true);
 				return TRUE;
 			}
 
@@ -2152,7 +2152,7 @@ int FileList::ProcessKey(FarKey Key)
 			if (SelectedFirst && !InternalProcessKey)
 				SortFileList(true);
 
-			ShowFileList(TRUE);
+			ShowFileList(true);
 			return TRUE;
 		}
 		case KEY_INS:
@@ -2168,7 +2168,7 @@ int FileList::ProcessKey(FarKey Key)
 			if (SelectedFirst)
 				SortFileList(true);
 
-			ShowFileList(TRUE);
+			ShowFileList(true);
 			return TRUE;
 		}
 		case KEY_CTRLF3:
@@ -2748,7 +2748,7 @@ int FileList::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 		if (MouseY > ScrollY && MouseY < ScrollY + Height - 1 && Height > 2) {
 			while (IsMouseButtonPressed()) {
 				CurFile = (FileCount - 1) * (MouseY - ScrollY) / (Height - 2);
-				ShowFileList(TRUE);
+				ShowFileList(true);
 				SetFocus();
 			}
 
@@ -2807,7 +2807,7 @@ int FileList::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 			  Но мы же вызываем Fast=TRUE...
 			  Вроде всё должно быть ок.
 			*/
-			ShowFileList(TRUE);
+			ShowFileList(true);
 			if (!WinPortTesting())
 				FlushInputBuffer();
 			ProcessEnter(true, ShiftPressed != 0);
@@ -2827,7 +2827,7 @@ int FileList::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 			}
 		}
 
-		ShowFileList(TRUE);
+		ShowFileList(true);
 		return TRUE;
 	}
 
@@ -2983,7 +2983,7 @@ void FileList::SetViewMode(int ViewMode)
 
 	if (ResortRequired) {
 		SortFileList(true);
-		ShowFileList(TRUE);
+		ShowFileList(true);
 		Panel *AnotherPanel = CtrlObject->Cp()->GetAnotherPanel(this);
 
 		if (AnotherPanel->GetType() == TREE_PANEL)
@@ -3162,7 +3162,7 @@ bool FileList::FindPartName(const wchar_t *Name, int Next, int Direct, int Exclu
 				if (!DirFind || (ListData[I]->FileAttr & FILE_ATTRIBUTE_DIRECTORY)) {
 					CurFile = I;
 					CurTopFile = CurFile - (Y2 - Y1) / 2;
-					ShowFileList(TRUE);
+					ShowFileList(true);
 					return true;
 				}
 			}
@@ -3176,7 +3176,7 @@ bool FileList::FindPartName(const wchar_t *Name, int Next, int Direct, int Exclu
 				if (!DirFind || (ListData[I]->FileAttr & FILE_ATTRIBUTE_DIRECTORY)) {
 					CurFile = I;
 					CurTopFile = CurFile - (Y2 - Y1) / 2;
-					ShowFileList(TRUE);
+					ShowFileList(true);
 					return true;
 				}
 			}
@@ -3517,7 +3517,7 @@ long FileList::SelectFiles(int Mode, const wchar_t *Mask)
 	if (SelectedFirst)
 		SortFileList(true);
 
-	ShowFileList(TRUE);
+	ShowFileList(true);
 
 	return workCount;
 }
@@ -4450,7 +4450,7 @@ void FileList::CountDirSize(DWORD PluginFlags)
 	}
 
 	SortFileList(true);
-	ShowFileList(TRUE);
+	ShowFileList(true);
 	CtrlObject->Cp()->Redraw();
 	CreateChangeNotification(FALSE);    // initially here was TRUE, but size is actually NOT recalculated recursively on deep change, so changing this to FALSE should not break anything, however give MUCH better performance due to inotify is slow on multiple directories
 }
