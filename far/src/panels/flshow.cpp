@@ -60,7 +60,7 @@ static FarLangMsg __FormatEndSelectedPhrase(int Count)
 	if (Count == 1)
 		return Msg::ListFileSize;
 
-	if (Count % 10 == 1 && Count != 11)
+	if (Count % 10 == 1 && Count % 100 != 11)
 		return Msg::ListFilesSize1;
 
 	return Msg::ListFilesSize2;
