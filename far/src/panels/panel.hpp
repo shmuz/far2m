@@ -289,7 +289,7 @@ public:
 	virtual void ClearSelection() {}
 	virtual void SaveSelection() {}
 	virtual void RestoreSelection() {}
-	virtual void SortFileList(int KeepPosition) {}
+	virtual void SortFileList(bool KeepPosition) {}
 	virtual void EditFilter() {}
 	virtual bool FileInFilter(long idxItem) { return true; }
 	virtual void ReadDiz(struct PluginPanelItem *ItemList = nullptr, int ItemLength = 0, DWORD dwFlags = 0) {}
@@ -301,7 +301,6 @@ public:
 	virtual int IsDizDisplayed() const { return FALSE; }
 	virtual int IsColumnDisplayed(int Type) const { return FALSE; }
 	virtual int GetColumnsCount() const { return 1; }
-	virtual void SetReturnCurrentFile(int Mode) {}
 	virtual void QViewDelTempName() {}
 	virtual void GetOpenPluginInfo(struct OpenPluginInfo *Info) {}
 	virtual void SetPluginMode(PHPTR hPlugin, const wchar_t *PluginFile, bool SendOnFocus = false) {}

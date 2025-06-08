@@ -135,7 +135,7 @@ class FileList : public Panel
 private:
 	FileFilter *Filter;
 	DizList Diz;
-	int DizRead;
+	bool DizRead;
 	/* $ 09.11.2001 IS
 		 Открывающий и закрывающий символ, которые используются для показа
 		 имени, которое не помещается в панели. По умолчанию - фигурные скобки.
@@ -152,7 +152,7 @@ private:
 	std::list<PluginsListItem *> PluginsList;
 	std::unique_ptr<IFSNotify> ListChange;
 	long UpperFolderTopFile, LastCurFile;
-	long ReturnCurrentFile;
+	bool ReturnCurrentFile;
 	long SelFileCount;
 	long GetSelPosition, LastSelPosition;
 	long TotalFileCount;
@@ -170,9 +170,10 @@ private:
 	int MouseSelection;
 	int SelectedFirst;
 	int IsEmpty;    // указывает на полностью пустую колонку
-	int AccessTimeUpdateRequired;
+	bool AccessTimeUpdateRequired;
 
-	int UpdateRequired, UpdateRequiredMode, UpdateDisabled;
+	bool UpdateRequired;
+	int UpdateRequiredMode, UpdateDisabled;
 	int SortGroupsRead;
 	int InternalProcessKey;
 
@@ -286,7 +287,7 @@ public:
 	virtual int SendKeyToPlugin(FarKey Key, BOOL Pred = FALSE);
 	void CreateChangeNotification(int CheckTree);
 	virtual void CloseChangeNotification();
-	virtual void SortFileList(int KeepPosition);
+	virtual void SortFileList(bool KeepPosition);
 	virtual void SetViewMode(int ViewMode);
 	virtual void SetSortMode(int SortMode, bool KeepOrder = false);
 	void ApplySortMode(int SortMode);
@@ -338,7 +339,6 @@ public:
 	virtual int IsDizDisplayed() const;
 	virtual int IsColumnDisplayed(int Type) const;
 	virtual int GetColumnsCount() const { return Columns; }
-	virtual void SetReturnCurrentFile(int Mode);
 	virtual void GetOpenPluginInfo(OpenPluginInfo *Info);
 	virtual void SetPluginMode(PHPTR hPlugin, const wchar_t *PluginFile, bool SendOnFocus = false);
 

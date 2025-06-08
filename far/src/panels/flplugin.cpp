@@ -841,7 +841,7 @@ void FileList::ProcessHostFile()
 				}
 
 				if (SelectedFirst)
-					SortFileList(TRUE);
+					SortFileList(true);
 			} else {
 				if ((Done = ProcessOneHostFile(CurFile)) == 1)
 					ClearSelection();
@@ -1023,7 +1023,7 @@ void FileList::PluginClearSelection(int SelectedItemNumber)
 void FileList::PluginEndSelection()
 {
 	if (SelectedFirst) {
-		SortFileList(TRUE);
+		SortFileList(true);
 	}
 }
 

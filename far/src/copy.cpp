@@ -1208,7 +1208,7 @@ ShellCopy::ShellCopy(Panel *SrcPanel,    // исходная панель (ак�
 
 	// проверим "нужность" апдейта пассивной панели
 	if (Flags.UPDATEPPANEL) {
-		DestPanel->SortFileList(TRUE);
+		DestPanel->SortFileList(true);
 		DestPanel->Update(UPDATE_KEEP_SELECTION | UPDATE_SECONDARY);
 	}
 

@@ -98,7 +98,7 @@ void FileList::Update(int Mode)
 void FileList::UpdateIfRequired()
 {
 	if (UpdateRequired && !UpdateDisabled) {
-		UpdateRequired = FALSE;
+		UpdateRequired = false;
 		Update(UpdateRequiredMode | UPDATE_IGNORE_VISIBLE);
 	}
 }
@@ -127,14 +127,14 @@ void FileList::ReadFileNames(int KeepSelection, int IgnoreVisible, int DrawMessa
 	strOriginalCurDir = strCurDir;
 
 	if (!IsVisible() && !IgnoreVisible) {
-		UpdateRequired = TRUE;
+		UpdateRequired = true;
 		UpdateRequiredMode = KeepSelection;
 		return;
 	}
 
-	UpdateRequired = FALSE;
-	AccessTimeUpdateRequired = FALSE;
-	DizRead = FALSE;
+	UpdateRequired = false;
+	AccessTimeUpdateRequired = false;
+	DizRead = false;
 	FAR_FIND_DATA_EX fdata;
 	FileListItem *CurPtr = nullptr, **OldData = nullptr;
 	FARString strCurName, strNextCurName;
@@ -444,7 +444,7 @@ void FileList::ReadFileNames(int KeepSelection, int IgnoreVisible, int DrawMessa
 		ClearSelection();
 	}
 
-	SortFileList(FALSE);
+	SortFileList(false);
 
 	if (CurFile >= FileCount || StrCmp(ListData[CurFile]->strName, strCurName))
 		if (!GoToFile(strCurName) && !strNextCurName.IsEmpty())
@@ -566,12 +566,12 @@ void FileList::UpdatePlugin(int KeepSelection, int IgnoreVisible)
 	_ALGO(SysLog(L"(KeepSelection=%d, IgnoreVisible=%d)", KeepSelection, IgnoreVisible));
 
 	if (!IsVisible() && !IgnoreVisible) {
-		UpdateRequired = TRUE;
+		UpdateRequired = true;
 		UpdateRequiredMode = KeepSelection;
 		return;
 	}
 
-	DizRead = FALSE;
+	DizRead = false;
 	FileListItem *CurPtr, **OldData = nullptr;
 	FARString strCurName, strNextCurName;
 	int OldFileCount = 0;
@@ -743,7 +743,7 @@ void FileList::UpdatePlugin(int KeepSelection, int IgnoreVisible)
 		ClearSelection();
 	}
 
-	SortFileList(FALSE);
+	SortFileList(false);
 
 	if (CurFile >= FileCount || StrCmp(ListData[CurFile]->strName, strCurName))
 		if (!GoToFile(strCurName) && !strNextCurName.IsEmpty())
@@ -757,7 +757,7 @@ void FileList::ReadDiz(PluginPanelItem *ItemList, int ItemLength, DWORD dwFlags)
 	if (DizRead)
 		return;
 
-	DizRead = TRUE;
+	DizRead = true;
 	Diz.Reset();
 
 	if (PanelMode == NORMAL_PANEL) {

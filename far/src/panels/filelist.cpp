@@ -193,13 +193,13 @@ enum SELECT_MODES
 FileList::FileList()
 	:
 	Filter(nullptr),
-	DizRead(FALSE),
+	DizRead(false),
 	ListData(nullptr),
 	FileCount(0),
 	hPlugin(nullptr),
 	UpperFolderTopFile(0),
 	LastCurFile(-1),
-	ReturnCurrentFile(FALSE),
+	ReturnCurrentFile(false),
 	SelFileCount(0),
 	GetSelPosition(0),
 	TotalFileCount(0),
@@ -213,10 +213,10 @@ FileList::FileList()
 	ShiftSelection(-1),
 	MouseSelection(0),
 	SelectedFirst(0),
-	AccessTimeUpdateRequired(FALSE),
-	UpdateRequired(FALSE),
+	AccessTimeUpdateRequired(false),
+	UpdateRequired(false),
 	UpdateDisabled(0),
-	InternalProcessKey(FALSE),
+	InternalProcessKey(0),
 	CacheSelIndex(-1),
 	CacheSelClearIndex(-1)
 {
@@ -382,7 +382,7 @@ void apply_permutation(Iter1 first, Iter1 last, Iter2 indices)
 	}
 }
 
-void FileList::SortFileList(int KeepPosition)
+void FileList::SortFileList(bool KeepPosition)
 {
 	if (FileCount > 1) {
 		FARString strCurName;
@@ -922,7 +922,7 @@ int64_t FileList::VMProcess(int OpCode, void *vParam, int64_t iParam)
 
 			if (Result != -1 && mps->Action != ps_action::restore) {
 				if (SelectedFirst)
-					SortFileList(TRUE);
+					SortFileList(true);
 				Redraw();
 			}
 
@@ -1056,7 +1056,7 @@ int FileList::ProcessKey(FarKey Key)
 
 	if (!ShiftPressed && ShiftSelection != -1) {
 		if (SelectedFirst) {
-			SortFileList(TRUE);
+			SortFileList(true);
 			ShowFileList(TRUE);
 		}
 
@@ -1127,7 +1127,7 @@ int FileList::ProcessKey(FarKey Key)
 			}
 
 			if (SelectedFirst)
-				SortFileList(TRUE);
+				SortFileList(true);
 
 			Redraw();
 			return TRUE;
@@ -1801,7 +1801,7 @@ int FileList::ProcessKey(FarKey Key)
 					//          else
 					//            SetTitle();
 				} else if (PanelMode == NORMAL_PANEL)
-					AccessTimeUpdateRequired = TRUE;
+					AccessTimeUpdateRequired = true;
 			}
 
 			/* $ 15.07.2000 tran
@@ -1851,7 +1851,7 @@ int FileList::ProcessKey(FarKey Key)
 				assert(CurFile < FileCount);
 				bool OldSelection = ListData[CurFile]->Selected;
 				int RealName = PanelMode != PLUGIN_PANEL;
-				ReturnCurrentFile = TRUE;
+				ReturnCurrentFile = true;
 
 				if (PanelMode == PLUGIN_PANEL) {
 					OpenPluginInfo Info;
@@ -1866,7 +1866,7 @@ int FileList::ProcessKey(FarKey Key)
 					ProcessCopyKeys(Key == KEY_SHIFTF5 ? KEY_F5 : KEY_F6);
 				}
 
-				ReturnCurrentFile = FALSE;
+				ReturnCurrentFile = false;
 
 				assert(CurFile < FileCount);
 				if (Key != KEY_SHIFTF5 && FileCount == OldFileCount && CurFile == OldCurFile
@@ -1931,7 +1931,7 @@ int FileList::ProcessKey(FarKey Key)
 					_FARKEY_ToName(Key)));
 			if (FileCount > 0 && SetCurPath()) {
 				if (Key == KEY_SHIFTF8)
-					ReturnCurrentFile = TRUE;
+					ReturnCurrentFile = true;
 
 				if (PanelMode == PLUGIN_PANEL
 						&& !CtrlObject->Plugins.UseFarCommand(hPlugin, PLUGIN_FARDELETEFILES))
@@ -1947,7 +1947,7 @@ int FileList::ProcessKey(FarKey Key)
 				}
 
 				if (Key == KEY_SHIFTF8)
-					ReturnCurrentFile = FALSE;
+					ReturnCurrentFile = false;
 			}
 
 			return TRUE;
@@ -2048,7 +2048,7 @@ int FileList::ProcessKey(FarKey Key)
 			Unlock();
 
 			if (SelectedFirst)
-				SortFileList(TRUE);
+				SortFileList(true);
 
 			ShowFileList(TRUE);
 			return TRUE;
@@ -2066,7 +2066,7 @@ int FileList::ProcessKey(FarKey Key)
 			Unlock();
 
 			if (SelectedFirst)
-				SortFileList(TRUE);
+				SortFileList(true);
 
 			ShowFileList(TRUE);
 			return TRUE;
@@ -2086,7 +2086,7 @@ int FileList::ProcessKey(FarKey Key)
 			Unlock();
 
 			if (SelectedFirst)
-				SortFileList(TRUE);
+				SortFileList(true);
 
 			ShowFileList(TRUE);
 			return TRUE;
@@ -2110,13 +2110,13 @@ int FileList::ProcessKey(FarKey Key)
 				Select(ListData[CurFile], ShiftSelection);
 
 				if (SelectedFirst)
-					SortFileList(TRUE);
+					SortFileList(true);
 
 				InternalProcessKey--;
 				Unlock();
 
 				if (SelectedFirst)
-					SortFileList(TRUE);
+					SortFileList(true);
 
 				ShowFileList(TRUE);
 				return TRUE;
@@ -2150,7 +2150,7 @@ int FileList::ProcessKey(FarKey Key)
 				Down(1);
 
 			if (SelectedFirst && !InternalProcessKey)
-				SortFileList(TRUE);
+				SortFileList(true);
 
 			ShowFileList(TRUE);
 			return TRUE;
@@ -2166,7 +2166,7 @@ int FileList::ProcessKey(FarKey Key)
 			Down(1);
 
 			if (SelectedFirst)
-				SortFileList(TRUE);
+				SortFileList(true);
 
 			ShowFileList(TRUE);
 			return TRUE;
@@ -2207,12 +2207,12 @@ int FileList::ProcessKey(FarKey Key)
 			if (SortGroups)
 				ReadSortGroups();
 
-			SortFileList(TRUE);
+			SortFileList(true);
 			Show();
 			return TRUE;
 		case KEY_SHIFTF12:
 			SelectedFirst = !SelectedFirst;
-			SortFileList(TRUE);
+			SortFileList(true);
 			Show();
 			return TRUE;
 		case KEY_CTRLPGUP:
@@ -2543,9 +2543,9 @@ bool FileList::ChangeDir(const wchar_t *NewDir, bool ShowMessage)
 				delete Item;
 
 				if (SelectedFirst)
-					SortFileList(FALSE);
+					SortFileList(false);
 				else if (FileCount > 0)
-					SortFileList(TRUE);
+					SortFileList(true);
 			}
 		}
 
@@ -2823,7 +2823,7 @@ int FileList::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 				Select(CurPtr, MouseSelection);
 
 				if (SelectedFirst)
-					SortFileList(TRUE);
+					SortFileList(true);
 			}
 		}
 
@@ -2848,7 +2848,7 @@ int FileList::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 		}
 
 		if (SelectedFirst)
-			SortFileList(TRUE);
+			SortFileList(true);
 
 		return TRUE;
 	}
@@ -2870,7 +2870,7 @@ int FileList::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 		}
 
 		if (SelectedFirst)
-			SortFileList(TRUE);
+			SortFileList(true);
 
 		return TRUE;
 	}
@@ -2982,7 +2982,7 @@ void FileList::SetViewMode(int ViewMode)
 	}
 
 	if (ResortRequired) {
-		SortFileList(TRUE);
+		SortFileList(true);
 		ShowFileList(TRUE);
 		Panel *AnotherPanel = CtrlObject->Cp()->GetAnotherPanel(this);
 
@@ -3010,7 +3010,7 @@ void FileList::ApplySortMode(int SortMode)
 	FileList::SortMode = SortMode;
 
 	if (FileCount > 0)
-		SortFileList(TRUE);
+		SortFileList(true);
 
 	FrameManager->RefreshFrame();
 }
@@ -3044,21 +3044,21 @@ void FileList::SetCustomSortMode(int Mode, int Order, bool InvertByDefault)
 void FileList::ChangeNumericSort(int Mode)
 {
 	Panel::ChangeNumericSort(Mode);
-	SortFileList(TRUE);
+	SortFileList(true);
 	Show();
 }
 
 void FileList::ChangeCaseSensitiveSort(int Mode)
 {
 	Panel::ChangeCaseSensitiveSort(Mode);
-	SortFileList(TRUE);
+	SortFileList(true);
 	Show();
 }
 
 void FileList::ChangeDirectoriesFirst(int Mode)
 {
 	Panel::ChangeDirectoriesFirst(Mode);
-	SortFileList(TRUE);
+	SortFileList(true);
 	Show();
 }
 
@@ -3515,7 +3515,7 @@ long FileList::SelectFiles(int Mode, const wchar_t *Mask)
 	}
 
 	if (SelectedFirst)
-		SortFileList(TRUE);
+		SortFileList(true);
 
 	ShowFileList(TRUE);
 
@@ -3694,10 +3694,10 @@ void FileList::CompareDir()
 	}
 
 	if (SelectedFirst)
-		SortFileList(TRUE);
+		SortFileList(true);
 
 	if (Another->SelectedFirst)
-		Another->SortFileList(TRUE);
+		Another->SortFileList(true);
 
 	Redraw();
 	Another->Redraw();
@@ -3930,7 +3930,7 @@ void FileList::ClearSelection()
 	}
 
 	if (SelectedFirst)
-		SortFileList(TRUE);
+		SortFileList(true);
 }
 
 void FileList::SaveSelection()
@@ -3949,7 +3949,7 @@ void FileList::RestoreSelection()
 	}
 
 	if (SelectedFirst)
-		SortFileList(TRUE);
+		SortFileList(true);
 
 	Redraw();
 }
@@ -4289,11 +4289,6 @@ void FileList::DescribeFiles()
 	}*/
 }
 
-void FileList::SetReturnCurrentFile(int Mode)
-{
-	ReturnCurrentFile = Mode;
-}
-
 bool FileList::ApplyCommand()
 {
 	static FARString strPrevCommand;
@@ -4454,7 +4449,7 @@ void FileList::CountDirSize(DWORD PluginFlags)
 		}
 	}
 
-	SortFileList(TRUE);
+	SortFileList(true);
 	ShowFileList(TRUE);
 	CtrlObject->Cp()->Redraw();
 	CreateChangeNotification(FALSE);    // initially here was TRUE, but size is actually NOT recalculated recursively on deep change, so changing this to FALSE should not break anything, however give MUCH better performance due to inotify is slow on multiple directories
@@ -4625,13 +4620,13 @@ void FileList::ProcessCopyKeys(FarKey Key)
 void FileList::SetSelectedFirstMode(int Mode)
 {
 	SelectedFirst = Mode;
-	SortFileList(TRUE);
+	SortFileList(true);
 }
 
 void FileList::ChangeSortOrder(int NewOrder)
 {
 	Panel::ChangeSortOrder(NewOrder);
-	SortFileList(TRUE);
+	SortFileList(true);
 	Show();
 }
 

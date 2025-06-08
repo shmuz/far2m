@@ -72,7 +72,7 @@ void FileList::DisplayObject()
 	_OT(SysLog(L"[%p] FileList::DisplayObject()", this));
 
 	if (UpdateRequired) {
-		UpdateRequired = FALSE;
+		UpdateRequired = false;
 		Update(UpdateRequiredMode);
 	}
 

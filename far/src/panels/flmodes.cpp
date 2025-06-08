@@ -329,8 +329,8 @@ void FileList::SetFilePanelModes()
 				NewSettings.PanelColumns);
 		TextToViewSettings(ModeDlg[MD_EDITSTATUSTYPES].strData, ModeDlg[MD_EDITSTATUSWIDTHS].strData,
 				NewSettings.StatusColumns);
-		CtrlObject->Cp()->LeftPanel->SortFileList(TRUE);
-		CtrlObject->Cp()->RightPanel->SortFileList(TRUE);
+		CtrlObject->Cp()->LeftPanel->SortFileList(true);
+		CtrlObject->Cp()->RightPanel->SortFileList(true);
 		CtrlObject->Cp()->SetScreenPosition();
 		int LeftMode = CtrlObject->Cp()->LeftPanel->GetViewMode();
 		int RightMode = CtrlObject->Cp()->RightPanel->GetViewMode();
