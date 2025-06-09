@@ -1,6 +1,6 @@
 #include <farplug-wide.h>
 
-SHAREDSYMBOL void WINAPI EXP_NAME(GetGlobalInfo)(struct GlobalInfo *aInfo)
+SHAREDSYMBOL void WINAPI GetGlobalInfoW(struct GlobalInfo *aInfo)
 {
   struct VersionInfo Version = { 3,25,0,0 };
   aInfo->StructSize    = sizeof(*aInfo);
