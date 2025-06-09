@@ -61,7 +61,6 @@ class Plugin
 		FARString m_strModuleName;
 		std::string m_strSettingsName;
 		std::string m_strModuleID;
-		FARString strRootKey;
 
 		BitFlags WorkFlags{};      // рабочие флаги текущего плагина
 		BitFlags FuncFlags{};      // битовые маски вызова эксп.функций плагина

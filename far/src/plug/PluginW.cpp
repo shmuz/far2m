@@ -599,14 +599,11 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 	*PSI=StartupInfo;
 	*FSF=StandardFunctions;
 	PSI->FSF=FSF;
-	PSI->RootKey=nullptr;
+	PSI->RootKey=L"";
 	PSI->ModuleNumber=(INT_PTR)pPlugin;
-
-	if (pPlugin)
-	{
-		PSI->ModuleName = pPlugin->GetModuleName().CPtr();
-		if (pPlugin->IsLuamacro())
-			PSI->Private = &MacroInfo;
+	PSI->ModuleName = pPlugin->GetModuleName().CPtr();
+	if (pPlugin->IsLuamacro()) {
+		PSI->Private = &MacroInfo;
 	}
 }
 
@@ -617,8 +614,6 @@ bool PluginW::SetStartupInfo(bool &bUnloaded)
 		PluginStartupInfo _info;
 		FarStandardFunctions _fsf;
 		CreatePluginStartupInfo(this, &_info, &_fsf);
-		// скорректируем адреса и плагино-зависимые поля
-		_info.RootKey = strRootKey.CPtr();
 		ExecuteStruct es(EXCEPT_SETSTARTUPINFO);
 		EXECUTE_FUNCTION(pSetStartupInfoW(&_info), es);
 

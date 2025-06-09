@@ -469,7 +469,7 @@ static void CreatePluginStartupInfoA(PluginA *pPlugin, oldfar::PluginStartupInfo
 	PSI->ModuleNumber=(INT_PTR)pPlugin;
 	PSI->FSF=FSF;
 	pPlugin->GetModuleName().GetCharString(PSI->ModuleName,sizeof(PSI->ModuleName));
-	PSI->RootKey=nullptr;
+	PSI->RootKey="";
 }
 
 bool PluginA::SetStartupInfo(bool &bUnloaded)
@@ -480,10 +480,6 @@ bool PluginA::SetStartupInfo(bool &bUnloaded)
 		oldfar::FarStandardFunctions _fsf;
 
 		CreatePluginStartupInfoA(this, &_info, &_fsf);
-		// скорректируем адреса и плагино-зависимые поля
-		if (mbRootKey.empty())
-			mbRootKey = strRootKey.GetMB();
-		_info.RootKey = mbRootKey.c_str();
 		ExecuteStruct es(EXCEPT_SETSTARTUPINFO);
 		EXECUTE_FUNCTION(pSetStartupInfo(&_info), es);
 
