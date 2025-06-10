@@ -607,8 +607,6 @@ void LF_GetOpenPanelInfo(lua_State* L, HANDLE hPlugin, struct OpenPluginInfo *aI
 	//---------------------------------------------------------------------------
 	lua_getfield (L, -1, "KeyBar");
 	if (lua_istable(L, -1)) {
-		size_t i;
-		int j;
 		struct KeyBarTitles *kbt = (struct KeyBarTitles*)
 			AddBufToCollector(L, cpos, sizeof(struct KeyBarTitles));
 		Info->KeyBar = kbt;
@@ -621,10 +619,10 @@ void LF_GetOpenPanelInfo(lua_State* L, HANDLE hPlugin, struct OpenPluginInfo *aI
 			{"AltShiftTitles",  kbt->AltShiftTitles},
 			{"CtrlAltTitles",   kbt->CtrlAltTitles},
 		};
-		for (i=0; i < ARRAYSIZE(pairs); i++) {
+		for (size_t i=0; i < ARRAYSIZE(pairs); i++) {
 			lua_getfield (L, -1, pairs[i].key);
 			if (lua_istable (L, -1)) {
-				for (j=0; j < ARRAYSIZE(kbt->Titles); j++)
+				for (int j=0; j < ARRAYSIZE(kbt->Titles); j++)
 					pairs[i].trg[j] = (wchar_t*)AddStringToCollectorSlot(L, cpos, j+1);
 			}
 			lua_pop (L, 1);
@@ -678,9 +676,8 @@ void PushFarMacroValue(lua_State* L, const struct FarMacroValue* val)
 
 void PackMacroValues(lua_State* L, size_t Count, const struct FarMacroValue* Values)
 {
-	size_t i;
 	lua_createtable(L, (int)Count, 1);
-	for(i=0; i < Count; i++)
+	for(size_t i=0; i < Count; i++)
 	{
 		PushFarMacroValue(L, Values + i);
 		lua_rawseti(L, -2, (int)i+1);
@@ -691,11 +688,10 @@ void PackMacroValues(lua_State* L, size_t Count, const struct FarMacroValue* Val
 
 static void WINAPI FillFarMacroCall_Callback (void *CallbackData, struct FarMacroValue *Values, size_t Count)
 {
-	size_t i;
 	struct FarMacroCall *fmc = (struct FarMacroCall*)CallbackData;
 	(void)Values; // not used
 	(void)Count;  // not used
-	for(i=0; i<fmc->Count; i++)
+	for(size_t i=0; i<fmc->Count; i++)
 	{
 		struct FarMacroValue *v = fmc->Values + i;
 		if (v->Type == FMVT_STRING)
@@ -786,11 +782,10 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 	{
 		case OPEN_FROMMACRO:
 		{
-			int top;
 			const struct OpenMacroInfo* data = (struct OpenMacroInfo*)Item;
 			lua_pushinteger(L, 0);        // dummy menuitem Id
 			PackMacroValues(L, data->Count, data->Values);
-			top = lua_gettop(L);
+			int top = lua_gettop(L);
 			if (pcall_msg(L, 3, LUA_MULTRET) == 0)
 			{
 				int nret = lua_gettop(L) - top + 4; // nret

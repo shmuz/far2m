@@ -36,10 +36,9 @@ int bit64_getvalue(lua_State *L, int pos, int64_t *target)
 {
 	if (lua_type(L,pos)==LUA_TUSERDATA)
 	{
-		int equal;
 		lua_getmetatable(L, pos);
 		luaL_getmetatable(L, metatable_name);
-		equal = lua_rawequal(L,-1,-2);
+		int equal = lua_rawequal(L,-1,-2);
 		lua_pop(L,2);
 
 		if (equal && target)
@@ -55,7 +54,6 @@ int bit64_getvalue(lua_State *L, int pos, int64_t *target)
 
 int64_t check64(lua_State *L, int pos, int* success)
 {
-	int64_t ret;
 	int tp = lua_type(L, pos);
 
 	if (success) *success = 1;
@@ -76,6 +74,7 @@ int64_t check64(lua_State *L, int pos, int* success)
 			lua_call(L, 1, 1);
 			lua_replace(L, pos);
 		}
+		int64_t ret;
 		if (bit64_getvalue(L, pos, &ret))
 			return ret;
 	}

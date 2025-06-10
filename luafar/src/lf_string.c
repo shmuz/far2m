@@ -197,12 +197,9 @@ wchar_t* oem_to_wcstring (lua_State *L, int pos, size_t* pTrgSize)
 
 char* push_multibyte_string(lua_State* L, UINT CodePage, const wchar_t* str, int numchars, DWORD dwFlags)
 {
-	int targetSize;
-	char *target;
-
 	if (str == NULL) { lua_pushnil(L); return NULL; }
 
-	targetSize = WideCharToMultiByte(
+	int targetSize = WideCharToMultiByte(
 									 CodePage, // UINT CodePage,
 									 dwFlags,  // DWORD dwFlags,
 									 str,      // LPCWSTR lpWideCharStr,
@@ -218,7 +215,7 @@ char* push_multibyte_string(lua_State* L, UINT CodePage, const wchar_t* str, int
 		luaL_error(L, "invalid UTF-32 string");
 	}
 
-	target = (char*)lua_newuserdata(L, targetSize+1);
+	char *target = (char*)lua_newuserdata(L, targetSize+1);
 	WideCharToMultiByte(CodePage, dwFlags, str, (int)numchars, target, targetSize, NULL, NULL);
 
 	if (numchars == -1)
@@ -266,10 +263,9 @@ static int ustring_WideCharToMultiByte(lua_State *L)
 {
 	size_t numchars;
 	const wchar_t* src = (const wchar_t*)luaL_checklstring(L, 1, &numchars);
-	UINT codepage;
 	DWORD dwFlags = 0;
 	numchars /= sizeof(wchar_t);
-	codepage = (UINT)luaL_checkinteger(L, 2);
+	UINT codepage = (UINT)luaL_checkinteger(L, 2);
 
 	if (lua_isstring(L, 3))
 	{
@@ -290,8 +286,6 @@ static int ustring_WideCharToMultiByte(lua_State *L)
 
 static int ustring_MultiByteToWideChar (lua_State *L)
 {
-	wchar_t* Trg;
-	size_t TrgSize;
 	(void) luaL_checkstring(L, 1);
 	UINT codepage = luaL_checkinteger(L, 2);
 	DWORD dwFlags = 0;
@@ -304,7 +298,8 @@ static int ustring_MultiByteToWideChar (lua_State *L)
 			else if (*s == 'u') dwFlags |= MB_USEGLYPHCHARS;
 		}
 	}
-	Trg = convert_multibyte_string(L, 1, codepage, dwFlags, &TrgSize, FALSE);
+	size_t TrgSize;
+	wchar_t *Trg = convert_multibyte_string(L, 1, codepage, dwFlags, &TrgSize, FALSE);
 	if (Trg) {
 		lua_pushlstring(L, (const char*)Trg, TrgSize * sizeof(wchar_t));
 		return 1;
@@ -381,10 +376,9 @@ static int ustring_EnumSystemCodePages(lua_State *L)
 
 static int ustring_GetCPInfo(lua_State *L)
 {
-	UINT codepage;
 	CPINFOEX info;
 	memset(&info, 0, sizeof(info));
-	codepage = luaL_checkinteger(L, 1);
+	UINT codepage = luaL_checkinteger(L, 1);
 	if (!WINPORT(GetCPInfoEx)(codepage, 0, &info))
 		return SysErrorReturn(L);
 	lua_createtable(L, 0, 6);
@@ -543,17 +537,16 @@ static int ustring_SetFileAttr(lua_State *L)
 static int ustring_subW(lua_State *L)
 {
 	size_t len;
-	intptr_t from, to;
 	const char* s = luaL_checklstring(L, 1, &len);
 	len /= sizeof(wchar_t);
-	from = luaL_optinteger(L, 2, 1);
+	intptr_t from = luaL_optinteger(L, 2, 1);
 
 	if (from < 0) from += len+1;
 
 	if (--from < 0) from = 0;
 	else if ((size_t)from > len) from = len;
 
-	to = luaL_optinteger(L, 3, -1);
+	intptr_t to = luaL_optinteger(L, 3, -1);
 
 	if (to < 0) to += len+1;
 

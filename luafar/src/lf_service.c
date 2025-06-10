@@ -237,7 +237,6 @@ static flags_t check_env_flag(lua_State *L, int pos)
 flags_t GetFlagCombination(lua_State *L, int pos, int *success)
 {
 	flags_t ret = 0;
-	flags_t flag;
 	pos = abs_index(L, pos);
 	if (success)
 		*success = TRUE;
@@ -250,7 +249,7 @@ flags_t GetFlagCombination(lua_State *L, int pos, int *success)
 		{
 			if (lua_type(L,-2)==LUA_TSTRING && lua_toboolean(L,-1))
 			{
-				flag = get_env_flag(L, -2, success);
+				flags_t flag = get_env_flag(L, -2, success);
 
 				if (success == NULL || *success)
 					ret |= flag;
@@ -271,7 +270,7 @@ flags_t GetFlagCombination(lua_State *L, int pos, int *success)
 			if (*p == 0) break;
 			for (q=p+1; *q && !isspace(*q); ) q++;
 			lua_pushlstring(L, p, q-p);
-			flag = get_env_flag(L, -1, &ok);
+			flags_t flag = get_env_flag(L, -1, &ok);
 			lua_pop(L, 1);
 			if (ok)
 				ret |= flag;
@@ -542,9 +541,8 @@ void PushPanelItem(lua_State *L, const struct PluginPanelItem *PanelItem)
 	if (PanelItem->Group)          PutWStrToTable(L, "Group",  PanelItem->Group, -1);
 
 	if (PanelItem->CustomColumnNumber > 0) {
-		int j;
 		lua_createtable (L, PanelItem->CustomColumnNumber, 0);
-		for(j=0; j < PanelItem->CustomColumnNumber; j++)
+		for(int j=0; j < PanelItem->CustomColumnNumber; j++)
 			PutWStrToArray(L, j+1, PanelItem->CustomColumnData[j], -1);
 		lua_setfield(L, -2, "CustomColumnData");
 	}
@@ -1585,13 +1583,12 @@ static int FarMenuCallback(void *Data, int MenuPos, FarKey Key)
 		MENU_DATA *mdata = (MENU_DATA*) Data;
 		lua_State *L = mdata->L;
 		int pos_func = lua_gettop(L) - mdata->nargs;
-		int idx;
 
 		lua_pushvalue(L, pos_func);          // Callback function
 		lua_pushinteger(L, MenuPos + 1);     // MenuPos
 		PushNameFromKey(L, Key);
 
-		for (idx = 1; idx <= mdata->nargs; idx++)
+		for (int idx = 1; idx <= mdata->nargs; idx++)
 			lua_pushvalue(L, pos_func + idx);
 
 		if (0 == lua_pcall(L, 2 + mdata->nargs, 1, 0)) {
@@ -1957,11 +1954,9 @@ int LF_Message(lua_State* L,
 		}
 		else if (wrap)                          // the 1-st character beyond the line
 		{
-			size_t len;
-			wchar_t **q;
 			pos = lastDelim ? lastDelim+1 : pos;
-			len = pos - start;
-			q = &allocLines[nAlloc++]; // line allocation is needed
+			size_t len = pos - start;
+			wchar_t **q = &allocLines[nAlloc++]; // line allocation is needed
 			*pItems++ = *q = (wchar_t*) malloc((len+1)*sizeof(wchar_t));
 			wcsncpy(*q, start, len);
 			(*q)[len] = L'\0';
@@ -2057,10 +2052,7 @@ void LF_Error(lua_State *L, const wchar_t* aMsg)
 // Return: -1 if escape pressed, else - button number chosen (1 based).
 static int far_Message(lua_State *L)
 {
-	int ret;
-	const wchar_t *Msg, *Title, *Buttons, *HelpTopic;
-	const char *Flags;
-	GUID Id;
+	const wchar_t *Msg;
 	luaL_checkany(L,1);
 	lua_settop(L,6);
 	Msg = NULL;
@@ -2078,13 +2070,13 @@ static int far_Message(lua_State *L)
 		lua_replace(L,1);
 	}
 
-	Title   = opt_utf8_string(L, 2, L"Message");
-	Buttons = opt_utf8_string(L, 3, L";OK");
-	Flags   = luaL_optstring(L, 4, "");
-	HelpTopic = opt_utf8_string(L, 5, NULL);
-	Id = OptGuid(L, 6);
+	const wchar_t *Title     = opt_utf8_string(L, 2, L"Message");
+	const wchar_t *Buttons   = opt_utf8_string(L, 3, L";OK");
+	const char *Flags        = luaL_optstring(L, 4, "");
+	const wchar_t *HelpTopic = opt_utf8_string(L, 5, NULL);
+	GUID Id                  = OptGuid(L, 6);
 
-	ret = LF_Message(L, Msg, Title, Buttons, Flags, HelpTopic, &Id);
+	int ret = LF_Message(L, Msg, Title, Buttons, Flags, HelpTopic, &Id);
 	lua_pushinteger(L, ret<0 ? ret : ret+1);
 	return 1;
 }
@@ -2317,7 +2309,6 @@ static int panel_SetPanelDirectory(lua_State *L)
 {
 	HANDLE handle = OptHandle2(L);
 	LONG_PTR param2 = 0;
-	int ret;
 
 	if (lua_istable(L, 3)) {
 		lua_getfield(L, 3, "Name");
@@ -2331,7 +2322,7 @@ static int panel_SetPanelDirectory(lua_State *L)
 	else
 		luaL_argerror(L, 3, "table or string");
 
-	ret = param2 ? PSInfo.Control(handle, FCTL_SETPANELDIR, 0, param2) : 0;
+	int ret = param2 ? PSInfo.Control(handle, FCTL_SETPANELDIR, 0, param2) : 0;
 	if (ret) {
 		PSInfo.Control(handle, FCTL_REDRAWPANEL, 0, 0); //not required in Far3
 	}
@@ -2343,7 +2334,6 @@ static int panel_SetPanelLocation(lua_State *L)
 {
 	HANDLE handle = OptHandle2(L);
 	struct FarPanelLocation fpl = {};
-	int ret;
 	luaL_checktype(L, 3, LUA_TTABLE);
 
 	lua_getfield(L, 3, "PluginName");
@@ -2358,7 +2348,7 @@ static int panel_SetPanelLocation(lua_State *L)
 	lua_getfield(L, 3, "Path");
 	if (lua_isstring(L,-1)) fpl.Path = check_utf8_string(L,-1,NULL);
 
-	ret = PSInfo.Control(handle, FCTL_SETPANELLOCATION, 0, (LONG_PTR)&fpl);
+	int ret = PSInfo.Control(handle, FCTL_SETPANELLOCATION, 0, (LONG_PTR)&fpl);
 	if (ret)
 		PSInfo.Control(handle, FCTL_REDRAWPANEL, 0, 0); //not required in Far3
 	lua_pushboolean(L, ret);
@@ -2700,8 +2690,6 @@ struct FarList* CreateList(lua_State *L, int historyindex)
 // item table is on Lua stack top
 static void SetFarDialogItem(lua_State *L, struct FarDialogItem* Item, int itemindex, int historyindex)
 {
-	flags_t Flags;
-
 	memset(Item, 0, sizeof(struct FarDialogItem));
 	Item->Type  = GetDialogItemType (L, 1, itemindex+1);
 	Item->X1    = GetIntFromArray   (L, 2);
@@ -2709,7 +2697,7 @@ static void SetFarDialogItem(lua_State *L, struct FarDialogItem* Item, int itemi
 	Item->X2    = GetIntFromArray   (L, 4);
 	Item->Y2    = GetIntFromArray   (L, 5);
 
-	Flags = GetItemFlags(L, 9, itemindex+1);
+	flags_t Flags = GetItemFlags(L, 9, itemindex+1);
 	Item->Focus = (Flags & DIF_FOCUS) ? 1:0;
 	Item->DefaultButton = (Flags & DIF_DEFAULTBUTTON) ? 1:0;
 	Item->Flags = Flags & 0xFFFFFFFF;
@@ -2775,8 +2763,6 @@ static void SetFarDialogItem(lua_State *L, struct FarDialogItem* Item, int itemi
 
 static void PushDlgItem (lua_State *L, const struct FarDialogItem* pItem, BOOL table_exist)
 {
-	flags_t Flags;
-
 	if (! table_exist) {
 		lua_createtable(L, 11, 0);
 		if (pItem->Type == DI_LISTBOX || pItem->Type == DI_COMBOBOX) {
@@ -2817,7 +2803,7 @@ static void PushDlgItem (lua_State *L, const struct FarDialogItem* pItem, BOOL t
 	else
 		PutIntToArray(L, 6, pItem->Selected);
 
-	Flags = pItem->Flags;
+	flags_t Flags = pItem->Flags;
 	if (pItem->Focus) Flags |= DIF_FOCUS;
 	if (pItem->DefaultButton) Flags |= DIF_DEFAULTBUTTON;
 	PutNumToArray(L, 9, Flags);
@@ -3940,33 +3926,25 @@ LONG_PTR LF_DlgProc(lua_State *L, HANDLE hDlg, int Msg, int Param1, LONG_PTR Par
 static int far_DialogInit(lua_State *L)
 {
 	enum { POS_HISTORIES=1, POS_ITEMS=2 };
-	int ItemsNumber, i;
-	struct FarDialogItem *Items;
-	flags_t Flags;
-	TDialogData *dd;
-	FARAPIDEFDLGPROC Proc;
-	LONG_PTR Param;
 	TPluginData *pd = GetPluginData(L);
-	GUID Id;
-	int X1, Y1, X2, Y2;
-	const wchar_t *HelpTopic;
 
-	Id = OptGuid(L, 1);
-	X1 = luaL_checkinteger(L, 2);
-	Y1 = luaL_checkinteger(L, 3);
-	X2 = luaL_checkinteger(L, 4);
-	Y2 = luaL_checkinteger(L, 5);
-	HelpTopic = opt_utf8_string(L, 6, NULL);
+	GUID Id = OptGuid(L, 1);
+	int X1 = luaL_checkinteger(L, 2);
+	int Y1 = luaL_checkinteger(L, 3);
+	int X2 = luaL_checkinteger(L, 4);
+	int Y2 = luaL_checkinteger(L, 5);
+	const wchar_t *HelpTopic = opt_utf8_string(L, 6, NULL);
 
 	luaL_checktype(L, 7, LUA_TTABLE);
 	lua_newtable (L); // create a "histories" table, to prevent history strings
 										// from being garbage collected too early
 	lua_replace (L, POS_HISTORIES);
-	ItemsNumber = lua_objlen(L, 7);
-	Items = (struct FarDialogItem*)lua_newuserdata (L, ItemsNumber * sizeof(struct FarDialogItem));
+	int ItemsNumber = lua_objlen(L, 7);
+	struct FarDialogItem *Items = (struct FarDialogItem*)
+			lua_newuserdata(L, ItemsNumber * sizeof(struct FarDialogItem));
 	lua_replace (L, POS_ITEMS);
 
-	for(i=0; i < ItemsNumber; i++) {
+	for(int i=0; i < ItemsNumber; i++) {
 		lua_pushinteger(L, i+1);
 		lua_gettable(L, 7);
 		if (lua_type(L, -1) == LUA_TTABLE) {
@@ -3978,13 +3956,13 @@ static int far_DialogInit(lua_State *L)
 	}
 
 	// 8-th parameter (flags)
-	Flags = OptFlags(L,8,0);
-	dd = NewDialogData(L, INVALID_HANDLE_VALUE, TRUE);
+	flags_t Flags = OptFlags(L,8,0);
+	TDialogData *dd = NewDialogData(L, INVALID_HANDLE_VALUE, TRUE);
 	dd->isModal = (Flags&FDLG_NONMODAL) == 0;
 
 	// 9-th parameter (DlgProc function)
-	Proc = NULL;
-	Param = 0;
+	FARAPIDEFDLGPROC Proc = NULL;
+	LONG_PTR Param = 0;
 	if (lua_isfunction(L, 9)) {
 		Proc = pd->DlgProc;
 		Param = (LONG_PTR)dd;
@@ -4585,7 +4563,7 @@ static int WINAPI FrsUserFunc(const struct FAR_FIND_DATA *FData, const wchar_t *
 {
 	FrsData *Data = (FrsData*)Param;
 	lua_State *L = Data->L;
-	int i, nret = lua_gettop(L);
+	int nret = lua_gettop(L);
 
 	if ((FData->dwFileAttributes & Data->attr_excl) != 0 || (FData->dwFileAttributes & Data->attr_incl) != Data->attr_incl)
 		return TRUE; // attributes mismatch
@@ -4594,7 +4572,7 @@ static int WINAPI FrsUserFunc(const struct FAR_FIND_DATA *FData, const wchar_t *
 	lua_newtable(L);
 	PushFarFindData(L, FData);
 	push_utf8_string(L, FullName, -1);
-	for (i=1; i<=Data->nparams; i++)
+	for (int i=1; i<=Data->nparams; i++)
 		lua_pushvalue(L, 4+i);
 
 	Data->err = lua_pcall(L, 2+Data->nparams, LUA_MULTRET, 0);
@@ -4610,19 +4588,19 @@ static int WINAPI FrsUserFunc(const struct FAR_FIND_DATA *FData, const wchar_t *
 
 static int far_RecursiveSearch(lua_State *L)
 {
-	flags_t Flags;
-	FrsData Data = { L,0,0,0,0 };
 	const wchar_t *InitDir = check_utf8_string(L, 1, NULL);
 	wchar_t *Mask = check_utf8_string(L, 2, NULL);
-	wchar_t *MaskEnd;
-
 	luaL_checktype(L, 3, LUA_TFUNCTION);
-	if ((MaskEnd=wcsstr(Mask, L">>")) != NULL)
+	FrsData Data = { L,0,0,0,0 };
+
+	wchar_t *MaskEnd = wcsstr(Mask, L">>");
+	if (MaskEnd)
 	{
 		*MaskEnd = 0;
 		SetAttrWords(MaskEnd+2, &Data.attr_incl, &Data.attr_excl);
 	}
-	Flags = OptFlags(L, 4, 0);
+
+	flags_t Flags = OptFlags(L, 4, 0);
 	if (lua_gettop(L) == 3)
 		lua_pushnil(L);
 
@@ -4633,6 +4611,7 @@ static int far_RecursiveSearch(lua_State *L)
 
 	if (Data.err)
 		LF_Error(L, check_utf8_string(L, -1, NULL));
+
 	return Data.err ? 0 : lua_gettop(L) - Data.nparams - 4;
 }
 
@@ -5080,11 +5059,10 @@ static int far_MacroExecute(lua_State* L)
 
 	if (top > 2)
 	{
-		size_t i;
 		Data.InCount = top-2;
 		Data.InValues = (struct FarMacroValue*)lua_newuserdata(L, Data.InCount*sizeof(struct FarMacroValue));
 		memset(Data.InValues, 0, Data.InCount*sizeof(struct FarMacroValue));
-		for (i=0; i<Data.InCount; i++)
+		for (size_t i=0; i<Data.InCount; i++)
 			ConvertLuaValue(L, (int)i+3, Data.InValues+i);
 	}
 
@@ -5109,17 +5087,15 @@ static int far_MakeMenuItems (lua_State *L)
 
 	if (argn > 0)
 	{
-		int item = 1, i;
 		char delim[] = { 226,148,130,0 };        // Unicode char 9474 in UTF-8
 		char buf_prefix[64], buf_space[64], buf_format[64];
 		int maxno = 0;
-		size_t len_prefix;
 
-		for (i=argn; i; maxno++,i/=10) {}
-		len_prefix = sprintf(buf_space, "%*s%s ", maxno, "", delim);
+		for (int i=argn; i; maxno++,i/=10) {}
+		size_t len_prefix = sprintf(buf_space, "%*s%s ", maxno, "", delim);
 		sprintf(buf_format, "%%%dd%%s ", maxno);
 
-		for(i=1; i<=argn; i++)
+		for(int i=1; i<=argn; i++)
 		{
 			size_t j, len_arg;
 			const char *start;
@@ -5146,15 +5122,13 @@ static int far_MakeMenuItems (lua_State *L)
 			for (j=0; j<len_arg; j++)
 				if (str[j] == '\0') str[j] = ' ';
 
+			int item = 1;
 			for (start=str; start; )
 			{
-				size_t len_text;
-				char *line;
-				const char* nl = strchr(start, '\n');
-
 				lua_newtable(L);                     //+3 (items,str,curr_item)
-				len_text = nl ? (nl++) - start : (str+len_arg) - start;
-				line = (char*) malloc(len_prefix + len_text);
+				const char* nl = strchr(start, '\n');
+				size_t len_text = nl ? (nl++) - start : (str+len_arg) - start;
+				char *line = (char*) malloc(len_prefix + len_text);
 				memcpy(line, buf_prefix, len_prefix);
 				memcpy(line + len_prefix, start, len_text);
 
@@ -5470,11 +5444,10 @@ static int far_GetPlugins(lua_State *L)
 
 static int far_IsPluginLoaded(lua_State *L)
 {
-	intptr_t handle;
 	int result = 0;
 	DWORD SysId = (DWORD)luaL_checkinteger(L, 1);;
 
-	handle = PSInfo.PluginsControlV3(NULL, PCTL_FINDPLUGIN, PFM_SYSID, &SysId);
+	intptr_t handle = PSInfo.PluginsControlV3(NULL, PCTL_FINDPLUGIN, PFM_SYSID, &SysId);
 	if (handle)
 	{
 		size_t size = PSInfo.PluginsControlV3((HANDLE)handle, PCTL_GETPLUGININFORMATION, 0, 0);
@@ -5643,9 +5616,6 @@ static int far_WriteConsole(lua_State *L)
 
 	for (;;)
 	{
-		BOOL bResult;
-		DWORD nCharsWritten;
-
 		const wchar_t *ptr1 = wcschr(src, L'\n');
 		const wchar_t *ptr2 = ptr1 ? ptr1 : src + wcslen(src);
 		size_t nCharsToWrite = ptr2 - src;
@@ -5654,7 +5624,11 @@ static int far_WriteConsole(lua_State *L)
 			nCharsToWrite = FarWidth;
 
 		PSInfo.Control(PANEL_ACTIVE, FCTL_GETUSERSCREEN, 0, 0);
-		bResult = nCharsToWrite ? WINPORT(WriteConsole)(h_out, src, (DWORD)nCharsToWrite, &nCharsWritten, NULL) : TRUE;
+
+		DWORD nCharsWritten;
+		BOOL bResult = (nCharsToWrite == 0)
+			|| WINPORT(WriteConsole)(h_out, src, (DWORD)nCharsToWrite, &nCharsWritten, NULL);
+
 		PSInfo.Control(PANEL_ACTIVE, FCTL_SETUSERSCREEN, 0, 0);
 
 		if (!bResult)
@@ -5689,15 +5663,16 @@ static int far_SplitCmdLine(lua_State *L)
 
 	for (const char *q=p; *p && (numargs < MAXARGS); p=q,numargs++)
 	{
-		int quoted;
 		char *trg = arg;
 		while (isspace(*q))
 			q++;
 		if (*q == 0)
 			break;
-		quoted = *q == '\"';
+
+		int quoted = *q == '\"';
 		if (quoted)
 			q++;
+
 		for (p=q; ; q++)
 		{
 			if (*q == '\\')
@@ -5724,11 +5699,10 @@ typedef intptr_t WINAPI UDList_Get(void* udlist, int index);
 
 static int far_DetectCodePage(lua_State *L)
 {
-	int codepage;
 	struct DetectCodePageInfo Info;
 	Info.StructSize = sizeof(Info);
 	Info.FileName = check_utf8_string(L, 1, NULL);
-	codepage = FSF.DetectCodePage(&Info);
+	int codepage = FSF.DetectCodePage(&Info);
 	if (codepage)
 		lua_pushinteger(L, codepage);
 	else

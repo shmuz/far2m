@@ -271,7 +271,6 @@ static int win_GetConsoleScreenBufferInfo (lua_State* L)
 static int win_CopyFile (lua_State *L)
 {
 	FILE *inp, *out;
-	int err;
 	char buf[0x2000]; // 8 KiB
 	const char* src = luaL_checkstring(L, 1);
 	const char* trg = luaL_checkstring(L, 2);
@@ -315,7 +314,7 @@ static int win_CopyFile (lua_State *L)
 			break;
 	}
 
-	err = ferror(inp) || ferror(out);
+	int err = ferror(inp) || ferror(out);
 	fclose(out);
 	fclose(inp);
 	if (!err) {

@@ -14,8 +14,7 @@ static int FL_PushParams(lua_State* L, const struct FarMacroCall* Data)
 	int ret = lua_checkstack(L, 2 + (int)Data->Count);
 	if (ret)
 	{
-		size_t i;
-		for(i=0; i < Data->Count; i++)
+		for(size_t i=0; i < Data->Count; i++)
 			PushFarMacroValue(L, Data->Values + i);
 	}
 	if (Data->Callback)
@@ -82,21 +81,19 @@ HANDLE Open_Luamacro (lua_State* L, INT_PTR Item)
 		else
 		{
 			struct MacroPluginReturn* Ret = &om_info->Ret;
-			int nargs, idx;
 
 			lua_getfield(L,-1,"n");
-			nargs = lua_type(L,-1)==LUA_TNUMBER ? (int)lua_tointeger(L,-1) : (int)lua_objlen(L,-2);
+			int nargs = lua_type(L,-1)==LUA_TNUMBER ? (int)lua_tointeger(L,-1) : (int)lua_objlen(L,-2);
 			lua_pop(L,1);
 			if (nargs < 0) nargs = 0;
 
 			InitMPR(L, Ret, (size_t)nargs, ReturnType);
 
-			for(idx=0; idx<nargs; idx++)
+			for(int idx=0; idx<nargs; idx++)
 			{
-				int type;
 				int64_t val64;
 				lua_rawgeti(L,-1,idx+1);
-				type = lua_type(L, -1);
+				int type = lua_type(L, -1);
 
 				if (type == LUA_TNUMBER)
 				{

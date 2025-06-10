@@ -124,9 +124,8 @@ static int su_FileRead (lua_State *L)
 static int su_FileWrite (lua_State *L)
 {
 	HANDLE *pHandle = checkFileHandle(L);
-	int idx;
 	int top = lua_gettop(L);
-	for (idx=2; idx <= top; idx++)
+	for (int idx=2; idx <= top; idx++)
 	{
 		size_t len;
 		const char* buf = luaL_checklstring(L, idx, &len);
