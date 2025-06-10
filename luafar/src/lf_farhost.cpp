@@ -48,10 +48,9 @@ void FillAnsiPluginPanelItem (lua_State *L, oldfar::PluginPanelItem *pi)
 	// custom column data
 	lua_getfield(L, -1, "CustomColumnData");
 	if (lua_istable(L,-1)) {
-		int i;
 		pi->CustomColumnNumber = lua_objlen(L,-1);
 		pi->CustomColumnData = (char**) malloc(pi->CustomColumnNumber * sizeof(char*));
-		for (i=0; i < pi->CustomColumnNumber; i++) {
+		for (int i=0; i < pi->CustomColumnNumber; i++) {
 			lua_rawgeti(L, -1, i+1);
 			pi->CustomColumnData[i] = (char*)lua_tostring(L, -1);
 			lua_pop(L,1);

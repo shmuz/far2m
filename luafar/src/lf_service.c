@@ -1,4 +1,3 @@
-//coding: utf-8
 //---------------------------------------------------------------------------
 
 #include <windows.h>
@@ -314,9 +313,8 @@ static flags_t CheckFlagsFromTable(lua_State *L, int pos, const char* key)
 
 flags_t GetFlagsFromTable(lua_State *L, int pos, const char* key)
 {
-	flags_t f;
 	lua_getfield(L, pos, key);
-	f = GetFlagCombination(L, -1, NULL);
+	flags_t f = GetFlagCombination(L, -1, NULL);
 	lua_pop(L, 1);
 	return f;
 }
@@ -567,10 +565,9 @@ void PushPanelItem(lua_State *L, const struct PluginPanelItem *PanelItem)
 
 void PushPanelItems(lua_State *L, HANDLE handle, const struct PluginPanelItem *PanelItems, int ItemsNumber)
 {
-	int i;
 	lua_createtable(L, ItemsNumber, 0);    //+1 "PanelItems"
 	PushOptPluginTable(L, handle);         //+2
-	for(i=0; i < ItemsNumber; i++) {
+	for(int i=0; i < ItemsNumber; i++) {
 		PushPanelItem (L, PanelItems + i);
 		lua_rawseti(L, -3, i+1);
 	}
@@ -1068,9 +1065,8 @@ static int PushBookmarks(lua_State *L, int EditorId, int count, int command)
 		ebm.ScreenLine = ebm.Cursor + count;
 		ebm.LeftPos    = ebm.ScreenLine + count;
 		if (PSInfo.EditorControlV2(EditorId, command, &ebm)) {
-			int i;
 			lua_createtable(L, count, 0);
-			for (i=0; i < count; i++) {
+			for (int i=0; i < count; i++) {
 				lua_pushinteger(L, i+1);
 				lua_createtable(L, 0, 4);
 				PutIntToTable (L, "Line", ebm.Line[i] + 1);
@@ -1174,7 +1170,7 @@ static int FillEditorSelect(lua_State *L, int pos_table, struct EditorSelect *es
 {
 	int OK;
 	lua_getfield(L, pos_table, "BlockType");
-	es->BlockType = GetFlagCombination(L, -1, &OK);
+	es->BlockType = get_env_flag(L, -1, &OK);
 	if (!OK) {
 		lua_pop(L,1);
 		return 0;
@@ -1196,7 +1192,7 @@ static int editor_Select(lua_State *L)
 	if (lua_istable(L, 2))
 		result = FillEditorSelect(L, 2, &es);
 	else {
-		es.BlockType = GetFlagCombination(L, 2, &result);
+		es.BlockType = get_env_flag(L, 2, &result);
 		if (result) {
 			es.BlockStartLine = luaL_optinteger(L, 3, 0) - 1;
 			es.BlockStartPos  = luaL_optinteger(L, 4, 0) - 1;
@@ -1493,7 +1489,6 @@ static int editor_ReadInput(lua_State *L)
 void FillInputRecord(lua_State *L, int pos, INPUT_RECORD *ir)
 {
 	int success = 0;
-	size_t size;
 
 	pos = abs_index(L, pos);
 	luaL_checktype(L, pos, LUA_TTABLE);
@@ -1501,7 +1496,7 @@ void FillInputRecord(lua_State *L, int pos, INPUT_RECORD *ir)
 
 	// determine event type
 	lua_getfield(L, pos, "EventType");
-	ir->EventType = GetFlagCombination(L, -1, &success);
+	ir->EventType = get_env_flag(L, -1, &success);
 	if (success)
 	{
 		if (ir->EventType == 0)
@@ -1530,6 +1525,7 @@ void FillInputRecord(lua_State *L, int pos, INPUT_RECORD *ir)
 
 			lua_getfield(L, -1, "UnicodeChar");
 			if (lua_type(L,-1) == LUA_TSTRING) {
+				size_t size;
 				wchar_t* ptr = utf8_to_wcstring(L, -1, &size);
 				if (ptr && size>=1)
 					ir->Event.KeyEvent.uChar.UnicodeChar = ptr[0];
@@ -1980,10 +1976,9 @@ int LF_Message(lua_State* L,
 	if (*aButtons != L';')
 	{
 		// Buttons: 2-nd pass.
-		int i;
 		ptr = BtnCopy;
 
-		for(i=0; i < num_buttons; i++)
+		for(int i=0; i < num_buttons; i++)
 		{
 			while(*ptr == L';')
 				++ptr;
@@ -2552,9 +2547,8 @@ static int far_GetDirList (lua_State *L)
 	int ItemsNumber;
 	int ret = PSInfo.GetDirList (Dir, &PanelItems, &ItemsNumber);
 	if (ret) {
-		int i;
 		lua_createtable(L, ItemsNumber, 0); // "PanelItems"
-		for(i=0; i < ItemsNumber; i++) {
+		for(int i=0; i < ItemsNumber; i++) {
 			lua_newtable(L);
 			PushFarFindData (L, PanelItems + i);
 			lua_rawseti(L, -2, i+1);
@@ -2649,7 +2643,7 @@ static int GetDialogItemType(lua_State* L, int key, int item)
 	int ok;
 	lua_pushinteger(L, key);
 	lua_gettable(L, -2);
-	int iType = GetFlagCombination(L, -1, &ok);
+	int iType = get_env_flag(L, -1, &ok);
 	if (!ok) {
 		const char* sType = lua_tostring(L, -1);
 		return luaL_error(L, "%s - unsupported type in dialog item %d", sType, item);
@@ -2661,11 +2655,10 @@ static int GetDialogItemType(lua_State* L, int key, int item)
 // the table is on lua stack top
 flags_t GetItemFlags(lua_State* L, int flag_index, int item_index)
 {
-	flags_t flags;
-	int ok;
 	lua_pushinteger(L, flag_index);
 	lua_gettable(L, -2);
-	flags = GetFlagCombination (L, -1, &ok);
+	int ok;
+	flags_t flags = GetFlagCombination (L, -1, &ok);
 	if (!ok)
 		return luaL_error(L, "unsupported flag in dialog item %d", item_index);
 	lua_pop(L, 1);
@@ -3169,7 +3162,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			break;
 
 		case DM_LISTSETMOUSEREACTION:
-			Param2 = GetFlagCombination (L, pos4, NULL);
+			Param2 = get_env_flag(L, pos4, NULL);
 			break;
 
 		case DM_GETCURSORPOS:
@@ -3294,8 +3287,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			res = lua_objlen(L, pos4);
 			if (res) {
 				DWORD* arr = (DWORD*)lua_newuserdata(L, res * sizeof(DWORD));
-				int i;
-				for(i=0; i<res; i++) {
+				for(int i=0; i<res; i++) {
 					lua_pushinteger(L,i+1);
 					lua_gettable(L,pos4);
 					arr[i] = lua_tointeger(L,-1);
@@ -3727,10 +3719,9 @@ int PushDNParams (lua_State *L, int Msg, int Param1, LONG_PTR Param2)
 		case DN_CTLCOLORDIALOG:
 		case DN_CTLCOLORDLGITEM:
 		{
-			int i;
 			uint64_t *ItemColor = (uint64_t*) Param2;
 			lua_createtable(L, 4, 0);
-			for(i=0; i < 4; i++) {
+			for(int i=0; i < 4; i++) {
 				bit64_push(L, ItemColor[i]);
 				lua_rawseti(L, -2, i+1);
 			}
@@ -3739,11 +3730,10 @@ int PushDNParams (lua_State *L, int Msg, int Param1, LONG_PTR Param2)
 
 		case DN_CTLCOLORDLGLIST:
 		{
-			int i;
 			struct FarListColors* flc = (struct FarListColors*) Param2;
 			lua_createtable(L, flc->ColorCount, 1);
 			PutIntToTable(L, "Flags", flc->Flags);
-			for (i=0; i < flc->ColorCount; i++)
+			for (int i=0; i < flc->ColorCount; i++)
 				PutIntToArray(L, i+1, flc->Colors[i]); // TODO: handle 64-bit values
 			break;
 		}
@@ -4231,7 +4221,7 @@ static int viewer_SetMode(lua_State *L)
 	luaL_checktype(L, 2, LUA_TTABLE);
 
 	lua_getfield(L, 2, "Type");
-	vsm.Type = GetFlagCombination (L, -1, &ok);
+	vsm.Type = get_env_flag(L, -1, &ok);
 	if (!ok)
 		return lua_pushboolean(L,0), 1;
 
@@ -4741,12 +4731,11 @@ static int DoAdvControl (lua_State *L, int Command, int Delta)
 			return push_utf8_string(L,buf,-1), 1;
 
 		case ACTL_GETARRAYCOLOR: {
-			int i;
 			intptr_t size = PSInfo.AdvControl(pd->ModuleNumber, Command, NULL, NULL);
 			uint64_t *p = (uint64_t*) lua_newuserdata(L, size * sizeof(uint64_t));
 			PSInfo.AdvControl(pd->ModuleNumber, Command, (void*)size, p);
 			lua_createtable(L, size, 0);
-			for (i=0; i < size; i++) {
+			for (int i=0; i < size; i++) {
 				bit64_push(L, p[i]);
 				lua_rawseti(L, -2, i+1);
 			}
@@ -4808,7 +4797,6 @@ static int DoAdvControl (lua_State *L, int Command, int Delta)
 		}
 
 		case ACTL_SETARRAYCOLOR: {
-			int i;
 			struct FarSetColors fsc;
 			luaL_checktype(L, pos2, LUA_TTABLE);
 			lua_settop(L, pos2);
@@ -4817,7 +4805,7 @@ static int DoAdvControl (lua_State *L, int Command, int Delta)
 			fsc.Flags = GetFlagCombination(L, -1, NULL);
 			fsc.ColorCount = lua_objlen(L, pos2);
 			fsc.Colors = (uint64_t*)lua_newuserdata(L, fsc.ColorCount * sizeof(uint64_t));
-			for (i=0; i < fsc.ColorCount; i++) {
+			for (int i=0; i < fsc.ColorCount; i++) {
 				lua_pushinteger(L,i+1);
 				lua_gettable(L,pos2);
 				fsc.Colors[i] = check64(L, -1, NULL);
@@ -5224,10 +5212,9 @@ static int far_InputRecordToName(lua_State* L)
 
 void NewVirtualKeyTable(lua_State* L, BOOL twoways)
 {
-	int i;
 	lua_createtable(L, twoways ? 256:0, 200);
 
-	for(i=0; i<256; i++)
+	for(int i=0; i<256; i++)
 	{
 		const char* str = VirtualKeyStrings[i];
 
@@ -5398,8 +5385,7 @@ static void PutPluginMenuItemToTable(lua_State *L, const char* Field, const wcha
 	PutIntToTable(L, "Count", Count);
 	lua_createtable(L, Count, 0);
 	if (Strings) {
-		int i;
-		for (i=0; i<Count; i++)
+		for (int i=0; i<Count; i++)
 			PutWStrToArray(L, i+1, Strings[i], -1);
 	}
 	lua_setfield(L, -2, "Strings");
@@ -5467,11 +5453,10 @@ static int far_GetPlugins(lua_State *L)
 
 	if (count > 0)
 	{
-		int i;
 		HANDLE *handles = lua_newuserdata(L, count*sizeof(HANDLE));
 		count = (int)PSInfo.PluginsControlV3(INVALID_HANDLE_VALUE, PCTL_GETPLUGINS, count, handles);
 
-		for(i=0; i<count; i++)
+		for(int i=0; i<count; i++)
 		{
 			PushPluginHandle(L, handles[i]);
 			lua_rawseti(L, -3, i+1);

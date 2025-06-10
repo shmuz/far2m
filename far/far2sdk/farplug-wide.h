@@ -784,9 +784,10 @@ typedef int (WINAPI *FARAPIMENUV2)(
 
 enum PLUGINPANELITEMFLAGS
 {
-	PPIF_PROCESSDESCR           = 0x80000000,
-	PPIF_SELECTED               = 0x40000000,
+	// The low word is reserved for private flags
 	PPIF_USERDATA               = 0x20000000,
+	PPIF_SELECTED               = 0x40000000,
+	PPIF_PROCESSDESCR           = 0x80000000,
 };
 
 struct FAR_FIND_DATA

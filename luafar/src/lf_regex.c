@@ -227,7 +227,6 @@ int rx_find_match(lua_State *L, int Op, int is_function, int is_wide)
 
 	if (PSInfo.RegExpControl(fr->hnd, RECTL_SEARCHEX, (LONG_PTR)&data))
 	{
-		int i;
 		int skip = (Op != OP_MATCH || data.Count>1) ? 1 : 0;
 
 		if (Op != OP_MATCH)
@@ -238,7 +237,7 @@ int rx_find_match(lua_State *L, int Op, int is_function, int is_wide)
 		if (Op == OP_EXEC)
 		{
 			lua_createtable(L, 2*(int)data.Count, 0);
-			for(i=1; i<data.Count; i++)
+			for(int i=1; i<data.Count; i++)
 			{
 				int k = (i-1)*2 + 1;
 				if (data.Match[i].start >= 0 && data.Match[i].end >= data.Match[i].start)
@@ -260,7 +259,7 @@ int rx_find_match(lua_State *L, int Op, int is_function, int is_wide)
 		}
 		else
 		{
-			i = (int)data.Count - skip + 1;
+			int i = (int)data.Count - skip + 1;
 			if (Op == OP_TFIND)
 				lua_newtable(L);
 			else if (!lua_checkstack(L, i))

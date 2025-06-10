@@ -173,9 +173,8 @@ const wchar_t** CreateStringsArray(lua_State* L, int cpos, const char* field, in
 		int n = lua_objlen(L, -1);
 		if (numstrings) *numstrings = n;
 		if (n > 0) {
-			int i;
 			buf = (const wchar_t**)AddBufToCollector(L, cpos, (n+1) * sizeof(wchar_t*));
-			for (i=0; i < n; i++)
+			for (int i=0; i < n; i++)
 				buf[i] = AddStringToCollectorSlot(L, cpos, i+1);
 			buf[n] = NULL;
 		}
@@ -208,10 +207,9 @@ void FillPluginPanelItem (lua_State *L, struct PluginPanelItem *pi, int index)
 	// custom column data
 	lua_getfield(L, -1, "CustomColumnData");
 	if (lua_istable(L,-1)) {
-		int i;
 		pi->CustomColumnNumber = lua_objlen(L,-1);
 		pi->CustomColumnData = malloc(pi->CustomColumnNumber * sizeof(wchar_t*));
-		for (i=0; i < pi->CustomColumnNumber; i++) {
+		for (int i=0; i < pi->CustomColumnNumber; i++) {
 			lua_rawgeti(L, -1, i+1);
 			*(wchar_t**)(pi->CustomColumnData+i) = (wchar_t*)_AddStringToCollector(L, Collector);
 		}
@@ -321,8 +319,7 @@ int LF_GetVirtualFindData (lua_State* L, HANDLE hPlugin, struct PluginPanelItem 
 
 void free_find_data(lua_State* L, HANDLE hPlugin, struct PluginPanelItem *PanelItems, int ItemsNumber)
 {
-	int i;
-	for (i=0; i<ItemsNumber; i++) {
+	for (int i=0; i<ItemsNumber; i++) {
 		free((void*)PanelItems[i].CustomColumnData);
 	}
 	PushPluginTable(L, hPlugin);
@@ -347,20 +344,16 @@ void LF_FreeVirtualFindData(lua_State* L, HANDLE hPlugin, struct PluginPanelItem
 // PanelItems table should be on Lua stack top
 void UpdateFileSelection(lua_State* L, struct PluginPanelItem *PanelItems, int ItemsNumber)
 {
-	int i;
-	for(i=0; i<(int)ItemsNumber; i++)
+	for (int i=0; i < ItemsNumber; i++)
 	{
 		lua_rawgeti(L, -1, i+1);           //+1
 		if (lua_istable(L,-1))
 		{
 			lua_getfield(L,-1,"Flags");      //+2
-			if (lua_toboolean(L,-1))
-			{
-				int success = 0;
-				DWORD Flags = GetFlagCombination(L,-1,&success);
-				if (success && ((Flags & PPIF_SELECTED) == 0))
-					PanelItems[i].Flags &= ~PPIF_SELECTED;
-			}
+			int success = 0;
+			DWORD Flags = GetFlagCombination(L,-1,&success);
+			if (success && ((Flags & PPIF_SELECTED) == 0))
+				PanelItems[i].Flags &= ~PPIF_SELECTED;
 			lua_pop(L,1);         //+1
 		}
 		lua_pop(L,1);           //+0
@@ -426,8 +419,7 @@ BOOL RunDefaultScript(lua_State* L, int ForFirstTime)
 
 	FILE *fp = NULL;
 	const char delims[] = ".-";
-	int i;
-	for (i=0; delims[i]; i++) {
+	for (int i=0; delims[i]; i++) {
 		char *end = strrchr(defscript, delims[i]);
 		if (end) {
 			strcpy(end, ".lua");
@@ -559,12 +551,11 @@ void LF_GetOpenPanelInfo(lua_State* L, HANDLE hPlugin, struct OpenPluginInfo *aI
 		int InfoLinesNumber = lua_tointeger(L, -1);
 		lua_pop(L,1);                         //+5: Info,Tbl,Coll,Info,Lines
 		if (InfoLinesNumber > 0 && InfoLinesNumber <= 100) {
-			int i;
 			struct InfoPanelLine *pl = (struct InfoPanelLine*)
 				AddBufToCollector(L, cpos, InfoLinesNumber * sizeof(struct InfoPanelLine));
 			Info->InfoLines = pl;
 			Info->InfoLinesNumber = InfoLinesNumber;
-			for (i=0; i<InfoLinesNumber; ++i,++pl,lua_pop(L,1)) {
+			for (int i=0; i<InfoLinesNumber; ++i,++pl,lua_pop(L,1)) {
 				lua_pushinteger(L, i+1);
 				lua_gettable(L, -2);
 				if (lua_istable(L, -1)) {          //+6: Info,Tbl,Coll,Info,Lines,Line
@@ -586,12 +577,11 @@ void LF_GetOpenPanelInfo(lua_State* L, HANDLE hPlugin, struct OpenPluginInfo *aI
 		int PanelModesNumber = lua_tointeger(L, -1);
 		lua_pop(L,1);                               //+5: Info,Tbl,Coll,Info,Modes
 		if (PanelModesNumber > 0 && PanelModesNumber <= 100) {
-			int i;
 			struct PanelMode *pm = (struct PanelMode*)
 				AddBufToCollector(L, cpos, PanelModesNumber * sizeof(struct PanelMode));
 			Info->PanelModesArray = pm;
 			Info->PanelModesNumber = PanelModesNumber;
-			for (i=0; i<PanelModesNumber; ++i,++pm,lua_pop(L,1)) {
+			for (int i=0; i<PanelModesNumber; ++i,++pm,lua_pop(L,1)) {
 				lua_pushinteger(L, i+1);
 				lua_gettable(L, -2);
 				if (lua_istable(L, -1)) {                //+6: Info,Tbl,Coll,Info,Modes,Mode
@@ -719,7 +709,6 @@ static void WINAPI FillFarMacroCall_Callback (void *CallbackData, struct FarMacr
 static HANDLE FillFarMacroCall (lua_State* L, int narg)
 {
 	int64_t val64;
-	int i;
 
 	struct FarMacroCall *fmc = (struct FarMacroCall*)
 		malloc(sizeof(struct FarMacroCall) + narg*sizeof(struct FarMacroValue));
@@ -730,7 +719,7 @@ static HANDLE FillFarMacroCall (lua_State* L, int narg)
 	fmc->Callback = FillFarMacroCall_Callback;
 	fmc->CallbackData = fmc;
 
-	for (i=0; i<narg; i++)
+	for (int i=0; i<narg; i++)
 	{
 		int type = lua_type(L, i-narg);
 		if (type == LUA_TNUMBER)
