@@ -630,14 +630,13 @@ static int far_GetCurrentDirectory (lua_State *L)
 
 static int push_ev_filename(lua_State *L, BOOL isEditor, int Id)
 {
-	wchar_t* fname;
 	int size = isEditor ?
 	       PSInfo.EditorControlV2(Id, ECTL_GETFILENAME, NULL) :
 	       PSInfo.ViewerControlV2(Id, VCTL_GETFILENAME, NULL);
 
 	if (!size) return 0;
 
-	fname = (wchar_t*)lua_newuserdata(L, size * sizeof(wchar_t));
+	wchar_t *fname = (wchar_t*)lua_newuserdata(L, size * sizeof(wchar_t));
 	size = isEditor ?
 	       PSInfo.EditorControlV2(Id, ECTL_GETFILENAME, fname) :
 	       PSInfo.ViewerControlV2(Id, VCTL_GETFILENAME, fname);
@@ -856,13 +855,10 @@ static int editor_DeleteString(lua_State *L)
 
 static int editor_InsertText(lua_State *L)
 {
-	int EditorId, redraw, res;
-	wchar_t* text;
-
-	EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
-	text = check_utf8_string(L,2,NULL);
-	redraw = lua_toboolean(L,3);
-	res = PSInfo.EditorControlV2(EditorId, ECTL_INSERTTEXT_V2, text);
+	int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
+	wchar_t *text = check_utf8_string(L,2,NULL);
+	int redraw = lua_toboolean(L,3);
+	int res = PSInfo.EditorControlV2(EditorId, ECTL_INSERTTEXT_V2, text);
 	if (res && redraw)
 		PSInfo.EditorControlV2(EditorId, ECTL_REDRAW, NULL);
 	lua_pushboolean(L, res);
@@ -871,15 +867,13 @@ static int editor_InsertText(lua_State *L)
 
 static int editor_InsertTextW(lua_State *L)
 {
-	int EditorId, redraw, res;
-
-	EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
+	int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
 	(void)luaL_checkstring(L,2);
-	redraw = lua_toboolean(L,3);
+	int redraw = lua_toboolean(L,3);
 	lua_pushvalue(L,2);
 	lua_pushlstring(L, "\0\0\0\0", 4);
 	lua_concat(L,2);
-	res = PSInfo.EditorControlV2(EditorId, ECTL_INSERTTEXT_V2, (void*)lua_tostring(L,-1));
+	int res = PSInfo.EditorControlV2(EditorId, ECTL_INSERTTEXT_V2, (void*)lua_tostring(L,-1));
 	if (res && redraw)
 		PSInfo.EditorControlV2(EditorId, ECTL_REDRAW, NULL);
 	lua_pushboolean(L, res);
@@ -937,7 +931,6 @@ static int SetKeyBar(lua_State *L, BOOL IsEditor)
 			argfail = TRUE;
 	}
 	else if (lua_istable(L, POS_PARAM)) {
-		size_t i, j;
 		param = &kbt;
 		memset(&kbt, 0, sizeof(kbt));
 		struct { const char* key; wchar_t** trg; } pairs[] = {
@@ -951,10 +944,10 @@ static int SetKeyBar(lua_State *L, BOOL IsEditor)
 		};
 		lua_settop(L, POS_PARAM);
 		lua_newtable(L); // POS_STORE
-		for (i=0; i < ARRAYSIZE(pairs); i++) {
+		for (size_t i=0; i < ARRAYSIZE(pairs); i++) {
 			lua_getfield (L, POS_PARAM, pairs[i].key);
 			if (lua_istable (L, -1)) {
-				for (j=0; j < ARRAYSIZE(kbt.Titles); j++) {
+				for (size_t j=0; j < ARRAYSIZE(kbt.Titles); j++) {
 					lua_pushinteger(L,j+1);
 					lua_gettable(L,-2);
 					if (lua_isstring(L,-1))
@@ -1206,7 +1199,6 @@ static int editor_Select(lua_State *L)
 // information directly.
 static int editor_GetSelection(lua_State *L)
 {
-	int BlockStartPos, h, from, to;
 	struct EditorInfo EI;
 	struct EditorGetString egs;
 	struct EditorSetPosition esp;
@@ -1219,13 +1211,14 @@ static int editor_GetSelection(lua_State *L)
 	lua_createtable(L, 0, 5);
 	PutIntToTable(L, "BlockType", EI.BlockType);
 	PutIntToTable(L, "StartLine", EI.BlockStartLine+1);
-	BlockStartPos = egs.SelStart;
+	int BlockStartPos = egs.SelStart;
 	PutIntToTable(L, "StartPos", BlockStartPos+1);
 	// binary search for a non-block line
-	h = 100; // arbitrary small number
-	from = EI.BlockStartLine;
+	int h = 100; // arbitrary small number
+	int from = EI.BlockStartLine;
+	int to = from + h;
 
-	for(to = from+h; to < EI.TotalLines; to = from + (h*=2))
+	for(; to < EI.TotalLines; to = from + (h*=2))
 	{
 		if (!FastGetString(EditorId, to, &egs))
 			return lua_pushnil(L), 1;
@@ -1321,16 +1314,15 @@ static int editor_AddColor(lua_State *L)
 		COLOR_BLACK = 0x000000;
 
 	struct EditorTrueColor etc;
-	int EditorId, Flags, isTrueColor = 0;
+	int isTrueColor = 0;
 	int64_t Color64;
-	DWORD fg, bg;
 
 	memset(&etc, 0, sizeof(etc));
-	EditorId              = luaL_optinteger(L,1,CURRENT_EDITOR);
+	int EditorId          = luaL_optinteger(L,1,CURRENT_EDITOR);
 	etc.Base.StringNumber = luaL_optinteger(L,2,0) - 1;
 	etc.Base.StartPos     = luaL_checkinteger(L,3) - 1;
 	etc.Base.EndPos       = luaL_checkinteger(L,4) - 1;
-	Flags                 = OptFlags(L,5,0);
+	int Flags             = OptFlags(L,5,0);
 
 	if (lua_istable(L,6))
 	{
@@ -1339,8 +1331,8 @@ static int editor_AddColor(lua_State *L)
 		{
 			etc.Base.Color // may contain COMMON_LVB_UNDERSCORE, etc.
 			   = GetOptIntFromTable(L,"Attr",0) & MASK_COLOR;
-			fg = GetOptIntFromTable(L,"Fore",COLOR_WHITE) | MASK_ACTIVE;
-			bg = GetOptIntFromTable(L,"Back",COLOR_BLACK) | MASK_ACTIVE;
+			DWORD fg = GetOptIntFromTable(L,"Fore",COLOR_WHITE) | MASK_ACTIVE;
+			DWORD bg = GetOptIntFromTable(L,"Back",COLOR_BLACK) | MASK_ACTIVE;
 			FarTrueColorFromRGB(&etc.TrueColor.Fore, fg, 1);
 			FarTrueColorFromRGB(&etc.TrueColor.Back, bg, 1);
 		}
@@ -1349,8 +1341,8 @@ static int editor_AddColor(lua_State *L)
 	else if (bit64_getvalue(L, 6, &Color64))
 	{
 		isTrueColor = 1;
-		fg = (Color64 >> 16) & 0xFFFFFF;
-		bg = (Color64 >> 40) & 0xFFFFFF;
+		DWORD fg = (Color64 >> 16) & 0xFFFFFF;
+		DWORD bg = (Color64 >> 40) & 0xFFFFFF;
 		FarTrueColorFromRGB(&etc.TrueColor.Fore, fg, 1);
 		FarTrueColorFromRGB(&etc.TrueColor.Back, bg, 1);
 	}
@@ -3438,9 +3430,8 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 		{
 			struct FarListItemData flid;
 			listdata_t Data, *oldData;
-			int Index;
 			luaL_checktype(L, pos4, LUA_TTABLE);
-			Index = GetOptIntFromTable(L, "Index", 1) - 1;
+			int Index = GetOptIntFromTable(L, "Index", 1) - 1;
 			lua_getfenv(L, 1);
 			lua_getfield(L, pos4, "Data");
 			if (lua_isnil(L,-1)) { // nil is not allowed
@@ -6188,8 +6179,6 @@ static int luaopen_far (lua_State *L)
 
 static void InitLuaState (lua_State *L, TPluginData *aPlugData, lua_CFunction aOpenLibs)
 {
-	int idx, pos;
-
 	lua_CFunction func_arr[] = {
 		luaopen_far,
 		luaopen_bit64,
@@ -6209,7 +6198,7 @@ static void InitLuaState (lua_State *L, TPluginData *aPlugData, lua_CFunction aO
 	}
 
 	// open more libraries
-	for (idx=0; idx < ARRAYSIZE(func_arr); idx++) {
+	for (int idx=0; idx < ARRAYSIZE(func_arr); idx++) {
 		lua_pushcfunction(L, func_arr[idx]);
 		lua_call(L, 0, 0);
 	}
@@ -6234,7 +6223,7 @@ static void InitLuaState (lua_State *L, TPluginData *aPlugData, lua_CFunction aO
 	{ // modify package.path
 		const char *farhome;
 		lua_getglobal  (L, "package");            //+1
-		pos = lua_gettop(L);
+		int pos = lua_gettop(L);
 		if (aPlugData->Flags & PDF_SETPACKAGEPATH) {
 			lua_pushstring (L, aPlugData->ShareDir);
 			lua_pushstring (L, "/?.lua;");
