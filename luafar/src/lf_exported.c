@@ -471,11 +471,10 @@ BOOL CheckReloadDefaultScript (lua_State *L)
 // -- the function pops the object and returns the reference;
 HANDLE RegisterObject(lua_State* L)
 {
-	void *ptr;
 	lua_newtable(L);                  //+2: Obj,Tbl
 	lua_pushvalue(L,-2);              //+3: Obj,Tbl,Obj
 	lua_setfield(L,-2,KEY_OBJECT);    //+2: Obj,Tbl
-	ptr = (void*)lua_topointer(L,-1);
+	void *ptr = (void*)lua_topointer(L,-1);
 	lua_pushlightuserdata(L, ptr);    //+3
 	lua_pushvalue(L,-2);              //+4
 	lua_rawset(L, LUA_REGISTRYINDEX); //+2

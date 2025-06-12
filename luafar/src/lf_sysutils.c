@@ -141,15 +141,15 @@ static int su_FileWrite (lua_State *L)
 // taken from MSDN help
 static int64_t myFileSeek (HANDLE hf, int64_t distance, DWORD MoveMethod)
 {
-	 LARGE_INTEGER li;
-	 li.QuadPart = distance;
-	 li.LowPart = WINPORT(SetFilePointer) (hf, li.LowPart, &li.HighPart, MoveMethod);
+	LARGE_INTEGER li;
+	li.QuadPart = distance;
+	li.LowPart = WINPORT(SetFilePointer) (hf, li.LowPart, &li.HighPart, MoveMethod);
 
-	 if (li.LowPart == INVALID_SET_FILE_POINTER && WINPORT(GetLastError()) != NO_ERROR)
-	 {
-			li.QuadPart = -1;
-	 }
-	 return li.QuadPart;
+	if (li.LowPart == INVALID_SET_FILE_POINTER && WINPORT(GetLastError()) != NO_ERROR)
+	{
+		li.QuadPart = -1;
+	}
+	return li.QuadPart;
 }
 
 static int su_FileSeek (lua_State *L)

@@ -370,8 +370,7 @@ static BOOL makedir (const wchar_t* path)
 	if (trg > p && trg[-1] == '/') trg--;
 	*trg = 0;
 
-	wchar_t* q;
-	for (q=p; *q; *q++=L'/') {
+	for (wchar_t *q=p; *q; *q++=L'/') {
 		q = wcschr(q, L'/');
 		if (q != NULL)  *q = 0;
 		if (q != p && !dir_exist(p) && !WINPORT(CreateDirectory)(p, NULL)) break;

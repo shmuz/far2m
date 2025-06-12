@@ -1859,22 +1859,18 @@ int LF_Message(lua_State* L,
 	const wchar_t* aHelpTopic,
 	const GUID*    aMessageGuid)
 {
-	const wchar_t **items, **pItems;
-	wchar_t** allocLines;
-	int nAlloc;
-	wchar_t *lastDelim, *MsgCopy, *start, *pos;
 	TPluginData *pd = GetPluginData(L);
-
 	SMALL_RECT sr;
 	int ret = PSInfo.AdvControl(pd->ModuleNumber, ACTL_GETFARRECT, &sr, NULL);
-	const int max_len   = ret ? sr.Right  - sr.Left+1-14 : 66;
-	const int max_lines = ret ? sr.Bottom - sr.Top+1-5 : 20;
+	const int max_len = ret ? sr.Right - sr.Left + 1 - 14 : 66;
+	const int max_lines = ret ? sr.Bottom - sr.Top + 1 - 5 : 20;
 
 	int num_lines = 0, num_buttons = 0;
-	uint64_t Flags = 0;
+
 	// Buttons
-	wchar_t *BtnCopy = NULL, *ptr = NULL;
+	wchar_t *BtnCopy = NULL;
 	int wrap = !(aFlags && strchr(aFlags, 'n'));
+	uint64_t Flags = 0;
 
 	if (*aButtons == L';')
 	{
@@ -1889,11 +1885,12 @@ int LF_Message(lua_State* L,
 		else
 			while(*aButtons == L';') aButtons++;
 	}
+
 	if (Flags == 0)
 	{
 		// Buttons: 1-st pass, determining number of buttons
 		BtnCopy = _wcsdup(aButtons);
-		ptr = BtnCopy;
+		wchar_t *ptr = BtnCopy;
 
 		while(*ptr && (num_buttons < 64))
 		{
@@ -1910,16 +1907,18 @@ int LF_Message(lua_State* L,
 		}
 	}
 
-	items = (const wchar_t**) malloc((1+max_lines+num_buttons) * sizeof(wchar_t*));
-	allocLines = (wchar_t**) malloc(max_lines * sizeof(wchar_t*)); // array of pointers to allocated lines
-	nAlloc = 0;                                                    // number of allocated lines
-	pItems = items;
+	const wchar_t **items = (const wchar_t**) malloc((1+max_lines+num_buttons) * sizeof(wchar_t*));
+	wchar_t **allocLines = (wchar_t**) malloc(max_lines * sizeof(wchar_t*)); // array of pointers to allocated lines
+	int nAlloc = 0; // number of allocated lines
+
 	// Title
+	const wchar_t **pItems = items;
 	*pItems++ = aTitle;
+
 	// Message lines
-	lastDelim = NULL;
-	MsgCopy = _wcsdup(aMsg);
-	start = pos = MsgCopy;
+	wchar_t *lastDelim = NULL;
+	wchar_t *MsgCopy = _wcsdup(aMsg);
+	wchar_t *start = MsgCopy, *pos = MsgCopy;
 
 	while(num_lines < max_lines)
 	{
@@ -1963,7 +1962,7 @@ int LF_Message(lua_State* L,
 	if (*aButtons != L';')
 	{
 		// Buttons: 2-nd pass.
-		ptr = BtnCopy;
+		wchar_t *ptr = BtnCopy;
 
 		for(int i=0; i < num_buttons; i++)
 		{
@@ -1993,14 +1992,17 @@ int LF_Message(lua_State* L,
 		if (strchr(aFlags, 'l')) Flags |= FMSG_LEFTALIGN;
 	}
 
-	ret = PSInfo.MessageV3(pd->ModuleNumber, aMessageGuid, Flags, aHelpTopic, items, 1+num_lines+num_buttons, num_buttons);
+	ret = PSInfo.MessageV3(pd->ModuleNumber, aMessageGuid, Flags, aHelpTopic, items,
+			1 + num_lines + num_buttons, num_buttons);
+
 	free(BtnCopy);
-
-	while(nAlloc) free(allocLines[--nAlloc]);
-
+	while (nAlloc) {
+		free(allocLines[--nAlloc]);
+	}
 	free(allocLines);
 	free(MsgCopy);
 	free(items);
+
 	return ret;
 }
 
@@ -2650,14 +2652,14 @@ flags_t GetItemFlags(lua_State* L, int flag_index, int item_index)
 // list table is on Lua stack top
 struct FarList* CreateList(lua_State *L, int historyindex)
 {
-	int i, n = (int)lua_objlen(L,-1);
+	int n = (int)lua_objlen(L,-1);
 	struct FarList* list = (struct FarList*)lua_newuserdata(L,
 	                       sizeof(struct FarList) + n*sizeof(struct FarListItem)); // +2
 	int len = (int)lua_objlen(L, historyindex);
 	lua_rawseti(L, historyindex, ++len);  // +1; put into "histories" table to avoid being gc'ed
 	list->ItemsNumber = n;
 	list->Items = (struct FarListItem*)(list+1);
-	for(i=0; i<n; i++)
+	for(int i=0; i<n; i++)
 	{
 		struct FarListItem *p = list->Items + i;
 		lua_pushinteger(L, i+1); // +2
@@ -2980,14 +2982,13 @@ LONG_PTR GetEnableFromLua (lua_State *L, int pos)
 
 DWORD GetColorFromTable(lua_State *L, const char *field, int index)
 {
-	DWORD val;
 	lua_getfield(L, -1, field);
 	if (lua_isnil(L, -1)) {
 		lua_pop(L, 1);
 		lua_pushinteger(L, index);
 		lua_gettable(L, -2);
 	}
-	val = (DWORD) lua_tointeger(L, -1);
+	DWORD val = (DWORD) lua_tointeger(L, -1);
 	lua_pop(L, 1);
 	return val;
 }
@@ -3236,10 +3237,9 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 		case DM_GETTEXT:
 		{
 			struct FarDialogItemData fdid;
-			size_t size;
 			fdid.PtrLength = (size_t) PSInfo.SendDlgMessage(hDlg, Msg, Param1, 0);
 			fdid.PtrData = (wchar_t*) malloc((fdid.PtrLength+1) * sizeof(wchar_t));
-			size = SendDlgMessage(hDlg, Msg, Param1, &fdid);
+			size_t size = SendDlgMessage(hDlg, Msg, Param1, &fdid);
 			push_utf8_string(L, size ? fdid.PtrData : L"", size);
 			free(fdid.PtrData);
 			return 1;
@@ -3429,7 +3429,6 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 		case DM_LISTSETDATA:
 		{
 			struct FarListItemData flid;
-			listdata_t Data, *oldData;
 			luaL_checktype(L, pos4, LUA_TTABLE);
 			int Index = GetOptIntFromTable(L, "Index", 1) - 1;
 			lua_getfenv(L, 1);
@@ -3438,13 +3437,14 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 				lua_pushinteger(L,0);
 				return 1;
 			}
-			oldData = (listdata_t*)PSInfo.SendDlgMessage(hDlg, DM_LISTGETDATA, Param1, Index);
+			listdata_t *oldData = (listdata_t*)PSInfo.SendDlgMessage(hDlg, DM_LISTGETDATA, Param1, Index);
 			if (oldData &&
 				sizeof(listdata_t) == PSInfo.SendDlgMessage(hDlg, DM_LISTGETDATASIZE, Param1, Index) &&
 				oldData->Id == pluginData)
 			{
 				luaL_unref(L, -2, oldData->Ref);
 			}
+			listdata_t Data;
 			Data.Id = pluginData;
 			Data.Ref = luaL_ref(L, -2);
 			flid.Index = Index;
@@ -3484,7 +3484,6 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 		case DM_RESIZEDIALOG:
 		case DM_SETCURSORPOS:
 		{
-			COORD* c;
 			luaL_checktype(L, pos4, LUA_TTABLE);
 			coord.X = GetOptIntFromTable(L, "X", 0);
 			coord.Y = GetOptIntFromTable(L, "Y", 0);
@@ -3495,7 +3494,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 				return 1;
 			}
 
-			c = (COORD*) SendDlgMessage(hDlg, Msg, Param1, &coord);
+			COORD *c = (COORD*) SendDlgMessage(hDlg, Msg, Param1, &coord);
 			lua_createtable(L, 0, 2);
 			PutIntToTable(L, "X", c->X);
 			PutIntToTable(L, "Y", c->Y);
@@ -5009,13 +5008,12 @@ static int far_MacroAdd(lua_State* L)
 
 static int far_MacroDelete(lua_State* L)
 {
-	TPluginData *pd = GetPluginData(L);
-	MacroAddData *Id;
 	int result = FALSE;
+	MacroAddData *Id = (MacroAddData*)luaL_checkudata(L, 1, AddMacroDataType);
 
-	Id = (MacroAddData*)luaL_checkudata(L, 1, AddMacroDataType);
 	if (Id->L)
 	{
+		TPluginData *pd = GetPluginData(L);
 		result = (int)PSInfo.MacroControl(pd->PluginId, MCTL_DELMACRO, 0, Id);
 		if (result)
 		{
@@ -5088,10 +5086,6 @@ static int far_MakeMenuItems (lua_State *L)
 
 		for(int i=1; i<=argn; i++)
 		{
-			size_t j, len_arg;
-			const char *start;
-			char* str;
-
 			lua_getglobal(L, "tostring");          //+2
 
 			if (lua_type(L,-1) != LUA_TFUNCTION)
@@ -5105,12 +5099,13 @@ static int far_MakeMenuItems (lua_State *L)
 			if (lua_type(L, -1) != LUA_TSTRING)
 				luaL_error(L, "tostring() returned a non-string value");
 
+			size_t len_arg;
 			sprintf(buf_prefix, buf_format, i, delim);
-			start = lua_tolstring(L, -1, &len_arg);
-			str = (char*) malloc(len_arg + 1);
+			const char *start = lua_tolstring(L, -1, &len_arg);
+			char *str = (char*) malloc(len_arg + 1);
 			memcpy(str, start, len_arg + 1);
 
-			for (j=0; j<len_arg; j++)
+			for (size_t j=0; j<len_arg; j++)
 				if (str[j] == '\0') str[j] = ' ';
 
 			int item = 1;
@@ -5646,10 +5641,9 @@ static int far_SplitCmdLine(lua_State *L)
 	const int MAXARGS = 64;
 	int numargs = 0;
 	const char *str = luaL_checkstring(L,1), *p=str;
-	char *arg;
 
 	lua_settop(L, 1);
-	arg = (char*)lua_newuserdata(L, strlen(str)+1);
+	char *arg = (char*)lua_newuserdata(L, strlen(str)+1);
 	lua_checkstack(L, MAXARGS);
 
 	for (const char *q=p; *p && (numargs < MAXARGS); p=q,numargs++)

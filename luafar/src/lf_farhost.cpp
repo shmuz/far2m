@@ -189,8 +189,8 @@ int _GetFilesW(lua_State *L, HANDLE hPanel, HMODULE hModule)
 	const wchar_t* DestPath = check_utf8_string(L, 4, NULL); //4-th argument
 	int OpMode = luaL_optinteger(L, 5, OPM_FIND|OPM_SILENT); //5-th argument
 
-	T_GetFilesW getfilesW;
-	if (NULL == (getfilesW = (T_GetFilesW) dlsym(hModule, "GetFilesW")))
+	T_GetFilesW getfilesW = (T_GetFilesW) dlsym(hModule, "GetFilesW");
+	if (getfilesW == NULL)
 		return FALSE;
 
 	PluginPanelItem *ppi, *ppi_curr;
@@ -234,8 +234,8 @@ int _GetFilesA(lua_State *L, HANDLE hPanel, HMODULE hModule)
 
 	int OpMode = luaL_optinteger(L, 5, oldfar::OPM_FIND|oldfar::OPM_SILENT); //5-th argument
 
-	T_GetFilesA getfilesA;
-	if (NULL == (getfilesA = (T_GetFilesA) dlsym(hModule, "GetFiles")))
+	T_GetFilesA getfilesA = (T_GetFilesA) dlsym(hModule, "GetFiles");
+	if (getfilesA == NULL)
 		return FALSE;
 
 	oldfar::PluginPanelItem *ppi, *ppi_curr;
@@ -270,8 +270,8 @@ int _SetDirectoryW(lua_State *L, HANDLE hPanel, HMODULE hModule)
 	const wchar_t *dir_name = check_utf8_string(L, 2, NULL); //2-nd argument
 	int OpMode = luaL_optinteger(L, 3, OPM_FIND | OPM_SILENT); //3-rd argument
 
-	T_SetDirectoryW setDirectoryW;
-	if (NULL == (setDirectoryW = (T_SetDirectoryW) dlsym(hModule, "SetDirectoryW")))
+	T_SetDirectoryW setDirectoryW = (T_SetDirectoryW) dlsym(hModule, "SetDirectoryW");
+	if (setDirectoryW == NULL)
 		return FALSE;
 
 	return setDirectoryW(hPanel, dir_name, OpMode);
@@ -285,8 +285,8 @@ int _SetDirectoryA(lua_State *L, HANDLE hPanel, HMODULE hModule)
 	const char *dir_name = luaL_checkstring(L, 2); //2-nd argument
 	int OpMode = luaL_optinteger(L, 3, oldfar::OPM_FIND | oldfar::OPM_SILENT); //3-rd argument
 
-	T_SetDirectoryA setDirectoryA;
-	if (NULL == (setDirectoryA = (T_SetDirectoryA) dlsym(hModule, "SetDirectory")))
+	T_SetDirectoryA setDirectoryA = (T_SetDirectoryA) dlsym(hModule, "SetDirectory");
+	if (setDirectoryA == NULL)
 		return FALSE;
 
 	return setDirectoryA(hPanel, dir_name, OpMode);
@@ -298,8 +298,8 @@ int _GetFindDataW(lua_State *L, HANDLE hPanel, HMODULE hModule)
 	typedef void (WINAPI * T_FreeFindDataW)(HANDLE, PluginPanelItem*, int);
 	ModuleGuard mg(hModule);
 
-	T_GetFindDataW getFindDataW;
-	if (NULL == (getFindDataW = (T_GetFindDataW) dlsym(hModule, "GetFindDataW")))
+	T_GetFindDataW getFindDataW = (T_GetFindDataW) dlsym(hModule, "GetFindDataW");
+	if (getFindDataW == NULL)
 		return FALSE;
 
 	PluginPanelItem *PanelItems;
@@ -324,8 +324,8 @@ int _GetFindDataA(lua_State *L, HANDLE hPanel, HMODULE hModule)
 	typedef void (WINAPI * T_FreeFindDataA)(HANDLE, oldfar::PluginPanelItem*, int);
 	ModuleGuard mg(hModule);
 
-	T_GetFindDataA getFindDataA;
-	if (NULL == (getFindDataA = (T_GetFindDataA) dlsym(hModule, "GetFindData")))
+	T_GetFindDataA getFindDataA = (T_GetFindDataA) dlsym(hModule, "GetFindData");
+	if (getFindDataA == NULL)
 		return FALSE;
 
 	oldfar::PluginPanelItem *PanelItems;
