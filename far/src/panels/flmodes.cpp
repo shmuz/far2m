@@ -43,6 +43,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "strmix.hpp"
 #include "panelmix.hpp"
 #include "DlgGuid.hpp"
+#include "keys.hpp"
 
 PanelViewSettings ViewSettingsArray[]=
 {
@@ -237,7 +238,34 @@ void FileList::SetFilePanelModes()
 			ModeList.SetHelp(L"PanelViewModes");
 			ModeList.SetFlags(VMENU_WRAPMODE);
 			ModeList.SetId(PanelViewModesId);
-			ModeList.Process();
+			ModeList.SetBottomTitle(Msg::EditPanelModesBottom);
+			ModeList.Show();
+			while (!ModeList.Done()) {
+				switch (auto Key = ModeList.ReadInput()) {
+					case KEY_CTRLENTER:
+					case KEY_CTRLNUMENTER:
+					case KEY_CTRLSHIFTENTER:
+					case KEY_CTRLSHIFTNUMENTER: {
+						auto PanelPtr = CtrlObject->Cp()->ActivePanel;
+						if (Key & KEY_SHIFT) {
+							PanelPtr = CtrlObject->Cp()->GetAnotherPanel(PanelPtr);
+						}
+						PanelPtr->SetViewMode(1 + ModeList.GetSelectPos());
+						FrameManager->RefreshFrame(0); // side effect: changes macro area
+						CtrlObject->Macro.SetArea(MACROAREA_MENU); // restore macro area
+						break;
+					}
+
+					case KEY_F4:
+						ModeList.Modal::SetExitCode(ModeList.GetSelectPos());
+						break;
+
+					default:
+						ModeList.ProcessInput();
+						break;
+				}
+			}
+
 			ModeNumber = ModeList.Modal::GetExitCode();
 		}
 

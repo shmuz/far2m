@@ -17225,6 +17225,17 @@ l:
 "Режими панелі"
 "Становішча панэляў"
 
+EditPanelModesBottom
+"F4 Ctrl+Enter Ctrl+Shift+Enter"
+"F4 Ctrl+Enter Ctrl+Shift+Enter"
+"F4 Ctrl+Enter Ctrl+Shift+Enter"
+"F4 Ctrl+Enter Ctrl+Shift+Enter"
+"F4 Ctrl+Enter Ctrl+Shift+Enter"
+"F4 Ctrl+Enter Ctrl+Shift+Enter"
+"F4 Ctrl+Enter Ctrl+Shift+Enter"
+"F4 Ctrl+Enter Ctrl+Shift+Enter"
+"F4 Ctrl+Enter Ctrl+Shift+Enter"
+
 EditPanelModesBrief
 l:
 "&Краткий режим"
