@@ -51,7 +51,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "strmix.hpp"
 #include "panelmix.hpp"
 
-extern const PanelViewSettings ViewSettingsArray[];
+extern const std::vector<PanelViewSettings> ViewSettingsArray;
 
 static wchar_t OutCharacter[16];
 
