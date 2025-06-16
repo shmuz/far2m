@@ -6171,6 +6171,23 @@ static int luaopen_far (lua_State *L)
 	return 0;
 }
 
+void LF_RunLuafarInit(lua_State* L)
+{
+	int top = lua_gettop(L);
+	lua_pushcfunction(L, far_InMyConfig);
+	lua_pushliteral(L, "luafar_init.lua");
+	lua_call(L, 1, 1); //+1
+
+	const char *fname = lua_tostring(L, -1);
+	struct stat St;
+	if (0 == stat(fname, &St)) {
+		if (luaL_loadfile(L,fname) || lua_pcall(L,0,0,0)) {
+			LF_Error(L, check_utf8_string(L, -1, NULL));
+		}
+	}
+	lua_settop(L, top);
+}
+
 static void InitLuaState (lua_State *L, TPluginData *aPlugData, lua_CFunction aOpenLibs)
 {
 	lua_CFunction func_arr[] = {

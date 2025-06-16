@@ -56,9 +56,15 @@ LUAPLUG void SetStartupInfoW(const struct PluginStartupInfo *aInfo)
 	if (!LS && LF_LuaOpen(aInfo, &PluginData, FUNC_OPENLIBS)) //includes opening "far" library
 		LS = PluginData.MainLuaState;
 
-	if (LS && !LF_RunDefaultScript(LS))  {
-		LF_LuaClose(&PluginData);
-		LS = NULL;
+	if (LS) {
+#ifndef NO_RUN_LUAFAR_INIT
+		LF_RunLuafarInit(LS);
+#endif
+
+		if (!LF_RunDefaultScript(LS))  {
+			LF_LuaClose(&PluginData);
+			LS = NULL;
+		}
 	}
 }
 //---------------------------------------------------------------------------
