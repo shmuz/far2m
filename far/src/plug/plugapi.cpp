@@ -2625,13 +2625,12 @@ int WINAPI farMacroControl(DWORD PluginId, int Command, int Param1, void *Param2
 				FARString ErrSrc;
 				bool Ok = Macro.GetMacroParseError(ErrPos, ErrSrc);
 
-				int Size = FAR_ALIGN(sizeof(MacroParseResult));
-				size_t stringOffset = Size;
-				Size+= static_cast<int>((ErrSrc.GetLength() + 1) * sizeof(wchar_t));
+				const size_t stringOffset = FAR_ALIGN(sizeof(MacroParseResult));
+				const size_t Size = stringOffset + (ErrSrc.GetLength() + 1) * sizeof(wchar_t);
 
 				MacroParseResult *Result = (MacroParseResult *)Param2;
 
-				if (Param1 >= Size && CheckStructSize(Result)) {
+				if (Param1 >= (int)Size && CheckStructSize(Result)) {
 					Result->StructSize = sizeof(MacroParseResult);
 					Result->ErrCode = Ok ? MPEC_SUCCESS : MPEC_ERROR;
 					Result->ErrPos = ErrPos;
@@ -2639,7 +2638,7 @@ int WINAPI farMacroControl(DWORD PluginId, int Command, int Param1, void *Param2
 					wmemcpy((wchar_t *)Result->ErrSrc, ErrSrc, ErrSrc.GetLength() + 1);
 				}
 
-				return Size;
+				return (int)Size;
 			}
 
 			default:    // FIXME
