@@ -2504,6 +2504,7 @@ local function test_Guids()
 end
 
 local function test_far_Menu()
+  -- test 1
   local items = {
     { text="line1" }, { text="line2" },
   }
@@ -2524,6 +2525,26 @@ local function test_far_Menu()
       assert(Area.Shell)
     end
   end
+
+  -- test 2 (far.MakeMenuItems)
+  local t = assert_table (far.MakeMenuItems("foo","bar","baz"))
+  assert_eq(#t, 3)
+
+  -- test 3 (far.Menu and Menu.GetValue)
+  local items = {"foo", "bar", "baz"}
+  mf.acall(far.Menu, {}, items)
+  assert_true(Area.Menu)
+  for j=1,#items do
+    assert_eq(Menu.GetValue(j), items[j])
+  end
+  for j=1,#items do
+    assert_eq(Menu.GetValue(0), items[j])
+    Keys("Down")
+  end
+  assert_eq(Menu.GetValue(-1), "")
+  assert_eq(Menu.GetValue(#items+1), "")
+  Keys("Esc")
+  assert_true(Area.Shell)
 end
 
 local function test_SplitCmdLine()
