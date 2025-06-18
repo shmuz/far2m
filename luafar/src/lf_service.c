@@ -5076,6 +5076,7 @@ static int far_MakeMenuItems (lua_State *L)
 
 	if (argn > 0)
 	{
+		int item = 1;
 		char delim[] = { 226,148,130,0 };        // Unicode char 9474 in UTF-8
 		char buf_prefix[64], buf_space[64], buf_format[64];
 		int maxno = 0;
@@ -5108,7 +5109,6 @@ static int far_MakeMenuItems (lua_State *L)
 			for (size_t j=0; j<len_arg; j++)
 				if (str[j] == '\0') str[j] = ' ';
 
-			int item = 1;
 			for (start=str; start; )
 			{
 				lua_newtable(L);                     //+3 (items,str,curr_item)
