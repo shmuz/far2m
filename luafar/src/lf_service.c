@@ -2447,8 +2447,8 @@ static int ChangePanelSelection(lua_State *L, BOOL op_set)
 	if (itemindex >= 0 && itemindex < numItems)
 		PSInfo.Control(handle, command, itemindex, state);
 	else {
-		int i, len = lua_objlen(L,3);
-		for (i=1; i<=len; i++) {
+		int len = lua_objlen(L,3);
+		for (int i=1; i<=len; i++) {
 			lua_pushinteger(L, i);
 			lua_gettable(L,3);
 			if (lua_isnumber(L,-1)) {
