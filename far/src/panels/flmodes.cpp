@@ -208,23 +208,23 @@ static const std::vector<PanelViewSettings> ViewSettingsRef =
 
 std::vector<PanelViewSettings> ViewSettingsArray = ViewSettingsRef;
 
-static size_t DisplayModeToReal(size_t Mode)
+static int MenuPosToIndex(int MenuPos)
 {
-	return (Mode + 1) % 10;
+	return (MenuPos + 1) % 10;
 }
 
-static size_t RealModeToDisplay(size_t Mode)
+static int IndexToMenuPos(int Index)
 {
-	return (Mode + 9) % 10;
+	return (Index + 9) % 10;
 }
 
 void FileList::SetFilePanelModes()
 {
-	int CurMode = 0;
+	int MenuPos = 0;
 
 	if (CtrlObject->Cp()->ActivePanel->GetType() == FILE_PANEL) {
-		CurMode = CtrlObject->Cp()->ActivePanel->GetViewMode();
-		CurMode = RealModeToDisplay(CurMode);
+		int CurMode = CtrlObject->Cp()->ActivePanel->GetViewMode();
+		MenuPos = IndexToMenuPos(CurMode);
 	}
 
 	for (;;) {
@@ -240,8 +240,7 @@ void FileList::SetFilePanelModes()
 			{Msg::EditPanelModesLinks,       0, 0},
 			{Msg::EditPanelModesAlternative, 0, 0}
 		};
-		int ModeNumber;
-		ModeListMenu[CurMode].SetSelect(1);
+		ModeListMenu[MenuPos].SetSelect(1);
 		{
 			VMenu ModeList(Msg::EditPanelModes, ModeListMenu, ARRAYSIZE(ModeListMenu), ScrY - 4);
 			ModeList.SetPosition(-1, -1, 0, 0);
@@ -260,7 +259,7 @@ void FileList::SetFilePanelModes()
 						if (Key & KEY_SHIFT) {
 							PanelPtr = CtrlObject->Cp()->GetAnotherPanel(PanelPtr);
 						}
-						PanelPtr->SetViewMode(DisplayModeToReal(ModeList.GetSelectPos()));
+						PanelPtr->SetViewMode(MenuPosToIndex(ModeList.GetSelectPos()));
 						FrameManager->RefreshFrame(0); // side effect: changes macro area
 						CtrlObject->Macro.SetArea(MACROAREA_MENU); // restore macro area
 						break;
@@ -276,13 +275,11 @@ void FileList::SetFilePanelModes()
 				}
 			}
 
-			ModeNumber = ModeList.Modal::GetExitCode();
+			MenuPos = ModeList.Modal::GetExitCode();
 		}
 
-		if (ModeNumber < 0)
+		if (MenuPos < 0)
 			return;
-
-		CurMode = ModeNumber;
 
 		enum ModeItems
 		{
@@ -308,7 +305,7 @@ void FileList::SetFilePanelModes()
 			MD_BUTTON_CANCEL,
 		};
 		DialogDataEx ModeDlgData[] = {
-			{DI_DOUBLEBOX, 3,  1,  72, 15, {}, 0, ModeListMenu[ModeNumber].Name},
+			{DI_DOUBLEBOX, 3,  1,  72, 15, {}, 0, ModeListMenu[MenuPos].Name},
 			{DI_TEXT,      5,  2,  0,  2,  {}, 0, Msg::EditPanelModeTypes},
 			{DI_EDIT,      5,  3,  35, 3,  {}, DIF_FOCUS,                     L""},
 			{DI_TEXT,      5,  4,  0,  4,  {}, 0, Msg::EditPanelModeWidths},
@@ -333,9 +330,9 @@ void FileList::SetFilePanelModes()
 		int ExitCode;
 		RemoveHighlights(ModeDlg[MD_DOUBLEBOX].strData);
 
-		ModeNumber = DisplayModeToReal(ModeNumber);
+		int ModeIndex = MenuPosToIndex(MenuPos);
 
-		PanelViewSettings &NewSettings = ViewSettingsArray[ModeNumber];
+		PanelViewSettings &NewSettings = ViewSettingsArray[ModeIndex];
 		ModeDlg[MD_CHECKBOX_FULLSCREEN].Selected = NewSettings.FullScreen;
 		ModeDlg[MD_CHECKBOX_ALIGNFILEEXT].Selected = NewSettings.AlignExtensions;
 		ModeDlg[MD_CHECKBOX_ALIGNFOLDEREXT].Selected = NewSettings.FolderAlignExtensions;
@@ -354,7 +351,7 @@ void FileList::SetFilePanelModes()
 		}
 
 		if (ExitCode == MD_BUTTON_RESET) {
-			NewSettings = ViewSettingsRef[ModeNumber];
+			NewSettings = ViewSettingsRef[ModeIndex];
 		}
 		else if (ExitCode == MD_BUTTON_OK) {
 			NewSettings.FullScreen = ModeDlg[MD_CHECKBOX_FULLSCREEN].Selected;
@@ -376,8 +373,8 @@ void FileList::SetFilePanelModes()
 		CtrlObject->Cp()->SetScreenPosition();
 		int LeftMode = CtrlObject->Cp()->LeftPanel->GetViewMode();
 		int RightMode = CtrlObject->Cp()->RightPanel->GetViewMode();
-		//    CtrlObject->Cp()->LeftPanel->SetViewMode(ModeNumber);
-		//    CtrlObject->Cp()->RightPanel->SetViewMode(ModeNumber);
+		//    CtrlObject->Cp()->LeftPanel->SetViewMode(ModeIndex);
+		//    CtrlObject->Cp()->RightPanel->SetViewMode(ModeIndex);
 		CtrlObject->Cp()->LeftPanel->SetViewMode(LeftMode);
 		CtrlObject->Cp()->RightPanel->SetViewMode(RightMode);
 		CtrlObject->Cp()->LeftPanel->Redraw();
