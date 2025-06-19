@@ -2567,7 +2567,7 @@ size_t PluginManager::GetPluginInformation(Plugin *pPlugin, FarGetPluginInformat
 
 void PluginManager::ShowPluginInfo(Plugin* pPlugin)
 {
-	const auto strPluginSysId = FARString().Format(L"0x%08X", pPlugin->GetSysID());
+	const auto strPluginId = FARString().Format(L"0x%08X", pPlugin->GetSysID());
 	FARString strPluginPrefix;
 	if (pPlugin->CheckWorkFlags(PIWF_CACHED))
 	{
@@ -2607,7 +2607,7 @@ void PluginManager::ShowPluginInfo(Plugin* pPlugin)
 	Builder.AddConstEditField(pPlugin->GetModuleName(), Width);
 
 	Builder.AddText(Msg::MPluginID);
-	Builder.AddConstEditField(strPluginSysId, Width);
+	Builder.AddConstEditField(strPluginId, Width);
 
 	Builder.AddText(Msg::MPluginPrefix);
 	Builder.AddConstEditField(strPluginPrefix, Width);
