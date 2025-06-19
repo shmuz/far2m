@@ -23393,16 +23393,16 @@ upd:"&Module path:"
 "&Файл плагіна:"
 "&Шлях да дадатку:"
 
-MPluginSysID
-"&SysID плагина:"
-"Plugin &SysID:"
-"&SysID modulu:"
-"Plugin &SysID"
-upd:"Plugin &SysID:"
-"&SysID wtyczki:"
-"&SysID complemento:"
-"&SysID плагіна:"
-upd:"Plugin &SysID:"
+MPluginID
+"&ID плагина:"
+"Plugin &ID:"
+"&ID modulu:"
+"Plugin &ID:"
+upd:"Plugin &ID:"
+"&ID wtyczki:"
+"&ID complemento:"
+"&ID плагіна:"
+"&ID плагіна:"
 
 MPluginPrefix
 "&Префикс плагина:"

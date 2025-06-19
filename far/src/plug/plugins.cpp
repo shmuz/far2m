@@ -2606,7 +2606,7 @@ void PluginManager::ShowPluginInfo(Plugin* pPlugin)
 	Builder.AddText(Msg::MPluginModulePath);
 	Builder.AddConstEditField(pPlugin->GetModuleName(), Width);
 
-	Builder.AddText(Msg::MPluginSysID);
+	Builder.AddText(Msg::MPluginID);
 	Builder.AddConstEditField(strPluginSysId, Width);
 
 	Builder.AddText(Msg::MPluginPrefix);
