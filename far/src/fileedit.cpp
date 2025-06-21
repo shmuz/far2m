@@ -2336,11 +2336,12 @@ void FileEditor::ShowStatus()
 				BOOL UsedDefaultChar=FALSE;
 				WINPORT(WideCharToMultiByte)(m_codepage,WC_NO_BEST_FIT_CHARS,&Str[CurPos],1,&C,1,0,&UsedDefaultChar);
 
-				if (C && !UsedDefaultChar && static_cast<wchar_t>(C)!=Str[CurPos])
+				int UC = static_cast<int>(static_cast<unsigned char>(C));
+				if (UC && !UsedDefaultChar && UC != Str[CurPos])
 				{
 					static const wchar_t *FmtCharCode[]={L"%o",L"%d",L"%Xh"};
 					Text(L" (");
-					mprintf(FmtCharCode[m_editor->EdOpt.CharCodeBase%ARRAYSIZE(FmtCharCode)],C);
+					mprintf(FmtCharCode[m_editor->EdOpt.CharCodeBase%ARRAYSIZE(FmtCharCode)], UC);
 					Text(L")");
 				}
 			}
