@@ -2049,20 +2049,10 @@ static int far_Message(lua_State *L)
 	const wchar_t *Msg;
 	luaL_checkany(L,1);
 	lua_settop(L,6);
-	Msg = NULL;
 
-	if (lua_isstring(L, 1))
-		Msg = check_utf8_string(L, 1, NULL);
-	else {
-		lua_getglobal(L, "tostring");
-		if (lua_isfunction(L,-1)) {
-			lua_pushvalue(L,1);
-			lua_call(L,1,1);
-			Msg = check_utf8_string(L,-1,NULL);
-		}
-		if (Msg == NULL) luaL_argerror(L, 1, "cannot convert to string");
-		lua_replace(L,1);
-	}
+	luaL_tolstring(L, 1, NULL);
+	Msg = check_utf8_string(L, -1, NULL);
+	lua_replace(L,1);
 
 	const wchar_t *Title     = opt_utf8_string(L, 2, L"Message");
 	const wchar_t *Buttons   = opt_utf8_string(L, 3, L";OK");
@@ -5087,31 +5077,19 @@ static int far_MakeMenuItems (lua_State *L)
 
 		for(int i=1; i<=argn; i++)
 		{
-			lua_getglobal(L, "tostring");          //+2
-
-			if (lua_type(L,-1) != LUA_TFUNCTION)
-				luaL_error(L, "global `tostring' is not function");
-
-			lua_pushvalue(L, i);                   //+3
-
-			if (0 != lua_pcall(L, 1, 1, 0))         //+2 (items,str)
-				luaL_error(L, lua_tostring(L,-1) ? lua_tostring(L,-1) : "tostring() failed");
-
-			if (lua_type(L, -1) != LUA_TSTRING)
-				luaL_error(L, "tostring() returned a non-string value");
-
 			size_t len_arg;
+			const char *start = luaL_tolstring(L, i, &len_arg); //+2
 			sprintf(buf_prefix, buf_format, i, delim);
-			const char *start = lua_tolstring(L, -1, &len_arg);
 			char *str = (char*) malloc(len_arg + 1);
 			memcpy(str, start, len_arg + 1);
+			lua_pop(L, 1);                         //+1 (items)
 
 			for (size_t j=0; j<len_arg; j++)
 				if (str[j] == '\0') str[j] = ' ';
 
 			for (start=str; start; )
 			{
-				lua_newtable(L);                     //+3 (items,str,curr_item)
+				lua_newtable(L);                     //+2 (items,curr_item)
 				const char* nl = strchr(start, '\n');
 				size_t len_text = nl ? (nl++) - start : (str+len_arg) - start;
 				char *line = (char*) malloc(len_prefix + len_text);
@@ -5120,16 +5098,15 @@ static int far_MakeMenuItems (lua_State *L)
 
 				lua_pushlstring(L, line, len_prefix + len_text);
 				free(line);
-				lua_setfield(L, -2, "text");         //+3
+				lua_setfield(L, -2, "text");         //+2
 				lua_pushvalue(L, i);
-				lua_setfield(L, -2, "arg");          //+3
-				lua_rawseti(L, -3, item++);          //+2 (items,str)
+				lua_setfield(L, -2, "arg");          //+2
+				lua_rawseti(L, -2, item++);          //+1 (items)
 				strcpy(buf_prefix, buf_space);
 				start = nl;
 			}
 
 			free(str);
-			lua_pop(L, 1);                         //+1 (items)
 		}
 	}
 

@@ -10,6 +10,84 @@
 #include "lf_string.h"
 #include "lf_util.h"
 
+// initially from: https://www.lua.org/source/5.2/lauxlib.c.html#luaL_tolstring,
+// but additionally throws on invalid __tostring return values, like in Lua 5.3
+const char *luaL_tolstring(lua_State *L, int idx, size_t *len)
+{
+	// partly from: https://www.lua.org/source/5.3/lauxlib.c.html#luaL_tolstring
+	if (luaL_callmeta(L, idx, "__tostring"))  /* metafield? */
+	{
+		if (!lua_isstring(L, -1))
+			luaL_error(L, "'__tostring' must return a string");
+	}
+	else
+	{
+		switch (lua_type(L, idx))
+		{
+			case LUA_TNUMBER:
+			case LUA_TSTRING:
+				lua_pushvalue(L, idx);
+				break;
+			case LUA_TBOOLEAN:
+				lua_pushstring(L, (lua_toboolean(L, idx) ? "true" : "false"));
+				break;
+			case LUA_TNIL:
+				lua_pushliteral(L, "nil");
+				break;
+			default:
+				lua_pushfstring(L, "%s: %p", luaL_typename(L, idx), lua_topointer(L, idx));
+				break;
+		}
+	}
+	return lua_tolstring(L, -1, len);
+}
+
+// noop if the value has no __tostring metamethod
+// otherwise it is called and the result string (or error msg) is pushed onto the stack
+ToStringResult safe__tostring_meta(lua_State *L, int idx)
+{
+	if (luaL_getmetafield(L, idx, "__tostring"))
+	{
+		lua_pushvalue(L, idx);
+		if (lua_pcall(L, 1, 1, 0) != 0)
+		{
+			if (!lua_isstring(L, -1))
+			{
+				const char* tname = luaL_typename(L, -1);
+				lua_pop(L, 1);
+				lua_pushfstring(L, "(error object is a %s value)", tname);
+			}
+		}
+		else if (!lua_isstring(L, -1))
+		{
+			lua_pop(L, 1);
+			lua_pushliteral(L, "'__tostring' must return a string");
+		}
+		else
+		{
+			return TOSTRING_SUCCESS;
+		}
+		return TOSTRING_ERROR;
+	}
+	return TOSTRING_NOMETA;
+}
+
+// the same as the luaL_tolstring, but protected
+// on error: error message is pushed onto the stack, and NULL is returned.
+const char *safe_luaL_tolstring(lua_State *L, int idx, size_t *len)
+{
+	switch (safe__tostring_meta(L, idx))
+	{
+		case TOSTRING_NOMETA:
+			return luaL_tolstring(L, idx, len);
+		case TOSTRING_SUCCESS:
+			return lua_tolstring(L, -1, len);
+		case TOSTRING_ERROR:
+		default: // to prevent compiler warnings
+			return NULL;
+	}
+}
+
 int SysErrorReturn(lua_State *L)
 {
 	int err = errno;
