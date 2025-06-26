@@ -160,7 +160,6 @@ class PluginA: public Plugin
 		const char *GetSettingsName() { return m_strSettingsName.c_str(); }
 		bool CheckWorkFlags(DWORD flags) { return WorkFlags.Check(flags)==TRUE; }
 		DWORD GetWorkFlags() { return WorkFlags.Flags; }
-		DWORD GetFuncFlags() { return FuncFlags.Flags; }
 
 		bool InitLang(const wchar_t *Path) { return Lang.Init(Path,false); }
 		void CloseLang() { Lang.Close(); }

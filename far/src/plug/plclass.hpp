@@ -63,7 +63,6 @@ class Plugin
 		std::string m_strModuleID;
 
 		BitFlags WorkFlags{};      // рабочие флаги текущего плагина
-		BitFlags FuncFlags{};      // битовые маски вызова эксп.функций плагина
 
 		bool m_Loaded = false;
 
@@ -150,7 +149,6 @@ class Plugin
 		virtual const char *GetSettingsName() = 0;
 		virtual bool CheckWorkFlags(DWORD flags) = 0;
 		virtual DWORD GetWorkFlags() = 0;
-		virtual DWORD GetFuncFlags() = 0;
 
 		virtual bool InitLang(const wchar_t *Path) = 0;
 		virtual void CloseLang() = 0;

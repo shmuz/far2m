@@ -367,7 +367,6 @@ bool PluginW::Load()
 	{
 		if (SetStartupInfo(bUnloaded))
 		{
-			FuncFlags.Set(PICFF_LOADED);
 			SaveToCache();
 			return true;
 		}
@@ -665,7 +664,6 @@ int PluginW::Unload(bool bExitFAR)
 	CloseModule();
 
 	m_Loaded = false;
-	FuncFlags.Clear(PICFF_LOADED); //??
 	return nResult;
 }
 
