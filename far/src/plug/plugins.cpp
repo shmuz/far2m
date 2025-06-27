@@ -181,10 +181,7 @@ PluginManager::~PluginManager()
 		pLuaMacro->Unload(true);
 		delete pLuaMacro;
 	}
-	if(PluginsData)
-	{
-		free(PluginsData);
-	}
+	free(PluginsData);
 }
 
 bool PluginManager::AddPlugin(Plugin *pPlugin)
@@ -1196,20 +1193,13 @@ void PluginManager::ConfigureCurrent(Plugin *pPlugin, int INum, const GUID *Guid
 		Result = pPlugin->Configure(INum);
 	}
 
-	if (Result)
-	{
-		int PMode[2];
-		PMode[0]=CtrlObject->Cp()->LeftPanel->GetMode();
-		PMode[1]=CtrlObject->Cp()->RightPanel->GetMode();
-
-		for (size_t I=0; I < ARRAYSIZE(PMode); ++I)
-		{
-			if (PMode[I] == PLUGIN_PANEL)
-			{
-				Panel *pPanel=(I?CtrlObject->Cp()->RightPanel:CtrlObject->Cp()->LeftPanel);
-				pPanel->Update(UPDATE_KEEP_SELECTION);
-				pPanel->SetViewMode(pPanel->GetViewMode());
-				pPanel->Redraw();
+	if (Result) {
+		for (int i = 0; i < 2; i++) {
+			auto panel = (i == 0) ? CtrlObject->Cp()->LeftPanel : CtrlObject->Cp()->RightPanel;
+			if (panel->GetMode() == PLUGIN_PANEL) {
+				panel->Update(UPDATE_KEEP_SELECTION);
+				panel->SetViewMode(panel->GetViewMode());
+				panel->Redraw();
 			}
 		}
 		pPlugin->SaveToCache();
@@ -1239,30 +1229,31 @@ bool PluginManager::CheckIfHotkeyPresent(MENUTYPE MenuType)
 		PluginInfo Info{};
 		bool bCached = pPlugin->CheckWorkFlags(PIWF_CACHED);
 		if (!bCached && !pPlugin->GetPluginInfo(&Info))
-		{
 			continue;
-		}
 
+		FARString strHotKey;
 		for (int J = 0; ; ++J)
 		{
+			const GUID *Guid = nullptr;
 			if (bCached)
 			{
 				KeyFileReadSection kfh(PluginsIni(), pPlugin->GetSettingsName());
 				if (!kfh.HasKey(StrPrintf(Fmt, J)))
 					break;
 			}
-			else if (J >= (IsConfig ? Info.PluginConfigStringsNumber:Info.PluginMenuStringsNumber))
+			else
 			{
-				break;
+				if (J < (IsConfig ? Info.PluginConfigStringsNumber : Info.PluginMenuStringsNumber))
+				{
+					if (pPlugin->IsLuamacro())
+						Guid = MenuItemGuids(MenuType, &Info) + J;
+				}
+				else
+					break;
 			}
-
-			FARString strHotKey;
-			const GUID *Guid = pPlugin->IsLuamacro() ? MenuItemGuids(MenuType, &Info) + J : nullptr;
 			GetPluginHotKey(pPlugin, J, Guid, MenuType, strHotKey);
 			if (!strHotKey.IsEmpty())
-			{
 				return true;
-			}
 		}
 	}
 	return false;
@@ -1692,7 +1683,7 @@ std::string PluginManager::GetHotKeySettingName(Plugin *pPlugin, int ItemNumber,
 	if (pPlugin->IsLuamacro())
 	{
 		const std::string &strGuid = GuidToString(*Guid);
-		std::string out = StrPrintf("luamacro:%s#%s", HotKeyType(MenuType), strGuid.c_str());
+		std::string out = StrPrintf("%08X:%s#%s", pPlugin->GetSysID(), HotKeyType(MenuType), strGuid.c_str());
 		return out;
 	}
 	std::string out = pPlugin->GetSettingsName();
