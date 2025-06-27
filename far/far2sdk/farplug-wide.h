@@ -2802,6 +2802,7 @@ struct GlobalInfo
 	const wchar_t *Title;
 	const wchar_t *Description;
 	const wchar_t *Author;
+	int UseMenuGuids;
 };
 
 struct FarGetPluginInformation

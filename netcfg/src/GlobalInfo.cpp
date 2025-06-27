@@ -9,4 +9,5 @@ SHAREDSYMBOL void WINAPI GetGlobalInfoW(struct GlobalInfo *aInfo)
   aInfo->Title         = L"NetCfg";
   aInfo->Description   = L"NetCfg plugin";
   aInfo->Author        = L"VPROFi";
+  aInfo->UseMenuGuids  = 0;
 }

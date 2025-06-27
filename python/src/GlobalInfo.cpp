@@ -9,4 +9,5 @@ SHAREDSYMBOL void WINAPI GetGlobalInfoW(struct GlobalInfo *aInfo)
   aInfo->Title         = L"Python";
   aInfo->Description   = L"Python plugin";
   aInfo->Author        = L"Grzegorz Makarewicz";
+  aInfo->UseMenuGuids  = 0;
 }

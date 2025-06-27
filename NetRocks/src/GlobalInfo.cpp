@@ -9,4 +9,5 @@ SHAREDSYMBOL void WINAPI GetGlobalInfoW(struct GlobalInfo *aInfo)
   aInfo->Title         = L"NetRocks";
   aInfo->Description   = L"Adds SFTP/SCP/NFS/SMB/WebDAV connectivity";
   aInfo->Author        = L"elfmz";
+  aInfo->UseMenuGuids  = 0;
 }

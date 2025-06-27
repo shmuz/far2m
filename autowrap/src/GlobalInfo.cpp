@@ -9,4 +9,5 @@ SHAREDSYMBOL void WINAPI GetGlobalInfoW(struct GlobalInfo *aInfo)
   aInfo->Title         = L"AutoWrap";
   aInfo->Description   = L"Auto wrap for Far editor";
   aInfo->Author        = L"Eugene Roshal, FAR Group, FAR People";
+  aInfo->UseMenuGuids  = 0;
 }

@@ -719,7 +719,7 @@ int Panel::ChangeDiskMenu(int Pos, int FirstCall)
 			}
 
 		} else {
-			if (mitem->pPlugin->IsLuamacro()) {
+			if (mitem->pPlugin->UseMenuGuids()) {
 				nItem = reinterpret_cast<INT_PTR>(&mitem->Guid);
 			}
 			SetLocation_Plugin(false, mitem->pPlugin, nullptr, nullptr, nItem);

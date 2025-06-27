@@ -9,4 +9,5 @@ SHAREDSYMBOL void WINAPI GetGlobalInfoW(struct GlobalInfo *aInfo)
   aInfo->Title         = L"Compare";
   aInfo->Description   = L"Advanced File Compare plugin";
   aInfo->Author        = L"Eugene Roshal, FAR Group, FAR People";
+  aInfo->UseMenuGuids  = 0;
 }

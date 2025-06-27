@@ -9,4 +9,5 @@ SHAREDSYMBOL void WINAPI GetGlobalInfoW(struct GlobalInfo *aInfo)
   aInfo->Title         = L"Simple Indent";
   aInfo->Description   = L"Simple Indent plugin for FAR editor";
   aInfo->Author        = L"Vladimir Panteleev, Alex Yaroslavsky, FAR People";
+  aInfo->UseMenuGuids  = 0;
 }

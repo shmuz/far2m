@@ -102,24 +102,25 @@ void Plugin::CloseModule()
 bool Plugin::GetGlobalInfo()
 {
 	GetModuleFN(pGetGlobalInfoW, NFMP_GetGlobalInfo);
-	if (!pGetGlobalInfoW)
-		return true;
-
-	ExecuteStruct es(EXCEPT_GETGLOBALINFO);
-	GlobalInfo gi { sizeof(GlobalInfo) };
-	EXECUTE_FUNCTION(pGetGlobalInfoW(&gi), es);
-
-	if (gi.StructSize && gi.Title && *gi.Title && gi.Description && *gi.Description
-			&& gi.Author && *gi.Author && gi.SysID)
+	if (pGetGlobalInfoW)
 	{
-		auto pPlugin = CtrlObject->Plugins.FindPlugin(gi.SysID);
-		if (!pPlugin || pPlugin == this) { // check for duplicate SysID's
-			SysID = gi.SysID;
-			strTitle = gi.Title;
-			strDescription = gi.Description;
-			strAuthor= gi.Author;
-			m_PlugVersion = gi.Version;
-			return true;
+		ExecuteStruct es(EXCEPT_GETGLOBALINFO);
+		GlobalInfo gi { sizeof(GlobalInfo) };
+		EXECUTE_FUNCTION(pGetGlobalInfoW(&gi), es);
+
+		if (gi.StructSize && gi.Title && *gi.Title && gi.Description && *gi.Description
+				&& gi.Author && *gi.Author && gi.SysID)
+		{
+			auto pPlugin = CtrlObject->Plugins.FindPlugin(gi.SysID);
+			if (!pPlugin || pPlugin == this) { // check for duplicate SysID's
+				SysID = gi.SysID;
+				strTitle = gi.Title;
+				strDescription = gi.Description;
+				strAuthor= gi.Author;
+				m_PlugVersion = gi.Version;
+				m_UseMenuGuids = (gi.UseMenuGuids != 0);
+				return true;
+			}
 		}
 	}
 

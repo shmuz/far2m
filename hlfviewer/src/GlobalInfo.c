@@ -9,6 +9,7 @@ SHAREDSYMBOL void WINAPI GetGlobalInfoW(struct GlobalInfo *aInfo)
   aInfo->Title         = L"HlfViewer";
   aInfo->Description   = L"Hlf-file Viewer for Far Manager";
   aInfo->Author        = L"Far Group, Shmuel Zeigerman";
+  aInfo->UseMenuGuids  = 0;
 }
 //---------------------------------------------------------------------------
 

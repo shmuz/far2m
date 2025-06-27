@@ -9,4 +9,5 @@ SHAREDSYMBOL void WINAPI GetGlobalInfoW(struct GlobalInfo *aInfo)
   aInfo->Title         = L"Inside";
   aInfo->Description   = L"Shows what is inside ELF and some other file formats";
   aInfo->Author        = L"elfmz";
+  aInfo->UseMenuGuids  = 0;
 }

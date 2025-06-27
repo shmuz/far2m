@@ -9,4 +9,5 @@ SHAREDSYMBOL void WINAPI GetGlobalInfoW(struct GlobalInfo *aInfo)
   aInfo->Title         = L"Editor Autocomplete";
   aInfo->Description   = L"Editor Autocomplete";
   aInfo->Author        = L"MikeMirzayanov, FAR People";
+  aInfo->UseMenuGuids  = 0;
 }

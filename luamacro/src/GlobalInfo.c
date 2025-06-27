@@ -9,6 +9,7 @@ SHAREDSYMBOL void WINAPI GetGlobalInfoW(struct GlobalInfo *aInfo)
   aInfo->Title         = L"LuaMacro";
   aInfo->Description   = L"Far macros in Lua";
   aInfo->Author        = L"Shmuel Zeigerman & Far Group";
+  aInfo->UseMenuGuids  = 1;
 }
 //---------------------------------------------------------------------------
 

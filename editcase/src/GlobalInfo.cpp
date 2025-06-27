@@ -9,4 +9,5 @@ SHAREDSYMBOL void WINAPI GetGlobalInfoW(struct GlobalInfo *aInfo)
   aInfo->Title         = L"EditCase";
   aInfo->Description   = L"Text case conversion";
   aInfo->Author        = L"Eugene Roshal, FAR Group, FAR People";
+  aInfo->UseMenuGuids  = 0;
 }

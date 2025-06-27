@@ -9,4 +9,5 @@ SHAREDSYMBOL void WINAPI GetGlobalInfoW(struct GlobalInfo *aInfo)
   aInfo->Title         = L"Calculator";
   aInfo->Description   = L"Calculator plugin";
   aInfo->Author        = L"Igor Ruskih, uncle-vunkis, FAR People";
+  aInfo->UseMenuGuids  = 0;
 }

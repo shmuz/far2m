@@ -9,4 +9,5 @@ SHAREDSYMBOL void WINAPI GetGlobalInfoW(struct GlobalInfo *aInfo)
   aInfo->Title         = L"Incremental Search";
   aInfo->Description   = L"Incremental Search in the editor";
   aInfo->Author        = L"Stanislav Mekhanoshin, FAR People";
+  aInfo->UseMenuGuids  = 0;
 }

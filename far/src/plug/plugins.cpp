@@ -1184,7 +1184,7 @@ int PluginManager::Compare(
 void PluginManager::ConfigureCurrent(Plugin *pPlugin, int INum, const GUID *Guid)
 {
 	int Result = FALSE;
-	if (pPlugin->IsLuamacro()) {
+	if (pPlugin->UseMenuGuids()) {
 		Guid = Guid ? Guid : &FarGuid;
 		ConfigureInfo Info = { sizeof(ConfigureInfo), Guid };
 		Result = dynamic_cast<PluginW*>(pPlugin)->ConfigureV3(&Info);
@@ -1245,7 +1245,7 @@ bool PluginManager::CheckIfHotkeyPresent(MENUTYPE MenuType)
 			{
 				if (J < (IsConfig ? Info.PluginConfigStringsNumber : Info.PluginMenuStringsNumber))
 				{
-					if (pPlugin->IsLuamacro())
+					if (pPlugin->UseMenuGuids())
 						Guid = MenuItemGuids(MenuType, &Info) + J;
 				}
 				else
@@ -1316,7 +1316,7 @@ void PluginManager::Configure(int StartPos)
 						strName = Info.PluginConfigStrings[J];
 					}
 
-					const GUID *Guid = pPlugin->IsLuamacro() ? Info.PluginConfigGuids + J : nullptr;
+					const GUID *Guid = pPlugin->UseMenuGuids() ? Info.PluginConfigGuids + J : nullptr;
 					GetPluginHotKey(pPlugin, J, Guid, MTYPE_CONFIGSMENU, strHotKey);
 					MenuItemEx ListItem;
 					ListItem.Clear();
@@ -1336,7 +1336,7 @@ void PluginManager::Configure(int StartPos)
 					PluginMenuItemData item;
 					item.pPlugin = pPlugin;
 					item.nItem = J;
-					if (pPlugin->IsLuamacro() && Info.PluginConfigGuids) {
+					if (pPlugin->UseMenuGuids() && Info.PluginConfigGuids) {
 						item.Guid = Info.PluginConfigGuids[J];
 					}
 					PluginList.SetUserData(&item, sizeof(PluginMenuItemData),PluginList.AddItem(&ListItem));
@@ -1503,7 +1503,7 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 							strName = Info.PluginMenuStrings[J];
 						}
 
-						const GUID *Guid = pPlugin->IsLuamacro() ? Info.PluginMenuGuids + J : nullptr;
+						const GUID *Guid = pPlugin->UseMenuGuids() ? Info.PluginMenuGuids + J : nullptr;
 						GetPluginHotKey(pPlugin, J, Guid, MTYPE_COMMANDSMENU, strHotKey);
 						MenuItemEx ListItem;
 						ListItem.Clear();
@@ -1523,7 +1523,7 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 						PluginMenuItemData item {};
 						item.pPlugin = pPlugin;
 						item.nItem = J;
-						if (pPlugin->IsLuamacro() && Info.PluginMenuGuids) {
+						if (pPlugin->UseMenuGuids() && Info.PluginMenuGuids) {
 							item.Guid = Info.PluginMenuGuids[J];
 						}
 						PluginList.SetUserData(&item, sizeof(PluginMenuItemData),PluginList.AddItem(&ListItem));
@@ -1628,7 +1628,7 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 	Panel *ActivePanel = CtrlObject->Cp()->ActivePanel;
 	int OpenCode = OPEN_PLUGINSMENU;
 	INT_PTR Item = item.nItem;
-	if (item.pPlugin->IsLuamacro()) {
+	if (item.pPlugin->UseMenuGuids()) {
 		Item = (INT_PTR)&item.Guid;
 	}
 	OpenDlgPluginData pd {};
@@ -1645,7 +1645,7 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 	{
 		OpenCode=OPEN_DIALOG;
 		pd.hDlg=(HANDLE)FrameManager->GetCurrentFrame();
-		if (item.pPlugin->IsLuamacro())
+		if (item.pPlugin->UseMenuGuids())
 			pd.ItemGuid = item.Guid;
 		else
 			pd.ItemNumber = item.nItem;
@@ -1680,7 +1680,7 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 
 std::string PluginManager::GetHotKeySettingName(Plugin *pPlugin, int ItemNumber, const GUID *Guid, MENUTYPE MenuType)
 {
-	if (pPlugin->IsLuamacro())
+	if (pPlugin->UseMenuGuids())
 	{
 		const std::string &strGuid = GuidToString(*Guid);
 		std::string out = StrPrintf("%08X:%s#%s", pPlugin->GetSysID(), HotKeyType(MenuType), strGuid.c_str());
@@ -1729,7 +1729,7 @@ bool PluginManager::GetDiskMenuItem(
 	LoadIfCacheAbsent();
 
 	FARString strHotKey;
-	if (!pPlugin->IsLuamacro()) {
+	if (!pPlugin->UseMenuGuids()) {
 		GetPluginHotKey(pPlugin, PluginItem, nullptr, MTYPE_DISKSMENU, strHotKey);
 		PluginHotkey = strHotKey.At(0);
 	}
@@ -1745,7 +1745,7 @@ bool PluginManager::GetDiskMenuItem(
 
 	if (pPlugin->GetPluginInfo(&Info) && Info.DiskMenuStringsNumber > PluginItem)
 	{
-		if (pPlugin->IsLuamacro()) {
+		if (pPlugin->UseMenuGuids()) {
 			Guid = Info.DiskMenuGuids[PluginItem];
 			GetPluginHotKey(pPlugin, PluginItem, &Guid, MTYPE_DISKSMENU, strHotKey);
 			PluginHotkey = strHotKey.At(0);

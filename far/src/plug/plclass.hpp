@@ -78,6 +78,7 @@ class Plugin
 		FARString strDescription;
 		FARString strAuthor;
 		VersionInfo m_PlugVersion{};
+		bool m_UseMenuGuids = false;
 
 		Language Lang;
 
@@ -201,6 +202,7 @@ class Plugin
 		bool IsLoaded() { return m_hModule != nullptr; }
 		static void ShowMessageAboutIllegalPluginVersion(const wchar_t* plg,int required);
 		bool IsLuamacro() { return SysID == SYSID_LUAMACRO; }
+		bool UseMenuGuids() { return m_UseMenuGuids; }
 };
 
 struct ExecuteStruct
