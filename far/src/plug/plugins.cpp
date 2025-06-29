@@ -1283,14 +1283,14 @@ void PluginManager::Configure(int StartPos)
 			PluginList.SetPosition(-1,-1,0,0);
 			MenuItemNumber = 0;
 			LoadIfCacheAbsent();
-			FARString strHotKey, strValue, strName;
+			FARString strName;
 			PluginInfo Info{};
 
 			Cma.SetPrevArea(); // for plugins: set the right macro area in GetPluginInfo()
 			for (int I = 0; I<PluginsCount; I++)
 			{
 				Plugin *pPlugin = PluginsData[I];
-				bool bCached = pPlugin->CheckWorkFlags(PIWF_CACHED)?true:false;
+				bool bCached = pPlugin->CheckWorkFlags(PIWF_CACHED);
 
 				if (!bCached && !pPlugin->GetPluginInfo(&Info))
 				{
@@ -1317,9 +1317,9 @@ void PluginManager::Configure(int StartPos)
 					}
 
 					const GUID *Guid = pPlugin->UseMenuGuids() ? Info.PluginConfigGuids + J : nullptr;
+					FARString strHotKey;
 					GetPluginHotKey(pPlugin, J, Guid, MTYPE_CONFIGSMENU, strHotKey);
 					MenuItemEx ListItem;
-					ListItem.Clear();
 
 					if (pPlugin->IsOemPlugin())
 						ListItem.Flags = LIF_CHECKED|L'A';
@@ -1331,15 +1331,12 @@ void PluginManager::Configure(int StartPos)
 					else
 						ListItem.strName.Format(L"   %ls", strName.CPtr());
 
-					//ListItem.SetSelect(MenuItemNumber++ == StartPos);
-					MenuItemNumber++;
-					PluginMenuItemData item;
-					item.pPlugin = pPlugin;
-					item.nItem = J;
+					PluginMenuItemData item { .pPlugin=pPlugin, .nItem=J };
 					if (pPlugin->UseMenuGuids() && Info.PluginConfigGuids) {
 						item.Guid = Info.PluginConfigGuids[J];
 					}
 					PluginList.SetUserData(&item, sizeof(PluginMenuItemData),PluginList.AddItem(&ListItem));
+					MenuItemNumber++;
 				}
 			}
 			Cma.SetCurArea();
@@ -1352,7 +1349,6 @@ void PluginManager::Configure(int StartPos)
 			NeedUpdateItems = false;
 		}
 
-		FARString strPluginModuleName;
 		PluginList.Show();
 
 		while (!PluginList.Done())
@@ -1366,20 +1362,19 @@ void PluginManager::Configure(int StartPos)
 				case KEY_SHIFTF1:
 					if (item)
 					{
-						strPluginModuleName = item->pPlugin->GetModuleName();
-						if (!FarShowHelp(strPluginModuleName,L"Config",FHELP_SELFHELP|FHELP_NOSHOWERROR) &&
-										!FarShowHelp(strPluginModuleName,L"Configure",FHELP_SELFHELP|FHELP_NOSHOWERROR))
+						const FARString &strModuleName = item->pPlugin->GetModuleName();
+						const wchar_t *topics[] = { L"Config", L"Configure", nullptr };
+						for (auto topic: topics)
 						{
-							FarShowHelp(strPluginModuleName,nullptr,FHELP_SELFHELP|FHELP_NOSHOWERROR);
+							if (FarShowHelp(strModuleName, topic, FHELP_SELFHELP|FHELP_NOSHOWERROR))
+								break;
 						}
 					}
 					break;
 
 				case KEY_F3:
 					if (item)
-					{
 						ShowPluginInfo(item->pPlugin);
-					}
 					break;
 
 				case KEY_F4:
@@ -1456,7 +1451,7 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 				PluginList.DeleteItems();
 				PluginList.SetPosition(-1,-1,0,0);
 				LoadIfCacheAbsent();
-				FARString strHotKey, strValue, strName;
+				FARString strName;
 				PluginInfo Info{};
 				KeyFileReadHelper kfh(PluginsIni());
 
@@ -1464,7 +1459,7 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 				for (int I = 0; I<PluginsCount; I++)
 				{
 					Plugin *pPlugin = PluginsData[I];
-					bool bCached = pPlugin->CheckWorkFlags(PIWF_CACHED)?true:false;
+					bool bCached = pPlugin->CheckWorkFlags(PIWF_CACHED);
 					int IFlags;
 
 					if (bCached)
@@ -1480,9 +1475,9 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 					}
 
 					if ((IsEditor && !(IFlags & PF_EDITOR)) ||
-					        (IsViewer && !(IFlags & PF_VIEWER)) ||
-					        (IsDialog && !(IFlags & PF_DIALOG)) ||
-					        (!IsEditor && !IsViewer && !IsDialog && (IFlags & PF_DISABLEPANELS)))
+							(IsViewer && !(IFlags & PF_VIEWER)) ||
+							(IsDialog && !(IFlags & PF_DIALOG)) ||
+							(!IsEditor && !IsViewer && !IsDialog && (IFlags & PF_DISABLEPANELS)))
 						continue;
 
 					for (int J = 0; ; J++)
@@ -1498,14 +1493,13 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 						{
 							if (J >= Info.PluginMenuStringsNumber)
 								break;
-
 							strName = Info.PluginMenuStrings[J];
 						}
 
 						const GUID *Guid = pPlugin->UseMenuGuids() ? Info.PluginMenuGuids + J : nullptr;
+						FARString strHotKey;
 						GetPluginHotKey(pPlugin, J, Guid, MTYPE_COMMANDSMENU, strHotKey);
 						MenuItemEx ListItem;
-						ListItem.Clear();
 
 						if (pPlugin->IsOemPlugin())
 							ListItem.Flags = LIF_CHECKED|L'A';
@@ -1517,15 +1511,12 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 						else
 							ListItem.strName.Format(L"   %ls", strName.CPtr());
 
-						//ListItem.SetSelect(MenuItemNumber++ == StartPos);
-						MenuItemNumber++;
-						PluginMenuItemData item {};
-						item.pPlugin = pPlugin;
-						item.nItem = J;
+						PluginMenuItemData item { .pPlugin=pPlugin, .nItem=J };
 						if (pPlugin->UseMenuGuids() && Info.PluginMenuGuids) {
 							item.Guid = Info.PluginMenuGuids[J];
 						}
 						PluginList.SetUserData(&item, sizeof(PluginMenuItemData),PluginList.AddItem(&ListItem));
+						MenuItemNumber++;
 					}
 				}
 				Cma.SetCurArea();
@@ -1555,17 +1546,14 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 
 					case KEY_F3:
 						if (item)
-						{
 							ShowPluginInfo(item->pPlugin);
-						}
 						break;
 
 					case KEY_F4:
 						if (item && PluginList.GetItemCount() > 0 && SelPos < MenuItemNumber)
 						{
-							FARString strName00;
-							int nOffset = HotKeysPresent?3:0;
-							strName00 = PluginList.GetItemPtr()->strName.CPtr()+nOffset;
+							int nOffset = HotKeysPresent ? 3 : 0;
+							FARString strName00 = PluginList.GetItemPtr()->strName.CPtr() + nOffset;
 							RemoveExternalSpaces(strName00);
 
 							if (SetHotKeyDialog(strName00, item->pPlugin, item->nItem, &item->Guid, MTYPE_COMMANDSMENU))
@@ -2139,10 +2127,10 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 		{
 		case CPT_MENU:
 			if (
-				(IsEditor && !(IFlags & PF_EDITOR)) ||
-				(IsViewer && !(IFlags & PF_VIEWER)) ||
-				(IsDialog && !(IFlags & PF_DIALOG)) ||
-				(!IsEditor && !IsViewer && !IsDialog && (IFlags & PF_DISABLEPANELS)))
+					(IsEditor && !(IFlags & PF_EDITOR)) ||
+					(IsViewer && !(IFlags & PF_VIEWER)) ||
+					(IsDialog && !(IFlags & PF_DIALOG)) ||
+					(!IsEditor && !IsViewer && !IsDialog && (IFlags & PF_DISABLEPANELS)))
 				return false;
 
 			MenuItemsCount = Info.PluginMenuStringsNumber;
