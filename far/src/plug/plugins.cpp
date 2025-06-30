@@ -1359,7 +1359,7 @@ void PluginManager::Configure(int StartPos)
 
 				case KEY_F3:
 					if (item)
-						ShowPluginInfo(item->pPlugin);
+						ShowPluginInfo(item->pPlugin, item->nItem, item->Guid);
 					break;
 
 				case KEY_F4:
@@ -1555,7 +1555,7 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 
 					case KEY_F3:
 						if (item)
-							ShowPluginInfo(item->pPlugin);
+							ShowPluginInfo(item->pPlugin, item->nItem, item->Guid);
 						break;
 
 					case KEY_F4:
@@ -2562,7 +2562,7 @@ size_t PluginManager::GetPluginInformation(Plugin *pPlugin, FarGetPluginInformat
 	return Size;
 }
 
-void PluginManager::ShowPluginInfo(Plugin* pPlugin)
+void PluginManager::ShowPluginInfo(Plugin *pPlugin, int nItem, const GUID &Guid)
 {
 	const auto strPluginId = FARString().Format(L"0x%08X", pPlugin->GetSysID());
 	FARString strPluginPrefix;
@@ -2605,6 +2605,12 @@ void PluginManager::ShowPluginInfo(Plugin* pPlugin)
 
 	Builder.AddText(Msg::MPluginID);
 	Builder.AddConstEditField(strPluginId, Width);
+
+	if (pPlugin->UseMenuGuids())
+	{
+		Builder.AddText(Msg::MPluginItemUUID);
+		Builder.AddConstEditField(GuidToString(Guid), Width);
+	}
 
 	Builder.AddText(Msg::MPluginPrefix);
 	Builder.AddConstEditField(strPluginPrefix, Width);

@@ -198,7 +198,7 @@ class PluginManager
 		size_t GetPluginInformation(Plugin *pPlugin, FarGetPluginInformation *pInfo, size_t BufferSize);
 
 		void LoadPlugins();
-		void ShowPluginInfo(Plugin *pPlugin);
+		void ShowPluginInfo(Plugin *pPlugin, int nItem, const GUID &Guid);
 
 		Plugin *GetPlugin(int PluginNumber);
 		Plugin *FindPlugin(const wchar_t *lpwszModuleName);

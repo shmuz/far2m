@@ -23404,6 +23404,17 @@ upd:"Plugin &ID:"
 "&ID плагіна:"
 "&ID плагіна:"
 
+MPluginItemUUID
+"&UUID пункта:"
+"Plugin item &UUID:"
+"UUID položky m&odulu:"
+"&Punkt UUID:"
+upd:"Plugin &item UUID:"
+"&UUID menu wtyczki:"
+"Item &UUID complemento:"
+"&UUID пункту:"
+"&UUID элемент:"
+
 MPluginPrefix
 "&Префикс плагина:"
 "Plugin &prefix:"

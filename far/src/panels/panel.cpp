@@ -634,7 +634,7 @@ int Panel::ChangeDiskMenu(int Pos, int FirstCall)
 				}
 				case KEY_F3:
 					if (item && item->pPlugin) {
-						CtrlObject->Plugins.ShowPluginInfo(item->pPlugin);
+						CtrlObject->Plugins.ShowPluginInfo(item->pPlugin, item->nItem, item->Guid);
 					}
 					break;
 				case KEY_ALTSHIFTF9:
