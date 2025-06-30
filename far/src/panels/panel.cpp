@@ -185,7 +185,7 @@ struct PanelMenuItem
 	Plugin *pPlugin = nullptr;
 
 	INT_PTR nItem = -1;    // plugin item or shortcut index
-	GUID Guid     = {};    // luamacro
+	GUID Guid     = {};
 
 	struct
 	{

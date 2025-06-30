@@ -609,6 +609,7 @@ static int far_GetPluginGlobalInfo(lua_State *L)
 	PutWStrToTable (L, "Title", info.Title, -1);
 	PutWStrToTable (L, "Description", info.Description, -1);
 	PutWStrToTable (L, "Author", info.Author, -1);
+	PutBoolToTable (L, "UseMenuGuids", info.UseMenuGuids);
 
 	lua_createtable(L,4,0);
 	PutIntToArray(L, 1, info.Version.Major);

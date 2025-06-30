@@ -282,18 +282,25 @@ end
 
 
 function Env:GetPluginInfo()
+  local PluginMenuGuid1   = win.Uuid("b1263604-3d97-4a7f-9803-99d3e0c37bae")
+  local PluginConfigGuid1 = win.Uuid("78f0f093-a71f-44f0-a7be-c59c79376b68")
+  local DiskMenuGuid1     = win.Uuid("2cd6d14a-e300-4dd4-a0dd-04d2e6c84501")
+
   local opt = self.Opt
   local Info = {
-    Flags = 0;
-    CommandPrefix = opt.Prefix;
+    Flags = 0,
+    CommandPrefix = opt.Prefix,
+    PluginConfigGuids = PluginConfigGuid1,
+    PluginConfigStrings = { M.MTempPanel },
   }
   if opt.AddToPluginsMenu then
+    Info.PluginMenuGuids = PluginMenuGuid1
     Info.PluginMenuStrings = { M.MTempPanel }
   end
   if opt.AddToDisksMenu then
+    Info.DiskMenuGuids = DiskMenuGuid1
     Info.DiskMenuStrings = { M.MDiskMenuString }
   end
-  Info.PluginConfigStrings = { M.MTempPanel }
   return Info
 end
 

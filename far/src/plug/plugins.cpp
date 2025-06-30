@@ -2082,7 +2082,6 @@ int PluginManager::CallPlugin(DWORD SysID, int OpenFrom, void *Data, void **Ret)
 // поддержка макрофункций Plugin.Menu, Plugin.Command, Plugin.Config
 bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 {
-	auto IsLuamacro = (SysID == SYSID_LUAMACRO);
 	auto Result = false;
 
 	Frame *TopFrame = FrameManager->GetTopModal();
@@ -2095,10 +2094,13 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 	const auto IsViewer = curType == MODALTYPE_VIEWER;
 	const auto IsDialog = curType == MODALTYPE_DIALOG;
 
+	Plugin *pPlugin = FindPlugin(SysID);
+	bool UseMenuGuids = pPlugin && pPlugin->UseMenuGuids();
+
 	if (Data->CallFlags & CPT_CHECKONLY)
 	{
-		Data->pPlugin = FindPlugin(SysID);
-		if (!Data->pPlugin || !Data->pPlugin->Load())
+		Data->pPlugin = pPlugin;
+		if (!pPlugin || !pPlugin->Load())
 			return false;
 
 		// Разрешен ли вызов данного типа в текущей области (предварительная проверка)
@@ -2114,7 +2116,7 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 			if (curType!=MODALTYPE_PANELS)
 				return false;
 
-			if (IsLuamacro ? !Data->pPlugin->HasConfigureV3() : !Data->pPlugin->HasConfigure())
+			if (UseMenuGuids ? !Data->pPlugin->HasConfigureV3() : !Data->pPlugin->HasConfigure())
 				return false;
 			break;
 
@@ -2172,12 +2174,12 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 			const GUID *Guids = MenuItemGuids(Type, &Info);
 
 			auto ItemFound = false;
-			if (IsLuamacro ? !Data->ItemUuid : !Data->ItemNumber) // 0 means "not specified"
+			if (UseMenuGuids ? !Data->ItemUuid : !Data->ItemNumber) // 0 means "not specified"
 			{
 				if (MenuItemsCount == 1)
 				{
 					Data->FoundItemNumber = 0;
-					if (IsLuamacro) {
+					if (UseMenuGuids) {
 						Data->FoundUuid = Guids[0];
 					}
 					ItemFound = true;
@@ -2185,7 +2187,7 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 			}
 			else
 			{
-				if (!IsLuamacro) {
+				if (!UseMenuGuids) {
 					if (Data->ItemNumber <= MenuItemsCount) {
 						Data->FoundItemNumber = Data->ItemNumber - 1; // 1-based on the user side
 						ItemFound = true;
@@ -2221,7 +2223,7 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 		{
 			auto OpenCode = OPEN_PLUGINSMENU;
 			INT_PTR Item = Data->FoundItemNumber;
-			if (IsLuamacro) {
+			if (UseMenuGuids) {
 				Item = reinterpret_cast<INT_PTR>(&Data->FoundUuid);
 			}
 			OpenDlgPluginData pd { sizeof(pd) };
@@ -2237,7 +2239,7 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 			else if (IsDialog)
 			{
 				OpenCode = OPEN_DIALOG;
-				if (!IsLuamacro) {
+				if (!UseMenuGuids) {
 					pd.ItemNumber = Data->FoundItemNumber;
 				}
 				else {

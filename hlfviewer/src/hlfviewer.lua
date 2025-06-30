@@ -309,12 +309,16 @@ function export.Open(OpenFrom, _Id, Item)
   end
 end
 
+local MenuGuid = win.Uuid("5D01066A-9019-46E9-B821-B40DA9119E16")
+
 function export.GetPluginInfo()
   return {
     CommandPrefix = "HLF";
     Flags = F.PF_EDITOR + F.PF_DISABLEPANELS;
     PluginConfigStrings = { M.MTitle };
     PluginMenuStrings = not Opt.ProcessEditorInput and { M.MShowHelpTopic } or nil;
+    PluginConfigGuids = MenuGuid;
+    PluginMenuGuids = MenuGuid;
   }
 end
 

@@ -597,16 +597,16 @@ FarKey KeyMacro::GetKey()
 					break;
 
 				DWORD SysID = static_cast<DWORD>(mpr.Values[0].Double);
-				if (!CtrlObject->Plugins.FindPlugin(SysID))
+				Plugin *pPlugin = CtrlObject->Plugins.FindPlugin(SysID);
+				if (!pPlugin)
 					break;
 
-				bool IsLuamacro = (SysID == SYSID_LUAMACRO);
 				GUID Guid;
 
 				PluginManager::CallPluginInfo cpInfo = { CPT_CHECKONLY };
 				if (mpr.ReturnType == MPRT_PLUGINMENU || mpr.ReturnType == MPRT_PLUGINCONFIG)
 				{
-					if (!IsLuamacro) {
+					if (!pPlugin->UseMenuGuids()) {
 						if (mpr.Count > 1) {
 							if (mpr.Values[1].Type == FMVT_DOUBLE)
 								cpInfo.ItemNumber = static_cast<DWORD>(mpr.Values[1].Double);

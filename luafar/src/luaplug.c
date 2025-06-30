@@ -163,17 +163,9 @@ LUAPLUG int CompareW(HANDLE hPlugin, const struct PluginPanelItem *Item1,
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_CONFIGURE) || defined(EXPORT_ALL)
-LUAPLUG int ConfigureW(int ItemNumber)
-{
-	return LS ? LF_Configure(LS, ItemNumber) : FALSE;
-}
-#endif
-//---------------------------------------------------------------------------
-
-#if defined(EXPORT_CONFIGUREV3) || defined(EXPORT_ALL)
 LUAPLUG int ConfigureV3W(const struct ConfigureInfo *Info)
 {
-	return LS ? LF_ConfigureV3(LS, Info) : FALSE;
+	return LS ? LF_Configure(LS, Info) : FALSE;
 }
 #endif
 //---------------------------------------------------------------------------
