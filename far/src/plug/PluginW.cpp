@@ -268,18 +268,27 @@ bool PluginW::SaveToCache()
 	for (int i = 0; i < Info.DiskMenuStringsNumber; i++)
 	{
 		kfh.SetString(GetSettingsName(), StrPrintf(FmtDiskMenuStringD, i), Info.DiskMenuStrings[i]);
+		if (UseMenuGuids())
+			kfh.SetString(GetSettingsName(), StrPrintf(FmtDiskMenuGuidD, i),
+				GuidToString(Info.DiskMenuGuids[i]));
 	}
 
 	for (int i = 0; i < Info.PluginMenuStringsNumber; i++)
 	{
 		kfh.SetString(GetSettingsName(), StrPrintf(FmtPluginMenuStringD, i),
 				Info.PluginMenuStrings[i]);
+		if (UseMenuGuids())
+			kfh.SetString(GetSettingsName(), StrPrintf(FmtPluginMenuGuidD, i),
+				GuidToString(Info.PluginMenuGuids[i]));
 	}
 
 	for (int i = 0; i < Info.PluginConfigStringsNumber; i++)
 	{
 		kfh.SetString(GetSettingsName(), StrPrintf(FmtPluginConfigStringD, i),
 				Info.PluginConfigStrings[i]);
+		if (UseMenuGuids())
+			kfh.SetString(GetSettingsName(), StrPrintf(FmtPluginConfigGuidD, i),
+				GuidToString(Info.PluginConfigGuids[i]));
 	}
 
 	kfh.SetString(GetSettingsName(), "CommandPrefix", Info.CommandPrefix);

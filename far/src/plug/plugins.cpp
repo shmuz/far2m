@@ -71,6 +71,9 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 const char *FmtDiskMenuStringD = "DiskMenuString%d";
 const char *FmtPluginMenuStringD = "PluginMenuString%d";
 const char *FmtPluginConfigStringD = "PluginConfigString%d";
+const char *FmtDiskMenuGuidD = "DiskMenuGuid%d";
+const char *FmtPluginMenuGuidD = "PluginMenuGuid%d";
+const char *FmtPluginConfigGuidD = "PluginConfigGuid%d";
 const char *SettingsSection = "Settings";
 const wchar_t *PluginsFolderName = L"Plugins";
 
@@ -1211,54 +1214,13 @@ struct PluginMenuItemData
 	Plugin *pPlugin;
 	int nItem;
 	GUID Guid;
+	wchar_t HotKey;
 };
 
 /* $ 29.05.2001 IS
    ! При настройке "параметров внешних модулей" закрывать окно с их
      списком только при нажатии на ESC
 */
-
-bool PluginManager::CheckIfHotkeyPresent(MENUTYPE MenuType)
-{
-	bool IsConfig = (MenuType == MTYPE_CONFIGSMENU);
-	const char *Fmt = IsConfig ? FmtPluginConfigStringD : FmtPluginMenuStringD;
-
-	for (int I = 0; I<PluginsCount; I++)
-	{
-		Plugin *pPlugin = PluginsData[I];
-		PluginInfo Info{};
-		bool bCached = pPlugin->CheckWorkFlags(PIWF_CACHED);
-		if (!bCached && !pPlugin->GetPluginInfo(&Info))
-			continue;
-
-		FARString strHotKey;
-		for (int J = 0; ; ++J)
-		{
-			const GUID *Guid = nullptr;
-			if (bCached)
-			{
-				KeyFileReadSection kfh(PluginsIni(), pPlugin->GetSettingsName());
-				if (!kfh.HasKey(StrPrintf(Fmt, J)))
-					break;
-			}
-			else
-			{
-				if (J < (IsConfig ? Info.PluginConfigStringsNumber : Info.PluginMenuStringsNumber))
-				{
-					if (pPlugin->UseMenuGuids())
-						Guid = MenuItemGuids(MenuType, &Info) + J;
-				}
-				else
-					break;
-			}
-			GetPluginHotKey(pPlugin, J, Guid, MenuType, strHotKey);
-			if (!strHotKey.IsEmpty())
-				return true;
-		}
-	}
-	return false;
-}
-
 void PluginManager::Configure(int StartPos)
 {
 	ChangeMacroArea Cma(MACROAREA_MENU);
@@ -1271,10 +1233,7 @@ void PluginManager::Configure(int StartPos)
 	{
 		bool NeedUpdateItems = true;
 		int MenuItemNumber = 0;
-
-		Cma.SetPrevArea(); // for plugins: set the right macro area in GetPluginInfo()
-		bool HotKeysPresent = CheckIfHotkeyPresent(MTYPE_CONFIGSMENU);
-		Cma.SetCurArea();
+		bool HotKeysPresent = false;
 
 		if (NeedUpdateItems)
 		{
@@ -1293,53 +1252,79 @@ void PluginManager::Configure(int StartPos)
 				bool bCached = pPlugin->CheckWorkFlags(PIWF_CACHED);
 
 				if (!bCached && !pPlugin->GetPluginInfo(&Info))
-				{
 					continue;
-				}
 
+				KeyFileReadSection kfh(PluginsIni(), pPlugin->GetSettingsName());
 				for (int J = 0; ; J++)
 				{
+					PluginMenuItemData item { .pPlugin=pPlugin, .nItem=J };
 					if (bCached)
 					{
-						KeyFileReadSection kfh(PluginsIni(), pPlugin->GetSettingsName());
 						const std::string &key = StrPrintf(FmtPluginConfigStringD, J);
-						if (!kfh.HasKey(key))
+						if (kfh.HasKey(key))
+							strName = kfh.GetString(key, "");
+						else
 							break;
 
-						strName = kfh.GetString(key, "");
+						if (pPlugin->UseMenuGuids())
+						{
+							const std::string &keyGuid = StrPrintf(FmtPluginConfigGuidD, J);
+							if (!kfh.HasKey(keyGuid))
+								break;
+
+							const auto &strGuid = kfh.GetString(keyGuid, L"");
+							if (!StrToGuid(strGuid.c_str(), item.Guid))
+								break;
+						}
+					}
+					else if (J < Info.PluginConfigStringsNumber)
+					{
+						strName = Info.PluginConfigStrings[J];
+						if (pPlugin->UseMenuGuids())
+							item.Guid = Info.PluginConfigGuids[J];
 					}
 					else
-					{
-						if (J >= Info.PluginConfigStringsNumber)
-							break;
+						break;
 
-						strName = Info.PluginConfigStrings[J];
+					FARString strHotKey;
+					GetPluginHotKey(pPlugin, J, &item.Guid, MTYPE_CONFIGSMENU, strHotKey);
+					if (!strHotKey.IsEmpty()) {
+						HotKeysPresent = true;
+						item.HotKey = strHotKey[0];
 					}
 
-					const GUID *Guid = pPlugin->UseMenuGuids() ? Info.PluginConfigGuids + J : nullptr;
-					FARString strHotKey;
-					GetPluginHotKey(pPlugin, J, Guid, MTYPE_CONFIGSMENU, strHotKey);
 					MenuItemEx ListItem;
+					ListItem.strName = strName;
 
 					if (pPlugin->IsOemPlugin())
 						ListItem.Flags = LIF_CHECKED|L'A';
 
-					if (!HotKeysPresent)
-						ListItem.strName = strName;
-					else if (!strHotKey.IsEmpty())
-						ListItem.strName.Format(L"&%lc%ls  %ls",strHotKey.At(0),(strHotKey.At(0)==L'&'?L"&":L""), strName.CPtr());
-					else
-						ListItem.strName.Format(L"   %ls", strName.CPtr());
-
-					PluginMenuItemData item { .pPlugin=pPlugin, .nItem=J };
-					if (pPlugin->UseMenuGuids() && Info.PluginConfigGuids) {
-						item.Guid = Info.PluginConfigGuids[J];
-					}
-					PluginList.SetUserData(&item, sizeof(PluginMenuItemData),PluginList.AddItem(&ListItem));
+					PluginList.SetUserData(&item, sizeof(item), PluginList.AddItem(&ListItem));
 					MenuItemNumber++;
 				}
 			}
 			Cma.SetCurArea();
+			if (HotKeysPresent)
+			{
+				FARString strTmp;
+				for (int I=0; I < MenuItemNumber; ++I)
+				{
+					MenuItemEx *Item = PluginList.GetItemPtr(I);
+					const auto data = (PluginMenuItemData*) PluginList.GetUserDataPtr(I);
+					if (data->HotKey)
+					{
+						strTmp.Format(L"&%lc%ls  %ls",
+								data->HotKey,
+								(data->HotKey == L'&' ? L"&" : L""),
+								Item->strName.CPtr());
+					}
+					else
+					{
+						strTmp.Format(L"   %ls", Item->strName.CPtr());
+					}
+					Item->strName = strTmp;
+				}
+			}
 
 			PluginList.AssignHighlights(FALSE);
 			PluginList.SetBottomTitle(Msg::PluginHotKeyBottom);
@@ -1439,40 +1424,34 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 		PluginList.SetId(PluginsMenuId);
 		bool NeedUpdateItems = true;
 
-		while (true)
+		for (;;)
 		{
-			Cma.SetPrevArea(); // for plugins: set the right macro area in GetPluginInfo()
-			bool HotKeysPresent = CheckIfHotkeyPresent(MTYPE_COMMANDSMENU);
-			Cma.SetCurArea();
+			bool HotKeysPresent = false;
 
 			if (NeedUpdateItems)
 			{
 				PluginList.ClearDone();
 				PluginList.DeleteItems();
 				PluginList.SetPosition(-1,-1,0,0);
+				MenuItemNumber = 0;
 				LoadIfCacheAbsent();
 				FARString strName;
 				PluginInfo Info{};
-				KeyFileReadHelper kfh(PluginsIni());
 
 				Cma.SetPrevArea(); // for plugins: set the right macro area in GetPluginInfo()
 				for (int I = 0; I<PluginsCount; I++)
 				{
 					Plugin *pPlugin = PluginsData[I];
 					bool bCached = pPlugin->CheckWorkFlags(PIWF_CACHED);
+					KeyFileReadSection kfh(PluginsIni(), pPlugin->GetSettingsName());
 					int IFlags;
 
 					if (bCached)
-					{
-						IFlags = kfh.GetUInt(pPlugin->GetSettingsName(), "Flags",0);
-					}
-					else
-					{
-						if (!pPlugin->GetPluginInfo(&Info))
-							continue;
-
+						IFlags = kfh.GetUInt("Flags", 0);
+					else if (pPlugin->GetPluginInfo(&Info))
 						IFlags = Info.Flags;
-					}
+					else
+						continue;
 
 					if ((IsEditor && !(IFlags & PF_EDITOR)) ||
 							(IsViewer && !(IFlags & PF_VIEWER)) ||
@@ -1482,44 +1461,74 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 
 					for (int J = 0; ; J++)
 					{
+						PluginMenuItemData item { .pPlugin=pPlugin, .nItem=J };
 						if (bCached)
 						{
 							const std::string &key = StrPrintf(FmtPluginMenuStringD, J);
-							if (!kfh.HasKey(pPlugin->GetSettingsName(), key))
+							if (kfh.HasKey(key))
+								strName = kfh.GetString(key, "");
+							else
 								break;
-							strName = kfh.GetString(pPlugin->GetSettingsName(), key, "");
+
+							if (pPlugin->UseMenuGuids())
+							{
+								const std::string &keyGuid = StrPrintf(FmtPluginMenuGuidD, J);
+								if (!kfh.HasKey(keyGuid))
+									break;
+
+								const auto &strGuid = kfh.GetString(keyGuid, L"");
+								if (!StrToGuid(strGuid.c_str(), item.Guid))
+									break;
+							}
+						}
+						else if (J < Info.PluginMenuStringsNumber)
+						{
+							strName = Info.PluginMenuStrings[J];
+							if (pPlugin->UseMenuGuids())
+								item.Guid = Info.PluginMenuGuids[J];
 						}
 						else
-						{
-							if (J >= Info.PluginMenuStringsNumber)
-								break;
-							strName = Info.PluginMenuStrings[J];
+							break;
+
+						FARString strHotKey;
+						GetPluginHotKey(pPlugin, J, &item.Guid, MTYPE_COMMANDSMENU, strHotKey);
+						if (!strHotKey.IsEmpty()) {
+							HotKeysPresent = true;
+							item.HotKey = strHotKey[0];
 						}
 
-						const GUID *Guid = pPlugin->UseMenuGuids() ? Info.PluginMenuGuids + J : nullptr;
-						FARString strHotKey;
-						GetPluginHotKey(pPlugin, J, Guid, MTYPE_COMMANDSMENU, strHotKey);
 						MenuItemEx ListItem;
+						ListItem.strName = strName;
 
 						if (pPlugin->IsOemPlugin())
 							ListItem.Flags = LIF_CHECKED|L'A';
 
-						if (!HotKeysPresent)
-							ListItem.strName = strName;
-						else if (!strHotKey.IsEmpty())
-							ListItem.strName.Format(L"&%lc%ls  %ls",strHotKey.At(0),(strHotKey.At(0)==L'&'?L"&":L""), strName.CPtr());
-						else
-							ListItem.strName.Format(L"   %ls", strName.CPtr());
-
-						PluginMenuItemData item { .pPlugin=pPlugin, .nItem=J };
-						if (pPlugin->UseMenuGuids() && Info.PluginMenuGuids) {
-							item.Guid = Info.PluginMenuGuids[J];
-						}
-						PluginList.SetUserData(&item, sizeof(PluginMenuItemData),PluginList.AddItem(&ListItem));
+						PluginList.SetUserData(&item, sizeof(item), PluginList.AddItem(&ListItem));
 						MenuItemNumber++;
 					}
 				}
 				Cma.SetCurArea();
+				if (HotKeysPresent)
+				{
+					FARString strTmp;
+					for (int I=0; I < MenuItemNumber; ++I)
+					{
+						MenuItemEx *Item = PluginList.GetItemPtr(I);
+						const auto data = (PluginMenuItemData*) PluginList.GetUserDataPtr(I);
+						if (data->HotKey)
+						{
+							strTmp.Format(L"&%lc%ls  %ls",
+									data->HotKey,
+									(data->HotKey == L'&' ? L"&" : L""),
+									Item->strName.CPtr());
+						}
+						else
+						{
+							strTmp.Format(L"   %ls", Item->strName.CPtr());
+						}
+						Item->strName = strTmp;
+					}
+				}
 
 				PluginList.AssignHighlights(FALSE);
 				PluginList.SetBottomTitle(Msg::PluginHotKeyBottom);
@@ -1685,11 +1694,11 @@ void PluginManager::GetPluginHotKey(Plugin *pPlugin, int ItemNumber, const GUID 
 }
 
 bool PluginManager::SetHotKeyDialog(
-		const wchar_t *DlgPluginTitle,    // имя плагина
-		Plugin *pPlugin,                  // ключ, откуда берем значение в state.ini/Settings
-		int ItemNumber,                   // +
-		const GUID *Guid,                 // +
-		MENUTYPE MenuType)                // +
+		const wchar_t *DlgPluginTitle,
+		Plugin *pPlugin,
+		int ItemNumber,
+		const GUID *Guid,
+		MENUTYPE MenuType)
 {
 	const std::string &SettingName = GetHotKeySettingName(pPlugin, ItemNumber, Guid, MenuType);
 	KeyFileHelper kfh(PluginsIni());
@@ -1715,33 +1724,41 @@ bool PluginManager::GetDiskMenuItem(
 {
 	LoadIfCacheAbsent();
 
-	FARString strHotKey;
-	if (!pPlugin->UseMenuGuids()) {
-		GetPluginHotKey(pPlugin, PluginItem, nullptr, MTYPE_DISKSMENU, strHotKey);
-		PluginHotkey = strHotKey.At(0);
-	}
-
 	if (pPlugin->CheckWorkFlags(PIWF_CACHED))
 	{
 		KeyFileReadSection kfh(PluginsIni(), pPlugin->GetSettingsName());
-		strPluginText = kfh.GetString( StrPrintf(FmtDiskMenuStringD, PluginItem), "" );
-		return !strPluginText.IsEmpty();
-	}
+		const std::string &key = StrPrintf(FmtDiskMenuStringD, PluginItem);
+		if (kfh.HasKey(key))
+			strPluginText = kfh.GetString(key, "");
+		else
+			return false;
 
-	PluginInfo Info;
+		if (pPlugin->UseMenuGuids())
+		{
+			const std::string &keyGuid = StrPrintf(FmtDiskMenuGuidD, PluginItem);
+			if (!kfh.HasKey(keyGuid))
+				return false;
 
-	if (pPlugin->GetPluginInfo(&Info) && Info.DiskMenuStringsNumber > PluginItem)
-	{
-		if (pPlugin->UseMenuGuids()) {
-			Guid = Info.DiskMenuGuids[PluginItem];
-			GetPluginHotKey(pPlugin, PluginItem, &Guid, MTYPE_DISKSMENU, strHotKey);
-			PluginHotkey = strHotKey.At(0);
+			const auto &strGuid = kfh.GetString(keyGuid, L"");
+			if (!StrToGuid(strGuid.c_str(), Guid))
+				return false;
 		}
+	}
+	else
+	{
+		PluginInfo Info {};
+		if (!pPlugin->GetPluginInfo(&Info) || (PluginItem >= Info.DiskMenuStringsNumber))
+			return false;
+
 		strPluginText = Info.DiskMenuStrings[PluginItem];
-		return true;
+		if (pPlugin->UseMenuGuids())
+			Guid = Info.DiskMenuGuids[PluginItem];
 	}
 
-	return false;
+	FARString strHotKey;
+	GetPluginHotKey(pPlugin, PluginItem, &Guid, MTYPE_DISKSMENU, strHotKey);
+	PluginHotkey = strHotKey.At(0);
+	return !strPluginText.IsEmpty();
 }
 
 int PluginManager::UseFarCommand(PHPTR ph,int CommandType)

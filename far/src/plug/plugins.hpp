@@ -46,6 +46,9 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 extern const char *FmtDiskMenuStringD;
 extern const char *FmtPluginMenuStringD;
 extern const char *FmtPluginConfigStringD;
+extern const char *FmtDiskMenuGuidD;
+extern const char *FmtPluginMenuGuidD;
+extern const char *FmtPluginConfigGuidD;
 
 
 class SaveScreen;
@@ -166,7 +169,6 @@ class PluginManager
 
 		bool TestPluginInfo(Plugin *Item,PluginInfo *Info);
 		bool TestOpenPluginInfo(Plugin *Item,OpenPluginInfo *Info);
-		bool CheckIfHotkeyPresent(MENUTYPE MenuType);
 
 		Plugin* LoadPlugin(const FARString &strModuleName, bool LoadUncached);
 
