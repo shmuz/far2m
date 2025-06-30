@@ -1217,6 +1217,35 @@ struct PluginMenuItemData
 	wchar_t HotKey;
 };
 
+struct TmpItemData
+{
+	PluginMenuItemData Item;
+	FARString Name;
+	TmpItemData(PluginMenuItemData &aItem, const FARString &aName) : Item(aItem), Name(aName) {}
+};
+
+static void FillPluginList(VMenu &PluginList, const std::vector<TmpItemData> &TmpItems, bool HotKeysPresent)
+{
+	for (const auto &tmp: TmpItems)
+	{
+		MenuItemEx ListItem;
+		if (tmp.Item.pPlugin->IsOemPlugin())
+			ListItem.Flags = LIF_CHECKED|L'A';
+
+		if (!HotKeysPresent)
+			ListItem.strName = tmp.Name;
+		else if (tmp.Item.HotKey)
+			ListItem.strName.Format(L"&%lc%ls  %ls",
+					tmp.Item.HotKey,
+					(tmp.Item.HotKey == L'&' ? L"&" : L""),
+					tmp.Name.CPtr());
+		else
+			ListItem.strName.Format(L"   %ls", tmp.Name.CPtr());
+
+		PluginList.SetUserData(&tmp.Item, sizeof(tmp.Item), PluginList.AddItem(&ListItem));
+	}
+}
+
 /* $ 29.05.2001 IS
    ! При настройке "параметров внешних модулей" закрывать окно с их
      списком только при нажатии на ESC
@@ -1240,10 +1269,10 @@ void PluginManager::Configure(int StartPos)
 			PluginList.ClearDone();
 			PluginList.DeleteItems();
 			PluginList.SetPosition(-1,-1,0,0);
-			MenuItemNumber = 0;
 			LoadIfCacheAbsent();
 			FARString strName;
 			PluginInfo Info{};
+			std::vector<TmpItemData> TmpItems;
 
 			Cma.SetPrevArea(); // for plugins: set the right macro area in GetPluginInfo()
 			for (int I = 0; I<PluginsCount; I++)
@@ -1292,45 +1321,18 @@ void PluginManager::Configure(int StartPos)
 						HotKeysPresent = true;
 						item.HotKey = strHotKey[0];
 					}
-
-					MenuItemEx ListItem;
-					ListItem.strName = strName;
-
-					if (pPlugin->IsOemPlugin())
-						ListItem.Flags = LIF_CHECKED|L'A';
-
-					PluginList.SetUserData(&item, sizeof(item), PluginList.AddItem(&ListItem));
-					MenuItemNumber++;
+					TmpItems.emplace_back(item, strName);
 				}
 			}
 			Cma.SetCurArea();
-			if (HotKeysPresent)
-			{
-				FARString strTmp;
-				for (int I=0; I < MenuItemNumber; ++I)
-				{
-					MenuItemEx *Item = PluginList.GetItemPtr(I);
-					const auto data = (PluginMenuItemData*) PluginList.GetUserDataPtr(I);
-					if (data->HotKey)
-					{
-						strTmp.Format(L"&%lc%ls  %ls",
-								data->HotKey,
-								(data->HotKey == L'&' ? L"&" : L""),
-								Item->strName.CPtr());
-					}
-					else
-					{
-						strTmp.Format(L"   %ls", Item->strName.CPtr());
-					}
-					Item->strName = strTmp;
-				}
-			}
+			MenuItemNumber = TmpItems.size();
+			FillPluginList(PluginList, TmpItems, HotKeysPresent);
 
 			PluginList.AssignHighlights(FALSE);
 			PluginList.SetBottomTitle(Msg::PluginHotKeyBottom);
 			PluginList.ClearDone();
-			PluginList.SortItems(0,HotKeysPresent?3:0);
-			PluginList.SetSelectPos(StartPos,1);
+			PluginList.SortItems(0, HotKeysPresent ? 3 : 0);
+			PluginList.SetSelectPos(StartPos, 1);
 			NeedUpdateItems = false;
 		}
 
@@ -1433,10 +1435,10 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 				PluginList.ClearDone();
 				PluginList.DeleteItems();
 				PluginList.SetPosition(-1,-1,0,0);
-				MenuItemNumber = 0;
 				LoadIfCacheAbsent();
 				FARString strName;
 				PluginInfo Info{};
+				std::vector<TmpItemData> TmpItems;
 
 				Cma.SetPrevArea(); // for plugins: set the right macro area in GetPluginInfo()
 				for (int I = 0; I<PluginsCount; I++)
@@ -1496,44 +1498,17 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 							HotKeysPresent = true;
 							item.HotKey = strHotKey[0];
 						}
-
-						MenuItemEx ListItem;
-						ListItem.strName = strName;
-
-						if (pPlugin->IsOemPlugin())
-							ListItem.Flags = LIF_CHECKED|L'A';
-
-						PluginList.SetUserData(&item, sizeof(item), PluginList.AddItem(&ListItem));
-						MenuItemNumber++;
+						TmpItems.emplace_back(item, strName);
 					}
 				}
 				Cma.SetCurArea();
-				if (HotKeysPresent)
-				{
-					FARString strTmp;
-					for (int I=0; I < MenuItemNumber; ++I)
-					{
-						MenuItemEx *Item = PluginList.GetItemPtr(I);
-						const auto data = (PluginMenuItemData*) PluginList.GetUserDataPtr(I);
-						if (data->HotKey)
-						{
-							strTmp.Format(L"&%lc%ls  %ls",
-									data->HotKey,
-									(data->HotKey == L'&' ? L"&" : L""),
-									Item->strName.CPtr());
-						}
-						else
-						{
-							strTmp.Format(L"   %ls", Item->strName.CPtr());
-						}
-						Item->strName = strTmp;
-					}
-				}
+				MenuItemNumber = TmpItems.size();
+				FillPluginList(PluginList, TmpItems, HotKeysPresent);
 
 				PluginList.AssignHighlights(FALSE);
 				PluginList.SetBottomTitle(Msg::PluginHotKeyBottom);
-				PluginList.SortItems(0,HotKeysPresent?3:0);
-				PluginList.SetSelectPos(StartPos,1);
+				PluginList.SortItems(0, HotKeysPresent ? 3 : 0);
+				PluginList.SetSelectPos(StartPos, 1);
 				NeedUpdateItems = false;
 			}
 

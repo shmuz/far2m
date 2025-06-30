@@ -2697,15 +2697,6 @@ size_t VMenu::GetUserDataSize(int Position)
 	return ItemPos < 0 ? 0 : Item[ItemPos]->UserDataSize;
 }
 
-void *VMenu::GetUserDataPtr(int Position)
-{
-	CriticalSectionLock Lock(CS);
-
-	int ItemPos = GetItemPosition(Position);
-
-	return ItemPos < 0 ? nullptr : Item[ItemPos]->UserData;
-}
-
 size_t VMenu::_SetUserData(MenuItemEx *PItem,
 		const void *Data,    // Данные
 		size_t Size)         // Размер, если =0 то предполагается, что в Data-строка

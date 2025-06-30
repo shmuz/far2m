@@ -355,7 +355,6 @@ public:
 	void UpdateItemFlags(int Pos, DWORD NewFlags);
 
 	void *GetUserData(void *Data, size_t Size, int Position = -1);
-	void *GetUserDataPtr(int Position);
 	size_t GetUserDataSize(int Position = -1);
 	size_t SetUserData(LPCVOID Data, size_t Size = 0, int Position = -1);
 
