@@ -600,23 +600,29 @@ static int far_GetPluginId(lua_State *L)
 	return 1;
 }
 
+static void PushGlobalInfo(lua_State *L, const struct GlobalInfo *info)
+{
+	lua_createtable(L, 0, 7);
+	PutNumToTable  (L, "StructSize", info->StructSize);
+	PutNumToTable  (L, "SysID", info->SysID);
+	PutWStrToTable (L, "Title", info->Title, -1);
+	PutWStrToTable (L, "Description", info->Description, -1);
+	PutWStrToTable (L, "Author", info->Author, -1);
+	PutBoolToTable (L, "UseMenuGuids", info->UseMenuGuids);
+
+	lua_createtable(L, 4, 0);
+	PutIntToArray(L, 1, info->Version.Major);
+	PutIntToArray(L, 2, info->Version.Minor);
+	PutIntToArray(L, 3, info->Version.Revision);
+	PutIntToArray(L, 4, info->Version.Build);
+	lua_setfield(L, -2, "Version");
+}
+
 static int far_GetPluginGlobalInfo(lua_State *L)
 {
 	struct GlobalInfo info;
 	GetPluginData(L)->GetGlobalInfo(&info);
-	lua_createtable(L,0,6);
-	PutNumToTable  (L, "SysID", info.SysID);
-	PutWStrToTable (L, "Title", info.Title, -1);
-	PutWStrToTable (L, "Description", info.Description, -1);
-	PutWStrToTable (L, "Author", info.Author, -1);
-	PutBoolToTable (L, "UseMenuGuids", info.UseMenuGuids);
-
-	lua_createtable(L,4,0);
-	PutIntToArray(L, 1, info.Version.Major);
-	PutIntToArray(L, 2, info.Version.Minor);
-	PutIntToArray(L, 3, info.Version.Revision);
-	PutIntToArray(L, 4, info.Version.Build);
-	lua_setfield(L, -2, "Version");
+	PushGlobalInfo(L, &info);
 	return 1;
 }
 
@@ -5362,23 +5368,8 @@ static int far_GetPluginInformation(lua_State *L)
 
 			lua_setfield(L, -2, "PInfo");
 		}
-		lua_createtable(L, 0, 7); // GInfo
-		{
-			PutNumToTable (L, "StructSize", pi->GInfo->StructSize);
-			PutNumToTable (L, "SysID", pi->GInfo->SysID);
-			PutWStrToTable(L, "Title", pi->GInfo->Title, -1);
-			PutWStrToTable(L, "Description", pi->GInfo->Description, -1);
-			PutWStrToTable(L, "Author", pi->GInfo->Author, -1);
-
-			lua_createtable(L, 4, 0);
-			PutIntToArray(L, 1, pi->GInfo->Version.Major);
-			PutIntToArray(L, 2, pi->GInfo->Version.Minor);
-			PutIntToArray(L, 3, pi->GInfo->Version.Revision);
-			PutIntToArray(L, 4, pi->GInfo->Version.Build);
-			lua_setfield(L, -2, "Version");
-
-			lua_setfield(L, -2, "GInfo");
-		}
+		PushGlobalInfo(L, pi->GInfo);
+		lua_setfield(L, -2, "GInfo");
 	}
 
 	return 1;

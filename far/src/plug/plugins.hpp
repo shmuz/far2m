@@ -54,7 +54,6 @@ extern const char *FmtPluginConfigGuidD;
 class SaveScreen;
 class FileEditor;
 class Viewer;
-class Frame;
 class Panel;
 struct FileListItem;
 
@@ -132,7 +131,6 @@ class PluginManager
 
 		Plugin **PluginsData;
 		int PluginsCount;
-		int OemPluginsCount;
 		struct BackgroundTasks : std::map<std::wstring, unsigned int>, std::mutex {} BgTasks;
 		std::unordered_map<DWORD, Plugin*> SysIdMap;
 
@@ -164,21 +162,12 @@ class PluginManager
 		void LoadIfCacheAbsent();
 		void ReadUserBackground(SaveScreen *SaveScr);
 
-		void GetPluginHotKey(Plugin *pPlugin, int ItemNumber,  const GUID *Guid, MENUTYPE MenuType, FARString &strHotKey);
-		std::string GetHotKeySettingName(Plugin *pPlugin, int ItemNumber, const GUID *Guid, MENUTYPE MenuType);
-
-		bool TestPluginInfo(Plugin *Item,PluginInfo *Info);
-		bool TestOpenPluginInfo(Plugin *Item,OpenPluginInfo *Info);
-
 		Plugin* LoadPlugin(const FARString &strModuleName, bool LoadUncached);
 
 		bool AddPlugin(Plugin *pPlugin);
 		bool RemovePlugin(Plugin *pPlugin);
 
 		void LoadPluginsFromCache();
-
-		void SetFlags(DWORD NewFlags) { Flags.Set(NewFlags); }
-		void SkipFlags(DWORD NewFlags) { Flags.Clear(NewFlags); }
 
 	public:
 
@@ -206,11 +195,8 @@ class PluginManager
 		Plugin *FindPlugin(Plugin *pPlugin);
 
 		int GetPluginsCount() { return PluginsCount; }
-		int GetOemPluginsCount() { return OemPluginsCount; }
 
 		BOOL IsPluginsLoaded() { return Flags.Check(PSIF_PLUGINSLOADED); }
-
-		BOOL CheckFlags(DWORD NewFlags) { return Flags.Check(NewFlags); }
 
 		void Configure(int StartPos=0);
 		void ConfigureCurrent(Plugin *pPlugin, int INum, const GUID *Guid);

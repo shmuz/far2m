@@ -159,7 +159,6 @@ static PluginType PluginTypeByExtension(const wchar_t *lpModuleName)
 PluginManager::PluginManager():
 	PluginsData(nullptr),
 	PluginsCount(0),
-	OemPluginsCount(0),
 	CurEditor(nullptr),
 	CurViewer(nullptr)
 {
@@ -198,10 +197,6 @@ bool PluginManager::AddPlugin(Plugin *pPlugin)
 	PluginsData = NewPluginsData;
 	PluginsData[PluginsCount]=pPlugin;
 	PluginsCount++;
-	if(pPlugin->IsOemPlugin())
-	{
-		OemPluginsCount++;
-	}
 	return true;
 }
 
@@ -212,10 +207,6 @@ bool PluginManager::RemovePlugin(Plugin *pPlugin)
 		if (PluginsData[i] == pPlugin)
 		{
 			SysIdMap.erase(pPlugin->SysID);
-			if(pPlugin->IsOemPlugin())
-			{
-				OemPluginsCount--;
-			}
 			delete pPlugin;
 			memmove(&PluginsData[i], &PluginsData[i+1], (PluginsCount-i-1)*sizeof(Plugin*));
 			PluginsCount--;
@@ -1225,6 +1216,25 @@ struct TmpItemData
 	TmpItemData(PluginMenuItemData &aItem, const FARString &aName) : Item(aItem), Name(aName) {}
 };
 
+static std::string GetHotKeySettingName(Plugin *pPlugin, int ItemNumber, const GUID *Guid, MENUTYPE MenuType)
+{
+	if (pPlugin->UseMenuGuids())
+	{
+		const std::string &strGuid = GuidToString(*Guid);
+		std::string out = StrPrintf("%08X:%s#%s", pPlugin->GetSysID(), HotKeyType(MenuType), strGuid.c_str());
+		return out;
+	}
+	std::string out = pPlugin->GetSettingsName();
+	out+= StrPrintf(":%s#%d", HotKeyType(MenuType), ItemNumber);
+	return out;
+}
+
+static void GetPluginHotKey(Plugin *pPlugin, int ItemNumber, const GUID *Guid, MENUTYPE MenuType, FARString &strHotKey)
+{
+	KeyFileReadSection kfh(PluginsIni(), HotkeysSection);
+	strHotKey = kfh.GetString(GetHotKeySettingName(pPlugin, ItemNumber, Guid, MenuType));
+}
+
 static void FillPluginList(VMenu &PluginList, const std::vector<TmpItemData> &TmpItems, bool HotKeysPresent)
 {
 	for (const auto &tmp: TmpItems)
@@ -1648,25 +1658,6 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 	}
 
 	return TRUE;
-}
-
-std::string PluginManager::GetHotKeySettingName(Plugin *pPlugin, int ItemNumber, const GUID *Guid, MENUTYPE MenuType)
-{
-	if (pPlugin->UseMenuGuids())
-	{
-		const std::string &strGuid = GuidToString(*Guid);
-		std::string out = StrPrintf("%08X:%s#%s", pPlugin->GetSysID(), HotKeyType(MenuType), strGuid.c_str());
-		return out;
-	}
-	std::string out = pPlugin->GetSettingsName();
-	out+= StrPrintf(":%s#%d", HotKeyType(MenuType), ItemNumber);
-	return out;
-}
-
-void PluginManager::GetPluginHotKey(Plugin *pPlugin, int ItemNumber, const GUID *Guid, MENUTYPE MenuType, FARString &strHotKey)
-{
-	KeyFileReadSection kfh(PluginsIni(), HotkeysSection);
-	strHotKey = kfh.GetString(GetHotKeySettingName(pPlugin, ItemNumber, Guid, MenuType));
 }
 
 bool PluginManager::SetHotKeyDialog(
