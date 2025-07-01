@@ -263,8 +263,8 @@ class PluginManager
 		void GetCustomData(FileListItem *ListItem);
 		bool MayExitFar();
 
-		void BackroundTaskStarted(const wchar_t *Info);
-		void BackroundTaskFinished(const wchar_t *Info);
+		void BackgroundTaskStarted(const wchar_t *Info);
+		void BackgroundTaskFinished(const wchar_t *Info);
 		bool HasBackgroundTasks();
 		std::map<std::wstring, unsigned int> BackgroundTasks();
 

@@ -74,8 +74,9 @@ const char *FmtPluginConfigStringD = "PluginConfigString%d";
 const char *FmtDiskMenuGuidD = "DiskMenuGuid%d";
 const char *FmtPluginMenuGuidD = "PluginMenuGuid%d";
 const char *FmtPluginConfigGuidD = "PluginConfigGuid%d";
-const char *SettingsSection = "Settings";
 const wchar_t *PluginsFolderName = L"Plugins";
+
+static const char *HotkeysSection = "Settings"; //don't change (used with both old and new far2m's)
 
 static int _cdecl PluginsSort(const void *el1,const void *el2);
 
@@ -527,7 +528,7 @@ void PluginManager::LoadPluginsFromCache()
 	FARString strModuleName;
 	for (const auto &s : sections)
 	{
-		if (s != SettingsSection)
+		if (s != HotkeysSection)
 		{
 			const std::string &module = kfh.GetString(s, "Module");
 			if (!module.empty()) {
@@ -1664,7 +1665,7 @@ std::string PluginManager::GetHotKeySettingName(Plugin *pPlugin, int ItemNumber,
 
 void PluginManager::GetPluginHotKey(Plugin *pPlugin, int ItemNumber, const GUID *Guid, MENUTYPE MenuType, FARString &strHotKey)
 {
-	KeyFileReadSection kfh(PluginsIni(), SettingsSection);
+	KeyFileReadSection kfh(PluginsIni(), HotkeysSection);
 	strHotKey = kfh.GetString(GetHotKeySettingName(pPlugin, ItemNumber, Guid, MenuType));
 }
 
@@ -1677,15 +1678,15 @@ bool PluginManager::SetHotKeyDialog(
 {
 	const std::string &SettingName = GetHotKeySettingName(pPlugin, ItemNumber, Guid, MenuType);
 	KeyFileHelper kfh(PluginsIni());
-	const auto &Setting = kfh.GetString(SettingsSection, SettingName, L"");
+	const auto &Setting = kfh.GetString(HotkeysSection, SettingName, L"");
 	WCHAR Letter[2] = {Setting.empty() ? 0 : Setting[0], 0};
 	if (!HotkeyLetterDialog(Msg::PluginHotKeyTitle, DlgPluginTitle, Letter[0]))
 		return false;
 
 	if (Letter[0])
-		kfh.SetString(SettingsSection, SettingName, Letter);
+		kfh.SetString(HotkeysSection, SettingName, Letter);
 	else
-		kfh.RemoveKey(SettingsSection, SettingName);
+		kfh.RemoveKey(HotkeysSection, SettingName);
 	return true;
 }
 
@@ -1787,7 +1788,7 @@ void PluginManager::DiscardCache()
 	const std::vector<std::string> &sections = kfh.EnumSections();
 	for (const auto &s : sections)
 	{
-		if (s != SettingsSection)
+		if (s != HotkeysSection)
 			kfh.RemoveSection(s);
 	}
 }
@@ -2330,31 +2331,31 @@ static void OnBackgroundTasksChangedSynched()
 		FrameManager->RefreshFrame();
 }
 
-void PluginManager::BackroundTaskStarted(const wchar_t *Info)
+void PluginManager::BackgroundTaskStarted(const wchar_t *Info)
 {
 	{
 		std::lock_guard<std::mutex> lock(BgTasks);
 		auto ir = BgTasks.emplace(Info, 0);
 		ir.first->second++;
-		fprintf(stderr, "PluginManager::BackroundTaskStarted('%ls') - count=%d\n", Info, ir.first->second);
+		fprintf(stderr, "PluginManager::BackgroundTaskStarted('%ls') - count=%d\n", Info, ir.first->second);
 	}
 
 	InterThreadCallAsync(std::bind(OnBackgroundTasksChangedSynched));
 }
 
-void PluginManager::BackroundTaskFinished(const wchar_t *Info)
+void PluginManager::BackgroundTaskFinished(const wchar_t *Info)
 {
 	{
 		std::lock_guard<std::mutex> lock(BgTasks);
 		auto it = BgTasks.find(Info);
 		if (it == BgTasks.end())
 		{
-			fprintf(stderr, "PluginManager::BackroundTaskFinished('%ls') - no such task!\n", Info);
+			fprintf(stderr, "PluginManager::BackgroundTaskFinished('%ls') - no such task!\n", Info);
 			return;
 		}
 
 		it->second--;
-		fprintf(stderr, "PluginManager::BackroundTaskFinished('%ls') - count=%d\n", Info, it->second);
+		fprintf(stderr, "PluginManager::BackgroundTaskFinished('%ls') - count=%d\n", Info, it->second);
 		if (it->second == 0)
 			BgTasks.erase(it);
 	}

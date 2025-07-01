@@ -358,9 +358,9 @@ static int farDispatchInterThreadCallsA()
 static void WINAPI farBackgroundTaskA(const char *Info, BOOL Started)
 {
 	if (Started)
-		CtrlObject->Plugins.BackroundTaskStarted(MB2Wide(Info).c_str());
+		CtrlObject->Plugins.BackgroundTaskStarted(MB2Wide(Info).c_str());
 	else
-		CtrlObject->Plugins.BackroundTaskFinished(MB2Wide(Info).c_str());
+		CtrlObject->Plugins.BackgroundTaskFinished(MB2Wide(Info).c_str());
 }
 
 static size_t WINAPI farStrCellsCountA(const char *Str, size_t CharsCount)
