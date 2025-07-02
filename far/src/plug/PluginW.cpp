@@ -79,6 +79,7 @@ static const char *szCache_Version = "Version";
 static const char *szCache_Title = "Title";
 static const char *szCache_Description = "Description";
 static const char *szCache_Author = "Author";
+static const char *szCache_UseMenuGuids = "UseMenuGuids";
 
 static const char szCache_OpenPlugin[] = "OpenPluginW";
 static const char szCache_OpenFilePlugin[] = "OpenFilePluginW";
@@ -209,6 +210,7 @@ bool PluginW::LoadFromCache()
 	strTitle = kfh.GetString(szCache_Title);
 	strDescription = kfh.GetString(szCache_Description);
 	strAuthor = kfh.GetString(szCache_Author);
+	m_UseMenuGuids = kfh.GetUInt(szCache_UseMenuGuids, 0) != 0;
 
 	pOpenPluginW = (PLUGINOPENPLUGINW)(INT_PTR)kfh.GetUInt(szCache_OpenPlugin, 0);
 	pOpenFilePluginW = (PLUGINOPENFILEPLUGINW)(INT_PTR)kfh.GetUInt(szCache_OpenFilePlugin, 0);
@@ -315,6 +317,7 @@ bool PluginW::SaveToCache()
 	kfh.SetString(GetSettingsName(), szCache_Title, strTitle);
 	kfh.SetString(GetSettingsName(), szCache_Description, strDescription);
 	kfh.SetString(GetSettingsName(), szCache_Author, strAuthor);
+	kfh.SetUInt(GetSettingsName(),   szCache_UseMenuGuids, m_UseMenuGuids ? 1:0);
 
 	return true;
 }

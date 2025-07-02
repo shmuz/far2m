@@ -2254,12 +2254,10 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 	}
 
 	// restore title for old plugins only.
-#ifndef NO_WRAPPER
 	if (Data->pPlugin->IsOemPlugin() && IsEditor && CurEditor)
 	{
 		CurEditor->SetPluginTitle(nullptr);
 	}
-#endif // NO_WRAPPER
 
 	return Result;
 }
@@ -2503,12 +2501,11 @@ size_t PluginManager::GetPluginInformation(Plugin *pPlugin, FarGetPluginInformat
 	{
 		pInfo->Flags |= FPF_LOADED;
 	}
-#ifndef NO_WRAPPER
+
 	if (pPlugin->IsOemPlugin())
 	{
 		pInfo->Flags |= FPF_ANSI;
 	}
-#endif // NO_WRAPPER
 
 	pInfo->GInfo->StructSize = sizeof(GlobalInfo);
 	pInfo->GInfo->SysID = SysID;
