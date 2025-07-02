@@ -295,23 +295,23 @@ bool PluginW::SaveToCache()
 
 	kfh.SetString(GetSettingsName(), "CommandPrefix", Info.CommandPrefix);
 	kfh.SetUInt(GetSettingsName(), "Flags", Info.Flags);
-
 	kfh.SetUInt(GetSettingsName(), szCache_SysID, SysID);
-	kfh.SetUInt(GetSettingsName(), szCache_OpenPlugin, pOpenPluginW!=nullptr);
-	kfh.SetUInt(GetSettingsName(), szCache_OpenFilePlugin, pOpenFilePluginW!=nullptr);
-	kfh.SetUInt(GetSettingsName(), szCache_SetFindList, pSetFindListW!=nullptr);
-	kfh.SetUInt(GetSettingsName(), szCache_ProcessEditorInput, pProcessEditorInputW!=nullptr);
-	kfh.SetUInt(GetSettingsName(), szCache_ProcessEditorEvent, pProcessEditorEventW!=nullptr);
-	kfh.SetUInt(GetSettingsName(), szCache_ProcessViewerEvent, pProcessViewerEventW!=nullptr);
-	kfh.SetUInt(GetSettingsName(), szCache_ProcessDialogEvent, pProcessDialogEventW!=nullptr);
-	kfh.SetUInt(GetSettingsName(), szCache_ProcessSynchroEvent, pProcessSynchroEventW!=nullptr);
-	kfh.SetUInt(GetSettingsName(), szCache_Configure, pConfigureW!=nullptr);
-	kfh.SetUInt(GetSettingsName(), szCache_ConfigureV3, pConfigureV3W!=nullptr);
-	kfh.SetUInt(GetSettingsName(), szCache_Analyse, pAnalyseW!=nullptr);
-	kfh.SetUInt(GetSettingsName(), szCache_GetCustomData, pGetCustomDataW!=nullptr);
-	kfh.SetUInt(GetSettingsName(), szCache_ProcessConsoleInput, pProcessConsoleInputW!=nullptr);
-	kfh.SetUInt(GetSettingsName(), szCache_GetFiles, pGetFilesW!=nullptr);
-	kfh.SetUInt(GetSettingsName(), szCache_ProcessHostFile, pProcessHostFileW!=nullptr);
+
+	if (pAnalyseW)              kfh.SetUInt(GetSettingsName(), szCache_Analyse, 1);
+	if (pConfigureV3W)          kfh.SetUInt(GetSettingsName(), szCache_ConfigureV3, 1);
+	if (pConfigureW)            kfh.SetUInt(GetSettingsName(), szCache_Configure, 1);
+	if (pGetCustomDataW)        kfh.SetUInt(GetSettingsName(), szCache_GetCustomData, 1);
+	if (pGetFilesW)             kfh.SetUInt(GetSettingsName(), szCache_GetFiles, 1);
+	if (pOpenFilePluginW)       kfh.SetUInt(GetSettingsName(), szCache_OpenFilePlugin, 1);
+	if (pOpenPluginW)           kfh.SetUInt(GetSettingsName(), szCache_OpenPlugin, 1);
+	if (pProcessConsoleInputW)  kfh.SetUInt(GetSettingsName(), szCache_ProcessConsoleInput, 1);
+	if (pProcessDialogEventW)   kfh.SetUInt(GetSettingsName(), szCache_ProcessDialogEvent, 1);
+	if (pProcessEditorEventW)   kfh.SetUInt(GetSettingsName(), szCache_ProcessEditorEvent, 1);
+	if (pProcessEditorInputW)   kfh.SetUInt(GetSettingsName(), szCache_ProcessEditorInput, 1);
+	if (pProcessHostFileW)      kfh.SetUInt(GetSettingsName(), szCache_ProcessHostFile, 1);
+	if (pProcessSynchroEventW)  kfh.SetUInt(GetSettingsName(), szCache_ProcessSynchroEvent, 1);
+	if (pProcessViewerEventW)   kfh.SetUInt(GetSettingsName(), szCache_ProcessViewerEvent, 1);
+	if (pSetFindListW)          kfh.SetUInt(GetSettingsName(), szCache_SetFindList, 1);
 
 	kfh.SetBytes(GetSettingsName(),  szCache_Version, (unsigned char*)&m_PlugVersion, sizeof(m_PlugVersion), 1);
 	kfh.SetString(GetSettingsName(), szCache_Title, strTitle);
