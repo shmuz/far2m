@@ -2513,6 +2513,7 @@ size_t PluginManager::GetPluginInformation(Plugin *pPlugin, FarGetPluginInformat
 	pInfo->GInfo->Title = StrToBuf(pPlugin->strTitle, Buffer, Rest, Size);
 	pInfo->GInfo->Description = StrToBuf(pPlugin->strDescription, Buffer, Rest, Size);
 	pInfo->GInfo->Author = StrToBuf(pPlugin->strAuthor, Buffer, Rest, Size);
+	pInfo->GInfo->UseMenuGuids = pPlugin->UseMenuGuids() ? 1 : 0;
 
 	pInfo->PInfo->StructSize = sizeof(PluginInfo);
 	pInfo->PInfo->Flags = Flags;
