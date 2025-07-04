@@ -173,20 +173,22 @@ bool PluginA::LoadFromCache()
 
 	if (kfh.GetBytes((unsigned char*)&m_PlugVersion, sizeof(m_PlugVersion), szCache_Version) != sizeof(m_PlugVersion))
 		memset(&m_PlugVersion, 0, sizeof(m_PlugVersion));
-	strTitle = kfh.GetString(szCache_Title);
-	strDescription = kfh.GetString(szCache_Description);
-	strAuthor = kfh.GetString(szCache_Author);
 
-	pOpenPlugin = (PLUGINOPENPLUGIN)(INT_PTR)kfh.GetUInt(szCache_OpenPlugin, 0);
-	pOpenFilePlugin = (PLUGINOPENFILEPLUGIN)(INT_PTR)kfh.GetUInt(szCache_OpenFilePlugin, 0);
-	pSetFindList = (PLUGINSETFINDLIST)(INT_PTR)kfh.GetUInt(szCache_SetFindList, 0);
-	pProcessEditorInput = (PLUGINPROCESSEDITORINPUT)(INT_PTR)kfh.GetUInt(szCache_ProcessEditorInput, 0);
-	pProcessEditorEvent = (PLUGINPROCESSEDITOREVENT)(INT_PTR)kfh.GetUInt(szCache_ProcessEditorEvent, 0);
-	pProcessViewerEvent = (PLUGINPROCESSVIEWEREVENT)(INT_PTR)kfh.GetUInt(szCache_ProcessViewerEvent, 0);
-	pProcessDialogEvent = (PLUGINPROCESSDIALOGEVENT)(INT_PTR)kfh.GetUInt(szCache_ProcessDialogEvent, 0);
+	strAuthor = kfh.GetString(szCache_Author);
+	strDescription = kfh.GetString(szCache_Description);
+	strTitle = kfh.GetString(szCache_Title);
+
 	pConfigure = (PLUGINCONFIGURE)(INT_PTR)kfh.GetUInt(szCache_Configure, 0);
 	pGetFiles = (PLUGINGETFILES)(INT_PTR)kfh.GetUInt(szCache_GetFiles, 0);
+	pOpenFilePlugin = (PLUGINOPENFILEPLUGIN)(INT_PTR)kfh.GetUInt(szCache_OpenFilePlugin, 0);
+	pOpenPlugin = (PLUGINOPENPLUGIN)(INT_PTR)kfh.GetUInt(szCache_OpenPlugin, 0);
+	pProcessDialogEvent = (PLUGINPROCESSDIALOGEVENT)(INT_PTR)kfh.GetUInt(szCache_ProcessDialogEvent, 0);
+	pProcessEditorEvent = (PLUGINPROCESSEDITOREVENT)(INT_PTR)kfh.GetUInt(szCache_ProcessEditorEvent, 0);
+	pProcessEditorInput = (PLUGINPROCESSEDITORINPUT)(INT_PTR)kfh.GetUInt(szCache_ProcessEditorInput, 0);
 	pProcessHostFile = (PLUGINPROCESSHOSTFILE)(INT_PTR)kfh.GetUInt(szCache_ProcessHostFile, 0);
+	pProcessViewerEvent = (PLUGINPROCESSVIEWEREVENT)(INT_PTR)kfh.GetUInt(szCache_ProcessViewerEvent, 0);
+	pSetFindList = (PLUGINSETFINDLIST)(INT_PTR)kfh.GetUInt(szCache_SetFindList, 0);
+
 	WorkFlags.Set(PIWF_CACHED); //too much "cached" flags
 
 	if (kfh.GetInt(szCache_Preopen) != 0)

@@ -118,7 +118,7 @@ bool Plugin::GetGlobalInfo()
 				strDescription = gi.Description;
 				strAuthor= gi.Author;
 				m_PlugVersion = gi.Version;
-				m_UseMenuGuids = (gi.UseMenuGuids != 0);
+				bUseMenuGuids = (gi.UseMenuGuids != 0);
 				return true;
 			}
 		}

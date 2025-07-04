@@ -713,16 +713,15 @@ PHPTR PluginManager::OpenFilePlugin(
 	return hResult;
 }
 
-PHPTR PluginManager::OpenFindListPlugin(const PluginPanelItem *PanelItem, int ItemsNumber)
+PHPTR PluginManager::OpenFindListPlugin(const PluginPanelItem *PanelItems, int ItemsNumber)
 {
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	PanelHandle *pResult = nullptr;
 	std::vector<PanelHandle> items;
-	Plugin *pPlugin = nullptr;
 
 	for (int i = 0; i < PluginsCount; i++)
 	{
-		pPlugin = PluginsData[i];
+		Plugin *pPlugin = PluginsData[i];
 
 		if (!pPlugin->HasSetFindList())
 			continue;
@@ -732,86 +731,64 @@ PHPTR PluginManager::OpenFindListPlugin(const PluginPanelItem *PanelItem, int It
 		if (hPlugin != INVALID_HANDLE_VALUE)
 		{
 			items.emplace_back(hPlugin, pPlugin);
+			if (!Opt.PluginConfirm.SetFindList)
+				break;
 		}
-
-		if (!items.empty() && !Opt.PluginConfirm.SetFindList)
-			break;
 	}
 
-	if (!items.empty())
+	if (items.size() > 1)
 	{
-		if (items.size() > 1)
+		VMenu menu(Msg::PluginConfirmationTitle, nullptr, 0, ScrY-4);
+		menu.SetPosition(-1, -1, 0, 0);
+		menu.SetHelp(L"ChoosePluginMenu");
+		menu.SetFlags(VMENU_SHOWAMPERSAND|VMENU_WRAPMODE);
+
+		for (const auto &ph: items)
 		{
-			VMenu menu(Msg::PluginConfirmationTitle, nullptr, 0, ScrY-4);
-			menu.SetPosition(-1, -1, 0, 0);
-			menu.SetHelp(L"ChoosePluginMenu");
-			menu.SetFlags(VMENU_SHOWAMPERSAND|VMENU_WRAPMODE);
 			MenuItemEx mitem;
-
-			for (size_t i = 0; i<items.size(); i++)
-			{
-				PanelHandle *handle = &items[i];
-				mitem.Clear();
-				mitem.strName = PointToName(handle->pPlugin->GetModuleName());
-				menu.AddItem(&mitem);
-			}
-
-			menu.Show();
-
-			while (!menu.Done())
-			{
-				menu.ReadInput();
-				menu.ProcessInput();
-			}
-
-			int ExitCode = menu.GetExitCode();
-
-			if (ExitCode >= 0)
-			{
-				pResult = &items[ExitCode];
-			}
+			mitem.strName = PointToName(ph.pPlugin->GetModuleName());
+			menu.AddItem(&mitem);
 		}
-		else
+
+		menu.Show();
+
+		while (!menu.Done())
 		{
-			pResult = &items.front();
+			menu.ReadInput();
+			menu.ProcessInput();
 		}
+
+		int ExitCode = menu.GetExitCode();
+		if (ExitCode >= 0)
+		{
+			pResult = &items[ExitCode];
+		}
+	}
+	else if (items.size() == 1)
+	{
+		pResult = &items.front();
 	}
 
 	if (pResult)
 	{
-		if (!pResult->pPlugin->SetFindList(pResult->hPanel, PanelItem, ItemsNumber))
-		{
+		if (!pResult->pPlugin->SetFindList(pResult->hPanel, PanelItems, ItemsNumber))
 			pResult = nullptr;
-		}
 	}
 
-	for (size_t i = 0; i<items.size(); i++)
+	for (const auto &ph: items)
 	{
-		PanelHandle *handle = &items[i];
-
-		if (handle!=pResult)
-		{
-			if (handle->hPanel!=INVALID_HANDLE_VALUE)
-				handle->pPlugin->ClosePlugin(handle->hPanel);
-		}
+		if (&ph != pResult && ph.hPanel != INVALID_HANDLE_VALUE)
+			ph.pPlugin->ClosePlugin(ph.hPanel);
 	}
 
-	if (pResult)
-	{
-		pResult = new PanelHandle(pResult->hPanel, pResult->pPlugin);
-	}
-
-	return pResult;
+	return pResult ? new PanelHandle(pResult->hPanel, pResult->pPlugin) : nullptr;
 }
-
 
 void PluginManager::ClosePanel(PHPTR ph)
 {
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
-	const auto RefCnt = ph->RefCnt;
-	assert(RefCnt > 0);
-	ph->RefCnt = RefCnt - 1;
-	if (RefCnt == 1) {
+	assert(ph->RefCnt > 0);
+	if (--ph->RefCnt == 0) {
 		ph->pPlugin->ClosePlugin(ph->hPanel);
 		delete ph;
 	}
@@ -819,9 +796,8 @@ void PluginManager::ClosePanel(PHPTR ph)
 
 void PluginManager::RetainPanel(PHPTR ph)
 {
-	const auto RefCnt = ph->RefCnt;
-	assert(RefCnt > 0);
-	ph->RefCnt = RefCnt + 1;
+	assert(ph->RefCnt > 0);
+	++ph->RefCnt;
 }
 
 FARString PluginManager::GetPluginModuleName(PHPTR ph)
@@ -2579,7 +2555,7 @@ void PluginManager::ShowPluginInfo(Plugin *pPlugin, int nItem, const GUID &Guid)
 	else
 	{
 		Builder.AddText(Msg::MPluginItemNumber);
-		Builder.AddConstEditField(StrPrintf("%d", nItem), Width);
+		Builder.AddConstEditField(FARString().Format(L"%d", nItem), Width);
 	}
 
 	Builder.AddText(Msg::MPluginPrefix);
