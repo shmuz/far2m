@@ -23415,6 +23415,17 @@ upd:"Plugin &item UUID:"
 "&UUID пункту:"
 "&UUID элемент:"
 
+MPluginItemNumber
+"Но&мер пункта:"
+"Item &number:"
+"Číslo po&ložky:"
+"Artikel&nummer:"
+"Te&rmékszám:"
+"&Numer pozycji:"
+"&Número de artículo:"
+"Номер &елемента:"
+"Нумар &элемента:"
+
 MPluginPrefix
 "&Префикс плагина:"
 "Plugin &prefix:"

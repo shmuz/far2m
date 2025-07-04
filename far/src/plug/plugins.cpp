@@ -2576,6 +2576,11 @@ void PluginManager::ShowPluginInfo(Plugin *pPlugin, int nItem, const GUID &Guid)
 		Builder.AddText(Msg::MPluginItemUUID);
 		Builder.AddConstEditField(GuidToString(Guid), Width);
 	}
+	else
+	{
+		Builder.AddText(Msg::MPluginItemNumber);
+		Builder.AddConstEditField(StrPrintf("%d", nItem), Width);
+	}
 
 	Builder.AddText(Msg::MPluginPrefix);
 	Builder.AddConstEditField(strPluginPrefix, Width);
