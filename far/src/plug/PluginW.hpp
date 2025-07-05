@@ -33,81 +33,81 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FARString.hpp"
 
 
+typedef int  (WINAPI *PLUGINANALYSEW)(const AnalyseData *pData);
 typedef void (WINAPI *PLUGINCLOSEPLUGINW)(HANDLE hPlugin);
-typedef int (WINAPI *PLUGINCOMPAREW)(HANDLE hPlugin,const PluginPanelItem *Item1,const PluginPanelItem *Item2,unsigned int Mode);
-typedef int (WINAPI *PLUGINCONFIGUREW)(int ItemNumber);
-typedef int (WINAPI *PLUGINCONFIGUREV3W)(const ConfigureInfo *Info);
-typedef int (WINAPI *PLUGINDELETEFILESW)(HANDLE hPlugin,PluginPanelItem *PanelItem,int ItemsNumber,int OpMode);
-typedef int (WINAPI *PLUGINMAYEXITFARW)();
+typedef int  (WINAPI *PLUGINCOMPAREW)(HANDLE hPlugin,const PluginPanelItem *Item1,const PluginPanelItem *Item2,unsigned int Mode);
+typedef int  (WINAPI *PLUGINCONFIGUREV3W)(const ConfigureInfo *Info);
+typedef int  (WINAPI *PLUGINCONFIGUREW)(int ItemNumber);
+typedef int  (WINAPI *PLUGINDELETEFILESW)(HANDLE hPlugin,PluginPanelItem *PanelItem,int ItemsNumber,int OpMode);
 typedef void (WINAPI *PLUGINEXITFARW)();
+typedef void (WINAPI *PLUGINFREECUSTOMDATAW)(wchar_t *CustomData);
 typedef void (WINAPI *PLUGINFREEFINDDATAW)(HANDLE hPlugin,PluginPanelItem *PanelItem,int ItemsNumber);
 typedef void (WINAPI *PLUGINFREEVIRTUALFINDDATAW)(HANDLE hPlugin,PluginPanelItem *PanelItem,int ItemsNumber);
-typedef int (WINAPI *PLUGINGETFILESW)(HANDLE hPlugin,PluginPanelItem *PanelItem,int ItemsNumber,int Move,const wchar_t **DestPath,int OpMode);
-typedef int (WINAPI *PLUGINGETLINKTARGETW)(HANDLE hPlugin, PluginPanelItem *PanelItem, wchar_t *Target, size_t TargetSize, int OpMode);
-typedef int (WINAPI *PLUGINGETFINDDATAW)(HANDLE hPlugin,PluginPanelItem **pPanelItem,int *pItemsNumber,int OpMode);
-typedef int (WINAPI *PLUGINMINFARVERSIONW)();
+typedef int  (WINAPI *PLUGINGETCUSTOMDATAW)(const wchar_t *FilePath, wchar_t **CustomData);
+typedef int  (WINAPI *PLUGINGETFILESW)(HANDLE hPlugin,PluginPanelItem *PanelItem,int ItemsNumber,int Move,const wchar_t **DestPath,int OpMode);
+typedef int  (WINAPI *PLUGINGETFINDDATAW)(HANDLE hPlugin,PluginPanelItem **pPanelItem,int *pItemsNumber,int OpMode);
+typedef int  (WINAPI *PLUGINGETLINKTARGETW)(HANDLE hPlugin, PluginPanelItem *PanelItem, wchar_t *Target, size_t TargetSize, int OpMode);
 typedef void (WINAPI *PLUGINGETOPENPLUGININFOW)(HANDLE hPlugin,OpenPluginInfo *Info);
 typedef void (WINAPI *PLUGINGETPLUGININFOW)(PluginInfo *Info);
-typedef int (WINAPI *PLUGINGETVIRTUALFINDDATAW)(HANDLE hPlugin,PluginPanelItem **pPanelItem,int *pItemsNumber,const wchar_t *Path);
-typedef int (WINAPI *PLUGINMAKEDIRECTORYW)(HANDLE hPlugin,const wchar_t **Name,int OpMode);
-typedef HANDLE(WINAPI *PLUGINOPENFILEPLUGINW)(const wchar_t *Name,const unsigned char *Data,int DataSize,int OpMode);
-typedef HANDLE(WINAPI *PLUGINOPENPLUGINW)(int OpenFrom,INT_PTR Item);
-typedef int (WINAPI *PLUGINPROCESSEDITOREVENTW)(int Event,void *Param);
-typedef int (WINAPI *PLUGINPROCESSEDITORINPUTW)(const INPUT_RECORD *Rec);
-typedef int (WINAPI *PLUGINPROCESSEVENTW)(HANDLE hPlugin,int Event,void *Param);
-typedef int (WINAPI *PLUGINPROCESSHOSTFILEW)(HANDLE hPlugin,PluginPanelItem *PanelItem,int ItemsNumber,int OpMode);
-typedef int (WINAPI *PLUGINPROCESSKEYW)(HANDLE hPlugin,int Key,unsigned int ControlState);
-typedef int (WINAPI *PLUGINPUTFILESW)(HANDLE hPlugin,PluginPanelItem *PanelItem,int ItemsNumber,int Move,const wchar_t *SrcPath,int OpMode);
-typedef int (WINAPI *PLUGINSETDIRECTORYW)(HANDLE hPlugin,const wchar_t *Dir,int OpMode);
-typedef int (WINAPI *PLUGINSETFINDLISTW)(HANDLE hPlugin,const PluginPanelItem *PanelItem,int ItemsNumber);
+typedef int  (WINAPI *PLUGINGETVIRTUALFINDDATAW)(HANDLE hPlugin,PluginPanelItem **pPanelItem,int *pItemsNumber,const wchar_t *Path);
+typedef int  (WINAPI *PLUGINMAKEDIRECTORYW)(HANDLE hPlugin,const wchar_t **Name,int OpMode);
+typedef int  (WINAPI *PLUGINMAYEXITFARW)();
+typedef int  (WINAPI *PLUGINMINFARVERSIONW)();
+typedef HANDLE (WINAPI *PLUGINOPENFILEPLUGINW)(const wchar_t *Name,const unsigned char *Data,int DataSize,int OpMode);
+typedef HANDLE (WINAPI *PLUGINOPENPLUGINW)(int OpenFrom,INT_PTR Item);
+typedef int  (WINAPI *PLUGINPROCESSCONSOLEINPUTW)(INPUT_RECORD *Rec);
+typedef int  (WINAPI *PLUGINPROCESSDIALOGEVENTW)(int Event,void *Param);
+typedef int  (WINAPI *PLUGINPROCESSEDITOREVENTW)(int Event,void *Param);
+typedef int  (WINAPI *PLUGINPROCESSEDITORINPUTW)(const INPUT_RECORD *Rec);
+typedef int  (WINAPI *PLUGINPROCESSEVENTW)(HANDLE hPlugin,int Event,void *Param);
+typedef int  (WINAPI *PLUGINPROCESSHOSTFILEW)(HANDLE hPlugin,PluginPanelItem *PanelItem,int ItemsNumber,int OpMode);
+typedef int  (WINAPI *PLUGINPROCESSKEYW)(HANDLE hPlugin,int Key,unsigned int ControlState);
+typedef int  (WINAPI *PLUGINPROCESSSYNCHROEVENTW)(int Event,void *Param);
+typedef int  (WINAPI *PLUGINPROCESSVIEWEREVENTW)(int Event,void *Param); //* $ 27.09.2000 SVS -  События во вьювере
+typedef int  (WINAPI *PLUGINPUTFILESW)(HANDLE hPlugin,PluginPanelItem *PanelItem,int ItemsNumber,int Move,const wchar_t *SrcPath,int OpMode);
+typedef int  (WINAPI *PLUGINSETDIRECTORYW)(HANDLE hPlugin,const wchar_t *Dir,int OpMode);
+typedef int  (WINAPI *PLUGINSETFINDLISTW)(HANDLE hPlugin,const PluginPanelItem *PanelItem,int ItemsNumber);
 typedef void (WINAPI *PLUGINSETSTARTUPINFOW)(const PluginStartupInfo *Info);
-typedef int (WINAPI *PLUGINPROCESSVIEWEREVENTW)(int Event,void *Param); //* $ 27.09.2000 SVS -  События во вьювере
-typedef int (WINAPI *PLUGINPROCESSDIALOGEVENTW)(int Event,void *Param);
-typedef int (WINAPI *PLUGINPROCESSSYNCHROEVENTW)(int Event,void *Param);
-typedef int (WINAPI *PLUGINANALYSEW)(const AnalyseData *pData);
-typedef int (WINAPI *PLUGINGETCUSTOMDATAW)(const wchar_t *FilePath, wchar_t **CustomData);
-typedef void (WINAPI *PLUGINFREECUSTOMDATAW)(wchar_t *CustomData);
-typedef int (WINAPI *PLUGINPROCESSCONSOLEINPUTW)(INPUT_RECORD *Rec);
 
 
 class PluginW: public Plugin
 {
 	private:
-		PLUGINSETSTARTUPINFOW        pSetStartupInfoW;
-		PLUGINOPENPLUGINW            pOpenPluginW;
-		PLUGINOPENFILEPLUGINW        pOpenFilePluginW;
-		PLUGINCLOSEPLUGINW           pClosePluginW;
-		PLUGINGETPLUGININFOW         pGetPluginInfoW;
-		PLUGINGETOPENPLUGININFOW     pGetOpenPluginInfoW;
-		PLUGINGETFINDDATAW           pGetFindDataW;
-		PLUGINFREEFINDDATAW          pFreeFindDataW;
-		PLUGINGETVIRTUALFINDDATAW    pGetVirtualFindDataW;
-		PLUGINFREEVIRTUALFINDDATAW   pFreeVirtualFindDataW;
-		PLUGINSETDIRECTORYW          pSetDirectoryW;
-		PLUGINGETLINKTARGETW         pGetLinkTargetW;
-		PLUGINGETFILESW              pGetFilesW;
-		PLUGINPUTFILESW              pPutFilesW;
-		PLUGINDELETEFILESW           pDeleteFilesW;
-		PLUGINMAKEDIRECTORYW         pMakeDirectoryW;
-		PLUGINPROCESSHOSTFILEW       pProcessHostFileW;
-		PLUGINSETFINDLISTW           pSetFindListW;
-		PLUGINCONFIGUREW             pConfigureW;
-		PLUGINCONFIGUREV3W           pConfigureV3W;
-		PLUGINMAYEXITFARW            pMayExitFARW;
-		PLUGINEXITFARW               pExitFARW;
-		PLUGINPROCESSKEYW            pProcessKeyW;
-		PLUGINPROCESSEVENTW          pProcessEventW;
-		PLUGINPROCESSEDITOREVENTW    pProcessEditorEventW;
-		PLUGINCOMPAREW               pCompareW;
-		PLUGINPROCESSEDITORINPUTW    pProcessEditorInputW;
-		PLUGINMINFARVERSIONW         pMinFarVersionW;
-		PLUGINPROCESSVIEWEREVENTW    pProcessViewerEventW;
-		PLUGINPROCESSDIALOGEVENTW    pProcessDialogEventW;
-		PLUGINPROCESSSYNCHROEVENTW   pProcessSynchroEventW;
 		PLUGINANALYSEW               pAnalyseW;
-		PLUGINGETCUSTOMDATAW         pGetCustomDataW;
+		PLUGINCLOSEPLUGINW           pClosePluginW;
+		PLUGINCOMPAREW               pCompareW;
+		PLUGINCONFIGUREV3W           pConfigureV3W;
+		PLUGINCONFIGUREW             pConfigureW;
+		PLUGINDELETEFILESW           pDeleteFilesW;
+		PLUGINEXITFARW               pExitFARW;
 		PLUGINFREECUSTOMDATAW        pFreeCustomDataW;
+		PLUGINFREEFINDDATAW          pFreeFindDataW;
+		PLUGINFREEVIRTUALFINDDATAW   pFreeVirtualFindDataW;
+		PLUGINGETCUSTOMDATAW         pGetCustomDataW;
+		PLUGINGETFILESW              pGetFilesW;
+		PLUGINGETFINDDATAW           pGetFindDataW;
+		PLUGINGETLINKTARGETW         pGetLinkTargetW;
+		PLUGINGETOPENPLUGININFOW     pGetOpenPluginInfoW;
+		PLUGINGETPLUGININFOW         pGetPluginInfoW;
+		PLUGINGETVIRTUALFINDDATAW    pGetVirtualFindDataW;
+		PLUGINMAKEDIRECTORYW         pMakeDirectoryW;
+		PLUGINMAYEXITFARW            pMayExitFARW;
+		PLUGINMINFARVERSIONW         pMinFarVersionW;
+		PLUGINOPENFILEPLUGINW        pOpenFilePluginW;
+		PLUGINOPENPLUGINW            pOpenPluginW;
 		PLUGINPROCESSCONSOLEINPUTW   pProcessConsoleInputW;
+		PLUGINPROCESSDIALOGEVENTW    pProcessDialogEventW;
+		PLUGINPROCESSEDITOREVENTW    pProcessEditorEventW;
+		PLUGINPROCESSEDITORINPUTW    pProcessEditorInputW;
+		PLUGINPROCESSEVENTW          pProcessEventW;
+		PLUGINPROCESSHOSTFILEW       pProcessHostFileW;
+		PLUGINPROCESSKEYW            pProcessKeyW;
+		PLUGINPROCESSSYNCHROEVENTW   pProcessSynchroEventW;
+		PLUGINPROCESSVIEWEREVENTW    pProcessViewerEventW;
+		PLUGINPUTFILESW              pPutFilesW;
+		PLUGINSETDIRECTORYW          pSetDirectoryW;
+		PLUGINSETFINDLISTW           pSetFindListW;
+		PLUGINSETSTARTUPINFOW        pSetStartupInfoW;
 
 	public:
 
@@ -128,41 +128,42 @@ class PluginW: public Plugin
 
 		bool IsPanelPlugin();
 
-		bool HasOpenPlugin() { return pOpenPluginW!=nullptr; }
-		bool HasMakeDirectory() { return pMakeDirectoryW!=nullptr; }
-		bool HasDeleteFiles() { return pDeleteFilesW!=nullptr; }
-		bool HasGetLinkTarget() { return pGetLinkTargetW != nullptr; }
-		bool HasPutFiles() { return pPutFilesW!=nullptr; }
-		bool HasGetFiles() { return pGetFilesW!=nullptr; }
-		bool HasSetStartupInfo() { return pSetStartupInfoW!=nullptr; }
-		bool HasOpenFilePlugin() { return pOpenFilePluginW!=nullptr; }
+		bool HasAnalyse() { return pAnalyseW!=nullptr; }
 		bool HasClosePlugin() { return pClosePluginW!=nullptr; }
-		bool HasGetPluginInfo() { return pGetPluginInfoW!=nullptr; }
-		bool HasGetOpenPluginInfo() { return pGetOpenPluginInfoW!=nullptr; }
-		bool HasGetFindData() { return pGetFindDataW!=nullptr; }
-		bool HasFreeFindData() { return pFreeFindDataW!=nullptr; }
-		bool HasGetVirtualFindData() { return pGetVirtualFindDataW!=nullptr; }
-		bool HasFreeVirtualFindData() { return pFreeVirtualFindDataW!=nullptr; }
-		bool HasSetDirectory() { return pSetDirectoryW!=nullptr; }
-		bool HasProcessHostFile() { return pProcessHostFileW!=nullptr; }
-		bool HasSetFindList() { return pSetFindListW!=nullptr; }
+		bool HasCompare() { return pCompareW!=nullptr; }
 		bool HasConfigure() { return pConfigureW!=nullptr; }
 		bool HasConfigureV3() { return pConfigureV3W!=nullptr; }
-		bool HasMayExitFAR() { return pMayExitFARW!=nullptr; }
+		bool HasDeleteFiles() { return pDeleteFilesW!=nullptr; }
 		bool HasExitFAR() { return pExitFARW!=nullptr; }
-		bool HasProcessKey() { return pProcessKeyW!=nullptr; }
-		bool HasProcessEvent() { return pProcessEventW!=nullptr; }
-		bool HasProcessEditorEvent() { return pProcessEditorEventW!=nullptr; }
-		bool HasCompare() { return pCompareW!=nullptr; }
-		bool HasProcessEditorInput() { return pProcessEditorInputW!=nullptr; }
-		bool HasMinFarVersion() { return pMinFarVersionW!=nullptr; }
-		bool HasProcessViewerEvent() { return pProcessViewerEventW!=nullptr; }
-		bool HasProcessDialogEvent() { return pProcessDialogEventW!=nullptr; }
-		bool HasProcessSynchroEvent() { return pProcessSynchroEventW!=nullptr; }
-		bool HasAnalyse() { return pAnalyseW!=nullptr; }
-		bool HasGetCustomData()  { return pGetCustomDataW!=nullptr; }
 		bool HasFreeCustomData() { return pFreeCustomDataW!=nullptr; }
+		bool HasFreeFindData() { return pFreeFindDataW!=nullptr; }
+		bool HasFreeVirtualFindData() { return pFreeVirtualFindDataW!=nullptr; }
+		bool HasGetCustomData()  { return pGetCustomDataW!=nullptr; }
+		bool HasGetFiles() { return pGetFilesW!=nullptr; }
+		bool HasGetFindData() { return pGetFindDataW!=nullptr; }
+		bool HasGetLinkTarget() { return pGetLinkTargetW != nullptr; }
+		bool HasGetOpenPluginInfo() { return pGetOpenPluginInfoW!=nullptr; }
+		bool HasGetPluginInfo() { return pGetPluginInfoW!=nullptr; }
+		bool HasGetVirtualFindData() { return pGetVirtualFindDataW!=nullptr; }
+		bool HasMakeDirectory() { return pMakeDirectoryW!=nullptr; }
+		bool HasMayExitFAR() { return pMayExitFARW!=nullptr; }
+		bool HasMinFarVersion() { return pMinFarVersionW!=nullptr; }
+		bool HasOpenFilePlugin() { return pOpenFilePluginW!=nullptr; }
+		bool HasOpenPlugin() { return pOpenPluginW!=nullptr; }
 		bool HasProcessConsoleInput() { return pProcessConsoleInputW!=nullptr; }
+		bool HasProcessDialogEvent() { return pProcessDialogEventW!=nullptr; }
+		bool HasProcessEditorEvent() { return pProcessEditorEventW!=nullptr; }
+		bool HasProcessEditorInput() { return pProcessEditorInputW!=nullptr; }
+		bool HasProcessEvent() { return pProcessEventW!=nullptr; }
+		bool HasProcessHostFile() { return pProcessHostFileW!=nullptr; }
+		bool HasProcessKey() { return pProcessKeyW!=nullptr; }
+		bool HasProcessSynchroEvent() { return pProcessSynchroEventW!=nullptr; }
+		bool HasProcessViewerEvent() { return pProcessViewerEventW!=nullptr; }
+		bool HasPutFiles() { return pPutFilesW!=nullptr; }
+		bool HasSetDirectory() { return pSetDirectoryW!=nullptr; }
+		bool HasSetFindList() { return pSetFindListW!=nullptr; }
+		bool HasSetStartupInfo() { return pSetStartupInfoW!=nullptr; }
+
 		const FARString &GetModuleName() { return m_strModuleName; }
 		const char *GetSettingsName() { return m_strSettingsName.c_str(); }
 		bool CheckWorkFlags(DWORD flags) { return WorkFlags.Check(flags)==TRUE; }
