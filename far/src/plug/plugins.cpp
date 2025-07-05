@@ -1189,7 +1189,7 @@ struct TmpItemData
 {
 	PluginMenuItemData Item;
 	FARString Name;
-	TmpItemData(PluginMenuItemData &aItem, const FARString &aName) : Item(aItem), Name(aName) {}
+	TmpItemData(const PluginMenuItemData &aItem, const FARString &aName) : Item(aItem), Name(aName) {}
 };
 
 static std::string GetHotKeySettingName(Plugin *pPlugin, int ItemNumber, const GUID *Guid, MENUTYPE MenuType)
@@ -1646,7 +1646,7 @@ bool PluginManager::SetHotKeyDialog(
 	const std::string &SettingName = GetHotKeySettingName(pPlugin, ItemNumber, Guid, MenuType);
 	KeyFileHelper kfh(PluginsIni());
 	const auto &Setting = kfh.GetString(HotkeysSection, SettingName, L"");
-	WCHAR Letter[2] = {Setting.empty() ? 0 : Setting[0], 0};
+	wchar_t Letter[2] = {Setting.empty() ? 0 : Setting[0], 0};
 	if (!HotkeyLetterDialog(Msg::PluginHotKeyTitle, DlgPluginTitle, Letter[0]))
 		return false;
 
@@ -1731,12 +1731,9 @@ int PluginManager::UseFarCommand(PHPTR ph,int CommandType)
 
 void PluginManager::ReloadLanguage()
 {
-	Plugin *PData;
-
 	for (int I = 0; I<PluginsCount; I++)
 	{
-		PData = PluginsData[I];
-		PData->CloseLang();
+		PluginsData[I]->CloseLang();
 	}
 
 	DiscardCache();
@@ -1747,8 +1744,7 @@ void PluginManager::DiscardCache()
 {
 	for (int I = 0; I<PluginsCount; I++)
 	{
-		Plugin *pPlugin = PluginsData[I];
-		pPlugin->Load();
+		PluginsData[I]->Load();
 	}
 
 	KeyFileHelper kfh(PluginsIni());
@@ -1774,18 +1770,16 @@ void PluginManager::LoadIfCacheAbsent()
 	}
 }
 
-//template parameters must have external linkage
-struct PluginData
+int PluginManager::ProcessCommandLine(const wchar_t *CommandParam, Panel *Target)
 {
-	Plugin *pPlugin;
-	DWORD PluginFlags;
+	struct PluginData
+	{
+		Plugin *pPlugin;
+		DWORD Flags;
 
-	PluginData() : pPlugin(nullptr), PluginFlags(0) {}
-	PluginData(Plugin *plugin, DWORD flags) : pPlugin(plugin), PluginFlags(flags) {}
-};
+		PluginData(Plugin *aPlugin, DWORD aFlags) : pPlugin(aPlugin), Flags(aFlags) {}
+	};
 
-int PluginManager::ProcessCommandLine(const wchar_t *CommandParam,Panel *Target)
-{
 	size_t PrefixLength = 0;
 	FARString strCommand = CommandParam;
 	UnquoteExternal(strCommand);
@@ -1811,11 +1805,12 @@ int PluginManager::ProcessCommandLine(const wchar_t *CommandParam,Panel *Target)
 
 	for (int I = 0; I<PluginsCount; I++)
 	{
+		Plugin *pPlugin = PluginsData[I];
 		int PluginFlags = 0;
 
-		if (PluginsData[I]->CheckWorkFlags(PIWF_CACHED))
+		if (pPlugin->CheckWorkFlags(PIWF_CACHED))
 		{
-			KeyFileReadSection kfh(PluginsIni(), PluginsData[I]->GetSettingsName());
+			KeyFileReadSection kfh(PluginsIni(), pPlugin->GetSettingsName());
 			strPluginPrefix = kfh.GetString("CommandPrefix", "");
 			PluginFlags = kfh.GetUInt("Flags", 0);
 		}
@@ -1823,7 +1818,7 @@ int PluginManager::ProcessCommandLine(const wchar_t *CommandParam,Panel *Target)
 		{
 			PluginInfo Info;
 
-			if (PluginsData[I]->GetPluginInfo(&Info))
+			if (pPlugin->GetPluginInfo(&Info))
 			{
 				strPluginPrefix = Info.CommandPrefix;
 				PluginFlags = Info.Flags;
@@ -1841,15 +1836,15 @@ int PluginManager::ProcessCommandLine(const wchar_t *CommandParam,Panel *Target)
 		for (;;)
 		{
 			const wchar_t *PrEnd = wcschr(PrStart, L':');
-			size_t Len = PrEnd ? (PrEnd-PrStart):StrLength(PrStart);
+			size_t Len = PrEnd ? (PrEnd - PrStart) : StrLength(PrStart);
 
-			if (Len<PrefixLength)Len = PrefixLength;
+			if (Len < PrefixLength) Len = PrefixLength;
 
 			if (!StrCmpNI(strPrefix, PrStart, (int)Len))
 			{
-				if (PluginsData[I]->Load() && PluginsData[I]->HasOpenPlugin())
+				if (pPlugin->Load() && pPlugin->HasOpenPlugin())
 				{
-					items.emplace_back(PluginsData[I], PluginFlags);
+					items.emplace_back(pPlugin, PluginFlags);
 					break;
 				}
 			}
@@ -1868,7 +1863,7 @@ int PluginManager::ProcessCommandLine(const wchar_t *CommandParam,Panel *Target)
 		return FALSE;
 
 	Panel *ActivePanel = CtrlObject->Cp()->ActivePanel;
-	Panel *CurPanel=(Target)?Target:ActivePanel;
+	Panel *CurPanel = Target ? Target : ActivePanel;
 
 	if (CurPanel->ProcessPluginEvent(FE_CLOSE,nullptr))
 		return FALSE;
@@ -1913,7 +1908,7 @@ int PluginManager::ProcessCommandLine(const wchar_t *CommandParam,Panel *Target)
 	if (PData)
 	{
 		CtrlObject->CmdLine->SetString(L"");
-		FARString strPluginCommand = strCommand.CPtr()+(PData->PluginFlags & PF_FULLCMDLINE ? 0:PrefixLength+1);
+		FARString strPluginCommand = strCommand.CPtr() + (PData->Flags & PF_FULLCMDLINE ? 0:PrefixLength+1);
 		RemoveTrailingSpaces(strPluginCommand);
 		PHPTR hPlugin = OpenPlugin(PData->pPlugin,OPEN_COMMANDLINE,(INT_PTR)strPluginCommand.CPtr()); //BUGBUG
 

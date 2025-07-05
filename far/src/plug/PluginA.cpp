@@ -1345,6 +1345,7 @@ void PluginA::ClearExports()
 	pFreeVirtualFindData = nullptr;
 	pGetFiles = nullptr;
 	pGetFindData = nullptr;
+	pGetGlobalInfoW = nullptr;
 	pGetOpenPluginInfo = nullptr;
 	pGetPluginInfo = nullptr;
 	pGetVirtualFindData = nullptr;
