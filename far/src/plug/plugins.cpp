@@ -2346,34 +2346,49 @@ static void ReadCache(KeyFileReadSection& kfh, const char *Fmt, std::vector<FARS
 	}
 }
 
-static char* BufReserve(char*& Buf, size_t Count, size_t& Rest, size_t& Size)
+class Sizer {
+private:
+	char  *mBuf;
+	size_t mRest;
+	size_t mSize;
+
+public:
+	Sizer(char *aBuf, size_t aRest, size_t aSize) : mBuf(aBuf), mRest(aRest), mSize(aSize) {}
+
+public:
+	char* BufReserve(size_t Count);
+	wchar_t* StrToBuf(const FARString& Str);
+	void ItemsToBuf(const wchar_t* const* &Strings, int& Count, const std::vector<FARString>& NamesArray);
+	size_t GetSize() const { return mSize; }
+};
+
+char* Sizer::BufReserve(size_t Count)
 {
 	char* Res = nullptr;
 
-	if (Buf)
+	if (mBuf)
 	{
-		if (Rest >= Count)
+		if (mRest >= Count)
 		{
-			Res = Buf;
-			Buf += Count;
-			Rest -= Count;
+			Res = mBuf;
+			mBuf += Count;
+			mRest -= Count;
 		}
 		else
 		{
-			Buf += Rest;
-			Rest = 0;
+			mBuf += mRest;
+			mRest = 0;
 		}
 	}
 
-	Size += Count;
+	mSize += Count;
 	return Res;
 }
 
-
-static wchar_t* StrToBuf(const FARString& Str, char*& Buf, size_t& Rest, size_t& Size)
+wchar_t* Sizer::StrToBuf(const FARString& Str)
 {
 	const auto Count = (Str.GetLength() + 1) * sizeof(wchar_t);
-	const auto Res = reinterpret_cast<wchar_t*>(BufReserve(Buf, Count, Rest, Size));
+	const auto Res = reinterpret_cast<wchar_t*> (BufReserve(Count));
 	if (Res)
 	{
 		wcscpy(Res, Str.CPtr());
@@ -2381,20 +2396,19 @@ static wchar_t* StrToBuf(const FARString& Str, char*& Buf, size_t& Rest, size_t&
 	return Res;
 }
 
-static void ItemsToBuf(const wchar_t* const* &Strings, int& Count,
-	const std::vector<FARString>& NamesArray, char*& Buf, size_t& Rest, size_t& Size)
+void Sizer::ItemsToBuf(const wchar_t* const* &Strings, int& Count, const std::vector<FARString>& NamesArray)
 {
 	Count = NamesArray.size();
 	Strings = nullptr;
 
 	if (Count)
 	{
-		const auto Items = reinterpret_cast<wchar_t**>(BufReserve(Buf, Count * sizeof(wchar_t*), Rest, Size));
+		const auto Items = reinterpret_cast<wchar_t**>(BufReserve(Count * sizeof(wchar_t*)));
 		Strings = Items;
 
 		for (int i = 0; i < Count; ++i)
 		{
-			wchar_t* pStr = StrToBuf(NamesArray[i], Buf, Rest, Size);
+			wchar_t* pStr = StrToBuf(NamesArray[i]);
 			if (Items)
 			{
 				Items[i] = pStr;
@@ -2448,23 +2462,25 @@ size_t PluginManager::GetPluginInformation(Plugin *pPlugin, FarGetPluginInformat
 		PluginInfo PInfo;
 		GlobalInfo GInfo;
 	} Temp;
-	char* Buffer = nullptr;
-	size_t Rest = 0;
-	size_t Size = sizeof(Temp);
 
-	if (pInfo && BufferSize >= Size)
+	char  *x_Buffer = nullptr;
+	size_t x_Rest = 0;
+	size_t x_Size = sizeof(Temp);
+
+	if (pInfo && BufferSize >= x_Size)
 	{
-		Rest = BufferSize - Size;
-		Buffer = reinterpret_cast<char*>(pInfo) + Size;
+		x_Rest = BufferSize - x_Size;
+		x_Buffer = reinterpret_cast<char*>(pInfo) + x_Size;
 	}
 	else
 	{
 		pInfo = &Temp.fgpi;
 	}
+	Sizer sizer(x_Buffer, x_Rest, x_Size);
 
 	pInfo->PInfo = reinterpret_cast<PluginInfo*>(pInfo+1);
 	pInfo->GInfo = reinterpret_cast<GlobalInfo*>(pInfo->PInfo+1);
-	pInfo->ModuleName = StrToBuf(pPlugin->GetModuleName(), Buffer, Rest, Size);
+	pInfo->ModuleName = sizer.StrToBuf(pPlugin->GetModuleName());
 
 	pInfo->Flags = 0;
 
@@ -2481,21 +2497,21 @@ size_t PluginManager::GetPluginInformation(Plugin *pPlugin, FarGetPluginInformat
 	pInfo->GInfo->StructSize = sizeof(GlobalInfo);
 	pInfo->GInfo->SysID = SysID;
 	pInfo->GInfo->Version = pPlugin->m_PlugVersion;
-	pInfo->GInfo->Title = StrToBuf(pPlugin->strTitle, Buffer, Rest, Size);
-	pInfo->GInfo->Description = StrToBuf(pPlugin->strDescription, Buffer, Rest, Size);
-	pInfo->GInfo->Author = StrToBuf(pPlugin->strAuthor, Buffer, Rest, Size);
+	pInfo->GInfo->Title = sizer.StrToBuf(pPlugin->strTitle);
+	pInfo->GInfo->Description = sizer.StrToBuf(pPlugin->strDescription);
+	pInfo->GInfo->Author = sizer.StrToBuf(pPlugin->strAuthor);
 	pInfo->GInfo->UseMenuGuids = pPlugin->UseMenuGuids() ? 1 : 0;
 
 	pInfo->PInfo->StructSize = sizeof(PluginInfo);
 	pInfo->PInfo->Flags = Flags;
 	pInfo->PInfo->SysID = SysID;
-	pInfo->PInfo->CommandPrefix = StrToBuf(Prefix, Buffer, Rest, Size);
+	pInfo->PInfo->CommandPrefix = sizer.StrToBuf(Prefix);
 
-	ItemsToBuf(pInfo->PInfo->PluginMenuStrings, pInfo->PInfo->PluginMenuStringsNumber, MenuItems, Buffer, Rest, Size);
-	ItemsToBuf(pInfo->PInfo->DiskMenuStrings, pInfo->PInfo->DiskMenuStringsNumber, DiskItems, Buffer, Rest, Size);
-	ItemsToBuf(pInfo->PInfo->PluginConfigStrings, pInfo->PInfo->PluginConfigStringsNumber, ConfItems, Buffer, Rest, Size);
+	sizer.ItemsToBuf(pInfo->PInfo->PluginMenuStrings, pInfo->PInfo->PluginMenuStringsNumber, MenuItems);
+	sizer.ItemsToBuf(pInfo->PInfo->DiskMenuStrings, pInfo->PInfo->DiskMenuStringsNumber, DiskItems);
+	sizer.ItemsToBuf(pInfo->PInfo->PluginConfigStrings, pInfo->PInfo->PluginConfigStringsNumber, ConfItems);
 
-	return Size;
+	return sizer.GetSize();
 }
 
 void PluginManager::ShowPluginInfo(Plugin *pPlugin, int nItem, const GUID &Guid)
