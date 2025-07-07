@@ -1901,27 +1901,34 @@ void PluginManager::ReadUserBackground(SaveScreen *SaveScr)
 }
 
 
+bool PluginManager::CallMacroPlugin(OpenMacroPluginInfo *Info)
+{
+#ifdef USELUA
+	Plugin *pPlugin = FindPlugin(SYSID_LUAMACRO);
+	return pPlugin && pPlugin->HasOpenPlugin() && pPlugin->OpenPlugin(OPEN_LUAMACRO, (INT_PTR)Info);
+#else
+	return false;
+#endif
+}
+
 /* $ 27.09.2000 SVS
   Функция CallPlugin - найти плагин по ID и запустить
   в зачаточном состоянии!
 */
-int PluginManager::CallPlugin(DWORD SysID, int OpenFrom, void *Data, void **Ret)
+bool PluginManager::CallPlugin(DWORD SysID, int OpenFrom, void *Data, void **Ret)
 {
 	Plugin *pPlugin = FindPlugin(SysID);
 	if ( !(pPlugin && pPlugin->HasOpenPlugin()) )
-		return FALSE;
+		return false;
 
 	if (Ret)
 		*Ret = nullptr;
 
-	if (OpenFrom == OPEN_LUAMACRO)
-		return pPlugin->OpenPlugin(OpenFrom, (INT_PTR)Data) != nullptr;
-
 	PHPTR PluginPanel = OpenPlugin(pPlugin,OpenFrom,(INT_PTR)Data);
 	if (!PluginPanel)
-		return TRUE;
+		return true;
 
-	bool process = false;
+	bool CreatingPanel = false;
 
 	if (OpenFrom == OPEN_FROMMACRO)
 	{
@@ -1930,31 +1937,32 @@ int PluginManager::CallPlugin(DWORD SysID, int OpenFrom, void *Data, void **Ret)
 			FarMacroCall *fmc = reinterpret_cast<FarMacroCall*>(PluginPanel->hPanel);
 			if (fmc->Count > 0 && fmc->Values[0].Type == FMVT_PANEL)
 			{
-				process = true;
+				CreatingPanel = true;
 				PluginPanel->hPanel = fmc->Values[0].Pointer;
 				if (fmc->Callback)
 					fmc->Callback(fmc->CallbackData, fmc->Values, fmc->Count);
 			}
 		}
 
-		if (!process)
+		if (!CreatingPanel)
 		{
 			if (Ret)
 				*Ret = PluginPanel->hPanel;
 			delete PluginPanel;
-			return TRUE;
+			return true;
 		}
 	}
 	else
 	{
-		process = OpenFrom == OPEN_PLUGINSMENU || OpenFrom == OPEN_FILEPANEL;
+		CreatingPanel = OpenFrom == OPEN_PLUGINSMENU || OpenFrom == OPEN_FILEPANEL;
 	}
 
-	if (process)
+	if (CreatingPanel)
 	{
 		int CurFocus = CtrlObject->Cp()->ActivePanel->GetFocus();
 		Panel *NewPanel = CtrlObject->Cp()->ChangePanel(CtrlObject->Cp()->ActivePanel,FILE_PANEL,TRUE,TRUE);
-		NewPanel->SetPluginMode(PluginPanel,L"",CurFocus || !CtrlObject->Cp()->GetAnotherPanel(NewPanel)->IsVisible());
+		bool SendOnFocus = CurFocus || !CtrlObject->Cp()->GetAnotherPanel(NewPanel)->IsVisible();
+		NewPanel->SetPluginMode(PluginPanel, L"", SendOnFocus);
 
 		if (OpenFrom != OPEN_FROMMACRO)
 		{
@@ -1968,10 +1976,10 @@ int PluginManager::CallPlugin(DWORD SysID, int OpenFrom, void *Data, void **Ret)
 		}
 	}
 
-	if (Ret && (OpenFrom == OPEN_FROMMACRO) && process)
+	if (Ret && (OpenFrom == OPEN_FROMMACRO) && CreatingPanel)
 		*Ret = reinterpret_cast<void*>(1);
 
-	return TRUE;
+	return true;
 }
 
 // поддержка макрофункций Plugin.Menu, Plugin.Command, Plugin.Config

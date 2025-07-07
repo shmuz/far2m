@@ -155,7 +155,7 @@ static bool SortFileList(CustomSort *cs, wchar_t *indicator)
 	FarMacroCall fmc = {sizeof(FarMacroCall), ARRAYSIZE(values), values, nullptr, nullptr};
 	OpenMacroPluginInfo info = {MCT_PANELSORT, &fmc};
 
-	if (!CtrlObject->Plugins.CallPlugin(SYSID_LUAMACRO, OPEN_LUAMACRO, &info))
+	if (!CtrlObject->Plugins.CallMacroPlugin(&info))
 		return false;
 
 	indicator[0] = info.Ret.Values[0].String[0];
@@ -169,7 +169,7 @@ static bool CanSort(int SortMode)
 	FarMacroCall fmc = {sizeof(FarMacroCall), ARRAYSIZE(values), values, nullptr, nullptr};
 	OpenMacroPluginInfo info = {MCT_CANPANELSORT, &fmc};
 
-	return CtrlObject->Plugins.CallPlugin(SYSID_LUAMACRO, OPEN_LUAMACRO, &info);
+	return CtrlObject->Plugins.CallMacroPlugin(&info);
 }
 
 }    // namespace custom_sort
@@ -4008,7 +4008,7 @@ void FileList::SelectSortMode()
 	OpenMacroPluginInfo ompInfo = {MCT_GETCUSTOMSORTMODES, nullptr};
 	MacroPluginReturn *mpr = nullptr;
 	{
-		if (CtrlObject->Plugins.CallPlugin(SYSID_LUAMACRO, OPEN_LUAMACRO, &ompInfo)) {
+		if (CtrlObject->Plugins.CallMacroPlugin(&ompInfo)) {
 			mpr = &ompInfo.Ret;
 			if (mpr->Count >= 3) {
 				int extra = mpr->Count / 3;

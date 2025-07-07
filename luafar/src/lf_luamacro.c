@@ -37,16 +37,16 @@ static void InitMPR (lua_State* L, struct MacroPluginReturn *mpr, size_t nargs, 
 
 HANDLE Open_Luamacro (lua_State* L, INT_PTR Item)
 {
-	struct OpenMacroPluginInfo* om_info = (struct OpenMacroPluginInfo*)Item;
-	int calltype = om_info->CallType;
-	size_t argc = om_info->Data ? om_info->Data->Count : 0; // store Data->Count: 'Data' will be invalid after FL_PushParams()
 	TPluginData *pd = GetPluginData(L);
-
 	if (pd->PluginId != LuamacroId)                //+1 (export.Open)
 	{
 		lua_pop(L, 1);
 		return NULL;
 	}
+
+	struct OpenMacroPluginInfo* om_info = (struct OpenMacroPluginInfo*)Item;
+	int calltype = om_info->CallType;
+	size_t argc = om_info->Data ? om_info->Data->Count : 0; // store Data->Count: 'Data' will be invalid after FL_PushParams()
 
 	lua_pushinteger(L, OPEN_LUAMACRO);             //+2
 	lua_pushinteger(L, calltype);                  //+3

@@ -174,11 +174,7 @@ static const wchar_t* GetMacroLanguage(DWORD Flags)
 
 static bool CallMacroPlugin(OpenMacroPluginInfo* Info)
 {
-#ifdef USELUA
-	return CtrlObject->Plugins.CallPlugin(SYSID_LUAMACRO, OPEN_LUAMACRO, Info) != 0;
-#else
-	return false;
-#endif
+	return CtrlObject->Plugins.CallMacroPlugin(Info);
 }
 
 static bool MacroPluginOp(int OpCode, const FarMacroValue& Param, MacroPluginReturn* Ret = nullptr)
