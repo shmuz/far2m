@@ -965,20 +965,18 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 				{
 					FarMacroValue *Values = Data->Count>2 ? Data->Values+2:nullptr;
 					OpenMacroInfo info={sizeof(OpenMacroInfo),Data->Count-2,Values};
-					void *ResultCallPlugin = nullptr;
 
 					if (SyncCall) m_InternalInput++;
 
-					if (!CtrlObject->Plugins.CallPlugin(SysID, OPEN_FROMMACRO, &info, &ResultCallPlugin))
-						ResultCallPlugin = nullptr;
+					void *Result = CtrlObject->Plugins.CallPluginFromMacro(SysID, &info);
 
 					if (SyncCall) m_InternalInput--;
 
 					//в windows гарантируется, что не бывает указателей меньше 0x10000
-					if (reinterpret_cast<uintptr_t>(ResultCallPlugin) >= 0x10000 && ResultCallPlugin != INVALID_HANDLE_VALUE)
-						api.PassPointer(ResultCallPlugin);
+					if (reinterpret_cast<uintptr_t>(Result) >= 0x10000 && Result != INVALID_HANDLE_VALUE)
+						api.PassPointer(Result);
 					else
-						api.PassBoolean(ResultCallPlugin != nullptr && ResultCallPlugin != INVALID_HANDLE_VALUE);
+						api.PassBoolean(Result != nullptr && Result != INVALID_HANDLE_VALUE);
 
 					return 0;
 				}

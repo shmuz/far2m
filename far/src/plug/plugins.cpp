@@ -1905,56 +1905,36 @@ bool PluginManager::CallMacroPlugin(OpenMacroPluginInfo *Info)
 {
 #ifdef USELUA
 	Plugin *pPlugin = FindPlugin(SYSID_LUAMACRO);
-	return pPlugin && pPlugin->HasOpenPlugin() && pPlugin->OpenPlugin(OPEN_LUAMACRO, (INT_PTR)Info);
+	return pPlugin && pPlugin->OpenPlugin(OPEN_LUAMACRO, (INT_PTR)Info);
 #else
 	return false;
 #endif
 }
 
-/* $ 27.09.2000 SVS
-  Функция CallPlugin - найти плагин по ID и запустить
-  в зачаточном состоянии!
-*/
-bool PluginManager::CallPlugin(DWORD SysID, int OpenFrom, void *Data, void **Ret)
+void* PluginManager::CallPluginFromMacro(DWORD SysID, OpenMacroInfo *Info)
 {
+	void *Ret = nullptr;
+
 	Plugin *pPlugin = FindPlugin(SysID);
 	if ( !(pPlugin && pPlugin->HasOpenPlugin()) )
-		return false;
+		return Ret;
 
-	if (Ret)
-		*Ret = nullptr;
-
-	PHPTR PluginPanel = OpenPlugin(pPlugin,OpenFrom,(INT_PTR)Data);
+	PHPTR PluginPanel = OpenPlugin(pPlugin, OPEN_FROMMACRO, (INT_PTR)Info);
 	if (!PluginPanel)
-		return true;
+		return Ret;
 
 	bool CreatingPanel = false;
 
-	if (OpenFrom == OPEN_FROMMACRO)
+	if (reinterpret_cast<UINT_PTR>(PluginPanel->hPanel) >= 0x10000)
 	{
-		if (reinterpret_cast<UINT_PTR>(PluginPanel->hPanel) >= 0x10000)
+		FarMacroCall *fmc = reinterpret_cast<FarMacroCall*>(PluginPanel->hPanel);
+		if (fmc->Count > 0 && fmc->Values[0].Type == FMVT_PANEL)
 		{
-			FarMacroCall *fmc = reinterpret_cast<FarMacroCall*>(PluginPanel->hPanel);
-			if (fmc->Count > 0 && fmc->Values[0].Type == FMVT_PANEL)
-			{
-				CreatingPanel = true;
-				PluginPanel->hPanel = fmc->Values[0].Pointer;
-				if (fmc->Callback)
-					fmc->Callback(fmc->CallbackData, fmc->Values, fmc->Count);
-			}
+			CreatingPanel = true;
+			PluginPanel->hPanel = fmc->Values[0].Pointer;
+			if (fmc->Callback)
+				fmc->Callback(fmc->CallbackData, fmc->Values, fmc->Count);
 		}
-
-		if (!CreatingPanel)
-		{
-			if (Ret)
-				*Ret = PluginPanel->hPanel;
-			delete PluginPanel;
-			return true;
-		}
-	}
-	else
-	{
-		CreatingPanel = OpenFrom == OPEN_PLUGINSMENU || OpenFrom == OPEN_FILEPANEL;
 	}
 
 	if (CreatingPanel)
@@ -1963,21 +1943,40 @@ bool PluginManager::CallPlugin(DWORD SysID, int OpenFrom, void *Data, void **Ret
 		Panel *NewPanel = CtrlObject->Cp()->ChangePanel(CtrlObject->Cp()->ActivePanel,FILE_PANEL,TRUE,TRUE);
 		bool SendOnFocus = CurFocus || !CtrlObject->Cp()->GetAnotherPanel(NewPanel)->IsVisible();
 		NewPanel->SetPluginMode(PluginPanel, L"", SendOnFocus);
-
-		if (OpenFrom != OPEN_FROMMACRO)
-		{
-			if (Data && *(const wchar_t *)Data)
-				SetDirectory(PluginPanel,(const wchar_t *)Data,0);
-		}
-		else
-		{
-			NewPanel->Update(0);
-			NewPanel->Show();
-		}
+		NewPanel->Update(0);
+		NewPanel->Show();
+		Ret = reinterpret_cast<void*>(1);
+	}
+	else
+	{
+		Ret = PluginPanel->hPanel;
+		delete PluginPanel;
 	}
 
-	if (Ret && (OpenFrom == OPEN_FROMMACRO) && CreatingPanel)
-		*Ret = reinterpret_cast<void*>(1);
+	return Ret;
+}
+
+/* $ 27.09.2000 SVS
+  Функция CallPlugin - найти плагин по ID и запустить
+  в зачаточном состоянии!
+*/
+bool PluginManager::CallPlugin(DWORD SysID, int OpenFrom, void *Data)
+{
+	Plugin *pPlugin = FindPlugin(SysID);
+	if ( !(pPlugin && pPlugin->HasOpenPlugin()) )
+		return false;
+
+	PHPTR PluginPanel = OpenPlugin(pPlugin,OpenFrom,(INT_PTR)Data);
+	if (PluginPanel && (OpenFrom == OPEN_PLUGINSMENU || OpenFrom == OPEN_FILEPANEL))
+	{
+		int CurFocus = CtrlObject->Cp()->ActivePanel->GetFocus();
+		Panel *NewPanel = CtrlObject->Cp()->ChangePanel(CtrlObject->Cp()->ActivePanel,FILE_PANEL,TRUE,TRUE);
+		bool SendOnFocus = CurFocus || !CtrlObject->Cp()->GetAnotherPanel(NewPanel)->IsVisible();
+		NewPanel->SetPluginMode(PluginPanel, L"", SendOnFocus);
+
+		if (Data && *(const wchar_t *)Data)
+			SetDirectory(PluginPanel,(const wchar_t *)Data,0);
+	}
 
 	return true;
 }

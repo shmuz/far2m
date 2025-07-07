@@ -210,9 +210,10 @@ class PluginManager
 		bool SetHotKeyDialog(const wchar_t *DlgPluginTitle, Plugin *pPlugin, int ItemNumber, const GUID *Guids, MENUTYPE MenuType);
 
 		// $ .09.2000 SVS - Функция CallPlugin - найти плагин по ID и запустить OpenFrom = OPEN_*
-		bool CallPlugin(DWORD SysID,int OpenFrom, void *Data, void **Ret=nullptr);
+		bool CallPlugin(DWORD SysID,int OpenFrom, void *Data);
 		bool CallPluginItem(DWORD SysID, CallPluginInfo* Data);
 		bool CallMacroPlugin(OpenMacroPluginInfo *Info);
+		void* CallPluginFromMacro(DWORD SysID, OpenMacroInfo *Info);
 
 //api functions
 
