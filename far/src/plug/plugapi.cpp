@@ -2269,9 +2269,9 @@ static int farPluginsControlSynched(HANDLE hHandle, int Command, int Param1, LON
 				case PCTL_CACHEFORGET:
 					return CtrlObject->Plugins.CacheForget(strPath);
 				case PCTL_LOADPLUGIN:
-					return CtrlObject->Plugins.LoadPluginExternal(strPath, false);
+					return CtrlObject->Plugins.LoadPluginExternal(strPath, false) != nullptr;
 				case PCTL_FORCEDLOADPLUGIN:
-					return CtrlObject->Plugins.LoadPluginExternal(strPath, true);
+					return CtrlObject->Plugins.LoadPluginExternal(strPath, true) != nullptr;
 				case PCTL_UNLOADPLUGIN:
 					return CtrlObject->Plugins.UnloadPluginExternal(strPath);
 			}
@@ -2305,13 +2305,13 @@ static intptr_t WINAPI farPluginsControlV3Synched(HANDLE hHandle, int Command, i
 		case PCTL_LOADPLUGIN:
 		case PCTL_FORCEDLOADPLUGIN:
 			if (Param1 == PLT_PATH && Param2) {
-				return (intptr_t)CtrlObject->Plugins.LoadPluginExternalV3(Param2ToPath(Param2),
+				return (intptr_t)CtrlObject->Plugins.LoadPluginExternal(Param2ToPath(Param2),
 						Command == PCTL_FORCEDLOADPLUGIN);
 			}
 			break;
 
 		case PCTL_UNLOADPLUGIN:
-			return CtrlObject->Plugins.UnloadPluginExternalV3((Plugin *)hHandle);
+			return CtrlObject->Plugins.UnloadPluginExternal((Plugin *)hHandle);
 
 		case PCTL_FINDPLUGIN:
 			if (Param1 == PFM_SYSID && Param2) {

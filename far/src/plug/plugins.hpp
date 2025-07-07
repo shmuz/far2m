@@ -177,13 +177,12 @@ class PluginManager
 	public:
 
 		bool CacheForget(const wchar_t *lpwszModuleName);
-		bool LoadPluginExternal(const wchar_t *ModuleName, bool LoadToMem);
+		Plugin* LoadPluginExternal(const wchar_t *ModuleName, bool LoadToMem);
 
 		int UnloadPlugin(Plugin *pPlugin, DWORD dwException, bool bRemove = false);
 		int UnloadPluginExternal(const wchar_t *lpwszModuleName);
+		int UnloadPluginExternal(Plugin* pPlugin);
 
-		Plugin* LoadPluginExternalV3(const wchar_t *ModuleName, bool LoadToMem);
-		int UnloadPluginExternalV3(Plugin* pPlugin);
 		size_t GetPluginInformation(Plugin *pPlugin, FarGetPluginInformation *pInfo, size_t BufferSize);
 
 		void LoadPlugins();

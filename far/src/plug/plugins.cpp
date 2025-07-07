@@ -78,8 +78,6 @@ const wchar_t *PluginsFolderName = L"Plugins";
 
 static const char *HotkeysSection = "Settings"; //don't change (used with both old and new far2m's)
 
-static int _cdecl PluginsSort(const void *el1,const void *el2);
-
 enum PluginType
 {
 	NOT_PLUGIN = 0,
@@ -155,6 +153,12 @@ static PluginType PluginTypeByExtension(const wchar_t *lpModuleName)
 	return NOT_PLUGIN;
 }
 
+static int _cdecl PluginsSort(const void *el1,const void *el2)
+{
+	Plugin *Plugin1=*((Plugin**)el1);
+	Plugin *Plugin2=*((Plugin**)el2);
+	return (StrCmpI(PointToName(Plugin1->GetModuleName()),PointToName(Plugin2->GetModuleName())));
+}
 
 PluginManager::PluginManager():
 	PluginsData(nullptr),
@@ -218,10 +222,7 @@ bool PluginManager::RemovePlugin(Plugin *pPlugin)
 }
 
 
-Plugin* PluginManager::LoadPlugin(
-    const FARString &strModuleName,
-    bool UncachedLoad
-)
+Plugin* PluginManager::LoadPlugin(const FARString &strModuleName, bool UncachedLoad)
 {
 	const PluginType PlType = PluginTypeByExtension(strModuleName);
 
@@ -301,12 +302,7 @@ bool PluginManager::CacheForget(const wchar_t *lpwszModuleName)
 	return true;
 }
 
-bool PluginManager::LoadPluginExternal(const wchar_t *lpwszModuleName, bool LoadToMem)
-{
-	return LoadPluginExternalV3(lpwszModuleName, LoadToMem) != nullptr;
-}
-
-Plugin* PluginManager::LoadPluginExternalV3(const wchar_t *lpwszModuleName, bool LoadToMem)
+Plugin* PluginManager::LoadPluginExternal(const wchar_t *lpwszModuleName, bool LoadToMem)
 {
 	Plugin *pPlugin = FindPlugin(lpwszModuleName);
 
@@ -373,19 +369,18 @@ int PluginManager::UnloadPlugin(Plugin *pPlugin, DWORD dwException, bool bRemove
 int PluginManager::UnloadPluginExternal(const wchar_t *lpwszModuleName)
 {
 //BUGBUG нужны проверки на легальность выгрузки
-	int nResult = FALSE;
 	Plugin *pPlugin = FindPlugin(lpwszModuleName);
 
 	if (pPlugin)
 	{
-		nResult = pPlugin->Unload(true);
+		int nResult = pPlugin->Unload(true);
 		RemovePlugin(pPlugin);
+		return nResult;
 	}
-
-	return nResult;
+	return FALSE;
 }
 
-int PluginManager::UnloadPluginExternalV3(Plugin* pPlugin)
+int PluginManager::UnloadPluginExternal(Plugin* pPlugin)
 {
 	if (FindPlugin(pPlugin))
 	{
@@ -528,13 +523,6 @@ void PluginManager::LoadPluginsFromCache()
 			}
 		}
 	}
-}
-
-int _cdecl PluginsSort(const void *el1,const void *el2)
-{
-	Plugin *Plugin1=*((Plugin**)el1);
-	Plugin *Plugin2=*((Plugin**)el2);
-	return (StrCmpI(PointToName(Plugin1->GetModuleName()),PointToName(Plugin2->GetModuleName())));
 }
 
 PHPTR PluginManager::OpenFilePlugin(
@@ -717,33 +705,33 @@ PHPTR PluginManager::OpenFindListPlugin(const PluginPanelItem *PanelItems, int I
 {
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	PanelHandle *pResult = nullptr;
-	std::vector<PanelHandle> items;
+	std::vector<PanelHandle> panels;
 
 	for (int i = 0; i < PluginsCount; i++)
 	{
 		Plugin *pPlugin = PluginsData[i];
 
-		if (!pPlugin->HasSetFindList())
-			continue;
-
-		HANDLE hPlugin = pPlugin->OpenPlugin(OPEN_FINDLIST, 0);
-
-		if (hPlugin != INVALID_HANDLE_VALUE)
+		if (pPlugin->HasSetFindList())
 		{
-			items.emplace_back(hPlugin, pPlugin);
-			if (!Opt.PluginConfirm.SetFindList)
-				break;
+			HANDLE hPlugin = pPlugin->OpenPlugin(OPEN_FINDLIST, 0);
+
+			if (hPlugin != INVALID_HANDLE_VALUE)
+			{
+				panels.emplace_back(hPlugin, pPlugin);
+				if (!Opt.PluginConfirm.SetFindList)
+					break;
+			}
 		}
 	}
 
-	if (items.size() > 1)
+	if (panels.size() > 1)
 	{
 		VMenu menu(Msg::PluginConfirmationTitle, nullptr, 0, ScrY-4);
 		menu.SetPosition(-1, -1, 0, 0);
 		menu.SetHelp(L"ChoosePluginMenu");
 		menu.SetFlags(VMENU_SHOWAMPERSAND|VMENU_WRAPMODE);
 
-		for (const auto &ph: items)
+		for (const auto &ph: panels)
 		{
 			MenuItemEx mitem;
 			mitem.strName = PointToName(ph.pPlugin->GetModuleName());
@@ -761,12 +749,12 @@ PHPTR PluginManager::OpenFindListPlugin(const PluginPanelItem *PanelItems, int I
 		int ExitCode = menu.GetExitCode();
 		if (ExitCode >= 0)
 		{
-			pResult = &items[ExitCode];
+			pResult = &panels[ExitCode];
 		}
 	}
-	else if (items.size() == 1)
+	else if (panels.size() == 1)
 	{
-		pResult = &items.front();
+		pResult = &panels.front();
 	}
 
 	if (pResult)
@@ -775,7 +763,7 @@ PHPTR PluginManager::OpenFindListPlugin(const PluginPanelItem *PanelItems, int I
 			pResult = nullptr;
 	}
 
-	for (const auto &ph: items)
+	for (const auto &ph: panels)
 	{
 		if (&ph != pResult && ph.hPanel != INVALID_HANDLE_VALUE)
 			ph.pPlugin->ClosePlugin(ph.hPanel);
@@ -818,44 +806,41 @@ int PluginManager::ProcessEditorInput(INPUT_RECORD *Rec)
 	return FALSE;
 }
 
-
 int PluginManager::ProcessEditorEvent(int Event,void *Param)
 {
-	int nResult = 0;
-
-	if (CtrlObject->Plugins.CurEditor)
+	if (CurEditor)
 	{
 		if (Event == EE_REDRAW)
 		{
-			CtrlObject->Plugins.CurEditor->AutoDeleteColors();
+			CurEditor->AutoDeleteColors();
 		}
 
 		for (int i = 0; i < PluginsCount; i++)
 		{
 			Plugin *pPlugin = PluginsData[i];
 
+			// The return value is currently ignored
 			if (pPlugin->HasProcessEditorEvent())
-				nResult = pPlugin->ProcessEditorEvent(Event, Param);
+				pPlugin->ProcessEditorEvent(Event, Param);
 		}
 	}
 
-	return nResult;
+	return 0;
 }
 
 
 int PluginManager::ProcessViewerEvent(int Event, void *Param)
 {
-	int nResult = 0;
-
 	for (int i = 0; i < PluginsCount; i++)
 	{
 		Plugin *pPlugin = PluginsData[i];
 
+		// The return value is currently ignored
 		if (pPlugin->HasProcessViewerEvent())
-			nResult = pPlugin->ProcessViewerEvent(Event, Param);
+			pPlugin->ProcessViewerEvent(Event, Param);
 	}
 
-	return nResult;
+	return 0;
 }
 
 int PluginManager::ProcessDialogEvent(int Event, void *Param)
@@ -884,11 +869,7 @@ int PluginManager::GetFindData(
 }
 
 
-void PluginManager::FreeFindData(
-    PHPTR ph,
-    PluginPanelItem *PanelItem,
-    int ItemsNumber
-)
+void PluginManager::FreeFindData(PHPTR ph, PluginPanelItem *PanelItem, int ItemsNumber)
 {
 	ph->pPlugin->FreeFindData(ph->hPanel, PanelItem, ItemsNumber);
 }
@@ -907,21 +888,13 @@ int PluginManager::GetVirtualFindData(
 }
 
 
-void PluginManager::FreeVirtualFindData(
-    PHPTR ph,
-    PluginPanelItem *PanelItem,
-    int ItemsNumber
-)
+void PluginManager::FreeVirtualFindData(PHPTR ph, PluginPanelItem *PanelItem, int ItemsNumber)
 {
 	return ph->pPlugin->FreeVirtualFindData(ph->hPanel, PanelItem, ItemsNumber);
 }
 
 
-int PluginManager::SetDirectory(
-    PHPTR ph,
-    const wchar_t *Dir,
-    int OpMode
-)
+int PluginManager::SetDirectory(PHPTR ph, const wchar_t *Dir, int OpMode)
 {
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	return ph->pPlugin->SetDirectory(ph->hPanel, Dir, OpMode);
@@ -1027,11 +1000,7 @@ int PluginManager::DeleteFiles(
 }
 
 
-int PluginManager::MakeDirectory(
-    PHPTR ph,
-    const wchar_t **Name,
-    int OpMode
-)
+int PluginManager::MakeDirectory(PHPTR ph, const wchar_t **Name, int OpMode)
 {
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	SaveScreen SaveScr;
@@ -1102,10 +1071,7 @@ int PluginManager::PutFiles(
 	return Code;
 }
 
-void PluginManager::GetOpenPluginInfo(
-    PHPTR ph,
-    OpenPluginInfo *Info
-)
+void PluginManager::GetOpenPluginInfo(PHPTR ph, OpenPluginInfo *Info)
 {
 	memset(Info, 0, sizeof(*Info));
 	ph->pPlugin->GetOpenPluginInfo(ph->hPanel, Info);
@@ -1122,21 +1088,13 @@ void PluginManager::GetOpenPluginInfo(
 }
 
 
-int PluginManager::ProcessKey(
-    PHPTR ph,
-    int Key,
-    unsigned int ControlState
-)
+int PluginManager::ProcessKey(PHPTR ph, int Key, unsigned int ControlState)
 {
 	return ph->pPlugin->ProcessKey(ph->hPanel, Key, ControlState);
 }
 
 
-int PluginManager::ProcessEvent(
-    PHPTR ph,
-    int Event,
-    void *Param
-)
+int PluginManager::ProcessEvent(PHPTR ph, int Event, void *Param)
 {
 	return ph->pPlugin->ProcessEvent(ph->hPanel, Event, Param);
 }
@@ -1764,8 +1722,7 @@ void PluginManager::LoadIfCacheAbsent()
 	{
 		for (int I = 0; I<PluginsCount; I++)
 		{
-			Plugin *pPlugin = PluginsData[I];
-			pPlugin->Load();
+			PluginsData[I]->Load();
 		}
 	}
 }
@@ -2238,16 +2195,11 @@ Plugin *PluginManager::FindPlugin(DWORD SysId)
 	return SysIdMap.count(SysId) ? SysIdMap[SysId] : nullptr;
 }
 
-PHPTR PluginManager::OpenPlugin(Plugin *pPlugin,int OpenFrom,INT_PTR Item)
+PHPTR PluginManager::OpenPlugin(Plugin *pPlugin, int OpenFrom, INT_PTR Item)
 {
-	HANDLE hPlugin = pPlugin->OpenPlugin(OpenFrom, Item);
+	HANDLE hPanel = pPlugin->OpenPlugin(OpenFrom, Item);
 
-	if (hPlugin != INVALID_HANDLE_VALUE)
-	{
-		return new PanelHandle(hPlugin, pPlugin);
-	}
-
-	return nullptr;
+	return (hPanel != INVALID_HANDLE_VALUE) ? new PanelHandle(hPanel, pPlugin) : nullptr;
 }
 
 void PluginManager::GetCustomData(FileListItem *ListItem)

@@ -1198,7 +1198,7 @@ int LF_ProcessEditorEvent (lua_State* L, int Event, void *Param)
 			GetExportFunction(L, "ProcessEditorEvent"))     //+1: Func
 	{
 		struct EditorInfo ei;
-		if (PSInfo.EditorControlV2(-1, ECTL_GETINFO, &ei))
+		if (PSInfo.EditorControlV2(CURRENT_EDITOR, ECTL_GETINFO, &ei))
 			lua_pushinteger(L, ei.EditorID);
 		else
 			lua_pushnil(L);
