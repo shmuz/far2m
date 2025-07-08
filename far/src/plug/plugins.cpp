@@ -1913,47 +1913,39 @@ bool PluginManager::CallMacroPlugin(OpenMacroPluginInfo *Info)
 
 void* PluginManager::CallPluginFromMacro(DWORD SysID, OpenMacroInfo *Info)
 {
-	void *Ret = nullptr;
-
 	Plugin *pPlugin = FindPlugin(SysID);
 	if ( !(pPlugin && pPlugin->HasOpenPlugin()) )
-		return Ret;
+		return nullptr;
 
 	PHPTR PluginPanel = OpenPlugin(pPlugin, OPEN_FROMMACRO, (INT_PTR)Info);
-	if (!PluginPanel)
-		return Ret;
 
-	bool CreatingPanel = false;
-
-	if (reinterpret_cast<UINT_PTR>(PluginPanel->hPanel) >= 0x10000)
+	if (PluginPanel)
 	{
-		FarMacroCall *fmc = reinterpret_cast<FarMacroCall*>(PluginPanel->hPanel);
-		if (fmc->Count > 0 && fmc->Values[0].Type == FMVT_PANEL)
+		if (reinterpret_cast<UINT_PTR>(PluginPanel->hPanel) >= 0x10000)
 		{
-			CreatingPanel = true;
-			PluginPanel->hPanel = fmc->Values[0].Pointer;
-			if (fmc->Callback)
-				fmc->Callback(fmc->CallbackData, fmc->Values, fmc->Count);
+			FarMacroCall *fmc = reinterpret_cast<FarMacroCall*>(PluginPanel->hPanel);
+			if (fmc->Count > 0 && fmc->Values[0].Type == FMVT_PANEL)
+			{
+				PluginPanel->hPanel = fmc->Values[0].Pointer;
+				if (fmc->Callback)
+					fmc->Callback(fmc->CallbackData, fmc->Values, fmc->Count);
+
+				int CurFocus = CtrlObject->Cp()->ActivePanel->GetFocus();
+				Panel *NewPanel = CtrlObject->Cp()->ChangePanel(CtrlObject->Cp()->ActivePanel,FILE_PANEL,TRUE,TRUE);
+				bool SendOnFocus = CurFocus || !CtrlObject->Cp()->GetAnotherPanel(NewPanel)->IsVisible();
+				NewPanel->SetPluginMode(PluginPanel, L"", SendOnFocus);
+				NewPanel->Update(0);
+				NewPanel->Show();
+				return reinterpret_cast<void*>(1);
+			}
 		}
-	}
 
-	if (CreatingPanel)
-	{
-		int CurFocus = CtrlObject->Cp()->ActivePanel->GetFocus();
-		Panel *NewPanel = CtrlObject->Cp()->ChangePanel(CtrlObject->Cp()->ActivePanel,FILE_PANEL,TRUE,TRUE);
-		bool SendOnFocus = CurFocus || !CtrlObject->Cp()->GetAnotherPanel(NewPanel)->IsVisible();
-		NewPanel->SetPluginMode(PluginPanel, L"", SendOnFocus);
-		NewPanel->Update(0);
-		NewPanel->Show();
-		Ret = reinterpret_cast<void*>(1);
-	}
-	else
-	{
-		Ret = PluginPanel->hPanel;
+		void *Ret = PluginPanel->hPanel;
 		delete PluginPanel;
+		return Ret;
 	}
 
-	return Ret;
+	return nullptr;
 }
 
 /* $ 27.09.2000 SVS
