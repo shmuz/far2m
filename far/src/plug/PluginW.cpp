@@ -141,14 +141,13 @@ static size_t WINAPI FarKeyToName(FarKey Key,wchar_t *KeyText,size_t Size)
 	if (!KeyToText(Key,strKT))
 		return 0;
 
-	size_t len = strKT.GetLength();
+	const size_t len = strKT.GetLength();
 
 	if (Size && KeyText)
 	{
-		if (Size <= len) len = Size-1;
-
-		wmemcpy(KeyText, strKT.CPtr(), len);
-		KeyText[len] = 0;
+		size_t minLen = std::min(len, Size - 1);
+		wmemcpy(KeyText, strKT.CPtr(), minLen);
+		KeyText[minLen] = 0;
 	}
 	else if (KeyText) *KeyText = 0;
 

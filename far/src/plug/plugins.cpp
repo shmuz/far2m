@@ -2307,15 +2307,15 @@ public:
 	Sizer(char *aBuf, size_t aRest, size_t aSize) : mBuf(aBuf), mRest(aRest), mSize(aSize) {}
 
 public:
-	char* BufReserve(size_t Count);
+	void* BufReserve(size_t Count);
 	wchar_t* StrToBuf(const FARString& Str);
 	void ItemsToBuf(const wchar_t* const* &Strings, int& Count, const std::vector<FARString>& NamesArray);
 	size_t GetSize() const { return mSize; }
 };
 
-char* Sizer::BufReserve(size_t Count)
+void* Sizer::BufReserve(size_t Count)
 {
-	char* Res = nullptr;
+	void* Res = nullptr;
 
 	if (mBuf)
 	{
