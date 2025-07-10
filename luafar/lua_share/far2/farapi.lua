@@ -232,6 +232,7 @@ enum FarMessagesProc
 	DN_MOUSEEVENT,
 	DN_DRAWDIALOGDONE,
 	DN_LISTHOTKEY,
+	DN_DROPDOWNOPENED,
 
 	DN_GETDIALOGINFO=DM_GETDIALOGINFO,
 
@@ -588,9 +589,9 @@ typedef int (__stdcall *FARAPIMENUV2)(
 
 enum PLUGINPANELITEMFLAGS
 {
-	PPIF_PROCESSDESCR           = 0x80000000,
-	PPIF_SELECTED               = 0x40000000,
 	PPIF_USERDATA               = 0x20000000,
+	PPIF_SELECTED               = 0x40000000,
+	PPIF_PROCESSDESCR           = 0x80000000,
 };
 
 struct FAR_FIND_DATA
@@ -2411,7 +2412,9 @@ enum FAR_REGEXP_CONTROL_COMMANDS
 	RECTL_OPTIMIZE,
 	RECTL_MATCHEX,
 	RECTL_SEARCHEX,
-	RECTL_BRACKETSCOUNT
+	RECTL_BRACKETSCOUNT,
+	RECTL_NAMEDGROUPINDEX,
+	RECTL_GETNAMEDGROUPS,
 };
 
 struct RegExpMatch
@@ -2427,6 +2430,12 @@ struct RegExpSearch
 	struct RegExpMatch* Match;
 	int Count;
 	void* Reserved;
+};
+
+struct RegExpNamedGroup
+{
+	size_t Index;
+	const wchar_t *Name;
 };
 
 struct VersionInfo
@@ -2445,6 +2454,7 @@ struct GlobalInfo
 	const wchar_t *Title;
 	const wchar_t *Description;
 	const wchar_t *Author;
+	int UseMenuGuids;
 };
 
 struct FarGetPluginInformation
