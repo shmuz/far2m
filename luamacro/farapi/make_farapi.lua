@@ -14,7 +14,8 @@ for _,fname in ipairs(srcfiles) do
   f:close()
 end
 
-local f_out = assert(io.open(trgfile, "w"))
+local trg_path = ... or trgfile
+local f_out = assert(io.open(trg_path, "w"))
 
 local function Remove_FAR_USE_INTERNALS(aText)
   local t={}
