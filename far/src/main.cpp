@@ -77,10 +77,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "farcolors.hpp"
 #include "message.hpp"
 
-#ifdef DIRECT_RT
-int DirectRT=0;
-#endif
-
 static void print_help(const char *self)
 {
 	printf("FAR2M - dual-panel file manager with built-in terminal\n"
@@ -144,12 +140,11 @@ static FARString ReconstructCommandLine(int argc, char **argv)
 	return cmd;
 }
 
-static void UpdatePathOptions(const FARString &strDestName, bool IsActivePanel)
+static void UpdatePathOptions(const FARString &strDestName, bool IsLeftPanel)
 {
 	FARString *outFolder, *outCurFile;
 
-	// Та панель, которая имеет фокус - активна (начнем по традиции с Левой Панели ;-)
-	if (IsActivePanel == (bool)Opt.LeftPanel.Focus) {
+	if (IsLeftPanel) {
 		Opt.LeftPanel.Type = FILE_PANEL;  // сменим моду панели
 		Opt.LeftPanel.Visible = TRUE;     // и включим ее
 		outFolder = &Opt.strLeftFolder;
@@ -229,7 +224,8 @@ static int MainProcess(
 			if (Opt.OnlyEditorViewerUsed == Options::ONLY_EDITOR
 				|| Opt.OnlyEditorViewerUsed == Options::ONLY_EDITOR_ON_CMDOUT)
 			{
-				FileEditor *ShellEditor=new FileEditor(Opt.strEditViewArg,CP_AUTODETECT,FFILEEDIT_CANNEWFILE|FFILEEDIT_ENABLEF6,StartLine,StartChar);
+				FileEditor *ShellEditor = new FileEditor(Opt.strEditViewArg, CP_AUTODETECT,
+						FFILEEDIT_CANNEWFILE | FFILEEDIT_ENABLEF6, StartLine, StartChar);
 				_tran(SysLog(L"make shelleditor %p",ShellEditor));
 
 				if (!ShellEditor->GetExitCode())  // ????????????
@@ -239,7 +235,7 @@ static int MainProcess(
 			}
 			else
 			{
-				FileViewer *ShellViewer=new FileViewer(Opt.strEditViewArg,FALSE);
+				FileViewer *ShellViewer = new FileViewer(Opt.strEditViewArg, FALSE);
 
 				if (!ShellViewer->GetExitCode())
 				{
@@ -268,10 +264,10 @@ static int MainProcess(
 			// юзая Opt.*
 			if (!strDestName1.IsEmpty())  // активная панель
 			{
-				UpdatePathOptions(strDestName1, true);
+				UpdatePathOptions(strDestName1, Opt.LeftPanel.Focus);
 
 				if (!strDestName2.IsEmpty())  // пассивная панель
-					UpdatePathOptions(strDestName2, false);
+					UpdatePathOptions(strDestName2, !Opt.LeftPanel.Focus);
 			}
 
 			// теперь все готово - создаем панели!

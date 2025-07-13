@@ -57,7 +57,7 @@ enum
 // #endif
 
 #ifdef DIRECT_RT
-extern int DirectRT;
+int DirectRT;
 #endif
 
 ScreenBuf ScrBuf;

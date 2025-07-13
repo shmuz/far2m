@@ -449,28 +449,26 @@ static BOOL LoadLuafar()
 
 	// 1. Load Lua
 #ifdef __APPLE__
-	const char *jit[] =
-		{ "libluajit-5.1.dylib", "/opt/homebrew/lib/libluajit-5.1.dylib", nullptr };
-	const char *lua[] =
-		{ "liblua5.1.dylib", "/opt/homebrew/lib/liblua5.1.dylib", nullptr };
+	const char *ext = ".dylib";
+	const char *paths[] = { "", "/opt/homebrew/lib/", nullptr };
 #else
-	const char *jit[] =
-		{ "libluajit-5.1.so", "/usr/local/lib/libluajit-5.1.so", "/usr/lib/libluajit-5.1.so", nullptr };
-	const char *lua[] =
-		{ "liblua5.1.so", "/usr/local/lib/liblua5.1.so", "/usr/lib/liblua5.1.so", nullptr };
+	const char *ext = ".so";
+	const char *paths[] = { "", "/usr/local/lib/", "/usr/lib/", nullptr };
 #endif
 
-	const char **libs[] { jit, lua };
-	auto str = getenv("FARPLAINLUA");
+	const char *names[] = { "libluajit-5.1", "liblua5.1" }; // luajit is first by default
+	const auto str = getenv("FARPLAINLUA");
 	if (str && (0 == strcmp(str, "1") || 0 == strcasecmp(str, "yes")))
-		std::swap(libs[0], libs[1]);
+		std::swap(names[0], names[1]);
 
 	void *handle = nullptr;
-	for (size_t i=0; i < ARRAYSIZE(libs) && !handle; i++)
+	for (size_t i=0; i < ARRAYSIZE(names) && !handle; i++)
 	{
-		for (const char **ptr=libs[i]; *ptr; ptr++)
-			if ((handle = dlopen(*ptr, RTLD_LAZY|RTLD_GLOBAL)))
-				break;
+		for (const char *path=*paths; path && !handle; path++)
+		{
+			const auto strName = std::string(path) + names[i] + ext;
+			handle = dlopen(strName.c_str(), RTLD_LAZY|RTLD_GLOBAL);
+		}
 	}
 	if (!handle)
 	{
