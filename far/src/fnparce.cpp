@@ -375,7 +375,7 @@ int SubstFileName(FARString &strStr,            // результирующая 
 	if (CmdLineDir)
 		PSubstData->strCmdDir = CmdLineDir;
 	else // ...спросим у ком.строки
-		CtrlObject->CmdLine->GetCurDir(PSubstData->strCmdDir);
+		PSubstData->strCmdDir = CtrlObject->CmdLine->GetCurDir();
 
 	size_t pos;
 	// Предварительно получим некоторые "константы" :-)

@@ -43,17 +43,6 @@ enum
 	FCMDOBJ_LOCKUPDATEPANEL = 0x00010000,
 };
 
-struct PushPopRecord
-{
-	FARString strName;
-
-	const PushPopRecord &operator=(const PushPopRecord &rhs)
-	{
-		strName = rhs.strName;
-		return *this;
-	}
-};
-
 class CommandLine : public ScreenObject
 {
 private:
@@ -88,8 +77,8 @@ public:
 	virtual void ResizeConsole();
 
 	std::string GetConsoleLog(HANDLE con_hnd, bool colored);
-	int GetCurDir(FARString &strCurDir);
-	BOOL SetCurDir(const wchar_t *CurDir);
+	const FARString &GetCurDir();
+	void SetCurDir(const wchar_t *CurDir);
 
 	void GetString(FARString &strStr) { CmdStr.GetString(strStr); }
 	int GetLength() { return CmdStr.GetLength(); }

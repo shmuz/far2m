@@ -2514,8 +2514,7 @@ static void ScanPluginTree(HANDLE hDlg, PHPTR hPlugin, DWORD Flags, int &Recurse
 static void DoPrepareFileList(HANDLE hDlg)
 {
 	ThreadedWorkQueuePtrScope wqs(pWorkQueue);
-	FARString strRoot;
-	CtrlObject->CmdLine->GetCurDir(strRoot);
+	FARString strRoot = CtrlObject->CmdLine->GetCurDir();
 
 	UserDefinedList List(ULF_UNIQUE, L";");
 

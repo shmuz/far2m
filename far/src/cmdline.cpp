@@ -556,21 +556,18 @@ int CommandLine::ProcessKey(FarKey Key)
 }
 
 
-BOOL CommandLine::SetCurDir(const wchar_t *CurDir)
+void CommandLine::SetCurDir(const wchar_t *CurDir)
 {
 	if (StrCmp(strCurDir,CurDir) || !TestCurrentDirectory(CurDir))
 	{
 		strCurDir = CurDir;
 	}
-
-	return TRUE;
 }
 
 
-int CommandLine::GetCurDir(FARString &strCurDir)
+const FARString& CommandLine::GetCurDir()
 {
-	strCurDir = CommandLine::strCurDir;
-	return (int)strCurDir.GetLength();
+	return strCurDir;
 }
 
 
@@ -646,19 +643,20 @@ void CommandLine::GetPrompt(FARString &strDestStr)
 	while (*Format) {
 		if (*Format == L'$') {
 			wchar_t Chr = Upper(*++Format);
-			size_t I;
+			bool bFound = false;
 
-			for (I = 0; I < ARRAYSIZE(ChrFmt); ++I) {
-				if (ChrFmt[I][0] == Chr) {
-					strDestStr+= ChrFmt[I][1];
+			for (const auto& Item: ChrFmt) {
+				if (Item[0] == Chr) {
+					strDestStr+= Item[1];
+					bFound = true;
 					break;
 				}
 			}
 
-			if (I == ARRAYSIZE(ChrFmt)) {
+			if (!bFound) {
 				switch (Chr) {
 						/*
-						эти не раелизованы
+						эти не реализованы
 						$E - Escape code (ASCII code 27)
 						$V - Windows XP version number
 						$_ - Carriage return and linefeed

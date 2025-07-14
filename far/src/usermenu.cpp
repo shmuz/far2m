@@ -240,8 +240,7 @@ void UserMenu::ProcessUserMenu(bool ChooseMenuType, const FARString &MenuFileNam
 	MenuModified = MenuNeedRefresh = false;
 
 	// Путь к текущему каталогу с файлом LocalMenuFileName
-	FARString strMenuFilePath;
-	CtrlObject->CmdLine->GetCurDir(strMenuFilePath);
+	FARString strMenuFilePath = CtrlObject->CmdLine->GetCurDir();
 
 	if (ChooseMenuType) {
 		switch (Message(0, 3, Msg::UserMenuTitle, Msg::ChooseMenuType, Msg::ChooseMenuMain,
@@ -398,7 +397,7 @@ void UserMenu::ProcessUserMenu(bool ChooseMenuType, const FARString &MenuFileNam
 
 					default:    // MM_USER
 						MenuMode = MM_LOCAL;
-						CtrlObject->CmdLine->GetCurDir(strMenuFilePath);
+						strMenuFilePath = CtrlObject->CmdLine->GetCurDir();
 						break;
 				}
 
@@ -727,8 +726,7 @@ int UserMenu::ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar
 		}
 
 		int CurLine = 0;
-		FARString strCmdLineDir;
-		CtrlObject->CmdLine->GetCurDir(strCmdLineDir);
+		FARString strCmdLineDir = CtrlObject->CmdLine->GetCurDir();
 		FARString strOldCmdLine;
 		CtrlObject->CmdLine->GetString(strOldCmdLine);
 		int OldCmdLineCurPos = CtrlObject->CmdLine->GetCurPos();

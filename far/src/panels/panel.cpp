@@ -1469,9 +1469,7 @@ void Panel::SetTitle()
 		if (!strCurDir.IsEmpty()) {
 			strTitleDir+= strCurDir;
 		} else {
-			FARString strCmdText;
-			CtrlObject->CmdLine->GetCurDir(strCmdText);
-			strTitleDir+= strCmdText;
+			strTitleDir+= CtrlObject->CmdLine->GetCurDir();
 		}
 
 		strTitleDir+= L"}";
