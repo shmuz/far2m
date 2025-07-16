@@ -447,7 +447,7 @@ static struct FARConfig
 	{true,  NSecMacros, "KeyRecordCtrlDot",             &Opt.Macro.strKeyMacroCtrlDot, szCtrlDot},
 	{true,  NSecMacros, "KeyRecordCtrlShiftDot",        &Opt.Macro.strKeyMacroCtrlShiftDot, szCtrlShiftDot},
 
-	{false, NSecSystem, "ExcludeCmdHistory",            &Opt.ExcludeCmdHistory, 0}, //AN
+	{true,  NSecSystem, "ExcludeCmdHistory",            &Opt.ExcludeCmdHistory, 0}, //AN
 
 	{true,  NSecCodePages, "CPMenuMode",                &Opt.CPMenuMode, 0, REG_BOOLEAN},
 

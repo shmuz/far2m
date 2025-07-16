@@ -1716,7 +1716,7 @@ upd:"Confirm elevated privileges use"
 
 ConfigRecycleBin
 "Удалять в &Корзину"
-"&Delete to Recycle Bin"
+"&Delete to Trash"
 "&Mazat do Koše"
 "In Papierkorb &löschen"
 "&Törlés a Lomtárba"
@@ -1812,6 +1812,61 @@ ConfigSaveHistory
 "Guardar &historial de comandos"
 "Зберігати &історію команд"
 "Захоўваць г&історыю камандаў"
+
+ConfigSaveHistoryOpt
+"Действия, заносимые в историю команд:"
+"Actions recorded in commands history:"
+upd:"Actions recorded in commands history:"
+upd:"Actions recorded in commands history:"
+upd:"Actions recorded in commands history:"
+upd:"Actions recorded in commands history:"
+upd:"Actions recorded in commands history:"
+upd:"Actions recorded in commands history:"
+upd:"Actions recorded in commands history:"
+
+ConfigSaveHistoryOptAssSys
+"Панели: файлы по сист&емным типам (xdg-open)"
+"Panels: files via s&ystem types (xdg-open)"
+upd:"Panels: files via system types (xdg-open)"
+upd:"Panels: files via system types (xdg-open)"
+upd:"Panels: files via system types (xdg-open)"
+upd:"Panels: files via system types (xdg-open)"
+upd:"Panels: files via system types (xdg-open)"
+upd:"Panels: files via system types (xdg-open)"
+upd:"Panels: files via system types (xdg-open)"
+
+ConfigSaveHistoryOptAssFar
+"Панели: файлы по ассоциациям &типов far2l"
+"Panels: files via &far2l associations"
+upd:"Panels: files via far2l associations"
+upd:"Panels: files via far2l associations"
+upd:"Panels: files via far2l associations"
+upd:"Panels: files via far2l associations"
+upd:"Panels: files via far2l associations"
+upd:"Panels: files via far2l associations"
+upd:"Panels: files via far2l associations"
+
+ConfigSaveHistoryOptExecPanel
+"Панели: испол&няемые файлы"
+"Panels: e&xecutable files"
+upd:"Panels: executable files"
+upd:"Panels: executable files"
+upd:"Panels: executable files"
+upd:"Panels: executable files"
+upd:"Panels: executable files"
+upd:"Panels: executable files"
+upd:"Panels: executable files"
+
+ConfigSaveHistoryOptExecCmdLine
+"&Командная строка: любая набранная команда"
+"&Command line: any typed command"
+upd:"Command line: any typed command"
+upd:"Command line: any typed command"
+upd:"Command line: any typed command"
+upd:"Command line: any typed command"
+upd:"Command line: any typed command"
+upd:"Command line: any typed command"
+upd:"Command line: any typed command"
 
 ConfigSaveFoldersHistory
 "Сохранять историю п&апок"
@@ -2844,14 +2899,14 @@ upd:"Administrator"
 
 ConfigAutoCompleteTitle
 l:
-"Настройка автозавершения"
-"AutoComplete settings"
-upd:"AutoComplete settings"
-upd:"AutoComplete settings"
-upd:"AutoComplete settings"
-upd:"AutoComplete settings"
-"Opciones de autocompletar"
-"Налаштування автозавершення"
+"Настройка автозавершения и истории"
+"AutoComplete && History settings"
+upd:"AutoComplete && History settings"
+upd:"AutoComplete && History settings"
+upd:"AutoComplete && History settings"
+upd:"AutoComplete && History settings"
+"Opciones de autocompletar e historial"
+"Налаштування автозавершення та історії"
 "Налады самазавяршэння і гістарычных"
 
 ConfigAutoCompleteExceptions
@@ -13134,15 +13189,15 @@ upd:"Command line settings"
 "Налады &каманднага радка"
 
 MenuAutoCompleteSettings
-"На&стройки автозавершения"
-"AutoComplete settings"
-upd:"AutoComplete settings"
-upd:"AutoComplete settings"
-upd:"AutoComplete settings"
-upd:"AutoComplete settings"
-"Opciones de autocompletar"
-"На&лаштування автозавершення"
-"На&лады аўтазаканчэння"
+"На&стройки автозавершения и истории"
+"AutoComplete && History settings"
+upd:"AutoComplete && History settings"
+upd:"AutoComplete && History settings"
+upd:"AutoComplete && History settings"
+upd:"AutoComplete && History settings"
+"Opciones de autocompletar e historial"
+"На&лаштування автозавершення та історії"
+"На&лады аўтазаканчэння і гістарычных"
 
 MenuMaskGroups
 "Группы масок файлов"
