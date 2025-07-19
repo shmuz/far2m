@@ -2054,16 +2054,15 @@ void VMenu::ShowMenu(bool IsParent)
 									? VMenuColorDisabled
 									: (Item[I]->Flags & LIF_GRAYED ? VMenuColorGrayed : VMenuColorText)]);
 
-				FARString strMenuLine;
 				wchar_t CheckMark = L' ';
-
 				if (Item[I]->Flags & LIF_CHECKED) {
-					if (!(Item[I]->Flags & 0x0000FFFF))
-						CheckMark = 0x221A;
+					if (wchar_t chm = Item[I]->Flags & 0xFFFF)
+						CheckMark = chm;
 					else
-						CheckMark = static_cast<wchar_t>(Item[I]->Flags & 0x0000FFFF);
+						CheckMark = Opt.NoGraphics ? L'*' : 0x221A; // L'√'
 				}
 
+				FARString strMenuLine;
 				strMenuLine.Append(CheckMark);
 				strMenuLine.Append(L' ');    // left scroller (<<) placeholder
 				int ShowPos =
