@@ -128,6 +128,18 @@ endif()
 #   message(STATUS "${ColorRed}Building without East Asian codepages support due to EACP=${EACP}${ColorNormal}")
 #endif()
 
+# set(RM rm) actually not needed: use $(CMAKE_COMMAND) -E remove
+
+if(MUSL)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__MUSL__")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__MUSL__")
+endif()
+
+if(TAR_LIMITED_ARGS)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__TAR_LIMITED_ARGS__")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__TAR_LIMITED_ARGS__")
+endif()
+
 if("${ICU_MODE}" STREQUAL "runtime")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DRUNTIME_ICU")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DRUNTIME_ICU")
