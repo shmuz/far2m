@@ -40,6 +40,10 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "Android")
     target_link_libraries(${PROJECT_NAME} PUBLIC luafar)
     set(LINK_FLAGS "-Wl,-rpath,../../")
+elseif (MUSL)
+    target_link_libraries(${PROJECT_NAME} PUBLIC luafar)
+    target_link_libraries(${PROJECT_NAME} PUBLIC luajit-5.1)
+    set(LINK_FLAGS "-Wl,-rpath,../../")
 endif()
 
 set_target_properties(${PROJECT_NAME}
