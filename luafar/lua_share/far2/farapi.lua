@@ -2466,7 +2466,7 @@ struct FarGetPluginInformation
 	struct GlobalInfo *GInfo;
 };
 
-struct AnalyseData
+struct AnalyseInfo
 {
 	size_t          StructSize;
 	const wchar_t  *FileName;
@@ -2514,6 +2514,6 @@ struct ConfigureInfo
 	void   __stdcall  SetStartupInfoW(const struct PluginStartupInfo *Info);
 	void   __stdcall  GetGlobalInfoW(struct GlobalInfo *Info);
 	int    __stdcall  ProcessConsoleInputW(INPUT_RECORD *Rec);
-	int    __stdcall  AnalyseW(const struct AnalyseData *pData);
+	int    __stdcall  AnalyseW(const struct AnalyseInfo *pInfo);
 
 ]=]

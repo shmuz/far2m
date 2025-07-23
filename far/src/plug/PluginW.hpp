@@ -33,7 +33,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FARString.hpp"
 
 
-typedef int  (WINAPI *PLUGINANALYSEW)(const AnalyseData *pData);
+typedef int  (WINAPI *PLUGINANALYSEW)(const AnalyseInfo *pInfo);
 typedef void (WINAPI *PLUGINCLOSEPLUGINW)(HANDLE hPlugin);
 typedef int  (WINAPI *PLUGINCOMPAREW)(HANDLE hPlugin,const PluginPanelItem *Item1,const PluginPanelItem *Item2,unsigned int Mode);
 typedef int  (WINAPI *PLUGINCONFIGUREV3W)(const ConfigureInfo *Info);
@@ -178,7 +178,7 @@ class PluginW: public Plugin
 		bool SetStartupInfo(bool &bUnloaded);
 		bool CheckMinFarVersion(bool &bUnloaded);
 
-		int Analyse(const AnalyseData *pData);
+		int Analyse(const AnalyseInfo *pInfo);
 
 		HANDLE OpenPlugin(int OpenFrom, INT_PTR Item);
 		HANDLE OpenFilePlugin(const wchar_t *Name, const unsigned char *Data, int DataSize, int OpMode);

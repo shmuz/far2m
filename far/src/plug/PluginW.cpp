@@ -698,14 +698,14 @@ bool PluginW::IsPanelPlugin()
 	       pClosePluginW;
 }
 
-int PluginW::Analyse(const AnalyseData *pData)
+int PluginW::Analyse(const AnalyseInfo *pInfo)
 {
 	if (Load() && pAnalyseW)
 	{
 		ExecuteStruct es(EXCEPT_ANALYSE);
 		es.bDefaultResult = FALSE;
 		es.bResult = FALSE;
-		EXECUTE_FUNCTION_EX(pAnalyseW(pData), es);
+		EXECUTE_FUNCTION_EX(pAnalyseW(pInfo), es);
 		return es.bResult;
 	}
 

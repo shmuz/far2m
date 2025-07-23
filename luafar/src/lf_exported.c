@@ -1481,22 +1481,22 @@ int LF_GetLinkTarget(
 	return 0;
 }
 
-static void PushAnalyseData(lua_State* L, const struct AnalyseData *Data)
+static void PushAnalyseInfo(lua_State* L, const struct AnalyseInfo *Info)
 {
 	lua_createtable(L, 0, 4);
-	PutIntToTable(L,  "StructSize", Data->StructSize);
-	PutWStrToTable(L, "FileName",   Data->FileName, -1);
-	PutLStrToTable(L, "Buffer",     Data->Buffer, Data->BufferSize);
-	PutIntToTable(L,  "OpMode",     Data->OpMode);
+	PutIntToTable(L,  "StructSize", Info->StructSize);
+	PutWStrToTable(L, "FileName",   Info->FileName, -1);
+	PutLStrToTable(L, "Buffer",     Info->Buffer, Info->BufferSize);
+	PutIntToTable(L,  "OpMode",     Info->OpMode);
 }
 
-int LF_Analyse(lua_State* L, const struct AnalyseData *Data)
+int LF_Analyse(lua_State* L, const struct AnalyseInfo *Info)
 {
 	int result = 0;
 
 	if (GetExportFunction(L, "Analyse"))    //+1
 	{
-		PushAnalyseData(L, Data);            //+2
+		PushAnalyseInfo(L, Info);            //+2
 
 		if (!pcall_msg(L, 1, 1))             //+1
 		{

@@ -201,7 +201,7 @@ class PluginA: public Plugin
 		int ProcessSynchroEvent(int Event, PVOID Param) { return 0; }
 		int ProcessConsoleInput(INPUT_RECORD *D) { return 0; }
 
-		int Analyse(const AnalyseData *pData) { return FALSE; }
+		int Analyse(const AnalyseInfo *pInfo) { return FALSE; }
 
 		bool GetPluginInfo(PluginInfo *pi);
 		int Configure(int MenuItem);

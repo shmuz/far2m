@@ -218,7 +218,7 @@ class PluginManager
 //api functions
 
 	public:
-		Plugin *Analyse(const AnalyseData *pData);
+		Plugin *Analyse(const AnalyseInfo *pInfo);
 
 		PHPTR OpenPlugin(Plugin *pPlugin,int OpenFrom,INT_PTR Item);
 		PHPTR OpenFilePlugin(const wchar_t *Name, int OpMode, OPENFILEPLUGINTYPE Type, Plugin *pDesiredPlugin = nullptr);

@@ -609,13 +609,13 @@ PHPTR PluginManager::OpenFilePlugin(
 		}
 		else
 		{
-			AnalyseData AData;
-			AData.FileName = Name;
-			AData.Buffer = smm ? smm->View() : nullptr;
-			AData.BufferSize = smm ? smm->Length() : 0;
-			AData.OpMode = OpMode;
+			AnalyseInfo AInfo;
+			AInfo.FileName = Name;
+			AInfo.Buffer = smm ? smm->View() : nullptr;
+			AInfo.BufferSize = smm ? smm->Length() : 0;
+			AInfo.OpMode = OpMode;
 
-			if (pPlugin->Analyse(&AData))
+			if (pPlugin->Analyse(&AInfo))
 			{
 				items.emplace_back(INVALID_HANDLE_VALUE, pPlugin);
 			}

@@ -2814,7 +2814,7 @@ struct FarGetPluginInformation
 	struct GlobalInfo *GInfo;
 };
 
-struct AnalyseData
+struct AnalyseInfo
 {
 	size_t          StructSize;
 	const wchar_t  *FileName;
@@ -2869,7 +2869,7 @@ extern "C"
 	void   WINAPI _export SetStartupInfoW(const struct PluginStartupInfo *Info);
 	void   WINAPI _export GetGlobalInfoW(struct GlobalInfo *Info);
 	int    WINAPI _export ProcessConsoleInputW(INPUT_RECORD *Rec);
-	int    WINAPI _export AnalyseW(const struct AnalyseData *pData);
+	int    WINAPI _export AnalyseW(const struct AnalyseInfo *pInfo);
 
 
 #ifdef __cplusplus

@@ -189,7 +189,7 @@ class Plugin
 		virtual int ProcessSynchroEvent(int Event, PVOID Param) = 0;
 		virtual int ProcessConsoleInput(INPUT_RECORD *D) = 0;
 
-		virtual int Analyse(const AnalyseData *pData) = 0;
+		virtual int Analyse(const AnalyseInfo *pInfo) = 0;
 
 		virtual bool GetPluginInfo(PluginInfo *pi) = 0;
 		virtual int Configure(int MenuItem) = 0;
