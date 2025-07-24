@@ -266,6 +266,26 @@ typedef struct {
   WINBOOL bInheritHandle;
 } SECURITY_ATTRIBUTES;
 
+typedef unsigned int uid_t, gid_t;
+enum { MAX_NAME=255 };
+
+typedef struct _WIN32_FIND_DATAW {
+    FILETIME ftCreationTime;
+    FILETIME ftLastAccessTime;
+    FILETIME ftLastWriteTime;
+    uid_t UnixOwner;
+    gid_t UnixGroup;
+    DWORD64 UnixDevice;
+    DWORD64 UnixNode;
+    DWORD64 nPhysicalSize;
+    DWORD64 nFileSize;
+    DWORD dwFileAttributes;
+    DWORD dwUnixMode;
+    DWORD nHardLinks;
+    DWORD nBlockSize;
+    WCHAR cFileName[ MAX_NAME ];
+} WIN32_FIND_DATAW, *PWIN32_FIND_DATAW, *LPWIN32_FIND_DATAW, WIN32_FIND_DATA, *PWIN32_FIND_DATA, *LPWIN32_FIND_DATA;
+
 enum {
   FILE_ATTRIBUTE_READONLY            = 0x00000001,
   FILE_ATTRIBUTE_HIDDEN              = 0x00000002,
