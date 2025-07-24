@@ -972,11 +972,10 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 
 					if (SyncCall) m_InternalInput--;
 
-					//в windows гарантируется, что не бывает указателей меньше 0x10000
-					if (reinterpret_cast<uintptr_t>(Result) >= 0x10000 && Result != INVALID_HANDLE_VALUE)
+					if (IsPointer(Result) && Result != INVALID_HANDLE_VALUE)
 						api.PassPointer(Result);
 					else
-						api.PassBoolean(Result != nullptr && Result != INVALID_HANDLE_VALUE);
+						api.PassBoolean(Result != nullptr);
 
 					return 0;
 				}
