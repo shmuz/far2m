@@ -324,9 +324,15 @@ LUAPLUG int GetLinkTargetW(
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_ANALYSE) || defined(EXPORT_ALL)
-LUAPLUG int AnalyseW(const struct AnalyseInfo *Info)
+LUAPLUG HANDLE AnalyseW(const struct AnalyseInfo *Info)
 {
-	return LS ? LF_Analyse(LS, Info) : 0;
+	return LS ? LF_Analyse(LS, Info) : INVALID_HANDLE_VALUE;
+}
+
+LUAPLUG void CloseAnalyseW(const struct CloseAnalyseInfo *Info)
+{
+	if (LS)
+		LF_CloseAnalyse(LS, Info);
 }
 #endif
 //---------------------------------------------------------------------------

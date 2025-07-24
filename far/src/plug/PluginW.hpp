@@ -33,7 +33,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FARString.hpp"
 
 
-typedef int  (WINAPI *PLUGINANALYSEW)(const AnalyseInfo *pInfo);
+typedef HANDLE (WINAPI *PLUGINANALYSEW)(const AnalyseInfo *Info);
+typedef void (WINAPI *PLUGINCLOSEANALYSEW)(const CloseAnalyseInfo *Info);
 typedef void (WINAPI *PLUGINCLOSEPLUGINW)(HANDLE hPlugin);
 typedef int  (WINAPI *PLUGINCOMPAREW)(HANDLE hPlugin,const PluginPanelItem *Item1,const PluginPanelItem *Item2,unsigned int Mode);
 typedef int  (WINAPI *PLUGINCONFIGUREV3W)(const ConfigureInfo *Info);
@@ -74,6 +75,7 @@ class PluginW: public Plugin
 {
 	private:
 		PLUGINANALYSEW               pAnalyseW;
+		PLUGINCLOSEANALYSEW          pCloseAnalyseW;
 		PLUGINCLOSEPLUGINW           pClosePluginW;
 		PLUGINCOMPAREW               pCompareW;
 		PLUGINCONFIGUREV3W           pConfigureV3W;
@@ -129,6 +131,7 @@ class PluginW: public Plugin
 		bool IsPanelPlugin();
 
 		bool HasAnalyse() { return pAnalyseW!=nullptr; }
+		bool HasCloseAnalyse() { return pCloseAnalyseW!=nullptr; }
 		bool HasClosePlugin() { return pClosePluginW!=nullptr; }
 		bool HasCompare() { return pCompareW!=nullptr; }
 		bool HasConfigure() { return pConfigureW!=nullptr; }
@@ -178,7 +181,8 @@ class PluginW: public Plugin
 		bool SetStartupInfo(bool &bUnloaded);
 		bool CheckMinFarVersion(bool &bUnloaded);
 
-		int Analyse(const AnalyseInfo *pInfo);
+		HANDLE Analyse(const AnalyseInfo *Info);
+		void CloseAnalyse(const CloseAnalyseInfo *Info);
 
 		HANDLE OpenPlugin(int OpenFrom, INT_PTR Item);
 		HANDLE OpenFilePlugin(const wchar_t *Name, const unsigned char *Data, int DataSize, int OpMode);

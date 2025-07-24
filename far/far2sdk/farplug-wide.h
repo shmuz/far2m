@@ -919,7 +919,7 @@ struct FarPanelLocation
 #define PANEL_NONE		((HANDLE)(-1))
 #define PANEL_ACTIVE	((HANDLE)(-1))
 #define PANEL_PASSIVE	((HANDLE)(-2))
-#define PANEL_STOP		((HANDLE)(-2))
+#define PANEL_STOP		((HANDLE)(-2)) // not -1 as in Far3, to be different from INVALID_HANDLE_VALUE
 
 enum FILE_CONTROL_COMMANDS
 {
@@ -2823,6 +2823,20 @@ struct AnalyseInfo
 	int             OpMode;
 };
 
+
+struct OpenAnalyseInfo
+{
+	size_t StructSize;
+	struct AnalyseInfo* Info;
+	HANDLE Handle;
+};
+
+struct CloseAnalyseInfo
+{
+	size_t StructSize;
+	HANDLE Handle;
+};
+
 struct ConfigureInfo
 {
 	size_t StructSize;
@@ -2869,7 +2883,8 @@ extern "C"
 	void   WINAPI _export SetStartupInfoW(const struct PluginStartupInfo *Info);
 	void   WINAPI _export GetGlobalInfoW(struct GlobalInfo *Info);
 	int    WINAPI _export ProcessConsoleInputW(INPUT_RECORD *Rec);
-	int    WINAPI _export AnalyseW(const struct AnalyseInfo *pInfo);
+	HANDLE WINAPI _export AnalyseW(const struct AnalyseInfo *Info);
+	void   WINAPI _export CloseAnalyseW(const struct CloseAnalyseInfo *Info);
 
 
 #ifdef __cplusplus

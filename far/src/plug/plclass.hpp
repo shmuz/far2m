@@ -142,6 +142,7 @@ class Plugin
 		virtual bool HasProcessDialogEvent() = 0;
 		virtual bool HasProcessSynchroEvent() = 0;
 		virtual bool HasAnalyse() = 0;
+		virtual bool HasCloseAnalyse() = 0;
 		virtual bool HasGetCustomData() = 0;
 		virtual bool HasFreeCustomData() = 0;
 		virtual bool HasProcessConsoleInput() = 0;
@@ -189,7 +190,8 @@ class Plugin
 		virtual int ProcessSynchroEvent(int Event, PVOID Param) = 0;
 		virtual int ProcessConsoleInput(INPUT_RECORD *D) = 0;
 
-		virtual int Analyse(const AnalyseInfo *pInfo) = 0;
+		virtual HANDLE Analyse(const AnalyseInfo *Info) = 0;
+		virtual void CloseAnalyse(const CloseAnalyseInfo *Info) = 0;
 
 		virtual bool GetPluginInfo(PluginInfo *pi) = 0;
 		virtual int Configure(int MenuItem) = 0;
@@ -273,6 +275,7 @@ enum ExceptFunctionsType
 	EXCEPT_PROCESSDIALOGEVENT,
 	EXCEPT_PROCESSSYNCHROEVENT,
 	EXCEPT_ANALYSE,
+	EXCEPT_CLOSEANALYSE,
 	EXCEPT_GETCUSTOMDATA,
 	EXCEPT_FREECUSTOMDATA,
 	EXCEPT_GETGLOBALINFO,

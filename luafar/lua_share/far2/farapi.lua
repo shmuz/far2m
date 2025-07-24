@@ -2475,6 +2475,20 @@ struct AnalyseInfo
 	int             OpMode;
 };
 
+
+struct OpenAnalyseInfo
+{
+	size_t StructSize;
+	struct AnalyseInfo* Info;
+	HANDLE Handle;
+};
+
+struct CloseAnalyseInfo
+{
+	size_t StructSize;
+	HANDLE Handle;
+};
+
 struct ConfigureInfo
 {
 	size_t StructSize;
@@ -2514,6 +2528,7 @@ struct ConfigureInfo
 	void   __stdcall  SetStartupInfoW(const struct PluginStartupInfo *Info);
 	void   __stdcall  GetGlobalInfoW(struct GlobalInfo *Info);
 	int    __stdcall  ProcessConsoleInputW(INPUT_RECORD *Rec);
-	int    __stdcall  AnalyseW(const struct AnalyseInfo *pInfo);
+	HANDLE __stdcall  AnalyseW(const struct AnalyseInfo *Info);
+	void   __stdcall  CloseAnalyseW(const struct CloseAnalyseInfo *Info);
 
 ]=]

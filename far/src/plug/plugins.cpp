@@ -532,17 +532,29 @@ PHPTR PluginManager::OpenFilePlugin(
     Plugin *pDesiredPlugin
 )
 {
+	struct CallResult
+	{
+		HANDLE Handle;
+		Plugin *pPlugin;
+		bool FromAnalyse;
+
+		CallResult(HANDLE aHandle, Plugin *aPlugin, bool aFromAnalyse)
+			: Handle(aHandle), pPlugin(aPlugin), FromAnalyse(aFromAnalyse) {}
+	};
+
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	ConsoleTitle ct(Opt.ShowCheckingFile ? Msg::CheckingFileInPlugin.CPtr() : nullptr);
 	PHPTR hResult = nullptr;
-	PHPTR pResult = nullptr;
-	std::vector<PanelHandle> items;
+	CallResult *pResult = nullptr;
+	std::vector<CallResult> Results;
 	FARString strFullName;
+	AnalyseInfo AnInfo { sizeof(AnalyseInfo), nullptr ,nullptr, 0, OpMode };
 
 	if (Name)
 	{
 		ConvertNameToFull(Name,strFullName);
 		Name = strFullName;
+		AnInfo.FileName = Name;
 	}
 
 	bool ShowMenu = Opt.PluginConfirm.OpenFilePlugin == BSTATE_3STATE ?
@@ -573,6 +585,8 @@ PHPTR PluginManager::OpenFilePlugin(
 			try
 			{
 				smm.reset(new SafeMMap(Wide2MB(Name).c_str(), SafeMMap::M_READ, Opt.PluginMaxReadData));
+				AnInfo.Buffer = smm->View();
+				AnInfo.BufferSize = smm->Length();
 			}
 			catch (std::exception &e)
 			{
@@ -592,42 +606,38 @@ PHPTR PluginManager::OpenFilePlugin(
 			if (Opt.ShowCheckingFile)
 				ct.Set(L"%ls - [%ls]...", Msg::CheckingFileInPlugin.CPtr(), PointToName(pPlugin->GetModuleName()));
 
-			HANDLE hPlugin = pPlugin->OpenFilePlugin(Name,
+			HANDLE Handle = pPlugin->OpenFilePlugin(Name,
 				smm ? (const unsigned char *)smm->View() : nullptr,
 				smm ? (DWORD)smm->Length() : 0, OpMode);
 
-			if (hPlugin == PANEL_STOP)   //сразу на выход, плагин решил нагло обработать все сам (Autorun/PictureView)!!!
+			if (Handle == PANEL_STOP)   //сразу на выход, плагин решил нагло обработать все сам (Autorun/PictureView)!!!
 			{
 				hResult = PHPTR_STOP;
 				break;
 			}
 
-			if (hPlugin != INVALID_HANDLE_VALUE)
+			if (Handle != INVALID_HANDLE_VALUE)
 			{
-				items.emplace_back(hPlugin, pPlugin);
+				Results.emplace_back(Handle, pPlugin, false);
 			}
 		}
 		else
 		{
-			AnalyseInfo AInfo;
-			AInfo.FileName = Name;
-			AInfo.Buffer = smm ? smm->View() : nullptr;
-			AInfo.BufferSize = smm ? smm->Length() : 0;
-			AInfo.OpMode = OpMode;
-
-			if (pPlugin->Analyse(&AInfo))
+			AnalyseInfo copyInfo = AnInfo;
+			HANDLE Handle = pPlugin->Analyse(&copyInfo);
+			if (Handle != INVALID_HANDLE_VALUE)
 			{
-				items.emplace_back(INVALID_HANDLE_VALUE, pPlugin);
+				Results.emplace_back(Handle, pPlugin, true);
 			}
 		}
 
-		if (!items.empty() && !ShowMenu)
+		if (!Results.empty() && !ShowMenu)
 			break;
 	}
 
-	if (!items.empty() && (hResult != PHPTR_STOP))
+	if (!Results.empty() && (hResult != PHPTR_STOP))
 	{
-		bool OnlyOne = (items.size() == 1) && !(Name && Opt.PluginConfirm.OpenFilePlugin &&
+		bool OnlyOne = (Results.size() == 1) && !(Name && Opt.PluginConfirm.OpenFilePlugin &&
 			Opt.PluginConfirm.StandardAssociation && Opt.PluginConfirm.EvenIfOnlyOnePlugin);
 
 		if(!OnlyOne && ShowMenu)
@@ -638,14 +648,13 @@ PHPTR PluginManager::OpenFilePlugin(
 			menu.SetFlags(VMENU_SHOWAMPERSAND|VMENU_WRAPMODE);
 			MenuItemEx mitem;
 
-			for (size_t i = 0; i < items.size(); i++)
+			for (const auto &res: Results)
 			{
-				PanelHandle *handle = &items[i];
 				mitem.Clear();
-				mitem.strName = PointToName(handle->pPlugin->GetModuleName());
+				mitem.strName = PointToName(res.pPlugin->GetModuleName());
 				//NB: here is really should be used sizeof(handle), not sizeof(*handle)
 				//cuz sizeof(void *) has special meaning in SetUserData!
-				menu.SetUserData(handle, sizeof(handle), menu.AddItem(&mitem));
+				menu.SetUserData(&res, sizeof(&res), menu.AddItem(&mitem));
 			}
 
 			if (Opt.PluginConfirm.StandardAssociation && Type == OFP_NORMAL)
@@ -669,33 +678,46 @@ PHPTR PluginManager::OpenFilePlugin(
 			if (menu.GetExitCode() == -1)
 				hResult = PHPTR_STOP;
 			else
-				pResult = (PanelHandle*)menu.GetUserData(nullptr, 0);
+				pResult = (CallResult*)menu.GetUserData(nullptr, 0);
 		}
 		else
 		{
-			pResult = &items.front();
+			pResult = &Results.front();
 		}
 
-		if (pResult && pResult->hPanel == INVALID_HANDLE_VALUE)
+		if (pResult && pResult->FromAnalyse)
 		{
-			HANDLE h = pResult->pPlugin->OpenPlugin(OPEN_ANALYSE, reinterpret_cast<INT_PTR>(Name));
+			AnalyseInfo copyInfo = AnInfo;
+			OpenAnalyseInfo oaInfo { sizeof(oaInfo), &copyInfo, pResult->Handle };
+			HANDLE h = pResult->pPlugin->OpenPlugin(OPEN_ANALYSE, reinterpret_cast<INT_PTR>(&oaInfo));
 
 			if (h != INVALID_HANDLE_VALUE)
-				pResult->hPanel = h;
+				pResult->Handle = h;
 			else
 				pResult = nullptr;
 		}
 	}
 
-	for (const auto& PH: items)
+	for (const auto& res: Results)
 	{
-		if (&PH != pResult && PH.hPanel != INVALID_HANDLE_VALUE)
-			PH.pPlugin->ClosePlugin(PH.hPanel);
+		if (&res != pResult)
+		{
+			if (res.FromAnalyse)
+			{
+				 if (res.pPlugin->HasCloseAnalyse())
+				 {
+					 CloseAnalyseInfo Info { sizeof(Info), res.Handle };
+					 res.pPlugin->CloseAnalyse(&Info);
+				 }
+			}
+			else
+				res.pPlugin->ClosePlugin(res.Handle);
+		}
 	}
 
 	if (pResult)
 	{
-		hResult = new PanelHandle(pResult->hPanel, pResult->pPlugin);
+		hResult = new PanelHandle(pResult->Handle, pResult->pPlugin);
 	}
 
 	return hResult;

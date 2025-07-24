@@ -121,6 +121,7 @@ class PluginA: public Plugin
 		bool IsPanelPlugin();
 
 		bool HasAnalyse() { return false; }
+		bool HasCloseAnalyse() { return false; }
 		bool HasClosePlugin() { return pClosePlugin!=nullptr; }
 		bool HasCompare() { return pCompare!=nullptr; }
 		bool HasConfigure() { return pConfigure!=nullptr; }
@@ -201,7 +202,8 @@ class PluginA: public Plugin
 		int ProcessSynchroEvent(int Event, PVOID Param) { return 0; }
 		int ProcessConsoleInput(INPUT_RECORD *D) { return 0; }
 
-		int Analyse(const AnalyseInfo *pInfo) { return FALSE; }
+		HANDLE Analyse(const AnalyseInfo *Info) { return INVALID_HANDLE_VALUE; }
+		void CloseAnalyse(const CloseAnalyseInfo *Info) {}
 
 		bool GetPluginInfo(PluginInfo *pi);
 		int Configure(int MenuItem);

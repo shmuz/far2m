@@ -779,6 +779,15 @@ static HANDLE FillFarMacroCall (lua_State* L, int narg)
 	return (HANDLE)fmc;
 }
 
+static void PushAnalyseInfo(lua_State* L, const struct AnalyseInfo *Info)
+{
+	lua_createtable(L, 0, 4);
+	PutIntToTable(L,  "StructSize", Info->StructSize);
+	PutWStrToTable(L, "FileName",   Info->FileName, -1);
+	PutLStrToTable(L, "Buffer",     Info->Buffer, Info->BufferSize);
+	PutIntToTable(L,  "OpMode",     Info->OpMode);
+}
+
 HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 {
 	if (!CheckReloadDefaultScript(L) || !GetExportFunction(L, "Open"))
@@ -892,14 +901,21 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 			break;
 
 		case OPEN_ANALYSE:
-			lua_pushnil(L); // dummy
-			push_utf8_string(L, (wchar_t*)Item, -1);
+		{
+			const struct OpenAnalyseInfo* oai = (struct OpenAnalyseInfo*)Item;
+			int ref = (int)(intptr_t)oai->Handle;
+			lua_pushnil(L); // dummy                 //+3
+			PushAnalyseInfo(L, oai->Info);           //+4
+			lua_rawgeti(L, LUA_REGISTRYINDEX, ref);  //+5
+			lua_setfield(L, -2, "Handle");           //+4
+			luaL_unref(L, LUA_REGISTRYINDEX, ref);   //+4
 			if (pcall_msg(L, 3, 1) == 0) {
 				if (lua_toboolean(L, -1))        //+1: Obj
 					return RegisterObject(L);      //+0
 				lua_pop(L,1);
 			}
 			break;
+		}
 
 		default:
 			lua_pop(L, 1);
@@ -1481,28 +1497,34 @@ int LF_GetLinkTarget(
 	return 0;
 }
 
-static void PushAnalyseInfo(lua_State* L, const struct AnalyseInfo *Info)
+HANDLE LF_Analyse(lua_State* L, const struct AnalyseInfo *Info)
 {
-	lua_createtable(L, 0, 4);
-	PutIntToTable(L,  "StructSize", Info->StructSize);
-	PutWStrToTable(L, "FileName",   Info->FileName, -1);
-	PutLStrToTable(L, "Buffer",     Info->Buffer, Info->BufferSize);
-	PutIntToTable(L,  "OpMode",     Info->OpMode);
-}
-
-int LF_Analyse(lua_State* L, const struct AnalyseInfo *Info)
-{
-	int result = 0;
-
-	if (GetExportFunction(L, "Analyse"))    //+1
+	HANDLE result = INVALID_HANDLE_VALUE;
+	if (GetExportFunction(L, "Analyse"))   //+1
 	{
 		PushAnalyseInfo(L, Info);            //+2
-
 		if (!pcall_msg(L, 1, 1))             //+1
 		{
-			result = lua_toboolean(L, -1);
-			lua_pop(L, 1);                   //+0
+			if (lua_toboolean(L, -1))
+			{
+				const intptr_t Unfit = (intptr_t)INVALID_HANDLE_VALUE;
+				intptr_t ref = luaL_ref(L, LUA_REGISTRYINDEX);   //+0
+				if (ref == Unfit)
+				{
+					lua_rawgeti(L, LUA_REGISTRYINDEX, Unfit);      //+1
+					ref = luaL_ref(L, LUA_REGISTRYINDEX);          //+0
+					luaL_unref(L, LUA_REGISTRYINDEX, Unfit);
+				}
+				result = (HANDLE)ref;
+			}
+			else
+				lua_pop(L, 1); //+0
 		}
 	}
 	return result;
+}
+
+void LF_CloseAnalyse(lua_State* L, const struct CloseAnalyseInfo *Info)
+{
+	luaL_unref(L, LUA_REGISTRYINDEX, (int)(intptr_t)Info->Handle);
 }

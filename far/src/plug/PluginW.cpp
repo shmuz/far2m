@@ -129,6 +129,7 @@ static const char NFMP_ProcessEvent[] = "ProcessEventW";
 static const char NFMP_Compare[] = "CompareW";
 static const char NFMP_GetMinFarVersion[] = "GetMinFarVersionW";
 static const char NFMP_Analyse[] = "AnalyseW";
+static const char NFMP_CloseAnalyse[] = "CloseAnalyseW";
 static const char NFMP_GetCustomData[] = "GetCustomDataW";
 static const char NFMP_FreeCustomData[] = "FreeCustomDataW";
 static const char NFMP_ProcessConsoleInput[] = "ProcessConsoleInputW";
@@ -339,6 +340,7 @@ bool PluginW::Load()
 		return false;
 
 	GetModuleFN(pAnalyseW, NFMP_Analyse);
+	GetModuleFN(pCloseAnalyseW, NFMP_CloseAnalyse);
 	GetModuleFN(pClosePluginW, NFMP_ClosePlugin);
 	GetModuleFN(pCompareW, NFMP_Compare);
 	GetModuleFN(pConfigureV3W, NFMP_ConfigureV3);
@@ -698,18 +700,26 @@ bool PluginW::IsPanelPlugin()
 	       pClosePluginW;
 }
 
-int PluginW::Analyse(const AnalyseInfo *pInfo)
+HANDLE PluginW::Analyse(const AnalyseInfo *Info)
 {
 	if (Load() && pAnalyseW)
 	{
 		ExecuteStruct es(EXCEPT_ANALYSE);
-		es.bDefaultResult = FALSE;
-		es.bResult = FALSE;
-		EXECUTE_FUNCTION_EX(pAnalyseW(pInfo), es);
-		return es.bResult;
+		es.hDefaultResult = INVALID_HANDLE_VALUE;
+		es.hResult = INVALID_HANDLE_VALUE;
+		EXECUTE_FUNCTION_EX(pAnalyseW(Info), es);
+		return es.hResult;
 	}
+	return INVALID_HANDLE_VALUE;
+}
 
-	return FALSE;
+void PluginW::CloseAnalyse(const CloseAnalyseInfo *Info)
+{
+	if (Load() && pCloseAnalyseW)
+	{
+		ExecuteStruct es(EXCEPT_CLOSEANALYSE);
+		EXECUTE_FUNCTION(pCloseAnalyseW(Info), es);
+	}
 }
 
 HANDLE PluginW::OpenPlugin(int OpenFrom, INT_PTR Item)
