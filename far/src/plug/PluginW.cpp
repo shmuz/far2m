@@ -39,6 +39,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "constitle.hpp"
 #include "cmdline.hpp"
 #include "filepanels.hpp"
+#include "fileattr.hpp"
 #include "panel.hpp"
 #include "vmenu.hpp"
 #include "dialog.hpp"
@@ -64,6 +65,9 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "interf.hpp"
 #include "execute.hpp"
 #include "flink.hpp"
+#include "fileowner.hpp"
+#include "datetime.hpp"
+
 #include <string>
 #include <list>
 #include <vector>
@@ -434,6 +438,73 @@ static size_t WINAPI farStrSizeOfCells(const wchar_t *Str, size_t CharsCount, si
 	return StrSizeOfCells(Str, CharsCount, *CellsCount, RoundUp != FALSE);
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+static int WINAPI farESetFileMode(const wchar_t *Name, DWORD Mode, int SkipMode)
+{
+	return ESetFileMode(Name, Mode, SkipMode);
+}
+
+static int WINAPI farESetFileTime(const wchar_t *Name, FILETIME *AccessTime, FILETIME *ModifyTime, DWORD FileAttr, int SkipMode)
+{
+	return ESetFileTime(Name, AccessTime, ModifyTime, FileAttr, SkipMode);
+}
+
+static int WINAPI farESetFileGroup(const wchar_t *Name, const wchar_t *Group, int SkipMode)
+{
+	return ESetFileGroup(Name, Group, SkipMode);
+}
+
+static int WINAPI farESetFileOwner(const wchar_t *Name, const wchar_t *Owner, int SkipMode)
+{
+	return ESetFileOwner(Name, Owner, SkipMode);
+}
+
+static const char *WINAPI farOwnerNameByID(uid_t id)
+{
+	return OwnerNameByID(id);
+}
+
+static const char *WINAPI farGroupNameByID(uid_t id)
+{
+	return GroupNameByID(id);
+}
+
+static BOOL farGetFindData(const wchar_t *lpwszFileName, WIN32_FIND_DATAW *FindDataW)
+{
+	FAR_FIND_DATA_EX FindDataEx;
+
+	if (!apiGetFindDataForExactPathName(lpwszFileName, FindDataEx))
+		return FALSE;
+
+	if (FindDataEx.strFileName.GetLength() >= MAX_NAME)
+		return FALSE;
+
+	FindDataW->ftCreationTime = FindDataEx.ftCreationTime;
+	FindDataW->ftLastAccessTime = FindDataEx.ftLastAccessTime;
+	FindDataW->ftLastWriteTime = FindDataEx.ftLastWriteTime;
+
+	FindDataW->UnixOwner = FindDataEx.UnixOwner;
+	FindDataW->UnixGroup = FindDataEx.UnixGroup;
+	FindDataW->UnixDevice = FindDataEx.UnixDevice;
+	FindDataW->UnixNode = FindDataEx.UnixNode;
+	FindDataW->dwFileAttributes = FindDataEx.dwFileAttributes;
+	FindDataW->nFileSize = FindDataEx.nFileSize;
+	FindDataW->dwUnixMode = FindDataEx.dwUnixMode;
+	FindDataW->nHardLinks = FindDataEx.nHardLinks;
+	FindDataW->nBlockSize = FindDataEx.nBlockSize;
+
+	memcpy(FindDataW->cFileName, FindDataEx.strFileName.GetBuffer(), sizeof(WCHAR) * (FindDataEx.strFileName.GetLength() + 1) );
+
+	return TRUE;
+}
+
+static int WINAPI farGetDateFormat() {return GetDateFormat();}
+static wchar_t WINAPI farGetDateSeparator() {return GetDateSeparator();}
+static wchar_t WINAPI farGetTimeSeparator() {return GetTimeSeparator();}
+static wchar_t WINAPI farGetDecimalSeparator() {return GetDecimalSeparator();}
+
+
 static const MacroPrivateInfo MacroInfo
 {
 	sizeof(MacroPrivateInfo),
@@ -539,7 +610,6 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 		StandardFunctions.FarNameToKey=KeyNameToKeyW;
 		StandardFunctions.FarInputRecordToKey=InputRecordToKey;
 		StandardFunctions.XLat=Xlat;
-		StandardFunctions.GetFileOwner=farGetFileOwner;
 		StandardFunctions.GetNumberOfLinks=GetNumberOfLinks;
 		StandardFunctions.FarRecursiveSearch=FarRecursiveSearch;
 		StandardFunctions.MkTemp=FarMkTemp;
@@ -560,8 +630,21 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 		StandardFunctions.VTLogExport = farAPIVTLogExportW;
 		StandardFunctions.DetectCodePage = farDetectCodePage;
 		StandardFunctions.FarNameToInputRecord = FarNameToInputRecord;
-		StandardFunctions.GetFileGroup = farGetFileGroup;
 		StandardFunctions.FormatFileSize = farFormatFileSize;
+
+		StandardFunctions.GetFileOwner = farGetFileOwner;
+		StandardFunctions.GetFileGroup = farGetFileGroup;
+		StandardFunctions.ESetFileMode = farESetFileMode;
+		StandardFunctions.ESetFileTime = farESetFileTime;
+		StandardFunctions.ESetFileGroup = farESetFileGroup;
+		StandardFunctions.ESetFileOwner = farESetFileOwner;
+		StandardFunctions.OwnerNameByID = farOwnerNameByID;
+		StandardFunctions.GroupNameByID = farGroupNameByID;
+		StandardFunctions.GetFindData = farGetFindData;
+		StandardFunctions.GetDateFormat = farGetDateFormat;
+		StandardFunctions.GetDateSeparator = farGetDateSeparator;
+		StandardFunctions.GetTimeSeparator = farGetTimeSeparator;
+		StandardFunctions.GetDecimalSeparator = farGetDecimalSeparator;
 	}
 
 	if (!StartupInfo.StructSize)
@@ -585,6 +668,7 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 		StartupInfo.ViewerControl=FarViewerControl;
 		StartupInfo.ShowHelp=FarShowHelp;
 		StartupInfo.AdvControl=FarAdvControl;
+		StartupInfo.AdvControlAsync=FarAdvControlAsync;
 		StartupInfo.DialogInit=FarDialogInit;
 		StartupInfo.DialogInitV3=FarDialogInitV3;
 		StartupInfo.DialogRun=FarDialogRun;

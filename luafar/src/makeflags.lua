@@ -28,16 +28,32 @@ function Skip:Process(line)
 end
 
 local function add_defines (src, trg_int, trg_ptr)
+  local STR_INLINE = "FAR_INLINE_CONSTANT"
+  local STATE_OUT, STATE_INLINE = 1, 2
+  local state = STATE_OUT
   local skip = NewSkip()
+
   for line in src:gmatch("[^\r\n]+") do
     if not skip:Process(line) then
-      local c, v = line:match("#define%s+([A-Z][A-Z0-9_]*)%s+(.+)")
-      if c then
-        if v:find("%(%s*void%s*%*%s*%)") or v:find("%(%s*HANDLE%s*%)") then
-          table.insert(trg_ptr, c)
-        else
-          table.insert(trg_int, c)
+      if state == STATE_OUT then
+        local c, v = line:match("#define%s+([A-Z][A-Z0-9_]*)%s+(.+)")
+        if c and c ~= STR_INLINE then
+          if v:find("%(%s*void%s*%*%s*%)") or v:find("%(%s*HANDLE%s*%)") then
+            table.insert(trg_ptr, c)
+          else
+            table.insert(trg_int, c)
+          end
+        elseif c == nil and line:find(STR_INLINE) then
+          state = STATE_INLINE
         end
+      elseif state == STATE_INLINE then
+        local c, delim = line:match("([A-Z][A-Z0-9_]*)%s*=.-([,;])")
+        if c then
+          table.insert(trg_int, c)
+          if delim == ";" then state = STATE_OUT end
+        end
+      else
+        error("must not get here")
       end
     end
   end

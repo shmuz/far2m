@@ -301,6 +301,7 @@ else()
 endif()
 
 AddPlugin( align         wide  1 )
+AddPlugin( arclite       wide  1 )
 AddPlugin( autowrap      wide  1 )
 AddPlugin( calc          wide  1 )
 AddPlugin( colorer       wide  1 )

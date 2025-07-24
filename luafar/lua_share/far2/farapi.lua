@@ -16,14 +16,16 @@ typedef SIZE_T (__stdcall *FARAPIVT_ENUM_BACKGROUND)(HANDLE *con_hnds, SIZE_T co
 typedef struct _INPUT_RECORD INPUT_RECORD;
 typedef struct _CHAR_INFO    CHAR_INFO;
 
-enum FARMESSAGEFLAGS
-{
+typedef uint32_t FARMESSAGEFLAGS;
+typedef GUID UUID;
+enum {
 	FMSG_WARNING             = 0x00000001,
 	FMSG_ERRORTYPE           = 0x00000002,
 	FMSG_KEEPBACKGROUND      = 0x00000004,
 	FMSG_LEFTALIGN           = 0x00000010,
 
 	FMSG_ALLINONE            = 0x00000020,
+	FMSG_DISPLAYNOTIFY       = 0x00000080,
 
 	FMSG_MB_OK               = 0x00010000,
 	FMSG_MB_OKCANCEL         = 0x00020000,
@@ -31,6 +33,7 @@ enum FARMESSAGEFLAGS
 	FMSG_MB_YESNO            = 0x00040000,
 	FMSG_MB_YESNOCANCEL      = 0x00050000,
 	FMSG_MB_RETRYCANCEL      = 0x00060000,
+	FMSG_NONE                = 0
 };
 
 typedef int (__stdcall *FARAPIMESSAGE)(
@@ -1343,14 +1346,14 @@ struct WindowInfo
 	intptr_t Id;
 };
 
-enum PROGRESSTATE
-{
+typedef uint32_t PROGRESSTATE;
+
+static const PROGRESSTATE
 	PGS_NOPROGRESS   =0x0,
 	PGS_INDETERMINATE=0x1,
 	PGS_NORMAL       =0x2,
 	PGS_ERROR        =0x4,
-	PGS_PAUSED       =0x8,
-};
+	PGS_PAUSED       =0x8;
 
 struct PROGRESSVALUE
 {
@@ -1911,6 +1914,7 @@ typedef int (__stdcall *FRSUSERFUNC)(
 
 enum FRSMODE
 {
+	FRS_NONE                 = 0x00,
 	FRS_RETUPDIR             = 0x01,
 	FRS_RECUR                = 0x02,
 	FRS_SCANSYMLINK          = 0x04,
@@ -1980,6 +1984,23 @@ typedef int (__stdcall *FARDISPATCHNTRTHRDCALLS)();
 typedef void (__stdcall *FARBACKGROUNDTASK)(const wchar_t *Info, BOOL Started);
 typedef size_t (__stdcall *FARSTRCELLSCOUNT)(const wchar_t *Str, size_t CharsCount);
 typedef size_t (__stdcall *FARSTRSIZEOFCELLS)(const wchar_t *Str, size_t CharsCount, size_t *CellsCount, BOOL RoundUp);
+
+typedef int (__stdcall *FARGETFILEOWNER)(const wchar_t *Computer, const wchar_t *Name, wchar_t *Owner, int Size);
+typedef int (__stdcall *FARESETFILEMODE)(const wchar_t *Name, DWORD Mode, int SkipMode);
+typedef int (__stdcall *FARESETFILETIME)(const wchar_t *Name, FILETIME *AccessTime, FILETIME *ModifyTime, DWORD FileAttr, int SkipMode);
+typedef int (__stdcall *FARESETFILEGROUP)(const wchar_t *Name, const wchar_t *Group, int SkipMode);
+typedef int (__stdcall *FARESETFILEOWNER)(const wchar_t *Name, const wchar_t *Owner, int SkipMode);
+typedef const char *(__stdcall *FAROWNERNAMEBYID)(uid_t id);
+typedef const char *(__stdcall *FARGROUPNAMEBYID)(uid_t id);
+typedef size_t (__stdcall *FARREADLINK)(const char *path, char *buf, size_t bufsiz);
+typedef BOOL (__stdcall *FARSDCLSTAT)(const wchar_t *path, void *s);
+typedef int (__stdcall *FARSDCSYMLINK)(const char *path1, const char *path2);
+typedef BOOL (__stdcall *FARGETFINDDATA)(const wchar_t *lpwszFileName, WIN32_FIND_DATAW *FindDataW);
+
+typedef int (__stdcall *FARGETDATEFORMAT)(void);
+typedef wchar_t (__stdcall *FARGETDATESEPARATOR)(void);
+typedef wchar_t (__stdcall *FARGETTIMESEPARATOR)(void);
+typedef wchar_t (__stdcall *FARGETDECIMALSEPARATOR)(void);
 typedef BOOL (__stdcall *FARAPIVT_LOGEXPORT)(HANDLE con_hnd, DWORD flags, const wchar_t *file);
 
 enum BOX_DEF_SYMBOLS
@@ -2110,6 +2131,19 @@ typedef struct FarStandardFunctions
 
 	FARAPIVT_ENUM_BACKGROUND   VTEnumBackground;
 	FARAPIVT_LOGEXPORT         VTLogExport;
+
+	FARESETFILEMODE			   ESetFileMode;
+	FARESETFILETIME			   ESetFileTime;
+	FARESETFILEGROUP		   ESetFileGroup;
+	FARESETFILEOWNER		   ESetFileOwner;
+	FAROWNERNAMEBYID		   OwnerNameByID;
+	FARGROUPNAMEBYID		   GroupNameByID;
+	FARGETFINDDATA			   GetFindData;
+	FARGETDATEFORMAT		   GetDateFormat;
+	FARGETDATESEPARATOR		   GetDateSeparator;
+	FARGETTIMESEPARATOR		   GetTimeSeparator;
+	FARGETDECIMALSEPARATOR	   GetDecimalSeparator;
+
 } FARSTANDARDFUNCTIONS;
 
 struct PluginStartupInfo
@@ -2165,6 +2199,7 @@ struct PluginStartupInfo
 	FARAPIMESSAGEV3        MessageV3;
 	FARAPIMENUV2           MenuV2;
 	FARAPIINPUTBOXV3       InputBoxV3;
+	FARAPIADVCONTROL       AdvControlAsync;
 };
 
 
@@ -2223,6 +2258,7 @@ struct PanelMode
 
 enum OPENPLUGININFO_FLAGS
 {
+	OPIF_NONE                    = 0,
 	OPIF_USEFILTER               = 0x00000001,
 	OPIF_USESORTGROUPS           = 0x00000002,
 	OPIF_USEHIGHLIGHTING         = 0x00000004,
@@ -2241,6 +2277,12 @@ enum OPENPLUGININFO_FLAGS
 	OPIF_USECRC32                = 0x00010000,
 	OPIF_HL_MARKERS_NOSHOW       = 0x00020000,
 	OPIF_HL_MARKERS_NOALIGN      = 0x00040000,
+
+	OPIF_USEFREESIZE             = 0x00080000,
+	OPIF_SHORTCUT                = 0x00100000,
+	OPIF_RECURSIVEPANEL          = 0x00200000,
+	OPIF_DELETEFILEONCLOSE       = 0x00400000,
+	OPIF_DELETEDIRONCLOSE        = 0x00800000,
 };
 
 
@@ -2279,9 +2321,8 @@ struct KeyBarTitles
 	wchar_t *CtrlAltTitles[12];
 };
 
-
-enum OPERATION_MODES
-{
+typedef uint32_t OPERATION_MODES;
+enum {
 	OPM_SILENT     =0x0001,
 	OPM_FIND       =0x0002,
 	OPM_VIEW       =0x0004,
@@ -2291,6 +2332,7 @@ enum OPERATION_MODES
 	OPM_QUICKVIEW  =0x0040,
 	OPM_PGDN       =0x0080,
 	OPM_COMMANDS   =0x0100,
+	OPM_NONE       =0
 };
 
 struct OpenPluginInfo

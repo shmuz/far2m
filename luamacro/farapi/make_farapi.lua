@@ -43,7 +43,13 @@ local function Remove_FAR_USE_INTERNALS(aText)
   return table.concat(t, "\n")
 end
 
+local function RemoveFarInlineConstants(aText)
+  aText = aText:gsub("\n%s*FAR_INLINE_CONSTANT.-\n(.-);", "\nenum {\n%1\n};")
+  return aText
+end
+
 txt = Remove_FAR_USE_INTERNALS(txt) -- must go first
+txt = RemoveFarInlineConstants(txt)
 txt = rex.gsub(txt, "#ifdef\\s+__cplusplus\\b(.|\n)*?#endif\\b", "")
 txt = rex.gsub(txt, "^\\s*#[^\n]+\n?", "", nil, "m")   -- delete all preprocessor lines
 txt = rex.gsub(txt, "\\bWINAPI\\b", "__stdcall")       -- LuaJIT

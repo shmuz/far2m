@@ -733,6 +733,12 @@ INT_PTR WINAPI FarAdvControl(INT_PTR ModuleNumber, int Command, void *Param1, vo
 	return InterThreadCall<LONG_PTR, 0>(std::bind(FarAdvControlSynched, ModuleNumber, Command, Param1, Param2));
 }
 
+INT_PTR WINAPI FarAdvControlAsync(INT_PTR ModuleNumber, int Command, void *Param1, void *Param2)
+{
+//	fprintf(stderr, "FarAdvControlAsync( ) - %ld\n", pthread_self());
+	return FarAdvControlSynched(ModuleNumber, Command, Param1, Param2);
+}
+
 static int FarMenuFnSynched(INT_PTR PluginNumber, const GUID *Id, int X, int Y, int MaxHeight, DWORD Flags,
 		const wchar_t *Title, const wchar_t *Bottom, const wchar_t *HelpTopic, const int *BreakKeys,
 		int *BreakCode, const FarMenuItem *Item, int ItemsNumber, FARMENUCALLBACK Callback,
