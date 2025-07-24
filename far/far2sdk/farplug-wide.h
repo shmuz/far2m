@@ -2485,17 +2485,17 @@ typedef struct FarStandardFunctions
 	FARAPIVT_ENUM_BACKGROUND   VTEnumBackground;
 	FARAPIVT_LOGEXPORT         VTLogExport;
 
-	FARESETFILEMODE			   ESetFileMode;
-	FARESETFILETIME			   ESetFileTime;
-	FARESETFILEGROUP		   ESetFileGroup;
-	FARESETFILEOWNER		   ESetFileOwner;
-	FAROWNERNAMEBYID		   OwnerNameByID;
-	FARGROUPNAMEBYID		   GroupNameByID;
-	FARGETFINDDATA			   GetFindData;
-	FARGETDATEFORMAT		   GetDateFormat;
-	FARGETDATESEPARATOR		   GetDateSeparator;
-	FARGETTIMESEPARATOR		   GetTimeSeparator;
-	FARGETDECIMALSEPARATOR	   GetDecimalSeparator;
+	FARESETFILEMODE            ESetFileMode;
+	FARESETFILETIME            ESetFileTime;
+	FARESETFILEGROUP           ESetFileGroup;
+	FARESETFILEOWNER           ESetFileOwner;
+	FAROWNERNAMEBYID           OwnerNameByID;
+	FARGROUPNAMEBYID           GroupNameByID;
+	FARGETFINDDATA             GetFindData;
+	FARGETDATEFORMAT           GetDateFormat;
+	FARGETDATESEPARATOR        GetDateSeparator;
+	FARGETTIMESEPARATOR        GetTimeSeparator;
+	FARGETDECIMALSEPARATOR     GetDecimalSeparator;
 
 } FARSTANDARDFUNCTIONS;
 
