@@ -13,6 +13,10 @@
 #  define ARRAYSIZE(buff) (sizeof(buff)/sizeof(buff[0]))
 #endif
 
+#ifndef GOOD_SLASH
+#define GOOD_SLASH  '/'
+#endif
+
 #define COLLECTOR_UD "Collector_UserData"
 
 typedef struct {

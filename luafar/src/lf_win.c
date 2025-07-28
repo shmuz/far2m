@@ -361,17 +361,17 @@ static BOOL makedir (const wchar_t* path)
 	const wchar_t* src = path;
 	wchar_t *p = wcsdup(path), *trg = p;
 	while (*src) {
-		if (*src == L'/') {
-			*trg++ = L'/';
-			do src++; while (*src == L'/');
+		if (*src == GOOD_SLASH) {
+			*trg++ = GOOD_SLASH;
+			do src++; while (*src == GOOD_SLASH);
 		}
 		else *trg++ = *src++;
 	}
-	if (trg > p && trg[-1] == '/') trg--;
+	if (trg > p && trg[-1] == GOOD_SLASH) trg--;
 	*trg = 0;
 
-	for (wchar_t *q=p; *q; *q++=L'/') {
-		q = wcschr(q, L'/');
+	for (wchar_t *q=p; *q; *q++ = GOOD_SLASH) {
+		q = wcschr(q, GOOD_SLASH);
 		if (q != NULL)  *q = 0;
 		if (q != p && !dir_exist(p) && !WINPORT(CreateDirectory)(p, NULL)) break;
 		if (q == NULL) { result=TRUE; break; }
@@ -408,21 +408,34 @@ static int win_IsProcess64bit(lua_State *L)
 
 static int win_ExpandEnv (lua_State *L)
 {
-	const char *p = luaL_checkstring(L,1), *q, *r, *s;
-	int remove = lua_toboolean(L,2);
+	const char *p = luaL_checkstring(L, 1);
+	int remove = lua_toboolean(L, 2);
+	lua_settop(L, 2);
 	luaL_Buffer buf;
 	luaL_buffinit(L, &buf);
-	for (; *p; p=r+1) {
+
+	if (*p == '~' && (p[1] == 0 || p[1] == GOOD_SLASH)) {
+		lua_pushcfunction(L, far_GetMyHome);
+		lua_call(L, 0, 1);
+		lua_replace(L, 2); // keep stack balance
+		luaL_addstring(&buf, lua_tostring(L, 2));
+		++p;
+	}
+
+	while (*p) {
+		const char *q, *r;
 		if ( (q = strstr(p, "$(")) && (r = strchr(q+2, ')')) ) {
 			lua_pushlstring(L, q+2, r-q-2);
-			s = getenv(lua_tostring(L,-1));
-			lua_pop(L,1);
+			const char *s = getenv(lua_tostring(L,-1));
+			lua_pop(L,1); // keep stack balance
 			if (s) {
 				luaL_addlstring(&buf, p, q-p);
 				luaL_addstring(&buf, s);
 			}
-			else
+			else {
 				luaL_addlstring(&buf, p, remove ? q-p : r+1-p);
+			}
+			p = r + 1;
 		}
 		else {
 			luaL_addstring(&buf, p);
@@ -524,7 +537,6 @@ static int win_EnsureColorsAreInverted(lua_State *L)
 
 static int win_JoinPath(lua_State *L)
 {
-	const int DELIM = '/';
 	int empty=1, was_slash=0;
 	int top = lua_gettop(L), idx;
 	luaL_Buffer buf;
@@ -534,17 +546,17 @@ static int win_JoinPath(lua_State *L)
 		const char *s = luaL_checkstring(L, idx);
 		if (*s == 0) {
 			if (idx == top && !was_slash) { // treat empty string in last arg as delimiter
-				luaL_addchar(&buf, DELIM);
+				luaL_addchar(&buf, GOOD_SLASH);
 				break;
 			}
 			continue;
 		}
-		if (!empty && !was_slash && *s != DELIM)
-			luaL_addchar(&buf, DELIM);
-		else if (was_slash && *s == DELIM)
+		if (!empty && !was_slash && *s != GOOD_SLASH)
+			luaL_addchar(&buf, GOOD_SLASH);
+		else if (was_slash && *s == GOOD_SLASH)
 			s++;
 		luaL_addstring(&buf, s);
-		was_slash = s[(int)strlen(s) - 1] == DELIM;
+		was_slash = s[(int)strlen(s) - 1] == GOOD_SLASH;
 		empty = 0;
 	}
 	luaL_pushresult(&buf);

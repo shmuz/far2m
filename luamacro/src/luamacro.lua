@@ -25,8 +25,12 @@ local RegexExpandEnv = regex.new( [[ \$ \( (\w+) \) | \$ (\w+) ]], "x")
 local HomeDir = far.GetMyHome()
 
 local function FullExpand(text)
-  text = text:gsub("^%~", HomeDir)
-  text = RegexExpandEnv:gsub(text, function(a,b) return win.GetEnv(a or b) end)
+  if text == "~" then
+    text = HomeDir
+  else
+    text = text:gsub("^%~%/", function() return HomeDir.."/" end)
+    text = RegexExpandEnv:gsub(text, function(a,b) return win.GetEnv(a or b) end)
+  end
   return text
 end
 

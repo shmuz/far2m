@@ -423,7 +423,7 @@ BOOL RunDefaultScript(lua_State* L, int ForFirstTime)
 	TPluginData* pd = GetPluginData(L);
 	lua_pushstring(L, pd->ShareDir);
 	lua_pushstring(L, "/");
-	push_utf8_string(L, wcsrchr(pd->ModuleName,L'/')+1, -1);
+	push_utf8_string(L, wcsrchr(pd->ModuleName, GOOD_SLASH) + 1, -1);
 	lua_concat(L,3);
 
 	char* defscript = (char*)lua_newuserdata (L, lua_objlen(L,-1) + 8);

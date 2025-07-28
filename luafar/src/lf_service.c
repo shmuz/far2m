@@ -580,7 +580,7 @@ static int far_PluginStartupInfo(lua_State *L)
 	lua_createtable(L, 0, 5);
 	PutWStrToTable(L, "ModuleName", pd->ModuleName, -1);
 
-	slash = wcsrchr(pd->ModuleName, L'/');
+	slash = wcsrchr(pd->ModuleName, GOOD_SLASH);
 	if (slash)
 		PutWStrToTable(L, "ModuleDir", pd->ModuleName, slash - pd->ModuleName);
 
@@ -6251,14 +6251,14 @@ int LF_LuaOpen (const struct PluginStartupInfo *aInfo, TPluginData* aPlugData, l
 		push_utf8_string(L, aPlugData->ModuleName, -1);                  //+1
 		aPlugData->ShareDir = (char*) malloc(lua_objlen(L,-1) + 8);
 		strcpy(aPlugData->ShareDir, luaL_gsub(L, lua_tostring(L,-1), s1, s2)); //+2
-		strrchr(aPlugData->ShareDir,'/')[0] = '\0';
+		strrchr(aPlugData->ShareDir, GOOD_SLASH)[0] = '\0';
 
 		DIR* dir = opendir(aPlugData->ShareDir); // a "patch" for PPA installations
 		if (dir)
 			closedir(dir);
 		else {
 			strcpy(aPlugData->ShareDir, lua_tostring(L,-2));
-			strrchr(aPlugData->ShareDir,'/')[0] = '\0';
+			strrchr(aPlugData->ShareDir, GOOD_SLASH)[0] = '\0';
 		}
 		lua_pop(L,2);                                                    //+0
 
