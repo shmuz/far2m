@@ -30,11 +30,7 @@ Plugin::~Plugin()
 
 void *Plugin::GetModulePFN(const char *fn)
 {
-	void *out = dlsym(m_hModule, fn);
-	// if (!out)
-	// 	fprintf(stderr, "Plugin '%ls' doesn't export '%s'\n", PointToName(m_strModuleName), fn);
-
-	return out;
+	return dlsym(m_hModule, fn);
 }
 
 bool Plugin::OpenModule()

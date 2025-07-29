@@ -195,22 +195,22 @@ class PluginManager
 
 		int GetPluginsCount() { return PluginsCount; }
 
-		BOOL IsPluginsLoaded() { return Flags.Check(PSIF_PLUGINSLOADED); }
+		bool IsPluginsLoaded() { return Flags.Check(PSIF_PLUGINSLOADED); }
 
 		void Configure(int StartPos=0);
 		void ConfigureCurrent(Plugin *pPlugin, int INum, const GUID *Guid);
-		int CommandsMenu(int ModalType,int StartPos,const wchar_t *HistoryName=nullptr);
-		bool GetDiskMenuItem(Plugin *pPlugin,int PluginItem, wchar_t& PluginHotkey, FARString &strPluginText, GUID &Guid);
+		int CommandsMenu(int ModalType, int StartPos, const wchar_t *HistoryName=nullptr);
+		bool GetDiskMenuItem(Plugin *pPlugin, int PluginItem, wchar_t& PluginHotkey, FARString &strPluginText, GUID &Guid);
 
-		int UseFarCommand(PHPTR ph,int CommandType);
+		bool UseFarCommand(PHPTR ph, int CommandType);
 		void ReloadLanguage();
 		void DiscardCache();
-		int ProcessCommandLine(const wchar_t *Command,Panel *Target=nullptr);
+		int ProcessCommandLine(const wchar_t *Command, Panel *Target=nullptr);
 
 		bool SetHotKeyDialog(const wchar_t *DlgPluginTitle, Plugin *pPlugin, int ItemNumber, const GUID *Guids, MENUTYPE MenuType);
 
 		// $ .09.2000 SVS - Функция CallPlugin - найти плагин по ID и запустить OpenFrom = OPEN_*
-		bool CallPlugin(DWORD SysID,int OpenFrom, void *Data);
+		bool CallPlugin(DWORD SysID, int OpenFrom, void *Data);
 		bool CallPluginItem(DWORD SysID, CallPluginInfo* Data);
 		bool CallMacroPlugin(OpenMacroPluginInfo *Info);
 		void* CallPluginFromMacro(DWORD SysID, OpenMacroInfo *Info);
@@ -218,35 +218,35 @@ class PluginManager
 //api functions
 
 	public:
-		PHPTR OpenPlugin(Plugin *pPlugin,int OpenFrom,INT_PTR Item);
-		PHPTR OpenFilePlugin(const wchar_t *Name, int OpMode, OPENFILEPLUGINTYPE Type, Plugin *pDesiredPlugin = nullptr);
-		PHPTR OpenFindListPlugin(const PluginPanelItem *PanelItem,int ItemsNumber);
+		void  ClosePanel(PHPTR ph); // decreases refcnt and actually closes plugin if refcnt reached zero
+		int   Compare(PHPTR ph, const PluginPanelItem *Item1, const PluginPanelItem *Item2, unsigned int Mode);
+		int   DeleteFiles(PHPTR ph, PluginPanelItem *PanelItem, int ItemsNumber, int OpMode);
+		void  FreeFindData(PHPTR ph, PluginPanelItem *PanelItem, int ItemsNumber);
+		void  FreeVirtualFindData(PHPTR ph, PluginPanelItem *PanelItem, int ItemsNumber);
+		void  GetCustomData(FileListItem *ListItem);
+		bool  GetFile(PHPTR ph, PluginPanelItem *PanelItem, const wchar_t *DestPath, FARString &strResultName, int OpMode);
+		int   GetFiles(PHPTR ph, PluginPanelItem *PanelItem, int ItemsNumber, int Move, const wchar_t **DestPath, int OpMode);
+		int   GetFindData(PHPTR ph, PluginPanelItem **pPanelItem, int *pItemsNumber, int Silent);
+		bool  GetLinkTarget(PHPTR ph, PluginPanelItem *PanelItem, FARString &result, int OpMode);
+		void  GetOpenPluginInfo(PHPTR ph, OpenPluginInfo *Info);
 		FARString GetPluginModuleName(PHPTR ph);
-		void ClosePanel(PHPTR ph); // decreases refcnt and actually closes plugin if refcnt reached zero
-		void RetainPanel(PHPTR ph); // increments refcnt
-		void GetOpenPluginInfo(PHPTR ph, OpenPluginInfo *Info);
-		int GetFindData(PHPTR ph,PluginPanelItem **pPanelItem,int *pItemsNumber,int Silent);
-		void FreeFindData(PHPTR ph,PluginPanelItem *PanelItem,int ItemsNumber);
-		int GetVirtualFindData(PHPTR ph,PluginPanelItem **pPanelItem,int *pItemsNumber,const wchar_t *Path);
-		void FreeVirtualFindData(PHPTR ph,PluginPanelItem *PanelItem,int ItemsNumber);
-		int SetDirectory(PHPTR ph,const wchar_t *Dir,int OpMode);
-		int GetFile(PHPTR ph,PluginPanelItem *PanelItem,const wchar_t *DestPath,FARString &strResultName,int OpMode);
-		bool GetLinkTarget(PHPTR ph,PluginPanelItem *PanelItem,FARString &result,int OpMode);
-		int GetFiles(PHPTR ph,PluginPanelItem *PanelItem,int ItemsNumber,int Move,const wchar_t **DestPath,int OpMode);
-		int PutFiles(PHPTR ph,PluginPanelItem *PanelItem,int ItemsNumber,int Move,int OpMode);
-		int DeleteFiles(PHPTR ph,PluginPanelItem *PanelItem,int ItemsNumber,int OpMode);
-		int MakeDirectory(PHPTR ph,const wchar_t **Name,int OpMode);
-		int ProcessHostFile(PHPTR ph,PluginPanelItem *PanelItem,int ItemsNumber,int OpMode);
-		int ProcessKey(PHPTR ph,int Key,unsigned int ControlState);
-		int ProcessEvent(PHPTR ph,int Event,void *Param);
-		int Compare(PHPTR ph,const PluginPanelItem *Item1,const PluginPanelItem *Item2,unsigned int Mode);
-		int ProcessEditorInput(INPUT_RECORD *Rec);
-		int ProcessEditorEvent(int Event,void *Param);
-		int ProcessViewerEvent(int Event,void *Param);
-		int ProcessDialogEvent(int Event,void *Param);
-		int ProcessConsoleInput(INPUT_RECORD *Rec);
-		void GetCustomData(FileListItem *ListItem);
-		bool MayExitFar();
+		int   GetVirtualFindData(PHPTR ph, PluginPanelItem **pPanelItem, int *pItemsNumber, const wchar_t *Path);
+		int   MakeDirectory(PHPTR ph, const wchar_t **Name, int OpMode);
+		bool  MayExitFar();
+		PHPTR OpenFilePlugin(const wchar_t *Name, int OpMode, OPENFILEPLUGINTYPE Type, Plugin *pDesiredPlugin = nullptr);
+		PHPTR OpenFindListPlugin(const PluginPanelItem *PanelItem, int ItemsNumber);
+		PHPTR OpenPlugin(Plugin *pPlugin, int OpenFrom, INT_PTR Item);
+		int   ProcessConsoleInput(INPUT_RECORD *Rec);
+		int   ProcessDialogEvent(int Event, void *Param);
+		int   ProcessEditorEvent(int Event, void *Param);
+		int   ProcessEditorInput(INPUT_RECORD *Rec);
+		int   ProcessEvent(PHPTR ph, int Event, void *Param);
+		int   ProcessHostFile(PHPTR ph, PluginPanelItem *PanelItem, int ItemsNumber, int OpMode);
+		int   ProcessKey(PHPTR ph, int Key, unsigned int ControlState);
+		int   ProcessViewerEvent(int Event, void *Param);
+		int   PutFiles(PHPTR ph, PluginPanelItem *PanelItem, int ItemsNumber, int Move, int OpMode);
+		void  RetainPanel(PHPTR ph); // increments refcnt
+		int   SetDirectory(PHPTR ph, const wchar_t *Dir, int OpMode);
 
 		void BackgroundTaskStarted(const wchar_t *Info);
 		void BackgroundTaskFinished(const wchar_t *Info);

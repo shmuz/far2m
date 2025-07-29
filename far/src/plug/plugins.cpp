@@ -878,35 +878,26 @@ int PluginManager::ProcessDialogEvent(int Event, void *Param)
 	return FALSE;
 }
 
-int PluginManager::GetFindData(
-    PHPTR ph,
-    PluginPanelItem **pPanelData,
-    int *pItemsNumber,
-    int OpMode
-)
+int PluginManager::GetFindData(PHPTR ph, PluginPanelItem **pItems, int *pItemsNumber, int OpMode)
 {
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	*pItemsNumber = 0;
-	return ph->pPlugin->GetFindData(ph->hPanel, pPanelData, pItemsNumber, OpMode);
+	return ph->pPlugin->GetFindData(ph->hPanel, pItems, pItemsNumber, OpMode);
 }
 
 
-void PluginManager::FreeFindData(PHPTR ph, PluginPanelItem *PanelItem, int ItemsNumber)
+void PluginManager::FreeFindData(PHPTR ph, PluginPanelItem *pItems, int ItemsNumber)
 {
-	ph->pPlugin->FreeFindData(ph->hPanel, PanelItem, ItemsNumber);
+	ph->pPlugin->FreeFindData(ph->hPanel, pItems, ItemsNumber);
 }
 
 
 int PluginManager::GetVirtualFindData(
-    PHPTR ph,
-    PluginPanelItem **pPanelData,
-    int *pItemsNumber,
-    const wchar_t *Path
-)
+		PHPTR ph, PluginPanelItem **pItems, int *pItemsNumber, const wchar_t *Path)
 {
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	*pItemsNumber = 0;
-	return ph->pPlugin->GetVirtualFindData(ph->hPanel, pPanelData, pItemsNumber, Path);
+	return ph->pPlugin->GetVirtualFindData(ph->hPanel, pItems, pItemsNumber, Path);
 }
 
 
@@ -948,17 +939,16 @@ int PluginManager::ProcessConsoleInput(INPUT_RECORD *Rec)
 }
 
 
-int PluginManager::GetFile(
-    PHPTR ph,
-    PluginPanelItem *PanelItem,
-    const wchar_t *DestPath,
-    FARString &strResultName,
-    int OpMode
-)
+bool PluginManager::GetFile(
+		PHPTR ph,
+		PluginPanelItem *PanelItem,
+		const wchar_t *DestPath,
+		FARString &strResultName,
+		int OpMode)
 {
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	SaveScreen *SaveScr = nullptr;
-	int Found = FALSE;
+	bool Found = false;
 	KeepUserScreen = FALSE;
 
 	if (!(OpMode & OPM_FIND))
@@ -994,7 +984,7 @@ int PluginManager::GetFile(
 			apiDeleteFile(strResultName); //BUGBUG
 		}
 		else
-			Found = TRUE;
+			Found = true;
 	}
 
 	ReadUserBackground(SaveScr);
@@ -1061,31 +1051,29 @@ bool PluginManager::GetLinkTarget(PHPTR ph, PluginPanelItem *PanelItem, FARStrin
 }
 
 int PluginManager::GetFiles(
-    PHPTR ph,
-    PluginPanelItem *PanelItem,
-    int ItemsNumber,
-    int Move,
-    const wchar_t **DestPath,
-    int OpMode
-)
+		PHPTR ph,
+		PluginPanelItem *PanelItems,
+		int ItemsNumber,
+		int Move,
+		const wchar_t **DestPath,
+		int OpMode)
 {
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
-	return ph->pPlugin->GetFiles(ph->hPanel, PanelItem, ItemsNumber, Move, DestPath, OpMode);
+	return ph->pPlugin->GetFiles(ph->hPanel, PanelItems, ItemsNumber, Move, DestPath, OpMode);
 }
 
 
 int PluginManager::PutFiles(
-    PHPTR ph,
-    PluginPanelItem *PanelItem,
-    int ItemsNumber,
-    int Move,
-    int OpMode
-)
+		PHPTR ph,
+		PluginPanelItem *PanelItems,
+		int ItemsNumber,
+		int Move,
+		int OpMode)
 {
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	SaveScreen SaveScr;
 	KeepUserScreen = FALSE;
-	int Code = ph->pPlugin->PutFiles(ph->hPanel, PanelItem, ItemsNumber, Move, OpMode);
+	int Code = ph->pPlugin->PutFiles(ph->hPanel, PanelItems, ItemsNumber, Move, OpMode);
 
 	if (Code)   //BUGBUG
 		ReadUserBackground(&SaveScr);
@@ -1095,39 +1083,29 @@ int PluginManager::PutFiles(
 
 void PluginManager::GetOpenPluginInfo(PHPTR ph, OpenPluginInfo *Info)
 {
-	memset(Info, 0, sizeof(*Info));
+	*Info = { sizeof(*Info) };
 	ph->pPlugin->GetOpenPluginInfo(ph->hPanel, Info);
-
-	Info->CurDir = NullToEmpty(Info->CurDir);
 
 	if ((Info->Flags & OPIF_REALNAMES)
 			&& (CtrlObject->Cp()->ActivePanel->GetPluginHandle() == ph)
-			&& *Info->CurDir
-			&& !IsNetworkServerPath(Info->CurDir))
+			&& Info->CurDir && *Info->CurDir && !IsNetworkServerPath(Info->CurDir))
 	{
 		apiSetCurrentDirectory(Info->CurDir, false);
 	}
 }
-
 
 int PluginManager::ProcessKey(PHPTR ph, int Key, unsigned int ControlState)
 {
 	return ph->pPlugin->ProcessKey(ph->hPanel, Key, ControlState);
 }
 
-
 int PluginManager::ProcessEvent(PHPTR ph, int Event, void *Param)
 {
 	return ph->pPlugin->ProcessEvent(ph->hPanel, Event, Param);
 }
 
-
-int PluginManager::Compare(
-    PHPTR ph,
-    const PluginPanelItem *Item1,
-    const PluginPanelItem *Item2,
-    unsigned int Mode
-)
+int PluginManager::Compare(PHPTR ph, const PluginPanelItem *Item1, const PluginPanelItem *Item2,
+		unsigned int Mode)
 {
 	return ph->pPlugin->Compare(ph->hPanel, Item1, Item2, Mode);
 }
@@ -1135,18 +1113,20 @@ int PluginManager::Compare(
 void PluginManager::ConfigureCurrent(Plugin *pPlugin, int INum, const GUID *Guid)
 {
 	int Result = FALSE;
-	if (pPlugin->UseMenuGuids()) {
-		Guid = Guid ? Guid : &FarGuid;
-		ConfigureInfo Info = { sizeof(ConfigureInfo), Guid };
-		Result = dynamic_cast<PluginW*>(pPlugin)->ConfigureV3(&Info);
+	if (pPlugin->HasConfigureV3()) {
+		if (pPlugin->UseMenuGuids()) {
+			Guid = Guid ? Guid : &FarGuid;
+			ConfigureInfo Info = { sizeof(ConfigureInfo), Guid };
+			Result = dynamic_cast<PluginW*>(pPlugin)->ConfigureV3(&Info);
+		}
 	}
 	else {
 		Result = pPlugin->Configure(INum);
 	}
 
 	if (Result) {
-		for (int i = 0; i < 2; i++) {
-			auto panel = (i == 0) ? CtrlObject->Cp()->LeftPanel : CtrlObject->Cp()->RightPanel;
+		auto panels = { CtrlObject->Cp()->LeftPanel, CtrlObject->Cp()->RightPanel };
+		for (auto panel: panels) {
 			if (panel->GetMode() == PLUGIN_PANEL) {
 				panel->Update(UPDATE_KEEP_SELECTION);
 				panel->SetViewMode(panel->GetViewMode());
@@ -1684,13 +1664,13 @@ bool PluginManager::GetDiskMenuItem(
 	return !strPluginText.IsEmpty();
 }
 
-int PluginManager::UseFarCommand(PHPTR ph,int CommandType)
+bool PluginManager::UseFarCommand(PHPTR ph,int CommandType)
 {
 	OpenPluginInfo Info;
 	GetOpenPluginInfo(ph,&Info);
 
 	if (!(Info.Flags & OPIF_REALNAMES))
-		return FALSE;
+		return false;
 
 	switch (CommandType)
 	{
@@ -1705,7 +1685,7 @@ int PluginManager::UseFarCommand(PHPTR ph,int CommandType)
 			return(!ph->pPlugin->HasMakeDirectory() || (Info.Flags & OPIF_EXTERNALMKDIR));
 	}
 
-	return TRUE;
+	return true;
 }
 
 

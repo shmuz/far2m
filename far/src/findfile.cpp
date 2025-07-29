@@ -1038,9 +1038,7 @@ static bool GetPluginFile(size_t ArcIndex, const FAR_FIND_DATA_EX &FindData, con
 					const_cast<LPWSTR>(PointToName(NullToEmpty(pItems[i].FindData.lpwszFileName)));
 
 			if (!StrCmp(lpFileNameToFind, Item.FindData.lpwszFileName)) {
-				nResult = CtrlObject->Plugins.GetFile(ArcItem.hPlugin, &Item, DestPath, strResultName,
-								  OPM_SILENT)
-						!= 0;
+				nResult = CtrlObject->Plugins.GetFile(ArcItem.hPlugin, &Item, DestPath, strResultName, OPM_SILENT);
 				break;
 			}
 		}
@@ -1421,8 +1419,7 @@ static void AnalyzeFileItem(HANDLE hDlg, PluginPanelItem *FileItem, const wchar_
 
 			bool GetFileResult = false;
 			GetFileResult = CtrlObject->Plugins.GetFile(hPlugin, FileItem, strTempDir, FileToScan,
-										OPM_SILENT | OPM_FIND)
-						!= FALSE;
+										OPM_SILENT | OPM_FIND);
 			if (!GetFileResult) {
 				apiRemoveDirectory(strTempDir);
 				return;

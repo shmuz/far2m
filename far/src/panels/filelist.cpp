@@ -1653,7 +1653,7 @@ int FileList::ProcessKey(FarKey Key)
 					if (!NewFile) {
 						PluginPanelItem PanelItem;
 						FileListToPluginItem(CurPtr, &PanelItem);
-						int Result = CtrlObject->Plugins.GetFile(hPlugin, &PanelItem, strTempDir, strFileName,
+						bool Result = CtrlObject->Plugins.GetFile(hPlugin, &PanelItem, strTempDir, strFileName,
 								OPM_SILENT | (Edit ? OPM_EDIT : OPM_VIEW));
 						FreePluginPanelItem(&PanelItem);
 
@@ -2364,7 +2364,7 @@ void FileList::ProcessEnter(bool EnableExec, bool SeparateWindow, bool EnableAss
 
 			PluginPanelItem PanelItem;
 			FileListToPluginItem(CurPtr, &PanelItem);
-			int Result = CtrlObject->Plugins.GetFile(hPlugin, &PanelItem, strTempDir, strFileName,
+			bool Result = CtrlObject->Plugins.GetFile(hPlugin, &PanelItem, strTempDir, strFileName,
 					OPM_SILENT | OPM_VIEW);
 			FreePluginPanelItem(&PanelItem);
 
@@ -3546,7 +3546,7 @@ void FileList::UpdateViewPanel()
 			apiCreateDirectory(strTempDir, nullptr);
 			PluginPanelItem PanelItem;
 			FileListToPluginItem(CurPtr, &PanelItem);
-			int Result = CtrlObject->Plugins.GetFile(hPlugin, &PanelItem, strTempDir, strFileName,
+			bool Result = CtrlObject->Plugins.GetFile(hPlugin, &PanelItem, strTempDir, strFileName,
 					OPM_SILENT | OPM_VIEW | OPM_QUICKVIEW);
 			FreePluginPanelItem(&PanelItem);
 
