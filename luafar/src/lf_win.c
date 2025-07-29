@@ -410,15 +410,13 @@ static int win_ExpandEnv (lua_State *L)
 {
 	const char *p = luaL_checkstring(L, 1);
 	int remove = lua_toboolean(L, 2);
-	lua_settop(L, 2);
 	luaL_Buffer buf;
 	luaL_buffinit(L, &buf);
 
 	if (*p == '~' && (p[1] == 0 || p[1] == GOOD_SLASH)) {
 		lua_pushcfunction(L, far_GetMyHome);
 		lua_call(L, 0, 1);
-		lua_replace(L, 2); // keep stack balance
-		luaL_addstring(&buf, lua_tostring(L, 2));
+		luaL_addvalue(&buf);
 		++p;
 	}
 
