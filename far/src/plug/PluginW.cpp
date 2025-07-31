@@ -333,6 +333,7 @@ bool PluginW::Load()
 	if (m_Loaded)
 		return true;
 
+	fprintf(stderr, "@ PluginW::Load(): #2\n");
 	if (!OpenModule())
 		return false;
 
@@ -342,6 +343,8 @@ bool PluginW::Load()
 
 	if (!GetGlobalInfo())
 		return false;
+
+	fprintf(stderr, "@ PluginW::Load(): #3\n");
 
 	GetModuleFN(pAnalyseW, NFMP_Analyse);
 	GetModuleFN(pCloseAnalyseW, NFMP_CloseAnalyse);
@@ -380,23 +383,31 @@ bool PluginW::Load()
 	GetModuleFN(pSetFindListW, NFMP_SetFindList);
 	GetModuleFN(pSetStartupInfoW, NFMP_SetStartupInfo);
 
+	fprintf(stderr, "@ PluginW::Load(): #4\n");
+
 	bool bUnloaded = false;
 
 	if (CheckMinFarVersion(bUnloaded))
 	{
+		fprintf(stderr, "@ PluginW::Load(): calling SetStartupInfo()\n");
 		if (SetStartupInfo(bUnloaded))
 		{
+			fprintf(stderr, "@ PluginW::Load(): calling SaveToCache()\n");
 			SaveToCache();
 			return true;
 		}
 	}
 
-	if (!bUnloaded)
+	fprintf(stderr, "@ PluginW::Load(): #5\n");
+	if (!bUnloaded) {
+		fprintf(stderr, "@ PluginW::Load(): calling Unload()\n");
 		Unload();
+	}
 
 	//чтоб не пытаться загрузить опять а то ошибка будет постоянно показываться.
 	WorkFlags.Set(PIWF_DONTLOADAGAIN);
 
+	fprintf(stderr, "@ PluginW::Load(): returning false\n");
 	return false;
 }
 
