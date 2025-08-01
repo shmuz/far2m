@@ -549,10 +549,10 @@ static BOOL LoadLuafar()
 	for (size_t i=0; i < ARRAYSIZE(names) && !handle; i++)
 	{
 		fprintf(stderr, "@ %s #1\n", __FUNCTION__);
-		for (const char *path=*paths; path && !handle; path++)
+		for (const char **path=paths; *path && !handle; path++)
 		{
 			fprintf(stderr, "@ %s #2\n", __FUNCTION__);
-			const auto strName = std::string(path) + names[i] + ext;
+			const auto strName = std::string(*path) + names[i] + ext;
 			handle = dlopen(strName.c_str(), RTLD_LAZY|RTLD_GLOBAL);
 			fprintf(stderr, "@ %s #3\n", __FUNCTION__);
 		}
