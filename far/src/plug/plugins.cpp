@@ -276,22 +276,16 @@ Plugin* PluginManager::LoadPlugin(const FARString &strModuleName, bool UncachedL
 
 	if (!bResult && !Opt.LoadPlug.PluginsCacheOnly)
 	{
-		fprintf(stderr, "@ %s: calling pPlugin->Load()\n", __FUNCTION__);
 		bResult = pPlugin->Load();
-		fprintf(stderr, "@ %s: pPlugin->Load() returned %s\n", __FUNCTION__, bResult ? "true":"false");
 
-		if (!bResult) {
-			fprintf(stderr, "@ %s: calling RemovePlugin(pPlugin)\n", __FUNCTION__);
+		if (!bResult)
 			RemovePlugin(pPlugin);
-		}
 	}
 
 	if (bResult && pPlugin->SysID) {
-		fprintf(stderr, "@ %s: calling SysIdMap.emplace()\n", __FUNCTION__);
 		SysIdMap.emplace(pPlugin->SysID, pPlugin);
 	}
 
-	fprintf(stderr, "@ %s: returning %p\n", __FUNCTION__, bResult ? pPlugin : nullptr);
 	return bResult ? pPlugin : nullptr;
 }
 
@@ -500,7 +494,6 @@ void PluginManager::LoadPlugins()
 				if (!(FindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
 				{
 					// this will check filename extension
-					fprintf(stderr, "@ %s: %ls\n", __FUNCTION__, strFullName.CPtr());
 					LoadPlugin(strFullName, false);
 				}
 			} // end while
