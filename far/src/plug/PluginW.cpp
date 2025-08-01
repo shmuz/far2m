@@ -548,24 +548,32 @@ static BOOL LoadLuafar()
 	void *handle = nullptr;
 	for (size_t i=0; i < ARRAYSIZE(names) && !handle; i++)
 	{
+		fprintf(stderr, "@ %s #1\n", __FUNCTION__);
 		for (const char *path=*paths; path && !handle; path++)
 		{
+			fprintf(stderr, "@ %s #2\n", __FUNCTION__);
 			const auto strName = std::string(path) + names[i] + ext;
 			handle = dlopen(strName.c_str(), RTLD_LAZY|RTLD_GLOBAL);
+			fprintf(stderr, "@ %s #3\n", __FUNCTION__);
 		}
 	}
 	if (!handle)
 	{
+		fprintf(stderr, "@ %s #4\n", __FUNCTION__);
 		Message(MSG_WARNING, 1, Msg::Error, L"Neither LuaJIT nor Lua5.1 library was found", Msg::Ok);
 		return FALSE;
 	}
 
 	// 2. Load LuaFAR
+	fprintf(stderr, "@ %s #5\n", __FUNCTION__);
 	FARString strLuaFar = g_strFarPath + PluginsFolderName + L"/luafar/luafar.so";
 	TranslateFarString<TranslateInstallPath_Share2Lib>(strLuaFar);
 	BOOL LuafarLoaded = dlopen(strLuaFar.GetMB().c_str(), RTLD_LAZY|RTLD_GLOBAL) ? TRUE : FALSE;
+
+	fprintf(stderr, "@ %s #6\n", __FUNCTION__);
 	if (!LuafarLoaded)
 	{
+		fprintf(stderr, "@ %s #7\n", __FUNCTION__);
 		Message(MSG_WARNING, 1, Msg::Error, L"Cannot load luafar.so", Msg::Ok);
 	}
 	return LuafarLoaded;
@@ -577,9 +585,11 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 	static PluginStartupInfo StartupInfo{};
 	static FarStandardFunctions StandardFunctions{};
 
+	fprintf(stderr, "@ %s #1\n", __FUNCTION__);
 	// заполняем структуру StandardFunctions один раз!!!
 	if (!StandardFunctions.StructSize)
 	{
+		fprintf(stderr, "@ %s #2\n", __FUNCTION__);
 		StandardFunctions.StructSize=sizeof(StandardFunctions);
 		StandardFunctions.snprintf=swprintf;
 		StandardFunctions.BoxSymbols=BoxSymbols;
@@ -589,6 +599,8 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 		StandardFunctions.atoi=FarAtoi;
 		StandardFunctions.atoi64=FarAtoi64;
 		StandardFunctions.itoa=FarItoa;
+
+		fprintf(stderr, "@ %s #3\n", __FUNCTION__);
 		StandardFunctions.itoa64=FarItoa64;
 		StandardFunctions.bsearch=FarBsearch;
 		StandardFunctions.LIsLower = farIsLower;
@@ -598,6 +610,8 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 		StandardFunctions.LUpper = farUpper;
 		StandardFunctions.LUpperBuf = farUpperBuf;
 		StandardFunctions.LLowerBuf = farLowerBuf;
+
+		fprintf(stderr, "@ %s #4\n", __FUNCTION__);
 		StandardFunctions.LLower = farLower;
 		StandardFunctions.LStrupr = farStrUpper;
 		StandardFunctions.LStrlwr = farStrLower;
@@ -608,6 +622,8 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 		StandardFunctions.Unquote=Unquote;
 		StandardFunctions.LTrim=RemoveLeadingSpaces;
 		StandardFunctions.RTrim=RemoveTrailingSpaces;
+
+		fprintf(stderr, "@ %s #5\n", __FUNCTION__);
 		StandardFunctions.Trim=RemoveExternalSpaces;
 		StandardFunctions.TruncStr=TruncStr;
 		StandardFunctions.TruncPathStr=TruncPathStr;
@@ -621,6 +637,8 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 		StandardFunctions.FarNameToKey=KeyNameToKeyW;
 		StandardFunctions.FarInputRecordToKey=InputRecordToKey;
 		StandardFunctions.XLat=Xlat;
+
+		fprintf(stderr, "@ %s #6\n", __FUNCTION__);
 		StandardFunctions.GetNumberOfLinks=GetNumberOfLinks;
 		StandardFunctions.FarRecursiveSearch=FarRecursiveSearch;
 		StandardFunctions.MkTemp=FarMkTemp;
@@ -643,6 +661,7 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 		StandardFunctions.FarNameToInputRecord = FarNameToInputRecord;
 		StandardFunctions.FormatFileSize = farFormatFileSize;
 
+		fprintf(stderr, "@ %s #7\n", __FUNCTION__);
 		StandardFunctions.GetFileOwner = farGetFileOwner;
 		StandardFunctions.GetFileGroup = farGetFileGroup;
 		StandardFunctions.ESetFileMode = farESetFileMode;
@@ -656,10 +675,13 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 		StandardFunctions.GetDateSeparator = farGetDateSeparator;
 		StandardFunctions.GetTimeSeparator = farGetTimeSeparator;
 		StandardFunctions.GetDecimalSeparator = farGetDecimalSeparator;
+
+		fprintf(stderr, "@ %s #8\n", __FUNCTION__);
 	}
 
 	if (!StartupInfo.StructSize)
 	{
+		fprintf(stderr, "@ %s #9\n", __FUNCTION__);
 		StartupInfo.StructSize=sizeof(StartupInfo);
 		StartupInfo.Menu=FarMenuFn;
 		StartupInfo.GetMsg=FarGetMsgFn;
@@ -670,6 +692,8 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 		StartupInfo.GetDirList=FarGetDirList;
 		StartupInfo.GetPluginDirList=FarGetPluginDirList;
 		StartupInfo.FreeDirList=FarFreeDirList;
+
+		fprintf(stderr, "@ %s #10\n", __FUNCTION__);
 		StartupInfo.FreePluginDirList=FarFreePluginDirList;
 		StartupInfo.Viewer=FarViewer;
 		StartupInfo.Editor=FarEditor;
@@ -684,6 +708,8 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 		StartupInfo.DialogInitV3=FarDialogInitV3;
 		StartupInfo.DialogRun=FarDialogRun;
 		StartupInfo.DialogFree=FarDialogFree;
+
+		fprintf(stderr, "@ %s #11\n", __FUNCTION__);
 		StartupInfo.SendDlgMessage=FarSendDlgMessage;
 		StartupInfo.DefDlgProc=FarDefDlgProc;
 		StartupInfo.InputBox=FarInputBox;
@@ -700,37 +726,51 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 		StartupInfo.TextV2=FarTextV2;
 		StartupInfo.MessageV3=FarMessageV3Fn;
 		StartupInfo.MenuV2=FarMenuV2Fn;
+
+		fprintf(stderr, "@ %s #12\n", __FUNCTION__);
 		StartupInfo.LuafarLoaded=LoadLuafar();
 	}
 
+	fprintf(stderr, "@ %s #13\n", __FUNCTION__);
 	*PSI=StartupInfo;
 	*FSF=StandardFunctions;
 	PSI->FSF=FSF;
 	PSI->RootKey=L"";
 	PSI->ModuleNumber=(INT_PTR)pPlugin;
+
+	fprintf(stderr, "@ %s #14\n", __FUNCTION__);
 	PSI->ModuleName = pPlugin->GetModuleName().CPtr();
 	if (pPlugin->IsLuamacro()) {
 		PSI->Private = &MacroInfo;
 	}
+	fprintf(stderr, "@ %s #15\n", __FUNCTION__);
 }
 
 bool PluginW::SetStartupInfo(bool &bUnloaded)
 {
 	if (pSetStartupInfoW)
 	{
+		fprintf(stderr, "@ PluginW::SetStartupInfo() #1\n");
+
 		PluginStartupInfo _info;
 		FarStandardFunctions _fsf;
 		CreatePluginStartupInfo(this, &_info, &_fsf);
+
+		fprintf(stderr, "@ PluginW::SetStartupInfo() #2\n");
 		ExecuteStruct es(EXCEPT_SETSTARTUPINFO);
 		EXECUTE_FUNCTION(pSetStartupInfoW(&_info), es);
 
+		fprintf(stderr, "@ PluginW::SetStartupInfo() #3\n");
+
 		if (es.bUnloaded)
 		{
+			fprintf(stderr, "@ PluginW::SetStartupInfo() #4\n");
 			bUnloaded = true;
 			return false;
 		}
 	}
 
+	fprintf(stderr, "@ PluginW::SetStartupInfo() #5\n");
 	return true;
 }
 
