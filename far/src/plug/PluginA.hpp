@@ -184,7 +184,7 @@ class PluginA: public Plugin
 		int MakeDirectory(HANDLE hPlugin, const wchar_t **Name, int OpMode);
 		int ProcessHostFile(HANDLE hPlugin, PluginPanelItem *PanelItem, int ItemsNumber, int OpMode);
 		int ProcessKey(HANDLE hPlugin, int Key, unsigned int dwControlState);
-		int ProcessEvent(HANDLE hPlugin, int Event, PVOID Param);
+		int ProcessEvent(HANDLE hPlugin, int Event, void *Param);
 		int Compare(HANDLE hPlugin, const PluginPanelItem *Item1, const PluginPanelItem *Item2, DWORD Mode);
 
 		int GetCustomData(const wchar_t *FilePath, wchar_t **CustomData) { return 0; }
@@ -196,10 +196,10 @@ class PluginA: public Plugin
 		void ClosePlugin(HANDLE hPlugin);
 
 		int ProcessEditorInput(const INPUT_RECORD *D);
-		int ProcessEditorEvent(int Event, PVOID Param);
-		int ProcessViewerEvent(int Event, PVOID Param);
-		int ProcessDialogEvent(int Event, PVOID Param);
-		int ProcessSynchroEvent(int Event, PVOID Param) { return 0; }
+		int ProcessEditorEvent(int Event, void *Param);
+		int ProcessViewerEvent(int Event, void *Param);
+		int ProcessDialogEvent(int Event, void *Param);
+		int ProcessSynchroEvent(int Event, void *Param) { return 0; }
 		int ProcessConsoleInput(INPUT_RECORD *D) { return 0; }
 
 		HANDLE Analyse(const AnalyseInfo *Info) { return INVALID_HANDLE_VALUE; }

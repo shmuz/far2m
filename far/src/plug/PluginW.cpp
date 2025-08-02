@@ -79,64 +79,64 @@ static const char *szCache_Preload = "Preload";
 static const char *szCache_Preopen = "Preopen";
 static const char *szCache_SysID = "SysID";
 
-static const char *szCache_Version = "Version";
-static const char *szCache_Title = "Title";
-static const char *szCache_Description = "Description";
 static const char *szCache_Author = "Author";
+static const char *szCache_Description = "Description";
+static const char *szCache_Title = "Title";
 static const char *szCache_UseMenuGuids = "UseMenuGuids";
+static const char *szCache_Version = "Version";
 
-static const char szCache_OpenPlugin[] = "OpenPluginW";
-static const char szCache_OpenFilePlugin[] = "OpenFilePluginW";
-static const char szCache_SetFindList[] = "SetFindListW";
-static const char szCache_ProcessEditorInput[] = "ProcessEditorInputW";
-static const char szCache_ProcessEditorEvent[] = "ProcessEditorEventW";
-static const char szCache_ProcessViewerEvent[] = "ProcessViewerEventW";
-static const char szCache_ProcessDialogEvent[] = "ProcessDialogEventW";
-static const char szCache_ProcessSynchroEvent[] = "ProcessSynchroEventW";
+static const char szCache_Analyse[] = "AnalyseW";
 static const char szCache_Configure[] = "ConfigureW";
 static const char szCache_ConfigureV3[] = "ConfigureV3W";
-static const char szCache_Analyse[] = "AnalyseW";
 static const char szCache_GetCustomData[] = "GetCustomDataW";
-static const char szCache_ProcessConsoleInput[] = "ProcessConsoleInputW";
 static const char szCache_GetFiles[] = "GetFilesW";
+static const char szCache_OpenFilePlugin[] = "OpenFilePluginW";
+static const char szCache_OpenPlugin[] = "OpenPluginW";
+static const char szCache_ProcessConsoleInput[] = "ProcessConsoleInputW";
+static const char szCache_ProcessDialogEvent[] = "ProcessDialogEventW";
+static const char szCache_ProcessEditorEvent[] = "ProcessEditorEventW";
+static const char szCache_ProcessEditorInput[] = "ProcessEditorInputW";
 static const char szCache_ProcessHostFile[] = "ProcessHostFileW";
+static const char szCache_ProcessSynchroEvent[] = "ProcessSynchroEventW";
+static const char szCache_ProcessViewerEvent[] = "ProcessViewerEventW";
+static const char szCache_SetFindList[] = "SetFindListW";
 
-static const char NFMP_OpenPlugin[] = "OpenPluginW";
-static const char NFMP_OpenFilePlugin[] = "OpenFilePluginW";
-static const char NFMP_SetFindList[] = "SetFindListW";
-static const char NFMP_ProcessEditorInput[] = "ProcessEditorInputW";
-static const char NFMP_ProcessEditorEvent[] = "ProcessEditorEventW";
-static const char NFMP_ProcessViewerEvent[] = "ProcessViewerEventW";
-static const char NFMP_ProcessDialogEvent[] = "ProcessDialogEventW";
-static const char NFMP_ProcessSynchroEvent[] = "ProcessSynchroEventW";
-static const char NFMP_SetStartupInfo[] = "SetStartupInfoW";
-static const char NFMP_ClosePlugin[] = "ClosePluginW";
-static const char NFMP_GetPluginInfo[] = "GetPluginInfoW";
-static const char NFMP_GetOpenPluginInfo[] = "GetOpenPluginInfoW";
-static const char NFMP_GetFindData[] = "GetFindDataW";
-static const char NFMP_FreeFindData[] = "FreeFindDataW";
-static const char NFMP_GetVirtualFindData[] = "GetVirtualFindDataW";
-static const char NFMP_FreeVirtualFindData[] = "FreeVirtualFindDataW";
-static const char NFMP_SetDirectory[] = "SetDirectoryW";
-static const char NFMP_GetLinkTarget[] = "GetLinkTargetW";
-static const char NFMP_GetFiles[] = "GetFilesW";
-static const char NFMP_PutFiles[] = "PutFilesW";
-static const char NFMP_DeleteFiles[] = "DeleteFilesW";
-static const char NFMP_MakeDirectory[] = "MakeDirectoryW";
-static const char NFMP_ProcessHostFile[] = "ProcessHostFileW";
-static const char NFMP_Configure[] = "ConfigureW";
-static const char NFMP_ConfigureV3[] = "ConfigureV3W";
-static const char NFMP_MayExitFAR[] = "MayExitFARW";
-static const char NFMP_ExitFAR[] = "ExitFARW";
-static const char NFMP_ProcessKey[] = "ProcessKeyW";
-static const char NFMP_ProcessEvent[] = "ProcessEventW";
-static const char NFMP_Compare[] = "CompareW";
-static const char NFMP_GetMinFarVersion[] = "GetMinFarVersionW";
 static const char NFMP_Analyse[] = "AnalyseW";
 static const char NFMP_CloseAnalyse[] = "CloseAnalyseW";
-static const char NFMP_GetCustomData[] = "GetCustomDataW";
+static const char NFMP_ClosePlugin[] = "ClosePluginW";
+static const char NFMP_Compare[] = "CompareW";
+static const char NFMP_Configure[] = "ConfigureW";
+static const char NFMP_ConfigureV3[] = "ConfigureV3W";
+static const char NFMP_DeleteFiles[] = "DeleteFilesW";
+static const char NFMP_ExitFAR[] = "ExitFARW";
 static const char NFMP_FreeCustomData[] = "FreeCustomDataW";
+static const char NFMP_FreeFindData[] = "FreeFindDataW";
+static const char NFMP_FreeVirtualFindData[] = "FreeVirtualFindDataW";
+static const char NFMP_GetCustomData[] = "GetCustomDataW";
+static const char NFMP_GetFiles[] = "GetFilesW";
+static const char NFMP_GetFindData[] = "GetFindDataW";
+static const char NFMP_GetLinkTarget[] = "GetLinkTargetW";
+static const char NFMP_GetMinFarVersion[] = "GetMinFarVersionW";
+static const char NFMP_GetOpenPluginInfo[] = "GetOpenPluginInfoW";
+static const char NFMP_GetPluginInfo[] = "GetPluginInfoW";
+static const char NFMP_GetVirtualFindData[] = "GetVirtualFindDataW";
+static const char NFMP_MakeDirectory[] = "MakeDirectoryW";
+static const char NFMP_MayExitFAR[] = "MayExitFARW";
+static const char NFMP_OpenFilePlugin[] = "OpenFilePluginW";
+static const char NFMP_OpenPlugin[] = "OpenPluginW";
 static const char NFMP_ProcessConsoleInput[] = "ProcessConsoleInputW";
+static const char NFMP_ProcessDialogEvent[] = "ProcessDialogEventW";
+static const char NFMP_ProcessEditorEvent[] = "ProcessEditorEventW";
+static const char NFMP_ProcessEditorInput[] = "ProcessEditorInputW";
+static const char NFMP_ProcessEvent[] = "ProcessEventW";
+static const char NFMP_ProcessHostFile[] = "ProcessHostFileW";
+static const char NFMP_ProcessKey[] = "ProcessKeyW";
+static const char NFMP_ProcessSynchroEvent[] = "ProcessSynchroEventW";
+static const char NFMP_ProcessViewerEvent[] = "ProcessViewerEventW";
+static const char NFMP_PutFiles[] = "PutFilesW";
+static const char NFMP_SetDirectory[] = "SetDirectoryW";
+static const char NFMP_SetFindList[] = "SetFindListW";
+static const char NFMP_SetStartupInfo[] = "SetStartupInfoW";
 
 
 static size_t WINAPI FarKeyToName(FarKey Key,wchar_t *KeyText,size_t Size)
@@ -303,27 +303,27 @@ bool PluginW::SaveToCache()
 	kfh.SetUInt(GetSettingsName(), "Flags", Info.Flags);
 	kfh.SetUInt(GetSettingsName(), szCache_SysID, SysID);
 
-	if (pAnalyseW)              kfh.SetUInt(GetSettingsName(), szCache_Analyse, 1);
-	if (pConfigureV3W)          kfh.SetUInt(GetSettingsName(), szCache_ConfigureV3, 1);
-	if (pConfigureW)            kfh.SetUInt(GetSettingsName(), szCache_Configure, 1);
-	if (pGetCustomDataW)        kfh.SetUInt(GetSettingsName(), szCache_GetCustomData, 1);
-	if (pGetFilesW)             kfh.SetUInt(GetSettingsName(), szCache_GetFiles, 1);
-	if (pOpenFilePluginW)       kfh.SetUInt(GetSettingsName(), szCache_OpenFilePlugin, 1);
-	if (pOpenPluginW)           kfh.SetUInt(GetSettingsName(), szCache_OpenPlugin, 1);
-	if (pProcessConsoleInputW)  kfh.SetUInt(GetSettingsName(), szCache_ProcessConsoleInput, 1);
-	if (pProcessDialogEventW)   kfh.SetUInt(GetSettingsName(), szCache_ProcessDialogEvent, 1);
-	if (pProcessEditorEventW)   kfh.SetUInt(GetSettingsName(), szCache_ProcessEditorEvent, 1);
-	if (pProcessEditorInputW)   kfh.SetUInt(GetSettingsName(), szCache_ProcessEditorInput, 1);
-	if (pProcessHostFileW)      kfh.SetUInt(GetSettingsName(), szCache_ProcessHostFile, 1);
-	if (pProcessSynchroEventW)  kfh.SetUInt(GetSettingsName(), szCache_ProcessSynchroEvent, 1);
-	if (pProcessViewerEventW)   kfh.SetUInt(GetSettingsName(), szCache_ProcessViewerEvent, 1);
-	if (pSetFindListW)          kfh.SetUInt(GetSettingsName(), szCache_SetFindList, 1);
+	kfh.SetUInt(GetSettingsName(), szCache_Analyse,             pAnalyseW ? 1:0);
+	kfh.SetUInt(GetSettingsName(), szCache_ConfigureV3,         pConfigureV3W ? 1:0);
+	kfh.SetUInt(GetSettingsName(), szCache_Configure,           pConfigureW ? 1:0);
+	kfh.SetUInt(GetSettingsName(), szCache_GetCustomData,       pGetCustomDataW ? 1:0);
+	kfh.SetUInt(GetSettingsName(), szCache_GetFiles,            pGetFilesW ? 1:0);
+	kfh.SetUInt(GetSettingsName(), szCache_OpenFilePlugin,      pOpenFilePluginW ? 1:0);
+	kfh.SetUInt(GetSettingsName(), szCache_OpenPlugin,          pOpenPluginW ? 1:0);
+	kfh.SetUInt(GetSettingsName(), szCache_ProcessConsoleInput, pProcessConsoleInputW ? 1:0);
+	kfh.SetUInt(GetSettingsName(), szCache_ProcessDialogEvent,  pProcessDialogEventW ? 1:0);
+	kfh.SetUInt(GetSettingsName(), szCache_ProcessEditorEvent,  pProcessEditorEventW ? 1:0);
+	kfh.SetUInt(GetSettingsName(), szCache_ProcessEditorInput,  pProcessEditorInputW ? 1:0);
+	kfh.SetUInt(GetSettingsName(), szCache_ProcessHostFile,     pProcessHostFileW ? 1:0);
+	kfh.SetUInt(GetSettingsName(), szCache_ProcessSynchroEvent, pProcessSynchroEventW ? 1:0);
+	kfh.SetUInt(GetSettingsName(), szCache_ProcessViewerEvent,  pProcessViewerEventW ? 1:0);
+	kfh.SetUInt(GetSettingsName(), szCache_SetFindList,         pSetFindListW ? 1:0);
 
-	kfh.SetBytes(GetSettingsName(),  szCache_Version, (unsigned char*)&m_PlugVersion, sizeof(m_PlugVersion), 1);
-	kfh.SetString(GetSettingsName(), szCache_Title, strTitle);
-	kfh.SetString(GetSettingsName(), szCache_Description, strDescription);
 	kfh.SetString(GetSettingsName(), szCache_Author, strAuthor);
+	kfh.SetString(GetSettingsName(), szCache_Description, strDescription);
+	kfh.SetString(GetSettingsName(), szCache_Title, strTitle);
 	kfh.SetUInt(GetSettingsName(),   szCache_UseMenuGuids, bUseMenuGuids ? 1:0);
+	kfh.SetBytes(GetSettingsName(),  szCache_Version, (unsigned char*)&m_PlugVersion, sizeof(m_PlugVersion), 1);
 
 	return true;
 }
@@ -904,9 +904,7 @@ int PluginW::SetFindList(
 	return bResult;
 }
 
-int PluginW::ProcessEditorInput(
-    const INPUT_RECORD *D
-)
+int PluginW::ProcessEditorInput(const INPUT_RECORD *D)
 {
 	BOOL bResult = FALSE;
 
@@ -921,10 +919,7 @@ int PluginW::ProcessEditorInput(
 	return bResult;
 }
 
-int PluginW::ProcessEditorEvent(
-    int Event,
-    PVOID Param
-)
+int PluginW::ProcessEditorEvent(int Event, void *Param)
 {
 	if (Load() && pProcessEditorEventW)
 	{
@@ -935,10 +930,7 @@ int PluginW::ProcessEditorEvent(
 	return 0; //oops!
 }
 
-int PluginW::ProcessViewerEvent(
-    int Event,
-    void *Param
-)
+int PluginW::ProcessViewerEvent(int Event, void *Param)
 {
 	if (Load() && pProcessViewerEventW)
 	{
@@ -949,10 +941,7 @@ int PluginW::ProcessViewerEvent(
 	return 0; //oops, again!
 }
 
-int PluginW::ProcessDialogEvent(
-    int Event,
-    void *Param
-)
+int PluginW::ProcessDialogEvent(int Event, void *Param)
 {
 	BOOL bResult = FALSE;
 
@@ -967,10 +956,7 @@ int PluginW::ProcessDialogEvent(
 	return bResult;
 }
 
-int PluginW::ProcessSynchroEvent(
-    int Event,
-    void *Param
-)
+int PluginW::ProcessSynchroEvent(int Event, void *Param)
 {
 	if (Load() && pProcessSynchroEventW)
 	{
@@ -1098,11 +1084,7 @@ int PluginW::DeleteFiles(
 }
 
 
-int PluginW::MakeDirectory(
-    HANDLE hPlugin,
-    const wchar_t **Name,
-    int OpMode
-)
+int PluginW::MakeDirectory(HANDLE hPlugin, const wchar_t **Name, int OpMode)
 {
 	int nResult = -1;
 
@@ -1139,11 +1121,7 @@ int PluginW::ProcessHostFile(
 }
 
 
-int PluginW::ProcessEvent(
-    HANDLE hPlugin,
-    int Event,
-    PVOID Param
-)
+int PluginW::ProcessEvent(HANDLE hPlugin, int Event, void *Param)
 {
 	BOOL bResult = FALSE;
 
@@ -1201,11 +1179,7 @@ int PluginW::GetFindData(
 }
 
 
-void PluginW::FreeFindData(
-    HANDLE hPlugin,
-    PluginPanelItem *PanelItem,
-    int ItemsNumber
-)
+void PluginW::FreeFindData(HANDLE hPlugin, PluginPanelItem *PanelItem, int ItemsNumber)
 {
 	if (pFreeFindDataW)
 	{
@@ -1214,11 +1188,7 @@ void PluginW::FreeFindData(
 	}
 }
 
-int PluginW::ProcessKey(
-    HANDLE hPlugin,
-    int Key,
-    unsigned int dwControlState
-)
+int PluginW::ProcessKey(HANDLE hPlugin, int Key, unsigned int dwControlState)
 {
 	BOOL bResult = FALSE;
 
@@ -1234,9 +1204,7 @@ int PluginW::ProcessKey(
 }
 
 
-void PluginW::ClosePlugin(
-    HANDLE hPlugin
-)
+void PluginW::ClosePlugin(HANDLE hPlugin)
 {
 	if (pClosePluginW)
 	{
@@ -1248,11 +1216,7 @@ void PluginW::ClosePlugin(
 }
 
 
-int PluginW::SetDirectory(
-    HANDLE hPlugin,
-    const wchar_t *Dir,
-    int OpMode
-)
+int PluginW::SetDirectory(HANDLE hPlugin, const wchar_t *Dir, int OpMode)
 {
 	BOOL bResult = FALSE;
 
@@ -1268,10 +1232,7 @@ int PluginW::SetDirectory(
 }
 
 
-void PluginW::GetOpenPluginInfo(
-    HANDLE hPlugin,
-    OpenPluginInfo *pInfo
-)
+void PluginW::GetOpenPluginInfo(HANDLE hPlugin, OpenPluginInfo *pInfo)
 {
 //	m_pManager->m_pCurrentPlugin = this;
 	pInfo->StructSize = sizeof(OpenPluginInfo);
@@ -1284,9 +1245,7 @@ void PluginW::GetOpenPluginInfo(
 }
 
 
-int PluginW::Configure(
-    int MenuItem
-)
+int PluginW::Configure(int MenuItem)
 {
 	BOOL bResult = FALSE;
 
@@ -1381,9 +1340,7 @@ void PluginW::ExitFAR()
 	}
 }
 
-int PluginW::ProcessConsoleInput(
-    INPUT_RECORD *D
-)
+int PluginW::ProcessConsoleInput(INPUT_RECORD *D)
 {
 	int bResult = 0;
 
