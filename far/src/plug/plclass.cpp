@@ -11,6 +11,8 @@
 #include <errno.h>
 #include <dlfcn.h>
 
+static const char NFMP_GetGlobalInfo[] = "GetGlobalInfoW";
+
 Plugin::Plugin(PluginManager *owner,
 		const FARString &strModuleName,
 		const std::string &settingsName,
