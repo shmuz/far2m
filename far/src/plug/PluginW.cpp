@@ -333,15 +333,12 @@ bool PluginW::Load()
 	if (m_Loaded)
 		return true;
 
-	if (!OpenModule())
+	if (!OpenModule() || !GetGlobalInfo())
 		return false;
 
 	m_Loaded = true;
 
 	WorkFlags.Clear(PIWF_CACHED);
-
-	if (!GetGlobalInfo())
-		return false;
 
 	GetModuleFN(pAnalyseW, NFMP_Analyse);
 	GetModuleFN(pCloseAnalyseW, NFMP_CloseAnalyse);
