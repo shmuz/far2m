@@ -157,8 +157,8 @@ end
 
 mf.usermenu = function(mode, filename)
   if not panel.CheckPanelsExist() then return end -- mantis #2986 (crash)
-  if mode and type(mode)~="number" then return end
   mode = mode or 0
+  if type(mode)~="number" then return end
   local sync_call = band(mode,0x100) ~= 0
   mode = band(mode,0xFF)
   if mode==0 or mode==1 then

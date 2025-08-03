@@ -215,25 +215,19 @@ void MenuFileToReg(const wchar_t *MenuKey, File &MenuFile, GetFileString &GetStr
 	}
 }
 
-UserMenu::UserMenu(bool ChooseMenuType)
+// ChooseMenuType: true - выбор типа меню (основное или локальное),
+//                 false - зависит от наличия FarMenu.Ini в текущем каталоге
+UserMenu::UserMenu(bool ChooseMenuType, bool FromAnyFile, const wchar_t *FileName)
 	:
 	grs(s_cfg_reader)
 {
-	MenuFromAnyFile = false;
-	ProcessUserMenu(ChooseMenuType, L"");
-}
-
-UserMenu::UserMenu(const FARString &MenuFileName)
-	:
-	grs(s_cfg_reader)
-{
-	MenuFromAnyFile = !MenuFileName.IsEmpty();
-	ProcessUserMenu(false, MenuFileName);
+	MenuFromAnyFile = FromAnyFile && *FileName;
+	ProcessUserMenu(ChooseMenuType, FileName);
 }
 
 UserMenu::~UserMenu() {}
 
-void UserMenu::ProcessUserMenu(bool ChooseMenuType, const FARString &MenuFileName)
+void UserMenu::ProcessUserMenu(bool ChooseMenuType, const wchar_t *MenuFileName)
 {
 	const wchar_t *const LocalMenuFileName = L"FarMenu.ini";
 	MenuMode = MM_LOCAL;

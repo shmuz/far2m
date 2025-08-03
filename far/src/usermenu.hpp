@@ -51,7 +51,7 @@ class UserMenu
 		bool MenuNeedRefresh;
 		bool MenuFromAnyFile;
 
-		void ProcessUserMenu(bool ChooseMenuType, const FARString& MenuFileName);
+		void ProcessUserMenu(bool ChooseMenuType, const wchar_t *MenuFileName);
 		int DeleteMenuRecord(const wchar_t *MenuKey, int DeletePos);
 		bool EditMenu(const wchar_t *MenuKey, int EditPos, int TotalRecords, bool Create);
 		int ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar_t *RootMenuKey,
@@ -59,7 +59,6 @@ class UserMenu
 		bool MoveMenuItem(const wchar_t *MenuKey,int Pos,int NewPos);
 
 	public:
-		UserMenu(bool ChooseMenuType); //	true - выбор типа меню (основное или локальное), false - зависит от наличия FarMenu.Ini в текущем каталоге
-		UserMenu(const FARString& MenuFileName);
+		UserMenu(bool ChooseMenuType, bool FromAnyFile=false, const wchar_t *FileName=L"");
 		~UserMenu();
 };
