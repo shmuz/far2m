@@ -52,7 +52,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "CFileMask.hpp"
 #include "filefilter.hpp"
 #include "syslog.hpp"
-// #include "localOEM.hpp"
 #include "codepage.hpp"
 #include "cddrv.hpp"
 #include "interf.hpp"

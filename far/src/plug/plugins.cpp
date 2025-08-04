@@ -55,7 +55,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "plugapi.hpp"
 #include "pathmix.hpp"
 #include "strmix.hpp"
-#include "processname.hpp"
 #include "interf.hpp"
 #include "filelist.hpp"
 #include "message.hpp"
@@ -65,7 +64,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "DlgGuid.hpp"
 #include <KeyFileHelper.h>
 #include "DialogBuilder.hpp"
-#include <crc64.h>
 #include <assert.h>
 
 const char *FmtDiskMenuStringD = "DiskMenuString%d";
@@ -157,7 +155,7 @@ static int _cdecl PluginsSort(const void *el1,const void *el2)
 {
 	Plugin *Plugin1=*((Plugin**)el1);
 	Plugin *Plugin2=*((Plugin**)el2);
-	return (StrCmpI(PointToName(Plugin1->GetModuleName()),PointToName(Plugin2->GetModuleName())));
+	return StrCmp(PointToName(Plugin1->GetModuleName()),PointToName(Plugin2->GetModuleName()));
 }
 
 PluginManager::PluginManager():
@@ -329,9 +327,7 @@ int PluginManager::UnloadPlugin(Plugin *pPlugin, DWORD dwException, bool bRemove
 
 	if (pPlugin && (dwException != EXCEPT_EXITFAR))   //схитрим, если упали в EXITFAR, не полезем в рекурсию, мы и так в Unload
 	{
-		Frame *frame;
-
-		if ((frame = FrameManager->GetBottomFrame()) )
+		if (auto frame = FrameManager->GetBottomFrame())
 			frame->Unlock();
 
 		if (Flags.Check(PSIF_DIALOG))   // BugZ#52 exception handling for floating point incorrect
@@ -510,9 +506,8 @@ void PluginManager::LoadPlugins()
 void PluginManager::LoadPluginsFromCache()
 {
 	KeyFileReadHelper kfh(PluginsIni());
-	const std::vector<std::string> &sections = kfh.EnumSections();
 	FARString strModuleName;
-	for (const auto &s : sections)
+	for (const auto &s : kfh.EnumSections())
 	{
 		if (s != HotkeysSection)
 		{
@@ -1708,8 +1703,7 @@ void PluginManager::DiscardCache()
 	}
 
 	KeyFileHelper kfh(PluginsIni());
-	const std::vector<std::string> &sections = kfh.EnumSections();
-	for (const auto &s : sections)
+	for (const auto &s : kfh.EnumSections())
 	{
 		if (s != HotkeysSection)
 			kfh.RemoveSection(s);

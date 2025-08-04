@@ -46,7 +46,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "interf.hpp"
 #include "ctrlobj.hpp"
 #include "DlgGuid.hpp"
-#include <crc64.h>
 #include "FileMasksProcessor.hpp"
 
 History::History(enumHISTORYTYPE TypeHistory, size_t HistoryCount, const std::string &RegKey,

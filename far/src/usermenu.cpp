@@ -251,7 +251,7 @@ void UserMenu::ProcessUserMenu(bool ChooseMenuType, const wchar_t *MenuFileName)
 	}
 
 	FARString strLocalMenuKey;
-	strLocalMenuKey.Format(L"UserMenu/LocalMenu%u", GetProcessUptimeMSec());
+	strLocalMenuKey.Format(L"UserMenu/LocalMenu%lu", (unsigned long)GetProcessUptimeMSec());
 	{
 		ConfigWriter(strLocalMenuKey.GetMB()).RemoveSection();
 	}
