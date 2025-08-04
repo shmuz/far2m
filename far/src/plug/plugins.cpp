@@ -461,7 +461,7 @@ void PluginManager::LoadPlugins()
 		const wchar_t *NamePtr;
 
 		// теперь пройдемся по всему ранее собранному списку
-		for (size_t PPLI = 0; nullptr!=(NamePtr = PluginPathList.Get(PPLI)); ++PPLI)
+		for (size_t I = 0; (NamePtr = PluginPathList.Get(I)); ++I)
 		{
 			// расширяем значение пути
 			apiExpandEnvironmentStrings(NamePtr,strFullName);
@@ -520,12 +520,8 @@ void PluginManager::LoadPluginsFromCache()
 	}
 }
 
-PHPTR PluginManager::OpenFilePlugin(
-    const wchar_t *Name,
-    int OpMode,
-    OPENFILEPLUGINTYPE Type,
-    Plugin *pDesiredPlugin
-)
+PHPTR PluginManager::OpenFilePlugin(const wchar_t *FileName, int OpMode, OPENFILEPLUGINTYPE Type,
+		Plugin *pDesiredPlugin)
 {
 	struct CallResult
 	{
@@ -540,22 +536,23 @@ PHPTR PluginManager::OpenFilePlugin(
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	ConsoleTitle ct(Opt.ShowCheckingFile ? Msg::CheckingFileInPlugin.CPtr() : nullptr);
 	PHPTR hResult = nullptr;
-	CallResult *pResult = nullptr;
+	CallResult *pCallResult = nullptr;
 	std::vector<CallResult> Results;
 	FARString strFullName;
+
+	OpMode |= (Type == OFP_ALTERNATIVE) ? OPM_PGDN : (Type == OFP_COMMANDS) ? OPM_COMMANDS : 0;
 	AnalyseInfo AnInfo { sizeof(AnalyseInfo), nullptr ,nullptr, 0, OpMode };
 
-	if (Name)
+	if (FileName)
 	{
-		ConvertNameToFull(Name,strFullName);
-		Name = strFullName;
-		AnInfo.FileName = Name;
+		ConvertNameToFull(FileName,strFullName);
+		FileName = strFullName;
+		AnInfo.FileName = FileName;
 	}
 
-	bool ShowMenu = Opt.PluginConfirm.OpenFilePlugin == BSTATE_3STATE ?
-			!(Type == OFP_NORMAL || Type == OFP_SEARCH) : Opt.PluginConfirm.OpenFilePlugin != 0;
-	if (Type == OFP_ALTERNATIVE) OpMode|= OPM_PGDN;
-	if (Type == OFP_COMMANDS) OpMode|= OPM_COMMANDS;
+	bool ShowMenu = Opt.PluginConfirm.OpenFilePlugin == BSTATE_3STATE
+			? !(Type == OFP_NORMAL || Type == OFP_SEARCH)
+			: Opt.PluginConfirm.OpenFilePlugin != 0;
 
 	Plugin *pPlugin = nullptr;
 	std::unique_ptr<SafeMMap> smm;
@@ -575,11 +572,11 @@ PHPTR PluginManager::OpenFilePlugin(
 			continue;
 		}
 
-		if(Name && !smm)
+		if(FileName && !smm)
 		{
 			try
 			{
-				smm.reset(new SafeMMap(Wide2MB(Name).c_str(), SafeMMap::M_READ, Opt.PluginMaxReadData));
+				smm.reset(new SafeMMap(Wide2MB(FileName).c_str(), SafeMMap::M_READ, Opt.PluginMaxReadData));
 				AnInfo.Buffer = smm->View();
 				AnInfo.BufferSize = smm->Length();
 			}
@@ -587,10 +584,10 @@ PHPTR PluginManager::OpenFilePlugin(
 			{
 				fprintf(stderr, "PluginManager::OpenFilePlugin: %s\n", e.what());
 
-				if(!OpMode)
+				if (OpMode == OPM_NONE)
 				{
 					Message(MSG_WARNING|MSG_ERRORTYPE, 1, MB2Wide(e.what()).c_str(),
-						Msg::OpenPluginCannotOpenFile, Name, Msg::Ok);
+						Msg::OpenPluginCannotOpenFile, FileName, Msg::Ok);
 				}
 				break;
 			}
@@ -601,7 +598,7 @@ PHPTR PluginManager::OpenFilePlugin(
 			if (Opt.ShowCheckingFile)
 				ct.Set(L"%ls - [%ls]...", Msg::CheckingFileInPlugin.CPtr(), PointToName(pPlugin->GetModuleName()));
 
-			HANDLE Handle = pPlugin->OpenFilePlugin(Name,
+			HANDLE Handle = pPlugin->OpenFilePlugin(FileName,
 				smm ? (const unsigned char *)smm->View() : nullptr,
 				smm ? (DWORD)smm->Length() : 0, OpMode);
 
@@ -632,7 +629,7 @@ PHPTR PluginManager::OpenFilePlugin(
 
 	if (!Results.empty() && (hResult != PHPTR_STOP))
 	{
-		bool OnlyOne = (Results.size() == 1) && !(Name && Opt.PluginConfirm.OpenFilePlugin &&
+		bool OnlyOne = (Results.size() == 1) && !(FileName && Opt.PluginConfirm.OpenFilePlugin &&
 			Opt.PluginConfirm.StandardAssociation && Opt.PluginConfirm.EvenIfOnlyOnePlugin);
 
 		if(!OnlyOne && ShowMenu)
@@ -673,29 +670,29 @@ PHPTR PluginManager::OpenFilePlugin(
 			if (menu.GetExitCode() == -1)
 				hResult = PHPTR_STOP;
 			else
-				pResult = (CallResult*)menu.GetUserData(nullptr, 0);
+				pCallResult = (CallResult*)menu.GetUserData(nullptr, 0);
 		}
 		else
 		{
-			pResult = &Results.front();
+			pCallResult = &Results.front();
 		}
 
-		if (pResult && pResult->FromAnalyse)
+		if (pCallResult && pCallResult->FromAnalyse)
 		{
 			AnalyseInfo copyInfo = AnInfo;
-			OpenAnalyseInfo oaInfo { sizeof(oaInfo), &copyInfo, pResult->Handle };
-			HANDLE h = pResult->pPlugin->OpenPlugin(OPEN_ANALYSE, reinterpret_cast<INT_PTR>(&oaInfo));
+			OpenAnalyseInfo oaInfo { sizeof(oaInfo), &copyInfo, pCallResult->Handle };
+			HANDLE h = pCallResult->pPlugin->OpenPlugin(OPEN_ANALYSE, reinterpret_cast<INT_PTR>(&oaInfo));
 
 			if (h != INVALID_HANDLE_VALUE)
-				pResult->Handle = h;
+				pCallResult->Handle = h;
 			else
-				pResult = nullptr;
+				pCallResult = nullptr;
 		}
 	}
 
 	for (const auto& res: Results)
 	{
-		if (&res != pResult)
+		if (&res != pCallResult)
 		{
 			if (res.FromAnalyse)
 			{
@@ -710,9 +707,9 @@ PHPTR PluginManager::OpenFilePlugin(
 		}
 	}
 
-	if (pResult)
+	if (pCallResult)
 	{
-		hResult = new PanelHandle(pResult->Handle, pResult->pPlugin);
+		hResult = new PanelHandle(pCallResult->Handle, pCallResult->pPlugin);
 	}
 
 	return hResult;
@@ -2372,7 +2369,6 @@ size_t PluginManager::GetPluginInformation(Plugin *pPlugin, FarGetPluginInformat
 	if (!FindPlugin(pPlugin))
 		return 0;
 
-	// if(IsPluginUnloaded(pPlugin)) return 0;
 	FARString Prefix;
 	DWORD Flags = 0, SysID = 0;
 	std::vector<FARString> MenuItems, DiskItems, ConfItems;
