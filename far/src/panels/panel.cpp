@@ -736,13 +736,9 @@ int Panel::ChangeDiskMenu(int Pos, int FirstCall)
 bool Panel::SetLocation_Plugin(bool file_plugin, Plugin *plugin, const wchar_t *path,
 		const wchar_t *host_file, LONG_PTR item)
 {
-	PHPTR hPlugin;
-
-	if (file_plugin) {
-		hPlugin = CtrlObject->Plugins.OpenFilePlugin(host_file, 0, OFP_ALTERNATIVE, plugin);    // OFP_NORMAL
-	} else {
-		hPlugin = CtrlObject->Plugins.OpenPlugin(plugin, OPEN_DISKMENU, item);                  // nItem
-	}
+	PHPTR hPlugin = file_plugin
+		? CtrlObject->Plugins.OpenFilePlugin(host_file, OPM_NONE, OFP_ALTERNATIVE, plugin)
+		: CtrlObject->Plugins.OpenPlugin(plugin, OPEN_DISKMENU, (void*)item);
 
 	if (hPlugin == nullptr) {
 		fprintf(stderr, "SetLocation_Plugin(%d, %p, '%ls', '%ls', %lld) FAILED plugin open\n", file_plugin,
@@ -1980,7 +1976,7 @@ bool Panel::ExecShortcutFolder(int Pos)
 				}
 
 				if (SrcPanel->GetType() == FILE_PANEL)
-					((FileList *)SrcPanel)->OpenFilePlugin(strPluginFile, FALSE, OFP_SHORTCUT);    //???
+					((FileList *)SrcPanel)->OpenFilePlugin(strPluginFile, false, OFP_SHORTCUT);    //???
 
 				if (!strShortcutFolder.IsEmpty())
 					SrcPanel->SetCurDir(strShortcutFolder, false);
@@ -1996,16 +1992,14 @@ bool Panel::ExecShortcutFolder(int Pos)
 					if (!StrCmpI(pPlugin->GetModuleName(), strPluginModule)) {
 						if (pPlugin->HasOpenPlugin()) {
 							PHPTR hNewPlugin = CtrlObject->Plugins.OpenPlugin(pPlugin, OPEN_SHORTCUT,
-									(INT_PTR)strPluginData.CPtr());
+									strPluginData.CPtr());
 
 							if (hNewPlugin) {
 								int CurFocus = SrcPanel->GetFocus();
 
-								Panel *NewPanel =
-										CtrlObject->Cp()->ChangePanel(SrcPanel, FILE_PANEL, TRUE, TRUE);
+								Panel *NewPanel = CtrlObject->Cp()->ChangePanel(SrcPanel, FILE_PANEL, TRUE, TRUE);
 								NewPanel->SetPluginMode(hNewPlugin, L"",
-										CurFocus
-												|| !CtrlObject->Cp()->GetAnotherPanel(NewPanel)->IsVisible());
+										CurFocus || !CtrlObject->Cp()->GetAnotherPanel(NewPanel)->IsVisible());
 
 								if (!strShortcutFolder.IsEmpty())
 									CtrlObject->Plugins.SetDirectory(hNewPlugin, strShortcutFolder, 0);

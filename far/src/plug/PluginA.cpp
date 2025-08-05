@@ -539,7 +539,7 @@ bool PluginA::IsPanelPlugin()
 	       pClosePlugin;
 }
 
-HANDLE PluginA::OpenPlugin(int OpenFrom, INT_PTR Item)
+HANDLE PluginA::OpenPlugin(int OpenFrom, const void *Item)
 {
 	//ChangePriority *ChPriority = new ChangePriority(THREAD_PRIORITY_NORMAL);
 
@@ -564,10 +564,10 @@ HANDLE PluginA::OpenPlugin(int OpenFrom, INT_PTR Item)
 		if (Item && (OpenFrom == OPEN_COMMANDLINE  || OpenFrom == OPEN_SHORTCUT))
 		{
 			ItemA = UnicodeToAnsi((const wchar_t *)Item);
-			Item = (INT_PTR)ItemA;
+			Item = ItemA;
 		}
 
-		EXECUTE_FUNCTION_EX(pOpenPlugin(OpenFrom,Item), es);
+		EXECUTE_FUNCTION_EX(pOpenPlugin(OpenFrom, (INT_PTR)Item), es);
 
 		if (ItemA) free(ItemA);
 

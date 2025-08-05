@@ -344,7 +344,7 @@ PHPTR FileList::OpenPluginForFile(const wchar_t *FileName, DWORD FileAttr, OPENF
 		_ALGO(SysLog(L"close AnotherPanel file"));
 		CtrlObject->Cp()->GetAnotherPanel(this)->CloseFile();
 		_ALGO(SysLog(L"call Plugins.OpenFilePlugin {"));
-		Result = CtrlObject->Plugins.OpenFilePlugin(FileName, 0, Type);
+		Result = CtrlObject->Plugins.OpenFilePlugin(FileName, OPM_NONE, Type);
 		_ALGO(SysLog(L"}"));
 	}
 	return Result;
@@ -681,7 +681,7 @@ void FileList::PluginPutFilesToNew()
 	_ALGO(CleverSysLog clv(L"FileList::PluginPutFilesToNew()"));
 	//_ALGO(SysLog(L"FileName='%ls'",(FileName?FileName:"(nullptr)")));
 	_ALGO(SysLog(L"call Plugins.OpenFilePlugin(nullptr, 0)"));
-	PHPTR hNewPlugin = CtrlObject->Plugins.OpenFilePlugin(nullptr, 0, OFP_CREATE);
+	PHPTR hNewPlugin = CtrlObject->Plugins.OpenFilePlugin(nullptr, OPM_NONE, OFP_CREATE);
 
 	if (hNewPlugin && hNewPlugin != PHPTR_STOP) {
 		_ALGO(SysLog(L"Create: FileList TmpPanel, FileCount=%d", FileCount));

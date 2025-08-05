@@ -175,7 +175,7 @@ class Plugin
 		virtual int    MakeDirectory(HANDLE hPlugin, const wchar_t **Name, int OpMode) = 0;
 		virtual bool   MayExitFAR() = 0;
 		virtual HANDLE OpenFilePlugin(const wchar_t *Name, const unsigned char *Data, int DataSize, int OpMode) = 0;
-		virtual HANDLE OpenPlugin(int OpenFrom, INT_PTR Item) = 0;
+		virtual HANDLE OpenPlugin(int OpenFrom, const void *Item) = 0;
 		virtual int    ProcessConsoleInput(INPUT_RECORD *D) = 0;
 		virtual int    ProcessDialogEvent(int Event, void *Param) = 0;
 		virtual int    ProcessEditorEvent(int Event, void *Param) = 0;

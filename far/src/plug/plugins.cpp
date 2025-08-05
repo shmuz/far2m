@@ -681,7 +681,7 @@ PHPTR PluginManager::OpenFilePlugin(const wchar_t *FileName, int OpMode, OPENFIL
 		{
 			AnalyseInfo copyInfo = AnInfo;
 			OpenAnalyseInfo oaInfo { sizeof(oaInfo), &copyInfo, pCallResult->Handle };
-			HANDLE h = pCallResult->pPlugin->OpenPlugin(OPEN_ANALYSE, reinterpret_cast<INT_PTR>(&oaInfo));
+			HANDLE h = pCallResult->pPlugin->OpenPlugin(OPEN_ANALYSE, &oaInfo);
 
 			if (h != INVALID_HANDLE_VALUE)
 				pCallResult->Handle = h;
@@ -727,7 +727,7 @@ PHPTR PluginManager::OpenFindListPlugin(const PluginPanelItem *PanelItems, int I
 
 		if (pPlugin->HasSetFindList())
 		{
-			HANDLE hPlugin = pPlugin->OpenPlugin(OPEN_FINDLIST, 0);
+			HANDLE hPlugin = pPlugin->OpenPlugin(OPEN_FINDLIST, nullptr);
 
 			if (hPlugin != INVALID_HANDLE_VALUE)
 			{
@@ -1132,7 +1132,7 @@ void PluginManager::ConfigureCurrent(Plugin *pPlugin, int INum, const GUID *Guid
 struct PluginMenuItemData
 {
 	Plugin *pPlugin;
-	int nItem;
+	intptr_t nItem;
 	GUID Guid;
 	wchar_t HotKey;
 };
@@ -1537,9 +1537,9 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 
 	Panel *ActivePanel = CtrlObject->Cp()->ActivePanel;
 	int OpenCode = OPEN_PLUGINSMENU;
-	INT_PTR Item = item.nItem;
+	const void *Item = (void*)item.nItem;
 	if (item.pPlugin->UseMenuGuids()) {
-		Item = (INT_PTR)&item.Guid;
+		Item = &item.Guid;
 	}
 	OpenDlgPluginData pd {};
 
@@ -1560,10 +1560,10 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 		else
 			pd.ItemNumber = item.nItem;
 
-		Item = (INT_PTR)&pd;
+		Item = &pd;
 	}
 
-	PHPTR hPlugin = OpenPlugin(item.pPlugin,OpenCode,Item);
+	PHPTR hPlugin = OpenPlugin(item.pPlugin, OpenCode, Item);
 
 	if (hPlugin && !IsEditor && !IsViewer && !IsDialog)
 	{
@@ -1860,7 +1860,7 @@ int PluginManager::ProcessCommandLine(const wchar_t *CommandParam, Panel *Target
 		CtrlObject->CmdLine->SetString(L"");
 		FARString strPluginCommand = strCommand.CPtr() + (PData->Flags & PF_FULLCMDLINE ? 0:PrefixLength+1);
 		RemoveTrailingSpaces(strPluginCommand);
-		PHPTR hPlugin = OpenPlugin(PData->pPlugin,OPEN_COMMANDLINE,(INT_PTR)strPluginCommand.CPtr()); //BUGBUG
+		PHPTR hPlugin = OpenPlugin(PData->pPlugin, OPEN_COMMANDLINE, strPluginCommand.CPtr()); //BUGBUG
 
 		if (hPlugin)
 		{
@@ -1898,7 +1898,7 @@ bool PluginManager::CallMacroPlugin(OpenMacroPluginInfo *Info)
 {
 #ifdef USELUA
 	Plugin *pPlugin = FindPlugin(SYSID_LUAMACRO);
-	return pPlugin && pPlugin->OpenPlugin(OPEN_LUAMACRO, (INT_PTR)Info);
+	return pPlugin && pPlugin->OpenPlugin(OPEN_LUAMACRO, Info);
 #else
 	return false;
 #endif
@@ -1910,7 +1910,7 @@ void* PluginManager::CallPluginFromMacro(DWORD SysID, OpenMacroInfo *Info)
 	if ( !(pPlugin && pPlugin->HasOpenPlugin()) )
 		return nullptr;
 
-	PHPTR PluginPanel = OpenPlugin(pPlugin, OPEN_FROMMACRO, (INT_PTR)Info);
+	PHPTR PluginPanel = OpenPlugin(pPlugin, OPEN_FROMMACRO, Info);
 
 	if (PluginPanel)
 	{
@@ -1951,7 +1951,7 @@ bool PluginManager::CallPlugin(DWORD SysID, int OpenFrom, void *Data)
 	if ( !(pPlugin && pPlugin->HasOpenPlugin()) )
 		return false;
 
-	PHPTR PluginPanel = OpenPlugin(pPlugin,OpenFrom,(INT_PTR)Data);
+	PHPTR PluginPanel = OpenPlugin(pPlugin, OpenFrom, Data);
 	if (PluginPanel && (OpenFrom == OPEN_PLUGINSMENU || OpenFrom == OPEN_FILEPANEL))
 	{
 		int CurFocus = CtrlObject->Cp()->ActivePanel->GetFocus();
@@ -2109,9 +2109,9 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 	case CPT_MENU:
 		{
 			auto OpenCode = OPEN_PLUGINSMENU;
-			INT_PTR Item = Data->FoundItemNumber;
+			void *Item = (void*)Data->FoundItemNumber;
 			if (UseMenuGuids) {
-				Item = reinterpret_cast<INT_PTR>(&Data->FoundUuid);
+				Item = &Data->FoundUuid;
 			}
 			OpenDlgPluginData pd { sizeof(pd) };
 
@@ -2133,7 +2133,7 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 					pd.ItemGuid = Data->FoundUuid;
 				}
 				pd.hDlg = reinterpret_cast<Dialog*>(TopFrame);
-				Item = reinterpret_cast<intptr_t>(&pd);
+				Item = &pd;
 			}
 
 			hPlugin = OpenPlugin(Data->pPlugin, OpenCode, Item);
@@ -2148,7 +2148,7 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 	case CPT_CMDLINE:
 		{
 			const FARString command = Data->Command; // Нужна копия строки
-			hPlugin = OpenPlugin(Data->pPlugin, OPEN_COMMANDLINE, reinterpret_cast<INT_PTR>(command.CPtr()));
+			hPlugin = OpenPlugin(Data->pPlugin, OPEN_COMMANDLINE, command.CPtr());
 			Result = true;
 		}
 		break;
@@ -2187,7 +2187,7 @@ Plugin *PluginManager::FindPlugin(DWORD SysId)
 	return SysIdMap.count(SysId) ? SysIdMap[SysId] : nullptr;
 }
 
-PHPTR PluginManager::OpenPlugin(Plugin *pPlugin, int OpenFrom, INT_PTR Item)
+PHPTR PluginManager::OpenPlugin(Plugin *pPlugin, int OpenFrom, const void *Item)
 {
 	HANDLE hPanel = pPlugin->OpenPlugin(OpenFrom, Item);
 

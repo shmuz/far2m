@@ -239,9 +239,9 @@ public:
 	}
 	bool FindPartNameXLat(const wchar_t *Name, int Next, int Direct = 1, int ExcludeSets = 0);
 
-	virtual int GoToFile(long idxItem) { return TRUE; }
-	virtual int GoToFile(const wchar_t *Name, BOOL OnlyPartName = FALSE) { return TRUE; }
-	virtual long FindFile(const wchar_t *Name, BOOL OnlyPartName = FALSE) { return -1; }
+	virtual bool GoToFile(long idxItem) { return true; }
+	virtual bool GoToFile(const wchar_t *Name, bool OnlyPartName = false) { return true; }
+	virtual long FindFile(const wchar_t *Name, bool OnlyPartName = false) { return -1; }
 
 	virtual bool IsSelected(const wchar_t *Name) { return false; }
 	virtual bool IsSelected(long indItem) { return false; }

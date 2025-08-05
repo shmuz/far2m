@@ -2411,7 +2411,7 @@ void FileList::ProcessEnter(bool EnableExec, bool SeparateWindow, bool EnableAss
 				return;
 			}
 
-			if (SeparateWindow || (hOpen = OpenFilePlugin(strFileName, TRUE, Type)) == nullptr
+			if (SeparateWindow || (hOpen = OpenFilePlugin(strFileName, true, Type)) == nullptr
 					|| hOpen == PHPTR_STOP) {
 				if (EnableExec && hOpen != PHPTR_STOP)
 				//					if (SeparateWindow || Opt.UseRegisteredTypes)
@@ -3061,23 +3061,23 @@ void FileList::ChangeDirectoriesFirst(int Mode)
 	Show();
 }
 
-int FileList::GoToFile(long idxItem)
+bool FileList::GoToFile(long idxItem)
 {
 	if ((DWORD)idxItem < (DWORD)FileCount) {
 		CurFile = idxItem;
 		CorrectPosition();
-		return TRUE;
+		return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
-int FileList::GoToFile(const wchar_t *Name, BOOL OnlyPartName)
+bool FileList::GoToFile(const wchar_t *Name, bool OnlyPartName)
 {
 	return GoToFile(FindFile(Name, OnlyPartName));
 }
 
-long FileList::FindFile(const wchar_t *Name, BOOL OnlyPartName)
+long FileList::FindFile(const wchar_t *Name, bool OnlyPartName)
 {
 	for (long I = 0; I < FileCount; I++) {
 		const wchar_t *CurPtrName =
@@ -4492,7 +4492,7 @@ int FileList::GetPrevDirectoriesFirst()
 			: DirectoriesFirst;
 }
 
-PHPTR FileList::OpenFilePlugin(const wchar_t *FileName, int PushPrev, OPENFILEPLUGINTYPE Type)
+PHPTR FileList::OpenFilePlugin(const wchar_t *FileName, bool PushPrev, OPENFILEPLUGINTYPE Type)
 {
 	if (!PushPrev && PanelMode == PLUGIN_PANEL) {
 		for (;;) {

@@ -142,14 +142,14 @@ class PluginManager
 			int OpenFrom;
 			union
 			{
-				int ItemNumber;
+				intptr_t ItemNumber;
 				GUID *ItemUuid;
 				const wchar_t *Command;
 			};
 			// Используется в функции CallPluginItem для внутренних нужд
 			Plugin *pPlugin;
 			GUID FoundUuid;
-			int FoundItemNumber;
+			intptr_t FoundItemNumber;
 		};
 
 		BitFlags Flags;        // флаги манагера плагинов
@@ -235,7 +235,7 @@ class PluginManager
 		bool  MayExitFar();
 		PHPTR OpenFilePlugin(const wchar_t *Name, int OpMode, OPENFILEPLUGINTYPE Type, Plugin *pDesiredPlugin = nullptr);
 		PHPTR OpenFindListPlugin(const PluginPanelItem *PanelItem, int ItemsNumber);
-		PHPTR OpenPlugin(Plugin *pPlugin, int OpenFrom, INT_PTR Item);
+		PHPTR OpenPlugin(Plugin *pPlugin, int OpenFrom, const void *Item);
 		int   ProcessConsoleInput(INPUT_RECORD *Rec);
 		int   ProcessDialogEvent(int Event, void *Param);
 		int   ProcessEditorEvent(int Event, void *Param);

@@ -304,16 +304,15 @@ public:
 	virtual int GetPrevCaseSensitiveSort();
 	virtual int GetPrevDirectoriesFirst();
 
-	PHPTR OpenFilePlugin(const wchar_t *FileName, int PushPrev, OPENFILEPLUGINTYPE Type);
+	PHPTR OpenFilePlugin(const wchar_t *FileName, bool PushPrev, OPENFILEPLUGINTYPE Type);
 	virtual int GetFileName(FARString &strName, int Pos, DWORD &FileAttr) const;
 	virtual int GetCurrentPos() const;
 	virtual bool
 	FindPartName(const wchar_t *Name, int Next, int Direct = 1, int ExcludeSets = 0, bool UseXlat = false);
-	long FindFile(const char *Name, BOOL OnlyPartName = FALSE);
 
-	virtual int GoToFile(long idxItem);
-	virtual int GoToFile(const wchar_t *Name, BOOL OnlyPartName = FALSE);
-	virtual long FindFile(const wchar_t *Name, BOOL OnlyPartName = FALSE);
+	virtual bool GoToFile(long idxItem);
+	virtual bool GoToFile(const wchar_t *Name, bool OnlyPartName = false);
+	virtual long FindFile(const wchar_t *Name, bool OnlyPartName = false);
 
 	virtual bool IsSelected(const wchar_t *Name);
 	virtual bool IsSelected(long idxItem);

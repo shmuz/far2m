@@ -170,7 +170,7 @@ class PluginA: public Plugin
 		bool SetStartupInfo(bool &bUnloaded);
 		bool CheckMinFarVersion(bool &bUnloaded);
 
-		HANDLE OpenPlugin(int OpenFrom, INT_PTR Item);
+		HANDLE OpenPlugin(int OpenFrom, const void *Item);
 		HANDLE OpenFilePlugin(const wchar_t *Name, const unsigned char *Data, int DataSize, int OpMode);
 
 		int SetFindList(HANDLE hPlugin, const PluginPanelItem *PanelItem, int ItemsNumber);

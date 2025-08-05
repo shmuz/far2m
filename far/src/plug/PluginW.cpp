@@ -802,7 +802,7 @@ void PluginW::CloseAnalyse(const CloseAnalyseInfo *Info)
 	}
 }
 
-HANDLE PluginW::OpenPlugin(int OpenFrom, INT_PTR Item)
+HANDLE PluginW::OpenPlugin(int OpenFrom, const void *Item)
 {
 	ChangePriority *ChPriority = new ChangePriority(ChangePriority::NORMAL);
 
@@ -820,7 +820,7 @@ HANDLE PluginW::OpenPlugin(int OpenFrom, INT_PTR Item)
 		ExecuteStruct es(EXCEPT_OPENPLUGIN);
 		es.hDefaultResult = INVALID_HANDLE_VALUE;
 		es.hResult = INVALID_HANDLE_VALUE;
-		EXECUTE_FUNCTION_EX(pOpenPluginW(OpenFrom,Item), es);
+		EXECUTE_FUNCTION_EX(pOpenPluginW(OpenFrom, (INT_PTR)Item), es);
 		hResult = es.hResult;
 		/*    CtrlObject->Macro.SetRedrawEditor(TRUE); //BUGBUG
 
