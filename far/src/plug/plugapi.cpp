@@ -1092,26 +1092,21 @@ void WINAPI FarDialogFree(HANDLE hDlg)
 	InterThreadCall<bool, false>(std::bind(FarDialogFreeSynched, hDlg));
 }
 
-/////////
-
 static CriticalSection s_get_msg_cs;
 const wchar_t *FarGetMsgFn(INT_PTR PluginHandle, FarLangMsgID MsgId)
 {
-	// BUGBUG, надо проверять, что PluginHandle - плагин
-	Plugin *plug = (Plugin *)PluginHandle;
-	if (plug->IsOemPlugin())    // LuaFAR _may_ call this function for OEM plugins
-		return nullptr;
+	auto plug = reinterpret_cast<Plugin*>(PluginHandle);
+	if (CtrlObject->Plugins.FindPlugin(plug)) {
+		if (auto pPlugin = dynamic_cast<PluginW*>(plug)) {
+			std::wstring strPath = pPlugin->GetModuleName().CPtr();
+			CutToSlash(strPath);
 
-	PluginW *pPlugin = (PluginW *)PluginHandle;
-	std::wstring strPath = pPlugin->GetModuleName().CPtr();
-	CutToSlash(strPath);
-
-	SCOPED_ACTION(CriticalSectionLock)(s_get_msg_cs);
-	if (!pPlugin->InitLang(strPath.c_str())) {
-		return nullptr;
+			SCOPED_ACTION(CriticalSectionLock)(s_get_msg_cs);
+			if (pPlugin->InitLang(strPath.c_str()))
+				return pPlugin->GetMsg(MsgId);
+		}
 	}
-
-	return pPlugin->GetMsg(MsgId);
+	return nullptr;
 }
 
 static int FarMessageFnSynched(INT_PTR PluginNumber, const GUID *Id, DWORD Flags, const wchar_t *HelpTopic,

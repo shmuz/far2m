@@ -2159,6 +2159,9 @@ local function test_PluginsControl()
 end
 
 local function test_far_timer()
+  if far.Timer == nil then -- TODO (FreeBSD, DragonFly BSD)
+    return
+  end
   local N = 0
   local timer = far.Timer(50, function(hnd)
       N = N+1
@@ -2566,26 +2569,38 @@ local function test_SplitCmdLine()
   assert(a=="-e" and b=="far.Show(4 + 7)" and c==nil and d==nil)
 end
 
+local function test_far_SaveScreen()
+  local scr = assert_udata(far.SaveScreen(0,0,20,10))
+  far.FreeScreen(scr)
+  assert_func(far.RestoreScreen)
+end
+
+local function test_far_GetDirList()
+  local dir = os.getenv("FARHOME") .. "/Plugins/luafar/luamacro"
+  local list = assert_table(far.GetDirList(dir))
+  local item = assert_table(list[1])
+  assert_str(item.FileName)
+end
+
 function MT.test_luafar()
-  test_bit64()
-  test_utf8()
-  test_win()
   test_AdvControl()
+  test_bit64()
+  test_dialog()
+  test_far_GetDirList()
+  test_far_GetMsg()
+  test_far_Menu()
+  test_far_SaveScreen()
+  test_FarStandardFunctions()
+  test_far_timer()
+  test_gmatch_coro()
+  test_Guids()
+  test_issue_3129()
   test_MacroControl()
   test_PluginsControl()
   test_RegexControl()
-  test_FarStandardFunctions()
-  test_dialog()
-  test_far_Menu()
   test_SplitCmdLine()
-
-  test_far_GetMsg()
-  if far.Timer then -- TODO (FreeBSD, DragonFly BSD)
-    test_far_timer()
-  end
-  test_gmatch_coro()
-  test_issue_3129()
-  test_Guids()
+  test_utf8()
+  test_win()
 end
 
 -- Test in particular that Plugin.Call (a so-called "restricted" function) works properly

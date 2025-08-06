@@ -4241,15 +4241,20 @@ static int far_InputBox(lua_State *L)
 
 static int far_GetMsg(lua_State *L)
 {
-	const wchar_t* Msg = NULL;
+	TPluginData* pd = GetPluginData(L);
 	int MsgId = (int)luaL_checkinteger(L, 1);
-	DWORD SysId = (DWORD)luaL_optinteger(L, 2, 0);
+	DWORD SysId = (DWORD)luaL_optinteger(L, 2, pd->PluginId);
+	const wchar_t* Msg = NULL;
+
 	if (MsgId >= 0) {
-		intptr_t Hnd = SysId ? PSInfo.PluginsControlV3(NULL, PCTL_FINDPLUGIN, PFM_SYSID, &SysId)
-			: GetPluginData(L)->ModuleNumber;
-		Msg = Hnd ? PSInfo.GetMsg(Hnd, MsgId) : NULL;
+		intptr_t modNumber = (SysId == pd->PluginId) ? pd->ModuleNumber
+				: PSInfo.PluginsControlV3(NULL, PCTL_FINDPLUGIN, PFM_SYSID, &SysId);
+		if (modNumber)
+			Msg = PSInfo.GetMsg(modNumber, MsgId);
 	}
-	Msg ? push_utf8_string(L, Msg, -1) : lua_pushnil(L);
+
+	if (Msg) push_utf8_string(L, Msg, -1);
+	else lua_pushnil(L);
 	return 1;
 }
 

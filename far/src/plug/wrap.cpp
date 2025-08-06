@@ -1043,22 +1043,21 @@ int WINAPI FarMessageFnA(INT_PTR PluginNumber, DWORD Flags, const char *HelpTopi
 }
 
 static CriticalSection s_get_msga_cs;
-const char *WINAPI FarGetMsgFnA(INT_PTR PluginHandle, FarLangMsgID MsgId)
+const char *FarGetMsgFnA(INT_PTR PluginHandle, FarLangMsgID MsgId)
 {
-	// BUGBUG, надо проверять, что PluginHandle - плагин
-	PluginA *pPlugin = (PluginA *)PluginHandle;
+	auto plug = reinterpret_cast<Plugin*>(PluginHandle);
+	if (CtrlObject->Plugins.FindPlugin(plug)) {
+		if (auto pPlugin = dynamic_cast<PluginA*>(plug)) {
+			std::wstring strPath = pPlugin->GetModuleName().CPtr();
+			CutToSlash(strPath);
 
-	std::wstring strPath = pPlugin->GetModuleName().CPtr();
-	CutToSlash(strPath);
-
-	SCOPED_ACTION(CriticalSectionLock)(s_get_msga_cs);
-	//	fprintf(stderr,"FarGetMsgFnA: strPath=%ls\n", strPath.CPtr());
-
-	if (!pPlugin->InitLang(strPath.c_str())) {
-		return "";
+			SCOPED_ACTION(CriticalSectionLock)(s_get_msga_cs);
+			//	fprintf(stderr,"FarGetMsgFnA: strPath=%ls\n", strPath.CPtr());
+			if (pPlugin->InitLang(strPath.c_str()))
+				return pPlugin->GetMsgA(MsgId);
+		}
 	}
-
-	return pPlugin->GetMsgA(MsgId);
+	return "";
 }
 
 int WINAPI FarMenuFnA(INT_PTR PluginNumber, int X, int Y, int MaxHeight, DWORD Flags, const char *Title,
