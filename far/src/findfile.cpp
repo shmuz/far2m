@@ -2800,7 +2800,7 @@ static bool FindFilesProcess(Vars &v)
 
 					if (hNewPlugin) {
 						Panel *ActivePanel = CtrlObject->Cp()->ActivePanel;
-						Panel *NewPanel = CtrlObject->Cp()->ChangePanel(ActivePanel, FILE_PANEL, TRUE, TRUE);
+						Panel *NewPanel = CtrlObject->Cp()->ChangePanel(ActivePanel, FILE_PANEL, true, true);
 						NewPanel->SetPluginMode(hNewPlugin, L"", true);
 						NewPanel->SetVisible(TRUE);
 						NewPanel->Update(0);
@@ -2830,7 +2830,7 @@ static bool FindFilesProcess(Vars &v)
 						FARString strArcName = ArcItem.strArcName;
 
 						if (FindPanel->GetType() != FILE_PANEL) {
-							FindPanel = CtrlObject->Cp()->ChangePanel(FindPanel, FILE_PANEL, TRUE, TRUE);
+							FindPanel = CtrlObject->Cp()->ChangePanel(FindPanel, FILE_PANEL, true, true);
 						}
 
 						FARString strArcPath = strArcName;
@@ -2886,7 +2886,7 @@ static bool FindFilesProcess(Vars &v)
 					if ((FindPanel->GetType() != FILE_PANEL) || (FindPanel->GetMode() != NORMAL_PANEL))
 					// Сменим панель на обычную файловую...
 					{
-						FindPanel = CtrlObject->Cp()->ChangePanel(FindPanel, FILE_PANEL, TRUE, TRUE);
+						FindPanel = CtrlObject->Cp()->ChangePanel(FindPanel, FILE_PANEL, true, true);
 						FindPanel->SetVisible(TRUE);
 						FindPanel->Update(0);
 					}

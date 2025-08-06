@@ -747,7 +747,7 @@ bool Panel::SetLocation_Plugin(bool file_plugin, Plugin *plugin, const wchar_t *
 	}
 
 	int Focus = GetFocus();
-	Panel *NewPanel = CtrlObject->Cp()->ChangePanel(this, FILE_PANEL, TRUE, TRUE);
+	Panel *NewPanel = CtrlObject->Cp()->ChangePanel(this, FILE_PANEL, true, true);
 	NewPanel->SetPluginMode(hPlugin, L"", Focus || !CtrlObject->Cp()->GetAnotherPanel(NewPanel)->IsVisible());
 
 	if (path) {
@@ -793,7 +793,7 @@ bool Panel::SetLocation_Directory(const wchar_t *path)
 		Update(UPDATE_KEEP_SELECTION);
 	} else {
 		int Focus = GetFocus();
-		Panel *NewPanel = CtrlObject->Cp()->ChangePanel(this, FILE_PANEL, TRUE, FALSE);
+		Panel *NewPanel = CtrlObject->Cp()->ChangePanel(this, FILE_PANEL, true, false);
 		NewPanel->SetCurDir(strNewCurDir, true);
 		NewPanel->Show();
 
@@ -1997,7 +1997,7 @@ bool Panel::ExecShortcutFolder(int Pos)
 							if (hNewPlugin) {
 								int CurFocus = SrcPanel->GetFocus();
 
-								Panel *NewPanel = CtrlObject->Cp()->ChangePanel(SrcPanel, FILE_PANEL, TRUE, TRUE);
+								Panel *NewPanel = CtrlObject->Cp()->ChangePanel(SrcPanel, FILE_PANEL, true, true);
 								NewPanel->SetPluginMode(hNewPlugin, L"",
 										CurFocus || !CtrlObject->Cp()->GetAnotherPanel(NewPanel)->IsVisible());
 
@@ -2027,7 +2027,7 @@ bool Panel::ExecShortcutFolder(int Pos)
 		/*
 		if (SrcPanel->GetType()!=FILE_PANEL)
 		{
-			SrcPanel=CtrlObject->Cp()->ChangePanel(SrcPanel,FILE_PANEL,TRUE,TRUE);
+			SrcPanel=CtrlObject->Cp()->ChangePanel(SrcPanel,FILE_PANEL,true,true);
 		}
 		*/
 

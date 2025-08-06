@@ -339,10 +339,7 @@ int PluginManager::UnloadPlugin(Plugin *pPlugin, DWORD dwException, bool bRemove
 
 		bool bPanelPlugin = pPlugin->IsPanelPlugin();
 
-		if (dwException != (DWORD)-1)
-			nResult = pPlugin->Unload(true);
-		else
-			nResult = pPlugin->Unload(false);
+		nResult = pPlugin->Unload(dwException != (DWORD)-1);
 
 		if (bPanelPlugin /*&& bUpdatePanels*/)
 		{
@@ -400,14 +397,14 @@ Plugin *PluginManager::FindPlugin(const wchar_t *lpwszModuleName)
 	return nullptr;
 }
 
-Plugin *PluginManager::FindPlugin(Plugin *pPlugin)
+bool PluginManager::FindPlugin(Plugin *pPlugin)
 {
 	for (int i = 0; i < PluginsCount; i++)
 	{
 		if (pPlugin == PluginsData[i])
-			return pPlugin;
+			return true;
 	}
-	return nullptr;
+	return false;
 }
 
 Plugin *PluginManager::GetPlugin(int PluginNumber)
@@ -1573,7 +1570,7 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 			return FALSE;
 		}
 
-		Panel *NewPanel = CtrlObject->Cp()->ChangePanel(ActivePanel,FILE_PANEL,TRUE,TRUE);
+		Panel *NewPanel = CtrlObject->Cp()->ChangePanel(ActivePanel,FILE_PANEL,true,true);
 		NewPanel->SetPluginMode(hPlugin,L"",true);
 		NewPanel->Update(0);
 		NewPanel->Show();
@@ -1720,7 +1717,7 @@ void PluginManager::LoadIfCacheAbsent()
 	}
 }
 
-int PluginManager::ProcessCommandLine(const wchar_t *CommandParam, Panel *Target)
+bool PluginManager::ProcessCommandLine(const wchar_t *CommandParam, Panel *Target)
 {
 	struct PluginData
 	{
@@ -1740,7 +1737,7 @@ int PluginManager::ProcessCommandLine(const wchar_t *CommandParam, Panel *Target
 		wchar_t Ch = strCommand.At(PrefixLength);
 
 		if (!Ch || IsSpace(Ch) || Ch == L'/' || PrefixLength>64)
-			return FALSE;
+			return false;
 
 		if (Ch == L':' && PrefixLength>0)
 			break;
@@ -1810,13 +1807,13 @@ int PluginManager::ProcessCommandLine(const wchar_t *CommandParam, Panel *Target
 	}
 
 	if (items.empty())
-		return FALSE;
+		return false;
 
 	Panel *ActivePanel = CtrlObject->Cp()->ActivePanel;
 	Panel *CurPanel = Target ? Target : ActivePanel;
 
 	if (CurPanel->ProcessPluginEvent(FE_CLOSE,nullptr))
-		return FALSE;
+		return false;
 
 	PluginData* PData = nullptr;
 
@@ -1860,18 +1857,18 @@ int PluginManager::ProcessCommandLine(const wchar_t *CommandParam, Panel *Target
 		CtrlObject->CmdLine->SetString(L"");
 		FARString strPluginCommand = strCommand.CPtr() + (PData->Flags & PF_FULLCMDLINE ? 0:PrefixLength+1);
 		RemoveTrailingSpaces(strPluginCommand);
-		PHPTR hPlugin = OpenPlugin(PData->pPlugin, OPEN_COMMANDLINE, strPluginCommand.CPtr()); //BUGBUG
+		PHPTR hPlugin = OpenPlugin(PData->pPlugin, OPEN_COMMANDLINE, strPluginCommand.CPtr());
 
 		if (hPlugin)
 		{
-			Panel *NewPanel = CtrlObject->Cp()->ChangePanel(CurPanel,FILE_PANEL,TRUE,TRUE);
+			Panel *NewPanel = CtrlObject->Cp()->ChangePanel(CurPanel,FILE_PANEL,true,true);
 			NewPanel->SetPluginMode(hPlugin,L"",!Target || Target == ActivePanel);
 			NewPanel->Update(0);
 			NewPanel->Show();
 		}
 	}
 
-	return TRUE;
+	return true;
 }
 
 
@@ -1924,7 +1921,7 @@ void* PluginManager::CallPluginFromMacro(DWORD SysID, OpenMacroInfo *Info)
 					fmc->Callback(fmc->CallbackData, fmc->Values, fmc->Count);
 
 				int CurFocus = CtrlObject->Cp()->ActivePanel->GetFocus();
-				Panel *NewPanel = CtrlObject->Cp()->ChangePanel(CtrlObject->Cp()->ActivePanel,FILE_PANEL,TRUE,TRUE);
+				Panel *NewPanel = CtrlObject->Cp()->ChangePanel(CtrlObject->Cp()->ActivePanel,FILE_PANEL,true,true);
 				bool SendOnFocus = CurFocus || !CtrlObject->Cp()->GetAnotherPanel(NewPanel)->IsVisible();
 				NewPanel->SetPluginMode(PluginPanel, L"", SendOnFocus);
 				NewPanel->Update(0);
@@ -1955,7 +1952,7 @@ bool PluginManager::CallPlugin(DWORD SysID, int OpenFrom, void *Data)
 	if (PluginPanel && (OpenFrom == OPEN_PLUGINSMENU || OpenFrom == OPEN_FILEPANEL))
 	{
 		int CurFocus = CtrlObject->Cp()->ActivePanel->GetFocus();
-		Panel *NewPanel = CtrlObject->Cp()->ChangePanel(CtrlObject->Cp()->ActivePanel,FILE_PANEL,TRUE,TRUE);
+		Panel *NewPanel = CtrlObject->Cp()->ChangePanel(CtrlObject->Cp()->ActivePanel,FILE_PANEL,true,true);
 		bool SendOnFocus = CurFocus || !CtrlObject->Cp()->GetAnotherPanel(NewPanel)->IsVisible();
 		NewPanel->SetPluginMode(PluginPanel, L"", SendOnFocus);
 
@@ -2167,7 +2164,7 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 			return false;
 		}
 
-		const auto NewPanel = CtrlObject->Cp()->ChangePanel(ActivePanel, FILE_PANEL, TRUE, TRUE);
+		const auto NewPanel = CtrlObject->Cp()->ChangePanel(ActivePanel, FILE_PANEL, true, true);
 		NewPanel->SetPluginMode(hPlugin, {}, true);
 		NewPanel->Update(0);
 		NewPanel->Show();

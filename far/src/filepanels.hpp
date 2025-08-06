@@ -73,7 +73,7 @@ class FilePanels:public Frame
 		void   DeletePanel(Panel *Deleted);
 		Panel* GetAnotherPanel(Panel *Current);
 		Panel* ChangePanelToFilled(Panel *Current,int NewType);
-		Panel* ChangePanel(Panel *Current,int NewType,int CreateNew,int Force);
+		Panel* ChangePanel(Panel *Current,int NewType,bool CreateNew,bool Force);
 		void   SetPanelPositions(int LeftFullScreen,int RightFullScreen);
 //    void   SetPanelPositions();
 

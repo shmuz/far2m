@@ -191,7 +191,7 @@ class PluginManager
 		Plugin *GetPlugin(int PluginNumber);
 		Plugin *FindPlugin(const wchar_t *lpwszModuleName);
 		Plugin *FindPlugin(DWORD SysID);
-		Plugin *FindPlugin(Plugin *pPlugin);
+		bool FindPlugin(Plugin *pPlugin);
 
 		int GetPluginsCount() { return PluginsCount; }
 
@@ -205,7 +205,7 @@ class PluginManager
 		bool UseFarCommand(PHPTR ph, int CommandType);
 		void ReloadLanguage();
 		void DiscardCache();
-		int ProcessCommandLine(const wchar_t *Command, Panel *Target=nullptr);
+		bool ProcessCommandLine(const wchar_t *Command, Panel *Target=nullptr);
 
 		bool SetHotKeyDialog(const wchar_t *DlgPluginTitle, Plugin *pPlugin, int ItemNumber, const GUID *Guids, MENUTYPE MenuType);
 
@@ -252,8 +252,6 @@ class PluginManager
 		void BackgroundTaskFinished(const wchar_t *Info);
 		bool HasBackgroundTasks();
 		std::map<std::wstring, unsigned int> BackgroundTasks();
-
-		friend class Plugin;
 };
 
 const char *PluginsIni();

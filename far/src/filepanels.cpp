@@ -467,9 +467,9 @@ int FilePanels::ProcessKey(FarKey Key)
 						/* $ 19.09.2000 IS
 						  Повторное нажатие на ctrl-l|q|t всегда включает файловую панель
 						*/
-						AnotherPanel=ChangePanel(AnotherPanel,FILE_PANEL,FALSE,FALSE);
+						AnotherPanel=ChangePanel(AnotherPanel,FILE_PANEL,false,false);
 					else
-						AnotherPanel=ChangePanel(AnotherPanel,NewType,FALSE,FALSE);
+						AnotherPanel=ChangePanel(AnotherPanel,NewType,false,false);
 
 					/* $ 07.09.2001 VVM
 					  ! При возврате из CTRL+Q, CTRL+L восстановим каталог, если активная панель - дерево. */
@@ -759,7 +759,7 @@ Panel* FilePanels::ChangePanelToFilled(Panel *Current,int NewType)
 	if (Current->GetType()!=NewType && !Current->ProcessPluginEvent(FE_CLOSE,nullptr))
 	{
 		Current->Hide();
-		Current=ChangePanel(Current,NewType,FALSE,FALSE);
+		Current=ChangePanel(Current,NewType,false,false);
 		Current->Update(0);
 		Current->Show();
 
@@ -779,7 +779,7 @@ Panel* FilePanels::GetAnotherPanel(Panel *Current)
 }
 
 
-Panel* FilePanels::ChangePanel(Panel *Current,int NewType,int CreateNew,int Force)
+Panel* FilePanels::ChangePanel(Panel *Current, int NewType, bool CreateNew, bool Force)
 {
 	Panel *NewPanel;
 	SaveScreen *SaveScr=nullptr;
