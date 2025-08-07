@@ -39,6 +39,7 @@ target_link_libraries(arclite utils far2m)
 
 target_include_directories(arclite PRIVATE
     ../WinPort
+    ../utils/include
     ../far/far2sdk
     ../far/src/base
 )
