@@ -1042,19 +1042,24 @@ int WINAPI FarMessageFnA(INT_PTR PluginNumber, DWORD Flags, const char *HelpTopi
 	return ret;
 }
 
-static CriticalSection s_get_msga_cs;
+static CriticalSection s_get_msg_cs;
 const char *FarGetMsgFnA(INT_PTR PluginHandle, FarLangMsgID MsgId)
 {
 	auto plug = reinterpret_cast<Plugin*>(PluginHandle);
 	if (CtrlObject->Plugins.FindPlugin(plug)) {
-		if (auto pPlugin = dynamic_cast<PluginA*>(plug)) {
-			std::wstring strPath = pPlugin->GetModuleName().CPtr();
-			CutToSlash(strPath);
-
-			SCOPED_ACTION(CriticalSectionLock)(s_get_msga_cs);
-			//	fprintf(stderr,"FarGetMsgFnA: strPath=%ls\n", strPath.CPtr());
-			if (pPlugin->InitLang(strPath.c_str()))
+		SCOPED_ACTION(CriticalSectionLock)(s_get_msg_cs);
+		std::wstring strPath = plug->GetModuleName().CPtr();
+		CutToSlash(strPath);
+		if (plug->InitLang(strPath.c_str())) {
+			if (auto pPlugin = dynamic_cast<PluginA*>(plug))
 				return pPlugin->GetMsgA(MsgId);
+			else if (auto pPlugin = dynamic_cast<PluginW*>(plug)) {
+				if (auto s = pPlugin->GetMsg(MsgId)) {
+					static std::string Msg;
+					Msg = Wide2MB(s);
+					return Msg.c_str();
+				}
+			}
 		}
 	}
 	return "";

@@ -1097,13 +1097,19 @@ const wchar_t *FarGetMsgFn(INT_PTR PluginHandle, FarLangMsgID MsgId)
 {
 	auto plug = reinterpret_cast<Plugin*>(PluginHandle);
 	if (CtrlObject->Plugins.FindPlugin(plug)) {
-		if (auto pPlugin = dynamic_cast<PluginW*>(plug)) {
-			std::wstring strPath = pPlugin->GetModuleName().CPtr();
-			CutToSlash(strPath);
-
-			SCOPED_ACTION(CriticalSectionLock)(s_get_msg_cs);
-			if (pPlugin->InitLang(strPath.c_str()))
+		SCOPED_ACTION(CriticalSectionLock)(s_get_msg_cs);
+		std::wstring strPath = plug->GetModuleName().CPtr();
+		CutToSlash(strPath);
+		if (plug->InitLang(strPath.c_str())) {
+			if (auto pPlugin = dynamic_cast<PluginW*>(plug))
 				return pPlugin->GetMsg(MsgId);
+			else if (auto pPlugin = dynamic_cast<PluginA*>(plug)) {
+				if (auto s = pPlugin->GetMsgA(MsgId)) {
+					static std::wstring Msg;
+					Msg = MB2Wide(s);
+					return Msg.c_str();
+				}
+			}
 		}
 	}
 	return nullptr;
