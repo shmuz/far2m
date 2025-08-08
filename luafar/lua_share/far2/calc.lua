@@ -228,10 +228,12 @@ local function calculator()
       end
     })
   local cfunction = function(c) return environ[c] end
-  local keys = { Enter="btnCalc"; Ins="btnIns"; F5 = "btnCopy"; }
+  local keys = { Ins="btnIns"; F5 = "btnCopy"; }
 
   local function btnCalc_Action(hDlg)
     if tonumber(result) then
+      local txt = Send(hDlg, F.DM_GETTEXT, dPos.calc)
+      Send(hDlg, F.DM_ADDHISTORY, dPos.calc, txt)
       Send(hDlg, F.DM_SETTEXT, dPos.calc, result)
     end
     return KEEP_DIALOG_OPEN
