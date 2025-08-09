@@ -2583,7 +2583,7 @@ local function test_far_GetDirList()
 end
 
 local function test_far_GetPluginDirList()
-  Plugin.Command(far.GetPluginId(), "macro:panel")
+  Plugin.Command(far.GetPluginId(), "macro:panel 4")
   assert_true(APanel.Plugin)
   local items = assert_table(far.GetPluginDirList(1, "."))
   assert_eq(#items, 4)

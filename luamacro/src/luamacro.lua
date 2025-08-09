@@ -407,7 +407,7 @@ local function Open_CommandLine (strCmdLine)
         Quit(OK and 0 or 3)
       ]], 0, "CtrlShiftF12")
     elseif cmd == "panel" then
-      return Shared.TestPanel, true
+      return Shared.TestPanel, { args=text; }
     elseif cmd == "browser" then
       macrobrowser()
     elseif cmd ~= "" then

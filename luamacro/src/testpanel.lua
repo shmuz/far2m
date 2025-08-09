@@ -8,16 +8,20 @@ mod.Info = {
   StartDate = "2025-08-09";
 }
 
-function mod.GetFindData(object, handle, OpMode)
-  return {
-    {FileName="file1.txt"; FileSize=1000;},
-    {FileName="file2.txt"; FileSize=3000;},
-    {FileName="file3.txt"; FileSize=2000;},
-    {FileName="file4.txt"; FileSize=4000;},
-  }
+function mod.GetFindData(obj, handle, OpMode)
+  if obj.files == nil then
+    obj.files = {}
+    local num = tonumber(obj.args:match("^[%w_]+%s+(%d+)")) or 0
+    for k=1,num do
+      local name = ("file-%d.txt"):format(k)
+      local size = math.random(1000, 9999)
+      obj.files[k] = { FileName=name; FileSize=size; }
+    end
+  end
+  return obj.files
 end
 
-function mod.GetOpenPanelInfo(object, handle)
+function mod.GetOpenPanelInfo(obj, handle)
   return {
     PanelTitle = Title;
     Flags = F.OPIF_ADDDOTS;
