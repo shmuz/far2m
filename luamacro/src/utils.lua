@@ -545,6 +545,16 @@ local function AddPanelModule (srctable, FileName)
   end
 end
 
+local function AddTestPanel()
+  local path = win.JoinPath(Shared.ShareDir, "testpanel.lua")
+  local func = loadfile(path)
+  if func then
+    local mod = func()
+    AddPanelModule(mod, path)
+    Shared.TestPanel = mod
+  end
+end
+
 local function AddContentColumns (srctable, FileName)
   if    type(srctable) == "table"
     and type(srctable.GetContentFields) == "function"
@@ -732,6 +742,8 @@ local function LoadMacros (unload, paths)
     end
   end
   Areas = newAreas
+
+  AddTestPanel() -- add always as it is needed for testing
 
   if not unload then
     LoadCounter = LoadCounter + 1

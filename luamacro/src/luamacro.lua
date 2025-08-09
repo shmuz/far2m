@@ -406,6 +406,8 @@ local function Open_CommandLine (strCmdLine)
         OK = pcall(R.test_all)
         Quit(OK and 0 or 3)
       ]], 0, "CtrlShiftF12")
+    elseif cmd == "panel" then
+      return Shared.TestPanel, true
     elseif cmd == "browser" then
       macrobrowser()
     elseif cmd ~= "" then
@@ -637,6 +639,7 @@ local function Init()
     yieldcall         = yieldcall,
     MacroDirs         = GetMacroDirs(),
     Unquote           = Unquote,
+    ShareDir          = ShareDir,
   }
   Shared.MacroCallFar, far.MacroCallFar = far.MacroCallFar, nil
   Shared.MacroCallToLua, far.MacroCallToLua = far.MacroCallToLua, nil

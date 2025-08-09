@@ -2582,14 +2582,32 @@ local function test_far_GetDirList()
   assert_str(item.FileName)
 end
 
+local function test_far_GetPluginDirList()
+  Plugin.Command(far.GetPluginId(), "macro:panel")
+  assert_true(APanel.Plugin)
+  local items = assert_table(far.GetPluginDirList(1, "."))
+  assert_eq(#items, 4)
+  assert_table(items[1])
+  Keys("Home Enter")
+  far.Text()
+end
+
+local function test_far_ShowHelp()
+  mf.postmacro(function() assert_eq(Area.Current,"Help"); Keys("Esc"); end)
+  assert_true(far.ShowHelp(nil, nil, "FHELP_FARHELP FHELP_USECONTENTS"))
+  assert_false(far.ShowHelp())
+end
+
 function MT.test_luafar()
   test_AdvControl()
   test_bit64()
   test_dialog()
   test_far_GetDirList()
+  test_far_GetPluginDirList()
   test_far_GetMsg()
   test_far_Menu()
   test_far_SaveScreen()
+  test_far_ShowHelp()
   test_FarStandardFunctions()
   test_far_timer()
   test_gmatch_coro()

@@ -4207,7 +4207,7 @@ static int viewer_SetMode(lua_State *L)
 
 static int far_ShowHelp(lua_State *L)
 {
-	const wchar_t *ModuleName = check_utf8_string (L,1,NULL);
+	const wchar_t *ModuleName = opt_utf8_string (L,1,NULL);
 	const wchar_t *HelpTopic = opt_utf8_string (L,2,NULL);
 	int Flags = OptFlags(L,3,0);
 	BOOL ret = PSInfo.ShowHelp (ModuleName, HelpTopic, Flags);

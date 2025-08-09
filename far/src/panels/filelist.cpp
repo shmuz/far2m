@@ -483,9 +483,8 @@ int _cdecl SortList(const void *el1, const void *el2)
 		return SPtr1->SortGroup < SPtr2->SortGroup ? -1 : 1;
 
 	if (hSortPlugin) {
-		DWORD SaveFlags1, SaveFlags2;
-		SaveFlags1 = SPtr1->UserFlags;
-		SaveFlags2 = SPtr2->UserFlags;
+		auto SaveFlags1 = SPtr1->UserFlags;
+		auto SaveFlags2 = SPtr2->UserFlags;
 		SPtr1->UserFlags = SPtr2->UserFlags = 0;
 		PluginPanelItem pi1 = {}, pi2 = {};
 		FileList::FileListToPluginItem(SPtr1, &pi1);

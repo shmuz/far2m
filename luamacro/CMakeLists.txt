@@ -86,6 +86,7 @@ set(MY_LIST
   luamacro.lua
   mbrowser.lua
   panelsort.lua
+  testpanel.lua
   utils.lua
 )
 
