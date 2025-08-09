@@ -112,11 +112,13 @@ end
 -- END: Functions implemented via "returning a key" to Far
 -------------------------------------------------------------------------------
 
+local MacroBrowserGuid = win.Uuid("EF6D67A2-59F7-4DF3-952E-F9049877B492")
+
 function export.GetPluginInfo()
   local out = {
     Flags = bor(F.PF_PRELOAD,F.PF_FULLCMDLINE,F.PF_EDITOR,F.PF_VIEWER,F.PF_DIALOG),
     CommandPrefix = "lm:macro:lua:moon:luas:moons:edit:view:load:unload:goto"..utils.GetPrefixes()[1],
-    PluginMenuGuids = win.Uuid("EF6D67A2-59F7-4DF3-952E-F9049877B492"),
+    PluginMenuGuids = MacroBrowserGuid,
     PluginMenuStrings = { "Macro Browser" },
   }
 
@@ -534,6 +536,9 @@ function export.Open (OpenFrom, Id, ...)
     elseif argtable[1]=="browser" then
       macrobrowser()
     end
+
+  elseif Id == MacroBrowserGuid then
+    macrobrowser()
 
   else
     local items = utils.GetMenuItems()
