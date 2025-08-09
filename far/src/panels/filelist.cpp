@@ -497,7 +497,7 @@ int _cdecl SortList(const void *el1, const void *el2)
 		FileList::FreePluginPanelItem(&pi1);
 		FileList::FreePluginPanelItem(&pi2);
 
-		if (RetCode != -2)
+		if (RetCode != 0 && RetCode != -2)
 			return RetCode * ListSortOrder;
 	}
 
