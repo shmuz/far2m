@@ -542,8 +542,6 @@ function export.Open (OpenFrom, Id, ...)
       if CanCreatePanel[OpenFrom] and mod and obj and PanelModuleExist(mod) then
         return { module=mod; object=obj }
       end
-    else
-      macrobrowser()
     end
 
   end

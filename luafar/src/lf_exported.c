@@ -880,7 +880,8 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 		case OPEN_PLUGINSMENU:
 		case OPEN_EDITOR:
 		case OPEN_VIEWER:
-			lua_pushlstring(L, (const char*)Item, sizeof(GUID));
+			// in OPEN_DISKMENU case, Item may be either 0 or not 0
+			Item ? lua_pushlstring(L, (const char*)Item, sizeof(GUID)) : lua_pushnil(L);
 			lua_pushinteger(L, 0);        // dummy Data
 			if (pcall_msg(L, 3, 1) == 0) {
 				if (lua_toboolean(L, -1))        //+1: Obj
