@@ -413,15 +413,15 @@ void FileList::SortFileList(bool KeepPosition)
 						(unsigned short)std::min(size_t(PointToExt(NamePtr) - NamePtr), (size_t)0xffff);
 			}
 
-			hSortPlugin = (PanelMode == PLUGIN_PANEL) && hPlugin && hPlugin->pPlugin->HasCompare()
-					? hPlugin : nullptr;
+			bool bCallEvents = (PanelMode == PLUGIN_PANEL) && hPlugin;
+			hSortPlugin = bCallEvents && hPlugin->pPlugin->HasCompare() ? hPlugin : nullptr;
 
-			if (hPlugin && ProcessPluginEvent(FE_STARTSORT, nullptr))
+			if (bCallEvents && ProcessPluginEvent(FE_STARTSORT, nullptr))
 				hSortPlugin = nullptr;
 
 			qsort(ListData, FileCount, sizeof(*ListData), SortList);
 
-			if (hPlugin)
+			if (bCallEvents)
 				ProcessPluginEvent(FE_ENDSORT, nullptr);
 		}
 		else if (SortMode >= PanelSortMode::BY_USER) {
