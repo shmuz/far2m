@@ -9,10 +9,9 @@ BETA VERSION.
 **Use at your own risk!**
 
 #### Included plug-ins
-Advanced compare, Align block, Auto wrap, Calculator, Draw lines, EditCase,
-Editor autocomplete, FarColorer, FileCase, HlfViewer, Incremental search,
-Inside, LuaMacro, MultiArc, NetCfg, NetRocks (SFTP/SCP/FTP/FTPS/SMB/NFS/WebDAV),
-Python (optional scripting support), SimpleIndent, TmpPanel.
+Advanced compare, Align block, ArcLite, Auto wrap, Calculator, Draw lines, EditCase,
+Editor autocomplete, FarColorer, FileCase, HlfViewer, Incremental search, Inside,
+LuaMacro, MultiArc, NetCfg, NetRocks, Python, SimpleIndent, TmpPanel.
 
 #### License: GNU/GPLv2
 
