@@ -403,9 +403,6 @@ void FileList::SortFileList(bool KeepPosition)
 			strCurName = ListData[CurFile]->strName;
 		}
 
-		hSortPlugin =
-				(PanelMode == PLUGIN_PANEL && hPlugin && hPlugin->pPlugin->HasCompare()) ? hPlugin : nullptr;
-
 		if (SortMode < PanelSortMode::COUNT) {
 			for (int i = 0; i < FileCount; ++i) {
 				auto Item = ListData[i];
@@ -415,8 +412,16 @@ void FileList::SortFileList(bool KeepPosition)
 				Item->FileExtPos =
 						(unsigned short)std::min(size_t(PointToExt(NamePtr) - NamePtr), (size_t)0xffff);
 			}
+
+			bool bCallEvents = (PanelMode == PLUGIN_PANEL) && hPlugin && hPlugin->pPlugin->HasCompare();
+			hSortPlugin = nullptr;
+			if (bCallEvents && !ProcessPluginEvent(FE_STARTSORT, nullptr))
+				hSortPlugin = hPlugin;
 			qsort(ListData, FileCount, sizeof(*ListData), SortList);
-		} else if (SortMode >= PanelSortMode::BY_USER) {
+			if (bCallEvents)
+				ProcessPluginEvent(FE_ENDSORT, nullptr);
+		}
+		else if (SortMode >= PanelSortMode::BY_USER) {
 			custom_sort::CustomSort cs{};
 			custom_sort::FileListPtr = this;
 			std::vector<unsigned int> Positions(FileCount);

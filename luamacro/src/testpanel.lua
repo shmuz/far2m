@@ -32,4 +32,10 @@ function mod.SetDirectory()
   return true
 end
 
+function export.ProcessPanelEvent(obj, handle, Event, Param)
+  if Event == F.FE_STARTSORT then
+    return true -- tell Far to not call Compare on this panel
+  end
+end
+
 return mod

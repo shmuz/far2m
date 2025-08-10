@@ -2395,6 +2395,9 @@ enum FAR_EVENTS
 
 	FE_GOTFOCUS       =6,
 	FE_KILLFOCUS      =7,
+
+	FE_STARTSORT      =8,
+	FE_ENDSORT        =9,
 };
 
 enum FAR_PLUGINS_CONTROL_COMMANDS
