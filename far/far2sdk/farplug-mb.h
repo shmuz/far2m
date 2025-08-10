@@ -1879,6 +1879,9 @@ namespace oldfar
 
 		FE_GOTFOCUS       =6,
 		FE_KILLFOCUS      =7,
+
+		FE_STARTSORT      =8,
+		FE_ENDSORT        =9,
 	};
 
 #ifndef _WIN64
