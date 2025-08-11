@@ -2506,11 +2506,8 @@ local function test_Guids()
   -- test_one_guid( "WipeHardLinkId", nil, "")
 end
 
-local function test_far_Menu()
-  -- test 1
-  local items = {
-    { text="line1" }, { text="line2" },
-  }
+local function test_far_Menu1()
+  local items = { { text="line1" }, { text="line2" } }
 
   local bkeys1 = {
     {BreakKey="F1"}, {BreakKey="F2"},
@@ -2528,12 +2525,10 @@ local function test_far_Menu()
       assert(Area.Shell)
     end
   end
+end
 
-  -- test 2 (far.MakeMenuItems)
-  local t = assert_table (far.MakeMenuItems("foo","bar","baz"))
-  assert_eq(#t, 3)
-
-  -- test 3 (far.Menu and Menu.GetValue)
+local function test_far_Menu2()
+  -- test far.Menu and Menu.GetValue
   local items = {"foo", "bar", "baz"}
   mf.acall(far.Menu, {}, items)
   assert_true(Area.Menu)
@@ -2548,6 +2543,64 @@ local function test_far_Menu()
   assert_eq(Menu.GetValue(#items+1), "")
   Keys("Esc")
   assert_true(Area.Shell)
+end
+
+local function test_far_Menu3()
+  -- test callback
+  local tPos, tKeys, Ret
+  local v1, v2 = 57, "foo"
+  local items = { { text="line1" }, { text="line2" }, { text="line3" } }
+
+  local function callback(pos, key, data1, data2)
+    table.insert(tPos, pos)
+    table.insert(tKeys, key)
+    assert_eq(data1, v1)
+    assert_eq(data2, v2)
+    return Ret
+  end
+
+  mf.acall(far.Menu, {}, items, nil, callback, v1, v2)
+  assert_true(Area.Menu)
+
+  local keys = { "End", "CtrlF", "AltY", "Home", "CtrlShiftF1" } -- key names
+  local poses = { 1, #items, #items, #items, 1 } -- positions
+  local rets = { 0, false, nil } -- return values that shouldn't affect anything
+  for i=1,3 do
+    Ret = rets[i]        -- set callback return value
+    tPos, tKeys = {}, {} -- clear callback collectors
+    for _,v in ipairs(keys)  do Keys(v) end -- run test
+    for k,v in ipairs(poses) do assert_eq(v, tPos[k]) end  -- check results
+    for k,v in ipairs(keys)  do assert_eq(v, tKeys[k]) end -- check results
+  end
+
+  -- test callback return ==1 ("don't process the key")
+  Ret = 1
+  Keys("Esc Enter")
+  assert_true(Area.Menu)
+
+  -- test callback return ==-1 ("cancel the menu")
+  Ret = -1
+  Keys("F1")
+  assert_true(Area.Shell)
+
+  -- test callback return ==2 ("close the menu as if Enter was pressed")
+  mf.acall(far.Menu, {}, items, nil, callback, v1, v2)
+  assert_true(Area.Menu)
+  Ret = 2
+  Keys("F1")
+  assert_true(Area.Shell)
+end
+
+local function test_far_MakeMenuItems()
+  local t = assert_table (far.MakeMenuItems("foo","bar","baz"))
+  assert_eq(#t, 3)
+end
+
+local function test_far_Menu()
+  test_far_Menu1()
+  test_far_Menu2()
+  test_far_Menu3()
+  test_far_MakeMenuItems()
 end
 
 local function test_SplitCmdLine()

@@ -2214,11 +2214,13 @@ int FileList::ProcessKey(FarKey Key)
 				ReadSortGroups();
 
 			SortFileList(true);
+			ProcessPluginEvent(FE_CHANGESORTPARAMS, nullptr);
 			Show();
 			return TRUE;
 		case KEY_SHIFTF12:
 			SelectedFirst = !SelectedFirst;
 			SortFileList(true);
+			ProcessPluginEvent(FE_CHANGESORTPARAMS, nullptr);
 			Show();
 			return TRUE;
 		case KEY_CTRLPGUP:
@@ -3018,6 +3020,7 @@ void FileList::ApplySortMode(int SortMode)
 	if (FileCount > 0)
 		SortFileList(true);
 
+	ProcessPluginEvent(FE_CHANGESORTPARAMS, nullptr);
 	FrameManager->RefreshFrame();
 }
 
@@ -3051,6 +3054,7 @@ void FileList::ChangeNumericSort(int Mode)
 {
 	Panel::ChangeNumericSort(Mode);
 	SortFileList(true);
+	ProcessPluginEvent(FE_CHANGESORTPARAMS, nullptr);
 	Show();
 }
 
@@ -3058,6 +3062,7 @@ void FileList::ChangeCaseSensitiveSort(int Mode)
 {
 	Panel::ChangeCaseSensitiveSort(Mode);
 	SortFileList(true);
+	ProcessPluginEvent(FE_CHANGESORTPARAMS, nullptr);
 	Show();
 }
 
@@ -3065,6 +3070,7 @@ void FileList::ChangeDirectoriesFirst(int Mode)
 {
 	Panel::ChangeDirectoriesFirst(Mode);
 	SortFileList(true);
+	ProcessPluginEvent(FE_CHANGESORTPARAMS, nullptr);
 	Show();
 }
 
@@ -4627,12 +4633,14 @@ void FileList::SetSelectedFirstMode(int Mode)
 {
 	SelectedFirst = Mode;
 	SortFileList(true);
+	ProcessPluginEvent(FE_CHANGESORTPARAMS, nullptr);
 }
 
 void FileList::ChangeSortOrder(int NewOrder)
 {
 	Panel::ChangeSortOrder(NewOrder);
 	SortFileList(true);
+	ProcessPluginEvent(FE_CHANGESORTPARAMS, nullptr);
 	Show();
 }
 
