@@ -68,6 +68,13 @@ enum history_return_type
 	HRT_CTRLALTENTER,
 };
 
+enum history_remove_dups
+{
+	HRD_NOREMOVE   = 0,
+	HRD_CASESENS   = 1,
+	HRD_CASEINSENS = 2,
+};
+
 struct HistoryRecord
 {
 	int Type  = HR_DEFAULT;
@@ -101,7 +108,7 @@ private:
 	bool mEnableAdd;
 	bool mKeepSelectedPos;
 	const int *mEnableSave;
-	int mRemoveDups;
+	history_remove_dups mRemoveDups;
 	std::list<HistoryRecord> mHistoryList;
 	Iter mCurrentItem;
 	struct stat mLoadedStat {};
@@ -112,8 +119,8 @@ private:
 	static const wchar_t *GetTitle(int Type);
 	const wchar_t *GetDelTitle() const;
 	bool IsAllowedForHistory(const wchar_t *Str) const;
-	int ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &HistoryMenu, int Height, int &Type,
-		Dialog *Dlg);
+	int ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &HistoryMenu, int Height,
+		int &Type, Dialog *Dlg);
 	bool ReadHistory();
 	bool SaveHistory();
 	void SyncChanges();
@@ -136,6 +143,6 @@ public:
 	bool GetSimilar(FARString &strStr, int LastCmdPartLength, bool bAppend = false);
 	bool GetAllSimilar(VMenu &HistoryMenu, const wchar_t *Str);
 	bool DeleteMatching(FARString &strStr);
-	void SetAddMode(bool EnableAdd, int RemoveDups, bool KeepSelectedPos);
+	void SetAddMode(bool EnableAdd, history_remove_dups RemoveDups, bool KeepSelectedPos);
 	void ResetPosition() { mCurrentItem = mHistoryList.end(); }
 };

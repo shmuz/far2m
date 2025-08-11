@@ -80,8 +80,8 @@ ControlObject::ControlObject()
 			&Opt.SaveFoldersHistory, true);
 	ViewHistory = new History(HISTORYTYPE_VIEW, Opt.ViewHistoryCount, "SavedViewHistory",
 			&Opt.SaveViewHistory, true);
-	FolderHistory->SetAddMode(true, 2, true);
-	ViewHistory->SetAddMode(true, 1, true);
+	FolderHistory->SetAddMode(true, HRD_CASEINSENS, true);
+	ViewHistory->SetAddMode(true, HRD_CASESENS, true);
 }
 
 void ControlObject::Init()

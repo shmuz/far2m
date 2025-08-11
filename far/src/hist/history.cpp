@@ -58,7 +58,7 @@ History::History(enumHISTORYTYPE TypeHistory, size_t HistoryCount, const std::st
 	mEnableAdd(true),
 	mKeepSelectedPos(false),
 	mEnableSave(EnableSave),
-	mRemoveDups(1),
+	mRemoveDups(HRD_CASESENS),
 	mCurrentItem(mHistoryList.end())
 {
 	if (*mEnableSave)
@@ -78,8 +78,8 @@ bool History::IsAllowedForHistory(const wchar_t *Str) const
    SaveForbid - принудительно запретить запись добавляемой строки.
 				Используется на панели плагина
 */
-void History::AddToHistoryExtra(const wchar_t *Str, const wchar_t *Extra, int Type, const wchar_t *Prefix,
-		bool SaveForbid)
+void History::AddToHistoryExtra(const wchar_t *Str, const wchar_t *Extra, int Type,
+		const wchar_t *Prefix, bool SaveForbid)
 {
 	if (!mEnableAdd)
 		return;
@@ -104,7 +104,8 @@ void History::AddToHistory(const wchar_t *Str, int Type, const wchar_t *Prefix, 
 	AddToHistoryExtra(Str, nullptr, Type, Prefix, SaveForbid);
 }
 
-void History::AddToHistoryLocal(const wchar_t *Str, const wchar_t *Extra, const wchar_t *Prefix, int Type)
+void History::AddToHistoryLocal(const wchar_t *Str, const wchar_t *Extra, const wchar_t *Prefix,
+		int Type)
 {
 	HistoryRecord AddRecord;
 
@@ -120,12 +121,12 @@ void History::AddToHistoryLocal(const wchar_t *Str, const wchar_t *Extra, const 
 	}
 	ReplaceStrings(AddRecord.strName, L"\n", L"\r");
 
-	if (mRemoveDups)    // удалять дубликаты?
+	if (mRemoveDups != HRD_NOREMOVE) // удалять дубликаты?
 	{
+		auto Cmp = (mRemoveDups == HRD_CASESENS) ? StrCmp : StrCmpI;
 		for (auto Item = mHistoryList.begin(); Item != mHistoryList.end(); Item++) {
 			if (EqualType(AddRecord.Type, Item->Type)) {
-				if ((mRemoveDups == 1 && !StrCmp(AddRecord.strName, Item->strName))
-						|| (mRemoveDups == 2 && !StrCmpI(AddRecord.strName, Item->strName))) {
+				if (!Cmp(AddRecord.strName, Item->strName)) {
 					AddRecord.Lock = Item->Lock;
 					mHistoryList.erase(Item);
 					break;
@@ -175,14 +176,14 @@ bool History::SaveHistory()
 	if (mTypeHistory == HISTORYTYPE_DIALOG) {
 		auto LastItem = --mHistoryList.end();
 		for (auto Item = mHistoryList.begin(); Item != mHistoryList.end();) {
-			const auto tmp = Item;
+			const auto curr = Item;
 
 			Item++;
 
-			if (tmp->Lock)
-				mHistoryList.splice(mHistoryList.cend(), mHistoryList, tmp);
+			if (curr->Lock)
+				mHistoryList.splice(mHistoryList.cend(), mHistoryList, curr);
 
-			if (tmp == LastItem)
+			if (curr == LastItem)
 				break;
 		}
 	}
@@ -387,12 +388,12 @@ int History::Select(const wchar_t *Title, const wchar_t *HelpTopic, FARString &s
 
 int History::Select(VMenu &HistoryMenu, int Height, Dialog *Dlg, FARString &strStr)
 {
-	int Type = 0;
+	int Type = HR_DEFAULT;
 	return ProcessMenu(strStr, nullptr, HistoryMenu, Height, Type, Dlg);
 }
 
-int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &HistoryMenu, int Height, int &Type,
-		Dialog *Dlg)
+int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &HistoryMenu, int Height,
+		int &Type, Dialog *Dlg)
 {
 	MenuItemEx MenuItem;
 	auto SelectedRecord = mHistoryList.end();
@@ -797,7 +798,7 @@ bool History::GetAllSimilar(VMenu &HistoryMenu, const wchar_t *Str)
 	return false;
 }
 
-void History::SetAddMode(bool EnableAdd, int RemoveDups, bool KeepSelectedPos)
+void History::SetAddMode(bool EnableAdd, history_remove_dups RemoveDups, bool KeepSelectedPos)
 {
 	mEnableAdd = EnableAdd;
 	mRemoveDups = RemoveDups;
