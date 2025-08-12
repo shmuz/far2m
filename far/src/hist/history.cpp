@@ -59,7 +59,7 @@ History::History(enumHISTORYTYPE TypeHistory, size_t HistoryCount, const std::st
 	mKeepSelectedPos(false),
 	mEnableSave(EnableSave),
 	mRemoveDups(HRD_CASESENS),
-	mCurrentItem(mHistoryList.end())
+	mCurrentItem(mList.end())
 {
 	if (*mEnableSave)
 		ReadHistory();
@@ -124,27 +124,26 @@ void History::AddToHistoryLocal(const wchar_t *Str, const wchar_t *Extra, const 
 	if (mRemoveDups != HRD_NOREMOVE) // удалять дубликаты?
 	{
 		auto Cmp = (mRemoveDups == HRD_CASESENS) ? StrCmp : StrCmpI;
-		for (auto Item = mHistoryList.begin(); Item != mHistoryList.end(); Item++) {
+		for (auto Item = mList.begin(); Item != mList.end(); Item++) {
 			if (EqualType(AddRecord.Type, Item->Type)) {
 				if (!Cmp(AddRecord.strName, Item->strName)) {
 					AddRecord.Lock = Item->Lock;
-					mHistoryList.erase(Item);
+					mList.erase(Item);
 					break;
 				}
 			}
 		}
 	}
 
-	for (auto Item = mHistoryList.begin();
-			Item != mHistoryList.end() && mHistoryList.size() >= mHistoryCount;) {
+	for (auto Item = mList.begin(); Item != mList.end() && mList.size() >= mHistoryCount; ) {
 		if (!Item->Lock)
-			Item = mHistoryList.erase(Item);
+			Item = mList.erase(Item);
 		else
 			Item++;
 	}
 
 	WINPORT(GetSystemTimeAsFileTime)(&AddRecord.Timestamp);    // in UTC
-	mHistoryList.push_back(std::move(AddRecord));
+	mList.push_back(std::move(AddRecord));
 	ResetPosition();
 }
 
@@ -167,25 +166,14 @@ bool History::SaveHistory()
 	if (!*mEnableSave)
 		return true;
 
-	if (mHistoryList.empty()) {
+	if (mList.empty()) {
 		ConfigWriter(mStrRegKey).RemoveSection();
 		return true;
 	}
 
 	// for dialogs, locked items should show first (be last in the list)
 	if (mTypeHistory == HISTORYTYPE_DIALOG) {
-		auto LastItem = --mHistoryList.end();
-		for (auto Item = mHistoryList.begin(); Item != mHistoryList.end();) {
-			const auto curr = Item;
-
-			Item++;
-
-			if (curr->Lock)
-				mHistoryList.splice(mHistoryList.cend(), mHistoryList, curr);
-
-			if (curr == LastItem)
-				break;
-		}
+		std::stable_partition(mList.begin(), mList.end(), [](const auto &x) { return !x.Lock; });
 	}
 
 	bool ret = false;
@@ -194,25 +182,19 @@ bool History::SaveHistory()
 		std::wstring strTypes, strLines, strLocks, strExtras;
 		std::vector<FILETIME> vTimes;
 		int Position = -1;
-		size_t i = mHistoryList.size();
+		bool first = true;
 
-		for (auto Item = --mHistoryList.cend(); Item != mHistoryList.cend(); Item--) {
-			AppendWithLFSeparator(strLines, Item->strName, i == mHistoryList.size());
-			AppendWithLFSeparator(strExtras, Item->strExtra, i == mHistoryList.size());
-			if (!Item->strExtra.IsEmpty()) {
+		for (auto It = mList.crbegin(); It != mList.crend(); ++It, first=false) {
+			AppendWithLFSeparator(strLines, It->strName, first);
+			AppendWithLFSeparator(strExtras, It->strExtra, first);
+			if (!It->strExtra.IsEmpty())
 				HasExtras = true;
-			}
 
 			if (mSaveType)
-				strTypes+= L'0' + Item->Type;
+				strTypes+= L'0' + It->Type;
 
-			strLocks+= (Item->Lock ? L'1' : L'0');
-			vTimes.emplace_back(Item->Timestamp);
-
-			--i;
-
-			if (Item == mCurrentItem)
-				Position = static_cast<int>(i);
+			strLocks+= (It->Lock ? L'1' : L'0');
+			vTimes.emplace_back(It->Timestamp);
 		}
 
 		ConfigWriter cfg_writer(mStrRegKey);
@@ -284,8 +266,8 @@ bool History::ReadHistory()
 		if (!strExtras.Pos(ExtraEnd, L'\n', ExtrasPos))
 			ExtraEnd = strExtras.GetLength();
 
-		mHistoryList.push_front(HistoryRecord());
-		auto &AddRecord = mHistoryList.front();
+		mList.push_front(HistoryRecord());
+		auto &AddRecord = mList.front();
 		AddRecord.strName = strLines.SubStr(LinesPos, LineEnd - LinesPos);
 		LinesPos = LineEnd + 1;
 		AddRecord.strExtra = strExtras.SubStr(ExtrasPos, ExtraEnd - ExtrasPos);
@@ -311,7 +293,7 @@ bool History::ReadHistory()
 		}
 
 		if ((int)Count == Position)
-			mCurrentItem = mHistoryList.begin();
+			mCurrentItem = mList.begin();
 	}
 
 	mLoadedStat = cfg_reader.LoadedSectionStat();
@@ -325,8 +307,8 @@ void History::SyncChanges()
 	if (mLoadedStat.st_ino != CurrentStat.st_ino || mLoadedStat.st_size != CurrentStat.st_size
 			|| mLoadedStat.st_mtime != CurrentStat.st_mtime) {
 		fprintf(stderr, "History::SyncChanges: %s\n", mStrRegKey.c_str());
-		mHistoryList.clear();
-		mCurrentItem = mHistoryList.end();
+		mList.clear();
+		mCurrentItem = mList.end();
 		ReadHistory();
 	}
 }
@@ -396,17 +378,17 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 		int &Type, Dialog *Dlg)
 {
 	MenuItemEx MenuItem;
-	auto SelectedRecord = mHistoryList.end();
+	auto SelectedRecord = mList.end();
 	FarListPos Pos = {0, 0};
 	int MenuExitCode = -1;
 	int RetCode = HRT_ENTER;
 	bool SetUpMenuPos = false;
 
 	SyncChanges();
-	if (mTypeHistory == HISTORYTYPE_DIALOG && mHistoryList.empty())
+	if (mTypeHistory == HISTORYTYPE_DIALOG && mList.empty())
 		return HRT_CANCEL;
 
-	std::vector<Iter> IterVector(mHistoryList.size());
+	std::vector<Iter> IterVector(mList.size());
 	for (bool Done = false; !Done; ) {
 		uintptr_t IterIndex = 0;
 		bool IsUpdate = false;
@@ -415,8 +397,8 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 		HistoryMenu.SetBottomTitle(Msg::HistoryFooter);
 
 		// заполнение пунктов меню
-		for (auto Item = mTypeHistory == HISTORYTYPE_DIALOG ? --mHistoryList.end() : mHistoryList.begin();
-				Item != mHistoryList.end();
+		for (auto Item = mTypeHistory == HISTORYTYPE_DIALOG ? --mList.end() : mList.begin();
+				Item != mList.end();
 				mTypeHistory == HISTORYTYPE_DIALOG ? --Item : ++Item) {
 			FARString strRecord;
 
@@ -441,7 +423,7 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 
 			if (!SetUpMenuPos)
 				MenuItem.SetSelect(mCurrentItem == Item
-						|| (mCurrentItem == mHistoryList.end() && Item == --mHistoryList.end()));
+						|| (mCurrentItem == mList.end() && Item == --mList.end()));
 
 			// NB: VMenu just copies userdata pointers, no memory allocation takes place
 			IterVector[IterIndex] = Item;
@@ -456,8 +438,8 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 			HistoryMenu.SetPosition(-1, -1, 0, 0);
 
 		if (SetUpMenuPos) {
-			Pos.SelectPos = (Pos.SelectPos < (int)mHistoryList.size()) ?
-					Pos.SelectPos : (int)mHistoryList.size() - 1;
+			Pos.SelectPos = (Pos.SelectPos < (int)mList.size()) ?
+					Pos.SelectPos : (int)mList.size() - 1;
 			Pos.TopPos = Min(Pos.TopPos, HistoryMenu.GetItemCount() - Height);
 			HistoryMenu.SetSelectPos(&Pos);
 			SetUpMenuPos = false;
@@ -479,7 +461,7 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 		HistoryMenu.Show();
 
 		while (!HistoryMenu.Done()) {
-			if (mTypeHistory == HISTORYTYPE_DIALOG && (!Dlg->GetDropDownOpened() || mHistoryList.empty())) {
+			if (mTypeHistory == HISTORYTYPE_DIALOG && (!Dlg->GetDropDownOpened() || mList.empty())) {
 				HistoryMenu.ProcessKey(KEY_ESC);
 				continue;
 			}
@@ -503,11 +485,11 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 					if (mTypeHistory == HISTORYTYPE_FOLDER || mTypeHistory == HISTORYTYPE_VIEW) {
 						bool ModifiedHistory = false;
 
-						for (auto Item = mHistoryList.begin(); Item != mHistoryList.end();) {
+						for (auto Item = mList.begin(); Item != mList.end();) {
 							// залоченные не трогаем
 							if (!Item->Lock
 									&& (apiGetFileAttributes(Item->strName) == INVALID_FILE_ATTRIBUTES)) {
-								Item = mHistoryList.erase(Item);    // убить запись из истории
+								Item = mList.erase(Item);    // убить запись из истории
 								ModifiedHistory = true;
 							} else
 								Item++;
@@ -561,7 +543,7 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 				case KEY_CTRLC:
 				case KEY_CTRLINS:
 				case KEY_CTRLNUMPAD0: {
-					if (CurrentRecord != mHistoryList.end())
+					if (CurrentRecord != mList.end())
 						CopyToClipboard(CurrentRecord->strName);
 
 					break;
@@ -588,7 +570,7 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 					if (HistoryMenu.GetShowItemCount() /* > 1*/) {
 						if (!CurrentRecord->Lock) {
 							HistoryMenu.Hide();
-							mHistoryList.erase(CurrentRecord);
+							mList.erase(CurrentRecord);
 							ResetPosition();
 							SaveHistory();
 							HistoryMenu.Modal::SetExitCode(Pos.SelectPos);
@@ -606,11 +588,11 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 							(!Opt.Confirm.HistoryClear ||
 									!Message(MSG_WARNING, 2, GetDelTitle(), Msg::HistoryClear, Msg::Clear, Msg::Cancel)))
 					{
-						for (auto Item = mHistoryList.begin(); Item != mHistoryList.end();) {
+						for (auto Item = mList.begin(); Item != mList.end();) {
 							if (Item->Lock)    // залоченные не трогаем
 								Item++;
 							else
-								Item = mHistoryList.erase(Item);
+								Item = mList.erase(Item);
 						}
 
 						ResetPosition();
@@ -640,7 +622,7 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 					(HistoryMenu.GetUserData(nullptr, sizeof(void*), Pos.SelectPos));
 			SelectedRecord = IterVector[IterIndex];
 
-			if (SelectedRecord == mHistoryList.end())
+			if (SelectedRecord == mList.end())
 				return HRT_CANCEL;
 
 			if (SelectedRecord->Type != HR_EXTERNAL && SelectedRecord->Type != HR_EXTERNAL_WAIT // ignore external
@@ -668,7 +650,7 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 		}
 	}
 
-	if (MenuExitCode < 0 || SelectedRecord == mHistoryList.end())
+	if (MenuExitCode < 0 || SelectedRecord == mList.end())
 		return HRT_CANCEL;
 
 	if (mKeepSelectedPos) {
@@ -707,12 +689,12 @@ void History::GetPrev(FARString &strStr)
 {
 	mCurrentItem--;
 
-	if (mCurrentItem == mHistoryList.end()) {
+	if (mCurrentItem == mList.end()) {
 		SyncChanges();
-		mCurrentItem = mHistoryList.begin();
+		mCurrentItem = mList.begin();
 	}
 
-	if (mCurrentItem != mHistoryList.end())
+	if (mCurrentItem != mList.end())
 		strStr = mCurrentItem->strName;
 	else
 		strStr.Clear();
@@ -720,12 +702,12 @@ void History::GetPrev(FARString &strStr)
 
 void History::GetNext(FARString &strStr)
 {
-	if (mCurrentItem != mHistoryList.end())
+	if (mCurrentItem != mList.end())
 		mCurrentItem++;
 	else
 		SyncChanges();
 
-	if (mCurrentItem != mHistoryList.end())
+	if (mCurrentItem != mList.end())
 		strStr = mCurrentItem->strName;
 	else
 		strStr.Clear();
@@ -737,11 +719,11 @@ bool History::DeleteMatching(FARString &strStr)
 
 	auto Item = mCurrentItem;
 	for (Item--; Item != mCurrentItem; Item--) {
-		if (Item == mHistoryList.end() || Item->Lock)
+		if (Item == mList.end() || Item->Lock)
 			continue;
 
 		if (Item->strName == strStr) {
-			mHistoryList.erase(Item);
+			mList.erase(Item);
 			SaveHistory();
 			return true;
 		}
@@ -764,7 +746,7 @@ bool History::GetSimilar(FARString &strStr, int LastCmdPartLength, bool bAppend)
 
 	auto Item = mCurrentItem;
 	for (Item--; Item != mCurrentItem; Item--) {
-		if (Item == mHistoryList.end())
+		if (Item == mList.end())
 			continue;
 
 		if (!StrCmpNI(strStr, Item->strName, Length) && StrCmp(strStr, Item->strName)) {
@@ -785,7 +767,7 @@ bool History::GetAllSimilar(VMenu &HistoryMenu, const wchar_t *Str)
 {
 	SyncChanges();
 	int Length = StrLength(Str);
-	for (auto Item = mHistoryList.rbegin(); Item != mHistoryList.rend(); Item++) {
+	for (auto Item = mList.rbegin(); Item != mList.rend(); Item++) {
 		if (!StrCmpNI(Str, Item->strName, Length)
 			&& StrCmp(Str, Item->strName)
 			&& IsAllowedForHistory(Item->strName)

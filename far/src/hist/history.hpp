@@ -109,7 +109,7 @@ private:
 	bool mKeepSelectedPos;
 	const int *mEnableSave;
 	history_remove_dups mRemoveDups;
-	std::list<HistoryRecord> mHistoryList;
+	std::list<HistoryRecord> mList;
 	Iter mCurrentItem;
 	struct stat mLoadedStat {};
 
@@ -144,5 +144,5 @@ public:
 	bool GetAllSimilar(VMenu &HistoryMenu, const wchar_t *Str);
 	bool DeleteMatching(FARString &strStr);
 	void SetAddMode(bool EnableAdd, history_remove_dups RemoveDups, bool KeepSelectedPos);
-	void ResetPosition() { mCurrentItem = mHistoryList.end(); }
+	void ResetPosition() { mCurrentItem = mList.end(); }
 };
