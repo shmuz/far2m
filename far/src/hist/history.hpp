@@ -102,7 +102,7 @@ private:
 	typedef std::list<HistoryRecord>::iterator Iter;
 
 	const enumHISTORYTYPE mTypeHistory;
-	const size_t mHistoryCount;
+	const size_t mMaxCount;
 	const bool mSaveType;
 	const std::string mStrRegKey;
 	bool mEnableAdd;

@@ -52,7 +52,7 @@ History::History(enumHISTORYTYPE TypeHistory, size_t HistoryCount, const std::st
 		const int *EnableSave, bool SaveType)
 	:
 	mTypeHistory(TypeHistory),
-	mHistoryCount(HistoryCount),
+	mMaxCount(HistoryCount),
 	mSaveType(SaveType),
 	mStrRegKey(RegKey),
 	mEnableAdd(true),
@@ -135,7 +135,7 @@ void History::AddToHistoryLocal(const wchar_t *Str, const wchar_t *Extra, const 
 		}
 	}
 
-	for (auto Item = mList.begin(); Item != mList.end() && mList.size() >= mHistoryCount; ) {
+	for (auto Item = mList.begin(); Item != mList.end() && mList.size() >= mMaxCount; ) {
 		if (!Item->Lock)
 			Item = mList.erase(Item);
 		else
@@ -258,7 +258,7 @@ bool History::ReadHistory()
 	cfg_reader.GetString(strExtras, "Extras", L"");
 
 	size_t LinesPos = 0, TypesPos = 0, LocksPos = 0, TimePos = 0, ExtrasPos = 0;
-	for (size_t Count=0; LinesPos < strLines.GetLength() && Count < mHistoryCount; Count++) {
+	for (size_t Count=0; LinesPos < strLines.GetLength() && Count < mMaxCount; Count++) {
 		size_t LineEnd, ExtraEnd;
 		if (!strLines.Pos(LineEnd, L'\n', LinesPos))
 			LineEnd = strLines.GetLength();
@@ -399,7 +399,8 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 		// заполнение пунктов меню
 		for (auto Item = mTypeHistory == HISTORYTYPE_DIALOG ? --mList.end() : mList.begin();
 				Item != mList.end();
-				mTypeHistory == HISTORYTYPE_DIALOG ? --Item : ++Item) {
+				mTypeHistory == HISTORYTYPE_DIALOG ? --Item : ++Item)
+		{
 			FARString strRecord;
 
 			if (mTypeHistory == HISTORYTYPE_VIEW) {
@@ -438,8 +439,7 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 			HistoryMenu.SetPosition(-1, -1, 0, 0);
 
 		if (SetUpMenuPos) {
-			Pos.SelectPos = (Pos.SelectPos < (int)mList.size()) ?
-					Pos.SelectPos : (int)mList.size() - 1;
+			Pos.SelectPos = (Pos.SelectPos < (int)mList.size()) ? Pos.SelectPos : (int)mList.size() - 1;
 			Pos.TopPos = Min(Pos.TopPos, HistoryMenu.GetItemCount() - Height);
 			HistoryMenu.SetSelectPos(&Pos);
 			SetUpMenuPos = false;
@@ -468,7 +468,7 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 
 			FarKey Key = HistoryMenu.ReadInput();
 
-			if (mTypeHistory == HISTORYTYPE_DIALOG && Key == KEY_TAB)    // Tab в списке хистори диалогов - аналог Enter
+			if (mTypeHistory == HISTORYTYPE_DIALOG && Key == KEY_TAB) // Tab в списке хистори диалогов - аналог Enter
 			{
 				HistoryMenu.ProcessKey(KEY_ENTER);
 				continue;
@@ -486,18 +486,17 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 						bool ModifiedHistory = false;
 
 						for (auto Item = mList.begin(); Item != mList.end();) {
-							// залоченные не трогаем
-							if (!Item->Lock
-									&& (apiGetFileAttributes(Item->strName) == INVALID_FILE_ATTRIBUTES)) {
-								Item = mList.erase(Item);    // убить запись из истории
+							if (!Item->Lock && (apiGetFileAttributes(Item->strName) == INVALID_FILE_ATTRIBUTES)) {
+								Item = mList.erase(Item);
 								ModifiedHistory = true;
-							} else
+							}
+							else
 								Item++;
 						}
 
-						if (ModifiedHistory)    // избавляемся от лишних телодвижений
+						if (ModifiedHistory)
 						{
-							SaveHistory();      // сохранить
+							SaveHistory();
 							HistoryMenu.Modal::SetExitCode(Pos.SelectPos);
 							HistoryMenu.SetUpdateRequired(TRUE);
 							IsUpdate = true;
