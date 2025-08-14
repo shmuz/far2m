@@ -490,7 +490,7 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 			HistoryMenu.GetSelectPos(&Pos);
 			auto IterIndex = reinterpret_cast<uintptr_t>
 					(HistoryMenu.GetUserData(nullptr, sizeof(void*), Pos.SelectPos));
-			auto CurrentRecord = IterVector[IterIndex];
+			auto CurrentRecord = IterVector.empty() ? mList.end() : IterVector[IterIndex];
 
 			switch (Key) {
 				case KEY_CTRLR:    // обновить с удалением недоступных
@@ -520,6 +520,7 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 
 					break;
 				}
+
 				case KEY_CTRLSHIFTNUMENTER:
 				case KEY_CTRLNUMENTER:
 				case KEY_SHIFTNUMENTER:
@@ -538,19 +539,18 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 							: (Key == KEY_SHIFTENTER || Key == KEY_SHIFTNUMENTER) ? HRT_SHIFTENTER : HRT_CTRLENTER;
 					break;
 				}
+
 				case KEY_F3:
 				case KEY_F4:
 				case KEY_NUMPAD5:
-				case KEY_SHIFTNUMPAD5: {
-					if (mTypeHistory == HISTORYTYPE_DIALOG || mTypeHistory == HISTORYTYPE_CMD
-							|| mTypeHistory == HISTORYTYPE_FOLDER)
-						break;
-
-					HistoryMenu.Modal::SetExitCode(Pos.SelectPos);
-					Done = true;
-					RetCode = (Key == KEY_F4 ? HRT_F4 : HRT_F3);
+				case KEY_SHIFTNUMPAD5:
+					if (mTypeHistory == HISTORYTYPE_VIEW) {
+						HistoryMenu.Modal::SetExitCode(Pos.SelectPos);
+						Done = true;
+						RetCode = (Key == KEY_F4) ? HRT_F4 : HRT_F3;
+					}
 					break;
-				}
+
 				// $ 09.04.2001 SVS - Фича - копирование из истории строки в Clipboard
 				case KEY_CTRLC:
 				case KEY_CTRLINS:
@@ -560,6 +560,7 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 
 					break;
 				}
+
 				// Lock/Unlock
 				case KEY_INS:
 				case KEY_NUMPAD0: {
@@ -577,6 +578,7 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 
 					break;
 				}
+
 				case KEY_SHIFTNUMDEL:
 				case KEY_SHIFTDEL: {
 					if (HistoryMenu.GetShowItemCount() /* > 1*/) {
@@ -594,6 +596,7 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 
 					break;
 				}
+
 				case KEY_NUMDEL:
 				case KEY_DEL: {
 					if (HistoryMenu.GetItemCount() &&
@@ -617,6 +620,7 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 
 					break;
 				}
+
 				default:
 					HistoryMenu.ProcessInput();
 					break;
