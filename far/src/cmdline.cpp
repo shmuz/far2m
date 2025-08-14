@@ -344,7 +344,7 @@ int CommandLine::ProcessKey(FarKey Key)
 		case KEY_ALTF8:
 		{
 			int Type;
-			int SelectType=CtrlObject->CmdHistory->Select(Msg::HistoryTitle,L"History",strStr,Type);
+			int SelectType=CtrlObject->CmdHistory->Select(strStr, Type);
 			switch (SelectType)
 			{
 				case HRT_ENTER:
@@ -412,7 +412,7 @@ int CommandLine::ProcessKey(FarKey Key)
 		case KEY_ALTF12:
 		{
 			int Type;
-			int SelectType=CtrlObject->FolderHistory->Select(Msg::FolderHistoryTitle,L"HistoryFolders",strStr,Type);
+			int SelectType=CtrlObject->FolderHistory->Select(strStr, Type);
 
 			if (SelectType == HRT_ENTER || SelectType == HRT_SHIFTENTER || SelectType == HRT_CTRLSHIFTENTER)
 			{
@@ -747,7 +747,7 @@ void CommandLine::ShowViewEditHistory()
 {
 	FARString strStr;
 	int Type;
-	int SelectType=CtrlObject->ViewHistory->Select(Msg::ViewHistoryTitle,L"HistoryViews",strStr,Type);
+	int SelectType=CtrlObject->ViewHistory->Select(strStr, Type);
 
 	if (SelectType == HRT_ENTER || SelectType == HRT_SHIFTENTER)
 	{

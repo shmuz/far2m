@@ -305,7 +305,8 @@ void History::SyncChanges()
 {
 	const struct stat &CurrentStat = ConfigReader::SavedSectionStat(mStrRegKey);
 	if (mLoadedStat.st_ino != CurrentStat.st_ino || mLoadedStat.st_size != CurrentStat.st_size
-			|| mLoadedStat.st_mtime != CurrentStat.st_mtime) {
+			|| mLoadedStat.st_mtime != CurrentStat.st_mtime)
+	{
 		fprintf(stderr, "History::SyncChanges: %s\n", mStrRegKey.c_str());
 		mList.clear();
 		mCurrentItem = mList.end();
@@ -342,40 +343,52 @@ const wchar_t *History::GetDelTitle() const
 	}
 }
 
-int History::Select(const wchar_t *Title, const wchar_t *HelpTopic, FARString &strStr, int &Type)
+int History::Select(FARString &strOut, int &TypeOut)
 {
-	int Height = ScrY - 8;
-	VMenu HistoryMenu(Title, nullptr, 0, Height);
-	HistoryMenu.SetFlags(VMENU_SHOWAMPERSAND | VMENU_WRAPMODE);
+	const wchar_t *Title, *HelpTopic;
+	const GUID *Guid;
+
 	switch (mTypeHistory) {
 		case HISTORYTYPE_CMD:
-			HistoryMenu.SetId(HistoryCmdId);
+			Title = Msg::HistoryTitle;
+			HelpTopic = L"History";
+			Guid = &HistoryCmdId;
 			break;
+
 		case HISTORYTYPE_FOLDER:
-			HistoryMenu.SetId(HistoryFolderId);
+			Title = Msg::FolderHistoryTitle;
+			HelpTopic = L"HistoryFolders";
+			Guid = &HistoryFolderId;
 			break;
+
 		case HISTORYTYPE_VIEW:
-			HistoryMenu.SetId(HistoryEditViewId);
+			Title = Msg::ViewHistoryTitle;
+			HelpTopic = L"HistoryViews";
+			Guid = &HistoryEditViewId;
 			break;
+
 		default:
-			break;
+			return HRT_CANCEL;
 	}
 
-	if (HelpTopic)
-		HistoryMenu.SetHelp(HelpTopic);
-
+	const int Height = ScrY - 8;
+	VMenu HistoryMenu(Title, nullptr, 0, Height);
+	HistoryMenu.SetFlags(VMENU_SHOWAMPERSAND | VMENU_WRAPMODE);
+	HistoryMenu.SetHelp(HelpTopic);
+	HistoryMenu.SetId(*Guid);
 	HistoryMenu.SetPosition(-1, -1, 0, 0);
-	return ProcessMenu(strStr, Title, HistoryMenu, Height, Type, nullptr);
+
+	return ProcessMenu(HistoryMenu, Title, Height, strOut, TypeOut, nullptr);
 }
 
-int History::Select(VMenu &HistoryMenu, int Height, Dialog *Dlg, FARString &strStr)
+int History::Select(VMenu &HistoryMenu, int Height, Dialog *Dlg, FARString &strOut)
 {
-	int Type = HR_DEFAULT;
-	return ProcessMenu(strStr, nullptr, HistoryMenu, Height, Type, Dlg);
+	int TypeOut = HR_DEFAULT;
+	return ProcessMenu(HistoryMenu, nullptr, Height, strOut, TypeOut, Dlg);
 }
 
-int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &HistoryMenu, int Height,
-		int &Type, Dialog *Dlg)
+int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, FARString &strOut,
+		int &TypeOut, Dialog *Dlg)
 {
 	MenuItemEx MenuItem;
 	auto SelectedRecord = mList.end();
@@ -656,7 +669,7 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 		mCurrentItem = SelectedRecord;
 	}
 
-	strStr = SelectedRecord->strName;
+	strOut = SelectedRecord->strName;
 
 	switch(RetCode) {
 		case HRT_CANCEL:
@@ -667,16 +680,16 @@ int History::ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &History
 		case HRT_CTRLENTER:
 		case HRT_CTRLSHIFTENTER:
 		case HRT_CTRLALTENTER:
-			Type = SelectedRecord->Type;
+			TypeOut = SelectedRecord->Type;
 			break;
 
 		case HRT_F3:
-			Type = HR_VIEWER;
+			TypeOut = HR_VIEWER;
 			RetCode = HRT_ENTER;
 			break;
 
 		case HRT_F4:
-			Type = (SelectedRecord->Type == HR_EDITOR_RO) ? HR_EDITOR_RO : HR_EDITOR;
+			TypeOut = (SelectedRecord->Type == HR_EDITOR_RO) ? HR_EDITOR_RO : HR_EDITOR;
 			RetCode = HRT_ENTER;
 			break;
 	}

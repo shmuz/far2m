@@ -119,8 +119,8 @@ private:
 	static const wchar_t *GetTitle(int Type);
 	const wchar_t *GetDelTitle() const;
 	bool IsAllowedForHistory(const wchar_t *Str) const;
-	int ProcessMenu(FARString &strStr, const wchar_t *Title, VMenu &HistoryMenu, int Height,
-		int &Type, Dialog *Dlg);
+	int ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, FARString &strOut,
+		int &TypeOut, Dialog *Dlg);
 	bool ReadHistory();
 	bool SaveHistory();
 	void SyncChanges();
@@ -136,8 +136,8 @@ public:
 	void AddToHistory(const wchar_t *Str, int Type = HR_DEFAULT, const wchar_t *Prefix = nullptr,
 		bool SaveForbid = false);
 	static bool ReadLastItem(const char *RegKey, FARString &strStr);
-	int Select(const wchar_t *Title, const wchar_t *HelpTopic, FARString &strStr, int &Type);
-	int Select(VMenu &HistoryMenu, int Height, Dialog *Dlg, FARString &strStr);
+	int Select(FARString &strOut, int &TypeOut);
+	int Select(VMenu &HistoryMenu, int Height, Dialog *Dlg, FARString &strOut);
 	void GetPrev(FARString &strStr);
 	void GetNext(FARString &strStr);
 	bool GetSimilar(FARString &strStr, int LastCmdPartLength, bool bAppend = false);
