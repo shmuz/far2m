@@ -401,9 +401,11 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 	if (mTypeHistory == HISTORYTYPE_DIALOG && mList.empty())
 		return HRT_CANCEL;
 
-	std::vector<Iter> IterVector(mList.size());
+	std::vector<Iter> IterVector;
 	for (bool Done = false; !Done; ) {
-		uintptr_t IterIndex = 0;
+		IterVector.clear();
+		IterVector.reserve(mList.size());
+
 		bool IsUpdate = false;
 		HistoryMenu.DeleteItems();
 		HistoryMenu.Modal::ClearDone();
@@ -440,10 +442,9 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 						|| (mCurrentItem == mList.end() && Item == --mList.end()));
 
 			// NB: VMenu just copies userdata pointers, no memory allocation takes place
-			IterVector[IterIndex] = Item;
-			HistoryMenu.SetUserData(reinterpret_cast<void*>(IterIndex), sizeof(void*),
+			HistoryMenu.SetUserData(reinterpret_cast<void*>(IterVector.size()), sizeof(void*),
 					HistoryMenu.AddItem(&MenuItem));
-			IterIndex++;
+			IterVector.push_back(Item);
 		}
 
 		if (mTypeHistory == HISTORYTYPE_DIALOG)
