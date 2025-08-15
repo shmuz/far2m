@@ -522,7 +522,7 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 					{
 						int DelCount = 0;
 
-						for (auto Item: mList) {
+						for (auto &Item: mList) {
 							Item.Marked = !Item.Lock && apiGetFileAttributes(Item.strName) == INVALID_FILE_ATTRIBUTES;
 							if (Item.Marked)
 								++DelCount;
