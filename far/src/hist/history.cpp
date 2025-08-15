@@ -518,42 +518,34 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 
 			switch (Key) {
 				case KEY_CTRLR:    // обновить с удалением недоступных
-				{
-					if (mHistoryType == HISTORYTYPE_FOLDER || mHistoryType == HISTORYTYPE_VIEW) {
+					if (mHistoryType == HISTORYTYPE_FOLDER || mHistoryType == HISTORYTYPE_VIEW)
+					{
 						int DelCount = 0;
 
-						for (int J = 0; J < 2; ++J) {
-							if (J == 1 && (DelCount == 0 || Message(MSG_WARNING, 2, Title,
-									FARString().Format(Msg::HistoryRefreshConfirm, DelCount), Msg::Ok, Msg::Cancel)))
-								break;
+						for (auto Item: mList) {
+							Item.Marked = !Item.Lock && apiGetFileAttributes(Item.strName) == INVALID_FILE_ATTRIBUTES;
+							if (Item.Marked)
+								++DelCount;
+						}
 
+						if (DelCount && 0 == Message(MSG_WARNING, 2, Title,
+								FARString().Format(Msg::HistoryRefreshConfirm, DelCount), Msg::Ok, Msg::Cancel))
+						{
 							for (auto Item = mList.begin(); Item != mList.end(); ) {
-								if (J == 0) {
-									Item->Marked = !Item->Lock && apiGetFileAttributes(Item->strName) == INVALID_FILE_ATTRIBUTES;
-									if (Item->Marked)
-										++DelCount;
-								}
-								else if (Item->Marked) {
+								if (Item->Marked)
 									Item = mList.erase(Item);
-									continue;
-								}
-								++Item;
+								else
+									++Item;
 							}
-
-							if (J == 1)
-							{
-								SaveHistory();
-								HistoryMenu.Modal::SetExitCode(Pos.SelectPos);
-								HistoryMenu.SetUpdateRequired(TRUE);
-								IsUpdate = true;
-							}
+							SaveHistory();
+							HistoryMenu.Modal::SetExitCode(Pos.SelectPos);
+							HistoryMenu.SetUpdateRequired(TRUE);
+							IsUpdate = true;
 						}
 
 						ResetPosition();
 					}
-
 					break;
-				}
 
 				case KEY_CTRLSHIFTNUMENTER:
 				case KEY_CTRLNUMENTER:
