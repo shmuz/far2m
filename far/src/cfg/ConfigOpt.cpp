@@ -267,6 +267,7 @@ static struct FARConfig
 	{true,  NSecSavedDialogHistory, NParamHistoryCount, &Opt.DialogsHistoryCount, 512},
 
 	{true,  NSecSystem, "PersonalPluginsPath",          &Opt.LoadPlug.strPersonalPluginsPath, L""},
+	{true,  NSecSystem, "HistoryShowDates",             &Opt.HistoryShowDates, 1, REG_BOOLEAN},
 	{true,  NSecSystem, "SaveHistory",                  &Opt.SaveHistory, 1, REG_BOOLEAN},
 	{true,  NSecSystem, "SaveFoldersHistory",           &Opt.SaveFoldersHistory, 1, REG_BOOLEAN},
 	{false, NSecSystem, "SavePluginFoldersHistory",     &Opt.SavePluginFoldersHistory, 0, REG_BOOLEAN},

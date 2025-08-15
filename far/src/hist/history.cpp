@@ -47,11 +47,12 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ctrlobj.hpp"
 #include "DlgGuid.hpp"
 #include "FileMasksProcessor.hpp"
+#include "datetime.hpp"
 
 History::History(enumHISTORYTYPE TypeHistory, size_t HistoryCount, const std::string &RegKey,
 		const int *EnableSave, bool SaveType)
 	:
-	mTypeHistory(TypeHistory),
+	mHistoryType(TypeHistory),
 	mMaxCount(HistoryCount),
 	mSaveType(SaveType),
 	mStrRegKey(RegKey),
@@ -67,7 +68,7 @@ History::History(enumHISTORYTYPE TypeHistory, size_t HistoryCount, const std::st
 
 bool History::IsAllowedForHistory(const wchar_t *Str) const
 {
-	if (mTypeHistory == HISTORYTYPE_CMD) {
+	if (mHistoryType == HISTORYTYPE_CMD) {
 		FileMasksProcessor fmp;
 		return !(fmp.Set(Opt.AutoComplete.Exceptions.CPtr(), FMF_ADDASTERISK) && fmp.Compare(Str, true));
 	}
@@ -84,7 +85,7 @@ void History::AddToHistoryExtra(const wchar_t *Str, const wchar_t *Extra, int Ty
 	if (!mEnableAdd)
 		return;
 
-	if (CtrlObject->Macro.IsExecuting() && CtrlObject->Macro.IsHistoryDisabled(mTypeHistory))
+	if (CtrlObject->Macro.IsExecuting() && CtrlObject->Macro.IsHistoryDisabled(mHistoryType))
 		return;
 
 	if (!IsAllowedForHistory(Str)) {
@@ -109,7 +110,7 @@ void History::AddToHistoryLocal(const wchar_t *Str, const wchar_t *Extra, const 
 {
 	HistoryRecord AddRecord;
 
-	if (mTypeHistory == HISTORYTYPE_FOLDER && Prefix && *Prefix) {
+	if (mHistoryType == HISTORYTYPE_FOLDER && Prefix && *Prefix) {
 		AddRecord.strName = Prefix;
 		AddRecord.strName+= L":";
 	}
@@ -172,7 +173,7 @@ bool History::SaveHistory()
 	}
 
 	// for dialogs, locked items should show first (be last in the list)
-	if (mTypeHistory == HISTORYTYPE_DIALOG) {
+	if (mHistoryType == HISTORYTYPE_DIALOG) {
 		std::stable_partition(mList.begin(), mList.end(), [](const auto &x) { return !x.Lock; });
 	}
 
@@ -332,7 +333,7 @@ const wchar_t *History::GetTitle(int Type)
 
 const wchar_t *History::GetDelTitle() const
 {
-	switch (mTypeHistory) {
+	switch (mHistoryType) {
 		case HISTORYTYPE_CMD:
 		case HISTORYTYPE_DIALOG:
 			return Msg::HistoryTitle;
@@ -348,7 +349,7 @@ int History::Select(FARString &strOut, int &TypeOut)
 	const wchar_t *Title, *HelpTopic;
 	const GUID *Guid;
 
-	switch (mTypeHistory) {
+	switch (mHistoryType) {
 		case HISTORYTYPE_CMD:
 			Title = Msg::HistoryTitle;
 			HelpTopic = L"History";
@@ -387,6 +388,20 @@ int History::Select(VMenu &HistoryMenu, int Height, Dialog *Dlg, FARString &strO
 	return ProcessMenu(HistoryMenu, nullptr, Height, strOut, TypeOut, Dlg);
 }
 
+static bool IsSameDay(const FILETIME &ft1, const FILETIME &ft2)
+{
+	SYSTEMTIME st1, st2;
+	FILETIME lt;
+
+	WINPORT(FileTimeToLocalFileTime)(&ft1, &lt);
+	WINPORT(FileTimeToSystemTime)(&lt, &st1);
+
+	WINPORT(FileTimeToLocalFileTime)(&ft2, &lt);
+	WINPORT(FileTimeToSystemTime)(&lt, &st2);
+
+	return st1.wDay == st2.wDay && st1.wMonth == st2.wMonth && st1.wYear == st2.wYear;
+}
+
 int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, FARString &strOut,
 		int &TypeOut, Dialog *Dlg)
 {
@@ -396,17 +411,18 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 	int MenuExitCode = -1;
 	int RetCode = HRT_ENTER;
 	bool SetUpMenuPos = false;
+	std::vector<Iter> IterVector;
 
 	SyncChanges();
-	if (mTypeHistory == HISTORYTYPE_DIALOG && mList.empty())
+	if (mHistoryType == HISTORYTYPE_DIALOG && mList.empty())
 		return HRT_CANCEL;
 
-	std::vector<Iter> IterVector;
 	for (bool Done = false; !Done; ) {
 		IterVector.clear();
 		IterVector.reserve(mList.size());
 
 		bool IsUpdate = false;
+		FILETIME CurTimestamp {};
 		HistoryMenu.DeleteItems();
 		HistoryMenu.Modal::ClearDone();
 		HistoryMenu.SetBottomTitle(Msg::HistoryFooter);
@@ -415,25 +431,28 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 		}
 
 		// заполнение пунктов меню
-		for (auto Item = mTypeHistory == HISTORYTYPE_DIALOG ? --mList.end() : mList.begin();
+		for (auto Item = mHistoryType == HISTORYTYPE_DIALOG ? --mList.end() : mList.begin();
 				Item != mList.end();
-				mTypeHistory == HISTORYTYPE_DIALOG ? --Item : ++Item)
+				mHistoryType == HISTORYTYPE_DIALOG ? --Item : ++Item)
 		{
+			if (Opt.HistoryShowDates && !IsSameDay(Item->Timestamp, CurTimestamp)) {
+				FARString strDate, strTime;
+				ConvertDate(Item->Timestamp, strDate, strTime, 0);
+				MenuItem.Clear();
+				MenuItem.strName = strDate;
+				MenuItem.Flags = LIF_SEPARATOR;
+				HistoryMenu.AddItem(&MenuItem);
+				CurTimestamp = Item->Timestamp;
+			}
+
 			FARString strRecord;
 
-			if (mTypeHistory == HISTORYTYPE_VIEW) {
+			if (mHistoryType == HISTORYTYPE_VIEW) {
 				strRecord+= GetTitle(Item->Type);
 				strRecord+= L":";
 				strRecord+= (Item->Type == HR_EDITOR_RO ? L"-" : L" ");
 			}
 
-			/*
-				TODO: возможно здесь! или выше....
-				char Date[16],Time[16], OutStr[32];
-				ConvertDate(Item->Timestamp,Date,Time,5,TRUE,FALSE,TRUE,TRUE);
-				а дальше
-				strRecord += дату и время
-			*/
 			strRecord+= Item->strName;
 
 			MenuItem.Clear();
@@ -450,20 +469,21 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 			IterVector.push_back(Item);
 		}
 
-		if (mTypeHistory == HISTORYTYPE_DIALOG)
+		if (mHistoryType == HISTORYTYPE_DIALOG)
 			Dlg->SetComboBoxPos();
 		else
 			HistoryMenu.SetPosition(-1, -1, 0, 0);
 
 		if (SetUpMenuPos) {
-			Pos.SelectPos = (Pos.SelectPos < (int)mList.size()) ? Pos.SelectPos : (int)mList.size() - 1;
-			Pos.TopPos = Min(Pos.TopPos, HistoryMenu.GetItemCount() - Height);
+			const auto ItemCount = HistoryMenu.GetItemCount();
+			Pos.SelectPos = ItemCount ? Min(Pos.SelectPos, ItemCount - 1) : 0;
+			Pos.TopPos = Min(Pos.TopPos, ItemCount - Height);
 			HistoryMenu.SetSelectPos(&Pos);
 			SetUpMenuPos = false;
 		}
 
 		/*BUGBUG???
-			if (mTypeHistory == HISTORYTYPE_DIALOG)
+			if (mHistoryType == HISTORYTYPE_DIALOG)
 			{
 					//  Перед отрисовкой спросим об изменении цветовых атрибутов
 					BYTE RealColors[VMENU_COLOR_COUNT];
@@ -478,14 +498,14 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 		HistoryMenu.Show();
 
 		while (!HistoryMenu.Done()) {
-			if (mTypeHistory == HISTORYTYPE_DIALOG && (!Dlg->GetDropDownOpened() || mList.empty())) {
+			if (mHistoryType == HISTORYTYPE_DIALOG && (!Dlg->GetDropDownOpened() || mList.empty())) {
 				HistoryMenu.ProcessKey(KEY_ESC);
 				continue;
 			}
 
 			FarKey Key = HistoryMenu.ReadInput();
 
-			if (mTypeHistory == HISTORYTYPE_DIALOG && Key == KEY_TAB) // Tab в списке хистори диалогов - аналог Enter
+			if (mHistoryType == HISTORYTYPE_DIALOG && Key == KEY_TAB) // Tab в списке хистори диалогов - аналог Enter
 			{
 				HistoryMenu.ProcessKey(KEY_ENTER);
 				continue;
@@ -499,7 +519,7 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 			switch (Key) {
 				case KEY_CTRLR:    // обновить с удалением недоступных
 				{
-					if (mTypeHistory == HISTORYTYPE_FOLDER || mTypeHistory == HISTORYTYPE_VIEW) {
+					if (mHistoryType == HISTORYTYPE_FOLDER || mHistoryType == HISTORYTYPE_VIEW) {
 						int DelCount = 0;
 
 						for (int J = 0; J < 2; ++J) {
@@ -543,7 +563,7 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 				case KEY_SHIFTENTER:
 				case KEY_CTRLALTENTER:
 				case KEY_CTRLALTNUMENTER: {
-					if (mTypeHistory == HISTORYTYPE_DIALOG)
+					if (mHistoryType == HISTORYTYPE_DIALOG)
 						break;
 
 					HistoryMenu.Modal::SetExitCode(Pos.SelectPos);
@@ -558,7 +578,7 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 				case KEY_F4:
 				case KEY_NUMPAD5:
 				case KEY_SHIFTNUMPAD5:
-					if (mTypeHistory == HISTORYTYPE_VIEW) {
+					if (mHistoryType == HISTORYTYPE_VIEW) {
 						HistoryMenu.Modal::SetExitCode(Pos.SelectPos);
 						Done = true;
 						RetCode = (Key == KEY_F4) ? HRT_F4 : HRT_F3;
@@ -647,7 +667,8 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 		Done = true;
 		MenuExitCode = HistoryMenu.Modal::GetExitCode();
 
-		if (MenuExitCode >= 0) {
+		if (MenuExitCode >= 0)
+		{
 			auto IterIndex = reinterpret_cast<uintptr_t>
 					(HistoryMenu.GetUserData(nullptr, sizeof(void*), Pos.SelectPos));
 			SelectedRecord = IterVector[IterIndex];
@@ -655,22 +676,22 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 			if (SelectedRecord == mList.end())
 				return HRT_CANCEL;
 
-			if (SelectedRecord->Type != HR_EXTERNAL && SelectedRecord->Type != HR_EXTERNAL_WAIT // ignore external
+			const auto HR = SelectedRecord->Type;
+			if (HR != HR_EXTERNAL && HR != HR_EXTERNAL_WAIT // ignore external
 					&& RetCode != HRT_CTRLENTER
-					&& ((mTypeHistory == HISTORYTYPE_FOLDER && !SelectedRecord->Type)
-							|| mTypeHistory == HISTORYTYPE_VIEW)
+					&& (mHistoryType == HISTORYTYPE_VIEW || (mHistoryType == HISTORYTYPE_FOLDER && HR == HR_DEFAULT))
 					&& apiGetFileAttributes(SelectedRecord->strName) == INVALID_FILE_ATTRIBUTES)
 			{
 				WINPORT(SetLastError)(ERROR_FILE_NOT_FOUND);
 
-				if (SelectedRecord->Type == HR_EDITOR && mTypeHistory == HISTORYTYPE_VIEW) // Edit? тогда спросим и если надо создадим
+				if (mHistoryType == HISTORYTYPE_VIEW && HR == HR_EDITOR) // Edit? тогда спросим и если надо создадим
 				{
 					if (!Message(MSG_WARNING | MSG_ERRORTYPE, 2, Title, SelectedRecord->strName,
 								Msg::ViewHistoryIsCreate, Msg::HYes, Msg::HNo))
 						break;
-				} else {
-					Message(MSG_WARNING | MSG_ERRORTYPE, 1, Title, SelectedRecord->strName, Msg::Ok);
 				}
+				else
+					Message(MSG_WARNING | MSG_ERRORTYPE, 1, Title, SelectedRecord->strName, Msg::Ok);
 
 				Done = false;
 				SetUpMenuPos = true;
@@ -819,6 +840,6 @@ void History::SetAddMode(bool EnableAdd, history_remove_dups RemoveDups, bool Ke
 
 bool History::EqualType(int Type1, int Type2)
 {
-	return (Type1 == Type2) || (mTypeHistory == HISTORYTYPE_VIEW &&
+	return (Type1 == Type2) || (mHistoryType == HISTORYTYPE_VIEW &&
 		((Type1 == HR_EDITOR_RO && Type2 == HR_EDITOR) || (Type1 == HR_EDITOR && Type2 == HR_EDITOR_RO)));
 }

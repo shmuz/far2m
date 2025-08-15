@@ -413,6 +413,7 @@ struct Options
 	} OnlyEditorViewerUsed;
 
 	int SaveViewHistory;
+	int HistoryShowDates;
 	int ViewHistoryCount;
 
 	FARString strExternalEditor;
