@@ -410,6 +410,9 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 		HistoryMenu.DeleteItems();
 		HistoryMenu.Modal::ClearDone();
 		HistoryMenu.SetBottomTitle(Msg::HistoryFooter);
+		if (Title) {
+			HistoryMenu.SetTitle(FARString().Format(L"%ls (%lu)", Title, (unsigned long)mList.size()));
+		}
 
 		// заполнение пунктов меню
 		for (auto Item = mTypeHistory == HISTORYTYPE_DIALOG ? --mList.end() : mList.begin();
@@ -497,23 +500,33 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 				case KEY_CTRLR:    // обновить с удалением недоступных
 				{
 					if (mTypeHistory == HISTORYTYPE_FOLDER || mTypeHistory == HISTORYTYPE_VIEW) {
-						bool ModifiedHistory = false;
+						int DelCount = 0;
 
-						for (auto Item = mList.begin(); Item != mList.end();) {
-							if (!Item->Lock && (apiGetFileAttributes(Item->strName) == INVALID_FILE_ATTRIBUTES)) {
-								Item = mList.erase(Item);
-								ModifiedHistory = true;
+						for (int J = 0; J < 2; ++J) {
+							if (J == 1 && (DelCount == 0 || Message(MSG_WARNING, 2, Title,
+									FARString().Format(Msg::HistoryRefreshConfirm, DelCount), Msg::Ok, Msg::Cancel)))
+								break;
+
+							for (auto Item = mList.begin(); Item != mList.end(); ) {
+								if (J == 0) {
+									Item->Marked = !Item->Lock && apiGetFileAttributes(Item->strName) == INVALID_FILE_ATTRIBUTES;
+									if (Item->Marked)
+										++DelCount;
+								}
+								else if (Item->Marked) {
+									Item = mList.erase(Item);
+									continue;
+								}
+								++Item;
 							}
-							else
-								Item++;
-						}
 
-						if (ModifiedHistory)
-						{
-							SaveHistory();
-							HistoryMenu.Modal::SetExitCode(Pos.SelectPos);
-							HistoryMenu.SetUpdateRequired(TRUE);
-							IsUpdate = true;
+							if (J == 1)
+							{
+								SaveHistory();
+								HistoryMenu.Modal::SetExitCode(Pos.SelectPos);
+								HistoryMenu.SetUpdateRequired(TRUE);
+								IsUpdate = true;
+							}
 						}
 
 						ResetPosition();

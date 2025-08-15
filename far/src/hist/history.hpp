@@ -79,6 +79,7 @@ struct HistoryRecord
 {
 	int Type  = HR_DEFAULT;
 	bool Lock = false;
+	bool Marked = false;
 	FARString strName;
 	FARString strExtra;
 	FILETIME Timestamp{};

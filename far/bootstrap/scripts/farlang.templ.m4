@@ -1636,6 +1636,17 @@ Clear
 "&Очистити"
 "&Ачысціць гісторыю"
 
+HistoryRefreshConfirm
+"%d элементов будет удалено из этой истории"
+"%d items will be removed from this history"
+"%d položek bude odstraněno z této historie"
+"%d Elemente werden aus diesem Verlauf entfernt"
+"%d elem lesz törölve ebből a történetből"
+"%d elementów zostanie usuniętych z tej historii"
+"%d elementos serán eliminados de este historial"
+"%d елементів буде видалено з цієї історії"
+"%d элементаў будзе выдалена з гэтай гісторыі"
+
 ConfigSystemTitle
 l:
 "Системные параметры"
