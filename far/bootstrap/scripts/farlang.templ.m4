@@ -13895,17 +13895,6 @@ EditControlHistoryFooterNoDel
 "Up/Down,Enter,Esc"
 "Up/Down,Enter,Esc"
 
-HistoryFooter
-"Up/Down,Enter,Esc,Shift+Del,Del,Ins,Ctrl+C"
-"Up/Down,Enter,Esc,Shift+Del,Del,Ins,Ctrl+C"
-"Up/Down,Enter,Esc,Shift+Del,Del,Ins,Ctrl+C"
-"Up/Down,Enter,Esc,Shift+Del,Del,Ins,Ctrl+C"
-"Up/Down,Enter,Esc,Shift+Del,Del,Ins,Ctrl+C"
-"Up/Down,Enter,Esc,Shift+Del,Del,Ins,Ctrl+C"
-"Up/Down,Enter,Esc,Shift+Del,Del,Ins,Ctrl+C"
-"Up/Down,Enter,Esc,Shift+Del,Del,Ins,Ctrl+C"
-"Up/Down,Enter,Esc,Shift+Del,Del,Ins,Ctrl+C"
-
 SearchFileTitle
 l:
 " Поиск "

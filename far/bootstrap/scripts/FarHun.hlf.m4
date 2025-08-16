@@ -1598,13 +1598,11 @@ $ #Parancs előzmények#
   A kiválasztott parancsot a vágólapra másolja,                #Ctrl-C#
     a lista legördítve marad                            vagy #Ctrl-Ins#
 
+  Dátumok megjelenítésének váltása                             #Ctrl-T#
+
     Ha az előző vagy a következő parancsot közvetlenül a
   parancssorból szeretnénk meghívni, használjuk a #Ctrl-E# vagy
   a #Ctrl-X# billentyűket.
-
-    Ha parancsot szeretnénk választani a listából, a kurzorvezérlőkön
-  és az #Enteren# kívül használhatjuk közvetlenül a parancs kiemelt
-  betűjelét is.
 
     Ha azt szeretnénk, hogy a FAR kilépéskor elmentse a parancsok
   előzményét, jelöljük be a megfelelő opciót a ~Rendszer beállítások~@SystemSettings@
@@ -1640,8 +1638,7 @@ $ #Előzmények: megnézett és szerkesztett fájlok előzménye#
   Fájl megnyitása a ~nézőkében~@Viewer@                                      #F3#
                                                         vagy #Numpad 5#
 
-    A lista fájljainak megnyitását a kurzorvezérlőkön és az #Enteren#
-  kívül elvégezhetjük közvetlenül a kiemelt betűjelükkel is.
+  Dátumok megjelenítésének váltása                             #Ctrl-T#
 
     Az előzménylista aktivizált elemei a lista végére kerülnek. Ezt a
   hatást elkerülhetjük, ha a #Shift-Enterrel# nyitjuk meg őket.
@@ -1682,8 +1679,7 @@ $ #Előzmények: mappa előzmények#
   A kiválasztott mappa nevét a vágólapra másolja,              #Ctrl-C#
   a lista legördítve marad                              vagy #Ctrl-Ins#
 
-    A lista mappáinak megnyitására a kurzorvezérlőkön és az #Enteren#
-  kívül használatjuk a kiemelt betűjelüket is.
+  Dátumok megjelenítésének váltása                             #Ctrl-T#
 
     Az előzménylista újraaktivált elemei a lista végére kerülnek. Ezt
   a hatást elkerülhetjük, ha a #Shift-Enterrel# nyitjuk meg őket.

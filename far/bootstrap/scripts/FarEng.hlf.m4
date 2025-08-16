@@ -1753,11 +1753,10 @@ available:
   Copy the text of the current command to the clipboard        #Ctrl-C#
   without closing the list                                or #Ctrl-Ins#
 
+  Switch date display                                          #Ctrl-T#
+
     To go to the previous or next command directly from the command line, you
 can press #Ctrl-E# or #Ctrl-X# respectively.
-
-    For choosing a command, besides the cursor control keys and #Enter#, you can
-use the highlighted shortcut letters.
 
     If you want to save the commands history after exiting FAR2M, use the
 respective option in the ~system settings dialog~@SystemSettings@.
@@ -1790,8 +1789,7 @@ shortcuts are available:
   Open a file in the ~viewer~@Viewer@                                        #F3#
                                                           or #Numpad 5#
 
-    For choosing a history item, besides the cursor control keys and #Enter#,
-you can use the highlighted shortcut letters.
+  Switch date display                                          #Ctrl-T#
 
     Items of the view and edit history are moved to the end of the list after
 they are selected. You can use #Shift-Enter# to select an item without changing
@@ -1830,8 +1828,7 @@ available:
   Copy the text of the current history item to the             #Ctrl-C#
   clipboard without closing the list                      or #Ctrl-Ins#
 
-    For choosing a history item, besides the cursor control keys and #Enter#,
-you can use the highlighted shortcut letters.
+  Switch date display                                          #Ctrl-T#
 
     Items of the folders history are moved to the end of the list after they
 are selected. You can use #Shift-Enter# to select an item without changing its
