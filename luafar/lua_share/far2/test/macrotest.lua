@@ -993,6 +993,7 @@ local function test_Far_GetConfig()
     "System.FindFolders",
     "System.FindSymLinks",
     "System.FolderInfo",
+    "System.HistoryShowDates",
     "System.HowCopySymlink",
     "System.InactivityExit",
     "System.InactivityExitTime",
