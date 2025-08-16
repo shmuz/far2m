@@ -138,7 +138,7 @@ public:
 		bool SaveForbid = false);
 	static bool ReadLastItem(const char *RegKey, FARString &strStr);
 	int Select(FARString &strOut, int &TypeOut);
-	int Select(VMenu &HistoryMenu, int Height, Dialog *Dlg, FARString &strOut);
+	int Select(VMenu &HistoryMenu, Dialog *Dlg, FARString &strOut);
 	void GetPrev(FARString &strStr);
 	void GetNext(FARString &strStr);
 	bool GetSimilar(FARString &strStr, int LastCmdPartLength, bool bAppend = false);

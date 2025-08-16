@@ -4287,16 +4287,16 @@ int Dialog::SelectFromComboBox(DialogItemEx *CurItem,
 	Private:
 	Заполняем выпадающий список из истории
 */
-BOOL Dialog::SelectFromEditHistory(DialogItemEx *CurItem, DlgEdit *EditLine, const wchar_t *HistoryName,
+bool Dialog::SelectFromEditHistory(DialogItemEx *CurItem, DlgEdit *EditLine, const wchar_t *HistoryName,
 		FARString &strIStr)
 {
 	CriticalSectionLock Lock(CS);
 
 	if (!EditLine)
-		return FALSE;
+		return false;
 
 	FARString strStr;
-	int ret = 0;
+	int ret = HRT_CANCEL;
 	FARString strRegKey = fmtSavedDialogHistory;
 	strRegKey+= HistoryName;
 	History DlgHist(HISTORYTYPE_DIALOG, Opt.DialogsHistoryCount, strRegKey.GetMB(), &Opt.Dialogs.EditHistory,
@@ -4315,7 +4315,7 @@ BOOL Dialog::SelectFromEditHistory(DialogItemEx *CurItem, DlgEdit *EditLine, con
 		SetDropDownOpened(TRUE);		// Установим флаг "открытия" комбобокса.
 		DlgProc((HANDLE)this, DN_DROPDOWNOPENED, FocusPos, 1);
 
-		ret = DlgHist.Select(HistoryMenu, Opt.Dialogs.CBoxMaxHeight, this, strStr);
+		ret = DlgHist.Select(HistoryMenu, this, strStr);
 
 		SetDropDownOpened(FALSE);		// Установим флаг "закрытия" комбобокса.
 		DlgProc((HANDLE)this, DN_DROPDOWNOPENED, FocusPos, 0);
@@ -4323,15 +4323,15 @@ BOOL Dialog::SelectFromEditHistory(DialogItemEx *CurItem, DlgEdit *EditLine, con
 		CurItem->ListPtr = nullptr;
 	}
 
-	if (ret > 0) {
+	if (ret != HRT_CANCEL) {
 		EditLine->SetString(strStr);
 		EditLine->SetLeftPos(0);
 		EditLine->SetClearFlag(0);
 		Redraw();
-		return TRUE;
+		return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 //////////////////////////////////////////////////////////////////////////

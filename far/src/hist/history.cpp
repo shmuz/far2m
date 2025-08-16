@@ -49,6 +49,13 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FileMasksProcessor.hpp"
 #include "datetime.hpp"
 
+static const char NKeyExtras[]   = "Extras";
+static const char NKeyLines[]    = "Lines";
+static const char NKeyLocks[]    = "Locks";
+static const char NKeyPosition[] = "Position";
+static const char NKeyTimes[]    = "Times";
+static const char NKeyTypes[]    = "Types";
+
 static const wchar_t *GetNamePrefix(int Type)
 {
 	switch (Type) {
@@ -237,18 +244,18 @@ bool History::SaveHistory()
 		}
 
 		ConfigWriter cfg_writer(mStrRegKey);
-		cfg_writer.SetString("Lines", strLines.c_str());
+		cfg_writer.SetString(NKeyLines, strLines.c_str());
 		if (HasExtras) {
-			cfg_writer.SetString("Extras", strExtras.c_str());
+			cfg_writer.SetString(NKeyExtras, strExtras.c_str());
 		} else {
-			cfg_writer.RemoveKey("Extras");
+			cfg_writer.RemoveKey(NKeyExtras);
 		}
 		if (mSaveType) {
-			cfg_writer.SetString("Types", strTypes.c_str());
+			cfg_writer.SetString(NKeyTypes, strTypes.c_str());
 		}
-		cfg_writer.SetString("Locks", strLocks.c_str());
-		cfg_writer.SetBytes("Times", (const unsigned char *)&vTimes[0], vTimes.size() * sizeof(FILETIME));
-		cfg_writer.SetInt("Position", Position);
+		cfg_writer.SetString(NKeyLocks, strLocks.c_str());
+		cfg_writer.SetBytes(NKeyTimes, (const unsigned char *)&vTimes[0], vTimes.size() * sizeof(FILETIME));
+		cfg_writer.SetInt(NKeyPosition, Position);
 
 		ret = cfg_writer.Save();
 		if (ret) {
@@ -269,7 +276,7 @@ bool History::ReadLastItem(const char *RegKey, FARString &strStr)
 	if (!cfg_reader.HasSection())
 		return false;
 
-	if (!cfg_reader.GetString(strStr, "Lines", L""))
+	if (!cfg_reader.GetString(strStr, NKeyLines, L""))
 		return false;
 
 	// last item is first in config
@@ -287,14 +294,14 @@ bool History::ReadHistory()
 
 	ConfigReader cfg_reader(mStrRegKey);
 
-	if (!cfg_reader.GetString(strLines, "Lines", L""))
+	if (!cfg_reader.GetString(strLines, NKeyLines, L""))
 		return false;
 
-	int Position = cfg_reader.GetInt("Position", -1);
-	cfg_reader.GetBytes(vTimes, "Times");
-	cfg_reader.GetString(strLocks, "Locks", L"");
-	cfg_reader.GetString(strTypes, "Types", L"");
-	cfg_reader.GetString(strExtras, "Extras", L"");
+	int Position = cfg_reader.GetInt(NKeyPosition, -1);
+	cfg_reader.GetBytes(vTimes, NKeyTimes);
+	cfg_reader.GetString(strLocks, NKeyLocks, L"");
+	cfg_reader.GetString(strTypes, NKeyTypes, L"");
+	cfg_reader.GetString(strExtras, NKeyExtras, L"");
 
 	size_t LinesPos = 0, TypesPos = 0, LocksPos = 0, TimePos = 0, ExtrasPos = 0;
 	for (size_t Count=0; LinesPos < strLines.GetLength() && Count < mMaxCount; Count++) {
@@ -348,8 +355,7 @@ void History::SyncChanges()
 	{
 		fprintf(stderr, "History::SyncChanges: %s\n", mStrRegKey.c_str());
 		mList.clear();
-		mIterCommon = mList.end();
-		mIterCmdLine = mList.end();
+		ResetPosition();
 		ReadHistory();
 	}
 }
@@ -405,10 +411,10 @@ int History::Select(FARString &strOut, int &TypeOut)
 	return ProcessMenu(HistoryMenu, Title, Height, strOut, TypeOut, nullptr);
 }
 
-int History::Select(VMenu &HistoryMenu, int Height, Dialog *Dlg, FARString &strOut)
+int History::Select(VMenu &HistoryMenu, Dialog *Dlg, FARString &strOut)
 {
 	int TypeOut = HR_DEFAULT;
-	return ProcessMenu(HistoryMenu, nullptr, Height, strOut, TypeOut, Dlg);
+	return ProcessMenu(HistoryMenu, nullptr, Opt.Dialogs.CBoxMaxHeight, strOut, TypeOut, Dlg);
 }
 
 int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, FARString &strOut,

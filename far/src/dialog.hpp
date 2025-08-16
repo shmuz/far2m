@@ -329,7 +329,7 @@ private:
 	void ChangeFocus2(unsigned SetFocusPos);
 
 	unsigned ChangeFocus(unsigned FocusPos, int Step, int SkipGroup);
-	BOOL SelectFromEditHistory(DialogItemEx *CurItem, DlgEdit *EditLine, const wchar_t *HistoryName,
+	bool SelectFromEditHistory(DialogItemEx *CurItem, DlgEdit *EditLine, const wchar_t *HistoryName,
 			FARString &strStr);
 	int SelectFromComboBox(DialogItemEx *CurItem, DlgEdit *EditLine, VMenu *List);
 	int AddToEditHistory(const wchar_t *AddStr, const wchar_t *HistoryName);
