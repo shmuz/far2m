@@ -49,6 +49,50 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FileMasksProcessor.hpp"
 #include "datetime.hpp"
 
+static const wchar_t *GetNamePrefix(int Type)
+{
+	switch (Type) {
+		case HR_VIEWER:             // вьювер
+			return Msg::HistoryView;
+		case HR_EDITOR:             // обычное открытие в редакторе
+		case HR_EDITOR_RO:          // открытие с локом
+			return Msg::HistoryEdit;
+		case HR_EXTERNAL:           // external - без ожидания
+		case HR_EXTERNAL_WAIT:      // external - AlwaysWaitFinish
+			return Msg::HistoryExt;
+	}
+
+	return L"";
+}
+
+static void AppendWithLFSeparator(std::wstring &str, const FARString &ap, bool first)
+{
+	if (!first) {
+		str+= L'\n';
+	}
+	size_t p = str.size();
+	str.append(ap.CPtr(), ap.GetLength());
+	for (; p < str.size(); ++p) {
+		if (str[p] == L'\n') {
+			str[p] = L'\r';
+		}
+	}
+}
+
+static bool IsSameDay(const FILETIME &ft1, const FILETIME &ft2)
+{
+	SYSTEMTIME st1, st2;
+	FILETIME lt;
+
+	WINPORT(FileTimeToLocalFileTime)(&ft1, &lt);
+	WINPORT(FileTimeToSystemTime)(&lt, &st1);
+
+	WINPORT(FileTimeToLocalFileTime)(&ft2, &lt);
+	WINPORT(FileTimeToSystemTime)(&lt, &st2);
+
+	return st1.wDay == st2.wDay && st1.wMonth == st2.wMonth && st1.wYear == st2.wYear;
+}
+
 History::History(enumHISTORYTYPE TypeHistory, size_t HistoryCount, const std::string &RegKey,
 		const int *EnableSave, bool SaveType)
 	:
@@ -65,6 +109,13 @@ History::History(enumHISTORYTYPE TypeHistory, size_t HistoryCount, const std::st
 {
 	if (*mEnableSave)
 		ReadHistory();
+}
+
+void History::ResetPosition()
+{
+	mIterCommon = mList.end();
+	if (mHistoryType == HISTORYTYPE_CMD)
+		mIterCmdLine = mList.end();
 }
 
 bool History::IsAllowedForHistory(const wchar_t *Str) const
@@ -147,20 +198,6 @@ void History::AddToHistoryLocal(const wchar_t *Str, const wchar_t *Extra, const 
 	WINPORT(GetSystemTimeAsFileTime)(&AddRecord.Timestamp);    // in UTC
 	mList.push_back(std::move(AddRecord));
 	ResetPosition();
-}
-
-static void AppendWithLFSeparator(std::wstring &str, const FARString &ap, bool first)
-{
-	if (!first) {
-		str+= L'\n';
-	}
-	size_t p = str.size();
-	str.append(ap.CPtr(), ap.GetLength());
-	for (; p < str.size(); ++p) {
-		if (str[p] == L'\n') {
-			str[p] = L'\r';
-		}
-	}
 }
 
 bool History::SaveHistory()
@@ -317,22 +354,6 @@ void History::SyncChanges()
 	}
 }
 
-const wchar_t *History::GetTitle(int Type)
-{
-	switch (Type) {
-		case HR_VIEWER:             // вьювер
-			return Msg::HistoryView;
-		case HR_EDITOR:             // обычное открытие в редакторе
-		case HR_EDITOR_RO:          // открытие с локом
-			return Msg::HistoryEdit;
-		case HR_EXTERNAL:           // external - без ожидания
-		case HR_EXTERNAL_WAIT:      // external - AlwaysWaitFinish
-			return Msg::HistoryExt;
-	}
-
-	return L"";
-}
-
 const wchar_t *History::GetDelTitle() const
 {
 	switch (mHistoryType) {
@@ -390,20 +411,6 @@ int History::Select(VMenu &HistoryMenu, int Height, Dialog *Dlg, FARString &strO
 	return ProcessMenu(HistoryMenu, nullptr, Height, strOut, TypeOut, Dlg);
 }
 
-static bool IsSameDay(const FILETIME &ft1, const FILETIME &ft2)
-{
-	SYSTEMTIME st1, st2;
-	FILETIME lt;
-
-	WINPORT(FileTimeToLocalFileTime)(&ft1, &lt);
-	WINPORT(FileTimeToSystemTime)(&lt, &st1);
-
-	WINPORT(FileTimeToLocalFileTime)(&ft2, &lt);
-	WINPORT(FileTimeToSystemTime)(&lt, &st2);
-
-	return st1.wDay == st2.wDay && st1.wMonth == st2.wMonth && st1.wYear == st2.wYear;
-}
-
 int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, FARString &strOut,
 		int &TypeOut, Dialog *Dlg)
 {
@@ -449,7 +456,7 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 			FARString strRecord;
 
 			if (mHistoryType == HISTORYTYPE_VIEW) {
-				strRecord+= GetTitle(Item->Type);
+				strRecord+= GetNamePrefix(Item->Type);
 				strRecord+= L":";
 				strRecord+= (Item->Type == HR_EDITOR_RO ? L"-" : L" ");
 			}
@@ -839,7 +846,7 @@ void History::SetAddMode(bool EnableAdd, history_remove_dups RemoveDups, bool Ke
 	mKeepSelectedPos = KeepSelectedPos;
 }
 
-bool History::EqualType(int Type1, int Type2)
+bool History::EqualType(int Type1, int Type2) const
 {
 	return (Type1 == Type2) || (mHistoryType == HISTORYTYPE_VIEW &&
 		((Type1 == HR_EDITOR_RO && Type2 == HR_EDITOR) || (Type1 == HR_EDITOR && Type2 == HR_EDITOR_RO)));

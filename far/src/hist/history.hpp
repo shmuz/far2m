@@ -117,8 +117,7 @@ private:
 
 private:
 	void AddToHistoryLocal(const wchar_t *Str, const wchar_t *Extra, const wchar_t *Prefix, int Type);
-	bool EqualType(int Type1, int Type2);
-	static const wchar_t *GetTitle(int Type);
+	bool EqualType(int Type1, int Type2) const;
 	const wchar_t *GetDelTitle() const;
 	bool IsAllowedForHistory(const wchar_t *Str) const;
 	int ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, FARString &strOut,
@@ -146,5 +145,5 @@ public:
 	bool GetAllSimilar(VMenu &HistoryMenu, const wchar_t *Str);
 	bool DeleteMatching(FARString &strStr);
 	void SetAddMode(bool EnableAdd, history_remove_dups RemoveDups, bool KeepSelectedPos);
-	void ResetPosition() { mIterCommon = mList.end(); }
+	void ResetPosition();
 };
