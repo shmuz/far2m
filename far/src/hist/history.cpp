@@ -121,8 +121,7 @@ History::History(enumHISTORYTYPE TypeHistory, size_t HistoryCount, const std::st
 void History::ResetPosition()
 {
 	mIterCommon = mList.end();
-	if (mHistoryType == HISTORYTYPE_CMD)
-		mIterCmdLine = mList.end();
+	mIterCmdLine = mList.end();
 }
 
 bool History::IsAllowedForHistory(const wchar_t *Str) const
