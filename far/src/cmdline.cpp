@@ -417,7 +417,7 @@ int CommandLine::ProcessKey(FarKey Key)
 			if (SelectType == HRT_ENTER || SelectType == HRT_SHIFTENTER || SelectType == HRT_CTRLSHIFTENTER)
 			{
 				if (SelectType == HRT_SHIFTENTER)
-					CtrlObject->FolderHistory->SetAddMode(false, HRD_CASEINSENS, true);
+					CtrlObject->FolderHistory->SetAddMode(false, HRD_CASESENS, true);
 
 				// пусть плагин сам прыгает... ;-)
 				Panel *Panel=CtrlObject->Cp()->ActivePanel;
@@ -440,7 +440,7 @@ int CommandLine::ProcessKey(FarKey Key)
 							CtrlObject->Cp()->ActivePanel->SetCurPath();
 						}
 						Panel->Redraw();
-						CtrlObject->FolderHistory->SetAddMode(true, HRD_CASEINSENS, true);
+						CtrlObject->FolderHistory->SetAddMode(true, HRD_CASESENS, true);
 					}
 				}
 			}
