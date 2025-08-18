@@ -425,12 +425,14 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 	int MenuExitCode = -1;
 	int RetCode = HRT_ENTER;
 	bool SetUpMenuPos = false;
+	int DeltaMenuPos = -1;
 	std::vector<Iter> IterVector;
 
 	SyncChanges();
 	if (mHistoryType == HISTORYTYPE_DIALOG && mList.empty())
 		return HRT_CANCEL;
 
+	mIterCommon = mList.end();
 	for (bool Done = false; !Done; ) {
 		IterVector.clear();
 		IterVector.reserve(mList.size());
@@ -472,9 +474,12 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 			MenuItem.strName = strRecord;
 			MenuItem.SetCheck(Item->Lock ? 1 : 0);
 
-			if (!SetUpMenuPos)
-				MenuItem.SetSelect(mIterCommon == Item
-						|| (mIterCommon == mList.end() && Item == --mList.end()));
+			if (!SetUpMenuPos) {
+				if (mIterCommon == Item || (mIterCommon == mList.end() && Item == --mList.end())) {
+					Pos.SelectPos = HistoryMenu.GetItemCount();
+					MenuItem.SetSelect(true);
+				}
+			}
 
 			// NB: VMenu just copies userdata pointers, no memory allocation takes place
 			HistoryMenu.SetUserData(reinterpret_cast<void*>(IterVector.size()), sizeof(void*),
@@ -493,6 +498,11 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 			Pos.TopPos = Min(Pos.TopPos, ItemCount - Height);
 			HistoryMenu.SetSelectPos(&Pos);
 			SetUpMenuPos = false;
+		}
+		else if (DeltaMenuPos >= 0) {
+			Pos.TopPos = Min(Pos.SelectPos - DeltaMenuPos, HistoryMenu.GetItemCount() - Height);
+			HistoryMenu.SetSelectPos(&Pos);
+			DeltaMenuPos = -1;
 		}
 
 		/*BUGBUG???
@@ -554,9 +564,8 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 							HistoryMenu.Modal::SetExitCode(Pos.SelectPos);
 							HistoryMenu.SetUpdateRequired(TRUE);
 							IsUpdate = true;
+							ResetPosition();
 						}
-
-						ResetPosition();
 					}
 					break;
 
@@ -663,6 +672,7 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 				case KEY_CTRLT:
 					Opt.HistoryShowDates = !Opt.HistoryShowDates;
 					mIterCommon = CurrentIter;
+					DeltaMenuPos = Pos.SelectPos - Pos.TopPos;
 					HistoryMenu.Modal::SetExitCode(Pos.SelectPos);
 					HistoryMenu.SetUpdateRequired(TRUE);
 					IsUpdate = true;
