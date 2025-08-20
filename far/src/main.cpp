@@ -362,7 +362,7 @@ int FarAppMain(int argc, char **argv)
 	// make current thread to be same as main one to avoid FARString reference-counter
 	// from cloning main strings from current one
 	OverrideInterThreadID(gMainThreadID);
- 
+
 	CharClasses::InitCharFlags();
 
 	_OT(SysLog(L"[[[[[[[[New Session of FAR]]]]]]]]]"));

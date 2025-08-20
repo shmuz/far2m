@@ -10,30 +10,27 @@ local band, bor, bnot = bit64.band, bit64.bor, bit64.bnot
 
 local function MakeItem(idx)
   local val,tp,val0,key,name,saved = Far.GetConfig(idx)
-  if val then
-    local txt = ("%-42s│%-8s│%s │"):format(key.."."..name, tp, saved and "s" or "-")
+  local txt = ("%-42s│%-8s│%s │"):format(key.."."..name, tp, saved and "s" or "-")
 
-    if tp == "integer" then
-      txt = ("%s%d = 0x%X"):format(txt, val, val)
-    elseif tp == "string" then
-      txt = txt .. val
-    elseif tp == "boolean" then
-      txt = txt .. (val == 0 and "false" or "true")
-    elseif tp == "3-state" then
-      local num = val % 3
-      txt = txt .. (num==0 and "false" or num==1 and "true" or "other")
-    elseif tp == "binary" then
-      txt = ("%s(%d bytes)"):format(txt, #val[1])
-    else
-      return nil
-    end
-
-    local item = { Text=txt; configIndex=idx; Flags=0; }
-    if tp ~= "binary" and val ~= val0 then
-      item.Flags = F.LIF_CHECKED + CheckChar
-    end
-    return item
+  if tp == "integer" then
+    txt = ("%s%d = 0x%X"):format(txt, val, val)
+  elseif tp == "string" then
+    txt = txt .. val
+  elseif tp == "boolean" then
+    txt = txt .. tostring(val)
+  elseif tp == "3-state" then
+    txt = txt .. tostring(val)
+  elseif tp == "binary" then
+    txt = ("%s(%d bytes)"):format(txt, #val[1])
+  else
+    return nil
   end
+
+  local item = { Text=txt; configIndex=idx; Flags=0; }
+  if tp ~= "binary" and val ~= val0 then
+    item.Flags = F.LIF_CHECKED + CheckChar
+  end
+  return item
 end
 
 local function EditValue(asHex, key, name, tp, val0, val)
@@ -41,7 +38,7 @@ local function EditValue(asHex, key, name, tp, val0, val)
     width = tp=="integer" and 40 or 76;
     {tp="dbox"; },                                           -- 1
     {tp="text"; text= ("%s.%s (%s)"):format(key,name,tp); }, -- 2
-    {tp="edit"; val=tostring(val); name="result"; },         -- 3
+    {tp="edit"; val=tostring(val); },                        -- 3
     {tp="sep"; },                                            -- 4
     {tp="butt"; centergroup=1; default=1; text="OK"; },      -- 5
     {tp="butt"; centergroup=1;            text="Reset"; },   -- 6
@@ -66,6 +63,7 @@ local function EditValue(asHex, key, name, tp, val0, val)
     end
     items[posEdit].val = table.concat(tt, " ")
   end
+  items[posEdit].name = "result"
 
   local closeaction = function(hDlg, Par1, tOut)
     if Par1 == posOK and tp == "integer" then
@@ -111,7 +109,7 @@ local function FarConfig()
   items.width = r.Right - r.Left - 4
   items[posList].height = r.Bottom - r.Top - 4
 
-  for i=1,math.huge do
+  for i = 1,Far.GetConfig("#") do
     local item = MakeItem(i)
     if not item then
       break
@@ -167,9 +165,10 @@ local function FarConfig()
 
         if Op == "edit" then
           if tp == "boolean" then
-            ok = Far.SetConfig(idx, val==0 and 1 or 0)
+            ok = Far.SetConfig(idx, not val)
           elseif tp == "3-state" then
-            ok = Far.SetConfig(idx, (val + 1) % 3)
+            local num = val==false and 0 or val==true and 1 or 2
+            ok = Far.SetConfig(idx, (num + 1) % 3)
           else
             local what, ret = EditValue(AsHex,key,name,tp,val0,val)
             if what then

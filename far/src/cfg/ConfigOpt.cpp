@@ -461,6 +461,11 @@ static struct FARConfig
 	{true,  NSecVMenu, "MBtnClick",                     &Opt.VMenu.MBtnClick, VMENUCLICK_APPLY},
 };
 
+size_t ConfigOptGetSize()
+{
+	return ARRAYSIZE(CFG);
+}
+
 int ConfigOptGetIndex(const wchar_t *KeyName)
 {
 	if (const wchar_t *Dot = wcsrchr(KeyName, L'.'))

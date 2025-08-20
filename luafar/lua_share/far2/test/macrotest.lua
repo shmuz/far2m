@@ -1062,7 +1062,7 @@ local function test_Far_GetConfig()
     "XLat.XLat",
   }
   for _,opt in ipairs(options) do
-    assert(Far.GetConfig(opt), opt)
+    Far.GetConfig(opt) -- an error is thrown if this function fails
   end
 end
 
@@ -2397,7 +2397,8 @@ local function test_Guids()
   end
   test_one_guid( "CopyCurrentOnlyFileId",    nil, "End ShiftF5")
   test_one_guid( "CopyFilesId",              nil, "End F5")
-  test_one_guid( "DeleteFileFolderId",       nil, "End F8")
+  local keyname = Far.GetConfig("System.DeleteToRecycleBin") and "DeleteRecycleId" or "DeleteFileFolderId"
+  test_one_guid( keyname,                    nil, "End F8")
   test_one_guid( "DeleteWipeId",             nil, "End AltDel")
   test_one_guid( "DescribeFileId",           nil, "End CtrlZ")
   test_one_guid( "FileAttrDlgId",            nil, "End CtrlA")

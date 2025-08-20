@@ -61,3 +61,4 @@ void ConfigOptSave(bool Ask);
 bool ConfigOptSetBinary(int Index, const void *Data, DWORD Size);
 bool ConfigOptSetInteger(int Index, DWORD Value);
 bool ConfigOptSetString(int Index, const wchar_t *Value);
+size_t ConfigOptGetSize();

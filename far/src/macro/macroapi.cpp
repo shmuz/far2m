@@ -183,6 +183,7 @@ private:
 	int64_t SendValue(FarMacroValue &Value);
 	int64_t fattrFuncImpl(int Type);
 	int64_t panelsetpathFuncImpl(bool IsPlugin);
+	int get_config_index();
 
 	const FarMacroCall* mData;
 };
@@ -1904,49 +1905,84 @@ int64_t FarMacroApi::dlgsetfocusFunc()
 	return PassValue(Ret);
 }
 
+int FarMacroApi::get_config_index()
+{
+	int Index = -1;
+
+	if (mData->Count >= 1) {
+		switch (mData->Values[0].Type) {
+			case FMVT_DOUBLE:
+				Index = static_cast<int>(mData->Values[0].Double) - 1;
+				if (Index < 0 || Index >= (int)ConfigOptGetSize()) {
+					PassError(L"GetConfig: numeric index out of range");
+					return -1;
+				}
+				break;
+
+			case FMVT_STRING:
+				Index = ConfigOptGetIndex(mData->Values[0].String);
+				break;
+
+			default:
+				break;
+		}
+	}
+
+	if (Index < 0)
+		PassError(L"GetConfig: invalid parameter specification");
+
+	return Index;
+}
+
 // val,type,val0,key,name,saved = Far.GetConfig(Index)
 //   where Index may be integer or string (Key.Name)
 int64_t FarMacroApi::fargetconfigFunc()
 {
-	int Index = -1;
-	GetConfig Data;
-
-	if (mData->Count >= 1)
-	{
-		if (mData->Values[0].Type == FMVT_DOUBLE)
-			Index = static_cast<int>(mData->Values[0].Double) - 1;
-		else if (mData->Values[0].Type == FMVT_STRING)
-			Index = ConfigOptGetIndex(mData->Values[0].String);
-	}
-
-	if (!ConfigOptGetValue(Index, Data))
-	{
-		PassBoolean(false);
+	if (mData->Values[0].Type == FMVT_STRING && !wcscmp(L"#", mData->Values[0].String)) {
+		PassNumber(ConfigOptGetSize());
 		return 0;
 	}
 
-	switch(Data.ValType)
-	{
+	int Index = get_config_index();
+	if (Index < 0)
+		return 0;  // PassError was already called
+
+	GetConfig Data;
+	ConfigOptGetValue(Index, Data);
+
+	switch(Data.ValType) {
 		case REG_DWORD:
 			PassNumber(Data.dwValue);
 			PassString(L"integer");
 			PassNumber(Data.dwDefault);
 			break;
+
 		case REG_BOOLEAN:
-			PassNumber(Data.dwValue);
+			PassBoolean(Data.dwValue & 0xFF);
 			PassString(L"boolean");
-			PassNumber(Data.dwDefault);
+			PassBoolean(Data.dwDefault & 0xFF);
 			break;
+
 		case REG_3STATE:
-			PassNumber(Data.dwValue);
+			switch (Data.dwValue & 0xFF) {
+				case 0: PassBoolean(0); break;
+				case 1: PassBoolean(1); break;
+				default: PassString(L"other"); break;
+			}
 			PassString(L"3-state");
-			PassNumber(Data.dwDefault);
+			switch (Data.dwDefault & 0xFF) {
+				case 0: PassBoolean(0); break;
+				case 1: PassBoolean(1); break;
+				default: PassString(L"other"); break;
+			}
 			break;
+
 		case REG_SZ:
 			PassString(Data.strValue);
 			PassString(L"string");
 			PassString(Data.strDefault);
 			break;
+
 		case REG_BINARY:
 			PassBinary(Data.binData, Data.binSize);
 			PassString(L"binary");
@@ -1963,16 +1999,44 @@ int64_t FarMacroApi::fargetconfigFunc()
 	return 0;
 }
 
-static bool _SetConfig(int Index, const FarMacroValue *Value)
+static bool _SetConfig(int Index, const FarMacroValue &Value)
 {
-	switch (Value->Type)
-	{
-		case FMVT_DOUBLE:
-			return ConfigOptSetInteger(Index, static_cast<DWORD>(Value->Double));
-		case FMVT_STRING:
-			return ConfigOptSetString(Index, Value->String);
-		case FMVT_BINARY:
-			return ConfigOptSetBinary(Index, Value->Binary.Data, Value->Binary.Size);
+	GetConfig Data;
+	ConfigOptGetValue(Index, Data);
+
+	DWORD dword;
+
+	switch (Data.ValType) {
+		case REG_DWORD:
+			if (Value.Type == FMVT_DOUBLE) dword = static_cast<DWORD>(Value.Double);
+			else if (Value.Type == FMVT_INTEGER) dword = static_cast<DWORD>(Value.Integer);
+			else return false;
+			return ConfigOptSetInteger(Index, dword);
+
+		case REG_BOOLEAN:
+			if (Value.Type == FMVT_DOUBLE) dword = Value.Double != 0 ? 1 : 0;
+			else if (Value.Type == FMVT_INTEGER) dword = Value.Integer ? 1 : 0;
+			else if (Value.Type == FMVT_BOOLEAN) dword = Value.Boolean ? 1 : 0;
+			else if (Value.Type == FMVT_NIL) dword = 0;
+			else return false;
+			return ConfigOptSetInteger(Index, dword);
+
+		case REG_3STATE:
+			if (Value.Type == FMVT_DOUBLE) dword = static_cast<DWORD>(Value.Double) % 3;
+			else if (Value.Type == FMVT_INTEGER) dword = Value.Integer % 3;
+			else if (Value.Type == FMVT_BOOLEAN) dword = Value.Boolean ? 1 : 0;
+			else if (Value.Type == FMVT_NIL) dword = 0;
+			else if (Value.Type == FMVT_STRING && !wcscasecmp(L"other", Value.String)) dword = 2;
+			else return false;
+			return ConfigOptSetInteger(Index, dword);
+
+		case REG_SZ:
+			return (Value.Type == FMVT_STRING) ?  ConfigOptSetString(Index, Value.String) : false;
+
+		case REG_BINARY:
+			return (Value.Type == FMVT_BINARY) ?
+					ConfigOptSetBinary(Index, Value.Binary.Data, Value.Binary.Size) : false;
+
 		default:
 			return false;
 	}
@@ -1982,22 +2046,18 @@ static bool _SetConfig(int Index, const FarMacroValue *Value)
 //   where Index may be integer or string (Key.Name)
 int64_t FarMacroApi::farsetconfigFunc()
 {
+	int Index = get_config_index();
+	if (Index < 0)
+		return 0;  // PassError was already called
+
 	bool Res = false;
 
-	if (mData->Count >= 2)
-	{
-		if (mData->Values[0].Type==FMVT_DOUBLE)
-		{
-			int Index = static_cast<int>(mData->Values[0].Double) - 1;
-			Res = _SetConfig(Index, &mData->Values[1]);
-		}
-		else if (mData->Values[0].Type==FMVT_STRING)
-		{
-			int Index = ConfigOptGetIndex(mData->Values[0].String);
-			Res = _SetConfig(Index, &mData->Values[1]);
-		}
-		FarAdvControl(0, ACTL_REDRAWALL, nullptr, nullptr);
+	if (mData->Count >= 2) {
+		Res = _SetConfig(Index, mData->Values[1]);
+		if (Res)
+			FarAdvControl(0, ACTL_REDRAWALL, nullptr, nullptr);
 	}
+
 	PassBoolean(Res);
 	return 0;
 }
