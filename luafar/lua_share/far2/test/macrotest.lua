@@ -1061,8 +1061,37 @@ local function test_Far_GetConfig()
     "XLat.WordDivForXlat",
     "XLat.XLat",
   }
+
+  assert_eq(Far.GetConfig("#"), #options)
+  assert_false(pcall(Far.GetConfig, 0))
+  assert_false(pcall(Far.GetConfig, #options+1))
+  assert_false(pcall(Far.GetConfig, "foo.bar"))
+
   for _,opt in ipairs(options) do
-    Far.GetConfig(opt) -- an error is thrown if this function fails
+    local val,tp,val0,key,name,saved = Far.GetConfig(opt) -- an error is thrown if this function fails
+    assert_str(tp)
+    assert_str(key)
+    assert_str(name)
+    assert_bool(saved)
+
+    if tp == "integer" then
+      assert_num(val)
+      assert_num(val0)
+    elseif tp == "boolean" then
+      assert_bool(val)
+      assert_bool(val0)
+    elseif tp == "3-state" then
+      assert(val==false or val==true or val=="other")
+      assert(val0==false or val0==true or val0=="other")
+    elseif tp == "string" then
+      assert_str(val)
+      assert_str(val0)
+    elseif tp == "binary" then
+      assert_table(val)
+      assert_str(val[1])
+    else
+      error("unknown type: "..tp)
+    end
   end
 end
 
@@ -2376,8 +2405,8 @@ local function test_one_guid(val, func, keys, numEsc)
 end
 
 local function test_Guids()
-  assert(0 ~= Far.GetConfig("Confirmations.Delete"), "Confirmations.Delete must be set")
-  assert(0 ~= Far.GetConfig("Confirmations.DeleteFolder"), "Confirmations.DeleteFolder must be set")
+  assert_true(Far.GetConfig("Confirmations.Delete"), "Confirmations.Delete must be set")
+  assert_true(Far.GetConfig("Confirmations.DeleteFolder"), "Confirmations.DeleteFolder must be set")
 
   assert_table(far.Guids)
 
@@ -2474,7 +2503,6 @@ local function test_Guids()
   -- test_one_guid( "DeleteFolderId", nil, "")
   -- test_one_guid( "DeleteFolderRecycleId", nil, "")
   -- test_one_guid( "DeleteLinkId", nil, "")
-  -- test_one_guid( "DeleteRecycleId", nil, "")
   -- test_one_guid( "DisconnectDriveId", nil, "")
   -- test_one_guid( "EditAskSaveExtId", nil, "")
   -- test_one_guid( "EditAskSaveId", nil, "")
