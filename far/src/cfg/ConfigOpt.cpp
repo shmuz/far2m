@@ -224,7 +224,7 @@ static struct FARConfig
 
 	{true,  NSecEditor, "ExternalEditorName",           &Opt.strExternalEditor, L""},
 	{true,  NSecEditor, "UseExternalEditor",            &Opt.EdOpt.UseExternalEditor, 0, REG_BOOLEAN},
-	{true,  NSecEditor, "ExpandTabs",                   &Opt.EdOpt.ExpandTabs, 0},
+	{true,  NSecEditor, "ExpandTabs",                   &Opt.EdOpt.ExpandTabs, EXPAND_NOTABS},
 	{true,  NSecEditor, "TabSize",                      &Opt.EdOpt.TabSize, 8},
 	{true,  NSecEditor, "PersistentBlocks",             &Opt.EdOpt.PersistentBlocks, 0, REG_BOOLEAN},
 	{true,  NSecEditor, "DelRemovesBlocks",             &Opt.EdOpt.DelRemovesBlocks, 1, REG_BOOLEAN},
@@ -385,7 +385,7 @@ static struct FARConfig
 	{false, NSecPanel, "RightClickRule",                &Opt.PanelRightClickRule, 2, REG_3STATE},
 	{false, NSecPanel, "CtrlFRule",                     &Opt.PanelCtrlFRule, 1, REG_BOOLEAN},
 	{false, NSecPanel, "CtrlAltShiftRule",              &Opt.PanelCtrlAltShiftRule, 0, REG_3STATE},
-	{false, NSecPanel, "RememberLogicalDrives",         &Opt.RememberLogicalDrives, 0},
+	{false, NSecPanel, "RememberLogicalDrives",         &Opt.RememberLogicalDrives, 0, REG_BOOLEAN},
 	{true,  NSecPanel, "AutoUpdateLimit",               &Opt.AutoUpdateLimit, 0},
 	{true,  NSecPanel, "ShowFilenameMarks",             &Opt.ShowFilenameMarks, 1, REG_BOOLEAN},
 	{true,  NSecPanel, "FilenameMarksAlign",            &Opt.FilenameMarksAlign, 1, REG_BOOLEAN},
@@ -393,11 +393,11 @@ static struct FARConfig
 	{true,  NSecPanel, "MaxFilenameIndentation",        &Opt.MaxFilenameIndentation, HIGHLIGHT_MAX_MARK_LENGTH},
 	{true,  NSecPanel, "ClassicHotkeyLinkResolving",    &Opt.ClassicHotkeyLinkResolving, 1, REG_BOOLEAN},
 
-	{true,  NSecPanelLeft, "Type",                      &Opt.LeftPanel.Type, 0},
+	{true,  NSecPanelLeft, "Type",                      &Opt.LeftPanel.Type, FILE_PANEL},
 	{true,  NSecPanelLeft, "Visible",                   &Opt.LeftPanel.Visible, 1, REG_BOOLEAN},
 	{true,  NSecPanelLeft, "Focus",                     &Opt.LeftPanel.Focus, 1, REG_BOOLEAN},
-	{true,  NSecPanelLeft, "ViewMode",                  &Opt.LeftPanel.ViewMode, 2},
-	{true,  NSecPanelLeft, "SortMode",                  &Opt.LeftPanel.SortMode, 1},
+	{true,  NSecPanelLeft, "ViewMode",                  &Opt.LeftPanel.ViewMode, VIEW_2},
+	{true,  NSecPanelLeft, "SortMode",                  &Opt.LeftPanel.SortMode, PanelSortMode::BY_NAME},
 	{true,  NSecPanelLeft, "SortOrder",                 &Opt.LeftPanel.SortOrder, 1},
 	{true,  NSecPanelLeft, "SortGroups",                &Opt.LeftPanel.SortGroups, 0, REG_BOOLEAN},
 	{true,  NSecPanelLeft, "NumericSort",               &Opt.LeftPanel.NumericSort, 0, REG_BOOLEAN},
@@ -407,11 +407,11 @@ static struct FARConfig
 	{true,  NSecPanelLeft, "SelectedFirst",             &Opt.LeftSelectedFirst, 0, REG_BOOLEAN},
 	{true,  NSecPanelLeft, "DirectoriesFirst",          &Opt.LeftPanel.DirectoriesFirst, 1, REG_BOOLEAN},
 
-	{true,  NSecPanelRight, "Type",                     &Opt.RightPanel.Type, 0},
+	{true,  NSecPanelRight, "Type",                     &Opt.RightPanel.Type, FILE_PANEL},
 	{true,  NSecPanelRight, "Visible",                  &Opt.RightPanel.Visible, 1, REG_BOOLEAN},
 	{true,  NSecPanelRight, "Focus",                    &Opt.RightPanel.Focus, 0, REG_BOOLEAN},
-	{true,  NSecPanelRight, "ViewMode",                 &Opt.RightPanel.ViewMode, 2},
-	{true,  NSecPanelRight, "SortMode",                 &Opt.RightPanel.SortMode, 1},
+	{true,  NSecPanelRight, "ViewMode",                 &Opt.RightPanel.ViewMode, VIEW_2},
+	{true,  NSecPanelRight, "SortMode",                 &Opt.RightPanel.SortMode, PanelSortMode::BY_NAME},
 	{true,  NSecPanelRight, "SortOrder",                &Opt.RightPanel.SortOrder, 1},
 	{true,  NSecPanelRight, "SortGroups",               &Opt.RightPanel.SortGroups, 0, REG_BOOLEAN},
 	{true,  NSecPanelRight, "NumericSort",              &Opt.RightPanel.NumericSort, 0, REG_BOOLEAN},
@@ -448,7 +448,7 @@ static struct FARConfig
 	{true,  NSecMacros, "KeyRecordCtrlDot",             &Opt.Macro.strKeyMacroCtrlDot, szCtrlDot},
 	{true,  NSecMacros, "KeyRecordCtrlShiftDot",        &Opt.Macro.strKeyMacroCtrlShiftDot, szCtrlShiftDot},
 
-	{true,  NSecSystem, "ExcludeCmdHistory",            &Opt.ExcludeCmdHistory, 0}, //AN
+	{true,  NSecSystem, "ExcludeCmdHistory",            &Opt.ExcludeCmdHistory, 0},
 
 	{true,  NSecCodePages, "CPMenuMode",                &Opt.CPMenuMode, 0, REG_BOOLEAN},
 

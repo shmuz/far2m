@@ -1127,6 +1127,7 @@ enum FARMACROVARTYPE
 	FMVT_ARRAY                  = 8,
 	FMVT_PANEL                  = 9,
 	FMVT_ERROR                  = 10,
+	FMVT_MBSTRING               = 11,
 };
 
 struct FarMacroValue
@@ -1138,6 +1139,7 @@ struct FarMacroValue
 		int64_t        Boolean;
 		double         Double;
 		const wchar_t *String;
+		const char    *MBString;
 		void          *Pointer;
 		struct
 		{

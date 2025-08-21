@@ -1405,6 +1405,7 @@ enum FARMACROVARTYPE
 	FMVT_ARRAY                  = 8,
 	FMVT_PANEL                  = 9,
 	FMVT_ERROR                  = 10,
+	FMVT_MBSTRING               = 11,
 };
 
 struct FarMacroValue
@@ -1416,6 +1417,7 @@ struct FarMacroValue
 		int64_t        Boolean;
 		double         Double;
 		const wchar_t *String;
+		const char    *MBString;
 		void          *Pointer;
 		struct
 		{
@@ -1441,6 +1443,7 @@ struct FarMacroValue
 	FarMacroValue(bool v)             { Type=FMVT_BOOLEAN; Boolean=v; }
 	FarMacroValue(double v)           { Type=FMVT_DOUBLE; Double=v; }
 	FarMacroValue(const wchar_t* v)   { Type=FMVT_STRING; String=v; }
+	FarMacroValue(const char* v)      { Type=FMVT_MBSTRING; MBString=v; }
 	FarMacroValue(void* v)            { Type=FMVT_POINTER; Pointer=v; }
 	FarMacroValue(FarMacroValue* arr,size_t count) { Type=FMVT_ARRAY; Array.Values=arr; Array.Count=count; }
 #endif

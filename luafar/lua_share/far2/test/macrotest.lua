@@ -31,6 +31,7 @@ local function assert_udata(v,m)   assert(type(v)=="userdata", m or AF)  return 
 local function assert_nil(v,m)     assert(v==nil, m or AF)               return true; end
 local function assert_false(v,m)   assert(v==false, m or AF)             return true; end
 local function assert_true(v,m)    assert(v==true, m or AF)              return true; end
+local function assert_err(...)     assert(pcall(...)==false, AF)         return true; end
 
 local function assert_range(v, low, high)
   if low then assert(v >= low, v) end
@@ -1063,9 +1064,9 @@ local function test_Far_GetConfig()
   }
 
   assert_eq(Far.GetConfig("#"), #options)
-  assert_false(pcall(Far.GetConfig, 0))
-  assert_false(pcall(Far.GetConfig, #options+1))
-  assert_false(pcall(Far.GetConfig, "foo.bar"))
+  assert_err(Far.GetConfig, 0)
+  assert_err(Far.GetConfig, #options+1)
+  assert_err(Far.GetConfig, "foo.bar")
 
   for _,opt in ipairs(options) do
     local val,tp,val0,key,name,saved = Far.GetConfig(opt) -- an error is thrown if this function fails
@@ -1788,9 +1789,9 @@ local function test_utf8_sub()
     assert_eq(text:sub(start), text:sub(start,len))
   end
 
-  assert_false(pcall(text.sub, text))
-  assert_false(pcall(text.sub, text, {}))
-  assert_false(pcall(text.sub, text, nil))
+  assert_err(text.sub, text)
+  assert_err(text.sub, text, {})
+  assert_err(text.sub, text, nil)
 end
 
 local function test_utf8_lower_upper()

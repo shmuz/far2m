@@ -105,6 +105,7 @@ public:
 	int64_t PassNumber(double dbl);
 	int64_t PassString(const wchar_t* str);
 	int64_t PassString(const FARString& str);
+	int64_t PassString(const char* str);
 	int64_t PassValue(const TVar& Var);
 	int64_t PassBinary(const void* data, size_t size);
 	int64_t PassArray(FarMacroValue *values, size_t count);
@@ -203,6 +204,12 @@ int64_t FarMacroApi::PassString(const wchar_t *str)
 int64_t FarMacroApi::PassString(const FARString& str)
 {
 	return PassString(str.CPtr());
+}
+
+int64_t FarMacroApi::PassString(const char *str)
+{
+	FarMacroValue val = str ? str : "";
+	return SendValue(val);
 }
 
 int64_t FarMacroApi::PassError(const wchar_t *str)
@@ -3172,15 +3179,10 @@ int64_t FarMacroApi::fargetinfoFunc()
 	PassString(Opt.strHelpLanguage);
 	PassNumber(WINPORT(GetConsoleColorPalette)(NULL));
 
-	std::vector<std::wstring> strings;
 	std::vector<FarMacroValue> values;
 	const char *mbStr;
 	for (int i=-1; (mbStr = WinPortBackendInfo(i)); i++) {
-		strings.emplace_back(MB2Wide(mbStr));
-	}
-	values.reserve(strings.size());
-	for (const auto& wStr: strings) {
-		values.emplace_back(wStr.c_str());
+		values.emplace_back(mbStr);
 	}
 	PassArray(values.data(), values.size());
 

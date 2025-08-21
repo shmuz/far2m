@@ -711,6 +711,9 @@ void PushFarMacroValue(lua_State* L, const struct FarMacroValue* val)
 		case FMVT_ERROR:
 			push_utf8_string(L, val->Value.String, -1);
 			break;
+		case FMVT_MBSTRING:
+			lua_pushstring(L, val->Value.MBString);
+			break;
 		case FMVT_BOOLEAN:
 			lua_pushboolean(L, (int)val->Value.Boolean);
 			break;
