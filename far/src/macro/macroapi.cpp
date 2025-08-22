@@ -63,6 +63,12 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "viewer.hpp"
 #include "xlat.hpp"
 
+FarMacroValue::FarMacroValue(const FARString& Str)
+{
+	Type = FMVT_STRING;
+	String = Str.CPtr();
+}
+
 static Frame* GetTopModal()
 {
 	return FrameManager->GetTopModal();
@@ -111,6 +117,8 @@ public:
 	int64_t PassArray(FarMacroValue *values, size_t count);
 	int64_t PassPointer(void* ptr);
 	int64_t PassNil();
+	int64_t NewTable();
+	int64_t SetTable(const FarMacroValue &Key, const FarMacroValue &Value);
 
 	int64_t absFunc();
 	int64_t ascFunc();
@@ -181,7 +189,7 @@ public:
 	int64_t udlSplitFunc();
 
 private:
-	int64_t SendValue(FarMacroValue &Value);
+	int64_t SendValue(const FarMacroValue &Value);
 	int64_t fattrFuncImpl(int Type);
 	int64_t panelsetpathFuncImpl(bool IsPlugin);
 	int get_config_index();
@@ -189,9 +197,9 @@ private:
 	const FarMacroCall* mData;
 };
 
-int64_t FarMacroApi::SendValue(FarMacroValue &Value)
+int64_t FarMacroApi::SendValue(const FarMacroValue &Value)
 {
-	mData->Callback(mData->CallbackData, &Value, 1);
+	mData->Callback(mData->CallbackData, const_cast<FarMacroValue*>(&Value), 1);
 	return 0;
 }
 
@@ -233,8 +241,7 @@ int64_t FarMacroApi::PassInteger(int64_t Int)
 
 int64_t FarMacroApi::PassBoolean(bool b)
 {
-	FarMacroValue val = b;
-	return SendValue(val);
+	return SendValue(b);
 }
 
 int64_t FarMacroApi::PassValue(const TVar& Var)
@@ -265,20 +272,30 @@ int64_t FarMacroApi::PassBinary(const void* data, size_t size)
 
 int64_t FarMacroApi::PassArray(FarMacroValue *values, size_t count)
 {
-	FarMacroValue val(values, count);
-	return SendValue(val);
+	FarMacroValue arr(values, count);
+	return SendValue(arr);
 }
 
 int64_t FarMacroApi::PassPointer(void* ptr)
 {
-	FarMacroValue val(ptr);
-	return SendValue(val);
+	return SendValue(ptr);
 }
 
 int64_t FarMacroApi::PassNil()
 {
-	FarMacroValue val;
-	return SendValue(val);
+	return SendValue(FMVT_NIL);
+}
+
+int64_t FarMacroApi::NewTable()
+{
+	return SendValue(FMVT_NEWTABLE);
+}
+
+int64_t FarMacroApi::SetTable(const FarMacroValue &Key, const FarMacroValue &Value)
+{
+	SendValue(Key);
+	SendValue(Value);
+	return SendValue(FMVT_SETTABLE);
 }
 
 std::vector<TVar> FarMacroApi::parseParams(size_t Count)
@@ -3171,32 +3188,30 @@ int64_t FarMacroApi::udlSplitFunc()
 
 int64_t FarMacroApi::fargetinfoFunc()
 {
-	FARString Str;
-
-	PassString(FAR_BUILD);
-	PassString(FAR_PLATFORM);
-	PassString(Opt.strLanguage);
-	PassString(Opt.strHelpLanguage);
-	PassNumber(WINPORT(GetConsoleColorPalette)(NULL));
+	NewTable();
+	SetTable("Build", FAR_BUILD);
+	SetTable("Platform", FAR_PLATFORM);
+	SetTable("MainLang", Opt.strLanguage);
+	SetTable("HelpLang", Opt.strHelpLanguage);
+	SetTable("ConsoleColorPalette", WINPORT(GetConsoleColorPalette)(NULL));
 
 	std::vector<FarMacroValue> values;
 	const char *mbStr;
 	for (int i=-1; (mbStr = WinPortBackendInfo(i)); i++) {
 		values.emplace_back(mbStr);
 	}
-	PassArray(values.data(), values.size());
+	SetTable("WinPortBackEnd", FarMacroValue(values.data(), values.size()));
 
+	FARString Str;
 #if defined (__clang__)
 	Str.Format(L"Clang, version %d.%d.%d", __clang_major__, __clang_minor__, __clang_patchlevel__);
-	PassString(Str);
 #elif defined (__INTEL_COMPILER)
 	Str.Format(L"Intel C++ Compiler, version %d.%d.%d",
 		__INTEL_COMPILER / 100, __INTEL_COMPILER % 100, __INTEL_COMPILER_UPDATE);
-	PassString(Str);
 #elif defined (__GNUC__)
 	Str.Format(L"GCC, version %d.%d.%d", __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__);
-	PassString(Str);
 #endif
+	SetTable("Compiler", Str);
 
 	return 0;
 }

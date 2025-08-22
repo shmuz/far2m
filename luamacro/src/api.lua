@@ -537,8 +537,9 @@ SetProperties(Menu, {
 --------------------------------------------------------------------------------
 
 Far = {
-  GetConfig      = function(...) return MacroCallFar(mc.MCODE_F_FAR_GETCONFIG, ...) end,
   DisableHistory = function(...) return Shared.keymacro.DisableHistory(...) end,
+  GetConfig      = function(...) return MacroCallFar(mc.MCODE_F_FAR_GETCONFIG, ...) end,
+  GetInfo        = function(...) return MacroCallFar(mc.MCODE_FAR_GETINFO, ...) end,
   KbdLayout      = function(...) return MacroCallFar(mc.MCODE_F_KBDLAYOUT, ...) end,
   KeyBar_Show    = function(...) return MacroCallFar(mc.MCODE_F_KEYBAR_SHOW, ...) end,
   SetConfig      = function(...) return MacroCallFar(mc.MCODE_F_FAR_SETCONFIG, ...) end,
@@ -554,19 +555,6 @@ SetProperties(Far, {
   UpTime         = function() return MacroCallFar(mc.MCODE_V_FAR_UPTIME) end,
   Width          = function() return MacroCallFar(mc.MCODE_V_FAR_WIDTH) end,
 })
-
-Far.GetInfo = function()
-  local a1,a2,a3,a4,a5,a6,a7 = MacroCallFar(mc.MCODE_FAR_GETINFO)
-  return {
-    Build               = a1;
-    Platform            = a2;
-    MainLang            = a3;
-    HelpLang            = a4;
-    ConsoleColorPalette = a5;
-    WinPortBackEnd      = a6;
-    Compiler            = a7;
-  }
-end
 --------------------------------------------------------------------------------
 
 BM = {

@@ -5,6 +5,7 @@
 #include "lf_service.h"
 #include "lf_string.h"
 #include "lf_bit64.h"
+#include "lf_util.h"
 
 extern int pcall_msg(lua_State* L, int narg, int nret);
 extern void PushFarMacroValue(lua_State* L, const struct FarMacroValue* val);
@@ -174,7 +175,7 @@ static void WINAPI MacroCallFarCallback(void *Data, struct FarMacroValue *Val, s
 	if (!cbdata->error && cbdata->ret_avail > 0)
 	{
 		cbdata->error = (Val->Type == FMVT_ERROR);
-		--cbdata->ret_avail;
+		cbdata->ret_avail += (Val->Type == FMVT_SETTABLE) ? 2 : -1;
 		PushFarMacroValue(cbdata->L, Val);
 	}
 }

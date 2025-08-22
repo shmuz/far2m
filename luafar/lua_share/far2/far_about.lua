@@ -44,14 +44,11 @@ local function FarAbout()
   local uname = win.uname()
 
   Add(0, "FAR2M version", Inf.Build)
-  if Inf.Compiler then
-    Add(0, "Compiler", Inf.Compiler)
-  end
+  Add(0, "Compiler", Inf.Compiler)
   Add(0, "Platform", Inf.Platform)
   Add(0, "Backend", Inf.WinPortBackEnd[1])
-  for k=2,64 do
-    local s = Inf.WinPortBackEnd[k]
-    if s then Add(2 , "System component", s) else break end
+  for k=2,#Inf.WinPortBackEnd do
+    Add(2, "System component", Inf.WinPortBackEnd[k])
   end
   Add(0, "ConsoleColorPalette", Inf.ConsoleColorPalette)
   Add(0, "Admin",               Far.IsUserAdmin and "yes" or "no")

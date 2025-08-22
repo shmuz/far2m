@@ -1406,6 +1406,8 @@ enum FARMACROVARTYPE
 	FMVT_PANEL                  = 9,
 	FMVT_ERROR                  = 10,
 	FMVT_MBSTRING               = 11,
+	FMVT_NEWTABLE               = 12,
+	FMVT_SETTABLE               = 13,
 };
 
 struct FarMacroValue
@@ -1445,7 +1447,9 @@ struct FarMacroValue
 	FarMacroValue(const wchar_t* v)   { Type=FMVT_STRING; String=v; }
 	FarMacroValue(const char* v)      { Type=FMVT_MBSTRING; MBString=v; }
 	FarMacroValue(void* v)            { Type=FMVT_POINTER; Pointer=v; }
+	FarMacroValue(FARMACROVARTYPE tp) { Type=tp; Integer=0; }
 	FarMacroValue(FarMacroValue* arr,size_t count) { Type=FMVT_ARRAY; Array.Values=arr; Array.Count=count; }
+	FarMacroValue(const class FARString&);
 #endif
 };
 
