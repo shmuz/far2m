@@ -1106,7 +1106,7 @@ void * OpenNetlink(void)
 	return ctx;
 }
 
-static int EnumMsg(netlink_ctx * ctx, int (* fn)(netlink_ctx * ctx, struct nlmsghdr * nlh))
+static int EnumMsg(netlink_ctx * ctx, int (* fn)(netlink_ctx * ctx, struct nlmsghdr * nlh), int * done)
 {
 	struct nlmsghdr * nlh = (struct nlmsghdr *)(ctx->buf+ctx->offset);
 	int res = FALSE, rcvsize = (int)ctx->rcvsize;
@@ -1149,13 +1149,16 @@ static int EnumMsg(netlink_ctx * ctx, int (* fn)(netlink_ctx * ctx, struct nlmsg
 				break;
 			case NLMSG_DONE:
 				LOG_INFO("NLMSG_DONE (End of a dump) %u\n", err->error);
+                                if( done )
+				    *done = TRUE;
+				res = TRUE;
 				break;
 			case NLMSG_NOOP:
 				LOG_INFO("NLMSG_NOOP (Nothing) %u\n", err->error);
 				res = TRUE;
 				break;
 			case NLMSG_OVERRUN:
-				LOG_INFO("NLMSG_OVERRUN (Data lost) %u\n", err->error);
+				LOG_ERROR("NLMSG_OVERRUN (Data lost) %u\n", err->error);
 				break;
 			}
 			break;
@@ -1554,7 +1557,7 @@ static const void * ProcessRouteMsgs(netlink_ctx * ctx)
 	ctx->typeprint = rtatype;
 	ctx->max_tbl_items = RTA_MAX;
 	ctx->infosize = sizeof(struct rtmsg);
-	if( EnumMsg(ctx, ProcessMsg) )
+	if( EnumMsg(ctx, ProcessMsg, 0) )
 		return (const void *)ctx->info.rt_recs;
 	return 0;
 }
@@ -1576,7 +1579,7 @@ static const void * ProcessAddrMsgs(netlink_ctx * ctx)
 	ctx->typeprint = ifatype;
 	ctx->max_tbl_items = IFA_MAX;
 	ctx->infosize = sizeof(struct ifaddrmsg);
-	if( EnumMsg(ctx, ProcessMsg) )
+	if( EnumMsg(ctx, ProcessMsg, 0) )
 		return (const void *)ctx->info.adr_recs;
 	return 0;
 }
@@ -1598,7 +1601,7 @@ static const void * ProcessRuleMsgs(netlink_ctx * ctx)
 	ctx->typeprint = fratype;
 	ctx->max_tbl_items = FRA_MAX;
 	ctx->infosize = sizeof(struct fib_rule_hdr);
-	if( EnumMsg(ctx, ProcessMsg) )
+	if( EnumMsg(ctx, ProcessMsg, 0) )
 		return (const void *)ctx->info.rule_recs;
 	return 0;
 }
@@ -1619,7 +1622,7 @@ static const void * ProcessLinkMsgs(netlink_ctx * ctx)
 	ctx->typeprint = iflatype;
 	ctx->max_tbl_items = IFLA_MAX;
 	ctx->infosize = sizeof(struct ifinfomsg);
-	if( EnumMsg(ctx, ProcessMsg) )
+	if( EnumMsg(ctx, ProcessMsg, 0) )
 		return (const void *)ctx->info.link_recs;
 	return 0;
 }
@@ -1640,7 +1643,7 @@ static const void * ProcessNeighborMsgs(netlink_ctx * ctx)
 	ctx->typeprint = ndatype;
 	ctx->max_tbl_items = NDA_MAX;
 	ctx->infosize = sizeof(struct ndmsg);
-	if( EnumMsg(ctx, ProcessMsg) )
+	if( EnumMsg(ctx, ProcessMsg, 0) )
 		return (const void *)ctx->info.neighbor_recs;
 	return 0;
 }
@@ -1759,15 +1762,18 @@ const void * GetInfo(netlink_ctx * ctx, const void * (* fn)(netlink_ctx * ctx))
 	ctx->offset = 0;
 
 	while( (ctx->rcvsize = netlink_recvmsg(ctx)) > 0 ) {
+                int done = FALSE;
 		assert( ctx->rcvsize > 0 && (size_t)ctx->rcvsize <= ctx->rcvbufsize );
 		LOG_INFO("1. ctx->totalmsg %d\n", ctx->totalmsg);
-		if( EnumMsg(ctx, IncrementTotalMsg) ) {
+		if( EnumMsg(ctx, IncrementTotalMsg, &done) ) {
 			LOG_INFO("2. ctx->totalmsg %d\n", ctx->totalmsg);
 			if( ctx->totalmsg ) {
 				info = fn(ctx);
 				ctx->offset += (size_t)ctx->rcvsize;
 				assert( ctx->rcvbufsize >= ctx->offset );
 			}
+                        if( done )
+				break;
 		} else
 			break;
 	}
