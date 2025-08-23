@@ -103,7 +103,7 @@ Edit::Edit(ScreenObject *pOwner, Callback *aCallback)
 	LeftPos(0),
 	CurPos(0),
 	PrevCurPos(0),
-	MSelStart(-1),
+	m_MSelStart(-1),
 	m_SelStart(-1),
 	m_SelEnd(0),
 	CursorSize(-1),
@@ -600,19 +600,19 @@ int64_t Edit::VMProcess(int OpCode, void *vParam, int64_t iParam)
 					switch (iParam) {
 						case 0:    // selection start
 						{
-							MSelStart = GetCurPos();
+							m_MSelStart = GetCurPos();
 							return 1;
 						}
 						case 1:    // selection finish
 						{
-							if (MSelStart != -1) {
-								if (MSelStart != GetCurPos())
-									Select(MSelStart, GetCurPos());
+							if (m_MSelStart != -1) {
+								if (m_MSelStart != GetCurPos())
+									Select(m_MSelStart, GetCurPos());
 								else
 									Select(-1, 0);
 
 								Show();
-								MSelStart = -1;
+								m_MSelStart = -1;
 								return 1;
 							}
 
@@ -625,7 +625,7 @@ int64_t Edit::VMProcess(int OpCode, void *vParam, int64_t iParam)
 				case 4:    // UnMark sel block
 				{
 					Select(-1, 0);
-					MSelStart = -1;
+					m_MSelStart = -1;
 					Show();
 					return 1;
 				}
