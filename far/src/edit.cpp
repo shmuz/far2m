@@ -94,20 +94,18 @@ public:
 	~DisableCallback() { Restore(); }
 };
 
-Edit::Edit(ScreenObject *pOwner, Callback *aCallback, bool bAllocateData)
+Edit::Edit(ScreenObject *pOwner, Callback *aCallback)
 	:
 	m_next(nullptr),
 	m_prev(nullptr),
-	Str(bAllocateData ? reinterpret_cast<wchar_t *>(malloc(sizeof(wchar_t))) : nullptr),
-	StrSize(0),
 	MaxLength(-1),
 	Mask(nullptr),
 	LeftPos(0),
 	CurPos(0),
 	PrevCurPos(0),
 	MSelStart(-1),
-	SelStart(-1),
-	SelEnd(0),
+	m_SelStart(-1),
+	m_SelEnd(0),
 	CursorSize(-1),
 	CursorPos(0)
 {
@@ -120,9 +118,6 @@ Edit::Edit(ScreenObject *pOwner, Callback *aCallback, bool bAllocateData)
 
 	SetOwner(pOwner);
 	SetWordDiv(Opt.strWordDiv);
-
-	if (bAllocateData)
-		*Str = 0;
 
 	Flags.Set(FEDITLINE_EDITBEYONDEND);
 	Color = F_LIGHTGRAY | B_BLACK;
@@ -141,9 +136,6 @@ Edit::~Edit()
 {
 	if (Mask)
 		free(Mask);
-
-	if (Str)
-		free(Str);
 }
 
 DWORD Edit::SetCodePage(UINT codepage)
@@ -168,9 +160,9 @@ DWORD Edit::SetCodePage(UINT codepage)
 	}
 
 	if (codepage != m_codepage) {
-		if (Str && *Str) {
+		if (!m_Str.IsEmpty()) {
 			// m_codepage = codepage;
-			int length = WINPORT(WideCharToMultiByte)(m_codepage, wc2mbFlags, Str, StrSize, nullptr, 0,
+			int length = WINPORT(WideCharToMultiByte)(m_codepage, wc2mbFlags, m_Str, StrSize(), nullptr, 0,
 					nullptr, lpUsedDefaultChar);
 
 			if (UsedDefaultChar)
@@ -183,7 +175,7 @@ DWORD Edit::SetCodePage(UINT codepage)
 				return Ret;
 			}
 
-			WINPORT(WideCharToMultiByte)(m_codepage, 0, Str, StrSize, decoded, length, nullptr, nullptr);
+			WINPORT(WideCharToMultiByte)(m_codepage, 0, m_Str, StrSize(), decoded, length, nullptr, nullptr);
 			int length2 = WINPORT(MultiByteToWideChar)(codepage, mb2wcFlags, decoded, length, nullptr, 0);
 
 			if (!length2 && WINPORT(GetLastError)() == ERROR_NO_UNICODE_TRANSLATION) {
@@ -202,9 +194,8 @@ DWORD Edit::SetCodePage(UINT codepage)
 			length2 = WINPORT(MultiByteToWideChar)(codepage, 0, decoded, length, encoded, length2);
 			encoded[length2] = L'\0';
 			free(decoded);
-			free(Str);
-			Str = encoded;
-			StrSize = length2;
+			m_Str = encoded;
+			m_Str.Truncate(length2);
 			HasSpecialWidthChars = false;
 			CheckForSpecialWidthChars();
 		}
@@ -225,8 +216,8 @@ void Edit::DisplayObject()
 {
 	if (Flags.Check(FEDITLINE_DROPDOWNBOX)) {
 		Flags.Clear(FEDITLINE_CLEARFLAG);    // при дроп-даун нам не нужно никакого unchanged text
-		SelStart = 0;
-		SelEnd = StrSize;                    // а также считаем что все выделено -
+		m_SelStart = 0;
+		m_SelEnd = StrSize();                // а также считаем что все выделено -
 											 //    надо же отличаться от обычных Edit
 	}
 
@@ -262,7 +253,7 @@ void Edit::SetCursorType(bool Visible, DWORD Size)
 
 void Edit::GetCursorType(bool &Visible, DWORD &Size)
 {
-	Visible = Flags.Check(FEDITLINE_CURSORVISIBLE) != FALSE;
+	Visible = Flags.Check(FEDITLINE_CURSORVISIBLE);
 	Size = CursorSize;
 }
 
@@ -272,13 +263,13 @@ int Edit::GetNextCursorPos(int Position, int Where)
 	int Result = Position;
 
 	if (Mask && *Mask && (Where == -1 || Where == 1)) {
-		int PosChanged = FALSE;
+		bool PosChanged = false;
 		int MaskLen = StrLength(Mask);
 
 		for (int i = Position; i < MaskLen && i >= 0; i+= Where) {
 			if (CheckCharMask(Mask[i])) {
 				Result = i;
-				PosChanged = TRUE;
+				PosChanged = true;
 				break;
 			}
 		}
@@ -287,7 +278,7 @@ int Edit::GetNextCursorPos(int Position, int Where)
 			for (int i = Position; i >= 0; i--) {
 				if (CheckCharMask(Mask[i])) {
 					Result = i;
-					PosChanged = TRUE;
+					PosChanged = true;
 					break;
 				}
 			}
@@ -310,13 +301,12 @@ void Edit::FastShow()
 {
 	int EditLength = ObjWidth;
 
-	if (!Flags.Check(FEDITLINE_EDITBEYONDEND) && CurPos > StrSize && StrSize >= 0)
-		CurPos = StrSize;
+	if (!Flags.Check(FEDITLINE_EDITBEYONDEND) && CurPos > StrSize())
+		CurPos = StrSize();
 
 	if (MaxLength != -1) {
-		if (StrSize > MaxLength) {
-			Str[MaxLength] = 0;
-			StrSize = MaxLength;
+		if (StrSize() > MaxLength) {
+			m_Str.Truncate(MaxLength);
 		}
 
 		if (CurPos > MaxLength - 1)
@@ -353,13 +343,13 @@ void Edit::FastShow()
 		RealLeftPos = CellPosToReal(LeftPos);
 
 	GotoXY(X1, Y1);
-	int CellSelStart = (SelStart == -1) ? -1 : RealPosToCell(SelStart);
-	int CellSelEnd = (SelEnd < 0) ? -1 : RealPosToCell(SelEnd);
+	int CellSelStart = (m_SelStart == -1) ? -1 : RealPosToCell(m_SelStart);
+	int CellSelEnd = (m_SelEnd < 0) ? -1 : RealPosToCell(m_SelEnd);
 
 	/* $ 17.08.2000 KM
 	   Если есть маска, сделаем подготовку строки, то есть
 	   все "постоянные" символы в маске, не являющиеся шаблонными
-	   должны постоянно присутствовать в Str
+	   должны постоянно присутствовать в m_Str
 	*/
 	if (Mask && *Mask)
 		RefreshStrByMask();
@@ -368,8 +358,8 @@ void Edit::FastShow()
 
 	OutStr.clear();
 	size_t OutStrCells = 0;
-	for (int i = RealLeftPos; i < StrSize && int(OutStrCells) < EditLength; ++i) {
-		auto wc = Str[i];
+	for (int i = RealLeftPos; i < StrSize() && int(OutStrCells) < EditLength; ++i) {
+		auto wc = m_Str[i];
 		if (Flags.Check(FEDITLINE_SHOWWHITESPACE) && Flags.Check(FEDITLINE_EDITORMODE)) {
 			switch(wc) {
 				case 0x0020: //space
@@ -475,7 +465,7 @@ void Edit::FastShow()
 		   ! У DropDowList`а выделение по полной программе - на всю видимую длину
 			 ДАЖЕ ЕСЛИ ПУСТАЯ СТРОКА
 		*/
-		if (CellSelStart >= EditLength /*|| !AllString && CellSelStart>=StrSize*/
+		if (CellSelStart >= EditLength /*|| !AllString && CellSelStart>=StrSize()*/
 				|| CellSelEnd < CellSelStart) {
 			if (Flags.Check(FEDITLINE_DROPDOWNBOX)) {
 				SetColor(SelColor);
@@ -512,13 +502,13 @@ int Edit::RecurseProcessKey(FarKey Key)
 	Recurse++;
 	int RetCode = ProcessKey(Key);
 	Recurse--;
-	return (RetCode);
+	return RetCode;
 }
 
 // Функция вставки всякой хреновени - от шорткатов до имен файлов
-int Edit::ProcessInsPath(FarKey Key, int PrevSelStart, int PrevSelEnd)
+bool Edit::ProcessInsPath(FarKey Key, int PrevSelStart, int PrevSelEnd)
 {
-	int RetCode = FALSE;
+	bool RetCode = false;
 	FARString strPathName;
 
 	if (Key >= KEY_RCTRL0 && Key <= KEY_RCTRL9)    // шорткаты?
@@ -526,10 +516,10 @@ int Edit::ProcessInsPath(FarKey Key, int PrevSelStart, int PrevSelEnd)
 		FARString strPluginModule, strPluginFile, strPluginData;
 
 		if (Bookmarks().Get(Key - KEY_RCTRL0, &strPathName, &strPluginModule, &strPluginFile, &strPluginData))
-			RetCode = TRUE;
+			RetCode = true;
 	} else                                                 // Пути/имена?
 	{
-		RetCode = _MakePath1(Key, strPathName, L"", 0);    // 0 - always not escaping path names
+		RetCode = _MakePath1(Key, strPathName, L"", 0) != 0; // 0 - always not escaping path names
 	}
 
 	// Если что-нить получилось, именно его и вставим (PathName)
@@ -540,8 +530,8 @@ int Edit::ProcessInsPath(FarKey Key, int PrevSelStart, int PrevSelEnd)
 		}
 
 		if (PrevSelStart != -1) {
-			SelStart = PrevSelStart;
-			SelEnd = PrevSelEnd;
+			m_SelStart = PrevSelStart;
+			m_SelEnd = PrevSelEnd;
 		}
 
 		if (!Flags.Check(FEDITLINE_PERSISTENTBLOCKS))
@@ -558,21 +548,20 @@ int64_t Edit::VMProcess(int OpCode, void *vParam, int64_t iParam)
 {
 	switch (OpCode) {
 		case MCODE_C_EMPTY:
-			return (int64_t)!GetLength();
+			return !GetLength();
 		case MCODE_C_SELECTED:
-			return (int64_t)(SelStart != -1 && SelStart < SelEnd);
+			return m_SelStart != -1 && m_SelStart < m_SelEnd;
 		case MCODE_C_EOF:
-			return (int64_t)(CurPos >= StrSize);
+			return CurPos >= StrSize();
 		case MCODE_C_BOF:
-			return (int64_t)!CurPos;
+			return !CurPos;
 		case MCODE_V_ITEMCOUNT:
-			return (int64_t)StrSize;
+			return StrSize();
 		case MCODE_V_CURPOS:
-			return (int64_t)(CurPos + 1);
+			return CurPos + 1;
 		case MCODE_F_EDITOR_SEL: {
-			int Action = (int)((INT_PTR)vParam);
 
-			switch (Action) {
+			switch ((INT_PTR)vParam) {
 				case 0:    // Get Param
 				{
 					switch (iParam) {
@@ -580,9 +569,9 @@ int64_t Edit::VMProcess(int OpCode, void *vParam, int64_t iParam)
 						case 2:    // return LastLine
 							return IsSelection() ? 1 : 0;
 						case 1:    // return FirstPos
-							return IsSelection() ? SelStart + 1 : 0;
+							return IsSelection() ? m_SelStart + 1 : 0;
 						case 3:    // return LastPos
-							return IsSelection() ? SelEnd : 0;
+							return IsSelection() ? m_SelEnd : 0;
 						case 4:    // return block type (0=nothing 1=stream, 2=column)
 							return IsSelection() ? 1 : 0;
 					}
@@ -596,7 +585,7 @@ int64_t Edit::VMProcess(int OpCode, void *vParam, int64_t iParam)
 							case 0:    // begin block (FirstLine & FirstPos)
 							case 1:    // end block (LastLine & LastPos)
 							{
-								SetCellCurPos(iParam ? SelEnd : SelStart);
+								SetCellCurPos(iParam ? m_SelEnd : m_SelStart);
 								Show();
 								return 1;
 							}
@@ -651,11 +640,11 @@ int64_t Edit::VMProcess(int OpCode, void *vParam, int64_t iParam)
 
 int Edit::CalcRTrimmedStrSize() const
 {
-	int TrimmedStrSize = StrSize;
-	while (TrimmedStrSize > 0 && (IsSpace(Str[TrimmedStrSize - 1]) || IsEol(Str[TrimmedStrSize - 1]))) {
-		--TrimmedStrSize;
+	int TrimSize = StrSize();
+	while (TrimSize > 0 && (IsSpace(m_Str[TrimSize - 1]) || IsEol(m_Str[TrimSize - 1]))) {
+		--TrimSize;
 	}
-	return TrimmedStrSize;
+	return TrimSize;
 }
 
 int Edit::CalcPosFwdTo(int Pos, int LimitPos) const
@@ -664,11 +653,11 @@ int Edit::CalcPosFwdTo(int Pos, int LimitPos) const
 		if (Pos < LimitPos)
 			do {
 				Pos++;
-			} while (Pos < LimitPos && Pos < StrSize && CharClasses::IsXxxfix(Str[Pos]));
+			} while (Pos < LimitPos && Pos < StrSize() && CharClasses::IsXxxfix(m_Str[Pos]));
 	} else
 		do {
 			Pos++;
-		} while (Pos < StrSize && CharClasses::IsXxxfix(Str[Pos]));
+		} while (Pos < StrSize() && CharClasses::IsXxxfix(m_Str[Pos]));
 
 	return Pos;
 }
@@ -680,7 +669,7 @@ int Edit::CalcPosBwdTo(int Pos) const
 
 	do {
 		--Pos;
-	} while (Pos > 0 && Pos < StrSize && CharClasses::IsXxxfix(Str[Pos]));
+	} while (Pos > 0 && Pos < StrSize() && CharClasses::IsXxxfix(m_Str[Pos]));
 
 	return Pos;
 }
@@ -729,7 +718,7 @@ int Edit::ProcessKey(FarKey Key)
 	*/
 	if ((((Key == KEY_BS || Key == KEY_DEL || Key == KEY_NUMDEL) && Flags.Check(FEDITLINE_DELREMOVESBLOCKS))
 				|| Key == KEY_CTRLD)
-			&& !Flags.Check(FEDITLINE_EDITORMODE) && SelStart != -1 && SelStart < SelEnd) {
+			&& !Flags.Check(FEDITLINE_EDITORMODE) && m_SelStart != -1 && m_SelStart < m_SelEnd) {
 		DeleteBlock();
 		Show();
 		return TRUE;
@@ -753,9 +742,9 @@ int Edit::ProcessKey(FarKey Key)
 			/* $ 12.11.2002 DJ
 			   зачем рисоваться, если ничего не изменилось?
 			*/
-			if (SelStart != -1 || SelEnd) {
-				PrevSelStart = SelStart;
-				PrevSelEnd = SelEnd;
+			if (m_SelStart != -1 || m_SelEnd) {
+				PrevSelStart = m_SelStart;
+				PrevSelEnd = m_SelEnd;
 				Select(-1, 0);
 				Show();
 			}
@@ -767,7 +756,7 @@ int Edit::ProcessKey(FarKey Key)
 	   удаляет такую строку также, как и Del
 	*/
 	if (((Opt.Dialogs.EULBsClear && Key == KEY_BS) || Key == KEY_DEL || Key == KEY_NUMDEL)
-			&& Flags.Check(FEDITLINE_CLEARFLAG) && CurPos >= StrSize)
+			&& Flags.Check(FEDITLINE_CLEARFLAG) && CurPos >= StrSize())
 		Key = KEY_CTRLY;
 
 	/* $ 15.09.2000 SVS
@@ -775,9 +764,9 @@ int Edit::ProcessKey(FarKey Key)
 			 Так должно быть только для UnChanged состояния
 	*/
 	if ((Key == KEY_SHIFTDEL || Key == KEY_SHIFTNUMDEL || Key == KEY_SHIFTDECIMAL)
-			&& Flags.Check(FEDITLINE_CLEARFLAG) && CurPos >= StrSize && SelStart == -1) {
-		SelStart = 0;
-		SelEnd = StrSize;
+			&& Flags.Check(FEDITLINE_CLEARFLAG) && CurPos >= StrSize() && m_SelStart == -1) {
+		m_SelStart = 0;
+		m_SelEnd = StrSize();
 	}
 
 	if (Flags.Check(FEDITLINE_CLEARFLAG)
@@ -819,17 +808,17 @@ int Edit::ProcessKey(FarKey Key)
 					Flags.Set(FEDITLINE_MARKINGBLOCK);
 				}
 
-				if (SelStart != -1 && SelStart <= CurPos)
-					Select(SelStart, CurPos);
+				if (m_SelStart != -1 && m_SelStart <= CurPos)
+					Select(m_SelStart, CurPos);
 				else {
 					int EndPos = CalcPosFwd((Mask && *Mask) ? CalcRTrimmedStrSize() : -1);
 					int NewStartPos = CurPos;
 
-					if (EndPos > StrSize)
-						EndPos = StrSize;
+					if (EndPos > StrSize())
+						EndPos = StrSize();
 
-					if (NewStartPos > StrSize)
-						NewStartPos = StrSize;
+					if (NewStartPos > StrSize())
+						NewStartPos = StrSize();
 
 					AddSelect(NewStartPos, EndPos);
 				}
@@ -846,11 +835,11 @@ int Edit::ProcessKey(FarKey Key)
 				Flags.Set(FEDITLINE_MARKINGBLOCK);
 			}
 
-			if ((SelStart != -1 && SelEnd == -1) || SelEnd > CurPos) {
-				if (CalcPosFwd() == SelEnd)
+			if ((m_SelStart != -1 && m_SelEnd == -1) || m_SelEnd > CurPos) {
+				if (CalcPosFwd() == m_SelEnd)
 					Select(-1, 0);
 				else
-					Select(CalcPosFwd(), SelEnd);
+					Select(CalcPosFwd(), m_SelEnd);
 			} else
 				AddSelect(CurPos, CalcPosFwd());
 
@@ -859,19 +848,19 @@ int Edit::ProcessKey(FarKey Key)
 		}
 		case KEY_CTRLSHIFTLEFT:
 		case KEY_CTRLSHIFTNUMPAD4: {
-			if (CurPos > StrSize) {
+			if (CurPos > StrSize()) {
 				PrevCurPos = CurPos;
-				CurPos = StrSize;
+				CurPos = StrSize();
 			}
 
 			if (CurPos > 0)
 				RecurseProcessKey(KEY_SHIFTLEFT);
 
 			while (CurPos > 0
-					&& !(!IsWordDiv(WordDiv(), Str[CurPos]) && IsWordDiv(WordDiv(), Str[CurPos - 1])
-							&& !IsSpace(Str[CurPos]))) {
-				if (!IsSpace(Str[CurPos])
-						&& (IsSpace(Str[CurPos - 1]) || IsWordDiv(WordDiv(), Str[CurPos - 1])))
+					&& !(!IsWordDiv(WordDiv(), m_Str[CurPos]) && IsWordDiv(WordDiv(), m_Str[CurPos - 1])
+							&& !IsSpace(m_Str[CurPos]))) {
+				if (!IsSpace(m_Str[CurPos])
+						&& (IsSpace(m_Str[CurPos - 1]) || IsWordDiv(WordDiv(), m_Str[CurPos - 1])))
 					break;
 
 				RecurseProcessKey(KEY_SHIFTLEFT);
@@ -882,15 +871,15 @@ int Edit::ProcessKey(FarKey Key)
 		}
 		case KEY_CTRLSHIFTRIGHT:
 		case KEY_CTRLSHIFTNUMPAD6: {
-			if (CurPos >= StrSize)
+			if (CurPos >= StrSize())
 				return FALSE;
 
 			RecurseProcessKey(KEY_SHIFTRIGHT);
 
-			while (CurPos < StrSize
-					&& !(IsWordDiv(WordDiv(), Str[CurPos]) && !IsWordDiv(WordDiv(), Str[CurPos - 1]))) {
-				if (!IsSpace(Str[CurPos])
-						&& (IsSpace(Str[CurPos - 1]) || IsWordDiv(WordDiv(), Str[CurPos - 1])))
+			while (CurPos < StrSize()
+					&& !(IsWordDiv(WordDiv(), m_Str[CurPos]) && !IsWordDiv(WordDiv(), m_Str[CurPos - 1]))) {
+				if (!IsSpace(m_Str[CurPos])
+						&& (IsSpace(m_Str[CurPos - 1]) || IsWordDiv(WordDiv(), m_Str[CurPos - 1])))
 					break;
 
 				RecurseProcessKey(KEY_SHIFTRIGHT);
@@ -916,11 +905,11 @@ int Edit::ProcessKey(FarKey Key)
 		case KEY_SHIFTEND:
 		case KEY_SHIFTNUMPAD1: {
 			Lock();
-			int Len = (Mask && *Mask) ? CalcRTrimmedStrSize() : StrSize;
+			int Len = (Mask && *Mask) ? CalcRTrimmedStrSize() : StrSize();
 
 			int LastCurPos = CurPos;
 
-			while (CurPos < Len /*StrSize*/) {
+			while (CurPos < Len /*StrSize()*/) {
 				RecurseProcessKey(KEY_SHIFTRIGHT);
 
 				if (LastCurPos == CurPos)
@@ -966,9 +955,9 @@ int Edit::ProcessKey(FarKey Key)
 			return TRUE;
 		}
 		case KEY_CTRLBS: {
-			if (CurPos > StrSize) {
+			if (CurPos > StrSize()) {
 				PrevCurPos = CurPos;
-				CurPos = StrSize;
+				CurPos = StrSize();
 			}
 
 			Lock();
@@ -979,7 +968,7 @@ int Edit::ProcessKey(FarKey Key)
 			for (;;) {
 				int StopDelete = FALSE;
 
-				if (CurPos > 1 && IsSpace(Str[CurPos - 1]) != IsSpace(Str[CurPos - 2]))
+				if (CurPos > 1 && IsSpace(m_Str[CurPos - 1]) != IsSpace(m_Str[CurPos - 2]))
 					StopDelete = TRUE;
 
 				RecurseProcessKey(KEY_BS);
@@ -987,7 +976,7 @@ int Edit::ProcessKey(FarKey Key)
 				if (!CurPos || StopDelete)
 					break;
 
-				if (IsWordDiv(WordDiv(), Str[CurPos - 1]))
+				if (IsWordDiv(WordDiv(), m_Str[CurPos - 1]))
 					break;
 			}
 
@@ -1001,7 +990,7 @@ int Edit::ProcessKey(FarKey Key)
 			Lock();
 
 			if (!Flags.Check(FEDITLINE_PERSISTENTBLOCKS)
-					&& (SelStart != -1 || Flags.Check(FEDITLINE_CLEARFLAG)))
+					&& (m_SelStart != -1 || Flags.Check(FEDITLINE_CLEARFLAG)))
 				RecurseProcessKey(KEY_DEL);
 
 			ProcessCtrlQ();
@@ -1011,19 +1000,19 @@ int Edit::ProcessKey(FarKey Key)
 		}
 		case KEY_OP_SELWORD: {
 			int OldCurPos = CurPos;
-			PrevSelStart = SelStart;
-			PrevSelEnd = SelEnd;
+			PrevSelStart = m_SelStart;
+			PrevSelEnd = m_SelEnd;
 #if defined(MOUSEKEY)
 
-			if (CurPos >= SelStart && CurPos <= SelEnd) {    // выделяем ВСЮ строку при повторном двойном клике
-				Select(0, StrSize);
+			if (CurPos >= m_SelStart && CurPos <= m_SelEnd) {    // выделяем ВСЮ строку при повторном двойном клике
+				Select(0, StrSize());
 			} else
 #endif
 			{
 				int SStart, SEnd;
 
-				if (CalcWordFromString(Str, CurPos, &SStart, &SEnd, WordDiv()))
-					Select(SStart, SEnd + (SEnd < StrSize ? 1 : 0));
+				if (CalcWordFromString(m_Str, CurPos, &SStart, &SEnd, WordDiv()))
+					Select(SStart, SEnd + (SEnd < StrSize() ? 1 : 0));
 			}
 
 			CurPos = OldCurPos;    // возвращаем обратно
@@ -1032,7 +1021,7 @@ int Edit::ProcessKey(FarKey Key)
 		}
 		case KEY_OP_PLAINTEXT: {
 			if (!Flags.Check(FEDITLINE_PERSISTENTBLOCKS)) {
-				if (SelStart != -1 || Flags.Check(FEDITLINE_CLEARFLAG))    // BugZ#1053 - Неточности в $Text
+				if (m_SelStart != -1 || Flags.Check(FEDITLINE_CLEARFLAG))    // BugZ#1053 - Неточности в $Text
 					RecurseProcessKey(KEY_DEL);
 			}
 
@@ -1047,7 +1036,7 @@ int Edit::ProcessKey(FarKey Key)
 		case KEY_CTRLDEL:
 		case KEY_CTRLNUMDEL:
 		case KEY_CTRLDECIMAL: {
-			if (CurPos >= StrSize)
+			if (CurPos >= StrSize())
 				return FALSE;
 
 			Lock();
@@ -1059,8 +1048,8 @@ int Edit::ProcessKey(FarKey Key)
 				while (ptr < MaskLen) {
 					ptr++;
 
-					if (!CheckCharMask(Mask[ptr]) || (IsSpace(Str[ptr]) && !IsSpace(Str[ptr + 1]))
-							|| (IsWordDiv(WordDiv(), Str[ptr])))
+					if (!CheckCharMask(Mask[ptr]) || (IsSpace(m_Str[ptr]) && !IsSpace(m_Str[ptr + 1]))
+							|| (IsWordDiv(WordDiv(), m_Str[ptr])))
 						break;
 				}
 
@@ -1071,15 +1060,15 @@ int Edit::ProcessKey(FarKey Key)
 				for (;;) {
 					int StopDelete = FALSE;
 
-					if (CurPos < StrSize - 1 && IsSpace(Str[CurPos]) && !IsSpace(Str[CurPos + 1]))
+					if (CurPos < StrSize() - 1 && IsSpace(m_Str[CurPos]) && !IsSpace(m_Str[CurPos + 1]))
 						StopDelete = TRUE;
 
 					RecurseProcessKey(KEY_DEL);
 
-					if (CurPos >= StrSize || StopDelete)
+					if (CurPos >= StrSize() || StopDelete)
 						break;
 
-					if (IsWordDiv(WordDiv(), Str[CurPos]))
+					if (IsWordDiv(WordDiv(), m_Str[CurPos]))
 						break;
 				}
 			}
@@ -1096,9 +1085,7 @@ int Edit::ProcessKey(FarKey Key)
 
 			PrevCurPos = CurPos;
 			LeftPos = CurPos = 0;
-			*Str = 0;
-			StrSize = 0;
-			Str = (wchar_t *)realloc(Str, 1 * sizeof(wchar_t));
+			m_Str.Clear();
 			Select(-1, 0);
 			Changed();
 			Show();
@@ -1108,22 +1095,20 @@ int Edit::ProcessKey(FarKey Key)
 			if (Flags.Check(FEDITLINE_READONLY | FEDITLINE_DROPDOWNBOX))
 				return (TRUE);
 
-			if (CurPos >= StrSize)
+			if (CurPos >= StrSize())
 				return FALSE;
 
 			if (!Flags.Check(FEDITLINE_EDITBEYONDEND)) {
-				if (CurPos < SelEnd)
-					SelEnd = CurPos;
+				if (CurPos < m_SelEnd)
+					m_SelEnd = CurPos;
 
-				if (SelEnd < SelStart && SelEnd != -1) {
-					SelEnd = 0;
-					SelStart = -1;
+				if (m_SelEnd < m_SelStart && m_SelEnd != -1) {
+					m_SelEnd = 0;
+					m_SelStart = -1;
 				}
 			}
 
-			Str[CurPos] = 0;
-			StrSize = CurPos;
-			Str = (wchar_t *)realloc(Str, (StrSize + 1) * sizeof(wchar_t));
+			m_Str.Truncate(CurPos);
 			Changed();
 			Show();
 			return TRUE;
@@ -1144,7 +1129,7 @@ int Edit::ProcessKey(FarKey Key)
 		case KEY_CTRLSHIFTEND:
 		case KEY_CTRLSHIFTNUMPAD1: {
 			PrevCurPos = CurPos;
-			CurPos = (Mask && *Mask) ? CalcRTrimmedStrSize() : StrSize;
+			CurPos = (Mask && *Mask) ? CalcRTrimmedStrSize() : StrSize();
 			Show();
 			return TRUE;
 		}
@@ -1180,19 +1165,19 @@ int Edit::ProcessKey(FarKey Key)
 			if (Flags.Check(FEDITLINE_READONLY | FEDITLINE_DROPDOWNBOX))
 				return (TRUE);
 
-			if (CurPos >= StrSize)
+			if (CurPos >= StrSize())
 				return FALSE;
 
-			if (SelStart != -1) {
-				if (SelEnd != -1 && CurPos < SelEnd)
-					SelEnd--;
+			if (m_SelStart != -1) {
+				if (m_SelEnd != -1 && CurPos < m_SelEnd)
+					m_SelEnd--;
 
-				if (CurPos < SelStart)
-					SelStart--;
+				if (CurPos < m_SelStart)
+					m_SelStart--;
 
-				if (SelEnd != -1 && SelEnd <= SelStart) {
-					SelStart = -1;
-					SelEnd = 0;
+				if (m_SelEnd != -1 && m_SelEnd <= m_SelStart) {
+					m_SelStart = -1;
+					m_SelEnd = 0;
 				}
 			}
 
@@ -1204,24 +1189,19 @@ int Edit::ProcessKey(FarKey Key)
 						while (j < MaskLen && !CheckCharMask(Mask[j]))
 							j++;
 
-						if (!CharInMask(Str[i + 1], Mask[j]))
+						if (!CharInMask(m_Str[i + 1], Mask[j]))
 							break;
 
-						Str[j] = Str[i + 1];
+						m_Str.ReplaceChar(j, m_Str[i + 1]);
 						j++;
 					}
 				}
 
-				Str[j] = L' ';
+				m_Str.ReplaceChar(j, L' ');
 			} else {
 				auto NextPos = CalcPosFwd();
 				if (NextPos > CurPos) {
-					wmemmove(Str + CurPos, Str + NextPos, (StrSize - NextPos) + 1);
-					StrSize-= (NextPos - CurPos);
-					wchar_t *NewStr = (wchar_t *)realloc(Str, (StrSize + 1) * sizeof(wchar_t));
-					if (NewStr) {
-						Str = NewStr;
-					}
+					m_Str.Replace(CurPos, NextPos - CurPos, L"", 0);
 				}
 			}
 
@@ -1233,15 +1213,15 @@ int Edit::ProcessKey(FarKey Key)
 		case KEY_CTRLNUMPAD4: {
 			PrevCurPos = CurPos;
 
-			if (CurPos > StrSize)
-				CurPos = StrSize;
+			if (CurPos > StrSize())
+				CurPos = StrSize();
 
 			CurPos = CalcPosBwd();
 
 			while (CurPos > 0
-					&& !(!IsWordDiv(WordDiv(), Str[CurPos]) && IsWordDiv(WordDiv(), Str[CurPos - 1])
-							&& !IsSpace(Str[CurPos]))) {
-				if (!IsSpace(Str[CurPos]) && IsSpace(Str[CurPos - 1]))
+					&& !(!IsWordDiv(WordDiv(), m_Str[CurPos]) && IsWordDiv(WordDiv(), m_Str[CurPos - 1])
+							&& !IsSpace(m_Str[CurPos]))) {
+				if (!IsSpace(m_Str[CurPos]) && IsSpace(m_Str[CurPos - 1]))
 					break;
 
 				CurPos--;
@@ -1252,7 +1232,7 @@ int Edit::ProcessKey(FarKey Key)
 		}
 		case KEY_CTRLRIGHT:
 		case KEY_CTRLNUMPAD6: {
-			if (CurPos >= StrSize)
+			if (CurPos >= StrSize())
 				return FALSE;
 
 			PrevCurPos = CurPos;
@@ -1262,13 +1242,13 @@ int Edit::ProcessKey(FarKey Key)
 				Len = CalcRTrimmedStrSize();
 				CurPos = CalcPosFwd(Len);
 			} else {
-				Len = StrSize;
+				Len = StrSize();
 				CurPos = CalcPosFwd();
 			}
 
-			while (CurPos < Len /*StrSize*/
-					&& !(IsWordDiv(WordDiv(), Str[CurPos]) && !IsWordDiv(WordDiv(), Str[CurPos - 1]))) {
-				if (!IsSpace(Str[CurPos]) && IsSpace(Str[CurPos - 1]))
+			while (CurPos < Len /*StrSize()*/
+					&& !(IsWordDiv(WordDiv(), m_Str[CurPos]) && !IsWordDiv(WordDiv(), m_Str[CurPos - 1]))) {
+				if (!IsSpace(m_Str[CurPos]) && IsSpace(m_Str[CurPos - 1]))
 					break;
 
 				CurPos++;
@@ -1280,7 +1260,7 @@ int Edit::ProcessKey(FarKey Key)
 		case KEY_SHIFTNUMDEL:
 		case KEY_SHIFTDECIMAL:
 		case KEY_SHIFTDEL: {
-			if (SelStart == -1 || SelStart >= SelEnd)
+			if (m_SelStart == -1 || m_SelStart >= m_SelEnd)
 				return FALSE;
 
 			RecurseProcessKey(KEY_CTRLINS);
@@ -1291,19 +1271,16 @@ int Edit::ProcessKey(FarKey Key)
 		case KEY_CTRLINS:
 		case KEY_CTRLNUMPAD0: {
 			if (!Flags.Check(FEDITLINE_PASSWORDMODE)) {
-				if (SelStart == -1 || SelStart >= SelEnd) {
+				if (m_SelStart == -1 || m_SelStart >= m_SelEnd) {
 					if (Mask && *Mask) {
-						std::wstring TrimmedStr(Str, CalcRTrimmedStrSize());
+						std::wstring TrimmedStr(m_Str, CalcRTrimmedStrSize());
 						CopyToClipboard(TrimmedStr.c_str());
 					} else {
-						CopyToClipboard(Str);
+						CopyToClipboard(m_Str);
 					}
-				} else if (SelEnd <= StrSize)    // TODO: если в начало условия добавить "StrSize &&", то пропадет баг "Ctrl-Ins в пустой строке очищает клипборд"
+				} else if (m_SelEnd <= StrSize()) // TODO: если в начало условия добавить "StrSize() &&", то пропадет баг "Ctrl-Ins в пустой строке очищает клипборд"
 				{
-					int Ch = Str[SelEnd];
-					Str[SelEnd] = 0;
-					CopyToClipboard(Str + SelStart);
-					Str[SelEnd] = Ch;
+					CopyToClipboard(FARString(m_Str+m_SelStart, m_SelEnd-m_SelStart));
 				}
 			}
 
@@ -1321,8 +1298,8 @@ int Edit::ProcessKey(FarKey Key)
 				DeleteBlock();
 			}
 
-			for (int i = StrLength(Str) - 1; i >= 0 && IsEol(Str[i]); i--)
-				Str[i] = 0;
+			for (int i = StrLength(m_Str) - 1; i >= 0 && IsEol(m_Str[i]); i--)
+				m_Str.ReplaceChar(i, 0);
 
 			for (int i = 0; ClipText[i]; i++) {
 				if (IsEol(ClipText[i])) {
@@ -1370,8 +1347,8 @@ int Edit::ProcessKey(FarKey Key)
 
 			if (!Flags.Check(FEDITLINE_PERSISTENTBLOCKS)) {
 				if (PrevSelStart != -1) {
-					SelStart = PrevSelStart;
-					SelEnd = PrevSelEnd;
+					m_SelStart = PrevSelStart;
+					m_SelEnd = PrevSelEnd;
 				}
 				DisableCallback DC(m_Callback.Active);
 				DeleteBlock();
@@ -1423,29 +1400,28 @@ int Edit::ProcessCtrlQ()
 	return InsertKey(ch);
 }
 
-int Edit::ProcessInsPlainText(const wchar_t *str)
+bool Edit::ProcessInsPlainText(const wchar_t *str)
 {
 	if (*str) {
 		InsertString(str);
-		return TRUE;
+		return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
-int Edit::InsertKey(FarKey Key)
+bool Edit::InsertKey(FarKey Key)
 {
 	bool changed = false;
-	wchar_t *NewStr;
 
 	if (Flags.Check(FEDITLINE_READONLY | FEDITLINE_DROPDOWNBOX))
-		return (TRUE);
+		return true;
 
 	if (Key == KEY_TAB && Flags.Check(FEDITLINE_OVERTYPE)) {
 		PrevCurPos = CurPos;
 		CursorPos+= TabSize - (CursorPos % TabSize);
 		SetCellCurPos(CursorPos);
-		return TRUE;
+		return true;
 	}
 
 	if (Mask && *Mask) {
@@ -1468,71 +1444,56 @@ int Edit::InsertKey(FarKey Key)
 								j--;
 							}
 
-							Str[i] = Str[j - 1];
+							m_Str.ReplaceChar(i, m_Str[j - 1]);
 							j--;
 						}
 					}
 				}
 
 				PrevCurPos = CurPos;
-				Str[CurPos++] = Key;
+				m_Str.ReplaceChar(CurPos++, Key);
 				changed = true;
 			} else {
 				// Здесь вариант для "ввели символ из маски", например для SetAttr - ввесли '.'
 				;    // char *Ptr=strchr(Mask+CurPos,Key);
 			}
-		} else if (CurPos < StrSize) {
+		} else if (CurPos < StrSize()) {
 			PrevCurPos = CurPos;
-			Str[CurPos++] = Key;
+			m_Str.ReplaceChar(CurPos++, Key);
 			changed = true;
 		}
 	} else {
-		if (MaxLength == -1 || StrSize < MaxLength) {
-			if (CurPos >= StrSize) {
-				if (!(NewStr = (wchar_t *)realloc(Str, (CurPos + 2) * sizeof(wchar_t))))
-					return FALSE;
-
-				Str = NewStr;
-				wmemset(&Str[StrSize], L' ', CurPos + 1 - StrSize);
-				Str[CurPos + 1] = 0;
-				StrSize = CurPos + 1;
-			} else if (!Flags.Check(FEDITLINE_OVERTYPE))
-				StrSize++;
-
-			if (Key == KEY_TAB && (TabExpandMode == EXPAND_NEWTABS || TabExpandMode == EXPAND_ALLTABS)) {
-				StrSize--;
-				InsertTab();
-				return TRUE;
+		if (MaxLength == -1 || StrSize() < MaxLength) {
+			if (CurPos >= StrSize()) {
+				m_Str.Replace(StrSize(), 0, L' ', CurPos - StrSize());
 			}
 
-			if (!(NewStr = (wchar_t *)realloc(Str, (StrSize + 1) * sizeof(wchar_t))))
-				return TRUE;
-
-			Str = NewStr;
+			if (Key == KEY_TAB && (TabExpandMode == EXPAND_NEWTABS || TabExpandMode == EXPAND_ALLTABS)) {
+				InsertTab();
+				return true;
+			}
 
 			if (!Flags.Check(FEDITLINE_OVERTYPE)) {
-				wmemmove(Str + CurPos + 1, Str + CurPos, StrSize - CurPos);
+				if (m_SelStart != -1) {
+					if (m_SelEnd != -1 && CurPos < m_SelEnd)
+						m_SelEnd++;
 
-				if (SelStart != -1) {
-					if (SelEnd != -1 && CurPos < SelEnd)
-						SelEnd++;
-
-					if (CurPos < SelStart)
-						SelStart++;
+					if (CurPos < m_SelStart)
+						m_SelStart++;
 				}
 			}
 
 			PrevCurPos = CurPos;
-			Str[CurPos++] = Key;
+			m_Str.Replace(CurPos++, 0, Key, 1);
 
 			wchar_t ch = static_cast<wchar_t>(Key);
 			CheckForSpecialWidthChars(&ch, 1);
 
 			changed = true;
 		} else if (Flags.Check(FEDITLINE_OVERTYPE)) {
-			if (CurPos < StrSize) {
+			if (CurPos < StrSize()) {
 				PrevCurPos = CurPos;
-				Str[CurPos++] = Key;
+				m_Str.ReplaceChar(CurPos++, Key);
 				changed = true;
 			}
 		}
@@ -1540,12 +1501,10 @@ int Edit::InsertKey(FarKey Key)
 			MessageBeep(MB_ICONHAND);*/
 	}
 
-	Str[StrSize] = 0;
-
 	if (changed)
 		Changed();
 
-	return TRUE;
+	return true;
 }
 
 void Edit::SetObjectColor(uint64_t Color, uint64_t SelColor, uint64_t ColorUnChanged)
@@ -1555,22 +1514,22 @@ void Edit::SetObjectColor(uint64_t Color, uint64_t SelColor, uint64_t ColorUnCha
 	this->ColorUnChanged = ColorUnChanged;
 }
 
-void Edit::GetString(wchar_t *Str, int MaxSize)
+void Edit::GetString(wchar_t *Str, int MaxSize) const
 {
-	// far_wcsncpy(Str, this->Str,MaxSize);
-	wmemmove(Str, this->Str, Min(StrSize, MaxSize - 1));
-	Str[Min(StrSize, MaxSize - 1)] = 0;
+	const auto Len = Min(StrSize(), MaxSize - 1);
+	wmemmove(Str, m_Str, Len);
+	Str[Len] = 0;
 	Str[MaxSize - 1] = 0;
 }
 
-void Edit::GetString(FARString &strStr)
+void Edit::GetString(FARString &strStr) const
 {
-	strStr = Str;
+	strStr = m_Str;
 }
 
 const wchar_t *Edit::GetStringAddr()
 {
-	return Str;
+	return m_Str;
 }
 
 void Edit::SetHiString(const wchar_t *Str)
@@ -1620,8 +1579,8 @@ void Edit::CheckForSpecialWidthChars(const wchar_t *CheckStr, int Length)
 	if (HasSpecialWidthChars) return;
 
 	if (!CheckStr) {
-		CheckStr = Str;
-		Length = StrSize;
+		CheckStr = m_Str;
+		Length = StrSize();
 	}
 
 	for (int i = 0; i < Length; ++i) {
@@ -1680,12 +1639,12 @@ void Edit::SetBinaryString(const wchar_t *Str, int Length)
 
 		for (int i = 0, j = 0; j < maskLen && j < Length;) {
 			if (CheckCharMask(Mask[i])) {
-				int goLoop = FALSE;
+				bool goLoop = false;
 
 				if (KeyMatchedMask(Str[j]))
 					InsertKey(Str[j]);
 				else
-					goLoop = TRUE;
+					goLoop = true;
 
 				j++;
 
@@ -1705,23 +1664,13 @@ void Edit::SetBinaryString(const wchar_t *Str, int Length)
 		*/
 		RefreshStrByMask(!*Str);
 	} else {
-		wchar_t *NewStr = (wchar_t *)malloc((Length + 1) * sizeof(wchar_t));
-
-		if (!NewStr)
-			return;
-
-		free(this->Str);
-
-		this->Str = NewStr;
-		StrSize = Length;
-		wmemcpy(this->Str, Str, Length);
-		this->Str[Length] = 0;
+		m_Str = FARString(Str, Length);
 
 		if (TabExpandMode == EXPAND_ALLTABS)
 			ExpandTabs();
 
 		PrevCurPos = CurPos;
-		CurPos = StrSize;
+		CurPos = StrSize();
 
 		HasSpecialWidthChars=false;
 		CheckForSpecialWidthChars();
@@ -1732,45 +1681,44 @@ void Edit::SetBinaryString(const wchar_t *Str, int Length)
 
 void Edit::GetBinaryString(const wchar_t **Str, const wchar_t **EOL, int &Length)
 {
-	*Str = this->Str;
+	*Str = m_Str;
 
 	if (EOL)
 		*EOL = EOL_TYPE_CHARS[EndType];
 
-	Length = StrSize;    //???
+	Length = StrSize();    //???
 }
 
-int Edit::GetSelString(wchar_t *Str, int MaxSize)
+bool Edit::GetSelString(wchar_t *Str, int MaxSize)
 {
-	if (SelStart == -1 || (SelEnd != -1 && SelEnd <= SelStart) || SelStart >= StrSize) {
+	if (m_SelStart == -1 || (m_SelEnd != -1 && m_SelEnd <= m_SelStart) || m_SelStart >= StrSize()) {
 		*Str = 0;
-		return FALSE;
+		return false;
 	}
 
 	int CopyLength;
 
-	if (SelEnd == -1)
+	if (m_SelEnd == -1)
 		CopyLength = MaxSize;
 	else
-		CopyLength = Min(MaxSize, SelEnd - SelStart + 1);
+		CopyLength = Min(MaxSize, m_SelEnd - m_SelStart + 1);
 
-	far_wcsncpy(Str, this->Str + SelStart, CopyLength);
-	return TRUE;
+	far_wcsncpy(Str, m_Str + m_SelStart, CopyLength);
+	return true;
 }
 
-int Edit::GetSelString(FARString &strStr)
+bool Edit::GetSelString(FARString &Str)
 {
-	if (SelStart == -1 || (SelEnd != -1 && SelEnd <= SelStart) || SelStart >= StrSize) {
-		strStr.Clear();
-		return FALSE;
+	if (m_SelStart == -1 || (m_SelEnd != -1 && m_SelEnd <= m_SelStart) || m_SelStart >= StrSize()) {
+		Str.Clear();
+		return false;
 	}
 
-	int CopyLength;
-	CopyLength = SelEnd - SelStart + 1;
-	wchar_t *lpwszStr = strStr.GetBuffer(CopyLength + 1);
-	far_wcsncpy(lpwszStr, this->Str + SelStart, CopyLength);
-	strStr.ReleaseBuffer();
-	return TRUE;
+	int CopyLength = m_SelEnd - m_SelStart + 1;
+	wchar_t *Buf = Str.GetBuffer(CopyLength + 1);
+	far_wcsncpy(Buf, m_Str + m_SelStart, CopyLength);
+	Str.ReleaseBuffer();
+	return true;
 }
 
 void Edit::InsertString(const wchar_t *Str)
@@ -1786,8 +1734,6 @@ void Edit::InsertString(const wchar_t *Str)
 
 void Edit::InsertBinaryString(const wchar_t *Str, int Length)
 {
-	wchar_t *NewStr;
-
 	if (Flags.Check(FEDITLINE_READONLY | FEDITLINE_DROPDOWNBOX))
 		return;
 
@@ -1798,7 +1744,7 @@ void Edit::InsertBinaryString(const wchar_t *Str, int Length)
 		int MaskLen = StrLength(Mask);
 
 		if (Pos < MaskLen) {
-			//_SVS(SysLog(L"InsertBinaryString ==> Str='%ls' (Length=%d) Mask='%ls'",Str,Length,Mask+Pos));
+			//_SVS(SysLog(L"InsertBinaryString ==> m_Str='%ls' (Length=%d) Mask='%ls'",m_Str,Length,Mask+Pos));
 			int StrLen = (MaskLen - Pos > Length) ? Length : MaskLen - Pos;
 
 			/* $ 15.11.2000 KM
@@ -1807,13 +1753,13 @@ void Edit::InsertBinaryString(const wchar_t *Str, int Length)
 			*/
 			for (int i = Pos, j = 0; j < StrLen + Pos;) {
 				if (CheckCharMask(Mask[i])) {
-					int goLoop = FALSE;
+					bool goLoop = false;
 
 					if (j < Length && KeyMatchedMask(Str[j])) {
 						InsertKey(Str[j]);
-						//_SVS(SysLog(L"InsertBinaryString ==> InsertKey(Str[%d]='%c');",j,Str[j]));
+						//_SVS(SysLog(L"InsertBinaryString ==> InsertKey(m_Str[%d]='%c');",j,m_Str[j]));
 					} else
-						goLoop = TRUE;
+						goLoop = true;
 
 					j++;
 
@@ -1832,47 +1778,23 @@ void Edit::InsertBinaryString(const wchar_t *Str, int Length)
 		}
 
 		RefreshStrByMask();
-		//_SVS(SysLog(L"InsertBinaryString ==> this->Str='%ls'",this->Str));
+		//_SVS(SysLog(L"InsertBinaryString ==> this->m_Str='%ls'",this->m_Str));
 	} else {
-		if (MaxLength != -1 && StrSize + Length > MaxLength) {
+		if (MaxLength != -1 && StrSize() + Length > MaxLength) {
 			// коррекция вставляемого размера, если определен MaxLength
-			if (StrSize < MaxLength) {
-				Length = MaxLength - StrSize;
+			if (StrSize() < MaxLength) {
+				Length = MaxLength - StrSize();
 			}
 		}
 
-		if (MaxLength == -1 || StrSize + Length <= MaxLength) {
-			if (CurPos > StrSize) {
-				if (!(NewStr = (wchar_t *)realloc(this->Str, (CurPos + 1) * sizeof(wchar_t))))
-					return;
-
-				this->Str = NewStr;
-				wmemset(&this->Str[StrSize], L' ', CurPos - StrSize);
-				this->Str[CurPos] = 0;
-				StrSize = CurPos;
+		if (MaxLength == -1 || StrSize() + Length <= MaxLength) {
+			if (CurPos > StrSize()) {
+				m_Str.Replace(StrSize(), 0, L' ', CurPos - StrSize());
 			}
 
-			int TmpSize = StrSize - CurPos;
-			wchar_t *TmpStr = new (std::nothrow) wchar_t[TmpSize + 16];
-
-			if (!TmpStr)
-				return;
-
-			wmemcpy(TmpStr, &this->Str[CurPos], TmpSize);
-			StrSize+= Length;
-
-			if (!(NewStr = (wchar_t *)realloc(this->Str, (StrSize + 1) * sizeof(wchar_t)))) {
-				delete[] TmpStr;
-				return;
-			}
-
-			this->Str = NewStr;
-			wmemcpy(&this->Str[CurPos], Str, Length);
+			m_Str.Replace(CurPos, 0, Str, Length);
 			PrevCurPos = CurPos;
 			CurPos+= Length;
-			wmemcpy(this->Str + CurPos, TmpStr, TmpSize);
-			this->Str[StrSize] = 0;
-			delete[] TmpStr;
 
 			if (TabExpandMode == EXPAND_ALLTABS)
 				ExpandTabs();
@@ -1887,7 +1809,7 @@ void Edit::InsertBinaryString(const wchar_t *Str, int Length)
 
 int Edit::GetLength()
 {
-	return (StrSize);
+	return StrSize();
 }
 
 // Функция установки маски ввода в объект Edit
@@ -1906,32 +1828,21 @@ void Edit::SetInputMask(const wchar_t *InputMask)
 }
 
 // Функция обновления состояния строки ввода по содержимому Mask
-void Edit::RefreshStrByMask(int InitMode)
+void Edit::RefreshStrByMask(bool InitMode)
 {
 	if (Mask && *Mask) {
 		int MaskLen = StrLength(Mask);
 
-		if (StrSize != MaskLen) {
-			wchar_t *NewStr = (wchar_t *)realloc(Str, (MaskLen + 1) * sizeof(wchar_t));
-
-			if (!NewStr)
-				return;
-
-			Str = NewStr;
-
-			for (int i = StrSize; i < MaskLen; i++)
-				Str[i] = L' ';
-
-			StrSize = MaxLength = MaskLen;
-			Str[StrSize] = 0;
-		}
+		if (StrSize() > MaskLen)
+			m_Str.Truncate(MaskLen);
+		else
+			m_Str.Replace(StrSize(), 0, L' ', MaskLen - StrSize());
 
 		for (int i = 0; i < MaskLen; i++) {
-			if (InitMode)
-				Str[i] = L' ';
-
 			if (!CheckCharMask(Mask[i]))
-				Str[i] = Mask[i];
+				m_Str.ReplaceChar(i, Mask[i]);
+			else if (InitMode)
+				m_Str.ReplaceChar(i, L' ');
 		}
 	}
 }
@@ -1958,7 +1869,7 @@ int Edit::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 		if (WINPORT(GetTickCount)() - PrevDoubleClick <= WINPORT(GetDoubleClickTime)()
 				&& MouseEvent->dwEventFlags != MOUSE_MOVED && PrevPosition.X == MouseEvent->dwMousePosition.X
 				&& PrevPosition.Y == MouseEvent->dwMousePosition.Y) {
-			Select(0, StrSize);
+			Select(0, StrSize());
 			PrevDoubleClick = 0;
 			PrevPosition.X = 0;
 			PrevPosition.Y = 0;
@@ -1986,39 +1897,30 @@ int Edit::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 int Edit::Search(const FARString &Str, FARString &ReplaceStr, int Position, int Case, int WholeWords,
 		int Reverse, int Regexp, int *SearchLength)
 {
-	return SearchString(this->Str, this->StrSize, Str, ReplaceStr, CurPos, Position, Case, WholeWords,
+	return SearchString(m_Str, StrSize(), Str, ReplaceStr, CurPos, Position, Case, WholeWords,
 			Reverse, Regexp, SearchLength, WordDiv());
 }
 
 void Edit::InsertTab()
 {
-	wchar_t *TabPtr;
-	int Pos, S;
-
 	if (Flags.Check(FEDITLINE_READONLY))
 		return;
 
-	Pos = CurPos;
-	S = TabSize - (Pos % TabSize);
+	const int Pos = CurPos;
+	const int S = TabSize - (Pos % TabSize);
 
-	if (SelStart != -1) {
-		if (Pos <= SelStart) {
-			SelStart+= S - (Pos == SelStart ? 0 : 1);
+	if (m_SelStart != -1) {
+		if (Pos <= m_SelStart) {
+			m_SelStart+= S - (Pos == m_SelStart ? 0 : 1);
 		}
 
-		if (SelEnd != -1 && Pos < SelEnd) {
-			SelEnd+= S;
+		if (m_SelEnd != -1 && Pos < m_SelEnd) {
+			m_SelEnd+= S;
 		}
 	}
 
-	int PrevStrSize = StrSize;
-	StrSize+= S;
 	CurPos+= S;
-	Str = (wchar_t *)realloc(Str, (StrSize + 1) * sizeof(wchar_t));
-	TabPtr = Str + Pos;
-	wmemmove(TabPtr + S, TabPtr, PrevStrSize - Pos);
-	wmemset(TabPtr, L' ', S);
-	Str[StrSize] = 0;
+	m_Str.Replace(Pos, 0, L' ', S);
 	Changed();
 }
 
@@ -2032,32 +1934,25 @@ void Edit::ExpandTabs()
 
 	bool changed = false;
 
-	while ((TabPtr = (wchar_t *)wmemchr(Str + Pos, L'\t', StrSize - Pos))) {
+	while ((TabPtr = (wchar_t *)wmemchr(m_Str + Pos, L'\t', StrSize() - Pos))) {
 		changed = true;
-		Pos = (int)(TabPtr - Str);
-		S = TabSize - ((int)(TabPtr - Str) % TabSize);
+		Pos = (int)(TabPtr - m_Str);
+		S = TabSize - ((int)(TabPtr - m_Str) % TabSize);
 
-		if (SelStart != -1) {
-			if (Pos <= SelStart) {
-				SelStart+= S - (Pos == SelStart ? 0 : 1);
+		if (m_SelStart != -1) {
+			if (Pos <= m_SelStart) {
+				m_SelStart+= S - (Pos == m_SelStart ? 0 : 1);
 			}
 
-			if (SelEnd != -1 && Pos < SelEnd) {
-				SelEnd+= S - 1;
+			if (m_SelEnd != -1 && Pos < m_SelEnd) {
+				m_SelEnd+= S - 1;
 			}
 		}
-
-		int PrevStrSize = StrSize;
-		StrSize+= S - 1;
 
 		if (CurPos > Pos)
 			CurPos+= S - 1;
 
-		Str = (wchar_t *)realloc(Str, (StrSize + 1) * sizeof(wchar_t));
-		TabPtr = Str + Pos;
-		wmemmove(TabPtr + S, TabPtr + 1, PrevStrSize - Pos);
-		wmemset(TabPtr, L' ', S);
-		Str[StrSize] = 0;
+		m_Str.Replace(Pos, 1, L' ', S);
 	}
 
 	if (changed)
@@ -2097,7 +1992,7 @@ int Edit::RealPosToCell(int PrevLength, int PrevPos, int Pos, int *CorrectPos)
 
 	// Если предыдущая позиция за концом строки, то табов там точно нет и
 	// вычислять особо ничего не надо, иначе производим вычисление
-	if (PrevPos >= StrSize || !HasSpecialWidthChars)
+	if (PrevPos >= StrSize() || !HasSpecialWidthChars)
 		TabPos+= Pos - PrevPos;
 	else {
 		// Начинаем вычисление с предыдущей позиции
@@ -2105,10 +2000,10 @@ int Edit::RealPosToCell(int PrevLength, int PrevPos, int Pos, int *CorrectPos)
 
 		// Проходим по всем символам до позиции поиска, если она ещё в пределах строки,
 		// либо до конца строки, если позиция поиска за пределами строки
-		for (; Index < Min(Pos, StrSize); Index++)
+		for (; Index < Min(Pos, StrSize()); Index++)
 
 			// Обрабатываем табы
-			if (Str[Index] == L'\t' && TabExpandMode != EXPAND_ALLTABS) {
+			if (m_Str[Index] == L'\t' && TabExpandMode != EXPAND_ALLTABS) {
 				// Если есть необходимость делать корректировку табов и эта коректировка
 				// ещё не проводилась, то увеличиваем длину обрабатываемой строки на еденицу
 				if (bCorrectPos) {
@@ -2122,15 +2017,15 @@ int Edit::RealPosToCell(int PrevLength, int PrevPos, int Pos, int *CorrectPos)
 			}
 			// Обрабатываем все остальные символы
 			else {
-				if (CharClasses::IsFullWidth(Str[Index])) {
+				if (CharClasses::IsFullWidth(m_Str[Index])) {
 					TabPos+= 2;
-				} else if (!CharClasses::IsXxxfix(Str[Index])) {
+				} else if (!CharClasses::IsXxxfix(m_Str[Index])) {
 					TabPos++;
 				}
 			}
 
 		// Если позиция находится за пределами строки, то там точно нет табов и всё просто
-		if (Pos >= StrSize)
+		if (Pos >= StrSize())
 			TabPos+= Pos - Index;
 	}
 	return TabPos;
@@ -2141,12 +2036,12 @@ int Edit::CellPosToReal(int Pos)
 	if (!HasSpecialWidthChars) return Pos;
 	int Index = 0;
 	for (int CellPos = 0; CellPos < Pos; Index++) {
-		if (Index >= StrSize) {
+		if (Index >= StrSize()) {
 			Index+= Pos - CellPos;
 			break;
 		}
 
-		if (Str[Index] == L'\t' && TabExpandMode != EXPAND_ALLTABS) {
+		if (m_Str[Index] == L'\t' && TabExpandMode != EXPAND_ALLTABS) {
 			int NewCellPos = CellPos + TabSize - (CellPos % TabSize);
 
 			if (NewCellPos > Pos)
@@ -2154,8 +2049,8 @@ int Edit::CellPosToReal(int Pos)
 
 			CellPos = NewCellPos;
 		} else {
-			CellPos+= CharClasses::IsFullWidth(Str[Index]) ? 2 : CharClasses::IsXxxfix(Str[Index]) ? 0 : 1;
-			while (Index + 1 < StrSize && CharClasses::IsXxxfix(Str[Index + 1])) {
+			CellPos+= CharClasses::IsFullWidth(m_Str[Index]) ? 2 : CharClasses::IsXxxfix(m_Str[Index]) ? 0 : 1;
+			while (Index + 1 < StrSize() && CharClasses::IsXxxfix(m_Str[Index + 1])) {
 				Index++;
 			}
 		}
@@ -2165,76 +2060,67 @@ int Edit::CellPosToReal(int Pos)
 
 void Edit::SanitizeSelectionRange()
 {
-	if (HasSpecialWidthChars && SelEnd >= SelStart && SelStart >= 0) {
-		while (SelStart > 0 && CharClasses::IsXxxfix(Str[SelStart]))
-			--SelStart;
+	if (HasSpecialWidthChars && m_SelEnd >= m_SelStart && m_SelStart >= 0) {
+		while (m_SelStart > 0 && CharClasses::IsXxxfix(m_Str[m_SelStart]))
+			--m_SelStart;
 
-		while (SelEnd < StrSize && CharClasses::IsXxxfix(Str[SelEnd]))
-			++SelEnd;
+		while (m_SelEnd < StrSize() && CharClasses::IsXxxfix(m_Str[m_SelEnd]))
+			++m_SelEnd;
 	}
 
 	/* $ 24.06.2002 SKV
 	   Если начало выделения за концом строки, надо выделение снять.
 	   17.09.2002 возвращаю обратно. Глюкодром.
 	*/
-	if (SelEnd < SelStart && SelEnd != -1) {
-		SelStart = -1;
-		SelEnd = 0;
+	if (m_SelEnd < m_SelStart && m_SelEnd != -1) {
+		m_SelStart = -1;
+		m_SelEnd = 0;
 	}
 
-	if (SelStart == -1 && SelEnd == -1) {
-		SelStart = -1;
-		SelEnd = 0;
+	if (m_SelStart == -1 && m_SelEnd == -1) {
+		m_SelStart = -1;
+		m_SelEnd = 0;
 	}
 }
 
 void Edit::Select(int Start, int End)
 {
-	SelStart = Start;
-	SelEnd = End;
+	m_SelStart = Start;
+	m_SelEnd = End;
 
 	SanitizeSelectionRange();
 }
 
 void Edit::AddSelect(int Start, int End)
 {
-	if (Start < SelStart || SelStart == -1)
-		SelStart = Start;
+	if (Start < m_SelStart || m_SelStart == -1)
+		m_SelStart = Start;
 
-	if (End == -1 || (End > SelEnd && SelEnd != -1))
-		SelEnd = End;
+	if (End == -1 || (End > m_SelEnd && m_SelEnd != -1))
+		m_SelEnd = End;
 
-	if (SelEnd > StrSize)
-		SelEnd = StrSize;
+	if (m_SelEnd > StrSize())
+		m_SelEnd = StrSize();
 
 	SanitizeSelectionRange();
 }
 
 void Edit::GetSelection(int &Start, int &End)
 {
-	/* $ 17.09.2002 SKV
-	  Мало того, что это нарушение правил OO design'а,
-	  так это еще и источние багов.
-	*/
-	/*  if (SelEnd>StrSize+1)
-		SelEnd=StrSize+1;
-	  if (SelStart>StrSize+1)
-		SelStart=StrSize+1;*/
-	/* SKV $ */
-	Start = SelStart;
-	End = SelEnd;
+	Start = m_SelStart;
+	End = m_SelEnd;
 
-	if (End > StrSize)
-		End = -1;    // StrSize;
+	if (End > StrSize())
+		End = -1;
 
-	if (Start > StrSize)
-		Start = StrSize;
+	if (Start > StrSize())
+		Start = StrSize();
 }
 
 void Edit::GetRealSelection(int &Start, int &End)
 {
-	Start = SelStart;
-	End = SelEnd;
+	Start = m_SelStart;
+	End = m_SelEnd;
 }
 
 void Edit::DeleteBlock()
@@ -2242,29 +2128,28 @@ void Edit::DeleteBlock()
 	if (Flags.Check(FEDITLINE_READONLY | FEDITLINE_DROPDOWNBOX))
 		return;
 
-	if (SelStart == -1 || SelStart >= SelEnd)
+	if (m_SelStart == -1 || m_SelStart >= m_SelEnd)
 		return;
 
 	PrevCurPos = CurPos;
 
 	if (Mask && *Mask) {
-		for (int i = SelStart; i < SelEnd; i++) {
+		for (int i = m_SelStart; i < m_SelEnd; i++) {
 			if (CheckCharMask(Mask[i]))
-				Str[i] = L' ';
+				m_Str.ReplaceChar(i, L' ');
 		}
 
-		CurPos = SelStart;
+		CurPos = m_SelStart;
 	} else {
-		int From = SelStart, To = SelEnd;
+		int From = m_SelStart, To = m_SelEnd;
 
-		if (From > StrSize)
-			From = StrSize;
+		if (From > StrSize())
+			From = StrSize();
 
-		if (To > StrSize)
-			To = StrSize;
+		if (To > StrSize())
+			To = StrSize();
 
-		wmemmove(Str + From, Str + To, StrSize - To + 1);
-		StrSize-= To - From;
+		m_Str.Replace(From, To - From, L"", 0);
 
 		if (CurPos > From) {
 			if (CurPos < To)
@@ -2272,12 +2157,10 @@ void Edit::DeleteBlock()
 			else
 				CurPos-= To - From;
 		}
-
-		Str = (wchar_t *)realloc(Str, (StrSize + 1) * sizeof(wchar_t));
 	}
 
-	SelStart = -1;
-	SelEnd = 0;
+	m_SelStart = -1;
+	m_SelEnd = 0;
 	Flags.Clear(FEDITLINE_MARKINGBLOCK);
 
 	// OT: Проверка на корректность поведени строки при удалении и вставки
@@ -2342,8 +2225,8 @@ void Edit::ApplyColor()
 		DWORD64 Attr = CurItem.Color;
 		int Length = CurItem.EndPos - CurItem.StartPos + 1;
 
-		if (CurItem.StartPos + Length >= StrSize)
-			Length = StrSize - CurItem.StartPos;
+		if (CurItem.StartPos + Length >= StrSize())
+			Length = StrSize() - CurItem.StartPos;
 
 		// Получаем начальную позицию
 		int RealStart, Start;
@@ -2399,7 +2282,7 @@ void Edit::ApplyColor()
 				символ строки -- это таб, то делаем расчёт с учтом корректировки,
 				иначе ничего не вычисялем и берём старые значения
 			*/
-			if (CorrectPos && EndPos < StrSize && Str[EndPos] == L'\t') {
+			if (CorrectPos && EndPos < StrSize() && m_Str[EndPos] == L'\t') {
 				RealEnd = RealPosToCell(TabPos, Pos, ++EndPos, nullptr);
 				End = RealEnd - LeftPos;
 			} else {
@@ -2464,18 +2347,22 @@ void Edit::ApplyColor()
 void Edit::Xlat(bool All)
 {
 	//   Для CmdLine - если нет выделения, преобразуем всю строку
-	if (All && SelStart == -1 && !SelEnd) {
-		::Xlat(Str, 0, StrLength(Str), Opt.XLat.Flags);
+	if (All && m_SelStart == -1 && !m_SelEnd) {
+		auto Buf = m_Str.GetBuffer();
+		::Xlat(Buf, 0, StrLength(Buf), Opt.XLat.Flags);
+		m_Str.ReleaseBuffer();
 		Changed();
 		Show();
 		return;
 	}
 
-	if (SelStart != -1 && SelStart != SelEnd) {
-		if (SelEnd == -1)
-			SelEnd = StrLength(Str);
+	if (m_SelStart != -1 && m_SelStart != m_SelEnd) {
+		if (m_SelEnd == -1)
+			m_SelEnd = StrLength(m_Str);
 
-		::Xlat(Str, SelStart, SelEnd, Opt.XLat.Flags);
+		auto Buf = m_Str.GetBuffer();
+		::Xlat(Buf, m_SelStart, m_SelEnd, Opt.XLat.Flags);
+		m_Str.ReleaseBuffer();
 		Changed();
 		Show();
 	}
@@ -2488,27 +2375,29 @@ void Edit::Xlat(bool All)
 		   Обрабатываем только то слово, на котором стоит курсор, или то слово, что
 		   находится левее позиции курсора на 1 символ
 		*/
-		int start = CurPos, end, StrSize = StrLength(Str);
+		int start = CurPos, end, StrSize = StrLength(m_Str);
 		bool DoXlat = true;
 
-		if (IsWordDiv(Opt.XLat.strWordDivForXlat, Str[start])) {
+		if (IsWordDiv(Opt.XLat.strWordDivForXlat, m_Str[start])) {
 			if (start)
 				start--;
 
-			DoXlat = (!IsWordDiv(Opt.XLat.strWordDivForXlat, Str[start]));
+			DoXlat = (!IsWordDiv(Opt.XLat.strWordDivForXlat, m_Str[start]));
 		}
 
 		if (DoXlat) {
-			while (start >= 0 && !IsWordDiv(Opt.XLat.strWordDivForXlat, Str[start]))
+			while (start >= 0 && !IsWordDiv(Opt.XLat.strWordDivForXlat, m_Str[start]))
 				start--;
 
 			start++;
 			end = start + 1;
 
-			while (end < StrSize && !IsWordDiv(Opt.XLat.strWordDivForXlat, Str[end]))
+			while (end < StrSize && !IsWordDiv(Opt.XLat.strWordDivForXlat, m_Str[end]))
 				end++;
 
-			::Xlat(Str, start, end, Opt.XLat.Flags);
+			auto Buf = m_Str.GetBuffer();
+			::Xlat(Buf, start, end, Opt.XLat.Flags);
+			m_Str.ReleaseBuffer();
 			Changed();
 			Show();
 		}
@@ -2533,12 +2422,10 @@ bool Edit::CharInMask(wchar_t Char, wchar_t Mask)
 			|| (Mask == EDMASK_HEX && std::iswxdigit(Char));
 }
 
-int Edit::CheckCharMask(wchar_t Chr)
+bool Edit::CheckCharMask(wchar_t Chr)
 {
 	return (Chr == EDMASK_ANY || Chr == EDMASK_DIGIT || Chr == EDMASK_DIGITS || Chr == EDMASK_DSS
-				   || Chr == EDMASK_ALPHA || Chr == EDMASK_HEX)
-			? TRUE
-			: FALSE;
+				   || Chr == EDMASK_ALPHA || Chr == EDMASK_HEX);
 }
 
 void Edit::SetDialogParent(DWORD Sets)
@@ -2563,100 +2450,10 @@ void Edit::Changed(bool DelBlock)
 	}
 }
 
-/*
-SystemCPEncoder::SystemCPEncoder(int nCodePage)
-{
-	m_nCodePage = nCodePage;
-	m_nRefCount = 1;
-	m_strName.Format(L"codepage - %d", m_nCodePage);
-}
-
-SystemCPEncoder::~SystemCPEncoder()
-{
-}
-
-int __stdcall SystemCPEncoder::AddRef()
-{
-	return ++m_nRefCount;
-}
-
-int __stdcall SystemCPEncoder::Release()
-{
-	if (!(--m_nRefCount))
-	{
-		delete this;
-		return 0;
-	}
-
-	return m_nRefCount;
-}
-
-const wchar_t* __stdcall SystemCPEncoder::GetName()
-{
-	return (const wchar_t*)m_strName;
-}
-
-int __stdcall SystemCPEncoder::Encode(
-	const char *lpString,
-	int nLength,
-	wchar_t *lpwszResult,
-	int nResultLength
-)
-{
-	int length = MultiByteToWideChar(m_nCodePage, 0, lpString, nLength, nullptr, 0);
-
-	if (lpwszResult)
-		length = MultiByteToWideChar(m_nCodePage, 0, lpString, nLength, lpwszResult, nResultLength);
-
-	return length;
-}
-
-int __stdcall SystemCPEncoder::Decode(
-	const wchar_t *lpwszString,
-	int nLength,
-	char *lpResult,
-	int nResultLength
-)
-{
-	int length = WideCharToMultiByte(m_nCodePage, 0, lpwszString, nLength, nullptr, 0, nullptr, nullptr);
-
-	if (lpResult)
-		length = WideCharToMultiByte(m_nCodePage, 0, lpwszString, nLength, lpResult, nResultLength, nullptr, nullptr);
-
-	return length;
-}
-
-int __stdcall SystemCPEncoder::Transcode(
-	const wchar_t *lpwszString,
-	int nLength,
-	ICPEncoder *pFrom,
-	wchar_t *lpwszResult,
-	int nResultLength
-)
-{
-	int length = pFrom->Decode(lpwszString, nLength, nullptr, 0);
-	char *lpDecoded = (char *)malloc(length);
-
-	if (lpDecoded)
-	{
-		pFrom->Decode(lpwszString, nLength, lpDecoded, length);
-		length = Encode(lpDecoded, length, nullptr, 0);
-
-		if (lpwszResult)
-			length = Encode(lpDecoded, length, lpwszResult, nResultLength);
-
-		free(lpDecoded);
-		return length;
-	}
-
-	return -1;
-}
-*/
-
-EditControl::EditControl(ScreenObject *pOwner, Callback *aCallback, bool bAllocateData, History *iHistory,
+EditControl::EditControl(ScreenObject *pOwner, Callback *aCallback, History *iHistory,
 		FarList *iList, DWORD iFlags)
 	:
-	Edit(pOwner, aCallback, bAllocateData),
+	Edit(pOwner, aCallback),
 	pCustomCompletionList(nullptr),
 	pHistory(iHistory),
 	pList(iList),
@@ -2670,7 +2467,7 @@ EditControl::EditControl(ScreenObject *pOwner, Callback *aCallback, bool bAlloca
 
 void EditControl::Show()
 {
-	if (X2 - X1 + 1 > StrSize) {
+	if (X2 - X1 + 1 > StrSize()) {
 		SetLeftPos(0);
 	}
 	Edit::Show();
@@ -2741,7 +2538,7 @@ void EditControl::RemoveSelectedCompletionMenuItem(VMenu &ComplMenu)
 void EditControl::AutoCompleteProcMenu(int &Result, bool Manual, bool DelBlock, FarKey &BackKey)
 {
 	VMenu ComplMenu(nullptr, nullptr, 0, 0);
-	FARString strTemp = Str;
+	FARString strTemp = m_Str;
 	PopulateCompletionMenu(ComplMenu, strTemp);
 	ComplMenu.SetBottomTitle(((!pCustomCompletionList && pHistory)
 					? Msg::EditControlHistoryFooter
@@ -2753,19 +2550,19 @@ void EditControl::AutoCompleteProcMenu(int &Result, bool Manual, bool DelBlock, 
 
 		if (!DelBlock && Opt.AutoComplete.AppendCompletion
 				&& (!Flags.Check(FEDITLINE_PERSISTENTBLOCKS) || Opt.AutoComplete.ShowList)) {
-			int SelStart = GetLength();
+			int m_SelStart = GetLength();
 
 			// magic
-			if (IsSlash(Str[SelStart - 1]) && Str[SelStart - 2] == L'"'
-					&& IsSlash(ComplMenu.GetItemPtr(0)->strName.At(SelStart - 2))) {
-				Str[SelStart - 2] = Str[SelStart - 1];
-				StrSize--;
-				SelStart--;
+			if (IsSlash(m_Str[m_SelStart - 1]) && m_Str[m_SelStart - 2] == L'"'
+					&& IsSlash(ComplMenu.GetItemPtr(0)->strName.At(m_SelStart - 2))) {
+				m_Str.ReplaceChar(m_SelStart - 2, m_Str[m_SelStart - 1]);
+				m_Str.Truncate(StrSize() - 1);
+				m_SelStart--;
 				CurPos--;
 			}
 
-			InsertString(ComplMenu.GetItemPtr(0)->strName.SubStr(SelStart));
-			Select(SelStart, GetLength());
+			InsertString(ComplMenu.GetItemPtr(0)->strName.SubStr(m_SelStart));
+			Select(m_SelStart, GetLength());
 			Show();
 		}
 		if (Opt.AutoComplete.ShowList) {
@@ -2819,22 +2616,22 @@ void EditControl::AutoCompleteProcMenu(int &Result, bool Manual, bool DelBlock, 
 											&& StrCmpI(strTemp, ComplMenu.GetItemPtr(0)->strName))) {
 								if (MenuKey != KEY_BS && MenuKey != KEY_DEL && MenuKey != KEY_NUMDEL
 										&& Opt.AutoComplete.AppendCompletion) {
-									int SelStart = GetLength();
+									int m_SelStart = GetLength();
 
 									// magic
-									if (IsSlash(Str[SelStart - 1]) && Str[SelStart - 2] == L'"'
-											&& IsSlash(ComplMenu.GetItemPtr(0)->strName.At(SelStart - 2))) {
-										Str[SelStart - 2] = Str[SelStart - 1];
-										StrSize--;
-										SelStart--;
+									if (IsSlash(m_Str[m_SelStart - 1]) && m_Str[m_SelStart - 2] == L'"'
+											&& IsSlash(ComplMenu.GetItemPtr(0)->strName.At(m_SelStart - 2))) {
+										m_Str.ReplaceChar(m_SelStart - 2, m_Str[m_SelStart - 1]);
+										m_Str.Truncate(StrSize() - 1);
+										m_SelStart--;
 										CurPos--;
 									}
 
 									DisableCallback DC(m_Callback.Active);
-									InsertString(ComplMenu.GetItemPtr(0)->strName.SubStr(SelStart));
+									InsertString(ComplMenu.GetItemPtr(0)->strName.SubStr(m_SelStart));
 									if (X2 - X1 > GetLength())
 										SetLeftPos(0);
-									Select(SelStart, GetLength());
+									Select(m_SelStart, GetLength());
 								}
 								ComplMenu.AddItem(&EmptyItem, 0);
 								SetMenuPos(ComplMenu);
@@ -2944,7 +2741,7 @@ int EditControl::AutoCompleteProc(bool Manual, bool DelBlock, FarKey &BackKey)
 	int Result = 0;
 	static int Reenter = 0;
 
-	if (ECFlags.Check(EC_ENABLEAUTOCOMPLETE) && *Str && !Reenter
+	if (ECFlags.Check(EC_ENABLEAUTOCOMPLETE) && *m_Str && !Reenter
 			&& (Manual || CtrlObject->Macro.GetState() == MACROSTATE_NOMACRO)) {
 		Reenter++;
 		AutoCompleteProcMenu(Result, Manual, DelBlock, BackKey);
@@ -2982,7 +2779,7 @@ int EditControl::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 					if (SelectionStart == -1) {
 						SelectionStart = CurPos;
 					}
-					Select(Min(SelectionStart, CurPos), Min(StrSize, Max(SelectionStart, CurPos)));
+					Select(Min(SelectionStart, CurPos), Min(StrSize(), Max(SelectionStart, CurPos)));
 					Show();
 				}
 			}
@@ -2995,13 +2792,13 @@ int EditControl::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 
 void EditControl::EnableAC(bool Permanent)
 {
-	ACState = Permanent ? true : ECFlags.Check(EC_ENABLEAUTOCOMPLETE) != FALSE;
+	ACState = Permanent || ECFlags.Check(EC_ENABLEAUTOCOMPLETE);
 	ECFlags.Set(EC_ENABLEAUTOCOMPLETE);
 }
 
 void EditControl::DisableAC(bool Permanent)
 {
-	ACState = Permanent ? false : ECFlags.Check(EC_ENABLEAUTOCOMPLETE) != FALSE;
+	ACState = !Permanent && ECFlags.Check(EC_ENABLEAUTOCOMPLETE);
 	ECFlags.Clear(EC_ENABLEAUTOCOMPLETE);
 }
 

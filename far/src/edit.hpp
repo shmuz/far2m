@@ -53,9 +53,9 @@ enum FLAGS_CLASS_EDITLINE
 	FEDITLINE_OVERTYPE         = 0x00004000,
 	FEDITLINE_DELREMOVESBLOCKS = 0x00008000,	// Del удаляет блоки (Opt.EditorDelRemovesBlocks)
 	FEDITLINE_PERSISTENTBLOCKS = 0x00010000,	// Постоянные блоки (Opt.EditorPersistentBlocks)
-	FEDITLINE_SHOWWHITESPACE = 0x00020000,
-	FEDITLINE_READONLY       = 0x00040000,
-	FEDITLINE_CURSORVISIBLE  = 0x00080000,
+	FEDITLINE_SHOWWHITESPACE   = 0x00020000,
+	FEDITLINE_READONLY         = 0x00040000,
+	FEDITLINE_CURSORVISIBLE    = 0x00080000,
 	// Если ни один из FEDITLINE_PARENT_ не указан (или указаны оба), то Edit
 	// явно не в диалоге юзается.
 	FEDITLINE_PARENT_SINGLELINE = 0x00100000,		// обычная строка ввода в диалоге
@@ -78,51 +78,11 @@ enum SetCPFlags
 	SETCP_MB2WCERROR = 0x00000002,
 	SETCP_OTHERERROR = 0x10000000,
 };
-/*
-interface ICPEncoder
-{
-
-	virtual int __stdcall AddRef() = 0;
-	virtual int __stdcall Release() = 0;
-
-	virtual const wchar_t* __stdcall GetName() = 0;
-	virtual int __stdcall Encode(const char *lpString, int nLength, wchar_t *lpwszResult, int nResultLength) = 0;
-	virtual int __stdcall Decode(const wchar_t *lpwszString, int nLength, char *lpResult, int nResultLength) = 0;
-	virtual int __stdcall Transcode(const wchar_t *lpwszString, int nLength, ICPEncoder *pFrom, wchar_t *lpwszResult, int nResultLength) = 0;
-};
-
-class SystemCPEncoder : public ICPEncoder
-{
-
-	public:
-
-		int m_nRefCount;
-		int m_nCodePage; //system single-byte codepage
-
-		FARString m_strName;
-
-	public:
-
-		SystemCPEncoder(int nCodePage);
-		virtual ~SystemCPEncoder();
-
-		virtual int __stdcall AddRef();
-		virtual int __stdcall Release();
-
-		virtual const wchar_t* __stdcall GetName();
-		virtual int __stdcall Encode(const char *lpString, int nLength, wchar_t *lpwszResult, int nResultLength);
-		virtual int __stdcall Decode(const wchar_t *lpwszString, int nLength, char *lpResult, int nResultLength);
-		virtual int __stdcall Transcode(const wchar_t *lpwszString, int nLength, ICPEncoder *pFrom, wchar_t *lpwszResult, int nResultLength);
-};
-*/
-class Dialog;
-class Editor;
 
 class Edit : public ScreenObject
 {
 	friend class DlgEdit;
 	friend class Editor;
-	friend class CommandLine;
 	friend class EditControl;
 
 public:
@@ -140,9 +100,7 @@ public:
 
 private:
 	std::vector<wchar_t> OutStr;
-	wchar_t *Str;
-
-	int StrSize;
+	FARString m_Str;
 	int MaxLength;
 
 	wchar_t *Mask;
@@ -162,8 +120,8 @@ private:
 	int TabExpandMode;
 
 	int MSelStart;
-	int SelStart;
-	int SelEnd;
+	int m_SelStart;
+	int m_SelEnd;
 
 	int EndType;
 
@@ -177,23 +135,24 @@ private:
 
 	std::unique_ptr<MenuFilesSuggestor> m_pSuggestor;
 	bool HasSpecialWidthChars;
+
 private:
 	virtual void DisplayObject();
-	int InsertKey(FarKey Key);
+	bool InsertKey(FarKey Key);
 	int RecurseProcessKey(FarKey Key);
 	void DeleteBlock();
 	void ApplyColor();
 	int GetNextCursorPos(int Position, int Where);
-	void RefreshStrByMask(int InitMode = FALSE);
+	void RefreshStrByMask(bool InitMode = false);
 	bool KeyMatchedMask(int Key) const;
 	static bool CharInMask(wchar_t Char, wchar_t Mask);
 
 	int ProcessCtrlQ();
 	int ProcessInsDate(const wchar_t *Str);
-	int ProcessInsPlainText(const wchar_t *Str);
+	bool ProcessInsPlainText(const wchar_t *Str);
 
-	int CheckCharMask(wchar_t Chr);
-	int ProcessInsPath(FarKey Key, int PrevSelStart = -1, int PrevSelEnd = 0);
+	bool CheckCharMask(wchar_t Chr);
+	bool ProcessInsPath(FarKey Key, int PrevSelStart = -1, int PrevSelEnd = 0);
 
 	int RealPosToCell(int PrevLength, int PrevPos, int Pos, int *CorrectPos);
 	void SanitizeSelectionRange();
@@ -210,12 +169,13 @@ protected:
 	inline int CalcPosBwd() const { return CalcPosBwdTo(CurPos); }
 
 public:
-	Edit(ScreenObject *pOwner = nullptr, Callback *aCallback = nullptr, bool bAllocateData = true);
+	Edit(ScreenObject *pOwner = nullptr, Callback *aCallback = nullptr);
 	virtual ~Edit();
 
 public:
 	DWORD SetCodePage(UINT codepage);	// BUGBUG
 	UINT GetCodePage();					// BUGBUG
+	int StrSize() const { return m_Str.GetLength(); }
 
 	virtual void FastShow();
 	virtual int ProcessKey(FarKey Key);
@@ -240,8 +200,8 @@ public:
 
 	void SetShowWhiteSpace(int Mode) { Flags.Change(FEDITLINE_SHOWWHITESPACE, Mode); }
 
-	void GetString(wchar_t *Str, int MaxSize);
-	void GetString(FARString &strStr);
+	void GetString(wchar_t *Str, int MaxSize) const;
+	void GetString(FARString &strStr) const;
 
 	const wchar_t *GetStringAddr();
 
@@ -255,8 +215,8 @@ public:
 	void SetEOL(const wchar_t *EOL);
 	const wchar_t *GetEOL();
 
-	int GetSelString(wchar_t *Str, int MaxSize);
-	int GetSelString(FARString &strStr);
+	bool GetSelString(wchar_t *Str, int MaxSize);
+	bool GetSelString(FARString &strStr);
 
 	int GetLength();
 
@@ -298,7 +258,7 @@ public:
 	void Select(int Start, int End);
 	void AddSelect(int Start, int End);
 	void GetSelection(int &Start, int &End);
-	BOOL IsSelection() { return SelStart == -1 && !SelEnd ? FALSE : TRUE; }
+	bool IsSelection() { return m_SelStart != -1 || m_SelEnd != 0; }
 	void GetRealSelection(int &Start, int &End);
 	void SetEditBeyondEnd(int Mode) { Flags.Change(FEDITLINE_EDITBEYONDEND, Mode); }
 	void SetEditorMode(int Mode) { Flags.Change(FEDITLINE_EDITORMODE, Mode); }
@@ -331,8 +291,6 @@ class VMenu;
 
 class EditControl : public Edit
 {
-	friend class DlgEdit;
-
 	const std::vector<std::string> *pCustomCompletionList;
 	History *pHistory;
 	FarList *pList;
@@ -355,7 +313,7 @@ public:
 		EC_ENABLEFNCOMPLETE_ESCAPED = 0x4,
 	};
 
-	EditControl(ScreenObject *pOwner = nullptr, Callback *aCallback = nullptr, bool bAllocateData = true,
+	EditControl(ScreenObject *pOwner = nullptr, Callback *aCallback = nullptr,
 			History *iHistory = 0, FarList *iList = 0, DWORD iFlags = 0);
 	virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
 	virtual void Show();

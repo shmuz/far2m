@@ -59,7 +59,7 @@ DlgEdit::DlgEdit(Dialog* pOwner,unsigned Index,DLGEDITTYPE Type):
 		case DLGEDIT_SINGLELINE:
 		{
 			Edit::Callback callback={true,EditChange,this};
-			
+
 			iHistory=0;
 			FarList* iList=0;
 			DWORD iFlags=0;
@@ -85,7 +85,7 @@ DlgEdit::DlgEdit(Dialog* pOwner,unsigned Index,DLGEDITTYPE Type):
 					iFlags|=EditControl::EC_ENABLEFNCOMPLETE;
 				}
 			}
-			lineEdit=new EditControl(pOwner,&callback,true,iHistory,iList,iFlags);
+			lineEdit=new EditControl(pOwner,&callback,iHistory,iList,iFlags);
 		}
 		break;
 	}
@@ -586,7 +586,7 @@ int  DlgEdit::GetStrSize(int Row)
 		return 0;//multiEdit->
 	else
 #endif
-		return lineEdit->StrSize;
+		return lineEdit->StrSize();
 }
 
 void DlgEdit::SetCursorType(bool Visible, DWORD Size)

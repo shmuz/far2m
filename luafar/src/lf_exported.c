@@ -704,39 +704,49 @@ void PushFarMacroValue(lua_State* L, const struct FarMacroValue* val)
 		case FMVT_INTEGER:
 			bit64_push(L, val->Value.Integer);
 			break;
+
 		case FMVT_DOUBLE:
 			lua_pushnumber(L, val->Value.Double);
 			break;
+
 		case FMVT_STRING:
 		case FMVT_ERROR:
 			push_utf8_string(L, val->Value.String, -1);
 			break;
+
 		case FMVT_MBSTRING:
 			lua_pushstring(L, val->Value.MBString);
 			break;
+
 		case FMVT_BOOLEAN:
 			lua_pushboolean(L, (int)val->Value.Boolean);
 			break;
+
 		case FMVT_POINTER:
 		case FMVT_PANEL:
 			lua_pushlightuserdata(L, val->Value.Pointer);
 			break;
+
 		case FMVT_BINARY:
 			lua_createtable(L,1,0);
 			lua_pushlstring(L, (char*)val->Value.Binary.Data, val->Value.Binary.Size);
 			lua_rawseti(L,-2,1);
 			break;
+
 		case FMVT_ARRAY:
 			PackMacroValues(L, val->Value.Array.Count, val->Value.Array.Values); // recursion
 			lua_pushliteral(L, "array");
 			lua_setfield(L, -2, "type");
 			break;
+
 		case FMVT_NEWTABLE:
 			lua_newtable(L);
 			break;
+
 		case FMVT_SETTABLE:
 			lua_settable(L, -3);
 			break;
+
 		default:
 			lua_pushnil(L);
 			break;

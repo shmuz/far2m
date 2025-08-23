@@ -468,7 +468,7 @@ int Editor::BlockStart2NumLine(int *Pos)
 			if (VBlockStart)
 				*Pos = eBlock->RealPosToCell(eBlock->CellPosToReal(VBlockX));
 			else
-				*Pos = eBlock->RealPosToCell(eBlock->SelStart);
+				*Pos = eBlock->RealPosToCell(eBlock->m_SelStart);
 		}
 
 		return CalcDistance(TopList, eBlock, -1);
@@ -1193,11 +1193,11 @@ int Editor::ProcessKey(FarKey Key)
 						CurLine->ProcessKey(KEY_END);
 						CurPos = CurLine->GetCurPos();
 
-						if (CurLine->SelStart >= 0) {
+						if (CurLine->m_SelStart >= 0) {
 							if (!SelAtBeginning)
-								CurLine->Select(CurLine->SelStart, CurPos);
+								CurLine->Select(CurLine->m_SelStart, CurPos);
 							else
-								CurLine->Select(CurPos, CurLine->SelEnd);
+								CurLine->Select(CurPos, CurLine->m_SelEnd);
 						} else
 							CurLine->Select(CurPos, SelStartPos);
 					}
@@ -2375,7 +2375,7 @@ int Editor::ProcessKey(FarKey Key)
 
 			// CurLine->TableSet ??? => UseDecodeTable?CurLine->TableSet:nullptr !!!
 			if (CalcWordFromString(CurLine->GetStringAddr(), CurPos, &SStart, &SEnd, EdOpt.strWordDiv)) {
-				CurLine->Select(SStart, SEnd + (SEnd < CurLine->StrSize ? 1 : 0));
+				CurLine->Select(SStart, SEnd + (SEnd < CurLine->StrSize() ? 1 : 0));
 
 				if (CurLine->IsSelection()) {
 					Flags.Set(FEDITOR_MARKINGBLOCK);
@@ -2718,7 +2718,7 @@ int Editor::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 				&& MouseEvent->dwEventFlags != MOUSE_MOVED
 				&& EditorPrevPosition.X == MouseEvent->dwMousePosition.X
 				&& EditorPrevPosition.Y == MouseEvent->dwMousePosition.Y) {
-			CurLine->Select(0, CurLine->StrSize);
+			CurLine->Select(0, CurLine->StrSize());
 
 			if (CurLine->IsSelection()) {
 				Flags.Set(FEDITOR_MARKINGBLOCK);
@@ -5967,7 +5967,9 @@ void Editor::Xlat()
 
 			AddUndoData(UNDO_EDIT, CurPtr->GetStringAddr(), CurPtr->GetEOL(), BlockStartLine + Line,
 					CurLine->GetCurPos(), CurPtr->GetLength());
-			::Xlat(CurPtr->Str, TBlockX, TBlockX + CopySize, Opt.XLat.Flags);
+			auto Buf = CurPtr->m_Str.GetBuffer();
+			::Xlat(Buf, TBlockX, TBlockX + CopySize, Opt.XLat.Flags);
+			CurPtr->m_Str.ReleaseBuffer();
 		}
 
 		DoXlat = TRUE;
@@ -5991,14 +5993,16 @@ void Editor::Xlat()
 
 				AddUndoData(UNDO_EDIT, CurPtr->GetStringAddr(), CurPtr->GetEOL(), BlockStartLine + Line,
 						CurLine->GetCurPos(), CurPtr->GetLength());
-				::Xlat(CurPtr->Str, StartSel, EndSel, Opt.XLat.Flags);
+				auto Buf = CurPtr->m_Str.GetBuffer();
+				::Xlat(Buf, StartSel, EndSel, Opt.XLat.Flags);
+				CurPtr->m_Str.ReleaseBuffer();
 				Line++;
 				CurPtr = CurPtr->m_next;
 			}
 
 			DoXlat = TRUE;
 		} else {
-			wchar_t *Str = CurLine->Str;
+			FARString &Str = CurLine->m_Str;
 			int start = CurLine->GetCurPos(), end, StrSize = CurLine->GetLength();    // StrLength(Str);
 			// $ 10.12.2000 IS
 			//   Обрабатываем только то слово, на котором стоит курсор, или то слово,
@@ -6024,7 +6028,9 @@ void Editor::Xlat()
 
 				AddUndoData(UNDO_EDIT, CurLine->GetStringAddr(), CurLine->GetEOL(), NumLine, start,
 						CurLine->GetLength());
-				::Xlat(Str, start, end, Opt.XLat.Flags);
+				auto Buf = Str.GetBuffer();
+				::Xlat(Buf, start, end, Opt.XLat.Flags);
+				Str.ReleaseBuffer();
 			}
 		}
 	}
@@ -6200,7 +6206,7 @@ void Editor::PR_EditorShowMsg()
 
 Edit *Editor::CreateString(const wchar_t *lpwszStr, int nLength)
 {
-	Edit *pEdit = new (std::nothrow) Edit(this, nullptr, lpwszStr ? false : true);
+	Edit *pEdit = new (std::nothrow) Edit(this, nullptr);
 
 	if (pEdit) {
 		pEdit->m_next = nullptr;
