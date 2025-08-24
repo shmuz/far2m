@@ -3208,11 +3208,11 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			if (SendDlgMessage(hDlg, Msg, Param1, &es))
 			{
 				lua_createtable(L,0,5);
-				PutNumToTable(L, "BlockType", (double) es.BlockType);
-				PutNumToTable(L, "BlockStartLine", (double) es.BlockStartLine+1);
-				PutNumToTable(L, "BlockStartPos", (double) es.BlockStartPos+1);
-				PutNumToTable(L, "BlockWidth", (double) es.BlockWidth);
-				PutNumToTable(L, "BlockHeight", (double) es.BlockHeight);
+				PutNumToTable(L, "BlockType", es.BlockType);
+				PutNumToTable(L, "BlockStartLine", es.BlockStartLine+1);
+				PutNumToTable(L, "BlockStartPos", es.BlockStartPos+1);
+				PutNumToTable(L, "BlockWidth", es.BlockWidth);
+				PutNumToTable(L, "BlockHeight", es.BlockHeight);
 				return 1;
 			}
 			return lua_pushnil(L), 1;
