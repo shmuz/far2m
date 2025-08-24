@@ -2805,7 +2805,7 @@ local function test_Editor_Sel()
 
   local act = 0
   for opt = 0,4 do
-    assert_eq(Editor.Sel(act,opt), 0) -- no block exists, zeroes returned
+    assert_eq(Editor.Sel(act,opt), 0) -- no block exists, zeros returned
   end
 
   local line, pos, w, h = 3, 13, 5, 4
@@ -2816,7 +2816,7 @@ local function test_Editor_Sel()
     assert_eq(Editor.Sel(act,0), line)
     assert_eq(Editor.Sel(act,1), pos)
     assert_eq(Editor.Sel(act,2), line-1+h)
-    assert_eq(Editor.Sel(act,3), pos-1+w)
+    assert_eq(Editor.Sel(act,3), pos+w)
     assert_eq(Editor.Sel(act,4), ii)
   end
 
@@ -2846,14 +2846,14 @@ local function test_Editor_Sel()
     assert_eq(Editor.Sel(0,0), 2)
     assert_eq(Editor.Sel(0,1), 10)
     assert_eq(Editor.Sel(0,2), 6)
-    assert_eq(Editor.Sel(0,3), 20-1)
+    assert_eq(Editor.Sel(0,3), 20)
     assert_eq(Editor.Sel(0,4), act==2 and 1 or 2)
   end
 
   assert_eq(1, Editor.Sel(4)) -- reset the block
   assert_eq(Editor.Sel(0,4), 0)
 
-  Keys("Esc Right Enter")
+  assert_true(editor.Quit())
 end
 
 function MT.test_Editor()

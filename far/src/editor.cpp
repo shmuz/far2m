@@ -641,7 +641,7 @@ int64_t Editor::VMProcess(int OpCode, void *vParam, int64_t iParam)
 						case 3:    // return LastPos
 						{
 							if (BlockEnd2NumLine(&iPos) != -1)
-								return iPos;
+								return iPos + 1;
 
 							return 0;
 						}
