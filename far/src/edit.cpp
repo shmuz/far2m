@@ -99,7 +99,6 @@ Edit::Edit(ScreenObject *pOwner, Callback *aCallback)
 	m_next(nullptr),
 	m_prev(nullptr),
 	MaxLength(-1),
-	Mask(nullptr),
 	LeftPos(0),
 	m_CurPos(0),
 	m_PrevCurPos(0),
@@ -134,8 +133,6 @@ Edit::Edit(ScreenObject *pOwner, Callback *aCallback)
 
 Edit::~Edit()
 {
-	if (Mask)
-		free(Mask);
 }
 
 inline bool Edit::IsWordDivX(int Pos) const
@@ -236,7 +233,7 @@ void Edit::DisplayObject()
 											 //    надо же отличаться от обычных Edit
 	}
 
-	//   Вычисление нового положения курсора в строке с учётом Mask.
+	//   Вычисление нового положения курсора в строке с учётом m_Mask.
 	int Value = (m_PrevCurPos > m_CurPos) ? -1 : 1;
 	m_CurPos = GetNextCursorPos(m_CurPos, Value);
 	FastShow();
@@ -272,17 +269,17 @@ void Edit::GetCursorType(bool &Visible, DWORD &Size)
 	Size = CursorSize;
 }
 
-//   Вычисление нового положения курсора в строке с учётом Mask.
+//   Вычисление нового положения курсора в строке с учётом m_Mask.
 int Edit::GetNextCursorPos(int Position, int Where)
 {
 	int Result = Position;
 
-	if (Mask && *Mask && (Where == -1 || Where == 1)) {
+	if (!m_Mask.IsEmpty() && (Where == -1 || Where == 1)) {
 		bool PosChanged = false;
-		int MaskLen = StrLength(Mask);
+		int MaskLen = StrLength(m_Mask);
 
 		for (int i = Position; i < MaskLen && i >= 0; i+= Where) {
-			if (CheckCharMask(Mask[i])) {
+			if (CheckCharMask(m_Mask[i])) {
 				Result = i;
 				PosChanged = true;
 				break;
@@ -291,7 +288,7 @@ int Edit::GetNextCursorPos(int Position, int Where)
 
 		if (!PosChanged) {
 			for (int i = Position; i >= 0; i--) {
-				if (CheckCharMask(Mask[i])) {
+				if (CheckCharMask(m_Mask[i])) {
 					Result = i;
 					PosChanged = true;
 					break;
@@ -301,7 +298,7 @@ int Edit::GetNextCursorPos(int Position, int Where)
 
 		if (!PosChanged) {
 			for (int i = Position; i < MaskLen; i++) {
-				if (CheckCharMask(Mask[i])) {
+				if (CheckCharMask(m_Mask[i])) {
 					Result = i;
 					break;
 				}
@@ -365,7 +362,7 @@ void Edit::FastShow()
 	   все "постоянные" символы в маске, не являющиеся шаблонными
 	   должны постоянно присутствовать в m_Str
 	*/
-	if (Mask && *Mask)
+	if (!m_Mask.IsEmpty())
 		RefreshStrByMask();
 
 	CursorPos = CellCurPos;
@@ -443,7 +440,7 @@ void Edit::FastShow()
 		if (Flags.Check(FEDITLINE_CLEARFLAG)) {
 			SetColor(ColorUnChanged);
 
-			if (Mask && *Mask) {
+			if (!m_Mask.IsEmpty()) {
 				RemoveTrailingSpaces(OutStr.data());
 				OutStr.resize(wcslen(OutStr.data()));
 				OutStrCells = StrCellsCount(OutStr.data(), OutStr.size());
@@ -825,7 +822,7 @@ int Edit::ProcessKey(FarKey Key)
 				if (m_SelStart != -1 && m_SelStart <= m_CurPos)
 					Select(m_SelStart, m_CurPos);
 				else {
-					int EndPos = CalcPosFwd((Mask && *Mask) ? CalcRTrimmedStrSize() : -1);
+					int EndPos = CalcPosFwd(!m_Mask.IsEmpty() ? CalcRTrimmedStrSize() : -1);
 					int NewStartPos = m_CurPos;
 
 					EndPos = Min(EndPos, StrSize());
@@ -911,7 +908,7 @@ int Edit::ProcessKey(FarKey Key)
 		case KEY_SHIFTEND:
 		case KEY_SHIFTNUMPAD1: {
 			Lock();
-			int Len = (Mask && *Mask) ? CalcRTrimmedStrSize() : StrSize();
+			int Len = !m_Mask.IsEmpty() ? CalcRTrimmedStrSize() : StrSize();
 
 			int LastCurPos = m_CurPos;
 
@@ -1047,14 +1044,14 @@ int Edit::ProcessKey(FarKey Key)
 
 			Lock();
 			DisableCallback DC(m_Callback.Active);
-			if (Mask && *Mask) {
-				int MaskLen = StrLength(Mask);
+			if (!m_Mask.IsEmpty()) {
+				int MaskLen = StrLength(m_Mask);
 				int ptr = m_CurPos;
 
 				while (ptr < MaskLen) {
 					ptr++;
 
-					if (!CheckCharMask(Mask[ptr]) || (IsSpaceX(ptr) && !IsSpaceX(ptr + 1)) || (IsWordDivX(ptr)))
+					if (!CheckCharMask(m_Mask[ptr]) || (IsSpaceX(ptr) && !IsSpaceX(ptr + 1)) || (IsWordDivX(ptr)))
 						break;
 				}
 
@@ -1130,7 +1127,7 @@ int Edit::ProcessKey(FarKey Key)
 		case KEY_CTRLSHIFTEND:
 		case KEY_CTRLSHIFTNUMPAD1: {
 			m_PrevCurPos = m_CurPos;
-			m_CurPos = (Mask && *Mask) ? CalcRTrimmedStrSize() : StrSize();
+			m_CurPos = !m_Mask.IsEmpty() ? CalcRTrimmedStrSize() : StrSize();
 			Show();
 			return TRUE;
 		}
@@ -1151,7 +1148,7 @@ int Edit::ProcessKey(FarKey Key)
 		case KEY_MSWHEEL_RIGHT:
 		case KEY_CTRLD: {
 			m_PrevCurPos = m_CurPos;
-			m_CurPos = CalcPosFwd((Mask && *Mask) ? CalcRTrimmedStrSize() : -1);
+			m_CurPos = CalcPosFwd(!m_Mask.IsEmpty() ? CalcRTrimmedStrSize() : -1);
 			Show();
 			return TRUE;
 		}
@@ -1182,15 +1179,15 @@ int Edit::ProcessKey(FarKey Key)
 				}
 			}
 
-			if (Mask && *Mask) {
-				const size_t MaskLen = wcslen(Mask);
+			if (!m_Mask.IsEmpty()) {
+				const size_t MaskLen = wcslen(m_Mask);
 				size_t j = m_CurPos;
 				for (size_t i = m_CurPos; i < MaskLen; ++i) {
-					if (i + 1 < MaskLen && CheckCharMask(Mask[i + 1])) {
-						while (j < MaskLen && !CheckCharMask(Mask[j]))
+					if (i + 1 < MaskLen && CheckCharMask(m_Mask[i + 1])) {
+						while (j < MaskLen && !CheckCharMask(m_Mask[j]))
 							j++;
 
-						if (!CharInMask(m_Str[i + 1], Mask[j]))
+						if (!CharInMask(m_Str[i + 1], m_Mask[j]))
 							break;
 
 						m_Str.ReplaceChar(j, m_Str[i + 1]);
@@ -1236,7 +1233,7 @@ int Edit::ProcessKey(FarKey Key)
 			m_PrevCurPos = m_CurPos;
 			int Len;
 
-			if (Mask && *Mask) {
+			if (!m_Mask.IsEmpty()) {
 				Len = CalcRTrimmedStrSize();
 				m_CurPos = CalcPosFwd(Len);
 			} else {
@@ -1269,7 +1266,7 @@ int Edit::ProcessKey(FarKey Key)
 		case KEY_CTRLNUMPAD0: {
 			if (!Flags.Check(FEDITLINE_PASSWORDMODE)) {
 				if (m_SelStart == -1 || m_SelStart >= m_SelEnd) {
-					if (Mask && *Mask) {
+					if (!m_Mask.IsEmpty()) {
 						std::wstring TrimmedStr(m_Str, CalcRTrimmedStrSize());
 						CopyToClipboard(TrimmedStr.c_str());
 					} else {
@@ -1419,20 +1416,20 @@ bool Edit::InsertKey(FarKey Key)
 		return true;
 	}
 
-	if (Mask && *Mask) {
-		int MaskLen = StrLength(Mask);
+	if (!m_Mask.IsEmpty()) {
+		int MaskLen = StrLength(m_Mask);
 
 		if (m_CurPos < MaskLen) {
 			if (KeyMatchedMask(Key)) {
 				if (!Flags.Check(FEDITLINE_OVERTYPE)) {
 					int i = MaskLen - 1;
 
-					while (!CheckCharMask(Mask[i]) && i > m_CurPos)
+					while (!CheckCharMask(m_Mask[i]) && i > m_CurPos)
 						i--;
 
 					for (int j = i; i > m_CurPos; i--) {
-						if (CheckCharMask(Mask[i])) {
-							while (!CheckCharMask(Mask[j - 1])) {
+						if (CheckCharMask(m_Mask[i])) {
+							while (!CheckCharMask(m_Mask[j - 1])) {
 								if (j <= m_CurPos)
 									break;
 
@@ -1450,7 +1447,7 @@ bool Edit::InsertKey(FarKey Key)
 				changed = true;
 			} else {
 				// Здесь вариант для "ввели символ из маски", например для SetAttr - ввесли '.'
-				;    // char *Ptr=strchr(Mask+m_CurPos,Key);
+				;    // char *Ptr=strchr(m_Mask+m_CurPos,Key);
 			}
 		} else if (m_CurPos < StrSize()) {
 			m_PrevCurPos = m_CurPos;
@@ -1627,12 +1624,12 @@ void Edit::SetBinaryString(const wchar_t *Str, int Length)
 
 	m_CurPos = 0;
 
-	if (Mask && *Mask) {
-		RefreshStrByMask(TRUE);
-		int maskLen = StrLength(Mask);
+	if (!m_Mask.IsEmpty()) {
+		RefreshStrByMask(true);
+		int maskLen = StrLength(m_Mask);
 
 		for (int i = 0, j = 0; j < maskLen && j < Length;) {
-			if (CheckCharMask(Mask[i])) {
+			if (CheckCharMask(m_Mask[i])) {
 				bool goLoop = false;
 
 				if (KeyMatchedMask(Str[j]))
@@ -1733,12 +1730,12 @@ void Edit::InsertBinaryString(const wchar_t *Str, int Length)
 
 	Flags.Clear(FEDITLINE_CLEARFLAG);
 
-	if (Mask && *Mask) {
+	if (!m_Mask.IsEmpty()) {
 		int Pos = m_CurPos;
-		int MaskLen = StrLength(Mask);
+		int MaskLen = StrLength(m_Mask);
 
 		if (Pos < MaskLen) {
-			//_SVS(SysLog(L"InsertBinaryString ==> m_Str='%ls' (Length=%d) Mask='%ls'",m_Str,Length,Mask+Pos));
+			//_SVS(SysLog(L"InsertBinaryString ==> m_Str='%ls' (Length=%d) m_Mask='%ls'",m_Str,Length,m_Mask+Pos));
 			int StrLen = (MaskLen - Pos > Length) ? Length : MaskLen - Pos;
 
 			/* $ 15.11.2000 KM
@@ -1746,7 +1743,7 @@ void Edit::InsertBinaryString(const wchar_t *Str, int Length)
 			   в строке с маской
 			*/
 			for (int i = Pos, j = 0; j < StrLen + Pos;) {
-				if (CheckCharMask(Mask[i])) {
+				if (CheckCharMask(m_Mask[i])) {
 					bool goLoop = false;
 
 					if (j < Length && KeyMatchedMask(Str[j])) {
@@ -1760,7 +1757,7 @@ void Edit::InsertBinaryString(const wchar_t *Str, int Length)
 					if (goLoop)
 						continue;
 				} else {
-					if (Mask[j] == Str[j]) {
+					if (m_Mask[j] == Str[j]) {
 						j++;
 					}
 					m_PrevCurPos = m_CurPos;
@@ -1809,23 +1806,18 @@ int Edit::GetLength()
 // Функция установки маски ввода в объект Edit
 void Edit::SetInputMask(const wchar_t *InputMask)
 {
-	if (Mask)
-		free(Mask);
-
 	if (InputMask && *InputMask) {
-		if (!(Mask = wcsdup(InputMask)))
-			return;
-
-		RefreshStrByMask(TRUE);
+		m_Mask = InputMask;
+		RefreshStrByMask(true);
 	} else
-		Mask = nullptr;
+		m_Mask.Clear();
 }
 
-// Функция обновления состояния строки ввода по содержимому Mask
+// Функция обновления состояния строки ввода по содержимому m_Mask
 void Edit::RefreshStrByMask(bool InitMode)
 {
-	if (Mask && *Mask) {
-		int MaskLen = StrLength(Mask);
+	if (!m_Mask.IsEmpty()) {
+		int MaskLen = StrLength(m_Mask);
 
 		if (StrSize() > MaskLen)
 			m_Str.Truncate(MaskLen);
@@ -1833,8 +1825,8 @@ void Edit::RefreshStrByMask(bool InitMode)
 			m_Str.Replace(StrSize(), 0, L' ', MaskLen - StrSize());
 
 		for (int i = 0; i < MaskLen; i++) {
-			if (!CheckCharMask(Mask[i]))
-				m_Str.ReplaceChar(i, Mask[i]);
+			if (!CheckCharMask(m_Mask[i]))
+				m_Str.ReplaceChar(i, m_Mask[i]);
 			else if (InitMode)
 				m_Str.ReplaceChar(i, L' ');
 		}
@@ -1960,7 +1952,7 @@ int Edit::GetCellCurPos()
 
 void Edit::SetCellCurPos(int NewPos)
 {
-	if (Mask && *Mask) {
+	if (!m_Mask.IsEmpty()) {
 		int NewPosLimit = CalcRTrimmedStrSize();
 		NewPos = Min(NewPos, NewPosLimit);
 	}
@@ -2124,9 +2116,9 @@ void Edit::DeleteBlock()
 
 	m_PrevCurPos = m_CurPos;
 
-	if (Mask && *Mask) {
+	if (!m_Mask.IsEmpty()) {
 		for (int i = m_SelStart; i < m_SelEnd; i++) {
-			if (CheckCharMask(Mask[i]))
+			if (CheckCharMask(m_Mask[i]))
 				m_Str.ReplaceChar(i, L' ');
 		}
 
@@ -2391,7 +2383,7 @@ void Edit::Xlat(bool All)
 */
 bool Edit::KeyMatchedMask(int Key) const
 {
-	return CharInMask(Key, Mask[m_CurPos]);
+	return CharInMask(Key, m_Mask[m_CurPos]);
 }
 
 bool Edit::CharInMask(wchar_t Char, wchar_t Mask)

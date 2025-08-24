@@ -102,7 +102,7 @@ private:
 	FARString m_Str;
 	int MaxLength;
 
-	wchar_t *Mask;
+	FARString m_Mask;
 
 	std::vector<ColorItem> ColorList;
 
@@ -247,7 +247,7 @@ public:
 	int GetMaxLength() { return MaxLength; }
 
 	void SetInputMask(const wchar_t *InputMask);
-	const wchar_t *GetInputMask() { return Mask; }
+	const wchar_t *GetInputMask() { return m_Mask.CPtr(); }
 
 	void SetOvertypeMode(int Mode) { Flags.Change(FEDITLINE_OVERTYPE, Mode); }
 	int GetOvertypeMode() { return Flags.Check(FEDITLINE_OVERTYPE); }
