@@ -112,8 +112,8 @@ private:
 	uint64_t ColorUnChanged;		// 28.07.2000 SVS - для диалога
 
 	int LeftPos;
-	int CurPos;
-	int PrevCurPos;		// 12.08.2000 KM - предыдущее положение курсора
+	int m_CurPos;
+	int m_PrevCurPos;		// 12.08.2000 KM - предыдущее положение курсора
 
 	int TabSize;		// 14.02.2001 IS - Размер табуляции - по умолчанию равен Opt.TabSize;
 
@@ -165,8 +165,8 @@ protected:
 	int CalcPosFwdTo(int Pos, int LimitPos = -1) const;
 	int CalcPosBwdTo(int Pos) const;
 
-	inline int CalcPosFwd(int LimitPos = -1) const { return CalcPosFwdTo(CurPos, LimitPos); }
-	inline int CalcPosBwd() const { return CalcPosBwdTo(CurPos); }
+	inline int CalcPosFwd(int LimitPos = -1) const { return CalcPosFwdTo(m_CurPos, LimitPos); }
+	inline int CalcPosBwd() const { return CalcPosBwdTo(m_CurPos); }
 
 public:
 	Edit(ScreenObject *pOwner = nullptr, Callback *aCallback = nullptr);
@@ -230,10 +230,10 @@ public:
 	int GetClearFlag() { return Flags.Check(FEDITLINE_CLEARFLAG); }
 	void SetCurPos(int NewPos)
 	{
-		CurPos = NewPos;
-		PrevCurPos = NewPos;
+		m_CurPos = NewPos;
+		m_PrevCurPos = NewPos;
 	}
-	int GetCurPos() { return (CurPos); }
+	int GetCurPos() { return (m_CurPos); }
 	int GetCellCurPos();
 	void SetCellCurPos(int NewPos);
 	int GetLeftPos() { return (LeftPos); }
