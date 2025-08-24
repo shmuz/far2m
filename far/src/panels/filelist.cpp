@@ -2514,10 +2514,10 @@ bool FileList::ChangeDir(const wchar_t *NewDir, bool ShowMessage)
 			}
 
 			PopPlugin(TRUE);
-			Panel *AnotherPanel = CtrlObject->Cp()->GetAnotherPanel(this);
+			/*Panel *AnotherPanel = CtrlObject->Cp()->GetAnotherPanel(this);
 
 			if (AnotherPanel->GetType() == INFO_PANEL)
-				AnotherPanel->Redraw();
+				AnotherPanel->Redraw();*/
 		} else {
 			if (!dot2Present && CurFile < FileCount && !PluginsList.empty()) {
 				PluginsListItem *Last = PluginsList.back();
@@ -2584,6 +2584,10 @@ bool FileList::ChangeDir(const wchar_t *NewDir, bool ShowMessage)
 		*/
 		else if (SetDirectorySuccess)
 			CurFile = CurTopFile = 0;
+
+		Panel *AnotherPanel = CtrlObject->Cp()->GetAnotherPanel(this);
+		if (AnotherPanel->GetType() == INFO_PANEL)
+			AnotherPanel->Redraw();
 
 		return SetDirectorySuccess;
 	} else {
