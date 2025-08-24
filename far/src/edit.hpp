@@ -99,7 +99,6 @@ public:
 	Edit *m_prev;
 
 private:
-	std::vector<wchar_t> OutStr;
 	FARString m_Str;
 	int MaxLength;
 
@@ -156,7 +155,10 @@ private:
 
 	int RealPosToCell(int PrevLength, int PrevPos, int Pos, int *CorrectPos);
 	void SanitizeSelectionRange();
-	inline const wchar_t *WordDiv() { return strWordDiv->CPtr(); }
+	inline const wchar_t *WordDiv() const { return strWordDiv->CPtr(); }
+	bool IsWordDivX(int Pos) const;
+	bool IsSpaceX(int Pos) const;
+	bool IsEolX(int Pos) const;
 	void CheckForSpecialWidthChars(const wchar_t *CheckStr = nullptr, int Length = 0);
 
 protected:

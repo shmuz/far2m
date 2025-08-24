@@ -138,6 +138,21 @@ Edit::~Edit()
 		free(Mask);
 }
 
+inline bool Edit::IsWordDivX(int Pos) const
+{
+	return IsWordDiv(WordDiv(), m_Str[Pos]);
+}
+
+inline bool Edit::IsSpaceX(int Pos) const
+{
+	return IsSpace(m_Str[Pos]);
+}
+
+inline bool Edit::IsEolX(int Pos) const
+{
+	return IsEol(m_Str[Pos]);
+}
+
 DWORD Edit::SetCodePage(UINT codepage)
 {
 	DWORD Ret = SETCP_NOERROR;
@@ -355,7 +370,7 @@ void Edit::FastShow()
 
 	CursorPos = CellCurPos;
 
-	OutStr.clear();
+	std::vector<wchar_t> OutStr;
 	size_t OutStrCells = 0;
 	for (int i = RealLeftPos; i < StrSize() && int(OutStrCells) < EditLength; ++i) {
 		auto wc = m_Str[i];
@@ -640,7 +655,7 @@ int64_t Edit::VMProcess(int OpCode, void *vParam, int64_t iParam)
 int Edit::CalcRTrimmedStrSize() const
 {
 	int TrimSize = StrSize();
-	while (TrimSize > 0 && (IsSpace(m_Str[TrimSize - 1]) || IsEol(m_Str[TrimSize - 1]))) {
+	while (TrimSize > 0 && (IsSpaceX(TrimSize - 1) || IsEolX(TrimSize - 1))) {
 		--TrimSize;
 	}
 	return TrimSize;
@@ -851,11 +866,9 @@ int Edit::ProcessKey(FarKey Key)
 			if (m_CurPos > 0)
 				RecurseProcessKey(KEY_SHIFTLEFT);
 
-			while (m_CurPos > 0
-					&& !(!IsWordDiv(WordDiv(), m_Str[m_CurPos]) && IsWordDiv(WordDiv(), m_Str[m_CurPos - 1])
-							&& !IsSpace(m_Str[m_CurPos]))) {
-				if (!IsSpace(m_Str[m_CurPos])
-						&& (IsSpace(m_Str[m_CurPos - 1]) || IsWordDiv(WordDiv(), m_Str[m_CurPos - 1])))
+			while (m_CurPos > 0 && (IsWordDivX(m_CurPos) || !IsWordDivX(m_CurPos - 1) || IsSpaceX(m_CurPos)))
+			{
+				if (!IsSpaceX(m_CurPos) && (IsSpaceX(m_CurPos - 1) || IsWordDivX(m_CurPos - 1)))
 					break;
 
 				RecurseProcessKey(KEY_SHIFTLEFT);
@@ -871,10 +884,8 @@ int Edit::ProcessKey(FarKey Key)
 
 			RecurseProcessKey(KEY_SHIFTRIGHT);
 
-			while (m_CurPos < StrSize()
-					&& !(IsWordDiv(WordDiv(), m_Str[m_CurPos]) && !IsWordDiv(WordDiv(), m_Str[m_CurPos - 1]))) {
-				if (!IsSpace(m_Str[m_CurPos])
-						&& (IsSpace(m_Str[m_CurPos - 1]) || IsWordDiv(WordDiv(), m_Str[m_CurPos - 1])))
+			while (m_CurPos < StrSize() && (!IsWordDivX(m_CurPos) || IsWordDivX(m_CurPos - 1))) {
+				if (!IsSpaceX(m_CurPos) && (IsSpaceX(m_CurPos - 1) || IsWordDivX(m_CurPos - 1)))
 					break;
 
 				RecurseProcessKey(KEY_SHIFTRIGHT);
@@ -963,7 +974,7 @@ int Edit::ProcessKey(FarKey Key)
 			for (;;) {
 				int StopDelete = FALSE;
 
-				if (m_CurPos > 1 && IsSpace(m_Str[m_CurPos - 1]) != IsSpace(m_Str[m_CurPos - 2]))
+				if (m_CurPos > 1 && IsSpaceX(m_CurPos - 1) != IsSpaceX(m_CurPos - 2))
 					StopDelete = TRUE;
 
 				RecurseProcessKey(KEY_BS);
@@ -971,7 +982,7 @@ int Edit::ProcessKey(FarKey Key)
 				if (!m_CurPos || StopDelete)
 					break;
 
-				if (IsWordDiv(WordDiv(), m_Str[m_CurPos - 1]))
+				if (IsWordDivX(m_CurPos - 1))
 					break;
 			}
 
@@ -1043,8 +1054,7 @@ int Edit::ProcessKey(FarKey Key)
 				while (ptr < MaskLen) {
 					ptr++;
 
-					if (!CheckCharMask(Mask[ptr]) || (IsSpace(m_Str[ptr]) && !IsSpace(m_Str[ptr + 1]))
-							|| (IsWordDiv(WordDiv(), m_Str[ptr])))
+					if (!CheckCharMask(Mask[ptr]) || (IsSpaceX(ptr) && !IsSpaceX(ptr + 1)) || (IsWordDivX(ptr)))
 						break;
 				}
 
@@ -1053,15 +1063,14 @@ int Edit::ProcessKey(FarKey Key)
 					RecurseProcessKey(KEY_DEL);
 			} else {
 				for (;;) {
-					bool StopDelete = (m_CurPos < StrSize() - 1) && IsSpace(m_Str[m_CurPos])
-							&& !IsSpace(m_Str[m_CurPos + 1]);
+					bool StopDelete = (m_CurPos < StrSize() - 1) && IsSpaceX(m_CurPos) && !IsSpaceX(m_CurPos + 1);
 
 					RecurseProcessKey(KEY_DEL);
 
 					if (m_CurPos >= StrSize() || StopDelete)
 						break;
 
-					if (IsWordDiv(WordDiv(), m_Str[m_CurPos]))
+					if (IsWordDivX(m_CurPos))
 						break;
 				}
 			}
@@ -1208,10 +1217,9 @@ int Edit::ProcessKey(FarKey Key)
 			m_CurPos = Min(m_CurPos, StrSize());
 			m_CurPos = CalcPosBwd();
 
-			while (m_CurPos > 0
-					&& !(!IsWordDiv(WordDiv(), m_Str[m_CurPos]) && IsWordDiv(WordDiv(), m_Str[m_CurPos - 1])
-							&& !IsSpace(m_Str[m_CurPos]))) {
-				if (!IsSpace(m_Str[m_CurPos]) && IsSpace(m_Str[m_CurPos - 1]))
+			while (m_CurPos > 0 && (IsWordDivX(m_CurPos) || !IsWordDivX(m_CurPos - 1) || IsSpaceX(m_CurPos)))
+			{
+				if (!IsSpaceX(m_CurPos) && IsSpaceX(m_CurPos - 1))
 					break;
 
 				m_CurPos--;
@@ -1236,9 +1244,8 @@ int Edit::ProcessKey(FarKey Key)
 				m_CurPos = CalcPosFwd();
 			}
 
-			while (m_CurPos < Len /*StrSize()*/
-					&& !(IsWordDiv(WordDiv(), m_Str[m_CurPos]) && !IsWordDiv(WordDiv(), m_Str[m_CurPos - 1]))) {
-				if (!IsSpace(m_Str[m_CurPos]) && IsSpace(m_Str[m_CurPos - 1]))
+			while (m_CurPos < Len /*StrSize()*/ && (!IsWordDivX(m_CurPos) || IsWordDivX(m_CurPos - 1))) {
+				if (!IsSpaceX(m_CurPos) && IsSpaceX(m_CurPos - 1))
 					break;
 
 				m_CurPos++;
@@ -1288,7 +1295,7 @@ int Edit::ProcessKey(FarKey Key)
 				DeleteBlock();
 			}
 
-			for (int i = StrLength(m_Str) - 1; i >= 0 && IsEol(m_Str[i]); i--)
+			for (int i = StrLength(m_Str) - 1; i >= 0 && IsEolX(i); i--)
 				m_Str.ReplaceChar(i, 0);
 
 			for (int i = 0; ClipText[i]; i++) {
@@ -1573,8 +1580,7 @@ void Edit::CheckForSpecialWidthChars(const wchar_t *CheckStr, int Length)
 
 	for (int i = 0; i < Length; ++i) {
 		auto wc = CheckStr[i];
-		if (wc == L'\t' || CharClasses::IsFullWidth(wc)
-						|| CharClasses::IsXxxfix(wc) ) {
+		if (wc == L'\t' || CharClasses::IsFullWidth(wc) || CharClasses::IsXxxfix(wc) ) {
 			HasSpecialWidthChars = true;
 			return;
 		}
