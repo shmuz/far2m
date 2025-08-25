@@ -100,17 +100,17 @@ public:
 
 private:
 	FARString m_Str;
-	int MaxLength;
+	int m_MaxLength;
 
 	FARString m_Mask;
 
-	std::vector<ColorItem> ColorList;
+	std::vector<ColorItem> m_ColorList;
 
 	uint64_t Color;
 	uint64_t SelColor;
 	uint64_t ColorUnChanged;		// 28.07.2000 SVS - для диалога
 
-	int LeftPos;
+	int m_LeftPos;
 	int m_CurPos;
 	int m_PrevCurPos;		// 12.08.2000 KM - предыдущее положение курсора
 
@@ -122,10 +122,10 @@ private:
 	int m_SelStart;
 	int m_SelEnd;
 
-	int EndType;
+	int m_EndType;
 
-	int CursorSize;
-	int CursorPos;
+	int m_CursorSize;
+	int m_CursorPos;
 	const FARString *strWordDiv;
 
 	UINT m_codepage;	// BUGBUG
@@ -238,13 +238,13 @@ public:
 	int GetCurPos() { return (m_CurPos); }
 	int GetCellCurPos();
 	void SetCellCurPos(int NewPos);
-	int GetLeftPos() { return (LeftPos); }
-	void SetLeftPos(int NewPos) { LeftPos = NewPos; }
+	int GetLeftPos() { return (m_LeftPos); }
+	void SetLeftPos(int NewPos) { m_LeftPos = NewPos; }
 	void SetPasswordMode(int Mode) { Flags.Change(FEDITLINE_PASSWORDMODE, Mode); }
-	void SetMaxLength(int Length) { MaxLength = Length; }
+	void SetMaxLength(int Length) { m_MaxLength = Length; }
 
 	// Получение максимального значения строки для потребностей Dialod API
-	int GetMaxLength() { return MaxLength; }
+	int GetMaxLength() { return m_MaxLength; }
 
 	void SetInputMask(const wchar_t *InputMask);
 	const wchar_t *GetInputMask() { return m_Mask.CPtr(); }
