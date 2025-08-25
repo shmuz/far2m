@@ -4619,7 +4619,7 @@ static int far_ConvertPath(lua_State *L)
 	return 1;
 }
 
-static int DoAdvControl (lua_State *L, int Command, int Delta)
+static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Command, int Delta)
 {
 	int pos2 = 2-Delta;
 	TPluginData* pd = GetPluginData(L);
@@ -4644,17 +4644,17 @@ static int DoAdvControl (lua_State *L, int Command, int Delta)
 		case ACTL_GETWINDOWCOUNT:
 		case ACTL_COMMIT:
 		case ACTL_REDRAWALL:
-			int1 = PSInfo.AdvControl(pd->ModuleNumber, Command, NULL, NULL);
+			int1 = PtrAdvControl(pd->ModuleNumber, Command, NULL, NULL);
 			return lua_pushinteger(L, int1), 1;
 
 		case ACTL_QUIT:
-			int1 = PSInfo.AdvControl(pd->ModuleNumber, Command, (void*)luaL_optinteger(L,pos2,0), NULL);
+			int1 = PtrAdvControl(pd->ModuleNumber, Command, (void*)luaL_optinteger(L,pos2,0), NULL);
 			return lua_pushinteger(L, int1), 1;
 
 		case ACTL_GETCOLOR: {
 			uint64_t color;
 			int1 = check_env_flag(L, pos2);
-			int1 = PSInfo.AdvControl(pd->ModuleNumber, Command, (void*)int1, &color);
+			int1 = PtrAdvControl(pd->ModuleNumber, Command, (void*)int1, &color);
 			int1 ? bit64_push(L, color) : lua_pushnil(L);
 			return 1;
 		}
@@ -4670,13 +4670,13 @@ static int DoAdvControl (lua_State *L, int Command, int Delta)
 					lua_rawseti(L, -2, j++);
 				}
 				sd->ref = luaL_ref(L, LUA_REGISTRYINDEX);
-				lua_pushinteger(L, PSInfo.AdvControl(pd->ModuleNumber, Command, sd, NULL));
+				lua_pushinteger(L, PtrAdvControl(pd->ModuleNumber, Command, sd, NULL));
 				return 1;
 			}
 			else {
 				luaL_argcheck(L, lua_isnumber(L,pos2), pos2, "integer or function expected");
 				TSynchroData *sd = CreateSynchroData(SYNCHRO_COMMON, lua_tointeger(L,pos2), NULL);
-				lua_pushinteger(L, PSInfo.AdvControl(pd->ModuleNumber, Command, sd, NULL));
+				lua_pushinteger(L, PtrAdvControl(pd->ModuleNumber, Command, sd, NULL));
 				return 1;
 			}
 
@@ -4687,24 +4687,24 @@ static int DoAdvControl (lua_State *L, int Command, int Delta)
 				int1 = OptFlags(L, pos2, -1);
 			if (int1 < -1) //this prevents program freeze
 				int1 = -1;
-			lua_pushinteger(L, PSInfo.AdvControl(pd->ModuleNumber, Command, (void*)int1, NULL));
+			lua_pushinteger(L, PtrAdvControl(pd->ModuleNumber, Command, (void*)int1, NULL));
 			return 1;
 
 		case ACTL_SETCURRENTWINDOW:
 			int1 = luaL_checkinteger(L, pos2) - 1;
-			int1 = PSInfo.AdvControl(pd->ModuleNumber, ACTL_SETCURRENTWINDOW, (void*)int1, NULL);
+			int1 = PtrAdvControl(pd->ModuleNumber, ACTL_SETCURRENTWINDOW, (void*)int1, NULL);
 			if (int1)
-				PSInfo.AdvControl(pd->ModuleNumber, ACTL_COMMIT, NULL, NULL);
+				PtrAdvControl(pd->ModuleNumber, ACTL_COMMIT, NULL, NULL);
 			return lua_pushinteger(L, int1), 1;
 
 		case ACTL_GETSYSWORDDIV:
-			PSInfo.AdvControl(pd->ModuleNumber, Command, buf, NULL);
+			PtrAdvControl(pd->ModuleNumber, Command, buf, NULL);
 			return push_utf8_string(L,buf,-1), 1;
 
 		case ACTL_GETARRAYCOLOR: {
-			intptr_t size = PSInfo.AdvControl(pd->ModuleNumber, Command, NULL, NULL);
+			intptr_t size = PtrAdvControl(pd->ModuleNumber, Command, NULL, NULL);
 			uint64_t *p = (uint64_t*) lua_newuserdata(L, size * sizeof(uint64_t));
-			PSInfo.AdvControl(pd->ModuleNumber, Command, (void*)size, p);
+			PtrAdvControl(pd->ModuleNumber, Command, (void*)size, p);
 			lua_createtable(L, size, 0);
 			for (int i=0; i < size; i++) {
 				bit64_push(L, p[i]);
@@ -4714,7 +4714,7 @@ static int DoAdvControl (lua_State *L, int Command, int Delta)
 		}
 
 		case ACTL_GETFARVERSION: {
-			DWORD n = PSInfo.AdvControl(pd->ModuleNumber, Command, NULL, NULL);
+			DWORD n = PtrAdvControl(pd->ModuleNumber, Command, NULL, NULL);
 			int v1 = (n >> 16);
 			int v2 = n & 0xffff;
 			if (lua_toboolean(L, pos2)) {
@@ -4733,14 +4733,14 @@ static int DoAdvControl (lua_State *L, int Command, int Delta)
 			wi.Pos = luaL_optinteger(L, pos2, 0) - 1;
 
 			if (Command == ACTL_GETWINDOWINFO) {
-				if (!PSInfo.AdvControl(pd->ModuleNumber, Command, &wi, NULL))
+				if (!PtrAdvControl(pd->ModuleNumber, Command, &wi, NULL))
 					return lua_pushnil(L), 1;
 
 				wi.TypeName = (wchar_t*)lua_newuserdata(L, (wi.TypeNameSize + wi.NameSize) * sizeof(wchar_t));
 				wi.Name = wi.TypeName + wi.TypeNameSize;
 			}
 
-			if (!PSInfo.AdvControl(pd->ModuleNumber, Command, &wi, NULL))
+			if (!PtrAdvControl(pd->ModuleNumber, Command, &wi, NULL))
 				return lua_pushnil(L), 1;
 
 			lua_createtable(L, 0, 6);
@@ -4782,14 +4782,14 @@ static int DoAdvControl (lua_State *L, int Command, int Delta)
 				fsc.Colors[i] = check64(L, -1, NULL);
 				lua_pop(L,1);
 			}
-			lua_pushinteger(L, PSInfo.AdvControl(pd->ModuleNumber, Command, &fsc, NULL));
+			lua_pushinteger(L, PtrAdvControl(pd->ModuleNumber, Command, &fsc, NULL));
 			return 1;
 		}
 
 		case ACTL_GETFARRECT:
 		{
 			SMALL_RECT sr;
-			if (PSInfo.AdvControl(pd->ModuleNumber, Command, &sr, NULL)) {
+			if (PtrAdvControl(pd->ModuleNumber, Command, &sr, NULL)) {
 				lua_createtable(L, 0, 4);
 				PutIntToTable(L, "Left",   sr.Left);
 				PutIntToTable(L, "Top",    sr.Top);
@@ -4802,7 +4802,7 @@ static int DoAdvControl (lua_State *L, int Command, int Delta)
 		}
 
 		case ACTL_GETCURSORPOS:
-			if (PSInfo.AdvControl(pd->ModuleNumber, Command, &coord, NULL)) {
+			if (PtrAdvControl(pd->ModuleNumber, Command, &coord, NULL)) {
 				lua_createtable(L, 0, 2);
 				PutIntToTable(L, "X", coord.X);
 				PutIntToTable(L, "Y", coord.Y);
@@ -4817,21 +4817,23 @@ static int DoAdvControl (lua_State *L, int Command, int Delta)
 			coord.X = lua_tointeger(L, -1);
 			lua_getfield(L, pos2, "Y");
 			coord.Y = lua_tointeger(L, -1);
-			lua_pushinteger(L, PSInfo.AdvControl(pd->ModuleNumber, Command, &coord, NULL));
+			lua_pushinteger(L, PtrAdvControl(pd->ModuleNumber, Command, &coord, NULL));
 			return 1;
 
 		case ACTL_WINPORTBACKEND:
-			PSInfo.AdvControl(pd->ModuleNumber, Command, buf, NULL);
+			PtrAdvControl(pd->ModuleNumber, Command, buf, NULL);
 			return push_utf8_string(L,buf,-1), 1;
 
 		//case ACTL_KEYMACRO:  //  not supported as it's replaced by separate functions far.MacroXxx
 	}
 }
 
-#define AdvCommand(name,command) \
-static int adv_##name(lua_State *L) { return DoAdvControl(L,command,1); }
+static int far_AdvControl(lua_State *L) { return DoAdvControl(L, PSInfo.AdvControl, 0, 0); }
 
-static int far_AdvControl(lua_State *L) { return DoAdvControl(L,0,0); }
+static int far_AdvControlAsync(lua_State *L) { return DoAdvControl(L, PSInfo.AdvControlAsync, 0, 0); }
+
+#define AdvCommand(name,command) \
+static int adv_##name(lua_State *L) { return DoAdvControl(L,PSInfo.AdvControl,command,1); }
 
 AdvCommand( Commit,                 ACTL_COMMIT)
 AdvCommand( GetArrayColor,          ACTL_GETARRAYCOLOR)
@@ -5930,6 +5932,7 @@ static const luaL_Reg panel_funcs[] =
 static const luaL_Reg far_funcs[] =
 {
 	PAIR( far, AdvControl),
+	PAIR( far, AdvControlAsync),
 	PAIR( far, BackgroundTask),
 	PAIR( far, CheckMask),
 	PAIR( far, ClearPluginCache),

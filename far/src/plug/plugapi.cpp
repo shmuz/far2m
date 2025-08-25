@@ -730,7 +730,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 
 INT_PTR WINAPI FarAdvControl(INT_PTR ModuleNumber, int Command, void *Param1, void *Param2)
 {
-	return InterThreadCall<LONG_PTR, 0>(std::bind(FarAdvControlSynched, ModuleNumber, Command, Param1, Param2));
+	return InterThreadCall<INT_PTR, 0>(std::bind(FarAdvControlSynched, ModuleNumber, Command, Param1, Param2));
 }
 
 INT_PTR WINAPI FarAdvControlAsync(INT_PTR ModuleNumber, int Command, void *Param1, void *Param2)
