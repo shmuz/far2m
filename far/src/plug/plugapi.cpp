@@ -2562,7 +2562,8 @@ BOOL farAPIVTLogExportW(HANDLE con_hnd, DWORD vth_flags, const wchar_t *file)
 
 int64_t WINAPI farCallFar(int CheckCode, FarMacroCall *Data)
 {
-	return CtrlObject ? CtrlObject->Macro.CallFar(CheckCode, Data) : 0;
+	if (CtrlObject) CtrlObject->Macro.CallFar(CheckCode, Data);
+	return 0;
 }
 
 int WINAPI farMacroControl(DWORD PluginId, int Command, int Param1, void *Param2)

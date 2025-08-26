@@ -105,146 +105,113 @@ public:
 	FarMacroApi(const FarMacroCall* Data) : mData(Data) {}
 
 	std::vector<TVar> parseParams(size_t Count);
-	int64_t PushBoolean(bool b);
-	int64_t PushError(const wchar_t* str);
-	int64_t PushInteger(int64_t Int);
-	int64_t PushNumber(double dbl);
-	int64_t PushString(const wchar_t* str);
-	int64_t PushString(const FARString& str);
-	int64_t PushString(const char* str);
-	int64_t PushValue(const TVar& Var);
-	int64_t PushBinary(const void* data, size_t size);
-	int64_t PushArray(FarMacroValue *values, size_t count);
-	int64_t PushPointer(void* ptr);
-	int64_t PushNil();
-	int64_t PushTable();
-	int64_t SetField(const FarMacroValue &Key, const FarMacroValue &Value);
 
-	int64_t absFunc();
-	int64_t ascFunc();
-	int64_t atoiFunc();
-	int64_t beepFunc();
-	int64_t chrFunc();                 //implemented in Lua
-	int64_t clipFunc();
-	int64_t dateFunc();
-	int64_t dlggetvalueFunc();
-	int64_t dlgsetfocusFunc();
-	int64_t editordellineFunc();
-	int64_t editorinsstrFunc();
-	int64_t editorposFunc();
-	int64_t editorselFunc();
-	int64_t editorsetFunc();
-	int64_t editorsetstrFunc();
-	int64_t editorsettitleFunc();
-	int64_t editorundoFunc();
-	int64_t environFunc();             //implemented in Lua
-	int64_t fargetconfigFunc();
-	int64_t fargetinfoFunc();
-	int64_t farsetconfigFunc();
-	int64_t fattrFunc();
-	int64_t fexistFunc();
-	int64_t floatFunc();
-	int64_t flockFunc();
-	int64_t fmatchFunc();
-	int64_t fsplitFunc();
-	int64_t indexFunc();
-	int64_t intFunc();
-	int64_t itowFunc();
-	int64_t kbdLayoutFunc();
-	int64_t keyFunc();
-	int64_t keybarshowFunc();
-	int64_t lcaseFunc();
-	int64_t lenFunc();
-	int64_t maxFunc();
-	int64_t menushowFunc();            //implemented in Lua (partially)
-	int64_t minFunc();
-	int64_t modFunc();
-	int64_t msgBoxFunc();
-	int64_t panelfattrFunc();
-	int64_t panelfexistFunc();
-	int64_t panelitemFunc();
-	int64_t panelselectFunc();
-	int64_t panelsetpathFunc();
-	int64_t panelsetpluginpathFunc();
-	int64_t panelsetposFunc();
-	int64_t panelsetposidxFunc();
-	int64_t pluginexistFunc();
-	int64_t pluginloadFunc();          //implemented in Lua
-	int64_t pluginunloadFunc();        //implemented in Lua
-	int64_t promptFunc();
-	int64_t replaceFunc();
-	int64_t rindexFunc();
-	int64_t size2strFunc();            //implemented in Lua
-	int64_t sleepFunc();
-	int64_t stringFunc();
-	int64_t strpadFunc();              //implemented in Lua
-	int64_t strwrapFunc();
-	int64_t substrFunc();
-	int64_t testfolderFunc();
-	int64_t trimFunc();
-	int64_t ucaseFunc();
-	int64_t waitkeyFunc();
-	int64_t windowscrollFunc();
-	int64_t xlatFunc();
-	int64_t udlSplitFunc();
+	void PushBoolean(bool Param)             { SendValue(Param); }
+	void PushInteger(int64_t Param)          { SendValue(Param); }
+	void PushNumber(double Param)            { SendValue(Param); }
+	void PushPointer(void* Param)            { SendValue(Param); }
+	void PushString(const char* Param)       { SendValue(Param ? Param : ""); }
+	void PushString(const wchar_t* Param)    { SendValue(Param ? Param : L""); }
+	void PushString(const FARString& Param)  { SendValue(Param.CPtr()); }
+	void PushNil()                           { SendValue(FMVT_NIL); }
+	void PushTable()                         { SendValue(FMVT_NEWTABLE); }
+	void SetTable()                          { SendValue(FMVT_SETTABLE); }
+	void PushArray(FarMacroValue *values, size_t count);
+	void PushBinary(const void* data, size_t size);
+	void PushError(const wchar_t* str);
+	void PushValue(const TVar& Var);
+	void SetField(const FarMacroValue &Key, const FarMacroValue &Value);
+
+	void absFunc();
+	void ascFunc();
+	void atoiFunc();
+	void beepFunc();
+	void chrFunc();                 //implemented in Lua
+	void clipFunc();
+	void dateFunc();
+	void dlggetvalueFunc();
+	void dlgsetfocusFunc();
+	void editordellineFunc();
+	void editorinsstrFunc();
+	void editorposFunc();
+	void editorselFunc();
+	void editorsetFunc();
+	void editorsetstrFunc();
+	void editorsettitleFunc();
+	void editorundoFunc();
+	void environFunc();             //implemented in Lua
+	void fargetconfigFunc();
+	void fargetinfoFunc();
+	void farsetconfigFunc();
+	void fattrFunc();
+	void fexistFunc();
+	void floatFunc();
+	void flockFunc();
+	void fmatchFunc();
+	void fsplitFunc();
+	void indexFunc();
+	void intFunc();
+	void itowFunc();
+	void kbdLayoutFunc();
+	void keyFunc();
+	void keybarshowFunc();
+	void lcaseFunc();
+	void lenFunc();
+	void maxFunc();
+	void menushowFunc();            //implemented in Lua (partially)
+	void minFunc();
+	void modFunc();
+	void msgBoxFunc();
+	void panelfattrFunc();
+	void panelfexistFunc();
+	void panelitemFunc();
+	void panelselectFunc();
+	void panelsetpathFunc();
+	void panelsetpluginpathFunc();
+	void panelsetposFunc();
+	void panelsetposidxFunc();
+	void pluginexistFunc();
+	void pluginloadFunc();          //implemented in Lua
+	void pluginunloadFunc();        //implemented in Lua
+	void promptFunc();
+	void replaceFunc();
+	void rindexFunc();
+	void size2strFunc();            //implemented in Lua
+	void sleepFunc();
+	void stringFunc();
+	void strpadFunc();              //implemented in Lua
+	void strwrapFunc();
+	void substrFunc();
+	void testfolderFunc();
+	void trimFunc();
+	void ucaseFunc();
+	void waitkeyFunc();
+	void windowscrollFunc();
+	void xlatFunc();
+	void udlSplitFunc();
 
 private:
-	int64_t SendValue(const FarMacroValue &Value);
-	int64_t fattrFuncImpl(int Type);
-	int64_t panelsetpathFuncImpl(bool IsPlugin);
+	void SendValue(const FarMacroValue &Value);
+	void fattrFuncImpl(int Type);
+	void panelsetpathFuncImpl(bool IsPlugin);
 	int get_config_index();
 
 	const FarMacroCall* mData;
 };
 
-int64_t FarMacroApi::SendValue(const FarMacroValue &Value)
+void FarMacroApi::SendValue(const FarMacroValue &Value)
 {
 	mData->Callback(mData->CallbackData, const_cast<FarMacroValue*>(&Value), 1);
-	return 0;
 }
 
-int64_t FarMacroApi::PushString(const wchar_t *str)
+void FarMacroApi::PushError(const wchar_t *str)
 {
-	FarMacroValue val = NullToEmpty(str);
-	return SendValue(val);
+	FarMacroValue val(FMVT_ERROR);
+	val.String = NullToEmpty(str);
+	SendValue(val);
 }
 
-int64_t FarMacroApi::PushString(const FARString& str)
-{
-	return PushString(str.CPtr());
-}
-
-int64_t FarMacroApi::PushString(const char *str)
-{
-	FarMacroValue val = str ? str : "";
-	return SendValue(val);
-}
-
-int64_t FarMacroApi::PushError(const wchar_t *str)
-{
-	FarMacroValue val = NullToEmpty(str);
-	val.Type = FMVT_ERROR;
-	return SendValue(val);
-}
-
-int64_t FarMacroApi::PushNumber(double dbl)
-{
-	FarMacroValue val = dbl;
-	return SendValue(val);
-}
-
-int64_t FarMacroApi::PushInteger(int64_t Int)
-{
-	FarMacroValue val = Int;
-	return SendValue(val);
-}
-
-int64_t FarMacroApi::PushBoolean(bool b)
-{
-	return SendValue(b);
-}
-
-int64_t FarMacroApi::PushValue(const TVar& Var)
+void FarMacroApi::PushValue(const TVar& Var)
 {
 	FarMacroValue val;
 	double dd;
@@ -258,44 +225,28 @@ int64_t FarMacroApi::PushValue(const TVar& Var)
 	else
 		val = Var.asInteger();
 
-	return SendValue(val);
+	SendValue(val);
 }
 
-int64_t FarMacroApi::PushBinary(const void* data, size_t size)
+void FarMacroApi::PushBinary(const void* data, size_t size)
 {
-	FarMacroValue val;
-	val.Type = FMVT_BINARY;
+	FarMacroValue val(FMVT_BINARY);
 	val.Binary.Data = data;
 	val.Binary.Size = size;
-	return SendValue(val);
+	SendValue(val);
 }
 
-int64_t FarMacroApi::PushArray(FarMacroValue *values, size_t count)
+void FarMacroApi::PushArray(FarMacroValue *values, size_t count)
 {
 	FarMacroValue arr(values, count);
-	return SendValue(arr);
+	SendValue(arr);
 }
 
-int64_t FarMacroApi::PushPointer(void* ptr)
-{
-	return SendValue(ptr);
-}
-
-int64_t FarMacroApi::PushNil()
-{
-	return SendValue(FMVT_NIL);
-}
-
-int64_t FarMacroApi::PushTable()
-{
-	return SendValue(FMVT_NEWTABLE);
-}
-
-int64_t FarMacroApi::SetField(const FarMacroValue &Key, const FarMacroValue &Value)
+void FarMacroApi::SetField(const FarMacroValue &Key, const FarMacroValue &Value)
 {
 	SendValue(Key);
 	SendValue(Value);
-	return SendValue(FMVT_SETTABLE);
+	SendValue(FMVT_SETTABLE);
 }
 
 std::vector<TVar> FarMacroApi::parseParams(size_t Count)
@@ -332,7 +283,7 @@ private:
 	const bool m_Lock;
 };
 
-int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
+void KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 {
 	int64_t Ret=0;
 	DWORD FileAttr = INVALID_FILE_ATTRIBUTES;
@@ -347,31 +298,31 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 
 	switch (CheckCode)
 	{
-		case MCODE_C_MSX:             return GetMacroConst(constMsX);
-		case MCODE_C_MSY:             return GetMacroConst(constMsY);
-		case MCODE_C_MSBUTTON:        return GetMacroConst(constMsButton);
-		case MCODE_C_MSCTRLSTATE:     return GetMacroConst(constMsCtrlState);
-		case MCODE_C_MSEVENTFLAGS:    return GetMacroConst(constMsEventFlags);
-		case MCODE_C_MSLASTCTRLSTATE: return GetMacroConst(constMsLastCtrlState);
+		case MCODE_C_MSX:             return api.PushInteger(GetMacroConst(constMsX));
+		case MCODE_C_MSY:             return api.PushInteger(GetMacroConst(constMsY));
+		case MCODE_C_MSBUTTON:        return api.PushInteger(GetMacroConst(constMsButton));
+		case MCODE_C_MSCTRLSTATE:     return api.PushInteger(GetMacroConst(constMsCtrlState));
+		case MCODE_C_MSEVENTFLAGS:    return api.PushInteger(GetMacroConst(constMsEventFlags));
+		case MCODE_C_MSLASTCTRLSTATE: return api.PushInteger(GetMacroConst(constMsLastCtrlState));
 
 		case MCODE_V_FAR_WIDTH:
-			return ScrX + 1;
+			return api.PushInteger(ScrX + 1);
 
 		case MCODE_V_FAR_HEIGHT:
-			return ScrY + 1;
+			return api.PushInteger(ScrY + 1);
 
 		case MCODE_V_FAR_TITLE:
 			Console.GetTitle(tmpStr);
 			return api.PushString(tmpStr);
 
 		case MCODE_V_FAR_PID:
-			return WINPORT(GetCurrentProcessId)();
+			return api.PushInteger(WINPORT(GetCurrentProcessId)());
 
 		case MCODE_V_FAR_UPTIME:
-			return GetProcessUptimeMSec();
+			return api.PushInteger(GetProcessUptimeMSec());
 
 		case MCODE_V_MACRO_AREA:
-			return GetArea();
+			return api.PushInteger(GetArea());
 
 		case MCODE_C_FULLSCREENMODE: // Fullscreen?
 			return api.PushBoolean(false);
@@ -380,10 +331,10 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 			return api.PushBoolean(Opt.IsUserAdmin);
 
 		case MCODE_V_DRVSHOWPOS:
-			return Macro_DskShowPosType;
+			return api.PushInteger(Macro_DskShowPosType);
 
 		case MCODE_V_DRVSHOWMODE: // Drv.ShowMode
-			return Opt.ChangeDriveMode;
+			return api.PushInteger(Opt.ChangeDriveMode);
 
 		case MCODE_C_CMDLINE_BOF:              // CmdLine.Bof - курсор в начале cmd-строки редактирования?
 		case MCODE_C_CMDLINE_EOF:              // CmdLine.Eof - курсор в конце cmd-строки редактирования?
@@ -396,7 +347,8 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 		case MCODE_V_CMDLINE_ITEMCOUNT:        // CmdLine.ItemCount
 		case MCODE_V_CMDLINE_CURPOS:           // CmdLine.CurPos
 		{
-			return CtrlObject->CmdLine ? CtrlObject->CmdLine->VMProcess(CheckCode) : -1;
+			auto ret = CtrlObject->CmdLine ? CtrlObject->CmdLine->VMProcess(CheckCode) : -1;
+			return api.PushInteger(ret);
 		}
 
 		case MCODE_V_CMDLINE_VALUE:            // CmdLine.Value
@@ -517,7 +469,7 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 		case MCODE_V_DLGINFOOWNER: // Dlg.Owner
 		{
 			if (CurrentWindow && CurrentWindow->GetType()==MODALTYPE_DIALOG) // ?? Mode == MACROAREA_DIALOG ??
-				return CurrentWindow->VMProcess(CheckCode);
+				return api.PushInteger(CurrentWindow->VMProcess(CheckCode));
 			break;
 		}
 
@@ -612,14 +564,14 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 		case MCODE_V_PPANEL_SELCOUNT: // PPanel.SelCount
 		{
 			SelPanel = CheckCode == MCODE_V_APANEL_SELCOUNT ? ActivePanel : PushivePanel;
-			return SelPanel ? SelPanel->GetRealSelCount() : 0;
+			return api.PushInteger(SelPanel ? SelPanel->GetRealSelCount() : 0);
 		}
 
 		case MCODE_V_APANEL_COLUMNCOUNT:       // APanel.ColumnCount - активная панель:  количество колонок
 		case MCODE_V_PPANEL_COLUMNCOUNT:       // PPanel.ColumnCount - пассивная панель: количество колонок
 		{
 			SelPanel = CheckCode == MCODE_V_APANEL_COLUMNCOUNT ? ActivePanel : PushivePanel;
-			return SelPanel ? SelPanel->GetColumnsCount() : 0;
+			return api.PushInteger(SelPanel ? SelPanel->GetColumnsCount() : 0);
 		}
 
 		case MCODE_V_APANEL_WIDTH: // APanel.Width
@@ -638,7 +590,7 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 				else
 					Ret = X2-X1+1;
 			}
-			return Ret;
+			return api.PushInteger(Ret);
 		}
 
 		case MCODE_V_APANEL_OPIFLAGS:  // APanel.OPIFlags
@@ -662,7 +614,7 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 				{
 					case MCODE_V_APANEL_OPIFLAGS:
 					case MCODE_V_PPANEL_OPIFLAGS:
-						return Info.Flags;
+						return api.PushInteger(Info.Flags);
 					case MCODE_V_APANEL_HOSTFILE:
 					case MCODE_V_PPANEL_HOSTFILE:
 						return api.PushString(Info.HostFile);
@@ -673,7 +625,7 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 			}
 
 			return CheckCode == MCODE_V_APANEL_OPIFLAGS || CheckCode == MCODE_V_PPANEL_OPIFLAGS ?
-				0 : api.PushString(L"");
+				api.PushInteger(0) : api.PushString(L"");
 		}
 
 		case MCODE_V_APANEL_PREFIX:           // APanel.Prefix
@@ -739,7 +691,7 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 		case MCODE_V_PPANEL_TYPE: // PPanel.Type
 		{
 			SelPanel = CheckCode == MCODE_V_APANEL_TYPE ? ActivePanel : PushivePanel;
-			return SelPanel? SelPanel->GetType() : FILE_PANEL;
+			return api.PushInteger(SelPanel? SelPanel->GetType() : FILE_PANEL);
 		}
 
 		case MCODE_V_APANEL_DRIVETYPE: // APanel.DriveType - активная панель: тип привода
@@ -754,21 +706,21 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 				UINT DriveType=FAR_GetDriveType(tmpStr, 0);
 				Ret = DriveType;
 			}
-			return Ret;
+			return api.PushInteger(Ret);
 		}
 
 		case MCODE_V_APANEL_ITEMCOUNT: // APanel.ItemCount
 		case MCODE_V_PPANEL_ITEMCOUNT: // PPanel.ItemCount
 		{
 			SelPanel = CheckCode == MCODE_V_APANEL_ITEMCOUNT ? ActivePanel : PushivePanel;
-			return SelPanel ? SelPanel->GetFileCount() : 0;
+			return api.PushInteger(SelPanel ? SelPanel->GetFileCount() : 0);
 		}
 
 		case MCODE_V_APANEL_CURPOS: // APanel.CurPos
 		case MCODE_V_PPANEL_CURPOS: // PPanel.CurPos
 		{
 			SelPanel = CheckCode == MCODE_V_APANEL_CURPOS ? ActivePanel : PushivePanel;
-			return SelPanel ? SelPanel->GetCurrentPos()+(SelPanel->GetFileCount()>0?1:0) : 0;
+			return api.PushInteger(SelPanel ? SelPanel->GetCurrentPos()+(SelPanel->GetFileCount()>0?1:0) : 0);
 		}
 
 		case MCODE_V_TITLE: // Title
@@ -809,7 +761,7 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 					Ret = X2-X1+1;
 			}
 
-			return Ret;
+			return api.PushInteger(Ret);
 		}
 
 		case MCODE_V_MENU_VALUE: // Menu.Value
@@ -847,7 +799,7 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 			{
 				Ret=f->VMProcess(CheckCode);
 			}
-			return Ret;
+			return api.PushInteger(Ret);
 		}
 
 		case MCODE_V_EDITORCURLINE: // Editor.CurLine - текущая линия в редакторе (в дополнении к Count)
@@ -873,10 +825,10 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 					return api.PushString(tmpStr);
 				}
 				else
-					return CurEditor->VMProcess(CheckCode);
+					return api.PushInteger(CurEditor->VMProcess(CheckCode));
 			}
 			return (CheckCode == MCODE_V_EDITORFILENAME || CheckCode == MCODE_V_EDITORSELVALUE) ?
-				api.PushString(L"") : 0;
+				api.PushString(L"") : api.PushInteger(0);
 		}
 
 		case MCODE_V_HELPFILENAME:  // Help.FileName
@@ -902,9 +854,9 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 					return api.PushString(tmpStr);
 				}
 				else
-					return CtrlObject->Plugins.CurViewer->VMProcess(MCODE_V_VIEWERSTATE);
+					return api.PushInteger(CtrlObject->Plugins.CurViewer->VMProcess(MCODE_V_VIEWERSTATE));
 			}
-			return (CheckCode == MCODE_V_VIEWERFILENAME) ? api.PushString(tmpStr) : 0;
+			return (CheckCode == MCODE_V_VIEWERFILENAME) ? api.PushString(tmpStr) : api.PushInteger(0);
 		}
 
 		//case MCODE_F_BEEP:             not_implemented;
@@ -914,8 +866,7 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 		//case MCODE_F_MENU_SHOW:        implemented_in_lua_partially;
 
 		case MCODE_F_USERMENU:
-			ShowUserMenu(Data->Count, Data->Values);
-			return 0;
+			return ShowUserMenu(Data->Count, Data->Values);
 
 		case MCODE_F_FAR_GETCONFIG:        return api.fargetconfigFunc();
 		case MCODE_F_FAR_SETCONFIG:        return api.farsetconfigFunc();
@@ -975,7 +926,7 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 					api.PushNumber(Flags);
 					api.PushString(m_RecCode);
 					api.PushString(m_RecDescription);
-					return 0;
+					return;
 				}
 			}
 			api.PushBoolean(false);
@@ -1002,7 +953,7 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 					else
 						api.PushBoolean(Result != nullptr);
 
-					return 0;
+					return;
 				}
 			}
 			return api.PushBoolean(false);
@@ -1065,10 +1016,8 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 			SCOPED_ACTION(LockOutput)(IsTopMacroOutputDisabled());
 
 			++m_WaitKey;
-			Ret = api.waitkeyFunc();
+			api.waitkeyFunc();
 			--m_WaitKey;
-
-			return Ret;
 		}
 		case MCODE_F_WINDOW_SCROLL:      return api.windowscrollFunc();
 		case MCODE_F_XLAT:               return api.xlatFunc();
@@ -1092,7 +1041,7 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 			if (auto f = GetTopModal())
 				Ret = f->VMProcess(CheckCode,(void*)(LONG_PTR)p2.i(),p1.i());
 
-			return Ret;
+			return api.PushInteger(Ret);
 		}
 
 		case MCODE_F_MENU_ITEMSTATUS:     // N=Menu.ItemStatus([N])
@@ -1168,7 +1117,7 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 					Ret=f->VMProcess(CheckCode,(void*)tmpVar.toString(),tmpMode);
 			}
 
-			return Ret;
+			return api.PushInteger(Ret);
 		}
 
 		case MCODE_F_MENU_FILTER:      // N=Menu.Filter([Action[,Mode]])
@@ -1226,12 +1175,11 @@ int64_t KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 		case MCODE_FAR_GETINFO:
 			return api.fargetinfoFunc();
 	}
-	return 0;
 }
 
 /* ------------------------------------------------------------------- */
 // S=trim(S[,N])
-int64_t FarMacroApi::trimFunc()
+void FarMacroApi::trimFunc()
 {
 	auto Params = parseParams(2);
 	const auto mode = static_cast<int>(Params[1].asInteger());
@@ -1246,11 +1194,10 @@ int64_t FarMacroApi::trimFunc()
 	}
 	PushString(p);
 	free(p);
-	return 0;
 }
 
 // S=substr(S,start[,length])
-int64_t FarMacroApi::substrFunc()
+void FarMacroApi::substrFunc()
 {
 	/*
 		TODO: http://bugs.farmanager.com/view.php?id=1480
@@ -1421,7 +1368,7 @@ static bool SplitFileName(const wchar_t *lpFullName,FARString &strDest,int nFlag
 }
 
 // S=fsplit(S,N)
-int64_t FarMacroApi::fsplitFunc()
+void FarMacroApi::fsplitFunc()
 {
 	auto Params = parseParams(2);
 	FARString strPath;
@@ -1432,7 +1379,7 @@ int64_t FarMacroApi::fsplitFunc()
 }
 
 // N=atoi(S[,radix])
-int64_t FarMacroApi::atoiFunc()
+void FarMacroApi::atoiFunc()
 {
 	auto Params = parseParams(2);
 	wchar_t *endptr;
@@ -1446,7 +1393,7 @@ int64_t FarMacroApi::atoiFunc()
 }
 
 // N=Window.Scroll(Lines[,Axis])
-int64_t FarMacroApi::windowscrollFunc()
+void FarMacroApi::windowscrollFunc()
 {
 	auto Params = parseParams(2);
 	bool Ret = false;
@@ -1470,7 +1417,7 @@ int64_t FarMacroApi::windowscrollFunc()
 }
 
 // S=itoa(N[,radix])
-int64_t FarMacroApi::itowFunc()
+void FarMacroApi::itowFunc()
 {
 	auto Params = parseParams(2);
 
@@ -1489,21 +1436,22 @@ int64_t FarMacroApi::itowFunc()
 }
 
 // os::chrono::sleep_for(Nms)
-int64_t FarMacroApi::sleepFunc()
+void FarMacroApi::sleepFunc()
 {
 	const auto Params = parseParams(1);
 	const auto Period = Params[0].asInteger();
+	int Ret = 0;
 
 	if (Period > 0)
 	{
 		WINPORT(Sleep)(Period);
-		return 1;
+		Ret = 1;
 	}
-	return 0;
+	return PushInteger(Ret);
 }
 
 // N=KeyBar.Show([N])
-int64_t FarMacroApi::keybarshowFunc()
+void FarMacroApi::keybarshowFunc()
 {
 	/*
 	Mode:
@@ -1517,11 +1465,11 @@ int64_t FarMacroApi::keybarshowFunc()
 	auto Params = parseParams(1);
 	const auto f = GetTopModal();
 
-	return f ? f->VMProcess(MCODE_F_KEYBAR_SHOW,nullptr,Params[0].asInteger())-1 : -1;
+	PushInteger(f ? f->VMProcess(MCODE_F_KEYBAR_SHOW,nullptr,Params[0].asInteger())-1 : -1);
 }
 
 // S=key(V)
-int64_t FarMacroApi::keyFunc()
+void FarMacroApi::keyFunc()
 {
 	auto Params = parseParams(1);
 	FARString strKeyText;
@@ -1545,7 +1493,7 @@ int64_t FarMacroApi::keyFunc()
 }
 
 // V=waitkey([N,[T]])
-int64_t FarMacroApi::waitkeyFunc()
+void FarMacroApi::waitkeyFunc()
 {
 	auto Params = parseParams(2);
 	const auto Period = static_cast<long>(Params[0].asInteger());
@@ -1562,25 +1510,25 @@ int64_t FarMacroApi::waitkeyFunc()
 		return PushString(strKeyText);
 	}
 
-	return (Key == KEY_NONE) ? KEY_INVALID : Key;
+	PushInteger(Key == KEY_NONE ? KEY_INVALID : Key);
 }
 
 // n=min(n1,n2)
-int64_t FarMacroApi::minFunc()
+void FarMacroApi::minFunc()
 {
 	auto Params = parseParams(2);
 	return PushValue(std::min(Params[0], Params[1]));
 }
 
 // n=max(n1,n2)
-int64_t FarMacroApi::maxFunc()
+void FarMacroApi::maxFunc()
 {
 	auto Params = parseParams(2);
 	return PushValue(std::max(Params[0], Params[1]));
 }
 
 // n=mod(n1,n2)
-int64_t FarMacroApi::modFunc()
+void FarMacroApi::modFunc()
 {
 	auto Params = parseParams(2);
 
@@ -1590,31 +1538,30 @@ int64_t FarMacroApi::modFunc()
 	}
 	else
 		PushValue(Params[0].i() % Params[1].i());
-	return 0;
 }
 
 // N=index(S1,S2[,Mode])
-int64_t FarMacroApi::indexFunc()
+void FarMacroApi::indexFunc()
 {
 	auto Params = parseParams(3);
 	const wchar_t *s = Params[0].toString();
 	const wchar_t *p = Params[1].toString();
 	const wchar_t *i = !Params[2].getInteger() ? StrStrI(s,p) : StrStr(s,p);
-	return 	(i ? i-s : -1);
+	PushInteger(i ? i-s : -1);
 }
 
 // S=rindex(S1,S2[,Mode])
-int64_t FarMacroApi::rindexFunc()
+void FarMacroApi::rindexFunc()
 {
 	auto Params = parseParams(3);
 	const wchar_t *s = Params[0].toString();
 	const wchar_t *p = Params[1].toString();
 	const wchar_t *i = !Params[2].getInteger() ? RevStrStrI(s,p) : RevStrStr(s,p);
-	return (i ? i-s : -1);
+	PushInteger(i ? i-s : -1);
 }
 
 // S=date([S])
-int64_t FarMacroApi::dateFunc()
+void FarMacroApi::dateFunc()
 {
 	auto Params = parseParams(1);
 
@@ -1633,18 +1580,17 @@ int64_t FarMacroApi::dateFunc()
 		XLAT_SWITCHKEYBBEEP    = 2
 		XLAT_USEKEYBLAYOUTNAME = 4
 */
-int64_t FarMacroApi::xlatFunc()
+void FarMacroApi::xlatFunc()
 {
 	auto Params = parseParams(2);
 	auto StrParam = wcsdup(Params[0].toString());
 	::Xlat(StrParam,0,StrLength(StrParam),Opt.XLat.Flags);
 	PushString(StrParam);
 	free(StrParam);
-	return 0;
 }
 
 // S=prompt(["Title"[,"Prompt"[,flags[, "Src"[, "History"]]]]])
-int64_t FarMacroApi::promptFunc()
+void FarMacroApi::promptFunc()
 {
 	auto Params = parseParams(5);
 	const auto Flags = static_cast<DWORD>(Params[2].asInteger());
@@ -1668,12 +1614,10 @@ int64_t FarMacroApi::promptFunc()
 
 	if (!history[0])
 		SetHistoryDisableMask(oldMask);
-
-	return 0;
 }
 
 // N=msgbox(["Title"[,"Text"[,flags]]])
-int64_t FarMacroApi::msgBoxFunc()
+void FarMacroApi::msgBoxFunc()
 {
 	auto Params = parseParams(3);
 
@@ -1698,11 +1642,12 @@ int64_t FarMacroApi::msgBoxFunc()
 	FARString TempBuf = title;
 	TempBuf += L"\n";
 	TempBuf += text;
-	return FarMessageFn(-1, Flags, nullptr, (const wchar_t* const*)TempBuf.CPtr(), 0, 0) + 1;
+	auto Ret = FarMessageFn(-1, Flags, nullptr, (const wchar_t* const*)TempBuf.CPtr(), 0, 0) + 1;
+	PushInteger(Ret);
 }
 
 // V=Panel.Select(panelType,Action[,Mode[,Items]])
-int64_t FarMacroApi::panelselectFunc()
+void FarMacroApi::panelselectFunc()
 {
 	auto Params = parseParams(4);
 
@@ -1741,12 +1686,12 @@ int64_t FarMacroApi::panelselectFunc()
 		Result=SelPanel->VMProcess(MCODE_F_PANEL_SELECT,&mps,0);
 	}
 
-	return (Result < 0 ? 0 : Result);
+	PushInteger(Result < 0 ? 0 : Result);
 }
 
 // N=panel.SetPath       (panelType,pathName[,fileName])
 // N=panel.SetPluginPath (panelType,pathName[,fileName])
-int64_t FarMacroApi::panelsetpathFuncImpl(bool IsPlugin)
+void FarMacroApi::panelsetpathFuncImpl(bool IsPlugin)
 {
 	auto Params = parseParams(3);
 	int typePanel     = Params[0].getInt32();
@@ -1787,17 +1732,17 @@ int64_t FarMacroApi::panelsetpathFuncImpl(bool IsPlugin)
 	return PushBoolean(Ret);
 }
 
-int64_t FarMacroApi::panelsetpathFunc()
+void FarMacroApi::panelsetpathFunc()
 {
 	return panelsetpathFuncImpl(false);
 }
 
-int64_t FarMacroApi::panelsetpluginpathFunc()
+void FarMacroApi::panelsetpluginpathFunc()
 {
 	return panelsetpathFuncImpl(true);
 }
 
-int64_t FarMacroApi::fattrFuncImpl(int Type)
+void FarMacroApi::fattrFuncImpl(int Type)
 {
 	DWORD FileAttr=INVALID_FILE_ATTRIBUTES;
 	long Pos=-1;
@@ -1839,29 +1784,30 @@ int64_t FarMacroApi::fattrFuncImpl(int Type)
 	if (Type == 3) // panel.fexist(3)
 		FileAttr=(DWORD)Pos+1;
 
-	return (FileAttr == INVALID_FILE_ATTRIBUTES) ? -1 : static_cast<int64_t>(FileAttr);
+	auto Ret = (FileAttr == INVALID_FILE_ATTRIBUTES) ? -1 : static_cast<int64_t>(FileAttr);
+	PushInteger(Ret);
 }
 
 // N=fattr(S)
-int64_t FarMacroApi::fattrFunc()
+void FarMacroApi::fattrFunc()
 {
 	return fattrFuncImpl(0);
 }
 
 // N=fexist(S)
-int64_t FarMacroApi::fexistFunc()
+void FarMacroApi::fexistFunc()
 {
 	return fattrFuncImpl(2);
 }
 
 // N=panel.fattr(S)
-int64_t FarMacroApi::panelfattrFunc()
+void FarMacroApi::panelfattrFunc()
 {
 	return fattrFuncImpl(1);
 }
 
 // N=panel.fexist(S)
-int64_t FarMacroApi::panelfexistFunc()
+void FarMacroApi::panelfexistFunc()
 {
 	return fattrFuncImpl(3);
 }
@@ -1879,7 +1825,7 @@ int64_t FarMacroApi::panelfexistFunc()
      1 on
      2 flip
 */
-int64_t FarMacroApi::flockFunc()
+void FarMacroApi::flockFunc()
 {
 	auto Params = parseParams(2);
 	int64_t Ret = -1;
@@ -1905,11 +1851,11 @@ int64_t FarMacroApi::flockFunc()
 	if (vkKey)
 		Ret=SetFLockState(vkKey,stateFLock);
 
-	return Ret;
+	PushInteger(Ret);
 }
 
 // N=Dlg->SetFocus([ID])
-int64_t FarMacroApi::dlgsetfocusFunc()
+void FarMacroApi::dlgsetfocusFunc()
 {
 	auto Params = parseParams(1);
 	TVar Ret(-1);
@@ -1960,16 +1906,15 @@ int FarMacroApi::get_config_index()
 
 // val,type,val0,key,name,saved = Far.GetConfig(Index)
 //   where Index may be integer or string (Key.Name)
-int64_t FarMacroApi::fargetconfigFunc()
+void FarMacroApi::fargetconfigFunc()
 {
 	if (mData->Values[0].Type == FMVT_STRING && !wcscmp(L"#", mData->Values[0].String)) {
-		PushNumber(ConfigOptGetSize());
-		return 0;
+		return PushNumber(ConfigOptGetSize());
 	}
 
 	int Index = get_config_index();
 	if (Index < 0)
-		return 0;  // PushError was already called
+		return;  // PushError was already called
 
 	GetConfig Data;
 	ConfigOptGetValue(Index, Data);
@@ -2020,7 +1965,6 @@ int64_t FarMacroApi::fargetconfigFunc()
 	PushString(Data.KeyName);
 	PushString(Data.ValName);
 	PushBoolean(Data.IsSave);
-	return 0;
 }
 
 static bool _SetConfig(int Index, const FarMacroValue &Value)
@@ -2068,11 +2012,11 @@ static bool _SetConfig(int Index, const FarMacroValue &Value)
 
 // Ok = Far.SetConfig(Index, Value)
 //   where Index may be integer or string (Key.Name)
-int64_t FarMacroApi::farsetconfigFunc()
+void FarMacroApi::farsetconfigFunc()
 {
 	int Index = get_config_index();
 	if (Index < 0)
-		return 0;  // PushError was already called
+		return;  // PushError was already called
 
 	bool Res = false;
 
@@ -2083,11 +2027,10 @@ int64_t FarMacroApi::farsetconfigFunc()
 	}
 
 	PushBoolean(Res);
-	return 0;
 }
 
 // V=Dlg.GetValue([Pos[,Type]])
-int64_t FarMacroApi::dlggetvalueFunc()
+void FarMacroApi::dlggetvalueFunc()
 {
 	auto Params = parseParams(2);
 	TVar Ret(-1);
@@ -2207,7 +2150,7 @@ int64_t FarMacroApi::dlggetvalueFunc()
 
 // N=Editor.Pos(Op,What[,Where])
 // Op: 0 - get, 1 - set
-int64_t FarMacroApi::editorposFunc()
+void FarMacroApi::editorposFunc()
 {
 	auto Params = parseParams(3);
 	TVar Ret(-1);
@@ -2310,16 +2253,16 @@ int64_t FarMacroApi::editorposFunc()
 				if (Result)
 					CurEditor->EditorControl(ECTL_REDRAW,nullptr);
 
-				return Result;
+				return PushInteger(Result);
 			}
 		}
 	}
 
-	return PushValue(Ret);
+	PushValue(Ret);
 }
 
 // OldVar=Editor.Set(Idx,Var)
-int64_t FarMacroApi::editorsetFunc()
+void FarMacroApi::editorsetFunc()
 {
 	TVar Ret(-1);
 	auto Params = parseParams(2);
@@ -2441,7 +2384,7 @@ int64_t FarMacroApi::editorsetFunc()
 }
 
 // V=Clip(N[,V])
-int64_t FarMacroApi::clipFunc()
+void FarMacroApi::clipFunc()
 {
 	auto Params = parseParams(2);
 	auto& Val = Params[1];
@@ -2471,7 +2414,7 @@ int64_t FarMacroApi::clipFunc()
 		}
 		case 1: // Put "S" into Clipboard
 		{
-			return CopyToClipboard(Val.s());
+			return PushInteger(CopyToClipboard(Val.s()));
 		}
 		case 2: // Add "S" into Clipboard
 		{
@@ -2504,7 +2447,7 @@ int64_t FarMacroApi::clipFunc()
 
 				clip.Close();
 			}
-			return Ret;
+			return PushInteger(Ret);
 		}
 		case 3: // Copy Win to internal, "S" - ignore
 		case 4: // Copy internal to Win, "S" - ignore
@@ -2524,7 +2467,7 @@ int64_t FarMacroApi::clipFunc()
 			Ret=CopyToClipboard(varClip.s());
 
 			Clipboard::SetUseInternalClipboardState(OldUseInternalClipboard);
-			return Ret; // 0!  ???
+			return PushInteger(Ret); // 0!  ???
 		}
 		case 5: // ClipMode
 		{
@@ -2542,17 +2485,17 @@ int64_t FarMacroApi::clipFunc()
 				}
 				Clipboard::SetUseInternalClipboardState(mode);
 			}
-			return prev_mode ? 2 : 1;
+			return PushInteger(prev_mode ? 2 : 1);
 		}
 	}
 
-	return Ret ? 1:0;
+	PushInteger(Ret ? 1 : 0);
 }
 
 // N=Panel.SetPosIdx(panelType,Idx[,InSelection])
 /*
 */
-int64_t FarMacroApi::panelsetposidxFunc()
+void FarMacroApi::panelsetposidxFunc()
 {
 	auto Params = parseParams(3);
 	int typePanel = Params[0].getInt32();
@@ -2662,11 +2605,11 @@ int64_t FarMacroApi::panelsetposidxFunc()
 		}
 	}
 
-	return Ret;
+	PushInteger(Ret);
 }
 
 // N=Panel.SetPos(panelType,fileName)
-int64_t FarMacroApi::panelsetposFunc()
+void FarMacroApi::panelsetposFunc()
 {
 	auto Params = parseParams(2);
 	auto& Val = Params[1];
@@ -2696,7 +2639,7 @@ int64_t FarMacroApi::panelsetposFunc()
 		}
 	}
 
-	return Ret;
+	PushInteger(Ret);
 }
 
 // Result=replace(Str,Find,Replace[,Cnt[,Mode]])
@@ -2710,7 +2653,7 @@ Mode:
       0 - case insensitive
       1 - case sensitive
 */
-int64_t FarMacroApi::replaceFunc()
+void FarMacroApi::replaceFunc()
 {
 	auto Params = parseParams(5);
 	int Mode    = Params[4].getInt32();
@@ -2741,12 +2684,10 @@ int64_t FarMacroApi::replaceFunc()
 	}
 	else
 		PushString(Src.s());
-
-	return 0;
 }
 
 // V=Panel.Item(typePanel,Index,TypeInfo)
-int64_t FarMacroApi::panelitemFunc()
+void FarMacroApi::panelitemFunc()
 {
 	auto Params = parseParams(3);
 	auto& P2 = Params[2];
@@ -2756,14 +2697,14 @@ int64_t FarMacroApi::panelitemFunc()
 	Panel *SelPanel = SelectPanel(typePanel);
 	if (!SelPanel)
 	{
-		return 0;
+		return PushInteger(0);
 	}
 
 	int TypePanel=SelPanel->GetType(); //FILE_PANEL,TREE_PANEL,QVIEW_PANEL,INFO_PANEL
 
 	if (!(TypePanel == FILE_PANEL || TypePanel ==TREE_PANEL))
 	{
-		return 0;
+		return PushInteger(0);
 	}
 
 	int Index=(int)(P1.toInteger())-1;
@@ -2786,7 +2727,7 @@ int64_t FarMacroApi::panelitemFunc()
 		FARString strDate, strTime;
 
 		if (nullptr == (filelistItem = fileList->GetItem(Index)))
-			return 0;
+			return PushInteger(0);
 
 		switch (TypeInfo)
 		{
@@ -2797,7 +2738,7 @@ int64_t FarMacroApi::panelitemFunc()
 				return PushString(filelistItem->strName);
 
 			case 2:  // FileAttr
-				return filelistItem->FileAttr;
+				return PushInteger(filelistItem->FileAttr);
 
 			case 3:  // CreationTime
 				ConvertDate(filelistItem->CreationTime,strDate,strTime,8,FALSE,FALSE,TRUE,TRUE);
@@ -2818,19 +2759,19 @@ int64_t FarMacroApi::panelitemFunc()
 				return PushString(strDate);
 
 			case 6:  // FileSize
-				return filelistItem->FileSize;
+				return PushInteger(filelistItem->FileSize);
 
 			case 7:  // PhysicalSize
-				return filelistItem->PhysicalSize;
+				return PushInteger(filelistItem->PhysicalSize);
 
 			case 8:  // Selected
 				return PushBoolean(filelistItem->Selected);
 
 			case 9:  // NumberOfLinks
-				return filelistItem->NumberOfLinks;
+				return PushInteger(filelistItem->NumberOfLinks);
 
 			case 10:  // SortGroup
-				return filelistItem->SortGroup;
+				return PushInteger(filelistItem->SortGroup);
 
 			case 11:  // DizText
 				fileList->ReadDiz();
@@ -2840,10 +2781,10 @@ int64_t FarMacroApi::panelitemFunc()
 				return PushString(filelistItem->strOwner);
 
 			case 13:  // CRC32
-				return filelistItem->CRC32;
+				return PushInteger(filelistItem->CRC32);
 
 			case 14:  // Position
-				return filelistItem->Position;
+				return PushInteger(filelistItem->Position);
 
 			case 15:  // CreationTime (FILETIME)
 				return PushInteger((int64_t)FileTimeToUI64(&filelistItem->CreationTime));
@@ -2855,10 +2796,10 @@ int64_t FarMacroApi::panelitemFunc()
 				return PushInteger((int64_t)FileTimeToUI64(&filelistItem->WriteTime));
 
 			case 18: // NumberOfStreams (deprecated)
-				return (filelistItem->FileAttr & FILE_ATTRIBUTE_DIRECTORY) ? 0 : 1;
+				return PushInteger((filelistItem->FileAttr & FILE_ATTRIBUTE_DIRECTORY) ? 0 : 1);
 
 			case 19: // StreamsSize (deprecated)
-				return 0;
+				return PushInteger(0);
 
 			case 20:  // ChangeTime
 				ConvertDate(filelistItem->ChangeTime,strDate,strTime,8,FALSE,FALSE,TRUE,TRUE);
@@ -2870,38 +2811,34 @@ int64_t FarMacroApi::panelitemFunc()
 				return PushInteger((int64_t)FileTimeToUI64(&filelistItem->ChangeTime));
 		}
 	}
-
-	return 0;
 }
 
 // N=len(V)
-int64_t FarMacroApi::lenFunc()
+void FarMacroApi::lenFunc()
 {
 	auto Params = parseParams(1);
-	return StrLength(Params[0].toString());
+	PushInteger(StrLength(Params[0].toString()));
 }
 
-int64_t FarMacroApi::ucaseFunc()
+void FarMacroApi::ucaseFunc()
 {
 	auto Params = parseParams(1);
 	wchar_t* Val = wcsdup(Params[0].toString());
 	StrUpper(Val);
 	PushString(Val);
 	free(Val);
-	return 0;
 }
 
-int64_t FarMacroApi::lcaseFunc()
+void FarMacroApi::lcaseFunc()
 {
 	auto Params = parseParams(1);
 	wchar_t* Val = wcsdup(Params[0].toString());
 	StrLower(Val);
 	PushString(Val);
 	free(Val);
-	return 0;
 }
 
-int64_t FarMacroApi::stringFunc()
+void FarMacroApi::stringFunc()
 {
 	auto Params = parseParams(1);
 	auto& Val = Params[0];
@@ -2910,7 +2847,7 @@ int64_t FarMacroApi::stringFunc()
 }
 
 // S=StrWrap(Text,Width[,Break[,Flags]])
-int64_t FarMacroApi::strwrapFunc()
+void FarMacroApi::strwrapFunc()
 {
 	auto Params = parseParams(4);
 	auto& Text  = Params[0];
@@ -2930,7 +2867,7 @@ int64_t FarMacroApi::strwrapFunc()
 	return PushString(strDest);
 }
 
-int64_t FarMacroApi::intFunc()
+void FarMacroApi::intFunc()
 {
 	auto Params = parseParams(1);
 	auto& Val = Params[0];
@@ -2938,7 +2875,7 @@ int64_t FarMacroApi::intFunc()
 	return PushValue(Val);
 }
 
-int64_t FarMacroApi::floatFunc()
+void FarMacroApi::floatFunc()
 {
 	auto Params = parseParams(1);
 	auto& Val = Params[0];
@@ -2946,7 +2883,7 @@ int64_t FarMacroApi::floatFunc()
 	return PushValue(Val);
 }
 
-int64_t FarMacroApi::absFunc()
+void FarMacroApi::absFunc()
 {
 	auto Params = parseParams(1);
 
@@ -2981,7 +2918,7 @@ int64_t FarMacroApi::absFunc()
 	return PushValue(Result);
 }
 
-int64_t FarMacroApi::ascFunc()
+void FarMacroApi::ascFunc()
 {
 	auto Params = parseParams(1);
 	auto& tmpVar = Params[0];
@@ -2995,21 +2932,21 @@ int64_t FarMacroApi::ascFunc()
 }
 
 // N=FMatch(S,Mask)
-int64_t FarMacroApi::fmatchFunc()
+void FarMacroApi::fmatchFunc()
 {
 	auto Params = parseParams(2);
 	auto& Mask(Params[1]);
 	auto& S(Params[0]);
 	CFileMask FileMask;
 
-	if (FileMask.Set(Mask.toString(), FMF_SILENT))
-		return FileMask.Compare(S.toString(), false);
+	int64_t Ret = FileMask.Set(Mask.toString(), FMF_SILENT) ?
+		FileMask.Compare(S.toString(), false) : -1;
 
-	return -1;
+	PushInteger(Ret);
 }
 
 // V=Editor.Sel(Action[,Opt])
-int64_t FarMacroApi::editorselFunc()
+void FarMacroApi::editorselFunc()
 {
 	/*
 	 MCODE_F_EDITOR_SEL
@@ -3061,7 +2998,7 @@ int64_t FarMacroApi::editorselFunc()
 }
 
 // V=Editor.Undo(N)
-int64_t FarMacroApi::editorundoFunc()
+void FarMacroApi::editorundoFunc()
 {
 	auto Params = parseParams(1);
 	auto& Action = Params[0];
@@ -3075,11 +3012,11 @@ int64_t FarMacroApi::editorundoFunc()
 		Ret=CurEditor->EditorControl(ECTL_UNDOREDO,&eur);
 	}
 
-	return Ret.i() ? 1:0;
+	PushInteger(Ret.i() ? 1:0);
 }
 
 // N=Editor.SetTitle([Title])
-int64_t FarMacroApi::editorsettitleFunc()
+void FarMacroApi::editorsettitleFunc()
 {
 	auto Params = parseParams(1);
 	auto& Title = Params[0];
@@ -3096,11 +3033,11 @@ int64_t FarMacroApi::editorsettitleFunc()
 		Ret=CurEditor->EditorControl(ECTL_SETTITLE,(void*)Title.s());
 	}
 
-	return Ret.i() ? 1:0;
+	PushInteger(Ret.i() ? 1:0);
 }
 
 // N=Plugin.Exist(SysId)
-int64_t FarMacroApi::pluginexistFunc()
+void FarMacroApi::pluginexistFunc()
 {
 	bool Ret = false;
 	if (mData->Count>0 && mData->Values[0].Type==FMVT_DOUBLE)
@@ -3121,7 +3058,7 @@ TSTFLD_EMPTY      (0) - пусто
 TSTFLD_NOTACCESS (-1) - нет доступа
 TSTFLD_ERROR     (-2) - ошибка (кривые параметры или нехватило памяти для выделения промежуточных буферов)
 */
-int64_t FarMacroApi::testfolderFunc()
+void FarMacroApi::testfolderFunc()
 {
 	auto Params = parseParams(1);
 	auto& tmpVar = Params[0];
@@ -3137,7 +3074,7 @@ int64_t FarMacroApi::testfolderFunc()
 			case 2: Ret=0; break;
 		}
 	}
-	return Ret;
+	PushInteger(Ret);
 }
 
 /*
@@ -3152,7 +3089,7 @@ Res=kbdLayout([N])
 Возвращает предыдущую раскладку (для N=0 текущую)
 */
 // N=kbdLayout([N])
-int64_t FarMacroApi::kbdLayoutFunc()
+void FarMacroApi::kbdLayoutFunc()
 {
 	//auto Params = parseParams(1);
 	//DWORD dwLayout = (DWORD)Params[0].getInteger();
@@ -3164,7 +3101,7 @@ int64_t FarMacroApi::kbdLayoutFunc()
 }
 
 //### temporary function, for test only
-int64_t FarMacroApi::udlSplitFunc()
+void FarMacroApi::udlSplitFunc()
 {
 	auto Params = parseParams(3);
 	auto Subj = Params[0].toString();
@@ -3183,10 +3120,9 @@ int64_t FarMacroApi::udlSplitFunc()
 	else {
 		PushBoolean(false);
 	}
-	return 0;
 }
 
-int64_t FarMacroApi::fargetinfoFunc()
+void FarMacroApi::fargetinfoFunc()
 {
 	PushTable();
 	SetField("Build", FAR_BUILD);
@@ -3212,6 +3148,4 @@ int64_t FarMacroApi::fargetinfoFunc()
 	Str.Format(L"GCC, version %d.%d.%d", __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__);
 #endif
 	SetField("Compiler", Str);
-
-	return 0;
 }

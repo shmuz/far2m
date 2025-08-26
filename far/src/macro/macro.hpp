@@ -79,7 +79,7 @@ public:
 	static bool    SaveMacros();
 	static void    SetMacroConst(MACROMOUSEINDEX ConstIndex, int64_t Value);
 
-	int64_t        CallFar(int CheckCode, const FarMacroCall* Data);
+	void           CallFar(int CheckCode, const FarMacroCall* Data);
 	bool           CanSendKeysToPlugin() const;
 	bool           CheckWaitKeyFunc() const;
 	FARMACROAREA   GetArea() const { return m_Area; }
