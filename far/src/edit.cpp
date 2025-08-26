@@ -1472,10 +1472,14 @@ bool Edit::InsertKey(FarKey Key)
 					if (m_CurPos < m_SelStart)
 						m_SelStart++;
 				}
-			}
 
-			m_PrevCurPos = m_CurPos;
-			m_Str.Replace(m_CurPos++, 0, Key, 1);
+				m_PrevCurPos = m_CurPos;
+				m_Str.Replace(m_CurPos++, 0, Key, 1);
+			}
+			else {
+				m_PrevCurPos = m_CurPos;
+				m_Str.ReplaceChar(m_CurPos++, Key);
+			}
 
 			wchar_t ch = static_cast<wchar_t>(Key);
 			CheckForSpecialWidthChars(&ch, 1);
