@@ -119,6 +119,8 @@ public:
 
 	virtual unsigned int RaiseRequestorPriority() = 0;
 	virtual void LowerRequestorPriority(unsigned int released_priority) = 0;
+
+	virtual DWORD GetBacktrace(INPUT_RECORD *data, DWORD size) = 0;
 };
 
 class ConsoleInputPriority
