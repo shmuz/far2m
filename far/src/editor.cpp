@@ -186,7 +186,7 @@ int Editor::SetRawData(const wchar_t *SrcBuf, int SizeSrcBuf, int TextFormat)
 {
 #if defined(PROJECT_DI_MEMOEDIT)
 	// InsertString(const wchar_t *lpwszStr, int nLength, Edit *pAfter)
-	TextChanged(1);
+	TextChanged(true);
 
 #endif
 	return TRUE;
@@ -439,7 +439,7 @@ void Editor::ShowEditor(int CurLineOnly)
   Even if state==0, this can be
   last UNDO.
 */
-void Editor::TextChanged(int State)
+void Editor::TextChanged(bool State)
 {
 	Flags.Change(FEDITOR_MODIFIED, State);
 	Flags.Set(FEDITOR_JUSTMODIFIED);
@@ -1567,7 +1567,7 @@ int Editor::ProcessKey(FarKey Key)
 						CurLine->ProcessKey(KEY_DEL);
 					}
 
-					TextChanged(1);
+					TextChanged(true);
 				}
 
 				Show();
@@ -1581,7 +1581,7 @@ int Editor::ProcessKey(FarKey Key)
 				if (!CurLine->m_prev && !CurPos && !BlockStart && !VBlockStart)
 					return TRUE;
 
-				TextChanged(1);
+				TextChanged(true);
 				int IsDelBlock = FALSE;
 
 				if (EdOpt.BSLikeDel) {
@@ -1614,7 +1614,7 @@ int Editor::ProcessKey(FarKey Key)
 		}
 		case KEY_CTRLBS: {
 			if (!Flags.Check(FEDITOR_LOCKMODE)) {
-				TextChanged(1);
+				TextChanged(true);
 
 				if (!Pasting && !EdOpt.PersistentBlocks && BlockStart)
 					DeleteBlock();
@@ -2324,7 +2324,7 @@ int Editor::ProcessKey(FarKey Key)
 			if (!Flags.Check(FEDITOR_LOCKMODE)) {
 				Pasting++;
 				AddUndoData(UNDO_BEGIN);
-				TextChanged(1);
+				TextChanged(true);
 
 				if (!EdOpt.PersistentBlocks && BlockStart) {
 					TurnOffMarkingBlock();
@@ -2349,7 +2349,7 @@ int Editor::ProcessKey(FarKey Key)
 					HostFileEditor->ShowStatus();
 
 				Pasting++;
-				TextChanged(1);
+				TextChanged(true);
 
 				if (!EdOpt.PersistentBlocks && BlockStart) {
 					TurnOffMarkingBlock();
@@ -2396,28 +2396,21 @@ int Editor::ProcessKey(FarKey Key)
 		}
 		case KEY_OP_PLAINTEXT: {
 			if (!Flags.Check(FEDITOR_LOCKMODE)) {
-				const wchar_t *Fmt = CtrlObject->Macro.GetStringToPrint();
-				FARString strTStr;
+				FARString strTStr = CtrlObject->Macro.GetStringToPrint();
+				if (strTStr.IsEmpty())
+					return TRUE;
 
-				strTStr = Fmt;
-
-				wchar_t *Ptr = strTStr.GetBuffer();
-
-				while (*Ptr)    // заменим L'\n' на L'\r' по правилам Paset ;-)
-				{
-					if (*Ptr == L'\n')
+				for (wchar_t *Ptr = strTStr.GetBuffer(); *Ptr; ++Ptr) {
+					if (*Ptr == L'\n') // заменим L'\n' на L'\r' по правилам Paset ;-)
 						*Ptr = L'\r';
-
-					++Ptr;
 				}
-
 				strTStr.ReleaseBuffer();
+
 				Pasting++;
 				//_SVS(SysLogDump(Fmt,0,TStr,strlen(TStr),nullptr));
-				TextChanged(1);
-				BOOL IsBlock = VBlockStart || BlockStart;
+				TextChanged(true);
 
-				if (!EdOpt.PersistentBlocks && IsBlock) {
+				if (!EdOpt.PersistentBlocks && (VBlockStart || BlockStart)) {
 					TurnOffMarkingBlock();
 					DeleteBlock();
 				}
@@ -2448,18 +2441,17 @@ int Editor::ProcessKey(FarKey Key)
 					return ret;
 				}
 
-				if (!Pasting && !EdOpt.PersistentBlocks && BlockStart)
-					if (IsCharKey(Key)) {
-						DeleteBlock();
-						/* $ 19.09.2002 SKV
-						  Однако надо.
-						  Иначе есди при надичии выделения набирать
-						  текст с шифтом флаги не сбросятся и следующий
-						  выделенный блок будет глючный.
-						*/
-						TurnOffMarkingBlock();
-						Show();
-					}
+				if (!Pasting && !EdOpt.PersistentBlocks && BlockStart && IsCharKey(Key)) {
+					DeleteBlock();
+					/* $ 19.09.2002 SKV
+					  Однако надо.
+					  Иначе есди при надичии выделения набирать
+					  текст с шифтом флаги не сбросятся и следующий
+					  выделенный блок будет глючный.
+					*/
+					TurnOffMarkingBlock();
+					Show();
+				}
 
 				int SkipCheckUndo = (Key == KEY_RIGHT || Key == KEY_NUMPAD6 || Key == KEY_CTRLLEFT
 						|| Key == KEY_CTRLNUMPAD4 || Key == KEY_CTRLRIGHT || Key == KEY_CTRLNUMPAD6
@@ -2513,7 +2505,7 @@ int Editor::ProcessKey(FarKey Key)
 
 				const wchar_t *Str;
 
-				wchar_t *CmpStr = 0;
+				wchar_t *CmpStr = nullptr;
 
 				int Length, CurPos;
 
@@ -2601,7 +2593,7 @@ int Editor::ProcessKey(FarKey Key)
 
 						if (NewLength != Length || memcmp(CmpStr, NewCmpStr, Length * sizeof(wchar_t))) {
 							AddUndoData(UNDO_EDIT, CmpStr, CurLine->GetEOL(), NumLine, CurPos, Length);    // EOL? - CurLine->GetEOL()  GlobalEOL   ""
-							TextChanged(1);
+							TextChanged(true);
 						}
 
 						delete[] CmpStr;
@@ -2846,7 +2838,7 @@ void Editor::DeleteString(Edit *DelPtr, int LineNumber, int DeleteLast, int Undo
 			VBlockStart = nullptr;
 	}
 
-	TextChanged(1);
+	TextChanged(true);
 
 	if (!DelPtr->m_next && (!DeleteLast || !DelPtr->m_prev)) {
 		AddUndoData(UNDO_EDIT, DelPtr->GetStringAddr(), DelPtr->GetEOL(), UndoLine, DelPtr->GetCurPos(),
@@ -2959,7 +2951,7 @@ void Editor::InsertString()
 	  Move TextChanged to the end of functions
 	  AFTER all modifications are made.
 	*/
-	//  TextChanged(1);
+	//  TextChanged(true);
 	Edit *NewString;
 	Edit *SrcIndent = nullptr;
 	int SelStart, SelEnd;
@@ -3180,7 +3172,7 @@ void Editor::InsertString()
 		}
 	}
 
-	TextChanged(1);
+	TextChanged(true);
 }
 
 void Editor::Down()
@@ -3548,7 +3540,7 @@ BOOL Editor::Search(int Next)
 							}
 
 							delete[] NewStr;
-							TextChanged(1);
+							TextChanged(true);
 						}
 
 						/* skv$*/
@@ -3625,7 +3617,7 @@ void Editor::Paste(const wchar_t *Src)
 	if (ClipText && *ClipText) {
 		AddUndoData(UNDO_BEGIN);
 		Flags.Set(FEDITOR_NEWUNDO);
-		TextChanged(1);
+		TextChanged(true);
 		int SaveOvertype = Flags.Check(FEDITOR_OVERTYPE);
 		UnmarkBlock();
 		Pasting++;
@@ -3803,7 +3795,7 @@ void Editor::DeleteBlock()
 	AddUndoData(UNDO_BEGIN);
 
 	for (int i = BlockStartLine; CurPtr; i++) {
-		TextChanged(1);
+		TextChanged(true);
 		int StartSel, EndSel;
 		/* $ 17.09.2002 SKV
 		  меняем на Real что б ловить выделение за концом строки.
@@ -4231,7 +4223,7 @@ void Editor::Undo(int redo)
 	if (ustart == UndoData.end())
 		return;
 
-	TextChanged(1);
+	TextChanged(true);
 	Flags.Set(FEDITOR_DISABLEUNDO);
 	int level = 0;
 	auto uend = ustart;
@@ -4308,7 +4300,7 @@ void Editor::Undo(int redo)
 	UndoPos = redo ? ud : --ud;
 
 	if (!Flags.Check(FEDITOR_UNDOSAVEPOSLOST) && UndoPos == UndoSavePos)
-		TextChanged(0);
+		TextChanged(false);
 
 	Flags.Clear(FEDITOR_DISABLEUNDO);
 }
@@ -4435,7 +4427,7 @@ void Editor::BlockLeft()
 			if (!MoveLine)
 				CurPtr->Select(StartSel > 0 ? StartSel - 1 : StartSel, EndSel > 0 ? EndSel - 1 : EndSel);
 
-			TextChanged(1);
+			TextChanged(true);
 		}
 
 		delete[] TmpStr;
@@ -4505,7 +4497,7 @@ void Editor::BlockRight()
 			if (!MoveLine)
 				CurPtr->Select(StartSel > 0 ? StartSel + 1 : StartSel, EndSel > 0 ? EndSel + 1 : EndSel);
 
-			TextChanged(1);
+			TextChanged(true);
 		}
 
 		delete[] TmpStr;
@@ -4548,7 +4540,7 @@ void Editor::DeleteVBlock()
 	Edit *CurPtr = VBlockStart;
 
 	for (int Line = 0; CurPtr && Line < VBlockSizeY; Line++, CurPtr = CurPtr->m_next) {
-		TextChanged(1);
+		TextChanged(true);
 		int TBlockX = CurPtr->CellPosToReal(VBlockX);
 		int TBlockSizeX = CurPtr->CellPosToReal(VBlockX + VBlockSizeX) - CurPtr->CellPosToReal(VBlockX);
 		const wchar_t *CurStr, *EndSeq;
@@ -4676,7 +4668,7 @@ void Editor::VPaste(wchar_t *ClipText)
 	if (*ClipText) {
 		AddUndoData(UNDO_BEGIN);
 		Flags.Set(FEDITOR_NEWUNDO);
-		TextChanged(1);
+		TextChanged(true);
 		int SaveOvertype = Flags.Check(FEDITOR_OVERTYPE);
 		UnmarkBlock();
 		Pasting++;
@@ -4762,7 +4754,7 @@ void Editor::VBlockShift(int Left)
 	AddUndoData(UNDO_BEGIN);
 
 	for (int Line = 0; CurPtr && Line < VBlockSizeY; Line++, CurPtr = CurPtr->m_next) {
-		TextChanged(1);
+		TextChanged(true);
 		int TBlockX = CurPtr->CellPosToReal(VBlockX);
 		int TBlockSizeX = CurPtr->CellPosToReal(VBlockX + VBlockSizeX) - CurPtr->CellPosToReal(VBlockX);
 		const wchar_t *CurStr, *EndSeq;
@@ -4975,7 +4967,7 @@ int Editor::EditorControl(int Command, void *Param)
 				int CurPos = CurPtr->GetCurPos();
 				CurPtr->SetBinaryString(NewStr, Length + LengthEOL);
 				CurPtr->SetCurPos(CurPos);
-				TextChanged(1);    // 10.08.2000 skv - Modified->TextChanged
+				TextChanged(true);    // 10.08.2000 skv - Modified->TextChanged
 				free(NewStr);
 			}
 
@@ -6038,7 +6030,7 @@ void Editor::Xlat()
 	AddUndoData(UNDO_END);
 
 	if (DoXlat)
-		TextChanged(1);
+		TextChanged(true);
 }
 /* SVS $ */
 

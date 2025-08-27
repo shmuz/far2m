@@ -251,7 +251,7 @@ class Editor:public ScreenObject
 		void GoToLine(int Line);
 		void GoToPosition();
 
-		void TextChanged(int State);
+		void TextChanged(bool State);
 
 		int  CalcDistance(Edit *From, Edit *To,int MaxDist);
 		void Paste(const wchar_t *Src=nullptr);

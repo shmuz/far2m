@@ -963,7 +963,7 @@ int FileEditor::ReProcessKey(FarKey Key,int CalledFromControl)
 				if (!m_editor->Flags.Check(FEDITOR_LOCKMODE))
 				{
 					m_editor->Pasting++;
-					m_editor->TextChanged(1);
+					m_editor->TextChanged(true);
 					BOOL IsBlock=m_editor->VBlockStart || m_editor->BlockStart;
 
 					if (!m_editor->EdOpt.PersistentBlocks && IsBlock)
@@ -1813,7 +1813,7 @@ int FileEditor::SaveFile(const wchar_t *Name,int Ask, bool bSaveAs, int TextForm
 			case 0:  // Save
 				break;
 			case 1:  // Not Save
-				m_editor->TextChanged(0); // 10.08.2000 skv: TextChanged() support;
+				m_editor->TextChanged(false); // 10.08.2000 skv: TextChanged() support;
 				return SAVEFILE_SUCCESS;
 		}
 	}
@@ -2093,7 +2093,7 @@ int FileEditor::SaveFile(const wchar_t *Name,int Ask, bool bSaveAs, int TextForm
 	/* 28.12.2001 VVM
 	  ! Проверить на успешную запись */
 	if (RetCode==SAVEFILE_SUCCESS)
-		m_editor->TextChanged(0);
+		m_editor->TextChanged(false);
 
 	if (GetDynamicallyBorn()) // принудительно сбросим Title // Flags.Check(FFILEEDIT_SAVETOSAVEAS) ????????
 		strTitle.Clear();
