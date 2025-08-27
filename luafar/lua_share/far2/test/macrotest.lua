@@ -2962,10 +2962,56 @@ local function test_Editor_Sel_Editor()
   assert_true(editor.Quit())
 end
 
+local function test_Editor_Misc()
+  local fname = far.MkTemp()
+  local flags = {EF_NONMODAL=1, EF_IMMEDIATERETURN=1, EF_DISABLEHISTORY=1, EF_DELETEONCLOSE=1}
+  assert_eq(editor.Editor(fname,nil,nil,nil,nil,nil,flags), F.EEC_MODIFIED)
+  assert_true(Area.Editor)
+
+  local EI = assert_table(editor.GetInfo())
+
+  local str = ("123456789-"):rep(4)
+  local str2, num
+
+  -- test Editor.Value
+  editor.SetString(nil,1,str)
+  assert_eq(Editor.Value, str)
+
+  -- test insertion with overtype=OFF
+  editor.SetString(nil,1,str)
+  editor.SetPosition(nil,1,1)
+  editor.InsertText(nil, "AB")
+  assert_eq(Editor.Value, "AB"..str)
+
+  -- test insertion with overtype=ON
+  editor.SetString(nil,1,str)
+  Keys("Ins")
+  editor.SetPosition(nil,1,1)
+  editor.InsertText(nil, "CD")
+  assert_eq(Editor.Value, "CD"..str:sub(3))
+  Keys("Ins")
+
+  -- test insertion beyond EOL (overtype=ON then OFF)
+  num = 20
+  assert_true(editor.SetParam(nil, "ESPT_CURSORBEYONDEOL", true))
+  str2 = str .. (" "):rep(num) .. "AB"
+  for _=1,2 do
+    Keys("Ins")
+    editor.SetString(nil,1,str)
+    editor.SetPosition(nil, 1, #str + 1 + num)
+    editor.InsertText(nil, "AB")
+    assert_eq(Editor.Value, str2)
+  end
+  assert_true(editor.SetParam(nil, "ESPT_CURSORBEYONDEOL", band(EI.Options, F.EOPT_CURSORBEYONDEOL) ~= 0))
+
+  editor.Quit()
+end
+
 function MT.test_Editor()
   test_Editor_Sel_Cmdline()
   test_Editor_Sel_Dialog()
   test_Editor_Sel_Editor()
+  test_Editor_Misc()
 end
 
 function MT.test_all()
