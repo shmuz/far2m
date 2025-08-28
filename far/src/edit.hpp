@@ -106,9 +106,9 @@ private:
 
 	std::vector<ColorItem> m_ColorList;
 
-	uint64_t Color;
-	uint64_t SelColor;
-	uint64_t ColorUnChanged;		// 28.07.2000 SVS - для диалога
+	uint64_t m_Color;
+	uint64_t m_SelColor;
+	uint64_t m_ColorUnChanged;		// 28.07.2000 SVS - для диалога
 
 	int m_LeftPos;
 	int m_CurPos;
@@ -133,7 +133,7 @@ private:
 	Callback m_Callback;
 
 	std::unique_ptr<MenuFilesSuggestor> m_pSuggestor;
-	bool HasSpecialWidthChars;
+	bool m_HasSpecialWidthChars;
 
 private:
 	virtual void DisplayObject();
@@ -188,8 +188,8 @@ public:
 	void SetObjectColor(uint64_t Color, uint64_t SelColor = 0xf,
 			uint64_t ColorUnChanged = FarColorToReal(COL_DIALOGEDITUNCHANGED));
 	// + Функция получения текущих Color,SelColor
-	long GetObjectColor() { return MAKELONG(Color, SelColor); }
-	int GetObjectColorUnChanged() { return ColorUnChanged; }
+	long GetObjectColor() { return MAKELONG(m_Color, m_SelColor); }
+	uint64_t GetObjectColorUnChanged() { return m_ColorUnChanged; }
 
 	void SetTabSize(int NewSize) { TabSize = NewSize; }
 	int GetTabSize() { return TabSize; }

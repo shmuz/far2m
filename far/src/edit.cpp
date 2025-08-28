@@ -120,9 +120,9 @@ Edit::Edit(ScreenObject *pOwner, Callback *aCallback)
 	SetWordDiv(Opt.strWordDiv);
 
 	Flags.Set(FEDITLINE_EDITBEYONDEND);
-	Color = F_LIGHTGRAY | B_BLACK;
-	SelColor = F_WHITE | B_BLACK;
-	ColorUnChanged = FarColorToReal(COL_DIALOGEDITUNCHANGED);
+	m_Color = F_LIGHTGRAY | B_BLACK;
+	m_SelColor = F_WHITE | B_BLACK;
+	m_ColorUnChanged = FarColorToReal(COL_DIALOGEDITUNCHANGED);
 	TabSize = Opt.EdOpt.TabSize;
 	TabExpandMode = EXPAND_NOTABS;
 	Flags.Change(FEDITLINE_DELREMOVESBLOCKS, Opt.EdOpt.DelRemovesBlocks);
@@ -208,7 +208,7 @@ DWORD Edit::SetCodePage(UINT codepage)
 			free(decoded);
 			m_Str = encoded;
 			m_Str.Truncate(length2);
-			HasSpecialWidthChars = false;
+			m_HasSpecialWidthChars = false;
 			CheckForSpecialWidthChars();
 		}
 
@@ -433,11 +433,11 @@ void Edit::FastShow()
 	}
 
 	OutStr.emplace_back(0);
-	SetColor(Color);
+	SetColor(m_Color);
 
 	if (CellSelStart == -1) {
 		if (Flags.Check(FEDITLINE_CLEARFLAG)) {
-			SetColor(ColorUnChanged);
+			SetColor(m_ColorUnChanged);
 
 			if (!m_Mask.IsEmpty()) {
 				RemoveTrailingSpaces(OutStr.data());
@@ -447,7 +447,7 @@ void Edit::FastShow()
 			}
 
 			FS << fmt::Cells() << fmt::LeftAlign() << OutStr.data();
-			SetColor(Color);
+			SetColor(m_Color);
 			int BlankLength = EditLength - OutStrCells;
 
 			if (BlankLength > 0) {
@@ -478,21 +478,21 @@ void Edit::FastShow()
 		if (CellSelStart >= EditLength /*|| !AllString && CellSelStart>=StrSize()*/
 				|| CellSelEnd < CellSelStart) {
 			if (Flags.Check(FEDITLINE_DROPDOWNBOX)) {
-				SetColor(SelColor);
+				SetColor(m_SelColor);
 				FS << fmt::Cells() << fmt::Expand(X2 - X1 + 1) << OutStr.data();
 			} else
 				Text(OutStr.data());
 		} else {
 			FS << fmt::Cells() << fmt::Truncate(CellSelStart) << OutStr.data();
-			SetColor(SelColor);
+			SetColor(m_SelColor);
 
 			if (!Flags.Check(FEDITLINE_DROPDOWNBOX)) {
 				FS << fmt::Cells() << fmt::Skip(CellSelStart) << fmt::Truncate(CellSelEnd - CellSelStart)
 				   << OutStr.data();
 
 				if (CellSelEnd < EditLength) {
-					// SetColor(Flags.Check(FEDITLINE_CLEARFLAG) ? SelColor:Color);
-					SetColor(Color);
+					// SetColor(Flags.Check(FEDITLINE_CLEARFLAG) ? m_SelColor:m_Color);
+					SetColor(m_Color);
 					FS << fmt::Cells() << fmt::Skip(CellSelEnd) << OutStr.data();
 				}
 			} else {
@@ -1507,9 +1507,9 @@ bool Edit::InsertKey(FarKey Key)
 
 void Edit::SetObjectColor(uint64_t Color, uint64_t SelColor, uint64_t ColorUnChanged)
 {
-	this->Color = Color;
-	this->SelColor = SelColor;
-	this->ColorUnChanged = ColorUnChanged;
+	m_Color = Color;
+	m_SelColor = SelColor;
+	m_ColorUnChanged = ColorUnChanged;
 }
 
 void Edit::GetString(wchar_t *Str, int MaxSize) const
@@ -1574,7 +1574,7 @@ const wchar_t *Edit::GetEOL()
 
 void Edit::CheckForSpecialWidthChars(const wchar_t *CheckStr, int Length)
 {
-	if (HasSpecialWidthChars) return;
+	if (m_HasSpecialWidthChars) return;
 
 	if (!CheckStr) {
 		CheckStr = m_Str;
@@ -1584,7 +1584,7 @@ void Edit::CheckForSpecialWidthChars(const wchar_t *CheckStr, int Length)
 	for (int i = 0; i < Length; ++i) {
 		const auto wc = CheckStr[i];
 		if (wc == L'\t' || CharClasses::IsFullWidth(wc) || CharClasses::IsXxxfix(wc) ) {
-			HasSpecialWidthChars = true;
+			m_HasSpecialWidthChars = true;
 			return;
 		}
 	}
@@ -1668,7 +1668,7 @@ void Edit::SetBinaryString(const wchar_t *Str, int Length)
 		m_PrevCurPos = m_CurPos;
 		m_CurPos = StrSize();
 
-		HasSpecialWidthChars=false;
+		m_HasSpecialWidthChars=false;
 		CheckForSpecialWidthChars();
 	}
 
@@ -1982,7 +1982,7 @@ int Edit::RealPosToCell(int PrevLength, int PrevPos, int Pos, int *CorrectPos)
 
 	// Если предыдущая позиция за концом строки, то табов там точно нет и
 	// вычислять особо ничего не надо, иначе производим вычисление
-	if (PrevPos >= StrSize() || !HasSpecialWidthChars)
+	if (PrevPos >= StrSize() || !m_HasSpecialWidthChars)
 		TabPos+= Pos - PrevPos;
 	else {
 		// Начинаем вычисление с предыдущей позиции
@@ -2023,7 +2023,7 @@ int Edit::RealPosToCell(int PrevLength, int PrevPos, int Pos, int *CorrectPos)
 
 int Edit::CellPosToReal(int Pos)
 {
-	if (!HasSpecialWidthChars) return Pos;
+	if (!m_HasSpecialWidthChars) return Pos;
 	int Index = 0;
 	for (int CellPos = 0; CellPos < Pos; Index++) {
 		if (Index >= StrSize()) {
@@ -2050,7 +2050,7 @@ int Edit::CellPosToReal(int Pos)
 
 void Edit::SanitizeSelectionRange()
 {
-	if (HasSpecialWidthChars && m_SelEnd >= m_SelStart && m_SelStart >= 0) {
+	if (m_HasSpecialWidthChars && m_SelEnd >= m_SelStart && m_SelStart >= 0) {
 		while (m_SelStart > 0 && CharClasses::IsXxxfix(m_Str[m_SelStart]))
 			--m_SelStart;
 
@@ -2312,9 +2312,9 @@ void Edit::ApplyColor()
 
 		// Раскрашиваем элемент, если есть что раскрашивать
 		if (Length > 0) {
-			ScrBuf.ApplyColor(Start, Y1, Start + Length - 1, Y1, Attr, SelColor);
+			ScrBuf.ApplyColor(Start, Y1, Start + Length - 1, Y1, Attr, m_SelColor);
 			// Не раскрашиваем выделение
-			//					SelColor >= COL_FIRSTPALETTECOLOR ? Palette[SelColor - COL_FIRSTPALETTECOLOR] : SelColor);
+			//					m_SelColor >= COL_FIRSTPALETTECOLOR ? Palette[m_SelColor - COL_FIRSTPALETTECOLOR] : m_SelColor);
 		}
 	}
 }

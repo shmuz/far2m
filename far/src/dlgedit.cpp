@@ -479,7 +479,7 @@ long DlgEdit::GetObjectColor()
 		return lineEdit->GetObjectColor();
 }
 
-int DlgEdit::GetObjectColorUnChanged()
+uint64_t DlgEdit::GetObjectColorUnChanged()
 {
 #if defined(PROJECT_DI_MEMOEDIT)
 
