@@ -499,13 +499,7 @@ void FileEditor::Init(const wchar_t *Name, UINT codepage, const wchar_t *Title, 
 		return;
 	}
 
-	if ((m_editor->m_EdOpt.ReadOnlyLock & 2) && FAttr != INVALID_FILE_ATTRIBUTES
-			&& (FAttr & (FILE_ATTRIBUTE_READONLY | ((m_editor->m_EdOpt.ReadOnlyLock & 0x60) >> 4))))
-			/* Hidden=0x2 System=0x4 - располагаются во 2-м полубайте,
-					поэтому применяем маску 0110.0000 и
-					сдвигаем на свое место => 0000.0110 и получаем
-					те самые нужные атрибуты  */
-	{
+	if ((m_editor->m_EdOpt.ReadOnlyLock & 2) && IsLockAttributes(FAttr)) {
 		if (Message(MSG_WARNING, 2, &EditorOpenRSHId, Msg::EditTitle, Name, Msg::EditRSH, Msg::EditROOpen,
 					Msg::Yes, Msg::No)) {
 			ExitCode = XC_OPEN_ERROR;
@@ -1347,9 +1341,7 @@ int FileEditor::LoadFile(const wchar_t *Name, int &UserBreak)
 	bool bCached = LoadFromCache(&cp);
 
 	DWORD FileAttributes = apiGetFileAttributes(Name);
-	if ((m_editor->m_EdOpt.ReadOnlyLock & 1) && FileAttributes != INVALID_FILE_ATTRIBUTES
-			&& (FileAttributes
-					& (FILE_ATTRIBUTE_READONLY | ((m_editor->m_EdOpt.ReadOnlyLock & 0x60) >> 4)))) {
+	if ((m_editor->m_EdOpt.ReadOnlyLock & 1) && IsLockAttributes(FileAttributes)) {
 		m_editor->Flags.Swap(FEDITOR_LOCKMODE);
 	}
 
@@ -2610,6 +2602,19 @@ bool FileEditor::AskOverwrite(const FARString &FileName)
 int FileEditor::GetEditorID() const
 {
 	return m_editor->m_EditorID;
+}
+
+bool FileEditor::IsLockAttributes(DWORD FileAttributes)
+{
+	/* Hidden=0x2 System=0x4 - располагаются во 2-м полубайте опции ReadOnlyLock,
+	   поэтому сдвигаем на свое место (>> 4) и применяем маску 0000.0110
+	   и получаем те самые нужные атрибуты
+	*/
+	if (FileAttributes != INVALID_FILE_ATTRIBUTES) {
+		auto ExtraAttr = (m_editor->m_EdOpt.ReadOnlyLock >> 4) & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM);
+		return (FileAttributes & (FILE_ATTRIBUTE_READONLY | ExtraAttr)) != 0;
+	}
+	return false;
 }
 
 void EditConsoleHistory(HANDLE con_hnd, bool Modal)

@@ -191,6 +191,7 @@ private:
 	const wchar_t *GetPluginData() { return strPluginData.CPtr(); }
 	bool LoadFromCache(EditorCacheParams *pp);
 	void SaveToCache();
+	bool IsLockAttributes(DWORD FileAttributes);
 };
 
 bool dlgOpenEditor(FARString &strFileName, UINT &codepage);
