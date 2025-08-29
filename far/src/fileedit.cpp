@@ -241,7 +241,7 @@ bool dlgSaveFileAs(FARString &strFileName, int &TextFormat, UINT &codepage, bool
 		{DI_EDIT,        5,  3,  70, 3,  {(DWORD_PTR)HistoryName}, DIF_FOCUS|DIF_HISTORY|DIF_EDITEXPAND|DIF_EDITPATH, L""},
 		{DI_TEXT,        3,  4,  0,  4,  {}, DIF_SEPARATOR, L""},
 		{DI_TEXT,        5,  5,  0,  5,  {}, 0,         Msg::EditCodePage},
-		{DI_COMBOBOX,    25, 5,  70, 5,  {}, DIF_DROPDOWNLIST | DIF_LISTWRAPMODE | DIF_LISTAUTOHIGHLIGHT, L""                       },
+		{DI_COMBOBOX,    25, 5,  70, 5,  {}, DIF_DROPDOWNLIST|DIF_LISTWRAPMODE|DIF_LISTAUTOHIGHLIGHT, L""},
 		{DI_CHECKBOX,    5,  6,  0,  6,  {AddSignature}, DIF_DISABLE, Msg::EditAddSignature},
 		{DI_TEXT,        3,  7,  0,  7,  {}, DIF_SEPARATOR, L""},
 		{DI_TEXT,        5,  8,  0,  8,  {}, 0,         Msg::EditSaveAsFormatTitle},
@@ -287,8 +287,6 @@ bool dlgSaveFileAs(FARString &strFileName, int &TextFormat, UINT &codepage, bool
 
 	return false;
 }
-
-const FileEditor *FileEditor::CurrentEditor = nullptr;
 
 FileEditor::FileEditor(const wchar_t *Name, UINT codepage, DWORD InitFlags, int StartLine, int StartChar,
 		const wchar_t *PluginData, int OpenModeExstFile)
@@ -365,7 +363,6 @@ FileEditor::~FileEditor()
 		delete m_editor;
 
 	m_editor = nullptr;
-	CurrentEditor = nullptr;
 
 	if (EditNamesList)
 		delete EditNamesList;
@@ -375,20 +372,17 @@ void FileEditor::Init(const wchar_t *Name, UINT codepage, const wchar_t *Title, 
 		int StartLine, int StartChar, const wchar_t *PluginData, int OpenModeExstFile)
 {
 	SudoClientRegion sdc_rgn;
+
 	class SmartLock
 	{
 	private:
 		Editor *editor;
 
 	public:
-		SmartLock(Editor *e)
-			:
-			editor(e)
-		{
-			editor->Lock();
-		}
+		SmartLock(Editor *e) : editor(e) { editor->Lock(); }
 		~SmartLock() { editor->Unlock(); }
 	};
+
 	SysErrorCode = 0;
 	int BlankFileName = !StrCmp(Name, Msg::NewFileName);
 	// AY: флаг оповещающий закрытие редактора.
@@ -407,7 +401,6 @@ void FileEditor::Init(const wchar_t *Name, UINT codepage, const wchar_t *Title, 
 	m_editor->SetOwner(this);
 	m_editor->SetCodePage(m_codepage);
 	*AttrStr = 0;
-	CurrentEditor = this;
 	SetTitle(Title);
 	EditNamesList = nullptr;
 	KeyBarVisible = Opt.EdOpt.ShowKeyBar;
@@ -445,11 +438,12 @@ void FileEditor::Init(const wchar_t *Name, UINT codepage, const wchar_t *Title, 
 							Msg::Current, Msg::NewOpen, Msg::Reload);
 				}
 				else {
-					MsgCode = (OpenModeExstFile == FEOPMODE_USEEXISTING)
-							? 0
-							: (OpenModeExstFile == FEOPMODE_NEWIFOPEN
-											? 1
-											: (OpenModeExstFile == FEOPMODE_RELOAD ? 2 : -100));
+					switch (OpenModeExstFile) {
+						case FEOPMODE_USEEXISTING: MsgCode = 0; break;
+						case FEOPMODE_NEWIFOPEN:   MsgCode = 1; break;
+						case FEOPMODE_RELOAD:      MsgCode = 2; break;
+						default:                   MsgCode = -100; break;
+					}
 				}
 
 				switch (MsgCode) {
@@ -506,13 +500,12 @@ void FileEditor::Init(const wchar_t *Name, UINT codepage, const wchar_t *Title, 
 	}
 
 	if ((m_editor->m_EdOpt.ReadOnlyLock & 2) && FAttr != INVALID_FILE_ATTRIBUTES
-			&& (FAttr
-					& (FILE_ATTRIBUTE_READONLY |
-							/* Hidden=0x2 System=0x4 - располагаются во 2-м полубайте,
-							   поэтому применяем маску 0110.0000 и
-							   сдвигаем на свое место => 0000.0110 и получаем
-							   те самые нужные атрибуты  */
-							((m_editor->m_EdOpt.ReadOnlyLock & 0x60) >> 4)))) {
+			&& (FAttr & (FILE_ATTRIBUTE_READONLY | ((m_editor->m_EdOpt.ReadOnlyLock & 0x60) >> 4))))
+			/* Hidden=0x2 System=0x4 - располагаются во 2-м полубайте,
+					поэтому применяем маску 0110.0000 и
+					сдвигаем на свое место => 0000.0110 и получаем
+					те самые нужные атрибуты  */
+	{
 		if (Message(MSG_WARNING, 2, &EditorOpenRSHId, Msg::EditTitle, Name, Msg::EditRSH, Msg::EditROOpen,
 					Msg::Yes, Msg::No)) {
 			ExitCode = XC_OPEN_ERROR;
@@ -1604,10 +1597,7 @@ class ContentSaver : public FileEditor::BaseContentWriter
 	CachedWrite CW;
 
 public:
-	ContentSaver(File &EditFile)
-		:
-		CW(EditFile)
-	{}
+	ContentSaver(File &EditFile) : CW(EditFile) {}
 
 	virtual void Write(const void *Data, size_t Length)
 	{
@@ -1642,14 +1632,12 @@ int FileEditor::SaveFile(const wchar_t *Name, int Ask, bool bSaveAs, int TextFor
 
 		switch (Message(MSG_WARNING, 3, &EditAskSaveId, Msg::EditTitle, Msg::EditAskSave, Msg::HYes, Msg::HNo,
 				Msg::HCancel)) {
-			case -1:
-			case -2:
-			case 2:                              // Continue Edit
+			default:                             // Continue Edit
 				return SAVEFILE_CANCEL;
 			case 0:                              // Save
 				break;
-			case 1:                              // Not Save
-				m_editor->TextChanged(false);    // 10.08.2000 skv: TextChanged() support;
+			case 1:                              // Don't Save
+				m_editor->TextChanged(false);
 				return SAVEFILE_SUCCESS;
 		}
 	}
@@ -1683,12 +1671,10 @@ int FileEditor::SaveFile(const wchar_t *Name, int Ask, bool bSaveAs, int TextFor
 
 					switch (Message(MSG_WARNING, 3, &EditAskSaveExtId, Msg::EditTitle, Msg::EditAskSaveExt,
 							Msg::HYes, Msg::EditBtnSaveAs, Msg::HCancel)) {
-						case -1:
-						case -2:
-						case 2:    // Continue Edit
+						default:   // Continue Edit
 							return SAVEFILE_CANCEL;
-						case 1:    // Save as
 
+						case 1:    // Save as
 							if (ProcessKey(KEY_SHIFTF2))
 								return SAVEFILE_SUCCESS;
 							else

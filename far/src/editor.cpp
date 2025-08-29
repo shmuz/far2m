@@ -363,18 +363,6 @@ void Editor::ShowEditor(int CurLineOnly)
 
 	if (!CurLineOnly) {
 		LeftPos = m_CurLine->GetLeftPos();
-#if 0
-
-		// крайне эксперементальный кусок!
-		if (CurPos+LeftPos < m_XX2)
-			LeftPos=0;
-		else if (m_CurLine->X2 < m_XX2)
-			LeftPos=m_CurLine->GetLength()-CurPos;
-
-		if (LeftPos < 0)
-			LeftPos=0;
-
-#endif
 
 		for (CurPtr = m_TopScreen, Y = Y1; Y <= Y2; Y++)
 			if (CurPtr) {
@@ -445,9 +433,7 @@ void Editor::TextChanged(bool State)
 bool Editor::CheckLine(Edit *line)
 {
 	if (line) {
-		Edit *eLine;
-
-		for (eLine = m_TopList; eLine; eLine = eLine->m_next) {
+		for (Edit *eLine = m_TopList; eLine; eLine = eLine->m_next) {
 			if (eLine == line)
 				return true;
 		}
@@ -536,22 +522,22 @@ int64_t Editor::VMProcess(int OpCode, void *vParam, int64_t iParam)
 
 	switch (OpCode) {
 		case MCODE_C_EMPTY:
-			return (int64_t)(!m_CurLine->m_next && !m_CurLine->m_prev);    //??
+			return !m_CurLine->m_next && !m_CurLine->m_prev;    //??
 		case MCODE_C_EOF:
-			return (int64_t)(!m_CurLine->m_next && CurPos >= m_CurLine->GetLength());
+			return !m_CurLine->m_next && CurPos >= m_CurLine->GetLength();
 		case MCODE_C_BOF:
-			return (int64_t)(!m_CurLine->m_prev && !CurPos);
+			return !m_CurLine->m_prev && !CurPos;
 		case MCODE_C_SELECTED:
-			return (int64_t)(m_BlockStart || m_VBlockStart ? TRUE : FALSE);
+			return m_BlockStart || m_VBlockStart ? TRUE : FALSE;
 		case MCODE_V_EDITORCURPOS:
-			return (int64_t)(m_CurLine->GetCellCurPos() + 1);
+			return m_CurLine->GetCellCurPos() + 1;
 		case MCODE_V_EDITORREALPOS:
-			return (int64_t)(m_CurLine->GetCurPos() + 1);
+			return m_CurLine->GetCurPos() + 1;
 		case MCODE_V_EDITORCURLINE:
-			return (int64_t)(m_NumLine + 1);
+			return m_NumLine + 1;
 		case MCODE_V_ITEMCOUNT:
 		case MCODE_V_EDITORLINES:
-			return (int64_t)m_NumLastLine;
+			return m_NumLastLine;
 			// работа со стековыми закладками
 		case MCODE_F_BM_ADD:
 			return AddStackBookmark();
@@ -583,7 +569,7 @@ int64_t Editor::VMProcess(int OpCode, void *vParam, int64_t iParam)
 			int64_t Ret = -1;
 			long Val[1];
 			EditorBookMarks ebm = {0};
-			int iMode = (int)((LONG_PTR)vParam);
+			LONG_PTR iMode = (LONG_PTR)vParam;
 
 			switch (iMode) {
 				case 0:
@@ -614,7 +600,7 @@ int64_t Editor::VMProcess(int OpCode, void *vParam, int64_t iParam)
 		case MCODE_F_EDITOR_SEL: {
 			int iLine;
 			int iPos;
-			int Action = (int)((INT_PTR)vParam);
+			INT_PTR Action = (INT_PTR)vParam;
 
 			switch (Action) {
 				case 0:    // Get Param
@@ -718,7 +704,7 @@ int64_t Editor::VMProcess(int OpCode, void *vParam, int64_t iParam)
 
 							UnmarkMacroBlock();
 							Show();
-							return (int64_t)Ret;
+							return Ret;
 						}
 					}
 
