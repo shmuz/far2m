@@ -44,7 +44,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FARString.hpp"
 
 class FileEditor;
-class KeyBar;
 
 struct InternalEditorBookMark
 {
@@ -84,12 +83,8 @@ struct EditorUndoData
 	wchar_t *Str;
 
 	EditorUndoData() { memset(this, 0, sizeof(*this)); }
-	~EditorUndoData()
-	{
-		if (Str) {
-			delete[] Str;
-		}
-	}
+	~EditorUndoData() { if (Str) delete[] Str; }
+
 	void SetData(int Type, const wchar_t *Str, const wchar_t *Eol, int StrNum, int StrPos, int Length = -1)
 	{
 		if (Length == -1 && Str)
@@ -163,65 +158,65 @@ private:
 		}
 	};
 
-	std::list<EditorUndoData> UndoData;
-	std::list<EditorUndoData>::iterator UndoPos;
-	std::list<EditorUndoData>::iterator UndoSavePos;
-	int UndoSkipLevel;
+	std::list<EditorUndoData> m_UndoData;
+	std::list<EditorUndoData>::iterator m_UndoPos;
+	std::list<EditorUndoData>::iterator m_UndoSavePos;
+	int m_UndoSkipLevel;
 
-	int LastChangeStrPos;
-	int NumLastLine;
-	int NumLine;
+	int m_LastChangeStrPos;
+	int m_NumLastLine;
+	int m_NumLine;
 	/* $ 26.02.2001 IS
 		 Сюда запомним размер табуляции и в дальнейшем будем использовать его,
 		 а не Opt.TabSize
 	*/
-	EditorOptions EdOpt;
+	EditorOptions m_EdOpt;
 
-	int Pasting;
-	wchar_t GlobalEOL[10];
+	int m_Pasting;
+	wchar_t m_GlobalEOL[10];
 
 	// работа с блоками из макросов (MCODE_F_EDITOR_SEL)
-	Edit *MBlockStart;
-	int MBlockStartX;
+	Edit *m_MBlockStart;
+	int m_MBlockStartX;
 
-	Edit *BlockStart;
-	int BlockStartLine;
-	Edit *VBlockStart;
+	Edit *m_BlockStart;
+	int m_BlockStartLine;
+	Edit *m_VBlockStart;
 
-	int VBlockX;
-	int VBlockSizeX;
-	int VBlockY;
-	int VBlockSizeY;
+	int m_VBlockX;
+	int m_VBlockSizeX;
+	int m_VBlockY;
+	int m_VBlockSizeY;
 
-	int MaxRightPos;
+	int m_MaxRightPos;
 
-	int XX2;    // scrollbar
+	int m_XX2;    // scrollbar
 
-	FARString strLastSearchStr;
+	FARString m_strLastSearchStr;
 	/* $ 30.07.2000 KM
 	   Новая переменная для поиска "Whole words"
 	*/
-	int LastSearchCase, LastSearchWholeWords, LastSearchReverse, LastSearchSelFound, LastSearchRegexp;
+	int m_LastSearchCase, m_LastSearchWholeWords, m_LastSearchReverse, m_LastSearchSelFound, m_LastSearchRegexp;
 
 	UINT m_codepage;    // BUGBUG
 
-	int StartLine;
-	int StartChar;
+	int m_StartLine;
+	int m_StartChar;
 
-	InternalEditorBookMark SavePos;
+	InternalEditorBookMark m_SavePos;
 
-	InternalEditorStackBookMark *StackPos;
-	BOOL NewStackPos;
+	InternalEditorStackBookMark *m_StackPos;
+	BOOL m_NewStackPos;
 
-	int EditorID;
+	int m_EditorID;
 
-	FileEditor *HostFileEditor;
-	Edit *TopList;
-	Edit *EndList;
-	Edit *TopScreen;
-	Edit *CurLine;
-	Edit *LastGetLine;
-	int LastGetLineNumber;
+	FileEditor *m_HostFileEditor;
+	Edit *m_TopList;
+	Edit *m_EndList;
+	Edit *m_TopScreen;
+	Edit *m_CurLine;
+	Edit *m_LastGetLine;
+	int m_LastGetLineNumber;
 
 	std::unordered_set<Edit *> m_AutoDeletedColors;
 
@@ -318,47 +313,47 @@ public:
 	void SetTitle(const wchar_t *Title);
 	long GetCurPos();
 	int EditorControl(int Command, void *Param);
-	void SetHostFileEditor(FileEditor *Editor) { HostFileEditor = Editor; }
+	void SetHostFileEditor(FileEditor *Editor) { m_HostFileEditor = Editor; }
 	static void SetReplaceMode(int Mode);
-	FileEditor *GetHostFileEditor() { return HostFileEditor; }
+	FileEditor *GetHostFileEditor() { return m_HostFileEditor; }
 	void PrepareResizedConsole() { Flags.Set(FEDITOR_ISRESIZEDCONSOLE); }
 
 	void SetTabSize(int NewSize);
-	int GetTabSize() const { return EdOpt.TabSize; }
+	int GetTabSize() const { return m_EdOpt.TabSize; }
 
 	void SetConvertTabs(int NewMode);
-	int GetConvertTabs() const { return EdOpt.ExpandTabs; }
+	int GetConvertTabs() const { return m_EdOpt.ExpandTabs; }
 
 	void SetDelRemovesBlocks(int NewMode);
-	int GetDelRemovesBlocks() const { return EdOpt.DelRemovesBlocks; }
+	int GetDelRemovesBlocks() const { return m_EdOpt.DelRemovesBlocks; }
 
 	void SetPersistentBlocks(int NewMode);
-	int GetPersistentBlocks() const { return EdOpt.PersistentBlocks; }
+	int GetPersistentBlocks() const { return m_EdOpt.PersistentBlocks; }
 
-	void SetAutoIndent(int NewMode) { EdOpt.AutoIndent = NewMode; }
-	int GetAutoIndent() const { return EdOpt.AutoIndent; }
+	void SetAutoIndent(int NewMode) { m_EdOpt.AutoIndent = NewMode; }
+	int GetAutoIndent() const { return m_EdOpt.AutoIndent; }
 
-	void SetAutoDetectCodePage(int NewMode) { EdOpt.AutoDetectCodePage = NewMode; }
-	int GetAutoDetectCodePage() const { return EdOpt.AutoDetectCodePage; }
+	void SetAutoDetectCodePage(int NewMode) { m_EdOpt.AutoDetectCodePage = NewMode; }
+	int GetAutoDetectCodePage() const { return m_EdOpt.AutoDetectCodePage; }
 
 	void SetCursorBeyondEOL(int NewMode);
-	int GetCursorBeyondEOL() const { return EdOpt.CursorBeyondEOL; }
+	int GetCursorBeyondEOL() const { return m_EdOpt.CursorBeyondEOL; }
 
-	void SetBSLikeDel(int NewMode) { EdOpt.BSLikeDel = NewMode; }
-	int GetBSLikeDel() const { return EdOpt.BSLikeDel; }
+	void SetBSLikeDel(int NewMode) { m_EdOpt.BSLikeDel = NewMode; }
+	int GetBSLikeDel() const { return m_EdOpt.BSLikeDel; }
 
-	void SetCharCodeBase(int NewMode) { EdOpt.CharCodeBase = NewMode % 3; }
-	int GetCharCodeBase() const { return EdOpt.CharCodeBase; }
+	void SetCharCodeBase(int NewMode) { m_EdOpt.CharCodeBase = NewMode % 3; }
+	int GetCharCodeBase() const { return m_EdOpt.CharCodeBase; }
 
-	void SetReadOnlyLock(int NewMode) { EdOpt.ReadOnlyLock = NewMode & 3; }
-	int GetReadOnlyLock() const { return EdOpt.ReadOnlyLock; }
+	void SetReadOnlyLock(int NewMode) { m_EdOpt.ReadOnlyLock = NewMode & 3; }
+	int GetReadOnlyLock() const { return m_EdOpt.ReadOnlyLock; }
 
-	void SetShowScrollBar(int NewMode) { EdOpt.ShowScrollBar = NewMode; }
+	void SetShowScrollBar(int NewMode) { m_EdOpt.ShowScrollBar = NewMode; }
 
-	void SetSearchPickUpWord(int NewMode) { EdOpt.SearchPickUpWord = NewMode; }
+	void SetSearchPickUpWord(int NewMode) { m_EdOpt.SearchPickUpWord = NewMode; }
 
-	void SetWordDiv(const wchar_t *WordDiv) { EdOpt.strWordDiv = WordDiv; }
-	const wchar_t *GetWordDiv() { return EdOpt.strWordDiv; }
+	void SetWordDiv(const wchar_t *WordDiv) { m_EdOpt.strWordDiv = WordDiv; }
+	const wchar_t *GetWordDiv() { return m_EdOpt.strWordDiv; }
 
 	void SetShowWhiteSpace(int NewMode);
 
@@ -393,7 +388,7 @@ public:
 	int GetClearFlag();
 
 	int GetCurCol();
-	int GetCurRow() { return NumLine; }
+	int GetCurRow() { return m_NumLine; }
 	void SetCurPos(int NewCol, int NewRow = -1);
 	void SetCursorType(bool Visible, DWORD Size);
 	void GetCursorType(bool &Visible, DWORD &Size);
