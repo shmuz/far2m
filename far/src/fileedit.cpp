@@ -1267,7 +1267,6 @@ int FileEditor::ProcessQuitKey(int FirstSave, BOOL NeedQuestion)
 	return (unsigned int)GetExitCode() == XC_QUIT;
 }
 
-// сюды плавно переносить код из Editor::ReadFile()
 int FileEditor::LoadFile(const wchar_t *Name, int &UserBreak)
 {
 	SudoClientRegion sdc_rgn;

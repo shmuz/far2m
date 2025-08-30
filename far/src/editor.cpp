@@ -2918,6 +2918,11 @@ void Editor::DeleteString(Edit *DelPtr, int LineNumber, int DeleteLast, int Undo
 	if (UndoLine != -1)
 		AddUndoData(UNDO_DELSTR, DelPtr->GetStringAddr(), DelPtr->GetEOL(), UndoLine, 0, DelPtr->GetLength());
 
+	if (m_LastGetLine == DelPtr) {
+		m_LastGetLine = nullptr;
+		m_LastGetLineNumber = 0;
+	}
+
 	m_AutoDeletedColors.erase(DelPtr);
 
 	delete DelPtr;
