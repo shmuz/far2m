@@ -114,9 +114,9 @@ private:
 	int m_CurPos;
 	int m_PrevCurPos;		// 12.08.2000 KM - предыдущее положение курсора
 
-	int TabSize;		// 14.02.2001 IS - Размер табуляции - по умолчанию равен Opt.TabSize;
+	int m_TabSize;		// 14.02.2001 IS - Размер табуляции - по умолчанию равен Opt.TabSize;
 
-	int TabExpandMode;
+	int m_TabExpandMode;
 
 	int m_MSelStart;
 	int m_SelStart;
@@ -126,7 +126,7 @@ private:
 
 	int m_CursorSize;
 	int m_CursorPos;
-	const FARString *strWordDiv;
+	const FARString *m_strWordDiv;
 
 	UINT m_codepage;	// BUGBUG
 
@@ -155,7 +155,7 @@ private:
 
 	int RealPosToCell(int PrevLength, int PrevPos, int Pos, int *CorrectPos);
 	void SanitizeSelectionRange();
-	inline const wchar_t *WordDiv() const { return strWordDiv->CPtr(); }
+	inline const wchar_t *WordDiv() const { return m_strWordDiv->CPtr(); }
 	bool IsWordDivX(int Pos) const;
 	bool IsSpaceX(int Pos) const;
 	bool IsEolX(int Pos) const;
@@ -191,8 +191,8 @@ public:
 	long GetObjectColor() { return MAKELONG(m_Color, m_SelColor); }
 	uint64_t GetObjectColorUnChanged() { return m_ColorUnChanged; }
 
-	void SetTabSize(int NewSize) { TabSize = NewSize; }
-	int GetTabSize() { return TabSize; }
+	void SetTabSize(int NewSize) { m_TabSize = NewSize; }
+	int GetTabSize() { return m_TabSize; }
 
 	void SetDelRemovesBlocks(int Mode) { Flags.Change(FEDITLINE_DELREMOVESBLOCKS, Mode); }
 	int GetDelRemovesBlocks() { return Flags.Check(FEDITLINE_DELREMOVESBLOCKS); }
@@ -235,7 +235,7 @@ public:
 		m_CurPos = NewPos;
 		m_PrevCurPos = NewPos;
 	}
-	int GetCurPos() { return (m_CurPos); }
+	int GetCurPos() { return m_CurPos; }
 	int GetCellCurPos();
 	void SetCellCurPos(int NewPos);
 	int GetLeftPos() { return (m_LeftPos); }
@@ -252,8 +252,8 @@ public:
 	void SetOvertypeMode(int Mode) { Flags.Change(FEDITLINE_OVERTYPE, Mode); }
 	int GetOvertypeMode() { return Flags.Check(FEDITLINE_OVERTYPE); }
 
-	void SetConvertTabs(int Mode) { TabExpandMode = Mode; }
-	int GetConvertTabs() { return TabExpandMode; }
+	void SetConvertTabs(int Mode) { m_TabExpandMode = Mode; }
+	int GetConvertTabs() { return m_TabExpandMode; }
 
 	int RealPosToCell(int Pos);
 	int CellPosToReal(int Pos);
@@ -282,7 +282,7 @@ public:
 	void SetReadOnly(int NewReadOnly) { Flags.Change(FEDITLINE_READONLY, NewReadOnly); }
 	int GetDropDownBox() { return Flags.Check(FEDITLINE_DROPDOWNBOX); }
 	void SetDropDownBox(int NewDropDownBox) { Flags.Change(FEDITLINE_DROPDOWNBOX, NewDropDownBox); }
-	void SetWordDiv(const FARString &WordDiv) { strWordDiv = &WordDiv; }
+	void SetWordDiv(const FARString &WordDiv) { m_strWordDiv = &WordDiv; }
 	virtual void Changed(bool DelBlock = false);
 };
 

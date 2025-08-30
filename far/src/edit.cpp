@@ -123,8 +123,8 @@ Edit::Edit(ScreenObject *pOwner, Callback *aCallback)
 	m_Color = F_LIGHTGRAY | B_BLACK;
 	m_SelColor = F_WHITE | B_BLACK;
 	m_ColorUnChanged = FarColorToReal(COL_DIALOGEDITUNCHANGED);
-	TabSize = Opt.EdOpt.TabSize;
-	TabExpandMode = EXPAND_NOTABS;
+	m_TabSize = Opt.EdOpt.TabSize;
+	m_TabExpandMode = EXPAND_NOTABS;
 	Flags.Change(FEDITLINE_DELREMOVESBLOCKS, Opt.EdOpt.DelRemovesBlocks);
 	Flags.Change(FEDITLINE_PERSISTENTBLOCKS, Opt.EdOpt.PersistentBlocks);
 	Flags.Change(FEDITLINE_SHOWWHITESPACE, Opt.EdOpt.ShowWhiteSpace);
@@ -336,7 +336,7 @@ void Edit::FastShow()
 			// tricky left pos shifting to
 			// - avoid m_LeftPos pointing into middle of full-width char cells pair
 			// - ensure RealLeftPos really shifted in case string starts by some long character
-			for (int ShiftBy = 1; ShiftBy <= std::max(TabSize, 2); ++ShiftBy) {
+			for (int ShiftBy = 1; ShiftBy <= Max(m_TabSize, 2); ++ShiftBy) {
 				RealLeftPos = CellPosToReal(CellCurPos - EditLength + ShiftBy);
 				int NewLeftPos = RealPosToCell(RealLeftPos);
 				if (m_LeftPos != NewLeftPos) {
@@ -405,7 +405,7 @@ void Edit::FastShow()
 		}
 
 		if (wc == L'\t') {
-			for (int j = 0, S = TabSize - ((m_LeftPos + OutStrCells) % TabSize);
+			for (int j = 0, S = m_TabSize - ((m_LeftPos + OutStrCells) % m_TabSize);
 					j < S && OutStrCells < EditLength; ++j, ++OutStrCells) {
 				OutStr.emplace_back(
 						(Flags.Check(FEDITLINE_SHOWWHITESPACE) && Flags.Check(FEDITLINE_EDITORMODE) && !j)
@@ -559,16 +559,22 @@ int64_t Edit::VMProcess(int OpCode, void *vParam, int64_t iParam)
 	switch (OpCode) {
 		case MCODE_C_EMPTY:
 			return !GetLength();
+
 		case MCODE_C_SELECTED:
 			return m_SelStart != -1 && m_SelStart < m_SelEnd;
+
 		case MCODE_C_EOF:
 			return m_CurPos >= StrSize();
+
 		case MCODE_C_BOF:
 			return !m_CurPos;
+
 		case MCODE_V_ITEMCOUNT:
 			return StrSize();
+
 		case MCODE_V_CURPOS:
 			return m_CurPos + 1;
+
 		case MCODE_F_EDITOR_SEL: {
 
 			switch ((INT_PTR)vParam) {
@@ -595,6 +601,7 @@ int64_t Edit::VMProcess(int OpCode, void *vParam, int64_t iParam)
 							case 0:    // begin block (FirstLine & FirstPos)
 							case 1:    // end block (LastLine & LastPos)
 							{
+								//### SetCurPos(iParam ? m_SelEnd : m_SelStart);
 								SetCellCurPos(iParam ? m_SelEnd : m_SelStart);
 								Show();
 								return 1;
@@ -736,13 +743,14 @@ int Edit::ProcessKey(FarKey Key)
 
 	int _Macro_IsExecuting = CtrlObject->Macro.IsExecuting();
 
-	// $ 04.07.2000 IG - добавлена проврерка на запуск макроса (00025.edit.cpp.txt)
+	// $ 04.07.2000 IG - добавлена проверка на запуск макроса (00025.edit.cpp.txt)
 	if (!ShiftPressed && (!_Macro_IsExecuting || (IsNavKey(Key) && _Macro_IsExecuting)) && !IsShiftKey(Key)
 			&& !Recurse && Key != KEY_SHIFT && Key != KEY_CTRL && Key != KEY_ALT && Key != KEY_RCTRL
 			&& Key != KEY_RALT && Key != KEY_NONE && Key != KEY_INS && Key != KEY_KILLFOCUS
 			&& Key != KEY_GOTFOCUS
 			&& ((Key & (~KEY_CTRLMASK)) != KEY_LWIN && (Key & (~KEY_CTRLMASK)) != KEY_RWIN
-					&& (Key & (~KEY_CTRLMASK)) != KEY_APPS)) {
+					&& (Key & (~KEY_CTRLMASK)) != KEY_APPS))
+	{
 		Flags.Clear(FEDITLINE_MARKINGBLOCK);    // хмм... а это здесь должно быть?
 
 		if (!Flags.Check(FEDITLINE_PERSISTENTBLOCKS) && !(Key == KEY_CTRLINS || Key == KEY_CTRLNUMPAD0)
@@ -834,6 +842,7 @@ int Edit::ProcessKey(FarKey Key)
 
 			return TRUE;
 		}
+
 		case KEY_SHIFTRIGHT:
 		case KEY_SHIFTNUMPAD6: {
 			if (!Flags.Check(FEDITLINE_MARKINGBLOCK)) {
@@ -852,6 +861,7 @@ int Edit::ProcessKey(FarKey Key)
 			RecurseProcessKey(KEY_RIGHT);
 			return TRUE;
 		}
+
 		case KEY_CTRLSHIFTLEFT:
 		case KEY_CTRLSHIFTNUMPAD4: {
 			if (m_CurPos > StrSize()) {
@@ -873,6 +883,7 @@ int Edit::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_CTRLSHIFTRIGHT:
 		case KEY_CTRLSHIFTNUMPAD6: {
 			if (m_CurPos >= StrSize())
@@ -893,6 +904,7 @@ int Edit::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_SHIFTHOME:
 		case KEY_SHIFTNUMPAD7: {
 			Lock();
@@ -904,6 +916,7 @@ int Edit::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_SHIFTEND:
 		case KEY_SHIFTNUMPAD1: {
 			Lock();
@@ -924,6 +937,7 @@ int Edit::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_BS: {
 			if (m_CurPos <= 0)
 				return FALSE;
@@ -944,6 +958,7 @@ int Edit::ProcessKey(FarKey Key)
 
 			return TRUE;
 		}
+
 		case KEY_CTRLSHIFTBS: {
 			DisableCallback DC(m_Callback);
 
@@ -956,6 +971,7 @@ int Edit::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_CTRLBS: {
 			if (m_CurPos > StrSize()) {
 				m_PrevCurPos = m_CurPos;
@@ -988,6 +1004,7 @@ int Edit::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_CTRLQ: {
 			Lock();
 
@@ -1000,6 +1017,7 @@ int Edit::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_OP_SELWORD: {
 			int OldCurPos = m_CurPos;
 			PrevSelStart = m_SelStart;
@@ -1021,19 +1039,18 @@ int Edit::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_OP_PLAINTEXT: {
 			if (!Flags.Check(FEDITLINE_PERSISTENTBLOCKS)) {
 				if (m_SelStart != -1 || Flags.Check(FEDITLINE_CLEARFLAG))    // BugZ#1053 - Неточности в $Text
 					RecurseProcessKey(KEY_DEL);
 			}
 
-			const wchar_t *S = CtrlObject->Macro.GetStringToPrint();
-
-			ProcessInsPlainText(S);
-
+			ProcessInsPlainText(CtrlObject->Macro.GetStringToPrint());
 			Show();
 			return TRUE;
 		}
+
 		case KEY_CTRLT:
 		case KEY_CTRLDEL:
 		case KEY_CTRLNUMDEL:
@@ -1077,6 +1094,7 @@ int Edit::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_CTRLY: {
 			if (Flags.Check(FEDITLINE_READONLY | FEDITLINE_DROPDOWNBOX))
 				return (TRUE);
@@ -1089,6 +1107,7 @@ int Edit::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_CTRLK: {
 			if (Flags.Check(FEDITLINE_READONLY | FEDITLINE_DROPDOWNBOX))
 				return (TRUE);
@@ -1119,6 +1138,7 @@ int Edit::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_END:
 		case KEY_NUMPAD1:
 		case KEY_CTRLEND:
@@ -1130,6 +1150,7 @@ int Edit::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_LEFT:
 		case KEY_NUMPAD4:
 		case KEY_MSWHEEL_LEFT:
@@ -1142,6 +1163,7 @@ int Edit::ProcessKey(FarKey Key)
 
 			return TRUE;
 		}
+
 		case KEY_RIGHT:
 		case KEY_NUMPAD6:
 		case KEY_MSWHEEL_RIGHT:
@@ -1151,12 +1173,14 @@ int Edit::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_INS:
 		case KEY_NUMPAD0: {
 			Flags.Swap(FEDITLINE_OVERTYPE);
 			Show();
 			return TRUE;
 		}
+
 		case KEY_NUMDEL:
 		case KEY_DEL: {
 			if (Flags.Check(FEDITLINE_READONLY | FEDITLINE_DROPDOWNBOX))
@@ -1206,6 +1230,7 @@ int Edit::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_CTRLLEFT:
 		case KEY_CTRLNUMPAD4: {
 			m_PrevCurPos = m_CurPos;
@@ -1224,6 +1249,7 @@ int Edit::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_CTRLRIGHT:
 		case KEY_CTRLNUMPAD6: {
 			if (m_CurPos >= StrSize())
@@ -1250,6 +1276,7 @@ int Edit::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_SHIFTNUMDEL:
 		case KEY_SHIFTDECIMAL:
 		case KEY_SHIFTDEL: {
@@ -1261,6 +1288,7 @@ int Edit::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_CTRLINS:
 		case KEY_CTRLNUMPAD0: {
 			if (!Flags.Check(FEDITLINE_PASSWORDMODE)) {
@@ -1279,6 +1307,7 @@ int Edit::ProcessKey(FarKey Key)
 
 			return TRUE;
 		}
+
 		case KEY_SHIFTINS:
 		case KEY_SHIFTNUMPAD0: {
 			wchar_t *ClipText = PasteFromClipboardEx(m_MaxLength);
@@ -1320,17 +1349,20 @@ int Edit::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_SHIFTTAB: {
 			m_PrevCurPos = m_CurPos;
-			m_CursorPos-= (m_CursorPos - 1) % TabSize + 1;
+			m_CursorPos-= (m_CursorPos - 1) % m_TabSize + 1;
 
-			m_CursorPos = Max(m_CursorPos, 0); // m_CursorPos=0,TabSize=1 case
+			m_CursorPos = Max(m_CursorPos, 0); // m_CursorPos=0,m_TabSize=1 case
 			SetCellCurPos(m_CursorPos);
 			Show();
 			return TRUE;
 		}
+
 		case KEY_SHIFTSPACE:
 			Key = KEY_SPACE;
+
 		default: {
 			// D(SysLog(L"Key=0x%08X",Key));
 			if (Key == KEY_ENTER || !IS_KEY_NORMAL(Key))    // KEY_NUMENTER,KEY_IDLE,KEY_NONE covered by !IS_KEY_NORMAL
@@ -1410,7 +1442,7 @@ bool Edit::InsertKey(FarKey Key)
 
 	if (Key == KEY_TAB && Flags.Check(FEDITLINE_OVERTYPE)) {
 		m_PrevCurPos = m_CurPos;
-		m_CursorPos+= TabSize - (m_CursorPos % TabSize);
+		m_CursorPos+= m_TabSize - (m_CursorPos % m_TabSize);
 		SetCellCurPos(m_CursorPos);
 		return true;
 	}
@@ -1459,7 +1491,7 @@ bool Edit::InsertKey(FarKey Key)
 				m_Str.Replace(StrSize(), 0, L' ', m_CurPos - StrSize());
 			}
 
-			if (Key == KEY_TAB && (TabExpandMode == EXPAND_NEWTABS || TabExpandMode == EXPAND_ALLTABS)) {
+			if (Key == KEY_TAB && (m_TabExpandMode == EXPAND_NEWTABS || m_TabExpandMode == EXPAND_ALLTABS)) {
 				InsertTab();
 				return true;
 			}
@@ -1662,7 +1694,7 @@ void Edit::SetBinaryString(const wchar_t *Str, int Length)
 	} else {
 		m_Str = FARString(Str, Length);
 
-		if (TabExpandMode == EXPAND_ALLTABS)
+		if (m_TabExpandMode == EXPAND_ALLTABS)
 			ExpandTabs();
 
 		m_PrevCurPos = m_CurPos;
@@ -1792,7 +1824,7 @@ void Edit::InsertBinaryString(const wchar_t *Str, int Length)
 			m_PrevCurPos = m_CurPos;
 			m_CurPos+= Length;
 
-			if (TabExpandMode == EXPAND_ALLTABS)
+			if (m_TabExpandMode == EXPAND_ALLTABS)
 				ExpandTabs();
 
 			CheckForSpecialWidthChars(Str, Length);
@@ -1898,7 +1930,7 @@ void Edit::InsertTab()
 		return;
 
 	const int Pos = m_CurPos;
-	const int S = TabSize - (Pos % TabSize);
+	const int S = m_TabSize - (Pos % m_TabSize);
 
 	if (m_SelStart != -1) {
 		if (Pos <= m_SelStart) {
@@ -1928,7 +1960,7 @@ void Edit::ExpandTabs()
 	while ((TabPtr = (wchar_t *)wmemchr(m_Str + Pos, L'\t', StrSize() - Pos))) {
 		changed = true;
 		Pos = (int)(TabPtr - m_Str);
-		S = TabSize - ((int)(TabPtr - m_Str) % TabSize);
+		S = m_TabSize - ((int)(TabPtr - m_Str) % m_TabSize);
 
 		if (m_SelStart != -1) {
 			if (Pos <= m_SelStart) {
@@ -1993,7 +2025,7 @@ int Edit::RealPosToCell(int PrevLength, int PrevPos, int Pos, int *CorrectPos)
 		for (; Index < Min(Pos, StrSize()); Index++)
 
 			// Обрабатываем табы
-			if (m_Str[Index] == L'\t' && TabExpandMode != EXPAND_ALLTABS) {
+			if (m_Str[Index] == L'\t' && m_TabExpandMode != EXPAND_ALLTABS) {
 				// Если есть необходимость делать корректировку табов и эта коректировка
 				// ещё не проводилась, то увеличиваем длину обрабатываемой строки на еденицу
 				if (bCorrectPos) {
@@ -2003,7 +2035,7 @@ int Edit::RealPosToCell(int PrevLength, int PrevPos, int Pos, int *CorrectPos)
 				}
 
 				// Расчитываем длину таба с учётом настроек и текущей позиции в строке
-				TabPos+= TabSize - (TabPos % TabSize);
+				TabPos+= m_TabSize - (TabPos % m_TabSize);
 			}
 			// Обрабатываем все остальные символы
 			else {
@@ -2031,8 +2063,8 @@ int Edit::CellPosToReal(int Pos)
 			break;
 		}
 
-		if (m_Str[Index] == L'\t' && TabExpandMode != EXPAND_ALLTABS) {
-			int NewCellPos = CellPos + TabSize - (CellPos % TabSize);
+		if (m_Str[Index] == L'\t' && m_TabExpandMode != EXPAND_ALLTABS) {
+			int NewCellPos = CellPos + m_TabSize - (CellPos % m_TabSize);
 
 			if (NewCellPos > Pos)
 				break;
