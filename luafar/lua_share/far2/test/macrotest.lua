@@ -2823,15 +2823,15 @@ local function test_Editor_Sel_Cmdline(args)
     assert_eq(panel.GetCmdLinePos(), pos + w + 1)
     --------------------------------------------------------------------------------------------------
     for act = 2,3 do
-      panel.SetCmdLinePos(nil,10)              -- set block start
+      panel.SetCmdLinePos(nil,pos)             -- set block start
       assert_eq(1, Editor.Sel(act,0))          -- +++
-      panel.SetCmdLinePos(nil,20)              -- set block end (it also selects the block)
+      panel.SetCmdLinePos(nil,pos + w)         -- set block end (it also selects the block)
       assert_eq(1, Editor.Sel(act,1))          -- +++
 
       assert_eq(Editor.Sel(0,0), 1)
-      assert_eq(Editor.Sel(0,1), 10)
+      assert_eq(Editor.Sel(0,1), pos)
       assert_eq(Editor.Sel(0,2), 1)
-      assert_eq(Editor.Sel(0,3), 20-1)
+      assert_eq(Editor.Sel(0,3), pos + w - 1)
       assert_eq(Editor.Sel(0,4), 1)
     end
     --------------------------------------------------------------------------------------------------
