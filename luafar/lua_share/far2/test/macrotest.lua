@@ -2794,12 +2794,7 @@ function MT.test_UserDefinedList()
   end
 end
 
-local function test_Editor_Sel_Cmdline()
-  local args = {
-    ("123456789-"):rep(4),
-    ("12\t4\t6789-"):rep(4),
-    ("12🔥4🔥6789-"):rep(4),
-  }
+local function test_Editor_Sel_Cmdline(args)
   for _, str in ipairs(args) do
     assert_true(Area.Shell)
     panel.SetCmdLine(nil, str)
@@ -2847,18 +2842,12 @@ local function test_Editor_Sel_Cmdline()
   end
 end
 
-local function test_Editor_Sel_Dialog()
+local function test_Editor_Sel_Dialog(args)
   Keys("F7 Del")
   assert_true(Area.Dialog)
   local inf = actl.GetWindowInfo()
   local hDlg = assert_udata(inf.Id)
   local EditPos = assert_num(hDlg:GetFocus())
-
-  local args = {
-    ("123456789-"):rep(4),
-    ("12\t4\t6789-"):rep(4),
-    ("12🔥4🔥6789-"):rep(4),
-  }
 
   for _, str in ipairs(args) do
     hDlg:SetText(EditPos, str)
@@ -2911,15 +2900,14 @@ local function test_Editor_Sel_Dialog()
   Keys("Esc")
 end
 
-local function test_Editor_Sel_Editor()
+local function test_Editor_Sel_Editor(args)
+  local R2T, T2R = editor.RealToTab, editor.TabToReal
+  local T2R2T = function(id, y, x)
+    return R2T(id, y, T2R(id, y, x)) -- needed when the column position is "inside" a tab
+  end
+
   Keys("ShiftF4 Del Enter")
   assert_true(Area.Editor)
-
-  local args = {
-    ("123456789-"):rep(4),
-    --("12\t4\t6789-"):rep(4),
-    --("12🔥4🔥6789-"):rep(4),
-  }
 
   for _, str in ipairs(args) do
     Keys("CtrlA Del")
@@ -2938,51 +2926,51 @@ local function test_Editor_Sel_Editor()
 
     for ii=1,2 do
       local typ = ii==1 and "BTYPE_STREAM" or "BTYPE_COLUMN"
-      local startpos = ii==1 and editor.RealToTab(nil, line-1+h, pos) or pos
-      local endpos = ii==1 and editor.RealToTab(nil, line-1+h, pos+w) or pos+w
+      local ref_x1 = (ii==1 and R2T or T2R2T)(nil, line, pos)
+      local ref_x2 = (ii==1 and R2T or T2R2T)(nil, line-1+h, pos+w)
 
       assert_true(editor.Select(nil, typ, line, pos, w, h)) -- select the block
       assert_eq(Editor.Sel(act,0), line)      -- get block start line
-      assert_eq(Editor.Sel(act,1), startpos)  -- get block start pos
+      assert_eq(Editor.Sel(act,1), ref_x1)    -- get block start pos
       assert_eq(Editor.Sel(act,2), line-1+h)  -- get block end line
-      assert_eq(Editor.Sel(act,3), endpos)    -- get block end pos
+      assert_eq(Editor.Sel(act,3), ref_x2)    -- get block end pos
       assert_eq(Editor.Sel(act,4), ii)        -- get block type
     end
     --------------------------------------------------------------------------------------------------
     act = 1
     for ii=1,2 do
       local typ = ii==1 and "BTYPE_STREAM" or "BTYPE_COLUMN"
-      local startpos = ii==1 and pos or editor.TabToReal(nil, line-1+h, pos) or pos
-      local endpos = ii==1 and pos+w or editor.TabToReal(nil, line-1+h, pos+w)
+      local ref_x1 = ii==1 and pos or T2R(nil, line, pos) or pos
+      local ref_x2 = ii==1 and pos+w or T2R(nil, line-1+h, pos+w)
 
       local inf
       assert_true(editor.Select(nil, typ, line, pos, w, h)) -- select the block
 
----editor.Redraw()
-
       assert_eq(1, Editor.Sel(act, 0)) -- set cursor at block start
       inf = editor.GetInfo()
       assert_eq(inf.CurLine, line)
----far.Show("startpos", inf.CurPos, startpos)
-      assert_eq(inf.CurPos, startpos)
+      assert_eq(inf.CurPos, ref_x1)
 
       assert_eq(1, Editor.Sel(act, 1)) -- set cursor next to block end
       inf = editor.GetInfo()
       assert_eq(inf.CurLine, line-1+h)
----far.Show("endpos", inf.CurPos, endpos)
-      assert_eq(inf.CurPos, endpos)
+      assert_eq(inf.CurPos, ref_x2)
     end
     --------------------------------------------------------------------------------------------------
+    local y1,x1,y2,x2 = 2,10,6,20
     for act = 2,3 do
-      editor.SetPosition(nil,2,10)     -- set block start
+      editor.SetPosition(nil,y1,x1)    -- set block start
       assert_eq(1, Editor.Sel(act,0))  -- +++
-      editor.SetPosition(nil,6,20)     -- set block end (it also selects the block)
+      editor.SetPosition(nil,y2,x2)    -- set block end (it also selects the block)
       assert_eq(1, Editor.Sel(act,1))  -- +++
 
-      assert_eq(Editor.Sel(0,0), 2)                  -- get block start line
-      assert_eq(Editor.Sel(0,1), 10)                 -- get block start pos
-      assert_eq(Editor.Sel(0,2), 6)                  -- get block end line
-      assert_eq(Editor.Sel(0,3), 20)                 -- get block end pos
+      local ref_x1 = (act==2 and R2T or T2R2T)(nil,y1,x1)
+      local ref_x2 = (act==2 and R2T or T2R2T)(nil,y2,x2)
+
+      assert_eq(Editor.Sel(0,0), y1)                 -- get block start line
+      assert_eq(Editor.Sel(0,1), ref_x1)             -- get block start pos
+      assert_eq(Editor.Sel(0,2), y2)                 -- get block end line
+      assert_eq(Editor.Sel(0,3), ref_x2)             -- get block end pos
       assert_eq(Editor.Sel(0,4), act==2 and 1 or 2)  -- get block type
     end
     --------------------------------------------------------------------------------------------------
@@ -3039,9 +3027,17 @@ local function test_Editor_Misc()
 end
 
 function MT.test_Editor()
-  test_Editor_Sel_Cmdline()
-  test_Editor_Sel_Dialog()
-  test_Editor_Sel_Editor()
+  local args = {
+    ("123456789-"):rep(4),     -- plain ASCII
+    ("12\t4\t6789-"):rep(4),   -- includes tabs
+    ("12🔥4🔥6789-"):rep(4),   -- includes 🔥 (a multi-byte double-width character)
+    ("1Ю23456789-"):rep(4),    -- insert 'Ю' (a multi-byte character) into position 2
+    ("1Ю2\t4\t6789-"):rep(4),  -- ditto
+    ("1Ю2🔥4🔥6789-"):rep(4),  -- ditto
+  }
+  test_Editor_Sel_Cmdline(args)
+  test_Editor_Sel_Dialog(args)
+  test_Editor_Sel_Editor(args)
   test_Editor_Misc()
 end
 
