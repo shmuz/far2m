@@ -135,9 +135,14 @@ Edit::~Edit()
 {
 }
 
+inline const wchar_t *Edit::GetWordDiv() const
+{
+	return m_strWordDiv->CPtr();
+}
+
 inline bool Edit::IsWordDivX(int Pos) const
 {
-	return IsWordDiv(WordDiv(), m_Str[Pos]);
+	return IsWordDiv(GetWordDiv(), m_Str[Pos]);
 }
 
 inline bool Edit::IsSpaceX(int Pos) const
@@ -670,10 +675,11 @@ int Edit::CalcPosFwdTo(int Pos, int LimitPos) const
 			do {
 				Pos++;
 			} while (Pos < LimitPos && Pos < StrSize() && CharClasses::IsXxxfix(m_Str[Pos]));
-	} else
+	} else {
 		do {
 			Pos++;
 		} while (Pos < StrSize() && CharClasses::IsXxxfix(m_Str[Pos]));
+	}
 
 	return Pos;
 }
@@ -923,7 +929,7 @@ int Edit::ProcessKey(FarKey Key)
 
 			int LastCurPos = m_CurPos;
 
-			while (m_CurPos < Len /*StrSize()*/) {
+			while (m_CurPos < Len) {
 				RecurseProcessKey(KEY_SHIFTRIGHT);
 
 				if (LastCurPos == m_CurPos)
@@ -1030,7 +1036,7 @@ int Edit::ProcessKey(FarKey Key)
 			{
 				int SStart, SEnd;
 
-				if (CalcWordFromString(m_Str, m_CurPos, &SStart, &SEnd, WordDiv()))
+				if (CalcWordFromString(m_Str, m_CurPos, &SStart, &SEnd, GetWordDiv()))
 					Select(SStart, SEnd + (SEnd < StrSize() ? 1 : 0));
 			}
 
@@ -1920,7 +1926,7 @@ int Edit::Search(const FARString &Str, FARString &ReplaceStr, int Position, int 
 		int Reverse, int Regexp, int *SearchLength)
 {
 	return SearchString(m_Str, StrSize(), Str, ReplaceStr, m_CurPos, Position, Case, WholeWords,
-			Reverse, Regexp, SearchLength, WordDiv());
+			Reverse, Regexp, SearchLength, GetWordDiv());
 }
 
 void Edit::InsertTab()
@@ -2094,10 +2100,6 @@ void Edit::SanitizeSelectionRange()
 			++m_SelEnd;
 	}
 
-	/* $ 24.06.2002 SKV
-	   Если начало выделения за концом строки, надо выделение снять.
-	   17.09.2002 возвращаю обратно. Глюкодром.
-	*/
 	if (m_SelEnd < m_SelStart && m_SelEnd != -1) {
 		m_SelStart = -1;
 		m_SelEnd = 0;

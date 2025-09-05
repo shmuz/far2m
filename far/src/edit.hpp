@@ -155,7 +155,7 @@ private:
 
 	int RealPosToCell(int PrevLength, int PrevPos, int Pos, int *CorrectPos);
 	void SanitizeSelectionRange();
-	inline const wchar_t *WordDiv() const { return m_strWordDiv->CPtr(); }
+	const wchar_t *GetWordDiv() const;
 	bool IsWordDivX(int Pos) const;
 	bool IsSpaceX(int Pos) const;
 	bool IsEolX(int Pos) const;
