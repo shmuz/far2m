@@ -2077,7 +2077,7 @@ void VMenu::ShowMenu(bool IsParent)
 
 				// fit menu FARString into available space
 				if (strMItemPtrLen > MaxLineWidth)
-					strMItemPtr.Truncate(
+					strMItemPtr.TruncateByCells(
 							HiFindRealPos(strMItemPtr, MaxLineWidth, CheckFlags(VMENU_SHOWAMPERSAND)));
 
 				// set highlight
