@@ -4522,8 +4522,9 @@ static int truncstring (lua_State *L, int op)
 	const wchar_t* Src = check_utf8_string(L, 1, NULL);
 	int MaxLen = luaL_checkinteger(L, 2);
 	int SrcLen = wcslen(Src);
+
 	if (MaxLen < 0) MaxLen = 0;
-	else if (MaxLen > SrcLen) MaxLen = SrcLen;
+
 	wchar_t* Trg = (wchar_t*)lua_newuserdata(L, (1 + SrcLen) * sizeof(wchar_t));
 	wcscpy(Trg, Src);
 	const wchar_t* ptr = (op == 'p') ?
