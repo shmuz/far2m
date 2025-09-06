@@ -11,6 +11,7 @@ local F = far.Flags
 local min, max, floor, ceil = math.min, math.max, math.floor, math.ceil
 local band, bor = bit64.band, bit64.bor
 local DlgSend = far.SendDlgMessage
+local CellsCount = far.StrCellsCount
 
 local function GetColor (index)
   local tbl = osWindows and far.Colors or far.Flags
@@ -324,6 +325,7 @@ function List:Draw (x, y)
     if not v then break end
     local vdata = self.idata[v]
     local text = v.text or ""
+
     if v.separator then
       local color = self.col_text
       if text ~= "" then text = " " .. text:sub(1, self.w-4) .. " " end
@@ -332,12 +334,16 @@ function List:Draw (x, y)
       far.Text(x, y+i, color, hor:rep(len1))
       far.Text(x+len1, y+i, color, text)
       far.Text(x+len1+tlen, y+i, color, hor:rep(self.w-len1-tlen))
+
     else
       local color = i==self.sel and self.col_selectedtext or self.col_text
       local color2 = i==self.sel and self.col_selectedhighlight or self.col_highlight
-      local tlen = text:len()
+      local tlen = CellsCount(text)
       local maxlen = self.w - mlen - self.rmargin
       local text2, fr, to = text, vdata.fr, vdata.to
+
+      -- Check text length and if it's too big, modify the text with an "ellipsis" method
+      -- TODO: fix this part using "Cells" functions
       if tlen > maxlen then
         maxlen = maxlen - 3
         local ss = self.searchstart - 1
@@ -354,17 +360,29 @@ function List:Draw (x, y)
           end
         end
       end
+
+      -- Draw the margin and the check (if any)
       far.Text(x, y+i, color, self.margin)
-      if v.checked then far.Text(x, y+i, color, check) end
-      if fr and to >= fr then
-        far.Text(x+mlen,      y+i, color,  text2:sub(1, fr-1))
-        far.Text(x+mlen+fr-1, y+i, color2, text2:sub(fr, to))
-        far.Text(x+mlen+to,   y+i, color,  text2:sub(to+1))
-      else
-        far.Text(x+mlen,      y+i, color,  text2)
+      if v.checked then
+        far.Text(x, y+i, color, check)
       end
+
+      -- Draw the line; if there's a match - highlight it
+      if fr and to >= fr then
+        local str1, str2, str3 = text2:sub(1,fr-1), text2:sub(fr,to), text2:sub(to+1)
+        local x1 = x + mlen
+        local x2 = x1 + CellsCount(str1)
+        local x3 = x2 + CellsCount(str2)
+        far.Text(x1, y+i, color,  str1)
+        far.Text(x2, y+i, color2, str2)
+        far.Text(x3, y+i, color,  str3)
+      else
+        far.Text(x+mlen, y+i, color, text2)
+      end
+
+      -- If the line is selected, extend selection up to the right border
       if i == self.sel then
-        local start = mlen + text2:len()
+        local start = mlen + CellsCount(text2)
         far.Text(x+start, y+i, color, (" "):rep(self.w - start))
       end
     end
