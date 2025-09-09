@@ -32,50 +32,31 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "headers.hpp"
-#include <sys/ioctl.h>
 #include <signal.h>
-#include <string>
-#include <sys/stat.h>
-#include <locale.h>
-#include <fcntl.h>
-#include <dlfcn.h>
-#include <unistd.h>
 
-#include "lang.hpp"
-#include "keys.hpp"
 #include "chgprior.hpp"
-#include "colors.hpp"
-#include "filepanels.hpp"
-#include "panel.hpp"
-#include "fileedit.hpp"
-#include "fileview.hpp"
-#include "exitcode.hpp"
-#include "lockscrn.hpp"
-#include "hilight.hpp"
-#include "manager.hpp"
-#include "ctrlobj.hpp"
-#include "scrbuf.hpp"
-#include "language.hpp"
-#include "syslog.hpp"
-#include "interf.hpp"
-#include "keyboard.hpp"
 #include "clipboard.hpp"
-#include "pathmix.hpp"
-#include "strmix.hpp"
-#include "dirmix.hpp"
-#include "Bookmarks.hpp"
 #include "cmdline.hpp"
-#include "console.hpp"
-#include "vtshell.h"
-#include "execute.hpp"
-#include "mix.hpp"
-#include "InterThreadCall.hpp"
-#include "SafeMMap.hpp"
-#include "ConfigRW.hpp"
+#include "colors.hpp"
+#include "config.hpp"
 #include "ConfigOpt.hpp"
+#include "console.hpp"
+#include "ctrlobj.hpp"
+#include "dirmix.hpp"
+#include "execute.hpp"
+#include "fileedit.hpp"
+#include "filepanels.hpp"
+#include "fileview.hpp"
+#include "interf.hpp"
+#include "InterThreadCall.hpp"
+#include "keyboard.hpp"
+#include "manager.hpp"
+#include "pathmix.hpp"
+#include "SafeMMap.hpp"
+#include "scrbuf.hpp"
+#include "syslog.hpp"
 #include "udlist.hpp"
-#include "farcolors.hpp"
-#include "message.hpp"
+#include "vtshell.h"
 
 static void print_help(const char *self)
 {
