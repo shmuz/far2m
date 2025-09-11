@@ -405,7 +405,7 @@ struct Options
 
 	enum OnlyEditorViewerUsedT
 	{
-		NOT_ONLY_EDITOR_VIEWER = 0,
+		INCLUDING_PANELS = 0,
 		ONLY_EDITOR,
 		ONLY_VIEWER,
 		ONLY_EDITOR_ON_CMDOUT,

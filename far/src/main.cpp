@@ -154,6 +154,8 @@ static void UpdatePathOptions(const FARString &strDestName, bool IsLeftPanel)
 	}
 }
 
+// See: github.com/elfmz/far2l/issues/2758
+//  and far/bootstrap/far2m-cd.sh
 static void Write_FAR2M_CWD()
 {
 	const char *far_cwd = getenv("FAR2M_CWD");
@@ -187,7 +189,7 @@ static int MainProcess(
 		Console.GetTextAttributes(InitAttributes);
 		SetFarColor(COL_COMMANDLINEUSERSCREEN, true);
 
-		if (Opt.OnlyEditorViewerUsed != Options::NOT_ONLY_EDITOR_VIEWER)
+		if (Opt.OnlyEditorViewerUsed != Options::INCLUDING_PANELS)
 		{
 			Panel *DummyPanel=new Panel;
 			_tran(SysLog(L"create dummy panels"));
@@ -209,7 +211,7 @@ static int MainProcess(
 						FFILEEDIT_CANNEWFILE | FFILEEDIT_ENABLEF6, StartLine, StartChar);
 				_tran(SysLog(L"make shelleditor %p",ShellEditor));
 
-				if (!ShellEditor->GetExitCode())  // ????????????
+				if (!ShellEditor->GetExitCode())
 				{
 					FrameManager->ExitMainLoop(false);
 				}
@@ -413,7 +415,7 @@ int FarAppMain(int argc, char **argv)
 					break;
 
 				case L'E':
-					if (Opt.OnlyEditorViewerUsed != Options::NOT_ONLY_EDITOR_VIEWER) //skip as already handled
+					if (Opt.OnlyEditorViewerUsed != Options::INCLUDING_PANELS) //skip as already handled
 					{
 						I = (strcmp(argv[I+1], "-") == 0) ? argc : I + 1;
 						break;
@@ -450,7 +452,7 @@ int FarAppMain(int argc, char **argv)
 					break;
 
 				case L'V':
-					if (Opt.OnlyEditorViewerUsed != Options::NOT_ONLY_EDITOR_VIEWER) //skip as already handled
+					if (Opt.OnlyEditorViewerUsed != Options::INCLUDING_PANELS) //skip as already handled
 					{
 						I = (strcmp(argv[I+1], "-") == 0) ? argc : I + 1;
 						break;
@@ -689,7 +691,7 @@ int _cdecl main(int argc, char *argv[])
 		memmove(argv+pos, argv+pos+count, (argc+1-pos)*sizeof(char*));
 	};
 
-	Opt.OnlyEditorViewerUsed = Options::NOT_ONLY_EDITOR_VIEWER;
+	Opt.OnlyEditorViewerUsed = Options::INCLUDING_PANELS;
 	if (argc > 0) {
 		const char *name = strrchr(argv[0], GOOD_SLASH);
 		name = name ? name+1 : argv[0];
