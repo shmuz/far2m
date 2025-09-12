@@ -33,21 +33,20 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
-#include "history.hpp"
-#include "keys.hpp"
-#include "vmenu.hpp"
-#include "lang.hpp"
-#include "message.hpp"
 #include "clipboard.hpp"
 #include "config.hpp"
 #include "ConfigRW.hpp"
-#include "strmix.hpp"
-#include "dialog.hpp"
-#include "interf.hpp"
 #include "ctrlobj.hpp"
+#include "datetime.hpp"
+#include "dialog.hpp"
 #include "DlgGuid.hpp"
 #include "FileMasksProcessor.hpp"
-#include "datetime.hpp"
+#include "history.hpp"
+#include "interf.hpp"
+#include "keys.hpp"
+#include "lang.hpp"
+#include "message.hpp"
+#include "vmenu.hpp"
 
 static const char NKeyExtras[]   = "Extras";
 static const char NKeyLines[]    = "Lines";
