@@ -82,11 +82,14 @@ local function FarAbout()
   AddEnv("XDG_SESSION_TYPE")
 
   local plugs = far.GetPlugins()
+  local info = {}
+  for i, v in ipairs(plugs) do
+    info[i] = far.GetPluginInformation(v)
+  end
+  table.sort(info, function(a,b) return a.GInfo.Title < b.GInfo.Title end)
   AddEmptyLine()
   Add(0, "-- Plugins (" ..#plugs.. ")", "")
-  for _, v in ipairs(plugs) do
-   local dt = far.GetPluginInformation(v)
-   --Add(0, dt.ModuleName:match("[^/]+$"), "")
+  for _, dt in ipairs(info) do
    Add(0, dt.GInfo.Title, dt.GInfo.Description)
   end
 
