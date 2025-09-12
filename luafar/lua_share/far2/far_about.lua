@@ -90,7 +90,7 @@ local function FarAbout()
   AddEmptyLine()
   Add(0, "-- Plugins (" ..#plugs.. ")", "")
   for _, dt in ipairs(info) do
-   Add(0, dt.GInfo.Title, dt.GInfo.Description)
+    Add(0, dt.GInfo.Title, dt.GInfo.Description)
   end
 
   local item = far.Menu(Props, Items, Bkeys)
