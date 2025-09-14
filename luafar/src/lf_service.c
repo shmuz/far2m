@@ -923,7 +923,7 @@ static int SetKeyBar(lua_State *L, BOOL IsEditor)
 		RESTORE = 0
 	}; // corresponds to FAR API
 
-	void* param;
+	void* param = NULL;
 	struct KeyBarTitles kbt;
 	int frameId = luaL_optinteger(L, POS_FRAME, -1);
 	BOOL argfail = FALSE;
