@@ -12,7 +12,7 @@
 #include "lf_string.h"
 #include "lf_util.h"
 
-extern HANDLE Open_Luamacro (lua_State* L, INT_PTR Item);
+extern BOOL Open_Luamacro (lua_State* L, INT_PTR Item);
 
 void PackMacroValues(lua_State* L, size_t Count, const struct FarMacroValue* Values); // forward declaration
 
@@ -853,7 +853,7 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 		return INVALID_HANDLE_VALUE;
 
 	if (OpenFrom == OPEN_LUAMACRO)
-		return Open_Luamacro(L, Item);
+		return Open_Luamacro(L, Item) ? (HANDLE)1 : (HANDLE)0;
 
 	lua_pushinteger(L, OpenFrom); // 1-st argument
 
