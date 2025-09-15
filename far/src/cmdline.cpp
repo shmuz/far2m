@@ -210,7 +210,6 @@ std::string CommandLine::GetConsoleLog(HANDLE con_hnd, bool colored)
 
 int CommandLine::ProcessKey(FarKey Key)
 {
-	const wchar_t *PStr;
 	FARString strStr;
 
 	FarKey SavedLastKey = LastKey;
@@ -322,25 +321,19 @@ int CommandLine::ProcessKey(FarKey Key)
 			return TRUE;
 
 		case KEY_ESC:
+			// $ 24.09.2000 SVS - Если задано поведение по "Несохранению при Esc", то позицию в хистори не меняем и ставим в первое положение.
+			if (Opt.CmdHistoryRule)
+				CtrlObject->CmdHistory->ResetPosition();
 
-			if (Key == KEY_ESC)
-			{
-				// $ 24.09.2000 SVS - Если задано поведение по "Несохранению при Esc", то позицию в хистори не меняем и ставим в первое положение.
-				if (Opt.CmdHistoryRule)
-					CtrlObject->CmdHistory->ResetPosition();
-
-				PStr=L"";
-			}
-			else
-				PStr=strStr;
-
-			SetString(PStr);
+			SetString(L"");
 			return TRUE;
+
 		case KEY_F2:
 		{
 			UserMenu Menu(false);
 			return TRUE;
 		}
+
 		case KEY_ALTF8:
 		{
 			int Type;
@@ -364,12 +357,15 @@ int CommandLine::ProcessKey(FarKey Key)
 			}
 			return TRUE;
 		}
+
 		case KEY_SHIFTF9:
 			ConfigOptSave(true);
 			return TRUE;
+
 		case KEY_F10:
 			FrameManager->ExitMainLoop(true);
 			return TRUE;
+
 		case KEY_ALTF10:
 		{
 			Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
@@ -402,13 +398,16 @@ int CommandLine::ProcessKey(FarKey Key)
 			}
 		}
 		return TRUE;
+
 		case KEY_F11:
 			CtrlObject->Plugins.CommandsMenu(FALSE,FALSE,0);
 			return TRUE;
+
 		case KEY_ALTF11:
 			ShowViewEditHistory();
 			CtrlObject->Cp()->Redraw();
 			return TRUE;
+
 		case KEY_ALTF12:
 		{
 			int Type;
@@ -448,6 +447,7 @@ int CommandLine::ProcessKey(FarKey Key)
 				SetString(strStr);
 		}
 		return TRUE;
+
 		case KEY_NUMENTER:
 		case KEY_SHIFTNUMENTER:
 		case KEY_ENTER:
@@ -483,10 +483,12 @@ int CommandLine::ProcessKey(FarKey Key)
 
 		}
 		return TRUE;
+
 		case KEY_CTRLU:
 			CmdStr.Select(-1,0);
 			CmdStr.Show();
 			return TRUE;
+
 		case KEY_OP_XLAT:
 		{
 			// 13.12.2000 SVS - ! Для CmdLine - если нет выделения, преобразуем всю строку (XLat)
@@ -498,6 +500,7 @@ int CommandLine::ProcessKey(FarKey Key)
 
 			return TRUE;
 		}
+
 		/* дополнительные клавиши для выделения в ком строке.
 		   ВНИМАНИЕ!
 		   Для сокращения кода этот кусок должен стоять перед "default"
@@ -506,9 +509,12 @@ int CommandLine::ProcessKey(FarKey Key)
 		case KEY_ALTSHIFTRIGHT: case KEY_ALTSHIFTNUMPAD6:
 		case KEY_ALTSHIFTEND:   case KEY_ALTSHIFTNUMPAD1:
 		case KEY_ALTSHIFTHOME:  case KEY_ALTSHIFTNUMPAD7:
+		{
 			Key&=~KEY_ALT;
-		default:
+		}
+		[[fallthrough]];
 
+		default:
 			//   Сбрасываем выделение на некоторых клавишах
 			if (!Opt.CmdLine.EditBlock)
 			{
@@ -808,14 +814,14 @@ void CommandLine::ShowViewEditHistory()
 		SetString(strStr);
 }
 
-void CommandLine::SaveBackground(int X1,int Y1,int X2,int Y2)
+void CommandLine::SaveBackground(int x1, int y1, int x2, int y2)
 {
 	if (BackgroundScreen)
 	{
 		delete BackgroundScreen;
 	}
 
-	BackgroundScreen=new SaveScreen(X1,Y1,X2,Y2);
+	BackgroundScreen=new SaveScreen(x1,y1,x2,y2);
 }
 
 void CommandLine::SaveBackground()

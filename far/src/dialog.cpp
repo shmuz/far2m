@@ -2788,12 +2788,14 @@ int Dialog::ProcessKey(FarKey Key)
 			}
 			return TRUE;
 		}
+
 		case KEY_ESC:
 		case KEY_BREAK:
 		case KEY_F10:
 			ExitCode = (Key == KEY_BREAK) ? -2 : -1;
 			CloseDialog();
 			return TRUE;
+
 		case KEY_HOME:
 		case KEY_NUMPAD7:
 
@@ -2801,11 +2803,14 @@ int Dialog::ProcessKey(FarKey Key)
 				return TRUE;
 
 			return Do_ProcessFirstCtrl();
+
 		case KEY_TAB:
 		case KEY_SHIFTTAB:
 			return Do_ProcessTab(Key == KEY_TAB);
+
 		case KEY_SPACE:
 			return Do_ProcessSpace();
+
 		case KEY_CTRLNUMENTER:
 		case KEY_CTRLENTER: {
 			for (I = 0; I < ItemCount; I++)
@@ -2830,6 +2835,7 @@ int Dialog::ProcessKey(FarKey Key)
 				return TRUE;						// делать больше не чего
 			}
 		}
+
 		case KEY_NUMENTER:
 		case KEY_ENTER: {
 			if (Item[FocusPos]->Type != DI_COMBOBOX && FarIsEdit(Item[FocusPos]->Type)
@@ -2909,6 +2915,7 @@ int Dialog::ProcessKey(FarKey Key)
 			CloseDialog();
 			return TRUE;
 		}
+
 		/*
 			3-х уровневое состояние
 			Для чекбокса сюда попадем только в случае, если контрол
@@ -2919,20 +2926,18 @@ int Dialog::ProcessKey(FarKey Key)
 		case KEY_MULTIPLY:
 
 			if (Item[FocusPos]->Type == DI_CHECKBOX) {
-				unsigned int CHKState = (Key == KEY_ADD
-								? 1
-								: (Key == KEY_SUBTRACT
-												? 0
-												: ((Key == KEY_MULTIPLY) ? 2 : Item[FocusPos]->Selected)));
+				const int CHKState = (Key == KEY_ADD) ? 1 : (Key == KEY_SUBTRACT) ? 0 : 2;
 
-				if (Item[FocusPos]->Selected != (int)CHKState)
+				if (Item[FocusPos]->Selected != CHKState) {
 					if (SendDlgMessage((HANDLE)this, DN_BTNCLICK, FocusPos, CHKState)) {
 						Item[FocusPos]->Selected = CHKState;
 						ShowDialog();
 					}
+				}
 			}
 
 			return TRUE;
+
 		case KEY_LEFT:
 		case KEY_NUMPAD4:
 		case KEY_SHIFTNUMPAD4:
@@ -2951,6 +2956,7 @@ int Dialog::ProcessKey(FarKey Key)
 				return MoveToCtrlHorizontal(Key == KEY_RIGHT || Key == KEY_NUMPAD6);
 			}
 		}
+
 		case KEY_UP:
 		case KEY_NUMPAD8:
 		case KEY_DOWN:
@@ -2960,6 +2966,7 @@ int Dialog::ProcessKey(FarKey Key)
 
 			return MoveToCtrlVertical(Key == KEY_UP || Key == KEY_NUMPAD8);
 		}
+
 		// $ 27.04.2001 VVM - Обработка колеса мышки
 		case KEY_MSWHEEL_UP:
 		case KEY_MSWHEEL_DOWN:
@@ -2969,6 +2976,7 @@ int Dialog::ProcessKey(FarKey Key)
 		case KEY_CTRLNUMPAD2:
 			return ProcessOpenComboBox(Item[FocusPos]->Type, Item[FocusPos], FocusPos);
 			// ЭТО перед default предпоследний!!!
+
 		case KEY_END:
 		case KEY_NUMPAD1:
 

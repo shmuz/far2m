@@ -122,7 +122,7 @@ void Grabber::CopyGrabbedArea(int Append)
 			{
 				switch (Chr2)
 				{
-					case L'.':  Chr=L'.'; break;
+					case L'.': Chr=L'.'; break;
 					case 0x07: Chr=L'*'; break;
 					case 0x10: Chr=L'>'; break;
 					case 0x11: Chr=L'<'; break;
@@ -156,14 +156,7 @@ void Grabber::CopyGrabbedArea(int Append)
 
 			if (Opt.NoBoxes && Chr2 >=0xB3 && Chr2 <= 0xDA)
 			{
-				switch (Chr2)
-				{
-					case 0xB3:
-					case 0xBA: Chr=L' '; break;
-					case 0xC4: Chr=L' '; break;
-					case 0xCD: Chr=L' '; break;
-					default:   Chr=L' '; break;
-				}
+				Chr = L' ';
 			}
 
 			*PtrCopyBuf++=Chr;
@@ -389,7 +382,7 @@ int Grabber::ProcessKey(FarKey Key)
 			if ((GArea.CurY+=5)>ScrY)
 				GArea.CurY=ScrY;
 
-			if (Key == KEY_CTRLSHIFTDOWN || Key == KEY_CTRLSHIFTNUMPAD8)
+			if (Key == KEY_CTRLSHIFTDOWN || Key == KEY_CTRLSHIFTNUMPAD2)
 				GArea.Y1=GArea.CurY;
 
 			break;

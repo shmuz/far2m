@@ -263,7 +263,7 @@ struct VMenuOptions
 	int LBtnClick;
 	int RBtnClick;
 	int MBtnClick;
-	bool MenuLoopScroll;
+	int MenuLoopScroll;
 };
 
 struct CommandLineOptions

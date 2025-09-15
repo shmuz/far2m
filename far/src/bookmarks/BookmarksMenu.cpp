@@ -114,8 +114,10 @@ static int ShowBookmarksMenuIteration(int Pos)
 			switch (Key)
 			{
 				case KEY_SHIFTUP:
-					if (SelPos == 0)
+					if (SelPos == 0) {
 						return SelPos;
+					}
+					[[fallthrough]];
 
 				case KEY_SHIFTDOWN:
 				{

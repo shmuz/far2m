@@ -119,31 +119,28 @@ void CheckMaskGroups( void )
 static int FillMasksMenu(VMenu *TypesMenu, int MenuPos)
 {
 	ConfigReader cfg_reader;
-	int DizWidth = 10;
+	const size_t DizWidth = 10;
 	MenuItemEx TypesMenuItem;
 	TypesMenu->DeleteItems();
 	int NumLine = 0;
+	FARString strMask;
 
-	for (;; NumLine++)
-	{
+	auto GetNextMask = [&] {
 		cfg_reader.SelectSectionFmt(FMS.TypeFmt, NumLine);
-		FARString strMask;
-		if (!cfg_reader.GetString(strMask, FMS.MaskValue))
-			break;
+		return cfg_reader.GetString(strMask, FMS.MaskValue);
+	};
 
-		FARString strMenuText;
-
-		if (DizWidth)
+	for (; GetNextMask(); NumLine++)
+	{
+		FARString strName = cfg_reader.GetString(FMS.MaskName);
+		if (strName.GetLength() > DizWidth)
 		{
-			FARString strName = cfg_reader.GetString(FMS.MaskName);
-			if (static_cast<int>(strName.GetLength()) > DizWidth)
-			{
-				strName.Truncate(DizWidth - (Opt.NoGraphics ? 3 : 1));
-				strName += (Opt.NoGraphics ? L"..." : L"…");
-			}
-			strMenuText.Format(L"%-*.*ls %lc ", DizWidth, DizWidth, strName.CPtr(), BoxSymbols[BS_V1]);
+			strName.Truncate(DizWidth - (Opt.NoGraphics ? 3 : 1));
+			strName += (Opt.NoGraphics ? L"..." : L"…");
 		}
 
+		FARString strMenuText;
+		strMenuText.Format(L"%-*.*ls %lc ", DizWidth, DizWidth, strName.CPtr(), BoxSymbols[BS_V1]);
 		strMenuText += strMask;
 		TypesMenuItem.Clear();
 		TypesMenuItem.strName = strMenuText;
