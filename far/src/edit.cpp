@@ -84,7 +84,7 @@ public:
 	~DisableCallback() { Restore(); }
 };
 
-Edit::Edit(ScreenObject *pOwner, Callback *aCallback)
+Edit::Edit(ScreenObject *aOwner, Callback *aCallback)
 	:
 	m_next(nullptr),
 	m_prev(nullptr),
@@ -106,7 +106,7 @@ Edit::Edit(ScreenObject *pOwner, Callback *aCallback)
 	if (aCallback)
 		m_Callback = *aCallback;
 
-	SetOwner(pOwner);
+	SetOwner(aOwner);
 	SetWordDiv(Opt.strWordDiv);
 
 	Flags.Set(FEDITLINE_EDITBEYONDEND);
@@ -739,7 +739,7 @@ int Edit::ProcessKey(FarKey Key)
 	int _Macro_IsExecuting = CtrlObject->Macro.IsExecuting();
 
 	// $ 04.07.2000 IG - добавлена проверка на запуск макроса (00025.edit.cpp.txt)
-	if (!ShiftPressed && (!_Macro_IsExecuting || (IsNavKey(Key) && _Macro_IsExecuting)) && !IsShiftKey(Key)
+	if (!ShiftPressed && (!_Macro_IsExecuting || IsNavKey(Key)) && !IsShiftKey(Key)
 			&& !Recurse && Key != KEY_SHIFT && Key != KEY_CTRL && Key != KEY_ALT && Key != KEY_RCTRL
 			&& Key != KEY_RALT && Key != KEY_NONE && Key != KEY_INS && Key != KEY_KILLFOCUS
 			&& Key != KEY_GOTFOCUS
@@ -1230,8 +1230,8 @@ int Edit::ProcessKey(FarKey Key)
 		case KEY_CTRLNUMPAD4: {
 			m_PrevCurPos = m_CurPos;
 
-			m_CurPos = Min(m_CurPos, StrSize());
-			m_CurPos = CalcPosBwd();
+			const auto pos = Min(m_CurPos, StrSize());
+			m_CurPos = CalcPosBwdTo(pos);
 
 			while (m_CurPos > 0 && (IsWordDivX(m_CurPos) || !IsWordDivX(m_CurPos - 1) || IsSpaceX(m_CurPos)))
 			{
@@ -1338,9 +1338,7 @@ int Edit::ProcessKey(FarKey Key)
 				InsertString(ClipText);
 			}
 
-			if (ClipText)
-				free(ClipText);
-
+			free(ClipText);
 			Show();
 			return TRUE;
 		}
@@ -1450,7 +1448,7 @@ bool Edit::InsertKey(FarKey Key)
 				if (!Flags.Check(FEDITLINE_OVERTYPE)) {
 					int i = MaskLen - 1;
 
-					while (!CheckCharMask(m_Mask[i]) && i > m_CurPos)
+					while (i > m_CurPos && !CheckCharMask(m_Mask[i]))
 						i--;
 
 					for (int j = i; i > m_CurPos; i--) {
@@ -2096,7 +2094,6 @@ void Edit::SanitizeSelectionRange()
 	}
 
 	if (m_SelStart == -1 && m_SelEnd == -1) {
-		m_SelStart = -1;
 		m_SelEnd = 0;
 	}
 }

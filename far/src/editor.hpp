@@ -85,28 +85,28 @@ struct EditorUndoData
 	EditorUndoData() { memset(this, 0, sizeof(*this)); }
 	~EditorUndoData() { if (Str) delete[] Str; }
 
-	void SetData(int Type, const wchar_t *Str, const wchar_t *Eol, int StrNum, int StrPos, int Length = -1)
+	void SetData(int aType, const wchar_t *aStr, const wchar_t *aEol, int aStrNum, int aStrPos, int aLength = -1)
 	{
-		if (Length == -1 && Str)
-			Length = (int)StrLength(Str);
+		if (aLength == -1 && aStr)
+			aLength = (int)StrLength(aStr);
 
-		this->Type = Type;
-		this->StrPos = StrPos;
-		this->StrNum = StrNum;
-		this->Length = Length;
-		far_wcsncpy(EOL, Eol ? Eol : L"", ARRAYSIZE(EOL) - 1);
+		Type = aType;
+		StrPos = aStrPos;
+		StrNum = aStrNum;
+		Length = aLength;
+		far_wcsncpy(EOL, aEol ? aEol : L"", ARRAYSIZE(EOL) - 1);
 
-		if (this->Str)
-			delete[] this->Str;
+		if (Str)
+			delete[] Str;
 
-		if (Str) {
-			this->Str = new wchar_t[Length + 1];
+		if (aStr) {
+			Str = new wchar_t[aLength + 1];
 
-			if (this->Str)
-				wmemmove(this->Str, Str, Length);
+			if (Str)
+				wmemmove(Str, aStr, aLength);
 		}
 		else
-			this->Str = nullptr;
+			Str = nullptr;
 	}
 };
 

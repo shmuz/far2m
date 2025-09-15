@@ -150,7 +150,7 @@ private:
 	int ProcessInsDate(const wchar_t *Str);
 	bool ProcessInsPlainText(const wchar_t *Str);
 
-	bool CheckCharMask(wchar_t Chr);
+	static bool CheckCharMask(wchar_t Chr);
 	bool ProcessInsPath(FarKey Key, int PrevSelStart = -1, int PrevSelEnd = 0);
 
 	int RealPosToCell(int PrevLength, int PrevPos, int Pos, int *CorrectPos);

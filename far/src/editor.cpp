@@ -68,7 +68,7 @@ enum
 	UNDO_END
 };
 
-Editor::Editor(ScreenObject *pOwner, bool DialogUsed)
+Editor::Editor(ScreenObject *Owner, bool DialogUsed)
 	:
 	m_UndoPos(m_UndoData.end()),
 	m_UndoSavePos(m_UndoData.end()),
@@ -103,7 +103,7 @@ Editor::Editor(ScreenObject *pOwner, bool DialogUsed)
 	_KEYMACRO(SysLog(L"Editor::Editor()"));
 	_KEYMACRO(SysLog(1));
 	m_EdOpt = Opt.EdOpt;
-	SetOwner(pOwner);
+	SetOwner(Owner);
 
 	if (DialogUsed)
 		Flags.Set(FEDITOR_DIALOGMEMOEDIT);
@@ -3317,7 +3317,7 @@ BOOL Editor::Search(int Next)
 		NewNumLine = m_NumLine;
 		CurPtr = m_CurLine;
 		DWORD StartTime = WINPORT(GetTickCount)();
-		int m_StartLine = m_NumLine;
+		int StartLine = m_NumLine;
 		SCOPED_ACTION(wakeful);
 
 		while (CurPtr) {
@@ -3336,8 +3336,8 @@ BOOL Editor::Search(int Next)
 				strMsgStr = strSearchStr;
 				InsertQuote(strMsgStr);
 				SetCursorType(false, -1);
-				int Total = ReverseSearch ? m_StartLine : m_NumLastLine - m_StartLine;
-				int Current = abs(NewNumLine - m_StartLine);
+				int Total = ReverseSearch ? StartLine : m_NumLastLine - StartLine;
+				int Current = abs(NewNumLine - StartLine);
 				EditorShowMsg(Msg::EditSearchTitle, Msg::EditSearchingFor, strMsgStr, ToPercent64(Current, Total));
 			}
 
@@ -5826,29 +5826,29 @@ Edit *Editor::GetStringByNumber(int DestLine)
 		return nullptr;
 
 	Edit *CurPtr = m_CurLine;
-	int m_StartLine = m_NumLine;
+	int StartLine = m_NumLine;
 
 	if (m_LastGetLine) {
 		CurPtr = m_LastGetLine;
-		m_StartLine = m_LastGetLineNumber;
+		StartLine = m_LastGetLineNumber;
 	}
 
-	bool Forward = (DestLine > m_StartLine && DestLine < m_StartLine + (m_NumLastLine - m_StartLine) / 2)
-			|| (DestLine < m_StartLine / 2);
+	bool Forward = (DestLine > StartLine && DestLine < StartLine + (m_NumLastLine - StartLine) / 2)
+			|| (DestLine < StartLine / 2);
 
-	if (DestLine > m_StartLine) {
+	if (DestLine > StartLine) {
 		if (!Forward) {
-			m_StartLine = m_NumLastLine - 1;
+			StartLine = m_NumLastLine - 1;
 			CurPtr = m_EndList;
 		}
 	} else {
 		if (Forward) {
-			m_StartLine = 0;
+			StartLine = 0;
 			CurPtr = m_TopList;
 		}
 	}
 
-	for (int Line = m_StartLine; Line != DestLine; Forward ? Line++ : Line--) {
+	for (int Line = StartLine; Line != DestLine; Forward ? Line++ : Line--) {
 		CurPtr = (Forward ? CurPtr->m_next : CurPtr->m_prev);
 		if (!CurPtr) {
 			m_LastGetLine = Forward ? m_TopList : m_EndList;
@@ -6123,18 +6123,18 @@ void Editor::SetCursorBeyondEOL(int NewMode)
 	}
 }
 
-void Editor::GetSavePosMode(int &m_SavePos, int &SaveShortPos)
+void Editor::GetSavePosMode(int &SavePos, int &SaveShortPos)
 {
-	m_SavePos = m_EdOpt.SavePos;
+	SavePos = m_EdOpt.SavePos;
 	SaveShortPos = m_EdOpt.SaveShortPos;
 }
 
 // передавайте в качестве значения параметра "-1" для параметра,
 // который не нужно менять
-void Editor::SetSavePosMode(int m_SavePos, int SaveShortPos)
+void Editor::SetSavePosMode(int SavePos, int SaveShortPos)
 {
-	if (m_SavePos != -1)
-		m_EdOpt.SavePos = m_SavePos;
+	if (SavePos != -1)
+		m_EdOpt.SavePos = SavePos;
 
 	if (SaveShortPos != -1)
 		m_EdOpt.SaveShortPos = SaveShortPos;

@@ -684,10 +684,10 @@ int64_t FileEditor::VMProcess(int OpCode, void *vParam, int64_t iParam)
 			case 0:
 				break;
 			case 1:
-				Opt.EdOpt.ShowKeyBar = false;
+				Opt.EdOpt.ShowKeyBar = 0;
 				goto Label3;
 			case 2:
-				Opt.EdOpt.ShowKeyBar = true;
+				Opt.EdOpt.ShowKeyBar = 1;
 				goto Label3;
 			case 3:
 			Label3:
