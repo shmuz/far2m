@@ -2397,8 +2397,6 @@ void FarMacroApi::clipFunc()
 		Val.toString();
 	}
 
-	int64_t Ret=0;
-
 	switch (cmdType)
 	{
 		case 0: // Get from Clipboard, "S" - ignore
@@ -2420,6 +2418,7 @@ void FarMacroApi::clipFunc()
 		{
 			TVar varClip(Val.s());
 			Clipboard clip;
+			int64_t Ret = 0;
 
 			if (clip.Open())
 			{
@@ -2443,7 +2442,7 @@ void FarMacroApi::clipFunc()
 					}
 				}
 
-				Ret=clip.Copy(varClip.s());
+				Ret = clip.Copy(varClip.s());
 
 				clip.Close();
 			}
@@ -2464,7 +2463,7 @@ void FarMacroApi::clipFunc()
 			}
 
 			Clipboard::SetUseInternalClipboardState(!Clipboard::GetUseInternalClipboardState());
-			Ret=CopyToClipboard(varClip.s());
+			int64_t Ret = CopyToClipboard(varClip.s());
 
 			Clipboard::SetUseInternalClipboardState(OldUseInternalClipboard);
 			return PushInteger(Ret); // 0!  ???
@@ -2489,7 +2488,7 @@ void FarMacroApi::clipFunc()
 		}
 	}
 
-	PushInteger(Ret ? 1 : 0);
+	PushInteger(0);
 }
 
 // N=Panel.SetPosIdx(panelType,Idx[,InSelection])
@@ -2634,7 +2633,7 @@ void FarMacroApi::panelsetposFunc()
 				SelPanel->UpdateIfChanged(UIC_UPDATE_NORMAL);
 				FrameManager->RefreshFrame(GetTopModal());
 				// </Mantis#0000289>
-				Ret=(int64_t)(SelPanel->GetCurrentPos()+1);
+				Ret = (int64_t)SelPanel->GetCurrentPos() + 1;
 			}
 		}
 	}

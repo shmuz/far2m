@@ -133,6 +133,7 @@ class PluginManager
 		int PluginsCount;
 		struct BackgroundTasks : std::map<std::wstring, unsigned int>, std::mutex {} BgTasks;
 		std::unordered_map<DWORD, Plugin*> SysIdMap;
+		BitFlags m_Flags;      // флаги манагера плагинов
 
 	public:
 
@@ -151,8 +152,6 @@ class PluginManager
 			GUID FoundUuid;
 			intptr_t FoundItemNumber;
 		};
-
-		BitFlags Flags;        // флаги манагера плагинов
 
 		FileEditor *CurEditor;
 		Viewer *CurViewer;     // 27.09.2000 SVS: Указатель на текущий Viewer
@@ -195,7 +194,7 @@ class PluginManager
 
 		int GetPluginsCount() { return PluginsCount; }
 
-		bool IsPluginsLoaded() { return Flags.Check(PSIF_PLUGINSLOADED); }
+		bool IsPluginsLoaded() { return m_Flags.Check(PSIF_PLUGINSLOADED); }
 
 		void Configure(int StartPos=0);
 		void ConfigureCurrent(Plugin *pPlugin, int INum, const GUID *Guid);

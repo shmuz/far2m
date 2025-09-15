@@ -771,7 +771,7 @@ int UserMenu::ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar
 					if (!isSilent) {
 						CtrlObject->CmdLine->ExecString(strCommand, FALSE, 0, 0, ListFileUsed);
 					} else {
-						SaveScreen SaveScr;
+						SCOPED_ACTION(SaveScreen);
 						CtrlObject->Cp()->LeftPanel->CloseFile();
 						CtrlObject->Cp()->RightPanel->CloseFile();
 						Execute(strCommand, 0, 0, ListFileUsed, true);

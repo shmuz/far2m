@@ -1044,7 +1044,7 @@ int FileEditor::ReProcessKey(FarKey Key, int CalledFromControl)
 				}
 
 				{
-					SaveScreen Sc;
+					SCOPED_ACTION(SaveScreen);
 					CtrlObject->Cp()->GoToFile(strFullFileNameTemp);
 					Flags.Set(FFILEEDIT_REDRAWTITLE);
 				}

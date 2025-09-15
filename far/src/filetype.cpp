@@ -279,7 +279,7 @@ bool ProcessLocalFileTypes(const wchar_t *Name, int Mode, bool CanAddHistory, FA
 			{
 				strCommand.LShift(1);
 #if 1
-				SaveScreen SaveScr;
+				SCOPED_ACTION(SaveScreen);
 				CtrlObject->Cp()->LeftPanel->CloseFile();
 				CtrlObject->Cp()->RightPanel->CloseFile();
 				Execute(strCommand, 0, 0, ListFileUsed, true);
@@ -354,7 +354,7 @@ void ProcessExternal(const wchar_t *Command, const wchar_t *Name, bool CanAddHis
 		}
 		else
 		{
-			SaveScreen SaveScr;
+			SCOPED_ACTION(SaveScreen);
 			CtrlObject->Cp()->LeftPanel->CloseFile();
 			CtrlObject->Cp()->RightPanel->CloseFile();
 			Execute(strExecStr.CPtr()+1, 0, 0, ListFileUsed);

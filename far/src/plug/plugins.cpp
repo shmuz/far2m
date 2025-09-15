@@ -330,9 +330,9 @@ int PluginManager::UnloadPlugin(Plugin *pPlugin, DWORD dwException, bool bRemove
 		if (auto frame = FrameManager->GetBottomFrame())
 			frame->Unlock();
 
-		if (Flags.Check(PSIF_DIALOG))   // BugZ#52 exception handling for floating point incorrect
+		if (m_Flags.Check(PSIF_DIALOG))   // BugZ#52 exception handling for floating point incorrect
 		{
-			Flags.Clear(PSIF_DIALOG);
+			m_Flags.Clear(PSIF_DIALOG);
 			FrameManager->DeleteFrame();
 			FrameManager->Commit();
 		}
@@ -417,7 +417,7 @@ Plugin *PluginManager::GetPlugin(int PluginNumber)
 
 void PluginManager::LoadPlugins()
 {
-	Flags.Clear(PSIF_PLUGINSLOADED);
+	m_Flags.Clear(PSIF_PLUGINSLOADED);
 
 	if (Opt.LoadPlug.PluginsCacheOnly)  // $ 01.09.2000 tran  '/co' switch
 	{
@@ -493,7 +493,7 @@ void PluginManager::LoadPlugins()
 		}
 	}
 
-	Flags.Set(PSIF_PLUGINSLOADED);
+	m_Flags.Set(PSIF_PLUGINSLOADED);
 
 	far_qsort(PluginsData, PluginsCount, sizeof(*PluginsData), PluginsSort);
 }
@@ -1193,10 +1193,10 @@ void PluginManager::Configure(int StartPos)
 	PluginList.SetFlags(VMENU_WRAPMODE);
 	PluginList.SetHelp(L"PluginsConfig");
 	PluginList.SetId(PluginsConfigMenuId);
+	bool NeedUpdateItems = true;
 
 	for (;;)
 	{
-		bool NeedUpdateItems = true;
 		int MenuItemNumber = 0;
 		bool HotKeysPresent = false;
 

@@ -298,7 +298,7 @@ int FileViewer::ProcessKey(FarKey Key)
 				return TRUE;
 			}
 
-			SaveScreen Sc;
+			SCOPED_ACTION(SaveScreen);
 			FARString strFileName;
 			View.GetFileName(strFileName);
 			CtrlObject->Cp()->GoToFile(strFileName);

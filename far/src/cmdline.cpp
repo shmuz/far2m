@@ -794,7 +794,7 @@ void CommandLine::ShowViewEditHistory()
 				}
 				else
 				{
-					SaveScreen SaveScr;
+					SCOPED_ACTION(SaveScreen);
 					CtrlObject->Cp()->LeftPanel->CloseFile();
 					CtrlObject->Cp()->RightPanel->CloseFile();
 					Execute(strStr.CPtr()+1);

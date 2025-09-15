@@ -193,7 +193,7 @@ int ScreenSaver(int EnableExit)
 	CONSOLE_CURSOR_INFO CursorInfo;
 	Console.GetCursorInfo(CursorInfo);
 	{
-		SaveScreen SaveScr;
+		SCOPED_ACTION(SaveScreen);
 		SetCursorType(false, 10);
 		randomize();
 		SetScreen(0, 0, ScrX, ScrY, L' ', F_LIGHTGRAY | B_BLACK);

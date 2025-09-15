@@ -92,19 +92,19 @@ void SaveScreen::RestoreArea(int RestoreCursor)
 	}
 }
 
-void SaveScreen::SaveArea(int X1, int Y1, int X2, int Y2)
+void SaveScreen::SaveArea(int x1, int y1, int x2, int y2)
 {
-	SaveScreen::X1 = X1;
-	SaveScreen::Y1 = Y1;
-	SaveScreen::X2 = X2;
-	SaveScreen::Y2 = Y2;
+	X1 = x1;
+	Y1 = y1;
+	X2 = x2;
+	Y2 = y2;
 
 	ScreenBuf = new (std::nothrow) CHAR_INFO[ScreenBufCharCount()];
 
 	if (!ScreenBuf)
 		return;
 
-	GetText(X1, Y1, X2, Y2, ScreenBuf, ScreenBufCharCount() * sizeof(CHAR_INFO));
+	GetText(x1, y1, x2, y2, ScreenBuf, ScreenBufCharCount() * sizeof(CHAR_INFO));
 	GetCursorPos(CurPosX, CurPosY);
 	GetCursorType(CurVisible, CurSize);
 }
