@@ -119,7 +119,7 @@ void CheckMaskGroups( void )
 static int FillMasksMenu(VMenu *TypesMenu, int MenuPos)
 {
 	ConfigReader cfg_reader;
-	const size_t DizWidth = 10;
+	const int DizWidth = 10;
 	MenuItemEx TypesMenuItem;
 	TypesMenu->DeleteItems();
 	int NumLine = 0;
@@ -133,7 +133,7 @@ static int FillMasksMenu(VMenu *TypesMenu, int MenuPos)
 	for (; GetNextMask(); NumLine++)
 	{
 		FARString strName = cfg_reader.GetString(FMS.MaskName);
-		if (strName.GetLength() > DizWidth)
+		if (static_cast<int>(strName.GetLength()) > DizWidth)
 		{
 			strName.Truncate(DizWidth - (Opt.NoGraphics ? 3 : 1));
 			strName += (Opt.NoGraphics ? L"..." : L"…");
