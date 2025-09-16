@@ -91,9 +91,9 @@ bool ScreenObject::Locked()
 	return (nLockCount > 0) || (pOwner && pOwner->Locked());
 }
 
-void ScreenObject::SetOwner(ScreenObject *pOwner)
+void ScreenObject::SetOwner(ScreenObject *Owner)
 {
-	ScreenObject::pOwner = pOwner;
+	pOwner = Owner;
 }
 
 ScreenObject *ScreenObject::GetOwner()
@@ -101,7 +101,7 @@ ScreenObject *ScreenObject::GetOwner()
 	return pOwner;
 }
 
-void ScreenObject::SetPosition(int X1, int Y1, int X2, int Y2)
+void ScreenObject::SetPosition(int x1, int y1, int x2, int y2)
 {
 	/*
 		$ 13.04.2002 KM
@@ -115,12 +115,12 @@ void ScreenObject::SetPosition(int X1, int Y1, int X2, int Y2)
 		SaveScr = nullptr;
 	}
 
-	ScreenObject::X1 = X1;
-	ScreenObject::Y1 = Y1;
-	ScreenObject::X2 = X2;
-	ScreenObject::Y2 = Y2;
-	ObjWidth = X2 - X1 + 1;
-	ObjHeight = Y2 - Y1 + 1;
+	X1 = x1;
+	Y1 = y1;
+	X2 = x2;
+	Y2 = y2;
+	ObjWidth = x2 - x1 + 1;
+	ObjHeight = y2 - y1 + 1;
 	Flags.Set(FSCROBJ_SETPOSITIONDONE);
 }
 
@@ -129,12 +129,12 @@ void ScreenObject::SetScreenPosition()
 	Flags.Clear(FSCROBJ_SETPOSITIONDONE);
 }
 
-void ScreenObject::GetPosition(int &X1, int &Y1, int &X2, int &Y2)
+void ScreenObject::GetPosition(int &x1, int &y1, int &x2, int &y2)
 {
-	X1 = ScreenObject::X1;
-	Y1 = ScreenObject::Y1;
-	X2 = ScreenObject::X2;
-	Y2 = ScreenObject::Y2;
+	x1 = X1;
+	y1 = Y1;
+	x2 = X2;
+	y2 = Y2;
 }
 
 void ScreenObject::Hide()

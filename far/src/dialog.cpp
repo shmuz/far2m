@@ -6388,21 +6388,21 @@ LONG_PTR WINAPI SendDlgMessage(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 	return InterThreadCall<LONG_PTR, 0>(std::bind(SendDlgMessageSynched, hDlg, Msg, Param1, Param2));
 }
 
-void Dialog::SetPosition(int X1, int Y1, int X2, int Y2)
+void Dialog::SetPosition(int x1, int y1, int x2, int y2)
 {
 	CriticalSectionLock Lock(CS);
 
-	if (X1 >= 0)
-		RealWidth = X2 - X1 + 1;
+	if (x1 >= 0)
+		RealWidth = x2 - x1 + 1;
 	else
-		RealWidth = X2;
+		RealWidth = x2;
 
-	if (Y1 >= 0)
-		RealHeight = Y2 - Y1 + 1;
+	if (y1 >= 0)
+		RealHeight = y2 - y1 + 1;
 	else
-		RealHeight = Y2;
+		RealHeight = y2;
 
-	ScreenObject::SetPosition(X1, Y1, X2, Y2);
+	ScreenObject::SetPosition(x1, y1, x2, y2);
 }
 //////////////////////////////////////////////////////////////////////////
 BOOL Dialog::IsInited()

@@ -265,7 +265,7 @@ int GetPluginDirInfo(PanelHandle *hPlugin, const wchar_t *DirName, uint32_t &Dir
 				FileSize+= PanelItem[I].FindData.nFileSize;
 				PhysicalSize+= PanelItem[I].FindData.nPhysicalSize
 						? PanelItem[I].FindData.nPhysicalSize
-						: PanelItem[I].FindData.nPhysicalSize;
+						: PanelItem[I].FindData.nFileSize;
 			}
 		}
 	}
