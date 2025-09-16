@@ -84,73 +84,72 @@ Grabber::~Grabber()
 }
 
 
-void Grabber::CopyGrabbedArea(int Append)
+void Grabber::CopyGrabbedArea(bool Append)
 {
 	if (GArea.X1 < 0)
 		return;
 
-	int X1,Y1,X2,Y2;
-	X1=Min(GArea.X1,GArea.X2);
-	X2=Max(GArea.X1,GArea.X2);
-	Y1=Min(GArea.Y1,GArea.Y2);
-	Y2=Max(GArea.Y1,GArea.Y2);
-	int GWidth=X2-X1+1,GHeight=Y2-Y1+1;
-	int BufSize=(GWidth+3)*GHeight;
-	CHAR_INFO *CharBuf=new CHAR_INFO[BufSize], *PtrCharBuf;
-	wchar_t *CopyBuf=(wchar_t *)malloc(BufSize*sizeof(wchar_t)), *PtrCopyBuf;
-	WORD Chr;
-	GetText(X1,Y1,X2,Y2,CharBuf,BufSize*sizeof(CHAR_INFO));
-	*CopyBuf=0;
-	PtrCharBuf=CharBuf;
-	PtrCopyBuf=CopyBuf;
+	const int x1 = Min(GArea.X1, GArea.X2);
+	const int x2 = Max(GArea.X1, GArea.X2);
+	const int y1 = Min(GArea.Y1, GArea.Y2);
+	const int y2 = Max(GArea.Y1, GArea.Y2);
+	const int GWidth = x2 - x1 + 1, GHeight = y2 - y1 + 1;
+	const int BufSize = (GWidth + 3) * GHeight;
 
-	for (int I=0; I<GHeight; I++)
+	CHAR_INFO *CharBuf = new CHAR_INFO[BufSize];
+	CHAR_INFO *PtrCharBuf = CharBuf;
+	wchar_t *CopyBuf = (wchar_t *)malloc(BufSize*sizeof(wchar_t));
+	wchar_t *PtrCopyBuf = CopyBuf;
+	*CopyBuf = 0;
+	GetText(x1, y1, x2, y2, CharBuf, BufSize*sizeof(CHAR_INFO));
+
+	for (int I=0; I < GHeight; I++)
 	{
-		if (I>0)
+		if (I > 0)
 		{
-			*PtrCopyBuf++=L'\r';
-			*PtrCopyBuf++=L'\n';
-			*PtrCopyBuf=0;
+			*PtrCopyBuf++ = L'\r';
+			*PtrCopyBuf++ = L'\n';
+			*PtrCopyBuf = 0;
 		}
 
-		for (int J=0; J<GWidth; J++, ++PtrCharBuf)
+		for (int J=0; J < GWidth; J++, ++PtrCharBuf)
 		{
 			WORD Chr2 = PtrCharBuf->Char.UnicodeChar;
-			Chr=PtrCharBuf->Char.UnicodeChar;
+			WORD Chr = Chr2;
 
 			if (Opt.CleanAscii)
 			{
 				switch (Chr2)
 				{
-					case L'.': Chr=L'.'; break;
-					case 0x07: Chr=L'*'; break;
-					case 0x10: Chr=L'>'; break;
-					case 0x11: Chr=L'<'; break;
+					case L'.': Chr = L'.'; break;
+					case 0x07: Chr = L'*'; break;
+					case 0x10: Chr = L'>'; break;
+					case 0x11: Chr = L'<'; break;
 					case 0x18:
-					case 0x19: Chr=L'|'; break;
+					case 0x19: Chr = L'|'; break;
 					case 0x1E:
-					case 0x1F: Chr=L'X'; break;
-					case 0xFF: Chr=L' '; break;
+					case 0x1F: Chr = L'X'; break;
+					case 0xFF: Chr = L' '; break;
 					default:
 
 						if (Chr2 < 0x20)
-							Chr=L'.';
+							Chr = L'.';
 						else if (Chr2 < 0x100)
-							Chr=Chr2;
+							Chr = Chr2;
 
 						break;
 				}
 			}
 
-			if (Opt.NoGraphics && Chr2 >=0xB3 && Chr2 <= 0xDA)
+			if (Opt.NoGraphics && Chr2 >= 0xB3 && Chr2 <= 0xDA)
 			{
 				switch (Chr2)
 				{
 					case 0xB3:
-					case 0xBA: Chr=L'|'; break;
-					case 0xC4: Chr=L'-'; break;
-					case 0xCD: Chr=L'='; break;
-					default:   Chr=L'+'; break;
+					case 0xBA: Chr = L'|'; break;
+					case 0xC4: Chr = L'-'; break;
+					case 0xCD: Chr = L'='; break;
+					default:   Chr = L'+'; break;
 				}
 			}
 
@@ -159,14 +158,14 @@ void Grabber::CopyGrabbedArea(int Append)
 				Chr = L' ';
 			}
 
-			*PtrCopyBuf++=Chr;
-			*PtrCopyBuf=0;
+			*PtrCopyBuf++ = Chr;
+			*PtrCopyBuf = 0;
 		}
 
-		for (int K=StrLength(CopyBuf)-1; K>=0 && CopyBuf[K]==L' '; K--)
-			CopyBuf[K]=0;
+		for (int K=StrLength(CopyBuf)-1; K >= 0 && CopyBuf[K] == L' '; K--)
+			CopyBuf[K] = 0;
 
-		PtrCopyBuf=CopyBuf+StrLength(CopyBuf);
+		PtrCopyBuf = CopyBuf + StrLength(CopyBuf);
 	}
 
 	Clipboard clip;
@@ -175,27 +174,27 @@ void Grabber::CopyGrabbedArea(int Append)
 	{
 		if (Append)
 		{
-			wchar_t *AppendBuf=clip.Paste();
-			int add=0;
+			wchar_t *AppendBuf = clip.Paste();
+			int add = 0;
 
 			if (AppendBuf)
 			{
-				size_t DataSize=StrLength(AppendBuf);
+				size_t DataSize = StrLength(AppendBuf);
 
-				if (AppendBuf[DataSize-1]!=L'\n')
+				if (AppendBuf[DataSize-1] != L'\n')
 				{
-					add=2;
+					add = 2;
 				}
 
-				AppendBuf=(wchar_t *)realloc(AppendBuf,(DataSize+BufSize+add)*sizeof(wchar_t));
-				wmemcpy(AppendBuf+DataSize+add,CopyBuf,BufSize);
+				AppendBuf = (wchar_t *)realloc(AppendBuf, (DataSize+BufSize+add) * sizeof(wchar_t));
+				wmemcpy(AppendBuf + DataSize + add, CopyBuf, BufSize);
 
 				if (add) {
-					wmemcpy(AppendBuf+DataSize, NATIVE_EOLW, wcslen(NATIVE_EOLW));
+					wmemcpy(AppendBuf + DataSize, NATIVE_EOLW, wcslen(NATIVE_EOLW));
 				}
 
 				free(CopyBuf);
-				CopyBuf=AppendBuf;
+				CopyBuf = AppendBuf;
 			}
 		}
 
@@ -212,49 +211,51 @@ void Grabber::CopyGrabbedArea(int Append)
 
 void Grabber::DisplayObject()
 {
-	MoveCursor(GArea.CurX,GArea.CurY);
+	MoveCursor(GArea.CurX, GArea.CurY);
 
-	if (PrevArea.X1!=GArea.X1 || PrevArea.X2!=GArea.X2 ||
-	        PrevArea.Y1!=GArea.Y1 || PrevArea.Y2!=GArea.Y2)
+	if (PrevArea.X1 != GArea.X1 || PrevArea.X2 != GArea.X2 ||
+			PrevArea.Y1 != GArea.Y1 || PrevArea.Y2 != GArea.Y2)
 	{
-		int X1,Y1,X2,Y2;
-		X1=Min(GArea.X1,GArea.X2);
-		X2=Max(GArea.X1,GArea.X2);
-		Y1=Min(GArea.Y1,GArea.Y2);
-		Y2=Max(GArea.Y1,GArea.Y2);
+		const int x1 = Min(GArea.X1, GArea.X2);
+		const int x2 = Max(GArea.X1, GArea.X2);
+		const int y1 = Min(GArea.Y1, GArea.Y2);
+		const int y2 = Max(GArea.Y1, GArea.Y2);
 
-		if (X1>Min(PrevArea.X1,PrevArea.X2) || X2<Max(PrevArea.X1,PrevArea.X2) ||
-		        Y1>Min(PrevArea.Y1,PrevArea.Y2) || Y2<Max(PrevArea.Y1,PrevArea.Y2))
+		if (x1 > Min(PrevArea.X1,PrevArea.X2) || x2 < Max(PrevArea.X1,PrevArea.X2) ||
+				y1 > Min(PrevArea.Y1,PrevArea.Y2) || y2 < Max(PrevArea.Y1,PrevArea.Y2))
 			SaveScr->RestoreArea(FALSE);
 
-		if (GArea.X1!=-1)
+		if (GArea.X1 != -1)
 		{
-			CHAR_INFO *CharBuf=new CHAR_INFO[(X2-X1+1)*(Y2-Y1+1)];
-			CHAR_INFO *PrevBuf=SaveScr->GetBufferAddress();
-			GetText(X1,Y1,X2,Y2,CharBuf,sizeof(CHAR_INFO)*(X2-X1+1)*(Y2-Y1+1));
+			const int GWidth = x2 - x1 + 1, GHeight = y2 - y1 + 1;
+			CHAR_INFO *CharBuf = new CHAR_INFO[GWidth*GHeight];
+			CHAR_INFO *PrevBuf = SaveScr->GetBufferAddress();
+			GetText(x1,y1,x2,y2, CharBuf, sizeof(CHAR_INFO)*GWidth*GHeight);
 
-			for (int X=X1; X<=X2; X++)
-				for (int Y=Y1; Y<=Y2; Y++)
+			for (int x=x1; x <= x2; x++)
+			{
+				for (int y=y1; y <= y2; y++)
 				{
 					int NewColor;
 
-					if ((PrevBuf[X+Y*(ScrX+1)].Attributes & B_LIGHTGRAY)==B_LIGHTGRAY)
-						NewColor=B_BLACK|F_LIGHTGRAY;
+					if ((PrevBuf[x+y*(ScrX+1)].Attributes & B_LIGHTGRAY) == B_LIGHTGRAY)
+						NewColor = B_BLACK|F_LIGHTGRAY;
 					else
-						NewColor=B_LIGHTGRAY|F_BLACK;
+						NewColor = B_LIGHTGRAY|F_BLACK;
 
-					int Pos=(X-X1)+(Y-Y1)*(X2-X1+1);
-					CharBuf[Pos].Attributes=(CharBuf[Pos].Attributes & ~0xff) | NewColor;
+					int Pos = (x-x1) + (y-y1)*GWidth;
+					CharBuf[Pos].Attributes = (CharBuf[Pos].Attributes & ~0xff) | NewColor;
 				}
+			}
 
-			PutText(X1,Y1,X2,Y2,CharBuf);
+			PutText(x1, y1, x2, y2, CharBuf);
 			delete[] CharBuf;
 		}
 
-		if (GArea.X1==-2)
+		if (GArea.X1 == -2)
 		{
 			SaveScr->RestoreArea(FALSE);
-			GArea.X1=GArea.X2;
+			GArea.X1 = GArea.X2;
 		}
 
 		PrevArea=GArea;
