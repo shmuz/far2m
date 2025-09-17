@@ -161,3 +161,7 @@ far2l asks plugin if it can exit now. If plugin has some background tasks pendin
 ## Known issues:
 * Only valid translations are English, Russian and Ukrainian, all other languages require deep correction.
 * Characters that occupy more than single cell or diacritic-like characters are rendered buggy, that means Chinese and Japanese texts are hardly readable in some cases.
+
+## SAST Tools
+
+[PVS-Studio](https://pvs-studio.com/en/pvs-studio/?utm_source=website&utm_medium=github&utm_campaign=open_source) - static analyzer for C, C++, C#, and Java code.
