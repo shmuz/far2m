@@ -79,22 +79,23 @@ local function add_enums (src, trg)
 end
 
 local function write_target (trg_int, trg_ptr)
+  -- if uncomment /*static*/ below then GCC 7.5 fails to compile; later GCC versions are OK
   io.write [[
-static const flag_pair flags[] = {
+/*static*/ const flag_pair flags[] = {
 ]]
   table.sort(trg_int)
   table.sort(trg_ptr)
   for _,v in ipairs(trg_int) do
     local len = math.max(1, 40 - #v)
     local space = (" "):rep(len)
-    io.write(string.format('  {"%s",%s%s },\n', v, space, v))
+    io.write(string.format('    {"%s",%s%s },\n', v, space, v))
   end
   for _,v in ipairs(trg_ptr) do
     local len = math.max(1, 40 - #v)
     local space = (" "):rep(len)
-    io.write(string.format('  {"%s",%s(intptr_t) %s },\n', v, space, v))
+    io.write(string.format('    {"%s",%s(intptr_t) %s },\n', v, space, v))
   end
-  io.write("};\n\n")
+  io.write("  };\n")
 end
 
 -- Windows API constants
@@ -143,10 +144,13 @@ typedef struct {
 
 ]]
 
-
-local file_bottom = [[
+local file_bottom_1 = [[
 void push_far_flags (lua_State *L)
 {
+]]
+
+local file_bottom_2 = [[
+
   int nelem = sizeof(flags) / sizeof(flags[0]);
   lua_createtable(L, 0, nelem);
   for (int i=0; i<nelem; ++i) {
@@ -155,7 +159,6 @@ void push_far_flags (lua_State *L)
   }
   (void)luaL_dostring(L, far_Guids);
 }
-
 ]]
 
 local function write_guids(fname)
@@ -198,8 +201,8 @@ do
   end
 
   io.write(file_top)
-  write_target(trg_int, trg_ptr)
   write_guids(dir .. "/../src/DlgGuid.hpp")
-  io.write(file_bottom)
+  io.write(file_bottom_1)
+  write_target(trg_int, trg_ptr)
+  io.write(file_bottom_2)
 end
-
