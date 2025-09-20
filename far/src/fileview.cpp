@@ -534,9 +534,16 @@ int FileViewer::FastHide()
 
 int FileViewer::ViewerControl(int Command,void *Param)
 {
-	_VCTLLOG(CleverSysLog SL(L"FileViewer::ViewerControl()"));
-	_VCTLLOG(SysLog(L"(Command=%ls, Param=[%d/0x%08X])",_VCTL_ToName(Command),(int)Param,Param));
-	return View.ViewerControl(Command,Param);
+	const int result = View.ViewerControl(Command, Param);
+	if (result && VCTL_GETINFO==Command)
+	{
+		const auto Info = static_cast<ViewerInfo*>(Param);
+		if (IsTitleBarVisible())
+			Info->Options |= VOPT_SHOWTITLEBAR;
+		if (KeyBarVisible)
+			Info->Options |= VOPT_SHOWKEYBAR;
+	}
+	return result;
 }
 
 FARString &FileViewer::GetTitle(FARString &Title,int LenTitle,int TruncSize)

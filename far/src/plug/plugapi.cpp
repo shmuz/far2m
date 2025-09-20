@@ -2034,34 +2034,34 @@ static int FarViewerControlSynchedV2(int ViewerID, int Command, void *Param)
 	if (FrameManager->ManagerIsDown())
 		return 0;
 
-	FileViewer *viewer = nullptr;
-	Viewer *CurViewer = CtrlObject->Plugins.CurViewer;
+	FileViewer *FoundFileViewer = nullptr;
 
-	if (ViewerID == -1 || (CurViewer && CurViewer->GetViewerID() == ViewerID)) {
-		return CurViewer ? CurViewer->ViewerControl(Command, Param) : 0;
+	if (ViewerID == -1) {
+		Viewer *CurViewer = CtrlObject->Plugins.CurViewer;
+		FoundFileViewer = CurViewer ? CurViewer->GetHostFileViewer() : nullptr;
 	}
 	else {
 		int count = FrameManager->GetFrameCount();
 		for (int i = 0; i < count; i++) {
-			auto fileview = dynamic_cast<FileViewer *>(FrameManager->operator[](i));
-			if (fileview && (fileview->GetViewerID() == ViewerID)) {
-				viewer = fileview;
+			auto fviewer = dynamic_cast<FileViewer *>(FrameManager->operator[](i));
+			if (fviewer && (fviewer->GetViewerID() == ViewerID)) {
+				FoundFileViewer = fviewer;
 				break;
 			}
 		}
-		if (!viewer) {
+		if (!FoundFileViewer) {
 			count = FrameManager->GetModalCount();
 			for (int i = 0; i < count; i++) {
-				auto fileview = dynamic_cast<FileViewer *>(FrameManager->GetModalByIndex(i));
-				if (fileview && (fileview->GetViewerID() == ViewerID)) {
-					viewer = fileview;
+				auto fviewer = dynamic_cast<FileViewer *>(FrameManager->GetModalByIndex(i));
+				if (fviewer && (fviewer->GetViewerID() == ViewerID)) {
+					FoundFileViewer = fviewer;
 					break;
 				}
 			}
 		}
 	}
 
-	return viewer ? viewer->ViewerControl(Command, Param) : 0;
+	return FoundFileViewer ? FoundFileViewer->ViewerControl(Command, Param) : 0;
 }
 
 int WINAPI FarViewerControl(int Command, void *Param)

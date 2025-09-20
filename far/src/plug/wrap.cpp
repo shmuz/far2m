@@ -4024,6 +4024,18 @@ int WINAPI FarViewerControlA(int Command, void *Param)
 			if (viW.Options & VOPT_AUTODETECTCODEPAGE)
 				viA->Options|= oldfar::VOPT_AUTODETECTTABLE;
 
+			if (viW.Options & VOPT_SHOWSCROLLBAR)
+				viA->Options|= oldfar::VOPT_SHOWSCROLLBAR;
+
+			if (viW.Options & VOPT_QUICKVIEW)
+				viA->Options|= oldfar::VOPT_QUICKVIEW;
+
+			if (viW.Options & VOPT_SHOWTITLEBAR)
+				viA->Options|= oldfar::VOPT_SHOWTITLEBAR;
+
+			if (viW.Options & VOPT_SHOWKEYBAR)
+				viA->Options|= oldfar::VOPT_SHOWKEYBAR;
+
 			viA->TabSize = viW.TabSize;
 			viA->CurMode.UseDecodeTable = 0;
 			viA->CurMode.TableNum = 0;

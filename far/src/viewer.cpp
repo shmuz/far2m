@@ -3255,6 +3255,12 @@ int Viewer::ViewerControl(int Command, void *Param)
 				if (ViOpt.AutoDetectCodePage)
 					Info->Options|= VOPT_AUTODETECTCODEPAGE;
 
+				if (ViOpt.ShowScrollbar)
+					Info->Options|= VOPT_SHOWSCROLLBAR;
+
+				if (m_bQuickView)
+					Info->Options|= VOPT_QUICKVIEW;
+
 				Info->TabSize = ViOpt.TabSize;
 				Info->LeftPos = LeftPos;
 				return TRUE;

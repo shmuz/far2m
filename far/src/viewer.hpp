@@ -242,6 +242,7 @@ public:
 
 	int ViewerControl(int Command, void *Param);
 	void SetHostFileViewer(FileViewer *Viewer) { HostFileViewer = Viewer; }
+	FileViewer* GetHostFileViewer() { return HostFileViewer; }
 
 	void GoTo(int ShowDlg = TRUE, int64_t NewPos = 0, DWORD Flags = 0);
 	void GetSelectedParam(int64_t &Pos, int64_t &Length, DWORD &Flags);
