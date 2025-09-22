@@ -312,6 +312,7 @@ AddPlugin( editorcomp    wide  1 )
 AddPlugin( filecase      wide  1 )
 AddPlugin( incsrch       wide  1 )
 AddPlugin( inside        mb    1 )
+AddPlugin( OpenWith      wide  1 )
 AddPlugin( SimpleIndent  wide  1 )
 AddPlugin( tmppanel      wide  1 )
 
