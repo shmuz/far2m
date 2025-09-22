@@ -62,7 +62,7 @@ bool g_wx_norgb = false;
 
 WinPortRGB WxConsoleForeground2RGB(DWORD64 attributes)
 {
-//	if (attributes & EXPLICIT_LINE_WRAP) { // uncomment if debugging automatic VT line wrapping
+//	if (attributes & EXPLICIT_LINE_BREAK) { // uncomment if debugging automatic VT line wrapping
 //		return WinPortRGB(0x123456);
 //	}
 	if (g_wx_norgb) {
@@ -75,7 +75,7 @@ WinPortRGB WxConsoleForeground2RGB(DWORD64 attributes)
 
 WinPortRGB WxConsoleBackground2RGB(DWORD64 attributes)
 {
-//	if (attributes & EXPLICIT_LINE_WRAP) { // uncomment if debugging automatic VT line wrapping
+//	if (attributes & EXPLICIT_LINE_BREAK) { // uncomment if debugging automatic VT line wrapping
 //		return WinPortRGB(~0x123456);
 //	}
 	if (g_wx_norgb) {
@@ -88,7 +88,7 @@ WinPortRGB WxConsoleBackground2RGB(DWORD64 attributes)
 
 ////////////////////
 
-static int wxKeyCode2WinKeyCode(int code)
+int wxKeyCode2WinKeyCode(int code)
 {
 	switch (code) {
 	case WXK_BACK: return VK_BACK;
@@ -226,6 +226,7 @@ static int wxKeyCode2WinKeyCode(int code)
 	//fprintf(stderr, "not translated %u %lc", code, code);
 	return code;
 }
+
 
 static int wxKeyCode2WinScanCode(int code, int code_raw)
 {
