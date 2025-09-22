@@ -192,7 +192,7 @@ void CommandLine::ProcessCompletion(bool possibilities)
 
 std::string CommandLine::GetConsoleLog(HANDLE con_hnd, bool colored)
 {
-	bool vtshell_busy = VTShell_Busy();
+	bool vtshell_busy = VTShell_State() != VTS_IDLE;
 	if (!vtshell_busy) {
 		++ProcessShowClock;
 		ShowBackground();
