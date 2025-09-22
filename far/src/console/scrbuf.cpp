@@ -151,11 +151,14 @@ void ScreenBuf::Write(int X, int Y, const CHAR_INFO *Text, int TextLength)
 		return;
 	}
 
-	if (X + TextLength >= BufX)
-		TextLength = BufX - X;    //??
+	if (X + TextLength >= BufX) {
+		TextLength = BufX - X;	//??
+		if (TextLength == 0) {
+			return;
+		}
+	}
 
 	CHAR_INFO *PtrBuf = Buf + Y * BufX + X;
-
 	for (int i = 0; i < TextLength; i++) {
 		SetVidChar(PtrBuf[i], Text[i].Char.UnicodeChar);
 		PtrBuf[i].Attributes = Text[i].Attributes;
@@ -169,6 +172,21 @@ void ScreenBuf::Write(int X, int Y, const CHAR_INFO *Text, int TextLength)
 		Flush();
 
 #endif
+}
+
+void ScreenBuf::SetExplicitLineBreak(int Y)
+{
+	int LastNonSpace = 0;
+	CHAR_INFO *PtrBuf = Buf + Y * BufX;
+	for (int i = 0; i < BufX; i++) {
+		if ((PtrBuf[i].Char.UnicodeChar != ' ' && PtrBuf[i].Char.UnicodeChar != 0)) {
+			LastNonSpace = i;
+		}
+		PtrBuf[LastNonSpace].Attributes &= ~EXPLICIT_LINE_BREAK;
+	}
+	if (LastNonSpace > 0) {
+		PtrBuf[LastNonSpace].Attributes |= EXPLICIT_LINE_BREAK;
+	}
 }
 
 /* Читать блок из виртуального буфера.
