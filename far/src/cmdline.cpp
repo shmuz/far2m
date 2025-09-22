@@ -845,18 +845,10 @@ void CommandLine::ShowBackground()
 		fprintf(stderr, "CommandLine::ShowBackground: no BackgroundScreen\n");
 }
 
-void CommandLine::CorrectRealScreenCoord()
-{
-	if (BackgroundScreen)
-	{
-		BackgroundScreen->CorrectRealScreenCoord();
-	}
-}
-
 void CommandLine::ResizeConsole()
 {
-	BackgroundScreen->Resize(ScrX+1,ScrY+1,2,Opt.WindowMode!=FALSE);
-//  this->DisplayObject();
+	BackgroundScreen->VirtualResize(ScrX + 1, ScrY + 1);
+	//	this->DisplayObject();
 }
 
 void CommandLine::RedrawWithoutComboBoxMark()
