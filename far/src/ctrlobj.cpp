@@ -48,6 +48,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "scrbuf.hpp"
 #include "syslog.hpp"
 #include "treelist.hpp"
+#include "vtlog.h"
 
 ControlObject *CtrlObject;
 
@@ -78,6 +79,7 @@ ControlObject::ControlObject()
 			&Opt.SaveViewHistory, true);
 	FolderHistory->SetAddMode(true, HRD_CASESENS, true);
 	ViewHistory->SetAddMode(true, HRD_CASESENS, true);
+	VTLog::Start();
 }
 
 void ControlObject::Init()
@@ -90,7 +92,7 @@ void ControlObject::Init()
 	MoveCursor(0, ScrY - 1);
 	FPanels = new FilePanels();
 	CmdLine = new CommandLine();
-	CmdLine->SaveBackground(0, 0, ScrX, ScrY);
+	CmdLine->SaveBackground();
 	this->MainKeyBar = &(FPanels->MainKeyBar);
 	this->TopMenuBar = &(FPanels->TopMenuBar);
 	FPanels->Init();
@@ -139,6 +141,7 @@ void ControlObject::CreateFilePanels()
 
 ControlObject::~ControlObject()
 {
+	VTLog::Stop();
 	if (CriticalInternalError)
 		return;
 
@@ -232,14 +235,20 @@ void ControlObject::ShowStartupBanner(LPCWSTR EmergencyMsg)
 			ScrollScreen(LineCount - FreeSpace);
 
 		const auto SavedColor = GetColor();
-		for (size_t i = 0; i < Lines.size(); ++i) {
+		for (size_t i = 0, y = 0; i < Lines.size(); ++i, ++y) {
 			if (i >= ConsoleHintsIndex) {
 				SetFarColor(Lines[i].Begins(L' ') ? COL_HELPTEXT : COL_HELPTOPIC);		// COL_HELPBOXTITLE
 			}
-			if (!Lines[i].IsEmpty()) {
-				GotoXY(0, ScrY - (Lines.size() - i + 2));
-				Text(Lines[i]);
-				ScrBuf.SetExplicitLineBreak(ScrY - (Lines.size() - i + 2));
+			for (const wchar_t *str = Lines[i].CPtr();;) {
+				const auto piece = std::min(size_t(wcslen(str)), size_t(ScrX + 1));
+				GotoXY(0, ScrY - (Lines.size() - y + 2));
+				Text(str, piece);
+				str+= piece;
+				if (!*str) {
+					ScrBuf.SetExplicitLineBreak(ScrY - (Lines.size() - y + 2));
+					break;
+				}
+				++y;
 			}
 		}
 		SetColor(SavedColor);

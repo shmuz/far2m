@@ -47,7 +47,7 @@ class CommandLine : public ScreenObject
 {
 private:
 	EditControl CmdStr;
-	SaveScreen *BackgroundScreen;
+	HANDLE BackgroundConsole = NULL;
 	FARString strCurDir;
 	FARString strLastCmdStr;
 	int LastCmdPartLength;
@@ -105,9 +105,8 @@ public:
 	void GetSelection(int &Start, int &End) { CmdStr.GetSelection(Start, End); }
 	void Select(int Start, int End) { CmdStr.Select(Start, End); }
 
-	void SaveBackground(int X1, int Y1, int X2, int Y2);
 	void SaveBackground();
-	void ShowBackground();
+	void ShowBackground(bool showanyway = false);
 	void LockUpdatePanel(int Mode) { Flags.Change(FCMDOBJ_LOCKUPDATEPANEL, Mode); }
 
 	void EnableAC() { return CmdStr.EnableAC(); }
@@ -116,5 +115,5 @@ public:
 
 	void RedrawWithoutComboBoxMark();
 
-	const CHAR_INFO *GetBackgroundScreen(int &W, int &H);
+	HANDLE GetBackgroundConsole();
 };

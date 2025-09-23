@@ -75,7 +75,7 @@ CommandLine::CommandLine()
 			(Opt.CmdLine.AutoComplete ? EditControl::EC_ENABLEAUTOCOMPLETE : 0)
 					| EditControl::EC_ENABLEFNCOMPLETE
 					| EditControl::EC_ENABLEFNCOMPLETE_ESCAPED),
-	BackgroundScreen(nullptr),
+//	BackgroundScreen(nullptr),
 	LastCmdPartLength(-1),
 	LastKey(0),
 	PushDirStackSize(0)
@@ -87,8 +87,9 @@ CommandLine::CommandLine()
 
 CommandLine::~CommandLine()
 {
-	if (BackgroundScreen)
-		delete BackgroundScreen;
+	if (BackgroundConsole) {
+		WINPORT(JoinConsole)(NULL, BackgroundConsole);
+	}
 }
 
 void CommandLine::SetPersistentBlocks(int Mode)
@@ -814,41 +815,36 @@ void CommandLine::ShowViewEditHistory()
 		SetString(strStr);
 }
 
-void CommandLine::SaveBackground(int x1, int y1, int x2, int y2)
-{
-	if (BackgroundScreen)
-	{
-		delete BackgroundScreen;
-	}
-
-	BackgroundScreen=new SaveScreen(x1,y1,x2,y2);
-}
-
 void CommandLine::SaveBackground()
 {
-	if (BackgroundScreen)
-	{
-//		BackgroundScreen->Discard();
-		BackgroundScreen->SaveArea();
-		fprintf(stderr, "CommandLine::SaveBackground: done\n");
+	fprintf(stderr, "CommandLine::SaveBackground: %s\n", BackgroundConsole ? "override" : "prev");
+	if (BackgroundConsole) {
+		WINPORT(DiscardConsole)(BackgroundConsole);
 	}
-	else
-		fprintf(stderr, "CommandLine::SaveBackground: no BackgroundScreen\n");
+	ScrBuf.Flush();
+	BackgroundConsole = WINPORT(ForkConsole)(NULL);
 }
-void CommandLine::ShowBackground()
+
+void CommandLine::ShowBackground(bool showanyway)
 {
-	if (BackgroundScreen)
-	{
-		BackgroundScreen->RestoreArea();
+	if (!IsVisible() && !showanyway)
+		return;
+
+	if (BackgroundConsole) {
+		WINPORT(JoinConsole)(NULL, BackgroundConsole);
+		BackgroundConsole = WINPORT(ForkConsole)(NULL);
+		ScrBuf.FillBuf();
 		fprintf(stderr, "CommandLine::ShowBackground: done\n");
-	} else
-		fprintf(stderr, "CommandLine::ShowBackground: no BackgroundScreen\n");
+	} else {
+		fprintf(stderr, " CommandLine::ShowBackground: no BackgroundConsole\n");
+	}
 }
 
 void CommandLine::ResizeConsole()
 {
-	BackgroundScreen->VirtualResize(ScrX + 1, ScrY + 1);
-	//	this->DisplayObject();
+	if (BackgroundConsole) {
+		WINPORT(SetConsoleScreenBufferSize)(BackgroundConsole, COORD{ SHORT(ScrX + 1), SHORT(ScrY + 1) } );
+	}
 }
 
 void CommandLine::RedrawWithoutComboBoxMark()
@@ -858,13 +854,8 @@ void CommandLine::RedrawWithoutComboBoxMark()
 	DrawComboBoxMark(L' ');
 }
 
-const CHAR_INFO *CommandLine::GetBackgroundScreen(int &W, int &H)
+HANDLE CommandLine::GetBackgroundConsole()
 {
-	if (!BackgroundScreen)
-		return NULL;
-
-	W = (BackgroundScreen->X2 - BackgroundScreen->X1) + 1;
-	H = (BackgroundScreen->Y2 - BackgroundScreen->Y1) + 1;
-	return BackgroundScreen->GetBufferAddress();
+	return BackgroundConsole;
 }
 
