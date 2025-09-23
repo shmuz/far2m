@@ -1619,7 +1619,7 @@ void WinPortPanel::OnChar( wxKeyEvent& event )
 		ir.Event.KeyEvent.wRepeatCount = 1;
 		// we can not determine correct VirtualKeyCode value here because of
 		// https://github.com/wxWidgets/wxWidgets/issues/25379
-		ir.Event.KeyEvent.wVirtualKeyCode = wxKeyCode2WinKeyCode(_key_tracker.LastKeydown().GetKeyCode());
+		ir.Event.KeyEvent.wVirtualKeyCode = VK_NONAME;
 		if (event.GetUnicodeKey() <= 0x7f) {
 			if (_key_tracker.LastKeydown().GetTimestamp() == event.GetTimestamp()) {
 				wx2INPUT_RECORD irx(TRUE, _key_tracker.LastKeydown(), _key_tracker);
