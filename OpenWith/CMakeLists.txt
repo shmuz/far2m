@@ -4,9 +4,8 @@ set(SOURCES
 src/GlobalInfo.cpp
 src/OpenWith.cpp
 src/AppProvider.cpp
-src/BSDAppProvider.cpp
 src/DummyAppProvider.cpp
-src/LinuxAppProvider.cpp
+src/XDGBasedAppProvider.cpp
 )
 
 if(APPLE)
