@@ -13,8 +13,10 @@ Advanced compare, Align block, ArcLite, Auto wrap, Calculator, Draw lines, EditC
 Editor autocomplete, FarColorer, FileCase, HlfViewer, Incremental search, Inside,
 LuaMacro, MultiArc, NetCfg, NetRocks, OpenWith, Python, SimpleIndent, TmpPanel.
 
-#### Additional plugins and macros
-Additional plugins and macros for far2m are available from [luafar2m](https://github.com/shmuz/luafar2m) repository.
+#### Some project-related links
+* Additional plugins and macros for far2m: [luafar2m](https://github.com/shmuz/luafar2m)
+* [PPA builds](https://launchpad.net/~far2l-team/+archive/ubuntu/lua)
+* [Portable far2m build script](https://github.com/sorcodiv/far2m-build)
 
 #### License: GNU/GPLv2
 
