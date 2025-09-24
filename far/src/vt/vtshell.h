@@ -2,17 +2,10 @@
 #include <vector>
 #include <string>
 
-enum VT_State
-{
-	VTS_IDLE = 0,
-	VTS_NORMAL_SCREEN,
-	VTS_ALTERNATE_SCREEN
-};
-
-VT_State VTShell_State();
-
 int VTShell_Execute(const char *cmd, bool need_sudo, bool may_bgnd, bool may_notify);
+bool VTShell_Busy();
 void VTShell_Shutdown();
+
 
 struct VTInfo
 {

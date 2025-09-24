@@ -1,7 +1,6 @@
 #include "wxMain.h"
 #include <dlfcn.h>
 #include "../NotifySh.h"
-#include "wxWinTranslations.h"
 
 #define AREAS_REDUCTION
 

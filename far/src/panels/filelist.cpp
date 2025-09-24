@@ -1295,7 +1295,9 @@ int FileList::ProcessKey(FarKey Key)
 						EscapeSpace(strFileName);
 
 					strFileName+= L" ";
-					EnsurePathHasParentPrefix(strFileName);
+					if (PanelMode != PLUGIN_PANEL) {
+						EnsurePathHasParentPrefix(strFileName);
+					}
 				}
 
 				CtrlObject->CmdLine->InsertString(strFileName);

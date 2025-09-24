@@ -14,6 +14,10 @@
 #include "ctrlobj.hpp"
 #include "cmdline.hpp"
 
+
+#define FOREGROUND_RGB (FOREGROUND_RED|FOREGROUND_GREEN|FOREGROUND_BLUE)
+#define BACKGROUND_RGB (BACKGROUND_RED|BACKGROUND_GREEN|BACKGROUND_BLUE)
+
 namespace VTLog
 {
 	struct DumpState
@@ -42,24 +46,17 @@ namespace VTLog
 	}
 
 
-	// rv.first: actual line width
-	// rv.second: if line actually ended or subject for tail-merging with following line(s)
-	static std::pair<unsigned int, bool> ActualLineWidth(unsigned int Width, const CHAR_INFO *Chars)
+	static unsigned int ActualLineWidth(unsigned int Width, const CHAR_INFO *Chars)
 	{
-		const CHAR_INFO *prev_ci = nullptr;
-		for (auto x = Width;;) {
-			if (x == 0) {
-				return std::pair<unsigned int, bool>(0, true);
+		for (;;) {
+			if (!Width)
+				return 0;
+
+			--Width;
+			const auto &CI = Chars[Width];
+			if ((CI.Char.UnicodeChar && CI.Char.UnicodeChar != L' ') || (CI.Attributes & BACKGROUND_RGB) != 0) {
+				return Width + 1;
 			}
-			--x;
-			const auto &ci = Chars[x];
-			// essentially same condition logic as applied in ConsoleBuffer::SetSize
-			if ((ci.Char.UnicodeChar && ci.Char.UnicodeChar != L' ')
-					|| (ci.Attributes & (IMPORTANT_LINE_CHAR | EXPLICIT_LINE_BREAK)) != 0
-					|| (prev_ci && (ci.Attributes & BACKGROUND_RGB) != (prev_ci->Attributes & BACKGROUND_RGB)))  {
-				return std::pair<unsigned int, bool>(x + 1, (ci.Attributes & EXPLICIT_LINE_BREAK) != 0 || x != Width - 1);
-			}
-			prev_ci = &ci;
 		}
 	}
 
@@ -75,35 +72,35 @@ namespace VTLog
 				const bool tc_fore_prev = (attr_prev & FOREGROUND_TRUECOLOR) != 0;
 
 				const size_t out_len_before_attr = out.size();
-				out += "\033[";
-				if (attr_prev == (DWORD64)-1
-					|| (attr_prev & FOREGROUND_INTENSITY) != (attr_now & FOREGROUND_INTENSITY)) {
-					out += (attr_now & FOREGROUND_INTENSITY) ? "1:" : "22:";
+				out+= "\033[";
+				if ( attr_prev == (DWORD64)-1
+				|| (attr_prev&FOREGROUND_INTENSITY) != (attr_now&FOREGROUND_INTENSITY)) {
+					out+= (attr_now&FOREGROUND_INTENSITY) ? "1;" : "22;";
 				}
-				if (attr_prev == (DWORD64)-1 || (tc_fore_prev && !tc_fore_now)
-					|| (attr_prev & (FOREGROUND_INTENSITY | FOREGROUND_RGB)) != (attr_now & (FOREGROUND_INTENSITY | FOREGROUND_RGB))) {
-					out += (attr_now & FOREGROUND_INTENSITY) ? '9' : '3';
-					out += '0' + TranslateForegroundColor(attr_now);
-					out += ':';
+				if ( attr_prev == (DWORD64)-1 || (tc_fore_prev && !tc_fore_now)
+				|| (attr_prev&(FOREGROUND_INTENSITY|FOREGROUND_RGB)) != (attr_now&(FOREGROUND_INTENSITY|FOREGROUND_RGB))) {
+					out+= (attr_now&FOREGROUND_INTENSITY) ? '9' : '3';
+					out+= '0' + TranslateForegroundColor(attr_now);
+					out+= ';';
 				}
-				if (attr_prev == (DWORD64)-1 || (tc_back_prev && !tc_back_now)
-					|| (attr_prev & (BACKGROUND_INTENSITY | BACKGROUND_RGB)) != (attr_now & (BACKGROUND_INTENSITY | BACKGROUND_RGB))) {
-					out += (attr_now & BACKGROUND_INTENSITY) ? "10" : "4";
-					out += '0' + TranslateBackgroundColor(attr_now);
-					out += ':';
+				if ( attr_prev == (DWORD64)-1 || (tc_back_prev && !tc_back_now)
+				|| (attr_prev&(BACKGROUND_INTENSITY|BACKGROUND_RGB)) != (attr_now&(BACKGROUND_INTENSITY|BACKGROUND_RGB))) {
+					out+= (attr_now&BACKGROUND_INTENSITY) ? "10" : "4";
+					out+= '0' + TranslateBackgroundColor(attr_now);
+					out+= ';';
 				}
 
 				if (tc_fore_now && (!tc_fore_prev || GET_RGB_FORE(attr_prev) != GET_RGB_FORE(attr_now))) {
 					const DWORD rgb = GET_RGB_FORE(attr_now);
-					out += StrPrintf("38:2:%u:%u:%u:", rgb & 0xff, (rgb >> 8) & 0xff, (rgb >> 16) & 0xff);
+					out+= StrPrintf("38;2;%u;%u;%u;", rgb & 0xff, (rgb >> 8) & 0xff, (rgb >> 16) & 0xff);
 				}
 
 				if (tc_back_now && (!tc_back_prev || GET_RGB_BACK(attr_prev) != GET_RGB_BACK(attr_now))) {
 					const DWORD rgb = GET_RGB_BACK(attr_now);
-					out += StrPrintf("48:2:%u:%u:%u:", rgb & 0xff, (rgb >> 8) & 0xff, (rgb >> 16) & 0xff);
+					out+= StrPrintf("48;2;%u;%u;%u;", rgb & 0xff, (rgb >> 8) & 0xff, (rgb >> 16) & 0xff);
 				}
 
-				if (out.back() == ':') {
+				if (out.back() == ';') {
 					out.back() = 'm';
 					attr_prev = attr_now;
 
@@ -133,12 +130,12 @@ namespace VTLog
 	{
 		std::mutex _mutex;
 		std::list< std::pair<HANDLE, std::string> > _memories;
-
+		
 	public:
-		void Add(HANDLE con_hnd, const CHAR_INFO *Chars, unsigned int Width, bool EOL)
+		void Add(HANDLE con_hnd, unsigned int Width, const CHAR_INFO *Chars)
 		{
-			std::lock_guard<std::mutex> lock(_mutex);
 			const size_t limit = (size_t)std::max(Opt.CmdLine.VTLogLimit, 2);
+			std::lock_guard<std::mutex> lock(_mutex);
 			// a little hustling to reduce reallocations
 			if (_memories.size() >= limit) {
 				while (_memories.size() > limit) {
@@ -154,11 +151,8 @@ namespace VTLog
 			if (Width) {
 				EncodeLine(last.second, Width, Chars, true);
 			}
-			if (EOL) {
-				last.second+= NATIVE_EOL;
-			}
 		}
-
+		
 		void DumpToFile(HANDLE con_hnd, int fd, DumpState &ds, bool colored)
 		{
 			std::lock_guard<std::mutex> lock(_mutex);
@@ -174,7 +168,7 @@ namespace VTLog
 							m.second.erase(i, j + 1 - i);
 						}
 					}
-					//m.second+= NATIVE_EOL;
+					m.second+= NATIVE_EOL;
 					if (write(fd, m.second.c_str(), m.second.size()) != (int)m.second.size())
 						perror("VTLog: WriteToFile");
 				}
@@ -212,16 +206,27 @@ namespace VTLog
 
 	} g_lines;
 
+	static unsigned int g_pause_cnt = 0;
+
 	void OnConsoleScroll(PVOID pContext, HANDLE hConsole, unsigned int Width, CHAR_INFO *Chars)
 	{
-		auto width_eol = ActualLineWidth(Width, Chars);
-		if (VTShell_State() == VTS_NORMAL_SCREEN) {
-			g_lines.Add(hConsole, Chars, width_eol.first, width_eol.second);
-		} else if (hConsole && CtrlObject && CtrlObject->CmdLine && hConsole == CtrlObject->CmdLine->GetBackgroundConsole()) {
-			g_lines.Add(NULL, Chars, width_eol.first, width_eol.second);
+		if (g_pause_cnt == 0) {
+			g_lines.Add(hConsole, ActualLineWidth(Width, Chars), Chars);
 		}
 	}
 
+	void Pause()
+	{
+		__sync_add_and_fetch(&g_pause_cnt, 1);
+	}
+
+	void Resume()
+	{
+		if (__sync_sub_and_fetch(&g_pause_cnt, 1) < 0) {
+			ABORT();
+		}
+	}
+	
 	void Start()
 	{
 		WINPORT(SetConsoleScrollCallback) (NULL, OnConsoleScroll, NULL);
@@ -242,37 +247,43 @@ namespace VTLog
 		g_lines.Reset(con_hnd);
 	}
 	
-	static void AppendScreenLine(const CHAR_INFO *line, unsigned int width, std::string &s, DumpState &ds, bool colored, bool no_line_recompose)
+	static void AppendScreenLine(const CHAR_INFO *line, unsigned int width, std::string &s, DumpState &ds, bool colored)
 	{
-		auto width_eol = ActualLineWidth(width, line);
-		if (width_eol.first || ds.nonempty) {
+		width = ActualLineWidth(width, line);
+		if (width || ds.nonempty) {
 			ds.nonempty = true;
-			EncodeLine(s, width_eol.first, line, colored);
-			if (width_eol.second || no_line_recompose) {
-				s+= NATIVE_EOL;
-			}
+			EncodeLine(s, width, line, colored);
+			s+= NATIVE_EOL;
 		}
 	}
 
-	static void AppendConsoleScreenLines(HANDLE con_hnd, std::string &s, DumpState &ds, bool colored)
+	static void AppendActiveScreenLines(HANDLE con_hnd, std::string &s, DumpState &ds, bool colored)
 	{
 		CONSOLE_SCREEN_BUFFER_INFO csbi = { };
 		if (WINPORT(GetConsoleScreenBufferInfo)(con_hnd, &csbi) && csbi.dwSize.X > 0 && csbi.dwSize.Y > 0) {
 			std::vector<CHAR_INFO> line(csbi.dwSize.X);
 			COORD buf_pos = { }, buf_size = {csbi.dwSize.X, 1};
 			SMALL_RECT rc = {0, 0, (SHORT) (csbi.dwSize.X - 1), 0};
-			// alternate VT screen mode typically used by rich UI terminal apps like MC
-			// which need identical screen copy without line recomposition
-			const bool no_line_recompose = (VTShell_State() == VTS_ALTERNATE_SCREEN);
-			if (no_line_recompose && !s.empty() && !strchr(NATIVE_EOL, s.back())) {
-				s+= NATIVE_EOL;
-			}
 			for (rc.Top = rc.Bottom = 0; rc.Top < csbi.dwSize.Y; rc.Top = ++rc.Bottom) {
 				if (WINPORT(ReadConsoleOutput)(con_hnd, &line[0], buf_size, buf_pos, &rc)) {
-					AppendScreenLine(&line[0], (unsigned int)csbi.dwSize.X, s, ds, colored, no_line_recompose);
+					AppendScreenLine(&line[0], (unsigned int)csbi.dwSize.X, s, ds, colored);
 				}
 			}
 		}		
+	}
+
+	static void AppendSavedScreenLines(std::string &s, DumpState &ds, bool colored)
+	{
+		if (CtrlObject->CmdLine) {
+			int w = 0, h = 0;
+			const CHAR_INFO *ci = CtrlObject->CmdLine->GetBackgroundScreen(w, h);
+			if (ci && w > 0 && h > 0) {
+				while (h--) {
+					AppendScreenLine(ci, (unsigned int)w, s, ds, colored);
+					ci+= w;
+				}
+			}
+		}
 	}
 
 	std::string GetAsFile(HANDLE con_hnd, bool colored, bool append_screen_lines, const char *wanted_path)
@@ -298,15 +309,14 @@ namespace VTLog
 		g_lines.DumpToFile(con_hnd, fd, ds, colored);
 		if (append_screen_lines) {
 			std::string s;
-			if (con_hnd || VTShell_State() != VTS_IDLE) {
-				AppendConsoleScreenLines(con_hnd, s, ds, colored);
-			} else if (CtrlObject->CmdLine) {
-				AppendConsoleScreenLines(CtrlObject->CmdLine->GetBackgroundConsole(), s, ds, colored);
+			if (!con_hnd && !VTShell_Busy()) {
+				AppendSavedScreenLines(s, ds, colored);
+			} else {
+				AppendActiveScreenLines(con_hnd, s, ds, colored);
 			}
 			if (!s.empty()) {
-				if (write(fd, s.c_str(), s.size()) != (int)s.size()) {
+				if (write(fd, s.c_str(), s.size()) != (int)s.size())
 					perror("VTLog: write");				
-				}
 			}
 		}
 		close(fd);

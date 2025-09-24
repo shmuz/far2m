@@ -151,14 +151,11 @@ void ScreenBuf::Write(int X, int Y, const CHAR_INFO *Text, int TextLength)
 		return;
 	}
 
-	if (X + TextLength >= BufX) {
-		TextLength = BufX - X;	//??
-		if (TextLength == 0) {
-			return;
-		}
-	}
+	if (X + TextLength >= BufX)
+		TextLength = BufX - X;    //??
 
 	CHAR_INFO *PtrBuf = Buf + Y * BufX + X;
+
 	for (int i = 0; i < TextLength; i++) {
 		SetVidChar(PtrBuf[i], Text[i].Char.UnicodeChar);
 		PtrBuf[i].Attributes = Text[i].Attributes;
@@ -172,20 +169,6 @@ void ScreenBuf::Write(int X, int Y, const CHAR_INFO *Text, int TextLength)
 		Flush();
 
 #endif
-}
-
-void ScreenBuf::SetExplicitLineBreak(int Y)
-{
-	int LastNonSpace = 0;
-	CHAR_INFO *PtrBuf = Buf + Y * BufX;
-	for (int i = 0; i < BufX; i++) {
-		if ((PtrBuf[i].Char.UnicodeChar != ' ' && PtrBuf[i].Char.UnicodeChar != 0)
-				|| (i != 0 && (PtrBuf[i].Attributes & BACKGROUND_RGB) != (PtrBuf[i - 1].Attributes & BACKGROUND_RGB))) {
-			LastNonSpace = i;
-		}
-		PtrBuf[i].Attributes &= ~EXPLICIT_LINE_BREAK;
-	}
-	PtrBuf[LastNonSpace].Attributes |= EXPLICIT_LINE_BREAK;
 }
 
 /* Читать блок из виртуального буфера.
@@ -211,24 +194,26 @@ void ScreenBuf::ApplyShadow(int X1, int Y1, int X2, int Y2, SaveScreen *ss)
 
 	for (I = 0; I < Height; I++) {
 		CHAR_INFO *DstBuf = Buf + (Y1 + I) * BufX + X1;
-		const CHAR_INFO *SrcBuf = ss ? &ss->Read(X1, Y1 + I) : DstBuf;
+		CHAR_INFO *SrcBuf = ss ? ss->GetBufferAddress()
+			+ ((Y1 + I) - ss->Y1) * (ss->X2 + 1 - ss->X1) + (X1 - ss->X1) : DstBuf;
 
 		for (J = 0; J < Width; J++, ++DstBuf, ++SrcBuf) {
 
-			union {
+			union
+			{
 				uint64_t attr64;
 				uint8_t attr[8];
 			};
 
 			attr64 = SrcBuf->Attributes;
-			attr64 &= 0xFFFFFFFFFFFFFF07;
+			attr64&= 0xFFFFFFFFFFFFFF07;
 
-			attr[7] >>= 1;
-			attr[6] >>= 1;
-			attr[5] >>= 1;
-			attr[4] >>= 1;
-			attr[3] >>= 1;
-			attr[2] >>= 1;
+			attr[7]>>= 1;
+			attr[6]>>= 1;
+			attr[5]>>= 1;
+			attr[4]>>= 1;
+			attr[3]>>= 1;
+			attr[2]>>= 1;
 
 			if (!attr[0])
 				attr[0] = 8;

@@ -6,6 +6,9 @@ namespace VTLog
 	void Start();
 	void Stop();
 
+	void Pause();
+	void Resume();
+
 	void ConsoleJoined(HANDLE con_hnd);
 
 	void Reset(HANDLE con_hnd);

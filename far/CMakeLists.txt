@@ -227,7 +227,7 @@ target_include_directories(far2m PRIVATE
 add_dependencies(far2m bootstrap WinPort)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    SET (WINPORT -Wl,-force_load WinPort wineguts utils)
+    SET (WINPORT -force_load WinPort wineguts utils)
 else()
     SET (WINPORT -Wl,--whole-archive WinPort -Wl,--no-whole-archive)
 endif()

@@ -2473,7 +2473,7 @@ void PluginManager::ShowPluginInfo(Plugin *pPlugin, int nItem, const GUID &Guid)
 		if (pPlugin->GetPluginInfo(&Info))
 			strPluginPrefix = NullToEmpty(Info.CommandPrefix);
 	}
-	const int Width = 43;
+	const int Width = 36;
 	DialogBuilder Builder(Msg::MPluginInformation, L"ShowPluginInfo");
 	Builder.SetId(PluginInformationId);
 

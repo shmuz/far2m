@@ -229,6 +229,7 @@ void Grabber::DisplayObject()
 		{
 			const int GWidth = x2 - x1 + 1, GHeight = y2 - y1 + 1;
 			CHAR_INFO *CharBuf = new CHAR_INFO[GWidth*GHeight];
+			CHAR_INFO *PrevBuf = SaveScr->GetBufferAddress();
 			GetText(x1,y1,x2,y2, CharBuf, sizeof(CHAR_INFO)*GWidth*GHeight);
 
 			for (int x=x1; x <= x2; x++)
@@ -237,7 +238,7 @@ void Grabber::DisplayObject()
 				{
 					int NewColor;
 
-					if ((SaveScr->Read(x, y).Attributes & B_LIGHTGRAY) == B_LIGHTGRAY)
+					if ((PrevBuf[x+y*(ScrX+1)].Attributes & B_LIGHTGRAY) == B_LIGHTGRAY)
 						NewColor = B_BLACK|F_LIGHTGRAY;
 					else
 						NewColor = B_LIGHTGRAY|F_BLACK;
