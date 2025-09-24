@@ -11,7 +11,7 @@ BETA VERSION.
 #### Included plug-ins
 Advanced compare, Align block, ArcLite, Auto wrap, Calculator, Draw lines, EditCase,
 Editor autocomplete, FarColorer, FileCase, HlfViewer, Incremental search, Inside,
-LuaMacro, MultiArc, NetCfg, NetRocks, Python, SimpleIndent, TmpPanel.
+LuaMacro, MultiArc, NetCfg, NetRocks, OpenWith, Python, SimpleIndent, TmpPanel.
 
 #### Additional plugins and macros
 Additional plugins and macros for far2m are available from [luafar2m](https://github.com/shmuz/luafar2m) repository.

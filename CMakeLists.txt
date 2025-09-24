@@ -230,7 +230,10 @@ else()
         endif()
 
     elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-        if (EXISTS "/opt/local/Library/Frameworks/wxWidgets.framework/Versions/wxWidgets/3.2/bin/wx-config")
+        if (DEFINED wxWidgets_CONFIG_EXECUTABLE)
+            message(STATUS "Using pre-defined wx config: ${wxWidgets_CONFIG_EXECUTABLE}")
+
+        elseif (EXISTS "/opt/local/Library/Frameworks/wxWidgets.framework/Versions/wxWidgets/3.2/bin/wx-config")
             # MacPorts
             set(wxWidgets_CONFIG_EXECUTABLE "/opt/local/Library/Frameworks/wxWidgets.framework/Versions/wxWidgets/3.2/bin/wx-config")
             set(wxWidgets_wxrc_EXECUTABLE "/opt/local/Library/Frameworks/wxWidgets.framework/Versions/wxWidgets/3.2/bin/wxrc")
@@ -312,6 +315,7 @@ AddPlugin( editorcomp    wide  1 )
 AddPlugin( filecase      wide  1 )
 AddPlugin( incsrch       wide  1 )
 AddPlugin( inside        mb    1 )
+AddPlugin( OpenWith      wide  1 )
 AddPlugin( SimpleIndent  wide  1 )
 AddPlugin( tmppanel      wide  1 )
 
