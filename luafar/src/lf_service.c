@@ -4727,24 +4727,21 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 			return 1;
 		}
 
-		case ACTL_GETWINDOWINFO:
-		case ACTL_GETSHORTWINDOWINFO: {
+		case ACTL_GETWINDOWINFO: {
 			struct WindowInfo wi;
 			memset(&wi, 0, sizeof(wi));
 			wi.Pos = luaL_optinteger(L, pos2, 0) - 1;
 
-			if (Command == ACTL_GETWINDOWINFO) {
-				if (!PtrAdvControl(pd->ModuleNumber, Command, &wi, NULL))
-					return lua_pushnil(L), 1;
+			if (!PtrAdvControl(pd->ModuleNumber, Command, &wi, NULL))
+				return lua_pushnil(L), 1;
 
-				wi.TypeName = (wchar_t*)lua_newuserdata(L, (wi.TypeNameSize + wi.NameSize) * sizeof(wchar_t));
-				wi.Name = wi.TypeName + wi.TypeNameSize;
-			}
+			wi.TypeName = (wchar_t*)lua_newuserdata(L, (wi.TypeNameSize + wi.NameSize) * sizeof(wchar_t));
+			wi.Name = wi.TypeName + wi.TypeNameSize;
 
 			if (!PtrAdvControl(pd->ModuleNumber, Command, &wi, NULL))
 				return lua_pushnil(L), 1;
 
-			lua_createtable(L, 0, 6);
+			lua_createtable(L, 0, 7);
 
 			switch(wi.Type)
 			{
@@ -4761,10 +4758,9 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 			PutIntToTable(L, "Pos", wi.Pos + 1);
 			PutIntToTable(L, "Type", wi.Type);
 			PutIntToTable(L, "Flags", wi.Flags);
-			if (Command == ACTL_GETWINDOWINFO) {
-				PutWStrToTable(L, "TypeName", wi.TypeName, -1);
-				PutWStrToTable(L, "Name", wi.Name, -1);
-			}
+			PutWStrToTable(L, "TypeName", wi.TypeName, -1);
+			PutWStrToTable(L, "Name", wi.Name, -1);
+
 			return 1;
 		}
 
@@ -4848,7 +4844,6 @@ AdvCommand( GetFarManagerVersion,   ACTL_GETFARVERSION)
 AdvCommand( GetInterfaceSettings,   ACTL_GETINTERFACESETTINGS)
 AdvCommand( GetPanelSettings,       ACTL_GETPANELSETTINGS)
 AdvCommand( GetPluginMaxReadData,   ACTL_GETPLUGINMAXREADDATA)
-AdvCommand( GetShortWindowInfo,     ACTL_GETSHORTWINDOWINFO)
 AdvCommand( GetSystemSettings,      ACTL_GETSYSTEMSETTINGS)
 AdvCommand( GetSysWordDiv,          ACTL_GETSYSWORDDIV)
 AdvCommand( GetWindowCount,         ACTL_GETWINDOWCOUNT)
@@ -5552,7 +5547,7 @@ static int far_ColorDialog(lua_State *L)
 	flags_t Flags = OptFlags(L, 2, 0);
 
 	if (PSInfo.ColorDialogV2(pd->ModuleNumber, &Data, Flags)) {
-		lua_createtable(L, 0, 4);
+		lua_createtable(L, 0, 6);
 		PutIntToTable(L, "ForegroundColor", (Data.Color >> 16) & 0xFFFFFF);
 		PutIntToTable(L, "BackgroundColor", (Data.Color >> 40) & 0xFFFFFF);
 		PutIntToTable(L, "PaletteColor", Data.Color & 0xFF);
@@ -5807,7 +5802,6 @@ static const luaL_Reg actl_funcs[] =
 	PAIR( adv, GetInterfaceSettings),
 	PAIR( adv, GetPanelSettings),
 	PAIR( adv, GetPluginMaxReadData),
-	PAIR( adv, GetShortWindowInfo),
 	PAIR( adv, GetSystemSettings),
 	PAIR( adv, GetSysWordDiv),
 	PAIR( adv, GetWindowCount),
