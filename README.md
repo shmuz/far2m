@@ -16,6 +16,7 @@ LuaMacro, MultiArc, NetCfg, NetRocks, OpenWith, Python, SimpleIndent, TmpPanel.
 #### Some project-related links
 * Additional plugins and macros for far2m: [luafar2m](https://github.com/shmuz/luafar2m)
 * [PPA builds](https://launchpad.net/~far2l-team/+archive/ubuntu/lua)
+* [FAR2M File Manager — portable build](https://github.com/spvkgn/far2m-portable)
 * [Portable far2m build script](https://github.com/sorcodiv/far2m-build)
 
 #### License: GNU/GPLv2
