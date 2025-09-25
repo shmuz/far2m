@@ -2656,14 +2656,25 @@ int WINAPI farMacroControl(DWORD PluginId, int Command, int Param1, void *Param2
 	return 0;
 }
 
-static int farColorDialogSynched(INT_PTR PluginNumber, ColorDialogData *Data, DWORD Flags)
+static int FarColorDialogSynched(const int flags, uint64_t *c)
 {
-	return GetColorDialog(PluginNumber, Data, Flags) ? TRUE : FALSE;
+	return (int)GetColorDialog(c, true);
 }
 
-int WINAPI farColorDialog(INT_PTR PluginNumber, ColorDialogData *Data, DWORD Flags)
+int WINAPI FarColorDialog(int flags, uint64_t *c)
 {
-	return InterThreadCall<int, 0>(std::bind(farColorDialogSynched, PluginNumber, Data, Flags));
+	return InterThreadCall<int, 0>(std::bind(FarColorDialogSynched, flags, c));
+	return 0;
+}
+
+static int FarColorDialogSynchedV2(INT_PTR PluginNumber, ColorDialogData *Data, DWORD Flags)
+{
+	return GetColorDialogV2(PluginNumber, Data, Flags) ? TRUE : FALSE;
+}
+
+int WINAPI FarColorDialogV2(INT_PTR PluginNumber, ColorDialogData *Data, DWORD Flags)
+{
+	return InterThreadCall<int, 0>(std::bind(FarColorDialogSynchedV2, PluginNumber, Data, Flags));
 }
 
 int WINAPI farDetectCodePage(DetectCodePageInfo *Info)

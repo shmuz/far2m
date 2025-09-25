@@ -5551,7 +5551,7 @@ static int far_ColorDialog(lua_State *L)
 
 	flags_t Flags = OptFlags(L, 2, 0);
 
-	if (PSInfo.ColorDialog(pd->ModuleNumber, &Data, Flags)) {
+	if (PSInfo.ColorDialogV2(pd->ModuleNumber, &Data, Flags)) {
 		lua_createtable(L, 0, 4);
 		PutIntToTable(L, "ForegroundColor", (Data.Color >> 16) & 0xFFFFFF);
 		PutIntToTable(L, "BackgroundColor", (Data.Color >> 40) & 0xFFFFFF);

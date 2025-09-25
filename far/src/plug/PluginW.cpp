@@ -648,7 +648,8 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 		StartupInfo.AdvControlAsync = FarAdvControlAsync;
 		StartupInfo.AdvControl = FarAdvControl;
 		StartupInfo.CmpName = FarCmpName;
-		StartupInfo.ColorDialog = farColorDialog;
+		StartupInfo.ColorDialog = FarColorDialog;
+		StartupInfo.ColorDialogV2 = FarColorDialogV2;
 		StartupInfo.Control = FarControl;
 		StartupInfo.DefDlgProc = FarDefDlgProc;
 		StartupInfo.DialogFree = FarDialogFree;

@@ -950,7 +950,7 @@ bool GetColorDialog16(uint16_t *color, bool bCentered)
 	return out;
 }
 
-bool GetColorDialog(INT_PTR PluginNumber, ColorDialogData *Data, DWORD Flags)
+bool GetColorDialogV2(INT_PTR PluginNumber, ColorDialogData *Data, DWORD Flags)
 {
 	if (Data)
 	{

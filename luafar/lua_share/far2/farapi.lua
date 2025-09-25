@@ -1831,6 +1831,11 @@ typedef int (__stdcall *FARAPIMACROCONTROL)(
 );
 
 typedef int (__stdcall *FARAPICOLORDIALOG)(
+	int Flags,
+	uint64_t *Color
+);
+
+typedef int (__stdcall *FARAPICOLORDIALOGV2)(
 	INT_PTR PluginNumber,
 	struct ColorDialogData *Data,
 	DWORD Flags
@@ -2199,7 +2204,7 @@ struct PluginStartupInfo
 	FARAPIEDITORCONTROLV2  EditorControlV2;
 	FARAPIVIEWERCONTROLV2  ViewerControlV2;
 	FARAPIPLUGINSCONTROLV3 PluginsControlV3;
-	FARAPICOLORDIALOG      ColorDialog;
+	FARAPICOLORDIALOGV2    ColorDialogV2;
 	FARAPIFREESCREEN       FreeScreen;
 	const void*            Private;
 	int                    LuafarLoaded;
@@ -2209,6 +2214,7 @@ struct PluginStartupInfo
 	FARAPIMENUV2           MenuV2;
 	FARAPIINPUTBOXV3       InputBoxV3;
 	FARAPIADVCONTROL       AdvControlAsync;
+	FARAPICOLORDIALOG      ColorDialog;
 };
 
 

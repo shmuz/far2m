@@ -63,6 +63,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "execute.hpp"
 #include "flink.hpp"
 #include "ConfigRW.hpp"
+#include "pick_color.hpp"
 #include "wrap.cpp"
 #include <KeyFileHelper.h>
 
@@ -427,6 +428,7 @@ static void CreatePluginStartupInfoA(PluginA *pPlugin, oldfar::PluginStartupInfo
 		StartupInfo.AdvControl = FarAdvControlA;
 		StartupInfo.CharTable = FarCharTableA;
 		StartupInfo.CmpName = FarCmpNameA;
+		StartupInfo.ColorDialog = FarColorDialogA;
 		StartupInfo.Control = FarControlA;
 		StartupInfo.DefDlgProc = FarDefDlgProcA;
 		StartupInfo.DialogEx = FarDialogExA;

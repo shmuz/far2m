@@ -124,7 +124,8 @@ HANDLE WINAPI FarDialogInitV3(INT_PTR PluginNumber, const GUID *Id, int X1, int 
 		DWORD Flags, FARWINDOWPROC Proc, LONG_PTR Param);
 intptr_t WINAPI farPluginsControlV3(HANDLE hHandle, int Command, intptr_t Param1, void *Param2);
 int WINAPI farMacroControl(DWORD PluginId, int Command, int Param1, void *Param2);
-int WINAPI farColorDialog(INT_PTR PluginNumber, ColorDialogData *Data, DWORD Flags);
+int WINAPI FarColorDialog(int Flags, uint64_t *Color);
+int WINAPI FarColorDialogV2(INT_PTR PluginNumber, ColorDialogData *Data, DWORD Flags);
 int64_t WINAPI farCallFar(int CheckCode, FarMacroCall *Data);
 int WINAPI farDetectCodePage(DetectCodePageInfo *Info);
 
