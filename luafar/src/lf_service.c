@@ -4741,7 +4741,7 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 			if (!PtrAdvControl(pd->ModuleNumber, Command, &wi, NULL))
 				return lua_pushnil(L), 1;
 
-			lua_createtable(L, 0, 7);
+			lua_createtable(L, 0, 6);
 
 			switch(wi.Type)
 			{

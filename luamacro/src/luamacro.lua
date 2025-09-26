@@ -694,6 +694,18 @@ local function Init()
   PluginIsReady = true
 end
 
+function export.Analyse(Data)
+  for _,module in ipairs(utils.GetPanelModules()) do
+    if type(module.Analyse) == "function" then
+      local datacopy = {}; for k,v in pairs(Data) do datacopy[k]=v; end -- prevent modifying 'Data'
+      local obj = module.Analyse(datacopy)
+      if obj then
+        return { module=module; object=obj }
+      end
+    end
+  end
+end
+
 function export.OpenFilePlugin (Name, Data, OpMode)
   for _,module in ipairs(utils.GetPanelModules()) do
     if type(module.OpenFilePlugin) == "function" then
