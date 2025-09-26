@@ -678,12 +678,10 @@ PHPTR PluginManager::OpenFilePlugin(const wchar_t *FileName, int OpMode, OPENFIL
 		{
 			AnalyseInfo copyInfo = AnInfo;
 			OpenAnalyseInfo oaInfo { sizeof(oaInfo), &copyInfo, pCallResult->Handle };
-			HANDLE h = pCallResult->pPlugin->OpenPlugin(OPEN_ANALYSE, &oaInfo);
+			pCallResult->Handle = pCallResult->pPlugin->OpenPlugin(OPEN_ANALYSE, &oaInfo);
 
-			if (h != INVALID_HANDLE_VALUE)
-				pCallResult->Handle = h;
-			else
-				pCallResult = nullptr;
+			if (pCallResult->Handle == PANEL_STOP)
+				hResult = PHPTR_STOP;
 		}
 	}
 
@@ -704,7 +702,7 @@ PHPTR PluginManager::OpenFilePlugin(const wchar_t *FileName, int OpMode, OPENFIL
 		}
 	}
 
-	if (pCallResult)
+	if (pCallResult && pCallResult->Handle != INVALID_HANDLE_VALUE && pCallResult->Handle != PANEL_STOP)
 	{
 		hResult = new PanelHandle(pCallResult->Handle, pCallResult->pPlugin);
 	}
