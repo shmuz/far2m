@@ -370,28 +370,37 @@ function Env:NewPanel (aOptions)
 end
 
 
-function Env:OpenFilePlugin (Name, Data)
-  if Name then
-    for mask in self.Opt.Mask:gmatch "[^,]+" do
-      if far.CmpName(mask, Name, "PN_SKIPPATH") then
-        if self.Opt.MenuForFilelist then
-          ShowMenuFromFile(Name)
-          break
-        else
-          local pan = self:NewPanel()
-          pan:ProcessList (ListFromFile(Name), self.Opt.ReplaceMode)
-          pan.HostFile = Name
-          return pan
-        end
-      end
-    end
+function Env:Analyse (Data)
+--far.Show("AnalyseW", "OpMode="..Data.OpMode, "FileName="..Data.FileName)
+  if Data.FileName then
+    return far.ProcessName(
+      "PN_CMPNAMELIST", self.Opt.Mask, Data.FileName, "PN_SKIPPATH")
   end
 end
 
 
 function Env:Open (OpenFrom, Item)
   self.StartupOpenFrom = OpenFrom
-  if OpenFrom == F.OPEN_COMMANDLINE then
+
+  if OpenFrom == F.OPEN_ANALYSE then
+    local Name = Item.FileName
+    if Name then
+      for mask in self.Opt.Mask:gmatch "[^,]+" do
+        if far.CmpName(mask, Name, "PN_SKIPPATH") then
+          if self.Opt.MenuForFilelist then
+            ShowMenuFromFile(Name)
+            return F.PANEL_STOP
+          else
+            local pan = self:NewPanel()
+            pan:ProcessList (ListFromFile(Name), self.Opt.ReplaceMode)
+            pan.HostFile = Name
+            return pan
+          end
+        end
+      end
+    end
+
+  elseif OpenFrom == F.OPEN_COMMANDLINE then
     local newOpt = setmetatable({}, {__index=self.Opt})
     local ParamsTable = {
       full    = "FullScreenPanel";

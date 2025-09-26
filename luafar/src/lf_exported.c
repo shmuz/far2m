@@ -543,35 +543,6 @@ void LF_CloseAnalyse(lua_State* L, const struct CloseAnalyseInfo *Info)
 	luaL_unref(L, LUA_REGISTRYINDEX, (int)(intptr_t)Info->Handle);
 }
 
-HANDLE LF_OpenFilePlugin(lua_State* L, const wchar_t *aName,
-	const unsigned char *aData, int aDataSize, int OpMode)
-{
-	if (!CheckReloadDefaultScript(L))
-		return INVALID_HANDLE_VALUE;
-
-	if (GetExportFunction(L, "OpenFilePlugin")) {           //+1
-		if (aName) {
-			push_utf8_string(L, aName, -1);                     //+2
-			lua_pushlstring(L, (const char*)aData, aDataSize);  //+3
-		}
-		else {
-			lua_pushnil(L); lua_pushnil(L);
-		}
-		lua_pushinteger(L, OpMode);
-		if (!pcall_msg(L, 3, 1)) {
-			if (lua_type(L,-1) == LUA_TNUMBER && lua_tointeger(L,-1) == -2) {
-				lua_pop(L,1);
-				return PANEL_STOP;
-			}
-			if (lua_toboolean(L, -1))                   //+1
-				return RegisterObject(L);                 //+0
-			lua_pop (L, 1);                             //+0
-		}
-	}
-	return INVALID_HANDLE_VALUE;
-}
-//---------------------------------------------------------------------------
-
 void LF_GetOpenPanelInfo(lua_State* L, HANDLE hPlugin, struct OpenPluginInfo *aInfo)
 {
 	aInfo->StructSize = sizeof (struct OpenPluginInfo);
@@ -970,8 +941,13 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 			lua_setfield(L, -2, "Handle");           //+4
 			luaL_unref(L, LUA_REGISTRYINDEX, ref);   //+4
 			if (pcall_msg(L, 3, 1) == 0) {
-				if (lua_toboolean(L, -1))        //+1: Obj
+				if (lua_type(L,-1) == LUA_TNUMBER && lua_tointeger(L,-1) == (intptr_t)PANEL_STOP) {
+					lua_pop(L,1);
+					return PANEL_STOP;
+				}
+				else if (lua_toboolean(L, -1))   //+1: Obj
 					return RegisterObject(L);      //+0
+
 				lua_pop(L,1);
 			}
 			break;

@@ -61,7 +61,6 @@ DLLFUNC void   LF_GetPluginInfo (lua_State* L, struct PluginInfo *Info);
 DLLFUNC int    LF_GetVirtualFindData (lua_State* L, HANDLE hPlugin,struct PluginPanelItem **pPanelItem,int *pItemsNumber,const wchar_t *Path);
 DLLFUNC int    LF_MakeDirectory (lua_State* L, HANDLE hPlugin,const wchar_t **Name,int OpMode);
 DLLFUNC int    LF_MayExitFAR (lua_State* L);
-DLLFUNC HANDLE LF_OpenFilePlugin (lua_State* L, const wchar_t *Name,const unsigned char *Data,int DataSize,int OpMode);
 DLLFUNC HANDLE LF_Open (lua_State* L, int OpenFrom,INT_PTR Item);
 DLLFUNC int    LF_ProcessDialogEvent (lua_State* L, int Event,void *Param);
 DLLFUNC int    LF_ProcessEditorEvent (lua_State* L, int Event,void *Param);

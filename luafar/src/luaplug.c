@@ -85,15 +85,6 @@ LUAPLUG HANDLE OpenPluginW(int OpenFrom, INT_PTR Item)
 #endif
 //---------------------------------------------------------------------------
 
-#if defined(EXPORT_OPENFILEPLUGIN) || defined(EXPORT_ALL)
-LUAPLUG HANDLE OpenFilePluginW(const wchar_t *Name, const unsigned char *Data,
-	int DataSize, int OpMode)
-{
-	return LS ? LF_OpenFilePlugin(LS, Name, Data, DataSize, OpMode) : INVALID_HANDLE_VALUE;
-}
-#endif
-//---------------------------------------------------------------------------
-
 #if defined(EXPORT_GETFINDDATA) || defined(EXPORT_ALL)
 LUAPLUG int GetFindDataW(HANDLE hPlugin, struct PluginPanelItem **pPanelItem,
 												int *pItemsNumber, int OpMode)
