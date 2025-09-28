@@ -2912,7 +2912,6 @@ struct ConfigureInfo
 	const GUID* Guid;
 };
 
-#if defined(__BORLANDC__) || defined(_MSC_VER) || defined(__GNUC__) || defined(__WATCOMC__)
 #ifdef __cplusplus
 extern "C"
 {
@@ -2955,10 +2954,8 @@ extern "C"
 	HANDLE WINAPI _export AnalyseW(const struct AnalyseInfo *Info);
 	void   WINAPI _export CloseAnalyseW(const struct CloseAnalyseInfo *Info);
 
-
 #ifdef __cplusplus
 };
-#endif
 #endif
 
 #ifndef _WIN64
