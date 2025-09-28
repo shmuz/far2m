@@ -775,6 +775,7 @@ end
 
 local function test_Far_GetConfig()
   local options = {
+    "CmdLine.AskOnMultilinePaste",
     "Cmdline.AutoComplete",
     "Cmdline.DelRemovesBlocks",
     "Cmdline.EditBlock",

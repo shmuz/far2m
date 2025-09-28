@@ -279,6 +279,7 @@ struct CommandLineOptions
 	int ImitateNumpadKeys;
 	FARString strPromptFormat;
 	FARString strShell;
+	int AskOnMultilinePaste;
 };
 
 struct LoadPluginsOptions
