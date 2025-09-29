@@ -495,13 +495,10 @@ bool ConfigOptGetValue(int I, GetConfig& Data)
 		switch (CFG[I].ValType)
 		{
 			case REG_DWORD:
-				Data.dwDefault = CFG[I].DefDWord;
-				Data.dwValue = *(DWORD*)CFG[I].ValPtr;
-				break;
 			case REG_BOOLEAN:
 			case REG_3STATE:
 				Data.dwDefault = CFG[I].DefDWord;
-				Data.dwValue = *(uint8_t*)CFG[I].ValPtr;
+				Data.dwValue = *(DWORD*)CFG[I].ValPtr;
 				break;
 			case REG_SZ:
 				Data.strDefault = CFG[I].DefStr;
@@ -528,8 +525,10 @@ bool ConfigOptSetInteger(int I, DWORD Value)
 				*(DWORD*)CFG[I].ValPtr = Value;
 				break;
 			case REG_BOOLEAN:
+				*(DWORD*)CFG[I].ValPtr = Value ? 1 : 0;
+				break;
 			case REG_3STATE:
-				*(uint8_t*)CFG[I].ValPtr = Value;
+				*(DWORD*)CFG[I].ValPtr = Value % 3;
 				break;
 		}
 		return true;
@@ -623,8 +622,10 @@ void ConfigOptLoad()
 				*(DWORD*)CFG[I].ValPtr = cfg_reader.GetUInt(CFG[I].ValName, CFG[I].DefDWord);
 				break;
 			case REG_BOOLEAN:
+				*(DWORD*)CFG[I].ValPtr = cfg_reader.GetUInt(CFG[I].ValName, CFG[I].DefDWord) ? 1 : 0;
+				break;
 			case REG_3STATE:
-				*(uint8_t*)CFG[I].ValPtr = cfg_reader.GetUInt(CFG[I].ValName, CFG[I].DefDWord);
+				*(DWORD*)CFG[I].ValPtr = cfg_reader.GetUInt(CFG[I].ValName, CFG[I].DefDWord) % 3;
 				break;
 			case REG_SZ:
 				*CFG[I].StrPtr = cfg_reader.GetString(CFG[I].ValName, CFG[I].DefStr);
@@ -802,11 +803,9 @@ void ConfigOptSave(bool Ask)
 			switch (CFG[I].ValType)
 			{
 				case REG_DWORD:
-					cfg_writer.SetUInt(CFG[I].ValName, *(DWORD*)CFG[I].ValPtr);
-					break;
 				case REG_BOOLEAN:
 				case REG_3STATE:
-					cfg_writer.SetUInt(CFG[I].ValName, *(uint8_t*)CFG[I].ValPtr);
+					cfg_writer.SetUInt(CFG[I].ValName, *(DWORD*)CFG[I].ValPtr);
 					break;
 				case REG_SZ:
 					cfg_writer.SetString(CFG[I].ValName, CFG[I].StrPtr->CPtr());
