@@ -134,8 +134,6 @@ void Grabber::CopyGrabbedArea(bool Append)
 
 						if (Chr2 < 0x20)
 							Chr = L'.';
-						else if (Chr2 < 0x100)
-							Chr = Chr2;
 
 						break;
 				}

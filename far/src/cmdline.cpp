@@ -566,7 +566,7 @@ int CommandLine::ProcessKey(FarKey Key)
 							ExecString(strToExec);
 						}
 						else if (res ==2) {
-							Opt.CmdLine.AskOnMultilinePaste = false;
+							Opt.CmdLine.AskOnMultilinePaste = FALSE;
 							ExecString(strToExec);
 						}
 						break;

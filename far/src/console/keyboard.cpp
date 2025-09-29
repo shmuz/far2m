@@ -528,7 +528,6 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 	_KEYMACRO(CleverSysLog Clev(L"GetInputRecord()"));
 	static int LastEventIdle=FALSE;
 	FarKey CalcKey;
-	FarKey ReadKey=0;
 	int NotMacros=FALSE;
 	static int LastMsClickMacroKey=0;
 	static clock_t sLastIdleDelivered = 0;
@@ -960,7 +959,7 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 		else
 			ShiftPressed = (CtrlState & SHIFT_PRESSED);
 
-		if ((KeyCode==VK_F16 && ReadKey==VK_F16) || !KeyCode)
+		if (!KeyCode)
 			return(KEY_NONE);
 
 		if (!rec->Event.KeyEvent.bKeyDown &&
@@ -971,14 +970,7 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 
 			if (ShiftPressedLast && KeyCode==VK_SHIFT)
 			{
-				if (ShiftPressedLast)
-				{
-					Key=KEY_SHIFT;
-				}
-				else if (RightShiftPressedLast)
-				{
-					Key=KEY_RSHIFT;
-				}
+				Key=KEY_SHIFT;
 			}
 
 			if (KeyCode==VK_CONTROL)
@@ -1022,10 +1014,10 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 				return(Key);
 		}
 
-		ShiftPressedLast=RightShiftPressedLast=FALSE;
-		CtrlPressedLast=RightCtrlPressedLast=FALSE;
-		AltPressedLast=RightAltPressedLast=FALSE;
-		ShiftPressedLast=(KeyCode==VK_SHIFT && rec->Event.KeyEvent.bKeyDown) ||
+		RightShiftPressedLast = FALSE;
+		CtrlPressedLast = RightCtrlPressedLast = FALSE;
+		AltPressedLast = RightAltPressedLast = FALSE;
+		ShiftPressedLast = (KeyCode==VK_SHIFT && rec->Event.KeyEvent.bKeyDown) ||
 		                 (KeyCode==VK_RETURN && ShiftPressed && !rec->Event.KeyEvent.bKeyDown);
 
 		if (!ShiftPressedLast)
@@ -1255,11 +1247,6 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 			}
 		}
 	}
-
-	int GrayKey=(CalcKey==KEY_ADD || CalcKey==KEY_SUBTRACT || CalcKey==KEY_MULTIPLY);
-
-	if (ReadKey && !GrayKey)
-		CalcKey=ReadKey;
 
 	{
 		_KEYMACRO(SysLog(L"[%d] CALL CtrlObject->Macro.ProcessKey(%ls)",__LINE__,_FARKEY_ToName(CalcKey)));
@@ -1625,12 +1612,15 @@ FarKey WINAPI KeyNameToKey(const wchar_t *Name)
 
 				if (Ptr+5 == endptr)
 				{
-					if (Key == KEY_ALT || Key == KEY_RALT) // Вариант (3) - Alt-Num
-						Key=(Key|K|KEY_ALTDIGIT)&(~(KEY_ALT|KEY_RALT));
-					else if (Key == KEY_M_SPEC) // Вариант (4)
-						Key=(Key|(K+KEY_VK_0xFF_BEGIN))&(~(KEY_M_SPEC|KEY_M_OEM));
-					else if (Key == KEY_M_OEM) // Вариант (5)
-						Key=(Key|(K+KEY_FKEY_BEGIN))&(~(KEY_M_SPEC|KEY_M_OEM));
+					switch(Key) {
+						case KEY_ALT:
+						case KEY_RALT:    // Вариант (3) - Alt-Num
+							Key = (Key|K|KEY_ALTDIGIT) & (~(KEY_ALT|KEY_RALT)); break;
+						case KEY_M_SPEC:  // Вариант (4)
+							Key = (Key|(K+KEY_VK_0xFF_BEGIN)) & (~(KEY_M_SPEC|KEY_M_OEM)); break;
+						case KEY_M_OEM:   // Вариант (5)
+							Key = (Key|(K+KEY_FKEY_BEGIN)) & (~(KEY_M_SPEC|KEY_M_OEM)); break;
+					}
 
 					Pos=Len;
 				}
