@@ -2398,7 +2398,7 @@ size_t PluginManager::GetPluginInformation(
 	else
 		return 0;
 
-	struct
+	struct Combined
 	{
 		FarGetPluginInformation fgpi;
 		PluginInfo PInfo;
@@ -2407,34 +2407,26 @@ size_t PluginManager::GetPluginInformation(
 
 	char  *x_Buffer = nullptr;
 	size_t x_Avail = 0;
-	size_t x_MinSize = sizeof(Temp);
+	size_t x_CombSize = sizeof(Combined);
 
-	if (aInfo && aBufferSize >= x_MinSize)
+	if (aInfo && aBufferSize >= x_CombSize)
 	{
-		x_Avail = aBufferSize - x_MinSize;
-		x_Buffer = reinterpret_cast<char*>(aInfo) + x_MinSize;
+		x_Avail = aBufferSize - x_CombSize;
+		x_Buffer = reinterpret_cast<char*>(aInfo) + x_CombSize;
 	}
 	else
 	{
 		aInfo = &Temp.fgpi;
 	}
-	Sizer sizer(x_Buffer, x_Avail, x_MinSize);
 
-	aInfo->PInfo = reinterpret_cast<PluginInfo*>(aInfo+1);
-	aInfo->GInfo = reinterpret_cast<GlobalInfo*>(aInfo->PInfo+1);
+	Sizer sizer(x_Buffer, x_Avail, x_CombSize);
+
+	auto pCombined = reinterpret_cast<Combined*>(aInfo);
+	aInfo->PInfo = &pCombined->PInfo;
+	aInfo->GInfo = &pCombined->GInfo;
+
 	aInfo->ModuleName = sizer.AddString(aPlugin->GetModuleName());
-
-	aInfo->Flags = 0;
-
-	if (aPlugin->IsLoaded())
-	{
-		aInfo->Flags |= FPF_LOADED;
-	}
-
-	if (aPlugin->IsOemPlugin())
-	{
-		aInfo->Flags |= FPF_ANSI;
-	}
+	aInfo->Flags = (aPlugin->IsLoaded() ? FPF_LOADED : 0) | (aPlugin->IsOemPlugin() ? FPF_ANSI : 0);
 
 	aInfo->GInfo->StructSize = sizeof(GlobalInfo);
 	aInfo->GInfo->SysID = SysID;
