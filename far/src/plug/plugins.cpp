@@ -230,7 +230,7 @@ Plugin* PluginManager::LoadPlugin(const FARString &strModuleName, bool UncachedL
 	struct stat st{};
 	if (stat(strModuleName.GetMB().c_str(), &st) == -1)
 	{
-		fprintf(stderr, "%s: stat error %u for '%ls'\n",
+		fprintf(stderr, "%s: stat error %d for '%ls'\n",
 			__FUNCTION__, errno, strModuleName.CPtr());
 		return nullptr;
 	}
@@ -1102,9 +1102,11 @@ void PluginManager::ConfigureCurrent(Plugin *pPlugin, int INum, const GUID *Guid
 	int Result = FALSE;
 	if (pPlugin->HasConfigureV3()) {
 		if (pPlugin->UseMenuGuids()) {
-			Guid = Guid ? Guid : &FarGuid;
-			ConfigureInfo Info = { sizeof(ConfigureInfo), Guid };
-			Result = dynamic_cast<PluginW*>(pPlugin)->ConfigureV3(&Info);
+			if (auto pPluginW = dynamic_cast<PluginW*>(pPlugin)) {
+				Guid = Guid ? Guid : &FarGuid;
+				ConfigureInfo Info = { sizeof(ConfigureInfo), Guid };
+				Result = pPluginW->ConfigureV3(&Info);
+			}
 		}
 	}
 	else {
@@ -1924,7 +1926,7 @@ void* PluginManager::CallPluginFromMacro(DWORD SysID, OpenMacroInfo *Info)
 				NewPanel->SetPluginMode(PluginPanel, L"", SendOnFocus);
 				NewPanel->Update(0);
 				NewPanel->Show();
-				return reinterpret_cast<void*>(1);
+				return reinterpret_cast<void*>(static_cast<intptr_t>(1));
 			}
 		}
 

@@ -206,7 +206,7 @@ bool PluginA::SaveToCache()
 	struct stat st{};
 	if (stat(module.c_str(), &st) == -1)
 	{
-		fprintf(stderr, "%s: stat('%s') error %u\n",
+		fprintf(stderr, "%s: stat('%s') error %d\n",
 			__FUNCTION__, module.c_str(), errno);
 		return false;
 	}
@@ -654,7 +654,7 @@ int PluginA::SetFindList(
 		es.bDefaultResult = FALSE;
 		oldfar::PluginPanelItem *PanelItemA = nullptr;
 		ConvertPanelItemsArrayToAnsi(PanelItem,PanelItemA,ItemsNumber);
-		EXECUTE_FUNCTION_EX(pSetFindList(hPlugin, PanelItemA, ItemsNumber), es);
+		EXECUTE_FUNCTION_BOOL(pSetFindList(hPlugin, PanelItemA, ItemsNumber), es);
 		FreePanelItemA(PanelItemA,ItemsNumber);
 		bResult = es.bResult;
 	}
@@ -685,7 +685,7 @@ int PluginA::ProcessEditorInput(
 			Ptr=&OemRecord;
 		}
 
-		EXECUTE_FUNCTION_EX(pProcessEditorInput(Ptr), es);
+		EXECUTE_FUNCTION_BOOL(pProcessEditorInput(Ptr), es);
 		bResult = es.bResult;
 	}
 
@@ -733,7 +733,7 @@ int PluginA::ProcessDialogEvent(
 	{
 		ExecuteStruct es(EXCEPT_PROCESSDIALOGEVENT);
 		es.bDefaultResult = FALSE;
-		EXECUTE_FUNCTION_EX(pProcessDialogEvent(Event, Param), es);
+		EXECUTE_FUNCTION_BOOL(pProcessDialogEvent(Event, Param), es);
 		bResult = es.bResult;
 	}
 
@@ -757,7 +757,7 @@ int PluginA::GetVirtualFindData(
 		size_t Size=StrLength(Path)+1;
 		LPSTR PathA=new char[Size * 4];
 		PWZ_to_PZ(Path,PathA, Size * 4);
-		EXECUTE_FUNCTION_EX(pGetVirtualFindData(hPlugin, &pVFDPanelItemA, pItemsNumber, PathA), es);
+		EXECUTE_FUNCTION_BOOL(pGetVirtualFindData(hPlugin, &pVFDPanelItemA, pItemsNumber, PathA), es);
 		bResult = es.bResult;
 		delete[] PathA;
 
@@ -863,9 +863,9 @@ int PluginA::DeleteFiles(
 		es.bDefaultResult = FALSE;
 		oldfar::PluginPanelItem *PanelItemA = nullptr;
 		ConvertPanelItemsArrayToAnsi(PanelItem,PanelItemA,ItemsNumber);
-		EXECUTE_FUNCTION_EX(pDeleteFiles(hPlugin, PanelItemA, ItemsNumber, OpMode), es);
+		EXECUTE_FUNCTION_BOOL(pDeleteFiles(hPlugin, PanelItemA, ItemsNumber, OpMode), es);
 		FreePanelItemA(PanelItemA,ItemsNumber);
-		bResult = (int)es.bResult;
+		bResult = es.bResult;
 	}
 
 	return bResult;
@@ -912,7 +912,7 @@ int PluginA::ProcessHostFile(
 		es.bDefaultResult = FALSE;
 		oldfar::PluginPanelItem *PanelItemA = nullptr;
 		ConvertPanelItemsArrayToAnsi(PanelItem,PanelItemA,ItemsNumber);
-		EXECUTE_FUNCTION_EX(pProcessHostFile(hPlugin, PanelItemA, ItemsNumber, OpMode), es);
+		EXECUTE_FUNCTION_BOOL(pProcessHostFile(hPlugin, PanelItemA, ItemsNumber, OpMode), es);
 		FreePanelItemA(PanelItemA,ItemsNumber);
 		bResult = es.bResult;
 	}
@@ -938,7 +938,7 @@ int PluginA::ProcessEvent(
 		if (Param && (Event == FE_COMMAND || Event == FE_CHANGEVIEWMODE))
 			ParamA = (PVOID)UnicodeToAnsi((const wchar_t *)Param);
 
-		EXECUTE_FUNCTION_EX(pProcessEvent(hPlugin, Event, ParamA), es);
+		EXECUTE_FUNCTION_BOOL(pProcessEvent(hPlugin, Event, ParamA), es);
 
 		if (ParamA && (Event == FE_COMMAND || Event == FE_CHANGEVIEWMODE))
 			free(ParamA);
@@ -991,7 +991,7 @@ int PluginA::GetFindData(
 		ExecuteStruct es(EXCEPT_GETFINDDATA);
 		es.bDefaultResult = FALSE;
 		pFDPanelItemA = nullptr;
-		EXECUTE_FUNCTION_EX(pGetFindData(hPlugin, &pFDPanelItemA, pItemsNumber, OpMode), es);
+		EXECUTE_FUNCTION_BOOL(pGetFindData(hPlugin, &pFDPanelItemA, pItemsNumber, OpMode), es);
 		bResult = es.bResult;
 
 		if (bResult && *pItemsNumber)
@@ -1033,7 +1033,7 @@ int PluginA::ProcessKey(
 	{
 		ExecuteStruct es(EXCEPT_PROCESSKEY);
 		es.bDefaultResult = TRUE; // do not pass this key to far on exception
-		EXECUTE_FUNCTION_EX(pProcessKey(hPlugin, Key, dwControlState), es);
+		EXECUTE_FUNCTION_BOOL(pProcessKey(hPlugin, Key, dwControlState), es);
 		bResult = es.bResult;
 	}
 
@@ -1070,7 +1070,7 @@ int PluginA::SetDirectory(
 		ExecuteStruct es(EXCEPT_SETDIRECTORY);
 		es.bDefaultResult = FALSE;
 		char *DirA = UnicodeToAnsi(Dir);
-		EXECUTE_FUNCTION_EX(pSetDirectory(hPlugin, DirA, OpMode), es);
+		EXECUTE_FUNCTION_BOOL(pSetDirectory(hPlugin, DirA, OpMode), es);
 
 		if (DirA) free(DirA);
 
@@ -1201,7 +1201,7 @@ int PluginA::Configure(
 	{
 		ExecuteStruct es(EXCEPT_CONFIGURE);
 		es.bDefaultResult = FALSE;
-		EXECUTE_FUNCTION_EX(pConfigure(MenuItem), es);
+		EXECUTE_FUNCTION_BOOL(pConfigure(MenuItem), es);
 		bResult = es.bResult;
 	}
 
@@ -1314,7 +1314,7 @@ bool PluginA::MayExitFAR()
 	{
 		ExecuteStruct es(EXCEPT_MAYEXITFAR);
 		es.bDefaultResult = 1;
-		EXECUTE_FUNCTION_EX(pMayExitFAR(), es);
+		EXECUTE_FUNCTION_BOOL(pMayExitFAR(), es);
 		return es.bResult;
 	}
 

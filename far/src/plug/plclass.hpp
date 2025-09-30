@@ -248,14 +248,14 @@ struct ExecuteStruct
 	{
 		INT_PTR nResult;
 		HANDLE hResult;
-		INT_PTR bResult;
+		BOOL bResult;
 	};
 
 	union
 	{
 		INT_PTR nDefaultResult;
 		HANDLE hDefaultResult;
-		INT_PTR bDefaultResult;
+		BOOL bDefaultResult;
 	};
 
 	bool bUnloaded;
@@ -271,4 +271,9 @@ struct ExecuteStruct
 #define EXECUTE_FUNCTION_EX(function, es) \
 	{ \
 		es.nResult = (INT_PTR)function; \
+	}
+
+#define EXECUTE_FUNCTION_BOOL(function, es) \
+	{ \
+		es.bResult = (BOOL)function; \
 	}

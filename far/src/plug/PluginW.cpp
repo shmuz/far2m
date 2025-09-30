@@ -248,7 +248,7 @@ bool PluginW::SaveToCache()
 	const std::string &module = m_strModuleName.GetMB();
 	if (stat(module.c_str(), &st) == -1)
 	{
-		fprintf(stderr, "%s: stat('%s') error %u\n",
+		fprintf(stderr, "%s: stat('%s') error %d\n",
 			__FUNCTION__, module.c_str(), errno);
 		return false;
 	}
@@ -805,14 +805,9 @@ void PluginW::CloseAnalyse(const CloseAnalyseInfo *Info)
 
 HANDLE PluginW::OpenPlugin(int OpenFrom, const void *Item)
 {
-	ChangePriority *ChPriority = new ChangePriority(ChangePriority::NORMAL);
+	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 
-	{
-//		FARString strCurDir;
-//		CtrlObject->CmdLine->GetCurDir(strCurDir);
-//		FarChDir(strCurDir);
-		g_strDirToSet.Clear();
-	}
+	g_strDirToSet.Clear();
 
 	HANDLE hResult = INVALID_HANDLE_VALUE;
 
@@ -823,42 +818,10 @@ HANDLE PluginW::OpenPlugin(int OpenFrom, const void *Item)
 		es.hResult = INVALID_HANDLE_VALUE;
 		EXECUTE_FUNCTION_EX(pOpenPluginW(OpenFrom, (INT_PTR)Item), es);
 		hResult = es.hResult;
-		/*    CtrlObject->Macro.SetRedrawEditor(TRUE); //BUGBUG
-
-		    if ( !es.bUnloaded )
-		    {
-
-		      if(OpenFrom == OPEN_EDITOR &&
-		         !CtrlObject->Macro.IsExecuting() &&
-		         CtrlObject->Plugins.CurEditor &&
-		         CtrlObject->Plugins.CurEditor->IsVisible() )
-		      {
-		        CtrlObject->Plugins.ProcessEditorEvent(EE_REDRAW,EEREDRAW_CHANGE);
-		        CtrlObject->Plugins.ProcessEditorEvent(EE_REDRAW,EEREDRAW_ALL);
-		        CtrlObject->Plugins.CurEditor->Show();
-		      }
-		      if (hInternal!=INVALID_HANDLE_VALUE)
-		      {
-		        PanelHandle *hPlugin=new PanelHandle;
-		        hPlugin->InternalHandle=es.hResult;
-		        hPlugin->PluginNumber=(INT_PTR)this;
-		        return((HANDLE)hPlugin);
-		      }
-		      else
-		        if ( !g_strDirToSet.IsEmpty() )
-		        {
-							CtrlObject->Cp()->ActivePanel->SetCurDir(g_strDirToSet,true);
-		          CtrlObject->Cp()->ActivePanel->Redraw();
-		        }
-		    } */
 	}
-
-	delete ChPriority;
 
 	return hResult;
 }
-
-//////////////////////////////////
 
 HANDLE PluginW::OpenFilePlugin(
     const wchar_t *Name,
@@ -893,7 +856,7 @@ int PluginW::SetFindList(
 	{
 		ExecuteStruct es(EXCEPT_SETFINDLIST);
 		es.bDefaultResult = FALSE;
-		EXECUTE_FUNCTION_EX(pSetFindListW(hPlugin, PanelItem, ItemsNumber), es);
+		EXECUTE_FUNCTION_BOOL(pSetFindListW(hPlugin, PanelItem, ItemsNumber), es);
 		bResult = es.bResult;
 	}
 
@@ -908,7 +871,7 @@ int PluginW::ProcessEditorInput(const INPUT_RECORD *D)
 	{
 		ExecuteStruct es(EXCEPT_PROCESSEDITORINPUT);
 		es.bDefaultResult = TRUE; //(TRUE) treat the result as a completed request on exception!
-		EXECUTE_FUNCTION_EX(pProcessEditorInputW(D), es);
+		EXECUTE_FUNCTION_BOOL(pProcessEditorInputW(D), es);
 		bResult = es.bResult;
 	}
 
@@ -945,7 +908,7 @@ int PluginW::ProcessDialogEvent(int Event, void *Param)
 	{
 		ExecuteStruct es(EXCEPT_PROCESSDIALOGEVENT);
 		es.bDefaultResult = FALSE;
-		EXECUTE_FUNCTION_EX(pProcessDialogEventW(Event, Param), es);
+		EXECUTE_FUNCTION_BOOL(pProcessDialogEventW(Event, Param), es);
 		bResult = es.bResult;
 	}
 
@@ -976,7 +939,7 @@ int PluginW::GetVirtualFindData(
 	{
 		ExecuteStruct es(EXCEPT_GETVIRTUALFINDDATA);
 		es.bDefaultResult = FALSE;
-		EXECUTE_FUNCTION_EX(pGetVirtualFindDataW(hPlugin, pPanelItem, pItemsNumber, Path), es);
+		EXECUTE_FUNCTION_BOOL(pGetVirtualFindDataW(hPlugin, pPanelItem, pItemsNumber, Path), es);
 		bResult = es.bResult;
 	}
 
@@ -1072,7 +1035,7 @@ int PluginW::DeleteFiles(
 	{
 		ExecuteStruct es(EXCEPT_DELETEFILES);
 		es.bDefaultResult = FALSE;
-		EXECUTE_FUNCTION_EX(pDeleteFilesW(hPlugin, PanelItem, ItemsNumber, OpMode), es);
+		EXECUTE_FUNCTION_BOOL(pDeleteFilesW(hPlugin, PanelItem, ItemsNumber, OpMode), es);
 		bResult = (int)es.bResult;
 	}
 
@@ -1109,7 +1072,7 @@ int PluginW::ProcessHostFile(
 	{
 		ExecuteStruct es(EXCEPT_PROCESSHOSTFILE);
 		es.bDefaultResult = FALSE;
-		EXECUTE_FUNCTION_EX(pProcessHostFileW(hPlugin, PanelItem, ItemsNumber, OpMode), es);
+		EXECUTE_FUNCTION_BOOL(pProcessHostFileW(hPlugin, PanelItem, ItemsNumber, OpMode), es);
 		bResult = es.bResult;
 	}
 
@@ -1125,7 +1088,7 @@ int PluginW::ProcessEvent(HANDLE hPlugin, int Event, void *Param)
 	{
 		ExecuteStruct es(EXCEPT_PROCESSEVENT);
 		es.bDefaultResult = FALSE;
-		EXECUTE_FUNCTION_EX(pProcessEventW(hPlugin, Event, Param), es);
+		EXECUTE_FUNCTION_BOOL(pProcessEventW(hPlugin, Event, Param), es);
 		bResult = es.bResult;
 	}
 
@@ -1167,7 +1130,7 @@ int PluginW::GetFindData(
 	{
 		ExecuteStruct es(EXCEPT_GETFINDDATA);
 		es.bDefaultResult = FALSE;
-		EXECUTE_FUNCTION_EX(pGetFindDataW(hPlugin, pPanelItem, pItemsNumber, OpMode), es);
+		EXECUTE_FUNCTION_BOOL(pGetFindDataW(hPlugin, pPanelItem, pItemsNumber, OpMode), es);
 		bResult = es.bResult;
 	}
 
@@ -1192,7 +1155,7 @@ int PluginW::ProcessKey(HANDLE hPlugin, int Key, unsigned int dwControlState)
 	{
 		ExecuteStruct es(EXCEPT_PROCESSKEY);
 		es.bDefaultResult = TRUE; // do not pass this key to far on exception
-		EXECUTE_FUNCTION_EX(pProcessKeyW(hPlugin, Key, dwControlState), es);
+		EXECUTE_FUNCTION_BOOL(pProcessKeyW(hPlugin, Key, dwControlState), es);
 		bResult = es.bResult;
 	}
 
@@ -1220,7 +1183,7 @@ int PluginW::SetDirectory(HANDLE hPlugin, const wchar_t *Dir, int OpMode)
 	{
 		ExecuteStruct es(EXCEPT_SETDIRECTORY);
 		es.bDefaultResult = FALSE;
-		EXECUTE_FUNCTION_EX(pSetDirectoryW(hPlugin, Dir, OpMode), es);
+		EXECUTE_FUNCTION_BOOL(pSetDirectoryW(hPlugin, Dir, OpMode), es);
 		bResult = es.bResult;
 	}
 
@@ -1249,7 +1212,7 @@ int PluginW::Configure(int MenuItem)
 	{
 		ExecuteStruct es(EXCEPT_CONFIGURE);
 		es.bDefaultResult = FALSE;
-		EXECUTE_FUNCTION_EX(pConfigureW(MenuItem), es);
+		EXECUTE_FUNCTION_BOOL(pConfigureW(MenuItem), es);
 		bResult = es.bResult;
 	}
 
@@ -1264,7 +1227,7 @@ int PluginW::ConfigureV3(const ConfigureInfo *Info)
 	{
 		ExecuteStruct es(EXCEPT_CONFIGUREV3);
 		es.bDefaultResult = FALSE;
-		EXECUTE_FUNCTION_EX(pConfigureV3W(Info), es);
+		EXECUTE_FUNCTION_BOOL(pConfigureV3W(Info), es);
 		bResult = es.bResult;
 	}
 	return bResult;
@@ -1298,7 +1261,7 @@ int PluginW::GetCustomData(const wchar_t *FilePath, wchar_t **CustomData)
 		ExecuteStruct es(EXCEPT_GETCUSTOMDATA);
 		es.bDefaultResult = 0;
 		es.bResult = 0;
-		EXECUTE_FUNCTION_EX(pGetCustomDataW(FilePath, CustomData), es);
+		EXECUTE_FUNCTION_BOOL(pGetCustomDataW(FilePath, CustomData), es);
 		return es.bResult;
 	}
 
@@ -1320,7 +1283,7 @@ bool PluginW::MayExitFAR()
 	{
 		ExecuteStruct es(EXCEPT_MAYEXITFAR);
 		es.bDefaultResult = 1;
-		EXECUTE_FUNCTION_EX(pMayExitFARW(), es);
+		EXECUTE_FUNCTION_BOOL(pMayExitFARW(), es);
 		return es.bResult;
 	}
 
@@ -1344,7 +1307,7 @@ int PluginW::ProcessConsoleInput(INPUT_RECORD *D)
 	{
 		ExecuteStruct es(EXCEPT_PROCESSCONSOLEINPUT);
 		es.bDefaultResult = 0;
-		EXECUTE_FUNCTION_EX(pProcessConsoleInputW(D), es);
+		EXECUTE_FUNCTION_BOOL(pProcessConsoleInputW(D), es);
 		bResult = es.bResult;
 	}
 
@@ -1354,6 +1317,7 @@ int PluginW::ProcessConsoleInput(INPUT_RECORD *D)
 void PluginW::ClearExports()
 {
 	pAnalyseW = nullptr;
+	pCloseAnalyseW = nullptr;
 	pClosePluginW = nullptr;
 	pCompareW = nullptr;
 	pConfigureV3W = nullptr;
