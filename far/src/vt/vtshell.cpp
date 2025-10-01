@@ -131,6 +131,7 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 	unsigned int _exit_code;
 	bool _may_notify{false};
 	std::atomic<bool> _allow_osc_clipset{false};
+	std::atomic<bool> _alternate_mode{false};
 	std::string _init_user_profile;
 
 	int ExecLeaderProcess()
@@ -366,6 +367,11 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 			UpdateTerminalSize(_fd_out);
 		if (_far2l_exts)
 			_far2l_exts->OnTerminalResized();
+	}
+
+	virtual void OnScreenModeChanged(bool alternate_mode)
+	{
+		_alternate_mode = alternate_mode;
 	}
 
 	virtual void OnInputResized(const INPUT_RECORD &ir) //called from worker thread
@@ -1152,6 +1158,11 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 	bool IsDone()
 	{
 		return _exit_marker.empty();
+	}
+
+	bool IsAlternateMode() const
+	{
+		return _alternate_mode;
 	}
 };
 
