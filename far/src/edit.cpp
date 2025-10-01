@@ -2217,7 +2217,7 @@ bool Edit::GetColor(ColorItem *col, int Item)
 void Edit::ApplyColor()
 {
 	// Для оптимизации сохраняем вычисленные позиции между итерациями цикла
-	int Pos = INT_MIN, TabPos = INT_MIN, TabEditorPos = INT_MIN;
+	int xPos = INT_MIN, xTabPos = INT_MIN, xTabEditorPos = INT_MIN;
 
 	// Обрабатываем элементы ракраски
 	for (auto &CurItem : m_ColorList) {
@@ -2226,13 +2226,10 @@ void Edit::ApplyColor()
 			continue;
 
 		// Отсекаем элементы заведомо не попадающие на экран
-		if (CurItem.StartPos - m_LeftPos > X2 && CurItem.EndPos - m_LeftPos < X1)
+		if (CurItem.StartPos - m_LeftPos > X2 || CurItem.EndPos - m_LeftPos < X1)
 			continue;
 
-		DWORD64 Attr = CurItem.Color;
-		int Length = CurItem.EndPos - CurItem.StartPos + 1;
-
-		Length = Min(Length, StrSize() - CurItem.StartPos);
+		int Length = Min(CurItem.EndPos + 1, StrSize()) - CurItem.StartPos;
 
 		// Получаем начальную позицию
 		int RealStart, Start;
@@ -2241,38 +2238,37 @@ void Edit::ApplyColor()
 			Если предыдущая позиция равна текущей, то ничего не вычисляем
 			и сразу берём ранее вычисленное значение
 		*/
-		if (Pos == CurItem.StartPos) {
-			RealStart = TabPos;
-			Start = TabEditorPos;
+		if (xPos == CurItem.StartPos) {
+			RealStart = xTabPos;
+			Start = xTabEditorPos;
 		}
 		/*
 			Если вычисление идёт первый раз или предыдущая позиция больше текущей,
 			то производим вычисление с начала строки
 		*/
-		else if (Pos == INT_MIN || CurItem.StartPos < Pos) {
+		else if (xPos == INT_MIN || CurItem.StartPos < xPos) {
 			RealStart = RealPosToCell(CurItem.StartPos);
 			Start = RealStart - m_LeftPos;
 		}
 		// Для оптимизации делаем вычисление относительно предыдущей позиции
 		else {
-			RealStart = RealPosToCell(TabPos, Pos, CurItem.StartPos, nullptr);
+			RealStart = RealPosToCell(xTabPos, xPos, CurItem.StartPos, nullptr);
 			Start = RealStart - m_LeftPos;
 		}
 
 		// Запоминаем вычисленные значения для их дальнейшего повторного использования
-		Pos = CurItem.StartPos;
-		TabPos = RealStart;
-		TabEditorPos = Start;
+		xPos = CurItem.StartPos;
+		xTabPos = RealStart;
+		xTabEditorPos = Start;
 
 		// Пропускаем элементы раскраски у которых начальная позиция за экраном
 		if (Start > X2)
 			continue;
 
-		// Корректировка относительно табов (отключается, если присутвует флаг ECF_TAB1)
-		int CorrectPos = Attr & ECF_TAB1 ? 0 : 1;
-
-		if (!CorrectPos)
-			Attr&= ~ECF_TAB1;
+		// Корректировка относительно табов (отключается, если присутствует флаг ECF_TAB1)
+		DWORD64 Attr = CurItem.Color;
+		int CorrectPos = (Attr & ECF_TAB1) ? 0 : 1;
+		Attr &= ~ECF_TAB1;
 
 		// Получаем конечную позицию
 		int EndPos = CurItem.EndPos;
@@ -2280,28 +2276,28 @@ void Edit::ApplyColor()
 
 		/*
 			Обрабатываем случай, когда предыдущая позиция равна текущей, то есть
-			длина раскрашиваемой строкии равна 1
+			длина раскрашиваемой строки равна 1
 		*/
-		if (Pos == EndPos) {
+		if (xPos == EndPos) {
 			/*
-				Если необходимо делать корректировку относительно табов и единственный
-				символ строки -- это таб, то делаем расчёт с учтом корректировки,
+				Если необходимо делать корректировку относительно табов, и единственный
+				символ строки -- это таб, то делаем расчёт с учётом корректировки,
 				иначе ничего не вычисляем и берём старые значения
 			*/
 			if (CorrectPos && EndPos < StrSize() && m_Str[EndPos] == L'\t') {
-				RealEnd = RealPosToCell(TabPos, Pos, ++EndPos, nullptr);
+				RealEnd = RealPosToCell(xTabPos, xPos, ++EndPos, nullptr);
 				End = RealEnd - m_LeftPos;
 			} else {
-				RealEnd = TabPos;
+				RealEnd = xTabPos;
 				CorrectPos = 0;
-				End = TabEditorPos;
+				End = xTabEditorPos;
 			}
 		}
 		/*
 			Если предыдущая позиция больше текущей, то производим вычисление
 			с начала строки (с учётом корректировки относительно табов)
 		*/
-		else if (EndPos < Pos) {
+		else if (EndPos < xPos) {
 			RealEnd = RealPosToCell(0, 0, EndPos, &CorrectPos);
 			EndPos+= CorrectPos;
 			End = RealEnd - m_LeftPos;
@@ -2311,15 +2307,15 @@ void Edit::ApplyColor()
 			корректировки относительно табов)
 		*/
 		else {
-			RealEnd = RealPosToCell(TabPos, Pos, EndPos, &CorrectPos);
+			RealEnd = RealPosToCell(xTabPos, xPos, EndPos, &CorrectPos);
 			EndPos+= CorrectPos;
 			End = RealEnd - m_LeftPos;
 		}
 
 		// Запоминаем вычисленные значения для их дальнейшего повторного использования
-		Pos = EndPos;
-		TabPos = RealEnd;
-		TabEditorPos = End;
+		xPos = EndPos;
+		xTabPos = RealEnd;
+		xTabEditorPos = End;
 
 		// Пропускаем элементы раскраски у которых конечная позиция меньше левой границы экрана
 		if (End < X1)
