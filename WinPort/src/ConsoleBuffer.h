@@ -5,21 +5,30 @@
 
 class ConsoleBuffer
 {
-	struct ConsoleChars : std::vector<CHAR_INFO> {} _console_chars;
+	typedef std::vector<CHAR_INFO> ConsoleChars;
 
+	ConsoleChars _console_chars;
 	unsigned int _width;
 
 	CHAR_INFO *InspectCopyArea(const COORD &data_size, const COORD &data_pos, SMALL_RECT &screen_rect);
-public:
-	ConsoleBuffer(); 
 
+public:
 	enum WriteResult {
 		WR_BAD = 0,
 		WR_SAME = 1,
 		WR_MODIFIED = 2
 	};
 
-	void SetSize(unsigned int width, unsigned int height, uint64_t attributes);
+	struct {
+		PCONSOLE_SCROLL_CALLBACK pfn{NULL};
+		PVOID context{NULL};
+	} scroll_callback;
+	HANDLE con_handle{NULL};
+
+	ConsoleBuffer(); 
+
+	void SetSizeSimple(unsigned int width, unsigned int height, uint64_t attributes, COORD &cursor_pos);
+	void SetSizeRecomposing(unsigned int width, unsigned int height, uint64_t attributes, COORD &cursor_pos);
 	void GetSize(unsigned int &width, unsigned int &height);
 	inline unsigned int GetWidth() const { return _width; }
 

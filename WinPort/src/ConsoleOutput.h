@@ -9,7 +9,6 @@
 
 class ConsoleOutput : public IConsoleOutput
 {
-	HANDLE _con_handle{NULL};
 	std::mutex _mutex;
 	ConsoleBuffer _buf;
 	std::vector<CHAR_INFO> _temp_chars;
@@ -32,11 +31,6 @@ class ConsoleOutput : public IConsoleOutput
 		UCHAR height;
 		bool visible;
 	} _cursor;
-	
-	struct {
-		PCONSOLE_SCROLL_CALLBACK pfn;
-		PVOID context;
-	} _scroll_callback;
 	
 	struct {
 		USHORT top;
@@ -62,6 +56,7 @@ class ConsoleOutput : public IConsoleOutput
 
 	SHORT ModifySequenceEntityAt(SequenceModifier &sm, COORD pos, SMALL_RECT &area);
 	size_t ModifySequenceAt(SequenceModifier &sm, COORD &pos);
+	void DenoteExplicitLineWrap(COORD pos);
 	void ScrollOutputOnOverflow(SMALL_RECT &area);
 
 	virtual const WCHAR *LockedGetTitle();
@@ -69,6 +64,7 @@ class ConsoleOutput : public IConsoleOutput
 	virtual void Unlock();
 	void SetUpdateCellArea(SMALL_RECT &area, COORD pos);
 	void CopyFrom(const ConsoleOutput &co);
+	void SetSizeInner(unsigned int width, unsigned int height);
 
 public:
 	ConsoleOutput();
@@ -128,7 +124,7 @@ public:
 	virtual void RepaintsDeferFinish(bool force);
 
 	virtual IConsoleOutput *ForkConsoleOutput(HANDLE con_handle);
-	virtual void JoinConsoleOutput(IConsoleOutput *con_out);
+	virtual void ReleaseConsoleOutput(IConsoleOutput *con_out, bool join);
 
 	virtual unsigned int WaitForChange(unsigned int prev_change_id, unsigned int timeout_msec = -1);
 	virtual const char *BackendInfo(int entity);

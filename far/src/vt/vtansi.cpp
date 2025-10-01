@@ -198,11 +198,10 @@ struct VTAnsiState
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
 	CONSOLE_CURSOR_INFO cci;
 	DWORD mode;
-	WORD attr;
 	SHORT scroll_top;
 	SHORT scroll_bottom;
 
-	VTAnsiState() : mode(0), attr(0), scroll_top(0), scroll_bottom(0)
+	VTAnsiState() : mode(0), scroll_top(0), scroll_bottom(0)
 	{
 		memset(&csbi, 0, sizeof(csbi));
 		memset(&cci, 0, sizeof(cci));
@@ -530,100 +529,30 @@ struct VTAnsiContext
 
 	class AlternativeScreenBuffer
 	{
-		VTAnsiContext &_ctx;
-		bool _enabled = false;
-		struct SavedScreenBuffer : std::vector<CHAR_INFO>
-		{
-			CONSOLE_SCREEN_BUFFER_INFO info;
-			bool valid = false;
-		} _other;
+		HANDLE _preserved_con_hnd{NULL};
 
-		public:
-		AlternativeScreenBuffer(VTAnsiContext &ctx) : _ctx(ctx)
+	public:
+		~AlternativeScreenBuffer()
 		{
+			if (_preserved_con_hnd) {
+				WINPORT(DiscardConsole)(_preserved_con_hnd);
+			}
 		}
-
-		void Toggle(HANDLE con_hnd, bool enable)
+		void Toggle(HANDLE con_hnd, bool activate)
 		{
-			if (_enabled == enable)
-				return;
-
-			SavedScreenBuffer tmp;
-//			HANDLE con_hnd = vt_shell->ConsoleHandle();
-			if (!WINPORT(GetConsoleScreenBufferInfo)(con_hnd, &tmp.info)) {
-				fprintf(stderr, "AlternativeScreenBuffer: csbi failed\n");
-				return;
-			}
-			if (tmp.info.dwSize.Y > 0 && tmp.info.dwSize.X > 0) {
-				tmp.resize((size_t)tmp.info.dwSize.Y * (size_t)tmp.info.dwSize.X);
-				COORD origin = {0, 0};
-				WINPORT(ReadConsoleOutput)(con_hnd, &tmp[0], tmp.info.dwSize, origin, &tmp.info.srWindow);
-			}
-			tmp.valid = true;
-
-			if (_other.valid) {
-	//			WINPORT(SetConsoleWindowInfo)(con_hnd, TRUE, &_other.info.srWindow);
-				COORD origin = {0, 0}, curpos = _other.info.dwCursorPosition;
-				SMALL_RECT outrect = _other.info.srWindow;
-				if (tmp.info.dwSize.Y < _other.info.dwSize.Y)
-					origin.Y = _other.info.dwSize.Y - tmp.info.dwSize.Y;
-				if (curpos.X >= tmp.info.dwSize.X)
-					curpos.X = (tmp.info.dwSize.X > 0) ? tmp.info.dwSize.X - 1 : 0;
-				if (curpos.X >= tmp.info.dwSize.X)
-					curpos.Y = (tmp.info.dwSize.Y > 0) ? tmp.info.dwSize.Y - 1 : 0;
-
-				WINPORT(WriteConsoleOutput)(con_hnd, &_other[0], _other.info.dwSize, origin, &outrect);
-
-				// if new screen bigger than saved - fill oversize with emptiness
-				if (tmp.info.dwSize.Y > _other.info.dwSize.Y) {
-					COORD pos = {0, 0};
-					for (pos.Y = _other.info.dwSize.Y + 1; pos.Y <= tmp.info.dwSize.Y; ++pos.Y) {
-						DWORD written = 0;
-						WINPORT(FillConsoleOutputCharacter)(con_hnd, ' ', tmp.info.dwSize.X, pos, &written);
-					}
+			if (activate) {
+				if (!_preserved_con_hnd) {
+					_preserved_con_hnd = WINPORT(ForkConsole)(con_hnd);
+				} else {
+					fprintf(stderr, "AlternativeScreenBuffer: already active\n");
 				}
-
-				if (tmp.info.dwSize.X > _other.info.dwSize.X) {
-					COORD pos = { SHORT(tmp.info.srWindow.Left + _other.info.dwSize.X + 1), 0};
-					for (pos.Y = 0; pos.Y <= tmp.info.dwSize.Y; ++pos.Y) {
-						DWORD written = 0;
-						WINPORT(FillConsoleOutputCharacter)(con_hnd, ' ', tmp.info.dwSize.X - _other.info.dwSize.X, pos, &written);
-					}
-				}
-
-				WINPORT(SetConsoleCursorPosition)(con_hnd, curpos);
-				WINPORT(SetConsoleTextAttribute)(con_hnd, _other.info.wAttributes);
-				_ctx.ansi_state.font_state.FromConsoleAttributes(_other.info.wAttributes);
-	//			fprintf(stderr, "AlternativeScreenBuffer: %d {%d, %d}\n", enable, _other.info.dwCursorPosition.X, _other.info.dwCursorPosition.Y);
+			} else if (_preserved_con_hnd) {
+				WINPORT(JoinConsole)(con_hnd, _preserved_con_hnd);
+				_preserved_con_hnd = NULL;
 			} else {
-				COORD zero_pos = {};
-				DWORD written = 0;
-				WINPORT(FillConsoleOutputCharacter)(con_hnd, ' ',
-					(DWORD)tmp.info.dwSize.Y * (DWORD)tmp.info.dwSize.X, zero_pos, &written);
-				WINPORT(FillConsoleOutputAttribute)(con_hnd, _ctx.saved_state.csbi.wAttributes,
-					(DWORD)tmp.info.dwSize.Y * (DWORD)tmp.info.dwSize.X, zero_pos, &written);
-				WINPORT(SetConsoleCursorPosition)(con_hnd, zero_pos);
-				WINPORT(SetConsoleTextAttribute)(con_hnd, _ctx.saved_state.csbi.wAttributes);
-				_ctx.ansi_state.font_state.FromConsoleAttributes(_ctx.saved_state.csbi.wAttributes);
-	//			fprintf(stderr, "AlternativeScreenBuffer: %d XXX %x\n", enable, saved_state.DefaultAttributes());
+				fprintf(stderr, "AlternativeScreenBuffer: not active\n");
 			}
-
-			std::swap(tmp, _other);
-
-			if (enable) {
-				VTLog::Pause();
-			} else {
-				VTLog::Resume();
-			}
-			_enabled = enable;
 		}
-
-		void Reset(HANDLE con_hnd)
-		{
-			Toggle(con_hnd, false);
-			_other.valid = false;
-		}
-
 	} alternative_screen_buffer;
 
 	void LimitByScrollRegion(SMALL_RECT &rect)
@@ -663,7 +592,7 @@ struct VTAnsiContext
 
 		DWORD fg = (DWORD)-1, bk = (DWORD)-1;
 		if (cmd == 4) {
-			if (pos + 2 == args_size && args[pos] == ';' && args[pos + 1] == '?') {
+			if (pos + 2 == args_size && (args[pos] == ';' || args[pos] == ':') && args[pos + 1] == '?') {
 				// not a set color but request current color
 				fg = bk = (DWORD)-2;
 				WINPORT(OverrideConsoleColor)(vt_shell->ConsoleHandle(),
@@ -678,7 +607,7 @@ struct VTAnsiContext
 //				abort();
 				return;
 			}
-			if (pos + 2 >= args_size || args[pos] != ';' || args[pos + 1] != '#') {
+			if (pos + 2 >= args_size || (args[pos] != ';' && args[pos] != ':') || args[pos + 1] != '#') {
 				fprintf(stderr, "%s(%d): bad args='%s'\n", __FUNCTION__, cmd, args);
 				return;
 			}
@@ -689,7 +618,7 @@ struct VTAnsiContext
 				return;
 			}
 			fg = bk = BGR2RGB(fg);
-			if (pos + 2 < args_size && args[pos] == ';' && args[pos + 1] == '#') {
+			if (pos + 2 < args_size && (args[pos] == ';' || args[pos] == ':') && args[pos + 1] == '#') {
 				pos+= 2;
 				saved_pos = pos;
 				bk = HexToULong(args, args_size, &pos);
@@ -702,11 +631,21 @@ struct VTAnsiContext
 		orig_palette.emplace(index, std::make_pair(fg, bk));
 	}
 
-#define FillBlank( len, Pos )  { \
-	DWORD NumberOfCharsWritten; \
-	WINPORT(FillConsoleOutputCharacter)( con_hnd, blank_character, len, Pos, &NumberOfCharsWritten );\
-	WINPORT(FillConsoleOutputAttribute)( con_hnd, Info.wAttributes, len, Pos, &NumberOfCharsWritten );\
-}
+	static void FillBlankLine(HANDLE con_hnd, COORD pos, DWORD len, WCHAR blank_character, DWORD64 attrs)
+	{
+		DWORD dw;
+		WINPORT(FillConsoleOutputCharacter)( con_hnd, blank_character, len, pos, &dw);
+		if (len > 0) {
+			if (blank_character && blank_character != ' ') {
+				auto last_pos = pos;
+				last_pos.X+= len - 1;
+				WINPORT(FillConsoleOutputAttribute)( con_hnd, attrs, len - 1, pos, &dw);
+				WINPORT(FillConsoleOutputAttribute)( con_hnd, attrs | EXPLICIT_LINE_BREAK, 1, last_pos, &dw);
+			} else {
+				WINPORT(FillConsoleOutputAttribute)( con_hnd, attrs, len, pos, &dw);
+			}
+		}
+	}
 
 	void ClearScreenAndHomeCursor(CONSOLE_SCREEN_BUFFER_INFO &Info)
 	{
@@ -739,7 +678,7 @@ struct VTAnsiContext
 		Pos.X = 0;
 		Pos.Y = Info.srWindow.Top;
 		DWORD len   = (Info.srWindow.Bottom - Info.srWindow.Top + 1) * Info.dwSize.X;
-		FillBlank( len, Pos );
+		FillBlankLine(con_hnd, Pos, len, blank_character, Info.wAttributes);
 		// Not technically correct, but perhaps expected.
 		WINPORT(SetConsoleCursorPosition)( con_hnd, Pos );
 	}
@@ -799,6 +738,7 @@ struct VTAnsiContext
 
 	//				case 47: case 1047:
 	//					alternative_screen_buffer.Toggle(suffix == 'h');
+	//					vt_shell->OnScreenModeChanged(suffix == 'h');
 	//					break;
 
 					case 1004:
@@ -814,6 +754,7 @@ struct VTAnsiContext
 
 					case 1049:
 						alternative_screen_buffer.Toggle(con_hnd, suffix == 'h');
+						vt_shell->OnScreenModeChanged(suffix == 'h');
 						break;
 
 					case 25:
@@ -824,8 +765,9 @@ struct VTAnsiContext
 
 					case 7:
 						mode = ENABLE_PROCESSED_OUTPUT | ENABLE_WINDOW_INPUT | ENABLE_EXTENDED_FLAGS | ENABLE_MOUSE_INPUT;
-						if (suffix == 'h')
+						if (suffix == 'h') {
 							mode |= ENABLE_WRAP_AT_EOL_OUTPUT;
+						}
 						WINPORT(SetConsoleMode)( con_hnd, mode );
 						break;
 
@@ -888,14 +830,14 @@ struct VTAnsiContext
 				switch (es_argv[0]) {
 				case 0:		// ESC[0J erase from cursor to end of display
 					len = (Info.srWindow.Bottom - Info.dwCursorPosition.Y) * Info.dwSize.X + Info.dwSize.X - Info.dwCursorPosition.X;
-					FillBlank( len, Info.dwCursorPosition );
+					FillBlankLine(con_hnd, Info.dwCursorPosition, len, blank_character, Info.wAttributes);
 					return;
 
 				case 1:		// ESC[1J erase from start to cursor.
 					Pos.X = 0;
 					Pos.Y = Info.srWindow.Top;
 					len   = (Info.dwCursorPosition.Y - Info.srWindow.Top) * Info.dwSize.X + Info.dwCursorPosition.X + 1;
-					FillBlank( len, Pos );
+					FillBlankLine(con_hnd, Pos, len, blank_character, Info.wAttributes);
 					return;
 
 				case 2:		// ESC[2J Clear screen and home cursor
@@ -912,19 +854,19 @@ struct VTAnsiContext
 				switch (es_argv[0]) {
 				case 0:		// ESC[0K Clear to end of line
 					len = Info.dwSize.X - Info.dwCursorPosition.X;
-					FillBlank( len, Info.dwCursorPosition );
+					FillBlankLine(con_hnd, Info.dwCursorPosition, len, blank_character, Info.wAttributes);
 					return;
 
 				case 1:		// ESC[1K Clear from start of line to cursor
 					Pos.X = 0;
 					Pos.Y = Info.dwCursorPosition.Y;
-					FillBlank( Info.dwCursorPosition.X + 1, Pos );
+					FillBlankLine(con_hnd, Pos, Info.dwCursorPosition.X + 1, blank_character, Info.wAttributes);
 					return;
 
 				case 2:		// ESC[2K Clear whole line.
 					Pos.X = 0;
 					Pos.Y = Info.dwCursorPosition.Y;
-					FillBlank( Info.dwSize.X, Pos );
+					FillBlankLine(con_hnd, Pos, Info.dwSize.X, blank_character, Info.wAttributes);
 					return;
 
 				default:
@@ -934,7 +876,7 @@ struct VTAnsiContext
 			case 'X':                 // ESC[#X Erase # characters.
 				if (es_argc == 0) es_argv[es_argc++] = 1; // ESC[X == ESC[1X
 				if (es_argc != 1) return;
-				FillBlank( es_argv[0], Info.dwCursorPosition );
+				FillBlankLine(con_hnd, Info.dwCursorPosition, es_argv[0], blank_character, Info.wAttributes);
 				return;
 
 			case 'L':                 // ESC[#L Insert # blank lines.
@@ -1274,11 +1216,11 @@ struct VTAnsiContext
 
 	struct AttrStackEntry
 	{
-		AttrStackEntry(TCHAR blank_character_, WORD attributes_ )
+		AttrStackEntry(TCHAR blank_character_, DWORD64 attributes_ )
 			: blank_character(blank_character_), attributes(attributes_) {}
 
 		TCHAR blank_character;
-		WORD attributes;
+		DWORD64 attributes;
 	};
 
 	struct AttrStack : std::vector<AttrStackEntry > {} _attr_stack;
@@ -1488,13 +1430,12 @@ struct VTAnsiContext
 					es_argc = 0;
 					es_argv[0] = *s - '0';
 					state = 4;
-				} else if (*s == ';') {
+				} else if (*s == ';' || *s == ':') {
 					es_argc = 1;
 					es_argv[0] = 0;
 					es_argv[1] = 0;
 					state = 4;
-				} else if (*s == ':') {
-					// ignore it
+//				} else if (*s == ':') { // ignore it
 				} else if (*s >= '\x3b' && *s <= '\x3f') {
 					prefix2 = *s;
 				} else if (*s >= '\x20' && *s <= '\x2f') {
@@ -1510,7 +1451,7 @@ struct VTAnsiContext
 			} else if (state == 4) {
 				if (is_digit( *s )) {
 					es_argv[es_argc] = 10 * es_argv[es_argc] + (*s - '0');
-				} else if (*s == ';') {
+				} else if (*s == ';' || *s == ':') {
 					if (es_argc < MAX_ARG-1) es_argc++;
 					es_argv[es_argc] = 0;
 					if (prefix == ']')
@@ -1594,7 +1535,6 @@ struct VTAnsiContext
 	}
 
 	VTAnsiContext()
-		: alternative_screen_buffer(*this)
 	{
 	}
 };
@@ -1608,14 +1548,11 @@ VTAnsi::VTAnsi(IVTShell *vtsh)
 	_ctx->saved_state.InitFromConsole(_ctx->vt_shell->ConsoleHandle());
 	_ctx->ansi_state.font_state.FromConsoleAttributes(_ctx->saved_state.csbi.wAttributes);
 
-	VTLog::Start();
-
 //	get_state();
 }
 
 VTAnsi::~VTAnsi()
 {
-	VTLog::Stop();
 	HANDLE con_hnd = _ctx->vt_shell->ConsoleHandle();
 	_ctx->saved_state.ApplyToConsole(con_hnd);
 	WINPORT(FlushConsoleInputBuffer)(con_hnd);
@@ -1669,7 +1606,8 @@ void VTAnsi::OnStop()
 	RevertConsoleState(con_hnd);
 	_incomplete.tail.clear();
 	_ctx->orig_palette.clear();
-	_ctx->alternative_screen_buffer.Reset(con_hnd);
+	_ctx->alternative_screen_buffer.Toggle(con_hnd, false);
+	_ctx->vt_shell->OnScreenModeChanged(false);
 	//_ctx->saved_state.ApplyToConsole(con_hnd, false);
 	_ctx->ResetTerminal();
 	_ctx->ansi_state.font_state.FromConsoleAttributes(_ctx->saved_state.csbi.wAttributes);
