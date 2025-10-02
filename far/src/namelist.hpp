@@ -35,36 +35,15 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #include <list>
-#include <farplug-wide.h>
 #include "FARString.hpp"
 
 class NamesList
 {
 	private:
-		struct FileName2
-		{
-			FARString strName;
-		};
+		std::list<FARString> m_Names;
+		std::list<FARString>::const_iterator m_CurrentName;
 
-		struct OneName
-		{
-			struct FileName2 Value;
-
-			OneName()
-			{
-			}
-			// для перекрывающихся объектов поведение как у xstrncpy!
-			const OneName& operator=(struct FileName2 &rhs)
-			{
-				Value.strName = rhs.strName;
-				return *this;
-			}
-		};
-
-		std::list<OneName> Names;
-		std::list<OneName>::const_iterator CurrentName;
-
-		FARString strCurrentDir;
+		FARString m_CurrentDir;
 
 	private:
 		void Init();

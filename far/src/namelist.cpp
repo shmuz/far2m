@@ -48,43 +48,43 @@ NamesList::~NamesList()
 
 void NamesList::AddName(const wchar_t *Name)
 {
-	Names.push_back(OneName());
-	auto &pName = Names.back();
-	pName.Value.strName = Name?Name:L"";
-	CurrentName = --Names.end();
+	m_Names.emplace_back();
+	auto &pName = m_Names.back();
+	pName = Name ? Name : L"";
+	m_CurrentName = --m_Names.end();
 }
 
 
 bool NamesList::GetNextName(FARString &strName)
 {
-	auto pName = CurrentName;
-	if (++pName == Names.end())
+	auto pName = m_CurrentName;
+	if (++pName == m_Names.end())
 		return false;
 
-	CurrentName = pName;
-	strName = CurrentName->Value.strName;
+	m_CurrentName = pName;
+	strName = *pName;
 	return true;
 }
 
 
 bool NamesList::GetPrevName(FARString &strName)
 {
-	if (CurrentName == Names.begin())
+	if (m_CurrentName == m_Names.begin())
 		return false;
 
-	--CurrentName;
-	strName = CurrentName->Value.strName;
+	--m_CurrentName;
+	strName = *m_CurrentName;
 	return true;
 }
 
 
 void NamesList::SetCurName(const wchar_t *Name)
 {
-	for (auto pCurName=Names.cbegin(); pCurName!=Names.cend(); pCurName++)
+	for (auto pCurName=m_Names.cbegin(); pCurName!=m_Names.cend(); pCurName++)
 	{
-		if (!StrCmp(Name, pCurName->Value.strName))
+		if (!StrCmp(Name, *pCurName))
 		{
-			CurrentName=pCurName;
+			m_CurrentName = pCurName;
 			return;
 		}
 	}
@@ -93,30 +93,30 @@ void NamesList::SetCurName(const wchar_t *Name)
 
 void NamesList::MoveData(NamesList &Dest)
 {
-	Dest.Names.swap(Names);
-	Dest.strCurrentDir = strCurrentDir;
-	Dest.CurrentName = CurrentName;
+	Dest.m_Names.swap(m_Names);
+	Dest.m_CurrentDir = m_CurrentDir;
+	Dest.m_CurrentName = m_CurrentName;
 	Init();
 }
 
 
 void NamesList::GetCurDir(FARString &strDir)
 {
-	strDir = strCurrentDir;
+	strDir = m_CurrentDir;
 }
 
 
 void NamesList::SetCurDir(const wchar_t *Dir)
 {
-	if (StrCmp(strCurrentDir,Dir) || !TestCurrentDirectory(Dir))
+	if (StrCmp(m_CurrentDir,Dir) || !TestCurrentDirectory(Dir))
 	{
-		strCurrentDir = Dir;
+		m_CurrentDir = Dir;
 	}
 }
 
 void NamesList::Init()
 {
-	Names.clear();
-	strCurrentDir.Clear();
-	CurrentName=Names.cend();
+	m_Names.clear();
+	m_CurrentDir.Clear();
+	m_CurrentName = m_Names.cend();
 }
