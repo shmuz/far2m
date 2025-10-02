@@ -750,7 +750,7 @@ void KeyMacro::RunStartMacro()
 
 bool KeyMacro::AddMacro(DWORD PluginId, const MacroAddMacro* Data)
 {
-	if (((Data->Area >= 0 && Data->Area < MACROAREA_LAST) || Data->Area == MACROAREA_COMMON)
+	if ((Data->Area < MACROAREA_LAST || Data->Area == MACROAREA_COMMON)
 		&& Data->AKey && *Data->AKey)
 	{
 		MACROFLAGS_MFLAGS Flags = 0;
@@ -883,13 +883,9 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg, int Msg, int Param1, L
 			// общие макросы учитываем только при удалении.
 			if (m_RecCode.IsEmpty() || Data.Area != MACROAREA_COMMON)
 			{
-				FARString strBufKey;
 				bool SetDelete = m_RecCode.IsEmpty();
-				if (Data.Code)
-				{
-					strBufKey = Data.Code;
-					InsertQuote(strBufKey);
-				}
+				FARString strBufKey = Data.Code;
+				InsertQuote(strBufKey);
 
 				FARString strBuf;
 				if (Data.Area == MACROAREA_COMMON)

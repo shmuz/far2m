@@ -111,7 +111,7 @@ static const wchar_t *PluginContents=L"__PluginContents__";
 static const wchar_t *HelpOnHelpTopic=L":Help";
 static const wchar_t *HelpContents=L"Contents";
 
-Help::Help(const wchar_t *Topic, const wchar_t *Mask,DWORD Flags):
+Help::Help(const wchar_t *Topic, const wchar_t *Mask, DWORD aFlags):
 	Cma(MACROAREA_HELP),
 	ErrorHelp(TRUE),
 	IsNewTopic(TRUE),
@@ -125,7 +125,7 @@ Help::Help(const wchar_t *Topic, const wchar_t *Mask,DWORD Flags):
 	SetDynamicallyBorn(false);
 	Stack=new CallBackStack;
 	StackData.Clear();
-	StackData.Flags=Flags;
+	StackData.Flags = aFlags;
 	StackData.strHelpMask = Mask; // сохраним маску файла
 	TopScreen=new SaveScreen;
 	StackData.strHelpTopic = Topic;
@@ -135,7 +135,7 @@ Help::Help(const wchar_t *Topic, const wchar_t *Mask,DWORD Flags):
 	else
 		SetPosition(4,2,ScrX-4,ScrY-2);
 
-	if (!ReadHelp(StackData.strHelpMask) && (Flags&FHELP_USECONTENTS))
+	if (!ReadHelp(StackData.strHelpMask) && (aFlags & FHELP_USECONTENTS))
 	{
 		StackData.strHelpTopic = Topic;
 
@@ -165,7 +165,7 @@ Help::Help(const wchar_t *Topic, const wchar_t *Mask,DWORD Flags):
 	{
 		ErrorHelp=TRUE;
 
-		if (!(Flags&FHELP_NOSHOWERROR))
+		if (!(aFlags & FHELP_NOSHOWERROR))
 		{
 			if (!ScreenObject::Flags.Check(FHELPOBJ_ERRCANNOTOPENHELP))
 			{
@@ -557,13 +557,13 @@ m1:
 
 					for (int I=(int)strSplitLine.GetLength()-1; I > 0; I--)
 					{
-						if (I > 0 && strSplitLine.At(I)==L'~' && strSplitLine.At(I-1)==L'~')
+						if (strSplitLine.At(I)==L'~' && strSplitLine.At(I-1)==L'~')
 						{
 							I--;
 							continue;
 						}
 
-						if (I > 0 && strSplitLine.At(I)==L'~' && strSplitLine.At(I-1)!=L'~')
+						if (strSplitLine.At(I)==L'~' && strSplitLine.At(I-1)!=L'~')
 						{
 							do
 							{
@@ -1292,7 +1292,7 @@ int Help::ProcessKey(FarKey Key)
 				FARString strTempStr;
 				//int RetCode = GetString(Msg::HelpSearchTitle,Msg::HelpSearchingFor,L"HelpSearch",strLastSearchStr,strLastSearchStr0);
 				//Msg::HelpSearchTitle, Msg::HelpSearchingFor,
-				int RetCode = GetSearchReplaceString(false, &strLastSearchStr0, &strTempStr, L"HelpSearch", L"", &Case, &WholeWords, nullptr, nullptr, &Regexp,nullptr);
+				int RetCode = GetSearchReplaceString(FALSE, &strLastSearchStr0, &strTempStr, L"HelpSearch", L"", &Case, &WholeWords, nullptr, nullptr, &Regexp,nullptr);
 
 				if (RetCode <= 0)
 					return TRUE;
@@ -1836,7 +1836,7 @@ void Help::Search(FILE *HelpFile,uintptr_t nCodePage)
 			FARString ReplaceStr;
 			int CurPos=0;
 			int SearchLength;
-			bool Result=SearchString(strReadStr,(int)strReadStr.GetLength(),strLastSearchStr,ReplaceStr,CurPos,0,LastSearchCase,LastSearchWholeWords,false,LastSearchRegexp,&SearchLength);
+			bool Result=SearchString(strReadStr,(int)strReadStr.GetLength(),strLastSearchStr,ReplaceStr,CurPos,0,LastSearchCase,LastSearchWholeWords,FALSE,LastSearchRegexp,&SearchLength);
 
 			if (Result)
 			{

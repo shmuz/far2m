@@ -729,7 +729,8 @@ void KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 			{
 				if (CtrlObject->Cp() == f)
 				{
-					ActivePanel->GetTitle(tmpStr);
+					if (ActivePanel)
+						ActivePanel->GetTitle(tmpStr);
 				}
 				else
 				{
@@ -1620,30 +1621,21 @@ void FarMacroApi::promptFunc()
 void FarMacroApi::msgBoxFunc()
 {
 	auto Params = parseParams(3);
-
-	DWORD Flags = (DWORD)Params[2].getInteger();
 	auto ValT = Params[0], ValB = Params[1];
-	const wchar_t *title = L"";
+	const wchar_t *title = (!ValT.isInteger() || ValT.i()) ? NullToEmpty(ValT.toString()) : L"";
+	const wchar_t *text  = (!ValB.isInteger() || ValB.i()) ? NullToEmpty(ValB.toString()) : L"";
 
-	if (!(ValT.isInteger() && !ValT.i()))
-		title=NullToEmpty(ValT.toString());
-
-	const wchar_t *text = L"";
-
-	if (!(ValB.isInteger() && !ValB.i()))
-		text = NullToEmpty(ValB.toString());
-
-	Flags &= ~(FMSG_KEEPBACKGROUND|FMSG_ERRORTYPE);
+	auto Flags = (DWORD)Params[2].getInteger();
+	Flags &= ~(FMSG_KEEPBACKGROUND | FMSG_ERRORTYPE);
 	Flags |= FMSG_ALLINONE;
 
 	if (!HIWORD(Flags) || HIWORD(Flags) > HIWORD(FMSG_MB_RETRYCANCEL))
 		Flags |= FMSG_MB_OK;
 
-	FARString TempBuf = title;
-	TempBuf += L"\n";
-	TempBuf += text;
-	auto Ret = FarMessageFn(-1, Flags, nullptr, (const wchar_t* const*)TempBuf.CPtr(), 0, 0) + 1;
-	PushInteger(Ret);
+	union { const wchar_t **pMany; const wchar_t *pOne; };
+	auto TempBuf = FARString(title) + L"\n" + text;
+	pOne = TempBuf;
+	PushInteger(1 + FarMessageFn(-1, Flags, nullptr, pMany, 0, 0));
 }
 
 // V=Panel.Select(panelType,Action[,Mode[,Items]])
@@ -2731,8 +2723,6 @@ void FarMacroApi::panelitemFunc()
 		switch (TypeInfo)
 		{
 			case 0:  // Name
-				return PushString(filelistItem->strName);
-
 			case 1:  // ShortName obsolete, use Name
 				return PushString(filelistItem->strName);
 
