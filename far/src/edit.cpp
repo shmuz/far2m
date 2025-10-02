@@ -2225,10 +2225,6 @@ void Edit::ApplyColor()
 		if (CurItem.StartPos > CurItem.EndPos)
 			continue;
 
-		// Отсекаем элементы заведомо не попадающие на экран
-		if (CurItem.StartPos - m_LeftPos > X2 || CurItem.EndPos - m_LeftPos < X1)
-			continue;
-
 		int Length = Min(CurItem.EndPos + 1, StrSize()) - CurItem.StartPos;
 
 		// Получаем начальную позицию
