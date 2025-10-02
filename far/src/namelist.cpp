@@ -49,7 +49,7 @@ NamesList::~NamesList()
 void NamesList::AddName(const wchar_t *Name)
 {
 	Names.push_back(OneName());
-	auto pName = Names.back();
+	auto &pName = Names.back();
 	pName.Value.strName = Name?Name:L"";
 	CurrentName = --Names.end();
 }
