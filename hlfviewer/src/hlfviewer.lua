@@ -173,8 +173,8 @@ local function ShowCurrentHelpTopic()
   local FileName = editor.GetFileName()
   local ei = editor.GetInfo()
 
-  if Opt.Style == 1 then
-    if 0 == bit64.band(ei.CurState, F.ECSTATE_SAVED) then
+  if Opt.Style == 1 then -- "show modified file"
+    if 0 ~= bit64.band(ei.CurState, F.ECSTATE_MODIFIED) then
       ShowHelpFromTempFile()
     else
       local Topic = FindTopic(false,true) or FindTopic(true,true)
@@ -185,8 +185,8 @@ local function ShowCurrentHelpTopic()
       end
     end
   else
-    if Opt.Style == 2 then
-      if 0 == bit64.band(ei.CurState, F.ECSTATE_SAVED) then
+    if Opt.Style == 2 then -- "save and show modified file"
+      if 0 ~= bit64.band(ei.CurState, F.ECSTATE_MODIFIED) then
         editor.SaveFile()
       end
     end
