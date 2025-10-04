@@ -510,7 +510,7 @@ int Editor::BlockEnd2NumLine(int *Pos)
 
 int64_t Editor::VMProcess(int OpCode, void *vParam, int64_t iParam)
 {
-	int CurPos = m_CurLine->GetCurPos();
+	const int CurPos = m_CurLine->GetCurPos();
 
 	switch (OpCode) {
 		case MCODE_C_EMPTY:
@@ -561,7 +561,7 @@ int64_t Editor::VMProcess(int OpCode, void *vParam, int64_t iParam)
 			int64_t Ret = -1;
 			long Val[1];
 			EditorBookMarks ebm = {0};
-			LONG_PTR iMode = (LONG_PTR)vParam;
+			auto iMode = (LONG_PTR)vParam;
 
 			switch (iMode) {
 				case 0:
@@ -577,12 +577,11 @@ int64_t Editor::VMProcess(int OpCode, void *vParam, int64_t iParam)
 					ebm.ScreenLine = Val;
 					break;
 				default:
-					iMode = -1;
-					break;
+					return Ret;
 			}
 
-			if (iMode >= 0 && GetStackBookmark((int)iParam - 1, &ebm))
-				Ret = (int64_t)((DWORD)Val[0] + 1);
+			if (GetStackBookmark((int)iParam - 1, &ebm))
+				Ret = Val[0] + 1;
 
 			return Ret;
 		}
@@ -689,7 +688,7 @@ int64_t Editor::VMProcess(int OpCode, void *vParam, int64_t iParam)
 									}
 
 									Ret = EditorControl(ECTL_SELECT, &eSel);
-								} else if (!eSel.BlockWidth && m_MBlockStart == m_CurLine) {
+								} else if (m_MBlockStart == m_CurLine) {
 									UnmarkBlock();
 								}
 							}
@@ -1446,6 +1445,7 @@ int Editor::ProcessKey(FarKey Key)
 		case KEY_SHIFTNUMDEL:
 		case KEY_SHIFTDECIMAL: {
 			Copy(FALSE);
+			[[fallthrough]];
 		}
 		case KEY_CTRLD: {
 			if (Flags.Check(FEDITOR_LOCKMODE))
