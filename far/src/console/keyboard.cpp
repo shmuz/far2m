@@ -756,6 +756,8 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 
 	if (rec->EventType==FOCUS_EVENT)
 	{
+		CtrlObject->Plugins.ProcessConsoleInput(rec);
+
 		/* $ 28.04.2001 VVM
 		  + Не только обработаем сами смену фокуса, но и передадим дальше */
 		ShiftPressed=RightShiftPressedLast=ShiftPressedLast=FALSE;
