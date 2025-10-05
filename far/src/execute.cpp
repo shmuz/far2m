@@ -260,7 +260,13 @@ public:
 		WINPORT(SetConsoleMode) (NULL, _saved_mode | ENABLE_PROCESSED_OUTPUT | ENABLE_WRAP_AT_EOL_OUTPUT
 			| ENABLE_EXTENDED_FLAGS | ENABLE_MOUSE_INPUT | ENABLE_INSERT_MODE | ENABLE_ECHO_INPUT);	// ENABLE_QUICK_EDIT_MODE
 		if (cmd_str) {
-			const std::wstring &ws = MB2Wide(cmd_str);
+			std::wstring ws = MB2Wide(cmd_str);
+			size_t pos = 0;
+			while ((pos = ws.find('\n', pos)) != std::string::npos) {
+				ws.insert(pos, 1, '\r');
+				pos += 2;
+			}
+
 			WINPORT(WriteConsole)(NULL, ws.c_str(), ws.size(), &_dw, NULL);
 			WINPORT(WriteConsole)(NULL, &eol[0], ARRAYSIZE(eol), &_dw, NULL);
 		}
