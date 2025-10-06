@@ -113,14 +113,17 @@ static struct FARConfig
 		void      *ValPtr;   // адрес переменной, куда помещаем данные
 		FARString *StrPtr;
 	};
-	DWORD DefDWord; // он же размер данных для OPT_BINARY
+	union {
+		DWORD DefDWord;
+		DWORD ArrSize;
+	};
 	union {
 	  const wchar_t *DefStr;   // строка по умолчанию
 	  const BYTE    *DefArr;   // данные по умолчанию
 	};
 
 	constexpr FARConfig(bool save, const char *key, const char *val, DWORD size, BYTE *trg, const BYTE *dflt) :
-		IsSave(save),ValType(OPT_BINARY),KeyName(key),ValName(val),ValPtr(trg),DefDWord(size),DefArr(dflt) {}
+		IsSave(save),ValType(OPT_BINARY),KeyName(key),ValName(val),ValPtr(trg),ArrSize(size),DefArr(dflt) {}
 
 	constexpr FARConfig(bool save, const char *key, const char *val, void *trg, DWORD dflt, OPT_TYPE Type=OPT_DWORD) :
 		IsSave(save),ValType(Type),KeyName(key),ValName(val),ValPtr(trg),DefDWord(dflt),DefStr(nullptr) {}
@@ -507,7 +510,7 @@ bool ConfigOptGetValue(size_t I, GetConfig& Data)
 			case OPT_BINARY:
 				Data.binDefault = CFG[I].DefArr;
 				Data.binData = CFG[I].ValPtr;
-				Data.binSize = CFG[I].DefDWord;
+				Data.binSize = CFG[I].ArrSize;
 				break;
 		}
 		return true;
@@ -552,7 +555,7 @@ bool ConfigOptSetBinary(size_t I, const void *Data, DWORD Size)
 {
 	if (I < ARRAYSIZE(CFG) && CFG[I].ValType == OPT_BINARY && Data)
 	{
-		Size = std::min(Size, CFG[I].DefDWord);
+		Size = std::min(Size, CFG[I].ArrSize);
 		memcpy(CFG[I].ValPtr, Data, Size);
 		return true;
 	}
@@ -633,9 +636,9 @@ void ConfigOptLoad()
 				*CFG[I].StrPtr = cfg_reader.GetString(CFG[I].ValName, CFG[I].DefStr);
 				break;
 			case OPT_BINARY:
-				int Size = cfg_reader.GetBytes((BYTE*)CFG[I].ValPtr, CFG[I].DefDWord, CFG[I].ValName, CFG[I].DefArr);
-				if (Size > 0 && Size < (int)CFG[I].DefDWord)
-					memset(((BYTE*)CFG[I].ValPtr)+Size,0,CFG[I].DefDWord-Size);
+				size_t Size = cfg_reader.GetBytes((BYTE*)CFG[I].ValPtr, CFG[I].ArrSize, CFG[I].ValName, CFG[I].DefArr);
+				if (Size > 0 && Size < CFG[I].ArrSize)
+					memset((BYTE*)CFG[I].ValPtr + Size, 0, CFG[I].ArrSize - Size);
 
 				break;
 		}
@@ -813,7 +816,7 @@ void ConfigOptSave(bool Ask)
 					cfg_writer.SetString(CFG[I].ValName, CFG[I].StrPtr->CPtr());
 					break;
 				case OPT_BINARY:
-					cfg_writer.SetBytes(CFG[I].ValName, (const BYTE*)CFG[I].ValPtr, CFG[I].DefDWord);
+					cfg_writer.SetBytes(CFG[I].ValName, (const BYTE*)CFG[I].ValPtr, CFG[I].ArrSize);
 					break;
 			}
 		}
