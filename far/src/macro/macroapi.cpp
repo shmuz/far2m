@@ -1912,19 +1912,19 @@ void FarMacroApi::fargetconfigFunc()
 	ConfigOptGetValue(Index, Data);
 
 	switch(Data.ValType) {
-		case REG_DWORD:
+		case OPT_DWORD:
 			PushNumber(Data.dwValue);
 			PushString(L"integer");
 			PushNumber(Data.dwDefault);
 			break;
 
-		case REG_BOOLEAN:
+		case OPT_BOOLEAN:
 			PushBoolean(Data.dwValue & 0xFF);
 			PushString(L"boolean");
 			PushBoolean(Data.dwDefault & 0xFF);
 			break;
 
-		case REG_3STATE:
+		case OPT_3STATE:
 			switch (Data.dwValue & 0xFF) {
 				case 0: PushBoolean(0); break;
 				case 1: PushBoolean(1); break;
@@ -1938,13 +1938,13 @@ void FarMacroApi::fargetconfigFunc()
 			}
 			break;
 
-		case REG_SZ:
+		case OPT_SZ:
 			PushString(Data.strValue);
 			PushString(L"string");
 			PushString(Data.strDefault);
 			break;
 
-		case REG_BINARY:
+		case OPT_BINARY:
 			PushBinary(Data.binData, Data.binSize);
 			PushString(L"binary");
 			if (Data.binDefault != nullptr)
@@ -1967,13 +1967,13 @@ static bool _SetConfig(int Index, const FarMacroValue &Value)
 	DWORD dword;
 
 	switch (Data.ValType) {
-		case REG_DWORD:
+		case OPT_DWORD:
 			if (Value.Type == FMVT_DOUBLE) dword = static_cast<DWORD>(Value.Double);
 			else if (Value.Type == FMVT_INTEGER) dword = static_cast<DWORD>(Value.Integer);
 			else return false;
 			return ConfigOptSetInteger(Index, dword);
 
-		case REG_BOOLEAN:
+		case OPT_BOOLEAN:
 			if (Value.Type == FMVT_DOUBLE) dword = Value.Double != 0 ? 1 : 0;
 			else if (Value.Type == FMVT_INTEGER) dword = Value.Integer ? 1 : 0;
 			else if (Value.Type == FMVT_BOOLEAN) dword = Value.Boolean ? 1 : 0;
@@ -1981,7 +1981,7 @@ static bool _SetConfig(int Index, const FarMacroValue &Value)
 			else return false;
 			return ConfigOptSetInteger(Index, dword);
 
-		case REG_3STATE:
+		case OPT_3STATE:
 			if (Value.Type == FMVT_DOUBLE) dword = static_cast<DWORD>(Value.Double) % 3;
 			else if (Value.Type == FMVT_INTEGER) dword = Value.Integer % 3;
 			else if (Value.Type == FMVT_BOOLEAN) dword = Value.Boolean ? 1 : 0;
@@ -1990,10 +1990,10 @@ static bool _SetConfig(int Index, const FarMacroValue &Value)
 			else return false;
 			return ConfigOptSetInteger(Index, dword);
 
-		case REG_SZ:
+		case OPT_SZ:
 			return (Value.Type == FMVT_STRING) ?  ConfigOptSetString(Index, Value.String) : false;
 
-		case REG_BINARY:
+		case OPT_BINARY:
 			return (Value.Type == FMVT_BINARY) ?
 					ConfigOptSetBinary(Index, Value.Binary.Data, Value.Binary.Size) : false;
 
