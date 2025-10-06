@@ -122,7 +122,7 @@ static struct FARConfig
 	  const BYTE    *DefArr;   // данные по умолчанию
 	};
 
-	constexpr FARConfig(bool save, const char *key, const char *val, DWORD size, BYTE *trg, const BYTE *dflt) :
+	constexpr FARConfig(bool save, const char *key, const char *val, DWORD size, void *trg, const BYTE *dflt) :
 		IsSave(save),ValType(OPT_BINARY),KeyName(key),ValName(val),ValPtr(trg),ArrSize(size),DefArr(dflt) {}
 
 	constexpr FARConfig(bool save, const char *key, const char *val, void *trg, DWORD dflt, OPT_TYPE Type=OPT_DWORD) :
@@ -133,10 +133,8 @@ static struct FARConfig
 
 } CFG[]=
 {
-//	{false, NSecColors, "CurrentPalette", SIZE_ARRAY_PALETTE, (BYTE *)Palette8bit, nullptr},
-//	{true,  NSecColors, "CurrentPaletteRGB", SIZE_ARRAY_PALETTE * sizeof(uint64_t), (BYTE *)Palette, nullptr},
 	{true,  NSecColors, "TempColors256", TEMP_COLORS256_SIZE, g_tempcolors256, nullptr},
-	{true,  NSecColors, "TempColorsRGB", TEMP_COLORSRGB_SIZE, (BYTE *)g_tempcolorsRGB, nullptr},
+	{true,  NSecColors, "TempColorsRGB", TEMP_COLORSRGB_SIZE, g_tempcolorsRGB, nullptr},
 
 	{true,  NSecScreen, "Clock",                        &Opt.Clock, 1, OPT_BOOLEAN},
 	{true,  NSecScreen, "ViewerEditorClock",            &Opt.ViewerEditorClock, 0, OPT_BOOLEAN},
