@@ -484,9 +484,9 @@ int ConfigOptGetIndex(const wchar_t *KeyName)
 	return -1;
 }
 
-bool ConfigOptGetValue(int I, GetConfig& Data)
+bool ConfigOptGetValue(size_t I, GetConfig& Data)
 {
-	if (I >= 0 && I < (int)ARRAYSIZE(CFG))
+	if (I < ARRAYSIZE(CFG))
 	{
 		Data.IsSave = CFG[I].IsSave;
 		Data.ValType = CFG[I].ValType;
@@ -515,9 +515,9 @@ bool ConfigOptGetValue(int I, GetConfig& Data)
 	return false;
 }
 
-bool ConfigOptSetInteger(int I, DWORD Value)
+bool ConfigOptSetInteger(size_t I, DWORD Value)
 {
-	if (I >= 0 && I < (int)ARRAYSIZE(CFG))
+	if (I < ARRAYSIZE(CFG))
 	{
 		switch(CFG[I].ValType)
 		{
@@ -538,9 +538,9 @@ bool ConfigOptSetInteger(int I, DWORD Value)
 	return false;
 }
 
-bool ConfigOptSetString(int I, const wchar_t *Value)
+bool ConfigOptSetString(size_t I, const wchar_t *Value)
 {
-	if (I >= 0 && I < (int)ARRAYSIZE(CFG) && CFG[I].ValType == OPT_SZ && Value)
+	if (I < ARRAYSIZE(CFG) && CFG[I].ValType == OPT_SZ && Value)
 	{
 		*CFG[I].StrPtr = Value;
 		return true;
@@ -548,9 +548,9 @@ bool ConfigOptSetString(int I, const wchar_t *Value)
 	return false;
 }
 
-bool ConfigOptSetBinary(int I, const void *Data, DWORD Size)
+bool ConfigOptSetBinary(size_t I, const void *Data, DWORD Size)
 {
-	if (I >= 0 && I < (int)ARRAYSIZE(CFG) && CFG[I].ValType == OPT_BINARY && Data)
+	if (I < ARRAYSIZE(CFG) && CFG[I].ValType == OPT_BINARY && Data)
 	{
 		Size = std::min(Size, CFG[I].DefDWord);
 		memcpy(CFG[I].ValPtr, Data, Size);

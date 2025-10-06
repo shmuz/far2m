@@ -60,10 +60,10 @@ struct GetConfig {
 
 void ConfigOptAssertLoaded();
 int  ConfigOptGetIndex(const wchar_t *wKeyName);
-bool ConfigOptGetValue(int Index, GetConfig& Data);
+bool ConfigOptGetValue(size_t Index, GetConfig& Data);
 void ConfigOptLoad();
 void ConfigOptSave(bool Ask);
-bool ConfigOptSetBinary(int Index, const void *Data, DWORD Size);
-bool ConfigOptSetInteger(int Index, DWORD Value);
-bool ConfigOptSetString(int Index, const wchar_t *Value);
+bool ConfigOptSetBinary(size_t Index, const void *Data, DWORD Size);
+bool ConfigOptSetInteger(size_t Index, DWORD Value);
+bool ConfigOptSetString(size_t Index, const wchar_t *Value);
 size_t ConfigOptGetSize();
