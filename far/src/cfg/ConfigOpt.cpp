@@ -570,11 +570,9 @@ static void ConfigOptFromCmdLine()
 		{
 			FARString strName(pName, pVal - pName);
 			pVal++;
-			GetConfig cfg;
-			int Index = ConfigOptGetIndex(strName.CPtr());
-			if (ConfigOptGetValue(Index, cfg))
+			if (int Index = ConfigOptGetIndex(strName.CPtr()); Index >= 0)
 			{
-				switch (cfg.ValType)
+				switch (CFG[Index].ValType)
 				{
 					default:
 						if (!StrCmpI(pVal, L"false"))        ConfigOptSetInteger(Index, 0);
@@ -650,17 +648,9 @@ void ConfigOptLoad()
 	SanitizeHistoryCounts();
 	SanitizeIndentationCounts();
 
-	if (Opt.CursorBlinkTime < 100)
-		Opt.CursorBlinkTime = 100;
+	Opt.CursorBlinkTime = std::clamp(Opt.CursorBlinkTime, 100, 500);
 
-	if (Opt.CursorBlinkTime > 500)
-		Opt.CursorBlinkTime = 500;
-
-	if (Opt.ShowMenuBar)
-		Opt.ShowMenuBar=1;
-
-	if (Opt.PluginMaxReadData < 0x1000) // || Opt.PluginMaxReadData > 0x80000)
-		Opt.PluginMaxReadData=0x1000;
+	Opt.PluginMaxReadData = std::max(Opt.PluginMaxReadData, 0x1000u);
 
 	if(ExplicitWindowMode)
 	{
@@ -668,8 +658,6 @@ void ConfigOptLoad()
 	}
 
 	Opt.HelpTabSize=8; // пока жестко пропишем...
-//	SanitizePalette();
-//	MergePalette();
 
 	Opt.ViOpt.ViewerIsWrap&=1;
 	Opt.ViOpt.ViewerWrap&=1;
@@ -682,8 +670,6 @@ void ConfigOptLoad()
 	if (Opt.XLat.strWordDivForXlat.IsEmpty())
 		Opt.XLat.strWordDivForXlat = WordDivForXlat0;
 
-	Opt.PanelRightClickRule%=3;
-	Opt.PanelCtrlAltShiftRule%=3;
 	Opt.ConsoleDetachKey=KeyNameToKey(strKeyNameConsoleDetachKey);
 
 	if (Opt.EdOpt.TabSize<1 || Opt.EdOpt.TabSize>512)
