@@ -1919,22 +1919,22 @@ void FarMacroApi::fargetconfigFunc()
 			break;
 
 		case OPT_BOOLEAN:
-			PushBoolean(Data.dwValue & 0xFF);
+			PushBoolean(Data.dwValue);
 			PushString(L"boolean");
-			PushBoolean(Data.dwDefault & 0xFF);
+			PushBoolean(Data.dwDefault);
 			break;
 
 		case OPT_3STATE:
-			switch (Data.dwValue & 0xFF) {
+			switch (Data.dwValue % 3) {
 				case 0: PushBoolean(0); break;
 				case 1: PushBoolean(1); break;
-				default: PushString(L"other"); break;
+				default: PushNumber(2); break;
 			}
 			PushString(L"3-state");
-			switch (Data.dwDefault & 0xFF) {
+			switch (Data.dwDefault % 3) {
 				case 0: PushBoolean(0); break;
 				case 1: PushBoolean(1); break;
-				default: PushString(L"other"); break;
+				default: PushNumber(2); break;
 			}
 			break;
 
@@ -1986,7 +1986,6 @@ static bool _SetConfig(int Index, const FarMacroValue &Value)
 			else if (Value.Type == FMVT_INTEGER) dword = Value.Integer % 3;
 			else if (Value.Type == FMVT_BOOLEAN) dword = Value.Boolean ? 1 : 0;
 			else if (Value.Type == FMVT_NIL) dword = 0;
-			else if (Value.Type == FMVT_STRING && !wcscasecmp(L"other", Value.String)) dword = 2;
 			else return false;
 			return ConfigOptSetInteger(Index, dword);
 

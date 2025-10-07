@@ -19,7 +19,7 @@ local function MakeItem(idx)
   elseif tp == "boolean" then
     txt = txt .. tostring(val)
   elseif tp == "3-state" then
-    txt = txt .. tostring(val)
+    txt = txt .. tostring(val == 2 and "other" or val)
   elseif tp == "binary" then
     txt = ("%s(%d bytes)"):format(txt, #val[1])
   else

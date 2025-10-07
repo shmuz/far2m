@@ -1083,8 +1083,8 @@ local function test_Far_GetConfig()
       assert_bool(val)
       assert_bool(val0)
     elseif tp == "3-state" then
-      assert(val==false or val==true or val=="other")
-      assert(val0==false or val0==true or val0=="other")
+      assert(val==false or val==true or val==2)
+      assert(val0==false or val0==true or val0==2)
     elseif tp == "string" then
       assert_str(val)
       assert_str(val0)
