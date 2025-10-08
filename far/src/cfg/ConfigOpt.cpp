@@ -71,36 +71,36 @@ static const wchar_t szCtrlDot[]=L"Ctrl.";
 static const wchar_t szCtrlShiftDot[]=L"CtrlShift.";
 
 // KeyName
-static const char NSecColors[]="Colors";
-static const char NSecScreen[]="Screen";
-static const char NSecCmdline[]="Cmdline";
-static const char NSecInterface[]="Interface";
-static const char NSecInterfaceCompletion[]="Interface/Completion";
-static const char NSecViewer[]="Viewer";
-static const char NSecDialog[]="Dialog";
-static const char NSecEditor[]="Editor";
-static const char NSecNotifications[]="Notifications";
-static const char NSecXLat[]="XLat";
-static const char NSecSystem[]="System";
-static const char NSecHelp[]="Help";
-static const char NSecLanguage[]="Language";
-static const char NSecConfirmations[]="Confirmations";
-static const char NSecPluginConfirmations[]="PluginConfirmations";
-static const char NSecPanel[]="Panel";
-static const char NSecPanelLeft[]="Panel/Left";
-static const char NSecPanelRight[]="Panel/Right";
-static const char NSecPanelLayout[]="Panel/Layout";
-static const char NSecPanelTree[]="Panel/Tree";
-static const char NSecLayout[]="Layout";
-static const char NSecDescriptions[]="Descriptions";
-static const char NSecMacros[]="Macros";
-static const char NSecSavedHistory[]="SavedHistory";
-static const char NSecSavedViewHistory[]="SavedViewHistory";
-static const char NSecSavedFolderHistory[]="SavedFolderHistory";
-static const char NSecSavedDialogHistory[]="SavedDialogHistory";
-static const char NSecCodePages[]="CodePages";
-static const char NParamHistoryCount[]="HistoryCount";
-static const char NSecVMenu[]="VMenu";
+static const char NParamHistoryCount[] = "HistoryCount";
+static const char NSecCmdline[] = "Cmdline";
+static const char NSecCodePages[] = "CodePages";
+static const char NSecColors[] = "Colors";
+static const char NSecConfirmations[] = "Confirmations";
+static const char NSecDescriptions[] = "Descriptions";
+static const char NSecDialog[] = "Dialog";
+static const char NSecEditor[] = "Editor";
+static const char NSecHelp[] = "Help";
+static const char NSecInterface[] = "Interface";
+static const char NSecInterfaceCompletion[] = "Interface/Completion";
+static const char NSecLanguage[] = "Language";
+static const char NSecLayout[] = "Layout";
+static const char NSecMacros[] = "Macros";
+static const char NSecNotifications[] = "Notifications";
+static const char NSecPanel[] = "Panel";
+static const char NSecPanelLayout[] = "Panel/Layout";
+static const char NSecPanelLeft[] = "Panel/Left";
+static const char NSecPanelRight[] = "Panel/Right";
+static const char NSecPanelTree[] = "Panel/Tree";
+static const char NSecPluginConfirmations[] = "PluginConfirmations";
+static const char NSecSavedDialogHistory[] = "SavedDialogHistory";
+static const char NSecSavedFolderHistory[] = "SavedFolderHistory";
+static const char NSecSavedHistory[] = "SavedHistory";
+static const char NSecSavedViewHistory[] = "SavedViewHistory";
+static const char NSecScreen[] = "Screen";
+static const char NSecSystem[] = "System";
+static const char NSecViewer[] = "Viewer";
+static const char NSecVMenu[] = "VMenu";
+static const char NSecXLat[] = "XLat";
 
 // Структура, описывающая всю конфигурацию(!)
 static struct FARConfig
@@ -110,10 +110,15 @@ static struct FARConfig
 	const char *KeyName;
 	const char *ValName;
 	union {
-		void      *ValPtr;   // адрес переменной, куда помещаем данные
+		void      *VoidPtr;   // адрес переменной, куда помещаем данные
+		int       *IntPtr;
+		DWORD     *DWordPtr;
+		bool      *BoolPtr;
 		FARString *StrPtr;
 	};
 	union {
+		int   DefInt;
+		bool  DefBool;
 		DWORD DefDWord;
 		DWORD ArrSize;
 	};
@@ -123,10 +128,16 @@ static struct FARConfig
 	};
 
 	constexpr FARConfig(bool save, const char *key, const char *val, DWORD size, void *trg, const BYTE *dflt) :
-		IsSave(save),ValType(OPT_BINARY),KeyName(key),ValName(val),ValPtr(trg),ArrSize(size),DefArr(dflt) {}
+		IsSave(save),ValType(OPT_BINARY),KeyName(key),ValName(val),VoidPtr(trg),ArrSize(size),DefArr(dflt) {}
 
-	constexpr FARConfig(bool save, const char *key, const char *val, void *trg, DWORD dflt, OPT_TYPE Type=OPT_DWORD) :
-		IsSave(save),ValType(Type),KeyName(key),ValName(val),ValPtr(trg),DefDWord(dflt),DefStr(nullptr) {}
+	constexpr FARConfig(bool save, const char *key, const char *val, DWORD *trg, DWORD dflt, OPT_TYPE Type=OPT_DWORD) :
+		IsSave(save),ValType(Type),KeyName(key),ValName(val),DWordPtr(trg),DefDWord(dflt),DefStr(nullptr) {}
+
+	constexpr FARConfig(bool save, const char *key, const char *val, int *trg, int dflt, OPT_TYPE Type=OPT_DWORD) :
+		IsSave(save),ValType(Type),KeyName(key),ValName(val),IntPtr(trg),DefInt(dflt),DefStr(nullptr) {}
+
+	constexpr FARConfig(bool save, const char *key, const char *val, bool *trg, bool dflt) :
+		IsSave(save),ValType(OPT_REALBOOLEAN),KeyName(key),ValName(val),BoolPtr(trg),DefBool(dflt),DefStr(nullptr) {}
 
 	constexpr FARConfig(bool save, const char *key, const char *val, FARString *trg, const wchar_t *dflt) :
 		IsSave(save),ValType(OPT_SZ),KeyName(key),ValName(val),StrPtr(trg),DefDWord(0),DefStr(dflt) {}
@@ -175,7 +186,7 @@ static struct FARConfig
 	{true,  NSecInterface, "ExclusiveWinRight",         &Opt.ExclusiveWinRight, 0, OPT_BOOLEAN},
 	{true,  NSecInterface, "UseStickyKeyEvent",         &Opt.UseStickyKeyEvent, 0, OPT_BOOLEAN},
 
-	{true,  NSecInterface, "DateFormat",                &Opt.DateFormat, (DWORD) GetDateFormatDefault()},
+	{true,  NSecInterface, "DateFormat",                &Opt.DateFormat, GetDateFormatDefault()},
 	{true,  NSecInterface, "DateSeparator",             &Opt.strDateSeparator, GetDateSeparatorDefaultStr()},
 	{true,  NSecInterface, "TimeSeparator",             &Opt.strTimeSeparator, GetTimeSeparatorDefaultStr()},
 	{true,  NSecInterface, "DecimalSeparator",          &Opt.strDecimalSeparator, GetDecimalSeparatorDefaultStr()},
@@ -295,7 +306,7 @@ static struct FARConfig
 
 	{true,  NSecSystem, "InactivityExit",               &Opt.InactivityExit, 0, OPT_BOOLEAN},
 	{true,  NSecSystem, "InactivityExitTime",           &Opt.InactivityExitTime, 15},
-	{true,  NSecSystem, "DriveMenuMode2",               &Opt.ChangeDriveMode, (DWORD)-1},
+	{true,  NSecSystem, "DriveMenuMode2",               &Opt.ChangeDriveMode, -1},
 	{true,  NSecSystem, "DriveDisconnectMode",          &Opt.ChangeDriveDisconnectMode, 1},
 
 	{true,  NSecSystem, "DriveExceptions",              &Opt.ChangeDriveExceptions,
@@ -306,16 +317,16 @@ static struct FARConfig
 
 	{true,  NSecSystem, "AutoUpdateRemoteDrive",        &Opt.AutoUpdateRemoteDrive, 1, OPT_BOOLEAN},
 	{true,  NSecSystem, "FileSearchMode",               &Opt.FindOpt.FileSearchMode, FINDAREA_FROM_CURRENT},
-	{false, NSecSystem, "CollectFiles",                 &Opt.FindOpt.CollectFiles, 1, OPT_BOOLEAN},
+	{false, NSecSystem, "CollectFiles",                 &Opt.FindOpt.CollectFiles, true},
 	{true,  NSecSystem, "SearchInFirstSize",            &Opt.FindOpt.strSearchInFirstSize, L""},
-	{true,  NSecSystem, "FindAlternateStreams",         &Opt.FindOpt.FindAlternateStreams, 0, OPT_BOOLEAN},
+	{true,  NSecSystem, "FindAlternateStreams",         &Opt.FindOpt.FindAlternateStreams, false},
 	{true,  NSecSystem, "SearchOutFormat",              &Opt.FindOpt.strSearchOutFormat, L"D,S,A"},
 	{true,  NSecSystem, "SearchOutFormatWidth",         &Opt.FindOpt.strSearchOutFormatWidth, L"14,13,0"},
-	{true,  NSecSystem, "FindFolders",                  &Opt.FindOpt.FindFolders, 1, OPT_BOOLEAN},
-	{true,  NSecSystem, "FindSymLinks",                 &Opt.FindOpt.FindSymLinks, 1, OPT_BOOLEAN},
-	{true,  NSecSystem, "FindCaseSensitiveFileMask",    &Opt.FindOpt.FindCaseSensitiveFileMask, 0, OPT_BOOLEAN},
-	{true,  NSecSystem, "UseFilterInSearch",            &Opt.FindOpt.UseFilter, 0, OPT_BOOLEAN},
-	{true,  NSecSystem, "FindCodePage",                 &Opt.FindCodePage, CP_AUTODETECT},
+	{true,  NSecSystem, "FindFolders",                  &Opt.FindOpt.FindFolders, true},
+	{true,  NSecSystem, "FindSymLinks",                 &Opt.FindOpt.FindSymLinks, true},
+	{true,  NSecSystem, "FindCaseSensitiveFileMask",    &Opt.FindOpt.FindCaseSensitiveFileMask, false},
+	{true,  NSecSystem, "UseFilterInSearch",            &Opt.FindOpt.UseFilter, false},
+	{true,  NSecSystem, "FindCodePage",                 &Opt.FindCodePage, (int)CP_AUTODETECT},
 	{false, NSecSystem, "CmdHistoryRule",               &Opt.CmdHistoryRule, 0, OPT_BOOLEAN},
 	{false, NSecSystem, "SetAttrFolderRules",           &Opt.SetAttrFolderRules, 1, OPT_BOOLEAN},
 	{false, NSecSystem, "MaxPositionCache",             &Opt.MaxPositionCache, POSCACHE_MAX_ELEMENTS},
@@ -335,7 +346,7 @@ static struct FARConfig
 	{false, NSecSystem, "QuotedSymbols",                &Opt.strQuotedSymbols, L" $&()[]{};|*?!'`\"\\\xA0"}, //xA0 => 160 =>oem(0xFF)
 	{false, NSecSystem, "QuotedName",                   &Opt.QuotedName, QUOTEDNAME_INSERT},
 	{false, NSecSystem, "PluginMaxReadData",            &Opt.PluginMaxReadData, 0x40000},
-	{false, NSecSystem, "CASRule",                      &Opt.CASRule, 0xFFFFFFFFU},
+	{false, NSecSystem, "CASRule",                      &Opt.CASRule, -1},
 	{false, NSecSystem, "AllCtrlAltShiftRule",          &Opt.AllCtrlAltShiftRule, 0x0000FFFF},
 	{true,  NSecSystem, "ScanJunction",                 &Opt.ScanJunction, 1, OPT_BOOLEAN},
 	{true,  NSecSystem, "OnlyFilesSize",                &Opt.OnlyFilesSize, 0, OPT_BOOLEAN},
@@ -499,7 +510,11 @@ bool ConfigOptGetValue(size_t I, GetConfig& Data)
 			case OPT_BOOLEAN:
 			case OPT_3STATE:
 				Data.dwDefault = CFG[I].DefDWord;
-				Data.dwValue = *(DWORD*)CFG[I].ValPtr;
+				Data.dwValue = *CFG[I].DWordPtr;
+				break;
+			case OPT_REALBOOLEAN:
+				Data.dwDefault = CFG[I].DefBool ? 1 : 0;
+				Data.dwValue = *CFG[I].BoolPtr ? 1 : 0;
 				break;
 			case OPT_SZ:
 				Data.strDefault = CFG[I].DefStr;
@@ -507,7 +522,7 @@ bool ConfigOptGetValue(size_t I, GetConfig& Data)
 				break;
 			case OPT_BINARY:
 				Data.binDefault = CFG[I].DefArr;
-				Data.binData = CFG[I].ValPtr;
+				Data.binData = CFG[I].VoidPtr;
 				Data.binSize = CFG[I].ArrSize;
 				break;
 		}
@@ -523,13 +538,16 @@ bool ConfigOptSetInteger(size_t I, DWORD Value)
 		switch(CFG[I].ValType)
 		{
 			case OPT_DWORD:
-				*(DWORD*)CFG[I].ValPtr = Value;
+				*CFG[I].DWordPtr = Value;
 				break;
 			case OPT_BOOLEAN:
-				*(DWORD*)CFG[I].ValPtr = Value ? 1 : 0;
+				*CFG[I].DWordPtr = Value ? 1 : 0;
+				break;
+			case OPT_REALBOOLEAN:
+				*CFG[I].BoolPtr = Value != 0;
 				break;
 			case OPT_3STATE:
-				*(DWORD*)CFG[I].ValPtr = Value % 3;
+				*CFG[I].DWordPtr = Value % 3;
 				break;
 			default:
 				return false;
@@ -554,7 +572,7 @@ bool ConfigOptSetBinary(size_t I, const void *Data, DWORD Size)
 	if (I < ARRAYSIZE(CFG) && CFG[I].ValType == OPT_BINARY && Data)
 	{
 		Size = std::min(Size, CFG[I].ArrSize);
-		memcpy(CFG[I].ValPtr, Data, Size);
+		memcpy(CFG[I].VoidPtr, Data, Size);
 		return true;
 	}
 	return false;
@@ -620,21 +638,24 @@ void ConfigOptLoad()
 		switch (CFG[I].ValType)
 		{
 			case OPT_DWORD:
-				*(DWORD*)CFG[I].ValPtr = cfg_reader.GetUInt(CFG[I].ValName, CFG[I].DefDWord);
+				*CFG[I].DWordPtr = cfg_reader.GetUInt(CFG[I].ValName, CFG[I].DefDWord);
 				break;
 			case OPT_BOOLEAN:
-				*(DWORD*)CFG[I].ValPtr = cfg_reader.GetUInt(CFG[I].ValName, CFG[I].DefDWord) ? 1 : 0;
+				*CFG[I].DWordPtr = cfg_reader.GetUInt(CFG[I].ValName, CFG[I].DefDWord) ? 1 : 0;
 				break;
 			case OPT_3STATE:
-				*(DWORD*)CFG[I].ValPtr = cfg_reader.GetUInt(CFG[I].ValName, CFG[I].DefDWord) % 3;
+				*CFG[I].DWordPtr = cfg_reader.GetUInt(CFG[I].ValName, CFG[I].DefDWord) % 3;
+				break;
+			case OPT_REALBOOLEAN:
+				*CFG[I].BoolPtr = cfg_reader.GetUInt(CFG[I].ValName, CFG[I].DefBool ? 1 : 0) != 0;
 				break;
 			case OPT_SZ:
 				*CFG[I].StrPtr = cfg_reader.GetString(CFG[I].ValName, CFG[I].DefStr);
 				break;
 			case OPT_BINARY:
-				size_t Size = cfg_reader.GetBytes((BYTE*)CFG[I].ValPtr, CFG[I].ArrSize, CFG[I].ValName, CFG[I].DefArr);
+				size_t Size = cfg_reader.GetBytes((BYTE*)CFG[I].VoidPtr, CFG[I].ArrSize, CFG[I].ValName, CFG[I].DefArr);
 				if (Size > 0 && Size < CFG[I].ArrSize)
-					memset((BYTE*)CFG[I].ValPtr + Size, 0, CFG[I].ArrSize - Size);
+					memset((BYTE*)CFG[I].VoidPtr + Size, 0, CFG[I].ArrSize - Size);
 
 				break;
 		}
@@ -794,13 +815,16 @@ void ConfigOptSave(bool Ask)
 				case OPT_DWORD:
 				case OPT_BOOLEAN:
 				case OPT_3STATE:
-					cfg_writer.SetUInt(CFG[I].ValName, *(DWORD*)CFG[I].ValPtr);
+					cfg_writer.SetUInt(CFG[I].ValName, *CFG[I].DWordPtr);
+					break;
+				case OPT_REALBOOLEAN:
+					cfg_writer.SetUInt(CFG[I].ValName, *CFG[I].BoolPtr ? 1 : 0);
 					break;
 				case OPT_SZ:
 					cfg_writer.SetString(CFG[I].ValName, CFG[I].StrPtr->CPtr());
 					break;
 				case OPT_BINARY:
-					cfg_writer.SetBytes(CFG[I].ValName, (const BYTE*)CFG[I].ValPtr, CFG[I].ArrSize);
+					cfg_writer.SetBytes(CFG[I].ValName, (const BYTE*)CFG[I].VoidPtr, CFG[I].ArrSize);
 					break;
 			}
 		}

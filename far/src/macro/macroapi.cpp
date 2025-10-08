@@ -1919,6 +1919,7 @@ void FarMacroApi::fargetconfigFunc()
 			break;
 
 		case OPT_BOOLEAN:
+		case OPT_REALBOOLEAN:
 			PushBoolean(Data.dwValue);
 			PushString(L"boolean");
 			PushBoolean(Data.dwDefault);
@@ -1974,6 +1975,7 @@ static bool _SetConfig(int Index, const FarMacroValue &Value)
 			return ConfigOptSetInteger(Index, dword);
 
 		case OPT_BOOLEAN:
+		case OPT_REALBOOLEAN:
 			if (Value.Type == FMVT_DOUBLE) dword = Value.Double != 0 ? 1 : 0;
 			else if (Value.Type == FMVT_INTEGER) dword = Value.Integer ? 1 : 0;
 			else if (Value.Type == FMVT_BOOLEAN) dword = Value.Boolean ? 1 : 0;
@@ -1995,10 +1997,8 @@ static bool _SetConfig(int Index, const FarMacroValue &Value)
 		case OPT_BINARY:
 			return (Value.Type == FMVT_BINARY) ?
 					ConfigOptSetBinary(Index, Value.Binary.Data, Value.Binary.Size) : false;
-
-		default:
-			return false;
 	}
+	return false;
 }
 
 // Ok = Far.SetConfig(Index, Value)
