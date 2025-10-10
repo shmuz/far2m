@@ -4118,11 +4118,12 @@ static int viewer_GetInfo(lua_State *L)
 		PutNumToTable(L,  "Options",     vi.Options);
 		PutNumToTable(L,  "TabSize",     vi.TabSize);
 		PutNumToTable(L,  "LeftPos",     vi.LeftPos + 1);
-		lua_createtable(L, 0, 5);
+
+		flags_t Flags = (vi.CurMode.Wrap ? VMF_WRAP : 0) | (vi.CurMode.WordWrap ? VMF_WORDWRAP : 0);
+		lua_createtable(L, 0, 4);
+		PutNumToTable (L, "Flags",       Flags);
 		PutNumToTable (L, "CodePage",    vi.CurMode.CodePage);
-		PutBoolToTable(L, "Wrap",        vi.CurMode.Wrap);
-		PutNumToTable (L, "WordWrap",    vi.CurMode.WordWrap);
-		PutBoolToTable(L, "Hex",         vi.CurMode.Hex);
+		PutNumToTable (L, "ViewMode",    vi.CurMode.Hex ? VMT_HEX : VMT_TEXT);
 		PutBoolToTable(L, "Processed",   vi.CurMode.Processed);
 		lua_setfield(L, -2, "CurMode");
 	}

@@ -1439,6 +1439,19 @@ struct ViewerSetPosition
 	int64_t StartPos;
 	int64_t LeftPos;
 };
+enum VIEWER_MODE_FLAGS
+{
+	VMF_WRAP     = 0x01,
+	VMF_WORDWRAP = 0x02,
+	VMF_NONE     = 0
+};
+
+enum VIEWER_MODE_TYPE
+{
+	VMT_TEXT    = 0,
+	VMT_HEX     = 1,
+	VMT_DUMP    = 2,
+};
 
 struct ViewerMode
 {

@@ -1742,6 +1742,22 @@ struct ViewerSetPosition
 	int64_t LeftPos;
 };
 
+#ifdef LUAFAR_INTERNALS    // luafar only; use 53 bits at most
+enum VIEWER_MODE_FLAGS
+{
+	VMF_WRAP     = 0x01,
+	VMF_WORDWRAP = 0x02,
+	VMF_NONE     = 0
+};
+
+enum VIEWER_MODE_TYPE
+{
+	VMT_TEXT    = 0,
+	VMT_HEX     = 1,
+	VMT_DUMP    = 2,
+};
+#endif
+
 struct ViewerMode
 {
 	UINT CodePage;
