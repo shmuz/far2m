@@ -3041,6 +3041,69 @@ function MT.test_Editor()
   test_Editor_Misc()
 end
 
+-- test F3,F4,F8 operations when the panels are hidden
+function MT.test_F3_F4_F8()
+  local farhome = assert_str(os.getenv("FARHOME"))
+  assert_true(panel.SetPanelDirectory(nil,1,farhome))
+
+  local API = panel.GetPanelInfo(nil,1)
+  assert_neq(0, bit64.band(API.Flags, F.PFLAGS_VISIBLE))
+
+  Keys("CtrlO")
+  API = panel.GetPanelInfo(nil,1)
+  assert_eq(0, bit64.band(API.Flags, F.PFLAGS_VISIBLE))
+  assert(API.ItemsNumber >= 16)
+
+  local R = assert_table(actl.GetFarRect())
+  local H = R.Bottom - R.Top + 1
+  assert(H >= 8, "the FAR height is too small")
+
+  Keys("F8 F4")
+  assert_true(Area.Editor)
+  local ei = editor.GetInfo()
+  assert_eq(ei.TotalLines, 1)
+  Keys("Esc")
+
+  Keys("F8 F3")
+  assert_true(Area.Viewer)
+  local vi = viewer.GetInfo()
+  assert_eq(vi.FileSize, 0)
+  Keys("Esc")
+
+  -- print not less than 5 screens of text
+  local NScreens = 5
+  Keys("CtrlY")
+  for k=1, math.ceil(NScreens * H / API.ItemsNumber) do
+    print("ls -l")
+    Keys("Enter")
+  end
+
+  Keys("F4")
+  assert_true(Area.Editor)
+  local ei = editor.GetInfo()
+  assert(ei.TotalLines > NScreens * H)
+  Keys("Esc")
+
+  Keys("F3")
+  assert_true(Area.Viewer)
+  local prevpos = 1E6
+  for k=1,NScreens do
+    local vi = viewer.GetInfo()
+    assert(vi.FilePos < prevpos)
+    prevpos = vi.FilePos
+    Keys("PgUp")
+  end
+  Keys("Esc")
+
+  Keys("F8 F3")
+  assert_true(Area.Viewer)
+  local vi = viewer.GetInfo()
+  assert_eq(vi.FileSize, 0)
+  Keys("Esc")
+
+  Keys("CtrlO")
+end
+
 function MT.test_all()
   assert(Area.Shell, "Run these tests from the Shell area.")
   assert(not APanel.Plugin and not PPanel.Plugin, "Run these tests when neither of panels is a plugin panel.")
@@ -3066,6 +3129,7 @@ function MT.test_all()
   MT.test_UserDefinedList()
   MT.test_far_regex( --[[far.Log, true]] ) -- external test files
   MT.test_far_DetectCodePage() -- external
+  MT.test_F3_F4_F8()
   actl.RedrawAll()
 end
 
