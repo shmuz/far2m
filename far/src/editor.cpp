@@ -5027,6 +5027,9 @@ int Editor::EditorControl(int Command, void *Param)
 				if (m_EdOpt.ShowWhiteSpace)
 					Info->Options|= EOPT_SHOWWHITESPACE;
 
+				if (m_EdOpt.ShowScrollBar && ScrollBarRequired(ObjHeight, m_NumLastLine))
+					Info->Options|= EOPT_SHOWSCROLLBAR;
+
 				Info->TabSize = m_EdOpt.TabSize;
 				Info->BookMarkCount = POSCACHE_BOOKMARK_COUNT;
 				Info->SessionBookmarkCount = GetStackBookmarks(nullptr);
@@ -6429,11 +6432,10 @@ void Editor::DrawScrollbar()
 {
 	if (m_EdOpt.ShowScrollBar) {
 		SetFarColor(COL_EDITORSCROLLBAR);
-		m_XX2 = X2
-				- (ScrollBarEx(X2, Y1, Y2 - Y1 + 1, m_NumLine - CalcDistance(m_TopScreen, m_CurLine, -1),
-						   m_NumLastLine)
-								? 1
-								: 0);
+		m_XX2 = X2;
+		int TopItem = m_NumLine - CalcDistance(m_TopScreen, m_CurLine, -1);
+		if (ScrollBarEx(X2, Y1, Y2 - Y1 + 1, TopItem, m_NumLastLine))
+			--m_XX2;
 	}
 }
 

@@ -2462,6 +2462,12 @@ int FileEditor::EditorControl(int Command, void *Param)
 		EditorInfo *Info = (EditorInfo *)Param;
 		if (DecideAboutSignature())
 			Info->Options|= EOPT_BOM;
+
+		if (Opt.EdOpt.ShowTitleBar)
+			Info->Options|= EOPT_SHOWTITLEBAR;
+
+		if (Opt.EdOpt.ShowKeyBar)
+			Info->Options|= EOPT_SHOWKEYBAR;
 	}
 	return result;
 }
