@@ -888,13 +888,12 @@ typedef BOOL (__stdcall *FARAPISHOWHELP)(
 );
 
 enum ADVANCED_CONTROL_COMMANDS
-{
+{ // don't change enum values!
 	ACTL_GETFARVERSION        = 0,
 	ACTL_GETSYSWORDDIV        = 2,
 	ACTL_WAITKEY              = 3,
 	ACTL_GETCOLOR             = 4,
 	ACTL_GETARRAYCOLOR        = 5,
-	ACTL_EJECTMEDIA           = 6,
 	ACTL_GETWINDOWINFO        = 9,
 	ACTL_GETWINDOWCOUNT       = 10,
 	ACTL_SETCURRENTWINDOW     = 11,

@@ -799,14 +799,13 @@ namespace oldfar
 	);
 
 	enum ADVANCED_CONTROL_COMMANDS
-	{
+	{ // don't change enum values!
 		ACTL_GETFARVERSION        = 0,
 		ACTL_CONSOLEMODE          = 1,
 		ACTL_GETSYSWORDDIV        = 2,
 		ACTL_WAITKEY              = 3,
 		ACTL_GETCOLOR             = 4,
 		ACTL_GETARRAYCOLOR        = 5,
-		ACTL_EJECTMEDIA           = 6,
 		ACTL_KEYMACRO             = 7,
 		ACTL_POSTKEYSEQUENCE      = 8,
 		ACTL_GETWINDOWINFO        = 9,
@@ -824,9 +823,6 @@ namespace oldfar
 		ACTL_GETPLUGINMAXREADDATA = 21,
 		ACTL_GETDIALOGSETTINGS    = 22,
 		ACTL_GETSHORTWINDOWINFO   = 23,
-		ACTL_REMOVEMEDIA          = 24,
-		ACTL_GETMEDIATYPE         = 25,
-		ACTL_GETPOLICIES          = 26,
 		ACTL_REDRAWALL            = 27,
 	};
 

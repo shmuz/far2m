@@ -275,9 +275,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 		case ACTL_GETINTERFACESETTINGS:
 		case ACTL_GETCONFIRMATIONS:
 		case ACTL_GETDESCSETTINGS:
-		case ACTL_GETPOLICIES:
 		case ACTL_GETPLUGINMAXREADDATA:
-		case ACTL_GETMEDIATYPE:
 		case ACTL_SETPROGRESSSTATE:
 		case ACTL_SETPROGRESSVALUE:
 		case ACTL_GETFARRECT:
@@ -382,43 +380,6 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 
 			return FALSE;
 		}
-		/*
-			$ 14.12.2000 SVS
-			ACTL_EJECTMEDIA - извлечь диск из съемного накопителя
-			Param1 - указатель на структуру ActlEjectMedia
-			Return - TRUE - успешное извлечение, FALSE - ошибка.
-		*/
-		case ACTL_EJECTMEDIA: {
-			return FALSE;	/*Param1?EjectVolume((wchar_t)((ActlEjectMedia*)Param1)->Letter,
-							   ((ActlEjectMedia*)Param1)->Flags):FALSE;*/
-							/*
-								if(Param1)
-								{
-									ActlEjectMedia *aem=(ActlEjectMedia *)Param1;
-									char DiskLetter[4]=" :/";
-									DiskLetter[0]=(char)aem->Letter;
-									int DriveType = FAR_GetDriveType(DiskLetter,nullptr,FALSE); // здесь не определяем тип CD
-
-									if(DriveType == DRIVE_USBDRIVE && RemoveUSBDrive((char)aem->Letter,aem->Flags))
-										return TRUE;
-									if(DriveType == DRIVE_SUBSTITUTE && DelSubstDrive(DiskLetter))
-										return TRUE;
-									if(IsDriveTypeCDROM(DriveType) && EjectVolume((char)aem->Letter,aem->Flags))
-										return TRUE;
-
-								}
-								return FALSE;
-							*/
-		}
-		/*
-			case ACTL_GETMEDIATYPE:
-			{
-				ActlMediaType *amt=(ActlMediaType *)Param1;
-				char DiskLetter[4]=" :/";
-				DiskLetter[0]=(amt)?(char)amt->Letter:0;
-				return FAR_GetDriveType(DiskLetter,nullptr,(amt && !(amt->Flags&MEDIATYPE_NODETECTCDROM)?TRUE:FALSE));
-			}
-		*/
 		/*
 			$ 05.06.2001 tran
 			новые ACTL_ для работы с фреймами

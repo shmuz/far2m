@@ -3106,8 +3106,6 @@ INT_PTR WINAPI FarAdvControlA(INT_PTR ModuleNumber, int Command, void *Param)
 		}
 		case oldfar::ACTL_GETARRAYCOLOR:
 			return FarAdvControl(ModuleNumber, ACTL_GETARRAYCOLOR, Param, nullptr);
-		case oldfar::ACTL_EJECTMEDIA:
-			return FarAdvControl(ModuleNumber, ACTL_EJECTMEDIA, Param, nullptr);
 		case oldfar::ACTL_KEYMACRO: {
 			if (!Param)
 				return FALSE;
@@ -3469,10 +3467,6 @@ INT_PTR WINAPI FarAdvControlA(INT_PTR ModuleNumber, int Command, void *Param)
 
 			return ret;
 		}
-		case oldfar::ACTL_REMOVEMEDIA:
-		case oldfar::ACTL_GETMEDIATYPE:
-		case oldfar::ACTL_GETPOLICIES:
-			return FALSE;
 		case oldfar::ACTL_REDRAWALL:
 			return FarAdvControl(ModuleNumber, ACTL_REDRAWALL, nullptr, nullptr);
 	}
