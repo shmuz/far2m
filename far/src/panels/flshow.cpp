@@ -857,10 +857,13 @@ static int MakeCurLeftPos(int ColumnWidth, const wchar_t *Str, int LeftPos, int 
 		LeftPos = Cells - ColumnWidth;
 
 	size_t ng = LeftPos;
-	int out = StrSizeOfCells(Str, wcslen(Str), ng, false);
+	int out = StrSizeOfCells(Str, wcslen(Str), ng, true);
 
-	if (MaxLeftPos < (int)ng)
-		MaxLeftPos = (int)ng;
+//	if (MaxLeftPos < (int)ng)
+//		MaxLeftPos = (int)ng;
+
+	if (MaxLeftPos < LeftPos)
+		MaxLeftPos = LeftPos;
 
 	return out;
 }
@@ -936,17 +939,7 @@ void FileList::ShowList(int ShowStatus, int StartColumn, OpenPluginInfo &Info)
 					int CurLeftPos = 0;
 
 					if (!ShowStatus && LeftPos > 0) {
-						int Length = StrLength(ColumnData);
-
-						if (Length > ColumnWidth) {
-							CurLeftPos = LeftPos;
-
-							if (CurLeftPos > Length - ColumnWidth)
-								CurLeftPos = Length - ColumnWidth;
-
-							if (CurLeftPos > MaxLeftPos)
-								MaxLeftPos = CurLeftPos;
-						}
+						CurLeftPos = MakeCurLeftPos(ColumnWidth, ColumnData, LeftPos, MaxLeftPos);
 					}
 
 					FS << fmt::Cells() << fmt::LeftAlign() << fmt::Size(ColumnWidth)
@@ -1024,33 +1017,23 @@ void FileList::ShowList(int ShowStatus, int StartColumn, OpenPluginInfo &Info)
 							int LeftBracket = FALSE, RightBracket = FALSE;
 
 							if (!ShowStatus && LeftPos) {
-								int Length = (int)wcslen(NamePtr);
-
-								if (Length > Width) {
-									if (LeftPos > 0) {
-										if (!RightAlign) {
-											CurLeftPos = LeftPos;
-
-											if (Length - CurLeftPos < Width)
-												CurLeftPos = Length - Width;
-
+								if (LeftPos > 0 && !RightAlign) {
+									CurLeftPos = MakeCurLeftPos(Width, NamePtr, LeftPos, MaxLeftPos);
 											NamePtr+= CurLeftPos;
-
-											if (CurLeftPos > MaxLeftPos)
-												MaxLeftPos = CurLeftPos;
-										}
 									} else if (RightAlign) {
+									int Cells = (int)StrZCellsCount(NamePtr);
+									if (Cells > Width) {
 										int CurRightPos = LeftPos;
-
-										if (Length + CurRightPos < Width)
-											CurRightPos = Width - Length;
+										if (Cells + CurRightPos < Width)
+											CurRightPos = Width - Cells;
 										else
 											RightBracket = TRUE;
 
-										NamePtr+= Length + CurRightPos - Width;
+										size_t ng = Cells + CurRightPos - Width;
+										NamePtr += StrSizeOfCells(NamePtr, wcslen(NamePtr), ng, false);
 										RightAlign = FALSE;
 
-										if (CurRightPos < MinLeftPos)
+										if (MinLeftPos > CurRightPos)
 											MinLeftPos = CurRightPos;
 									}
 								}
@@ -1164,19 +1147,8 @@ void FileList::ShowList(int ShowStatus, int StartColumn, OpenPluginInfo &Info)
 							int CurLeftPos = 0;
 
 							if (!ShowStatus && LeftPos > 0) {
-								int Length = ListData[ListPos]->DizText
-										? StrLength(ListData[ListPos]->DizText)
-										: 0;
-
-								if (Length > ColumnWidth) {
-									CurLeftPos = LeftPos;
-
-									if (CurLeftPos > Length - ColumnWidth)
-										CurLeftPos = Length - ColumnWidth;
-
-									if (CurLeftPos > MaxLeftPos)
-										MaxLeftPos = CurLeftPos;
-								}
+								CurLeftPos = MakeCurLeftPos(ColumnWidth, ListData[ListPos]->DizText, LeftPos,
+										MaxLeftPos);
 							}
 
 							FARString strDizText = ListData[ListPos]->DizText
