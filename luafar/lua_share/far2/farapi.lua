@@ -1010,19 +1010,6 @@ enum FarDescriptionSettings
 	FDS_UPDATEREADONLY                 = 0x00000008,
 };
 
-enum FAREJECTMEDIAFLAGS
-{
-	EJECT_NO_MESSAGE                    = 0x00000001,
-	EJECT_LOAD_MEDIA                    = 0x00000002,
-};
-
-struct ActlEjectMedia
-{
-	DWORD Letter;
-	DWORD Flags;
-};
-
-
 enum FARKEYMACROFLAGS
 {
 	KMFLAGS_SILENTCHECK         = 0x00000001,
