@@ -219,10 +219,10 @@ size_t FileList::FileListToPluginItem2(FileListItem *fi, PluginPanelItem *pi)
 	}
 
 	if (pi) {
-		char *data = (char *)(pi + 1);
+		wchar_t *data = (wchar_t *)(pi + 1);
 
-		pi->FindData.lpwszFileName = wcscpy((wchar_t *)data, fi->strName);
-		data+= sizeof(wchar_t) * (fi->strName.GetLength() + 1);
+		pi->FindData.lpwszFileName = wcscpy(data, fi->strName);
+		data+= fi->strName.GetLength() + 1;
 		pi->FindData.nFileSize = fi->FileSize;
 		pi->FindData.nPhysicalSize = fi->PhysicalSize;
 		pi->FindData.dwFileAttributes = fi->FileAttr;
@@ -238,23 +238,23 @@ size_t FileList::FileListToPluginItem2(FileListItem *fi, PluginPanelItem *pi)
 
 		pi->CustomColumnNumber = fi->CustomColumnNumber;
 		pi->CustomColumnData = (wchar_t **)data;
-		data+= fi->CustomColumnNumber * sizeof(wchar_t *);
+		data+= fi->CustomColumnNumber * sizeof(wchar_t *) / sizeof(wchar_t);
 
 		for (int ii = 0; ii < fi->CustomColumnNumber; ii++) {
 			if (!fi->CustomColumnData[ii]) {
 				((const wchar_t **)(pi->CustomColumnData))[ii] = nullptr;
 			} else {
 				((const wchar_t **)(pi->CustomColumnData))[ii] =
-						wcscpy((wchar_t *)data, fi->CustomColumnData[ii]);
-				data+= sizeof(wchar_t) * (wcslen(fi->CustomColumnData[ii]) + 1);
+						wcscpy(data, fi->CustomColumnData[ii]);
+				data+= wcslen(fi->CustomColumnData[ii]) + 1;
 			}
 		}
 
 		if (!fi->DizText) {
 			pi->Description = nullptr;
 		} else {
-			pi->Description = wcscpy((wchar_t *)data, fi->DizText);
-			data+= sizeof(wchar_t) * (wcslen(fi->DizText) + 1);
+			pi->Description = wcscpy(data, fi->DizText);
+			data+= wcslen(fi->DizText) + 1;
 		}
 
 		pi->CRC32 = fi->CRC32;
@@ -263,15 +263,15 @@ size_t FileList::FileListToPluginItem2(FileListItem *fi, PluginPanelItem *pi)
 		if (fi->strOwner.IsEmpty()) {
 			pi->Owner = nullptr;
 		} else {
-			pi->Owner = wcscpy((wchar_t *)data, fi->strOwner);
-			data+= sizeof(wchar_t) * (wcslen(fi->strOwner) + 1);
+			pi->Owner = wcscpy(data, fi->strOwner);
+			data+= wcslen(fi->strOwner) + 1;
 		}
 
 		if (fi->strGroup.IsEmpty()) {
 			pi->Group = nullptr;
 		} else {
-			pi->Group = wcscpy((wchar_t *)data, fi->strGroup);
-			data+= sizeof(wchar_t) * (wcslen(fi->strGroup) + 1);
+			pi->Group = wcscpy(data, fi->strGroup);
+			data+= wcslen(fi->strGroup) + 1;
 		}
 
 		// copy user data at the end to avoid alignment troubles(hooting)
