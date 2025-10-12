@@ -70,11 +70,15 @@ int Log(const char* Format, ...)
 		buf += "/luafar_log.txt";
 		FILE* fp = fopen(buf.c_str(), "a");
 		if (fp) {
+			static double StartTime;
+			struct timespec ts;
+			double sec = clock_gettime(CLOCK_MONOTONIC, &ts) ? StartTime : ts.tv_sec + (double)ts.tv_nsec/1e9;
 			if (++N == 1) {
+				StartTime = sec;
 				time_t rtime = time(nullptr);
 				fprintf(fp, "\n%s------------------------------\n", ctime(&rtime));
 			}
-			fprintf(fp, "%d: ", N);
+			fprintf(fp, "%d: %.04f: FAR: ", N, sec - StartTime);
 			vfprintf(fp, Format, valist);
 			fprintf(fp, "\n");
 			fclose(fp);
