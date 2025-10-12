@@ -203,15 +203,19 @@ void FileList::FreePluginPanelItem(PluginPanelItem *pi)
 
 size_t FileList::FileListToPluginItem2(FileListItem *fi, PluginPanelItem *pi)
 {
-	size_t size = sizeof(*pi);
-	size+= sizeof(wchar_t) * (fi->strName.GetLength() + 1);
-	size+= fi->strOwner.IsEmpty() ? 0 : sizeof(wchar_t) * (fi->strOwner.GetLength() + 1);
-	size+= fi->strGroup.IsEmpty() ? 0 : sizeof(wchar_t) * (fi->strGroup.GetLength() + 1);
-	size+= fi->DizText ? sizeof(wchar_t) * (wcslen(fi->DizText) + 1) : 0;
-	size+= fi->CustomColumnNumber * sizeof(wchar_t *);
+	size_t pi_size = sizeof(*pi) / sizeof(wchar_t);
+	if (pi_size * sizeof(wchar_t) < sizeof(*pi))
+		++pi_size;
+
+	size_t size = pi_size;
+	size+= fi->strName.GetLength() + 1;
+	size+= fi->strOwner.IsEmpty() ? 0 : fi->strOwner.GetLength() + 1;
+	size+= fi->strGroup.IsEmpty() ? 0 : fi->strGroup.GetLength() + 1;
+	size+= fi->DizText ? wcslen(fi->DizText) + 1 : 0;
+	size+= fi->CustomColumnNumber * sizeof(wchar_t *) / sizeof(wchar_t);
 
 	for (int ii = 0; ii < fi->CustomColumnNumber; ii++) {
-		size+= fi->CustomColumnData[ii] ? sizeof(wchar_t) * (wcslen(fi->CustomColumnData[ii]) + 1) : 0;
+		size+= fi->CustomColumnData[ii] ? wcslen(fi->CustomColumnData[ii]) + 1 : 0;
 	}
 
 	if (fi->UserData && (fi->UserFlags & PPIF_USERDATA)) {
@@ -219,7 +223,7 @@ size_t FileList::FileListToPluginItem2(FileListItem *fi, PluginPanelItem *pi)
 	}
 
 	if (pi) {
-		wchar_t *data = (wchar_t *)(pi + 1);
+		wchar_t *data = (wchar_t *)(pi) + pi_size;
 
 		pi->FindData.lpwszFileName = wcscpy(data, fi->strName);
 		data+= fi->strName.GetLength() + 1;
@@ -284,7 +288,7 @@ size_t FileList::FileListToPluginItem2(FileListItem *fi, PluginPanelItem *pi)
 			pi->UserData = fi->UserData;
 	}
 
-	return size;
+	return size * sizeof(wchar_t);
 }
 
 void FileList::PluginToFileListItem(PluginPanelItem *pi, FileListItem *fi)
