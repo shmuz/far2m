@@ -3232,9 +3232,10 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 		}
 
 		case DM_GETTEXT:
+		case DM_GETDIALOGTITLE:
 		{
 			struct FarDialogItemData fdid;
-			fdid.PtrLength = (size_t) PSInfo.SendDlgMessage(hDlg, Msg, Param1, 0);
+			fdid.PtrLength = (size_t) SendDlgMessage(hDlg, Msg, Param1, NULL);
 			fdid.PtrData = (wchar_t*) malloc((fdid.PtrLength+1) * sizeof(wchar_t));
 			size_t size = SendDlgMessage(hDlg, Msg, Param1, &fdid);
 			push_utf8_string(L, size ? fdid.PtrData : L"", size);
@@ -3549,6 +3550,7 @@ DlgMethod( GetCursorPos,           DM_GETCURSORPOS)
 DlgMethod( GetCursorSize,          DM_GETCURSORSIZE)
 DlgMethod( GetDefaultColor,        DM_GETDEFAULTCOLOR)
 DlgMethod( GetDialogInfo,          DM_GETDIALOGINFO)
+DlgMethod( GetDialogTitle,         DM_GETDIALOGTITLE)
 DlgMethod( GetDlgData,             DM_GETDLGDATA)
 DlgMethod( GetDlgItem,             DM_GETDLGITEM)
 DlgMethod( GetDlgRect,             DM_GETDLGRECT)
@@ -5727,6 +5729,7 @@ static const luaL_Reg dialog_methods[] =
 	PAIR( dlg, GetCursorSize),
 	PAIR( dlg, GetDefaultColor),
 	PAIR( dlg, GetDialogInfo),
+	PAIR( dlg, GetDialogTitle),
 	PAIR( dlg, GetDlgData),
 	PAIR( dlg, GetDlgItem),
 	PAIR( dlg, GetDlgRect),

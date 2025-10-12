@@ -5121,6 +5121,28 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 
 			return Result;
 		}
+		/*****************************************************************/
+		// Param1=0, Param2=FarDialogItemData, Ret=size (without '\0')
+		case DM_GETDIALOGTITLE: {
+			FarDialogItemData *did = (FarDialogItemData *)Param2;
+			const wchar_t *strTitleDialog = Dlg->GetDialogTitle();
+			size_t Len = wcslen(strTitleDialog);
+			if (did != nullptr) // если здесь nullptr, то это еще один способ получить размер
+			{
+				if (!did->PtrLength)
+					did->PtrLength = Len;
+				else if (Len > did->PtrLength)
+					Len = did->PtrLength;
+
+				if (did->PtrData)
+				{
+					wmemcpy(did->PtrData, strTitleDialog, Len);
+					did->PtrData[Len] = 0;
+				}
+			}
+
+			return Len;
+		}
 	}
 
 	/*****************************************************************/
