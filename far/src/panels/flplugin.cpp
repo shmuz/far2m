@@ -203,23 +203,25 @@ void FileList::FreePluginPanelItem(PluginPanelItem *pi)
 
 size_t FileList::FileListToPluginItem2(FileListItem *fi, PluginPanelItem *pi)
 {
-	size_t pi_size = sizeof(*pi) / sizeof(wchar_t);
-	if (pi_size * sizeof(wchar_t) < sizeof(*pi))
-		++pi_size;
+	auto Ceil = [] (size_t size) {
+		size_t Ret = size / sizeof(wchar_t);
+		return (Ret * sizeof(wchar_t) < size) ? Ret + 1 : Ret;
+	};
 
+	const size_t pi_size = Ceil(sizeof(*pi));
 	size_t size = pi_size;
 	size+= fi->strName.GetLength() + 1;
 	size+= fi->strOwner.IsEmpty() ? 0 : fi->strOwner.GetLength() + 1;
 	size+= fi->strGroup.IsEmpty() ? 0 : fi->strGroup.GetLength() + 1;
 	size+= fi->DizText ? wcslen(fi->DizText) + 1 : 0;
-	size+= fi->CustomColumnNumber * sizeof(wchar_t *) / sizeof(wchar_t);
+	size+= Ceil(fi->CustomColumnNumber * sizeof(wchar_t *));
 
 	for (int ii = 0; ii < fi->CustomColumnNumber; ii++) {
 		size+= fi->CustomColumnData[ii] ? wcslen(fi->CustomColumnData[ii]) + 1 : 0;
 	}
 
 	if (fi->UserData && (fi->UserFlags & PPIF_USERDATA)) {
-		size+= *(DWORD *)fi->UserData;
+		size+= Ceil(*(DWORD *)fi->UserData);
 	}
 
 	if (pi) {
@@ -242,14 +244,13 @@ size_t FileList::FileListToPluginItem2(FileListItem *fi, PluginPanelItem *pi)
 
 		pi->CustomColumnNumber = fi->CustomColumnNumber;
 		pi->CustomColumnData = (wchar_t **)data;
-		data+= fi->CustomColumnNumber * sizeof(wchar_t *) / sizeof(wchar_t);
+		data+= Ceil(fi->CustomColumnNumber * sizeof(wchar_t *));
 
 		for (int ii = 0; ii < fi->CustomColumnNumber; ii++) {
 			if (!fi->CustomColumnData[ii]) {
 				((const wchar_t **)(pi->CustomColumnData))[ii] = nullptr;
 			} else {
-				((const wchar_t **)(pi->CustomColumnData))[ii] =
-						wcscpy(data, fi->CustomColumnData[ii]);
+				((const wchar_t **)(pi->CustomColumnData))[ii] = wcscpy(data, fi->CustomColumnData[ii]);
 				data+= wcslen(fi->CustomColumnData[ii]) + 1;
 			}
 		}
@@ -282,8 +283,8 @@ size_t FileList::FileListToPluginItem2(FileListItem *fi, PluginPanelItem *pi)
 		if (fi->UserData && (fi->UserFlags & PPIF_USERDATA)) {
 			DWORD Size = *(DWORD *)fi->UserData;
 			pi->UserData = (DWORD_PTR)data;
-			memcpy((void *)pi->UserData, (const void *)fi->UserData, Size);
-			// data+=Size;
+			memcpy(data, (const void *)fi->UserData, Size);
+			// data += Ceil(Size);
 		} else
 			pi->UserData = fi->UserData;
 	}
