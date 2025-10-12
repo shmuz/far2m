@@ -18,11 +18,15 @@ int Log(lua_State *L, const char* Format, ...)
 			strcat(buf, "/luafar_log.txt");
 			FILE* fp = fopen(buf, "a");
 			if (fp) {
+				static double StartTime;
+				struct timespec ts;
+				double sec = clock_gettime(CLOCK_MONOTONIC, &ts) ? StartTime : ts.tv_sec + (double)ts.tv_nsec/1e9;
 				if (++N == 1) {
+					StartTime = sec;
 					time_t rtime = time(NULL);
 					fprintf(fp, "\n%s------------------------\n", ctime(&rtime));
 				}
-				fprintf(fp, "%d: %08X: ", N, GetPluginData(L)->PluginId);
+				fprintf(fp, "%d: %.04f: %08X: ", N, sec - StartTime, GetPluginData(L)->PluginId);
 				vfprintf(fp, Format, valist);
 				fprintf(fp, "\n");
 				fclose(fp);
