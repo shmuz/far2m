@@ -59,6 +59,10 @@ local function add_defines (src, trg_int, trg_ptr)
   end
 end
 
+local function enum_blacklist (s)
+  return s:find("^FMSG_") or s:find("^[EFMPSV]CTL_") or s:find("^FFCTL_") or s:find("^RECTL_")
+end
+
 local function add_enums (src, trg)
   local skip = NewSkip()
   local enum = false
@@ -71,7 +75,7 @@ local function add_enums (src, trg)
           enum = false
         else
           local c = line:match("^%s*([%w_]+)")
-          if c then table.insert(trg, c) end
+          if c and not enum_blacklist(c) then table.insert(trg, c) end
         end
       end
     end

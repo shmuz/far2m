@@ -278,6 +278,7 @@ enum LISTITEMFLAGS
 	LIF_GRAYED             = 0x00100000U,
 	LIF_HIDDEN             = 0x00200000U,
 	LIF_DELETEUSERDATA     = 0x80000000U,
+	LIF_NONE               = 0
 };
 
 struct FarListItem
@@ -315,6 +316,7 @@ enum FARLISTFINDFLAGS
 {
 	LIFIND_EXACTMATCH = 0x00000001,
 	LIFIND_KEEPAMPERSAND = 0x00000002,
+	LIFIND_NONE = 0
 };
 
 struct FarListFind
@@ -338,6 +340,7 @@ enum FARLISTINFOFLAGS
 	LINFO_REVERSEHIGHLIGHT      = 0x00001000,
 	LINFO_WRAPMODE              = 0x00008000,
 	LINFO_SHOWAMPERSAND         = 0x00010000,
+	LINFO_NONE                  = 0
 };
 
 struct FarListInfo
@@ -442,7 +445,8 @@ enum FARDIALOGFLAGS
 	FDLG_NODRAWPANEL         = 0x00000008,
 	FDLG_NONMODAL            = 0x00000010,
 	FDLG_KEEPCONSOLETITLE    = 0x00000020,
-	FDLG_REGULARIDLE         = 0x00000040 // causes dialog to receive DN_ENTERIDLE at least once per second
+	FDLG_REGULARIDLE         = 0x00000040, // causes dialog to receive DN_ENTERIDLE at least once per second
+	FDLG_NONE                = 0
 };
 
 typedef LONG_PTR(__stdcall *FARWINDOWPROC)(
@@ -545,6 +549,7 @@ enum FARMENUFLAGS
 	FMENU_SHOWSHORTBOX         = 0x00000080,
 	FMENU_SHOWSINGLEBOX        = 0x00000100,
 	FMENU_NODRAWSHADOW         = 0x00000200,
+	FMENU_NONE                 = 0
 };
 
 typedef int (__stdcall *FARAPIMENU)(
@@ -596,6 +601,7 @@ enum PLUGINPANELITEMFLAGS
 	PPIF_USERDATA               = 0x20000000,
 	PPIF_SELECTED               = 0x40000000,
 	PPIF_PROCESSDESCR           = 0x80000000,
+	PPIF_NONE                   = 0
 };
 
 struct FAR_FIND_DATA
@@ -665,6 +671,8 @@ enum PANELINFOFLAGS
 	PFLAGS_PLUGIN             = 0x00002000,
 	PFLAGS_VISIBLE            = 0x00004000,
 	PFLAGS_FOCUS              = 0x00008000,
+
+	PFLAGS_NONE               = 0
 };
 
 enum PANELINFOTYPE
@@ -807,6 +815,7 @@ enum VIEWER_FLAGS
 	VF_DISABLEHISTORY        = 0x00000008,
 	VF_IMMEDIATERETURN       = 0x00000100,
 	VF_DELETEONLYFILEONCLOSE = 0x00000200,
+	VF_NONE                  = 0
 };
 
 typedef int (__stdcall *FARAPIVIEWER)(
@@ -836,6 +845,8 @@ enum EDITOR_FLAGS
 	EF_OPENMODE_USEEXISTING  = 0x20000000,
 	EF_OPENMODE_BREAKIFOPEN  = 0x30000000,
 	EF_OPENMODE_RELOADIFOPEN = 0x40000000,
+
+	EF_NONE                  = 0
 };
 
 enum EDITOR_EXITCODE
@@ -880,6 +891,7 @@ enum FarHelpFlags
 	FHELP_CUSTOMFILE  = 0x00000002,
 	FHELP_CUSTOMPATH  = 0x00000004,
 	FHELP_USECONTENTS = 0x40000000,
+	FHELP_NONE        = 0
 };
 
 typedef BOOL (__stdcall *FARAPISHOWHELP)(
@@ -1392,6 +1404,7 @@ enum VIEWER_SETMODE_TYPES
 enum VIEWER_SETMODEFLAGS_TYPES
 {
 	VSMFL_REDRAW    = 0x00000001,
+	VSMFL_NONE      = 0
 };
 
 struct ViewerSetMode
@@ -1418,6 +1431,7 @@ enum VIEWER_SETPOS_FLAGS
 	VSP_PERCENT     = 0x0002,
 	VSP_RELATIVE    = 0x0004,
 	VSP_NORETNEWPOS = 0x0008,
+	VSP_NONE        = 0
 };
 
 struct ViewerSetPosition
@@ -1729,6 +1743,7 @@ enum EDITORCOLORFLAGS
 	ECF_TAB1 = 0x10000,
 	ECF_TABMARKFIRST = ECF_TAB1,
 	ECF_AUTODELETE = 0x20000,
+	ECF_NONE = 0,
 };
 
 struct EditorColor
@@ -1951,6 +1966,12 @@ enum MKLINKOP
 	FLINK_SYMLINKFILE      = 4,
 	FLINK_SYMLINKDIR       = 5,
 	FLINK_SYMLINK          = 6,
+	LINK_HARDLINK          = FLINK_HARDLINK,
+	LINK_JUNCTION          = FLINK_JUNCTION,
+	LINK_VOLMOUNT          = FLINK_VOLMOUNT,
+	LINK_SYMLINKFILE       = FLINK_SYMLINKFILE,
+	LINK_SYMLINKDIR        = FLINK_SYMLINKDIR,
+	LINK_SYMLINK           = FLINK_SYMLINK,
 
 	FLINK_SHOWERRMSG       = 0x10000,
 	FLINK_DONOTUPDATEPANEL = 0x20000,
@@ -2230,7 +2251,8 @@ enum PLUGIN_FLAGS
 	PF_VIEWER         = 0x0008,
 	PF_FULLCMDLINE    = 0x0010,
 	PF_DIALOG         = 0x0020,
-	PF_PREOPEN        = 0x8000 // early dlopen plugin but initialize it later, when it will be really needed
+	PF_PREOPEN        = 0x8000, // early dlopen plugin but initialize it later, when it will be really needed
+	PF_NONE           = 0
 };
 
 struct PluginInfo
