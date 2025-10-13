@@ -209,12 +209,13 @@ size_t FileList::FileListToPluginItem2(FileListItem *fi, PluginPanelItem *pi)
 	};
 
 	const size_t pi_size = Ceil(sizeof(*pi));
-	size_t size = pi_size;
+	const size_t cn_size = Ceil(fi->CustomColumnNumber * sizeof(wchar_t *));
+
+	size_t size = pi_size + cn_size;
 	size+= fi->strName.GetLength() + 1;
 	size+= fi->strOwner.IsEmpty() ? 0 : fi->strOwner.GetLength() + 1;
 	size+= fi->strGroup.IsEmpty() ? 0 : fi->strGroup.GetLength() + 1;
 	size+= fi->DizText ? wcslen(fi->DizText) + 1 : 0;
-	size+= Ceil(fi->CustomColumnNumber * sizeof(wchar_t *));
 
 	for (int ii = 0; ii < fi->CustomColumnNumber; ii++) {
 		size+= fi->CustomColumnData[ii] ? wcslen(fi->CustomColumnData[ii]) + 1 : 0;
@@ -227,8 +228,22 @@ size_t FileList::FileListToPluginItem2(FileListItem *fi, PluginPanelItem *pi)
 	if (pi) {
 		wchar_t *data = (wchar_t *)(pi) + pi_size;
 
-		pi->FindData.lpwszFileName = wcscpy(data, fi->strName);
-		data+= fi->strName.GetLength() + 1;
+		auto AddFARString = [&] (const FARString &str) {
+			wchar_t *Ret = wcscpy(data, str);
+			data+= str.GetLength() + 1;
+			return Ret;
+		};
+
+		auto AddString = [&] (const wchar_t *str) {
+			wchar_t *Ret = nullptr;
+			if (str) {
+				Ret = wcscpy(data, str);
+				data+= wcslen(str) + 1;
+			}
+			return Ret;
+		};
+
+		pi->FindData.lpwszFileName = AddFARString(fi->strName);
 		pi->FindData.nFileSize = fi->FileSize;
 		pi->FindData.nPhysicalSize = fi->PhysicalSize;
 		pi->FindData.dwFileAttributes = fi->FileAttr;
@@ -237,47 +252,20 @@ size_t FileList::FileListToPluginItem2(FileListItem *fi, PluginPanelItem *pi)
 		pi->FindData.ftCreationTime = fi->CreationTime;
 		pi->FindData.ftLastAccessTime = fi->AccessTime;
 		pi->NumberOfLinks = fi->NumberOfLinks;
-		pi->Flags = fi->UserFlags;
-
-		if (fi->Selected)
-			pi->Flags|= PPIF_SELECTED;
-
-		pi->CustomColumnNumber = fi->CustomColumnNumber;
-		pi->CustomColumnData = (wchar_t **)data;
-		data+= Ceil(fi->CustomColumnNumber * sizeof(wchar_t *));
-
-		for (int ii = 0; ii < fi->CustomColumnNumber; ii++) {
-			if (!fi->CustomColumnData[ii]) {
-				((const wchar_t **)(pi->CustomColumnData))[ii] = nullptr;
-			} else {
-				((const wchar_t **)(pi->CustomColumnData))[ii] = wcscpy(data, fi->CustomColumnData[ii]);
-				data+= wcslen(fi->CustomColumnData[ii]) + 1;
-			}
-		}
-
-		if (!fi->DizText) {
-			pi->Description = nullptr;
-		} else {
-			pi->Description = wcscpy(data, fi->DizText);
-			data+= wcslen(fi->DizText) + 1;
-		}
-
+		pi->Flags = fi->UserFlags | (fi->Selected ? PPIF_SELECTED : 0);
 		pi->CRC32 = fi->CRC32;
 		pi->Reserved[0] = pi->Reserved[1] = 0;
 
-		if (fi->strOwner.IsEmpty()) {
-			pi->Owner = nullptr;
-		} else {
-			pi->Owner = wcscpy(data, fi->strOwner);
-			data+= wcslen(fi->strOwner) + 1;
+		pi->CustomColumnNumber = fi->CustomColumnNumber;
+		pi->CustomColumnData = (wchar_t **)data;
+		data+= cn_size;
+		for (int ii = 0; ii < fi->CustomColumnNumber; ii++) {
+			*(const wchar_t**)&pi->CustomColumnData[ii] = AddString(fi->CustomColumnData[ii]);
 		}
 
-		if (fi->strGroup.IsEmpty()) {
-			pi->Group = nullptr;
-		} else {
-			pi->Group = wcscpy(data, fi->strGroup);
-			data+= wcslen(fi->strGroup) + 1;
-		}
+		pi->Description = AddString(fi->DizText);
+		pi->Owner = fi->strOwner.IsEmpty() ? nullptr : AddFARString(fi->strOwner);
+		pi->Group = fi->strGroup.IsEmpty() ? nullptr : AddFARString(fi->strGroup);
 
 		// copy user data at the end to avoid alignment troubles(hooting)
 		if (fi->UserData && (fi->UserFlags & PPIF_USERDATA)) {
