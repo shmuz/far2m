@@ -181,6 +181,7 @@ private:
 	long CacheSelClearIndex, CacheSelClearPos;
 
 	wchar_t CustomSortIndicator[2];
+	std::vector<PluginPanelItem> SelItems;
 
 private:
 	virtual void SetSelectedFirstMode(int Mode);
@@ -227,23 +228,22 @@ private:
 	virtual int GetCurName(FARString &strName);
 	virtual int GetCurBaseName(FARString &strName);
 
-	void PushPlugin(PHPTR hPlugin, const wchar_t *HostFile);
+	void PushPlugin(const wchar_t *HostFile);
 	int PopPlugin(int EnableRestoreViewMode);
 	void CopyFiles();
 	void CopyNames(bool FullPathName, bool RealName);
 	void SelectSortMode();
 	bool ApplyCommand();
 	void DescribeFiles();
-	void CreatePluginItemList(PluginPanelItem *(&ItemList), int &ItemNumber, BOOL AddTwoDot = TRUE);
-	void DeletePluginItemList(PluginPanelItem *(&ItemList), int &ItemNumber);
+	void CreatePluginItemList(bool AddTwoDot = true);
+	void DeletePluginItemList();
 	PHPTR OpenPluginForFile(const wchar_t *FileName, DWORD FileAttr, OPENFILEPLUGINTYPE Type);
 	int PreparePanelView(PanelViewSettings *PanelView);
 	int PrepareColumnWidths(std::vector<Column> &Columns, int FullScreen);
 	void PrepareViewSettings(int ViewMode, OpenPluginInfo *PlugInfo);
 
 	void PluginDelete();
-	void PutDizToPlugin(FileList *DestPanel, PluginPanelItem *ItemList, int ItemNumber, int Delete, int Move,
-			DizList *SrcDiz, DizList *DestDiz);
+	void PutDizToPlugin(FileList *DestPanel, int Delete, int Move, DizList *SrcDiz, DizList *DestDiz);
 	void PluginGetFiles(const wchar_t **DestPath, int Move);
 	void PluginToPluginFiles(int Move);
 	void PluginHostGetFiles();
@@ -251,7 +251,7 @@ private:
 	// возвращает то, что возвращает PutFiles
 	int PluginPutFilesToAnother(int Move, Panel *AnotherPanel);
 	void ProcessPluginCommand();
-	void PluginClearSelection(PluginPanelItem *ItemList, int ItemNumber);
+	void PluginClearSelection();
 	void ProcessCopyKeys(FarKey Key);
 	void ReadSortGroups(bool UpdateFilterCurrentTime = true);
 	FileListItem *
@@ -339,7 +339,7 @@ public:
 	virtual int IsColumnDisplayed(int Type) const;
 	virtual int GetColumnsCount() const { return Columns; }
 	virtual void GetOpenPluginInfo(OpenPluginInfo *Info);
-	virtual void SetPluginMode(PHPTR hPlugin, const wchar_t *PluginFile, bool SendOnFocus = false);
+	virtual void SetPluginMode(PHPTR PanHandle, const wchar_t *PluginFile, bool SendOnFocus = false);
 
 	void PluginGetPanelInfo(PanelInfo &Info);
 	size_t PluginGetPanelItem(int ItemNumber, PluginPanelItem *Item);
