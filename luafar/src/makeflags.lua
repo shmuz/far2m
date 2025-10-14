@@ -61,6 +61,7 @@ end
 
 local function enum_blacklist (s)
   return s:find("^FMSG_") or s:find("^[EFMPSV]CTL_") or s:find("^FFCTL_") or s:find("^RECTL_")
+      or s:find("^KEY_ALTSHIFT%w") or s:find("^KEY_R?CTRLALT%w") or s:find("^KEY_R?CTRLSHIFT%w")
 end
 
 local function add_enums (src, trg)

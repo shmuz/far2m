@@ -405,7 +405,7 @@ local function test_mf_key()
     F.KEY_SHIFT,        "Shift",
     F.KEY_RCTRL,        "RCtrl",
     F.KEY_RALT,         "RAlt",
-    F.KEY_CTRLALTF10,   "CtrlAltF10",
+    F.KEY_CTRLALT + F.KEY_F10, "CtrlAltF10",
   }
   for i=1,#ref,2 do
     assert_eq (mf.key        (ref[i]), ref[i+1])
