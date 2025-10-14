@@ -195,6 +195,18 @@ ColorsInit[]
 	{"WarnDialog.DefaultButton.Selected",           F_BLACK | B_LIGHTGRAY,    }, // COL_WARNDIALOGSELECTEDDEFAULTBUTTON,
 	{"WarnDialog.DefaultButton.Highlight",          F_YELLOW | B_RED,         }, // COL_WARNDIALOGHIGHLIGHTDEFAULTBUTTON,
 	{"WarnDialog.DefaultButton.Highlight.Selected", F_YELLOW | B_LIGHTGRAY,   }, // COL_WARNDIALOGHIGHLIGHTSELECTEDDEFAULTBUTTON,
+	{"Dialog.OverflowArrow",                        F_YELLOW | B_CYAN,        }, // COL_DIALOGOVERFLOWARROW,
+	{"WarnDialog.OverflowArrow",                    F_YELLOW | B_RED,         }, // COL_WARNDIALOGOVERFLOWARROW,
+	{"Dialog.List",                                 F_DARKGRAY | B_LIGHTGRAY, }, // COL_DIALOGLISTPREFIX,
+	{"Dialog.List.Selected",                        F_LIGHTGRAY | B_BLACK,    }, // COL_DIALOGLISTSELPREFIX,
+	{"Dialog.Combo",                                F_DARKGRAY | B_CYAN,      }, // COL_DIALOGCOMBOPREFIX,
+	{"Dialog.Combo.Selected",                       F_DARKGRAY | B_RED,       }, // COL_DIALOGCOMBOSELPREFIX,
+	{"WarnDialog.List",                             F_BLACK | B_LIGHTGRAY,    }, // COL_WARNDIALOGLISTPREFIX,
+	{"WarnDialog.List.Selected",                    F_DARKGRAY | B_RED,       }, // COL_WARNDIALOGLISTSELPREFIX,
+	{"WarnDialog.Combo",                            F_DARKGRAY | B_CYAN,      }, // COL_WARNDIALOGCOMBOPREFIX,
+	{"WarnDialog.Combo.Selected",                   F_LIGHTGRAY | B_BLACK,    }, // COL_WARNDIALOGCOMBOSELPREFIX,
+	{"Menu.Prefix",                                 F_DARKGRAY | B_CYAN,      }, // COL_MENUPREFIX,
+	{"Menu.Prefix.Selected",                        F_LIGHTGRAY | B_BLACK,    }, // COL_MENUSELPREFIX,
 };
 
 static_assert(ARRAYSIZE(ColorsInit) == COL_LASTPALETTECOLOR);
@@ -236,9 +248,9 @@ bool FarColors::Load(KeyFileHelper &kfh) noexcept {
 	if (!kfh.HasSection(FARCOLORS_SECTION)) return false;
 
 	for (size_t i = 0; i < SIZE_ARRAY_FARCOLORS; i++) {
-		const std::string &expstr = kfh.GetString(FARCOLORS_SECTION, ColorsInit[i].name, FARCOLORS_DEFCOLOR);
+		const std::string &expstr = kfh.GetString(FARCOLORS_SECTION, ColorsInit[i].name);
 
-		uint64_t color = ExprToFarColor(expstr.c_str(), expstr.size());
+		uint64_t color = expstr.empty() ? DefaultColorsIndex16[i] : ExprToFarColor(expstr.c_str(), expstr.size());
 
 //		if (rez)
 		FARColors.colors[i] = color;

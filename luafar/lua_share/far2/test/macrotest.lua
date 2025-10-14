@@ -1859,7 +1859,7 @@ end
 
 local function test_AdvControl_Colors()
   local allcolors = assert_table(far.AdvControl("ACTL_GETARRAYCOLOR"))
-  assert_eq(#allcolors, 147)
+  assert_eq(#allcolors, 159)
   for i,color in ipairs(allcolors) do
     assert_eq(far.AdvControl("ACTL_GETCOLOR", i-1), color)
   end
@@ -1911,7 +1911,7 @@ end
 local function test_ACTL()
   assert_func  ( actl.Commit)
   assert_table ( actl.GetArrayColor())
-  assert_range ( #actl.GetArrayColor(),142,152)
+  assert_range ( #actl.GetArrayColor(),154,164)
   assert_numint( actl.GetColor("COL_DIALOGBOXTITLE"))
   assert_num   ( actl.GetConfirmations())
   assert_table ( actl.GetCursorPos())
