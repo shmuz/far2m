@@ -1288,8 +1288,11 @@ bool Panel::SetCurDir(const wchar_t *CurDir, bool ClosePlugin, bool ShowMessage)
 
 void Panel::InitCurDir(const wchar_t *CurDir)
 {
-	if (StrCmpI(strCurDir, CurDir) || !TestCurrentDirectory(CurDir)) {
+	if (StrCmp(strCurDir, CurDir) || !TestCurrentDirectory(CurDir)) {
 		strCurDir = CurDir;
+		DeleteEndSlash(strCurDir, true); //prevent displaying end slash and AltF10 crash
+		if (strCurDir.IsEmpty())
+			strCurDir = CurDir;
 	}
 }
 
