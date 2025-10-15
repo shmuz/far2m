@@ -1193,10 +1193,10 @@ void PluginManager::Configure(int StartPos)
 	PluginList.SetFlags(VMENU_WRAPMODE);
 	PluginList.SetHelp(L"PluginsConfig");
 	PluginList.SetId(PluginsConfigMenuId);
-	bool NeedUpdateItems = true;
 
 	for (;;)
 	{
+		bool NeedUpdateItems = true;
 		int MenuItemNumber = 0;
 		bool HotKeysPresent = false;
 
