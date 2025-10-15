@@ -371,30 +371,29 @@ void TreeList::Update(int Mode)
 	Flags.Clear(FTREELIST_UPDATEREQUIRED);
 	GetRoot();
 	int LastTreeCount = TreeCount;
-	int RetFromReadTree = TRUE;
 	Flags.Clear(FTREELIST_TREEISPREPARED);
-	int TreeFilePresent = ReadTreeFile();
-
-	if (!TreeFilePresent)
-		RetFromReadTree = ReadTree();
+	bool RetFromReadTree = ReadTreeFile() || ReadTree();
 
 	Flags.Set(FTREELIST_TREEISPREPARED);
 
-	if (!RetFromReadTree && !Flags.Check(FTREELIST_ISPANEL)) {
-		ExitCode = 0;
-		return;
-	}
+	if (RetFromReadTree) {
+		if (TreeCount > 0 && !((Mode & UPDATE_KEEP_SELECTION) && LastTreeCount == TreeCount)) {
+			SyncDir();
+			TreeItem *CurPtr = ListData[CurFile];
 
-	if (RetFromReadTree && TreeCount > 0 && (!(Mode & UPDATE_KEEP_SELECTION) || LastTreeCount != TreeCount)) {
-		SyncDir();
-		TreeItem *CurPtr = ListData[CurFile];
-
-		if (apiGetFileAttributes(CurPtr->strName) == INVALID_FILE_ATTRIBUTES) {
-			DelTreeName(CurPtr->strName);
-			Update(UPDATE_KEEP_SELECTION);
-			Show();
+			if (apiGetFileAttributes(CurPtr->strName) == INVALID_FILE_ATTRIBUTES) {
+				DelTreeName(CurPtr->strName);
+				Update(UPDATE_KEEP_SELECTION);
+				Show();
+			}
 		}
-	} else if (!RetFromReadTree) {
+	}
+	else {
+		if (!Flags.Check(FTREELIST_ISPANEL)) {
+			ExitCode = 0;
+			return;
+		}
+
 		Show();
 
 		if (!Flags.Check(FTREELIST_ISPANEL)) {
@@ -442,7 +441,7 @@ int TreeList::ReadTree()
 	TreeCount = 1;
 	int FirstCall = TRUE, AscAbort = FALSE;
 	TreeStartTime = GetProcessUptimeMSec();
-	RefreshFrameManager frref(ScrX, ScrY, TreeStartTime, FALSE);    // DontRedrawFrame);
+	SCOPED_ACTION(RefreshFrameManager)(ScrX, ScrY, TreeStartTime, FALSE);    // DontRedrawFrame);
 	ScTree.SetFindPath(strRoot, L"*", FSCANTREE_NOFILES | FSCANTREE_NODEVICES);
 	LastScrX = ScrX;
 	LastScrY = ScrY;
@@ -475,7 +474,6 @@ int TreeList::ReadTree()
 			continue;
 
 		ListData[TreeCount] = new TreeItem;
-		ListData[TreeCount]->Clear();
 		ListData[TreeCount]->strName = strFullName;
 		TreeCount++;
 	}
@@ -586,10 +584,9 @@ int TreeList::GetCacheTreeName(const wchar_t *Root, FARString &strName, int Crea
 
 void TreeList::GetRoot()
 {
-	FARString strPanelDir;
 	Panel *RootPanel = GetRootPanel();
-	RootPanel->GetCurDir(strPanelDir);
-	strRoot = strPanelDir;
+	RootPanel->GetCurDir(strRoot);
+	DeleteEndSlash(strRoot, true, true);
 }
 
 Panel *TreeList::GetRootPanel()
@@ -620,6 +617,7 @@ void TreeList::SyncDir()
 	AnotherPanel->GetCurDir(strPanelDir);
 
 	if (!strPanelDir.IsEmpty()) {
+		DeleteEndSlash(strPanelDir, true, true);
 		if (AnotherPanel->GetType() == FILE_PANEL) {
 			if (!SetDirPosition(strPanelDir)) {
 				ReadSubTree(strPanelDir);

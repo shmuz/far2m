@@ -305,11 +305,12 @@ bool DeleteEndSlash(std::wstring &strPath, bool AllEndSlash)
 	return out;
 }
 
-bool DeleteEndSlash(FARString &strPath, bool AllEndSlash)
+bool DeleteEndSlash(FARString &strPath, bool AllEndSlash, bool NotEmpty)
 {
 	size_t LenToSlash = strPath.GetLength();
+	size_t Limit = NotEmpty ? 1 : 0;
 
-	while (LenToSlash != 0 && IsSlash(strPath.At(LenToSlash - 1)))
+	while (LenToSlash > Limit && IsSlash(strPath.At(LenToSlash - 1)))
 	{
 		--LenToSlash;
 		if (!AllEndSlash) break;

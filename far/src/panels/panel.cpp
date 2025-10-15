@@ -1290,9 +1290,7 @@ void Panel::InitCurDir(const wchar_t *CurDir)
 {
 	if (StrCmp(strCurDir, CurDir) || !TestCurrentDirectory(CurDir)) {
 		strCurDir = CurDir;
-		DeleteEndSlash(strCurDir, true); //prevent displaying end slash and AltF10 crash
-		if (strCurDir.IsEmpty())
-			strCurDir = CurDir;
+		DeleteEndSlash(strCurDir, true, true); //prevent displaying end slash
 	}
 }
 
