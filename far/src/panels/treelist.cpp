@@ -636,7 +636,7 @@ void TreeList::PR_MsgReadTree()
 	TreeList::MsgReadTree(preRedrawItem.Param.Flags, FirstCall);
 }
 
-int TreeList::MsgReadTree(int TreeCount, int &FirstCall)
+int TreeList::MsgReadTree(int TreeCount, int FirstCall)
 {
 	/* $ 24.09.2001 VVM
 	  ! Писать сообщение о чтении дерева только, если это заняло более 500 мсек. */
@@ -856,8 +856,7 @@ int TreeList::ProcessKey(FarKey Key)
 					if (PutCode == 1 || PutCode == 2)
 						AnotherPanel->SetPluginModified();
 
-					if (ItemList)
-						delete[] ItemList;
+					delete[] ItemList;
 
 					if (Move)
 						ReadSubTree(ListData[CurFile]->strName);
@@ -1156,17 +1155,18 @@ int TreeList::SetDirPosition(const wchar_t *NewDir)
 	return FALSE;
 }
 
-int TreeList::GetCurDir(FARString &strCurDir)
+int TreeList::GetCurDir(FARString &strDir)
 {
 	if (!TreeCount) {
 		if (ModalMode == MODALTREE_FREE)
-			strCurDir = strRoot;
+			strDir = strRoot;
 		else
-			strCurDir.Clear();
-	} else
-		strCurDir = ListData[CurFile]->strName;    // BUGBUG
+			strDir.Clear();
+	}
+	else
+		strDir = ListData[CurFile]->strName;    // BUGBUG
 
-	return (int)strCurDir.GetLength();
+	return (int)strDir.GetLength();
 }
 
 int TreeList::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)

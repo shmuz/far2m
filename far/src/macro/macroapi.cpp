@@ -949,7 +949,7 @@ void KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 
 					if (SyncCall) m_InternalInput--;
 
-					if (IsPointer(Result) && Result != INVALID_HANDLE_VALUE)
+					if (IsPointer(Result))
 						api.PushPointer(Result);
 					else
 						api.PushBoolean(Result != nullptr);

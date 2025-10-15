@@ -1911,7 +1911,7 @@ void* PluginManager::CallPluginFromMacro(DWORD SysID, OpenMacroInfo *Info)
 
 	if (PluginPanel)
 	{
-		if (IsPointer(PluginPanel->hPanel) && PluginPanel->hPanel != INVALID_HANDLE_VALUE)
+		if (IsPointer(PluginPanel->hPanel))
 		{
 			FarMacroCall *fmc = reinterpret_cast<FarMacroCall*>(PluginPanel->hPanel);
 			if (fmc->Count > 0 && fmc->Values[0].Type == FMVT_PANEL)
@@ -1926,7 +1926,7 @@ void* PluginManager::CallPluginFromMacro(DWORD SysID, OpenMacroInfo *Info)
 				NewPanel->SetPluginMode(PluginPanel, L"", SendOnFocus);
 				NewPanel->Update(0);
 				NewPanel->Show();
-				return reinterpret_cast<void*>(static_cast<intptr_t>(1));
+				return INVALID_HANDLE_VALUE;
 			}
 		}
 

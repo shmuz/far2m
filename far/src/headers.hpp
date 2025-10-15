@@ -187,7 +187,9 @@ const RAII_type ANONYMOUS_VARIABLE(scoped_object_)
 //------------------------------------------------------------------------------
 
 int Log(const char* Format, ...);
-inline bool IsPointer(void *p) { return reinterpret_cast<uintptr_t>(p) >= 0x10000; }
+inline bool IsPointer(void *p) {
+	return p != INVALID_HANDLE_VALUE && reinterpret_cast<uintptr_t>(p) >= 0x10000;
+}
 
 #include <algorithm>
 #include <set>
