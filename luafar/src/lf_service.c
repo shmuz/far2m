@@ -2678,21 +2678,22 @@ struct FarList* CreateList(lua_State *L, int historyindex)
 	return list;
 }
 
-// item table is on Lua stack top
+// - This function, among other things, makes "conversion" from far3 to far2 API.
+// - Item table is on Lua stack top.
 static void SetFarDialogItem(lua_State *L, struct FarDialogItem* Item, int itemindex, int historyindex)
 {
-	memset(Item, 0, sizeof(struct FarDialogItem));
-	Item->Type  = GetDialogItemType (L, 1, itemindex+1);
+	++itemindex;
+	flags_t Flags = GetItemFlags(L, 9, itemindex);
+	memset(Item, 0, sizeof(*Item));
+
+	// positions 1-5
+	Item->Type  = GetDialogItemType (L, 1, itemindex);
 	Item->X1    = GetIntFromArray   (L, 2);
 	Item->Y1    = GetIntFromArray   (L, 3);
 	Item->X2    = GetIntFromArray   (L, 4);
 	Item->Y2    = GetIntFromArray   (L, 5);
 
-	flags_t Flags = GetItemFlags(L, 9, itemindex+1);
-	Item->Focus = (Flags & DIF_FOCUS) ? 1:0;
-	Item->DefaultButton = (Flags & DIF_DEFAULTBUTTON) ? 1:0;
-	Item->Flags = Flags & 0xFFFFFFFF;
-
+	// position 6
 	if (Item->Type==DI_LISTBOX || Item->Type==DI_COMBOBOX) {
 		lua_pushinteger(L, 6);   // +1
 		lua_gettable(L, -2);     // +1
@@ -2723,16 +2724,20 @@ static void SetFarDialogItem(lua_State *L, struct FarDialogItem* Item, int itemi
 			Item->Selected = lua_toboolean(L,-1) ? BSTATE_CHECKED : BSTATE_UNCHECKED;
 		lua_pop(L, 1);
 	}
-	else if (Item->Type == DI_EDIT) {
-		if (Item->Flags & DIF_HISTORY) {
+
+	// position 7
+	if (Item->Type == DI_EDIT) {
+		if (Flags & DIF_HISTORY) {
 			lua_rawgeti(L, -1, 7);      // +1
 			Item->History = opt_utf8_string (L, -1, NULL); // +1 --> Item->History and Item->Mask are aliases (union members)
 			size_t len = lua_objlen(L, historyindex);
 			lua_rawseti (L, historyindex, len+1); // +0; put into "histories" table to avoid being gc'ed
 		}
 	}
-	else if (Item->Type == DI_FIXEDIT) {
-		if (Item->Flags & DIF_MASKEDIT) {
+
+	// position 8
+	if (Item->Type == DI_FIXEDIT) {
+		if (Flags & DIF_MASKEDIT) {
 			lua_rawgeti(L, -1, 8);      // +1
 			Item->Mask = opt_utf8_string (L, -1, NULL); // +1 --> Item->History and Item->Mask are aliases (union members)
 			size_t len = lua_objlen(L, historyindex);
@@ -2740,7 +2745,12 @@ static void SetFarDialogItem(lua_State *L, struct FarDialogItem* Item, int itemi
 		}
 	}
 
-	Item->MaxLen = GetOptIntFromArray(L, 11, 0);
+	// position 9
+	Item->Focus = (Flags & DIF_FOCUS) ? 1:0;
+	Item->DefaultButton = (Flags & DIF_DEFAULTBUTTON) ? 1:0;
+	Item->Flags = Flags & 0xFFFFFFFF;
+
+	// position 10
 	lua_pushinteger(L, 10); // +1
 	lua_gettable(L, -2);    // +1
 	if (lua_isstring(L, -1)) {
@@ -2750,8 +2760,12 @@ static void SetFarDialogItem(lua_State *L, struct FarDialogItem* Item, int itemi
 	}
 	else
 		lua_pop(L, 1);
+
+	// position 11
+	Item->MaxLen = GetOptIntFromArray(L, 11, 0);
 }
 
+// This function, among other things, makes "conversion" from far2 to far3 API
 static void PushDlgItem (lua_State *L, const struct FarDialogItem* pItem, BOOL table_exist)
 {
 	if (! table_exist) {
@@ -2761,12 +2775,15 @@ static void PushDlgItem (lua_State *L, const struct FarDialogItem* pItem, BOOL t
 			lua_rawseti(L, -2, 6);
 		}
 	}
+
+	// position 1-5
 	PutIntToArray  (L, 1, pItem->Type);
 	PutIntToArray  (L, 2, pItem->X1);
 	PutIntToArray  (L, 3, pItem->Y1);
 	PutIntToArray  (L, 4, pItem->X2);
 	PutIntToArray  (L, 5, pItem->Y2);
 
+	// position 6
 	if (pItem->Type == DI_LISTBOX || pItem->Type == DI_COMBOBOX) {
 		lua_rawgeti(L, -1, 6);
 		lua_pushinteger(L, pItem->ListPos+1);
@@ -2778,31 +2795,29 @@ static void PushDlgItem (lua_State *L, const struct FarDialogItem* pItem, BOOL t
 		lua_pushlightuserdata(L, pItem->VBuf);
 		lua_rawseti(L, -2, 6);
 	}
-	else if (pItem->Type == DI_CHECKBOX || pItem->Type == DI_RADIOBUTTON)
-	{
-		lua_pushinteger(L, pItem->Selected);
-		lua_rawseti(L, -2, 6);
-	}
-	else if (pItem->Type == DI_EDIT && (pItem->Flags & DIF_HISTORY))
-	{
-		PutWStrToArray(L, 7, pItem->History, -1);
-	}
-	else if (pItem->Type == DI_FIXEDIT && (pItem->Flags & DIF_MASKEDIT))
-	{
-		PutWStrToArray(L, 8, pItem->Mask, -1);
-	}
 	else
-		PutIntToArray(L, 6, pItem->Selected);
+	{
+		int sel = (pItem->Type == DI_CHECKBOX || pItem->Type == DI_RADIOBUTTON) ? pItem->Selected : 0;
+		PutIntToArray(L, 6, sel);
+	}
 
-	flags_t Flags = pItem->Flags;
-	if (pItem->Focus) Flags |= DIF_FOCUS;
-	if (pItem->DefaultButton) Flags |= DIF_DEFAULTBUTTON;
+	// position 7
+	const wchar_t *str;
+	str = (pItem->Type == DI_EDIT && (pItem->Flags & DIF_HISTORY)) ? pItem->History : L"";
+	PutWStrToArray(L, 7, str, -1);
+
+	// position 8
+	str = (pItem->Type == DI_FIXEDIT && (pItem->Flags & DIF_MASKEDIT)) ? pItem->Mask : L"";
+	PutWStrToArray(L, 8, str, -1);
+
+	// position 9
+	flags_t Flags = pItem->Flags
+			| (pItem->Focus ? DIF_FOCUS : 0) | (pItem->DefaultButton ? DIF_DEFAULTBUTTON : 0);
 	PutNumToArray(L, 9, Flags);
 
-	lua_pushinteger(L, 10);
-	push_utf8_string(L, pItem->PtrData, -1);
-	lua_settable(L, -3);
-	PutIntToArray  (L, 11, pItem->MaxLen);
+	// position 10-11
+	PutWStrToArray(L, 10, pItem->PtrData, -1);
+	PutIntToArray(L, 11, pItem->MaxLen);
 }
 
 LONG_PTR SendDlgMessage(HANDLE hDlg, int Msg, int Param1, void *Param2)
