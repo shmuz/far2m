@@ -61,10 +61,10 @@ public:
 	}
 	// проверить набор флагов
 	bool Check(DWORD NewFlags) const { return (Flags & NewFlags) != 0; }
-	// изменить состояние набора флагов в заивисмости от Status
-	DWORD Change(DWORD NewFlags, BOOL Status)
+	// изменить состояние набора флагов
+	DWORD Change(DWORD NewFlags, bool Add)
 	{
-		if (Status)
+		if (Add)
 			Flags|= NewFlags;
 		else
 			Flags&= ~NewFlags;

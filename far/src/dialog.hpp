@@ -318,7 +318,7 @@ private:
 	void DeleteDialogObjects();
 	int LenStrItem(int ID, const wchar_t *lpwszStr = nullptr);
 
-	void ShowDialog(unsigned ID = (unsigned)-1);	// ID=-1 - отрисовать весь диалог
+	void ShowDialog(int ID = -1);	// ID=-1 - отрисовать весь диалог
 
 	DWORD CtlColorDlgItem(int ItemPos, const DialogItemEx *CurItem, uint64_t *ItemColor);
 	/*
@@ -403,15 +403,15 @@ public:
 
 	void GetDialogObjectsData();
 
-	void SetDialogMode(DWORD Flags) { DialogMode.Set(Flags); }
-	bool CheckDialogMode(DWORD Flags) { return DialogMode.Check(Flags) != FALSE; }
+	void SetDialogMode(DWORD flags) { DialogMode.Set(flags); }
+	bool CheckDialogMode(DWORD flags) { return DialogMode.Check(flags); }
 
 	// метод для перемещения диалога
 	void AdjustEditPos(int dx, int dy);
 
-	int IsMoving() { return DialogMode.Check(DMODE_DRAGGED); }
-	void SetModeMoving(int IsMoving) { DialogMode.Change(DMODE_ISCANMOVE, IsMoving); }
-	int GetModeMoving() { return DialogMode.Check(DMODE_ISCANMOVE); }
+	bool IsMoving() { return DialogMode.Check(DMODE_DRAGGED); }
+	void SetModeMoving(bool IsMoving) { DialogMode.Change(DMODE_ISCANMOVE, IsMoving); }
+	bool GetModeMoving() { return DialogMode.Check(DMODE_ISCANMOVE); }
 	void SetDialogData(LONG_PTR NewDataDialog);
 	LONG_PTR GetDialogData() { return DataDialog; };
 

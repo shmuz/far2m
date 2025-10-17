@@ -212,7 +212,7 @@ void DialogItemExToDialogItemEx(DialogItemEx *pSrc, DialogItemEx *pDest)
 	pDest->customItemColor[3] = pSrc->customItemColor[3];
 }
 
-void ConvertItemSmall(FarDialogItem *Item, DialogItemEx *Data)
+static void ConvertItemSmall(FarDialogItem *Item, const DialogItemEx *Data)
 {
 	Item->Type = Data->Type;
 	Item->X1 = Data->X1;
@@ -228,8 +228,7 @@ void ConvertItemSmall(FarDialogItem *Item, DialogItemEx *Data)
 	Item->Param.History = nullptr;
 	if (Data->Type == DI_LISTBOX || Data->Type == DI_COMBOBOX) {
 		Item->Param.ListPos = Data->ListPtr ? Data->ListPtr->GetSelectPos() : 0;
-	}
-	if ((Data->Type == DI_EDIT || Data->Type == DI_FIXEDIT) && Data->Flags & DIF_HISTORY) {
+	} else if ((Data->Type == DI_EDIT || Data->Type == DI_FIXEDIT) && Data->Flags & DIF_HISTORY) {
 		Item->Param.History = Data->strHistory;
 	} else if (Data->Type == DI_FIXEDIT && Data->Flags & DIF_MASKEDIT) {
 		Item->Param.Mask = Data->strMask;
@@ -238,7 +237,7 @@ void ConvertItemSmall(FarDialogItem *Item, DialogItemEx *Data)
 	}
 }
 
-size_t ItemStringAndSize(DialogItemEx *Data, FARString &ItemString)
+static size_t ItemStringAndSize(const DialogItemEx *Data, FARString &ItemString)
 {
 	DlgEdit *EditPtr;
 	if (FarIsEdit(Data->Type) && (EditPtr = (DlgEdit *)(Data->ObjPtr)) != nullptr)
@@ -332,7 +331,7 @@ bool ConvertItemEx(CVTITEMFLAGS FromPlugin, FarDialogItem *Item, DialogItemEx *D
 	return true;
 }
 
-size_t ConvertItemEx2(FarDialogItem *Item, DialogItemEx *Data)
+static size_t ConvertItemEx2(FarDialogItem *Item, const DialogItemEx *Data)
 {
 	size_t size = sizeof(*Item);
 	FARString str;
@@ -1140,7 +1139,7 @@ BOOL Dialog::SetItemRect(unsigned ID, SMALL_RECT *aRect)
 	}
 
 	if (DialogMode.Check(DMODE_SHOW)) {
-		ShowDialog((unsigned)-1);
+		ShowDialog();
 		ScrBuf.Flush();
 	}
 
@@ -1284,6 +1283,7 @@ void Dialog::DeleteDialogObjects()
 
 				if (CurItem->ObjPtr)
 					delete (DlgEdit *)(CurItem->ObjPtr);
+				[[fallthrough]];
 
 			case DI_LISTBOX:
 
@@ -1621,9 +1621,9 @@ DWORD Dialog::CtlColorDlgItem(int ItemPos, const DialogItemEx *CurItem, uint64_t
 				if (IsWarning)
 				{
 					// Text
-					Color[0] = FarColorToReal(DisabledItem? COL_WARNDIALOGEDITDISABLED: Focus? COL_WARNDIALOGEDITSELECTED : COL_WARNDIALOGEDIT);
+					Color[0] = FarColorToReal(DisabledItem? COL_WARNDIALOGEDITDISABLED : Focus? COL_WARNDIALOGEDITSELECTED : COL_WARNDIALOGEDIT);
 					// Select
-					Color[1] = FarColorToReal(DisabledItem? COL_WARNDIALOGEDITDISABLED : Focus? COL_WARNDIALOGEDITSELECTED : COL_WARNDIALOGEDIT);
+					Color[1] = Color[0];
 					// Unchanged
 					Color[2] = FarColorToReal(DisabledItem? COL_WARNDIALOGEDITDISABLED : Focus? COL_WARNDIALOGEDITSELECTED : COL_WARNDIALOGEDITUNCHANGED);
 					// History
@@ -1634,7 +1634,7 @@ DWORD Dialog::CtlColorDlgItem(int ItemPos, const DialogItemEx *CurItem, uint64_t
 					// Text
 					Color[0] = FarColorToReal(DisabledItem? COL_DIALOGEDITDISABLED : Focus? COL_DIALOGEDITSELECTED : COL_DIALOGEDIT);
 					// Select
-					Color[1] = FarColorToReal(DisabledItem? COL_DIALOGEDITDISABLED: Focus? COL_DIALOGEDITSELECTED : COL_DIALOGEDIT);
+					Color[1] = Color[0];
 					// Unchanged
 					Color[2] = FarColorToReal(DisabledItem? COL_DIALOGEDITDISABLED :  Focus? COL_DIALOGEDITSELECTED : COL_DIALOGEDITUNCHANGED);
 					// History
@@ -1773,7 +1773,7 @@ static void SetColorFrame(DWORD Attr, const std::unique_ptr<DialogItemTrueColors
 	Private:
 		Отрисовка элементов диалога на экране.
 */
-void Dialog::ShowDialog(unsigned ID)
+void Dialog::ShowDialog(int ID)
 {
 	CriticalSectionLock Lock(CS);
 
@@ -1783,13 +1783,12 @@ void Dialog::ShowDialog(unsigned ID)
 	FARString strStr;
 	DialogItemEx *CurItem;
 	int X, Y;
-//	size_t I, DrawItemCount;
-	unsigned I, DrawItemCount;
+	unsigned DrawItemCount;
 	uint64_t ItemColor[4] = {};
 
 	// Если не разрешена отрисовка, то вываливаем.
 	if (IsEnableRedraw < 1 ||						// разрешена прорисовка ?
-			(ID + 1 > ItemCount) ||					// а номер в рамках дозволенного?
+			ID >= (int)ItemCount ||					// а номер в рамках дозволенного?
 			DialogMode.Check(DMODE_DRAWING) ||		// диалог рисуется?
 			!DialogMode.Check(DMODE_SHOW) ||		// если не видим, то и не отрисовываем.
 			!DialogMode.Check(DMODE_INITOBJECTS))
@@ -1798,7 +1797,7 @@ void Dialog::ShowDialog(unsigned ID)
 	DialogMode.Set(DMODE_DRAWING);	// диалог рисуется!!!
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 
-	if (ID == (unsigned)-1)		// рисуем все?
+	if (ID == -1)		// рисуем все?
 	{
 		// Перед прорисовкой диалога посылаем сообщение в обработчик
 		if (!DlgProc((HANDLE)this, DN_DRAWDIALOG, 0, 0)) {
@@ -1836,7 +1835,7 @@ void Dialog::ShowDialog(unsigned ID)
 		bool CursorVisible = false;
 		DWORD CursorSize = 0;
 
-		if (ID != (unsigned)-1 && FocusPos != ID) {
+		if ((int)FocusPos != ID) {
 			if (Item[FocusPos]->Type == DI_USERCONTROL && Item[FocusPos]->UCData->CursorPos.X != -1
 					&& Item[FocusPos]->UCData->CursorPos.Y != -1) {
 				CursorVisible = Item[FocusPos]->UCData->CursorVisible;
@@ -1847,7 +1846,7 @@ void Dialog::ShowDialog(unsigned ID)
 		SetCursorType(CursorVisible, CursorSize);
 	}
 
-	for (I = ID; I < DrawItemCount; I++) {
+	for (auto I = (unsigned)ID; I < DrawItemCount; I++) {
 		CurItem = Item[I];
 
 		if (CurItem->Flags & DIF_HIDDEN)
@@ -2312,7 +2311,7 @@ void Dialog::ShowDialog(unsigned ID)
 
 	// КОСТЫЛЬ!
 	// но работает ;-)
-	for (I = 0; I < ItemCount; I++) {
+	for (unsigned I = 0; I < ItemCount; I++) {
 		CurItem = Item[I];
 
 		if (CurItem->ListPtr && GetDropDownOpened() && CurItem->ListPtr->IsVisible()) {
@@ -2381,6 +2380,8 @@ int Dialog::ProcessMoveDialog(DWORD Key)
 			case KEY_HOME:
 			case KEY_NUMPAD7:
 				rr = Key == KEY_CTRLLEFT || Key == KEY_CTRLNUMPAD4 ? 10 : X1;
+				[[fallthrough]];
+
 			case KEY_LEFT:
 			case KEY_NUMPAD4:
 				Hide();
@@ -2396,6 +2397,7 @@ int Dialog::ProcessMoveDialog(DWORD Key)
 					Show();
 
 				break;
+
 			case KEY_CTRLRIGHT:
 			case KEY_CTRLNUMPAD6:
 			case KEY_CTRLEND:
@@ -2403,6 +2405,8 @@ int Dialog::ProcessMoveDialog(DWORD Key)
 			case KEY_END:
 			case KEY_NUMPAD1:
 				rr = Key == KEY_CTRLRIGHT || Key == KEY_CTRLNUMPAD6 ? 10 : Max(0, ScrX - X2);
+				[[fallthrough]];
+
 			case KEY_RIGHT:
 			case KEY_NUMPAD6:
 				Hide();
@@ -2418,6 +2422,7 @@ int Dialog::ProcessMoveDialog(DWORD Key)
 					Show();
 
 				break;
+
 			case KEY_PGUP:
 			case KEY_NUMPAD9:
 			case KEY_CTRLPGUP:
@@ -2425,6 +2430,8 @@ int Dialog::ProcessMoveDialog(DWORD Key)
 			case KEY_CTRLUP:
 			case KEY_CTRLNUMPAD8:
 				rr = Key == KEY_CTRLUP || Key == KEY_CTRLNUMPAD8 ? 5 : Y1;
+				[[fallthrough]];
+
 			case KEY_UP:
 			case KEY_NUMPAD8:
 				Hide();
@@ -2440,6 +2447,7 @@ int Dialog::ProcessMoveDialog(DWORD Key)
 					Show();
 
 				break;
+
 			case KEY_CTRLDOWN:
 			case KEY_CTRLNUMPAD2:
 			case KEY_CTRLPGDN:
@@ -2447,6 +2455,8 @@ int Dialog::ProcessMoveDialog(DWORD Key)
 			case KEY_PGDN:
 			case KEY_NUMPAD3:
 				rr = Key == KEY_CTRLDOWN || Key == KEY_CTRLNUMPAD2 ? 5 : Max(0, ScrY - Y2);
+				[[fallthrough]];
+
 			case KEY_DOWN:
 			case KEY_NUMPAD2:
 				Hide();
@@ -2535,7 +2545,7 @@ int64_t Dialog::VMProcess(int OpCode, void *vParam, int64_t iParam)
 				if (Item[FocusPos]->ListPtr)
 					return Item[FocusPos]->ListPtr->VMProcess(OpCode, vParam, iParam);
 			} else if (OpCode == MCODE_F_MENU_CHECKHOTKEY)
-				return (int64_t)(CheckHighlights(*str, (int)iParam) + 1);
+				return CheckHighlights(*str, (int)iParam) + 1;
 
 			return 0;
 		}
@@ -2835,6 +2845,7 @@ int Dialog::ProcessKey(FarKey Key)
 				return TRUE;						// делать больше не чего
 			}
 		}
+		[[fallthrough]];
 
 		case KEY_NUMENTER:
 		case KEY_ENTER: {
@@ -2988,7 +2999,8 @@ int Dialog::ProcessKey(FarKey Key)
 				return TRUE;
 			}
 
-			// ???
+			[[fallthrough]];
+
 			// ЭТО перед default последний!!!
 		case KEY_PGDN:
 		case KEY_NUMPAD3:
@@ -4797,13 +4809,10 @@ LONG_PTR WINAPI DefDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 			return TRUE;
 		}
 		case DN_CTLCOLORDIALOG:
-			return Param2;
 		case DN_CTLCOLORDLGITEM:
 			return Param2;
 		case DN_CTLCOLORDLGLIST:
-			return FALSE;
 		case DN_ENTERIDLE:
-			return 0;	// always 0
 		case DM_GETDIALOGINFO:
 			return FALSE;
 	}
@@ -4817,25 +4826,18 @@ LONG_PTR WINAPI DefDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 
 	switch (Msg) {
 		case DN_MOUSECLICK:
-			return FALSE;
-		case DN_DRAWDLGITEM:
-			return TRUE;
-		case DN_HOTKEY:
-			return TRUE;
-		case DN_EDITCHANGE:
-			return TRUE;
-		case DN_BTNCLICK:
-			return ((Type == DI_BUTTON && !(CurItem->Flags & DIF_BTNNOCLOSE)) ? FALSE : TRUE);
-		case DN_LISTCHANGE:
-			return TRUE;
 		case DN_KEY:
-			return FALSE;
-		case DN_MOUSEEVENT:
-			return TRUE;
 		case DM_GETSELECTION:	// Msg=DM_GETSELECTION, Param1=ID, Param2=*EditorSelect
-			return FALSE;
 		case DM_SETSELECTION:
 			return FALSE;
+		case DN_DRAWDLGITEM:
+		case DN_HOTKEY:
+		case DN_EDITCHANGE:
+		case DN_LISTCHANGE:
+		case DN_MOUSEEVENT:
+			return TRUE;
+		case DN_BTNCLICK:
+			return (Type == DI_BUTTON && !(CurItem->Flags & DIF_BTNNOCLOSE)) ? FALSE : TRUE;
 	}
 
 	return 0;
@@ -4862,6 +4864,7 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 		case DM_RESIZEDIALOG:
 			// изменим вызов RESIZE.
 			Param1 = -1;
+			[[fallthrough]];
 			/*****************************************************************/
 		case DM_MOVEDIALOG: {
 			int W1, H1;
@@ -5791,6 +5794,7 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 				FarDialogItemData IData = {0, (wchar_t *)Param2};
 				return SendDlgMessage(hDlg, DM_GETTEXT, Param1, (LONG_PTR)&IData);
 			}
+			[[fallthrough]];
 
 			/*****************************************************************/
 		case DM_GETTEXT:
@@ -5803,15 +5807,17 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 				switch (Type) {
 					case DI_MEMOEDIT:
 						break;
+
 					case DI_COMBOBOX:
 					case DI_EDIT:
 					case DI_PSWEDIT:
 					case DI_FIXEDIT:
-
 						if (!CurItem->ObjPtr)
 							break;
 
 						Ptr = const_cast<const wchar_t *>(((DlgEdit *)(CurItem->ObjPtr))->GetStringAddr());
+						[[fallthrough]];
+
 					case DI_TEXT:
 					case DI_VTEXT:
 					case DI_SINGLEBOX:
@@ -5859,6 +5865,7 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 
 				return Len - (!Len ? 0 : 1);
 			}
+			[[fallthrough]];
 
 			// здесь умышленно не ставим return, т.к. хотим получить размер
 			// следовательно сразу должен идти "case DM_GETTEXTLENGTH"!!!
@@ -5893,6 +5900,7 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 						Len = ((DlgEdit *)(CurItem->ObjPtr))->GetLength() + 1;
 						break;
 					}
+					[[fallthrough]];
 
 				case DI_LISTBOX: {
 					Len = 0;
@@ -6159,9 +6167,8 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 				$ 09.12.2001 DJ
 				у DI_PSWEDIT не бывает хистори!
 			*/
-			else if (Param2
-					&& (Type == DI_COMBOBOX
-							|| ((Type == DI_EDIT || Type == DI_FIXEDIT) && (CurItem->Flags & DIF_HISTORY))))	/* DJ $ */
+			if (Type == DI_COMBOBOX
+					|| ((Type == DI_EDIT || Type == DI_FIXEDIT) && (CurItem->Flags & DIF_HISTORY)))	/* DJ $ */
 			{
 				// Открываем заданный в Param1 комбобокс или историю
 				if (Dlg->GetDropDownOpened()) {
@@ -6365,26 +6372,21 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 
 					return TRUE;
 				} else {
-					if (Param2) {
-						EditorSelect *EdSel = (EditorSelect *)Param2;
-						DlgEdit *EditLine = (DlgEdit *)(CurItem->ObjPtr);
+					EditorSelect *EdSel = (EditorSelect *)Param2;
+					DlgEdit *EditLine = (DlgEdit *)(CurItem->ObjPtr);
 
-						// EdSel->BlockType=BTYPE_STREAM;
-						// EdSel->BlockStartLine=0;
-						// EdSel->BlockHeight=1;
-						if (EdSel->BlockType == BTYPE_NONE)
-							EditLine->Select(-1, 0);
-						else
-							EditLine->Select(EdSel->BlockStartPos, EdSel->BlockStartPos + EdSel->BlockWidth);
+					if (EdSel->BlockType == BTYPE_NONE)
+						EditLine->Select(-1, 0);
+					else
+						EditLine->Select(EdSel->BlockStartPos, EdSel->BlockStartPos + EdSel->BlockWidth);
 
-						if (Dlg->DialogMode.Check(DMODE_SHOW))		//???
-						{
-							Dlg->ShowDialog(Param1);
-							ScrBuf.Flush();
-						}
-
-						return TRUE;
+					if (Dlg->DialogMode.Check(DMODE_SHOW))		//???
+					{
+						Dlg->ShowDialog(Param1);
+						ScrBuf.Flush();
 					}
+
+					return TRUE;
 				}
 			}
 
