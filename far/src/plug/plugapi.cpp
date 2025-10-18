@@ -616,18 +616,10 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 			return Ret;
 		}
 
-		case ACTL_SETPROGRESSSTATE: {
+		case ACTL_PROGRESSNOTIFY:
+		case ACTL_SETPROGRESSSTATE:
+		case ACTL_SETPROGRESSVALUE:
 			return TRUE;
-		}
-
-		case ACTL_SETPROGRESSVALUE: {
-			BOOL Result = FALSE;
-			if (Param1) {
-				// PROGRESSVALUE* PV=reinterpret_cast<PROGRESSVALUE*>(Param1);
-				Result = TRUE;
-			}
-			return Result;
-		}
 
 		case ACTL_QUIT: {
 			CloseFARMenu = TRUE;
@@ -672,10 +664,6 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 			}
 			return Result;
 		} break;
-
-		case ACTL_PROGRESSNOTIFY: {
-			return TRUE;
-		}
 
 		case ACTL_WINPORTBACKEND: {
 			std::wstring Backend = MB2Wide(WinPortBackendInfo(-1));
@@ -1183,6 +1171,8 @@ static int FarControlSynched(HANDLE hPlugin, int Command, int Param1, LONG_PTR P
 	switch (Command) {
 		case FCTL_CLOSEPLUGIN:
 			g_strDirToSet = (wchar_t *)Param2;
+			[[fallthrough]];
+
 		case FCTL_GETPANELINFO:
 		case FCTL_GETPANELITEM:
 		case FCTL_GETSELECTEDPANELITEM:
@@ -1387,7 +1377,7 @@ HANDLE WINAPI FarSaveScreen(int X1, int Y1, int X2, int Y2)
 	if (Y2 == -1)
 		Y2 = ScrY;
 
-	return ((HANDLE)(new SaveScreen(X1, Y1, X2, Y2)));
+	return new SaveScreen(X1, Y1, X2, Y2);
 }
 
 void WINAPI FarRestoreScreen(HANDLE hScreen)

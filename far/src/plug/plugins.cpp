@@ -1196,11 +1196,8 @@ void PluginManager::Configure(int StartPos)
 
 	for (;;)
 	{
-		bool NeedUpdateItems = true;
 		int MenuItemNumber = 0;
 		bool HotKeysPresent = false;
-
-		if (NeedUpdateItems)
 		{
 			PluginList.ClearDone();
 			PluginList.DeleteItems();
@@ -1269,9 +1266,9 @@ void PluginManager::Configure(int StartPos)
 			PluginList.ClearDone();
 			PluginList.SortItems(0, HotKeysPresent ? 3 : 0);
 			PluginList.SetSelectPos(StartPos, 1);
-			NeedUpdateItems = false;
 		}
 
+		bool NeedUpdateItems = false;
 		PluginList.Show();
 
 		while (!PluginList.Done())

@@ -2679,6 +2679,7 @@ int WINAPI FarControlA(HANDLE hPlugin, int Command, void *Param)
 	switch (Command) {
 		case oldfar::FCTL_CHECKPANELSEXIST:
 			return FarControl(hPlugin, FCTL_CHECKPANELSEXIST, 0, (LONG_PTR)Param);
+
 		case oldfar::FCTL_CLOSEPLUGIN: {
 			wchar_t *ParamW = nullptr;
 
@@ -2692,6 +2693,7 @@ int WINAPI FarControlA(HANDLE hPlugin, int Command, void *Param)
 
 			return ret;
 		}
+
 		case oldfar::FCTL_GETANOTHERPANELINFO:
 		case oldfar::FCTL_GETPANELINFO: {
 			if (!Param)
@@ -2804,6 +2806,7 @@ int WINAPI FarControlA(HANDLE hPlugin, int Command, void *Param)
 			Reenter--;
 			return ret;
 		}
+
 		case oldfar::FCTL_GETANOTHERPANELSHORTINFO:
 		case oldfar::FCTL_GETPANELSHORTINFO: {
 			if (!Param)
@@ -2834,8 +2837,11 @@ int WINAPI FarControlA(HANDLE hPlugin, int Command, void *Param)
 
 			return ret;
 		}
+
 		case oldfar::FCTL_SETANOTHERSELECTION:
 			hPlugin = PANEL_PASSIVE;
+			[[fallthrough]];
+
 		case oldfar::FCTL_SETSELECTION: {
 			if (!Param)
 				return FALSE;
@@ -2850,8 +2856,11 @@ int WINAPI FarControlA(HANDLE hPlugin, int Command, void *Param)
 			FarControl(hPlugin, FCTL_ENDSELECTION, 0, 0);
 			return TRUE;
 		}
+
 		case oldfar::FCTL_REDRAWANOTHERPANEL:
 			hPlugin = PANEL_PASSIVE;
+			[[fallthrough]];
+
 		case oldfar::FCTL_REDRAWPANEL: {
 			if (!Param)
 				return FarControl(hPlugin, FCTL_REDRAWPANEL, 0, 0);
@@ -2860,12 +2869,18 @@ int WINAPI FarControlA(HANDLE hPlugin, int Command, void *Param)
 			PanelRedrawInfo pri = {priA->CurrentItem, priA->TopPanelItem};
 			return FarControl(hPlugin, FCTL_REDRAWPANEL, 0, (LONG_PTR)&pri);
 		}
+
 		case oldfar::FCTL_SETANOTHERNUMERICSORT:
 			hPlugin = PANEL_PASSIVE;
+			[[fallthrough]];
+
 		case oldfar::FCTL_SETNUMERICSORT:
 			return FarControl(hPlugin, FCTL_SETNUMERICSORT, (Param && (*(int *)Param)) ? 1 : 0, 0);
+
 		case oldfar::FCTL_SETANOTHERPANELDIR:
 			hPlugin = PANEL_PASSIVE;
+			[[fallthrough]];
+
 		case oldfar::FCTL_SETPANELDIR: {
 			if (!Param)
 				return FALSE;
@@ -2875,26 +2890,39 @@ int WINAPI FarControlA(HANDLE hPlugin, int Command, void *Param)
 			free(Dir);
 			return ret;
 		}
+
 		case oldfar::FCTL_SETANOTHERSORTMODE:
 			hPlugin = PANEL_PASSIVE;
+			[[fallthrough]];
+
 		case oldfar::FCTL_SETSORTMODE:
 
 			if (!Param)
 				return FALSE;
 
 			return FarControl(hPlugin, FCTL_SETSORTMODE, *(int *)Param, 0);
+
 		case oldfar::FCTL_SETANOTHERSORTORDER:
 			hPlugin = PANEL_PASSIVE;
+			[[fallthrough]];
+
 		case oldfar::FCTL_SETSORTORDER:
 			return FarControl(hPlugin, FCTL_SETSORTORDER, (Param && (*(int *)Param)) ? TRUE : FALSE, 0);
+
 		case oldfar::FCTL_SETANOTHERVIEWMODE:
 			hPlugin = PANEL_PASSIVE;
+			[[fallthrough]];
+
 		case oldfar::FCTL_SETVIEWMODE:
 			return FarControl(hPlugin, FCTL_SETVIEWMODE, (Param ? *(int *)Param : 0), 0);
+
 		case oldfar::FCTL_UPDATEANOTHERPANEL:
 			hPlugin = PANEL_PASSIVE;
+			[[fallthrough]];
+
 		case oldfar::FCTL_UPDATEPANEL:
 			return FarControl(hPlugin, FCTL_UPDATEPANEL, Param ? 1 : 0, 0);
+
 		case oldfar::FCTL_GETCMDLINE:
 		case oldfar::FCTL_GETCMDLINESELECTEDTEXT: {
 			if (Param) {
@@ -2908,12 +2936,13 @@ int WINAPI FarControlA(HANDLE hPlugin, int Command, void *Param)
 
 			return FALSE;
 		}
-		case oldfar::FCTL_GETCMDLINEPOS:
 
+		case oldfar::FCTL_GETCMDLINEPOS:
 			if (!Param)
 				return FALSE;
 
 			return FarControl(hPlugin, FCTL_GETCMDLINEPOS, 0, (LONG_PTR)Param);
+
 		case oldfar::FCTL_GETCMDLINESELECTION: {
 			if (!Param)
 				return FALSE;
@@ -2929,6 +2958,7 @@ int WINAPI FarControlA(HANDLE hPlugin, int Command, void *Param)
 
 			return ret;
 		}
+
 		case oldfar::FCTL_INSERTCMDLINE: {
 			if (!Param)
 				return FALSE;
@@ -2938,6 +2968,7 @@ int WINAPI FarControlA(HANDLE hPlugin, int Command, void *Param)
 			free(s);
 			return ret;
 		}
+
 		case oldfar::FCTL_SETCMDLINE: {
 			if (!Param)
 				return FALSE;
@@ -2947,12 +2978,13 @@ int WINAPI FarControlA(HANDLE hPlugin, int Command, void *Param)
 			free(s);
 			return ret;
 		}
-		case oldfar::FCTL_SETCMDLINEPOS:
 
+		case oldfar::FCTL_SETCMDLINEPOS:
 			if (!Param)
 				return FALSE;
 
 			return FarControl(hPlugin, FCTL_SETCMDLINEPOS, *(int *)Param, 0);
+
 		case oldfar::FCTL_SETCMDLINESELECTION: {
 			if (!Param)
 				return FALSE;
@@ -2961,8 +2993,10 @@ int WINAPI FarControlA(HANDLE hPlugin, int Command, void *Param)
 			CmdLineSelect cls = {clsA->SelStart, clsA->SelEnd};
 			return FarControl(hPlugin, FCTL_SETCMDLINESELECTION, 0, (LONG_PTR)&cls);
 		}
+
 		case oldfar::FCTL_GETUSERSCREEN:
 			return FarControl(hPlugin, FCTL_GETUSERSCREEN, 0, 0);
+
 		case oldfar::FCTL_SETUSERSCREEN:
 			return FarControl(hPlugin, FCTL_SETUSERSCREEN, 0, 0);
 	}
@@ -3164,6 +3198,7 @@ INT_PTR WINAPI FarAdvControlA(INT_PTR ModuleNumber, int Command, void *Param)
 							kmA->Param.MacroResult.ErrMsg2 = "";
 							kmA->Param.MacroResult.ErrMsg3 = "";
 							[[fallthrough]];
+
 						case MSSC_POST:
 							free((void *)mtW.SequenceText);
 							break;
