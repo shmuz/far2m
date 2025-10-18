@@ -2292,72 +2292,74 @@ static void ReadCache(KeyFileReadSection& kfh, const char *Fmt, std::vector<FARS
 
 class Sizer {
 private:
-	char  *mCurPtr;
+	void  *mBuf;
+	void  *mCurPtr;
 	size_t mAvail;
-	size_t mTotalSize;
+	bool   mHasSpace;
 
 public:
-	Sizer(char *aBuf, size_t aAvail, size_t aSize) : mCurPtr(aBuf), mAvail(aAvail), mTotalSize(aSize) {}
+	Sizer(void *aBuf, size_t aAvail)
+		: mBuf(aBuf), mCurPtr(aBuf), mAvail(aAvail), mHasSpace(aAvail != 0) {}
 
 public:
-	void* AddBytes(size_t Count);
+	void* AddBytes(const void *Data, size_t NumBytes, size_t Alignment);
 	wchar_t* AddString(const FARString& Str);
-	void AddItems(const wchar_t* const* &Strings, int& Count, const std::vector<FARString>& NamesArray);
-	size_t GetSize() const { return mTotalSize; }
+	size_t AddItems(const wchar_t* const* &Strings, const std::vector<FARString>& NamesArray);
+	size_t GetSize() const { return (uintptr_t)mCurPtr - (uintptr_t)mBuf; }
 };
 
-void* Sizer::AddBytes(size_t Count)
+void* Sizer::AddBytes(const void *Data, size_t NumBytes, size_t Alignment)
 {
-	void* Res = nullptr;
+	const size_t BIG = 0x100000; // an arbitrary big value that must be sufficient
+	size_t Space = BIG;
+	std::align(Alignment, NumBytes, mCurPtr, Space);
+	size_t RequiredSize = NumBytes + (BIG - Space);
 
-	if (mCurPtr)
+	if (mHasSpace)
 	{
-		if (mAvail >= Count)
+		if (mAvail >= RequiredSize)
 		{
-			Res = mCurPtr;
-			mCurPtr += Count;
-			mAvail -= Count;
+			mAvail -= RequiredSize;
+			if (Data)
+				memmove(mCurPtr, Data, NumBytes);
+			else
+				memset(mCurPtr, 0, NumBytes);
 		}
 		else
-		{
-			mCurPtr = nullptr;
-		}
+			mHasSpace = false;
 	}
 
-	mTotalSize += Count;
-	return Res;
+	void *Ret = mCurPtr;
+	mCurPtr = (char*)mCurPtr + NumBytes;
+	return Ret;
 }
 
 wchar_t* Sizer::AddString(const FARString& Str)
 {
-	const auto Count = (Str.GetLength() + 1) * sizeof(wchar_t);
-	const auto Res = static_cast<wchar_t*> (AddBytes(Count));
-	if (Res)
-	{
-		wcscpy(Res, Str.CPtr());
-	}
-	return Res;
+	const auto numBytes = sizeof(wchar_t) * (Str.GetLength() + 1);
+	return (wchar_t*)AddBytes(Str.CPtr(), numBytes, alignof(wchar_t));
 }
 
-void Sizer::AddItems(const wchar_t* const* &Strings, int& Count, const std::vector<FARString>& NamesArray)
+size_t Sizer::AddItems(const wchar_t* const* &Strings, const std::vector<FARString>& NamesArray)
 {
-	Count = NamesArray.size();
+	size_t Count = NamesArray.size();
 	Strings = nullptr;
 
 	if (Count)
 	{
-		const auto Items = static_cast<wchar_t**>(AddBytes(Count * sizeof(wchar_t*)));
-		Strings = Items;
+		size_t numBytes = Count * sizeof(wchar_t*);
+		const auto Items = (wchar_t**)AddBytes(nullptr, numBytes, alignof(wchar_t*));
+		Strings = mHasSpace ? Items : nullptr;
 
-		for (int i = 0; i < Count; ++i)
+		for (size_t i = 0; i < Count; ++i)
 		{
 			wchar_t* pStr = AddString(NamesArray[i]);
-			if (Items)
-			{
+			if (mHasSpace)
 				Items[i] = pStr;
-			}
 		}
 	}
+
+	return Count;
 }
 
 size_t PluginManager::GetPluginInformation(
@@ -2400,32 +2402,20 @@ size_t PluginManager::GetPluginInformation(
 	else
 		return 0;
 
-	struct Combined
-	{
-		FarGetPluginInformation fgpi;
-		PluginInfo PInfo;
-		GlobalInfo GInfo;
-	} Temp;
+	FarGetPluginInformation fgpi;
+	PluginInfo PInfo;
+	GlobalInfo GInfo;
 
-	char  *x_Buffer = nullptr;
-	size_t x_Avail = 0;
-	size_t x_CombSize = sizeof(Combined);
-
-	if (aInfo && aBufferSize >= x_CombSize)
+	if (aInfo == nullptr || aBufferSize < sizeof(fgpi))
 	{
-		x_Avail = aBufferSize - x_CombSize;
-		x_Buffer = reinterpret_cast<char*>(aInfo) + x_CombSize;
-	}
-	else
-	{
-		aInfo = &Temp.fgpi;
+		aBufferSize = 0;
+		aInfo = &fgpi;
 	}
 
-	Sizer sizer(x_Buffer, x_Avail, x_CombSize);
-
-	auto pCombined = reinterpret_cast<Combined*>(aInfo);
-	aInfo->PInfo = &pCombined->PInfo;
-	aInfo->GInfo = &pCombined->GInfo;
+	Sizer sizer(aInfo, aBufferSize);
+	sizer.AddBytes(&fgpi, sizeof(fgpi), 1);
+	aInfo->PInfo = (PluginInfo*) sizer.AddBytes(&PInfo, sizeof(PluginInfo), alignof(PluginInfo));
+	aInfo->GInfo = (GlobalInfo*) sizer.AddBytes(&GInfo, sizeof(GlobalInfo), alignof(GlobalInfo));
 
 	aInfo->ModuleName = sizer.AddString(aPlugin->GetModuleName());
 	aInfo->Flags = (aPlugin->IsLoaded() ? FPF_LOADED : 0) | (aPlugin->IsOemPlugin() ? FPF_ANSI : 0);
@@ -2443,9 +2433,9 @@ size_t PluginManager::GetPluginInformation(
 	aInfo->PInfo->SysID = SysID;
 	aInfo->PInfo->CommandPrefix = sizer.AddString(Prefix);
 
-	sizer.AddItems(aInfo->PInfo->PluginMenuStrings, aInfo->PInfo->PluginMenuStringsNumber, MenuItems);
-	sizer.AddItems(aInfo->PInfo->DiskMenuStrings, aInfo->PInfo->DiskMenuStringsNumber, DiskItems);
-	sizer.AddItems(aInfo->PInfo->PluginConfigStrings, aInfo->PInfo->PluginConfigStringsNumber, ConfigItems);
+	aInfo->PInfo->PluginMenuStringsNumber = sizer.AddItems(aInfo->PInfo->PluginMenuStrings, MenuItems);
+	aInfo->PInfo->DiskMenuStringsNumber = sizer.AddItems(aInfo->PInfo->DiskMenuStrings, DiskItems);
+	aInfo->PInfo->PluginConfigStringsNumber = sizer.AddItems(aInfo->PInfo->PluginConfigStrings, ConfigItems);
 
 	return sizer.GetSize();
 }
