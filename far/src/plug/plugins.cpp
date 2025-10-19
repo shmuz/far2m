@@ -64,6 +64,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "DlgGuid.hpp"
 #include <KeyFileHelper.h>
 #include "DialogBuilder.hpp"
+#include "sizer.hpp"
 #include <assert.h>
 
 const char *FmtDiskMenuStringD = "DiskMenuString%d";
@@ -2287,78 +2288,6 @@ static void ReadCache(KeyFileReadSection& kfh, const char *Fmt, std::vector<FARS
 	}
 }
 
-class Sizer {
-private:
-	void  *mBuf;
-	void  *mCurPtr;
-	size_t mAvail;
-	bool   mHasSpace;
-
-public:
-	Sizer(void *aBuf, size_t aAvail)
-		: mBuf(aBuf), mCurPtr(aBuf), mAvail(aAvail), mHasSpace(aAvail != 0) {}
-
-public:
-	void* AddBytes(const void *Data, size_t NumBytes, size_t Alignment);
-	wchar_t* AddString(const FARString& Str);
-	size_t AddItems(const wchar_t* const* &Strings, const std::vector<FARString>& NamesArray);
-	size_t GetSize() const { return (uintptr_t)mCurPtr - (uintptr_t)mBuf; }
-};
-
-void* Sizer::AddBytes(const void *Data, size_t NumBytes, size_t Alignment)
-{
-	const size_t BIG = 0x100000; // an arbitrary big value that must be sufficient
-	size_t Space = BIG;
-	std::align(Alignment, NumBytes, mCurPtr, Space);
-	size_t RequiredSize = NumBytes + (BIG - Space);
-
-	if (mHasSpace)
-	{
-		if (mAvail >= RequiredSize)
-		{
-			mAvail -= RequiredSize;
-			if (Data)
-				memmove(mCurPtr, Data, NumBytes);
-			else
-				memset(mCurPtr, 0, NumBytes);
-		}
-		else
-			mHasSpace = false;
-	}
-
-	void *Ret = mCurPtr;
-	mCurPtr = (char*)mCurPtr + NumBytes;
-	return Ret;
-}
-
-wchar_t* Sizer::AddString(const FARString& Str)
-{
-	const auto numBytes = sizeof(wchar_t) * (Str.GetLength() + 1);
-	return (wchar_t*)AddBytes(Str.CPtr(), numBytes, alignof(wchar_t));
-}
-
-size_t Sizer::AddItems(const wchar_t* const* &Strings, const std::vector<FARString>& NamesArray)
-{
-	size_t Count = NamesArray.size();
-	Strings = nullptr;
-
-	if (Count)
-	{
-		size_t numBytes = Count * sizeof(wchar_t*);
-		const auto Items = (wchar_t**)AddBytes(nullptr, numBytes, alignof(wchar_t*));
-		Strings = mHasSpace ? Items : nullptr;
-
-		for (size_t i = 0; i < Count; ++i)
-		{
-			wchar_t* pStr = AddString(NamesArray[i]);
-			if (mHasSpace)
-				Items[i] = pStr;
-		}
-	}
-
-	return Count;
-}
-
 size_t PluginManager::GetPluginInformation(
 		Plugin *aPlugin,
 		FarGetPluginInformation *aInfo,
@@ -2414,25 +2343,25 @@ size_t PluginManager::GetPluginInformation(
 	aInfo->PInfo = (PluginInfo*) sizer.AddBytes(&PInfo, sizeof(PluginInfo), alignof(PluginInfo));
 	aInfo->GInfo = (GlobalInfo*) sizer.AddBytes(&GInfo, sizeof(GlobalInfo), alignof(GlobalInfo));
 
-	aInfo->ModuleName = sizer.AddString(aPlugin->GetModuleName());
+	aInfo->ModuleName = sizer.AddFARString(aPlugin->GetModuleName());
 	aInfo->Flags = (aPlugin->IsLoaded() ? FPF_LOADED : 0) | (aPlugin->IsOemPlugin() ? FPF_ANSI : 0);
 
 	aInfo->GInfo->StructSize = sizeof(GlobalInfo);
 	aInfo->GInfo->SysID = SysID;
 	aInfo->GInfo->Version = aPlugin->m_PlugVersion;
-	aInfo->GInfo->Title = sizer.AddString(aPlugin->strTitle);
-	aInfo->GInfo->Description = sizer.AddString(aPlugin->strDescription);
-	aInfo->GInfo->Author = sizer.AddString(aPlugin->strAuthor);
+	aInfo->GInfo->Title = sizer.AddFARString(aPlugin->strTitle);
+	aInfo->GInfo->Description = sizer.AddFARString(aPlugin->strDescription);
+	aInfo->GInfo->Author = sizer.AddFARString(aPlugin->strAuthor);
 	aInfo->GInfo->UseMenuGuids = aPlugin->UseMenuGuids() ? 1 : 0;
 
 	aInfo->PInfo->StructSize = sizeof(PluginInfo);
 	aInfo->PInfo->Flags = Flags;
 	aInfo->PInfo->SysID = SysID;
-	aInfo->PInfo->CommandPrefix = sizer.AddString(Prefix);
+	aInfo->PInfo->CommandPrefix = sizer.AddFARString(Prefix);
 
-	aInfo->PInfo->PluginMenuStringsNumber = sizer.AddItems(aInfo->PInfo->PluginMenuStrings, MenuItems);
-	aInfo->PInfo->DiskMenuStringsNumber = sizer.AddItems(aInfo->PInfo->DiskMenuStrings, DiskItems);
-	aInfo->PInfo->PluginConfigStringsNumber = sizer.AddItems(aInfo->PInfo->PluginConfigStrings, ConfigItems);
+	aInfo->PInfo->PluginMenuStringsNumber = sizer.AddStrArray(aInfo->PInfo->PluginMenuStrings, MenuItems);
+	aInfo->PInfo->DiskMenuStringsNumber = sizer.AddStrArray(aInfo->PInfo->DiskMenuStrings, DiskItems);
+	aInfo->PInfo->PluginConfigStringsNumber = sizer.AddStrArray(aInfo->PInfo->PluginConfigStrings, ConfigItems);
 
 	return sizer.GetSize();
 }

@@ -33,20 +33,19 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
-#include "lang.hpp"
+#include "config.hpp"
+#include "ctrlobj.hpp"
+#include "datetime.hpp"
+#include "delete.hpp"
+#include "dirmix.hpp"
 #include "filelist.hpp"
 #include "filepanels.hpp"
 #include "history.hpp"
-#include "ctrlobj.hpp"
-#include "syslog.hpp"
-#include "message.hpp"
-#include "config.hpp"
-#include "delete.hpp"
-#include "datetime.hpp"
-#include "dirmix.hpp"
-#include "pathmix.hpp"
-#include "panelmix.hpp"
 #include "mix.hpp"
+#include "panelmix.hpp"
+#include "pathmix.hpp"
+#include "sizer.hpp"
+#include "syslog.hpp"
 
 /*
    В стеке ФАРова панель не хранится - только плагиновые!
@@ -161,7 +160,7 @@ int FileList::FileNameToPluginItem(const wchar_t *Name, PluginPanelItem *pi)
 	return FALSE;
 }
 
-void FileList::FileListToPluginItem(FileListItem *fi, PluginPanelItem *pi)
+void FileList::FileListToPluginItem(const FileListItem *fi, PluginPanelItem *pi)
 {
 	pi->FindData.lpwszFileName = wcsdup(fi->strName);
 	pi->FindData.nFileSize = fi->FileSize;
@@ -201,49 +200,29 @@ void FileList::FreePluginPanelItem(PluginPanelItem *pi)
 		free((void *)pi->UserData);
 }
 
-size_t FileList::FileListToPluginItem2(FileListItem *fi, PluginPanelItem *pi)
+size_t FileList::FileListToPluginItem2(const FileListItem *fi, PluginPanelItem *pi)
 {
-	auto Ceil = [] (size_t size) {
-		size_t Ret = size / sizeof(wchar_t);
-		return (Ret * sizeof(wchar_t) < size) ? Ret + 1 : Ret;
-	};
+	PluginPanelItem Item{};
+	bool bHasMem = pi != nullptr;
+	pi = bHasMem ? pi : &Item;
 
-	const size_t pi_size = Ceil(sizeof(*pi));
-	const size_t cn_size = Ceil(fi->CustomColumnNumber * sizeof(wchar_t *));
+	Sizer sizer(pi, bHasMem ? Sizer::BIG : 0);
+	sizer.AddBytes(nullptr, sizeof(PluginPanelItem), 1);
 
-	size_t size = pi_size + cn_size;
-	size+= fi->strName.GetLength() + 1;
-	size+= fi->strOwner.IsEmpty() ? 0 : fi->strOwner.GetLength() + 1;
-	size+= fi->strGroup.IsEmpty() ? 0 : fi->strGroup.GetLength() + 1;
-	size+= fi->DizText ? wcslen(fi->DizText) + 1 : 0;
-
-	for (int ii = 0; ii < fi->CustomColumnNumber; ii++) {
-		size+= fi->CustomColumnData[ii] ? wcslen(fi->CustomColumnData[ii]) + 1 : 0;
-	}
+	pi->FindData.lpwszFileName = (wchar_t*) sizer.AddFARString(fi->strName);
+	pi->CustomColumnNumber =
+			sizer.AddStrArray(pi->CustomColumnData, fi->CustomColumnData, fi->CustomColumnNumber);
+	pi->Description = sizer.AddCString(fi->DizText);
+	pi->Owner = fi->strOwner.IsEmpty() ? nullptr : sizer.AddFARString(fi->strOwner);
+	pi->Group = fi->strGroup.IsEmpty() ? nullptr : sizer.AddFARString(fi->strGroup);
 
 	if (fi->UserData && (fi->UserFlags & PPIF_USERDATA)) {
-		size+= Ceil(*(DWORD *)fi->UserData);
-	}
+		DWORD Size = *(DWORD *)fi->UserData;
+		pi->UserData = (DWORD_PTR)sizer.AddBytes((void*)fi->UserData, Size, alignof(max_align_t));
+	} else
+		pi->UserData = fi->UserData;
 
-	if (pi) {
-		wchar_t *data = (wchar_t *)(pi) + pi_size;
-
-		auto AddFARString = [&] (const FARString &str) {
-			wchar_t *Ret = wcscpy(data, str);
-			data+= str.GetLength() + 1;
-			return Ret;
-		};
-
-		auto AddString = [&] (const wchar_t *str) {
-			wchar_t *Ret = nullptr;
-			if (str) {
-				Ret = wcscpy(data, str);
-				data+= wcslen(str) + 1;
-			}
-			return Ret;
-		};
-
-		pi->FindData.lpwszFileName = AddFARString(fi->strName);
+	if (bHasMem) {
 		pi->FindData.nFileSize = fi->FileSize;
 		pi->FindData.nPhysicalSize = fi->PhysicalSize;
 		pi->FindData.dwFileAttributes = fi->FileAttr;
@@ -255,32 +234,12 @@ size_t FileList::FileListToPluginItem2(FileListItem *fi, PluginPanelItem *pi)
 		pi->Flags = fi->UserFlags | (fi->Selected ? PPIF_SELECTED : 0);
 		pi->CRC32 = fi->CRC32;
 		pi->Reserved[0] = pi->Reserved[1] = 0;
-
-		pi->CustomColumnNumber = fi->CustomColumnNumber;
-		pi->CustomColumnData = (wchar_t **)data;
-		data+= cn_size;
-		for (int ii = 0; ii < fi->CustomColumnNumber; ii++) {
-			*(const wchar_t**)&pi->CustomColumnData[ii] = AddString(fi->CustomColumnData[ii]);
-		}
-
-		pi->Description = AddString(fi->DizText);
-		pi->Owner = fi->strOwner.IsEmpty() ? nullptr : AddFARString(fi->strOwner);
-		pi->Group = fi->strGroup.IsEmpty() ? nullptr : AddFARString(fi->strGroup);
-
-		// copy user data at the end to avoid alignment troubles(hooting)
-		if (fi->UserData && (fi->UserFlags & PPIF_USERDATA)) {
-			DWORD Size = *(DWORD *)fi->UserData;
-			pi->UserData = (DWORD_PTR)data;
-			memcpy(data, (const void *)fi->UserData, Size);
-			// data += Ceil(Size);
-		} else
-			pi->UserData = fi->UserData;
 	}
 
-	return size * sizeof(wchar_t);
+	return sizer.GetSize();
 }
 
-void FileList::PluginToFileListItem(PluginPanelItem *pi, FileListItem *fi)
+void FileList::PluginToFileListItem(const PluginPanelItem *pi, FileListItem *fi)
 {
 	fi->strName = pi->FindData.lpwszFileName;
 	fi->strOwner = pi->Owner;

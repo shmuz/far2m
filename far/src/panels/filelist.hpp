@@ -370,9 +370,9 @@ public:
 	static void SavePanelModes(ConfigWriter &cfg_writer);
 	static void ReadPanelModes(ConfigReader &cfg_reader);
 	static int FileNameToPluginItem(const wchar_t *Name, PluginPanelItem *pi);
-	static void FileListToPluginItem(FileListItem *fi, PluginPanelItem *pi);
+	static void FileListToPluginItem(const FileListItem *fi, PluginPanelItem *pi);
 	static void FreePluginPanelItem(PluginPanelItem *pi);
-	size_t FileListToPluginItem2(FileListItem *fi, PluginPanelItem *pi);
-	static void PluginToFileListItem(PluginPanelItem *pi, FileListItem *fi);
+	static size_t FileListToPluginItem2(const FileListItem *fi, PluginPanelItem *pi);
+	static void PluginToFileListItem(const PluginPanelItem *pi, FileListItem *fi);
 	static int IsModeFullScreen(int Mode);
 };

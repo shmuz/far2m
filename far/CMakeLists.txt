@@ -165,6 +165,7 @@ src/mix/FSFileFlags.cpp
 src/mix/StrCells.cpp
 src/mix/CachedCreds.cpp
 src/mix/GitTools.cpp
+src/mix/sizer.cpp
 )
 
 # Set target names for the executables
