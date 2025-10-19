@@ -55,3 +55,5 @@ WinPortRGB WxConsoleBackground2RGB(DWORD64 attributes);
 DWORD WxKeyboardLedsState();
 
 void WinPortWxAssertHandler(const wxString& file, int line, const wxString& func, const wxString& cond, const wxString& msg);
+
+int wxKeyCode2WinKeyCode(int code);

@@ -24,11 +24,15 @@ class SudoAskpassScreen
 			ir.EventType = WINDOW_BUFFER_SIZE_EVENT;
 			ir.Event.WindowBufferSizeEvent.dwSize.X = w;
 			ir.Event.WindowBufferSizeEvent.dwSize.Y = h;
+			fprintf(stderr, "FinalScreenUpdater: %d %d\n",
+				ir.Event.WindowBufferSizeEvent.dwSize.X, ir.Event.WindowBufferSizeEvent.dwSize.Y);
 		}
 
 		~FinalScreenUpdater()
 		{
 			ir.Event.WindowBufferSizeEvent.bDamaged = TRUE;
+			fprintf(stderr, "~FinalScreenUpdater: %d %d\n",
+				ir.Event.WindowBufferSizeEvent.dwSize.X, ir.Event.WindowBufferSizeEvent.dwSize.Y);
 			g_winport_con_in->Enqueue(&ir, 1);
 		}
 	} _fsu;
