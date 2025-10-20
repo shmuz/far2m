@@ -2339,9 +2339,9 @@ size_t PluginManager::GetPluginInformation(
 	}
 
 	Sizer sizer(aInfo, aBufferSize);
-	sizer.AddBytes(&fgpi, sizeof(fgpi), 1);
-	aInfo->PInfo = (PluginInfo*) sizer.AddBytes(&PInfo, sizeof(PluginInfo), alignof(PluginInfo));
-	aInfo->GInfo = (GlobalInfo*) sizer.AddBytes(&GInfo, sizeof(GlobalInfo), alignof(GlobalInfo));
+	sizer.AddBytes(sizeof(fgpi), &fgpi);
+	aInfo->PInfo = sizer.AddObject<PluginInfo>(1, &PInfo);
+	aInfo->GInfo = sizer.AddObject<GlobalInfo>(1, &GInfo);
 
 	aInfo->ModuleName = sizer.AddFARString(aPlugin->GetModuleName());
 	aInfo->Flags = (aPlugin->IsLoaded() ? FPF_LOADED : 0) | (aPlugin->IsOemPlugin() ? FPF_ANSI : 0);

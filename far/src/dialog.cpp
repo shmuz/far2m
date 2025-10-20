@@ -337,7 +337,7 @@ static size_t ConvertItemEx2(FarDialogItem *Item, const DialogItemEx *Data)
 	FarDialogItem LocalItem;
 	auto pItem = Item ? Item : &LocalItem;
 	Sizer sizer(pItem, Item ? Sizer::BIG : 0);
-	sizer.AddBytes(nullptr, sizeof(FarDialogItem), 1);
+	sizer.AddBytes(sizeof(FarDialogItem));
 
 	if (Item)
 		ConvertItemSmall(pItem, Data); // here, because it sets pItem->PtrData to nullptr
@@ -348,12 +348,11 @@ static size_t ConvertItemEx2(FarDialogItem *Item, const DialogItemEx *Data)
 
 	if (Data->Type == DI_LISTBOX || Data->Type == DI_COMBOBOX) {
 		FarList LocalItems, *pLocalItems = &LocalItems;
-		pItem->Param.ListItems = (FarList*)sizer.AddBytes(nullptr, sizeof(FarList), alignof(FarList));
+		pItem->Param.ListItems = sizer.AddObject<FarList>();
 		auto &pItems = Item ? pItem->Param.ListItems : pLocalItems;
 		auto Menu = Data->ListPtr;
 		pItems->ItemsNumber = Menu->GetItemCount();
-		pItems->Items = (FarListItem*)
-				sizer.AddBytes(nullptr, pItems->ItemsNumber * sizeof(FarListItem), alignof(FarListItem));
+		pItems->Items = sizer.AddObject<FarListItem>(pItems->ItemsNumber);
 		if (Item) {
 			for (int i=0; i < pItems->ItemsNumber; i++)
 				Menu->MenuItem2FarList(Menu->GetItemPtr(i), &pItems->Items[i]);

@@ -2,7 +2,7 @@
 
 #include "sizer.hpp"
 
-void* Sizer::AddBytes(const void *Data, size_t NumBytes, size_t Alignment)
+void* Sizer::AddBytes(size_t NumBytes, const void *Data, size_t Alignment)
 {
 	size_t Space = BIG;
 	std::align(Alignment, NumBytes, mCurPtr, Space);
@@ -29,16 +29,12 @@ void* Sizer::AddBytes(const void *Data, size_t NumBytes, size_t Alignment)
 
 wchar_t* Sizer::AddFARString(const FARString& Str)
 {
-	const auto numBytes = sizeof(wchar_t) * (Str.GetLength() + 1);
-	return (wchar_t*)AddBytes(Str.CPtr(), numBytes, alignof(wchar_t));
+	return AddObject<wchar_t>(Str.GetLength() + 1, Str.CPtr());
 }
 
 wchar_t* Sizer::AddCString(const wchar_t* Str)
 {
-	if (Str == nullptr)
-		return nullptr;
-	const auto numBytes = sizeof(wchar_t) * (wcslen(Str) + 1);
-	return (wchar_t*)AddBytes(Str, numBytes, alignof(wchar_t));
+	return Str ? AddObject<wchar_t>(wcslen(Str) + 1, Str) : nullptr;
 }
 
 size_t Sizer::AddStrArray(const wchar_t* const* &Strings, const std::vector<FARString>& NamesArray)
@@ -48,8 +44,7 @@ size_t Sizer::AddStrArray(const wchar_t* const* &Strings, const std::vector<FARS
 
 	if (Count)
 	{
-		size_t numBytes = Count * sizeof(wchar_t*);
-		const auto Items = (wchar_t**)AddBytes(nullptr, numBytes, alignof(wchar_t*));
+		const auto Items = AddObject<wchar_t*>(Count);
 		Strings = mHasSpace ? Items : nullptr;
 
 		for (size_t i = 0; i < Count; ++i)
@@ -69,8 +64,7 @@ size_t Sizer::AddStrArray(const wchar_t* const* &Strings, wchar_t** NamesArray, 
 
 	if (Count)
 	{
-		size_t numBytes = Count * sizeof(wchar_t*);
-		const auto Items = (wchar_t**)AddBytes(nullptr, numBytes, alignof(wchar_t*));
+		const auto Items = AddObject<wchar_t*>(Count);
 		Strings = mHasSpace ? Items : nullptr;
 
 		for (size_t i = 0; i < Count; ++i)

@@ -202,12 +202,12 @@ void FileList::FreePluginPanelItem(PluginPanelItem *pi)
 
 size_t FileList::FileListToPluginItem2(const FileListItem *fi, PluginPanelItem *pi)
 {
-	PluginPanelItem Item{};
+	PluginPanelItem Item;
 	bool bHasMem = pi != nullptr;
 	pi = bHasMem ? pi : &Item;
 
 	Sizer sizer(pi, bHasMem ? Sizer::BIG : 0);
-	sizer.AddBytes(nullptr, sizeof(PluginPanelItem), 1);
+	sizer.AddBytes(sizeof(PluginPanelItem));
 
 	pi->FindData.lpwszFileName = (wchar_t*) sizer.AddFARString(fi->strName);
 	pi->CustomColumnNumber =
@@ -218,7 +218,7 @@ size_t FileList::FileListToPluginItem2(const FileListItem *fi, PluginPanelItem *
 
 	if (fi->UserData && (fi->UserFlags & PPIF_USERDATA)) {
 		DWORD Size = *(DWORD *)fi->UserData;
-		pi->UserData = (DWORD_PTR)sizer.AddBytes((void*)fi->UserData, Size, alignof(max_align_t));
+		pi->UserData = (DWORD_PTR)sizer.AddBytes(Size, (void*)fi->UserData, alignof(max_align_t));
 	} else
 		pi->UserData = fi->UserData;
 
