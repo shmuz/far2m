@@ -57,6 +57,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "history.hpp"
 #include "InterThreadCall.hpp"
 #include "DlgGuid.hpp"
+#include "sizer.hpp"
 #include <VT256ColorTable.h>
 #include <cwctype>
 #include <atomic>
@@ -333,21 +334,33 @@ bool ConvertItemEx(CVTITEMFLAGS FromPlugin, FarDialogItem *Item, DialogItemEx *D
 
 static size_t ConvertItemEx2(FarDialogItem *Item, const DialogItemEx *Data)
 {
-	size_t size = sizeof(*Item);
+	FarDialogItem LocalItem;
+	auto pItem = Item ? Item : &LocalItem;
+	Sizer sizer(pItem, Item ? Sizer::BIG : 0);
+	sizer.AddBytes(nullptr, sizeof(FarDialogItem), 1);
+
+	if (Item)
+		ConvertItemSmall(pItem, Data); // here, because it sets pItem->PtrData to nullptr
+
 	FARString str;
-	size_t sz = ItemStringAndSize(Data, str);
-	size+= (sz + 1) * sizeof(wchar_t);
+	ItemStringAndSize(Data, str);
+	pItem->PtrData = sizer.AddFARString(str);
 
-	if (Item) {
-		ConvertItemSmall(Item, Data);
-
-		wchar_t *p = (wchar_t *)(Item + 1);
-		Item->PtrData = p;
-		wmemcpy(p, str.CPtr(), sz);
-		p[sz] = L'\0';
+	if (Data->Type == DI_LISTBOX || Data->Type == DI_COMBOBOX) {
+		FarList LocalItems, *pLocalItems = &LocalItems;
+		pItem->Param.ListItems = (FarList*)sizer.AddBytes(nullptr, sizeof(FarList), alignof(FarList));
+		auto &pItems = Item ? pItem->Param.ListItems : pLocalItems;
+		auto Menu = Data->ListPtr;
+		pItems->ItemsNumber = Menu->GetItemCount();
+		pItems->Items = (FarListItem*)
+				sizer.AddBytes(nullptr, pItems->ItemsNumber * sizeof(FarListItem), alignof(FarListItem));
+		if (Item) {
+			for (int i=0; i < pItems->ItemsNumber; i++)
+				Menu->MenuItem2FarList(Menu->GetItemPtr(i), &pItems->Items[i]);
+		}
 	}
 
-	return size;
+	return sizer.GetSize();
 }
 
 void DataToItemEx(const DialogDataEx *Data, DialogItemEx *Item, int Count)

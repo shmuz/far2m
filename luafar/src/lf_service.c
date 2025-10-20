@@ -2678,6 +2678,20 @@ struct FarList* CreateList(lua_State *L, int historyindex)
 	return list;
 }
 
+static void PushList (lua_State *L, const struct FarList *list)
+{
+	lua_createtable(L, list->ItemsNumber, 0);
+	for (int i=0; i < list->ItemsNumber; i++)
+	{
+		lua_createtable(L, 0, 2);
+		PutIntToTable(L, "Flags", list->Items[i].Flags);
+		PutWStrToTable(L, "Text", list->Items[i].Text, -1);
+		lua_rawseti(L, -2, i + 1);
+		if (list->Items[i].Flags & LIF_SELECTED)
+			PutIntToTable(L, "SelectIndex", i + 1);
+	}
+}
+
 // - This function, among other things, makes "conversion" from far3 to far2 API.
 // - Item table is on Lua stack top.
 static void SetFarDialogItem(lua_State *L, struct FarDialogItem* Item, int itemindex, int historyindex)
@@ -2768,13 +2782,8 @@ static void SetFarDialogItem(lua_State *L, struct FarDialogItem* Item, int itemi
 // This function, among other things, makes "conversion" from far2 to far3 API
 static void PushDlgItem (lua_State *L, const struct FarDialogItem* pItem, BOOL table_exist)
 {
-	if (! table_exist) {
+	if (! table_exist)
 		lua_createtable(L, 11, 0);
-		if (pItem->Type == DI_LISTBOX || pItem->Type == DI_COMBOBOX) {
-			lua_createtable(L, 0, 1);
-			lua_rawseti(L, -2, 6);
-		}
-	}
 
 	// position 1-5
 	PutIntToArray  (L, 1, pItem->Type);
@@ -2784,11 +2793,10 @@ static void PushDlgItem (lua_State *L, const struct FarDialogItem* pItem, BOOL t
 	PutIntToArray  (L, 5, pItem->Y2);
 
 	// position 6
-	if (pItem->Type == DI_LISTBOX || pItem->Type == DI_COMBOBOX) {
-		lua_rawgeti(L, -1, 6);
-		lua_pushinteger(L, pItem->ListPos+1);
-		lua_setfield(L, -2, "SelectIndex");
-		lua_pop(L,1);
+	if ((pItem->Type == DI_LISTBOX || pItem->Type == DI_COMBOBOX) && pItem->ListItems)
+	{
+		PushList(L, pItem->ListItems);
+		lua_rawseti(L, -2, 6);
 	}
 	else if (pItem->Type == DI_USERCONTROL)
 	{
@@ -3673,8 +3681,12 @@ int PushDNParams (lua_State *L, int Msg, int Param1, LONG_PTR Param2)
 	{
 		case DN_DRAWDLGITEM:
 		case DN_EDITCHANGE:
-			PushDlgItem(L, (struct FarDialogItem*)Param2, FALSE);
+		{
+			struct FarDialogItem fdi = *(struct FarDialogItem*)Param2;
+			fdi.History = NULL; // clear possible garbage value sent by Far
+			PushDlgItem(L, &fdi, FALSE);
 			break;
+		}
 
 		case DN_HELP:
 			push_utf8_string(L, Param2 ? (wchar_t*)Param2 : L"", -1);
