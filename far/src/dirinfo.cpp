@@ -165,6 +165,7 @@ int GetDirInfo(const wchar_t *Title, const wchar_t *DirName, uint32_t &DirCount,
 				if (Flags & GETDIRINFO_ENHBREAK) {
 					return -1;
 				}
+				[[fallthrough]];
 
 			default:
 				GetInputRecord(&rec);

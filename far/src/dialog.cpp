@@ -62,6 +62,9 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cwctype>
 #include <atomic>
 
+#define FarIsEditNoCombobox(Type) \
+	((Type) == DI_EDIT || (Type) == DI_FIXEDIT || (Type) == DI_PSWEDIT || (Type) == DI_MEMOEDIT)
+
 #define VTEXT_ADN_SEPARATORS 1
 
 // Флаги для функции ConvertItem
@@ -1140,8 +1143,6 @@ BOOL Dialog::SetItemRect(unsigned ID, SMALL_RECT *aRect)
 			CurItem->Y2 = 0;	// ???
 			break;
 		case DI_VTEXT:
-			CurItem->X2 = 0;	// ???
-			CurItem->Y2 = Rect.Bottom;
 		case DI_DOUBLEBOX:
 		case DI_SINGLEBOX:
 		case DI_USERCONTROL:
@@ -2665,7 +2666,7 @@ int64_t Dialog::VMProcess(int OpCode, void *vParam, int64_t iParam)
 			return 0;
 		}
 		case MCODE_F_EDITOR_SEL: {
-			if (FarIsEdit(Item[FocusPos]->Type)
+			if (FarIsEditNoCombobox(Item[FocusPos]->Type)
 					|| (Item[FocusPos]->Type == DI_COMBOBOX
 							&& !(DropDownOpened || (Item[FocusPos]->Flags & DIF_DROPDOWNLIST)))) {
 				return ((DlgEdit *)(Item[FocusPos]->ObjPtr))->VMProcess(OpCode, vParam, iParam);
@@ -2861,8 +2862,9 @@ int Dialog::ProcessKey(FarKey Key)
 
 		case KEY_NUMENTER:
 		case KEY_ENTER: {
-			if (Item[FocusPos]->Type != DI_COMBOBOX && FarIsEdit(Item[FocusPos]->Type)
-					&& (Item[FocusPos]->Flags & DIF_EDITOR) && !(Item[FocusPos]->Flags & DIF_READONLY)) {
+			if (FarIsEditNoCombobox(Item[FocusPos]->Type)
+					&& (Item[FocusPos]->Flags & DIF_EDITOR) && !(Item[FocusPos]->Flags & DIF_READONLY))
+			{
 				unsigned EditorLastPos;
 
 				for (EditorLastPos = I = FocusPos; I < ItemCount; I++)
@@ -3458,10 +3460,7 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 				// для прозрачных :-)
 				if (Item[I]->Type == DI_SINGLEBOX || Item[I]->Type == DI_DOUBLEBOX) {
 					// если на рамке, то...
-					if (((MsX == Rect.Left || MsX == Rect.Right) && MsY >= Rect.Top && MsY <= Rect.Bottom)
-							||									// vert
-							((MsY == Rect.Top || MsY == Rect.Bottom) && MsX >= Rect.Left
-									&& MsX <= Rect.Right))		// hor
+					if (MsX == Rect.Left || MsX == Rect.Right || MsY == Rect.Top || MsY == Rect.Bottom)
 					{
 						if (DlgProc((HANDLE)this, DN_MOUSECLICK, I, (LONG_PTR)MouseEvent))
 							return TRUE;

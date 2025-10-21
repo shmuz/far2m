@@ -210,7 +210,7 @@ enum DialogItemTypes
 };
 
 /*
-   Check diagol element type has inputstring?
+   Check dialog element type has inputstring?
    (DI_EDIT, DI_FIXEDIT, DI_PSWEDIT, etc)
 */
 #ifdef FAR_USE_INTERNALS

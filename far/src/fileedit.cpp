@@ -877,6 +877,7 @@ int FileEditor::ReProcessKey(FarKey Key, int CalledFromControl)
 
 				return TRUE;
 			}
+
 			case KEY_F2:
 			case KEY_SHIFTF2: {
 				BOOL Done = FALSE;
@@ -1051,10 +1052,12 @@ int FileEditor::ReProcessKey(FarKey Key, int CalledFromControl)
 
 				return (TRUE);
 			}
+
 			case KEY_ALTF10: {
 				FrameManager->ExitMainLoop(true);
 				return (TRUE);
 			}
+
 			case KEY_CTRLB: {
 				Opt.EdOpt.ShowKeyBar = !Opt.EdOpt.ShowKeyBar;
 
@@ -1066,20 +1069,24 @@ int FileEditor::ReProcessKey(FarKey Key, int CalledFromControl)
 				KeyBarVisible = Opt.EdOpt.ShowKeyBar;
 				return (TRUE);
 			}
+
 			case KEY_CTRLSHIFTB: {
 				Opt.EdOpt.ShowTitleBar = !Opt.EdOpt.ShowTitleBar;
 				TitleBarVisible = Opt.EdOpt.ShowTitleBar;
 				Show();
 				return (TRUE);
 			}
-			case KEY_SHIFTF10:
 
+			case KEY_SHIFTF10:
 				if (!ProcessKey(KEY_F2))    // учтем факт того, что могли отказаться от сохранения
 					return FALSE;
+				[[fallthrough]];
 
 			case KEY_F4:
 				if (F4KeyOnly)
 					return TRUE;
+				[[fallthrough]];
+
 			case KEY_ESC:
 			case KEY_F10: {
 				int FirstSave = 1, NeedQuestion = 1;
@@ -1133,6 +1140,7 @@ int FileEditor::ReProcessKey(FarKey Key, int CalledFromControl)
 
 				return TRUE;
 			}
+
 			case KEY_F8:
 			case KEY_SHIFTF8: {
 				UINT codepage;
@@ -1177,6 +1185,7 @@ int FileEditor::ReProcessKey(FarKey Key, int CalledFromControl)
 				}
 				return TRUE;
 			}
+
 			case KEY_ALTSHIFTF9: {
 				//     Работа с локальной копией EditorOptions
 				EditorOptions EdOpt;
@@ -1190,6 +1199,7 @@ int FileEditor::ReProcessKey(FarKey Key, int CalledFromControl)
 				m_editor->Show();
 				return TRUE;
 			}
+
 			default: {
 				if (Flags.Check(FFILEEDIT_FULLSCREEN) && !CtrlObject->Macro.IsExecuting())
 					EditKeyBar.Refresh(Opt.EdOpt.ShowKeyBar);
@@ -1260,7 +1270,7 @@ int FileEditor::LoadFile(const wchar_t *Name, int &UserBreak)
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	SCOPED_ACTION(TPreRedrawFuncGuard)(Editor::PR_EditorShowMsg);
 	SCOPED_ACTION(wakeful);
-	int LastLineCR = 0;
+	bool LastLineCR = false;
 	EditorCacheParams cp;
 	UserBreak = 0;
 	File EditFile;
@@ -1388,7 +1398,7 @@ int FileEditor::LoadFile(const wchar_t *Name, int &UserBreak)
 			return FALSE;
 		}
 
-		LastLineCR = 0;
+		LastLineCR = false;
 		DWORD CurTime = WINPORT(GetTickCount)();
 
 		if (CurTime - StartTime > RedrawTimeout) {
@@ -1422,12 +1432,11 @@ int FileEditor::LoadFile(const wchar_t *Name, int &UserBreak)
 
 		int Offset = StrLength > 3 ? StrLength - 3 : 0;
 
-		if (!LastLineCR
-				&& ((CurEOL = wmemchr(Str + Offset, L'\r', StrLength - Offset))
-						|| (CurEOL = wmemchr(Str + Offset, L'\n', StrLength - Offset)))) {
+		if ((CurEOL = wmemchr(Str + Offset, L'\r', StrLength - Offset))
+						|| (CurEOL = wmemchr(Str + Offset, L'\n', StrLength - Offset))) {
 			far_wcsncpy(m_editor->m_GlobalEOL, CurEOL, ARRAYSIZE(m_editor->m_GlobalEOL));
 			m_editor->m_GlobalEOL[ARRAYSIZE(m_editor->m_GlobalEOL) - 1] = 0;
-			LastLineCR = 1;
+			LastLineCR = true;
 		}
 
 		if (!m_editor->InsertString(Str, StrLength)) {
