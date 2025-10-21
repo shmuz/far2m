@@ -2289,9 +2289,7 @@ static void ReadCache(KeyFileReadSection& kfh, const char *Fmt, std::vector<FARS
 }
 
 size_t PluginManager::GetPluginInformation(
-		Plugin *aPlugin,
-		FarGetPluginInformation *aInfo,
-		size_t aBufferSize)
+		Plugin *aPlugin, FarGetPluginInformation *aInfo, size_t aBufSize)
 {
 	if (!FindPlugin(aPlugin))
 		return 0;
@@ -2328,40 +2326,46 @@ size_t PluginManager::GetPluginInformation(
 	else
 		return 0;
 
-	FarGetPluginInformation fgpi;
+	FarGetPluginInformation *Out = aInfo;
+	if (Out == nullptr)
+		aBufSize = 0;
+
+	Sizer sizer(Out, aBufSize);
+
+	FarGetPluginInformation FGPInfo;
+	sizer.AddObject<FarGetPluginInformation>();
+	if (aBufSize < sizer.GetSize())
+		Out = &FGPInfo;
+
 	PluginInfo PInfo;
+	Out->PInfo = sizer.AddObject<PluginInfo>();
+	if (aBufSize < sizer.GetSize())
+		Out->PInfo = &PInfo;
+
 	GlobalInfo GInfo;
+	Out->GInfo = sizer.AddObject<GlobalInfo>();
+	if (aBufSize < sizer.GetSize())
+		Out->GInfo = &GInfo;
 
-	if (aInfo == nullptr || aBufferSize < sizeof(fgpi))
-	{
-		aBufferSize = 0;
-		aInfo = &fgpi;
-	}
+	Out->ModuleName = sizer.AddFARString(aPlugin->GetModuleName());
+	Out->Flags = (aPlugin->IsLoaded() ? FPF_LOADED : 0) | (aPlugin->IsOemPlugin() ? FPF_ANSI : 0);
 
-	Sizer sizer(aInfo, aBufferSize);
-	sizer.AddBytes(sizeof(fgpi), &fgpi);
-	aInfo->PInfo = sizer.AddObject<PluginInfo>(1, &PInfo);
-	aInfo->GInfo = sizer.AddObject<GlobalInfo>(1, &GInfo);
+	Out->GInfo->StructSize = sizeof(GlobalInfo);
+	Out->GInfo->SysID = SysID;
+	Out->GInfo->Version = aPlugin->m_PlugVersion;
+	Out->GInfo->Title = sizer.AddFARString(aPlugin->strTitle);
+	Out->GInfo->Description = sizer.AddFARString(aPlugin->strDescription);
+	Out->GInfo->Author = sizer.AddFARString(aPlugin->strAuthor);
+	Out->GInfo->UseMenuGuids = aPlugin->UseMenuGuids() ? 1 : 0;
 
-	aInfo->ModuleName = sizer.AddFARString(aPlugin->GetModuleName());
-	aInfo->Flags = (aPlugin->IsLoaded() ? FPF_LOADED : 0) | (aPlugin->IsOemPlugin() ? FPF_ANSI : 0);
+	Out->PInfo->StructSize = sizeof(PluginInfo);
+	Out->PInfo->Flags = Flags;
+	Out->PInfo->SysID = SysID;
+	Out->PInfo->CommandPrefix = sizer.AddFARString(Prefix);
 
-	aInfo->GInfo->StructSize = sizeof(GlobalInfo);
-	aInfo->GInfo->SysID = SysID;
-	aInfo->GInfo->Version = aPlugin->m_PlugVersion;
-	aInfo->GInfo->Title = sizer.AddFARString(aPlugin->strTitle);
-	aInfo->GInfo->Description = sizer.AddFARString(aPlugin->strDescription);
-	aInfo->GInfo->Author = sizer.AddFARString(aPlugin->strAuthor);
-	aInfo->GInfo->UseMenuGuids = aPlugin->UseMenuGuids() ? 1 : 0;
-
-	aInfo->PInfo->StructSize = sizeof(PluginInfo);
-	aInfo->PInfo->Flags = Flags;
-	aInfo->PInfo->SysID = SysID;
-	aInfo->PInfo->CommandPrefix = sizer.AddFARString(Prefix);
-
-	aInfo->PInfo->PluginMenuStringsNumber = sizer.AddStrArray(aInfo->PInfo->PluginMenuStrings, MenuItems);
-	aInfo->PInfo->DiskMenuStringsNumber = sizer.AddStrArray(aInfo->PInfo->DiskMenuStrings, DiskItems);
-	aInfo->PInfo->PluginConfigStringsNumber = sizer.AddStrArray(aInfo->PInfo->PluginConfigStrings, ConfigItems);
+	Out->PInfo->PluginMenuStringsNumber = sizer.AddStrArray(Out->PInfo->PluginMenuStrings, MenuItems);
+	Out->PInfo->DiskMenuStringsNumber = sizer.AddStrArray(Out->PInfo->DiskMenuStrings, DiskItems);
+	Out->PInfo->PluginConfigStringsNumber = sizer.AddStrArray(Out->PInfo->PluginConfigStrings, ConfigItems);
 
 	return sizer.GetSize();
 }

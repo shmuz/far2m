@@ -148,8 +148,6 @@ void SystemSettings()
 	DeleteLinks->Indent(4);
 	Builder.LinkFlags(DeleteToRecycleBin, DeleteLinks, DIF_DISABLE);
 
-	//	Builder.AddCheckbox(MSudoParanoic, &Opt.SudoParanoic);
-	//	Builder.AddCheckbox(CopyWriteThrough, &Opt.CMOpt.WriteThrough);
 	Builder.AddCheckbox(Msg::ConfigScanJunction, &Opt.ScanJunction);
 	Builder.AddCheckbox(Msg::ConfigOnlyFilesSize, &Opt.OnlyFilesSize);
 
@@ -159,10 +157,12 @@ void SystemSettings()
 	Builder.AddTextAfter(InactivityExitTime, Msg::ConfigInactivityMinutes);
 	Builder.LinkFlags(InactivityExit, InactivityExitTime, DIF_DISABLE);
 
+	Builder.AddSeparator();
 	AddHistorySettings(Builder, Msg::ConfigSaveHistory, &Opt.SaveHistory, &Opt.HistoryCount);
 	AddHistorySettings(Builder, Msg::ConfigSaveFoldersHistory, &Opt.SaveFoldersHistory,
 			&Opt.FoldersHistoryCount);
 	AddHistorySettings(Builder, Msg::ConfigSaveViewHistory, &Opt.SaveViewHistory, &Opt.ViewHistoryCount);
+	Builder.AddSeparator();
 
 	Builder.AddCheckbox(Msg::ConfigAutoSave, &Opt.AutoSaveSetup);
 	Builder.AddOKCancel();
