@@ -337,28 +337,29 @@ bool ConvertItemEx(CVTITEMFLAGS FromPlugin, FarDialogItem *Item, DialogItemEx *D
 
 static size_t ConvertItemEx2(FarDialogItem *Item, const DialogItemEx *Data)
 {
-	FarDialogItem LocalItem;
-	auto pItem = Item ? Item : &LocalItem;
-	Sizer sizer(pItem, Item ? Sizer::BIG : 0);
-	sizer.AddBytes(sizeof(FarDialogItem));
+	FarDialogItem LocalItem, *Out;
+	Out = Item ? Item : &LocalItem;
+	Sizer sizer(Out, Item ? Sizer::BIG : 0);
+	sizer.AddObject<FarDialogItem>();
 
 	if (Item)
-		ConvertItemSmall(pItem, Data); // here, because it sets pItem->PtrData to nullptr
+		ConvertItemSmall(Out, Data); // place here, because it sets Out->PtrData to nullptr
 
 	FARString str;
 	ItemStringAndSize(Data, str);
-	pItem->PtrData = sizer.AddFARString(str);
+	Out->PtrData = sizer.AddFARString(str);
 
 	if (Data->Type == DI_LISTBOX || Data->Type == DI_COMBOBOX) {
-		FarList LocalItems, *pLocalItems = &LocalItems;
-		pItem->Param.ListItems = sizer.AddObject<FarList>();
-		auto &pItems = Item ? pItem->Param.ListItems : pLocalItems;
+		FarList LocalItems, *outItems;
+		Out->Param.ListItems = sizer.AddObject<FarList>();
+		outItems = Item ? Out->Param.ListItems : &LocalItems;
 		auto Menu = Data->ListPtr;
-		pItems->ItemsNumber = Menu->GetItemCount();
-		pItems->Items = sizer.AddObject<FarListItem>(pItems->ItemsNumber);
+		int Count = Menu->GetItemCount();
+		outItems->ItemsNumber = Count;
+		outItems->Items = sizer.AddObject<FarListItem>(Count);
 		if (Item) {
-			for (int i=0; i < pItems->ItemsNumber; i++)
-				Menu->MenuItem2FarList(Menu->GetItemPtr(i), &pItems->Items[i]);
+			for (int i=0; i < Count; i++)
+				Menu->MenuItem2FarList(Menu->GetItemPtr(i), &outItems->Items[i]);
 		}
 	}
 
