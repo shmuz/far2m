@@ -4,9 +4,9 @@
 
 void* Sizer::AddBytes(size_t NumBytes, const void *Data, size_t Alignment)
 {
-	size_t Space = BIG;
+	size_t Space = SIZE_MAX;
 	std::align(Alignment, NumBytes, mCurPtr, Space);
-	size_t RequiredSize = NumBytes + (BIG - Space);
+	size_t RequiredSize = NumBytes + (SIZE_MAX - Space);
 
 	if (mHasSpace)
 	{
@@ -32,7 +32,7 @@ wchar_t* Sizer::AddFARString(const FARString& Str)
 	return AddObject<wchar_t>(Str.GetLength() + 1, Str.CPtr());
 }
 
-wchar_t* Sizer::AddCString(const wchar_t* Str)
+wchar_t* Sizer::AddWString(const wchar_t* Str)
 {
 	return Str ? AddObject<wchar_t>(wcslen(Str) + 1, Str) : nullptr;
 }
@@ -69,7 +69,7 @@ size_t Sizer::AddStrArray(const wchar_t* const* &Strings, wchar_t** NamesArray, 
 
 		for (size_t i = 0; i < Count; ++i)
 		{
-			wchar_t* pStr = AddCString(NamesArray[i]);
+			wchar_t* pStr = AddWString(NamesArray[i]);
 			if (mHasSpace)
 				Items[i] = pStr;
 		}

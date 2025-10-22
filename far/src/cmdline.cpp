@@ -811,7 +811,7 @@ void CommandLine::ShowViewEditHistory()
 				FileEditor *FEdit=new FileEditor(strStr,CP_AUTODETECT,FFILEEDIT_CANNEWFILE|FFILEEDIT_ENABLEF6);
 
 				if (Type == HR_EDITOR_RO)
-					FEdit->SetLockEditor(TRUE);
+					FEdit->SetLockEditor(true);
 
 				break;
 			}

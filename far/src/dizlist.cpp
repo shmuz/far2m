@@ -228,7 +228,7 @@ const wchar_t *DizList::GetDizTextAddr(const wchar_t *Name, const int64_t FileSi
 			wchar_t SizeText[30];
 			const wchar_t *DizPtr = DizText;
 			bool SkipSize = true;
-			swprintf(SizeText, ARRAYSIZE(SizeText), L"%llu", FileSize);
+			swprintf(SizeText, ARRAYSIZE(SizeText), L"%lld", FileSize);
 
 			for (int I = 0; SizeText[I]; DizPtr++) {
 				if (*DizPtr != L',' && *DizPtr != L'.') {

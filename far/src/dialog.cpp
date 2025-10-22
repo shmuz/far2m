@@ -339,7 +339,7 @@ static size_t ConvertItemEx2(FarDialogItem *Item, const DialogItemEx *Data)
 {
 	FarDialogItem LocalItem, *Out;
 	Out = Item ? Item : &LocalItem;
-	Sizer sizer(Out, Item ? Sizer::BIG : 0);
+	Sizer sizer(Out, Item ? SIZE_MAX : 0);
 	sizer.AddObject<FarDialogItem>();
 
 	if (Item)
@@ -1212,7 +1212,6 @@ BOOL Dialog::GetItemRect(unsigned I, SMALL_RECT &Rect)
 				Rect.Right = Rect.Left + Len - (Len ? 1 : 0);
 
 			if (ItemFlags & (DIF_SEPARATOR | DIF_SEPARATOR2)) {
-				Rect.Bottom = Rect.Top;
 				Rect.Left = (!DialogMode.Check(DMODE_SMALLDIALOG) ? 3 : 0);				//???
 				Rect.Right = X2 - X1 - (!DialogMode.Check(DMODE_SMALLDIALOG) ? 5 : 0);	//???
 			}
@@ -1241,7 +1240,6 @@ BOOL Dialog::GetItemRect(unsigned I, SMALL_RECT &Rect)
 #if defined(VTEXT_ADN_SEPARATORS)
 
 			if (ItemFlags & (DIF_SEPARATOR | DIF_SEPARATOR2)) {
-				Rect.Right = Rect.Left;
 				Rect.Top = (!DialogMode.Check(DMODE_SMALLDIALOG) ? 1 : 0);					//???
 				Rect.Bottom = Y2 - Y1 - (!DialogMode.Check(DMODE_SMALLDIALOG) ? 3 : 0);		//???
 				break;
@@ -6307,8 +6305,7 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 				}
 			} else {
 				fprintf(stderr,
-					"%s: DM_SETREADONLY invoked for non-edit item %u\n",
-					__FUNCTION__, Param1);
+					"%s: DM_SETREADONLY invoked for non-edit item %d\n", __FUNCTION__, Param1);
 			}
 			if (Dlg->DialogMode.Check(DMODE_SHOW)) {		//???
 				Dlg->ShowDialog(Param1);

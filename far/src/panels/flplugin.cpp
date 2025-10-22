@@ -205,13 +205,13 @@ size_t FileList::FileListToPluginItem2(const FileListItem *fi, PluginPanelItem *
 	PluginPanelItem Item, *Out;
 	Out = pi ? pi : &Item;
 
-	Sizer sizer(Out, pi ? Sizer::BIG : 0);
+	Sizer sizer(Out, pi ? SIZE_MAX : 0);
 	sizer.AddObject<PluginPanelItem>();
 
 	Out->FindData.lpwszFileName = sizer.AddFARString(fi->strName);
 	Out->CustomColumnNumber =
 			sizer.AddStrArray(Out->CustomColumnData, fi->CustomColumnData, fi->CustomColumnNumber);
-	Out->Description = sizer.AddCString(fi->DizText);
+	Out->Description = sizer.AddWString(fi->DizText);
 	Out->Owner = fi->strOwner.IsEmpty() ? nullptr : sizer.AddFARString(fi->strOwner);
 	Out->Group = fi->strGroup.IsEmpty() ? nullptr : sizer.AddFARString(fi->strGroup);
 

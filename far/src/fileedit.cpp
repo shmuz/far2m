@@ -712,10 +712,10 @@ int64_t FileEditor::VMProcess(int OpCode, void *vParam, int64_t iParam)
 
 int FileEditor::ProcessKey(FarKey Key)
 {
-	return ReProcessKey(Key, FALSE);
+	return ReProcessKey(Key, false);
 }
 
-int FileEditor::ReProcessKey(FarKey Key, int CalledFromControl)
+int FileEditor::ReProcessKey(FarKey Key, bool CalledFromControl)
 {
 	SudoClientRegion sdc_rgn;
 	if (Key != KEY_F4 && Key != KEY_IDLE)
@@ -758,7 +758,7 @@ int FileEditor::ReProcessKey(FarKey Key, int CalledFromControl)
 		}
 		case KEY_F6: {
 			if (Flags.Check(FFILEEDIT_ENABLEF6)) {
-				int FirstSave = 1, NeedQuestion = 1;
+				bool FirstSave = true, NeedQuestion = true;
 				UINT cp = m_codepage;
 
 				// проверка на "а может это говно удалили уже?"
@@ -773,7 +773,7 @@ int FileEditor::ReProcessKey(FarKey Key, int CalledFromControl)
 						case 0:
 
 							if (ProcessKey(KEY_F2)) {
-								FirstSave = 0;
+								FirstSave = false;
 								break;
 							}
 
@@ -963,7 +963,7 @@ int FileEditor::ReProcessKey(FarKey Key, int CalledFromControl)
 
 					ShowConsoleTitle();
 					FarChDir(strStartDir);    //???
-					int SaveResult = SaveFile(strFullSaveAsName, 0, SaveAs, SaveAsTextFormat, codepage,
+					int SaveResult = SaveFile(strFullSaveAsName, false, SaveAs, SaveAsTextFormat, codepage,
 							DecideAboutSignature());
 
 					if (SaveResult == SAVEFILE_ERROR) {
@@ -1089,7 +1089,7 @@ int FileEditor::ReProcessKey(FarKey Key, int CalledFromControl)
 
 			case KEY_ESC:
 			case KEY_F10: {
-				int FirstSave = 1, NeedQuestion = 1;
+				bool FirstSave = true, NeedQuestion = true;
 
 				if (Key != KEY_SHIFTF10)    // KEY_SHIFTF10 не учитываем!
 				{
@@ -1099,40 +1099,37 @@ int FileEditor::ReProcessKey(FarKey Key, int CalledFromControl)
 					if (m_editor->IsFileChanged() ||    // в текущем сеансе были изменения?
 							FilePlaced)                 // а сам файл то еще на месте?
 					{
-						int Res;
+						int Res = 100;
 
-						if (m_editor->IsFileChanged() && FilePlaced)
+						if (m_editor->IsFileChanged() && FilePlaced) {
 							Res = Message(MSG_WARNING, 3, &EditorSaveExitDeletedId, Msg::EditTitle,
 									Msg::EditSavedChangedNonFile, Msg::EditSavedChangedNonFile2, Msg::HYes,
 									Msg::HNo, Msg::HCancel);
-						else if (!m_editor->IsFileChanged() && FilePlaced)
+						}
+						else if (!m_editor->IsFileChanged() && FilePlaced) {
 							Res = Message(MSG_WARNING, 3, &EditorSaveExitDeletedId, Msg::EditTitle,
 									Msg::EditSavedChangedNonFile1, Msg::EditSavedChangedNonFile2, Msg::HYes,
 									Msg::HNo, Msg::HCancel);
-						else
-							Res = 100;
+						}
 
 						switch (Res) {
 							case 0:
-
 								if (!ProcessKey(KEY_F2))    // попытка сначала сохранить
-									NeedQuestion = 0;
+									NeedQuestion = false;
 
-								FirstSave = 0;
+								FirstSave = false;
 								break;
 							case 1:
-								NeedQuestion = 0;
-								FirstSave = 0;
+								FirstSave = NeedQuestion = false;
 								break;
 							case 100:
-								FirstSave = NeedQuestion = 1;
 								break;
 							case 2:
 							default:
 								return FALSE;
 						}
 					} else if (!m_editor->Flags.Check(FEDITOR_MODIFIED))    //????
-						NeedQuestion = 0;
+						NeedQuestion = false;
 				}
 
 				if (!ProcessQuitKey(FirstSave, NeedQuestion))
@@ -1212,7 +1209,7 @@ int FileEditor::ReProcessKey(FarKey Key, int CalledFromControl)
 	return TRUE;
 }
 
-int FileEditor::ProcessQuitKey(int FirstSave, BOOL NeedQuestion)
+int FileEditor::ProcessQuitKey(bool FirstSave, bool NeedQuestion)
 {
 	SudoClientRegion sdc_rgn;
 	FARString strOldCurDir;
@@ -1223,7 +1220,7 @@ int FileEditor::ProcessQuitKey(int FirstSave, BOOL NeedQuestion)
 		int SaveCode = SAVEFILE_SUCCESS;
 
 		if (NeedQuestion) {
-			SaveCode = SaveFile(strFullFileName, FirstSave, 0, FALSE);
+			SaveCode = SaveFile(strFullFileName, FirstSave, false, 0);
 		}
 
 		if (SaveCode == SAVEFILE_CANCEL)
@@ -1257,7 +1254,7 @@ int FileEditor::ProcessQuitKey(int FirstSave, BOOL NeedQuestion)
 					Msg::Retry, Msg::Cancel))
 			break;
 
-		FirstSave = 0;
+		FirstSave = false;
 	}
 
 	FarChDir(strOldCurDir);
@@ -1599,7 +1596,7 @@ public:
 	}
 };
 
-int FileEditor::SaveFile(const wchar_t *Name, int Ask, bool bSaveAs, int TextFormat, UINT codepage,
+int FileEditor::SaveFile(const wchar_t *Name, bool Ask, bool bSaveAs, int TextFormat, UINT codepage,
 		bool AddSignature)
 {
 	SudoClientRegion sdc_rgn;
@@ -1947,7 +1944,7 @@ bool FileEditor::GetCanLoseFocus(bool DynamicMode)
 	return DynamicMode ? !m_editor->IsFileModified() : CanLoseFocus;
 }
 
-void FileEditor::SetLockEditor(BOOL LockMode)
+void FileEditor::SetLockEditor(bool LockMode)
 {
 	if (LockMode)
 		m_editor->Flags.Set(FEDITOR_LOCKMODE);
@@ -1960,9 +1957,9 @@ int FileEditor::FastHide()
 	return Opt.AllCtrlAltShiftRule & CASR_EDITOR;
 }
 
-BOOL FileEditor::isTemporary()
+bool FileEditor::isTemporary()
 {
-	return (!GetDynamicallyBorn());
+	return !GetDynamicallyBorn();
 }
 
 void FileEditor::ResizeConsole()
@@ -1986,7 +1983,7 @@ void FileEditor::SetPluginTitle(const wchar_t *PluginTitle)
 		strPluginTitle = PluginTitle;
 }
 
-BOOL FileEditor::SetFileName(const wchar_t *NewFileName)
+bool FileEditor::SetFileName(const wchar_t *NewFileName)
 {
 	strFileName = NewFileName;
 
@@ -2011,7 +2008,7 @@ BOOL FileEditor::SetFileName(const wchar_t *NewFileName)
 		strFullFileName+= strFileName;
 	}
 
-	return TRUE;
+	return true;
 }
 
 void FileEditor::SetTitle(const wchar_t *Title)
@@ -2151,9 +2148,9 @@ DWORD FileEditor::EditorGetFileAttributes(const wchar_t *Name)
 	return FileAttributes;
 }
 
-/* Return TRUE - панель обовили
+/* Return true - панель обовили
  */
-BOOL FileEditor::UpdateFileList()
+bool FileEditor::UpdateFileList()
 {
 	Panel *ActivePanel = CtrlObject->Cp()->ActivePanel;
 	const wchar_t *FileName = PointToName(strFullFileName);
@@ -2166,10 +2163,10 @@ BOOL FileEditor::UpdateFileList()
 
 	if (!StrCmp(strPanelPath, strFilePath)) {
 		ActivePanel->Update(UPDATE_KEEP_SELECTION | UPDATE_DRAW_MESSAGE);
-		return TRUE;
+		return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 void FileEditor::GetEditorOptions(EditorOptions &EdOpt)
@@ -2370,7 +2367,7 @@ int FileEditor::EditorControl(int Command, void *Param)
 
 					Flags.Set(FFILEEDIT_SAVEWQUESTIONS);
 					// всегда записываем в режиме save as - иначе не сменить кодировку и концы линий.
-					return SaveFile(strName, FALSE, true, EOL, codepage, DecideAboutSignature());
+					return SaveFile(strName, false, true, EOL, codepage, DecideAboutSignature());
 				}
 			}
 
@@ -2448,7 +2445,7 @@ int FileEditor::EditorControl(int Command, void *Param)
 			return FALSE;
 		}
 		case ECTL_PROCESSKEY: {
-			ReProcessKey((int)(INT_PTR)Param);
+			ReProcessKey((FarKey)(INT_PTR)Param);
 			return TRUE;
 		}
 		case ECTL_SETPARAM: {

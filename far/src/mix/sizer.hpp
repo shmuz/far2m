@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+#include "FARString.hpp"
+
 class Sizer {
 private:
 	void  *mBuf;
@@ -12,11 +15,9 @@ public:
 		: mBuf(aBuf), mCurPtr(aBuf), mAvail(aAvail), mHasSpace(aAvail != 0) {}
 
 public:
-	static const size_t BIG = 0xFFFF'0000u; // an arbitrary big value
-
 	void* AddBytes(size_t NumBytes, const void *Data = nullptr, size_t Alignment = 1);
 	wchar_t* AddFARString(const FARString& Str);
-	wchar_t* AddCString(const wchar_t* Str);
+	wchar_t* AddWString(const wchar_t* Str);
 	size_t AddStrArray(const wchar_t* const* &Strings, const std::vector<FARString>& NamesArray);
 	size_t AddStrArray(const wchar_t* const* &Strings, wchar_t** NamesArray, size_t Count);
 	size_t GetSize() const { return (uintptr_t)mCurPtr - (uintptr_t)mBuf; }

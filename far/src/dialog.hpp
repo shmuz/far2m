@@ -150,6 +150,15 @@ struct DialogItemEx
 	int SelStart;
 	int SelEnd;
 
+	DialogItemEx() {}
+	DialogItemEx(const DialogItemEx &Other) { Copy(Other); }
+
+	const DialogItemEx &operator=(const DialogItemEx &Other)
+	{
+		Copy(Other);
+		return *this;
+	}
+
 	void Clear()
 	{
 //		TrueColors.reset();
@@ -182,7 +191,7 @@ struct DialogItemEx
 		SelEnd = 0;
 	}
 
-	const DialogItemEx &operator=(const DialogItemEx &Other)
+	void Copy(const DialogItemEx &Other)
 	{
 		Type = Other.Type;
 		X1 = Other.X1;
@@ -210,7 +219,6 @@ struct DialogItemEx
 		UCData = Other.UCData;
 		SelStart = Other.SelStart;
 		SelEnd = Other.SelEnd;
-		return *this;
 	}
 
 	void Indent(int Delta)

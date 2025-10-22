@@ -96,8 +96,8 @@ public:
 	virtual ~FileEditor();
 
 	void ShowStatus();
-	void SetLockEditor(BOOL LockMode);
-	bool IsFullScreen() { return Flags.Check(FFILEEDIT_FULLSCREEN) != FALSE; }
+	void SetLockEditor(bool LockMode);
+	bool IsFullScreen() { return Flags.Check(FFILEEDIT_FULLSCREEN); }
 	void SetNamesList(NamesList *Names);
 	void SetEnableF6(int AEnableF6)
 	{
@@ -152,10 +152,10 @@ private:
 	FileHolderPtr FHP;
 
 	virtual void DisplayObject();
-	int ProcessQuitKey(int FirstSave, BOOL NeedQuestion = TRUE);
-	BOOL UpdateFileList();
+	int ProcessQuitKey(bool FirstSave, bool NeedQuestion = true);
+	bool UpdateFileList();
 	bool DecideAboutSignature();
-	int ReProcessKey(FarKey Key, int CalledFromControl = TRUE);
+	int ReProcessKey(FarKey Key, bool CalledFromControl = true);
 	bool AskOverwrite(const FARString &FileName);
 	void Init(const wchar_t *Name, UINT codepage, const wchar_t *Title, DWORD InitFlags, int StartLine,
 			int StartChar, const wchar_t *PluginData, int OpenModeExstFile);
@@ -172,18 +172,18 @@ private:
 	virtual int FastHide();    // для нужд CtrlAltShift
 	// возвращает признак того, является ли файл временным
 	// используется для принятия решения переходить в каталог по CtrlF10
-	BOOL isTemporary();
+	bool isTemporary();
 	virtual void ResizeConsole();
 	int LoadFile(const wchar_t *Name, int &UserBreak);
 	// TextFormat, Codepage и AddSignature используются ТОЛЬКО, если bSaveAs = true!
 
 	void SaveContent(const wchar_t *Name, BaseContentWriter *Writer, bool bSaveAs, int TextFormat,
 			UINT codepage, bool AddSignature, int Phase);
-	int SaveFile(const wchar_t *Name, int Ask, bool bSaveAs, int TextFormat = 0, UINT Codepage = CP_UTF8,
+	int SaveFile(const wchar_t *Name, bool Ask, bool bSaveAs, int TextFormat = 0, UINT Codepage = CP_UTF8,
 			bool AddSignature = false);
 	void SetTitle(const wchar_t *Title);
 	virtual FARString &GetTitle(FARString &Title, int SubLen = -1, int TruncSize = 0);
-	BOOL SetFileName(const wchar_t *NewFileName);
+	bool SetFileName(const wchar_t *NewFileName);
 	int ProcessEditorInput(INPUT_RECORD *Rec);
 	void ChangeEditKeyBar();
 	DWORD EditorGetFileAttributes(const wchar_t *Name);
