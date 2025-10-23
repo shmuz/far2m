@@ -510,7 +510,7 @@ function export.Open (OpenFrom, Id, ...)
     local mod = info.Handle.module
     if type(mod.Open) == "function" then
       info.Handle = info.Handle.object
-      local obj = mod.Open(OpenFrom, guid, info)
+      local obj = mod.Open(OpenFrom, Id, info)
       return obj and { module=mod; object=obj }
     end
 

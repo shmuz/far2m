@@ -3,6 +3,7 @@
 local Shared = ...
 local mc = Shared.Constants
 local Msg, ErrMsg, pack = Shared.Msg, Shared.ErrMsg, Shared.pack
+local FullExpand = Shared.FullExpand
 local MacroDirs
 
 local F = far.Flags
