@@ -7,6 +7,7 @@ local CheckChar = string.byte "*"
 local sd = require"far2.simpledialog"
 local F = far.Flags
 local band, bor, bnot = bit64.band, bit64.bor, bit64.bnot
+local TKEY_BINARY = "__binary"
 
 local function MakeItem(idx)
   local val,tp,val0,key,name,saved = Far.GetConfig(idx)
@@ -21,7 +22,7 @@ local function MakeItem(idx)
   elseif tp == "3-state" then
     txt = txt .. tostring(val == 2 and "other" or val)
   elseif tp == "binary" then
-    txt = ("%s(%d bytes)"):format(txt, #val[1])
+    txt = ("%s(%d bytes)"):format(txt, #val[TKEY_BINARY])
   else
     return nil
   end
@@ -57,7 +58,7 @@ local function EditValue(asHex, key, name, tp, val0, val)
     items[posEdit ].readonly = true
     items[posOK   ].disable = true
     items[posReset].disable = true
-    local str, tt = val[1], {}
+    local str, tt = val[TKEY_BINARY], {}
     for i=1,#str do
       tt[i] = ("%02X"):format(string.byte(str, i))
     end

@@ -1356,6 +1356,13 @@ enum FARMACROVARTYPE
 	FMVT_MBSTRING               = 11,
 	FMVT_NEWTABLE               = 12,
 	FMVT_SETTABLE               = 13,
+	FMVT_DIALOG                 = 14,
+	FMVT_TABLE                  = 15,
+	FMVT_GETTABLE               = 16,
+	FMVT_STACKPOP               = 17,
+	FMVT_STACKGETTOP            = 18,
+	FMVT_STACKSETTOP            = 19,
+	FMVT_STACKPUSHVALUE         = 20,
 };
 
 struct FarMacroValue
@@ -1393,11 +1400,19 @@ struct FarMacroValue
 	FarMacroValue(bool v)             { Type=FMVT_BOOLEAN; Boolean=v; }
 	FarMacroValue(double v)           { Type=FMVT_DOUBLE; Double=v; }
 	FarMacroValue(const wchar_t* v)   { Type=FMVT_STRING; String=v; }
-	FarMacroValue(const char* v)      { Type=FMVT_MBSTRING; MBString=v; }
 	FarMacroValue(void* v)            { Type=FMVT_POINTER; Pointer=v; }
-	FarMacroValue(FARMACROVARTYPE tp) { Type=tp; }
-	FarMacroValue(FarMacroValue* arr,size_t count) { Type=FMVT_ARRAY; Array.Values=arr; Array.Count=count; }
+	FarMacroValue(const char* v)      { Type=FMVT_MBSTRING; MBString=v; }
 	FarMacroValue(const class FARString&);
+
+	FarMacroValue(FARMACROVARTYPE tp, int64_t param=0) {
+		Type = tp;
+		Integer = param;
+	}
+	FarMacroValue(FarMacroValue* arr, size_t count) {
+		Type = FMVT_ARRAY;
+		Array.Values = arr;
+		Array.Count = count;
+	}
 #endif
 };
 

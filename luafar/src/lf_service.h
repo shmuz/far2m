@@ -5,6 +5,8 @@
 
 #include "lf_luafar.h"
 
+#define TKEY_BINARY "__binary"
+
 static const DWORD LuamacroId = 0x4EBBEFC8;
 
 typedef int64_t flags_t;

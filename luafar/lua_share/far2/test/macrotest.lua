@@ -49,6 +49,7 @@ local F = far.Flags
 local band, bor, bnot = bit64.band, bit64.bor, bit64.bnot
 local luamacroId = far.GetPluginId()
 local hlfviewerId = 0x1AF0754D
+local TKEY_BINARY = "__binary"
 
 local function pack (...)
   return { n=select("#",...), ... }
@@ -1090,7 +1091,7 @@ local function test_Far_GetConfig()
       assert_str(val0)
     elseif tp == "binary" then
       assert_table(val)
-      assert_str(val[1])
+      assert_str(val[TKEY_BINARY])
     else
       error("unknown type: "..tp)
     end
@@ -1493,8 +1494,10 @@ function MT.test_Plugin()
   -- Plugin.Call, Plugin.SyncCall
   local function test (func, N) -- test arguments and return
     local i1 = bit64.new("0x8765876587658765")
-    local r1,r2,r3,r4,r5 = func(luamacroId, "argtest", "foo", i1, -2.34, false, {"foo\0bar"})
-    assert(r1=="foo" and r2==i1 and r3==-2.34 and r4==false and type(r5)=="table" and r5[1]=="foo\0bar")
+    local a1,a2,a3,a4,a5 = "foo", i1, -2.34, false, {[TKEY_BINARY]="foo\0bar"}
+    local r1,r2,r3,r4,r5 = func(luamacroId, "argtest", a1,a2,a3,a4,a5)
+    assert(r1==a1 and r2==a2 and r3==a3 and r4==a4
+      and type(r5)=="table" and r5[TKEY_BINARY]==a5[TKEY_BINARY])
 
     local src = {}
     for k=1,N do src[k]=k end
@@ -1506,22 +1509,19 @@ function MT.test_Plugin()
 end
 
 local function test_far_MacroExecute()
+  local i1 = bit64.new("0x8765876587658765")
+  local a1,a2,a3,a4,a5,a6 = "foo", false, 5, nil, i1, {[TKEY_BINARY]="bar"}
   local function test(code, flags)
-    local t = far.MacroExecute(code, flags,
-      "foo",
-      false,
-      5,
-      nil,
-      bit64.new("0x8765876587658765"),
-      {"bar"})
-    assert_table (t)
-    assert_eq    (t.n,  6)
-    assert_eq    (t[1], "foo")
-    assert_false (t[2])
-    assert_eq    (t[3], 5)
-    assert_nil   (t[4])
-    assert_eq    (t[5], bit64.new("0x8765876587658765"))
-    assert_eq    (assert_table(t[6])[1], "bar")
+    local r = far.MacroExecute(code, flags, a1, a2, a3, a4, a5, a6)
+    assert_table (r)
+    assert_eq    (r.n,  6)
+    assert_eq    (r[1], a1)
+    assert_eq    (r[2], a2)
+    assert_eq    (r[3], a3)
+    assert_eq    (r[4], a4)
+    assert_eq    (r[5], a5)
+    assert_table (r[6])
+    assert_eq    (r[6][TKEY_BINARY], a6[TKEY_BINARY])
   end
   test("return ...", nil)
   test("return ...", "KMFLAGS_LUA")
