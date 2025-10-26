@@ -107,7 +107,7 @@ static TVar Convert2TVar(const FarMacroValue &val)
 		case FMVT_BOOLEAN: return TVar(val.Boolean);
 		case FMVT_DOUBLE:  return TVar(val.Double);
 		case FMVT_STRING:  return TVar(val.String);
-		case FMVT_POINTER: return TVar((intptr_t)val.Pointer);
+		case FMVT_POINTER: return TVar((int64_t)(intptr_t)val.Pointer);
 		case FMVT_TABLE: {
 			TVar tv(val.Integer);
 			tv.SetType(TVarType::vtTable);
