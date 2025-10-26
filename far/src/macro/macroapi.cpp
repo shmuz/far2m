@@ -99,6 +99,24 @@ static bool ToDouble(long long v, double *d)
 	return false;
 }
 
+static TVar Convert2TVar(const FarMacroValue &val)
+{
+	switch (val.Type)
+	{
+		case FMVT_INTEGER: return TVar(val.Integer);
+		case FMVT_BOOLEAN: return TVar(val.Boolean);
+		case FMVT_DOUBLE:  return TVar(val.Double);
+		case FMVT_STRING:  return TVar(val.String);
+		case FMVT_POINTER: return TVar((intptr_t)val.Pointer);
+		case FMVT_TABLE: {
+			TVar tv(val.Integer);
+			tv.SetType(TVarType::vtTable);
+			return tv;
+		}
+		default: return TVar();
+	}
+}
+
 class FarMacroApi
 {
 public:
@@ -116,11 +134,17 @@ public:
 	void PushNil()                           { SendValue(FMVT_NIL); }
 	void PushTable()                         { SendValue(FMVT_NEWTABLE); }
 	void SetTable()                          { SendValue(FMVT_SETTABLE); }
+	void StackSetTop(int top)                { SendValue(FarMacroValue(FMVT_STACKSETTOP, top)); }
+	void StackPop(int count)                 { SendValue(FarMacroValue(FMVT_STACKPOP, count)); }
+	void StackPushValue(int pos)             { SendValue(FarMacroValue(FMVT_STACKPUSHVALUE, pos)); }
+
 	void PushArray(FarMacroValue *values, size_t count);
 	void PushBinary(const void* data, size_t size);
 	void PushError(const wchar_t* str);
 	void PushValue(const TVar& Var);
 	void SetField(const FarMacroValue &Key, const FarMacroValue &Value);
+	int  StackGetTop();
+	TVar GetTable(int pos, const TVar &Key);
 
 	void absFunc();
 	void ascFunc();
@@ -249,6 +273,23 @@ void FarMacroApi::SetField(const FarMacroValue &Key, const FarMacroValue &Value)
 	SendValue(FMVT_SETTABLE);
 }
 
+int FarMacroApi::StackGetTop()
+{
+	FarMacroValue val(FMVT_STACKGETTOP); //[IN,OUT]
+	SendValue(val);
+	return val.Integer;
+}
+
+TVar FarMacroApi::GetTable(int pos, const TVar &Key)
+{
+	pos = pos > 0 ? pos : StackGetTop() + 1 + pos;
+	FarMacroValue Res(FMVT_GETTABLE, pos);
+	PushValue(Key);
+	SendValue(Res);
+	StackPop(1);
+	return Convert2TVar(Res);
+}
+
 std::vector<TVar> FarMacroApi::parseParams(size_t Count)
 {
 	auto argNum = std::min(mData->Count, Count);
@@ -256,16 +297,7 @@ std::vector<TVar> FarMacroApi::parseParams(size_t Count)
 	Params.reserve(Count);
 	for (size_t i=0; i<argNum; i++)
 	{
-		const FarMacroValue& val = mData->Values[i];
-		switch(val.Type)
-		{
-			case FMVT_INTEGER: Params.emplace_back(val.Integer); break;
-			case FMVT_BOOLEAN: Params.emplace_back(val.Boolean); break;
-			case FMVT_DOUBLE:  Params.emplace_back(val.Double);  break;
-			case FMVT_STRING:  Params.emplace_back(val.String);  break;
-			case FMVT_POINTER: Params.emplace_back((int64_t)(intptr_t)val.Pointer); break;
-			default:           Params.emplace_back();            break;
-		}
+		Params.emplace_back(Convert2TVar(mData->Values[i]));
 	}
 	while (argNum++ < Count)
 		Params.emplace_back();

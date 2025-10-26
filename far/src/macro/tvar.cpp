@@ -263,20 +263,6 @@ static wchar_t *dubstr(const wchar_t *s)
 	return newStr;
 }
 
-static TVar addStr(const wchar_t *a, const wchar_t *b)
-{
-	TVar r(L"");
-	wchar_t *c = new(std::nothrow) wchar_t[StrLength(a ? a : L"")+StrLength(b ? b : L"")+1];
-
-	if (c)
-	{
-		r = wcscat(wcscpy(c, a ? a : L""), b ? b : L"");
-		delete [] c;
-	}
-
-	return r;
-}
-
 TVar::~TVar()
 {
 	if (str)
@@ -416,6 +402,7 @@ const wchar_t *TVar::toString()
 			far_wcsncpy(s, ::toString(dnum),ARRAYSIZE(s));
 			break;
 		case vtInteger:
+		case vtTable:
 			far_wcsncpy(s, ::toString(inum),ARRAYSIZE(s));
 			break;
 		case vtString:
@@ -502,6 +489,7 @@ static int _cmp_Ne(TVarType vt,const void *a, const void *b)
 
 	switch (vt)
 	{
+		case vtTable:
 		case vtInteger: r = *(int64_t*)a != *(int64_t*)b?1:0; break;
 		case vtDouble:  r = *(double*)a != *(double*)b?1:0; break;
 		case vtString:  r = StrCmp((const wchar_t*)a, (const wchar_t*)b); break;
@@ -517,6 +505,7 @@ static int _cmp_Eq(TVarType vt,const void *a, const void *b)
 
 	switch (vt)
 	{
+		case vtTable:
 		case vtInteger: r = *(int64_t*)a == *(int64_t*)b?1:0; break;
 		case vtDouble:  r = *(double*)a == *(double*)b?1:0; break;
 		case vtString:  r = !StrCmp((const wchar_t*)a, (const wchar_t*)b); break;
@@ -532,6 +521,7 @@ static int _cmp_Lt(TVarType vt,const void *a, const void *b)
 
 	switch (vt)
 	{
+		case vtTable:
 		case vtInteger: r = *(int64_t*)a < *(int64_t*)b?1:0; break;
 		case vtDouble:  r = *(double*)a < *(double*)b?1:0; break;
 		case vtString:  r = StrCmp((const wchar_t*)a, (const wchar_t*)b) < 0; break;
@@ -547,6 +537,7 @@ static int _cmp_Le(TVarType vt,const void *a, const void *b)
 
 	switch (vt)
 	{
+		case vtTable:
 		case vtInteger: r = *(int64_t*)a <= *(int64_t*)b?1:0; break;
 		case vtDouble:  r = *(double*)a <= *(double*)b?1:0; break;
 		case vtString:  r = StrCmp((const wchar_t*)a, (const wchar_t*)b) <= 0; break;
@@ -562,6 +553,7 @@ static int _cmp_Gt(TVarType vt,const void *a, const void *b)
 
 	switch (vt)
 	{
+		case vtTable:
 		case vtInteger: r = *(int64_t*)a > *(int64_t*)b?1:0; break;
 		case vtDouble:  r = *(double*)a > *(double*)b?1:0; break;
 		case vtString:  r = StrCmp((const wchar_t*)a, (const wchar_t*)b) > 0; break;
@@ -577,6 +569,7 @@ static int _cmp_Ge(TVarType vt,const void *a, const void *b)
 
 	switch (vt)
 	{
+		case vtTable:
 		case vtInteger: r = *(int64_t*)a >= *(int64_t*)b?1:0; break;
 		case vtDouble:  r = *(double*)a >= *(double*)b?1:0; break;
 		case vtString:  r = StrCmp((const wchar_t*)a, (const wchar_t*)b) >= 0; break;
@@ -594,10 +587,12 @@ int TVar::CompAB(const TVar& a, const TVar& b, TVarFuncCmp fcmp)
 
 	switch (a.vType)
 	{
+		case vtTable:
 		case vtInteger:
 
 			switch (b.vType)
 			{
+				case vtTable:
 				case vtInteger: r = fcmp(vtInteger,&a.inum,&b.inum); break;
 				case vtDouble:  r = fcmp(vtDouble,&a.inum,&b.dnum); break;
 				case vtString:
@@ -619,6 +614,7 @@ int TVar::CompAB(const TVar& a, const TVar& b, TVarFuncCmp fcmp)
 
 			switch (b.vType)
 			{
+				case vtTable:
 				case vtInteger: r = fcmp(vtInteger,&a.dnum,&b.inum); break;
 				case vtDouble:  r = fcmp(vtDouble,&a.dnum,&b.dnum);  break;
 				case vtString:
@@ -728,6 +724,7 @@ int64_t TVar::asInteger() const
 	switch (vType)
 	{
 	case vtInteger:
+	case vtTable:
 	case vtUnknown:
 		return inum;
 
@@ -750,6 +747,7 @@ double TVar::asDouble() const
 	switch (vType)
 	{
 	case vtInteger:
+	case vtTable:
 	case vtUnknown:
 		return inum;
 

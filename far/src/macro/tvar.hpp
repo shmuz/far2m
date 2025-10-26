@@ -49,6 +49,7 @@ enum TVarType
 	vtInteger = 0,
 	vtString  = 1,
 	vtDouble  = 2,
+	vtTable   = 3,
 };
 
 typedef int (*TVarFuncCmp)(TVarType vt,const void *, const void *);
@@ -92,10 +93,12 @@ class TVar
 		friend int operator>=(const TVar&, const TVar&);
 
 		TVarType type() const { return vType; }
+		void SetType(TVarType newType) { vType = newType; }
 
 		int isString()   const { return vType == vtString;  }
 		int isInteger()  const { return vType == vtInteger; }
 		int isDouble()   const { return vType == vtDouble;  }
+		int isTable()    const { return vType == vtTable; }
 		int isUnknown()  const { return vType == vtUnknown;  }
 
 		double d()         const;
