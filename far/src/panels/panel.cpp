@@ -1290,7 +1290,7 @@ void Panel::InitCurDir(const wchar_t *CurDir)
 {
 	if (StrCmp(strCurDir, CurDir) || !TestCurrentDirectory(CurDir)) {
 		strCurDir = CurDir;
-		DeleteEndSlash(strCurDir, true, true); //prevent displaying end slash
+		DeleteEndSlash(strCurDir, true); //prevent displaying end slash
 	}
 }
 

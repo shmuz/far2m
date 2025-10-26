@@ -586,7 +586,7 @@ void TreeList::GetRoot()
 {
 	Panel *RootPanel = GetRootPanel();
 	RootPanel->GetCurDir(strRoot);
-	DeleteEndSlash(strRoot, true, true);
+	DeleteEndSlash(strRoot, true);
 }
 
 Panel *TreeList::GetRootPanel()
@@ -617,7 +617,7 @@ void TreeList::SyncDir()
 	AnotherPanel->GetCurDir(strPanelDir);
 
 	if (!strPanelDir.IsEmpty()) {
-		DeleteEndSlash(strPanelDir, true, true);
+		DeleteEndSlash(strPanelDir, true);
 		if (AnotherPanel->GetType() == FILE_PANEL) {
 			if (!SetDirPosition(strPanelDir)) {
 				ReadSubTree(strPanelDir);

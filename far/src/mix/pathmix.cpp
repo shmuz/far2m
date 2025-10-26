@@ -33,7 +33,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
-
 #include "pathmix.hpp"
 #include "strmix.hpp"
 #include "panel.hpp"
@@ -42,12 +41,10 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 NTPath::NTPath(LPCWSTR Src)
 {
-	if (Src&&*Src)
-	{
-		Str=Src;
-		if (!HasPathPrefix(Src) && *Src!='/')
-		{
-			ConvertNameToFull(Str,Str);
+	if (Src && *Src) {
+		Str = Src;
+		if (!HasPathPrefix(Src) && *Src != GOOD_SLASH) {
+			ConvertNameToFull(Str, Str);
 		}
 	}
 }
@@ -69,12 +66,12 @@ bool IsNetworkServerPath(const wchar_t *Path)
 
 bool IsLocalPath(const wchar_t *Path)
 {
-	return (Path && Path[0] == L'/'); // && Path[1] != L'/'
+	return (Path && Path[0] == LGOOD_SLASH);	// && Path[1] != L'/'
 }
 
 bool IsLocalRootPath(const wchar_t *Path)
 {
-	return (Path && Path[0] == L'/' && !Path[1]);
+	return (Path && Path[0] == LGOOD_SLASH && !Path[1]);
 }
 
 bool HasPathPrefix(const wchar_t *Path)
@@ -94,7 +91,7 @@ bool IsLocalPrefixRootPath(const wchar_t *Path)
 
 bool IsLocalVolumePath(const wchar_t *Path)
 {
-	return HasPathPrefix(Path);//todo  && !_wcsnicmp(&Path[4],L"Volume{",7) && Path[47] == L'}';
+	return HasPathPrefix(Path);		// todo && !_wcsnicmp(&Path[4],L"Volume{",7) && Path[47] == L'}';
 }
 
 bool IsLocalVolumeRootPath(const wchar_t *Path)
@@ -113,7 +110,7 @@ bool PathCanHoldRegularFile(const wchar_t *Path)
 	const wchar_t *p = FirstSlash(Path + offset);
 
 	/* server || server\ */
-	if (!p || !*(p+1))
+	if (!p || !*(p + 1))
 		return false;
 
 	return true;
@@ -142,25 +139,25 @@ bool TestCurrentDirectory(const wchar_t *TestDir)
 {
 	FARString strCurDir;
 
-	if (apiGetCurrentDirectory(strCurDir) && !StrCmp(strCurDir,TestDir))
+	if (apiGetCurrentDirectory(strCurDir) && !StrCmp(strCurDir, TestDir))
 		return true;
 
 	return false;
 }
 
-const wchar_t* WINAPI PointToName(const wchar_t *lpwszPath)
+const wchar_t *WINAPI PointToName(const wchar_t *lpwszPath)
 {
-	return PointToName(lpwszPath,nullptr);
+	return PointToName(lpwszPath, nullptr);
 }
 
-const wchar_t* PointToName(FARString& strPath)
+const wchar_t *PointToName(FARString &strPath)
 {
-	const wchar_t *lpwszPath=strPath.CPtr();
-	const wchar_t *lpwszEndPtr=lpwszPath+strPath.GetLength();
-	return PointToName(lpwszPath,lpwszEndPtr);
+	const wchar_t *lpwszPath = strPath.CPtr();
+	const wchar_t *lpwszEndPtr = lpwszPath + strPath.GetLength();
+	return PointToName(lpwszPath, lpwszEndPtr);
 }
 
-const wchar_t* PointToName(const wchar_t *lpwszPath,const wchar_t *lpwszEndPtr)
+const wchar_t *PointToName(const wchar_t *lpwszPath, const wchar_t *lpwszEndPtr)
 {
 	if (!lpwszPath)
 		return nullptr;
@@ -281,8 +278,7 @@ bool DeleteEndSlash(wchar_t *Path, bool AllEndSlash)
 	bool Ret = false;
 	size_t len = StrLength(Path);
 
-	while (len && IsSlash(Path[--len]))
-	{
+	while (len > 1 && IsSlash(Path[--len])) {
 		Ret = true;
 		Path[len] = L'\0';
 
@@ -296,7 +292,7 @@ bool DeleteEndSlash(wchar_t *Path, bool AllEndSlash)
 bool DeleteEndSlash(std::wstring &strPath, bool AllEndSlash)
 {
 	bool out = false;
-	while (!strPath.empty() && IsSlash(strPath.back())) {
+	while (strPath.size() > 1 && IsSlash(strPath.back())) {
 		out = true;
 		strPath.pop_back();
 		if (!AllEndSlash)
@@ -305,15 +301,14 @@ bool DeleteEndSlash(std::wstring &strPath, bool AllEndSlash)
 	return out;
 }
 
-bool DeleteEndSlash(FARString &strPath, bool AllEndSlash, bool NotEmpty)
+bool DeleteEndSlash(FARString &strPath, bool AllEndSlash)
 {
 	size_t LenToSlash = strPath.GetLength();
-	size_t Limit = NotEmpty ? 1 : 0;
 
-	while (LenToSlash > Limit && IsSlash(strPath.At(LenToSlash - 1)))
-	{
+	while (LenToSlash > 1 && IsSlash(strPath.At(LenToSlash - 1))) {
 		--LenToSlash;
-		if (!AllEndSlash) break;
+		if (!AllEndSlash)
+			break;
 	}
 
 	if (LenToSlash == strPath.GetLength())
