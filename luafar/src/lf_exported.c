@@ -744,21 +744,26 @@ static void WINAPI FillFarMacroCall_Callback (void *CallbackData, struct FarMacr
 	free(CallbackData);
 }
 
-static HANDLE FillFarMacroCall (lua_State* L, int narg)
+static struct FarMacroCall* CreateFarMacroCall(size_t narg)
 {
-	int64_t val64;
-
+	size_t offset = aligned_size(sizeof(struct FarMacroCall), _Alignof(struct FarMacroValue));
 	struct FarMacroCall *fmc = (struct FarMacroCall*)
-		malloc(sizeof(struct FarMacroCall) + narg*sizeof(struct FarMacroValue));
-
+			malloc(offset + narg*sizeof(struct FarMacroValue));
 	fmc->StructSize = sizeof(*fmc);
 	fmc->Count = narg;
-	fmc->Values = (struct FarMacroValue*)(fmc+1);
+	fmc->Values = (struct FarMacroValue*)((char*)fmc + offset);
 	fmc->Callback = FillFarMacroCall_Callback;
 	fmc->CallbackData = fmc;
+	return fmc;
+}
+
+static HANDLE FillFarMacroCall (lua_State* L, int narg)
+{
+	struct FarMacroCall *fmc = CreateFarMacroCall(narg);
 
 	for (int i=0; i<narg; i++)
 	{
+		int64_t val64;
 		int pos = i - narg;
 		int type = lua_type(L, pos);
 		fmc->Values[i].Type = FMVT_NIL;
@@ -838,16 +843,9 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 						lua_rawgeti(L,-nret,1); // nret+1
 						if (lua_toboolean(L, -1))
 						{
-							struct FarMacroCall* fmc = (struct FarMacroCall*)
-								malloc(sizeof(struct FarMacroCall)+sizeof(struct FarMacroValue));
-							fmc->StructSize = sizeof(*fmc);
-							fmc->Count = 1;
-							fmc->Values = (struct FarMacroValue*)(fmc+1);
-							fmc->Callback = FillFarMacroCall_Callback;
-							fmc->CallbackData = fmc;
+							struct FarMacroCall *fmc = CreateFarMacroCall(1);
 							fmc->Values[0].Type = FMVT_PANEL;
 							fmc->Values[0].Value.Pointer = RegisterObject(L); // nret
-
 							lua_pop(L,nret); // +0
 							return fmc;
 						}

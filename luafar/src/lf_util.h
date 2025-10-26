@@ -78,5 +78,6 @@ void  PutFileTimeToTable(lua_State *L, const char* key, FILETIME ft);
 TDialogData* NewDialogData(lua_State* L, HANDLE hDlg, BOOL isOwned);
 TPluginData* GetPluginData(lua_State* L);
 TFarUserControl* CheckFarUserControl(lua_State* L, int pos);
+size_t aligned_size(size_t Size, size_t Alignment);
 
 #endif // LUAFAR_UTIL_H

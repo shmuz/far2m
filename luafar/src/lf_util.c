@@ -228,3 +228,8 @@ void SetAttrWords(const wchar_t* str, DWORD* incl, DWORD* excl)
 		else if (c == L'K')  *excl |= FILE_ATTRIBUTE_DEVICE_SOCK;
 	}
 }
+
+size_t aligned_size(size_t Size, size_t Alignment)
+{
+	return (Size + (Alignment - 1)) & ~(Alignment - 1);
+}
