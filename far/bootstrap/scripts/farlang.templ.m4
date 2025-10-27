@@ -2035,7 +2035,7 @@ ConfigFilenameMaxIndentation
 "Максімальны адступ імёнаў файлаў"
 
 ConfigAutoChange
-"&Автосмена папки"
+"&Автосмена каталога"
 "&Auto change folder"
 "&Automaticky měnit adresář"
 "Ordner &automatisch wechseln (Baumansicht)"

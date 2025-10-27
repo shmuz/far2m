@@ -950,6 +950,7 @@ local function test_Far_GetConfig()
     "Panel.ShowHidden",
     "Panel.SortFolderExt",
     "Panel/Tree.AutoChangeFolder",
+    "Panel/Tree.ExclSubTreeMask",
     "Panel/Tree.LocalDisk",
     "Panel/Tree.MinTreeCount",
     "Panel/Tree.NetDisk",

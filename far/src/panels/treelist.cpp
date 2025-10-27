@@ -331,7 +331,7 @@ void TreeList::DisplayTree(int Fast)
 	}
 
 	UpdateViewPanel();
-	SetTitle();    // не забудим прорисовать заголовок
+	SetTitle();    // не забудем прорисовать заголовок
 
 	if (LckScreen)
 		delete LckScreen;
@@ -442,7 +442,7 @@ int TreeList::ReadTree()
 	int FirstCall = TRUE, AscAbort = FALSE;
 	TreeStartTime = GetProcessUptimeMSec();
 	SCOPED_ACTION(RefreshFrameManager)(ScrX, ScrY, TreeStartTime, FALSE);    // DontRedrawFrame);
-	ScTree.SetFindPath(strRoot, L"*", FSCANTREE_NOFILES | FSCANTREE_NODEVICES);
+	ScTree.SetFindPath(strRoot, L"*", FSCANTREE_NOFILES | FSCANTREE_NODEVICES, Opt.Tree.ExclSubTreeMask);
 	LastScrX = ScrX;
 	LastScrY = ScrY;
 	SCOPED_ACTION(wakeful);
@@ -960,6 +960,15 @@ int TreeList::ProcessKey(FarKey Key)
 
 			return TRUE;
 		}
+		case KEY_LEFT:
+		{
+			LevelUp();
+
+			if (Opt.Tree.AutoChangeFolder && !ModalMode)
+				ProcessKey(KEY_ENTER);
+
+			return TRUE;
+		}
 		case KEY_SUBTRACT:    // OFM: Gray+/Gray- navigation
 		{
 			CurFile = GetPrevNavPos();
@@ -1069,6 +1078,19 @@ int TreeList::GetPrevNavPos() const
 	}
 
 	return PrevPos;
+}
+
+void TreeList::LevelUp()
+{
+	int CurDepth = ListData[CurFile]->Depth;
+
+	for (int I = CurFile - 1; I >= 0; --I)
+		if (ListData[I]->Depth == CurDepth - 1) {
+			CurFile = I;
+			break;
+		}
+
+	DisplayTree(TRUE);
 }
 
 void TreeList::Up(int Count)
@@ -1554,7 +1576,7 @@ void TreeList::ReadSubTree(const wchar_t *Path)
 	ConvertNameToFull(Path, strDirName);
 	AddTreeName(strDirName);
 	int FirstCall = TRUE, AscAbort = FALSE;
-	ScTree.SetFindPath(strDirName, L"*", 0);
+	ScTree.SetFindPath(strDirName, L"*", 0, Opt.Tree.ExclSubTreeMask);
 	LastScrX = ScrX;
 	LastScrY = ScrY;
 

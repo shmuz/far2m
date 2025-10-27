@@ -360,6 +360,7 @@ static struct FARConfig
 	{false, NSecPanelTree, "RemovableDisk",             &Opt.Tree.RemovableDisk, 2},
 	{false, NSecPanelTree, "NetPath",                   &Opt.Tree.NetPath, 2},
 	{true,  NSecPanelTree, "AutoChangeFolder",          &Opt.Tree.AutoChangeFolder, 0, OPT_BOOLEAN}, // ???
+	{true,  NSecPanelTree, "ExclSubTreeMask",           &Opt.Tree.ExclSubTreeMask, L".*"},
 
 	{false, NSecHelp, "ActivateURL",                    &Opt.HelpURLRules, 1},
 
