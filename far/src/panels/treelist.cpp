@@ -83,7 +83,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 static int _cdecl SortList(const void *el1, const void *el2);
 static int _cdecl SortCacheList(const void *el1, const void *el2);
 static int StaticSortNumeric;
-static int StaticSortCaseSensitive;
+static int StaticSortCaseSensitive = TRUE;
 static int TreeCmp(const wchar_t *Str1, const wchar_t *Str2, int Numeric, int CaseSensitive);
 static clock_t TreeStartTime;
 static int LastScrX = -1;
@@ -492,7 +492,8 @@ int TreeList::ReadTree()
 		return FALSE;
 	}
 
-	StaticSortNumeric = NumericSort = StaticSortCaseSensitive = CaseSensitiveSort = FALSE;
+	StaticSortNumeric = NumericSort = CaseSensitiveSort = FALSE;
+	StaticSortCaseSensitive = TRUE;
 	far_qsort(ListData, TreeCount, sizeof(*ListData), SortList);
 
 	if (!FillLastData())
@@ -1166,7 +1167,7 @@ int TreeList::SetDirPosition(const wchar_t *NewDir)
 	long I;
 
 	for (I = 0; I < TreeCount; I++) {
-		if (!StrCmpI(NewDir, ListData[I]->strName)) {
+		if (!StrCmp(NewDir, ListData[I]->strName)) {
 			WorkDir = CurFile = I;
 			CurTopFile = CurFile - (Y2 - Y1 - 1) / 2;
 			CorrectPosition();
