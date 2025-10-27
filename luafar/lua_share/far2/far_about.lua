@@ -15,7 +15,8 @@ local function os_release()
 end
 
 local function FarAbout()
-  local Props = { Title="About far2m"; Bottom="CtrlC, CtrlIns: Copy"; HelpTopic=":FarAbout"; }
+  local Props = { Title="About far2m"; Bottom="CtrlC, CtrlIns: Copy"; HelpTopic=":FarAbout";
+      Id=win.Uuid("01EB28A5-0A1A-4383-8536-0E4C24CC279B"); }
   local Items, Bkeys = {}, "CtrlC CtrlIns"
   local Array = {}
 

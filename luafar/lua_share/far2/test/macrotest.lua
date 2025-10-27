@@ -2414,6 +2414,9 @@ local function test_Guids()
   Keys("Esc"); print("lm:farconfig"); Keys("Enter")
   test_one_guid( "AdvancedConfigId")
 
+  print("lm:farabout"); Keys("Enter")
+  assert_eq(Menu.Id, "01EB28A5-0A1A-4383-8536-0E4C24CC279B"); Keys("Esc");
+
   test_one_guid( "ApplyCommandId",           nil, "CtrlG")
   test_one_guid( "AskInsertMenuOrCommandId", nil, "F2 Ins", 2)
   test_one_guid( "ChangeDiskMenuId",         nil, "AltF1")
