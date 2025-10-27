@@ -142,7 +142,7 @@ public:
 	void PushBinary(const void* data, size_t size);
 	void PushError(const wchar_t* str);
 	void PushValue(const TVar& Var);
-	void SetField(const FarMacroValue &Key, const FarMacroValue &Value);
+	void SetField(const FarMacroValue &Key, const FarMacroValue &Value, int Pos = -3);
 	int  StackGetTop();
 	TVar GetTable(int pos, const TVar &Key);
 
@@ -266,11 +266,11 @@ void FarMacroApi::PushArray(FarMacroValue *values, size_t count)
 	SendValue(arr);
 }
 
-void FarMacroApi::SetField(const FarMacroValue &Key, const FarMacroValue &Value)
+void FarMacroApi::SetField(const FarMacroValue &Key, const FarMacroValue &Value, int Pos)
 {
 	SendValue(Key);
 	SendValue(Value);
-	SendValue(FMVT_SETTABLE);
+	SendValue(FarMacroValue(FMVT_SETTABLE, Pos));
 }
 
 int FarMacroApi::StackGetTop()
