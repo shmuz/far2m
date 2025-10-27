@@ -492,8 +492,8 @@ int TreeList::ReadTree()
 		return FALSE;
 	}
 
-	StaticSortNumeric = NumericSort = CaseSensitiveSort = FALSE;
-	StaticSortCaseSensitive = TRUE;
+	StaticSortNumeric = NumericSort = FALSE;
+	StaticSortCaseSensitive = CaseSensitiveSort = TRUE;
 	far_qsort(ListData, TreeCount, sizeof(*ListData), SortList);
 
 	if (!FillLastData())
