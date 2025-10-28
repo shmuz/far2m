@@ -117,6 +117,21 @@ static TVar Convert2TVar(const FarMacroValue &val)
 	}
 }
 
+static bool IsNum(const FarMacroValue &val)
+{
+	return val.Type==FMVT_DOUBLE || val.Type==FMVT_INTEGER;
+}
+
+static int64_t ToInt(const FarMacroValue &val)
+{
+	return val.Type==FMVT_DOUBLE ? (int64_t)val.Double : val.Type==FMVT_INTEGER ? val.Integer : 0;
+}
+
+static bool IsStr(const FarMacroValue &val)
+{
+	return val.Type==FMVT_STRING;
+}
+
 class FarMacroApi
 {
 public:
@@ -450,9 +465,9 @@ void KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 		}
 
 		case MCODE_F_KEYMACRO:
-			if (Data->Count && Data->Values[0].Type==FMVT_DOUBLE)
+			if (Data->Count && IsNum(Data->Values[0]))
 			{
-				switch (static_cast<int>(Data->Values[0].Double))
+				switch (ToInt(Data->Values[0]))
 				{
 					case IMP_RESTORE_MACROCHAR:
 						RestoreMacroChar();
@@ -470,7 +485,7 @@ void KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 						api.PushNumber(ScrBuf.GetLockCount());
 						break;
 					case IMP_SCRBUF_SETLOCKCOUNT:
-						if (Data->Count > 1) ScrBuf.SetLockCount(Data->Values[1].Double);
+						if (Data->Count > 1) ScrBuf.SetLockCount(ToInt(Data->Values[1]));
 						break;
 					case IMP_GET_USEINTERNALCLIPBOARD:
 						api.PushBoolean(Clipboard::GetUseInternalClipboardState());
@@ -484,7 +499,7 @@ void KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 					case IMP_KEYTOTEXT:
 						if (Data->Count > 1)
 						{
-							KeyToText(Data->Values[1].Double, tmpStr);
+							KeyToText(ToInt(Data->Values[1]), tmpStr);
 							api.PushString(tmpStr);
 						}
 						break;
@@ -903,18 +918,18 @@ void KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 		case MCODE_F_FAR_SETCONFIG:        return api.farsetconfigFunc();
 
 		case MCODE_F_SETCUSTOMSORTMODE:
-			if (Data->Count>=3 && Data->Values[0].Type==FMVT_DOUBLE  &&
-				Data->Values[1].Type==FMVT_DOUBLE && Data->Values[2].Type==FMVT_BOOLEAN)
+			if (Data->Count>=3 && IsNum(Data->Values[0]) && IsNum(Data->Values[1])
+					&& Data->Values[2].Type==FMVT_BOOLEAN)
 			{
-				auto panel = SelectPanel((int)(Data->Values[0].Double));
+				auto panel = SelectPanel(ToInt(Data->Values[0]));
 				if (panel)
 				{
-					int SortMode = (int)Data->Values[1].Double;
+					int SortMode = ToInt(Data->Values[1]);
 					bool InvertByDefault = Data->Values[2].Boolean != 0;
 					sort_order Order = sort_order::first;
-					if (Data->Count>=4 && Data->Values[3].Type==FMVT_DOUBLE)
+					if (Data->Count>=4 && IsNum(Data->Values[3]))
 					{
-						switch (static_cast<int>(Data->Values[3].Double))
+						switch (ToInt(Data->Values[3]))
 						{
 							default:
 							case 0: Order = sort_order::first;   break;
@@ -933,8 +948,8 @@ void KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 			bool Result = false;
 			if (Data->Count >= 2)
 			{
-				auto Area = static_cast<FARMACROAREA>(Data->Values[0].Double);
-				auto Flags = static_cast<DWORD>(Data->Values[1].Double);
+				auto Area = static_cast<FARMACROAREA>(ToInt(Data->Values[0]));
+				DWORD Flags = ToInt(Data->Values[1]);
 				auto Callback = (Data->Count >= 3 && Data->Values[2].Type == FMVT_POINTER) ?
 					reinterpret_cast<FARMACROCALLBACK>(Data->Values[2].Pointer) : nullptr;
 				auto CallbackId = (Data->Count >= 4 && Data->Values[3].Type == FMVT_POINTER) ?
@@ -945,11 +960,11 @@ void KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 		}
 
 		case MCODE_F_MACROSETTINGS:
-			if (Data->Count>=4 && Data->Values[0].Type==FMVT_STRING && Data->Values[1].Type==FMVT_DOUBLE
-				&& Data->Values[2].Type==FMVT_STRING && Data->Values[3].Type==FMVT_STRING)
+			if (Data->Count>=4 && IsStr(Data->Values[0]) && IsNum(Data->Values[1])
+					&& IsStr(Data->Values[2]) && IsStr(Data->Values[3]))
 			{
 				const auto Key = KeyNameToKey(Data->Values[0].String);
-				auto Flags = static_cast<DWORD>(Data->Values[1].Double);
+				DWORD Flags = ToInt(Data->Values[1]);
 				const auto Src = Data->Values[2].String;
 				const auto Descr = Data->Values[3].String;
 				if (Key && GetMacroSettings(Key, Flags, Src, Descr))
@@ -964,10 +979,10 @@ void KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 			break;
 
 		case MCODE_F_PLUGIN_CALL:
-			if(Data->Count>=2 && Data->Values[0].Type==FMVT_BOOLEAN && Data->Values[1].Type==FMVT_DOUBLE)
+			if(Data->Count>=2 && Data->Values[0].Type==FMVT_BOOLEAN && IsNum(Data->Values[1]))
 			{
 				bool SyncCall = (Data->Values[0].Boolean == 0);
-				DWORD SysID = (DWORD)Data->Values[1].Double;
+				DWORD SysID = ToInt(Data->Values[1]);
 				if (CtrlObject->Plugins.FindPlugin(SysID))
 				{
 					FarMacroValue *Values = Data->Count>2 ? Data->Values+2:nullptr;
@@ -1513,7 +1528,7 @@ void FarMacroApi::keyFunc()
 	else
 	{
 		// Проверим...
-		if (mData->Values[0].Type == FMVT_STRING)
+		if (IsStr(mData->Values[0]))
 		{
 			if (KeyNameToKey(mData->Values[0].String) != KEY_INVALID)
 				strKeyText = mData->Values[0].String;
@@ -1889,7 +1904,6 @@ void FarMacroApi::dlgsetfocusFunc()
 		Ret = Dlg->VMProcess(MCODE_V_DLGCURPOS);
 		if (static_cast<int>(Index) >= 0)
 		{
-			//if (!Dlg->SendMessage(DM_SETFOCUS, Index, nullptr))
 			if (!SendDlgMessage(Dlg, DM_SETFOCUS, Index, 0))
 				Ret = 0;
 		}
@@ -1900,23 +1914,18 @@ void FarMacroApi::dlgsetfocusFunc()
 int FarMacroApi::get_config_index()
 {
 	int Index = -1;
+	const auto &Val = mData->Values[0];
 
 	if (mData->Count >= 1) {
-		switch (mData->Values[0].Type) {
-			case FMVT_DOUBLE:
-				Index = static_cast<int>(mData->Values[0].Double) - 1;
-				if (Index < 0 || Index >= (int)ConfigOptGetSize()) {
-					PushError(L"GetConfig: numeric index out of range");
-					return -1;
-				}
-				break;
-
-			case FMVT_STRING:
-				Index = ConfigOptGetIndex(mData->Values[0].String);
-				break;
-
-			default:
-				break;
+		if (IsNum(Val)) {
+			Index = ToInt(Val) - 1;
+			if (Index < 0 || Index >= (int)ConfigOptGetSize()) {
+				PushError(L"GetConfig: numeric index out of range");
+				return -1;
+			}
+		}
+		else if (IsStr(Val)) {
+			Index = ConfigOptGetIndex(Val.String);
 		}
 	}
 
@@ -1930,7 +1939,7 @@ int FarMacroApi::get_config_index()
 //   where Index may be integer or string (Key.Name)
 void FarMacroApi::fargetconfigFunc()
 {
-	if (mData->Values[0].Type == FMVT_STRING && !wcscmp(L"#", mData->Values[0].String)) {
+	if (IsStr(mData->Values[0]) && !wcscmp(L"#", mData->Values[0].String)) {
 		return PushNumber(ConfigOptGetSize());
 	}
 
@@ -1999,30 +2008,29 @@ static bool _SetConfig(int Index, const FarMacroValue &Value)
 
 	switch (Data.ValType) {
 		case OPT_DWORD:
-			if (Value.Type == FMVT_DOUBLE) dword = static_cast<DWORD>(Value.Double);
-			else if (Value.Type == FMVT_INTEGER) dword = static_cast<DWORD>(Value.Integer);
-			else return false;
-			return ConfigOptSetInteger(Index, dword);
+			if (IsNum(Value)) {
+				dword = ToInt(Value);
+				return ConfigOptSetInteger(Index, dword);
+			}
+			return false;
 
 		case OPT_BOOLEAN:
 		case OPT_REALBOOLEAN:
-			if (Value.Type == FMVT_DOUBLE) dword = Value.Double != 0 ? 1 : 0;
-			else if (Value.Type == FMVT_INTEGER) dword = Value.Integer ? 1 : 0;
+			if (IsNum(Value)) dword = ToInt(Value) ? 1 : 0;
 			else if (Value.Type == FMVT_BOOLEAN) dword = Value.Boolean ? 1 : 0;
 			else if (Value.Type == FMVT_NIL) dword = 0;
 			else return false;
 			return ConfigOptSetInteger(Index, dword);
 
 		case OPT_3STATE:
-			if (Value.Type == FMVT_DOUBLE) dword = static_cast<DWORD>(Value.Double) % 3;
-			else if (Value.Type == FMVT_INTEGER) dword = Value.Integer % 3;
+			if (IsNum(Value)) dword = ToInt(Value) % 3;
 			else if (Value.Type == FMVT_BOOLEAN) dword = Value.Boolean ? 1 : 0;
 			else if (Value.Type == FMVT_NIL) dword = 0;
 			else return false;
 			return ConfigOptSetInteger(Index, dword);
 
 		case OPT_SZ:
-			return (Value.Type == FMVT_STRING) ?  ConfigOptSetString(Index, Value.String) : false;
+			return IsStr(Value) ?  ConfigOptSetString(Index, Value.String) : false;
 
 		case OPT_BINARY:
 			return (Value.Type == FMVT_BINARY) ?
@@ -2861,7 +2869,7 @@ void FarMacroApi::stringFunc()
 	auto Params = parseParams(1);
 	auto& Val = Params[0];
 	Val.toString();
-	return PushValue(Val);
+	PushValue(Val);
 }
 
 // S=StrWrap(Text,Width[,Break[,Flags]])
@@ -2882,7 +2890,7 @@ void FarMacroApi::strwrapFunc()
 	const wchar_t* pBreak = *Break.s()==0 ? L"\n" : Break.s();
 	FARString strDest;
 	FarFormatText(Text.toString(), Width,strDest, pBreak, 1); // 1 == FFTM_BREAKLONGWORD
-	return PushString(strDest);
+	PushString(strDest);
 }
 
 void FarMacroApi::intFunc()
@@ -2890,7 +2898,7 @@ void FarMacroApi::intFunc()
 	auto Params = parseParams(1);
 	auto& Val = Params[0];
 	Val.toInteger();
-	return PushValue(Val);
+	PushValue(Val);
 }
 
 void FarMacroApi::floatFunc()
@@ -2898,7 +2906,7 @@ void FarMacroApi::floatFunc()
 	auto Params = parseParams(1);
 	auto& Val = Params[0];
 	Val.toDouble();
-	return PushValue(Val);
+	PushValue(Val);
 }
 
 void FarMacroApi::absFunc()
@@ -2933,20 +2941,20 @@ void FarMacroApi::absFunc()
 		break;
 	}
 
-	return PushValue(Result);
+	PushValue(Result);
 }
 
 void FarMacroApi::ascFunc()
 {
 	auto Params = parseParams(1);
-	auto& tmpVar = Params[0];
+	auto& Var = Params[0];
 
-	if (tmpVar.isString())
+	if (Var.isString())
 	{
-		tmpVar = (int64_t)((DWORD)((WORD)*tmpVar.toString()));
-		tmpVar.toInteger();
+		Var = (int64_t)((DWORD)((WORD)*Var.toString()));
+		Var.toInteger();
 	}
-	return PushValue(tmpVar);
+	PushValue(Var);
 }
 
 // N=FMatch(S,Mask)
@@ -3012,7 +3020,7 @@ void FarMacroApi::editorselFunc()
 			Ret=CurFrame->VMProcess(MCODE_F_EDITOR_SEL,(void*)Action.toInteger(),Opt.i());
 	}
 
-	return PushValue(Ret);
+	PushValue(Ret);
 }
 
 // V=Editor.Undo(N)
@@ -3057,13 +3065,8 @@ void FarMacroApi::editorsettitleFunc()
 // N=Plugin.Exist(SysId)
 void FarMacroApi::pluginexistFunc()
 {
-	bool Ret = false;
-	if (mData->Count>0 && mData->Values[0].Type==FMVT_DOUBLE)
-	{
-		if (CtrlObject->Plugins.FindPlugin(static_cast<DWORD>(mData->Values[0].Double)))
-			Ret = true;
-	}
-	return PushBoolean(Ret);
+	PushBoolean(mData->Count > 0 && IsNum(mData->Values[0])
+			&& CtrlObject->Plugins.FindPlugin(ToInt(mData->Values[0])));
 }
 
 // N=testfolder(S)
@@ -3115,7 +3118,7 @@ void FarMacroApi::kbdLayoutFunc()
 	BOOL Ret=TRUE;
 	HKL  RetLayout=(HKL)0; //Layout=(HKL)0,
 
-	return PushValue(Ret?TVar(static_cast<INT64>(reinterpret_cast<INT_PTR>(RetLayout))):0);
+	PushValue(Ret ? TVar(static_cast<INT64>(reinterpret_cast<INT_PTR>(RetLayout))) : 0);
 }
 
 //### temporary function, for test only
