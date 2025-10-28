@@ -1914,9 +1914,10 @@ void FarMacroApi::dlgsetfocusFunc()
 int FarMacroApi::get_config_index()
 {
 	int Index = -1;
-	const auto &Val = mData->Values[0];
 
 	if (mData->Count >= 1) {
+		const auto &Val = mData->Values[0];
+
 		if (IsNum(Val)) {
 			Index = ToInt(Val) - 1;
 			if (Index < 0 || Index >= (int)ConfigOptGetSize()) {
