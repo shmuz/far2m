@@ -292,16 +292,14 @@ TVar FarMacroApi::GetTable(int pos, const TVar &Key)
 
 std::vector<TVar> FarMacroApi::parseParams(size_t Count)
 {
-	auto argNum = std::min(mData->Count, Count);
+	const auto argNum = std::min(mData->Count, Count);
 	std::vector<TVar> Params;
 	Params.reserve(Count);
 	for (size_t i=0; i<argNum; i++)
 	{
 		Params.emplace_back(Convert2TVar(mData->Values[i]));
 	}
-	while (argNum++ < Count)
-		Params.emplace_back();
-
+	Params.resize(Count);
 	return Params;
 }
 
