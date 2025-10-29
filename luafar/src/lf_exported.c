@@ -575,6 +575,7 @@ void LF_GetOpenPanelInfo(lua_State* L, HANDLE hPlugin, struct OpenPluginInfo *aI
 	Info->CurDir     = AddStringToCollectorField(L, cpos, "CurDir");
 	Info->Format     = AddStringToCollectorField(L, cpos, "Format");
 	Info->PanelTitle = AddStringToCollectorField(L, cpos, "PanelTitle");
+	Info->CurURL     = AddStringToCollectorField(L, cpos, "CurURL");
 	//---------------------------------------------------------------------------
 	lua_getfield(L, -1, "InfoLines");
 	lua_getfield(L, -2, "InfoLinesNumber");
