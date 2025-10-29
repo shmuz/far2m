@@ -14142,7 +14142,7 @@ QuickViewBytes
 "Памер файлаў        "
 
 QuickViewPhysical
-"Физичеcкий размер  "
+"Физичеcкий размер   "
 "Physical size    "
 upd:"Komprim. velikost  "
 upd:"Komprimiert      "

@@ -1809,6 +1809,7 @@ namespace oldfar
 		int                   StartSortOrder;
 		const struct KeyBarTitles *KeyBar;
 		const char           *ShortcutData;
+		const char           *CurURL;
 		long                  Reserved;
 	};
 
