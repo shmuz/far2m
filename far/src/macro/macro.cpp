@@ -632,11 +632,13 @@ FarKey KeyMacro::GetKey()
 					}
 				}
 
-				if (mpr.ReturnType == MPRT_PLUGINMENU)
+				if (mpr.ReturnType == MPRT_PLUGINMENU) {
 					cpInfo.CallFlags |= CPT_MENU;
-				else if (mpr.ReturnType == MPRT_PLUGINCONFIG)
+				}
+				else if (mpr.ReturnType == MPRT_PLUGINCONFIG) {
 					cpInfo.CallFlags |= CPT_CONFIGURE;
-				else if (mpr.ReturnType == MPRT_PLUGINCOMMAND)
+				}
+				else // if (mpr.ReturnType == MPRT_PLUGINCOMMAND)
 				{
 					cpInfo.CallFlags |= CPT_CMDLINE;
 					cpInfo.Command = L"";

@@ -639,19 +639,19 @@ static int libexec(const char *lib, const char *cd, const char *symbol, int argc
 {
 	void *dl = dlopen(lib, RTLD_LOCAL|RTLD_LAZY);
 	if (!dl) {
-		fprintf(stderr, "libexec('%s', '%s', %d) - dlopen error %u\n", lib, symbol, argc, errno);
+		fprintf(stderr, "libexec('%s', '%s', %d) - dlopen error %d\n", lib, symbol, argc, errno);
 		return -1;
 	}
 
 	typedef int (*libexec_main_t)(int argc, char *argv[]);
 	libexec_main_t libexec_main = (libexec_main_t)dlsym(dl, symbol);
 	if (!libexec_main) {
-		fprintf(stderr, "libexec('%s', '%s', %d) - dlsym error %u\n", lib, symbol, argc, errno);
+		fprintf(stderr, "libexec('%s', '%s', %d) - dlsym error %d\n", lib, symbol, argc, errno);
 		return -1;
 	}
 
 	if (cd && *cd && chdir(cd) == -1) {
-		fprintf(stderr, "libexec('%s', '%s', %d) - chdir('%s') error %u\n", lib, symbol, argc, cd, errno);
+		fprintf(stderr, "libexec('%s', '%s', %d) - chdir('%s') error %d\n", lib, symbol, argc, cd, errno);
 	}
 
 	return libexec_main(argc, argv);

@@ -597,19 +597,19 @@ void Manager::SetLastInputRecord(const INPUT_RECORD *Rec)
 
 void Manager::ProcessMainLoop()
 {
-	if ( CurrentFrame )
+	if (CurrentFrame)
 		CtrlObject->Macro.SetArea(CurrentFrame->GetMacroArea());
 
 	DispatchInterThreadCalls();
 
-	if ( CurrentFrame && !CurrentFrame->ProcessEvents() )
+	if (CurrentFrame && !CurrentFrame->ProcessEvents())
 	{
 		ProcessKey(KEY_IDLE);
 	}
-	else
+	else if (CurrentFrame)
 	{
 		// Mantis#0000073: Не работает автоскролинг в QView
-		WaitInMainLoop=IsPanelsActive() && ((FilePanels*)CurrentFrame)->ActivePanel->GetType()!=QVIEW_PANEL;
+		WaitInMainLoop = IsPanelsActive() && ((FilePanels*)CurrentFrame)->ActivePanel->GetType() != QVIEW_PANEL;
 		//WaitInFastFind++;
 		FarKey Key = GetInputRecord(&LastInputRecord);
 		//WaitInFastFind--;

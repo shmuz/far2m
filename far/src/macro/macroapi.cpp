@@ -1099,35 +1099,32 @@ void KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 
 			TVar Out = L"";
 			auto CurArea = GetArea();
-			wchar_t _value[] = { 0,0 };
 
-			if (IsMenuArea(CurArea) || CurArea == MACROAREA_DIALOG)
+			if (auto f = GetTopModal(); f && (IsMenuArea(CurArea) || CurArea == MACROAREA_DIALOG))
 			{
-				if (auto f = GetTopModal())
+				if (CheckCode == MCODE_F_MENU_GETHOTKEY)
 				{
-					if (CheckCode == MCODE_F_MENU_GETHOTKEY)
+					if (auto Result = f->VMProcess(CheckCode, nullptr, MenuItemPos))
 					{
-						if (auto Result=f->VMProcess(CheckCode,nullptr,MenuItemPos) )
-						{
-							_value[0] = static_cast<wchar_t>(Result);
-							Out=_value;
-						}
+						auto HotKey = static_cast<wchar_t>(Result);
+						tmpStr = FARString(&HotKey, 1);
+						Out = tmpStr.CPtr();
 					}
-					else if (CheckCode == MCODE_F_MENU_GETVALUE)
+				}
+				else if (CheckCode == MCODE_F_MENU_GETVALUE)
+				{
+					FARString NewStr;
+					if (f->VMProcess(CheckCode, &NewStr, MenuItemPos))
 					{
-						FARString NewStr;
-						if (f->VMProcess(CheckCode,&NewStr,MenuItemPos))
-						{
-							tmpStr = NewStr;
-							HiText2Str(tmpStr, NewStr);
-							RemoveExternalSpaces(tmpStr);
-							Out=tmpStr.CPtr();
-						}
+						tmpStr = NewStr;
+						HiText2Str(tmpStr, NewStr);
+						RemoveExternalSpaces(tmpStr);
+						Out = tmpStr.CPtr();
 					}
-					else if (CheckCode == MCODE_F_MENU_ITEMSTATUS)
-					{
-						Out=f->VMProcess(CheckCode,nullptr,MenuItemPos);
-					}
+				}
+				else // if (CheckCode == MCODE_F_MENU_ITEMSTATUS)
+				{
+					Out = f->VMProcess(CheckCode, nullptr, MenuItemPos);
 				}
 			}
 
@@ -1915,7 +1912,7 @@ int FarMacroApi::get_config_index()
 {
 	int Index = -1;
 
-	if (mData->Count >= 1) {
+	if (mData->Count) {
 		const auto &Val = mData->Values[0];
 
 		if (IsNum(Val)) {
@@ -1940,7 +1937,7 @@ int FarMacroApi::get_config_index()
 //   where Index may be integer or string (Key.Name)
 void FarMacroApi::fargetconfigFunc()
 {
-	if (IsStr(mData->Values[0]) && !wcscmp(L"#", mData->Values[0].String)) {
+	if (mData->Count && IsStr(mData->Values[0]) && !wcscmp(L"#", mData->Values[0].String)) {
 		return PushNumber(ConfigOptGetSize());
 	}
 
@@ -3066,7 +3063,7 @@ void FarMacroApi::editorsettitleFunc()
 // N=Plugin.Exist(SysId)
 void FarMacroApi::pluginexistFunc()
 {
-	PushBoolean(mData->Count > 0 && IsNum(mData->Values[0])
+	PushBoolean(mData->Count && IsNum(mData->Values[0])
 			&& CtrlObject->Plugins.FindPlugin(ToInt(mData->Values[0])));
 }
 
@@ -3116,10 +3113,10 @@ void FarMacroApi::kbdLayoutFunc()
 	//auto Params = parseParams(1);
 	//DWORD dwLayout = (DWORD)Params[0].getInteger();
 
-	BOOL Ret=TRUE;
-	HKL  RetLayout=(HKL)0; //Layout=(HKL)0,
+	//BOOL Ret=TRUE;
+	//HKL  RetLayout=(HKL)0; //Layout=(HKL)0,
 
-	PushValue(Ret ? TVar(static_cast<INT64>(reinterpret_cast<INT_PTR>(RetLayout))) : 0);
+	//PushValue(Ret ? TVar(static_cast<INT64>(reinterpret_cast<INT_PTR>(RetLayout))) : 0);
 }
 
 //### temporary function, for test only
