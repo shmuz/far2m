@@ -647,11 +647,11 @@ FarKey KeyMacro::GetKey()
 				}
 
 				// Чтобы вернуть результат "выполнения" нужно проверить наличие плагина/пункта
-				if (CtrlObject->Plugins.CallPluginItem(SysID, &cpInfo, true))
+				if (CtrlObject->Plugins.CallPluginItem(pPlugin, &cpInfo, true))
 				{
 					// Если нашли успешно - то теперь выполнение
 					SetMacroValue(true);
-					CtrlObject->Plugins.CallPluginItem(SysID, &cpInfo, false);
+					CtrlObject->Plugins.CallPluginItem(pPlugin, &cpInfo, false);
 				}
 				FrameManager->RefreshFrame();
 

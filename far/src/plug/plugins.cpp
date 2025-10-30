@@ -1962,7 +1962,7 @@ bool PluginManager::CallPlugin(DWORD SysID, int OpenFrom, void *Data)
 }
 
 // поддержка макрофункций Plugin.Menu, Plugin.Command, Plugin.Config
-bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data, bool CheckOnly)
+bool PluginManager::CallPluginItem(Plugin *pPlugin, CallPluginInfo *Data, bool CheckOnly)
 {
 	auto Result = false;
 
@@ -1976,51 +1976,45 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data, bool Check
 	const auto IsViewer = curType == MODALTYPE_VIEWER;
 	const auto IsDialog = curType == MODALTYPE_DIALOG;
 
-	Plugin *pPlugin = FindPlugin(SysID);
-	bool UseMenuGuids = pPlugin && pPlugin->UseMenuGuids();
+	bool UseMenuGuids = pPlugin->UseMenuGuids();
 
 	if (CheckOnly)
 	{
-		Data->pPlugin = pPlugin;
-		if (!pPlugin || !pPlugin->Load())
+		if (!pPlugin->Load())
 			return false;
 
 		// Разрешен ли вызов данного типа в текущей области (предварительная проверка)
 		switch (Data->CallFlags)
 		{
 		case CPT_MENU:
-			if (!Data->pPlugin->HasOpenPlugin())
+			if (!pPlugin->HasOpenPlugin())
 				return false;
 			break;
 
 		case CPT_CONFIGURE:
 			//TODO: Автокомплит не влияет?
-			if (curType!=MODALTYPE_PANELS)
+			if (curType != MODALTYPE_PANELS)
 				return false;
 
-			if (UseMenuGuids ? !Data->pPlugin->HasConfigureV3() : !Data->pPlugin->HasConfigure())
+			if (UseMenuGuids ? !pPlugin->HasConfigureV3() : !pPlugin->HasConfigure())
 				return false;
 			break;
 
 		case CPT_CMDLINE:
 			//TODO: Автокомплит не влияет?
-			if (curType!=MODALTYPE_PANELS)
+			if (curType != MODALTYPE_PANELS)
 				return false;
 
 			//TODO: OpenPanel или OpenFilePlugin?
-			if (!Data->pPlugin->HasOpenPlugin())
+			if (!pPlugin->HasOpenPlugin())
 				return false;
-			break;
-
-		default:
 			break;
 		}
 
 		PluginInfo Info{sizeof(Info)};
-		if (!Data->pPlugin->GetPluginInfo(&Info))
+		if (!pPlugin->GetPluginInfo(&Info))
 			return false;
 
-		const auto IFlags = Info.Flags;
 		int MenuItemsCount = 0;
 
 		// Разрешен ли вызов данного типа в текущей области
@@ -2028,10 +2022,10 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data, bool Check
 		{
 		case CPT_MENU:
 			if (
-					(IsEditor && !(IFlags & PF_EDITOR)) ||
-					(IsViewer && !(IFlags & PF_VIEWER)) ||
-					(IsDialog && !(IFlags & PF_DIALOG)) ||
-					(!IsEditor && !IsViewer && !IsDialog && (IFlags & PF_DISABLEPANELS)))
+					(IsEditor && !(Info.Flags & PF_EDITOR)) ||
+					(IsViewer && !(Info.Flags & PF_VIEWER)) ||
+					(IsDialog && !(Info.Flags & PF_DIALOG)) ||
+					(!IsEditor && !IsViewer && !IsDialog && (Info.Flags & PF_DISABLEPANELS)))
 				return false;
 
 			MenuItemsCount = Info.PluginMenuStringsNumber;
@@ -2045,9 +2039,6 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data, bool Check
 			if (!Info.CommandPrefix || !*Info.CommandPrefix)
 				return false;
 			break;
-
-		default:
-			break;
 		}
 
 		if (Data->CallFlags == CPT_MENU || Data->CallFlags == CPT_CONFIGURE)
@@ -2055,32 +2046,31 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data, bool Check
 			int Type = Data->CallFlags == CPT_MENU ? MTYPE_COMMANDSMENU : MTYPE_CONFIGSMENU;
 			const GUID *Guids = MenuItemGuids(Type, &Info);
 
-			auto ItemFound = false;
+			bool ItemFound = false;
 			if (UseMenuGuids ? !Data->ItemUuid : !Data->ItemNumber) // 0 means "not specified"
 			{
 				if (MenuItemsCount == 1)
 				{
-					Data->FoundItemNumber = 0;
-					if (UseMenuGuids) {
-						Data->FoundUuid = Guids[0];
-					}
 					ItemFound = true;
+					Data->FoundItemNumber = 0;
+					if (UseMenuGuids)
+						Data->FoundUuid = Guids[0];
 				}
 			}
 			else
 			{
 				if (!UseMenuGuids) {
 					if (Data->ItemNumber <= MenuItemsCount) {
-						Data->FoundItemNumber = Data->ItemNumber - 1; // 1-based on the user side
 						ItemFound = true;
+						Data->FoundItemNumber = Data->ItemNumber - 1; // 1-based on the user side
 					}
 				}
 				else {
-					for (int ii = 0; ii < MenuItemsCount; ii++) {
-						if (!memcmp(Data->ItemUuid, &Guids[ii], sizeof(GUID))) {
-							Data->FoundUuid = *Data->ItemUuid;
-							Data->FoundItemNumber = ii;
+					for (int i = 0; i < MenuItemsCount; i++) {
+						if (!memcmp(Data->ItemUuid, &Guids[i], sizeof(GUID))) {
 							ItemFound = true;
+							Data->FoundUuid = *Data->ItemUuid;
+							Data->FoundItemNumber = i;
 							break;
 						}
 					}
@@ -2093,9 +2083,6 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data, bool Check
 		return true;
 	}
 
-	if (!Data->pPlugin)
-		return false;
-
 	PHPTR hPlugin = nullptr;
 	Panel* ActivePanel = CtrlObject->Cp()->ActivePanel;
 
@@ -2103,24 +2090,13 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data, bool Check
 	{
 	case CPT_MENU:
 		{
-			auto OpenCode = OPEN_PLUGINSMENU;
-			void *Item = (void*)Data->FoundItemNumber;
-			if (UseMenuGuids) {
-				Item = &Data->FoundUuid;
-			}
+			auto OpenCode = IsEditor ? OPEN_EDITOR : IsViewer ? OPEN_VIEWER : IsDialog ? OPEN_DIALOG
+					: OPEN_PLUGINSMENU;
 			OpenDlgPluginData pd { sizeof(pd) };
+			void *Item;
 
-			if (IsEditor)
+			if (IsDialog)
 			{
-				OpenCode = OPEN_EDITOR;
-			}
-			else if (IsViewer)
-			{
-				OpenCode = OPEN_VIEWER;
-			}
-			else if (IsDialog)
-			{
-				OpenCode = OPEN_DIALOG;
 				if (!UseMenuGuids) {
 					pd.ItemNumber = Data->FoundItemNumber;
 				}
@@ -2130,25 +2106,24 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data, bool Check
 				pd.hDlg = reinterpret_cast<Dialog*>(TopFrame);
 				Item = &pd;
 			}
+			else
+				Item = UseMenuGuids ? &Data->FoundUuid : (void*)Data->FoundItemNumber;
 
-			hPlugin = OpenPlugin(Data->pPlugin, OpenCode, Item);
+			hPlugin = OpenPlugin(pPlugin, OpenCode, Item);
 			Result = true;
 		}
 		break;
 
 	case CPT_CONFIGURE:
-		ConfigureCurrent(Data->pPlugin, Data->FoundItemNumber, &Data->FoundUuid);
+		ConfigureCurrent(pPlugin, Data->FoundItemNumber, &Data->FoundUuid);
 		return true;
 
 	case CPT_CMDLINE:
 		{
 			const FARString command = Data->Command; // Нужна копия строки
-			hPlugin = OpenPlugin(Data->pPlugin, OPEN_COMMANDLINE, command.CPtr());
+			hPlugin = OpenPlugin(pPlugin, OPEN_COMMANDLINE, command.CPtr());
 			Result = true;
 		}
-		break;
-
-	default:
 		break;
 	}
 
@@ -2169,7 +2144,7 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data, bool Check
 	}
 
 	// restore title for old plugins only.
-	if (Data->pPlugin->IsOemPlugin() && IsEditor && CurEditor)
+	if (pPlugin->IsOemPlugin() && IsEditor && CurEditor)
 	{
 		CurEditor->SetPluginTitle(nullptr);
 	}

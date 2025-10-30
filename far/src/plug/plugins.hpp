@@ -146,7 +146,6 @@ class PluginManager
 				const wchar_t *Command;
 			};
 			// Используется в функции CallPluginItem для внутренних нужд
-			Plugin *pPlugin;
 			GUID FoundUuid;
 			intptr_t FoundItemNumber;
 		};
@@ -208,7 +207,7 @@ class PluginManager
 
 		// $ .09.2000 SVS - Функция CallPlugin - найти плагин по ID и запустить OpenFrom = OPEN_*
 		bool CallPlugin(DWORD SysID, int OpenFrom, void *Data);
-		bool CallPluginItem(DWORD SysID, CallPluginInfo* Data, bool CheckOnly);
+		bool CallPluginItem(Plugin *pPlugin, CallPluginInfo* Data, bool CheckOnly);
 		bool CallMacroPlugin(OpenMacroPluginInfo *Info);
 		void* CallPluginFromMacro(DWORD SysID, OpenMacroInfo *Info);
 
