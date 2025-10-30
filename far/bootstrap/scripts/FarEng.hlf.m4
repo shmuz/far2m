@@ -117,8 +117,8 @@ transforms your commands into the corresponding external archiver calls.
 
 @License
 $ # FAR2M: License#
-GNU GPL v2 and some source files originally licensed under 3-clause BSD license
-See LICENSE.txt and LICENSE.Far2.txt in sources tree for details
+ GNU GPL v2 and some source files originally licensed under 3-clause BSD license
+ See LICENSE.txt and LICENSE.Far2.txt in sources tree for details
 
 @CmdLine
 $ # FAR2M: command line switches#
