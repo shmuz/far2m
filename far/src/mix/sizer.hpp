@@ -8,11 +8,9 @@ private:
 	void  *mBuf;
 	void  *mCurPtr;
 	size_t mAvail;
-	bool   mHasSpace;
 
 public:
-	Sizer(void *aBuf, size_t aAvail)
-		: mBuf(aBuf), mCurPtr(aBuf), mAvail(aAvail), mHasSpace(aAvail != 0) {}
+	Sizer(void *Buf, size_t BufSize) : mBuf(Buf), mCurPtr(Buf), mAvail(BufSize) {}
 
 public:
 	void* AddBytes(size_t NumBytes, const void *Data = nullptr, size_t Alignment = 1);

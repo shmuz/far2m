@@ -7,22 +7,20 @@ void* Sizer::AddBytes(size_t NumBytes, const void *Data, size_t Alignment)
 	size_t Space = SIZE_MAX;
 	std::align(Alignment, NumBytes, mCurPtr, Space);
 	size_t RequiredSize = NumBytes + (SIZE_MAX - Space);
+	void *Ret = nullptr;
 
-	if (mHasSpace)
+	if (mAvail >= RequiredSize)
 	{
-		if (mAvail >= RequiredSize)
-		{
-			mAvail -= RequiredSize;
-			if (Data)
-				memmove(mCurPtr, Data, NumBytes);
-			else
-				memset(mCurPtr, 0, NumBytes);
-		}
+		Ret = mCurPtr;
+		mAvail -= RequiredSize;
+		if (Data)
+			memmove(mCurPtr, Data, NumBytes);
 		else
-			mHasSpace = false;
+			memset(mCurPtr, 0, NumBytes);
 	}
+	else
+		mAvail = 0;
 
-	void *Ret = mCurPtr;
 	mCurPtr = (char*)mCurPtr + NumBytes;
 	return Ret;
 }
@@ -45,12 +43,12 @@ size_t Sizer::AddStrArray(const wchar_t* const* &Strings, const std::vector<FARS
 	if (Count)
 	{
 		const auto Items = AddObject<wchar_t*>(Count);
-		Strings = mHasSpace ? Items : nullptr;
+		Strings = Items;
 
 		for (size_t i = 0; i < Count; ++i)
 		{
 			wchar_t* pStr = AddFARString(NamesArray[i]);
-			if (mHasSpace)
+			if (Items)
 				Items[i] = pStr;
 		}
 	}
@@ -65,12 +63,12 @@ size_t Sizer::AddStrArray(const wchar_t* const* &Strings, wchar_t** NamesArray, 
 	if (Count)
 	{
 		const auto Items = AddObject<wchar_t*>(Count);
-		Strings = mHasSpace ? Items : nullptr;
+		Strings = Items;
 
 		for (size_t i = 0; i < Count; ++i)
 		{
 			wchar_t* pStr = AddWString(NamesArray[i]);
-			if (mHasSpace)
+			if (Items)
 				Items[i] = pStr;
 		}
 	}

@@ -2311,17 +2311,17 @@ size_t PluginManager::GetPluginInformation(
 
 	Sizer sizer(aInfo, aBufSize);
 
-	sizer.AddObject<FarGetPluginInformation>();
-	if (aBufSize >= sizer.GetSize())
-		pAll = aInfo;
+	auto ptr1 = sizer.AddObject<FarGetPluginInformation>();
+	if (ptr1)
+		pAll = ptr1;
 
-	auto ptr1 = sizer.AddObject<PluginInfo>();
-	if (aBufSize >= sizer.GetSize())
-		pPInfo = pAll->PInfo = ptr1;
+	auto ptr2 = sizer.AddObject<PluginInfo>();
+	if (ptr2)
+		pPInfo = pAll->PInfo = ptr2;
 
-	auto ptr2 = sizer.AddObject<GlobalInfo>();
-	if (aBufSize >= sizer.GetSize())
-		pGInfo = pAll->GInfo = ptr2;
+	auto ptr3 = sizer.AddObject<GlobalInfo>();
+	if (ptr3)
+		pGInfo = pAll->GInfo = ptr3;
 
 	pAll->ModuleName = sizer.AddFARString(aPlugin->GetModuleName());
 	pAll->Flags = (aPlugin->IsLoaded() ? FPF_LOADED : 0) | (aPlugin->IsOemPlugin() ? FPF_ANSI : 0);
