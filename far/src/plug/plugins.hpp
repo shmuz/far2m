@@ -111,11 +111,9 @@ typedef PanelHandle * PHPTR;
 // параметры вызова макрофункций Plugin.Menu и т.п.
 enum CALLPLUGINFLAGS
 {
-	CPT_MENU        = 0x01,
-	CPT_CONFIGURE   = 0x02,
-	CPT_CMDLINE     = 0x04,
-	CPT_MASK        = 0x07,
-	CPT_CHECKONLY   = 0x10000000,
+	CPT_MENU,
+	CPT_CONFIGURE,
+	CPT_CMDLINE,
 };
 
 enum MENUTYPE
@@ -139,7 +137,7 @@ class PluginManager
 
 		struct CallPluginInfo
 		{
-			unsigned int CallFlags; // CALLPLUGINFLAGS
+			CALLPLUGINFLAGS CallFlags;
 			int OpenFrom;
 			union
 			{
@@ -210,7 +208,7 @@ class PluginManager
 
 		// $ .09.2000 SVS - Функция CallPlugin - найти плагин по ID и запустить OpenFrom = OPEN_*
 		bool CallPlugin(DWORD SysID, int OpenFrom, void *Data);
-		bool CallPluginItem(DWORD SysID, CallPluginInfo* Data);
+		bool CallPluginItem(DWORD SysID, CallPluginInfo* Data, bool CheckOnly);
 		bool CallMacroPlugin(OpenMacroPluginInfo *Info);
 		void* CallPluginFromMacro(DWORD SysID, OpenMacroInfo *Info);
 

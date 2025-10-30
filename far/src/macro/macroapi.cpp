@@ -117,21 +117,6 @@ static TVar Convert2TVar(const FarMacroValue &val)
 	}
 }
 
-static bool IsNum(const FarMacroValue &val)
-{
-	return val.Type==FMVT_DOUBLE || val.Type==FMVT_INTEGER;
-}
-
-static int64_t ToInt(const FarMacroValue &val)
-{
-	return val.Type==FMVT_DOUBLE ? (int64_t)val.Double : val.Type==FMVT_INTEGER ? val.Integer : 0;
-}
-
-static bool IsStr(const FarMacroValue &val)
-{
-	return val.Type==FMVT_STRING;
-}
-
 class FarMacroApi
 {
 public:

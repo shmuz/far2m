@@ -166,7 +166,7 @@ void ShowUserMenu(size_t Count, const FarMacroValue *Values)
 	{
 		ChooseMenuType = Values[0].Boolean != 0;
 	}
-	else if (Count && Values[0].Type == FMVT_STRING)
+	else if (Count && IsStr(Values[0]))
 	{
 		FromAnyFile = true;
 		FileName = Values[0].String;
@@ -345,10 +345,10 @@ static bool LM_GetMacro(GetMacroData* Data, int Area, const FARString& TextKey, 
 	if (CallMacroPlugin(&info) && info.Ret.Count >= 5)
 	{
 		const auto* Values = info.Ret.Values;
-		Data->Area        = static_cast<FARMACROAREA>(static_cast<int>(Values[0].Double));
-		Data->Code        = Values[1].Type == FMVT_STRING ? Values[1].String : L"";
-		Data->Description = Values[2].Type == FMVT_STRING ? Values[2].String : L"";
-		Data->Flags       = static_cast<MACROFLAGS_MFLAGS>(Values[3].Double);
+		Data->Area        = static_cast<FARMACROAREA>(ToInt(Values[0]));
+		Data->Code        = IsStr(Values[1]) ? Values[1].String : L"";
+		Data->Description = IsStr(Values[2]) ? Values[2].String : L"";
+		Data->Flags       = static_cast<MACROFLAGS_MFLAGS>(ToInt(Values[3]));
 		Data->IsKeyboardMacro = Values[4].Boolean != 0;
 		return true;
 	}
@@ -416,8 +416,8 @@ bool KeyMacro::GetMacroParseError(COORD& ErrPos, FARString& ErrSrc)
 	if (MacroPluginOp(OP_GETLASTERROR, false, &Ret))
 	{
 		ErrSrc = Ret.Values[0].String;
-		ErrPos.Y = static_cast<int>(Ret.Values[1].Double);
-		ErrPos.X = static_cast<int>(Ret.Values[2].Double);
+		ErrPos.Y = ToInt(Ret.Values[1]);
+		ErrPos.X = ToInt(Ret.Values[2]);
 		return ErrSrc.IsEmpty();
 	}
 	else
@@ -578,14 +578,14 @@ FarKey KeyMacro::GetKey()
 
 			case MPRT_KEYS:
 			{
-				switch (static_cast<int>(mpr.Values[0].Double))
+				switch (ToInt(mpr.Values[0]))
 				{
 					case 1:
 						return KEY_OP_SELWORD;
 					case 2:
 						return KEY_OP_XLAT;
 					default:
-						return static_cast<FarKey>(mpr.Values[1].Double);
+						return ToInt(mpr.Values[1]);
 				}
 			}
 
@@ -601,49 +601,45 @@ FarKey KeyMacro::GetKey()
 			{
 				SetMacroValue(false);
 
-				if (!mpr.Count || mpr.Values[0].Type != FMVT_DOUBLE)
+				if ( !(mpr.Count && IsNum(mpr.Values[0])) )
 					break;
 
-				DWORD SysID = static_cast<DWORD>(mpr.Values[0].Double);
+				DWORD SysID = ToInt(mpr.Values[0]);
 				Plugin *pPlugin = CtrlObject->Plugins.FindPlugin(SysID);
 				if (!pPlugin)
 					break;
 
 				GUID Guid;
+				PluginManager::CallPluginInfo cpInfo {};
 
-				PluginManager::CallPluginInfo cpInfo = { CPT_CHECKONLY };
-				if (mpr.ReturnType == MPRT_PLUGINMENU || mpr.ReturnType == MPRT_PLUGINCONFIG)
+				if ((mpr.ReturnType==MPRT_PLUGINMENU || mpr.ReturnType==MPRT_PLUGINCONFIG) && mpr.Count > 1)
 				{
-					if (!pPlugin->UseMenuGuids()) {
-						if (mpr.Count > 1) {
-							if (mpr.Values[1].Type == FMVT_DOUBLE)
-								cpInfo.ItemNumber = static_cast<DWORD>(mpr.Values[1].Double);
-							else
-								break;
-						}
+					if (pPlugin->UseMenuGuids()) {
+						if (IsStr(mpr.Values[1]) && StrToGuid(mpr.Values[1].String, Guid))
+							cpInfo.ItemUuid = &Guid;
+						else
+							break;
 					}
 					else {
-						if (mpr.Count > 1) {
-							if (mpr.Values[1].Type == FMVT_STRING && StrToGuid(mpr.Values[1].String, Guid))
-								cpInfo.ItemUuid = &Guid;
-							else
-								break;
-						}
+						if (IsNum(mpr.Values[1]))
+							cpInfo.ItemNumber = ToInt(mpr.Values[1]);
+						else
+							break;
 					}
 				}
 
 				if (mpr.ReturnType == MPRT_PLUGINMENU) {
-					cpInfo.CallFlags |= CPT_MENU;
+					cpInfo.CallFlags = CPT_MENU;
 				}
 				else if (mpr.ReturnType == MPRT_PLUGINCONFIG) {
-					cpInfo.CallFlags |= CPT_CONFIGURE;
+					cpInfo.CallFlags = CPT_CONFIGURE;
 				}
 				else // if (mpr.ReturnType == MPRT_PLUGINCOMMAND)
 				{
-					cpInfo.CallFlags |= CPT_CMDLINE;
+					cpInfo.CallFlags = CPT_CMDLINE;
 					cpInfo.Command = L"";
 					if (mpr.Count > 1) {
-						if (mpr.Values[1].Type == FMVT_STRING)
+						if (IsStr(mpr.Values[1]))
 							cpInfo.Command = mpr.Values[1].String;
 						else
 							break;
@@ -651,12 +647,11 @@ FarKey KeyMacro::GetKey()
 				}
 
 				// Чтобы вернуть результат "выполнения" нужно проверить наличие плагина/пункта
-				if (CtrlObject->Plugins.CallPluginItem(SysID, &cpInfo))
+				if (CtrlObject->Plugins.CallPluginItem(SysID, &cpInfo, true))
 				{
 					// Если нашли успешно - то теперь выполнение
 					SetMacroValue(true);
-					cpInfo.CallFlags&=~CPT_CHECKONLY;
-					CtrlObject->Plugins.CallPluginItem(SysID, &cpInfo);
+					CtrlObject->Plugins.CallPluginItem(SysID, &cpInfo, false);
 				}
 				FrameManager->RefreshFrame();
 

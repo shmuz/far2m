@@ -120,6 +120,18 @@ private:
 	static LONG_PTR WINAPI ParamMacroDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2);
 };
 
+inline bool IsNum(const FarMacroValue &val) {
+	return val.Type==FMVT_DOUBLE || val.Type==FMVT_INTEGER;
+}
+
+inline int64_t ToInt(const FarMacroValue &val) {
+	return val.Type==FMVT_DOUBLE ? (int64_t)val.Double : val.Type==FMVT_INTEGER ? val.Integer : 0;
+}
+
+inline bool IsStr(const FarMacroValue &val) {
+	return val.Type==FMVT_STRING;
+}
+
 DWORD       GetHistoryDisableMask();
 std::string GuidToString(const GUID& Guid);
 bool        IsMenuArea(int Area);

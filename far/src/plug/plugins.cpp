@@ -1962,7 +1962,7 @@ bool PluginManager::CallPlugin(DWORD SysID, int OpenFrom, void *Data)
 }
 
 // поддержка макрофункций Plugin.Menu, Plugin.Command, Plugin.Config
-bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
+bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data, bool CheckOnly)
 {
 	auto Result = false;
 
@@ -1979,14 +1979,14 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 	Plugin *pPlugin = FindPlugin(SysID);
 	bool UseMenuGuids = pPlugin && pPlugin->UseMenuGuids();
 
-	if (Data->CallFlags & CPT_CHECKONLY)
+	if (CheckOnly)
 	{
 		Data->pPlugin = pPlugin;
 		if (!pPlugin || !pPlugin->Load())
 			return false;
 
 		// Разрешен ли вызов данного типа в текущей области (предварительная проверка)
-		switch (Data->CallFlags & CPT_MASK)
+		switch (Data->CallFlags)
 		{
 		case CPT_MENU:
 			if (!Data->pPlugin->HasOpenPlugin())
@@ -2024,7 +2024,7 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 		int MenuItemsCount = 0;
 
 		// Разрешен ли вызов данного типа в текущей области
-		switch (Data->CallFlags & CPT_MASK)
+		switch (Data->CallFlags)
 		{
 		case CPT_MENU:
 			if (
@@ -2050,9 +2050,9 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 			break;
 		}
 
-		if ((Data->CallFlags & CPT_MASK)==CPT_MENU || (Data->CallFlags & CPT_MASK)==CPT_CONFIGURE)
+		if (Data->CallFlags == CPT_MENU || Data->CallFlags == CPT_CONFIGURE)
 		{
-			int Type = (Data->CallFlags & CPT_MASK)==CPT_MENU ? MTYPE_COMMANDSMENU : MTYPE_CONFIGSMENU;
+			int Type = Data->CallFlags == CPT_MENU ? MTYPE_COMMANDSMENU : MTYPE_CONFIGSMENU;
 			const GUID *Guids = MenuItemGuids(Type, &Info);
 
 			auto ItemFound = false;
@@ -2099,7 +2099,7 @@ bool PluginManager::CallPluginItem(DWORD SysID, CallPluginInfo *Data)
 	PHPTR hPlugin = nullptr;
 	Panel* ActivePanel = CtrlObject->Cp()->ActivePanel;
 
-	switch (Data->CallFlags & CPT_MASK)
+	switch (Data->CallFlags)
 	{
 	case CPT_MENU:
 		{
