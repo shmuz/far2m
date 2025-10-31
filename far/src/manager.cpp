@@ -75,14 +75,14 @@ void _FRAMELOG(const char* prefix, Frame* frame)
 		Log("%s: nullptr", prefix);
 }
 
-#define _DUMP_FRAME_LIST() do {          \
-		for (auto iFrame: FrameList)      \
-			_FRAMELOG("--> ", iFrame);       \
+#define _DUMP_FRAME_LIST() do { \
+		for (auto iFrame: FrameList) \
+			_FRAMELOG("--> ", iFrame); \
 	} while(false)
 
-#define _DUMP_FRAME_STACK() do {         \
-		for (auto iFrame: ModalStack)     \
-			_FRAMELOG("==> ", iFrame);       \
+#define _DUMP_FRAME_STACK() do { \
+		for (auto iFrame: ModalStack) \
+			_FRAMELOG("==> ", iFrame); \
 	} while(false)
 
 #else
@@ -329,12 +329,11 @@ void Manager::ExecuteModalEV(bool RefreshScreen)
 */
 int Manager::CountFramesWithName(const wchar_t *Name, bool IgnoreCase) const
 {
-	int Counter=0;
-	typedef int (__cdecl *cmpfunc_t)(const wchar_t *s1, const wchar_t *s2);
-	cmpfunc_t cmpfunc=IgnoreCase ? StrCmpI : StrCmp;
+	int Counter = 0;
+	auto cmpfunc = IgnoreCase ? StrCmpI : StrCmp;
 	FARString strType, strCurName;
 
-	for (auto iFrame: FrameList)
+	for (const auto iFrame: FrameList)
 	{
 		iFrame->GetTypeAndName(strType, strCurName);
 
@@ -1033,14 +1032,14 @@ bool Manager::IsPanelsActive() const
 	return FramePos>=0 && CurrentFrame && CurrentFrame->GetType() == MODALTYPE_PANELS;
 }
 
-Frame *Manager::operator[](int Index) const
+Frame *Manager::operator[](size_t Index) const
 {
-	return Index>=0 && Index<(int)FrameList.size() ? FrameList[Index] : nullptr;
+	return Index < FrameList.size() ? FrameList[Index] : nullptr;
 }
 
-Frame *Manager::GetModalByIndex(int Index) const
+Frame *Manager::GetModalByIndex(size_t Index) const
 {
-	return Index>=0 && Index<(int)ModalStack.size() ? ModalStack[Index] : nullptr;
+	return Index < ModalStack.size() ? ModalStack[Index] : nullptr;
 }
 
 int Manager::IndexOfStack(Frame *Frame) const

@@ -76,9 +76,8 @@ class Manager
 		void StartupMainloop();
 		Frame *FrameMenu(); // show window menu (F12)
 
-		// Она в цикле вызывает себя, пока хотябы один из указателей отличен от nullptr
 		// Функции, "подмастерья начальника" - Commit'a
-		// Иногда вызываются не только из него и из других мест
+		// Иногда вызываются не только из него, но и из других мест
 		void RefreshCommit(Frame *aFrame);
 		void DeactivateCommit(Frame *aDeactivated,Frame *aActivated);
 		void ActivateCommit(Frame *aFrame);
@@ -130,6 +129,7 @@ class Manager
 		int  GetFrameCountByType(int Type) const;
 
 		void Commit(int Count=0);  // завершает транзакцию по изменениям в очереди и стеке фреймов
+		// Она в цикле вызывает себя, пока хотя бы один из указателей отличен от nullptr
 
 		int CountFramesWithName(const wchar_t *Name, bool IgnoreCase=true) const;
 
@@ -151,8 +151,8 @@ class Manager
 
 		Frame *GetCurrentFrame() const { return CurrentFrame; }
 
-		Frame *operator[](int Index) const;
-		Frame *GetModalByIndex(int Index) const;
+		Frame *operator[](size_t Index) const;
+		Frame *GetModalByIndex(size_t Index) const;
 
 		int IndexOfList(Frame *Frame) const;
 

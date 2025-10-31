@@ -159,8 +159,12 @@ local function FarConfig()
     if Op == "edit" or Op == "reset" then
       local data = hDlg:ListGetCurPos(posList)
       if data then
-        local ok = false
         local pos = data.SelectPos
+        if pos < 1 then -- all items are filtered out
+          return
+        end
+
+        local ok = false
         local idx = list[pos].configIndex
         local val,tp,val0,key,name = Far.GetConfig(idx)
 
