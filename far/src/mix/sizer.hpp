@@ -10,7 +10,7 @@ private:
 	size_t mAvail;
 
 public:
-	Sizer(void *Buf, size_t BufSize) : mBuf(Buf), mCurPtr(Buf), mAvail(BufSize) {}
+	Sizer(void *Buf, size_t BufSize) : mBuf(Buf), mCurPtr(Buf), mAvail(Buf ? BufSize : 0) {}
 
 public:
 	void* AddBytes(size_t NumBytes, const void *Data = nullptr, size_t Alignment = 1);

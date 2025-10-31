@@ -202,37 +202,37 @@ void FileList::FreePluginPanelItem(PluginPanelItem *pi)
 
 size_t FileList::FileListToPluginItem2(const FileListItem *fi, PluginPanelItem *pi)
 {
-	PluginPanelItem Item, *Out;
-	Out = pi ? pi : &Item;
+	PluginPanelItem Item, *pAll = &Item;
+	Sizer sizer(pi, SIZE_MAX);
+	if (sizer.AddObject<PluginPanelItem>())
+		pAll = pi;
 
-	Sizer sizer(Out, pi ? SIZE_MAX : 0);
-	sizer.AddObject<PluginPanelItem>();
-
-	Out->FindData.lpwszFileName = sizer.AddFARString(fi->strName);
-	Out->CustomColumnNumber =
-			sizer.AddStrArray(Out->CustomColumnData, fi->CustomColumnData, fi->CustomColumnNumber);
-	Out->Description = sizer.AddWString(fi->DizText);
-	Out->Owner = fi->strOwner.IsEmpty() ? nullptr : sizer.AddFARString(fi->strOwner);
-	Out->Group = fi->strGroup.IsEmpty() ? nullptr : sizer.AddFARString(fi->strGroup);
+	pAll->FindData.lpwszFileName = sizer.AddFARString(fi->strName);
+	pAll->CustomColumnNumber =
+			sizer.AddStrArray(pAll->CustomColumnData, fi->CustomColumnData, fi->CustomColumnNumber);
+	pAll->Description = sizer.AddWString(fi->DizText);
+	pAll->Owner = fi->strOwner.IsEmpty() ? nullptr : sizer.AddFARString(fi->strOwner);
+	pAll->Group = fi->strGroup.IsEmpty() ? nullptr : sizer.AddFARString(fi->strGroup);
 
 	if (fi->UserData && (fi->UserFlags & PPIF_USERDATA)) {
-		DWORD Size = *(DWORD *)fi->UserData;
-		Out->UserData = (DWORD_PTR)sizer.AddBytes(Size, (void*)fi->UserData, alignof(max_align_t));
-	} else
-		Out->UserData = fi->UserData;
+		DWORD *pUserData = (DWORD*)fi->UserData;
+		pAll->UserData = (DWORD_PTR)sizer.AddBytes(*pUserData, pUserData, alignof(max_align_t));
+	}
+	else
+		pAll->UserData = fi->UserData;
 
 	if (pi) {
-		Out->FindData.nFileSize = fi->FileSize;
-		Out->FindData.nPhysicalSize = fi->PhysicalSize;
-		Out->FindData.dwFileAttributes = fi->FileAttr;
-		Out->FindData.dwUnixMode = fi->FileMode;
-		Out->FindData.ftLastWriteTime = fi->WriteTime;
-		Out->FindData.ftCreationTime = fi->CreationTime;
-		Out->FindData.ftLastAccessTime = fi->AccessTime;
-		Out->NumberOfLinks = fi->NumberOfLinks;
-		Out->Flags = fi->UserFlags | (fi->Selected ? PPIF_SELECTED : 0);
-		Out->CRC32 = fi->CRC32;
-		Out->Reserved[0] = Out->Reserved[1] = 0;
+		pAll->FindData.nFileSize = fi->FileSize;
+		pAll->FindData.nPhysicalSize = fi->PhysicalSize;
+		pAll->FindData.dwFileAttributes = fi->FileAttr;
+		pAll->FindData.dwUnixMode = fi->FileMode;
+		pAll->FindData.ftLastWriteTime = fi->WriteTime;
+		pAll->FindData.ftCreationTime = fi->CreationTime;
+		pAll->FindData.ftLastAccessTime = fi->AccessTime;
+		pAll->NumberOfLinks = fi->NumberOfLinks;
+		pAll->Flags = fi->UserFlags | (fi->Selected ? PPIF_SELECTED : 0);
+		pAll->CRC32 = fi->CRC32;
+		pAll->Reserved[0] = pAll->Reserved[1] = 0;
 	}
 
 	return sizer.GetSize();

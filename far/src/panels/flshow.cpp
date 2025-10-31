@@ -544,7 +544,7 @@ bool FileList::ResolveSymlink(FARString &target_path, const wchar_t *link_name, 
 		char buf[MAX_PATH + 1] = {0};
 		ssize_t r = sdc_readlink(target_path.GetMB().c_str(), buf, ARRAYSIZE(buf) - 1);
 		if (r <= 0 || r >= (ssize_t)ARRAYSIZE(buf)) {
-			fprintf(stderr, "ResolveSymlink: sdc_readlink errno %u\n", errno);
+			fprintf(stderr, "ResolveSymlink: sdc_readlink errno %d\n", errno);
 			return false;
 		}
 		buf[r] = 0;
