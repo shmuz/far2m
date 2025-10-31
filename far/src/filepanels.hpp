@@ -85,7 +85,7 @@ class FilePanels:public Frame
 
 		int SetAnhoterPanelFocus();
 		int SwapPanels();
-		int ChangePanelViewMode(Panel *Current,int Mode,BOOL RefreshFrame);
+		int ChangePanelViewMode(Panel *Current,int Mode,bool RefreshFrame);
 
 		virtual void SetScreenPosition();
 

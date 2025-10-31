@@ -724,7 +724,7 @@ int FilePanels::ProcessKey(FarKey Key)
 		default:
 		{
 			if (Key >= KEY_CTRL0 && Key <= KEY_CTRL9)
-				ChangePanelViewMode(ActivePanel,Key-KEY_CTRL0,TRUE);
+				ChangePanelViewMode(ActivePanel,Key-KEY_CTRL0,true);
 			else if (!ActivePanel->ProcessKey(Key))
 				CtrlObject->CmdLine->ProcessKey(Key);
 
@@ -735,7 +735,7 @@ int FilePanels::ProcessKey(FarKey Key)
 	return TRUE;
 }
 
-int FilePanels::ChangePanelViewMode(Panel *Current,int Mode,BOOL RefreshFrame)
+int FilePanels::ChangePanelViewMode(Panel *Current,int Mode,bool RefreshFrame)
 {
 	if (Current && Mode >= VIEW_0 && Mode <= VIEW_9)
 	{

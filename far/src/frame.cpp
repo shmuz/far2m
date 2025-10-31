@@ -64,11 +64,10 @@ void Frame::SetRegularIdle(bool enabled)
 {
 	if (enabled != RegularIdle) {
 		RegularIdle = enabled;
-		if (enabled) {
+		if (enabled)
 			FrameManager->RegularIdleWantersAdd();
-		} else {
+		else
 			FrameManager->RegularIdleWantersRemove();
-		}
 	}
 }
 
@@ -83,7 +82,7 @@ void Frame::UpdateKeyBar()
 		FrameKeyBar->RedrawIfChanged();
 }
 
-int Frame::IsTopFrame()
+bool Frame::IsTopFrame()
 {
 	return FrameManager->GetCurrentFrame() == this;
 }
@@ -94,10 +93,10 @@ void Frame::OnChangeFocus(int focus)
 	{
 		Show();
 
-		for (Frame *iModal=NextModal; iModal; iModal=iModal->NextModal)
+		for (Frame *f=NextModal; f; f=f->NextModal)
 		{
-			if (iModal->GetType()!=MODALTYPE_COMBOBOX && iModal->IsVisible())
-				iModal->Show();
+			if (f->GetType() != MODALTYPE_COMBOBOX && f->IsVisible())
+				f->Show();
 		}
 	}
 	else
@@ -118,12 +117,10 @@ void Frame::PushFrame(Frame* Modalized)
 
 void Frame::DestroyAllModal()
 {
-	Frame* f = this;
-	while (f->NextModal)
+	for (Frame *f=this, *Next; f->NextModal; f=Next)
 	{
-		Frame *Prev = f;
-		f = f->NextModal;
-		Prev->NextModal = nullptr;
+		Next = f->NextModal;
+		f->NextModal = nullptr;
 	}
 }
 

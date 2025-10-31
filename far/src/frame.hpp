@@ -98,7 +98,7 @@ class Frame: public ScreenObject
 
 		int IsTitleBarVisible() const {return TitleBarVisible;}
 
-		int IsTopFrame();
+		bool IsTopFrame();
 		virtual FARMACROAREA GetMacroArea() { return MacroArea; }
 		void PushFrame(Frame* Modalized);
 		void DestroyAllModal();

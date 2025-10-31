@@ -125,37 +125,33 @@ bool Manager::ExitAll()
 {
 	for (int i=(int)ModalStack.size()-1; i>=0; i--)
 	{
-		Frame *iFrame=ModalStack[i];
+		Frame *iFrame = ModalStack[i];
 
 		if (!iFrame->GetCanLoseFocus(false))
 		{
-			auto PrevFrameCount=ModalStack.size();
+			auto PrevFrameCount = ModalStack.size();
 			iFrame->ProcessKey(KEY_ESC);
 			Commit();
 
 			if (PrevFrameCount==ModalStack.size())
-			{
 				return false;
-			}
 		}
 	}
 
 	for (int i=(int)FrameList.size()-1; i>=0; i--)
 	{
-		Frame *iFrame=FrameList[i];
+		Frame *iFrame = FrameList[i];
 
 		if (!iFrame->GetCanLoseFocus(true))
 		{
 			ActivateFrame(iFrame);
 			Commit();
-			auto PrevFrameCount=FrameList.size();
+			auto PrevFrameCount = FrameList.size();
 			iFrame->ProcessKey(KEY_ESC);
 			Commit();
 
 			if (PrevFrameCount==FrameList.size())
-			{
 				return false;
-			}
 		}
 	}
 
@@ -167,24 +163,24 @@ void Manager::CloseAll()
 	for (int i=(int)ModalStack.size()-1; i>=0; i--)
 	{
 		DeleteCommit(ModalStack[i]);
-		DeletedFrame=nullptr;
+		DeletedFrame = nullptr;
 	}
 
 	for (int i=(int)FrameList.size()-1; i>=0; i--)
 	{
 		DeleteCommit(FrameList[i]);
-		DeletedFrame=nullptr;
+		DeletedFrame = nullptr;
 	}
 
 	FrameList.clear();
-	FramePos=0;
+	FramePos = 0;
 }
 
 void Manager::InsertFrame(Frame *Inserted)
 {
 	_FRAMELOG("InsertFrame", Inserted);
 
-	InsertedFrame=Inserted;
+	InsertedFrame = Inserted;
 }
 
 void Manager::DeleteFrame(Frame *Deleted)
@@ -193,7 +189,7 @@ void Manager::DeleteFrame(Frame *Deleted)
 
 	if (!Deleted)
 	{
-		DeletedFrame=CurrentFrame;
+		DeletedFrame = CurrentFrame;
 	}
 	else
 	{
@@ -206,7 +202,7 @@ void Manager::DeleteFrame(Frame *Deleted)
 				return;
 			}
 		}
-		DeletedFrame=Deleted;
+		DeletedFrame = Deleted;
 	}
 }
 
@@ -217,7 +213,7 @@ void Manager::ModalizeFrame(Frame *Modalized)
 	if (ActivatedFrame) // Issue #26 (the 1-st problem)
 	{
 		ActivateCommit(ActivatedFrame);
-		ActivatedFrame=nullptr;
+		ActivatedFrame = nullptr;
 	}
 
 	CurrentFrame->PushFrame(Modalized);
@@ -230,29 +226,23 @@ void Manager::UnmodalizeFrame(Frame *Unmodalized)
 	for (auto iFrame: FrameList)
 	{
 		if (iFrame->RemoveModal(Unmodalized))
-		{
 			break;
-		}
 	}
 
 	for (auto iFrame: ModalStack)
 	{
 		if (iFrame->RemoveModal(Unmodalized))
-		{
 			break;
-		}
 	}
 }
 
 void Manager::ExecuteNonModal()
 {
-	Frame *NonModal=InsertedFrame?InsertedFrame:(ExecutedFrame?ExecutedFrame:ActivatedFrame);
+	Frame *NonModal = InsertedFrame ? InsertedFrame : ExecutedFrame ? ExecutedFrame : ActivatedFrame;
 	_FRAMELOG("ExecuteNonModal", NonModal);
 
 	if (!NonModal)
-	{
 		return;
-	}
 
 	if (InList(NonModal))
 	{
@@ -260,21 +250,19 @@ void Manager::ExecuteNonModal()
 	}
 	else
 	{
-		ExecutedFrame=nullptr;
+		ExecutedFrame = nullptr;
 		InsertCommit(NonModal);
-		InsertedFrame=nullptr;
+		InsertedFrame = nullptr;
 	}
 
 	for (;;)
 	{
 		Commit();
 
-		if (CurrentFrame!=NonModal || EndLoop)
-		{
+		if (CurrentFrame == NonModal && !EndLoop)
+			ProcessMainLoop();
+		else
 			break;
-		}
-
-		ProcessMainLoop();
 	}
 }
 
@@ -282,30 +270,26 @@ void Manager::ExecuteModal(Frame *Executed)
 {
 	_FRAMELOG("ExecuteModal", Executed);
 
-	if (Executed) {
+	if (Executed)
 		ExecutedFrame = Executed;
-	}
-	else if (ExecutedFrame == nullptr) {
+	else if (!ExecutedFrame)
 		return;
-	}
 
-	auto ModalStartLevel=ModalStack.size();
-	bool OriginalStartManager=StartManager;
-	StartManager=true;
+	auto ModalStartLevel = ModalStack.size();
+	bool OriginalStartManager = StartManager;
+	StartManager = true;
 
 	for (;;)
 	{
 		Commit();
 
-		if (ModalStack.size()<=ModalStartLevel)
-		{
+		if (ModalStack.size() > ModalStartLevel)
+			ProcessMainLoop();
+		else
 			break;
-		}
-
-		ProcessMainLoop();
 	}
 
-	StartManager=OriginalStartManager;
+	StartManager = OriginalStartManager;
 }
 
 /* $ 15.05.2002 SKV
@@ -355,61 +339,61 @@ Frame *Manager::FrameMenu()
 	    Флаг для определения того, что меню переключения
 	    экранов уже активировано.
 	*/
-	static bool AlreadyShown=false;
+	static bool AlreadyShown = false;
 
 	if (AlreadyShown)
 		return nullptr;
 
 	int ExitCode;
-	bool CheckCanLoseFocus=CurrentFrame->GetCanLoseFocus();
+	bool CheckCanLoseFocus = CurrentFrame->GetCanLoseFocus();
 	{
 		MenuItemEx ModalMenuItem;
-		VMenu ModalMenu(Msg::ScreensTitle,nullptr,0,ScrY-4);
+		VMenu ModalMenu(Msg::ScreensTitle, nullptr, 0, ScrY-4);
 		ModalMenu.SetHelp(L"ScrSwitch");
 		ModalMenu.SetFlags(VMENU_WRAPMODE);
-		ModalMenu.SetPosition(-1,-1,0,0);
+		ModalMenu.SetPosition(-1, -1, 0, 0);
 		ModalMenu.SetId(ScreensSwitchId);
 
 		if (!CheckCanLoseFocus)
 			ModalMenuItem.SetDisable(TRUE);
 
-		for (int I=0; I<(int)FrameList.size(); I++)
+		for (int I=0; I < (int)FrameList.size(); I++)
 		{
 			FARString strType, strName, strNumText;
 			FrameList[I]->GetTypeAndName(strType, strName);
 			ModalMenuItem.Clear();
 
-			if (I<10)
-				strNumText.Format(L"&%d. ",I);
-			else if (I<36)
-				strNumText.Format(L"&%lc. ",I+55);  // 55='A'-10
+			if (I < 10)
+				strNumText.Format(L"&%d. ", I);
+			else if (I < 36)
+				strNumText.Format(L"&%lc. ", I - 10 + 'A');
 			else
 				strNumText = L"&   ";
 
-			//TruncPathStr(strName,ScrX-24);
-			ReplaceStrings(strName,L"&",L"&&",-1);
+			//TruncPathStr(strName, ScrX - 24);
+			ReplaceStrings(strName, L"&", L"&&", -1);
 			/*  добавляется "*" если файл изменен */
 			ModalMenuItem.strName.Format(L"%ls%-10.10ls %lc %ls", strNumText.CPtr(), strType.CPtr(),
-				(FrameList[I]->IsFileModified()?L'*':L' '), strName.CPtr());
-			ModalMenuItem.SetSelect(I==FramePos);
+				(FrameList[I]->IsFileModified() ? L'*' : L' '), strName.CPtr());
+			ModalMenuItem.SetSelect(I == FramePos);
 			ModalMenu.AddItem(&ModalMenuItem);
 		}
 
-		AlreadyShown=true;
+		AlreadyShown = true;
 		ModalMenu.Process();
-		AlreadyShown=false;
-		ExitCode=ModalMenu.Modal::GetExitCode();
+		AlreadyShown = false;
+		ExitCode = ModalMenu.Modal::GetExitCode();
 	}
 
 	if (CheckCanLoseFocus)
 	{
-		if (ExitCode>=0)
+		if (ExitCode >= 0)
 		{
 			ActivateFrame(ExitCode);
-			return (ActivatedFrame==CurrentFrame || !CurrentFrame->GetCanLoseFocus()?nullptr:CurrentFrame);
+			return ActivatedFrame==CurrentFrame || !CurrentFrame->GetCanLoseFocus() ? nullptr : CurrentFrame;
 		}
 
-		return (ActivatedFrame==CurrentFrame?nullptr:CurrentFrame);
+		return ActivatedFrame == CurrentFrame ? nullptr : CurrentFrame;
 	}
 
 	return nullptr;
@@ -417,7 +401,7 @@ Frame *Manager::FrameMenu()
 
 int Manager::GetFrameCountByType(int Type) const
 {
-	int ret=0;
+	int ret = 0;
 
 	for (auto iFrame: FrameList)
 	{
@@ -427,7 +411,7 @@ int Manager::GetFrameCountByType(int Type) const
 		if (iFrame == DeletedFrame || (unsigned int)iFrame->GetExitCode() == XC_QUIT)
 			continue;
 
-		if (iFrame->GetType()==Type)
+		if (iFrame->GetType() == Type)
 			ret++;
 	}
 
@@ -435,7 +419,7 @@ int Manager::GetFrameCountByType(int Type) const
 }
 
 /*$ 11.05.2001 OT Теперь можно искать файл не только по полному имени, но и отдельно - путь, отдельно имя */
-Frame* Manager::FindFrameByFile(int ModalType,const wchar_t *FileName, const wchar_t *Dir) const
+Frame* Manager::FindFrameByFile(int ModalType, const wchar_t *FileName, const wchar_t *Dir) const
 {
 	FARString strFullFileName = FileName;
 
@@ -449,7 +433,7 @@ Frame* Manager::FindFrameByFile(int ModalType,const wchar_t *FileName, const wch
 	for (auto iFrame: FrameList)
 	{
 		// Mantis#0000469 - получать Name будем только при совпадении ModalType
-		if (iFrame->GetType()==ModalType)
+		if (iFrame->GetType() == ModalType)
 		{
 			FARString strType, strName;
 			iFrame->GetTypeAndName(strType, strName);
@@ -493,21 +477,21 @@ void Manager::DeactivateFrame(Frame *Deactivated,int Direction)
 
 	if (Direction)
 	{
-		FramePos+=Direction;
+		FramePos += Direction;
 
-		if (FramePos>=(int)FrameList.size())
+		if (FramePos >= (int)FrameList.size())
 		{
-			FramePos=0;
+			FramePos = 0;
 		}
-		else if (FramePos<0)
+		else if (FramePos < 0)
 		{
-			FramePos=(int)FrameList.size()-1;
+			FramePos = (int)FrameList.size() - 1;
 		}
 
 		ActivateFrame(FramePos);
 	}
 
-	DeactivatedFrame=Deactivated;
+	DeactivatedFrame = Deactivated;
 }
 
 void Manager::RefreshFrame(Frame *Refreshed)
@@ -517,14 +501,7 @@ void Manager::RefreshFrame(Frame *Refreshed)
 	if (ActivatedFrame)
 		return;
 
-	if (Refreshed)
-	{
-		RefreshedFrame=Refreshed;
-	}
-	else
-	{
-		RefreshedFrame=CurrentFrame;
-	}
+	RefreshedFrame = Refreshed ? Refreshed : CurrentFrame;
 
 	if (InList(Refreshed) || InStack(Refreshed))
 	{
@@ -552,7 +529,7 @@ void Manager::ExecuteFrame(Frame *Executed)
 {
 	_FRAMELOG("ExecuteFrame", Executed);
 
-	ExecutedFrame=Executed;
+	ExecutedFrame = Executed;
 }
 
 /* $ 10.05.2001 DJ
@@ -571,26 +548,24 @@ bool Manager::HaveAnyFrame() const
 
 void Manager::EnterMainLoop()
 {
-	WaitInFastFind=0;
-	StartManager=true;
+	WaitInFastFind = 0;
+	StartManager = true;
 
 	for (;;)
 	{
 		Commit();
 
-		if (EndLoop || !HaveAnyFrame())
-		{
+		if (!EndLoop && HaveAnyFrame())
+			ProcessMainLoop();
+		else
 			break;
-		}
-
-		ProcessMainLoop();
 	}
 }
 
 void Manager::SetLastInputRecord(const INPUT_RECORD *Rec)
 {
 	if (&LastInputRecord != Rec)
-		LastInputRecord=*Rec;
+		LastInputRecord = *Rec;
 }
 
 
@@ -612,7 +587,7 @@ void Manager::ProcessMainLoop()
 		//WaitInFastFind++;
 		FarKey Key = GetInputRecord(&LastInputRecord);
 		//WaitInFastFind--;
-		WaitInMainLoop=FALSE;
+		WaitInMainLoop = FALSE;
 
 		if (EndLoop)
 			return;
@@ -620,7 +595,7 @@ void Manager::ProcessMainLoop()
 		if (LastInputRecord.EventType==MOUSE_EVENT)
 		{
 				// используем копию структуры, т.к. LastInputRecord может внезапно измениться во время выполнения ProcessMouse
-				MOUSE_EVENT_RECORD mer=LastInputRecord.Event.MouseEvent;
+				MOUSE_EVENT_RECORD mer = LastInputRecord.Event.MouseEvent;
 				ProcessMouse(&mer);
 		}
 		else
@@ -655,8 +630,8 @@ void Manager::ExitMainLoop(bool Ask, int ExitCode)
 {
 	if (CloseFAR)
 	{
-		CloseFAR=FALSE;
-		CloseFARMenu=TRUE;
+		CloseFAR = FALSE;
+		CloseFARMenu = TRUE;
 	}
 
 	bool Exiting = true;
@@ -686,12 +661,12 @@ void Manager::ExitMainLoop(bool Ask, int ExitCode)
 			if (!cp || (!cp->LeftPanel->ProcessPluginEvent(FE_CLOSE,nullptr) &&
 			            !cp->RightPanel->ProcessPluginEvent(FE_CLOSE,nullptr)))
 			{
-				EndLoop=true;
+				EndLoop = true;
 			}
 		}
 		else
 		{
-			CloseFARMenu=FALSE;
+			CloseFARMenu = FALSE;
 		}
 	}
 }
@@ -725,11 +700,11 @@ static void Test_EXCEPTION_STACK_OVERFLOW(char* target)
 
 int Manager::ProcessKey(FarKey Key)
 {
-	int ret=FALSE;
+	int ret = FALSE;
 
 	if (CurrentFrame)
 	{
-		DWORD KeyM=(Key&(~KEY_CTRLMASK));
+		DWORD KeyM = (Key&(~KEY_CTRLMASK));
 
 		if (!((KeyM >= KEY_MACRO_BASE && KeyM <= KEY_MACRO_ENDBASE) || (KeyM >= KEY_OP_BASE && KeyM <= KEY_OP_ENDBASE))) // пропустим макро-коды
 		{
@@ -860,8 +835,8 @@ int Manager::ProcessKey(FarKey Key)
 					*/
 					if (CtrlObject->Macro.IsExecuting())
 					{
-						int PScrX=ScrX;
-						int PScrY=ScrY;
+						int PScrX = ScrX;
+						int PScrY = ScrY;
 						WINPORT(Sleep)(10);
 						GetVideoMode(CurSize);
 
@@ -871,8 +846,8 @@ int Manager::ProcessKey(FarKey Key)
 						}
 						else
 						{
-							PrevScrX=PScrX;
-							PrevScrY=PScrY;
+							PrevScrX = PScrX;
+							PrevScrY = PScrY;
 							WINPORT(Sleep)(10);
 							return ProcessKey(KEY_CONSOLE_BUFFER_RESIZE);
 						}
@@ -882,8 +857,8 @@ int Manager::ProcessKey(FarKey Key)
 				}
 				case KEY_F12:
 				{
-					auto CurFrame=FrameManager->GetCurrentFrame();
-					int TypeFrame=CurFrame->GetType();
+					auto CurFrame = FrameManager->GetCurrentFrame();
+					int TypeFrame = CurFrame->GetType();
 
 					if ((TypeFrame != MODALTYPE_HELP && TypeFrame != MODALTYPE_DIALOG) || CurFrame->GetCanLoseFocus())
 					{
@@ -907,14 +882,14 @@ int Manager::ProcessKey(FarKey Key)
 					{
 						if (CurrentFrame->FastHide())
 						{
-							int isPanelFocus=CurrentFrame->GetType() == MODALTYPE_PANELS;
+							int isPanelFocus = CurrentFrame->GetType() == MODALTYPE_PANELS;
 
 							if (isPanelFocus)
 							{
-								int LeftVisible=CtrlObject->Cp()->LeftPanel->IsVisible();
-								int RightVisible=CtrlObject->Cp()->RightPanel->IsVisible();
-								int CmdLineVisible=CtrlObject->CmdLine->IsVisible();
-								int KeyBarVisible=CtrlObject->Cp()->MainKeyBar.IsVisible();
+								int LeftVisible = CtrlObject->Cp()->LeftPanel->IsVisible();
+								int RightVisible = CtrlObject->Cp()->RightPanel->IsVisible();
+								int CmdLineVisible = CtrlObject->CmdLine->IsVisible();
+								int KeyBarVisible = CtrlObject->Cp()->MainKeyBar.IsVisible();
 								CtrlObject->CmdLine->ShowBackground();
 								CtrlObject->Cp()->LeftPanel->Hide0();
 								CtrlObject->Cp()->RightPanel->Hide0();
@@ -978,11 +953,11 @@ int Manager::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 	// При каптюренной мыши отдаем управление заданному объекту
 //    if (ScreenObject::CaptureMouseObject)
 //      return ScreenObject::CaptureMouseObject->ProcessMouse(MouseEvent);
-	int ret=FALSE;
+	int ret = FALSE;
 
 //    _D(SysLog(1,"Manager::ProcessMouse()"));
 	if (CurrentFrame)
-		ret=CurrentFrame->ProcessMouse(MouseEvent);
+		ret = CurrentFrame->ProcessMouse(MouseEvent);
 
 //    _D(SysLog(L"Manager::ProcessMouse() ret=%i",ret));
 	return ret;
@@ -1001,7 +976,7 @@ void Manager::PluginsMenu()
 		*/
 		if (curType==MODALTYPE_PANELS)
 		{
-			int pType=CtrlObject->Cp()->ActivePanel->GetType();
+			int pType = CtrlObject->Cp()->ActivePanel->GetType();
 
 			if (pType==QVIEW_PANEL || pType==INFO_PANEL)
 			{
@@ -1010,11 +985,11 @@ void Manager::PluginsMenu()
 
 				if (!strCurFileName.IsEmpty())
 				{
-					DWORD Attr=apiGetFileAttributes(strCurFileName);
+					DWORD Attr = apiGetFileAttributes(strCurFileName);
 
 					// интересуют только обычные файлы
 					if (Attr!=INVALID_FILE_ATTRIBUTES && !(Attr&FILE_ATTRIBUTE_DIRECTORY))
-						curType=MODALTYPE_VIEWER;
+						curType = MODALTYPE_VIEWER;
 				}
 			}
 		}
@@ -1148,7 +1123,7 @@ void Manager::DeactivateCommit(Frame *aDeactivated, Frame *aActivated)
 		}
 		else
 		{
-			ModalStack.back()=aActivated;
+			ModalStack.back() = aActivated;
 		}
 	}
 }
@@ -1159,14 +1134,14 @@ void Manager::ActivateCommit(Frame *aFrame)
 
 	if (CurrentFrame==aFrame)
 	{
-		RefreshedFrame=aFrame;
+		RefreshedFrame = aFrame;
 		return;
 	}
 
-	int Index=IndexOfList(aFrame);
+	int Index = IndexOfList(aFrame);
 	if (Index!=-1)
 	{
-		FramePos=Index;
+		FramePos = Index;
 		if (CurrentFrame && InList(CurrentFrame)) {
 			aFrame->FrameToBack = CurrentFrame;
 		}
@@ -1176,14 +1151,14 @@ void Manager::ActivateCommit(Frame *aFrame)
 	  Если мы пытаемся активировать полумодальный фрэйм,
 	  то надо его вытащить на верх стэка модалов.
 	*/
-	Index=IndexOfStack(aFrame);
+	Index = IndexOfStack(aFrame);
 	if (Index!=-1)
 	{
 		ModalStack.erase(ModalStack.begin()+Index);
 		ModalStack.push_back(aFrame);
 	}
 
-	RefreshedFrame=CurrentFrame=aFrame;
+	RefreshedFrame = CurrentFrame = aFrame;
 }
 
 void Manager::UpdateCommit(Frame *aDeleted, Frame *aInserted, Frame *aExecuted)
@@ -1197,12 +1172,12 @@ void Manager::UpdateCommit(Frame *aDeleted, Frame *aInserted, Frame *aExecuted)
 	}
 	else if (aInserted)
 	{
-		int Index=IndexOfList(aDeleted);
+		int Index = IndexOfList(aDeleted);
 		if (-1!=Index)
 		{
-			FrameList[Index]=aInserted;
+			FrameList[Index] = aInserted;
 			ActivateFrame(aInserted);
-			ActivatedFrame->FrameToBack=CurrentFrame;
+			ActivatedFrame->FrameToBack = CurrentFrame;
 			DeleteCommit(aDeleted);
 		}
 	}
@@ -1219,7 +1194,7 @@ void Manager::DeleteCommit(Frame *aFrame)
 	  Надёжнее найти и удалить именно то, что
 	  нужно, а не просто верхний.
 	*/
-	int Index=IndexOfStack(aFrame);
+	int Index = IndexOfStack(aFrame);
 	if (Index!=-1)
 	{
 		ModalStack.erase(ModalStack.begin()+Index);
@@ -1233,11 +1208,11 @@ void Manager::DeleteCommit(Frame *aFrame)
 	{
 		if (iFrame->FrameToBack==aFrame)
 		{
-			iFrame->FrameToBack=CtrlObject->Cp();
+			iFrame->FrameToBack = CtrlObject->Cp();
 		}
 	}
 
-	Index=IndexOfList(aFrame);
+	Index = IndexOfList(aFrame);
 	if (Index!=-1)
 	{
 		_DUMP_FRAME_LIST();
@@ -1248,7 +1223,7 @@ void Manager::DeleteCommit(Frame *aFrame)
 
 		if (FramePos >= (int)FrameList.size())
 		{
-			FramePos=0;
+			FramePos = 0;
 		}
 
 		if (aFrame->FrameToBack==CtrlObject->Cp())
@@ -1268,13 +1243,13 @@ void Manager::DeleteCommit(Frame *aFrame)
 	if (aFrame->GetDynamicallyBorn())
 	{
 		if (CurrentFrame==aFrame)
-			CurrentFrame=nullptr;
+			CurrentFrame = nullptr;
 
 		/* $ 14.05.2002 SKV
 		  Так как в деструкторе фрэйма неявно может быть
 		  вызван commit, то надо подстраховаться.
 		*/
-		DeletedFrame=nullptr;
+		DeletedFrame = nullptr;
 		delete aFrame;
 	}
 
@@ -1294,12 +1269,12 @@ void Manager::InsertCommit(Frame *aFrame)
 {
 	_FRAMELOG("InsertCommit", aFrame);
 
-	aFrame->FrameToBack=CurrentFrame;
+	aFrame->FrameToBack = CurrentFrame;
 	FrameList.push_back(aFrame);
 
 	if (!ActivatedFrame)
 	{
-		ActivatedFrame=aFrame;
+		ActivatedFrame = aFrame;
 	}
 }
 
@@ -1332,7 +1307,7 @@ void Manager::ExecuteCommit(Frame *aFrame)
 	_FRAMELOG("ExecuteCommit", aFrame);
 
 	ModalStack.push_back(aFrame);
-	ActivatedFrame=aFrame;
+	ActivatedFrame = aFrame;
 }
 
 /* $ Введена для нужд CtrlAltShift OT */
@@ -1365,7 +1340,7 @@ void Manager::ImmediateHide()
 		}
 		else
 		{
-			int UnlockCount=0;
+			int UnlockCount = 0;
 			IsRedrawFramesInProcess++;
 
 			while ((*this)[FramePos]->Locked())
@@ -1419,12 +1394,12 @@ void Manager::ImmediateHide()
 */
 void Manager::ResizeAllModal(Frame *ModalFrame)
 {
-	Frame *iModal=ModalFrame->NextModal;
+	Frame *iModal = ModalFrame->NextModal;
 
 	while (iModal)
 	{
 		iModal->ResizeConsole();
-		iModal=iModal->NextModal;
+		iModal = iModal->NextModal;
 	}
 }
 
@@ -1459,11 +1434,11 @@ void Manager::InitKeyBar()
 // возвращает top-модал или сам фрейм, если у фрейма нету модалов
 Frame* Manager::GetTopModal() const
 {
-	Frame *f=CurrentFrame;
+	Frame *f = CurrentFrame;
 	if (f)
 	{
 		while (f->NextModal)
-			f=f->NextModal;
+			f = f->NextModal;
 	}
 	return f;
 }

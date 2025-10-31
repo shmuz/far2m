@@ -160,9 +160,7 @@ local function FarConfig()
       local data = hDlg:ListGetCurPos(posList)
       if data then
         local pos = data.SelectPos
-        if pos < 1 then -- all items are filtered out
-          return
-        end
+        if pos < 1 then return end -- all items are filtered out
 
         local ok = false
         local idx = list[pos].configIndex
