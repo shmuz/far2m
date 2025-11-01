@@ -68,7 +68,7 @@ void _FRAMELOG(const char* prefix, Frame* frame)
 	if (frame)
 	{
 		FARString tp, nm;
-		frame->GetTypeAndName(tp,nm);
+		frame->GetTypeAndName(tp, nm);
 		Log("%s: %p : %ls : %ls", prefix, frame, tp.CPtr(), nm.CPtr());
 	}
 	else
@@ -123,7 +123,7 @@ Manager::~Manager()
 */
 bool Manager::ExitAll()
 {
-	for (int i=(int)ModalStack.size()-1; i>=0; i--)
+	for (int i=(int)ModalStack.size()-1; i >= 0; i--)
 	{
 		Frame *iFrame = ModalStack[i];
 
@@ -133,12 +133,12 @@ bool Manager::ExitAll()
 			iFrame->ProcessKey(KEY_ESC);
 			Commit();
 
-			if (PrevFrameCount==ModalStack.size())
+			if (PrevFrameCount == ModalStack.size())
 				return false;
 		}
 	}
 
-	for (int i=(int)FrameList.size()-1; i>=0; i--)
+	for (int i=(int)FrameList.size()-1; i >= 0; i--)
 	{
 		Frame *iFrame = FrameList[i];
 
@@ -150,7 +150,7 @@ bool Manager::ExitAll()
 			iFrame->ProcessKey(KEY_ESC);
 			Commit();
 
-			if (PrevFrameCount==FrameList.size())
+			if (PrevFrameCount == FrameList.size())
 				return false;
 		}
 	}
@@ -160,13 +160,13 @@ bool Manager::ExitAll()
 
 void Manager::CloseAll()
 {
-	for (int i=(int)ModalStack.size()-1; i>=0; i--)
+	for (int i=(int)ModalStack.size()-1; i >= 0; i--)
 	{
 		DeleteCommit(ModalStack[i]);
 		DeletedFrame = nullptr;
 	}
 
-	for (int i=(int)FrameList.size()-1; i>=0; i--)
+	for (int i=(int)FrameList.size()-1; i >= 0; i--)
 	{
 		DeleteCommit(FrameList[i]);
 		DeletedFrame = nullptr;
@@ -255,38 +255,23 @@ void Manager::ExecuteNonModal()
 		InsertedFrame = nullptr;
 	}
 
-	for (;;)
-	{
-		Commit();
-
-		if (CurrentFrame == NonModal && !EndLoop)
-			ProcessMainLoop();
-		else
-			break;
-	}
+	while (Commit(0), CurrentFrame == NonModal && !EndLoop)
+		ProcessMainLoop();
 }
 
 void Manager::ExecuteModal(Frame *Executed)
 {
 	_FRAMELOG("ExecuteModal", Executed);
 
-	if (Executed)
-		ExecutedFrame = Executed;
-	else if (!ExecutedFrame)
+	if (!(ExecutedFrame = Executed ? Executed : ExecutedFrame))
 		return;
 
 	auto ModalStartLevel = ModalStack.size();
 	bool OriginalStartManager = StartManager;
 	StartManager = true;
 
-	for (;;)
-	{
-		Commit();
-
-		if (ModalStack.size() > ModalStartLevel)
-			ProcessMainLoop();
-		else
-			break;
+	while (Commit(0), ModalStack.size() > ModalStartLevel) {
+		ProcessMainLoop();
 	}
 
 	StartManager = OriginalStartManager;
@@ -390,7 +375,7 @@ Frame *Manager::FrameMenu()
 		if (ExitCode >= 0)
 		{
 			ActivateFrame(ExitCode);
-			return ActivatedFrame==CurrentFrame || !CurrentFrame->GetCanLoseFocus() ? nullptr : CurrentFrame;
+			return ActivatedFrame == CurrentFrame || !CurrentFrame->GetCanLoseFocus() ? nullptr : CurrentFrame;
 		}
 
 		return ActivatedFrame == CurrentFrame ? nullptr : CurrentFrame;
@@ -408,7 +393,7 @@ int Manager::GetFrameCountByType(int Type) const
 		/* $ 10.05.2001 DJ
 		   не учитываем фрейм, который собираемся удалять
 		*/
-		if (iFrame == DeletedFrame || (unsigned int)iFrame->GetExitCode() == XC_QUIT)
+		if (iFrame == DeletedFrame || iFrame->GetExitCode() == XC_QUIT)
 			continue;
 
 		if (iFrame->GetType() == Type)
@@ -468,26 +453,19 @@ void Manager::ActivateFrame(Frame *Activated)
 
 void Manager::ActivateFrame(int Index)
 {
-	ActivateFrame((*this)[Index]);
+	if (Frame *iFrame; !ActivatedFrame && (iFrame = (*this)[Index]))
+	{
+		ActivatedFrame = iFrame;
+	}
 }
 
-void Manager::DeactivateFrame(Frame *Deactivated,int Direction)
+void Manager::DeactivateFrame(Frame *Deactivated, int Direction)
 {
 	_FRAMELOG("DeactivateFrame", Deactivated);
 
-	if (Direction)
+	if (Direction && FrameList.size())
 	{
-		FramePos += Direction;
-
-		if (FramePos >= (int)FrameList.size())
-		{
-			FramePos = 0;
-		}
-		else if (FramePos < 0)
-		{
-			FramePos = (int)FrameList.size() - 1;
-		}
-
+		FramePos = (FramePos + Direction + FrameList.size()) % FrameList.size();
 		ActivateFrame(FramePos);
 	}
 
@@ -503,7 +481,7 @@ void Manager::RefreshFrame(Frame *Refreshed)
 
 	RefreshedFrame = Refreshed ? Refreshed : CurrentFrame;
 
-	if (InList(Refreshed) || InStack(Refreshed))
+	if (RefreshedFrame && (InList(RefreshedFrame) || InStack(RefreshedFrame)))
 	{
 		/* $ 13.04.2002 KM
 			Вызываем принудительный Commit() для фрейма имеющего члена
@@ -515,7 +493,7 @@ void Manager::RefreshFrame(Frame *Refreshed)
 			настройка цветов. Теперь AltF9 в диалоге настройки
 			цветов корректно перерисовывает меню.
 		*/
-		if (RefreshedFrame && RefreshedFrame->NextModal)
+		if (RefreshedFrame->NextModal)
 			Commit();
 	}
 }
@@ -551,15 +529,8 @@ void Manager::EnterMainLoop()
 	WaitInFastFind = 0;
 	StartManager = true;
 
-	for (;;)
-	{
-		Commit();
-
-		if (!EndLoop && HaveAnyFrame())
-			ProcessMainLoop();
-		else
-			break;
-	}
+	while (Commit(0), !EndLoop && HaveAnyFrame())
+		ProcessMainLoop();
 }
 
 void Manager::SetLastInputRecord(const INPUT_RECORD *Rec)
@@ -592,7 +563,7 @@ void Manager::ProcessMainLoop()
 		if (EndLoop)
 			return;
 
-		if (LastInputRecord.EventType==MOUSE_EVENT)
+		if (LastInputRecord.EventType == MOUSE_EVENT)
 		{
 				// используем копию структуры, т.к. LastInputRecord может внезапно измениться во время выполнения ProcessMouse
 				MOUSE_EVENT_RECORD mer = LastInputRecord.Event.MouseEvent;
@@ -658,8 +629,8 @@ void Manager::ExitMainLoop(bool Ask, int ExitCode)
 			//      глюки, например, при перезагрузке
 			FilePanels *cp = CtrlObject->Cp();
 
-			if (!cp || (!cp->LeftPanel->ProcessPluginEvent(FE_CLOSE,nullptr) &&
-			            !cp->RightPanel->ProcessPluginEvent(FE_CLOSE,nullptr)))
+			if (!cp || (!cp->LeftPanel->ProcessPluginEvent(FE_CLOSE, nullptr) &&
+			            !cp->RightPanel->ProcessPluginEvent(FE_CLOSE, nullptr)))
 			{
 				EndLoop = true;
 			}
@@ -704,7 +675,7 @@ int Manager::ProcessKey(FarKey Key)
 
 	if (CurrentFrame)
 	{
-		DWORD KeyM = (Key&(~KEY_CTRLMASK));
+		DWORD KeyM = Key & ~KEY_CTRLMASK;
 
 		if (!((KeyM >= KEY_MACRO_BASE && KeyM <= KEY_MACRO_ENDBASE) || (KeyM >= KEY_OP_BASE && KeyM <= KEY_OP_ENDBASE))) // пропустим макро-коды
 		{
@@ -713,9 +684,9 @@ int Manager::ProcessKey(FarKey Key)
 				case MODALTYPE_PANELS:
 				{
 					_ALGO(CleverSysLog clv(L"Manager::ProcessKey()"));
-					_ALGO(SysLog(L"Key=%ls",_FARKEY_ToName(Key)));
+					_ALGO(SysLog(L"Key=%ls", _FARKEY_ToName(Key)));
 
-					if (CtrlObject->Cp()->ActivePanel->SendKeyToPlugin(Key,TRUE))
+					if (CtrlObject->Cp()->ActivePanel->SendKeyToPlugin(Key, TRUE))
 						return TRUE;
 
 					break;
@@ -862,7 +833,7 @@ int Manager::ProcessKey(FarKey Key)
 
 					if ((TypeFrame != MODALTYPE_HELP && TypeFrame != MODALTYPE_DIALOG) || CurFrame->GetCanLoseFocus())
 					{
-						DeactivateFrame(FrameMenu(),0);
+						DeactivateFrame(FrameMenu(), 0);
 						return TRUE;
 					}
 
@@ -917,7 +888,7 @@ int Manager::ProcessKey(FarKey Key)
 							else
 							{
 								ImmediateHide();
-								WaitKey(Key==KEY_CTRLALTSHIFTPRESS?KEY_CTRLALTSHIFTRELEASE:KEY_RCTRLALTSHIFTRELEASE);
+								WaitKey(Key == KEY_CTRLALTSHIFTPRESS ? KEY_CTRLALTSHIFTRELEASE : KEY_RCTRLALTSHIFTRELEASE);
 							}
 
 							FrameManager->RefreshFrame();
@@ -933,7 +904,7 @@ int Manager::ProcessKey(FarKey Key)
 
 					if (CurrentFrame->GetCanLoseFocus())
 					{
-						DeactivateFrame(CurrentFrame,Key==KEY_CTRLTAB?1:-1);
+						DeactivateFrame(CurrentFrame, Key == KEY_CTRLTAB ? 1 : -1);
 						return TRUE;
 					}
 
@@ -967,18 +938,19 @@ void Manager::PluginsMenu()
 {
 	int curType = CurrentFrame->GetType();
 
-	if (curType == MODALTYPE_PANELS || curType == MODALTYPE_EDITOR || curType == MODALTYPE_VIEWER || curType == MODALTYPE_DIALOG)
+	if (curType == MODALTYPE_PANELS || curType == MODALTYPE_EDITOR || curType == MODALTYPE_VIEWER
+			|| curType == MODALTYPE_DIALOG)
 	{
 		/* 02.01.2002 IS
 		   ! Вывод правильной помощи по Shift-F1 в меню плагинов в редакторе/вьюере/диалоге
 		   ! Если на панели QVIEW или INFO открыт файл, то считаем, что это
 		     полноценный вьюер и запускаем с соответствующим параметром плагины
 		*/
-		if (curType==MODALTYPE_PANELS)
+		if (curType == MODALTYPE_PANELS)
 		{
 			int pType = CtrlObject->Cp()->ActivePanel->GetType();
 
-			if (pType==QVIEW_PANEL || pType==INFO_PANEL)
+			if (pType == QVIEW_PANEL || pType == INFO_PANEL)
 			{
 				FARString strType, strCurFileName;
 				CtrlObject->Cp()->GetTypeAndName(strType, strCurFileName);
@@ -988,23 +960,23 @@ void Manager::PluginsMenu()
 					DWORD Attr = apiGetFileAttributes(strCurFileName);
 
 					// интересуют только обычные файлы
-					if (Attr!=INVALID_FILE_ATTRIBUTES && !(Attr&FILE_ATTRIBUTE_DIRECTORY))
+					if (Attr != INVALID_FILE_ATTRIBUTES && !(Attr & FILE_ATTRIBUTE_DIRECTORY))
 						curType = MODALTYPE_VIEWER;
 				}
 			}
 		}
 
 		// в редакторе, вьюере или диалоге покажем свою помощь по Shift-F1
-		const wchar_t *Topic=curType==MODALTYPE_EDITOR?L"Editor":
-		                     curType==MODALTYPE_VIEWER?L"Viewer":
-		                     curType==MODALTYPE_DIALOG?L"Dialog":nullptr;
-		CtrlObject->Plugins.CommandsMenu(curType,0,Topic);
+		const wchar_t *Topic = curType == MODALTYPE_EDITOR ? L"Editor" :
+		                       curType == MODALTYPE_VIEWER ? L"Viewer" :
+		                       curType == MODALTYPE_DIALOG ? L"Dialog" : nullptr;
+		CtrlObject->Plugins.CommandsMenu(curType, 0,Topic);
 	}
 }
 
 bool Manager::IsPanelsActive() const
 {
-	return FramePos>=0 && CurrentFrame && CurrentFrame->GetType() == MODALTYPE_PANELS;
+	return FramePos >= 0 && CurrentFrame && CurrentFrame->GetType() == MODALTYPE_PANELS;
 }
 
 Frame *Manager::operator[](size_t Index) const
@@ -1019,9 +991,9 @@ Frame *Manager::GetModalByIndex(size_t Index) const
 
 int Manager::IndexOfStack(Frame *Frame) const
 {
-	for (int i=0; i<(int)ModalStack.size(); i++)
+	for (int i=0; i < (int)ModalStack.size(); i++)
 	{
-		if (Frame==ModalStack[i])
+		if (Frame == ModalStack[i])
 			return i;
 	}
 	return -1;
@@ -1029,9 +1001,9 @@ int Manager::IndexOfStack(Frame *Frame) const
 
 int Manager::IndexOfList(Frame *Frame) const
 {
-	for (int i=0; i<(int)FrameList.size(); i++)
+	for (int i=0; i < (int)FrameList.size(); i++)
 	{
-		if (Frame==FrameList[i])
+		if (Frame == FrameList[i])
 			return i;
 	}
 	return -1;
@@ -1044,13 +1016,13 @@ void Manager::Commit(int Count)
 	{
 		_BASICLOG("Commit");
 
-		if (DeletedFrame && (InsertedFrame||ExecutedFrame))
+		if (DeletedFrame && (InsertedFrame || ExecutedFrame))
 		{
 			tmp = DeletedFrame;
 			tmp2 = InsertedFrame;
 			tmp3 = ExecutedFrame;
 			DeletedFrame = InsertedFrame = ExecutedFrame = nullptr;
-			UpdateCommit(tmp,tmp2,tmp3);
+			UpdateCommit(tmp, tmp2, tmp3);
 		}
 		else if (ExecutedFrame)
 		{
@@ -1115,7 +1087,7 @@ void Manager::DeactivateCommit(Frame *aDeactivated, Frame *aActivated)
 
 	aDeactivated->OnChangeFocus(0);
 
-	if (!ModalStack.empty() && aDeactivated==ModalStack.back())
+	if (!ModalStack.empty() && aDeactivated == ModalStack.back())
 	{
 		if (InStack(aActivated))
 		{
@@ -1132,14 +1104,14 @@ void Manager::ActivateCommit(Frame *aFrame)
 {
 	_FRAMELOG("ActivateCommit", aFrame);
 
-	if (CurrentFrame==aFrame)
+	if (CurrentFrame == aFrame)
 	{
 		RefreshedFrame = aFrame;
 		return;
 	}
 
 	int Index = IndexOfList(aFrame);
-	if (Index!=-1)
+	if (Index != -1)
 	{
 		FramePos = Index;
 		if (CurrentFrame && InList(CurrentFrame)) {
@@ -1152,7 +1124,7 @@ void Manager::ActivateCommit(Frame *aFrame)
 	  то надо его вытащить на верх стэка модалов.
 	*/
 	Index = IndexOfStack(aFrame);
-	if (Index!=-1)
+	if (Index != -1)
 	{
 		ModalStack.erase(ModalStack.begin()+Index);
 		ModalStack.push_back(aFrame);
@@ -1173,7 +1145,7 @@ void Manager::UpdateCommit(Frame *aDeleted, Frame *aInserted, Frame *aExecuted)
 	else if (aInserted)
 	{
 		int Index = IndexOfList(aDeleted);
-		if (-1!=Index)
+		if (-1 != Index)
 		{
 			FrameList[Index] = aInserted;
 			ActivateFrame(aInserted);
@@ -1195,7 +1167,7 @@ void Manager::DeleteCommit(Frame *aFrame)
 	  нужно, а не просто верхний.
 	*/
 	int Index = IndexOfStack(aFrame);
-	if (Index!=-1)
+	if (Index != -1)
 	{
 		ModalStack.erase(ModalStack.begin()+Index);
 		if (!ModalStack.empty())
@@ -1206,14 +1178,14 @@ void Manager::DeleteCommit(Frame *aFrame)
 
 	for (auto iFrame: FrameList)
 	{
-		if (iFrame->FrameToBack==aFrame)
+		if (iFrame->FrameToBack == aFrame)
 		{
 			iFrame->FrameToBack = CtrlObject->Cp();
 		}
 	}
 
 	Index = IndexOfList(aFrame);
-	if (Index!=-1)
+	if (Index != -1)
 	{
 		_DUMP_FRAME_LIST();
 
@@ -1226,7 +1198,7 @@ void Manager::DeleteCommit(Frame *aFrame)
 			FramePos = 0;
 		}
 
-		if (aFrame->FrameToBack==CtrlObject->Cp())
+		if (aFrame->FrameToBack == CtrlObject->Cp())
 		{
 			_BASICLOG("== ActivateFrame(FrameList[FramePos])");
 			ActivateFrame(FrameList[FramePos]);
@@ -1242,7 +1214,7 @@ void Manager::DeleteCommit(Frame *aFrame)
 
 	if (aFrame->GetDynamicallyBorn())
 	{
-		if (CurrentFrame==aFrame)
+		if (CurrentFrame == aFrame)
 			CurrentFrame = nullptr;
 
 		/* $ 14.05.2002 SKV
@@ -1256,13 +1228,9 @@ void Manager::DeleteCommit(Frame *aFrame)
 	// Полагаемся на то, что в ActivateFrame не будет переписан уже
 	// присвоенный  ActivatedFrame
 	if (!ModalStack.empty())
-	{
 		ActivateFrame(ModalStack.back());
-	}
 	else
-	{
 		ActivateFrame(FramePos);
-	}
 }
 
 void Manager::InsertCommit(Frame *aFrame)
@@ -1273,9 +1241,7 @@ void Manager::InsertCommit(Frame *aFrame)
 	FrameList.push_back(aFrame);
 
 	if (!ActivatedFrame)
-	{
 		ActivatedFrame = aFrame;
-	}
 }
 
 void Manager::RefreshCommit(Frame *aFrame)
@@ -1314,7 +1280,7 @@ void Manager::ExecuteCommit(Frame *aFrame)
 void Manager::ImmediateHide()
 {
 	_BASICLOG("ImmediateHide");
-	if (FramePos<0)
+	if (FramePos < 0)
 		return;
 
 	// Сначала проверяем, есть ли у прятываемого фрейма SaveScreen
@@ -1333,7 +1299,7 @@ void Manager::ImmediateHide()
 		    модального стека? И если да, покажем User screen.
 		*/
 		auto type = ModalStack.back()->GetType();
-		if (type==MODALTYPE_EDITOR || type==MODALTYPE_VIEWER)
+		if (type == MODALTYPE_EDITOR || type == MODALTYPE_VIEWER)
 		{
 			if (CtrlObject->CmdLine)
 				CtrlObject->CmdLine->ShowBackground();
@@ -1352,14 +1318,14 @@ void Manager::ImmediateHide()
 			RefreshFrame((*this)[FramePos]);
 			Commit();
 
-			for (int i=0; i<UnlockCount; i++)
+			for (int i=0; i < UnlockCount; i++)
 			{
 				(*this)[FramePos]->Lock();
 			}
 
-			if (ModalStack.size()>1)
+			if (ModalStack.size() > 1)
 			{
-				for (int i=0; i<(int)ModalStack.size()-1; i++)
+				for (int i=0; i < (int)ModalStack.size()-1; i++)
 				{
 					if (!(ModalStack[i]->FastHide() & CASR_HELP))
 					{

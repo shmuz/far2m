@@ -1258,7 +1258,7 @@ int FileEditor::ProcessQuitKey(bool FirstSave, bool NeedQuestion)
 	}
 
 	FarChDir(strOldCurDir);
-	return (unsigned int)GetExitCode() == XC_QUIT;
+	return GetExitCode() == XC_QUIT;
 }
 
 int FileEditor::LoadFile(const wchar_t *Name, int &UserBreak)
