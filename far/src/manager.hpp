@@ -73,7 +73,6 @@ class Manager
 		INPUT_RECORD LastInputRecord;
 
 	private:
-		void StartupMainloop();
 		Frame *FrameMenu(); // show window menu (F12)
 
 		// Функции, "подмастерья начальника" - Commit'a
