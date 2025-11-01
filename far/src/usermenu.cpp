@@ -597,7 +597,7 @@ int UserMenu::ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar
 					// case KEY_ALTSHIFTF4:  // редактировать только текущий пункт (если субменю - то все субменю)
 					case KEY_CTRLF4:    // редактировать все меню
 					{
-						(*FrameManager)[0]->Unlock();
+						FrameManager->GetFrame(0)->Unlock();
 						FARString strMenuFileName;
 						File MenuFile;
 						if (!FarMkTempEx(strMenuFileName)

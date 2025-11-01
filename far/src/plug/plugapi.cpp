@@ -402,7 +402,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 				if (wi->Pos == -1)
 					f = FrameManager->GetTopModal();
 				else
-					f = FrameManager->operator[](wi->Pos);
+					f = FrameManager->GetFrame(wi->Pos);
 
 				if (!f)
 					return FALSE;
@@ -455,7 +455,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 		case ACTL_SETCURRENTWINDOW: {
 			// Запретим переключение фрэймов, если находимся в модальном редакторе/вьюере.
 			auto Index = (INT_PTR)Param1;
-			if (FrameManager && !FrameManager->InModalEV() && FrameManager->operator[](Index)) {
+			if (FrameManager && !FrameManager->InModalEV() && FrameManager->GetFrame(Index)) {
 				// Запретим переключение фрэймов, если находимся в хелпе или диалоге (тоже модальных)
 				if (FrameManager->GetTopModal()->GetCanLoseFocus()) {
 					Frame *PrevFrame = FrameManager->GetCurrentFrame();
@@ -1949,7 +1949,7 @@ static int FarEditorControlSynchedV2(int EditorID, int Command, void *Param)
 	} else {
 		int count = FrameManager->GetFrameCount();
 		for (int i = 0; i < count; i++) {
-			auto fileedit = dynamic_cast<FileEditor *>(FrameManager->operator[](i));
+			auto fileedit = dynamic_cast<FileEditor *>(FrameManager->GetFrame(i));
 			if (fileedit && (fileedit->GetEditorID() == EditorID)) {
 				Editor = fileedit;
 				break;
@@ -1958,7 +1958,7 @@ static int FarEditorControlSynchedV2(int EditorID, int Command, void *Param)
 		if (!Editor) {
 			count = FrameManager->GetModalCount();
 			for (int i = 0; i < count; i++) {
-				auto fileedit = dynamic_cast<FileEditor *>(FrameManager->GetModalByIndex(i));
+				auto fileedit = dynamic_cast<FileEditor *>(FrameManager->GetModal(i));
 				if (fileedit && (fileedit->GetEditorID() == EditorID)) {
 					Editor = fileedit;
 					break;
@@ -1994,7 +1994,7 @@ static int FarViewerControlSynchedV2(int ViewerID, int Command, void *Param)
 	else {
 		int count = FrameManager->GetFrameCount();
 		for (int i = 0; i < count; i++) {
-			auto fviewer = dynamic_cast<FileViewer *>(FrameManager->operator[](i));
+			auto fviewer = dynamic_cast<FileViewer *>(FrameManager->GetFrame(i));
 			if (fviewer && (fviewer->GetViewerID() == ViewerID)) {
 				FoundFileViewer = fviewer;
 				break;
@@ -2003,7 +2003,7 @@ static int FarViewerControlSynchedV2(int ViewerID, int Command, void *Param)
 		if (!FoundFileViewer) {
 			count = FrameManager->GetModalCount();
 			for (int i = 0; i < count; i++) {
-				auto fviewer = dynamic_cast<FileViewer *>(FrameManager->GetModalByIndex(i));
+				auto fviewer = dynamic_cast<FileViewer *>(FrameManager->GetModal(i));
 				if (fviewer && (fviewer->GetViewerID() == ViewerID)) {
 					FoundFileViewer = fviewer;
 					break;

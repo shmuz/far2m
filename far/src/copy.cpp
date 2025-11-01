@@ -253,9 +253,9 @@ void CopyProgress::Flush()
 	if (Timer()) {
 		if (!IsCancelled) {
 			if (CheckForEscSilent()) {
-				(*FrameManager)[0]->Lock();
+				FrameManager->GetFrame(0)->Lock();
 				IsCancelled = ConfirmAbortOp() != 0;
-				(*FrameManager)[0]->Unlock();
+				FrameManager->GetFrame(0)->Unlock();
 			}
 		}
 
@@ -603,7 +603,7 @@ ShellCopy::ShellCopy(Panel *SrcPanel,    // исходная панель (ак�
 	Filter = new FileFilter(SrcPanel, FFT_COPY);
 	// $ 26.05.2001 OT Запретить перерисовку панелей во время копирования
 	_tran(SysLog(L"call (*FrameManager)[0]->LockRefresh()"));
-	(*FrameManager)[0]->Lock();
+	FrameManager->GetFrame(0)->Lock();
 
 	// Progress bar update threshold
 	CDP.thisClass = this;
@@ -1418,8 +1418,8 @@ ShellCopy::~ShellCopy()
 
 	// $ 26.05.2001 OT Разрешить перерисовку панелей
 	_tran(SysLog(L"call (*FrameManager)[0]->UnlockRefresh()"));
-	(*FrameManager)[0]->Unlock();
-	(*FrameManager)[0]->Refresh();
+	FrameManager->GetFrame(0)->Unlock();
+	FrameManager->GetFrame(0)->Refresh();
 
 	if (Filter)    // Уничтожим объект фильтра
 		delete Filter;

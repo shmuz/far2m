@@ -442,17 +442,13 @@ void Manager::ActivateFrame(Frame *Activated)
 	_FRAMELOG("ActivateFrame", Activated);
 
 	if (!ActivatedFrame && Activated && (InList(Activated) || InStack(Activated)))
-	{
 		ActivatedFrame = Activated;
-	}
 }
 
 void Manager::ActivateFrame(int Index)
 {
-	if (Frame *iFrame; !ActivatedFrame && (iFrame = (*this)[Index]))
-	{
-		ActivatedFrame = iFrame;
-	}
+	if (!ActivatedFrame)
+		ActivatedFrame = GetFrame(Index);
 }
 
 void Manager::DeactivateFrame(Frame *Deactivated, int Direction)
@@ -496,7 +492,7 @@ void Manager::RefreshFrame(Frame *Refreshed)
 
 void Manager::RefreshFrame(int Index)
 {
-	RefreshFrame((*this)[Index]);
+	RefreshFrame(GetFrame(Index));
 }
 
 void Manager::ExecuteFrame(Frame *Executed)
@@ -975,12 +971,12 @@ bool Manager::IsPanelsActive() const
 	return FramePos >= 0 && CurrentFrame && CurrentFrame->GetType() == MODALTYPE_PANELS;
 }
 
-Frame *Manager::operator[](size_t Index) const
+Frame *Manager::GetFrame(size_t Index) const
 {
 	return Index < FrameList.size() ? FrameList[Index] : nullptr;
 }
 
-Frame *Manager::GetModalByIndex(size_t Index) const
+Frame *Manager::GetModal(size_t Index) const
 {
 	return Index < ModalStack.size() ? ModalStack[Index] : nullptr;
 }
@@ -1289,23 +1285,23 @@ void Manager::ImmediateHide()
 			if (CtrlObject->CmdLine)
 				CtrlObject->CmdLine->ShowBackground();
 		}
-		else
+		else if (auto BottomFrame = GetBottomFrame())
 		{
 			int UnlockCount = 0;
 			IsRedrawFramesInProcess++;
 
-			while ((*this)[FramePos]->Locked())
+			while (BottomFrame->Locked())
 			{
-				(*this)[FramePos]->Unlock();
+				BottomFrame->Unlock();
 				UnlockCount++;
 			}
 
-			RefreshFrame((*this)[FramePos]);
+			RefreshFrame(BottomFrame);
 			Commit();
 
 			for (int i=0; i < UnlockCount; i++)
 			{
-				(*this)[FramePos]->Lock();
+				BottomFrame->Lock();
 			}
 
 			if (ModalStack.size() > 1)

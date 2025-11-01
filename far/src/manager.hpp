@@ -44,7 +44,7 @@ class Manager
 		std::vector<Frame*> ModalStack; // Стек модальных фреймов
 		std::vector<Frame*> FrameList;  // Очередь немодальных фреймов
 		int  FramePos;           // Индекс текущий немодального фрейма. Он не всегда совпадает с CurrentFrame
-		// текущий немодальный фрейм можно получить с помощью FrameManager->GetBottomFrame();
+		// текущий немодальный фрейм можно получить с помощью GetBottomFrame();
 
 		/*$ Претенденты на ... */
 		Frame *InsertedFrame;   // Фрейм, который будет добавлен в конец немодальной очереди
@@ -150,8 +150,8 @@ class Manager
 
 		Frame *GetCurrentFrame() const { return CurrentFrame; }
 
-		Frame *operator[](size_t Index) const;
-		Frame *GetModalByIndex(size_t Index) const;
+		Frame *GetFrame(size_t Index) const;
+		Frame *GetModal(size_t Index) const;
 
 		int IndexOfList(Frame *Frame) const;
 
@@ -168,7 +168,7 @@ class Manager
 		*/
 		void ResizeAllModal(Frame *ModalFrame);
 
-		Frame *GetBottomFrame() const { return (*this)[FramePos]; }
+		Frame *GetBottomFrame() const { return GetFrame(FramePos); }
 
 		bool ManagerIsDown() const {return EndLoop;}
 		bool ManagerStarted() const {return StartManager;}
