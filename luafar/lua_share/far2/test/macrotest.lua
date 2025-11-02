@@ -902,7 +902,6 @@ local function test_Far_GetConfig()
     "Panel.CaseSensitiveCompareSelect",
     "Panel.ClassicHotkeyLinkResolving",
     "Panel.CtrlAltShiftRule",
-    "Panel.CtrlFRule",
     "Panel.FilenameMarksAlign",
     "Panel.Highlight",
     "Panel/Layout.ColumnTitles",

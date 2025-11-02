@@ -397,7 +397,6 @@ static struct FARConfig
 	{true,  NSecPanel, "CaseSensitiveCompareSelect",    &Opt.PanelCaseSensitiveCompareSelect, 0, OPT_BOOLEAN},
 	{true,  NSecPanel, "ReverseSort",                   &Opt.ReverseSort, 1, OPT_BOOLEAN},
 	{false, NSecPanel, "RightClickRule",                &Opt.PanelRightClickRule, 2, OPT_3STATE},
-	{false, NSecPanel, "CtrlFRule",                     &Opt.PanelCtrlFRule, 1, OPT_BOOLEAN},
 	{false, NSecPanel, "CtrlAltShiftRule",              &Opt.PanelCtrlAltShiftRule, 0, OPT_3STATE},
 	{false, NSecPanel, "RememberLogicalDrives",         &Opt.RememberLogicalDrives, 0, OPT_BOOLEAN},
 	{true,  NSecPanel, "AutoUpdateLimit",               &Opt.AutoUpdateLimit, 0},

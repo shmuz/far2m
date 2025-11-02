@@ -358,7 +358,8 @@ public:
 	int PluginPanelHelp(PHPTR ph);
 	virtual long GetFileCount() const { return FileCount; }
 
-	FARString &CreateFullPathName(const wchar_t *Name, DWORD FileAttr, FARString &strDest, bool RealName);
+	FARString &CreateFullPathName(const wchar_t *Name, FARString &strDest, bool RealName);
+	FARString &PluginGetURL(const wchar_t *Name, FARString &strDest);
 
 	const FileListItem *GetItem(int Index) const;
 	virtual BOOL UpdateKeyBar();
