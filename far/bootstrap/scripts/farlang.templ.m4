@@ -388,6 +388,17 @@ upd:" *** Command forcefully terminated"
 " *** Команда завершена примусово"
 " *** Каманда завершана прымусова"
 
+BackgroundCommands
+"Фоновые команды терминала [F3]"
+"Background terminal commands [F3]"
+upd:"Background terminal commands [F3]"
+upd:"Background terminal commands [F3]"
+upd:"Background terminal commands [F3]"
+upd:"Background terminal commands [F3]"
+upd:"Background terminal commands [F3]"
+"Фонові команди терміналу [F3]"
+"Фонавыя каманды тэрмінала [F3]"
+
 MultilinePaste
 "Вставка нескольких строк"
 "Multiline paste"

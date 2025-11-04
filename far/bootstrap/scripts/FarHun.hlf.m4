@@ -3716,6 +3716,7 @@ A #Ctrl-Tab# a következő, a #Ctrl-Shift-Tab# az előző képernyőre vált, az
     A funkciót a ~Panel beállítások~@PanelSettings@ párbeszédablak
 "Háttérképernyők száma mutatva" opciójával letilthatjuk.
 
+    See also: common ~menu~@MenuCmd@ keyboard commands.
 
 @ApplyCmd
 $ #Parancs végrehajtása#

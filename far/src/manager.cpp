@@ -58,6 +58,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "InterThreadCall.hpp"
 #include "DlgGuid.hpp"
 #include "vtshell.h"
+#include "fileview.hpp"
 
 // #define DEBUG_MANAGER
 #ifdef DEBUG_MANAGER
@@ -308,6 +309,77 @@ int Manager::CountFramesWithName(const wchar_t *Name, bool IgnoreCase) const
 	return Counter;
 }
 
+static FARString FrameMenuNumTextPrefix(int i)
+{
+	FARString out;
+	if (i < 10)
+		out.Format(L"&%d ", i);
+	else if (i - 10 < 'Z' - 'A')
+		out.Format(L"&%c ", char(i - 10 + 'A'));
+	else
+		out.Format(L"&  ");
+	return out;
+}
+
+class FramesMenu : public VMenu
+{
+	VTInfos _vts;
+	int _vts_base_index{-1};
+
+public:
+	FramesMenu() : VMenu (Msg::ScreensTitle, nullptr, 0, ScrY - 4)
+	{
+		VTShell_Enum(_vts);
+	}
+
+	virtual int ProcessKey(FarKey Key)
+	{
+		if (Key == KEY_F3 && _vts_base_index >= 0
+				&& _vts_base_index <= GetSelectPos()
+				&& _vts_base_index + int(_vts.size()) > GetSelectPos() ) {
+			ViewConsoleHistory(_vts[GetSelectPos() - _vts_base_index].con_hnd, true, false);
+			return TRUE;
+		}
+		return VMenu::ProcessKey(Key);
+	}
+
+	void AddVTSItems(int FramePos)
+	{
+		if (_vts.empty()) {
+			_vts_base_index = -1;
+			return;
+		}
+		_vts_base_index = GetItemCount() + 1;
+		MenuItemEx mi;
+		mi.Clear();
+		mi.strName = Msg::BackgroundCommands;
+		mi.Flags = LIF_SEPARATOR;
+		AddItem(&mi);
+		for (const auto &vt : _vts) {
+			mi.Clear();
+			mi.strName = vt.title;
+			ReplaceStrings(mi.strName, L"&", L"&&", -1);
+			mi.strName.Insert(0, FrameMenuNumTextPrefix(GetItemCount() - 1) );
+			mi.SetSelect(GetItemCount() == FramePos);
+			if (vt.done)
+				mi.SetCheck(vt.exit_code ? L'!' : L'#');
+
+			AddItem(&mi);
+		}
+	}
+
+	int Do()
+	{
+		VMenu::Process();
+		int r = Modal::GetExitCode();
+		if (_vts_base_index >= 0 && r >= _vts_base_index && r < GetItemCount()) {
+			CtrlObject->CmdLine->SwitchToBackgroundTerminal(r - _vts_base_index);
+			return -1;
+		}
+		return r;
+	}
+};
+
 /*!
   \return Возвращает nullptr если нажат "отказ" или если нажат текущий фрейм.
   Другими словами, если немодальный фрейм не поменялся.
@@ -329,7 +401,8 @@ Frame *Manager::FrameMenu()
 	bool CheckCanLoseFocus = CurrentFrame->GetCanLoseFocus();
 	{
 		MenuItemEx ModalMenuItem;
-		VMenu ModalMenu(Msg::ScreensTitle, nullptr, 0, ScrY-4);
+		FramesMenu ModalMenu;
+
 		ModalMenu.SetHelp(L"ScrSwitch");
 		ModalMenu.SetFlags(VMENU_WRAPMODE);
 		ModalMenu.SetPosition(-1, -1, 0, 0);
@@ -340,36 +413,33 @@ Frame *Manager::FrameMenu()
 
 		for (int I=0; I < (int)FrameList.size(); I++)
 		{
-			FARString strType, strName, strNumText;
+			/*  добавляется "*" если файл изменен */
+			FARString strNumText = FrameMenuNumTextPrefix(I);
+			FARString strType, strName;
 			FrameList[I]->GetTypeAndName(strType, strName);
 			ModalMenuItem.Clear();
 
-			if (I < 10)
-				strNumText.Format(L"&%d. ", I);
-			else if (I < 36)
-				strNumText.Format(L"&%lc. ", I - 10 + 'A');
-			else
-				strNumText = L"&   ";
-
 			//TruncPathStr(strName, ScrX - 24);
 			ReplaceStrings(strName, L"&", L"&&", -1);
-			/*  добавляется "*" если файл изменен */
 			ModalMenuItem.strName.Format(L"%ls%-10.10ls %lc %ls", strNumText.CPtr(), strType.CPtr(),
 				(FrameList[I]->IsFileModified() ? L'*' : L' '), strName.CPtr());
 			ModalMenuItem.SetSelect(I == FramePos);
+			if (FrameList[I]->IsFileModified())
+				ModalMenuItem.SetCheck(L'*');
+
 			ModalMenu.AddItem(&ModalMenuItem);
 		}
 
+		ModalMenu.AddVTSItems(FramePos);
+
 		AlreadyShown = true;
-		ModalMenu.Process();
+		ExitCode = ModalMenu.Do();
 		AlreadyShown = false;
-		ExitCode = ModalMenu.Modal::GetExitCode();
+//		ExitCode = ModalMenu.Modal::GetExitCode();
 	}
 
-	if (CheckCanLoseFocus)
-	{
-		if (ExitCode >= 0)
-		{
+	if (CheckCanLoseFocus) {
+		if (ExitCode >= 0 && ExitCode < GetFrameCount()) {
 			ActivateFrame(ExitCode);
 			return ActivatedFrame == CurrentFrame || !CurrentFrame->GetCanLoseFocus() ? nullptr : CurrentFrame;
 		}

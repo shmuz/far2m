@@ -75,6 +75,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "drivemix.hpp"
 #include "xlat.hpp"
 #include "DlgGuid.hpp"
+#include "vt/vtshell.h"
 #include <StackHeapArray.hpp>
 
 static int DragX, DragY, DragMove;
@@ -1420,13 +1421,19 @@ void Panel::ShowScreensCount() const
 		int Editors = FrameManager->GetFrameCountByType(MODALTYPE_EDITOR);
 		int Dialogs = FrameManager->GetFrameCountByType(MODALTYPE_DIALOG);
 		bool HasPluginsTasks = CtrlObject->Plugins.HasBackgroundTasks();
+		unsigned int vts = VTShell_Count();
 
-		if (Viewers > 0 || Editors > 0 || Dialogs > 0 || HasPluginsTasks) {
+		if (Viewers > 0 || Editors > 0 || Dialogs > 0 || vts > 0 || HasPluginsTasks) {
 			FARString strScreensText;
 
 			char Prefix = '[';
+			if (vts > 0) {
+				strScreensText.Format(L"%cT%u", Prefix, vts);
+				Prefix = ' ';
+			}
+
 			if (Viewers > 0) {
-				strScreensText.Format(L"%cV%d", Prefix, Viewers);
+				strScreensText.AppendFormat(L"%cV%d", Prefix, Viewers);
 				Prefix = ' ';
 			}
 
