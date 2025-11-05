@@ -11,7 +11,7 @@ void ConsoleBuffer::SetSize(unsigned int width, unsigned int height, uint64_t at
 		return;
 
 	COORD prev_size = {(SHORT)_width, _width ? (SHORT)(_console_chars.size() / _width) : (SHORT)0 };
-	ConsoleChars other_chars; 
+	ConsoleChars other_chars;
 	other_chars.resize(size_t(height) * width);
 	_console_chars.swap(other_chars);
 	_width = width;
@@ -24,7 +24,7 @@ void ConsoleBuffer::SetSize(unsigned int width, unsigned int height, uint64_t at
 		SMALL_RECT screen_rect = {0, 0, (SHORT)(width - 1), (SHORT)(height - 1)};
 		Write(&other_chars[0], prev_size, prev_pos, screen_rect);
 	}
-	
+
 }
 
 void ConsoleBuffer::GetSize(unsigned int &width, unsigned int &height)
@@ -81,9 +81,9 @@ CHAR_INFO *ConsoleBuffer::InspectCopyArea(const COORD &data_size, const COORD &d
 void ConsoleBuffer::Read(CHAR_INFO *data, COORD data_size, COORD data_pos, SMALL_RECT &screen_rect)
 {
 	CHAR_INFO *screen = InspectCopyArea(data_size, data_pos, screen_rect);
-	if (!screen) 
+	if (!screen)
 		return;
-	
+
 	data = OffsetMatrixPtr(data, data_size.X, data_pos.X, data_pos.Y);
 	for (SHORT y = screen_rect.Top; y <= screen_rect.Bottom; ++y) {
 		memcpy(data, screen, (screen_rect.Right + 1 - screen_rect.Left) * sizeof(*data));
@@ -142,7 +142,7 @@ ConsoleBuffer::WriteResult ConsoleBuffer::Write(const CHAR_INFO &ch, COORD scree
 	CHAR_INFO &dch = _console_chars[index];
 	if (AreSameChars(dch, ch))
 		return WR_SAME;
-		
+
 	dch = ch;
 	return WR_MODIFIED;
 }

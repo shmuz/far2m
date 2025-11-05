@@ -11,7 +11,7 @@ class ConsoleBuffer
 
 	CHAR_INFO *InspectCopyArea(const COORD &data_size, const COORD &data_pos, SMALL_RECT &screen_rect);
 public:
-	ConsoleBuffer(); 
+	ConsoleBuffer();
 
 	enum WriteResult {
 		WR_BAD = 0,

@@ -12,7 +12,7 @@ template <class I>
 	if (h < 12) h = 12;
 }
 
-template <class I> 
+template <class I>
 	void ApplyCoordinateLimits(I &v, unsigned int limit)
 {
 	if (v <= 0) v = 0;
@@ -72,7 +72,7 @@ ConsoleOutput::ConsoleOutput() :
 	_mode(ENABLE_PROCESSED_OUTPUT|ENABLE_WRAP_AT_EOL_OUTPUT | ENABLE_QUICK_EDIT_MODE | ENABLE_EXTENDED_FLAGS),
 	_attributes(FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED)
 {
-	memset(&_cursor.pos, 0, sizeof(_cursor.pos));	
+	memset(&_cursor.pos, 0, sizeof(_cursor.pos));
 	MB2Wide(APP_BASENAME, _title);
 	_scroll_callback.pfn = NULL;
 	_cursor.height = 15;
@@ -273,7 +273,7 @@ DWORD ConsoleOutput::GetMode()
 
 void ConsoleOutput::SetMode(DWORD mode)
 {
-	std::lock_guard<std::mutex> lock(_mutex);	
+	std::lock_guard<std::mutex> lock(_mutex);
 	if ((mode & ENABLE_EXTENDED_FLAGS)==0) {
 		mode&= ~(ENABLE_QUICK_EDIT_MODE|ENABLE_INSERT_MODE);
 		mode|= (_mode & (ENABLE_QUICK_EDIT_MODE|ENABLE_INSERT_MODE));
@@ -356,7 +356,7 @@ void ConsoleOutput::ScrollOutputOnOverflow(SMALL_RECT &area)
 {
 	unsigned int width, height;
 	_buf.GetSize(width, height);
-	
+
 	if (height > ((unsigned int)_scroll_region.bottom) + 1)
 		height = ((unsigned int)_scroll_region.bottom) + 1;
 
@@ -366,21 +366,21 @@ void ConsoleOutput::ScrollOutputOnOverflow(SMALL_RECT &area)
 	_temp_chars.resize(size_t(width) * (height - 1) );
 	if (_temp_chars.empty())
 		return;
-	
+
 	COORD tmp_pos = {0, 0};
-	
+
 	if (_scroll_callback.pfn && _scroll_region.top == 0) {
 		COORD line_size = {(SHORT)width, 1};
 		SMALL_RECT line_rect = {0, 0, (SHORT)(width - 1), 0};
 		_buf.Read(&_temp_chars[0], line_size, tmp_pos, line_rect);
 		_scroll_callback.pfn(_scroll_callback.context, _con_handle, width, &_temp_chars[0]);
 	}
-	
+
 	COORD tmp_size = {(SHORT)width, (SHORT)(height - 1 - _scroll_region.top)};
-	
+
 	SMALL_RECT scr_rect = {0, (SHORT)(_scroll_region.top + 1), (SHORT)(width - 1), (SHORT)(height - 1) };
 	_buf.Read(&_temp_chars[0], tmp_size, tmp_pos, scr_rect);
-	if (scr_rect.Left!=0 || scr_rect.Top!=(int)(_scroll_region.top + 1) 
+	if (scr_rect.Left!=0 || scr_rect.Top!=(int)(_scroll_region.top + 1)
 		|| scr_rect.Right!=(int)(width-1) || scr_rect.Bottom!=(int)(height-1)) {
 		fprintf(stderr, "ConsoleOutput::ScrollOutputOnOverflow: bug\n");
 		return;
@@ -389,7 +389,7 @@ void ConsoleOutput::ScrollOutputOnOverflow(SMALL_RECT &area)
 	scr_rect.Bottom = height - 2;
 	_buf.Write(&_temp_chars[0], tmp_size, tmp_pos, scr_rect);
 	AffectArea(area, scr_rect);
-	
+
 	scr_rect.Left = 0;
 	scr_rect.Right = width - 1;
 	scr_rect.Top = scr_rect.Bottom = height - 1;
@@ -458,7 +458,7 @@ SHORT ConsoleOutput::ModifySequenceEntityAt(SequenceModifier &sm, COORD pos, SMA
 			CI_SET_ATTR(ch, sm.attr);
 		} break;
 	}
-	
+
 	if (_buf.Write(ch, pos) == ConsoleBuffer::WR_MODIFIED) {
 		AffectArea(area, pos.X, pos.Y);
 		if (out == 2) {
@@ -495,9 +495,9 @@ size_t ConsoleOutput::ModifySequenceAt(SequenceModifier &sm, COORD &pos)
 				++sm.str;
 				continue;
 			}
-			
+
 			if (pos.X >= (int)width) {
-				if ( sm.kind!=SequenceModifier::SM_WRITE_STR || ( (_mode&ENABLE_WRAP_AT_EOL_OUTPUT)!=0 && 
+				if ( sm.kind!=SequenceModifier::SM_WRITE_STR || ( (_mode&ENABLE_WRAP_AT_EOL_OUTPUT)!=0 &&
 						((_mode&ENABLE_PROCESSED_OUTPUT)==0 || (*sm.str!='\r'&& *sm.str!='\n')))) {
 					pos.X = 0;
 					pos.Y++;
@@ -534,10 +534,10 @@ size_t ConsoleOutput::ModifySequenceAt(SequenceModifier &sm, COORD &pos)
 				}
 			} else {
 				--sm.count;
-				++rv;				
+				++rv;
 			}
 		}
-		
+
 		if (&pos == &_cursor.pos && (areas[0].Left!=pos.X || areas[0].Top!=pos.Y)) {
 			refresh_pos_areas = true;
 			areas[1].Left = areas[1].Right = pos.X;
@@ -621,7 +621,7 @@ static void ClipRect(SMALL_RECT &rect, const SMALL_RECT &clip, COORD *offset = N
 	}
 }
 
-bool ConsoleOutput::Scroll(const SMALL_RECT *lpScrollRectangle, 
+bool ConsoleOutput::Scroll(const SMALL_RECT *lpScrollRectangle,
 	const SMALL_RECT *lpClipRectangle, COORD dwDestinationOrigin, const CHAR_INFO *lpFill)
 {
 	union {
@@ -640,7 +640,7 @@ bool ConsoleOutput::Scroll(const SMALL_RECT *lpScrollRectangle,
 	size_t total_chars = data_size.X;
 	total_chars*= data_size.Y;
 	COORD data_pos = {0, 0};
-		
+
 	areas.n.dst = {dwDestinationOrigin.X, dwDestinationOrigin.Y,
 		(SHORT)(dwDestinationOrigin.X + data_size.X - 1), (SHORT)(dwDestinationOrigin.Y + data_size.Y - 1)};
 	{
@@ -651,7 +651,7 @@ bool ConsoleOutput::Scroll(const SMALL_RECT *lpScrollRectangle,
 		fprintf(stderr, "!!!!SCROLL:[%i %i %i %i] -> [%i %i %i %i]",
 			areas.n.src.Left, areas.n.src.Top, areas.n.src.Right, areas.n.src.Bottom,
 			areas.n.dst.Left, areas.n.dst.Top, areas.n.dst.Right, areas.n.dst.Bottom);
-	
+
 		if (lpClipRectangle) {
 			fprintf(stderr, " CLIP:[%i %i %i %i]",
 				lpClipRectangle->Left, lpClipRectangle->Top, lpClipRectangle->Right, lpClipRectangle->Bottom);
@@ -663,7 +663,7 @@ bool ConsoleOutput::Scroll(const SMALL_RECT *lpScrollRectangle,
 				areas.n.dst.Left, areas.n.dst.Top, areas.n.dst.Right, areas.n.dst.Bottom,
 				data_pos.X, data_pos.Y);
 		}
-		
+
 		if (lpFill) {
 			fprintf(stderr, " FILL:[%i %i %i %i]",
 				areas.n.src.Left, areas.n.src.Top, areas.n.src.Right, areas.n.src.Bottom);
