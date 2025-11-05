@@ -876,11 +876,11 @@ void Viewer::SetStatusMode(int Mode)
 void Viewer::ReadString(ViewerString *pString, int MaxSize, int StrSize)
 {
 	WCHAR Ch, Ch2;
-	int64_t OutPtr;
+	int64_t OutPtr, visual_length;
 	bool bSelStartFound = false, bSelEndFound = false;
 	pString->bSelection = false;
 	AdjustWidth();
-	OutPtr = 0;
+	OutPtr = visual_length = 0;
 
 	if (VM.Hex) {
 		size_t len = 16;
@@ -915,7 +915,7 @@ void Viewer::ReadString(ViewerString *pString, int MaxSize, int StrSize)
 			/* $ 12.07.2000 SVS
 			  ! Wrap - трехпозиционный
 			*/
-			if (VM.Wrap && OutPtr > XX2 - X1) {
+			if (VM.Wrap && visual_length > XX2 - X1) {
 				/* $ 11.07.2000 tran
 				   + warp are now WORD-WRAP */
 				int64_t SavePos = vtell();
@@ -992,11 +992,13 @@ void Viewer::ReadString(ViewerString *pString, int MaxSize, int StrSize)
 			if (CRSkipped) {
 				CRSkipped = false;
 				pString->lpData[(int)OutPtr++] = L'\r';
+				visual_length++;
 			}
 
 			if (Ch == L'\t') {
 				do {
 					pString->lpData[(int)OutPtr++] = L' ';
+					visual_length++;
 				} while ((OutPtr % ViOpt.TabSize) && ((int)OutPtr < (MAX_VIEWLINEB - 1)));
 
 				if (VM.Wrap && OutPtr > XX2 - X1)
@@ -1011,7 +1013,7 @@ void Viewer::ReadString(ViewerString *pString, int MaxSize, int StrSize)
 			if (Ch == L'\r') {
 				CRSkipped = true;
 
-				if (OutPtr >= XX2 - X1) {
+				if (visual_length >= XX2 - X1) {
 					int64_t SavePos = vtell();
 					WCHAR nextCh = 0;
 
@@ -1030,6 +1032,7 @@ void Viewer::ReadString(ViewerString *pString, int MaxSize, int StrSize)
 				Ch = L' ';
 
 			pString->lpData[(int)OutPtr++] = Ch;
+			visual_length += CharClasses::IsFullWidth(Ch) ? 2 : CharClasses::IsXxxfix(Ch) ? 0 : 1;
 			pString->lpData[(int)OutPtr] = 0;
 
 			if (SelectSize > 0 && (SelectPos + SelectSize) == vtell()) {
