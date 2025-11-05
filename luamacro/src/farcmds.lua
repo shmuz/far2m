@@ -37,7 +37,7 @@ local function Command(prefix, text)
     else
       local patt = [=[ ^ \[ (\d+)? (?: [,:;] (\d+))? \] \s* (.+) ]=]
       local line, col, fname = regex.match(cmd, patt, nil, "x")
-      fname = fname or cmd
+      fname = (line or col) and fname or cmd
       local attr = win.GetFileAttr(fname)
       if attr and attr:find("d") then
         far.Message("Cannot edit the folder '"..fname.."'", "Error", nil, "w")
