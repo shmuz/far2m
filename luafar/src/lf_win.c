@@ -137,13 +137,6 @@ static int win_GetLocalTime(lua_State *L)
 	return 1;
 }
 
-static void pushFileTime (lua_State *L, const FILETIME *ft)
-{
-	long long llFileTime = ft->dwLowDateTime + 0x100000000ll * ft->dwHighDateTime;
-	llFileTime /= 10000;
-	lua_pushnumber(L, (double)llFileTime);
-}
-
 static int win_GetSystemTimeAsFileTime (lua_State *L)
 {
 	FILETIME ft;

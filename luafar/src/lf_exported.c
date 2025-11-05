@@ -506,9 +506,9 @@ static void PushAnalyseInfo(lua_State* L, const struct AnalyseInfo *Info)
 {
 	lua_createtable(L, 0, 4);
 	PutIntToTable(L,  "StructSize", Info->StructSize);
-	PutWStrToTable(L, "FileName",   Info->FileName, -1);
-	PutLStrToTable(L, "Buffer",     Info->Buffer, Info->BufferSize);
-	PutIntToTable(L,  "OpMode",     Info->OpMode);
+	PutWStrToTable(L, "FileName", Info->FileName, -1);
+	PutLStrToTable(L, "Buffer", Info->Buffer, Info->BufferSize);
+	PutFlagsToTable(L, "OpMode", Info->OpMode);
 }
 
 HANDLE LF_Analyse(lua_State* L, const struct AnalyseInfo *Info)

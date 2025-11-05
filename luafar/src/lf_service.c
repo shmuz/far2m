@@ -318,6 +318,18 @@ flags_t GetFlagsFromTable(lua_State *L, int pos, const char* key)
 	return f;
 }
 
+void PutFlagsToTable(lua_State *L, const char* key, flags_t flags)
+{
+	bit64_push(L, flags);
+	lua_setfield(L, -2, key);
+}
+
+void PutFlagsToArray(lua_State *L, int index, flags_t flags)
+{
+	bit64_push(L, flags);
+	lua_rawseti(L, -2, index);
+}
+
 TPluginData* GetPluginData(lua_State* L)
 {
 	lua_getfield(L, LUA_REGISTRYINDEX, FAR_PLUGINDATA);
@@ -537,7 +549,7 @@ void PushPanelItem(lua_State *L, const struct PluginPanelItem *PanelItem)
 	lua_newtable(L); // "PanelItem"
 
 	PushFarFindData(L, &PanelItem->FindData);
-	PutNumToTable(L, "Flags", PanelItem->Flags);
+	PutFlagsToTable(L, "Flags", PanelItem->Flags);
 	PutNumToTable(L, "NumberOfLinks", PanelItem->NumberOfLinks);
 	PutNumToTable(L, "CRC32", PanelItem->CRC32);
 
@@ -2121,7 +2133,7 @@ static int panel_GetPanelInfo(lua_State *L)
 	PutIntToTable (L, "TopPanelItem", pi.TopPanelItem + 1);
 	PutIntToTable (L, "ViewMode",     pi.ViewMode);
 	PutIntToTable (L, "SortMode",     pi.SortMode);
-	PutIntToTable (L, "Flags",        pi.Flags);
+	PutFlagsToTable(L, "Flags",       pi.Flags);
 	PutNumToTable (L, "OwnerID",      pi.OwnerID);
 	//-------------------------------------------------------------------------
 	if (pi.PluginHandle) {
@@ -2689,7 +2701,7 @@ static void PushList (lua_State *L, const struct FarList *list)
 	for (int i=0; i < list->ItemsNumber; i++)
 	{
 		lua_createtable(L, 0, 2);
-		PutIntToTable(L, "Flags", list->Items[i].Flags);
+		PutFlagsToTable(L, "Flags", list->Items[i].Flags);
 		PutWStrToTable(L, "Text", list->Items[i].Text, -1);
 		lua_rawseti(L, -2, i + 1);
 		if (list->Items[i].Flags & LIF_SELECTED)
@@ -2826,7 +2838,7 @@ static void PushDlgItem (lua_State *L, const struct FarDialogItem* pItem, BOOL t
 	// position 9
 	flags_t Flags = pItem->Flags
 			| (pItem->Focus ? DIF_FOCUS : 0) | (pItem->DefaultButton ? DIF_DEFAULTBUTTON : 0);
-	PutNumToArray(L, 9, Flags);
+	PutFlagsToArray(L, 9, Flags);
 
 	// position 10-11
 	PutWStrToArray(L, 10, pItem->PtrData, -1);
@@ -3358,7 +3370,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			if (SendDlgMessage(hDlg, Msg, Param1, &flgi))
 			{
 				lua_createtable(L,0,2);
-				PutIntToTable(L, "Flags", flgi.Item.Flags);
+				PutFlagsToTable(L, "Flags", flgi.Item.Flags);
 				PutWStrToTable(L, "Text", flgi.Item.Text, -1);
 				return 1;
 			}
@@ -3401,7 +3413,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			if (SendDlgMessage(hDlg, Msg, Param1, &fli))
 			{
 				lua_createtable(L,0,6);
-				PutIntToTable(L, "Flags", fli.Flags);
+				PutFlagsToTable(L, "Flags", fli.Flags);
 				PutIntToTable(L, "ItemsNumber", fli.ItemsNumber);
 				PutIntToTable(L, "SelectPos", fli.SelectPos+1);
 				PutIntToTable(L, "TopPos", fli.TopPos+1);
@@ -4155,10 +4167,10 @@ static int viewer_GetInfo(lua_State *L)
 
 		flags_t Flags = (vi.CurMode.Wrap ? VMF_WRAP : 0) | (vi.CurMode.WordWrap ? VMF_WORDWRAP : 0);
 		lua_createtable(L, 0, 4);
-		PutNumToTable (L, "Flags",       Flags);
-		PutNumToTable (L, "CodePage",    vi.CurMode.CodePage);
-		PutNumToTable (L, "ViewMode",    vi.CurMode.Hex ? VMT_HEX : VMT_TEXT);
-		PutBoolToTable(L, "Processed",   vi.CurMode.Processed);
+		PutNumToTable  (L, "CodePage",   vi.CurMode.CodePage);
+		PutFlagsToTable(L, "Flags",      Flags);
+		PutNumToTable  (L, "ViewMode",   vi.CurMode.Hex ? VMT_HEX : VMT_TEXT);
+		PutBoolToTable (L, "Processed",  vi.CurMode.Processed);
 		lua_setfield(L, -2, "CurMode");
 	}
 	else
@@ -4792,10 +4804,9 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 
 			PutIntToTable(L, "Pos", wi.Pos + 1);
 			PutIntToTable(L, "Type", wi.Type);
-			PutIntToTable(L, "Flags", wi.Flags);
+			PutFlagsToTable(L, "Flags", wi.Flags);
 			PutWStrToTable(L, "TypeName", wi.TypeName, -1);
 			PutWStrToTable(L, "Name", wi.Name, -1);
-
 			return 1;
 		}
 
@@ -5104,6 +5115,13 @@ static int far_CPluginStartupInfo(lua_State *L)
 	return 1;
 }
 
+void pushFileTime(lua_State *L, const FILETIME *ft)
+{
+	long long llFileTime = ft->dwLowDateTime + 0x100000000LL * ft->dwHighDateTime;
+	llFileTime /= 10000;
+	lua_pushnumber(L, (double)llFileTime);
+}
+
 static int far_MakeMenuItems (lua_State *L)
 {
 	int argn = lua_gettop(L);
@@ -5391,11 +5409,11 @@ static int far_GetPluginInformation(lua_State *L)
 	lua_createtable(L, 0, 4);
 	{
 		PutWStrToTable(L, "ModuleName", pi->ModuleName, -1);
-		PutNumToTable(L, "Flags", pi->Flags);
+		PutFlagsToTable(L, "Flags", pi->Flags);
 		lua_createtable(L, 0, 6); // PInfo
 		{
 			PutNumToTable(L, "StructSize", pi->PInfo->StructSize);
-			PutNumToTable(L, "Flags", pi->PInfo->Flags);
+			PutFlagsToTable(L, "Flags", pi->PInfo->Flags);
 			PutNumToTable(L, "SysID", pi->PInfo->SysID);
 			PutPluginMenuItemToTable(L, "DiskMenu", pi->PInfo->DiskMenuStrings, pi->PInfo->DiskMenuStringsNumber);
 			PutPluginMenuItemToTable(L, "PluginMenu", pi->PInfo->PluginMenuStrings, pi->PInfo->PluginMenuStringsNumber);
