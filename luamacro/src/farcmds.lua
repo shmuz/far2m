@@ -35,15 +35,18 @@ local function Command(prefix, text)
         editor.Editor(tmpname,nil,nil,nil,nil,nil,flags)
       end
     else
-      local line,col,fname = regex.match(cmd, [=[ \[ (\d+)? (?: ,(\d+))? \] \s* (.+) ]=], nil, "x")
-      line  = line or (col and 1) or nil
-      col   = col or nil
-      fname = far.SplitCmdLine(fname or cmd)
+      local patt = [=[ ^ \[ (\d+)? (?: [,:;] (\d+))? \] \s* (.+) ]=]
+      local line, col, fname = regex.match(cmd, patt, nil, "x")
+      fname = fname or cmd
       local attr = win.GetFileAttr(fname)
       if attr and attr:find("d") then
         far.Message("Cannot edit the folder '"..fname.."'", "Error", nil, "w")
       else
-        editor.Editor(fname,nil,nil,nil,nil,nil,flags,line,col)
+        line, col = line or nil, col or nil  -- convert false to nil
+        editor.Editor(fname, nil,nil,nil,nil,nil, flags, line, col)
+        if line == nil and col then
+          editor.SetPosition(nil,line,col) -- a workaround to behave as in far3
+        end
       end
     end
   ----------------------------------------------------------------------------
