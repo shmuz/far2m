@@ -2423,34 +2423,37 @@ local function test_Guids()
   test_one_guid( "ChangeDiskMenuId",         nil, "AltF2")
   test_one_guid( "CodePagesMenuId",          nil, "F9 Home 3*Right Enter End 4*Up Enter")
 
-  local was_empty = APanel.Empty
-  if was_empty then
-    Keys("F7 1 Enter")
-    assert_false(APanel.Empty)
-  end
-  test_one_guid( "CopyCurrentOnlyFileId",    nil, "End ShiftF5")
-  test_one_guid( "CopyFilesId",              nil, "End F5")
-  local keyname = Far.GetConfig("System.DeleteToRecycleBin") and "DeleteRecycleId" or "DeleteFileFolderId"
-  test_one_guid( keyname,                    nil, "End F8")
-  test_one_guid( "DeleteWipeId",             nil, "End AltDel")
-  test_one_guid( "DescribeFileId",           nil, "End CtrlZ")
-  test_one_guid( "FileAttrDlgId",            nil, "End CtrlA")
-  test_one_guid( "HardSymLinkId",            nil, "End AltF6")
-  test_one_guid( "MoveCurrentOnlyFileId",    nil, "End ShiftF6")
-  test_one_guid( "MoveFilesId",              nil, "End F6")
-  if was_empty then
-    assert_eq(APanel.Current, "1")
-    Keys("F8")
-    if Area.Dialog then Keys("Enter") end
-    assert_true(APanel.Empty)
-  end
+  local fname, linkname = "file-1", "link-1"
+  local dir = far.InMyTemp("macrotest")
+  os.execute("mkdir "..dir)
+  os.execute("rm -f " ..dir.. "/*")
+  assert_true(panel.SetPanelDirectory(nil,1,dir))
+  assert_true(APanel.Empty)
+  io.open(fname, "w"):close()
+  assert_true(panel.UpdatePanel(nil,1))
+  assert_false(APanel.Empty)
+  assert_true(far.MkLink(fname, linkname, "LINK_SYMLINKFILE"))
 
-  test_one_guid( "EditUserMenuId",           nil, "F2 Ins Enter", 2)
-  test_one_guid( "EditorReplaceId",          nil, "ShiftF4 Del Enter CtrlF7", 2)
-  test_one_guid( "EditorSearchId",           nil, "ShiftF4 Del Enter F7", 2)
+  local RecBin = Far.GetConfig("System.DeleteToRecycleBin")
+  for k=1,2 do
+    assert_neq(0, Panel.SetPos(0, k==1 and fname or linkname))
+    test_one_guid( "CopyCurrentOnlyFileId", nil, "ShiftF5")
+    test_one_guid( "CopyFilesId",           nil, "F5")
+    test_one_guid( "DescribeFileId",        nil, "CtrlZ")
+    test_one_guid( "FileAttrDlgId",         nil, "CtrlA")
+    test_one_guid( "HardSymLinkId",         nil, "AltF6")
+    test_one_guid( "MoveCurrentOnlyFileId", nil, "ShiftF6")
+    test_one_guid( "MoveFilesId",           nil, "F6")
+    test_one_guid( RecBin and "DeleteRecycleId" or "DeleteFileFolderId", nil, "F8")
+    test_one_guid( k==1 and "DeleteWipeId" or "DeleteFileFolderId",      nil, "AltDel") -- ### not as in Far3
+  end                                                                                   -- and not as in far2l
+
+  test_one_guid( "EditUserMenuId",              nil, "F2 Ins Enter", 2)
+  test_one_guid( "EditorReplaceId",             nil, "ShiftF4 Del Enter CtrlF7", 2)
+  test_one_guid( "EditorSearchId",              nil, "ShiftF4 Del Enter F7", 2)
   test_one_guid( "EditorCanNotEditDirectoryId", nil, "ShiftF4 . . Enter", 1)
-  test_one_guid( "SelectFromEditHistoryId",  nil, "ShiftF4 A Enter Esc ShiftF4 CtrlDown", 2)
-  test_one_guid( "FarAskQuitId",             nil, "F10")
+  test_one_guid( "SelectFromEditHistoryId",     nil, "ShiftF4 A Enter Esc ShiftF4 CtrlDown", 2)
+  test_one_guid( "FarAskQuitId",                nil, "F10")
 
   local myMenu
   myMenu = function() mf.mainmenu("fileassociations") end
