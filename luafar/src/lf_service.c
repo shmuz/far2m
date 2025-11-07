@@ -4555,12 +4555,12 @@ static int far_MkTemp(lua_State *L)
 
 static int far_MkLink(lua_State *L)
 {
-	const wchar_t* src = check_utf8_string(L, 1, NULL);
-	const wchar_t* dst = check_utf8_string(L, 2, NULL);
-	DWORD link_type = OptFlags(L, 3, FLINK_SYMLINK);
+	const wchar_t* target = check_utf8_string(L, 1, NULL);
+	const wchar_t* linkname = check_utf8_string(L, 2, NULL);
+	DWORD linktype = OptFlags(L, 3, FLINK_SYMLINK);
 	flags_t flags = OptFlags(L, 4, 0);
-	flags = (link_type & 0x0000FFFF) | (flags & 0xFFFF0000);
-	lua_pushboolean(L, FSF.MkLink(src, dst, flags));
+	flags = (linktype & 0x0000FFFF) | (flags & 0xFFFF0000);
+	lua_pushboolean(L, FSF.MkLink(target, linkname, flags));
 	return 1;
 }
 

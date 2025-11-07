@@ -103,7 +103,7 @@ private:
 
 void ShellDelete(Panel *SrcPanel, bool Wipe)
 {
-	SudoClientRegion scr;
+	SCOPED_ACTION(SudoClientRegion);
 	SCOPED_ACTION(TPreRedrawFuncGuard)(PR_ShellDeleteMsg);
 	FAR_FIND_DATA_EX FindData;
 	FARString strDeleteFilesMsg;
@@ -111,17 +111,16 @@ void ShellDelete(Panel *SrcPanel, bool Wipe)
 	FARString strDizName;
 	FARString strFullName;
 	DWORD FileAttr;
-	int SelCount, UpdateDiz;
-	int DizPresent;
-	int Ret;
-	BOOL NeedUpdate = TRUE, NeedSetUpADir = FALSE;
+	int SelCount;
+	bool UpdateDiz, DizPresent;
+	bool NeedUpdate = true, NeedSetUpADir = false;
 	int Opt_DeleteToRecycleBin = Opt.DeleteToRecycleBin;
 	/*& 31.05.2001 OT Запретить перерисовку текущего фрейма*/
 	Frame *FrameFromLaunched = FrameManager->GetCurrentFrame();
 	FrameFromLaunched->Lock();
 	DeleteAllFolders = !Opt.Confirm.DeleteFolder;
-	UpdateDiz = (Opt.Diz.UpdateMode == DIZ_UPDATE_ALWAYS
-			|| (SrcPanel->IsDizDisplayed() && Opt.Diz.UpdateMode == DIZ_UPDATE_IF_DISPLAYED));
+	UpdateDiz = Opt.Diz.UpdateMode == DIZ_UPDATE_ALWAYS
+			|| (SrcPanel->IsDizDisplayed() && Opt.Diz.UpdateMode == DIZ_UPDATE_IF_DISPLAYED);
 
 	if (!(SelCount = SrcPanel->GetSelCount()))
 		goto done;
@@ -138,7 +137,7 @@ void ShellDelete(Panel *SrcPanel, bool Wipe)
 		SrcPanel->GetSelNameCompat(&strSelName, FileAttr);
 
 		if (TestParentFolderName(strSelName) || strSelName.IsEmpty()) {
-			NeedUpdate = FALSE;
+			NeedUpdate = false;
 			goto done;
 		}
 
@@ -162,9 +161,7 @@ void ShellDelete(Panel *SrcPanel, bool Wipe)
 		strDeleteFilesMsg.Format(Msg::AskDeleteItems, SelCount, Ends);
 	}
 
-	Ret = 1;
-
-	if (Ret && (Opt.Confirm.Delete || SelCount > 1))    // || (FileAttr & FILE_ATTRIBUTE_DIRECTORY)))
+	if (Opt.Confirm.Delete || SelCount > 1)    // || (FileAttr & FILE_ATTRIBUTE_DIRECTORY)))
 	{
 		const wchar_t *DelMsg;
 		const wchar_t *TitleMsg = Wipe ? Msg::DeleteWipeTitle : Msg::DeleteTitle;
@@ -209,7 +206,7 @@ void ShellDelete(Panel *SrcPanel, bool Wipe)
 									: Opt.DeleteToRecycleBin ? Msg::DeleteRecycle
 															 : Msg::Delete),
 					Msg::Cancel)) {
-			NeedUpdate = FALSE;
+			NeedUpdate = false;
 			goto done;
 		}
 	}
@@ -223,7 +220,7 @@ void ShellDelete(Panel *SrcPanel, bool Wipe)
 		if (Message(MSG_WARNING, 2, MsgId, (Wipe ? Msg::WipeFilesTitle : Msg::DeleteFilesTitle),
 					(Wipe ? Msg::AskWipe : Msg::AskDelete), strDeleteFilesMsg, Msg::DeleteFileAll,
 					Msg::DeleteFileCancel)) {
-			NeedUpdate = FALSE;
+			NeedUpdate = false;
 			goto done;
 		}
 	}
@@ -232,10 +229,10 @@ void ShellDelete(Panel *SrcPanel, bool Wipe)
 		SrcPanel->ReadDiz();
 
 	SrcPanel->GetDizName(strDizName);
-	DizPresent = (!strDizName.IsEmpty() && apiGetFileAttributes(strDizName) != INVALID_FILE_ATTRIBUTES);
+	DizPresent = !strDizName.IsEmpty() && apiGetFileAttributes(strDizName) != INVALID_FILE_ATTRIBUTES;
 	DeleteTitle = new ConsoleTitle(Msg::DeletingTitle);
 
-	if ((NeedSetUpADir = CheckUpdateAnotherPanel(SrcPanel, strSelName)) == -1)
+	if (!(NeedSetUpADir = CheckUpdateAnotherPanel(SrcPanel, strSelName)))
 		goto done;
 
 	if (SrcPanel->GetType() == TREE_PANEL)
@@ -335,7 +332,7 @@ void ShellDelete(Panel *SrcPanel, bool Wipe)
 									Msg::DeleteFileSkip, Msg::DeleteFileCancel);
 
 						if (MsgCode < 0 || MsgCode == 3) {
-							NeedSetUpADir = FALSE;
+							NeedSetUpADir = false;
 							break;
 						}
 

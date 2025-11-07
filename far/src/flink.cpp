@@ -132,7 +132,7 @@ int WINAPI FarMkLink(const wchar_t *ExistingName, const wchar_t *NewName, DWORD 
 	}
 
 	if (Result && !(Flags&FLINK_DONOTUPDATEPANEL))
-		ShellUpdatePanels(nullptr, FALSE);
+		ShellUpdatePanels(nullptr, false);
 
 	return Result;
 }

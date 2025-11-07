@@ -401,7 +401,7 @@ void UserMenu::ProcessUserMenu(bool ChooseMenuType, const wchar_t *MenuFileName)
 	}
 
 	if (FrameManager->IsPanelsActive() && (ExitCode == EC_COMMAND_SELECTED || MenuModified))
-		ShellUpdatePanels(CtrlObject->Cp()->ActivePanel, FALSE);
+		ShellUpdatePanels(CtrlObject->Cp()->ActivePanel, false);
 }
 
 // заполнение меню

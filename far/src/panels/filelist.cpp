@@ -990,7 +990,7 @@ class FileList_TempFileHolder : public TempFileUploadHolder
 	void CheckPanelUpdate(Panel *panel)
 	{
 		if (panel && panel->GetPluginHandle() == hPlugin) {
-			ShellUpdatePanels(panel, FALSE);
+			ShellUpdatePanels(panel, false);
 		}
 	}
 

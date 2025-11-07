@@ -589,7 +589,7 @@ int InfoList::ProcessKey(FarKey Key)
 			int64_t Pos, Length;
 			DWORD Flags;
 			DizView->GetSelectedParam(Pos, Length, Flags);
-			// ShellUpdatePanels(nullptr,FALSE);
+			// ShellUpdatePanels(nullptr,false);
 			DizView->InRecursion++;
 			Redraw();
 			CtrlObject->Cp()->GetAnotherPanel(this)->Redraw();

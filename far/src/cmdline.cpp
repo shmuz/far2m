@@ -246,7 +246,7 @@ int CommandLine::ProcessKey(FarKey Key)
 		VTLog::Reset(NULL);
 		ShowBackground();
 		Redraw();
-//		ShellUpdatePanels(CtrlObject->Cp()->ActivePanel, FALSE);
+//		ShellUpdatePanels(CtrlObject->Cp()->ActivePanel, false);
 		CtrlObject->MainKeyBar->Refresh(Opt.ShowKeyBar);
 
 //		CmdExecute(L"reset", true, false, true, false, false, false);

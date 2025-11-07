@@ -36,8 +36,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "panel.hpp"
 #include "panelctype.hpp"
 
-void ShellUpdatePanels(Panel *SrcPanel,BOOL NeedSetUpADir=FALSE);
-int  CheckUpdateAnotherPanel(Panel *SrcPanel,const wchar_t *SelName);
+void ShellUpdatePanels(Panel *SrcPanel, bool NeedSetUpADir = false);
+bool CheckUpdateAnotherPanel(Panel *SrcPanel, const wchar_t *SelName);
 
 int _MakePath1(DWORD Key, FARString &strPathName, const wchar_t *Param2, int escaping = 1); // by default escaping filenames
 
