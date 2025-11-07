@@ -169,31 +169,34 @@ void ShellDelete(Panel *SrcPanel, bool Wipe)
 		   ! Косметика в сообщениях - разные сообщения в зависимости от того,
 			 какие и сколько элементов выделено.
 		*/
-		BOOL folder = (FileAttr & FILE_ATTRIBUTE_DIRECTORY);
+		bool folder = (FileAttr & FILE_ATTRIBUTE_DIRECTORY) != 0;
+		bool reparse = (FileAttr & FILE_ATTRIBUTE_REPARSE_POINT) != 0;
 		const GUID *MsgId = nullptr;
 
 		if (SelCount == 1) {
-			if (Wipe && !(FileAttr & FILE_ATTRIBUTE_REPARSE_POINT)) {
+			if (Wipe && !reparse) {
 				DelMsg = folder ? Msg::AskWipeFolder : Msg::AskWipeFile;
-				MsgId = &DeleteWipeId;
-			} else {
-				if (Opt.DeleteToRecycleBin && !(FileAttr & FILE_ATTRIBUTE_REPARSE_POINT)) {
-					DelMsg = folder ? Msg::AskDeleteRecycleFolder : Msg::AskDeleteRecycleFile;
-					MsgId = &DeleteRecycleId;
-				} else {
-					DelMsg = folder ? Msg::AskDeleteFolder : Msg::AskDeleteFile;
-					MsgId = &DeleteFileFolderId;
-				}
+				MsgId = folder ? &WipeFolderId : &DeleteWipeId;
 			}
-		} else {
-			if (Wipe && !(FileAttr & FILE_ATTRIBUTE_REPARSE_POINT)) {
+			else if (Opt.DeleteToRecycleBin && !reparse) {
+				DelMsg = folder ? Msg::AskDeleteRecycleFolder : Msg::AskDeleteRecycleFile;
+				MsgId = folder ? &DeleteFolderRecycleId : &DeleteRecycleId;
+			}
+			else {
+				DelMsg = folder ? Msg::AskDeleteFolder : Msg::AskDeleteFile;
+				MsgId = folder ? &DeleteFolderId : &DeleteFileFolderId;
+			}
+		}
+		else {
+			if (Wipe && !reparse) {
 				DelMsg = Msg::AskWipe;
-				TitleMsg = Msg::DeleteWipeTitle;
 				MsgId = &DeleteWipeId;
-			} else if (Opt.DeleteToRecycleBin && !(FileAttr & FILE_ATTRIBUTE_REPARSE_POINT)) {
+			}
+			else if (Opt.DeleteToRecycleBin && !reparse) {
 				DelMsg = Msg::AskDeleteRecycle;
 				MsgId = &DeleteRecycleId;
-			} else {
+			}
+			else {
 				DelMsg = Msg::AskDelete;
 				MsgId = &DeleteFileFolderId;
 			}
@@ -202,10 +205,9 @@ void ShellDelete(Panel *SrcPanel, bool Wipe)
 		SetMessageHelp(L"DeleteFile");
 
 		if (Message(0, 2, MsgId, TitleMsg, DelMsg, strDeleteFilesMsg,
-					(Wipe                                    ? Msg::DeleteWipe
-									: Opt.DeleteToRecycleBin ? Msg::DeleteRecycle
-															 : Msg::Delete),
-					Msg::Cancel)) {
+					(Wipe ? Msg::DeleteWipe : Opt.DeleteToRecycleBin ? Msg::DeleteRecycle : Msg::Delete),
+					Msg::Cancel))
+		{
 			NeedUpdate = false;
 			goto done;
 		}
@@ -219,7 +221,8 @@ void ShellDelete(Panel *SrcPanel, bool Wipe)
 
 		if (Message(MSG_WARNING, 2, MsgId, (Wipe ? Msg::WipeFilesTitle : Msg::DeleteFilesTitle),
 					(Wipe ? Msg::AskWipe : Msg::AskDelete), strDeleteFilesMsg, Msg::DeleteFileAll,
-					Msg::DeleteFileCancel)) {
+					Msg::DeleteFileCancel))
+		{
 			NeedUpdate = false;
 			goto done;
 		}
@@ -277,12 +280,12 @@ void ShellDelete(Panel *SrcPanel, bool Wipe)
 						UINT64 FileSize, PhysicalSize;
 
 						if (GetDirInfo(nullptr, strSelName, CurrentDirCount, CurrentFileCount, FileSize,
-									PhysicalSize, ClusterSize, -1, nullptr, 0)
-								> 0) {
+									PhysicalSize, ClusterSize, -1, nullptr, 0) > 0)
+						{
 							ItemsCount+= CurrentFileCount + CurrentDirCount;
-						} else {
-							Cancel = true;
 						}
+						else
+							Cancel = true;
 					}
 				}
 			}

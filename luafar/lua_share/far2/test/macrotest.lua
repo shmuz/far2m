@@ -2436,7 +2436,8 @@ local function test_Guids()
 
   local RecBin = Far.GetConfig("System.DeleteToRecycleBin")
   for k=1,2 do
-    assert_neq(0, Panel.SetPos(0, k==1 and fname or linkname))
+    local symlink = k == 2
+    assert_neq(0, Panel.SetPos(0, symlink and linkname or fname))
     test_one_guid( "CopyCurrentOnlyFileId", nil, "ShiftF5")
     test_one_guid( "CopyFilesId",           nil, "F5")
     test_one_guid( "DescribeFileId",        nil, "CtrlZ")
@@ -2444,9 +2445,11 @@ local function test_Guids()
     test_one_guid( "HardSymLinkId",         nil, "AltF6")
     test_one_guid( "MoveCurrentOnlyFileId", nil, "ShiftF6")
     test_one_guid( "MoveFilesId",           nil, "F6")
-    test_one_guid( RecBin and "DeleteRecycleId" or "DeleteFileFolderId", nil, "F8")
-    test_one_guid( k==1 and "DeleteWipeId" or "DeleteFileFolderId",      nil, "AltDel") -- ### not as in Far3
-  end                                                                                   -- and not as in far2l
+    test_one_guid( RecBin and not symlink and "DeleteRecycleId" or "DeleteFileFolderId",
+                                            nil, "F8")
+    test_one_guid( symlink and "DeleteFileFolderId" or "DeleteWipeId",
+                                            nil, "AltDel") -- ### differs from Far3 and far2l
+  end
 
   test_one_guid( "EditUserMenuId",              nil, "F2 Ins Enter", 2)
   test_one_guid( "EditorReplaceId",             nil, "ShiftF4 Del Enter CtrlF7", 2)

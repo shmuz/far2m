@@ -3230,28 +3230,30 @@ int FileList::GetSelName(FARString *strName, DWORD &FileAttr, DWORD &FileMode, F
 			return FALSE;
 	}
 
-	while (GetSelPosition < FileCount)
+	while (GetSelPosition < FileCount) {
 		if (ListData[GetSelPosition++]->Selected) {
-			*strName = ListData[GetSelPosition - 1]->strName;
+			const auto pos = GetSelPosition - 1;
+			*strName = ListData[pos]->strName;
 
-			FileAttr = ListData[GetSelPosition - 1]->FileAttr;
-			FileMode = ListData[GetSelPosition - 1]->FileMode;
-			LastSelPosition = GetSelPosition - 1;
+			FileAttr = ListData[pos]->FileAttr;
+			FileMode = ListData[pos]->FileMode;
+			LastSelPosition = pos;
 
 			if (fde) {
-				fde->dwFileAttributes = ListData[GetSelPosition - 1]->FileAttr;
-				fde->dwUnixMode = ListData[GetSelPosition - 1]->FileMode;
-				fde->ftCreationTime = ListData[GetSelPosition - 1]->CreationTime;
-				fde->ftLastAccessTime = ListData[GetSelPosition - 1]->AccessTime;
-				fde->ftLastWriteTime = ListData[GetSelPosition - 1]->WriteTime;
-				fde->ftChangeTime = ListData[GetSelPosition - 1]->ChangeTime;
-				fde->nFileSize = ListData[GetSelPosition - 1]->FileSize;
-				fde->nPhysicalSize = ListData[GetSelPosition - 1]->PhysicalSize;
-				fde->strFileName = ListData[GetSelPosition - 1]->strName;
+				fde->dwFileAttributes = ListData[pos]->FileAttr;
+				fde->dwUnixMode = ListData[pos]->FileMode;
+				fde->ftCreationTime = ListData[pos]->CreationTime;
+				fde->ftLastAccessTime = ListData[pos]->AccessTime;
+				fde->ftLastWriteTime = ListData[pos]->WriteTime;
+				fde->ftChangeTime = ListData[pos]->ChangeTime;
+				fde->nFileSize = ListData[pos]->FileSize;
+				fde->nPhysicalSize = ListData[pos]->PhysicalSize;
+				fde->strFileName = ListData[pos]->strName;
 			}
 
 			return TRUE;
 		}
+	}
 
 	return FALSE;
 }
