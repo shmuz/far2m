@@ -235,8 +235,8 @@ void ShellDelete(Panel *SrcPanel, bool Wipe)
 	DizPresent = !strDizName.IsEmpty() && apiGetFileAttributes(strDizName) != INVALID_FILE_ATTRIBUTES;
 	DeleteTitle = new ConsoleTitle(Msg::DeletingTitle);
 
-	//if (!(NeedSetUpADir = CheckUpdateAnotherPanel(SrcPanel, strSelName)))
-	//	goto done;
+	if (!(NeedSetUpADir = CheckUpdateAnotherPanel(SrcPanel, strSelName)))
+		; //	goto done;
 
 	if (SrcPanel->GetType() == TREE_PANEL)
 		FarChDir(L"/");
