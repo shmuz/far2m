@@ -635,9 +635,11 @@ void CommandLine::ExecString(const wchar_t *Str, bool SeparateWindow,
 
 void CommandLine::InsertString(const wchar_t *Str)
 {
-	LastCmdPartLength=-1;
+	LastCmdPartLength = -1;
+	CmdStr.DisableAC();
 	CmdStr.InsertString(Str);
 	CmdStr.Show();
+	CmdStr.RevertAC();
 }
 
 
