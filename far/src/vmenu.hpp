@@ -277,9 +277,9 @@ private:
 	int CheckHighlights(wchar_t Chr, int StartPos = 0);
 	wchar_t GetHighlights(const struct MenuItemEx *_item);
 	bool ShiftItemShowPos(int Pos, int Direct);
-	bool ItemCanHaveFocus(DWORD Flags);
-	bool ItemCanBeEntered(DWORD Flags);
-	bool ItemIsVisible(DWORD Flags);
+	static bool ItemCanHaveFocus(DWORD Flags);
+	static bool ItemCanBeEntered(DWORD Flags);
+	static bool ItemIsVisible(DWORD Flags);
 	void UpdateMaxLengthFromTitles();
 	void UpdateMaxLength(int Length);
 	void UpdateInternalCounters(DWORD OldFlags, DWORD NewFlags);
@@ -318,11 +318,11 @@ public:
 	void SetUpdateRequired(int SetUpdate) { ChangeFlags(VMENU_UPDATEREQUIRED, SetUpdate); }
 	void SetBoxType(int BoxType);
 
-	void SetFlags(DWORD Flags) { VMFlags.Set(Flags); }
-	void ClearFlags(DWORD Flags) { VMFlags.Clear(Flags); }
-	BOOL CheckFlags(DWORD Flags) const { return VMFlags.Check(Flags); }
+	void SetFlags(DWORD a_Flags) { VMFlags.Set(a_Flags); }
+	void ClearFlags(DWORD a_Flags) { VMFlags.Clear(a_Flags); }
+	BOOL CheckFlags(DWORD a_Flags) const { return VMFlags.Check(a_Flags); }
 	DWORD GetFlags() const { return VMFlags.Flags; }
-	DWORD ChangeFlags(DWORD Flags, BOOL Status) { return VMFlags.Change(Flags, Status); }
+	DWORD ChangeFlags(DWORD a_Flags, BOOL Status) { return VMFlags.Change(a_Flags, Status); }
 
 	void AssignHighlights(int Reverse);
 

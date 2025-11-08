@@ -797,7 +797,7 @@ static FARString WipingRename(const wchar_t *Name)
 	}
 
 	if (!apiMoveFile(Name, strTempName)) {
-		fprintf(stderr, "%s: error %u renaming '%ls' to '%ls'\n", __FUNCTION__, errno, Name,
+		fprintf(stderr, "%s: error %d renaming '%ls' to '%ls'\n", __FUNCTION__, errno, Name,
 				strTempName.CPtr());
 		return Name;
 	}

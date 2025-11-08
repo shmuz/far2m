@@ -56,6 +56,7 @@ local function pack (...)
 end
 
 local TmpFileName = far.InMyTemp("macrotest.tmp")
+local TmpDir = far.InMyTemp("macrotest")
 
 local function WriteTmpFile(...)
   local fp = assert(io.open(TmpFileName,"w"))
@@ -2424,10 +2425,9 @@ local function test_Guids()
   test_one_guid( "CodePagesMenuId",          nil, "F9 Home 3*Right Enter End 4*Up Enter")
 
   local fname, linkname = "file-1", "link-1"
-  local dir = far.InMyTemp("macrotest")
-  os.execute("mkdir "..dir)
-  os.execute("rm -f " ..dir.. "/*")
-  assert_true(panel.SetPanelDirectory(nil,1,dir))
+  os.execute("mkdir "..TmpDir)
+  os.execute("rm -f " ..TmpDir.. "/*")
+  assert_true(panel.SetPanelDirectory(nil,1,TmpDir))
   assert_true(APanel.Empty)
   io.open(fname, "w"):close()
   assert_true(panel.UpdatePanel(nil,1))
@@ -2813,7 +2813,7 @@ local function test_Editor_Sel_Cmdline(args)
       assert_eq(Editor.Sel(act,opt), 0) -- no block exists, zeros returned
     end
 
-    local line, pos, w, h = 1, 13, 5, 1
+    local line, pos, w = 1, 13, 5
 
     panel.SetCmdLineSelection(nil, pos, pos+w)
     assert_eq(Editor.Sel(act,0), line)
@@ -3069,48 +3069,74 @@ function MT.test_F3_F4_F8()
 
   Keys("F8 F4")
   assert_true(Area.Editor)
-  local ei = editor.GetInfo()
-  assert_eq(ei.TotalLines, 1)
+  local EI = editor.GetInfo()
+  assert_eq(EI.TotalLines, 1)
   Keys("Esc")
 
   Keys("F8 F3")
   assert_true(Area.Viewer)
-  local vi = viewer.GetInfo()
-  assert_eq(vi.FileSize, 0)
+  local VI = viewer.GetInfo()
+  assert_eq(VI.FileSize, 0)
   Keys("Esc")
 
   -- print not less than 5 screens of text
   local NScreens = 5
   Keys("CtrlY")
-  for k=1, math.ceil(NScreens * H / API.ItemsNumber) do
+  for _=1, math.ceil(NScreens * H / API.ItemsNumber) do
     print("ls -l")
     Keys("Enter")
   end
 
   Keys("F4")
   assert_true(Area.Editor)
-  local ei = editor.GetInfo()
-  assert(ei.TotalLines > NScreens * H)
+  EI = editor.GetInfo()
+  assert(EI.TotalLines > NScreens * H)
   Keys("Esc")
 
   Keys("F3")
   assert_true(Area.Viewer)
   local prevpos = 1E6
-  for k=1,NScreens do
-    local vi = viewer.GetInfo()
-    assert(vi.FilePos < prevpos)
-    prevpos = vi.FilePos
+  for _=1,NScreens do
+    local VI = viewer.GetInfo()
+    assert(VI.FilePos < prevpos)
+    prevpos = VI.FilePos
     Keys("PgUp")
   end
   Keys("Esc")
 
   Keys("F8 F3")
   assert_true(Area.Viewer)
-  local vi = viewer.GetInfo()
-  assert_eq(vi.FileSize, 0)
+  VI = viewer.GetInfo()
+  assert_eq(VI.FileSize, 0)
   Keys("Esc")
 
   Keys("CtrlO")
+end
+
+function MT.test_Delete_Wipe()
+  local fname1, fname2 = "file-1", "file-2"
+  os.execute("mkdir "..TmpDir)
+  os.execute("rm -f " ..TmpDir.. "/*")
+  assert_true(panel.SetPanelDirectory(nil,1,TmpDir))
+  assert_eq(APanel.ItemCount, 1)
+  io.open(fname1, "w"):close()
+  io.open(fname2, "w"):close()
+  assert_true(panel.UpdatePanel(nil,1))
+  assert_eq(APanel.ItemCount, 3)
+
+  assert_neq(0, Panel.SetPos(0, fname1))
+  Keys("F8")
+  assert_true(Area.Dialog)
+  Keys("Enter")
+  assert_true(Area.Shell)
+  assert_eq(APanel.ItemCount, 2)
+
+  assert_neq(0, Panel.SetPos(0, fname2))
+  Keys("AltDel")
+  assert_true(Area.Dialog)
+  Keys("Enter")
+  assert_true(Area.Shell)
+  assert_eq(APanel.ItemCount, 1)
 end
 
 function MT.test_all()
@@ -3139,6 +3165,7 @@ function MT.test_all()
   MT.test_far_regex( --[[far.Log, true]] ) -- external test files
   MT.test_far_DetectCodePage() -- external
   MT.test_F3_F4_F8()
+  MT.test_Delete_Wipe()
   actl.RedrawAll()
 end
 

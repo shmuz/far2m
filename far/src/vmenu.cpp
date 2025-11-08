@@ -59,11 +59,11 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "cmdline.hpp"
 VMenu::VMenu(const wchar_t *Title,    // заголовок меню
 		MenuDataEx *Data,             // пункты меню
-		int ItemCount,                // количество пунктов меню
-		int MaxHeight,                // максимальная высота
-		DWORD Flags,                  // нужен ScrollBar?
+		int a_ItemCount,              // количество пунктов меню
+		int a_MaxHeight,              // максимальная высота
+		DWORD a_Flags,                // нужен ScrollBar?
 		FARWINDOWPROC Proc,           // обработчик
-		Dialog *ParentDialog)         // родитель для ListBox
+		Dialog *a_ParentDialog)       // родитель для ListBox
 	:
 	strTitle(Title),
 	SelectPos(-1),
@@ -71,7 +71,7 @@ VMenu::VMenu(const wchar_t *Title,    // заголовок меню
 	WasAutoHeight(false),
 	MaxLength(0),
 	BoxType(DOUBLE_BOX),
-	ParentDialog(ParentDialog),
+	ParentDialog(a_ParentDialog),
 	VMenuProc(Proc ? Proc : (FARWINDOWPROC)VMenu::DefMenuProc),
 	OldTitle(nullptr),
 	bFilterEnabled(false),
@@ -83,7 +83,7 @@ VMenu::VMenu(const wchar_t *Title,    // заголовок меню
 {
 	SaveScr = nullptr;
 	SetDynamicallyBorn(false);
-	SetFlags(Flags | VMENU_MOUSEREACTION | VMENU_UPDATEREQUIRED);
+	SetFlags(a_Flags | VMENU_MOUSEREACTION | VMENU_UPDATEREQUIRED);
 	ClearFlags(VMENU_SHOWAMPERSAND | VMENU_MOUSEDOWN);
 	GetCursorType(PrevCursorVisible, PrevCursorSize);
 	bRightBtnPressed = false;
@@ -95,7 +95,7 @@ VMenu::VMenu(const wchar_t *Title,    // заголовок меню
 
 	MenuItemEx NewItem;
 
-	for (int I = 0; I < ItemCount; I++) {
+	for (int I = 0; I < a_ItemCount; I++) {
 		NewItem.Clear();
 
 		if (!IsPtr(Data[I].Name))    // awful
@@ -109,7 +109,7 @@ VMenu::VMenu(const wchar_t *Title,    // заголовок меню
 		AddItem(&NewItem);
 	}
 
-	SetMaxHeight(MaxHeight);
+	SetMaxHeight(a_MaxHeight);
 	SetColors(nullptr);    // Установим цвет по умолчанию
 
 	if (!CheckFlags(VMENU_LISTBOX) && CtrlObject) {
@@ -147,21 +147,21 @@ void VMenu::ResetCursor()
 }
 
 // может иметь фокус
-bool VMenu::ItemCanHaveFocus(DWORD Flags)
+bool VMenu::ItemCanHaveFocus(DWORD a_Flags)
 {
-	return !(Flags & (LIF_DISABLE | LIF_HIDDEN | LIF_SEPARATOR));
+	return !(a_Flags & (LIF_DISABLE | LIF_HIDDEN | LIF_SEPARATOR));
 }
 
 // может быть выбран
-bool VMenu::ItemCanBeEntered(DWORD Flags)
+bool VMenu::ItemCanBeEntered(DWORD a_Flags)
 {
-	return !(Flags & (LIF_DISABLE | LIF_HIDDEN | LIF_GRAYED | LIF_SEPARATOR));
+	return !(a_Flags & (LIF_DISABLE | LIF_HIDDEN | LIF_GRAYED | LIF_SEPARATOR));
 }
 
 // видимый
-bool VMenu::ItemIsVisible(DWORD Flags)
+bool VMenu::ItemIsVisible(DWORD a_Flags)
 {
-	return !(Flags & (LIF_HIDDEN));
+	return !(a_Flags & (LIF_HIDDEN));
 }
 
 bool VMenu::UpdateRequired()
@@ -1118,17 +1118,17 @@ int VMenu::ProcessKey(FarKey Key)
 		case KEY_ALTF9:
 			FrameManager->ProcessKey(KEY_ALTF9);
 			break;
+
 		case KEY_NUMENTER:
-		case KEY_ENTER: {
+		case KEY_ENTER:
 			if (!ParentDialog || CheckFlags(VMENU_COMBOBOX)) {
 				if (SelectPos < 0 || ItemCanBeEntered(Item[SelectPos]->Flags)) {
 					EndLoop = TRUE;
 					Modal::ExitCode = SelectPos;
 				}
 			}
-
 			break;
-		}
+
 		case KEY_ESC:
 		case KEY_F10: {
 			EnableFilter(false);
@@ -1140,27 +1140,28 @@ int VMenu::ProcessKey(FarKey Key)
 
 			break;
 		}
+
 		case KEY_HOME:
 		case KEY_NUMPAD7:
 		case KEY_CTRLHOME:
 		case KEY_CTRLNUMPAD7:
 		case KEY_CTRLPGUP:
-		case KEY_CTRLNUMPAD9: {
+		case KEY_CTRLNUMPAD9:
 			SetSelectPos(0, 1);
 			TopPos = 0;
 			ShowMenu(true);
 			break;
-		}
+
 		case KEY_END:
 		case KEY_NUMPAD1:
 		case KEY_CTRLEND:
 		case KEY_CTRLNUMPAD1:
 		case KEY_CTRLPGDN:
-		case KEY_CTRLNUMPAD3: {
+		case KEY_CTRLNUMPAD3:
 			SetSelectPos(ItemCount - 1, -1);
 			ShowMenu(true);
 			break;
-		}
+
 		case KEY_PGUP:
 		case KEY_NUMPAD9: {
 			int dy = ((BoxType != NO_BOX) ? Y2 - Y1 - 1 : Y2 - Y1);
@@ -1174,6 +1175,7 @@ int VMenu::ProcessKey(FarKey Key)
 			ShowMenu(true);
 			break;
 		}
+
 		case KEY_PGDN:
 		case KEY_NUMPAD3: {
 			int dy = ((BoxType != NO_BOX) ? Y2 - Y1 - 1 : Y2 - Y1);
@@ -1188,6 +1190,7 @@ int VMenu::ProcessKey(FarKey Key)
 			ShowMenu(true);
 			break;
 		}
+
 		case KEY_ALTHOME:
 		case KEY_NUMPAD7 | KEY_ALT:
 		case KEY_ALTEND:
@@ -1212,6 +1215,7 @@ int VMenu::ProcessKey(FarKey Key)
 			ShowMenu(true);
 			break;
 		}
+
 		case KEY_ALTLEFT:
 		case KEY_NUMPAD4 | KEY_ALT:
 		case KEY_MSWHEEL_LEFT:
@@ -1232,6 +1236,7 @@ int VMenu::ProcessKey(FarKey Key)
 
 			break;
 		}
+
 		case KEY_ALTSHIFTLEFT:
 		case KEY_NUMPAD4 | KEY_ALT | KEY_SHIFT:
 		case KEY_ALTSHIFTRIGHT:
@@ -1256,24 +1261,24 @@ int VMenu::ProcessKey(FarKey Key)
 		case KEY_LEFT:
 		case KEY_NUMPAD4:
 		case KEY_UP:
-		case KEY_NUMPAD8: {
+		case KEY_NUMPAD8:
 			SetSelectPos(SelectPos - 1, -1, IsRepeatedKey() && !Opt.VMenu.MenuLoopScroll);
 			ShowMenu(true);
 			break;
-		}
+
 		case KEY_RIGHT:
 		case KEY_NUMPAD6:
 		case KEY_DOWN:
-		case KEY_NUMPAD2: {
+		case KEY_NUMPAD2:
 			SetSelectPos(SelectPos + 1, 1, IsRepeatedKey() && !Opt.VMenu.MenuLoopScroll);
 			ShowMenu(true);
 			break;
-		}
-		case KEY_CTRLALTF: {
+
+		case KEY_CTRLALTF:
 			EnableFilter(!bFilterEnabled);
 			DisplayObject();
 			break;
-		}
+
 		case KEY_CTRLV:
 		case KEY_SHIFTINS:
 		case KEY_SHIFTNUMPAD0: {
@@ -1296,13 +1301,15 @@ int VMenu::ProcessKey(FarKey Key)
 			}
 			return TRUE;
 		}
-		case KEY_CTRLALTL: {
+
+		case KEY_CTRLALTL:
 			if (bFilterEnabled) {
 				bFilterLocked = !bFilterLocked;
 				DisplayObject();
 				break;
 			}
-		}
+			[[fallthrough]];
+
 		case KEY_TAB:
 		case KEY_SHIFTTAB:
 		default: {
@@ -2456,11 +2463,11 @@ void VMenu::ResizeConsole()
 	}
 }
 
-void VMenu::SetBoxType(int BoxType)
+void VMenu::SetBoxType(int a_BoxType)
 {
 	CriticalSectionLock Lock(CS);
 
-	VMenu::BoxType = BoxType;
+	BoxType = a_BoxType;
 }
 
 void VMenu::SetColors(FarListColors *ColorsIn)
@@ -2804,7 +2811,7 @@ int VMenu::FindItem(const FarListFind *FItem)
 	return FindItem(FItem->StartIndex, FItem->Pattern, FItem->Flags);
 }
 
-int VMenu::FindItem(int StartIndex, const wchar_t *Pattern, DWORD Flags)
+int VMenu::FindItem(int StartIndex, const wchar_t *Pattern, DWORD a_Flags)
 {
 	CriticalSectionLock Lock(CS);
 
@@ -2814,11 +2821,11 @@ int VMenu::FindItem(int StartIndex, const wchar_t *Pattern, DWORD Flags)
 		for (int I = StartIndex; I < ItemCount; I++) {
 			FARString strTmpBuf(Item[I]->strName);
 			int LenNamePtr = (int)strTmpBuf.GetLength();
-			if ( (Flags & LIFIND_KEEPAMPERSAND) == 0) {
+			if ( (a_Flags & LIFIND_KEEPAMPERSAND) == 0) {
 				RemoveChar(strTmpBuf, L'&');
 			}
 
-			if (Flags & LIFIND_EXACTMATCH) {
+			if (a_Flags & LIFIND_EXACTMATCH) {
 				if (!StrCmpNI(strTmpBuf, Pattern, Max(LenPattern, LenNamePtr)))
 					return I;
 			} else {
