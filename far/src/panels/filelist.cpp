@@ -1256,7 +1256,8 @@ int FileList::ProcessKey(FarKey Key)
 						// full paths aren't needed to be prefixed with ./
 						localPath = false;
 						if (PanelMode != PLUGIN_PANEL) {
-							CreateFullPathName(CurPtr->strName, strFileName, Key == KEY_CTRLALTF);
+							CreateFullPathName((CurPtr->strName == L".." ? L"." : CurPtr->strName),
+									strFileName, Key == KEY_CTRLALTF);
 						} else {
 							PluginGetURL(CurPtr->strName, strFileName);
 						}
