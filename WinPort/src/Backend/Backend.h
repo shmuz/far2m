@@ -44,6 +44,11 @@ public:
 	virtual bool OnConsoleSetBasePalette(void *pbuff) = 0;
 	virtual void OnConsoleOverrideColor(DWORD Index, DWORD *ColorFG, DWORD *ColorBK) = 0;
 	virtual void OnConsoleSetCursorBlinkTime(DWORD interval) = 0;
+
+	virtual void OnGetConsoleImageCaps(WinportGraphicsInfo *wgi) = 0;
+	virtual bool OnSetConsoleImage(const char *id, DWORD flags, COORD pos, DWORD width, DWORD height, const void *buffer) = 0;
+	virtual bool OnDeleteConsoleImage(const char *id) = 0;
+
 	virtual const char *OnConsoleBackendInfo(int entity) = 0;
 };
 
@@ -217,6 +222,10 @@ public:
 	virtual void OverrideColor(DWORD Index, DWORD *ColorFG, DWORD *ColorBK) = 0;
 	virtual void RepaintsDeferStart() = 0;
 	virtual void RepaintsDeferFinish(bool force) = 0;
+
+	virtual void OnGetConsoleImageCaps(WinportGraphicsInfo *wgi) = 0;
+	virtual bool OnSetConsoleImage(const char *id, DWORD flags, COORD pos, DWORD width, DWORD height, const void *buffer) = 0;
+	virtual bool OnDeleteConsoleImage(const char *id) = 0;
 
 	virtual const char *BackendInfo(int entity) = 0;
 
