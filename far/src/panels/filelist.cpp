@@ -1241,10 +1241,11 @@ int FileList::ProcessKey(FarKey Key)
 					strFileName = CurPtr->strName;
 
 					if (TestParentFolderName(strFileName)) {
-						if (PanelMode == PLUGIN_PANEL)
+						if (PanelMode == PLUGIN_PANEL) {
 							strFileName.Clear();
-						else
-							strFileName.Truncate(1);    // "."
+						} else {
+							strFileName.Truncate(1);	// ".."->"."
+						}
 
 						if (Key != KEY_CTRLALTF)
 							Key = KEY_CTRLF;
@@ -1256,10 +1257,9 @@ int FileList::ProcessKey(FarKey Key)
 						// full paths aren't needed to be prefixed with ./
 						localPath = false;
 						if (PanelMode != PLUGIN_PANEL) {
-							CreateFullPathName((CurPtr->strName == L".." ? L"." : CurPtr->strName),
-									strFileName, Key == KEY_CTRLALTF);
+							CreateFullPathName(strFileName, strFileName, Key == KEY_CTRLALTF);
 						} else {
-							PluginGetURL(CurPtr->strName, strFileName);
+							PluginGetURL(strFileName, strFileName);
 						}
 					}
 
