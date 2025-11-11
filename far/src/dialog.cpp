@@ -2323,11 +2323,11 @@ void Dialog::ShowDialog(int ID)
 								CurItem->UCData->CursorPos.Y + CY1 + Y1);
 						SetCursorType(CurItem->UCData->CursorVisible, CurItem->UCData->CursorSize);
 					} else
-						SetCursorType(0, -1);
+						SetCursorType(false, -1);
 				}
 
 
-				break;	// уже наприсовали :-)))
+				break;	// уже нарисовали :-)))
 				/* ***************************************************************** */
 				//.........
 		}	// end switch(...
