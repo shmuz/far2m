@@ -2302,20 +2302,30 @@ void Dialog::ShowDialog(int ID)
 			/* 01.08.2000 SVS $ */
 			/* ***************************************************************** */
 			case DI_USERCONTROL:
-
-				if (CurItem->VBuf) {
-					PutText(X1 + CX1, Y1 + CY1, X1 + CX2, Y1 + CY2, CurItem->VBuf);
-
-					// не забудем переместить курсор, если он позиционирован.
-					if (FocusPos == I) {
-						if (CurItem->UCData->CursorPos.X != -1 && CurItem->UCData->CursorPos.Y != -1) {
-							MoveCursor(CurItem->UCData->CursorPos.X + CX1 + X1,
-									CurItem->UCData->CursorPos.Y + CY1 + Y1);
-							SetCursorType(CurItem->UCData->CursorVisible, CurItem->UCData->CursorSize);
-						} else
-							SetCursorType(false, -1);
+				if (CurItem->VBuf != INVALID_HANDLE_VALUE) { // a temporary solution (2025-11-11)
+					if (CurItem->Reserved > 0xff) {
+						PutText(X1 + CX1, Y1 + CY1, X1 + CX2, Y1 + CY2, CurItem->VBuf);
+					} else { // fill with spaces of given attibutes
+						CHAR_INFO ci{};
+						CI_SET_WCHAR(ci, L' ');
+						CI_SET_ATTR(ci, CurItem->Reserved);
+						for (auto Y = Y1 + CY1; Y <= Y1 + CY2; ++Y) {
+							for (auto X = X1 + CX1; X <= X1 + CX2; ++X) {
+								PutText(X, Y, X, Y, &ci);
+							}
+						}
 					}
 				}
+				// не забудем переместить курсор, если он позиционирован.
+				if (FocusPos == I) {
+					if (CurItem->UCData->CursorPos.X != -1 && CurItem->UCData->CursorPos.Y != -1) {
+						MoveCursor(CurItem->UCData->CursorPos.X + CX1 + X1,
+								CurItem->UCData->CursorPos.Y + CY1 + Y1);
+						SetCursorType(CurItem->UCData->CursorVisible, CurItem->UCData->CursorSize);
+					} else
+						SetCursorType(0, -1);
+				}
+
 
 				break;	// уже наприсовали :-)))
 				/* ***************************************************************** */

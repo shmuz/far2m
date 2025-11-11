@@ -2738,6 +2738,8 @@ static void SetFarDialogItem(lua_State *L, struct FarDialogItem* Item, int itemi
 	}
 	else if (Item->Type == DI_USERCONTROL)
 	{
+		Item->VBuf = INVALID_HANDLE_VALUE; // Cope with dialog.cpp change taken from far2l on 2025-11-11
+		                                   // (and consider that to be a temporary solution).
 		lua_rawgeti(L, -1, 6);
 		if (lua_type(L,-1) == LUA_TUSERDATA)
 		{
