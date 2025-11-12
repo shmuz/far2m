@@ -172,7 +172,7 @@ local function GetFileParams (Text)
   if from then
     local fname
     if Text:sub(to+1,to+1) == "\"" then -- quoted file name
-      from, to, fname = regex.find(Text, [["((?:\\.|[^"])+)"]], to+1)
+      from, to, fname = regex.find(Text, [[("(?:\\.|[^"])+")]], to+1) -- don't remove quotes
     else -- unquoted file name
       from, to, fname = regex.find(Text, [[((?:\\.|\S)+)]], to+1)
     end
@@ -382,7 +382,7 @@ local function Open_CommandLine (strCmdLine)
   prefix = prefix:lower()
   if prefix == "lm" or prefix == "macro" then
     if text == "" then
-      return
+      About(); return;
     end
     local cmd = text:match("%S*"):lower()
     if cmd == "load" then
@@ -415,9 +415,8 @@ local function Open_CommandLine (strCmdLine)
     elseif cmd ~= "" then
       ErrMsg(Msg.CL_UnsupportedCommand .. cmd)
     end
-  ----------------------------------------------------------------------------
   elseif prefix == "lua" or prefix == "moon" or prefix == "luas" or prefix == "moons" then
-    if text=="" then return end
+    if text=="" then About(); return; end
     local show = false
     if text:find("^=") then
       show, text = true, text:sub(2)
@@ -494,12 +493,12 @@ local CanCreatePanel = {
   [F.OPEN_PLUGINSMENU]   = true;
 }
 
-function export.Open (OpenFrom, Id, ...)
+function export.Open (OpenFrom, guid, ...)
   if not PluginIsReady then
     return
 
   elseif OpenFrom == F.OPEN_LUAMACRO then
-    return Open_LuaMacro(Id, ...)
+    return Open_LuaMacro(guid, ...)
 
   elseif OpenFrom == F.OPEN_COMMANDLINE then
     local mod, obj = Open_CommandLine(...)
@@ -510,14 +509,14 @@ function export.Open (OpenFrom, Id, ...)
     local mod = info.Handle.module
     if type(mod.Open) == "function" then
       info.Handle = info.Handle.object
-      local obj = mod.Open(OpenFrom, Id, info)
+      local obj = mod.Open(OpenFrom, guid, info)
       return obj and { module=mod; object=obj }
     end
 
   elseif OpenFrom == F.OPEN_FINDLIST then
     for _,mod in ipairs(utils.GetPanelModules()) do
       if type(mod.Open) == "function" then
-        local obj = mod.Open(OpenFrom, Id, ...)
+        local obj = mod.Open(OpenFrom, guid, ...)
         if obj then return { module=mod; object=obj } end
       end
     end
@@ -530,7 +529,7 @@ function export.Open (OpenFrom, Id, ...)
       if mod_guid then
         local mod = utils.GetPanelModules()[win.Uuid(mod_guid)]
         if mod and type(mod.Open) == "function" then
-          local obj = mod.Open(OpenFrom, Id, Item)
+          local obj = mod.Open(OpenFrom, guid, Item)
           return obj and { module=mod; object=obj }
         end
       end
@@ -546,13 +545,13 @@ function export.Open (OpenFrom, Id, ...)
       macrobrowser()
     end
 
-  elseif Id == MacroBrowserGuid then
+  elseif guid == MacroBrowserGuid then
     macrobrowser()
 
   else
     local items = utils.GetMenuItems()
-    if items[Id] then
-      local mod, obj = items[Id].action(OpenFrom, ...)
+    if items[guid] then
+      local mod, obj = items[guid].action(OpenFrom, ...)
       if CanCreatePanel[OpenFrom] and mod and obj and PanelModuleExist(mod) then
         return { module=mod; object=obj }
       end
@@ -636,9 +635,7 @@ local function Init()
   farcmds = RunPluginFile("farcmds.lua", Shared)
   macrobrowser = RunPluginFile("mbrowser.lua", Shared)
 
-  do
-    pcall(require, "moonscript")
-  end
+  pcall(require, "moonscript")
 
   if bit and jit then
     panelsort = RunPluginFile("panelsort.lua", Shared)
