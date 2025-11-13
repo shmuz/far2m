@@ -35,7 +35,6 @@ local TrueAreaNames = {
   [F.MACROAREA_SHELLAUTOCOMPLETION]  = "ShellAutoCompletion",
   [F.MACROAREA_DIALOGAUTOCOMPLETION] = "DialogAutoCompletion",
   [F.MACROAREA_GRABBER]              = "Grabber",
---~   [F.MACROAREA_DESKTOP]              = "Desktop",
   [F.MACROAREA_COMMON]               = "Common",
 }
 
@@ -86,7 +85,7 @@ local function FixInitialModules()
 end
 
 local function CheckFileName (mask, name)
-  return far.ProcessName(F.PN_CMPNAMELIST, mask, name, F.PN_SKIPPATH)
+  return far.ProcessName("PN_CMPNAMELIST", mask, name, "PN_SKIPPATH")
 end
 
 local StringToFlags, FlagsToString do
@@ -251,11 +250,11 @@ local function EV_Handler (macros, filename, ...)
 end
 
 local function export_ProcessEditorEvent (EditorID, Event, Param)
-  return EV_Handler(Events.editorevent, editor.GetFileName(nil), EditorID, Event, Param)
+  return EV_Handler(Events.editorevent, editor.GetFileName(EditorID), EditorID, Event, Param)
 end
 
 local function export_ProcessViewerEvent (ViewerID, Event, Param)
-  return EV_Handler(Events.viewerevent, viewer.GetFileName(nil), ViewerID, Event, Param)
+  return EV_Handler(Events.viewerevent, viewer.GetFileName(ViewerID), ViewerID, Event, Param)
 end
 
 local function export_ExitFAR (unload)
@@ -367,9 +366,8 @@ local function AddRegularMacro (srctable, FileName)
   key = key or srctable.key
   macro.key = type(key)=="string" and key:find("%S") and key or "none"
 
-  local keyregex = macro.key:match("^/(.+)/$")
+  local keyregex, ok = macro.key:match("^/(.+)/$"), nil
   if keyregex then
-    local ok
     ok, macro.keyregex = pcall(regex.new, "^("..keyregex..")$", "i")
     if not ok then
       ErrMsg("Invalid regex: "..macro.key)
@@ -673,10 +671,6 @@ local function ErrMsgLoad (msg, filename, isMoonScript, mode)
           found = true
         else
           fname = string_sub(fname,4)
-          -- for k=1,5 do
-          --   if fname:utf8valid() then break end
-          --   fname = string_sub(fname,2)
-          -- end
           local middle = fname:match("^[^/]*/[^/]+/")
           if middle then
             local from = string_find(filename:lower(), middle:lower(), 1, true)
@@ -797,15 +791,15 @@ local function LoadMacros (unload, paths)
   if not unload then
     LoadCounter = LoadCounter + 1
     local DummyFunc = function() end
+    local DirMacros = MacroDirs.MainPath
     if not ReadOnlyConfig then
       for _,v in ipairs {"scripts", "modules", "lib32", "lib64"} do
-        win.CreateDir(JoinPath(MacroDirs.MainPath, v))
+        win.CreateDir(JoinPath(DirMacros, v))
       end
       win.CreateDir(far.InMyConfig("Menus"))
     end
 
-    local ok1, moonscript = pcall(require, "moonscript")
-    if not ok1 then moonscript=nil; end
+    local moonscript = require "moonscript"
 
     local FuncList1 = {"Macro",  "Event",  "MenuItem",  "CommandLine",  "PanelModule",  "ContentColumns"}
     local FuncList2 = {"NoMacro","NoEvent","NoMenuItem","NoCommandLine","NoPanelModule","NoContentColumns"}
@@ -819,6 +813,8 @@ local function LoadMacros (unload, paths)
       local f, msg = (isMoonScript and moonscript.loadfile or loadfile)(FullPath)
       if not f then
         numerrors=numerrors+1
+        msg = ('Error in %s file: %s\n%s'):format(isMoonScript and "MoonScript" or "Lua",
+              FullPath, string.gsub(msg, "\n\t", "\n   "))
         ErrMsgLoad(msg,FullPath,isMoonScript,"compile")
         return
       end
@@ -878,9 +874,12 @@ local function LoadMacros (unload, paths)
       end
     end
 
-    paths = paths and win.ExpandEnv(paths) or JoinPath(MacroDirs.MainPath,"scripts;")..MacroDirs.LoadPathList
+    if paths then
+      paths = win.ExpandEnv(paths)
+    else
+      paths = JoinPath(DirMacros, "scripts;") .. MacroDirs.LoadPathList
+    end
 
-    local filemask = moonscript and "*.lua,*.moon" or "*.lua"
     for p in paths:gmatch("[^;]+") do
       p = far.ConvertPath(p, F.CPM_FULL) -- needed for relative paths
       AddReplacingKeys(JoinPath(p, "_keyreplace.cfg"))
@@ -891,17 +890,17 @@ local function LoadMacros (unload, paths)
       else
         macroinit = nil
       end
-      far.RecursiveSearch (p, filemask, LoadRegularFile, bor(F.FRS_RECUR,F.FRS_SCANSYMLINK), macroinit)
+      far.RecursiveSearch (p, "*.lua,*.moon", LoadRegularFile, bor(F.FRS_RECUR,F.FRS_SCANSYMLINK), macroinit)
     end
 
-    far.RecursiveSearch (JoinPath(MacroDirs.MainPath, "internal"), "*.lua", LoadRecordedFile, 0)
+    far.RecursiveSearch (JoinPath(DirMacros,"internal"), "*.lua", LoadRecordedFile, 0)
 
-    export.ExitFAR             = Events.exitfar[1]      and export_ExitFAR
-    export.MayExitFAR          = Events.mayexitfar[1]   and export_MayExitFAR
-    export.ProcessDialogEvent  = Events.dialogevent[1]  and export_ProcessDialogEvent
-    export.ProcessEditorEvent  = Events.editorevent[1]  and export_ProcessEditorEvent
-    export.ProcessEditorInput  = Events.editorinput[1]  and export_ProcessEditorInput
-    export.ProcessViewerEvent  = Events.viewerevent[1]  and export_ProcessViewerEvent
+    export.ExitFAR = Events.exitfar[1] and export_ExitFAR
+    export.MayExitFAR = Events.mayexitfar[1] and export_MayExitFAR
+    export.ProcessDialogEvent = Events.dialogevent[1] and export_ProcessDialogEvent
+    export.ProcessEditorEvent = Events.editorevent[1] and export_ProcessEditorEvent
+    export.ProcessEditorInput = Events.editorinput[1] and export_ProcessEditorInput
+    export.ProcessViewerEvent = Events.viewerevent[1] and export_ProcessViewerEvent
     export.ProcessConsoleInput = Events.consoleinput[1] and export_ProcessConsoleInput
     export.ProcessSynchroEvent = Events.synchroevent[1] and export_ProcessSynchroEvent
     if ContentColumns[1] then
