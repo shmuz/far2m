@@ -239,13 +239,15 @@ local function test_mf_asc()
 end
 
 local function test_mf_atoi()
-  for _,v in ipairs { "0", "-10", "0x11" } do
-    assert_eq(mf.atoi(v), tonumber(v))
+  local function check(str, base)
+    assert_eq(mf.atoi(str,base), tonumber(str,base))
   end
 
-  assert_eq (mf.atoi("1011",2),  tonumber("1011",2))
-  assert_eq (mf.atoi("1234",5),  tonumber("1234",5))
-  assert_eq (mf.atoi("-1234",5), -194)
+  for _,v in ipairs { "0", "-10", "0x11" } do check(v) end
+
+  check("1011",  2)
+  check("1234",  5)
+  check("-1234", 5)
 
   for _,v in ipairs { "123456789123456789", "-123456789123456789",
                       "0x1B69B4BACD05F15", "-0x1B69B4BACD05F15" } do
@@ -320,9 +322,9 @@ end
 
 local function test_mf_msgbox()
   assert_eq (msgbox, mf.msgbox)
-  mf.postmacro(function() Keys("Esc") end)
+  mf.postmacro(Keys, "Esc")
   assert_eq (0, msgbox("title","message"))
-  mf.postmacro(function() Keys("Enter") end)
+  mf.postmacro(Keys, "Enter")
   assert_eq (1, msgbox("title","message"))
 end
 
@@ -3140,8 +3142,8 @@ function MT.test_Delete_Wipe()
 end
 
 function MT.test_all()
-  assert(Area.Shell, "Run these tests from the Shell area.")
-  assert(not APanel.Plugin and not PPanel.Plugin, "Run these tests when neither of panels is a plugin panel.")
+  assert_true(Area.Shell, "Run these tests from the Shell area.")
+  assert_false(APanel.Plugin or PPanel.Plugin, "Run these tests when neither of panels is a plugin panel.")
 
   MT.test_areas()
   MT.test_mf()
