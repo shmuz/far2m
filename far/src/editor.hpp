@@ -228,7 +228,7 @@ private:
 	void Down();
 	void ScrollDown();
 	void ScrollUp();
-	BOOL Search(int Next);
+	bool Search(bool Next);
 
 	void GoToLine(int Line);
 	void GoToPosition();

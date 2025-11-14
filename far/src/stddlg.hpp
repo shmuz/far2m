@@ -42,8 +42,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   TRUE.
   Параметры:
     IsReplaceMode
-      TRUE  - если хотим заменять
-      FALSE - если хотим искать
+      true  - если хотим заменять
+      false - если хотим искать
 
     SearchStr
       Указатель на строку поиска.
@@ -52,7 +52,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     ReplaceStr,
       Указатель на строку замены.
       Результат отработки диалога заносится в нее же.
-      Для случая, если IsReplaceMode=FALSE может быть равна nullptr
+      Для случая, если IsReplaceMode=false может быть равна nullptr
 
     TextHistoryName
       Имя истории строки поиска.
@@ -95,7 +95,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     FALSE - пользователь отказался от диалога (Esc)
 */
 int WINAPI GetSearchReplaceString(
-    int IsReplaceMode,
+    bool IsReplaceMode,
     FARString *pSearchStr,
     FARString *pReplaceStr,
     const wchar_t *TextHistoryName,

@@ -54,7 +54,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "wakeful.hpp"
 #include "xlat.hpp"
 
-static int ReplaceMode, ReplaceAll;
+static bool ReplaceMode;
 
 static int m_EditorID = 0;
 
@@ -1831,50 +1831,36 @@ int Editor::ProcessKey(FarKey Key)
 			return TRUE;
 		}
 		case KEY_F7: {
-			int ReplaceMode0 = ReplaceMode;
-			int ReplaceAll0 = ReplaceAll;
-			ReplaceMode = ReplaceAll = FALSE;
+			bool ReplaceMode0 = ReplaceMode;
+			ReplaceMode = false;
 
-			if (!Search(FALSE)) {
+			if (!Search(false))
 				ReplaceMode = ReplaceMode0;
-				ReplaceAll = ReplaceAll0;
-			}
 
 			return TRUE;
 		}
 		case KEY_CTRLF7: {
 			if (!Flags.Check(FEDITOR_LOCKMODE)) {
-				int ReplaceMode0 = ReplaceMode;
-				int ReplaceAll0 = ReplaceAll;
-				ReplaceMode = TRUE;
-				ReplaceAll = FALSE;
+				bool ReplaceMode0 = ReplaceMode;
+				ReplaceMode = true;
 
-				if (!Search(FALSE)) {
+				if (!Search(false))
 					ReplaceMode = ReplaceMode0;
-					ReplaceAll = ReplaceAll0;
-				}
 			}
 
 			return TRUE;
 		}
 		case KEY_SHIFTF7: {
-			/* $ 20.09.2000 SVS
-			   При All после нажатия Shift-F7 надобно снова спросить...
-			*/
-			// ReplaceAll=FALSE;
-			/* $ 07.05.2001 IS
-			   Сказано в хелпе "Shift-F7 Продолжить _поиск_"
-			*/
-			// ReplaceMode=FALSE;
+			// ReplaceMode=false;
 			TurnOffMarkingBlock();
-			Search(TRUE);
+			Search(true);
 			return TRUE;
 		}
 		case KEY_ALTF7: {
 			TurnOffMarkingBlock();
 			int LastSearchReversePrev = m_LastSearchReverse;
 			m_LastSearchReverse = !m_LastSearchReverse;
-			Search(TRUE);
+			Search(true);
 			m_LastSearchReverse = LastSearchReversePrev;
 			return TRUE;
 		}
@@ -3246,26 +3232,25 @@ void Editor::ScrollUp()
    в отдельную функцию GetSearchReplaceString
    (файл stddlg.cpp)
 */
-BOOL Editor::Search(int Next)
+bool Editor::Search(bool Next)
 {
-	Edit *CurPtr, *TmpPtr;
-	FARString strSearchStr, strReplaceStr;
+	bool ReplaceAll = false;
 	static FARString strLastReplaceStr;
 	// static int LastSuccessfulReplaceMode=0;
 	FARString strMsgStr;
 	const wchar_t *TextHistoryName = L"SearchText", *ReplaceHistoryName = L"ReplaceText";
-	int CurPos, Case, WholeWords, ReverseSearch, SelectFound, Regexp, Match, NewNumLine, UserBreak;
+	bool Match, UserBreak;
 
 	if (Next && m_strLastSearchStr.IsEmpty())
-		return TRUE;
+		return true;
 
-	strSearchStr = m_strLastSearchStr;
-	strReplaceStr = strLastReplaceStr;
-	Case = m_LastSearchCase;
-	WholeWords = m_LastSearchWholeWords;
-	ReverseSearch = m_LastSearchReverse;
-	SelectFound = m_LastSearchSelFound;
-	Regexp = m_LastSearchRegexp;
+	FARString strSearchStr = m_strLastSearchStr;
+	FARString strReplaceStr = strLastReplaceStr;
+	int Case = m_LastSearchCase;
+	int WholeWords = m_LastSearchWholeWords;
+	int ReverseSearch = m_LastSearchReverse;
+	int SelectFound = m_LastSearchSelFound;
+	int Regexp = m_LastSearchRegexp;
 
 	if (!Next) {
 		if (m_EdOpt.SearchPickUpWord) {
@@ -3282,7 +3267,7 @@ BOOL Editor::Search(int Next)
 		if (!GetSearchReplaceString(ReplaceMode, &strSearchStr, &strReplaceStr, TextHistoryName,
 					ReplaceHistoryName, &Case, &WholeWords, &ReverseSearch, &SelectFound, &Regexp,
 					L"EditorSearch"))
-			return FALSE;
+			return false;
 	}
 
 	m_strLastSearchStr = strSearchStr;
@@ -3294,7 +3279,7 @@ BOOL Editor::Search(int Next)
 	m_LastSearchRegexp = Regexp;
 
 	if (strSearchStr.IsEmpty())
-		return TRUE;
+		return true;
 
 	// LastSuccessfulReplaceMode=ReplaceMode;
 
@@ -3307,15 +3292,15 @@ BOOL Editor::Search(int Next)
 		strMsgStr = strSearchStr;
 		InsertQuote(strMsgStr);
 		SetCursorType(false, -1);
-		Match = 0;
-		UserBreak = 0;
-		CurPos = m_CurLine->GetCurPos();
+		Match = false;
+		UserBreak = false;
+		int CurPos = m_CurLine->GetCurPos();
 
 		if (!ReverseSearch && Next)
 			CurPos++;
 
-		NewNumLine = m_NumLine;
-		CurPtr = m_CurLine;
+		int NewNumLine = m_NumLine;
+		Edit *CurPtr = m_CurLine;
 		DWORD StartTime = WINPORT(GetTickCount)();
 		int StartLine = m_NumLine;
 		SCOPED_ACTION(wakeful);
@@ -3328,7 +3313,7 @@ BOOL Editor::Search(int Next)
 
 				if (CheckForEscSilent()) {
 					if (ConfirmAbortOp()) {
-						UserBreak = TRUE;
+						UserBreak = true;
 						break;
 					}
 				}
@@ -3364,7 +3349,7 @@ BOOL Editor::Search(int Next)
 					m_Pasting--;
 				}
 
-				int Skip = FALSE;
+				bool Skip = false;
 				/* $ 24.01.2003 KM
 				   ! По окончании поиска отступим от верха экрана на треть отображаемой высоты.
 				*/
@@ -3375,7 +3360,7 @@ BOOL Editor::Search(int Next)
 				if (FromTop < 0 || FromTop >= ((ScrY - 5) / 2 - 2))
 					FromTop = 0;
 
-				TmpPtr = m_CurLine = CurPtr;
+				Edit *TmpPtr = m_CurLine = CurPtr;
 
 				for (int i = 0; i < FromTop; i++) {
 					if (TmpPtr->m_prev)
@@ -3415,13 +3400,13 @@ BOOL Editor::Search(int Next)
 						PreRedraw.Push(pitem);
 
 						if (MsgCode == 1)
-							ReplaceAll = TRUE;
+							ReplaceAll = true;
 
-						if (MsgCode == 2)
-							Skip = TRUE;
+						else if (MsgCode == 2)
+							Skip = true;
 
-						if (MsgCode < 0 || MsgCode == 3) {
-							UserBreak = TRUE;
+						else if (MsgCode < 0 || MsgCode == 3) {
+							UserBreak = true;
 							break;
 						}
 					}
@@ -3495,51 +3480,35 @@ BOOL Editor::Search(int Next)
 							}
 
 							Flags.Change(FEDITOR_OVERTYPE, SaveOvertypeMode);
-						} else {
+						}
+						else {
 							/* Fast method */
+							int SStrLen = SearchLength;
+							int RStrLen = (int)strReplaceStrCurrent.GetLength();
+							int StrLen;
 							const wchar_t *Str, *Eol;
-							int StrLen, NewStrLen;
-							int SStrLen = SearchLength, RStrLen = (int)strReplaceStrCurrent.GetLength();
 							m_CurLine->GetBinaryString(&Str, &Eol, StrLen);
 							int EolLen = StrLength(Eol);
-							NewStrLen = StrLen;
-							NewStrLen-= SStrLen;
-							NewStrLen+= RStrLen;
-							NewStrLen+= EolLen;
+							int NewStrLen = StrLen - SStrLen + RStrLen + EolLen;
 							wchar_t *NewStr = new wchar_t[NewStrLen + 1];
 							int CurPos = m_CurLine->GetCurPos();
 							wmemcpy(NewStr, Str, CurPos);
 							wmemcpy(NewStr + CurPos, strReplaceStrCurrent, RStrLen);
-							wmemcpy(NewStr + CurPos + RStrLen, Str + CurPos + SStrLen,
-									StrLen - CurPos - SStrLen);
+							wmemcpy(NewStr + CurPos + RStrLen, Str + CurPos + SStrLen, StrLen - CurPos - SStrLen);
 							wmemcpy(NewStr + NewStrLen - EolLen, Eol, EolLen);
 							AddUndoData(UNDO_EDIT, m_CurLine->GetStringAddr(), m_CurLine->GetEOL(), m_NumLine,
 									m_CurLine->GetCurPos(), m_CurLine->GetLength());
 							m_CurLine->SetBinaryString(NewStr, NewStrLen);
 							m_CurLine->SetCurPos(CurPos + RStrLen);
-
-							if (SelectFound && !ReplaceMode) {
-								UnmarkBlock();
-								Flags.Set(FEDITOR_MARKINGBLOCK);
-								CurPtr->Select(CurPos, CurPos + RStrLen);
-								m_BlockStart = CurPtr;
-								m_BlockStartLine = NewNumLine;
-							}
-
 							delete[] NewStr;
 							TextChanged(true);
 						}
 
-						/* skv$*/
-						// AY: В этом нет никакой надобности и оно приводит к не правильному
-						// позиционированию при Replace
-						// if (ReverseSearch)
-						// m_CurLine->SetCurPos(CurPos);
 						m_Pasting--;
 					}
 				}
 
-				Match = 1;
+				Match = true;
 
 				if (!ReplaceMode)
 					break;
@@ -3571,7 +3540,7 @@ BOOL Editor::Search(int Next)
 	if (!Match && !UserBreak)
 		Message(MSG_WARNING, 1, Msg::EditSearchTitle, Msg::EditNotFound, strMsgStr, Msg::Ok);
 
-	return TRUE;
+	return true;
 }
 
 void Editor::Paste(const wchar_t *Src)

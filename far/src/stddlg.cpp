@@ -43,7 +43,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "DlgGuid.hpp"
 
 int WINAPI GetSearchReplaceString(
-    int IsReplaceMode,
+    bool IsReplaceMode,
     FARString *pSearchStr,
     FARString *pReplaceStr,
     const wchar_t *TextHistoryName,
