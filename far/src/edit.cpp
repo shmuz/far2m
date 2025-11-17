@@ -364,6 +364,7 @@ void Edit::FastShow()
 
 	std::vector<wchar_t> OutStr;
 	int OutStrCells = 0;
+	bool joining = false;
 	for (int i = RealLeftPos; i < StrSize() && OutStrCells < EditLength; ++i) {
 		auto wc = m_Str[i];
 		if (Flags.Check(FEDITLINE_SHOWWHITESPACE) && Flags.Check(FEDITLINE_EDITORMODE)) {
@@ -409,15 +410,20 @@ void Edit::FastShow()
 								: L' ');
 			}
 		} else {
-			if (CharClasses::IsFullWidth(wc)) {
-				if (OutStrCells + 2 > EditLength) {
+			if (wc == CharClasses::ZERO_WIDTH_JOINER) {
+				joining = true;
+			} else if (CharClasses::IsFullWidth(&m_Str[i])) {
+				if (int(OutStrCells + 2) > EditLength) {
 					OutStr.emplace_back(L' ');
 					OutStrCells++;
 					break;
 				}
-				OutStrCells+= 2;
-			} else if (!CharClasses::IsXxxfix(wc))
-				OutStrCells++;
+				if (!joining) OutStrCells+= 2;
+				joining = false;
+			} else if (!CharClasses::IsXxxfix(wc)) {
+				if (!joining) OutStrCells++;
+				joining = false;
+			}
 
 			OutStr.emplace_back(wc ? wc : L' ');
 		}
@@ -660,15 +666,36 @@ int Edit::CalcRTrimmedStrSize() const
 
 int Edit::CalcPosFwdTo(int Pos, int LimitPos) const
 {
+	bool joining = false;
 	if (LimitPos != -1) {
-		if (Pos < LimitPos)
-			do {
-				Pos++;
-			} while (Pos < LimitPos && Pos < StrSize() && CharClasses::IsXxxfix(m_Str[Pos]));
+		if (Pos < LimitPos) {
+			++Pos;
+			// Skip combining marks and ZWJ sequences
+			for ( ; Pos < LimitPos && Pos < StrSize(); ++Pos) {
+				if (m_Str[Pos] == CharClasses::ZERO_WIDTH_JOINER) {
+					joining = true;
+				} else if (CharClasses::IsXxxfix(m_Str[Pos])) {
+					continue;
+				} else if (joining) {
+					joining = false;
+				} else {
+					break;
+				}
+			}
+		}
 	} else {
-		do {
-			Pos++;
-		} while (Pos < StrSize() && CharClasses::IsXxxfix(m_Str[Pos]));
+		++Pos;
+		for ( ; Pos < StrSize(); ++Pos) {
+			if (m_Str[Pos] == CharClasses::ZERO_WIDTH_JOINER) {
+				joining = true;
+			} else if (CharClasses::IsXxxfix(m_Str[Pos])) {
+				continue;
+			} else if (joining) {
+				joining = false;
+			} else {
+				break;
+			}
+		}
 	}
 
 	return Pos;
@@ -679,9 +706,18 @@ int Edit::CalcPosBwdTo(int Pos) const
 	if (Pos <= 0)
 		return 0;
 
-	do {
-		--Pos;
-	} while (Pos > 0 && Pos < StrSize() && CharClasses::IsXxxfix(m_Str[Pos]));
+	--Pos;
+	for ( ; Pos > 0 && Pos < StrSize(); --Pos) {
+		if (m_Str[Pos] == CharClasses::ZERO_WIDTH_JOINER) {
+			continue;
+		} else if (CharClasses::IsXxxfix(m_Str[Pos])) {
+			continue;
+		} else if (m_Str[Pos - 1] == CharClasses::ZERO_WIDTH_JOINER) {
+			continue;
+		} else {
+			break;
+		}
+	}
 
 	return Pos;
 }
@@ -2013,15 +2049,15 @@ int Edit::RealPosToCell(int PrevLength, int PrevPos, int Pos, int *CorrectPos)
 	else {
 		// Начинаем вычисление с предыдущей позиции
 		int Index = PrevPos;
-
+		bool joining = false;
 		// Проходим по всем символам до позиции поиска, если она ещё в пределах строки,
 		// либо до конца строки, если позиция поиска за пределами строки
 		for (; Index < Min(Pos, StrSize()); Index++)
 
 			// Обрабатываем табы
 			if (m_Str[Index] == L'\t' && m_TabExpandMode != EXPAND_ALLTABS) {
-				// Если есть необходимость делать корректировку табов и эта коректировка
-				// ещё не проводилась, то увеличиваем длину обрабатываемой строки на еденицу
+				// Если есть необходимость делать корректировку табов и эта корректировка
+				// ещё не проводилась, то увеличиваем длину обрабатываемой строки на единицу
 				if (bCorrectPos) {
 					++Pos;
 					*CorrectPos = 1;
@@ -2030,14 +2066,24 @@ int Edit::RealPosToCell(int PrevLength, int PrevPos, int Pos, int *CorrectPos)
 
 				// Расчитываем длину таба с учётом настроек и текущей позиции в строке
 				TabPos+= m_TabSize - (TabPos % m_TabSize);
+				joining = false;
 			}
 			// Обрабатываем все остальные символы
 			else {
-				if (CharClasses::IsFullWidth(m_Str[Index])) {
-					TabPos+= 2;
-				} else if (!CharClasses::IsXxxfix(m_Str[Index])) {
-					TabPos++;
+				if (m_Str[Index] == CharClasses::ZERO_WIDTH_JOINER)
+				{
+					joining = true;
+					continue;
 				}
+				if (CharClasses::IsXxxfix(m_Str[Index]))
+					continue;
+				if (joining)
+				{
+					joining = false;
+					continue;
+				}
+
+				TabPos += CharClasses::IsFullWidth(&m_Str[Index]) ? 2 : 1;
 			}
 
 		// Если позиция находится за пределами строки, то там точно нет табов и всё просто
@@ -2056,7 +2102,8 @@ int Edit::CellPosToReal(int Pos)
 		return Pos;
 
 	int Index = 0;
-	for (int CellPos = 0; CellPos < Pos; Index++) {
+	bool joining = false;
+	for (int CellPos = 0; CellPos < Pos || joining; Index++) {
 		if (Index >= StrSize()) {
 			Index+= Pos - CellPos;
 			break;
@@ -2069,9 +2116,24 @@ int Edit::CellPosToReal(int Pos)
 				break;
 
 			CellPos = NewCellPos;
+			joining = false;
 		} else {
-			CellPos+= CharClasses::IsFullWidth(m_Str[Index]) ? 2 : CharClasses::IsXxxfix(m_Str[Index]) ? 0 : 1;
+			if (m_Str[Index] == CharClasses::ZERO_WIDTH_JOINER)
+			{
+				joining = true;
+				continue;
+			}
+
+			if (CharClasses::IsXxxfix(m_Str[Index]))
+				continue;
+
+			if (!joining)
+				CellPos += CharClasses::IsFullWidth(&m_Str[Index]) ? 2 : 1;
+
+			joining = false;
 			while (Index + 1 < StrSize() && CharClasses::IsXxxfix(m_Str[Index + 1])) {
+				if (m_Str[Index + 1] == CharClasses::ZERO_WIDTH_JOINER)
+					joining = true;
 				Index++;
 			}
 		}
@@ -2082,19 +2144,45 @@ int Edit::CellPosToReal(int Pos)
 void Edit::SanitizeSelectionRange()
 {
 	if (m_HasSpecialWidthChars && m_SelEnd >= m_SelStart && m_SelStart >= 0) {
-		while (m_SelStart > 0 && CharClasses::IsXxxfix(m_Str[m_SelStart]))
-			--m_SelStart;
+		bool joining = false;
+		for ( ; m_SelStart > 0; m_SelStart--) {
+			if (m_Str[m_SelStart] == CharClasses::ZERO_WIDTH_JOINER) {
+				joining = true;
+			} else if (CharClasses::IsXxxfix(m_Str[m_SelStart])) {
+				continue;
+			} else if (joining) {
+				joining = false;
+			} else {
+				break;
+			}
+		}
 
-		while (m_SelEnd < StrSize() && CharClasses::IsXxxfix(m_Str[m_SelEnd]))
-			++m_SelEnd;
+		joining = false;
+		for ( ; m_SelEnd < StrSize(); m_SelEnd++) {
+			if (m_Str[m_SelEnd] == CharClasses::ZERO_WIDTH_JOINER) {
+				joining = true;
+			} else if (CharClasses::IsXxxfix(m_Str[m_SelEnd])) {
+				continue;
+			} else if (joining) {
+				joining = false;
+			} else {
+				break;
+			}
+		}
 	}
 
+	/*
+		$ 24.06.2002 SKV
+		Если начало выделения за концом строки, надо выделение снять.
+		17.09.2002 возвращаю обратно. Глюкодром.
+	*/
 	if (m_SelEnd < m_SelStart && m_SelEnd != -1) {
 		m_SelStart = -1;
 		m_SelEnd = 0;
 	}
 
 	if (m_SelStart == -1 && m_SelEnd == -1) {
+		m_SelStart = -1;
 		m_SelEnd = 0;
 	}
 }
