@@ -11,7 +11,8 @@ local F = far.Flags
 local min, max, floor, ceil = math.min, math.max, math.floor, math.ceil
 local band, bor = bit64.band, bit64.bor
 local DlgSend = far.SendDlgMessage
-local CellsCount = far.StrCellsCount
+
+local CellsCount = osWindows and function(s) return s:len() end or far.StrCellsCount
 
 local function GetColor (index)
   local tbl = osWindows and far.Colors or far.Flags
@@ -151,9 +152,19 @@ local function NewList (props, items, bkeys, startId)
   return self
 end
 
+local function CreateVBuf(width, height)
+  local cell = { Char="a"; Attributes=0x89; }
+  local vbuf = far.CreateUserControl(width, height)
+  for i=1,#vbuf do
+    vbuf[i] = cell
+  end
+  return vbuf
+end
+
 function List:CreateDialogItems (x, y)
   self.x, self.y = x, y
-  return { "DI_USERCONTROL", x, y, x+self.w+1, y+self.h+1, 0,0,0,0, "" }
+  self.vbuf = CreateVBuf(self.wmax+2, self.hmax+2)
+  return { "DI_USERCONTROL", x, y, x+self.w+1, y+self.h+1, self.vbuf, 0,0,0, "" }
 end
 
 function List:SetSize()
@@ -178,7 +189,7 @@ function List:OnResizeConsole (hDlg, consoleSize)
     self.wmax, self.hmax = max(4, consoleSize.X - 8), max(1, consoleSize.Y - 6)
     self:SetSize()
     self:SetUpperItem()
-    DlgSend(hDlg, "DM_RESIZEDIALOG", 0, {X=self.w + 6, Y=self.h + 4})
+    self.vbuf = CreateVBuf(self.wmax+2, self.hmax+2)
   end
 end
 
@@ -261,17 +272,28 @@ function List:OnDialogClose ()
   end
 end
 
+function List:Write(X, Y, Color, Text)
+  local j = (Y - self.upper + 1) * (self.w + 2) + X - 2
+  local cell = { Attributes=Color }
+  for ch in Text:gmatch(".") do
+    cell.Char = ch
+    self.vbuf[j] = cell
+    j = j + 1
+  end
+end
+
 do
   local ch = ("").char
   local sng = {c1=9484,c2=9488,c3=9492,c4=9496,hor=9472,ver=9474,sep1=9500,sep2=9508}
   local dbl = {c1=9556,c2=9559,c3=9562,c4=9565,hor=9552,ver=9553,sep1=9567,sep2=9570}
-  for k,v in pairs(sng) do
-    sng[k], dbl[k] = ch(v), ch(dbl[k])
+  for k in pairs(sng) do
+    sng[k], dbl[k] = ch(sng[k]), ch(dbl[k])
   end
   local up, dn = ch(9650), ch(9660)
   local scr1, scr2 = ch(9617), ch(9619)
 
   function List:DrawBox (x, y)
+    y = y + self.upper - 4
     local T = self.focused and dbl or sng
     local color = self.col_text
     if self.mousestate ~= "drag_slider" then
@@ -284,22 +306,27 @@ do
     end
 
     local function Horisontal (cleft, cright, text, yy)
-      local mlen = text=="" and 0 or 1
-      far.Text(x, yy, color, cleft) -- left corner
+      text = text:sub(1, self.w)
       local tlen = text:len()
-      local len = max(ceil((self.w - 2*mlen - tlen)/2-0.5), 0)
-      far.Text(x+1, yy, color, T.hor:rep(len))
-      far.Text(x+1+len+mlen, yy, color, text:sub(1, self.w-1))
-      local offs = len + tlen + 2*mlen
-      far.Text(x+1+offs, yy, color, T.hor:rep(self.w - offs))
-      far.Text(x+self.w+1, yy, color, cright) -- right corner
+      if tlen < self.w then
+        text = " "..text
+        tlen = tlen + 1
+        if tlen < self.w then
+          text = text.." "
+          tlen = tlen + 1
+        end
+      end
+      local len1 = math.floor((self.w - tlen) / 2)
+      local len2 = self.w - tlen - len1
+      text = cleft .. T.hor:rep(len1) .. text .. T.hor:rep(len2) .. cright
+      self:Write(x, yy, color, text)
     end
 
     Horisontal(T.c1, T.c2, self.fulltitle, y)
     for k=1,self.h do
       local item = self.drawitems[self.upper+k-1]
       local sep = item and item.separator
-      far.Text(x, y+k, color, sep and T.sep1 or T.ver)
+      self:Write(x, y+k, color, sep and T.sep1 or T.ver)
       local c
       if self.h < 3 or self.h >= #self.drawitems then c = sep and T.sep2 or T.ver
       elseif k == 1 then c = up
@@ -308,7 +335,7 @@ do
         local m = k-2
         c = m >= self.slider_start and m < self.slider_start+self.slider_len and scr2 or scr1
       end
-      far.Text(x+self.w+1, y+k, color, c)
+      self:Write(x+self.w+1, y+k, color, c)
     end
     Horisontal(T.c3, T.c4, self.bottom, y+self.h+1)
   end
@@ -316,7 +343,7 @@ end
 
 function List:Draw (x, y)
   self:DrawBox(x, y)
-  x, y = x+1, y+1-self.upper
+  x = x + 1
   local mlen = self.margin:len()
   local char = ("").char
   local check, hor = char(8730), char(9472)
@@ -331,10 +358,9 @@ function List:Draw (x, y)
       if text ~= "" then text = " " .. text:sub(1, self.w-4) .. " " end
       local tlen = text:len()
       local len1 = floor((self.w - tlen) / 2)
-      far.Text(x, y+i, color, hor:rep(len1))
-      far.Text(x+len1, y+i, color, text)
-      far.Text(x+len1+tlen, y+i, color, hor:rep(self.w-len1-tlen))
-
+      self:Write(x, i, color, hor:rep(len1))
+      self:Write(x+len1, i, color, text)
+      self:Write(x+len1+tlen, i, color, hor:rep(self.w-len1-tlen))
     else
       local color = i==self.sel and self.col_selectedtext or self.col_text
       local color2 = i==self.sel and self.col_selectedhighlight or self.col_highlight
@@ -362,9 +388,9 @@ function List:Draw (x, y)
       end
 
       -- Draw the margin and the check (if any)
-      far.Text(x, y+i, color, self.margin)
+      self:Write(x, i, color, self.margin)
       if v.checked then
-        far.Text(x, y+i, color, check)
+        self:Write(x, i, color, check)
       end
 
       -- Draw the line; if there's a match - highlight it
@@ -373,18 +399,16 @@ function List:Draw (x, y)
         local x1 = x + mlen
         local x2 = x1 + CellsCount(str1)
         local x3 = x2 + CellsCount(str2)
-        far.Text(x1, y+i, color,  str1)
-        far.Text(x2, y+i, color2, str2)
-        far.Text(x3, y+i, color,  str3)
+        self:Write(x1, i, color,  str1)
+        self:Write(x2, i, color2, str2)
+        self:Write(x3, i, color,  str3)
       else
-        far.Text(x+mlen, y+i, color, text2)
+        self:Write(x+mlen, i, color, text2)
       end
 
-      -- If the line is selected, extend selection up to the right border
-      if i == self.sel then
-        local start = mlen + CellsCount(text2)
-        far.Text(x+start, y+i, color, (" "):rep(self.w - start))
-      end
+      -- Extend selection up to the right border
+      local start = mlen + CellsCount(text2)
+      self:Write(x+start, i, color, (" "):rep(self.w - start))
     end
   end
 end
@@ -1108,7 +1132,7 @@ local function Menu (props, list)
     elseif msg == F.DN_DRAWDLGITEM then
       list.Log("DN_DRAWDLGITEM")
       if param1 == pos_usercontrol then
-        list:OnDrawDlgItem (Rect.Left, Rect.Top)
+        list:OnDrawDlgItem (1, 2)
         DlgSend(hDlg, "DM_SETTEXT", pos_title, list.fulltitle)
       end
 
@@ -1180,6 +1204,8 @@ local function Menu (props, list)
     elseif msg == F.DN_RESIZECONSOLE then
       list.Log("DN_RESIZECONSOLE")
       list:OnResizeConsole(hDlg, param2)
+      DlgSend(hDlg, "DM_SETDLGITEM", pos_usercontrol, list:CreateDialogItems(2, 1))
+      DlgSend(hDlg, "DM_RESIZEDIALOG", 0, {X=list.w + 6, Y=list.h + 4})
       return 1
 
     elseif msg == F.DN_CLOSE then
