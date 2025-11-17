@@ -245,9 +245,9 @@ local function test_mf_atoi()
 
   for _,v in ipairs { "0", "-10", "0x11" } do check(v) end
 
-  check("1011",  2)
-  check("1234",  5)
-  check("-1234", 5)
+  check("1011", 2)
+  check("1234", 5)
+  assert_eq(mf.atoi(-1234, 5), -194)
 
   for _,v in ipairs { "123456789123456789", "-123456789123456789",
                       "0x1B69B4BACD05F15", "-0x1B69B4BACD05F15" } do
@@ -1477,8 +1477,7 @@ function MT.test_Plugin()
   assert_false(Plugin.Config())
   if Plugin.Exist(hlfviewerId) then
     assert_true(Plugin.Config(hlfviewerId))
-    assert_true(Area.Dialog)
-    Keys("Esc")
+    TestArea("Dialog", nil, "Esc")
     assert_true(Area.Shell)
   end
 
@@ -1486,8 +1485,7 @@ function MT.test_Plugin()
   assert_false(Plugin.Command())
   assert_true(Plugin.Command(luamacroId))
   assert_true(Plugin.Command(luamacroId, "view:$FARHOME/FarEng.lng"))
-  assert_true(Area.Viewer)
-  Keys("Esc")
+  TestArea("Viewer", nil, "Esc")
   assert_true(Area.Shell)
 
   -- Plugin.Exist
