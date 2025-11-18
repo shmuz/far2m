@@ -141,16 +141,13 @@ static int ShowMessageSynched(DWORD Flags, int Buttons, const wchar_t *Title, co
 	}
 
 	for (MaxLength = BtnLength, I = 0; I < StrCount; I++) {
-		if (static_cast<DWORD>(Length = HiStrCellsCount(Items[I])) > MaxLength)
-			MaxLength = Length;
+		if (auto Len = StrCellsCount(Items[I], StrLength(Items[I])); Len > MaxLength)
+			MaxLength = Len;
 	}
 
 	// учтем так же размер заголовка
 	if (Title && *Title) {
-		I = (DWORD)HiStrCellsCount(Title) + 2;
-
-		if (MaxLength < I)
-			MaxLength = I;
+		MaxLength = Max<size_t>(MaxLength, StrCellsCount(Title, StrLength(Title)) + 2);
 	}
 
 	// первая коррекция максимального размера
