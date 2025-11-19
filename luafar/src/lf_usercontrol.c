@@ -37,15 +37,31 @@ int uc_len(lua_State* L)
 	return 1;
 }
 
+static int uc_write(lua_State* L)
+{
+	TFarUserControl* fuc = CheckFarUserControl(L, 1);
+	intptr_t index = CheckFarUserControlIndex(L, fuc, 2);
+
+	size_t len = 0;
+	const wchar_t* Char = check_utf8_string(L, 3, &len);
+	if (index + len > (size_t)fuc->Size)
+		len = fuc->Size - index;
+
+	INT64 Attr = check64(L, 4, NULL);
+
+	for (size_t i=0; i < len; i++) {
+		fuc->VBuf[index+i].Char.UnicodeChar = Char[i];
+		fuc->VBuf[index+i].Attributes = Attr;
+	}
+
+	lua_pushinteger(L, len);
+	return 1;
+}
+
 static int uc_index(lua_State* L)
 {
 	TFarUserControl* fuc = CheckFarUserControl(L, 1);
-	const char* method = luaL_checkstring(L, 2);
-	if (!strcmp(method, "rawhandle"))
-	{
-		lua_pushlightuserdata(L, fuc->VBuf);
-	}
-	else
+	if (lua_type(L, 2) == LUA_TNUMBER)
 	{
 		intptr_t index = CheckFarUserControlIndex(L, fuc, 2);
 		wchar_t UnicodeChar = fuc->VBuf[index].Char.UnicodeChar & 0xFFFFFFFF;
@@ -53,6 +69,16 @@ static int uc_index(lua_State* L)
 		PutWStrToTable(L, "Char", &UnicodeChar, 1);
 		bit64_push(L, fuc->VBuf[index].Attributes);
 		lua_setfield(L, -2, "Attributes");
+	}
+	else
+	{
+		const char* method = luaL_checkstring(L, 2);
+		if (!strcmp(method, "rawhandle"))
+			lua_pushlightuserdata(L, fuc->VBuf);
+		else if (!strcmp(method, "write"))
+			lua_pushcfunction(L, uc_write);
+		else
+			luaL_argerror(L, 2, "invalid index");
 	}
 	return 1;
 }
