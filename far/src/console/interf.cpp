@@ -876,18 +876,17 @@ void ScrollScreen(int Count)
 	ScrBuf.FillRect(0, ScrY + 1 - Count, ScrX, ScrY, L' ', FarColorToReal(COL_COMMANDLINEUSERSCREEN));
 }
 
-void GetText(int X1, int Y1, int X2, int Y2, void *Dest, int DestSize)
+void GetText(int X1, int Y1, int X2, int Y2, CHAR_INFO *Dest, int DestSize)
 {
-	ScrBuf.Read(X1, Y1, X2, Y2, (CHAR_INFO *)Dest, DestSize);
+	ScrBuf.Read(X1, Y1, X2, Y2, Dest, DestSize);
 }
 
-void PutText(int X1, int Y1, int X2, int Y2, const void *Src)
+void PutText(int X1, int Y1, int X2, int Y2, const CHAR_INFO *Src)
 {
 	int Width = X2 - X1 + 1;
-	int Y;
-	CHAR_INFO *SrcPtr = (CHAR_INFO *)Src;
+	auto SrcPtr = Src;
 
-	for (Y = Y1; Y <= Y2; ++Y, SrcPtr+= Width)
+	for (int Y = Y1; Y <= Y2; ++Y, SrcPtr+= Width)
 		ScrBuf.Write(X1, Y, SrcPtr, Width);
 }
 

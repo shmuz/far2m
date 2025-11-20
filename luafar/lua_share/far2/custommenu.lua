@@ -35,7 +35,7 @@ local function FlagsToInt (input)
   return ret
 end
 
-local function limit (v, lo, hi)
+local function clamp (v, lo, hi)
   if lo>hi then lo,hi=hi,lo end
   return v<lo and lo or v>hi and hi or v
 end
@@ -161,7 +161,7 @@ local function CreateVBuf(width, height)
   return vbuf
 end
 
-function List:CreateDialogItems (x, y)
+function List:CreateDialogItem (x, y)
   self.x, self.y = x, y
   self.vbuf = CreateVBuf(self.wmax+2, self.hmax+2)
   return { "DI_USERCONTROL", x, y, x+self.w+1, y+self.h+1, self.vbuf, 0,0,0, "" }
@@ -253,10 +253,6 @@ function List:OnInitDialog (hDlg)
   end
 end
 
-function List:OnDrawDlgItem (x, y)
-  self:Draw (x+self.x, y+self.y)
-end
-
 function List:OnGotFocus ()
   self.focused = true
 end
@@ -274,11 +270,15 @@ end
 
 function List:Write(X, Y, Color, Text)
   local j = (Y - self.upper + 1) * (self.w + 2) + X - 2
-  local cell = { Attributes=Color }
-  for ch in Text:gmatch(".") do
-    cell.Char = ch
-    self.vbuf[j] = cell
-    j = j + 1
+  if osWindows then
+    return self.vbuf:write(j, Text, Color)
+  else
+    local cell = { Attributes=Color }
+    for ch in Text:gmatch(".") do
+      cell.Char = ch
+      self.vbuf[j] = cell
+      j = j + 1
+    end
   end
 end
 
@@ -292,8 +292,9 @@ do
   local up, dn = ch(9650), ch(9660)
   local scr1, scr2 = ch(9617), ch(9619)
 
-  function List:DrawBox (x, y)
-    y = y + self.upper - 4
+  function List:DrawBox()
+    local x = 3
+    local y = self.upper - 1
     local T = self.focused and dbl or sng
     local color = self.col_text
     if self.mousestate ~= "drag_slider" then
@@ -316,7 +317,7 @@ do
           tlen = tlen + 1
         end
       end
-      local len1 = math.floor((self.w - tlen) / 2)
+      local len1 = floor((self.w - tlen) / 2)
       local len2 = self.w - tlen - len1
       text = cleft .. T.hor:rep(len1) .. text .. T.hor:rep(len2) .. cright
       self:Write(x, yy, color, text)
@@ -341,9 +342,9 @@ do
   end
 end
 
-function List:Draw (x, y)
-  self:DrawBox(x, y)
-  x = x + 1
+function List:Draw()
+  self:DrawBox()
+  local x = 4
   local mlen = self.margin:len()
   local char = ("").char
   local check, hor = char(8730), char(9472)
@@ -520,7 +521,7 @@ function List:MouseEvent (hDlg, Ev, x, y)
     if LEFT then
       if MOVED and (Y ~= self.clickY) then
         local n = (self.h - 2) - self.slider_len
-        self.slider_start = limit(self.slider_start + (Y - self.clickY), 0, n)
+        self.slider_start = clamp(self.slider_start + (Y - self.clickY), 0, n)
         self.upper = floor(1 + self.slider_start * (#self.drawitems - self.h) / n)
         self.sel = self.upper + self.slider_start
         self.clickY = Y
@@ -1097,7 +1098,7 @@ local function Menu (props, list)
   local Rect
   local Items = {  -- a hidden element for setting console title
     { F.DI_TEXT,  1,1,8,1,  0,0,0,F.DIF_HIDDEN, "" },
-    list:CreateDialogItems(2, 1),
+    list:CreateDialogItem(2, 1),
   }
   local pos_title, pos_usercontrol = 1, 2
   list.startId = pos_usercontrol
@@ -1132,7 +1133,7 @@ local function Menu (props, list)
     elseif msg == F.DN_DRAWDLGITEM then
       list.Log("DN_DRAWDLGITEM")
       if param1 == pos_usercontrol then
-        list:OnDrawDlgItem (1, 2)
+        list:Draw()
         DlgSend(hDlg, "DM_SETTEXT", pos_title, list.fulltitle)
       end
 
@@ -1204,7 +1205,7 @@ local function Menu (props, list)
     elseif msg == F.DN_RESIZECONSOLE then
       list.Log("DN_RESIZECONSOLE")
       list:OnResizeConsole(hDlg, param2)
-      DlgSend(hDlg, "DM_SETDLGITEM", pos_usercontrol, list:CreateDialogItems(2, 1))
+      DlgSend(hDlg, "DM_SETDLGITEM", pos_usercontrol, list:CreateDialogItem(2, 1))
       DlgSend(hDlg, "DM_RESIZEDIALOG", 0, {X=list.w + 6, Y=list.h + 4})
       return 1
 
