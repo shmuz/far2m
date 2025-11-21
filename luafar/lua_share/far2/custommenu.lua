@@ -348,9 +348,11 @@ function List:Draw()
   local mlen = self.margin:len()
   local char = ("").char
   local check, hor = char(8730), char(9472)
+  local first_empty
+
   for i=self.upper, self.upper+self.h-1 do
     local v = self.drawitems[i]
-    if not v then break end
+    if not v then first_empty = i; break; end
     local vdata = self.idata[v]
     local text = v.text or ""
 
@@ -410,6 +412,14 @@ function List:Draw()
       -- Extend selection up to the right border
       local start = mlen + CellsCount(text2)
       self:Write(x+start, i, color, (" "):rep(self.w - start))
+    end
+  end
+
+  -- clear the remaining visible space if any
+  if first_empty then
+    local space = (" "):rep(self.w)
+    for i=first_empty, self.upper+self.h-1 do
+      self:Write(x, i, self.col_text, space)
     end
   end
 end
