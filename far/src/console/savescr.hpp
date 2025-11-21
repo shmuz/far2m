@@ -68,4 +68,5 @@ public:
 	void Resize(int ScrX, int ScrY, DWORD Corner, bool SyncWithConsole);
 
 	void DumpBuffer(const wchar_t *Title);
+	const CHAR_INFO &Read(int X, int Y) const;
 };

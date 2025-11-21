@@ -35,31 +35,35 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "modal.hpp"
 #include "chgmmode.hpp"
+#include <memory>
 
 struct GrabberArea
 {
-	SHORT X1,Y1,X2,Y2;
-	SHORT CurX,CurY;
+	SHORT left{}, right{}, top{}, bottom{};
+	SHORT cur_x{}, cur_y{};
 };
 
-class Grabber:Modal
+class Grabber : Modal
 {
-	private:
-		ChangeMacroArea Cma;
-		GrabberArea PrevArea;
-		GrabberArea GArea;
-		int ResetArea;
+private:
+	ChangeMacroArea _cma;
+	std::unique_ptr<SaveScreen> _save_scr;
+	GrabberArea _prev_area;
+	GrabberArea _area;
+	bool _reset_area;
 
-	private:
-		virtual void DisplayObject();
-		virtual int ProcessKey(FarKey Key);
-		virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
-		void CopyGrabbedArea(bool Append);
-		void Reset();
+	GrabberArea NormalizedArea() const;
 
-	public:
-		Grabber();
-		virtual ~Grabber();
+private:
+	virtual void DisplayObject();
+	virtual int ProcessKey(FarKey Key);
+	virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
+	void CopyGrabbedArea(bool append);
+	void Reset();
+
+	Grabber();
+	virtual ~Grabber();
+
+public:
+	static bool Run();
 };
-
-bool RunGraber();

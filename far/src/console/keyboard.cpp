@@ -2092,7 +2092,7 @@ FarKey CalcKeyCode(INPUT_RECORD *rec, int RealKey, int *NotMacros)
 				}
 				else
 				{
-					RunGraber();
+					Grabber::Run();
 				}
 
 				return(KEY_NONE);
@@ -2115,7 +2115,7 @@ FarKey CalcKeyCode(INPUT_RECORD *rec, int RealKey, int *NotMacros)
 				if (CtrlObject->Macro.IsExecuting() && CtrlObject->Macro.CheckWaitKeyFunc())
 					return KEY_INS|KEY_ALT;
 
-				RunGraber();
+				Grabber::Run();
 				return(KEY_NONE);
 			}
 		}

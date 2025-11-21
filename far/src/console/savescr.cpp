@@ -288,3 +288,14 @@ void SaveScreen::DumpBuffer(const wchar_t *Title)
 {
 	SaveScreenDumpBuffer(Title, GetBufferAddress(), X1, Y1, X2, Y2, nullptr);
 }
+
+const CHAR_INFO &SaveScreen::Read(int X, int Y) const
+{
+	if (X < X1 || X > X2 || Y < Y1 || Y > Y2 || !ScreenBuf) {
+		fprintf(stderr, "SaveScreen::Read(%d, %d) - out of bounds: %d %d %d %d\n", X, Y, X1, Y1, X2, Y2);
+		static const CHAR_INFO s_dummy_out{};
+		return s_dummy_out;
+	}
+
+	return ScreenBuf[ size_t(Y - Y1) * size_t(X2 - X1 + 1) + size_t(X - X1) ];
+}

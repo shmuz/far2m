@@ -33,7 +33,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
-
 #include "grabber.hpp"
 #include "keyboard.hpp"
 #include "colors.hpp"
@@ -46,384 +45,372 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "clipboard.hpp"
 #include "config.hpp"
 
-Grabber::Grabber() :
-	Cma(MACROAREA_GRABBER)
+Grabber::Grabber()
+	:
+	_cma(MACROAREA_GRABBER)
 {
-	Frame *pFrame = FrameManager->GetCurrentFrame();
-	pFrame->Lock();
-	SaveScr=new SaveScreen;
-	memset(&GArea,0,sizeof(GArea));
-	memset(&PrevArea,0,sizeof(PrevArea));
-	bool Visible=false;
-	DWORD Size=0;
-	GetCursorType(Visible,Size);
+	LockCurrentFrame lcf;
+	lcf.RefreshOnUnlock();
+	_save_scr.reset(new SaveScreen);
+	bool visible = false;
+	DWORD size = 0;
+	GetCursorType(visible, size);
 
-	if (Visible)
-		GetCursorPos(GArea.CurX,GArea.CurY);
-	else
-	{
-		GArea.CurX=0;
-		GArea.CurY=0;
-	}
+	if (visible)
+		GetCursorPos(_area.cur_x, _area.cur_y);
 
-	GArea.X1=-1;
-	SetCursorType(true,60);
-	PrevArea=GArea;
-	ResetArea=TRUE;
+	_area.left = -1;
+	SetCursorType(TRUE, 60);
+	_prev_area = NormalizedArea();
+	_reset_area = true;
 	DisplayObject();
-	Process();
-	delete SaveScr;
-	SaveScr = nullptr; //prevent repeated deletion in ScreenObject
-	pFrame->Unlock();
-	FrameManager->RefreshFrame();
+}
+
+Grabber::~Grabber() {}
+
+
+static void FilterGrabbedText(std::wstring &grabbed_text)
+{
+	for (auto &ch : grabbed_text) {
+		const auto orig_ch = ch;
+		if (Opt.CleanAscii) switch (orig_ch) {
+			case L'.': ch = L'.'; break;
+			case 0x07: ch = L'*'; break;
+			case 0x10: ch = L'>'; break;
+			case 0x11: ch = L'<'; break;
+			case 0x18: // fallthrough
+			case 0x19: ch = L'|'; break;
+			case 0x1E: // fallthrough
+			case 0x1F: ch = L'X'; break;
+			case 0xFF: ch = L' '; break;
+			default:
+				if (orig_ch < 0x20)
+					ch = L'.';
+		}
+
+		if (orig_ch >= 0xB3 && orig_ch <= 0xDA) {
+			if (Opt.NoGraphics) switch (orig_ch) {
+				case 0xB3: // fallthrough
+				case 0xBA: ch = L'|'; break;
+				case 0xC4: ch = L'-'; break;
+				case 0xCD: ch = L'='; break;
+				default:   ch = L'+';
+			}
+
+			if (Opt.NoBoxes) switch (orig_ch) {
+				case 0xB3: // fallthrough
+				case 0xBA: ch = L' '; break;
+				case 0xC4: ch = L' '; break;
+				case 0xCD: ch = L' '; break;
+				default:   ch = L' ';
+			}
+		}
+	}
 }
 
 
-Grabber::~Grabber()
+GrabberArea Grabber::NormalizedArea() const
 {
+	GrabberArea out;
+	out.left = Min(_area.left, _area.right);
+	out.right = Max(_area.left, _area.right);
+	out.top = Min(_area.top, _area.bottom);
+	out.bottom = Max(_area.top, _area.bottom);
+	out.cur_x = _area.cur_x;
+	out.cur_y = _area.cur_y;
+	return out;
 }
 
-
-void Grabber::CopyGrabbedArea(bool Append)
+void Grabber::CopyGrabbedArea(bool append)
 {
-	if (GArea.X1 < 0)
+	if (_area.left < 0)
 		return;
 
-	const int x1 = Min(GArea.X1, GArea.X2);
-	const int x2 = Max(GArea.X1, GArea.X2);
-	const int y1 = Min(GArea.Y1, GArea.Y2);
-	const int y2 = Max(GArea.Y1, GArea.Y2);
-	const int GWidth = x2 - x1 + 1, GHeight = y2 - y1 + 1;
-	const int BufSize = (GWidth + 3) * GHeight;
+	const auto &area = NormalizedArea();
+	const size_t width = size_t(area.right + 1 - area.left);
+	std::vector<CHAR_INFO> char_info(width * (area.bottom + 1 - area.top));
+	GetText(area.left, area.top, area.right, area.bottom, char_info.data(), char_info.size() * sizeof(CHAR_INFO));
 
-	CHAR_INFO *CharBuf = new CHAR_INFO[BufSize];
-	CHAR_INFO *PtrCharBuf = CharBuf;
-	wchar_t *CopyBuf = (wchar_t *)malloc(BufSize*sizeof(wchar_t));
-	wchar_t *PtrCopyBuf = CopyBuf;
-	*CopyBuf = 0;
-	GetText(x1, y1, x2, y2, CharBuf, BufSize*sizeof(CHAR_INFO));
-
-	for (int I=0; I < GHeight; I++)
-	{
-		if (I > 0)
-		{
-			*PtrCopyBuf++ = L'\r';
-			*PtrCopyBuf++ = L'\n';
-			*PtrCopyBuf = 0;
+	std::wstring grabbed_text;
+	for (size_t i = 0; i < char_info.size(); ++i) {
+		if ( i != 0 && (i % width) == 0) {
+			StrTrimRight(grabbed_text);
+			grabbed_text+= L'\n';
 		}
-
-		for (int J=0; J < GWidth; J++, ++PtrCharBuf)
-		{
-			WORD Chr2 = PtrCharBuf->Char.UnicodeChar;
-			WORD Chr = Chr2;
-
-			if (Opt.CleanAscii)
-			{
-				switch (Chr2)
-				{
-					case L'.': Chr = L'.'; break;
-					case 0x07: Chr = L'*'; break;
-					case 0x10: Chr = L'>'; break;
-					case 0x11: Chr = L'<'; break;
-					case 0x18:
-					case 0x19: Chr = L'|'; break;
-					case 0x1E:
-					case 0x1F: Chr = L'X'; break;
-					case 0xFF: Chr = L' '; break;
-					default:
-
-						if (Chr2 < 0x20)
-							Chr = L'.';
-
-						break;
-				}
-			}
-
-			if (Opt.NoGraphics && Chr2 >= 0xB3 && Chr2 <= 0xDA)
-			{
-				switch (Chr2)
-				{
-					case 0xB3:
-					case 0xBA: Chr = L'|'; break;
-					case 0xC4: Chr = L'-'; break;
-					case 0xCD: Chr = L'='; break;
-					default:   Chr = L'+'; break;
-				}
-			}
-
-			if (Opt.NoBoxes && Chr2 >=0xB3 && Chr2 <= 0xDA)
-			{
-				Chr = L' ';
-			}
-
-			*PtrCopyBuf++ = Chr;
-			*PtrCopyBuf = 0;
+		if (CI_USING_COMPOSITE_CHAR(char_info[i])) {
+			grabbed_text+= WINPORT(CompositeCharLookup)(char_info[i].Char.UnicodeChar);
+		} else if (char_info[i].Char.UnicodeChar) {
+			grabbed_text+= char_info[i].Char.UnicodeChar;
 		}
-
-		for (int K=StrLength(CopyBuf)-1; K >= 0 && CopyBuf[K] == L' '; K--)
-			CopyBuf[K] = 0;
-
-		PtrCopyBuf = CopyBuf + StrLength(CopyBuf);
 	}
+	StrTrimRight(grabbed_text);
+
+	FilterGrabbedText(grabbed_text);
 
 	Clipboard clip;
 
-	if (clip.Open())
-	{
-		if (Append)
-		{
-			wchar_t *AppendBuf = clip.Paste();
-			int add = 0;
-
-			if (AppendBuf)
-			{
-				size_t DataSize = StrLength(AppendBuf);
-
-				if (AppendBuf[DataSize-1] != L'\n')
-				{
-					add = 2;
+	if (clip.Open()) {
+		if (append) {
+			wchar_t *prev_clip_data = clip.Paste();
+			if (prev_clip_data && *prev_clip_data) {
+				std::wstring tmp = prev_clip_data;
+				if (tmp.back() != '\n') {
+					tmp+= '\n';
+					tmp+= grabbed_text;
 				}
-
-				AppendBuf = (wchar_t *)realloc(AppendBuf, (DataSize+BufSize+add) * sizeof(wchar_t));
-				wmemcpy(AppendBuf + DataSize + add, CopyBuf, BufSize);
-
-				if (add) {
-					wmemcpy(AppendBuf + DataSize, NATIVE_EOLW, wcslen(NATIVE_EOLW));
-				}
-
-				free(CopyBuf);
-				CopyBuf = AppendBuf;
+				grabbed_text.swap(tmp);
 			}
+			free(prev_clip_data);
 		}
 
-		clip.Copy(CopyBuf);
+		clip.Copy(grabbed_text.c_str());
 
 		clip.Close();
 	}
-	if (CopyBuf)
-		free(CopyBuf);
-
-	delete[] CharBuf;
 }
-
 
 void Grabber::DisplayObject()
 {
-	MoveCursor(GArea.CurX, GArea.CurY);
+	MoveCursor(_area.cur_x, _area.cur_y);
 
-	if (PrevArea.X1 != GArea.X1 || PrevArea.X2 != GArea.X2 ||
-			PrevArea.Y1 != GArea.Y1 || PrevArea.Y2 != GArea.Y2)
-	{
-		const int x1 = Min(GArea.X1, GArea.X2);
-		const int x2 = Max(GArea.X1, GArea.X2);
-		const int y1 = Min(GArea.Y1, GArea.Y2);
-		const int y2 = Max(GArea.Y1, GArea.Y2);
+	const auto &area = NormalizedArea();
 
-		if (x1 > Min(PrevArea.X1,PrevArea.X2) || x2 < Max(PrevArea.X1,PrevArea.X2) ||
-				y1 > Min(PrevArea.Y1,PrevArea.Y2) || y2 < Max(PrevArea.Y1,PrevArea.Y2))
-			SaveScr->RestoreArea(FALSE);
+	if (area.left != _prev_area.left || area.right != _prev_area.right
+			|| area.top != _prev_area.top || area.bottom != _prev_area.bottom) {
 
-		if (GArea.X1 != -1)
-		{
-			const int GWidth = x2 - x1 + 1, GHeight = y2 - y1 + 1;
-			CHAR_INFO *CharBuf = new CHAR_INFO[GWidth*GHeight];
-			CHAR_INFO *PrevBuf = SaveScr->GetBufferAddress();
-			GetText(x1,y1,x2,y2, CharBuf, sizeof(CHAR_INFO)*GWidth*GHeight);
+		if (area.left > _prev_area.left || area.right < _prev_area.right
+				|| area.top > _prev_area.top || area.bottom < _prev_area.bottom) {
+			_save_scr->RestoreArea(FALSE);
+		}
 
-			for (int x=x1; x <= x2; x++)
-			{
-				for (int y=y1; y <= y2; y++)
-				{
-					int NewColor;
+		if (_area.left != -1) {
+			const size_t width = size_t(area.right + 1 - area.left);
+			std::vector<CHAR_INFO> char_info(width * (area.bottom + 1 - area.top));
 
-					if ((PrevBuf[x+y*(ScrX+1)].Attributes & B_LIGHTGRAY) == B_LIGHTGRAY)
-						NewColor = B_BLACK|F_LIGHTGRAY;
+			GetText(area.left, area.top, area.right, area.bottom, char_info.data(), sizeof(CHAR_INFO) * char_info.size());
+
+			for (auto x = area.left; x <= area.right; ++x)
+				for (auto y = area.top; y <= area.bottom; ++y) {
+					DWORD64 new_attrs;
+
+					if ((_save_scr->Read(x, y).Attributes & B_LIGHTGRAY) == B_LIGHTGRAY)
+						new_attrs = B_BLACK | F_LIGHTGRAY;
 					else
-						NewColor = B_LIGHTGRAY|F_BLACK;
+						new_attrs = B_LIGHTGRAY | F_BLACK;
 
-					int Pos = (x-x1) + (y-y1)*GWidth;
-					CharBuf[Pos].Attributes = (CharBuf[Pos].Attributes & ~0xff) | NewColor;
+					const size_t index = width * (y - area.top) + size_t(x - area.left);
+					char_info[index].Attributes =
+						((char_info[index].Attributes & ~0xff) | new_attrs)
+							& (~(FOREGROUND_TRUECOLOR | BACKGROUND_TRUECOLOR));
 				}
-			}
 
-			PutText(x1, y1, x2, y2, CharBuf);
-			delete[] CharBuf;
+			PutText(area.left, area.top, area.right, area.bottom, char_info.data());
 		}
 
-		if (GArea.X1 == -2)
-		{
-			SaveScr->RestoreArea(FALSE);
-			GArea.X1 = GArea.X2;
+		if (_area.left == -2) {
+			_save_scr->RestoreArea(FALSE);
+			_area.left = area.right;
 		}
 
-		PrevArea=GArea;
+		_prev_area = NormalizedArea();
 	}
 }
 
-
-int Grabber::ProcessKey(FarKey Key)
+int Grabber::ProcessKey(FarKey key)
 {
-	/* $ 14.03.2001 SVS
-	  [-] Неправильно воспроизводился макрос в режиме грабления экрана.
-	      При воспроизведении клавиша Home перемещала курсор в координаты
-	      0,0 консоли.
-	  Не было учтено режима выполнения макроса.
+	/*
+		$ 14.03.2001 SVS
+		[-] Неправильно воспроизводился макрос в режиме грабления экрана.
+		При воспроизведении клавиша Home перемещала курсор в координаты
+		0,0 консоли.
+		Не было учтено режима выполнения макроса.
 	*/
-	SetCursorType(true,60);
+	SetCursorType(TRUE, 60);
 
-	if (CtrlObject->Macro.IsExecuting())
-	{
-		if ((Key&KEY_SHIFT) && Key!=KEY_NONE && ResetArea)
+	if (CtrlObject->Macro.IsExecuting()) {
+		if ((key & KEY_SHIFT) && key != KEY_NONE && _reset_area)
 			Reset();
-		else if (Key!=KEY_IDLE && Key!=KEY_NONE && !(Key&KEY_SHIFT))
-			ResetArea=TRUE;
-	}
-	else
-	{
-		if ((ShiftPressed || Key!=KEY_SHIFT) && (Key&KEY_SHIFT) && Key!=KEY_NONE && ResetArea)
+		else if (key != KEY_IDLE && key != KEY_NONE && !(key & KEY_SHIFT))
+			_reset_area = true;
+	} else {
+		if ((ShiftPressed || key != KEY_SHIFT) && (key & KEY_SHIFT) && key != KEY_NONE && _reset_area)
 			Reset();
-		else if (Key!=KEY_IDLE && Key!=KEY_NONE && Key!=KEY_SHIFT && !ShiftPressed && !(Key&KEY_SHIFT))
-			ResetArea=TRUE;
+		else if (key != KEY_IDLE && key != KEY_NONE && key != KEY_SHIFT && !ShiftPressed && !(key & KEY_SHIFT))
+			_reset_area = true;
 	}
 
-	switch (Key)
-	{
+	switch (key) {
 		case KEY_CTRLU:
 			Reset();
-			GArea.X1=-2;
+			_area.left = -2;
 			break;
 		case KEY_ESC:
 			SetExitCode(0);
 			break;
 		case KEY_NUMENTER:
 		case KEY_ENTER:
-		case KEY_CTRLINS:   case KEY_CTRLNUMPAD0:
+		case KEY_CTRLINS:
+		case KEY_CTRLNUMPAD0:
 		case KEY_CTRLADD:
-			CopyGrabbedArea(Key == KEY_CTRLADD);
+			CopyGrabbedArea(key == KEY_CTRLADD);
 			SetExitCode(1);
 			break;
-		case KEY_LEFT:      case KEY_NUMPAD4:   case L'4':
+		case KEY_LEFT:
+		case KEY_NUMPAD4:
+		case L'4':
 
-			if (GArea.CurX>0)
-				GArea.CurX--;
-
-			break;
-		case KEY_RIGHT:     case KEY_NUMPAD6:   case L'6':
-
-			if (GArea.CurX<ScrX)
-				GArea.CurX++;
+			if (_area.cur_x > 0)
+				_area.cur_x--;
 
 			break;
-		case KEY_UP:        case KEY_NUMPAD8:   case L'8':
+		case KEY_RIGHT:
+		case KEY_NUMPAD6:
+		case L'6':
 
-			if (GArea.CurY>0)
-				GArea.CurY--;
-
-			break;
-		case KEY_DOWN:      case KEY_NUMPAD2:   case L'2':
-
-			if (GArea.CurY<ScrY)
-				GArea.CurY++;
+			if (_area.cur_x < ScrX)
+				_area.cur_x++;
 
 			break;
-		case KEY_HOME:      case KEY_NUMPAD7:   case L'7':
-			GArea.CurX=0;
-			break;
-		case KEY_END:       case KEY_NUMPAD1:   case L'1':
-			GArea.CurX=ScrX;
-			break;
-		case KEY_PGUP:      case KEY_NUMPAD9:   case L'9':
-			GArea.CurY=0;
-			break;
-		case KEY_PGDN:      case KEY_NUMPAD3:   case L'3':
-			GArea.CurY=ScrY;
-			break;
-		case KEY_CTRLHOME:  case KEY_CTRLNUMPAD7:
-			GArea.CurX=GArea.CurY=0;
-			break;
-		case KEY_CTRLEND:   case KEY_CTRLNUMPAD1:
-			GArea.CurX=ScrX;
-			GArea.CurY=ScrY;
-			break;
-		case KEY_CTRLLEFT:      case KEY_CTRLNUMPAD4:
-		case KEY_CTRLSHIFTLEFT: case KEY_CTRLSHIFTNUMPAD4:
+		case KEY_UP:
+		case KEY_NUMPAD8:
+		case L'8':
 
-			if ((GArea.CurX-=10)<0)
-				GArea.CurX=0;
-
-			if (Key == KEY_CTRLSHIFTLEFT || Key == KEY_CTRLSHIFTNUMPAD4)
-				GArea.X1=GArea.CurX;
+			if (_area.cur_y > 0)
+				_area.cur_y--;
 
 			break;
-		case KEY_CTRLRIGHT:      case KEY_CTRLNUMPAD6:
-		case KEY_CTRLSHIFTRIGHT: case KEY_CTRLSHIFTNUMPAD6:
+		case KEY_DOWN:
+		case KEY_NUMPAD2:
+		case L'2':
 
-			if ((GArea.CurX+=10)>ScrX)
-				GArea.CurX=ScrX;
-
-			if (Key == KEY_CTRLSHIFTRIGHT || Key == KEY_CTRLSHIFTNUMPAD6)
-				GArea.X1=GArea.CurX;
+			if (_area.cur_y < ScrY)
+				_area.cur_y++;
 
 			break;
-		case KEY_CTRLUP:        case KEY_CTRLNUMPAD8:
-		case KEY_CTRLSHIFTUP:   case KEY_CTRLSHIFTNUMPAD8:
+		case KEY_HOME:
+		case KEY_NUMPAD7:
+		case L'7':
+			_area.cur_x = 0;
+			break;
+		case KEY_END:
+		case KEY_NUMPAD1:
+		case L'1':
+			_area.cur_x = ScrX;
+			break;
+		case KEY_PGUP:
+		case KEY_NUMPAD9:
+		case L'9':
+			_area.cur_y = 0;
+			break;
+		case KEY_PGDN:
+		case KEY_NUMPAD3:
+		case L'3':
+			_area.cur_y = ScrY;
+			break;
+		case KEY_CTRLHOME:
+		case KEY_CTRLNUMPAD7:
+			_area.cur_x = _area.cur_y = 0;
+			break;
+		case KEY_CTRLEND:
+		case KEY_CTRLNUMPAD1:
+			_area.cur_x = ScrX;
+			_area.cur_y = ScrY;
+			break;
+		case KEY_CTRLLEFT:
+		case KEY_CTRLNUMPAD4:
+		case KEY_CTRLSHIFTLEFT:
+		case KEY_CTRLSHIFTNUMPAD4:
 
-			if ((GArea.CurY-=5)<0)
-				GArea.CurY=0;
+			if ((_area.cur_x-= 10) < 0)
+				_area.cur_x = 0;
 
-			if (Key == KEY_CTRLSHIFTUP || Key == KEY_CTRLSHIFTNUMPAD8)
-				GArea.Y1=GArea.CurY;
+			if (key == KEY_CTRLSHIFTLEFT || key == KEY_CTRLSHIFTNUMPAD4)
+				_area.left = _area.cur_x;
 
 			break;
-		case KEY_CTRLDOWN:      case KEY_CTRLNUMPAD2:
-		case KEY_CTRLSHIFTDOWN: case KEY_CTRLSHIFTNUMPAD2:
+		case KEY_CTRLRIGHT:
+		case KEY_CTRLNUMPAD6:
+		case KEY_CTRLSHIFTRIGHT:
+		case KEY_CTRLSHIFTNUMPAD6:
 
-			if ((GArea.CurY+=5)>ScrY)
-				GArea.CurY=ScrY;
+			if ((_area.cur_x+= 10) > ScrX)
+				_area.cur_x = ScrX;
 
-			if (Key == KEY_CTRLSHIFTDOWN || Key == KEY_CTRLSHIFTNUMPAD2)
-				GArea.Y1=GArea.CurY;
+			if (key == KEY_CTRLSHIFTRIGHT || key == KEY_CTRLSHIFTNUMPAD6)
+				_area.left = _area.cur_x;
 
 			break;
-		case KEY_SHIFTLEFT:  case KEY_SHIFTNUMPAD4:
+		case KEY_CTRLUP:
+		case KEY_CTRLNUMPAD8:
+		case KEY_CTRLSHIFTUP:
+		case KEY_CTRLSHIFTNUMPAD8:
 
-			if (GArea.X1>0)
-				GArea.X1--;
+			if ((_area.cur_y-= 5) < 0)
+				_area.cur_y = 0;
 
-			GArea.CurX=GArea.X1;
+			if (key == KEY_CTRLSHIFTUP || key == KEY_CTRLSHIFTNUMPAD8)
+				_area.top = _area.cur_y;
+
 			break;
-		case KEY_SHIFTRIGHT: case KEY_SHIFTNUMPAD6:
+		case KEY_CTRLDOWN:
+		case KEY_CTRLNUMPAD2:
+		case KEY_CTRLSHIFTDOWN:
+		case KEY_CTRLSHIFTNUMPAD2:
 
-			if (GArea.X1<ScrX)
-				GArea.X1++;
+			if ((_area.cur_y+= 5) > ScrY)
+				_area.cur_y = ScrY;
 
-			GArea.CurX=GArea.X1;
-			break;
-		case KEY_SHIFTUP:    case KEY_SHIFTNUMPAD8:
+			if (key == KEY_CTRLSHIFTDOWN || key == KEY_CTRLSHIFTNUMPAD8)
+				_area.top = _area.cur_y;
 
-			if (GArea.Y1>0)
-				GArea.Y1--;
+			break;
+		case KEY_SHIFTLEFT:
+		case KEY_SHIFTNUMPAD4:
 
-			GArea.CurY=GArea.Y1;
-			break;
-		case KEY_SHIFTDOWN:  case KEY_SHIFTNUMPAD2:
+			if (_area.left > 0)
+				_area.left--;
 
-			if (GArea.Y1<ScrY)
-				GArea.Y1++;
+			_area.cur_x = _area.left;
+			break;
+		case KEY_SHIFTRIGHT:
+		case KEY_SHIFTNUMPAD6:
 
-			GArea.CurY=GArea.Y1;
+			if (_area.left < ScrX)
+				_area.left++;
+
+			_area.cur_x = _area.left;
 			break;
-		case KEY_SHIFTHOME:  case KEY_SHIFTNUMPAD7:
-			GArea.CurX=GArea.X1=0;
+		case KEY_SHIFTUP:
+		case KEY_SHIFTNUMPAD8:
+
+			if (_area.top > 0)
+				_area.top--;
+
+			_area.cur_y = _area.top;
 			break;
-		case KEY_SHIFTEND:   case KEY_SHIFTNUMPAD1:
-			GArea.CurX=GArea.X1=ScrX;
+		case KEY_SHIFTDOWN:
+		case KEY_SHIFTNUMPAD2:
+
+			if (_area.top < ScrY)
+				_area.top++;
+
+			_area.cur_y = _area.top;
 			break;
-		case KEY_SHIFTPGUP:  case KEY_SHIFTNUMPAD9:
-			GArea.CurY=GArea.Y1=0;
+		case KEY_SHIFTHOME:
+		case KEY_SHIFTNUMPAD7:
+			_area.cur_x = _area.left = 0;
 			break;
-		case KEY_SHIFTPGDN:  case KEY_SHIFTNUMPAD3:
-			GArea.CurY=GArea.Y1=ScrY;
+		case KEY_SHIFTEND:
+		case KEY_SHIFTNUMPAD1:
+			_area.cur_x = _area.left = ScrX;
+			break;
+		case KEY_SHIFTPGUP:
+		case KEY_SHIFTNUMPAD9:
+			_area.cur_y = _area.top = 0;
+			break;
+		case KEY_SHIFTPGDN:
+		case KEY_SHIFTNUMPAD3:
+			_area.cur_y = _area.top = ScrY;
 			break;
 	}
 
@@ -431,64 +418,65 @@ int Grabber::ProcessKey(FarKey Key)
 	return TRUE;
 }
 
-
 int Grabber::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 {
-	if (MouseEvent->dwEventFlags==DOUBLE_CLICK ||
-	        (!MouseEvent->dwEventFlags && (MouseEvent->dwButtonState & RIGHTMOST_BUTTON_PRESSED)))
-	{
+	if (MouseEvent->dwEventFlags == DOUBLE_CLICK
+			|| (!MouseEvent->dwEventFlags && (MouseEvent->dwButtonState & RIGHTMOST_BUTTON_PRESSED))) {
 		ProcessKey(KEY_ENTER);
 		return TRUE;
 	}
 
-	if (MouseButtonState!=FROM_LEFT_1ST_BUTTON_PRESSED)
+	if (MouseButtonState != FROM_LEFT_1ST_BUTTON_PRESSED)
 		return FALSE;
 
-	GArea.CurX=Min(Max(static_cast<SHORT>(0),MouseX),ScrX);
-	GArea.CurY=Min(Max(static_cast<SHORT>(0),MouseY),ScrY);
+	_area.cur_x = Min(Max(static_cast<SHORT>(0), MouseX), ScrX);
+	_area.cur_y = Min(Max(static_cast<SHORT>(0), MouseY), ScrY);
 
 	if (!MouseEvent->dwEventFlags)
-		ResetArea=TRUE;
-	else if (MouseEvent->dwEventFlags==MOUSE_MOVED)
-	{
-		if (ResetArea)
-		{
-			GArea.X2=GArea.CurX;
-			GArea.Y2=GArea.CurY;
-			ResetArea=FALSE;
+		_reset_area = true;
+	else if (MouseEvent->dwEventFlags == MOUSE_MOVED) {
+		if (_reset_area) {
+			_area.right = _area.cur_x;
+			_area.bottom = _area.cur_y;
+			_reset_area = false;
 		}
 
-		GArea.X1=GArea.CurX;
-		GArea.Y1=GArea.CurY;
+		_area.left = _area.cur_x;
+		_area.top = _area.cur_y;
 	}
 
-	//VerticalBlock=MouseEvent->dwControlKeyState&(LEFT_ALT_PRESSED|RIGHT_ALT_PRESSED);
+	// VerticalBlock=MouseEvent->dwControlKeyState&(LEFT_ALT_PRESSED|RIGHT_ALT_PRESSED);
 	DisplayObject();
 	return TRUE;
 }
 
 void Grabber::Reset()
 {
-	GArea.X1=GArea.X2=GArea.CurX;
-	GArea.Y1=GArea.Y2=GArea.CurY;
-	ResetArea=FALSE;
-	//DisplayObject();
+	_area.left = _area.right = _area.cur_x;
+	_area.top = _area.bottom = _area.cur_y;
+	_reset_area = false;
+	// DisplayObject();
 }
 
-bool RunGraber()
+bool Grabber::Run()
 {
-	static bool InGrabber=false;
+	static bool s_in_grabber = false;
 
-	if (!InGrabber)
-	{
-		InGrabber=true;
-		WaitInMainLoop=FALSE;
-		if (!WinPortTesting())
-			FlushInputBuffer();
-		Grabber Grabber;
-		InGrabber=false;
-		return true;
+	bool out = false;
+	if (!s_in_grabber) {
+		s_in_grabber = true;
+		try {
+			WaitInMainLoop = FALSE;
+			if (!WinPortTesting())
+				FlushInputBuffer();
+			Grabber().Process();
+			out = true;
+
+		} catch (std::exception &e) {
+			fprintf(stderr, "%s: %s\n", __FUNCTION__, e.what());
+		}
+		s_in_grabber = false;
 	}
 
-	return false;
+	return out;
 }

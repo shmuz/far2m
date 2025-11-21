@@ -782,7 +782,7 @@ int Manager::ProcessKey(FarKey Key)
 			case KEY_ALT|KEY_NUMPAD0:
 			case KEY_ALTINS:
 			{
-				RunGraber();
+				Grabber::Run();
 				return TRUE;
 			}
 			case KEY_CONSOLE_BUFFER_RESIZE:
@@ -852,7 +852,7 @@ int Manager::ProcessKey(FarKey Key)
 					return TRUE;
 				case KEY_F11:
 					PluginsMenu();
-					FrameManager->RefreshFrame();
+					RefreshFrame();
 					return TRUE;
 				case KEY_ALTF9:
 				{
@@ -890,7 +890,7 @@ int Manager::ProcessKey(FarKey Key)
 				}
 				case KEY_F12:
 				{
-					auto CurFrame = FrameManager->GetCurrentFrame();
+					auto CurFrame = GetCurrentFrame();
 					int TypeFrame = CurFrame->GetType();
 
 					if ((TypeFrame != MODALTYPE_HELP && TypeFrame != MODALTYPE_DIALOG) || CurFrame->GetCanLoseFocus())
@@ -953,7 +953,7 @@ int Manager::ProcessKey(FarKey Key)
 								WaitKey(Key == KEY_CTRLALTSHIFTPRESS ? KEY_CTRLALTSHIFTRELEASE : KEY_RCTRLALTSHIFTRELEASE);
 							}
 
-							FrameManager->RefreshFrame();
+							RefreshFrame();
 						}
 
 						return TRUE;
@@ -1460,20 +1460,29 @@ Frame* Manager::GetTopModal() const
 	return f;
 }
 
-LockBottomFrame::LockBottomFrame()
-	: _frame(FrameManager ? FrameManager->GetBottomFrame() : nullptr)
+LockFrame::LockFrame(Frame *frame)
+	:
+	_frame(frame), _refresh(false)
 {
 	if (_frame)
-	{
-		if (_frame->Locked())
-			_frame = nullptr;
-		else
-			_frame->Lock();
-	}
+		_frame->Lock();
 }
 
-LockBottomFrame::~LockBottomFrame()
+LockFrame::~LockFrame()
 {
 	if (_frame)
 		_frame->Unlock();
+
+	if (_refresh && FrameManager)
+		FrameManager->RefreshFrame(_frame);
 }
+
+LockBottomFrame::LockBottomFrame()
+	:
+	LockFrame(FrameManager ? FrameManager->GetBottomFrame() : nullptr)
+{}
+
+LockCurrentFrame::LockCurrentFrame()
+	:
+	LockFrame(FrameManager ? FrameManager->GetCurrentFrame() : nullptr)
+{}
