@@ -46,6 +46,7 @@ const char *luaL_tolstring(lua_State *L, int idx, size_t *len)
 // otherwise it is called and the result string (or error msg) is pushed onto the stack
 ToStringResult safe__tostring_meta(lua_State *L, int idx)
 {
+	idx = abs_index(L, idx);
 	if (luaL_getmetafield(L, idx, "__tostring"))
 	{
 		lua_pushvalue(L, idx);
