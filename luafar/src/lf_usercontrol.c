@@ -7,6 +7,7 @@
 #include "lf_string.h"
 #include "lf_util.h"
 #include "lf_bit64.h"
+#include "lf_service.h"
 
 #define TYPE_USERCONTROL "far_usercontrol"
 
@@ -42,20 +43,29 @@ static int uc_write(lua_State* L)
 	TFarUserControl* fuc = CheckFarUserControl(L, 1);
 	intptr_t index = CheckFarUserControlIndex(L, fuc, 2);
 
-	size_t len = 0;
-	const wchar_t* Char = check_utf8_string(L, 3, &len);
-	if (index + len > (size_t)fuc->Size)
-		len = fuc->Size - index;
+	struct FillTextInfo Info = { sizeof(Info) };
+	Info.Str = check_utf8_string(L, 3, &Info.Length);
+	Info.Color = check64(L, 4, NULL);
+	Info.Buf = fuc->VBuf + index;
 
-	INT64 Attr = check64(L, 4, NULL);
-
-	for (size_t i=0; i < len; i++) {
-		fuc->VBuf[index+i].Char.UnicodeChar = Char[i];
-		fuc->VBuf[index+i].Attributes = Attr;
+	if (FSF.StrCellsCount(Info.Str, Info.Length) > fuc->Size - index)
+	{ // binary search
+		int low = 0, high = Info.Length;
+		for (int delta; (delta = (high - low) / 2); )
+		{
+			int mid = low + delta;
+			if (FSF.StrCellsCount(Info.Str, mid) > fuc->Size - index)
+				high = mid;
+			else
+				low = mid;
+		}
+		Info.Length = low;
 	}
 
-	lua_pushinteger(L, len);
-	return 1;
+	PSInfo.FillText(&Info);
+	lua_pushinteger(L, Info.nScreenCells);
+	lua_pushinteger(L, Info.nBufCells);
+	return 2;
 }
 
 static int uc_index(lua_State* L)

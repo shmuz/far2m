@@ -660,6 +660,7 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 		StartupInfo.EditorControlV2 = FarEditorControlV2;
 		StartupInfo.Editor = FarEditor;
 		StartupInfo.FileFilterControl = farFileFilterControl;
+		StartupInfo.FillText = FarFillText;
 		StartupInfo.FreeDirList = FarFreeDirList;
 		StartupInfo.FreePluginDirList = FarFreePluginDirList;
 		StartupInfo.FreeScreen = FarFreeScreen;

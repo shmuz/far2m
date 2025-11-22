@@ -534,24 +534,13 @@ void Text(const WCHAR Ch, size_t Length)
 	Text(Ch, CurColor, Length);
 }
 
-void Text(const WCHAR *Str, size_t Length)
+void FillText(const WCHAR *Str, size_t Length, DWORD64 CurColor, CHAR_INFO *BufPtr,
+		int &nCells, int &Skipped)
 {
-	if (Length == (size_t)-1)
-		Length = StrLength(Str);
-
+	nCells = Skipped = 0;
 	if (Length == 0)
 		return;
 
-	CHAR_INFO StackBuffer[StackBufferSize];
-	PCHAR_INFO HeapBuffer = nullptr;
-	PCHAR_INFO BufPtr = StackBuffer;
-
-	if (Length * 2 >= StackBufferSize) {
-		HeapBuffer = new CHAR_INFO[Length * 2 + 1];
-		BufPtr = HeapBuffer;
-	}
-
-	int nCells = 0, Skipped = 0;
 	std::wstring wstr;
 	for (size_t i = 0; i < Length; ++nCells) {
 		const size_t nG = StrSizeOfCell(&Str[i], Length - i);
@@ -570,15 +559,9 @@ void Text(const WCHAR *Str, size_t Length)
 		}
 		i+= nG;
 	}
-
-	ScrBuf.Write(CurX, CurY, BufPtr, nCells + Skipped);
-	if (HeapBuffer) {
-		delete[] HeapBuffer;
-	}
-	CurX+= nCells;
 }
 
-void TextEx(const WCHAR *Str, size_t Length)
+void Text(const WCHAR *Str, size_t Length)
 {
 	if (Length == (size_t)-1)
 		Length = StrLength(Str);
@@ -596,29 +579,7 @@ void TextEx(const WCHAR *Str, size_t Length)
 	}
 
 	int nCells = 0, Skipped = 0;
-	std::wstring wstr;
-	for (size_t i = 0; i < Length; ++nCells) {
-
-		const size_t nG = StrSizeOfCell(&Str[i], Length - i);
-
-		if (nG > 1) {
-			wstr.assign(&Str[i], nG);
-			CI_SET_COMPOSITE(BufPtr[nCells], wstr.c_str());
-			CI_SET_ATTR(BufPtr[nCells], CurColor);
-		} else {
-			CI_SET_WCHAR(BufPtr[nCells], Str[i]);
-			CI_SET_ATTR(BufPtr[nCells], CurColor & (0xFFFFFFFFFFFFFFFF ^ (IMPORTANT_LINE_CHAR | EXPLICIT_LINE_BREAK | COMMON_LVB_STRIKEOUT | COMMON_LVB_UNDERSCORE)) );
-		}
-
-//		CI_SET_ATTR(BufPtr[nCells], CurColor);
-		if (CharClasses::IsFullWidth(&Str[i])) {
-			++nCells;
-			CI_SET_WCATTR(BufPtr[nCells], 0, CurColor);
-		} else	if (CharClasses::IsXxxfix(Str[i])) {
-			++Skipped;
-		}
-		i+= nG;
-	}
+	FillText(Str, Length, CurColor, BufPtr, nCells, Skipped);
 
 	ScrBuf.Write(CurX, CurY, BufPtr, nCells + Skipped);
 	if (HeapBuffer) {

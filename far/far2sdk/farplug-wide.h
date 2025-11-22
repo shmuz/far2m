@@ -2158,6 +2158,19 @@ struct DetectCodePageInfo
 
 typedef int (WINAPI *FARSTDDETECTCODEPAGE)(struct DetectCodePageInfo* Info);
 
+struct FillTextInfo
+{
+	size_t StructSize;  // [IN]
+	const wchar_t *Str; // [IN]
+	size_t Length;      // [IN]
+	DWORD64 Color;      // [IN]
+	CHAR_INFO *Buf;     // [OUT]
+	int nBufCells;      // [OUT]
+	int nScreenCells;   // [OUT]
+};
+
+typedef int (WINAPI *FARFILLTEXT)(struct FillTextInfo *Info);
+
 // <C&C++>
 typedef int (WINAPIV *FARSTDSNPRINTF)(wchar_t *Buffer,size_t Sizebuf,const wchar_t *Format,...);
 typedef int (WINAPIV *FARSTDSSCANF)(const wchar_t *Buffer, const wchar_t *Format,...);
@@ -2565,6 +2578,7 @@ struct PluginStartupInfo
 	FARAPIINPUTBOXV3       InputBoxV3;
 	FARAPIADVCONTROL       AdvControlAsync;
 	FARAPICOLORDIALOG      ColorDialog;
+	FARFILLTEXT            FillText;
 };
 
 

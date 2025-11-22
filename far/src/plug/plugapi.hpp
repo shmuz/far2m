@@ -146,6 +146,7 @@ int WINAPI FarInputBoxV3(INT_PTR PluginNumber, const GUID* Id,
 /* Функция, которая будет действовать и в редакторе, и в панелях, и... */
 INT_PTR WINAPI FarAdvControl(INT_PTR ModuleNumber, int Command, void *Param1, void *Param2);
 INT_PTR WINAPI FarAdvControlAsync(INT_PTR ModuleNumber, int Command, void *Param1, void *Param2);
+int WINAPI FarFillText(FillTextInfo *Info);
 
 // Функция расширенного диалога
 HANDLE WINAPI FarDialogInit(INT_PTR PluginNumber, int X1, int Y1, int X2, int Y2, const wchar_t *HelpTopic,

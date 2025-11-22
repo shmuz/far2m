@@ -169,6 +169,19 @@ int WINAPI FarInputBoxV3(INT_PTR PluginNumber, const GUID* Id,
 			HistoryName, SrcText, DestText, DestLength, HelpTopic, Flags));
 }
 
+int WINAPI FarFillText(FillTextInfo *Info)
+{
+	if (CheckStructSize(Info))
+	{
+		int nCells, Skipped;
+		FillText(Info->Str, Info->Length, Info->Color, Info->Buf, nCells, Skipped);
+		Info->nScreenCells = nCells;
+		Info->nBufCells = nCells + Skipped;
+		return 1;
+	}
+	return 0;
+}
+
 /* Функция вывода помощи */
 BOOL WINAPI FarShowHelpSynched(const wchar_t *ModuleName, const wchar_t *HelpTopic, DWORD Flags)
 {

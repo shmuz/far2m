@@ -89,7 +89,7 @@ void Text(int X, int Y, uint64_t Color, const WCHAR *Str, size_t Length);
 void Text(const WCHAR Ch, uint64_t Color, size_t Length);
 void Text(const WCHAR Ch, size_t Length);
 void Text(const WCHAR *Str, size_t Length = (size_t)-1);
-void TextEx(const WCHAR *Str, size_t Length = (size_t)-1);
+void FillText(const WCHAR *Str, size_t Length, DWORD64 Color,CHAR_INFO *BufPtr, int &nCells, int &Skipped);
 
 void Text(FarLangMsg MsgId);
 void VText(const WCHAR *Str);
