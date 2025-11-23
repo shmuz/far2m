@@ -229,11 +229,11 @@ int64_t FileViewer::VMProcess(int OpCode,void *vParam,int64_t iParam)
 				break;
 
 			case 1:
-				Opt.ViOpt.ShowKeyBar = false;
+				Opt.ViOpt.ShowKeyBar = 0;
 				goto Label3;
 
 			case 2:
-				Opt.ViOpt.ShowKeyBar = true;
+				Opt.ViOpt.ShowKeyBar = 1;
 				goto Label3;
 
 			case 3: Label3:

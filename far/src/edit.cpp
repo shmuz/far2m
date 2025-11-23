@@ -2182,7 +2182,6 @@ void Edit::SanitizeSelectionRange()
 	}
 
 	if (m_SelStart == -1 && m_SelEnd == -1) {
-		m_SelStart = -1;
 		m_SelEnd = 0;
 	}
 }

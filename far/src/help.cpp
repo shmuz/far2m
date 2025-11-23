@@ -380,7 +380,6 @@ int Help::ReadHelp(const wchar_t *Mask)
 			}
 
 			strReadStr=strOutTemp;
-			MacroProcess=true;
 			MI++;
 		}
 

@@ -141,13 +141,13 @@ static int ShowMessageSynched(DWORD Flags, int Buttons, const wchar_t *Title, co
 	}
 
 	for (MaxLength = BtnLength, I = 0; I < StrCount; I++) {
-		if (auto Len = StrCellsCount(Items[I], StrLength(Items[I])); Len > MaxLength)
+		if (auto Len = StrZCellsCount(Items[I]); Len > MaxLength)
 			MaxLength = Len;
 	}
 
 	// учтем так же размер заголовка
 	if (Title && *Title) {
-		MaxLength = Max<size_t>(MaxLength, StrCellsCount(Title, StrLength(Title)) + 2);
+		MaxLength = Max<size_t>(MaxLength, StrZCellsCount(Title) + 2);
 	}
 
 	// первая коррекция максимального размера
@@ -456,12 +456,10 @@ static int ShowMessageSynched(DWORD Flags, int Buttons, const wchar_t *Title, co
 	*/
 	free(Str);
 
-	if (!Buttons) {
-		if (ScrBuf.GetLockCount() > 0 && !CtrlObject->Macro.PeekKey())
-			ScrBuf.SetLockCount(0);
+	if (ScrBuf.GetLockCount() > 0 && !CtrlObject->Macro.PeekKey())
+		ScrBuf.SetLockCount(0);
 
-		ScrBuf.Flush();
-	}
+	ScrBuf.Flush();
 
 	return 0;
 }

@@ -1101,9 +1101,6 @@ const wchar_t * CalcWordFromString(const wchar_t *Str,int CurPos,int *Start,int 
 			StartWPos = EndWPos = R;
 
 		} else if (R >= StrSize) {
-			if ( L < 0)
-				return nullptr;
-
 			StartWPos = EndWPos = L;
 
 		} else if (CurPos - L > R - CurPos) { // ?? >=

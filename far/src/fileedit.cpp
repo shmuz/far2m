@@ -346,19 +346,14 @@ FileEditor::~FileEditor()
 		CtrlObject->Plugins.CurEditor = save;
 	}
 
-	if (m_editor)
-		delete m_editor;
-
-	m_editor = nullptr;
-
-	if (EditNamesList)
-		delete EditNamesList;
+	delete m_editor;
+	delete EditNamesList;
 }
 
 void FileEditor::Init(const wchar_t *Name, UINT codepage, const wchar_t *Title, DWORD InitFlags,
 		int StartLine, int StartChar, const wchar_t *PluginData, int OpenModeExstFile)
 {
-	SudoClientRegion sdc_rgn;
+	SCOPED_ACTION(SudoClientRegion);
 
 	class SmartLock
 	{
@@ -717,7 +712,7 @@ int FileEditor::ProcessKey(FarKey Key)
 
 int FileEditor::ReProcessKey(FarKey Key, bool CalledFromControl)
 {
-	SudoClientRegion sdc_rgn;
+	SCOPED_ACTION(SudoClientRegion);
 	if (Key != KEY_F4 && Key != KEY_IDLE)
 		F4KeyOnly = false;
 
@@ -1211,7 +1206,7 @@ int FileEditor::ReProcessKey(FarKey Key, bool CalledFromControl)
 
 int FileEditor::ProcessQuitKey(bool FirstSave, bool NeedQuestion)
 {
-	SudoClientRegion sdc_rgn;
+	SCOPED_ACTION(SudoClientRegion);
 	FARString strOldCurDir;
 	apiGetCurrentDirectory(strOldCurDir);
 
@@ -1263,7 +1258,7 @@ int FileEditor::ProcessQuitKey(bool FirstSave, bool NeedQuestion)
 
 int FileEditor::LoadFile(const wchar_t *Name, int &UserBreak)
 {
-	SudoClientRegion sdc_rgn;
+	SCOPED_ACTION(SudoClientRegion);
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	SCOPED_ACTION(TPreRedrawFuncGuard)(Editor::PR_EditorShowMsg);
 	SCOPED_ACTION(wakeful);
@@ -1599,7 +1594,7 @@ public:
 int FileEditor::SaveFile(const wchar_t *Name, bool Ask, bool bSaveAs, int TextFormat, UINT codepage,
 		bool AddSignature)
 {
-	SudoClientRegion sdc_rgn;
+	SCOPED_ACTION(SudoClientRegion);
 	if (!bSaveAs) {
 		TextFormat = 0;
 		codepage = m_editor->GetCodePage();
@@ -2130,7 +2125,7 @@ void FileEditor::ShowStatus()
 */
 DWORD FileEditor::EditorGetFileAttributes(const wchar_t *Name)
 {
-	SudoClientRegion sdc_rgn;
+	SCOPED_ACTION(SudoClientRegion);
 	DWORD FileAttributes = apiGetFileAttributes(Name);
 	int ind = 0;
 
