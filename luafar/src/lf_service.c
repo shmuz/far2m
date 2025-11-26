@@ -5565,7 +5565,8 @@ static int far_StrSizeOfCells(lua_State *L)
 {
 	size_t Len;
 	const wchar_t *Str = check_utf8_string(L, 1, &Len);
-	size_t CellsCount = luaL_checkinteger(L, 2);
+	lua_Integer tmp = luaL_checkinteger(L, 2);
+	size_t CellsCount = tmp >= 0 ? tmp : 0;
 	int RoundUp = lua_toboolean(L, 3);
 
 	lua_pushinteger(L, FSF.StrSizeOfCells(Str, Len, &CellsCount, RoundUp));

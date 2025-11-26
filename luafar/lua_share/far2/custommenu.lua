@@ -270,7 +270,7 @@ end
 
 function List:Write(X, Y, Color, Text)
   local j = (Y - self.upper + 1) * (self.w + 2) + X - 2
-  return self.vbuf:write(j, Text, Color)
+  return X + self.vbuf:write(j, Text, Color)
 end
 
 do
@@ -391,17 +391,11 @@ function List:Draw()
       local x1 = x + mlen
       if fr and to >= fr then
         local str1, str2, str3 = text2:sub(1,fr-1), text2:sub(fr,to), text2:sub(to+1)
-        x1 = x1 + self:Write(x1, i, color,   str1)
-        x1 = x1 + self:Write(x1, i, color2,  str2)
-        x1 = x1 + self:Write(x1, i, color,   str3)
-        -- local x2 = x1 + CellsCount(str1)
-        -- local x3 = x2 + CellsCount(str2)
-        -- self:Write(x1, i, color,  str1)
-        -- self:Write(x2, i, color2, str2)
-        -- self:Write(x3, i, color,  str3)
+        x1 = self:Write(x1, i, color,   str1)
+        x1 = self:Write(x1, i, color2,  str2)
+        self:Write(x1, i, color,   str3)
       else
-        x1 = x1 + self:Write(x1, i, color, text2)
-        -- self:Write(x+mlen, i, color, text2)
+        self:Write(x1, i, color, text2)
       end
 
       -- Extend selection up to the right border

@@ -48,19 +48,8 @@ static int uc_write(lua_State* L)
 	Info.Color = check64(L, 4, NULL);
 	Info.Buf = fuc->VBuf + index;
 
-	if (FSF.StrCellsCount(Info.Str, Info.Length) > fuc->Size - index)
-	{ // binary search
-		int low = 0, high = Info.Length;
-		for (int delta; (delta = (high - low) / 2); )
-		{
-			int mid = low + delta;
-			if (FSF.StrCellsCount(Info.Str, mid) > fuc->Size - index)
-				high = mid;
-			else
-				low = mid;
-		}
-		Info.Length = low;
-	}
+	size_t nCells = fuc->Size - index;
+	Info.Length = FSF.StrSizeOfCells(Info.Str, Info.Length, &nCells, 0);
 
 	PSInfo.FillText(&Info);
 	lua_pushinteger(L, Info.nScreenCells);
