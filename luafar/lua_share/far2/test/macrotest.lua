@@ -2094,14 +2094,22 @@ local function test_FarStandardFunctions()
   assert(far.LStrncmp("111abc","111def",3) == 0)
   assert(far.LStrncmp("111abc","111def",4) < 0)
 
-  assert(6 == far.StrCellsCount("🔥🔥🔥"))
-  assert(4 == far.StrCellsCount("🔥🔥🔥", 2))
+  assert_eq(6, far.StrCellsCount("🔥🔥🔥"))
+  assert_eq(4, far.StrCellsCount("🔥🔥🔥", 2))
 
-  local a, b
-  a, b = far.StrSizeOfCells("🔥🔥🔥", 100)
-  assert(a == 3 and b == 6)
-  a, b = far.StrSizeOfCells("🔥🔥🔥", 100, true)
-  assert(a == 3 and b == 6)
+  local data = {
+  --  / input -------------- / output /
+    { "🔥🔥🔥", 100, false,    3, 6 },
+    { "🔥🔥🔥", 100, true,     3, 6 },
+    { "🔥🔥🔥",   2, false,    1, 2 },
+    { "A🔥",      2, false,    1, 1 },
+    { "A🔥",      2, true,     2, 3 },
+  }
+  for i,v in ipairs(data) do
+    local nChars, nCells = far.StrSizeOfCells(unpack(v, 1, 3))
+    assert_eq(nChars, v[4])
+    assert_eq(nCells, v[5])
+  end
 end
 
 -- "Several lines are merged into one".
@@ -2388,9 +2396,28 @@ local function test_dialog_issue_28()
   assert_true(checkValue)
 end
 
+local function test_usercontrol()
+  local w, h = 40, 12
+  local uc = assert_udata(far.CreateUserControl(w, h))
+
+  -- __index (number)
+  assert_eq(#uc, w * h)
+  assert_table(uc[#uc])
+  assert_false(pcall(function() return uc[#uc + 1] end))
+
+  -- __index (string)
+  assert_udata(uc.rawhandle)
+  assert_func(uc.write) -- test needed
+
+  -- __newindex
+  assert_true(pcall(function() uc[#uc] = { Char="A"; Attributes=0; }; end))
+  assert_false(pcall(function() uc[#uc + 1] = {} end))
+end
+
 local function test_dialog()
   test_dialog_1()
   test_dialog_issue_28()
+  test_usercontrol()
 end
 
 local function test_one_guid(val, func, keys, numEsc)
