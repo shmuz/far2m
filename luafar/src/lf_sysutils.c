@@ -107,8 +107,11 @@ static int su_FileClose (lua_State *L)
 static int su_FileRead (lua_State *L)
 {
 	HANDLE *pHandle = checkFileHandle(L);
-	DWORD count = luaL_checkinteger(L,2);
-	luaL_argcheck(L, count > 0, 2, "must be positive number");
+	lua_Integer count = luaL_checkinteger(L,2);
+	if (count <= 0) {
+		lua_pushliteral(L, "");
+		return 1;
+	}
 	char* buf = malloc(count);
 	if (buf) {
 		DWORD nRead;
