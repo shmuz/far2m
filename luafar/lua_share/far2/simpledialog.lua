@@ -150,6 +150,7 @@ function mod:GetDialogState(hDlg)
 end
 
 function mod:SetDialogState(hDlg, Data)
+  Send(hDlg, "DM_ENABLEREDRAW", 0)
   for pos,elem in ipairs(self.Items) do
     if not (elem.noauto or elem.noload) then
       if type(elem.name)=="string" or type(elem.name)=="number" then
@@ -175,6 +176,31 @@ function mod:SetDialogState(hDlg, Data)
       end
     end
   end
+  Send(hDlg, "DM_ENABLEREDRAW", 1)
+end
+
+function mod:ClearControls(hDlg)
+  Send(hDlg, "DM_ENABLEREDRAW", 0)
+  for pos,elem in ipairs(self.Items) do
+    if not (elem.noauto or elem.noload) then
+      local tp = elem.tp
+
+      if tp=="chbox" then
+        Send(hDlg, "DM_SETCHECK", pos, 0)
+
+      elseif tp=="rbutt" then
+        Send(hDlg, "DM_SETCHECK", pos, elem.group and 1 or 0)
+
+      elseif tp=="edit" or tp=="fixedit" or tp=="pswedit" then
+        Send(hDlg, "DM_SETTEXT", pos, "")
+
+      elseif tp=="combobox" or tp=="listbox" then
+        Send(hDlg, "DM_LISTSETCURPOS", pos, {SelectPos=1})
+
+      end
+    end
+  end
+  Send(hDlg, "DM_ENABLEREDRAW", 1)
 end
 
 -- supported dialog item types
