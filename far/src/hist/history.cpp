@@ -49,6 +49,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "vmenu.hpp"
 
 static const char NKeyExtras[]   = "Extras";
+static const char NKeyLastItem[] = "LastItem";
 static const char NKeyLines[]    = "Lines";
 static const char NKeyLocks[]    = "Locks";
 static const char NKeyPosition[] = "Position";
@@ -227,6 +228,8 @@ bool History::SaveHistory()
 		std::vector<FILETIME> vTimes;
 		int Position = -1;
 		bool first = true;
+		FARString strLastItem;
+		FILETIME timeLastItem {};
 
 		for (auto It = mList.crbegin(); It != mList.crend(); ++It, first=false) {
 			AppendWithLFSeparator(strLines, It->strName, first);
@@ -239,6 +242,11 @@ bool History::SaveHistory()
 
 			strLocks+= (It->Lock ? L'1' : L'0');
 			vTimes.emplace_back(It->Timestamp);
+
+			if (WINPORT(CompareFileTime)(&It->Timestamp, &timeLastItem) > 0) {
+				timeLastItem = It->Timestamp;
+				strLastItem = It->strName;
+			}
 		}
 
 		ConfigWriter cfg_writer(mStrRegKey);
@@ -254,6 +262,7 @@ bool History::SaveHistory()
 		cfg_writer.SetString(NKeyLocks, strLocks.c_str());
 		cfg_writer.SetBytes(NKeyTimes, (const unsigned char *)&vTimes[0], vTimes.size() * sizeof(FILETIME));
 		cfg_writer.SetInt(NKeyPosition, Position);
+		cfg_writer.SetString(NKeyLastItem, strLastItem);
 
 		ret = cfg_writer.Save();
 		if (ret) {
@@ -269,20 +278,8 @@ bool History::SaveHistory()
 bool History::ReadLastItem(const char *RegKey, FARString &strStr)
 {
 	strStr.Clear();
-
 	ConfigReader cfg_reader(RegKey);
-	if (!cfg_reader.HasSection())
-		return false;
-
-	if (!cfg_reader.GetString(strStr, NKeyLines, L""))
-		return false;
-
-	// last item is first in config
-	size_t p;
-	if (strStr.Pos(p, L'\n'))
-		strStr.Remove(p, strStr.GetLength() - p);
-
-	return true;
+	return cfg_reader.HasSection() && cfg_reader.GetString(strStr, NKeyLastItem, L"");
 }
 
 bool History::ReadHistory()
