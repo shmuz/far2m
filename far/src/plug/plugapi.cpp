@@ -488,7 +488,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 		case ACTL_COMMIT: {
 			if (FrameManager)
 				FrameManager->Commit();
-			return FALSE;
+			return TRUE;
 		}
 		/*
 			$ 15.09.2001 tran
