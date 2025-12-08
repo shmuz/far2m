@@ -143,7 +143,7 @@ public:
 	void GetNext(FARString &strStr);
 	bool GetSimilar(FARString &strStr, int LastCmdPartLength, bool bAppend = false);
 	bool GetAllSimilar(VMenu &HistoryMenu, const wchar_t *Str);
-	bool DeleteMatching(FARString &strStr);
+	bool DeleteMatching(const FARString &strStr);
 	void SetAddMode(bool EnableAdd, history_remove_dups RemoveDups, bool KeepSelectedPos);
 	void ResetPosition();
 };

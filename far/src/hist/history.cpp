@@ -326,7 +326,7 @@ bool History::ReadHistory()
 		}
 
 		if (TimePos + sizeof(FILETIME) <= vTimes.size()) {
-			AddRecord.Timestamp = *(const FILETIME *)(vTimes.data() + TimePos);
+			memcpy(&AddRecord.Timestamp, vTimes.data() + TimePos, sizeof(FILETIME));
 			TimePos+= sizeof(FILETIME);
 		}
 
@@ -754,9 +754,10 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 
 void History::GetPrev(FARString &strStr)
 {
-	mIterCmdLine--;
-
-	if (mIterCmdLine == mList.end()) {
+	if (!mList.empty() && mIterCmdLine != mList.begin()) {
+		mIterCmdLine--;
+	}
+	else {
 		SyncChanges();
 		mIterCmdLine = mList.begin();
 	}
@@ -780,16 +781,12 @@ void History::GetNext(FARString &strStr)
 		strStr.Clear();
 }
 
-bool History::DeleteMatching(FARString &strStr)
+bool History::DeleteMatching(const FARString &strStr)
 {
 	SyncChanges();
 
-	auto Item = mIterCommon;
-	for (Item--; Item != mIterCommon; Item--) {
-		if (Item == mList.end() || Item->Lock)
-			continue;
-
-		if (Item->strName == strStr) {
+	for (auto Item = mList.cbegin(); Item != mList.cend(); ++Item) {
+		if (!Item->Lock && Item->strName == strStr) {
 			mList.erase(Item);
 			SaveHistory();
 			return true;
@@ -807,9 +804,8 @@ bool History::GetSimilar(FARString &strStr, int LastCmdPartLength, bool bAppend)
 	if (LastCmdPartLength != -1 && LastCmdPartLength < Length)
 		Length = LastCmdPartLength;
 
-	if (LastCmdPartLength == -1) {
+	if (LastCmdPartLength == -1)
 		ResetPosition();
-	}
 
 	auto Item = mIterCommon;
 	for (Item--; Item != mIterCommon; Item--) {
