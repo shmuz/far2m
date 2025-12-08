@@ -67,16 +67,13 @@ static const wchar_t *GetNamePrefix(int Type)
 		case HR_EXTERNAL:           // external - без ожидания
 		case HR_EXTERNAL_WAIT:      // external - AlwaysWaitFinish
 			return Msg::HistoryExt;
+		default:
+			return L"";
 	}
-
-	return L"";
 }
 
-static void AppendWithLFSeparator(std::wstring &str, const FARString &ap, bool first)
+static void AppendWithLFSeparator(std::wstring &str, const FARString &ap)
 {
-	if (!first) {
-		str+= L'\n';
-	}
 	size_t p = str.size();
 	str.append(ap.CPtr(), ap.GetLength());
 	for (; p < str.size(); ++p) {
@@ -84,6 +81,7 @@ static void AppendWithLFSeparator(std::wstring &str, const FARString &ap, bool f
 			str[p] = L'\r';
 		}
 	}
+	str+= L'\n';
 }
 
 static bool IsSameDay(const FILETIME &ft1, const FILETIME &ft2)
@@ -114,8 +112,7 @@ History::History(enumHISTORYTYPE TypeHistory, size_t HistoryCount, const std::st
 	mIterCommon(mList.end()),
 	mIterCmdLine(mList.end())
 {
-	if (*mEnableSave)
-		ReadHistory();
+	ReadHistory();
 }
 
 void History::ResetPosition()
@@ -127,8 +124,8 @@ void History::ResetPosition()
 bool History::IsAllowedForHistory(const wchar_t *Str) const
 {
 	if (mHistoryType == HISTORYTYPE_CMD) {
-		FileMasksProcessor fmp;
-		return !(fmp.Set(Opt.AutoComplete.Exceptions.CPtr(), FMF_ADDASTERISK) && fmp.Compare(Str, true));
+		static FileMasksProcessor fmp;
+		return !(fmp.Set(Opt.AutoComplete.Exceptions, FMF_SILENT) && fmp.Compare(Str, true));
 	}
 	return true;
 }
@@ -227,13 +224,12 @@ bool History::SaveHistory()
 		std::wstring strTypes, strLines, strLocks, strExtras;
 		std::vector<FILETIME> vTimes;
 		int Position = -1;
-		bool first = true;
 		FARString strLastItem;
 		FILETIME timeLastItem {};
 
-		for (auto It = mList.crbegin(); It != mList.crend(); ++It, first=false) {
-			AppendWithLFSeparator(strLines, It->strName, first);
-			AppendWithLFSeparator(strExtras, It->strExtra, first);
+		for (auto It = mList.crbegin(); It != mList.crend(); ++It) {
+			AppendWithLFSeparator(strLines, It->strName);
+			AppendWithLFSeparator(strExtras, It->strExtra);
 			if (!It->strExtra.IsEmpty())
 				HasExtras = true;
 
@@ -270,6 +266,7 @@ bool History::SaveHistory()
 		}
 
 	} catch (std::exception &e) {
+		fprintf(stderr, "%s: exception '%s'\n", __FUNCTION__, e.what());
 	}
 
 	return ret;
@@ -279,7 +276,7 @@ bool History::ReadLastItem(const char *RegKey, FARString &strStr)
 {
 	strStr.Clear();
 	ConfigReader cfg_reader(RegKey);
-	return cfg_reader.HasSection() && cfg_reader.GetString(strStr, NKeyLastItem, L"");
+	return cfg_reader.HasSection() && cfg_reader.GetString(strStr, NKeyLastItem);
 }
 
 bool History::ReadHistory()
@@ -289,14 +286,14 @@ bool History::ReadHistory()
 
 	ConfigReader cfg_reader(mStrRegKey);
 
-	if (!cfg_reader.GetString(strLines, NKeyLines, L""))
+	if (!cfg_reader.GetString(strLines, NKeyLines))
 		return false;
 
 	int Position = cfg_reader.GetInt(NKeyPosition, -1);
 	cfg_reader.GetBytes(vTimes, NKeyTimes);
-	cfg_reader.GetString(strLocks, NKeyLocks, L"");
-	cfg_reader.GetString(strTypes, NKeyTypes, L"");
-	cfg_reader.GetString(strExtras, NKeyExtras, L"");
+	cfg_reader.GetString(strLocks, NKeyLocks);
+	cfg_reader.GetString(strTypes, NKeyTypes);
+	cfg_reader.GetString(strExtras, NKeyExtras);
 
 	size_t LinesPos = 0, TypesPos = 0, LocksPos = 0, TimePos = 0, ExtrasPos = 0;
 	for (size_t Count=0; LinesPos < strLines.GetLength() && Count < mMaxCount; Count++) {

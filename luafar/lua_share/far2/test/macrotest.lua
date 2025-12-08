@@ -1898,6 +1898,8 @@ function MT.test_mantis_1722()
 end
 
 function MT.test_all()
+  mf.AddExitHandler(panel.SetPanelDirectory, nil, 1, panel.GetPanelDirectory(nil,1))
+
   asrt.istrue(Area.Shell, "Run these tests from the Shell area.")
   asrt.isfalse(APanel.Plugin or PPanel.Plugin, "Run these tests when neither of panels is a plugin panel.")
 
