@@ -131,8 +131,8 @@ void Plugin::ShowMessageAboutIllegalPluginVersion(const wchar_t* plg,int require
 {
 	FARString strMsg1, strMsg2;
 	strMsg1.Format(Msg::PlgRequired,
-	               (WORD)(HIWORD(required)),(WORD)(LOWORD(required)));
+	               (int)(HIWORD(required)),(int)(LOWORD(required)));
 	strMsg2.Format(Msg::PlgRequired2,
-	               (WORD)(HIWORD(FAR_VERSION)),(WORD)(LOWORD(FAR_VERSION)));
+	               (int)(HIWORD(FAR_VERSION)),(int)(LOWORD(FAR_VERSION)));
 	Message(MSG_WARNING,1,Msg::Error,Msg::PlgBadVers,plg,strMsg1,strMsg2,Msg::Ok);
 }

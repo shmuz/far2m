@@ -506,7 +506,6 @@ static const MacroPrivateInfo MacroInfo
 	farCallFar,
 };
 
-// This seems to prevent irregular segfaults related to unloading luafar.so in the process of Far termination.
 static BOOL LoadLuafar()
 {
 #if !defined(USELUA)
@@ -547,12 +546,12 @@ static BOOL LoadLuafar()
 	// 2. Load LuaFAR
 	FARString strLuaFar = g_strFarPath + PluginsFolderName + L"/luafar/luafar.so";
 	TranslateFarString<TranslateInstallPath_Share2Lib>(strLuaFar);
-	BOOL LuafarLoaded = dlopen(strLuaFar.GetMB().c_str(), RTLD_LAZY|RTLD_GLOBAL) ? TRUE : FALSE;
-	if (!LuafarLoaded)
+	if (!dlopen(strLuaFar.GetMB().c_str(), RTLD_LAZY|RTLD_GLOBAL))
 	{
 		Message(MSG_WARNING, 1, Msg::Error, L"Cannot load luafar.so", Msg::Ok);
+		return FALSE;
 	}
-	return LuafarLoaded;
+	return TRUE;
 #endif // #if defined(USELUA)
 }
 

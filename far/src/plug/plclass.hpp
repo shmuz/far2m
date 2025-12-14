@@ -195,7 +195,7 @@ class Plugin
 		bool IsLoaded() { return m_hModule != nullptr; }
 		static void ShowMessageAboutIllegalPluginVersion(const wchar_t* plg,int required);
 		bool IsLuamacro() { return SysID == SYSID_LUAMACRO; }
-		bool UseMenuGuids() { return bUseMenuGuids && !IsOemPlugin(); }
+		bool UseMenuGuids() { return bUseMenuGuids; }
 };
 
 enum ExceptFunctionsType
