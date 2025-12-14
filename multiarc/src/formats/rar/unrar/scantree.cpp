@@ -11,7 +11,7 @@ ScanTree::ScanTree(StringList *FileMasks,RECURSE_MODE Recurse,bool GetLinks,SCAN
   FolderWildcards=false;
 
   FindStack.push_back(NULL); // We need a single NULL pointer for initial Depth==0.
-  
+
   SetAllMaskDepth=0;
   Depth=0;
   Errors=0;
@@ -87,7 +87,7 @@ bool ScanTree::ExpandFolderMask()
       // First path separator position after folder wildcard mask.
       // In case of dir1\dir2*\dir3\name.ext mask it may point not to file
       // name, so we cannot use PointToName() here.
-      SlashPos=I; 
+      SlashPos=I;
       break;
     }
   }
@@ -217,8 +217,8 @@ bool ScanTree::GetNextMask()
   // starting from "share\".
   SpecPathLength=GetNamePos(CurMask);
 
-  // We prefer to scan entire disk if mask like \\server\share\ or c:\
-  // is specified even without -r, but not with -r-. Use \\server\share\*.*,
+  // We prefer to scan entire disk if mask like \\server\share\ or c:\ is
+  // specified even without -r, but not with -r-. Use \\server\share\*.*,
   // c:\*.* mask or -r- to scan only the root directory. Note that UNC names
   // are possible both in Win32 and Unix, just with proper path separators.
   if (Recurse!=RECURSE_DISABLE)
@@ -229,7 +229,7 @@ bool ScanTree::GetNextMask()
       {
         Slash=CurMask.find(CPATHDIVIDER,Slash+1);
         // If path separator is mssing or it is the last string character.
-        ScanEntireDisk=Slash==std::wstring::npos || 
+        ScanEntireDisk=Slash==std::wstring::npos ||
                        Slash!=std::wstring::npos && Slash+1==CurMask.size();
 
         // Win32 FindFirstFile fails for \\server\share names without
@@ -264,7 +264,7 @@ SCAN_CODE ScanTree::FindProc(FindData *FD)
   if (CurMask.empty())
     return SCAN_NEXT;
   bool FastFindFile=false;
-  
+
   if (FindStack[Depth]==NULL) // No FindFile object for this depth yet.
   {
     bool Wildcards=IsWildcard(CurMask);
@@ -284,8 +284,8 @@ SCAN_CODE ScanTree::FindProc(FindData *FD)
     // at top level in recursion mode. We always comrpess the entire directory
     // if folder wildcard is specified.
     bool SearchAll=!IsDir && (Depth>0 || Recurse==RECURSE_ALWAYS ||
-                   FolderWildcards && Recurse!=RECURSE_DISABLE || 
-                   Wildcards && Recurse==RECURSE_WILDCARDS || 
+                   FolderWildcards && Recurse!=RECURSE_DISABLE ||
+                   Wildcards && Recurse==RECURSE_WILDCARDS ||
                    ScanEntireDisk && Recurse!=RECURSE_DISABLE);
     if (Depth==0)
       SearchAllInRoot=SearchAll;
@@ -328,9 +328,9 @@ SCAN_CODE ScanTree::FindProc(FindData *FD)
           }
         }
 
-        // If we searched only for one file or directory in "fast find" 
-        // (without a wildcard) mode, let's set masks to zero, 
-        // so calling function will know that current mask is used 
+        // If we searched only for one file or directory in "fast find"
+        // (without a wildcard) mode, let's set masks to zero,
+        // so calling function will know that current mask is used
         // and next one must be read from mask list for next call.
         // It is not necessary for directories, because even in "fast find"
         // mode, directory recursing will quit by (Depth < 0) condition,
@@ -423,7 +423,7 @@ SCAN_CODE ScanTree::FindProc(FindData *FD)
 
       return FastFindFile ? SCAN_DONE:SCAN_NEXT;
     }
-    
+
     std::wstring Mask=FastFindFile ? MASKALL:PointToName(CurMask);
     CurMask=FD->Name;
 
