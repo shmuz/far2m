@@ -167,11 +167,17 @@ function List:CreateDialogItem (x, y)
   return { "DI_USERCONTROL", x, y, x+self.w+1, y+self.h+1, self.vbuf, 0,0,0, "" }
 end
 
+function List:GetItemText(item)
+  local f = self.OnGetItemText
+  return f and f(self,item) or item.text
+end
+
 function List:SetSize()
   if self.resizeW then
     local wd = 0
     for _,v in ipairs(self.drawitems) do
-      local len = v.text:len() + (v.separator and 1 or 0)
+      local text = self:GetItemText(v)
+      local len = text:len() + (v.separator and 1 or 0)
       wd = max(wd, len)
       if wd > self.wmax then break end -- this check is needed for performance (with big lists && long lines)
     end
@@ -345,7 +351,7 @@ function List:Draw()
     local v = self.drawitems[i]
     if not v then first_empty = i; break; end
     local vdata = self.idata[v]
-    local text = v.text or ""
+    local text = self:GetItemText(v) or ""
 
     if v.separator then
       local color = self.col_text
@@ -369,7 +375,7 @@ function List:Draw()
         local ss = self.searchstart - 1
         local br1 = ss + floor((maxlen - ss) * self.ellipsis/3 + 0.5)
         local br2 = tlen - (maxlen - br1) + 1
-        text2 = text:sub(1, br1) .. "..." .. v.text:sub(br2)
+        text2 = text:sub(1, br1) .. "..." .. text:sub(br2)
         if fr and to >= fr then
           local offs = br2 - 1 - br1 - 3
           if fr >= br2-1 then fr = fr - offs
@@ -649,12 +655,13 @@ function List:ChangePattern (hDlg, pattern)
   if find or find2 then
     local groupdate
     for _,v in ipairs(self.items) do
+      local text = self:GetItemText(v)
       local fr, to
       if find then
-        fr, to = find(v.text, pattern, self.searchstart)
+        fr, to = find(text, pattern, self.searchstart)
       end
       if fr==nil and find2 then
-        fr, to = find2(v.text, pat2, self.searchstart)
+        fr, to = find2(text, pat2, self.searchstart)
       end
       local vdata = self.idata[v]
       vdata.fr, vdata.to = fr, to
@@ -948,14 +955,17 @@ end
 
 function List:CopyItemToClipboard()
   local Item = self.drawitems[self.sel]
-  if Item then far.CopyToClipboard(Item.text:sub(self.searchstart)) end
+  if Item then
+    local text = self:GetItemText(Item)
+    far.CopyToClipboard(text:sub(self.searchstart))
+  end
 end
 
 function List:CopyFilteredItemsToClipboard()
   local t = {}
   for k,v in ipairs(self.drawitems) do
     if not v.separator then
-      t[#t+1] = v.text
+      t[#t+1] = self:GetItemText(v)
     end
   end
   t[#t+1] = ""
@@ -1024,7 +1034,10 @@ function List:Key (hDlg, key)
     self.ellipsis = (self.ellipsis + 1) % 4
 
   elseif FindKey(self.keys_showitem, key) then
-    if Item then far.Message(Item.text:sub(self.searchstart), "Full Item Text", ";Ok") end
+    if Item then
+      local text = self:GetItemText(Item)
+      far.Message(text:sub(self.searchstart), "Full Item Text", ";Ok")
+    end
 
   elseif self.filterlines then
 
@@ -1115,7 +1128,10 @@ local function Menu (props, list)
           return { ValType=F.FMVT_INTEGER, Value=list.sel }
         elseif tp == 0 or tp == 10 then             -- get item text
           local item = list.drawitems[list.sel]
-          return item and { ValType=F.FMVT_STRING, Value=item.text or "" }
+          if item then
+            local text = list:GetItemText(item)
+            return { ValType=F.FMVT_STRING, Value=text or "" }
+          end
         elseif tp == 11 then                        -- get ItemCount
           return { ValType=F.FMVT_INTEGER, Value=#list.drawitems }
         end
