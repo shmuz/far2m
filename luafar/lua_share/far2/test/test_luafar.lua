@@ -59,174 +59,6 @@ function LF.test_far_GetMsg()
   asrt.str (far.GetMsg(0))
 end
 
-local function test_clipboard()
-  local orig = far.PasteFromClipboard()
-  local values = { "Человек", "foo", "", n=3 }
-  for k=1,values.n do
-    local v = values[k]
-    far.CopyToClipboard(v)
-    asrt.eq(far.PasteFromClipboard(), v)
-  end
-  if orig then
-    far.CopyToClipboard(orig)
-    asrt.eq(far.PasteFromClipboard(), orig)
-  end
-end
-
-local function test_ProcessName()
-  asrt.istrue  (far.ProcessName("PN_CHECKMASK", "f*.ex?"))
-  asrt.istrue  (far.CheckMask("f*.ex?"))
-  asrt.istrue  (far.CheckMask("/(abc)?def/"))
-  asrt.isfalse (far.CheckMask("/[[[/"))
-
-  asrt.eq      (far.ProcessName("PN_GENERATENAME", "a??b.*", "cdef.txt"), "adeb.txt")
-  asrt.eq      (far.GenerateName("a??b.*", "cdef.txt"),     "adeb.txt")
-  asrt.eq      (far.GenerateName("a??b.*", "cdef.txt", 50), "adeb.txt")
-  asrt.eq      (far.GenerateName("a??b.*", "cdef.txt", 2),  "adbef.txt")
-
-  asrt.istrue  (far.ProcessName("PN_CMPNAME", "f*.ex?", "ftp.exe"))
-  asrt.istrue  (far.CmpName("f*.ex?",      "ftp.exe"        ))
-  asrt.istrue  (far.CmpName("f*.ex?",      "fc.exe"         ))
-  asrt.istrue  (far.CmpName("f*.ex?",      "f.ext"          ))
-
-  asrt.isfalse (far.CmpName("f*.ex?",      "FTP.exe", "PN_CASESENSITIVE" ))
-  asrt.istrue  (far.CmpName("f*.ex?",      "FTP.exe"        ))
-
-  asrt.isfalse (far.CmpName("f*.ex?",      "a/f.ext"        ))
-  asrt.isfalse (far.CmpName("f*.ex?",      "a/f.ext", 0     ))
-  asrt.istrue  (far.CmpName("f*.ex?",      "a/f.ext", "PN_SKIPPATH" ))
-
-  asrt.istrue  (far.CmpName("*co*",        "color.ini"      ))
-  asrt.istrue  (far.CmpName("*co*",        "edit.com"       ))
-  asrt.istrue  (far.CmpName("[c-ft]*.txt", "config.txt"     ))
-  asrt.istrue  (far.CmpName("[c-ft]*.txt", "demo.txt"       ))
-  asrt.istrue  (far.CmpName("[c-ft]*.txt", "faq.txt"        ))
-  asrt.istrue  (far.CmpName("[c-ft]*.txt", "tips.txt"       ))
-  asrt.istrue  (far.CmpName("*",           "foo.bar"        ))
-  asrt.istrue  (far.CmpName("*.cpp",       "foo.cpp"        ))
-  asrt.isfalse (far.CmpName("*.cpp",       "foo.abc"        ))
-  asrt.isfalse (far.CmpName("*|*.cpp",     "foo.abc"        )) -- exclude mask not supported
-  asrt.isfalse (far.CmpName("*,*",         "foo.bar"        )) -- mask list not supported
-
-  asrt.istrue  (far.ProcessName("PN_CMPNAMELIST", "*", "foo.bar"))
-  asrt.istrue  (far.CmpNameList("*",          "foo.bar"    ))
-  asrt.istrue  (far.CmpNameList("*.cpp",      "foo.cpp"    ))
-  asrt.isfalse (far.CmpNameList("*.cpp",      "foo.abc"    ))
-
-  asrt.istrue  (far.CmpNameList("*|*.cpp",    "foo.abc"    )) -- exclude mask IS supported
-  asrt.istrue  (far.CmpNameList("|*.cpp",     "foo.abc"    ))
-  asrt.istrue  (far.CmpNameList("*|",         "foo.abc"    ))
-  asrt.istrue  (far.CmpNameList("*|bar|*",    "foo.abc"    ))
-  asrt.isfalse (far.CmpNameList("*|*.abc",    "foo.abc"    ))
-  asrt.isfalse (far.CmpNameList("|",          "foo.abc"    ))
-
-  asrt.istrue  (far.CmpNameList("*.aa,*.bar", "foo.bar"    ))
-  asrt.istrue  (far.CmpNameList("*.aa,*.bar", "c:/foo.bar" ))
-  asrt.istrue  (far.CmpNameList("/.+/",       "c:/foo.bar" ))
-  asrt.istrue  (far.CmpNameList("/bar$/",     "c:/foo.bar" ))
-  asrt.isfalse (far.CmpNameList("/dar$/",     "c:/foo.bar" ))
-  asrt.istrue  (far.CmpNameList("/abcd/;*",    "/abcd/foo.bar", "PN_SKIPPATH"))
-  asrt.istrue  (far.CmpNameList("/Makefile(.+)?/", "Makefile"))
-  asrt.istrue  (far.CmpNameList("/makefile([._\\-].+)?$/i", "Makefile", "PN_SKIPPATH"))
-
-  asrt.isfalse (far.CmpNameList("f*.ex?",    "a/f.ext", 0     ))
-  asrt.istrue  (far.CmpNameList("f*.ex?",    "a/f.ext", "PN_SKIPPATH" ))
-
-  asrt.istrue  (far.CmpNameList("/ BAR ; /xi  ;*.md", "bar;foo"))
-  asrt.isfalse (far.CmpNameList("/ BAR ; /xi  ;*.md", "bar,foo"))
-  asrt.istrue  (far.CmpNameList("/ BAR ; /xi  ;*.md", "README.md"))
-  asrt.isfalse (far.CmpNameList("/ BAR ; /xi  ;*.md", "README.me"))
-end
-
-function LF.test_FarStandardFunctions()
-  test_clipboard()
-
-  test_ProcessName()
-
-  asrt.eq(far.ConvertPath([[/foo/bar/../../abc]], "CPM_FULL"), [[/abc]])
-
-  asrt.eq(far.FormatFileSize(123456, 8), "  123456")
-  asrt.eq(far.FormatFileSize(123456, -8), "123456  ")
-
-  asrt.str (far.GetCurrentDirectory())
-
-  asrt.istrue  (far.LIsAlpha("A"))
-  asrt.istrue  (far.LIsAlpha("Я"))
-  asrt.isfalse (far.LIsAlpha("7"))
-  asrt.isfalse (far.LIsAlpha(";"))
-
-  asrt.istrue  (far.LIsAlphanum("A"))
-  asrt.istrue  (far.LIsAlphanum("Я"))
-  asrt.istrue  (far.LIsAlphanum("7"))
-  asrt.isfalse (far.LIsAlphanum(";"))
-
-  asrt.isfalse (far.LIsLower("A"))
-  asrt.istrue  (far.LIsLower("a"))
-  asrt.isfalse (far.LIsLower("Я"))
-  asrt.istrue  (far.LIsLower("я"))
-  asrt.isfalse (far.LIsLower("7"))
-  asrt.isfalse (far.LIsLower(";"))
-
-  asrt.istrue  (far.LIsUpper("A"))
-  asrt.isfalse (far.LIsUpper("a"))
-  asrt.istrue  (far.LIsUpper("Я"))
-  asrt.isfalse (far.LIsUpper("я"))
-  asrt.isfalse (far.LIsUpper("7"))
-  asrt.isfalse (far.LIsUpper(";"))
-
-  asrt.eq (far.LLowerBuf("abc-ABC-эюя-ЭЮЯ-7;"), "abc-abc-эюя-эюя-7;")
-  asrt.eq (far.LUpperBuf("abc-ABC-эюя-ЭЮЯ-7;"), "ABC-ABC-ЭЮЯ-ЭЮЯ-7;")
-
-  assert(far.LStricmp("abc","def") < 0)
-  assert(far.LStricmp("def","abc") > 0)
-  assert(far.LStricmp("abc","abc") == 0)
-  assert(far.LStricmp("ABC","def") < 0)
-  assert(far.LStricmp("DEF","abc") > 0)
-  assert(far.LStricmp("ABC","abc") == 0)
-
-  assert(far.LStrnicmp("abc","def",3) < 0)
-  assert(far.LStrnicmp("def","abc",3) > 0)
-  assert(far.LStrnicmp("abc","abc",3) == 0)
-  assert(far.LStrnicmp("ABC","def",3) < 0)
-  assert(far.LStrnicmp("DEF","abc",3) > 0)
-  assert(far.LStrnicmp("ABC","abc",3) == 0)
-  assert(far.LStrnicmp("111abc","111def",3) == 0)
-  assert(far.LStrnicmp("111abc","111def",4) < 0)
-
-  assert(far.LStrcmp("abc","def") < 0)
-  assert(far.LStrcmp("def","abc") > 0)
-  assert(far.LStrcmp("abc","abc") == 0)
-  assert(far.LStrcmp("ABC","def") < 0)
-  assert(far.LStrcmp("DEF","abc") < 0)
-  assert(far.LStrcmp("ABC","abc") < 0)
-
-  assert(far.LStrncmp("abc","def",3) < 0)
-  assert(far.LStrncmp("def","abc",3) > 0)
-  assert(far.LStrncmp("abc","abc",3) == 0)
-  assert(far.LStrncmp("ABC","def",3) < 0)
-  assert(far.LStrncmp("DEF","abc",3) < 0)
-  assert(far.LStrncmp("ABC","abc",3) < 0)
-  assert(far.LStrncmp("111abc","111def",3) == 0)
-  assert(far.LStrncmp("111abc","111def",4) < 0)
-
-  asrt.eq(6, far.StrCellsCount("🔥🔥🔥"))
-  asrt.eq(4, far.StrCellsCount("🔥🔥🔥", 2))
-
-  local data = {
-  --  / input -------------- / output /
-    { "🔥🔥🔥", 100, false,    3, 6 },
-    { "🔥🔥🔥", 100, true,     3, 6 },
-    { "🔥🔥🔥",   2, false,    1, 2 },
-    { "A🔥",      2, false,    1, 1 },
-    { "A🔥",      2, true,     2, 3 },
-  }
-  for _,v in ipairs(data) do
-    local nChars, nCells = far.StrSizeOfCells(unpack(v, 1, 3))
-    asrt.eq(nChars, v[4])
-    asrt.eq(nCells, v[5])
-  end
-end
-
 local function test_far_MacroExecute()
   local i1 = bit64.new("0x8765876587658765")
   local a1,a2,a3,a4,a5,a6 = "foo", false, 5, nil, i1, {[TKEY_BINARY]="bar"}
@@ -627,31 +459,6 @@ function LF.test_AdvControl_Misc()
   end
   Keys("foo")
   asrt.eq(val, incr*count)
-end
-
--- "Several lines are merged into one".
-function LF.test_issue_3129()
-  local fname = far.InMyTemp("far2m-"..win.Uuid("L"):sub(1,8))
-  local fp = assert(io.open(fname, "w"))
-  fp:close()
-  local flags = {EF_NONMODAL=1, EF_IMMEDIATERETURN=1, EF_DISABLEHISTORY=1}
-  assert(editor.Editor(fname,nil,nil,nil,nil,nil,flags) == F.EEC_MODIFIED)
-  for k=1,3 do
-    editor.InsertString()
-    editor.SetString(nil, k, "foo")
-  end
-  asrt.istrue (editor.SaveFile())
-  asrt.istrue (editor.Quit())
-  actl.Commit()
-  fp = assert(io.open(fname))
-  local k = 0
-  for line in fp:lines() do
-    k = k + 1
-    asrt.eq (line, "foo")
-  end
-  fp:close()
-  win.DeleteFile(fname)
-  asrt.eq (k, 3)
 end
 
 function LF.test_gmatch_coro()
@@ -1272,21 +1079,36 @@ function LF.test_Guids()
   -- test_one_guid( "WipeHardLinkId", nil, "")
 end
 
-function LF.test_luafar()
+function LF.test_far_regex(printfunc, verbose)
+  local test = require "far2.test.regex.runtest"
+  local numerr = test(printfunc, verbose)
+  asrt.eq (numerr, 0)
+end
+
+function LF.test_far_DetectCodePage()
+  local test = require "far2.test.codepage.test_codepage"
+  local dir = os.getenv("FARHOME").."/Plugins/luafar/lua_share/far2/test/codepage"
+  local pass, total = test(dir)
+  asrt.num(pass)
+  asrt.num(total)
+  assert(pass > 0 and pass == total)
+end
+
+function LF.test_luafar_all()
   LF.test_AdvControl()
   LF.test_bit64()
   LF.test_dialog()
+  LF.test_far_DetectCodePage() -- external
   LF.test_far_GetDirList()
-  LF.test_far_GetPluginDirList()
   LF.test_far_GetMsg()
+  LF.test_far_GetPluginDirList()
   LF.test_far_Menu()
+  LF.test_far_regex( --[[far.Log, true]] ) -- external test files
   LF.test_far_SaveScreen()
   LF.test_far_ShowHelp()
-  LF.test_FarStandardFunctions()
   LF.test_far_timer()
   LF.test_gmatch_coro()
   LF.test_Guids()
-  LF.test_issue_3129()
   LF.test_MacroControl()
   LF.test_PluginsControl()
   LF.test_RegexControl()

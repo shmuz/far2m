@@ -21,6 +21,9 @@ local MacroKey1, MacroKey2 = "CtrlShiftF12", "RCtrlShiftF12"
 
 local asrt = require "far2.assert"
 local LF   = require "far2.test.test_luafar"
+local TE   = require "far2.test.test_editor"
+local FSF  = require "far2.test.test_fsf"
+local TP   = require "far2.test.test_panel"
 
 local MT = {} -- "macrotest", this module
 local F = far.Flags
@@ -1161,216 +1164,6 @@ function MT.test_Mouse()
   asrt.num (Mouse.LastCtrlState)
 end
 
-local function test_XPanel(pan) -- (@pan: either APanel or PPanel)
-  local pNum = pan==APanel and 1 or 0
-  local panInfo = asrt.table(panel.GetPanelInfo(nil, pNum))
-  local curItem = asrt.table(panel.GetCurrentPanelItem(nil, pNum))
-  local colTypes = asrt.str(panel.GetColumnTypes(nil, pNum))
-  local colCount = select(2, colTypes:gsub("%f[%w]N", "")) -- only "Name" columns
-  local R = asrt.table(panInfo.PanelRect)
-
-  asrt.bool (pan.Bof)
-  asrt.eq   (pan.ColumnCount, colCount)
-  asrt.eq   (pan.CurPos, asrt.num(panInfo.CurrentItem))
-  asrt.eq   (pan.Current, asrt.str(curItem.FileName))
-  asrt.num  (pan.DriveType)
-  asrt.eq   (pan.Empty, panInfo.ItemsNumber==1) -- an empty panel has a ".." item
-  asrt.bool (pan.Eof)
-  asrt.eq   (pan.FilePanel, panInfo.PanelType==F.PTYPE_FILEPANEL)
-  asrt.bool (pan.Filter)
-  asrt.eq   (pan.Folder, curItem.FileAttributes:match("d")=="d")
-  asrt.eq   (pan.Format, asrt.str(panel.GetPanelFormat(nil, pNum)))
-  asrt.eq   (pan.Height, R.bottom - R.top + 1)
-  asrt.eq   (pan.HostFile, asrt.str(panel.GetPanelHostFile(nil, pNum)))
-  asrt.eq   (pan.ItemCount, panInfo.ItemsNumber)
-  asrt.eq   (pan.Left, 0 ~= band(panInfo.Flags,F.PFLAGS_PANELLEFT))
-  asrt.num  (pan.OPIFlags)
-  asrt.eq   (pan.Path, asrt.table(panel.GetPanelDirectory(nil, pNum)).Name)
-  asrt.str  (pan.Path0)
-  asrt.eq   (pan.Plugin, 0 ~= band(panInfo.Flags,F.PFLAGS_PLUGIN))
-  asrt.eq   (pan.Prefix, asrt.str(panel.GetPanelPrefix(nil, pNum)))
-  asrt.bool (pan.Root)
-  asrt.num  (pan.SelCount)
-  asrt.bool (pan.Selected)
-  asrt.eq   (pan.Type, panInfo.PanelType)
-  asrt.str  (pan.UNCPath)
-  asrt.eq   (pan.Visible, 0 ~= band(panInfo.Flags,F.PFLAGS_VISIBLE))
-  asrt.eq   (pan.Width, R.right - R.left + 1)
-
-  if pan == APanel then
-    Keys "End"  asrt.istrue(pan.Eof); asrt.istrue(pan.Empty or not pan.Bof);
-    Keys "Home" asrt.istrue(pan.Bof); asrt.istrue(pan.Empty or not pan.Eof);
-  end
-end
-
-MT.test_APanel = function() test_XPanel(APanel) end
-MT.test_PPanel = function() test_XPanel(PPanel) end
-
-local function test_Panel_Item()
-  local index = 0 -- 0 is the current element, otherwise element index
-  for pan=0,1 do
-    asrt.str    (Panel.Item(pan,index,0))  -- file name
-    asrt.str    (Panel.Item(pan,index,1))  -- short file name
-    asrt.num    (Panel.Item(pan,index,2))  -- file attributes
-    asrt.str    (Panel.Item(pan,index,3))  -- creation time
-    asrt.str    (Panel.Item(pan,index,4))  -- last access time
-    asrt.str    (Panel.Item(pan,index,5))  -- modification time
-    asrt.numint (Panel.Item(pan,index,6))  -- size
-    asrt.numint (Panel.Item(pan,index,7))  -- packed size
-    asrt.bool   (Panel.Item(pan,index,8))  -- selected
-    asrt.num    (Panel.Item(pan,index,9))  -- number of links
-    asrt.num    (Panel.Item(pan,index,10)) -- sort group
-    asrt.str    (Panel.Item(pan,index,11)) -- diz text
-    asrt.str    (Panel.Item(pan,index,12)) -- owner
-    asrt.num    (Panel.Item(pan,index,13)) -- crc32
-    asrt.num    (Panel.Item(pan,index,14)) -- position when read from the file system
-    asrt.numint (Panel.Item(pan,index,15)) -- creation time
-    asrt.numint (Panel.Item(pan,index,16)) -- last access time
-    asrt.numint (Panel.Item(pan,index,17)) -- modification time
-    asrt.num    (Panel.Item(pan,index,18)) -- number of streams
-    asrt.numint (Panel.Item(pan,index,19)) -- size of streams
-    asrt.str    (Panel.Item(pan,index,20)) -- change time
-    asrt.numint (Panel.Item(pan,index,21)) -- change time
-  end
-end
-
-local function test_Panel_SetPath()
-  -- store
-  local adir_old = panel.GetPanelDirectory(nil,1).Name
-  local pdir_old = panel.GetPanelDirectory(nil,0).Name
-  --test
-  local pdir = "/bin"
-  local adir = "/usr/bin"
-  local afile = "ldd"
-  asrt.istrue(Panel.SetPath(1, pdir))
-  asrt.istrue(Panel.SetPath(0, adir, afile))
-  asrt.eq (pdir, panel.GetPanelDirectory(nil,0).Name)
-  asrt.eq (adir, panel.GetPanelDirectory(nil,1).Name)
-  asrt.eq (panel.GetCurrentPanelItem(nil,1).FileName, afile)
-  -- restore
-  asrt.istrue(Panel.SetPath(1, pdir_old))
-  asrt.istrue(Panel.SetPath(0, adir_old))
-  actl.Commit()
-end
-
--- N=Panel.Select(panelType,Action[,Mode[,Items]])
-local function Test_Panel_Select(pan)
-  local adir_old = panel.GetPanelDirectory(nil,pan).Name -- store panel directory
-
-  local PS = asrt.func(Panel.Select)
-  local ACT_RM, ACT_ADD, ACT_INV, ACT_RST = 0,1,2,3       -- Action
-  local MOD_ALL, MOD_INDEX, MOD_LIST, MOD_MASK = 0,1,2,3  -- Mode
-
-  local dir = asrt.str(win.GetEnv("FARHOME"))
-  asrt.istrue(panel.SetPanelDirectory(nil,pan,dir))
-  local pi = asrt.table(panel.GetPanelInfo(nil,pan))
-  local ItemsCount = asrt.num(pi.ItemsNumber)-1 -- don't count ".."
-  assert(ItemsCount>=10, "not enough files to test")
-
-  --------------------------------------------------------------
-  asrt.eq(ItemsCount, PS(1-pan, ACT_ADD, MOD_ALL)) -- select all
-  pi = asrt.table(panel.GetPanelInfo(nil, pan))
-  asrt.eq(ItemsCount, pi.SelectedItemsNumber)
-
-  asrt.eq(ItemsCount, PS(1-pan, ACT_RM, MOD_ALL)) -- clear all
-  pi = asrt.table(panel.GetPanelInfo(nil, pan))
-  asrt.eq(0, pi.SelectedItemsNumber)
-
-  asrt.eq(ItemsCount, PS(1-pan, ACT_INV, MOD_ALL)) -- invert
-  pi = asrt.table(panel.GetPanelInfo(nil, pan))
-  asrt.eq(ItemsCount, pi.SelectedItemsNumber)
-
-  asrt.eq(0, PS(1-pan, ACT_INV, MOD_ALL)) -- invert again (return value is the selection count, contrary to docs)
-  pi = asrt.table(panel.GetPanelInfo(nil, pan))
-  asrt.eq(0, pi.SelectedItemsNumber)
-
-  asrt.eq(ItemsCount, PS(1-pan, ACT_RST, MOD_ALL)) -- restore (same as Ctrl+M)
-  pi = asrt.table(panel.GetPanelInfo(nil, pan))
-  asrt.eq(ItemsCount, pi.SelectedItemsNumber)
-
-  asrt.eq(ItemsCount, PS(1-pan, ACT_RM, MOD_ALL)) -- clear all
-  pi = asrt.table(panel.GetPanelInfo(nil, pan))
-  asrt.eq(0, pi.SelectedItemsNumber)
-
-  --------------------------------------------------------------
-  asrt.eq(1, PS(1-pan, ACT_ADD, MOD_INDEX, 5))
-  pi = asrt.table(panel.GetPanelInfo(nil, pan))
-  asrt.eq(1, pi.SelectedItemsNumber)
-
-  asrt.eq(1, PS(1-pan, ACT_RM, MOD_INDEX, 5))
-  pi = asrt.table(panel.GetPanelInfo(nil, pan))
-  asrt.eq(0, pi.SelectedItemsNumber)
-
-  asrt.eq(1, PS(1-pan, ACT_INV, MOD_INDEX, 5))
-  pi = asrt.table(panel.GetPanelInfo(nil, pan))
-  asrt.eq(1, pi.SelectedItemsNumber)
-
-  asrt.eq(1, PS(1-pan, ACT_INV, MOD_INDEX, 5))
-  pi = asrt.table(panel.GetPanelInfo(nil, pan))
-  asrt.eq(0, pi.SelectedItemsNumber)
-
-  --------------------------------------------------------------
-  local list = dir.."/FarEng.hlf\nFarEng.lng" -- the 1-st file with path, the 2-nd without
-  asrt.eq(2, PS(1-pan, ACT_ADD, MOD_LIST, list))
-  pi = asrt.table(panel.GetPanelInfo(nil, pan))
-  asrt.eq(2, pi.SelectedItemsNumber)
-
-  asrt.eq(2, PS(1-pan, ACT_RM, MOD_LIST, list))
-  pi = asrt.table(panel.GetPanelInfo(nil, pan))
-  asrt.eq(0, pi.SelectedItemsNumber)
-
-  asrt.eq(2, PS(1-pan, ACT_INV, MOD_LIST, list))
-  pi = asrt.table(panel.GetPanelInfo(nil, pan))
-  asrt.eq(2, pi.SelectedItemsNumber)
-
-  asrt.eq(2, PS(1-pan, ACT_INV, MOD_LIST, list))
-  pi = asrt.table(panel.GetPanelInfo(nil, pan))
-  asrt.eq(0, pi.SelectedItemsNumber)
-
-  --------------------------------------------------------------
-  local mask = "*.hlf;*.lng"
-  local count = 0
-  for i=1, pi.ItemsNumber do
-    local item = asrt.table(panel.GetPanelItem(nil,pan,i))
-    if far.CmpNameList(mask, item.FileName) then count=count+1 end
-  end
-  assert(count>1, "not enough files to test")
-
-  asrt.eq(count, PS(1-pan, ACT_ADD, MOD_MASK, mask))
-  pi = asrt.table(panel.GetPanelInfo(nil, pan))
-  asrt.eq(count, pi.SelectedItemsNumber)
-
-  asrt.eq(count, PS(1-pan, ACT_RM, MOD_MASK, mask))
-  pi = asrt.table(panel.GetPanelInfo(nil, pan))
-  asrt.eq(0, pi.SelectedItemsNumber)
-
-  asrt.eq(count, PS(1-pan, ACT_INV, MOD_MASK, mask))
-  pi = asrt.table(panel.GetPanelInfo(nil, pan))
-  asrt.eq(count, pi.SelectedItemsNumber)
-
-  asrt.eq(count, PS(1-pan, ACT_INV, MOD_MASK, mask))
-  pi = asrt.table(panel.GetPanelInfo(nil, pan))
-  asrt.eq(0, pi.SelectedItemsNumber)
-
-  panel.SetPanelDirectory(nil, pan, adir_old) -- restore panel directory
-end
-
-function MT.test_Panel()
-  test_Panel_Item()
-
-  asrt.eq (Panel.FAttr(0,":"), -1)
-  asrt.eq (Panel.FAttr(1,":"), -1)
-
-  asrt.eq (Panel.FExist(0,":"), 0)
-  asrt.eq (Panel.FExist(1,":"), 0)
-
-  Test_Panel_Select(0)
-  Test_Panel_Select(1)
-  test_Panel_SetPath()
-  asrt.func (Panel.SetPos)
-  asrt.func (Panel.SetPosIdx)
-end
-
 function MT.test_Dlg()
   Keys"F7 a b c"
   asrt.istrue(Area.Dialog)
@@ -1461,21 +1254,6 @@ function MT.test_coroutine()
   end
 end
 
-function MT.test_far_regex(printfunc, verbose)
-  local test = require "far2.test.regex.runtest"
-  local numerr = test(printfunc, verbose)
-  asrt.eq (numerr, 0)
-end
-
-function MT.test_far_DetectCodePage()
-  local test = require "far2.test.codepage.test_codepage"
-  local dir = os.getenv("FARHOME").."/Plugins/luafar/lua_share/far2/test/codepage"
-  local pass, total = test(dir)
-  asrt.num(pass)
-  asrt.num(total)
-  assert(pass > 0 and pass == total)
-end
-
 function MT.test_UserDefinedList()
   local ADDASTERISK      = 0x001
   local PACKASTERISKS    = 0x002
@@ -1533,264 +1311,17 @@ function MT.test_UserDefinedList()
   end
 end
 
-local function test_Editor_Sel_Cmdline(args)
-  for _, str in ipairs(args) do
-    asrt.istrue(Area.Shell)
-    panel.SetCmdLine(nil, str)
-
-    local act = 0
-    for opt = 0,4 do
-      asrt.eq(Editor.Sel(act,opt), 0) -- no block exists, zeros returned
-    end
-
-    local line, pos, w = 1, 13, 5
-
-    panel.SetCmdLineSelection(nil, pos, pos+w)
-    asrt.eq(Editor.Sel(act,0), line)
-    asrt.eq(Editor.Sel(act,1), pos)
-    asrt.eq(Editor.Sel(act,2), line)
-    asrt.eq(Editor.Sel(act,3), pos + w)
-    asrt.eq(Editor.Sel(act,4), 1)
-    --------------------------------------------------------------------------------------------------
-    act = 1
-    panel.SetCmdLineSelection(nil, pos, pos+w)
-
-    asrt.eq(1, Editor.Sel(act, 0)) -- set cursor at block start
-    asrt.eq(panel.GetCmdLinePos(), pos)
-
-    asrt.eq(1, Editor.Sel(act, 1)) -- set cursor next to block end
-    asrt.eq(panel.GetCmdLinePos(), pos + w + 1)
-    --------------------------------------------------------------------------------------------------
-    for act = 2,3 do
-      panel.SetCmdLinePos(nil,pos)             -- set block start
-      asrt.eq(1, Editor.Sel(act,0))          -- +++
-      panel.SetCmdLinePos(nil,pos + w)         -- set block end (it also selects the block)
-      asrt.eq(1, Editor.Sel(act,1))          -- +++
-
-      asrt.eq(Editor.Sel(0,0), 1)
-      asrt.eq(Editor.Sel(0,1), pos)
-      asrt.eq(Editor.Sel(0,2), 1)
-      asrt.eq(Editor.Sel(0,3), pos + w - 1)
-      asrt.eq(Editor.Sel(0,4), 1)
-    end
-    --------------------------------------------------------------------------------------------------
-    asrt.eq(1, Editor.Sel(4)) -- reset the block
-    asrt.eq(Editor.Sel(0,4), 0)
-
-    panel.SetCmdLine(nil, "")
-  end
-end
-
-local function test_Editor_Sel_Dialog(args)
-  Keys("F7 Del")
-  asrt.istrue(Area.Dialog)
-  local inf = actl.GetWindowInfo()
-  local hDlg = asrt.udata(inf.Id)
-  local EditPos = asrt.num(hDlg:GetFocus())
-
-  for _, str in ipairs(args) do
-    hDlg:SetText(EditPos, str)
-
-    local act = 0
-    for opt = 0,4 do
-      asrt.eq(Editor.Sel(act,opt), 0) -- no block exists, zeros returned
-    end
-
-    local tSel = { BlockType = F.BTYPE_STREAM; BlockStartLine = 1; BlockStartPos = 13,
-                   BlockWidth = 5; BlockHeight = 1; }
-
-    hDlg:SetSelection(EditPos, tSel)
-    asrt.eq(Editor.Sel(act,0), tSel.BlockStartLine)
-    asrt.eq(Editor.Sel(act,1), tSel.BlockStartPos)
-    asrt.eq(Editor.Sel(act,2), tSel.BlockStartLine)
-    asrt.eq(Editor.Sel(act,3), tSel.BlockStartPos + tSel.BlockWidth - 1) -- [-1: DIFFERENT FROM EDITOR]
-    asrt.eq(Editor.Sel(act,4), tSel.BlockType)
-    --------------------------------------------------------------------------------------------------
-    act = 1
-    hDlg:SetSelection(EditPos, tSel)
-
-    asrt.eq(1, Editor.Sel(act, 0)) -- set cursor at block start
-    local pos = asrt.table(hDlg:GetCursorPos(EditPos))
-    asrt.eq(pos.Y+1, tSel.BlockStartLine)
-    asrt.eq(pos.X+1, tSel.BlockStartPos)
-
-    asrt.eq(1, Editor.Sel(act, 1)) -- set cursor next to block end
-    pos = asrt.table(hDlg:GetCursorPos(EditPos))
-    asrt.eq(pos.Y+1, tSel.BlockStartLine)
-    asrt.eq(pos.X+1, tSel.BlockStartPos + tSel.BlockWidth)
-    --------------------------------------------------------------------------------------------------
-    for act = 2,3 do
-      hDlg:SetCursorPos(EditPos, {X=10; Y=0})  -- set block start
-      asrt.eq(1, Editor.Sel(act,0))          -- +++
-      hDlg:SetCursorPos(EditPos, {X=20; Y=0})  -- set block end (it also selects the block)
-      asrt.eq(1, Editor.Sel(act,1))          -- +++
-
-      asrt.eq(Editor.Sel(0,0), 1)
-      asrt.eq(Editor.Sel(0,1), 10+1)
-      asrt.eq(Editor.Sel(0,2), 1)
-      asrt.eq(Editor.Sel(0,3), 20)
-      asrt.eq(Editor.Sel(0,4), 1)
-    end
-    --------------------------------------------------------------------------------------------------
-    asrt.eq(1, Editor.Sel(4)) -- reset the block
-    asrt.eq(Editor.Sel(0,4), 0)
-  end
-
-  Keys("Esc")
-end
-
-local function test_Editor_Sel_Editor(args)
-  local R2T, T2R = editor.RealToTab, editor.TabToReal
-  local T2R2T = function(id, y, x)
-    return R2T(id, y, T2R(id, y, x)) -- needed when the column position is "inside" a tab
-  end
-
-  Keys("ShiftF4 Del Enter")
-  asrt.istrue(Area.Editor)
-
-  for _, str in ipairs(args) do
-    Keys("CtrlA Del")
-
-    for k=1,8 do
-      editor.InsertString()
-      editor.SetString(nil, k, str)
-    end
-
-    local act = 0
-    for opt = 0,4 do
-      asrt.eq(Editor.Sel(act,opt), 0) -- no block exists, zeros returned
-    end
-
-    local line, pos, w, h = 3, 13, 5, 4
-
-    for ii=1,2 do
-      local typ = ii==1 and "BTYPE_STREAM" or "BTYPE_COLUMN"
-      local ref_x1 = (ii==1 and R2T or T2R2T)(nil, line, pos)
-      local ref_x2 = (ii==1 and R2T or T2R2T)(nil, line-1+h, pos+w)
-
-      asrt.istrue(editor.Select(nil, typ, line, pos, w, h)) -- select the block
-      asrt.eq(Editor.Sel(act,0), line)      -- get block start line
-      asrt.eq(Editor.Sel(act,1), ref_x1)    -- get block start pos
-      asrt.eq(Editor.Sel(act,2), line-1+h)  -- get block end line
-      asrt.eq(Editor.Sel(act,3), ref_x2)    -- get block end pos
-      asrt.eq(Editor.Sel(act,4), ii)        -- get block type
-    end
-    --------------------------------------------------------------------------------------------------
-    act = 1
-    for ii=1,2 do
-      local typ = ii==1 and "BTYPE_STREAM" or "BTYPE_COLUMN"
-      local ref_x1 = ii==1 and pos or T2R(nil, line, pos) or pos
-      local ref_x2 = ii==1 and pos+w or T2R(nil, line-1+h, pos+w)
-
-      local inf
-      asrt.istrue(editor.Select(nil, typ, line, pos, w, h)) -- select the block
-
-      asrt.eq(1, Editor.Sel(act, 0)) -- set cursor at block start
-      inf = editor.GetInfo()
-      asrt.eq(inf.CurLine, line)
-      asrt.eq(inf.CurPos, ref_x1)
-
-      asrt.eq(1, Editor.Sel(act, 1)) -- set cursor next to block end
-      inf = editor.GetInfo()
-      asrt.eq(inf.CurLine, line-1+h)
-      asrt.eq(inf.CurPos, ref_x2)
-    end
-    --------------------------------------------------------------------------------------------------
-    local y1,x1,y2,x2 = 2,10,6,20
-    for act = 2,3 do
-      editor.SetPosition(nil,y1,x1)    -- set block start
-      asrt.eq(1, Editor.Sel(act,0))  -- +++
-      editor.SetPosition(nil,y2,x2)    -- set block end (it also selects the block)
-      asrt.eq(1, Editor.Sel(act,1))  -- +++
-
-      local ref_x1 = (act==2 and R2T or T2R2T)(nil,y1,x1)
-      local ref_x2 = (act==2 and R2T or T2R2T)(nil,y2,x2)
-
-      asrt.eq(Editor.Sel(0,0), y1)                 -- get block start line
-      asrt.eq(Editor.Sel(0,1), ref_x1)             -- get block start pos
-      asrt.eq(Editor.Sel(0,2), y2)                 -- get block end line
-      asrt.eq(Editor.Sel(0,3), ref_x2)             -- get block end pos
-      asrt.eq(Editor.Sel(0,4), act==2 and 1 or 2)  -- get block type
-    end
-    --------------------------------------------------------------------------------------------------
-    asrt.eq(1, Editor.Sel(4)) -- reset the block
-    asrt.eq(Editor.Sel(0,4), 0)
-  end
-
-  asrt.istrue(editor.Quit())
-end
-
-local function test_Editor_Misc()
-  local fname = far.MkTemp()
-  local flags = {EF_NONMODAL=1, EF_IMMEDIATERETURN=1, EF_DISABLEHISTORY=1, EF_DELETEONCLOSE=1}
-  asrt.eq(editor.Editor(fname,nil,nil,nil,nil,nil,flags), F.EEC_MODIFIED)
-  asrt.istrue(Area.Editor)
-
-  local EI = asrt.table(editor.GetInfo())
-
-  local str = ("123456789-"):rep(4)
-  local str2, num
-
-  -- test Editor.Value
-  editor.SetString(nil,1,str)
-  asrt.eq(Editor.Value, str)
-
-  -- test insertion with overtype=OFF
-  editor.SetString(nil,1,str)
-  editor.SetPosition(nil,1,1)
-  editor.InsertText(nil, "AB")
-  asrt.eq(Editor.Value, "AB"..str)
-
-  -- test insertion with overtype=ON
-  editor.SetString(nil,1,str)
-  Keys("Ins")
-  editor.SetPosition(nil,1,1)
-  editor.InsertText(nil, "CD")
-  asrt.eq(Editor.Value, "CD"..str:sub(3))
-  Keys("Ins")
-
-  -- test insertion beyond EOL (overtype=ON then OFF)
-  num = 20
-  asrt.istrue(editor.SetParam(nil, "ESPT_CURSORBEYONDEOL", true))
-  str2 = str .. (" "):rep(num) .. "AB"
-  for _=1,2 do
-    Keys("Ins")
-    editor.SetString(nil,1,str)
-    editor.SetPosition(nil, 1, #str + 1 + num)
-    editor.InsertText(nil, "AB")
-    asrt.eq(Editor.Value, str2)
-  end
-  asrt.istrue(editor.SetParam(nil, "ESPT_CURSORBEYONDEOL", band(EI.Options, F.EOPT_CURSORBEYONDEOL) ~= 0))
-
-  editor.Quit()
-end
-
-function MT.test_Editor()
-  local args = {
-    ("123456789-"):rep(4),     -- plain ASCII
-    ("12\t4\t6789-"):rep(4),   -- includes tabs
-    ("12🔥4🔥6789-"):rep(4),   -- includes 🔥 (a multi-byte double-width character)
-    ("1Ю23456789-"):rep(4),    -- insert 'Ю' (a multi-byte character) into position 2
-    ("1Ю2\t4\t6789-"):rep(4),  -- ditto
-    ("1Ю2🔥4🔥6789-"):rep(4),  -- ditto
-  }
-  test_Editor_Sel_Cmdline(args)
-  test_Editor_Sel_Dialog(args)
-  test_Editor_Sel_Editor(args)
-  test_Editor_Misc()
-end
-
 -- test F3,F4,F8 operations when the panels are hidden
 function MT.test_F3_F4_F8()
   local farhome = asrt.str(os.getenv("FARHOME"))
   asrt.istrue(panel.SetPanelDirectory(nil,1,farhome))
 
   local API = panel.GetPanelInfo(nil,1)
-  asrt.neq(0, bit64.band(API.Flags, F.PFLAGS_VISIBLE))
+  asrt.neq(0, band(API.Flags, F.PFLAGS_VISIBLE))
 
   Keys("CtrlO")
   API = panel.GetPanelInfo(nil,1)
-  asrt.eq(0, bit64.band(API.Flags, F.PFLAGS_VISIBLE))
+  asrt.eq(0, band(API.Flags, F.PFLAGS_VISIBLE))
   assert(API.ItemsNumber >= 16)
 
   local R = asrt.table(actl.GetFarRect())
@@ -1903,30 +1434,27 @@ function MT.test_all()
   asrt.istrue(Area.Shell, "Run these tests from the Shell area.")
   asrt.isfalse(APanel.Plugin or PPanel.Plugin, "Run these tests when neither of panels is a plugin panel.")
 
-  LF.test_luafar()
-
   MT.test_areas()
   MT.test_mf()
   MT.test_CmdLine()
   MT.test_Help()
   MT.test_Dlg()
   MT.test_Drv()
-  MT.test_Editor()
   MT.test_Far()
   MT.test_Menu()
   MT.test_Mouse()
   MT.test_Object()
-  MT.test_Panel()
   MT.test_Plugin()
-  MT.test_APanel()
-  MT.test_PPanel()
   MT.test_mantis_1722()
   MT.test_coroutine()
   MT.test_UserDefinedList()
-  MT.test_far_regex( --[[far.Log, true]] ) -- external test files
-  MT.test_far_DetectCodePage() -- external
   MT.test_F3_F4_F8()
   MT.test_Delete_Wipe()
+
+  FSF.test_fsf_all()
+  LF.test_luafar_all()
+  TE.test_editor_all()
+  TP.test_panel_all()
 
   actl.RedrawAll()
 end
