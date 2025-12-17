@@ -198,7 +198,6 @@ local function test_Misc()
   local EI = asrt.table(editor.GetInfo())
 
   local str = ("123456789-"):rep(4)
-  local str2, num
 
   -- test Editor.Value
   editor.SetString(nil,1,str)
@@ -219,13 +218,13 @@ local function test_Misc()
   Keys("Ins")
 
   -- test insertion beyond EOL (overtype=ON then OFF)
-  num = 20
+  local num = 20
   asrt.istrue(editor.SetParam(nil, "ESPT_CURSORBEYONDEOL", true))
-  str2 = str .. (" "):rep(num) .. "AB"
+  local str2 = str .. (" "):rep(num) .. "AB"
   for _=1,2 do
     Keys("Ins")
     editor.SetString(nil,1,str)
-    editor.SetPosition(nil, 1, #str + 1 + num)
+    editor.SetPosition(nil, 1, str:len() + 1 + num)
     editor.InsertText(nil, "AB")
     asrt.eq(Editor.Value, str2)
   end
@@ -259,7 +258,7 @@ local function test_issue_3129()
   asrt.eq (k, 3)
 end
 
-local function test_editor_all()
+local function test_Editor_Sel()
   local args = {
     ("123456789-"):rep(4),     -- plain ASCII
     ("12\t4\t6789-"):rep(4),   -- includes tabs
@@ -271,8 +270,42 @@ local function test_editor_all()
   test_Sel_Cmdline(args)
   test_Sel_Dialog(args)
   test_Sel_Editor(args)
+end
+
+local function test_multiple_instances()
+  local flags = {EF_NONMODAL=1, EF_IMMEDIATERETURN=1, EF_DISABLEHISTORY=1, EF_DELETEONCLOSE=1}
+  local N = 10
+  local ids = {}
+
+  asrt.eq(1, actl.GetWindowCount())
+  for k=1,N do
+    local fname = far.InMyTemp("instance-"..k)
+    asrt.eq(editor.Editor(fname,nil,nil,nil,nil,nil,flags), F.EEC_MODIFIED)
+    ids[k] = asrt.table(editor.GetInfo()).EditorID
+  end
+  asrt.eq(1 + N, actl.GetWindowCount())
+
+  for k=1,N do
+    asrt.istrue(editor.SetString(ids[k], 1, "string-"..k))
+  end
+
+  for k=N,1,-1 do
+    asrt.eq(editor.GetString(ids[k], 1, 3), "string-"..k)
+  end
+
+  for k=1,N do
+    asrt.istrue(editor.Quit(ids[k]))
+  end
+
+  asrt.eq(1, actl.GetWindowCount())
+  asrt.istrue(Area.Shell)
+end
+
+local function test_editor_all()
+  test_Editor_Sel()
   test_Misc()
   test_issue_3129()
+  test_multiple_instances()
 end
 
 return {
