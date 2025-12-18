@@ -3,6 +3,10 @@ local asrt = {}
 
 function asrt.eq(a,b,m)      assert(a == b, m or AF)               return true; end
 function asrt.neq(a,b,m)     assert(a ~= b, m or AF)               return true; end
+function asrt.lt(a,b,m)      assert(a < b,  m or AF)               return true; end
+function asrt.gt(a,b,m)      assert(a > b,  m or AF)               return true; end
+function asrt.lte(a,b,m)     assert(a <= b, m or AF)               return true; end
+function asrt.gte(a,b,m)     assert(a >= b, m or AF)               return true; end
 function asrt.num(v,m)       assert(type(v)=="number", m or AF)    return v; end
 function asrt.str(v,m)       assert(type(v)=="string", m or AF)    return v; end
 function asrt.table(v,m)     assert(type(v)=="table", m or AF)     return v; end
