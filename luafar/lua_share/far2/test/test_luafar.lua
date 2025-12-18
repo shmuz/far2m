@@ -1085,20 +1085,10 @@ function LF.test_far_regex(printfunc, verbose)
   asrt.eq (numerr, 0)
 end
 
-function LF.test_far_DetectCodePage()
-  local test = require "far2.test.codepage.test_codepage"
-  local dir = os.getenv("FARHOME").."/Plugins/luafar/lua_share/far2/test/codepage"
-  local pass, total = test(dir)
-  asrt.num(pass)
-  asrt.num(total)
-  assert(pass > 0 and pass == total)
-end
-
 function LF.test_luafar_all()
   LF.test_AdvControl()
   LF.test_bit64()
   LF.test_dialog()
-  LF.test_far_DetectCodePage() -- external
   LF.test_far_GetDirList()
   LF.test_far_GetMsg()
   LF.test_far_GetPluginDirList()

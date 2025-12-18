@@ -276,28 +276,72 @@ local function test_multiple_instances()
   local flags = {EF_NONMODAL=1, EF_IMMEDIATERETURN=1, EF_DISABLEHISTORY=1, EF_DELETEONCLOSE=1}
   local N = 10
   local ids = {}
+  local MakeText = function(idx) return "This is a string number "..idx end
+  local MakeFName = function(idx) return far.InMyTemp("instance-"..idx) end
 
+  -- editor.Editor
   asrt.eq(1, actl.GetWindowCount())
   for k=1,N do
-    local fname = far.InMyTemp("instance-"..k)
-    asrt.eq(editor.Editor(fname,nil,nil,nil,nil,nil,flags), F.EEC_MODIFIED)
+    asrt.eq(editor.Editor(MakeFName(k), nil,nil,nil,nil,nil, flags), F.EEC_MODIFIED)
     ids[k] = asrt.table(editor.GetInfo()).EditorID
   end
+  asrt.eq(ids[N] - ids[1], N - 1)
   asrt.eq(1 + N, actl.GetWindowCount())
 
+  -- editor.SetString
+  for k=1,N do asrt.istrue(editor.SetString(ids[k], 1, MakeText(k))) end
+
+  -- editor.AddColor
+  local colstart, colend, colbase = 2, 5, 1
   for k=1,N do
-    asrt.istrue(editor.SetString(ids[k], 1, "string-"..k))
+    asrt.istrue(editor.AddColor(ids[k], 1, colstart+k, colend+k, nil, colbase+k))
   end
 
+  -- GetString, GetColor, DelColor
   for k=N,1,-1 do
-    asrt.eq(editor.GetString(ids[k], 1, 3), "string-"..k)
+    local ID = ids[k]
+    -- inspect text
+    local str = asrt.table(editor.GetString(ID, 1))
+    asrt.eq(str.StringText, MakeText(k))
+    -- inspect color
+    asrt.isnil(editor.GetColor(ID, 1, 2))    -- coloritem 2 does not exist
+    local clr = asrt.table(editor.GetColor(ID, 1, 1))
+    asrt.eq(clr.StartPos, colstart+k)
+    asrt.eq(clr.EndPos, colend+k)
+    asrt.eq(clr.BaseColor, colbase+k)
+    asrt.istrue(editor.DelColor(ID, 1))
+    asrt.isnil(editor.GetColor(ID, 1, 1))    -- coloritem 1 was deleted
   end
 
+  -- editor.Select
+  local selstart, selwidth = 2, 3
+  for k=1,N do asrt.istrue(editor.Select(ids[k], "BTYPE_STREAM", 1, selstart + k, selwidth, 1)) end
+
+  -- GetFileName, GetInfo, GetSelection
   for k=1,N do
-    asrt.istrue(editor.Quit(ids[k]))
+    local ID = ids[k]
+    -- editor.GetFileName
+    asrt.eq(editor.GetFileName(ID), MakeFName(k))
+    -- editor.GetInfo
+    local info = asrt.table(editor.GetInfo(ID))
+    asrt.eq(info.EditorID, ID)
+    asrt.eq(info.BlockType, F.BTYPE_STREAM)
+    asrt.eq(info.BlockStartLine, 1)
+    asrt.eq(info.FileName, MakeFName(k))
+    -- editor.GetSelection
+    local sel = asrt.table(editor.GetSelection(ID))
+    asrt.eq(sel.BlockType, F.BTYPE_STREAM)
+    asrt.eq(sel.StartLine, 1)
+    asrt.eq(sel.StartPos, selstart + k)
+    asrt.eq(sel.EndLine, 1)
+    asrt.eq(sel.EndPos, selstart + k + selwidth - 1)
   end
 
-  asrt.eq(1, actl.GetWindowCount())
+  -- editor.Quit
+  for k = N, 1, -1 do
+    asrt.istrue(editor.Quit(ids[k]))
+    asrt.eq(k, actl.GetWindowCount())
+  end
   asrt.istrue(Area.Shell)
 end
 

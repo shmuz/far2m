@@ -1,6 +1,7 @@
 -- test Far Standard Functions
 
 local asrt = require "far2.assert"
+local F = far.Flags
 
 
 local function test_Clipboard()
@@ -84,13 +85,17 @@ local function test_ProcessName()
 end
 
 
-local function test_text_funcs()
-  asrt.eq(far.ConvertPath([[/foo/bar/../../abc]], "CPM_FULL"), [[/abc]])
+local function test_path_funcs()
+  local dir = asrt.table(panel.GetPanelDirectory(nil,1)).Name
+  asrt.eq (far.GetCurrentDirectory(), dir)
+  asrt.eq (far.ConvertPath("abcd"), win.JoinPath(dir, "abcd"))
+  asrt.eq (far.ConvertPath([[/foo/bar/../../abc]], "CPM_FULL"), [[/abc]])
+end
 
+
+local function test_text_funcs()
   asrt.eq(far.FormatFileSize(123456, 8), "  123456")
   asrt.eq(far.FormatFileSize(123456, -8), "123456  ")
-
-  asrt.str (far.GetCurrentDirectory())
 
   asrt.istrue  (far.LIsAlpha("A"))
   asrt.istrue  (far.LIsAlpha("Я"))
@@ -119,41 +124,43 @@ local function test_text_funcs()
   asrt.eq (far.LLowerBuf("abc-ABC-эюя-ЭЮЯ-7;"), "abc-abc-эюя-эюя-7;")
   asrt.eq (far.LUpperBuf("abc-ABC-эюя-ЭЮЯ-7;"), "ABC-ABC-ЭЮЯ-ЭЮЯ-7;")
 
-  assert(far.LStricmp("abc","def") < 0)
-  assert(far.LStricmp("def","abc") > 0)
-  assert(far.LStricmp("abc","abc") == 0)
-  assert(far.LStricmp("ABC","def") < 0)
-  assert(far.LStricmp("DEF","abc") > 0)
-  assert(far.LStricmp("ABC","abc") == 0)
+  asrt.lt (far.LStricmp("abc", "def") , 0)
+  asrt.gt (far.LStricmp("def", "abc") , 0)
+  asrt.eq (far.LStricmp("abc", "abc") , 0)
+  asrt.lt (far.LStricmp("ABC", "def") , 0)
+  asrt.gt (far.LStricmp("DEF", "abc") , 0)
+  asrt.eq (far.LStricmp("ABC", "abc") , 0)
 
-  assert(far.LStrnicmp("abc","def",3) < 0)
-  assert(far.LStrnicmp("def","abc",3) > 0)
-  assert(far.LStrnicmp("abc","abc",3) == 0)
-  assert(far.LStrnicmp("ABC","def",3) < 0)
-  assert(far.LStrnicmp("DEF","abc",3) > 0)
-  assert(far.LStrnicmp("ABC","abc",3) == 0)
-  assert(far.LStrnicmp("111abc","111def",3) == 0)
-  assert(far.LStrnicmp("111abc","111def",4) < 0)
+  asrt.lt (far.LStrnicmp("abc", "def", 3), 0)
+  asrt.gt (far.LStrnicmp("def", "abc", 3), 0)
+  asrt.eq (far.LStrnicmp("abc", "abc", 3), 0)
+  asrt.lt (far.LStrnicmp("ABC", "def", 3), 0)
+  asrt.gt (far.LStrnicmp("DEF", "abc", 3), 0)
+  asrt.eq (far.LStrnicmp("ABC", "abc", 3), 0)
+  asrt.eq (far.LStrnicmp("111abc", "111def", 3), 0)
+  asrt.lt (far.LStrnicmp("111abc", "111def", 4), 0)
 
-  assert(far.LStrcmp("abc","def") < 0)
-  assert(far.LStrcmp("def","abc") > 0)
-  assert(far.LStrcmp("abc","abc") == 0)
-  assert(far.LStrcmp("ABC","def") < 0)
-  assert(far.LStrcmp("DEF","abc") < 0)
-  assert(far.LStrcmp("ABC","abc") < 0)
+  asrt.lt (far.LStrcmp("abc", "def"), 0)
+  asrt.gt (far.LStrcmp("def", "abc"), 0)
+  asrt.eq (far.LStrcmp("abc", "abc"), 0)
+  asrt.lt (far.LStrcmp("ABC", "def"), 0)
+  asrt.lt (far.LStrcmp("DEF", "abc"), 0)
+  asrt.lt (far.LStrcmp("ABC", "abc"), 0)
 
-  assert(far.LStrncmp("abc","def",3) < 0)
-  assert(far.LStrncmp("def","abc",3) > 0)
-  assert(far.LStrncmp("abc","abc",3) == 0)
-  assert(far.LStrncmp("ABC","def",3) < 0)
-  assert(far.LStrncmp("DEF","abc",3) < 0)
-  assert(far.LStrncmp("ABC","abc",3) < 0)
-  assert(far.LStrncmp("111abc","111def",3) == 0)
-  assert(far.LStrncmp("111abc","111def",4) < 0)
+  asrt.lt (far.LStrncmp("abc", "def", 3), 0)
+  asrt.gt (far.LStrncmp("def", "abc", 3), 0)
+  asrt.eq (far.LStrncmp("abc", "abc", 3), 0)
+  asrt.lt (far.LStrncmp("ABC", "def", 3), 0)
+  asrt.lt (far.LStrncmp("DEF", "abc", 3), 0)
+  asrt.lt (far.LStrncmp("ABC", "abc", 3), 0)
+  asrt.eq (far.LStrncmp("111abc", "111def", 3), 0)
+  asrt.lt (far.LStrncmp("111abc", "111def", 4), 0)
 end
 
 
 local function test_Cells()
+  asrt.eq(6, far.StrCellsCount("abcdef"))
+  asrt.eq(4, far.StrCellsCount("abcdef", 4))
   asrt.eq(6, far.StrCellsCount("🔥🔥🔥"))
   asrt.eq(4, far.StrCellsCount("🔥🔥🔥", 2))
 
@@ -173,9 +180,92 @@ local function test_Cells()
 end
 
 
+local function test_DetectCodePage()
+  asrt.func(far.DetectCodePage)
+  local test = require "far2.test.codepage.test_codepage"
+  local dir = os.getenv("FARHOME").."/Plugins/luafar/lua_share/far2/test/codepage"
+  local pass, total = test(dir)
+  asrt.num(pass)
+  asrt.num(total)
+  assert(pass > 0 and pass == total)
+end
+
+
+local function test_group_owner_links()
+  local stinfo = asrt.table(far.PluginStartupInfo())
+  local fname = asrt.str(stinfo.ModuleName)
+  --------
+  local group = asrt.str(far.GetFileGroup(nil, fname))
+  asrt.neq(group, "")
+  --------
+  local owner = asrt.str(far.GetFileOwner(nil, fname))
+  asrt.neq(owner, "")
+  --------
+  asrt.eq(1, far.GetNumberOfLinks(fname))
+  --------
+  local linkname = far.InMyTemp("templink-1")
+  win.DeleteFile(linkname)
+  asrt.istrue(far.MkLink(fname, linkname))
+  local dest = asrt.str(far.GetReparsePointInfo(linkname))
+  asrt.eq(dest, fname)
+  asrt.istrue(win.DeleteFile(linkname))
+  --------
+end
+
+
+local function test_misc()
+  asrt.func(far.BackgroundTask)
+end
+
+
+local function test_keys_names()
+  local VK = asrt.table(win.GetVirtualKeys())
+  local rec, key
+  -------- far.InputRecordToKey
+  rec = {
+    EventType = asrt.num(F.KEY_EVENT);
+    VirtualKeyCode = asrt.num(VK.INSERT);
+    ControlKeyState = asrt.num(F.LEFT_CTRL_PRESSED);
+  }
+  key = asrt.num(far.InputRecordToKey(rec))
+  asrt.eq(key, F.KEY_CTRL + F.KEY_NUMPAD0) -- !!! VK.INSERT converts to KEY_NUMPAD0 (also in far3)
+
+  -------- far.InputRecordToKey
+  rec.VirtualKeyCode = asrt.num(VK.NUMPAD0);
+  key = asrt.num(far.InputRecordToKey(rec))
+  asrt.eq(key, F.KEY_CTRL + F.KEY_NUMPAD0)
+
+  -------- far.KeyToName
+  asrt.eq(far.KeyToName(F.KEY_CTRL + F.KEY_NUMPAD0), "CtrlNum0")
+  asrt.eq(far.KeyToName(F.KEY_CTRL + F.KEY_INS), "CtrlIns")
+
+  -------- far.NameToKey
+  asrt.eq(far.NameToKey("CtrlNum0"), F.KEY_CTRL + F.KEY_NUMPAD0)
+  asrt.eq(far.NameToKey("CtrlIns"), F.KEY_CTRL + F.KEY_INS)
+
+  -------- far.NameToInputRecord
+  rec = asrt.table(far.NameToInputRecord("CtrlNum0"))
+  asrt.eq(rec.EventType, F.KEY_EVENT)
+  asrt.eq(rec.VirtualKeyCode, VK.NUMPAD0)
+  asrt.eq(rec.ControlKeyState, F.LEFT_CTRL_PRESSED)
+
+  -------- far.NameToInputRecord
+  rec = asrt.table(far.NameToInputRecord("CtrlIns"))
+  asrt.eq(rec.EventType, F.KEY_EVENT)
+  asrt.eq(rec.VirtualKeyCode, VK.INSERT)
+  asrt.eq(rec.ControlKeyState, F.LEFT_CTRL_PRESSED)
+  --------
+end
+
+
 local function test_fsf_all()
   test_Cells()
   test_Clipboard()
+  test_DetectCodePage() -- external
+  test_group_owner_links()
+  test_keys_names()
+  test_misc()
+  test_path_funcs()
   test_ProcessName()
   test_text_funcs()
 end
