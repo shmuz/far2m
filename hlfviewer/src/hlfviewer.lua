@@ -21,8 +21,14 @@ local function Trim(s)
   return s:match("^%s*(.-)%s*$")
 end
 
-local function GetPluginConfig()
-  return Sett.mload(SETTINGS_KEY, SETTINGS_NAME) or setmetatable({}, { __index = DefOpt })
+local function LoadConfig()
+  Opt = {}
+  local loaded = Sett.mload(SETTINGS_KEY, SETTINGS_NAME) or {}
+  for k in pairs(DefOpt) do
+    if loaded[k] == nil then Opt[k] = DefOpt[k]
+    else Opt[k] = loaded[k]
+    end
+  end
 end
 
 local function FileExists(Name)
@@ -349,6 +355,6 @@ function export.Configure()
 end
 
 do
-  Opt = GetPluginConfig()
+  LoadConfig()
   --far.ReloadDefaultScript = true
 end
