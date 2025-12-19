@@ -7,42 +7,22 @@ local SETTINGS_KEY  = nil
 local SETTINGS_NAME = "settings"
 
 local F = far.Flags
-local VK = win.GetVirtualKeys()
 
-local _DefOpt = {
+local DefOpt = {
   ProcessEditorInput = true;
-  CheckMaskFile      = true;
-  MaskFile           = "*.hlf";
+  CheckFileMask      = true;
+  FileMask           = "*.hlf";
   AssignKeyName      = "F1";
-  RecKey             = {};
   Style              = 0;
 }
 local Opt
-
-local _DefKey = {
-  EventType = F.KEY_EVENT;
-  KeyDown = true;
-  RepeatCount = 1;
-  VirtualKeyCode = VK.F1;
-  VirtualScanCode = 0x3B;
-  UnicodeChar = nil;
-  ControlKeyState = 0;
-}
 
 local function Trim(s)
   return s:match("^%s*(.-)%s*$")
 end
 
 local function GetPluginConfig()
-  Opt = Sett.mload(SETTINGS_KEY, SETTINGS_NAME) or _DefOpt
-
-  local rec = far.NameToInputRecord(Opt.AssignKeyName)
-  if rec then
-    Opt.RecKey = rec
-  else
-    Opt.AssignKeyName = "F1"
-    Opt.RecKey=_DefKey;
-  end
+  return Sett.mload(SETTINGS_KEY, SETTINGS_NAME) or setmetatable({}, { __index = DefOpt })
 end
 
 local function FileExists(Name)
@@ -50,8 +30,8 @@ local function FileExists(Name)
 end
 
 local function CheckExtension(ptrName)
-  if Opt.CheckMaskFile and Opt.MaskFile ~= "" then
-    return far.ProcessName("PN_CMPNAMELIST", Opt.MaskFile, ptrName, "PN_SKIPPATH")
+  if Opt.CheckFileMask and Opt.FileMask ~= "" then
+    return far.ProcessName("PN_CMPNAMELIST", Opt.FileMask, ptrName, "PN_SKIPPATH")
   end
   return true
 end
@@ -117,7 +97,7 @@ local function IsHlf()
   local ei = editor.GetInfo()
   local CheckedHlf=true
 
-  if Opt.CheckMaskFile then
+  if Opt.CheckFileMask then
     local FileName = editor.GetFileName();
     if FileName then
       CheckedHlf = CheckExtension(FileName)
@@ -322,45 +302,20 @@ function export.GetPluginInfo()
   }
 end
 
-local function inputrecord_compare (r1,r2)
-  if r1.EventType == r2.EventType then
-    if r1.EventType == F.KEY_EVENT then
-        local RMASK = F.RIGHT_ALT_PRESSED + F.LEFT_ALT_PRESSED + F.RIGHT_CTRL_PRESSED
-                      + F.LEFT_CTRL_PRESSED + F.SHIFT_PRESSED
-
-        return r1.VirtualKeyCode == r2.VirtualKeyCode and
-          bit64.band(r1.ControlKeyState,RMASK) == bit64.band(r2.ControlKeyState,RMASK)
-
-    elseif r1.EventType == F.MOUSE_EVENT then
-        return r1.ButtonState == r2.ButtonState and
-          r1.ControlKeyState == r2.ControlKeyState and
-          r1.EventFlags == r2.EventFlags
-    end
-  end
-
-  return false;
-end
-
 function export.ProcessEditorInput (Rec)
-  local Result = false
-
-  if Opt.ProcessEditorInput then
-    if Rec.EventType==F.KEY_EVENT and Rec.KeyDown and inputrecord_compare(Rec,Opt.RecKey) then
-      local ei = editor.GetInfo()
-
-      if IsHlf() or (Opt.CheckMaskFile and CheckExtension(ei.FileName)) then
-        Result = ShowCurrentHelpTopic()
-      end
-
+  if Opt.ProcessEditorInput
+      and Rec.EventType == F.KEY_EVENT
+      and Rec.KeyDown
+      and Opt.AssignKeyName
+      and Opt.AssignKeyName == far.InputRecordToName(Rec)
+  then
+    if IsHlf() or (Opt.CheckFileMask and CheckExtension(editor.GetFileName())) then
+      return ShowCurrentHelpTopic()
     end
   end
-
-  return Result
 end
 
 function export.Configure()
-  GetPluginConfig()
-
   local X1 = math.max(M.MProcessEditorInput:len(), M.MCheckMaskFile:len()) + 10
   local Items = {
     guid="7A3A74E8-505E-482B-A7F3-2ECE6AC41650";
@@ -368,14 +323,14 @@ function export.Configure()
     width=0;
     { tp="dbox";  text=M.MConfig; },
     { tp="chbox"; text=M.MProcessEditorInput; val=Opt.ProcessEditorInput; name="ProcessEditorInput"; },
-    { tp="chbox"; text=M.MCheckMaskFile;      val=Opt.CheckMaskFile;      name="CheckMaskFile"; },
+    { tp="chbox"; text=M.MCheckMaskFile;      val=Opt.CheckFileMask;      name="CheckFileMask"; },
     { tp="edit";  x1=X1; ystep=-1; width=28;  val=Opt.AssignKeyName;      name="AssignKeyName"; },
-    { tp="edit";  x1=X1;           width=28;  val=Opt.MaskFile;           name="MaskFile"; },
+    { tp="edit";  x1=X1;           width=28;  val=Opt.FileMask;           name="FileMask"; },
     { tp="sep"; },
     { tp="text";  text=M.MStyle; },
-    { tp="rbutt"; text=M.MStr1;               val=Opt.Style==0;           name="Style0"; },
-    { tp="rbutt"; text=M.MStr2;               val=Opt.Style==1;           name="Style1"; },
-    { tp="rbutt"; text=M.MStr3;               val=Opt.Style==2;           name="Style2"; },
+    { tp="rbutt"; text=M.MStyle1;             val=Opt.Style==0;           name="Style0"; },
+    { tp="rbutt"; text=M.MStyle2;             val=Opt.Style==1;           name="Style1"; },
+    { tp="rbutt"; text=M.MStyle3;             val=Opt.Style==2;           name="Style2"; },
     { tp="sep"; },
     { tp="butt"; text=M.MOk;     centergroup=1; default=1; },
     { tp="butt"; text=M.MCancel; centergroup=1; cancel=1; },
@@ -383,26 +338,17 @@ function export.Configure()
 
   local out = sd.New(Items):Run()
   if out then
-    Opt.AssignKeyName = out.AssignKeyName
-    local rec = far.NameToInputRecord(Opt.AssignKeyName)
-    if rec then
-      Opt.RecKey = rec
-    else
-      Opt.AssignKeyName = "F1"
-      Opt.RecKey = _DefKey
-    end
     Opt.ProcessEditorInput = out.ProcessEditorInput
-    Opt.CheckMaskFile      = out.CheckMaskFile
+    Opt.CheckFileMask      = out.CheckFileMask
     Opt.AssignKeyName      = out.AssignKeyName
-    Opt.MaskFile           = out.MaskFile
+    Opt.FileMask           = out.FileMask
     Opt.Style = out.Style2 and 2 or out.Style1 and 1 or 0
-
     Sett.msave(SETTINGS_KEY, SETTINGS_NAME, Opt)
     return true
   end
 end
 
 do
-  GetPluginConfig()
+  Opt = GetPluginConfig()
   --far.ReloadDefaultScript = true
 end
