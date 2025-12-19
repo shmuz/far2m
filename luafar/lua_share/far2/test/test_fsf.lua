@@ -220,20 +220,20 @@ end
 
 local function test_keys_names()
   local VK = asrt.table(win.GetVirtualKeys())
-  local rec, key
   -------- far.InputRecordToKey
-  rec = {
-    EventType = asrt.num(F.KEY_EVENT);
-    VirtualKeyCode = asrt.num(VK.INSERT);
-    ControlKeyState = asrt.num(F.LEFT_CTRL_PRESSED);
-  }
-  key = asrt.num(far.InputRecordToKey(rec))
-  asrt.eq(key, F.KEY_CTRL + F.KEY_NUMPAD0) -- !!! VK.INSERT converts to KEY_NUMPAD0 (also in far3)
+  local rec = { EventType = asrt.num(F.KEY_EVENT); }
 
-  -------- far.InputRecordToKey
-  rec.VirtualKeyCode = asrt.num(VK.NUMPAD0);
-  key = asrt.num(far.InputRecordToKey(rec))
-  asrt.eq(key, F.KEY_CTRL + F.KEY_NUMPAD0)
+  local states = { F.LEFT_CTRL_PRESSED, F.LEFT_CTRL_PRESSED + F.ENHANCED_KEY }
+  local codes = { VK.INSERT, VK.NUMPAD0 }
+  for st = 1,#states do
+    rec.ControlKeyState = states[st]
+    local key_ref = F.KEY_CTRL + (st==1 and F.KEY_NUMPAD0 or F.KEY_INS)
+    for cd = 1,#codes do -- nothing depends on it (ENHANCED_KEY determines the result)
+      rec.VirtualKeyCode = codes[cd]
+      local key = asrt.num(far.InputRecordToKey(rec))
+      asrt.eq(key, key_ref)
+    end
+  end
 
   -------- far.KeyToName
   asrt.eq(far.KeyToName(F.KEY_CTRL + F.KEY_NUMPAD0), "CtrlNum0")

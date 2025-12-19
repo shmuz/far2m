@@ -5136,7 +5136,7 @@ static int far_MakeMenuItems (lua_State *L)
 		char buf_prefix[64], buf_space[64], buf_format[64];
 		int maxno = 0;
 
-		for (int i=argn; i; maxno++,i/=10) {}
+		for (int i=argn; i; i/=10) ++maxno;
 		size_t len_prefix = sprintf(buf_space, "%*s%s ", maxno, "", delim);
 		sprintf(buf_format, "%%%dd%%s ", maxno);
 
