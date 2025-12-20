@@ -2071,57 +2071,6 @@ FarKey CalcKeyCode(INPUT_RECORD *rec, int RealKey, int *NotMacros)
 
 	if (AltPressed && !CtrlPressed && !ShiftPressed)
 	{
-#if 0
-
-		if (!AltValue && !CtrlObject->Macro.IsRecording())
-		{
-			// VK_INSERT  = 0x2D       AS-0 = 0x2D
-			// VK_NUMPAD0 = 0x60       A-0  = 0x60
-			/*
-			  С грабером не все понятно - что, где и когда вызывать,
-			  посему его оставим пока в покое.
-			*/
-			if (//(CtrlState&NUMLOCK_ON)  && KeyCode==VK_NUMPAD0 && !(CtrlState&ENHANCED_KEY) ||
-			    (KeyCode==VK_INSERT && (CtrlState&ENHANCED_KEY))
-			)
-			{   // CtrlObject->Macro.IsRecording()
-				//// // _SVS(SysLog(L"IsProcessAssignMacroKey=%d",IsProcessAssignMacroKey));
-				if (IsProcessAssignMacroKey)
-				{
-					return KEY_INS|KEY_ALT;
-				}
-				else
-				{
-					Grabber::Run();
-				}
-
-				return(KEY_NONE);
-			}
-		}
-
-#else
-
-		if (!AltValue)
-		{
-			if (KeyCode==VK_INSERT || KeyCode==VK_NUMPAD0)
-			{
-				if (CtrlObject && CtrlObject->Macro.IsRecording())
-				{
-					_KEYMACRO(SysLog(L"[%d] CALL CtrlObject->Macro.ProcessKey(KEY_INS|KEY_ALT)",__LINE__));
-					CtrlObject->Macro.ProcessKey(KEY_INS|KEY_ALT);
-				}
-
-				// макрос проигрывается и мы "сейчас" в состоянии выполнения функции waitkey? (Mantis#0000968: waitkey() пропускает AltIns)
-				if (CtrlObject->Macro.IsExecuting() && CtrlObject->Macro.CheckWaitKeyFunc())
-					return KEY_INS|KEY_ALT;
-
-				Grabber::Run();
-				return(KEY_NONE);
-			}
-		}
-
-#endif
-
 		if (!(CtrlState & ENHANCED_KEY)
 		        //(CtrlState&NUMLOCK_ON) && KeyCode >= VK_NUMPAD0 && KeyCode <= VK_NUMPAD9 ||
 		        // !(CtrlState&NUMLOCK_ON) && KeyCode < VK_NUMPAD0

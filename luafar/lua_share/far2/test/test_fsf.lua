@@ -2,6 +2,8 @@
 
 local asrt = require "far2.assert"
 local F = far.Flags
+local VK = win.GetVirtualKeys()
+local band, bor = bit64.band, bit64.bor
 
 
 local function test_Clipboard()
@@ -219,19 +221,27 @@ end
 
 
 local function test_keys_names()
-  local VK = asrt.table(win.GetVirtualKeys())
   -------- far.InputRecordToKey
   local rec = { EventType = asrt.num(F.KEY_EVENT); }
 
-  local states = { F.LEFT_CTRL_PRESSED, F.LEFT_CTRL_PRESSED + F.ENHANCED_KEY }
   local codes = { VK.INSERT, VK.NUMPAD0 }
-  for st = 1,#states do
-    rec.ControlKeyState = states[st]
-    local key_ref = F.KEY_CTRL + (st==1 and F.KEY_NUMPAD0 or F.KEY_INS)
+  local states = {
+    0,                   bor(F.ENHANCED_KEY, 0),
+    F.LEFT_CTRL_PRESSED, bor(F.ENHANCED_KEY, F.LEFT_CTRL_PRESSED),
+    F.LEFT_ALT_PRESSED,  bor(F.ENHANCED_KEY, F.LEFT_ALT_PRESSED),
+    F.SHIFT_PRESSED,     bor(F.ENHANCED_KEY, F.SHIFT_PRESSED),
+  }
+
+  for _,state in ipairs(states) do
+    local key_ref = F.KEY_NUMPAD0
+    if band(state, F.ENHANCED_KEY) ~= 0 then key_ref = F.KEY_INS end
+    if band(state, F.LEFT_CTRL_PRESSED) ~= 0 then key_ref = bor(key_ref, F.KEY_CTRL) end
+    if band(state, F.LEFT_ALT_PRESSED)  ~= 0 then key_ref = bor(key_ref, F.KEY_ALT) end
+    if band(state, F.SHIFT_PRESSED)     ~= 0 then key_ref = bor(key_ref, F.KEY_SHIFT) end
+    rec.ControlKeyState = state
     for cd = 1,#codes do -- nothing depends on it (ENHANCED_KEY determines the result)
       rec.VirtualKeyCode = codes[cd]
-      local key = asrt.num(far.InputRecordToKey(rec))
-      asrt.eq(key, key_ref)
+      asrt.eq(far.InputRecordToKey(rec), key_ref)
     end
   end
 
