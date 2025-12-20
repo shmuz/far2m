@@ -268,7 +268,7 @@ void ShellDelete(Panel *SrcPanel, bool Wipe)
 							StartTime = CurTime;
 							FirstTime = false;
 
-							if (CheckForEscSilent() && ConfirmAbortOp()) {
+							if (CheckForEsc()) {
 								Cancel = true;
 								break;
 							}
@@ -307,7 +307,7 @@ void ShellDelete(Panel *SrcPanel, bool Wipe)
 				StartTime = CurTime;
 				FirstTime = false;
 
-				if (CheckForEscSilent() && ConfirmAbortOp()) {
+				if (CheckForEsc()) {
 					Cancel = true;
 					break;
 				}
@@ -372,7 +372,7 @@ void ShellDelete(Panel *SrcPanel, bool Wipe)
 						if (CurTime - StartTime > RedrawTimeout) {
 							StartTime = CurTime;
 
-							if (CheckForEscSilent() && ConfirmAbortOp()) {
+							if (CheckForEsc()) {
 								Cancel = true;
 								break;
 							}

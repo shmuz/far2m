@@ -73,36 +73,36 @@ static void FilterGrabbedText(std::wstring &grabbed_text)
 {
 	for (auto &ch : grabbed_text) {
 		const auto orig_ch = ch;
-		if (Opt.CleanAscii) switch (orig_ch) {
-			case L'.': ch = L'.'; break;
-			case 0x07: ch = L'*'; break;
-			case 0x10: ch = L'>'; break;
-			case 0x11: ch = L'<'; break;
-			case 0x18: // fallthrough
-			case 0x19: ch = L'|'; break;
-			case 0x1E: // fallthrough
-			case 0x1F: ch = L'X'; break;
-			case 0xFF: ch = L' '; break;
-			default:
-				if (orig_ch < 0x20)
-					ch = L'.';
+		if (Opt.CleanAscii) {
+			switch (orig_ch) {
+				case L'.': ch = L'.'; break;
+				case 0x07: ch = L'*'; break;
+				case 0x10: ch = L'>'; break;
+				case 0x11: ch = L'<'; break;
+				case 0x18: // fallthrough
+				case 0x19: ch = L'|'; break;
+				case 0x1E: // fallthrough
+				case 0x1F: ch = L'X'; break;
+				case 0xFF: ch = L' '; break;
+				default:
+					if (orig_ch < 0x20)
+						ch = L'.';
+					break;
+			}
 		}
 
 		if (orig_ch >= 0xB3 && orig_ch <= 0xDA) {
-			if (Opt.NoGraphics) switch (orig_ch) {
-				case 0xB3: // fallthrough
-				case 0xBA: ch = L'|'; break;
-				case 0xC4: ch = L'-'; break;
-				case 0xCD: ch = L'='; break;
-				default:   ch = L'+';
+			if (Opt.NoBoxes) {
+				ch = L' ';
 			}
-
-			if (Opt.NoBoxes) switch (orig_ch) {
-				case 0xB3: // fallthrough
-				case 0xBA: ch = L' '; break;
-				case 0xC4: ch = L' '; break;
-				case 0xCD: ch = L' '; break;
-				default:   ch = L' ';
+			else if (Opt.NoGraphics) {
+				switch (orig_ch) {
+					case 0xB3: // fallthrough
+					case 0xBA: ch = L'|'; break;
+					case 0xC4: ch = L'-'; break;
+					case 0xCD: ch = L'='; break;
+					default:   ch = L'+'; break;
+				}
 			}
 		}
 	}
@@ -360,7 +360,7 @@ int Grabber::ProcessKey(FarKey key)
 			if ((_area.cur_y+= 5) > ScrY)
 				_area.cur_y = ScrY;
 
-			if (key == KEY_CTRLSHIFTDOWN || key == KEY_CTRLSHIFTNUMPAD8)
+			if (key == KEY_CTRLSHIFTDOWN || key == KEY_CTRLSHIFTNUMPAD2)
 				_area.top = _area.cur_y;
 
 			break;

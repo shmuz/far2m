@@ -64,13 +64,13 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* start Глобальные переменные */
 
 // "дополнительная" очередь кодов клавиш
-FarQueue<DWORD> *KeyQueue=nullptr;
-int AltPressed=0,CtrlPressed=0,ShiftPressed=0;
-int RightAltPressed=0,RightCtrlPressed=0,RightShiftPressed=0;
-DWORD MouseButtonState=0,PrevMouseButtonState=0;
-int PrevLButtonPressed=0, PrevRButtonPressed=0, PrevMButtonPressed=0;
-SHORT PrevMouseX=0,PrevMouseY=0,MouseX=0,MouseY=0;
-int PreMouseEventFlags=0,MouseEventFlags=0;
+FarQueue<DWORD> *KeyQueue = nullptr;
+int AltPressed = 0, CtrlPressed = 0, ShiftPressed = 0;
+int RightAltPressed = 0, RightCtrlPressed = 0, RightShiftPressed = 0;
+DWORD MouseButtonState = 0, PrevMouseButtonState = 0;
+int PrevLButtonPressed = 0, PrevRButtonPressed = 0, PrevMButtonPressed = 0;
+SHORT PrevMouseX = 0, PrevMouseY = 0, MouseX = 0, MouseY = 0;
+int PreMouseEventFlags = 0,MouseEventFlags = 0;
 
 /* end Глобальные переменные */
 
@@ -88,9 +88,9 @@ static bool IsKeyRCASPressed=false; // Right CtrlAltShift - нажато или 
 
 static clock_t PressedLastTime,KeyPressedLastTime;
 static bool ShiftState = false;
-static bool LastShiftEnterPressed=false;
+static bool LastShiftEnterPressed = false;
 
-static auto was_repeat = false;
+static bool was_repeat = false;
 static auto last_pressed_keycode = static_cast<WORD>(-1);
 
 bool IsRepeatedKey()
@@ -1233,7 +1233,7 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 					// для WaitKey()
 					if (ProcessMouse)
 						return MsCalcKey;
-					else
+					else if (FrameManager)
 					{
 						_KEYMACRO(SysLog(L"[%d] CALL CtrlObject->Macro.ProcessKey(%ls)",__LINE__,_FARKEY_ToName(MsCalcKey)));
 						FrameManager->SetLastInputRecord(rec);
@@ -1248,18 +1248,17 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 		}
 	}
 
+	_KEYMACRO(SysLog(L"[%d] CALL CtrlObject->Macro.ProcessKey(%ls)",__LINE__,_FARKEY_ToName(CalcKey)));
+	if(FrameManager)
 	{
-		_KEYMACRO(SysLog(L"[%d] CALL CtrlObject->Macro.ProcessKey(%ls)",__LINE__,_FARKEY_ToName(CalcKey)));
-		if(FrameManager)
-		{
-			FrameManager->SetLastInputRecord(rec);
-		}
-		if (!NotMacros && CtrlObject && CtrlObject->Macro.ProcessKey(CalcKey,rec))
-		{
-			rec->EventType=0;
-			CalcKey=KEY_NONE;
-		}
+		FrameManager->SetLastInputRecord(rec);
 	}
+	if (!NotMacros && CtrlObject && CtrlObject->Macro.ProcessKey(CalcKey,rec))
+	{
+		rec->EventType=0;
+		CalcKey=KEY_NONE;
+	}
+
 	return(CalcKey);
 }
 
@@ -2068,9 +2067,9 @@ FarKey CalcKeyCode(INPUT_RECORD *rec, bool RealKey, bool *NotMacros, bool ApiCal
 	{
 		if (!ApiCall && !AltValue)
 		{
-			if (KeyCode==VK_INSERT || KeyCode==VK_NUMPAD0)
+			if (CtrlObject && (KeyCode==VK_INSERT || KeyCode==VK_NUMPAD0))
 			{
-				if (CtrlObject && CtrlObject->Macro.IsRecording())
+				if (CtrlObject->Macro.IsRecording())
 				{
 					_KEYMACRO(SysLog(L"[%d] CALL CtrlObject->Macro.ProcessKey(KEY_INS|KEY_ALT)",__LINE__));
 					CtrlObject->Macro.ProcessKey(KEY_INS|KEY_ALT);
