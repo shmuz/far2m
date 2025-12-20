@@ -254,7 +254,7 @@ void CopyProgress::Flush()
 		if (!IsCancelled) {
 			if (CheckForEscSilent()) {
 				FrameManager->GetFrame(0)->Lock();
-				IsCancelled = ConfirmAbortOp() != 0;
+				IsCancelled = ConfirmAbortOp();
 				FrameManager->GetFrame(0)->Unlock();
 			}
 		}

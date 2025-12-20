@@ -372,13 +372,9 @@ void ShellDelete(Panel *SrcPanel, bool Wipe)
 						if (CurTime - StartTime > RedrawTimeout) {
 							StartTime = CurTime;
 
-							if (CheckForEscSilent()) {
-								int AbortOp = ConfirmAbortOp();
-
-								if (AbortOp) {
-									Cancel = true;
-									break;
-								}
+							if (CheckForEscSilent() && ConfirmAbortOp()) {
+								Cancel = true;
+								break;
 							}
 
 							ShellDeleteMsg(strFullName, Wipe,

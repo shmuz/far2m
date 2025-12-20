@@ -2430,7 +2430,7 @@ int FileEditor::EditorControl(int Command, void *Param)
 					}
 
 #endif
-					FarKey Key = CalcKeyCode(rec, FALSE);
+					FarKey Key = CalcKeyCode(rec, false);
 					ReProcessKey(Key);
 				}
 

@@ -642,7 +642,7 @@ void SetMessageHelp(const wchar_t *Topic)
    FALSE - продолжить операцию
    TRUE  - прервать операцию
 */
-int AbortMessage()
+bool AbortMessage()
 {
 	int Res = Message(MSG_WARNING | MSG_KILLSAVESCREEN, 2, Msg::KeyESCWasPressed,
 			(Opt.Confirm.EscTwiceToInterrupt ? Msg::DoYouWantToStopWork2 : Msg::DoYouWantToStopWork),

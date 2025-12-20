@@ -59,6 +59,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "palette.hpp"
 #include "xlat.hpp"
 
+#define FLAG_NOMACRO 0x80000000
+
 /* start Глобальные переменные */
 
 // "дополнительная" очередь кодов клавиш
@@ -69,28 +71,24 @@ DWORD MouseButtonState=0,PrevMouseButtonState=0;
 int PrevLButtonPressed=0, PrevRButtonPressed=0, PrevMButtonPressed=0;
 SHORT PrevMouseX=0,PrevMouseY=0,MouseX=0,MouseY=0;
 int PreMouseEventFlags=0,MouseEventFlags=0;
-// только что был ввод Alt-Цифира?
-int ReturnAltValue=0;
 
 /* end Глобальные переменные */
 
-
-//static SHORT KeyToVKey[MAX_VKEY_CODE];
-//static WCHAR VKeyToASCII[0x200];
+static bool ReturnAltValue = false; // только что был ввод Alt-Цифира?
 
 static unsigned int AltValue=0;
-static int KeyCodeForALT_LastPressed=0;
+static unsigned int KeyCodeForALT_LastPressed=0;
 
 static MOUSE_EVENT_RECORD lastMOUSE_EVENT_RECORD;
-static int ShiftPressedLast=FALSE,AltPressedLast=FALSE,CtrlPressedLast=FALSE;
-static BOOL IsKeyCASPressed=FALSE; // CtrlAltShift - нажато или нет?
+static bool ShiftPressedLast=false, AltPressedLast=false, CtrlPressedLast=false;
+static bool IsKeyCASPressed=false; // CtrlAltShift - нажато или нет?
 
-static int RightShiftPressedLast=FALSE,RightAltPressedLast=FALSE,RightCtrlPressedLast=FALSE;
-static BOOL IsKeyRCASPressed=FALSE; // Right CtrlAltShift - нажато или нет?
+static bool RightShiftPressedLast=false, RightAltPressedLast=false, RightCtrlPressedLast=false;
+static bool IsKeyRCASPressed=false; // Right CtrlAltShift - нажато или нет?
 
 static clock_t PressedLastTime,KeyPressedLastTime;
-static int ShiftState=0;
-static int LastShiftEnterPressed=FALSE;
+static bool ShiftState = false;
+static bool LastShiftEnterPressed=false;
 
 static auto was_repeat = false;
 static auto last_pressed_keycode = static_cast<WORD>(-1);
@@ -470,7 +468,7 @@ FarKey WINAPI InputRecordToKey(const INPUT_RECORD *r)
 	{
 		INPUT_RECORD Rec=*r; // НАДО!, т.к. внутри CalcKeyCode
 		//   структура INPUT_RECORD модифицируется!
-		return CalcKeyCode(&Rec, FALSE, nullptr, true);
+		return CalcKeyCode(&Rec, false, nullptr, true);
 	}
 
 	return KEY_NONE;
@@ -526,9 +524,9 @@ static DWORD KeyMsClick2ButtonState(DWORD Key,DWORD& Event)
 FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,bool AllowSynchro)
 {
 	_KEYMACRO(CleverSysLog Clev(L"GetInputRecord()"));
-	static int LastEventIdle=FALSE;
+	static bool LastEventIdle = false;
 	FarKey CalcKey;
-	int NotMacros=FALSE;
+	bool NotMacros=false;
 	static int LastMsClickMacroKey=0;
 	static clock_t sLastIdleDelivered = 0;
 
@@ -543,7 +541,7 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 	{
 		clock_t now = GetProcessUptimeMSec();
 		if (now - sLastIdleDelivered >= 1000) {
-			LastEventIdle=TRUE;
+			LastEventIdle = true;
 			memset(rec,0,sizeof(*rec));
 			rec->EventType=KEY_EVENT;
 			sLastIdleDelivered=now;
@@ -596,9 +594,9 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 
 	if (KeyQueue && KeyQueue->Peek())
 	{
-		CalcKey=KeyQueue->Get();
-		NotMacros=CalcKey&0x80000000?1:0;
-		CalcKey&=~0x80000000;
+		CalcKey = KeyQueue->Get();
+		NotMacros = (CalcKey & FLAG_NOMACRO) != 0;
+		CalcKey &= ~FLAG_NOMACRO;
 
 		if (!NotMacros)
 		{
@@ -624,7 +622,7 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 	if (!LastEventIdle)
 		StartIdleTime = GetProcessUptimeMSec();
 
-	LastEventIdle = FALSE;
+	LastEventIdle = false;
 	SetFarConsoleMode();
 
 	for (DWORD LoopCount = 0;;) {
@@ -709,14 +707,14 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 						Reenter--;
 					}
 
-					static int UpdateReenter=0;
+					static bool UpdateReenter = false;
 
 					if (!UpdateReenter && CurTime-KeyPressedLastTime>700)
 					{
-						UpdateReenter=TRUE;
+						UpdateReenter = true;
 						CtrlObject->Cp()->LeftPanel->UpdateIfChanged(UIC_UPDATE_NORMAL);
 						CtrlObject->Cp()->RightPanel->UpdateIfChanged(UIC_UPDATE_NORMAL);
-						UpdateReenter=FALSE;
+						UpdateReenter = false;
 					}
 				}
 			}
@@ -728,7 +726,7 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 
 			if (!WaitInMainLoop && LoopCount==64)
 			{
-				LastEventIdle=TRUE;
+				LastEventIdle = true;
 				memset(rec,0,sizeof(*rec));
 				rec->EventType=KEY_EVENT;
 				sLastIdleDelivered=GetProcessUptimeMSec();
@@ -760,11 +758,11 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 
 		/* $ 28.04.2001 VVM
 		  + Не только обработаем сами смену фокуса, но и передадим дальше */
-		ShiftPressed=RightShiftPressedLast=ShiftPressedLast=FALSE;
-		CtrlPressed=CtrlPressedLast=RightCtrlPressedLast=FALSE;
-		AltPressed=AltPressedLast=RightAltPressedLast=FALSE;
+		ShiftPressed = RightShiftPressedLast = ShiftPressedLast = false;
+		CtrlPressed = CtrlPressedLast = RightCtrlPressedLast = false;
+		AltPressed = AltPressedLast = RightAltPressedLast = false;
 		MouseButtonState=0;
-		ShiftState=FALSE;
+		ShiftState = false;
 		PressedLastTime=0;
 		Console.ReadInput(*rec);
 		CalcKey=rec->Event.FocusEvent.bSetFocus?KEY_GOTFOCUS:KEY_KILLFOCUS;
@@ -854,19 +852,19 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 		*/
 		if (IsKeyCASPressed && (Opt.CASRule&1) && (!CtrlPressed || !AltPressed || !ShiftPressed))
 		{
-			IsKeyCASPressed=FALSE;
+			IsKeyCASPressed = false;
 			return KEY_CTRLALTSHIFTRELEASE;
 		}
 
 		if (IsKeyRCASPressed && (Opt.CASRule&2) && (!RightCtrlPressed || !RightAltPressed || !ShiftPressed))
 		{
-			IsKeyRCASPressed=FALSE;
+			IsKeyRCASPressed = false;
 			return KEY_RCTRLALTSHIFTRELEASE;
 		}
 	}
 
-	ReturnAltValue=FALSE;
-	CalcKey=CalcKeyCode(rec,TRUE,&NotMacros);
+	ReturnAltValue = false;
+	CalcKey=CalcKeyCode(rec,true,&NotMacros);
 
 	if (ReturnAltValue && !NotMacros)
 	{
@@ -968,7 +966,7 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 			(KeyCode==VK_SHIFT || KeyCode==VK_CONTROL || KeyCode==VK_MENU) &&
 			CurClock-PressedLastTime<500)
 		{
-			uint32_t Key {std::numeric_limits<uint32_t>::max()};
+			uint32_t Key = KEY_INVALID;
 
 			if (ShiftPressedLast && KeyCode==VK_SHIFT)
 			{
@@ -1005,20 +1003,20 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 				{
 					FrameManager->SetLastInputRecord(rec);
 				}
-				if (Key!=std::numeric_limits<uint32_t>::max() && !NotMacros && CtrlObject && CtrlObject->Macro.ProcessKey(Key,rec))
+				if (Key!=KEY_INVALID && !NotMacros && CtrlObject && CtrlObject->Macro.ProcessKey(Key,rec))
 				{
 					rec->EventType=0;
 					Key=KEY_NONE;
 				}
 			}
 
-			if (Key!=std::numeric_limits<uint32_t>::max())
+			if (Key != KEY_INVALID)
 				return(Key);
 		}
 
-		RightShiftPressedLast = FALSE;
-		CtrlPressedLast = RightCtrlPressedLast = FALSE;
-		AltPressedLast = RightAltPressedLast = FALSE;
+		RightShiftPressedLast = false;
+		CtrlPressedLast = RightCtrlPressedLast = false;
+		AltPressedLast = RightAltPressedLast = false;
 		ShiftPressedLast = (KeyCode==VK_SHIFT && rec->Event.KeyEvent.bKeyDown) ||
 		                 (KeyCode==VK_RETURN && ShiftPressed && !rec->Event.KeyEvent.bKeyDown);
 
@@ -1027,12 +1025,12 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 			{
 				if (CtrlState & RIGHT_CTRL_PRESSED)
 				{
-					RightCtrlPressedLast=TRUE;
+					RightCtrlPressedLast = true;
 					//// // _SVS(SysLog(L"RightCtrlPressedLast=TRUE;"));
 				}
 				else
 				{
-					CtrlPressedLast=TRUE;
+					CtrlPressedLast = true;
 					//// // _SVS(SysLog(L"CtrlPressedLast=TRUE;"));
 				}
 			}
@@ -1043,11 +1041,11 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 			{
 				if (CtrlState & RIGHT_ALT_PRESSED)
 				{
-					RightAltPressedLast=TRUE;
+					RightAltPressedLast = true;
 				}
 				else
 				{
-					AltPressedLast=TRUE;
+					AltPressedLast = true;
 				}
 
 				PressedLastTime=CurClock;
@@ -1082,13 +1080,13 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 							{
 								if (Opt.CASRule&2)
 								{
-									IsKeyRCASPressed=TRUE;
+									IsKeyRCASPressed = true;
 									return (KEY_RCTRLALTSHIFTPRESS);
 								}
 							}
 							else if (Opt.CASRule&1)
 							{
-								IsKeyCASPressed=TRUE;
+								IsKeyCASPressed = true;
 								return (KEY_CTRLALTSHIFTPRESS);
 							}
 						}
@@ -1102,7 +1100,7 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 						{
 							if ((Opt.CASRule&2))
 							{
-								IsKeyRCASPressed=TRUE;
+								IsKeyRCASPressed = true;
 								return (KEY_RCTRLALTSHIFTPRESS);
 							}
 						}
@@ -1293,7 +1291,7 @@ FarKey GetInputRecord(INPUT_RECORD *rec, bool ExcludeMacro, bool ProcessMouse, b
 			rec->EventType = 0;
 			break;
 		case 2:
-			Key = CalcKeyCode(rec,FALSE);
+			Key = CalcKeyCode(rec,false);
 			break;
 		}
 	}
@@ -1317,7 +1315,7 @@ DWORD PeekInputRecord(INPUT_RECORD *rec,bool ExcludeMacro)
 			return 0;
 	}
 
-	return(CalcKeyCode(rec,TRUE));
+	return(CalcKeyCode(rec,true));
 }
 
 /* $ 24.08.2000 SVS
@@ -1410,18 +1408,18 @@ int WriteInput(wchar_t Key,DWORD Flags)
 	}
 	else if (KeyQueue)
 	{
-		return KeyQueue->Put(((DWORD)Key)|(Flags&SKEY_NOTMACROS?0x80000000:0));
+		return KeyQueue->Put(((DWORD)Key) | (Flags & SKEY_NOTMACROS ? FLAG_NOMACRO : 0));
 	}
 	else
 		return 0;
 }
 
 
-int CheckForEscSilent()
+bool CheckForEscSilent()
 {
 	INPUT_RECORD rec;
 	FarKey Key;
-	BOOL Processed=TRUE;
+	bool Processed = true;
 	/* TODO: Здесь, в общем то - ХЗ, т.к.
 	         по хорошему нужно проверять CtrlObject->Macro.PeekKey() на ESC или BREAK
 	         Но к чему это приведет - пока не могу дать ответ !!!
@@ -1436,12 +1434,12 @@ int CheckForEscSilent()
 		if (!CtrlObject->Macro.IsOpCode(CtrlObject->Macro.PeekKey()))
 			CtrlObject->Macro.GetKey(); // ...то "завершим" макрос
 		else
-			Processed=FALSE;
+			Processed = false;
 
 #else
 
 		if (CtrlObject->Macro.IsOutputDisabled())
-			Processed=FALSE;
+			Processed = false;
 
 #endif
 	}
@@ -1470,7 +1468,7 @@ int CheckForEscSilent()
 		else
 		*/
 		if (Key==KEY_ESC || Key==KEY_BREAK)
-			return TRUE;
+			return true;
 		else if (Key==KEY_ALTF9)
 			FrameManager->ProcessKey(KEY_ALTF9);
 	}
@@ -1478,30 +1476,27 @@ int CheckForEscSilent()
 	if (!Processed && CtrlObject->Macro.IsExecuting())
 		ScrBuf.Flush();
 
-	return FALSE;
+	return false;
 }
 
-int ConfirmAbortOp()
+bool ConfirmAbortOp()
 {
-	return Opt.Confirm.Esc?AbortMessage():TRUE;
+	return !Opt.Confirm.Esc || AbortMessage();
 }
 
 /* $ 09.02.2001 IS
      Подтверждение нажатия Esc
 */
-int CheckForEsc()
+bool CheckForEsc()
 {
-	if (CheckForEscSilent())
-		return(ConfirmAbortOp());
-	else
-		return FALSE;
+	return CheckForEscSilent() && ConfirmAbortOp();
 }
 
 /* $ 25.07.2000 SVS
-    ! Функция KeyToText сделана самосотоятельной - вошла в состав FSF
+    ! Функция KeyToText сделана самостоятельной - вошла в состав FSF
 */
 /* $ 01.08.2000 SVS
-   ! дополнительный параметра у KeyToText - размер данных
+   ! дополнительный параметр у KeyToText - размер данных
    Size=0 - по максимуму!
 */
 static void GetShiftKeyName(FARString &strName, FarKey Key)
@@ -1786,7 +1781,7 @@ bool TranslateKeyToVK(FarKey Key,int &VirtKey,int &ControlState,INPUT_RECORD *Re
 }
 
 
-int IsNavKey(FarKey Key)
+bool IsNavKey(FarKey Key)
 {
 	static DWORD NavKeys[][2]=
 	{
@@ -1808,12 +1803,12 @@ int IsNavKey(FarKey Key)
 	for (int I=0; I < int(ARRAYSIZE(NavKeys)); I++)
 		if ((!NavKeys[I][0] && Key==NavKeys[I][1]) ||
 		        (NavKeys[I][0] && (Key&0x00FFFFFF)==(NavKeys[I][1]&0x00FFFFFF)))
-			return TRUE;
+			return true;
 
-	return FALSE;
+	return false;
 }
 
-int IsShiftKey(FarKey Key)
+bool IsShiftKey(FarKey Key)
 {
 	static FarKey ShiftKeys[]=
 	{
@@ -1859,13 +1854,13 @@ int IsShiftKey(FarKey Key)
 
 	for (int I=0; I<int(ARRAYSIZE(ShiftKeys)); I++)
 		if (Key==ShiftKeys[I])
-			return TRUE;
+			return true;
 
-	return FALSE;
+	return false;
 }
 
 
-FarKey CalcKeyCode(INPUT_RECORD *rec, int RealKey, int *NotMacros, bool ApiCall)
+FarKey CalcKeyCode(INPUT_RECORD *rec, bool RealKey, bool *NotMacros, bool ApiCall)
 {
 	_SVS(CleverSysLog Clev(L"CalcKeyCode"));
 	_SVS(SysLog(L"CalcKeyCode -> %ls| RealKey=%d  *NotMacros=%d",_INPUT_RECORD_Dump(rec),RealKey,(NotMacros?*NotMacros:0)));
@@ -1875,7 +1870,7 @@ FarKey CalcKeyCode(INPUT_RECORD *rec, int RealKey, int *NotMacros, bool ApiCall)
 	WCHAR Char=rec->Event.KeyEvent.uChar.UnicodeChar;
 
 	if (NotMacros)
-		*NotMacros=CtrlState&0x80000000?TRUE:FALSE;
+		*NotMacros = (CtrlState & FLAG_NOMACRO) != 0;
 
 	if (rec->EventType != KEY_EVENT)
 		return(KEY_NONE);
@@ -1925,7 +1920,7 @@ FarKey CalcKeyCode(INPUT_RECORD *rec, int RealKey, int *NotMacros, bool ApiCall)
 			//	FlushInputBuffer();//???
 			INPUT_RECORD TempRec;
 			Console.ReadInput(TempRec);
-			ReturnAltValue=TRUE;
+			ReturnAltValue = true;
 			AltValue&=0xFFFF;
 			/*
 			О перетаскивании из проводника / вставке текста в консоль, на примере буквы 'ы':
@@ -2040,10 +2035,10 @@ FarKey CalcKeyCode(INPUT_RECORD *rec, int RealKey, int *NotMacros, bool ApiCall)
 				if (RightCtrlPressed && RightAltPressed && RightShiftPressed)
 				{
 					if ((Opt.CASRule&2))
-						return (IsKeyRCASPressed?KEY_RCTRLALTSHIFTPRESS:KEY_RCTRLALTSHIFTRELEASE);
+						return (IsKeyRCASPressed ? KEY_RCTRLALTSHIFTPRESS : KEY_RCTRLALTSHIFTRELEASE);
 				}
 				else if (Opt.CASRule&1)
-					return (IsKeyCASPressed?KEY_CTRLALTSHIFTPRESS:KEY_CTRLALTSHIFTRELEASE);
+					return (IsKeyCASPressed ? KEY_CTRLALTSHIFTPRESS : KEY_CTRLALTSHIFTRELEASE);
 			}
 		}
 	}
@@ -2057,7 +2052,7 @@ FarKey CalcKeyCode(INPUT_RECORD *rec, int RealKey, int *NotMacros, bool ApiCall)
 			case VK_RCONTROL:
 
 				if (Opt.CASRule&2)
-					return (IsKeyRCASPressed?KEY_RCTRLALTSHIFTPRESS:KEY_RCTRLALTSHIFTRELEASE);
+					return (IsKeyRCASPressed ? KEY_RCTRLALTSHIFTPRESS : KEY_RCTRLALTSHIFTRELEASE);
 
 				break;
 		}
@@ -2097,14 +2092,14 @@ FarKey CalcKeyCode(INPUT_RECORD *rec, int RealKey, int *NotMacros, bool ApiCall)
 		{
 			static unsigned int ScanCodes[]={82,79,80,81,75,76,77,71,72,73};
 
-			for (int I=0; I<int(ARRAYSIZE(ScanCodes)); I++)
+			for (size_t I=0; I < ARRAYSIZE(ScanCodes); I++)
 			{
-				if (ScanCodes[I]==ScanCode)
+				if (ScanCodes[I] == ScanCode)
 				{
-					if (RealKey && (unsigned int)KeyCodeForALT_LastPressed != KeyCode)
+					if (RealKey && KeyCodeForALT_LastPressed != KeyCode)
 					{
-						AltValue=AltValue*10+I;
-						KeyCodeForALT_LastPressed=KeyCode;
+						AltValue = AltValue*10 + I;
+						KeyCodeForALT_LastPressed = KeyCode;
 					}
 
 					if (AltValue)
@@ -2283,15 +2278,15 @@ FarKey CalcKeyCode(INPUT_RECORD *rec, int RealKey, int *NotMacros, bool ApiCall)
 			if (ShiftPressed && RealKey && !ShiftPressedLast && !CtrlPressed && !AltPressed && !LastShiftEnterPressed)
 				return(KEY_ENTER);
 
-			LastShiftEnterPressed=Modif&KEY_SHIFT?TRUE:FALSE;
+			LastShiftEnterPressed = (Modif & KEY_SHIFT) != 0;
 			return(Modif|KEY_ENTER);
 #else
 
 			if (ShiftPressed && RealKey && !ShiftPressedLast && !CtrlPressed && !AltPressed && !LastShiftEnterPressed)
 				return (CtrlState&ENHANCED_KEY) ? KEY_NUMENTER:KEY_ENTER;
 
-			LastShiftEnterPressed=Modif&KEY_SHIFT?TRUE:FALSE;
-			return Modif|((CtrlState&ENHANCED_KEY) ? KEY_NUMENTER:KEY_ENTER);
+			LastShiftEnterPressed = (Modif & KEY_SHIFT) != 0;
+			return Modif | ((CtrlState & ENHANCED_KEY) ? KEY_NUMENTER : KEY_ENTER);
 #endif
 		case VK_BROWSER_BACK:
 			return Modif|KEY_BROWSER_BACK;
