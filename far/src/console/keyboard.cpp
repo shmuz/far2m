@@ -470,7 +470,7 @@ FarKey WINAPI InputRecordToKey(const INPUT_RECORD *r)
 	{
 		INPUT_RECORD Rec=*r; // НАДО!, т.к. внутри CalcKeyCode
 		//   структура INPUT_RECORD модифицируется!
-		return CalcKeyCode(&Rec,FALSE);
+		return CalcKeyCode(&Rec, FALSE, nullptr, true);
 	}
 
 	return KEY_NONE;
@@ -1865,7 +1865,7 @@ int IsShiftKey(FarKey Key)
 }
 
 
-FarKey CalcKeyCode(INPUT_RECORD *rec, int RealKey, int *NotMacros)
+FarKey CalcKeyCode(INPUT_RECORD *rec, int RealKey, int *NotMacros, bool ApiCall)
 {
 	_SVS(CleverSysLog Clev(L"CalcKeyCode"));
 	_SVS(SysLog(L"CalcKeyCode -> %ls| RealKey=%d  *NotMacros=%d",_INPUT_RECORD_Dump(rec),RealKey,(NotMacros?*NotMacros:0)));
@@ -2069,8 +2069,27 @@ FarKey CalcKeyCode(INPUT_RECORD *rec, int RealKey, int *NotMacros)
 
 	int NotShift=!CtrlPressed && !AltPressed && !ShiftPressed;
 
-	if (AltPressed && !CtrlPressed && !ShiftPressed)
+	if (!ApiCall && AltPressed && !CtrlPressed && !ShiftPressed)
 	{
+		if (!AltValue)
+		{
+			if (KeyCode==VK_INSERT || KeyCode==VK_NUMPAD0)
+			{
+				if (CtrlObject && CtrlObject->Macro.IsRecording())
+				{
+					_KEYMACRO(SysLog(L"[%d] CALL CtrlObject->Macro.ProcessKey(KEY_INS|KEY_ALT)",__LINE__));
+					CtrlObject->Macro.ProcessKey(KEY_INS|KEY_ALT);
+				}
+
+				// макрос проигрывается и мы "сейчас" в состоянии выполнения функции waitkey? (Mantis#0000968: waitkey() пропускает AltIns)
+				if (CtrlObject->Macro.IsExecuting() && CtrlObject->Macro.CheckWaitKeyFunc())
+					return KEY_INS|KEY_ALT;
+
+				Grabber::Run();
+				return(KEY_NONE);
+			}
+		}
+
 		if (!(CtrlState & ENHANCED_KEY)
 		        //(CtrlState&NUMLOCK_ON) && KeyCode >= VK_NUMPAD0 && KeyCode <= VK_NUMPAD9 ||
 		        // !(CtrlState&NUMLOCK_ON) && KeyCode < VK_NUMPAD0

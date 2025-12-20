@@ -221,27 +221,43 @@ end
 
 
 local function test_keys_names()
-  -------- far.InputRecordToKey
+  -------- InputRecordToKey, InputRecordToName
   local rec = { EventType = asrt.num(F.KEY_EVENT); }
 
   local codes = { VK.INSERT, VK.NUMPAD0 }
-  local states = {
-    0,                   bor(F.ENHANCED_KEY, 0),
-    F.LEFT_CTRL_PRESSED, bor(F.ENHANCED_KEY, F.LEFT_CTRL_PRESSED),
-    F.LEFT_ALT_PRESSED,  bor(F.ENHANCED_KEY, F.LEFT_ALT_PRESSED),
-    F.SHIFT_PRESSED,     bor(F.ENHANCED_KEY, F.SHIFT_PRESSED),
-  }
+
+  local bits = { F.ENHANCED_KEY, F.LEFT_CTRL_PRESSED, F.LEFT_ALT_PRESSED, F.SHIFT_PRESSED }
+  local states = {} -- will contain all bitwise OR combinations of 'bits'
+  for i = 0, 2^#bits - 1 do
+    local v = 0
+    for j = 0, #bits - 1 do
+      if band(i, 2^j) ~= 0 then v = bor(v, bits[j+1]) end
+    end
+    table.insert(states, v)
+  end
 
   for _,state in ipairs(states) do
-    local key_ref = F.KEY_NUMPAD0
-    if band(state, F.ENHANCED_KEY) ~= 0 then key_ref = F.KEY_INS end
-    if band(state, F.LEFT_CTRL_PRESSED) ~= 0 then key_ref = bor(key_ref, F.KEY_CTRL) end
-    if band(state, F.LEFT_ALT_PRESSED)  ~= 0 then key_ref = bor(key_ref, F.KEY_ALT) end
-    if band(state, F.SHIFT_PRESSED)     ~= 0 then key_ref = bor(key_ref, F.KEY_SHIFT) end
+    local key_ref, name_ref = F.KEY_NUMPAD0, "Num0"
+    if band(state, F.ENHANCED_KEY) ~= 0 then
+      key_ref, name_ref = F.KEY_INS, "Ins"
+    end
+    if band(state, F.SHIFT_PRESSED) ~= 0 then
+      key_ref = bor(key_ref, F.KEY_SHIFT)
+      name_ref = "Shift"..name_ref
+    end
+    if band(state, F.LEFT_ALT_PRESSED) ~= 0 then
+      key_ref = bor(key_ref, F.KEY_ALT)
+      name_ref = "Alt"..name_ref
+    end
+    if band(state, F.LEFT_CTRL_PRESSED) ~= 0 then
+      key_ref = bor(key_ref, F.KEY_CTRL)
+      name_ref = "Ctrl"..name_ref
+    end
     rec.ControlKeyState = state
     for cd = 1,#codes do -- nothing depends on it (ENHANCED_KEY determines the result)
       rec.VirtualKeyCode = codes[cd]
       asrt.eq(far.InputRecordToKey(rec), key_ref)
+      asrt.eq(far.InputRecordToName(rec), name_ref)
     end
   end
 
