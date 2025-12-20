@@ -2069,9 +2069,9 @@ FarKey CalcKeyCode(INPUT_RECORD *rec, int RealKey, int *NotMacros, bool ApiCall)
 
 	int NotShift=!CtrlPressed && !AltPressed && !ShiftPressed;
 
-	if (!ApiCall && AltPressed && !CtrlPressed && !ShiftPressed)
+	if (AltPressed && !CtrlPressed && !ShiftPressed)
 	{
-		if (!AltValue)
+		if (!ApiCall && !AltValue)
 		{
 			if (KeyCode==VK_INSERT || KeyCode==VK_NUMPAD0)
 			{
