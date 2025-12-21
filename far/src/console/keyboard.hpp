@@ -38,13 +38,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FARString.hpp"
 #include "keys.hpp"
 
-enum
-{
-	SKEY_VK_KEYS           = 0x40000000,
-	SKEY_IDLE              = 0x80000000,
-	SKEY_NOTMACROS         = 0x00000001,
-};
-
 #define MOUSE_ANY_BUTTON_PRESSED (FROM_LEFT_1ST_BUTTON_PRESSED|RIGHTMOST_BUTTON_PRESSED|FROM_LEFT_2ND_BUTTON_PRESSED|FROM_LEFT_3RD_BUTTON_PRESSED|FROM_LEFT_4TH_BUTTON_PRESSED)
 
 extern FarQueue<DWORD> *KeyQueue;
@@ -66,10 +59,10 @@ BOOL WINAPI KeyToText(FarKey Key, FARString &strKeyText);
 FarKey WINAPI InputRecordToKey(const INPUT_RECORD *Rec);
 FarKey GetInputRecord(INPUT_RECORD *rec,bool ExcludeMacro=false,bool ProcessMouse=false,bool AllowSynchro=true);
 DWORD PeekInputRecord(INPUT_RECORD *rec,bool ExcludeMacro=true);
-FarKey CalcKeyCode(INPUT_RECORD *rec,bool RealKey,bool *NotMacros=nullptr,bool ApiCall=false);
+FarKey CalcKeyCode(INPUT_RECORD *rec,bool RealKey,bool ApiCall=false);
 FarKey WaitKey(FarKey KeyWait=KEY_INVALID,DWORD delayMS=0,bool ExcludeMacro=true,bool EnableQuickEdit=true);
 int SetFLockState(UINT vkKey, int State);
-int WriteInput(wchar_t Key,DWORD Flags=0);
+int WriteInput(wchar_t Key);
 bool IsNavKey(FarKey Key);
 bool IsShiftKey(FarKey Key);
 bool CheckForEsc();

@@ -59,8 +59,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "palette.hpp"
 #include "xlat.hpp"
 
-#define FLAG_NOMACRO 0x80000000
-
 /* start Глобальные переменные */
 
 // "дополнительная" очередь кодов клавиш
@@ -468,7 +466,7 @@ FarKey WINAPI InputRecordToKey(const INPUT_RECORD *r)
 	{
 		INPUT_RECORD Rec=*r; // НАДО!, т.к. внутри CalcKeyCode
 		//   структура INPUT_RECORD модифицируется!
-		return CalcKeyCode(&Rec, false, nullptr, true);
+		return CalcKeyCode(&Rec, false, true);
 	}
 
 	return KEY_NONE;
@@ -526,7 +524,6 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 	_KEYMACRO(CleverSysLog Clev(L"GetInputRecord()"));
 	static bool LastEventIdle = false;
 	FarKey CalcKey;
-	bool NotMacros=false;
 	static int LastMsClickMacroKey=0;
 	static clock_t sLastIdleDelivered = 0;
 
@@ -595,18 +592,13 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 	if (KeyQueue && KeyQueue->Peek())
 	{
 		CalcKey = KeyQueue->Get();
-		NotMacros = (CalcKey & FLAG_NOMACRO) != 0;
-		CalcKey &= ~FLAG_NOMACRO;
 
-		if (!NotMacros)
+		_KEYMACRO(SysLog(L"[%d] CALL CtrlObject->Macro.ProcessKey(%ls)",__LINE__,_FARKEY_ToName(CalcKey)));
+		FrameManager->SetLastInputRecord(rec);
+		if (!ExcludeMacro && CtrlObject && CtrlObject->Macro.ProcessKey(CalcKey,rec))
 		{
-			_KEYMACRO(SysLog(L"[%d] CALL CtrlObject->Macro.ProcessKey(%ls)",__LINE__,_FARKEY_ToName(CalcKey)));
-			FrameManager->SetLastInputRecord(rec);
-			if (!ExcludeMacro && CtrlObject && CtrlObject->Macro.ProcessKey(CalcKey,rec))
-			{
-				rec->EventType=0;
-				CalcKey=KEY_NONE;
-			}
+			rec->EventType=0;
+			CalcKey=KEY_NONE;
 		}
 
 		return(CalcKey);
@@ -864,9 +856,9 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 	}
 
 	ReturnAltValue = false;
-	CalcKey=CalcKeyCode(rec,true,&NotMacros);
+	CalcKey=CalcKeyCode(rec, true);
 
-	if (ReturnAltValue && !NotMacros)
+	if (ReturnAltValue)
 	{
 		_KEYMACRO(SysLog(L"[%d] CALL CtrlObject->Macro.ProcessKey(%ls)",__LINE__,_FARKEY_ToName(CalcKey)));
 		FrameManager->SetLastInputRecord(rec);
@@ -1003,7 +995,7 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 				{
 					FrameManager->SetLastInputRecord(rec);
 				}
-				if (Key!=KEY_INVALID && !NotMacros && CtrlObject && CtrlObject->Macro.ProcessKey(Key,rec))
+				if (Key!=KEY_INVALID && CtrlObject && CtrlObject->Macro.ProcessKey(Key,rec))
 				{
 					rec->EventType=0;
 					Key=KEY_NONE;
@@ -1253,7 +1245,7 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 	{
 		FrameManager->SetLastInputRecord(rec);
 	}
-	if (!NotMacros && CtrlObject && CtrlObject->Macro.ProcessKey(CalcKey,rec))
+	if (CtrlObject && CtrlObject->Macro.ProcessKey(CalcKey,rec))
 	{
 		rec->EventType=0;
 		CalcKey=KEY_NONE;
@@ -1376,43 +1368,10 @@ FarKey WaitKey(FarKey KeyWait, DWORD delayMS, bool ExcludeMacro, bool EnableQuic
 	return Key;
 }
 
-int WriteInput(wchar_t Key,DWORD Flags)
+int WriteInput(wchar_t Key)
 {
-	if (Flags&(SKEY_VK_KEYS|SKEY_IDLE))
-	{
-		INPUT_RECORD Rec;
-		DWORD WriteCount;
-
-		if (Flags&SKEY_IDLE)
-		{
-			Rec.EventType=FOCUS_EVENT;
-			Rec.Event.FocusEvent.bSetFocus=TRUE;
-		}
-		else
-		{
-			Rec.EventType=KEY_EVENT;
-			Rec.Event.KeyEvent.bKeyDown=1;
-			Rec.Event.KeyEvent.wRepeatCount=1;
-			Rec.Event.KeyEvent.wVirtualKeyCode=Key;
-			Rec.Event.KeyEvent.wVirtualScanCode=WINPORT(MapVirtualKey)(Rec.Event.KeyEvent.wVirtualKeyCode,MAPVK_VK_TO_VSC);
-
-			if (Key < 0x30 || Key > 0x5A) // 0-9:;<=>?@@ A..Z  //?????
-				Key=0;
-
-			Rec.Event.KeyEvent.uChar.UnicodeChar=Rec.Event.KeyEvent.uChar.AsciiChar=Key;
-			Rec.Event.KeyEvent.dwControlKeyState=0;
-		}
-
-		return Console.WriteInput(Rec, 1, WriteCount);
-	}
-	else if (KeyQueue)
-	{
-		return KeyQueue->Put(((DWORD)Key) | (Flags & SKEY_NOTMACROS ? FLAG_NOMACRO : 0));
-	}
-	else
-		return 0;
+	return KeyQueue ? KeyQueue->Put(Key) : 0;
 }
-
 
 bool CheckForEscSilent()
 {
@@ -1859,17 +1818,14 @@ bool IsShiftKey(FarKey Key)
 }
 
 
-FarKey CalcKeyCode(INPUT_RECORD *rec, bool RealKey, bool *NotMacros, bool ApiCall)
+FarKey CalcKeyCode(INPUT_RECORD *rec, bool RealKey, bool ApiCall)
 {
 	_SVS(CleverSysLog Clev(L"CalcKeyCode"));
-	_SVS(SysLog(L"CalcKeyCode -> %ls| RealKey=%d  *NotMacros=%d",_INPUT_RECORD_Dump(rec),RealKey,(NotMacros?*NotMacros:0)));
+	_SVS(SysLog(L"CalcKeyCode -> %ls| RealKey=%d",_INPUT_RECORD_Dump(rec),RealKey));
 	const UINT CtrlState = rec->Event.KeyEvent.dwControlKeyState;
 	const UINT ScanCode = rec->Event.KeyEvent.wVirtualScanCode;
 	const UINT KeyCode = rec->Event.KeyEvent.wVirtualKeyCode;
 	WCHAR Char=rec->Event.KeyEvent.uChar.UnicodeChar;
-
-	if (NotMacros)
-		*NotMacros = (CtrlState & FLAG_NOMACRO) != 0;
 
 	if (rec->EventType != KEY_EVENT)
 		return(KEY_NONE);
