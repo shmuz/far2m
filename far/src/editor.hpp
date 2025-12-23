@@ -191,7 +191,7 @@ private:
 
 	int m_XX2;    // scrollbar
 
-	FARString m_strLastSearchStr;
+	FARString m_LastSearchStr;
 	/* $ 30.07.2000 KM
 	   Новая переменная для поиска "Whole words"
 	*/

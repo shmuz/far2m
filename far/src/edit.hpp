@@ -38,6 +38,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "farcolors.hpp"
 #include "bitflags.hpp"
 #include "FilesSuggestor.hpp"
+#include "RegExp.hpp"
 #include <memory>
 #include <vector>
 
@@ -226,7 +227,7 @@ public:
 	void InsertBinaryString(const wchar_t *Str, int Length);
 
 	int Search(const FARString &Str, FARString &ReplaceStr, int Position, int Case, int WholeWords,
-			int Reverse, int Regexp, int *SearchLength);
+			int Reverse, RegExp *RE, int *SearchLength);
 
 	void SetClearFlag(int Flag) { Flags.Change(FEDITLINE_CLEARFLAG, Flag); }
 	int GetClearFlag() { return Flags.Check(FEDITLINE_CLEARFLAG); }

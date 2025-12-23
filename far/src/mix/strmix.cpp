@@ -38,7 +38,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lang.hpp"
 #include "config.hpp"
 #include "pathmix.hpp"
-#include "RegExp.hpp"
 #include "StackHeapArray.hpp"
 
 FARString &FormatNumber(const wchar_t *Src, FARString &strDest, int NumDigits)
@@ -1367,7 +1366,7 @@ std::string UnescapeUnprintable(const std::string &str)
 }
 
 bool SearchString(const wchar_t *Source, int StrSize, const FARString& Str, FARString& ReplaceStr,
-		int& CurPos, int Position, int Case, int WholeWords, int Reverse, int Regexp, int *SearchLength,
+		int& CurPos, int Position, int Case, int WholeWords, int Reverse, RegExp *Re, int *SearchLength,
 		const wchar_t* WordDiv)
 {
 	*SearchLength = 0;
@@ -1388,28 +1387,21 @@ bool SearchString(const wchar_t *Source, int StrSize, const FARString& Str, FARS
 
 	if ((Position<StrSize || (!Position && !StrSize)) && !Str.IsEmpty())
 	{
-		if (Regexp)
+		if (Re)
 		{
-			FARString strSlash(Str);
-			InsertRegexpQuote(strSlash);
-			RegExp re;
-			// Q: что важнее: опция диалога или опция RegExp`а?
-			if (!re.Compile(strSlash, OP_PERLSTYLE|OP_OPTIMIZE|(!Case?OP_IGNORECASE:0)))
-				return false;
-
 			regex_match rmatch;
 
 			bool found = false;
 			if (!Reverse)
 			{
-				if (re.SearchEx(ReStringView(Source, StrSize),Position,rmatch))
+				if (Re->SearchEx(ReStringView(Source, StrSize),Position,rmatch))
 					found = true;
 			}
 			else
 			{
 				for (int pos=Position; pos >= 0; --pos)
 				{
-					if (re.SearchEx(ReStringView(Source, StrSize), pos, rmatch))
+					if (Re->SearchEx(ReStringView(Source, StrSize), pos, rmatch))
 					{
 						if (rmatch.Matches[0].start <= Position)
 						{
@@ -1423,7 +1415,7 @@ bool SearchString(const wchar_t *Source, int StrSize, const FARString& Str, FARS
 			{
 				*SearchLength = rmatch.Matches[0].end - rmatch.Matches[0].start;
 				CurPos = rmatch.Matches[0].start;
-				ReplaceStr = ReplaceBrackets(Source, ReplaceStr, rmatch, re.GetNamedGroups());
+				ReplaceStr = ReplaceBrackets(Source, ReplaceStr, rmatch, Re->GetNamedGroups());
 			}
 
 			return found;
@@ -1486,4 +1478,11 @@ bool SearchString(const wchar_t *Source, int StrSize, const FARString& Str, FARS
 	}
 
 	return false;
+}
+
+bool CompileRegexp(const wchar_t *Str, int CaseSensitive, RegExp *Re)
+{
+	FARString strSlash(Str);
+	InsertRegexpQuote(strSlash);
+	return Re->Compile(strSlash, OP_PERLSTYLE | OP_OPTIMIZE | (CaseSensitive ? 0 : OP_IGNORECASE));
 }

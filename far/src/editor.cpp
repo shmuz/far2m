@@ -114,9 +114,9 @@ Editor::Editor(ScreenObject *Owner, bool DialogUsed)
 	   16-ричном представлении.
 	*/
 	if (GlobalSearchHex)
-		Transform(m_strLastSearchStr, strGlobalSearchString, L'S');
+		Transform(m_LastSearchStr, strGlobalSearchString, L'S');
 	else
-		m_strLastSearchStr = strGlobalSearchString;
+		m_LastSearchStr = strGlobalSearchString;
 
 	UnmarkMacroBlock();
 
@@ -157,9 +157,9 @@ void Editor::KeepInitParameters()
 {
 	// Установлен глобальный режим поиска 16-ричных данных?
 	if (GlobalSearchHex)
-		Transform(strGlobalSearchString, m_strLastSearchStr, L'X');
+		Transform(strGlobalSearchString, m_LastSearchStr, L'X');
 	else
-		strGlobalSearchString = m_strLastSearchStr;
+		strGlobalSearchString = m_LastSearchStr;
 
 	GlobalSearchCase = m_LastSearchCase;
 	GlobalSearchWholeWords = m_LastSearchWholeWords;
@@ -3235,17 +3235,16 @@ void Editor::ScrollUp()
 bool Editor::Search(bool Next)
 {
 	bool ReplaceAll = false;
-	static FARString strLastReplaceStr;
-	// static int LastSuccessfulReplaceMode=0;
+	static FARString LastReplaceStr;
 	FARString strMsgStr;
 	const wchar_t *TextHistoryName = L"SearchText", *ReplaceHistoryName = L"ReplaceText";
 	bool Match, UserBreak;
 
-	if (Next && m_strLastSearchStr.IsEmpty())
+	if (Next && m_LastSearchStr.IsEmpty())
 		return true;
 
-	FARString strSearchStr = m_strLastSearchStr;
-	FARString strReplaceStr = strLastReplaceStr;
+	FARString SearchStr = m_LastSearchStr;
+	FARString ReplaceStr = LastReplaceStr;
 	int Case = m_LastSearchCase;
 	int WholeWords = m_LastSearchWholeWords;
 	int ReverseSearch = m_LastSearchReverse;
@@ -3258,38 +3257,33 @@ bool Editor::Search(bool Next)
 			const wchar_t *Ptr = CalcWordFromString(m_CurLine->GetStringAddr(), m_CurLine->GetCurPos(),
 					&StartPickPos, &EndPickPos, GetWordDiv());
 
-			if (Ptr) {
-				FARString strWord(Ptr, (size_t)EndPickPos - StartPickPos + 1);
-				strSearchStr = strWord;
-			}
+			if (Ptr)
+				SearchStr = FARString(Ptr, (size_t)EndPickPos - StartPickPos + 1);
 		}
 
-		if (!GetSearchReplaceString(ReplaceMode, &strSearchStr, &strReplaceStr, TextHistoryName,
+		if (!GetSearchReplaceString(ReplaceMode, &SearchStr, &ReplaceStr, TextHistoryName,
 					ReplaceHistoryName, &Case, &WholeWords, &ReverseSearch, &SelectFound, &Regexp,
 					L"EditorSearch"))
 			return false;
+
+		m_LastSearchStr = SearchStr;
+		LastReplaceStr = ReplaceStr;
+		m_LastSearchCase = Case;
+		m_LastSearchWholeWords = WholeWords;
+		m_LastSearchReverse = ReverseSearch;
+		m_LastSearchSelFound = SelectFound;
+		m_LastSearchRegexp = Regexp;
+
+		if (SearchStr.IsEmpty())
+			return true;
 	}
-
-	m_strLastSearchStr = strSearchStr;
-	strLastReplaceStr = strReplaceStr;
-	m_LastSearchCase = Case;
-	m_LastSearchWholeWords = WholeWords;
-	m_LastSearchReverse = ReverseSearch;
-	m_LastSearchSelFound = SelectFound;
-	m_LastSearchRegexp = Regexp;
-
-	if (strSearchStr.IsEmpty())
-		return true;
-
-	// LastSuccessfulReplaceMode=ReplaceMode;
 
 	if (!m_EdOpt.PersistentBlocks || (SelectFound && !ReplaceMode))
 		UnmarkBlock();
 
 	{
-		// SaveScreen SaveScr;
 		SCOPED_ACTION(TPreRedrawFuncGuard)(Editor::PR_EditorShowMsg);
-		strMsgStr = strSearchStr;
+		strMsgStr = SearchStr;
 		InsertQuote(strMsgStr);
 		SetCursorType(false, -1);
 		Match = false;
@@ -3305,6 +3299,10 @@ bool Editor::Search(bool Next)
 		int StartLine = m_NumLine;
 		SCOPED_ACTION(wakeful);
 
+		RegExp re;
+		if (Regexp && !CompileRegexp(SearchStr, Case, &re))
+			return true;
+
 		while (CurPtr) {
 			DWORD CurTime = WINPORT(GetTickCount)();
 
@@ -3318,8 +3316,6 @@ bool Editor::Search(bool Next)
 					}
 				}
 
-				strMsgStr = strSearchStr;
-				InsertQuote(strMsgStr);
 				SetCursorType(false, -1);
 				int Total = ReverseSearch ? StartLine : m_NumLastLine - StartLine;
 				int Current = abs(NewNumLine - StartLine);
@@ -3327,15 +3323,16 @@ bool Editor::Search(bool Next)
 			}
 
 			int SearchLength = 0;
-			FARString strReplaceStrCurrent(ReplaceMode ? strReplaceStr : L"");
+			FARString ReplaceStrCurrent(ReplaceMode ? ReplaceStr : L"");
 			if (Regexp) {
-				ReplaceStrings(strReplaceStrCurrent, L"\\r", L"\r");
-				ReplaceStrings(strReplaceStrCurrent, L"\\n", L"\r");
-				ReplaceStrings(strReplaceStrCurrent, L"\\t", L"\t");
+				ReplaceStrings(ReplaceStrCurrent, L"\\r", L"\r");
+				ReplaceStrings(ReplaceStrCurrent, L"\\n", L"\r");
+				ReplaceStrings(ReplaceStrCurrent, L"\\t", L"\t");
 			}
 
-			if (CurPtr->Search(strSearchStr, strReplaceStrCurrent, CurPos, Case, WholeWords, ReverseSearch,
-						Regexp, &SearchLength)) {
+			if (CurPtr->Search(SearchStr, ReplaceStrCurrent, CurPos, Case, WholeWords, ReverseSearch,
+						Regexp ? &re:nullptr, &SearchLength))
+			{
 				if (SelectFound && !ReplaceMode) {
 					m_Pasting++;
 					Lock();
@@ -3388,7 +3385,7 @@ bool Editor::Search(bool Next)
 								CurPtr->RealPosToCell(CurPtr->CellPosToReal(CurX) + SearchLength) - 1, CurY,
 								FarColorToReal(COL_EDITORSELECTEDTEXT));
 						FARString strQSearchStr(CurPtr->GetStringAddr() + CurPtr->GetCurPos(), SearchLength),
-								strQReplaceStr = strReplaceStrCurrent;
+								strQReplaceStr = ReplaceStrCurrent;
 						InsertQuote(strQSearchStr);
 						InsertQuote(strQReplaceStr);
 						ReplaceStrings(strQReplaceStr, L"\r", L"\x2424"); // ␤
@@ -3418,15 +3415,15 @@ bool Editor::Search(bool Next)
 						  If Replace FARString doesn't contain control symbols (tab and return),
 						  processed with fast method, otherwise use improved old one.
 						*/
-						if (strReplaceStrCurrent.Contains(L'\t') || strReplaceStrCurrent.Contains(L'\r')) {
+						if (ReplaceStrCurrent.Contains(L'\t') || ReplaceStrCurrent.Contains(L'\r')) {
 							int SaveOvertypeMode = Flags.Check(FEDITOR_OVERTYPE);
 							Flags.Set(FEDITOR_OVERTYPE);
 							m_CurLine->SetOvertypeMode(TRUE);
 							// int CurPos=m_CurLine->GetCurPos();
 
 							int I = 0;
-							for (; SearchLength && strReplaceStrCurrent[I]; I++, SearchLength--) {
-								int Ch = strReplaceStrCurrent[I];
+							for (; SearchLength && ReplaceStrCurrent[I]; I++, SearchLength--) {
+								int Ch = ReplaceStrCurrent[I];
 
 								if (Ch == KEY_TAB) {
 									Flags.Clear(FEDITOR_OVERTYPE);
@@ -3454,8 +3451,8 @@ bool Editor::Search(bool Next)
 								Flags.Clear(FEDITOR_OVERTYPE);
 								m_CurLine->SetOvertypeMode(FALSE);
 
-								for (; strReplaceStrCurrent[I]; I++) {
-									int Ch = strReplaceStrCurrent[I];
+								for (; ReplaceStrCurrent[I]; I++) {
+									int Ch = ReplaceStrCurrent[I];
 
 									if (Ch != KEY_BS && !(Ch == KEY_DEL || Ch == KEY_NUMDEL))
 										ProcessKey(Ch);
@@ -3467,7 +3464,7 @@ bool Editor::Search(bool Next)
 							}
 
 							int Cnt = 0;
-							const wchar_t *Tmp = strReplaceStrCurrent;
+							const wchar_t *Tmp = ReplaceStrCurrent;
 
 							while ((Tmp = wcschr(Tmp, L'\r'))) {
 								Cnt++;
@@ -3484,7 +3481,7 @@ bool Editor::Search(bool Next)
 						else {
 							/* Fast method */
 							int SStrLen = SearchLength;
-							int RStrLen = (int)strReplaceStrCurrent.GetLength();
+							int RStrLen = (int)ReplaceStrCurrent.GetLength();
 							int StrLen;
 							const wchar_t *Str, *Eol;
 							m_CurLine->GetBinaryString(&Str, &Eol, StrLen);
@@ -3493,7 +3490,7 @@ bool Editor::Search(bool Next)
 							wchar_t *NewStr = new wchar_t[NewStrLen + 1];
 							int CurPos = m_CurLine->GetCurPos();
 							wmemcpy(NewStr, Str, CurPos);
-							wmemcpy(NewStr + CurPos, strReplaceStrCurrent, RStrLen);
+							wmemcpy(NewStr + CurPos, ReplaceStrCurrent, RStrLen);
 							wmemcpy(NewStr + CurPos + RStrLen, Str + CurPos + SStrLen, StrLen - CurPos - SStrLen);
 							wmemcpy(NewStr + NewStrLen - EolLen, Eol, EolLen);
 							AddUndoData(UNDO_EDIT, m_CurLine->GetStringAddr(), m_CurLine->GetEOL(), m_NumLine,
@@ -3518,7 +3515,8 @@ bool Editor::Search(bool Next)
 				if (Skip)
 					if (!ReverseSearch)
 						CurPos++;
-			} else {
+			}
+			else {
 				if (ReverseSearch) {
 					CurPtr = CurPtr->m_prev;
 

@@ -1948,10 +1948,10 @@ int Edit::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
    добавления поиска целых слов.
 */
 int Edit::Search(const FARString &Str, FARString &ReplaceStr, int Position, int Case, int WholeWords,
-		int Reverse, int Regexp, int *SearchLength)
+		int Reverse, RegExp *Re, int *SearchLength)
 {
 	return SearchString(m_Str, StrSize(), Str, ReplaceStr, m_CurPos, Position, Case, WholeWords,
-			Reverse, Regexp, SearchLength, GetWordDiv());
+			Reverse, Re, SearchLength, GetWordDiv());
 }
 
 void Edit::InsertTab()

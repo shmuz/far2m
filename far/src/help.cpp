@@ -1291,7 +1291,8 @@ int Help::ProcessKey(FarKey Key)
 				FARString strTempStr;
 				//int RetCode = GetString(Msg::HelpSearchTitle,Msg::HelpSearchingFor,L"HelpSearch",strLastSearchStr,strLastSearchStr0);
 				//Msg::HelpSearchTitle, Msg::HelpSearchingFor,
-				int RetCode = GetSearchReplaceString(FALSE, &strLastSearchStr0, &strTempStr, L"HelpSearch", L"", &Case, &WholeWords, nullptr, nullptr, &Regexp,nullptr);
+				int RetCode = GetSearchReplaceString(FALSE, &strLastSearchStr0, &strTempStr, L"HelpSearch",
+						L"", &Case, &WholeWords, nullptr, nullptr, &Regexp, nullptr);
 
 				if (RetCode <= 0)
 					return TRUE;
@@ -1796,17 +1797,13 @@ void Help::Search(FILE *HelpFile,uintptr_t nCodePage)
 	OldGetFileString GetStr(HelpFile);
 	int nStrLength;
 	wchar_t *ReadStr;
-	FARString strCurTopic, strEntryName, strReadStr, strLastSearchStrU=strLastSearchStr;
+	FARString strCurTopic, strEntryName, strReadStr;
 
-	strLastSearchStrU.Upper();
+	RegExp re;
+	bool bSearch = !LastSearchRegexp || CompileRegexp(strLastSearchStr, LastSearchCase, &re);
 
-	for (;;)
+	while (bSearch && GetStr.GetString(&ReadStr, nCodePage, nStrLength) > 0)
 	{
-		if (GetStr.GetString(&ReadStr, nCodePage, nStrLength) <= 0)
-		{
-			break;
-		}
-
 		strReadStr=ReadStr;
 		RemoveTrailingSpaces(strReadStr);
 
@@ -1835,7 +1832,9 @@ void Help::Search(FILE *HelpFile,uintptr_t nCodePage)
 			FARString ReplaceStr;
 			int CurPos=0;
 			int SearchLength;
-			bool Result=SearchString(strReadStr,(int)strReadStr.GetLength(),strLastSearchStr,ReplaceStr,CurPos,0,LastSearchCase,LastSearchWholeWords,FALSE,LastSearchRegexp,&SearchLength);
+			bool Result = SearchString(strReadStr, (int)strReadStr.GetLength(), strLastSearchStr,
+					ReplaceStr, CurPos, 0, LastSearchCase, LastSearchWholeWords, FALSE,
+					LastSearchRegexp ? &re:nullptr, &SearchLength);
 
 			if (Result)
 			{
