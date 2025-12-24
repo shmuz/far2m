@@ -1376,10 +1376,7 @@ bool SearchString(const wchar_t *Source, int StrSize, const FARString& Str, FARS
 
 	if (Reverse)
 	{
-		Position--;
-
-		if (Position>=StrSize)
-			Position=StrSize-1;
+		Position = Min(Position-1, StrSize-1);
 
 		if (Position<0)
 			return false;
