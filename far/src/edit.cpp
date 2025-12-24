@@ -459,15 +459,14 @@ void Edit::FastShow()
 			FS << fmt::LeftAlign() << fmt::Cells() << fmt::Size(EditLength) << OutStr.data();
 		}
 	} else {
-		if ((CellSelStart-= m_LeftPos) < 0)
-			CellSelStart = 0;
+		CellSelStart = Max(CellSelStart - m_LeftPos, 0);
 
-		int AllString = (CellSelEnd == -1);
+		bool AllString = (CellSelEnd == -1);
 
 		if (AllString)
 			CellSelEnd = EditLength;
-		else if ((CellSelEnd-= m_LeftPos) < 0)
-			CellSelEnd = 0;
+		else
+			CellSelEnd = Max(CellSelEnd - m_LeftPos, 0);
 
 		for (; OutStrCells < EditLength; ++OutStrCells) {
 			OutStr.emplace(OutStr.begin() + OutStr.size() - 1, L' ');
@@ -772,7 +771,7 @@ int Edit::ProcessKey(FarKey Key)
 		return TRUE;
 	}
 
-	int _Macro_IsExecuting = CtrlObject->Macro.IsExecuting();
+	bool _Macro_IsExecuting = CtrlObject->Macro.IsExecuting();
 
 	// $ 04.07.2000 IG - добавлена проверка на запуск макроса (00025.edit.cpp.txt)
 	if (!ShiftPressed && (!_Macro_IsExecuting || IsNavKey(Key)) && !IsShiftKey(Key)
@@ -847,6 +846,11 @@ int Edit::ProcessKey(FarKey Key)
 	}
 
 	switch (Key) {
+		case KEY_CTRLA:
+			Select(0, StrSize());
+			Show();
+			return FALSE;
+
 		case KEY_SHIFTLEFT:
 		case KEY_SHIFTNUMPAD4: {
 			if (m_CurPos > 0) {

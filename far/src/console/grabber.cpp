@@ -321,8 +321,7 @@ int Grabber::ProcessKey(FarKey key)
 		case KEY_CTRLSHIFTLEFT:
 		case KEY_CTRLSHIFTNUMPAD4:
 
-			if ((_area.cur_x-= 10) < 0)
-				_area.cur_x = 0;
+			_area.cur_x = Max(_area.cur_x - 10, 0);
 
 			if (key == KEY_CTRLSHIFTLEFT || key == KEY_CTRLSHIFTNUMPAD4)
 				_area.left = _area.cur_x;
@@ -333,8 +332,7 @@ int Grabber::ProcessKey(FarKey key)
 		case KEY_CTRLSHIFTRIGHT:
 		case KEY_CTRLSHIFTNUMPAD6:
 
-			if ((_area.cur_x+= 10) > ScrX)
-				_area.cur_x = ScrX;
+			_area.cur_x = Min<int>(_area.cur_x + 10, ScrX);
 
 			if (key == KEY_CTRLSHIFTRIGHT || key == KEY_CTRLSHIFTNUMPAD6)
 				_area.left = _area.cur_x;
@@ -345,8 +343,7 @@ int Grabber::ProcessKey(FarKey key)
 		case KEY_CTRLSHIFTUP:
 		case KEY_CTRLSHIFTNUMPAD8:
 
-			if ((_area.cur_y-= 5) < 0)
-				_area.cur_y = 0;
+			_area.cur_y = Max(_area.cur_y - 5, 0);
 
 			if (key == KEY_CTRLSHIFTUP || key == KEY_CTRLSHIFTNUMPAD8)
 				_area.top = _area.cur_y;
@@ -357,8 +354,7 @@ int Grabber::ProcessKey(FarKey key)
 		case KEY_CTRLSHIFTDOWN:
 		case KEY_CTRLSHIFTNUMPAD2:
 
-			if ((_area.cur_y+= 5) > ScrY)
-				_area.cur_y = ScrY;
+			_area.cur_y = Min<int>(_area.cur_y + 5, ScrY);
 
 			if (key == KEY_CTRLSHIFTDOWN || key == KEY_CTRLSHIFTNUMPAD2)
 				_area.top = _area.cur_y;

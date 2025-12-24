@@ -99,7 +99,7 @@ struct EditorUndoData
 		delete[] Str;
 
 		if (aStr) {
-			Str = new wchar_t[aLength + 1];
+			Str = new (std::nothrow) wchar_t[aLength + 1];
 
 			if (Str)
 				wmemmove(Str, aStr, aLength);
