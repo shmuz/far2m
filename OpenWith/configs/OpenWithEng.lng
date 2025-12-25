@@ -21,6 +21,7 @@
 "Use `&xdg-mime` tool"
 "Use `&file` tool"
 "Use `magi&ka` tool"
+"Use glob rules &detection"
 "Use &extension-based fallback"
 "Load MIME type &aliases"
 "Load MIME type su&bclasses"
@@ -37,7 +38,7 @@
 
 "&Filepath:"
 "files selected: "
-"&MIME type:"
+"&MIME profile:"
 "L&aunch command:"
 "&Close"
 "&Launch"
