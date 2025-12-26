@@ -3536,7 +3536,7 @@ bool Editor::Search(bool Next)
 	Show();
 
 	if (!Match && !UserBreak)
-		Message(MSG_WARNING, 1, Msg::EditSearchTitle, Msg::EditNotFound, strMsgStr, Msg::Ok);
+		Message(MSG_WARNING, 1, &EditSearchNotFound, Msg::EditSearchTitle, Msg::EditNotFound, strMsgStr, Msg::Ok);
 
 	return true;
 }
