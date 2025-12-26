@@ -1382,7 +1382,7 @@ bool SearchString(const wchar_t *Source, int StrSize, const FARString& Str, FARS
 			return false;
 	}
 
-	if ((Position<StrSize || (!Position && !StrSize)) && !Str.IsEmpty())
+	if ((Position <= StrSize) && !Str.IsEmpty())
 	{
 		if (Re)
 		{
