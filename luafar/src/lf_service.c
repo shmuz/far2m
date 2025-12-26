@@ -3126,8 +3126,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 
 		case DM_ENABLE:
 			Param2 = GetEnableFromLua(L, pos4);
-			lua_pushboolean(L, PSInfo.SendDlgMessage(hDlg, Msg, Param1, Param2));
-			return 1;
+			break;
 
 		case DM_GETCHECK:
 			lua_pushinteger(L, PSInfo.SendDlgMessage(hDlg, Msg, Param1, 0));
