@@ -255,7 +255,7 @@ void FilePanels::DeletePanel(Panel *Deleted)
 	delete Deleted;
 }
 
-int FilePanels::SetAnhoterPanelFocus()
+int FilePanels::SetAnotherPanelFocus()
 {
 	int Ret=FALSE;
 
@@ -385,7 +385,7 @@ int FilePanels::ProcessKey(FarKey Key)
 		}
 		case KEY_TAB:
 		{
-			if (!SetAnhoterPanelFocus()) {
+			if (!SetAnotherPanelFocus()) {
 				CtrlObject->CmdLine->ProcessKey(Key);
 			}
 			break;

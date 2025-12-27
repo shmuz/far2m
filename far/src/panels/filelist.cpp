@@ -2447,6 +2447,7 @@ bool FileList::ChangeDir(const wchar_t *NewDir, bool ShowMessage)
 
 	Panel *AnotherPanel;
 
+	FrameManager->FolderChanged();
 	if (PanelMode != PLUGIN_PANEL && !IsAbsolutePath(NewDir) && !TestCurrentDirectory(strCurDir))
 		FarChDir(strCurDir);
 

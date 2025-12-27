@@ -239,6 +239,7 @@ class PluginManager
 		int   ProcessEvent(PHPTR ph, int Event, void *Param);
 		int   ProcessHostFile(PHPTR ph, PluginPanelItem *PanelItem, int ItemsNumber, int OpMode);
 		int   ProcessKey(PHPTR ph, int Key, unsigned int ControlState);
+		int   ProcessSynchroEvent(int Event, void* Param);
 		int   ProcessViewerEvent(int Event, void *Param);
 		int   PutFiles(PHPTR ph, PluginPanelItem *PanelItem, int ItemsNumber, int Move, int OpMode);
 		void  RetainPanel(PHPTR ph); // increments refcnt

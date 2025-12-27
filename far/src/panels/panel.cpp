@@ -1085,6 +1085,7 @@ void Panel::FastFindShow(int FindX, int FindY)
 void Panel::SetFocus()
 {
 	if (CtrlObject->Cp()->ActivePanel != this) {
+		FrameManager->FolderChanged();
 		CtrlObject->Cp()->ActivePanel->KillFocus();
 		CtrlObject->Cp()->ActivePanel = this;
 	}

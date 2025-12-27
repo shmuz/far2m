@@ -41,6 +41,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "filelist.hpp"
 #include "filepanels.hpp"
 #include "history.hpp"
+#include "manager.hpp"
 #include "mix.hpp"
 #include "panelmix.hpp"
 #include "pathmix.hpp"
@@ -829,6 +830,7 @@ int FileList::ProcessOneHostFile(int Idx)
 
 void FileList::SetPluginMode(PHPTR PanHandle, const wchar_t *PluginFile, bool SendOnFocus)
 {
+	FrameManager->FolderChanged();
 	if (PanelMode != PLUGIN_PANEL) {
 		CtrlObject->FolderHistory->AddToHistory(strCurDir);
 	}

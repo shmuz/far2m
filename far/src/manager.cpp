@@ -107,6 +107,7 @@ Manager::Manager():
 	ExecutedFrame(nullptr),
 	CurrentFrame(nullptr),
 	ModalEVCount(0),
+	FolderChangedCount(0),
 	EndLoop(false),
 	StartManager(false)
 {
@@ -1115,8 +1116,14 @@ void Manager::Commit(int Count)
 		}
 		else
 		{
+			if (FolderChangedCount)
+			{
+				FolderChangedCount = 0;
+				CtrlObject->Plugins.ProcessSynchroEvent(SE_FOLDERCHANGED, nullptr);
+			}
 			break;
 		}
+
 		if (Count > 0 && --Count == 0)
 		{
 			break;

@@ -67,8 +67,8 @@ local LoadingInProgress
 local EnumState = {}
 local Events
 local EventGroups = {
-  "consoleinput", "dialogevent", "editorevent", "editorinput", "exitfar", "mayexitfar",
-  "synchroevent", "viewerevent",
+  "consoleinput", "dialogevent", "editorevent", "editorinput", "exitfar", "folderchanged",
+  "mayexitfar", "synchroevent", "viewerevent",
 }
 local AddedMenuItems
 local AddedPrefixes
@@ -278,7 +278,11 @@ local function export_ProcessConsoleInput (Rec)
 end
 
 local function export_ProcessSynchroEvent (Event, Param)
-  return EV_Handler(Events.synchroevent, nil, Event, Param)
+  if Event == F.SE_FOLDERCHANGED then
+    EV_Handler(Events.folderchanged)
+  else
+    return EV_Handler(Events.synchroevent, nil, Event, Param)
+  end
 end
 
 local function export_GetContentFields (colnames)
@@ -902,7 +906,8 @@ local function LoadMacros (unload, paths)
     export.ProcessEditorInput = Events.editorinput[1] and export_ProcessEditorInput
     export.ProcessViewerEvent = Events.viewerevent[1] and export_ProcessViewerEvent
     export.ProcessConsoleInput = Events.consoleinput[1] and export_ProcessConsoleInput
-    export.ProcessSynchroEvent = Events.synchroevent[1] and export_ProcessSynchroEvent
+    export.ProcessSynchroEvent = (Events.synchroevent[1] or Events.folderchanged[1])
+                                 and export_ProcessSynchroEvent
     if ContentColumns[1] then
       export.GetContentFields = export_GetContentFields
       export.GetContentData   = export_GetContentData

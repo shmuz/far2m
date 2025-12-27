@@ -67,6 +67,7 @@ class Manager
 		*/
 		int ModalEVCount;
 		int RegularIdleWanters = 0;
+		int FolderChangedCount;
 
 		bool EndLoop;            // Признак выхода из цикла
 		bool StartManager;
@@ -185,6 +186,7 @@ class Manager
 		void RegularIdleWantersAdd() { RegularIdleWanters++; }
 		void RegularIdleWantersRemove() { if (RegularIdleWanters) RegularIdleWanters--; }
 		int RegularIdleWantersCount() const { return RegularIdleWanters; }
+		void FolderChanged() { FolderChangedCount++; }
 };
 
 extern Manager *FrameManager;

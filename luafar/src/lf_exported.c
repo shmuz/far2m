@@ -1432,6 +1432,11 @@ int LF_ProcessSynchroEvent (lua_State* L, int Event, void *Param)
 				break;
 		}
 	}
+	else if (Event == SE_FOLDERCHANGED)
+	{
+		Common_ProcessSynchroEvent(L, Event, 0);
+	}
+
 	return 0;
 }
 

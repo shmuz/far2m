@@ -853,6 +853,17 @@ int PluginManager::ProcessViewerEvent(int Event, void *Param)
 	return 0;
 }
 
+int PluginManager::ProcessSynchroEvent(int Event, void* Param)
+{
+	const auto LuaMacro = FindPlugin(SYSID_LUAMACRO);
+	if (LuaMacro && LuaMacro->HasProcessSynchroEvent())
+	{
+		LuaMacro->ProcessSynchroEvent(Event, Param);
+	}
+
+	return 0;
+}
+
 int PluginManager::ProcessDialogEvent(int Event, void *Param)
 {
 	for (int i = 0; i<PluginsCount; i++)
