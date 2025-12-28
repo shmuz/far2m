@@ -1498,7 +1498,7 @@ COPY_CODES ShellCopy::CopyFileTree(const wchar_t *Dest)
 	if (Flags.MOVE) {
 		FARString strTmpSrcDir;
 		SrcPanel->GetCurDir(strTmpSrcDir);
-		AllowMoveByOS = (CheckDisksProps(strTmpSrcDir, Dest, CHECKEDPROPS_ISSAMEDISK)) != 0;
+		AllowMoveByOS = CheckDisksProps(strTmpSrcDir, Dest, CHECKEDPROPS_ISSAMEDISK);
 	}
 
 	// Основной цикл копирования одной порции.

@@ -65,4 +65,4 @@ enum CHECKEDPROPS_TYPE
 	CHECKEDPROPS_ISDST_ENCRYPTION,
 };
 
-int CheckDisksProps(const wchar_t *SrcPath,const wchar_t *DestPath,int CheckedType);
+bool CheckDisksProps(const wchar_t *SrcPath,const wchar_t *DestPath,int CheckedType);
