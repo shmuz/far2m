@@ -3224,7 +3224,7 @@ int Dialog::ProcessKey(FarKey Key)
 					return TRUE;
 				}
 
-				if (!(Item[FocusPos]->Flags & DIF_READONLY) || IsNavKey(Key)) {
+				if (!(Item[FocusPos]->Flags & DIF_READONLY) || IsNavKey(Key) || Key == KEY_CTRLA) {
 					// "только что ломанулись и начинать выделение с нуля"?
 					if ((Opt.Dialogs.EditLine & DLGEDITLINE_NEWSELONGOTFOCUS) && Item[FocusPos]->SelStart != -1
 							&& PrevFocusPos != FocusPos) {	// && Item[FocusPos].SelEnd)
