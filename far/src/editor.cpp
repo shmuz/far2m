@@ -3512,7 +3512,7 @@ bool Editor::Search(bool Next)
 
 				CurPos = m_CurLine->GetCurPos();
 
-				if (Skip || SearchLength == 0)
+				if (Skip) // || SearchLength == 0)
 					if (!ReverseSearch)
 						CurPos++;
 			}
