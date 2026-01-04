@@ -1243,48 +1243,125 @@ wchar_t GetDecimalSeparator()
 	return Opt.strDecimalSeparator.IsEmpty() ? GetDecimalSeparatorDefault() : Opt.strDecimalSeparator.At(0);
 }
 
-FARString ReplaceBrackets(
+
+static FARString ReplaceBrackets(
 		const wchar_t* SearchStr,
 		const FARString& ReplaceStr,
-		regex_match& Match,
+		const regex_match& Match,
 		std::unordered_map<std::wstring, size_t> const& NamedGroups)
 {
+	enum ST {
+		ST_COMMON, ST_ORDERED_1, ST_ORDERED_2, ST_NAMED,
+	};
+	ST State = ST_COMMON;
 	FARString result;
 	const size_t length = ReplaceStr.GetLength();
+	const wchar_t *Arr = ReplaceStr;
+	const wchar_t *start = Arr;
+	size_t index = 0;
 
-	for (size_t pos=0; pos < length; )
+	for (size_t pos=0; pos <= length; ) // use '<=' to process all within the loop
 	{
-		bool common=true;
+		const wchar_t *p = Arr + pos;
 
-		if (ReplaceStr[pos]=='$')
+		switch(State)
 		{
-			if (pos+1 > length) break;
+			case ST_COMMON:
+				start = p; // all other states are switched to from this state
 
-			wchar_t symbol=Upper(ReplaceStr[pos+1]);
-			int index=-1;
-
-			if (symbol>='0'&&symbol<='9')
-			{
-				index=symbol-'0';
-			}
-			else if (symbol>='A'&&symbol<='Z')
-			{
-				index=symbol-'A'+10;
-			}
-			else if (symbol == L'{')
-			{
-				size_t EndPos = 0;
-				for (size_t i = pos+2; i < length; i++)
+				if (pos == length) // end of input
 				{
-					if (!(IsAlphaNum(ReplaceStr[i]) || ReplaceStr[i]==L'_' || ReplaceStr[i]==L' '))
-					{
-						EndPos = i;
-						break;
-					}
+					pos++;
 				}
-				if ((ReplaceStr[EndPos] == L'}') && (EndPos > pos+2))
+				else if (p[0] == L'\\')
 				{
-					std::wstring Name(ReplaceStr+(pos+2), EndPos-(pos+2));
+					wchar_t x1, x2;
+					if (Upper(p[1]) == L'X'  // process hexadecimal codes, e.g. \x7A, \x00, etc.
+							&& (x1 = ParseHexDigit(p[2])) != 0xFF && (x2 = ParseHexDigit(p[3])) != 0xFF)
+					{
+						result += wchar_t(x1*16 + x2);
+						pos += 4;
+					}
+					else if (pos + 1 < length)
+					{
+						switch(p[1])
+						{
+							case L't' : result += L'\t'; break;
+							case L'r' : result += L'\r'; break;
+							case L'n' : result += L'\n'; break;
+							case L'\\': result += L'\\'; break;
+							case L'$' : result += L'$' ; break;
+							default   : result += L'\\'; result += p[1]; break;
+						}
+						pos += 2;
+					}
+					else
+					{
+						result += L'\\';
+						pos++;
+					}
+					break;
+				}
+				else if (p[0] == L'$' && p[1] >= L'0' && p[1] <= L'9')
+				{
+					State = ST_ORDERED_1;
+					index = p[1] - L'0';
+					pos += 2;
+				}
+				else if (p[0] == L'$' && p[1] == L'{' && p[2] >= L'0' && p[2] <= L'9')
+				{
+					State = ST_ORDERED_2;
+					index = p[2] - L'0';
+					pos += 3;
+				}
+				else if (p[0] == L'$' && p[1] == L'{' && (p[2] == L'_' || IsAlpha(p[2])))
+				{
+					State = ST_NAMED;
+					pos += 2;
+				}
+				else
+				{
+					result += p[0];
+					pos++;
+				}
+				break;
+
+			case ST_ORDERED_1:
+			case ST_ORDERED_2:
+				if (p[0] >= L'0' && p[0] <= L'9')
+				{
+					index = 10*index + (p[0] - L'0');
+					pos++;
+				}
+				else if (State == ST_ORDERED_2 && p[0] != L'}') // alien char; insert the "buffer" as is;
+				{                                               // don't increment 'pos'
+					result += FARString(start, p - start);
+					State = ST_COMMON;
+				}
+				else // valid group syntax found
+				{
+					if (index < Match.Matches.size())
+					{
+						const auto& match = Match.Matches[index];
+						FARString bracket(SearchStr + match.start, match.end - match.start);
+						result += bracket;
+					}
+					else // invalid index; insert the "buffer" as is
+					{
+						auto end = (State == ST_ORDERED_1) ? p : p + 1;
+						result += FARString(start, end - start);
+					}
+					pos += (State == ST_ORDERED_1) ? 0 : 1;
+					State = ST_COMMON;
+				}
+				break;
+
+			case ST_NAMED:
+				if (p[0] == L'_' || IsAlphaNum(p[0]))
+					pos++;
+				else if (p[0] == L'}') // valid named group syntax found
+				{
+					std::wstring Name(start+2, p - (start+2));
 					const auto found = NamedGroups.find(Name);
 					if (found != NamedGroups.end())
 					{
@@ -1296,35 +1373,20 @@ FARString ReplaceBrackets(
 							result += bracket;
 						}
 					}
-					//	else //insert named group "as is"
-					//	{
-					//		result += FARString(ReplaceStr + pos, (EndPos+1) - pos);
-					//	}
-					pos = EndPos + 1;
-					continue;
+					else //insert named group "as is"
+					{
+						result += FARString(start, p - start);
+					}
+					State = ST_COMMON;
+					pos++;
 				}
-			}
-
-			if (index>=0)
-			{
-				if (index < (int)Match.Matches.size())
+				else // named group not closed; don't increment 'pos'
 				{
-					const auto& match = Match.Matches[index];
-					FARString bracket(SearchStr + match.start, match.end - match.start);
-					result+=bracket;
+					result += FARString(start, (p-1) - start);
+					State = ST_COMMON;
 				}
-
-				common=false;
-				++pos;
-			}
+				break;
 		}
-
-		if (common)
-		{
-			result+=ReplaceStr[pos];
-		}
-
-		++pos;
 	}
 
 	return result;
