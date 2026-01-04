@@ -20,7 +20,6 @@ set(SCRIPTS "${CMAKE_CURRENT_SOURCE_DIR}/scripts")
 set(HLFFILES
     "${BOOTSTRAP}/FarEng.hlf"
     "${BOOTSTRAP}/FarRus.hlf"
-    "${BOOTSTRAP}/FarHun.hlf"
     "${BOOTSTRAP}/FarUkr.hlf"
 )
 
