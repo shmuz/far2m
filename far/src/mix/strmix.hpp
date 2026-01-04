@@ -127,6 +127,6 @@ inline const wchar_t* GetDecimalSeparatorDefaultStr() { return L"."; };
 
 bool SearchString(const wchar_t *Source, int StrSize, const FARString& Str,
 		FARString& ReplaceStr, int& CurPos, int Position, int Case, int WholeWords,
-		int Reverse, RegExp *Re, int *SearchLength, const wchar_t* WordDiv=nullptr);
+		int Reverse, RegExp *Re, int& SearchLength, const wchar_t* WordDiv=nullptr);
 
 bool CompileRegexp(const wchar_t *Str, int CaseSensitive, RegExp *Re);

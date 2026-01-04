@@ -226,8 +226,8 @@ public:
 	void InsertString(const wchar_t *Str);
 	void InsertBinaryString(const wchar_t *Str, int Length);
 
-	int Search(const FARString &Str, FARString &ReplaceStr, int Position, int Case, int WholeWords,
-			int Reverse, RegExp *RE, int *SearchLength);
+	bool Search(const FARString &Str, FARString &ReplaceStr, int Position, int Case, int WholeWords,
+			int Reverse, RegExp *RE, int& SearchLength);
 
 	void SetClearFlag(int Flag) { Flags.Change(FEDITLINE_CLEARFLAG, Flag); }
 	int GetClearFlag() { return Flags.Check(FEDITLINE_CLEARFLAG); }

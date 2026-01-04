@@ -4205,21 +4205,24 @@ have a number (in the order of appearance).
 
 @RegExpRepl
 $ #Regular expressions in replace#
-    In "Replace with" line one can use special replace string regular
-expressions:
+    In the "Replace with" line, one can use the following special replacement expressions:
 
-    #$0#..#$9#, #$A#..#$Z#
+    #$N# or #${N}# (where N is one or more decimal digits)
+    These represent captured group numbers and are replaced with the matching text.
+    The numbers are assigned to the groups based on the sequence of opening parentheses in the expression.
+    #$0# represents the entire found sequence.
 
-    The found group numbers, they are replaced with appropriate groups.
-The numbers are assigned to the groups in order of opening parentheses
-sequence in regular expression. #$0# means the whole found sequence.
-#$*# is replaced with '*' character.
+    The literal #$# and the literal #\# must be escaped by prepending them
+with a backslash (i.e., #\$# and #\\\\#).
 
-    Both #\n# and #\r# are interpreted as line breaks, depending on
-the end-of-line style used in the file. They behave the same way.
+    Both #\n# and #\r# are interpreted as line breaks, automatically adapting
+to the end-of-line style used in the file. They function identically.
 
-    #\t# is replaced with tab character (0x09).
+    #\t# is replaced with a tab character (0x09).
 
+    #\xNN# (where N is a hexadecimal digit)
+    This will be replaced with a byte of the specified value.
+    For example, #\x50# will be replaced with the character P.
 
 @ElevationDlg
 $ #Запрос привилегий администратора#

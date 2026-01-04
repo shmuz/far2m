@@ -1832,9 +1832,9 @@ void Help::Search(FILE *HelpFile,uintptr_t nCodePage)
 			FARString ReplaceStr;
 			int CurPos=0;
 			int SearchLength;
-			bool Result = SearchString(strReadStr, (int)strReadStr.GetLength(), strLastSearchStr,
+			bool Result = SearchString(strReadStr, strReadStr.GetLength(), strLastSearchStr,
 					ReplaceStr, CurPos, 0, LastSearchCase, LastSearchWholeWords, FALSE,
-					LastSearchRegexp ? &re:nullptr, &SearchLength);
+					LastSearchRegexp ? &re:nullptr, SearchLength);
 
 			if (Result)
 			{

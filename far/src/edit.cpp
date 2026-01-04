@@ -1957,8 +1957,8 @@ int Edit::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
    Немного изменён алгоритм из-за необходимости
    добавления поиска целых слов.
 */
-int Edit::Search(const FARString &Str, FARString &ReplaceStr, int Position, int Case, int WholeWords,
-		int Reverse, RegExp *Re, int *SearchLength)
+bool Edit::Search(const FARString &Str, FARString &ReplaceStr, int Position, int Case,
+		int WholeWords, int Reverse, RegExp *Re, int& SearchLength)
 {
 	return SearchString(m_Str, StrSize(), Str, ReplaceStr, m_CurPos, Position, Case, WholeWords,
 			Reverse, Re, SearchLength, GetWordDiv());

@@ -1286,9 +1286,9 @@ static FARString ReplaceBrackets(
 					{
 						switch(p[1])
 						{
+							case L'r' :
+							case L'n' : result += L'\r'; break;
 							case L't' : result += L'\t'; break;
-							case L'r' : result += L'\r'; break;
-							case L'n' : result += L'\n'; break;
 							case L'\\': result += L'\\'; break;
 							case L'$' : result += L'$' ; break;
 							default   : result += L'\\'; result += p[1]; break;
@@ -1428,10 +1428,10 @@ std::string UnescapeUnprintable(const std::string &str)
 }
 
 bool SearchString(const wchar_t *Source, int StrSize, const FARString& Str, FARString& ReplaceStr,
-		int& CurPos, int Position, int Case, int WholeWords, int Reverse, RegExp *Re, int *SearchLength,
+		int& CurPos, int Position, int Case, int WholeWords, int Reverse, RegExp *Re, int& SearchLength,
 		const wchar_t* WordDiv)
 {
-	*SearchLength = 0;
+	SearchLength = 0;
 
 	if (!WordDiv)
 		WordDiv=Opt.strWordDiv;
@@ -1472,7 +1472,7 @@ bool SearchString(const wchar_t *Source, int StrSize, const FARString& Str, FARS
 			}
 			if (found)
 			{
-				*SearchLength = rmatch.Matches[0].end - rmatch.Matches[0].start;
+				SearchLength = rmatch.Matches[0].end - rmatch.Matches[0].start;
 				CurPos = rmatch.Matches[0].start;
 				ReplaceStr = ReplaceBrackets(Source, ReplaceStr, rmatch, Re->GetNamedGroups());
 			}
@@ -1483,7 +1483,7 @@ bool SearchString(const wchar_t *Source, int StrSize, const FARString& Str, FARS
 		if (Position==StrSize)
 			return false;
 
-		int Length = *SearchLength = (int)Str.GetLength();
+		int Length = SearchLength = (int)Str.GetLength();
 
 		for (int I=Position; (Reverse && I>=0) || (!Reverse && I<StrSize); Reverse ? I--:I++)
 		{

@@ -3238,7 +3238,7 @@ bool Editor::Search(bool Next)
 	static FARString LastReplaceStr;
 	FARString strMsgStr;
 	const wchar_t *TextHistoryName = L"SearchText", *ReplaceHistoryName = L"ReplaceText";
-	bool Match, UserBreak;
+	bool Match = false, UserBreak = false;
 
 	if (Next && m_LastSearchStr.IsEmpty())
 		return true;
@@ -3286,24 +3286,21 @@ bool Editor::Search(bool Next)
 		strMsgStr = SearchStr;
 		InsertQuote(strMsgStr);
 		SetCursorType(false, -1);
-		Match = false;
-		UserBreak = false;
 		int CurPos = m_CurLine->GetCurPos();
 
 		if (!ReverseSearch && Next)
 			CurPos++;
 
+		const int StartLine = m_NumLine;
 		int NewNumLine = m_NumLine;
-		Edit *CurPtr = m_CurLine;
 		DWORD StartTime = WINPORT(GetTickCount)();
-		int StartLine = m_NumLine;
 		SCOPED_ACTION(wakeful);
 
 		RegExp re;
 		if (Regexp && !CompileRegexp(SearchStr, Case, &re))
 			return true;
 
-		while (CurPtr) {
+		for (Edit *CurPtr=m_CurLine, *PrevCurPtr=CurPtr; CurPtr; ) {
 			DWORD CurTime = WINPORT(GetTickCount)();
 
 			if (CurTime - StartTime > RedrawTimeout) {
@@ -3322,16 +3319,17 @@ bool Editor::Search(bool Next)
 				EditorShowMsg(Msg::EditSearchTitle, Msg::EditSearchingFor, strMsgStr, ToPercent64(Current, Total));
 			}
 
-			int SearchLength = 0;
-			FARString ReplaceStrCurrent(ReplaceMode ? ReplaceStr : L"");
-			if (Regexp) {
-				ReplaceStrings(ReplaceStrCurrent, L"\\r", L"\r");
-				ReplaceStrings(ReplaceStrCurrent, L"\\n", L"\r");
-				ReplaceStrings(ReplaceStrCurrent, L"\\t", L"\t");
+			if (!ReverseSearch && (PrevCurPtr != CurPtr))
+			{
+				PrevCurPtr = CurPtr;
+				CurPos = 0;
 			}
 
+			int SearchLength = 0;
+			FARString ReplaceStrCurrent(ReplaceMode ? ReplaceStr : L"");
+
 			if (CurPtr->Search(SearchStr, ReplaceStrCurrent, CurPos, Case, WholeWords, ReverseSearch,
-						Regexp ? &re:nullptr, &SearchLength))
+					Regexp ? &re:nullptr, SearchLength))
 			{
 				if (SelectFound && !ReplaceMode) {
 					m_Pasting++;
@@ -3481,7 +3479,7 @@ bool Editor::Search(bool Next)
 						else {
 							/* Fast method */
 							int SStrLen = SearchLength;
-							int RStrLen = (int)ReplaceStrCurrent.GetLength();
+							int RStrLen = ReplaceStrCurrent.GetLength();
 							int StrLen;
 							const wchar_t *Str, *Eol;
 							m_CurLine->GetBinaryString(&Str, &Eol, StrLen);
@@ -3512,7 +3510,7 @@ bool Editor::Search(bool Next)
 
 				CurPos = m_CurLine->GetCurPos();
 
-				if (Skip) // || SearchLength == 0)
+				if (Skip || SearchLength == 0)
 					if (!ReverseSearch)
 						CurPos++;
 			}
