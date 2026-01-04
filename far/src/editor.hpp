@@ -205,7 +205,7 @@ private:
 	InternalEditorBookMark m_SavePos;
 
 	InternalEditorStackBookMark *m_StackPos;
-	BOOL m_NewStackPos;
+	bool m_NewStackPos;
 
 	int m_EditorID;
 
@@ -221,8 +221,8 @@ private:
 
 private:
 	virtual void DisplayObject();
-	void ShowEditor(int CurLineOnly);
-	void DeleteString(Edit *DelPtr, int LineNumber, int DeleteLast, int UndoLine);
+	void ShowEditor(bool CurLineOnly);
+	void DeleteString(Edit *DelPtr, int LineNumber, bool DeleteLast, int UndoLine);
 	void InsertString();
 	void Up();
 	void Down();
@@ -255,7 +255,7 @@ private:
 	void DeleteVBlock();
 	void VCopy(int Append);
 	void VPaste(wchar_t *ClipText);
-	void VBlockShift(int Left);
+	void VBlockShift(bool Left);
 	Edit *GetStringByNumber(int DestLine);
 	static void EditorShowMsg(const wchar_t *Title, const wchar_t *Msg, const wchar_t *Name, int Percent);
 
@@ -265,7 +265,7 @@ private:
 	int ClearStackBookmarks();
 	int DeleteStackBookmark(InternalEditorStackBookMark *sb_delete);
 	int RestoreStackBookmark();
-	int AddStackBookmark(BOOL blNewPos = TRUE);
+	int AddStackBookmark(bool blNewPos);
 	InternalEditorStackBookMark *PointerToFirstStackBookmark(int *piCount = nullptr);
 	InternalEditorStackBookMark *PointerToLastStackBookmark(int *piCount = nullptr);
 	InternalEditorStackBookMark *PointerToStackBookmark(int iIdx);
@@ -297,9 +297,6 @@ public:
 
 	bool SetCodePage(UINT codepage);                                            // BUGBUG
 	UINT GetCodePage();                                                         // BUGBUG
-
-	int SetRawData(const wchar_t *SrcBuf, int SizeSrcBuf, int TextFormat);      // преобразование из буфера в список
-	int GetRawData(wchar_t **DestBuf, int &SizeDestBuf, int TextFormat = 0);    // преобразование из списка в буфер
 
 	virtual int ProcessKey(FarKey Key);
 	virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);

@@ -2245,7 +2245,7 @@ int FileEditor::EditorControl(int Command, void *Param)
 			return FALSE;
 		}
 		case ECTL_ADDSTACKBOOKMARK: {
-			return m_editor->AddStackBookmark();
+			return m_editor->AddStackBookmark(true);
 		}
 		case ECTL_PREVSTACKBOOKMARK: {
 			return m_editor->PrevStackBookmark();
