@@ -1251,14 +1251,15 @@ static FARString ReplaceBrackets(
 		std::unordered_map<std::wstring, size_t> const& NamedGroups)
 {
 	enum ST {
-		ST_COMMON, ST_ORDERED_1, ST_ORDERED_2, ST_NAMED,
+		ST_COMMON, ST_HEXCHAR, ST_ORDERED_1, ST_ORDERED_2, ST_NAMED,
 	};
 	ST State = ST_COMMON;
 	FARString result;
 	const size_t length = ReplaceStr.GetLength();
 	const wchar_t *Arr = ReplaceStr;
 	const wchar_t *start = Arr;
-	size_t index = 0;
+	size_t index = 0, count = 0;
+	wchar_t hexChar;
 
 	for (size_t pos=0; pos <= length; ) // use '<=' to process all within the loop
 	{
@@ -1275,12 +1276,11 @@ static FARString ReplaceBrackets(
 				}
 				else if (p[0] == L'\\')
 				{
-					wchar_t x1, x2;
-					if (Upper(p[1]) == L'X'  // process hexadecimal codes, e.g. \x7A, \x00, etc.
-							&& (x1 = ParseHexDigit(p[2])) != 0xFF && (x2 = ParseHexDigit(p[3])) != 0xFF)
+					if (Upper(p[1]) == L'X' && (hexChar = ParseHexDigit(p[2])) != 0xFF)
 					{
-						result += wchar_t(x1*16 + x2);
-						pos += 4;
+						State = ST_HEXCHAR; // process hexadecimal codes, e.g. \x7ABC, \x00, etc.
+						count = 1;
+						pos += 3;
 					}
 					else if (pos + 1 < length)
 					{
@@ -1323,6 +1323,24 @@ static FARString ReplaceBrackets(
 				{
 					result += p[0];
 					pos++;
+				}
+				break;
+
+			case ST_HEXCHAR:
+				if (auto uc = ParseHexDigit(p[0]); uc != 0xFF)
+				{
+					pos++;
+					hexChar = hexChar*16 + uc;
+					if (++count == 4) // 4 hex chars at most
+					{
+						result += hexChar;
+						State = ST_COMMON;
+					}
+				}
+				else
+				{
+					result += hexChar;
+					State = ST_COMMON;
 				}
 				break;
 

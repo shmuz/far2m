@@ -4209,20 +4209,24 @@ $ #Regular expressions in replace#
 
     #$N# or #${N}# (where N is one or more decimal digits)
     These represent captured group numbers and are replaced with the matching text.
-    The numbers are assigned to the groups based on the sequence of opening parentheses in the expression.
+    The numbers are assigned to the groups based on the sequence of opening
+    parentheses in the expression.
+
     #$0# represents the entire found sequence.
 
-    The literal #$# and the literal #\# must be escaped by prepending them
-with a backslash (i.e., #\$# and #\\\\#).
+    #${name}# represents a named group whose name is "name".
 
-    Both #\n# and #\r# are interpreted as line breaks, automatically adapting
-to the end-of-line style used in the file. They function identically.
+    The literal #$# and the literal #\# must be escaped by prepending them
+    with a backslash (i.e., #\$# and #\\\\#).
+
+    #\n# and #\r# are interpreted as line breaks, automatically adapting
+    to the end-of-line style used in the file. They function identically.
 
     #\t# is replaced with a tab character (0x09).
 
-    #\xNN# (where N is a hexadecimal digit)
-    This will be replaced with a byte of the specified value.
-    For example, #\x50# will be replaced with the character P.
+    #\xhhhh# (where hhhh is a sequence of 1 to 4 hexadecimal digits).
+    This will be replaced with a character of the specified value.
+    For example, \x50 will be replaced with the character P.
 
 @ElevationDlg
 $ #Запрос привилегий администратора#
