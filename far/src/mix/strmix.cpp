@@ -426,7 +426,7 @@ FARString& WINAPI RemoveUnprintableCharacters(FARString &strStr)
 
 
 // Удалить символ Target из строки Str (везде!)
-FARString &RemoveChar(FARString &strStr,wchar_t Target,BOOL Dup)
+FARString &RemoveChar(FARString &strStr,wchar_t Target,bool Dup)
 {
 	wchar_t *Ptr = strStr.GetBuffer();
 	wchar_t *Str = Ptr, Chr;
@@ -530,7 +530,7 @@ const wchar_t *GetCommaWord(const wchar_t *Src, FARString &strWord, wchar_t Sepa
 }
 
 
-BOOL IsCaseMixed(const FARString &strSrc)
+bool IsCaseMixed(const FARString &strSrc)
 {
 	const wchar_t *lpwszSrc = strSrc;
 
@@ -541,24 +541,24 @@ BOOL IsCaseMixed(const FARString &strSrc)
 
 	while (*(lpwszSrc++))
 		if (IsAlpha(*lpwszSrc) && (IsLower(*lpwszSrc) != Case))
-			return TRUE;
+			return true;
 
-	return FALSE;
+	return false;
 }
 
-BOOL IsCaseLower(const FARString &strSrc)
+bool IsCaseLower(const FARString &strSrc)
 {
 	const wchar_t *lpwszSrc = strSrc;
 
 	while (*lpwszSrc)
 	{
 		if (!IsLower(*lpwszSrc))
-			return FALSE;
+			return false;
 
 		lpwszSrc++;
 	}
 
-	return TRUE;
+	return true;
 }
 
 
@@ -791,7 +791,7 @@ wchar_t *InsertString(wchar_t *Str,int Pos,const wchar_t *InsStr,int InsSize)
 // Заменить в строке Str Count вхождений подстроки FindStr на подстроку ReplStr
 // Если Count < 0 - заменять "до полной победы"
 // Return - количество замен
-int ReplaceStrings(FARString &strStr,const wchar_t *FindStr,const wchar_t *ReplStr,int Count,BOOL IgnoreCase)
+int ReplaceStrings(FARString &strStr,const wchar_t *FindStr,const wchar_t *ReplStr,int Count,bool IgnoreCase)
 {
 	if (!Count)
 		return 0;
@@ -828,7 +828,7 @@ From PHP 4.x.x
 
 Разбивает на строки с выравниваением влево.
 
-Если параметр Flahs & FFTM_BREAKLONGWORD, то строка всегда
+Если параметр Flags & FFTM_BREAKLONGWORD, то строка всегда
 сворачивается по заданной ширине. Так если у вас есть слово,
 которое больше заданной ширины, то оно будет разрезано на части.
 
@@ -860,11 +860,6 @@ FarFormatText( "Эта строка содержит ооооооооооооо�
 ---
 
 */
-
-enum FFTMODE
-{
-	FFTM_BREAKLONGWORD = 0x00000001,
-};
 
 FARString& WINAPI FarFormatText(const wchar_t *SrcText,     // источник
                              int Width,               // заданная ширина
@@ -1509,47 +1504,29 @@ bool SearchString(const wchar_t *Source, int StrSize, const FARString& Str, FARS
 			{
 				if (!Str[J])
 				{
-					CurPos=I;
+					CurPos = I;
 					return true;
 				}
 
 				if (WholeWords)
 				{
-					int locResultLeft=FALSE;
-					int locResultRight=FALSE;
-					wchar_t ChLeft=Source[I-1];
-
-					if (I>0)
-						locResultLeft=(IsSpace(ChLeft) || wcschr(WordDiv,ChLeft));
-					else
-						locResultLeft=TRUE;
-
-					if (I+Length<StrSize)
+					if (I > 0)
 					{
-						wchar_t ChRight=Source[I+Length];
-						locResultRight=(IsSpace(ChRight) || wcschr(WordDiv,ChRight));
+						wchar_t ChLeft = Source[I-1];
+						if (!IsSpace(ChLeft) && !wcschr(WordDiv,ChLeft))
+							break;
 					}
-					else
+					if (I+Length < StrSize)
 					{
-						locResultRight=TRUE;
+						wchar_t ChRight = Source[I+Length];
+						if (!IsSpace(ChRight) && !wcschr(WordDiv,ChRight))
+							break;
 					}
-
-					if (!locResultLeft || !locResultRight)
-						break;
 				}
 
-				wchar_t Ch=Source[I+J];
-
-				if (Case)
-				{
-					if (Ch!=Str[J])
-						break;
-				}
-				else
-				{
-					if (Upper(Ch)!=Upper(Str[J]))
-						break;
-				}
+				wchar_t Ch = Source[I+J];
+				if ((Case && Ch != Str[J]) || (!Case && Upper(Ch) != Upper(Str[J])))
+					break;
 			}
 		}
 	}

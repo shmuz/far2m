@@ -1508,7 +1508,7 @@ FarKey WINAPI KeyNameToKey(const wchar_t *Name)
 	{
 		if (wcsstr(strTmpName,ModifKeyName[I].UName) && !(Key&ModifKeyName[I].Key))
 		{
-			int CntReplace=ReplaceStrings(strTmpName,ModifKeyName[I].UName,L"",-1,TRUE);
+			int CntReplace=ReplaceStrings(strTmpName,ModifKeyName[I].UName,L"",-1,true);
 			Key|=ModifKeyName[I].Key;
 			Pos+=ModifKeyName[I].Len*CntReplace;
 		}

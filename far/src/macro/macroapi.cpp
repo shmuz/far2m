@@ -2872,7 +2872,7 @@ void FarMacroApi::strwrapFunc()
 
 	const wchar_t* pBreak = *Break.s()==0 ? L"\n" : Break.s();
 	FARString strDest;
-	FarFormatText(Text.toString(), Width,strDest, pBreak, 1); // 1 == FFTM_BREAKLONGWORD
+	FarFormatText(Text.toString(), Width,strDest, pBreak, FFTM_BREAKLONGWORD);
 	PushString(strDest);
 }
 

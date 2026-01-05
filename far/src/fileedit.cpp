@@ -410,7 +410,7 @@ void FileEditor::Init(const wchar_t *Name, UINT codepage, const wchar_t *Title, 
 		Frame *iFrame = FrameManager->FindFrameByFile(MODALTYPE_EDITOR, strFullFileName);
 
 		if (iFrame) {
-			int SwitchTo = FALSE;
+			bool SwitchTo = false;
 			int MsgCode = 0;
 
 			if (!iFrame->GetCanLoseFocus(true) || Opt.Confirm.AllowReedit) {
@@ -430,10 +430,10 @@ void FileEditor::Init(const wchar_t *Name, UINT codepage, const wchar_t *Title, 
 
 				switch (MsgCode) {
 					case 0:    // Current
-						SwitchTo = TRUE;
+						SwitchTo = true;
 						break;
 					case 1:    // NewOpen
-						SwitchTo = FALSE;
+						SwitchTo = false;
 						break;
 					case 2:    // Reload
 						FrameManager->DeleteFrame(iFrame);
@@ -448,7 +448,7 @@ void FileEditor::Init(const wchar_t *Name, UINT codepage, const wchar_t *Title, 
 				}
 			}
 			else {
-				SwitchTo = TRUE;
+				SwitchTo = true;
 			}
 
 			if (SwitchTo) {
@@ -814,7 +814,7 @@ int FileEditor::ReProcessKey(FarKey Key, bool CalledFromControl)
 		}
 	}
 
-	BOOL ProcessedNext = TRUE;
+	bool ProcessedNext = true;
 
 	_SVS(if (Key == 'n' || Key == 'm'))
 	_SVS(SysLog(L"%d Key='%c'", __LINE__, Key));
@@ -837,7 +837,7 @@ int FileEditor::ReProcessKey(FarKey Key, bool CalledFromControl)
 				if (!m_editor->Flags.Check(FEDITOR_LOCKMODE)) {
 					m_editor->m_Pasting++;
 					m_editor->TextChanged(true);
-					BOOL IsBlock = m_editor->m_VBlockStart || m_editor->m_BlockStart;
+					bool IsBlock = m_editor->m_VBlockStart || m_editor->m_BlockStart;
 
 					if (!m_editor->m_EdOpt.PersistentBlocks && IsBlock) {
 						m_editor->Flags.Clear(FEDITOR_MARKINGVBLOCK | FEDITOR_MARKINGBLOCK);
@@ -875,7 +875,7 @@ int FileEditor::ReProcessKey(FarKey Key, bool CalledFromControl)
 
 			case KEY_F2:
 			case KEY_SHIFTF2: {
-				BOOL Done = FALSE;
+				bool Done = false;
 				FARString strOldCurDir;
 				apiGetCurrentDirectory(strOldCurDir);
 
@@ -966,7 +966,7 @@ int FileEditor::ReProcessKey(FarKey Key, bool CalledFromControl)
 
 						if (Message(MSG_WARNING | MSG_ERRORTYPE, 2, Msg::EditTitle, Msg::EditCannotSave,
 									strFileName, Msg::Retry, Msg::Cancel)) {
-							Done = TRUE;
+							Done = true;
 							break;
 						}
 					} else if (SaveResult == SAVEFILE_SUCCESS) {
@@ -998,9 +998,9 @@ int FileEditor::ReProcessKey(FarKey Key, bool CalledFromControl)
 							ShowConsoleTitle();
 							Show();    //!!! BUGBUG
 						}
-						Done = TRUE;
+						Done = true;
 					} else {
-						Done = TRUE;
+						Done = true;
 						break;
 					}
 				}
@@ -1621,7 +1621,7 @@ int FileEditor::SaveFile(const wchar_t *Name, bool Ask, bool bSaveAs, int TextFo
 		}
 	}
 
-	int NewFile = TRUE;
+	bool NewFile = true;
 
 	FileUnmakeWritable = apiMakeWritable(Name);
 	if (FileUnmakeWritable.get()) {
@@ -1667,7 +1667,7 @@ int FileEditor::SaveFile(const wchar_t *Name, bool Ask, bool bSaveAs, int TextFo
 		}
 
 		Flags.Clear(FFILEEDIT_SAVEWQUESTIONS);
-		NewFile = FALSE;
+		NewFile = false;
 	} else {
 		// проверим путь к файлу, может его уже снесли...
 		FARString strCreatedPath = Name;

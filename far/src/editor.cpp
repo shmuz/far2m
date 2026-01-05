@@ -782,8 +782,8 @@ int Editor::ProcessKey(FarKey Key)
 		return SetBookmark(Key - KEY_RCTRL0);
 
 	int SelStart = 0, SelEnd = 0;
-	int SelFirst = FALSE;
-	int SelAtBeginning = FALSE;
+	bool SelFirst = false;
+	bool SelAtBeginning = false;
 	EditorBlockGuard _bg(*this, &Editor::UnmarkEmptyBlock);
 
 	switch (Key) {
@@ -827,7 +827,7 @@ int Editor::ProcessKey(FarKey Key)
 				Flags.Set(FEDITOR_MARKINGBLOCK);
 				m_BlockStart = m_CurLine;
 				m_BlockStartLine = m_NumLine;
-				SelFirst = TRUE;
+				SelFirst = true;
 				SelStart = SelEnd = CurPos;
 			} else {
 				SelAtBeginning = m_CurLine == m_BlockStart && CurPos == SelStart;
@@ -1293,7 +1293,7 @@ int Editor::ProcessKey(FarKey Key)
 			return TRUE;
 		}
 		case KEY_CTRLADD: {
-			Copy(TRUE);
+			Copy(true);
 			return TRUE;
 		}
 		case KEY_CTRLA: {
@@ -1316,7 +1316,7 @@ int Editor::ProcessKey(FarKey Key)
 				Show();
 			}
 
-			Copy(FALSE);
+			Copy(false);
 			return TRUE;
 		}
 		case KEY_CTRLP:
@@ -1359,7 +1359,7 @@ int Editor::ProcessKey(FarKey Key)
 		case KEY_SHIFTDEL:
 		case KEY_SHIFTNUMDEL:
 		case KEY_SHIFTDECIMAL: {
-			Copy(FALSE);
+			Copy(false);
 			[[fallthrough]];
 		}
 		case KEY_CTRLD: {
@@ -2257,7 +2257,7 @@ int Editor::ProcessKey(FarKey Key)
 					Flags.Set(FEDITOR_MARKINGBLOCK);
 					m_BlockStart = m_CurLine;
 					m_BlockStartLine = m_NumLine;
-					// SelFirst=TRUE;
+					// SelFirst=true;
 					SelStart = SStart;
 					SelEnd = SEnd;
 					// m_CurLine->ProcessKey(MCODE_OP_SELWORD);
@@ -3561,7 +3561,7 @@ void Editor::Paste(const wchar_t *Src)
 		free(ClipText);
 }
 
-void Editor::Copy(int Append)
+void Editor::Copy(bool Append)
 {
 	if (m_VBlockStart) {
 		VCopy(Append);
@@ -4440,7 +4440,7 @@ void Editor::DeleteVBlock()
 	m_VBlockStart = nullptr;
 }
 
-void Editor::VCopy(int Append)
+void Editor::VCopy(bool Append)
 {
 	wchar_t *CopyData = nullptr;
 

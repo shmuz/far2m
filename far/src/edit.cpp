@@ -2560,7 +2560,7 @@ EditControl::EditControl(ScreenObject *pOwner, Callback *aCallback, History *iHi
 	ECFlags(iFlags)
 
 {
-	ACState = ECFlags.Check(EC_ENABLEAUTOCOMPLETE) != FALSE;
+	ACState = ECFlags.Check(EC_ENABLEAUTOCOMPLETE);
 }
 
 void EditControl::Show()

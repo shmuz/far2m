@@ -57,6 +57,11 @@ enum
 	COLUMN_MINSIZEINDEX_MASK = 0x00000003,
 };
 
+enum FFTMODE
+{
+	FFTM_BREAKLONGWORD = 0x00000001,
+};
+
 std::string EscapeUnprintable(const std::string &str);
 std::string UnescapeUnprintable(const std::string &str);
 
@@ -79,9 +84,9 @@ FARString & WINAPI RemoveUnprintableCharacters(FARString &strStr);
 wchar_t* WINAPI QuoteSpaceOnly(wchar_t *Str);
 FARString& WINAPI QuoteSpaceOnly(FARString &strStr);
 
-FARString &RemoveChar(FARString &strStr,wchar_t Target,BOOL Dup=TRUE);
+FARString &RemoveChar(FARString &strStr,wchar_t Target,bool Dup=true);
 wchar_t *InsertString(wchar_t *Str,int Pos,const wchar_t *InsStr,int InsSize=0);
-int ReplaceStrings(FARString &strStr,const wchar_t *FindStr,const wchar_t *ReplStr,int Count=-1,BOOL IgnoreCase=FALSE);
+int ReplaceStrings(FARString &strStr,const wchar_t *FindStr,const wchar_t *ReplStr,int Count=-1,bool IgnoreCase=false);
 
 const wchar_t *GetCommaWord(const wchar_t *Src,FARString &strWord,wchar_t Separator=L',',wchar_t Separator2=0);
 
@@ -113,8 +118,8 @@ FARString& TruncStrFromCenter(FARString &strStr, int MaxLength);
 wchar_t* WINAPI TruncPathStr(wchar_t *Str, int MaxLength);
 FARString& WINAPI TruncPathStr(FARString &strStr, int MaxLength);
 
-BOOL IsCaseMixed(const FARString &strStr);
-BOOL IsCaseLower(const FARString &strStr);
+bool IsCaseMixed(const FARString &strStr);
+bool IsCaseLower(const FARString &strStr);
 
 FARString& CenterStr(const wchar_t *Src, FARString &strDest,int Length);
 FARString FixedSizeStr(FARString str, size_t Cells, bool RAlign, bool TruncateCenter);

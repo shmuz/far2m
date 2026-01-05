@@ -237,7 +237,7 @@ private:
 
 	int CalcDistance(Edit *From, Edit *To, int MaxDist);
 	void Paste(const wchar_t *Src = nullptr);
-	void Copy(int Append);
+	void Copy(bool Append);
 	void DeleteBlock();
 	void UnmarkBlock();
 	void UnmarkEmptyBlock();
@@ -253,7 +253,7 @@ private:
 	void BlockLeft();
 	void BlockRight();
 	void DeleteVBlock();
-	void VCopy(int Append);
+	void VCopy(bool Append);
 	void VPaste(wchar_t *ClipText);
 	void VBlockShift(bool Left);
 	Edit *GetStringByNumber(int DestLine);
