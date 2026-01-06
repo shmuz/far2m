@@ -1249,15 +1249,18 @@ static FARString ReplaceBrackets(
 		ST_COMMON, ST_HEXCHAR, ST_ORDERED_1, ST_ORDERED_2, ST_NAMED,
 	};
 	ST State = ST_COMMON;
-	FARString result;
+	FARString strResult, strPart;
 	const size_t length = ReplaceStr.GetLength();
 	const wchar_t *Arr = ReplaceStr;
 	const wchar_t *start = Arr;
 	size_t index = 0, count = 0;
 	wchar_t hexChar;
+	std::vector<wchar_t> stack;
+	stack.reserve(256);
 
 	for (size_t pos=0; pos <= length; ) // use '<=' to process all within the loop
 	{
+		strPart.Clear();
 		const wchar_t *p = Arr + pos;
 
 		switch(State)
@@ -1271,7 +1274,17 @@ static FARString ReplaceBrackets(
 				}
 				else if (p[0] == L'\\')
 				{
-					if (Upper(p[1]) == L'X' && (hexChar = ParseHexDigit(p[2])) != 0xFF)
+					if (p[1] == L'L' || p[1] == L'U' || p[1] == L'l'  || p[1] == L'u')
+					{
+						stack.push_back(p[1]);
+						pos += 2;
+					}
+					else if (p[1] == L'E')
+					{
+						if (!stack.empty()) stack.pop_back();
+						pos += 2;
+					}
+					else if (Upper(p[1]) == L'X' && (hexChar = ParseHexDigit(p[2])) != 0xFF)
 					{
 						State = ST_HEXCHAR; // process hexadecimal codes, e.g. \x7ABC, \x00, etc.
 						count = 1;
@@ -1282,20 +1295,19 @@ static FARString ReplaceBrackets(
 						switch(p[1])
 						{
 							case L'r' :
-							case L'n' : result += L'\r'; break;
-							case L't' : result += L'\t'; break;
-							case L'\\': result += L'\\'; break;
-							case L'$' : result += L'$' ; break;
-							default   : result += L'\\'; result += p[1]; break;
+							case L'n' : strPart = L'\r'; break;
+							case L't' : strPart = L'\t'; break;
+							case L'\\': strPart = L'\\'; break;
+							case L'$' : strPart = L'$' ; break;
+							default   : strPart = L'\\'; strPart = p[1]; break;
 						}
 						pos += 2;
 					}
 					else
 					{
-						result += L'\\';
+						strPart = L'\\';
 						pos++;
 					}
-					break;
 				}
 				else if (p[0] == L'$' && p[1] >= L'0' && p[1] <= L'9')
 				{
@@ -1316,7 +1328,7 @@ static FARString ReplaceBrackets(
 				}
 				else
 				{
-					result += p[0];
+					strPart = p[0];
 					pos++;
 				}
 				break;
@@ -1328,13 +1340,13 @@ static FARString ReplaceBrackets(
 					hexChar = hexChar*16 + uc;
 					if (++count == 4) // 4 hex chars at most
 					{
-						result += hexChar;
+						strPart = hexChar;
 						State = ST_COMMON;
 					}
 				}
 				else
 				{
-					result += hexChar;
+					strPart = hexChar;
 					State = ST_COMMON;
 				}
 				break;
@@ -1348,7 +1360,7 @@ static FARString ReplaceBrackets(
 				}
 				else if (State == ST_ORDERED_2 && p[0] != L'}') // alien char; insert the "buffer" as is;
 				{                                               // don't increment 'pos'
-					result += FARString(start, p - start);
+					strPart = FARString(start, p - start);
 					State = ST_COMMON;
 				}
 				else // valid group syntax found
@@ -1356,13 +1368,12 @@ static FARString ReplaceBrackets(
 					if (index < Match.Matches.size())
 					{
 						const auto& match = Match.Matches[index];
-						FARString bracket(SearchStr + match.start, match.end - match.start);
-						result += bracket;
+						strPart = FARString(SearchStr + match.start, match.end - match.start);
 					}
 					else // invalid index; insert the "buffer" as is
 					{
 						auto end = (State == ST_ORDERED_1) ? p : p + 1;
-						result += FARString(start, end - start);
+						strPart = FARString(start, end - start);
 					}
 					pos += (State == ST_ORDERED_1) ? 0 : 1;
 					State = ST_COMMON;
@@ -1382,27 +1393,54 @@ static FARString ReplaceBrackets(
 						if (idx < Match.Matches.size())
 						{
 							const auto& match = Match.Matches[idx];
-							FARString bracket(SearchStr + match.start, match.end - match.start);
-							result += bracket;
+							strPart = FARString(SearchStr + match.start, match.end - match.start);
 						}
 					}
 					else //insert named group "as is"
 					{
-						result += FARString(start, p - start);
+						strPart = FARString(start, p - start);
 					}
 					State = ST_COMMON;
 					pos++;
 				}
 				else // named group not closed; don't increment 'pos'
 				{
-					result += FARString(start, (p-1) - start);
+					strPart = FARString(start, (p-1) - start);
 					State = ST_COMMON;
 				}
 				break;
 		}
+
+		// remove all \l and \u from stack top
+		while(!strPart.IsEmpty() && !stack.empty())
+		{
+			auto Ch = stack.back();
+			if (Ch == L'l' || Ch == L'u')
+			{
+				stack.pop_back();
+				strResult += (Ch == L'l' ? Lower(strPart[0]) : Upper(strPart[0]));
+				strPart = strPart.SubStr(1);
+			}
+			else
+				break;
+		}
+
+		// process \L and \U
+		if (!strPart.IsEmpty())
+		{
+			if (!stack.empty())
+			{
+				switch(stack.back())
+				{
+					case L'L': strPart.Lower(); break;
+					case L'U': strPart.Upper(); break;
+				}
+			}
+			strResult += strPart;
+		}
 	}
 
-	return result;
+	return strResult;
 }
 
 

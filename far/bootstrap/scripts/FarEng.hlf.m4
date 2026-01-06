@@ -4216,8 +4216,8 @@ $ #Regular expressions in replace#
 
     #${name}# represents a named group whose name is "name".
 
-    The literal #$# and the literal #\# must be escaped by prepending them
-    with a backslash (i.e., #\$# and #\\\\#).
+    The literal #$# and the literal #\# must be escaped
+    by prepending them with a backslash (i.e., #\$# and #\\\\#).
 
     #\n# and #\r# are interpreted as line breaks, automatically adapting
     to the end-of-line style used in the file. They function identically.
@@ -4227,6 +4227,12 @@ $ #Regular expressions in replace#
     #\xhhhh# (where hhhh is a sequence of 1 to 4 hexadecimal digits).
     This will be replaced with a character of the specified value.
     For example, \x50 will be replaced with the character P.
+
+    #\L# - convert the following text to lower case
+    #\U# - convert the following text to upper case
+    #\l# - convert the next 1 character to lower case
+    #\u# - convert the next 1 character to upper case
+    #\E# - end the scope of the previous \L, \U, \l, \u directive
 
 @ElevationDlg
 $ #Запрос привилегий администратора#
