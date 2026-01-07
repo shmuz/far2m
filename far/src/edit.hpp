@@ -250,8 +250,8 @@ public:
 	void SetInputMask(const wchar_t *InputMask);
 	const wchar_t *GetInputMask() { return m_Mask.CPtr(); }
 
-	void SetOvertypeMode(int Mode) { Flags.Change(FEDITLINE_OVERTYPE, Mode); }
-	int GetOvertypeMode() { return Flags.Check(FEDITLINE_OVERTYPE); }
+	void SetOvertypeMode(bool Mode) { Flags.Change(FEDITLINE_OVERTYPE, Mode); }
+	bool GetOvertypeMode() { return Flags.Check(FEDITLINE_OVERTYPE); }
 
 	void SetConvertTabs(int Mode) { m_TabExpandMode = Mode; }
 	int GetConvertTabs() { return m_TabExpandMode; }

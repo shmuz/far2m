@@ -371,17 +371,10 @@ public:
 	void FreeAllocatedData(bool FreeUndo = true);
 
 	Edit *CreateString(const wchar_t *lpwszStr, int nLength);
-	Edit *
-	InsertString(const wchar_t *lpwszStr, int nLength, Edit *pAfter = nullptr, int AfterLineNumber = -1);
+	Edit *InsertString(const wchar_t *lpwszStr, int nLength, Edit *pAfter=nullptr, int AfterLineNumber=-1);
 
-	void SetDialogParent(DWORD Sets);
 	void SetReadOnly(int NewReadOnly) { Flags.Change(FEDITOR_LOCKMODE, NewReadOnly); }
 	int GetReadOnly() { return Flags.Check(FEDITOR_LOCKMODE); }
-	void SetOvertypeMode(int Mode);
-	int GetOvertypeMode();
-	void SetEditBeyondEnd(int Mode);
-	void SetClearFlag(int Flag);
-	int GetClearFlag();
 
 	int GetCurCol();
 	int GetCurRow() { return m_NumLine; }

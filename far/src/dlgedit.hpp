@@ -92,8 +92,8 @@ public:
 	void SetInputMask(const wchar_t *InputMask);
 	const wchar_t *GetInputMask();
 
-	void SetOvertypeMode(int Mode);
-	int GetOvertypeMode();
+	void SetOvertypeMode(bool Mode);
+	bool GetOvertypeMode();
 
 	void SetEditBeyondEnd(int Mode);
 

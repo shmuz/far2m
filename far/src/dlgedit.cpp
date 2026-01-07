@@ -211,7 +211,7 @@ void DlgEdit::SetPasswordMode(int Mode)
 		lineEdit->SetPasswordMode(Mode);
 }
 
-void DlgEdit::SetOvertypeMode(int Mode)
+void DlgEdit::SetOvertypeMode(bool Mode)
 {
 #if defined(PROJECT_DI_MEMOEDIT)
 
@@ -222,7 +222,7 @@ void DlgEdit::SetOvertypeMode(int Mode)
 		lineEdit->SetOvertypeMode(Mode);
 }
 
-int DlgEdit::GetOvertypeMode()
+bool DlgEdit::GetOvertypeMode()
 {
 #if defined(PROJECT_DI_MEMOEDIT)
 

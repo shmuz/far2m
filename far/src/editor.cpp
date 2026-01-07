@@ -3004,8 +3004,8 @@ void Editor::InsertString()
 		if (IndentPos > 0) {
 			if (m_CurLine->GetLength() || !m_EdOpt.CursorBeyondEOL) {
 				m_CurLine->ProcessKey(KEY_HOME);
-				int SaveOvertypeMode = m_CurLine->GetOvertypeMode();
-				m_CurLine->SetOvertypeMode(FALSE);
+				bool SaveOvertypeMode = m_CurLine->GetOvertypeMode();
+				m_CurLine->SetOvertypeMode(false);
 				const wchar_t *PrevStr = nullptr;
 				int PrevLength = 0;
 
@@ -3268,16 +3268,12 @@ bool Editor::Search(bool Next)
 				if (FromTop < 0 || FromTop >= ((ScrY - 5) / 2 - 2))
 					FromTop = 0;
 
-				Edit *TmpPtr = m_CurLine = CurPtr;
-
-				for (int i = 0; i < FromTop; i++) {
-					if (TmpPtr->m_prev)
-						TmpPtr = TmpPtr->m_prev;
-					else
-						break;
+				m_CurLine = CurPtr;
+				m_TopScreen = CurPtr;
+				for (int i = 0; (i < FromTop) && m_TopScreen->m_prev; i++) {
+					m_TopScreen = m_TopScreen->m_prev;
 				}
 
-				m_TopScreen = TmpPtr;
 				m_NumLine = NewNumLine;
 				int LeftPos = CurPtr->GetLeftPos();
 				int CellCurPos = CurPtr->GetCellCurPos();
@@ -3295,15 +3291,15 @@ bool Editor::Search(bool Next)
 						ScrBuf.ApplyColor(CurX, CurY,
 								CurPtr->RealPosToCell(CurPtr->CellPosToReal(CurX) + SearchLength) - 1, CurY,
 								FarColorToReal(COL_EDITORSELECTEDTEXT));
-						FARString strQSearchStr(CurPtr->GetStringAddr() + CurPtr->GetCurPos(), SearchLength),
-								strQReplaceStr = ReplaceStrCurrent;
-						InsertQuote(strQSearchStr);
-						InsertQuote(strQReplaceStr);
-						ReplaceStrings(strQReplaceStr, L"\r", L"\x2424"); // ␤
-						ReplaceStrings(strQReplaceStr, L"\t", L"\x2192"); // →
+						FARString QSearchStr(CurPtr->GetStringAddr() + CurPtr->GetCurPos(), SearchLength);
+						FARString QReplaceStr = ReplaceStrCurrent;
+						InsertQuote(QSearchStr);
+						InsertQuote(QReplaceStr);
+						ReplaceStrings(QReplaceStr, L"\r", L"\x2424"); // ␤
+						ReplaceStrings(QReplaceStr, L"\t", L"\x2192"); // →
 						PreRedrawItem pitem = PreRedraw.Pop();
 						MsgCode = Message(0, 4, &EditorConfirmReplaceId, Msg::EditReplaceTitle,
-								Msg::EditAskReplace, strQSearchStr, Msg::EditAskReplaceWith, strQReplaceStr,
+								Msg::EditAskReplace, QSearchStr, Msg::EditAskReplaceWith, QReplaceStr,
 								Msg::EditReplace, Msg::EditReplaceAll, Msg::EditSkip, Msg::EditCancel);
 						PreRedraw.Push(pitem);
 
@@ -3327,22 +3323,22 @@ bool Editor::Search(bool Next)
 						  processed with fast method, otherwise use improved old one.
 						*/
 						if (ReplaceStrCurrent.Contains(L'\t') || ReplaceStrCurrent.Contains(L'\r')) {
-							int SaveOvertypeMode = Flags.Check(FEDITOR_OVERTYPE);
+							bool SaveOvertypeMode = Flags.Check(FEDITOR_OVERTYPE);
 							Flags.Set(FEDITOR_OVERTYPE);
-							m_CurLine->SetOvertypeMode(TRUE);
+							m_CurLine->SetOvertypeMode(true);
 							// int CurPos=m_CurLine->GetCurPos();
 
 							int I = 0;
 							for (; SearchLength && ReplaceStrCurrent[I]; I++, SearchLength--) {
 								int Ch = ReplaceStrCurrent[I];
 
-								if (Ch == KEY_TAB) {
+								if (Ch == L'\t') {
 									Flags.Clear(FEDITOR_OVERTYPE);
-									m_CurLine->SetOvertypeMode(FALSE);
+									m_CurLine->SetOvertypeMode(false);
 									ProcessKey(KEY_DEL);
 									ProcessKey(KEY_TAB);
 									Flags.Set(FEDITOR_OVERTYPE);
-									m_CurLine->SetOvertypeMode(TRUE);
+									m_CurLine->SetOvertypeMode(true);
 									continue;
 								}
 
@@ -3360,7 +3356,7 @@ bool Editor::Search(bool Next)
 
 							if (!SearchLength) {
 								Flags.Clear(FEDITOR_OVERTYPE);
-								m_CurLine->SetOvertypeMode(FALSE);
+								m_CurLine->SetOvertypeMode(false);
 
 								for (; ReplaceStrCurrent[I]; I++) {
 									int Ch = ReplaceStrCurrent[I];
@@ -3490,7 +3486,7 @@ void Editor::Paste(const wchar_t *Src)
 
 		if (Flags.Check(FEDITOR_OVERTYPE)) {
 			Flags.Clear(FEDITOR_OVERTYPE);
-			m_CurLine->SetOvertypeMode(FALSE);
+			m_CurLine->SetOvertypeMode(false);
 		}
 
 		m_BlockStart = m_CurLine;
@@ -3549,7 +3545,7 @@ void Editor::Paste(const wchar_t *Src)
 
 		if (SaveOvertype) {
 			Flags.Set(FEDITOR_OVERTYPE);
-			m_CurLine->SetOvertypeMode(TRUE);
+			m_CurLine->SetOvertypeMode(true);
 		}
 
 		m_Pasting--;
@@ -4533,7 +4529,7 @@ void Editor::VPaste(wchar_t *ClipText)
 
 		if (Flags.Check(FEDITOR_OVERTYPE)) {
 			Flags.Clear(FEDITOR_OVERTYPE);
-			m_CurLine->SetOvertypeMode(FALSE);
+			m_CurLine->SetOvertypeMode(false);
 		}
 
 		m_VBlockStart = m_CurLine;
@@ -4570,7 +4566,7 @@ void Editor::VPaste(wchar_t *ClipText)
 				} else {
 					ProcessKey(KEY_DOWN);
 					m_CurLine->SetCellCurPos(StartPos);
-					m_CurLine->SetOvertypeMode(FALSE);
+					m_CurLine->SetOvertypeMode(false);
 				}
 
 				I+= EolLength - 1;
@@ -4587,7 +4583,7 @@ void Editor::VPaste(wchar_t *ClipText)
 
 		if (SaveOvertype) {
 			Flags.Set(FEDITOR_OVERTYPE);
-			m_CurLine->SetOvertypeMode(TRUE);
+			m_CurLine->SetOvertypeMode(true);
 		}
 
 		m_TopScreen = SavedTopScreen;
@@ -6248,24 +6244,6 @@ bool Editor::SetCodePage(UINT codepage)
 UINT Editor::GetCodePage()
 {
 	return m_codepage;
-}
-
-void Editor::SetDialogParent(DWORD Sets) {}
-
-void Editor::SetOvertypeMode(int Mode) {}
-
-int Editor::GetOvertypeMode()
-{
-	return 0;
-}
-
-void Editor::SetEditBeyondEnd(int Mode) {}
-
-void Editor::SetClearFlag(int Flag) {}
-
-int Editor::GetClearFlag()
-{
-	return 0;
 }
 
 int Editor::GetCurCol()

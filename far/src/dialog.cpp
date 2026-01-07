@@ -950,7 +950,7 @@ unsigned Dialog::InitDialogObjects(unsigned ID)
 				*/
 				DialogEdit->SetMaxLength(CurItem->X2 - CurItem->X1 + 1
 						+ (CurItem->X2 == CurItem->X1 || !(ItemFlags & DIF_HISTORY) ? 0 : 1));
-				DialogEdit->SetOvertypeMode(TRUE);
+				DialogEdit->SetOvertypeMode(true);
 				/*
 					$ 12.08.2000 KM
 					Если тип строки ввода DI_FIXEDIT и установлен флаг DIF_MASKEDIT
