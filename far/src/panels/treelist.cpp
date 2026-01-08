@@ -78,7 +78,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "syslog.hpp"
 #include "cache.hpp"
 #include "filestr.hpp"
-#include "wakeful.hpp"
 
 static int _cdecl SortList(const void *el1, const void *el2);
 static int _cdecl SortCacheList(const void *el1, const void *el2);
@@ -445,7 +444,6 @@ int TreeList::ReadTree()
 	ScTree.SetFindPath(strRoot, L"*", FSCANTREE_NOFILES | FSCANTREE_NODEVICES, Opt.Tree.ExclSubTreeMask);
 	LastScrX = ScrX;
 	LastScrY = ScrY;
-	SCOPED_ACTION(wakeful);
 	while (ScTree.GetNextName(&fdata, strFullName)) {
 		//    if(TreeCount > 3)
 		TreeList::MsgReadTree(TreeCount, FirstCall);

@@ -66,7 +66,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "constitle.hpp"
 #include "DlgGuid.hpp"
 #include "console.hpp"
-#include "wakeful.hpp"
 #include "panelmix.hpp"
 #include "setattr.hpp"
 #include "udlist.hpp"
@@ -2734,7 +2733,6 @@ static bool FindFilesProcess(Vars &v)
 
 	FindFileThread fft(v.PluginMode, reinterpret_cast<HANDLE>(&Dlg));
 	if (fft.StartThread()) {
-		SCOPED_ACTION(wakeful);
 		Dlg.Process();
 		WAIT_FOR_AND_DISPATCH_INTER_THREAD_CALLS(fft.CheckForDone());
 

@@ -55,7 +55,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pathmix.hpp"
 #include "strmix.hpp"
 #include "fileowner.hpp"
-#include "wakeful.hpp"
 #include "DlgGuid.hpp"
 #include "execute.hpp"
 #include "FSFileFlags.h"
@@ -1405,7 +1404,6 @@ bool ShellSetFileAttributes(Panel *SrcPanel, LPCWSTR Object)
 					if (SrcPanel) {
 						SrcPanel->GetSelName(nullptr, FileAttr, FileMode);
 					}
-					SCOPED_ACTION(wakeful);
 					bool Cancel = false;
 					DWORD LastTime = 0;
 

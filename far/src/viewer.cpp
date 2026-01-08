@@ -66,7 +66,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "constitle.hpp"
 #include "console.hpp"
 #include "AnsiEsc.hpp"
-#include "wakeful.hpp"
 #include "WideMB.h"
 #include "UtfConvert.hpp"
 #include "DlgGuid.hpp"
@@ -2486,7 +2485,6 @@ void Viewer::Search(int Next, int FirstChar)
 			wchar_t Buf[16384];
 
 			int ReadSize;
-			SCOPED_ACTION(wakeful);
 			INT64 StartPos = vtell();
 			DWORD StartTime = WINPORT(GetTickCount)();
 

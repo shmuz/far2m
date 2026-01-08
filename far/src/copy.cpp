@@ -70,7 +70,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mix.hpp"
 #include "DlgGuid.hpp"
 #include "console.hpp"
-#include "wakeful.hpp"
 #include "udlist.hpp"
 #include <unistd.h>
 
@@ -192,7 +191,6 @@ enum CopyMode
 class CopyProgress
 {
 	ConsoleTitle CopyTitle;
-	SCOPED_ACTION(wakeful);
 	SMALL_RECT Rect;
 	wchar_t Bar[100];
 	size_t BarSize;

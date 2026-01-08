@@ -49,7 +49,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "keyboard.hpp"
 #include "pathmix.hpp"
 #include "strmix.hpp"
-#include "wakeful.hpp"
 #include "config.hpp"
 
 static void DrawGetDirInfoMsg(const wchar_t *Title, const wchar_t *Name, const UINT64 Size)
@@ -85,7 +84,6 @@ int GetDirInfo(const wchar_t *Title, const wchar_t *DirName, uint32_t &DirCount,
 	SaveScreen SaveScr;
 	UndoGlobalSaveScrPtr UndSaveScr(&SaveScr);
 	SCOPED_ACTION(TPreRedrawFuncGuard)(PR_DrawGetDirInfoMsg);
-	SCOPED_ACTION(wakeful);
 	ScanTree ScTree(FALSE, TRUE,
 			((Flags & GETDIRINFO_SCANSYMLINKDEF) ? -1 : ((Flags & GETDIRINFO_SCANSYMLINK) != 0)));
 	FAR_FIND_DATA_EX FindData;

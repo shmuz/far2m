@@ -56,7 +56,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "panelmix.hpp"
 #include "mix.hpp"
 #include "dirinfo.hpp"
-#include "wakeful.hpp"
 #include "execute.hpp"
 #include "DlgGuid.hpp"
 
@@ -242,7 +241,6 @@ void ShellDelete(Panel *SrcPanel, bool Wipe)
 		FarChDir(L"/");
 
 	{
-		SCOPED_ACTION(wakeful);
 		bool Cancel = false;
 		// SaveScreen SaveScr;
 		SetCursorType(false, 0);

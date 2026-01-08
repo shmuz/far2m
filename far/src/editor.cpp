@@ -51,7 +51,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "stddlg.hpp"
 #include "syslog.hpp"
 #include "TPreRedrawFunc.hpp"
-#include "wakeful.hpp"
 #include "xlat.hpp"
 
 static bool ReplaceMode;
@@ -3207,7 +3206,6 @@ bool Editor::Search(bool Next)
 		const int StartLine = m_NumLine;
 		int NewNumLine = m_NumLine;
 		DWORD StartTime = WINPORT(GetTickCount)();
-		SCOPED_ACTION(wakeful);
 
 		RegExp re;
 		if (Regexp && !CompileRegexp(SearchStr, Case, &re))

@@ -58,7 +58,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "scrbuf.hpp"
 #include "syslog.hpp"
 #include "TPreRedrawFunc.hpp"
-#include "wakeful.hpp"
 
 enum enumOpenEditor
 {
@@ -1261,7 +1260,6 @@ int FileEditor::LoadFile(const wchar_t *Name, int &UserBreak)
 	SCOPED_ACTION(SudoClientRegion);
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	SCOPED_ACTION(TPreRedrawFuncGuard)(Editor::PR_EditorShowMsg);
-	SCOPED_ACTION(wakeful);
 	bool LastLineCR = false;
 	EditorCacheParams cp;
 	UserBreak = 0;
@@ -1599,8 +1597,6 @@ int FileEditor::SaveFile(const wchar_t *Name, bool Ask, bool bSaveAs, int TextFo
 		TextFormat = 0;
 		codepage = m_editor->GetCodePage();
 	}
-
-	SCOPED_ACTION(wakeful);
 
 	if (m_editor->Flags.Check(FEDITOR_LOCKMODE) && !m_editor->Flags.Check(FEDITOR_MODIFIED) && !bSaveAs)
 		return SAVEFILE_SUCCESS;
