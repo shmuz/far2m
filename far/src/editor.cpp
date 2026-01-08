@@ -3198,10 +3198,10 @@ bool Editor::Search(bool Next)
 		strMsgStr = SearchStr;
 		InsertQuote(strMsgStr);
 		SetCursorType(false, -1);
-		int CurPos = m_CurLine->GetCurPos();
+		int FromPos = m_CurLine->GetCurPos();
 
 		if (!ReverseSearch && Next)
-			CurPos++;
+			FromPos++;
 
 		const int StartLine = m_NumLine;
 		int NewNumLine = m_NumLine;
@@ -3211,7 +3211,7 @@ bool Editor::Search(bool Next)
 		if (Regexp && !CompileRegexp(SearchStr, Case, &re))
 			return true;
 
-		for (Edit *CurPtr=m_CurLine, *PrevCurPtr=CurPtr; CurPtr; ) {
+		for (Edit *CurPtr=m_CurLine; CurPtr; ) {
 			DWORD CurTime = WINPORT(GetTickCount)();
 
 			if (CurTime - StartTime > RedrawTimeout) {
@@ -3230,18 +3230,15 @@ bool Editor::Search(bool Next)
 				EditorShowMsg(Msg::EditSearchTitle, Msg::EditSearchingFor, strMsgStr, ToPercent64(Current, Total));
 			}
 
-			if (!ReverseSearch && (PrevCurPtr != CurPtr))
-			{
-				PrevCurPtr = CurPtr;
-				CurPos = 0;
-			}
-
 			int SearchLength = 0;
 			FARString ReplaceStrCurrent(ReplaceMode ? ReplaceStr : L"");
 
-			if (CurPtr->Search(SearchStr, ReplaceStrCurrent, CurPos, Case, WholeWords, ReverseSearch,
+			if (CurPtr->Search(SearchStr, ReplaceStrCurrent, FromPos, Case, WholeWords, ReverseSearch,
 					Regexp ? &re:nullptr, SearchLength))
 			{
+				bool EmptyMatch = (SearchLength == 0);
+				bool Skip = false;
+
 				if (SelectFound && !ReplaceMode) {
 					m_Pasting++;
 					Lock();
@@ -3255,7 +3252,6 @@ bool Editor::Search(bool Next)
 					m_Pasting--;
 				}
 
-				bool Skip = false;
 				/* $ 24.01.2003 KM
 				   ! По окончании поиска отступим от верха экрана на треть отображаемой высоты.
 				*/
@@ -3301,16 +3297,15 @@ bool Editor::Search(bool Next)
 								Msg::EditReplace, Msg::EditReplaceAll, Msg::EditSkip, Msg::EditCancel);
 						PreRedraw.Push(pitem);
 
-						if (MsgCode == 1)
-							ReplaceAll = true;
-
-						else if (MsgCode == 2)
-							Skip = true;
-
-						else if (MsgCode < 0 || MsgCode == 3) {
-							UserBreak = true;
-							break;
+						switch (MsgCode) {
+							case 0:  break;
+							case 1:  ReplaceAll = true; break;
+							case 2:  Skip = true; break;
+							default: UserBreak = true;  break;
 						}
+
+						if (UserBreak)
+							break;
 					}
 
 					if (!MsgCode || MsgCode == 1) {
@@ -3415,11 +3410,11 @@ bool Editor::Search(bool Next)
 				if (!ReplaceMode)
 					break;
 
-				CurPos = m_CurLine->GetCurPos();
+				FromPos = m_CurLine->GetCurPos();
 
-				if (Skip || SearchLength == 0)
+				if (Skip || EmptyMatch)
 					if (!ReverseSearch)
-						CurPos++;
+						FromPos++;
 			}
 			else {
 				if (ReverseSearch) {
@@ -3428,10 +3423,10 @@ bool Editor::Search(bool Next)
 					if (!CurPtr)
 						break;
 
-					CurPos = CurPtr->GetLength();
+					FromPos = CurPtr->GetLength();
 					NewNumLine--;
 				} else {
-					CurPos = 0;
+					FromPos = 0;
 					CurPtr = CurPtr->m_next;
 					NewNumLine++;
 				}
