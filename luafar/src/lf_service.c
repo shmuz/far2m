@@ -2074,7 +2074,16 @@ static int far_Message(lua_State *L)
 	luaL_checkany(L,1);
 	lua_settop(L,6);
 
-	global_tolstring(L, 1, NULL);
+	size_t MsgLen;
+	const char *str = global_tolstring(L, 1, &MsgLen);
+	char *copy = malloc(MsgLen);
+	for (size_t i=0; i < MsgLen; i++) {
+		copy[i] = str[i] ? str[i] : ' ';  // replace '\0' with a space
+	}
+	lua_pop(L, 1);
+	lua_pushlstring(L, copy, MsgLen);
+	free(copy);
+
 	Msg = check_utf8_string(L, -1, NULL);
 	lua_replace(L,1);
 
