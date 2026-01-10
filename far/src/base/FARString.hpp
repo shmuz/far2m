@@ -152,6 +152,7 @@ public:
 	inline wchar_t At(size_t nIndex) const { return m_pContent->GetData()[nIndex]; }
 
 	inline bool IsEmpty() const { return !(m_pContent->GetLength() && *m_pContent->GetData()); }
+	inline bool Empty() const { return !m_pContent->GetLength(); }
 
 	size_t GetCharString(char *lpszStr, size_t nSize, UINT CodePage=CP_UTF8) const;
 	std::string GetMB() const;

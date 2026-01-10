@@ -1412,7 +1412,7 @@ static FARString ReplaceBrackets(
 		}
 
 		// remove all \l and \u from stack top
-		while(!strPart.IsEmpty() && !stack.empty())
+		while(!strPart.Empty() && !stack.empty())
 		{
 			auto Ch = stack.back();
 			if (Ch == L'l' || Ch == L'u')
@@ -1426,7 +1426,7 @@ static FARString ReplaceBrackets(
 		}
 
 		// process \L and \U
-		if (!strPart.IsEmpty())
+		if (!strPart.Empty())
 		{
 			if (!stack.empty())
 			{
