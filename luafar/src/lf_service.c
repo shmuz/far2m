@@ -2067,6 +2067,7 @@ void LF_Error(lua_State *L, const wchar_t* aMsg)
 //             if absent or nil, then one button "OK" is used).
 // 4-th param: flags
 // 5-th param: help topic
+// 6-th param: Id
 // Return: -1 if escape pressed, else - button number chosen (1 based).
 static int far_Message(lua_State *L)
 {
