@@ -120,19 +120,6 @@ int WINAPI GetString(
     const GUID *Guid = nullptr
 );
 
-int WINAPI GetString(
-    const GUID &Guid,
-    const wchar_t *Title,
-    const wchar_t *SubTitle,
-    const wchar_t *HistoryName,
-    const wchar_t *SrcText,
-    FARString &strDestText,
-    const wchar_t *HelpTopic = nullptr,
-    DWORD Flags = 0,
-    int *CheckBoxValue = nullptr,
-    const wchar_t *CheckBoxText = nullptr
-);
-
 // для диалога GetNameAndPassword()
 enum FlagsNameAndPassword
 {

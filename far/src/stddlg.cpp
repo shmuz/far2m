@@ -499,21 +499,6 @@ int WINAPI GetString(
 	return FALSE;
 }
 
-int WINAPI GetString(
-    const GUID &Guid,
-    const wchar_t *Title,
-    const wchar_t *Prompt,
-    const wchar_t *HistoryName,
-    const wchar_t *SrcText,
-    FARString &strDestText,
-    const wchar_t *HelpTopic,
-    DWORD Flags,
-    int *CheckBoxValue,
-    const wchar_t *CheckBoxText)
-{
-	return GetString(Title,Prompt,HistoryName,SrcText,strDestText,HelpTopic,Flags,CheckBoxValue,CheckBoxText,&Guid);
-}
-
 /*
   Стандартный диалог ввода пароля.
   Умеет сам запоминать последнего юзвера и пароль.

@@ -4218,11 +4218,12 @@ void FileList::DescribeFiles()
 		strMsg.Append(Msg::EnterDescription).Append(L" ").Append(strQuotedName).Append(L":");
 
 		/* $ 09.08.2000 SVS
-		   Для Ctrl-Z ненужно брать предыдущее значение!
+		   Для Ctrl-Z не нужно брать предыдущее значение!
 		*/
-		if (!GetString(DescribeFileId, Msg::DescribeFiles, strMsg, L"DizText", PrevText ? PrevText : L"",
+		if (!GetString(Msg::DescribeFiles, strMsg, L"DizText", PrevText ? PrevText : L"",
 					strDizText, L"FileDiz",
-					FIB_ENABLEEMPTY | (!DizCount ? FIB_NOUSELASTHISTORY : 0) | FIB_BUTTONS))
+					FIB_ENABLEEMPTY | (!DizCount ? FIB_NOUSELASTHISTORY : 0) | FIB_BUTTONS,
+					nullptr, nullptr, &DescribeFileId))
 			break;
 
 		DizCount++;
@@ -4263,8 +4264,9 @@ bool FileList::ApplyCommand()
 	FARString strCommand;
 	bool isSilent = false;
 
-	if (!GetString(ApplyCommandId, Msg::AskApplyCommandTitle, Msg::AskApplyCommand, L"ApplyCmd",
-				strPrevCommand, strCommand, L"ApplyCmd", FIB_BUTTONS | FIB_EDITPATH)
+	if (!GetString(Msg::AskApplyCommandTitle, Msg::AskApplyCommand, L"ApplyCmd",
+				strPrevCommand, strCommand, L"ApplyCmd", FIB_BUTTONS | FIB_EDITPATH,
+				nullptr, nullptr, &ApplyCommandId)
 			|| !SetCurPath())
 		return false;
 
