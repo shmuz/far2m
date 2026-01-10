@@ -87,6 +87,7 @@ FARString& WINAPI QuoteSpaceOnly(FARString &strStr);
 FARString &RemoveChar(FARString &strStr,wchar_t Target,bool Dup=true);
 wchar_t *InsertString(wchar_t *Str,int Pos,const wchar_t *InsStr,int InsSize=0);
 int ReplaceStrings(FARString &strStr,const wchar_t *FindStr,const wchar_t *ReplStr,int Count=-1,bool IgnoreCase=false);
+FARString &ReplaceNulls(FARString &Str, wchar_t Char=L' ');
 
 const wchar_t *GetCommaWord(const wchar_t *Src,FARString &strWord,wchar_t Separator=L',',wchar_t Separator2=0);
 

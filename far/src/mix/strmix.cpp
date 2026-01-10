@@ -819,6 +819,18 @@ int ReplaceStrings(FARString &strStr,const wchar_t *FindStr,const wchar_t *ReplS
 	return ReplacedCount;
 }
 
+FARString &ReplaceNulls(FARString &Str, wchar_t Char)
+{
+	size_t Len = Str.GetLength();
+	wchar_t *Buf = Str.GetBuffer();
+	for (size_t I = 0; I < Len; I++) {
+		if (Buf[I] == 0)
+			Buf[I] = Char;
+	}
+	Str.ReleaseBuffer();
+	return Str;
+}
+
 /*
 From PHP 4.x.x
 Форматирует исходный текст по заданной ширине, используя

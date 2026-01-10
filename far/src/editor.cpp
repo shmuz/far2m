@@ -3287,8 +3287,8 @@ bool Editor::Search(bool Next)
 								FarColorToReal(COL_EDITORSELECTEDTEXT));
 						FARString QSearchStr(CurPtr->GetStringAddr() + CurPtr->GetCurPos(), SearchLength);
 						FARString QReplaceStr = ReplaceStrCurrent;
-						InsertQuote(QSearchStr);
-						InsertQuote(QReplaceStr);
+						InsertQuote(ReplaceNulls(QSearchStr));
+						InsertQuote(ReplaceNulls(QReplaceStr));
 						ReplaceStrings(QReplaceStr, L"\r", L"\x2424"); // ␤
 						ReplaceStrings(QReplaceStr, L"\t", L"\x2192"); // →
 						PreRedrawItem pitem = PreRedraw.Pop();
