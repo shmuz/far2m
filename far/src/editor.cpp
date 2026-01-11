@@ -3417,11 +3417,10 @@ bool Editor::Search(bool Next)
 							}
 							else {
 								int Pos = SStrLen ? CurPos - SStrLen : CurPos - 1;
-								if (Pos < 0) {
+								if (Pos >= 0)
+									m_CurLine->SetCurPos(Pos);
+								else
 									ReverseNewLine = true;
-									Pos = 0;
-								}
-								m_CurLine->SetCurPos(Pos);
 							}
 							delete[] NewStr;
 							TextChanged(true);
