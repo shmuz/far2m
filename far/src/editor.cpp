@@ -3200,8 +3200,8 @@ bool Editor::Search(bool Next)
 		SetCursorType(false, -1);
 		int FromPos = m_CurLine->GetCurPos();
 
-		if (!ReverseSearch && Next)
-			FromPos++;
+		if (Next)
+			ReverseSearch ? FromPos-- : FromPos++;
 
 		const int StartLine = m_NumLine;
 		int NewNumLine = m_NumLine;
@@ -3233,10 +3233,26 @@ bool Editor::Search(bool Next)
 			int SearchLength = 0;
 			FARString ReplaceStrCurrent(ReplaceMode ? ReplaceStr : L"");
 
+			auto ChangeLine = [&] {
+				if (ReverseSearch) {
+					CurPtr = CurPtr->m_prev;
+					if (CurPtr) {
+						FromPos = CurPtr->GetLength();
+						NewNumLine--;
+					}
+				}
+				else {
+					FromPos = 0;
+					CurPtr = CurPtr->m_next;
+					NewNumLine++;
+				}
+			};
+
 			if (CurPtr->Search(SearchStr, ReplaceStrCurrent, FromPos, Case, WholeWords, ReverseSearch,
 					Regexp ? &re:nullptr, SearchLength))
 			{
-				bool EmptyMatch = (SearchLength == 0);
+				bool ReverseNewLine = false;
+				const bool EmptyMatch = (SearchLength == 0);
 				bool Skip = false;
 
 				if (SelectFound && !ReplaceMode) {
@@ -3380,8 +3396,8 @@ bool Editor::Search(bool Next)
 						}
 						else {
 							/* Fast method */
-							int SStrLen = SearchLength;
-							int RStrLen = ReplaceStrCurrent.GetLength();
+							const int SStrLen = SearchLength;
+							const int RStrLen = ReplaceStrCurrent.GetLength();
 							int StrLen;
 							const wchar_t *Str, *Eol;
 							m_CurLine->GetBinaryString(&Str, &Eol, StrLen);
@@ -3396,7 +3412,17 @@ bool Editor::Search(bool Next)
 							AddUndoData(UNDO_EDIT, m_CurLine->GetStringAddr(), m_CurLine->GetEOL(), m_NumLine,
 									m_CurLine->GetCurPos(), m_CurLine->GetLength());
 							m_CurLine->SetBinaryString(NewStr, NewStrLen);
-							m_CurLine->SetCurPos(CurPos + RStrLen);
+							if (!ReverseSearch) {
+								m_CurLine->SetCurPos(CurPos + RStrLen);
+							}
+							else {
+								int Pos = SStrLen ? CurPos - SStrLen : CurPos - 1;
+								if (Pos < 0) {
+									ReverseNewLine = true;
+									Pos = 0;
+								}
+								m_CurLine->SetCurPos(Pos);
+							}
 							delete[] NewStr;
 							TextChanged(true);
 						}
@@ -3410,26 +3436,19 @@ bool Editor::Search(bool Next)
 				if (!ReplaceMode)
 					break;
 
-				FromPos = m_CurLine->GetCurPos();
+				if (ReverseNewLine) {
+					ChangeLine();
+				}
+				else {
+					FromPos = m_CurLine->GetCurPos();
 
-				if (Skip || EmptyMatch)
-					if (!ReverseSearch)
-						FromPos++;
+					if (Skip || EmptyMatch)
+						if (!ReverseSearch)
+							FromPos++;
+				}
 			}
 			else {
-				if (ReverseSearch) {
-					CurPtr = CurPtr->m_prev;
-
-					if (!CurPtr)
-						break;
-
-					FromPos = CurPtr->GetLength();
-					NewNumLine--;
-				} else {
-					FromPos = 0;
-					CurPtr = CurPtr->m_next;
-					NewNumLine++;
-				}
+				ChangeLine();
 			}
 		}
 	}

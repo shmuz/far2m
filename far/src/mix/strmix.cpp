@@ -1501,9 +1501,9 @@ bool SearchString(const wchar_t *Source, int StrSize, const FARString& Str, FARS
 
 	if (Reverse)
 	{
-		Position = Min(Position-1, StrSize-1);
+		Position = Min(Position, StrSize);
 
-		if (Position<0)
+		if (Position < 0)
 			return false;
 	}
 
@@ -1542,9 +1542,6 @@ bool SearchString(const wchar_t *Source, int StrSize, const FARString& Str, FARS
 
 			return found;
 		}
-
-		if (Position==StrSize)
-			return false;
 
 		int Length = SearchLength = (int)Str.GetLength();
 
