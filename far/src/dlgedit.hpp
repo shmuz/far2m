@@ -138,8 +138,8 @@ public:
 	void SetCursorType(bool Visible, DWORD Size);
 	void GetCursorType(bool &Visible, DWORD &Size);
 
-	int GetReadOnly();
-	void SetReadOnly(int NewReadOnly);
+	bool GetReadOnly();
+	void SetReadOnly(bool NewReadOnly);
 
 	void SetCallbackState(bool Enable) { lineEdit->SetCallbackState(Enable); }
 	void AutoComplete(bool Manual, bool DelBlock) { return lineEdit->AutoComplete(Manual, DelBlock); }

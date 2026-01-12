@@ -311,7 +311,7 @@ public:
 	long GetCurPos();
 	int EditorControl(int Command, void *Param);
 	void SetHostFileEditor(FileEditor *Editor) { m_HostFileEditor = Editor; }
-	static void SetReplaceMode(int Mode);
+	static void SetReplaceMode(bool Mode);
 	FileEditor *GetHostFileEditor() { return m_HostFileEditor; }
 	void PrepareResizedConsole() { Flags.Set(FEDITOR_ISRESIZEDCONSOLE); }
 
@@ -374,8 +374,8 @@ public:
 	Edit *CreateString(const wchar_t *lpwszStr, int nLength);
 	Edit *InsertString(const wchar_t *lpwszStr, int nLength, Edit *pAfter=nullptr, int AfterLineNumber=-1);
 
-	void SetReadOnly(int NewReadOnly) { Flags.Change(FEDITOR_LOCKMODE, NewReadOnly); }
-	int GetReadOnly() { return Flags.Check(FEDITOR_LOCKMODE); }
+	void SetReadOnly(bool NewReadOnly) { Flags.Change(FEDITOR_LOCKMODE, NewReadOnly); }
+	bool GetReadOnly() { return Flags.Check(FEDITOR_LOCKMODE); }
 
 	int GetCurCol();
 	int GetCurRow() { return m_NumLine; }

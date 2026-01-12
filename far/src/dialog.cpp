@@ -890,7 +890,7 @@ unsigned Dialog::InitDialogObjects(unsigned ID)
 			//	FEDITLINE_PARENT_SINGLELINE:FEDITLINE_PARENT_MULTILINE);
 			DialogEdit->SetDialogParent(
 					Type == DI_MEMOEDIT ? FEDITLINE_PARENT_MULTILINE : FEDITLINE_PARENT_SINGLELINE);
-			DialogEdit->SetReadOnly(0);
+			DialogEdit->SetReadOnly(false);
 
 			if (Type == DI_COMBOBOX) {
 				if (CurItem->ListPtr) {
@@ -1039,7 +1039,7 @@ unsigned Dialog::InitDialogObjects(unsigned ID)
 			DialogEdit->SetDelRemovesBlocks(Opt.Dialogs.DelRemovesBlocks);
 
 			if (ItemFlags & DIF_READONLY)
-				DialogEdit->SetReadOnly(1);
+				DialogEdit->SetReadOnly(true);
 		} else if (Type == DI_USERCONTROL) {
 			if (!DialogMode.Check(DMODE_CREATEOBJECTS))
 				CurItem->UCData = new DlgUserControl;
@@ -6004,8 +6004,8 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 
 						if (CurItem->ObjPtr) {
 							DlgEdit *EditLine = (DlgEdit *)(CurItem->ObjPtr);
-							int ReadOnly = EditLine->GetReadOnly();
-							EditLine->SetReadOnly(0);
+							bool ReadOnly = EditLine->GetReadOnly();
+							EditLine->SetReadOnly(false);
 							EditLine->DisableAC();
 							EditLine->SetString(CurItem->strData);
 							EditLine->RevertAC();
@@ -6290,7 +6290,7 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 			if (FarIsEdit(Type)) {
 				DlgEdit *CurItemEdit = (DlgEdit *)CurItem->ObjPtr;
 				if (CurItemEdit) {
-					CurItemEdit->SetReadOnly(Param2 ? 1 : 0);
+					CurItemEdit->SetReadOnly(Param2 != 0);
 				}
 			} else {
 				fprintf(stderr,

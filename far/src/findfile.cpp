@@ -3111,7 +3111,7 @@ FindFiles::FindFiles()
 		strLastFindStr = strFindStr;
 
 		if (!strFindStr.IsEmpty())
-			Editor::SetReplaceMode(FALSE);
+			Editor::SetReplaceMode(false);
 	} while (FindFilesProcess(v));
 	CtrlObject->Cp()->ActivePanel->SetTitle();
 }

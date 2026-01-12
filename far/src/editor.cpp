@@ -5733,7 +5733,7 @@ Edit *Editor::GetStringByNumber(int DestLine)
 	return CurPtr;
 }
 
-void Editor::SetReplaceMode(int Mode)
+void Editor::SetReplaceMode(bool Mode)
 {
 	::ReplaceMode = Mode;
 }

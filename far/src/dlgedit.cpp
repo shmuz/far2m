@@ -611,7 +611,7 @@ void DlgEdit::GetCursorType(bool& Visible, DWORD& Size)
 		lineEdit->GetCursorType(Visible,Size);
 }
 
-int DlgEdit::GetReadOnly()
+bool DlgEdit::GetReadOnly()
 {
 #if defined(PROJECT_DI_MEMOEDIT)
 
@@ -622,7 +622,7 @@ int DlgEdit::GetReadOnly()
 		return lineEdit->GetReadOnly();
 }
 
-void DlgEdit::SetReadOnly(int NewReadOnly)
+void DlgEdit::SetReadOnly(bool NewReadOnly)
 {
 #if defined(PROJECT_DI_MEMOEDIT)
 
