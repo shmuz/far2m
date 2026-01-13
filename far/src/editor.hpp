@@ -82,8 +82,17 @@ struct EditorUndoData
 	int Length {0};
 	wchar_t *Str {nullptr};
 
+private:
+	static size_t UndoDataSize;
+
+public:
 	EditorUndoData() = default;
-	~EditorUndoData() { delete[] Str; }
+	~EditorUndoData() {
+		UndoDataSize -= Length;
+		delete[] Str;
+	}
+
+	static size_t GetUndoDataSize() { return UndoDataSize; }
 
 	void SetData(int aType, const wchar_t *aStr, const wchar_t *aEol, int aStrNum, int aStrPos, int aLength = -1)
 	{
@@ -93,6 +102,8 @@ struct EditorUndoData
 		Type = aType;
 		StrPos = aStrPos;
 		StrNum = aStrNum;
+		UndoDataSize -= Length;
+		UndoDataSize += aLength;
 		Length = aLength;
 		far_wcsncpy(EOL, aEol ? aEol : L"", ARRAYSIZE(EOL) - 1);
 

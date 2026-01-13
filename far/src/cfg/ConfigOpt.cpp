@@ -247,7 +247,7 @@ static struct FARConfig
 	{true,  NSecEditor, "AutoDetectCodePage",           &Opt.EdOpt.AutoDetectCodePage, 0, OPT_BOOLEAN},
 	{true,  NSecEditor, "EditorCursorBeyondEOL",        &Opt.EdOpt.CursorBeyondEOL, 1, OPT_BOOLEAN},
 	{true,  NSecEditor, "ReadOnlyLock",                 &Opt.EdOpt.ReadOnlyLock, 0},
-	{false, NSecEditor, "EditorUndoSize",               &Opt.EdOpt.UndoSize, 0},
+	{true,  NSecEditor, "UndoDataSize",                 &Opt.EdOpt.UndoSize, 0x0800'0000}, // 2^27 chars (1 GiB)
 	{false, NSecEditor, "WordDiv",                      &Opt.strWordDiv, WordDiv0},
 	{false, NSecEditor, "BSLikeDel",                    &Opt.EdOpt.BSLikeDel, 1, OPT_BOOLEAN},
 	{false, NSecEditor, "FileSizeLimit",                &Opt.EdOpt.FileSizeLimitLo, 0},

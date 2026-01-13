@@ -53,6 +53,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "TPreRedrawFunc.hpp"
 #include "xlat.hpp"
 
+size_t EditorUndoData::UndoDataSize = 0;
+
 static bool ReplaceMode;
 
 static int EditorID = 0;
@@ -4046,7 +4048,7 @@ void Editor::AddUndoData(int Type, const wchar_t *Str, const wchar_t *Eol, int S
 
 	if (m_EdOpt.UndoSize > 0) {
 		while (!m_UndoData.empty()
-				&& (m_UndoData.size() > static_cast<size_t>(m_EdOpt.UndoSize) || m_UndoSkipLevel > 0)) {
+				&& (EditorUndoData::GetUndoDataSize() > m_EdOpt.UndoSize || m_UndoSkipLevel > 0)) {
 			auto u = m_UndoData.begin();
 
 			if (u->Type == UNDO_BEGIN)
