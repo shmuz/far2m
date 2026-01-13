@@ -94,11 +94,8 @@ public:
 
 	static size_t GetUndoDataSize() { return UndoDataSize; }
 
-	void SetData(int aType, const wchar_t *aStr, const wchar_t *aEol, int aStrNum, int aStrPos, int aLength = -1)
+	void SetData(int aType, const wchar_t *aStr, const wchar_t *aEol, int aStrNum, int aStrPos, int aLength)
 	{
-		if (aLength == -1 && aStr)
-			aLength = (int)StrLength(aStr);
-
 		Type = aType;
 		StrPos = aStrPos;
 		StrNum = aStrNum;
@@ -257,7 +254,7 @@ private:
 	void ProcessPasteEvent();
 
 	void AddUndoData(int Type, const wchar_t *Str = nullptr, const wchar_t *Eol = nullptr, int StrNum = 0,
-			int StrPos = 0, int Length = -1);
+			int StrPos = 0, int Length = 0);
 	void AddUndoData(Edit *pEdit, int StrNum);
 	void Undo(bool redo);
 	void SelectAll();
