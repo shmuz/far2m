@@ -3192,10 +3192,6 @@ bool Editor::Search(bool Next)
 		strMsgStr = SearchStr;
 		InsertQuote(strMsgStr);
 		SetCursorType(false, -1);
-		int FromPos = m_CurLine->GetCurPos();
-
-		if (Next)
-			ReverseSearch ? FromPos-- : FromPos++;
 
 		const int StartLine = m_NumLine;
 		int NewNumLine = m_NumLine;
@@ -3205,7 +3201,32 @@ bool Editor::Search(bool Next)
 		if (Regexp && !CompileRegexp(SearchStr, Case, &re))
 			return true;
 
-		for (Edit *CurPtr=m_CurLine; CurPtr; ) {
+		Edit *CurPtr = m_CurLine;
+		int FromPos = m_CurLine->GetCurPos();
+
+		auto ChangeLine = [&] {
+			if (!ReverseSearch) {
+				CurPtr = CurPtr->m_next;
+				FromPos = 0;
+				NewNumLine++;
+			}
+			else {
+				CurPtr = CurPtr->m_prev;
+				if (CurPtr) {
+					FromPos = CurPtr->GetLength();
+					NewNumLine--;
+				}
+			}
+		};
+
+		if (Next) {
+			if (!ReverseSearch)
+				++FromPos;
+			else if (--FromPos < 0)
+				ChangeLine();
+		}
+
+		while (CurPtr) {
 			DWORD CurTime = WINPORT(GetTickCount)();
 
 			if (CurTime - StartTime > RedrawTimeout) {
@@ -3226,21 +3247,6 @@ bool Editor::Search(bool Next)
 
 			int SearchLength = 0;
 			FARString ReplaceStrCurrent(ReplaceMode ? ReplaceStr : L"");
-
-			auto ChangeLine = [&] {
-				if (ReverseSearch) {
-					CurPtr = CurPtr->m_prev;
-					if (CurPtr) {
-						FromPos = CurPtr->GetLength();
-						NewNumLine--;
-					}
-				}
-				else {
-					FromPos = 0;
-					CurPtr = CurPtr->m_next;
-					NewNumLine++;
-				}
-			};
 
 			if (CurPtr->Search(SearchStr, ReplaceStrCurrent, FromPos, Case, WholeWords, ReverseSearch,
 					Regexp ? &re:nullptr, SearchLength))
