@@ -3331,11 +3331,10 @@ bool Editor::Search(bool Next)
 						  If Replace FARString doesn't contain control symbols (tab and return),
 						  processed with fast method, otherwise use improved old one.
 						*/
-						if (ReplaceStrCurrent.Contains(L'\t') || ReplaceStrCurrent.Contains(L'\r')) {
+						if (ReplaceStrCurrent.Contains(L'\r')) {
 							bool SaveOvertypeMode = Flags.Check(FEDITOR_OVERTYPE);
 							Flags.Set(FEDITOR_OVERTYPE);
 							m_CurLine->SetOvertypeMode(true);
-							// int CurPos=m_CurLine->GetCurPos();
 
 							int I = 0;
 							for (; SearchLength && ReplaceStrCurrent[I]; I++, SearchLength--) {
