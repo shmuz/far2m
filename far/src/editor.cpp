@@ -4046,28 +4046,26 @@ void Editor::AddUndoData(int Type, const wchar_t *Str, const wchar_t *Eol, int S
 	m_UndoPos = --m_UndoData.end();
 	m_UndoPos->SetData(Type, Str, Eol, StrNum, StrPos, Length);
 
-	if (m_EdOpt.UndoSize > 0) {
-		while (!m_UndoData.empty()
-				&& (EditorUndoData::GetUndoDataSize() > m_EdOpt.UndoSize || m_UndoSkipLevel > 0)) {
-			auto u = m_UndoData.begin();
+	while (!m_UndoData.empty()
+			&& (EditorUndoData::GetUndoDataSize() > m_EdOpt.UndoSize || m_UndoSkipLevel > 0)) {
+		auto u = m_UndoData.begin();
 
-			if (u->Type == UNDO_BEGIN)
-				++m_UndoSkipLevel;
+		if (u->Type == UNDO_BEGIN)
+			++m_UndoSkipLevel;
 
-			if (u->Type == UNDO_END && m_UndoSkipLevel > 0)
-				--m_UndoSkipLevel;
+		if (u->Type == UNDO_END && m_UndoSkipLevel > 0)
+			--m_UndoSkipLevel;
 
-			if (m_UndoSavePos == m_UndoData.end())
-				Flags.Set(FEDITOR_UNDOSAVEPOSLOST);
+		if (m_UndoSavePos == m_UndoData.end())
+			Flags.Set(FEDITOR_UNDOSAVEPOSLOST);
 
-			if (u == m_UndoSavePos)
-				m_UndoSavePos = m_UndoData.end();
+		if (u == m_UndoSavePos)
+			m_UndoSavePos = m_UndoData.end();
 
-			m_UndoData.erase(u);
-		}
-
-		m_UndoPos = --m_UndoData.end();
+		m_UndoData.erase(u);
 	}
+
+	m_UndoPos = --m_UndoData.end();
 }
 
 void Editor::AddUndoData(Edit *pEdit, int StrNum)
