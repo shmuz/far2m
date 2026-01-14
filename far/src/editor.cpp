@@ -3372,11 +3372,12 @@ bool Editor::Search(bool Next)
 								m_CurLine->SetCurPos(CurPos + RStrLen);
 							}
 							else {
-								int Pos = SStrLen ? CurPos - SStrLen : CurPos - 1;
-								if (Pos >= 0)
-									m_CurLine->SetCurPos(Pos);
-								else
+								if (CurPos > 0)
+									m_CurLine->SetCurPos(CurPos - 1);
+								else {
+									m_CurLine->SetCurPos(CurPos);
 									ReverseNewLine = true;
+								}
 							}
 							delete[] NewStr;
 							TextChanged(true);

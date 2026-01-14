@@ -1521,9 +1521,10 @@ bool SearchString(const wchar_t *Source, int StrSize, const FARString& Str, FARS
 			}
 			else
 			{
+				auto View = ReStringView(Source, Min(Position + 1, StrSize));
 				for (int pos=Position; pos >= 0; --pos)
 				{
-					if (Re->SearchEx(ReStringView(Source, StrSize), pos, rmatch))
+					if (Re->SearchEx(View, pos, rmatch))
 					{
 						if (rmatch.Matches[0].start <= Position)
 						{
