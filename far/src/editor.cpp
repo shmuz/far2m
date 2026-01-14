@@ -1763,7 +1763,6 @@ int Editor::ProcessKey(FarKey Key)
 			return TRUE;
 		}
 		case KEY_SHIFTF7: {
-			// ReplaceMode=false;
 			TurnOffMarkingBlock();
 			Search(true);
 			return TRUE;
@@ -1776,48 +1775,7 @@ int Editor::ProcessKey(FarKey Key)
 			m_LastSearchReverse = LastSearchReversePrev;
 			return TRUE;
 		}
-		/*case KEY_F8:
-		{
-		  Flags.Set(FEDITOR_TABLECHANGEDBYUSER);
-		  if ((AnsiText=!AnsiText))
-		  {
-			int UseUnicode=FALSE;
-			GetTable(&TableSet,TRUE,TableNum,UseUnicode);
-		  }
-		  TableNum=0;
-		  UseDecodeTable=AnsiText;
-		  SetStringsTable();
-		  if (m_HostFileEditor) m_HostFileEditor->ChangeEditKeyBar();
-		  Show();
-		  return TRUE;
-		} */ //BUGBUGBUG
-		/*case KEY_SHIFTF8:
-		{
-		  {
-			int UseUnicode=FALSE;
-			int GetTableCode=GetTable(&TableSet,FALSE,TableNum,UseUnicode);
-			if (GetTableCode!=-1)
-			{
-			  Flags.Set(FEDITOR_TABLECHANGEDBYUSER);
-			  UseDecodeTable=GetTableCode;
-			  AnsiText=FALSE;
-			  SetStringsTable();
-			  if (m_HostFileEditor) m_HostFileEditor->ChangeEditKeyBar();
-			  Show();
-			}
-		  }
-		  return TRUE; //BUGBUGBUG
-		} */
 		case KEY_F11: {
-			/*
-				  if(!Flags.Check(FEDITOR_DIALOGMEMOEDIT))
-				  {
-					CtrlObject->Plugins.CurEditor=m_HostFileEditor; // this;
-					if (CtrlObject->Plugins.CommandsMenu(MODALTYPE_EDITOR,0,"Editor"))
-					  *PluginTitle=0;
-					Show();
-				  }
-			*/
 			return TRUE;
 		}
 		case KEY_CTRLSHIFTZ:
@@ -4728,18 +4686,17 @@ int Editor::EditorControl(int Command, void *Param)
 			if (Flags.Check(FEDITOR_LOCKMODE)) {
 				_ECTLLOG(SysLog(L"FEDITOR_LOCKMODE!"));
 				return FALSE;
-			} else {
-				int Indent = Param && *(int *)Param != FALSE;
-
-				if (!Indent)
-					m_Pasting++;
-
-				Flags.Set(FEDITOR_NEWUNDO);
-				InsertString();
-
-				if (!Indent)
-					m_Pasting--;
 			}
+			bool Indent = Param && *(int*)Param;
+
+			if (!Indent)
+				m_Pasting++;
+
+			Flags.Set(FEDITOR_NEWUNDO);
+			InsertString();
+
+			if (!Indent)
+				m_Pasting--;
 
 			return TRUE;
 		}
@@ -6082,32 +6039,6 @@ Edit *Editor::CreateString(const wchar_t *lpwszStr, int nLength)
 
 	return pEdit;
 }
-
-/*bool Editor::AddString (const wchar_t *lpwszStr, int nLength)
-{
-  Edit *pNewEdit = CreateString (lpwszStr, nLength);
-
-  if ( !pNewEdit )
-	return false;
-
-  if ( !m_TopList || !m_NumLastLine ) //???
-	m_TopList = m_EndList = m_TopScreen = m_CurLine = pNewEdit;
-  else
-  {
-	Edit *PrevPtr;
-
-	m_EndList->m_next = pNewEdit;
-
-	PrevPtr = m_EndList;
-	m_EndList = m_EndList->m_next;
-	m_EndList->m_prev = PrevPtr;
-	m_EndList->m_next = nullptr;
-  }
-
-  m_NumLastLine++;
-
-  return true;
-}*/
 
 Edit *Editor::InsertString(const wchar_t *lpwszStr, int nLength, Edit *pAfter, int AfterLineNumber)
 {
