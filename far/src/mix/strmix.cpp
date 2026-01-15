@@ -1311,7 +1311,7 @@ static FARString ReplaceBrackets(
 							case L't' : strPart = L'\t'; break;
 							case L'\\': strPart = L'\\'; break;
 							case L'$' : strPart = L'$' ; break;
-							default   : strPart = L'\\'; strPart = p[1]; break;
+							default   : strPart = FARString(p, 2); break;
 						}
 						pos += 2;
 					}
