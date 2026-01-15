@@ -91,7 +91,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       Если nullptr или пустая строка - тема помощи не назначается.
 
   Возвращаемое значение:
-    TRUE  - пользователь подтвердил свои намериния
+    TRUE  - пользователь подтвердил свои намерения
     FALSE - пользователь отказался от диалога (Esc)
 */
 int WINAPI GetSearchReplaceString(

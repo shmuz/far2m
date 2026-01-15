@@ -228,6 +228,9 @@ private:
 	std::unordered_set<Edit *> m_AutoDeletedColors;
 
 private:
+	enum NextType {
+		NEXT_NONE, NEXT_FORWARD, NEXT_REVERSE
+	};
 	virtual void DisplayObject();
 	void ShowEditor(bool CurLineOnly);
 	void DeleteString(Edit *DelPtr, int LineNumber, bool DeleteLast, int UndoLine);
@@ -236,7 +239,7 @@ private:
 	void Down();
 	void ScrollDown();
 	void ScrollUp();
-	bool Search(bool Next);
+	bool Search(bool ReplaceMode, NextType Next);
 
 	void GoToLine(int Line);
 	void GoToPosition();

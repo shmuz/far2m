@@ -55,7 +55,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 size_t EditorUndoData::UndoDataSize = 0;
 
-static bool ReplaceMode;
+static bool GlobalReplaceMode;
 
 static int EditorID = 0;
 
@@ -1743,36 +1743,27 @@ int Editor::ProcessKey(FarKey Key)
 			return TRUE;
 		}
 		case KEY_F7: {
-			bool ReplaceMode0 = ReplaceMode;
-			ReplaceMode = false;
-
-			if (!Search(false))
-				ReplaceMode = ReplaceMode0;
+			if (Search(false, NEXT_NONE))
+				GlobalReplaceMode = false;
 
 			return TRUE;
 		}
 		case KEY_CTRLF7: {
 			if (!Flags.Check(FEDITOR_LOCKMODE)) {
-				bool ReplaceMode0 = ReplaceMode;
-				ReplaceMode = true;
-
-				if (!Search(false))
-					ReplaceMode = ReplaceMode0;
+				if (Search(true, NEXT_NONE))
+					GlobalReplaceMode = true;
 			}
 
 			return TRUE;
 		}
 		case KEY_SHIFTF7: {
 			TurnOffMarkingBlock();
-			Search(true);
+			Search(GlobalReplaceMode, m_LastSearchReverse ? NEXT_REVERSE : NEXT_FORWARD);
 			return TRUE;
 		}
 		case KEY_ALTF7: {
 			TurnOffMarkingBlock();
-			int LastSearchReversePrev = m_LastSearchReverse;
-			m_LastSearchReverse = !m_LastSearchReverse;
-			Search(true);
-			m_LastSearchReverse = LastSearchReversePrev;
+			Search(GlobalReplaceMode, m_LastSearchReverse ? NEXT_FORWARD : NEXT_REVERSE);
 			return TRUE;
 		}
 		case KEY_F11: {
@@ -3096,13 +3087,16 @@ void Editor::ScrollUp()
    в отдельную функцию GetSearchReplaceString
    (файл stddlg.cpp)
 */
-bool Editor::Search(bool Next)
+bool Editor::Search(bool ReplaceMode, NextType NextTp)
 {
-	bool ReplaceAll = false;
 	static FARString LastReplaceStr;
 	FARString strMsgStr;
-	const wchar_t *TextHistoryName = L"SearchText", *ReplaceHistoryName = L"ReplaceText";
-	bool Match = false, UserBreak = false;
+	const wchar_t *TextHistoryName = L"SearchText";
+	const wchar_t *ReplaceHistoryName = L"ReplaceText";
+	bool ReplaceAll = false;
+	bool Match = false;
+	bool UserBreak = false;
+	bool Next = (NextTp != NEXT_NONE);
 
 	if (Next && m_LastSearchStr.IsEmpty())
 		return true;
@@ -3111,9 +3105,9 @@ bool Editor::Search(bool Next)
 	FARString ReplaceStr = LastReplaceStr;
 	int Case = m_LastSearchCase;
 	int WholeWords = m_LastSearchWholeWords;
-	int ReverseSearch = m_LastSearchReverse;
 	int SelectFound = m_LastSearchSelFound;
 	int Regexp = m_LastSearchRegexp;
+	int ReverseSearch = (NextTp == NEXT_NONE) ? m_LastSearchReverse : (NextTp == NEXT_REVERSE);
 
 	if (!Next) {
 		if (m_EdOpt.SearchPickUpWord) {
@@ -5698,7 +5692,7 @@ Edit *Editor::GetStringByNumber(int DestLine)
 
 void Editor::SetReplaceMode(bool Mode)
 {
-	::ReplaceMode = Mode;
+	GlobalReplaceMode = Mode;
 }
 
 int Editor::GetLineCurPos()
