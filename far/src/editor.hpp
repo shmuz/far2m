@@ -42,6 +42,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "config.hpp"
 #include "noncopyable.hpp"
 #include "FARString.hpp"
+#include "stddlg.hpp"
 
 class FileEditor;
 
@@ -199,11 +200,7 @@ private:
 
 	int m_XX2;    // scrollbar
 
-	FARString m_LastSearchStr;
-	/* $ 30.07.2000 KM
-	   Новая переменная для поиска "Whole words"
-	*/
-	int m_LastSearchCase, m_LastSearchWholeWords, m_LastSearchReverse, m_LastSearchSelFound, m_LastSearchRegexp;
+	SearchReplaceDlgParams m_LastSearch;
 
 	UINT m_codepage;    // BUGBUG
 

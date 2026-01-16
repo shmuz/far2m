@@ -42,22 +42,13 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "strmix.hpp"
 #include "DlgGuid.hpp"
 
-int WINAPI GetSearchReplaceString(
+int WINAPI GetSearchReplaceParams(
     bool IsReplaceMode,
-    FARString *pSearchStr,
-    FARString *pReplaceStr,
+		SearchReplaceDlgParams &Par,
     const wchar_t *TextHistoryName,
     const wchar_t *ReplaceHistoryName,
-    int *Case,
-    int *WholeWords,
-    int *Reverse,
-    int *SelectFound,
-    int *Regexp,
     const wchar_t *HelpTopic)
 {
-	if (!pSearchStr || (IsReplaceMode && !pReplaceStr))
-		return FALSE;
-
 	static const wchar_t *TextHistoryName0    = L"SearchText",
 	        *ReplaceHistoryName0 = L"ReplaceText";
 	int HeightDialog, DeltaCol1, DeltaCol2, DeltaCol, I;
@@ -130,13 +121,11 @@ int WINAPI GetSearchReplaceString(
 		else
 			ReplaceDlg[4].strHistory=ReplaceHistoryName;
 
-		ReplaceDlg[2].strData = *pSearchStr;
+		ReplaceDlg[2].strData = Par.SearchStr;
+		ReplaceDlg[4].strData = Par.ReplaceStr;
 
-		if (*pReplaceStr)
-			ReplaceDlg[4].strData = *pReplaceStr;
-
-		if (Case)
-			ReplaceDlg[6].Selected=*Case;
+		if (Par.CaseSens >= 0)
+			ReplaceDlg[6].Selected = Par.CaseSens;
 		else
 		{
 			DeltaCol1++;
@@ -150,8 +139,8 @@ int WINAPI GetSearchReplaceString(
 			}
 		}
 
-		if (WholeWords)
-			ReplaceDlg[7].Selected=*WholeWords;
+		if (Par.WholeWords >= 0)
+			ReplaceDlg[7].Selected = Par.WholeWords;
 		else
 		{
 			DeltaCol1++;
@@ -165,8 +154,8 @@ int WINAPI GetSearchReplaceString(
 			}
 		}
 
-		if (Reverse)
-			ReplaceDlg[8].Selected=*Reverse;
+		if (Par.Reverse >= 0)
+			ReplaceDlg[8].Selected = Par.Reverse;
 		else
 		{
 			DeltaCol1++;
@@ -180,8 +169,8 @@ int WINAPI GetSearchReplaceString(
 			}
 		}
 
-		if (Regexp)
-			ReplaceDlg[9].Selected=*Regexp;
+		if (Par.Regexp >= 0)
+			ReplaceDlg[9].Selected = Par.Regexp;
 		else
 		{
 			DeltaCol2++;
@@ -233,18 +222,17 @@ int WINAPI GetSearchReplaceString(
 				return FALSE;
 		}
 
-		*pSearchStr = ReplaceDlg[2].strData;
+		Par.SearchStr = ReplaceDlg[2].strData;
 
-		if (pReplaceStr)
-			*pReplaceStr = ReplaceDlg[4].strData;
+		Par.ReplaceStr = ReplaceDlg[4].strData;
 
-		if (Case)       *Case=ReplaceDlg[6].Selected;
+		if (Par.CaseSens >= 0)    Par.CaseSens = ReplaceDlg[6].Selected;
 
-		if (WholeWords) *WholeWords=ReplaceDlg[7].Selected;
+		if (Par.WholeWords >= 0)  Par.WholeWords = ReplaceDlg[7].Selected;
 
-		if (Reverse)    *Reverse=ReplaceDlg[8].Selected;
+		if (Par.Reverse >= 0)     Par.Reverse = ReplaceDlg[8].Selected;
 
-		if (Regexp)     *Regexp=ReplaceDlg[9].Selected;
+		if (Par.Regexp >= 0)      Par.Regexp = ReplaceDlg[9].Selected;
 	}
 	else
 	{
@@ -292,16 +280,16 @@ int WINAPI GetSearchReplaceString(
 		else
 			SearchDlg[2].strHistory=TextHistoryName;
 
-		SearchDlg[2].strData = *pSearchStr;
+		SearchDlg[2].strData = Par.SearchStr;
 
-		if (Case)
-			SearchDlg[4].Selected=*Case;
+		if (Par.CaseSens >= 0)
+			SearchDlg[4].Selected = Par.CaseSens;
 
-		if (WholeWords)
-			SearchDlg[5].Selected=*WholeWords;
+		if (Par.WholeWords >= 0)
+			SearchDlg[5].Selected = Par.WholeWords;
 
-		if (Reverse)
-			SearchDlg[6].Selected=*Reverse;
+		if (Par.Reverse >= 0)
+			SearchDlg[6].Selected = Par.Reverse;
 		else
 		{
 			HeightDialog--;
@@ -314,18 +302,18 @@ int WINAPI GetSearchReplaceString(
 			}
 		}
 
-		if (Regexp)
-			SearchDlg[7].Selected=*Regexp;
+		if (Par.Regexp >= 0)
+			SearchDlg[7].Selected = Par.Regexp;
 
-		if (SelectFound)
-			SearchDlg[8].Selected=*SelectFound;
+		if (Par.SelectFound >= 0)
+			SearchDlg[8].Selected = Par.SelectFound;
 		else
 			SearchDlg[8].Flags |= (DIF_DISABLE|DIF_HIDDEN);
 
 		{
 			Dialog Dlg(SearchDlg,ARRAYSIZE(SearchDlg));
 			Dlg.SetPosition(-1,-1,76,HeightDialog);
-			Dlg.SetId(Reverse ? EditorSearchId : HelpSearchId);
+			Dlg.SetId(Par.Reverse >= 0 ? EditorSearchId : HelpSearchId);
 
 			if (HelpTopic && *HelpTopic)
 				Dlg.SetHelp(HelpTopic);
@@ -336,25 +324,22 @@ int WINAPI GetSearchReplaceString(
 				return FALSE;
 		}
 
-		*pSearchStr = SearchDlg[2].strData;
+		Par.SearchStr = SearchDlg[2].strData;
 
-		if (pReplaceStr)
-			pReplaceStr->Clear();
+		if (Par.CaseSens >= 0)
+			Par.CaseSens = SearchDlg[4].Selected;
 
-		if (Case)
-			*Case=SearchDlg[4].Selected;
+		if (Par.WholeWords >= 0)
+			Par.WholeWords = SearchDlg[5].Selected;
 
-		if (WholeWords)
-			*WholeWords=SearchDlg[5].Selected;
+		if (Par.Reverse >= 0)
+			Par.Reverse = SearchDlg[6].Selected;
 
-		if (Reverse)
-			*Reverse=SearchDlg[6].Selected;
+		if (Par.Regexp >= 0)
+			Par.Regexp = SearchDlg[7].Selected;
 
-		if (Regexp)
-			*Regexp=SearchDlg[7].Selected;
-
-		if (SelectFound)
-			*SelectFound=SearchDlg[8].Selected;
+		if (Par.SelectFound)
+			Par.SelectFound = SearchDlg[8].Selected;
 	}
 
 	return TRUE;

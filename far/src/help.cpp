@@ -129,6 +129,8 @@ Help::Help(const wchar_t *Topic, const wchar_t *Mask, DWORD aFlags):
 	StackData.strHelpMask = Mask; // сохраним маску файла
 	TopScreen=new SaveScreen;
 	StackData.strHelpTopic = Topic;
+	LastSearch.Reverse = -1;
+	LastSearch.SelectFound = -1;
 
 	if (Opt.FullScreenHelp)
 		SetPosition(0,0,ScrX,ScrY);
@@ -1283,34 +1285,17 @@ int Help::ProcessKey(FarKey Key)
 			// не поганим SelTopic, если и так в FoundContents
 			if (StrCmpI(StackData.strHelpTopic,FoundContents))
 			{
-				FARString strLastSearchStr0=strLastSearchStr;
-				int Case=LastSearchCase;
-				int WholeWords=LastSearchWholeWords;
-				int Regexp=LastSearchRegexp;
-
-				FARString strTempStr;
-				//int RetCode = GetString(Msg::HelpSearchTitle,Msg::HelpSearchingFor,L"HelpSearch",strLastSearchStr,strLastSearchStr0);
-				//Msg::HelpSearchTitle, Msg::HelpSearchingFor,
-				int RetCode = GetSearchReplaceString(FALSE, &strLastSearchStr0, &strTempStr, L"HelpSearch",
-						L"", &Case, &WholeWords, nullptr, nullptr, &Regexp, nullptr);
-
-				if (RetCode <= 0)
-					return TRUE;
-
-				strLastSearchStr=strLastSearchStr0;
-				LastSearchCase=Case;
-				LastSearchWholeWords=WholeWords;
-				LastSearchRegexp=Regexp;
-
-				Stack->Push(&StackData);
-				IsNewTopic=TRUE;
-				JumpTopic(FoundContents);
-				ErrorHelp=FALSE;
-				IsNewTopic=FALSE;
+				if (GetSearchReplaceParams(false, LastSearch, L"HelpSearch", L""))
+				{
+					Stack->Push(&StackData);
+					IsNewTopic=TRUE;
+					JumpTopic(FoundContents);
+					ErrorHelp=FALSE;
+					IsNewTopic=FALSE;
+				}
 			}
 
 			return TRUE;
-
 		}
 		case KEY_SHIFTF2:
 		{
@@ -1790,7 +1775,7 @@ void Help::Search(FILE *HelpFile,uintptr_t nCodePage)
 	StackData.CurX=StackData.CurY=0;
 	strCtrlColorChar.Clear();
 
-	FARString strTitleLine=strLastSearchStr;
+	FARString strTitleLine = LastSearch.SearchStr;
 	AddTitle(strTitleLine);
 
 	bool TopicFound=false;
@@ -1800,7 +1785,7 @@ void Help::Search(FILE *HelpFile,uintptr_t nCodePage)
 	FARString strCurTopic, strEntryName, strReadStr;
 
 	RegExp re;
-	bool bSearch = !LastSearchRegexp || CompileRegexp(strLastSearchStr, LastSearchCase, &re);
+	bool bSearch = !LastSearch.Regexp || CompileRegexp(LastSearch.SearchStr, LastSearch.CaseSens, &re);
 
 	while (bSearch && GetStr.GetString(&ReadStr, nCodePage, nStrLength) > 0)
 	{
@@ -1832,9 +1817,9 @@ void Help::Search(FILE *HelpFile,uintptr_t nCodePage)
 			FARString ReplaceStr;
 			int CurPos=0;
 			int SearchLength;
-			bool Result = SearchString(strReadStr, strReadStr.GetLength(), strLastSearchStr,
-					ReplaceStr, CurPos, 0, LastSearchCase, LastSearchWholeWords, FALSE,
-					LastSearchRegexp ? &re:nullptr, SearchLength);
+			bool Result = SearchString(strReadStr, strReadStr.GetLength(), LastSearch.SearchStr,
+					ReplaceStr, CurPos, 0, LastSearch.CaseSens, LastSearch.WholeWords, FALSE,
+					LastSearch.Regexp ? &re:nullptr, SearchLength);
 
 			if (Result)
 			{

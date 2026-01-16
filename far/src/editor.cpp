@@ -48,7 +48,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "message.hpp"
 #include "mix.hpp"
 #include "scrbuf.hpp"
-#include "stddlg.hpp"
 #include "syslog.hpp"
 #include "TPreRedrawFunc.hpp"
 #include "xlat.hpp"
@@ -82,11 +81,6 @@ Editor::Editor(ScreenObject *Owner, bool DialogUsed)
 	m_BlockStartLine(0),
 	m_VBlockStart(nullptr),
 	m_MaxRightPos(0),
-	m_LastSearchCase(GlobalSearchCase),
-	m_LastSearchWholeWords(GlobalSearchWholeWords),
-	m_LastSearchReverse(GlobalSearchReverse),
-	m_LastSearchSelFound(Opt.EdOpt.SearchSelFound),
-	m_LastSearchRegexp(Opt.EdOpt.SearchRegexp),
 	m_codepage(CP_OEMCP),
 	m_StartLine(-1),
 	m_StartChar(-1),
@@ -103,6 +97,12 @@ Editor::Editor(ScreenObject *Owner, bool DialogUsed)
 {
 	_KEYMACRO(SysLog(L"Editor::Editor()"));
 	_KEYMACRO(SysLog(1));
+	m_LastSearch.CaseSens = GlobalSearchCase;
+	m_LastSearch.WholeWords = GlobalSearchWholeWords;
+	m_LastSearch.Reverse = GlobalSearchReverse;
+	m_LastSearch.SelectFound = Opt.EdOpt.SearchSelFound;
+	m_LastSearch.Regexp = Opt.EdOpt.SearchRegexp;
+
 	m_EdOpt = Opt.EdOpt;
 	SetOwner(Owner);
 
@@ -115,9 +115,9 @@ Editor::Editor(ScreenObject *Owner, bool DialogUsed)
 	   16-ричном представлении.
 	*/
 	if (GlobalSearchHex)
-		Transform(m_LastSearchStr, strGlobalSearchString, L'S');
+		Transform(m_LastSearch.SearchStr, strGlobalSearchString, L'S');
 	else
-		m_LastSearchStr = strGlobalSearchString;
+		m_LastSearch.SearchStr = strGlobalSearchString;
 
 	UnmarkMacroBlock();
 
@@ -158,15 +158,15 @@ void Editor::KeepInitParameters()
 {
 	// Установлен глобальный режим поиска 16-ричных данных?
 	if (GlobalSearchHex)
-		Transform(strGlobalSearchString, m_LastSearchStr, L'X');
+		Transform(strGlobalSearchString, m_LastSearch.SearchStr, L'X');
 	else
-		strGlobalSearchString = m_LastSearchStr;
+		strGlobalSearchString = m_LastSearch.SearchStr;
 
-	GlobalSearchCase = m_LastSearchCase;
-	GlobalSearchWholeWords = m_LastSearchWholeWords;
-	GlobalSearchReverse = m_LastSearchReverse;
-	Opt.EdOpt.SearchSelFound = m_LastSearchSelFound;
-	Opt.EdOpt.SearchRegexp = m_LastSearchRegexp;
+	GlobalSearchCase = m_LastSearch.CaseSens;
+	GlobalSearchWholeWords = m_LastSearch.WholeWords;
+	GlobalSearchReverse = m_LastSearch.Reverse;
+	Opt.EdOpt.SearchSelFound = m_LastSearch.SelectFound;
+	Opt.EdOpt.SearchRegexp = m_LastSearch.Regexp;
 }
 
 void Editor::DisplayObject()
@@ -1758,12 +1758,12 @@ int Editor::ProcessKey(FarKey Key)
 		}
 		case KEY_SHIFTF7: {
 			TurnOffMarkingBlock();
-			Search(GlobalReplaceMode, m_LastSearchReverse ? NEXT_REVERSE : NEXT_FORWARD);
+			Search(GlobalReplaceMode, m_LastSearch.Reverse ? NEXT_REVERSE : NEXT_FORWARD);
 			return TRUE;
 		}
 		case KEY_ALTF7: {
 			TurnOffMarkingBlock();
-			Search(GlobalReplaceMode, m_LastSearchReverse ? NEXT_FORWARD : NEXT_REVERSE);
+			Search(GlobalReplaceMode, m_LastSearch.Reverse ? NEXT_FORWARD : NEXT_REVERSE);
 			return TRUE;
 		}
 		case KEY_F11: {
@@ -3084,12 +3084,11 @@ void Editor::ScrollUp()
 
 /* $ 21.01.2001 SVS
    Диалоги поиска/замены выведен из Editor::Search
-   в отдельную функцию GetSearchReplaceString
+   в отдельную функцию GetSearchReplaceParams
    (файл stddlg.cpp)
 */
 bool Editor::Search(bool ReplaceMode, NextType NextTp)
 {
-	static FARString LastReplaceStr;
 	FARString strMsgStr;
 	const wchar_t *TextHistoryName = L"SearchText";
 	const wchar_t *ReplaceHistoryName = L"ReplaceText";
@@ -3098,42 +3097,44 @@ bool Editor::Search(bool ReplaceMode, NextType NextTp)
 	bool UserBreak = false;
 	bool Next = (NextTp != NEXT_NONE);
 
-	if (Next && m_LastSearchStr.IsEmpty())
+	if (Next && m_LastSearch.SearchStr.IsEmpty())
 		return true;
 
-	FARString SearchStr = m_LastSearchStr;
-	FARString ReplaceStr = LastReplaceStr;
-	int Case = m_LastSearchCase;
-	int WholeWords = m_LastSearchWholeWords;
-	int SelectFound = m_LastSearchSelFound;
-	int Regexp = m_LastSearchRegexp;
-	int ReverseSearch = (NextTp == NEXT_NONE) ? m_LastSearchReverse : (NextTp == NEXT_REVERSE);
+	FARString SearchStr = m_LastSearch.SearchStr;
+	FARString ReplaceStr = m_LastSearch.ReplaceStr;
+	int Case = m_LastSearch.CaseSens;
+	int WholeWords = m_LastSearch.WholeWords;
+	int SelectFound = m_LastSearch.SelectFound;
+	int Regexp = m_LastSearch.Regexp;
+	int ReverseSearch = (NextTp == NEXT_NONE) ? m_LastSearch.Reverse : (NextTp == NEXT_REVERSE);
 
 	if (!Next) {
+		auto LS = m_LastSearch;
+
 		if (m_EdOpt.SearchPickUpWord) {
 			int StartPickPos = -1, EndPickPos = -1;
 			const wchar_t *Ptr = CalcWordFromString(m_CurLine->GetStringAddr(), m_CurLine->GetCurPos(),
 					&StartPickPos, &EndPickPos, GetWordDiv());
 
 			if (Ptr)
-				SearchStr = FARString(Ptr, (size_t)EndPickPos - StartPickPos + 1);
+				LS.SearchStr = FARString(Ptr, (size_t)EndPickPos - StartPickPos + 1);
 		}
 
-		if (!GetSearchReplaceString(ReplaceMode, &SearchStr, &ReplaceStr, TextHistoryName,
-					ReplaceHistoryName, &Case, &WholeWords, &ReverseSearch, &SelectFound, &Regexp,
-					L"EditorSearch"))
+		if (GetSearchReplaceParams(ReplaceMode, LS, TextHistoryName,	ReplaceHistoryName, L"EditorSearch"))
+			m_LastSearch = LS;
+		else
 			return false;
 
-		m_LastSearchStr = SearchStr;
-		LastReplaceStr = ReplaceStr;
-		m_LastSearchCase = Case;
-		m_LastSearchWholeWords = WholeWords;
-		m_LastSearchReverse = ReverseSearch;
-		m_LastSearchSelFound = SelectFound;
-		m_LastSearchRegexp = Regexp;
-
-		if (SearchStr.IsEmpty())
+		if (LS.SearchStr.IsEmpty())
 			return true;
+
+		SearchStr = LS.SearchStr;
+		ReplaceStr = LS.ReplaceStr;
+		Case = LS.CaseSens;
+		WholeWords = LS.WholeWords;
+		SelectFound = LS.SelectFound;
+		Regexp = LS.Regexp;
+		ReverseSearch = LS.Reverse;
 	}
 
 	if (!m_EdOpt.PersistentBlocks || (SelectFound && !ReplaceMode))

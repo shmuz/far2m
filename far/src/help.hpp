@@ -36,6 +36,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "frame.hpp"
 #include "keybar.hpp"
 #include "chgmmode.hpp"
+#include "stddlg.hpp"
 
 class CallBackStack;
 
@@ -138,8 +139,7 @@ class Help:public Frame
 
 		FARString strCtrlStartPosChar;
 
-		FARString strLastSearchStr;
-		int LastSearchCase = 0, LastSearchWholeWords = 0, LastSearchRegexp = 0;
+		SearchReplaceDlgParams LastSearch;
 	private:
 		virtual void DisplayObject();
 		int  ReadHelp(const wchar_t *Mask=nullptr);
