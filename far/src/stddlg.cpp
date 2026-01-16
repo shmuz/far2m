@@ -43,11 +43,11 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "DlgGuid.hpp"
 
 int WINAPI GetSearchReplaceParams(
-    bool IsReplaceMode,
+		bool IsReplaceMode,
 		SearchReplaceDlgParams &Par,
-    const wchar_t *TextHistoryName,
-    const wchar_t *ReplaceHistoryName,
-    const wchar_t *HelpTopic)
+		const wchar_t *TextHistoryName,
+		const wchar_t *ReplaceHistoryName,
+		const wchar_t *HelpTopic)
 {
 	static const wchar_t *TextHistoryName0    = L"SearchText",
 	        *ReplaceHistoryName0 = L"ReplaceText";

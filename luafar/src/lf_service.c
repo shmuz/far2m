@@ -578,6 +578,17 @@ void PushPanelItem(lua_State *L, const struct PluginPanelItem *PanelItem)
 	}
 }
 
+static void PutRECTToTable(lua_State *L, const char* key, RECT rect)
+{
+	lua_createtable(L, 0, 4);
+	PutIntToTable(L, "left", rect.left);
+	PutIntToTable(L, "top", rect.top);
+	PutIntToTable(L, "right", rect.right);
+	PutIntToTable(L, "bottom", rect.bottom);
+	lua_setfield(L, -2, key);
+}
+//---------------------------------------------------------------------------
+
 void PushPanelItems(lua_State *L, HANDLE handle, const struct PluginPanelItem *PanelItems, int ItemsNumber)
 {
 	lua_createtable(L, ItemsNumber, 0);    //+1 "PanelItems"
@@ -2130,12 +2141,7 @@ static int panel_GetPanelInfo(lua_State *L)
 	//-------------------------------------------------------------------------
 	PutIntToTable (L, "PanelType", pi.PanelType);
 	//-------------------------------------------------------------------------
-	lua_createtable(L, 0, 4); // "PanelRect"
-	PutIntToTable (L, "left",   pi.PanelRect.left);
-	PutIntToTable (L, "top",    pi.PanelRect.top);
-	PutIntToTable (L, "right",  pi.PanelRect.right);
-	PutIntToTable (L, "bottom", pi.PanelRect.bottom);
-	lua_setfield(L, -2, "PanelRect");
+	PutRECTToTable(L, "PanelRect", pi.PanelRect);
 	//-------------------------------------------------------------------------
 	PutIntToTable (L, "ItemsNumber",  pi.ItemsNumber);
 	PutIntToTable (L, "SelectedItemsNumber", pi.SelectedItemsNumber);

@@ -3100,17 +3100,10 @@ bool Editor::Search(bool ReplaceMode, NextType NextTp)
 	if (Next && m_LastSearch.SearchStr.IsEmpty())
 		return true;
 
-	FARString SearchStr = m_LastSearch.SearchStr;
-	FARString ReplaceStr = m_LastSearch.ReplaceStr;
-	int Case = m_LastSearch.CaseSens;
-	int WholeWords = m_LastSearch.WholeWords;
-	int SelectFound = m_LastSearch.SelectFound;
-	int Regexp = m_LastSearch.Regexp;
-	int ReverseSearch = (NextTp == NEXT_NONE) ? m_LastSearch.Reverse : (NextTp == NEXT_REVERSE);
+	auto LS = m_LastSearch;
+	LS.Reverse = (NextTp == NEXT_NONE) ? m_LastSearch.Reverse : (NextTp == NEXT_REVERSE);
 
 	if (!Next) {
-		auto LS = m_LastSearch;
-
 		if (m_EdOpt.SearchPickUpWord) {
 			int StartPickPos = -1, EndPickPos = -1;
 			const wchar_t *Ptr = CalcWordFromString(m_CurLine->GetStringAddr(), m_CurLine->GetCurPos(),
@@ -3127,22 +3120,14 @@ bool Editor::Search(bool ReplaceMode, NextType NextTp)
 
 		if (LS.SearchStr.IsEmpty())
 			return true;
-
-		SearchStr = LS.SearchStr;
-		ReplaceStr = LS.ReplaceStr;
-		Case = LS.CaseSens;
-		WholeWords = LS.WholeWords;
-		SelectFound = LS.SelectFound;
-		Regexp = LS.Regexp;
-		ReverseSearch = LS.Reverse;
 	}
 
-	if (!m_EdOpt.PersistentBlocks || (SelectFound && !ReplaceMode))
+	if (!m_EdOpt.PersistentBlocks || (LS.SelectFound && !ReplaceMode))
 		UnmarkBlock();
 
 	{
 		SCOPED_ACTION(TPreRedrawFuncGuard)(Editor::PR_EditorShowMsg);
-		strMsgStr = SearchStr;
+		strMsgStr = LS.SearchStr;
 		InsertQuote(strMsgStr);
 		SetCursorType(false, -1);
 
@@ -3151,14 +3136,14 @@ bool Editor::Search(bool ReplaceMode, NextType NextTp)
 		DWORD StartTime = WINPORT(GetTickCount)();
 
 		RegExp re;
-		if (Regexp && !CompileRegexp(SearchStr, Case, &re))
+		if (LS.Regexp && !CompileRegexp(LS.SearchStr, LS.CaseSens, &re))
 			return true;
 
 		Edit *CurPtr = m_CurLine;
 		int FromPos = m_CurLine->GetCurPos();
 
 		auto ChangeLine = [&] {
-			if (!ReverseSearch) {
+			if (!LS.Reverse) {
 				CurPtr = CurPtr->m_next;
 				FromPos = 0;
 				NewNumLine++;
@@ -3173,7 +3158,7 @@ bool Editor::Search(bool ReplaceMode, NextType NextTp)
 		};
 
 		if (Next) {
-			if (!ReverseSearch)
+			if (!LS.Reverse)
 				++FromPos;
 			else if (--FromPos < 0)
 				ChangeLine();
@@ -3193,22 +3178,22 @@ bool Editor::Search(bool ReplaceMode, NextType NextTp)
 				}
 
 				SetCursorType(false, -1);
-				int Total = ReverseSearch ? StartLine : m_NumLastLine - StartLine;
+				int Total = LS.Reverse ? StartLine : m_NumLastLine - StartLine;
 				int Current = abs(NewNumLine - StartLine);
 				EditorShowMsg(Msg::EditSearchTitle, Msg::EditSearchingFor, strMsgStr, ToPercent64(Current, Total));
 			}
 
 			int SearchLength = 0;
-			FARString ReplaceStrCurrent(ReplaceMode ? ReplaceStr : L"");
+			FARString ReplaceStrCurrent(ReplaceMode ? LS.ReplaceStr : L"");
 
-			if (CurPtr->Search(SearchStr, ReplaceStrCurrent, FromPos, Case, WholeWords, ReverseSearch,
-					Regexp ? &re:nullptr, SearchLength))
+			if (CurPtr->Search(LS.SearchStr, ReplaceStrCurrent, FromPos, LS.CaseSens, LS.WholeWords,
+					LS.Reverse, LS.Regexp ? &re:nullptr, SearchLength))
 			{
 				bool ReverseNewLine = false;
 				const bool EmptyMatch = (SearchLength == 0);
 				bool Skip = false;
 
-				if (SelectFound && !ReplaceMode) {
+				if (LS.SelectFound && !ReplaceMode) {
 					m_Pasting++;
 					Lock();
 					UnmarkBlock();
@@ -3363,7 +3348,7 @@ bool Editor::Search(bool ReplaceMode, NextType NextTp)
 							wmemcpy(NewStr + NewStrLen - EolLen, Eol, EolLen);
 							AddUndoData(m_CurLine, m_NumLine);
 							m_CurLine->SetBinaryString(NewStr, NewStrLen);
-							if (!ReverseSearch) {
+							if (!LS.Reverse) {
 								m_CurLine->SetCurPos(CurPos + RStrLen);
 							}
 							else {
@@ -3394,7 +3379,7 @@ bool Editor::Search(bool ReplaceMode, NextType NextTp)
 					FromPos = m_CurLine->GetCurPos();
 
 					if (Skip || EmptyMatch)
-						if (!ReverseSearch)
+						if (!LS.Reverse)
 							FromPos++;
 				}
 			}

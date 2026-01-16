@@ -40,7 +40,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 struct SearchReplaceDlgParams {
 	FARString SearchStr;
 	FARString ReplaceStr;
-	int CaseSens = 0;    // -1 means the button should not be shown in the dialog
+	int CaseSens = 0;    // -1 means the checkbox should not be shown in the dialog
 	int WholeWords = 0;  // +++
 	int Reverse = 0;     // +++
 	int SelectFound = 0; // +++
