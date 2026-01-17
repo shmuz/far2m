@@ -3243,8 +3243,6 @@ bool Editor::Search(bool ReplaceMode, NextType NextTp)
 						FARString QReplaceStr = ReplaceStrCurrent;
 						InsertQuote(ReplaceNulls(QSearchStr));
 						InsertQuote(ReplaceNulls(QReplaceStr));
-						ReplaceStrings(QReplaceStr, L"\r", L"\x2424"); // ␤
-						ReplaceStrings(QReplaceStr, L"\t", L"\x2192"); // →
 						PreRedrawItem pitem = PreRedraw.Pop();
 						MsgCode = Message(0, 4, &EditorConfirmReplaceId, Msg::EditReplaceTitle,
 								Msg::EditAskReplace, QSearchStr, Msg::EditAskReplaceWith, QReplaceStr,
