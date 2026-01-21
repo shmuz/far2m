@@ -3345,11 +3345,22 @@ bool Editor::Search(bool ReplaceMode, NextType NextTp)
 							wmemcpy(NewStr + CurPos + RStrLen, Str + CurPos + SStrLen, StrLen - CurPos - SStrLen);
 							wmemcpy(NewStr + NewStrLen - EolLen, Eol, EolLen);
 							AddUndoData(m_CurLine, m_NumLine);
-							m_CurLine->SetBinaryString(NewStr, NewStrLen);
+
 							if (!LS.Reverse) {
-								m_CurLine->SetCurPos(CurPos + RStrLen);
+								if (m_CurLine->GetConvertTabs() == EXPAND_ALLTABS) {
+									m_CurLine->m_TabExpandMode = EXPAND_NOTABS;    // change temporarily
+									m_CurLine->SetBinaryString(NewStr, NewStrLen);
+									m_CurLine->SetCurPos(CurPos + RStrLen);
+									m_CurLine->ExpandTabs();                       // ExpandTabs() adjusts m_CurPos
+									m_CurLine->SetConvertTabs(EXPAND_ALLTABS);     // restore
+								}
+								else {
+									m_CurLine->SetBinaryString(NewStr, NewStrLen);
+									m_CurLine->SetCurPos(CurPos + RStrLen);
+								}
 							}
 							else {
+								m_CurLine->SetBinaryString(NewStr, NewStrLen);
 								if (CurPos > 0)
 									m_CurLine->SetCurPos(CurPos - 1);
 								else {
@@ -3357,6 +3368,7 @@ bool Editor::Search(bool ReplaceMode, NextType NextTp)
 									ReverseNewLine = true;
 								}
 							}
+
 							delete[] NewStr;
 							TextChanged(true);
 						}
