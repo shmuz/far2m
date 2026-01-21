@@ -3348,7 +3348,7 @@ bool Editor::Search(bool ReplaceMode, NextType NextTp)
 
 							if (!LS.Reverse) {
 								if (m_CurLine->GetConvertTabs() == EXPAND_ALLTABS) {
-									m_CurLine->m_TabExpandMode = EXPAND_NOTABS;    // change temporarily
+									m_CurLine->SetConvertTabs(EXPAND_NOTABS);      // change temporarily
 									m_CurLine->SetBinaryString(NewStr, NewStrLen);
 									m_CurLine->SetCurPos(CurPos + RStrLen);
 									m_CurLine->ExpandTabs();                       // ExpandTabs() adjusts m_CurPos
