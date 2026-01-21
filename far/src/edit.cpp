@@ -1676,8 +1676,11 @@ void Edit::SetBinaryString(const wchar_t *Str, int Length)
 	if (m_MaxLength != -1)
 		Length = Min(Length, m_MaxLength);    // ??
 
-	if (Length > 0 && !Flags.Check(FEDITLINE_PARENT_SINGLELINE)) {
-		if (Str[Length - 1] == L'\r') {
+	if (Length >= 0 && !Flags.Check(FEDITLINE_PARENT_SINGLELINE)) {
+		if (Length == 0) {
+			m_EndType = EOL_NONE;
+		}
+		else if (Str[Length - 1] == L'\r') {
 			m_EndType = EOL_CR;
 			Length--;
 		} else {
