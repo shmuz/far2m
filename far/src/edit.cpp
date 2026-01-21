@@ -1992,18 +1992,17 @@ void Edit::InsertTab()
 
 void Edit::ExpandTabs()
 {
-	wchar_t *TabPtr;
-	int Pos = 0, S;
-
 	if (Flags.Check(FEDITLINE_READONLY))
 		return;
 
+	wchar_t *TabPtr;
+	int Pos = 0;
 	bool changed = false;
 
 	while ((TabPtr = (wchar_t *)wmemchr(m_Str + Pos, L'\t', StrSize() - Pos))) {
 		changed = true;
 		Pos = (int)(TabPtr - m_Str);
-		S = m_TabSize - ((int)(TabPtr - m_Str) % m_TabSize);
+		int S = m_TabSize - (Pos % m_TabSize);
 
 		if (m_SelStart != -1) {
 			if (Pos <= m_SelStart) {
