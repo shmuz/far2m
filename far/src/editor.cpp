@@ -4850,7 +4850,7 @@ int Editor::EditorControl(int Command, void *Param)
 				if (m_EdOpt.ShowWhiteSpace)
 					Info->Options|= EOPT_SHOWWHITESPACE;
 
-				if (m_EdOpt.ShowScrollBar && ScrollBarRequired(ObjHeight, m_NumLastLine))
+				if (IsScrollbarShown())
 					Info->Options|= EOPT_SHOWSCROLLBAR;
 
 				Info->TabSize = m_EdOpt.TabSize;
@@ -4860,6 +4860,10 @@ int Editor::EditorControl(int Command, void *Param)
 				Info->CurState|= !Flags.Check(FEDITOR_MODIFIED) ? ECSTATE_SAVED : 0;
 				Info->CurState|= Flags.Check(FEDITOR_MODIFIED | FEDITOR_WASCHANGED) ? ECSTATE_MODIFIED : 0;
 				Info->CodePage = m_codepage;
+
+				Info->ClientArea = RECT { X1,Y1,X2,Y2 };
+				Info->ClientArea.right += IsScrollbarShown() ? -1 : 0;
+
 				return TRUE;
 			}
 
@@ -6228,4 +6232,9 @@ void Editor::AutoDeleteColors()
 void Editor::TurnOffMarkingBlock()
 {
 	Flags.Clear(FEDITOR_MARKINGVBLOCK | FEDITOR_MARKINGBLOCK);
+}
+
+bool Editor::IsScrollbarShown() const
+{
+	return m_EdOpt.ShowScrollBar && ScrollBarRequired(ObjHeight, m_NumLastLine);
 }

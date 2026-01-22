@@ -2465,6 +2465,8 @@ int FileEditor::EditorControl(int Command, void *Param)
 
 		if (Opt.EdOpt.ShowKeyBar)
 			Info->Options|= EOPT_SHOWKEYBAR;
+
+		Info->WindowArea = RECT { X1,Y1,X2,Y2 };
 	}
 	return result;
 }

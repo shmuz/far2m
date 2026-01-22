@@ -354,6 +354,7 @@ public:
 	int GetReadOnlyLock() const { return m_EdOpt.ReadOnlyLock; }
 
 	void SetShowScrollBar(int NewMode) { m_EdOpt.ShowScrollBar = NewMode; }
+	bool IsScrollbarShown() const;
 
 	void SetSearchPickUpWord(int NewMode) { m_EdOpt.SearchPickUpWord = NewMode; }
 

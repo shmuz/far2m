@@ -3724,7 +3724,7 @@ int WINAPI FarEditorControlA(int Command, void *Param)
 			return FarEditorControl(ECTL_INSERTTEXT, (void *)strP.CPtr());
 		}
 		case oldfar::ECTL_GETINFO: {
-			EditorInfo ei{};
+			EditorInfo ei { sizeof(ei) };
 			oldfar::EditorInfo *oei = (oldfar::EditorInfo *)Param;
 
 			if (!oei)
@@ -3765,6 +3765,8 @@ int WINAPI FarEditorControlA(int Command, void *Param)
 				oei->TabSize = ei.TabSize;
 				oei->BookMarkCount = ei.BookMarkCount;
 				oei->CurState = ei.CurState;
+				oei->WindowArea = ei.WindowArea;
+				oei->ClientArea = ei.ClientArea;
 				return TRUE;
 			}
 

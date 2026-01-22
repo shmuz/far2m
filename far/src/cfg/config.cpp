@@ -805,7 +805,7 @@ void EditorConfig(EditorOptions &EdOpt, bool Local)
 	Builder.AddText(Msg::EditConfigExpandTabsTitle);
 	DialogBuilderListItem ExpandTabsItems[] = {
 			{Msg::EditConfigDoNotExpandTabs,        EXPAND_NOTABS },
-            {Msg::EditConfigExpandTabs,             EXPAND_NEWTABS},
+			{Msg::EditConfigExpandTabs,             EXPAND_NEWTABS},
 			{Msg::EditConfigConvertAllTabsToSpaces, EXPAND_ALLTABS}
     };
 	Builder.AddComboBox(&EdOpt.ExpandTabs, 64, ExpandTabsItems, 3,

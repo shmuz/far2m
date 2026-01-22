@@ -2173,7 +2173,7 @@ void FarMacroApi::editorposFunc()
 	auto CurEditor = CtrlObject->Plugins.CurEditor;
 	if (CtrlObject->Macro.GetArea()==MACROAREA_EDITOR && CurEditor && CurEditor->IsVisible())
 	{
-		EditorInfo ei;
+		EditorInfo ei { sizeof(ei) };
 		CurEditor->EditorControl(ECTL_GETINFO,&ei);
 
 		switch (Op)

@@ -699,7 +699,7 @@ static int editor_GetFileName(lua_State *L)
 static int editor_GetInfo(lua_State *L)
 {
 	int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
-	struct EditorInfo ei;
+	struct EditorInfo ei = { sizeof(ei) };
 	if (!PSInfo.EditorControlV2(EditorId, ECTL_GETINFO, &ei))
 		return lua_pushnil(L), 1;
 
@@ -726,6 +726,8 @@ static int editor_GetInfo(lua_State *L)
 	PutNumToTable(L, "SessionBookmarkCount", ei.SessionBookmarkCount);
 	PutNumToTable(L, "CurState", ei.CurState);
 	PutNumToTable(L, "CodePage", ei.CodePage);
+	PutRECTToTable(L, "WindowArea", ei.WindowArea);
+	PutRECTToTable(L, "ClientArea", ei.ClientArea);
 	return 1;
 }
 

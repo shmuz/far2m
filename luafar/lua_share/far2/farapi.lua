@@ -1686,6 +1686,7 @@ enum EDITOR_CURRENTSTATE
 
 struct EditorInfo
 {
+	size_t StructSize;
 	int EditorID;
 	int WindowSizeX;
 	int WindowSizeY;
@@ -1701,11 +1702,11 @@ struct EditorInfo
 	DWORD Options;
 	int TabSize;
 	int BookMarkCount;
+	int SessionBookmarkCount;
 	DWORD CurState;
 	UINT CodePage;
-
-	DWORD Reserved[4];
-	int SessionBookmarkCount;
+	RECT WindowArea;
+	RECT ClientArea;
 };
 
 struct EditorBookMarks

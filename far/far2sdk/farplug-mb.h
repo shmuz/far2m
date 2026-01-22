@@ -1291,6 +1291,7 @@ namespace oldfar
 
 	struct EditorInfo
 	{
+		size_t StructSize;
 		int EditorID;
 		const char *FileName;
 		int WindowSizeX;
@@ -1310,7 +1311,8 @@ namespace oldfar
 		int TabSize;
 		int BookMarkCount;
 		DWORD CurState;
-		DWORD Reserved[6];
+		RECT WindowArea;
+		RECT ClientArea;
 	};
 
 	struct EditorBookMarks
