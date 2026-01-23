@@ -352,6 +352,8 @@ void Edit::FastShow()
 	int CellSelStart = (m_SelStart == -1) ? -1 : RealPosToCell(m_SelStart);
 	int CellSelEnd = (m_SelEnd < 0) ? -1 : RealPosToCell(m_SelEnd);
 
+	int iTrailingSpacesPos = StrSize(); // for Visual show trailing spaces/tabs in dialog editlines
+
 	/* $ 17.08.2000 KM
 	   Если есть маска, сделаем подготовку строки, то есть
 	   все "постоянные" символы в маске, не являющиеся шаблонными
@@ -359,6 +361,12 @@ void Edit::FastShow()
 	*/
 	if (!m_Mask.IsEmpty())
 		RefreshStrByMask();
+	// for Visual show trailing spaces/tabs in dialog editlines (not in masked)
+	else if (Flags.Check(FEDITLINE_PARENT_SINGLELINE|FEDITLINE_PARENT_MULTILINE)) {
+		for (iTrailingSpacesPos = StrSize(); iTrailingSpacesPos > 0; iTrailingSpacesPos--)
+			if (!std::iswblank(m_Str[iTrailingSpacesPos-1]))
+				break;
+	}
 
 	m_CursorPos = CellCurPos;
 
@@ -367,7 +375,9 @@ void Edit::FastShow()
 	bool joining = false;
 	for (int i = RealLeftPos; i < StrSize() && OutStrCells < EditLength; ++i) {
 		auto wc = m_Str[i];
-		if (Flags.Check(FEDITLINE_SHOWWHITESPACE) && Flags.Check(FEDITLINE_EDITORMODE)) {
+		auto showSymbols = (Flags.Check(FEDITLINE_SHOWWHITESPACE) && Flags.Check(FEDITLINE_EDITORMODE))
+				|| (i >= iTrailingSpacesPos);
+		if (showSymbols) {
 			switch(wc) {
 				case 0x0020: //space
 					wc = L'\xB7'; // ·
@@ -402,25 +412,27 @@ void Edit::FastShow()
 		}
 
 		if (wc == L'\t') {
-			for (int j = 0, S = m_TabSize - ((m_LeftPos + OutStrCells) % m_TabSize);
-					j < S && OutStrCells < EditLength; ++j, ++OutStrCells) {
-				OutStr.emplace_back(
-						(Flags.Check(FEDITLINE_SHOWWHITESPACE) && Flags.Check(FEDITLINE_EDITORMODE) && !j)
-								? L'\x2192'
-								: L' ');
+			for (int j = 0, S = m_TabSize - (m_LeftPos + OutStrCells) % m_TabSize;
+					j < S && OutStrCells < EditLength;
+					++j, ++OutStrCells)
+			{
+				OutStr.emplace_back(showSymbols && j == 0 ? L'\x2192' : L' '); // →
 			}
-		} else {
+		}
+		else {
 			if (wc == CharClasses::ZERO_WIDTH_JOINER) {
 				joining = true;
-			} else if (CharClasses::IsFullWidth(&m_Str[i])) {
-				if (int(OutStrCells + 2) > EditLength) {
+			}
+			else if (CharClasses::IsFullWidth(&m_Str[i])) {
+				if (OutStrCells + 2 > EditLength) {
 					OutStr.emplace_back(L' ');
 					OutStrCells++;
 					break;
 				}
 				if (!joining) OutStrCells+= 2;
 				joining = false;
-			} else if (!CharClasses::IsXxxfix(wc)) {
+			}
+			else if (!CharClasses::IsXxxfix(wc)) {
 				if (!joining) OutStrCells++;
 				joining = false;
 			}
