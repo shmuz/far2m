@@ -55,6 +55,9 @@ static const char NKeyLocks[]    = "Locks";
 static const char NKeyPosition[] = "Position";
 static const char NKeyTimes[]    = "Times";
 static const char NKeyTypes[]    = "Types";
+static const char NKeyVersion[]  = "Version";
+
+#define SAVE_VERSION 2  // remove version handling around July 2026, keep the latest version only
 
 static const wchar_t *GetNamePrefix(int Type)
 {
@@ -72,16 +75,9 @@ static const wchar_t *GetNamePrefix(int Type)
 	}
 }
 
-static void AppendWithLFSeparator(std::wstring &str, const FARString &ap)
+static void AppendHistoryString(FARString &str, const FARString &ap)
 {
-	size_t p = str.size();
-	str.append(ap.CPtr(), ap.GetLength());
-	for (; p < str.size(); ++p) {
-		if (str[p] == L'\n') {
-			str[p] = L'\r';
-		}
-	}
-	str+= L'\n';
+	str.AppendFormat(L"[%u]%ls", (unsigned)ap.GetLength(), ap.CPtr());
 }
 
 static bool IsSameDay(const FILETIME &ft1, const FILETIME &ft2)
@@ -175,7 +171,6 @@ void History::AddToHistoryLocal(const wchar_t *Str, const wchar_t *Extra, const 
 	if (Extra) {
 		AddRecord.strExtra = Extra;
 	}
-	ReplaceStrings(AddRecord.strName, L"\n", L"\r");
 
 	if (mRemoveDups != HRD_NOREMOVE) // удалять дубликаты?
 	{
@@ -221,15 +216,15 @@ bool History::SaveHistory()
 	bool ret = false;
 	try {
 		bool HasExtras = false;
-		std::wstring strTypes, strLines, strLocks, strExtras;
+		FARString strTypes, strLines, strLocks, strExtras;
 		std::vector<FILETIME> vTimes;
 		int Position = -1;
 		FARString strLastItem;
 		FILETIME timeLastItem {};
 
 		for (auto It = mList.crbegin(); It != mList.crend(); ++It) {
-			AppendWithLFSeparator(strLines, It->strName);
-			AppendWithLFSeparator(strExtras, It->strExtra);
+			AppendHistoryString(strLines, It->strName);
+			AppendHistoryString(strExtras, It->strExtra);
 			if (!It->strExtra.IsEmpty())
 				HasExtras = true;
 
@@ -246,19 +241,20 @@ bool History::SaveHistory()
 		}
 
 		ConfigWriter cfg_writer(mStrRegKey);
-		cfg_writer.SetString(NKeyLines, strLines.c_str());
+		cfg_writer.SetString(NKeyLines, strLines);
 		if (HasExtras) {
-			cfg_writer.SetString(NKeyExtras, strExtras.c_str());
+			cfg_writer.SetString(NKeyExtras, strExtras);
 		} else {
 			cfg_writer.RemoveKey(NKeyExtras);
 		}
 		if (mSaveType) {
-			cfg_writer.SetString(NKeyTypes, strTypes.c_str());
+			cfg_writer.SetString(NKeyTypes, strTypes);
 		}
-		cfg_writer.SetString(NKeyLocks, strLocks.c_str());
+		cfg_writer.SetString(NKeyLocks, strLocks);
 		cfg_writer.SetBytes(NKeyTimes, (const unsigned char *)&vTimes[0], vTimes.size() * sizeof(FILETIME));
 		cfg_writer.SetInt(NKeyPosition, Position);
 		cfg_writer.SetString(NKeyLastItem, strLastItem);
+		cfg_writer.SetInt(NKeyVersion, SAVE_VERSION);
 
 		ret = cfg_writer.Save();
 		if (ret) {
@@ -279,6 +275,22 @@ bool History::ReadLastItem(const char *RegKey, FARString &strStr)
 	return cfg_reader.HasSection() && cfg_reader.GetString(strStr, NKeyLastItem);
 }
 
+static bool ExtractHistoryString(FARString &Trg, const FARString &Src, size_t &Pos)
+{
+	if (Src[Pos] == L'[') {
+		++Pos;
+		const auto Len = _wtoi(Src.CPtr() + Pos);
+		while (iswdigit(Src[Pos]))
+			++Pos;
+		if (Src[Pos] == L']') {
+			Trg = Src.SubStr(++Pos, Len);
+			Pos += Len;
+			return true;
+		}
+	}
+	return false;
+}
+
 bool History::ReadHistory()
 {
 	FARString strLines, strExtras, strLocks, strTypes;
@@ -289,6 +301,7 @@ bool History::ReadHistory()
 	if (!cfg_reader.GetString(strLines, NKeyLines))
 		return false;
 
+	int Version = cfg_reader.GetInt(NKeyVersion, SAVE_VERSION - 1);
 	int Position = cfg_reader.GetInt(NKeyPosition, -1);
 	cfg_reader.GetBytes(vTimes, NKeyTimes);
 	cfg_reader.GetString(strLocks, NKeyLocks);
@@ -297,19 +310,31 @@ bool History::ReadHistory()
 
 	size_t LinesPos = 0, TypesPos = 0, LocksPos = 0, TimePos = 0, ExtrasPos = 0;
 	for (size_t Count=0; LinesPos < strLines.GetLength() && Count < mMaxCount; Count++) {
-		size_t LineEnd, ExtraEnd;
-		if (!strLines.Pos(LineEnd, L'\n', LinesPos))
-			LineEnd = strLines.GetLength();
-
-		if (!strExtras.Pos(ExtraEnd, L'\n', ExtrasPos))
-			ExtraEnd = strExtras.GetLength();
-
 		mList.push_front(HistoryRecord());
 		auto &AddRecord = mList.front();
-		AddRecord.strName = strLines.SubStr(LinesPos, LineEnd - LinesPos);
-		LinesPos = LineEnd + 1;
-		AddRecord.strExtra = strExtras.SubStr(ExtrasPos, ExtraEnd - ExtrasPos);
-		ExtrasPos = ExtraEnd + 1;
+
+		if (Version == SAVE_VERSION) {
+			if (ExtractHistoryString(AddRecord.strName, strLines, LinesPos)) {
+				ExtractHistoryString(AddRecord.strExtra, strExtras, ExtrasPos);
+			}
+			else {
+				mList.pop_front();
+				break;
+			}
+		}
+		else {
+			size_t LineEnd, ExtraEnd;
+			if (!strLines.Pos(LineEnd, L'\n', LinesPos))
+				LineEnd = strLines.GetLength();
+
+			if (!strExtras.Pos(ExtraEnd, L'\n', ExtrasPos))
+				ExtraEnd = strExtras.GetLength();
+
+			AddRecord.strName = strLines.SubStr(LinesPos, LineEnd - LinesPos);
+			LinesPos = LineEnd + 1;
+			AddRecord.strExtra = strExtras.SubStr(ExtrasPos, ExtraEnd - ExtrasPos);
+			ExtrasPos = ExtraEnd + 1;
+		}
 
 		if (TypesPos < strTypes.GetLength()) {
 			if (iswdigit(strTypes[TypesPos])) {

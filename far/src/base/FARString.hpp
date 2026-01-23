@@ -202,7 +202,7 @@ public:
 	inline const wchar_t *CEnd() const { return m_pContent->GetData() + m_pContent->GetLength(); }
 	inline operator const wchar_t *() const { return m_pContent->GetData(); }
 
-	FARString SubStr(size_t Pos, size_t Len = -1);
+	FARString SubStr(size_t Pos, size_t Len = -1) const;
 
 	inline FARString& operator=(FARString &&strOriginal) { std::swap(m_pContent, strOriginal.m_pContent); return *this; }
 	inline FARString& operator=(const FARString &strCopy) { return Copy(strCopy); }

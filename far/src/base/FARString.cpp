@@ -361,7 +361,7 @@ FARString& FARString::Copy(const char *lpszData, UINT CodePage)
 	return *this;
 }
 
-FARString FARString::SubStr(size_t Pos, size_t Len)
+FARString FARString::SubStr(size_t Pos, size_t Len) const
 {
 	if (Pos >= GetLength())
 		return FARString();
