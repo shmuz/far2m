@@ -89,7 +89,7 @@ LONG_PTR WINAPI MkDirDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2)
 
 void ShellMakeDir(Panel *SrcPanel)
 {
-	UserDefinedList DirList(ULF_UNIQUE|ULF_CASESENSITIVE);
+	UserDefinedList DirList(ULF_UNIQUE | ULF_CASESENSITIVE | ULF_NOTTRIM);
 	DialogDataEx MkDirDlgData[]=
 	{
 		{DI_DOUBLEBOX,3,1,72,8,{},0,Msg::MakeFolderTitle},

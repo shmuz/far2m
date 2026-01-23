@@ -1266,7 +1266,7 @@ static FARString ReplaceBrackets(
 	const wchar_t *Arr = ReplaceStr;
 	const wchar_t *start = Arr;
 	size_t index = 0, count = 0;
-	wchar_t hexChar;
+	wchar_t hexChar = 0;
 	std::vector<wchar_t> stack;
 	stack.reserve(256);
 
