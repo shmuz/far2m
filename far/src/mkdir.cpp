@@ -68,12 +68,12 @@ LONG_PTR WINAPI MkDirDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2)
 		{
 			if (Param1==MKDIR_OK)
 			{
-				FARString strDirName=reinterpret_cast<LPCWSTR>(SendDlgMessage(hDlg,DM_GETCONSTTEXTPTR,MKDIR_EDIT,0));
-				Opt.MultiMakeDir=(SendDlgMessage(hDlg,DM_GETCHECK,MKDIR_CHECKBOX,0)==BSTATE_CHECKED);
+				auto strDirName = reinterpret_cast<LPCWSTR>(SendDlgMessage(hDlg,DM_GETCONSTTEXTPTR,MKDIR_EDIT,0));
+				Opt.MultiMakeDir = SendDlgMessage(hDlg,DM_GETCHECK,MKDIR_CHECKBOX,0) == BSTATE_CHECKED;
 
-				UserDefinedList* pDirList=reinterpret_cast<UserDefinedList*>(SendDlgMessage(hDlg,DM_GETDLGDATA,0,0));
+				auto pDirList = reinterpret_cast<UserDefinedList*>(SendDlgMessage(hDlg,DM_GETDLGDATA,0,0));
 
-				bool OK = (Opt.MultiMakeDir && pDirList->Set(strDirName)) || (!Opt.MultiMakeDir && pDirList->SetAsIs(strDirName));
+				bool OK = Opt.MultiMakeDir ? pDirList->Set(strDirName) : pDirList->SetAsIs(strDirName);
 				if (!OK)
 				{
 					Message(MSG_WARNING,1,Msg::Warning,Msg::IncorrectDirList,Msg::Ok);
@@ -89,7 +89,7 @@ LONG_PTR WINAPI MkDirDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2)
 
 void ShellMakeDir(Panel *SrcPanel)
 {
-	UserDefinedList DirList(ULF_UNIQUE | ULF_CASESENSITIVE | ULF_NOTTRIM);
+	UserDefinedList DirList(ULF_UNIQUE | ULF_CASESENSITIVE | ULF_NOTTRIM | ULF_ACCOUNTEMPTYLINE);
 	DialogDataEx MkDirDlgData[]=
 	{
 		{DI_DOUBLEBOX,3,1,72,8,{},0,Msg::MakeFolderTitle},
