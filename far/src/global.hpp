@@ -46,8 +46,8 @@ extern FARString g_strFarPath;
 
 extern FARString strGlobalSearchString;
 extern int GlobalSearchCase;
-extern int GlobalSearchWholeWords;	// значение "Whole words" для поиска
-extern int GlobalSearchHex;			// значение "Search for hex" для поиска
+extern int GlobalSearchWholeWords; // значение "Whole words" для поиска
+extern int GlobalSearchHex; // значение "Search for hex" для поиска
 
 extern int GlobalSearchReverse;
 
@@ -83,17 +83,15 @@ extern int CriticalInternalError;
 extern int _localLastError;
 
 extern int KeepUserScreen;
-extern FARString g_strDirToSet;		// RAVE!!!
+extern FARString g_strDirToSet; //RAVE!!!
 
-extern int Macro_DskShowPosType;	// для какой панели вызывали меню выбора дисков (0 - ничерта не вызывали, 1 - левая (AltF1), 2 - правая (AltF2))
+extern int Macro_DskShowPosType; // для какой панели вызывали меню выбора дисков (0 - ничерта не вызывали, 1 - левая (AltF1), 2 - правая (AltF2))
 
 extern DWORD RedrawTimeout;
 
 extern FormatScreen FS;
 
 extern DWORD ErrorMode;
-
-extern __attribute__((visibility("default"))) bool g_use_vs16;
 
 extern int FarExitCode;
 
