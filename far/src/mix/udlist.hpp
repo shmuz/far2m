@@ -54,14 +54,12 @@ enum UDL_FLAGS
 };
 
 
-class UserDefinedListItem
+struct UserDefinedListItem
 {
-	public:
 		size_t index;
 		FARString Str;
 
 		UserDefinedListItem() : index(0) {}
-		void Compact(wchar_t Char, bool ByPairs);
 };
 
 class UserDefinedList : private NonCopyable

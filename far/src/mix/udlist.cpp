@@ -38,7 +38,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "udlist.hpp"
 
-void UserDefinedListItem::Compact(wchar_t Char, bool ByPairs)
+static void CompactString(FARString &Str, wchar_t Char, bool ByPairs)
 {
 	auto buf=new wchar_t[Str.GetLength()+1], trg=buf;
 	bool found=false;
@@ -125,59 +125,48 @@ bool UserDefinedList::Set(const wchar_t* List, bool AddToList)
 	if (!AddToList)
 		Array.clear();
 
-	bool rc=false;
+	UserDefinedListItem item;
+	item.index = Array.size();
 
+	int Length, RealLength;
+	auto Error = false;
+	auto CurPtr = List;
+	auto InQuotes = false;
+
+	while (!Error && (CurPtr = Skip(CurPtr, Length, RealLength, Error, InQuotes)))
 	{
-		UserDefinedListItem item;
-		item.index=Array.size();
-
-		int Length, RealLength;
-		bool Error=false;
-		const wchar_t *CurList=List;
-		bool InQuotes=false;
-
-		while (!Error && (CurList=Skip(CurList, Length, RealLength, Error, InQuotes)))
+		if (Length > 0)
 		{
-			if (Length > 0)
-			{
-				item.Str=FARString(CurList,Length);
+			item.Str = FARString(CurPtr, Length);
 
-				if (item.Str)
+			if (!(mProcessRegexp && *CurPtr == L'/'))
+			{
+				if (mPackAsterisks)
+					CompactString(item.Str, L'*', false);
+
+				if (InQuotes)
+					CompactString(item.Str, L'\"', true);
+
+				if (mAddAsterisk && !FindAnyOfChars(item.Str.CPtr(), "?*."))
 				{
-					if (!(mProcessRegexp && *CurList==L'/'))
-					{
-						if (mPackAsterisks)
-							item.Compact(L'*', false);
-
-						if (InQuotes)
-							item.Compact(L'\"', true);
-
-						if (mAddAsterisk && !FindAnyOfChars(item.Str.CPtr(), "?*."))
-						{
-							Length=StrLength(item.Str);
-							item.Str += L"*";
-						}
-					}
-
-					Array.push_back(item);
-					CurList+=RealLength;
+					Length = StrLength(item.Str);
+					item.Str += L"*";
 				}
-				else
-					Error=true;
-			}
-			else
-			{
-				if (!mAccountEmptyLine)
-					Error=true;
 			}
 
-			++item.index;
+			Array.push_back(item);
+			CurPtr += RealLength;
+		}
+		else
+		{
+			if (!mAccountEmptyLine)
+				Error = true;
 		}
 
-		rc=!Error;
+		++item.index;
 	}
 
-	if (rc)
+	if (!Error)
 	{
 		auto Compare = mCaseSensitive ? StrCmp : StrCmpI;
 
@@ -189,7 +178,7 @@ bool UserDefinedList::Set(const wchar_t* List, bool AddToList)
 		if (mUnique)
 		{
 			std::sort(Array.begin(), Array.end(), SortCompare);
-			for (auto it=Array.cbegin(); it != Array.cend(); )
+			for (auto it = Array.cbegin(); it != Array.cend(); )
 			{
 				auto curr = it;
 				if (++it != Array.cend())
@@ -205,49 +194,49 @@ bool UserDefinedList::Set(const wchar_t* List, bool AddToList)
 		else if (!mUnique) // чтобы не сортировать уже отсортированное
 			std::sort(Array.begin(), Array.end(), SortCompare);
 
-		size_t i=0;
+		size_t i = 0;
 		for (auto& el: Array)
 		{
-			el.index=i++;
+			el.index = i++;
 		}
 	}
 	else
 		Array.clear();
 
-	return rc;
+	return !Error;
 }
 
 const wchar_t *UserDefinedList::Skip(const wchar_t *Str, int &Length, int &RealLength, bool &Error,
 	bool &InQuotes)
 {
+	Length = RealLength = 0;
+	Error = false;
 	InQuotes = false;
-	Length=RealLength=0;
-	Error=false;
 
 	if (!*Str)
 		return nullptr;
 
-	if ( mTrim )
+	if (mTrim)
 		while (IsSpace(*Str)) ++Str;
 
 	if (wcschr(mSeparator, *Str))
 	{
 		++Str;
-		if ( mTrim )
+		if (mTrim)
 			while (IsSpace(*Str)) ++Str;
 	}
 
 	if (!*Str)
 		return Str;
 
-	const wchar_t *cur=Str;
-	InQuotes = (*cur==L'\"');
-	bool IsRegexp = mProcessRegexp && (*cur==L'/');
+	const wchar_t *cur = Str;
+	InQuotes = (*cur == L'\"');
+	bool IsRegexp = mProcessRegexp && (*cur == L'/');
 
 	if (InQuotes)
 	{
 		const wchar_t *End = nullptr;
-		for (auto ptr=++cur; *ptr; ++ptr)
+		for (auto ptr = ++cur; *ptr; ++ptr)
 		{
 			if (*ptr == L'\"')
 			{
@@ -255,7 +244,7 @@ const wchar_t *UserDefinedList::Skip(const wchar_t *Str, int &Length, int &RealL
 					++ptr;
 				else
 				{
-					End=ptr;
+					End = ptr;
 					break;
 				}
 			}
@@ -263,15 +252,15 @@ const wchar_t *UserDefinedList::Skip(const wchar_t *Str, int &Length, int &RealL
 
 		if (End)
 		{
-			auto RealEnd=End+1;
+			auto RealEnd = End + 1;
 
-			if ( mTrim )
+			if (mTrim)
 				while (IsSpace(*RealEnd)) ++RealEnd;
 
 			if (!*RealEnd || wcschr(mSeparator, *RealEnd))
 			{
-				Length=(int)(End-cur);
-				RealLength=(int)(RealEnd-cur);
+				Length = (int)(End - cur);
+				RealLength = (int)(RealEnd - cur);
 				return cur;
 			}
 		}
@@ -283,30 +272,32 @@ const wchar_t *UserDefinedList::Skip(const wchar_t *Str, int &Length, int &RealL
 		for (auto ptr=cur+1; *ptr; ++ptr)
 		{
 			if (*ptr == L'\\') {
-				if (!*++ptr)
+				++ptr;
+				if (*ptr == 0)
 					goto ErrorLabel;
 			}
 			else if (*ptr == L'/') {
-				End=ptr;
+				End = ptr;
 				break;
 			}
 		}
+
 		if (End)
 		{
 			++End;
 			for (int i=0; i<4; i++,End++) { // allow up to 4 flags, e.g. "ismx"
-				if (!*End || wcschr(mSeparator,*End) || !IsAlpha(*End))
+				if (!*End || wcschr(mSeparator, *End) || !IsAlpha(*End))
 					break;
 			}
 
-			auto RealEnd=End;
-			if ( mTrim )
+			auto RealEnd = End;
+			if (mTrim)
 				while (IsSpace(*RealEnd)) ++RealEnd;
 
-			if (!*RealEnd || wcschr(mSeparator,*RealEnd))
+			if (!*RealEnd || wcschr(mSeparator, *RealEnd))
 			{
-				Length=(int)(End-cur);
-				RealLength=(int)(RealEnd-cur);
+				Length = (int)(End - cur);
+				RealLength = (int)(RealEnd - cur);
 				return cur;
 			}
 		}
@@ -314,32 +305,32 @@ const wchar_t *UserDefinedList::Skip(const wchar_t *Str, int &Length, int &RealL
 
 	else
 	{
-		bool InBrackets=false;
+		bool InBrackets = false;
 		for (; *cur; ++cur) // важно! проверка *cur должна стоять первой
 		{
 			if (mProcessBrackets)
 			{
-				if (*cur==L'[')
-					InBrackets=true;
-				else if (*cur==L']')
-					InBrackets=false;
+				if (*cur == L'[')
+					InBrackets = true;
+				else if (*cur == L']')
+					InBrackets = false;
 			}
-			if (!InBrackets && wcschr(mSeparator,*cur))
+			if (!InBrackets && wcschr(mSeparator, *cur))
 				break;
 		}
 
-		RealLength=Length=(int)(cur-Str);
+		RealLength = Length = (int)(cur - Str);
 
-		if ( mTrim )
+		if (mTrim)
 		{
-			while (Length>0 && IsSpace(*--cur))
+			while (Length > 0 && IsSpace(*--cur))
 				--Length;
 		}
 		return Str;
 	}
 
 ErrorLabel:
-	Error=true;
+	Error = true;
 	return nullptr;
 }
 
