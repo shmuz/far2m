@@ -59,14 +59,9 @@ class UserDefinedListItem
 	public:
 		size_t index;
 		FARString Str;
-		bool CaseSensitive;
-		UserDefinedListItem(bool cs=false):index(0), CaseSensitive(cs) {}
-		bool operator==(const UserDefinedListItem &rhs) const;
-		bool operator<(const UserDefinedListItem &rhs) const;
-		const UserDefinedListItem& operator=(const UserDefinedListItem &rhs);
-		const UserDefinedListItem& operator=(const wchar_t *rhs);
+
+		UserDefinedListItem() : index(0) {}
 		void Compact(wchar_t Char, bool ByPairs);
-		~UserDefinedListItem() {}
 };
 
 class UserDefinedList : private NonCopyable

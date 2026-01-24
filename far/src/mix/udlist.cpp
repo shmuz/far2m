@@ -38,34 +38,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "udlist.hpp"
 
-bool UserDefinedListItem::operator==(const UserDefinedListItem &rhs) const
-{
-	return 0 == (CaseSensitive ? StrCmp:StrCmpI)(Str.CPtr(), rhs.Str.CPtr());
-}
-
-bool UserDefinedListItem::operator<(const UserDefinedListItem &rhs) const
-{
-	return (CaseSensitive ? StrCmp:StrCmpI)(Str.CPtr(), rhs.Str.CPtr()) < 0;
-}
-
-const UserDefinedListItem& UserDefinedListItem::operator=(const UserDefinedListItem &rhs)
-{
-	if (this!=&rhs)
-	{
-		Str=rhs.Str;
-		index=rhs.index;
-		CaseSensitive=rhs.CaseSensitive;
-	}
-
-	return *this;
-}
-
-const UserDefinedListItem& UserDefinedListItem::operator=(const wchar_t *rhs)
-{
-	Str=rhs;
-	return *this;
-}
-
 void UserDefinedListItem::Compact(wchar_t Char, bool ByPairs)
 {
 	auto buf=new wchar_t[Str.GetLength()+1], trg=buf;
@@ -135,8 +107,8 @@ bool UserDefinedList::SetAsIs(const wchar_t* List)
 	if (*List)
 	{
 		Array.clear();
-		Array.emplace_back(mCaseSensitive);
-		Array.back() = List;
+		Array.emplace_back();
+		Array.back().Str = List;
 		return true;
 	}
 	return false;
@@ -156,7 +128,7 @@ bool UserDefinedList::Set(const wchar_t* List, bool AddToList)
 	bool rc=false;
 
 	{
-		UserDefinedListItem item(mCaseSensitive);
+		UserDefinedListItem item;
 		item.index=Array.size();
 
 		int Length, RealLength;
@@ -207,15 +179,22 @@ bool UserDefinedList::Set(const wchar_t* List, bool AddToList)
 
 	if (rc)
 	{
+		auto Compare = mCaseSensitive ? StrCmp : StrCmpI;
+
+		auto SortCompare = [&] (const UserDefinedListItem& Elem1, const UserDefinedListItem& Elem2)
+		{
+			return Compare(Elem1.Str, Elem2.Str) < 0;
+		};
+
 		if (mUnique)
 		{
-			std::sort(Array.begin(), Array.end());
+			std::sort(Array.begin(), Array.end(), SortCompare);
 			for (auto it=Array.cbegin(); it != Array.cend(); )
 			{
 				auto curr = it;
 				if (++it != Array.cend())
 				{
-					if (*it == *curr)
+					if (0 == Compare(it->Str, curr->Str))
 						it = Array.erase(curr);
 				}
 			}
@@ -224,7 +203,7 @@ bool UserDefinedList::Set(const wchar_t* List, bool AddToList)
 		if (!mSort)
 			std::sort(Array.begin(), Array.end(), CmpIndexes);
 		else if (!mUnique) // чтобы не сортировать уже отсортированное
-			std::sort(Array.begin(), Array.end());
+			std::sort(Array.begin(), Array.end(), SortCompare);
 
 		size_t i=0;
 		for (auto& el: Array)
