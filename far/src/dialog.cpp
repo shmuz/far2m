@@ -1105,7 +1105,7 @@ void Dialog::ProcessLastHistory(DialogItemEx *CurItem, int MsgIndex)
 
 static int ToRange(int Val, int Min, int Max)
 {
-	return std::min(std::max(Val, Min), Max);
+	return std::clamp(Val, Min, Max);
 }
 
 // Изменение координат и/или размеров итема диалога.

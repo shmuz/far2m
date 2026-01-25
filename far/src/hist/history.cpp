@@ -268,11 +268,11 @@ bool History::SaveHistory()
 	return ret;
 }
 
-bool History::ReadLastItem(const char *RegKey, FARString &strStr)
+bool History::ReadLastItem(const char *RegKey, FARString &Str)
 {
-	strStr.Clear();
+	Str.Clear();
 	ConfigReader cfg_reader(RegKey);
-	return cfg_reader.HasSection() && cfg_reader.GetString(strStr, NKeyLastItem);
+	return cfg_reader.HasSection() && cfg_reader.GetString(Str, NKeyLastItem);
 }
 
 static bool ExtractHistoryString(FARString &Trg, const FARString &Src, size_t &Pos)
