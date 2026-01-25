@@ -3,6 +3,8 @@
 #include <wchar.h>
 #include "../include/CharClasses.h"
 
+__attribute__((visibility("default"))) bool g_use_vs16 = true;
+
 std::array<std::shared_ptr<CharClasses::Block>, CharClasses::BLOCK_COUNT> CharClasses::blocks;
 bool CharClasses::initialized = false;
 
