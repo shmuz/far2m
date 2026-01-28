@@ -1819,8 +1819,10 @@ void VMenu::DrawTitles()
 		FARString strDisplayTitle = strTitle;
 
 		if (bFilterEnabled) {
-			if (bFilterLocked || strFilter.IsEmpty())
-				strDisplayTitle+= L" ";
+			if (bFilterLocked) {
+				if (!strTitle.IsEmpty())
+					strDisplayTitle+= L" ";
+			}
 			else
 				strDisplayTitle.Clear();
 
