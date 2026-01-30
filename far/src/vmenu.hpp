@@ -320,7 +320,7 @@ public:
 
 	void SetFlags(DWORD a_Flags) { VMFlags.Set(a_Flags); }
 	void ClearFlags(DWORD a_Flags) { VMFlags.Clear(a_Flags); }
-	BOOL CheckFlags(DWORD a_Flags) const { return VMFlags.Check(a_Flags); }
+	bool CheckFlags(DWORD a_Flags) const { return VMFlags.Check(a_Flags); }
 	DWORD GetFlags() const { return VMFlags.Flags; }
 	DWORD ChangeFlags(DWORD a_Flags, BOOL Status) { return VMFlags.Change(a_Flags, Status); }
 

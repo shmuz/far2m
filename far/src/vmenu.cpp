@@ -1092,7 +1092,7 @@ int VMenu::ProcessKey(FarKey Key)
 			return TRUE;
 		}
 		if ((Key != KEY_F1 && Key != KEY_SHIFTF1 && Key != KEY_F10 && Key != KEY_ESC && Key != KEY_ALTF9)) {
-			if (!bFilterEnabled || (bFilterEnabled && Key != KEY_BS && Key != KEY_CTRLALTF)) {
+			if (!bFilterEnabled || (Key != KEY_BS && Key != KEY_CTRLALTF)) {
 				Modal::ExitCode = -1;
 				return FALSE;
 			}
@@ -1900,16 +1900,11 @@ void VMenu::ShowMenu(bool IsParent)
 	}
 
 	if (CheckFlags(VMENU_LISTBOX)) {
-		if (CheckFlags(VMENU_SHOWNOBOX))
-			BoxType = NO_BOX;
-		else if (CheckFlags(VMENU_LISTHASFOCUS))
-			BoxType = SHORT_DOUBLE_BOX;
-		else
-			BoxType = SHORT_SINGLE_BOX;
-	}
+		BoxType =
+			CheckFlags(VMENU_SHOWNOBOX) ? NO_BOX :
+			CheckFlags(VMENU_LISTHASFOCUS) ? SHORT_DOUBLE_BOX : SHORT_SINGLE_BOX;
 
-	if (CheckFlags(VMENU_LISTBOX)) {
-		if ((!IsParent || !GetShowItemCount())) {
+		if (!IsParent || !GetShowItemCount()) {
 			if (GetShowItemCount())
 				BoxType = CheckFlags(VMENU_SHOWNOBOX) ? NO_BOX : SHORT_SINGLE_BOX;
 
