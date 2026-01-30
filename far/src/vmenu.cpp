@@ -1809,48 +1809,46 @@ void VMenu::DrawTitles()
 {
 	CriticalSectionLock Lock(CS);
 
-	int MaxTitleLength = X2 - X1 - 2;
-	int WidthTitle;
+	int MaxTitleLength = X2 - X1 - 3;
 
-	if (MaxTitleLength < 1)    // prevent crashes
+	if (MaxTitleLength < 0)    // prevent crashes
 		return;
 
 	if (!strTitle.IsEmpty() || bFilterEnabled) {
 		FARString strDisplayTitle = strTitle;
 
 		if (bFilterEnabled) {
-			if (bFilterLocked) {
-				if (!strTitle.IsEmpty())
-					strDisplayTitle+= L" ";
+			int displayLen = (int)strDisplayTitle.GetLength();
+			if (displayLen) {
+				int overflow = displayLen + (int)strFilter.GetLength() + 3 - MaxTitleLength;
+				if (overflow > 0) {
+					int newLen = displayLen - overflow - 1; // reserve 1 for ellipsis
+					if (newLen > 0) {
+						strDisplayTitle.Truncate(newLen);
+						strDisplayTitle += L"\x2026 "; // ellipsis + space
+					}
+					else
+						strDisplayTitle.Clear();
+				}
+				else
+					strDisplayTitle += L" ";
 			}
-			else
-				strDisplayTitle.Clear();
 
-			strDisplayTitle+= bFilterLocked ? L"<" : L"[";
-			strDisplayTitle+= strFilter;
-			strDisplayTitle+= bFilterLocked ? L">" : L"]";
+			strDisplayTitle += bFilterLocked ? L"<" : L"[";
+			strDisplayTitle += strFilter;
+			strDisplayTitle += bFilterLocked ? L">" : L"]";
 		}
 
-		WidthTitle = (int)strDisplayTitle.GetLength();
-
-		if (WidthTitle > MaxTitleLength)
-			WidthTitle = MaxTitleLength - 1;
-
+		int WidthTitle = Min<int>(strDisplayTitle.GetLength(), MaxTitleLength);
 		GotoXY(X1 + (X2 - X1 - 1 - WidthTitle) / 2, Y1);
 		SetColor(Colors[VMenuColorTitle]);
-
 		FS << L" " << fmt::Size(WidthTitle) << strDisplayTitle << L" ";
 	}
 
 	if (!strBottomTitle.IsEmpty()) {
-		WidthTitle = (int)strBottomTitle.GetLength();
-
-		if (WidthTitle > MaxTitleLength)
-			WidthTitle = MaxTitleLength - 1;
-
+		int WidthTitle = Min<int>(strBottomTitle.GetLength(), MaxTitleLength);
 		GotoXY(X1 + (X2 - X1 - 1 - WidthTitle) / 2, Y2);
 		SetColor(Colors[VMenuColorTitle]);
-
 		FS << L" " << fmt::Size(WidthTitle) << strBottomTitle << L" ";
 	}
 }
