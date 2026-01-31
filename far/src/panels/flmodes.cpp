@@ -240,7 +240,7 @@ void FileList::SetFilePanelModes()
 			{Msg::EditPanelModesLinks,       0, 0},
 			{Msg::EditPanelModesAlternative, 0, 0}
 		};
-		ModeListMenu[MenuPos].SetSelect(1);
+		ModeListMenu[MenuPos].SetSelect(true);
 		{
 			VMenu ModeList(Msg::EditPanelModes, ModeListMenu, ARRAYSIZE(ModeListMenu), ScrY - 4);
 			ModeList.SetPosition(-1, -1, 0, 0);

@@ -4006,12 +4006,12 @@ void FileList::SelectSortMode()
 
 		if (ItemIterator != SortModes + PanelSortMode::COUNT) {
 			SortMenu[ItemIterator - SortModes].SetCheck(Check);
-			SortMenu[ItemIterator - SortModes].SetSelect(TRUE);
+			SortMenu[ItemIterator - SortModes].SetSelect(true);
 		} else if (mpr) {
 			for (size_t i = 0; i < mpr->Count; i+= 3) {
 				if (mpr->Values[i].Double == SortMode) {
 					SortMenu[ARRAYSIZE(SortModes) + 1 + i / 3].SetCheck(Check);
-					SortMenu[ARRAYSIZE(SortModes) + 1 + i / 3].SetSelect(TRUE);
+					SortMenu[ARRAYSIZE(SortModes) + 1 + i / 3].SetSelect(true);
 					break;
 				}
 			}

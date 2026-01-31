@@ -818,7 +818,9 @@ void KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 
 			if (dynamic_cast<VMenu*>(f))
 			{
-				return api.PushString( reinterpret_cast<LPCWSTR>(f->VMProcess(CheckCode)) );
+				const auto Id = reinterpret_cast<GUID*> (f->VMProcess(CheckCode));
+				const auto &strGuid = GuidToString(*Id);
+				return api.PushString(strGuid.c_str());
 			}
 			return api.PushString(L"");
 		}

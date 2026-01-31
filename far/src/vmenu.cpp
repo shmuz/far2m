@@ -128,7 +128,7 @@ VMenu::~VMenu()
 	if (!CheckFlags(VMENU_LISTBOX) && CtrlObject)
 		CtrlObject->Macro.SetArea(PrevMacroArea);
 
-	bool WasVisible = Flags.Check(FSCROBJ_VISIBLE) != 0;
+	bool WasVisible = Flags.Check(FSCROBJ_VISIBLE);
 	Hide();
 	DeleteItems();
 	SetCursorType(PrevCursorVisible, PrevCursorSize);
@@ -168,7 +168,7 @@ bool VMenu::UpdateRequired()
 {
 	CriticalSectionLock Lock(CS);
 
-	return CheckFlags(VMENU_UPDATEREQUIRED) != 0;
+	return CheckFlags(VMENU_UPDATEREQUIRED);
 }
 
 void VMenu::UpdateInternalCounters(DWORD OldFlags, DWORD NewFlags)
@@ -270,7 +270,7 @@ int VMenu::SetSelectPos(int Pos, int Direct, bool stop_on_edge)
 }
 
 // установить курсор и верхний итем
-int VMenu::SetSelectPos(FarListPos *ListPos)
+int VMenu::SetSelectPos(const FarListPos *ListPos)
 {
 	CriticalSectionLock Lock(CS);
 
@@ -314,15 +314,15 @@ void VMenu::UpdateSelectPos()
 
 	for (int i = 0; i < ItemCount; i++) {
 		if (!ItemCanHaveFocus(Item[i]->Flags)) {
-			Item[i]->SetSelect(FALSE);
+			Item[i]->SetSelect(false);
 		} else {
 			if (SelectPos == -1) {
-				Item[i]->SetSelect(TRUE);
+				Item[i]->SetSelect(true);
 				SelectPos = i;
 			} else if (SelectPos != i) {
-				Item[i]->SetSelect(FALSE);
+				Item[i]->SetSelect(false);
 			} else {
-				Item[i]->SetSelect(TRUE);
+				Item[i]->SetSelect(true);
 			}
 		}
 	}
@@ -436,9 +436,6 @@ int VMenu::AddItem(const MenuItemEx *NewItem, int PosAdd)
 	Item[PosAdd]->AccelKey = NewItem->AccelKey;
 	_SetUserData(Item[PosAdd], NewItem->UserData, NewItem->UserDataSize);
 	Item[PosAdd]->AmpPos = -1;
-	Item[PosAdd]->Len[0] = NewItem->Len[0];
-	Item[PosAdd]->Len[1] = NewItem->Len[1];
-	Item[PosAdd]->Idx2 = NewItem->Idx2;
 	Item[PosAdd]->ShowPos = 0;
 
 	if (CheckFlags(VMENU_SHOWAMPERSAND))
@@ -1024,13 +1021,7 @@ int64_t VMenu::VMProcess(int OpCode, void *vParam, int64_t iParam)
 		}
 
 		case MCODE_V_MENUINFOID:    // Menu.Id
-		{
-			static FARString strId;
-			strId.Format(L"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X", Id.Data1, Id.Data2, Id.Data3,
-					Id.Data4[0], Id.Data4[1], Id.Data4[2], Id.Data4[3], Id.Data4[4], Id.Data4[5], Id.Data4[6],
-					Id.Data4[7]);
-			return reinterpret_cast<int64_t>(strId.CPtr());
-		}
+			return reinterpret_cast<intptr_t>(&Id);
 	}
 
 	return 0;
@@ -1181,7 +1172,6 @@ int VMenu::ProcessKey(FarKey Key)
 			int dy = ((BoxType != NO_BOX) ? Y2 - Y1 - 1 : Y2 - Y1);
 
 			int p = VisualPosToReal(GetVisualPos(SelectPos) + dy);
-			;
 
 			if (p >= ItemCount)
 				p = ItemCount - 1;
@@ -1223,13 +1213,13 @@ int VMenu::ProcessKey(FarKey Key)
 		case KEY_NUMPAD6 | KEY_ALT:
 		case KEY_MSWHEEL_RIGHT: {
 			bool NeedRedraw = false;
+			int Direct = (Key == KEY_ALTLEFT || Key == (KEY_NUMPAD4 | KEY_ALT) || Key == KEY_MSWHEEL_LEFT)
+					? -1 : 1;
 
-			for (int I = 0; I < ItemCount; ++I)
-				if (ShiftItemShowPos(I,
-							(Key == KEY_ALTLEFT || Key == (KEY_NUMPAD4 | KEY_ALT) || Key == KEY_MSWHEEL_LEFT)
-									? -1
-									: 1))
+			for (int I = 0; I < ItemCount; ++I) {
+				if (ShiftItemShowPos(I, Direct))
 					NeedRedraw = true;
+			}
 
 			if (NeedRedraw)
 				ShowMenu(true);

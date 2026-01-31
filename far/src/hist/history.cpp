@@ -495,7 +495,7 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 			if (!SetUpMenuPos) {
 				if (mIterCommon == Item || (mIterCommon == mList.end() && Item == --mList.end())) {
 					Pos.SelectPos = HistoryMenu.GetItemCount();
-					MenuItem.SetSelect(TRUE);
+					MenuItem.SetSelect(true);
 				}
 			}
 

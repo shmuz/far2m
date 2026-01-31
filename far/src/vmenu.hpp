@@ -40,7 +40,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "modal.hpp"
 #include <farplug-wide.h>
 #include "manager.hpp"
-#include "frame.hpp"
 #include "bitflags.hpp"
 #include "CriticalSections.hpp"
 
@@ -103,12 +102,10 @@ struct MenuItemEx
 	void *UserData;      // Либо как указатель, либо содержит данные непосредственно
 	size_t UserDataSize; // Размер пользовательских данных
 	short AmpPos;        // Позиция автоназначенной подсветки
-	short Len[2];        // размеры 2-х частей
-	short Idx2;          // начало 2-й части
 
 	int ShowPos;
 
-	DWORD SetCheck(int Value)
+	void SetCheck(int Value)
 	{
 		if (Value) {
 			Flags|= LIF_CHECKED;
@@ -119,26 +116,10 @@ struct MenuItemEx
 		} else {
 			Flags&= ~(0xFFFF | LIF_CHECKED);
 		}
-
-		return Flags;
 	}
 
-	DWORD SetSelect(int Value)
-	{
-		if (Value)
-			Flags|= LIF_SELECTED;
-		else
-			Flags&= ~LIF_SELECTED;
-		return Flags;
-	}
-	DWORD SetDisable(int Value)
-	{
-		if (Value)
-			Flags|= LIF_DISABLE;
-		else
-			Flags&= ~LIF_DISABLE;
-		return Flags;
-	}
+	void SetSelect (bool Value) { if (Value) Flags|= LIF_SELECTED; else Flags&= ~LIF_SELECTED; }
+	void SetDisable(bool Value) { if (Value) Flags|= LIF_DISABLE; else Flags&= ~LIF_DISABLE; }
 
 	void Clear()
 	{
@@ -148,16 +129,13 @@ struct MenuItemEx
 		UserDataSize = 0;
 		UserData = nullptr;
 		AmpPos = 0;
-		Len[0] = 0;
-		Len[1] = 0;
-		Idx2 = 0;
 		ShowPos = 0;
 	}
 
 	MenuItemEx() { Clear(); }
 
 	// UserData не копируется.
-	const MenuItemEx &operator=(const MenuItemEx &srcMenu)
+	MenuItemEx &operator=(const MenuItemEx &srcMenu)
 	{
 		if (this != &srcMenu) {
 			Flags = srcMenu.Flags;
@@ -166,9 +144,6 @@ struct MenuItemEx
 			UserDataSize = 0;
 			UserData = nullptr;
 			AmpPos = srcMenu.AmpPos;
-			Len[0] = srcMenu.Len[0];
-			Len[1] = srcMenu.Len[1];
-			Idx2 = srcMenu.Idx2;
 			ShowPos = srcMenu.ShowPos;
 		}
 
@@ -179,45 +154,22 @@ struct MenuItemEx
 struct MenuDataEx
 {
 	const wchar_t *Name;
-
 	DWORD Flags;
 	DWORD AccelKey;
 
-	DWORD SetCheck(int Value)
+	void SetCheck(int Value)
 	{
 		if (Value) {
 			Flags&= ~0xFFFF;
 			Flags|= ((Value & 0xFFFF) | LIF_CHECKED);
-		} else
+		}
+		else
 			Flags&= ~(0xFFFF | LIF_CHECKED);
-
-		return Flags;
 	}
 
-	DWORD SetSelect(int Value)
-	{
-		if (Value)
-			Flags|= LIF_SELECTED;
-		else
-			Flags&= ~LIF_SELECTED;
-		return Flags;
-	}
-	DWORD SetDisable(int Value)
-	{
-		if (Value)
-			Flags|= LIF_DISABLE;
-		else
-			Flags&= ~LIF_DISABLE;
-		return Flags;
-	}
-	DWORD SetGrayed(int Value)
-	{
-		if (Value)
-			Flags|= LIF_GRAYED;
-		else
-			Flags&= ~LIF_GRAYED;
-		return Flags;
-	}
+	void SetSelect (bool Value) { if (Value) Flags|= LIF_SELECTED; else Flags&= ~LIF_SELECTED; }
+	void SetDisable(bool Value) { if (Value) Flags|= LIF_DISABLE; else Flags&= ~LIF_DISABLE; }
+	void SetGrayed (bool Value) { if (Value) Flags|= LIF_GRAYED; else Flags&= ~LIF_GRAYED; }
 };
 
 class VMenu : public Modal
@@ -359,8 +311,8 @@ public:
 	size_t SetUserData(LPCVOID Data, size_t Size = 0, int Position = -1);
 
 	int GetSelectPos() { return SelectPos; }
-	int GetSelectPos(struct FarListPos *ListPos);
-	int SetSelectPos(struct FarListPos *ListPos);
+	int GetSelectPos(FarListPos *ListPos);
+	int SetSelectPos(const FarListPos *ListPos);
 	int SetSelectPos(int Pos, int Direct, bool stop_on_edge = false);
 	int GetCheck(int Position = -1);
 	void SetCheck(int Check, int Position = -1);

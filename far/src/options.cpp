@@ -328,8 +328,8 @@ void ShellOptions(int LastCommand, MOUSE_EVENT_RECORD *MouseEvent)
 
 			MainMenu[0].Selected = 0;
 			MainMenu[HItemToShow].Selected = 1;
-			VMenuTable[HItemToShow][0].SetSelect(0);
-			VMenuTable[HItemToShow][LastVItem].SetSelect(1);
+			VMenuTable[HItemToShow][0].SetSelect(false);
+			VMenuTable[HItemToShow][LastVItem].SetSelect(true);
 			HOptMenu.Show();
 			{
 				SCOPED_ACTION(ChangeMacroArea)(MACROAREA_MAINMENU);
