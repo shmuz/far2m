@@ -979,8 +979,7 @@ enum FILE_CONTROL_COMMANDS
 	FCTL_SETCASESENSITIVESORT,
 	FCTL_GETPANELPLUGINHANDLE, // Param2 points to value of type HANDLE, sets that value to handle of plugin that renders that panel or INVALID_HANDLE_VALUE
 	FCTL_SETPANELLOCATION, // Param2 points to FarPanelLocation
-	FCTL_RESERVED1,
-	FCTL_RESERVED2,
+	FCTL_SETEXECUTABLESFIRST, // not used in far2m
 	FCTL_GETPANELPREFIX,
 	FCTL_SETACTIVEPANEL,
 };
