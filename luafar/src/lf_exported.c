@@ -1251,9 +1251,16 @@ int LF_ProcessEditorEvent (lua_State* L, int Event, void *Param)
 			case EE_REDRAW:
 				lua_pushinteger(L, (INT_PTR)Param);
 				break;
+			case EE_SAVE: {
+				struct EditorSaveFile *esf = (struct EditorSaveFile*)Param;
+				lua_createtable(L, 0, 3);
+				PutWStrToTable(L, "FileName", esf->FileName, -1);
+				PutWStrToTable(L, "FileEOL", esf->FileEOL, -1);
+				PutIntToTable(L, "CodePage", esf->CodePage);
+				break;
+			}
 			default:
 			case EE_READ:
-			case EE_SAVE:
 				lua_pushnil(L);
 				break;
 		}

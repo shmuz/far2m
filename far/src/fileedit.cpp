@@ -1780,7 +1780,9 @@ int FileEditor::SaveFile(const wchar_t *Name, bool Ask, bool bSaveAs, int TextFo
 			}
 		}
 
-		CtrlObject->Plugins.ProcessEditorEvent(EE_SAVE, nullptr);
+		const FARString NameForPlugin(Name);
+		EditorSaveFile esf_info { NameForPlugin.CPtr(), m_editor->m_GlobalEOL, codepage };
+		CtrlObject->Plugins.ProcessEditorEvent(EE_SAVE, &esf_info);
 
 		m_editor->m_UndoSavePos = m_editor->m_UndoPos;
 		m_editor->Flags.Clear(FEDITOR_UNDOSAVEPOSLOST);
