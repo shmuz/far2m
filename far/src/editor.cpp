@@ -93,7 +93,8 @@ Editor::Editor(ScreenObject *Owner, bool DialogUsed)
 	m_TopScreen(nullptr),
 	m_CurLine(nullptr),
 	m_LastGetLine(nullptr),
-	m_LastGetLineNumber(0)
+	m_LastGetLineNumber(0),
+	m_showCursor(true)
 {
 	_KEYMACRO(SysLog(L"Editor::Editor()"));
 	_KEYMACRO(SysLog(1));
@@ -167,6 +168,161 @@ void Editor::KeepInitParameters()
 	GlobalSearchReverse = m_LastSearch.Reverse;
 	Opt.EdOpt.SearchSelFound = m_LastSearch.SelectFound;
 	Opt.EdOpt.SearchRegexp = m_LastSearch.Regexp;
+}
+
+/*
+	преобразование из буфера в список
+*/
+int Editor::SetRawData(const wchar_t *SrcBuf, int SizeSrcBuf, int TextFormat)
+{
+	FreeAllocatedData(true);
+
+	if (!SrcBuf) {
+		fprintf(stderr, "Editor::SetRawData null\n");
+		InsertString(nullptr, 0);
+		m_CurLine = m_TopList;
+		m_TopScreen = m_TopList;
+		m_NumLine = 0;
+		TextChanged(1);
+		return TRUE;
+	}
+
+	if (SizeSrcBuf < 0)
+		SizeSrcBuf = (int)StrLength(SrcBuf);
+
+	if (SizeSrcBuf == 0) {
+		fprintf(stderr, "Editor::SetRawData empty\n");
+		InsertString(nullptr, 0);
+		m_CurLine = m_TopList;
+		m_TopScreen = m_TopList;
+		m_NumLine = 0;
+		TextChanged(1);
+		return TRUE;
+	}
+
+	const wchar_t *ptr = SrcBuf;
+	const wchar_t *end = SrcBuf + SizeSrcBuf;
+	const wchar_t *text_eol = *m_GlobalEOL ? m_GlobalEOL : NATIVE_EOLW;
+
+	while (ptr < end) {
+		const wchar_t *line_start = ptr;
+		const wchar_t *eol_ptr = ptr;
+		while (eol_ptr < end && *eol_ptr != L'\r' && *eol_ptr != L'\n')
+			eol_ptr++;
+
+		int line_len = (int)(eol_ptr - line_start);
+
+		const wchar_t *eol = L"";
+		int eol_len = 0;
+		if (eol_ptr < end) {
+			if (*eol_ptr == L'\r') {
+				if (eol_ptr + 2 < end && eol_ptr[1] == L'\r' && eol_ptr[2] == L'\n') {
+					eol = L"\r\r\n";
+					eol_len = 3;
+				} else if (eol_ptr + 1 < end && eol_ptr[1] == L'\n') {
+					eol = L"\r\n";
+					eol_len = 2;
+				} else {
+					eol = L"\r";
+					eol_len = 1;
+				}
+			} else {
+				eol = L"\n";
+				eol_len = 1;
+			}
+		}
+
+		Edit *line = InsertString(line_start, line_len, nullptr, -1);
+		if (!line)
+			return FALSE;
+
+		if (eol_len > 0) {
+			line->SetEOL(TextFormat ? text_eol : eol);
+		}
+
+		if (eol_len == 0)
+			break;
+
+		ptr = eol_ptr + eol_len;
+	}
+
+	if (!m_TopList)
+		InsertString(nullptr, 0);
+
+	m_CurLine = m_TopList;
+	m_TopScreen = m_TopList;
+	m_NumLine = 0;
+	TextChanged(true);
+	return TRUE;
+}
+
+/*
+	Editor::Edit2Str - преобразование из списка в буфер с учетом EOL
+
+		DestBuf     - куда сохраняем (выделяется динамически!)
+		SizeDestBuf - размер сохранения
+		TextFormat  - тип концовки строк
+*/
+int Editor::GetRawData(wchar_t **DestBuf, int &SizeDestBuf, int TextFormat)
+{
+	wchar_t *PDest = nullptr;
+	SizeDestBuf = 0;	// общий размер = 0
+
+	const wchar_t *SaveStr, *EndSeq;
+
+	int Length;
+
+	// посчитаем количество строк и общий размер памяти (чтобы не дергать realloc)
+	Edit *CurPtr = m_TopList;
+
+	DWORD AllLength = 0;
+
+	while (CurPtr) {
+		CurPtr->GetBinaryString(&SaveStr, &EndSeq, Length);
+		AllLength+= Length + StrLength(!TextFormat ? EndSeq : m_GlobalEOL) + 1;
+		CurPtr = CurPtr->m_next;
+	}
+
+	wchar_t *MemEditStr = reinterpret_cast<wchar_t *>(malloc((AllLength + 8) * sizeof(wchar_t)));
+
+	if (MemEditStr) {
+		*MemEditStr = 0;
+		PDest = MemEditStr;
+
+		// прйдемся по списку строк
+		CurPtr = m_TopList;
+
+		AllLength = 0;
+
+		while (CurPtr) {
+			CurPtr->GetBinaryString(&SaveStr, &EndSeq, Length);
+			wmemcpy(PDest, SaveStr, Length);
+			PDest+= Length;
+
+			size_t LenEndSeq;
+			if (!TextFormat) {
+				LenEndSeq = StrLength(EndSeq);
+				wmemcpy(PDest, EndSeq, LenEndSeq);
+			} else {
+				LenEndSeq = StrLength(m_GlobalEOL);
+				wmemcpy(PDest, m_GlobalEOL, LenEndSeq);
+			}
+
+			PDest+= LenEndSeq;
+
+			AllLength+= LenEndSeq + Length;
+
+			CurPtr = CurPtr->m_next;
+		}
+
+		*PDest = 0;
+
+		SizeDestBuf = (int)(PDest - MemEditStr);
+		if (DestBuf)
+			*DestBuf = MemEditStr;
+		return TRUE;
+	} else
+		return FALSE;
 }
 
 void Editor::DisplayObject()
@@ -251,12 +407,14 @@ void Editor::ShowEditor(bool CurLineOnly)
 			if (Flags.Check(FEDITOR_JUSTMODIFIED)) {
 				Flags.Clear(FEDITOR_JUSTMODIFIED);
 
-				if (!Flags.Check(FEDITOR_DIALOGMEMOEDIT)) {
+				if (!Flags.Check(FEDITOR_DIALOGMEMOEDIT)
+						|| (CtrlObject && CtrlObject->Plugins.CurDialogEditor == this)) {
 					_SYS_EE_REDRAW(SysLog(L"Call ProcessEditorEvent(EE_REDRAW,EEREDRAW_CHANGE)"));
 					CtrlObject->Plugins.ProcessEditorEvent(EE_REDRAW, EEREDRAW_CHANGE);
 				}
 			} else {
-				if (!Flags.Check(FEDITOR_DIALOGMEMOEDIT)) {
+				if (!Flags.Check(FEDITOR_DIALOGMEMOEDIT)
+						|| (CtrlObject && CtrlObject->Plugins.CurDialogEditor == this)) {
 					_SYS_EE_REDRAW(SysLog(L"Call ProcessEditorEvent(EE_REDRAW,%ls)",
 							(CurLineOnly ? "EEREDRAW_LINE" : "EEREDRAW_ALL")));
 					CtrlObject->Plugins.ProcessEditorEvent(EE_REDRAW,
@@ -291,6 +449,7 @@ void Editor::ShowEditor(bool CurLineOnly)
 	}
 
 	m_CurLine->SetOvertypeMode(Flags.Check(FEDITOR_OVERTYPE));
+	m_CurLine->SetCursorVisibleFlag(m_showCursor);
 	m_CurLine->Show();
 
 	if (m_VBlockStart && m_VBlockSizeX > 0 && m_VBlockSizeY > 0) {
@@ -2507,16 +2666,24 @@ int Editor::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 	if (m_EdOpt.ShowScrollBar && MouseEvent->dwMousePosition.X == X2
 			&& !(MouseEvent->dwEventFlags & MOUSE_MOVED)) {
 		if (MouseEvent->dwMousePosition.Y == Y1) {
-			while (IsMouseButtonPressed()) {
+			if (!Flags.Check(FEDITOR_DIALOGMEMOEDIT)) {
+				while (IsMouseButtonPressed()) ProcessKey(KEY_CTRLUP);
+			} else {
 				ProcessKey(KEY_CTRLUP);
 			}
 		} else if (MouseEvent->dwMousePosition.Y == Y2) {
-			while (IsMouseButtonPressed()) {
+			if (!Flags.Check(FEDITOR_DIALOGMEMOEDIT)) {
+				while (IsMouseButtonPressed()) ProcessKey(KEY_CTRLDOWN);
+			} else {
 				ProcessKey(KEY_CTRLDOWN);
 			}
 		} else {
-			while (IsMouseButtonPressed())
+			if (!Flags.Check(FEDITOR_DIALOGMEMOEDIT)) {
+				while (IsMouseButtonPressed())
+					GoToLine((m_NumLastLine - 1) * (MouseY - Y1) / (Y2 - Y1));
+			} else {
 				GoToLine((m_NumLastLine - 1) * (MouseY - Y1) / (Y2 - Y1));
+			}
 		}
 
 		return TRUE;
@@ -4870,6 +5037,14 @@ int Editor::EditorControl(int Command, void *Param)
 			_ECTLLOG(SysLog(L"Error: !Param"));
 			return FALSE;
 		}
+		case ECTL_GETFILENAME: {
+			if (m_virtualFileName.IsEmpty())
+				return 0;
+			if (Param) {
+				wcscpy(reinterpret_cast<LPWSTR>(Param), m_virtualFileName);
+			}
+			return static_cast<int>(m_virtualFileName.GetLength() + 1);
+		}
 		case ECTL_SETPOSITION: {
 			// "Вначале было слово..."
 			if (Param) {
@@ -5097,24 +5272,22 @@ int Editor::EditorControl(int Command, void *Param)
 				_ECTLLOG(SysLog(L"  EndPos      =%d", col->EndPos));
 				_ECTLLOG(SysLog(L"  Color       =%d (0x%08X)", col->Color, col->Color));
 				_ECTLLOG(SysLog(L"}"));
+				ColorItem newcol{0};
+
+				int xoff = Flags.Check(FEDITOR_DIALOGMEMOEDIT) ? 0 : X1;
+				newcol.StartPos = col->StartPos + (col->StartPos != -1 ? xoff : 0);
+				newcol.EndPos = col->EndPos + xoff;
+				newcol.Color = col->Color;
+				newcol.Flags = col->Color & 0xFFFF0000;
 				Edit *CurPtr = GetStringByNumber(col->StringNumber);
+
 				if (!CurPtr) {
 					_ECTLLOG(SysLog(L"GetStringByNumber(%d) return nullptr", col->StringNumber));
 					return FALSE;
 				}
 
-				ColorItem newcol{0};
-				newcol.StartPos = col->StartPos + (col->StartPos != -1 ? X1 : 0);
 				if (!col->Color)
 					return (CurPtr->DeleteColor(newcol.StartPos));
-
-				if (col->EndPos >= 0) {
-					newcol.EndPos = col->EndPos + X1;
-				} else {
-					newcol.EndPos = CurPtr->GetLeftPos() + CurPtr->CellPosToReal(X2 - X1);    // CurPtr->GetLength();
-				}
-				newcol.Color = col->Color;
-				newcol.Flags = col->Color & 0xFFFF0000;
 
 				if (Command == ECTL_ADDTRUECOLOR) {
 					const EditorTrueColor *tcol = (EditorTrueColor *)Param;
@@ -5147,8 +5320,9 @@ int Editor::EditorControl(int Command, void *Param)
 					return FALSE;
 				}
 
-				col->StartPos = curcol.StartPos - X1;
-				col->EndPos = curcol.EndPos - X1;
+				int xoff = Flags.Check(FEDITOR_DIALOGMEMOEDIT) ? 0 : X1;
+				col->StartPos = curcol.StartPos - xoff;
+				col->EndPos = curcol.EndPos - xoff;
 				col->Color = curcol.Color & 0xffff;
 				if (Command == ECTL_GETTRUECOLOR) {
 					EditorTrueColor *tcol = (EditorTrueColor *)Param;
@@ -6178,6 +6352,34 @@ bool Editor::SetCodePage(UINT codepage)
 UINT Editor::GetCodePage()
 {
 	return m_codepage;
+}
+
+void Editor::SetDialogParent(DWORD Sets) {}
+
+void Editor::SetPosition(int X1, int Y1, int X2, int Y2)
+{
+	ScreenObject::SetPosition(X1,Y1,X2,Y2);
+
+	for(Edit *CurPtr=m_TopList; CurPtr; CurPtr=CurPtr->m_next)
+	{
+		CurPtr->SetPosition(X1,Y1,X2,Y2);
+	}
+}
+
+void Editor::SetOvertypeMode(int Mode) {}
+
+int Editor::GetOvertypeMode()
+{
+	return 0;
+}
+
+void Editor::SetEditBeyondEnd(int Mode) {}
+
+void Editor::SetClearFlag(int Flag) {}
+
+int Editor::GetClearFlag()
+{
+	return 0;
 }
 
 int Editor::GetCurCol()

@@ -69,7 +69,172 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "vtlog.h"
 #include "vtshell.h"
 #include "vtcompletor.h"
+#include "dialog.hpp"
 #include <limits>
+
+namespace
+{
+void NormalizeMultilineForExec(FARString &text)
+{
+	const wchar_t *src = text.CPtr();
+	size_t len = text.GetLength();
+	FARString out;
+	out.Reserve(len);
+
+	for (size_t i = 0; i < len; ++i) {
+		if (src[i] == L'\r') {
+			if (i + 1 < len && src[i + 1] == L'\n')
+				continue;
+			out.Append(L'\n');
+		} else {
+			out.Append(src[i]);
+		}
+	}
+
+	text = out;
+}
+
+namespace {
+enum
+{
+	MP_BOX,
+	MP_MEMO,
+	MP_SEPARATOR,
+	MP_BTN_CANCEL,
+	MP_BTN_EXEC,
+	MP_BTN_EXEC_NOASK
+};
+
+struct CmdlinePasteDlgLayout
+{
+	int min_width;
+	int min_height;
+};
+
+static void CalcCmdlinePasteDialogLayout(const CmdlinePasteDlgLayout &layout, int &dlg_w, int &dlg_h, int &dlg_x,
+		int &dlg_y)
+{
+	dlg_w = Max(layout.min_width, Min(ScrX - 2, Max(76, (ScrX * 3) / 4)));
+	dlg_h = Max(layout.min_height, Min(ScrY - 2, Max(20, (ScrY * 2) / 3)));
+	dlg_x = Max(0, (ScrX - dlg_w) / 2);
+	dlg_y = Max(0, (ScrY - dlg_h) / 2);
+}
+
+static INT_PTR WINAPI CmdlinePasteDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
+{
+	if (Msg == DN_RESIZECONSOLE) {
+		auto *layout = reinterpret_cast<CmdlinePasteDlgLayout *>(SendDlgMessage(hDlg, DM_GETDLGDATA, 0, 0));
+		if (!layout)
+			return DefDlgProc(hDlg, Msg, Param1, Param2);
+
+		int dlg_w = 0;
+		int dlg_h = 0;
+		int dlg_x = 0;
+		int dlg_y = 0;
+		CalcCmdlinePasteDialogLayout(*layout, dlg_w, dlg_h, dlg_x, dlg_y);
+
+		SendDlgMessage(hDlg, DM_ENABLEREDRAW, FALSE, 0);
+
+		COORD size = {(SHORT)dlg_w, (SHORT)dlg_h};
+		SendDlgMessage(hDlg, DM_RESIZEDIALOG, 0, reinterpret_cast<LONG_PTR>(&size));
+
+		COORD pos = {(SHORT)dlg_x, (SHORT)dlg_y};
+		SendDlgMessage(hDlg, DM_MOVEDIALOG, TRUE, reinterpret_cast<LONG_PTR>(&pos));
+
+		SMALL_RECT rect;
+		rect.Left = 3;
+		rect.Top = 1;
+		rect.Right = (SHORT)(dlg_w - 4);
+		rect.Bottom = (SHORT)(dlg_h - 2);
+		SendDlgMessage(hDlg, DM_SETITEMPOSITION, MP_BOX, reinterpret_cast<LONG_PTR>(&rect));
+
+		rect.Left = 5;
+		rect.Top = 2;
+		rect.Right = (SHORT)(dlg_w - 6);
+		rect.Bottom = (SHORT)(dlg_h - 5);
+		SendDlgMessage(hDlg, DM_SETITEMPOSITION, MP_MEMO, reinterpret_cast<LONG_PTR>(&rect));
+
+		rect.Left = 0;
+		rect.Right = 0;
+		rect.Top = (SHORT)(dlg_h - 5);
+		rect.Bottom = (SHORT)(dlg_h - 5);
+		SendDlgMessage(hDlg, DM_GETITEMPOSITION, MP_SEPARATOR, reinterpret_cast<LONG_PTR>(&rect));
+		rect.Top = (SHORT)(dlg_h - 4);
+		rect.Bottom = (SHORT)(dlg_h - 4);
+		SendDlgMessage(hDlg, DM_SETITEMPOSITION, MP_SEPARATOR, reinterpret_cast<LONG_PTR>(&rect));
+
+		SendDlgMessage(hDlg, DM_GETITEMPOSITION, MP_BTN_CANCEL, reinterpret_cast<LONG_PTR>(&rect));
+		rect.Top = (SHORT)(dlg_h - 3);
+		rect.Bottom = (SHORT)(dlg_h - 3);
+		SendDlgMessage(hDlg, DM_SETITEMPOSITION, MP_BTN_CANCEL, reinterpret_cast<LONG_PTR>(&rect));
+		SendDlgMessage(hDlg, DM_GETITEMPOSITION, MP_BTN_EXEC, reinterpret_cast<LONG_PTR>(&rect));
+		rect.Top = (SHORT)(dlg_h - 3);
+		rect.Bottom = (SHORT)(dlg_h - 3);
+		SendDlgMessage(hDlg, DM_SETITEMPOSITION, MP_BTN_EXEC, reinterpret_cast<LONG_PTR>(&rect));
+		SendDlgMessage(hDlg, DM_GETITEMPOSITION, MP_BTN_EXEC_NOASK, reinterpret_cast<LONG_PTR>(&rect));
+		rect.Top = (SHORT)(dlg_h - 3);
+		rect.Bottom = (SHORT)(dlg_h - 3);
+		SendDlgMessage(hDlg, DM_SETITEMPOSITION, MP_BTN_EXEC_NOASK, reinterpret_cast<LONG_PTR>(&rect));
+
+		SendDlgMessage(hDlg, DM_ENABLEREDRAW, TRUE, 0);
+		return TRUE;
+	}
+
+	return DefDlgProc(hDlg, Msg, Param1, Param2);
+}
+} // namespace
+
+int ShowMultilinePasteDialog(FARString &text)
+{
+	static const wchar_t kCmdlineMemoFilename[] = L"cmdline.bash";
+	const int min_width = 40;
+	const int min_height = 12;
+	const int dlg_w = Max(min_width, Min(ScrX - 2, Max(76, (ScrX * 3) / 4)));
+	const int dlg_h = Max(min_height, Min(ScrY - 2, Max(20, (ScrY * 2) / 3)));
+	const int sep_y = dlg_h - 4;
+	const int btn_y = dlg_h - 3;
+//	const int dlg_w = Max(min_width, Min(ScrX - 2, 76));
+//	const int dlg_h = Max(min_height, Min(ScrY - 2, 20));
+
+	DialogDataEx DlgData[] = {
+		{DI_DOUBLEBOX, 3, 1, (short)(dlg_w - 4), (short)(dlg_h - 2), {}, 0, Msg::MultilinePaste},
+		{DI_MEMOEDIT,  5, 2, (short)(dlg_w - 6), (short)(dlg_h - 5), {}, DIF_FOCUS, L""},
+		{DI_TEXT,      0, (short)sep_y, 0, (short)sep_y, {}, DIF_SEPARATOR, L""},
+		{DI_BUTTON,    0, (short)btn_y, 0, (short)btn_y, {}, DIF_CENTERGROUP, Msg::HCancel},
+		{DI_BUTTON,    0, (short)btn_y, 0, (short)btn_y, {}, DIF_CENTERGROUP | DIF_DEFAULT, Msg::HExecute},
+		{DI_BUTTON,    0, (short)btn_y, 0, (short)btn_y, {}, DIF_CENTERGROUP, Msg::HExecuteNoAsk}
+	};
+
+	MakeDialogItemsEx(DlgData, DlgItems);
+	DlgItems[MP_MEMO].strData = text;
+	DlgItems[MP_MEMO].UserData = (DWORD_PTR)kCmdlineMemoFilename;
+
+	CmdlinePasteDlgLayout layout = {min_width, min_height};
+	Dialog Dlg(DlgItems, ARRAYSIZE(DlgItems), CmdlinePasteDlgProc, reinterpret_cast<LONG_PTR>(&layout));
+	Dlg.SetPosition(-1, -1, dlg_w, dlg_h);
+	Dlg.Process();
+
+	int exit_code = Dlg.GetExitCode();
+	if (exit_code == MP_BTN_EXEC || exit_code == MP_BTN_EXEC_NOASK) {
+		int len = (int)SendDlgMessage((HANDLE)&Dlg, DM_GETTEXTLENGTH, MP_MEMO, 0);
+		if (len > 0) {
+			FARString edited;
+			wchar_t *buf = edited.GetBuffer(len + 1);
+			FarDialogItemData data = {(size_t)len, buf};
+			SendDlgMessage((HANDLE)&Dlg, DM_GETTEXT, MP_MEMO, (LONG_PTR)&data);
+			edited.ReleaseBuffer(len);
+			text = edited;
+		} else {
+			text = DlgItems[MP_MEMO].strData;
+		}
+		NormalizeMultilineForExec(text);
+		RemoveTrailingSpaces(text);
+		return (exit_code == MP_BTN_EXEC) ? 1 : 2;
+	}
+
+	return 0;
+}
+} // namespace
 
 CommandLine::CommandLine()
 	:
@@ -117,19 +282,19 @@ void CommandLine::SetAutoComplete(int Mode)
 
 void CommandLine::DisplayObject()
 {
-	_OT(SysLog(L"[%p] CommandLine::DisplayObject()",this));
+	_OT(SysLog(L"[%p] CommandLine::DisplayObject()", this));
 	FARString strTruncDir;
 	GetPrompt(strTruncDir);
-	TruncPathStr(strTruncDir,(X2-X1)/2);
-	GotoXY(X1,Y1);
+	TruncPathStr(strTruncDir, (X2-X1)/2);
+	GotoXY(X1, Y1);
 	SetFarColor(COL_COMMANDLINEPREFIX);
 	Text(strTruncDir);
 	CmdStr.SetObjectColor(FarColorToReal(COL_COMMANDLINE), FarColorToReal(COL_COMMANDLINESELECTED));
-	CmdStr.SetPosition(X1+(int)strTruncDir.CellsCount(),Y1,X2,Y2);
+	CmdStr.SetPosition(X1+(int)strTruncDir.CellsCount(), Y1, X2, Y2);
 
 	CmdStr.Show();
 
-	GotoXY(X2+1,Y1);
+	GotoXY(X2+1, Y1);
 	SetFarColor(COL_COMMANDLINEPREFIX);
 	Text(L"\x2191");
 }
@@ -149,22 +314,22 @@ void CommandLine::SetCurPos(int Pos, int LeftPos)
 	CmdStr.Redraw();
 }
 
-int64_t CommandLine::VMProcess(int OpCode,void *vParam,int64_t iParam)
+int64_t CommandLine::VMProcess(int OpCode, void *vParam, int64_t iParam)
 {
 	if (OpCode >= MCODE_C_CMDLINE_BOF && OpCode <= MCODE_C_CMDLINE_SELECTED)
-		return CmdStr.VMProcess(OpCode-MCODE_C_CMDLINE_BOF+MCODE_C_BOF,vParam,iParam);
+		return CmdStr.VMProcess(OpCode-MCODE_C_CMDLINE_BOF+MCODE_C_BOF, vParam, iParam);
 
 	if (OpCode >= MCODE_C_BOF && OpCode <= MCODE_C_SELECTED)
-		return CmdStr.VMProcess(OpCode,vParam,iParam);
+		return CmdStr.VMProcess(OpCode, vParam, iParam);
 
 	if (OpCode == MCODE_V_ITEMCOUNT || OpCode == MCODE_V_CURPOS)
-		return CmdStr.VMProcess(OpCode,vParam,iParam);
+		return CmdStr.VMProcess(OpCode, vParam, iParam);
 
 	if (OpCode == MCODE_V_CMDLINE_ITEMCOUNT || OpCode == MCODE_V_CMDLINE_CURPOS)
-		return CmdStr.VMProcess(OpCode-MCODE_V_CMDLINE_ITEMCOUNT+MCODE_V_ITEMCOUNT,vParam,iParam);
+		return CmdStr.VMProcess(OpCode-MCODE_V_CMDLINE_ITEMCOUNT+MCODE_V_ITEMCOUNT, vParam, iParam);
 
 	if (OpCode == MCODE_F_EDITOR_SEL)
-		return CmdStr.VMProcess(MCODE_F_EDITOR_SEL,vParam,iParam);
+		return CmdStr.VMProcess(MCODE_F_EDITOR_SEL, vParam, iParam);
 
 	return 0;
 }
@@ -261,7 +426,7 @@ int CommandLine::ProcessKey(FarKey Key)
 
 		strStr = strLastCmdStr;
 		int CurCmdPartLength=(int)strStr.GetLength();
-		CtrlObject->CmdHistory->GetSimilar(strStr,LastCmdPartLength);
+		CtrlObject->CmdHistory->GetSimilar(strStr, LastCmdPartLength);
 
 		if (LastCmdPartLength==-1)
 		{
@@ -270,7 +435,7 @@ int CommandLine::ProcessKey(FarKey Key)
 		}
 		CmdStr.DisableAC();
 		CmdStr.SetString(strStr);
-		CmdStr.Select(LastCmdPartLength,static_cast<int>(strStr.GetLength()));
+		CmdStr.Select(LastCmdPartLength, static_cast<int>(strStr.GetLength()));
 		CmdStr.RevertAC();
 		Show();
 		return TRUE;
@@ -373,13 +538,13 @@ int CommandLine::ProcessKey(FarKey Key)
 			Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
 			{
 				// TODO: здесь можно добавить проверку, что мы в корне диска и отсутствие файла Tree.Far...
-				FolderTree Tree(strStr,MODALTREE_ACTIVE,TRUE,FALSE);
+				FolderTree Tree(strStr, MODALTREE_ACTIVE, TRUE, FALSE);
 			}
 			CtrlObject->Cp()->RedrawKeyBar();
 
 			if (!strStr.IsEmpty())
 			{
-				ActivePanel->SetCurDir(strStr,true);
+				ActivePanel->SetCurDir(strStr, true);
 				ActivePanel->Show();
 
 				if (ActivePanel->GetType()==TREE_PANEL)
@@ -402,7 +567,7 @@ int CommandLine::ProcessKey(FarKey Key)
 		return TRUE;
 
 		case KEY_F11:
-			CtrlObject->Plugins.CommandsMenu(FALSE,FALSE,0);
+			CtrlObject->Plugins.CommandsMenu(FALSE, FALSE, 0);
 			return TRUE;
 
 		case KEY_ALTF11:
@@ -430,11 +595,11 @@ int CommandLine::ProcessKey(FarKey Key)
 				//Type==0 - обычный путь
 				//если путь плагиновый то сначала попробуем запустить его (а вдруг там префикс)
 				//ну а если путь не плагиновый то запускать его точно не надо
-				if (!Type || !CtrlObject->Plugins.ProcessCommandLine(strStr,Panel))
+				if (!Type || !CtrlObject->Plugins.ProcessCommandLine(strStr, Panel))
 				{
 					if (Panel->GetMode() == PLUGIN_PANEL || CheckShortcutFolder(strStr, false))
 					{
-						Panel->SetCurDir(strStr,Type ? false:true);
+						Panel->SetCurDir(strStr, Type ? false:true);
 						// restore current directory to active panel path
 						if(SelectType == HRT_CTRLSHIFTENTER)
 						{
@@ -458,7 +623,7 @@ int CommandLine::ProcessKey(FarKey Key)
 		case KEY_CTRLALTNUMENTER:
 		{
 			Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
-			CmdStr.Select(-1,0);
+			CmdStr.Select(-1, 0);
 			CmdStr.Show();
 			CmdStr.GetString(strStr);
 			RemoveTrailingSpaces(strStr, true);
@@ -474,7 +639,7 @@ int CommandLine::ProcessKey(FarKey Key)
 				CtrlObject->CmdHistory->AddToHistoryExtra(strStr, curDir);
 			}
 
-			if (ActivePanel->ProcessPluginEvent(FE_COMMAND,(void *)strStr.CPtr())) {
+			if (ActivePanel->ProcessPluginEvent(FE_COMMAND, (void *)strStr.CPtr())) {
 				ActivePanel->GetCurDirPluginAware(strCurDir, false);
 				Show();
 				ActivePanel->SetTitle();
@@ -487,7 +652,7 @@ int CommandLine::ProcessKey(FarKey Key)
 		return TRUE;
 
 		case KEY_CTRLU:
-			CmdStr.Select(-1,0);
+			CmdStr.Select(-1, 0);
 			CmdStr.Show();
 			return TRUE;
 
@@ -534,16 +699,15 @@ int CommandLine::ProcessKey(FarKey Key)
 					KEY_END,        KEY_NUMPAD1
 				};
 
-				for (size_t I=0; I< ARRAYSIZE(UnmarkKeys); I++)
-					if (Key==UnmarkKeys[I])
-					{
-						CmdStr.Select(-1,0);
+				for (size_t I = 0; I < ARRAYSIZE(UnmarkKeys); I++)
+					if (Key == UnmarkKeys[I]) {
+						CmdStr.Select(-1, 0);
 						break;
 					}
 			}
 
 			if (Key == KEY_CTRLD)
-				Key=KEY_RIGHT;
+				Key = KEY_RIGHT;
 
 			if (Key == KEY_CTRLV || Key == KEY_SHIFTINS || Key == KEY_SHIFTNUMPAD0) {
 				wchar_t *ClipText = PasteFromClipboard();
@@ -552,16 +716,7 @@ int CommandLine::ProcessKey(FarKey Key)
 					FARString strToExec = strStr.SubStr(0, CmdStr.GetCurPos()) + ClipText + strStr.SubStr(CmdStr.GetCurPos());
 					RemoveTrailingSpaces(strToExec);
 					if (Opt.CmdLine.AskOnMultilinePaste) {
-						ExMessager em;
-						em.AddMultiline(Msg::MultilinePaste);
-						em.AddMultiline(strToExec);
-						em.AddDup(L"\2");
-						em.AddMultiline(Msg::MultilinePasteWarn);
-						em.AddDup(Msg::HCancel);
-						em.AddDup(Msg::HExecute);
-						em.AddDup(Msg::HExecuteNoAsk);
-
-						int res = em.Show(MSG_LEFTALIGN, 3);
+						int res = ShowMultilinePasteDialog(strToExec);
 						if (res == 1) {
 							ExecString(strToExec);
 						}
@@ -586,7 +741,7 @@ int CommandLine::ProcessKey(FarKey Key)
 			if(Key == KEY_CTRLSHIFTEND || Key == KEY_CTRLSHIFTNUMPAD1)
 			{
 				CmdStr.EnableAC();
-				CmdStr.AutoComplete(true,false);
+				CmdStr.AutoComplete(true, false);
 				CmdStr.RevertAC();
 			}
 
@@ -599,7 +754,7 @@ int CommandLine::ProcessKey(FarKey Key)
 
 void CommandLine::SetCurDir(const wchar_t *CurDir)
 {
-	if (StrCmp(strCurDir,CurDir) || !TestCurrentDirectory(CurDir))
+	if (StrCmp(strCurDir, CurDir) || !TestCurrentDirectory(CurDir))
 	{
 		strCurDir = CurDir;
 	}
@@ -612,7 +767,7 @@ const FARString& CommandLine::GetCurDir()
 }
 
 
-void CommandLine::SetString(const wchar_t *Str,bool Redraw)
+void CommandLine::SetString(const wchar_t *Str, bool Redraw)
 {
 	LastCmdPartLength=-1;
 	CmdStr.SetString(Str);
@@ -629,7 +784,7 @@ void CommandLine::ExecString(const wchar_t *Str, bool SeparateWindow,
 	CmdStr.DisableAC();
 	SetString(Str);
 	CmdStr.RevertAC();
-	CmdExecute(Str,SeparateWindow,DirectRun, WaitForIdle, Silent, RunAs);
+	CmdExecute(Str, SeparateWindow, DirectRun, WaitForIdle, Silent, RunAs);
 }
 
 
@@ -795,7 +950,7 @@ void CommandLine::ShowViewEditHistory()
 	if (SelectType == HRT_ENTER || SelectType == HRT_SHIFTENTER)
 	{
 		if (SelectType == HRT_ENTER)
-			CtrlObject->ViewHistory->AddToHistory(strStr,Type);
+			CtrlObject->ViewHistory->AddToHistory(strStr, Type);
 
 		CtrlObject->ViewHistory->SetAddMode(false, HRD_CASESENS, true);
 
@@ -803,14 +958,14 @@ void CommandLine::ShowViewEditHistory()
 		{
 			case HR_VIEWER:
 			{
-				new FileViewer(strStr,TRUE);
+				new FileViewer(strStr, TRUE);
 				break;
 			}
 			case HR_EDITOR: // обычное открытие в редакторе
 			case HR_EDITOR_RO: // открытие с локом
 			{
 				// пусть файл создается
-				FileEditor *FEdit=new FileEditor(strStr,CP_AUTODETECT,FFILEEDIT_CANNEWFILE|FFILEEDIT_ENABLEF6);
+				FileEditor *FEdit=new FileEditor(strStr, CP_AUTODETECT, FFILEEDIT_CANNEWFILE|FFILEEDIT_ENABLEF6);
 
 				if (Type == HR_EDITOR_RO)
 					FEdit->SetLockEditor(true);
@@ -858,7 +1013,7 @@ void CommandLine::SaveBackground(int x1, int y1, int x2, int y2)
 		delete BackgroundScreen;
 	}
 
-	BackgroundScreen=new SaveScreen(x1,y1,x2,y2);
+	BackgroundScreen=new SaveScreen(x1, y1, x2, y2);
 }
 
 void CommandLine::SaveBackground()
@@ -892,7 +1047,7 @@ void CommandLine::CorrectRealScreenCoord()
 
 void CommandLine::ResizeConsole()
 {
-	BackgroundScreen->Resize(ScrX+1,ScrY+1,2,Opt.WindowMode!=FALSE);
+	BackgroundScreen->Resize(ScrX+1, ScrY+1, 2, Opt.WindowMode!=FALSE);
 //  this->DisplayObject();
 }
 

@@ -142,6 +142,7 @@ class Edit;
 
 class Editor : public ScreenObject
 {
+	friend class DlgEdit;
 	friend class FileEditor;
 
 private:
@@ -224,6 +225,9 @@ private:
 
 	std::unordered_set<Edit *> m_AutoDeletedColors;
 
+	bool m_showCursor;
+	FARString m_virtualFileName;
+
 private:
 	enum NextType {
 		NEXT_NONE, NEXT_FORWARD, NEXT_REVERSE
@@ -301,11 +305,17 @@ public:
 	virtual ~Editor();
 
 public:
+	int GetEditorID() const { return m_EditorID; }
+	void SetVirtualFileName(const wchar_t *name) { m_virtualFileName = name; }
+
 	void SetCacheParams(EditorCacheParams *pp);
 	void GetCacheParams(EditorCacheParams *pp);
 
 	bool SetCodePage(UINT codepage);                                            // BUGBUG
 	UINT GetCodePage();                                                         // BUGBUG
+
+	int SetRawData(const wchar_t *SrcBuf, int SizeSrcBuf, int TextFormat);		// преобразование из буфера в список
+	int GetRawData(wchar_t **DestBuf, int &SizeDestBuf, int TextFormat = 0);	// преобразование из списка в буфер
 
 	virtual int ProcessKey(FarKey Key);
 	virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
@@ -361,6 +371,7 @@ public:
 	void SetWordDiv(const wchar_t *WordDiv) { m_EdOpt.strWordDiv = WordDiv; }
 	const wchar_t *GetWordDiv() { return m_EdOpt.strWordDiv; }
 
+	int GetShowWhiteSpace() const { return m_EdOpt.ShowWhiteSpace; }
 	void SetShowWhiteSpace(int NewMode);
 
 	void GetSavePosMode(int &SavePos, int &SaveShortPos);
@@ -383,15 +394,24 @@ public:
 	Edit *CreateString(const wchar_t *lpwszStr, int nLength);
 	Edit *InsertString(const wchar_t *lpwszStr, int nLength, Edit *pAfter=nullptr, int AfterLineNumber=-1);
 
+	void SetDialogParent(DWORD Sets);
 	void SetReadOnly(bool NewReadOnly) { Flags.Change(FEDITOR_LOCKMODE, NewReadOnly); }
 	bool GetReadOnly() { return Flags.Check(FEDITOR_LOCKMODE); }
+	void SetOvertypeMode(int Mode);
+	int GetOvertypeMode();
+	void SetEditBeyondEnd(int Mode);
+	void SetClearFlag(int Flag);
+	int GetClearFlag();
 
 	int GetCurCol();
 	int GetCurRow() { return m_NumLine; }
 	void SetCurPos(int NewCol, int NewRow = -1);
 	void SetCursorType(bool Visible, DWORD Size);
 	void GetCursorType(bool &Visible, DWORD &Size);
+	void SetShowCursor(bool Enable) { m_showCursor = Enable; }
 	void SetObjectColor(uint64_t Color, uint64_t SelColor, uint64_t ColorUnChanged);
 	void DrawScrollbar();
 	void AutoDeleteColors();
+
+	virtual void SetPosition(int X1, int Y1, int X2, int Y2);
 };

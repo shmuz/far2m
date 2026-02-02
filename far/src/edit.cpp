@@ -111,6 +111,7 @@ Edit::Edit(ScreenObject *aOwner, Callback *aCallback)
 	SetWordDiv(Opt.strWordDiv);
 
 	Flags.Set(FEDITLINE_EDITBEYONDEND);
+	Flags.Set(FEDITLINE_CURSORVISIBLE);
 	m_Color = F_LIGHTGRAY | B_BLACK;
 	m_SelColor = F_WHITE | B_BLACK;
 	m_ColorUnChanged = FarColorToReal(COL_DIALOGEDITUNCHANGED);
@@ -234,22 +235,26 @@ void Edit::DisplayObject()
 	m_CurPos = GetNextCursorPos(m_CurPos, Value);
 	FastShow();
 
-	/* $ 26.07.2000 tran
-	   при DropDownBox курсор выключаем
-	   не знаю даже - попробовал но не очень красиво вышло */
-	if (Flags.Check(FEDITLINE_DROPDOWNBOX))
-		::SetCursorType(false, 10);
-	else {
-		if (Flags.Check(FEDITLINE_OVERTYPE)) {
-			int NewCursorSize = (Opt.CursorSize[2] ? Opt.CursorSize[2] : 99);
-			::SetCursorType(true, m_CursorSize == -1 ? NewCursorSize : m_CursorSize);
-		} else {
-			int NewCursorSize = (Opt.CursorSize[0] ? Opt.CursorSize[0] : 10);
-			::SetCursorType(true, m_CursorSize == -1 ? NewCursorSize : m_CursorSize);
+	/*
+		$ 26.07.2000 tran
+		при DropDownBox курсор выключаем
+		не знаю даже - попробовал но не очень красиво вышло
+	*/
+	if (Flags.Check(FEDITLINE_CURSORVISIBLE)) {
+		if (Flags.Check(FEDITLINE_DROPDOWNBOX))
+			::SetCursorType(false, 10);
+		else {
+			if (Flags.Check(FEDITLINE_OVERTYPE)) {
+				int NewCursorSize = (Opt.CursorSize[2] ? Opt.CursorSize[2] : 99);
+				::SetCursorType(true, m_CursorSize == -1 ? NewCursorSize : m_CursorSize);
+			} else {
+				int NewCursorSize = (Opt.CursorSize[0] ? Opt.CursorSize[0] : 10);
+				::SetCursorType(true, m_CursorSize == -1 ? NewCursorSize : m_CursorSize);
+			}
 		}
-	}
 
-	MoveCursor(X1 + m_CursorPos - m_LeftPos, Y1);
+		MoveCursor(X1 + m_CursorPos - m_LeftPos, Y1);
+	}
 }
 
 void Edit::SetCursorType(bool Visible, DWORD Size)

@@ -279,6 +279,7 @@ public:
 	void SetDialogParent(DWORD Sets);
 	void SetCursorType(bool Visible, DWORD Size);
 	void GetCursorType(bool &Visible, DWORD &Size);
+	void SetCursorVisibleFlag(bool Visible) { Flags.Change(FEDITLINE_CURSORVISIBLE, Visible); }
 	bool GetReadOnly() { return Flags.Check(FEDITLINE_READONLY); }
 	void SetReadOnly(bool NewReadOnly) { Flags.Change(FEDITLINE_READONLY, NewReadOnly); }
 	int GetDropDownBox() { return Flags.Check(FEDITLINE_DROPDOWNBOX); }

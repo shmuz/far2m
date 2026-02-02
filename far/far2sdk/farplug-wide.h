@@ -202,9 +202,7 @@ enum DialogItemTypes
 	DI_RADIOBUTTON,
 	DI_COMBOBOX,
 	DI_LISTBOX,
-#ifdef FAR_USE_INTERNALS
 	DI_MEMOEDIT,
-#endif // END FAR_USE_INTERNALS
 
 	DI_USERCONTROL=255,
 };
@@ -213,11 +211,7 @@ enum DialogItemTypes
    Check dialog element type has inputstring?
    (DI_EDIT, DI_FIXEDIT, DI_PSWEDIT, etc)
 */
-#ifdef FAR_USE_INTERNALS
-# define FarIsEdit(Type)  ((Type) == DI_EDIT || (Type) == DI_FIXEDIT || (Type) == DI_PSWEDIT || (Type) == DI_COMBOBOX || (Type) == DI_MEMOEDIT)
-#else
-# define FarIsEdit(Type)  ((Type) == DI_EDIT || (Type) == DI_FIXEDIT || (Type) == DI_PSWEDIT || (Type) == DI_COMBOBOX)
-#endif
+#define FarIsEdit(Type)  ((Type) == DI_EDIT || (Type) == DI_FIXEDIT || (Type) == DI_PSWEDIT || (Type) == DI_COMBOBOX || (Type) == DI_MEMOEDIT)
 
 enum FarDialogItemFlags
 {

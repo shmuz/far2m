@@ -1132,7 +1132,8 @@ BOOL Dialog::SetItemRect(unsigned ID, SMALL_RECT *aRect)
 		DlgEdit *DialogEdit = (DlgEdit *)CurItem->ObjPtr;
 		CurItem->X2 = Rect.Right;
 		CurItem->Y2 = (Type == DI_MEMOEDIT ? Rect.Bottom : 0);
-		DialogEdit->SetPosition(X1 + Rect.Left, Y1 + Rect.Top, X1 + Rect.Right, Y1 + Rect.Top);
+		const int edit_bottom = (Type == DI_MEMOEDIT ? Rect.Bottom : Rect.Top);
+		DialogEdit->SetPosition(X1 + Rect.Left, Y1 + Rect.Top, X1 + Rect.Right, Y1 + edit_bottom);
 	} else if (Type == DI_LISTBOX) {
 		CurItem->X2 = Rect.Right;
 		CurItem->Y2 = Rect.Bottom;
@@ -1337,7 +1338,6 @@ void Dialog::GetDialogObjectsData()
 
 		switch (Type = CurItem->Type) {
 			case DI_MEMOEDIT:
-				break;	//????
 			case DI_EDIT:
 			case DI_FIXEDIT:
 			case DI_PSWEDIT:
@@ -1900,7 +1900,7 @@ void Dialog::ShowDialog(int ID)
 		// TODO: прежде чем эту строку применять... нужно проверить _ВСЕ_ диалоги на предмет X2, Y2. !!!
 		if (((CX1 > -1) && (CX2 > 0) && (CX2 > CX1)) &&
 				((CY1 > -1) && (CY2 > 0) && (CY2 > CY1)))
-			SetScreen(X1+CX1,Y1+CY1,X1+CX2,Y1+CY2,' ',Attr&0xFF);
+			SetScreen(X1+CX1, Y1+CY1, X1+CX2, Y1+CY2, ' ', Attr&0xFF);
 
 #endif
 
@@ -2015,7 +2015,7 @@ void Dialog::ShowDialog(int ID)
 						/*
 						int CntChr=CX2-CX1+1;
 						SetColor(ItemColor[0]);
-						GotoXY(X1+X,Y1+Y);
+						GotoXY(X1+X, Y1+Y);
 
 						if (X1+X+CntChr-1 > X2)
 							CntChr=X2-(X1+X)+1;
@@ -2220,7 +2220,7 @@ void Dialog::ShowDialog(int ID)
 				if (CurItem->Flags & DIF_SHOWAMPERSAND)
 					Text(strStr);
 				else
-					HiText(strStr,ItemColor[1]);
+					HiText(strStr, ItemColor[1]);
 //					HiText(strStr, HIBYTE(LOWORD(Attr)));
 
 				if (CurItem->Flags & DIF_SETSHIELD) {
@@ -2873,6 +2873,11 @@ int Dialog::ProcessKey(FarKey Key)
 
 		case KEY_NUMENTER:
 		case KEY_ENTER: {
+			if (Item[FocusPos]->Type == DI_MEMOEDIT && Item[FocusPos]->ObjPtr) {
+				((DlgEdit *)(Item[FocusPos]->ObjPtr))->ProcessKey(Key);
+				ShowDialog();
+				return TRUE;
+			}
 			if (FarIsEditNoCombobox(Item[FocusPos]->Type)
 					&& (Item[FocusPos]->Flags & DIF_EDITOR) && !(Item[FocusPos]->Flags & DIF_READONLY))
 			{
@@ -3000,6 +3005,12 @@ int Dialog::ProcessKey(FarKey Key)
 			if (Item[FocusPos]->Type == DI_USERCONTROL)		// для user-типа вываливаем
 				return TRUE;
 
+			if (Item[FocusPos]->Type == DI_MEMOEDIT && Item[FocusPos]->ObjPtr) {
+				((DlgEdit *)(Item[FocusPos]->ObjPtr))->ProcessKey(Key);
+				ShowDialog();
+				return TRUE;
+			}
+
 			return MoveToCtrlVertical(Key == KEY_UP || Key == KEY_NUMPAD8);
 		}
 
@@ -3026,12 +3037,26 @@ int Dialog::ProcessKey(FarKey Key)
 
 			[[fallthrough]];
 
+			// ???
 			// ЭТО перед default последний!!!
+		case KEY_F5:
+			if (Item[FocusPos]->Type == DI_MEMOEDIT) {
+				((DlgEdit *)(Item[FocusPos]->ObjPtr))->ToggleShowWhiteSpace();
+				ShowDialog(FocusPos);
+				return TRUE;
+			}
+			break;
+
 		case KEY_PGDN:
 		case KEY_NUMPAD3:
 
 			if (Item[FocusPos]->Type == DI_USERCONTROL)		// для user-типа вываливаем
 				return TRUE;
+
+			if (Item[FocusPos]->Type == DI_MEMOEDIT) {
+				((DlgEdit *)(Item[FocusPos]->ObjPtr))->ProcessKey(Key);
+				return TRUE;
+			}
 
 			if (!(Item[FocusPos]->Flags & DIF_EDITOR)) {
 				for (I = 0; I < ItemCount; I++)
@@ -3440,11 +3465,24 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 		if (MouseEvent->dwButtonState)
 			DialogMode.Set(DMODE_CLICKOUTSIDE);
 
+		if (!MouseEvent->dwButtonState && FocusPos < ItemCount
+				&& !(Item[FocusPos]->Flags & (DIF_DISABLE | DIF_HIDDEN))
+				&& FarIsEdit(Item[FocusPos]->Type)) {
+			DlgEdit *EditLine = (DlgEdit *)(Item[FocusPos]->ObjPtr);
+			EditLine->ProcessMouse(MouseEvent);
+		}
+
 		// ScreenObject::SetCapture(this);
 		return TRUE;
 	}
 
 	if (!MouseEvent->dwButtonState) {
+		if (FocusPos < ItemCount && !(Item[FocusPos]->Flags & (DIF_DISABLE | DIF_HIDDEN))
+				&& FarIsEdit(Item[FocusPos]->Type)) {
+			DlgEdit *EditLine = (DlgEdit *)(Item[FocusPos]->ObjPtr);
+			if (EditLine->ProcessMouse(MouseEvent))
+				return TRUE;
+		}
 		DialogMode.Clear(DMODE_CLICKOUTSIDE);
 		//		ScreenObject::SetCapture(nullptr);
 		return FALSE;
@@ -5103,14 +5141,14 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 				DialogInfo *di=reinterpret_cast<DialogInfo*>(Param2);
 				if (Dlg->IdExist)
 				{
-					if ((size_t)di->StructSize >= offsetof(DialogInfo,Id)+sizeof(di->Id))
+					if ((size_t)di->StructSize >= offsetof(DialogInfo, Id)+sizeof(di->Id))
 					{
 						di->Id=Dlg->Id;
 						Result=TRUE;
 					}
 				}
 
-				if ((size_t)di->StructSize >= offsetof(DialogInfo,Owner)+sizeof(di->Owner))
+				if ((size_t)di->StructSize >= offsetof(DialogInfo, Owner)+sizeof(di->Owner))
 				{
 					di->Owner = 0;
 					if (Dlg->PluginNumber != -1)
@@ -5491,8 +5529,9 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 				return FALSE;
 
 			if (FarIsEdit(Type) && CurItem->ObjPtr) {
-				((COORD *)Param2)->X = ((DlgEdit *)(CurItem->ObjPtr))->GetCurPos();
-				((COORD *)Param2)->Y = 0;
+				DlgEdit *EditPtr = (DlgEdit *)(CurItem->ObjPtr);
+				((COORD *)Param2)->X = EditPtr->GetCurPos();
+				((COORD *)Param2)->Y = (Type == DI_MEMOEDIT) ? EditPtr->GetCurRow() : 0;
 				return TRUE;
 			} else if (Type == DI_USERCONTROL && CurItem->UCData) {
 				((COORD *)Param2)->X = CurItem->UCData->CursorPos.X;
@@ -5506,7 +5545,10 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 		case DM_SETCURSORPOS: {
 			if (FarIsEdit(Type) && CurItem->ObjPtr && ((COORD *)Param2)->X >= 0) {
 				DlgEdit *EditPtr = (DlgEdit *)(CurItem->ObjPtr);
-				EditPtr->SetCurPos(((COORD *)Param2)->X);
+				if (Type == DI_MEMOEDIT)
+					EditPtr->SetCurPos(((COORD *)Param2)->X, ((COORD *)Param2)->Y);
+				else
+					EditPtr->SetCurPos(((COORD *)Param2)->X);
 				// EditPtr->Show();
 				Dlg->ShowDialog(Param1);
 				return TRUE;
@@ -5546,7 +5588,14 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 		case DM_GETEDITPOSITION: {
 			if (Param2 && FarIsEdit(Type)) {
 				if (Type == DI_MEMOEDIT) {
-					// EditorControl(ECTL_GETINFO,(EditorSetPosition *)Param2);
+					EditorSetPosition *esp = (EditorSetPosition *)Param2;
+					DlgEdit *EditPtr = (DlgEdit *)(CurItem->ObjPtr);
+					esp->CurLine = EditPtr->GetCurRow();
+					esp->CurPos = EditPtr->GetCurPos();
+					esp->CurTabPos = EditPtr->GetCellCurPos();
+					esp->TopScreenLine = 0;
+					esp->LeftPos = EditPtr->GetLeftPos();
+					esp->Overtype = EditPtr->GetOvertypeMode();
 					return TRUE;
 				} else {
 					EditorSetPosition *esp = (EditorSetPosition *)Param2;
@@ -5567,7 +5616,14 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 		case DM_SETEDITPOSITION: {
 			if (Param2 && FarIsEdit(Type)) {
 				if (Type == DI_MEMOEDIT) {
-					// EditorControl(ECTL_SETPOSITION,(EditorSetPosition *)Param2);
+					EditorSetPosition *esp = (EditorSetPosition *)Param2;
+					DlgEdit *EditPtr = (DlgEdit *)(CurItem->ObjPtr);
+					EditPtr->SetCurPos(esp->CurPos, esp->CurLine);
+					EditPtr->SetCellCurPos(esp->CurTabPos);
+					EditPtr->SetLeftPos(esp->LeftPos, esp->CurLine);
+					EditPtr->SetOvertypeMode(esp->Overtype);
+					Dlg->ShowDialog(Param1);
+					ScrBuf.Flush();
 					return TRUE;
 				} else {
 					EditorSetPosition *esp = (EditorSetPosition *)Param2;
@@ -5805,6 +5861,22 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 
 				switch (Type) {
 					case DI_MEMOEDIT:
+						if (!CurItem->ObjPtr)
+							break;
+						{
+							FARString strData;
+							((DlgEdit *)(CurItem->ObjPtr))->GetString(strData);
+							Ptr = strData.CPtr();
+							Len = (int)strData.GetLength() + 1;
+							if (!did->PtrLength)
+								did->PtrLength = Len;
+							else if (Len > did->PtrLength)
+								Len = did->PtrLength + 1;
+							if (Len > 0 && did->PtrData) {
+								wmemmove(did->PtrData, Ptr, Len);
+								did->PtrData[Len - 1] = 0;
+							}
+						}
 						break;
 
 					case DI_COMBOBOX:
@@ -5950,7 +6022,6 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 
 				switch (Type) {
 					case DI_MEMOEDIT:
-						break;
 					case DI_COMBOBOX:
 					case DI_EDIT:
 					case DI_TEXT:
@@ -5995,6 +6066,17 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 					case DI_RADIOBUTTON:
 						break;
 					case DI_MEMOEDIT:
+						NeedInit = FALSE;
+						if (CurItem->ObjPtr) {
+							DlgEdit *EditLine = (DlgEdit *)(CurItem->ObjPtr);
+							int ReadOnly = EditLine->GetReadOnly();
+							EditLine->SetReadOnly(0);
+							EditLine->SetString(CurItem->strData);
+							EditLine->SetReadOnly(ReadOnly);
+							if (Dlg->DialogMode.Check(DMODE_INITOBJECTS))
+								EditLine->SetClearFlag(0);
+							EditLine->Select(-1, 0);
+						}
 						break;
 					case DI_COMBOBOX:
 					case DI_EDIT:
