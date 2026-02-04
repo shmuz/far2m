@@ -1236,36 +1236,57 @@ int LF_ProcessEditorEvent (lua_State* L, int Event, void *Param)
 	if (!(GetPluginData(L)->Flags & PDF_PROCESSINGERROR) &&
 			GetExportFunction(L, "ProcessEditorEvent"))     //+1: Func
 	{
-		struct EditorInfo ei = { sizeof(ei) };
-		if (PSInfo.EditorControlV2(CURRENT_EDITOR, ECTL_GETINFO, &ei))
-			lua_pushinteger(L, ei.EditorID);
-		else
-			lua_pushnil(L);
-		lua_pushinteger(L, Event);  //+3;
+		struct EditorSaveFile *esf;
+		int Top = lua_gettop(L);
+		int EditorID = CURRENT_EDITOR;
+
+		if (Event == EE_SAVE) {
+			esf = (struct EditorSaveFile*)Param;
+			EditorID = esf->EditorID;
+		}
+		else if (Event == EE_REDRAW) {
+			struct EditorInfo ei = { sizeof(ei) };
+			if (PSInfo.EditorControlV2(CURRENT_EDITOR, ECTL_GETINFO, &ei))
+				EditorID = ei.EditorID;
+		}
+		else if (Param != NULL)
+			EditorID = *(int*)Param;
+
+		lua_pushinteger(L, EditorID); //+2
+		lua_pushinteger(L, Event);    //+3;
+
 		switch(Event) {
 			case EE_CLOSE:
 			case EE_GOTFOCUS:
 			case EE_KILLFOCUS:
 				lua_pushinteger(L, *(int*)Param);
 				break;
+
 			case EE_REDRAW:
 				lua_pushinteger(L, (INT_PTR)Param);
 				break;
+
 			case EE_SAVE: {
-				struct EditorSaveFile *esf = (struct EditorSaveFile*)Param;
+				esf = (struct EditorSaveFile*)Param;
 				lua_createtable(L, 0, 3);
 				PutWStrToTable(L, "FileName", esf->FileName, -1);
 				PutWStrToTable(L, "FileEOL", esf->FileEOL, -1);
 				PutIntToTable(L, "CodePage", esf->CodePage);
 				break;
 			}
-			default:
+
 			case EE_READ:
 				lua_pushnil(L);
 				break;
+
+			default:
+				lua_settop(L, Top);
+				return ret;
 		}
+
 		if (pcall_msg(L, 3, 1) == 0) {    //+1
-			if (lua_isnumber(L,-1)) ret = lua_tointeger(L,-1);
+			if (lua_isnumber(L,-1))
+				ret = lua_tointeger(L,-1);
 			lua_pop(L,1);
 		}
 	}

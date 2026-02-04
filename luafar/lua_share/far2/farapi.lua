@@ -1776,6 +1776,7 @@ struct EditorSaveFile
 	const wchar_t *FileName;
 	const wchar_t *FileEOL;
 	UINT CodePage;
+	int EditorID; // used in EE_SAVE; not used in ECTL_SAVEFILE
 };
 
 typedef int (__stdcall *FARAPIEDITORCONTROL)(

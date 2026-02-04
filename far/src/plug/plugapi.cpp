@@ -1955,11 +1955,12 @@ static int FarEditorControlSynchedV2(int EditorID, int Command, void *Param)
 
 	if (!FrameManager->ManagerIsDown()) {
 		if (EditorID == -1) {
+			// BUGBUG: guess which editor is really current at this moment
 			auto &Plugins = CtrlObject->Plugins;
-			if (Plugins.CurEditor)
-				Ret = Plugins.CurEditor->EditorControl(Command, Param);
-			else if (Plugins.CurDialogEditor)
+			if (Plugins.CurDialogEditor)
 				Ret = Plugins.CurDialogEditor->EditorControl(Command, Param);
+			else if (Plugins.CurEditor)
+				Ret = Plugins.CurEditor->EditorControl(Command, Param);
 		}
 		else {
 			Editor *edit = Editor::GetEditorById(EditorID);

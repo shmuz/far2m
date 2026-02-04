@@ -5259,7 +5259,7 @@ int Editor::EditorControl(int Command, void *Param)
 				_ECTLLOG(SysLog(L"}"));
 				ColorItem newcol{0};
 
-				int xoff = Flags.Check(FEDITOR_DIALOGMEMOEDIT) ? 0 : X1;
+				int xoff = X1; // was: = Flags.Check(FEDITOR_DIALOGMEMOEDIT) ? 0 : X1;
 				newcol.StartPos = col->StartPos + (col->StartPos != -1 ? xoff : 0);
 				newcol.EndPos = col->EndPos + xoff;
 				newcol.Color = col->Color;

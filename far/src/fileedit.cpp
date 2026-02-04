@@ -541,8 +541,9 @@ void FileEditor::Init(const wchar_t *Name, UINT codepage, const wchar_t *Title, 
 		m_editor->SetCodePage(m_codepage);
 	}
 
-	CtrlObject->Plugins.CurEditor = this;    //&FEdit;
-	CtrlObject->Plugins.ProcessEditorEvent(EE_READ, nullptr);
+	int FEditEditorID = GetEditorID();
+	CtrlObject->Plugins.CurEditor = this;
+	CtrlObject->Plugins.ProcessEditorEvent(EE_READ, &FEditEditorID); // was: nullptr
 	bEE_READ_Sent = true;
 	ShowConsoleTitle();
 	EditKeyBar.SetOwner(this);
@@ -1781,8 +1782,8 @@ int FileEditor::SaveFile(const wchar_t *Name, bool Ask, bool bSaveAs, int TextFo
 		}
 
 		const FARString NameForPlugin(Name);
-		EditorSaveFile esf_info { NameForPlugin.CPtr(), m_editor->m_GlobalEOL, codepage };
-		CtrlObject->Plugins.ProcessEditorEvent(EE_SAVE, &esf_info);
+		EditorSaveFile esf { NameForPlugin.CPtr(), m_editor->m_GlobalEOL, codepage, GetEditorID() };
+		CtrlObject->Plugins.ProcessEditorEvent(EE_SAVE, &esf);
 
 		m_editor->m_UndoSavePos = m_editor->m_UndoPos;
 		m_editor->Flags.Clear(FEDITOR_UNDOSAVEPOSLOST);
