@@ -823,7 +823,14 @@ int PluginManager::ProcessEditorEvent(int Event,void *Param)
 	{
 		if (Event == EE_REDRAW)
 		{
-			CurEditor ? CurEditor->AutoDeleteColors() : CurDialogEditor->AutoDeleteColors();
+			switch(FrameManager->GetTopModal()->GetType()) {
+				case MODALTYPE_EDITOR:
+					CurEditor->AutoDeleteColors();
+					break;
+				case MODALTYPE_DIALOG:
+					CurDialogEditor->AutoDeleteColors();
+					break;
+			}
 		}
 
 		for (int i = 0; i < PluginsCount; i++)

@@ -399,33 +399,22 @@ void Editor::ShowEditor(bool CurLineOnly)
 		/*$ 10.08.2000 skv
 		  Don't send EE_REDRAW while macro is being executed.
 		  Send EE_REDRAW with param=2 if text was just modified.
-
 		*/
-		_SYS_EE_REDRAW(CleverSysLog Clev(L"Editor::ShowEditor()"));
-
 		if (!ScrBuf.GetLockCount()) {
-			/*$ 13.09.2000 skv
-			  EE_REDRAW 1 and 2 replaced.
-			*/
+			auto NeedRedraw = !Flags.Check(FEDITOR_DIALOGMEMOEDIT)
+						|| (CtrlObject && CtrlObject->Plugins.CurDialogEditor == this);
+
 			if (Flags.Check(FEDITOR_JUSTMODIFIED)) {
 				Flags.Clear(FEDITOR_JUSTMODIFIED);
 
-				if (!Flags.Check(FEDITOR_DIALOGMEMOEDIT)
-						|| (CtrlObject && CtrlObject->Plugins.CurDialogEditor == this)) {
-					_SYS_EE_REDRAW(SysLog(L"Call ProcessEditorEvent(EE_REDRAW,EEREDRAW_CHANGE)"));
+				if (NeedRedraw)
 					CtrlObject->Plugins.ProcessEditorEvent(EE_REDRAW, EEREDRAW_CHANGE);
-				}
-			} else {
-				if (!Flags.Check(FEDITOR_DIALOGMEMOEDIT)
-						|| (CtrlObject && CtrlObject->Plugins.CurDialogEditor == this)) {
-					_SYS_EE_REDRAW(SysLog(L"Call ProcessEditorEvent(EE_REDRAW,%ls)",
-							(CurLineOnly ? "EEREDRAW_LINE" : "EEREDRAW_ALL")));
-					CtrlObject->Plugins.ProcessEditorEvent(EE_REDRAW,
-							CurLineOnly ? EEREDRAW_LINE : EEREDRAW_ALL);
-				}
+			}
+			else {
+				if (NeedRedraw)
+					CtrlObject->Plugins.ProcessEditorEvent(EE_REDRAW, CurLineOnly ? EEREDRAW_LINE : EEREDRAW_ALL);
 			}
 		}
-		_SYS_EE_REDRAW(else SysLog(L"ScrBuf Locked !!!"));
 	}
 
 	DrawScrollbar();
@@ -2470,10 +2459,6 @@ int Editor::ProcessKey(FarKey Key)
 
 					if (!Flags.Check(FEDITOR_DIALOGMEMOEDIT)) {
 						CtrlObject->Plugins.CurEditor = m_HostFileEditor;    // this;
-						//_D(SysLog(L"%08d EE_REDRAW",__LINE__));
-						_SYS_EE_REDRAW(SysLog(L"Editor::ProcessKey[%d](!m_EdOpt.CursorBeyondEOL): "
-											  L"EE_REDRAW(EEREDRAW_ALL)",
-								__LINE__));
 						CtrlObject->Plugins.ProcessEditorEvent(EE_REDRAW, EEREDRAW_ALL);
 					}
 
@@ -2746,9 +2731,6 @@ int Editor::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 		else {
 			if (!Flags.Check(FEDITOR_DIALOGMEMOEDIT)) {
 				CtrlObject->Plugins.CurEditor = m_HostFileEditor;    // this;
-				_SYS_EE_REDRAW(
-						SysLog(L"Editor::ProcessMouse[%08d] ProcessEditorEvent(EE_REDRAW,EEREDRAW_LINE)",
-								__LINE__));
 				CtrlObject->Plugins.ProcessEditorEvent(EE_REDRAW, EEREDRAW_LINE);
 			}
 		}
