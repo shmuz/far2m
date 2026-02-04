@@ -163,7 +163,8 @@ PluginManager::PluginManager():
 	PluginsData(nullptr),
 	PluginsCount(0),
 	CurEditor(nullptr),
-	CurViewer(nullptr)
+	CurViewer(nullptr),
+	CurDialogEditor(nullptr)
 {
 }
 
@@ -818,7 +819,7 @@ int PluginManager::ProcessEditorInput(INPUT_RECORD *Rec)
 
 int PluginManager::ProcessEditorEvent(int Event,void *Param)
 {
-	if (CurEditor)
+	if (CurEditor || CurDialogEditor)
 	{
 		if (Event == EE_REDRAW)
 		{

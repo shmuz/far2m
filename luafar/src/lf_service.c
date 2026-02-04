@@ -1116,7 +1116,7 @@ static int PushBookmarks(lua_State *L, int EditorId, int count, int command)
 
 static int editor_GetBookmarks(lua_State *L)
 {
-	struct EditorInfo ei;
+	struct EditorInfo ei = { sizeof(ei) };
 	int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
 	if (!PSInfo.EditorControlV2(EditorId, ECTL_GETINFO, &ei))
 		return 0;
@@ -1236,7 +1236,7 @@ static int editor_Select(lua_State *L)
 // information directly.
 static int editor_GetSelection(lua_State *L)
 {
-	struct EditorInfo EI;
+	struct EditorInfo EI = { sizeof(EI) };
 	struct EditorGetString egs;
 	struct EditorSetPosition esp;
 	int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
@@ -1441,7 +1441,7 @@ static int editor_SaveFile(lua_State *L)
 	esf.FileEOL = opt_utf8_string(L, 3, NULL);
 	esf.CodePage = luaL_optinteger(L, 4, 0);
 	if (esf.CodePage == 0) {
-		struct EditorInfo ei;
+		struct EditorInfo ei = { sizeof(ei) };
 		if (PSInfo.EditorControlV2(EditorId, ECTL_GETINFO, &ei))
 			esf.CodePage = ei.CodePage;
 	}

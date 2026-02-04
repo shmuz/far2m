@@ -1236,7 +1236,7 @@ int LF_ProcessEditorEvent (lua_State* L, int Event, void *Param)
 	if (!(GetPluginData(L)->Flags & PDF_PROCESSINGERROR) &&
 			GetExportFunction(L, "ProcessEditorEvent"))     //+1: Func
 	{
-		struct EditorInfo ei;
+		struct EditorInfo ei = { sizeof(ei) };
 		if (PSInfo.EditorControlV2(CURRENT_EDITOR, ECTL_GETINFO, &ei))
 			lua_pushinteger(L, ei.EditorID);
 		else

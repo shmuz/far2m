@@ -1954,10 +1954,13 @@ static int FarEditorControlSynchedV2(int EditorID, int Command, void *Param)
 	int Ret = 0;
 
 	if (!FrameManager->ManagerIsDown()) {
-		FileEditor *CurEditor = CtrlObject->Plugins.CurEditor;
-
-		if (CurEditor && EditorID == -1)
-			Ret = CurEditor->EditorControl(Command, Param);
+		if (EditorID == -1) {
+			auto &Plugins = CtrlObject->Plugins;
+			if (Plugins.CurEditor)
+				Ret = Plugins.CurEditor->EditorControl(Command, Param);
+			else if (Plugins.CurDialogEditor)
+				Ret = Plugins.CurDialogEditor->EditorControl(Command, Param);
+		}
 		else {
 			Editor *edit = Editor::GetEditorById(EditorID);
 			if (edit) {
