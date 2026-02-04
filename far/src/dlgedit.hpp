@@ -171,6 +171,7 @@ public:
 	}
 
 	bool HistoryGetSimilar(FARString &strStr, int LastCmdPartLength, bool bAppend = false);
+	int GetEditorID() const;
 
 private:
 	Dialog *m_Dialog;

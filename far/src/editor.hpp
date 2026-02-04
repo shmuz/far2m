@@ -228,6 +228,8 @@ private:
 	bool m_showCursor;
 	FARString m_virtualFileName;
 
+	static std::map<int, Editor*> IdMap;
+
 private:
 	enum NextType {
 		NEXT_NONE, NEXT_FORWARD, NEXT_REVERSE
@@ -306,6 +308,7 @@ public:
 
 public:
 	int GetEditorID() const { return m_EditorID; }
+	static Editor* GetEditorById(int Id);
 	void SetVirtualFileName(const wchar_t *name) { m_virtualFileName = name; }
 
 	void SetCacheParams(EditorCacheParams *pp);

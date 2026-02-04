@@ -1951,36 +1951,23 @@ void WINAPI FarTextV2(int X, int Y, const ColorDialogData *Data, const wchar_t *
 
 static int FarEditorControlSynchedV2(int EditorID, int Command, void *Param)
 {
-	if (FrameManager->ManagerIsDown())
-		return 0;
+	int Ret = 0;
 
-	FileEditor *Editor = nullptr;
-	FileEditor *CurEditor = CtrlObject->Plugins.CurEditor;
+	if (!FrameManager->ManagerIsDown()) {
+		FileEditor *CurEditor = CtrlObject->Plugins.CurEditor;
 
-	if (EditorID == -1 || (CurEditor && CurEditor->GetEditorID() == EditorID)) {
-		Editor = CurEditor;
-	} else {
-		int count = FrameManager->GetFrameCount();
-		for (int i = 0; i < count; i++) {
-			auto fileedit = dynamic_cast<FileEditor *>(FrameManager->GetFrame(i));
-			if (fileedit && (fileedit->GetEditorID() == EditorID)) {
-				Editor = fileedit;
-				break;
-			}
-		}
-		if (!Editor) {
-			count = FrameManager->GetModalCount();
-			for (int i = 0; i < count; i++) {
-				auto fileedit = dynamic_cast<FileEditor *>(FrameManager->GetModal(i));
-				if (fileedit && (fileedit->GetEditorID() == EditorID)) {
-					Editor = fileedit;
-					break;
-				}
+		if (CurEditor && EditorID == -1)
+			Ret = CurEditor->EditorControl(Command, Param);
+		else {
+			Editor *edit = Editor::GetEditorById(EditorID);
+			if (edit) {
+				auto f_edit = dynamic_cast<FileEditor*>(edit->GetOwner());
+				Ret = f_edit ? f_edit->EditorControl(Command, Param) : edit->EditorControl(Command, Param);
 			}
 		}
 	}
 
-	return Editor ? Editor->EditorControl(Command, Param) : 0;
+	return Ret;
 }
 
 int WINAPI FarEditorControl(int Command, void *Param)

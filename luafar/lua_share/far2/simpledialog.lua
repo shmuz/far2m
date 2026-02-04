@@ -212,6 +212,7 @@ local TypeMap = {
     edit           =  F.DI_EDIT;
     fixedit        =  F.DI_FIXEDIT;
     listbox        =  F.DI_LISTBOX;
+    memo           =  F.DI_MEMOEDIT;
     pswedit        =  F.DI_PSWEDIT;
     rbutt          =  F.DI_RADIOBUTTON;
     sbox           =  F.DI_SINGLEBOX;
@@ -380,6 +381,9 @@ function mod:Compile()
       end
 
     elseif tp == F.DI_TEXT then
+      outData[i] = MkItem()
+
+    elseif tp == F.DI_MEMOEDIT then
       outData[i] = MkItem()
 
     elseif tp == F.DI_VTEXT then

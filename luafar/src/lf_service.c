@@ -2958,6 +2958,7 @@ static int Is_DM_DialogItem(int Msg)
 		case DM_GETEDITPOSITION:
 		case DM_GETITEMDATA:
 		case DM_GETITEMPOSITION:
+		case DM_GETMEMOEDITID:
 		case DM_GETSELECTION:
 		case DM_GETTEXT:
 		case DM_GETTRUECOLOR:  //same as DM_GETCOLOR
@@ -3584,6 +3585,16 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 		case DM_SETREADONLY:
 			Param2 = lua_isnumber(L, pos4) ? lua_tointeger(L, pos4) : lua_toboolean(L, pos4);
 			break;
+
+		case DM_GETMEMOEDITID:
+		{
+			int MemoId;
+			if (SendDlgMessage(hDlg, Msg, Param1, &MemoId))
+				lua_pushinteger(L, MemoId);
+			else
+				lua_pushboolean(L, 0);
+			return 1;
+		}
 	}
 	res = PSInfo.SendDlgMessage (hDlg, Msg, Param1, Param2);
 	lua_pushinteger (L, res + res_incr);
@@ -3618,6 +3629,7 @@ DlgMethod( GetEditPosition,        DM_GETEDITPOSITION)
 DlgMethod( GetFocus,               DM_GETFOCUS)
 DlgMethod( GetItemData,            DM_GETITEMDATA)
 DlgMethod( GetItemPosition,        DM_GETITEMPOSITION)
+DlgMethod( GetMemoEditId,          DM_GETMEMOEDITID)
 DlgMethod( GetSelection,           DM_GETSELECTION)
 DlgMethod( GetText,                DM_GETTEXT)
 DlgMethod( GetTrueColor,           DM_GETTRUECOLOR)
@@ -5811,6 +5823,7 @@ static const luaL_Reg dialog_methods[] =
 	PAIR( dlg, GetFocus),
 	PAIR( dlg, GetItemData),
 	PAIR( dlg, GetItemPosition),
+	PAIR( dlg, GetMemoEditId),
 	PAIR( dlg, GetSelection),
 	PAIR( dlg, GetText),
 	PAIR( dlg, GetTrueColor),

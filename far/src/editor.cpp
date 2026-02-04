@@ -57,6 +57,7 @@ size_t EditorUndoData::UndoDataSize = 0;
 static bool GlobalReplaceMode;
 
 static int EditorID = 0;
+std::map<int, Editor*> Editor::IdMap;
 
 // EditorUndoData
 enum
@@ -106,6 +107,7 @@ Editor::Editor(ScreenObject *Owner, bool DialogUsed)
 
 	m_EdOpt = Opt.EdOpt;
 	SetOwner(Owner);
+	IdMap[m_EditorID] = this;
 
 	if (DialogUsed)
 		Flags.Set(FEDITOR_DIALOGMEMOEDIT);
@@ -132,6 +134,7 @@ Editor::~Editor()
 	//_SVS(SysLog(L"[%p] Editor::~Editor()",this));
 	FreeAllocatedData();
 	KeepInitParameters();
+	IdMap.erase(m_EditorID);
 	_KEYMACRO(SysLog(-1));
 	_KEYMACRO(SysLog(L"Editor::~Editor()"));
 }
@@ -6439,4 +6442,10 @@ void Editor::TurnOffMarkingBlock()
 bool Editor::IsScrollbarShown() const
 {
 	return m_EdOpt.ShowScrollBar && ScrollBarRequired(ObjHeight, m_NumLastLine);
+}
+
+Editor* Editor::GetEditorById(int Id)
+{
+	auto It = IdMap.find(Id);
+	return It == IdMap.end() ? nullptr : It->second;
 }

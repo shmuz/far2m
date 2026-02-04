@@ -153,7 +153,7 @@ struct DialogItemEx
 	DialogItemEx() {}
 	DialogItemEx(const DialogItemEx &Other) { Copy(Other); }
 
-	const DialogItemEx &operator=(const DialogItemEx &Other)
+	DialogItemEx &operator=(const DialogItemEx &Other)
 	{
 		Copy(Other);
 		return *this;

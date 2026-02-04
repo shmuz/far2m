@@ -5190,11 +5190,6 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 		return Dlg->CallDlgProc(Msg, Param1, Param2);
 	}
 
-	/*****************************************************************/
-	DialogItemEx *CurItem = nullptr;
-	int Type = 0;
-	size_t Len = 0;
-
 	/*
 		предварительно проверим...
 		$ 09.12.2001 DJ
@@ -5203,9 +5198,9 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 	if ((unsigned)Param1 >= Dlg->ItemCount || !Dlg->Item)
 		return 0;
 
-	//	CurItem=&Dlg->Item[Param1];
-	CurItem = Dlg->Item[Param1];
-	Type = CurItem->Type;
+	size_t Len = 0;
+	DialogItemEx *CurItem = Dlg->Item[Param1];
+	int Type = CurItem->Type;
 	const wchar_t *Ptr = CurItem->strData;
 
 	if (FarIsEdit(Type) && CurItem->ObjPtr)
@@ -6472,6 +6467,15 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 
 			break;
 		}
+
+		case DM_GETMEMOEDITID:
+			if (Type == DI_MEMOEDIT && Param2) {
+				DlgEdit *DialogEdit = (DlgEdit*)CurItem->ObjPtr;
+				*reinterpret_cast<int*>(Param2) = DialogEdit->GetEditorID();
+				return TRUE;
+			}
+			return FALSE;
+
 	}
 
 	// Все, что сами не отрабатываем - посылаем на обработку обработчику.
