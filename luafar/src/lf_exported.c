@@ -1229,45 +1229,49 @@ int LF_ProcessEditorInput (lua_State* L, const INPUT_RECORD *Rec)
 	return ret;
 }
 
+static int GetEditorID(int Event, void *Param)
+{
+	switch (Event) {
+		case EE_READ:     // far2m API
+		case EE_CLOSE:    // far2 official API
+			return *(int*)Param;
+
+		case EE_SAVE: {   // far2m API
+			struct EditorSaveFile *esf = (struct EditorSaveFile*)Param;
+			return esf->EditorID;
+		}
+
+		default: {        // no API
+			struct EditorInfo ei = { sizeof(ei) };
+			if (PSInfo.EditorControlV2(CURRENT_EDITOR, ECTL_GETINFO, &ei))
+				return ei.EditorID;
+			else
+				return CURRENT_EDITOR;
+		}
+	}
+}
+
 int LF_ProcessEditorEvent (lua_State* L, int Event, void *Param)
 {
 	int ret = 0;
+	int Top = lua_gettop(L);
 
 	if (!(GetPluginData(L)->Flags & PDF_PROCESSINGERROR) &&
 			GetExportFunction(L, "ProcessEditorEvent"))     //+1: Func
 	{
-		struct EditorSaveFile *esf;
-		int Top = lua_gettop(L);
-		int EditorID = CURRENT_EDITOR;
+		int ID = GetEditorID(Event, Param);
+		lua_pushinteger(L, ID);     //+2
+		lua_pushinteger(L, Event);  //+3;
 
-		if (Event == EE_SAVE) {
-			esf = (struct EditorSaveFile*)Param;
-			EditorID = esf->EditorID;
-		}
-		else if (Event == EE_REDRAW) {
-			struct EditorInfo ei = { sizeof(ei) };
-			if (PSInfo.EditorControlV2(CURRENT_EDITOR, ECTL_GETINFO, &ei))
-				EditorID = ei.EditorID;
-		}
-		else if (Param != NULL)
-			EditorID = *(int*)Param;
-
-		lua_pushinteger(L, EditorID); //+2
-		lua_pushinteger(L, Event);    //+3;
-
+		// 3-rd parameter
 		switch(Event) {
+			case EE_READ:
 			case EE_CLOSE:
-			case EE_GOTFOCUS:
-			case EE_KILLFOCUS:
-				lua_pushinteger(L, *(int*)Param);
+				lua_pushinteger(L, 0);  //dummy
 				break;
 
-			case EE_REDRAW:
-				lua_pushinteger(L, (INT_PTR)Param);
-				break;
-
-			case EE_SAVE: {
-				esf = (struct EditorSaveFile*)Param;
+			case EE_SAVE: {  // far2m API
+				struct EditorSaveFile *esf = (struct EditorSaveFile*)Param;
 				lua_createtable(L, 0, 3);
 				PutWStrToTable(L, "FileName", esf->FileName, -1);
 				PutWStrToTable(L, "FileEOL", esf->FileEOL, -1);
@@ -1275,13 +1279,18 @@ int LF_ProcessEditorEvent (lua_State* L, int Event, void *Param)
 				break;
 			}
 
-			case EE_READ:
-				lua_pushnil(L);
+			case EE_GOTFOCUS:  // far2 official API
+			case EE_KILLFOCUS: // ditto
+				lua_pushinteger(L, *(int*)Param);
 				break;
 
-			default:
+			case EE_REDRAW: // far2 official API
+				lua_pushinteger(L, (INT_PTR)Param);
+				break;
+
+			default: // ignore an unknown event type
 				lua_settop(L, Top);
-				return ret;
+				return 0;
 		}
 
 		if (pcall_msg(L, 3, 1) == 0) {    //+1
