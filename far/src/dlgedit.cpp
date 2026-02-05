@@ -148,7 +148,6 @@ DlgEdit::~DlgEdit()
 	if (lineEdit)
 		delete lineEdit;
 
-
 	if (multiEdit) {
 		if (m_dialogEditorOpened && CtrlObject) {
 			DialogEditorPluginScope scope(multiEdit);
@@ -157,12 +156,10 @@ DlgEdit::~DlgEdit()
 		}
 		delete multiEdit;
 	}
-
 }
 
 int DlgEdit::ProcessKey(FarKey Key)
 {
-
 	if (Type == DLGEDIT_MULTILINE) {
 		DialogEditorPluginScope scope(multiEdit);
 		return multiEdit->ProcessKey(Key);
@@ -172,7 +169,6 @@ int DlgEdit::ProcessKey(FarKey Key)
 
 int DlgEdit::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 {
-
 	if (Type == DLGEDIT_MULTILINE) {
 		DialogEditorPluginScope scope(multiEdit);
 		return multiEdit->ProcessMouse(MouseEvent);
@@ -182,7 +178,6 @@ int DlgEdit::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 
 void DlgEdit::DisplayObject()
 {
-
 	if (Type == DLGEDIT_MULTILINE) {
 		if (m_Dialog && m_Index < m_Dialog->ItemCount) {
 			DialogItemEx *CurItem = m_Dialog->Item[m_Index];
@@ -199,7 +194,6 @@ void DlgEdit::DisplayObject()
 
 void DlgEdit::SetPosition(int x1, int y1, int x2, int y2)
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		multiEdit->SetPosition(x1, y1, x2, y2);
 	else
@@ -208,7 +202,6 @@ void DlgEdit::SetPosition(int x1, int y1, int x2, int y2)
 
 void DlgEdit::Show()
 {
-
 	if (Type == DLGEDIT_MULTILINE) {
 		if (m_Dialog && m_Index < m_Dialog->ItemCount) {
 			DialogItemEx *CurItem = m_Dialog->Item[m_Index];
@@ -225,7 +218,6 @@ void DlgEdit::Show()
 
 void DlgEdit::GetPosition(int& x1, int& y1, int& x2, int& y2)
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		multiEdit->GetPosition(x1, y1, x2, y2);
 	else
@@ -234,7 +226,6 @@ void DlgEdit::GetPosition(int& x1, int& y1, int& x2, int& y2)
 
 void DlgEdit::SetDialogParent(DWORD Sets)
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		multiEdit->SetDialogParent(Sets);
 	else
@@ -269,7 +260,6 @@ void DlgEdit::SetPasswordMode(int Mode)
 
 void DlgEdit::SetOvertypeMode(bool Mode)
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		multiEdit->SetOvertypeMode(Mode);
 	else
@@ -278,7 +268,6 @@ void DlgEdit::SetOvertypeMode(bool Mode)
 
 bool DlgEdit::GetOvertypeMode()
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		return multiEdit->GetOvertypeMode();
 	else
@@ -301,7 +290,6 @@ const wchar_t *DlgEdit::GetInputMask()
 
 void DlgEdit::SetEditBeyondEnd(int Mode)
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		multiEdit->SetEditBeyondEnd(Mode);
 	else
@@ -310,7 +298,6 @@ void DlgEdit::SetEditBeyondEnd(int Mode)
 
 void DlgEdit::SetClearFlag(int Flag)
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		multiEdit->SetClearFlag(Flag);
 	else
@@ -319,7 +306,6 @@ void DlgEdit::SetClearFlag(int Flag)
 
 int DlgEdit::GetClearFlag()
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		return multiEdit->GetClearFlag();
 	else
@@ -328,7 +314,6 @@ int DlgEdit::GetClearFlag()
 
 const wchar_t *DlgEdit::GetStringAddr()
 {
-
 	if (Type == DLGEDIT_MULTILINE) {
 		return nullptr;
 	} else
@@ -337,7 +322,6 @@ const wchar_t *DlgEdit::GetStringAddr()
 
 void DlgEdit::SetHiString(const wchar_t *Str)
 {
-
 	if (Type == DLGEDIT_MULTILINE) {
 		// Not supported for multiline editor control.
 	} else
@@ -346,7 +330,6 @@ void DlgEdit::SetHiString(const wchar_t *Str)
 
 void DlgEdit::SetString(const wchar_t *Str)
 {
-
 	if (Type == DLGEDIT_MULTILINE) {
 		if (multiEdit)
 			multiEdit->SetRawData(Str, -1, 0);
@@ -365,7 +348,6 @@ void DlgEdit::InsertString(const wchar_t *Str)
 
 void DlgEdit::GetString(wchar_t *Str, int MaxSize, int Row)
 {
-
 	if (Type == DLGEDIT_MULTILINE) {
 		if (!multiEdit || !Str || MaxSize <= 0)
 			return;
@@ -394,7 +376,6 @@ void DlgEdit::GetString(wchar_t *Str, int MaxSize, int Row)
 
 void DlgEdit::GetString(FARString &strStr, int Row)
 {
-
 	if (Type == DLGEDIT_MULTILINE) {
 		if (!multiEdit) {
 			strStr.Clear();
@@ -423,7 +404,6 @@ void DlgEdit::GetString(FARString &strStr, int Row)
 
 void DlgEdit::SetCurPos(int NewCol, int NewRow) // Row==-1 - current line
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		multiEdit->SetCurPos(NewCol, NewRow);
 	else
@@ -432,7 +412,6 @@ void DlgEdit::SetCurPos(int NewCol, int NewRow) // Row==-1 - current line
 
 int DlgEdit::GetCurPos()
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		return multiEdit->GetCurPos(); // GetCurCol???
 	else
@@ -441,7 +420,6 @@ int DlgEdit::GetCurPos()
 
 int DlgEdit::GetCurRow()
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		return multiEdit->GetCurRow();
 	else
@@ -450,7 +428,6 @@ int DlgEdit::GetCurRow()
 
 int DlgEdit::GetCellCurPos()
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		return multiEdit->GetCurPos(); // GetCurCol???
 	else
@@ -459,7 +436,6 @@ int DlgEdit::GetCellCurPos()
 
 void DlgEdit::SetCellCurPos(int NewPos)
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		multiEdit->SetCurPos(NewPos,multiEdit->GetCurRow()); //???
 	else
@@ -468,7 +444,6 @@ void DlgEdit::SetCellCurPos(int NewPos)
 
 void DlgEdit::SetPersistentBlocks(int Mode)
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		multiEdit->SetPersistentBlocks(Mode);
 	else
@@ -477,7 +452,6 @@ void DlgEdit::SetPersistentBlocks(int Mode)
 
 int DlgEdit::GetPersistentBlocks()
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		return multiEdit->GetPersistentBlocks();
 	else
@@ -486,7 +460,6 @@ int DlgEdit::GetPersistentBlocks()
 
 void DlgEdit::SetDelRemovesBlocks(int Mode)
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		multiEdit->SetDelRemovesBlocks(Mode);
 	else
@@ -495,7 +468,6 @@ void DlgEdit::SetDelRemovesBlocks(int Mode)
 
 int DlgEdit::GetDelRemovesBlocks()
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		return multiEdit->GetDelRemovesBlocks();
 	else
@@ -504,7 +476,6 @@ int DlgEdit::GetDelRemovesBlocks()
 
 void DlgEdit::SetObjectColor(uint64_t Color, uint64_t SelColor, uint64_t ColorUnChanged)
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		multiEdit->SetObjectColor(Color, SelColor, ColorUnChanged);
 	else
@@ -513,7 +484,6 @@ void DlgEdit::SetObjectColor(uint64_t Color, uint64_t SelColor, uint64_t ColorUn
 
 long DlgEdit::GetObjectColor()
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		return 0; // multiEdit->GetObjectColor();
 	else
@@ -522,7 +492,6 @@ long DlgEdit::GetObjectColor()
 
 uint64_t DlgEdit::GetObjectColorUnChanged()
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		return 0; // multiEdit->GetObjectColorUnChanged();
 	else
@@ -531,7 +500,6 @@ uint64_t DlgEdit::GetObjectColorUnChanged()
 
 void DlgEdit::FastShow()
 {
-
 	if (Type == DLGEDIT_MULTILINE) {
 		if (m_Dialog && m_Index < m_Dialog->ItemCount) {
 			DialogItemEx *CurItem = m_Dialog->Item[m_Index];
@@ -548,7 +516,6 @@ void DlgEdit::FastShow()
 
 int DlgEdit::GetLeftPos()
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		return 0; // multiEdit->GetLeftPos();
 	else
@@ -557,7 +524,6 @@ int DlgEdit::GetLeftPos()
 
 void DlgEdit::SetLeftPos(int NewPos, int Row) // Row==-1 - current line
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		;//multiEdit->SetLeftPos(NewPos,Row);
 	else
@@ -566,7 +532,6 @@ void DlgEdit::SetLeftPos(int NewPos, int Row) // Row==-1 - current line
 
 void DlgEdit::DeleteBlock()
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		multiEdit->DeleteBlock();
 	else
@@ -575,7 +540,6 @@ void DlgEdit::DeleteBlock()
 
 int DlgEdit::GetLength()
 {
-
 	if (Type == DLGEDIT_MULTILINE) {
 		if (!multiEdit)
 			return 0;
@@ -593,7 +557,6 @@ int DlgEdit::GetLength()
 
 void DlgEdit::Select(int Start, int End)
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		;//multiEdit->Select(Start,End);
 	else
@@ -602,7 +565,6 @@ void DlgEdit::Select(int Start, int End)
 
 void DlgEdit::GetSelection(int &Start, int &End)
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		;//multiEdit->GetSelection();
 	else
@@ -611,7 +573,6 @@ void DlgEdit::GetSelection(int &Start, int &End)
 
 void DlgEdit::Xlat(bool All)
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		multiEdit->Xlat();
 	else
@@ -620,7 +581,6 @@ void DlgEdit::Xlat(bool All)
 
 int DlgEdit::GetStrSize(int Row)
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		return 0;//multiEdit->
 	else
@@ -629,7 +589,6 @@ int DlgEdit::GetStrSize(int Row)
 
 void DlgEdit::SetCursorType(bool Visible, DWORD Size)
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		multiEdit->SetCursorType(Visible, Size);
 	else
@@ -638,7 +597,6 @@ void DlgEdit::SetCursorType(bool Visible, DWORD Size)
 
 void DlgEdit::GetCursorType(bool &Visible, DWORD &Size)
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		multiEdit->GetCursorType(Visible, Size);
 	else
@@ -655,7 +613,6 @@ void DlgEdit::ToggleShowWhiteSpace()
 
 bool DlgEdit::GetReadOnly()
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		return multiEdit->GetReadOnly();
 	else
@@ -664,7 +621,6 @@ bool DlgEdit::GetReadOnly()
 
 void DlgEdit::SetReadOnly(bool NewReadOnly)
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		multiEdit->SetReadOnly(NewReadOnly);
 	else
@@ -673,7 +629,6 @@ void DlgEdit::SetReadOnly(bool NewReadOnly)
 
 BitFlags &DlgEdit::Flags()
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		return multiEdit->Flags;
 	else
@@ -682,7 +637,6 @@ BitFlags &DlgEdit::Flags()
 
 void DlgEdit::Hide()
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		multiEdit->Hide();
 	else
@@ -691,7 +645,6 @@ void DlgEdit::Hide()
 
 void DlgEdit::Hide0()
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		multiEdit->Hide0();
 	else
@@ -700,7 +653,6 @@ void DlgEdit::Hide0()
 
 void DlgEdit::ShowConsoleTitle()
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		multiEdit->ShowConsoleTitle();
 	else
@@ -709,7 +661,6 @@ void DlgEdit::ShowConsoleTitle()
 
 void DlgEdit::SetScreenPosition()
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		multiEdit->SetScreenPosition();
 	else
@@ -718,7 +669,6 @@ void DlgEdit::SetScreenPosition()
 
 void DlgEdit::ResizeConsole()
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		multiEdit->ResizeConsole();
 	else
@@ -727,7 +677,6 @@ void DlgEdit::ResizeConsole()
 
 int64_t DlgEdit::VMProcess(int OpCode, void *vParam, int64_t iParam)
 {
-
 	if (Type == DLGEDIT_MULTILINE)
 		return multiEdit->VMProcess(OpCode, vParam, iParam);
 	else
