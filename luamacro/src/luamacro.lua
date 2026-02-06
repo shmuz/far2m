@@ -562,8 +562,10 @@ end
 
 -- TODO: when called from a module's panel, call that module's Configure()
 function export.Configure (guid)
-  local items = utils.GetMenuItems()
-  if items[guid] then items[guid].action() end
+  local item = utils.GetMenuItems()[guid]
+  if item and item.flags.config then
+    item.action()
+  end
 end
 
 local function InitPackagePaths(mainpath)
