@@ -1385,6 +1385,7 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 
 			if (NeedUpdateItems)
 			{
+				PluginList.Hide(); //far2m issue #91
 				PluginList.ClearDone();
 				PluginList.DeleteItems();
 				PluginList.SetPosition(-1,-1,0,0);
