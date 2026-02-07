@@ -2618,6 +2618,8 @@ int64_t Dialog::VMProcess(int OpCode, void *vParam, int64_t iParam)
 					return 255;								// Элемент управления, определяемый программистом.
 				case DI_VTEXT:
 					return 1;								// Вертикальная текстовая строка.
+				case DI_MEMOEDIT:
+					return 12;
 			}
 
 			return -1;
