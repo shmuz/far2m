@@ -197,6 +197,7 @@ struct PanelMenuItem
 
 static void AddPluginItems(VMenu &ChDisk, int Pos)
 {
+	ChDisk.Hide(); //far2m issue #91
 	std::vector<ChDiskPluginItem> MPItems;
 	// Список дополнительных хоткеев, для случая, когда плагинов, добавляющих пункт в меню, больше 9.
 
