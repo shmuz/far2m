@@ -414,7 +414,8 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 				*/
 				if (wi->Pos == -1) {
 					f = FrameManager->GetTopModal();
-					f = (f && f->IsVisible()) ?  f : FrameManager->GetCurrentFrame();
+					if (f && dynamic_cast<VMenu*>(f) && !f->IsVisible())
+						f = FrameManager->GetCurrentFrame();
 				}
 				else
 					f = FrameManager->GetFrame(wi->Pos);
