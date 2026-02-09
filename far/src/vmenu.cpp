@@ -128,16 +128,12 @@ VMenu::~VMenu()
 	if (!CheckFlags(VMENU_LISTBOX) && CtrlObject)
 		CtrlObject->Macro.SetArea(PrevMacroArea);
 
-	bool WasVisible = Flags.Check(FSCROBJ_VISIBLE);
 	Hide();
 	DeleteItems();
 	SetCursorType(PrevCursorVisible, PrevCursorSize);
 
 	if (!CheckFlags(VMENU_LISTBOX)) {
 		FrameManager->UnmodalizeFrame(this);
-		if (WasVisible) {
-			FrameManager->RefreshFrame();
-		}
 	}
 }
 
