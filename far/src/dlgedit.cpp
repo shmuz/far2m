@@ -67,8 +67,7 @@ void NotifyDialogEditorFocus(Editor *editor, bool &opened, bool &has_focus, bool
 
 	DialogEditorPluginScope scope(editor);
 	if (!opened) {
-		int Id = editor->GetEditorID();
-		CtrlObject->Plugins.ProcessEditorEvent(EE_READ, &Id, editor);
+		CtrlObject->Plugins.ProcessEditorEvent(EE_READ, nullptr, editor);
 		opened = true;
 	}
 

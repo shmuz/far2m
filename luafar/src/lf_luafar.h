@@ -63,7 +63,7 @@ DLLFUNC int    LF_MakeDirectory (lua_State* L, HANDLE hPlugin,const wchar_t **Na
 DLLFUNC int    LF_MayExitFAR (lua_State* L);
 DLLFUNC HANDLE LF_Open (lua_State* L, int OpenFrom,INT_PTR Item);
 DLLFUNC int    LF_ProcessDialogEvent (lua_State* L, int Event,void *Param);
-DLLFUNC int    LF_ProcessEditorEvent (lua_State* L, int Event,void *Param);
+DLLFUNC int    LF_ProcessEditorEvent (lua_State* L, const struct ProcessEditorEventInfo *Info);
 DLLFUNC int    LF_ProcessEditorInput (lua_State* L, const INPUT_RECORD *Rec);
 DLLFUNC int    LF_ProcessPanelEvent (lua_State* L, HANDLE hPlugin,int Event,void *Param);
 DLLFUNC int    LF_ProcessHostFile (lua_State* L, HANDLE hPlugin,struct PluginPanelItem *PanelItem,int ItemsNumber,int OpMode);

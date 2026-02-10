@@ -1229,29 +1229,7 @@ int LF_ProcessEditorInput (lua_State* L, const INPUT_RECORD *Rec)
 	return ret;
 }
 
-static int GetEditorID(int Event, void *Param)
-{
-	switch (Event) {
-		case EE_READ:     // far2m API
-		case EE_CLOSE:    // far2 official API
-			return *(int*)Param;
-
-		case EE_SAVE: {   // far2m API
-			struct EditorSaveFile *esf = (struct EditorSaveFile*)Param;
-			return esf->EditorID;
-		}
-
-		default: {        // no API
-			struct EditorInfo ei = { sizeof(ei) };
-			if (PSInfo.EditorControlV2(CURRENT_EDITOR, ECTL_GETINFO, &ei))
-				return ei.EditorID;
-			else
-				return CURRENT_EDITOR;
-		}
-	}
-}
-
-int LF_ProcessEditorEvent (lua_State* L, int Event, void *Param)
+int LF_ProcessEditorEvent (lua_State* L, const struct ProcessEditorEventInfo *Info)
 {
 	int ret = 0;
 	int Top = lua_gettop(L);
@@ -1259,19 +1237,18 @@ int LF_ProcessEditorEvent (lua_State* L, int Event, void *Param)
 	if (!(GetPluginData(L)->Flags & PDF_PROCESSINGERROR) &&
 			GetExportFunction(L, "ProcessEditorEvent"))     //+1: Func
 	{
-		int ID = GetEditorID(Event, Param);
-		lua_pushinteger(L, ID);     //+2
-		lua_pushinteger(L, Event);  //+3;
+		lua_pushinteger(L, Info->EditorID);  //+2
+		lua_pushinteger(L, Info->Event);     //+3;
 
 		// 3-rd parameter
-		switch(Event) {
+		switch (Info->Event) {
 			case EE_READ:
 			case EE_CLOSE:
 				lua_pushinteger(L, 0);  //dummy
 				break;
 
-			case EE_SAVE: {  // far2m API
-				struct EditorSaveFile *esf = (struct EditorSaveFile*)Param;
+			case EE_SAVE: {
+				struct EditorSaveFile *esf = (struct EditorSaveFile*)Info->Param;
 				lua_createtable(L, 0, 3);
 				PutWStrToTable(L, "FileName", esf->FileName, -1);
 				PutWStrToTable(L, "FileEOL", esf->FileEOL, -1);
@@ -1279,13 +1256,13 @@ int LF_ProcessEditorEvent (lua_State* L, int Event, void *Param)
 				break;
 			}
 
-			case EE_GOTFOCUS:  // far2 official API
-			case EE_KILLFOCUS: // ditto
-				lua_pushinteger(L, *(int*)Param);
+			case EE_GOTFOCUS:
+			case EE_KILLFOCUS:
+				lua_pushinteger(L, *(int*)Info->Param);
 				break;
 
-			case EE_REDRAW: // far2 official API
-				lua_pushinteger(L, (INT_PTR)Param);
+			case EE_REDRAW:
+				lua_pushinteger(L, (INT_PTR)Info->Param);
 				break;
 
 			default: // ignore an unknown event type

@@ -253,9 +253,9 @@ LUAPLUG int ProcessEditorInputW(const INPUT_RECORD *Rec)
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_PROCESSEDITOREVENT) || defined(EXPORT_ALL)
-LUAPLUG int ProcessEditorEventW(int Event, void *Param)
+LUAPLUG int ProcessEditorEventV3W(const struct ProcessEditorEventInfo *Info)
 {
-	return LS ? LF_ProcessEditorEvent(LS, Event, Param) : 0;
+	return LS ? LF_ProcessEditorEvent(LS, Info) : 0;
 }
 #endif
 //---------------------------------------------------------------------------
