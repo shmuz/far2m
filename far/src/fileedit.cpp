@@ -341,7 +341,7 @@ FileEditor::~FileEditor()
 		int FEditEditorID = m_editor->m_EditorID;
 		FileEditor *save = CtrlObject->Plugins.CurEditor;
 		CtrlObject->Plugins.CurEditor = this;
-		CtrlObject->Plugins.ProcessEditorEvent(EE_CLOSE, &FEditEditorID);
+		CtrlObject->Plugins.ProcessEditorEvent(EE_CLOSE, &FEditEditorID, m_editor);
 		CtrlObject->Plugins.CurEditor = save;
 	}
 
@@ -543,7 +543,7 @@ void FileEditor::Init(const wchar_t *Name, UINT codepage, const wchar_t *Title, 
 
 	int FEditEditorID = GetEditorID();
 	CtrlObject->Plugins.CurEditor = this;
-	CtrlObject->Plugins.ProcessEditorEvent(EE_READ, &FEditEditorID); // was: nullptr
+	CtrlObject->Plugins.ProcessEditorEvent(EE_READ, &FEditEditorID, m_editor);
 	bEE_READ_Sent = true;
 	ShowConsoleTitle();
 	EditKeyBar.SetOwner(this);
@@ -638,7 +638,7 @@ void FileEditor::DisplayObject()
 		if (m_editor->Flags.Check(FEDITOR_ISRESIZEDCONSOLE)) {
 			m_editor->Flags.Clear(FEDITOR_ISRESIZEDCONSOLE);
 			CtrlObject->Plugins.CurEditor = this;
-			CtrlObject->Plugins.ProcessEditorEvent(EE_REDRAW, EEREDRAW_CHANGE);    // EEREDRAW_ALL);
+			CtrlObject->Plugins.ProcessEditorEvent(EE_REDRAW, EEREDRAW_CHANGE, m_editor); // EEREDRAW_ALL);
 		}
 
 		m_editor->Show();
@@ -1783,7 +1783,7 @@ int FileEditor::SaveFile(const wchar_t *Name, bool Ask, bool bSaveAs, int TextFo
 
 		const FARString NameForPlugin(Name);
 		EditorSaveFile esf { NameForPlugin.CPtr(), m_editor->m_GlobalEOL, codepage, GetEditorID() };
-		CtrlObject->Plugins.ProcessEditorEvent(EE_SAVE, &esf);
+		CtrlObject->Plugins.ProcessEditorEvent(EE_SAVE, &esf, m_editor);
 
 		m_editor->m_UndoSavePos = m_editor->m_UndoPos;
 		m_editor->Flags.Clear(FEDITOR_UNDOSAVEPOSLOST);
@@ -2191,7 +2191,7 @@ void FileEditor::OnChangeFocus(int focus)
 	Frame::OnChangeFocus(focus);
 	CtrlObject->Plugins.CurEditor = this;
 	int FEditEditorID = m_editor->m_EditorID;
-	CtrlObject->Plugins.ProcessEditorEvent(focus ? EE_GOTFOCUS : EE_KILLFOCUS, &FEditEditorID);
+	CtrlObject->Plugins.ProcessEditorEvent(focus ? EE_GOTFOCUS : EE_KILLFOCUS, &FEditEditorID, m_editor);
 }
 
 int FileEditor::EditorControl(int Command, void *Param)

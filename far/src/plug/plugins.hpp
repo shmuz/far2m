@@ -236,7 +236,7 @@ class PluginManager
 		PHPTR OpenPlugin(Plugin *pPlugin, int OpenFrom, const void *Item);
 		int   ProcessConsoleInput(INPUT_RECORD *Rec);
 		int   ProcessDialogEvent(int Event, void *Param);
-		int   ProcessEditorEvent(int Event, void *Param);
+		int   ProcessEditorEvent(int Event, void *Param, Editor *EditorInstance);
 		int   ProcessEditorInput(INPUT_RECORD *Rec);
 		int   ProcessEvent(PHPTR ph, int Event, void *Param);
 		int   ProcessHostFile(PHPTR ph, PluginPanelItem *PanelItem, int ItemsNumber, int OpMode);

@@ -2605,6 +2605,14 @@ struct ConfigureInfo
 	size_t StructSize;
 	const GUID* Guid;
 };
+
+struct ProcessEditorEventInfo
+{
+	size_t StructSize;
+	int Event;
+	void* Param;
+	int EditorID;
+};
 	void   __stdcall  PluginModuleOpen(const char *path);
 	void   __stdcall  ClosePluginW(HANDLE hPlugin);
 	int    __stdcall  CompareW(HANDLE hPlugin,const struct PluginPanelItem *Item1,const struct PluginPanelItem *Item2,unsigned int Mode);
@@ -2627,6 +2635,7 @@ struct ConfigureInfo
 	HANDLE __stdcall  OpenPluginW(int OpenFrom,INT_PTR Item);
 	int    __stdcall  ProcessDialogEventW(int Event,void *Param);
 	int    __stdcall  ProcessEditorEventW(int Event,void *Param);
+	int    __stdcall  ProcessEditorEventV3W(const struct ProcessEditorEventInfo *Info);
 	int    __stdcall  ProcessEditorInputW(const INPUT_RECORD *Rec);
 	int    __stdcall  ProcessEventW(HANDLE hPlugin,int Event,void *Param);
 	int    __stdcall  ProcessHostFileW(HANDLE hPlugin,struct PluginPanelItem *PanelItem,int ItemsNumber,int OpMode);

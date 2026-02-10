@@ -68,7 +68,7 @@ void NotifyDialogEditorFocus(Editor *editor, bool &opened, bool &has_focus, bool
 	DialogEditorPluginScope scope(editor);
 	if (!opened) {
 		int Id = editor->GetEditorID();
-		CtrlObject->Plugins.ProcessEditorEvent(EE_READ, &Id); // was: nullptr
+		CtrlObject->Plugins.ProcessEditorEvent(EE_READ, &Id, editor);
 		opened = true;
 	}
 
@@ -76,7 +76,7 @@ void NotifyDialogEditorFocus(Editor *editor, bool &opened, bool &has_focus, bool
 		return;
 
 	int id = editor->GetEditorID();
-	CtrlObject->Plugins.ProcessEditorEvent(focus ? EE_GOTFOCUS : EE_KILLFOCUS, &id);
+	CtrlObject->Plugins.ProcessEditorEvent(focus ? EE_GOTFOCUS : EE_KILLFOCUS, &id, editor);
 	has_focus = focus;
 }
 }
@@ -152,7 +152,7 @@ DlgEdit::~DlgEdit()
 		if (m_dialogEditorOpened && CtrlObject) {
 			DialogEditorPluginScope scope(multiEdit);
 			int id = multiEdit->GetEditorID();
-			CtrlObject->Plugins.ProcessEditorEvent(EE_CLOSE, &id);
+			CtrlObject->Plugins.ProcessEditorEvent(EE_CLOSE, &id, multiEdit);
 		}
 		delete multiEdit;
 	}

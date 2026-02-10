@@ -93,6 +93,7 @@ static const char szCache_OpenPlugin[] = "OpenPluginW";
 static const char szCache_ProcessConsoleInput[] = "ProcessConsoleInputW";
 static const char szCache_ProcessDialogEvent[] = "ProcessDialogEventW";
 static const char szCache_ProcessEditorEvent[] = "ProcessEditorEventW";
+static const char szCache_ProcessEditorEventV3[] = "ProcessEditorEventV3W";
 static const char szCache_ProcessEditorInput[] = "ProcessEditorInputW";
 static const char szCache_ProcessHostFile[] = "ProcessHostFileW";
 static const char szCache_ProcessSynchroEvent[] = "ProcessSynchroEventW";
@@ -125,6 +126,7 @@ static const char NFMP_OpenPlugin[] = "OpenPluginW";
 static const char NFMP_ProcessConsoleInput[] = "ProcessConsoleInputW";
 static const char NFMP_ProcessDialogEvent[] = "ProcessDialogEventW";
 static const char NFMP_ProcessEditorEvent[] = "ProcessEditorEventW";
+static const char NFMP_ProcessEditorEventV3[] = "ProcessEditorEventV3W";
 static const char NFMP_ProcessEditorInput[] = "ProcessEditorInputW";
 static const char NFMP_ProcessEvent[] = "ProcessEventW";
 static const char NFMP_ProcessHostFile[] = "ProcessHostFileW";
@@ -225,6 +227,7 @@ bool PluginW::LoadFromCache()
 	pProcessConsoleInputW = (PLUGINPROCESSCONSOLEINPUTW)(INT_PTR)kfh.GetUInt(szCache_ProcessConsoleInput, 0);
 	pProcessDialogEventW = (PLUGINPROCESSDIALOGEVENTW)(INT_PTR)kfh.GetUInt(szCache_ProcessDialogEvent, 0);
 	pProcessEditorEventW = (PLUGINPROCESSEDITOREVENTW)(INT_PTR)kfh.GetUInt(szCache_ProcessEditorEvent, 0);
+	pProcessEditorEventV3W = (PLUGINPROCESSEDITOREVENTV3W)(INT_PTR)kfh.GetUInt(szCache_ProcessEditorEventV3, 0);
 	pProcessEditorInputW = (PLUGINPROCESSEDITORINPUTW)(INT_PTR)kfh.GetUInt(szCache_ProcessEditorInput, 0);
 	pProcessHostFileW = (PLUGINPROCESSHOSTFILEW)(INT_PTR)kfh.GetUInt(szCache_ProcessHostFile, 0);
 	pProcessSynchroEventW = (PLUGINPROCESSSYNCHROEVENTW)(INT_PTR)kfh.GetUInt(szCache_ProcessSynchroEvent, 0);
@@ -311,6 +314,7 @@ bool PluginW::SaveToCache()
 	kfh.SetUInt(GetSettingsName(), szCache_ProcessConsoleInput, pProcessConsoleInputW ? 1:0);
 	kfh.SetUInt(GetSettingsName(), szCache_ProcessDialogEvent,  pProcessDialogEventW ? 1:0);
 	kfh.SetUInt(GetSettingsName(), szCache_ProcessEditorEvent,  pProcessEditorEventW ? 1:0);
+	kfh.SetUInt(GetSettingsName(), szCache_ProcessEditorEventV3, pProcessEditorEventV3W ? 1:0);
 	kfh.SetUInt(GetSettingsName(), szCache_ProcessEditorInput,  pProcessEditorInputW ? 1:0);
 	kfh.SetUInt(GetSettingsName(), szCache_ProcessHostFile,     pProcessHostFileW ? 1:0);
 	kfh.SetUInt(GetSettingsName(), szCache_ProcessSynchroEvent, pProcessSynchroEventW ? 1:0);
@@ -364,6 +368,7 @@ bool PluginW::Load()
 	GetModuleFN(pProcessConsoleInputW, NFMP_ProcessConsoleInput);
 	GetModuleFN(pProcessDialogEventW, NFMP_ProcessDialogEvent);
 	GetModuleFN(pProcessEditorEventW, NFMP_ProcessEditorEvent);
+	GetModuleFN(pProcessEditorEventV3W, NFMP_ProcessEditorEventV3);
 	GetModuleFN(pProcessEditorInputW, NFMP_ProcessEditorInput);
 	GetModuleFN(pProcessEventW, NFMP_ProcessEvent);
 	GetModuleFN(pProcessHostFileW, NFMP_ProcessHostFile);
@@ -886,7 +891,18 @@ int PluginW::ProcessEditorEvent(int Event, void *Param)
 		EXECUTE_FUNCTION_EX(pProcessEditorEventW(Event, Param), es);
 	}
 
-	return 0; //oops!
+	return 0;
+}
+
+int PluginW::ProcessEditorEventV3(const ProcessEditorEventInfo *Info)
+{
+	if (Load() && pProcessEditorEventV3W)
+	{
+		ExecuteStruct es(EXCEPT_PROCESSEDITOREVENTV3);
+		EXECUTE_FUNCTION_EX(pProcessEditorEventV3W(Info), es);
+	}
+
+	return 0;
 }
 
 int PluginW::ProcessViewerEvent(int Event, void *Param)
@@ -1343,6 +1359,7 @@ void PluginW::ClearExports()
 	pProcessConsoleInputW = nullptr;
 	pProcessDialogEventW = nullptr;
 	pProcessEditorEventW = nullptr;
+	pProcessEditorEventV3W = nullptr;
 	pProcessEditorInputW = nullptr;
 	pProcessEventW = nullptr;
 	pProcessHostFileW = nullptr;

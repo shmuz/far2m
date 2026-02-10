@@ -146,6 +146,7 @@ class PluginA: public Plugin
 		bool HasProcessConsoleInput() { return false; }
 		bool HasProcessDialogEvent() { return pProcessDialogEvent!=nullptr; }
 		bool HasProcessEditorEvent() { return pProcessEditorEvent!=nullptr; }
+		bool HasProcessEditorEventV3() { return false; } //TODO
 		bool HasProcessEditorInput() { return pProcessEditorInput!=nullptr; }
 		bool HasProcessEvent() { return pProcessEvent!=nullptr; }
 		bool HasProcessHostFile() { return pProcessHostFile!=nullptr; }
@@ -197,6 +198,7 @@ class PluginA: public Plugin
 
 		int ProcessEditorInput(const INPUT_RECORD *D);
 		int ProcessEditorEvent(int Event, void *Param);
+		int ProcessEditorEventV3(const ProcessEditorEventInfo *Info) { return 0; }; //TODO
 		int ProcessViewerEvent(int Event, void *Param);
 		int ProcessDialogEvent(int Event, void *Param);
 		int ProcessSynchroEvent(int Event, void *Param) { return 0; }

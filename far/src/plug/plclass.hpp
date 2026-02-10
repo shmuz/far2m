@@ -135,6 +135,7 @@ class Plugin
 		virtual bool HasProcessConsoleInput() = 0;
 		virtual bool HasProcessDialogEvent() = 0;
 		virtual bool HasProcessEditorEvent() = 0;
+		virtual bool HasProcessEditorEventV3() = 0;
 		virtual bool HasProcessEditorInput() = 0;
 		virtual bool HasProcessEvent() = 0;
 		virtual bool HasProcessHostFile() = 0;
@@ -179,6 +180,7 @@ class Plugin
 		virtual int    ProcessConsoleInput(INPUT_RECORD *D) = 0;
 		virtual int    ProcessDialogEvent(int Event, void *Param) = 0;
 		virtual int    ProcessEditorEvent(int Event, void *Param) = 0;
+		virtual int    ProcessEditorEventV3(const ProcessEditorEventInfo *Info) = 0;
 		virtual int    ProcessEditorInput(const INPUT_RECORD *D) = 0;
 		virtual int    ProcessEvent(HANDLE hPlugin, int Event, void *Param) = 0;
 		virtual int    ProcessHostFile(HANDLE hPlugin, PluginPanelItem *PanelItem, int ItemsNumber, int OpMode) = 0;
@@ -228,6 +230,7 @@ enum ExceptFunctionsType
 	EXCEPT_PROCESSCONSOLEINPUT,
 	EXCEPT_PROCESSDIALOGEVENT,
 	EXCEPT_PROCESSEDITOREVENT,
+	EXCEPT_PROCESSEDITOREVENTV3,
 	EXCEPT_PROCESSEDITORINPUT,
 	EXCEPT_PROCESSEVENT,
 	EXCEPT_PROCESSHOSTFILE,

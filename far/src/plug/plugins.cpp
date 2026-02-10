@@ -817,29 +817,25 @@ int PluginManager::ProcessEditorInput(INPUT_RECORD *Rec)
 	return FALSE;
 }
 
-int PluginManager::ProcessEditorEvent(int Event,void *Param)
+int PluginManager::ProcessEditorEvent(int Event, void *Param, Editor *EditorInstance)
 {
-	if (CurEditor || CurDialogEditor)
+	if (Event == EE_REDRAW)
+		EditorInstance->AutoDeleteColors();
+
+	auto EditorID = EditorInstance->GetEditorID();
+
+	for (int i = 0; i < PluginsCount; i++)
 	{
-		if (Event == EE_REDRAW)
+		Plugin *pPlugin = PluginsData[i];
+
+		if (pPlugin->HasProcessEditorEvent())
 		{
-			switch(FrameManager->GetTopModal()->GetType()) {
-				case MODALTYPE_EDITOR:
-					CurEditor->AutoDeleteColors();
-					break;
-				case MODALTYPE_DIALOG:
-					CurDialogEditor->AutoDeleteColors();
-					break;
-			}
+			pPlugin->ProcessEditorEvent(Event, Param); // the return value is ignored
 		}
-
-		for (int i = 0; i < PluginsCount; i++)
+		else if (pPlugin->HasProcessEditorEventV3())
 		{
-			Plugin *pPlugin = PluginsData[i];
-
-			// The return value is currently ignored
-			if (pPlugin->HasProcessEditorEvent())
-				pPlugin->ProcessEditorEvent(Event, Param);
+			ProcessEditorEventInfo Info { sizeof(Info), Event, Param, EditorID };
+			pPlugin->ProcessEditorEventV3(&Info);
 		}
 	}
 

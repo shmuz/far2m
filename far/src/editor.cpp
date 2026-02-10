@@ -408,11 +408,11 @@ void Editor::ShowEditor(bool CurLineOnly)
 				Flags.Clear(FEDITOR_JUSTMODIFIED);
 
 				if (NeedRedraw)
-					CtrlObject->Plugins.ProcessEditorEvent(EE_REDRAW, EEREDRAW_CHANGE);
+					CtrlObject->Plugins.ProcessEditorEvent(EE_REDRAW, EEREDRAW_CHANGE, this);
 			}
 			else {
 				if (NeedRedraw)
-					CtrlObject->Plugins.ProcessEditorEvent(EE_REDRAW, CurLineOnly ? EEREDRAW_LINE : EEREDRAW_ALL);
+					CtrlObject->Plugins.ProcessEditorEvent(EE_REDRAW, CurLineOnly ? EEREDRAW_LINE : EEREDRAW_ALL, this);
 			}
 		}
 	}
@@ -2459,7 +2459,7 @@ int Editor::ProcessKey(FarKey Key)
 
 					if (!Flags.Check(FEDITOR_DIALOGMEMOEDIT)) {
 						CtrlObject->Plugins.CurEditor = m_HostFileEditor;    // this;
-						CtrlObject->Plugins.ProcessEditorEvent(EE_REDRAW, EEREDRAW_ALL);
+						CtrlObject->Plugins.ProcessEditorEvent(EE_REDRAW, EEREDRAW_ALL, this);
 					}
 
 					/*$ 03.02.2001 SKV
@@ -2731,7 +2731,7 @@ int Editor::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 		else {
 			if (!Flags.Check(FEDITOR_DIALOGMEMOEDIT)) {
 				CtrlObject->Plugins.CurEditor = m_HostFileEditor;    // this;
-				CtrlObject->Plugins.ProcessEditorEvent(EE_REDRAW, EEREDRAW_LINE);
+				CtrlObject->Plugins.ProcessEditorEvent(EE_REDRAW, EEREDRAW_LINE, this);
 			}
 		}
 

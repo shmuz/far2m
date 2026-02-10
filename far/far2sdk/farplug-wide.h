@@ -2919,6 +2919,14 @@ struct ConfigureInfo
 	const GUID* Guid;
 };
 
+struct ProcessEditorEventInfo
+{
+	size_t StructSize;
+	int Event;
+	void* Param;
+	int EditorID;
+};
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -2946,6 +2954,7 @@ extern "C"
 	HANDLE WINAPI _export OpenPluginW(int OpenFrom,INT_PTR Item);
 	int    WINAPI _export ProcessDialogEventW(int Event,void *Param);
 	int    WINAPI _export ProcessEditorEventW(int Event,void *Param);
+	int    WINAPI _export ProcessEditorEventV3W(const struct ProcessEditorEventInfo *Info);
 	int    WINAPI _export ProcessEditorInputW(const INPUT_RECORD *Rec);
 	int    WINAPI _export ProcessEventW(HANDLE hPlugin,int Event,void *Param);
 	int    WINAPI _export ProcessHostFileW(HANDLE hPlugin,struct PluginPanelItem *PanelItem,int ItemsNumber,int OpMode);

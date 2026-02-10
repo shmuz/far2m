@@ -59,6 +59,7 @@ typedef HANDLE (WINAPI *PLUGINOPENPLUGINW)(int OpenFrom,INT_PTR Item);
 typedef int  (WINAPI *PLUGINPROCESSCONSOLEINPUTW)(INPUT_RECORD *Rec);
 typedef int  (WINAPI *PLUGINPROCESSDIALOGEVENTW)(int Event,void *Param);
 typedef int  (WINAPI *PLUGINPROCESSEDITOREVENTW)(int Event,void *Param);
+typedef int  (WINAPI *PLUGINPROCESSEDITOREVENTV3W)(const ProcessEditorEventInfo *Info);
 typedef int  (WINAPI *PLUGINPROCESSEDITORINPUTW)(const INPUT_RECORD *Rec);
 typedef int  (WINAPI *PLUGINPROCESSEVENTW)(HANDLE hPlugin,int Event,void *Param);
 typedef int  (WINAPI *PLUGINPROCESSHOSTFILEW)(HANDLE hPlugin,PluginPanelItem *PanelItem,int ItemsNumber,int OpMode);
@@ -100,6 +101,7 @@ class PluginW: public Plugin
 		PLUGINPROCESSCONSOLEINPUTW   pProcessConsoleInputW;
 		PLUGINPROCESSDIALOGEVENTW    pProcessDialogEventW;
 		PLUGINPROCESSEDITOREVENTW    pProcessEditorEventW;
+		PLUGINPROCESSEDITOREVENTV3W  pProcessEditorEventV3W;
 		PLUGINPROCESSEDITORINPUTW    pProcessEditorInputW;
 		PLUGINPROCESSEVENTW          pProcessEventW;
 		PLUGINPROCESSHOSTFILEW       pProcessHostFileW;
@@ -156,6 +158,7 @@ class PluginW: public Plugin
 		bool HasProcessConsoleInput() { return pProcessConsoleInputW!=nullptr; }
 		bool HasProcessDialogEvent() { return pProcessDialogEventW!=nullptr; }
 		bool HasProcessEditorEvent() { return pProcessEditorEventW!=nullptr; }
+		bool HasProcessEditorEventV3() { return pProcessEditorEventV3W!=nullptr; }
 		bool HasProcessEditorInput() { return pProcessEditorInputW!=nullptr; }
 		bool HasProcessEvent() { return pProcessEventW!=nullptr; }
 		bool HasProcessHostFile() { return pProcessHostFileW!=nullptr; }
@@ -211,6 +214,7 @@ class PluginW: public Plugin
 
 		int ProcessEditorInput(const INPUT_RECORD *D);
 		int ProcessEditorEvent(int Event, void *Param);
+		int ProcessEditorEventV3(const ProcessEditorEventInfo *Info);
 		int ProcessViewerEvent(int Event, void *Param);
 		int ProcessDialogEvent(int Event, void *Param);
 		int ProcessSynchroEvent(int Event, void *Param);
