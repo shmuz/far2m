@@ -2631,9 +2631,6 @@ int Editor::ProcessKey(FarKey Key)
 
 int Editor::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 {
-	Edit *NewPtr;
-	int NewDist, Dist;
-
 	// Shift + Mouse click -> adhoc quick edit
 	if ((MouseEvent->dwControlKeyState & SHIFT_PRESSED) != 0 && (MouseEvent->dwEventFlags & MOUSE_MOVED) == 0
 			&& (MouseEvent->dwButtonState & FROM_LEFT_1ST_BUTTON_PRESSED) != 0) {
@@ -2641,13 +2638,14 @@ int Editor::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 		return TRUE;
 	}
 
-	// $ 28.12.2000 VVM - Щелчок мышкой снимает непостоянный блок всегда
-	if ((MouseEvent->dwButtonState & 3)) {
-		TurnOffMarkingBlock();
+	if ((MouseEvent->dwButtonState & FROM_LEFT_1ST_BUTTON_PRESSED) == 0) {
+		MouseSelStartingLine = -1;
+	}
 
-		if ((!m_EdOpt.PersistentBlocks) && (m_BlockStart || m_VBlockStart)) {
+	// $ 28.12.2000 VVM - Щелчок мышкой снимает непостоянный блок всегда
+	if ((MouseEvent->dwButtonState & 3) && !(MouseEvent->dwEventFlags & MOUSE_MOVED)) {
+		if (!m_EdOpt.PersistentBlocks) {
 			UnmarkBlock();
-			Show();
 		}
 	}
 
@@ -2673,111 +2671,165 @@ int Editor::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 				GoToLine((m_NumLastLine - 1) * (MouseY - Y1) / (Y2 - Y1));
 			}
 		}
-
 		return TRUE;
 	}
 
-	if (MouseEvent->dwButtonState & FROM_LEFT_1ST_BUTTON_PRESSED) {
-		static int EditorPrevDoubleClick = 0;
-		static COORD EditorPrevPosition = {0, 0};
+	// scroll up/down by dragging outside editor window
+	if (MouseEvent->dwMousePosition.Y < Y1 && (MouseEvent->dwButtonState & 3)) {
+		if (!Flags.Check(FEDITOR_DIALOGMEMOEDIT)) {
+			while (IsMouseButtonPressed() && MouseY < Y1) ProcessKey(KEY_UP);
+		} else {
+			ProcessKey(KEY_UP);
+		}
+		return TRUE;
+	}
+	if (MouseEvent->dwMousePosition.Y > Y2 && (MouseEvent->dwButtonState & 3)) {
+		if (!Flags.Check(FEDITOR_DIALOGMEMOEDIT)) {
+			while (IsMouseButtonPressed() && MouseY > Y2) ProcessKey(KEY_DOWN);
+		} else {
+			ProcessKey(KEY_DOWN);
+		}
+		return TRUE;
+	}
 
-		if (WINPORT(GetTickCount)() - EditorPrevDoubleClick <= WINPORT(GetDoubleClickTime)()
-				&& MouseEvent->dwEventFlags != MOUSE_MOVED
-				&& EditorPrevPosition.X == MouseEvent->dwMousePosition.X
-				&& EditorPrevPosition.Y == MouseEvent->dwMousePosition.Y) {
-			m_CurLine->Select(0, m_CurLine->StrSize());
+	// For any click inside the editor window, first position the cursor
+	if (MouseEvent->dwMousePosition.X >= X1 && MouseEvent->dwMousePosition.X <= m_XX2
+		&& MouseEvent->dwMousePosition.Y >= Y1 && MouseEvent->dwMousePosition.Y <= Y2)
+	{
+		if((MouseEvent->dwButtonState & 3))
+		{
+			// Calculate line number width if needed
+			int LineNumWidth = 0;
 
-			if (m_CurLine->IsSelection()) {
-				Flags.Set(FEDITOR_MARKINGBLOCK);
-				m_BlockStart = m_CurLine;
-				m_BlockStartLine = m_NumLine;
+			Edit* TargetLine = nullptr;
+			int TargetPos = -1;
+
+			// Non-word-wrap mode
+			{
+				int line_offset = MouseEvent->dwMousePosition.Y - Y1;
+				TargetLine = m_TopScreen;
+				while (line_offset-- && TargetLine && TargetLine->m_next) {
+					TargetLine = TargetLine->m_next;
+				}
+
+				if (TargetLine) {
+					int mouseCellPos = MouseEvent->dwMousePosition.X - X1 - LineNumWidth + TargetLine->GetLeftPos();
+					TargetPos = TargetLine->CellPosToReal(mouseCellPos);
+				}
 			}
 
-			EditorPrevDoubleClick = 0;
-			EditorPrevPosition.X = 0;
-			EditorPrevPosition.Y = 0;
+			if (TargetLine)
+			{
+				const int screenHeight = Y2 - Y1;
+				auto visibleOffset = [&](Edit* line) -> int
+				{
+					int offset = 0;
+					for (Edit* ptr = m_TopScreen; ptr && offset <= screenHeight; ptr = ptr->m_next, ++offset)
+					{
+						if (ptr == line)
+							return offset;
+					}
+					return -1;
+				};
+
+				int targetOffset = visibleOffset(TargetLine);
+				int currentOffset = visibleOffset(m_CurLine);
+
+				if (targetOffset != -1 && currentOffset != -1)
+				{
+					int delta = targetOffset - currentOffset;
+					while (delta > 0)
+					{
+						Down();
+						--delta;
+					}
+					while (delta < 0)
+					{
+						Up();
+						++delta;
+					}
+				}
+					else
+					{
+						const int topLineNumber = GetTopScreenLineNumber();
+						Edit* topLinePtr = m_TopScreen;
+
+						if (!topLinePtr)
+							topLinePtr = m_TopList ? m_TopList : TargetLine;
+
+						m_CurLine = TargetLine;
+						int offsetFromTop = (topLinePtr && m_CurLine) ? CalcDistance(topLinePtr, m_CurLine, -1) : 0;
+						m_NumLine = topLineNumber + offsetFromTop;
+					}
+
+				// Снимаем любое предыдущее выделение при новом клике.
+				// UnmarkBlock() должен вызываться только при первом клике, а не при каждом движении
+				if ((MouseEvent->dwEventFlags & MOUSE_MOVED) == 0) {
+					UnmarkBlock();
+				}
+				m_CurLine->SetCurPos(TargetPos);
+				if (MouseSelStartingLine == -1) {
+					MouseSelStartingLine = m_NumLine;
+					MouseSelStartingPos = TargetPos;
+				} else {
+					const bool SelVBlock = (MouseEvent->dwControlKeyState & (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED)) != 0;
+					if (MouseSelStartingLine < m_NumLine || (MouseSelStartingLine == m_NumLine && TargetPos >= MouseSelStartingPos)) {
+						MarkBlock(SelVBlock, MouseSelStartingLine, MouseSelStartingPos,
+							TargetPos - MouseSelStartingPos, m_NumLine + 1 - MouseSelStartingLine);
+					} else {
+						MarkBlock(SelVBlock, m_NumLine, TargetPos,
+							MouseSelStartingPos - TargetPos, MouseSelStartingLine + 1 - m_NumLine);
+					}
+				}
+				Show();
+			}
 		}
 
-		if (MouseEvent->dwEventFlags == DOUBLE_CLICK) {
-			TurnOffMarkingBlock();
+		// --- Common logic for click/double-click/triple-click ---
+		if (MouseEvent->dwButtonState & FROM_LEFT_1ST_BUTTON_PRESSED)
+		{
+			static int EditorPrevClickCount = 0;
+			static DWORD EditorPrevClickTime = 0;
+			static COORD EditorPrevPosition = {0,0};
 
-			if (m_BlockStart || m_VBlockStart)
-				UnmarkBlock();
+			if ( (WINPORT(GetTickCount)() - EditorPrevClickTime <= WINPORT(GetDoubleClickTime)())
+				&& (MouseEvent->dwEventFlags != MOUSE_MOVED)
+				&& (EditorPrevPosition.X == MouseEvent->dwMousePosition.X)
+				&& (EditorPrevPosition.Y == MouseEvent->dwMousePosition.Y) )
+			{
+				EditorPrevClickCount++;
+			}
+			else
+			{
+				EditorPrevClickCount = 1;
+			}
 
-			ProcessKey(KEY_OP_SELWORD);
-			EditorPrevDoubleClick = WINPORT(GetTickCount)();
+			EditorPrevClickTime = WINPORT(GetTickCount)();
 			EditorPrevPosition = MouseEvent->dwMousePosition;
-		} else {
-			EditorPrevDoubleClick = 0;
-			EditorPrevPosition.X = 0;
-			EditorPrevPosition.Y = 0;
-		}
 
-		Show();
+			if (EditorPrevClickCount == 2) // Double-click
+			{
+				ProcessKey(KEY_OP_SELWORD);
+			}
+			else if (EditorPrevClickCount >= 3) // Triple-click (and more)
+			{
+				m_CurLine->Select(0, m_CurLine->GetLength());
+				if (m_CurLine->IsSelection()) {
+					Flags.Set(FEDITOR_MARKINGBLOCK);
+					m_BlockStart = m_CurLine;
+					m_BlockStartLine = m_NumLine;
+				}
+				EditorPrevClickCount = 0; // Reset to avoid re-triggering
+			}
+			Show();
+		}
 	}
 
 	if (MouseEvent->dwButtonState == FROM_LEFT_2ND_BUTTON_PRESSED
-			&& (MouseEvent->dwEventFlags & (DOUBLE_CLICK | MOUSE_MOVED | MOUSE_HWHEELED | MOUSE_WHEELED))
-					== 0) {
+			&& (MouseEvent->dwEventFlags & (DOUBLE_CLICK | MOUSE_MOVED | MOUSE_HWHEELED | MOUSE_WHEELED)) == 0) {
 		ProcessPasteEvent();
 	}
 
-	if (m_CurLine->ProcessMouse(MouseEvent)) {
-		if (m_HostFileEditor)
-			m_HostFileEditor->ShowStatus();
-
-		if (m_VBlockStart)
-			Show();
-		else {
-			if (!Flags.Check(FEDITOR_DIALOGMEMOEDIT)) {
-				CtrlObject->Plugins.CurEditor = m_HostFileEditor;    // this;
-				CtrlObject->Plugins.ProcessEditorEvent(EE_REDRAW, EEREDRAW_LINE, this);
-			}
-		}
-
-		return TRUE;
-	}
-
-	if (!(MouseEvent->dwButtonState & 3))
-		return FALSE;
-
-	// scroll up
-	if (MouseEvent->dwMousePosition.Y == Y1 - 1) {
-		while (IsMouseButtonPressed() && MouseY == Y1 - 1)
-			ProcessKey(KEY_UP);
-
-		return TRUE;
-	}
-
-	// scroll down
-	if (MouseEvent->dwMousePosition.Y == Y2 + 1) {
-		while (IsMouseButtonPressed() && MouseY == Y2 + 1)
-			ProcessKey(KEY_DOWN);
-
-		return TRUE;
-	}
-
-	if (MouseEvent->dwMousePosition.X < X1 || MouseEvent->dwMousePosition.X > X2
-			|| MouseEvent->dwMousePosition.Y < Y1 || MouseEvent->dwMousePosition.Y > Y2)
-		return FALSE;
-
-	NewDist = MouseEvent->dwMousePosition.Y - Y1;
-	NewPtr = m_TopScreen;
-
-	while (NewDist-- && NewPtr->m_next)
-		NewPtr = NewPtr->m_next;
-
-	Dist = CalcDistance(m_TopScreen, NewPtr, -1) - CalcDistance(m_TopScreen, m_CurLine, -1);
-
-	if (Dist > 0)
-		while (Dist--)
-			Down();
-	else
-		while (Dist++)
-			Up();
-
-	m_CurLine->ProcessMouse(MouseEvent);
-	Show();
 	return TRUE;
 }
 
@@ -2791,6 +2843,19 @@ int Editor::CalcDistance(Edit *From, Edit *To, int MaxDist)
 	}
 
 	return (Distance);
+}
+
+int Editor::GetTopScreenLineNumber()
+{
+	if (!m_CurLine)
+		return 1;
+
+	Edit* topLinePtr = m_TopScreen;
+	if (!topLinePtr)
+		topLinePtr = m_TopList ? m_TopList : m_CurLine;
+
+	int relative = (m_CurLine == topLinePtr) ? 0 : CalcDistance(topLinePtr, m_CurLine, -1);
+	return std::max(0, m_NumLine - relative) + 1;
 }
 
 void Editor::DeleteString(Edit *DelPtr, int LineNumber, bool DeleteLast, int UndoLine)
@@ -3886,6 +3951,62 @@ void Editor::DeleteBlock()
 
 	AddUndoData(UNDO_END);
 	m_BlockStart = nullptr;
+}
+
+bool Editor::MarkBlock(bool SelVBlock, int SelStartLine, int SelStartPos, int SelWidth, int SelHeight)
+{
+	if (SelHeight < 1)
+		return false;
+
+	Edit *CurPtr = GetStringByNumber(SelStartLine);
+
+	if (!CurPtr)
+		return false;
+
+	UnmarkBlock();
+
+	if (!SelVBlock) {
+		Flags.Set(FEDITOR_MARKINGBLOCK);
+		m_BlockStart = CurPtr;
+
+		if ((m_BlockStartLine = SelStartLine) == -1)
+			m_BlockStartLine = m_NumLine;
+
+		for (int i = 0; i < SelHeight; i++) {
+			int SelStart = i ? 0 : SelStartPos;
+			int SelEnd = (i < SelHeight - 1) ? -1 : SelStartPos + SelWidth;
+			CurPtr->Select(SelStart, SelEnd);
+			CurPtr = CurPtr->m_next;
+
+			if (!CurPtr)
+				return true;    // ранее было FALSE
+		}
+	}
+	else {
+		Flags.Set(FEDITOR_MARKINGVBLOCK);
+		m_VBlockStart = CurPtr;
+
+		if ((m_BlockStartLine = SelStartLine) == -1)
+			m_BlockStartLine = m_NumLine;
+
+		m_VBlockX = SelStartPos;
+
+		if ((m_VBlockY = SelStartLine) == -1)
+			m_VBlockY = m_NumLine;
+
+		m_VBlockSizeX = SelWidth;
+		m_VBlockSizeY = SelHeight;
+
+		if (m_VBlockSizeX < 0) {
+			m_VBlockSizeX = -m_VBlockSizeX;
+			m_VBlockX-= m_VBlockSizeX;
+
+			if (m_VBlockX < 0)
+				m_VBlockX = 0;
+		}
+	}
+
+	return true;
 }
 
 void Editor::UnmarkBlock()
@@ -5097,86 +5218,14 @@ int Editor::EditorControl(int Command, void *Param)
 		case ECTL_SELECT: {
 			if (Param) {
 				EditorSelect *Sel = (EditorSelect *)Param;
-				_ECTLLOG(SysLog(L"EditorSelect{"));
-				_ECTLLOG(SysLog(L"  BlockType     =%ls (%d)",
-						(Sel->BlockType == BTYPE_NONE
-										? L"BTYPE_NONE"
-										: (Sel->BlockType == BTYPE_STREAM
-														? L""
-														: (Sel->BlockType == BTYPE_COLUMN ? L"BTYPE_COLUMN"
-																						  : L"BTYPE_?????"))),
-						Sel->BlockType));
-				_ECTLLOG(SysLog(L"  m_BlockStartLine=%d", Sel->m_BlockStartLine));
-				_ECTLLOG(SysLog(L"  BlockStartPos =%d", Sel->BlockStartPos));
-				_ECTLLOG(SysLog(L"  BlockWidth    =%d", Sel->BlockWidth));
-				_ECTLLOG(SysLog(L"  BlockHeight   =%d", Sel->BlockHeight));
-				_ECTLLOG(SysLog(L"}"));
-
-				if (Sel->BlockType == BTYPE_NONE || Sel->BlockStartPos == -1) {
+				if (Sel->BlockType == BTYPE_NONE || Sel->BlockStartPos < 0) {
+					fprintf(stderr, "ECTL_SELECT: unmark cuz Type=%d StartPos=%d\n", Sel->BlockType, Sel->BlockStartPos);
 					UnmarkBlock();
 					return TRUE;
 				}
-
-				if (Sel->BlockHeight < 1) {
-					_ECTLLOG(SysLog(L"Error: EditorSelect::BlockHeight < 1"));
-					return FALSE;
-				}
-
-				Edit *CurPtr = GetStringByNumber(Sel->BlockStartLine);
-
-				if (!CurPtr) {
-					_ECTLLOG(SysLog(L"Error: start line m_BlockStartLine=%d not found, GetStringByNumber(%d) "
-									L"return nullptr",
-							Sel->m_BlockStartLine, Sel->m_BlockStartLine));
-					return FALSE;
-				}
-
-				UnmarkBlock();
-
-				if (Sel->BlockType == BTYPE_STREAM) {
-					Flags.Set(FEDITOR_MARKINGBLOCK);
-					m_BlockStart = CurPtr;
-
-					if ((m_BlockStartLine = Sel->BlockStartLine) == -1)
-						m_BlockStartLine = m_NumLine;
-
-					for (int i = 0; i < Sel->BlockHeight; i++) {
-						int SelStart = i ? 0 : Sel->BlockStartPos;
-						int SelEnd = (i < Sel->BlockHeight - 1) ? -1 : Sel->BlockStartPos + Sel->BlockWidth;
-						CurPtr->Select(SelStart, SelEnd);
-						CurPtr = CurPtr->m_next;
-
-						if (!CurPtr)
-							return TRUE;    // ранее было FALSE
-					}
-				} else if (Sel->BlockType == BTYPE_COLUMN) {
-					Flags.Set(FEDITOR_MARKINGVBLOCK);
-					m_VBlockStart = CurPtr;
-
-					if ((m_BlockStartLine = Sel->BlockStartLine) == -1)
-						m_BlockStartLine = m_NumLine;
-
-					m_VBlockX = Sel->BlockStartPos;
-
-					if ((m_VBlockY = Sel->BlockStartLine) == -1)
-						m_VBlockY = m_NumLine;
-
-					m_VBlockSizeX = Sel->BlockWidth;
-					m_VBlockSizeY = Sel->BlockHeight;
-
-					if (m_VBlockSizeX < 0) {
-						m_VBlockSizeX = -m_VBlockSizeX;
-						m_VBlockX-= m_VBlockSizeX;
-
-						if (m_VBlockX < 0)
-							m_VBlockX = 0;
-					}
-				}
-
-				return TRUE;
+				return MarkBlock(Sel->BlockType == BTYPE_COLUMN, Sel->BlockStartLine, Sel->BlockStartPos, Sel->BlockWidth, Sel->BlockHeight);
 			}
-
-			_ECTLLOG(SysLog(L"Error: !Param"));
+			fprintf(stderr, "ECTL_SELECT: !Param\n");
 			break;
 		}
 		case ECTL_REDRAW: {

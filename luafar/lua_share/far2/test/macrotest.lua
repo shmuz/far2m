@@ -1459,4 +1459,9 @@ function MT.test_all()
   actl.RedrawAll()
 end
 
+MT.test_fsf_all    = FSF.test_fsf_all
+MT.test_luafar_all = LF.test_luafar_all
+MT.test_editor_all = TE.test_editor_all
+MT.test_panel_all  = TP.test_panel_all
+
 return MT

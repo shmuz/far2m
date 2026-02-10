@@ -223,6 +223,8 @@ private:
 	Edit *m_LastGetLine;
 	int m_LastGetLineNumber;
 
+	int MouseSelStartingLine{-1}, MouseSelStartingPos{-1};
+
 	std::unordered_set<Edit *> m_AutoDeletedColors;
 
 	bool m_showCursor;
@@ -234,6 +236,7 @@ private:
 	enum NextType {
 		NEXT_NONE, NEXT_FORWARD, NEXT_REVERSE
 	};
+	int GetTopScreenLineNumber();
 	virtual void DisplayObject();
 	void ShowEditor(bool CurLineOnly);
 	void DeleteString(Edit *DelPtr, int LineNumber, bool DeleteLast, int UndoLine);
@@ -253,6 +256,7 @@ private:
 	void Paste(const wchar_t *Src = nullptr);
 	void Copy(bool Append);
 	void DeleteBlock();
+	bool MarkBlock(bool SelVBlock, int SelStartLine, int SelStartPos, int SelWidth, int SelHeight);
 	void UnmarkBlock();
 	void UnmarkEmptyBlock();
 	void UnmarkMacroBlock();
