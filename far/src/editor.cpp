@@ -3953,7 +3953,8 @@ void Editor::DeleteBlock()
 	m_BlockStart = nullptr;
 }
 
-bool Editor::MarkBlock(bool SelVBlock, int SelStartLine, int SelStartPos, int SelWidth, int SelHeight)
+// This function keeps Far3 compatibility of ECTL_SELECT
+bool Editor::MarkBlockFromPlugin(bool SelVBlock, int SelStartLine, int SelStartPos, int SelWidth, int SelHeight)
 {
 	if (SelHeight < 1)
 		return false;
@@ -3965,24 +3966,7 @@ bool Editor::MarkBlock(bool SelVBlock, int SelStartLine, int SelStartPos, int Se
 
 	UnmarkBlock();
 
-	if (!SelVBlock) {
-		Flags.Set(FEDITOR_MARKINGBLOCK);
-		m_BlockStart = CurPtr;
-
-		if ((m_BlockStartLine = SelStartLine) == -1)
-			m_BlockStartLine = m_NumLine;
-
-		for (int i = 0; i < SelHeight; i++) {
-			int SelStart = i ? 0 : SelStartPos;
-			int SelEnd = (i < SelHeight - 1) ? -1 : SelStartPos + SelWidth;
-			CurPtr->Select(SelStart, SelEnd);
-			CurPtr = CurPtr->m_next;
-
-			if (!CurPtr)
-				return true;    // ранее было FALSE
-		}
-	}
-	else {
+	if (SelVBlock) {
 		Flags.Set(FEDITOR_MARKINGVBLOCK);
 		m_VBlockStart = CurPtr;
 
@@ -4003,6 +3987,85 @@ bool Editor::MarkBlock(bool SelVBlock, int SelStartLine, int SelStartPos, int Se
 
 			if (m_VBlockX < 0)
 				m_VBlockX = 0;
+		}
+
+	} else {
+		Flags.Set(FEDITOR_MARKINGBLOCK);
+		m_BlockStart = CurPtr;
+
+		if ((m_BlockStartLine = SelStartLine) == -1)
+			m_BlockStartLine = m_NumLine;
+
+		for (int i = 0; i < SelHeight && CurPtr; i++) {
+			int SelStart = i ? 0 : SelStartPos;
+			int SelEnd = (i < SelHeight - 1) ? -1 : SelStartPos + SelWidth;
+			CurPtr->Select(SelStart, SelEnd);
+			CurPtr = CurPtr->m_next;
+			// ранее было if (!CurPtr) return FALSE
+		}
+	}
+
+	return true;
+}
+
+bool Editor::MarkBlock(bool SelVBlock, int SelStartLine, int SelStartPos, int SelWidth, int SelHeight)
+{
+	fprintf(stderr, "Editor::MarkBlock: VBlock=%d StartLine=%d StartPos=%d Width=%d Height=%d\n",
+		SelVBlock, SelStartLine, SelStartPos, SelWidth, SelHeight);
+
+	Edit *CurPtr = GetStringByNumber(SelStartLine);
+
+	if (!CurPtr) {
+		fprintf(stderr, "Editor::MarkBlock: fail cuz StartLine=%d not found\n", SelStartLine);
+		return false;
+	}
+	if (SelHeight <= 0 || SelStartPos < 0) {
+		fprintf(stderr, "Editor::MarkBlock: fail cuz Height=%d <= 0 || StartPos=%d < 0\n", SelHeight, SelStartPos);
+		return false;
+	}
+
+	UnmarkBlock();
+
+	if (SelVBlock) {
+		Flags.Set(FEDITOR_MARKINGVBLOCK);
+		m_VBlockStart = CurPtr;
+
+		if ((m_BlockStartLine = SelStartLine) == -1)
+			m_BlockStartLine = m_NumLine;
+
+		m_VBlockX = CurPtr->RealPosToCell(SelStartPos);
+
+		if ((m_VBlockY = SelStartLine) == -1)
+			m_VBlockY = m_NumLine;
+
+		auto LastPtr = CurPtr;
+		for (int i = SelHeight; --i > 0 && LastPtr->m_next; ) {
+			LastPtr = LastPtr->m_next;
+		}
+		m_VBlockSizeX = LastPtr->RealPosToCell(SelStartPos + SelWidth) - m_VBlockX;
+		m_VBlockSizeY = SelHeight;
+
+		if (m_VBlockSizeX < 0) {
+			m_VBlockSizeX = -m_VBlockSizeX;
+			m_VBlockX-= m_VBlockSizeX;
+
+			if (m_VBlockX < 0)
+				m_VBlockX = 0;
+		}
+
+	} else {
+		Flags.Set(FEDITOR_MARKINGBLOCK);
+		m_BlockStart = CurPtr;
+
+		if ((m_BlockStartLine = SelStartLine) == -1)
+			m_BlockStartLine = m_NumLine;
+
+		for (int i = 0; i < SelHeight && CurPtr; i++) {
+			int SelStart = i ? 0 : SelStartPos;
+			int SelEnd = (i < SelHeight - 1) ? -1 : SelStartPos + SelWidth;
+			CurPtr->Select(SelStart, SelEnd);
+			CurPtr = CurPtr->m_next;
+			// ранее было if (!CurPtr) return FALSE
 		}
 	}
 
@@ -5223,7 +5286,8 @@ int Editor::EditorControl(int Command, void *Param)
 					UnmarkBlock();
 					return TRUE;
 				}
-				return MarkBlock(Sel->BlockType == BTYPE_COLUMN, Sel->BlockStartLine, Sel->BlockStartPos, Sel->BlockWidth, Sel->BlockHeight);
+				return MarkBlockFromPlugin(Sel->BlockType == BTYPE_COLUMN, Sel->BlockStartLine,
+						Sel->BlockStartPos, Sel->BlockWidth, Sel->BlockHeight);
 			}
 			fprintf(stderr, "ECTL_SELECT: !Param\n");
 			break;

@@ -256,6 +256,7 @@ private:
 	void Paste(const wchar_t *Src = nullptr);
 	void Copy(bool Append);
 	void DeleteBlock();
+	bool MarkBlockFromPlugin(bool SelVBlock, int SelStartLine, int SelStartPos, int SelWidth, int SelHeight);
 	bool MarkBlock(bool SelVBlock, int SelStartLine, int SelStartPos, int SelWidth, int SelHeight);
 	void UnmarkBlock();
 	void UnmarkEmptyBlock();
