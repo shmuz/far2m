@@ -2696,11 +2696,8 @@ int Editor::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 	if (MouseEvent->dwMousePosition.X >= X1 && MouseEvent->dwMousePosition.X <= m_XX2
 		&& MouseEvent->dwMousePosition.Y >= Y1 && MouseEvent->dwMousePosition.Y <= Y2)
 	{
-		if((MouseEvent->dwButtonState & 3))
+		if (MouseEvent->dwButtonState & 3)
 		{
-			// Calculate line number width if needed
-			int LineNumWidth = 0;
-
 			Edit* TargetLine = nullptr;
 			int TargetPos = -1;
 
@@ -2713,7 +2710,7 @@ int Editor::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 				}
 
 				if (TargetLine) {
-					int mouseCellPos = MouseEvent->dwMousePosition.X - X1 - LineNumWidth + TargetLine->GetLeftPos();
+					int mouseCellPos = MouseEvent->dwMousePosition.X - X1 + TargetLine->GetLeftPos();
 					TargetPos = TargetLine->CellPosToReal(mouseCellPos);
 				}
 			}
@@ -2749,18 +2746,18 @@ int Editor::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 						++delta;
 					}
 				}
-					else
-					{
-						const int topLineNumber = GetTopScreenLineNumber();
-						Edit* topLinePtr = m_TopScreen;
+				else
+				{
+					const int topLineNumber = GetTopScreenLineNumber();
+					Edit* topLinePtr = m_TopScreen;
 
-						if (!topLinePtr)
-							topLinePtr = m_TopList ? m_TopList : TargetLine;
+					if (!topLinePtr)
+						topLinePtr = m_TopList ? m_TopList : TargetLine;
 
-						m_CurLine = TargetLine;
-						int offsetFromTop = (topLinePtr && m_CurLine) ? CalcDistance(topLinePtr, m_CurLine, -1) : 0;
-						m_NumLine = topLineNumber + offsetFromTop;
-					}
+					m_CurLine = TargetLine;
+					int offsetFromTop = (topLinePtr && m_CurLine) ? CalcDistance(topLinePtr, m_CurLine, -1) : 0;
+					m_NumLine = topLineNumber + offsetFromTop;
+				}
 
 				// Снимаем любое предыдущее выделение при новом клике.
 				// UnmarkBlock() должен вызываться только при первом клике, а не при каждом движении
@@ -5142,6 +5139,7 @@ int Editor::EditorControl(int Command, void *Param)
 				Info->CurState|= Flags.Check(FEDITOR_MODIFIED | FEDITOR_WASCHANGED) ? ECSTATE_MODIFIED : 0;
 				Info->CodePage = m_codepage;
 
+				Info->WindowArea = RECT { X1,Y1,X2,Y2 };
 				Info->ClientArea = RECT { X1,Y1,X2,Y2 };
 				Info->ClientArea.right += IsScrollbarShown() ? -1 : 0;
 
