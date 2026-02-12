@@ -3953,61 +3953,6 @@ void Editor::DeleteBlock()
 	m_BlockStart = nullptr;
 }
 
-// This function keeps Far3 compatibility of ECTL_SELECT
-bool Editor::MarkBlockFromPlugin(bool SelVBlock, int SelStartLine, int SelStartPos, int SelWidth, int SelHeight)
-{
-	if (SelHeight < 1)
-		return false;
-
-	Edit *CurPtr = GetStringByNumber(SelStartLine);
-
-	if (!CurPtr)
-		return false;
-
-	UnmarkBlock();
-
-	if (SelVBlock) {
-		Flags.Set(FEDITOR_MARKINGVBLOCK);
-		m_VBlockStart = CurPtr;
-
-		if ((m_BlockStartLine = SelStartLine) == -1)
-			m_BlockStartLine = m_NumLine;
-
-		m_VBlockX = SelStartPos;
-
-		if ((m_VBlockY = SelStartLine) == -1)
-			m_VBlockY = m_NumLine;
-
-		m_VBlockSizeX = SelWidth;
-		m_VBlockSizeY = SelHeight;
-
-		if (m_VBlockSizeX < 0) {
-			m_VBlockSizeX = -m_VBlockSizeX;
-			m_VBlockX-= m_VBlockSizeX;
-
-			if (m_VBlockX < 0)
-				m_VBlockX = 0;
-		}
-
-	} else {
-		Flags.Set(FEDITOR_MARKINGBLOCK);
-		m_BlockStart = CurPtr;
-
-		if ((m_BlockStartLine = SelStartLine) == -1)
-			m_BlockStartLine = m_NumLine;
-
-		for (int i = 0; i < SelHeight && CurPtr; i++) {
-			int SelStart = i ? 0 : SelStartPos;
-			int SelEnd = (i < SelHeight - 1) ? -1 : SelStartPos + SelWidth;
-			CurPtr->Select(SelStart, SelEnd);
-			CurPtr = CurPtr->m_next;
-			// ранее было if (!CurPtr) return FALSE
-		}
-	}
-
-	return true;
-}
-
 bool Editor::MarkBlock(bool SelVBlock, int SelStartLine, int SelStartPos, int SelWidth, int SelHeight)
 {
 	fprintf(stderr, "Editor::MarkBlock: VBlock=%d StartLine=%d StartPos=%d Width=%d Height=%d\n",
@@ -6543,4 +6488,59 @@ Editor* Editor::GetEditorById(int Id)
 {
 	auto It = IdMap.find(Id);
 	return It == IdMap.end() ? nullptr : It->second;
+}
+
+// This function keeps Far3 compatibility of ECTL_SELECT
+bool Editor::MarkBlockFromPlugin(bool SelVBlock, int SelStartLine, int SelStartPos, int SelWidth, int SelHeight)
+{
+	if (SelHeight < 1)
+		return false;
+
+	Edit *CurPtr = GetStringByNumber(SelStartLine);
+
+	if (!CurPtr)
+		return false;
+
+	UnmarkBlock();
+
+	if (SelVBlock) {
+		Flags.Set(FEDITOR_MARKINGVBLOCK);
+		m_VBlockStart = CurPtr;
+
+		if ((m_BlockStartLine = SelStartLine) == -1)
+			m_BlockStartLine = m_NumLine;
+
+		m_VBlockX = SelStartPos;
+
+		if ((m_VBlockY = SelStartLine) == -1)
+			m_VBlockY = m_NumLine;
+
+		m_VBlockSizeX = SelWidth;
+		m_VBlockSizeY = SelHeight;
+
+		if (m_VBlockSizeX < 0) {
+			m_VBlockSizeX = -m_VBlockSizeX;
+			m_VBlockX-= m_VBlockSizeX;
+
+			if (m_VBlockX < 0)
+				m_VBlockX = 0;
+		}
+
+	} else {
+		Flags.Set(FEDITOR_MARKINGBLOCK);
+		m_BlockStart = CurPtr;
+
+		if ((m_BlockStartLine = SelStartLine) == -1)
+			m_BlockStartLine = m_NumLine;
+
+		for (int i = 0; i < SelHeight && CurPtr; i++) {
+			int SelStart = i ? 0 : SelStartPos;
+			int SelEnd = (i < SelHeight - 1) ? -1 : SelStartPos + SelWidth;
+			CurPtr->Select(SelStart, SelEnd);
+			CurPtr = CurPtr->m_next;
+			// ранее было if (!CurPtr) return FALSE
+		}
+	}
+
+	return true;
 }
