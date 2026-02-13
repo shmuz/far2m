@@ -2654,7 +2654,7 @@ will be shown.
     2. ^<wrap>When trying to reload a file already opened in the editor the
 "~reloading a file~@EditorReload@" warning message will be shown.
 
-    3. ^<wrap>The WIN encoding is used by default when creating new files, this
+    3. ^<wrap>The UTF-8 encoding is used by default when creating new files, this
 behavior can be changed in the ~Editor settings~@EditorSettings@ dialog.
 
   #Control keys#
@@ -2662,7 +2662,7 @@ behavior can be changed in the ~Editor settings~@EditorSettings@ dialog.
   Cursor movement
 
    #Left#                    Character left
-   #Ctrl-S#                  ^<wrap>Move the cursor one character to the left, but don't move to the previous line if the line beginning is reached.
+   #Ctrl-S#                  ^<wrap>Move the cursor one character to the left, but don't move to the previous line if the line beginning is reached
    #Right#                   Character right
    #Up#                      Line up
    #Down#                    Line down
@@ -2684,28 +2684,31 @@ behavior can be changed in the ~Editor settings~@EditorSettings@ dialog.
    #Del#                     ^<wrap>Delete char (also may delete block, depending upon ~Editor settings~@EditorSettings@).
    #BS#                      Delete char left
    #Ctrl-Y#                  Delete line
-   #Ctrl-K#                  Delete to end of line
+   #Ctrl-K, Alt-D#           Delete to end of line
    #Ctrl-BS#                 Delete word left
    #Ctrl-T, Ctrl-Del#        Delete word right
 
   Block operations
 
-   #Shift-Cursor keys#       Select block
-   #Ctrl-Shift-Cursor keys#  Select block
-   #Alt-gray cursor keys#    Select vertical block
-   #Alt-Shift-Cursor keys#   Select vertical block
-   #Ctrl-Alt-gray keys#      Select vertical block
-   #Ctrl-A#                  Select all text
-   #Ctrl-U#                  Deselect block
-   #Shift-Ins, Ctrl-V#       Paste block from clipboard
-   #Shift-Del, Ctrl-X#       Cut block
-   #Ctrl-Ins, Ctrl-C#        Copy block to clipboard
-   #Ctrl-<Gray +>#           Append block to clipboard
-   #Ctrl-D#                  Delete block
-   #Ctrl-P#                  ^<wrap>Copy block to current cursor position (in persistent blocks mode only)
-   #Ctrl-M#                  ^<wrap>Move block to current cursor position (in persistent blocks mode only)
-   #Alt-U#                   Shift block left
-   #Alt-I#                   Shift block right
+   #Shift-Cursor keys#         Select block
+   #Drag mouse holding#
+     #the left button down#    Select block
+   #Ctrl-Shift-Cursor keys#    Select block by words
+   #Alt-Cursor keys#           Select vertical block
+   #Alt-Shift-Cursor keys#     Select vertical block
+   #Alt + drag mouse holding#
+     #the left button down#    Select vertical block
+   #Ctrl-A#                    Select all text
+   #Ctrl-U#                    Deselect block
+   #Shift-Ins, Ctrl-V#         Paste block from clipboard
+   #Shift-Del, Ctrl-X#         Cut block
+   #Ctrl-Ins, Ctrl-C#          Copy block to clipboard
+   #Ctrl-<Gray +>#             Append block to clipboard
+   #Ctrl-D#                    Delete block
+   #Ctrl-P#                    ^<wrap>Copy block to current cursor position (in persistent blocks mode only, clipboard is not modified)
+   #Ctrl-M#                    ^<wrap>Move block to current cursor position (in persistent blocks mode only, clipboard is not modified)
+   #Alt-U#                     Shift block left
+   #Alt-I#                     Shift block right
 
   Other operations
 
