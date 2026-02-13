@@ -146,6 +146,8 @@ local function FarConfig()
       if p2=="Enter" or p2=="NumEnter" or p2=="F4" or p2=="ShiftF4" then
         Op = "edit"
         AsHex = (p2 == "ShiftF4")
+      elseif p2=="ShiftF1" then
+        Op = "help"
       else
         Op = (p2=="Del" or p2=="NumDel") and "reset" or p2=="CtrlH" and "hide"
       end
@@ -156,7 +158,7 @@ local function FarConfig()
       end
     end
 
-    if Op == "edit" or Op == "reset" then
+    if Op == "edit" or Op == "reset" or Op == "help" then
       local data = hDlg:ListGetCurPos(posList)
       if data then
         local pos = data.SelectPos
@@ -180,6 +182,11 @@ local function FarConfig()
           end
         elseif Op == "reset" then
           ok = Far.SetConfig(idx, val0)
+        elseif Op == "help" then
+          local flags = "FHELP_FARHELP FHELP_NOSHOWERROR"
+          if not far.ShowHelp(nil, ("%s.%s"):format(key, name), flags) then
+            far.ShowHelp(nil, ("%sSettings"):format(key), flags)
+          end
         end
 
         if ok then
