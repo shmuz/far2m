@@ -31,6 +31,7 @@ set(SOURCES
   src/lstrlib.c
   src/loadlib.c
   src/linit.c
+  src/lf_utf8lib.c
 )
 
 set(CMAKE_C_VISIBILITY_PRESET default)

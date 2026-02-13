@@ -109,14 +109,11 @@ local function MakeHlf(FileName)
     if line == "<%INDEX%>" then
       Write("   ~" .. Contents .. "~@Contents@")
 
-      table.sort(atopic, function(a,b) return a.text < b.text; end)
+      table.sort(atopic, function(a,b) return utf8.ncasecmp(a.text, b.text) < 0; end)
 
       local ch = ""
       for _, item in ipairs(atopic) do
-        local c1 = item.text:sub(1, 1)
-        if c1:byte() >= 128 then  -- poor man unicode hack
-          c1 = item.text:sub(1, 2)
-        end
+        local c1 = utf8.sub(item.text, 1, 1)
         if ch ~= c1 then
           ch = c1
           Write("") -- insert empty line
