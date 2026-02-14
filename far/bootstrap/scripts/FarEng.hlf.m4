@@ -209,7 +209,7 @@ in the input stream. This will probably be fixed in a later version of FAR2M.
   Stretch to console window instead of console buffer.
 
   #-set:<parameter>=<value>#
-  Override the configuration parameter, see ~lm:farconfig~@FarConfig@ for details.
+  Override the configuration parameter, see ~far:config~@FarConfig@ for details.
 
 
   It is possible to specify at most two paths (to folders, files or archives;
@@ -4673,7 +4673,7 @@ $ #About FAR#
 
 @FarConfig
 $ #Configuration editor#
- Starts with the command #lm:farconfig#
+ Starts with the command #far:config#
 
  Allows to view and edit all Far Manager’s options.
  Most options can be changed from the ~Options menu~@OptMenu@, however some options are available
@@ -4700,8 +4700,24 @@ to the left of the name.
  #Ctrl+H#
  Toggle display of unchanged options.
 
+ #Shift+F1#
+ Show the help for the current option, if available.
+
  #Ctrl+Alt+F#
  Toggle quick filtering mode.
+
+@Cmdline.ImitateNumpadKeys
+$ #far:config Cmdline.ImitateNumpadKeys#
+ This Boolean parameter controls if any of #+#, #-# and #*# characters entered
+in the empty command line should be treated as the matching Numpad character
+(it may be helpful when the keyboard does not have Numpad keys).
+
+ False - ^<wrap>Do not imitate Numpad keys
+ True  - Imitate Numpad keys
+
+ Default value: False (Do not imitate Numpad keys)
+
+ This parameter can be changed via ~far:config~@FarConfig@ only.
 
 @Index
 $ #Index help file#

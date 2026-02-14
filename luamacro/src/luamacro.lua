@@ -117,7 +117,7 @@ local MacroBrowserGuid = win.Uuid("EF6D67A2-59F7-4DF3-952E-F9049877B492")
 function export.GetPluginInfo()
   local out = {
     Flags = bor(F.PF_PRELOAD,F.PF_FULLCMDLINE,F.PF_EDITOR,F.PF_VIEWER,F.PF_DIALOG),
-    CommandPrefix = "lm:macro:lua:moon:luas:moons:edit:view:load:unload:goto"..utils.GetPrefixes()[1],
+    CommandPrefix = "lm:macro:lua:moon:luas:moons:far:edit:view:load:unload:goto"..utils.GetPrefixes()[1],
     PluginMenuGuids = MacroBrowserGuid,
     PluginMenuStrings = { "Macro Browser" },
   }
@@ -380,7 +380,18 @@ local function Open_CommandLine (strCmdLine)
   local prefix, text = strCmdLine:match("^%s*([^:%s]+):%s*(.-)%s*$")
   if not prefix then return end -- this can occur with Plugin.Command()
   prefix = prefix:lower()
-  if prefix == "lm" or prefix == "macro" then
+  ----------------------------------------------------------------------------
+  if prefix == "far" then
+    local cmd = text:match("%S*"):lower()
+    if cmd == "about" then
+      require("far2.far_about")()
+    elseif cmd == "config" then
+      require("far2.far_config")()
+    elseif cmd ~= "" then
+      ErrMsg(Msg.CL_UnsupportedCommand..prefix..":"..cmd)
+    end
+  ----------------------------------------------------------------------------
+  elseif prefix == "lm" or prefix == "macro" then
     if text == "" then
       About(); return;
     end
@@ -395,10 +406,6 @@ local function Open_CommandLine (strCmdLine)
       utils.UnloadMacros()
     elseif cmd == "about" then
       About()
-    elseif cmd == "farabout" then
-      require("far2.far_about")()
-    elseif cmd == "farconfig" then
-      require("far2.far_config")()
     elseif cmd == "test" then
       far.MacroPost( [[
         local function Quit(n) actl.Quit(n) Keys("Esc") end
@@ -413,8 +420,9 @@ local function Open_CommandLine (strCmdLine)
     elseif cmd == "browser" then
       macrobrowser()
     elseif cmd ~= "" then
-      ErrMsg(Msg.CL_UnsupportedCommand .. cmd)
+      ErrMsg(Msg.CL_UnsupportedCommand..prefix..":"..cmd)
     end
+  ----------------------------------------------------------------------------
   elseif prefix == "lua" or prefix == "moon" or prefix == "luas" or prefix == "moons" then
     if text=="" then About(); return; end
     local show = false

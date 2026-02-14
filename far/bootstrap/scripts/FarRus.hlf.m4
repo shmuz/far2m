@@ -216,7 +216,7 @@ far2m, который работает в режиме WX.
   Подстраиваться под размер консольного окна вместо консольного буфера.
 
   #-set:<parameter>=<value>#
-  Изменить значение конфигурационного параметра. См. ~lm:farconfig~@FarConfig@.
+  Изменить значение конфигурационного параметра. См. ~far:config~@FarConfig@.
 
 
   В командной строке можно указать не более двух путей (к каталогам, файлам, архивам;
@@ -4826,7 +4826,7 @@ $ #About FAR#
 
 @FarConfig
 $ #Редактор конфигурации#
- Запускается по команде #lm:farconfig#
+ Запускается по команде #far:config#
 
  Позволяет просмотреть и изменить все настройки Far Manager.
  Большинство настроек можно изменить через ~Меню параметров~@OptMenu@, но некоторые доступны только отсюда
@@ -4852,8 +4852,24 @@ $ #Редактор конфигурации#
  #Ctrl+H#
  Переключить отображение неизмененных параметров.
 
+ #Shift+F1#
+ Показать описание параметра, если оно доступно.
+
  #Ctrl+Alt+F#
  Переключить режим быстрой фильтрации.
+
+@Cmdline.ImitateNumpadKeys
+$ #far:config Cmdline.ImitateNumpadKeys#
+ This Boolean parameter controls if any of #+#, #-# and #*# characters entered
+in the empty command line should be treated as the matching Numpad character
+(it may be helpful when the keyboard does not have Numpad keys).
+
+ False - ^<wrap>Do not imitate Numpad keys
+ True  - Imitate Numpad keys
+
+ Default value: False (Do not imitate Numpad keys)
+
+ This parameter can be changed via ~far:config~@FarConfig@ only.
 
 @Index
 $ #Индекс файла помощи#
