@@ -4855,6 +4855,7 @@ $ #Редактор конфигурации#
  #Ctrl+Alt+F#
  Переключить режим быстрой фильтрации.
 
+
 @Cmdline.ImitateNumpadKeys
 $ #far:config Cmdline.ImitateNumpadKeys#
  This Boolean parameter controls if any of #+#, #-# and #*# characters entered
@@ -4868,6 +4869,7 @@ in the empty command line should be treated as the matching Numpad character
 
  This parameter can be changed via ~far:config~@FarConfig@ only.
 
+
 @Interface.UseStickyKeyEvent
 $ #far:config Interface.UseStickyKeyEvent#
  This Boolean parameter turns on and off the "Sticky keys" feature.
@@ -4878,6 +4880,55 @@ $ #far:config Interface.UseStickyKeyEvent#
  Default value: False (The feature is off)
 
  This parameter can be changed via ~far:config~@FarConfig@ only.
+
+
+@Macros.ShowPlayIndicator
+$ #far:config Macros.ShowPlayIndicator#
+ Этот логический (Boolean) параметр включает или выключает индикатор
+воспроизведения макропоследовательности (символ «\2FP\-» в левом
+верхнем углу экрана).
+
+ False - ^<wrap>Индикатор выключен.
+ True  - Индикатор включён.
+
+ Значение по умолчанию: True (индикатор включён).
+
+ Изменить этот параметр можно только через ~far:config~@FarConfig@.
+
+
+@Dialog.CBoxMaxHeight
+$ #far:config Dialog.CBoxMaxHeight#
+ Этот числовой параметр задаёт максимальную высоту списка истории
+в диалогах.
+
+ Значение по умолчанию: 8.
+
+ Изменить этот параметр можно только через ~far:config~@FarConfig@.
+
+
+@Editor.UndoDataSize
+$ #far:config Editor.UndoDataSize#
+ This numeric parameter limits the size of undo memory buffer in Editor.
+ Its value is expressed in sizeof(wchar_t), i.e. 8 byte units.
+
+ Default value: 0x800'0000 (which corresponds to 1024 MiB).
+
+ This parameter can be changed via ~far:config~@FarConfig@ only.
+
+
+@Editor.BSLikeDel
+$ #far:config Editor.BSLikeDel#
+ This Boolean parameter defines the behavior of the #BackSpace# key when
+a vertical block is selected in Editor.
+
+ False - ^<wrap>Deletes the character to the left of the cursor; keeps
+the (vertical) selection;
+ True  - Deletes the selected vertical block, like the #Del# key does.
+
+ Default value: True (deletes the selection).
+
+ This parameter can be changed via ~far:config~@FarConfig@ only.
+
 
 @Index
 $ #Индекс файла помощи#

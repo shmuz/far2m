@@ -4702,6 +4702,7 @@ to the left of the name.
  #Ctrl+Alt+F#
  Toggle quick filtering mode.
 
+
 @Cmdline.ImitateNumpadKeys
 $ #far:config Cmdline.ImitateNumpadKeys#
  This Boolean parameter controls if any of #+#, #-# and #*# characters entered
@@ -4715,6 +4716,7 @@ in the empty command line should be treated as the matching Numpad character
 
  This parameter can be changed via ~far:config~@FarConfig@ only.
 
+
 @Interface.UseStickyKeyEvent
 $ #far:config Interface.UseStickyKeyEvent#
  This Boolean parameter turns on and off the "Sticky keys" feature.
@@ -4725,6 +4727,54 @@ $ #far:config Interface.UseStickyKeyEvent#
  Default value: False (The feature is off)
 
  This parameter can be changed via ~far:config~@FarConfig@ only.
+
+
+@Macros.ShowPlayIndicator
+$ #far:config Macros.ShowPlayIndicator#
+ This Boolean parameter turns macro playback indicator (symbol ‘\2FP\-’
+at the top left-hand corner of the screen) on or off.
+
+ False - ^<wrap>The indicator is turned off.
+ True  - The indicator is turned on.
+
+ Default value: True (the indicator is on).
+
+ This parameter can be changed via ~far:config~@FarConfig@ only.
+
+
+@Dialog.CBoxMaxHeight
+$ #far:config Dialog.CBoxMaxHeight#
+ This numeric parameter specifies the maximum height of history list
+in dialogs.
+
+ Default value: 8.
+
+ This parameter can be changed via ~far:config~@FarConfig@ only.
+
+
+@Editor.UndoDataSize
+$ #far:config Editor.UndoDataSize#
+ This numeric parameter limits the size of undo memory buffer in Editor.
+ Its value is expressed in sizeof(wchar_t), i.e. 8 byte units.
+
+ Default value: 0x800'0000 (which corresponds to 1024 MiB).
+
+ This parameter can be changed via ~far:config~@FarConfig@ only.
+
+
+@Editor.BSLikeDel
+$ #far:config Editor.BSLikeDel#
+ This Boolean parameter defines the behavior of the #BackSpace# key when
+a vertical block is selected in Editor.
+
+ False - ^<wrap>Deletes the character to the left of the cursor; keeps
+the (vertical) selection;
+ True  - Deletes the selected vertical block, like the #Del# key does.
+
+ Default value: True (deletes the selection).
+
+ This parameter can be changed via ~far:config~@FarConfig@ only.
+
 
 @Index
 $ #Index help file#
