@@ -95,6 +95,33 @@ local function EditValue(asHex, key, name, tp, val0, val)
   end
 end
 
+local HelpTopicsMap = {
+  CodePages           = "CodePagesMenu";
+  Confirmations       = "ConfirmDlg";
+  Descriptions        = "FileDiz";
+  Interface           = "InterfSettings";
+  PluginConfirmations = "PluginsManagerSettings";
+  SavedDialogHistory  = "DialogSettings";
+  SavedFolderHistory  = "SystemSettings";
+  SavedHistory        = "SystemSettings";
+  SavedViewHistory    = "SystemSettings";
+  Screen              = "InterfSettings";
+  XLat                = "InputSettings";
+}
+
+local function ShowHelpTopic(key, name)
+  local flags = "FHELP_FARHELP FHELP_NOSHOWERROR"
+
+  if far.ShowHelp(nil, ("%s.%s"):format(key, name), flags) then return end
+
+  key = key:match("(.+)/") or key
+
+  local alias = HelpTopicsMap[key]
+  if alias then far.ShowHelp(nil, alias, flags); return; end
+
+  if far.ShowHelp(nil, key.."Settings", flags) then return end
+end
+
 local function FarConfig()
   local Hidden = false -- the options having default values are hidden
 
@@ -183,10 +210,7 @@ local function FarConfig()
         elseif Op == "reset" then
           ok = Far.SetConfig(idx, val0)
         elseif Op == "help" then
-          local flags = "FHELP_FARHELP FHELP_NOSHOWERROR"
-          if not far.ShowHelp(nil, ("%s.%s"):format(key, name), flags) then
-            far.ShowHelp(nil, ("%sSettings"):format(key), flags)
-          end
+          ShowHelpTopic(key, name)
         end
 
         if ok then
