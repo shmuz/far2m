@@ -4242,42 +4242,38 @@ $ #Запрос привилегий администратора#
 
 
 @KeyMacro
-$ #Macro command #
-    Keyboard macro commands or macro commands - are recorded sequences of key
+$ #Macro commands#
+ By default macros are loaded from files with #.lua# and #.moon# extensions residing in folder
+#~~/.config/far2m/Macros/scripts#. See more details in #$FARHOME/Manuals/macroapi_manual_linux.chm#.
+
+ Keyboard macro commands or macro commands - are recorded sequences of key
 presses that can be used to perform repetitive task unlimited number of times
 by pressing a single hotkey.
 
-    Each macro command has the following parameters:
+ Each macro command has the following parameters:
+ - ^<wrap>a hotkey, that will execute the recorded sequence when pressed;
+ - additional ~settings~@KeyMacroSetting@, that influence the method and
+   the area of execution of the recorded sequence.
 
-    - an hotkey, that will execute the recorded sequence when
-      pressed;
-    - additional ~settings~@KeyMacroSetting@, that influence the method and
-      the area of execution of the recorded sequence.
+ Macro commands are mostly used for:
+ - ^<wrap>Performing repetitive task unlimited number of times by
+pressing a single hotkey.
+ - Execution of special functions, which are represented by
+special commands in the text of the macro command.
+ - Redefine standard hotkeys, which are used by Far for
+execution of internal commands.
 
-    Macro commands may contain special ~commands~@KeyMacroLang@, that will be
-interpreted in a special way upon execution, those allowing to create complex
-constructions.
+ The main usage of macro commands is assignment of hotkeys for calling
+external plugins and for overloading Far actions.
 
-    Macro commands are mostly used for:
+ See also:
 
-    1. Performing repetitive task unlimited number of times by
-       pressing a single hotkey.
-    2. Execution of special functions, which are represented by
-       special commands in the text of the macro command.
-    3. Redefine standard hotkeys, which are used by FAR2M for
-       execution of internal commands.
-
-    The main usage of macro commands is assignment of hotkeys for calling
-external plugins and for overloading FAR2M actions.
-
-    See also:
-
-    ~Macro command areas of execution~@KeyMacroArea@
-    ~Hotkeys~@KeyMacroAssign@
-    ~Recording and playing-back macro commands~@KeyMacroRecPlay@
-    ~Deleting a macro command~@KeyMacroDelete@
-    ~Macro command settings~@KeyMacroSetting@
-    ~Commands, used inside the text of a macro command~@KeyMacroLang@
+ ~Macro command areas of execution~@KeyMacroArea@
+ ~Hotkeys~@KeyMacroAssign@
+ ~Recording and playing-back macro commands~@KeyMacroRecPlay@
+ ~Deleting a macro command~@KeyMacroDelete@
+ ~Macro command settings~@KeyMacroSetting@
+ ~The list of installed macros~@KeyMacroList@
 
 
 @KeyMacroArea
@@ -4716,6 +4712,17 @@ in the empty command line should be treated as the matching Numpad character
  True  - Imitate Numpad keys
 
  Default value: False (Do not imitate Numpad keys)
+
+ This parameter can be changed via ~far:config~@FarConfig@ only.
+
+@Interface.UseStickyKeyEvent
+$ #far:config Interface.UseStickyKeyEvent#
+ This Boolean parameter turns on and off the "Sticky keys" feature.
+
+ False - ^<wrap>The feature is off
+ True  - The feature is on
+
+ Default value: False (The feature is off)
 
  This parameter can be changed via ~far:config~@FarConfig@ only.
 
