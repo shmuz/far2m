@@ -945,10 +945,10 @@ function LF.test_Guids()
 
   asrt.table(far.Guids)
 
-  Keys("Esc"); print("lm:farconfig"); Keys("Enter")
+  Keys("Esc"); print("far:config"); Keys("Enter")
   test_one_guid( "AdvancedConfigId")
 
-  print("lm:farabout"); Keys("Enter")
+  print("far:about"); Keys("Enter")
   asrt.eq(Menu.Id, "01EB28A5-0A1A-4383-8536-0E4C24CC279B"); Keys("Esc");
 
   test_one_guid( "ApplyCommandId",           nil, "CtrlG")
