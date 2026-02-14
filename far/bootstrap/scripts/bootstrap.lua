@@ -109,7 +109,13 @@ local function MakeHlf(FileName)
     if line == "<%INDEX%>" then
       Write("   ~" .. Contents .. "~@Contents@")
 
-      table.sort(atopic, function(a,b) return utf8.ncasecmp(a.text, b.text) < 0; end)
+      table.sort(atopic,
+        function(a,b)  -- move far:config topics to the bottom + sort alphabetically
+          local afound, bfound = a.text:find("^far:config"), b.text:find("^far:config")
+          if afound == bfound then return utf8.ncasecmp(a.text, b.text) < 0
+          else return afound == nil
+          end
+        end)
 
       local ch = ""
       for _, item in ipairs(atopic) do
