@@ -159,7 +159,7 @@ Help::Help(const wchar_t *Topic, const wchar_t *Mask, DWORD aFlags):
 	{
 		ScreenObject::Flags.Clear(FHELPOBJ_ERRCANNOTOPENHELP);
 		InitKeyBar();
-		MacroArea = MACROAREA_HELP;
+		SetMacroArea(MACROAREA_HELP);
 		MoveToReference(1,1);
 		FrameManager->ExecuteModal(this); //OT
 	}

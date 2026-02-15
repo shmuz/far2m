@@ -440,8 +440,6 @@ public:
 	virtual int GetType() { return MODALTYPE_DIALOG; }
 	virtual const wchar_t *GetTypeName() { return L"[Dialog]"; };
 
-	virtual FARMACROAREA GetMacroArea();
-
 	/* $ Введена для нужд CtrlAltShift OT */
 	virtual int FastHide();
 	virtual void ResizeConsole();

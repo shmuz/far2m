@@ -60,6 +60,7 @@ class Frame: public ScreenObject
 		Frame *FrameToBack;
 		Frame *NextModal;
 		bool RegularIdle = false;
+		FARMACROAREA MacroArea;
 
 	protected:
 		bool DynamicallyBorn;
@@ -68,7 +69,6 @@ class Frame: public ScreenObject
 		int  KeyBarVisible;
 		int  TitleBarVisible;
 		KeyBar *FrameKeyBar;
-		FARMACROAREA MacroArea;
 
 	public:
 		Frame();
@@ -100,6 +100,7 @@ class Frame: public ScreenObject
 
 		bool IsTopFrame();
 		virtual FARMACROAREA GetMacroArea() { return MacroArea; }
+		void SetMacroArea(FARMACROAREA Area) { MacroArea = Area; }
 		void PushFrame(Frame* Modalized);
 		void DestroyAllModal();
 		void SetDynamicallyBorn(bool Born) {DynamicallyBorn=Born;}

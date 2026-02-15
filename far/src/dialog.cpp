@@ -458,6 +458,7 @@ Dialog::Dialog(FarDialogItem *SrcItem,		// Набор элементов диа�
 void Dialog::Init(FARWINDOWPROC DlgProc,	// Диалоговая процедура
 		LONG_PTR InitParam)					// Ассоцированные с диалогом данные
 {
+	SetMacroArea(MACROAREA_DIALOG);
 	SetDynamicallyBorn(false);				// $OT: По умолчанию все диалоги создаются статически
 	CanLoseFocus = false;
 	// Номер плагина, вызвавшего диалог (-1 = Main)
@@ -4693,11 +4694,6 @@ int Dialog::GetTypeAndName(FARString &strType, FARString &strName)
 		strName = lpwszTitle;
 
 	return MODALTYPE_DIALOG;
-}
-
-FARMACROAREA Dialog::GetMacroArea()
-{
-	return MACROAREA_DIALOG;
 }
 
 int Dialog::FastHide()

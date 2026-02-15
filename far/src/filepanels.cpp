@@ -67,7 +67,7 @@ FilePanels::FilePanels():
 	RightStateBeforeHide(0)
 {
 	_OT(SysLog(L"[%p] FilePanels::FilePanels()", this));
-	MacroArea = MACROAREA_SHELL;
+	SetMacroArea(MACROAREA_SHELL);
 	KeyBarVisible = Opt.ShowKeyBar;
 //  SetKeyBar(&MainKeyBar);
 //  _D(SysLog(L"MainKeyBar=0x%p",&MainKeyBar));

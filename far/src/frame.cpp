@@ -47,9 +47,9 @@ Frame::Frame():
 	ExitCode(-1),
 	KeyBarVisible(0),
 	TitleBarVisible(0),
-	FrameKeyBar(nullptr),
-	MacroArea(MACROAREA_OTHER)
+	FrameKeyBar(nullptr)
 {
+	SetMacroArea(MACROAREA_OTHER);
 	_OT(SysLog(L"[%p] Frame::Frame()", this));
 }
 

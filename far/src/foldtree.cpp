@@ -68,7 +68,7 @@ FolderTree::FolderTree(FARString &strResultFolder,int iModalMode,int IsStandalon
 	if ((Tree=new(std::nothrow) TreeList(FALSE)))
 	{
 		CtrlObject->Macro.SetArea(MACROAREA_FINDFOLDER);
-		MacroArea = MACROAREA_FINDFOLDER;
+		SetMacroArea(MACROAREA_FINDFOLDER);
 		Tree->SetModalMode(ModalMode);
 		Tree->SetPosition(X1,Y1,X2,Y2);
 

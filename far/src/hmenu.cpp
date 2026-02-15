@@ -55,6 +55,7 @@ HMenu::HMenu(HMenuData *Item,int ItemCount):
 	ItemCount(ItemCount),
 	VExitCode(-1)
 {
+	SetMacroArea(MACROAREA_MAINMENU);
 	SetDynamicallyBorn(false);
 	SetRestoreScreenMode(TRUE);
 	FrameManager->ModalizeFrame(this);
@@ -400,6 +401,7 @@ void HMenu::ProcessSubMenu(MenuDataEx *Data,int DataCount,
 	SubMenu->SetFlags(VMENU_WRAPMODE);
 	SubMenu->SetHelp(SubMenuHelp);
 	SubMenu->SetPosition(X,Y,0,0);
+	SubMenu->SetMacroArea(MACROAREA_MAINMENU);
 	SubMenu->Show();
 
 	while (!SubMenu->Done() && !CloseFARMenu)
