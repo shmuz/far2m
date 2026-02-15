@@ -5523,6 +5523,12 @@ int Editor::EditorControl(int Command, void *Param)
 
 			return FALSE;
 		}
+		case ECTL_SETVIRTUALFILENAME:
+			if (Param) {
+				m_virtualFileName = (wchar_t*)Param;
+				return TRUE;
+			}
+			return FALSE;
 	}
 
 	return FALSE;

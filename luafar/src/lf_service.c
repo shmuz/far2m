@@ -1600,6 +1600,15 @@ static int editor_ProcessKey(lua_State *L)
 	return 0;
 }
 
+static int editor_SetVirtualFileName(lua_State *L)
+{
+	int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
+	wchar_t *name = check_utf8_string(L, 2, NULL);
+	int ret = PSInfo.EditorControlV2(EditorId, ECTL_SETVIRTUALFILENAME, name);
+	lua_pushboolean(L, ret);
+	return 1;
+}
+
 typedef struct {
 	lua_State *L;
 	int nargs;
@@ -5963,6 +5972,7 @@ static const luaL_Reg editor_funcs[] =
 	PAIR( editor, SetString),
 	PAIR( editor, SetStringW),
 	PAIR( editor, SetTitle),
+	PAIR( editor, SetVirtualFileName),
 	PAIR( editor, TabToReal),
 	PAIR( editor, TurnOffMarkingBlock),
 	PAIR( editor, UndoRedo),
