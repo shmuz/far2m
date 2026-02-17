@@ -1315,6 +1315,9 @@ void Manager::RefreshCommit(Frame *aFrame)
 
 		aFrame->Refresh();
 
+		while (aFrame->NextModal)
+			aFrame = aFrame->NextModal;
+
 		CtrlObject->Macro.SetArea(aFrame->GetMacroArea());
 	}
 
