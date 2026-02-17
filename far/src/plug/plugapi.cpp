@@ -622,13 +622,8 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 			return Options;
 		}
 		case ACTL_REDRAWALL: {
-			auto Area = CtrlObject->Macro.GetArea();
 			int Ret = FrameManager->ProcessKey(KEY_CONSOLE_BUFFER_RESIZE);
 			FrameManager->Commit();
-			if (IsMenuArea(Area))    // пока что костыль
-			{
-				CtrlObject->Macro.SetArea(Area);
-			}
 			return Ret;
 		}
 

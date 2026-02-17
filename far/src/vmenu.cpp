@@ -113,6 +113,7 @@ VMenu::VMenu(const wchar_t *Title,    // заголовок меню
 	SetColors(nullptr);    // Установим цвет по умолчанию
 
 	if (!CheckFlags(VMENU_LISTBOX) && CtrlObject) {
+		SetMacroArea(MACROAREA_MENU);
 		PrevMacroArea = CtrlObject->Macro.GetArea();
 
 		if (!IsMenuArea(PrevMacroArea))
