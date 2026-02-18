@@ -128,7 +128,7 @@ struct DialogItemEx
 	FARString strMask;
 
 //	std::unique_ptr<DialogItemTrueColors> TrueColors;
-	uint64_t customItemColor[4];
+	uint64_t customItemColor[DLG_ITEM_MAX_CUST_COLORS];
 
 	DWORD Flags;
 	int DefaultButton;
@@ -162,10 +162,7 @@ struct DialogItemEx
 	void Clear()
 	{
 //		TrueColors.reset();
-		customItemColor[0] = 0;
-		customItemColor[1] = 0;
-		customItemColor[2] = 0;
-		customItemColor[3] = 0;
+		memset(customItemColor, 0, sizeof(customItemColor));
 		Type = 0;
 		X1 = 0;
 		Y1 = 0;
@@ -198,10 +195,8 @@ struct DialogItemEx
 		X2 = Other.X2;
 		Y1 = Other.Y1;
 		Y2 = Other.Y2;
-		customItemColor[0] = Other.customItemColor[0];
-		customItemColor[1] = Other.customItemColor[1];
-		customItemColor[2] = Other.customItemColor[2];
-		customItemColor[3] = Other.customItemColor[3];
+
+        memcpy(customItemColor, Other.customItemColor, sizeof(customItemColor));
 
 		Focus = Other.Focus;
 		Reserved = Other.Reserved;

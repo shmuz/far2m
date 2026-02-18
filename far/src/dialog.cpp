@@ -210,10 +210,7 @@ void DialogItemExToDialogItemEx(DialogItemEx *pSrc, DialogItemEx *pDest)
 	pDest->SelStart = pSrc->SelStart;
 	pDest->SelEnd = pSrc->SelEnd;
 
-	pDest->customItemColor[0] = pSrc->customItemColor[0];
-	pDest->customItemColor[1] = pSrc->customItemColor[1];
-	pDest->customItemColor[2] = pSrc->customItemColor[2];
-	pDest->customItemColor[3] = pSrc->customItemColor[3];
+    memcpy(pDest->customItemColor, pSrc->customItemColor, sizeof(pDest->customItemColor));
 }
 
 static void ConvertItemSmall(FarDialogItem *Item, const DialogItemEx *Data)
@@ -382,10 +379,7 @@ void DataToItemEx(const DialogDataEx *Data, DialogItemEx *Item, int Count)
 		Item[i].X2 = Data[i].X2;
 		Item[i].Y2 = Data[i].Y2;
 
-		Item[i].customItemColor[0] = 0;
-		Item[i].customItemColor[1] = 0;
-		Item[i].customItemColor[2] = 0;
-		Item[i].customItemColor[3] = 0;
+		memset(Item[i].customItemColor, 0, sizeof(Item[i].customItemColor));
 
 		if (Item[i].X2 < Item[i].X1)
 			Item[i].X2 = Item[i].X1;
@@ -1799,7 +1793,7 @@ void Dialog::ShowDialog(int ID)
 	DialogItemEx *CurItem;
 	int X, Y;
 	unsigned DrawItemCount;
-	uint64_t ItemColor[4] = {};
+	uint64_t ItemColor[DLG_ITEM_MAX_CUST_COLORS] = {};
 
 	// Если не разрешена отрисовка, то вываливаем.
 	if (IsEnableRedraw < 1 ||						// разрешена прорисовка ?
@@ -1826,7 +1820,7 @@ void Dialog::ShowDialog(int ID)
 
 		if (!DialogMode.Check(DMODE_NODRAWPANEL)) {
 
-			uint64_t Color[4] = {};
+			uint64_t Color[DLG_ITEM_MAX_CUST_COLORS] = {};
 
 			Color[0] = FarColorToReal(DialogMode.Check(DMODE_WARNINGSTYLE) ? COL_WARNDIALOGTEXT:COL_DIALOGTEXT);
 			DlgProc((HANDLE)this, DN_CTLCOLORDIALOG, 0, (LONG_PTR)Color);
@@ -1892,7 +1886,7 @@ void Dialog::ShowDialog(int ID)
 
 		CtlColorDlgItem(I, CurItem, ItemColor);
 
-		for (size_t g = 0; g < 4; g++)
+		for (size_t g = 0; g < DLG_ITEM_MAX_CUST_COLORS; g++)
 			if (CurItem->customItemColor[g])
 				ItemColor[g] = CurItem->customItemColor[g];
 
@@ -6316,7 +6310,7 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 		///case DM_GETCOLOR:///
 		case DM_GETTRUECOLOR: {
 			if (Param2)
-				memcpy((uint64_t *)Param2, CurItem->customItemColor, sizeof(uint64_t) * 4);
+				memcpy((void*)Param2, CurItem->customItemColor, sizeof(CurItem->customItemColor));
 //			if (!CurItem->TrueColors) {
 //				memset((uint64_t *)Param2, 0, sizeof(DialogItemTrueColors));
 //			} else {
@@ -6330,7 +6324,7 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 		///case DM_SETCOLOR:///
 		case DM_SETTRUECOLOR: {
 			if (Param2)
-				memcpy(CurItem->customItemColor, (uint64_t *)Param2, sizeof(uint64_t) * 4);
+				memcpy(CurItem->customItemColor, (void*)Param2, sizeof(CurItem->customItemColor));
 
 //			if (!CurItem->TrueColors) {
 //				CurItem->TrueColors.reset(new DialogItemTrueColors);

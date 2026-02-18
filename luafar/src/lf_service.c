@@ -3170,10 +3170,11 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 		case DM_GETDEFAULTCOLOR:
 		case DM_GETTRUECOLOR: //same as DM_GETCOLOR
 		{
-			uint64_t Colors[4];
+			const int MAXCOLORS = DLG_ITEM_MAX_CUST_COLORS;
+			uint64_t Colors[MAXCOLORS];
 			SendDlgMessage(hDlg, Msg, Param1, Colors);
-			lua_createtable(L, 4, 0);
-			for (int i=0; i < 4; i++) {
+			lua_createtable(L, MAXCOLORS, 0);
+			for (int i=0; i < MAXCOLORS; i++) {
 				bit64_push(L, Colors[i]);
 				lua_rawseti(L, -2, i+1);
 			}
@@ -3181,10 +3182,11 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 		}
 
 		case DM_SETTRUECOLOR: {  //same as DM_SETCOLOR
-			uint64_t Colors[4];
+			const int MAXCOLORS = DLG_ITEM_MAX_CUST_COLORS;
+			uint64_t Colors[MAXCOLORS];
 			luaL_argcheck(L, lua_istable(L,pos4), pos4, "table expected");
 			memset(Colors, 0, sizeof(Colors));
-			for (int i=0; i < 4; i++) {
+			for (int i=0; i < MAXCOLORS; i++) {
 				lua_rawgeti(L, pos4, i+1);
 				if (!lua_isnil(L, -1)) {
 					Colors[i] = check64(L, -1, NULL);
