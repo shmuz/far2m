@@ -141,7 +141,7 @@ bool ScanTree::GetFilteredMask()
   uint SlashPos=0;
   uint StartPos=0;
 #ifdef _WIN_ALL // Not treat the special NTFS \\?\d: path prefix as a wildcard.
-  if (CurMask.rfind(L"\\\\?\\",0)==0)
+  if (starts_with(CurMask,L"\\\\?\\"))
     StartPos=4;
 #endif
   for (uint I=StartPos;I<CurMask.size();I++)
@@ -217,8 +217,8 @@ bool ScanTree::GetNextMask()
   // starting from "share\".
   SpecPathLength=GetNamePos(CurMask);
 
-  // We prefer to scan entire disk if mask like \\server\share\ or c:\ is
-  // specified even without -r, but not with -r-. Use \\server\share\*.*,
+  // We prefer to scan entire disk if mask like \\server\share\ or c:\
+  // is specified even without -r, but not with -r-. Use \\server\share\*.*,
   // c:\*.* mask or -r- to scan only the root directory. Note that UNC names
   // are possible both in Win32 and Unix, just with proper path separators.
   if (Recurse!=RECURSE_DISABLE)

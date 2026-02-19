@@ -339,4 +339,3 @@ RemoveProgress::RemoveProgress(const std::string &site_dir, ProgressState &state
 	: ComplexOperationProgress(site_dir, state, wea_state, MRemoveTitle, false, false)
 {
 }
-
