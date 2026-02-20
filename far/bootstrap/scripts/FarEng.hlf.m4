@@ -4661,7 +4661,7 @@ $ #Макросы: Остальные области#
 
 @FarAbout
 $ #About FAR#
- Starts with the command #lm:farabout#
+ Starts with the command #far:about#
 
  Displays various information about Far Manager, its plugins and system environment.
 
