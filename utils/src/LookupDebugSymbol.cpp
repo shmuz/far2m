@@ -13,13 +13,19 @@
 	typedef Elf64_Phdr Elf_Phdr;
 	typedef Elf64_Shdr Elf_Shdr;
 	typedef Elf64_Sym  Elf_Sym;
+# if !defined(__ANDROID__)
 #  define ELF_ST_TYPE(INFO) ELF64_ST_TYPE(INFO)
+# endif
+
 # else
 	typedef Elf32_Ehdr Elf_Ehdr;
 	typedef Elf32_Phdr Elf_Phdr;
 	typedef Elf32_Shdr Elf_Shdr;
 	typedef Elf32_Sym  Elf_Sym;
+# if !defined(__ANDROID__)
 #  define ELF_ST_TYPE(INFO) ELF32_ST_TYPE(INFO)
+# endif
+
 # endif
 
 static FDScope s_initial_cwdfd(open(".", O_PATH));
