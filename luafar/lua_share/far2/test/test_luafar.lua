@@ -422,13 +422,13 @@ function LF.test_AdvControl_Colors()
   -- change the colors
   local arr, elem = {StartIndex=0; Flags=0}, 123
   for n=1,#allcolors do arr[n]=elem end
-  asrt.eq(1, far.AdvControl("ACTL_SETARRAYCOLOR", arr))
+  asrt.eq(1, far.AdvControl("ACTL_SETARRAYCOLOR", nil, arr))
   for n=1,#allcolors do
     asrt.eq(elem, far.AdvControl("ACTL_GETCOLOR", n-1))
   end
 
   -- restore the colors
-  asrt.eq(1, far.AdvControl("ACTL_SETARRAYCOLOR", allcolors))
+  asrt.eq(1, far.AdvControl("ACTL_SETARRAYCOLOR", nil, allcolors))
 end
 
 function LF.test_AdvControl_Misc()

@@ -4854,6 +4854,7 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 
 		case ACTL_SETARRAYCOLOR: {
 			struct FarSetColors fsc;
+			++pos2; // make compatible with far3
 			luaL_checktype(L, pos2, LUA_TTABLE);
 			lua_settop(L, pos2);
 			fsc.StartIndex = GetOptIntFromTable(L, "StartIndex", 0);
