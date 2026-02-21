@@ -4910,6 +4910,17 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 			PtrAdvControl(pd->ModuleNumber, Command, buf, NULL);
 			return push_utf8_string(L,buf,-1), 1;
 
+		case ACTL_GETWINDOWTYPE: {
+			struct WindowType wt = { sizeof(wt) };
+
+			if (PtrAdvControl(pd->ModuleNumber, Command, 0, &wt)) {
+				lua_createtable(L, 0, 1);
+				PutIntToTable(L, "Type", wt.Type);
+			}
+			else lua_pushnil(L);
+
+			return 1;
+		}
 		//case ACTL_KEYMACRO:  //  not supported as it's replaced by separate functions far.MacroXxx
 	}
 }
@@ -4937,6 +4948,7 @@ AdvCommand( GetSystemSettings,      ACTL_GETSYSTEMSETTINGS)
 AdvCommand( GetSysWordDiv,          ACTL_GETSYSWORDDIV)
 AdvCommand( GetWindowCount,         ACTL_GETWINDOWCOUNT)
 AdvCommand( GetWindowInfo,          ACTL_GETWINDOWINFO)
+AdvCommand( GetWindowType,          ACTL_GETWINDOWTYPE)
 AdvCommand( Quit,                   ACTL_QUIT)
 AdvCommand( RedrawAll,              ACTL_REDRAWALL)
 AdvCommand( SetArrayColor,          ACTL_SETARRAYCOLOR)
@@ -5908,6 +5920,7 @@ static const luaL_Reg actl_funcs[] =
 	PAIR( adv, GetSysWordDiv),
 	PAIR( adv, GetWindowCount),
 	PAIR( adv, GetWindowInfo),
+	PAIR( adv, GetWindowType),
 	PAIR( adv, Quit),
 	PAIR( adv, RedrawAll),
 	PAIR( adv, SetArrayColor),

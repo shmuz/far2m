@@ -243,7 +243,7 @@ BOOL WINAPI FarShowHelp(const wchar_t *ModuleName, const wchar_t *HelpTopic, DWO
 	return InterThreadCall<BOOL, FALSE>(std::bind(FarShowHelpSynched, ModuleName, HelpTopic, Flags));
 }
 
-static int ModalTypeToWindowType(int ModalType)
+static WINDOWINFO_TYPE ModalTypeToWindowType(int ModalType)
 {
 	switch(ModalType) {
 		default:                    return WTYPE_VIRTUAL;
@@ -255,8 +255,23 @@ static int ModalTypeToWindowType(int ModalType)
 		case MODALTYPE_HELP:        return WTYPE_HELP;
 		case MODALTYPE_COMBOBOX:    return WTYPE_COMBOBOX;
 		case MODALTYPE_FINDFOLDER:  return WTYPE_FINDFOLDER;
-		case MODALTYPE_USER:        return WTYPE_USER;
 	}
+}
+
+static Frame *GetFrameEx(int Pos)
+{
+	Frame *fr = nullptr;
+
+	//  Если Pos == -1 то берем текущий фрейм
+	if (Pos == -1) {
+		fr = FrameManager->GetTopModal();
+		if (fr && dynamic_cast<VMenu*>(fr) && !fr->IsVisible())
+			fr = FrameManager->GetCurrentFrame();
+	}
+	else
+		fr = FrameManager->GetFrame(Pos);
+
+	return fr;
 }
 
 /*
@@ -269,6 +284,22 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 	{
 		PluginSynchroManager.Synchro(ModuleNumber, Param1);
 		return 0;
+	}
+
+	if (ACTL_GETWINDOWTYPE == Command)
+	{
+		const auto info = static_cast<WindowType*>(Param2);
+		if (CheckStructSize(info)) {
+			Frame *CurFrame = GetFrameEx(-1);
+			if (CurFrame) {
+				auto Type = ModalTypeToWindowType(CurFrame->GetType());
+				if (Type != WTYPE_VIRTUAL) {
+					info->Type = Type;
+					return TRUE;
+				}
+			}
+		}
+		return FALSE;
 	}
 
 	struct Opt2Flags
@@ -406,19 +437,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 			if (FrameManager && Param1) {
 				FARString strType, strName;
 				WindowInfo *wi = (WindowInfo *)Param1;
-				Frame *f;
-
-				/*
-					$ 22.12.2001 VVM
-					+ Если Pos == -1 то берем текущий фрейм
-				*/
-				if (wi->Pos == -1) {
-					f = FrameManager->GetTopModal();
-					if (f && dynamic_cast<VMenu*>(f) && !f->IsVisible())
-						f = FrameManager->GetCurrentFrame();
-				}
-				else
-					f = FrameManager->GetFrame(wi->Pos);
+				Frame *f = GetFrameEx(wi->Pos);
 
 				if (!f)
 					return FALSE;

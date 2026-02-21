@@ -1153,6 +1153,7 @@ enum ADVANCED_CONTROL_COMMANDS
 	ACTL_PROGRESSNOTIFY       = 35,
 
 	ACTL_WINPORTBACKEND       = 40,
+	ACTL_GETWINDOWTYPE        = 41,
 };
 
 enum FAR_MACRO_CONTROL_COMMANDS
@@ -1583,11 +1584,8 @@ enum WINDOWINFO_TYPE
 	WTYPE_DIALOG,
 	WTYPE_VMENU,
 	WTYPE_HELP,
-#ifdef FAR_USE_INTERNALS
 	WTYPE_COMBOBOX,
 	WTYPE_FINDFOLDER,
-	WTYPE_USER,
-#endif // END FAR_USE_INTERNALS
 };
 
 enum WINDOWINFO_FLAGS
@@ -1610,6 +1608,12 @@ struct WindowInfo
 	int NameSize;
 	DWORD Flags;
 	intptr_t Id;
+};
+
+struct WindowType
+{
+	size_t StructSize;
+	enum WINDOWINFO_TYPE Type;
 };
 
 typedef uint32_t PROGRESSTATE;

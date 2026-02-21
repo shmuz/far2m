@@ -768,7 +768,6 @@ int Manager::ProcessKey(FarKey Key)
 				case MODALTYPE_VMENU:
 				case MODALTYPE_HELP:
 				case MODALTYPE_COMBOBOX:
-				case MODALTYPE_USER:
 				case MODALTYPE_FINDFOLDER:
 				default:
 					break;
