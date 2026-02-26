@@ -5315,9 +5315,8 @@ int Editor::EditorControl(int Command, void *Param)
 				_ECTLLOG(SysLog(L"}"));
 				ColorItem newcol{0};
 
-				int xoff = X1; // was: = Flags.Check(FEDITOR_DIALOGMEMOEDIT) ? 0 : X1;
-				newcol.StartPos = col->StartPos + (col->StartPos != -1 ? xoff : 0);
-				newcol.EndPos = col->EndPos + xoff;
+				newcol.StartPos = col->StartPos;
+				newcol.EndPos = col->EndPos;
 				newcol.Color = col->Color;
 				newcol.Flags = col->Color & 0xFFFF0000;
 				Edit *CurPtr = GetStringByNumber(col->StringNumber);
@@ -5361,9 +5360,8 @@ int Editor::EditorControl(int Command, void *Param)
 					return FALSE;
 				}
 
-				int xoff = Flags.Check(FEDITOR_DIALOGMEMOEDIT) ? 0 : X1;
-				col->StartPos = curcol.StartPos - xoff;
-				col->EndPos = curcol.EndPos - xoff;
+				col->StartPos = curcol.StartPos;
+				col->EndPos = curcol.EndPos;
 				col->Color = curcol.Color & 0xffff;
 				if (Command == ECTL_GETTRUECOLOR) {
 					EditorTrueColor *tcol = (EditorTrueColor *)Param;

@@ -2375,7 +2375,7 @@ void Edit::ApplyColor()
 		xTabEditorPos = Start;
 
 		// Пропускаем элементы раскраски у которых начальная позиция за экраном
-		if (Start > X2)
+		if (Start > ObjWidth - 1)
 			continue;
 
 		// Корректировка относительно табов (отключается, если присутствует флаг ECF_TAB1)
@@ -2421,13 +2421,11 @@ void Edit::ApplyColor()
 		xTabPos = RealEnd;
 		xTabEditorPos = End;
 
-		// Пропускаем элементы раскраски у которых конечная позиция меньше левой границы экрана
-		if (End < X1)
-			continue;
+		if (Start < 0)
+			Start = 0;
 
-		// Обрезаем раскраску элемента по экрану
-		Start = Max(Start, X1);
-		End = Min(End, X2);
+		if (End > ObjWidth - 1)
+			End = ObjWidth - 1;
 
 		// Устанавливаем длину раскрашиваемого элемента
 		Length = End - Start + 1;
@@ -2435,11 +2433,10 @@ void Edit::ApplyColor()
 		if (Length < X2)
 			Length-= CorrectPos;
 
-		// Раскрашиваем элемент, если есть что раскрашивать
 		if (Length > 0) {
-			ScrBuf.ApplyColor(Start, Y1, Start + Length - 1, Y1, Attr, m_SelColor);
-			// Не раскрашиваем выделение
-			//					m_SelColor >= COL_FIRSTPALETTECOLOR ? Palette[m_SelColor - COL_FIRSTPALETTECOLOR] : m_SelColor);
+			ScrBuf.ApplyColor(X1 + Start, Y1, X1 + Start + Length - 1, Y1, Attr, m_SelColor );
+					// Не раскрашиваем выделение
+//					SelColor >= COL_FIRSTPALETTECOLOR ? Palette[SelColor - COL_FIRSTPALETTECOLOR] : m_SelColor);
 		}
 	}
 }
