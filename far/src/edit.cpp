@@ -2435,8 +2435,8 @@ void Edit::ApplyColor()
 
 		if (Length > 0) {
 			ScrBuf.ApplyColor(X1 + Start, Y1, X1 + Start + Length - 1, Y1, Attr, m_SelColor );
-					// Не раскрашиваем выделение
-//					SelColor >= COL_FIRSTPALETTECOLOR ? Palette[SelColor - COL_FIRSTPALETTECOLOR] : m_SelColor);
+			// Не раскрашиваем выделение
+			// m_SelColor >= COL_FIRSTPALETTECOLOR ? Palette[m_SelColor - COL_FIRSTPALETTECOLOR] : m_SelColor);
 		}
 	}
 }
