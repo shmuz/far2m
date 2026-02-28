@@ -5842,14 +5842,14 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 							FARString strData;
 							((DlgEdit *)(CurItem->ObjPtr))->GetString(strData);
 							Ptr = strData.CPtr();
-							Len = (int)strData.GetLength() + 1;
+							Len = strData.GetLength();
 							if (!did->PtrLength)
 								did->PtrLength = Len;
 							else if (Len > did->PtrLength)
-								Len = did->PtrLength + 1;
-							if (Len > 0 && did->PtrData) {
+								Len = did->PtrLength;
+							if (did->PtrData) {
 								wmemmove(did->PtrData, Ptr, Len);
-								did->PtrData[Len - 1] = 0;
+								did->PtrData[Len] = 0;
 							}
 						}
 						break;
@@ -6010,7 +6010,7 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 					case DI_FIXEDIT:
 					case DI_LISTBOX:	// меняет только текущий итем
 						CurItem->strData = did->PtrData;
-						Len = (int)CurItem->strData.GetLength();
+						Len = CurItem->strData.GetLength();
 						break;
 					default:
 						Len = 0;

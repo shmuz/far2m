@@ -186,7 +186,7 @@ int Editor::SetRawData(const wchar_t *SrcBuf, int SizeSrcBuf, int TextFormat)
 		m_CurLine = m_TopList;
 		m_TopScreen = m_TopList;
 		m_NumLine = 0;
-		TextChanged(1);
+		TextChanged(true);
 		return TRUE;
 	}
 
@@ -199,13 +199,14 @@ int Editor::SetRawData(const wchar_t *SrcBuf, int SizeSrcBuf, int TextFormat)
 		m_CurLine = m_TopList;
 		m_TopScreen = m_TopList;
 		m_NumLine = 0;
-		TextChanged(1);
+		TextChanged(true);
 		return TRUE;
 	}
 
 	const wchar_t *ptr = SrcBuf;
 	const wchar_t *end = SrcBuf + SizeSrcBuf;
 	const wchar_t *text_eol = *m_GlobalEOL ? m_GlobalEOL : NATIVE_EOLW;
+	bool insert_extra_string = false;
 
 	while (ptr < end) {
 		const wchar_t *line_start = ptr;
@@ -239,17 +240,18 @@ int Editor::SetRawData(const wchar_t *SrcBuf, int SizeSrcBuf, int TextFormat)
 		if (!line)
 			return FALSE;
 
-		if (eol_len > 0) {
-			line->SetEOL(TextFormat ? text_eol : eol);
-		}
-
 		if (eol_len == 0)
 			break;
 
+		line->SetEOL(TextFormat ? text_eol : eol);
 		ptr = eol_ptr + eol_len;
+		if (ptr >= end) {
+			insert_extra_string = true;
+			break;
+		}
 	}
 
-	if (!m_TopList)
+	if (!m_TopList || insert_extra_string)
 		InsertString(nullptr, 0);
 
 	m_CurLine = m_TopList;
