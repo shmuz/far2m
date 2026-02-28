@@ -97,8 +97,8 @@ public:
 
 	void SetEditBeyondEnd(int Mode);
 
-	void SetClearFlag(int Flag);
-	int GetClearFlag();
+	void SetClearFlag(bool Add);
+	bool GetClearFlag();
 
 	void SetString(const wchar_t *Str);
 	void InsertString(const wchar_t *Str);

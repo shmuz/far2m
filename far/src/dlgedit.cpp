@@ -295,15 +295,15 @@ void DlgEdit::SetEditBeyondEnd(int Mode)
 		lineEdit->SetEditBeyondEnd(Mode);
 }
 
-void DlgEdit::SetClearFlag(int Flag)
+void DlgEdit::SetClearFlag(bool Add)
 {
 	if (Type == DLGEDIT_MULTILINE)
-		multiEdit->SetClearFlag(Flag);
+		multiEdit->SetClearFlag(Add);
 	else
-		lineEdit->SetClearFlag(Flag);
+		lineEdit->SetClearFlag(Add);
 }
 
-int DlgEdit::GetClearFlag()
+bool DlgEdit::GetClearFlag()
 {
 	if (Type == DLGEDIT_MULTILINE)
 		return multiEdit->GetClearFlag();

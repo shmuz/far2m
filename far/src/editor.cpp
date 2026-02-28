@@ -5150,8 +5150,6 @@ int Editor::EditorControl(int Command, void *Param)
 			return FALSE;
 		}
 		case ECTL_GETFILENAME: {
-			if (m_virtualFileName.IsEmpty())
-				return 0;
 			if (Param) {
 				wcscpy(reinterpret_cast<LPWSTR>(Param), m_virtualFileName);
 			}
@@ -6420,11 +6418,11 @@ int Editor::GetOvertypeMode()
 
 void Editor::SetEditBeyondEnd(int Mode) {}
 
-void Editor::SetClearFlag(int Flag) {}
+void Editor::SetClearFlag(bool Add) {}
 
-int Editor::GetClearFlag()
+bool Editor::GetClearFlag()
 {
-	return 0;
+	return false;
 }
 
 int Editor::GetCurCol()

@@ -229,8 +229,8 @@ public:
 	bool Search(const FARString &Str, FARString &ReplaceStr, int Position, int Case, int WholeWords,
 			int Reverse, RegExp *RE, int& SearchLength);
 
-	void SetClearFlag(int Flag) { Flags.Change(FEDITLINE_CLEARFLAG, Flag); }
-	int GetClearFlag() { return Flags.Check(FEDITLINE_CLEARFLAG); }
+	void SetClearFlag(bool Add) { Flags.Change(FEDITLINE_CLEARFLAG, Add); }
+	bool GetClearFlag() { return Flags.Check(FEDITLINE_CLEARFLAG); }
 	void SetCurPos(int NewPos)
 	{
 		m_CurPos = NewPos;

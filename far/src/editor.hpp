@@ -408,8 +408,8 @@ public:
 	void SetOvertypeMode(int Mode);
 	int GetOvertypeMode();
 	void SetEditBeyondEnd(int Mode);
-	void SetClearFlag(int Flag);
-	int GetClearFlag();
+	void SetClearFlag(bool Add);
+	bool GetClearFlag();
 
 	int GetCurCol();
 	int GetCurRow() { return m_NumLine; }

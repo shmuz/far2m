@@ -869,7 +869,7 @@ int Edit::ProcessKey(FarKey Key)
 			return FALSE;
 
 		case KEY_CTRLU:
-			SetClearFlag(0);
+			SetClearFlag(false);
 			Select(-1, 0);
 			Show();
 			return FALSE;
@@ -1939,7 +1939,7 @@ int Edit::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 			|| MouseEvent->dwMousePosition.Y != Y1)
 		return FALSE;
 
-	// SetClearFlag(0); // пусть едитор сам заботится о снятии клеар-текста?
+	// SetClearFlag(false); // пусть едитор сам заботится о снятии клеар-текста?
 	SetCellCurPos(MouseEvent->dwMousePosition.X - X1 + m_LeftPos);
 
 	if (!Flags.Check(FEDITLINE_PERSISTENTBLOCKS))

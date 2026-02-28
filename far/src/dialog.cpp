@@ -974,12 +974,12 @@ unsigned Dialog::InitDialogObjects(unsigned ID)
 					DialogEdit->SetEditBeyondEnd(FALSE);
 
 					if (!DialogMode.Check(DMODE_INITOBJECTS))
-						DialogEdit->SetClearFlag(1);
+						DialogEdit->SetClearFlag(true);
 				}
 			}
 
 			if (CurItem->Type == DI_COMBOBOX)
-				DialogEdit->SetClearFlag(1);
+				DialogEdit->SetClearFlag(true);
 
 			/*
 				$ 01.08.2000 SVS
@@ -3220,7 +3220,7 @@ int Dialog::ProcessKey(FarKey Key)
 				}
 
 				if (Key == KEY_OP_XLAT && !(Item[FocusPos]->Flags & DIF_READONLY)) {
-					edt->SetClearFlag(0);
+					edt->SetClearFlag(false);
 					edt->Xlat();
 
 					// иначе неправильно работает ctrl-end
@@ -3560,7 +3560,7 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 
 						if (MsY == EditY1 && Type == DI_COMBOBOX && (Item[I]->Flags & DIF_DROPDOWNLIST)
 								&& MsX >= EditX1 && MsX <= EditX2 + 1) {
-							EditLine->SetClearFlag(0);
+							EditLine->SetClearFlag(false);
 
 							ChangeFocus2(I);
 							ShowDialog();
@@ -3573,7 +3573,7 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 						ChangeFocus2(I);
 
 						if (EditLine->ProcessMouse(MouseEvent)) {
-							EditLine->SetClearFlag(0);	// а может это делать в самом edit?
+							EditLine->SetClearFlag(false);	// а может это делать в самом edit?
 
 							/*
 								$ 23.06.2001 KM
@@ -3585,7 +3585,7 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 						} else {
 							// Проверка на DI_COMBOBOX здесь лишняя. Убрана (KM).
 							if (MsX == EditX2 + 1 && MsY == EditY1 && ItemHasDropDownArrow(Item[I])) {
-								EditLine->SetClearFlag(0);	// раз уж покусились на, то и...
+								EditLine->SetClearFlag(false);	// раз уж покусились на, то и...
 
 								ChangeFocus2(I);
 
@@ -4368,7 +4368,7 @@ bool Dialog::SelectFromEditHistory(DialogItemEx *CurItem, DlgEdit *EditLine, con
 	if (ret != HRT_CANCEL) {
 		EditLine->SetString(strStr);
 		EditLine->SetLeftPos(0);
-		EditLine->SetClearFlag(0);
+		EditLine->SetClearFlag(false);
 		Redraw();
 		return true;
 	}
@@ -5992,7 +5992,7 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 		/*****************************************************************/
 		case DM_SETTEXT: {
 			if (Param2) {
-				int NeedInit = TRUE;
+				bool NeedInit = true;
 				FarDialogItemData *did = (FarDialogItemData *)Param2;
 
 				switch (Type) {
@@ -6041,15 +6041,15 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 					case DI_RADIOBUTTON:
 						break;
 					case DI_MEMOEDIT:
-						NeedInit = FALSE;
+						NeedInit = false;
 						if (CurItem->ObjPtr) {
 							DlgEdit *EditLine = (DlgEdit *)(CurItem->ObjPtr);
-							int ReadOnly = EditLine->GetReadOnly();
-							EditLine->SetReadOnly(0);
+							bool ReadOnly = EditLine->GetReadOnly();
+							EditLine->SetReadOnly(false);
 							EditLine->SetString(CurItem->strData);
 							EditLine->SetReadOnly(ReadOnly);
 							if (Dlg->DialogMode.Check(DMODE_INITOBJECTS))
-								EditLine->SetClearFlag(0);
+								EditLine->SetClearFlag(false);
 							EditLine->Select(-1, 0);
 						}
 						break;
@@ -6057,7 +6057,7 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 					case DI_EDIT:
 					case DI_PSWEDIT:
 					case DI_FIXEDIT:
-						NeedInit = FALSE;
+						NeedInit = false;
 
 						if (CurItem->ObjPtr) {
 							DlgEdit *EditLine = (DlgEdit *)(CurItem->ObjPtr);
@@ -6069,7 +6069,7 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 							EditLine->SetReadOnly(ReadOnly);
 
 							if (Dlg->DialogMode.Check(DMODE_INITOBJECTS))	// не меняем клеар-флаг, пока не проиницализировались
-								EditLine->SetClearFlag(0);
+								EditLine->SetClearFlag(false);
 
 							EditLine->Select(-1, 0);	// снимаем выделение
 														// ...оно уже снимается в DlgEdit::SetString()
@@ -6388,10 +6388,10 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 		{
 			if (FarIsEdit(Type)) {
 				DlgEdit *EditLine = (DlgEdit *)(CurItem->ObjPtr);
-				int ClearFlag = EditLine->GetClearFlag();
+				bool ClearFlag = EditLine->GetClearFlag();
 
 				if (Param2 >= 0) {
-					EditLine->SetClearFlag((int)Param2);
+					EditLine->SetClearFlag(Param2 != 0);
 					EditLine->Select(-1, 0);					// снимаем выделение
 
 					if (Dlg->DialogMode.Check(DMODE_SHOW))		//???
