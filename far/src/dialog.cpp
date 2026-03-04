@@ -986,13 +986,10 @@ unsigned Dialog::InitDialogObjects(unsigned ID)
 				Еже ли стоит флаг DIF_USELASTHISTORY и непустая строка ввода,
 				то подстанавливаем первое значение из History
 			*/
-			if (CurItem->Type == DI_EDIT
-					&& (ItemFlags & (DIF_HISTORY | DIF_USELASTHISTORY))
-							== (DIF_HISTORY | DIF_USELASTHISTORY)) {
+			if (CurItem->Type == DI_EDIT && (ItemFlags & DIF_HISTORY) && (ItemFlags & DIF_USELASTHISTORY))
 				ProcessLastHistory(CurItem, -1);
-			}
 
-			if ((ItemFlags & DIF_MANUALADDHISTORY) && !(ItemFlags & DIF_HISTORY))
+			if (!(ItemFlags & DIF_HISTORY))
 				ItemFlags&= ~DIF_MANUALADDHISTORY;	// сбросим нафиг.
 
 			/*
@@ -1027,11 +1024,13 @@ unsigned Dialog::InitDialogObjects(unsigned ID)
 			if (Type == DI_FIXEDIT)
 				DialogEdit->SetCurPos(0);
 
-			// Для обычных строк отрубим постоянные блоки
-			if (!(ItemFlags & DIF_EDITOR))
-				DialogEdit->SetPersistentBlocks(Opt.Dialogs.EditBlock);
+			if (Type != DI_MEMOEDIT) {
+				// Для обычных строк отрубим постоянные блоки
+				if (!(ItemFlags & DIF_EDITOR))
+					DialogEdit->SetPersistentBlocks(Opt.Dialogs.EditBlock);
 
-			DialogEdit->SetDelRemovesBlocks(Opt.Dialogs.DelRemovesBlocks);
+				DialogEdit->SetDelRemovesBlocks(Opt.Dialogs.DelRemovesBlocks);
+			}
 
 			if (ItemFlags & DIF_READONLY)
 				DialogEdit->SetReadOnly(true);
