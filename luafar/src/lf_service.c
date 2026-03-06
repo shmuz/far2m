@@ -1609,6 +1609,15 @@ static int editor_SetVirtualFileName(lua_State *L)
 	return 1;
 }
 
+static int editor_SetSavedState(lua_State *L)
+{
+	int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
+	int value = lua_toboolean(L, 2);
+	int ret = PSInfo.EditorControlV2(EditorId, ECTL_SETSAVEDSTATE, &value);
+	lua_pushboolean(L, ret);
+	return 1;
+}
+
 typedef struct {
 	lua_State *L;
 	int nargs;
@@ -5985,6 +5994,7 @@ static const luaL_Reg editor_funcs[] =
 	PAIR( editor, SetKeyBar),
 	PAIR( editor, SetParam),
 	PAIR( editor, SetPosition),
+	PAIR( editor, SetSavedState),
 	PAIR( editor, SetString),
 	PAIR( editor, SetStringW),
 	PAIR( editor, SetTitle),

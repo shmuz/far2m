@@ -5523,6 +5523,12 @@ int Editor::EditorControl(int Command, void *Param)
 				return TRUE;
 			}
 			return FALSE;
+		case ECTL_SETSAVEDSTATE:
+			if (Param) {
+				Flags.Change(FEDITOR_MODIFIED | FEDITOR_WASCHANGED, *static_cast<int*>(Param) == 0);
+				return TRUE;
+			}
+			return FALSE;
 	}
 
 	return FALSE;
