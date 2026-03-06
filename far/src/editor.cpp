@@ -178,16 +178,20 @@ void Editor::KeepInitParameters()
 */
 int Editor::SetRawData(const wchar_t *SrcBuf, int SizeSrcBuf, int TextFormat)
 {
-	FreeAllocatedData(true);
-
-	if (!SrcBuf) {
-		fprintf(stderr, "Editor::SetRawData null\n");
-		InsertString(nullptr, 0);
+	auto ExitActions = [&] {
 		m_CurLine = m_TopList;
 		m_TopScreen = m_TopList;
 		m_NumLine = 0;
 		TextChanged(true);
 		return TRUE;
+	};
+
+	FreeAllocatedData(true);
+
+	if (!SrcBuf) {
+		fprintf(stderr, "Editor::SetRawData null\n");
+		InsertString(nullptr, 0);
+		return ExitActions();
 	}
 
 	if (SizeSrcBuf < 0)
@@ -196,11 +200,7 @@ int Editor::SetRawData(const wchar_t *SrcBuf, int SizeSrcBuf, int TextFormat)
 	if (SizeSrcBuf == 0) {
 		fprintf(stderr, "Editor::SetRawData empty\n");
 		InsertString(nullptr, 0);
-		m_CurLine = m_TopList;
-		m_TopScreen = m_TopList;
-		m_NumLine = 0;
-		TextChanged(true);
-		return TRUE;
+		return ExitActions();
 	}
 
 	const wchar_t *ptr = SrcBuf;
@@ -254,11 +254,7 @@ int Editor::SetRawData(const wchar_t *SrcBuf, int SizeSrcBuf, int TextFormat)
 	if (!m_TopList || insert_extra_string)
 		InsertString(nullptr, 0);
 
-	m_CurLine = m_TopList;
-	m_TopScreen = m_TopList;
-	m_NumLine = 0;
-	TextChanged(true);
-	return TRUE;
+	return ExitActions();
 }
 
 /*
