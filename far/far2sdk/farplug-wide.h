@@ -2739,9 +2739,8 @@ struct OpenPluginInfo
 
 enum OPENPLUGIN_OPENFROM
 {
-	OPEN_FROM_MASK          = 0x000000FF,
-
 	OPEN_DISKMENU           = 0,
+	OPEN_LEFTDISKMENU       = OPEN_DISKMENU,
 	OPEN_PLUGINSMENU        = 1,
 	OPEN_FINDLIST           = 2,
 	OPEN_SHORTCUT           = 3,
@@ -2751,6 +2750,7 @@ enum OPENPLUGIN_OPENFROM
 	OPEN_FILEPANEL          = 7,
 	OPEN_DIALOG             = 8,
 	OPEN_ANALYSE            = 9,
+	OPEN_RIGHTDISKMENU      = 10,
 
 	OPEN_FROMMACRO          = 12,
 	OPEN_LUAMACRO           = 100,

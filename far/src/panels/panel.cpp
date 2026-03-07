@@ -738,9 +738,16 @@ int Panel::ChangeDiskMenu(int Pos, int FirstCall)
 bool Panel::SetLocation_Plugin(bool file_plugin, Plugin *plugin, const wchar_t *path,
 		const wchar_t *host_file, LONG_PTR item)
 {
-	PHPTR hPlugin = file_plugin
-		? CtrlObject->Plugins.OpenFilePlugin(host_file, OPM_NONE, OFP_ALTERNATIVE, plugin)
-		: CtrlObject->Plugins.OpenPlugin(plugin, OPEN_DISKMENU, (void*)item);
+	PHPTR hPlugin;
+	if (file_plugin) {
+		hPlugin = CtrlObject->Plugins.OpenFilePlugin(host_file, OPM_NONE, OFP_ALTERNATIVE, plugin);
+	}
+	else {
+		auto OpenFrom = plugin->UseMenuGuids()
+				? (this == CtrlObject->Cp()->LeftPanel ? OPEN_LEFTDISKMENU : OPEN_RIGHTDISKMENU)
+				: OPEN_DISKMENU;
+		hPlugin = CtrlObject->Plugins.OpenPlugin(plugin, OpenFrom, (void*)item);
+	}
 
 	if (hPlugin == nullptr) {
 		fprintf(stderr, "SetLocation_Plugin(%d, %p, '%ls', '%ls', %lld) FAILED plugin open\n", file_plugin,
