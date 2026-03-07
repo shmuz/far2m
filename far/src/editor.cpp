@@ -4916,8 +4916,7 @@ int Editor::EditorControl(int Command, void *Param)
 					return FALSE;
 				}
 
-				CurPtr->GetBinaryString(const_cast<const wchar_t **>(&GetString->StringText),
-						const_cast<const wchar_t **>(&GetString->StringEOL), GetString->StringLength);
+				CurPtr->GetBinaryString(&GetString->StringText, &GetString->StringEOL, GetString->StringLength);
 				GetString->SelStart = -1;
 				GetString->SelEnd = 0;
 				int DestLine = GetString->StringNumber;
@@ -4949,6 +4948,7 @@ int Editor::EditorControl(int Command, void *Param)
 
 			break;
 		}
+
 		case ECTL_INSERTSTRING: {
 			if (Flags.Check(FEDITOR_LOCKMODE)) {
 				_ECTLLOG(SysLog(L"FEDITOR_LOCKMODE!"));
@@ -4967,6 +4967,7 @@ int Editor::EditorControl(int Command, void *Param)
 
 			return TRUE;
 		}
+
 		case ECTL_INSERTTEXT:
 		case ECTL_INSERTTEXT_V2: {
 			if (!Param)
@@ -4993,6 +4994,7 @@ int Editor::EditorControl(int Command, void *Param)
 
 			return TRUE;
 		}
+
 		case ECTL_SETSTRING: {
 			EditorSetString *SetString = (EditorSetString *)Param;
 
@@ -5059,6 +5061,7 @@ int Editor::EditorControl(int Command, void *Param)
 
 			return TRUE;
 		}
+
 		case ECTL_DELETESTRING: {
 			if (Flags.Check(FEDITOR_LOCKMODE)) {
 				_ECTLLOG(SysLog(L"FEDITOR_LOCKMODE!"));
@@ -5069,6 +5072,7 @@ int Editor::EditorControl(int Command, void *Param)
 			DeleteString(m_CurLine, m_NumLine, false, m_NumLine);
 			return TRUE;
 		}
+
 		case ECTL_DELETECHAR: {
 			if (Flags.Check(FEDITOR_LOCKMODE)) {
 				_ECTLLOG(SysLog(L"FEDITOR_LOCKMODE!"));
@@ -5081,6 +5085,7 @@ int Editor::EditorControl(int Command, void *Param)
 			m_Pasting--;
 			return TRUE;
 		}
+
 		case ECTL_GETINFO: {
 			EditorInfo *Info = (EditorInfo *)Param;
 
@@ -5147,12 +5152,14 @@ int Editor::EditorControl(int Command, void *Param)
 			_ECTLLOG(SysLog(L"Error: !Param"));
 			return FALSE;
 		}
+
 		case ECTL_GETFILENAME: {
 			if (Param) {
 				wcscpy(reinterpret_cast<LPWSTR>(Param), m_virtualFileName);
 			}
 			return static_cast<int>(m_virtualFileName.GetLength() + 1);
 		}
+
 		case ECTL_SETPOSITION: {
 			// "Вначале было слово..."
 			if (Param) {
@@ -5217,6 +5224,7 @@ int Editor::EditorControl(int Command, void *Param)
 			_ECTLLOG(SysLog(L"Error: !Param"));
 			break;
 		}
+
 		case ECTL_SELECT: {
 			if (Param) {
 				EditorSelect *Sel = (EditorSelect *)Param;
@@ -5231,11 +5239,13 @@ int Editor::EditorControl(int Command, void *Param)
 			fprintf(stderr, "ECTL_SELECT: !Param\n");
 			break;
 		}
+
 		case ECTL_REDRAW: {
 			Show();
 			ScrBuf.Flush();
 			return TRUE;
 		}
+
 		case ECTL_TABTOREAL: {
 			if (Param) {
 				EditorConvertPos *ecp = (EditorConvertPos *)Param;
@@ -5257,6 +5267,7 @@ int Editor::EditorControl(int Command, void *Param)
 
 			break;
 		}
+
 		case ECTL_REALTOTAB: {
 			if (Param) {
 				EditorConvertPos *ecp = (EditorConvertPos *)Param;
@@ -5278,6 +5289,7 @@ int Editor::EditorControl(int Command, void *Param)
 
 			break;
 		}
+
 		case ECTL_EXPANDTABS: {
 			if (Flags.Check(FEDITOR_LOCKMODE)) {
 				_ECTLLOG(SysLog(L"FEDITOR_LOCKMODE!"));
@@ -5297,7 +5309,7 @@ int Editor::EditorControl(int Command, void *Param)
 
 			return TRUE;
 		}
-		// TODO: Если DI_MEMOEDIT не будет юзать раскаску, то должно выполняется в FileEditor::EditorControl(), в диалоге - нафиг ненать
+
 		case ECTL_ADDTRUECOLOR:
 		case ECTL_ADDCOLOR: {
 			if (Param) {
@@ -5337,7 +5349,7 @@ int Editor::EditorControl(int Command, void *Param)
 
 			break;
 		}
-		// TODO: Если DI_MEMOEDIT не будет юзать раскаску, то должно выполняется в FileEditor::EditorControl(), в диалоге - нафиг ненать
+
 		case ECTL_GETTRUECOLOR:
 		case ECTL_GETCOLOR: {
 			if (Param) {
@@ -5375,12 +5387,14 @@ int Editor::EditorControl(int Command, void *Param)
 
 			break;
 		}
+
 		// должно выполняется в FileEditor::EditorControl()
 		case ECTL_PROCESSKEY: {
 			_ECTLLOG(SysLog(L"Key = %ls", _FARKEY_ToName((DWORD)Param)));
 			ProcessKey((int)(INT_PTR)Param);
 			return TRUE;
 		}
+
 		/* $ 16.02.2001 IS
 			 Изменение некоторых внутренних настроек редактора. Param указывает на
 			 структуру EditorSetParameter
@@ -5401,28 +5415,34 @@ int Editor::EditorControl(int Command, void *Param)
 
 						rc = (int)m_EdOpt.strWordDiv.GetLength() + 1;
 						break;
+
 					case ESPT_SETWORDDIV:
 						_ECTLLOG(SysLog(L"  wszParam    =[%ls]", espar->Param.wszParam));
 						SetWordDiv((!espar->Param.wszParam || !*espar->Param.wszParam)
 										? Opt.strWordDiv.CPtr()
 										: espar->Param.wszParam);
 						break;
+
 					case ESPT_TABSIZE:
 						_ECTLLOG(SysLog(L"  iParam      =%d", espar->Param.iParam));
 						SetTabSize(espar->Param.iParam);
 						break;
+
 					case ESPT_EXPANDTABS:
 						_ECTLLOG(SysLog(L"  iParam      =%ls", espar->Param.iParam ? L"On" : L"Off"));
 						SetConvertTabs(espar->Param.iParam);
 						break;
+
 					case ESPT_AUTOINDENT:
 						_ECTLLOG(SysLog(L"  iParam      =%ls", espar->Param.iParam ? L"On" : L"Off"));
 						SetAutoIndent(espar->Param.iParam);
 						break;
+
 					case ESPT_CURSORBEYONDEOL:
 						_ECTLLOG(SysLog(L"  iParam      =%ls", espar->Param.iParam ? L"On" : L"Off"));
 						SetCursorBeyondEOL(espar->Param.iParam);
 						break;
+
 					case ESPT_CHARCODEBASE:
 						_ECTLLOG(SysLog(L"  iParam      =%ls",
 								(!espar->Param.iParam
@@ -5433,7 +5453,8 @@ int Editor::EditorControl(int Command, void *Param)
 																							: L"?????")))));
 						SetCharCodeBase(espar->Param.iParam);
 						break;
-						/* $ 07.08.2001 IS сменить кодировку из плагина */
+
+					/* $ 07.08.2001 IS сменить кодировку из плагина */
 					case ESPT_CODEPAGE: {
 						if ((UINT)espar->Param.iParam == CP_AUTODETECT)    // BUGBUG
 						{
@@ -5451,19 +5472,23 @@ int Editor::EditorControl(int Command, void *Param)
 							Show();
 						}
 					} break;
+
 					/* $ 29.10.2001 IS изменение настройки "Сохранять позицию файла" */
 					case ESPT_SAVEFILEPOSITION:
 						_ECTLLOG(SysLog(L"  iParam      =%ls", espar->Param.iParam ? L"On" : L"Off"));
 						SetSavePosMode(espar->Param.iParam, -1);
 						break;
+
 						/* $ 23.03.2002 IS запретить/отменить изменение файла */
 					case ESPT_LOCKMODE:
 						_ECTLLOG(SysLog(L"  iParam      =%ls", espar->Param.iParam ? L"On" : L"Off"));
 						Flags.Change(FEDITOR_LOCKMODE, espar->Param.iParam);
 						break;
+
 					case ESPT_SHOWWHITESPACE:
 						SetShowWhiteSpace(espar->Param.iParam);
 						break;
+
 					default:
 						_ECTLLOG(SysLog(L"}"));
 						return FALSE;
@@ -5475,11 +5500,13 @@ int Editor::EditorControl(int Command, void *Param)
 
 			return FALSE;
 		}
+
 		// Убрать флаг редактора "осуществляется выделение блока"
 		case ECTL_TURNOFFMARKINGBLOCK: {
 			TurnOffMarkingBlock();
 			return TRUE;
 		}
+
 		case ECTL_DELETEBLOCK: {
 			if (Flags.Check(FEDITOR_LOCKMODE) || !(m_VBlockStart || m_BlockStart)) {
 
@@ -5495,6 +5522,7 @@ int Editor::EditorControl(int Command, void *Param)
 			Show();
 			return TRUE;
 		}
+
 		case ECTL_UNDOREDO: {
 			if (Param) {
 				EditorUndoRedo *eur = (EditorUndoRedo *)Param;
@@ -5517,12 +5545,14 @@ int Editor::EditorControl(int Command, void *Param)
 
 			return FALSE;
 		}
+
 		case ECTL_SETVIRTUALFILENAME:
 			if (Param) {
 				m_virtualFileName = (wchar_t*)Param;
 				return TRUE;
 			}
 			return FALSE;
+
 		case ECTL_SETSAVEDSTATE:
 			if (Param) {
 				Flags.Change(FEDITOR_MODIFIED | FEDITOR_WASCHANGED, *static_cast<int*>(Param) == 0);

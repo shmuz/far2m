@@ -1901,13 +1901,8 @@ struct EditorUndoRedo
 struct EditorGetString
 {
 	int StringNumber;
-#ifdef FAR_USE_INTERNALS
-	wchar_t *StringText;
-	wchar_t *StringEOL;
-#else // ELSE FAR_USE_INTERNALS
 	const wchar_t *StringText;
 	const wchar_t *StringEOL;
-#endif // END FAR_USE_INTERNALS
 	int StringLength;
 	int SelStart;
 	int SelEnd;
