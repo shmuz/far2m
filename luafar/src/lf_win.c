@@ -743,6 +743,24 @@ static int win_stat(lua_State *L)
 	return 1;
 }
 
+static int win_GetEnvironmentStrings(lua_State *L)
+{
+	extern char **environ;
+	lua_newtable(L);
+	if (environ) {
+		for (size_t i=0; environ[i]; i++) {
+			char *ptr = environ[i];
+			char *eq = strchr(ptr, '=');
+			if (eq && eq != ptr) {
+				lua_pushlstring(L, ptr, eq - ptr);
+				lua_pushstring(L, eq + 1);
+				lua_rawset(L, -3);
+			}
+		}
+	}
+	return 1;
+}
+
 #define PAIR(prefix,txt) {#txt, prefix ## _ ## txt}
 
 static const luaL_Reg win_funcs[] = {
@@ -760,6 +778,7 @@ static const luaL_Reg win_funcs[] = {
 	PAIR( win, GetConsoleScreenBufferInfo),
 	PAIR( win, GetCurrentDir),
 	PAIR( win, GetEnv),
+	PAIR( win, GetEnvironmentStrings),
 	PAIR( win, GetFileInfo),
 	PAIR( win, GetFileTimes),
 	PAIR( win, GetHostName),
