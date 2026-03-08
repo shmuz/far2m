@@ -88,7 +88,7 @@ VMenu::VMenu(const wchar_t *Title,    // заголовок меню
 	GetCursorType(PrevCursorVisible, PrevCursorSize);
 	bRightBtnPressed = false;
 	IdExist = false;
-	memset(&Id, 0, sizeof(Id));
+	Id = {};
 
 	// инициализируем перед тем, как добавлять айтема
 	UpdateMaxLengthFromTitles();

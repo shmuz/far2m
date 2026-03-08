@@ -1032,7 +1032,7 @@ static int editor_SetParam(lua_State *L)
 	else if (tp == LUA_TBOOLEAN)
 		esp.Param.iParam = lua_toboolean(L,3);
 	else if (tp == LUA_TSTRING)
-		esp.Param.wszParam = (wchar_t*)check_utf8_string(L,3,NULL);
+		esp.Param.wszParam = check_utf8_string(L,3,NULL);
 	//-----------------------------------------------------
 	if (esp.Type == ESPT_GETWORDDIV) {
 		esp.Param.wszParam = buf;

@@ -85,7 +85,7 @@ DialogBuilder::DialogBuilder(FarLangMsg TitleMessageId, const wchar_t *HelpTopic
 	HelpTopic(HelpTopic)
 {
 	IdExist = false;
-	memset(&Id, 0, sizeof(Id));
+	Id = {};
 	UserDlgProc = nullptr;
 	AddBorder(GetLangString(TitleMessageId));
 }
