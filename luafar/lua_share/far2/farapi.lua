@@ -1823,6 +1823,17 @@ typedef int (__stdcall *FARAPIINPUTBOX)(
 	DWORD Flags
 );
 
+typedef int (__stdcall *FARAPICOLORDIALOG)(
+	int Flags,
+	uint64_t *Color
+);
+
+typedef int (__stdcall *FARAPICOLORDIALOGV2)(
+	INT_PTR PluginNumber,
+	struct ColorDialogData *Data,
+	DWORD Flags
+);
+
 typedef int (__stdcall *FARAPIINPUTBOXV3)(
 	INT_PTR PluginNumber,
 	const GUID *Id,
@@ -1868,17 +1879,6 @@ typedef int (__stdcall *FARAPIMACROCONTROL)(
 	int Command,
 	int Param1,
 	void* Param2
-);
-
-typedef int (__stdcall *FARAPICOLORDIALOG)(
-	int Flags,
-	uint64_t *Color
-);
-
-typedef int (__stdcall *FARAPICOLORDIALOGV2)(
-	INT_PTR PluginNumber,
-	struct ColorDialogData *Data,
-	DWORD Flags
 );
 
 struct DetectCodePageInfo
@@ -2245,6 +2245,7 @@ struct PluginStartupInfo
 
 	FARAPISHOWHELP         ShowHelp;
 	FARAPIADVCONTROL       AdvControl;
+	FARAPIADVCONTROL       AdvControlAsync;
 	FARAPIINPUTBOX         InputBox;
 	FARAPIDIALOGINIT       DialogInit;
 	FARAPIDIALOGRUN        DialogRun;
@@ -2258,7 +2259,6 @@ struct PluginStartupInfo
 	FARAPIFILEFILTERCONTROL FileFilterControl;
 	FARAPIREGEXPCONTROL    RegExpControl;
 
-	void*                  RESERVED[2];
 	FARAPIMACROCONTROL     MacroControl;
 	FARAPIEDITORCONTROLV2  EditorControlV2;
 	FARAPIVIEWERCONTROLV2  ViewerControlV2;
@@ -2272,7 +2272,6 @@ struct PluginStartupInfo
 	FARAPIMESSAGEV3        MessageV3;
 	FARAPIMENUV2           MenuV2;
 	FARAPIINPUTBOXV3       InputBoxV3;
-	FARAPIADVCONTROL       AdvControlAsync;
 	FARAPICOLORDIALOG      ColorDialog;
 	FARFILLTEXT            FillText;
 };

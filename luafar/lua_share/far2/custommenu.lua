@@ -13,8 +13,7 @@ local band, bor = bit64.band, bit64.bor
 local DlgSend = far.SendDlgMessage
 
 local function GetColor (index)
-  local tbl = osWindows and far.Colors or far.Flags
-  return far.AdvControl("ACTL_GETCOLOR", tbl[index])
+  return far.AdvControl("ACTL_GETCOLOR", far.Colors[index])
 end
 
 local function SendRedrawMessage (hDlg)

@@ -16,8 +16,7 @@ local CellsCount = osWindows and function(s) return s:len() end
                    or far.StrCellsCount -- luacheck: ignore 143 (accessing undefined field)
 
 local function GetColor (index)
-  local tbl = osWindows and far.Colors or far.Flags
-  return far.AdvControl("ACTL_GETCOLOR", tbl[index])
+  return far.AdvControl("ACTL_GETCOLOR", far.Colors[index])
 end
 
 local function SendRedrawMessage (hDlg)
