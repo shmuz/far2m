@@ -13,6 +13,12 @@ typedef uint32_t FarKey;
 # define CP_AUTODETECT ((UINT)-1)
 #endif
 
+#ifdef __cpp_inline_variables
+#define FAR_INLINE_CONSTANT inline constexpr
+#else
+#define FAR_INLINE_CONSTANT static const
+#endif
+
 enum VTLogExportFlags
 {
 	VT_LOGEXPORT_COLORED          = 0x00000001,

@@ -69,7 +69,7 @@ local function add_enums (src, trg)
   local enum = false
   for line in src:gmatch("[^\r\n]+") do
     if not skip:Process(line) then
-      if line:find("^%s*enum%s*[%w_]*%s*$") then
+      if line:find("^%s*enum%s*[%w_]*%s*{?%s*$") then
         enum = true
       elseif enum then
         if line:find("^%s*};") then
@@ -141,6 +141,7 @@ extern "C" {
 #include "farplug-wide.h"
 #include "farcolor.h"
 #include "farkeys.h"
+#include "far3parts.h"
 
 typedef struct {
   const char* key;
@@ -195,14 +196,20 @@ do
   local trg_int, trg_ptr = {}, {}
   for _,v in ipairs(t_winapi) do table.insert(trg_int, v) end
 
-  for _,fname in ipairs { "farcommon.h", "farplug-wide.h", "farcolor.h", "farkeys.h" } do
-    local fp = assert (io.open (dir.."/"..fname))
+  local input_files = {
+    { name= "farcommon.h";     enums= true;  defines= false; },
+    { name= "farplug-wide.h";  enums= true;  defines= true;  },
+    { name= "farcolor.h";      enums= true;  defines= false; },
+    { name= "farkeys.h";       enums= true;  defines= false; },
+    { name= "far3parts.h";     enums= true;  defines= true;  },
+  }
+
+  for _,file in ipairs(input_files) do
+    local fp = assert (io.open (dir.."/"..file.name))
     local src = fp:read ("*all")
     fp:close()
-    if fname == "farplug-wide.h" then
-      add_defines(src, trg_int, trg_ptr)
-    end
-    add_enums(src, trg_int)
+    if file.defines then add_defines(src, trg_int, trg_ptr) end
+    if file.enums then add_enums(src, trg_int) end
   end
 
   io.write(file_top)

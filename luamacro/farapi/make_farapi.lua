@@ -4,7 +4,7 @@
 local rex = require "rex_pcre"
 
 local srcdir = os.getenv("HOME").."/repos/far2m/far/far2sdk"
-local srcfiles = { srcdir.."/farcommon.h", srcdir.."/farplug-wide.h" }
+local srcfiles = { srcdir.."/farcommon.h", srcdir.."/farplug-wide.h", srcdir.."/far3parts.h" }
 local trgfile = "farapi.lua"
 
 local txt = ""

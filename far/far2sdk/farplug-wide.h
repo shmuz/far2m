@@ -139,13 +139,6 @@ typedef struct _CHAR_INFO    CHAR_INFO;
 
 #include "farcommon.h"
 
-
-#ifdef __cpp_inline_variables
-#define FAR_INLINE_CONSTANT inline constexpr
-#else
-#define FAR_INLINE_CONSTANT static const
-#endif
-
 typedef uint32_t FARMESSAGEFLAGS;
 typedef GUID UUID;
 

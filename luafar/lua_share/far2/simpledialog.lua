@@ -10,7 +10,7 @@ local OpSys     = DirSep=="/" and "linux" or "windows"
 local FarVer    = F.ACTL_GETFARMANAGERVERSION and 3 or 2
 local band, bor = bit64.band, bit64.bor
 local Send      = far.SendDlgMessage
-local Colors    = far.Colors or F
+local Colors    = far.Colors
 
 local IND_TYPE, IND_X1, IND_Y1, IND_X2, IND_Y2, IND_HISTORY, IND_DATA = 1,2,3,4,5,7,10
 local IND_SELECTED = 6

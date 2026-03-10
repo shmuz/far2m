@@ -9,6 +9,7 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
+#include "far3parts.h"
 #include "lf_bit64.h"
 #include "lf_farlibs.h"
 #include "lf_string.h"
