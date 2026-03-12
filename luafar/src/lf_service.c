@@ -1343,54 +1343,64 @@ static void FarTrueColorFromRGB(struct FarTrueColor *out, DWORD rgb, int used)
 	out->B = (rgb >> 16) & 0xff;
 }
 
-static int GetFarColor(lua_State *L, int pos, struct EditorTrueColor *etc, int *isTrueColor)
+static DWORD RGBFromFarTrueColor(const struct FarTrueColor *tc)
 {
-	const uint32_t MASK_ACTIVE = (0x1 << 24);
+	return (tc->R) | (tc->G << 8) | (tc->B << 16);
+}
 
-	COLORREF FgColor, BgColor;
-	//COLORREF UnderlineColor;
-	FAR3COLORFLAGS Flags;
+// partially taken from the Colorer plugin
+static void GetFarColor(lua_State *L, int pos, struct FarTrueColorForeAndBack *fullcolor,
+		int *basecolor, int *isTrueColor)
+{
+	memset(fullcolor, 0, sizeof(*fullcolor));
+	*basecolor = 0;
+	*isTrueColor = 0;
 
 	if (lua_istable(L, pos))
 	{
 		lua_pushvalue(L, pos);
-		Flags = CheckFlagsFromTable(L, -1, "Flags");
-		FgColor = (COLORREF) GetOptNumFromTable(L, "ForegroundColor", 0);
-		BgColor = (COLORREF) GetOptNumFromTable(L, "BackgroundColor", 0);
-		// UnderlineColor = (COLORREF) GetOptNumFromTable(L, "UnderlineColor", 0);
+		DWORD FgColor = (DWORD) GetOptNumFromTable(L, "ForegroundColor", 0);
+		DWORD BgColor = (DWORD) GetOptNumFromTable(L, "BackgroundColor", 0);
 		lua_pop(L, 1);
+
+		FAR3COLORFLAGS Flags = CheckFlagsFromTable(L, pos, "Flags");
+		if (Flags & FCF_INDEXMASK)
+		{
+			*basecolor = (FgColor & 0x0F) | ((BgColor & 0x0F) << 4);
+		}
+		else if (FgColor || BgColor)
+		{
+			*isTrueColor = 1;
+			struct FarTrueColor *Fore = &fullcolor->Fore;
+			struct FarTrueColor *Back = &fullcolor->Back;
+
+			FarTrueColorFromRGB(Fore, FgColor, 1);
+			FarTrueColorFromRGB(Back, BgColor, 1);
+
+			if (Fore->R > 0x10)  *basecolor |= FOREGROUND_RED;
+			if (Fore->G > 0x10)  *basecolor |= FOREGROUND_GREEN;
+			if (Fore->B > 0x10)  *basecolor |= FOREGROUND_BLUE;
+
+			if (Back->R > 0x10)  *basecolor |= BACKGROUND_RED;
+			if (Back->G > 0x10)  *basecolor |= BACKGROUND_GREEN;
+			if (Back->B > 0x10)  *basecolor |= BACKGROUND_BLUE;
+
+			if (Fore->R > 0x80 || Fore->G > 0x80 || Fore->B > 0x80)
+				*basecolor = FOREGROUND_INTENSITY;
+
+			if (*basecolor == 0 || Back->R > 0x80 || Back->G > 0x80 || Back->B > 0x80)
+				*basecolor = BACKGROUND_INTENSITY;
+
+			if (Flags & FCF_FG_UNDERLINE_MASK)  *basecolor |= COMMON_LVB_UNDERSCORE;
+			if (Flags & FCF_FG_STRIKEOUT)       *basecolor |= COMMON_LVB_STRIKEOUT;
+		}
 	}
 	else if (lua_isnumber(L, pos))
 	{
-		DWORD num = (DWORD)lua_tonumber(L, pos);
-		Flags = FCF_INDEXMASK;
-		FgColor = (num & 0x0F);      // | ALPHAMASK; // ALPHAMASK is needed on far3
-		BgColor = ((num>>4) & 0x0F); // | ALPHAMASK; // ALPHAMASK is needed on far3
-		// UnderlineColor = 0;
+		*basecolor = lua_tointeger(L, pos) & 0xFF;
 	}
 	else
-	  return 0;
-
-	if (!(Flags & FCF_INDEXMASK))
-	{
-		if (isTrueColor)
-			*isTrueColor = 1;
-		FarTrueColorFromRGB(&etc->TrueColor.Fore, FgColor | MASK_ACTIVE, 1);
-		FarTrueColorFromRGB(&etc->TrueColor.Back, BgColor | MASK_ACTIVE, 1);
-	}
-	else
-	{
-		if (isTrueColor)
-			*isTrueColor = 0;
-		etc->Base.Color = FgColor | (BgColor << 4);
-	}
-
-	if (etc->Base.Color == 0) // prevent color deletion
-		etc->Base.Color = 0x0F;
-
-	//etc->Base.Color |= (Flags & ~MASK_COLOR);
-
-	return 1;
+		luaL_argerror(L, pos, "table or number expected");
 }
 
 static int editor_AddColor(lua_State *L)
@@ -1405,11 +1415,13 @@ static int editor_AddColor(lua_State *L)
 	etc.Base.StartPos     = luaL_checkinteger(L, 3) - 1;
 	etc.Base.EndPos       = luaL_checkinteger(L, 4) - 1;
 	int Flags             = (int) OptFlags(L, 5, 0);
-	int gotColor          = GetFarColor(L, 6, &etc, &isTrueColor);
 
-	luaL_argcheck(L, gotColor, 6, "table or number expected");
+	GetFarColor(L, 6, &etc.TrueColor, &etc.Base.Color, &isTrueColor);
 
 	etc.Base.Color |= (Flags & ~MASK_COLOR);
+
+	if (etc.Base.Color == 0) // prevent color deletion
+		etc.Base.Color = 0x0F;
 
 	if (isTrueColor)
 		lua_pushboolean(L, PSInfo.EditorControlV2(EditorId, ECTL_ADDTRUECOLOR, &etc));
@@ -1421,9 +1433,8 @@ static int editor_AddColor(lua_State *L)
 
 static int editor_DelColor(lua_State *L)
 {
-	struct EditorColor ec;
+	struct EditorColor ec = { 0 }; // set ec.Color = 0
 	int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
-	memset(&ec, 0, sizeof(ec)); // set ec.Color = 0
 	ec.StringNumber = luaL_optinteger  (L, 2, 0) - 1;
 	ec.StartPos     = luaL_optinteger  (L, 3, 0) - 1;
 	lua_pushboolean(L, PSInfo.EditorControlV2(EditorId, ECTL_ADDCOLOR, &ec)); // ECTL_ADDCOLOR (sic)
@@ -1439,17 +1450,33 @@ static int editor_GetColor(lua_State *L)
 	etc.Base.ColorItem    = luaL_checkinteger(L, 3) - 1;
 	if (PSInfo.EditorControlV2(EditorId, ECTL_GETTRUECOLOR, &etc))
 	{
+		DWORD Flags = 0;
 		lua_createtable(L, 0, 5);
 		PutNumToTable(L, "StartPos", etc.Base.StartPos+1);
 		PutNumToTable(L, "EndPos", etc.Base.EndPos+1);
-		PutNumToTable(L, "BaseColor", etc.Base.Color);
+
 		if (etc.TrueColor.Fore.Flags & 0x1)
-			PutNumToTable(L, "TrueFore", etc.TrueColor.Fore.R | (etc.TrueColor.Fore.G << 8) | (etc.TrueColor.Fore.B << 16));
+			PutNumToTable(L, "ForegroundColor", RGBFromFarTrueColor(&etc.TrueColor.Fore));
+		else {
+			PutNumToTable(L, "ForegroundColor", etc.Base.Color & 0x0F);
+			Flags |= FCF_FG_INDEX;
+		}
+
 		if (etc.TrueColor.Back.Flags & 0x1)
-			PutNumToTable(L, "TrueBack", etc.TrueColor.Back.R | (etc.TrueColor.Back.G << 8) | (etc.TrueColor.Back.B << 16));
+			PutNumToTable(L, "BackgroundColor", RGBFromFarTrueColor(&etc.TrueColor.Back));
+		else {
+			PutNumToTable(L, "BackgroundColor", (etc.Base.Color & 0xF0) >> 4);
+			Flags |= FCF_BG_INDEX;
+		}
+
+		PutNumToTable(L, "Flags", Flags);
+
+		if (etc.Base.Color & COMMON_LVB_UNDERSCORE) Flags |= FCF_FG_UNDERLINE_MASK;
+		if (etc.Base.Color & COMMON_LVB_STRIKEOUT)  Flags |= FCF_FG_STRIKEOUT;
 	}
 	else
 		lua_pushnil(L);
+
 	return 1;
 }
 

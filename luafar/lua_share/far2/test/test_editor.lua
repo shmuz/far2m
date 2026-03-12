@@ -308,7 +308,8 @@ local function test_multiple_instances()
     local clr = asrt.table(editor.GetColor(ID, 1, 1))
     asrt.eq(clr.StartPos, colstart+k)
     asrt.eq(clr.EndPos, colend+k)
-    asrt.eq(clr.BaseColor, colbase+k)
+    asrt.eq(16*clr.BackgroundColor + clr.ForegroundColor, colbase+k)
+    asrt.eq(clr.Flags, F.FCF_FG_INDEX + F.FCF_BG_INDEX)
     asrt.istrue(editor.DelColor(ID, 1))
     asrt.isnil(editor.GetColor(ID, 1, 1))    -- coloritem 1 was deleted
   end
