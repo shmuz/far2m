@@ -1469,10 +1469,10 @@ static int editor_GetColor(lua_State *L)
 			Flags |= FCF_BG_INDEX;
 		}
 
-		PutNumToTable(L, "Flags", Flags);
-
 		if (etc.Base.Color & COMMON_LVB_UNDERSCORE) Flags |= FCF_FG_UNDERLINE_MASK;
 		if (etc.Base.Color & COMMON_LVB_STRIKEOUT)  Flags |= FCF_FG_STRIKEOUT;
+
+		PutNumToTable(L, "Flags", Flags);
 	}
 	else
 		lua_pushnil(L);
