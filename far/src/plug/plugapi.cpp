@@ -1956,6 +1956,7 @@ static bool FarTextV2Synched(int X, int Y, const ColorDialogData *Data, const wc
 		ScrBuf.Flush();
 		ScrBuf.SetLockCount(PrevLockCount);
 	} else {
+		Log("Data->Color: %llX", (uint64_t)Data->Color);
 		Text(X, Y, Data->Color, Str);
 	}
 	return true;

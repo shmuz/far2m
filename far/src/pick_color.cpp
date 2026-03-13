@@ -959,7 +959,6 @@ bool GetColorDialogV2(INT_PTR PluginNumber, ColorDialogData *Data, DWORD Flags)
 
 		if (GetColorDialogInner(&Color, pMask, Flags&FCD_RGB, Flags&FCD_FONTSTYLES, true, PluginNumber))
 		{
-			Data->Flags = (Color >> 8) & 0xFF;
 			Data->Color = Color;
 			if (pMask)
 				Data->Mask = *pMask;

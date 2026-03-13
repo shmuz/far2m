@@ -1400,6 +1400,8 @@ static uint64_t GetFarColor(lua_State *L, int pos, struct FarTrueColorForeAndBac
 			FarTrueColorFromRGB(Fore, FgColor, 1);
 			FarTrueColorFromRGB(Back, BgColor, 1);
 
+			*basecolor |= (FOREGROUND_TRUECOLOR | BACKGROUND_TRUECOLOR);
+
 			if (Fore->R > 0x10)  *basecolor |= FOREGROUND_RED;
 			if (Fore->G > 0x10)  *basecolor |= FOREGROUND_GREEN;
 			if (Fore->B > 0x10)  *basecolor |= FOREGROUND_BLUE;
@@ -1408,21 +1410,19 @@ static uint64_t GetFarColor(lua_State *L, int pos, struct FarTrueColorForeAndBac
 			if (Back->G > 0x10)  *basecolor |= BACKGROUND_GREEN;
 			if (Back->B > 0x10)  *basecolor |= BACKGROUND_BLUE;
 
-			if (Fore->R > 0x80 || Fore->G > 0x80 || Fore->B > 0x80)
-				*basecolor = FOREGROUND_INTENSITY;
-
-			if (*basecolor == 0 || Back->R > 0x80 || Back->G > 0x80 || Back->B > 0x80)
-				*basecolor = BACKGROUND_INTENSITY;
-
 			if (Flags & FCF_FG_UNDERLINE_MASK)  *basecolor |= COMMON_LVB_UNDERSCORE;
 			if (Flags & FCF_FG_STRIKEOUT)       *basecolor |= COMMON_LVB_STRIKEOUT;
 
-			return (BgColor << 40) | (FgColor << 16) | *basecolor;
+			return (BgColor << 40) | (FgColor << 16) | (*basecolor & 0xFFFF);
 		}
 	}
 	else if (lua_isnumber(L, pos))
 	{
 		*basecolor = lua_tointeger(L, pos) & 0xFF;
+	}
+	else if (lua_isnoneornil(L, pos))
+	{
+		*basecolor = 0x0F;
 	}
 	else
 		return luaL_argerror(L, pos, "table or number expected");
@@ -3150,17 +3150,6 @@ DWORD GetColorFromTable(lua_State *L, const char *field, int index)
 	return val;
 }
 
-static void FillDialogColors(lua_State *L, struct ColorDialogData *Data)
-{
-	uint64_t Fore      = GetColorFromTable  (L, "ForegroundColor", 1) & 0xFFFFFF;
-	uint64_t Back      = GetColorFromTable  (L, "BackgroundColor", 2) & 0xFFFFFF;
-	uint64_t Palette   = GetColorFromTable  (L, "PaletteColor", 3) & 0xFF;
-	uint64_t Flags     = GetColorFromTable  (L, "Flags", 4) & 0xFF;
-	Data->Mask         = GetOptIntFromTable (L, "Mask", 0); //NOTE: Data->Mask is a 64-bit value
-	Data->Flags        = (DWORD)Flags;
-	Data->Color        = (Back << 40) | (Fore << 16) | (Flags << 8) | Palette;
-}
-
 static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 {
 	typedef struct { void *Id; int Ref; } listdata_t;
@@ -3265,7 +3254,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			SendDlgMessage(hDlg, Msg, Param1, Colors);
 			lua_createtable(L, MAXCOLORS, 0);
 			for (int i=0; i < MAXCOLORS; i++) {
-				bit64_push(L, Colors[i]);
+				PushFarColor(L, Colors[i]);
 				lua_rawseti(L, -2, i+1);
 			}
 			return 1;
@@ -3279,8 +3268,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			for (int i=0; i < MAXCOLORS; i++) {
 				lua_rawgeti(L, pos4, i+1);
 				if (!lua_isnil(L, -1)) {
-					Log(L, "Line %d", __LINE__);
-					Colors[i] = check64(L, -1, NULL);
+					Colors[i] = GetFarColor64(L, -1);
 				}
 				lua_pop(L,1);
 			}
@@ -3872,9 +3860,9 @@ int PushDNParams (lua_State *L, int Msg, int Param1, LONG_PTR Param2)
 		case DN_CTLCOLORDLGITEM:
 		{
 			uint64_t *ItemColor = (uint64_t*) Param2;
-			lua_createtable(L, 4, 0);
-			for(int i=0; i < 4; i++) {
-				bit64_push(L, ItemColor[i]);
+			lua_createtable(L, DLG_ITEM_MAX_CUST_COLORS, 0);
+			for(int i=0; i < DLG_ITEM_MAX_CUST_COLORS; i++) {
+				PushFarColor(L, ItemColor[i]);
 				lua_rawseti(L, -2, i+1);
 			}
 			break;
@@ -4440,26 +4428,13 @@ static int far_GetMsg(lua_State *L)
 
 static int far_Text(lua_State *L)
 {
-	uint64_t Color = 0;
-	const wchar_t* Str;
+	struct ColorDialogData Data = { 0 };
 
 	int X = luaL_optinteger(L, 1, 0);
 	int Y = luaL_optinteger(L, 2, 0);
-	if (lua_toboolean(L,3) && !lua_istable(L,3)) {
-		Color = GetFarColor64(L, 3);
-	}
-	Str = opt_utf8_string(L, 4, NULL);
-
-	if (lua_istable(L, 3)) {
-		struct ColorDialogData Data;
-		memset(&Data, 0, sizeof(Data));
-		lua_settop(L, 3);
-		FillDialogColors(L, &Data);
-		PSInfo.TextV2(X, Y, &Data, Str);
-	}
-	else
-		PSInfo.Text(X, Y, Color, Str);
-
+	Data.Color = GetFarColor64(L, 3);
+	const wchar_t *Str = opt_utf8_string(L, 4, NULL);
+	PSInfo.TextV2(X, Y, &Data, Str);
 	return 0;
 }
 
@@ -5730,34 +5705,13 @@ static int far_Log(lua_State *L)
 static int far_ColorDialog(lua_State *L)
 {
 	TPluginData* pd = GetPluginData(L);
-	struct ColorDialogData Data = { 0, 0x0F, 0 };
-	int success;
+	struct ColorDialogData Data = { 0 };
 
-	uint64_t Color = check64(L, 1, &success);
-	if (success) {
-		Data.Color = Color;
-		Data.Flags = (Color >>  8) & 0xFF;
-	}
-	else if (lua_istable(L, 1)) {
-		lua_pushvalue(L, 1);
-		FillDialogColors(L, &Data);
-		lua_pop(L, 1);
-	}
-	else if (!lua_isnoneornil(L, 1))
-		return luaL_argerror(L, 1, "wrong type for Color");
-
+	Data.Color = GetFarColor64(L, 1);
 	flags_t Flags = OptFlags(L, 2, 0);
 
-	if (PSInfo.ColorDialogV2(pd->ModuleNumber, &Data, Flags)) {
-		lua_createtable(L, 0, 6);
-		PutIntToTable(L, "ForegroundColor", (Data.Color >> 16) & 0xFFFFFF);
-		PutIntToTable(L, "BackgroundColor", (Data.Color >> 40) & 0xFFFFFF);
-		PutIntToTable(L, "PaletteColor", Data.Color & 0xFF);
-		PutIntToTable(L, "Flags", Data.Flags);
-
-		bit64_push(L, Data.Mask);  lua_setfield(L, -2, "Mask");
-		bit64_push(L, Data.Color); lua_setfield(L, -2, "Color");
-	}
+	if (PSInfo.ColorDialogV2(pd->ModuleNumber, &Data, Flags))
+		PushFarColor(L, Data.Color);
 	else
 		lua_pushnil(L);
 

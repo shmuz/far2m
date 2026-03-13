@@ -63,40 +63,4 @@ struct color_index
 // #define COLORMASK 0x00ffffff
 // #define ALPHAMASK 0xff000000
 
-struct Far3Color
-{
-	FAR3COLORFLAGS Flags;
-	union
-	{
-		COLORREF ForegroundColor;
-		struct color_index ForegroundIndex;
-		struct rgba ForegroundRGBA;
-	}
-#ifndef __cplusplus
-	Foreground
-#endif
-	;
-	union
-	{
-		COLORREF BackgroundColor;
-		struct color_index BackgroundIndex;
-		struct rgba BackgroundRGBA;
-	}
-#ifndef __cplusplus
-	Background
-#endif
-	;
-	union
-	{
-		COLORREF UnderlineColor;
-		struct color_index UnderlineIndex;
-		struct rgba UnderlineRGBA;
-	}
-#ifndef __cplusplus
-	Underline
-#endif
-		;
-	DWORD Reserved;
-};
-
 #endif // #ifndef __FAR2SDK_FAR3PARTS_H__

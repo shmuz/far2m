@@ -1317,7 +1317,6 @@ enum FARCOLORDIALOGFLAGS
 
 struct ColorDialogData
 {
-	DWORD Flags;
 	uint64_t Color;
 	uint64_t Mask;
 };
@@ -2711,36 +2710,6 @@ struct color_index
 		reserved0,
 		reserved1,
 		a;
-};
-
-struct Far3Color
-{
-	FAR3COLORFLAGS Flags;
-	union
-	{
-		COLORREF ForegroundColor;
-		struct color_index ForegroundIndex;
-		struct rgba ForegroundRGBA;
-	}
-	Foreground
-	;
-	union
-	{
-		COLORREF BackgroundColor;
-		struct color_index BackgroundIndex;
-		struct rgba BackgroundRGBA;
-	}
-	Background
-	;
-	union
-	{
-		COLORREF UnderlineColor;
-		struct color_index UnderlineIndex;
-		struct rgba UnderlineRGBA;
-	}
-	Underline
-		;
-	DWORD Reserved;
 };
 
 ]=]
