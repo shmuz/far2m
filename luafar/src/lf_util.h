@@ -77,6 +77,8 @@ FILETIME GetFileTimeFromTable(lua_State *L, const char *key);
 void  PutFileTimeToTable(lua_State *L, const char* key, FILETIME ft);
 TDialogData* NewDialogData(lua_State* L, HANDLE hDlg, BOOL isOwned);
 TPluginData* GetPluginData(lua_State* L);
+uint64_t GetFarColor64(lua_State *L, int pos);
+void PushFarColor(lua_State *L, uint64_t value);
 TFarUserControl* CheckFarUserControl(lua_State* L, int pos);
 size_t aligned_size(size_t Size, size_t Alignment);
 

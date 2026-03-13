@@ -1335,6 +1335,29 @@ static int editor_TurnOffMarkingBlock(lua_State *L)
 	return 0;
 }
 
+void PushFarColor(lua_State *L, uint64_t value)
+{
+	DWORD Flags = 0;
+
+	lua_newtable(L);
+	if (value >> 16)
+	{
+		PutIntToTable(L, "ForegroundColor", (value >> 16) & 0xFFFFFF);
+		PutIntToTable(L, "BackgroundColor", (value >> 40) & 0xFFFFFF);
+
+		if (value & COMMON_LVB_UNDERSCORE) Flags |= FCF_FG_UNDERLINE_MASK;
+		if (value & COMMON_LVB_STRIKEOUT)  Flags |= FCF_FG_STRIKEOUT;
+	}
+	else
+	{
+		PutIntToTable(L, "ForegroundColor", value & 0x0F);
+		PutIntToTable(L, "BackgroundColor", (value >> 4) & 0x0F);
+		Flags |= (FCF_FG_INDEX | FCF_BG_INDEX);
+	}
+
+	PutIntToTable(L, "Flags", Flags);
+}
+
 static void FarTrueColorFromRGB(struct FarTrueColor *out, DWORD rgb, int used)
 {
 	out->Flags = used ? 1 : 0;
@@ -1349,7 +1372,7 @@ static DWORD RGBFromFarTrueColor(const struct FarTrueColor *tc)
 }
 
 // partially taken from the Colorer plugin
-static void GetFarColor(lua_State *L, int pos, struct FarTrueColorForeAndBack *fullcolor,
+static uint64_t GetFarColor(lua_State *L, int pos, struct FarTrueColorForeAndBack *fullcolor,
 		int *basecolor, int *isTrueColor)
 {
 	memset(fullcolor, 0, sizeof(*fullcolor));
@@ -1359,8 +1382,8 @@ static void GetFarColor(lua_State *L, int pos, struct FarTrueColorForeAndBack *f
 	if (lua_istable(L, pos))
 	{
 		lua_pushvalue(L, pos);
-		DWORD FgColor = (DWORD) GetOptNumFromTable(L, "ForegroundColor", 0);
-		DWORD BgColor = (DWORD) GetOptNumFromTable(L, "BackgroundColor", 0);
+		uint64_t FgColor = GetOptIntFromTable(L, "ForegroundColor", 0) & 0x00FFFFFF;
+		uint64_t BgColor = GetOptIntFromTable(L, "BackgroundColor", 0) & 0x00FFFFFF;
 		lua_pop(L, 1);
 
 		FAR3COLORFLAGS Flags = CheckFlagsFromTable(L, pos, "Flags");
@@ -1393,6 +1416,8 @@ static void GetFarColor(lua_State *L, int pos, struct FarTrueColorForeAndBack *f
 
 			if (Flags & FCF_FG_UNDERLINE_MASK)  *basecolor |= COMMON_LVB_UNDERSCORE;
 			if (Flags & FCF_FG_STRIKEOUT)       *basecolor |= COMMON_LVB_STRIKEOUT;
+
+			return (BgColor << 40) | (FgColor << 16) | *basecolor;
 		}
 	}
 	else if (lua_isnumber(L, pos))
@@ -1400,7 +1425,16 @@ static void GetFarColor(lua_State *L, int pos, struct FarTrueColorForeAndBack *f
 		*basecolor = lua_tointeger(L, pos) & 0xFF;
 	}
 	else
-		luaL_argerror(L, pos, "table or number expected");
+		return luaL_argerror(L, pos, "table or number expected");
+
+	return *basecolor;
+}
+
+uint64_t GetFarColor64(lua_State *L, int pos)
+{
+	struct FarTrueColorForeAndBack fullcolor;
+	int basecolor, istruecolor;
+	return GetFarColor(L, pos, &fullcolor, &basecolor, &istruecolor);
 }
 
 static int editor_AddColor(lua_State *L)
@@ -3245,6 +3279,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			for (int i=0; i < MAXCOLORS; i++) {
 				lua_rawgeti(L, pos4, i+1);
 				if (!lua_isnil(L, -1)) {
+					Log(L, "Line %d", __LINE__);
 					Colors[i] = check64(L, -1, NULL);
 				}
 				lua_pop(L,1);
@@ -3885,7 +3920,7 @@ LONG_PTR ProcessDNResult(lua_State *L, int Msg, LONG_PTR Param2)
 				{
 					lua_rawgeti(L, -1, i+1);
 					if (!lua_isnil(L, -1)) {
-						ItemColor[i] = check64(L, -1, NULL);
+						ItemColor[i] = GetFarColor64(L, -1);
 					}
 					lua_pop(L, 1);
 				}
@@ -3896,7 +3931,7 @@ LONG_PTR ProcessDNResult(lua_State *L, int Msg, LONG_PTR Param2)
 		case DN_CTLCOLORDIALOG:
 			if (!lua_isnil(L, -1)) {
 				uint64_t *Color = (uint64_t*) Param2;
-				Color[0] = check64(L, -1, NULL);
+				Color[0] = GetFarColor64(L, -1);
 				ret = 1;
 			}
 			break;
@@ -4411,7 +4446,7 @@ static int far_Text(lua_State *L)
 	int X = luaL_optinteger(L, 1, 0);
 	int Y = luaL_optinteger(L, 2, 0);
 	if (lua_toboolean(L,3) && !lua_istable(L,3)) {
-		Color = check64(L, 3, NULL);
+		Color = GetFarColor64(L, 3);
 	}
 	Str = opt_utf8_string(L, 4, NULL);
 
@@ -4801,7 +4836,7 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 			uint64_t color;
 			int1 = check_env_flag(L, pos2);
 			int1 = PtrAdvControl(pd->ModuleNumber, Command, (void*)int1, &color);
-			int1 ? bit64_push(L, color) : lua_pushnil(L);
+			int1 ? PushFarColor(L, color) : lua_pushnil(L);
 			return 1;
 		}
 
@@ -4853,7 +4888,7 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 			PtrAdvControl(pd->ModuleNumber, Command, (void*)size, p);
 			lua_createtable(L, size, 0);
 			for (int i=0; i < size; i++) {
-				bit64_push(L, p[i]);
+				PushFarColor(L, p[i]);
 				lua_rawseti(L, -2, i+1);
 			}
 			return 1;
@@ -4919,9 +4954,8 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 			fsc.ColorCount = lua_objlen(L, pos2);
 			fsc.Colors = (uint64_t*)lua_newuserdata(L, fsc.ColorCount * sizeof(uint64_t));
 			for (int i=0; i < fsc.ColorCount; i++) {
-				lua_pushinteger(L,i+1);
-				lua_gettable(L,pos2);
-				fsc.Colors[i] = check64(L, -1, NULL);
+				lua_rawgeti(L, pos2, i+1);
+				fsc.Colors[i] = GetFarColor64(L, -1);
 				lua_pop(L,1);
 			}
 			lua_pushinteger(L, PtrAdvControl(pd->ModuleNumber, Command, &fsc, NULL));

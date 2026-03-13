@@ -24,7 +24,7 @@ local function test_ACTL()
   asrt.eq    ( actl.Commit(), 1)
   local arr = asrt.table ( actl.GetArrayColor())
   asrt.range ( #arr, 154)
-  asrt.numint( actl.GetColor("COL_DIALOGBOXTITLE"))
+  asrt.table ( actl.GetColor("COL_DIALOGBOXTITLE"))
   asrt.num   ( actl.GetConfirmations())
   asrt.table ( actl.GetCursorPos())
   asrt.num   ( actl.GetDescSettings())
@@ -413,18 +413,28 @@ end
 function LF.test_AdvControl_Colors()
   local allcolors = asrt.table(far.AdvControl("ACTL_GETARRAYCOLOR"))
   asrt.eq(#allcolors, 159)
-  for i,color in ipairs(allcolors) do
-    asrt.eq(far.AdvControl("ACTL_GETCOLOR", i-1), color)
+  for n=1,#allcolors do
+    local color = assert(far.AdvControl("ACTL_GETCOLOR", n-1))
+    assert(color.Flags and color.ForegroundColor and color.BackgroundColor)
+    for k,v in pairs(color) do
+      asrt.eq(allcolors[n][k], v)
+    end
   end
   asrt.isnil(far.AdvControl("ACTL_GETCOLOR", #allcolors))
   asrt.isnil(far.AdvControl("ACTL_GETCOLOR", -1))
 
   -- change the colors
-  local arr, elem = {StartIndex=0; Flags=0}, 123
+  local MASK = bor(F.FCF_INDEXMASK, F.FCF_FG_OVERLINE, F.FCF_FG_STRIKEOUT)
+  local arr, elem = {StartIndex=0; Flags=0}, {Flags=100; ForegroundColor=101; BackgroundColor=102}
   for n=1,#allcolors do arr[n]=elem end
-  asrt.eq(1, far.AdvControl("ACTL_SETARRAYCOLOR", nil, arr))
+  asrt.eq(far.AdvControl("ACTL_SETARRAYCOLOR", nil, arr), 1)
   for n=1,#allcolors do
-    asrt.eq(elem, far.AdvControl("ACTL_GETCOLOR", n-1))
+    local color = asrt.table(far.AdvControl("ACTL_GETCOLOR", n-1))
+    for k,v in pairs(elem) do
+      if k == "Flags" then asrt.eq(band(color[k],MASK), band(v,MASK))
+      else asrt.eq(color[k], v)
+      end
+    end
   end
 
   -- restore the colors
