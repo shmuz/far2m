@@ -304,14 +304,15 @@ local function test_multiple_instances()
     local str = asrt.table(editor.GetString(ID, 1))
     asrt.eq(str.StringText, MakeText(k))
     -- inspect color
-    asrt.isnil(editor.GetColor(ID, 1, 2))    -- coloritem 2 does not exist
-    local clr = asrt.table(editor.GetColor(ID, 1, 1))
+    asrt.isnil(editor.GetColor(ID, 1, 1))    -- coloritem 1 does not exist
+    local clr = asrt.table(editor.GetColor(ID, 1, 0))
     asrt.eq(clr.StartPos, colstart+k)
     asrt.eq(clr.EndPos, colend+k)
-    asrt.eq(16*clr.BackgroundColor + clr.ForegroundColor, colbase+k)
-    asrt.eq(clr.Flags, F.FCF_FG_INDEX + F.FCF_BG_INDEX)
+    local Color = asrt.table(clr.Color)
+    asrt.eq(16*Color.BackgroundColor + Color.ForegroundColor, colbase+k)
+    asrt.eq(Color.Flags, F.FCF_FG_INDEX + F.FCF_BG_INDEX)
     asrt.istrue(editor.DelColor(ID, 1))
-    asrt.isnil(editor.GetColor(ID, 1, 1))    -- coloritem 1 was deleted
+    asrt.isnil(editor.GetColor(ID, 1, 0))    -- coloritem 0 was deleted
   end
 
   -- editor.Select

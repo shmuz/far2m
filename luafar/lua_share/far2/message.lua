@@ -13,7 +13,7 @@
 
 
 local F = far.Flags
-local bnot, band, bor = bit64.bnot, bit64.band, bit64.bor
+local bnot, band, bor, lshift = bit64.bnot, bit64.band, bit64.bor, bit64.lshift
 local min, max = math.min, math.max
 local STARTX, STARTY = 5, 2
 
@@ -313,8 +313,17 @@ local function TableBox (items, title, buttons, flags, helptopic, id)
 end
 
 local function GetInvertedColor (element)
-  local color = actl.GetColor(F[element])
-  return band(bnot(color), 0xFF)
+  local color = far.AdvControl("ACTL_GETCOLOR", far.Colors[element])
+  local fc, bc = color.ForegroundColor, color.BackgroundColor
+  if 0 ~= band(color.Flags, F.FCF_FG_4BIT) then
+    fc = band(bnot(fc), 0xF)
+    bc = band(bnot(bc), 0xF)
+    return bor(fc, lshift(bc, 4))
+  else
+    color.ForegroundColor = bor(bnot(fc), 0xFF000000)
+    color.BackgroundColor = bor(bnot(bc), 0xFF000000)
+    return color
+  end
 end
 
 return {

@@ -1481,13 +1481,15 @@ static int editor_GetColor(lua_State *L)
 	int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
 	memset(&etc, 0, sizeof(etc));
 	etc.Base.StringNumber = luaL_optinteger(L, 2, 0) - 1;
-	etc.Base.ColorItem    = luaL_checkinteger(L, 3) - 1;
+	etc.Base.ColorItem    = luaL_checkinteger(L, 3);
 	if (PSInfo.EditorControlV2(EditorId, ECTL_GETTRUECOLOR, &etc))
 	{
 		DWORD Flags = 0;
 		lua_createtable(L, 0, 5);
 		PutNumToTable(L, "StartPos", etc.Base.StartPos+1);
 		PutNumToTable(L, "EndPos", etc.Base.EndPos+1);
+
+		lua_newtable(L); // Color
 
 		if (etc.TrueColor.Fore.Flags & 0x1)
 			PutNumToTable(L, "ForegroundColor", RGBFromFarTrueColor(&etc.TrueColor.Fore));
@@ -1507,6 +1509,8 @@ static int editor_GetColor(lua_State *L)
 		if (etc.Base.Color & COMMON_LVB_STRIKEOUT)  Flags |= FCF_FG_STRIKEOUT;
 
 		PutNumToTable(L, "Flags", Flags);
+
+		lua_setfield(L, -2, "Color");
 	}
 	else
 		lua_pushnil(L);
