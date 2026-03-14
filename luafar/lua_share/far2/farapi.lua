@@ -2659,8 +2659,6 @@ struct ProcessEditorEventInfo
 	HANDLE __stdcall  AnalyseW(const struct AnalyseInfo *Info);
 	void   __stdcall  CloseAnalyseW(const struct CloseAnalyseInfo *Info);
 
-typedef DWORD COLORREF;
-
 typedef uint32_t FAR3COLORFLAGS;
 enum {
 	FCF_FG_INDEX           = 0x00000001,
@@ -2692,24 +2690,6 @@ enum {
 	FCF_STYLE_MASK         = 0xFFF00000,
 
 	FCF_NONE               = 0
-};
-
-struct rgba
-{
-	unsigned char
-		r,
-		g,
-		b,
-		a;
-};
-
-struct color_index
-{
-	unsigned char
-		i,
-		reserved0,
-		reserved1,
-		a;
 };
 
 ]=]
