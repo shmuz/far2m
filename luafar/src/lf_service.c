@@ -3141,19 +3141,6 @@ LONG_PTR GetEnableFromLua (lua_State *L, int pos)
 	return ret;
 }
 
-DWORD GetColorFromTable(lua_State *L, const char *field, int index)
-{
-	lua_getfield(L, -1, field);
-	if (lua_isnil(L, -1)) {
-		lua_pop(L, 1);
-		lua_pushinteger(L, index);
-		lua_gettable(L, -2);
-	}
-	DWORD val = (DWORD) lua_tointeger(L, -1);
-	lua_pop(L, 1);
-	return val;
-}
-
 static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 {
 	typedef struct { void *Id; int Ref; } listdata_t;
@@ -5237,13 +5224,6 @@ static int far_CPluginStartupInfo(lua_State *L)
 {
 	lua_pushlightuserdata(L, &PSInfo);
 	return 1;
-}
-
-void pushFileTime(lua_State *L, const FILETIME *ft)
-{
-	long long llFileTime = ft->dwLowDateTime + 0x100000000LL * ft->dwHighDateTime;
-	llFileTime /= 10000;
-	lua_pushnumber(L, (double)llFileTime);
 }
 
 static int far_MakeMenuItems (lua_State *L)

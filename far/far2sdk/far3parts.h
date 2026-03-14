@@ -5,8 +5,6 @@
 #include <windows.h>
 #include "farcommon.h"
 
-typedef DWORD COLORREF;
-
 typedef uint32_t FAR3COLORFLAGS;
 FAR_INLINE_CONSTANT FAR3COLORFLAGS
 	FCF_FG_INDEX           = 0x00000001,
@@ -40,27 +38,5 @@ FAR_INLINE_CONSTANT FAR3COLORFLAGS
 	FCF_STYLE_MASK         = 0xFFF00000,
 
 	FCF_NONE               = 0;
-
-struct rgba
-{
-	unsigned char
-		r,
-		g,
-		b,
-		a;
-};
-
-struct color_index
-{
-	unsigned char
-		i,
-		reserved0,
-		reserved1,
-		a;
-};
-
-// #define INDEXMASK 0x000000ff
-// #define COLORMASK 0x00ffffff
-// #define ALPHAMASK 0xff000000
 
 #endif // #ifndef __FAR2SDK_FAR3PARTS_H__

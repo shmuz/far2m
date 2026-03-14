@@ -24,7 +24,6 @@ void     PushInputRecord(lua_State *L, const INPUT_RECORD* ir);
 
 void     LF_Error(lua_State *L, const wchar_t* aMsg);
 void     NewVirtualKeyTable(lua_State* L, BOOL twoways);
-void     pushFileTime(lua_State *L, const FILETIME *ft);
 void     ConvertLuaValue(lua_State *L, int pos, struct FarMacroValue *target);
 TPluginData*  GetPluginData(lua_State* L);
 HANDLE   OptHandle(lua_State *L);
