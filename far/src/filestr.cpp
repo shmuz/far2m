@@ -37,7 +37,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "DetectCodepage.h"
 #include "codepage.hpp"
 
-#define DELTA 1024
+// Initial line buffer size - larger values reduce reallocations for typical files
+#define DELTA 8192
 
 enum EolType
 {
@@ -59,6 +60,8 @@ OldGetFileString::OldGetFileString(FILE *SrcFile)
 	SrcFile(SrcFile),
 	ReadPos(0),
 	ReadSize(0),
+	ReadBuf(READ_BUF_SIZE),
+	wReadBuf(READ_BUF_SIZE),
 	m_nStrLength(DELTA),
 	Str(reinterpret_cast<char *>(malloc(m_nStrLength))),
 	m_nwStrLength(DELTA),
@@ -97,7 +100,8 @@ int OldGetFileString::GetString(wchar_t **DestStr, int nCodePage, int &Length)
 			if (!SomeDataLost) {
 				// при CP_UTF7 dwFlags должен быть 0, см. MSDN
 				nResultLength = WINPORT(MultiByteToWideChar)(nCodePage,
-						(nCodePage == CP_UTF7) ? 0 : MB_ERR_INVALID_CHARS, Str, Length, wStr, m_nwStrLength - 1);
+						(SomeDataLost || nCodePage == CP_UTF7) ? 0 : MB_ERR_INVALID_CHARS, Str, Length, wStr,
+						m_nwStrLength - 1);
 
 				ret = WINPORT(GetLastError)();
 
@@ -144,7 +148,7 @@ int OldGetFileString::GetAnsiString(char **DestStr, int &Length)
 	int ExitCode = 1;
 	EolType Eol = FEOL_NONE;
 	int x = 0;
-	char *ReadBufPtr = ReadPos < ReadSize ? ReadBuf + ReadPos : nullptr;
+	char *ReadBufPtr = ReadPos < ReadSize ? ReadBuf.data() + ReadPos : nullptr;
 
 	// Обработка ситуации, когда у нас пришёл двойной \r\r, а потом не было \n.
 	// В этом случаем считаем \r\r двумя MAC окончаниями строк.
@@ -155,7 +159,7 @@ int OldGetFileString::GetAnsiString(char **DestStr, int &Length)
 	} else {
 		while (1) {
 			if (ReadPos >= ReadSize) {
-				if (!(ReadSize = (int)fread(ReadBuf, 1, sizeof(ReadBuf), SrcFile))) {
+				if (!(ReadSize = (int)fread(ReadBuf.data(), 1, ReadBuf.size(), SrcFile))) {
 					if (!CurLength)
 						ExitCode = 0;
 
@@ -163,7 +167,7 @@ int OldGetFileString::GetAnsiString(char **DestStr, int &Length)
 				}
 
 				ReadPos = 0;
-				ReadBufPtr = ReadBuf;
+				ReadBufPtr = ReadBuf.data();
 			}
 
 			if (Eol == FEOL_NONE) {
@@ -227,7 +231,7 @@ int OldGetFileString::GetUnicodeString(wchar_t **DestStr, int &Length, bool bBig
 	int ExitCode = 1;
 	EolType Eol = FEOL_NONE;
 	int x = 0;
-	wchar_t *ReadBufPtr = ReadPos < ReadSize ? wReadBuf + ReadPos / sizeof(wchar_t) : nullptr;
+	wchar_t *ReadBufPtr = ReadPos < ReadSize ? wReadBuf.data() + ReadPos / sizeof(wchar_t) : nullptr;
 
 	// Обработка ситуации, когда у нас пришёл двойной \r\r, а потом не было \n.
 	// В этом случаем считаем \r\r двумя MAC окончаниями строк.
@@ -238,7 +242,7 @@ int OldGetFileString::GetUnicodeString(wchar_t **DestStr, int &Length, bool bBig
 	} else {
 		while (1) {
 			if (ReadPos >= ReadSize) {
-				if (!(ReadSize = (int)fread(wReadBuf, 1, sizeof(wReadBuf), SrcFile))) {
+				if (!(ReadSize = (int)fread(wReadBuf.data(), 1, wReadBuf.size() * sizeof(wchar_t), SrcFile))) {
 					if (!CurLength)
 						ExitCode = 0;
 
@@ -246,10 +250,10 @@ int OldGetFileString::GetUnicodeString(wchar_t **DestStr, int &Length, bool bBig
 				}
 
 				if (bBigEndian)
-					RevBytes(wReadBuf, ReadSize / sizeof(wReadBuf[0]));
+					RevBytes(wReadBuf.data(), ReadSize / sizeof(wchar_t));
 
 				ReadPos = 0;
-				ReadBufPtr = wReadBuf;
+				ReadBufPtr = wReadBuf.data();
 			}
 
 			if (Eol == FEOL_NONE) {
@@ -404,7 +408,7 @@ wchar_t *StringReader::Read(FILE *file, wchar_t *lpwszDest, size_t nDestLength, 
 		return lpwszDest;
 	}
 
-	if (_tmp.size() < (nDestLength + 1) * 4)    // UTF-8, up to 4 bytes per char support
+	if (_tmp.size() < (nDestLength + 1) * 4)	// UTF-8, up to 4 bytes per char support
 		_tmp.resize((nDestLength + 1) * 4);
 
 	if (!fgets(_tmp.data(), _tmp.size(), file))
@@ -426,7 +430,8 @@ wchar_t *StringReader::Read(FILE *file, wchar_t *lpwszDest, size_t nDestLength, 
 template <class CHAR_T>
 class TypedStringReader
 {
-	CHAR_T ReadBuf[8192];
+	static constexpr size_t READ_BUF_SIZE = 65536;
+	std::vector<CHAR_T> ReadBuf;
 	std::vector<CHAR_T> Str;
 
 	GetFileStringContext &context;
@@ -434,7 +439,7 @@ class TypedStringReader
 public:
 	TypedStringReader(GetFileStringContext &context_)
 		:
-		Str(DELTA), context(context_)
+		ReadBuf(READ_BUF_SIZE), Str(DELTA), context(context_)
 	{}
 
 	int GetString(CHAR_T **DestStr, int &Length, bool be = false)
@@ -450,7 +455,7 @@ public:
 		}
 
 		CHAR_T *ReadBufPtr =
-				context.ReadPos < context.ReadSize ? &ReadBuf[context.ReadPos / sizeof(CHAR_T)] : nullptr;
+				context.ReadPos < context.ReadSize ? ReadBuf.data() + context.ReadPos / sizeof(CHAR_T) : nullptr;
 
 		// Обработка ситуации, когда у нас пришёл двойной \r\r, а потом не было \n.
 		// В этом случаем считаем \r\r двумя MAC окончаниями строк.
@@ -461,7 +466,7 @@ public:
 		} else {
 			for (;;) {
 				if (context.ReadPos >= context.ReadSize) {
-					if (!(context.SrcFile.Read(ReadBuf, sizeof(ReadBuf), &context.ReadSize)
+					if (!(context.SrcFile.Read(ReadBuf.data(), ReadBuf.size() * sizeof(CHAR_T), &context.ReadSize)
 								&& context.ReadSize)) {
 						if (!CurLength) {
 							ExitCode = 0;
@@ -470,7 +475,7 @@ public:
 					}
 
 					context.ReadPos = 0;
-					ReadBufPtr = ReadBuf;
+					ReadBufPtr = ReadBuf.data();
 				}
 				if (Eol == FEOL_NONE) {
 					// UNIX
@@ -539,6 +544,7 @@ int GetFileString::PeekString(LPWSTR *DestStr, UINT nCodePage, int &Length)
 		LastString = DestStr;
 		LastLength = Length;
 	} else {
+		DestStr = LastString;
 		Length = LastLength;
 	}
 	return LastResult;
@@ -607,7 +613,7 @@ int GetFileString::GetString(LPWSTR *DestStr, UINT nCodePage, int &Length)
 		if (!context.SomeDataLost) {
 			// при CP_UTF7 dwFlags должен быть 0, см. MSDN
 			nResultLength = WINPORT(MultiByteToWideChar)(nCodePage,
-					(nCodePage == CP_UTF7) ? 0 : MB_ERR_INVALID_CHARS, Str, Length,
+					(context.SomeDataLost || nCodePage == CP_UTF7) ? 0 : MB_ERR_INVALID_CHARS, Str, Length,
 					&Buffer[0], Buffer.size() - 1);
 
 			Result = WINPORT(GetLastError)();
@@ -692,7 +698,7 @@ size_t EstimateEncodingValidity(bool rev, const void *buf, size_t size)
 	/// return count of well-known control characters widely used in texts
 	/// like '\r' '\n' '\t' ' '
 	const size_t count = size / sizeof(T);
-	if (count * sizeof(T) != size) {    // expecting aligned size
+	if (count * sizeof(T) != size) {	// expecting aligned size
 		return 0;
 	}
 	const T *data = (const T *)buf;
@@ -702,11 +708,11 @@ size_t EstimateEncodingValidity(bool rev, const void *buf, size_t size)
 		if (v == (T)'\r' || v == (T)'\n' || v == (T)'\t' || v == (T)' ') {
 			++out;
 		}
-		if (!WCHAR_IS_VALID(v)) {    // may be try to transcode?
+		if (!WCHAR_IS_VALID(v)) {	// may be try to transcode?
 			return 0;
 		}
 	}
-	if (out < count / 32) {    // too few controls for normal text
+	if (out < count / 32) {		// too few controls for normal text
 		return 0;
 	}
 	return out;
@@ -715,17 +721,17 @@ size_t EstimateEncodingValidity(bool rev, const void *buf, size_t size)
 static bool GetFileFormatByHeuristics(File &file, UINT &nCodePage)
 {
 	file.SetPointer(0, nullptr, FILE_BEGIN);
-	BYTE Buffer[0x8000];    // Must be aligned by 32 bits
+	std::vector<BYTE> Buffer(0x8000);	// std::vector guarantees proper alignment (>=alignof(std::max_align_t))
 	DWORD ReadSize = 0;
-	bool ReadResult = file.Read(Buffer, sizeof(Buffer), &ReadSize);
+	bool ReadResult = file.Read(Buffer.data(), Buffer.size(), &ReadSize);
 	file.SetPointer(0, nullptr, FILE_BEGIN);
 	if (!ReadResult || ReadSize < 2)
 		return false;
 
-	const auto Val16LE = EstimateEncodingValidity<uint16_t>(false, Buffer, ReadSize);
-	const auto Val16BE = EstimateEncodingValidity<uint16_t>(true, Buffer, ReadSize);
-	const auto Val32LE = EstimateEncodingValidity<uint32_t>(false, Buffer, ReadSize);
-	const auto Val32BE = EstimateEncodingValidity<uint32_t>(true, Buffer, ReadSize);
+	const auto Val16LE = EstimateEncodingValidity<uint16_t>(false, Buffer.data(), ReadSize);
+	const auto Val16BE = EstimateEncodingValidity<uint16_t>(true, Buffer.data(), ReadSize);
+	const auto Val32LE = EstimateEncodingValidity<uint32_t>(false, Buffer.data(), ReadSize);
+	const auto Val32BE = EstimateEncodingValidity<uint32_t>(true, Buffer.data(), ReadSize);
 	if (Val16LE > Val16BE && Val16LE > Val32LE && Val16LE > Val32BE) {
 		nCodePage = CP_UTF16LE;
 		return true;
@@ -742,11 +748,11 @@ static bool GetFileFormatByHeuristics(File &file, UINT &nCodePage)
 		nCodePage = CP_UTF32BE;
 		return true;
 	}
-	if (IsTextUTF8(Buffer, ReadSize)) {
+	if (IsTextUTF8(Buffer.data(), ReadSize)) {
 		nCodePage = CP_UTF8;
 		return true;
 	}
-	const int cp = DetectCodePage(reinterpret_cast<LPCSTR>(Buffer), ReadSize);
+	const int cp = DetectCodePage(reinterpret_cast<LPCSTR>(Buffer.data()), ReadSize);
 	if (cp != -1) {
 		nCodePage = cp;
 		return true;
