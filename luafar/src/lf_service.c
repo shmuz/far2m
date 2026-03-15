@@ -3864,8 +3864,10 @@ int PushDNParams (lua_State *L, int Msg, int Param1, LONG_PTR Param2)
 			struct FarListColors* flc = (struct FarListColors*) Param2;
 			lua_createtable(L, flc->ColorCount, 1);
 			PutIntToTable(L, "Flags", flc->Flags);
-			for (int i=0; i < flc->ColorCount; i++)
-				PutIntToArray(L, i+1, flc->Colors[i]); // TODO: handle 64-bit values
+			for (int i=0; i < flc->ColorCount; i++) {
+				PushFarColor(L, flc->Colors[i]);
+				lua_rawseti(L, -2, i+1);
+			}
 			break;
 		}
 
@@ -3886,8 +3888,11 @@ LONG_PTR ProcessDNResult(lua_State *L, int Msg, LONG_PTR Param2)
 			ret = lua_istable(L,-1);
 			if (ret) {
 				struct FarListColors* flc = (struct FarListColors*) Param2;
-				for (int i=0; i < flc->ColorCount; i++)
-					flc->Colors[i] = GetIntFromArray(L, i+1); // TODO: handle 64-bit values
+				for (int i=0; i < flc->ColorCount; i++) {
+					lua_rawgeti(L, -1, i+1);
+					flc->Colors[i] = GetFarColor64(L, -1);
+					lua_pop(L, 1);
+				}
 			}
 			break;
 
