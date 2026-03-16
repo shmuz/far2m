@@ -55,6 +55,10 @@ if(NOT "${GIT_TAG}" STREQUAL "v_${VERSION}")
                 WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
                 OUTPUT_VARIABLE GIT_HASH
                 OUTPUT_STRIP_TRAILING_WHITESPACE)
+            execute_process(COMMAND "${GIT_EXECUTABLE}" show --no-patch --format=%ct HEAD
+                WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+                OUTPUT_VARIABLE GIT_UNIXTIME
+                OUTPUT_STRIP_TRAILING_WHITESPACE)
         endif()
     endif()
     if(NOT "${GIT_DATE}" STREQUAL "")

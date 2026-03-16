@@ -4878,6 +4878,13 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 			return 1;
 		}
 
+		case ACTL_GETFARUNIXTIME: {
+			uint64_t unixtime = 0;
+			PtrAdvControl(pd->ModuleNumber, Command, &unixtime, NULL);
+			lua_pushnumber(L, unixtime);
+			return 1;
+		}
+
 		case ACTL_GETWINDOWINFO: {
 			struct WindowInfo wi;
 			memset(&wi, 0, sizeof(wi));
@@ -5002,6 +5009,7 @@ AdvCommand( GetDescSettings,        ACTL_GETDESCSETTINGS)
 AdvCommand( GetDialogSettings,      ACTL_GETDIALOGSETTINGS)
 AdvCommand( GetFarRect,             ACTL_GETFARRECT)
 AdvCommand( GetFarManagerVersion,   ACTL_GETFARVERSION)
+AdvCommand( GetFarUnixTime,         ACTL_GETFARUNIXTIME)
 AdvCommand( GetInterfaceSettings,   ACTL_GETINTERFACESETTINGS)
 AdvCommand( GetPanelSettings,       ACTL_GETPANELSETTINGS)
 AdvCommand( GetPluginMaxReadData,   ACTL_GETPLUGINMAXREADDATA)
@@ -5946,6 +5954,7 @@ static const luaL_Reg actl_funcs[] =
 	PAIR( adv, GetDialogSettings),
 	PAIR( adv, GetFarRect),
 	PAIR( adv, GetFarManagerVersion),
+	PAIR( adv, GetFarUnixTime),
 	PAIR( adv, GetInterfaceSettings),
 	PAIR( adv, GetPanelSettings),
 	PAIR( adv, GetPluginMaxReadData),

@@ -327,6 +327,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 		case ACTL_SETCURSORPOS:
 		case ACTL_PROGRESSNOTIFY:
 		case ACTL_WINPORTBACKEND:
+		case ACTL_GETFARUNIXTIME:
 			break;
 		default:
 
@@ -340,6 +341,12 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 				*(DWORD *)Param1 = FAR_VERSION;
 
 			return FAR_VERSION;
+		}
+		case ACTL_GETFARUNIXTIME: {
+			if (Param1)
+				*(uint64_t *)Param1 = FAR_UNIXTIME;
+
+			return 0;
 		}
 		case ACTL_GETPLUGINMAXREADDATA: {
 			return Opt.PluginMaxReadData;

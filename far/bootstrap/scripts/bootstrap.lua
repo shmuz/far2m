@@ -1,5 +1,5 @@
 -- luacheck: globals
--- globals MAJOR, MINOR, PATCH, ARCH must be set from the command line
+-- globals MAJOR, MINOR, PATCH, ARCH, UNIXTIME must be set from the command line
 local args = {...}
 
 local COPYRIGHTYEARS = "2016-" .. os.date("%Y")
@@ -37,6 +37,7 @@ const char *Copyright =
 local function FarVersion()
   Write(("const uint32_t FAR_VERSION = 0x10000 * %s + %s;"):format(MAJOR, MINOR))
   Write(("const char *FAR_BUILD = \"%s.%s.%s\";"):format(MAJOR, MINOR, PATCH))
+  Write(("const uint64_t FAR_UNIXTIME = %s;"):format(UNIXTIME == "" and "0" or UNIXTIME))
   Write(StrCopyright:format(FULLVERSION, COPYRIGHTYEARS))
 end
 
