@@ -39,7 +39,7 @@ set(LUACMD
   "-eMAJOR=${VERSION_MAJOR}"
   "-eMINOR=${VERSION_MINOR}"
   "-ePATCH=[[${VERSION_PATCH}]]"
-  "-eUNIXTIME=${GIT_UNIXTIME}"
+  "-eCOMMITTIME=${GIT_COMMITTIME}"
   "${SCRIPTS}/bootstrap.lua"
 )
 

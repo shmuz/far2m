@@ -44,6 +44,8 @@ if(GIT_FOUND)
         OUTPUT_STRIP_TRAILING_WHITESPACE)
 endif()
 
+set(GIT_COMMITTIME "0")
+
 if(NOT "${GIT_TAG}" STREQUAL "v_${VERSION}")
     if(GIT_FOUND)
         if(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
@@ -57,7 +59,7 @@ if(NOT "${GIT_TAG}" STREQUAL "v_${VERSION}")
                 OUTPUT_STRIP_TRAILING_WHITESPACE)
             execute_process(COMMAND "${GIT_EXECUTABLE}" show --no-patch --format=%ct HEAD
                 WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-                OUTPUT_VARIABLE GIT_UNIXTIME
+                OUTPUT_VARIABLE GIT_COMMITTIME
                 OUTPUT_STRIP_TRAILING_WHITESPACE)
         endif()
     endif()

@@ -4878,10 +4878,10 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 			return 1;
 		}
 
-		case ACTL_GETFARUNIXTIME: {
-			uint64_t unixtime = 0;
-			PtrAdvControl(pd->ModuleNumber, Command, &unixtime, NULL);
-			lua_pushnumber(L, unixtime);
+		case ACTL_GETFARCOMMITTIME: {
+			uint64_t commit_time = 0;
+			PtrAdvControl(pd->ModuleNumber, Command, &commit_time, NULL);
+			lua_pushnumber(L, commit_time);
 			return 1;
 		}
 
@@ -5007,9 +5007,9 @@ AdvCommand( GetConfirmations,       ACTL_GETCONFIRMATIONS)
 AdvCommand( GetCursorPos,           ACTL_GETCURSORPOS)
 AdvCommand( GetDescSettings,        ACTL_GETDESCSETTINGS)
 AdvCommand( GetDialogSettings,      ACTL_GETDIALOGSETTINGS)
+AdvCommand( GetFarCommitTime,       ACTL_GETFARCOMMITTIME)
 AdvCommand( GetFarRect,             ACTL_GETFARRECT)
 AdvCommand( GetFarManagerVersion,   ACTL_GETFARVERSION)
-AdvCommand( GetFarUnixTime,         ACTL_GETFARUNIXTIME)
 AdvCommand( GetInterfaceSettings,   ACTL_GETINTERFACESETTINGS)
 AdvCommand( GetPanelSettings,       ACTL_GETPANELSETTINGS)
 AdvCommand( GetPluginMaxReadData,   ACTL_GETPLUGINMAXREADDATA)
@@ -5952,9 +5952,9 @@ static const luaL_Reg actl_funcs[] =
 	PAIR( adv, GetCursorPos),
 	PAIR( adv, GetDescSettings),
 	PAIR( adv, GetDialogSettings),
+	PAIR( adv, GetFarCommitTime),
 	PAIR( adv, GetFarRect),
 	PAIR( adv, GetFarManagerVersion),
-	PAIR( adv, GetFarUnixTime),
 	PAIR( adv, GetInterfaceSettings),
 	PAIR( adv, GetPanelSettings),
 	PAIR( adv, GetPluginMaxReadData),

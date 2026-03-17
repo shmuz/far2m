@@ -2,7 +2,7 @@
 
 extern const uint32_t FAR_VERSION;
 extern const char *FAR_BUILD;
-extern const uint64_t FAR_UNIXTIME;
+extern const uint64_t FAR_COMMITTIME;
 
 extern const char *Copyright;
 
