@@ -342,21 +342,25 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 
 			return FAR_VERSION;
 		}
+
 		case ACTL_GETFARCOMMITTIME: {
 			if (Param1)
 				*(uint64_t *)Param1 = FAR_COMMITTIME;
 
 			return 0;
 		}
+
 		case ACTL_GETPLUGINMAXREADDATA: {
 			return Opt.PluginMaxReadData;
 		}
+
 		case ACTL_GETSYSWORDDIV: {
 			if (Param1)
 				wcscpy((wchar_t *)Param1, Opt.strWordDiv);
 
 			return (int)Opt.strWordDiv.GetLength() + 1;
 		}
+
 		/*
 			$ 24.08.2000 SVS
 			ожидать определенную (или любую) клавишу
@@ -367,6 +371,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 		case ACTL_WAITKEY: {
 			return WaitKey(Param1 ? (FarKey)(DWORD_PTR)Param1 : KEY_INVALID, 0, false, false);
 		}
+
 		/*
 			$ 04.12.2000 SVS
 			ACTL_GETCOLOR - получить определенный цвет по индекс, определенному
@@ -385,6 +390,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 
 			return FALSE;
 		}
+
 		/*
 			ACTL_GETARRAYCOLOR - получить весь массив цветов
 			Param1 - размер буфера (в элементах FarColor)
@@ -392,14 +398,13 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 			Return - размер массива.
 		*/
 		case ACTL_GETARRAYCOLOR: {
-			if ((int)(intptr_t)Param1 > SIZE_ARRAY_FARCOLORS)
-				return SIZE_ARRAY_FARCOLORS;
-
-			if (Param2)
-				memcpy(Param2, &FarColors::setcolors[0], (int)(intptr_t)Param1 * sizeof(FarColors::setcolors[0]));
-
+			if (Param1 && Param2) {
+				auto copysize = Min((intptr_t)Param1, (intptr_t)SIZE_ARRAY_FARCOLORS);
+				memcpy(Param2, FarColors::setcolors, copysize * sizeof(FarColors::setcolors[0]));
+			}
 			return SIZE_ARRAY_FARCOLORS;
 		}
+
 		/*
 			Param1=FARColor{
 				DWORD Flags;
@@ -431,10 +436,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 
 			return FALSE;
 		}
-		/*
-			$ 05.06.2001 tran
-			новые ACTL_ для работы с фреймами
-		*/
+
 		case ACTL_GETWINDOWINFO:
 			/*
 				$ 12.04.2005 AY
@@ -491,9 +493,11 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 
 			return FALSE;
 		}
+
 		case ACTL_GETWINDOWCOUNT: {
 			return FrameManager ? FrameManager->GetFrameCount() : 0;
 		}
+
 		case ACTL_SETCURRENTWINDOW: {
 			// Запретим переключение фрэймов, если находимся в модальном редакторе/вьюере.
 			auto Index = (INT_PTR)Param1;
@@ -509,6 +513,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 
 			return FALSE;
 		}
+
 		/*
 			$ 26.06.2001 SKV
 			Для полноценной работы с ACTL_SETCURRENTWINDOW
@@ -519,6 +524,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 				FrameManager->Commit();
 			return TRUE;
 		}
+
 		/*
 			$ 15.09.2001 tran
 			пригодится плагинам
@@ -526,6 +532,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 		case ACTL_GETFARHWND: {
 			return 0;
 		}
+
 		case ACTL_GETDIALOGSETTINGS: {
 			DWORD Options = 0;
 			static Opt2Flags ODlg[] = {
@@ -543,6 +550,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 
 			return Options;
 		}
+
 		/*
 			$ 24.11.2001 IS
 			Ознакомим с настройками системными, панели, интерфейса, подтверждений
@@ -565,6 +573,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 
 			return Options;
 		}
+
 		case ACTL_GETPANELSETTINGS: {
 			DWORD Options = 0;
 			static Opt2Flags OSys[] = {
@@ -588,6 +597,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 
 			return Options;
 		}
+
 		case ACTL_GETINTERFACESETTINGS: {
 			DWORD Options = 0;
 			static Opt2Flags OSys[] = {
@@ -608,6 +618,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 
 			return Options;
 		}
+
 		case ACTL_GETCONFIRMATIONS: {
 			DWORD Options = 0;
 			static Opt2Flags OSys[] = {
@@ -630,6 +641,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 
 			return Options;
 		}
+
 		case ACTL_GETDESCSETTINGS: {
 			// опций мало - с массивом не заморачиваемся
 			DWORD Options = 0;
@@ -647,6 +659,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 
 			return Options;
 		}
+
 		case ACTL_REDRAWALL: {
 			int Ret = FrameManager->ProcessKey(KEY_CONSOLE_BUFFER_RESIZE);
 			FrameManager->Commit();

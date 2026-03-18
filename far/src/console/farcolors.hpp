@@ -45,7 +45,7 @@ public:
 	uint64_t colors[SIZE_ARRAY_FARCOLORS];
 	static uint32_t GammaCorrection;
 	static bool GammaChanged;
-    static FarColors FARColors;
+	static FarColors FARColors;
 
 	FarColors() noexcept;
 	~FarColors() noexcept;

@@ -4805,9 +4805,11 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 
 		case ACTL_GETCOLOR: {
 			uint64_t color;
-			int1 = check_env_flag(L, pos2);
-			int1 = PtrAdvControl(pd->ModuleNumber, Command, (void*)int1, &color);
-			int1 ? PushFarColor(L, color) : lua_pushnil(L);
+			uintptr_t index = check_env_flag(L, pos2);
+			if (PtrAdvControl(pd->ModuleNumber, Command, (void*)index, &color))
+				PushFarColor(L, color);
+			else
+				lua_pushnil(L);
 			return 1;
 		}
 
