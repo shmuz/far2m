@@ -3081,23 +3081,17 @@ void Editor::InsertString()
 		AddUndoData(m_CurLine, m_NumLine);
 		AddUndoData(UNDO_INSSTR, nullptr, m_EndList == m_CurLine ? L"" : m_GlobalEOL, m_NumLine + 1, 0);    // EOL? - m_CurLine->GetEOL()  m_GlobalEOL   ""
 		AddUndoData(UNDO_END);
-		wchar_t *NewCurLineStr = (wchar_t *)malloc((CurPos + 1) * sizeof(wchar_t));
+		FARString NewCurLineStr(CurLineStr, CurPos);
 
-		if (!NewCurLineStr)
-			return;
-
-		wmemcpy(NewCurLineStr, CurLineStr, CurPos);
-		NewCurLineStr[CurPos] = 0;
 		int StrSize = CurPos;
 
 		if (m_EdOpt.AutoIndent && NewLineEmpty) {
-			RemoveTrailingSpaces(NewCurLineStr);
+			RemoveTrailingSpaces(NewCurLineStr, false);
 			StrSize = StrLength(NewCurLineStr);
 		}
 
 		m_CurLine->SetBinaryString(NewCurLineStr, StrSize);
 		m_CurLine->SetEOL(EndSeq);
-		free(NewCurLineStr);
 	} else {
 		NewString->SetString(L"");
 		AddUndoData(UNDO_INSSTR, nullptr, L"", m_NumLine + 1, 0);    // EOL? - m_CurLine->GetEOL()  m_GlobalEOL   ""

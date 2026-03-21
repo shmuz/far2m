@@ -2515,11 +2515,15 @@ bool Edit::KeyMatchedMask(int Key) const
 
 bool Edit::CharInMask(wchar_t Char, wchar_t Mask)
 {
-	return (Mask == EDMASK_ANY)
-			|| (Mask == EDMASK_DSS && (std::iswdigit(Char) || Char == L' ' || Char == L'-'))
-			|| (Mask == EDMASK_DIGITS && (std::iswdigit(Char) || Char == L' '))
-			|| (Mask == EDMASK_DIGIT && (std::iswdigit(Char))) || (Mask == EDMASK_ALPHA && IsAlpha(Char))
-			|| (Mask == EDMASK_HEX && std::iswxdigit(Char));
+	switch (Mask) {
+		case EDMASK_ANY:     return true;
+		case EDMASK_ALPHA:   return IsAlpha(Char);
+		case EDMASK_DSS:     return std::iswdigit(Char) || Char == L' ' || Char == L'-';
+		case EDMASK_DIGITS:  return std::iswdigit(Char) || Char == L' ';
+		case EDMASK_DIGIT:   return std::iswdigit(Char);
+		case EDMASK_HEX:     return std::iswxdigit(Char);
+		default:             return false;
+	}
 }
 
 bool Edit::CheckCharMask(wchar_t Chr)
