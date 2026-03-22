@@ -6,25 +6,51 @@ assert(type(_G.mf) == "table", "Must be run by plugin LuaMacro")
 
 local osWindows = string.sub(package.config, 1, 1) == "\\"
 
-local exports = osWindows and [[
-  "Analyse", "ClosePanel", "Compare", "Configure", "DeleteFiles", "ExitFAR",
-  "GetContentData", "GetContentFields", "GetFiles", "GetFindData",
-  "GetGlobalInfo", "GetOpenPanelInfo", "GetPluginInfo", "MakeDirectory", "OnError", "Open",
-  "ProcessConsoleInput", "ProcessDialogEvent", "ProcessEditorEvent", "ProcessEditorInput",
-  "ProcessHostFile", "ProcessPanelEvent", "ProcessPanelInput", "ProcessSynchroEvent",
-  "ProcessViewerEvent", "PutFiles", "SetDirectory", "SetFindList", "SetStartupInfo",
-]] or [[
-  "Analyse", "ClosePanel", "Compare", "Configure", "DeleteFiles", "ExitFAR", "GetCustomData",
-  "GetFiles", "GetFindData", "GetOpenPanelInfo", "GetPluginInfo", "GetVirtualFindData",
-  "MakeDirectory", "MayExitFAR", "OnError", "Open", "OpenFilePlugin", "ProcessConsoleInput",
-  "ProcessDialogEvent", "ProcessEditorEvent", "ProcessEditorInput", "ProcessPanelEvent",
-  "ProcessHostFile", "ProcessKey", "ProcessSynchroEvent", "ProcessViewerEvent", "PutFiles",
-  "SetDirectory", "SetFindList",
+local exports_common = [[
+  "Analyse",
+  "ClosePanel",
+  "Compare",
+  "Configure",
+  "DeleteFiles",
+  "ExitFAR",
+  "GetFiles",
+  "GetFindData",
+  "GetOpenPanelInfo",
+  "GetPluginInfo",
+  "MakeDirectory",
+  "OnError",
+  "Open",
+  "ProcessConsoleInput",
+  "ProcessDialogEvent",
+  "ProcessEditorEvent",
+  "ProcessEditorInput",
+  "ProcessHostFile",
+  "ProcessPanelEvent",
+  "ProcessSynchroEvent",
+  "ProcessViewerEvent",
+  "PutFiles",
+  "SetDirectory",
+  "SetFindList",
 ]]
 
-local globals_luafar = osWindows and
-  { "bit64", "editor", "far", "_luaplug", "panel", "regex", "utf8", "viewer", "win", }
-  or
+local exports_far3_only = [[
+  "GetContentData",
+  "GetContentFields",
+  "GetGlobalInfo",
+  "ProcessPanelInput",
+]]
+
+local exports_far2m_only = [[
+  "GetCustomData",
+  "GetLinkTarget",
+  "GetVirtualFindData",
+  "MayExitFAR",
+  "ProcessKey",
+]]
+
+local exports = exports_common .. (osWindows and exports_far3_only or exports_far2m_only)
+
+local globals_luafar =
   { "actl", "bit64", "editor", "far", "_luaplug", "panel", "regex", "utf8", "viewer", "win", }
 
 local globals_luamacro = {
