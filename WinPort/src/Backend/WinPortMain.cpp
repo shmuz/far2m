@@ -6,6 +6,7 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <dlfcn.h>
+#include <time.h>
 
 #ifdef __linux__
 # include <termios.h>
@@ -38,9 +39,12 @@
 # include "TestController.h"
 #endif
 
+#define STDERR_BUFFER_SIZE 0x1000
+
 IConsoleOutput *g_winport_con_out = nullptr;
 IConsoleInput *g_winport_con_in = nullptr;
-static BOOL g_winport_testing = FALSE;
+static char *s_stderr_trace = nullptr;
+static BOOL s_winport_testing = FALSE;
 
 bool WinPortMainTTY(const char *full_exe_path, int std_in, int std_out,
 	bool ext_clipboard, bool norgb, DWORD nodetect, bool far2l_tty,
@@ -51,8 +55,35 @@ extern "C" void WinPortInitRegistry();
 
 extern "C" BOOL WinPortTesting()
 {
-	return g_winport_testing;
+	return s_winport_testing;
 }
+
+extern "C" const char *WinPortStderrTrace(size_t *len)
+{
+	if (s_stderr_trace) {
+		static unsigned int s_cnt = 0;
+		unsigned int cnt = ++s_cnt;
+		*len = STDERR_BUFFER_SIZE;
+		// there is no ducumented way to obtain size of buffered content,
+		// so here is little trick: write 'magic' string to stderr and then look
+		// for it
+		char magic[32];
+		const int magic_len = snprintf(magic, sizeof(magic), "EndOfSTDERR:%x@%llx\n", cnt, (unsigned long long)time(NULL));
+		if (magic_len > 0) {
+			fwrite(magic, magic_len, 1, stderr);
+			for (int l = 0; l + magic_len <= STDERR_BUFFER_SIZE; ++l) {
+				if (memcmp(s_stderr_trace + l, magic, magic_len) == 0) {
+					*len = l;
+					break;
+				}
+			}
+		}
+	} else {
+		*len = 0;
+	}
+	return s_stderr_trace;
+}
+
 
 class FScope
 {
@@ -110,7 +141,14 @@ static void SetupStdHandles()
 	if (!err.empty() && err != "-") {
 		if (freopen(err.c_str(), "a", stderr)) {
 			reopened|= 2;
-			setvbuf(stderr, NULL, _IONBF, 0);
+			if (err == DEVNULL) {
+				if (!s_stderr_trace) {
+					s_stderr_trace = (char *)calloc(STDERR_BUFFER_SIZE, 1);
+				}
+				setvbuf(stderr, s_stderr_trace, _IOFBF, STDERR_BUFFER_SIZE);
+			} else {
+				setvbuf(stderr, NULL, _IONBF, 0);
+			}
 		} else
 			perror("freopen stderr");
 	}
@@ -264,7 +302,7 @@ static int TTYTryReviveSome(int std_in, int std_out, bool far2l_tty, std::unique
 
 		fprintf(f_out, "\n\x1b[1;31mSome far2m-s lost in space-time nearby:\x1b[39;22m\n");
 		for (size_t i = 0; i < instances.size(); ++i) {
-			fprintf(f_out, " \x1b[1;31m%lu\x1b[39;22m: %s\n", i + 1, instances[i].info.c_str());
+			fprintf(f_out, " \x1b[1;31m%lu\x1b[39;22m: %s\n", (unsigned long)(i + 1), instances[i].info.c_str());
 		}
 
 		fprintf(f_out, "\x1b[1;31mInput instance index to revive or empty string to spawn new far2m\x1b[39;22m\n");
@@ -556,7 +594,7 @@ extern "C" int WinPortMain(const char *full_exe_path, int argc, char **argv, int
 			winport_con_out->SetSize(w.ws_col, w.ws_row);
 		}
 		test_ctl.reset(new TestController(test_ctl_id));
-		g_winport_testing = TRUE;
+		s_winport_testing = TRUE;
 		unsetenv("FAR2L_TESTCTL");
 #else
 		fprintf(stderr, "Testing facilities not enabled, rebuild with -DTESTING=YES to use FAR2L_TESTCTL environment variable\n");
