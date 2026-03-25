@@ -3000,7 +3000,7 @@ LONG_PTR SendDlgMessage(HANDLE hDlg, int Msg, int Param1, void *Param2)
 
 static void PushDlgItemNum(lua_State *L, HANDLE hDlg, int numitem, int pos_table)
 {
-	int size = PSInfo.SendDlgMessage(hDlg, DM_GETDLGITEM, numitem, 0);
+	int size = SendDlgMessage(hDlg, DM_GETDLGITEM, numitem, NULL);
 	if (size > 0) {
 		BOOL table_exist = lua_istable(L, pos_table);
 		struct FarDialogItem* pItem = (struct FarDialogItem*) lua_newuserdata(L, size);
@@ -3089,7 +3089,7 @@ static int Is_DM_DialogItem(int Msg)
 		case DM_GETMEMOEDITID:
 		case DM_GETSELECTION:
 		case DM_GETTEXT:
-		case DM_GETTRUECOLOR:  //same as DM_GETCOLOR
+		case DM_GETCOLOR:  //same as DM_GETTRUECOLOR
 		case DM_LISTADD:
 		case DM_LISTADDSTR:
 		case DM_LISTDELETE:
@@ -3125,7 +3125,7 @@ static int Is_DM_DialogItem(int Msg)
 		case DM_SETTEXT:
 		case DM_SETTEXTPTR:
 		case DM_SETTEXTPTRSILENT:
-		case DM_SETTRUECOLOR:  //same as DM_SETCOLOR
+		case DM_SETCOLOR:  //same as DM_SETTRUECOLOR
 		case DM_SHOWITEM:
 		case DM_SETREADONLY:
 		// DN_*
@@ -3192,6 +3192,8 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			break;
 
 		case DM_ENABLEREDRAW:
+		case DM_SETMOUSEEVENTNOTIFY:
+		case DM_SHOWDIALOG:
 			Param1 = GetEnableFromLua(L,pos3);
 			break;
 
@@ -3221,6 +3223,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 
 		case DM_CLOSE:
 		case DM_EDITUNCHANGEDFLAG:
+		case DM_GETCHECK:
 		case DM_GETCOMBOBOXEVENT:
 		case DM_GETCURSORSIZE:
 		case DM_GETDROPDOWNOPENED:
@@ -3236,7 +3239,6 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 		case DM_SETMAXTEXTLENGTH:     // alias: DM_SETTEXTLENGTH
 		case DM_SETMOUSEEVENTNOTIFY:
 		case DM_SHOWDIALOG:
-		case DM_SHOWITEM:
 		case DM_USER:
 		// DN_*
 		case DN_BTNCLICK:
@@ -3248,12 +3250,9 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			break;
 
 		case DM_ENABLE:
+		case DM_SHOWITEM:
 			Param2 = GetEnableFromLua(L, pos4);
 			break;
-
-		case DM_GETCHECK:
-			lua_pushinteger(L, PSInfo.SendDlgMessage(hDlg, Msg, Param1, 0));
-			return 1;
 
 		case DM_SETCHECK:
 			if (lua_isnumber(L,pos4))
@@ -3263,7 +3262,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			break;
 
 		case DM_GETDEFAULTCOLOR:
-		case DM_GETTRUECOLOR: //same as DM_GETCOLOR
+		case DM_GETCOLOR: //same as DM_GETTRUECOLOR
 		{
 			const int MAXCOLORS = DLG_ITEM_MAX_CUST_COLORS;
 			uint64_t Colors[MAXCOLORS];
@@ -3276,7 +3275,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			return 1;
 		}
 
-		case DM_SETTRUECOLOR: {  //same as DM_SETCOLOR
+		case DM_SETCOLOR: {  //same as DM_SETTRUECOLOR
 			const int MAXCOLORS = DLG_ITEM_MAX_CUST_COLORS;
 			uint64_t Colors[MAXCOLORS];
 			luaL_argcheck(L, lua_istable(L,pos4), pos4, "table expected");
@@ -3331,13 +3330,13 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 		}
 
 		case DM_GETDLGDATA: {
-			TDialogData *dd = (TDialogData*) PSInfo.SendDlgMessage(hDlg,Msg,0,0);
+			TDialogData *dd = (TDialogData*) SendDlgMessage(hDlg,Msg,0,NULL);
 			lua_rawgeti(L, LUA_REGISTRYINDEX, dd->dataRef);
 			return 1;
 		}
 
 		case DM_SETDLGDATA: {
-			TDialogData *dd = (TDialogData*) PSInfo.SendDlgMessage(hDlg,DM_GETDLGDATA,0,0);
+			TDialogData *dd = (TDialogData*) SendDlgMessage(hDlg,DM_GETDLGDATA,0,NULL);
 			lua_rawgeti(L, LUA_REGISTRYINDEX, dd->dataRef);
 			luaL_unref(L, LUA_REGISTRYINDEX, dd->dataRef);
 			lua_pushvalue(L, pos3);
@@ -3410,7 +3409,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 		}
 
 		case DM_GETCONSTTEXTPTR: {
-			const wchar_t *ptr = (wchar_t*)PSInfo.SendDlgMessage(hDlg, Msg, Param1, 0);
+			const wchar_t *ptr = (wchar_t*)SendDlgMessage(hDlg, Msg, Param1, NULL);
 			push_utf8_string(L, ptr ? ptr:L"", -1);
 			return 1;
 		}
@@ -3435,7 +3434,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 					arr[i] = lua_tointeger(L,-1);
 					lua_pop(L,1);
 				}
-				res = PSInfo.SendDlgMessage (hDlg, Msg, res, (LONG_PTR)arr);
+				res = SendDlgMessage (hDlg, Msg, res, arr);
 			}
 			return lua_pushinteger(L, res), 1;
 		}
@@ -3454,7 +3453,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 		{
 			struct FarListDelete fld;
 			if (lua_isnoneornil(L, pos4))
-				lua_pushinteger(L, PSInfo.SendDlgMessage(hDlg, Msg, Param1, 0));
+				lua_pushinteger(L, SendDlgMessage(hDlg, Msg, Param1, NULL));
 			else
 			{
 				luaL_checktype(L, pos4, LUA_TTABLE);
@@ -3738,7 +3737,6 @@ DlgMethod( GetItemPosition,        DM_GETITEMPOSITION)
 DlgMethod( GetMemoEditId,          DM_GETMEMOEDITID)
 DlgMethod( GetSelection,           DM_GETSELECTION)
 DlgMethod( GetText,                DM_GETTEXT)
-DlgMethod( GetTrueColor,           DM_GETTRUECOLOR)
 DlgMethod( Key,                    DM_KEY)
 DlgMethod( ListAdd,                DM_LISTADD)
 DlgMethod( ListAddStr,             DM_LISTADDSTR)
@@ -3782,7 +3780,6 @@ DlgMethod( SetSelection,           DM_SETSELECTION)
 DlgMethod( SetText,                DM_SETTEXT)
 DlgMethod( SetTextPtr,             DM_SETTEXTPTR)
 DlgMethod( SetTextPtrSilent,       DM_SETTEXTPTRSILENT)
-DlgMethod( SetTrueColor,           DM_SETTRUECOLOR)
 DlgMethod( ShowDialog,             DM_SHOWDIALOG)
 DlgMethod( ShowItem,               DM_SHOWITEM)
 DlgMethod( User,                   DM_USER)
@@ -5918,7 +5915,6 @@ static const luaL_Reg dialog_methods[] =
 	PAIR( dlg, GetMemoEditId),
 	PAIR( dlg, GetSelection),
 	PAIR( dlg, GetText),
-	PAIR( dlg, GetTrueColor),
 	PAIR( dlg, Key),
 	PAIR( dlg, ListAdd),
 	PAIR( dlg, ListAddStr),
@@ -5962,7 +5958,6 @@ static const luaL_Reg dialog_methods[] =
 	PAIR( dlg, SetText),
 	PAIR( dlg, SetTextPtr),
 	PAIR( dlg, SetTextPtrSilent),
-	PAIR( dlg, SetTrueColor),
 	PAIR( dlg, ShowDialog),
 	PAIR( dlg, ShowItem),
 	PAIR( dlg, User),
