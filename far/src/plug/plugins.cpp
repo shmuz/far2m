@@ -819,13 +819,11 @@ int PluginManager::ProcessEditorInput(INPUT_RECORD *Rec)
 
 int PluginManager::ProcessEditorEvent(int Event, void *Param, Editor *EditorInstance)
 {
-	if (Event == EE_REDRAW)
-	{
-		if (FrameManager->ManagerIsDown())
-			return 0;
+	if (FrameManager->ManagerIsDown())  // https://github.com/shmuz/far2m/issues/98
+		return 0;
 
+	if (Event == EE_REDRAW)
 		EditorInstance->AutoDeleteColors();
-	}
 
 	auto EditorID = EditorInstance->GetEditorID();
 
