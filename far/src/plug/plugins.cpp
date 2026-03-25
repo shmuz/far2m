@@ -820,7 +820,12 @@ int PluginManager::ProcessEditorInput(INPUT_RECORD *Rec)
 int PluginManager::ProcessEditorEvent(int Event, void *Param, Editor *EditorInstance)
 {
 	if (Event == EE_REDRAW)
+	{
+		if (FrameManager->ManagerIsDown())
+			return 0;
+
 		EditorInstance->AutoDeleteColors();
+	}
 
 	auto EditorID = EditorInstance->GetEditorID();
 
