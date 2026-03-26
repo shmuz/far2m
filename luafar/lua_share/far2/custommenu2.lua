@@ -306,7 +306,7 @@ do
     local function Horisontal (cleft, cright, text, yy)
       text = text:sub(1, self.w)
       local tlen = text:len()
-      if tlen < self.w then
+      if tlen > 0 and tlen < self.w then
         text = " "..text
         tlen = tlen + 1
         if tlen < self.w then
@@ -1221,7 +1221,7 @@ local function Menu (props, list)
       list.Log("DN_RESIZECONSOLE")
       list:OnResizeConsole(hDlg, param2)
       DlgSend(hDlg, "DM_SETDLGITEM", pos_usercontrol, list:CreateDialogItem(2, 1))
-      DlgSend(hDlg, "DM_RESIZEDIALOG", 0, {X=list.w + 6, Y=list.h + 4})
+      list:UpdateSizePos(hDlg)
       return 1
 
     elseif msg == F.DN_CLOSE then
