@@ -1318,11 +1318,10 @@ void PluginManager::Configure(int StartPos)
 					break;
 
 				case KEY_F4:
-					if (item && PluginList.GetItemCount() > 0 && SelPos<MenuItemNumber)
+					if (item && PluginList.GetItemCount() > 0 && SelPos < MenuItemNumber)
 					{
-						FARString strName00;
-						int nOffset = HotKeysPresent?3:0;
-						strName00 = PluginList.GetItemPtr()->strName.CPtr()+nOffset;
+						int nOffset = HotKeysPresent ? 3 : 0;
+						FARString strName00 = PluginList.GetItemPtr()->strName.CPtr() + nOffset;
 						RemoveExternalSpaces(strName00);
 
 						if (SetHotKeyDialog(strName00, item->pPlugin, item->nItem, &item->Guid, MTYPE_CONFIGSMENU))
@@ -1347,30 +1346,30 @@ void PluginManager::Configure(int StartPos)
 			StartPos = PluginList.Modal::GetExitCode();
 			PluginList.Hide();
 
-			if (StartPos<0)
+			if (StartPos < 0)
 				break;
 
-			PluginMenuItemData *item = (PluginMenuItemData*)PluginList.GetUserData(nullptr,0,StartPos);
+			PluginMenuItemData *item = (PluginMenuItemData*)PluginList.GetUserData(nullptr, 0, StartPos);
 			ConfigureCurrent(item->pPlugin, item->nItem, &item->Guid);
 		}
 	}
 }
 
-int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *HistoryName)
+int PluginManager::CommandsMenu(int ModalType, int StartPos, const wchar_t *HistoryName)
 {
-	if(ModalType == MODALTYPE_DIALOG)
+	if (ModalType == MODALTYPE_DIALOG)
 	{
-		if(reinterpret_cast<Dialog*>(FrameManager->GetCurrentFrame())->CheckDialogMode(DMODE_NOPLUGINS))
-		{
+		auto Dlg = dynamic_cast<Dialog*>(FrameManager->GetCurrentFrame());
+		if (!Dlg || Dlg->CheckDialogMode(DMODE_NOPLUGINS))
 			return 0;
-		}
 	}
 
 	int MenuItemNumber = 0;
 	bool IsEditor = ModalType == MODALTYPE_EDITOR;
 	bool IsViewer = ModalType == MODALTYPE_VIEWER;
 	bool IsDialog = ModalType == MODALTYPE_DIALOG;
-	PluginMenuItemData item;
+	bool IsPanels = !IsEditor && !IsViewer && !IsDialog;
+	PluginMenuItemData SelItem {};
 	{
 		ChangeMacroArea Cma(MACROAREA_MENU);
 		VMenu PluginList(Msg::PluginCommandsMenuTitle,nullptr,0,ScrY-4);
@@ -1412,7 +1411,7 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 					if ((IsEditor && !(IFlags & PF_EDITOR)) ||
 							(IsViewer && !(IFlags & PF_VIEWER)) ||
 							(IsDialog && !(IFlags & PF_DIALOG)) ||
-							(!IsEditor && !IsViewer && !IsDialog && (IFlags & PF_DISABLEPANELS)))
+							(IsPanels && (IFlags & PF_DISABLEPANELS)))
 						continue;
 
 					for (int J = 0; ; J++)
@@ -1541,63 +1540,55 @@ int PluginManager::CommandsMenu(int ModalType,int StartPos,const wchar_t *Histor
 		int ExitCode = PluginList.Modal::GetExitCode();
 		PluginList.Hide();
 
-		if (ExitCode<0)
+		if (ExitCode < 0)
 		{
 			return FALSE;
 		}
 
 		ScrBuf.Flush();
-		item = *(PluginMenuItemData*)PluginList.GetUserData(nullptr,0,ExitCode);
+		SelItem = *(PluginMenuItemData*)PluginList.GetUserData(nullptr, 0, ExitCode);
 	}
 
-	Panel *ActivePanel = CtrlObject->Cp()->ActivePanel;
-	int OpenCode = OPEN_PLUGINSMENU;
-	const void *Item = (void*)item.nItem;
-	if (item.pPlugin->UseMenuGuids()) {
-		Item = &item.Guid;
-	}
 	OpenDlgPluginData pd {};
+	int OpenCode = IsEditor ? OPEN_EDITOR
+			: IsViewer ? OPEN_VIEWER
+			: IsDialog ? OPEN_DIALOG
+			: OPEN_PLUGINSMENU;
 
-	if (IsEditor)
+	const void *Item = IsDialog ? (void*)&pd
+			: SelItem.pPlugin->UseMenuGuids() ? (void*)&SelItem.Guid
+			: (void*)SelItem.nItem;
+
+	if (IsDialog)
 	{
-		OpenCode = OPEN_EDITOR;
-	}
-	else if (IsViewer)
-	{
-		OpenCode = OPEN_VIEWER;
-	}
-	else if (IsDialog)
-	{
-		OpenCode = OPEN_DIALOG;
-		pd.hDlg=(HANDLE)FrameManager->GetCurrentFrame();
-		if (item.pPlugin->UseMenuGuids())
-			pd.ItemGuid = item.Guid;
+		pd.hDlg = FrameManager->GetCurrentFrame();
+		if (SelItem.pPlugin->UseMenuGuids())
+			pd.ItemGuid = SelItem.Guid;
 		else
-			pd.ItemNumber = item.nItem;
-
-		Item = &pd;
+			pd.ItemNumber = SelItem.nItem;
 	}
 
-	PHPTR hPlugin = OpenPlugin(item.pPlugin, OpenCode, Item);
+	PHPTR panelHandle = OpenPlugin(SelItem.pPlugin, OpenCode, Item);
 
-	if (hPlugin && !IsEditor && !IsViewer && !IsDialog)
+	if (IsPanels && panelHandle)
 	{
-		if (ActivePanel->ProcessPluginEvent(FE_CLOSE,nullptr))
+		Panel *ActivePanel = CtrlObject->Cp()->ActivePanel;
+		if (ActivePanel->ProcessPluginEvent(FE_CLOSE, nullptr))
 		{
-			ClosePanel(hPlugin);
+			ClosePanel(panelHandle);
 			return FALSE;
 		}
 
 		Panel *NewPanel = CtrlObject->Cp()->ChangePanel(ActivePanel,FILE_PANEL,true,true);
-		NewPanel->SetPluginMode(hPlugin,L"",true);
+		NewPanel->SetPluginMode(panelHandle, L"", true);
 		NewPanel->Update(0);
 		NewPanel->Show();
 	}
-
-	// restore title for old plugins only.
-	if (item.pPlugin->IsOemPlugin() && IsEditor && CurEditor)
+	else if (IsEditor)
 	{
-		CurEditor->SetPluginTitle(nullptr);
+		// restore title for old plugins only.
+		if (SelItem.pPlugin->IsOemPlugin() && CurEditor)
+			CurEditor->SetPluginTitle(nullptr);
 	}
 
 	return TRUE;
