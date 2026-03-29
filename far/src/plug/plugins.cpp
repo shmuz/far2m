@@ -152,16 +152,12 @@ static PluginType PluginTypeByExtension(const wchar_t *lpModuleName)
 	return NOT_PLUGIN;
 }
 
-static int _cdecl PluginsSort(const void *el1,const void *el2)
+bool PluginsSort(const Plugin* a, const Plugin* b)
 {
-	Plugin *Plugin1=*((Plugin**)el1);
-	Plugin *Plugin2=*((Plugin**)el2);
-	return StrCmp(PointToName(Plugin1->GetModuleName()),PointToName(Plugin2->GetModuleName()));
+	return StrCmp(PointToName(a->GetModuleName()), PointToName(b->GetModuleName())) < 0;
 }
 
 PluginManager::PluginManager():
-	PluginsData(nullptr),
-	PluginsCount(0),
 	CurEditor(nullptr),
 	CurViewer(nullptr),
 	CurDialogEditor(nullptr)
@@ -172,9 +168,8 @@ PluginManager::~PluginManager()
 {
 	Plugin *pLuaMacro = nullptr; //to be deleted last
 
-	for (int i = 0; i < PluginsCount; i++)
+	for (auto pPlugin: PluginsData)
 	{
-		Plugin *pPlugin = PluginsData[i];
 		if (pPlugin->IsLuamacro())
 			pLuaMacro = pPlugin;
 		else
@@ -188,32 +183,17 @@ PluginManager::~PluginManager()
 		pLuaMacro->Unload(true);
 		delete pLuaMacro;
 	}
-	free(PluginsData);
-}
-
-bool PluginManager::AddPlugin(Plugin *pPlugin)
-{
-	Plugin **NewPluginsData=(Plugin**)realloc(PluginsData,sizeof(*PluginsData)*(PluginsCount+1));
-
-	if (!NewPluginsData)
-		return false;
-
-	PluginsData = NewPluginsData;
-	PluginsData[PluginsCount]=pPlugin;
-	PluginsCount++;
-	return true;
 }
 
 bool PluginManager::RemovePlugin(Plugin *pPlugin)
 {
-	for (int i = 0; i < PluginsCount; i++)
+	for (auto it=PluginsData.begin(); it != PluginsData.end(); it++)
 	{
-		if (PluginsData[i] == pPlugin)
+		if (*it == pPlugin)
 		{
 			SysIdMap.erase(pPlugin->SysID);
 			delete pPlugin;
-			memmove(&PluginsData[i], &PluginsData[i+1], (PluginsCount-i-1)*sizeof(Plugin*));
-			PluginsCount--;
+			PluginsData.erase(it);
 			return true;
 		}
 	}
@@ -259,11 +239,7 @@ Plugin* PluginManager::LoadPlugin(const FARString &strModuleName, bool UncachedL
 	if (!pPlugin)
 		return nullptr;
 
-	if (!AddPlugin(pPlugin))
-	{
-		delete pPlugin;
-		return nullptr;
-	}
+	PluginsData.push_back(pPlugin);
 
 	bool bResult = false;
 
@@ -318,7 +294,7 @@ Plugin* PluginManager::LoadPluginExternal(const wchar_t *lpwszModuleName, bool L
 	{
 		pPlugin = LoadPlugin(lpwszModuleName, LoadToMem);
 		if (pPlugin)
-			far_qsort(PluginsData, PluginsCount, sizeof(*PluginsData), PluginsSort);
+			PluginsData.sort(PluginsSort);
 	}
 	return pPlugin;
 }
@@ -388,10 +364,8 @@ int PluginManager::UnloadPluginExternal(Plugin* pPlugin)
 
 Plugin *PluginManager::FindPlugin(const wchar_t *lpwszModuleName)
 {
-	for (int i = 0; i < PluginsCount; i++)
+	for (auto pPlugin: PluginsData)
 	{
-		Plugin *pPlugin = PluginsData[i];
-
 		if (!StrCmp(lpwszModuleName, pPlugin->GetModuleName()))
 			return pPlugin;
 	}
@@ -401,20 +375,12 @@ Plugin *PluginManager::FindPlugin(const wchar_t *lpwszModuleName)
 
 bool PluginManager::FindPlugin(Plugin *pPlugin)
 {
-	for (int i = 0; i < PluginsCount; i++)
+	for (auto P: PluginsData)
 	{
-		if (pPlugin == PluginsData[i])
+		if (pPlugin == P)
 			return true;
 	}
 	return false;
-}
-
-Plugin *PluginManager::GetPlugin(int PluginNumber)
-{
-	if (PluginNumber < PluginsCount && PluginNumber >= 0)
-		return PluginsData[PluginNumber];
-
-	return nullptr;
 }
 
 void PluginManager::LoadPlugins()
@@ -481,7 +447,7 @@ void PluginManager::LoadPlugins()
 				continue;
 
 			// ставим на поток очередной путь из списка...
-			ScTree.SetFindPath(strPluginsDir,L"*.far-plug-*", 0);
+			ScTree.SetFindPath(strPluginsDir, L"*.far-plug-*", 0);
 
 			// ...и пройдемся по нему
 			while (ScTree.GetNextName(&FindData,strFullName))
@@ -491,13 +457,13 @@ void PluginManager::LoadPlugins()
 					// this will check filename extension
 					LoadPlugin(strFullName, false);
 				}
-			} // end while
+			}
 		}
 	}
 
 	m_Flags.Set(PSIF_PLUGINSLOADED);
 
-	far_qsort(PluginsData, PluginsCount, sizeof(*PluginsData), PluginsSort);
+	PluginsData.sort(PluginsSort);
 }
 
 /* $ 01.09.2000 tran
@@ -556,9 +522,9 @@ PHPTR PluginManager::OpenFilePlugin(const wchar_t *FileName, int OpMode, OPENFIL
 	Plugin *pPlugin = nullptr;
 	std::unique_ptr<SafeMMap> smm;
 
-	for (int i = 0; i < PluginsCount; i++)
+	for (auto P: PluginsData)
 	{
-		pPlugin = PluginsData[i];
+		pPlugin = P;
 		if (pDesiredPlugin != nullptr && pDesiredPlugin != pPlugin)
 			continue;
 
@@ -718,10 +684,8 @@ PHPTR PluginManager::OpenFindListPlugin(const PluginPanelItem *PanelItems, int I
 	PanelHandle *pResult = nullptr;
 	std::vector<PanelHandle> panels;
 
-	for (int i = 0; i < PluginsCount; i++)
+	for (auto pPlugin: PluginsData)
 	{
-		Plugin *pPlugin = PluginsData[i];
-
 		if (pPlugin->HasSetFindList())
 		{
 			HANDLE hPlugin = pPlugin->OpenPlugin(OPEN_FINDLIST, nullptr);
@@ -806,10 +770,8 @@ FARString PluginManager::GetPluginModuleName(PHPTR ph)
 
 int PluginManager::ProcessEditorInput(INPUT_RECORD *Rec)
 {
-	for (int i = 0; i < PluginsCount; i++)
+	for (auto pPlugin: PluginsData)
 	{
-		Plugin *pPlugin = PluginsData[i];
-
 		if (pPlugin->HasProcessEditorInput() && pPlugin->ProcessEditorInput(Rec))
 			return TRUE;
 	}
@@ -827,10 +789,8 @@ int PluginManager::ProcessEditorEvent(int Event, void *Param, Editor *EditorInst
 
 	auto EditorID = EditorInstance->GetEditorID();
 
-	for (int i = 0; i < PluginsCount; i++)
+	for (auto pPlugin: PluginsData)
 	{
-		Plugin *pPlugin = PluginsData[i];
-
 		if (pPlugin->HasProcessEditorEvent())
 		{
 			pPlugin->ProcessEditorEvent(Event, Param); // the return value is ignored
@@ -848,10 +808,8 @@ int PluginManager::ProcessEditorEvent(int Event, void *Param, Editor *EditorInst
 
 int PluginManager::ProcessViewerEvent(int Event, void *Param)
 {
-	for (int i = 0; i < PluginsCount; i++)
+	for (auto pPlugin: PluginsData)
 	{
-		Plugin *pPlugin = PluginsData[i];
-
 		// The return value is currently ignored
 		if (pPlugin->HasProcessViewerEvent())
 			pPlugin->ProcessViewerEvent(Event, Param);
@@ -873,10 +831,8 @@ int PluginManager::ProcessSynchroEvent(int Event, void* Param)
 
 int PluginManager::ProcessDialogEvent(int Event, void *Param)
 {
-	for (int i = 0; i<PluginsCount; i++)
+	for (auto pPlugin: PluginsData)
 	{
-		Plugin *pPlugin = PluginsData[i];
-
 		if (pPlugin->HasProcessDialogEvent() && pPlugin->ProcessDialogEvent(Event,Param))
 			return TRUE;
 	}
@@ -924,9 +880,8 @@ int PluginManager::ProcessConsoleInput(INPUT_RECORD *Rec)
 {
 	bool InputChanged = false;
 
-	for (int i = 0; i < PluginsCount; i++)
+	for (auto pPlugin: PluginsData)
 	{
-		Plugin *pPlugin = PluginsData[i];
 		if (!pPlugin->HasProcessConsoleInput())
 			continue;
 
@@ -1228,9 +1183,8 @@ void PluginManager::Configure(int StartPos)
 			std::vector<TmpItemData> TmpItems;
 
 			Cma.SetPrevArea(); // for plugins: set the right macro area in GetPluginInfo()
-			for (int I = 0; I<PluginsCount; I++)
+			for (auto pPlugin: PluginsData)
 			{
-				Plugin *pPlugin = PluginsData[I];
 				bool bCached = pPlugin->CheckWorkFlags(PIWF_CACHED);
 
 				if (!bCached && !pPlugin->GetPluginInfo(&Info))
@@ -1394,9 +1348,8 @@ int PluginManager::CommandsMenu(int ModalType, int StartPos, const wchar_t *Hist
 				std::vector<TmpItemData> TmpItems;
 
 				Cma.SetPrevArea(); // for plugins: set the right macro area in GetPluginInfo()
-				for (int I = 0; I<PluginsCount; I++)
+				for (auto pPlugin: PluginsData)
 				{
-					Plugin *pPlugin = PluginsData[I];
 					bool bCached = pPlugin->CheckWorkFlags(PIWF_CACHED);
 					KeyFileReadSection kfh(PluginsIni(), pPlugin->GetSettingsName());
 					int IFlags;
@@ -1689,9 +1642,9 @@ bool PluginManager::UseFarCommand(PHPTR ph,int CommandType)
 
 void PluginManager::ReloadLanguage()
 {
-	for (int I = 0; I<PluginsCount; I++)
+	for (auto pPlugin: PluginsData)
 	{
-		PluginsData[I]->CloseLang();
+		pPlugin->CloseLang();
 	}
 
 	DiscardCache();
@@ -1700,9 +1653,9 @@ void PluginManager::ReloadLanguage()
 
 void PluginManager::DiscardCache()
 {
-	for (int I = 0; I<PluginsCount; I++)
+	for (auto pPlugin: PluginsData)
 	{
-		PluginsData[I]->Load();
+		pPlugin->Load();
 	}
 
 	KeyFileHelper kfh(PluginsIni());
@@ -1719,9 +1672,9 @@ void PluginManager::LoadIfCacheAbsent()
 	struct stat st;
 	if (stat(PluginsIni(), &st) == -1)
 	{
-		for (int I = 0; I<PluginsCount; I++)
+		for (auto pPlugin: PluginsData)
 		{
-			PluginsData[I]->Load();
+			pPlugin->Load();
 		}
 	}
 }
@@ -1759,9 +1712,8 @@ bool PluginManager::ProcessCommandLine(const wchar_t *CommandParam, Panel *Targe
 	FARString strPluginPrefix;
 	std::vector<PluginData> items;
 
-	for (int I = 0; I<PluginsCount; I++)
+	for (auto pPlugin: PluginsData)
 	{
-		Plugin *pPlugin = PluginsData[I];
 		int PluginFlags = 0;
 
 		if (pPlugin->CheckWorkFlags(PIWF_CACHED))
@@ -2182,10 +2134,8 @@ void PluginManager::GetCustomData(FileListItem *ListItem)
 {
 	FARString FilePath(NTPath(ListItem->strName).Get());
 
-	for (int i = 0; i<PluginsCount; i++)
+	for (auto pPlugin: PluginsData)
 	{
-		Plugin *pPlugin = PluginsData[i];
-
 		wchar_t *CustomData = nullptr;
 
 		if (pPlugin->HasGetCustomData() && pPlugin->GetCustomData(FilePath.CPtr(), &CustomData))
@@ -2202,10 +2152,8 @@ void PluginManager::GetCustomData(FileListItem *ListItem)
 
 bool PluginManager::MayExitFar()
 {
-	for (int i = 0; i<PluginsCount; i++)
+	for (auto pPlugin: PluginsData)
 	{
-		Plugin *pPlugin = PluginsData[i];
-
 		if (pPlugin->HasMayExitFAR() && !pPlugin->MayExitFAR())
 			return false;
 	}

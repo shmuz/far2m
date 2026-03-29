@@ -147,7 +147,7 @@ class Plugin
 		virtual bool HasSetFindList() = 0;
 		virtual bool HasSetStartupInfo() = 0;
 
-		virtual const FARString &GetModuleName() = 0;
+		virtual const FARString &GetModuleName() const = 0;
 		virtual const char *GetSettingsName() = 0;
 		virtual bool CheckWorkFlags(DWORD flags) = 0;
 		virtual DWORD GetWorkFlags() = 0;

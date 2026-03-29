@@ -1870,9 +1870,9 @@ void Help::ReadDocumentsHelp(int TypeIndex)
 	{
 		case HIDX_PLUGINS:
 		{
-			for (int I=0; I<CtrlObject->Plugins.GetPluginsCount(); I++)
+			for (auto pPlugin: CtrlObject->Plugins.GetPlugins())
 			{
-				strPath = CtrlObject->Plugins.GetPlugin(I)->GetModuleName();
+				strPath = pPlugin->GetModuleName();
 				CutToSlash(strPath);
 				UINT nCodePage = CP_UTF8;
 				FILE *HelpFile=OpenLangFile(strPath,HelpFileMask,Opt.strHelpLanguage,strFullFileName, nCodePage);

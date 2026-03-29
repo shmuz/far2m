@@ -2707,8 +2707,8 @@ static bool FindFilesProcess(Vars &v)
 	AnySetFindList = false;
 	{
 		SCOPED_ACTION(PluginLocker);
-		for (int i = 0; i < CtrlObject->Plugins.GetPluginsCount(); i++) {
-			if (CtrlObject->Plugins.GetPlugin(i)->HasSetFindList()) {
+		for (auto pPlugin: CtrlObject->Plugins.GetPlugins()) {
+			if (pPlugin->HasSetFindList()) {
 				AnySetFindList = true;
 				break;
 			}

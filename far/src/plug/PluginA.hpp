@@ -158,7 +158,7 @@ class PluginA: public Plugin
 		bool HasSetFindList() { return pSetFindList!=nullptr; }
 		bool HasSetStartupInfo() { return pSetStartupInfo!=nullptr; }
 
-		const FARString &GetModuleName() { return m_strModuleName; }
+		const FARString &GetModuleName() const { return m_strModuleName; }
 		const char *GetSettingsName() { return m_strSettingsName.c_str(); }
 		bool CheckWorkFlags(DWORD flags) { return WorkFlags.Check(flags)==TRUE; }
 		DWORD GetWorkFlags() { return WorkFlags.Flags; }

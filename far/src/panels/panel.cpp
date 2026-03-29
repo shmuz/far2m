@@ -202,8 +202,7 @@ static void AddPluginItems(VMenu &ChDisk, int Pos)
 	// Список дополнительных хоткеев, для случая, когда плагинов, добавляющих пункт в меню, больше 9.
 
 	// IS: счетчики - плагинов и пунктов плагина
-	for (int PluginNumber = 0; PluginNumber < CtrlObject->Plugins.GetPluginsCount(); ++PluginNumber) {
-		Plugin *pPlugin = CtrlObject->Plugins.GetPlugin(PluginNumber);
+	for (auto pPlugin: CtrlObject->Plugins.GetPlugins()) {
 		FARString strPluginText;
 		WCHAR HotKey = 0;
 		GUID Guid;
@@ -2003,9 +2002,7 @@ bool Panel::ExecShortcutFolder(int Pos)
 				if (CtrlObject->Cp()->ActivePanel->ProcessPluginEvent(FE_CLOSE, nullptr))
 					return true;
 
-				for (int I = 0; I < CtrlObject->Plugins.GetPluginsCount(); I++) {
-					Plugin *pPlugin = CtrlObject->Plugins.GetPlugin(I);
-
+				for (auto pPlugin: CtrlObject->Plugins.GetPlugins()) {
 					if (!StrCmpI(pPlugin->GetModuleName(), strPluginModule)) {
 						if (pPlugin->HasOpenPlugin()) {
 							PHPTR hNewPlugin = CtrlObject->Plugins.OpenPlugin(pPlugin, OPEN_SHORTCUT,

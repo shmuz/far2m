@@ -39,6 +39,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "PluginA.hpp"
 #include "PluginW.hpp"
 #include <string>
+#include <list>
 #include <map>
 #include <unordered_map>
 #include <mutex>
@@ -128,8 +129,7 @@ class PluginManager
 {
 	private:
 
-		Plugin **PluginsData;
-		int PluginsCount;
+		std::list<Plugin*> PluginsData;
 		struct BackgroundTasks : std::map<std::wstring, unsigned int>, std::mutex {} BgTasks;
 		std::unordered_map<DWORD, Plugin*> SysIdMap;
 		BitFlags m_Flags;      // флаги манагера плагинов
@@ -162,7 +162,6 @@ class PluginManager
 
 		Plugin* LoadPlugin(const FARString &strModuleName, bool LoadUncached);
 
-		bool AddPlugin(Plugin *pPlugin);
 		bool RemovePlugin(Plugin *pPlugin);
 
 		void LoadPluginsFromCache();
@@ -173,6 +172,7 @@ class PluginManager
 		~PluginManager();
 
 	public:
+		const std::list<Plugin*> &GetPlugins() const { return PluginsData; };
 
 		bool CacheForget(const wchar_t *lpwszModuleName);
 		Plugin* LoadPluginExternal(const wchar_t *ModuleName, bool LoadToMem);
@@ -186,12 +186,11 @@ class PluginManager
 		void LoadPlugins();
 		void ShowPluginInfo(Plugin *pPlugin, int nItem, const GUID &Guid);
 
-		Plugin *GetPlugin(int PluginNumber);
 		Plugin *FindPlugin(const wchar_t *lpwszModuleName);
 		Plugin *FindPlugin(DWORD SysID);
 		bool FindPlugin(Plugin *pPlugin);
 
-		int GetPluginsCount() { return PluginsCount; }
+		int GetPluginsCount() const { return PluginsData.size(); }
 
 		bool IsPluginsLoaded() { return m_Flags.Check(PSIF_PLUGINSLOADED); }
 

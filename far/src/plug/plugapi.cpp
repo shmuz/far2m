@@ -2324,11 +2324,15 @@ static intptr_t WINAPI farPluginsControlV3Synched(HANDLE hHandle, int Command, i
 
 		case PCTL_GETPLUGINS: {
 			int Count = CtrlObject->Plugins.GetPluginsCount();
-			if (Param1 && Param2) {
-				if (Param1 > Count)
-					Param1 = Count;
-				for (int i = 0; i < Param1; i++)
-					*((HANDLE *)Param2 + i) = CtrlObject->Plugins.GetPlugin(i);
+			if ((Param1 > 0) && Param2) {
+				Param1 = Min<int>(Param1, Count);
+				auto HandlePtr = reinterpret_cast<HANDLE*>(Param2);
+				for (auto pPlugin: CtrlObject->Plugins.GetPlugins()) {
+					if (Param1--)
+						*HandlePtr++ = pPlugin;
+					else
+						break;
+				}
 			}
 			return Count;
 		}
