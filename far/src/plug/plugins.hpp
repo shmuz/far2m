@@ -208,7 +208,8 @@ class PluginManager
 
 		// $ .09.2000 SVS - Функция CallPlugin - найти плагин по ID и запустить OpenFrom = OPEN_*
 		bool CallPlugin(DWORD SysID, int OpenFrom, void *Data);
-		bool CallPluginItem(Plugin *pPlugin, CallPluginInfo* Data, bool CheckOnly);
+		bool CallPluginItemCheck(Plugin *pPlugin, CallPluginInfo* Data);
+		bool CallPluginItemExecute(Plugin *pPlugin, CallPluginInfo* Data);
 		bool CallMacroPlugin(OpenMacroPluginInfo *Info);
 		void* CallPluginFromMacro(DWORD SysID, OpenMacroInfo *Info);
 

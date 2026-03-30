@@ -84,7 +84,7 @@ enum PluginType
 	MULTIBYTE_PLUGIN
 };
 
-static const char *HotKeyType(int Type)
+static const char *HotKeyType(MENUTYPE Type)
 {
 	switch(Type)
 	{
@@ -92,17 +92,6 @@ static const char *HotKeyType(int Type)
 		case MTYPE_COMMANDSMENU: return "Hotkey";
 		case MTYPE_CONFIGSMENU:  return "ConfHotkey";
 		case MTYPE_DISKSMENU:    return "DriveMenuHotkey";
-	}
-}
-
-static const GUID *MenuItemGuids(int Type, const PluginInfo *Info)
-{
-	switch(Type)
-	{
-		default:
-		case MTYPE_COMMANDSMENU: return Info->PluginMenuGuids;
-		case MTYPE_CONFIGSMENU:  return Info->PluginConfigGuids;
-		case MTYPE_DISKSMENU:    return Info->DiskMenuGuids;
 	}
 }
 
@@ -1925,7 +1914,126 @@ bool PluginManager::CallPlugin(DWORD SysID, int OpenFrom, void *Data)
 }
 
 // поддержка макрофункций Plugin.Menu, Plugin.Command, Plugin.Config
-bool PluginManager::CallPluginItem(Plugin *pPlugin, CallPluginInfo *Data, bool CheckOnly)
+bool PluginManager::CallPluginItemCheck(Plugin *pPlugin, CallPluginInfo *Data)
+{
+	Frame *TopFrame = FrameManager->GetTopModal();
+	const auto curType = TopFrame->GetType();
+
+	if (curType == MODALTYPE_DIALOG && reinterpret_cast<Dialog*>(TopFrame)->CheckDialogMode(DMODE_NOPLUGINS))
+		return false;
+
+	if (!pPlugin->Load())
+		return false;
+
+	const auto IsEditor = curType == MODALTYPE_EDITOR;
+	const auto IsViewer = curType == MODALTYPE_VIEWER;
+	const auto IsDialog = curType == MODALTYPE_DIALOG;
+
+	const bool UseMenuGuids = pPlugin->UseMenuGuids();
+
+	// Разрешен ли вызов данного типа в текущей области (предварительная проверка)
+	switch (Data->CallFlags)
+	{
+	case CPT_MENU:
+		if (!pPlugin->HasOpenPlugin())
+			return false;
+		break;
+
+	case CPT_CONFIGURE:
+		//TODO: Автокомплит не влияет?
+		if (curType != MODALTYPE_PANELS)
+			return false;
+
+		if (UseMenuGuids ? !pPlugin->HasConfigureV3() : !pPlugin->HasConfigure())
+			return false;
+		break;
+
+	case CPT_CMDLINE:
+		//TODO: Автокомплит не влияет?
+		if (curType != MODALTYPE_PANELS)
+			return false;
+
+		//TODO: OpenPanel или OpenFilePlugin?
+		if (!pPlugin->HasOpenPlugin())
+			return false;
+		break;
+	}
+
+	PluginInfo Info{sizeof(Info)};
+	if (!pPlugin->GetPluginInfo(&Info))
+		return false;
+
+	int MenuItemsCount = 0;
+
+	// Разрешен ли вызов данного типа в текущей области
+	switch (Data->CallFlags)
+	{
+	case CPT_MENU:
+		if (
+				(IsEditor && !(Info.Flags & PF_EDITOR)) ||
+				(IsViewer && !(Info.Flags & PF_VIEWER)) ||
+				(IsDialog && !(Info.Flags & PF_DIALOG)) ||
+				(!IsEditor && !IsViewer && !IsDialog && (Info.Flags & PF_DISABLEPANELS)))
+			return false;
+
+		MenuItemsCount = Info.PluginMenuStringsNumber;
+		break;
+
+	case CPT_CONFIGURE:
+		MenuItemsCount = Info.PluginConfigStringsNumber;
+		break;
+
+	case CPT_CMDLINE:
+		if (!Info.CommandPrefix || !*Info.CommandPrefix)
+			return false;
+		break;
+	}
+
+	if (Data->CallFlags == CPT_MENU || Data->CallFlags == CPT_CONFIGURE)
+	{
+		const GUID *Guids = (Data->CallFlags == CPT_MENU)
+				? Info.PluginMenuGuids : Info.PluginConfigGuids;
+
+		bool ItemFound = false;
+		bool ItemNotSpecified = UseMenuGuids ? !Data->ItemUuid : !Data->ItemNumber;
+		if (ItemNotSpecified)
+		{
+			if (MenuItemsCount == 1)
+			{
+				ItemFound = true;
+				Data->FoundItemNumber = 0;
+				if (UseMenuGuids)
+					Data->FoundUuid = Guids[0];
+			}
+		}
+		else
+		{
+			if (!UseMenuGuids) {
+				if (Data->ItemNumber <= MenuItemsCount) {
+					ItemFound = true;
+					Data->FoundItemNumber = Data->ItemNumber - 1; // 1-based on the user side
+				}
+			}
+			else {
+				for (int i = 0; i < MenuItemsCount; i++) {
+					if (!memcmp(Data->ItemUuid, &Guids[i], sizeof(GUID))) {
+						ItemFound = true;
+						Data->FoundUuid = *Data->ItemUuid;
+						Data->FoundItemNumber = i;
+						break;
+					}
+				}
+			}
+		}
+		if (!ItemFound)
+			return false;
+	}
+
+	return true;
+}
+
+// поддержка макрофункций Plugin.Menu, Plugin.Command, Plugin.Config
+bool PluginManager::CallPluginItemExecute(Plugin *pPlugin, CallPluginInfo *Data)
 {
 	auto Result = false;
 
@@ -1939,115 +2047,9 @@ bool PluginManager::CallPluginItem(Plugin *pPlugin, CallPluginInfo *Data, bool C
 	const auto IsViewer = curType == MODALTYPE_VIEWER;
 	const auto IsDialog = curType == MODALTYPE_DIALOG;
 
-	bool UseMenuGuids = pPlugin->UseMenuGuids();
-
-	if (CheckOnly)
-	{
-		if (!pPlugin->Load())
-			return false;
-
-		// Разрешен ли вызов данного типа в текущей области (предварительная проверка)
-		switch (Data->CallFlags)
-		{
-		case CPT_MENU:
-			if (!pPlugin->HasOpenPlugin())
-				return false;
-			break;
-
-		case CPT_CONFIGURE:
-			//TODO: Автокомплит не влияет?
-			if (curType != MODALTYPE_PANELS)
-				return false;
-
-			if (UseMenuGuids ? !pPlugin->HasConfigureV3() : !pPlugin->HasConfigure())
-				return false;
-			break;
-
-		case CPT_CMDLINE:
-			//TODO: Автокомплит не влияет?
-			if (curType != MODALTYPE_PANELS)
-				return false;
-
-			//TODO: OpenPanel или OpenFilePlugin?
-			if (!pPlugin->HasOpenPlugin())
-				return false;
-			break;
-		}
-
-		PluginInfo Info{sizeof(Info)};
-		if (!pPlugin->GetPluginInfo(&Info))
-			return false;
-
-		int MenuItemsCount = 0;
-
-		// Разрешен ли вызов данного типа в текущей области
-		switch (Data->CallFlags)
-		{
-		case CPT_MENU:
-			if (
-					(IsEditor && !(Info.Flags & PF_EDITOR)) ||
-					(IsViewer && !(Info.Flags & PF_VIEWER)) ||
-					(IsDialog && !(Info.Flags & PF_DIALOG)) ||
-					(!IsEditor && !IsViewer && !IsDialog && (Info.Flags & PF_DISABLEPANELS)))
-				return false;
-
-			MenuItemsCount = Info.PluginMenuStringsNumber;
-			break;
-
-		case CPT_CONFIGURE:
-			MenuItemsCount = Info.PluginConfigStringsNumber;
-			break;
-
-		case CPT_CMDLINE:
-			if (!Info.CommandPrefix || !*Info.CommandPrefix)
-				return false;
-			break;
-		}
-
-		if (Data->CallFlags == CPT_MENU || Data->CallFlags == CPT_CONFIGURE)
-		{
-			int Type = Data->CallFlags == CPT_MENU ? MTYPE_COMMANDSMENU : MTYPE_CONFIGSMENU;
-			const GUID *Guids = MenuItemGuids(Type, &Info);
-
-			bool ItemFound = false;
-			if (UseMenuGuids ? !Data->ItemUuid : !Data->ItemNumber) // 0 means "not specified"
-			{
-				if (MenuItemsCount == 1)
-				{
-					ItemFound = true;
-					Data->FoundItemNumber = 0;
-					if (UseMenuGuids)
-						Data->FoundUuid = Guids[0];
-				}
-			}
-			else
-			{
-				if (!UseMenuGuids) {
-					if (Data->ItemNumber <= MenuItemsCount) {
-						ItemFound = true;
-						Data->FoundItemNumber = Data->ItemNumber - 1; // 1-based on the user side
-					}
-				}
-				else {
-					for (int i = 0; i < MenuItemsCount; i++) {
-						if (!memcmp(Data->ItemUuid, &Guids[i], sizeof(GUID))) {
-							ItemFound = true;
-							Data->FoundUuid = *Data->ItemUuid;
-							Data->FoundItemNumber = i;
-							break;
-						}
-					}
-				}
-			}
-			if (!ItemFound)
-				return false;
-		}
-
-		return true;
-	}
+	const bool UseMenuGuids = pPlugin->UseMenuGuids();
 
 	PHPTR hPlugin = nullptr;
-	Panel* ActivePanel = CtrlObject->Cp()->ActivePanel;
 
 	switch (Data->CallFlags)
 	{
@@ -2094,6 +2096,7 @@ bool PluginManager::CallPluginItem(Plugin *pPlugin, CallPluginInfo *Data, bool C
 	{
 		//BUGBUG: Закрытие панели? Нужно ли оно?
 		//BUGBUG: В ProcessCommandLine зовется перед Open, а в CPT_MENU - после
+		Panel* ActivePanel = CtrlObject->Cp()->ActivePanel;
 		if (ActivePanel->ProcessPluginEvent(FE_CLOSE, nullptr))
 		{
 			ClosePanel(hPlugin);
