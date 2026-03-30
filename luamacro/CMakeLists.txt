@@ -27,7 +27,6 @@ endforeach()
 
 target_compile_definitions(${PROJECT_NAME}
   PRIVATE ${EXPORTS}
-  PRIVATE -DNOSETPACKAGEPATH
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ../far/far2sdk)

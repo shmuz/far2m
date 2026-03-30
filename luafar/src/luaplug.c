@@ -48,7 +48,7 @@ LUAPLUG void SetStartupInfoW(const struct PluginStartupInfo *aInfo)
 	PluginData.DlgProc       = DlgProc;
 	PluginData.PluginId      = globInfo.SysID;
 	PluginData.GetGlobalInfo = GetGlobalInfoW;
-#ifndef NOSETPACKAGEPATH
+#ifdef SETPACKAGEPATH
 	PluginData.Flags |= PDF_SETPACKAGEPATH;
 #endif
 
