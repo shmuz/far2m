@@ -114,7 +114,7 @@ bool Plugin::GetGlobalInfo()
 				SysID = gi.SysID;
 				strTitle = gi.Title;
 				strDescription = gi.Description;
-				strAuthor= gi.Author;
+				strAuthor = gi.Author;
 				m_PlugVersion = gi.Version;
 				bUseMenuGuids = (gi.UseMenuGuids != 0);
 				return true;

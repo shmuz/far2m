@@ -215,7 +215,6 @@ bool PluginA::SaveToCache()
 
 	PluginInfo Info{};
 	GetPluginInfo(&Info);
-	SysID = Info.SysID; //LAME!!!
 
 	kfh.SetInt(GetSettingsName(), szCache_Preopen, ((Info.Flags & PF_PREOPEN) != 0));
 
@@ -1299,8 +1298,6 @@ bool PluginA::GetPluginInfo(PluginInfo *pi)
 		if (!es.bUnloaded)
 		{
 			ConvertPluginInfo(InfoA, pi);
-			if (pi->SysID == 0) // prevent erasing SysID that may be already set by GetGlobalInfoW()
-				pi->SysID = SysID;
 			return true;
 		}
 	}

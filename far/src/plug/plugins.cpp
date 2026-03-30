@@ -191,9 +191,9 @@ bool PluginManager::RemovePlugin(Plugin *pPlugin)
 	{
 		if (*it == pPlugin)
 		{
+			PluginsData.erase(it);
 			SysIdMap.erase(pPlugin->SysID);
 			delete pPlugin;
-			PluginsData.erase(it);
 			return true;
 		}
 	}
@@ -2247,7 +2247,7 @@ size_t PluginManager::GetPluginInformation(
 	{
 		Prefix = NullToEmpty(Info.CommandPrefix);
 		Flags = Info.Flags;
-		SysID = Info.SysID;
+		SysID = aPlugin->SysID;
 		for (int i = 0; i<Info.PluginMenuStringsNumber; i++)
 			MenuItems.emplace_back(Info.PluginMenuStrings[i]);
 
