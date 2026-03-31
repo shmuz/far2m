@@ -609,15 +609,13 @@ FarKey KeyMacro::GetKey()
 				if (!pPlugin)
 					break;
 
-				GUID Guid;
 				PluginManager::CallPluginInfo cpInfo {};
 
 				if ((mpr.ReturnType==MPRT_PLUGINMENU || mpr.ReturnType==MPRT_PLUGINCONFIG) && mpr.Count > 1)
 				{
+					cpInfo.IsItemSpecified = true;
 					if (pPlugin->UseMenuGuids()) {
-						if (IsStr(mpr.Values[1]) && StrToGuid(mpr.Values[1].String, Guid))
-							cpInfo.ItemUuid = &Guid;
-						else
+						if (!IsStr(mpr.Values[1]) || !StrToGuid(mpr.Values[1].String, cpInfo.ItemUuid))
 							break;
 					}
 					else {
@@ -637,7 +635,6 @@ FarKey KeyMacro::GetKey()
 				else // if (mpr.ReturnType == MPRT_PLUGINCOMMAND)
 				{
 					cpInfo.CallFlags = CPT_CMDLINE;
-					cpInfo.Command = L"";
 					if (mpr.Count > 1) {
 						if (IsStr(mpr.Values[1]))
 							cpInfo.Command = mpr.Values[1].String;

@@ -1949,11 +1949,9 @@ bool PluginManager::CallPluginItemCheck(Plugin *pPlugin, CallPluginInfo *Data)
 		break;
 
 	case CPT_CMDLINE:
-		//TODO: Автокомплит не влияет?
 		if (curType != MODALTYPE_PANELS)
 			return false;
 
-		//TODO: OpenPanel или OpenFilePlugin?
 		if (!pPlugin->HasOpenPlugin())
 			return false;
 		break;
@@ -1995,15 +1993,14 @@ bool PluginManager::CallPluginItemCheck(Plugin *pPlugin, CallPluginInfo *Data)
 				? Info.PluginMenuGuids : Info.PluginConfigGuids;
 
 		bool ItemFound = false;
-		bool ItemNotSpecified = UseMenuGuids ? !Data->ItemUuid : !Data->ItemNumber;
-		if (ItemNotSpecified)
+		if (!Data->IsItemSpecified)
 		{
 			if (MenuItemsCount == 1)
 			{
 				ItemFound = true;
-				Data->FoundItemNumber = 0;
+				Data->ItemNumber = 0;
 				if (UseMenuGuids)
-					Data->FoundUuid = Guids[0];
+					Data->ItemUuid = Guids[0];
 			}
 		}
 		else
@@ -2011,15 +2008,14 @@ bool PluginManager::CallPluginItemCheck(Plugin *pPlugin, CallPluginInfo *Data)
 			if (!UseMenuGuids) {
 				if (Data->ItemNumber <= MenuItemsCount) {
 					ItemFound = true;
-					Data->FoundItemNumber = Data->ItemNumber - 1; // 1-based on the user side
+					--Data->ItemNumber; // 1-based on the user side
 				}
 			}
 			else {
 				for (int i = 0; i < MenuItemsCount; i++) {
-					if (!memcmp(Data->ItemUuid, &Guids[i], sizeof(GUID))) {
+					if (!memcmp(&Data->ItemUuid, &Guids[i], sizeof(GUID))) {
 						ItemFound = true;
-						Data->FoundUuid = *Data->ItemUuid;
-						Data->FoundItemNumber = i;
+						Data->ItemNumber = i;
 						break;
 					}
 				}
@@ -2040,16 +2036,13 @@ bool PluginManager::CallPluginItemExecute(Plugin *pPlugin, CallPluginInfo *Data)
 	Frame *TopFrame = FrameManager->GetTopModal();
 	const auto curType = TopFrame->GetType();
 
-	if (curType == MODALTYPE_DIALOG && reinterpret_cast<Dialog*>(TopFrame)->CheckDialogMode(DMODE_NOPLUGINS))
-		return false;
-
 	const auto IsEditor = curType == MODALTYPE_EDITOR;
 	const auto IsViewer = curType == MODALTYPE_VIEWER;
 	const auto IsDialog = curType == MODALTYPE_DIALOG;
 
 	const bool UseMenuGuids = pPlugin->UseMenuGuids();
 
-	PHPTR hPlugin = nullptr;
+	PHPTR panelHandle = nullptr;
 
 	switch (Data->CallFlags)
 	{
@@ -2057,54 +2050,53 @@ bool PluginManager::CallPluginItemExecute(Plugin *pPlugin, CallPluginInfo *Data)
 		{
 			auto OpenCode = IsEditor ? OPEN_EDITOR : IsViewer ? OPEN_VIEWER : IsDialog ? OPEN_DIALOG
 					: OPEN_PLUGINSMENU;
-			OpenDlgPluginData pd { sizeof(pd) };
+			OpenDlgPluginData pd {};
 			void *Item;
 
 			if (IsDialog)
 			{
 				if (!UseMenuGuids) {
-					pd.ItemNumber = Data->FoundItemNumber;
+					pd.ItemNumber = Data->ItemNumber;
 				}
 				else {
-					pd.ItemGuid = Data->FoundUuid;
+					pd.ItemGuid = Data->ItemUuid;
 				}
 				pd.hDlg = reinterpret_cast<Dialog*>(TopFrame);
 				Item = &pd;
 			}
 			else
-				Item = UseMenuGuids ? &Data->FoundUuid : (void*)Data->FoundItemNumber;
+				Item = UseMenuGuids ? &Data->ItemUuid : (void*)Data->ItemNumber;
 
-			hPlugin = OpenPlugin(pPlugin, OpenCode, Item);
+			panelHandle = OpenPlugin(pPlugin, OpenCode, Item);
 			Result = true;
 		}
 		break;
 
 	case CPT_CONFIGURE:
-		ConfigureCurrent(pPlugin, Data->FoundItemNumber, &Data->FoundUuid);
+		ConfigureCurrent(pPlugin, Data->ItemNumber, &Data->ItemUuid);
 		return true;
 
 	case CPT_CMDLINE:
 		{
-			const FARString command = Data->Command; // Нужна копия строки
-			hPlugin = OpenPlugin(pPlugin, OPEN_COMMANDLINE, command.CPtr());
+			panelHandle = OpenPlugin(pPlugin, OPEN_COMMANDLINE, Data->Command.CPtr());
 			Result = true;
 		}
 		break;
 	}
 
-	if (hPlugin && !IsEditor && !IsViewer && !IsDialog)
+	if (panelHandle && !IsEditor && !IsViewer && !IsDialog)
 	{
 		//BUGBUG: Закрытие панели? Нужно ли оно?
 		//BUGBUG: В ProcessCommandLine зовется перед Open, а в CPT_MENU - после
 		Panel* ActivePanel = CtrlObject->Cp()->ActivePanel;
 		if (ActivePanel->ProcessPluginEvent(FE_CLOSE, nullptr))
 		{
-			ClosePanel(hPlugin);
+			ClosePanel(panelHandle);
 			return false;
 		}
 
 		const auto NewPanel = CtrlObject->Cp()->ChangePanel(ActivePanel, FILE_PANEL, true, true);
-		NewPanel->SetPluginMode(hPlugin, {}, true);
+		NewPanel->SetPluginMode(panelHandle, {}, true);
 		NewPanel->Update(0);
 		NewPanel->Show();
 	}

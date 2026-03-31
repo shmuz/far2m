@@ -139,20 +139,14 @@ class PluginManager
 		struct CallPluginInfo
 		{
 			CALLPLUGINFLAGS CallFlags;
-			int OpenFrom;
-			union
-			{
-				intptr_t ItemNumber;
-				GUID *ItemUuid;
-				const wchar_t *Command;
-			};
-			// Используется в функции CallPluginItem для внутренних нужд
-			GUID FoundUuid;
-			intptr_t FoundItemNumber;
+			bool IsItemSpecified;
+			FARString Command;
+			intptr_t ItemNumber;
+			GUID ItemUuid;
 		};
 
 		FileEditor *CurEditor;
-		Viewer *CurViewer;     // 27.09.2000 SVS: Указатель на текущий Viewer
+		Viewer *CurViewer;
 		Editor *CurDialogEditor;
 
 	private:
