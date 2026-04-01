@@ -159,6 +159,7 @@ class PluginManager
 		bool RemovePlugin(Plugin *pPlugin);
 
 		void LoadPluginsFromCache();
+		bool SetNewPanel(PHPTR panelHandle);
 
 	public:
 

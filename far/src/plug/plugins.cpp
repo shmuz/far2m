@@ -84,17 +84,6 @@ enum PluginType
 	MULTIBYTE_PLUGIN
 };
 
-static const char *HotKeyType(MENUTYPE Type)
-{
-	switch(Type)
-	{
-		default:
-		case MTYPE_COMMANDSMENU: return "Hotkey";
-		case MTYPE_CONFIGSMENU:  return "ConfHotkey";
-		case MTYPE_DISKSMENU:    return "DriveMenuHotkey";
-	}
-}
-
 const char *PluginsIni()
 {
 	static std::string s_out(InMyConfig("plugins/state.ini"));
@@ -1106,21 +1095,26 @@ struct TmpItemData
 
 static std::string GetHotKeySettingName(Plugin *pPlugin, int ItemNumber, const GUID *Guid, MENUTYPE MenuType)
 {
+	auto HotKeyType =
+			(MenuType == MTYPE_CONFIGSMENU) ? "ConfHotkey"
+			: (MenuType == MTYPE_DISKSMENU) ? "DriveMenuHotkey" : "Hotkey";
+
 	if (pPlugin->UseMenuGuids())
 	{
 		const std::string &strGuid = GuidToString(*Guid);
-		std::string out = StrPrintf("%08X:%s#%s", pPlugin->GetSysID(), HotKeyType(MenuType), strGuid.c_str());
+		std::string out = StrPrintf("%08X:%s#%s", pPlugin->GetSysID(), HotKeyType, strGuid.c_str());
 		return out;
 	}
 	std::string out = pPlugin->GetSettingsName();
-	out+= StrPrintf(":%s#%d", HotKeyType(MenuType), ItemNumber);
+	out+= StrPrintf(":%s#%d", HotKeyType, ItemNumber);
 	return out;
 }
 
-static void GetPluginHotKey(Plugin *pPlugin, int ItemNumber, const GUID *Guid, MENUTYPE MenuType, FARString &strHotKey)
+static wchar_t GetPluginHotKey(Plugin *pPlugin, int ItemNumber, const GUID *Guid, MENUTYPE MenuType)
 {
 	KeyFileReadSection kfh(PluginsIni(), HotkeysSection);
-	strHotKey = kfh.GetString(GetHotKeySettingName(pPlugin, ItemNumber, Guid, MenuType));
+	FARString str = kfh.GetString(GetHotKeySettingName(pPlugin, ItemNumber, Guid, MenuType));
+	return str.IsEmpty() ? 0 : str[0];
 }
 
 static void FillPluginList(VMenu &PluginList, const std::vector<TmpItemData> &TmpItems, bool HotKeysPresent)
@@ -1143,6 +1137,24 @@ static void FillPluginList(VMenu &PluginList, const std::vector<TmpItemData> &Tm
 
 		PluginList.SetUserData(&tmp.Item, sizeof(tmp.Item), PluginList.AddItem(&ListItem));
 	}
+}
+
+bool PluginManager::SetNewPanel(PHPTR panelHandle)
+{
+	//BUGBUG: Закрытие панели? Нужно ли оно?
+	//BUGBUG: В ProcessCommandLine зовется перед Open, а в CPT_MENU - после
+	Panel *ActivePanel = CtrlObject->Cp()->ActivePanel;
+	if (ActivePanel->ProcessPluginEvent(FE_CLOSE, nullptr))
+	{
+		ClosePanel(panelHandle);
+		return false;
+	}
+
+	Panel *NewPanel = CtrlObject->Cp()->ChangePanel(ActivePanel, FILE_PANEL, true, true);
+	NewPanel->SetPluginMode(panelHandle, L"", true);
+	NewPanel->Update(0);
+	NewPanel->Show();
+	return true;
 }
 
 /* $ 29.05.2001 IS
@@ -1211,11 +1223,10 @@ void PluginManager::Configure(int StartPos)
 					else
 						break;
 
-					FARString strHotKey;
-					GetPluginHotKey(pPlugin, J, &item.Guid, MTYPE_CONFIGSMENU, strHotKey);
-					if (!strHotKey.IsEmpty()) {
+					wchar_t HotKey = GetPluginHotKey(pPlugin, J, &item.Guid, MTYPE_CONFIGSMENU);
+					if (HotKey) {
 						HotKeysPresent = true;
-						item.HotKey = strHotKey[0];
+						item.HotKey = HotKey;
 					}
 					TmpItems.emplace_back(item, strName);
 				}
@@ -1387,11 +1398,10 @@ int PluginManager::CommandsMenu(int ModalType, int StartPos, const wchar_t *Hist
 						else
 							break;
 
-						FARString strHotKey;
-						GetPluginHotKey(pPlugin, J, &item.Guid, MTYPE_COMMANDSMENU, strHotKey);
-						if (!strHotKey.IsEmpty()) {
+						wchar_t HotKey = GetPluginHotKey(pPlugin, J, &item.Guid, MTYPE_COMMANDSMENU);
+						if (HotKey) {
 							HotKeysPresent = true;
-							item.HotKey = strHotKey[0];
+							item.HotKey = HotKey;
 						}
 						TmpItems.emplace_back(item, strName);
 					}
@@ -1514,17 +1524,8 @@ int PluginManager::CommandsMenu(int ModalType, int StartPos, const wchar_t *Hist
 
 	if (IsPanels && panelHandle)
 	{
-		Panel *ActivePanel = CtrlObject->Cp()->ActivePanel;
-		if (ActivePanel->ProcessPluginEvent(FE_CLOSE, nullptr))
-		{
-			ClosePanel(panelHandle);
+		if (!SetNewPanel(panelHandle))
 			return FALSE;
-		}
-
-		Panel *NewPanel = CtrlObject->Cp()->ChangePanel(ActivePanel,FILE_PANEL,true,true);
-		NewPanel->SetPluginMode(panelHandle, L"", true);
-		NewPanel->Update(0);
-		NewPanel->Show();
 	}
 	else if (IsEditor)
 	{
@@ -1562,8 +1563,7 @@ bool PluginManager::GetDiskMenuItem(
 		int PluginItem,
 		wchar_t& PluginHotkey,
 		FARString &strPluginText,
-		GUID &Guid
-)
+		GUID &Guid)
 {
 	LoadIfCacheAbsent();
 
@@ -1598,9 +1598,7 @@ bool PluginManager::GetDiskMenuItem(
 			Guid = Info.DiskMenuGuids[PluginItem];
 	}
 
-	FARString strHotKey;
-	GetPluginHotKey(pPlugin, PluginItem, &Guid, MTYPE_DISKSMENU, strHotKey);
-	PluginHotkey = strHotKey.At(0);
+	PluginHotkey = GetPluginHotKey(pPlugin, PluginItem, &Guid, MTYPE_DISKSMENU);
 	return !strPluginText.IsEmpty();
 }
 
@@ -1925,11 +1923,12 @@ bool PluginManager::CallPluginItemCheck(Plugin *pPlugin, CallPluginInfo *Data)
 	if (!pPlugin->Load())
 		return false;
 
-	const auto IsEditor = curType == MODALTYPE_EDITOR;
-	const auto IsViewer = curType == MODALTYPE_VIEWER;
-	const auto IsDialog = curType == MODALTYPE_DIALOG;
+	bool IsEditor = curType == MODALTYPE_EDITOR;
+	bool IsViewer = curType == MODALTYPE_VIEWER;
+	bool IsDialog = curType == MODALTYPE_DIALOG;
+	bool IsPanels = !IsEditor && !IsViewer && !IsDialog;
 
-	const bool UseMenuGuids = pPlugin->UseMenuGuids();
+	bool UseMenuGuids = pPlugin->UseMenuGuids();
 
 	// Разрешен ли вызов данного типа в текущей области (предварительная проверка)
 	switch (Data->CallFlags)
@@ -1971,7 +1970,7 @@ bool PluginManager::CallPluginItemCheck(Plugin *pPlugin, CallPluginInfo *Data)
 				(IsEditor && !(Info.Flags & PF_EDITOR)) ||
 				(IsViewer && !(Info.Flags & PF_VIEWER)) ||
 				(IsDialog && !(Info.Flags & PF_DIALOG)) ||
-				(!IsEditor && !IsViewer && !IsDialog && (Info.Flags & PF_DISABLEPANELS)))
+				(IsPanels && (Info.Flags & PF_DISABLEPANELS)))
 			return false;
 
 		MenuItemsCount = Info.PluginMenuStringsNumber;
@@ -2036,11 +2035,12 @@ bool PluginManager::CallPluginItemExecute(Plugin *pPlugin, CallPluginInfo *Data)
 	Frame *TopFrame = FrameManager->GetTopModal();
 	const auto curType = TopFrame->GetType();
 
-	const auto IsEditor = curType == MODALTYPE_EDITOR;
-	const auto IsViewer = curType == MODALTYPE_VIEWER;
-	const auto IsDialog = curType == MODALTYPE_DIALOG;
+	bool IsEditor = curType == MODALTYPE_EDITOR;
+	bool IsViewer = curType == MODALTYPE_VIEWER;
+	bool IsDialog = curType == MODALTYPE_DIALOG;
+	bool IsPanels = !IsEditor && !IsViewer && !IsDialog;
 
-	const bool UseMenuGuids = pPlugin->UseMenuGuids();
+	bool UseMenuGuids = pPlugin->UseMenuGuids();
 
 	PHPTR panelHandle = nullptr;
 
@@ -2048,62 +2048,48 @@ bool PluginManager::CallPluginItemExecute(Plugin *pPlugin, CallPluginInfo *Data)
 	{
 	case CPT_MENU:
 		{
-			auto OpenCode = IsEditor ? OPEN_EDITOR : IsViewer ? OPEN_VIEWER : IsDialog ? OPEN_DIALOG
-					: OPEN_PLUGINSMENU;
+			OPENPLUGIN_OPENFROM OpenCode;
 			OpenDlgPluginData pd {};
 			void *Item;
 
 			if (IsDialog)
 			{
-				if (!UseMenuGuids) {
-					pd.ItemNumber = Data->ItemNumber;
-				}
-				else {
-					pd.ItemGuid = Data->ItemUuid;
-				}
-				pd.hDlg = reinterpret_cast<Dialog*>(TopFrame);
+				OpenCode = OPEN_DIALOG;
 				Item = &pd;
+				pd.hDlg = reinterpret_cast<Dialog*>(TopFrame);
+				if (!UseMenuGuids)
+					pd.ItemNumber = Data->ItemNumber;
+				else
+					pd.ItemGuid = Data->ItemUuid;
 			}
 			else
+			{
+				OpenCode = IsEditor ? OPEN_EDITOR : IsViewer ? OPEN_VIEWER : OPEN_PLUGINSMENU;
 				Item = UseMenuGuids ? &Data->ItemUuid : (void*)Data->ItemNumber;
+			}
 
 			panelHandle = OpenPlugin(pPlugin, OpenCode, Item);
 			Result = true;
+			break;
 		}
-		break;
 
 	case CPT_CONFIGURE:
 		ConfigureCurrent(pPlugin, Data->ItemNumber, &Data->ItemUuid);
 		return true;
 
 	case CPT_CMDLINE:
-		{
-			panelHandle = OpenPlugin(pPlugin, OPEN_COMMANDLINE, Data->Command.CPtr());
-			Result = true;
-		}
+		panelHandle = OpenPlugin(pPlugin, OPEN_COMMANDLINE, Data->Command);
+		Result = true;
 		break;
 	}
 
-	if (panelHandle && !IsEditor && !IsViewer && !IsDialog)
+	if (IsPanels && panelHandle)
 	{
-		//BUGBUG: Закрытие панели? Нужно ли оно?
-		//BUGBUG: В ProcessCommandLine зовется перед Open, а в CPT_MENU - после
-		Panel* ActivePanel = CtrlObject->Cp()->ActivePanel;
-		if (ActivePanel->ProcessPluginEvent(FE_CLOSE, nullptr))
-		{
-			ClosePanel(panelHandle);
-			return false;
-		}
-
-		const auto NewPanel = CtrlObject->Cp()->ChangePanel(ActivePanel, FILE_PANEL, true, true);
-		NewPanel->SetPluginMode(panelHandle, {}, true);
-		NewPanel->Update(0);
-		NewPanel->Show();
+		return SetNewPanel(panelHandle);
 	}
-
-	// restore title for old plugins only.
-	if (pPlugin->IsOemPlugin() && IsEditor && CurEditor)
+	else if (IsEditor && pPlugin->IsOemPlugin() && CurEditor)
 	{
+		// restore title for old plugins only
 		CurEditor->SetPluginTitle(nullptr);
 	}
 

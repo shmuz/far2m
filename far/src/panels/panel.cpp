@@ -247,8 +247,13 @@ static void AddPluginItems(VMenu &ChDisk, int Pos)
 
 		for (auto I = MPItems.begin(); I != MPItems.end(); I++) {
 			I->Item.SetSelect(ChDisk.GetItemCount() == Pos);
-			const wchar_t HotKeyStr[] = {I->HotKey ? L'&' : L' ', I->HotKey ? I->HotKey : L' ', L' ',
-					I->HotKey ? L' ' : L'\0', L'\0'};
+			const wchar_t HotKeyStr[] = {
+					I->HotKey ? L'&' : L' ',
+					I->HotKey ? I->HotKey : L' ',
+					L' ',
+					I->HotKey ? L' ' : L'\0',
+					L'\0'
+			};
 			I->Item.strName = FARString(HotKeyStr) + I->Item.strName;
 			ChDisk.AddItem(&I->Item);
 			delete (PanelMenuItem *)I->Item.UserData;    // ммда...
@@ -743,7 +748,7 @@ bool Panel::SetLocation_Plugin(bool file_plugin, Plugin *plugin, const wchar_t *
 	else {
 		auto OpenFrom = plugin->UseMenuGuids()
 				? (this == CtrlObject->Cp()->LeftPanel ? OPEN_LEFTDISKMENU : OPEN_RIGHTDISKMENU)
-				: OPEN_DISKMENU;
+				: OPEN_DISKMENU; // for compatibility with far2l plugins
 		hPlugin = CtrlObject->Plugins.OpenPlugin(plugin, OpenFrom, (void*)item);
 	}
 
