@@ -494,7 +494,8 @@ local function Open_LuaMacro (calltype, ...)
 end
 
 local CanCreatePanel = {
-  [F.OPEN_DISKMENU]      = true;
+  [F.OPEN_LEFTDISKMENU]  = true;
+  [F.OPEN_RIGHTDISKMENU] = true;
   [F.OPEN_FINDLIST]      = true;
   [F.OPEN_SHORTCUT]      = true;
 --[F.OPEN_FILEPANEL]     = true; -- does it needed?
