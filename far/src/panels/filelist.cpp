@@ -746,7 +746,6 @@ bool FileList::GetPluginInfo(PluginInfo *PInfo)
 {
 	const auto PluginPanel = GetPluginHandle();
 	if (PluginPanel && PluginPanel->pPlugin && GetMode() == PLUGIN_PANEL) {
-		PInfo->StructSize = sizeof(PluginInfo);
 		return PluginPanel->pPlugin->GetPluginInfo(PInfo);
 	}
 	return false;
@@ -783,12 +782,8 @@ int64_t FileList::VMProcess(int OpCode, void *vParam, int64_t iParam)
 		case MCODE_V_APANEL_PREFIX:    // APanel.Prefix
 		case MCODE_V_PPANEL_PREFIX:    // PPanel.Prefix
 		{
-			PluginInfo *PInfo = (PluginInfo *)vParam;
-			memset(PInfo, 0, sizeof(*PInfo));
-			PInfo->StructSize = sizeof(*PInfo);
-			if (GetMode() == PLUGIN_PANEL && hPlugin && hPlugin->pPlugin)
-				return hPlugin->pPlugin->GetPluginInfo(PInfo) ? 1 : 0;
-			return 0;
+			return (GetMode() == PLUGIN_PANEL) && hPlugin && hPlugin->pPlugin
+				&& hPlugin->pPlugin->GetPluginInfo((PluginInfo*)vParam);
 		}
 
 		case MCODE_V_APANEL_PATH0:

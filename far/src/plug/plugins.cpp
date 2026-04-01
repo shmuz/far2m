@@ -1168,7 +1168,7 @@ void PluginManager::Configure(int StartPos)
 			PluginList.SetPosition(-1,-1,0,0);
 			LoadIfCacheAbsent();
 			FARString strName;
-			PluginInfo Info{};
+			PluginInfo Info;
 			std::vector<TmpItemData> TmpItems;
 
 			Cma.SetPrevArea(); // for plugins: set the right macro area in GetPluginInfo()
@@ -1333,7 +1333,7 @@ int PluginManager::CommandsMenu(int ModalType, int StartPos, const wchar_t *Hist
 				PluginList.SetPosition(-1,-1,0,0);
 				LoadIfCacheAbsent();
 				FARString strName;
-				PluginInfo Info{};
+				PluginInfo Info;
 				std::vector<TmpItemData> TmpItems;
 
 				Cma.SetPrevArea(); // for plugins: set the right macro area in GetPluginInfo()
@@ -1589,7 +1589,7 @@ bool PluginManager::GetDiskMenuItem(
 	}
 	else
 	{
-		PluginInfo Info {};
+		PluginInfo Info;
 		if (!pPlugin->GetPluginInfo(&Info) || (PluginItem >= Info.DiskMenuStringsNumber))
 			return false;
 
@@ -1957,7 +1957,7 @@ bool PluginManager::CallPluginItemCheck(Plugin *pPlugin, CallPluginInfo *Data)
 		break;
 	}
 
-	PluginInfo Info{sizeof(Info)};
+	PluginInfo Info;
 	if (!pPlugin->GetPluginInfo(&Info))
 		return false;
 
@@ -2238,7 +2238,7 @@ size_t PluginManager::GetPluginInformation(
 		ReadCache(kfh, FmtDiskMenuStringD, DiskItems);
 		ReadCache(kfh, FmtPluginConfigStringD, ConfigItems);
 	}
-	else if (PluginInfo Info {sizeof(Info)}; aPlugin->GetPluginInfo(&Info))
+	else if (PluginInfo Info; aPlugin->GetPluginInfo(&Info))
 	{
 		Prefix = NullToEmpty(Info.CommandPrefix);
 		Flags = Info.Flags;
@@ -2306,7 +2306,7 @@ void PluginManager::ShowPluginInfo(Plugin *pPlugin, int nItem, const GUID &Guid)
 	}
 	else
 	{
-		PluginInfo Info = {sizeof(Info)};
+		PluginInfo Info;
 		if (pPlugin->GetPluginInfo(&Info))
 			strPluginPrefix = NullToEmpty(Info.CommandPrefix);
 	}

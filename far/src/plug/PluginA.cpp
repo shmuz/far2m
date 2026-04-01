@@ -213,7 +213,7 @@ bool PluginA::SaveToCache()
 
 	kfh.SetString(GetSettingsName(), "Module", module.c_str());
 
-	PluginInfo Info{};
+	PluginInfo Info;
 	GetPluginInfo(&Info);
 
 	kfh.SetInt(GetSettingsName(), szCache_Preopen, ((Info.Flags & PF_PREOPEN) != 0));
@@ -1292,7 +1292,7 @@ bool PluginA::GetPluginInfo(PluginInfo *pi)
 	if (pGetPluginInfo)
 	{
 		ExecuteStruct es(EXCEPT_GETPLUGININFO);
-		oldfar::PluginInfo InfoA{};
+		oldfar::PluginInfo InfoA { sizeof(InfoA) };
 		EXECUTE_FUNCTION(pGetPluginInfo(&InfoA), es);
 
 		if (!es.bUnloaded)

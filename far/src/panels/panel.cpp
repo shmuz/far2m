@@ -463,8 +463,7 @@ int Panel::ChangeDiskMenu(int Pos, int FirstCall)
 		}
 
 		if (Opt.ChangeDriveMode & DRIVE_SHOW_PLUGINS) {
-			SCOPED_ACTION(ChangeMacroArea)
-			(PrevMacroArea);    // for plugins: set the right macro area in GetPluginInfo()
+			SCOPED_ACTION(ChangeMacroArea)(PrevMacroArea); // for plugins: set the right macro area in GetPluginInfo()
 			AddPluginItems(ChDisk, Pos);
 		}
 
@@ -1691,7 +1690,7 @@ int Panel::SetPluginCommand(int Command, int Param1, LONG_PTR Param2)
 			FARString strTemp;
 
 			if (GetType() == FILE_PANEL && GetMode() == PLUGIN_PANEL) {
-				PluginInfo PInfo = {sizeof(PInfo)};
+				PluginInfo PInfo;
 				if (DestFilePanel && DestFilePanel->GetPluginInfo(&PInfo))
 					strTemp = NullToEmpty(PInfo.CommandPrefix);
 			}

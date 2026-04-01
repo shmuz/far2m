@@ -453,13 +453,10 @@ bool KeyMacro::ProcessKey(FarKey dwKey, const INPUT_RECORD *Rec)
 	{
 		if ((ctrldot||ctrlshiftdot) && !IsExecuting())
 		{
-			bool OK = false;
-			if (auto Plug = CtrlObject->Plugins.FindPlugin(SYSID_LUAMACRO)) { //### && !IsPendingRemove())
-				PluginInfo Info{};
-				Plug->GetPluginInfo(&Info);
-				OK = Info.StructSize && Info.CommandPrefix;
-			}
-			if (!OK) {
+			PluginInfo Info;
+			auto Plug = CtrlObject->Plugins.FindPlugin(SYSID_LUAMACRO);
+			if (!Plug || !Plug->GetPluginInfo(&Info)) //### && !IsPendingRemove())
+			{
 				m_InternalInput = 1; //prevent multiple message boxes
 				Message(MSG_WARNING, 1, Msg::Error,
 				   Msg::MacroPluginLuamacroNotLoaded,

@@ -258,7 +258,7 @@ bool PluginW::SaveToCache()
 
 	kfh.SetString(GetSettingsName(), "Module", module.c_str());
 
-	PluginInfo Info{};
+	PluginInfo Info;
 	GetPluginInfo(&Info);
 
 	kfh.SetInt(GetSettingsName(), szCache_Preopen, ((Info.Flags & PF_PREOPEN) != 0));
@@ -1251,7 +1251,7 @@ int PluginW::ConfigureV3(const ConfigureInfo *Info)
 
 bool PluginW::GetPluginInfo(PluginInfo *pi)
 {
-	memset(pi, 0, sizeof(PluginInfo));
+	*pi = { sizeof(PluginInfo) };
 
 	if (pGetPluginInfoW)
 	{
