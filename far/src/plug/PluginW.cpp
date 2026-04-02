@@ -379,19 +379,14 @@ bool PluginW::Load()
 	GetModuleFN(pSetFindListW, NFMP_SetFindList);
 	GetModuleFN(pSetStartupInfoW, NFMP_SetStartupInfo);
 
-	bool bUnloaded = false;
-
-	if (CheckMinFarVersion(bUnloaded))
+	if (CheckMinFarVersion())
 	{
-		if (SetStartupInfo(bUnloaded))
+		if (SetStartupInfo())
 		{
 			SaveToCache();
 			return true;
 		}
 	}
-
-	if (!bUnloaded)
-		Unload();
 
 	//чтоб не пытаться загрузить опять а то ошибка будет постоянно показываться.
 	WorkFlags.Set(PIWF_DONTLOADAGAIN);
@@ -704,7 +699,7 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 	}
 }
 
-bool PluginW::SetStartupInfo(bool &bUnloaded)
+bool PluginW::SetStartupInfo()
 {
 	if (pSetStartupInfoW)
 	{
@@ -713,29 +708,17 @@ bool PluginW::SetStartupInfo(bool &bUnloaded)
 		CreatePluginStartupInfo(this, &_info, &_fsf);
 		ExecuteStruct es(EXCEPT_SETSTARTUPINFO);
 		EXECUTE_FUNCTION(pSetStartupInfoW(&_info), es);
-
-		if (es.bUnloaded)
-		{
-			bUnloaded = true;
-			return false;
-		}
 	}
 
 	return true;
 }
 
-bool PluginW::CheckMinFarVersion(bool &bUnloaded)
+bool PluginW::CheckMinFarVersion()
 {
 	if (pMinFarVersionW)
 	{
 		ExecuteStruct es(EXCEPT_MINFARVERSION);
 		EXECUTE_FUNCTION_EX(pMinFarVersionW(), es);
-
-		if (es.bUnloaded)
-		{
-			bUnloaded = true;
-			return false;
-		}
 
 		DWORD FVer = (DWORD)es.nResult;
 
@@ -1257,9 +1240,7 @@ bool PluginW::GetPluginInfo(PluginInfo *pi)
 	{
 		ExecuteStruct es(EXCEPT_GETPLUGININFO);
 		EXECUTE_FUNCTION(pGetPluginInfoW(pi), es);
-
-		if (!es.bUnloaded)
-			return true;
+		return true;
 	}
 
 	return false;

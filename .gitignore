@@ -1,4 +1,3 @@
 _build/
-far2m-cppcheck-build-dir/
 .luacheckrc
 far/libluajit.a

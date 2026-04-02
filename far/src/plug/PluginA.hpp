@@ -168,8 +168,8 @@ class PluginA: public Plugin
 		const char *GetMsgA(int nID) { return Lang.GetMsgMB(nID); }
 
 	public:
-		bool SetStartupInfo(bool &bUnloaded);
-		bool CheckMinFarVersion(bool &bUnloaded);
+		bool SetStartupInfo();
+		bool CheckMinFarVersion();
 
 		HANDLE OpenPlugin(int OpenFrom, const void *Item);
 		HANDLE OpenFilePlugin(const wchar_t *Name, const unsigned char *Data, int DataSize, int OpMode);

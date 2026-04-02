@@ -181,8 +181,8 @@ class PluginW: public Plugin
 
 	public:
 
-		bool SetStartupInfo(bool &bUnloaded);
-		bool CheckMinFarVersion(bool &bUnloaded);
+		bool SetStartupInfo();
+		bool CheckMinFarVersion();
 
 		HANDLE Analyse(const AnalyseInfo *Info);
 		void CloseAnalyse(const CloseAnalyseInfo *Info);

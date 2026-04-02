@@ -156,7 +156,7 @@ class Plugin
 		virtual void CloseLang() = 0;
 
 		virtual HANDLE Analyse(const AnalyseInfo *Info) = 0;
-		virtual bool   CheckMinFarVersion(bool &bUnloaded) = 0;
+		virtual bool   CheckMinFarVersion() = 0;
 		virtual void   CloseAnalyse(const CloseAnalyseInfo *Info) = 0;
 		virtual void   ClosePlugin(HANDLE hPlugin) = 0;
 		virtual int    Compare(HANDLE hPlugin, const PluginPanelItem *Item1, const PluginPanelItem *Item2, DWORD Mode) = 0;
@@ -190,7 +190,7 @@ class Plugin
 		virtual int    PutFiles(HANDLE hPlugin, PluginPanelItem *PanelItem, int ItemsNumber, int Move, int OpMode) = 0;
 		virtual int    SetDirectory(HANDLE hPlugin, const wchar_t *Dir, int OpMode) = 0;
 		virtual int    SetFindList(HANDLE hPlugin, const PluginPanelItem *PanelItem, int ItemsNumber) = 0;
-		virtual bool   SetStartupInfo(bool &bUnloaded) = 0;
+		virtual bool   SetStartupInfo() = 0;
 
 		DWORD GetSysID() { return SysID; }
 		bool GetGlobalInfo();
@@ -261,9 +261,7 @@ struct ExecuteStruct
 		BOOL bDefaultResult;
 	};
 
-	bool bUnloaded;
-
-	ExecuteStruct(ExceptFunctionsType ID) : id(ID), nResult(0), nDefaultResult(0), bUnloaded(false) {}
+	ExecuteStruct(ExceptFunctionsType ID) : id(ID), nResult(0), nDefaultResult(0) {}
 };
 
 #define EXECUTE_FUNCTION(function, es) \

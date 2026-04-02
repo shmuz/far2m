@@ -309,19 +309,14 @@ bool PluginA::Load()
 	GetModuleFN(pSetFindList, NFMP_SetFindList);
 	GetModuleFN(pSetStartupInfo, NFMP_SetStartupInfo);
 
-	bool bUnloaded = false;
-
-	if (CheckMinFarVersion(bUnloaded))
+	if (CheckMinFarVersion())
 	{
-		if (SetStartupInfo(bUnloaded))
+		if (SetStartupInfo())
 		{
 			SaveToCache();
 			return true;
 		}
 	}
-
-	if (!bUnloaded)
-		Unload();
 
 	//чтоб не пытаться загрузить опять а то ошибка будет постоянно показываться.
 	WorkFlags.Set(PIWF_DONTLOADAGAIN);
@@ -458,7 +453,7 @@ static void CreatePluginStartupInfoA(PluginA *pPlugin, oldfar::PluginStartupInfo
 	PSI->RootKey = "";
 }
 
-bool PluginA::SetStartupInfo(bool &bUnloaded)
+bool PluginA::SetStartupInfo()
 {
 	if (pSetStartupInfo)
 	{
@@ -468,29 +463,17 @@ bool PluginA::SetStartupInfo(bool &bUnloaded)
 		CreatePluginStartupInfoA(this, &_info, &_fsf);
 		ExecuteStruct es(EXCEPT_SETSTARTUPINFO);
 		EXECUTE_FUNCTION(pSetStartupInfo(&_info), es);
-
-		if (es.bUnloaded)
-		{
-			bUnloaded = true;
-			return false;
-		}
 	}
 
 	return true;
 }
 
-bool PluginA::CheckMinFarVersion(bool &bUnloaded)
+bool PluginA::CheckMinFarVersion()
 {
 	if (pMinFarVersion)
 	{
 		ExecuteStruct es(EXCEPT_MINFARVERSION);
 		EXECUTE_FUNCTION_EX(pMinFarVersion(), es);
-
-		if (es.bUnloaded)
-		{
-			bUnloaded = true;
-			return false;
-		}
 
 		DWORD FVer = (DWORD)es.nResult;
 
@@ -573,34 +556,6 @@ HANDLE PluginA::OpenPlugin(int OpenFrom, const void *Item)
 		if (ItemA) free(ItemA);
 
 		hResult = es.hResult;
-		/*    CtrlObject->Macro.SetRedrawEditor(TRUE); //BUGBUG
-
-		    if ( !es.bUnloaded )
-		    {
-
-		      if(OpenFrom == OPEN_EDITOR &&
-		         !CtrlObject->Macro.IsExecuting() &&
-		         CtrlObject->Plugins.CurEditor &&
-		         CtrlObject->Plugins.CurEditor->IsVisible() )
-		      {
-		        CtrlObject->Plugins.ProcessEditorEvent(EE_REDRAW,EEREDRAW_CHANGE);
-		        CtrlObject->Plugins.ProcessEditorEvent(EE_REDRAW,EEREDRAW_ALL);
-		        CtrlObject->Plugins.CurEditor->Show();
-		      }
-		      if (hInternal!=INVALID_HANDLE_VALUE)
-		      {
-		        PanelHandle *hPlugin=new PanelHandle;
-		        hPlugin->InternalHandle=es.hResult;
-		        hPlugin->PluginNumber=(INT_PTR)this;
-		        return((HANDLE)hPlugin);
-		      }
-		      else
-		        if ( !g_strDirToSet.IsEmpty() )
-		        {
-							CtrlObject->Cp()->ActivePanel->SetCurDir(g_strDirToSet,true);
-		          CtrlObject->Cp()->ActivePanel->Redraw();
-		        }
-		    } */
 	}
 
 //	delete ChPriority;
@@ -1295,11 +1250,8 @@ bool PluginA::GetPluginInfo(PluginInfo *pi)
 		oldfar::PluginInfo InfoA { sizeof(InfoA) };
 		EXECUTE_FUNCTION(pGetPluginInfo(&InfoA), es);
 
-		if (!es.bUnloaded)
-		{
-			ConvertPluginInfo(InfoA, pi);
-			return true;
-		}
+		ConvertPluginInfo(InfoA, pi);
+		return true;
 	}
 
 	return false;
