@@ -519,6 +519,7 @@ SHAREDSYMBOL void WINAPI SetStartupInfoW(const struct PluginStartupInfo *Info)
 SHAREDSYMBOL void WINAPI GetPluginInfoW(struct PluginInfo *Info)
 {
 	Info->StructSize = sizeof(struct PluginInfo);
+	Info->SysID = 0x93CDEF19;
 	Info->Flags = 0;
 	static const wchar_t *s_menu_strings[1];
 	s_menu_strings[0] = GetMsg(MPluginTitle);

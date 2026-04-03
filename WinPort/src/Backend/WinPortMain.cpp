@@ -559,7 +559,7 @@ extern "C" int WinPortMain(const char *full_exe_path, int argc, char **argv, int
 	}
 	//check variation selector 16 is usable before reassigning stdout
 	if (arg_opts.tty && arg_opts.nodetect == NODETECT_NONE) {
-		g_use_vs16 = detect_vs16_width() == 2;
+		g_far2l_use_vs16 = detect_vs16_width() == 2;
 	}
 
 	SetupStdHandles();
