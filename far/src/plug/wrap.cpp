@@ -63,32 +63,6 @@ bool FirstSlashA(const char *String, size_t &pos)
 	return Ret;
 }
 
-static const char *LastSlashA(const char *String)
-{
-	const char *Start = String;
-
-	while (*String++)
-		;
-
-	while (--String != Start && !IsSlashA(*String))
-		;
-
-	return IsSlashA(*String) ? String : nullptr;
-}
-
-static bool LastSlashA(const char *String, size_t &pos)
-{
-	bool Ret = false;
-	const char *Ptr = LastSlashA(String);
-
-	if (Ptr) {
-		pos = Ptr - String;
-		Ret = true;
-	}
-
-	return Ret;
-}
-
 static void AnsiToUnicodeBin(const char *lpszAnsiString, wchar_t *lpwszUnicodeString, int nLength,
 		UINT CodePage = CP_UTF8)
 {

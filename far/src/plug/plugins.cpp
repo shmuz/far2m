@@ -131,7 +131,8 @@ static PluginType PluginTypeByExtension(const wchar_t *lpModuleName)
 
 bool PluginsSort(const Plugin* a, const Plugin* b)
 {
-	return StrCmp(PointToName(a->GetModuleName()), PointToName(b->GetModuleName())) < 0;
+	auto res = StrCmp(PointToName(a->GetModuleName()), PointToName(b->GetModuleName()));
+	return res < 0 || (res == 0 && a->GetSysID() < b->GetSysID());
 }
 
 PluginManager::PluginManager():
@@ -216,30 +217,29 @@ Plugin* PluginManager::LoadPlugin(const FARString &strModuleName, bool UncachedL
 	if (!pPlugin)
 		return nullptr;
 
-	PluginsData.push_back(pPlugin);
-
-	bool bResult = false;
+	bool bLoaded = false;
 
 	if (!UncachedLoad)
 	{
-		bResult = pPlugin->LoadFromCache();
+		bLoaded = pPlugin->LoadFromCache();
 		fprintf(stderr, "%s: cache %s for '%ls'\n",
-			__FUNCTION__, bResult ? "hit" : "miss", strModuleName.CPtr());
+			__FUNCTION__, bLoaded ? "hit" : "miss", strModuleName.CPtr());
 	}
 
-	if (!bResult && !Opt.LoadPlug.PluginsCacheOnly)
-	{
-		bResult = pPlugin->Load();
-
-		if (!bResult)
-			RemovePlugin(pPlugin);
+	if (!bLoaded && !Opt.LoadPlug.PluginsCacheOnly) {
+		PluginsData.push_front(pPlugin);  // - It is required as plugins call API during Load().
+		bLoaded = pPlugin->Load();        // - push_front is used to speed up FindPlugin().
+		PluginsData.pop_front();
 	}
 
-	if (bResult && pPlugin->SysID) {
+	if (bLoaded && pPlugin->SysID) {
+		PluginsData.push_back(pPlugin);
 		SysIdMap.emplace(pPlugin->SysID, pPlugin);
+		return pPlugin;
 	}
 
-	return bResult ? pPlugin : nullptr;
+	delete pPlugin;
+	return nullptr;
 }
 
 bool PluginManager::CacheForget(const wchar_t *lpwszModuleName)
@@ -346,8 +346,12 @@ Plugin *PluginManager::FindPlugin(const wchar_t *lpwszModuleName)
 		if (!StrCmp(lpwszModuleName, pPlugin->GetModuleName()))
 			return pPlugin;
 	}
-
 	return nullptr;
+}
+
+Plugin *PluginManager::FindPlugin(DWORD SysId)
+{
+	return SysIdMap.count(SysId) ? SysIdMap[SysId] : nullptr;
 }
 
 bool PluginManager::FindPlugin(Plugin *pPlugin)
@@ -782,7 +786,6 @@ int PluginManager::ProcessEditorEvent(int Event, void *Param, Editor *EditorInst
 	return 0;
 }
 
-
 int PluginManager::ProcessViewerEvent(int Event, void *Param)
 {
 	for (auto pPlugin: PluginsData)
@@ -935,8 +938,7 @@ int PluginManager::DeleteFiles(
     PHPTR ph,
     PluginPanelItem *PanelItem,
     int ItemsNumber,
-    int OpMode
-)
+    int OpMode)
 {
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	SaveScreen SaveScr;
@@ -968,8 +970,7 @@ int PluginManager::ProcessHostFile(
     PHPTR ph,
     PluginPanelItem *PanelItem,
     int ItemsNumber,
-    int OpMode
-)
+    int OpMode)
 {
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	SaveScreen SaveScr;
@@ -2093,11 +2094,6 @@ bool PluginManager::CallPluginItemExecute(Plugin *pPlugin, CallPluginInfo *Data)
 	}
 
 	return Result;
-}
-
-Plugin *PluginManager::FindPlugin(DWORD SysId)
-{
-	return SysIdMap.count(SysId) ? SysIdMap[SysId] : nullptr;
 }
 
 PHPTR PluginManager::OpenPlugin(Plugin *pPlugin, int OpenFrom, const void *Item)

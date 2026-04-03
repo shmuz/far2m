@@ -28,6 +28,7 @@ Plugin::Plugin(PluginManager *owner,
 Plugin::~Plugin()
 {
 	Lang.Close();
+	CloseModule();
 }
 
 void *Plugin::GetModulePFN(const char *fn)
@@ -122,7 +123,7 @@ bool Plugin::GetGlobalInfo()
 		}
 	}
 
-	Unload();
+	Unload(false);
 	WorkFlags.Set(PIWF_DONTLOADAGAIN);
 	return false;
 }

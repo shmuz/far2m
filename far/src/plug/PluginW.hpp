@@ -128,7 +128,7 @@ class PluginW: public Plugin
 
 		bool SaveToCache();
 
-		int Unload(bool bExitFAR = false);
+		int Unload(bool bExitFAR);
 
 		bool IsPanelPlugin();
 

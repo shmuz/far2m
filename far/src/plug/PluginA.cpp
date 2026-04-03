@@ -177,16 +177,16 @@ bool PluginA::LoadFromCache()
 	strDescription = kfh.GetString(szCache_Description);
 	strTitle = kfh.GetString(szCache_Title);
 
-	pConfigure = (PLUGINCONFIGURE)(INT_PTR)kfh.GetUInt(szCache_Configure, 0);
-	pGetFiles = (PLUGINGETFILES)(INT_PTR)kfh.GetUInt(szCache_GetFiles, 0);
-	pOpenFilePlugin = (PLUGINOPENFILEPLUGIN)(INT_PTR)kfh.GetUInt(szCache_OpenFilePlugin, 0);
-	pOpenPlugin = (PLUGINOPENPLUGIN)(INT_PTR)kfh.GetUInt(szCache_OpenPlugin, 0);
-	pProcessDialogEvent = (PLUGINPROCESSDIALOGEVENT)(INT_PTR)kfh.GetUInt(szCache_ProcessDialogEvent, 0);
-	pProcessEditorEvent = (PLUGINPROCESSEDITOREVENT)(INT_PTR)kfh.GetUInt(szCache_ProcessEditorEvent, 0);
-	pProcessEditorInput = (PLUGINPROCESSEDITORINPUT)(INT_PTR)kfh.GetUInt(szCache_ProcessEditorInput, 0);
-	pProcessHostFile = (PLUGINPROCESSHOSTFILE)(INT_PTR)kfh.GetUInt(szCache_ProcessHostFile, 0);
-	pProcessViewerEvent = (PLUGINPROCESSVIEWEREVENT)(INT_PTR)kfh.GetUInt(szCache_ProcessViewerEvent, 0);
-	pSetFindList = (PLUGINSETFINDLIST)(INT_PTR)kfh.GetUInt(szCache_SetFindList, 0);
+	load_ptr(kfh, szCache_Configure,          pConfigure);
+	load_ptr(kfh, szCache_GetFiles,           pGetFiles);
+	load_ptr(kfh, szCache_OpenFilePlugin,     pOpenFilePlugin);
+	load_ptr(kfh, szCache_OpenPlugin,         pOpenPlugin);
+	load_ptr(kfh, szCache_ProcessDialogEvent, pProcessDialogEvent);
+	load_ptr(kfh, szCache_ProcessEditorEvent, pProcessEditorEvent);
+	load_ptr(kfh, szCache_ProcessEditorInput, pProcessEditorInput);
+	load_ptr(kfh, szCache_ProcessHostFile,    pProcessHostFile);
+	load_ptr(kfh, szCache_ProcessViewerEvent, pProcessViewerEvent);
+	load_ptr(kfh, szCache_SetFindList,        pSetFindList);
 
 	WorkFlags.Set(PIWF_CACHED); //too much "cached" flags
 

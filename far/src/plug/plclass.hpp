@@ -90,6 +90,12 @@ class Plugin
 			fn = (TFN)GetModulePFN(api);
 		}
 
+		template <typename T, typename Obj>
+			void load_ptr(Obj& kfh, const char* key, T& func_ptr)
+		{
+			func_ptr = reinterpret_cast<T>(static_cast<uintptr_t>(kfh.GetUInt(key, 0)));
+		}
+
 	public:
 		Plugin(PluginManager *owner,
 			const FARString &strModuleName,
@@ -105,7 +111,7 @@ class Plugin
 
 		virtual bool SaveToCache() = 0;
 
-		virtual int Unload(bool bExitFAR = false) = 0;
+		virtual int Unload(bool bExitFAR) = 0;
 
 		virtual bool IsPanelPlugin() = 0;
 
@@ -192,7 +198,7 @@ class Plugin
 		virtual int    SetFindList(HANDLE hPlugin, const PluginPanelItem *PanelItem, int ItemsNumber) = 0;
 		virtual bool   SetStartupInfo() = 0;
 
-		DWORD GetSysID() { return SysID; }
+		DWORD GetSysID() const { return SysID; }
 		bool GetGlobalInfo();
 		bool IsLoaded() { return m_hModule != nullptr; }
 		static void ShowMessageAboutIllegalPluginVersion(const wchar_t* plg,int required);

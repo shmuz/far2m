@@ -217,24 +217,24 @@ bool PluginW::LoadFromCache()
 	strTitle = kfh.GetString(szCache_Title);
 	bUseMenuGuids = kfh.GetUInt(szCache_UseMenuGuids, 0) != 0;
 
-	pAnalyseW = (PLUGINANALYSEW)(INT_PTR)kfh.GetUInt(szCache_Analyse, 0);
-	pConfigureV3W = (PLUGINCONFIGUREV3W)(INT_PTR)kfh.GetUInt(szCache_ConfigureV3, 0);
-	pConfigureW = (PLUGINCONFIGUREW)(INT_PTR)kfh.GetUInt(szCache_Configure, 0);
-	pGetCustomDataW = (PLUGINGETCUSTOMDATAW)(INT_PTR)kfh.GetUInt(szCache_GetCustomData, 0);
-	pGetFilesW = (PLUGINGETFILESW)(INT_PTR)kfh.GetUInt(szCache_GetFiles, 0);
-	pOpenFilePluginW = (PLUGINOPENFILEPLUGINW)(INT_PTR)kfh.GetUInt(szCache_OpenFilePlugin, 0);
-	pOpenPluginW = (PLUGINOPENPLUGINW)(INT_PTR)kfh.GetUInt(szCache_OpenPlugin, 0);
-	pProcessConsoleInputW = (PLUGINPROCESSCONSOLEINPUTW)(INT_PTR)kfh.GetUInt(szCache_ProcessConsoleInput, 0);
-	pProcessDialogEventW = (PLUGINPROCESSDIALOGEVENTW)(INT_PTR)kfh.GetUInt(szCache_ProcessDialogEvent, 0);
-	pProcessEditorEventW = (PLUGINPROCESSEDITOREVENTW)(INT_PTR)kfh.GetUInt(szCache_ProcessEditorEvent, 0);
-	pProcessEditorEventV3W = (PLUGINPROCESSEDITOREVENTV3W)(INT_PTR)kfh.GetUInt(szCache_ProcessEditorEventV3, 0);
-	pProcessEditorInputW = (PLUGINPROCESSEDITORINPUTW)(INT_PTR)kfh.GetUInt(szCache_ProcessEditorInput, 0);
-	pProcessHostFileW = (PLUGINPROCESSHOSTFILEW)(INT_PTR)kfh.GetUInt(szCache_ProcessHostFile, 0);
-	pProcessSynchroEventW = (PLUGINPROCESSSYNCHROEVENTW)(INT_PTR)kfh.GetUInt(szCache_ProcessSynchroEvent, 0);
-	pProcessViewerEventW = (PLUGINPROCESSVIEWEREVENTW)(INT_PTR)kfh.GetUInt(szCache_ProcessViewerEvent, 0);
-	pSetFindListW = (PLUGINSETFINDLISTW)(INT_PTR)kfh.GetUInt(szCache_SetFindList, 0);
+	load_ptr(kfh, szCache_Analyse,              pAnalyseW);
+	load_ptr(kfh, szCache_ConfigureV3,          pConfigureV3W);
+	load_ptr(kfh, szCache_Configure,            pConfigureW);
+	load_ptr(kfh, szCache_GetCustomData,        pGetCustomDataW);
+	load_ptr(kfh, szCache_GetFiles,             pGetFilesW);
+	load_ptr(kfh, szCache_OpenFilePlugin,       pOpenFilePluginW);
+	load_ptr(kfh, szCache_OpenPlugin,           pOpenPluginW);
+	load_ptr(kfh, szCache_ProcessConsoleInput,  pProcessConsoleInputW);
+	load_ptr(kfh, szCache_ProcessDialogEvent,   pProcessDialogEventW);
+	load_ptr(kfh, szCache_ProcessEditorEvent,   pProcessEditorEventW);
+	load_ptr(kfh, szCache_ProcessEditorEventV3, pProcessEditorEventV3W);
+	load_ptr(kfh, szCache_ProcessEditorInput,   pProcessEditorInputW);
+	load_ptr(kfh, szCache_ProcessHostFile,      pProcessHostFileW);
+	load_ptr(kfh, szCache_ProcessSynchroEvent,  pProcessSynchroEventW);
+	load_ptr(kfh, szCache_ProcessViewerEvent,   pProcessViewerEventW);
+	load_ptr(kfh, szCache_SetFindList,          pSetFindListW);
 
-	WorkFlags.Set(PIWF_CACHED); //too much "cached" flags
+	WorkFlags.Set(PIWF_CACHED);
 
 	if (kfh.GetInt(szCache_Preopen) != 0)
 		OpenModule();
