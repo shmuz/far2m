@@ -4053,189 +4053,193 @@ to child processes:
 
 @RegExp
 $ #Regular expressions#
-    The regular expressions syntax is almost equal to Perl regexp`s.
+ The regular expressions syntax is almost equal to Perl regexp`s.
 
-    General form: #regexp# or /#regexp#/#options#.
+ General form: #regexp# or /#regexp#/#options#.
 
-    #Options#:
-    #i# - ignore character case;
-    #s# - ^<wrap>consider the whole text as one line, '.' matches any character;
-    #m# - ^<wrap>consider the whole text as multiple lines. ^ and $ match the
-    beginning and the end of any "inner" string;
-    #x# - ^<wrap>ignore space characters (unscreened ones, i.e. without backslash before).
+ #Options#:
+ #i# - ignore character case;
+ #s# - ^<wrap>consider the whole text as one line, '.' matches any character;
+ #m# - ^<wrap>consider the whole text as multiple lines. ^ and $ match the
+ beginning and the end of any "inner" string;
+ #x# - ^<wrap>ignore space characters (unscreened ones, i.e. without backslash before).
 This is useful to outline the complex expressions.
 
-    #regexp# - the sequence of characters and metacharacters. The characters are
+ #regexp# - the sequence of characters and metacharacters. The characters are
 letters and digits, any other symbol becomes character when screened, i.e.
 prepended the backslash #\#.
 
-    Pay attention that all slashes and backslashes in regular expression must
+ Pay attention that all slashes and backslashes in regular expression must
 be prepended with the symbol #\# to differ from other special symbols or with
 the end of expression. An example: the string "big\white/scary" looks in the
 form of regular expression like "big\\white\/scary".
 
-    #Metacharacters#
+ #Metacharacters#
 
-    #\#  - ^<wrap>the next symbol is treated as itself, not a metacharacter
-    #^#  - ^<wrap>the beginning of string
-    #$#  - ^<wrap>the end of string
-    #|#  - ^<wrap>the alternative. Either expression before or after #|# has to match.
+ #\#  - ^<wrap>the next symbol is treated as itself, not a metacharacter
+ #^#  - ^<wrap>the beginning of string
+ #$#  - ^<wrap>the end of string
+ #|#  - ^<wrap>the alternative. Either expression before or after #|# has to match.
 
-          ^<wrap>An example: "\d+\w+|Hello\d+" means "(\d+\w+)|(Hello\d+)", not "\d+(\w+|H)ello\d+".
+ ^<wrap>An example: "\d+\w+|Hello\d+" means "(\d+\w+)|(Hello\d+)", not "\d+(\w+|H)ello\d+".
 
-    #()# - ^<wrap>grouping - it is used for references or when replacing matched text.
-    #[]# - ^<wrap>character class - the metacharacter which matches any symbol
+ #()# - ^<wrap>grouping - it is used for references or when replacing matched text.
+ #[]# - ^<wrap>character class - the metacharacter which matches any symbol
 or range of symbols enumerated in #[]#. Ranges are defined as [a-z].
 Metacharacters are not taken into account in character classes. If the first
 symbol in class is #^# then this is a negative class. If the character #^# has
 to be added to class, then it either must not to be at first place or it must
 be prepended with #\#.
 
-    Except grouping, the parentheses are used for the following operations:
-    #(?:pattern)#  - ^<wrap>usual grouping, but it does not get a number.
-    #(?=pattern)#  - ^<wrap>the forward lookup. The matching continues from
+ Except grouping, the parentheses are used for the following operations:
+ #(?:pattern)#  - ^<wrap>usual grouping, but it does not get a number.
+ #(?=pattern)#  - ^<wrap>the forward lookup. The matching continues from
 the same place, but only if the pattern in these parentheses has matched. For
 example, #\w+(?=\s)# matches the word followed by space symbol, and the space
 is not included into the search result.
-    #(?!pattern)#  - ^<wrap>the negation of forward lookup. The matching
+ #(?!pattern)#  - ^<wrap>the negation of forward lookup. The matching
 continues from the same place if the pattern does not match. For example,
 #foo(?!bar)# matches any "foo" without following "bar". Remember that this
 expression has zero size, which means that #a(?!b)d# matches #ad# because #a#
 is followed by the symbol, which is not #b# (but #d#), and #d# follows the
 zero-size expression.
-    #(?<=pattern)# - ^<wrap>the backward lookup. Unfortunately, the pattern must have fixed length.
-    #(?<!pattern)# - ^<wrap>the negation of backward lookup. The same restriction.
+ #(?<=pattern)# - ^<wrap>the backward lookup. Unfortunately, the pattern must have fixed length.
+ #(?<!pattern)# - ^<wrap>the negation of backward lookup. The same restriction.
 
-    #Quantifiers#
+ #(?{name}pattern)# - ^<wrap>group with a name.
+The name must contain only word characters (#\w#) and spaces (#\s#).
 
-    Any character, group or class can be followed by a quantifier:
+ #Quantifiers#
 
-    #?#      - ^<wrap>Match 0 or 1 time, greedily.
-    #??#     - ^<wrap>Match 0 or 1 time, not greedily.
-    #*#      - ^<wrap>Match 0 or more times, greedily.
-    #*?#     - ^<wrap>Match 0 or more times, not greedily.
-    #+#      - ^<wrap>Match 1 or more times, greedily.
-    #+?#     - ^<wrap>Match 1 or more times, not greedily
-    #{n}#    - ^<wrap>Match exactly n times.
-    #{n,}#   - ^<wrap>Match at least n times, greedily.
-    #{n,}?#  - ^<wrap>Match at least n times, not greedily.
-    #{n,m}#  - ^<wrap>Match at least n but not more than m times, greedily.
-    #{n,m}?# - ^<wrap>Match at least n but not more than m times, not greedily.
-    #{,m}#   - ^<wrap>equals to {0,m}
-    #{,m}?#  - ^<wrap>equals to {0,m}?
+ Any character, group or class can be followed by a quantifier:
+
+ #?#      - ^<wrap>Match 0 or 1 time, greedily.
+ #??#     - ^<wrap>Match 0 or 1 time, not greedily.
+ #*#      - ^<wrap>Match 0 or more times, greedily.
+ #*?#     - ^<wrap>Match 0 or more times, not greedily.
+ #+#      - ^<wrap>Match 1 or more times, greedily.
+ #+?#     - ^<wrap>Match 1 or more times, not greedily
+ #{n}#    - ^<wrap>Match exactly n times.
+ #{n,}#   - ^<wrap>Match at least n times, greedily.
+ #{n,}?#  - ^<wrap>Match at least n times, not greedily.
+ #{n,m}#  - ^<wrap>Match at least n but not more than m times, greedily.
+ #{n,m}?# - ^<wrap>Match at least n but not more than m times, not greedily.
+ #{,m}#   - ^<wrap>equals to {0,m}
+ #{,m}?#  - ^<wrap>equals to {0,m}?
 
 
-    #"Greedy" and "not greedy" quantifiers#
+ #"Greedy" and "not greedy" quantifiers#
 
-    Greedy quantifier captures as much symbols as possible, and only if
-    further match fails, it "returns" the captured string (the rollback
+  Greedy quantifier captures as much symbols as possible, and only if
+further match fails, it "returns" the captured string (the rollback
 happens, which is rather expensive).
-    When expression "A.*Z" is matched to string
+  When expression "A.*Z" is matched to string
 "AZXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", #.*# captures the whole string, and then
 rolls back symbol by symbol until it finds Z. On the opposite, if the expression
 is "A.*?Z" then Z is found at once. Not greedy quantifier is also known as
 #mininizing#, it captures minimal possible quantity of symbols, and only if
 further match fails it captures more.
 
-    #Special symbols#
+ #Special symbols#
 
    Non-letter and non-digit symbol can be prepended by '#\#' in most cases,
 but in case of letters and digits this must be done with care because this is
 the way thew special symbols are written:
 
-    #.#    - ^<wrap>any symbol except carriage return. If there is “s” among
+ #.#    - ^<wrap>any symbol except carriage return. If there is “s” among
 the options then this can be any symbol.
-    #\t#   - tab (0x09)
-    #\n#   - new line (lf, 0x0a)
-    #\r#   - carriage return (cr, 0x0d)
-    #\f#   - form feed (0x0c)
-    #\a#   - bell (0x07)
-    #\e#   - escape (0x1b)
-    #\xNNNN# - hex character, where N - [0-9A-Fa-f].
-    #\Q#   - ^<wrap>the beginning of metacharacters quoting - the whole quoted
+ #\t#   - tab (0x09)
+ #\n#   - new line (lf, 0x0a)
+ #\r#   - carriage return (cr, 0x0d)
+ #\f#   - form feed (0x0c)
+ #\a#   - bell (0x07)
+ #\e#   - escape (0x1b)
+ #\xNNNN# - hex character, where N - [0-9A-Fa-f].
+ #\Q#   - ^<wrap>the beginning of metacharacters quoting - the whole quoted
 text is treated as text itself, not the regular expression
-    #\E#   - the end of metacharacters quoting
-    #\w#   - letter, digit or '_'.
-    #\W#   - not \w
-    #\s#   - space symbol (tab/space/lf/cr).
-    #\S#   - not \s
-    #\d#   - digit
-    #\D#   - not digit
-    #\i#   - letter
-    #\I#   - not letter
-    #\l#   - lower case symbol
-    #\L#   - not lower case symbol
-    #\u#   - upper case symbol
-    #\U#   - not upper case symbol
-    #\b#   - ^<wrap>the word margin - means that to the left or right from the
+ #\E#   - the end of metacharacters quoting
+ #\w#   - letter, digit or '_'.
+ #\W#   - not \w
+ #\s#   - space symbol (tab/space/lf/cr).
+ #\S#   - not \s
+ #\d#   - digit
+ #\D#   - not digit
+ #\i#   - letter
+ #\I#   - not letter
+ #\l#   - lower case symbol
+ #\L#   - not lower case symbol
+ #\u#   - upper case symbol
+ #\U#   - not upper case symbol
+ #\b#   - ^<wrap>the word margin - means that to the left or right from the
 current position there is a word symbol, and to the right or left,
 accordingly, there is non-word symbol
-    #\B#   - not \b
-    #\A#   - the beginning of the text, disregard the option “m”
-    #\Z#   - the end of the text, disregard the option “m”
-    #\O#   - ^<wrap>the no-return point. If the matching has passed by this symbol,
+ #\B#   - not \b
+ #\A#   - the beginning of the text, disregard the option “m”
+ #\Z#   - the end of the text, disregard the option “m”
+ #\O#   - ^<wrap>the no-return point. If the matching has passed by this symbol,
 it won't roll back and and will return "no match". It can be used in complex expressions
 after mandatory fragment with quantifier. This special symbol can be used when
 big amounts of data are processed.
-         Example:
-         /.*?name\O=(['"])(.*?)\1\O.*?value\O=(['"])(.*?)\3/
-         ^<wrap>Strings containing "name=", but not containing "value=", are processed (in fact, skipped) faster.
+      Example:
+      /.*?name\O=(['"])(.*?)\1\O.*?value\O=(['"])(.*?)\3/
+      ^<wrap>Strings containing "name=", but not containing "value=", are processed (in fact, skipped) faster.
 
-    #\NN#  - ^<wrap>reference to earlier matched parentheses . NN is an integer from 0 to 15.
+ #\NN#  - ^<wrap>reference to earlier matched parentheses . NN is an integer from 0 to 15.
 Each parentheses except (?:pattern), (?=pattern), (?!pattern), (?<=pattern) and (?<!pattern)
 have a number (in the order of appearance).
 
-         Example:
-         "(['"])hello\1" matches to "hello" or 'hello'.
+      Example:
+      "(['"])hello\1" matches to "hello" or 'hello'.
 
+ #\p{name}# - ^<wrap>reference to earlier matched parentheses with the specified #name#.
 
-    #Examples:#
+ #Examples:#
 
-    #/foobar/#
-       matches to "foobar", but not to "FOOBAR"
-    #/ FOO bar /ix#
-       matches to "foobar" and "FOOBAR"
-    #/(foo)?bar/#
-       matches to "foobar" and "bar"
-    #/^foobar$/#
-       matches to "foobar" only, but not to "foofoofoobarfoobar"
-    #/[\d\.]+/#
-       matches to any number with decimal point
-    #/(foo|bar)+/#
-       matches to "foofoofoobarfoobar" and "bar"
-    #/\Q.)))$\E/#
-       equals to "\.\)\)\)\$"
+ #/foobar/#
+    matches to "foobar", but not to "FOOBAR"
+ #/ FOO bar /ix#
+    matches to "foobar" and "FOOBAR"
+ #/(foo)?bar/#
+    matches to "foobar" and "bar"
+ #/^foobar$/#
+    matches to "foobar" only, but not to "foofoofoobarfoobar"
+ #/[\d\.]+/#
+    matches to any number with decimal point
+ #/(foo|bar)+/#
+    matches to "foofoofoobarfoobar" and "bar"
+ #/\Q.)))$\E/#
+    equals to "\.\)\)\)\$"
 
 @RegExpRepl
 $ #Regular expressions in replace#
-    In the "Replace with" line, one can use the following special replacement expressions:
+ In the "Replace with" line, one can use the following special replacement expressions:
 
-    #$N# or #${N}# (where N is one or more decimal digits)
-    These represent captured group numbers and are replaced with the matching text.
-    The numbers are assigned to the groups based on the sequence of opening
-    parentheses in the expression.
+ #$N# or #${N}# (where N is one or more decimal digits)
+ These represent captured group numbers and are replaced with the matching text.
+ The numbers are assigned to the groups based on the sequence of opening
+ parentheses in the expression.
 
-    #$0# represents the entire found sequence.
+ #$0# represents the entire found sequence.
 
-    #${name}# represents a named group whose name is "name".
+ #${name}# represents a named group whose name is "name".
 
-    The literal #$# and the literal #\# must be escaped
-    by prepending them with a backslash (i.e., #\$# and #\\\\#).
+ The literal #$# and the literal #\# must be escaped
+by prepending them with a backslash (i.e., #\$# and #\\\\#).
 
-    #\n# and #\r# are interpreted as line breaks, automatically adapting
-    to the end-of-line style used in the file. They function identically.
+ #\n# and #\r# are interpreted as line breaks, automatically adapting
+to the end-of-line style used in the file. They function identically.
 
-    #\t# is replaced with a tab character (0x09).
+ #\t# is replaced with a tab character (0x09).
 
-    #\xhhhh# (where hhhh is a sequence of 1 to 4 hexadecimal digits).
-    This will be replaced with a character of the specified value.
-    For example, \x50 will be replaced with the character P.
+ #\xhhhh# (where hhhh is a sequence of 1 to 4 hexadecimal digits).
+ This will be replaced with a character of the specified value.
+ For example, \x50 will be replaced with the character P.
 
-    #\L# - convert the following text to lower case
-    #\U# - convert the following text to upper case
-    #\l# - convert the next 1 character to lower case
-    #\u# - convert the next 1 character to upper case
-    #\E# - end the scope of the previous \L, \U, \l, \u directive
+ #\L# - convert the following text to lower case
+ #\U# - convert the following text to upper case
+ #\l# - convert the next 1 character to lower case
+ #\u# - convert the next 1 character to upper case
+ #\E# - end the scope of the previous \L, \U, \l, \u directive
 
 @ElevationDlg
 $ #Запрос привилегий администратора#

@@ -5501,6 +5501,17 @@ EditNotFound
 "Рядок не знайдено"
 "Радок не знойдзены"
 
+EditInvalidRegexp
+"Недопустимое регулярное выражение"
+"Invalid regular expression"
+"Neplatný regulární výraz"
+"Ungültiger regulärer Ausdruck"
+"Érvénytelen reguláris kifejezés"
+"Nieprawidłowe wyrażenie regularne"
+"Expresión regular no válida"
+"Неприпустимий регулярний вираз"
+"Недапушчальны рэгулярны выраз"
+
 EditAskReplace
 l:
 "Заменить"
