@@ -42,6 +42,16 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "strmix.hpp"
 #include "DlgGuid.hpp"
 
+static LONG_PTR WINAPI SearchReplaceDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
+{
+	if (Msg == DN_CLOSE && Param1 >= 0)
+	{
+		if (0 == SendDlgMessage(hDlg, DM_GETTEXTLENGTH, 2, 0)) // don't close dialog if search string is empty
+			return FALSE;
+	}
+	return DefDlgProc(hDlg, Msg, Param1, Param2);
+}
+
 int WINAPI GetSearchReplaceParams(
 		bool IsReplaceMode,
 		SearchReplaceDlgParams &Par,
@@ -209,7 +219,7 @@ int WINAPI GetSearchReplaceParams(
 		}
 
 		{
-			Dialog Dlg(ReplaceDlg,ARRAYSIZE(ReplaceDlgData));
+			Dialog Dlg(ReplaceDlg, ARRAYSIZE(ReplaceDlgData), SearchReplaceDlgProc);
 			Dlg.SetPosition(-1,-1,76,HeightDialog);
 			Dlg.SetId(EditorReplaceId);
 
@@ -311,7 +321,7 @@ int WINAPI GetSearchReplaceParams(
 			SearchDlg[8].Flags |= (DIF_DISABLE|DIF_HIDDEN);
 
 		{
-			Dialog Dlg(SearchDlg,ARRAYSIZE(SearchDlg));
+			Dialog Dlg(SearchDlg, ARRAYSIZE(SearchDlg), SearchReplaceDlgProc);
 			Dlg.SetPosition(-1,-1,76,HeightDialog);
 			Dlg.SetId(Par.Reverse >= 0 ? EditorSearchId : HelpSearchId);
 
@@ -343,28 +353,6 @@ int WINAPI GetSearchReplaceParams(
 	}
 
 	return TRUE;
-}
-
-
-// Функция для коррекции аля Shift-F4 Shift-Enter без отпускания Shift ;-)
-static LONG_PTR WINAPI GetStringDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2)
-{
-	/*
-	  if(Msg == DM_KEY)
-	  {
-	//    char KeyText[50];
-	//    KeyToText(Param2,KeyText);
-	//    _D(SysLog(L"%ls (0x%08X) ShiftPressed=%d",KeyText,Param2,ShiftPressed));
-	    if(ShiftPressed && (Param2 == KEY_ENTER||Param2 == KEY_NUMENTER) && !CtrlObject->Macro.IsExecuting())
-	    {
-	      DWORD Arr[1];
-	      Arr[0]=Param2 == KEY_ENTER?KEY_SHIFTENTER:KEY_SHIFTNUMENTER;
-	      SendDlgMessage(hDlg,Msg,Param1,(long)Arr);
-	      return TRUE;
-	    }
-	  }
-	*/
-	return DefDlgProc(hDlg,Msg,Param1,Param2);
 }
 
 
@@ -454,7 +442,7 @@ int WINAPI GetString(
 		StrDlg[2].strData = SrcText;
 
 	{
-		Dialog Dlg(StrDlg,ARRAYSIZE(StrDlg)-Substract,GetStringDlgProc);
+		Dialog Dlg(StrDlg,ARRAYSIZE(StrDlg)-Substract);
 		Dlg.SetPosition(-1,-1,76,offset+((Flags&FIB_BUTTONS)?8:6));
 
 		if (HelpTopic)
