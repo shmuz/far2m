@@ -5501,6 +5501,17 @@ EditNotFound
 "Рядок не знайдено"
 "Радок не знойдзены"
 
+EditEmptySearchField
+"Пустое поле поиска"
+"Search field is empty"
+"Vyhledávací pole je prázdné"
+"Suchfeld ist leer"
+"A keresőmező üres"
+"Pole wyszukiwania jest puste"
+"El campo de búsqueda está vacío"
+"Поле пошуку порожнє"
+"Поле пошуку пустое"
+
 EditInvalidRegexp
 "Недопустимое регулярное выражение"
 "Invalid regular expression"

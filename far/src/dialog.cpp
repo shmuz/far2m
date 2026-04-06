@@ -5836,9 +5836,7 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 
 				switch (Type) {
 					case DI_MEMOEDIT:
-						if (!CurItem->ObjPtr)
-							break;
-						{
+						if (CurItem->ObjPtr) {
 							FARString strData;
 							((DlgEdit *)(CurItem->ObjPtr))->GetString(strData);
 							Ptr = strData.CPtr();
