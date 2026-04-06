@@ -317,24 +317,6 @@ int LF_GetFindData(lua_State* L, HANDLE hPanel, struct PluginPanelItem **pPanelI
 	return FALSE;
 }
 
-int LF_GetVirtualFindData (lua_State* L, HANDLE hPanel, struct PluginPanelItem **pPanelItem,
-													 int *pItemsNumber, const wchar_t *Path)
-{
-	if (GetExportFunction(L, "GetVirtualFindData")) {   //+1: Func
-		PushPluginPair(L, hPanel);                 //+3: Func,Pair
-		push_utf8_string(L, Path, -1);             //+4: Func,Pair,Path
-		if (!pcall_msg(L, 3, 1)) {                 //+1: FindData
-			if (lua_istable(L, -1)) {
-				FillFindData(L, hPanel, pPanelItem, pItemsNumber); //+0
-				lua_gc(L, LUA_GCCOLLECT, 0);         //free memory taken by FindData
-				return TRUE;
-			}
-			lua_pop(L,1);
-		}
-	}
-	return FALSE;
-}
-
 static void free_find_data(lua_State* L, HANDLE hPanel, struct PluginPanelItem *PanelItems, int ItemsNumber)
 {
 	if (PanelItems) {
@@ -352,11 +334,6 @@ static void free_find_data(lua_State* L, HANDLE hPanel, struct PluginPanelItem *
 }
 
 void LF_FreeFindData(lua_State* L, HANDLE hPanel, struct PluginPanelItem *PanelItems, int ItemsNumber)
-{
-	free_find_data(L, hPanel, PanelItems, ItemsNumber);
-}
-
-void LF_FreeVirtualFindData(lua_State* L, HANDLE hPanel, struct PluginPanelItem *PanelItems, int ItemsNumber)
 {
 	free_find_data(L, hPanel, PanelItems, ItemsNumber);
 }

@@ -170,22 +170,6 @@ LUAPLUG int DeleteFilesW(HANDLE hPlugin, struct PluginPanelItem *PanelItem,
 #endif
 //---------------------------------------------------------------------------
 
-#if defined(EXPORT_GETVIRTUALFINDDATA) || defined(EXPORT_ALL)
-LUAPLUG int GetVirtualFindDataW(HANDLE hPlugin,
-	struct PluginPanelItem **pPanelItem, int *pItemsNumber, const wchar_t *Path)
-{
-	if (LS) return LF_GetVirtualFindData(LS,hPlugin,pPanelItem,pItemsNumber,Path);
-	return FALSE;
-}
-
-LUAPLUG void FreeVirtualFindDataW(HANDLE hPlugin,
-	struct PluginPanelItem *PanelItem, int ItemsNumber)
-{
-	if (LS) LF_FreeVirtualFindData(LS, hPlugin, PanelItem, ItemsNumber);
-}
-#endif
-//---------------------------------------------------------------------------
-
 #if defined(EXPORT_MAKEDIRECTORY) || defined(EXPORT_ALL)
 LUAPLUG int MakeDirectoryW(HANDLE hPlugin, const wchar_t **Name, int OpMode)
 {
