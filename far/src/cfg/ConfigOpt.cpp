@@ -801,13 +801,15 @@ void ConfigOptSave(bool Ask, int SaveWhat)
 	if (Ask && Message(0,2,Msg::SaveSetupTitle,Msg::SaveSetupAsk1,Msg::SaveSetupAsk2,Msg::SaveSetup,Msg::Cancel))
 		return;
 
-	WINPORT(SaveConsoleWindowState)();
-
 	/* <ПРЕПРОЦЕССЫ> *************************************************** */
-	if (SaveWhat & OST_PANELS) {
-		SavePanelsToOpt();
+	if (SaveWhat & OST_COMMON)
+	{
+		WINPORT(SaveConsoleWindowState)();
+		CtrlObject->HiFiles->SaveHiData();
 	}
-	CtrlObject->HiFiles->SaveHiData();
+
+	if (SaveWhat & OST_PANELS)
+		SavePanelsToOpt();
 
 	ConfigWriter cfg_writer;
 
@@ -840,12 +842,15 @@ void ConfigOptSave(bool Ask, int SaveWhat)
 	}
 
 	/* <ПОСТПРОЦЕССЫ> *************************************************** */
-	FileFilter::SaveFilters(cfg_writer);
-	FileList::SavePanelModes(cfg_writer);
+	if (SaveWhat & OST_COMMON)
+	{
+		FileFilter::SaveFilters(cfg_writer);
+		FileList::SavePanelModes(cfg_writer);
 
-	if (Ask)
-		CtrlObject->Macro.SaveMacros();
+		if (Ask)
+			CtrlObject->Macro.SaveMacros();
 
-	FarColors::SaveFarColors();
+		FarColors::SaveFarColors();
+	}
 	/* *************************************************** </ПОСТПРОЦЕССЫ> */
 }
