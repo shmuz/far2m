@@ -913,6 +913,7 @@ local function test_Far_GetConfig()
     "Screen.ScreenSaverTime",
     "Screen.ViewerEditorClock",
     "System.AllCtrlAltShiftRule",
+    "System.AutoSavePanels",
     "System.AutoSaveSetup",
     "System.AutoUpdateRemoteDrive",
     "System.CASRule",

@@ -428,6 +428,7 @@ struct Options
 	FARString strQuotedSymbols;
 	DWORD QuotedName;
 	int AutoSaveSetup;
+	int AutoSavePanels;
 	int ChangeDriveMode;
 	int ChangeDriveDisconnectMode;
 	FARString ChangeDriveExceptions;

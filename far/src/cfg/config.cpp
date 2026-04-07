@@ -165,6 +165,7 @@ void SystemSettings()
 	Builder.AddSeparator();
 
 	Builder.AddCheckbox(Msg::ConfigAutoSave, &Opt.AutoSaveSetup);
+	Builder.AddCheckbox(Msg::ConfigAutoSavePanels, &Opt.AutoSavePanels);
 	Builder.AddOKCancel();
 
 	if (Builder.ShowDialog()) {

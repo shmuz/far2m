@@ -1956,6 +1956,17 @@ ConfigAutoSave
 "Автозапис кон&фігурації"
 "А&ўтазапіс наладаў"
 
+ConfigAutoSavePanels
+"Автосохранение состояния панелей"
+"Auto-save panels state"
+"Ukládat stav panelů"
+"Panelzustand autospeichern"
+"Panelek állapot-mentése"
+"Autozapis stanu paneli"
+"Auto-guardar estado de paneles"
+"Автозбереження стану панелей"
+"Аўтазахаванне стану панэлей"
+
 ConfigPanelTitle
 l:
 "Настройки панели"

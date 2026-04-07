@@ -43,7 +43,7 @@ enum OPT_TYPE {
 };
 
 struct GetConfig {
-	bool IsSave;
+	int IsSave;
 	OPT_TYPE ValType;
 	FARString KeyName;
 	FARString ValName;
@@ -59,11 +59,16 @@ struct GetConfig {
 	DWORD binSize;
 };
 
+enum OptSaveType {
+	OST_COMMON = 0x01,
+	OST_PANELS = 0x02,
+};
+
 void ConfigOptAssertLoaded();
 int  ConfigOptGetIndex(const wchar_t *wKeyName);
 bool ConfigOptGetValue(size_t Index, GetConfig& Data);
 void ConfigOptLoad();
-void ConfigOptSave(bool Ask);
+void ConfigOptSave(bool Ask, int SaveWhat = OST_COMMON);
 bool ConfigOptSetBinary(size_t Index, const void *Data, DWORD Size);
 bool ConfigOptSetInteger(size_t Index, DWORD Value);
 bool ConfigOptSetString(size_t Index, const wchar_t *Value);
