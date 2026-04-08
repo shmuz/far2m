@@ -58,6 +58,9 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "udlist.hpp"
 #include "vtshell.h"
 
+static void SetCustomSettings(const char *arg);
+static const char EnvFarSettings[] = "FARSETTINGS"; // used in utils/src/InMy.cpp
+
 static void print_help(const char *self)
 {
 	printf("FAR2M - dual-panel file manager with built-in terminal\n"
@@ -441,8 +444,7 @@ int FarAppMain(int argc, char **argv)
 						else
 						{
 							Opt.OnlyEditorViewerUsed = Options::ONLY_EDITOR;
-							Opt.strEditViewArg = argv[I+1];
-							I++;
+							Opt.strEditViewArg = argv[++I];
 						}
 					}
 					else { // -e without filename => new file to editor
@@ -469,8 +471,7 @@ int FarAppMain(int argc, char **argv)
 						else
 						{
 							Opt.OnlyEditorViewerUsed = Options::ONLY_VIEWER;
-							Opt.strEditViewArg = argv[I+1];
-							I++;
+							Opt.strEditViewArg = argv[++I];
 						}
 					}
 					break;
@@ -522,8 +523,7 @@ int FarAppMain(int argc, char **argv)
 					}
 					else if (Upper(arg_w[2]) == L'D' && !arg_w[3]) {
 						if (I + 1 < argc) {
-							I++;
-							arg_w = MB2Wide(argv[I]);
+							arg_w = MB2Wide(argv[++I]);
 							switchHandled = false;
 						}
 					}
@@ -531,6 +531,12 @@ int FarAppMain(int argc, char **argv)
 
 				case L'W':
 					Opt.WindowMode=TRUE;
+					break;
+
+				case L'U':
+					if (I + 1 < argc) {
+						SetCustomSettings(argv[++I]);
+					}
 					break;
 			}
 		}
@@ -680,7 +686,8 @@ static void SetCustomSettings(const char *arg)
 
 	if (!refined.empty()) {
 		// could use FARPROFILE/FARLOCALPROFILE for that but it would be abusing
-		setenv("FARSETTINGS", refined.c_str(), 1);
+		setenv(EnvFarSettings, refined.c_str(), 1);
+		InMyPathChanged();
 	}
 }
 
@@ -720,26 +727,11 @@ int _cdecl main(int argc, char *argv[])
 		}
 	}
 
-	unsetenv("FARSETTINGS"); // don't inherit from parent process in any case
+	unsetenv(EnvFarSettings); // don't inherit from parent process in any case
 
 	const char *askpass = getenv("SUDO_ASKPASS");
 	if (askpass && strstr(askpass, "far2l_askpass")) {
 		unsetenv("SUDO_ASKPASS"); // far2m is run from far2l
-	}
-
-	// Custom settings
-	for (int i = 1; i < argc; ) {
-		if (!strcasecmp(argv[i], "-u")) {
-			if (i < argc - 1) {
-				SetCustomSettings(argv[i+1]);
-				RemoveArgs(i, 2);
-			}
-			else {
-				RemoveArgs(i, 1);
-			}
-		}
-		else
-			++i;
 	}
 
 	setlocale(LC_ALL, "");//otherwise non-latin keys missing with XIM input method
