@@ -71,7 +71,6 @@ static const wchar_t szCtrlDot[]=L"Ctrl.";
 static const wchar_t szCtrlShiftDot[]=L"CtrlShift.";
 
 // KeyName
-static const char NParamHistoryCount[] = "HistoryCount";
 static const char NSecCmdline[] = "Cmdline";
 static const char NSecCodePages[] = "CodePages";
 static const char NSecColors[] = "Colors";
@@ -101,6 +100,17 @@ static const char NSecSystem[] = "System";
 static const char NSecViewer[] = "Viewer";
 static const char NSecVMenu[] = "VMenu";
 static const char NSecXLat[] = "XLat";
+
+// ValName
+static const char NParamAutoSavePanels[] = "AutoSavePanels";
+static const char NParamAutoSaveSetup[] = "AutoSaveSetup";
+static const char NParamHistoryCount[] = "HistoryCount";
+
+enum OptSaveType {
+	OST_NONE   = 0,
+	OST_COMMON = 0x01,
+	OST_PANELS = 0x02,
+};
 
 // Структура, описывающая всю конфигурацию(!)
 struct FARConfig
@@ -286,8 +296,8 @@ static FARConfig CFG[]
 	{0x1, NSecSystem, "SaveFoldersHistory",           &Opt.SaveFoldersHistory, 1, OPT_BOOLEAN},
 	{0x0, NSecSystem, "SavePluginFoldersHistory",     &Opt.SavePluginFoldersHistory, 0, OPT_BOOLEAN},
 	{0x1, NSecSystem, "SaveViewHistory",              &Opt.SaveViewHistory, 1, OPT_BOOLEAN},
-	{0x1, NSecSystem, "AutoSaveSetup",                &Opt.AutoSaveSetup, 0, OPT_BOOLEAN},
-	{0x1, NSecSystem, "AutoSavePanels",               &Opt.AutoSavePanels, 0, OPT_BOOLEAN},
+	{0x1, NSecSystem, NParamAutoSaveSetup,            &Opt.AutoSaveSetup, 0, OPT_BOOLEAN},
+	{0x1, NSecSystem, NParamAutoSavePanels,           &Opt.AutoSavePanels, 0, OPT_BOOLEAN},
 	{0x1, NSecSystem, "DeleteToRecycleBin",           &Opt.DeleteToRecycleBin, 0, OPT_BOOLEAN},
 	{0x1, NSecSystem, "DeleteToRecycleBinKillLink",   &Opt.DeleteToRecycleBinKillLink, 1, OPT_BOOLEAN},
 	{0x0, NSecSystem, "WipeSymbol",                   &Opt.WipeSymbol, 0},
@@ -796,19 +806,34 @@ static void SavePanelsToOpt()
 	RightPanel->GetCurBaseName(Opt.strRightCurFile);
 }
 
-void ConfigOptSave(bool Ask, int SaveWhat)
+// Saved instantly when the "System Settings" dialog is accepted.
+void ConfigOptSaveAutoOptions()
 {
+	ConfigWriter cfg_writer;
+	cfg_writer.SelectSection(NSecSystem);
+	cfg_writer.SetUInt(NParamAutoSaveSetup, Opt.AutoSaveSetup);
+	cfg_writer.SetUInt(NParamAutoSavePanels, Opt.AutoSavePanels);
+}
+
+void ConfigOptSave(bool Ask)
+{
+	const int SaveFlags = (Ask || Opt.AutoSaveSetup)
+			? (OST_COMMON | OST_PANELS) : Opt.AutoSavePanels ? OST_PANELS : 0;
+
+	if (SaveFlags == OST_NONE)
+		return;
+
 	if (Ask && Message(0,2,Msg::SaveSetupTitle,Msg::SaveSetupAsk1,Msg::SaveSetupAsk2,Msg::SaveSetup,Msg::Cancel))
 		return;
 
 	/* <ПРЕПРОЦЕССЫ> *************************************************** */
-	if (SaveWhat & OST_COMMON)
+	if (SaveFlags & OST_COMMON)
 	{
 		WINPORT(SaveConsoleWindowState)();
 		CtrlObject->HiFiles->SaveHiData();
 	}
 
-	if (SaveWhat & OST_PANELS)
+	if (SaveFlags & OST_PANELS)
 		SavePanelsToOpt();
 
 	ConfigWriter cfg_writer;
@@ -818,7 +843,7 @@ void ConfigOptSave(bool Ask, int SaveWhat)
 
 	for (size_t I=0; I < ARRAYSIZE(CFG); ++I)
 	{
-		if (CFG[I].IsSave & SaveWhat)
+		if (CFG[I].IsSave & SaveFlags)
 		{
 			cfg_writer.SelectSection(CFG[I].KeyName);
 			switch (CFG[I].ValType)
@@ -842,7 +867,7 @@ void ConfigOptSave(bool Ask, int SaveWhat)
 	}
 
 	/* <ПОСТПРОЦЕССЫ> *************************************************** */
-	if (SaveWhat & OST_COMMON)
+	if (SaveFlags & OST_COMMON)
 	{
 		FileFilter::SaveFilters(cfg_writer);
 		FileList::SavePanelModes(cfg_writer);

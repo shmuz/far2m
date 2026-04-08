@@ -38,6 +38,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "cmdline.hpp"
 #include "colors.hpp"
 #include "config.hpp"
+#include "ConfigOpt.hpp"
 #include "ctrlobj.hpp"
 #include "datetime.hpp"
 #include "DialogBuilder.hpp"
@@ -169,6 +170,7 @@ void SystemSettings()
 	Builder.AddOKCancel();
 
 	if (Builder.ShowDialog()) {
+		ConfigOptSaveAutoOptions();
 		SanitizeHistoryCounts();
 		ApplySudoConfiguration();
 	}

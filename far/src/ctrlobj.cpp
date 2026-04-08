@@ -149,10 +149,7 @@ ControlObject::~ControlObject()
 	_OT(SysLog(L"[%p] ControlObject::~ControlObject()", this));
 
 	if (Cp() && Cp()->ActivePanel) {
-		if (Opt.AutoSaveSetup)
-			ConfigOptSave(false, OST_COMMON | OST_PANELS);
-		else if (Opt.AutoSavePanels)
-			ConfigOptSave(false, OST_PANELS);
+		ConfigOptSave(false);
 
 		if (Cp()->ActivePanel->GetMode() != PLUGIN_PANEL) {
 			FARString strCurDir;
