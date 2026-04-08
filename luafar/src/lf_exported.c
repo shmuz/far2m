@@ -856,11 +856,7 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 		case OPEN_DIALOG:
 		{
 			struct OpenDlgPluginData *data = (struct OpenDlgPluginData*)Item;
-			if (GetPluginData(L)->PluginId == LuamacroId)
-				lua_pushlstring(L, (const char*)&data->ItemGuid, sizeof(GUID));
-			else
-				lua_pushinteger(L, data->ItemNumber);
-
+			lua_pushlstring(L, (const char*)&data->ItemGuid, sizeof(GUID));
 			lua_createtable(L, 0, 1);
 			NewDialogData(L, data->hDlg, FALSE);
 			lua_setfield(L, -2, "hDlg");

@@ -43,7 +43,6 @@ LUAPLUG void SetStartupInfoW(const struct PluginStartupInfo *aInfo)
 
 	PluginData.ModuleName    = aInfo->ModuleName;
 	PluginData.ModuleNumber  = aInfo->ModuleNumber;
-	PluginData.RootKey       = aInfo->RootKey;
 	PluginData.Private       = aInfo->Private;
 	PluginData.DlgProc       = DlgProc;
 	PluginData.PluginId      = globInfo.SysID;

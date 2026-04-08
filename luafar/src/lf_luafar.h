@@ -27,7 +27,6 @@ typedef struct
 {
 	const wchar_t* ModuleName;   // copied from PluginStartupInfo
 	INT_PTR        ModuleNumber; // +
-	const wchar_t* RootKey;      // +
 	const void*    Private;      // +
 
 	DWORD          PluginId;

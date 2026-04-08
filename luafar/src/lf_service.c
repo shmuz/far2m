@@ -366,10 +366,9 @@ static int Dialog_getvalue(lua_State *L, int pos, HANDLE *target)
 {
 	if (lua_type(L, pos) == LUA_TUSERDATA)
 	{
-		int equal;
 		lua_getmetatable(L, pos);
 		luaL_getmetatable(L, FarDialogType);
-		equal = lua_rawequal(L, -1, -2);
+		int equal = lua_rawequal(L, -1, -2);
 		lua_pop(L, 2);
 		if (equal && target)
 		{
@@ -629,12 +628,11 @@ void PushPanelItems(lua_State *L, HANDLE handle, const struct PluginPanelItem *P
 
 static int far_PluginStartupInfo(lua_State *L)
 {
-	const wchar_t *slash;
 	TPluginData *pd = GetPluginData(L);
 	lua_createtable(L, 0, 5);
 	PutWStrToTable(L, "ModuleName", pd->ModuleName, -1);
 
-	slash = wcsrchr(pd->ModuleName, GOOD_SLASH);
+	const wchar_t *slash = wcsrchr(pd->ModuleName, GOOD_SLASH);
 	if (slash)
 		PutWStrToTable(L, "ModuleDir", pd->ModuleName, slash - pd->ModuleName);
 
@@ -934,7 +932,7 @@ static int editor_InsertTextW(lua_State *L)
 	(void)luaL_checkstring(L,2);
 	int redraw = lua_toboolean(L,3);
 	lua_pushvalue(L,2);
-	lua_pushlstring(L, "\0\0\0\0", 4);
+	lua_pushlstring(L, "\0\0\0\0", sizeof(wchar_t));
 	lua_concat(L,2);
 	int res = PSInfo.EditorControlV2(EditorId, ECTL_INSERTTEXT_V2, (void*)lua_tostring(L,-1));
 	if (res && redraw)
@@ -959,9 +957,8 @@ static int editor_DeleteBlock(lua_State *L)
 
 static int editor_UndoRedo(lua_State *L)
 {
-	struct EditorUndoRedo eur;
+	struct EditorUndoRedo eur = {};
 	int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
-	memset(&eur, 0, sizeof(eur));
 	eur.Command = check_env_flag(L, 2);
 	return lua_pushboolean (L, PSInfo.EditorControlV2(EditorId, ECTL_UNDOREDO, &eur)), 1;
 }
@@ -1046,9 +1043,8 @@ static int viewer_SetKeyBar(lua_State *L)
 
 static int editor_SetParam(lua_State *L)
 {
-	struct EditorSetParameter esp;
+	struct EditorSetParameter esp = {};
 	int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
-	memset(&esp, 0, sizeof(esp));
 	wchar_t buf[256];
 	esp.Type = check_env_flag(L,2);
 	//-----------------------------------------------------
