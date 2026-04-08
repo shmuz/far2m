@@ -534,7 +534,7 @@ int FarAppMain(int argc, char **argv)
 					break;
 
 				case L'U':
-					if (I + 1 < argc) {
+					if (arg_w[2] == 0 && (I + 1) < argc) {
 						SetCustomSettings(argv[++I]);
 					}
 					break;
