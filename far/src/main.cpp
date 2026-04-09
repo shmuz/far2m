@@ -58,7 +58,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "udlist.hpp"
 #include "vtshell.h"
 
-static void SetCustomSettings(const char *arg);
 static const char EnvFarSettings[] = "FARSETTINGS"; // used in utils/src/InMy.cpp
 
 static void print_help(const char *self)
@@ -532,12 +531,6 @@ int FarAppMain(int argc, char **argv)
 				case L'W':
 					Opt.WindowMode=TRUE;
 					break;
-
-				case L'U':
-					if (arg_w[2] == 0 && (I + 1) < argc) {
-						SetCustomSettings(argv[++I]);
-					}
-					break;
 			}
 		}
 		if (!switchHandled) // простые параметры. Их может быть max две штукА.
@@ -687,7 +680,6 @@ static void SetCustomSettings(const char *arg)
 	if (!refined.empty()) {
 		// could use FARPROFILE/FARLOCALPROFILE for that but it would be abusing
 		setenv(EnvFarSettings, refined.c_str(), 1);
-		InMyPathChanged();
 	}
 }
 
@@ -732,6 +724,21 @@ int _cdecl main(int argc, char *argv[])
 	const char *askpass = getenv("SUDO_ASKPASS");
 	if (askpass && strstr(askpass, "far2l_askpass")) {
 		unsetenv("SUDO_ASKPASS"); // far2m is run from far2l
+	}
+
+	// Custom settings
+	for (int i = 1; i < argc; ) {
+		if (!strcasecmp(argv[i], "-u")) {
+			if (i < argc - 1) {
+				SetCustomSettings(argv[i+1]);
+				RemoveArgs(i, 2);
+			}
+			else {
+				RemoveArgs(i, 1);
+			}
+		}
+		else
+			++i;
 	}
 
 	setlocale(LC_ALL, "");//otherwise non-latin keys missing with XIM input method
