@@ -382,167 +382,133 @@ int FarAppMain(int argc, char **argv)
 
 	for (int I=1; I<argc; I++)
 	{
-		if (strncmp(argv[I], "--", 2) == 0) {
+		if (strncmp(argv[I], "--", 2) == 0)
 			continue; // 2024-Jul-06: --primary-selection, --maximize and --nomaximize may appear here
-		}
-		std::wstring arg_w = MB2Wide(argv[I]);
+
 		bool switchHandled = false;
-		if (arg_w[0]==L'-' && arg_w[1])
+		FARString arg_w = argv[I];
+		size_t argLen = arg_w.GetLength();
+		if (arg_w[0] == L'-' && argLen > 1)
 		{
 			switchHandled = true;
-			if (!StrCmpNI(arg_w.c_str() + 1, L"SET:", 4))
-			{
-				Opt.CmdLineStrings.emplace_back(arg_w.c_str() + 5);
-				continue;
+			FARString argUpper = arg_w.Upper();
+
+			if (argUpper == L"-A")
+				Opt.CleanAscii = TRUE;
+
+			else if (argUpper == L"-AG")
+				Opt.NoGraphics = TRUE;
+
+			else if (argUpper == L"-AN")
+				Opt.NoBoxes = TRUE;
+
+			else if (argUpper == L"-CD") {
+				if (I + 1 < argc) {
+					arg_w = argv[++I];
+					switchHandled = false;
+				}
 			}
-			switch (Upper(arg_w[1]))
+
+			else if (argUpper == L"-CO")
+				Opt.LoadPlug.PluginsCacheOnly = TRUE;
+
+			else if (argUpper == L"-I")
+				Opt.SmallIcon = TRUE;
+
+			else if (argUpper == L"-M")
+				Opt.Macro.DisableMacro |= MDOL_ALL;
+
+			else if (argUpper == L"-MA")
+				Opt.Macro.DisableMacro |= MDOL_AUTOSTART;
+
+			else if (argUpper == L"-W")
+				Opt.WindowMode = TRUE;
+
+			else if (argUpper.Begins(L"-SET:"))
+				Opt.CmdLineStrings.emplace_back(arg_w.CPtr() + 5);
+
+			else if (argUpper.Begins(L"-E"))
 			{
-				case L'A':
-					switch (Upper(arg_w[2]))
-					{
-						case 0:
-							Opt.CleanAscii=TRUE;
-							break;
+				if (Opt.OnlyEditorViewerUsed != Options::INCLUDING_PANELS) { //skip as already handled
+					if (strcmp(argv[++I], "-") == 0) break;
+					continue;
+				}
 
-						case L'G':
-							if (!arg_w[3])
-								Opt.NoGraphics=TRUE;
-							break;
-
-						case L'N':
-							if (!arg_w[3])
-								Opt.NoBoxes=TRUE;
-							break;
+				if (argLen > 2) {
+					unsigned int stLine, stChar;
+					int N = sscanf(argv[I] + 2, "%u:%u", &stLine, &stChar);
+					if (N > 0) {
+						StartLine = stLine;
+						if (N > 1) StartChar = stChar;
 					}
-					break;
+					else continue;
+				}
 
-				case L'E':
-					if (Opt.OnlyEditorViewerUsed != Options::INCLUDING_PANELS) //skip as already handled
-					{
-						I = (strcmp(argv[I+1], "-") == 0) ? argc : I + 1;
+				if (I+1 < argc) {
+					if (strcmp(argv[I+1], "-") == 0) {
+						Opt.OnlyEditorViewerUsed = Options::ONLY_EDITOR_ON_CMDOUT;
+						Opt.strEditViewArg = ReconstructCommandLine(argc - I - 2, &argv[I+2]);
 						break;
 					}
+					Opt.OnlyEditorViewerUsed = Options::ONLY_EDITOR;
+					Opt.strEditViewArg = argv[++I];
+				}
+				else { // -e without filename => new file to editor
+					Opt.OnlyEditorViewerUsed = Options::ONLY_EDITOR;
+					Opt.strEditViewArg.Clear();
+				}
+			}
 
-					if (iswdigit(arg_w[2]))
-					{
-						auto ptr = arg_w.data() + 2;
-						StartLine = _wtoi(ptr);
-						auto ChPtr = wcschr(ptr, L':');
-						if (ChPtr)
-							StartChar = _wtoi(ChPtr+1);
-					}
+			else if (argUpper == L"-V")
+			{
+				if (Opt.OnlyEditorViewerUsed != Options::INCLUDING_PANELS) { //skip as already handled
+					if (strcmp(argv[++I], "-") == 0) break;
+					continue;
+				}
 
-					if (I+1 < argc)
-					{
-						if (strcmp(argv[I+1], "-") == 0)
-						{
-							Opt.OnlyEditorViewerUsed = Options::ONLY_EDITOR_ON_CMDOUT;
-							Opt.strEditViewArg = ReconstructCommandLine(argc - I - 2, &argv[I+2]);
-							I = argc;
-						}
-						else
-						{
-							Opt.OnlyEditorViewerUsed = Options::ONLY_EDITOR;
-							Opt.strEditViewArg = argv[++I];
-						}
-					}
-					else { // -e without filename => new file to editor
-						Opt.OnlyEditorViewerUsed = Options::ONLY_EDITOR;
-						Opt.strEditViewArg.Clear();
-					}
-					break;
-
-				case L'V':
-					if (Opt.OnlyEditorViewerUsed != Options::INCLUDING_PANELS) //skip as already handled
-					{
-						I = (strcmp(argv[I+1], "-") == 0) ? argc : I + 1;
+				if (I+1 < argc) {
+					if (strcmp(argv[I+1], "-") == 0) {
+						Opt.OnlyEditorViewerUsed = Options::ONLY_VIEWER_ON_CMDOUT;
+						Opt.strEditViewArg = ReconstructCommandLine(argc - I - 2, &argv[I+2]);
 						break;
 					}
+					Opt.OnlyEditorViewerUsed = Options::ONLY_VIEWER;
+					Opt.strEditViewArg = argv[++I];
+				}
+			}
 
-					if (I+1 < argc)
+			else if (argUpper.Begins(L"-P"))
+			{
+				bCustomPlugins = true;
+				if (argLen > 2)
+				{
+					UserDefinedList Udl(ULF_UNIQUE | ULF_CASESENSITIVE, L":");
+					if (Udl.Set(arg_w.CPtr() + 2))
 					{
-						if (strcmp(argv[I+1], "-") == 0)
+						for (size_t i=0; i < Udl.Size(); i++)
 						{
-							Opt.OnlyEditorViewerUsed = Options::ONLY_VIEWER_ON_CMDOUT;
-							Opt.strEditViewArg = ReconstructCommandLine(argc - I - 2, &argv[I+2]);
-							I = argc;
-						}
-						else
-						{
-							Opt.OnlyEditorViewerUsed = Options::ONLY_VIEWER;
-							Opt.strEditViewArg = argv[++I];
-						}
-					}
-					break;
-
-				case L'M':
-					switch (Upper(arg_w[2]))
-					{
-						case 0:
-							Opt.Macro.DisableMacro|=MDOL_ALL;
-							break;
-
-						case L'A':
-							if (!arg_w[3])
-								Opt.Macro.DisableMacro|=MDOL_AUTOSTART;
-							break;
-					}
-					break;
-
-				case L'I':
-					Opt.SmallIcon=TRUE;
-					break;
-
-				case L'P':
-					bCustomPlugins = true;
-					if (arg_w[2])
-					{
-						UserDefinedList Udl(ULF_UNIQUE | ULF_CASESENSITIVE, L":");
-						if (Udl.Set(arg_w.data() + 2))
-						{
-							for (size_t i=0; i < Udl.Size(); i++)
-							{
-								FARString path = Udl.Get(i);
-								apiExpandEnvironmentStrings(path, path);
-								// Unquote(path);
-								ConvertNameToFull(path, path);
-								if (!Opt.LoadPlug.strCustomPluginsPath.IsEmpty()) {
-									Opt.LoadPlug.strCustomPluginsPath += L':';
-								}
-								Opt.LoadPlug.strCustomPluginsPath += path;
+							FARString path = Udl.Get(i);
+							apiExpandEnvironmentStrings(path, path);
+							// Unquote(path);
+							ConvertNameToFull(path, path);
+							if (!Opt.LoadPlug.strCustomPluginsPath.IsEmpty()) {
+								Opt.LoadPlug.strCustomPluginsPath += L':';
 							}
+							Opt.LoadPlug.strCustomPluginsPath += path;
 						}
 					}
-					break;
-
-				case L'C':
-					if (Upper(arg_w[2])==L'O' && !arg_w[3])
-					{
-						Opt.LoadPlug.PluginsCacheOnly=TRUE;
-					}
-					else if (Upper(arg_w[2]) == L'D' && !arg_w[3]) {
-						if (I + 1 < argc) {
-							arg_w = MB2Wide(argv[++I]);
-							switchHandled = false;
-						}
-					}
-					break;
-
-				case L'W':
-					Opt.WindowMode=TRUE;
-					break;
+				}
 			}
 		}
+
 		if (!switchHandled) // простые параметры. Их может быть max две штукА.
 		{
 			if (CntDestName < 2)
 			{
-				if (IsPluginPrefixPath(arg_w.c_str()))
-				{
-					DestNames[CntDestName++] = arg_w.c_str();
+				if (IsPluginPrefixPath(arg_w)) {
+					DestNames[CntDestName++] = arg_w;
 				}
-				else
-				{
+				else {
 					FARString tmpStr = arg_w;
 					ConvertNameToFull(tmpStr, tmpStr);
 					if (apiGetFileAttributes(tmpStr) != INVALID_FILE_ATTRIBUTES)
