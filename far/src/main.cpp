@@ -388,7 +388,7 @@ int FarAppMain(int argc, char **argv)
 		bool switchHandled = false;
 		FARString arg_w = argv[I];
 		size_t argLen = arg_w.GetLength();
-		if (arg_w[0] == L'-' && argLen > 1)
+		if (argLen > 1 && arg_w[0] == L'-')
 		{
 			switchHandled = true;
 			FARString argUpper = arg_w.Upper();
@@ -430,7 +430,7 @@ int FarAppMain(int argc, char **argv)
 			else if (argUpper.Begins(L"-E"))
 			{
 				if (Opt.OnlyEditorViewerUsed != Options::INCLUDING_PANELS) { //skip as already handled
-					if (strcmp(argv[++I], "-") == 0) break;
+					if (++I == argc || strcmp(argv[I], "-") == 0) break;
 					continue;
 				}
 
@@ -462,7 +462,7 @@ int FarAppMain(int argc, char **argv)
 			else if (argUpper == L"-V")
 			{
 				if (Opt.OnlyEditorViewerUsed != Options::INCLUDING_PANELS) { //skip as already handled
-					if (strcmp(argv[++I], "-") == 0) break;
+					if (++I == argc || strcmp(argv[I], "-") == 0) break;
 					continue;
 				}
 
