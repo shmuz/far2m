@@ -596,13 +596,14 @@ void LF_GetOpenPanelInfo(lua_State* L, HANDLE hPlugin, struct OpenPluginInfo *aI
 				if (lua_istable(L, -1)) {                //+6: Info,Tbl,Coll,Info,Modes,Mode
 					pm->ColumnTypes  = AddStringToCollectorField(L, cpos, "ColumnTypes");
 					pm->ColumnWidths = AddStringToCollectorField(L, cpos, "ColumnWidths");
-					pm->FullScreen   = (int)GetOptBoolFromTable(L, "FullScreen", FALSE);
-					pm->DetailedStatus  = GetOptIntFromTable(L, "DetailedStatus", 0);
-					pm->AlignExtensions = GetOptIntFromTable(L, "AlignExtensions", 0);
-					pm->CaseConversion  = (int)GetOptBoolFromTable(L, "CaseConversion", FALSE);
 					pm->StatusColumnTypes  = AddStringToCollectorField(L, cpos, "StatusColumnTypes");
 					pm->StatusColumnWidths = AddStringToCollectorField(L, cpos, "StatusColumnWidths");
 					pm->ColumnTitles = (const wchar_t* const*)CreateStringsArray(L, cpos, "ColumnTitles", NULL);
+					flags_t Flags = GetFlagsFromTable (L, -1, "Flags");
+					pm->FullScreen      = (Flags & PMFLAGS_FULLSCREEN)      ? 1 : 0;
+					pm->DetailedStatus  = (Flags & PMFLAGS_DETAILEDSTATUS)  ? 1 : 0;
+					pm->AlignExtensions = (Flags & PMFLAGS_ALIGNEXTENSIONS) ? 1 : 0;
+					pm->CaseConversion  = (Flags & PMFLAGS_CASECONVERSION)  ? 1 : 0;
 				}
 			}
 		}

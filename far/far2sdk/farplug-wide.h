@@ -2601,14 +2601,23 @@ struct PluginInfo
 	const GUID *PluginConfigGuids;
 };
 
-
-
 struct InfoPanelLine
 {
 	const wchar_t *Text;
 	const wchar_t *Data;
 	int  Separator;
 };
+
+#ifdef LUAFAR_INTERNALS    // luafar only; use 53 bits at most
+enum PANELMODE_FLAGS
+{
+	PMFLAGS_FULLSCREEN      = 0x00000001,
+	PMFLAGS_DETAILEDSTATUS  = 0x00000002,
+	PMFLAGS_ALIGNEXTENSIONS = 0x00000004,
+	PMFLAGS_CASECONVERSION  = 0x00000008,
+	PMFLAGS_NONE            = 0,
+};
+#endif
 
 struct PanelMode
 {

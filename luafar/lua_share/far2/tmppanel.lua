@@ -885,12 +885,12 @@ function Panel:GetOpenPanelInfo (Handle)
     ColumnWidths = self.Opt.ColumnWidths,
     StatusColumnTypes = self.Opt.StatusColumnTypes,
     StatusColumnWidths = self.Opt.StatusColumnWidths,
-    CaseConversion = true,
+    Flags = F.PMFLAGS_CASECONVERSION,
   }
   if self.Env.StartupOpenFrom == F.OPEN_COMMANDLINE then
-    mode.FullScreen = self.Opt.FullScreenPanel
+    mode.Flags = bor(mode.Flags, self.Opt.FullScreenPanel and F.PMFLAGS_FULLSCREEN or 0)
   else
-    mode.FullScreen = self.Env.StartupOptFullScreenPanel
+    mode.Flags = bor(mode.Flags, self.Env.StartupOptFullScreenPanel and F.PMFLAGS_FULLSCREEN or 0)
   end
   Info.PanelModesArray = { [5] = mode }
   Info.PanelModesNumber = 10
