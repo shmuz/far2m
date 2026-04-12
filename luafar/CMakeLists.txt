@@ -6,14 +6,19 @@ set(FARLUATOOL "${TOOLS}/lua")
 
 set(FARSRC "${CMAKE_SOURCE_DIR}/far/src")
 set(SDK "${CMAKE_SOURCE_DIR}/far/far2sdk")
-set(MAKEFLAGS "${CMAKE_CURRENT_SOURCE_DIR}/src/makeflags.lua")
+set(FLAG_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/src/makeflags.lua")
 
 add_custom_command(
     OUTPUT  farflags.c    # Treated as relative to CMAKE_CURRENT_BINARY_DIR
-    COMMAND ${FARLUATOOL} ${MAKEFLAGS} ${SDK} > farflags.c
-    DEPENDS ${SDK}/farplug-wide.h ${SDK}/farcolor.h ${SDK}/farkeys.h ${SDK}/far3parts.h
-    DEPENDS ${MAKEFLAGS} ${FARSRC}/DlgGuid.hpp
-    DEPENDS ${FARLUATOOL}
+    COMMAND ${FARLUATOOL} ${FLAG_SCRIPT} ${SDK} > farflags.c
+    DEPENDS
+      ${SDK}/far3parts.h
+      ${SDK}/farcolor.h
+      ${SDK}/farkeys.h
+      ${SDK}/farplug-wide.h
+      ${FARSRC}/DlgGuid.hpp
+      ${FLAG_SCRIPT}
+      ${FARLUATOOL}
 )
 
 set(SOURCES

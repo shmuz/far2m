@@ -429,7 +429,7 @@ static FARConfig CFG[]
 	{0x2, NSecPanelLeft, "CaseSensitiveSort",         &Opt.LeftPanel.CaseSensitiveSort, 0, OPT_BOOLEAN},
 	{0x2, NSecPanelLeft, "Folder",                    &Opt.strLeftFolder, L""},
 	{0x2, NSecPanelLeft, "CurFile",                   &Opt.strLeftCurFile, L""},
-	{0x2, NSecPanelLeft, "SelectedFirst",             &Opt.LeftSelectedFirst, 0, OPT_BOOLEAN},
+	{0x1, NSecPanelLeft, "SelectedFirst",             &Opt.LeftSelectedFirst, 0, OPT_BOOLEAN},
 	{0x2, NSecPanelLeft, "DirectoriesFirst",          &Opt.LeftPanel.DirectoriesFirst, 1, OPT_BOOLEAN},
 
 	{0x2, NSecPanelRight, "Type",                     &Opt.RightPanel.Type, FILE_PANEL},
@@ -443,7 +443,7 @@ static FARConfig CFG[]
 	{0x2, NSecPanelRight, "CaseSensitiveSort",        &Opt.RightPanel.CaseSensitiveSort, 0, OPT_BOOLEAN},
 	{0x2, NSecPanelRight, "Folder",                   &Opt.strRightFolder, L""},
 	{0x2, NSecPanelRight, "CurFile",                  &Opt.strRightCurFile, L""},
-	{0x2, NSecPanelRight, "SelectedFirst",            &Opt.RightSelectedFirst, 0, OPT_BOOLEAN},
+	{0x1, NSecPanelRight, "SelectedFirst",            &Opt.RightSelectedFirst, 0, OPT_BOOLEAN},
 	{0x2, NSecPanelRight, "DirectoriesFirst",         &Opt.RightPanel.DirectoriesFirst, 1, OPT_BOOLEAN},
 
 	{0x1, NSecPanelLayout, "ColumnTitles",            &Opt.ShowColumnTitles, 1, OPT_BOOLEAN},
