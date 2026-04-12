@@ -5,6 +5,7 @@
 #include <lua.h>
 #include <lauxlib.h>
 
+#include "far3parts.h"
 #include <farkeys.h>
 
 #include "lf_bit64.h"
@@ -556,6 +557,7 @@ void LF_GetOpenPanelInfo(lua_State* L, HANDLE hPlugin, struct OpenPluginInfo *aI
 	//---------------------------------------------------------------------------
 	lua_getfield(L, -1, "InfoLines");
 	lua_getfield(L, -2, "InfoLinesNumber");
+
 	if (lua_istable(L,-2) && lua_isnumber(L,-1)) {
 		int InfoLinesNumber = lua_tointeger(L, -1);
 		lua_pop(L,1);                         //+5: Info,Tbl,Coll,Info,Lines
@@ -570,7 +572,8 @@ void LF_GetOpenPanelInfo(lua_State* L, HANDLE hPlugin, struct OpenPluginInfo *aI
 				if (lua_istable(L, -1)) {          //+6: Info,Tbl,Coll,Info,Lines,Line
 					pl->Text = AddStringToCollectorField(L, cpos, "Text");
 					pl->Data = AddStringToCollectorField(L, cpos, "Data");
-					pl->Separator = GetOptIntFromTable(L, "Separator", 0);
+					flags_t Flags = GetFlagsFromTable(L, -1, "Flags");
+					pl->Separator = (Flags & IPLFLAGS_SEPARATOR) ? 1 : 0;
 				}
 			}
 		}

@@ -2699,4 +2699,9 @@ enum {
 	FCF_NONE               = 0
 };
 
+enum FAR3_INFOPANELLINE_FLAGS {
+	IPLFLAGS_SEPARATOR      = 0x00000001,
+	IPLFLAGS_NONE           = 0
+};
+
 ]=]
