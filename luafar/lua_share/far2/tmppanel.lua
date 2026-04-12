@@ -850,15 +850,24 @@ function Panel:ProcessPanelEvent (Handle, Event, Param)
 end
 
 
-local OPIF_SAFE_FLAGS, OPIF_COMMON_FLAGS do
-  local f = F
-  OPIF_SAFE_FLAGS = bor (f.OPIF_USEFILTER, f.OPIF_USESORTGROUPS,
-                  f.OPIF_USEHIGHLIGHTING, f.OPIF_ADDDOTS, f.OPIF_SHOWNAMESONLY)
-  OPIF_COMMON_FLAGS = bor (OPIF_SAFE_FLAGS, f.OPIF_REALNAMES,
-                  f.OPIF_EXTERNALGET, f.OPIF_EXTERNALDELETE)
-end
-
 function Panel:GetOpenPanelInfo (Handle)
+  local OPIF_SAFE_FLAGS = bor(
+    F.OPIF_ADDDOTS,         -- Автоматически добавить элемент, равный двум точкам (..)
+    F.OPIF_SHOWNAMESONLY)   -- Показывать по умолчанию имена без путей во всех режимах просмотра
+
+  local OPIF_COMMON_FLAGS = bor(
+    OPIF_SAFE_FLAGS,
+    F.OPIF_EXTERNALDELETE,  -- Флаги могут быть использованы только с OPIF_REALNAMES.
+    F.OPIF_EXTERNALGET,     -- Вынуждает использование соответствующих функций Far Manager,
+                            -- даже если требуемая функция экспортируется плагином.
+
+    F.OPIF_REALNAMES,       -- Включает использование стандартной обработки файла Far Manager'ом,
+                            -- если запрошенная операция не поддерживается плагином. Если этот
+                            -- флаг указан, элементы на панели плагина должны быть именами
+                            -- реальных файлов.
+    F.OPIF_SHORTCUT)        -- Флаг указывает, что плагин позволяет добавлять смену каталогов
+                            -- в историю Far Manager'a, а также поддерживает установку "быстрых
+                            -- каталогов" на своей панели.
   -----------------------------------------------------------------------------
   --far.Message"GetOpenPanelInfo"  --> this crashes FAR if enter then exit viewer/editor
                                    --  on a file in the emulated file system

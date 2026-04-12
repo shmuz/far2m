@@ -60,7 +60,8 @@ local function add_defines (src, trg_int, trg_ptr)
 end
 
 local function enum_blacklist (s)
-  return s:find("^FMSG_") or s:find("^[EFMPSV]CTL_") or s:find("^FFCTL_") or s:find("^RECTL_")
+  return s == "OPIF_USEFILTER" or s == "OPIF_USEHIGHLIGHTING" or s == "OPIF_USESORTGROUPS"
+      or s:find("^FMSG_") or s:find("^[EFMPSV]CTL_") or s:find("^FFCTL_") or s:find("^RECTL_")
       or s:find("^KEY_ALTSHIFT%w") or s:find("^KEY_R?CTRLALT%w") or s:find("^KEY_R?CTRLSHIFT%w")
 end
 

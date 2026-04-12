@@ -548,12 +548,19 @@ void LF_GetOpenPanelInfo(lua_State* L, HANDLE hPlugin, struct OpenPluginInfo *aI
 		(struct OpenPluginInfo*) AddBufToCollector(L, cpos, sizeof(struct OpenPluginInfo));
 	//---------------------------------------------------------------------------
 	Info->StructSize = sizeof (struct OpenPluginInfo);
-	Info->Flags      = GetFlagsFromTable(L, -1, "Flags");
 	Info->HostFile   = AddStringToCollectorField(L, cpos, "HostFile");
 	Info->CurDir     = AddStringToCollectorField(L, cpos, "CurDir");
 	Info->Format     = AddStringToCollectorField(L, cpos, "Format");
 	Info->PanelTitle = AddStringToCollectorField(L, cpos, "PanelTitle");
 	Info->CurURL     = AddStringToCollectorField(L, cpos, "CurURL");
+	//---------------------------------------------------------------------------
+	// Convert 3 far3 API flags to far2 API
+	flags_t Flags = GetFlagsFromTable(L, -1, "Flags");
+	Flags |= (OPIF_USEFILTER | OPIF_USEHIGHLIGHTING | OPIF_USESORTGROUPS);
+	if (Flags & OPIF_DISABLEFILTER)        Flags &= ~OPIF_USEFILTER;
+	if (Flags & OPIF_DISABLEHIGHLIGHTING)  Flags &= ~OPIF_USEHIGHLIGHTING;
+	if (Flags & OPIF_DISABLESORTGROUPS)    Flags &= ~OPIF_USESORTGROUPS;
+	Info->Flags = Flags & 0xFFFFFFFF;
 	//---------------------------------------------------------------------------
 	lua_getfield(L, -1, "InfoLines");
 	lua_getfield(L, -2, "InfoLinesNumber");

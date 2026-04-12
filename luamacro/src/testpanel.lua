@@ -24,7 +24,7 @@ end
 function mod.GetOpenPanelInfo(obj, handle)
   return {
     PanelTitle = Title;
-    Flags = F.OPIF_ADDDOTS;
+    Flags = F.OPIF_ADDDOTS + F.OPIF_DISABLEFILTER + F.OPIF_DISABLEHIGHLIGHTING + F.OPIF_DISABLESORTGROUPS;
   }
 end
 
