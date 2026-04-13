@@ -46,6 +46,7 @@ local M = {
 local function Mod_SetMessageTable(msg_tbl) M = msg_tbl; end
 
 local F  = far.Flags
+local VK = win.GetVirtualKeys()
 local band, bor = bit64.band, bit64.bor
 
 -- constants
@@ -905,11 +906,16 @@ function Panel:GetOpenPanelInfo (Handle)
   Info.PanelModesNumber = 10
   Info.StartPanelMode = ("4"):byte()
   -----------------------------------------------------------------------------
+  local ALTSHIFT = bor(F.SHIFT_PRESSED, F.LEFT_ALT_PRESSED)
   Info.KeyBar = {
-    Titles = { [7] = M.MF7 },
-    AltShiftTitles = { [2] = M.MAltShiftF2, [3] = M.MAltShiftF3,
-      [12] = self.Env.StartupOptCommonPanel and M.MAltShiftF12 }
+    {VirtualKeyCode=VK.F7, Text=M.MF7, LongText=M.MF7},
+    {VirtualKeyCode=VK.F2, ControlKeyState=ALTSHIFT, Text=M.MAltShiftF2, LongText=M.MAltShiftF2},
+    {VirtualKeyCode=VK.F3, ControlKeyState=ALTSHIFT, Text=M.MAltShiftF3, LongText=M.MAltShiftF3},
   }
+  if self.Env.StartupOptCommonPanel then
+    table.insert(Info.KeyBar,
+      {VirtualKeyCode=VK.F12, ControlKeyState=ALTSHIFT, Text=M.MAltShiftF12, LongText=M.MAltShiftF12})
+  end
   -----------------------------------------------------------------------------
   return Info
 end

@@ -521,8 +521,128 @@ void LF_CloseAnalyse(lua_State* L, const struct CloseAnalyseInfo *Info)
 	luaL_unref(L, LUA_REGISTRYINDEX, (int)(intptr_t)Info->Handle);
 }
 
+// the KeyBar table is on stack top
+static void OPI_FillInfoLines(lua_State *L, struct OpenPluginInfo *Info, int cpos)
+{
+	lua_getfield(L, -1, "InfoLines");
+	lua_getfield(L, -2, "InfoLinesNumber");
+
+	if (lua_istable(L,-2) && lua_isnumber(L,-1)) {
+		int InfoLinesNumber = lua_tointeger(L, -1);
+		lua_pop(L,1);                         //+5: Info,Tbl,Coll,Info,Lines
+		if (InfoLinesNumber > 0 && InfoLinesNumber <= 100) {
+			struct InfoPanelLine *pl = (struct InfoPanelLine*)
+				AddBufToCollector(L, cpos, InfoLinesNumber * sizeof(struct InfoPanelLine));
+			Info->InfoLines = pl;
+			Info->InfoLinesNumber = InfoLinesNumber;
+			for (int i=0; i<InfoLinesNumber; ++i,++pl,lua_pop(L,1)) {
+				lua_pushinteger(L, i+1);
+				lua_gettable(L, -2);
+				if (lua_istable(L, -1)) {          //+6: Info,Tbl,Coll,Info,Lines,Line
+					pl->Text = AddStringToCollectorField(L, cpos, "Text");
+					pl->Data = AddStringToCollectorField(L, cpos, "Data");
+					flags_t Flags = GetFlagsFromTable(L, -1, "Flags");
+					pl->Separator = (Flags & IPLFLAGS_SEPARATOR) ? 1 : 0;
+				}
+			}
+		}
+		lua_pop(L,1);
+	}
+	else lua_pop(L, 2);
+}
+
+// the KeyBar table is on stack top
+static void OPI_FillPanelModes(lua_State *L, struct OpenPluginInfo *Info, int cpos)
+{
+	lua_getfield(L, -1, "PanelModesArray");
+	lua_getfield(L, -2, "PanelModesNumber");
+	if (lua_istable(L,-2) && lua_isnumber(L,-1)) {
+		int PanelModesNumber = lua_tointeger(L, -1);
+		lua_pop(L,1);                               //+5: Info,Tbl,Coll,Info,Modes
+		if (PanelModesNumber > 0 && PanelModesNumber <= 100) {
+			struct PanelMode *pm = (struct PanelMode*)
+				AddBufToCollector(L, cpos, PanelModesNumber * sizeof(struct PanelMode));
+			Info->PanelModesArray = pm;
+			Info->PanelModesNumber = PanelModesNumber;
+			for (int i=0; i<PanelModesNumber; ++i,++pm,lua_pop(L,1)) {
+				lua_pushinteger(L, i+1);
+				lua_gettable(L, -2);
+				if (lua_istable(L, -1)) {                //+6: Info,Tbl,Coll,Info,Modes,Mode
+					pm->ColumnTypes  = AddStringToCollectorField(L, cpos, "ColumnTypes");
+					pm->ColumnWidths = AddStringToCollectorField(L, cpos, "ColumnWidths");
+					pm->StatusColumnTypes  = AddStringToCollectorField(L, cpos, "StatusColumnTypes");
+					pm->StatusColumnWidths = AddStringToCollectorField(L, cpos, "StatusColumnWidths");
+					pm->ColumnTitles = (const wchar_t* const*)CreateStringsArray(L, cpos, "ColumnTitles", NULL);
+					flags_t Flags = GetFlagsFromTable (L, -1, "Flags");
+					pm->FullScreen      = (Flags & PMFLAGS_FULLSCREEN)      ? 1 : 0;
+					pm->DetailedStatus  = (Flags & PMFLAGS_DETAILEDSTATUS)  ? 1 : 0;
+					pm->AlignExtensions = (Flags & PMFLAGS_ALIGNEXTENSIONS) ? 1 : 0;
+					pm->CaseConversion  = (Flags & PMFLAGS_CASECONVERSION)  ? 1 : 0;
+				}
+			}
+		}
+		lua_pop(L,1);
+	}
+	else lua_pop(L, 2);
+}
+
+// the KeyBar table is on stack top
+static void OPI_FillKeyBarTitles(lua_State *L, struct OpenPluginInfo *Info, int cpos)
+{
+	lua_getfield (L, -1, "KeyBar");
+	if (lua_istable(L, -1)) {
+		struct KeyBarTitles *kbt = (struct KeyBarTitles*)
+			AddBufToCollector(L, cpos, sizeof(struct KeyBarTitles));
+		Info->KeyBar = kbt;
+		size_t Count = lua_objlen(L, -1);
+
+		for(size_t i=0; i < Count; i++)
+		{
+			lua_rawgeti(L, -1, i+1);
+			if (!lua_istable(L, -1))
+			{
+				lua_pop(L, 1);
+				break;
+			}
+
+			WORD VirtualKeyCode = GetOptIntFromTable(L, "VirtualKeyCode", 0);
+			if (VirtualKeyCode >= VK_F1 && VirtualKeyCode <= VK_F12)
+			{
+				lua_getfield(L, -1, "ControlKeyState");
+				DWORD State = (DWORD)GetFlagCombination(L, -1, NULL);
+				lua_pop(L, 1);
+
+				wchar_t **target;
+				if ((State & (LEFT_CTRL_PRESSED|RIGHT_CTRL_PRESSED)) && (State & (LEFT_ALT_PRESSED|RIGHT_ALT_PRESSED)))
+					target = kbt->CtrlAltTitles;
+				else if ((State & SHIFT_PRESSED) && (State & (LEFT_ALT_PRESSED|RIGHT_ALT_PRESSED)))
+					target = kbt->AltShiftTitles;
+				else if ((State & SHIFT_PRESSED) && (State & (LEFT_CTRL_PRESSED|RIGHT_CTRL_PRESSED)))
+					target = kbt->CtrlShiftTitles;
+				else if (State & SHIFT_PRESSED)
+					target = kbt->ShiftTitles;
+				else if (State & (LEFT_ALT_PRESSED|RIGHT_ALT_PRESSED))
+					target = kbt->AltTitles;
+				else if (State & (LEFT_CTRL_PRESSED|RIGHT_CTRL_PRESSED))
+					target = kbt->CtrlTitles;
+				else
+					target = kbt->Titles;
+
+				wchar_t *Text = (wchar_t*)AddStringToCollectorField(L, cpos, "Text");
+				wchar_t *LongText = (wchar_t*)AddStringToCollectorField(L, cpos, "LongText");
+				target[VirtualKeyCode - VK_F1] = *LongText ? LongText : Text;
+			}
+
+			lua_pop(L, 1); // pop KeyBarLabel table
+		}
+	}
+	lua_pop(L,1); // pop KeyBar table
+}
+
 void LF_GetOpenPanelInfo(lua_State* L, HANDLE hPlugin, struct OpenPluginInfo *aInfo)
 {
+	int stack_top = lua_gettop(L);
+
 	aInfo->StructSize = sizeof (struct OpenPluginInfo);
 	if (!GetExportFunction(L, "GetOpenPanelInfo"))     //+1
 		return;
@@ -562,97 +682,19 @@ void LF_GetOpenPanelInfo(lua_State* L, HANDLE hPlugin, struct OpenPluginInfo *aI
 	if (Flags & OPIF_DISABLESORTGROUPS)    Flags &= ~OPIF_USESORTGROUPS;
 	Info->Flags = Flags & 0xFFFFFFFF;
 	//---------------------------------------------------------------------------
-	lua_getfield(L, -1, "InfoLines");
-	lua_getfield(L, -2, "InfoLinesNumber");
-
-	if (lua_istable(L,-2) && lua_isnumber(L,-1)) {
-		int InfoLinesNumber = lua_tointeger(L, -1);
-		lua_pop(L,1);                         //+5: Info,Tbl,Coll,Info,Lines
-		if (InfoLinesNumber > 0 && InfoLinesNumber <= 100) {
-			struct InfoPanelLine *pl = (struct InfoPanelLine*)
-				AddBufToCollector(L, cpos, InfoLinesNumber * sizeof(struct InfoPanelLine));
-			Info->InfoLines = pl;
-			Info->InfoLinesNumber = InfoLinesNumber;
-			for (int i=0; i<InfoLinesNumber; ++i,++pl,lua_pop(L,1)) {
-				lua_pushinteger(L, i+1);
-				lua_gettable(L, -2);
-				if (lua_istable(L, -1)) {          //+6: Info,Tbl,Coll,Info,Lines,Line
-					pl->Text = AddStringToCollectorField(L, cpos, "Text");
-					pl->Data = AddStringToCollectorField(L, cpos, "Data");
-					flags_t Flags = GetFlagsFromTable(L, -1, "Flags");
-					pl->Separator = (Flags & IPLFLAGS_SEPARATOR) ? 1 : 0;
-				}
-			}
-		}
-		lua_pop(L,1);
-	}
-	else lua_pop(L, 2);
+	OPI_FillInfoLines(L, Info, cpos);
+	OPI_FillPanelModes(L, Info, cpos);
+	OPI_FillKeyBarTitles(L, Info, cpos);
 	//---------------------------------------------------------------------------
 	Info->DescrFiles = CreateStringsArray(L, cpos, "DescrFiles", &Info->DescrFilesNumber);
-	//---------------------------------------------------------------------------
-	lua_getfield(L, -1, "PanelModesArray");
-	lua_getfield(L, -2, "PanelModesNumber");
-	if (lua_istable(L,-2) && lua_isnumber(L,-1)) {
-		int PanelModesNumber = lua_tointeger(L, -1);
-		lua_pop(L,1);                               //+5: Info,Tbl,Coll,Info,Modes
-		if (PanelModesNumber > 0 && PanelModesNumber <= 100) {
-			struct PanelMode *pm = (struct PanelMode*)
-				AddBufToCollector(L, cpos, PanelModesNumber * sizeof(struct PanelMode));
-			Info->PanelModesArray = pm;
-			Info->PanelModesNumber = PanelModesNumber;
-			for (int i=0; i<PanelModesNumber; ++i,++pm,lua_pop(L,1)) {
-				lua_pushinteger(L, i+1);
-				lua_gettable(L, -2);
-				if (lua_istable(L, -1)) {                //+6: Info,Tbl,Coll,Info,Modes,Mode
-					pm->ColumnTypes  = AddStringToCollectorField(L, cpos, "ColumnTypes");
-					pm->ColumnWidths = AddStringToCollectorField(L, cpos, "ColumnWidths");
-					pm->StatusColumnTypes  = AddStringToCollectorField(L, cpos, "StatusColumnTypes");
-					pm->StatusColumnWidths = AddStringToCollectorField(L, cpos, "StatusColumnWidths");
-					pm->ColumnTitles = (const wchar_t* const*)CreateStringsArray(L, cpos, "ColumnTitles", NULL);
-					flags_t Flags = GetFlagsFromTable (L, -1, "Flags");
-					pm->FullScreen      = (Flags & PMFLAGS_FULLSCREEN)      ? 1 : 0;
-					pm->DetailedStatus  = (Flags & PMFLAGS_DETAILEDSTATUS)  ? 1 : 0;
-					pm->AlignExtensions = (Flags & PMFLAGS_ALIGNEXTENSIONS) ? 1 : 0;
-					pm->CaseConversion  = (Flags & PMFLAGS_CASECONVERSION)  ? 1 : 0;
-				}
-			}
-		}
-		lua_pop(L,1);
-	}
-	else lua_pop(L, 2);
 	//---------------------------------------------------------------------------
 	Info->StartPanelMode = GetOptIntFromTable(L, "StartPanelMode", 0);
 	Info->StartSortMode  = GetFlagsFromTable (L, -1, "StartSortMode");
 	Info->StartSortOrder = GetOptIntFromTable(L, "StartSortOrder", 0);
 	//---------------------------------------------------------------------------
-	lua_getfield (L, -1, "KeyBar");
-	if (lua_istable(L, -1)) {
-		struct KeyBarTitles *kbt = (struct KeyBarTitles*)
-			AddBufToCollector(L, cpos, sizeof(struct KeyBarTitles));
-		Info->KeyBar = kbt;
-		struct { const char* key; wchar_t** trg; } pairs[] = {
-			{"Titles",          kbt->Titles},
-			{"CtrlTitles",      kbt->CtrlTitles},
-			{"AltTitles",       kbt->AltTitles},
-			{"ShiftTitles",     kbt->ShiftTitles},
-			{"CtrlShiftTitles", kbt->CtrlShiftTitles},
-			{"AltShiftTitles",  kbt->AltShiftTitles},
-			{"CtrlAltTitles",   kbt->CtrlAltTitles},
-		};
-		for (size_t i=0; i < ARRAYSIZE(pairs); i++) {
-			lua_getfield (L, -1, pairs[i].key);
-			if (lua_istable (L, -1)) {
-				for (int j=0; j < ARRAYSIZE(kbt->Titles); j++)
-					pairs[i].trg[j] = (wchar_t*)AddStringToCollectorSlot(L, cpos, j+1);
-			}
-			lua_pop (L, 1);
-		}
-	}
-	lua_pop(L,1);
-	//---------------------------------------------------------------------------
 	Info->ShortcutData = AddStringToCollectorField (L, cpos, "ShortcutData");
 	//---------------------------------------------------------------------------
-	lua_pop(L,4);
+	lua_settop(L, stack_top);
 	*aInfo = *Info;
 }
 //---------------------------------------------------------------------------
