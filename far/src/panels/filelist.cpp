@@ -1467,9 +1467,11 @@ int FileList::ProcessKey(FarKey Key)
 					OpenPluginInfo Info;
 					CtrlObject->Plugins.GetOpenPluginInfo(hPlugin, &Info);
 
-					if (Info.HostFile && *Info.HostFile)
-						ProcessKey(KEY_F5);
-					else if ((Info.Flags & OPIF_REALNAMES) == OPIF_REALNAMES)
+					if (Info.HostFile && *Info.HostFile) {
+						// Intentional No-Op: ProcessKey(KEY_F5) was removed
+						// because it caused side effects in some plugins
+					}
+					else if (Info.Flags & OPIF_REALNAMES)
 						PluginHostGetFiles();
 
 					return TRUE;
