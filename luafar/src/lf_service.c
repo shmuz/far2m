@@ -3866,6 +3866,12 @@ int PushDNParams (lua_State *L, int Msg, int Param1, LONG_PTR Param2)
 		}
 
 		case DN_CTLCOLORDIALOG:
+		{
+			uint64_t *ItemColor = (uint64_t*) Param2;
+			PushFarColor(L, ItemColor[0]);
+			break;
+		}
+
 		case DN_CTLCOLORDLGITEM:
 		{
 			uint64_t *ItemColor = (uint64_t*) Param2;
@@ -3931,7 +3937,7 @@ LONG_PTR ProcessDNResult(lua_State *L, int Msg, LONG_PTR Param2)
 			break;
 
 		case DN_CTLCOLORDIALOG:
-			if (!lua_isnil(L, -1)) {
+			if (lua_istable(L, -1) || lua_isnumber(L, -1)) {
 				uint64_t *Color = (uint64_t*) Param2;
 				Color[0] = GetFarColor64(L, -1);
 				ret = 1;
