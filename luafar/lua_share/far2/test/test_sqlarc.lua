@@ -138,7 +138,7 @@ end
 local function test_get_archive_dir_data (activePanel, aDir)
   -- Set directory inside the archive
   local nPanel = activePanel and 1 or 0
-  assert(Panel.SetPluginPath(1-nPanel, join("/", aDir)))
+  assert(Panel.SetPath(1-nPanel, join("/", aDir)))
   -- Collect directory items
   local t = {}
   for k=1,assert(panel.GetPanelInfo(nil, nPanel)).ItemsNumber do

@@ -26,7 +26,7 @@ const char KEY_OBJECT[]    = "Panel_Object";
 
 static void push_guid(lua_State *L, const void *pGuid)
 {
-	lua_pushlstring(L, (char*)pGuid, sizeof(GUID));
+	lua_pushlstring(L, (const char*)pGuid, sizeof(GUID));
 }
 
 // taken from lua.c v5.1.2

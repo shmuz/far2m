@@ -223,7 +223,7 @@ local function test_query_from_editor()
   assert(APanel.ItemCount == 2*N+1)
 
   -- test from a view
-  assert(Panel.SetPluginPath(0, "/main/MyView"))
+  assert(Panel.SetPath(0, "/main/MyView"))
   assert(APanel.Path=="/main/MyView")
   assert(APanel.ItemCount == 2*N+1)
   EnterEditor()

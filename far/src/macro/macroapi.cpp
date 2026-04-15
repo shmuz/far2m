@@ -191,7 +191,6 @@ public:
 	void panelitemFunc();
 	void panelselectFunc();
 	void panelsetpathFunc();
-	void panelsetpluginpathFunc();
 	void panelsetposFunc();
 	void panelsetposidxFunc();
 	void pluginexistFunc();
@@ -1031,7 +1030,6 @@ void KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 		case MCODE_F_PANELITEM:          return api.panelitemFunc();
 		case MCODE_F_PANEL_SELECT:       return api.panelselectFunc();
 		case MCODE_F_PANEL_SETPATH:      return api.panelsetpathFunc();
-		case MCODE_F_PANEL_SETPLUGINPATH: return api.panelsetpluginpathFunc();
 		case MCODE_F_PANEL_SETPOS:       return api.panelsetposFunc();
 		case MCODE_F_PANEL_SETPOSIDX:    return api.panelsetposidxFunc();
 		case MCODE_F_PROMPT:             return api.promptFunc();
@@ -1711,8 +1709,7 @@ void FarMacroApi::panelselectFunc()
 }
 
 // N=panel.SetPath       (panelType,pathName[,fileName])
-// N=panel.SetPluginPath (panelType,pathName[,fileName])
-void FarMacroApi::panelsetpathFuncImpl(bool IsPlugin)
+void FarMacroApi::panelsetpathFunc()
 {
 	auto Params = parseParams(3);
 	int typePanel     = Params[0].getInt32();
@@ -1730,9 +1727,7 @@ void FarMacroApi::panelsetpathFuncImpl(bool IsPlugin)
 		if (apiExpandEnvironmentStrings(pathName, strPath))
 			pathName = strPath.CPtr();
 
-		Ret = IsPlugin
-			? SelPanel->GetMode()==PLUGIN_PANEL && SelPanel->SetCurDir(pathName,false,false)
-			: SelPanel->SetCurDir(pathName,SelPanel->GetMode()==PLUGIN_PANEL && IsAbsolutePath(pathName),false);
+		Ret = SelPanel->SetCurDir(pathName, false, false);
 
 		if (Ret)
 		{
@@ -1750,17 +1745,7 @@ void FarMacroApi::panelsetpathFuncImpl(bool IsPlugin)
 		}
 	}
 
-	return PushBoolean(Ret);
-}
-
-void FarMacroApi::panelsetpathFunc()
-{
-	return panelsetpathFuncImpl(false);
-}
-
-void FarMacroApi::panelsetpluginpathFunc()
-{
-	return panelsetpathFuncImpl(true);
+	PushBoolean(Ret);
 }
 
 void FarMacroApi::fattrFuncImpl(int Type)
