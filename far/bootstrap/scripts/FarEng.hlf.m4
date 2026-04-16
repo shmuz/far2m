@@ -2168,10 +2168,10 @@ tray of a CD drive. Turn off this option if automatic CD-ROM mounting does not w
 correctly (this can happen because of bugs in the drivers of some CD-ROM drives).
 
   #Auto save setup#
-  Setup is automatically saved on FAR exit. The current folders for both panels are also saved.
+  When exiting FAR, the configuration will be saved automatically, except for the panels state.
 
   #Auto-save panels state#
-  Panels' state is automatically saved on FAR exit.
+  Panels state is automatically saved on FAR exit.
 
 
 @PanelSettings
