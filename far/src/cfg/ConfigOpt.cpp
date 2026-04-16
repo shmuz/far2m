@@ -817,9 +817,13 @@ void ConfigOptSaveAutoOptions()
 
 void ConfigOptSave(bool Ask)
 {
-	const int SaveFlags = Ask ? (OST_COMMON | OST_PANELS)
-			: Opt.AutoSaveSetup   ? OST_COMMON
-			: Opt.AutoSavePanels  ? OST_PANELS : OST_NONE;
+	int SaveFlags = OST_NONE;
+	if (Ask)
+		SaveFlags = OST_COMMON | OST_PANELS;
+	else {
+		SaveFlags |= (Opt.AutoSaveSetup  ? OST_COMMON : 0);
+		SaveFlags |= (Opt.AutoSavePanels ? OST_PANELS : 0);
+	}
 
 	if (SaveFlags == OST_NONE)
 		return;
