@@ -43,7 +43,7 @@ enum OPT_TYPE {
 };
 
 struct GetConfig {
-	int IsSave;
+	int SaveType;
 	OPT_TYPE ValType;
 	FARString KeyName;
 	FARString ValName;

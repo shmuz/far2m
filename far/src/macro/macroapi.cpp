@@ -1966,7 +1966,7 @@ void FarMacroApi::fargetconfigFunc()
 
 	PushString(Data.KeyName);
 	PushString(Data.ValName);
-	PushBoolean(Data.IsSave); //### in fact, it's an int
+	PushBoolean(Data.SaveType); //### in fact, it's an int
 }
 
 static bool _SetConfig(int Index, const FarMacroValue &Value)
