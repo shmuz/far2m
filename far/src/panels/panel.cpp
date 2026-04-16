@@ -75,6 +75,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "drivemix.hpp"
 #include "xlat.hpp"
 #include "DlgGuid.hpp"
+#include "sizer.hpp"
 #include "vt/vtshell.h"
 #include <StackHeapArray.hpp>
 
@@ -1747,6 +1748,30 @@ int Panel::SetPluginCommand(int Command, int Param1, LONG_PTR Param2)
 			break;
 		}
 
+		case FCTL_GETPANELDIR_V2:
+		{
+			static int Reenter = 0;
+			if (!Reenter)
+			{
+				Reenter++;
+				ShortcutInfo Info;
+				GetShortcutInfo(Info);
+
+				FarPanelDirectory dirInfo, *pDirInfo = &dirInfo;
+				Sizer sizer((void*)Param2, SIZE_MAX);
+				if (sizer.AddObject<FarPanelDirectory>())
+					pDirInfo = (FarPanelDirectory*)Param2;
+
+				pDirInfo->Name = sizer.AddFARString(Info.ShortcutFolder);
+				pDirInfo->Param = sizer.AddFARString(Info.PluginData);
+				pDirInfo->File = sizer.AddFARString(Info.PluginFile);
+				pDirInfo->PluginId = Info.PluginId;
+				Result = sizer.GetSize();
+				Reenter--;
+			}
+			break;
+		}
+
 		case FCTL_GETCOLUMNTYPES:
 		case FCTL_GETCOLUMNWIDTHS:
 
@@ -1891,6 +1916,31 @@ BOOL Panel::NeedUpdatePanel(Panel *AnotherPanel)
 		return TRUE;
 
 	return FALSE;
+}
+
+bool Panel::GetShortcutInfo(ShortcutInfo& Info) const
+{
+	bool result = true;
+	if (PanelMode == PLUGIN_PANEL)
+	{
+		const auto ph = GetPluginHandle();
+		Info.PluginId = ph->pPlugin->GetSysID();
+		OpenPluginInfo OpInfo;
+		CtrlObject->Plugins.GetOpenPluginInfo(ph, &OpInfo);
+		Info.PluginFile = NullToEmpty(OpInfo.HostFile);
+		Info.ShortcutFolder = NullToEmpty(OpInfo.CurDir);
+		Info.PluginData = NullToEmpty(OpInfo.ShortcutData);
+		if (!(OpInfo.Flags & OPIF_SHORTCUT))
+			result = false;
+	}
+	else
+	{
+		Info.PluginId = 0;
+		Info.PluginFile.Clear();
+		Info.PluginData.Clear();
+		Info.ShortcutFolder = strCurDir;
+	}
+	return result;
 }
 
 bool Panel::SaveShortcutFolder(int Pos)

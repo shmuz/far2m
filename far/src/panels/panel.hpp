@@ -163,6 +163,15 @@ public:
 	int ProcessingPluginCommand;
 
 private:
+	struct ShortcutInfo
+	{
+		FARString ShortcutFolder;
+		FARString PluginFile;
+		FARString PluginData;
+		DWORD PluginId;
+	};
+	bool GetShortcutInfo(ShortcutInfo& Info) const;
+
 	int ChangeDiskMenu(int Pos, int FirstCall);
 	int DisconnectDrive(PanelMenuItem *item, VMenu &ChDisk);
 	void FastFindShow(int FindX, int FindY);

@@ -730,6 +730,15 @@ struct FarPanelLocation
 	const wchar_t *Path;
 };
 
+struct FarPanelDirectory // from far3
+{
+	size_t StructSize;
+	const wchar_t* Name;
+	const wchar_t* Param;
+	DWORD PluginId;
+	const wchar_t* File;
+};
+
 enum FILE_CONTROL_COMMANDS
 {
 	FCTL_CLOSEPLUGIN,
@@ -772,6 +781,7 @@ enum FILE_CONTROL_COMMANDS
 	FCTL_SETEXECUTABLESFIRST, // not used in far2m
 	FCTL_GETPANELPREFIX,
 	FCTL_SETACTIVEPANEL,
+	FCTL_GETPANELDIR_V2,
 };
 
 typedef int (__stdcall *FARAPICONTROL)(

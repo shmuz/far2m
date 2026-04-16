@@ -2440,19 +2440,23 @@ static int panel_SetViewMode(lua_State *L)
 
 static int panel_GetPanelDirectory(lua_State *L)
 {
-	get_string_info(L, FCTL_GETPANELDIR); //puts either a string or a nil on stack top
-
-	if (lua_isstring(L, -1))
+	HANDLE handle = OptHandle2(L);
+	int size = PSInfo.Control(handle, FCTL_GETPANELDIR_V2, 0, 0);
+	if (size)
 	{
-		lua_createtable(L, 0, 4);
-		lua_insert(L, -2);
-		lua_setfield(L, -2, "Name");
-
-		PutWStrToTable(L, "Param", L"", -1);
-		PutWStrToTable(L, "File",  L"", -1);
-		PutIntToTable(L, "PluginId", 0);
+		struct FarPanelDirectory *fpd = (struct FarPanelDirectory*) lua_newuserdata(L, size);
+		fpd->StructSize = sizeof(*fpd);
+		if (PSInfo.Control(handle, FCTL_GETPANELDIR_V2, size, (LONG_PTR)fpd))
+		{
+			lua_createtable(L, 0, 4);
+			PutWStrToTable(L, "Name",     fpd->Name,  -1);
+			PutWStrToTable(L, "Param",    fpd->Param, -1);
+			PutWStrToTable(L, "File",     fpd->File,  -1);
+			PutIntToTable (L, "PluginId", fpd->PluginId);
+			return 1;
+		}
 	}
-	return 1;
+	return lua_pushnil(L), 1;
 }
 
 static int panel_SetPanelDirectory(lua_State *L)
