@@ -1,6 +1,8 @@
 -- started: 2020-01-11
 -- coding: UTF-8
 
+local DIRSEP = package.config:sub(1, 1)
+
 assert(Far and Panel and Editor and Viewer and mf, "This script must be run by LuaMacro plugin")
 
 local PluginGuids = {
@@ -91,14 +93,14 @@ local function test_create_archive_dirs()
   assert(APanel.Folder)
   assert(APanel.Current == "Папка 1")
   Keys("Enter")
-  assert(APanel.Path == "Папка 1")
+  assert(APanel.Path == join(DIRSEP, "Папка 1"))
 
   Keys("F7"); assert(Area.Dialog and Dlg.Id==PluginGuids.MakeFolder)
   print("Папка 2"); Keys("Enter");
   assert(APanel.Folder)
   assert(APanel.Current == "Папка 2")
   Keys("Enter")
-  assert(APanel.Path == join("Папка 1", "Папка 2"))
+  assert(APanel.Path == join(DIRSEP, "Папка 1", "Папка 2"))
 end
 
 local function test_remove_tree(aDir, aInnerCall)
