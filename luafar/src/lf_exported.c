@@ -879,7 +879,7 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 		case OPEN_DIALOG:
 		{
 			lua_pop(L, 1);       // pop dummy menuitem Id
-      struct OpenDlgPluginData *data = (struct OpenDlgPluginData*)Item;
+			struct OpenDlgPluginData *data = (struct OpenDlgPluginData*)Item;
 			push_guid(L, &data->ItemGuid);
 			lua_createtable(L, 0, 1);
 			NewDialogData(L, data->hDlg, FALSE);

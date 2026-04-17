@@ -5330,7 +5330,7 @@ static int far_Show(lua_State *L)
 		"local bot = n==0 and 'No arguments' or n==1 and '1 argument' or n..' arguments'\n"
 		"local it, pos = far.Menu({Title=''; Bottom=bot; Flags='FMENU_SHOWAMPERSAND FMENU_WRAPMODE'},\n"
 		"  items, 'Space CtrlC CtrlIns')\n"
-		"if items[pos] and (it.BreakKey=='CtrlC' or it.BreakKey=='CtrlIns') then\n"
+		"if items[pos] and it ~= items[pos] and (it.BreakKey=='CtrlC' or it.BreakKey=='CtrlIns') then\n"
 		"  far.CopyToClipboard(tostring(items[pos].arg)) end\n"
 		"return it, pos";
 	int argn = lua_gettop(L);

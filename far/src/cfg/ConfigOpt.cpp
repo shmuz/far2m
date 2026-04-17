@@ -818,7 +818,7 @@ void ConfigOptSaveAutoOptions()
 void ConfigOptSave(bool Ask)
 {
 	int SaveFlags = Ask ? (OST_COMMON | OST_PANELS)
-			: (Opt.AutoSaveSetup  ? OST_COMMON : 0) | (Opt.AutoSavePanels ? OST_PANELS : 0);
+			: (Opt.AutoSaveSetup ? OST_COMMON : 0) | (Opt.AutoSavePanels ? OST_PANELS : 0);
 
 	if (SaveFlags == OST_NONE)
 		return;
