@@ -1890,7 +1890,7 @@ static int far_Menu(lua_State *L)
 	int NumBreakCodes = 0;
 	int *pBreakKeys = NULL;
 
-	if (lua_isstring(L,POS_BKEYS))
+	if (lua_type(L, POS_BKEYS) == LUA_TSTRING)
 	{
 		const char *ptr = lua_tostring(L,POS_BKEYS);
 		lua_newtable(L);
@@ -1919,8 +1919,8 @@ static int far_Menu(lua_State *L)
 		// push breakkeys table on top
 		lua_pushvalue(L, POS_BKEYS);      // vk=-2; bk=-1;
 
+		int ind_target = 0;
 		for(int ind=0; ind < NumBreakCodes; ind++) {
-			BreakKeys[ind] = (0 | PKF_ALT); // preset to invalid value
 			// get next break key (optional modifier plus virtual key)
 			lua_pushinteger(L,ind+1);       // vk=-3; bk=-2;
 			lua_gettable(L,-2);             // vk=-3; bk=-2;
@@ -1941,7 +1941,7 @@ static int far_Menu(lua_State *L)
 					if (State & (LEFT_CTRL_PRESSED|RIGHT_CTRL_PRESSED)) mod |= PKF_CONTROL;
 					if (State & (LEFT_ALT_PRESSED|RIGHT_ALT_PRESSED))   mod |= PKF_ALT;
 					if (State & SHIFT_PRESSED)                          mod |= PKF_SHIFT;
-					BreakKeys[ind] = (Code & 0xFFFF) | (mod << 16);
+					BreakKeys[ind_target++] = (Code & 0xFFFF) | (mod << 16);
 					lua_pop(L, 2);
 					continue; // success
 				}
@@ -1971,10 +1971,10 @@ static int far_Menu(lua_State *L)
 			// get virtual key and break key values
 			lua_rawget(L,-4);               // vk=-4; bk=-3;
 			int tmp = lua_tointeger(L,-1) | mod;
-			if (tmp) BreakKeys[ind] = tmp;
+			if (tmp) BreakKeys[ind_target++] = tmp;
 			lua_pop(L,2);                   // vk=-2; bk=-1;
 		}
-		BreakKeys[NumBreakCodes] = 0; // required by FAR API
+		BreakKeys[ind_target] = 0; // required by FAR API
 		pBreakKeys = BreakKeys;
 		pBreakCode = &BreakCode;
 	}
