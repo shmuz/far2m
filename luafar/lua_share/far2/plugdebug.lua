@@ -2,9 +2,11 @@
 -- luacheck: new_globals Old_export
 
 local F = far.Flags
+local VK = win.GetVirtualKeys ()
 
 local PanelEvents = { [0]="FE_CHANGEVIEWMODE","FE_REDRAW","FE_IDLE","FE_CLOSE",
-  "FE_BREAK","FE_COMMAND","FE_GOTFOCUS","FE_KILLFOCUS","FE_CHANGESORTPARAMS" }
+  "FE_BREAK","FE_COMMAND","FE_GOTFOCUS","FE_KILLFOCUS","FE_CHANGESORTPARAMS",
+  "FE_STARTSORT", "FE_ENDSORT" }
 
 local OpenFrom = {	[0]="OPEN_LEFTDISKMENU","OPEN_PLUGINSMENU","OPEN_FINDLIST","OPEN_SHORTCUT",
   "OPEN_COMMANDLINE","OPEN_EDITOR","OPEN_VIEWER","OPEN_FILEPANEL","OPEN_DIALOG","OPEN_ANALYSE",
@@ -71,7 +73,7 @@ local function Inject(_, name)
       ------------------------------------------------------------------------------
       end
     --------------------------------------------------------------------------------
-    elseif name=="ProcessEvent" then
+    elseif name=="ProcessPanelEvent" then
       local Event, Param = select(3, ...)
       if Event==F.FE_IDLE then -- don't show this event
         txt = nil
@@ -81,7 +83,8 @@ local function Inject(_, name)
     --------------------------------------------------------------------------------
     elseif name=="ProcessKey" then
       local key, ctrlstate = select(3, ...)
-      txt = ("%s (key=0x%X, ctrlstate=0x%X)"):format(name, key, ctrlstate)
+      local vkname = VK[key % 0x100] or "?"
+      txt = ("%s (key=0x%X, ctrlstate=0x%X, vk=VK_%s)"):format(name, key, ctrlstate, vkname)
     --------------------------------------------------------------------------------
     elseif name=="SetDirectory" then
       local Dir, OpMode = select(3, ...)
