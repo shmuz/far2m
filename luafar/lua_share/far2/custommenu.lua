@@ -89,6 +89,7 @@ local function NewList (props, items, bkeys, startId)
   end
 
   -- Constants
+  self.usevbuf   = P.usevbuf
   self.bkeys     = bkeys
   self.flags     = FlagsToInt(P.flags)
   self.items     = items
@@ -333,7 +334,7 @@ do
         local len2 = self.w - tlen - len1
         text = cleft .. T.hor:rep(len1) .. text .. T.hor:rep(len2) .. cright
         self:Write(x, yy, color, text)
-        
+
       else
         local mlen = text=="" and 0 or 1
         far.Text(x, yy, color, cleft) -- left corner
@@ -453,7 +454,7 @@ function List:Draw(x, y)
         -- Extend selection up to the right border
         local start = mlen + CellsCount(text2)
         self:Write(x+start, i, color, (" "):rep(self.w - start))
-        
+
       else
         far.Text(x, y+i, color, self.margin)
         if v.checked then far.Text(x, y+i, color, check) end
