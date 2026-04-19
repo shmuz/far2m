@@ -5439,6 +5439,12 @@ int Editor::EditorControl(int Command, void *Param)
 			}
 			return FALSE;
 
+		case ECTL_GETVIRTUALFILENAME:
+			if (Param) {
+				wcscpy((wchar_t*)Param, m_virtualFileName);
+			}
+			return m_virtualFileName.GetLength() + 1;
+
 		case ECTL_SETSAVEDSTATE:
 			if (Param) {
 				Flags.Change(FEDITOR_MODIFIED | FEDITOR_WASCHANGED, *static_cast<int*>(Param) == 0);

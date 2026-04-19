@@ -1715,6 +1715,16 @@ static int editor_SetVirtualFileName(lua_State *L)
 	return 1;
 }
 
+static int editor_GetVirtualFileName(lua_State *L)
+{
+	int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
+	size_t size = PSInfo.EditorControlV2(EditorId, ECTL_GETVIRTUALFILENAME, NULL);
+	wchar_t *buf = (wchar_t*) lua_newuserdata(L, size * sizeof(wchar_t));
+	PSInfo.EditorControlV2(EditorId, ECTL_GETVIRTUALFILENAME, buf);
+	push_utf8_string(L, buf, -1);
+	return 1;
+}
+
 static int editor_SetSavedState(lua_State *L)
 {
 	int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
@@ -6039,6 +6049,7 @@ static const luaL_Reg editor_funcs[] =
 	PAIR( editor, GetString),
 	PAIR( editor, GetStringW),
 	PAIR( editor, GetTitle),
+	PAIR( editor, GetVirtualFileName),
 	PAIR( editor, InsertString),
 	PAIR( editor, InsertText),
 	PAIR( editor, InsertTextW),

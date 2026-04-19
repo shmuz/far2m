@@ -155,12 +155,12 @@ public:
 	void dateFunc();
 	void dlggetvalueFunc();
 	void dlgsetfocusFunc();
-	void editordellineFunc();
-	void editorinsstrFunc();
+	void editordellineFunc();       //implemented in Lua
+	void editorinsstrFunc();        //implemented in Lua
 	void editorposFunc();
 	void editorselFunc();
 	void editorsetFunc();
-	void editorsetstrFunc();
+	void editorsetstrFunc();        //implemented in Lua
 	void editorsettitleFunc();
 	void editorundoFunc();
 	void environFunc();             //implemented in Lua
@@ -311,6 +311,19 @@ public:
 private:
 	const bool m_Lock;
 };
+
+static FileEditor* GetActiveEditor(Editor** MemoEdit)
+{
+	Dialog *Dlg = dynamic_cast<Dialog*>(FrameManager->GetTopModal());
+	*MemoEdit = Dlg ? Dlg->GetMemoEdit() : nullptr;
+
+	if (*MemoEdit == nullptr && CtrlObject->Macro.GetArea() == MACROAREA_EDITOR)
+	{
+		FileEditor *CurEditor = CtrlObject->Plugins.CurEditor;
+		return (CurEditor && CurEditor->IsVisible()) ? CurEditor : nullptr;
+	}
+	return nullptr;
+}
 
 void KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 {
@@ -842,15 +855,14 @@ void KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 		case MCODE_V_EDITORFILENAME: // Editor.FileName
 		case MCODE_V_EDITORSELVALUE: // Editor.SelValue
 		{
-			FileEditor *CurEditor = CtrlObject->Plugins.CurEditor;
-			Dialog *Dlg = dynamic_cast<Dialog*>(FrameManager->GetTopModal());
-			Editor *edit = Dlg ? Dlg->GetMemoEdit() : nullptr;
+			Editor *Memo;
+			FileEditor *CurEditor = GetActiveEditor(&Memo);
 
-			if (edit || (GetArea()==MACROAREA_EDITOR && CurEditor && CurEditor->IsVisible()))
+			if (CurEditor || Memo)
 			{
 				if (CheckCode == MCODE_V_EDITORFILENAME)
 				{
-					if (!edit)
+					if (!Memo)
 					{
 						FARString strType;
 						CurEditor->GetTypeAndName(strType, tmpStr);
@@ -859,13 +871,15 @@ void KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 				}
 				else if (CheckCode == MCODE_V_EDITORSELVALUE)
 				{
-					if (edit) edit->VMProcess(CheckCode,&tmpStr);
+					if (Memo) Memo->VMProcess(CheckCode,&tmpStr);
 					else CurEditor->VMProcess(CheckCode,&tmpStr);
 					return api.PushString(tmpStr);
 				}
 				else
-					if (edit) return api.PushInteger(edit->VMProcess(CheckCode));
+				{
+					if (Memo) return api.PushInteger(Memo->VMProcess(CheckCode));
 					else return api.PushInteger(CurEditor->VMProcess(CheckCode));
+				}
 			}
 			return (CheckCode == MCODE_V_EDITORFILENAME || CheckCode == MCODE_V_EDITORSELVALUE) ?
 				api.PushString(L"") : api.PushInteger(0);
@@ -2165,11 +2179,15 @@ void FarMacroApi::editorposFunc()
 	int What  = Params[1].getInt32();
 	int Where = Params[2].getInt32();
 
-	auto CurEditor = CtrlObject->Plugins.CurEditor;
-	if (CtrlObject->Macro.GetArea()==MACROAREA_EDITOR && CurEditor && CurEditor->IsVisible())
+	Editor *Memo;
+	FileEditor *CurEditor = GetActiveEditor(&Memo);
+	if (CurEditor || Memo)
 	{
 		EditorInfo ei { sizeof(ei) };
-		CurEditor->EditorControl(ECTL_GETINFO,&ei);
+		if (CurEditor)
+			CurEditor->EditorControl(ECTL_GETINFO, &ei);
+		else
+			Memo->EditorControl(ECTL_GETINFO, &ei);
 
 		switch (Op)
 		{
@@ -2276,8 +2294,9 @@ void FarMacroApi::editorsetFunc()
 	auto& _longState = Params[1];
 	int Index = Params[0].getInt32();
 
-	auto CurEditor = CtrlObject->Plugins.CurEditor;
-	if (CtrlObject->Macro.GetArea()==MACROAREA_EDITOR && CurEditor && CurEditor->IsVisible())
+	Editor *Memo;
+	FileEditor *CurEditor = GetActiveEditor(&Memo);
+	if (CurEditor)
 	{
 		long longState=-1L;
 
@@ -3008,12 +3027,16 @@ void FarMacroApi::editorundoFunc()
 	auto& Action = Params[0];
 	TVar Ret = 0;
 
-	auto CurEditor = CtrlObject->Plugins.CurEditor;
-	if (CtrlObject->Macro.GetArea()==MACROAREA_EDITOR && CurEditor && CurEditor->IsVisible())
+	Editor *Memo;
+	FileEditor *CurEditor = GetActiveEditor(&Memo);
+	if (CurEditor || Memo)
 	{
 		EditorUndoRedo eur;
-		eur.Command=(int)Action.toInteger();
-		Ret=CurEditor->EditorControl(ECTL_UNDOREDO,&eur);
+		eur.Command = (int)Action.toInteger();
+		if (CurEditor)
+			Ret = CurEditor->EditorControl(ECTL_UNDOREDO, &eur);
+		else
+			Ret = Memo->EditorControl(ECTL_UNDOREDO, &eur);
 	}
 
 	PushInteger(Ret.i() ? 1:0);
@@ -3026,8 +3049,9 @@ void FarMacroApi::editorsettitleFunc()
 	auto& Title = Params[0];
 	TVar Ret = 0;
 
-	auto CurEditor = CtrlObject->Plugins.CurEditor;
-	if (CtrlObject->Macro.GetArea()==MACROAREA_EDITOR && CurEditor && CurEditor->IsVisible())
+	Editor *Memo;
+	FileEditor *CurEditor = GetActiveEditor(&Memo);
+	if (CurEditor)
 	{
 		if (Title.isInteger() && !Title.i())
 		{
