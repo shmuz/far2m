@@ -73,6 +73,7 @@ function MT.test_areas()
   TestArea ("Tree",       "CtrlT Tab",  "Tab CtrlT")
   TestArea ("FindFolder", "AltF10",     "Esc")
   TestArea ("UserMenu",   "F2",         "Esc")
+  TestArea ("MemoEdit",   "F2 Ins Enter Tab Tab", "Esc Esc")
 
   TestArea("Shell")
   asrt.isfalse (Area.Other)
@@ -92,6 +93,7 @@ function MT.test_areas()
   asrt.isfalse (Area.ShellAutoCompletion)
   asrt.isfalse (Area.DialogAutoCompletion)
   asrt.isfalse (Area.Grabber)
+  asrt.isfalse (Area.MemoEdit)
 end
 
 local function test_mf_akey()

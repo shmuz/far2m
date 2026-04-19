@@ -842,22 +842,30 @@ void KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 		case MCODE_V_EDITORFILENAME: // Editor.FileName
 		case MCODE_V_EDITORSELVALUE: // Editor.SelValue
 		{
-			auto CurEditor = CtrlObject->Plugins.CurEditor;
-			if (GetArea()==MACROAREA_EDITOR && CurEditor && CurEditor->IsVisible())
+			FileEditor *CurEditor = CtrlObject->Plugins.CurEditor;
+			Dialog *Dlg = dynamic_cast<Dialog*>(FrameManager->GetTopModal());
+			Editor *edit = Dlg ? Dlg->GetMemoEdit() : nullptr;
+
+			if (edit || (GetArea()==MACROAREA_EDITOR && CurEditor && CurEditor->IsVisible()))
 			{
 				if (CheckCode == MCODE_V_EDITORFILENAME)
 				{
-					FARString strType;
-					CurEditor->GetTypeAndName(strType, tmpStr);
-					return api.PushString(tmpStr);
+					if (!edit)
+					{
+						FARString strType;
+						CurEditor->GetTypeAndName(strType, tmpStr);
+						return api.PushString(tmpStr);
+					}
 				}
 				else if (CheckCode == MCODE_V_EDITORSELVALUE)
 				{
-					CurEditor->VMProcess(CheckCode,&tmpStr);
+					if (edit) edit->VMProcess(CheckCode,&tmpStr);
+					else CurEditor->VMProcess(CheckCode,&tmpStr);
 					return api.PushString(tmpStr);
 				}
 				else
-					return api.PushInteger(CurEditor->VMProcess(CheckCode));
+					if (edit) return api.PushInteger(edit->VMProcess(CheckCode));
+					else return api.PushInteger(CurEditor->VMProcess(CheckCode));
 			}
 			return (CheckCode == MCODE_V_EDITORFILENAME || CheckCode == MCODE_V_EDITORSELVALUE) ?
 				api.PushString(L"") : api.PushInteger(0);

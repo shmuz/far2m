@@ -219,6 +219,7 @@ local prop_Area = {
   ShellAutoCompletion  = function() return MacroCallFar(MCODE_V_MACRO_AREA)==15 end,
   DialogAutoCompletion = function() return MacroCallFar(MCODE_V_MACRO_AREA)==16 end,
   Grabber    = function() return MacroCallFar(MCODE_V_MACRO_AREA)==17 end,
+  MemoEdit   = function() return MacroCallFar(MCODE_V_MACRO_AREA)==18 end,
 }
 
 local prop_APanel = {

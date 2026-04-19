@@ -1989,23 +1989,32 @@ void WINAPI FarTextV2(int X, int Y, const ColorDialogData *Data, const wchar_t *
 
 static int FarEditorControlSynchedV2(int EditorID, int Command, void *Param)
 {
+	if (FrameManager->ManagerIsDown())
+		return 0;
+
+	if (EditorID == -1) {
+		auto Dlg = dynamic_cast<Dialog*>(FrameManager->GetTopModal());
+		if (Dlg) {
+			Editor *editor = Dlg->GetMemoEdit();
+			return editor ? editor->EditorControl(Command, Param) : 0;
+		}
+	}
+
 	int Ret = 0;
 
-	if (!FrameManager->ManagerIsDown()) {
-		if (EditorID == -1) {
-			// BUGBUG: guess which editor is really current at this moment
-			auto &Plugins = CtrlObject->Plugins;
-			if (Plugins.CurDialogEditor)
-				Ret = Plugins.CurDialogEditor->EditorControl(Command, Param);
-			else if (Plugins.CurEditor)
-				Ret = Plugins.CurEditor->EditorControl(Command, Param);
-		}
-		else {
-			Editor *edit = Editor::GetEditorById(EditorID);
-			if (edit) {
-				auto f_edit = dynamic_cast<FileEditor*>(edit->GetOwner());
-				Ret = f_edit ? f_edit->EditorControl(Command, Param) : edit->EditorControl(Command, Param);
-			}
+	if (EditorID == -1) {
+		// BUGBUG: guess which editor is really current at this moment
+		auto &Plugins = CtrlObject->Plugins;
+		if (false && Plugins.CurDialogEditor)
+			Ret = Plugins.CurDialogEditor->EditorControl(Command, Param);
+		else if (Plugins.CurEditor)
+			Ret = Plugins.CurEditor->EditorControl(Command, Param);
+	}
+	else {
+		Editor *edit = Editor::GetEditorById(EditorID);
+		if (edit) {
+			auto f_edit = dynamic_cast<FileEditor*>(edit->GetOwner());
+			Ret = f_edit ? f_edit->EditorControl(Command, Param) : edit->EditorControl(Command, Param);
 		}
 	}
 

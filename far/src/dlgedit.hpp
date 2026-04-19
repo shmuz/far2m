@@ -171,7 +171,7 @@ public:
 	}
 
 	bool HistoryGetSimilar(FARString &strStr, int LastCmdPartLength, bool bAppend = false);
-	int GetEditorID() const;
+	Editor* GetMemoEdit() const { return multiEdit; }
 
 private:
 	Dialog *m_Dialog;

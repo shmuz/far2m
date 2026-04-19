@@ -35,6 +35,7 @@ local TrueAreaNames = {
   [F.MACROAREA_SHELLAUTOCOMPLETION]  = "ShellAutoCompletion",
   [F.MACROAREA_DIALOGAUTOCOMPLETION] = "DialogAutoCompletion",
   [F.MACROAREA_GRABBER]              = "Grabber",
+  [F.MACROAREA_MEMOEDIT]             = "MemoEdit",
   [F.MACROAREA_COMMON]               = "Common",
 }
 
@@ -47,7 +48,7 @@ end
 
 local SomeAreaNames = {
   "other", "viewer", "editor", "dialog", "menu", "help", "dialogautocompletion",
-  "grabber", "desktop", "common" -- "common" должен идти последним
+  "grabber", "desktop", "memoedit", "common" -- "common" должен идти последним
 }
 
 local function GetTrueAreaName(Mode) return TrueAreaNames[Mode] end

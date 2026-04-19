@@ -45,6 +45,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "CriticalSections.hpp"
 
 class History;
+class Editor;
 
 // Флаги текущего режима диалога
 enum DIALOG_MODES
@@ -458,6 +459,7 @@ public:
 
 	void SetId(const GUID &Id);
 	bool IsRedrawEnabled() const { return IsEnableRedraw > 0; }
+	Editor* GetMemoEdit(int Pos = -1) const;
 
 	friend class History;
 };

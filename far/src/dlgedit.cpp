@@ -698,8 +698,3 @@ bool DlgEdit::HistoryGetSimilar(FARString &strStr, int LastCmdPartLength, bool b
 {
 	return iHistory ? iHistory->GetSimilar(strStr, LastCmdPartLength, bAppend) : false;
 }
-
-int DlgEdit::GetEditorID() const
-{
-	return (Type == DLGEDIT_MULTILINE) ? multiEdit->GetEditorID() : -1;
-}

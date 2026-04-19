@@ -570,6 +570,7 @@ void Dialog::InitDialog()
 			IdExist = true;
 		}
 
+		SetMacroArea(Item[InitFocus]->Type == DI_MEMOEDIT ? MACROAREA_MEMOEDIT : MACROAREA_DIALOG);
 		DlgProc((HANDLE)this, DN_GOTFOCUS, InitFocus, 0);
 	}
 }
@@ -4144,6 +4145,8 @@ void Dialog::ChangeFocus2(unsigned SetFocusPos)
 		PrevFocusPos = FocusPos;
 		FocusPos = SetFocusPos;
 
+		SetMacroArea(Item[FocusPos]->Type == DI_MEMOEDIT ? MACROAREA_MEMOEDIT : MACROAREA_DIALOG);
+
 		if (DialogMode.Check(DMODE_INITOBJECTS))
 			DlgProc((HANDLE)this, DN_GOTFOCUS, FocusPos, 0);
 	}
@@ -6448,8 +6451,8 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 
 		case DM_GETMEMOEDITID:
 			if (Type == DI_MEMOEDIT && Param2) {
-				DlgEdit *DialogEdit = (DlgEdit*)CurItem->ObjPtr;
-				*reinterpret_cast<int*>(Param2) = DialogEdit->GetEditorID();
+				auto dialogEdit = reinterpret_cast<DlgEdit*>(CurItem->ObjPtr);
+				*reinterpret_cast<int*>(Param2) = dialogEdit->GetMemoEdit()->GetEditorID();
 				return TRUE;
 			}
 			return FALSE;
@@ -6528,4 +6531,14 @@ void Dialog::SetId(const GUID &Id)
 {
 	this->Id = Id;
 	IdExist = true;
+}
+
+Editor* Dialog::GetMemoEdit(int Pos) const
+{
+	Pos = (Pos < 0) ? FocusPos : Pos;
+	if (Pos >= 0 && Pos < (int)ItemCount && Item[Pos]->Type == DI_MEMOEDIT) {
+		auto dlgEdit = reinterpret_cast<DlgEdit*>(Item[Pos]->ObjPtr);
+		return dlgEdit->GetMemoEdit();
+	}
+	return nullptr;
 }
