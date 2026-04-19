@@ -2001,7 +2001,7 @@ static int FarEditorControlSynchedV2(int EditorID, int Command, void *Param)
 		if (auto Dlg = dynamic_cast<Dialog*>(FrameManager->GetTopModal()))
 			editor = Dlg->GetMemoEdit();
 
-		if (editor == nullptr && CtrlObject->Plugins.CurEditor)
+		if (editor == nullptr)
 			fileEdit = CtrlObject->Plugins.CurEditor;
 	}
 	else if ((editor = Editor::GetEditorById(EditorID)))
