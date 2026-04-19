@@ -2251,6 +2251,20 @@ LONG_PTR WINAPI ViewerSearchDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR P
 						0);
 				return FALSE;
 			}
+			break;
+		}
+		case DN_CLOSE: {
+			if (Param1 >= 0) {
+				int Pos = SendDlgMessage(hDlg, DM_SHOWITEM, SD_EDIT_TEXT, -1) ? SD_EDIT_TEXT : SD_EDIT_HEX;
+				const wchar_t *Txt = (const wchar_t*)SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR, Pos, 0);
+				bool IsEmpty = (Pos == SD_EDIT_TEXT) ? *Txt == 0 : !IsHexDigit(*Txt);
+				if (IsEmpty) {
+					SendDlgMessage(hDlg, DM_SETFOCUS, Pos, 0);
+					Message(MSG_WARNING, 1, Msg::EditSearchTitle, Msg::EditEmptySearchField, Msg::Ok);
+					return FALSE;
+				}
+			}
+			break;
 		}
 	}
 
