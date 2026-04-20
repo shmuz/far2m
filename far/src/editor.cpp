@@ -399,7 +399,7 @@ void Editor::ShowEditor(bool CurLineOnly)
 		  Send EE_REDRAW with param=2 if text was just modified.
 		*/
 		if (!ScrBuf.GetLockCount()) {
-			auto NeedRedraw = !Flags.Check(FEDITOR_DIALOGMEMOEDIT)
+			auto NeedRedraw = true || !Flags.Check(FEDITOR_DIALOGMEMOEDIT) // "true" is here intentionally
 						|| (CtrlObject && CtrlObject->Plugins.CurDialogEditor == this);
 
 			if (Flags.Check(FEDITOR_JUSTMODIFIED)) {
@@ -837,6 +837,11 @@ int Editor::ProcessKey(FarKey Key)
 
 	if (Key == KEY_NONE)
 		return TRUE;
+
+	if (Flags.Check(FEDITOR_DIALOGMEMOEDIT)) {
+		if (CtrlObject->Plugins.ProcessEditorInput(FrameManager->GetLastInputRecord()))
+			return TRUE;
+	}
 
 	_KEYMACRO(CleverSysLog SL(L"Editor::ProcessKey()"));
 	_KEYMACRO(SysLog(L"Key=%ls", _FARKEY_ToName(Key)));
