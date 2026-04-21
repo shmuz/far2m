@@ -727,7 +727,7 @@ static int editor_GetInfo(lua_State *L)
 	if (!PSInfo.EditorControlV2(EditorId, ECTL_GETINFO, &ei))
 		return lua_pushnil(L), 1;
 
-	lua_createtable(L, 0, 18);
+	lua_createtable(L, 0, 22);
 	PutNumToTable(L, "EditorID", ei.EditorID);
 
 	if (push_ev_filename(L, 1, EditorId))

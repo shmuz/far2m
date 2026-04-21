@@ -18,14 +18,14 @@ local areaCodes = {
   other="O", shell="S", viewer="V", editor="E", dialog="D", search="S",
   disks="D", mainmenu="M", menu="M", help="H", info="I", qview="Q", tree="T",
   findfolder="F", usermenu="U", shellautocompletion="S",
-  dialogautocompletion="D", grabber="G", desktop="K", common="C",
+  dialogautocompletion="D", grabber="G", memoedit="K", common="C",
 }
 
 local areaArr = {
   "other", "shell", "viewer", "editor", "dialog", "search",
   "disks", "mainmenu", "menu", "help", "info", "qview", "tree",
   "findfolder", "usermenu", "shellautocompletion",
-  "dialogautocompletion", "grabber", "desktop", "common",
+  "dialogautocompletion", "grabber", "memoedit", "common",
 }
 -- O S V E D S D M M H I Q T F U S D G K C
 --   1     2 1 2 3 3             1 2
