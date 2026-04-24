@@ -5624,10 +5624,10 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 				} else {
 					EditorSetPosition *esp = (EditorSetPosition *)Param2;
 					DlgEdit *EditPtr = (DlgEdit *)(CurItem->ObjPtr);
-					EditPtr->SetCurPos(esp->CurPos);
-					EditPtr->SetCellCurPos(esp->CurTabPos);
-					EditPtr->SetLeftPos(esp->LeftPos);
-					EditPtr->SetOvertypeMode(esp->Overtype);
+					if (esp->CurPos >= 0)     EditPtr->SetCurPos(esp->CurPos);
+					if (esp->CurTabPos >= 0)  EditPtr->SetCellCurPos(esp->CurTabPos);
+					if (esp->LeftPos >= 0)    EditPtr->SetLeftPos(esp->LeftPos);
+					if (esp->Overtype >= 0)   EditPtr->SetOvertypeMode(esp->Overtype);
 					Dlg->ShowDialog(Param1);
 					ScrBuf.Flush();
 					return TRUE;
