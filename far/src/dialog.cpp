@@ -5611,27 +5611,22 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 		/*****************************************************************/
 		case DM_SETEDITPOSITION: {
 			if (Param2 && FarIsEdit(Type)) {
+				int Result = TRUE;
 				if (Type == DI_MEMOEDIT) {
+					auto EditPtr = reinterpret_cast<DlgEdit*>(CurItem->ObjPtr);
+					Result = EditPtr->GetMemoEdit()->EditorControl(ECTL_SETPOSITION, (void*)Param2);
+				}
+				else {
 					EditorSetPosition *esp = (EditorSetPosition *)Param2;
-					DlgEdit *EditPtr = (DlgEdit *)(CurItem->ObjPtr);
-					EditPtr->SetCurPos(esp->CurPos, esp->CurLine);
-					EditPtr->SetCellCurPos(esp->CurTabPos);
-					EditPtr->SetLeftPos(esp->LeftPos, esp->CurLine);
-					EditPtr->SetOvertypeMode(esp->Overtype);
-					Dlg->ShowDialog(Param1);
-					ScrBuf.Flush();
-					return TRUE;
-				} else {
-					EditorSetPosition *esp = (EditorSetPosition *)Param2;
-					DlgEdit *EditPtr = (DlgEdit *)(CurItem->ObjPtr);
+					auto EditPtr = reinterpret_cast<DlgEdit*>(CurItem->ObjPtr);
 					if (esp->CurPos >= 0)     EditPtr->SetCurPos(esp->CurPos);
 					if (esp->CurTabPos >= 0)  EditPtr->SetCellCurPos(esp->CurTabPos);
 					if (esp->LeftPos >= 0)    EditPtr->SetLeftPos(esp->LeftPos);
 					if (esp->Overtype >= 0)   EditPtr->SetOvertypeMode(esp->Overtype);
-					Dlg->ShowDialog(Param1);
-					ScrBuf.Flush();
-					return TRUE;
 				}
+				Dlg->ShowDialog(Param1);
+				ScrBuf.Flush();
+				return Result;
 			}
 
 			return FALSE;

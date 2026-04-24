@@ -5172,6 +5172,10 @@ int Editor::EditorControl(int Command, void *Param)
 				}
 
 				Unlock();
+				if (!m_HostFileEditor) {
+					Show();
+					ScrBuf.Flush();
+				}
 				return TRUE;
 			}
 
