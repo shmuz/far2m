@@ -5586,14 +5586,17 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 				if (Type == DI_MEMOEDIT) {
 					EditorSetPosition *esp = (EditorSetPosition *)Param2;
 					DlgEdit *EditPtr = (DlgEdit *)(CurItem->ObjPtr);
-					esp->CurLine = EditPtr->GetCurRow();
-					esp->CurPos = EditPtr->GetCurPos();
-					esp->CurTabPos = EditPtr->GetCellCurPos();
-					esp->TopScreenLine = 0;
-					esp->LeftPos = EditPtr->GetLeftPos();
-					esp->Overtype = EditPtr->GetOvertypeMode();
+					EditorInfo Info { sizeof(Info) };
+					EditPtr->GetMemoEdit()->EditorControl(ECTL_GETINFO, &Info);
+					esp->CurLine = Info.CurLine;
+					esp->CurPos = Info.CurPos;
+					esp->CurTabPos = Info.CurTabPos;
+					esp->TopScreenLine = Info.TopScreenLine;
+					esp->LeftPos = Info.LeftPos;
+					esp->Overtype = Info.Overtype;
 					return TRUE;
-				} else {
+				}
+				else {
 					EditorSetPosition *esp = (EditorSetPosition *)Param2;
 					DlgEdit *EditPtr = (DlgEdit *)(CurItem->ObjPtr);
 					esp->CurLine = 0;
