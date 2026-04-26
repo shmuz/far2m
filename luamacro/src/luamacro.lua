@@ -21,7 +21,7 @@ local TableExecString -- must be separate from LastMessage, otherwise Far crashe
 local utils, macrobrowser, panelsort, keymacro, farcmds
 local PluginIsReady
 
-local RegexExpandEnv = regex.new( [[ \$ \( (\w+) \) | \$ (\w+) ]], "x")
+local RegexExpandEnv = regex.new( [[ \$ \{ (\w+) \} | \$ (\w+) ]], "x")
 local HomeDir = far.GetMyHome()
 
 local function FullExpand(text)

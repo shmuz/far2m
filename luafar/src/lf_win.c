@@ -422,7 +422,7 @@ static int win_ExpandEnv (lua_State *L)
 
 	while (*p) {
 		const char *q, *r;
-		if ( (q = strstr(p, "$(")) && (r = strchr(q+2, ')')) ) {
+		if ( (q = strstr(p, "${")) && (r = strchr(q+2, '}')) ) {
 			lua_pushlstring(L, q+2, r-q-2);
 			const char *s = getenv(lua_tostring(L,-1));
 			lua_pop(L,1); // keep stack balance

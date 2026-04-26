@@ -604,12 +604,12 @@ function LF.test_win_CompareString()
 end
 
 function LF.test_win_ExpandEnv()
-  local s1 = "$(HOME)/abc"
+  local s1 = "${HOME}/abc"
   local s2 = win.ExpandEnv(s1)
   asrt.neq(s1, s2)
   asrt.num(s2:find("abc$"))
 
-  local s3 = "$(HOME-HOME-HOME)/abc"
+  local s3 = "${HOME-HOME-HOME}/abc"
   local s4 = win.ExpandEnv(s3)
   asrt.eq(s3, s4)
   local s5 = win.ExpandEnv(s3, true)
