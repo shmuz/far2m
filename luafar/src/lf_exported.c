@@ -8,39 +8,41 @@
 #include "far3parts.h"
 #include <farkeys.h>
 
+#include "lf_util.h"
+#include "lf_string.h"
 #include "lf_bit64.h"
 #include "lf_service.h"
-#include "lf_string.h"
-#include "lf_util.h"
 
 extern BOOL Open_Luamacro (lua_State* L, INT_PTR Item);
 
 void PackMacroValues(lua_State* L, size_t Count, const struct FarMacroValue* Values); // forward declaration
 
 // "Collector" is a Lua table referenced from the Plugin Object table by name.
-// Collector contains an array of lightuserdata which are pointers to new[]'ed
-// chars.
-const char COLLECTOR_OPI[] = "Collector_OpenPluginInfo";
+// Collector contains an array of lightuserdata which are pointers to malloc'ed
+// memory regions.
+const char COLLECTOR_OPI[] = "Collector_OpenPanelInfo";
 const char COLLECTOR_PI[]  = "Collector_PluginInfo";
 const char KEY_OBJECT[]    = "Panel_Object";
 
-static void push_guid(lua_State *L, const void *pGuid)
-{
-	lua_pushlstring(L, (const char*)pGuid, sizeof(GUID));
-}
-
 // taken from lua.c v5.1.2
-int traceback (lua_State *L) {
-	lua_getfield(L, LUA_GLOBALSINDEX, "debug");
-	if (!lua_istable(L, -1)) {
+int traceback(lua_State *L)
+{
+	lua_getglobal(L, "debug");
+
+	if (!lua_istable(L, -1))
+	{
 		lua_pop(L, 1);
 		return 1;
 	}
+
 	lua_getfield(L, -1, "traceback");
-	if (!lua_isfunction(L, -1)) {
+
+	if (!lua_isfunction(L, -1))
+	{
 		lua_pop(L, 2);
 		return 1;
 	}
+
 	lua_pushvalue(L, 1);  /* pass error message */
 	lua_pushinteger(L, 2);  /* skip this function and traceback */
 	lua_call(L, 2, 1);  /* call debug.traceback */
@@ -48,7 +50,8 @@ int traceback (lua_State *L) {
 }
 
 // taken from lua.c v5.1.2 (modified)
-int docall (lua_State *L, int narg, int nret) {
+int docall(lua_State *L, int narg, int nret)
+{
 	int status;
 	int base = lua_gettop(L) - narg;  /* function index */
 	lua_pushcfunction(L, traceback);  /* push traceback function */
@@ -57,6 +60,7 @@ int docall (lua_State *L, int narg, int nret) {
 	lua_remove(L, base);  /* remove traceback function */
 	/* force a complete garbage collection in case of errors */
 	if (status != 0) lua_gc(L, LUA_GCCOLLECT, 0);
+
 	return status;
 }
 
@@ -70,23 +74,26 @@ int GetExportFunction(lua_State* L, const char* FuncName)
 		lua_getfield(L, -1, FuncName);
 		if (lua_isfunction(L,-1))
 			return lua_remove(L,-2), 1;
+
 		lua_pop(L,1);
 	}
 	return lua_pop(L,1), 0;
 }
 
-int pcall_msg (lua_State* L, int narg, int nret)
+int pcall_msg(lua_State* L, int narg, int nret)
 {
 	// int status = lua_pcall(L, narg, nret, 0);
-	int status = docall (L, narg, nret);
+	int status = docall(L, narg, nret);
 
-	if (status != 0) {
+	if (status != 0)
+	{
 		int status2 = 1;
 		DWORD *Flags = &GetPluginData(L)->Flags;
 
 		*Flags |= PDF_PROCESSINGERROR;
 
-		if (GetExportFunction(L, "OnError")) {
+		if (GetExportFunction(L, "OnError"))
+		{
 			lua_insert(L,-2);
 			status2 = lua_pcall(L,1,0,0);
 		}
@@ -148,13 +155,16 @@ void ReplacePluginInfoCollector(lua_State* L, const char* Key)
 
 // the value is on stack top (-1)
 // collector table is under the index 'pos' (this index cannot be a pseudo-index)
+// the function pops the value off the stack;
 const wchar_t* _AddStringToCollector(lua_State *L, int pos)
 {
-	if (lua_isstring(L,-1)) {
-		const wchar_t* s = check_utf8_string (L, -1, NULL);
+	if (lua_isstring(L,-1))
+	{
+		const wchar_t* s = check_utf8_string(L, -1, NULL);
 		lua_rawseti(L, pos, lua_objlen(L, pos) + 1);
 		return s;
 	}
+
 	lua_pop(L,1);
 	return L"";
 }
@@ -164,6 +174,7 @@ const wchar_t* _AddStringToCollector(lua_State *L, int pos)
 const wchar_t* AddStringToCollectorField(lua_State *L, int pos, const char* key)
 {
 	lua_getfield(L, -1, key);
+	if (pos < 0) --pos;
 	return _AddStringToCollector(L, pos);
 }
 
@@ -171,17 +182,18 @@ const wchar_t* AddStringToCollectorField(lua_State *L, int pos, const char* key)
 // collector table is under the index 'pos' (this index cannot be a pseudo-index)
 const wchar_t* AddStringToCollectorSlot(lua_State *L, int pos, int key)
 {
-	lua_pushinteger (L, key);
+	lua_pushinteger(L, key);
 	lua_gettable(L, -2);
+	if (pos < 0) --pos;
 	return _AddStringToCollector(L, pos);
 }
 
 // collector table is under the index 'pos' (this index cannot be a pseudo-index)
 void* AddBufToCollector(lua_State *L, int pos, size_t size)
 {
+	void *t = lua_newuserdata(L, size);
 	if (pos < 0) --pos;
-	void* t = lua_newuserdata(L, size);
-	memset (t, 0, size);
+	memset(t, 0, size);
 	lua_rawseti(L, pos, lua_objlen(L, pos) + 1);
 	return t;
 }
@@ -193,18 +205,27 @@ const wchar_t** CreateStringsArray(lua_State* L, int cpos, const char* field, in
 {
 	const wchar_t **buf = NULL;
 	if (numstrings) *numstrings = 0;
-	lua_getfield(L, -1, field);
-	if (lua_istable(L, -1)) {
-		int n = lua_objlen(L, -1);
+	lua_getfield(L, -1, field);     //+1
+	if (cpos < 0) --cpos;
+
+	if (lua_istable(L, -1))
+	{
+		size_t n = lua_objlen(L, -1);
+
 		if (numstrings) *numstrings = n;
-		if (n > 0) {
+
+		if (n > 0)
+		{
 			buf = (const wchar_t**)AddBufToCollector(L, cpos, (n+1) * sizeof(wchar_t*));
-			for (int i=0; i < n; i++)
-				buf[i] = AddStringToCollectorSlot(L, cpos, i+1);
+
+			for(size_t i=0; i < n; i++)
+				buf[i] = AddStringToCollectorSlot(L, cpos, (int)i+1);
+
 			buf[n] = NULL;
 		}
 	}
-	lua_pop(L, 1);
+
+	lua_pop(L, 1);  //+0
 	return buf;
 }
 
@@ -323,7 +344,7 @@ int LF_GetFindData(lua_State* L, HANDLE hPanel, struct PluginPanelItem **pPanelI
 	return FALSE;
 }
 
-static void free_find_data(lua_State* L, HANDLE hPanel, struct PluginPanelItem *PanelItems, int ItemsNumber)
+void LF_FreeFindData(lua_State* L, HANDLE hPanel, struct PluginPanelItem *PanelItems, int ItemsNumber)
 {
 	if (PanelItems) {
 		for (int i = 0; i < ItemsNumber; i++) {
@@ -338,11 +359,7 @@ static void free_find_data(lua_State* L, HANDLE hPanel, struct PluginPanelItem *
 		free(PanelItems);
 	}
 }
-
-void LF_FreeFindData(lua_State* L, HANDLE hPanel, struct PluginPanelItem *PanelItems, int ItemsNumber)
-{
-	free_find_data(L, hPanel, PanelItems, ItemsNumber);
-}
+//---------------------------------------------------------------------------
 
 // PanelItems table should be on Lua stack top
 void UpdateFileSelection(lua_State* L, struct PluginPanelItem *PanelItems, int ItemsNumber)
@@ -350,6 +367,7 @@ void UpdateFileSelection(lua_State* L, struct PluginPanelItem *PanelItems, int I
 	for (int i=0; i < ItemsNumber; i++)
 	{
 		lua_rawgeti(L, -1, i+1);           //+1
+
 		if (lua_istable(L,-1))
 		{
 			lua_getfield(L,-1,"Flags");      //+2
@@ -359,6 +377,7 @@ void UpdateFileSelection(lua_State* L, struct PluginPanelItem *PanelItems, int I
 				PanelItems[i].Flags &= ~PPIF_SELECTED;
 			lua_pop(L,1);         //+1
 		}
+
 		lua_pop(L,1);           //+0
 	}
 }
@@ -453,7 +472,7 @@ BOOL LF_RunDefaultScript(lua_State* L)
 }
 
 // return FALSE only if error occurred
-BOOL CheckReloadDefaultScript (lua_State *L)
+static BOOL CheckReloadDefaultScript(lua_State *L)
 {
 	// reload default script?
 	int reload = 0;
@@ -472,12 +491,13 @@ BOOL CheckReloadDefaultScript (lua_State *L)
 // -- a new table is created, the object is put into it under the key KEY_OBJECT;
 // -- the table is put into the registry, and reference to it is obtained;
 // -- the function pops the object and returns the reference;
-HANDLE RegisterObject(lua_State* L)
+static HANDLE RegisterObject(lua_State* L)
 {
+	void *ptr;
 	lua_newtable(L);                  //+2: Obj,Tbl
 	lua_pushvalue(L,-2);              //+3: Obj,Tbl,Obj
 	lua_setfield(L,-2,KEY_OBJECT);    //+2: Obj,Tbl
-	void *ptr = (void*)lua_topointer(L,-1);
+	ptr = (void*)lua_topointer(L,-1); //+2
 	lua_pushlightuserdata(L, ptr);    //+3
 	lua_pushvalue(L,-2);              //+4
 	lua_rawset(L, LUA_REGISTRYINDEX); //+2
@@ -497,27 +517,32 @@ static void PushAnalyseInfo(lua_State* L, const struct AnalyseInfo *Info)
 HANDLE LF_Analyse(lua_State* L, const struct AnalyseInfo *Info)
 {
 	HANDLE result = INVALID_HANDLE_VALUE;
-	if (GetExportFunction(L, "Analyse"))   //+1
+
+	if (GetExportFunction(L, "Analyse"))    //+1
 	{
 		PushAnalyseInfo(L, Info);            //+2
-		if (!pcall_msg(L, 1, 1))             //+1
+
+		if (!pcall_msg(L, 1, 1))              //+1
 		{
 			if (lua_toboolean(L, -1))
 			{
 				const intptr_t Unfit = (intptr_t)INVALID_HANDLE_VALUE;
 				intptr_t ref = luaL_ref(L, LUA_REGISTRYINDEX);   //+0
+
 				if (ref == Unfit)
 				{
 					lua_rawgeti(L, LUA_REGISTRYINDEX, Unfit);      //+1
 					ref = luaL_ref(L, LUA_REGISTRYINDEX);          //+0
 					luaL_unref(L, LUA_REGISTRYINDEX, Unfit);
 				}
+
 				result = (HANDLE)ref;
 			}
 			else
-				lua_pop(L, 1); //+0
+				lua_pop(L, 1);                   //+0
 		}
 	}
+
 	return result;
 }
 
@@ -525,6 +550,7 @@ void LF_CloseAnalyse(lua_State* L, const struct CloseAnalyseInfo *Info)
 {
 	luaL_unref(L, LUA_REGISTRYINDEX, (int)(intptr_t)Info->Handle);
 }
+//---------------------------------------------------------------------------
 
 // the KeyBar table is on stack top
 static void OPI_FillInfoLines(lua_State *L, struct OpenPluginInfo *Info, int cpos)
@@ -532,18 +558,25 @@ static void OPI_FillInfoLines(lua_State *L, struct OpenPluginInfo *Info, int cpo
 	lua_getfield(L, -1, "InfoLines");
 	lua_getfield(L, -2, "InfoLinesNumber");
 
-	if (lua_istable(L,-2) && lua_isnumber(L,-1)) {
+	if (lua_istable(L,-2) && lua_isnumber(L,-1))
+	{
 		int InfoLinesNumber = lua_tointeger(L, -1);
 		lua_pop(L,1);                         //+5: Info,Tbl,Coll,Info,Lines
-		if (InfoLinesNumber > 0 && InfoLinesNumber <= 100) {
+
+		if (InfoLinesNumber > 0)
+		{
 			struct InfoPanelLine *pl = (struct InfoPanelLine*)
 				AddBufToCollector(L, cpos, InfoLinesNumber * sizeof(struct InfoPanelLine));
 			Info->InfoLines = pl;
 			Info->InfoLinesNumber = InfoLinesNumber;
-			for (int i=0; i<InfoLinesNumber; ++i,++pl,lua_pop(L,1)) {
+
+			for(int i=0; i<InfoLinesNumber; ++i,++pl,lua_pop(L,1))
+			{
 				lua_pushinteger(L, i+1);
 				lua_gettable(L, -2);
-				if (lua_istable(L, -1)) {          //+6: Info,Tbl,Coll,Info,Lines,Line
+
+				if (lua_istable(L, -1))            //+6: Info,Tbl,Coll,Info,Lines,Line
+				{
 					pl->Text = AddStringToCollectorField(L, cpos, "Text");
 					pl->Data = AddStringToCollectorField(L, cpos, "Data");
 					flags_t Flags = GetFlagsFromTable(L, -1, "Flags");
@@ -551,6 +584,7 @@ static void OPI_FillInfoLines(lua_State *L, struct OpenPluginInfo *Info, int cpo
 				}
 			}
 		}
+
 		lua_pop(L,1);
 	}
 	else lua_pop(L, 2);
@@ -561,18 +595,26 @@ static void OPI_FillPanelModes(lua_State *L, struct OpenPluginInfo *Info, int cp
 {
 	lua_getfield(L, -1, "PanelModesArray");
 	lua_getfield(L, -2, "PanelModesNumber");
-	if (lua_istable(L,-2) && lua_isnumber(L,-1)) {
+
+	if (lua_istable(L,-2) && lua_isnumber(L,-1))
+	{
 		int PanelModesNumber = lua_tointeger(L, -1);
 		lua_pop(L,1);                               //+5: Info,Tbl,Coll,Info,Modes
-		if (PanelModesNumber > 0 && PanelModesNumber <= 100) {
+
+		if (PanelModesNumber > 0)
+		{
 			struct PanelMode *pm = (struct PanelMode*)
 				AddBufToCollector(L, cpos, PanelModesNumber * sizeof(struct PanelMode));
 			Info->PanelModesArray = pm;
 			Info->PanelModesNumber = PanelModesNumber;
-			for (int i=0; i<PanelModesNumber; ++i,++pm,lua_pop(L,1)) {
+
+			for(int i=0; i<PanelModesNumber; ++i,++pm,lua_pop(L,1))
+			{
 				lua_pushinteger(L, i+1);
 				lua_gettable(L, -2);
-				if (lua_istable(L, -1)) {                //+6: Info,Tbl,Coll,Info,Modes,Mode
+
+				if (lua_istable(L, -1))                  //+6: Info,Tbl,Coll,Info,Modes,Mode
+				{
 					pm->ColumnTypes  = AddStringToCollectorField(L, cpos, "ColumnTypes");
 					pm->ColumnWidths = AddStringToCollectorField(L, cpos, "ColumnWidths");
 					pm->StatusColumnTypes  = AddStringToCollectorField(L, cpos, "StatusColumnTypes");
@@ -586,6 +628,7 @@ static void OPI_FillPanelModes(lua_State *L, struct OpenPluginInfo *Info, int cp
 				}
 			}
 		}
+
 		lua_pop(L,1);
 	}
 	else lua_pop(L, 2);
@@ -594,8 +637,10 @@ static void OPI_FillPanelModes(lua_State *L, struct OpenPluginInfo *Info, int cp
 // the KeyBar table is on stack top
 static void OPI_FillKeyBarTitles(lua_State *L, struct OpenPluginInfo *Info, int cpos)
 {
-	lua_getfield (L, -1, "KeyBar");
-	if (lua_istable(L, -1)) {
+	lua_getfield(L, -1, "KeyBar");
+
+	if (lua_istable(L, -1))
+	{
 		struct KeyBarTitles *kbt = (struct KeyBarTitles*)
 			AddBufToCollector(L, cpos, sizeof(struct KeyBarTitles));
 		Info->KeyBar = kbt;
@@ -604,6 +649,7 @@ static void OPI_FillKeyBarTitles(lua_State *L, struct OpenPluginInfo *Info, int 
 		for(size_t i=0; i < Count; i++)
 		{
 			lua_rawgeti(L, -1, i+1);
+
 			if (!lua_istable(L, -1))
 			{
 				lua_pop(L, 1);
@@ -641,7 +687,8 @@ static void OPI_FillKeyBarTitles(lua_State *L, struct OpenPluginInfo *Info, int 
 			lua_pop(L, 1); // pop KeyBarLabel table
 		}
 	}
-	lua_pop(L,1); // pop KeyBar table
+
+	lua_pop(L, 1); // pop KeyBar table
 }
 
 void LF_GetOpenPanelInfo(lua_State* L, HANDLE hPlugin, struct OpenPluginInfo *aInfo)
@@ -653,10 +700,12 @@ void LF_GetOpenPanelInfo(lua_State* L, HANDLE hPlugin, struct OpenPluginInfo *aI
 		return;
 
 	PushPluginPair(L, hPlugin);                        //+3
+
 	if (pcall_msg(L, 2, 1) != 0)
 		return;
 
-	if (!lua_istable(L, -1)) {                          //+1: Info
+	if (!lua_istable(L, -1))                            //+1: Info
+	{
 		lua_pop(L, 1);
 		return;
 	}
@@ -849,6 +898,11 @@ static HANDLE FillFarMacroCall (lua_State* L, int narg)
 	return (HANDLE)fmc;
 }
 
+static void push_guid(lua_State *L, const void *pGuid)
+{
+	lua_pushlstring(L, (const char*)pGuid, sizeof(GUID));
+}
+
 HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 {
 	if (!CheckReloadDefaultScript(L) || !GetExportFunction(L, "Open"))
@@ -988,29 +1042,38 @@ int LF_Compare(lua_State* L, HANDLE hPlugin, const struct PluginPanelItem *Item1
 							 const struct PluginPanelItem *Item2, unsigned int Mode)
 {
 	int res = -2; // default FAR compare function should be used
-	if (GetExportFunction(L, "Compare")) { //+1: Func
+	if (GetExportFunction(L, "Compare"))    //+1: Func
+	{
 		PushPluginPair(L, hPlugin);          //+3: Func,Pair
 		PushPanelItem(L, Item1);             //+4
 		PushPanelItem(L, Item2);             //+5
 		lua_pushinteger(L, Mode);            //+6
-		if (0 == pcall_msg(L, 5, 1)) {       //+1
+
+		if (0 == pcall_msg(L, 5, 1))          //+1
+		{
 			res = lua_tointeger(L,-1);
 			lua_pop(L,1);
 		}
 	}
+
 	return res;
 }
 
 int LF_Configure(lua_State* L, const struct ConfigureInfo *Info)
 {
 	int res = FALSE;
-	if (GetExportFunction(L, "Configure")) { //+1: Func
+
+	if (GetExportFunction(L, "Configure"))    //+1: Func
+	{
 		push_guid(L, Info->Guid);
-		if (0 == pcall_msg(L, 1, 1)) {        //+1
+
+		if (0 == pcall_msg(L, 1, 1))          //+1
+		{
 			res = lua_toboolean(L,-1);
 			lua_pop(L,1);
 		}
 	}
+
 	return res;
 }
 
@@ -1018,11 +1081,15 @@ int LF_DeleteFiles(lua_State* L, HANDLE hPlugin, struct PluginPanelItem *PanelIt
 	int ItemsNumber, int OpMode)
 {
 	int res = FALSE;
-	if (GetExportFunction(L, "DeleteFiles")) {   //+1: Func
+
+	if (GetExportFunction(L, "DeleteFiles"))      //+1: Func
+	{
 		PushPluginPair(L, hPlugin);                //+3: Func,Pair
 		PushPanelItems(L, hPlugin, PanelItem, ItemsNumber); //+4
 		lua_pushinteger(L, OpMode);                //+5
-		if (0 == pcall_msg(L, 4, 1))    {           //+1
+
+		if (0 == pcall_msg(L, 4, 1))                //+1
+		{
 			res = lua_toboolean(L,-1);
 			lua_pop(L,1);
 		}
@@ -1036,13 +1103,18 @@ int LF_DeleteFiles(lua_State* L, HANDLE hPlugin, struct PluginPanelItem *PanelIt
 int LF_MakeDirectory (lua_State* L, HANDLE hPlugin, const wchar_t **Name, int OpMode)
 {
 	int res = 0;
-	if (GetExportFunction(L, "MakeDirectory")) { //+1: Func
+
+	if (GetExportFunction(L, "MakeDirectory"))    //+1: Func
+	{
 		PushPluginPair(L, hPlugin);                //+3: Func,Pair
 		push_utf8_string(L, *Name, -1);            //+4
 		lua_pushinteger(L, OpMode);                //+5
-		if (0 == pcall_msg(L, 4, 2)) {              //+2
+
+		if (0 == pcall_msg(L, 4, 2))                //+2
+		{
 			res = lua_tointeger(L,-2);
-			if (res == 1 && lua_isstring(L,-1)) {
+			if (res == 1 && lua_isstring(L,-1))
+			{
 				*Name = check_utf8_string(L,-1,NULL);
 				lua_pushvalue(L, -1);
 				lua_setfield(L, LUA_REGISTRYINDEX, "MakeDirectory.Name"); // protect from GC
@@ -1052,6 +1124,7 @@ int LF_MakeDirectory (lua_State* L, HANDLE hPlugin, const wchar_t **Name, int Op
 			lua_pop(L,2);
 		}
 	}
+
 	return res;
 }
 
@@ -1080,18 +1153,22 @@ int LF_ProcessHostFile(lua_State* L, HANDLE hPlugin, struct PluginPanelItem *Pan
 	int ItemsNumber, int OpMode)
 {
 	int ret = 0;
-	if (GetExportFunction(L, "ProcessHostFile")) {   //+1: Func
+
+	if (GetExportFunction(L, "ProcessHostFile"))      //+1: Func
+	{
 		PushPanelItems(L, hPlugin, PanelItem, ItemsNumber); //+2: Func,Item
 		lua_insert(L,-2);                  //+2: Item,Func
 		PushPluginPair(L, hPlugin);        //+4: Item,Func,Pair
 		lua_pushvalue(L,-4);               //+5: Item,Func,Pair,Item
 		lua_pushinteger(L, OpMode);        //+6: Item,Func,Pair,Item,OpMode
-		if (!pcall_msg(L, 4, 1)) {         //+2: Item,Res
+
+		if (!pcall_msg(L, 4, 1))           //+2: Item,Res
+		{
 			ret = lua_toboolean(L,-1);
 			lua_pop(L,1);                    //+1: Item (required for UpdateFileSelection)
 			UpdateFileSelection(L, PanelItem, ItemsNumber);
 		}
-		lua_pop(L,1);
+		lua_pop(L,1); //+0
 	}
 	return ret;
 }
@@ -1117,7 +1194,9 @@ int LF_PutFiles(lua_State* L, HANDLE hPlugin, struct PluginPanelItem *PanelItems
 	int ItemsNumber, int Move, const wchar_t *SrcPath, int OpMode)
 {
 	int ret = 0;
-	if (GetExportFunction(L, "PutFiles")) {   //+1: Func
+
+	if (GetExportFunction(L, "PutFiles"))       //+1: Func
+	{
 		PushPanelItems(L, hPlugin, PanelItems, ItemsNumber); //+2: Func,Items
 		lua_insert(L,-2);                  //+2: Items,Func
 		PushPluginPair(L, hPlugin);        //+4: Items,Func,Pair
@@ -1125,12 +1204,13 @@ int LF_PutFiles(lua_State* L, HANDLE hPlugin, struct PluginPanelItem *PanelItems
 		lua_pushboolean(L, Move);          //+6: Items,Func,Pair,Item,Move
 		push_utf8_string(L, SrcPath, -1);  //+7: Items,Func,Pair,Item,Move,SrcPath
 		lua_pushinteger(L, OpMode);        //+8: Items,Func,Pair,Item,Move,SrcPath,OpMode
-		if (!pcall_msg(L, 6, 1)) {         //+2: Items,Res
+		if (!pcall_msg(L, 6, 1))           //+2: Items,Res
+		{
 			ret = lua_tointeger(L,-1);
 			lua_pop(L,1);                    //+1: Items (required for UpdateFileSelection)
 			UpdateFileSelection(L, PanelItems, ItemsNumber);
 		}
-		lua_pop(L,1);
+		lua_pop(L,1); //+0
 	}
 	return ret;
 }
@@ -1138,11 +1218,15 @@ int LF_PutFiles(lua_State* L, HANDLE hPlugin, struct PluginPanelItem *PanelItems
 int LF_SetDirectory(lua_State* L, HANDLE hPlugin, const wchar_t *Dir, int OpMode)
 {
 	int ret = 0;
-	if (GetExportFunction(L, "SetDirectory")) {   //+1: Func
+
+	if (GetExportFunction(L, "SetDirectory"))      //+1: Func
+	{
 		PushPluginPair(L, hPlugin);        //+3: Func,Pair
 		push_utf8_string(L, Dir, -1);      //+4: Func,Pair,Dir
 		lua_pushinteger(L, OpMode);        //+5: Func,Pair,Dir,OpMode
-		if (!pcall_msg(L, 4, 1)) {         //+1: Res
+
+		if (!pcall_msg(L, 4, 1))           //+1: Res
+		{
 			ret = lua_toboolean(L,-1);
 			lua_pop(L,1);
 		}
@@ -1154,14 +1238,18 @@ int LF_SetFindList(lua_State* L, HANDLE hPlugin, const struct PluginPanelItem *P
 	int ItemsNumber)
 {
 	int ret = 0;
-	if (GetExportFunction(L, "SetFindList")) {    //+1: Func
+
+	if (GetExportFunction(L, "SetFindList"))       //+1: Func
+	{
 		PushPluginPair(L, hPlugin);                 //+3: Func,Pair
 		PushPanelItems(L, hPlugin, PanelItems, ItemsNumber); //+4: Func,Pair,Items
-		if (!pcall_msg(L, 3, 1)) {                  //+1: Res
+		if (!pcall_msg(L, 3, 1))                    //+1: Res
+		{
 			ret = lua_toboolean(L,-1);
 			lua_pop(L,1);
 		}
 	}
+
 	return ret;
 }
 
@@ -1209,13 +1297,16 @@ void LF_GetPluginInfo(lua_State* L, struct PluginInfo *aPI)
 	aPI->StructSize = sizeof (struct PluginInfo);
 	if (!GetExportFunction(L, "GetPluginInfo"))    //+1
 		return;
+
 	if (pcall_msg(L, 0, 1) != 0)
 		return;
-	if (!lua_istable(L, -1)) {
+
+	if (!lua_istable(L, -1))
+	{
 		lua_pop(L,1);
 		return;
 	}
-	//--------------------------------------------------------------------------
+
 	ReplacePluginInfoCollector(L, COLLECTOR_PI);       //+2: Info,Coll
 	int cpos = lua_gettop(L);  // collector position
 	lua_pushvalue(L, -2);                              //+3: Info,Coll,Info
@@ -1242,10 +1333,14 @@ void LF_GetPluginInfo(lua_State* L, struct PluginInfo *aPI)
 int LF_ProcessEditorInput (lua_State* L, const INPUT_RECORD *Rec)
 {
 	int ret = 0;
-	if (!GetExportFunction(L, "ProcessEditorInput"))   //+1: Func
+
+	if (!GetExportFunction(L, "ProcessEditorInput"))    //+1: Func
 		return 0;
+
 	PushInputRecord(L, Rec);
-	if (!pcall_msg(L, 1, 1)) {         //+1: Res
+
+	if (pcall_msg(L, 1, 1) == 0)        //+1: Res
+	{
 		ret = lua_toboolean(L,-1);
 		lua_pop(L,1);
 	}

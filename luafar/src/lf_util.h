@@ -1,8 +1,6 @@
 #ifndef LUAFAR_UTIL_H
 #define LUAFAR_UTIL_H
 
-#include "farplug-wide.h"
-
 #include <lua.h>
 #include "lf_luafar.h"
 
