@@ -669,11 +669,11 @@ PHPTR PluginManager::OpenFindListPlugin(const PluginPanelItem *PanelItems, int I
 	{
 		if (pPlugin->HasSetFindList())
 		{
-			HANDLE hPlugin = pPlugin->OpenPlugin(OPEN_FINDLIST, nullptr);
+			HANDLE hPanel = pPlugin->OpenPlugin(OPEN_FINDLIST, nullptr);
 
-			if (hPlugin != INVALID_HANDLE_VALUE)
+			if (hPanel != INVALID_HANDLE_VALUE)
 			{
-				panels.emplace_back(hPlugin, pPlugin);
+				panels.emplace_back(hPanel, pPlugin);
 				if (!Opt.PluginConfirm.SetFindList)
 					break;
 			}
@@ -1805,12 +1805,12 @@ bool PluginManager::ProcessCommandLine(const wchar_t *CommandParam, Panel *Targe
 		CtrlObject->CmdLine->SetString(L"");
 		FARString strPluginCommand = strCommand.CPtr() + (PData->Flags & PF_FULLCMDLINE ? 0:PrefixLength+1);
 		RemoveTrailingSpaces(strPluginCommand);
-		PHPTR hPlugin = OpenPlugin(PData->pPlugin, OPEN_COMMANDLINE, strPluginCommand.CPtr());
+		PHPTR ph = OpenPlugin(PData->pPlugin, OPEN_COMMANDLINE, strPluginCommand.CPtr());
 
-		if (hPlugin)
+		if (ph)
 		{
 			Panel *NewPanel = CtrlObject->Cp()->ChangePanel(CurPanel,FILE_PANEL,true,true);
-			NewPanel->SetPluginMode(hPlugin,L"",!Target || Target == ActivePanel);
+			NewPanel->SetPluginMode(ph, L"", !Target || Target == ActivePanel);
 			NewPanel->Update(0);
 			NewPanel->Show();
 		}

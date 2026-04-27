@@ -785,7 +785,7 @@ enum FILE_CONTROL_COMMANDS
 };
 
 typedef int (__stdcall *FARAPICONTROL)(
-	HANDLE hPlugin,
+	HANDLE hPanel,
 	int Command,
 	int Param1,
 	LONG_PTR Param2
@@ -812,7 +812,7 @@ typedef int (__stdcall *FARAPIGETDIRLIST)(
 
 typedef int (__stdcall *FARAPIGETPLUGINDIRLIST)(
 	INT_PTR PluginNumber,
-	HANDLE hPlugin,
+	HANDLE hPanel,
 	const wchar_t *Dir,
 	struct PluginPanelItem **pPanelItem,
 	int *pItemsNumber

@@ -81,7 +81,7 @@ SIZE_T farAPIVTEnumBackground(HANDLE *con_hnds, SIZE_T count);
 BOOL  farAPIVTLogExportW(HANDLE con_hnd, DWORD vth_flags, const wchar_t *file);
 BOOL  farAPIVTLogExportA(HANDLE con_hnd, DWORD vth_flags, const char *file);
 
-int WINAPI FarGetPluginDirList(INT_PTR PluginNumber, HANDLE hPlugin, const wchar_t *Dir,
+int WINAPI FarGetPluginDirList(INT_PTR PluginNumber, HANDLE hPanel, const wchar_t *Dir,
 		struct PluginPanelItem **pPanelItem, int *pItemsNumber);
 void WINAPI FarFreePluginDirList(PluginPanelItem *PanelItem, int ItemsNumber);
 
@@ -91,7 +91,7 @@ int WINAPI FarMenuFn(INT_PTR PluginNumber, int X, int Y, int MaxHeight, DWORD Fl
 const wchar_t *WINAPI FarGetMsgFn(INT_PTR PluginHandle, FarLangMsgID MsgId);
 int WINAPI FarMessageFn(INT_PTR PluginNumber, DWORD Flags, const wchar_t *HelpTopic,
 		const wchar_t *const *Items, int ItemsNumber, int ButtonsNumber);
-int WINAPI FarControl(HANDLE hPlugin, int Command, int Param1, LONG_PTR Param2);
+int WINAPI FarControl(HANDLE hPanel, int Command, int Param1, LONG_PTR Param2);
 HANDLE WINAPI FarSaveScreen(int X1, int Y1, int X2, int Y2);
 void WINAPI FarRestoreScreen(HANDLE hScreen);
 

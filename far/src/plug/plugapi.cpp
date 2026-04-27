@@ -1200,13 +1200,13 @@ int WINAPI FarMessageV3Fn(INT_PTR PluginNumber, const GUID *Id, DWORD Flags, con
 			ItemsNumber, ButtonsNumber));
 }
 
-static int FarControlSynched(HANDLE hPlugin, int Command, int Param1, LONG_PTR Param2)
+static int FarControlSynched(HANDLE hPanel, int Command, int Param1, LONG_PTR Param2)
 {
 	_FCTLLOG(CleverSysLog CSL(L"Control"));
-	_FCTLLOG(SysLog(L"(hPlugin=0x%08X, Command=%ls, Param1=[%d/0x%08X], Param2=[%d/0x%08X])", hPlugin,
+	_FCTLLOG(SysLog(L"(hPanel=0x%08X, Command=%ls, Param1=[%d/0x%08X], Param2=[%d/0x%08X])", hPanel,
 			_FCTL_ToName(Command), (int)Param1, Param1, (int)Param2, Param2));
 	_ALGO(CleverSysLog clv(L"FarControl"));
-	_ALGO(SysLog(L"(hPlugin=0x%08X, Command=%ls, Param1=[%d/0x%08X], Param2=[%d/0x%08X])", hPlugin,
+	_ALGO(SysLog(L"(hPanel=0x%08X, Command=%ls, Param1=[%d/0x%08X], Param2=[%d/0x%08X])", hPanel,
 			_FCTL_ToName(Command), (int)Param1, Param1, (int)Param2, Param2));
 
 	if (Command == FCTL_CHECKPANELSEXIST)
@@ -1253,12 +1253,12 @@ static int FarControlSynched(HANDLE hPlugin, int Command, int Param1, LONG_PTR P
 			if (!FPanels)
 				return FALSE;
 
-			if ((hPlugin == PANEL_ACTIVE) || (hPlugin == PANEL_PASSIVE)) {
-				Panel *pPanel = (hPlugin == PANEL_ACTIVE)
+			if (hPanel == PANEL_ACTIVE || hPanel == PANEL_PASSIVE) {
+				Panel *pPanel = (hPanel == PANEL_ACTIVE)
 						? FPanels->ActivePanel
 						: FPanels->GetAnotherPanel(FPanels->ActivePanel);
 
-				if (Command == FCTL_SETACTIVEPANEL && hPlugin == PANEL_ACTIVE)
+				if (Command == FCTL_SETACTIVEPANEL && hPanel == PANEL_ACTIVE)
 					return TRUE;
 
 				if (pPanel) {
@@ -1268,34 +1268,22 @@ static int FarControlSynched(HANDLE hPlugin, int Command, int Param1, LONG_PTR P
 				return FALSE;    //???
 			}
 
-			HANDLE hInternal;
 			Panel *LeftPanel = FPanels->LeftPanel;
 			Panel *RightPanel = FPanels->RightPanel;
 			int Processed = FALSE;
-			PanelHandle *PlHandle;
 
 			if (LeftPanel && LeftPanel->GetMode() == PLUGIN_PANEL) {
-				PlHandle = LeftPanel->GetPluginHandle();
+				PanelHandle *PlHandle = LeftPanel->GetPluginHandle();
 
-				if (PlHandle) {
-					hInternal = PlHandle->hPanel;
-
-					if (hPlugin == hInternal) {
-						Processed = LeftPanel->SetPluginCommand(Command, Param1, Param2);
-					}
-				}
+				if (PlHandle && PlHandle->hPanel == hPanel)
+					Processed = LeftPanel->SetPluginCommand(Command, Param1, Param2);
 			}
 
 			if (RightPanel && RightPanel->GetMode() == PLUGIN_PANEL) {
-				PlHandle = RightPanel->GetPluginHandle();
+				PanelHandle *PlHandle = RightPanel->GetPluginHandle();
 
-				if (PlHandle) {
-					hInternal = PlHandle->hPanel;
-
-					if (hPlugin == hInternal) {
-						Processed = RightPanel->SetPluginCommand(Command, Param1, Param2);
-					}
-				}
+				if (PlHandle && PlHandle->hPanel == hPanel)
+					Processed = RightPanel->SetPluginCommand(Command, Param1, Param2);
 			}
 
 			return (Processed);
@@ -1388,7 +1376,7 @@ static int FarControlSynched(HANDLE hPlugin, int Command, int Param1, LONG_PTR P
 			return FALSE;
 		}
 		case FCTL_ISACTIVEPANEL: {
-			if (hPlugin == PANEL_ACTIVE)
+			if (hPanel == PANEL_ACTIVE)
 				return TRUE;
 
 			Panel *pPanel = FPanels->ActivePanel;
@@ -1398,7 +1386,7 @@ static int FarControlSynched(HANDLE hPlugin, int Command, int Param1, LONG_PTR P
 				PlHandle = pPanel->GetPluginHandle();
 
 				if (PlHandle) {
-					if (PlHandle->hPanel == hPlugin)
+					if (PlHandle->hPanel == hPanel)
 						return TRUE;
 				}
 			}
@@ -1410,9 +1398,9 @@ static int FarControlSynched(HANDLE hPlugin, int Command, int Param1, LONG_PTR P
 	return FALSE;
 }
 
-int WINAPI FarControl(HANDLE hPlugin, int Command, int Param1, LONG_PTR Param2)
+int WINAPI FarControl(HANDLE hPanel, int Command, int Param1, LONG_PTR Param2)
 {
-	return InterThreadCall<int, 0>(std::bind(FarControlSynched, hPlugin, Command, Param1, Param2));
+	return InterThreadCall<int, 0>(std::bind(FarControlSynched, hPanel, Command, Param1, Param2));
 }
 
 //
@@ -1546,11 +1534,11 @@ private:
 	void ScanPluginDir(PHPTR pHandle, const FARString &SearchPath);
 
 public:
-	int GetList(Plugin *pPlugin, HANDLE hPlugin, const wchar_t *Dir,
+	int GetList(Plugin *pPlugin, HANDLE hPanel, const wchar_t *Dir,
 			PluginPanelItem **pPanelItem, int *pItemsNumber);
 };
 
-int PluginDirList::GetList(Plugin *pPlugin, HANDLE hPlugin, const wchar_t *Dir,
+int PluginDirList::GetList(Plugin *pPlugin, HANDLE hPanel, const wchar_t *Dir,
 		PluginPanelItem **pPanelItem, int *pItemsNumber)
 {
 	if (FrameManager->ManagerIsDown() || !Dir || !pItemsNumber || !pPanelItem)
@@ -1559,11 +1547,11 @@ int PluginDirList::GetList(Plugin *pPlugin, HANDLE hPlugin, const wchar_t *Dir,
 	PanelHandle DirListPlugin;
 
 	// А не хочет ли плагин посмотреть на текущую панель?
-	if (hPlugin == PANEL_ACTIVE || hPlugin == PANEL_PASSIVE) {
+	if (hPanel == PANEL_ACTIVE || hPanel == PANEL_PASSIVE) {
 		/* $ 30.11.2001 DJ
 			 А плагиновая ли это панель?
 		*/
-		auto panel = (hPlugin == PANEL_ACTIVE) ? CtrlObject->Cp()->ActivePanel
+		auto panel = (hPanel == PANEL_ACTIVE) ? CtrlObject->Cp()->ActivePanel
 				: CtrlObject->Cp()->GetAnotherPanel(CtrlObject->Cp()->ActivePanel);
 		if (auto Handle = panel->GetPluginHandle())
 			DirListPlugin = *Handle;
@@ -1572,7 +1560,7 @@ int PluginDirList::GetList(Plugin *pPlugin, HANDLE hPlugin, const wchar_t *Dir,
 	}
 	else {
 		DirListPlugin.pPlugin = pPlugin;
-		DirListPlugin.hPanel = hPlugin;
+		DirListPlugin.hPanel = hPanel;
 	}
 
 	SCOPED_ACTION(SaveScreen);
@@ -1698,19 +1686,19 @@ void PluginDirList::ScanPluginDir(PHPTR pHandle, const FARString &SearchPath)
 	CtrlObject->Plugins.FreeFindData(pHandle, PanelItems, ItemCount);
 }
 
-int FarGetPluginDirListSynched(INT_PTR PluginNumber, HANDLE hPlugin, const wchar_t *Dir,
+int FarGetPluginDirListSynched(INT_PTR PluginNumber, HANDLE hPanel, const wchar_t *Dir,
 		PluginPanelItem **pPanelItem, int *pItemsNumber)
 {
 	auto pPlugin = reinterpret_cast<Plugin*>(PluginNumber);
 	return CtrlObject->Plugins.FindPlugin(pPlugin) ?
-			PluginDirList().GetList(pPlugin, hPlugin, Dir, pPanelItem, pItemsNumber) : FALSE;
+			PluginDirList().GetList(pPlugin, hPanel, Dir, pPanelItem, pItemsNumber) : FALSE;
 }
 
-int WINAPI FarGetPluginDirList(INT_PTR PluginNumber, HANDLE hPlugin, const wchar_t *Dir,
+int WINAPI FarGetPluginDirList(INT_PTR PluginNumber, HANDLE hPanel, const wchar_t *Dir,
 		PluginPanelItem **pPanelItem, int *pItemsNumber)
 {
 	return InterThreadCall<int, 0>(
-			std::bind(FarGetPluginDirListSynched, PluginNumber, hPlugin, Dir, pPanelItem, pItemsNumber));
+			std::bind(FarGetPluginDirListSynched, PluginNumber, hPanel, Dir, pPanelItem, pItemsNumber));
 }
 
 void WINAPI FarFreeDirList(FAR_FIND_DATA *PanelItem, int nItemsNumber)

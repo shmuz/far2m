@@ -945,13 +945,12 @@ bool ShellSetFileAttributes(Panel *SrcPanel, LPCWSTR Object)
 
 	if (SrcPanel && SrcPanel->GetMode() == PLUGIN_PANEL) {
 		OpenPluginInfo Info;
-		PHPTR hPlugin = SrcPanel->GetPluginHandle();
+		PHPTR ph = SrcPanel->GetPluginHandle();
 
-		if (hPlugin == nullptr) {
+		if (ph == nullptr)
 			return false;
-		}
 
-		CtrlObject->Plugins.GetOpenPluginInfo(hPlugin, &Info);
+		CtrlObject->Plugins.GetOpenPluginInfo(ph, &Info);
 
 		if (!(Info.Flags & OPIF_REALNAMES)) {
 			AttrDlg[SA_BUTTON_SET].Flags|= DIF_DISABLE;

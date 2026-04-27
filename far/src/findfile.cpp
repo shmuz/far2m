@@ -2687,12 +2687,12 @@ static bool FindFilesProcess(Vars &v)
 
 	if (v.PluginMode) {
 		Panel *ActivePanel = CtrlObject->Cp()->ActivePanel;
-		PHPTR hPlugin = ActivePanel->GetPluginHandle();
+		PHPTR ph = ActivePanel->GetPluginHandle();
 		OpenPluginInfo Info;
 		{
 			SCOPED_ACTION(PluginLocker);
-			CtrlObject->Plugins.GetOpenPluginInfo(hPlugin, &Info);
-			itd.SetFindFileArcIndex(itd.AddArcListItem(Info.HostFile, hPlugin, Info.Flags, Info.CurDir));
+			CtrlObject->Plugins.GetOpenPluginInfo(ph, &Info);
+			itd.SetFindFileArcIndex(itd.AddArcListItem(Info.HostFile, ph, Info.Flags, Info.CurDir));
 		}
 
 		if (itd.GetFindFileArcIndex() == LIST_INDEX_NONE)
