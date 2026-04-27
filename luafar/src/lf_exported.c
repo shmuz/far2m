@@ -380,10 +380,12 @@ void UpdateFileSelection(lua_State* L, struct PluginPanelItem *PanelItems, size_
 		if (lua_istable(L,-1))
 		{
 			lua_getfield(L,-1,"Flags");      //+2
+
 			int success = 0;
 			DWORD Flags = GetFlagCombination(L,-1,&success);
 			if (success && ((Flags & PPIF_SELECTED) == 0))
 				PanelItems[i].Flags &= ~PPIF_SELECTED;
+
 			lua_pop(L,1);         //+1
 		}
 
@@ -392,16 +394,16 @@ void UpdateFileSelection(lua_State* L, struct PluginPanelItem *PanelItems, size_
 }
 //---------------------------------------------------------------------------
 
-int LF_GetFiles (lua_State* L, HANDLE hPlugin, struct PluginPanelItem *PanelItem,
+int LF_GetFiles(lua_State* L, HANDLE hPanel, struct PluginPanelItem *PanelItem,
 	int ItemsNumber, int Move, const wchar_t **DestPath, int OpMode)
 {
 	int ret = 0;
 
 	if (GetExportFunction(L, "GetFiles"))         //+1: Func
 	{
-		PushPanelItems(L, hPlugin, PanelItem, ItemsNumber); //+2: Func,Item
+		PushPanelItems(L, hPanel, PanelItem, ItemsNumber); //+2: Func,Item
 		lua_insert(L,-2);                  //+2: Item,Func
-		PushPluginPair(L, hPlugin);        //+4: Item,Func,Pair
+		PushPluginPair(L, hPanel);         //+4: Item,Func,Pair
 		lua_pushvalue(L,-4);               //+5: Item,Func,Pair,Item
 		lua_pushboolean(L, Move);
 		push_utf8_string(L, *DestPath, -1);
@@ -710,7 +712,7 @@ static void OPI_FillKeyBarTitles(lua_State *L, struct OpenPluginInfo *Info, int 
 	lua_pop(L, 1); // pop KeyBar table
 }
 
-void LF_GetOpenPanelInfo(lua_State* L, HANDLE hPlugin, struct OpenPluginInfo *aInfo)
+void LF_GetOpenPanelInfo(lua_State* L, HANDLE hPanel, struct OpenPluginInfo *aInfo)
 {
 	int stack_top = lua_gettop(L);
 
@@ -718,7 +720,7 @@ void LF_GetOpenPanelInfo(lua_State* L, HANDLE hPlugin, struct OpenPluginInfo *aI
 	if (!GetExportFunction(L, "GetOpenPanelInfo"))     //+1
 		return;
 
-	PushPluginPair(L, hPlugin);                        //+3
+	PushPluginPair(L, hPanel);                         //+3
 
 	if (pcall_msg(L, 2, 1) != 0)
 		return;
@@ -729,7 +731,7 @@ void LF_GetOpenPanelInfo(lua_State* L, HANDLE hPlugin, struct OpenPluginInfo *aI
 		return;
 	}
 
-	PushPluginTable(L, hPlugin);                       //+2: Info,Tbl
+	PushPluginTable(L, hPanel);                        //+2: Info,Tbl
 	lua_newtable(L);                                   //+3: Info,Tbl,Coll
 	int cpos = lua_gettop (L);  // collector stack position
 	lua_pushvalue(L,-1);                               //+4: Info,Tbl,Coll,Coll
@@ -1046,25 +1048,25 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 	return INVALID_HANDLE_VALUE;
 }
 
-void LF_ClosePanel(lua_State* L, HANDLE hPlugin)
+void LF_ClosePanel(lua_State* L, HANDLE hPanel)
 {
 	if (GetExportFunction(L, "ClosePanel"))    //+1: Func
 	{
-		PushPluginPair(L, hPlugin);              //+3: Func,Pair
+		PushPluginPair(L, hPanel);               //+3: Func,Pair
 		pcall_msg(L, 2, 0);
 	}
-	lua_pushlightuserdata(L, hPlugin);
+	lua_pushlightuserdata(L, hPanel);
 	lua_pushnil(L);
 	lua_rawset(L, LUA_REGISTRYINDEX);
 }
 
-int LF_Compare(lua_State* L, HANDLE hPlugin, const struct PluginPanelItem *Item1,
+int LF_Compare(lua_State* L, HANDLE hPanel, const struct PluginPanelItem *Item1,
 							 const struct PluginPanelItem *Item2, unsigned int Mode)
 {
 	int res = -2; // default FAR compare function should be used
 	if (GetExportFunction(L, "Compare"))    //+1: Func
 	{
-		PushPluginPair(L, hPlugin);          //+3: Func,Pair
+		PushPluginPair(L, hPanel);           //+3: Func,Pair
 		PushPanelItem(L, Item1);             //+4
 		PushPanelItem(L, Item2);             //+5
 		lua_pushinteger(L, Mode);            //+6
@@ -1097,15 +1099,15 @@ int LF_Configure(lua_State* L, const struct ConfigureInfo *Info)
 	return res;
 }
 
-int LF_DeleteFiles(lua_State* L, HANDLE hPlugin, struct PluginPanelItem *PanelItem,
+int LF_DeleteFiles(lua_State* L, HANDLE hPanel, struct PluginPanelItem *PanelItem,
 	int ItemsNumber, int OpMode)
 {
 	int res = FALSE;
 
 	if (GetExportFunction(L, "DeleteFiles"))      //+1: Func
 	{
-		PushPluginPair(L, hPlugin);                //+3: Func,Pair
-		PushPanelItems(L, hPlugin, PanelItem, ItemsNumber); //+4
+		PushPluginPair(L, hPanel);                 //+3: Func,Pair
+		PushPanelItems(L, hPanel, PanelItem, ItemsNumber); //+4
 		lua_pushinteger(L, OpMode);                //+5
 
 		if (0 == pcall_msg(L, 4, 1))                //+1
@@ -1121,13 +1123,13 @@ int LF_DeleteFiles(lua_State* L, HANDLE hPlugin, struct PluginPanelItem *PanelIt
 // far.MakeDirectory returns 2 values:
 //    a) status (an integer; in accordance to FAR API), and
 //    b) new directory name (a string; optional)
-int LF_MakeDirectory (lua_State* L, HANDLE hPlugin, const wchar_t **Name, int OpMode)
+int LF_MakeDirectory (lua_State* L, HANDLE hPanel, const wchar_t **Name, int OpMode)
 {
 	int res = 0;
 
 	if (GetExportFunction(L, "MakeDirectory"))    //+1: Func
 	{
-		PushPluginPair(L, hPlugin);                //+3: Func,Pair
+		PushPluginPair(L, hPanel);                 //+3: Func,Pair
 		push_utf8_string(L, *Name, -1);            //+4
 		lua_pushinteger(L, OpMode);                //+5
 
@@ -1149,14 +1151,14 @@ int LF_MakeDirectory (lua_State* L, HANDLE hPlugin, const wchar_t **Name, int Op
 	return res;
 }
 
-int LF_ProcessPanelEvent(lua_State* L, HANDLE hPlugin, int Event, void *Param)
+int LF_ProcessPanelEvent(lua_State* L, HANDLE hPanel, int Event, void *Param)
 {
 	int res = FALSE;
 
 	if (!(GetPluginData(L)->Flags & PDF_PROCESSINGERROR) &&
 			GetExportFunction(L, "ProcessPanelEvent"))     //+1: Func
 	{
-		PushPluginPair(L, hPlugin);        //+3
+		PushPluginPair(L, hPanel);         //+3
 		lua_pushinteger(L, Event);         //+4
 		if (Event == FE_CHANGEVIEWMODE || Event == FE_COMMAND)
 			push_utf8_string(L, (const wchar_t*)Param, -1); //+5
@@ -1170,16 +1172,16 @@ int LF_ProcessPanelEvent(lua_State* L, HANDLE hPlugin, int Event, void *Param)
 	return res;
 }
 
-int LF_ProcessHostFile(lua_State* L, HANDLE hPlugin, struct PluginPanelItem *PanelItem,
+int LF_ProcessHostFile(lua_State* L, HANDLE hPanel, struct PluginPanelItem *PanelItem,
 	int ItemsNumber, int OpMode)
 {
 	int ret = 0;
 
 	if (GetExportFunction(L, "ProcessHostFile"))      //+1: Func
 	{
-		PushPanelItems(L, hPlugin, PanelItem, ItemsNumber); //+2: Func,Item
+		PushPanelItems(L, hPanel, PanelItem, ItemsNumber); //+2: Func,Item
 		lua_insert(L,-2);                  //+2: Item,Func
-		PushPluginPair(L, hPlugin);        //+4: Item,Func,Pair
+		PushPluginPair(L, hPanel);         //+4: Item,Func,Pair
 		lua_pushvalue(L,-4);               //+5: Item,Func,Pair,Item
 		lua_pushinteger(L, OpMode);        //+6: Item,Func,Pair,Item,OpMode
 
@@ -1194,13 +1196,13 @@ int LF_ProcessHostFile(lua_State* L, HANDLE hPlugin, struct PluginPanelItem *Pan
 	return ret;
 }
 
-int LF_ProcessKey(lua_State* L, HANDLE hPlugin, int Key, unsigned int ControlState)
+int LF_ProcessKey(lua_State* L, HANDLE hPanel, int Key, unsigned int ControlState)
 {
 	if ((Key & ~PKF_PREPROCESS) == KEY_NONE)
 		return FALSE; //ignore garbage
 
 	if (GetExportFunction(L, "ProcessKey")) {   //+1: Func
-		PushPluginPair(L, hPlugin);        //+3: Func,Pair
+		PushPluginPair(L, hPanel);         //+3: Func,Pair
 		lua_pushinteger(L, Key);           //+4
 		lua_pushinteger(L, ControlState);  //+5
 		if (pcall_msg(L, 4, 1) == 0)    {  //+1: Res
@@ -1211,16 +1213,16 @@ int LF_ProcessKey(lua_State* L, HANDLE hPlugin, int Key, unsigned int ControlSta
 	return FALSE;
 }
 
-int LF_PutFiles(lua_State* L, HANDLE hPlugin, struct PluginPanelItem *PanelItems,
+int LF_PutFiles(lua_State* L, HANDLE hPanel, struct PluginPanelItem *PanelItems,
 	int ItemsNumber, int Move, const wchar_t *SrcPath, int OpMode)
 {
 	int ret = 0;
 
 	if (GetExportFunction(L, "PutFiles"))       //+1: Func
 	{
-		PushPanelItems(L, hPlugin, PanelItems, ItemsNumber); //+2: Func,Items
+		PushPanelItems(L, hPanel, PanelItems, ItemsNumber); //+2: Func,Items
 		lua_insert(L,-2);                  //+2: Items,Func
-		PushPluginPair(L, hPlugin);        //+4: Items,Func,Pair
+		PushPluginPair(L, hPanel);         //+4: Items,Func,Pair
 		lua_pushvalue(L,-4);               //+5: Items,Func,Pair,Item
 		lua_pushboolean(L, Move);          //+6: Items,Func,Pair,Item,Move
 		push_utf8_string(L, SrcPath, -1);  //+7: Items,Func,Pair,Item,Move,SrcPath
@@ -1236,13 +1238,13 @@ int LF_PutFiles(lua_State* L, HANDLE hPlugin, struct PluginPanelItem *PanelItems
 	return ret;
 }
 
-int LF_SetDirectory(lua_State* L, HANDLE hPlugin, const wchar_t *Dir, int OpMode)
+int LF_SetDirectory(lua_State* L, HANDLE hPanel, const wchar_t *Dir, int OpMode)
 {
 	int ret = 0;
 
 	if (GetExportFunction(L, "SetDirectory"))      //+1: Func
 	{
-		PushPluginPair(L, hPlugin);        //+3: Func,Pair
+		PushPluginPair(L, hPanel);         //+3: Func,Pair
 		push_utf8_string(L, Dir, -1);      //+4: Func,Pair,Dir
 		lua_pushinteger(L, OpMode);        //+5: Func,Pair,Dir,OpMode
 
@@ -1255,15 +1257,15 @@ int LF_SetDirectory(lua_State* L, HANDLE hPlugin, const wchar_t *Dir, int OpMode
 	return ret;
 }
 
-int LF_SetFindList(lua_State* L, HANDLE hPlugin, const struct PluginPanelItem *PanelItems,
+int LF_SetFindList(lua_State* L, HANDLE hPanel, const struct PluginPanelItem *PanelItems,
 	int ItemsNumber)
 {
 	int ret = 0;
 
 	if (GetExportFunction(L, "SetFindList"))       //+1: Func
 	{
-		PushPluginPair(L, hPlugin);                 //+3: Func,Pair
-		PushPanelItems(L, hPlugin, PanelItems, ItemsNumber); //+4: Func,Pair,Items
+		PushPluginPair(L, hPanel);                  //+3: Func,Pair
+		PushPanelItems(L, hPanel, PanelItems, ItemsNumber); //+4: Func,Pair,Items
 
 		if (!pcall_msg(L, 3, 1))                    //+1: Res
 		{
@@ -1653,7 +1655,7 @@ int LF_ProcessConsoleInput(lua_State* L, INPUT_RECORD *Rec)
 
 int LF_GetLinkTarget(
 	lua_State *L,
-	HANDLE hPlugin,
+	HANDLE hPanel,
 	struct PluginPanelItem *PanelItem,
 	wchar_t *Target,
 	size_t TargetSize,
@@ -1661,7 +1663,7 @@ int LF_GetLinkTarget(
 {
 	if (GetExportFunction(L, "GetLinkTarget"))  //+1: Func
 	{
-		PushPluginPair(L, hPlugin);               //+3: Func,Pair
+		PushPluginPair(L, hPanel);                //+3: Func,Pair
 		PushPanelItem(L, PanelItem);              //+4: Func,Pair,Item
 		lua_pushinteger(L, OpMode);               //+5  Func,Pair,Item,OpMode
 		if (!pcall_msg(L, 4, 1))                  //+1: Res

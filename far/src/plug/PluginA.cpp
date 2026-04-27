@@ -127,7 +127,6 @@ static void CheckScreenLock()
 }
 
 
-
 PluginA::PluginA(PluginManager *owner, const FARString &strModuleName,
 					const std::string &settingsName, const std::string &moduleID)
 	:
@@ -569,8 +568,7 @@ HANDLE PluginA::OpenFilePlugin(
     const wchar_t *Name,
     const unsigned char *Data,
     int DataSize,
-    int OpMode
-)
+    int OpMode)
 {
 	HANDLE hResult = INVALID_HANDLE_VALUE;
 
@@ -594,11 +592,7 @@ HANDLE PluginA::OpenFilePlugin(
 }
 
 
-int PluginA::SetFindList(
-    HANDLE hPlugin,
-    const PluginPanelItem *PanelItem,
-    int ItemsNumber
-)
+int PluginA::SetFindList(HANDLE hPanel, const PluginPanelItem *PanelItem, int ItemsNumber)
 {
 	BOOL bResult = FALSE;
 
@@ -608,7 +602,7 @@ int PluginA::SetFindList(
 		es.bDefaultResult = FALSE;
 		oldfar::PluginPanelItem *PanelItemA = nullptr;
 		ConvertPanelItemsArrayToAnsi(PanelItem,PanelItemA,ItemsNumber);
-		EXECUTE_FUNCTION_BOOL(pSetFindList(hPlugin, PanelItemA, ItemsNumber), es);
+		EXECUTE_FUNCTION_BOOL(pSetFindList(hPanel, PanelItemA, ItemsNumber), es);
 		FreePanelItemA(PanelItemA,ItemsNumber);
 		bResult = es.bResult;
 	}
@@ -616,9 +610,7 @@ int PluginA::SetFindList(
 	return bResult;
 }
 
-int PluginA::ProcessEditorInput(
-    const INPUT_RECORD *D
-)
+int PluginA::ProcessEditorInput(const INPUT_RECORD *D)
 {
 	BOOL bResult = FALSE;
 
@@ -646,10 +638,7 @@ int PluginA::ProcessEditorInput(
 	return bResult;
 }
 
-int PluginA::ProcessEditorEvent(
-    int Event,
-    void *Param
-)
+int PluginA::ProcessEditorEvent(int Event, void *Param)
 {
 	if (Load() && pProcessEditorEvent)
 	{
@@ -661,10 +650,7 @@ int PluginA::ProcessEditorEvent(
 	return 0; //oops!
 }
 
-int PluginA::ProcessViewerEvent(
-    int Event,
-    void *Param
-)
+int PluginA::ProcessViewerEvent(int Event, void *Param)
 {
 	if (Load() && pProcessViewerEvent)
 	{
@@ -676,10 +662,7 @@ int PluginA::ProcessViewerEvent(
 	return 0; //oops, again!
 }
 
-int PluginA::ProcessDialogEvent(
-    int Event,
-    void *Param
-)
+int PluginA::ProcessDialogEvent(int Event, void *Param)
 {
 	BOOL bResult = FALSE;
 
@@ -695,11 +678,10 @@ int PluginA::ProcessDialogEvent(
 }
 
 int PluginA::GetVirtualFindData(
-    HANDLE hPlugin,
+    HANDLE hPanel,
     PluginPanelItem **pPanelItem,
     int *pItemsNumber,
-    const wchar_t *Path
-)
+    const wchar_t *Path)
 {
 	BOOL bResult = FALSE;
 
@@ -711,7 +693,7 @@ int PluginA::GetVirtualFindData(
 		size_t Size=StrLength(Path)+1;
 		LPSTR PathA=new char[Size * 4];
 		PWZ_to_PZ(Path,PathA, Size * 4);
-		EXECUTE_FUNCTION_BOOL(pGetVirtualFindData(hPlugin, &pVFDPanelItemA, pItemsNumber, PathA), es);
+		EXECUTE_FUNCTION_BOOL(pGetVirtualFindData(hPanel, &pVFDPanelItemA, pItemsNumber, PathA), es);
 		bResult = es.bResult;
 		delete[] PathA;
 
@@ -725,36 +707,31 @@ int PluginA::GetVirtualFindData(
 }
 
 
-void PluginA::FreeVirtualFindData(
-    HANDLE hPlugin,
-    PluginPanelItem *PanelItem,
-    int ItemsNumber
-)
+void PluginA::FreeVirtualFindData(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber)
 {
 	FreeUnicodePanelItem(PanelItem, ItemsNumber);
 
 	if (pFreeVirtualFindData && pVFDPanelItemA)
 	{
 		ExecuteStruct es(EXCEPT_FREEVIRTUALFINDDATA);
-		EXECUTE_FUNCTION(pFreeVirtualFindData(hPlugin, pVFDPanelItemA, ItemsNumber), es);
+		EXECUTE_FUNCTION(pFreeVirtualFindData(hPanel, pVFDPanelItemA, ItemsNumber), es);
 		pVFDPanelItemA = nullptr;
 		(void)es; // supress 'set but not used' warning
 	}
 }
 
-bool PluginA::GetLinkTarget(HANDLE hPlugin, PluginPanelItem *PanelItem, FARString &result, int OpMode)
+bool PluginA::GetLinkTarget(HANDLE hPanel, PluginPanelItem *PanelItem, FARString &result, int OpMode)
 {
 	return false;
 }
 
 int PluginA::GetFiles(
-    HANDLE hPlugin,
+    HANDLE hPanel,
     PluginPanelItem *PanelItem,
     int ItemsNumber,
     int Move,
     const wchar_t **DestPath,
-    int OpMode
-)
+    int OpMode)
 {
 	int nResult = -1;
 
@@ -766,7 +743,7 @@ int PluginA::GetFiles(
 		ConvertPanelItemsArrayToAnsi(PanelItem,PanelItemA,ItemsNumber);
 		char DestA[oldfar::NM];
 		PWZ_to_PZ(*DestPath,DestA,sizeof(DestA));
-		EXECUTE_FUNCTION_EX(pGetFiles(hPlugin, PanelItemA, ItemsNumber, Move, DestA, OpMode), es);
+		EXECUTE_FUNCTION_EX(pGetFiles(hPanel, PanelItemA, ItemsNumber, Move, DestA, OpMode), es);
 		static wchar_t DestW[oldfar::NM];
 		PZ_to_PWZ(DestA,DestW,ARRAYSIZE(DestW));
 		*DestPath=DestW;
@@ -779,12 +756,11 @@ int PluginA::GetFiles(
 
 
 int PluginA::PutFiles(
-    HANDLE hPlugin,
+    HANDLE hPanel,
     PluginPanelItem *PanelItem,
     int ItemsNumber,
     int Move,
-    int OpMode
-)
+    int OpMode)
 {
 	int nResult = -1;
 
@@ -794,7 +770,7 @@ int PluginA::PutFiles(
 		es.nDefaultResult = -1;
 		oldfar::PluginPanelItem *PanelItemA = nullptr;
 		ConvertPanelItemsArrayToAnsi(PanelItem,PanelItemA,ItemsNumber);
-		EXECUTE_FUNCTION_EX(pPutFiles(hPlugin, PanelItemA, ItemsNumber, Move, OpMode), es);
+		EXECUTE_FUNCTION_EX(pPutFiles(hPanel, PanelItemA, ItemsNumber, Move, OpMode), es);
 		FreePanelItemA(PanelItemA,ItemsNumber);
 		nResult = (int)es.nResult;
 	}
@@ -803,11 +779,10 @@ int PluginA::PutFiles(
 }
 
 int PluginA::DeleteFiles(
-    HANDLE hPlugin,
+    HANDLE hPanel,
     PluginPanelItem *PanelItem,
     int ItemsNumber,
-    int OpMode
-)
+    int OpMode)
 {
 	BOOL bResult = FALSE;
 
@@ -817,7 +792,7 @@ int PluginA::DeleteFiles(
 		es.bDefaultResult = FALSE;
 		oldfar::PluginPanelItem *PanelItemA = nullptr;
 		ConvertPanelItemsArrayToAnsi(PanelItem,PanelItemA,ItemsNumber);
-		EXECUTE_FUNCTION_BOOL(pDeleteFiles(hPlugin, PanelItemA, ItemsNumber, OpMode), es);
+		EXECUTE_FUNCTION_BOOL(pDeleteFiles(hPanel, PanelItemA, ItemsNumber, OpMode), es);
 		FreePanelItemA(PanelItemA,ItemsNumber);
 		bResult = es.bResult;
 	}
@@ -826,11 +801,7 @@ int PluginA::DeleteFiles(
 }
 
 
-int PluginA::MakeDirectory(
-    HANDLE hPlugin,
-    const wchar_t **Name,
-    int OpMode
-)
+int PluginA::MakeDirectory(HANDLE hPanel, const wchar_t **Name, int OpMode)
 {
 	int nResult = -1;
 
@@ -840,7 +811,7 @@ int PluginA::MakeDirectory(
 		es.nDefaultResult = -1;
 		char NameA[oldfar::NM];
 		PWZ_to_PZ(*Name,NameA,sizeof(NameA));
-		EXECUTE_FUNCTION_EX(pMakeDirectory(hPlugin, NameA, OpMode), es);
+		EXECUTE_FUNCTION_EX(pMakeDirectory(hPanel, NameA, OpMode), es);
 		static wchar_t NameW[oldfar::NM];
 		PZ_to_PWZ(NameA,NameW,ARRAYSIZE(NameW));
 		*Name=NameW;
@@ -851,12 +822,7 @@ int PluginA::MakeDirectory(
 }
 
 
-int PluginA::ProcessHostFile(
-    HANDLE hPlugin,
-    PluginPanelItem *PanelItem,
-    int ItemsNumber,
-    int OpMode
-)
+int PluginA::ProcessHostFile(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber, int OpMode)
 {
 	BOOL bResult = FALSE;
 
@@ -866,7 +832,7 @@ int PluginA::ProcessHostFile(
 		es.bDefaultResult = FALSE;
 		oldfar::PluginPanelItem *PanelItemA = nullptr;
 		ConvertPanelItemsArrayToAnsi(PanelItem,PanelItemA,ItemsNumber);
-		EXECUTE_FUNCTION_BOOL(pProcessHostFile(hPlugin, PanelItemA, ItemsNumber, OpMode), es);
+		EXECUTE_FUNCTION_BOOL(pProcessHostFile(hPanel, PanelItemA, ItemsNumber, OpMode), es);
 		FreePanelItemA(PanelItemA,ItemsNumber);
 		bResult = es.bResult;
 	}
@@ -875,11 +841,7 @@ int PluginA::ProcessHostFile(
 }
 
 
-int PluginA::ProcessEvent(
-    HANDLE hPlugin,
-    int Event,
-    void *Param
-)
+int PluginA::ProcessEvent(HANDLE hPanel, int Event, void *Param)
 {
 	BOOL bResult = FALSE;
 
@@ -892,7 +854,7 @@ int PluginA::ProcessEvent(
 		if (Param && (Event == FE_COMMAND || Event == FE_CHANGEVIEWMODE))
 			ParamA = (PVOID)UnicodeToAnsi((const wchar_t *)Param);
 
-		EXECUTE_FUNCTION_BOOL(pProcessEvent(hPlugin, Event, ParamA), es);
+		EXECUTE_FUNCTION_BOOL(pProcessEvent(hPanel, Event, ParamA), es);
 
 		if (ParamA && (Event == FE_COMMAND || Event == FE_CHANGEVIEWMODE))
 			free(ParamA);
@@ -904,12 +866,7 @@ int PluginA::ProcessEvent(
 }
 
 
-int PluginA::Compare(
-    HANDLE hPlugin,
-    const PluginPanelItem *Item1,
-    const PluginPanelItem *Item2,
-    DWORD Mode
-)
+int PluginA::Compare(HANDLE hPanel, const PluginPanelItem *Item1, const PluginPanelItem *Item2, DWORD Mode)
 {
 	int nResult = -2;
 
@@ -921,7 +878,7 @@ int PluginA::Compare(
 		oldfar::PluginPanelItem *Item2A = nullptr;
 		ConvertPanelItemsArrayToAnsi(Item1,Item1A,1);
 		ConvertPanelItemsArrayToAnsi(Item2,Item2A,1);
-		EXECUTE_FUNCTION_EX(pCompare(hPlugin, Item1A, Item2A, Mode), es);
+		EXECUTE_FUNCTION_EX(pCompare(hPanel, Item1A, Item2A, Mode), es);
 		FreePanelItemA(Item1A,1);
 		FreePanelItemA(Item2A,1);
 		nResult = (int)es.nResult;
@@ -931,12 +888,7 @@ int PluginA::Compare(
 }
 
 
-int PluginA::GetFindData(
-    HANDLE hPlugin,
-    PluginPanelItem **pPanelItem,
-    int *pItemsNumber,
-    int OpMode
-)
+int PluginA::GetFindData(HANDLE hPanel, PluginPanelItem **pPanelItem, int *pItemsNumber, int OpMode)
 {
 	BOOL bResult = FALSE;
 
@@ -945,7 +897,7 @@ int PluginA::GetFindData(
 		ExecuteStruct es(EXCEPT_GETFINDDATA);
 		es.bDefaultResult = FALSE;
 		pFDPanelItemA = nullptr;
-		EXECUTE_FUNCTION_BOOL(pGetFindData(hPlugin, &pFDPanelItemA, pItemsNumber, OpMode), es);
+		EXECUTE_FUNCTION_BOOL(pGetFindData(hPanel, &pFDPanelItemA, pItemsNumber, OpMode), es);
 		bResult = es.bResult;
 
 		if (bResult && *pItemsNumber)
@@ -958,28 +910,20 @@ int PluginA::GetFindData(
 }
 
 
-void PluginA::FreeFindData(
-    HANDLE hPlugin,
-    PluginPanelItem *PanelItem,
-    int ItemsNumber
-)
+void PluginA::FreeFindData(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber)
 {
 	FreeUnicodePanelItem(PanelItem, ItemsNumber);
 
 	if (pFreeFindData && pFDPanelItemA)
 	{
 		ExecuteStruct es(EXCEPT_FREEFINDDATA);
-		EXECUTE_FUNCTION(pFreeFindData(hPlugin, pFDPanelItemA, ItemsNumber), es);
+		EXECUTE_FUNCTION(pFreeFindData(hPanel, pFDPanelItemA, ItemsNumber), es);
 		pFDPanelItemA = nullptr;
 		(void)es; // supress 'set but not used' warning
 	}
 }
 
-int PluginA::ProcessKey(
-    HANDLE hPlugin,
-    int Key,
-    unsigned int dwControlState
-)
+int PluginA::ProcessKey(HANDLE hPanel, int Key, unsigned int dwControlState)
 {
 	BOOL bResult = FALSE;
 
@@ -987,7 +931,7 @@ int PluginA::ProcessKey(
 	{
 		ExecuteStruct es(EXCEPT_PROCESSKEY);
 		es.bDefaultResult = TRUE; // do not pass this key to far on exception
-		EXECUTE_FUNCTION_BOOL(pProcessKey(hPlugin, Key, dwControlState), es);
+		EXECUTE_FUNCTION_BOOL(pProcessKey(hPanel, Key, dwControlState), es);
 		bResult = es.bResult;
 	}
 
@@ -995,14 +939,12 @@ int PluginA::ProcessKey(
 }
 
 
-void PluginA::ClosePlugin(
-    HANDLE hPlugin
-)
+void PluginA::ClosePlugin(HANDLE hPanel)
 {
 	if (pClosePlugin)
 	{
 		ExecuteStruct es(EXCEPT_CLOSEPLUGIN);
-		EXECUTE_FUNCTION(pClosePlugin(hPlugin), es);
+		EXECUTE_FUNCTION(pClosePlugin(hPanel), es);
 		(void)es; // supress 'set but not used' warning
 	}
 
@@ -1011,11 +953,7 @@ void PluginA::ClosePlugin(
 }
 
 
-int PluginA::SetDirectory(
-    HANDLE hPlugin,
-    const wchar_t *Dir,
-    int OpMode
-)
+int PluginA::SetDirectory(HANDLE hPanel, const wchar_t *Dir, int OpMode)
 {
 	BOOL bResult = FALSE;
 
@@ -1024,7 +962,7 @@ int PluginA::SetDirectory(
 		ExecuteStruct es(EXCEPT_SETDIRECTORY);
 		es.bDefaultResult = FALSE;
 		char *DirA = UnicodeToAnsi(Dir);
-		EXECUTE_FUNCTION_BOOL(pSetDirectory(hPlugin, DirA, OpMode), es);
+		EXECUTE_FUNCTION_BOOL(pSetDirectory(hPanel, DirA, OpMode), es);
 
 		if (DirA) free(DirA);
 
@@ -1126,10 +1064,7 @@ void PluginA::ConvertOpenPluginInfo(oldfar::OpenPluginInfo &Src, OpenPluginInfo 
 	*Dest=OPI;
 }
 
-void PluginA::GetOpenPluginInfo(
-    HANDLE hPlugin,
-    OpenPluginInfo *pInfo
-)
+void PluginA::GetOpenPluginInfo(HANDLE hPanel, OpenPluginInfo *pInfo)
 {
 //	m_pManager->m_pCurrentPlugin = this;
 	pInfo->StructSize = sizeof(OpenPluginInfo);
@@ -1138,16 +1073,14 @@ void PluginA::GetOpenPluginInfo(
 	{
 		ExecuteStruct es(EXCEPT_GETOPENPLUGININFO);
 		oldfar::OpenPluginInfo InfoA{};
-		EXECUTE_FUNCTION(pGetOpenPluginInfo(hPlugin, &InfoA), es);
+		EXECUTE_FUNCTION(pGetOpenPluginInfo(hPanel, &InfoA), es);
 		ConvertOpenPluginInfo(InfoA,pInfo);
 		(void)es; // supress 'set but not used' warning
 	}
 }
 
 
-int PluginA::Configure(
-    int MenuItem
-)
+int PluginA::Configure(int MenuItem)
 {
 	BOOL bResult = FALSE;
 

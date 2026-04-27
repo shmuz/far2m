@@ -35,23 +35,23 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 typedef HANDLE (WINAPI *PLUGINANALYSEW)(const AnalyseInfo *Info);
 typedef void (WINAPI *PLUGINCLOSEANALYSEW)(const CloseAnalyseInfo *Info);
-typedef void (WINAPI *PLUGINCLOSEPLUGINW)(HANDLE hPlugin);
-typedef int  (WINAPI *PLUGINCOMPAREW)(HANDLE hPlugin,const PluginPanelItem *Item1,const PluginPanelItem *Item2,unsigned int Mode);
+typedef void (WINAPI *PLUGINCLOSEPLUGINW)(HANDLE hPanel);
+typedef int  (WINAPI *PLUGINCOMPAREW)(HANDLE hPanel,const PluginPanelItem *Item1,const PluginPanelItem *Item2,unsigned int Mode);
 typedef int  (WINAPI *PLUGINCONFIGUREV3W)(const ConfigureInfo *Info);
 typedef int  (WINAPI *PLUGINCONFIGUREW)(int ItemNumber);
-typedef int  (WINAPI *PLUGINDELETEFILESW)(HANDLE hPlugin,PluginPanelItem *PanelItem,int ItemsNumber,int OpMode);
+typedef int  (WINAPI *PLUGINDELETEFILESW)(HANDLE hPanel,PluginPanelItem *PanelItem,int ItemsNumber,int OpMode);
 typedef void (WINAPI *PLUGINEXITFARW)();
 typedef void (WINAPI *PLUGINFREECUSTOMDATAW)(wchar_t *CustomData);
-typedef void (WINAPI *PLUGINFREEFINDDATAW)(HANDLE hPlugin,PluginPanelItem *PanelItem,int ItemsNumber);
-typedef void (WINAPI *PLUGINFREEVIRTUALFINDDATAW)(HANDLE hPlugin,PluginPanelItem *PanelItem,int ItemsNumber);
+typedef void (WINAPI *PLUGINFREEFINDDATAW)(HANDLE hPanel,PluginPanelItem *PanelItem,int ItemsNumber);
+typedef void (WINAPI *PLUGINFREEVIRTUALFINDDATAW)(HANDLE hPanel,PluginPanelItem *PanelItem,int ItemsNumber);
 typedef int  (WINAPI *PLUGINGETCUSTOMDATAW)(const wchar_t *FilePath, wchar_t **CustomData);
-typedef int  (WINAPI *PLUGINGETFILESW)(HANDLE hPlugin,PluginPanelItem *PanelItem,int ItemsNumber,int Move,const wchar_t **DestPath,int OpMode);
-typedef int  (WINAPI *PLUGINGETFINDDATAW)(HANDLE hPlugin,PluginPanelItem **pPanelItem,int *pItemsNumber,int OpMode);
-typedef int  (WINAPI *PLUGINGETLINKTARGETW)(HANDLE hPlugin, PluginPanelItem *PanelItem, wchar_t *Target, size_t TargetSize, int OpMode);
-typedef void (WINAPI *PLUGINGETOPENPLUGININFOW)(HANDLE hPlugin,OpenPluginInfo *Info);
+typedef int  (WINAPI *PLUGINGETFILESW)(HANDLE hPanel,PluginPanelItem *PanelItem,int ItemsNumber,int Move,const wchar_t **DestPath,int OpMode);
+typedef int  (WINAPI *PLUGINGETFINDDATAW)(HANDLE hPanel,PluginPanelItem **pPanelItem,int *pItemsNumber,int OpMode);
+typedef int  (WINAPI *PLUGINGETLINKTARGETW)(HANDLE hPanel, PluginPanelItem *PanelItem, wchar_t *Target, size_t TargetSize, int OpMode);
+typedef void (WINAPI *PLUGINGETOPENPLUGININFOW)(HANDLE hPanel,OpenPluginInfo *Info);
 typedef void (WINAPI *PLUGINGETPLUGININFOW)(PluginInfo *Info);
-typedef int  (WINAPI *PLUGINGETVIRTUALFINDDATAW)(HANDLE hPlugin,PluginPanelItem **pPanelItem,int *pItemsNumber,const wchar_t *Path);
-typedef int  (WINAPI *PLUGINMAKEDIRECTORYW)(HANDLE hPlugin,const wchar_t **Name,int OpMode);
+typedef int  (WINAPI *PLUGINGETVIRTUALFINDDATAW)(HANDLE hPanel,PluginPanelItem **pPanelItem,int *pItemsNumber,const wchar_t *Path);
+typedef int  (WINAPI *PLUGINMAKEDIRECTORYW)(HANDLE hPanel,const wchar_t **Name,int OpMode);
 typedef int  (WINAPI *PLUGINMAYEXITFARW)();
 typedef int  (WINAPI *PLUGINMINFARVERSIONW)();
 typedef HANDLE (WINAPI *PLUGINOPENFILEPLUGINW)(const wchar_t *Name,const unsigned char *Data,int DataSize,int OpMode);
@@ -61,14 +61,14 @@ typedef int  (WINAPI *PLUGINPROCESSDIALOGEVENTW)(int Event,void *Param);
 typedef int  (WINAPI *PLUGINPROCESSEDITOREVENTW)(int Event,void *Param);
 typedef int  (WINAPI *PLUGINPROCESSEDITOREVENTV3W)(const ProcessEditorEventInfo *Info);
 typedef int  (WINAPI *PLUGINPROCESSEDITORINPUTW)(const INPUT_RECORD *Rec);
-typedef int  (WINAPI *PLUGINPROCESSEVENTW)(HANDLE hPlugin,int Event,void *Param);
-typedef int  (WINAPI *PLUGINPROCESSHOSTFILEW)(HANDLE hPlugin,PluginPanelItem *PanelItem,int ItemsNumber,int OpMode);
-typedef int  (WINAPI *PLUGINPROCESSKEYW)(HANDLE hPlugin,int Key,unsigned int ControlState);
+typedef int  (WINAPI *PLUGINPROCESSEVENTW)(HANDLE hPanel,int Event,void *Param);
+typedef int  (WINAPI *PLUGINPROCESSHOSTFILEW)(HANDLE hPanel,PluginPanelItem *PanelItem,int ItemsNumber,int OpMode);
+typedef int  (WINAPI *PLUGINPROCESSKEYW)(HANDLE hPanel,int Key,unsigned int ControlState);
 typedef int  (WINAPI *PLUGINPROCESSSYNCHROEVENTW)(int Event,void *Param);
 typedef int  (WINAPI *PLUGINPROCESSVIEWEREVENTW)(int Event,void *Param); //* $ 27.09.2000 SVS -  События во вьювере
-typedef int  (WINAPI *PLUGINPUTFILESW)(HANDLE hPlugin,PluginPanelItem *PanelItem,int ItemsNumber,int Move,const wchar_t *SrcPath,int OpMode);
-typedef int  (WINAPI *PLUGINSETDIRECTORYW)(HANDLE hPlugin,const wchar_t *Dir,int OpMode);
-typedef int  (WINAPI *PLUGINSETFINDLISTW)(HANDLE hPlugin,const PluginPanelItem *PanelItem,int ItemsNumber);
+typedef int  (WINAPI *PLUGINPUTFILESW)(HANDLE hPanel,PluginPanelItem *PanelItem,int ItemsNumber,int Move,const wchar_t *SrcPath,int OpMode);
+typedef int  (WINAPI *PLUGINSETDIRECTORYW)(HANDLE hPanel,const wchar_t *Dir,int OpMode);
+typedef int  (WINAPI *PLUGINSETFINDLISTW)(HANDLE hPanel,const PluginPanelItem *PanelItem,int ItemsNumber);
 typedef void (WINAPI *PLUGINSETSTARTUPINFOW)(const PluginStartupInfo *Info);
 
 
@@ -190,27 +190,27 @@ class PluginW: public Plugin
 		HANDLE OpenPlugin(int OpenFrom, const void *Item);
 		HANDLE OpenFilePlugin(const wchar_t *Name, const unsigned char *Data, int DataSize, int OpMode);
 
-		int SetFindList(HANDLE hPlugin, const PluginPanelItem *PanelItem, int ItemsNumber);
-		int GetFindData(HANDLE hPlugin, PluginPanelItem **pPanelItem, int *pItemsNumber, int OpMode);
-		int GetVirtualFindData(HANDLE hPlugin, PluginPanelItem **pPanelItem, int *pItemsNumber, const wchar_t *Path);
-		int SetDirectory(HANDLE hPlugin, const wchar_t *Dir, int OpMode);
-		bool GetLinkTarget(HANDLE hPlugin, PluginPanelItem *PanelItem, FARString &result, int OpMode);
-		int GetFiles(HANDLE hPlugin, PluginPanelItem *PanelItem, int ItemsNumber, int Move, const wchar_t **DestPath, int OpMode);
-		int PutFiles(HANDLE hPlugin, PluginPanelItem *PanelItem, int ItemsNumber, int Move, int OpMode);
-		int DeleteFiles(HANDLE hPlugin, PluginPanelItem *PanelItem, int ItemsNumber, int OpMode);
-		int MakeDirectory(HANDLE hPlugin, const wchar_t **Name, int OpMode);
-		int ProcessHostFile(HANDLE hPlugin, PluginPanelItem *PanelItem, int ItemsNumber, int OpMode);
-		int ProcessKey(HANDLE hPlugin, int Key, unsigned int dwControlState);
-		int ProcessEvent(HANDLE hPlugin, int Event, void *Param);
-		int Compare(HANDLE hPlugin, const PluginPanelItem *Item1, const PluginPanelItem *Item2, DWORD Mode);
+		int SetFindList(HANDLE hPanel, const PluginPanelItem *PanelItem, int ItemsNumber);
+		int GetFindData(HANDLE hPanel, PluginPanelItem **pPanelItem, int *pItemsNumber, int OpMode);
+		int GetVirtualFindData(HANDLE hPanel, PluginPanelItem **pPanelItem, int *pItemsNumber, const wchar_t *Path);
+		int SetDirectory(HANDLE hPanel, const wchar_t *Dir, int OpMode);
+		bool GetLinkTarget(HANDLE hPanel, PluginPanelItem *PanelItem, FARString &result, int OpMode);
+		int GetFiles(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber, int Move, const wchar_t **DestPath, int OpMode);
+		int PutFiles(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber, int Move, int OpMode);
+		int DeleteFiles(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber, int OpMode);
+		int MakeDirectory(HANDLE hPanel, const wchar_t **Name, int OpMode);
+		int ProcessHostFile(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber, int OpMode);
+		int ProcessKey(HANDLE hPanel, int Key, unsigned int dwControlState);
+		int ProcessEvent(HANDLE hPanel, int Event, void *Param);
+		int Compare(HANDLE hPanel, const PluginPanelItem *Item1, const PluginPanelItem *Item2, DWORD Mode);
 
 		int GetCustomData(const wchar_t *FilePath, wchar_t **CustomData);
 		void FreeCustomData(wchar_t *CustomData);
 
-		void GetOpenPluginInfo(HANDLE hPlugin, OpenPluginInfo *Info);
-		void FreeFindData(HANDLE hPlugin, PluginPanelItem *PanelItem, int ItemsNumber);
-		void FreeVirtualFindData(HANDLE hPlugin, PluginPanelItem *PanelItem, int ItemsNumber);
-		void ClosePlugin(HANDLE hPlugin);
+		void GetOpenPluginInfo(HANDLE hPanel, OpenPluginInfo *Info);
+		void FreeFindData(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber);
+		void FreeVirtualFindData(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber);
+		void ClosePlugin(HANDLE hPanel);
 
 		int ProcessEditorInput(const INPUT_RECORD *D);
 		int ProcessEditorEvent(int Event, void *Param);
