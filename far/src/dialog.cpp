@@ -518,26 +518,19 @@ void Dialog::CheckDialogCoord()
 		X1 = (ScrX - X2 + 1) / 2;
 
 		if (X1 < 0)		// ширина диалога больше ширины экрана?
-		{
 			X1 = 0;
-		} else {
-			X2+= X1 - 1;
-		}
+		else
+			X2 += X1 - 1;
 	}
 
 	if (Y1 == -1)		// задано центрирование диалога по вертикали?
 	{					//   Y2 при этом = высоте диалога.
 		Y1 = (ScrY - Y2 + 1) / 2;
 
-		if (!DialogMode.Check(DMODE_SMALLDIALOG))	//????
-			if (Y1 > 5)
-				Y1--;
-
-		if (Y1 < 0) {
+		if (Y1 < 0)
 			Y1 = 0;
-		} else {
-			Y2+= Y1 - 1;
-		}
+		else
+			Y2 += Y1 - 1;
 	}
 }
 
