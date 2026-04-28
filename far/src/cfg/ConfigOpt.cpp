@@ -419,7 +419,7 @@ static FARConfig CFG[]
 	{OST_COMMON, NSecPanel, "ClassicHotkeyLinkResolving",    &Opt.ClassicHotkeyLinkResolving, 1, OPT_BOOLEAN},
 
 	{OST_PANELS, NSecPanelLeft, "Type",                      &Opt.LeftPanel.Type, FILE_PANEL},
-	{OST_PANELS, NSecPanelLeft, "Visible",                   &Opt.LeftPanel.Visible, 1, OPT_BOOLEAN},
+	{OST_COMMON, NSecPanelLeft, "Visible",                   &Opt.LeftPanel.Visible, 1, OPT_BOOLEAN},
 	{OST_PANELS, NSecPanelLeft, "Focus",                     &Opt.LeftPanel.Focus, 1, OPT_BOOLEAN},
 	{OST_PANELS, NSecPanelLeft, "ViewMode",                  &Opt.LeftPanel.ViewMode, VIEW_2},
 	{OST_PANELS, NSecPanelLeft, "SortMode",                  &Opt.LeftPanel.SortMode, PanelSortMode::BY_NAME},
@@ -433,7 +433,7 @@ static FARConfig CFG[]
 	{OST_PANELS, NSecPanelLeft, "DirectoriesFirst",          &Opt.LeftPanel.DirectoriesFirst, 1, OPT_BOOLEAN},
 
 	{OST_PANELS, NSecPanelRight, "Type",                     &Opt.RightPanel.Type, FILE_PANEL},
-	{OST_PANELS, NSecPanelRight, "Visible",                  &Opt.RightPanel.Visible, 1, OPT_BOOLEAN},
+	{OST_COMMON, NSecPanelRight, "Visible",                  &Opt.RightPanel.Visible, 1, OPT_BOOLEAN},
 	{OST_PANELS, NSecPanelRight, "Focus",                    &Opt.RightPanel.Focus, 0, OPT_BOOLEAN},
 	{OST_PANELS, NSecPanelRight, "ViewMode",                 &Opt.RightPanel.ViewMode, VIEW_2},
 	{OST_PANELS, NSecPanelRight, "SortMode",                 &Opt.RightPanel.SortMode, PanelSortMode::BY_NAME},
