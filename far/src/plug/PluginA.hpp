@@ -194,7 +194,7 @@ class PluginA: public Plugin
 		void GetOpenPluginInfo(HANDLE hPanel, OpenPluginInfo *Info);
 		void FreeFindData(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber);
 		void FreeVirtualFindData(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber);
-		void ClosePlugin(HANDLE hPanel);
+		void ClosePanel(HANDLE hPanel);
 
 		int ProcessEditorInput(const INPUT_RECORD *D);
 		int ProcessEditorEvent(int Event, void *Param);

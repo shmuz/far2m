@@ -627,7 +627,7 @@ int FileList::ConvertName(FARString &strDest, const wchar_t *SrcName, int MaxLen
 
 void FileList::PrepareViewSettings(int ViewMode, OpenPluginInfo *PlugInfo)
 {
-	OpenPluginInfo Info = {0};
+	OpenPluginInfo Info;
 
 	if (PanelMode == PLUGIN_PANEL) {
 		if (!PlugInfo)

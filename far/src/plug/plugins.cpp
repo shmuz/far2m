@@ -647,7 +647,7 @@ PHPTR PluginManager::OpenFilePlugin(const wchar_t *FileName, int OpMode, OPENFIL
 				 }
 			}
 			else
-				res.pPlugin->ClosePlugin(res.Handle);
+				res.pPlugin->ClosePanel(res.Handle);
 		}
 	}
 
@@ -722,7 +722,7 @@ PHPTR PluginManager::OpenFindListPlugin(const PluginPanelItem *PanelItems, int I
 	for (const auto &ph: panels)
 	{
 		if (&ph != pResult && ph.hPanel != INVALID_HANDLE_VALUE)
-			ph.pPlugin->ClosePlugin(ph.hPanel);
+			ph.pPlugin->ClosePanel(ph.hPanel);
 	}
 
 	return pResult ? new PanelHandle(pResult->hPanel, pResult->pPlugin) : nullptr;
@@ -733,7 +733,7 @@ void PluginManager::ClosePanel(PHPTR ph)
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	assert(ph->RefCnt > 0);
 	if (--ph->RefCnt == 0) {
-		ph->pPlugin->ClosePlugin(ph->hPanel);
+		ph->pPlugin->ClosePanel(ph->hPanel);
 		delete ph;
 	}
 }

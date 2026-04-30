@@ -264,7 +264,7 @@ FileList::~FileList()
 	DeleteListData(ListData, FileCount);
 
 	if (PanelMode == PLUGIN_PANEL)
-		while (PopPlugin(FALSE))
+		while (PopPlugin(false))
 			;
 
 	delete Filter;
@@ -2357,7 +2357,7 @@ void FileList::ProcessEnter(bool EnableExec, bool SeparateWindow, bool EnableAss
 		}
 
 		if (EnableExec && SetCurPath() && !SeparateWindow
-				&& ProcessLocalFileTypes(strFileName, FILETYPE_EXEC, !PluginMode, strCurDir))    //?? is was var!
+				&& ProcessLocalFileTypes(strFileName, FILETYPE_EXEC, !PluginMode, strCurDir))
 		{
 			if (PluginMode)
 				QueueDeleteOnClose(strFileName);
@@ -2420,7 +2420,7 @@ bool FileList::SetCurDir(const wchar_t *NewDir, bool ClosePlugin, bool ShowMessa
 			if (ProcessPluginEvent(FE_CLOSE, nullptr))
 				return FALSE;
 
-			if (!PopPlugin(TRUE))
+			if (!PopPlugin(true))
 				break;
 		}
 
@@ -2487,7 +2487,7 @@ bool FileList::ChangeDir(const wchar_t *NewDir, bool ShowMessage)
 				GoToPanelFile = true;
 			}
 
-			PopPlugin(TRUE);
+			PopPlugin(true);
 			/*Panel *AnotherPanel = CtrlObject->Cp()->GetAnotherPanel(this);
 
 			if (AnotherPanel->GetType() == INFO_PANEL)
@@ -4467,7 +4467,7 @@ PHPTR FileList::OpenFilePlugin(const wchar_t *FileName, bool PushPrev, OPENFILEP
 			if (ProcessPluginEvent(FE_CLOSE, nullptr))
 				return PHPTR_STOP;
 
-			if (!PopPlugin(TRUE))
+			if (!PopPlugin(true))
 				break;
 		}
 	}

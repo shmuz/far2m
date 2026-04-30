@@ -593,7 +593,7 @@ void FileList::UpdatePlugin(int KeepSelection, int IgnoreVisible)
 	if (!CtrlObject->Plugins.GetFindData(hPlugin, &PanelData, &PluginFileCount, 0)) {
 		DeleteListData(ListData, FileCount);
 		SymlinksCache.clear();
-		PopPlugin(TRUE);
+		PopPlugin(true);
 		Update(KeepSelection);
 
 		// WARP> явный хак, но очень способствует - восстанавливает позицию на панели при ошибке чтения архива.

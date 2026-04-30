@@ -939,7 +939,7 @@ int PluginA::ProcessKey(HANDLE hPanel, int Key, unsigned int dwControlState)
 }
 
 
-void PluginA::ClosePlugin(HANDLE hPanel)
+void PluginA::ClosePanel(HANDLE hPanel)
 {
 	if (pClosePlugin)
 	{

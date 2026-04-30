@@ -845,9 +845,8 @@ int Editor::ProcessKey(FarKey Key)
 
 	_KEYMACRO(CleverSysLog SL(L"Editor::ProcessKey()"));
 	_KEYMACRO(SysLog(L"Key=%ls", _FARKEY_ToName(Key)));
-	int CurPos, CurVisPos, I;
-	CurPos = m_CurLine->GetCurPos();
-	CurVisPos = GetLineCurPos();
+	int CurPos = m_CurLine->GetCurPos();
+	int CurVisPos = GetLineCurPos();
 	bool isk = IsShiftKey(Key);
 	_SVS(SysLog(L"[%d] isk=%d", __LINE__, isk));
 
@@ -1052,7 +1051,7 @@ int Editor::ProcessKey(FarKey Key)
 			m_Pasting++;
 			Lock();
 
-			for (I = Y1; I < Y2; I++) {
+			for (int I = Y1; I < Y2; I++) {
 				ProcessKey(KEY_SHIFTUP);
 
 				if (!m_EdOpt.CursorBeyondEOL) {
@@ -1072,7 +1071,7 @@ int Editor::ProcessKey(FarKey Key)
 			m_Pasting++;
 			Lock();
 
-			for (I = Y1; I < Y2; I++) {
+			for (int I = Y1; I < Y2; I++) {
 				ProcessKey(KEY_SHIFTDOWN);
 
 				if (!m_EdOpt.CursorBeyondEOL) {
@@ -1770,7 +1769,7 @@ int Editor::ProcessKey(FarKey Key)
 		case KEY_NUMPAD9: {
 			Flags.Set(FEDITOR_NEWUNDO);
 
-			for (I = Y1; I < Y2; I++)
+			for (int I = Y1; I < Y2; I++)
 				ScrollUp();
 
 			Show();
@@ -1780,7 +1779,7 @@ int Editor::ProcessKey(FarKey Key)
 		case KEY_NUMPAD3: {
 			Flags.Set(FEDITOR_NEWUNDO);
 
-			for (I = Y1; I < Y2; I++)
+			for (int I = Y1; I < Y2; I++)
 				ScrollDown();
 
 			Show();
@@ -1814,8 +1813,9 @@ int Editor::ProcessKey(FarKey Key)
 				int StartPos = m_CurLine->GetCellCurPos();
 				m_NumLine = m_NumLastLine - 1;
 				m_CurLine = m_EndList;
+				m_TopScreen = m_CurLine;
 
-				for (m_TopScreen = m_CurLine, I = Y1; I < Y2 && m_TopScreen->m_prev; I++) {
+				for (int I = Y1; I < Y2 && m_TopScreen->m_prev; I++) {
 					m_TopScreen->SetPosition(X1, I, m_XX2, I);
 					m_TopScreen = m_TopScreen->m_prev;
 				}
@@ -1864,7 +1864,7 @@ int Editor::ProcessKey(FarKey Key)
 				Edit *CurPtr = m_TopScreen;
 				bool CurLineFound = false;
 
-				for (I = Y1; I < Y2; I++) {
+				for (int I = Y1; I < Y2; I++) {
 					if (!CurPtr->m_next)
 						break;
 
@@ -2227,7 +2227,7 @@ int Editor::ProcessKey(FarKey Key)
 			m_Pasting++;
 			Lock();
 
-			for (I = Y1; I < Y2; I++)
+			for (int I = Y1; I < Y2; I++)
 				ProcessKey(KEY_ALTSHIFTUP);
 
 			Unlock();
@@ -2241,7 +2241,7 @@ int Editor::ProcessKey(FarKey Key)
 			m_Pasting++;
 			Lock();
 
-			for (I = Y1; I < Y2; I++)
+			for (int I = Y1; I < Y2; I++)
 				ProcessKey(KEY_ALTSHIFTDOWN);
 
 			Unlock();
@@ -2341,7 +2341,6 @@ int Editor::ProcessKey(FarKey Key)
 			return TRUE;
 		}
 		case KEY_OP_SELWORD: {
-			int OldCurPos = CurPos;
 			int SStart, SEnd;
 			m_Pasting++;
 			Lock();
@@ -2362,7 +2361,6 @@ int Editor::ProcessKey(FarKey Key)
 				}
 			}
 
-			CurPos = OldCurPos;    // возвращаем обратно
 			m_Pasting--;
 			Unlock();
 			Show();
@@ -2758,7 +2756,7 @@ int Editor::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 						topLinePtr = m_TopList ? m_TopList : TargetLine;
 
 					m_CurLine = TargetLine;
-					int offsetFromTop = (topLinePtr && m_CurLine) ? CalcDistance(topLinePtr, m_CurLine, -1) : 0;
+					int offsetFromTop = CalcDistance(topLinePtr, m_CurLine, -1);
 					m_NumLine = topLineNumber + offsetFromTop;
 				}
 
@@ -6334,13 +6332,13 @@ UINT Editor::GetCodePage()
 
 void Editor::SetDialogParent(DWORD Sets) {}
 
-void Editor::SetPosition(int X1, int Y1, int X2, int Y2)
+void Editor::SetPosition(int x1, int y1, int x2, int y2)
 {
-	ScreenObject::SetPosition(X1,Y1,X2,Y2);
+	ScreenObject::SetPosition(x1,y1,x2,y2);
 
 	for(Edit *CurPtr=m_TopList; CurPtr; CurPtr=CurPtr->m_next)
 	{
-		CurPtr->SetPosition(X1,Y1,X2,Y2);
+		CurPtr->SetPosition(x1,y1,x2,y2);
 	}
 }
 

@@ -1161,7 +1161,7 @@ int PluginW::ProcessKey(HANDLE hPanel, int Key, unsigned int dwControlState)
 }
 
 
-void PluginW::ClosePlugin(HANDLE hPanel)
+void PluginW::ClosePanel(HANDLE hPanel)
 {
 	if (pClosePluginW)
 	{

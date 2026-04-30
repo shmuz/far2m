@@ -70,13 +70,13 @@ void FileList::PushPlugin(const wchar_t *HostFile)
 	PluginsList.push_back(stItem);
 }
 
-int FileList::PopPlugin(int EnableRestoreViewMode)
+bool FileList::PopPlugin(bool EnableRestoreViewMode)
 {
 	OpenPluginInfo Info{};
 
 	if (PluginsList.empty()) {
 		PanelMode = NORMAL_PANEL;
-		return FALSE;
+		return false;
 	}
 
 	// указатель на плагин, с которого уходим
@@ -139,7 +139,7 @@ int FileList::PopPlugin(int EnableRestoreViewMode)
 	if (EnableRestoreViewMode)
 		CtrlObject->Cp()->RedrawKeyBar();
 
-	return TRUE;
+	return true;
 }
 
 int FileList::FileNameToPluginItem(const wchar_t *Name, PluginPanelItem *pi)

@@ -164,7 +164,7 @@ class Plugin
 		virtual HANDLE Analyse(const AnalyseInfo *Info) = 0;
 		virtual bool   CheckMinFarVersion() = 0;
 		virtual void   CloseAnalyse(const CloseAnalyseInfo *Info) = 0;
-		virtual void   ClosePlugin(HANDLE hPanel) = 0;
+		virtual void   ClosePanel(HANDLE hPanel) = 0;
 		virtual int    Compare(HANDLE hPanel, const PluginPanelItem *Item1, const PluginPanelItem *Item2, DWORD Mode) = 0;
 		virtual int    Configure(int MenuItem) = 0;
 		virtual int    DeleteFiles(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber, int OpMode) = 0;

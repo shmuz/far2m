@@ -217,8 +217,7 @@ private:
 
 	void MoveSelection(FileListItem **FileList, long FileCount, FileListItem **OldList, long OldFileCount);
 	virtual int GetSelCount() const;
-	virtual int
-	GetSelName(FARString *strName, DWORD &FileAttr, DWORD &FileMode, FAR_FIND_DATA_EX *fde = nullptr);
+	virtual int GetSelName(FARString *strName, DWORD &FileAttr, DWORD &FileMode, FAR_FIND_DATA_EX *fde = nullptr);
 	virtual void UngetSelName();
 	virtual void ClearLastGetSelection();
 
@@ -229,7 +228,7 @@ private:
 	virtual int GetCurBaseName(FARString &strName);
 
 	void PushPlugin(const wchar_t *HostFile);
-	int PopPlugin(int EnableRestoreViewMode);
+	bool PopPlugin(bool EnableRestoreViewMode);
 	void CopyFiles();
 	void CopyNames(bool FullPathName, bool RealName);
 	void SelectSortMode();
@@ -307,8 +306,8 @@ public:
 	PHPTR OpenFilePlugin(const wchar_t *FileName, bool PushPrev, OPENFILEPLUGINTYPE Type);
 	virtual int GetFileName(FARString &strName, int Pos, DWORD &FileAttr) const;
 	virtual int GetCurrentPos() const;
-	virtual bool
-	FindPartName(const wchar_t *Name, int Next, int Direct = 1, int ExcludeSets = 0, bool UseXlat = false);
+	virtual bool FindPartName(const wchar_t *Name, int Next, int Direct = 1, int ExcludeSets = 0,
+			bool UseXlat = false);
 
 	virtual bool GoToFile(long idxItem);
 	virtual bool GoToFile(const wchar_t *Name, bool OnlyPartName = false);
