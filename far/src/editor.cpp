@@ -5307,6 +5307,26 @@ int Editor::EditorControl(int Command, void *Param)
 			break;
 		}
 
+		case ECTL_PROCESSINPUT: {
+			if (Param) {
+				INPUT_RECORD *rec = (INPUT_RECORD *)Param;
+
+				if (CtrlObject->Plugins.ProcessEditorInput(rec))
+					return TRUE;
+
+				if (rec->EventType == MOUSE_EVENT)
+					ProcessMouse(&rec->Event.MouseEvent);
+				else {
+					FarKey Key = CalcKeyCode(rec, false);
+					ProcessKey(Key);
+				}
+
+				return TRUE;
+			}
+
+			return FALSE;
+		}
+
 		// должно выполняется в FileEditor::EditorControl()
 		case ECTL_PROCESSKEY: {
 			ProcessKey((int)(INT_PTR)Param);
