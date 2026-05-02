@@ -2975,7 +2975,10 @@ static void PushDlgItem (lua_State *L, const struct FarDialogItem* pItem, BOOL t
 	}
 	else if (pItem->Type == DI_USERCONTROL)
 	{
-		lua_pushlightuserdata(L, pItem->VBuf);
+		//-- "bad light userdata pointer" error with old LuaJIT builds.
+		//-- See: https://github.com/shmuz/far2m/issues/102.
+		// lua_pushlightuserdata(L, pItem->VBuf);
+		lua_pushinteger(L, 0); // dummy; to avoid a hole in the array
 		lua_rawseti(L, -2, 6);
 	}
 	else
