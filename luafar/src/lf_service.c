@@ -752,6 +752,7 @@ static int editor_GetInfo(lua_State *L)
 	PutNumToTable(L, "CodePage", ei.CodePage);
 	PutRECTToTable(L, "WindowArea", ei.WindowArea);
 	PutRECTToTable(L, "ClientArea", ei.ClientArea);
+	PutBoolToTable(L, "IsMemoEdit", ei.IsMemoEdit);
 	return 1;
 }
 

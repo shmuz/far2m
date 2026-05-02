@@ -5102,6 +5102,7 @@ int Editor::EditorControl(int Command, void *Param)
 				Info->CurState|= !Flags.Check(FEDITOR_MODIFIED) ? ECSTATE_SAVED : 0;
 				Info->CurState|= Flags.Check(FEDITOR_MODIFIED | FEDITOR_WASCHANGED) ? ECSTATE_MODIFIED : 0;
 				Info->CodePage = m_codepage;
+				Info->IsMemoEdit = Flags.Check(FEDITOR_DIALOGMEMOEDIT) ? 1 : 0;
 
 				Info->WindowArea = RECT { X1,Y1,X2,Y2 };
 				Info->ClientArea = RECT { X1,Y1,X2,Y2 };

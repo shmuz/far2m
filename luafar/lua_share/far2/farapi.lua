@@ -1731,6 +1731,7 @@ struct EditorInfo
 	UINT CodePage;
 	RECT WindowArea;
 	RECT ClientArea;
+	int IsMemoEdit;
 };
 
 struct EditorBookMarks
