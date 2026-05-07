@@ -937,101 +937,93 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 
 	// 3-rd argument
 
-	switch(OpenFrom)
+	if (OpenFrom == OPEN_FROMMACRO)
 	{
-		case OPEN_FROMMACRO:
-		{
-			const struct OpenMacroInfo* data = (struct OpenMacroInfo*)Item;
-			PackMacroValues(L, data->Count, data->Values);
-			break;
-		}
-
-		case OPEN_SHORTCUT:
-		case OPEN_COMMANDLINE:
-			push_utf8_string(L, (wchar_t*)Item, -1);
-			break;
-
-		case OPEN_DIALOG:
-		{
-			lua_pop(L, 1);       // pop dummy menuitem Id
-			struct OpenDlgPluginData *data = (struct OpenDlgPluginData*)Item;
-			push_guid(L, &data->ItemGuid);
-			lua_createtable(L, 0, 1);
-			NewDialogData(L, data->hDlg, FALSE);
-			lua_setfield(L, -2, "hDlg");
-			break;
-		}
-
-		case OPEN_LEFTDISKMENU:
-		case OPEN_RIGHTDISKMENU:
-		case OPEN_PLUGINSMENU:
-		case OPEN_EDITOR:
-		case OPEN_VIEWER:
-			lua_pop(L, 1);       // pop dummy menuitem Id
-			push_guid(L, (void*)Item);
-			lua_pushnil(L);      // dummy Data
-			break;
-
-		case OPEN_ANALYSE:
-		{
-			const struct OpenAnalyseInfo* oai = (struct OpenAnalyseInfo*)Item;
-			intptr_t ref = (intptr_t)oai->Handle;
-			PushAnalyseInfo(L, oai->Info);
-			lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
-			lua_setfield(L, -2, "Handle");
-			luaL_unref(L, LUA_REGISTRYINDEX, ref);
-			break;
-		}
-
-		default:
-			lua_pushnil(L);
-			break;
+		struct OpenMacroInfo* data = (struct OpenMacroInfo*)Item;
+		PackMacroValues(L, data->Count, data->Values);
+	}
+	else if (OpenFrom == OPEN_SHORTCUT)
+	{
+		push_utf8_string(L, (wchar_t*)Item, -1);
+	}
+	else if (OpenFrom == OPEN_COMMANDLINE)
+	{
+		push_utf8_string(L, (wchar_t*)Item, -1);
+	}
+	else if (OpenFrom == OPEN_DIALOG)
+	{
+		struct OpenDlgPluginData *data = (struct OpenDlgPluginData*)Item;
+		lua_pop(L, 1);       // pop dummy menuitem Id
+		push_guid(L, &data->ItemGuid);
+		lua_createtable(L, 0, 1);
+		NewDialogData(L, data->hDlg, FALSE);
+		lua_setfield(L, -2, "hDlg");
+	}
+	else if (OpenFrom == OPEN_ANALYSE)
+	{
+		struct OpenAnalyseInfo* oai = (struct OpenAnalyseInfo*)Item;
+		PushAnalyseInfo(L, oai->Info);
+		lua_rawgeti(L, LUA_REGISTRYINDEX, (int)(intptr_t)oai->Handle);
+		lua_setfield(L, -2, "Handle");
+		luaL_unref(L, LUA_REGISTRYINDEX, (int)(intptr_t)oai->Handle);
+	}
+	else if (OpenFrom == OPEN_LEFTDISKMENU || OpenFrom == OPEN_RIGHTDISKMENU ||
+			OpenFrom == OPEN_PLUGINSMENU || OpenFrom == OPEN_EDITOR || OpenFrom == OPEN_VIEWER)
+	{
+		lua_pop(L, 1);       // pop dummy menuitem Id
+		push_guid(L, (void*)Item);
+		lua_pushnil(L);      // dummy Data
+	}
+	else
+	{
+		lua_pushnil(L);
 	}
 
 	// Call export.Open()
 
 	if (OpenFrom == OPEN_FROMMACRO)
 	{
-    int top = lua_gettop(L);
-    if (pcall_msg(L, 3, LUA_MULTRET) == 0)
-    {
-      int nret = lua_gettop(L) - top + 4; // nret
-      if (nret > 0 && lua_istable(L, -nret))
-      {
-        lua_getfield(L, -nret, "type"); // nret+1
-        if (lua_type(L,-1)==LUA_TSTRING && lua_objlen(L,-1)==5 && !strcmp("panel",lua_tostring(L,-1)))
-        {
-          lua_pop(L,1); // nret
-          lua_rawgeti(L,-nret,1); // nret+1
-          if (lua_toboolean(L, -1))
-          {
-            struct FarMacroCall *fmc = CreateFarMacroCall(1);
-            fmc->Values[0].Type = FMVT_PANEL;
-            fmc->Values[0].Value.Pointer = RegisterObject(L); // nret
-            lua_pop(L,nret); // +0
-            return fmc;
-          }
-          lua_pop(L,nret+1); // +0
-        }
-        lua_pop(L,1); // nret
-      }
-      if (nret)
-      {
-        HANDLE hndl = FillFarMacroCall(L,nret);
-        lua_pop(L,nret); // +0
-        return hndl;
-      }
-    }
-  }
+		int top = lua_gettop(L);
+		if (pcall_msg(L, 3, LUA_MULTRET) == 0)
+		{
+			int nret = lua_gettop(L) - top + 4; // nret
+			if (nret > 0 && lua_istable(L, -nret))
+			{
+				lua_getfield(L, -nret, "type"); // nret+1
+				if (lua_type(L,-1)==LUA_TSTRING && lua_objlen(L,-1)==5 && !strcmp("panel",lua_tostring(L,-1)))
+				{
+					lua_pop(L,1); // nret
+					lua_rawgeti(L,-nret,1); // nret+1
+					if (lua_toboolean(L, -1))
+					{
+						struct FarMacroCall* fmc = CreateFarMacroCall(1);
+						fmc->Values[0].Type = FMVT_PANEL;
+						fmc->Values[0].Value.Pointer = RegisterObject(L); // nret
+						lua_pop(L,nret); // +0
+						return fmc;
+					}
+					lua_pop(L,nret+1); // +0
+				}
+				lua_pop(L,1); // nret
+			}
+			if (nret)
+			{
+				HANDLE hndl = FillFarMacroCall(L,nret);
+				lua_pop(L,nret); // +0
+				return hndl;
+			}
+		}
+	}
 	else if (OpenFrom == OPEN_ANALYSE)
 	{
-		if (pcall_msg(L, 3, 1) == 0) {
+		if (pcall_msg(L, 3, 1) == 0)
+		{
 			if (lua_type(L,-1) == LUA_TNUMBER && lua_tointeger(L,-1) == (intptr_t)PANEL_STOP) {
 				lua_pop(L,1);
 				return PANEL_STOP;
 			}
-			else if (lua_toboolean(L, -1))   //+1: Obj
-				return RegisterObject(L);      //+0
+			else if (lua_toboolean(L, -1))             //+1: Obj
+				return RegisterObject(L);               //+0
 
 			lua_pop(L,1);
 		}
