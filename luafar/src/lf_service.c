@@ -1735,6 +1735,14 @@ static int editor_SetSavedState(lua_State *L)
 	return 1;
 }
 
+static int editor_Reparse(lua_State *L)
+{
+	int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
+	int ret = PSInfo.EditorControlV2(EditorId, ECTL_REPARSE, NULL);
+	lua_pushboolean(L, ret);
+	return 1;
+}
+
 typedef struct {
 	lua_State *L;
 	int nargs;
@@ -6066,6 +6074,7 @@ static const luaL_Reg editor_funcs[] =
 	PAIR( editor, ReadInput),
 	PAIR( editor, RealToTab),
 	PAIR( editor, Redraw),
+	PAIR( editor, Reparse),
 	PAIR( editor, SaveFile),
 	PAIR( editor, Select),
 	PAIR( editor, SetKeyBar),
