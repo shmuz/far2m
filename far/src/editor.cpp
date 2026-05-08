@@ -5479,6 +5479,22 @@ int Editor::EditorControl(int Command, void *Param)
 				return TRUE;
 			}
 			return FALSE;
+
+		case ECTL_REPARSE: {
+			struct BitGuard {
+				BitFlags& state;
+				BitGuard(BitFlags& s) : state(s) { state.Set(FEDITOR_REPARSING); }
+				~BitGuard() { state.Clear(FEDITOR_REPARSING); }
+			};
+
+			if (Flags.Check(FEDITOR_REPARSING))
+				return FALSE;
+
+			SCOPED_ACTION(BitGuard)(Flags);
+			CtrlObject->Plugins.ProcessEditorEvent(EE_CLOSE, nullptr, this);
+			CtrlObject->Plugins.ProcessEditorEvent(EE_READ, nullptr, this);
+			return TRUE;
+		}
 	}
 
 	return FALSE;

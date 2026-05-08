@@ -150,8 +150,7 @@ DlgEdit::~DlgEdit()
 	if (multiEdit) {
 		if (m_dialogEditorOpened && CtrlObject) {
 			DialogEditorPluginScope scope(multiEdit);
-			int id = multiEdit->GetEditorID();
-			CtrlObject->Plugins.ProcessEditorEvent(EE_CLOSE, &id, multiEdit);
+			CtrlObject->Plugins.ProcessEditorEvent(EE_CLOSE, nullptr, multiEdit);
 		}
 		delete multiEdit;
 	}

@@ -768,10 +768,12 @@ int PluginManager::ProcessEditorEvent(int Event, void *Param, Editor *EditorInst
 	if (Event == EE_REDRAW)
 		EditorInstance->AutoDeleteColors();
 
-	auto EditorID = EditorInstance->GetEditorID();
-
 	for (auto pPlugin: PluginsData)
 	{
+		int EditorID = EditorInstance->GetEditorID(); // a separate copy of EditorID for each plugin
+		if (Event == EE_CLOSE)
+			Param = &EditorID;
+
 		if (pPlugin->HasProcessEditorEvent())
 		{
 			pPlugin->ProcessEditorEvent(Event, Param); // the return value is ignored

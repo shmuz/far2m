@@ -135,6 +135,7 @@ enum FLAGS_CLASS_EDITOR
 	FEDITOR_CURPOSCHANGEDBYPLUGIN = 0x00100000,  // позиция была изменена плагином (ECTL_SETPOSITION)
 	FEDITOR_ISRESIZEDCONSOLE      = 0x00800000,
 	FEDITOR_PROCESSCTRLQ          = 0x02000000,  // нажата Ctrl-Q и идет процесс вставки кода символа
+	FEDITOR_REPARSING             = 0x40000000,  // ECTL_REPARSE in process: prevents recursion
 	FEDITOR_DIALOGMEMOEDIT        = 0x80000000,  // Editor используется в диалоге в качестве DI_MEMOEDIT
 };
 

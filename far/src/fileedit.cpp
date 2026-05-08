@@ -338,10 +338,9 @@ FileEditor::~FileEditor()
 		SaveToCache();
 
 	if (bEE_READ_Sent && CtrlObject) {
-		int FEditEditorID = m_editor->m_EditorID;
 		FileEditor *save = CtrlObject->Plugins.CurEditor;
 		CtrlObject->Plugins.CurEditor = this;
-		CtrlObject->Plugins.ProcessEditorEvent(EE_CLOSE, &FEditEditorID, m_editor);
+		CtrlObject->Plugins.ProcessEditorEvent(EE_CLOSE, nullptr, m_editor);
 		CtrlObject->Plugins.CurEditor = save;
 	}
 
