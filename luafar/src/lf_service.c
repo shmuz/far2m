@@ -3056,6 +3056,7 @@ TDialogData* NewDialogData(lua_State* L, HANDLE hDlg, BOOL isOwned)
 		lua_newtable(L);
 		lua_setfenv(L, -2);
 	}
+
 	return dd;
 }
 

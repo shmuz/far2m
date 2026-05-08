@@ -926,8 +926,11 @@ static void push_guid(lua_State *L, const void *pGuid)
 
 HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 {
+	int entry_top = lua_gettop(L);
+	HANDLE Result = INVALID_HANDLE_VALUE;
+
 	if (!CheckReloadDefaultScript(L) || !GetExportFunction(L, "Open"))
-		return INVALID_HANDLE_VALUE;
+		return Result;
 
 	if (OpenFrom == OPEN_LUAMACRO)
 		return Open_Luamacro(L, Item);
@@ -999,18 +1002,15 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 						struct FarMacroCall* fmc = CreateFarMacroCall(1);
 						fmc->Values[0].Type = FMVT_PANEL;
 						fmc->Values[0].Value.Pointer = RegisterObject(L); // nret
-						lua_pop(L,nret); // +0
-						return fmc;
+						Result = fmc;
 					}
-					lua_pop(L,nret+1); // +0
+					goto Exit;
 				}
 				lua_pop(L,1); // nret
 			}
 			if (nret)
 			{
-				HANDLE hndl = FillFarMacroCall(L,nret);
-				lua_pop(L,nret); // +0
-				return hndl;
+				Result = FillFarMacroCall(L,nret);
 			}
 		}
 	}
@@ -1018,26 +1018,24 @@ HANDLE LF_Open (lua_State* L, int OpenFrom, INT_PTR Item)
 	{
 		if (pcall_msg(L, 3, 1) == 0)
 		{
-			if (lua_type(L,-1) == LUA_TNUMBER && lua_tointeger(L,-1) == (intptr_t)PANEL_STOP) {
-				lua_pop(L,1);
-				return PANEL_STOP;
-			}
-			else if (lua_toboolean(L, -1))             //+1: Obj
-				return RegisterObject(L);               //+0
-
-			lua_pop(L,1);
+			if (lua_type(L,-1) == LUA_TNUMBER && lua_tointeger(L,-1) == (intptr_t)PANEL_STOP)
+				Result = PANEL_STOP;
+			else if (lua_toboolean(L, -1))
+				Result = RegisterObject(L);
 		}
 	}
   else
   {
-		if (pcall_msg(L, 3, 1) == 0) {
-			if (lua_toboolean(L, -1))        //+1: Obj
-				return RegisterObject(L);      //+0
-			lua_pop(L,1);
+		if (pcall_msg(L, 3, 1) == 0)
+		{
+			if (lua_toboolean(L, -1))
+				Result = RegisterObject(L);
 		}
 	}
 
-	return INVALID_HANDLE_VALUE;
+Exit:
+	lua_settop(L, entry_top);
+	return Result;
 }
 
 void LF_ClosePanel(lua_State* L, HANDLE hPanel)
