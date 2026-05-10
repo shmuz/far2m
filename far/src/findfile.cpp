@@ -1119,8 +1119,8 @@ static bool ScanFile(const wchar_t *Name)
 				FILE_FLAG_SEQUENTIAL_SCAN))
 		return false;
 
-	char readBufferA[0x10000] __attribute__((aligned(0x1000)));
-	wchar_t readBuffer[ARRAYSIZE(readBufferA)] __attribute__((aligned(0x1000)));
+	static char readBufferA[0x10000] __attribute__((aligned(0x1000)));
+	static wchar_t readBuffer[ARRAYSIZE(readBufferA)] __attribute__((aligned(0x1000)));
 
 	// Количество считанных из файла байт
 	DWORD readBlockSize = 0;
