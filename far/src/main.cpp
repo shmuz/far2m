@@ -663,9 +663,12 @@ int _cdecl main(int argc, char *argv[])
 
 		if (strcmp(name, "far2medit") == 0) { // run by symlink in editor mode
 			Opt.OnlyEditorViewerUsed = Options::ONLY_EDITOR;
-			if (argc > 1 && *argv[1] != '-') {
-				Opt.strEditViewArg = argv[1];	// use the next argument
-				RemoveArgs(1, 1);
+			for (int I = 1; I < argc; I++) {
+				if (*argv[I] != '-') {
+					Opt.strEditViewArg = argv[I];
+					RemoveArgs(I, 1);
+					break;
+				}
 			}
 		}
 		else if (strcmp(name, "far2m_askpass") == 0)
