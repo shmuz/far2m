@@ -1096,15 +1096,10 @@ static int FindStringBMH(const unsigned char *searchBuffer, size_t searchBufferC
 
 static bool ScanFile(const wchar_t *Name)
 {
-#define RETURN(r)                                                                                            \
-	{                                                                                                        \
-		result = (r);                                                                                        \
-		goto exit;                                                                                           \
-	}
-#define CONTINUE(r)                                                                                          \
-	{                                                                                                        \
-		if ((r) || cpIndex == codePagesCount - 1)                                                            \
-			RETURN(r) else continue;                                                                         \
+#define CONTINUE()                                        \
+	{                                                     \
+		if (cpIndex == codePagesCount - 1)                \
+			return false; else continue;                  \
 	}
 	// Длина строки поиска
 	const size_t findStringCount = strFindStr.GetLength();
@@ -1141,9 +1136,6 @@ static bool ScanFile(const wchar_t *Name)
 
 	UINT LastPercents = 0;
 
-	// Результат поиска
-	bool result = false;
-
 	// Основной цикл чтения из файла
 
 	while (!StopFlag
@@ -1151,7 +1143,8 @@ static bool ScanFile(const wchar_t *Name)
 					(!SearchInFirst || alreadyRead + sizeof(readBufferA) <= SearchInFirst)
 							? sizeof(readBufferA)
 							: static_cast<DWORD>(SearchInFirst - alreadyRead),
-					&readBlockSize)) {
+					&readBlockSize))
+	{
 		UINT Percents = static_cast<UINT>(FileSize ? alreadyRead * 100 / FileSize : 0);
 		if (Percents != LastPercents) {
 			itd.SetPercent(Percents);
@@ -1165,19 +1158,20 @@ static bool ScanFile(const wchar_t *Name)
 		if (SearchHex) {
 			// Выходим, если ничего не прочитали или прочитали мало
 			if (!readBlockSize || readBlockSize < hexFindStringSize)
-				RETURN(false)
+				return false;
 
 			// Ищем
 			if (FindStringBMH((const unsigned char *)readBufferA, readBlockSize) != -1)
-				RETURN(true)
-		} else {
+				return true;
+		}
+		else {
 			for (int cpIndex = 0; cpIndex < codePagesCount; cpIndex++) {
 				// Информация о кодовой странице
 				CodePageInfo *cpi = codePages + cpIndex;
 
 				// Пропускаем ошибочные кодовые страницы
 				if (!cpi->MaxCharSize)
-					CONTINUE(false)
+					CONTINUE()
 
 				// Если начало файла очищаем информацию о поиске по словам
 				if (WholeWords && alreadyRead == readBlockSize) {
@@ -1186,14 +1180,18 @@ static bool ScanFile(const wchar_t *Name)
 				}
 
 				// Если ничего не прочитали
-				if (!readBlockSize)
+				if (!readBlockSize) {
 					// Если поиск по словам и в конце предыдущего блока было что-то найдено,
 					// то считаем, что нашли то, что нужно
-					CONTINUE(WholeWords && cpi->WordFound)
+					if (WholeWords && cpi->WordFound)
+						return true;
+					else
+						CONTINUE()
+				}
 
 				// Выходим, если прочитали меньше размера строки поиска и нет поиска по словам
 				if (readBlockSize < findStringCount && !(WholeWords && cpi->WordFound))
-					CONTINUE(FALSE)
+					CONTINUE()
 
 				// Количество символов в выходном буфере
 				unsigned int bufferCount;
@@ -1208,7 +1206,7 @@ static bool ScanFile(const wchar_t *Name)
 
 					// Выходим, если размер буфера меньше длины строки посика
 					if (bufferCount < findStringCount)
-						CONTINUE(false)
+						CONTINUE()
 
 					// Копируем буфер чтения в буфер сравнения
 					// todo
@@ -1225,7 +1223,7 @@ static bool ScanFile(const wchar_t *Name)
 
 					// Выходим, если нам не удалось сконвертировать строку
 					if (!bufferCount)
-						CONTINUE(false)
+						CONTINUE()
 
 					// Если прочитали меньше размера строки поиска и поиска по словам, то проверяем
 					// первый символ блока на разделитель и выходим
@@ -1233,17 +1231,17 @@ static bool ScanFile(const wchar_t *Name)
 					if (WholeWords && cpi->WordFound) {
 						// Если конец файла, то считаем, что есть разделитель в конце
 						if (findStringCount - 1 >= bufferCount)
-							RETURN(true)
+							return true;
 						// Проверяем первый символ текущего блока с учётом обратного смещения, которое делается
 						// при переходе между блоками
 						cpi->LastSymbol = readBuffer[findStringCount - 1];
 
 						if (IsWordDiv(cpi->LastSymbol))
-							RETURN(true)
+							return true;
 
 						// Если размер буфера меньше размера слова, то выходим
 						if (readBlockSize < findStringCount)
-							CONTINUE(false)
+							CONTINUE()
 					}
 
 					// Устанавливаем буфер сравнения
@@ -1262,7 +1260,7 @@ static bool ScanFile(const wchar_t *Name)
 
 					// Если подстрока найдена и отключен поиск по словам, то считаем что всё хорошо
 					if (!WholeWords)
-						RETURN(TRUE)
+						return true;
 
 					// Устанавливаем позицию в исходном буфере
 					index+= foundIndex;
@@ -1293,7 +1291,7 @@ static bool ScanFile(const wchar_t *Name)
 							cpi->LastSymbol = buffer[index + findStringCount];
 
 							if (IsWordDiv(cpi->LastSymbol))
-								RETURN(true)
+								return true;
 						} else
 							cpi->WordFound = true;
 					}
@@ -1301,7 +1299,7 @@ static bool ScanFile(const wchar_t *Name)
 
 				// Выходим, если мы вышли за пределы количества байт разрешённых для поиска
 				if (SearchInFirst && SearchInFirst >= alreadyRead)
-					CONTINUE(false)
+					CONTINUE()
 				// Запоминаем последний символ блока
 				cpi->LastSymbol = buffer[bufferCount - 1];
 			}
@@ -1315,18 +1313,13 @@ static bool ScanFile(const wchar_t *Name)
 		if (readBlockSize == sizeof(readBufferA)) {
 			// Отступаем назад на длину слова поиска минус 1
 			if (!file.SetPointer(-1 * offset, nullptr, FILE_CURRENT))
-				RETURN(FALSE)
+				return false;
 			alreadyRead-= offset;
 		}
 	}
 
-exit:
-	// Закрываем хэндл файла
-	file.Close();
-	// Возвращаем результат
-	return (result);
+	return false;
 #undef CONTINUE
-#undef RETURN
 }
 
 static void AddMenuRecord(HANDLE hDlg, const wchar_t *FullName, const FAR_FIND_DATA_EX &FindData, size_t ArcIndex);
