@@ -848,19 +848,19 @@ end
 function LF.test_SplitCmdLine()
   local a,b,c,d
 
-  a,b,c,d = far.SplitCmdLine("ab cd ef gh")
+  a,b,c,d = unpack(far.SplitCmdLine("ab cd ef gh"))
   assert(a=="ab" and b=="cd" and c=="ef" and d=="gh")
 
-  a,b,c,d = far.SplitCmdLine("  ab  cd\\ ef gh  ")
+  a,b,c,d = unpack(far.SplitCmdLine("  ab  cd\\ ef gh  "))
   assert(a=="ab" and b=="cd ef" and c=="gh" and d==nil)
 
-  a,b,c,d = far.SplitCmdLine [["ab  cd"  ef "gh  "]]
+  a,b,c,d = unpack(far.SplitCmdLine [["ab  cd"  ef "gh  "]])
   assert(a=="ab  cd" and b=="ef" and c=="gh  " and d==nil)
 
-  a,b,c,d = far.SplitCmdLine [[-r""]]
+  a,b,c,d = unpack(far.SplitCmdLine [[-r""]])
   assert(a==[[-r""]] and b==nil and c==nil and d==nil)
 
-  a,b,c,d = far.SplitCmdLine [[-e  "far.Show(4 + 7)"]]
+  a,b,c,d = unpack(far.SplitCmdLine [[-e  "far.Show(4 + 7)"]])
   assert(a=="-e" and b=="far.Show(4 + 7)" and c==nil and d==nil)
 end
 

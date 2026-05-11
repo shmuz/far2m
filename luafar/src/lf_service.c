@@ -5816,15 +5816,13 @@ static int far_RunDefaultScript(lua_State *L)
 
 static int far_SplitCmdLine(lua_State *L)
 {
-	const int MAXARGS = 64;
 	int numargs = 0;
 	const char *str = luaL_checkstring(L,1), *p=str;
 
-	lua_settop(L, 1);
 	char *arg = (char*)lua_newuserdata(L, strlen(str)+1);
-	lua_checkstack(L, MAXARGS);
 
-	for (const char *q=p; *p && (numargs < MAXARGS); p=q,numargs++)
+	lua_newtable(L);
+	for (const char *q=p; *p; p=q)
 	{
 		char *trg = arg;
 		while (isspace(*q))
@@ -5853,8 +5851,9 @@ static int far_SplitCmdLine(lua_State *L)
 			*trg++ = *q;
 		}
 		lua_pushlstring(L, arg, trg-arg);
+		lua_rawseti(L, -2, ++numargs);
 	}
-	return numargs;
+	return 1;
 }
 
 typedef intptr_t WINAPI UDList_Create(unsigned Flags, const wchar_t* Subj);

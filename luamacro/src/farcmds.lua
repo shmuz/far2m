@@ -64,7 +64,7 @@ local function Command(prefix, text)
         viewer.Viewer(tmpname,nil,nil,nil,nil,nil,flags)
       end
     else
-      local fname = far.SplitCmdLine(cmd)
+      local fname = far.SplitCmdLine(cmd)[1]
       local attr = win.GetFileAttr(fname)
       if attr and attr:find("d") then
         far.Message("Cannot view the folder '"..fname.."'", "Error", nil, "w")

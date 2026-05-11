@@ -433,7 +433,7 @@ function Env:Open (OpenFrom, Item)
     elseif argv:sub(1,1) == "<" then
       return self:OpenPanelFromOutput(argv:sub(2), newOpt)
     else
-      argv = far.SplitCmdLine(argv)
+      argv = far.SplitCmdLine(argv)[1]
       local PathName = ExpandEnvironmentStr(argv)
       local attr = win.GetFileAttr(PathName)
       if attr and not attr:find("d") then

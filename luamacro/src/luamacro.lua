@@ -179,7 +179,7 @@ local function GetFileParams (Text)
     if from then
       local space,params = Text:match("^(%s*)(.*)", to+1)
       if space~="" or params=="" then
-        fname = far.SplitCmdLine(fname)
+        fname = far.SplitCmdLine(fname)[1]
         return FullExpand(fname), params
       end
     end

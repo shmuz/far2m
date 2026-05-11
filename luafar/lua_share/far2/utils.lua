@@ -365,7 +365,7 @@ end
 local function CompileCommandLine (sCommandLine, tCommands)
   local actions = {}
   local opt
-  local args = { far.SplitCmdLine(sCommandLine) }
+  local args = far.SplitCmdLine(sCommandLine)
   for i,v in ipairs(args) do
     local curropt, param
     if opt then

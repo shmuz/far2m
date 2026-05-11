@@ -210,7 +210,7 @@ local function OpenCommandLine(cmdbuf)
   local ModuleName = far.PluginStartupInfo().ModuleName
 
   if cmdbuf:find("%S") then
-    local ptrName, ptrTopic = far.SplitCmdLine(cmdbuf)
+    local ptrName, ptrTopic = unpack(far.SplitCmdLine(cmdbuf))
 
     ptrTopic = ptrTopic and ptrTopic:match("%S.*")
     if ptrTopic then
