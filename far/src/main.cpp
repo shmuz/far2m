@@ -664,7 +664,7 @@ int _cdecl main(int argc, char *argv[])
 		if (strcmp(name, "far2medit") == 0) { // run by symlink in editor mode
 			Opt.OnlyEditorViewerUsed = Options::ONLY_EDITOR;
 			for (int I = 1; I < argc; I++) {
-				if (*argv[I] != '-') {
+				if (strstr(argv[I], "--") != argv[I]) {
 					Opt.strEditViewArg = argv[I];
 					RemoveArgs(I, 1);
 					break;

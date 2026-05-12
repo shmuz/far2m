@@ -1096,11 +1096,8 @@ static int FindStringBMH(const unsigned char *searchBuffer, size_t searchBufferC
 
 static bool ScanFile(const wchar_t *Name)
 {
-#define CONTINUE()                                        \
-	{                                                     \
-		if (cpIndex == codePagesCount - 1)                \
-			return false; else continue;                  \
-	}
+#define CONTINUE() { if (cpIndex == codePagesCount - 1) return false; else continue; }
+
 	// Длина строки поиска
 	const size_t findStringCount = strFindStr.GetLength();
 
@@ -1218,7 +1215,7 @@ static bool ScanFile(const wchar_t *Name)
 					}
 				} else {
 					// Конвертируем буфер чтения из кодировки поиска в wchar_t
-					bufferCount = WINPORT(MultiByteToWideChar)(cpi->CodePage, 0, (char *)readBufferA,
+					bufferCount = WINPORT(MultiByteToWideChar)(cpi->CodePage, 0, readBufferA,
 							readBlockSize, readBuffer, ARRAYSIZE(readBuffer));
 
 					// Выходим, если нам не удалось сконвертировать строку

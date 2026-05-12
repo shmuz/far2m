@@ -5856,9 +5856,6 @@ static int far_SplitCmdLine(lua_State *L)
 	return 1;
 }
 
-typedef intptr_t WINAPI UDList_Create(unsigned Flags, const wchar_t* Subj);
-typedef intptr_t WINAPI UDList_Get(void* udlist, int index);
-
 static int far_DetectCodePage(lua_State *L)
 {
 	struct DetectCodePageInfo Info;
