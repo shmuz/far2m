@@ -1168,7 +1168,7 @@ static bool ScanFile(const wchar_t *Name)
 
 				// Пропускаем ошибочные кодовые страницы
 				if (!cpi->MaxCharSize)
-					CONTINUE()
+					continue;
 
 				// Если начало файла очищаем информацию о поиске по словам
 				if (WholeWords && alreadyRead == readBlockSize) {

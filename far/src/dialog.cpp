@@ -1659,7 +1659,9 @@ DWORD Dialog::CtlColorDlgItem(int ItemPos, const DialogItemEx *CurItem, uint64_t
 				else
 				{
 					// Text
-					Color[0] = FarColorToReal(DisabledItem? COL_DIALOGEDITDISABLED : Flags & DIF_NOFOCUS? COL_DIALOGEDITUNCHANGED : COL_DIALOGEDIT);
+					Color[0] = FarColorToReal(DisabledItem? COL_DIALOGEDITDISABLED
+							: Type == DI_MEMOEDIT ? COL_EDITORTEXT
+							: Flags & DIF_NOFOCUS ? COL_DIALOGEDITUNCHANGED : COL_DIALOGEDIT);
 					// Select
 					Color[1] = FarColorToReal(DisabledItem? COL_DIALOGEDITDISABLED
 							: Type == DI_MEMOEDIT ? COL_EDITORSELECTEDTEXT : COL_DIALOGEDITSELECTED);
