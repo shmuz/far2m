@@ -187,6 +187,14 @@ else()
         RUNTIME_OUTPUT_DIRECTORY "${INSTALL_DIR}")
 endif()
 
+set_target_properties(far2m PROPERTIES ENABLE_EXPORTS TRUE)
+
+if(DEFINED MUSL AND MUSL AND USEWX)
+    message(STATUS "Detected musl libc (Alpine Linux). Increasing default stack size to 2MB.")
+    target_link_options(far2m PRIVATE "-Wl,-z,stack-size=2097152")
+    target_link_options(far2m PRIVATE "-Wl,--export-dynamic")
+endif()
+
 if (${USELUA})
     target_compile_definitions(far2m PRIVATE -DUSELUA)
 endif()
@@ -232,10 +240,6 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 else()
     SET (WINPORT -Wl,--whole-archive WinPort -Wl,--no-whole-archive)
 endif()
-
-set_target_properties(far2m
-    PROPERTIES
-    ENABLE_EXPORTS TRUE)
 
 if (DEFINED USELUA AND ${CMAKE_SYSTEM_NAME} MATCHES "Android")
     set (LIBLUAJIT -Wl,--whole-archive ${CMAKE_CURRENT_SOURCE_DIR}/libluajit.a -Wl,--no-whole-archive)

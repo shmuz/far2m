@@ -131,22 +131,16 @@ endif()
 # set(RM rm) actually not needed: use $(CMAKE_COMMAND) -E remove
 
 if("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
-    # 1. Execute a test to check if the system uses musl libc
+    # Execute a test to check if the system uses musl libc
     execute_process(
         COMMAND ldd --version
         OUTPUT_VARIABLE LDD_OUT
         ERROR_VARIABLE LDD_ERR
     )
-
-    # 2. If 'musl' is found in the ldd output, apply the stack size flag
     if("${LDD_OUT}" MATCHES "musl" OR "${LDD_ERR}" MATCHES "musl")
-        # Apply globally to all targets
+        set(MUSL "YES")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__MUSL__")
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__MUSL__")
-        if(${USEWX})
-            message(STATUS "Detected musl libc (Alpine Linux). Increasing default stack size to 2MB.")
-            add_link_options("-Wl,-z,stack-size=2097152")
-        endif()
     endif()
 endif()
 
