@@ -147,7 +147,7 @@ VMenu::~VMenu()
 					case WTYPE_EDITOR:
 					case WTYPE_VIEWER:
 						FrameManager->RefreshFrame();
-					  break;
+						break;
 				}
 			}
 		}
