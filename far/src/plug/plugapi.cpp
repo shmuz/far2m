@@ -258,22 +258,6 @@ static WINDOWINFO_TYPE ModalTypeToWindowType(int ModalType)
 	}
 }
 
-static Frame *GetFrameEx(int Pos)
-{
-	Frame *fr = nullptr;
-
-	//  Если Pos == -1 то берем текущий фрейм
-	if (Pos == -1) {
-		fr = FrameManager->GetTopModal();
-		if (fr && dynamic_cast<VMenu*>(fr) && !fr->IsVisible())
-			fr = FrameManager->GetCurrentFrame();
-	}
-	else
-		fr = FrameManager->GetFrame(Pos);
-
-	return fr;
-}
-
 /*
 	$ 05.07.2000 IS
 	Функция, которая будет действовать и в редакторе, и в панелях, и...
@@ -290,7 +274,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 	{
 		const auto info = static_cast<WindowType*>(Param2);
 		if (CheckStructSize(info)) {
-			Frame *CurFrame = GetFrameEx(-1);
+			Frame *CurFrame = FrameManager->GetFrameEx(-1);
 			if (CurFrame) {
 				auto Type = ModalTypeToWindowType(CurFrame->GetType());
 				if (Type != WTYPE_VIRTUAL) {
@@ -446,7 +430,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 			if (FrameManager && Param1) {
 				FARString strType, strName;
 				WindowInfo *wi = (WindowInfo *)Param1;
-				Frame *f = GetFrameEx(wi->Pos);
+				Frame *f = FrameManager->GetFrameEx(wi->Pos);
 
 				if (!f)
 					return FALSE;

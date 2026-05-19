@@ -129,12 +129,28 @@ VMenu::~VMenu()
 	if (!CheckFlags(VMENU_LISTBOX) && CtrlObject)
 		CtrlObject->Macro.SetArea(PrevMacroArea);
 
+	bool WasVisible = Flags.Check(FSCROBJ_VISIBLE);
 	Hide();
 	DeleteItems();
 	SetCursorType(PrevCursorVisible, PrevCursorSize);
 
-	if (!CheckFlags(VMENU_LISTBOX)) {
+	if (!CheckFlags(VMENU_LISTBOX))
+	{
 		FrameManager->UnmodalizeFrame(this);
+		if (WasVisible)
+		{
+			if (auto f = FrameManager->GetFrameEx())
+			{
+				switch (f->GetType())
+				{
+					case WTYPE_PANELS:
+					case WTYPE_EDITOR:
+					case WTYPE_VIEWER:
+						FrameManager->RefreshFrame();
+					  break;
+				}
+			}
+		}
 	}
 }
 

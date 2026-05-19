@@ -1051,6 +1051,22 @@ Frame *Manager::GetModal(size_t Index) const
 	return Index < ModalStack.size() ? ModalStack[Index] : nullptr;
 }
 
+Frame *Manager::GetFrameEx(int Pos) const
+{
+	Frame *fr = nullptr;
+
+	//  Если Pos == -1 то берем текущий фрейм
+	if (Pos == -1) {
+		fr = GetTopModal();
+		if (fr && dynamic_cast<VMenu*>(fr) && !fr->IsVisible())
+			fr = GetCurrentFrame();
+	}
+	else
+		fr = GetFrame(Pos);
+
+	return fr;
+}
+
 int Manager::IndexOfStack(Frame *Frame) const
 {
 	for (int i=0; i < (int)ModalStack.size(); i++)

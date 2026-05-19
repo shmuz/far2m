@@ -153,6 +153,7 @@ class Manager
 
 		Frame *GetFrame(size_t Index) const;
 		Frame *GetModal(size_t Index) const;
+		Frame *GetFrameEx(int Pos = -1) const;
 
 		int IndexOfList(Frame *Frame) const;
 
