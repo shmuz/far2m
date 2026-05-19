@@ -2374,7 +2374,7 @@ void FileList::ProcessEnter(bool EnableExec, bool SeparateWindow, bool EnableAss
 			EnsurePathHasParentPrefix(strFileName);
 
 			if (!(Opt.ExcludeCmdHistory & EXCLUDECMDHISTORY_NOTPANEL) && !PluginMode)    // AN
-				CtrlObject->CmdHistory->AddToHistoryExtra(strFileName, strCurDir);
+				CtrlObject->CmdHistory->AddToHistory(strFileName, strCurDir);
 
 			CtrlObject->CmdLine->ExecString(strFileName, SeparateWindow, true, false, false, RunAs);
 
@@ -2466,7 +2466,7 @@ bool FileList::ChangeDir(const wchar_t *NewDir, bool ShowMessage)
 		FARString strInfoCurDir = Info.CurDir;
 		FARString strInfoFormat = Info.Format;
 		FARString strInfoHostFile = Info.HostFile;
-		CtrlObject->FolderHistory->AddToHistory(strInfoCurDir, HR_DEFAULT, strInfoFormat);
+		CtrlObject->FolderHistory->AddToHistory(strInfoCurDir, nullptr, HR_DEFAULT, strInfoFormat);
 		/* $ 25.04.01 DJ
 		   при неудаче SetDirectory не сбрасываем выделение
 		*/

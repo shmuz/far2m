@@ -126,8 +126,7 @@ bool History::IsAllowedForHistory(const wchar_t *Str) const
 	return true;
 }
 
-void History::AddToHistoryExtra(const wchar_t *Str, const wchar_t *Extra, int Type,
-		const wchar_t *Prefix)
+void History::AddToHistory(const wchar_t *Str, const wchar_t *Extra, int Type, const wchar_t *Prefix)
 {
 	if (!mEnableAdd)
 		return;
@@ -141,20 +140,7 @@ void History::AddToHistoryExtra(const wchar_t *Str, const wchar_t *Extra, int Ty
 	}
 
 	SyncChanges();
-	AddToHistoryLocal(Str, Extra, Prefix, Type);
 
-	if (*mEnableSave)
-		SaveHistory();
-}
-
-void History::AddToHistory(const wchar_t *Str, int Type, const wchar_t *Prefix)
-{
-	AddToHistoryExtra(Str, nullptr, Type, Prefix);
-}
-
-void History::AddToHistoryLocal(const wchar_t *Str, const wchar_t *Extra, const wchar_t *Prefix,
-		int Type)
-{
 	HistoryRecord AddRecord;
 
 	if (mHistoryType == HISTORYTYPE_FOLDER && Prefix && *Prefix) {
@@ -192,6 +178,9 @@ void History::AddToHistoryLocal(const wchar_t *Str, const wchar_t *Extra, const 
 	WINPORT(GetSystemTimeAsFileTime)(&AddRecord.Timestamp);    // in UTC
 	mList.push_back(std::move(AddRecord));
 	ResetPosition();
+
+	if (*mEnableSave)
+		SaveHistory();
 }
 
 bool History::SaveHistory()

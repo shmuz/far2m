@@ -116,7 +116,6 @@ private:
 	struct stat mLoadedStat {};
 
 private:
-	void AddToHistoryLocal(const wchar_t *Str, const wchar_t *Extra, const wchar_t *Prefix, int Type);
 	bool EqualType(int Type1, int Type2) const;
 	const wchar_t *GetDelTitle() const;
 	bool IsAllowedForHistory(const wchar_t *Str) const;
@@ -132,9 +131,8 @@ public:
 	~History() {}
 
 public:
-	void AddToHistoryExtra(const wchar_t *Str, const wchar_t *Extra, int Type = HR_DEFAULT,
+	void AddToHistory(const wchar_t *Str, const wchar_t *Extra = nullptr, int Type = HR_DEFAULT,
 		const wchar_t *Prefix = nullptr);
-	void AddToHistory(const wchar_t *Str, int Type = HR_DEFAULT, const wchar_t *Prefix = nullptr);
 	static bool ReadLastItem(const char *RegKey, FARString &strStr);
 	int Select(FARString &strOut, int &TypeOut);
 	int Select(VMenu &HistoryMenu, Dialog *Dlg, FARString &strOut);

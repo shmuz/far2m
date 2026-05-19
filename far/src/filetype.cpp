@@ -273,7 +273,7 @@ bool ProcessLocalFileTypes(const wchar_t *Name, int Mode, bool CanAddHistory, FA
 			{
 				CtrlObject->CmdLine->ExecString(strCommand, false, false, ListFileUsed);
 				if (CanAddHistory && !(Opt.ExcludeCmdHistory&EXCLUDECMDHISTORY_NOTFARASS)) //AN
-					CtrlObject->CmdHistory->AddToHistoryExtra(strCommand, strCurDir);
+					CtrlObject->CmdHistory->AddToHistory(strCommand, strCurDir);
 			}
 			else
 			{
@@ -322,7 +322,7 @@ void ProcessGlobalFileTypes(const wchar_t *Name, bool RunAs, bool CanAddHistory,
 
 	if (CanAddHistory && !(Opt.ExcludeCmdHistory&EXCLUDECMDHISTORY_NOTWINASS))
 	{
-		CtrlObject->CmdHistory->AddToHistoryExtra(strName,strCurDir);
+		CtrlObject->CmdHistory->AddToHistory(strName, strCurDir);
 	}
 }
 
@@ -345,7 +345,7 @@ void ProcessExternal(const wchar_t *Command, const wchar_t *Name, bool CanAddHis
 		SubstFileName(strFullExecStr,strFullName,&strListName,&strAnotherListName);
 
 		if (CanAddHistory) {
-			CtrlObject->ViewHistory->AddToHistory(strFullExecStr, HR_EXTERNAL_WAIT);
+			CtrlObject->ViewHistory->AddToHistory(strFullExecStr, nullptr, HR_EXTERNAL_WAIT);
 		}
 
 		if (strExecStr.At(0) != L'@')

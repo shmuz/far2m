@@ -636,7 +636,7 @@ int CommandLine::ProcessKey(FarKey Key)
 			if (!(Opt.ExcludeCmdHistory & EXCLUDECMDHISTORY_NOTCMDLINE)) {
 				FARString curDir;
 				ActivePanel->GetCurDirPluginAware(curDir);
-				CtrlObject->CmdHistory->AddToHistoryExtra(strStr, curDir);
+				CtrlObject->CmdHistory->AddToHistory(strStr, curDir);
 			}
 
 			if (ActivePanel->ProcessPluginEvent(FE_COMMAND, (void *)strStr.CPtr())) {
@@ -950,7 +950,7 @@ void CommandLine::ShowViewEditHistory()
 	if (SelectType == HRT_ENTER || SelectType == HRT_SHIFTENTER)
 	{
 		if (SelectType == HRT_ENTER)
-			CtrlObject->ViewHistory->AddToHistory(strStr, Type);
+			CtrlObject->ViewHistory->AddToHistory(strStr, nullptr, Type);
 
 		CtrlObject->ViewHistory->SetAddMode(false, HRD_CASESENS, true);
 
