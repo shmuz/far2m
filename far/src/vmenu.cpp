@@ -137,18 +137,15 @@ VMenu::~VMenu()
 	if (!CheckFlags(VMENU_LISTBOX))
 	{
 		FrameManager->UnmodalizeFrame(this);
-		if (WasVisible)
+		if (Frame *f; WasVisible && (f = FrameManager->GetFrameEx()))
 		{
-			if (auto f = FrameManager->GetFrameEx())
+			switch (f->GetType())
 			{
-				switch (f->GetType())
-				{
-					case WTYPE_PANELS:
-					case WTYPE_EDITOR:
-					case WTYPE_VIEWER:
-						FrameManager->RefreshFrame();
-						break;
-				}
+				case WTYPE_PANELS:
+				case WTYPE_EDITOR:
+				case WTYPE_VIEWER:
+					FrameManager->RefreshFrame();
+					break;
 			}
 		}
 	}
