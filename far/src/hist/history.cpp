@@ -126,12 +126,8 @@ bool History::IsAllowedForHistory(const wchar_t *Str) const
 	return true;
 }
 
-/*
-   SaveForbid - принудительно запретить запись добавляемой строки.
-				Используется на панели плагина
-*/
 void History::AddToHistoryExtra(const wchar_t *Str, const wchar_t *Extra, int Type,
-		const wchar_t *Prefix, bool SaveForbid)
+		const wchar_t *Prefix)
 {
 	if (!mEnableAdd)
 		return;
@@ -147,13 +143,13 @@ void History::AddToHistoryExtra(const wchar_t *Str, const wchar_t *Extra, int Ty
 	SyncChanges();
 	AddToHistoryLocal(Str, Extra, Prefix, Type);
 
-	if (*mEnableSave && !SaveForbid)
+	if (*mEnableSave)
 		SaveHistory();
 }
 
-void History::AddToHistory(const wchar_t *Str, int Type, const wchar_t *Prefix, bool SaveForbid)
+void History::AddToHistory(const wchar_t *Str, int Type, const wchar_t *Prefix)
 {
-	AddToHistoryExtra(Str, nullptr, Type, Prefix, SaveForbid);
+	AddToHistoryExtra(Str, nullptr, Type, Prefix);
 }
 
 void History::AddToHistoryLocal(const wchar_t *Str, const wchar_t *Extra, const wchar_t *Prefix,

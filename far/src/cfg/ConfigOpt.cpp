@@ -294,7 +294,6 @@ static FARConfig CFG[]
 	{OST_COMMON, NSecSystem, "HistoryShowDates",             &Opt.HistoryShowDates, 1, OPT_BOOLEAN},
 	{OST_COMMON, NSecSystem, "SaveHistory",                  &Opt.SaveHistory, 1, OPT_BOOLEAN},
 	{OST_COMMON, NSecSystem, "SaveFoldersHistory",           &Opt.SaveFoldersHistory, 1, OPT_BOOLEAN},
-	{OST_NONE,   NSecSystem, "SavePluginFoldersHistory",     &Opt.SavePluginFoldersHistory, 0, OPT_BOOLEAN},
 	{OST_COMMON, NSecSystem, "SaveViewHistory",              &Opt.SaveViewHistory, 1, OPT_BOOLEAN},
 	{OST_COMMON, NSecSystem, NParamAutoSaveSetup,            &Opt.AutoSaveSetup, 0, OPT_BOOLEAN},
 	{OST_COMMON, NSecSystem, NParamAutoSavePanels,           &Opt.AutoSavePanels, 0, OPT_BOOLEAN},

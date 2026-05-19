@@ -962,7 +962,6 @@ local function test_Far_GetConfig()
     "System.QuotedSymbols",
     "System.SaveFoldersHistory",
     "System.SaveHistory",
-    "System.SavePluginFoldersHistory",
     "System.SaveViewHistory",
     "System.ScanJunction",
     "System.ScanSymlinks",

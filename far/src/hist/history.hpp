@@ -133,9 +133,8 @@ public:
 
 public:
 	void AddToHistoryExtra(const wchar_t *Str, const wchar_t *Extra, int Type = HR_DEFAULT,
-		const wchar_t *Prefix = nullptr, bool SaveForbid = false);
-	void AddToHistory(const wchar_t *Str, int Type = HR_DEFAULT, const wchar_t *Prefix = nullptr,
-		bool SaveForbid = false);
+		const wchar_t *Prefix = nullptr);
+	void AddToHistory(const wchar_t *Str, int Type = HR_DEFAULT, const wchar_t *Prefix = nullptr);
 	static bool ReadLastItem(const char *RegKey, FARString &strStr);
 	int Select(FARString &strOut, int &TypeOut);
 	int Select(VMenu &HistoryMenu, Dialog *Dlg, FARString &strOut);

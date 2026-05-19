@@ -2463,13 +2463,10 @@ bool FileList::ChangeDir(const wchar_t *NewDir, bool ShowMessage)
 
 		OpenPluginInfo Info;
 		CtrlObject->Plugins.GetOpenPluginInfo(hPlugin, &Info);
-		/* $ 16.01.2002 VVM
-		  + Если у плагина нет OPIF_REALNAMES, то история папок не пишется в реестр */
 		FARString strInfoCurDir = Info.CurDir;
 		FARString strInfoFormat = Info.Format;
 		FARString strInfoHostFile = Info.HostFile;
-		CtrlObject->FolderHistory->AddToHistory(strInfoCurDir, HR_DEFAULT, strInfoFormat,
-				!((Info.Flags & OPIF_REALNAMES) || Opt.SavePluginFoldersHistory));
+		CtrlObject->FolderHistory->AddToHistory(strInfoCurDir, HR_DEFAULT, strInfoFormat);
 		/* $ 25.04.01 DJ
 		   при неудаче SetDirectory не сбрасываем выделение
 		*/
