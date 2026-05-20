@@ -133,7 +133,8 @@ static int GetDescriptionWidth(ConfigReader &cfg_reader, const wchar_t *Name=nul
    - Убрал непонятный мне запрет на использование маски файлов типа "*.*"
      (был когда-то, вроде, такой баг-репорт)
 */
-bool ProcessLocalFileTypes(const wchar_t *Name, int Mode, bool CanAddHistory, FARString &strCurDir)
+bool ProcessLocalFileTypes(const wchar_t *Name, int Mode, bool CanAddHistory,
+		const FARString &strCurDir)
 {
 	ConfigReader cfg_reader;
 	//RenumKeyRecord(FTS.Associations,FTS.TypeFmt,FTS.Type0);
@@ -253,13 +254,14 @@ bool ProcessLocalFileTypes(const wchar_t *Name, int Mode, bool CanAddHistory, FA
 			return true;
 	}
 
-	int Size=TypesMenu.GetUserDataSize(ExitCode);
-	LPWSTR Command=strCommand.GetBuffer(Size/sizeof(wchar_t));
-	TypesMenu.GetUserData(Command,Size,ExitCode);
-	strCommand.ReleaseBuffer(Size);
+	int Size = TypesMenu.GetUserDataSize(ExitCode);
+	auto BufferSize = Size / sizeof(wchar_t);
+	auto Command = strCommand.GetBuffer(BufferSize);
+	TypesMenu.GetUserData(Command, Size, ExitCode);
+	strCommand.ReleaseBuffer(BufferSize - 1);
 	FARString strListName, strAnotherListName;
-	/*int PreserveLFN=*/SubstFileName(strCommand,Name,&strListName,&strAnotherListName);
-	bool ListFileUsed=!strListName.IsEmpty()||!strAnotherListName.IsEmpty();
+	SubstFileName(strCommand, Name, &strListName, &strAnotherListName);
+	bool ListFileUsed = !strListName.IsEmpty() || !strAnotherListName.IsEmpty();
 
 	{
 		//PreserveLongName PreserveName(PreserveLFN);
@@ -314,7 +316,8 @@ bool ProcessLocalFileTypes(const wchar_t *Name, int Mode, bool CanAddHistory, FA
 	return true;
 }
 
-void ProcessGlobalFileTypes(const wchar_t *Name, bool RunAs, bool CanAddHistory, FARString &strCurDir)
+void ProcessGlobalFileTypes(const wchar_t *Name, bool RunAs, bool CanAddHistory,
+		const FARString &strCurDir)
 {
 	FARString strName(Name);
 	EscapeSpace(strName);
@@ -329,7 +332,8 @@ void ProcessGlobalFileTypes(const wchar_t *Name, bool RunAs, bool CanAddHistory,
 /*
   Используется для запуска внешнего редактора и вьювера
 */
-void ProcessExternal(const wchar_t *Command, const wchar_t *Name, bool CanAddHistory, FARString &strCurDir)
+void ProcessExternal(const wchar_t *Command, const wchar_t *Name, bool CanAddHistory,
+		const FARString &strCurDir)
 {
 	FARString strListName, strAnotherListName;
 	FARString strFullName;

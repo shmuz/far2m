@@ -379,8 +379,10 @@ int luaopen_timer(lua_State *L)
 	if (initialize()) {
 		lua_newuserdata(L, 4);             //+1 create a userdatum whose __gc will be called on destroying the lua_State
 		lua_newtable(L);                   //+2 create a metatable
+#ifndef __MUSL__		                   // TODO: find out why it crashes on Far exit
 		lua_pushcfunction(L, finalize_timer_system); //+3
 		lua_setfield(L, -2, "__gc");       //+2
+#endif
 		lua_setmetatable(L, -2);           //+1
 		lua_pushvalue(L, -1);              //+2
 		lua_rawset(L, LUA_REGISTRYINDEX);  //+0 place it in Lua registry (both as the key and the value)
