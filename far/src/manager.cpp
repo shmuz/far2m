@@ -162,14 +162,14 @@ bool Manager::ExitAll()
 
 void Manager::CloseAll()
 {
-	for (int i=(int)ModalStack.size()-1; i >= 0; i--)
+	while (!ModalStack.empty())
 	{
-		DeleteCommit(ModalStack[i]);
+		DeleteCommit(ModalStack.back());
 	}
 
-	for (int i=(int)FrameList.size()-1; i >= 0; i--)
+	while (!FrameList.empty())
 	{
-		DeleteCommit(FrameList[i]);
+		DeleteCommit(FrameList.back());
 	}
 
 	FrameList.clear();
@@ -1270,8 +1270,11 @@ void Manager::DeleteCommit(Frame *aFrame)
 
 		if (aFrame->FrameToBack == CtrlObject->Cp())
 		{
-			_BASICLOG("== ActivateFrame(FrameList[FramePos])");
-			ActivateFrame(FrameList[FramePos]);
+			if (!FrameList.empty())
+			{
+				_BASICLOG("== ActivateFrame(FrameList[FramePos])");
+				ActivateFrame(FrameList[FramePos]);
+			}
 		}
 		else
 		{
