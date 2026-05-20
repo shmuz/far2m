@@ -273,9 +273,10 @@ bool ProcessLocalFileTypes(const wchar_t *Name, int Mode, bool CanAddHistory,
 
 			if (!isSilent)
 			{
+				const FARString strOldCurDir = strCurDir;
 				CtrlObject->CmdLine->ExecString(strCommand, false, false, ListFileUsed);
 				if (CanAddHistory && !(Opt.ExcludeCmdHistory&EXCLUDECMDHISTORY_NOTFARASS)) //AN
-					CtrlObject->CmdHistory->AddToHistory(strCommand, strCurDir);
+					CtrlObject->CmdHistory->AddToHistory(strCommand, strOldCurDir);
 			}
 			else
 			{
