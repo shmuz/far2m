@@ -1319,7 +1319,8 @@ static bool ScanFile(const wchar_t *Name)
 #undef CONTINUE
 }
 
-static void AddMenuRecord(HANDLE hDlg, const wchar_t *FullName, const FAR_FIND_DATA_EX &FindData, size_t ArcIndex);
+static void
+AddMenuRecord(HANDLE hDlg, const wchar_t *FullName, const FAR_FIND_DATA_EX &FindData, size_t ArcIndex);
 
 struct ScanFileWorkItem : IThreadedWorkItem
 {
@@ -1404,9 +1405,9 @@ static void AnalyzeFileItem(HANDLE hDlg, PluginPanelItem *FileItem, const wchar_
 			FarMkTempEx(strTempDir);
 			apiCreateDirectory(strTempDir, nullptr);
 
-			bool GetFileResult = CtrlObject->Plugins.GetFile(hPlugin,
-				FileItem, strTempDir, FileToScan, OPM_SILENT | OPM_FIND) != FALSE;
-
+			bool GetFileResult = false;
+			GetFileResult = CtrlObject->Plugins.GetFile(hPlugin, FileItem, strTempDir, FileToScan,
+										OPM_SILENT | OPM_FIND);
 			if (!GetFileResult) {
 				apiRemoveDirectory(strTempDir);
 				return;
@@ -1537,9 +1538,9 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 				if (!strFindStr.IsEmpty()) {
 					FARString strFStr(strFindStr);
 					TruncStrFromEnd(strFStr, 10);
-					strFStr.Insert(0, L" \"");
-					strFStr+= L'\"';
-					strSearchStr.Format(Msg::FindSearchingIn, strFStr.CPtr());
+					FARString strTemp(L" \"");
+					strTemp+= strFStr+= "\"";
+					strSearchStr.Format(Msg::FindSearchingIn, strTemp.CPtr());
 				} else
 					strSearchStr.Format(Msg::FindSearchingIn, L"");
 
@@ -2047,8 +2048,12 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 	return DefDlgProc(hDlg, Msg, Param1, Param2);
 }
 
-static int AddMenuRecordSynched(HANDLE hDlg, const wchar_t *FullName, const FAR_FIND_DATA_EX &FindData, size_t ArcIndex)
+static void
+AddMenuRecord(HANDLE hDlg, const wchar_t *FullName, const FAR_FIND_DATA_EX &FindData, size_t ArcIndex)
 {
+	if (!hDlg)
+		return;
+
 	VMenu *ListBox = reinterpret_cast<Dialog *>(hDlg)->GetAllItem()[FD_LISTBOX]->ListPtr;
 
 	if (!ListBox->GetItemCount()) {
@@ -2237,16 +2242,6 @@ static int AddMenuRecordSynched(HANDLE hDlg, const wchar_t *FullName, const FAR_
 	itd.SetFileCount(FC);
 	itd.SetDirCount(DC);
 	itd.SetLastFoundNumber(LF);
-	return 0;
-}
-
-static void AddMenuRecord(HANDLE hDlg, const wchar_t *FullName, const FAR_FIND_DATA_EX &FindData, size_t ArcIndex)
-{
-	if (!hDlg) {
-		fprintf(stderr, "%s: !hDlg\n", __FUNCTION__);
-	} else if (InterThreadCall<int, -1>(std::bind(AddMenuRecordSynched, hDlg, FullName, FindData, ArcIndex)) < 0) {
-		fprintf(stderr, "%s: InterThreadCall failed\n", __FUNCTION__);
-	}
 }
 
 static void DoPreparePluginList(HANDLE hDlg);
@@ -2722,7 +2717,6 @@ static bool FindFilesProcess(Vars &v)
 	// Надо бы показать диалог, а то инициализация элементов запаздывает
 	// иногда при поиске и первые элементы не добавляются
 	Dlg.InitDialog();
-	Dlg.SetRegularIdle(true);
 	Dlg.Show();
 
 	strLastDirName.Clear();
