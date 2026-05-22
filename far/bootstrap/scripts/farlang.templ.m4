@@ -5266,23 +5266,25 @@ EditSaving
 "Захаванне файла"
 
 EditStatusLine
-"Строка"
-"Line"
-"Řádek"
-"Zeile"
-"Sor"
-"linia"
-"Línea"
-"Рядок"
-"Радок"
+l:// Up to 3 characters
+"Стр"
+"Ln"
+"Řdk"
+upd:"Zei"
+upd:"Sor"
+"Lin"
+"Lín"
+"Ряд"
+"Стр"
 
 EditStatusCol
+l:// Up to 2 characters
 "Кол"
 "Col"
-"Sloupec"
-"Spal"
-"Oszlop"
-"kolumna"
+"Slp"
+upd:"Spl"
+upd:"Osz"
+"Kol"
 "Col"
 "Кол"
 "Кал"

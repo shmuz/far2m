@@ -2040,30 +2040,33 @@ void FileEditor::ShowStatus()
 	SetFarColor(COL_EDITORSTATUS);
 	GotoXY(X1, Y1);    //??
 
-	bool bShowClock = Opt.ViewerEditorClock && Flags.Check(FFILEEDIT_FULLSCREEN);
-	FARString strLocalTitle;
-	GetTitle(strLocalTitle);
-	int SizeTitle = (bShowClock ? 17 : 23) + Max(0, X2 - 80);
-	TruncPathStr(strLocalTitle, Min(ObjWidth, SizeTitle));
+	const auto bShowClock = Opt.ViewerEditorClock && Flags.Check(FFILEEDIT_FULLSCREEN);
+	const auto VC = Opt.NoGraphics ? L'|' : L'│';                      // "vertical char"
+	const auto IC = m_editor->Flags.Check(FEDITOR_LOCKMODE) ? L'-'     // "information char"
+			: m_editor->Flags.Check(FEDITOR_PROCESSCTRLQ) ? L'"' : L' ';
 
 	// предварительный расчет
 	FARString strLineNum;
 	strLineNum.Format(L"%d/%d", m_editor->m_NumLastLine, m_editor->m_NumLastLine);
 	int SizeLineNum = Max(12, (int)strLineNum.GetLength());
-	SizeTitle -= Max(0, SizeLineNum - 12);
+
+	int SizeTitle = (bShowClock ? 17 : 23) + Max(0, X2 - 80) - Max(0, SizeLineNum - 12);
+	FARString strLocalTitle;
+	GetTitle(strLocalTitle);
+	TruncPathStr(strLocalTitle, Min(ObjWidth, SizeTitle));
 
 	strLineNum.Format(L"%d/%d", m_editor->m_NumLine + 1, m_editor->m_NumLastLine);
-	FARString strCodepage = ShortReadableCodepageName(m_codepage);
 	FormatString FString;
-	FString << fmt::LeftAlign() << fmt::Expand(SizeTitle) << strLocalTitle << L' '
-			<< (m_editor->Flags.Check(FEDITOR_MODIFIED) ? L'*' : L' ')
-			<< (m_editor->Flags.Check(FEDITOR_LOCKMODE) ? L'-' : L' ')
-			<< (m_editor->Flags.Check(FEDITOR_PROCESSCTRLQ) ? L'"' : L' ') << fmt::Expand(5)
-			<< EOLName(m_editor->m_GlobalEOL) << L' ' << fmt::Expand(5) << strCodepage << L' '
-			<< fmt::Expand(7) << Msg::EditStatusLine << L' ' << fmt::Expand(SizeLineNum)
-			<< fmt::Truncate(SizeLineNum) << strLineNum << L' ' << fmt::Expand(5) << Msg::EditStatusCol
-			<< L' ' << fmt::LeftAlign() << fmt::Expand(4) << m_editor->m_CurLine->GetCellCurPos() + 1 << L' '
-			<< fmt::Expand(3) << FARString(AttrStr);
+	FString
+			<< fmt::LeftAlign() << fmt::Expand(SizeTitle) << strLocalTitle << VC
+			<< (m_editor->Flags.Check(FEDITOR_MODIFIED) ? L'*' : L' ') << IC << VC
+			<< fmt::Expand(5) << EOLName(m_editor->m_GlobalEOL) << VC
+			<< fmt::Expand(5) << ShortReadableCodepageName(m_codepage) << VC
+			<< fmt::LeftAlign() << fmt::Expand(3) << Msg::EditStatusLine << L' '
+			<< fmt::Expand(SizeLineNum) << fmt::Truncate(SizeLineNum) << strLineNum << VC
+			<< fmt::Expand(2) << Msg::EditStatusCol << L' '
+			<< fmt::LeftAlign() << fmt::Expand(4) << m_editor->m_CurLine->GetCellCurPos() + 1 << VC
+			<< fmt::Expand(3) << AttrStr;
 
 	int StatusWidth = Max(0, ObjWidth - (bShowClock ? 5 : 0));
 
