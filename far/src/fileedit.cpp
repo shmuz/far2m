@@ -2039,44 +2039,33 @@ void FileEditor::ShowStatus()
 
 	SetFarColor(COL_EDITORSTATUS);
 	GotoXY(X1, Y1);    //??
-	FARString strLineStr;
+
+	bool bShowClock = Opt.ViewerEditorClock && Flags.Check(FFILEEDIT_FULLSCREEN);
 	FARString strLocalTitle;
 	GetTitle(strLocalTitle);
-	int NameLength = Opt.ViewerEditorClock && Flags.Check(FFILEEDIT_FULLSCREEN) ? 17 : 23;
-
-	if (X2 > 80)
-		NameLength+= (X2 - 80);
-
-	if (!strPluginTitle.IsEmpty() || !strTitle.IsEmpty())
-		TruncPathStr(strLocalTitle, (ObjWidth < NameLength ? ObjWidth : NameLength));
-	else
-		TruncPathStr(strLocalTitle, NameLength);
+	int SizeTitle = (bShowClock ? 17 : 23) + Max(0, X2 - 80);
+	TruncPathStr(strLocalTitle, Min(ObjWidth, SizeTitle));
 
 	// предварительный расчет
-	strLineStr.Format(L"%d/%d", m_editor->m_NumLastLine, m_editor->m_NumLastLine);
-	int SizeLineStr = (int)strLineStr.GetLength();
+	FARString strLineNum;
+	strLineNum.Format(L"%d/%d", m_editor->m_NumLastLine, m_editor->m_NumLastLine);
+	int SizeLineNum = Max(12, (int)strLineNum.GetLength());
+	SizeTitle -= Max(0, SizeLineNum - 12);
 
-	if (SizeLineStr > 12)
-		NameLength-= (SizeLineStr - 12);
-	else
-		SizeLineStr = 12;
-
-	strLineStr.Format(L"%d/%d", m_editor->m_NumLine + 1, m_editor->m_NumLastLine);
-	FARString strAttr(AttrStr);
+	strLineNum.Format(L"%d/%d", m_editor->m_NumLine + 1, m_editor->m_NumLastLine);
+	FARString strCodepage = ShortReadableCodepageName(m_codepage);
 	FormatString FString;
-	FString << fmt::LeftAlign() << fmt::Expand(NameLength) << strLocalTitle << L' '
+	FString << fmt::LeftAlign() << fmt::Expand(SizeTitle) << strLocalTitle << L' '
 			<< (m_editor->Flags.Check(FEDITOR_MODIFIED) ? L'*' : L' ')
 			<< (m_editor->Flags.Check(FEDITOR_LOCKMODE) ? L'-' : L' ')
 			<< (m_editor->Flags.Check(FEDITOR_PROCESSCTRLQ) ? L'"' : L' ') << fmt::Expand(5)
-			<< EOLName(m_editor->m_GlobalEOL) << L' ' << fmt::Expand(5) << m_codepage << L' '
-			<< fmt::Expand(7) << Msg::EditStatusLine << L' ' << fmt::Expand(SizeLineStr)
-			<< fmt::Truncate(SizeLineStr) << strLineStr << L' ' << fmt::Expand(5) << Msg::EditStatusCol
+			<< EOLName(m_editor->m_GlobalEOL) << L' ' << fmt::Expand(5) << strCodepage << L' '
+			<< fmt::Expand(7) << Msg::EditStatusLine << L' ' << fmt::Expand(SizeLineNum)
+			<< fmt::Truncate(SizeLineNum) << strLineNum << L' ' << fmt::Expand(5) << Msg::EditStatusCol
 			<< L' ' << fmt::LeftAlign() << fmt::Expand(4) << m_editor->m_CurLine->GetCellCurPos() + 1 << L' '
-			<< fmt::Expand(3) << strAttr;
-	int StatusWidth = ObjWidth - (Opt.ViewerEditorClock && Flags.Check(FFILEEDIT_FULLSCREEN) ? 5 : 0);
+			<< fmt::Expand(3) << FARString(AttrStr);
 
-	if (StatusWidth < 0)
-		StatusWidth = 0;
+	int StatusWidth = Max(0, ObjWidth - (bShowClock ? 5 : 0));
 
 	FS << fmt::LeftAlign() << fmt::Size(StatusWidth) << FString.strValue();
 	{
@@ -2086,7 +2075,7 @@ void FileEditor::ShowStatus()
 		int CurPos = m_editor->m_CurLine->GetCurPos();
 
 		if (CurPos < Length) {
-			GotoXY(X2 - (Opt.ViewerEditorClock && Flags.Check(FFILEEDIT_FULLSCREEN) ? 16 : 10), Y1);
+			GotoXY(X2 - (bShowClock ? 15 : 9), Y1);
 			SetFarColor(COL_EDITORSTATUS);
 			/* $ 27.02.2001 SVS
 			Показываем в зависимости от базы */
@@ -2102,15 +2091,14 @@ void FileEditor::ShowStatus()
 				int UC = static_cast<int>(static_cast<unsigned char>(C));
 				if (UC && !UsedDefaultChar && UC != Str[CurPos]) {
 					static const wchar_t *FmtCharCode[] = {L"%o", L"%d", L"%Xh"};
-					Text(L" (");
+					Text(L"/");
 					mprintf(FmtCharCode[m_editor->m_EdOpt.CharCodeBase % ARRAYSIZE(FmtCharCode)], UC);
-					Text(L")");
 				}
 			}
 		}
 	}
 
-	if (Opt.ViewerEditorClock && Flags.Check(FFILEEDIT_FULLSCREEN))
+	if (bShowClock)
 		ShowTime(FALSE);
 }
 

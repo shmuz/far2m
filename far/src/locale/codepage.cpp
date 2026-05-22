@@ -856,3 +856,20 @@ bool IsCodePageSupported(UINT CodePage)
 
 	return GetCodePageInfo(CodePage, cpiex);
 }
+
+FARString ShortReadableCodepageName(UINT cp)
+{
+	switch (cp)
+	{
+		case CP_UTF7:    return L"UTF-7";
+		case CP_UTF8:    return L"UTF-8";
+		case CP_UTF16LE: return L"U16LE";
+		case CP_UTF16BE: return L"U16BE";
+		case CP_UTF32LE: return L"U32LE";
+		case CP_UTF32BE: return L"U32BE";
+		default: return
+			cp == WINPORT(GetACP)()   ? L"ANSI" :
+			cp == WINPORT(GetOEMCP)() ? L"OEM" :
+			FARString().Format(L"%u", cp);
+	}
+}

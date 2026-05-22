@@ -101,6 +101,8 @@ UINT SelectCodePage(UINT nCurrent, bool bShowUnicode, bool bShowUTF, bool bShowU
 
 UINT FillCodePagesList(HANDLE dialogHandle, UINT controlId, UINT codePage, bool allowAuto, bool allowAll);
 
+FARString ShortReadableCodepageName(UINT cp);
+
 //#define CP_DBG
 
 #ifdef __cplusplus
