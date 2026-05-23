@@ -33,6 +33,8 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <vector>
+
 struct DizRecord
 {
 	wchar_t *DizText;
@@ -46,8 +48,7 @@ class DizList
 {
 	private:
 		FARString strDizFileName;
-		DizRecord *DizData;
-		int DizCount;
+		std::vector<DizRecord> DizData;
 		int *IndexData;
 		int IndexCount;
 		bool Modified;
