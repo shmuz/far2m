@@ -2060,8 +2060,8 @@ void FileEditor::ShowStatus()
 	FString
 			<< fmt::LeftAlign() << fmt::Expand(SizeTitle) << strLocalTitle << VC
 			<< (m_editor->Flags.Check(FEDITOR_MODIFIED) ? L'*' : L' ') << IC << VC
-			<< fmt::Expand(5) << EOLName(m_editor->m_GlobalEOL) << VC
-			<< fmt::Expand(5) << ShortReadableCodepageName(m_codepage) << VC
+			<< fmt::LeftAlign() << fmt::Expand(5) << EOLName(m_editor->m_GlobalEOL) << VC
+			<< fmt::LeftAlign() << fmt::Expand(5) << ShortReadableCodepageName(m_codepage) << VC
 			<< fmt::LeftAlign() << fmt::Expand(3) << Msg::EditStatusLine << L' '
 			<< fmt::Expand(SizeLineNum) << fmt::Truncate(SizeLineNum) << strLineNum << VC
 			<< fmt::Expand(2) << Msg::EditStatusCol << L' '

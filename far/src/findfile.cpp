@@ -1405,10 +1405,8 @@ static void AnalyzeFileItem(HANDLE hDlg, PluginPanelItem *FileItem, const wchar_
 			FarMkTempEx(strTempDir);
 			apiCreateDirectory(strTempDir, nullptr);
 
-			bool GetFileResult = false;
-			GetFileResult = CtrlObject->Plugins.GetFile(hPlugin, FileItem, strTempDir, FileToScan,
-										OPM_SILENT | OPM_FIND);
-			if (!GetFileResult) {
+			if (!CtrlObject->Plugins.GetFile(hPlugin, FileItem, strTempDir, FileToScan, OPM_SILENT | OPM_FIND))
+			{
 				apiRemoveDirectory(strTempDir);
 				return;
 			}
