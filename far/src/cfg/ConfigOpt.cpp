@@ -465,7 +465,6 @@ static FARConfig CFG[]
 	{OST_COMMON, NSecDescriptions, "SetHidden",              &Opt.Diz.SetHidden, 1, OPT_BOOLEAN},
 	{OST_COMMON, NSecDescriptions, "StartPos",               &Opt.Diz.StartPos, 0},
 	{OST_COMMON, NSecDescriptions, "AnsiByDefault",          &Opt.Diz.AnsiByDefault, 0, OPT_BOOLEAN},
-	{OST_COMMON, NSecDescriptions, "SaveInUTF",              &Opt.Diz.SaveInUTF, 0, OPT_BOOLEAN},
 
 	{OST_NONE,   NSecMacros, "DateFormat",                   &Opt.Macro.strDateFormat, L"%a %b %d %H:%M:%S %Z %Y"},
 	{OST_COMMON, NSecMacros, "ShowPlayIndicator",            &Opt.Macro.ShowPlayIndicator, 1, OPT_BOOLEAN},

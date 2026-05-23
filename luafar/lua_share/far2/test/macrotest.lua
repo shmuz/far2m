@@ -753,7 +753,6 @@ local function test_Far_GetConfig()
     "Descriptions.AnsiByDefault",
     "Descriptions.ListNames",
     "Descriptions.ROUpdate",
-    "Descriptions.SaveInUTF",
     "Descriptions.SetHidden",
     "Descriptions.StartPos",
     "Descriptions.UpdateMode",

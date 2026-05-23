@@ -17313,17 +17313,6 @@ upd:"Dateien standardmäßig mit Windows-Kod&ierung öffnen"
 "&Використовувати кодову сторінку ANSI за замовчуванням"
 "Уж&ыць прадвызначаную кадыроўку ANSI"
 
-CfgDizSaveInUTF
-"Сохранять в UTF8"
-"Save in UTF8"
-upd:"Save in UTF8"
-upd:"Save in UTF8"
-upd:"Save in UTF8"
-upd:"Save in UTF8"
-"Guardar en UTF8"
-"Зберігати в UTF8"
-"Захаваць у UTF8"
-
 ReadingTitleFiles
 l:
 "Обновление панелей"

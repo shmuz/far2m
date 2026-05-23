@@ -169,7 +169,6 @@ struct DizOptions
 	int SetHidden;
 	int StartPos;
 	int AnsiByDefault;
-	int SaveInUTF;
 };
 
 struct CodeXLAT

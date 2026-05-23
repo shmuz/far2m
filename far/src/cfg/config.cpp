@@ -749,7 +749,6 @@ void SetDizConfig()
 	Builder.AddSeparator();
 
 	Builder.AddCheckbox(Msg::CfgDizAnsiByDefault, &Opt.Diz.AnsiByDefault);
-	Builder.AddCheckbox(Msg::CfgDizSaveInUTF, &Opt.Diz.SaveInUTF);
 	Builder.AddOKCancel();
 	Builder.ShowDialog();
 }

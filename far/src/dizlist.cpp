@@ -426,39 +426,28 @@ bool DizList::Flush(const wchar_t *Path, const wchar_t *DizName)
 	if (!DizData.empty()
 			&& DizFile.Open(strDizFileName, GENERIC_WRITE, FILE_SHARE_READ, nullptr,
 					FileAttr == INVALID_FILE_ATTRIBUTES ? CREATE_NEW : TRUNCATE_EXISTING)) {
-		UINT CodePage = Opt.Diz.SaveInUTF ? CP_UTF8 : (Opt.Diz.AnsiByDefault ? CP_ACP : CP_OEMCP);
-
 		CachedWrite Cache(DizFile);
 
-		if (CodePage == CP_UTF8) {
-			DWORD dwSignature = SIGN_UTF8;
-			if (!Cache.Write(&dwSignature, 3)) {
-				AnyError = true;
-			}
+		DWORD dwSignature = SIGN_UTF8;
+		if (!Cache.Write(&dwSignature, 3)) {
+			AnyError = true;
 		}
 
 		if (!AnyError) {
 			for (auto &Rec: DizData) {
 				if (!Rec.Deleted) {
-					const auto DizLength = Rec.DizText.GetLength();
-					DWORD Size = (DizLength + 1) * (CodePage == CP_UTF8 ? 3 : 1);	// UTF-8, up to 3 bytes per char support
-					char *lpDizText = new (std::nothrow) char[Size];
-					if (lpDizText) {
-						int BytesCount = WINPORT(WideCharToMultiByte)(CodePage, 0, Rec.DizText,
-								DizLength + 1, lpDizText, Size, nullptr, nullptr);
-						if (BytesCount > 1) {
-							if (Cache.Write(lpDizText, BytesCount - 1)) {
-								EmptyDiz = false;
-							} else {
-								AnyError = true;
-								break;
-							}
-							if (!Cache.Write("\r\n", 2)) {
-								AnyError = true;
-								break;
-							}
+					std::string utf8Text = Wide2MB(Rec.DizText);
+					if (!utf8Text.empty()) {
+						if (Cache.Write(utf8Text.c_str(), utf8Text.size())) {
+							EmptyDiz = false;
+						} else {
+							AnyError = true;
+							break;
 						}
-						delete[] lpDizText;
+						if (!Cache.Write("\n", 1)) {
+							AnyError = true;
+							break;
+						}
 					}
 				}
 			}
