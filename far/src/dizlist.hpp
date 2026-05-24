@@ -53,7 +53,6 @@ class DizList
 		bool Modified;
 		bool NeedRebuild;
 		UINT OrigCodePage;
-		char *AnsiBuf;
 
 	private:
 		int GetDizPos(const wchar_t *Name, int *TextPos);

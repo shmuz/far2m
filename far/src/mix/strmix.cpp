@@ -515,13 +515,10 @@ const wchar_t *GetCommaWord(const wchar_t *Src, FARString &strWord, wchar_t Sepa
 
 		if ((*Src==Separator || *Src==Separator2) && !SkipBrackets)
 		{
-			Src++;
-
-			while (IsSpace(*Src))
+			for (Src++; IsSpace(*Src); )
 				Src++;
 
-			strWord.Copy(StartPtr,WordLen);
-			return Src;
+			break;
 		}
 	}
 

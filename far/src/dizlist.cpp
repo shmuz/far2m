@@ -62,15 +62,12 @@ DizList::DizList()
 	IndexCount(0),
 	Modified(false),
 	NeedRebuild(true),
-	OrigCodePage(CP_AUTODETECT),
-	AnsiBuf(nullptr)
+	OrigCodePage(CP_AUTODETECT)
 {}
 
 DizList::~DizList()
 {
 	Reset();
-
-	free(AnsiBuf);
 }
 
 void DizList::Reset()
@@ -100,7 +97,8 @@ void DizList::Read(const wchar_t *Path, const wchar_t *DizName)
 	for (;;) {
 		if (DizName) {
 			strDizFileName = DizName;
-		} else {
+		}
+		else {
 			strDizFileName = Path;
 
 			if (!PathCanHoldRegularFile(strDizFileName))
@@ -112,14 +110,15 @@ void DizList::Read(const wchar_t *Path, const wchar_t *DizName)
 				break;
 
 			AddEndSlash(strDizFileName);
-			strDizFileName+= strArgName;
+			strDizFileName += strArgName;
 		}
 
 		File DizFile;
-        FAR_FIND_DATA_EX FindData;
-        if (apiGetFindDataEx(strDizFileName, FindData, FIND_FILE_FLAG_CASE_INSENSITIVE) &&
-            DizFile.Open(FindData.strFileName, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING)) {
-            strDizFileName=FindData.strFileName;
+		FAR_FIND_DATA_EX FindData;
+		if (apiGetFindDataEx(strDizFileName, FindData, FIND_FILE_FLAG_CASE_INSENSITIVE) &&
+				DizFile.Open(FindData.strFileName, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING))
+		{
+			strDizFileName = FindData.strFileName;
 			GetFileString GetStr(DizFile);
 			wchar_t *DizText;
 			int DizLength;
@@ -160,12 +159,11 @@ void DizList::Read(const wchar_t *Path, const wchar_t *DizName)
 
 bool DizList::AddRecord(const wchar_t *DizText)
 {
-	DizData.emplace_back(DizRecord{});
-	DizRecord& Rec = DizData.back();
-
+	auto &Rec = DizData.emplace_back(DizRecord{});
 	Rec.DizText = DizText;
 	Rec.NameStart = 0;
 	Rec.NameLength = 0;
+	Rec.Deleted = false;
 
 	if (*DizText == L'\"') {
 		DizText++;
@@ -175,14 +173,14 @@ bool DizList::AddRecord(const wchar_t *DizText)
 			DizText++;
 			Rec.NameLength++;
 		}
-	} else {
+	}
+	else {
 		while (!IsSpaceOrEos(*DizText)) {
 			DizText++;
 			Rec.NameLength++;
 		}
 	}
 
-	Rec.Deleted = false;
 	NeedRebuild = true;
 	Modified = true;
 	return true;
@@ -234,16 +232,15 @@ int DizList::GetDizPosEx(const wchar_t *Name, int *TextPos)
 	// если файл описаний был в OEM/ANSI то имена файлов могут не совпадать с юникодными
 	if (DizPos == -1 && !IsUnicodeOrUtfCodePage(OrigCodePage) && OrigCodePage != CP_AUTODETECT) {
 		int len = StrLength(Name);
-		char *tmp = (char *)malloc(len + 1);
+		char *AnsiBuf = (char *)malloc(len + 1);
 
-		if (!tmp)
+		if (!AnsiBuf)
 			return -1;
 
-		free(AnsiBuf);
-		AnsiBuf = tmp;
 		WINPORT(WideCharToMultiByte)(OrigCodePage, 0, Name, len, AnsiBuf, len, nullptr, nullptr);
 		AnsiBuf[len] = 0;
 		FARString strRecoded(AnsiBuf, OrigCodePage);
+		free(AnsiBuf);
 
 		if (strRecoded == Name)
 			return -1;
