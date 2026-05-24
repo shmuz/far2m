@@ -7,7 +7,7 @@ SHAREDSYMBOL void WINAPI GetGlobalInfoW(struct GlobalInfo *aInfo)
   aInfo->SysID         = 0x93CDEF19;
   aInfo->Version       = Version;
   aInfo->Title         = L"OpenWith";
-  aInfo->Description   = L"Provides a context-aware menu to open the currently selected file";
+  aInfo->Description   = L"Provides a context menu to open the currently selected file(s)";
   aInfo->Author        = L"spnethw, FAR People";
   aInfo->UseMenuGuids  = 0;
 }

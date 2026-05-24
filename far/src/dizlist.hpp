@@ -48,8 +48,7 @@ class DizList
 	private:
 		FARString strDizFileName;
 		std::vector<DizRecord> DizData;
-		int *IndexData;
-		int IndexCount;
+		std::vector<int> IndexData;
 		bool Modified;
 		bool NeedRebuild;
 		UINT OrigCodePage;
