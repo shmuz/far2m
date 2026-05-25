@@ -1095,7 +1095,7 @@ function LF.test_far_regex(printfunc, verbose)
   asrt.eq (numerr, 0)
 end
 
-function LF.test_luafar_all()
+function LF.test_all()
   LF.test_AdvControl()
   LF.test_bit64()
   LF.test_dialog()

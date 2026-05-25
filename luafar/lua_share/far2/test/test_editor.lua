@@ -347,7 +347,7 @@ local function test_multiple_instances()
   asrt.istrue(Area.Shell)
 end
 
-local function test_editor_all()
+local function test_all()
   test_Editor_Sel()
   test_Misc()
   test_issue_3129()
@@ -355,5 +355,5 @@ local function test_editor_all()
 end
 
 return {
-  test_editor_all = test_editor_all;
+  test_all = test_all;
 }

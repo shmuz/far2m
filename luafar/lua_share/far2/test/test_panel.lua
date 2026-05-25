@@ -200,7 +200,7 @@ local function test_Panel_Select(pan)
 end
 
 
-local function test_panel_all()
+local function test_all()
   test_APanel()
   test_PPanel()
   test_Panel_Item()
@@ -220,5 +220,5 @@ end
 
 
 return {
-  test_panel_all = test_panel_all;
+  test_all = test_all;
 }

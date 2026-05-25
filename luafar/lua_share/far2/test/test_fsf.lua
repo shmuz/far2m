@@ -284,7 +284,7 @@ local function test_keys_names()
 end
 
 
-local function test_fsf_all()
+local function test_all()
   test_Cells()
   test_Clipboard()
   test_DetectCodePage() -- external
@@ -298,5 +298,5 @@ end
 
 
 return {
-  test_fsf_all = test_fsf_all;
+  test_all = test_all;
 }

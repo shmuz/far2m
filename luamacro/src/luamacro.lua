@@ -411,7 +411,8 @@ local function Open_CommandLine (strCmdLine)
         local function Quit(n) actl.Quit(n) Keys("Esc") end
         local OK, R = pcall(require, "far2.test.macrotest")
         if not OK then Quit(1) end
-        if not R.test_all then Quit(2) end
+        if not (R.test_all and R.SetMacroKeys) then Quit(2) end
+        R.SetMacroKeys("CtrlShiftF12")
         OK = pcall(R.test_all)
         Quit(OK and 0 or 3)
       ]], 0, "CtrlShiftF12")

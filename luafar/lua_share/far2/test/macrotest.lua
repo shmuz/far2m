@@ -10,6 +10,7 @@ Macro {
   action = function()
     Far.DisableHistory(0x0F)
     local mod = require "far2.test.macrotest"
+    mod.SetMacroKeys("CtrlShiftF12")
     mod.test_all()
     far.Message("All tests OK", "LuaMacro")
   end;
@@ -17,13 +18,15 @@ Macro {
 --]]
 
 -- The keys that invoke the whole macrotest from a macro. Some tests depend on that.
-local MacroKey1, MacroKey2 = "CtrlShiftF12", "RCtrlShiftF12"
+local MacroKeys = {}
 
 local asrt = require "far2.assert"
-local LF   = require "far2.test.test_luafar"
-local TE   = require "far2.test.test_editor"
-local FSF  = require "far2.test.test_fsf"
-local TP   = require "far2.test.test_panel"
+local Libs = {
+  LF  = require "far2.test.test_luafar";
+  TE  = require "far2.test.test_editor";
+  FSF = require "far2.test.test_fsf";
+  TP  = require "far2.test.test_panel";
+}
 
 local MT = {} -- "macrotest", this module
 local F = far.Flags
@@ -31,6 +34,10 @@ local band = bit64.band
 local luamacroId = far.GetPluginId()
 local hlfviewerId = 0x1AF0754D
 local TKEY_BINARY = "__binary"
+
+function MT.SetMacroKeys(...)
+  MacroKeys = { ... }
+end
 
 local function pack (...)
   return { n=select("#",...), ... }
@@ -99,8 +106,11 @@ end
 local function test_mf_akey()
   asrt.eq(akey, mf.akey)
   local key,name = akey(0),akey(1)
-  assert(key==far.NameToKey(MacroKey1) and name==MacroKey1 or
-         key==far.NameToKey(MacroKey2) and name==MacroKey2)
+  local ok = false
+  for _,refkey in ipairs(MacroKeys) do
+    if key==far.NameToKey(refkey) and name==refkey then ok=true; break; end
+  end
+  asrt.istrue(ok)
   -- (the 2nd parameter is tested in function test_mf_eval).
 end
 
@@ -151,7 +161,7 @@ local function test_mf_eval()
     assert(akey(1,1)=="CtrlA")
     foobar = (foobar or 0) + 1
     return foobar,false,5,nil,"foo"
-  ]]):format(MacroKey1, MacroKey2)
+  ]]):format(MacroKeys[1] or "", MacroKeys[2] or "")
   local Id = asrt.udata(far.MacroAdd(nil,nil,"CtrlA",code))
   for k=1,3 do
     local ret1,a,b,c,d,e = eval("CtrlA",2)
@@ -1430,8 +1440,6 @@ function MT.test_mantis_1722()
 end
 
 function MT.test_all()
-  mf.AddExitHandler(panel.SetPanelDirectory, nil, 1, panel.GetPanelDirectory(nil,1))
-
   asrt.istrue(Area.Shell, "Run these tests from the Shell area.")
   asrt.isfalse(APanel.Plugin or PPanel.Plugin, "Run these tests when neither of panels is a plugin panel.")
 
@@ -1452,17 +1460,17 @@ function MT.test_all()
   MT.test_F3_F4_F8()
   MT.test_Delete_Wipe()
 
-  FSF.test_fsf_all()
-  LF.test_luafar_all()
-  TE.test_editor_all()
-  TP.test_panel_all()
+  Libs.FSF.test_all()
+  Libs.LF.test_all()
+  Libs.TE.test_all()
+  Libs.TP.test_all()
 
   actl.RedrawAll()
 end
 
-MT.test_fsf_all    = FSF.test_fsf_all
-MT.test_luafar_all = LF.test_luafar_all
-MT.test_editor_all = TE.test_editor_all
-MT.test_panel_all  = TP.test_panel_all
+MT.test_fsf_all    = Libs.FSF.test_all
+MT.test_luafar_all = Libs.LF.test_all
+MT.test_editor_all = Libs.TE.test_all
+MT.test_panel_all  = Libs.TP.test_all
 
 return MT
