@@ -118,9 +118,8 @@ void DizList::Read(const wchar_t *Path, const wchar_t *DizName)
 			int DizLength;
 			clock_t StartTime = GetProcessUptimeMSec();
 			UINT CodePage = CP_AUTODETECT;
-			bool bSigFound = false;
 
-			if (!GetFileFormat(DizFile, CodePage, &bSigFound, false) || !bSigFound)
+			if (!GetFileFormat(DizFile, CodePage))
 				CodePage = Opt.Diz.AnsiByDefault ? CP_ACP : CP_OEMCP;
 
 			while (GetStr.GetString(&DizText, CodePage, DizLength) > 0) {
@@ -229,16 +228,14 @@ int DizList::GetDizPosEx(const wchar_t *Name, int *TextPos)
 	if (DizPos == -1 && !IsUnicodeOrUtfCodePage(OrigCodePage) && OrigCodePage != CP_AUTODETECT)
 	{
 		int len = WINPORT(WideCharToMultiByte)(OrigCodePage, 0, Name, -1, nullptr, 0, nullptr, nullptr);
-		if (len == 0)
+		if (!len)
 			return -1;
 
-		char *AnsiBuf = (char *)malloc(len);
-		if (!AnsiBuf)
+		std::vector<char> AnsiBuf(len);
+		if (!WINPORT(WideCharToMultiByte)(OrigCodePage, 0, Name, -1, AnsiBuf.data(), len, nullptr, nullptr))
 			return -1;
 
-		WINPORT(WideCharToMultiByte)(OrigCodePage, 0, Name, -1, AnsiBuf, len, nullptr, nullptr);
-		FARString strRecoded(AnsiBuf, OrigCodePage);
-		free(AnsiBuf);
+		FARString strRecoded(AnsiBuf.data(), OrigCodePage);
 		return (strRecoded == Name) ? - 1 : GetDizPos(strRecoded, TextPos);
 	}
 

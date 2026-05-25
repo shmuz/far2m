@@ -154,6 +154,12 @@ void cp_logger(int level, const char *cname, const char *msg, ...){
   return;
 }
 
+// return number of items including separator
+inline int WithSep(int Num)
+{
+	return Num ? (Num + 1) : 0;
+}
+
 // Получаем кодовую страницу для элемента в меню
 inline UINT GetMenuItemCodePage(int Position = -1)
 {
@@ -165,37 +171,45 @@ inline UINT GetListItemCodePage(int Position = -1)
 	return static_cast<UINT>(SendDlgMessage(dialog, DM_LISTGETDATA, control, Position));
 }
 
-// Проверяем попадает или нет позиция в диапазон стандартных кодовых страниц (правильность работы для разделителей не гарантируется)
+// Проверяем попадает или нет позиция в диапазон стандартных кодовых страниц
+// (правильность работы для разделителей не гарантируется)
 inline bool IsPositionStandard(UINT position)
 {
-	return position<=(UINT)CodePages->GetItemCount()-favoriteCodePages-(favoriteCodePages?1:0)-normalCodePages-(normalCodePages?1:0);
+	return position <= (UINT)CodePages->GetItemCount() - WithSep(favoriteCodePages)
+			- WithSep(normalCodePages);
 }
 
-// Проверяем попадает или нет позиция в диапазон любимых кодовых страниц (правильность работы для разделителей не гарантируется)
+// Проверяем попадает или нет позиция в диапазон любимых кодовых страниц
+// (правильность работы для разделителей не гарантируется)
 inline bool IsPositionFavorite(UINT position)
 {
-	return position>=(UINT)CodePages->GetItemCount()-normalCodePages;
+	return position >= (UINT)CodePages->GetItemCount() - normalCodePages;
 }
 
-// Проверяем попадает или нет позиция в диапазон обыкновенных кодовых страниц (правильность работы для разделителей не гарантируется)
+// Проверяем попадает или нет позиция в диапазон обыкновенных кодовых страниц
+// (правильность работы для разделителей не гарантируется)
 inline bool IsPositionNormal(UINT position)
 {
 	UINT ItemCount = CodePages->GetItemCount();
-	return position>=ItemCount-normalCodePages-favoriteCodePages-(normalCodePages?1:0) && position<ItemCount-normalCodePages;
+	return position >= ItemCount - WithSep(normalCodePages) - favoriteCodePages
+			&& position < ItemCount - normalCodePages;
 }
 
 // Формируем строку для визуального представления таблицы символов
-static void FormatCodePageString(UINT CodePage, const wchar_t *CodePageName, FormatString &CodePageNameString, bool IsCodePageNameCustom)
+static void FormatCodePageString(UINT CodePage, const wchar_t *CodePageName,
+		FormatString &CodePageNameString, bool IsCodePageNameCustom)
 {
-	if (CodePage!=CP_AUTODETECT)
+	if (CodePage != CP_AUTODETECT)
 	{
-		CodePageNameString<<fmt::Expand(5)<<CodePage<<BoxSymbols[BS_V1]<<(!IsCodePageNameCustom||CallbackCallSource==CodePagesFill?L' ':L'*');
+		CodePageNameString << fmt::Expand(5) << CodePage << BoxSymbols[BS_V1]
+		<< (!IsCodePageNameCustom || CallbackCallSource == CodePagesFill ? L' ' : L'*');
 	}
-	CodePageNameString<<CodePageName;
+	CodePageNameString << CodePageName;
 }
 
 // Добавляем таблицу символов
-static void AddCodePage(const wchar_t *codePageName, UINT codePage, int position, bool enabled, bool checked, bool IsCodePageNameCustom)
+static void AddCodePage(const wchar_t *codePageName, UINT codePage, int position, bool enabled,
+		bool checked, bool IsCodePageNameCustom)
 {
 	if (CallbackCallSource == CodePagesFill)
 	{
@@ -259,14 +273,15 @@ static void AddCodePage(const wchar_t *codePageName, UINT codePage, int position
 		{
 			if ((CodePages->GetSelectPos()==-1 || GetMenuItemCodePage()!=codePage))
 			{
-				CodePages->SetSelectPos(position>=0?position:CodePages->GetItemCount()-1, 1);
+				CodePages->SetSelectPos(position >= 0 ? position : CodePages->GetItemCount() - 1, 1);
 			}
 		}
 	}
 }
 
 // Добавляем стандартную таблицу символов
-static void AddStandardCodePage(const wchar_t *codePageName, UINT codePage, int position = -1, bool enabled = true)
+static void AddStandardCodePage(const wchar_t *codePageName, UINT codePage, int position = -1,
+		bool enabled = true)
 {
 	bool checked = false;
 
@@ -389,7 +404,8 @@ static BOOL __stdcall EnumCodePagesProc(const wchar_t *lpwszCodePage)
 
 	// Формируем имя таблиц символов
 	bool IsCodePageNameCustom = false;
-	wchar_t *codePageName = FormatCodePageName(codePage, cpiex.CodePageName, ARRAYSIZE(cpiex.CodePageName), IsCodePageNameCustom);
+	wchar_t *codePageName = FormatCodePageName(codePage, cpiex.CodePageName,
+			ARRAYSIZE(cpiex.CodePageName), IsCodePageNameCustom);
 	// Получаем признак выбранности таблицы символов
 	s_cfg_reader->SelectSection(FavoriteCodePagesKey);
 	int selectType = s_cfg_reader->GetInt(Wide2MB(lpwszCodePage), 0);
@@ -399,21 +415,20 @@ static BOOL __stdcall EnumCodePagesProc(const wchar_t *lpwszCodePage)
 	{
 		// Если надо добавляем разделитель между выбранными и нормальными таблицами символов
 		if (!favoriteCodePages)
-			AddSeparator(Msg::GetCodePageFavorites,GetItemsCount()-normalCodePages-(normalCodePages?1:0));
+			AddSeparator(Msg::GetCodePageFavorites, GetItemsCount() - WithSep(normalCodePages));
 
 		// Добавляем таблицу символов в выбранные
 		AddCodePage(
-		    codePageName,
-		    codePage,
-		    GetCodePageInsertPosition(
-		        codePage,
-		        GetItemsCount()-normalCodePages-favoriteCodePages-(normalCodePages?1:0),
-		        favoriteCodePages
-		    ),
-		    true,
-		    selectType & CPST_FIND ? true : false,
-			IsCodePageNameCustom
-		);
+			codePageName,
+			codePage,
+			GetCodePageInsertPosition(
+				codePage,
+				GetItemsCount() - WithSep(normalCodePages) - favoriteCodePages,
+				favoriteCodePages),
+			true,
+			selectType & CPST_FIND ? true : false,
+			IsCodePageNameCustom);
+
 		// Увеличиваем счётчик выбранных таблиц символов
 		favoriteCodePages++;
 	}
@@ -425,17 +440,16 @@ static BOOL __stdcall EnumCodePagesProc(const wchar_t *lpwszCodePage)
 
 		// Добавляем таблицу символов в нормальные
 		AddCodePage(
-		    codePageName,
-		    codePage,
-		    GetCodePageInsertPosition(
-		        codePage,
-		        GetItemsCount()-normalCodePages,
-		        normalCodePages
-		    ),
+			codePageName,
+			codePage,
+			GetCodePageInsertPosition(
+				codePage,
+				GetItemsCount()-normalCodePages,
+				normalCodePages),
 			true,
 			false,
-			IsCodePageNameCustom
-		);
+			IsCodePageNameCustom);
+
 		// Увеличиваем счётчик выбранных таблиц символов
 		normalCodePages++;
 	}
@@ -447,20 +461,24 @@ static BOOL __stdcall EnumCodePagesProc(const wchar_t *lpwszCodePage)
 static void AddCodePages(DWORD codePages)
 {
 	// Добавляем стандартные таблицы символов
-	AddStandardCodePage((codePages & ::SearchAll) ? Msg::FindFileAllCodePages : Msg::EditOpenAutoDetect, CP_AUTODETECT, -1, (codePages & ::SearchAll) || (codePages & ::Auto));
+	AddStandardCodePage((codePages & ::SearchAll) ? Msg::FindFileAllCodePages : Msg::EditOpenAutoDetect,
+			CP_AUTODETECT, -1, (codePages & ::SearchAll) || (codePages & ::Auto));
+
 	AddSeparator(Msg::GetCodePageSystem);
-	AddStandardCodePage(L"UTF-8", CP_UTF8, -1, true);
-	AddStandardCodePage(L"ANSI", WINPORT(GetACP)(), -1, true);
-	AddStandardCodePage(L"KOI8", CP_KOI8R, -1, true);
+	AddStandardCodePage(L"ANSI", WINPORT(GetACP)());
+	AddStandardCodePage(L"OEM", WINPORT(GetOEMCP)());
+	AddStandardCodePage(L"KOI8", CP_KOI8R);
+
 	AddSeparator(Msg::GetCodePageUnicode);
-	AddStandardCodePage(L"UTF-7", CP_UTF7, -1, true);
-	AddStandardCodePage(L"UTF-16 (Little endian)", CP_UTF16LE, -1, true);
-	AddStandardCodePage(L"UTF-16 (Big endian)", CP_UTF16BE, -1, true);
-	AddStandardCodePage(L"DOS", WINPORT(GetOEMCP)(), -1, true);
-	if (sizeof(wchar_t)==4) {
-		AddStandardCodePage(L"UTF-32 (Little endian)", CP_UTF32LE, -1, true);
-		AddStandardCodePage(L"UTF-32 (Big endian)", CP_UTF32BE, -1, true);
+	AddStandardCodePage(L"UTF-8", CP_UTF8);
+	AddStandardCodePage(L"UTF-7", CP_UTF7);
+	if (sizeof(wchar_t) == 4) {
+		AddStandardCodePage(L"UTF-32 (Little endian)", CP_UTF32LE);
+		AddStandardCodePage(L"UTF-32 (Big endian)", CP_UTF32BE);
 	}
+	AddStandardCodePage(L"UTF-16 (Little endian)", CP_UTF16LE);
+	AddStandardCodePage(L"UTF-16 (Big endian)", CP_UTF16BE);
+
 	// Получаем таблицы символов установленные в системе
 	WINPORT(EnumSystemCodePages)((CODEPAGE_ENUMPROCW)EnumCodePagesProc, 0);//CP_INSTALLED
 }
@@ -585,8 +603,9 @@ static void ProcessSelected(bool select)
 static void FillCodePagesVMenu(bool bShowUnicode, bool bShowUTF, bool bShowUTF7, bool bShowAuto)
 {
 	UINT codePage = currentCodePage;
+	int SelectPos = CodePages->GetSelectPos();
 
-	if (CodePages->GetSelectPos()!=-1 && CodePages->GetSelectPos()<CodePages->GetItemCount()-normalCodePages)
+	if (SelectPos != -1 && SelectPos < CodePages->GetItemCount() - normalCodePages)
 		currentCodePage = GetMenuItemCodePage();
 
 	// Очищаем меню
