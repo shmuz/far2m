@@ -66,7 +66,7 @@ class DizList
 	public:
 		void Read(const wchar_t *Path, const wchar_t *DizName=nullptr);
 		void Reset();
-		const wchar_t *GetDizTextAddr(const wchar_t *Name, const int64_t FileSize);
+		const wchar_t *GetDizTextAddr(const wchar_t *Name);
 		bool DeleteDiz(const wchar_t *Name);
 		bool Flush(const wchar_t *Path, const wchar_t *DizName=nullptr);
 		bool AddDizText(const wchar_t *Name, const wchar_t *DizText);

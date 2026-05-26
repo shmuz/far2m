@@ -819,7 +819,7 @@ void FileList::ReadDiz(PluginPanelItem *ItemList, int ItemLength, DWORD dwFlags)
 	for (int I = 0; I < FileCount; I++) {
 		if (!ListData[I]->DizText) {
 			ListData[I]->DeleteDiz = false;
-			ListData[I]->DizText = (wchar_t *)Diz.GetDizTextAddr(ListData[I]->strName, ListData[I]->FileSize);
+			ListData[I]->DizText = (wchar_t *)Diz.GetDizTextAddr(ListData[I]->strName);
 		}
 	}
 }

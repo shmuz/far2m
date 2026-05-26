@@ -48,7 +48,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "cache.hpp"
 
 static const DizRecord *SearchDizData;
-static int _cdecl SortDizIndex(const void *el1, const void *el2);
 static int _cdecl SortDizSearch(const void *key, const void *elem);
 struct DizSearchKey
 {
@@ -179,7 +178,7 @@ bool DizList::AddRecord(const wchar_t *DizText)
 	return true;
 }
 
-const wchar_t *DizList::GetDizTextAddr(const wchar_t *Name, const int64_t FileSize)
+const wchar_t *DizList::GetDizTextAddr(const wchar_t *Name)
 {
 	const wchar_t *DizText = nullptr;
 	int TextPos;
@@ -190,31 +189,6 @@ const wchar_t *DizList::GetDizTextAddr(const wchar_t *Name, const int64_t FileSi
 
 		while (*DizText && IsSpace(*DizText))
 			DizText++;
-
-		if (iswdigit(*DizText)) {
-			wchar_t SizeText[30];
-			const wchar_t *DizPtr = DizText;
-			bool SkipSize = true;
-			swprintf(SizeText, ARRAYSIZE(SizeText), L"%lld", FileSize);
-
-			for (int I = 0; SizeText[I]; DizPtr++) {
-				if (*DizPtr == L',' || *DizPtr == L'.')
-					continue;
-				if (SizeText[I] == *DizPtr)
-					I++;
-				else {
-					SkipSize = false;
-					break;
-				}
-			}
-
-			if (SkipSize && IsSpace(*DizPtr)) {
-				DizText = DizPtr;
-
-				while (*DizText && IsSpace(*DizText))
-					DizText++;
-			}
-		}
 	}
 
 	return DizText;
@@ -276,35 +250,26 @@ void DizList::BuildIndex()
 	for (size_t I = 0; I < IndexData.size(); I++)
 		IndexData[I] = I;
 
-	SearchDizData = DizData.data();
-	far_qsort(IndexData.data(), IndexData.size(), sizeof(int), SortDizIndex);
-	NeedRebuild = false;
-}
+	auto less = [&] (int a, int b)
+	{
+		const DizRecord& Rec1 = DizData[a];
+		const DizRecord& Rec2 = DizData[b];
+		const wchar_t *Diz1 = Rec1.DizText + Rec1.NameStart;
+		const wchar_t *Diz2 = Rec2.DizText + Rec2.NameStart;
+		int CmpCode = StrCmpN(Diz1, Diz2, Min(Rec1.NameLength, Rec2.NameLength));
 
-int _cdecl SortDizIndex(const void *el1, const void *el2)
-{
-	const DizRecord& Rec1 = SearchDizData[*(int *)el1];
-	const DizRecord& Rec2 = SearchDizData[*(int *)el2];
-	const wchar_t *Diz1 = Rec1.DizText + Rec1.NameStart;
-	const wchar_t *Diz2 = Rec2.DizText + Rec2.NameStart;
-	int CmpCode = StrCmpNI(Diz1, Diz2, Min(Rec1.NameLength, Rec2.NameLength));
+		if (CmpCode != 0)
+			return CmpCode < 0;
 
-	if (!CmpCode) {
-		if (Rec1.NameLength > Rec2.NameLength)
-			return 1;
-
-		if (Rec1.NameLength < Rec2.NameLength)
-			return -1;
+		if (Rec1.NameLength != Rec2.NameLength)
+			return Rec1.NameLength < Rec2.NameLength;
 
 		// for equal names, deleted is bigger
-		if (Rec1.Deleted && !Rec2.Deleted)
-			return 1;
+		return !Rec1.Deleted && Rec2.Deleted;
+	};
 
-		if (Rec2.Deleted && !Rec1.Deleted)
-			return -1;
-	}
-
-	return CmpCode;
+	std::sort(IndexData.begin(), IndexData.end(), less);
+	NeedRebuild = false;
 }
 
 int _cdecl SortDizSearch(const void *key, const void *elem)
@@ -313,7 +278,7 @@ int _cdecl SortDizSearch(const void *key, const void *elem)
 	const DizRecord &Rec = SearchDizData[*(int *)elem];
 
 	const wchar_t *DizName = Rec.DizText + Rec.NameStart;
-	int CmpCode = StrCmpNI(searchKey.Str, DizName, Min(Rec.NameLength, searchKey.Len));
+	int CmpCode = StrCmpN(searchKey.Str, DizName, Min(Rec.NameLength, searchKey.Len));
 
 	if (!CmpCode) {
 		if (searchKey.Len > Rec.NameLength)

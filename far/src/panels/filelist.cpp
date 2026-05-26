@@ -4206,7 +4206,7 @@ void FileList::DescribeFiles()
 	while (GetSelNameCompat(&strSelName, FileAttr)) {
 		FARString strDizText, strMsg, strQuotedName;
 		const wchar_t *PrevText;
-		PrevText = Diz.GetDizTextAddr(strSelName, GetLastSelectedSize());
+		PrevText = Diz.GetDizTextAddr(strSelName);
 		strQuotedName = strSelName;
 		QuoteSpaceOnly(strQuotedName);
 		strMsg.Append(Msg::EnterDescription).Append(L" ").Append(strQuotedName).Append(L":");
