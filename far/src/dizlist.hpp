@@ -41,14 +41,6 @@ struct DizRecord
 	int NameStart;
 	int NameLength;
 	bool Deleted;
-
-	// Default the move operations
-	DizRecord(DizRecord&&) noexcept = default;
-	DizRecord& operator=(DizRecord&&) noexcept = default;
-
-	// Delete the copy operations to guarantee NO copying happens
-	DizRecord(const DizRecord&) = delete;
-	DizRecord& operator=(const DizRecord&) = delete;
 };
 
 class DizList
@@ -56,6 +48,7 @@ class DizList
 	private:
 		FARString strDizFileName;
 		std::vector<DizRecord> DizData;
+		std::vector<int> IndexData;
 		bool Modified;
 		bool NeedRebuild;
 		UINT OrigCodePage;
@@ -64,6 +57,7 @@ class DizList
 		int GetDizPos(const wchar_t *Name, int *TextPos);
 		int GetDizPosEx(const wchar_t *Name, int *TextPos);
 		bool AddRecord(const wchar_t *DizText);
+		void BuildIndex();
 
 	public:
 		DizList();
