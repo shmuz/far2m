@@ -210,7 +210,7 @@ int DizList::GetDizPosEx(const wchar_t *Name, int *TextPos)
 			return -1;
 
 		FARString strRecoded(AnsiBuf.data(), OrigCodePage);
-		return (strRecoded == Name) ? - 1 : GetDizPos(strRecoded, TextPos);
+		return (strRecoded == Name) ? -1 : GetDizPos(strRecoded, TextPos);
 	}
 
 	return DizPos;
