@@ -54,10 +54,6 @@ DizList::DizList()
 	OrigCodePage(CP_AUTODETECT)
 {}
 
-DizList::~DizList()
-{
-}
-
 void DizList::Reset()
 {
 	DizData.clear();
@@ -230,8 +226,8 @@ int DizList::GetDizPos(const wchar_t *Name, int *TextPos)
 		.Deleted = false
 	};
 
-	auto less = [&] (const int &a, const DizRecord &Key) {
-		return DizCompare(DizData[a], Key);
+	auto less = [&] (int Index, const DizRecord &Key) {
+		return DizCompare(DizData[Index], Key);
 	};
 
 	auto It = std::lower_bound(IndexData.begin(), IndexData.end(), Key, less);
@@ -263,7 +259,7 @@ void DizList::BuildIndex()
 
 	for (size_t I = 0; I < DizData.size(); I++) {
 		if (!DizData[I].Deleted)
-			IndexData.push_back(I);
+			IndexData.push_back((int)I);
 	}
 
 	auto less = [&] (int a, int b) {

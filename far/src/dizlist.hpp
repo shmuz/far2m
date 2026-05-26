@@ -61,7 +61,7 @@ class DizList
 
 	public:
 		DizList();
-		~DizList();
+		~DizList() = default;
 
 	public:
 		void Read(const wchar_t *Path, const wchar_t *DizName=nullptr);
