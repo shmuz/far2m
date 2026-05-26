@@ -47,14 +47,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "codepage.hpp"
 #include "cache.hpp"
 
-static const DizRecord *SearchDizData;
-static int _cdecl SortDizSearch(const void *key, const void *elem);
-struct DizSearchKey
-{
-	const wchar_t *Str;
-	const int Len;
-};
-
 DizList::DizList()
 	:
 	Modified(false),
@@ -216,6 +208,22 @@ int DizList::GetDizPosEx(const wchar_t *Name, int *TextPos)
 	return DizPos;
 }
 
+static bool DizCompare(const DizRecord& Rec1, const DizRecord& Rec2)
+{
+	const wchar_t *Diz1 = Rec1.DizText + Rec1.NameStart;
+	const wchar_t *Diz2 = Rec2.DizText + Rec2.NameStart;
+	int CmpCode = StrCmpN(Diz1, Diz2, Min(Rec1.NameLength, Rec2.NameLength));
+
+	if (CmpCode != 0)
+		return CmpCode < 0;
+
+	if (Rec1.NameLength != Rec2.NameLength)
+		return Rec1.NameLength < Rec2.NameLength;
+
+	// for equal names, deleted is bigger
+	return !Rec1.Deleted && Rec2.Deleted;
+}
+
 int DizList::GetDizPos(const wchar_t *Name, int *TextPos)
 {
 	if (DizData.empty() || !*Name)
@@ -224,20 +232,35 @@ int DizList::GetDizPos(const wchar_t *Name, int *TextPos)
 	if (NeedRebuild)
 		BuildIndex();
 
-	SearchDizData = DizData.data();
-	DizSearchKey Key = {Name, StrLength(Name)};
-	int *DestIndex = (int *)bsearch(&Key, IndexData.data(), IndexData.size(), sizeof(int), SortDizSearch);
+	const DizRecord Key {
+		.DizText = Name,
+		.NameStart = 0,
+		.NameLength = StrLength(Name),
+		.Deleted = false
+	};
 
-	if (DestIndex) {
-		if (TextPos) {
-			const auto &Rec = DizData[*DestIndex];
-			*TextPos = Rec.NameStart + Rec.NameLength;
+	auto less = [&] (const int &a, const DizRecord &Key)
+	{
+		return DizCompare(DizData[a], Key);
+	};
 
-			if (Rec.NameStart && Rec.DizText[*TextPos] == L'\"')
-				(*TextPos)++;
+	auto It = std::lower_bound(IndexData.begin(), IndexData.end(), Key, less);
+	if (It != IndexData.end())
+	{
+		const auto &Rec = DizData[*It];
+
+		// we got >=, ensure that it is actually ==
+		bool Equal = !Rec.Deleted && Rec.NameLength == Key.NameLength
+				&& !StrCmpN(Rec.DizText + Rec.NameStart, Key.DizText, Key.NameLength);
+		if (Equal) {
+			if (TextPos) {
+				*TextPos = Rec.NameStart + Rec.NameLength;
+				if (Rec.NameStart && Rec.DizText[*TextPos] == L'\"')
+					(*TextPos)++;
+			}
+
+			return *It;
 		}
-
-		return *DestIndex;
 	}
 
 	return -1;
@@ -252,52 +275,11 @@ void DizList::BuildIndex()
 
 	auto less = [&] (int a, int b)
 	{
-		const DizRecord& Rec1 = DizData[a];
-		const DizRecord& Rec2 = DizData[b];
-		const wchar_t *Diz1 = Rec1.DizText + Rec1.NameStart;
-		const wchar_t *Diz2 = Rec2.DizText + Rec2.NameStart;
-		int CmpCode = StrCmpN(Diz1, Diz2, Min(Rec1.NameLength, Rec2.NameLength));
-
-		if (CmpCode != 0)
-			return CmpCode < 0;
-
-		if (Rec1.NameLength != Rec2.NameLength)
-			return Rec1.NameLength < Rec2.NameLength;
-
-		// for equal names, deleted is bigger
-		return !Rec1.Deleted && Rec2.Deleted;
+		return DizCompare(DizData[a], DizData[b]);
 	};
 
 	std::sort(IndexData.begin(), IndexData.end(), less);
 	NeedRebuild = false;
-}
-
-int _cdecl SortDizSearch(const void *key, const void *elem)
-{
-	const DizSearchKey &searchKey = *(DizSearchKey *)key;
-	const DizRecord &Rec = SearchDizData[*(int *)elem];
-
-	const wchar_t *DizName = Rec.DizText + Rec.NameStart;
-	int CmpCode = StrCmpN(searchKey.Str, DizName, Min(Rec.NameLength, searchKey.Len));
-
-	if (!CmpCode) {
-		if (searchKey.Len > Rec.NameLength)
-			return 1;
-
-		if (searchKey.Len + 1 < Rec.NameLength)
-			return -1;
-
-		// filename == filename.
-		if (searchKey.Len + 1 == Rec.NameLength
-				&& !(DizName[searchKey.Len] == L'.' && wcschr(DizName, L'.') == &DizName[searchKey.Len]))
-			return -1;
-
-		// for equal names, deleted is bigger so deleted items are never matched
-		if (Rec.Deleted)
-			return -1;
-	}
-
-	return CmpCode;
 }
 
 bool DizList::DeleteDiz(const wchar_t *Name)
