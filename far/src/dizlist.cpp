@@ -203,12 +203,15 @@ int DizList::GetDizPosEx(const wchar_t *Name, int *TextPos)
 	return DizPos;
 }
 
-static bool DizCompare(const DizRecord& Rec1, const DizRecord& Rec2)
+static int DizCompare(const DizRecord& Rec1, const DizRecord& Rec2)
 {
 	const wchar_t *Diz1 = Rec1.DizText + Rec1.NameStart;
 	const wchar_t *Diz2 = Rec2.DizText + Rec2.NameStart;
 	int CmpCode = StrCmpN(Diz1, Diz2, Min(Rec1.NameLength, Rec2.NameLength));
-	return (CmpCode != 0) ? (CmpCode < 0) : (Rec1.NameLength < Rec2.NameLength);
+	if (CmpCode != 0) return CmpCode;
+	if (Rec1.NameLength < Rec2.NameLength) return -1;
+	if (Rec1.NameLength > Rec2.NameLength) return 1;
+	return 0;
 }
 
 int DizList::GetDizPos(const wchar_t *Name, int *TextPos)
@@ -227,24 +230,20 @@ int DizList::GetDizPos(const wchar_t *Name, int *TextPos)
 	};
 
 	auto less = [&] (int Index, const DizRecord &Key) {
-		return DizCompare(DizData[Index], Key);
+		return DizCompare(DizData[Index], Key) < 0;
 	};
 
 	auto It = std::lower_bound(IndexData.begin(), IndexData.end(), Key, less);
 	if (It != IndexData.end())
 	{
-		const auto &Rec = DizData[*It];
-
 		// we got >=, ensure that it is actually ==
-		bool Equal = Rec.NameLength == Key.NameLength
-				&& !StrCmpN(Rec.DizText + Rec.NameStart, Key.DizText, Key.NameLength);
-		if (Equal) {
+		const auto &Rec = DizData[*It];
+		if (DizCompare(Rec, Key) == 0) {
 			if (TextPos) {
 				*TextPos = Rec.NameStart + Rec.NameLength;
 				if (Rec.NameStart && Rec.DizText[*TextPos] == L'\"')
 					(*TextPos)++;
 			}
-
 			return *It;
 		}
 	}
@@ -259,11 +258,11 @@ void DizList::BuildIndex()
 
 	for (size_t I = 0; I < DizData.size(); I++) {
 		if (!DizData[I].Deleted)
-			IndexData.push_back((int)I);
+			IndexData.push_back(static_cast<int>(I));
 	}
 
 	auto less = [&] (int a, int b) {
-		return DizCompare(DizData[a], DizData[b]);
+		return DizCompare(DizData[a], DizData[b]) < 0;
 	};
 
 	std::sort(IndexData.begin(), IndexData.end(), less);
