@@ -56,7 +56,6 @@ DizList::DizList()
 
 DizList::~DizList()
 {
-	Reset();
 }
 
 void DizList::Reset()
@@ -213,15 +212,7 @@ static bool DizCompare(const DizRecord& Rec1, const DizRecord& Rec2)
 	const wchar_t *Diz1 = Rec1.DizText + Rec1.NameStart;
 	const wchar_t *Diz2 = Rec2.DizText + Rec2.NameStart;
 	int CmpCode = StrCmpN(Diz1, Diz2, Min(Rec1.NameLength, Rec2.NameLength));
-
-	if (CmpCode != 0)
-		return CmpCode < 0;
-
-	if (Rec1.NameLength != Rec2.NameLength)
-		return Rec1.NameLength < Rec2.NameLength;
-
-	// for equal names, deleted is bigger
-	return !Rec1.Deleted && Rec2.Deleted;
+	return (CmpCode != 0) ? (CmpCode < 0) : (Rec1.NameLength < Rec2.NameLength);
 }
 
 int DizList::GetDizPos(const wchar_t *Name, int *TextPos)
@@ -239,8 +230,7 @@ int DizList::GetDizPos(const wchar_t *Name, int *TextPos)
 		.Deleted = false
 	};
 
-	auto less = [&] (const int &a, const DizRecord &Key)
-	{
+	auto less = [&] (const int &a, const DizRecord &Key) {
 		return DizCompare(DizData[a], Key);
 	};
 
@@ -250,7 +240,7 @@ int DizList::GetDizPos(const wchar_t *Name, int *TextPos)
 		const auto &Rec = DizData[*It];
 
 		// we got >=, ensure that it is actually ==
-		bool Equal = !Rec.Deleted && Rec.NameLength == Key.NameLength
+		bool Equal = Rec.NameLength == Key.NameLength
 				&& !StrCmpN(Rec.DizText + Rec.NameStart, Key.DizText, Key.NameLength);
 		if (Equal) {
 			if (TextPos) {
@@ -268,13 +258,15 @@ int DizList::GetDizPos(const wchar_t *Name, int *TextPos)
 
 void DizList::BuildIndex()
 {
-	IndexData.resize(DizData.size());
+	IndexData.clear();
+	IndexData.reserve(DizData.size());
 
-	for (size_t I = 0; I < IndexData.size(); I++)
-		IndexData[I] = I;
+	for (size_t I = 0; I < DizData.size(); I++) {
+		if (!DizData[I].Deleted)
+			IndexData.push_back(I);
+	}
 
-	auto less = [&] (int a, int b)
-	{
+	auto less = [&] (int a, int b) {
 		return DizCompare(DizData[a], DizData[b]);
 	};
 
