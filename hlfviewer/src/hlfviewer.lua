@@ -2,7 +2,6 @@
 
 local M    = require "hv_message"
 local Sett = require "far2.settings"
-local sd   = require "far2.simpledialog"
 local SETTINGS_KEY  = nil
 local SETTINGS_NAME = "settings"
 
@@ -322,6 +321,7 @@ function export.ProcessEditorInput (Rec)
 end
 
 function export.Configure()
+  local sd = require "far2.simpledialog"
   local X1 = math.max(M.MProcessEditorInput:len(), M.MCheckMaskFile:len()) + 10
   local Items = {
     guid="7A3A74E8-505E-482B-A7F3-2ECE6AC41650";
