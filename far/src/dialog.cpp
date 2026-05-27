@@ -5864,7 +5864,7 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 								did->PtrData[Len] = 0;
 							}
 						}
-						break;
+						return Len;
 
 					case DI_COMBOBOX:
 					case DI_EDIT:

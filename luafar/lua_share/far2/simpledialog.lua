@@ -6,8 +6,8 @@
 
 local F         = far.Flags
 local DirSep    = package.config:sub(1,1)
-local OpSys     = DirSep=="/" and "linux" or "windows"
-local FarVer    = F.ACTL_GETFARMANAGERVERSION and 3 or 2
+local OsWin     = DirSep == "\\"
+local FarVer    = F.ACTL_GETFARMANAGERVERSION and 3 or 2 -- luacheck:ignore
 local band, bor = bit64.band, bit64.bor
 local Send      = far.SendDlgMessage
 local Colors    = far.Colors
@@ -33,7 +33,7 @@ end
 -- @return         : output text (or nil)
 function mod.OpenInEditor(text, ext)
   local tempdir
-  if OpSys == "windows" then
+  if OsWin then
     tempdir = win.GetEnv("TEMP")
     if not tempdir then
       far.Message("Environment variable TEMP is not set", "Error", nil, "w")
@@ -135,7 +135,7 @@ function mod:GetDialogState(hDlg)
           local val = item[IND_SELECTED]
           out[elem.name] = (val ~= 0) -- false,true
 
-        elseif tp==F.DI_EDIT or tp==F.DI_FIXEDIT or tp==F.DI_PSWEDIT then
+        elseif tp==F.DI_EDIT or tp==F.DI_FIXEDIT or tp==F.DI_PSWEDIT or tp==F.DI_MEMOEDIT then
           out[elem.name] = item[IND_DATA] -- string
 
         elseif tp==F.DI_COMBOBOX or tp==F.DI_LISTBOX then
@@ -166,7 +166,7 @@ function mod:SetDialogState(hDlg, Data)
             Send(hDlg, "DM_SETCHECK", pos, 1)
           end
 
-        elseif tp=="edit" or tp=="fixedit" or tp=="pswedit" then
+        elseif tp=="edit" or tp=="fixedit" or tp=="pswedit" or tp=="memo" then
           Send(hDlg, "DM_SETTEXT", pos, val or "")
 
         elseif tp=="combobox" or tp=="listbox" then
@@ -261,11 +261,11 @@ if (FarVer == 2) then
     FlagsMap.colormask             = F.DIF_COLORMASK
     FlagsMap.setcolor              = F.DIF_SETCOLOR
 else
-    FlagsMap.editpathexec          = F.DIF_EDITPATHEXEC
-    FlagsMap.listtrackmouse        = F.DIF_LISTTRACKMOUSE
-    FlagsMap.listtrackmouseinfocus = F.DIF_LISTTRACKMOUSEINFOCUS
-    FlagsMap.righttext             = F.DIF_RIGHTTEXT
-    FlagsMap.wordwrap              = F.DIF_WORDWRAP
+    FlagsMap.editpathexec          = F.DIF_EDITPATHEXEC           -- luacheck:ignore
+    FlagsMap.listtrackmouse        = F.DIF_LISTTRACKMOUSE         -- luacheck:ignore
+    FlagsMap.listtrackmouseinfocus = F.DIF_LISTTRACKMOUSEINFOCUS  -- luacheck:ignore
+    FlagsMap.righttext             = F.DIF_RIGHTTEXT              -- luacheck:ignore
+    FlagsMap.wordwrap              = F.DIF_WORDWRAP               -- luacheck:ignore
 end
 
 ---- Replacement for far.Dialog() with much cleaner syntax of dialog description.
