@@ -2,11 +2,12 @@
 -- Started for far2m:       2022-01-23
 -- Author:                  Shmuel Zeigerman
 -- Far3 minimal version:    3.0.3300
--- Far3 plugin:             any LuaFAR plugin
+-- Plugin:                  any LuaFAR plugin
 
 local F         = far.Flags
 local DirSep    = package.config:sub(1,1)
 local OsWin     = DirSep == "\\"
+local OsLin     = not OsWin
 local FarVer    = F.ACTL_GETFARMANAGERVERSION and 3 or 2 -- luacheck:ignore
 local band, bor = bit64.band, bit64.bor
 local Send      = far.SendDlgMessage
@@ -40,7 +41,7 @@ function mod.OpenInEditor(text, ext)
       return nil
     end
   else
-    tempdir = far.InMyTemp()
+    tempdir = far.InMyTemp() -- luacheck:ignore
   end
   if tempdir:sub(-1) ~= DirSep then tempdir = tempdir..DirSep end
 
@@ -135,7 +136,7 @@ function mod:GetDialogState(hDlg)
           local val = item[IND_SELECTED]
           out[elem.name] = (val ~= 0) -- false,true
 
-        elseif tp==F.DI_EDIT or tp==F.DI_FIXEDIT or tp==F.DI_PSWEDIT or tp==F.DI_MEMOEDIT then
+        elseif tp==F.DI_EDIT or tp==F.DI_FIXEDIT or tp==F.DI_PSWEDIT or (OsLin and tp==F.DI_MEMOEDIT) then
           out[elem.name] = item[IND_DATA] -- string
 
         elseif tp==F.DI_COMBOBOX or tp==F.DI_LISTBOX then
@@ -166,7 +167,7 @@ function mod:SetDialogState(hDlg, Data)
             Send(hDlg, "DM_SETCHECK", pos, 1)
           end
 
-        elseif tp=="edit" or tp=="fixedit" or tp=="pswedit" or tp=="memo" then
+        elseif tp=="edit" or tp=="fixedit" or tp=="pswedit" or (OsLin and tp=="memo") then
           Send(hDlg, "DM_SETTEXT", pos, val or "")
 
         elseif tp=="combobox" or tp=="listbox" then
@@ -212,7 +213,7 @@ local TypeMap = {
     edit           =  F.DI_EDIT;
     fixedit        =  F.DI_FIXEDIT;
     listbox        =  F.DI_LISTBOX;
-    memo           =  F.DI_MEMOEDIT;
+    memo           =  OsLin and F.DI_MEMOEDIT or nil; -- luacheck:ignore
     pswedit        =  F.DI_PSWEDIT;
     rbutt          =  F.DI_RADIOBUTTON;
     sbox           =  F.DI_SINGLEBOX;
@@ -258,8 +259,8 @@ local FlagsMap = {
     uselasthistory         = F.DIF_USELASTHISTORY;
 }
 if (FarVer == 2) then
-    FlagsMap.colormask             = F.DIF_COLORMASK
-    FlagsMap.setcolor              = F.DIF_SETCOLOR
+    FlagsMap.colormask             = F.DIF_COLORMASK              -- luacheck:ignore
+    FlagsMap.setcolor              = F.DIF_SETCOLOR               -- luacheck:ignore
 else
     FlagsMap.editpathexec          = F.DIF_EDITPATHEXEC           -- luacheck:ignore
     FlagsMap.listtrackmouse        = F.DIF_LISTTRACKMOUSE         -- luacheck:ignore
@@ -383,7 +384,7 @@ function mod:Compile()
     elseif tp == F.DI_TEXT then
       outData[i] = MkItem()
 
-    elseif tp == F.DI_MEMOEDIT then
+    elseif OsLin and tp == F.DI_MEMOEDIT then -- luacheck:ignore
       outData[i] = MkItem()
 
     elseif tp == F.DI_VTEXT then
