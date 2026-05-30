@@ -1899,7 +1899,7 @@ void Dialog::ShowDialog(int ID)
 				/* ***************************************************************** */
 			case DI_SINGLEBOX:
 			case DI_DOUBLEBOX: {
-				BOOL IsDrawTitle = TRUE;
+				bool IsDrawTitle = true;
 				GotoXY(X1 + CX1, Y1 + CY1);
 //				SetColorFrame(Attr, CurItem->TrueColors);
 				SetColor(ItemColor[2]);
@@ -1908,7 +1908,7 @@ void Dialog::ShowDialog(int ID)
 					DrawLine(CX2 - CX1 + 1, CurItem->Type == DI_SINGLEBOX ? 8 : 9);		//???
 				} else if (CX1 == CX2) {
 					DrawLine(CY2 - CY1 + 1, CurItem->Type == DI_SINGLEBOX ? 10 : 11);
-					IsDrawTitle = FALSE;
+					IsDrawTitle = false;
 				} else {
 					Box(X1 + CX1, Y1 + CY1, X1 + CX2, Y1 + CY2, ItemColor[2],
 							(CurItem->Type == DI_SINGLEBOX) ? SINGLE_BOX : DOUBLE_BOX);

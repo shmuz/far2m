@@ -749,7 +749,7 @@ bool Panel::MakeListFile(FARString &strListFileName,const wchar_t *Modifers)
 					}
 				}
 
-				BOOL Written=ListFile.Write(Ptr,NumberOfBytesToWrite,&NumberOfBytesWritten);
+				bool Written = ListFile.Write(Ptr,NumberOfBytesToWrite,&NumberOfBytesWritten);
 
 				if (Buffer)
 					free(Buffer);

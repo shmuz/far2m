@@ -63,7 +63,7 @@ void ShowTime(int ShowAlways);
 */
 void InitConsole();
 void CloseConsole();
-void SetFarConsoleMode(BOOL SetsActiveBuffer = FALSE);
+void SetFarConsoleMode(bool SetsActiveBuffer = false);
 void ChangeConsoleMode(int Mode);
 void FlushInputBuffer();
 void ToggleVideoMode();

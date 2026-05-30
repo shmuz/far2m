@@ -283,7 +283,7 @@ public:
 			CtrlObject->CmdLine->SaveBackground();
 		}
 		ProcessShowClock--;
-		SetFarConsoleMode(TRUE);
+		SetFarConsoleMode(true);
 		ScrBuf.Flush();
 		if (CtrlObject && CtrlObject->MainKeyBar) {
 			CtrlObject->MainKeyBar->Refresh(Opt.ShowKeyBar, true);

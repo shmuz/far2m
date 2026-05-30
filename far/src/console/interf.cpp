@@ -136,7 +136,7 @@ void CloseConsole()
 	KeyQueue = nullptr;
 }
 
-void SetFarConsoleMode(BOOL SetsActiveBuffer)
+void SetFarConsoleMode(bool SetsActiveBuffer)
 {
 	int Mode = ENABLE_WINDOW_INPUT;
 

@@ -1330,11 +1330,10 @@ LONG_PTR WINAPI CopyDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 				 показывался корневой каталог, теперь показывается самый первый каталог
 				 в списке.
 			*/
-			BOOL MultiCopy = SendDlgMessage(hDlg, DM_GETCHECK, ID_SC_MULTITARGET, 0) == BSTATE_CHECKED;
+			bool MultiCopy = SendDlgMessage(hDlg, DM_GETCHECK, ID_SC_MULTITARGET, 0) == BSTATE_CHECKED;
 			FARString strOldFolder;
-			int nLength;
 			FarDialogItemData Data;
-			nLength = (int)SendDlgMessage(hDlg, DM_GETTEXTLENGTH, ID_SC_TARGETEDIT, 0);
+			int nLength = (int)SendDlgMessage(hDlg, DM_GETTEXTLENGTH, ID_SC_TARGETEDIT, 0);
 			Data.PtrData = strOldFolder.GetBuffer(nLength + 1);
 			Data.PtrLength = nLength;
 			SendDlgMessage(hDlg, DM_GETTEXT, ID_SC_TARGETEDIT, (LONG_PTR)&Data);
@@ -3139,41 +3138,6 @@ int ShellCopy::AskOverwrite(const FAR_FIND_DATA_EX &SrcData, const wchar_t *SrcN
 			apiMakeWritable(DestName);
 	}
 
-	return TRUE;
-}
-
-BOOL ShellCopySecuryMsg(const wchar_t *Name)
-{
-	static clock_t PrepareSecuryStartTime;
-
-	if (!Name || !*Name
-			|| (static_cast<DWORD>(GetProcessUptimeMSec() - PrepareSecuryStartTime)
-					> Opt.ShowTimeoutDACLFiles)) {
-		static int Width = 30;
-		int WidthTemp;
-		if (Name && *Name) {
-			PrepareSecuryStartTime = GetProcessUptimeMSec();    // Первый файл рисуется всегда
-			WidthTemp = Max(StrLength(Name), 30);
-		} else
-			Width = WidthTemp = 30;
-
-		// ширина месага - 38%
-		WidthTemp = Min(WidthTemp, WidthNameForMessage);
-		Width = Max(Width, WidthTemp);
-
-		FARString strOutFileName = Name;    //??? nullptr ???
-		TruncPathStr(strOutFileName, Width);
-		CenterStr(strOutFileName, strOutFileName, Width + 4);
-		Message(0, 0, Msg::MoveDlgTitle, Msg::CopyPrepareSecury, strOutFileName);
-
-		if (CP->Cancelled()) {
-			return FALSE;
-		}
-	}
-
-	PreRedrawItem preRedrawItem = PreRedraw.Peek();
-	preRedrawItem.Param.Param1 = Name;
-	PreRedraw.SetParam(preRedrawItem.Param);
 	return TRUE;
 }
 

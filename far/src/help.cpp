@@ -97,7 +97,7 @@ class CallBackStack
 
 	public:
 		void ClearStack();
-		BOOL isEmpty() const {return !topOfStack;}
+		bool isEmpty() const {return !topOfStack;}
 
 		void Push(const StackHelpData *Data);
 		int Pop(StackHelpData *Data=nullptr);
@@ -1655,14 +1655,14 @@ int Help::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 }
 
 
-int Help::IsReferencePresent()
+bool Help::IsReferencePresent()
 {
 	CorrectPosition();
 	int StrPos=FixCount+StackData.TopStr+StackData.CurY;
 
 	if (StrPos >= StrCount)
 	{
-		return FALSE;
+		return false;
 	}
 
 	const HelpRecord *rec=GetHelpItem(StrPos);
@@ -1683,7 +1683,7 @@ void Help::MoveToReference(int Forward,int CurScreen)
 	int SaveCurX=StackData.CurX;
 	int SaveCurY=StackData.CurY;
 	int SaveTopStr=StackData.TopStr;
-	BOOL ReferencePresent;
+	bool ReferencePresent;
 	StackData.strSelTopic.Clear();
 	Lock();
 
@@ -2042,7 +2042,7 @@ void Help::OnChangeFocus(int Focus)
 void Help::ResizeConsole()
 {
 	auto OldIsNewTopic = IsNewTopic;
-	BOOL ErrCannotOpenHelp = ScreenObject::Flags.Check(FHELPOBJ_ERRCANNOTOPENHELP);
+	bool ErrCannotOpenHelp = ScreenObject::Flags.Check(FHELPOBJ_ERRCANNOTOPENHELP);
 	ScreenObject::Flags.Set(FHELPOBJ_ERRCANNOTOPENHELP);
 	IsNewTopic = false;
 	delete TopScreen;

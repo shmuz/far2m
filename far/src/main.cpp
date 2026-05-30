@@ -502,7 +502,7 @@ int FarAppMain(int argc, char **argv)
 
 		if (!switchHandled) // простые параметры. Их может быть max две штукА.
 		{
-			if (CntDestName < 2)
+			if (CntDestName < 2 && *arg_w)
 			{
 				if (IsPluginPrefixPath(arg_w)) {
 					DestNames[CntDestName++] = arg_w;
@@ -603,14 +603,14 @@ static int libexec(const char *lib, const char *cd, const char *symbol, int argc
 {
 	void *dl = dlopen(lib, RTLD_LOCAL|RTLD_LAZY);
 	if (!dl) {
-		fprintf(stderr, "libexec('%s', '%s', %d) - dlopen error %d\n", lib, symbol, argc, errno);
+		fprintf(stderr, "libexec('%s', '%s', %d) - %s\n", lib, symbol, argc, dlerror());
 		return -1;
 	}
 
 	typedef int (*libexec_main_t)(int argc, char *argv[]);
 	libexec_main_t libexec_main = (libexec_main_t)dlsym(dl, symbol);
 	if (!libexec_main) {
-		fprintf(stderr, "libexec('%s', '%s', %d) - dlsym error %d\n", lib, symbol, argc, errno);
+		fprintf(stderr, "libexec('%s', '%s', %d) - %s\n", lib, symbol, argc, dlerror());
 		return -1;
 	}
 
@@ -650,9 +650,9 @@ static void SetCustomSettings(const char *arg)
 
 int _cdecl main(int argc, char *argv[])
 {
-	auto RemoveArgs = [&] (int pos, int count) {
-		argc -= count;
-		memmove(argv+pos, argv+pos+count, (argc+1-pos)*sizeof(char*));
+	auto ClearArg = [&] (int pos) {
+		static char ZeroChar = 0;
+	  argv[pos] = &ZeroChar;
 	};
 
 	Opt.OnlyEditorViewerUsed = Options::INCLUDING_PANELS;
@@ -665,7 +665,7 @@ int _cdecl main(int argc, char *argv[])
 			for (int I = 1; I < argc; I++) {
 				if (strstr(argv[I], "--") != argv[I]) {
 					Opt.strEditViewArg = argv[I];
-					RemoveArgs(I, 1);
+					ClearArg(I);
 					break;
 				}
 			}
@@ -695,18 +695,14 @@ int _cdecl main(int argc, char *argv[])
 	}
 
 	// Custom settings
-	for (int i = 1; i < argc; ) {
+	for (int i = 1; i < argc; ++i) {
 		if (!strcasecmp(argv[i], "-u")) {
-			if (i < argc - 1) {
-				SetCustomSettings(argv[i+1]);
-				RemoveArgs(i, 2);
-			}
-			else {
-				RemoveArgs(i, 1);
+			ClearArg(i);
+			if (++i < argc) {
+				SetCustomSettings(argv[i]);
+				ClearArg(i);
 			}
 		}
-		else
-			++i;
 	}
 
 	setlocale(LC_ALL, "");//otherwise non-latin keys missing with XIM input method

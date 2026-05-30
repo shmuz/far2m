@@ -151,7 +151,7 @@ class Help:public Frame
 		void OutString(const wchar_t *Str);
 		int  StringLen(const wchar_t *Str);
 		void CorrectPosition();
-		int  IsReferencePresent();
+		bool IsReferencePresent();
 		void MoveToReference(int Forward,int CurScreen);
 		void ReadDocumentsHelp(int TypeIndex);
 		void Search(FILE *HelpFile,uintptr_t nCodePage);

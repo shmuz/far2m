@@ -500,7 +500,7 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 		ScrBuf.FillBuf();
 		CtrlObject->CmdLine->SaveBackground();
 
-		SetFarConsoleMode(TRUE);
+		SetFarConsoleMode(true);
 		if (kind == CLK_EDIT)
 			EditConsoleHistory(NULL, true);
 		else
