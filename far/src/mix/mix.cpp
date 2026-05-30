@@ -93,7 +93,7 @@ FarRecursiveSearch(const wchar_t *InitDir, const wchar_t *Mask, FRSUSERFUNC Func
 			return;
 
 		bool CaseSensMask = (Flags & FRS_CASESENSMASK) != 0;
-		ScanTree ScTree(Flags & FRS_RETUPDIR, Flags & FRS_RECUR, Flags & FRS_SCANSYMLINK);
+		ScanTree ScTree((Flags & FRS_RETUPDIR) != 0, (Flags & FRS_RECUR) != 0, Flags & FRS_SCANSYMLINK);
 		FAR_FIND_DATA_EX FindData;
 		FARString strFullName;
 		ScTree.SetFindPath(InitDir, L"*");
@@ -123,7 +123,7 @@ FarRecursiveSearch(const wchar_t *InitDir, const wchar_t *Mask, FRSUSERFUNC Func
 int WINAPI FarMkTemp(wchar_t *Dest, DWORD size, const wchar_t *Prefix)
 {
 	FARString strDest;
-	if (FarMkTempEx(strDest, Prefix, TRUE) && Dest && size) {
+	if (FarMkTempEx(strDest, Prefix, true) && Dest && size) {
 		far_wcsncpy(Dest, strDest, size);
 	}
 	return static_cast<int>(strDest.GetLength() + 1);
@@ -138,7 +138,7 @@ int WINAPI FarMkTemp(wchar_t *Dest, DWORD size, const wchar_t *Prefix)
 		+---------- [0A-Z]
 */
 FARString &
-FarMkTempEx(FARString &strDest, const wchar_t *Prefix, BOOL WithTempPath, const wchar_t *UserTempPath)
+FarMkTempEx(FARString &strDest, const wchar_t *Prefix, bool WithTempPath, const wchar_t *UserTempPath)
 {
 	FARString strPath = L".";
 	if (WithTempPath) {

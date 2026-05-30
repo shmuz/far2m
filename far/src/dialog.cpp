@@ -1037,7 +1037,7 @@ unsigned Dialog::InitDialogObjects(unsigned ID)
 	}
 
 	// если будет редактор, то обязательно будет выделен.
-	SelectOnEntry(FocusPos, TRUE);
+	SelectOnEntry(FocusPos, true);
 	// все объекты созданы!
 	DialogMode.Set(DMODE_CREATEOBJECTS);
 	return FocusPos;
@@ -1097,7 +1097,7 @@ static int ToRange(int Val, int Min, int Max)
 }
 
 // Изменение координат и/или размеров итема диалога.
-BOOL Dialog::SetItemRect(unsigned ID, SMALL_RECT *aRect)
+bool Dialog::SetItemRect(unsigned ID, SMALL_RECT *aRect)
 {
 	CriticalSectionLock Lock(CS);
 
@@ -1151,12 +1151,12 @@ BOOL Dialog::SetItemRect(unsigned ID, SMALL_RECT *aRect)
 	return TRUE;
 }
 
-BOOL Dialog::GetItemRect(unsigned I, SMALL_RECT &Rect)
+bool Dialog::GetItemRect(unsigned I, SMALL_RECT &Rect)
 {
 	CriticalSectionLock Lock(CS);
 
 	if (I >= ItemCount)
-		return FALSE;
+		return false;
 
 	DialogItemEx *CurItem = Item[I];
 	DWORD ItemFlags = CurItem->Flags;
@@ -1255,7 +1255,7 @@ BOOL Dialog::GetItemRect(unsigned I, SMALL_RECT &Rect)
 			break;
 	}
 
-	return TRUE;
+	return true;
 }
 
 bool Dialog::ItemHasDropDownArrow(const DialogItemEx *Item)
@@ -2374,7 +2374,7 @@ int Dialog::LenStrItem(int ID, const wchar_t *lpwszStr)
 	return (Item[ID]->Flags & DIF_SHOWAMPERSAND) ? StrZCellsCount(lpwszStr) : HiStrCellsCount(lpwszStr);
 }
 
-int Dialog::ProcessMoveDialog(DWORD Key)
+bool Dialog::ProcessMoveDialog(DWORD Key)
 {
 	CriticalSectionLock Lock(CS);
 
@@ -2521,7 +2521,7 @@ int Dialog::ProcessMoveDialog(DWORD Key)
 			Show();
 		}
 
-		return (TRUE);
+		return true;
 	}
 
 	if (Key == KEY_CTRLF5 && DialogMode.Check(DMODE_ISCANMOVE)) {
@@ -2895,7 +2895,7 @@ int Dialog::ProcessKey(FarKey Key)
 
 				if (EditorLastPos > FocusPos) {
 					((DlgEdit *)(Item[FocusPos]->ObjPtr))->SetCurPos(0);
-					Do_ProcessNextCtrl(FALSE, FALSE);
+					Do_ProcessNextCtrl(false, false);
 				}
 
 				ShowDialog();
@@ -3127,7 +3127,7 @@ int Dialog::ProcessKey(FarKey Key)
 										}
 									}
 
-									Do_ProcessNextCtrl(TRUE);
+									Do_ProcessNextCtrl(true);
 									edt_1->SetCurPos(CurPos);
 								}
 							} else {
@@ -3736,7 +3736,7 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 	return FALSE;
 }
 
-int Dialog::ProcessOpenComboBox(int Type, DialogItemEx *CurItem, unsigned CurFocusPos)
+bool Dialog::ProcessOpenComboBox(int Type, DialogItemEx *CurItem, unsigned CurFocusPos)
 {
 	CriticalSectionLock Lock(CS);
 	FARString strStr;
@@ -3744,7 +3744,7 @@ int Dialog::ProcessOpenComboBox(int Type, DialogItemEx *CurItem, unsigned CurFoc
 
 	// для user-типа вываливаем
 	if (Type == DI_USERCONTROL)
-		return TRUE;
+		return true;
 
 	CurEditLine = ((DlgEdit *)(CurItem->ObjPtr));
 
@@ -3761,7 +3761,7 @@ int Dialog::ProcessOpenComboBox(int Type, DialogItemEx *CurItem, unsigned CurFoc
 		SelectFromComboBox(CurItem, CurEditLine, CurItem->ListPtr);
 	}
 
-	return TRUE;
+	return true;
 }
 
 unsigned Dialog::ProcessRadioButton(unsigned CurRB)
@@ -3815,13 +3815,13 @@ unsigned Dialog::ProcessRadioButton(unsigned CurRB)
 	return CurRB;
 }
 
-int Dialog::Do_ProcessFirstCtrl()
+bool Dialog::Do_ProcessFirstCtrl()
 {
 	CriticalSectionLock Lock(CS);
 
 	if (FarIsEdit(Item[FocusPos]->Type)) {
 		((DlgEdit *)(Item[FocusPos]->ObjPtr))->ProcessKey(KEY_HOME);
-		return TRUE;
+		return true;
 	} else {
 		for (unsigned I = 0; I < ItemCount; I++)
 			if (IsItemFocusable(Item[I])) {
@@ -3831,10 +3831,10 @@ int Dialog::Do_ProcessFirstCtrl()
 			}
 	}
 
-	return TRUE;
+	return true;
 }
 
-int Dialog::Do_ProcessNextCtrl(int Up, BOOL IsRedraw)
+bool Dialog::Do_ProcessNextCtrl(bool Up, bool IsRedraw)
 {
 	CriticalSectionLock Lock(CS);
 	unsigned OldPos = FocusPos;
@@ -3858,10 +3858,10 @@ int Dialog::Do_ProcessNextCtrl(int Up, BOOL IsRedraw)
 		ShowDialog(FocusPos);
 	}
 
-	return TRUE;
+	return true;
 }
 
-int Dialog::MoveToCtrlHorizontal(int right)
+bool Dialog::MoveToCtrlHorizontal(bool right)
 {
 	int MinDist     = RealWidth,
 		LeftBorder  = 0,
@@ -3914,10 +3914,10 @@ int Dialog::MoveToCtrlHorizontal(int right)
 	}
 
 
-	return TRUE;
+	return true;
 }
 
-int Dialog::MoveToCtrlVertical(int up)
+bool Dialog::MoveToCtrlVertical(bool up)
 {
 	int MinDist      = RealHeight,
 		UpperBorder  = 0,
@@ -3969,10 +3969,10 @@ int Dialog::MoveToCtrlVertical(int up)
 		return Do_ProcessNextCtrl(up);
 	}
 
-	return TRUE;
+	return true;
 }
 
-int Dialog::Do_ProcessTab(int Next)
+bool Dialog::Do_ProcessTab(bool Next)
 {
 	CriticalSectionLock Lock(CS);
 	unsigned I;
@@ -3994,16 +3994,17 @@ int Dialog::Do_ProcessTab(int Next)
 						&& !((DlgEdit *)Item[I]->ObjPtr)->GetLength())
 					I--;
 		}
-	} else
+	}
+	else
 		I = FocusPos;
 
 	ChangeFocus2(I);
 	ShowDialog();
 
-	return TRUE;
+	return true;
 }
 
-int Dialog::Do_ProcessSpace()
+bool Dialog::Do_ProcessSpace()
 {
 	CriticalSectionLock Lock(CS);
 	int OldFocusPos;
@@ -4022,20 +4023,20 @@ int Dialog::Do_ProcessSpace()
 			Item[OldFocusPos]->Selected = OldSelected;
 
 		ShowDialog();
-		return TRUE;
+		return true;
 	} else if (Item[FocusPos]->Type == DI_RADIOBUTTON) {
 		FocusPos = ProcessRadioButton(FocusPos);
 		ShowDialog();
-		return TRUE;
+		return true;
 	} else if (FarIsEdit(Item[FocusPos]->Type) && !(Item[FocusPos]->Flags & DIF_READONLY)) {
 		if (((DlgEdit *)(Item[FocusPos]->ObjPtr))->ProcessKey(KEY_SPACE)) {
 			Redraw();	// Перерисовка должна идти после DN_EDITCHANGE (imho)
 		}
 
-		return TRUE;
+		return true;
 	}
 
-	return TRUE;
+	return true;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -4152,8 +4153,8 @@ void Dialog::ChangeFocus2(unsigned SetFocusPos)
 		if (Item[SetFocusPos]->Type == DI_LISTBOX)
 			Item[SetFocusPos]->ListPtr->SetFlags(VMENU_LISTHASFOCUS);
 
-		SelectOnEntry(FocusPos, FALSE);
-		SelectOnEntry(SetFocusPos, TRUE);
+		SelectOnEntry(FocusPos, false);
+		SelectOnEntry(SetFocusPos, true);
 
 		PrevFocusPos = FocusPos;
 		FocusPos = SetFocusPos;
@@ -4169,7 +4170,7 @@ void Dialog::ChangeFocus2(unsigned SetFocusPos)
 	Функция SelectOnEntry - выделение строки редактирования
 	Обработка флага DIF_SELECTONENTRY
 */
-void Dialog::SelectOnEntry(unsigned Pos, BOOL Selected)
+void Dialog::SelectOnEntry(unsigned Pos, bool Selected)
 {
 	// if(!DialogMode.Check(DMODE_SHOW))
 	//	return;
@@ -4183,8 +4184,6 @@ void Dialog::SelectOnEntry(unsigned Pos, BOOL Selected)
 				edt->Select(0, edt->GetLength());
 			else
 				edt->Select(-1, 0);
-
-			//_SVS(SysLog(L"Selected=%d edt->GetLength()=%d",Selected,edt->GetLength()));
 		}
 	}
 }
@@ -6505,7 +6504,7 @@ void Dialog::SetPosition(int x1, int y1, int x2, int y2)
 	ScreenObject::SetPosition(x1, y1, x2, y2);
 }
 //////////////////////////////////////////////////////////////////////////
-BOOL Dialog::IsInited()
+bool Dialog::IsInited()
 {
 	CriticalSectionLock Lock(CS);
 	return DialogMode.Check(DMODE_INITOBJECTS);

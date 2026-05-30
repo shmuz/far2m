@@ -278,7 +278,7 @@ void CheckForPendingCtrlHandleEvent()
 		return;
 	}
 
-	CloseFAR = TRUE;
+	CloseFAR = true;
 }
 
 void ShowTime(int ShowAlways)
@@ -1138,7 +1138,7 @@ int HiStrCellsCount(const wchar_t *Str)
 	return Length;
 }
 
-int HiFindRealPos(const wchar_t *Str, int Pos, BOOL ShowAmp)
+int HiFindRealPos(const wchar_t *Str, int Pos, bool ShowAmp)
 {
 	/*
 			&&      = '&'

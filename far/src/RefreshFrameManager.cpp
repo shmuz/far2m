@@ -52,7 +52,7 @@ UndoGlobalSaveScrPtr::~UndoGlobalSaveScrPtr()
 }
 
 
-RefreshFrameManager::RefreshFrameManager(int OScrX,int OScrY, int MsgWaitTime, BOOL DontRedrawFrame):
+RefreshFrameManager::RefreshFrameManager(int OScrX,int OScrY, int MsgWaitTime, bool DontRedrawFrame):
 	OScrX(OScrX),
 	OScrY(OScrY),
 	MsgWaitTime(MsgWaitTime),

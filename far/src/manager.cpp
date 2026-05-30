@@ -621,7 +621,7 @@ void Manager::ProcessMainLoop()
 		//WaitInFastFind++;
 		FarKey Key = GetInputRecord(&LastInputRecord);
 		//WaitInFastFind--;
-		WaitInMainLoop = FALSE;
+		WaitInMainLoop = false;
 
 		if (EndLoop)
 			return;
@@ -664,8 +664,8 @@ void Manager::ExitMainLoop(bool Ask, int ExitCode)
 {
 	if (CloseFAR)
 	{
-		CloseFAR = FALSE;
-		CloseFARMenu = TRUE;
+		CloseFAR = false;
+		CloseFARMenu = true;
 	}
 
 	bool Exiting = true;
@@ -700,7 +700,7 @@ void Manager::ExitMainLoop(bool Ask, int ExitCode)
 		}
 		else
 		{
-			CloseFARMenu = FALSE;
+			CloseFARMenu = false;
 		}
 	}
 }

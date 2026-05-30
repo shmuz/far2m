@@ -43,7 +43,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ctrlobj.hpp"
 #include "config.hpp"
 
-RedrawDesktop::RedrawDesktop(BOOL IsHidden):
+RedrawDesktop::RedrawDesktop(bool IsHidden):
 	LeftVisible(CtrlObject->Cp()->LeftPanel->IsVisible()),
 	RightVisible(CtrlObject->Cp()->RightPanel->IsVisible()),
 	ClockVisible(Opt.Clock!=0)

@@ -979,7 +979,7 @@ static LONG_PTR WINAPI MainDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 				case FAD_EDIT_TEXT: {
 					// Строка "Содержащих текст"
 					if (!v->FindFoldersChanged) {
-						BOOL Checked = (Item.PtrData && *Item.PtrData) ? FALSE : Opt.FindOpt.FindFolders;
+						bool Checked = (Item.PtrData && *Item.PtrData) ? false : Opt.FindOpt.FindFolders;
 						SendDlgMessage(hDlg, DM_SETCHECK, FAD_CHECKBOX_DIRS,
 								Checked ? BSTATE_CHECKED : BSTATE_UNCHECKED);
 					}
@@ -1453,8 +1453,8 @@ class FindDlg_TempFileHolder : public TempFileUploadHolder
 
 		if (ArcItem.hPlugin == nullptr) {
 			FARString strFindArcName = ArcItem.strArcName;
-			int SavePluginsOutput = DisablePluginsOutput;
-			DisablePluginsOutput = TRUE;
+			auto SavePluginsOutput = DisablePluginsOutput;
+			DisablePluginsOutput = true;
 			ArcItem.hPlugin = CtrlObject->Plugins.OpenFilePlugin(strFindArcName, OPM_FIND, OFP_SEARCH);
 			DisablePluginsOutput = SavePluginsOutput;
 			if (ArcItem.hPlugin == PHPTR_STOP || ArcItem.hPlugin == nullptr) {
@@ -1725,8 +1725,8 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 						if (!(ArcItem.Flags & OPIF_REALNAMES)) {
 							FARString strFindArcName = ArcItem.strArcName;
 							if (ArcItem.hPlugin == nullptr) {
-								int SavePluginsOutput = DisablePluginsOutput;
-								DisablePluginsOutput = TRUE;
+								auto SavePluginsOutput = DisablePluginsOutput;
+								DisablePluginsOutput = true;
 								{
 									SCOPED_ACTION(PluginLocker);
 									ArcItem.hPlugin = CtrlObject->Plugins.OpenFilePlugin(strFindArcName,
@@ -1815,7 +1815,7 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 							SendDlgMessage(hDlg, DM_SHOWDIALOG, FALSE, 0);
 							SendDlgMessage(hDlg, DM_ENABLEREDRAW, FALSE, 0);
 							{
-								FileViewer ShellViewer(strSearchFileName, FALSE, FALSE, FALSE, -1, nullptr,
+								FileViewer ShellViewer(strSearchFileName, false, false, false, -1, nullptr,
 										(FindItem.ArcIndex != LIST_INDEX_NONE)
 												? nullptr
 												: (Opt.FindOpt.CollectFiles ? &ViewList : nullptr));
@@ -2253,8 +2253,8 @@ static void ArchiveSearch(HANDLE hDlg, const wchar_t *ArcName)
 	PHPTR hArc;
 	{
 		SCOPED_ACTION(PluginLocker);
-		int SavePluginsOutput = DisablePluginsOutput;
-		DisablePluginsOutput = TRUE;
+		auto SavePluginsOutput = DisablePluginsOutput;
+		DisablePluginsOutput = true;
 		hArc = CtrlObject->Plugins.OpenFilePlugin(strArcName, OPM_FIND, OFP_SEARCH);
 		DisablePluginsOutput = SavePluginsOutput;
 	}
@@ -2277,8 +2277,8 @@ static void ArchiveSearch(HANDLE hDlg, const wchar_t *ArcName)
 		OpenPluginInfo Info;
 		{
 			SCOPED_ACTION(PluginLocker);
-			int SavePluginsOutput = DisablePluginsOutput;
-			DisablePluginsOutput = TRUE;
+			auto SavePluginsOutput = DisablePluginsOutput;
+			DisablePluginsOutput = true;
 			CtrlObject->Plugins.GetOpenPluginInfo(hArc, &Info);
 			itd.SetFindFileArcIndex(itd.AddArcListItem(ArcName, hArc, Info.Flags, Info.CurDir));
 			DisablePluginsOutput = SavePluginsOutput;
@@ -2315,7 +2315,7 @@ static void ArchiveSearch(HANDLE hDlg, const wchar_t *ArcName)
 
 static void DoScanTree(HANDLE hDlg, FARString &strRoot)
 {
-	ScanTree ScTree(FALSE, !(SearchMode == FINDAREA_CURRENT_ONLY || SearchMode == FINDAREA_INPATH),
+	ScanTree ScTree(false, !(SearchMode == FINDAREA_CURRENT_ONLY || SearchMode == FINDAREA_INPATH),
 			Opt.FindOpt.FindSymLinks);
 	FARString strSelName;
 	DWORD FileAttr;

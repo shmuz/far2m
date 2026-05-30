@@ -350,7 +350,7 @@ void ShellDelete(Panel *SrcPanel, bool Wipe)
 
 				if (!DirSymLink && (!Opt.DeleteToRecycleBin || Wipe)) {
 					FARString strFullName;
-					ScanTree ScTree(TRUE, TRUE, FALSE);
+					ScanTree ScTree(true, true, FALSE);
 					FARString strSelFullName;
 
 					if (IsAbsolutePath(strSelName)) {
@@ -886,7 +886,7 @@ void DeleteDirTree(const wchar_t *Dir)
 	SudoClientRegion scr;
 	FARString strFullName;
 	FAR_FIND_DATA_EX FindData;
-	ScanTree ScTree(TRUE, TRUE, FALSE);
+	ScanTree ScTree(true, true, FALSE);
 	ScTree.SetFindPath(Dir, L"*", 0);
 
 	while (ScTree.GetNextName(&FindData, strFullName)) {

@@ -55,8 +55,8 @@ public:
 public:
 	int Init(int SizeQueue);
 
-	BOOL isEmpty() const;
-	BOOL isFull() const;
+	bool isEmpty() const;
+	bool isFull() const;
 
 	Object Peek() const;
 

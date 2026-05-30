@@ -40,7 +40,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pathmix.hpp"
 #include "processname.hpp"
 
-ScanTree::ScanTree(int RetUpDir, int Recurse, int ScanJunction)
+ScanTree::ScanTree(bool RetUpDir, bool Recurse, int ScanJunction)
 {
 	Flags.Change(FSCANTREE_RETUPDIR, RetUpDir);
 	Flags.Change(FSCANTREE_RECUR, Recurse);

@@ -157,7 +157,7 @@ void FileFilter::FillMenu(VMenu &FilterList)
 			FARString strCurDir, strFileName;
 			FAR_FIND_DATA_EX fdata;
 			GetHostPanel()->GetCurDir(strCurDir);
-			ScanTree ScTree(FALSE, FALSE);
+			ScanTree ScTree(false, false);
 			ScTree.SetFindPath(strCurDir, L"*");
 
 			while (ScTree.GetNextName(&fdata, strFileName))

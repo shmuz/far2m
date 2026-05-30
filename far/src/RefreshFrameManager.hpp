@@ -47,11 +47,11 @@ class UndoGlobalSaveScrPtr
 class RefreshFrameManager
 {
 	private:
-		int OScrX,OScrY;
+		int OScrX, OScrY;
 		long MsgWaitTime;
-		BOOL DontRedrawFrame;
+		bool DontRedrawFrame;
 
 	public:
-		RefreshFrameManager(int OScrX,int OScrY, int MsgWaitTime, BOOL DontRedrawFrame=FALSE);
+		RefreshFrameManager(int OScrX, int OScrY, int MsgWaitTime, bool DontRedrawFrame = false);
 		~RefreshFrameManager();
 };

@@ -96,7 +96,7 @@ enum DIZUPDATETYPE
 struct PanelOptions
 {
 	int Type;
-	int Visible;
+	bool Visible;
 	int Focus;
 	int ViewMode;
 	int SortMode;
@@ -284,13 +284,13 @@ struct CommandLineOptions
 struct LoadPluginsOptions
 {
 //  DWORD TypeLoadPlugins;       // see TYPELOADPLUGINSOPTIONS
-	int MainPluginDir; // TRUE - использовать стандартный путь к основным плагинам
-	int PluginsCacheOnly; // seting by '/co' switch, not saved in registry
-	int PluginsPersonal;
+	bool MainPluginDir; // true - использовать стандартный путь к основным плагинам
+	bool PluginsCacheOnly; // seting by '/co' switch, not saved in registry
+	bool PluginsPersonal;
 
 	FARString strCustomPluginsPath;  // путь для поиска плагинов, указанный в /p
 	FARString strPersonalPluginsPath;
-	int SilentLoadPlugin; // при загрузке плагина с кривым...
+	bool SilentLoadPlugin; // при загрузке плагина с кривым...
 	int ScanSymlinks;
 };
 
@@ -455,9 +455,9 @@ struct Options
 	int ShowSortMode;
 	int ShowMenuBar;
 	int FormatNumberSeparators;
-	int CleanAscii;
-	int NoGraphics;
-	int NoBoxes;
+	bool CleanAscii;
+	bool NoGraphics;
+	bool NoBoxes;
 	int ConsolePaintSharp, ExclusiveCtrlLeft, ExclusiveCtrlRight, ExclusiveAltLeft, ExclusiveAltRight,
 			ExclusiveWinLeft, ExclusiveWinRight;
 	int UseStickyKeyEvent; // 0 = enable CtrlSpace,AltSpace,CtrlShiftSpace,etc., 1 = original far2l behavior;
@@ -479,7 +479,7 @@ struct Options
 	int AutoUpdateRemoteDrive;
 
 	FARString strLanguage;
-	int SmallIcon;
+	bool SmallIcon;
 	int ClassicHotkeyLinkResolving;
 	int PanelRightClickRule; // задает поведение правой клавиши мыши
 	int PanelCtrlAltShiftRule; // задает поведение Ctrl-Alt-Shift для панелей.
@@ -580,7 +580,7 @@ struct Options
 	FARString strTimeSeparator;
 	FARString strDecimalSeparator;
 
-	BOOL WindowMode;
+	bool WindowMode;
 	std::vector<std::wstring> CmdLineStrings;
 };
 

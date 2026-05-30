@@ -63,13 +63,13 @@ FarQueue<Object>::~FarQueue()
 }
 
 template <class Object>
-BOOL FarQueue<Object>::isEmpty() const
+bool FarQueue<Object>::isEmpty() const
 {
 	return !CurrentSize;
 }
 
 template <class Object>
-BOOL FarQueue<Object>::isFull() const
+bool FarQueue<Object>::isFull() const
 {
 	return CurrentSize == Size;
 }

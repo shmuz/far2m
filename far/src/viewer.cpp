@@ -2912,7 +2912,7 @@ bool Viewer::vgetc(WCHAR &C)
 #define RB_HEX 4
 #define RB_DEC 5
 
-void Viewer::GoTo(int ShowDlg, int64_t Offset, DWORD Flags)
+void Viewer::GoTo(bool ShowDlg, int64_t Offset, DWORD Flags)
 {
 	int64_t Relative = 0;
 	const wchar_t *LineHistoryName = L"ViewerOffset";
@@ -3316,7 +3316,7 @@ int Viewer::ViewerControl(int Command, void *Param)
 						break;
 				}
 
-				GoTo(FALSE, NewPos, vsp->Flags);
+				GoTo(false, NewPos, vsp->Flags);
 
 				if (isReShow && !(vsp->Flags & VSP_NOREDRAW))
 					ScrBuf.Flush();

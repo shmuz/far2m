@@ -530,7 +530,7 @@ int InfoList::ProcessKey(FarKey Key)
 			if (!strDizFileName.IsEmpty()) {
 				CtrlObject->Cp()->GetAnotherPanel(this)->GetCurDir(strCurDir);
 				FarChDir(strCurDir);
-				new FileViewer(strDizFileName, TRUE);    // OT
+				new FileViewer(strDizFileName, true);    // OT
 			}
 
 			CtrlObject->Cp()->Redraw();

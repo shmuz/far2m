@@ -244,7 +244,7 @@ public:
 	void SetHostFileViewer(FileViewer *Viewer) { HostFileViewer = Viewer; }
 	FileViewer* GetHostFileViewer() { return HostFileViewer; }
 
-	void GoTo(int ShowDlg = TRUE, int64_t NewPos = 0, DWORD Flags = 0);
+	void GoTo(bool ShowDlg = true, int64_t NewPos = 0, DWORD Flags = 0);
 	void GetSelectedParam(int64_t &Pos, int64_t &Length, DWORD &Flags);
 	// Функция выделения - как самостоятельная функция
 	void SelectText(const int64_t &MatchPos, const int64_t &SearchLength, const DWORD Flags = 0x1);
@@ -270,9 +270,9 @@ public:
 
 	NamesList *GetNamesList() { return &ViewNamesList; }
 
-	int ProcessHexMode(int newMode, bool isRedraw = TRUE);
-	int ProcessWrapMode(int newMode, bool isRedraw = TRUE);
-	int ProcessTypeWrapMode(int newMode, bool isRedraw = TRUE);
+	int ProcessHexMode(int newMode, bool isRedraw = true);
+	int ProcessWrapMode(int newMode, bool isRedraw = true);
+	int ProcessTypeWrapMode(int newMode, bool isRedraw = true);
 
 	int GetViewerID() const { return ViewerID; }
 };

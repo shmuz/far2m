@@ -61,7 +61,7 @@ public:
 	void CorrectRealScreenCoord();
 	void SaveArea(int X1, int Y1, int X2, int Y2);
 	void SaveArea();
-	void RestoreArea(int RestoreCursor = TRUE);
+	void RestoreArea(bool RestoreCursor = true);
 	void Discard();
 	void AppendArea(SaveScreen *NewArea);
 	/*$ 18.05.2001 OT */

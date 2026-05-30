@@ -343,16 +343,16 @@ private:
 	int ProcessHighlighting(FarKey Key, unsigned FocusPos, int Translate);
 	int CheckHighlights(WORD Chr, int StartPos = 0);
 
-	void SelectOnEntry(unsigned Pos, BOOL Selected);
+	void SelectOnEntry(unsigned Pos, bool Selected);
 
 	void CheckDialogCoord();
-	BOOL GetItemRect(unsigned I, SMALL_RECT &Rect);
+	bool GetItemRect(unsigned I, SMALL_RECT &Rect);
 	bool ItemHasDropDownArrow(const DialogItemEx *Item);
 
 	// возвращает заголовок диалога (текст первого текста или фрейма)
 	const wchar_t *GetDialogTitle();
 
-	BOOL SetItemRect(unsigned ID, SMALL_RECT *Rect);
+	bool SetItemRect(unsigned ID, SMALL_RECT *Rect);
 
 	/*
 		$ 23.06.2001 KM
@@ -367,23 +367,23 @@ private:
 
 	unsigned InitDialogObjects(unsigned ID = (unsigned)-1);
 
-	int ProcessOpenComboBox(int Type, DialogItemEx *CurItem, unsigned CurFocusPos);
-	int ProcessMoveDialog(DWORD Key);
+	bool ProcessOpenComboBox(int Type, DialogItemEx *CurItem, unsigned CurFocusPos);
+	bool ProcessMoveDialog(DWORD Key);
 
-	int Do_ProcessTab(int Next);
-	int Do_ProcessNextCtrl(int Next, BOOL IsRedraw = TRUE);
+	bool Do_ProcessTab(bool Next);
+	bool Do_ProcessNextCtrl(bool Next, bool IsRedraw = true);
 
 	/**
 	 * move focus to right or left dialog item.
 	*/
-	int MoveToCtrlHorizontal(int right);
+	bool MoveToCtrlHorizontal(bool right);
 	/**
 	 * move focus to up or down dialog item.
 	*/
-	int MoveToCtrlVertical(int up);
+	bool MoveToCtrlVertical(bool up);
 
-	int Do_ProcessFirstCtrl();
-	int Do_ProcessSpace();
+	bool Do_ProcessFirstCtrl();
+	bool Do_ProcessSpace();
 	void SetComboBoxPos(DialogItemEx *Item = nullptr);
 
 	LONG_PTR CallDlgProc(int nMsg, int nParam1, LONG_PTR nParam2);
@@ -454,7 +454,7 @@ public:
 
 	virtual void SetPosition(int X1, int Y1, int X2, int Y2);
 
-	BOOL IsInited();
+	bool IsInited();
 	bool ProcessEvents();
 
 	void SetId(const GUID &Id);

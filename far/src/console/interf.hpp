@@ -134,7 +134,7 @@ inline void SetVidChar(CHAR_INFO &CI, COMP_CHAR Chr)
 }
 
 int HiStrCellsCount(const wchar_t *Str);
-int HiFindRealPos(const wchar_t *Str, int Pos, BOOL ShowAmp);
+int HiFindRealPos(const wchar_t *Str, int Pos, bool ShowAmp);
 int HiFindNextVisualPos(const wchar_t *Str, int Pos, int Direct);
 FARString &HiText2Str(FARString &strDest, const wchar_t *Str);
 #define RemoveHighlights(Str) RemoveChar(Str, L'&')

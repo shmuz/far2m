@@ -1656,7 +1656,7 @@ COPY_CODES ShellCopy::CopyFileTree(const wchar_t *Dest)
 				int SubCopyCode;
 				FARString strSubName;
 				FARString strFullName;
-				ScanTree ScTree(TRUE, TRUE, Flags.SYMLINK == COPY_SYMLINK_ASFILE);
+				ScanTree ScTree(true, true, Flags.SYMLINK == COPY_SYMLINK_ASFILE);
 				strSubName = strSelName;
 				strSubName+= L"/";
 
@@ -2835,7 +2835,7 @@ LONG_PTR WINAPI WarnDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 						break;
 				}
 
-				FileViewer Viewer(ViewName, FALSE, FALSE, TRUE, -1, nullptr, nullptr, FALSE);
+				FileViewer Viewer(ViewName, false, false, true, -1, nullptr, nullptr, false);
 				Viewer.SetDynamicallyBorn(false);
 				// а этот трюк не даст пользователю сменить текущий каталог по CtrlF10 и этим ввести в заблуждение копир:
 				Viewer.SetFileHolder(std::make_shared<FileHolder>(ViewName, true));

@@ -48,9 +48,9 @@ private:
 	KeyBar ViewKeyBar;
 	bool AutoClose;
 	bool F3KeyOnly;
-	int FullScreen;
-	int DisableEdit;
-	int DisableHistory;
+	bool FullScreen;
+	bool DisableEdit;
+	bool DisableHistory;
 
 	FARString strName;
 
@@ -59,7 +59,7 @@ private:
 	  Добавлено для поиска по AltF7. При редактировании найденного файла из
 	  архива для клавиши F2 сделать вызов ShiftF2.
 	*/
-	int SaveToSaveAs;
+	bool SaveToSaveAs;
 	FARString strPluginData;
 	FileHolderPtr UngreppedFH;
 	int64_t UngreppedPos{0};
@@ -68,16 +68,16 @@ private:
 	void GrepFilterDismiss();
 
 public:
-	FileViewer(const wchar_t *Name, int EnableSwitch = FALSE, int DisableHistory = FALSE,
-			int DisableEdit = FALSE, long ViewStartPos = -1, const wchar_t *PluginData = nullptr,
-			NamesList *ViewNamesList = nullptr, int ToSaveAs = FALSE, UINT aCodePage = CP_AUTODETECT);
-	FileViewer(const wchar_t *Name, int EnableSwitch, int DisableHistory, const wchar_t *Title, int X1,
+	FileViewer(const wchar_t *Name, bool EnableSwitch = false, bool DisableHistory = false,
+			bool DisableEdit = false, long ViewStartPos = -1, const wchar_t *PluginData = nullptr,
+			NamesList *ViewNamesList = nullptr, bool ToSaveAs = false, UINT aCodePage = CP_AUTODETECT);
+	FileViewer(const wchar_t *Name, bool EnableSwitch, bool DisableHistory, const wchar_t *Title, int X1,
 			int Y1, int X2, int Y2, UINT aCodePage = CP_AUTODETECT);
 	virtual ~FileViewer();
 
 public:
-	void Init(const wchar_t *Name, int EnableSwitch, int DisableHistory, long ViewStartPos,
-			const wchar_t *PluginData, NamesList *ViewNamesList, int ToSaveAs);
+	void Init(const wchar_t *Name, bool EnableSwitch, bool DisableHistory, long ViewStartPos,
+			const wchar_t *PluginData, NamesList *ViewNamesList, bool ToSaveAs);
 	virtual void InitKeyBar();
 	virtual int ProcessKey(FarKey Key);
 	virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
@@ -111,7 +111,7 @@ public:
 		InitKeyBar();
 	}
 	int ViewerControl(int Command, void *Param);
-	BOOL IsFullScreen() { return FullScreen; }
+	bool IsFullScreen() { return FullScreen; }
 	virtual FARString &GetTitle(FARString &Title, int SubLen = -1, int TruncSize = 0);
 	int64_t GetViewFileSize() const;
 	int64_t GetViewFilePos() const;

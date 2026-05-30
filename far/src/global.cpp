@@ -39,48 +39,46 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "bootstrap/farversion.inc"
 
 // идет процесс назначения клавиши в макросе?
-BOOL IsProcessAssignMacroKey=FALSE;
-
-// идет процесс "вьювер/редактор" во время поиска файлов?
-BOOL IsProcessVE_FindFile=FALSE;
+int IsProcessAssignMacroKey = 0;
 
 // Идёт процесс перерисовки всех фреймов
-BOOL IsRedrawFramesInProcess=FALSE;
+int IsRedrawFramesInProcess = 0;
 
 // идет процесс быстрого поиска в панелях?
-int WaitInFastFind=FALSE;
+int WaitInFastFind = 0;
 
 // мы крутимся в основном цикле?
-int WaitInMainLoop=FALSE;
+bool WaitInMainLoop = false;
 
-clock_t StartIdleTime=0;
+clock_t StartIdleTime = 0;
 
 FARString g_strFarModuleName;
 FARString g_strFarPath;
 
 FARString strGlobalSearchString;
-int GlobalSearchCase=FALSE;
-int GlobalSearchWholeWords=FALSE; // значение "Whole words" для поиска
-int GlobalSearchHex=FALSE;     // значение "Search for hex" для поиска
-int GlobalSearchReverse=FALSE;
+int GlobalSearchCase = 0;
+int GlobalSearchWholeWords = 0; // значение "Whole words" для поиска
+int GlobalSearchHex = 0;     // значение "Search for hex" для поиска
+int GlobalSearchReverse = 0;
 
-int ScreenSaverActive=FALSE;
+bool ScreenSaverActive = false;
 
-int CloseFAR=FALSE,CloseFARMenu=FALSE;
+bool CloseFAR = false;
+bool CloseFARMenu = false;
 
-int DisablePluginsOutput=FALSE;
+bool DisablePluginsOutput = false;
 
-int WidthNameForMessage=0;
+int WidthNameForMessage = 0;
 
-BOOL ProcessShowClock=FALSE;
+int ProcessShowClock = 0;
 
 const wchar_t *HelpFileMask=L"*.hlf";
 const wchar_t *HelpFormatLinkModule=L"<%ls>%ls";
 
 #if defined(SYSLOG)
-BOOL StartSysLog=0;
-long CallNewDelete=0;
-long CallMallocFree=0;
+bool StartSysLog = false;
+long CallNewDelete = 0;
+long CallMallocFree = 0;
 #endif
 
 class SaveScreen;

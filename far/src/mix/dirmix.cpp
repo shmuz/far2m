@@ -270,7 +270,7 @@ void PrepareTemporaryOpenPath(FARString &Path)
 
 	std::vector<FARString> outdated;
 
-	ScanTree scan_tree(0, 0);
+	ScanTree scan_tree(false, false);
 	scan_tree.SetFindPath(Path.CPtr(), L"*", 0);
 	FAR_FIND_DATA_EX found_data;
 	FARString found_name;

@@ -45,7 +45,8 @@ extern "C"
 #endif
 
 	typedef int (WINAPI *FRSUSERFUNC)(const FAR_FIND_DATA *FData,const wchar_t *FullName,void *param);
-	void WINAPI FarRecursiveSearch(const wchar_t *initdir,const wchar_t *mask,FRSUSERFUNC func,DWORD flags,void *param);
+	void WINAPI FarRecursiveSearch(const wchar_t *initdir, const wchar_t *mask, FRSUSERFUNC func,
+			DWORD flags, void *param);
 
 	int WINAPI FarMkTemp(wchar_t *Dest, DWORD size, const wchar_t *Prefix);
 
@@ -53,7 +54,8 @@ extern "C"
 };
 #endif
 
-FARString& FarMkTempEx(FARString &strDest, const wchar_t *Prefix=nullptr, BOOL WithTempPath=TRUE, const wchar_t *UserTempPath=nullptr);
+FARString& FarMkTempEx(FARString &strDest, const wchar_t *Prefix=nullptr, bool WithTempPath=true,
+		const wchar_t *UserTempPath=nullptr);
 void DisplayNotification(const wchar_t *action, const char *object);
 void DisplayNotification(const char *action, const char *object);
 void DisplayNotification(const wchar_t *action, const wchar_t *object);

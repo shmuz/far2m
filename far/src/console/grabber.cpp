@@ -180,7 +180,7 @@ void Grabber::DisplayObject()
 
 		if (area.left > _prev_area.left || area.right < _prev_area.right
 				|| area.top > _prev_area.top || area.bottom < _prev_area.bottom) {
-			_save_scr->RestoreArea(FALSE);
+			_save_scr->RestoreArea(false);
 		}
 
 		if (_area.left != -1) {
@@ -208,7 +208,7 @@ void Grabber::DisplayObject()
 		}
 
 		if (_area.left == -2) {
-			_save_scr->RestoreArea(FALSE);
+			_save_scr->RestoreArea(false);
 			_area.left = area.right;
 		}
 
@@ -462,7 +462,7 @@ bool Grabber::Run()
 	if (!s_in_grabber) {
 		s_in_grabber = true;
 		try {
-			WaitInMainLoop = FALSE;
+			WaitInMainLoop = false;
 			if (!WinPortTesting())
 				FlushInputBuffer();
 			Grabber().Process();

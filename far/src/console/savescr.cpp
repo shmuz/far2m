@@ -77,7 +77,7 @@ void SaveScreen::Discard()
 	ScreenBuf = nullptr;
 }
 
-void SaveScreen::RestoreArea(int RestoreCursor)
+void SaveScreen::RestoreArea(bool RestoreCursor)
 {
 	if (!ScreenBuf) {
 		fprintf(stderr, "SaveScreen::RestoreArea: no ScreenBuf\n");

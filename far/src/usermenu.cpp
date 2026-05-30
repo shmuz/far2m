@@ -439,7 +439,7 @@ FillUserMenu(VMenu &UserMenu, const wchar_t *MenuKey, int MenuPos, int *FuncPos,
 				MenuPos++;
 			}
 		} else {
-			SubstFileName(strLabel, Name, nullptr, nullptr, TRUE);
+			SubstFileName(strLabel, Name, nullptr, nullptr, true);
 			apiExpandEnvironmentStrings(strLabel, strLabel);
 			FuncNum = PrepareHotKey(strHotKey);
 			int Offset = strHotKey.At(0) == L'&' ? 5 : 4;
@@ -701,7 +701,7 @@ int UserMenu::ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar
 			strSubMenuKey.Format(L"%ls/Item%d", MenuKey, ExitCode);
 			s_cfg_reader->SelectSection(strSubMenuKey);
 			if (s_cfg_reader->GetString(strSubMenuLabel, "Label", L"")) {
-				SubstFileName(strSubMenuLabel, strName, nullptr, nullptr, TRUE);
+				SubstFileName(strSubMenuLabel, strName, nullptr, nullptr, true);
 				apiExpandEnvironmentStrings(strSubMenuLabel, strSubMenuLabel);
 				size_t pos;
 
@@ -758,7 +758,7 @@ int UserMenu::ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar
 				  ЭТО выполняется всегда, т.к. парсинг всей строки идет, а надо
 				  проверить фазу "if exist ..\a.bat", а уж потом делать выводы...
 				*/
-				SubstFileName(strCommand, strName, &strListName, &strAnotherListName, FALSE, strCmdLineDir);
+				SubstFileName(strCommand, strName, &strListName, &strAnotherListName, false, strCmdLineDir);
 				bool ListFileUsed = !strListName.IsEmpty() || !strAnotherListName.IsEmpty();
 
 				RemoveExternalSpaces(strCommand);

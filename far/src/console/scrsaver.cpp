@@ -189,7 +189,7 @@ int ScreenSaver(int EnableExit)
 		WINPORT(Sleep)(100);
 	}
 
-	ScreenSaverActive = TRUE;
+	ScreenSaverActive = true;
 	CONSOLE_CURSOR_INFO CursorInfo;
 	Console.GetCursorInfo(CursorInfo);
 	{
@@ -214,7 +214,7 @@ int ScreenSaver(int EnableExit)
 		}
 	}
 	SetCursorType(CursorInfo.bVisible != FALSE, CursorInfo.dwSize);
-	ScreenSaverActive = FALSE;
+	ScreenSaverActive = false;
 	if (!WinPortTesting())
 		FlushInputBuffer();
 	StartIdleTime = GetProcessUptimeMSec();

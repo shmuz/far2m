@@ -1799,7 +1799,7 @@ void VMenu::DisplayObject()
 
 	if (!CheckFlags(VMENU_LISTBOX)) {
 		DrawTitles();
-		WaitInMainLoop = FALSE;
+		WaitInMainLoop = false;
 	}
 
 	ShowMenu(true);
@@ -2616,7 +2616,7 @@ void VMenu::SetOneColor(int Index, uint64_t Color)
 	//		Colors[Index] = FarColorToReal(Color);
 }
 
-BOOL VMenu::GetVMenuInfo(FarListInfo *Info)
+bool VMenu::GetVMenuInfo(FarListInfo *Info)
 {
 	CriticalSectionLock Lock(CS);
 
@@ -2630,10 +2630,10 @@ BOOL VMenu::GetVMenuInfo(FarListInfo *Info)
 		Info->MaxHeight = MaxHeight;
 		Info->MaxLength = MaxLength;
 		memset(&Info->Reserved, 0, sizeof(Info->Reserved));
-		return TRUE;
+		return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 // функция обработки меню (по умолчанию)

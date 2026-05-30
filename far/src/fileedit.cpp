@@ -632,7 +632,7 @@ void FileEditor::Show()
 void FileEditor::DisplayObject()
 {
 	if (!m_editor->Locked()) {
-		WaitInMainLoop = FALSE;
+		WaitInMainLoop = false;
 		if (m_editor->Flags.Check(FEDITOR_ISRESIZEDCONSOLE)) {
 			m_editor->Flags.Clear(FEDITOR_ISRESIZEDCONSOLE);
 			CtrlObject->Plugins.CurEditor = this;
@@ -785,7 +785,7 @@ int FileEditor::ReProcessKey(FarKey Key, bool CalledFromControl)
 					if (ProcessQuitKey(FirstSave, NeedQuestion)) {
 						// объект будет в конце удалён в FrameManager
 						auto *Viewer = new FileViewer(strFullFileName, GetCanLoseFocus(),
-								Flags.Check(FFILEEDIT_DISABLEHISTORY), FALSE, FilePos, nullptr, EditNamesList,
+								Flags.Check(FFILEEDIT_DISABLEHISTORY), false, FilePos, nullptr, EditNamesList,
 								Flags.Check(FFILEEDIT_SAVETOSAVEAS), cp);
 						Viewer->SetFileHolder(FHP);
 						Viewer->SetPluginData(strPluginData);

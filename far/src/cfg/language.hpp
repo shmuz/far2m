@@ -82,7 +82,7 @@ extern Language Lang;
 class VMenu;
 
 FILE *OpenLangFile(FARString strPath, const wchar_t *Mask, const wchar_t *Language, FARString &strFileName,
-		UINT &nCodePage, BOOL StrongLang = FALSE, FARString *pstrLangName = nullptr);
+		UINT &nCodePage, bool StrongLang = false, FARString *pstrLangName = nullptr);
 int GetLangParam(FILE *SrcFile, const wchar_t *ParamName, FARString *strParam1, FARString *strParam2,
 		UINT nCodePage);
 int GetOptionsParam(FILE *SrcFile, const wchar_t *KeyName, FARString &strValue, UINT nCodePage);

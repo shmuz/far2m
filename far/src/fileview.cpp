@@ -57,24 +57,25 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "GrepFile.hpp"
 #include "exitcode.hpp"
 
-FileViewer::FileViewer(const wchar_t *Name,int EnableSwitch,int DisableHistory,
-                       int DisableEdit,long ViewStartPos,const wchar_t *PluginData,
-                       NamesList *ViewNamesList,int ToSaveAs,UINT aCodePage):
+FileViewer::FileViewer(const wchar_t *Name, bool EnableSwitch, bool DisableHistory,
+                       bool DisableEdit, long ViewStartPos, const wchar_t *PluginData,
+                       NamesList *ViewNamesList, bool ToSaveAs, UINT aCodePage):
 	View(false,aCodePage),
-	FullScreen(TRUE),
+	FullScreen(true),
 	DisableEdit(DisableEdit)
 {
 	_OT(SysLog(L"[%p] FileViewer::FileViewer(I variant...)", this));
 	SetPosition(0,0,ScrX,ScrY);
-	Init(Name,EnableSwitch,DisableHistory,ViewStartPos,PluginData,ViewNamesList,ToSaveAs);
+	Init(Name, EnableSwitch, DisableHistory, ViewStartPos, PluginData, ViewNamesList, ToSaveAs);
 }
 
 
-FileViewer::FileViewer(const wchar_t *Name,int EnableSwitch,int DisableHistory,
-                       const wchar_t *Title, int X1,int Y1,int X2,int Y2,UINT aCodePage): View(false,aCodePage)
+FileViewer::FileViewer(const wchar_t *Name, bool EnableSwitch, bool DisableHistory,
+                       const wchar_t *Title, int X1, int Y1, int X2, int Y2, UINT aCodePage)
+		: View(false, aCodePage)
 {
 	_OT(SysLog(L"[%p] FileViewer::FileViewer(II variant...)", this));
-	DisableEdit=TRUE;
+	DisableEdit=true;
 
 	if (X1 < 0)
 		X1=0;
@@ -103,13 +104,13 @@ FileViewer::FileViewer(const wchar_t *Name,int EnableSwitch,int DisableHistory,
 	SetPosition(X1,Y1,X2,Y2);
 	FullScreen=(!X1 && !Y1 && X2==ScrX && Y2==ScrY);
 	View.SetTitle(Title);
-	Init(Name,EnableSwitch,DisableHistory,-1,L"",nullptr,FALSE);
+	Init(Name, EnableSwitch, DisableHistory, -1, L"", nullptr, false);
 }
 
 
-void FileViewer::Init(const wchar_t *name,int EnableSwitch,int disableHistory, ///
-                      long ViewStartPos,const wchar_t *PluginData,
-                      NamesList *ViewNamesList,int ToSaveAs)
+void FileViewer::Init(const wchar_t *name, bool EnableSwitch, bool disableHistory, ///
+                      long ViewStartPos, const wchar_t *PluginData,
+                      NamesList *ViewNamesList, bool ToSaveAs)
 {
 	RedrawTitle = FALSE;
 	ViewKeyBar.SetOwner(this);
@@ -130,7 +131,7 @@ void FileViewer::Init(const wchar_t *name,int EnableSwitch,int disableHistory, /
 
 	if (!View.OpenFile(strName,TRUE)) // $ 04.07.2000 tran + add TRUE as 'warning' parameter
 	{
-		DisableHistory = TRUE;  // $ 26.03.2002 DJ - при неудаче открытия - не пишем мусор в историю
+		DisableHistory = true;  // $ 26.03.2002 DJ - при неудаче открытия - не пишем мусор в историю
 		ExitCode=FALSE;
 		CtrlObject->Macro.SetArea(OldMacroArea);
 		return;
@@ -214,7 +215,7 @@ void FileViewer::Show()
 
 void FileViewer::DisplayObject()
 {
-	WaitInMainLoop = FALSE;
+	WaitInMainLoop = false;
 	View.Show();
 }
 

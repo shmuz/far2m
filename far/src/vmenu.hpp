@@ -274,7 +274,7 @@ public:
 	void ClearFlags(DWORD a_Flags) { VMFlags.Clear(a_Flags); }
 	bool CheckFlags(DWORD a_Flags) const { return VMFlags.Check(a_Flags); }
 	DWORD GetFlags() const { return VMFlags.Flags; }
-	DWORD ChangeFlags(DWORD a_Flags, BOOL Status) { return VMFlags.Change(a_Flags, Status); }
+	DWORD ChangeFlags(DWORD a_Flags, bool Status) { return VMFlags.Change(a_Flags, Status); }
 
 	void AssignHighlights(int Reverse);
 
@@ -324,7 +324,7 @@ public:
 	struct MenuItemEx *GetItemPtr(int Position = -1);
 
 	void SortItems(int Direction = 0, int Offset = 0);
-	BOOL GetVMenuInfo(struct FarListInfo *Info);
+	bool GetVMenuInfo(struct FarListInfo *Info);
 
 	virtual const wchar_t *GetTypeName() { return L"[VMenu]"; }
 	virtual int GetTypeAndName(FARString &strType, FARString &strName);

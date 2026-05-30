@@ -38,7 +38,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 extern clock_t StartIdleTime;
 
-extern int WaitInMainLoop;
+extern bool WaitInMainLoop;
 extern int WaitInFastFind;
 
 extern FARString g_strFarModuleName;
@@ -48,29 +48,29 @@ extern FARString strGlobalSearchString;
 extern int GlobalSearchCase;
 extern int GlobalSearchWholeWords; // значение "Whole words" для поиска
 extern int GlobalSearchHex; // значение "Search for hex" для поиска
-
 extern int GlobalSearchReverse;
 
-extern int ScreenSaverActive;
+extern bool ScreenSaverActive;
 
-extern int CloseFAR, CloseFARMenu;
+extern bool CloseFAR;
+extern bool CloseFARMenu;
 
-extern int DisablePluginsOutput;
+extern bool DisablePluginsOutput;
 
-extern BOOL IsProcessAssignMacroKey;
-extern BOOL IsRedrawFramesInProcess;
+extern int IsProcessAssignMacroKey;
+extern int IsRedrawFramesInProcess;
 
 extern const char *Copyright;
 
 extern int WidthNameForMessage;
 
-extern BOOL ProcessShowClock;
+extern int ProcessShowClock;
 
 extern const wchar_t *HelpFileMask;
 extern const wchar_t *HelpFormatLinkModule;
 
 #if defined(SYSLOG)
-extern BOOL StartSysLog;
+extern bool StartSysLog;
 extern long CallNewDelete;
 extern long CallMallocFree;
 #endif

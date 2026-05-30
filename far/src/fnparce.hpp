@@ -35,7 +35,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FARString.hpp"
 
-int SubstFileName(FARString &strStr, const wchar_t *Name, 
-                  FARString *strListName=nullptr,
+int SubstFileName(FARString &strStr, const wchar_t *Name,
+                  FARString *strListName = nullptr,
                   FARString *strAnotherListName = nullptr,
-                  int IgnoreInput=FALSE,const wchar_t *CmdLineDir=nullptr);
+                  bool IgnoreInput = false,
+									const wchar_t *CmdLineDir = nullptr);

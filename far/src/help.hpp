@@ -111,7 +111,7 @@ class Help:public Frame
 {
 	private:
 		ChangeMacroArea Cma;
-		BOOL  ErrorHelp;            // TRUE - ошибка! Например - нет такого топика
+		bool  ErrorHelp;            // true - ошибка! Например - нет такого топика
 		SaveScreen *TopScreen;      // область сохранения под хелпом
 		KeyBar      HelpKeyBar;     // кейбар
 		CallBackStack *Stack;       // стек возврата
@@ -123,9 +123,9 @@ class Help:public Frame
 		int   StrCount;             // количество строк в теме
 		int   FixCount;             // количество строк непрокручиваемой области
 		int   FixSize;              // Размер непрокручиваемой области
-		int   TopicFound;           // TRUE - топик найден
-		int   IsNewTopic;           // это новый топик?
-		int   MouseDown;
+		bool  TopicFound;           // true - топик найден
+		bool  IsNewTopic;           // это новый топик?
+		bool  MouseDown;
 
 		FARString strCtrlColorChar;    // CtrlColorChar - опция! для спецсимвола-
 		//   символа - для атрибутов
@@ -167,7 +167,7 @@ class Help:public Frame
 		virtual int  ProcessKey(FarKey Key);
 		virtual int  ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
 		virtual void InitKeyBar();
-		BOOL GetError() {return ErrorHelp;}
+		bool GetError() {return ErrorHelp;}
 		virtual void SetScreenPosition();
 		virtual void OnChangeFocus(int focus); // вызывается при смене фокуса
 		virtual void ResizeConsole();

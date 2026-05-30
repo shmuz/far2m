@@ -160,7 +160,7 @@ class PluginA: public Plugin
 
 		const FARString &GetModuleName() const { return m_strModuleName; }
 		const char *GetSettingsName() { return m_strSettingsName.c_str(); }
-		bool CheckWorkFlags(DWORD flags) { return WorkFlags.Check(flags)==TRUE; }
+		bool CheckWorkFlags(DWORD flags) { return WorkFlags.Check(flags); }
 		DWORD GetWorkFlags() { return WorkFlags.Flags; }
 
 		bool InitLang(const wchar_t *Path) { return Lang.Init(Path,false); }

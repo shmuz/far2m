@@ -51,14 +51,14 @@ static const wchar_t LangFileMask[] = L"*.lng";
 Language Lang;
 
 static FILE *TryOpenLangFile(const wchar_t *Path, const wchar_t *Mask, const wchar_t *Language,
-		FARString &strFileName, UINT &nCodePage, BOOL StrongLang, FARString *pstrLangName)
+		FARString &strFileName, UINT &nCodePage, bool StrongLang, FARString *pstrLangName)
 {
 	strFileName.Clear();
 	FILE *LangFile = nullptr;
 	FARString strEngFileName;
 	FARString strLangName;
 	FAR_FIND_DATA_EX FindData;
-	ScanTree ScTree(FALSE, FALSE);
+	ScanTree ScTree(false, false);
 	ScTree.SetFindPath(Path, Mask);
 
 	while (ScTree.GetNextName(&FindData, strFileName)) {
@@ -108,7 +108,7 @@ static FILE *TryOpenLangFile(const wchar_t *Path, const wchar_t *Mask, const wch
 }
 
 FILE *OpenLangFile(FARString strPath, const wchar_t *Mask, const wchar_t *Language, FARString &strFileName,
-		UINT &nCodePage, BOOL StrongLang, FARString *pstrLangName)
+		UINT &nCodePage, bool StrongLang, FARString *pstrLangName)
 {
 	FILE *out = TryOpenLangFile(strPath, Mask, Language, strFileName, nCodePage, StrongLang, pstrLangName);
 	if (!out) {
@@ -195,7 +195,7 @@ int Select(int HelpLanguage, VMenu **MenuPtr)
 	LangMenu->SetPosition(ScrX / 2 - 8 + 5 * HelpLanguage, ScrY / 2 - 4 + 2 * HelpLanguage, 0, 0);
 	FARString strFullName;
 	FAR_FIND_DATA_EX FindData;
-	ScanTree ScTree(FALSE, FALSE);
+	ScanTree ScTree(false, false);
 	ScTree.SetFindPath(g_strFarPath, Mask);
 
 	while (ScTree.GetNextName(&FindData, strFullName)) {

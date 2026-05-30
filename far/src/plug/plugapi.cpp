@@ -656,7 +656,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 			return TRUE;
 
 		case ACTL_QUIT: {
-			CloseFARMenu = TRUE;
+			CloseFARMenu = true;
 			FrameManager->ExitMainLoop(false, reinterpret_cast<intptr_t>(Param1));
 			return TRUE;
 		}
@@ -1440,7 +1440,7 @@ static int FarGetDirListSynched(const wchar_t *Dir, FAR_FIND_DATA **pPanelItem, 
 		int MsgOut = 0;
 		FAR_FIND_DATA_EX FindData;
 		FARString strFullName;
-		ScanTree ScTree(FALSE);
+		ScanTree ScTree(false);
 		ScTree.SetFindPath(strDirName, L"*");
 		*pItemsNumber = 0;
 		*pPanelItem = nullptr;
@@ -1734,7 +1734,7 @@ static int FarViewerSynched(const wchar_t *FileName, const wchar_t *Title, int X
 		return FALSE;
 
 	class ConsoleTitle ct;
-	int DisableHistory = (Flags & VF_DISABLEHISTORY) ? TRUE : FALSE;
+	bool DisableHistory = (Flags & VF_DISABLEHISTORY) != 0;
 
 	// $ 15.05.2002 SKV - Запретим вызов немодального редактора вьюера из модального.
 	if (FrameManager->InModalEV()) {
@@ -1744,7 +1744,7 @@ static int FarViewerSynched(const wchar_t *FileName, const wchar_t *Title, int X
 	if (Flags & VF_NONMODAL) {
 		/* 09.09.2001 IS ! Добавим имя файла в историю, если потребуется */
 		FileViewer *Viewer = new (std::nothrow)
-				FileViewer(FileName, TRUE, DisableHistory, Title, X1, Y1, X2, Y2, CodePage);
+				FileViewer(FileName, true, DisableHistory, Title, X1, Y1, X2, Y2, CodePage);
 
 		if (!Viewer)
 			return FALSE;
@@ -1765,7 +1765,7 @@ static int FarViewerSynched(const wchar_t *FileName, const wchar_t *Title, int X
 		}
 	} else {
 		/* 09.09.2001 IS ! Добавим имя файла в историю, если потребуется */
-		FileViewer Viewer(FileName, FALSE, DisableHistory, Title, X1, Y1, X2, Y2, CodePage);
+		FileViewer Viewer(FileName, false, DisableHistory, Title, X1, Y1, X2, Y2, CodePage);
 
 		Viewer.SetEnableF6(Flags & VF_ENABLE_F6);
 

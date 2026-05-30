@@ -129,13 +129,13 @@ static void UpdatePathOptions(const FARString &strDestName, bool IsLeftPanel)
 
 	if (IsLeftPanel) {
 		Opt.LeftPanel.Type = FILE_PANEL;  // сменим моду панели
-		Opt.LeftPanel.Visible = TRUE;     // и включим ее
+		Opt.LeftPanel.Visible = true;     // и включим ее
 		outFolder = &Opt.strLeftFolder;
 		outCurFile = &Opt.strLeftCurFile;
 	}
 	else {
 		Opt.RightPanel.Type = FILE_PANEL;
-		Opt.RightPanel.Visible = TRUE;
+		Opt.RightPanel.Visible = true;
 		outFolder = &Opt.strRightFolder;
 		outCurFile = &Opt.strRightCurFile;
 	}
@@ -220,7 +220,7 @@ static int MainProcess(
 			}
 			else
 			{
-				FileViewer *ShellViewer = new FileViewer(Opt.strEditViewArg, FALSE);
+				FileViewer *ShellViewer = new FileViewer(Opt.strEditViewArg, false);
 
 				if (!ShellViewer->GetExitCode())
 				{
@@ -350,7 +350,6 @@ int FarAppMain(int argc, char **argv)
 
 	CharClasses::InitCharFlags();
 
-	_OT(SysLog(L"[[[[[[[[New Session of FAR]]]]]]]]]"));
 	FARString DestNames[2];
 	int CntDestName = 0; // количество параметров-имен каталогов
 	int StartLine = -1, StartChar = -1;
@@ -358,9 +357,9 @@ int FarAppMain(int argc, char **argv)
 
 	Opt.Macro.DisableMacro = 0;
 
-	Opt.LoadPlug.MainPluginDir=TRUE; // По умолчанию - брать плагины из основного каталога
-	Opt.LoadPlug.PluginsPersonal=TRUE;
-	Opt.LoadPlug.PluginsCacheOnly=FALSE;
+	Opt.LoadPlug.MainPluginDir = true; // По умолчанию - брать плагины из основного каталога
+	Opt.LoadPlug.PluginsPersonal = true;
+	Opt.LoadPlug.PluginsCacheOnly = false;
 
 	Opt.IsUserAdmin = (geteuid()==0);
 	if (Opt.IsUserAdmin) {
@@ -394,13 +393,13 @@ int FarAppMain(int argc, char **argv)
 			FARString argUpper = arg_w.Upper();
 
 			if (argUpper == L"-A")
-				Opt.CleanAscii = TRUE;
+				Opt.CleanAscii = true;
 
 			else if (argUpper == L"-AG")
-				Opt.NoGraphics = TRUE;
+				Opt.NoGraphics = true;
 
 			else if (argUpper == L"-AN")
-				Opt.NoBoxes = TRUE;
+				Opt.NoBoxes = true;
 
 			else if (argUpper == L"-CD") {
 				if (I + 1 < argc) {
@@ -410,10 +409,10 @@ int FarAppMain(int argc, char **argv)
 			}
 
 			else if (argUpper == L"-CO")
-				Opt.LoadPlug.PluginsCacheOnly = TRUE;
+				Opt.LoadPlug.PluginsCacheOnly = true;
 
 			else if (argUpper == L"-I")
-				Opt.SmallIcon = TRUE;
+				Opt.SmallIcon = true;
 
 			else if (argUpper == L"-M")
 				Opt.Macro.DisableMacro |= MDOL_ALL;
@@ -422,7 +421,7 @@ int FarAppMain(int argc, char **argv)
 				Opt.Macro.DisableMacro |= MDOL_AUTOSTART;
 
 			else if (argUpper == L"-W")
-				Opt.WindowMode = TRUE;
+				Opt.WindowMode = true;
 
 			else if (argUpper.Begins(L"-SET:"))
 				Opt.CmdLineStrings.emplace_back(arg_w.CPtr() + 5);
@@ -524,20 +523,20 @@ int FarAppMain(int argc, char **argv)
 	std::set_new_handler(nullptr);
 
 	if (bCustomPlugins) { //если есть ключ /p то он отменяет /co
-		Opt.LoadPlug.MainPluginDir = FALSE;
-		Opt.LoadPlug.PluginsPersonal = FALSE;
-		Opt.LoadPlug.PluginsCacheOnly = FALSE;
+		Opt.LoadPlug.MainPluginDir = false;
+		Opt.LoadPlug.PluginsPersonal = false;
+		Opt.LoadPlug.PluginsCacheOnly = false;
 	}
 	else if (Opt.LoadPlug.PluginsCacheOnly) {
-		Opt.LoadPlug.MainPluginDir = FALSE;
-		Opt.LoadPlug.PluginsPersonal = FALSE;
+		Opt.LoadPlug.MainPluginDir = false;
+		Opt.LoadPlug.PluginsPersonal = false;
 	}
 
 	ConfigOptLoad();
 	FarColors::InitFarColors();
 
 	InitConsole();
-	WINPORT(SetConsoleCursorBlinkTime)(NULL, Opt.CursorBlinkTime);
+	WINPORT(SetConsoleCursorBlinkTime)(nullptr, Opt.CursorBlinkTime);
 
 	if (!Lang.Init(g_strFarPath,true,Msg::MaxMsgId))
 	{

@@ -113,9 +113,9 @@ static const wchar_t *HelpContents=L"Contents";
 
 Help::Help(const wchar_t *Topic, const wchar_t *Mask, DWORD aFlags):
 	Cma(MACROAREA_HELP),
-	ErrorHelp(TRUE),
-	IsNewTopic(TRUE),
-	MouseDown(FALSE),
+	ErrorHelp(true),
+	IsNewTopic(true),
+	MouseDown(false),
 	CurColor(FarColorToReal(COL_HELPTEXT)),
 	CtrlTabSize(8)
 {
@@ -165,7 +165,7 @@ Help::Help(const wchar_t *Topic, const wchar_t *Mask, DWORD aFlags):
 	}
 	else
 	{
-		ErrorHelp=TRUE;
+		ErrorHelp = true;
 
 		if (!(aFlags & FHELP_NOSHOWERROR))
 		{
@@ -232,11 +232,12 @@ int Help::ReadHelp(const wchar_t *Mask)
 	}
 
 	UINT nCodePage = CP_UTF8;
-	FILE *HelpFile=OpenLangFile(strPath,(!*Mask?HelpFileMask:Mask),Opt.strHelpLanguage,strFullHelpPathName, nCodePage);
+	FILE *HelpFile = OpenLangFile(strPath, (!*Mask ? HelpFileMask : Mask), Opt.strHelpLanguage,
+			strFullHelpPathName, nCodePage);
 
 	if (!HelpFile)
 	{
-		ErrorHelp=TRUE;
+		ErrorHelp = true;
 
 		if (!ScreenObject::Flags.Check(FHELPOBJ_ERRCANNOTOPENHELP))
 		{
@@ -288,7 +289,7 @@ int Help::ReadHelp(const wchar_t *Mask)
 
 	StrCount=0;
 	FixCount=0;
-	TopicFound=0;
+	TopicFound=false;
 	RepeatLastLine=FALSE;
 	BreakProcess=FALSE;
 	int NearTopicFound=0;
@@ -443,7 +444,7 @@ int Help::ReadHelp(const wchar_t *Mask)
 			}
 			else if (!StrCmpI(strReadStr.CPtr()+1,StackData.strHelpTopic))
 			{
-				TopicFound=1;
+				TopicFound=true;
 				NearTopicFound=1;
 			}
 		}
@@ -626,7 +627,7 @@ m1:
 	AddLine(L"");
 	fclose(HelpFile);
 	FixSize=FixCount?FixCount+1:0;
-	ErrorHelp=FALSE;
+	ErrorHelp = false;
 
 	if (IsNewTopic)
 	{
@@ -692,7 +693,7 @@ void Help::DisplayObject()
 	{
 		if (!ErrorHelp) // если это убрать, то при несуществующей ссылки
 		{              // с нынешним манагером попадаем в бесконечный цикл.
-			ErrorHelp=TRUE;
+			ErrorHelp = true;
 
 			if (!(StackData.Flags&FHELP_NOSHOWERROR))
 			{
@@ -1258,10 +1259,10 @@ int Help::ProcessKey(FarKey Key)
 			if (StrCmpI(StackData.strHelpTopic,HelpOnHelpTopic))
 			{
 				Stack->Push(&StackData);
-				IsNewTopic=TRUE;
+				IsNewTopic = true;
 				JumpTopic(HelpOnHelpTopic);
-				IsNewTopic=FALSE;
-				ErrorHelp=FALSE;
+				IsNewTopic = false;
+				ErrorHelp = false;
 			}
 
 			return TRUE;
@@ -1272,10 +1273,10 @@ int Help::ProcessKey(FarKey Key)
 			if (StrCmpI(StackData.strHelpTopic,HelpContents))
 			{
 				Stack->Push(&StackData);
-				IsNewTopic=TRUE;
+				IsNewTopic = true;
 				JumpTopic(HelpContents);
-				ErrorHelp=FALSE;
-				IsNewTopic=FALSE;
+				ErrorHelp = false;
+				IsNewTopic = false;
 			}
 
 			return TRUE;
@@ -1288,10 +1289,10 @@ int Help::ProcessKey(FarKey Key)
 				if (GetSearchReplaceParams(false, LastSearch, L"HelpSearch", L""))
 				{
 					Stack->Push(&StackData);
-					IsNewTopic=TRUE;
+					IsNewTopic = true;
 					JumpTopic(FoundContents);
-					ErrorHelp=FALSE;
-					IsNewTopic=FALSE;
+					ErrorHelp = false;
+					IsNewTopic = false;
 				}
 			}
 
@@ -1303,10 +1304,10 @@ int Help::ProcessKey(FarKey Key)
 			if (StrCmpI(StackData.strHelpTopic,PluginContents))
 			{
 				Stack->Push(&StackData);
-				IsNewTopic=TRUE;
+				IsNewTopic = true;
 				JumpTopic(PluginContents);
-				ErrorHelp=FALSE;
-				IsNewTopic=FALSE;
+				ErrorHelp = false;
+				IsNewTopic = false;
 			}
 
 			return TRUE;
@@ -1319,7 +1320,7 @@ int Help::ProcessKey(FarKey Key)
 			{
 				Stack->Pop(&StackData);
 				JumpTopic(StackData.strHelpTopic);
-				ErrorHelp=FALSE;
+				ErrorHelp=false;
 				return TRUE;
 			}
 
@@ -1331,7 +1332,7 @@ int Help::ProcessKey(FarKey Key)
 			if (!StackData.strSelTopic.IsEmpty() && StrCmpI(StackData.strHelpTopic,StackData.strSelTopic))
 			{
 				Stack->Push(&StackData);
-				IsNewTopic=TRUE;
+				IsNewTopic = true;
 
 				if (!JumpTopic())
 				{
@@ -1339,8 +1340,8 @@ int Help::ProcessKey(FarKey Key)
 					ReadHelp(StackData.strHelpMask); // вернем то, что отображали.
 				}
 
-				ErrorHelp=FALSE;
-				IsNewTopic=FALSE;
+				ErrorHelp = false;
+				IsNewTopic = false;
 			}
 
 			return TRUE;
@@ -1502,7 +1503,7 @@ int Help::JumpTopic(const wchar_t *JumpTopic)
 
 	if (HelpList.empty())
 	{
-		ErrorHelp=TRUE;
+		ErrorHelp = true;
 
 		if (!(StackData.Flags&FHELP_NOSHOWERROR))
 		{
@@ -1630,14 +1631,14 @@ int Help::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 	  + Запомнить нажатие клавиши мышки и только в этом случае реагировать при отпускании */
 	if (!MouseEvent->dwEventFlags &&
 	        (MouseEvent->dwButtonState & (FROM_LEFT_1ST_BUTTON_PRESSED|RIGHTMOST_BUTTON_PRESSED)))
-		MouseDown = TRUE;
+		MouseDown = true;
 
 	if (!MouseEvent->dwEventFlags &&
 	        !(MouseEvent->dwButtonState & (FROM_LEFT_1ST_BUTTON_PRESSED|RIGHTMOST_BUTTON_PRESSED)) &&
 	        MouseDown &&
 	        !StackData.strSelTopic.IsEmpty())
 	{
-		MouseDown = FALSE;
+		MouseDown = false;
 		ProcessKey(KEY_ENTER);
 	}
 
@@ -1771,14 +1772,14 @@ void Help::Search(FILE *HelpFile,uintptr_t nCodePage)
 	FixCount=1;
 	FixSize=2;
 	StackData.TopStr=0;
-	TopicFound=TRUE;
+	TopicFound = true;
 	StackData.CurX=StackData.CurY=0;
 	strCtrlColorChar.Clear();
 
 	FARString strTitleLine = LastSearch.SearchStr;
 	AddTitle(strTitleLine);
 
-	bool TopicFound=false;
+	bool TopicFound = false;
 	OldGetFileString GetStr(HelpFile);
 	int nStrLength;
 	wchar_t *ReadStr;
@@ -1846,7 +1847,7 @@ void Help::ReadDocumentsHelp(int TypeIndex)
 	FixCount=1;
 	FixSize=2;
 	StackData.TopStr=0;
-	TopicFound=TRUE;
+	TopicFound=true;
 	StackData.CurX=StackData.CurY=0;
 	strCtrlColorChar.Clear();
 	const wchar_t *PtrTitle=0, *ContentsName=0;
@@ -1875,7 +1876,7 @@ void Help::ReadDocumentsHelp(int TypeIndex)
 				strPath = pPlugin->GetModuleName();
 				CutToSlash(strPath);
 				UINT nCodePage = CP_UTF8;
-				FILE *HelpFile=OpenLangFile(strPath,HelpFileMask,Opt.strHelpLanguage,strFullFileName, nCodePage);
+				FILE *HelpFile = OpenLangFile(strPath, HelpFileMask, Opt.strHelpLanguage, strFullFileName, nCodePage);
 
 				if (HelpFile)
 				{
@@ -2040,10 +2041,10 @@ void Help::OnChangeFocus(int Focus)
 
 void Help::ResizeConsole()
 {
-	int OldIsNewTopic=IsNewTopic;
-	BOOL ErrCannotOpenHelp=ScreenObject::Flags.Check(FHELPOBJ_ERRCANNOTOPENHELP);
+	auto OldIsNewTopic = IsNewTopic;
+	BOOL ErrCannotOpenHelp = ScreenObject::Flags.Check(FHELPOBJ_ERRCANNOTOPENHELP);
 	ScreenObject::Flags.Set(FHELPOBJ_ERRCANNOTOPENHELP);
-	IsNewTopic=FALSE;
+	IsNewTopic = false;
 	delete TopScreen;
 	TopScreen=nullptr;
 	Hide();
@@ -2057,11 +2058,11 @@ void Help::ResizeConsole()
 		SetPosition(4,2,ScrX-4,ScrY-2);
 
 	ReadHelp(StackData.strHelpMask);
-	ErrorHelp=FALSE;
+	ErrorHelp = false;
 	//StackData.CurY--; // ЭТО ЕСМЬ КОСТЫЛЬ (пусть пока будет так!)
 	StackData.CurX--;
 	MoveToReference(1,1);
-	IsNewTopic=OldIsNewTopic;
+	IsNewTopic = OldIsNewTopic;
 	ScreenObject::Flags.Change(FHELPOBJ_ERRCANNOTOPENHELP,ErrCannotOpenHelp);
 	FrameManager->ImmediateHide();
 	FrameManager->RefreshFrame();

@@ -43,6 +43,6 @@ class RedrawDesktop
 		bool ClockVisible;
 
 	public:
-		RedrawDesktop(BOOL IsHidden=FALSE);
+		RedrawDesktop(bool IsHidden = false);
 		~RedrawDesktop();
 };

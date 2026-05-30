@@ -408,7 +408,7 @@ int TreeList::ReadTree()
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	// SaveScreen SaveScr;
 	SCOPED_ACTION(TPreRedrawFuncGuard)(TreeList::PR_MsgReadTree);
-	ScanTree ScTree(FALSE);
+	ScanTree ScTree(false);
 	FAR_FIND_DATA_EX fdata;
 	FARString strFullName;
 	SaveState();
@@ -440,7 +440,7 @@ int TreeList::ReadTree()
 	TreeCount = 1;
 	int FirstCall = TRUE, AscAbort = FALSE;
 	TreeStartTime = GetProcessUptimeMSec();
-	SCOPED_ACTION(RefreshFrameManager)(ScrX, ScrY, TreeStartTime, FALSE);    // DontRedrawFrame);
+	SCOPED_ACTION(RefreshFrameManager)(ScrX, ScrY, TreeStartTime, false);    // DontRedrawFrame);
 	ScTree.SetFindPath(strRoot, L"*", FSCANTREE_NOFILES | FSCANTREE_NODEVICES, Opt.Tree.ExclSubTreeMask);
 	LastScrX = ScrX;
 	LastScrY = ScrY;
@@ -1561,7 +1561,7 @@ void TreeList::ReadSubTree(const wchar_t *Path)
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	// SaveScreen SaveScr;
 	SCOPED_ACTION(TPreRedrawFuncGuard)(TreeList::PR_MsgReadTree);
-	ScanTree ScTree(FALSE);
+	ScanTree ScTree(false);
 	FAR_FIND_DATA_EX fdata;
 	FARString strDirName;
 	FARString strFullName;

@@ -350,7 +350,7 @@ int SubstFileName(FARString &strStr,            // результирующая 
                   const wchar_t *Name,           // Длинное имя
                   FARString *pListName,
                   FARString *pAnotherListName,
-                  int   IgnoreInput,    // TRUE - не исполнять "!?<title>?<init>!"
+                  bool  IgnoreInput,    // true - не исполнять "!?<title>?<init>!"
                   const wchar_t *CmdLineDir)     // Каталог исполнения
 {
 	if (pListName)

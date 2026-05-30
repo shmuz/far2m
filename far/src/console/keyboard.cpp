@@ -647,7 +647,7 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 
 		if (CloseFAR)
 		{
-//      CloseFAR=FALSE;
+//      CloseFAR=false;
 			/* $ 30.08.2001 IS
 			   При принудительном закрытии Фара пытаемся вести себя так же, как и при
 			   нажатии на F10 в панелях, только не запрашиваем подтверждение закрытия,

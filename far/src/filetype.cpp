@@ -104,7 +104,7 @@ static int GetDescriptionWidth(ConfigReader &cfg_reader, const wchar_t *Name=nul
 				continue;
 
 			FARString strExpandedDesc = strDescription;
-			SubstFileName(strExpandedDesc,Name,nullptr,nullptr,TRUE);
+			SubstFileName(strExpandedDesc, Name, nullptr, nullptr, true);
 			CurWidth = HiStrCellsCount(strExpandedDesc);
 		}
 
@@ -206,7 +206,7 @@ bool ProcessLocalFileTypes(const wchar_t *Name, int Mode, bool CanAddHistory,
 
 		TypesMenuItem.Clear();
 		FARString strCommandText = strCommand;
-		SubstFileName(strCommandText,Name,nullptr,nullptr,TRUE);
+		SubstFileName(strCommandText, Name, nullptr, nullptr, true);
 
 		ActualCmdCount++;
 		FARString strMenuText;
@@ -218,7 +218,7 @@ bool ProcessLocalFileTypes(const wchar_t *Name, int Mode, bool CanAddHistory,
 			if (!strDescription.IsEmpty())
 			{
 				strTitle = strDescription;
-				SubstFileName(strTitle, Name,nullptr,nullptr,TRUE);
+				SubstFileName(strTitle, Name, nullptr, nullptr, true);
 			}
 
 			size_t Pos=0;
@@ -291,7 +291,7 @@ bool ProcessLocalFileTypes(const wchar_t *Name, int Mode, bool CanAddHistory,
 				// на команду "@type !@!" пропадал с экрана)
 				// сделаем по аналогии с CommandLine::CmdExecute()
 				{
-					RedrawDesktop RdrwDesktop(TRUE);
+					RedrawDesktop RdrwDesktop(true);
 					Execute(strCommand, 0, 0, ListFileUsed);
 					ScrollScreen(1); // обязательно, иначе деструктор RedrawDesktop
 					// проредравив экран забьет последнюю строку вывода.

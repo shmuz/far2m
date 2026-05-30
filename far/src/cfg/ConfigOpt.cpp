@@ -342,7 +342,7 @@ static FARConfig CFG[]
 	{OST_NONE,   NSecSystem, "SetAttrFolderRules",           &Opt.SetAttrFolderRules, 1, OPT_BOOLEAN},
 	{OST_NONE,   NSecSystem, "MaxPositionCache",             &Opt.MaxPositionCache, POSCACHE_MAX_ELEMENTS},
 	{OST_NONE,   NSecSystem, "ConsoleDetachKey",             &strKeyNameConsoleDetachKey, L"CtrlAltTab"},
-	{OST_NONE,   NSecSystem, "SilentLoadPlugin",             &Opt.LoadPlug.SilentLoadPlugin, 0, OPT_BOOLEAN},
+	{OST_NONE,   NSecSystem, "SilentLoadPlugin",             &Opt.LoadPlug.SilentLoadPlugin, false},
 	{OST_COMMON, NSecSystem, "ScanSymlinks",                 &Opt.LoadPlug.ScanSymlinks, 1, OPT_BOOLEAN},
 	{OST_COMMON, NSecSystem, "MultiMakeDir",                 &Opt.MultiMakeDir, 0, OPT_BOOLEAN},
 	{OST_NONE,   NSecSystem, "MsWheelDelta",                 &Opt.MsWheelDelta, 1},
@@ -362,7 +362,7 @@ static FARConfig CFG[]
 	{OST_COMMON, NSecSystem, "ScanJunction",                 &Opt.ScanJunction, 1, OPT_BOOLEAN},
 	{OST_COMMON, NSecSystem, "OnlyFilesSize",                &Opt.OnlyFilesSize, 0, OPT_BOOLEAN},
 	{OST_NONE,   NSecSystem, "UsePrintManager",              &Opt.UsePrintManager, 1, OPT_BOOLEAN},
-	{OST_NONE,   NSecSystem, "WindowMode",                   &Opt.WindowMode, 0, OPT_BOOLEAN},
+	{OST_NONE,   NSecSystem, "WindowMode",                   &Opt.WindowMode, false},
 
 	{OST_NONE,   NSecPanelTree, "MinTreeCount",              &Opt.Tree.MinTreeCount, 4},
 	{OST_NONE,   NSecPanelTree, "TreeFileAttr",              &Opt.Tree.TreeFileAttr, FILE_ATTRIBUTE_HIDDEN},
@@ -418,7 +418,7 @@ static FARConfig CFG[]
 	{OST_COMMON, NSecPanel, "ClassicHotkeyLinkResolving",    &Opt.ClassicHotkeyLinkResolving, 1, OPT_BOOLEAN},
 
 	{OST_PANELS, NSecPanelLeft, "Type",                      &Opt.LeftPanel.Type, FILE_PANEL},
-	{OST_COMMON, NSecPanelLeft, "Visible",                   &Opt.LeftPanel.Visible, 1, OPT_BOOLEAN},
+	{OST_COMMON, NSecPanelLeft, "Visible",                   &Opt.LeftPanel.Visible, true},
 	{OST_PANELS, NSecPanelLeft, "Focus",                     &Opt.LeftPanel.Focus, 1, OPT_BOOLEAN},
 	{OST_PANELS, NSecPanelLeft, "ViewMode",                  &Opt.LeftPanel.ViewMode, VIEW_2},
 	{OST_PANELS, NSecPanelLeft, "SortMode",                  &Opt.LeftPanel.SortMode, PanelSortMode::BY_NAME},
@@ -432,7 +432,7 @@ static FARConfig CFG[]
 	{OST_PANELS, NSecPanelLeft, "DirectoriesFirst",          &Opt.LeftPanel.DirectoriesFirst, 1, OPT_BOOLEAN},
 
 	{OST_PANELS, NSecPanelRight, "Type",                     &Opt.RightPanel.Type, FILE_PANEL},
-	{OST_COMMON, NSecPanelRight, "Visible",                  &Opt.RightPanel.Visible, 1, OPT_BOOLEAN},
+	{OST_COMMON, NSecPanelRight, "Visible",                  &Opt.RightPanel.Visible, true},
 	{OST_PANELS, NSecPanelRight, "Focus",                    &Opt.RightPanel.Focus, 0, OPT_BOOLEAN},
 	{OST_PANELS, NSecPanelRight, "ViewMode",                 &Opt.RightPanel.ViewMode, VIEW_2},
 	{OST_PANELS, NSecPanelRight, "SortMode",                 &Opt.RightPanel.SortMode, PanelSortMode::BY_NAME},
@@ -638,7 +638,7 @@ void ConfigOptLoad()
 	ConfigReader cfg_reader;
 
 	/* <ПРЕПРОЦЕССЫ> *************************************************** */
-	bool ExplicitWindowMode=Opt.WindowMode!=FALSE;
+	bool ExplicitWindowMode = Opt.WindowMode;
 	//Opt.LCIDSort=LOCALE_USER_DEFAULT; // проинициализируем на всякий случай
 	/* *************************************************** </ПРЕПРОЦЕССЫ> */
 
@@ -685,7 +685,7 @@ void ConfigOptLoad()
 
 	if(ExplicitWindowMode)
 	{
-		Opt.WindowMode=TRUE;
+		Opt.WindowMode = true;
 	}
 
 	Opt.HelpTabSize=8; // пока жестко пропишем...

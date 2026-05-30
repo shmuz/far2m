@@ -958,7 +958,7 @@ void CommandLine::ShowViewEditHistory()
 		{
 			case HR_VIEWER:
 			{
-				new FileViewer(strStr, TRUE);
+				new FileViewer(strStr, true);
 				break;
 			}
 			case HR_EDITOR: // обычное открытие в редакторе
@@ -1047,7 +1047,7 @@ void CommandLine::CorrectRealScreenCoord()
 
 void CommandLine::ResizeConsole()
 {
-	BackgroundScreen->Resize(ScrX+1, ScrY+1, 2, Opt.WindowMode!=FALSE);
+	BackgroundScreen->Resize(ScrX+1, ScrY+1, 2, Opt.WindowMode);
 //  this->DisplayObject();
 }
 
