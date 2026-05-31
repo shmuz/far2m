@@ -815,13 +815,18 @@ void ConfigOptSaveAutoOptions()
 
 void ConfigOptSave(bool Ask)
 {
-	int SaveFlags = Ask ? (OST_COMMON | OST_PANELS)
-			: (Opt.AutoSaveSetup ? OST_COMMON : 0) | (Opt.AutoSavePanels ? OST_PANELS : 0);
+	int SaveFlags = 0;
 
-	if (SaveFlags == OST_NONE)
-		return;
+	if (Ask) {
+		if (0 == Message(0,2,Msg::SaveSetupTitle,Msg::SaveSetupAsk1,Msg::SaveSetupAsk2,Msg::SaveSetup,Msg::Cancel))
+			SaveFlags = OST_COMMON | OST_PANELS;
+	}
+	else {
+		if (Opt.AutoSaveSetup)    SaveFlags |= OST_COMMON;
+		if (Opt.AutoSavePanels)   SaveFlags |= OST_PANELS;
+	}
 
-	if (Ask && Message(0,2,Msg::SaveSetupTitle,Msg::SaveSetupAsk1,Msg::SaveSetupAsk2,Msg::SaveSetup,Msg::Cancel))
+	if (SaveFlags == 0)
 		return;
 
 	/* <ПРЕПРОЦЕССЫ> *************************************************** */

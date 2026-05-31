@@ -61,7 +61,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 struct CommandLineParams {
 	int StartLine = -1;
 	int StartChar = -1;
-	bool bCustomPlugins = false;
 	FARString DestNames[2];
 };
 
@@ -344,6 +343,7 @@ static void SetupFarPath(const char *Arg0)
 
 static void ParseCommandLine(CommandLineParams &Params, int argc, char **argv)
 {
+	bool bCustomPlugins = false;
 	int CntDestName = 0; // количество параметров-имен каталогов
 
 	for (int I=1; I<argc; I++)
@@ -445,7 +445,7 @@ static void ParseCommandLine(CommandLineParams &Params, int argc, char **argv)
 
 			else if (argUpper.Begins(L"-P"))
 			{
-				Params.bCustomPlugins = true;
+				bCustomPlugins = true;
 				if (argLen > 2)
 				{
 					UserDefinedList Udl(ULF_UNIQUE | ULF_CASESENSITIVE, L":");
@@ -483,6 +483,22 @@ static void ParseCommandLine(CommandLineParams &Params, int argc, char **argv)
 			}
 		}
 	}
+
+	if (bCustomPlugins) { //если есть ключ /p то он отменяет /co
+		Opt.LoadPlug.MainPluginDir = false;
+		Opt.LoadPlug.PluginsPersonal = false;
+		Opt.LoadPlug.PluginsCacheOnly = false;
+	}
+	else if (Opt.LoadPlug.PluginsCacheOnly) {
+		Opt.LoadPlug.MainPluginDir = false;
+		Opt.LoadPlug.PluginsPersonal = false;
+		Opt.LoadPlug.PluginsCacheOnly = true;
+	}
+	else {
+		Opt.LoadPlug.MainPluginDir = true; // По умолчанию - брать плагины из основного каталога
+		Opt.LoadPlug.PluginsPersonal = true;
+		Opt.LoadPlug.PluginsCacheOnly = false;
+	}
 }
 
 int FarAppMain(int argc, char **argv)
@@ -498,8 +514,6 @@ int FarAppMain(int argc, char **argv)
 	OverrideInterThreadID(gMainThreadID);
 
 	CharClasses::InitCharFlags();
-
-	Opt.Macro.DisableMacro = 0;
 
 	Opt.IsUserAdmin = (geteuid() == 0);
 	if (Opt.IsUserAdmin)
@@ -518,33 +532,17 @@ int FarAppMain(int argc, char **argv)
 	setenv("FARHOME", g_strFarPath.GetMB().c_str(), 1);
 	AddEndSlash(g_strFarPath);
 
+	ConfigOptLoad();
+
 	CommandLineParams Params;
-	ParseCommandLine(Params, argc, argv);
+	ParseCommandLine(Params, argc, argv); // call it *after* ConfigOptLoad()
 
 	//Инициализация массива клавиш. Должна быть после CopyGlobalSettings!
 	InitKeysArray();
 	//WaitForInputIdle(GetCurrentProcess(),0);
 	std::set_new_handler(nullptr);
 
-	if (Params.bCustomPlugins) { //если есть ключ /p то он отменяет /co
-		Opt.LoadPlug.MainPluginDir = false;
-		Opt.LoadPlug.PluginsPersonal = false;
-		Opt.LoadPlug.PluginsCacheOnly = false;
-	}
-	else if (Opt.LoadPlug.PluginsCacheOnly) {
-		Opt.LoadPlug.MainPluginDir = false;
-		Opt.LoadPlug.PluginsPersonal = false;
-		Opt.LoadPlug.PluginsCacheOnly = true;
-	}
-	else {
-		Opt.LoadPlug.MainPluginDir = true; // По умолчанию - брать плагины из основного каталога
-		Opt.LoadPlug.PluginsPersonal = true;
-		Opt.LoadPlug.PluginsCacheOnly = false;
-	}
-
-	ConfigOptLoad();
 	FarColors::InitFarColors();
-
 	InitConsole();
 	WINPORT(SetConsoleCursorBlinkTime)(nullptr, Opt.CursorBlinkTime);
 
