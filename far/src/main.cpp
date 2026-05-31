@@ -58,7 +58,15 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "udlist.hpp"
 #include "vtshell.h"
 
+struct CommandLineParams {
+	int StartLine = -1;
+	int StartChar = -1;
+	bool bCustomPlugins = false;
+	FARString DestNames[2];
+};
+
 static const char EnvFarSettings[] = "FARSETTINGS"; // used in utils/src/InMy.cpp
+static unsigned int gMainThreadID;
 
 static void print_help(const char *self)
 {
@@ -334,50 +342,9 @@ static void SetupFarPath(const char *Arg0)
 	}
 }
 
-static unsigned int gMainThreadID;
-
-int FarAppMain(int argc, char **argv)
+static void ParseCommandLine(CommandLineParams &Params, int argc, char **argv)
 {
-	// avoid killing process due to broker terminated unexpectedly
-	signal(SIGPIPE, SIG_IGN);
-
-	fprintf(stderr, "argv[0]='%s' g_strFarModuleName='%ls' translation_prefix='%ls' temp='%s' config='%s'\n",
-		argv[0], g_strFarModuleName.CPtr(), GetPathTranslationPrefix(), InMyTemp().c_str(), InMyConfig().c_str());
-
-	// make current thread to be same as main one to avoid FARString reference-counter
-	// from cloning main strings from current one
-	OverrideInterThreadID(gMainThreadID);
-
-	CharClasses::InitCharFlags();
-
-	FARString DestNames[2];
 	int CntDestName = 0; // количество параметров-имен каталогов
-	int StartLine = -1, StartChar = -1;
-	bool bCustomPlugins = false;
-
-	Opt.Macro.DisableMacro = 0;
-
-	Opt.LoadPlug.MainPluginDir = true; // По умолчанию - брать плагины из основного каталога
-	Opt.LoadPlug.PluginsPersonal = true;
-	Opt.LoadPlug.PluginsCacheOnly = false;
-
-	Opt.IsUserAdmin = (geteuid()==0);
-	if (Opt.IsUserAdmin) {
-		setenv("FARADMINMODE", "1", 1);
-	} else {
-		unsetenv("FARADMINMODE");
-	}
-
-	setenv("FARPID", ToDec(getpid()).c_str(), 1);
-
-	g_strFarPath = g_strFarModuleName;        // /usr/bin/far2m
-	bool translated = TranslateFarString<TranslateInstallPath_Bin2Share>(g_strFarPath); // /usr/share/far2m
-	CutToSlash(g_strFarPath, true);           // /usr/share
-	if (translated) {
-		g_strFarPath.Append("/" APP_BASENAME);  // /usr/share/far2m
-	}
-	setenv("FARHOME", g_strFarPath.GetMB().c_str(), 1);
-	AddEndSlash(g_strFarPath);
 
 	for (int I=1; I<argc; I++)
 	{
@@ -437,8 +404,8 @@ int FarAppMain(int argc, char **argv)
 					unsigned int stLine, stChar;
 					int N = sscanf(argv[I] + 2, "%u:%u", &stLine, &stChar);
 					if (N > 0) {
-						StartLine = stLine;
-						if (N > 1) StartChar = stChar;
+						Params.StartLine = stLine;
+						if (N > 1) Params.StartChar = stChar;
 					}
 					else continue;
 				}
@@ -478,7 +445,7 @@ int FarAppMain(int argc, char **argv)
 
 			else if (argUpper.Begins(L"-P"))
 			{
-				bCustomPlugins = true;
+				Params.bCustomPlugins = true;
 				if (argLen > 2)
 				{
 					UserDefinedList Udl(ULF_UNIQUE | ULF_CASESENSITIVE, L":");
@@ -502,27 +469,64 @@ int FarAppMain(int argc, char **argv)
 
 		if (!switchHandled) // простые параметры. Их может быть max две штукА.
 		{
-			if (CntDestName < 2 && *arg_w)
+			if (CntDestName < 2 && !arg_w.IsEmpty())
 			{
 				if (IsPluginPrefixPath(arg_w)) {
-					DestNames[CntDestName++] = arg_w;
+					Params.DestNames[CntDestName++] = arg_w;
 				}
 				else {
 					FARString tmpStr = arg_w;
 					ConvertNameToFull(tmpStr, tmpStr);
 					if (apiGetFileAttributes(tmpStr) != INVALID_FILE_ATTRIBUTES)
-						DestNames[CntDestName++] = tmpStr;
+						Params.DestNames[CntDestName++] = tmpStr;
 				}
 			}
 		}
 	}
+}
+
+int FarAppMain(int argc, char **argv)
+{
+	// avoid killing process due to broker terminated unexpectedly
+	signal(SIGPIPE, SIG_IGN);
+
+	fprintf(stderr, "argv[0]='%s' g_strFarModuleName='%ls' translation_prefix='%ls' temp='%s' config='%s'\n",
+		argv[0], g_strFarModuleName.CPtr(), GetPathTranslationPrefix(), InMyTemp().c_str(), InMyConfig().c_str());
+
+	// make current thread to be same as main one to avoid FARString reference-counter
+	// from cloning main strings from current one
+	OverrideInterThreadID(gMainThreadID);
+
+	CharClasses::InitCharFlags();
+
+	Opt.Macro.DisableMacro = 0;
+
+	Opt.IsUserAdmin = (geteuid() == 0);
+	if (Opt.IsUserAdmin)
+		setenv("FARADMINMODE", "1", 1);
+	else
+		unsetenv("FARADMINMODE");
+
+	setenv("FARPID", ToDec(getpid()).c_str(), 1);
+
+	g_strFarPath = g_strFarModuleName;        // /usr/bin/far2m
+	bool translated = TranslateFarString<TranslateInstallPath_Bin2Share>(g_strFarPath); // /usr/share/far2m
+	CutToSlash(g_strFarPath, true);           // /usr/share
+	if (translated) {
+		g_strFarPath.Append("/" APP_BASENAME);  // /usr/share/far2m
+	}
+	setenv("FARHOME", g_strFarPath.GetMB().c_str(), 1);
+	AddEndSlash(g_strFarPath);
+
+	CommandLineParams Params;
+	ParseCommandLine(Params, argc, argv);
 
 	//Инициализация массива клавиш. Должна быть после CopyGlobalSettings!
 	InitKeysArray();
 	//WaitForInputIdle(GetCurrentProcess(),0);
 	std::set_new_handler(nullptr);
 
-	if (bCustomPlugins) { //если есть ключ /p то он отменяет /co
+	if (Params.bCustomPlugins) { //если есть ключ /p то он отменяет /co
 		Opt.LoadPlug.MainPluginDir = false;
 		Opt.LoadPlug.PluginsPersonal = false;
 		Opt.LoadPlug.PluginsCacheOnly = false;
@@ -530,6 +534,12 @@ int FarAppMain(int argc, char **argv)
 	else if (Opt.LoadPlug.PluginsCacheOnly) {
 		Opt.LoadPlug.MainPluginDir = false;
 		Opt.LoadPlug.PluginsPersonal = false;
+		Opt.LoadPlug.PluginsCacheOnly = true;
+	}
+	else {
+		Opt.LoadPlug.MainPluginDir = true; // По умолчанию - брать плагины из основного каталога
+		Opt.LoadPlug.PluginsPersonal = true;
+		Opt.LoadPlug.PluginsCacheOnly = false;
 	}
 
 	ConfigOptLoad();
@@ -563,7 +573,7 @@ int FarAppMain(int argc, char **argv)
 	if ( Opt.OnlyEditorViewerUsed == Options::ONLY_EDITOR && Opt.strEditViewArg.IsEmpty() )
 		Opt.strEditViewArg = Msg::NewFileName;
 
-	int Result = MainProcess(DestNames[0],DestNames[1],StartLine,StartChar);
+	int Result = MainProcess(Params.DestNames[0], Params.DestNames[1], Params.StartLine, Params.StartChar);
 
 	EmptyInternalClipboard();
 	VTShell_Shutdown();//ensure VTShell deinitialized before statics destructors called
@@ -652,7 +662,7 @@ int _cdecl main(int argc, char *argv[])
 {
 	auto ClearArg = [&] (int pos) {
 		static char ZeroChar = 0;
-	  argv[pos] = &ZeroChar;
+		argv[pos] = &ZeroChar;
 	};
 
 	Opt.OnlyEditorViewerUsed = Options::INCLUDING_PANELS;
@@ -687,7 +697,7 @@ int _cdecl main(int argc, char *argv[])
 		}
 	}
 
-	unsetenv(EnvFarSettings); // don't inherit from parent process in any case
+	unsetenv(EnvFarSettings); // don't inherit from parent process
 
 	const char *askpass = getenv("SUDO_ASKPASS");
 	if (askpass && strstr(askpass, "far2l_askpass")) {
