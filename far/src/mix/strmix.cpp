@@ -126,35 +126,20 @@ static wchar_t * WINAPI InsertCustomQuote(wchar_t *Str,wchar_t QuoteChar)
 	return Str;
 }
 
-static FARString& InsertCustomQuote(FARString &strStr,wchar_t QuoteChar)
+static FARString& InsertCustomQuote(FARString &strStr, wchar_t QuoteChar)
 {
-	size_t l = strStr.GetLength();
-
-	if (strStr.At(0) != QuoteChar)
+	if (strStr.IsEmpty() || strStr[0] != QuoteChar)
 	{
-		strStr.Insert(0,QuoteChar);
-		l++;
-	}
-
-	if (l==1 || strStr.At(l-1) != QuoteChar)
-	{
+		strStr.Insert(0, QuoteChar);
 		strStr += QuoteChar;
 	}
 
 	return strStr;
 }
 
-wchar_t * WINAPI InsertQuote(wchar_t *Str)
+static wchar_t * InsertQuote(wchar_t *Str)
 {
 	return InsertCustomQuote(Str,L'\"');
-}
-
-wchar_t * WINAPI InsertRegexpQuote(wchar_t *Str)
-{
-	if (Str && *Str != L'/')
-		return InsertCustomQuote(Str,L'/');
-	else          //выражение вида /regexp/i не дополняем слэшем
-		return Str;
 }
 
 FARString& InsertQuote(FARString &strStr)
@@ -164,10 +149,7 @@ FARString& InsertQuote(FARString &strStr)
 
 FARString& InsertRegexpQuote(FARString &strStr)
 {
-	if (strStr.IsEmpty() || strStr[0] != L'/')
-		return InsertCustomQuote(strStr,L'/');
-	else          //выражение вида /regexp/i не дополняем слэшем
-		return strStr;
+	return InsertCustomQuote(strStr, L'/'); //выражение вида /regexp/i не дополняем слэшем
 }
 
 

@@ -67,11 +67,9 @@ std::string UnescapeUnprintable(const std::string &str);
 
 FARString &EscapeSpace(FARString &strStr);
 FARString &UnEscapeSpace(FARString &strStr);
-wchar_t* WINAPI InsertQuote(wchar_t *Str);
 FARString& InsertQuote(FARString& strStr);
 void WINAPI Unquote(FARString &strStr);
 void WINAPI Unquote(wchar_t *Str);
-wchar_t * WINAPI InsertRegexpQuote(wchar_t *Str);
 FARString& InsertRegexpQuote(FARString& strStr);
 void UnquoteExternal(FARString &strStr);
 wchar_t* WINAPI RemoveLeadingSpaces(wchar_t *Str);
