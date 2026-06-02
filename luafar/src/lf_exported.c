@@ -1418,19 +1418,11 @@ int LF_ProcessViewerEvent (lua_State* L, int Event, void* Param)
 	if (!(GetPluginData(L)->Flags & PDF_PROCESSINGERROR) &&
 			GetExportFunction(L, "ProcessViewerEvent"))     //+1: Func
 	{
-		struct ViewerInfo vi;
-		vi.StructSize = sizeof(vi);
-		if (PSInfo.ViewerControlV2(-1, VCTL_GETINFO, &vi))
-			lua_pushinteger(L, vi.ViewerID);
-		else
-			lua_pushnil(L);
+		int ViewerID = Param ? *(int*)Param : -1;
+
+		lua_pushinteger(L, ViewerID);
 		lua_pushinteger(L, Event);
-		switch(Event) {
-			case VE_GOTFOCUS:
-			case VE_KILLFOCUS:
-			case VE_CLOSE:  lua_pushinteger(L, *(int*)Param); break;
-			default:        lua_pushnil(L); break;
-		}
+		lua_pushnil(L);
 
 		if (pcall_msg(L, 3, 1) == 0)         //+1
 		{

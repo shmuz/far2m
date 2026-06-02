@@ -433,7 +433,7 @@ int Viewer::OpenFile(const wchar_t *Name, int warning)
 	CtrlObject->Plugins.CurViewer = this;    // HostFileViewer;
 	/* $ 15.09.2001 tran
 	   пора легализироваться */
-	CtrlObject->Plugins.ProcessViewerEvent(VE_READ, nullptr);
+	CtrlObject->Plugins.ProcessViewerEvent(VE_READ, &ViewerID);
 	bVE_READ_Sent = true;
 	return TRUE;
 }
