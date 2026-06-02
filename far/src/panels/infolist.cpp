@@ -161,6 +161,15 @@ void InfoList::ClearTitles()
 
 void InfoList::DisplayObject()
 {
+	struct Reenter {
+		BitFlags &mFlags;
+		Reenter(BitFlags &Flags) : mFlags(Flags) { mFlags.Set(FSCROBJ_ISREDRAWING); }
+		~Reenter() { mFlags.Clear(FSCROBJ_ISREDRAWING); }
+	};
+	if (Flags.Check(FSCROBJ_ISREDRAWING))
+		return;
+
+	SCOPED_ACTION(Reenter)(Flags);
 	FARString strTitle;
 	FARString strOutStr;
 	FARString strRealDir;
