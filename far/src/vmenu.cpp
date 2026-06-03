@@ -1818,13 +1818,13 @@ void VMenu::DrawTitles()
 		FARString strDisplayTitle = strTitle;
 
 		if (bFilterEnabled) {
-			int displayLen = (int)strDisplayTitle.GetLength();
+			int displayLen = (int)strDisplayTitle.CellsCount();
 			if (displayLen) {
-				int overflow = displayLen + (int)strFilter.GetLength() + 3 - MaxTitleLength;
+				int overflow = displayLen + (int)strFilter.CellsCount() + 3 - MaxTitleLength;
 				if (overflow > 0) {
 					int newLen = displayLen - overflow - 1; // reserve 1 for ellipsis
 					if (newLen > 0) {
-						strDisplayTitle.Truncate(newLen);
+						strDisplayTitle.TruncateByCells(newLen);
 						strDisplayTitle += L"\x2026 "; // ellipsis + space
 					}
 					else
@@ -1839,17 +1839,17 @@ void VMenu::DrawTitles()
 			strDisplayTitle += bFilterLocked ? L">" : L"]";
 		}
 
-		int WidthTitle = Min<int>(strDisplayTitle.GetLength(), MaxTitleLength);
+		int WidthTitle = Min<int>(strDisplayTitle.CellsCount(), MaxTitleLength);
 		GotoXY(X1 + (X2 - X1 - 1 - WidthTitle) / 2, Y1);
 		SetColor(Colors[VMenuColorTitle]);
-		FS << L" " << fmt::Size(WidthTitle) << strDisplayTitle << L" ";
+		FS << L" " << fmt::Cells() << fmt::Size(WidthTitle) << strDisplayTitle << L" ";
 	}
 
 	if (!strBottomTitle.IsEmpty()) {
-		int WidthTitle = Min<int>(strBottomTitle.GetLength(), MaxTitleLength);
+		int WidthTitle = Min<int>(strBottomTitle.CellsCount(), MaxTitleLength);
 		GotoXY(X1 + (X2 - X1 - 1 - WidthTitle) / 2, Y2);
 		SetColor(Colors[VMenuColorTitle]);
-		FS << L" " << fmt::Size(WidthTitle) << strBottomTitle << L" ";
+		FS << L" " << fmt::Cells() << fmt::Size(WidthTitle) << strBottomTitle << L" ";
 	}
 }
 
