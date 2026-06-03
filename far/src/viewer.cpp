@@ -250,7 +250,7 @@ Viewer::~Viewer()
 
 	if (!OpenFailed && bVE_READ_Sent) {
 		CtrlObject->Plugins.CurViewer = this;    // HostFileViewer;
-		CtrlObject->Plugins.ProcessViewerEvent(VE_CLOSE, &ViewerID);
+		CtrlObject->Plugins.ProcessViewerEvent(VE_CLOSE, ViewerID);
 	}
 
 	if (CtrlObject->Plugins.CurViewer == this) {
@@ -431,9 +431,7 @@ int Viewer::OpenFile(const wchar_t *Name, int warning)
 	ChangeViewKeyBar();
 	AdjustWidth();
 	CtrlObject->Plugins.CurViewer = this;    // HostFileViewer;
-	/* $ 15.09.2001 tran
-	   пора легализироваться */
-	CtrlObject->Plugins.ProcessViewerEvent(VE_READ, &ViewerID);
+	CtrlObject->Plugins.ProcessViewerEvent(VE_READ, ViewerID);
 	bVE_READ_Sent = true;
 	return TRUE;
 }

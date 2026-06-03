@@ -788,18 +788,18 @@ int PluginManager::ProcessEditorEvent(int Event, void *Param, Editor *EditorInst
 	return 0;
 }
 
-int PluginManager::ProcessViewerEvent(int Event, void *Param)
+int PluginManager::ProcessViewerEvent(int Event, int ViewerId)
 {
 	if (FrameManager->ManagerIsDown())
 		return 0;
 
 	for (auto pPlugin: PluginsData)
 	{
-		int ViewerID = Param ? *static_cast<int*>(Param) : -1; // a separate copy of ViewerID for each plugin
+		int Id = ViewerId; // a separate copy of ViewerID for each plugin
 
 		// The return value is currently ignored
 		if (pPlugin->HasProcessViewerEvent())
-			pPlugin->ProcessViewerEvent(Event, &ViewerID);
+			pPlugin->ProcessViewerEvent(Event, &Id);
 	}
 
 	return 0;

@@ -19,16 +19,14 @@ Macro {
 
 -- The keys that invoke the whole macrotest from a macro. Some tests depend on that.
 local MacroKeys = {}
+local MT = {} -- "macrotest", this module
 
 local asrt = require "far2.assert"
-local Libs = {
-  LF  = require "far2.test.test_luafar";
-  TE  = require "far2.test.test_editor";
-  FSF = require "far2.test.test_fsf";
-  TP  = require "far2.test.test_panel";
-}
+MT.Mod_Editor = require "far2.test.test_editor";
+MT.Mod_FSF    = require "far2.test.test_fsf";
+MT.Mod_Luafar = require "far2.test.test_luafar";
+MT.Mod_Panel  = require "far2.test.test_panel";
 
-local MT = {} -- "macrotest", this module
 local F = far.Flags
 local band = bit64.band
 local luamacroId = far.GetPluginId()
@@ -1460,17 +1458,12 @@ function MT.test_all()
   MT.test_F3_F4_F8()
   MT.test_Delete_Wipe()
 
-  Libs.FSF.test_all()
-  Libs.LF.test_all()
-  Libs.TE.test_all()
-  Libs.TP.test_all()
+  MT.Mod_Editor.test_all()
+  MT.Mod_FSF.test_all()
+  MT.Mod_Luafar.test_all()
+  MT.Mod_Panel.test_all()
 
   actl.RedrawAll()
 end
-
-MT.test_fsf_all    = Libs.FSF.test_all
-MT.test_luafar_all = Libs.LF.test_all
-MT.test_editor_all = Libs.TE.test_all
-MT.test_panel_all  = Libs.TP.test_all
 
 return MT

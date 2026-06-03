@@ -124,7 +124,6 @@ public:
 	void CodepageChangedByUser() { Flags.Set(FFILEEDIT_CODEPAGECHANGEDBYUSER); }
 	virtual void Show();
 	void SetPluginTitle(const wchar_t *PluginTitle);
-	void AutoDeleteColors() const { m_editor->AutoDeleteColors(); }
 	int GetEditorID() const;
 
 private:
