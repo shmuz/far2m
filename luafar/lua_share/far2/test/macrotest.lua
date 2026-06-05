@@ -17,8 +17,6 @@ Macro {
 }
 --]]
 
--- The keys that invoke the whole macrotest from a macro. Some tests depend on that.
-local MacroKeys = {}
 local MT = {} -- "macrotest", this module
 
 local asrt = require "far2.assert"
@@ -27,14 +25,19 @@ MT.Mod_FSF    = require "far2.test.test_fsf";
 MT.Mod_Luafar = require "far2.test.test_luafar";
 MT.Mod_Panel  = require "far2.test.test_panel";
 
+local MacroKeys -- keys that invoke the whole macrotest from a macro
 local F = far.Flags
 local band = bit64.band
 local luamacroId = far.GetPluginId()
 local hlfviewerId = 0x1AF0754D
 local TKEY_BINARY = "__binary"
 
-function MT.SetMacroKeys(...)
-  MacroKeys = { ... }
+function MT.SetMacroKeys(strKeys)
+  MacroKeys = asrt.str(strKeys, "bad parameter to SetMacroKeys")
+end
+
+local function CheckMacroKeys()
+  asrt.str(MacroKeys, "MacroKeys value is not set")
 end
 
 local function pack (...)
@@ -102,10 +105,11 @@ function MT.test_areas()
 end
 
 local function test_mf_akey()
+  CheckMacroKeys()
   asrt.eq(akey, mf.akey)
   local key,name = akey(0),akey(1)
   local ok = false
-  for _,refkey in ipairs(MacroKeys) do
+  for refkey in MacroKeys:gmatch("%S+") do
     if key==far.NameToKey(refkey) and name==refkey then ok=true; break; end
   end
   asrt.istrue(ok)
@@ -113,6 +117,7 @@ local function test_mf_akey()
 end
 
 local function test_mf_eval()
+  CheckMacroKeys()
   asrt.eq(eval, mf.eval)
 
   -- test arguments validity checking
@@ -153,13 +158,14 @@ local function test_mf_eval()
   asrt.eq (eval("5 7",1,"moonscript"), 11)
 
   -- test with Mode==2
+  local refKey1, refKey2 = MacroKeys:match("(%S*)%s*(%S*)")
   local code = ([[
     local key = akey(1,0)
     assert(key=="%s" or key=="%s")
     assert(akey(1,1)=="CtrlA")
     foobar = (foobar or 0) + 1
     return foobar,false,5,nil,"foo"
-  ]]):format(MacroKeys[1] or "", MacroKeys[2] or "")
+  ]]):format(refKey1, refKey2)
   local Id = asrt.udata(far.MacroAdd(nil,nil,"CtrlA",code))
   for k=1,3 do
     local ret1,a,b,c,d,e = eval("CtrlA",2)
