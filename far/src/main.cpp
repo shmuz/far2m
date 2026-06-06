@@ -612,8 +612,8 @@ static int libexec(const char *lib, const char *cd, const char *symbol, int argc
 	dlerror(); // clear stale state
 	typedef int (*main_t)(int argc, char *argv[]);
 	auto libexec_main = reinterpret_cast<main_t>(dlsym(dl, symbol));
-	if (!libexec_main) {
-		fprintf(stderr, "libexec('%s', '%s', %d) - %s\n", lib, symbol, argc, dlerror());
+	if (const char* errmsg = dlerror()) {
+		fprintf(stderr, "libexec('%s', '%s', %d) - %s\n", lib, symbol, argc, errmsg);
 		dlclose(dl);
 		return -1;
 	}
