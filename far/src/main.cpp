@@ -132,6 +132,9 @@ static FARString ReconstructCommandLine(int argc, char **argv)
 
 static void UpdatePathOptions(const FARString &strDestName, bool IsLeftPanel)
 {
+	if (strDestName.IsEmpty() || IsPluginPrefixPath(strDestName))
+		return;
+
 	FARString *outFolder, *outCurFile;
 
 	if (IsLeftPanel) {
@@ -187,7 +190,6 @@ static void RunEditorOrViewerMode(int StartLine, int StartChar)
 {
 	clock_t cl_start = clock();
 	Panel *DummyPanel=new Panel;
-	_tran(SysLog(L"create dummy panels"));
 	CtrlObject->CreateFilePanels();
 	CtrlObject->Cp()->LeftPanel = CtrlObject->Cp()->RightPanel = CtrlObject->Cp()->ActivePanel = DummyPanel;
 	CtrlObject->Plugins.LoadPlugins();
@@ -204,23 +206,16 @@ static void RunEditorOrViewerMode(int StartLine, int StartChar)
 	{
 		FileEditor *ShellEditor = new FileEditor(Opt.strEditViewArg, CP_AUTODETECT,
 				FFILEEDIT_CANNEWFILE | FFILEEDIT_ENABLEF6, StartLine, StartChar);
-		_tran(SysLog(L"make shelleditor %p",ShellEditor));
 
 		if (!ShellEditor->GetExitCode())
-		{
 			FrameManager->ExitMainLoop(false);
-		}
 	}
 	else
 	{
 		FileViewer *ShellViewer = new FileViewer(Opt.strEditViewArg, false);
 
 		if (!ShellViewer->GetExitCode())
-		{
 			FrameManager->ExitMainLoop(false);
-		}
-
-		_tran(SysLog(L"make shellviewer, %p",ShellViewer));
 	}
 
 	fprintf(stderr, "STARTUP(E/V): %llu\n", (unsigned long long)(clock() - cl_start) );
@@ -232,24 +227,18 @@ static void RunEditorOrViewerMode(int StartLine, int StartChar)
 		unlink(Opt.strEditViewArg.GetMB().c_str());
 	}
 
-	CtrlObject->Cp()->LeftPanel = CtrlObject->Cp()->RightPanel = CtrlObject->Cp()->ActivePanel = nullptr;
+	auto Cp = CtrlObject->Cp();
+	Cp->LeftPanel = Cp->RightPanel = Cp->ActivePanel = nullptr;
 	delete DummyPanel;
-	_tran(SysLog(L"editor/viewer closed, delete dummy panels"));
 }
 
 static void RunPanelMode(const FARString &strDestName1, const FARString &strDestName2)
 {
 	clock_t cl_start = clock();
 
-	// воспользуемся тем, что ControlObject::Init() создает панели
-	// юзая Opt.*
-	if (!strDestName1.IsEmpty())  // активная панель
-	{
-		UpdatePathOptions(strDestName1, Opt.LeftPanel.Focus);
-
-		if (!strDestName2.IsEmpty())  // пассивная панель
-			UpdatePathOptions(strDestName2, !Opt.LeftPanel.Focus);
-	}
+	// воспользуемся тем, что ControlObject::Init() создает панели, юзая Opt.*
+	UpdatePathOptions(strDestName1, Opt.LeftPanel.Focus);
+	UpdatePathOptions(strDestName2, !Opt.LeftPanel.Focus);
 
 	// теперь все готово - создаем панели!
 	CtrlObject->Init();
@@ -284,7 +273,6 @@ static void RunPanelMode(const FARString &strDestName1, const FARString &strDest
 			CtrlObject->CmdLine->ExecString(strDestName1,0);
 		}
 
-		// !!! ВНИМАНИЕ !!!
 		// Сначала редравим пассивную панель, а потом активную!
 		AnotherPanel()->Redraw();
 		ActivePanel()->Redraw();
@@ -358,6 +346,7 @@ static void ParseCommandLine(CommandLineParams &Params, int argc, char **argv)
 			continue; // 2024-Jul-06: --primary-selection, --maximize and --nomaximize may appear here
 
 		bool switchHandled = false;
+		bool cdCommand = false;
 		FARString arg_w = argv[I];
 		size_t argLen = arg_w.GetLength();
 		if (argLen > 1 && arg_w[0] == L'-')
@@ -375,9 +364,10 @@ static void ParseCommandLine(CommandLineParams &Params, int argc, char **argv)
 				Opt.NoBoxes = true;
 
 			else if (argUpper == L"-CD") {
-				if (I + 1 < argc) {
-					arg_w = argv[++I];
+				if (++I < argc) {
+					arg_w = argv[I];
 					switchHandled = false;
+					cdCommand = true;
 				}
 			}
 
@@ -477,7 +467,7 @@ static void ParseCommandLine(CommandLineParams &Params, int argc, char **argv)
 		{
 			if (CntDestName < 2 && !arg_w.IsEmpty())
 			{
-				if (IsPluginPrefixPath(arg_w)) {
+				if (!cdCommand && IsPluginPrefixPath(arg_w)) {
 					Params.DestNames[CntDestName++] = arg_w;
 				}
 				else {
