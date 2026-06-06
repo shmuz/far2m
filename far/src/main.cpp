@@ -189,22 +189,24 @@ static void Write_FAR2M_CWD()
 static void RunEditorOrViewerMode(int StartLine, int StartChar)
 {
 	clock_t cl_start = clock();
-	Panel *DummyPanel=new Panel;
+	Panel *DummyPanel = new Panel;
 	CtrlObject->CreateFilePanels();
 	CtrlObject->Cp()->LeftPanel = CtrlObject->Cp()->RightPanel = CtrlObject->Cp()->ActivePanel = DummyPanel;
 	CtrlObject->Plugins.LoadPlugins();
 	CtrlObject->Macro.LoadMacros(true);
 
-	if (Opt.OnlyEditorViewerUsed == Options::ONLY_EDITOR_ON_CMDOUT
-		|| Opt.OnlyEditorViewerUsed == Options::ONLY_VIEWER_ON_CMDOUT)
-	{
-		Opt.strEditViewArg = ExecuteCommandAndGrabItsOutput(Opt.strEditViewArg);
-	}
+	bool IsCmdOut = Opt.OnlyEditorViewerUsed == Options::ONLY_EDITOR_ON_CMDOUT
+			|| Opt.OnlyEditorViewerUsed == Options::ONLY_VIEWER_ON_CMDOUT;
 
-	if (Opt.OnlyEditorViewerUsed == Options::ONLY_EDITOR
-		|| Opt.OnlyEditorViewerUsed == Options::ONLY_EDITOR_ON_CMDOUT)
+	bool IsEditor = Opt.OnlyEditorViewerUsed == Options::ONLY_EDITOR
+			|| Opt.OnlyEditorViewerUsed == Options::ONLY_EDITOR_ON_CMDOUT;
+
+	if (IsCmdOut)
+		Opt.strEditViewArg = ExecuteCommandAndGrabItsOutput(Opt.strEditViewArg);
+
+	if (IsEditor)
 	{
-		FileEditor *ShellEditor = new FileEditor(Opt.strEditViewArg, CP_AUTODETECT,
+		auto ShellEditor = new FileEditor(Opt.strEditViewArg, CP_AUTODETECT,
 				FFILEEDIT_CANNEWFILE | FFILEEDIT_ENABLEF6, StartLine, StartChar);
 
 		if (!ShellEditor->GetExitCode())
@@ -212,7 +214,7 @@ static void RunEditorOrViewerMode(int StartLine, int StartChar)
 	}
 	else
 	{
-		FileViewer *ShellViewer = new FileViewer(Opt.strEditViewArg, false);
+		auto ShellViewer = new FileViewer(Opt.strEditViewArg, false);
 
 		if (!ShellViewer->GetExitCode())
 			FrameManager->ExitMainLoop(false);
@@ -221,14 +223,10 @@ static void RunEditorOrViewerMode(int StartLine, int StartChar)
 	fprintf(stderr, "STARTUP(E/V): %llu\n", (unsigned long long)(clock() - cl_start) );
 	FrameManager->EnterMainLoop();
 
-	if (Opt.OnlyEditorViewerUsed == Options::ONLY_VIEWER_ON_CMDOUT
-		|| Opt.OnlyEditorViewerUsed == Options::ONLY_EDITOR_ON_CMDOUT)
-	{
+	if (IsCmdOut)
 		unlink(Opt.strEditViewArg.GetMB().c_str());
-	}
 
-	auto Cp = CtrlObject->Cp();
-	Cp->LeftPanel = Cp->RightPanel = Cp->ActivePanel = nullptr;
+	CtrlObject->Cp()->LeftPanel = CtrlObject->Cp()->RightPanel = CtrlObject->Cp()->ActivePanel = nullptr;
 	delete DummyPanel;
 }
 
@@ -335,7 +333,7 @@ static void SetupFarPath(const char *Arg0)
 	}
 }
 
-static void ParseCommandLine(CommandLineParams &Params, int argc, char **argv)
+static void ProcessCommandLine(CommandLineParams &Params, int argc, char **argv)
 {
 	bool bCustomPlugins = false;
 	int CntDestName = 0; // количество параметров-имен каталогов
@@ -531,7 +529,7 @@ int FarAppMain(int argc, char **argv)
 	ConfigOptLoad();
 
 	CommandLineParams Params;
-	ParseCommandLine(Params, argc, argv); // call it *after* ConfigOptLoad()
+	ProcessCommandLine(Params, argc, argv); // call it *after* ConfigOptLoad()
 
 	//Инициализация массива клавиш. Должна быть после CopyGlobalSettings!
 	InitKeysArray();
@@ -616,6 +614,7 @@ static int libexec(const char *lib, const char *cd, const char *symbol, int argc
 	auto libexec_main = reinterpret_cast<main_t>(dlsym(dl, symbol));
 	if (!libexec_main) {
 		fprintf(stderr, "libexec('%s', '%s', %d) - %s\n", lib, symbol, argc, dlerror());
+		dlclose(dl);
 		return -1;
 	}
 
@@ -701,7 +700,9 @@ int _cdecl main(int argc, char *argv[])
 		unsetenv("SUDO_ASKPASS"); // far2m is run from far2l
 	}
 
-	// Custom settings
+	// Process -U before WinPortMain():
+	// WinPortMain performs early startup / command-line handling and expects
+	// FARSETTINGS to already reflect the selected settings identity / path.
 	for (int i = 1; i < argc; ++i) {
 		if (!strcasecmp(argv[i], "-CD"))
 			++i;
