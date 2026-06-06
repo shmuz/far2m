@@ -611,8 +611,9 @@ static int libexec(const char *lib, const char *cd, const char *symbol, int argc
 		return -1;
 	}
 
-	typedef int (*libexec_main_t)(int argc, char *argv[]);
-	libexec_main_t libexec_main = (libexec_main_t)dlsym(dl, symbol);
+	dlerror(); // clear stale state
+	typedef int (*main_t)(int argc, char *argv[]);
+	auto libexec_main = reinterpret_cast<main_t>(dlsym(dl, symbol));
 	if (!libexec_main) {
 		fprintf(stderr, "libexec('%s', '%s', %d) - %s\n", lib, symbol, argc, dlerror());
 		return -1;
@@ -622,7 +623,9 @@ static int libexec(const char *lib, const char *cd, const char *symbol, int argc
 		fprintf(stderr, "libexec('%s', '%s', %d) - chdir('%s') error %d\n", lib, symbol, argc, cd, errno);
 	}
 
-	return libexec_main(argc, argv);
+	int ret = libexec_main(argc, argv);
+	dlclose(dl);
+	return ret;
 }
 
 static void SetCustomSettings(const char *arg)
