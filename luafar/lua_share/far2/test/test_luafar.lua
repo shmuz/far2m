@@ -106,7 +106,7 @@ local function test_far_MacroAdd()
   Id = far.MacroAdd(nil, nil, key, [[@c:\myscript]])
   asrt.istrue(far.MacroDelete(asrt.udata(Id))) -- check default area (MACROAREA_COMMON)
 
-  Id = far.MacroAdd(area,nil,key,[[Keys"F7" assert(Dlg.Id=="FAD00DBE-3FFF-4095-9232-E1CC70C67737") Keys"Esc"]],descr)
+  Id = far.MacroAdd(area,nil,key,[[Keys"F7" assert(Dlg.Id==far.Guids.MakeFolderId) Keys"Esc"]],descr)
   asrt.eq(0, mf.eval("Shell/"..key, 2))
   asrt.istrue(far.MacroDelete(Id))
 

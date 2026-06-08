@@ -6282,6 +6282,7 @@ static int luaopen_far (lua_State *L)
 	lua_setfield(L, LUA_REGISTRYINDEX, FAR_VIRTUALKEYS);
 
 	luaL_register(L, "far", far_funcs);
+	PutStrToTable (L, "Flavor", "far2m");
 	push_far_flags(L);
 	lua_pushvalue(L, -1);
 	lua_setfield(L, -3, "Flags");

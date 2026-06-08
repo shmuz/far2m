@@ -4,13 +4,14 @@
 --[[
 -- The following macro can be used to run all the tests.
 
+local MacroKey = "CtrlShiftF12"
 Macro {
   description="Macro-engine test";
-  area="Shell"; key="CtrlShiftF12";
+  area="Shell"; key=MacroKey;
   action = function()
     Far.DisableHistory(0x0F)
     local mod = require "far2.test.macrotest"
-    mod.SetMacroKeys("CtrlShiftF12")
+    mod.SetMacroKeys(MacroKey)
     mod.test_all()
     far.Message("All tests OK", "LuaMacro")
   end;
@@ -104,6 +105,7 @@ function MT.test_areas()
   asrt.isfalse (Area.MemoEdit)
 end
 
+-- V = akey(Mode[,Type])
 local function test_mf_akey()
   CheckMacroKeys()
   asrt.eq(akey, mf.akey)
