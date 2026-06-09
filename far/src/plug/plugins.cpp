@@ -2106,11 +2106,8 @@ bool PluginManager::CallPluginItemExecute(Plugin *pPlugin, CallPluginInfo *Data)
 PHPTR PluginManager::OpenPlugin(Plugin *pPlugin, int OpenFrom, const void *Item)
 {
 	HANDLE hPanel = pPlugin->OpenPlugin(OpenFrom, Item);
-
-	bool Creating = (OpenFrom == OPEN_FROMMACRO) ?
-		(hPanel != nullptr) : (hPanel != INVALID_HANDLE_VALUE);
-
-	return Creating ? new PanelHandle(hPanel, pPlugin) : nullptr;
+	return (hPanel == nullptr || hPanel == INVALID_HANDLE_VALUE)
+			? nullptr : new PanelHandle(hPanel, pPlugin);
 }
 
 void PluginManager::GetCustomData(FileListItem *ListItem)
