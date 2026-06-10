@@ -32,10 +32,9 @@ Bookmarks::Bookmarks()
 {
 }
 
-bool Bookmarks::Set(int index, const FARString *path,
-	const FARString *plugin, const FARString *plugin_file, const FARString *plugin_data)
+bool Bookmarks::Set(int index, const BookmarkData &Data)
 {
-	if ( (!path || path->IsEmpty()) && (!plugin || plugin->IsEmpty()))
+	if (Data.ShortcutFolder.IsEmpty() && Data.PluginModule.IsEmpty())
 	{
 		return Clear(index);
 	}
@@ -43,35 +42,29 @@ bool Bookmarks::Set(int index, const FARString *path,
 	const auto &sec = ToDec(index);
 	_kfh.RemoveSection(sec);
 
-	_kfh.SetString(sec, "Path", path ? path->GetMB().c_str() : "");
-	_kfh.SetString(sec, "Plugin", plugin ? plugin->GetMB().c_str() : "");
-	_kfh.SetString(sec, "PluginFile", plugin_file ? plugin_file->GetMB().c_str() : "");
-	_kfh.SetString(sec, "PluginData", plugin_data ? plugin_data->GetMB().c_str() : "");
+	_kfh.SetString(sec, "Path",       Data.ShortcutFolder.GetMB().c_str());
+	_kfh.SetString(sec, "Plugin",     Data.PluginModule.GetMB().c_str());
+	_kfh.SetString(sec, "PluginFile", Data.PluginFile.GetMB().c_str());
+	_kfh.SetString(sec, "PluginData", Data.PluginData.GetMB().c_str());
 
 	return _kfh.Save();
 }
 
-bool Bookmarks::Get(int index, FARString *path,
-	FARString *plugin, FARString *plugin_file, FARString *plugin_data)
+bool Bookmarks::Get(int index, BookmarkData &Data)
 {
 	const auto &sec = ToDec(index);
 	FARString strFolder(_kfh.GetString(sec, "Path"));
 
 	if (!strFolder.IsEmpty())
-		apiExpandEnvironmentStrings(strFolder, *path);
+		apiExpandEnvironmentStrings(strFolder, Data.ShortcutFolder);
 	else
-		path->Clear();
+		Data.ShortcutFolder.Clear();
 
-	if (plugin)
-		*plugin = _kfh.GetString(sec, "Plugin");
+	Data.PluginModule = _kfh.GetString(sec, "Plugin");
+	Data.PluginFile   = _kfh.GetString(sec, "PluginFile");
+	Data.PluginData   = _kfh.GetString(sec, "PluginData");
 
-	if (plugin_file)
-		*plugin_file = _kfh.GetString(sec, "PluginFile");
-
-	if (plugin_data)
-		*plugin_data = _kfh.GetString(sec, "PluginData");
-
-	return (!path->IsEmpty() || (plugin && !plugin->IsEmpty()));
+	return !Data.ShortcutFolder.IsEmpty() || !Data.PluginModule.IsEmpty();
 }
 
 bool Bookmarks::Clear(int index)
@@ -80,14 +73,14 @@ bool Bookmarks::Clear(int index)
 	if (index < 10)
 		return _kfh.Save();
 
-	for (int dst_index = index, miss_counter = 0;;)
+	for (int dst_index = index, miss_counter = 0; ; ++index)
 	{
-		FARString path, plugin, plugin_file, plugin_data;
-		if (Get(index, &path, &plugin, &plugin_file, &plugin_data))
+		BookmarkData Data;
+		if (Get(index, Data))
 		{
 			if (dst_index != index)
 			{
-				Set(dst_index, &path, &plugin, &plugin_file, &plugin_data);
+				Set(dst_index, Data);
 			}
 			++dst_index;
 			miss_counter = 0;
@@ -100,8 +93,6 @@ bool Bookmarks::Clear(int index)
 			}
 			break;
 		}
-
-		++index;
 	}
 
 	return _kfh.Save();

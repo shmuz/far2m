@@ -172,7 +172,7 @@ private:
 	};
 	bool GetShortcutInfo(ShortcutInfo& Info) const;
 
-	int ChangeDiskMenu(int Pos, int FirstCall);
+	int ChangeDiskMenu(int Pos, bool FirstCall);
 	int DisconnectDrive(PanelMenuItem *item, VMenu &ChDisk);
 	void FastFindShow(int FindX, int FindY);
 	void FastFindProcessName(Edit *FindEdit, const wchar_t *Src, FARString &strLastName, FARString &strName);

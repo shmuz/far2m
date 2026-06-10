@@ -537,17 +537,15 @@ int Edit::RecurseProcessKey(FarKey Key)
 bool Edit::ProcessInsPath(FarKey Key, int PrevSelStart, int PrevSelEnd)
 {
 	bool RetCode = false;
-	FARString strPathName;
+	BookmarkData Data;
 
 	if (Key >= KEY_RCTRL0 && Key <= KEY_RCTRL9)    // шорткаты?
 	{
-		FARString strPluginModule, strPluginFile, strPluginData;
-
-		if (Bookmarks().Get(Key - KEY_RCTRL0, &strPathName, &strPluginModule, &strPluginFile, &strPluginData))
+		if (Bookmarks().Get(Key - KEY_RCTRL0, Data))
 			RetCode = true;
 	} else                                                 // Пути/имена?
 	{
-		RetCode = _MakePath1(Key, strPathName, L"", 0) != 0; // 0 - always not escaping path names
+		RetCode = _MakePath1(Key, Data.ShortcutFolder, L"", 0) != 0; // 0 - always not escaping path names
 	}
 
 	// Если что-нить получилось, именно его и вставим (PathName)
@@ -565,7 +563,7 @@ bool Edit::ProcessInsPath(FarKey Key, int PrevSelStart, int PrevSelEnd)
 		if (!Flags.Check(FEDITLINE_PERSISTENTBLOCKS))
 			DeleteBlock();
 
-		InsertString(strPathName);
+		InsertString(Data.ShortcutFolder);
 		Flags.Clear(FEDITLINE_CLEARFLAG);
 	}
 

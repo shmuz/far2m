@@ -62,7 +62,6 @@ static int ShowBookmarksMenuIteration(int Pos)
 	int ExitCode=-1;
 	Bookmarks b;
 	{
-		int I;
 		MenuItemEx ListItem;
 		VMenu FolderList(Msg::BookmarksTitle,nullptr,0,ScrY-4);
 		FolderList.SetFlags(VMENU_WRAPMODE); // VMENU_SHOWAMPERSAND|
@@ -71,17 +70,16 @@ static int ShowBookmarksMenuIteration(int Pos)
 		FolderList.SetId(FolderShortcutsId);
 		FolderList.SetBottomTitle(Msg::BookmarkBottom);
 
-		for (I=0; ; I++)
+		for (int I=0; ; I++)
 		{
-			FARString strFolderName, strPlugin;
-			FARString strValueName;
+			BookmarkData Data;
 			ListItem.Clear();
-			b.Get(I, &strFolderName, &strPlugin);
-			//TruncStr(strFolderName,60);
+			b.Get(I, Data);
+			//TruncStr(Data.ShortcutFolder,60);
 
-			if (strFolderName.IsEmpty())
+			if (Data.ShortcutFolder.IsEmpty())
 			{
-				strFolderName = strPlugin.IsEmpty()
+				Data.ShortcutFolder = Data.PluginModule.IsEmpty()
 					? Msg::ShortcutNone : Msg::ShortcutPlugin;
 			}
 
@@ -89,16 +87,17 @@ static int ShowBookmarksMenuIteration(int Pos)
 //			ListItem.strName.Format(L"%ls+&%d   %ls", Msg::RightCtrl.CPtr(), I ,strFolderName.CPtr());
 			if (I < 10)
 			{
-				ListItem.strName.Format(L"[%ls | Ctrl+Alt] + &%d   %ls", Msg::RightCtrl.CPtr(), I, strFolderName.CPtr());
+				ListItem.strName.Format(L"[%ls | Ctrl+Alt] + &%d   %ls",
+						Msg::RightCtrl.CPtr(), I, Data.ShortcutFolder.CPtr());
 			}
 			else
 			{
-				ListItem.strName.Format(L"%ls", strFolderName.CPtr());
+				ListItem.strName.Format(L"%ls", Data.ShortcutFolder.CPtr());
 			}
 			ListItem.SetSelect(I == Pos);
 			FolderList.AddItem(&ListItem);
 
-			if (I >= 10 && strFolderName == Msg::ShortcutNone)
+			if (I >= 10 && Data.ShortcutFolder == Msg::ShortcutNone)
 			{
 				break;
 			}
@@ -121,15 +120,15 @@ static int ShowBookmarksMenuIteration(int Pos)
 
 				case KEY_SHIFTDOWN:
 				{
-					FARString strDir, strPluginModule, strPluginFile, strPluginData;
-					if (!b.Get(SelPos, &strDir, &strPluginModule, &strPluginFile, &strPluginData) )
-						return(SelPos);
+					BookmarkData Data;
+					if (!b.Get(SelPos, Data) )
+						return SelPos;
 
 					const int OtherPos = (Key == KEY_SHIFTUP) ? SelPos - 1 : SelPos + 1;
-					FARString strOtherDir, strOtherPluginModule, strOtherPluginFile, strOtherPluginData;
-					b.Get(OtherPos, &strOtherDir, &strOtherPluginModule, &strOtherPluginFile, &strOtherPluginData);
-					b.Set(OtherPos, &strDir, &strPluginModule, &strPluginFile, &strPluginData);
-					b.Set(SelPos, &strOtherDir, &strOtherPluginModule, &strOtherPluginFile, &strOtherPluginData);
+					BookmarkData OtherData;
+					b.Get(OtherPos, OtherData);
+					b.Set(OtherPos, Data);
+					b.Set(SelPos, OtherData);
 
 					return(OtherPos);
 				}
@@ -144,26 +143,27 @@ static int ShowBookmarksMenuIteration(int Pos)
 				case KEY_INS:
 				{
 					Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
-					FARString strNewPluginModule, strNewPluginFile, strNewPluginData;
-					FARString strNewDir = CtrlObject->CmdLine->GetCurDir();
+					BookmarkData NewData;
+					NewData.ShortcutFolder = CtrlObject->CmdLine->GetCurDir();
 
 					if (ActivePanel->GetMode() == PLUGIN_PANEL)
 					{
 						OpenPluginInfo Info;
 						ActivePanel->GetOpenPluginInfo(&Info);
 						PanelHandle *ph = ActivePanel->GetPluginHandle();
-						strNewPluginModule = ph->pPlugin->GetModuleName();
-						strNewPluginFile = Info.HostFile;
-						strNewPluginData = Info.ShortcutData;
+						NewData.PluginModule = ph->pPlugin->GetModuleName();
+						NewData.PluginFile = Info.HostFile;
+						NewData.PluginData = Info.ShortcutData;
 					}
 
-					b.Set(SelPos, &strNewDir, &strNewPluginModule, &strNewPluginFile, &strNewPluginData);
-					return(SelPos);
+					b.Set(SelPos, NewData);
+					return SelPos;
 				}
 				case KEY_F4:
 				{
-					FARString strNewDir;
-					b.Get(SelPos, &strNewDir);
+					BookmarkData Data;
+					b.Get(SelPos, Data);
+					FARString strNewDir = Data.ShortcutFolder;
 					FARString strTemp = strNewDir;
 
 					DialogBuilder Builder(Msg::BookmarksTitle, HelpBookmarks);
@@ -180,19 +180,21 @@ static int ShowBookmarksMenuIteration(int Pos)
 						if (!IsLocalRootPath(strNewDir))
 							DeleteEndSlash(strNewDir);
 
-						BOOL Saved=TRUE;
+						bool Saved = true;
 						apiExpandEnvironmentStrings(strNewDir,strTemp);
 
 						if (apiGetFileAttributes(strTemp) == INVALID_FILE_ATTRIBUTES)
 						{
 							WINPORT(SetLastError)(ERROR_PATH_NOT_FOUND);
-							Saved=!Message(MSG_WARNING | MSG_ERRORTYPE, 2, Msg::Error, strNewDir, Msg::SaveThisShortcut, Msg::Yes, Msg::No);
+							Saved = !Message(MSG_WARNING | MSG_ERRORTYPE, 2, Msg::Error, strNewDir,
+									Msg::SaveThisShortcut, Msg::Yes, Msg::No);
 						}
 
 						if (Saved)
 						{
-							b.Set(SelPos, &strNewDir);
-							return(SelPos);
+							BookmarkData NewData { strNewDir };
+							b.Set(SelPos, NewData);
+							return SelPos;
 						}
 					}
 

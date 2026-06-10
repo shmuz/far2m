@@ -2,6 +2,14 @@
 #include <KeyFileHelper.h>
 #include "FARString.hpp"
 
+struct BookmarkData
+{
+	FARString ShortcutFolder;
+	FARString PluginModule;
+	FARString PluginFile;
+	FARString PluginData;
+};
+
 class Bookmarks
 {
 	KeyFileHelper _kfh;
@@ -9,12 +17,8 @@ class Bookmarks
 public:
 	Bookmarks();
 
-	bool Set(int index, const FARString *path, const FARString *plugin = nullptr,
-		const FARString *plugin_file = nullptr, const FARString *plugin_data = nullptr);
-
-	bool Get(int index, FARString *path, FARString *plugin = nullptr,
-		FARString *plugin_file = nullptr, FARString *plugin_data = nullptr);
-
+	bool Set(int index, const BookmarkData &Data);
+	bool Get(int index, BookmarkData &Data);
 	bool Clear(int index);
 };
 

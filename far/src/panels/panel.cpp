@@ -161,7 +161,8 @@ void Panel::ChangeDirToCurrent()
 
 void Panel::ChangeDisk()
 {
-	int Pos = 0, FirstCall = TRUE;
+	int Pos = 0;
+	bool FirstCall = true;
 
 	if (!strCurDir.IsEmpty() && strCurDir.At(1) == L':') {
 		Pos = Upper(strCurDir.At(0)) - L'A';
@@ -169,7 +170,7 @@ void Panel::ChangeDisk()
 
 	while (Pos != -1) {
 		Pos = ChangeDiskMenu(Pos, FirstCall);
-		FirstCall = FALSE;
+		FirstCall = false;
 	}
 }
 
@@ -337,8 +338,9 @@ static void AddBookmarkItems(VMenu &ChDisk, int Pos)
 {
 	Bookmarks b;
 	for (int SCPos = 0, AddedCount = 0;; ++SCPos) {
-		FARString Folder, Plugin, PluginFile, ShortcutPath;
-		if (b.Get(SCPos, &Folder, &Plugin, &PluginFile, nullptr)) {
+		FARString ShortcutPath;
+		BookmarkData Data;
+		if (b.Get(SCPos, Data)) {
 			MenuItemEx ChDiskItem;
 
 			if (!AddedCount++) {
@@ -353,14 +355,14 @@ static void AddBookmarkItems(VMenu &ChDisk, int Pos)
 			ChDiskItem.Clear();
 			ChDiskItem.SetSelect(ChDisk.GetItemCount() == Pos);
 
-			if (!PluginFile.IsEmpty()) {
-				ShortcutPath+= PluginFile;
+			if (!Data.PluginFile.IsEmpty()) {
+				ShortcutPath+= Data.PluginFile;
 				ShortcutPath+= L"/";
 			}
-			ShortcutPath+= Folder;
+			ShortcutPath+= Data.ShortcutFolder;
 			if (ShortcutPath.IsEmpty()) {
 				ShortcutPath = L"@";
-				ShortcutPath+= Plugin;
+				ShortcutPath+= Data.PluginModule;
 			}
 
 			if (SCPos <= 9)
@@ -380,7 +382,7 @@ static void AddBookmarkItems(VMenu &ChDisk, int Pos)
 	}
 }
 
-int Panel::ChangeDiskMenu(int Pos, int FirstCall)
+int Panel::ChangeDiskMenu(int Pos, bool FirstCall)
 {
 	/*Events.DeviceArchivalEvent.Reset();
 	Events.DeviceRemoveEvent.Reset();
@@ -1945,25 +1947,22 @@ bool Panel::GetShortcutInfo(ShortcutInfo& Info) const
 
 bool Panel::SaveShortcutFolder(int Pos)
 {
-	FARString strShortcutFolder, strPluginModule, strPluginFile, strPluginData;
+	BookmarkData Data;
 
 	if (PanelMode == PLUGIN_PANEL) {
 		PHPTR hPlugin = GetPluginHandle();
 		PanelHandle *ph = hPlugin;
-		strPluginModule = ph->pPlugin->GetModuleName();
+		Data.PluginModule = ph->pPlugin->GetModuleName();
 		OpenPluginInfo Info;
 		CtrlObject->Plugins.GetOpenPluginInfo(hPlugin, &Info);
-		strPluginFile = Info.HostFile;
-		strShortcutFolder = Info.CurDir;
-		strPluginData = Info.ShortcutData;
+		Data.PluginFile = Info.HostFile;
+		Data.ShortcutFolder = Info.CurDir;
+		Data.PluginData = Info.ShortcutData;
 	} else {
-		strPluginModule.Clear();
-		strPluginFile.Clear();
-		strPluginData.Clear();
-		strShortcutFolder = strCurDir;
+		Data.ShortcutFolder = strCurDir;
 	}
 
-	if (Bookmarks().Set(Pos, &strShortcutFolder, &strPluginModule, &strPluginFile, &strPluginData))
+	if (Bookmarks().Set(Pos, Data))
 		return true;
 
 	return true;
@@ -2009,9 +2008,9 @@ int Panel::ProcessShortcutFolder(int Key,BOOL ProcTreePanel)
 
 bool Panel::ExecShortcutFolder(int Pos)
 {
-	FARString strShortcutFolder, strPluginModule, strPluginFile, strPluginData;
+	BookmarkData Data;
 
-	if (Bookmarks().Get(Pos, &strShortcutFolder, &strPluginModule, &strPluginFile, &strPluginData)) {
+	if (Bookmarks().Get(Pos, Data)) {
 		Panel *SrcPanel = this;
 		Panel *AnotherPanel = CtrlObject->Cp()->GetAnotherPanel(this);
 
@@ -2026,9 +2025,9 @@ bool Panel::ExecShortcutFolder(int Pos)
 
 		int CheckFullScreen = SrcPanel->IsFullScreen();
 
-		if (!strPluginModule.IsEmpty()) {
-			if (!strPluginFile.IsEmpty()) {
-				switch (CheckShortcutFolder(strPluginFile, true)) {
+		if (!Data.PluginModule.IsEmpty()) {
+			if (!Data.PluginFile.IsEmpty()) {
+				switch (CheckShortcutFolder(Data.PluginFile, true)) {
 					case 0:
 						//              return FALSE;
 					case -1:
@@ -2036,20 +2035,20 @@ bool Panel::ExecShortcutFolder(int Pos)
 				}
 
 				/* Своеобразное решение BugZ#50 */
-				FARString strRealDir = strPluginFile;;
+				FARString strRealDir = Data.PluginFile;
 
 				if (CutToSlash(strRealDir)) {
 					SrcPanel->SetCurDir(strRealDir, true);
-					SrcPanel->GoToFile(PointToName(strPluginFile));
+					SrcPanel->GoToFile(PointToName(Data.PluginFile));
 
 					SrcPanel->ClearAllItem();
 				}
 
 				if (SrcPanel->GetType() == FILE_PANEL)
-					((FileList *)SrcPanel)->OpenFilePlugin(strPluginFile, false, OFP_SHORTCUT);    //???
+					((FileList *)SrcPanel)->OpenFilePlugin(Data.PluginFile, false, OFP_SHORTCUT);    //???
 
-				if (!strShortcutFolder.IsEmpty())
-					SrcPanel->SetCurDir(strShortcutFolder, false);
+				if (!Data.ShortcutFolder.IsEmpty())
+					SrcPanel->SetCurDir(Data.ShortcutFolder, false);
 
 				SrcPanel->Show();
 			} else {
@@ -2057,10 +2056,10 @@ bool Panel::ExecShortcutFolder(int Pos)
 					return true;
 
 				for (auto pPlugin: CtrlObject->Plugins.GetPlugins()) {
-					if (!StrCmpI(pPlugin->GetModuleName(), strPluginModule)) {
+					if (!StrCmp(pPlugin->GetModuleName(), Data.PluginModule)) {
 						if (pPlugin->HasOpenPlugin()) {
 							PHPTR hNewPlugin = CtrlObject->Plugins.OpenPlugin(pPlugin, OPEN_SHORTCUT,
-									strPluginData.CPtr());
+									Data.PluginData.CPtr());
 
 							if (hNewPlugin) {
 								int CurFocus = SrcPanel->GetFocus();
@@ -2069,8 +2068,8 @@ bool Panel::ExecShortcutFolder(int Pos)
 								NewPanel->SetPluginMode(hNewPlugin, L"",
 										CurFocus || !CtrlObject->Cp()->GetAnotherPanel(NewPanel)->IsVisible());
 
-								if (!strShortcutFolder.IsEmpty())
-									CtrlObject->Plugins.SetDirectory(hNewPlugin, strShortcutFolder, 0);
+								if (!Data.ShortcutFolder.IsEmpty())
+									CtrlObject->Plugins.SetDirectory(hNewPlugin, Data.ShortcutFolder, 0);
 
 								NewPanel->Update(0);
 								NewPanel->Show();
@@ -2085,7 +2084,7 @@ bool Panel::ExecShortcutFolder(int Pos)
 			return true;
 		}
 
-		switch (CheckShortcutFolder(strShortcutFolder, false)) {
+		switch (CheckShortcutFolder(Data.ShortcutFolder, false)) {
 			case 0:
 				//          return FALSE;
 			case -1:
@@ -2099,7 +2098,7 @@ bool Panel::ExecShortcutFolder(int Pos)
 		}
 		*/
 
-		SrcPanel->SetCurDir(strShortcutFolder, true);
+		SrcPanel->SetCurDir(Data.ShortcutFolder, true);
 
 		if (CheckFullScreen != SrcPanel->IsFullScreen())
 			CtrlObject->Cp()->GetAnotherPanel(SrcPanel)->Show();
