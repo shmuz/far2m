@@ -3345,8 +3345,12 @@ bool Editor::Search(bool ReplaceMode, NextType NextTp)
 		DWORD StartTime = WINPORT(GetTickCount)();
 
 		RegExp re;
-		if (LS.Regexp && !CompileRegexp(LS.SearchStr, LS.CaseSens, &re))
+		if (LS.Regexp && !CompileRegexp(LS.SearchStr, LS.CaseSens, &re)) {
+			FARString strMsg(LS.SearchStr);
+			InsertQuote(strMsg);
+			Message(MSG_WARNING, 1, Msg::EditSearchTitle, Msg::EditInvalidRegexp, strMsg, Msg::Ok);
 			return true;
+		}
 
 		Edit *CurPtr = m_CurLine;
 		int FromPos = m_CurLine->GetCurPos();
