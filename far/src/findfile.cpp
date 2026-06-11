@@ -1111,8 +1111,9 @@ static bool ScanFile(const wchar_t *Name)
 				FILE_FLAG_SEQUENTIAL_SCAN))
 		return false;
 
-	static char readBufferA[0x10000] __attribute__((aligned(0x1000)));
-	static wchar_t readBuffer[ARRAYSIZE(readBufferA)] __attribute__((aligned(0x1000)));
+	constexpr size_t ElementCount = 0x10000;
+	std::vector<char> readBufferA(ElementCount, 0);
+	std::vector<wchar_t> readBuffer(ElementCount, 0);
 
 	// Количество считанных из файла байт
 	DWORD readBlockSize = 0;
@@ -1136,9 +1137,9 @@ static bool ScanFile(const wchar_t *Name)
 	// Основной цикл чтения из файла
 
 	while (!StopFlag
-			&& file.Read(readBufferA,
-					(!SearchInFirst || alreadyRead + sizeof(readBufferA) <= SearchInFirst)
-							? sizeof(readBufferA)
+			&& file.Read(readBufferA.data(),
+					(!SearchInFirst || alreadyRead + ElementCount <= SearchInFirst)
+							? ElementCount
 							: static_cast<DWORD>(SearchInFirst - alreadyRead),
 					&readBlockSize))
 	{
@@ -1158,7 +1159,7 @@ static bool ScanFile(const wchar_t *Name)
 				return false;
 
 			// Ищем
-			if (FindStringBMH((const unsigned char *)readBufferA, readBlockSize) != -1)
+			if (FindStringBMH((const unsigned char *)readBufferA.data(), readBlockSize) != -1)
 				return true;
 		}
 		else {
@@ -1208,15 +1209,15 @@ static bool ScanFile(const wchar_t *Name)
 					// Копируем буфер чтения в буфер сравнения
 					// todo
 					if (cpi->CodePage == CP_WIDE_BE) {
-						WideReverse((const wchar_t *)readBufferA, readBuffer, bufferCount);
-						buffer = readBuffer;
+						WideReverse((const wchar_t *)readBufferA.data(), readBuffer.data(), bufferCount);
+						buffer = readBuffer.data();
 					} else {
-						buffer = (wchar_t *)readBufferA;
+						buffer = (wchar_t *)readBufferA.data();
 					}
 				} else {
 					// Конвертируем буфер чтения из кодировки поиска в wchar_t
-					bufferCount = WINPORT(MultiByteToWideChar)(cpi->CodePage, 0, readBufferA,
-							readBlockSize, readBuffer, ARRAYSIZE(readBuffer));
+					bufferCount = WINPORT(MultiByteToWideChar)(cpi->CodePage, 0, readBufferA.data(),
+							readBlockSize, readBuffer.data(), ElementCount);
 
 					// Выходим, если нам не удалось сконвертировать строку
 					if (!bufferCount)
@@ -1242,7 +1243,7 @@ static bool ScanFile(const wchar_t *Name)
 					}
 
 					// Устанавливаем буфер сравнения
-					buffer = readBuffer;
+					buffer = readBuffer.data();
 				}
 
 				unsigned int index = 0;
@@ -1307,7 +1308,7 @@ static bool ScanFile(const wchar_t *Name)
 		}
 
 		// Если мы потенциально прочитали не весь файл
-		if (readBlockSize == sizeof(readBufferA)) {
+		if (readBlockSize == ElementCount) {
 			// Отступаем назад на длину слова поиска минус 1
 			if (!file.SetPointer(-1 * offset, nullptr, FILE_CURRENT))
 				return false;
