@@ -90,9 +90,9 @@ int _regex_gmatch_closure(lua_State *L, int is_wide)
 
 	if ((pData->Position <= pData->Length) && PSInfo.RegExpControl(fr->hnd, RECTL_SEARCHEX, (LONG_PTR)pData))
 	{
-		int i, skip = pData->Count>1 ? 1 : 0;
+		int skip = pData->Count>1 ? 1 : 0;
 
-		for(i=skip; i<pData->Count; i++)
+		for (int i=skip; i<pData->Count; i++)
 		{
 			if (pData->Match[i].start >= 0 && pData->Match[i].end >= pData->Match[i].start)
 			{
@@ -236,7 +236,7 @@ int rx_find_match(lua_State *L, int Op, int is_function, int is_wide)
 		if (Op == OP_EXEC)
 		{
 			lua_createtable(L, 2*(int)data.Count, 0);
-			for(int i=1; i<data.Count; i++)
+			for (int i=1; i<data.Count; i++)
 			{
 				int k = (i-1)*2 + 1;
 				if (data.Match[i].start >= 0 && data.Match[i].end >= data.Match[i].start)
@@ -263,7 +263,7 @@ int rx_find_match(lua_State *L, int Op, int is_function, int is_wide)
 				lua_newtable(L);
 			else if (!lua_checkstack(L, i))
 				luaL_error(L, "cannot add %d stack slots", i);
-			for(i=skip; i<data.Count; i++)
+			for (i=skip; i<data.Count; i++)
 			{
 				push_match(L, data.Text, data.Match+i, is_wide);
 				if (Op == OP_TFIND)
@@ -379,7 +379,7 @@ int rx_gsub(lua_State *L, int is_function, int is_wide)
 
 	while(max_reps < 0 || reps < max_reps)
 	{
-		intptr_t prev_end = data.Match[0].end;
+		int prev_end = data.Match[0].end;
 
 		if (!PSInfo.RegExpControl(fregex->hnd, RECTL_SEARCHEX, (LONG_PTR)&data))
 			break;
@@ -406,7 +406,7 @@ int rx_gsub(lua_State *L, int is_function, int is_wide)
 		{
 			size_t tail = 0;
 
-			for(size_t i=0; i<replen; i++)
+			for (size_t i=0; i<replen; i++)
 			{
 				if (repstr[i] == L'%')
 				{
@@ -527,11 +527,11 @@ int rx_gsub(lua_State *L, int is_function, int is_wide)
 		}
 		else   // if (reptype == LUA_TFUNCTION)
 		{
-			intptr_t i, skip = data.Count==1 ? 0:1;
+			int skip = data.Count==1 ? 0:1;
 			lua_checkstack(L, (int)(data.Count+1-skip));
 			lua_pushvalue(L, 3);
 
-			for(i=skip; i<data.Count; i++)
+			for (int i=skip; i<data.Count; i++)
 			{
 				if (data.Match[i].start >= 0 && data.Match[i].end >= data.Match[i].start)
 				{

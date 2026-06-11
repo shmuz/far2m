@@ -1922,27 +1922,26 @@ BOOL Panel::NeedUpdatePanel(Panel *AnotherPanel)
 
 bool Panel::GetShortcutInfo(ShortcutInfo& Info) const
 {
-	bool result = true;
 	if (PanelMode == PLUGIN_PANEL)
 	{
 		const auto ph = GetPluginHandle();
-		Info.PluginId = ph->pPlugin->GetSysID();
 		OpenPluginInfo OpInfo;
 		CtrlObject->Plugins.GetOpenPluginInfo(ph, &OpInfo);
-		Info.PluginFile = NullToEmpty(OpInfo.HostFile);
+
 		Info.ShortcutFolder = NullToEmpty(OpInfo.CurDir);
+		Info.PluginFile = NullToEmpty(OpInfo.HostFile);
 		Info.PluginData = NullToEmpty(OpInfo.ShortcutData);
-		if (!(OpInfo.Flags & OPIF_SHORTCUT))
-			result = false;
+		Info.PluginId = ph->pPlugin->GetSysID();
+		return (OpInfo.Flags & OPIF_SHORTCUT) != 0;
 	}
 	else
 	{
-		Info.PluginId = 0;
+		Info.ShortcutFolder = strCurDir;
 		Info.PluginFile.Clear();
 		Info.PluginData.Clear();
-		Info.ShortcutFolder = strCurDir;
+		Info.PluginId = 0;
+		return true;
 	}
-	return result;
 }
 
 bool Panel::SaveShortcutFolder(int Pos)
