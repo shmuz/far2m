@@ -919,13 +919,13 @@ void InfoList::SetMacroArea(int Restore)
 	CtrlObject->Macro.SetArea(Restore ? PrevMacroArea : MACROAREA_INFOPANEL);
 }
 
-int InfoList::GetCurName(FARString &strName)
+bool InfoList::GetCurName(FARString &strName)
 {
 	strName = strDizFileName;
-	return (TRUE);
+	return true;
 }
 
-BOOL InfoList::UpdateKeyBar()
+bool InfoList::UpdateKeyBar()
 {
 	KeyBar *KB = CtrlObject->MainKeyBar;
 	KB->SetAllGroup(KBL_MAIN, Msg::InfoF1, 12);
@@ -937,7 +937,7 @@ BOOL InfoList::UpdateKeyBar()
 	KB->SetAllGroup(KBL_ALTSHIFT, Msg::InfoAltShiftF1, 12);
 	KB->SetAllGroup(KBL_CTRLALTSHIFT, Msg::InfoCtrlAltShiftF1, 12);
 	DynamicUpdateKeyBar();
-	return TRUE;
+	return true;
 }
 
 void InfoList::DynamicUpdateKeyBar()

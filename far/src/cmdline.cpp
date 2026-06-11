@@ -247,7 +247,7 @@ CommandLine::CommandLine()
 	LastKey(0),
 	PushDirStackSize(0)
 {
-	CmdStr.SetEditBeyondEnd(FALSE);
+	CmdStr.SetEditBeyondEnd(false);
 	SetPersistentBlocks(Opt.CmdLine.EditBlock);
 	SetDelRemovesBlocks(Opt.CmdLine.DelRemovesBlocks);
 }

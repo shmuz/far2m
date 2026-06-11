@@ -749,7 +749,7 @@ int Manager::ProcessKey(FarKey Key)
 					_ALGO(CleverSysLog clv(L"Manager::ProcessKey()"));
 					_ALGO(SysLog(L"Key=%ls", _FARKEY_ToName(Key)));
 
-					if (CtrlObject->Cp()->ActivePanel->SendKeyToPlugin(Key, TRUE))
+					if (CtrlObject->Cp()->ActivePanel->SendKeyToPlugin(Key, true))
 						return TRUE;
 
 					break;

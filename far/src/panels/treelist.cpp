@@ -201,7 +201,7 @@ TreeList::~TreeList()
 
 	tempTreeCache.Clean();
 	FlushCache();
-	SetMacroArea(TRUE);
+	SetMacroArea(true);
 }
 
 void TreeList::SetRootDir(const wchar_t *NewRootDir)
@@ -1445,13 +1445,13 @@ int TreeList::GetSelCount() const
 	return 1;
 }
 
-int TreeList::GetSelName(FARString *strName, DWORD &FileAttr, DWORD &FileMode, FAR_FIND_DATA_EX *fd)
+bool TreeList::GetSelName(FARString *strName, DWORD &FileAttr, DWORD &FileMode, FAR_FIND_DATA_EX *fd)
 {
 	FileMode = 0640;
 
 	if (!strName) {
 		GetSelPosition = 0;
-		return TRUE;
+		return true;
 	}
 
 	if (!GetSelPosition) {
@@ -1460,22 +1460,22 @@ int TreeList::GetSelName(FARString *strName, DWORD &FileAttr, DWORD &FileMode, F
 		FileAttr = FILE_ATTRIBUTE_DIRECTORY;
 		FileMode|= S_IFDIR | S_IXUSR | S_IXGRP | S_IXOTH;
 		GetSelPosition++;
-		return TRUE;
+		return true;
 	}
 
 	GetSelPosition = 0;
-	return FALSE;
+	return false;
 }
 
-int TreeList::GetCurName(FARString &strName)
+bool TreeList::GetCurName(FARString &strName)
 {
 	if (!TreeCount) {
 		strName.Clear();
-		return FALSE;
+		return false;
 	}
 
 	strName = ListData[CurFile]->strName;
-	return TRUE;
+	return true;
 }
 
 void TreeList::AddTreeName(const wchar_t *Name)
@@ -1743,14 +1743,14 @@ long TreeList::FindNext(int StartPos, const wchar_t *Name)
 	return -1;
 }
 
-int TreeList::GetFileName(FARString &strName, int Pos, DWORD &FileAttr) const
+bool TreeList::GetFileName(FARString &strName, int Pos, DWORD &FileAttr) const
 {
 	if (Pos < 0 || Pos >= TreeCount)
-		return FALSE;
+		return false;
 
 	strName = ListData[Pos]->strName;
 	FileAttr = FILE_ATTRIBUTE_DIRECTORY | apiGetFileAttributes(ListData[Pos]->strName);
-	return TRUE;
+	return true;
 }
 
 int _cdecl SortList(const void *el1, const void *el2)
@@ -1809,7 +1809,7 @@ int TreeCmp(const wchar_t *Str1, const wchar_t *Str2, int Numeric, int CaseSensi
 /* $ 16.10.2000 tran
  функция, определяющаяя необходимость кеширования
  файла */
-int TreeList::MustBeCached(const wchar_t *Root)
+bool TreeList::MustBeCached(const wchar_t *Root)
 {
 	UINT type;
 	type = FAR_GetDriveType(Root);
@@ -1818,10 +1818,10 @@ int TreeList::MustBeCached(const wchar_t *Root)
 			|| IsDriveTypeCDROM(type)) {
 		if (type == DRIVE_REMOVABLE) {
 			if (Upper(Root[0]) == L'A' || Upper(Root[0]) == L'B')
-				return FALSE;    // это дискеты
+				return false;    // это дискеты
 		}
 
-		return TRUE;
+		return true;
 		// кешируются CD, removable и неизвестно что :)
 	}
 
@@ -1830,14 +1830,14 @@ int TreeList::MustBeCached(const wchar_t *Root)
 		DRIVE_RAMDISK
 		DRIVE_FIXED
 	*/
-	return FALSE;
+	return false;
 }
 
 void TreeList::SetFocus()
 {
 	Panel::SetFocus();
 	SetTitle();
-	SetMacroArea(FALSE);
+	SetMacroArea(false);
 }
 
 void TreeList::KillFocus()
@@ -1850,10 +1850,10 @@ void TreeList::KillFocus()
 	}
 
 	Panel::KillFocus();
-	SetMacroArea(TRUE);
+	SetMacroArea(true);
 }
 
-void TreeList::SetMacroArea(int Restore)
+void TreeList::SetMacroArea(bool Restore)
 {
 	if (!CtrlObject)
 		return;
@@ -1864,7 +1864,7 @@ void TreeList::SetMacroArea(int Restore)
 	CtrlObject->Macro.SetArea(Restore ? PrevMacroArea : MACROAREA_TREEPANEL);
 }
 
-BOOL TreeList::UpdateKeyBar()
+bool TreeList::UpdateKeyBar()
 {
 	KeyBar *KB = CtrlObject->MainKeyBar;
 	KB->SetAllGroup(KBL_MAIN, Msg::KBTreeF1, 12);
@@ -1876,7 +1876,7 @@ BOOL TreeList::UpdateKeyBar()
 	KB->SetAllGroup(KBL_ALTSHIFT, Msg::KBTreeAltShiftF1, 12);
 	KB->SetAllGroup(KBL_CTRLALTSHIFT, Msg::KBTreeCtrlAltShiftF1, 12);
 	DynamicUpdateKeyBar();
-	return TRUE;
+	return true;
 }
 
 void TreeList::DynamicUpdateKeyBar()

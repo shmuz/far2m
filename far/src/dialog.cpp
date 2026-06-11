@@ -965,7 +965,7 @@ unsigned Dialog::InitDialogObjects(unsigned ID)
 					вставки и удаления строк
 				*/
 				if (!(ItemFlags & DIF_EDITOR)) {
-					DialogEdit->SetEditBeyondEnd(FALSE);
+					DialogEdit->SetEditBeyondEnd(false);
 
 					if (!DialogMode.Check(DMODE_INITOBJECTS))
 						DialogEdit->SetClearFlag(true);

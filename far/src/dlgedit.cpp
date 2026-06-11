@@ -286,7 +286,7 @@ const wchar_t *DlgEdit::GetInputMask()
 	return L""; //???
 }
 
-void DlgEdit::SetEditBeyondEnd(int Mode)
+void DlgEdit::SetEditBeyondEnd(bool Mode)
 {
 	if (Type == DLGEDIT_MULTILINE)
 		multiEdit->SetEditBeyondEnd(Mode);

@@ -462,7 +462,7 @@ void FileList::ReadFileNames(int KeepSelection, int IgnoreVisible, int DrawMessa
 /*$ 22.06.2001 SKV
   Добавлен параметр для вызова после исполнения команды.
 */
-int FileList::UpdateIfChanged(int UpdateMode)
+bool FileList::UpdateIfChanged(int UpdateMode)
 {
 	//_SVS(SysLog(L"CurDir='%ls' Opt.AutoUpdateLimit=%d <= FileCount=%d",CurDir,Opt.AutoUpdateLimit,FileCount));
 	if (!Opt.AutoUpdateLimit || static_cast<DWORD>(FileCount) <= Opt.AutoUpdateLimit) {
@@ -495,12 +495,12 @@ int FileList::UpdateIfChanged(int UpdateMode)
 				if (UpdateMode == UIC_UPDATE_NORMAL)
 					Show();
 
-				return TRUE;
+				return true;
 			}
 		}
 	}
 
-	return FALSE;
+	return false;
 }
 
 void FileList::CreateChangeNotification(int CheckTree)

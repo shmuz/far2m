@@ -87,7 +87,7 @@ FolderTree::FolderTree(FARString &strResultFolder,int iModalMode,int IsStandalon
 				return;
 			}
 
-			FindEdit->SetEditBeyondEnd(FALSE);
+			FindEdit->SetEditBeyondEnd(false);
 			FindEdit->SetPersistentBlocks(Opt.Dialogs.EditBlock);
 			InitKeyBar();
 			FrameManager->ExecuteModal(this); //OT

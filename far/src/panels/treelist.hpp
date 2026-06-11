@@ -87,7 +87,7 @@ private:
 	long SaveWorkDir;
 
 private:
-	void SetMacroArea(int Restore = FALSE);
+	void SetMacroArea(bool Restore = false);
 	virtual void DisplayObject();
 	void DisplayTree(int Fast);
 	void DisplayTreeName(const wchar_t *Name, int Pos);
@@ -137,7 +137,7 @@ public:
 
 	virtual int GetCurDir(FARString &strCurDir);
 
-	virtual int GetCurName(FARString &strName);
+	virtual bool GetCurName(FARString &strName);
 
 	virtual void UpdateViewPanel();
 	virtual void MoveToMouse(MOUSE_EVENT_RECORD *MouseEvent);
@@ -154,17 +154,17 @@ public:
 
 	int GetExitCode() const { return ExitCode; }
 	virtual long GetFileCount() const { return TreeCount; }
-	virtual int GetFileName(FARString &strName, int Pos, DWORD &FileAttr) const;
+	virtual bool GetFileName(FARString &strName, int Pos, DWORD &FileAttr) const;
 
 	virtual void SetTitle();
 	virtual FARString &GetTitle(FARString &Title, int SubLen = -1, int TruncSize = 0);
 	virtual void SetFocus();
 	virtual void KillFocus();
-	virtual BOOL UpdateKeyBar();
+	virtual bool UpdateKeyBar();
 	const TreeItem *GetItem(int Index) const;
 	virtual int GetCurrentPos() const;
 
-	virtual int
+	virtual bool
 	GetSelName(FARString *strName, DWORD &FileAttr, DWORD &FileMode, FAR_FIND_DATA_EX *fd = nullptr);
 
 public:
@@ -176,6 +176,6 @@ public:
 	static void ReadCache(const wchar_t *TreeRoot);
 	static void FlushCache();
 
-	static int MustBeCached(const wchar_t *Root);    // $ 16.10.2000 tran - функция, определяющаяя необходимость кеширования файла
+	static bool MustBeCached(const wchar_t *Root); // функция, определяющая необходимость кеширования файла
 	static void PR_MsgReadTree();
 };

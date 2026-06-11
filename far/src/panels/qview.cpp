@@ -431,15 +431,15 @@ void QuickView::PrintText(const wchar_t *Str)
 	FS << fmt::Cells() << fmt::Truncate(X2 - 2 - WhereX() + 1) << Str;
 }
 
-int QuickView::UpdateIfChanged(int UpdateMode)
+bool QuickView::UpdateIfChanged(int UpdateMode)
 {
 	if (IsVisible() && !strCurFileName.IsEmpty() && Directory == 2) {
 		FARString strViewName = strCurFileName;
 		ShowFile(strViewName, !strTempName.IsEmpty(), nullptr);
-		return TRUE;
+		return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 void QuickView::SetTitle()
@@ -486,17 +486,17 @@ void QuickView::SetMacroArea(int Restore)
 	CtrlObject->Macro.SetArea(Restore ? PrevMacroArea : MACROAREA_QVIEWPANEL);
 }
 
-int QuickView::GetCurName(FARString &strName)
+bool QuickView::GetCurName(FARString &strName)
 {
 	if (!strCurFileName.IsEmpty()) {
 		strName = strCurFileName;
-		return (TRUE);
+		return true;
 	}
 
-	return (FALSE);
+	return false;
 }
 
-BOOL QuickView::UpdateKeyBar()
+bool QuickView::UpdateKeyBar()
 {
 	KeyBar *KB = CtrlObject->MainKeyBar;
 	KB->SetAllGroup(KBL_MAIN, Msg::QViewF1, 12);
@@ -508,7 +508,7 @@ BOOL QuickView::UpdateKeyBar()
 	KB->SetAllGroup(KBL_ALTSHIFT, Msg::QViewAltShiftF1, 12);
 	KB->SetAllGroup(KBL_CTRLALTSHIFT, Msg::QViewCtrlAltShiftF1, 12);
 	DynamicUpdateKeyBar();
-	return TRUE;
+	return true;
 }
 
 void QuickView::DynamicUpdateKeyBar()

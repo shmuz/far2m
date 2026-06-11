@@ -422,7 +422,7 @@ void Editor::ShowEditor(bool CurLineOnly)
 
 		for (CurPtr = m_TopScreen, Y = Y1; Y <= Y2; Y++)
 			if (CurPtr) {
-				CurPtr->SetEditBeyondEnd(TRUE);
+				CurPtr->SetEditBeyondEnd(true);
 				CurPtr->SetPosition(X1, Y, m_XX2, Y);
 				// CurPtr->SetTables(UseDecodeTable ? &TableSet:nullptr);
 				//_D(SysLog(L"Setleftpos 3 to %i",LeftPos));

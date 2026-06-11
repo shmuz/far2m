@@ -195,7 +195,7 @@ public:
 	virtual ~Panel();
 
 public:
-	virtual int SendKeyToPlugin(FarKey Key, BOOL Pred = FALSE) { return FALSE; }
+	virtual bool SendKeyToPlugin(FarKey Key, bool Pred = false) { return false; }
 	virtual bool SetCurDir(const wchar_t *NewDir, bool ClosePlugin, bool ShowMessage = true);
 	virtual void ChangeDirToCurrent();
 
@@ -205,13 +205,13 @@ public:
 
 	virtual int GetSelCount() const { return 0; }
 	virtual int GetRealSelCount() const { return 0; }
-	virtual int
+	virtual bool
 	GetSelName(FARString *strName, DWORD &FileAttr, DWORD &FileMode, FAR_FIND_DATA_EX *fd = nullptr)
 	{
-		return FALSE;
+		return false;
 	}
 
-	int GetSelNameCompat(FARString *strName, DWORD &FileAttr, FAR_FIND_DATA_EX *fd = nullptr)
+	bool GetSelNameCompat(FARString *strName, DWORD &FileAttr, FAR_FIND_DATA_EX *fd = nullptr)
 	{
 		DWORD FileMode = 0;
 		return GetSelName(strName, FileAttr, FileMode, fd);
@@ -221,9 +221,9 @@ public:
 	virtual void ClearLastGetSelection() {}
 	virtual uint64_t GetLastSelectedSize() { return (uint64_t)(-1); }
 
-	virtual int GetCurName(FARString &strName);
-	virtual int GetCurBaseName(FARString &strName);
-	virtual int GetFileName(FARString &strName, int Pos, DWORD &FileAttr) const { return FALSE; }
+	virtual bool GetCurName(FARString &strName);
+	virtual bool GetCurBaseName(FARString &strName);
+	virtual bool GetFileName(FARString &strName, int Pos, DWORD &FileAttr) const { return false; }
 
 	virtual int GetCurrentPos() const { return 0; }
 	virtual void SetFocus();
@@ -233,7 +233,7 @@ public:
 	  Параметр для игнорирования времени последнего Update.
 	  Используется для Update после исполнения команды.
 	*/
-	virtual int UpdateIfChanged(int UpdateMode) { return 0; }
+	virtual bool UpdateIfChanged(int UpdateMode) { return false; }
 	/* $ 19.03.2002 DJ
 	   UpdateIfRequired() - обновить, если апдейт был пропущен из-за того,
 	   что панель невидима
@@ -325,7 +325,7 @@ public:
 	   функция вызывается для обновления кейбара; если возвращает FALSE,
 	   используется стандартный кейбар
 	*/
-	virtual BOOL UpdateKeyBar() { return FALSE; }
+	virtual bool UpdateKeyBar() { return false; }
 
 	virtual long GetFileCount() const { return 0; }
 
@@ -342,7 +342,7 @@ public:
 	int GetType() { return (Type); }
 	void SetUpdateMode(int Mode) { EnableUpdate = Mode; }
 	bool MakeListFile(FARString &strListFileName, const wchar_t *Modifers = nullptr);
-	int SetCurPath();
+	bool SetCurPath();
 
-	BOOL NeedUpdatePanel(Panel *AnotherPanel);
+	bool NeedUpdatePanel(Panel *AnotherPanel);
 };

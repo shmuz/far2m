@@ -79,11 +79,11 @@ public:
 	virtual void CloseFile();
 	virtual void QViewDelTempName();
 
-	virtual int UpdateIfChanged(int UpdateMode);
+	virtual bool UpdateIfChanged(int UpdateMode);
 	virtual void SetTitle();
 	virtual FARString &GetTitle(FARString &Title, int SubLen = -1, int TruncSize = 0);
 	virtual void SetFocus();
 	virtual void KillFocus();
-	virtual BOOL UpdateKeyBar();
-	virtual int GetCurName(FARString &strName);
+	virtual bool UpdateKeyBar();
+	virtual bool GetCurName(FARString &strName);
 };

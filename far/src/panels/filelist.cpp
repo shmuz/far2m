@@ -715,16 +715,16 @@ void FileList::SetFocus()
 		SetTitle();
 }
 
-int FileList::SendKeyToPlugin(FarKey Key, BOOL Pred)
+bool FileList::SendKeyToPlugin(FarKey Key, bool Pred)
 {
 	_ALGO(CleverSysLog clv(L"FileList::SendKeyToPlugin()"));
-	_ALGO(SysLog(L"Key=%ls Pred=%d", _FARKEY_ToName(Key), Pred));
+	_ALGO(SysLog(L"Key=%ls Pred=%d", _FARKEY_ToName(Key), (int)Pred));
 
 	if (PanelMode != PLUGIN_PANEL)
-		return FALSE;
+		return false;
 
 	if (!CtrlObject->Macro.CanSendKeysToPlugin())
-		return FALSE;
+		return false;
 
 	int VirtKey, ControlState;
 
@@ -736,10 +736,10 @@ int FileList::SendKeyToPlugin(FarKey Key, BOOL Pred)
 		ProcessPluginCommand();
 
 		if (ProcessCode)
-			return TRUE;
+			return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 bool FileList::GetPluginInfo(PluginInfo *PInfo)
@@ -3192,13 +3192,13 @@ int FileList::GetRealSelCount() const
 	return FileCount ? SelFileCount : 0;
 }
 
-int FileList::GetSelName(FARString *strName, DWORD &FileAttr, DWORD &FileMode, FAR_FIND_DATA_EX *fde)
+bool FileList::GetSelName(FARString *strName, DWORD &FileAttr, DWORD &FileMode, FAR_FIND_DATA_EX *fde)
 {
 	FileMode = 0640;
 	if (!strName) {
 		GetSelPosition = 0;
 		LastSelPosition = -1;
-		return TRUE;
+		return true;
 	}
 	if (!SelFileCount || ReturnCurrentFile) {
 		if (!GetSelPosition && CurFile < FileCount) {
@@ -3221,9 +3221,9 @@ int FileList::GetSelName(FARString *strName, DWORD &FileAttr, DWORD &FileMode, F
 				fde->strFileName = ListData[CurFile]->strName;
 			}
 
-			return TRUE;
+			return true;
 		} else
-			return FALSE;
+			return false;
 	}
 
 	while (GetSelPosition < FileCount) {
@@ -3247,11 +3247,11 @@ int FileList::GetSelName(FARString *strName, DWORD &FileAttr, DWORD &FileMode, F
 				fde->strFileName = ListData[pos]->strName;
 			}
 
-			return TRUE;
+			return true;
 		}
 	}
 
-	return FALSE;
+	return false;
 }
 
 void FileList::ClearLastGetSelection()
@@ -3281,24 +3281,24 @@ const FileListItem *FileList::GetLastSelectedItem()
 	return nullptr;
 }
 
-int FileList::GetCurName(FARString &strName)
+bool FileList::GetCurName(FARString &strName)
 {
 	if (!FileCount) {
 		strName.Clear();
-		return FALSE;
+		return false;
 	}
 
 	assert(CurFile < FileCount);
 	strName = ListData[CurFile]->strName;
 
-	return TRUE;
+	return true;
 }
 
-int FileList::GetCurBaseName(FARString &strName)
+bool FileList::GetCurBaseName(FARString &strName)
 {
 	if (!FileCount) {
 		strName.Clear();
-		return FALSE;
+		return false;
 	}
 
 	if (PanelMode == PLUGIN_PANEL && !PluginsList.empty())    // для плагинов
@@ -3309,7 +3309,7 @@ int FileList::GetCurBaseName(FARString &strName)
 		strName = ListData[CurFile]->strName;
 	}
 
-	return TRUE;
+	return true;
 }
 
 enum
@@ -3916,14 +3916,14 @@ void FileList::RestoreSelection()
 	Redraw();
 }
 
-int FileList::GetFileName(FARString &strName, int Pos, DWORD &FileAttr) const
+bool FileList::GetFileName(FARString &strName, int Pos, DWORD &FileAttr) const
 {
 	if (Pos >= FileCount)
-		return FALSE;
+		return false;
 
 	strName = ListData[Pos]->strName;
 	FileAttr = ListData[Pos]->FileAttr;
-	return TRUE;
+	return true;
 }
 
 int FileList::GetCurrentPos() const
@@ -4596,7 +4596,7 @@ void FileList::ChangeSortOrder(int NewOrder)
 	Show();
 }
 
-BOOL FileList::UpdateKeyBar()
+bool FileList::UpdateKeyBar()
 {
 	KeyBar *KB = CtrlObject->MainKeyBar;
 	KB->SetAllGroup(KBL_MAIN, Msg::F1, 12);
@@ -4628,7 +4628,7 @@ BOOL FileList::UpdateKeyBar()
 		}
 	}
 
-	return TRUE;
+	return true;
 }
 
 int FileList::PluginPanelHelp(PHPTR ph)

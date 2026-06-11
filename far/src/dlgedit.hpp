@@ -95,7 +95,7 @@ public:
 	void SetOvertypeMode(bool Mode);
 	bool GetOvertypeMode();
 
-	void SetEditBeyondEnd(int Mode);
+	void SetEditBeyondEnd(bool Mode);
 
 	void SetClearFlag(bool Add);
 	bool GetClearFlag();

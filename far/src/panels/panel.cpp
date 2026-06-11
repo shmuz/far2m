@@ -922,7 +922,7 @@ void Panel::FastFind(int FirstKey)
 		FastFindShow(FindX, FindY);
 		Edit FindEdit;
 		FindEdit.SetPosition(FindX + 2, FindY + 1, FindX + 19, FindY + 1);
-		FindEdit.SetEditBeyondEnd(FALSE);
+		FindEdit.SetEditBeyondEnd(false);
 		FindEdit.SetObjectColor(FarColorToReal(COL_DIALOGEDIT));
 		FindEdit.Show();
 
@@ -1326,10 +1326,10 @@ void Panel::InitCurDir(const wchar_t *CurDir)
 	 в FarChDir, которая теперь используется у нас для установления
 	 текущего каталога.
 */
-int Panel::SetCurPath()
+bool Panel::SetCurPath()
 {
 	if (GetMode() == PLUGIN_PANEL)
-		return TRUE;
+		return true;
 
 	if (!FarChDir(strCurDir)) {
 		while (!FarChDir(strCurDir)) {
@@ -1338,7 +1338,7 @@ int Panel::SetCurPath()
 			if (Result == TSTFLD_NOTFOUND) {
 				if (CheckShortcutFolder(strCurDir, false, true) && FarChDir(strCurDir)) {
 					SetCurDir(strCurDir, true);
-					return TRUE;
+					return true;
 				}
 			} else
 				break;
@@ -1365,10 +1365,10 @@ int Panel::SetCurPath()
 			}
 		}
 
-		return FALSE;
+		return false;
 	}
 
-	return TRUE;
+	return true;
 }
 
 void Panel::Hide()
@@ -1898,26 +1898,23 @@ int Panel::SetPluginCommand(int Command, int Param1, LONG_PTR Param2)
 	return Result;
 }
 
-int Panel::GetCurName(FARString &strName)
+bool Panel::GetCurName(FARString &strName)
 {
 	strName.Clear();
-	return FALSE;
+	return false;
 }
 
-int Panel::GetCurBaseName(FARString &strName)
+bool Panel::GetCurBaseName(FARString &strName)
 {
 	strName.Clear();
-	return FALSE;
+	return false;
 }
 
-BOOL Panel::NeedUpdatePanel(Panel *AnotherPanel)
+bool Panel::NeedUpdatePanel(Panel *AnotherPanel)
 {
 	/* Обновить, если обновление разрешено и пути совпадают */
-	if ((!Opt.AutoUpdateLimit || static_cast<DWORD>(GetFileCount()) <= Opt.AutoUpdateLimit)
-			&& !StrCmpI(AnotherPanel->strCurDir, strCurDir))
-		return TRUE;
-
-	return FALSE;
+	return (!Opt.AutoUpdateLimit || static_cast<DWORD>(GetFileCount()) <= Opt.AutoUpdateLimit)
+			&& !StrCmpI(AnotherPanel->strCurDir, strCurDir);
 }
 
 bool Panel::GetShortcutInfo(ShortcutInfo& Info) const

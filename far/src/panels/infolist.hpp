@@ -109,7 +109,7 @@ public:
 	virtual void SetFocus();
 	virtual void KillFocus();
 	virtual FARString &GetTitle(FARString &Title, int SubLen = -1, int TruncSize = 0);
-	virtual BOOL UpdateKeyBar();
+	virtual bool UpdateKeyBar();
 	virtual void CloseFile();
-	virtual int GetCurName(FARString &strName);
+	virtual bool GetCurName(FARString &strName);
 };

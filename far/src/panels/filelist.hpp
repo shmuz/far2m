@@ -217,15 +217,15 @@ private:
 
 	void MoveSelection(FileListItem **FileList, long FileCount, FileListItem **OldList, long OldFileCount);
 	virtual int GetSelCount() const;
-	virtual int GetSelName(FARString *strName, DWORD &FileAttr, DWORD &FileMode, FAR_FIND_DATA_EX *fde = nullptr);
+	virtual bool GetSelName(FARString *strName, DWORD &FileAttr, DWORD &FileMode, FAR_FIND_DATA_EX *fde = nullptr);
 	virtual void UngetSelName();
 	virtual void ClearLastGetSelection();
 
 	virtual uint64_t GetLastSelectedSize();
 	const FileListItem *GetLastSelectedItem();
 
-	virtual int GetCurName(FARString &strName);
-	virtual int GetCurBaseName(FARString &strName);
+	virtual bool GetCurName(FARString &strName);
+	virtual bool GetCurBaseName(FARString &strName);
 
 	void PushPlugin(const wchar_t *HostFile);
 	bool PopPlugin(bool EnableRestoreViewMode);
@@ -275,7 +275,7 @@ public:
 	  Параметр для игнорирования времени последнего Update.
 	  Используется для Update после исполнения команды.
 	*/
-	virtual int UpdateIfChanged(int UpdateMode);
+	virtual bool UpdateIfChanged(int UpdateMode);
 
 	/* $ 19.03.2002 DJ
 	   UpdateIfRequired() - обновить, если апдейт был пропущен из-за того,
@@ -283,7 +283,7 @@ public:
 	*/
 	virtual void UpdateIfRequired();
 
-	virtual int SendKeyToPlugin(FarKey Key, BOOL Pred = FALSE);
+	virtual bool SendKeyToPlugin(FarKey Key, bool Pred = false);
 	void CreateChangeNotification(int CheckTree);
 	virtual void CloseChangeNotification();
 	virtual void SortFileList(bool KeepPosition);
@@ -304,7 +304,7 @@ public:
 	virtual int GetPrevDirectoriesFirst();
 
 	PHPTR OpenFilePlugin(const wchar_t *FileName, bool PushPrev, OPENFILEPLUGINTYPE Type);
-	virtual int GetFileName(FARString &strName, int Pos, DWORD &FileAttr) const;
+	virtual bool GetFileName(FARString &strName, int Pos, DWORD &FileAttr) const;
 	virtual int GetCurrentPos() const;
 	virtual bool FindPartName(const wchar_t *Name, int Next, int Direct = 1, int ExcludeSets = 0,
 			bool UseXlat = false);
@@ -361,7 +361,7 @@ public:
 	FARString &PluginGetURL(const wchar_t *Name, FARString &strDest);
 
 	const FileListItem *GetItem(int Index) const;
-	virtual BOOL UpdateKeyBar();
+	virtual bool UpdateKeyBar();
 
 	void ResetLastUpdateTime() { LastUpdateTime = 0; }
 	virtual PHPTR GetPluginHandle() const;
