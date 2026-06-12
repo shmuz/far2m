@@ -218,7 +218,7 @@ class PluginManager
 		void  FreeVirtualFindData(PHPTR ph, PluginPanelItem *PanelItem, int ItemsNumber);
 		void  GetCustomData(FileListItem *ListItem);
 		bool  GetFile(PHPTR ph, PluginPanelItem *PanelItem, const wchar_t *DestPath, FARString &strResultName, int OpMode);
-		int   GetFiles(PHPTR ph, PluginPanelItem *PanelItem, int ItemsNumber, int Move, const wchar_t **DestPath, int OpMode);
+		int   GetFiles(PHPTR ph, PluginPanelItem *PanelItem, int ItemsNumber, bool Move, const wchar_t **DestPath, int OpMode);
 		int   GetFindData(PHPTR ph, PluginPanelItem **pPanelItem, int *pItemsNumber, int Silent);
 		bool  GetLinkTarget(PHPTR ph, PluginPanelItem *PanelItem, FARString &result, int OpMode);
 		void  GetOpenPluginInfo(PHPTR ph, OpenPluginInfo *Info);
@@ -238,7 +238,7 @@ class PluginManager
 		int   ProcessKey(PHPTR ph, int Key, unsigned int ControlState);
 		int   ProcessSynchroEvent(int Event, void* Param);
 		int   ProcessViewerEvent(int Event, int ViewerId);
-		int   PutFiles(PHPTR ph, PluginPanelItem *PanelItem, int ItemsNumber, int Move, int OpMode);
+		int   PutFiles(PHPTR ph, PluginPanelItem *PanelItem, int ItemsNumber, bool Move, int OpMode);
 		void  RetainPanel(PHPTR ph); // increments refcnt
 		int   SetDirectory(PHPTR ph, const wchar_t *Dir, int OpMode);
 

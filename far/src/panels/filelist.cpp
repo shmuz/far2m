@@ -4504,10 +4504,10 @@ void FileList::ProcessCopyKeys(FarKey Key)
 {
 	if (FileCount > 0) {
 		SCOPED_ACTION(SudoClientRegion);
-		int Drag = Key == KEY_DRAGCOPY || Key == KEY_DRAGMOVE;
-		int Ask = !Drag || Opt.Confirm.Drag;
-		int Move = (Key == KEY_F6 || Key == KEY_DRAGMOVE);
-		int AnotherDir = FALSE;
+		bool Drag = Key == KEY_DRAGCOPY || Key == KEY_DRAGMOVE;
+		bool Ask = !Drag || Opt.Confirm.Drag;
+		bool Move = (Key == KEY_F6 || Key == KEY_DRAGMOVE);
+		bool AnotherDir = false;
 		Panel *AnotherPanel = CtrlObject->Cp()->GetAnotherPanel(this);
 
 		if (AnotherPanel->GetType() == FILE_PANEL) {
@@ -4520,14 +4520,14 @@ void FileList::ProcessCopyKeys(FarKey Key)
 							& FILE_ATTRIBUTE_DIRECTORY)
 					&& !TestParentFolderName(
 							AnotherFilePanel->ListData[AnotherFilePanel->CurFile]->strName)) {
-				AnotherDir = TRUE;
+				AnotherDir = true;
 			}
 		}
 
 		if (PanelMode == PLUGIN_PANEL && !CtrlObject->Plugins.UseFarCommand(hPlugin, PLUGIN_FARGETFILES)) {
 			if (Key != KEY_ALTF6) {
 				FARString strPluginDestPath;
-				int ToPlugin = FALSE;
+				int ToPlugin = 0;
 
 				if (AnotherPanel->GetMode() == PLUGIN_PANEL && AnotherPanel->IsVisible()
 						&& !CtrlObject->Plugins.UseFarCommand(AnotherPanel->GetPluginHandle(),
@@ -4568,7 +4568,8 @@ void FileList::ProcessCopyKeys(FarKey Key)
 					}
 				}
 			}
-		} else {
+		}
+		else {
 			int ToPlugin = AnotherPanel->GetMode() == PLUGIN_PANEL && AnotherPanel->IsVisible()
 					&& Key != KEY_ALTF6
 					&& !CtrlObject->Plugins.UseFarCommand(AnotherPanel->GetPluginHandle(),

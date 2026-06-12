@@ -176,7 +176,7 @@ private:
 	int DisconnectDrive(PanelMenuItem *item, VMenu &ChDisk);
 	void FastFindShow(int FindX, int FindY);
 	void FastFindProcessName(Edit *FindEdit, const wchar_t *Src, FARString &strLastName, FARString &strName);
-	void DragMessage(int X, int Y, int Move);
+	void DragMessage(int X, int Y, bool Move);
 	int OnFCtlSetLocation(const FarPanelLocation *location);
 
 protected:
@@ -306,9 +306,9 @@ public:
 	virtual void GetDizName(FARString &strDizName) {}
 	virtual void FlushDiz() {}
 	virtual void CopyDiz(const wchar_t *Name, const wchar_t *DestName, DizList *DestDiz) {}
-	virtual int IsFullScreen() const { return ViewSettings.FullScreen; }
-	virtual int IsDizDisplayed() const { return FALSE; }
-	virtual int IsColumnDisplayed(int Type) const { return FALSE; }
+	virtual bool IsFullScreen() const { return ViewSettings.FullScreen != 0; }
+	virtual bool IsDizDisplayed() const { return false; }
+	virtual bool IsColumnDisplayed(int Type) const { return false; }
 	virtual int GetColumnsCount() const { return 1; }
 	virtual void QViewDelTempName() {}
 	virtual void GetOpenPluginInfo(struct OpenPluginInfo *Info) {}
@@ -336,7 +336,7 @@ public:
 	virtual void Hide();
 	virtual void Show();
 	int SetPluginCommand(int Command, int Param1, LONG_PTR Param2);
-	int PanelProcessMouse(MOUSE_EVENT_RECORD *MouseEvent, int &RetCode);
+	bool PanelProcessMouse(MOUSE_EVENT_RECORD *MouseEvent, int &RetCode);
 	void ChangeDisk();
 	int GetFocus() { return (Focus); }
 	int GetType() { return (Type); }

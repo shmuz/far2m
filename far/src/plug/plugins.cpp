@@ -1000,7 +1000,7 @@ int PluginManager::GetFiles(
 		PHPTR ph,
 		PluginPanelItem *PanelItems,
 		int ItemsNumber,
-		int Move,
+		bool Move,
 		const wchar_t **DestPath,
 		int OpMode)
 {
@@ -1013,7 +1013,7 @@ int PluginManager::PutFiles(
 		PHPTR ph,
 		PluginPanelItem *PanelItems,
 		int ItemsNumber,
-		int Move,
+		bool Move,
 		int OpMode)
 {
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);

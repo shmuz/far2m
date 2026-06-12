@@ -74,7 +74,7 @@ class FilePanels:public Frame
 		Panel* GetAnotherPanel(Panel *Current);
 		Panel* ChangePanelToFilled(Panel *Current,int NewType);
 		Panel* ChangePanel(Panel *Current,int NewType,bool CreateNew,bool Force);
-		void   SetPanelPositions(int LeftFullScreen,int RightFullScreen);
+		void   SetPanelPositions(bool LeftFullScreen, bool RightFullScreen);
 //    void   SetPanelPositions();
 
 		void   SetupKeyBar();

@@ -238,17 +238,17 @@ private:
 	void DeletePluginItemList();
 	PHPTR OpenPluginForFile(const wchar_t *FileName, DWORD FileAttr, OPENFILEPLUGINTYPE Type);
 	int PreparePanelView(PanelViewSettings *PanelView);
-	int PrepareColumnWidths(std::vector<Column> &Columns, int FullScreen);
+	int PrepareColumnWidths(std::vector<Column> &Columns, bool FullScreen);
 	void PrepareViewSettings(int ViewMode, OpenPluginInfo *PlugInfo);
 
 	void PluginDelete();
-	void PutDizToPlugin(FileList *DestPanel, int Delete, int Move, DizList *SrcDiz, DizList *DestDiz);
-	void PluginGetFiles(const wchar_t **DestPath, int Move);
-	void PluginToPluginFiles(int Move);
+	void PutDizToPlugin(FileList *DestPanel, bool Delete, bool Move, DizList *SrcDiz, DizList *DestDiz);
+	void PluginGetFiles(const wchar_t **DestPath, bool Move);
+	void PluginToPluginFiles(bool Move);
 	void PluginHostGetFiles();
 	void PluginPutFilesToNew();
 	// возвращает то, что возвращает PutFiles
-	int PluginPutFilesToAnother(int Move, Panel *AnotherPanel);
+	int PluginPutFilesToAnother(bool Move, Panel *AnotherPanel);
 	void ProcessPluginCommand();
 	void PluginClearSelection();
 	void ProcessCopyKeys(FarKey Key);
@@ -333,9 +333,9 @@ public:
 	virtual void FlushDiz();
 	virtual void GetDizName(FARString &strDizName);
 	virtual void CopyDiz(const wchar_t *Name, const wchar_t *DestName, DizList *DestDiz);
-	virtual int IsFullScreen() const;
-	virtual int IsDizDisplayed() const;
-	virtual int IsColumnDisplayed(int Type) const;
+	virtual bool IsFullScreen() const;
+	virtual bool IsDizDisplayed() const;
+	virtual bool IsColumnDisplayed(int Type) const;
 	virtual int GetColumnsCount() const { return Columns; }
 	virtual void GetOpenPluginInfo(OpenPluginInfo *Info);
 	virtual void SetPluginMode(PHPTR PanHandle, const wchar_t *PluginFile, bool SendOnFocus = false);
@@ -374,5 +374,5 @@ public:
 	static void FreePluginPanelItem(PluginPanelItem *pi);
 	static size_t FileListToPluginItem2(const FileListItem *fi, PluginPanelItem *pi);
 	static void PluginToFileListItem(const PluginPanelItem *pi, FileListItem *fi);
-	static int IsModeFullScreen(int Mode);
+	static bool IsModeFullScreen(int Mode);
 };

@@ -165,7 +165,7 @@ FilePanels::~FilePanels()
 	RightPanel=nullptr;
 }
 
-void FilePanels::SetPanelPositions(int LeftFullScreen,int RightFullScreen)
+void FilePanels::SetPanelPositions(bool LeftFullScreen, bool RightFullScreen)
 {
 	if (Opt.WidthDecrement < -(ScrX/2-10))
 		Opt.WidthDecrement=-(ScrX/2-10);
@@ -782,50 +782,49 @@ Panel* FilePanels::GetAnotherPanel(Panel *Current)
 Panel* FilePanels::ChangePanel(Panel *Current, int NewType, bool CreateNew, bool Force)
 {
 	Panel *NewPanel;
-	SaveScreen *SaveScr=nullptr;
-	// OldType не инициализировался...
-	int OldType=Current->GetType(),X1,Y1,X2,Y2;
-	int OldViewMode,OldSortMode,OldSortOrder,OldSortGroups,OldSelectedFirst,OldDirectoriesFirst;
-	int OldPanelMode,LeftPosition,ChangePosition,OldNumericSort,OldCaseSensitiveSort;
-	int OldFullScreen,OldFocus,UseLastPanel=0;
-	OldPanelMode=Current->GetMode();
+	SaveScreen *SaveScr = nullptr;
+	int X1, Y1, X2, Y2;
+	int OldType = Current->GetType();
+	int OldPanelMode = Current->GetMode();
+	bool UseLastPanel = false;
 
 	if (!Force && NewType==OldType && OldPanelMode==NORMAL_PANEL)
-		return(Current);
+		return Current;
 
-	OldViewMode=Current->GetPrevViewMode();
-	OldFullScreen=Current->IsFullScreen();
-	OldSortMode=Current->GetPrevSortMode();
-	OldSortOrder=Current->GetPrevSortOrder();
-	OldNumericSort=Current->GetPrevNumericSort();
-	OldCaseSensitiveSort=Current->GetPrevCaseSensitiveSort();
-	OldSortGroups=Current->GetSortGroups();
-	OldFocus=Current->GetFocus();
-	OldSelectedFirst=Current->GetSelectedFirstMode();
-	OldDirectoriesFirst=Current->GetPrevDirectoriesFirst();
-	LeftPosition=(Current==LeftPanel);
-	Panel* &LastFilePanel=LeftPosition ? LastLeftFilePanel:LastRightFilePanel;
+	int  OldViewMode = Current->GetPrevViewMode();
+	bool OldFullScreen = Current->IsFullScreen();
+	int  OldSortMode = Current->GetPrevSortMode();
+	int  OldSortOrder = Current->GetPrevSortOrder();
+	int  OldNumericSort = Current->GetPrevNumericSort();
+	int  OldCaseSensitiveSort = Current->GetPrevCaseSensitiveSort();
+	int  OldSortGroups = Current->GetSortGroups();
+	int  OldFocus = Current->GetFocus();
+	int  OldSelectedFirst = Current->GetSelectedFirstMode();
+	int  OldDirectoriesFirst = Current->GetPrevDirectoriesFirst();
+
+	bool LeftPosition = (Current == LeftPanel);
+	Panel* &LastFilePanel = LeftPosition ? LastLeftFilePanel : LastRightFilePanel;
 	Current->GetPosition(X1,Y1,X2,Y2);
-	ChangePosition=((OldType==FILE_PANEL && NewType!=FILE_PANEL &&
-	                 OldFullScreen) || (NewType==FILE_PANEL &&
-	                                    ((OldFullScreen && !FileList::IsModeFullScreen(OldViewMode)) ||
-	                                     (!OldFullScreen && FileList::IsModeFullScreen(OldViewMode)))));
+	bool ChangePosition =
+		(OldType==FILE_PANEL && NewType!=FILE_PANEL && OldFullScreen)
+		||
+		(NewType==FILE_PANEL && OldFullScreen != FileList::IsModeFullScreen(OldViewMode));
 
 	if (!ChangePosition)
 	{
-		SaveScr=Current->SaveScr;
-		Current->SaveScr=nullptr;
+		SaveScr = Current->SaveScr;
+		Current->SaveScr = nullptr;
 	}
 
 	if (OldType==FILE_PANEL && NewType!=FILE_PANEL)
 	{
 		delete Current->SaveScr;
-		Current->SaveScr=nullptr;
+		Current->SaveScr = nullptr;
 
-		if (LastFilePanel!=Current)
+		if (LastFilePanel != Current)
 		{
 			DeletePanel(LastFilePanel);
-			LastFilePanel=Current;
+			LastFilePanel = Current;
 		}
 
 		LastFilePanel->Hide();
@@ -834,7 +833,7 @@ Panel* FilePanels::ChangePanel(Panel *Current, int NewType, bool CreateNew, bool
 		{
 			LastFilePanel->SaveScr->Discard();
 			delete LastFilePanel->SaveScr;
-			LastFilePanel->SaveScr=nullptr;
+			LastFilePanel->SaveScr = nullptr;
 		}
 	}
 	else
@@ -845,28 +844,27 @@ Panel* FilePanels::ChangePanel(Panel *Current, int NewType, bool CreateNew, bool
 		if (OldType==FILE_PANEL && NewType==FILE_PANEL)
 		{
 			DeletePanel(LastFilePanel);
-			LastFilePanel=nullptr;
+			LastFilePanel = nullptr;
 		}
 	}
 
 	if (!CreateNew && NewType==FILE_PANEL && LastFilePanel)
 	{
-		int LastX1,LastY1,LastX2,LastY2;
-		LastFilePanel->GetPosition(LastX1,LastY1,LastX2,LastY2);
+		int LastX1, LastY1, LastX2, LastY2;
+		LastFilePanel->GetPosition(LastX1, LastY1, LastX2, LastY2);
 
 		if (LastFilePanel->IsFullScreen())
-			LastFilePanel->SetPosition(LastX1,Y1,LastX2,Y2);
+			LastFilePanel->SetPosition(LastX1, Y1, LastX2, Y2);
 		else
 			LastFilePanel->SetPosition(X1,Y1,X2,Y2);
 
-		NewPanel=LastFilePanel;
+		NewPanel = LastFilePanel;
 
 		if (!ChangePosition)
 		{
-			if ((NewPanel->IsFullScreen() && !OldFullScreen) ||
-			        (!NewPanel->IsFullScreen() && OldFullScreen))
+			if (NewPanel->IsFullScreen() != OldFullScreen)
 			{
-				Panel *AnotherPanel=GetAnotherPanel(Current);
+				Panel *AnotherPanel = GetAnotherPanel(Current);
 
 				if (SaveScr && AnotherPanel->IsVisible() &&
 				        AnotherPanel->GetType()==FILE_PANEL && AnotherPanel->IsFullScreen())
@@ -875,29 +873,29 @@ Panel* FilePanels::ChangePanel(Panel *Current, int NewType, bool CreateNew, bool
 				delete SaveScr;
 			}
 			else
-				NewPanel->SaveScr=SaveScr;
+				NewPanel->SaveScr = SaveScr;
 		}
 
 		if (!OldFocus && NewPanel->GetFocus())
 			NewPanel->KillFocus();
 
-		UseLastPanel=TRUE;
+		UseLastPanel = true;
 	}
 	else
 		NewPanel=CreatePanel(NewType);
 
 	if (Current==ActivePanel)
-		ActivePanel=NewPanel;
+		ActivePanel = NewPanel;
 
 	if (LeftPosition)
 	{
-		LeftPanel=NewPanel;
-		LastLeftType=OldType;
+		LeftPanel = NewPanel;
+		LastLeftType = OldType;
 	}
 	else
 	{
-		RightPanel=NewPanel;
-		LastRightType=OldType;
+		RightPanel = NewPanel;
+		LastRightType = OldType;
 	}
 
 	if (!UseLastPanel)
@@ -906,12 +904,12 @@ Panel* FilePanels::ChangePanel(Panel *Current, int NewType, bool CreateNew, bool
 		{
 			if (LeftPosition)
 			{
-				NewPanel->SetPosition(0,Y1,ScrX/2-Opt.WidthDecrement,Y2);
+				NewPanel->SetPosition(0, Y1, ScrX/2 - Opt.WidthDecrement, Y2);
 				RightPanel->Redraw();
 			}
 			else
 			{
-				NewPanel->SetPosition(ScrX/2+1-Opt.WidthDecrement,Y1,ScrX,Y2);
+				NewPanel->SetPosition(ScrX/2 + 1 - Opt.WidthDecrement, Y1, ScrX, Y2);
 				LeftPanel->Redraw();
 			}
 		}
@@ -932,7 +930,7 @@ Panel* FilePanels::ChangePanel(Panel *Current, int NewType, bool CreateNew, bool
 		NewPanel->SetDirectoriesFirst(OldDirectoriesFirst);
 	}
 
-	return(NewPanel);
+	return NewPanel;
 }
 
 int  FilePanels::GetTypeAndName(FARString &strType, FARString &strName)

@@ -673,14 +673,15 @@ void FileList::PrepareViewSettings(int ViewMode, OpenPluginInfo *PlugInfo)
 				ViewSettings.FileLowerCase = 0;
 				ViewSettings.FileUpperToLowerCase = 0;
 			}
-		} else
-			for (size_t I = 0; I < ViewSettings.PanelColumns.size(); I++)
-				if ((ViewSettings.PanelColumns[I].Type & 0xff) == NAME_COLUMN) {
+		}
+		else {
+			for (auto &Column: ViewSettings.PanelColumns) {
+				if ((Column.Type & 0xff) == NAME_COLUMN) {
 					if (Info.Flags & OPIF_SHOWNAMESONLY)
-						ViewSettings.PanelColumns[I].Type|= COLUMN_NAMEONLY;
+						Column.Type |= COLUMN_NAMEONLY;
 
 					if (Info.Flags & OPIF_SHOWRIGHTALIGNNAMES)
-						ViewSettings.PanelColumns[I].Type|= COLUMN_RIGHTALIGN;
+						Column.Type |= COLUMN_RIGHTALIGN;
 
 					if (Info.Flags & OPIF_SHOWPRESERVECASE) {
 						ViewSettings.FolderUpperCase = 0;
@@ -688,6 +689,8 @@ void FileList::PrepareViewSettings(int ViewMode, OpenPluginInfo *PlugInfo)
 						ViewSettings.FileUpperToLowerCase = 0;
 					}
 				}
+			}
+		}
 	}
 
 	Columns = PreparePanelView(&ViewSettings);
@@ -706,7 +709,7 @@ int FileList::PreparePanelView(PanelViewSettings *PanelView)
 	return (PrepareColumnWidths(PanelView->PanelColumns, PanelView->FullScreen));
 }
 
-int FileList::PrepareColumnWidths(std::vector<Column> &Columns, int FullScreen)
+int FileList::PrepareColumnWidths(std::vector<Column> &Columns, bool FullScreen)
 {
 	if (Columns.empty()) {
 		Column col = {NAME_COLUMN, 0, COUNT_WIDTH};
@@ -1286,31 +1289,30 @@ void FileList::ShowList(int ShowStatus, int StartColumn, OpenPluginInfo &Info)
 	}
 }
 
-int FileList::IsFullScreen() const
+bool FileList::IsFullScreen() const
 {
-	return this->ViewSettings.FullScreen;
+	return ViewSettings.FullScreen != 0;
 }
 
-int FileList::IsModeFullScreen(int Mode)
+bool FileList::IsModeFullScreen(int Mode)
 {
-	return (ViewSettingsArray[Mode].FullScreen);
+	return ViewSettingsArray[Mode].FullScreen != 0;
 }
 
-int FileList::IsDizDisplayed() const
+bool FileList::IsDizDisplayed() const
 {
-	return (IsColumnDisplayed(DIZ_COLUMN));
+	return IsColumnDisplayed(DIZ_COLUMN);
 }
 
-int FileList::IsColumnDisplayed(int Type) const
+bool FileList::IsColumnDisplayed(int Type) const
 {
+	for (const auto &Column: ViewSettings.PanelColumns)
+		if ((int)(Column.Type & 0xff) == Type)
+			return true;
 
-	for (size_t i = 0; i < ViewSettings.PanelColumns.size(); i++)
-		if ((int)(ViewSettings.PanelColumns[i].Type & 0xff) == Type)
-			return TRUE;
+	for (const auto &Column: ViewSettings.StatusColumns)
+		if ((int)(Column.Type & 0xff) == Type)
+			return true;
 
-	for (size_t i = 0; i < ViewSettings.StatusColumns.size(); i++)
-		if ((int)(ViewSettings.StatusColumns[i].Type & 0xff) == Type)
-			return TRUE;
-
-	return FALSE;
+	return false;
 }

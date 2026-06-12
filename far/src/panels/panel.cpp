@@ -79,7 +79,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "vt/vtshell.h"
 #include <StackHeapArray.hpp>
 
-static int DragX, DragY, DragMove;
+static int DragX, DragY;
+static bool DragMove;
 static Panel *SrcDragPanel;
 static SaveScreen *DragSaveScr = nullptr;
 static FARString strDragName;
@@ -1121,7 +1122,7 @@ void Panel::KillFocus()
 	Redraw();
 }
 
-int Panel::PanelProcessMouse(MOUSE_EVENT_RECORD *MouseEvent, int &RetCode)
+bool Panel::PanelProcessMouse(MOUSE_EVENT_RECORD *MouseEvent, int &RetCode)
 {
 	RetCode = TRUE;
 
@@ -1130,7 +1131,7 @@ int Panel::PanelProcessMouse(MOUSE_EVENT_RECORD *MouseEvent, int &RetCode)
 			if (Opt.ScreenSaver && !(MouseEvent->dwButtonState & 3)) {
 				EndDrag();
 				ScreenSaver(TRUE);
-				return TRUE;
+				return true;
 			}
 		} else {
 			if ((MouseEvent->dwButtonState & 3) && !MouseEvent->dwEventFlags) {
@@ -1141,7 +1142,7 @@ int Panel::PanelProcessMouse(MOUSE_EVENT_RECORD *MouseEvent, int &RetCode)
 				else
 					ShellOptions(0, MouseEvent);
 
-				return TRUE;
+				return true;
 			}
 		}
 	}
@@ -1150,7 +1151,7 @@ int Panel::PanelProcessMouse(MOUSE_EVENT_RECORD *MouseEvent, int &RetCode)
 			|| (MouseEvent->dwMousePosition.X < X1 || MouseEvent->dwMousePosition.X > X2
 					|| MouseEvent->dwMousePosition.Y < Y1 || MouseEvent->dwMousePosition.Y > Y2)) {
 		RetCode = FALSE;
-		return TRUE;
+		return true;
 	}
 
 	if (DragX != -1) {
@@ -1163,13 +1164,13 @@ int Panel::PanelProcessMouse(MOUSE_EVENT_RECORD *MouseEvent, int &RetCode)
 				SrcDragPanel->ProcessKey(DragMove ? KEY_DRAGMOVE : KEY_DRAGCOPY);
 			}
 
-			return TRUE;
+			return true;
 		}
 
 		if (MouseEvent->dwMousePosition.Y <= Y1 || MouseEvent->dwMousePosition.Y >= Y2
 				|| !CtrlObject->Cp()->GetAnotherPanel(SrcDragPanel)->IsVisible()) {
 			EndDrag();
-			return TRUE;
+			return true;
 		}
 
 		if ((MouseEvent->dwButtonState & 2) && !MouseEvent->dwEventFlags)
@@ -1183,7 +1184,7 @@ int Panel::PanelProcessMouse(MOUSE_EVENT_RECORD *MouseEvent, int &RetCode)
 				}
 
 				DragMessage(MouseEvent->dwMousePosition.X, MouseEvent->dwMousePosition.Y, DragMove);
-				return TRUE;
+				return true;
 			} else {
 				delete DragSaveScr;
 				DragSaveScr = nullptr;
@@ -1192,7 +1193,7 @@ int Panel::PanelProcessMouse(MOUSE_EVENT_RECORD *MouseEvent, int &RetCode)
 	}
 
 	if (!(MouseEvent->dwButtonState & 3))
-		return TRUE;
+		return true;
 
 	if ((MouseEvent->dwButtonState & 1) && !MouseEvent->dwEventFlags && X2 - X1 < ScrX) {
 		DWORD FileAttr;
@@ -1203,11 +1204,11 @@ int Panel::PanelProcessMouse(MOUSE_EVENT_RECORD *MouseEvent, int &RetCode)
 			SrcDragPanel = this;
 			DragX = MouseEvent->dwMousePosition.X;
 			DragY = MouseEvent->dwMousePosition.Y;
-			DragMove = ShiftPressed;
+			DragMove = ShiftPressed != 0;
 		}
 	}
 
-	return FALSE;
+	return false;
 }
 
 int Panel::IsDragging() const
@@ -1222,7 +1223,7 @@ void Panel::EndDrag()
 	DragX = DragY = -1;
 }
 
-void Panel::DragMessage(int X, int Y, int Move)
+void Panel::DragMessage(int X, int Y, bool Move)
 {
 	FARString strDragMsg, strSelName;
 	int SelCount, MsgX, Length;

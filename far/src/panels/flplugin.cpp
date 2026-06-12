@@ -354,7 +354,7 @@ void FileList::PluginDelete()
 	if (!SelItems.empty()) {
 		if (CtrlObject->Plugins.DeleteFiles(hPlugin, SelItems.data(), SelItems.size(), 0)) {
 			SetPluginModified();
-			PutDizToPlugin(this, TRUE, FALSE, nullptr, &Diz);
+			PutDizToPlugin(this, true, false, nullptr, &Diz);
 		}
 
 		DeletePluginItemList();
@@ -366,8 +366,8 @@ void FileList::PluginDelete()
 	}
 }
 
-void FileList::PutDizToPlugin(FileList *DestPanel, int Delete,
-		int Move, DizList *SrcDiz, DizList *DestDiz)
+void FileList::PutDizToPlugin(FileList *DestPanel, bool Delete,
+		bool Move, DizList *SrcDiz, DizList *DestDiz)
 {
 	_ALGO(CleverSysLog clv(L"FileList::PutDizToPlugin()"));
 	OpenPluginInfo Info;
@@ -438,7 +438,7 @@ void FileList::PutDizToPlugin(FileList *DestPanel, int Delete,
 	}
 }
 
-void FileList::PluginGetFiles(const wchar_t **DestPath, int Move)
+void FileList::PluginGetFiles(const wchar_t **DestPath, bool Move)
 {
 	_ALGO(CleverSysLog clv(L"FileList::PluginGetFiles()"));
 	SaveSelection();
@@ -474,7 +474,7 @@ void FileList::PluginGetFiles(const wchar_t **DestPath, int Move)
 
 			if (Move) {
 				SetPluginModified();
-				PutDizToPlugin(this, TRUE, FALSE, nullptr, &Diz);
+				PutDizToPlugin(this, true, false, nullptr, &Diz);
 			}
 		} else if (!ReturnCurrentFile)
 			PluginClearSelection();
@@ -488,7 +488,7 @@ void FileList::PluginGetFiles(const wchar_t **DestPath, int Move)
 	}
 }
 
-void FileList::PluginToPluginFiles(int Move)
+void FileList::PluginToPluginFiles(bool Move)
 {
 	_ALGO(CleverSysLog clv(L"FileList::PluginToPluginFiles()"));
 	Panel *AnotherPanel = CtrlObject->Cp()->GetAnotherPanel(this);
@@ -523,12 +523,12 @@ void FileList::PluginToPluginFiles(int Move)
 					ClearSelection();
 
 				AnotherPanel->SetPluginModified();
-				PutDizToPlugin(AnotherFilePanel, FALSE, FALSE, &Diz, &AnotherFilePanel->Diz);
+				PutDizToPlugin(AnotherFilePanel, false, false, &Diz, &AnotherFilePanel->Diz);
 
 				if (Move)
 					if (CtrlObject->Plugins.DeleteFiles(hPlugin, SelItems.data(), SelItems.size(), OPM_SILENT)) {
 						SetPluginModified();
-						PutDizToPlugin(this, TRUE, FALSE, nullptr, &Diz);
+						PutDizToPlugin(this, true, false, nullptr, &Diz);
 					}
 			} else if (!ReturnCurrentFile)
 				PluginClearSelection();
@@ -632,7 +632,7 @@ void FileList::PluginPutFilesToNew()
 		   Если PluginPutFilesToAnother вернула число, отличное от 2, то нужно
 		   попробовать установить курсор на созданный файл.
 		*/
-		int rc = PluginPutFilesToAnother(FALSE, &TmpPanel);
+		int rc = PluginPutFilesToAnother(false, &TmpPanel);
 
 		if (rc != 2 && FileCount == PrevFileCount + 1) {
 			int LastPos = 0;
@@ -676,7 +676,7 @@ void FileList::PluginPutFilesToNew()
 	  2 - удача, курсор принудительно установлен на файл и заново его
 		  устанавливать не нужно (см. PluginPutFilesToNew)
 */
-int FileList::PluginPutFilesToAnother(int Move, Panel *AnotherPanel)
+int FileList::PluginPutFilesToAnother(bool Move, Panel *AnotherPanel)
 {
 	if (AnotherPanel->GetMode() != PLUGIN_PANEL)
 		return 0;
@@ -698,7 +698,7 @@ int FileList::PluginPutFilesToAnother(int Move, Panel *AnotherPanel)
 			}
 
 			_ALGO(SysLog(L"call PutDizToPlugin"));
-			PutDizToPlugin(AnotherFilePanel, FALSE, Move, &Diz, &AnotherFilePanel->Diz);
+			PutDizToPlugin(AnotherFilePanel, false, Move, &Diz, &AnotherFilePanel->Diz);
 			AnotherPanel->SetPluginModified();
 		} else if (!ReturnCurrentFile)
 			PluginClearSelection();
