@@ -323,8 +323,8 @@ public:
 	bool SetCodePage(UINT codepage);                                            // BUGBUG
 	UINT GetCodePage();                                                         // BUGBUG
 
-	int SetRawData(const wchar_t *SrcBuf, int SizeSrcBuf, int TextFormat);		// преобразование из буфера в список
-	int GetRawData(wchar_t **DestBuf, int &SizeDestBuf, int TextFormat = 0);	// преобразование из списка в буфер
+	int SetRawData(const wchar_t *SrcBuf, int SizeSrcBuf, bool TextFormat); // преобразование из буфера в список
+	int GetRawData(wchar_t **DestBuf, int &SizeDestBuf, bool TextFormat = false); // преобраз. из списка в буфер
 
 	virtual int ProcessKey(FarKey Key);
 	virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);

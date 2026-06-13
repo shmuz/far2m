@@ -49,7 +49,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "config.hpp"
 #include "exitcode.hpp"
 
-FolderTree::FolderTree(FARString &strResultFolder,int iModalMode,int IsStandalone,int IsFullScreen):
+FolderTree::FolderTree(FARString &strResultFolder,int iModalMode,bool IsStandalone,bool IsFullScreen):
 	Cma(MACROAREA_FINDFOLDER),
 	Tree(nullptr),
 	FindEdit(nullptr),

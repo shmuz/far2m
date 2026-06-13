@@ -290,16 +290,12 @@ void FileList::PluginToFileListItem(const PluginPanelItem *pi, FileListItem *fi)
 
 PHPTR FileList::OpenPluginForFile(const wchar_t *FileName, DWORD FileAttr, OPENFILEPLUGINTYPE Type)
 {
-	PHPTR Result = nullptr;
 	if (FileName && *FileName && !(FileAttr & FILE_ATTRIBUTE_DIRECTORY)) {
 		SetCurPath();
-		_ALGO(SysLog(L"close AnotherPanel file"));
 		CtrlObject->Cp()->GetAnotherPanel(this)->CloseFile();
-		_ALGO(SysLog(L"call Plugins.OpenFilePlugin {"));
-		Result = CtrlObject->Plugins.OpenFilePlugin(FileName, OPM_NONE, Type);
-		_ALGO(SysLog(L"}"));
+		return CtrlObject->Plugins.OpenFilePlugin(FileName, OPM_NONE, Type);
 	}
-	return Result;
+	return nullptr;
 }
 
 void FileList::CreatePluginItemList(bool AddTwoDot)

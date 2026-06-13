@@ -330,7 +330,7 @@ void DlgEdit::SetString(const wchar_t *Str)
 {
 	if (Type == DLGEDIT_MULTILINE) {
 		if (multiEdit)
-			multiEdit->SetRawData(Str, -1, 0);
+			multiEdit->SetRawData(Str, -1, false);
 	} else
 		lineEdit->SetString(Str);
 }
@@ -339,7 +339,7 @@ void DlgEdit::InsertString(const wchar_t *Str)
 {
 	if (Type == DLGEDIT_MULTILINE) {
 		if (multiEdit)
-			multiEdit->SetRawData(Str, -1, 0);
+			multiEdit->SetRawData(Str, -1, false);
 	} else
 		lineEdit->InsertString(Str);
 }
@@ -359,7 +359,7 @@ void DlgEdit::GetString(wchar_t *Str, int MaxSize, int Row)
 		} else {
 			wchar_t *buf = nullptr;
 			int size = 0;
-			if (!multiEdit->GetRawData(&buf, size, 0) || !buf) {
+			if (!multiEdit->GetRawData(&buf, size, false) || !buf) {
 				*Str = 0;
 				return;
 			}
@@ -389,7 +389,7 @@ void DlgEdit::GetString(FARString &strStr, int Row)
 		} else {
 			wchar_t *buf = nullptr;
 			int size = 0;
-			if (!multiEdit->GetRawData(&buf, size, 0) || !buf) {
+			if (!multiEdit->GetRawData(&buf, size, false) || !buf) {
 				strStr.Clear();
 				return;
 			}
@@ -543,7 +543,7 @@ int DlgEdit::GetLength()
 			return 0;
 		wchar_t *buf = nullptr;
 		int size = 0;
-		if (!multiEdit->GetRawData(&buf, size, 0) || !buf) {
+		if (!multiEdit->GetRawData(&buf, size, false) || !buf) {
 			fprintf(stderr, "DlgEdit::GetLength multiline getraw failed\n");
 			return 0;
 		}

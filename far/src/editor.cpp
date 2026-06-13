@@ -176,7 +176,7 @@ void Editor::KeepInitParameters()
 /*
 	преобразование из буфера в список
 */
-int Editor::SetRawData(const wchar_t *SrcBuf, int SizeSrcBuf, int TextFormat)
+int Editor::SetRawData(const wchar_t *SrcBuf, int SizeSrcBuf, bool TextFormat)
 {
 	auto ExitActions = [&] {
 		m_CurLine = m_TopList;
@@ -264,7 +264,7 @@ int Editor::SetRawData(const wchar_t *SrcBuf, int SizeSrcBuf, int TextFormat)
 		SizeDestBuf - размер сохранения
 		TextFormat  - тип концовки строк
 */
-int Editor::GetRawData(wchar_t **DestBuf, int &SizeDestBuf, int TextFormat)
+int Editor::GetRawData(wchar_t **DestBuf, int &SizeDestBuf, bool TextFormat)
 {
 	wchar_t *PDest = nullptr;
 	SizeDestBuf = 0;	// общий размер = 0

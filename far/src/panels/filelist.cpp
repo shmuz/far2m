@@ -1421,7 +1421,7 @@ int FileList::ProcessKey(FarKey Key)
 
 			if (PanelMode == PLUGIN_PANEL)    // && *PluginsList[PluginsListSize-1].HostFile)
 			{
-				int CheckFullScreen = IsFullScreen();
+				bool CheckFullScreen = IsFullScreen();
 				OpenPluginInfo Info;
 				CtrlObject->Plugins.GetOpenPluginInfo(hPlugin, &Info);
 
@@ -2199,7 +2199,7 @@ int FileList::ProcessKey(FarKey Key)
 		case KEY_CTRLPGUP:
 		case KEY_CTRLNUMPAD9: {
 			//"this" может быть удалён в ChangeDir
-			int CheckFullScreen = IsFullScreen();
+			bool CheckFullScreen = IsFullScreen();
 			ChangeDir(L"..");
 			Panel *NewActivePanel = CtrlObject->Cp()->ActivePanel;
 			NewActivePanel->SetViewMode(NewActivePanel->GetViewMode());
@@ -2320,7 +2320,7 @@ void FileList::ProcessEnter(bool EnableExec, bool SeparateWindow, bool EnableAss
 			EscapeSpace(strFullPath);
 			Execute(strFullPath, SeparateWindow, true);
 		} else {
-			int CheckFullScreen = IsFullScreen();
+			bool CheckFullScreen = IsFullScreen();
 
 			ChangeDir(CurPtr->strName);
 
@@ -2414,7 +2414,7 @@ void FileList::ProcessEnter(bool EnableExec, bool SeparateWindow, bool EnableAss
 bool FileList::SetCurDir(const wchar_t *NewDir, bool ClosePlugin, bool ShowMessage)
 {
 	if (ClosePlugin && PanelMode == PLUGIN_PANEL) {
-		const int CheckFullScreen = IsFullScreen();
+		bool CheckFullScreen = IsFullScreen();
 
 		for (;;) {
 			if (ProcessPluginEvent(FE_CLOSE, nullptr))
@@ -2498,7 +2498,7 @@ bool FileList::ChangeDir(const wchar_t *NewDir, bool ShowMessage)
 			}
 
 			strFindDir = strInfoCurDir;
-			SetDirectorySuccess = CtrlObject->Plugins.SetDirectory(hPlugin, strSetDir, 0);
+			SetDirectorySuccess = CtrlObject->Plugins.SetDirectory(hPlugin, strSetDir, OPM_NONE);
 		}
 
 		ProcessPluginCommand();
@@ -2913,7 +2913,7 @@ void FileList::SetViewMode(int ViewMode)
 	if ((size_t)ViewMode >= ViewSettingsArray.size())
 		ViewMode = VIEW_0;
 
-	int CurFullScreen = IsFullScreen();
+	bool CurFullScreen = IsFullScreen();
 	int OldOwner = IsColumnDisplayed(OWNER_COLUMN);
 	int OldGroup = IsColumnDisplayed(GROUP_COLUMN);
 	int OldPhysical = IsColumnDisplayed(PHYSICAL_COLUMN);
@@ -4484,7 +4484,7 @@ PHPTR FileList::OpenFilePlugin(const wchar_t *FileName, bool PushPrev, OPENFILEP
 			FileCount = 0;
 		}
 
-		BOOL WasFullscreen = IsFullScreen();
+		bool WasFullscreen = IsFullScreen();
 		SetPluginMode(hNewPlugin, FileName);    // SendOnFocus??? true???
 		PanelMode = PLUGIN_PANEL;
 		UpperFolderTopFile = CurTopFile;

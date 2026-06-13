@@ -98,7 +98,7 @@ void FileList::ShowFileList(bool Fast)
 		strInfoCurDir = Info.CurDir;
 	}
 
-	int CurFullScreen = IsFullScreen();
+	bool CurFullScreen = IsFullScreen();
 	PrepareViewSettings(ViewMode, &Info);
 	CorrectPosition();
 

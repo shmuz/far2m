@@ -2836,7 +2836,7 @@ static bool FindFilesProcess(Vars &v)
 						CtrlObject->Plugins.GetOpenPluginInfo(ArcItem.hPlugin, &Info);
 						if (SearchMode == FINDAREA_ROOT || SearchMode == FINDAREA_ALL
 								|| SearchMode == FINDAREA_ALL_BUTNETWORK || SearchMode == FINDAREA_INPATH)
-							CtrlObject->Plugins.SetDirectory(ArcItem.hPlugin, L"/", 0);
+							CtrlObject->Plugins.SetDirectory(ArcItem.hPlugin, L"/", OPM_NONE);
 
 						SetPluginDirectory(strFileName, ArcItem.hPlugin, TRUE);
 					}

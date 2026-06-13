@@ -50,8 +50,8 @@ class FolderTree:public Frame
 
 		KeyBar TreeKeyBar;     // кейбар
 		int ModalMode;
-		int IsFullScreen;
-		int IsStandalone;
+		bool IsFullScreen;
+		bool IsStandalone;
 
 		FARString strNewFolder;
 		FARString strLastName;
@@ -62,7 +62,7 @@ class FolderTree:public Frame
 		void SetCoords();
 
 	public:
-		FolderTree(FARString &strResultFolder,int ModalMode,int IsStandalone=TRUE,int IsFullScreen=TRUE);
+		FolderTree(FARString &strResultFolder,int ModalMode,bool IsStandalone=true,bool IsFullScreen=true);
 		virtual ~FolderTree();
 
 	public:

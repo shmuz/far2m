@@ -769,8 +769,8 @@ bool Panel::SetLocation_Plugin(bool file_plugin, Plugin *plugin, const wchar_t *
 	if (path) {
 		NewPanel->Update(0);
 		NewPanel->Show();
-		CtrlObject->Plugins.SetDirectory(hPlugin, L"/", 0);
-		if (!CtrlObject->Plugins.SetDirectory(hPlugin, path, 0)) {
+		CtrlObject->Plugins.SetDirectory(hPlugin, L"/", OPM_NONE);
+		if (!CtrlObject->Plugins.SetDirectory(hPlugin, path, OPM_NONE)) {
 			fprintf(stderr, "SetLocation_Plugin(%d, %p, '%ls', '%ls', %lld) FAILED set directory\n",
 					file_plugin, plugin, path, host_file, (long long)item);
 		}
@@ -1296,9 +1296,8 @@ int Panel::GetCurDirPluginAware(FARString &strCurDir, bool AppendHostFile)
 
 bool Panel::SetCurDir(const wchar_t *CurDir, bool ClosePlugin, bool ShowMessage)
 {
-	if (StrCmpI(strCurDir, CurDir) || !TestCurrentDirectory(CurDir)) {
+	if (StrCmp(strCurDir, CurDir) || !TestCurrentDirectory(CurDir))
 		strCurDir = CurDir;
-	}
 
 	return true;
 }
@@ -2006,104 +2005,105 @@ int Panel::ProcessShortcutFolder(int Key,BOOL ProcTreePanel)
 bool Panel::ExecShortcutFolder(int Pos)
 {
 	BookmarkData Data;
+	if (!Bookmarks().Get(Pos, Data))
+		return false;
 
-	if (Bookmarks().Get(Pos, Data)) {
-		Panel *SrcPanel = this;
-		Panel *AnotherPanel = CtrlObject->Cp()->GetAnotherPanel(this);
+	Panel *SrcPanel = this;
+	Panel *AnotherPanel = CtrlObject->Cp()->GetAnotherPanel(this);
 
-		switch (GetType()) {
-			case TREE_PANEL:
-			case QVIEW_PANEL:
-			case INFO_PANEL:
-				if (AnotherPanel->GetType() == FILE_PANEL)
-					SrcPanel = AnotherPanel;
-				break;
-		}
+	switch (GetType()) {
+		case TREE_PANEL:
+		case QVIEW_PANEL:
+		case INFO_PANEL:
+			if (AnotherPanel->GetType() == FILE_PANEL)
+				SrcPanel = AnotherPanel;
+			break;
+	}
 
-		int CheckFullScreen = SrcPanel->IsFullScreen();
+	bool CheckFullScreen = SrcPanel->IsFullScreen();
 
-		if (!Data.PluginModule.IsEmpty()) {
-			if (!Data.PluginFile.IsEmpty()) {
-				switch (CheckShortcutFolder(Data.PluginFile, true)) {
-					case 0:
-						//              return FALSE;
-					case -1:
-						return true;
-				}
-
-				/* Своеобразное решение BugZ#50 */
-				FARString strRealDir = Data.PluginFile;
-
-				if (CutToSlash(strRealDir)) {
-					SrcPanel->SetCurDir(strRealDir, true);
-					SrcPanel->GoToFile(PointToName(Data.PluginFile));
-
-					SrcPanel->ClearAllItem();
-				}
-
-				if (SrcPanel->GetType() == FILE_PANEL)
-					((FileList *)SrcPanel)->OpenFilePlugin(Data.PluginFile, false, OFP_SHORTCUT);    //???
-
-				if (!Data.ShortcutFolder.IsEmpty())
-					SrcPanel->SetCurDir(Data.ShortcutFolder, false);
-
-				SrcPanel->Show();
-			} else {
-				if (CtrlObject->Cp()->ActivePanel->ProcessPluginEvent(FE_CLOSE, nullptr))
+	if (!Data.PluginModule.IsEmpty())
+	{
+		if (!Data.PluginFile.IsEmpty())
+		{
+			switch (CheckShortcutFolder(Data.PluginFile, true)) {
+				case 0:
+				case -1:
 					return true;
-
-				for (auto pPlugin: CtrlObject->Plugins.GetPlugins()) {
-					if (!StrCmp(pPlugin->GetModuleName(), Data.PluginModule)) {
-						if (pPlugin->HasOpenPlugin()) {
-							PHPTR hNewPlugin = CtrlObject->Plugins.OpenPlugin(pPlugin, OPEN_SHORTCUT,
-									Data.PluginData.CPtr());
-
-							if (hNewPlugin) {
-								int CurFocus = SrcPanel->GetFocus();
-
-								Panel *NewPanel = CtrlObject->Cp()->ChangePanel(SrcPanel, FILE_PANEL, true, true);
-								NewPanel->SetPluginMode(hNewPlugin, L"",
-										CurFocus || !CtrlObject->Cp()->GetAnotherPanel(NewPanel)->IsVisible());
-
-								if (!Data.ShortcutFolder.IsEmpty())
-									CtrlObject->Plugins.SetDirectory(hNewPlugin, Data.ShortcutFolder, 0);
-
-								NewPanel->Update(0);
-								NewPanel->Show();
-							}
-						}
-
-						break;
-					}
-				}
 			}
 
-			return true;
-		}
+			/* Своеобразное решение BugZ#50 */
+			FARString strRealDir = Data.PluginFile;
 
-		switch (CheckShortcutFolder(Data.ShortcutFolder, false)) {
-			case 0:
-				//          return FALSE;
-			case -1:
-				return true;
-		}
+			if (CutToSlash(strRealDir)) {
+				SrcPanel->SetCurDir(strRealDir, true);
+				SrcPanel->GoToFile(PointToName(Data.PluginFile));
 
-		/*
-		if (SrcPanel->GetType()!=FILE_PANEL)
+				SrcPanel->ClearAllItem();
+			}
+
+			if (SrcPanel->GetType() == FILE_PANEL)
+				((FileList *)SrcPanel)->OpenFilePlugin(Data.PluginFile, false, OFP_SHORTCUT);    //???
+
+			if (!Data.ShortcutFolder.IsEmpty())
+				SrcPanel->SetCurDir(Data.ShortcutFolder, false);
+
+			SrcPanel->Show();
+		}
+		else
 		{
-			SrcPanel=CtrlObject->Cp()->ChangePanel(SrcPanel,FILE_PANEL,true,true);
+			if (CtrlObject->Cp()->ActivePanel->ProcessPluginEvent(FE_CLOSE, nullptr))
+				return true;
+
+			for (auto pPlugin: CtrlObject->Plugins.GetPlugins()) {
+				if (!StrCmp(pPlugin->GetModuleName(), Data.PluginModule)) {
+					if (pPlugin->HasOpenPlugin()) {
+						PHPTR hNewPlugin = CtrlObject->Plugins.OpenPlugin(pPlugin, OPEN_SHORTCUT,
+								Data.PluginData.CPtr());
+
+						if (hNewPlugin) {
+							int CurFocus = SrcPanel->GetFocus();
+
+							Panel *NewPanel = CtrlObject->Cp()->ChangePanel(SrcPanel, FILE_PANEL, true, true);
+							NewPanel->SetPluginMode(hNewPlugin, L"",
+									CurFocus || !CtrlObject->Cp()->GetAnotherPanel(NewPanel)->IsVisible());
+
+							if (!Data.ShortcutFolder.IsEmpty())
+								CtrlObject->Plugins.SetDirectory(hNewPlugin, Data.ShortcutFolder, OPM_NONE);
+
+							NewPanel->Update(0);
+							NewPanel->Show();
+						}
+					}
+
+					break;
+				}
+			}
 		}
-		*/
 
-		SrcPanel->SetCurDir(Data.ShortcutFolder, true);
-
-		if (CheckFullScreen != SrcPanel->IsFullScreen())
-			CtrlObject->Cp()->GetAnotherPanel(SrcPanel)->Show();
-
-		SrcPanel->Redraw();
 		return true;
 	}
-	return false;
+
+	switch (CheckShortcutFolder(Data.ShortcutFolder, false)) {
+		case 0:
+		case -1:
+			return true;
+	}
+
+	/*
+	if (SrcPanel->GetType()!=FILE_PANEL)
+	{
+		SrcPanel=CtrlObject->Cp()->ChangePanel(SrcPanel,FILE_PANEL,true,true);
+	}
+	*/
+
+	SrcPanel->SetCurDir(Data.ShortcutFolder, true);
+
+	if (CheckFullScreen != SrcPanel->IsFullScreen())
+		CtrlObject->Cp()->GetAnotherPanel(SrcPanel)->Show();
+
+	SrcPanel->Redraw();
+	return true;
 }
 
 // Just as FindPartName(), but with retry support through keyboard layout translation, specially for FastFind

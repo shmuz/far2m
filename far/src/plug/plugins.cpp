@@ -1911,8 +1911,8 @@ bool PluginManager::CallPlugin(DWORD SysID, int OpenFrom, void *Data)
 		bool SendOnFocus = CurFocus || !CtrlObject->Cp()->GetAnotherPanel(NewPanel)->IsVisible();
 		NewPanel->SetPluginMode(PluginPanel, L"", SendOnFocus);
 
-		if (Data && *(const wchar_t *)Data)
-			SetDirectory(PluginPanel,(const wchar_t *)Data,0);
+		if (auto Dir = static_cast<wchar_t*>(Data))
+			SetDirectory(PluginPanel, Dir, OPM_NONE);
 	}
 
 	return true;
