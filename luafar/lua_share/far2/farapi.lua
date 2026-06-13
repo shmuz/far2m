@@ -2611,7 +2611,7 @@ struct AnalyseInfo
 	const wchar_t  *FileName;
 	const void     *Buffer;
 	size_t          BufferSize;
-	int             OpMode;
+	DWORD           OpMode;
 };
 
 

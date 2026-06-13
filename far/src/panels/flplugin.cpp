@@ -105,10 +105,10 @@ bool FileList::PopPlugin(bool EnableRestoreViewMode)
 			apiGetCurrentDirectory(strSaveDir);
 
 			if (FileNameToPluginItem(PStack->strHostFile, &PanelItem)) {
-				CtrlObject->Plugins.PutFiles(hPlugin, &PanelItem, 1, FALSE, 0);
+				CtrlObject->Plugins.PutFiles(hPlugin, &PanelItem, 1, false, OPM_NONE);
 			} else {
 				PanelItem.FindData.lpwszFileName = wcsdup(PointToName(PStack->strHostFile));
-				CtrlObject->Plugins.DeleteFiles(hPlugin, &PanelItem, 1, 0);
+				CtrlObject->Plugins.DeleteFiles(hPlugin, &PanelItem, 1, OPM_NONE);
 				free(PanelItem.FindData.lpwszFileName);
 			}
 
@@ -348,7 +348,7 @@ void FileList::PluginDelete()
 	CreatePluginItemList();
 
 	if (!SelItems.empty()) {
-		if (CtrlObject->Plugins.DeleteFiles(hPlugin, SelItems.data(), SelItems.size(), 0)) {
+		if (CtrlObject->Plugins.DeleteFiles(hPlugin, SelItems.data(), SelItems.size(), OPM_NONE)) {
 			SetPluginModified();
 			PutDizToPlugin(this, true, false, nullptr, &Diz);
 		}
@@ -418,7 +418,7 @@ void FileList::PutDizToPlugin(FileList *DestPanel, bool Delete,
 				PluginPanelItem PanelItem;
 
 				if (FileNameToPluginItem(strDizName, &PanelItem))
-					CtrlObject->Plugins.PutFiles(DestPanel->hPlugin, &PanelItem, 1, FALSE,
+					CtrlObject->Plugins.PutFiles(DestPanel->hPlugin, &PanelItem, 1, false,
 							OPM_SILENT | OPM_DESCR);
 				else if (Delete) {
 					PluginPanelItem pi{};
@@ -441,7 +441,7 @@ void FileList::PluginGetFiles(const wchar_t **DestPath, bool Move)
 	CreatePluginItemList();
 
 	if (!SelItems.empty()) {
-		int GetCode = CtrlObject->Plugins.GetFiles(hPlugin, SelItems.data(), SelItems.size(), Move, DestPath, 0);
+		int GetCode = CtrlObject->Plugins.GetFiles(hPlugin, SelItems.data(), SelItems.size(), Move, DestPath, OPM_NONE);
 
 		if ((Opt.Diz.UpdateMode == DIZ_UPDATE_IF_DISPLAYED && IsDizDisplayed())
 				|| Opt.Diz.UpdateMode == DIZ_UPDATE_ALWAYS) {
@@ -512,7 +512,7 @@ void FileList::PluginToPluginFiles(bool Move)
 			FARString strSaveDir;
 			apiGetCurrentDirectory(strSaveDir);
 			FarChDir(strTempDir);
-			PutCode = CtrlObject->Plugins.PutFiles(AnotherFilePanel->hPlugin, SelItems.data(), SelItems.size(), FALSE, 0);
+			PutCode = CtrlObject->Plugins.PutFiles(AnotherFilePanel->hPlugin, SelItems.data(), SelItems.size(), false, OPM_NONE);
 
 			if (PutCode == 1 || PutCode == 2) {
 				if (!ReturnCurrentFile)
@@ -570,7 +570,8 @@ void FileList::PluginHostGetFiles()
 			strDestPath.Truncate(pos);
 	}
 
-	int OpMode = OPM_TOPLEVEL, ExitLoop = FALSE;
+	DWORD OpMode = OPM_TOPLEVEL;
+	bool ExitLoop = false;
 	GetSelNameCompat(nullptr, FileAttr);
 
 	while (!ExitLoop && GetSelNameCompat(&strSelName, FileAttr)) {
@@ -582,12 +583,11 @@ void FileList::PluginHostGetFiles()
 			int ItemNumber;
 			_ALGO(SysLog(L"call Plugins.GetFindData()"));
 
-			if (CtrlObject->Plugins.GetFindData(hCurPlugin, &ItemList, &ItemNumber, 0)) {
+			if (CtrlObject->Plugins.GetFindData(hCurPlugin, &ItemList, &ItemNumber, OPM_NONE)) {
 				_ALGO(SysLog(L"call Plugins.GetFiles()"));
 				const wchar_t *lpwszDestPath = strDestPath;
 				ExitLoop = CtrlObject->Plugins.GetFiles(hCurPlugin, ItemList, ItemNumber, FALSE,
-								   &lpwszDestPath, OpMode)
-						!= 1;
+								   &lpwszDestPath, OpMode) != 1;
 				strDestPath = lpwszDestPath;
 
 				if (!ExitLoop) {
@@ -685,7 +685,7 @@ int FileList::PluginPutFilesToAnother(bool Move, Panel *AnotherPanel)
 	if (!SelItems.empty()) {
 		SetCurPath();
 		_ALGO(SysLog(L"call Plugins.PutFiles"));
-		PutCode = CtrlObject->Plugins.PutFiles(AnotherFilePanel->hPlugin, SelItems.data(), SelItems.size(), Move, 0);
+		PutCode = CtrlObject->Plugins.PutFiles(AnotherFilePanel->hPlugin, SelItems.data(), SelItems.size(), Move, OPM_NONE);
 
 		if (PutCode == 1 || PutCode == 2) {
 			if (!ReturnCurrentFile) {
@@ -739,7 +739,7 @@ void FileList::ProcessHostFile()
 			_ALGO(SysLog(L"call CreatePluginItemList"));
 			CreatePluginItemList();
 			_ALGO(SysLog(L"call Plugins.ProcessHostFile"));
-			Done = CtrlObject->Plugins.ProcessHostFile(hPlugin, SelItems.data(), SelItems.size(), 0);
+			Done = CtrlObject->Plugins.ProcessHostFile(hPlugin, SelItems.data(), SelItems.size(), OPM_NONE);
 
 			if (Done)
 				SetPluginModified();

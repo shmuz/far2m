@@ -553,7 +553,7 @@ bool FileList::ResolveSymlink(FARString &target_path, const wchar_t *link_name, 
 	} else if (PanelMode == PLUGIN_PANEL) {
 		PluginPanelItem pi;
 		FileListToPluginItem(fi, &pi);
-		if (!CtrlObject->Plugins.GetLinkTarget(hPlugin, &pi, target_path, 0)) {
+		if (!CtrlObject->Plugins.GetLinkTarget(hPlugin, &pi, target_path, OPM_NONE)) {
 			fprintf(stderr, "ResolveSymlink: GetLinkTarget failed\n");
 			return false;
 		}

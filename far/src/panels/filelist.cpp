@@ -963,7 +963,7 @@ class FileList_TempFileHolder : public TempFileUploadHolder
 
 		PluginPanelItem PanelItem;
 		if (FileList::FileNameToPluginItem(strPath, &PanelItem)) {
-			PutCode = CtrlObject->Plugins.PutFiles(hPlugin, &PanelItem, 1, FALSE, OPM_EDIT);
+			PutCode = CtrlObject->Plugins.PutFiles(hPlugin, &PanelItem, 1, false, OPM_EDIT);
 
 			if (PutCode == 0) {
 				Message(MSG_WARNING, 1, Msg::Error, Msg::CannotSaveFile, Msg::TextSavedToTemp, strPath.CPtr(),
@@ -1867,7 +1867,7 @@ int FileList::ProcessKey(FarKey Key)
 						&& !CtrlObject->Plugins.UseFarCommand(hPlugin, PLUGIN_FARMAKEDIRECTORY)) {
 					FARString strDirName;
 					const wchar_t *lpwszDirName = strDirName;
-					int MakeCode = CtrlObject->Plugins.MakeDirectory(hPlugin, &lpwszDirName, 0);
+					int MakeCode = CtrlObject->Plugins.MakeDirectory(hPlugin, &lpwszDirName, OPM_NONE);
 					strDirName = lpwszDirName;
 
 					if (!MakeCode)

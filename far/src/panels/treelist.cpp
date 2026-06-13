@@ -850,7 +850,7 @@ int TreeList::ProcessKey(FarKey Key)
 					int ItemNumber = 1;
 					PHPTR hAnotherPlugin = AnotherPanel->GetPluginHandle();
 					FileList::FileNameToPluginItem(ListData[CurFile]->strName, ItemList);
-					int PutCode = CtrlObject->Plugins.PutFiles(hAnotherPlugin, ItemList, ItemNumber, Move, 0);
+					int PutCode = CtrlObject->Plugins.PutFiles(hAnotherPlugin, ItemList, ItemNumber, Move, OPM_NONE);
 
 					if (PutCode == 1 || PutCode == 2)
 						AnotherPanel->SetPluginModified();

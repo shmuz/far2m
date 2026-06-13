@@ -590,7 +590,7 @@ void FileList::UpdatePlugin(int KeepSelection, int IgnoreVisible)
 	PluginPanelItem *PanelData = nullptr;
 	int PluginFileCount;
 
-	if (!CtrlObject->Plugins.GetFindData(hPlugin, &PanelData, &PluginFileCount, 0)) {
+	if (!CtrlObject->Plugins.GetFindData(hPlugin, &PanelData, &PluginFileCount, OPM_NONE)) {
 		DeleteListData(ListData, FileCount);
 		SymlinksCache.clear();
 		PopPlugin(true);
@@ -776,7 +776,7 @@ void FileList::ReadDiz(PluginPanelItem *ItemList, int ItemLength, DWORD dwFlags)
 		/* $ 25.02.2001 VVM
 			+ Обработка флага RDF_NO_UPDATE */
 		if (!ItemList && !(dwFlags & RDF_NO_UPDATE)) {
-			GetCode = CtrlObject->Plugins.GetFindData(hPlugin, &PanelData, &PluginFileCount, 0);
+			GetCode = CtrlObject->Plugins.GetFindData(hPlugin, &PanelData, &PluginFileCount, OPM_NONE);
 		} else {
 			PanelData = ItemList;
 			PluginFileCount = ItemLength;

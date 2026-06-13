@@ -323,25 +323,11 @@ bool CutToSlash(FARString &strStr, bool bInclude)
 	size_t pos;
 
 	if (FindLastSlash(pos, strStr)) {
-		if (bInclude)
-			strStr.Truncate(pos);
-		else
-			strStr.Truncate(pos + 1);
-
+		strStr.Truncate(bInclude ? pos : pos + 1);
 		return true;
 	}
 
 	return false;
-}
-
-bool CutToSlash(std::wstring &strStr, bool bInclude)
-{
-	size_t pos = strStr.rfind(GOOD_SLASH);
-	if (pos == std::string::npos)
-		return false;
-
-	strStr.resize(bInclude ? pos + 1 : pos);
-	return true;
 }
 
 FARString &CutToFolderNameIfFolder(FARString &strPath)

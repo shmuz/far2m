@@ -466,7 +466,7 @@ void PluginManager::LoadPluginsFromCache()
 	}
 }
 
-PHPTR PluginManager::OpenFilePlugin(const wchar_t *FileName, int OpMode, OPENFILEPLUGINTYPE Type,
+PHPTR PluginManager::OpenFilePlugin(const wchar_t *FileName, DWORD OpMode, OPENFILEPLUGINTYPE Type,
 		Plugin *pDesiredPlugin)
 {
 	struct CallResult
@@ -546,7 +546,8 @@ PHPTR PluginManager::OpenFilePlugin(const wchar_t *FileName, int OpMode, OPENFIL
 
 			HANDLE Handle = pPlugin->OpenFilePlugin(FileName,
 				smm ? (const unsigned char *)smm->View() : nullptr,
-				smm ? (DWORD)smm->Length() : 0, OpMode);
+				smm ? (DWORD)smm->Length() : 0,
+				OpMode);
 
 			if (Handle == PANEL_STOP)   //сразу на выход, плагин решил нагло обработать все сам (Autorun/PictureView)!!!
 			{
@@ -827,7 +828,7 @@ int PluginManager::ProcessDialogEvent(int Event, void *Param)
 	return FALSE;
 }
 
-int PluginManager::GetFindData(PHPTR ph, PluginPanelItem **pItems, int *pItemsNumber, int OpMode)
+int PluginManager::GetFindData(PHPTR ph, PluginPanelItem **pItems, int *pItemsNumber, DWORD OpMode)
 {
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	*pItemsNumber = 0;
@@ -856,7 +857,7 @@ void PluginManager::FreeVirtualFindData(PHPTR ph, PluginPanelItem *PanelItem, in
 }
 
 
-int PluginManager::SetDirectory(PHPTR ph, const wchar_t *Dir, int OpMode)
+int PluginManager::SetDirectory(PHPTR ph, const wchar_t *Dir, DWORD OpMode)
 {
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	return ph->pPlugin->SetDirectory(ph->hPanel, Dir, OpMode);
@@ -892,7 +893,7 @@ bool PluginManager::GetFile(
 		PluginPanelItem *PanelItem,
 		const wchar_t *DestPath,
 		FARString &strResultName,
-		int OpMode)
+		DWORD OpMode)
 {
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	SaveScreen *SaveScr = nullptr;
@@ -945,7 +946,7 @@ int PluginManager::DeleteFiles(
     PHPTR ph,
     PluginPanelItem *PanelItem,
     int ItemsNumber,
-    int OpMode)
+    DWORD OpMode)
 {
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	SaveScreen SaveScr;
@@ -959,7 +960,7 @@ int PluginManager::DeleteFiles(
 }
 
 
-int PluginManager::MakeDirectory(PHPTR ph, const wchar_t **Name, int OpMode)
+int PluginManager::MakeDirectory(PHPTR ph, const wchar_t **Name, DWORD OpMode)
 {
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	SaveScreen SaveScr;
@@ -977,7 +978,7 @@ int PluginManager::ProcessHostFile(
     PHPTR ph,
     PluginPanelItem *PanelItem,
     int ItemsNumber,
-    int OpMode)
+    DWORD OpMode)
 {
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	SaveScreen SaveScr;
@@ -990,7 +991,7 @@ int PluginManager::ProcessHostFile(
 	return Code;
 }
 
-bool PluginManager::GetLinkTarget(PHPTR ph, PluginPanelItem *PanelItem, FARString &result, int OpMode)
+bool PluginManager::GetLinkTarget(PHPTR ph, PluginPanelItem *PanelItem, FARString &result, DWORD OpMode)
 {
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	return ph->pPlugin->GetLinkTarget(ph->hPanel, PanelItem, result, OpMode);
@@ -1002,7 +1003,7 @@ int PluginManager::GetFiles(
 		int ItemsNumber,
 		bool Move,
 		const wchar_t **DestPath,
-		int OpMode)
+		DWORD OpMode)
 {
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	return ph->pPlugin->GetFiles(ph->hPanel, PanelItems, ItemsNumber, Move, DestPath, OpMode);
@@ -1014,7 +1015,7 @@ int PluginManager::PutFiles(
 		PluginPanelItem *PanelItems,
 		int ItemsNumber,
 		bool Move,
-		int OpMode)
+		DWORD OpMode)
 {
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	SaveScreen SaveScr;

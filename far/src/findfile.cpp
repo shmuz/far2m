@@ -1486,7 +1486,7 @@ class FindDlg_TempFileHolder : public TempFileUploadHolder
 
 		bool out = false;
 		if (FileList::FileNameToPluginItem(GetPathName(), &PanelItem)) {
-			out = (CtrlObject->Plugins.PutFiles(ArcItem.hPlugin, &PanelItem, 1, FALSE, OPM_EDIT) != 0);
+			out = (CtrlObject->Plugins.PutFiles(ArcItem.hPlugin, &PanelItem, 1, false, OPM_EDIT) != 0);
 
 			if (!out) {
 				Message(MSG_WARNING, 1, Msg::Error, Msg::CannotSaveFile, Msg::TextSavedToTemp, GetPathName(),
@@ -2824,7 +2824,7 @@ static bool FindFilesProcess(Vars &v)
 						CutToSlash(strArcPath);
 						FindPanel->SetCurDir(strArcPath, true);
 						ArcItem.hPlugin =
-								((FileList *)FindPanel)->OpenFilePlugin(strArcName, FALSE, OFP_SEARCH);
+								((FileList *)FindPanel)->OpenFilePlugin(strArcName, false, OFP_SEARCH);
 						if (ArcItem.hPlugin == PHPTR_STOP)
 							ArcItem.hPlugin = nullptr;
 						itd.SetArcListItem(FindItem.ArcIndex, ArcItem);

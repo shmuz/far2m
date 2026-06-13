@@ -2026,11 +2026,8 @@ bool Panel::ExecShortcutFolder(int Pos)
 	{
 		if (!Data.PluginFile.IsEmpty())
 		{
-			switch (CheckShortcutFolder(Data.PluginFile, true)) {
-				case 0:
-				case -1:
-					return true;
-			}
+			if (CheckShortcutFolder(Data.PluginFile, true) != 1)
+				return true;
 
 			/* Своеобразное решение BugZ#50 */
 			FARString strRealDir = Data.PluginFile;
@@ -2038,7 +2035,6 @@ bool Panel::ExecShortcutFolder(int Pos)
 			if (CutToSlash(strRealDir)) {
 				SrcPanel->SetCurDir(strRealDir, true);
 				SrcPanel->GoToFile(PointToName(Data.PluginFile));
-
 				SrcPanel->ClearAllItem();
 			}
 
@@ -2084,11 +2080,8 @@ bool Panel::ExecShortcutFolder(int Pos)
 		return true;
 	}
 
-	switch (CheckShortcutFolder(Data.ShortcutFolder, false)) {
-		case 0:
-		case -1:
-			return true;
-	}
+	if (CheckShortcutFolder(Data.PluginFile, true) != 1)
+		return true;
 
 	/*
 	if (SrcPanel->GetType()!=FILE_PANEL)

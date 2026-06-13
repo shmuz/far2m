@@ -72,7 +72,6 @@ bool PathCanHoldRegularFile(const wchar_t *Path);
 bool IsPluginPrefixPath(const wchar_t *Path);
 
 bool CutToSlash(FARString &strStr, bool bInclude = false);
-bool CutToSlash(std::wstring &strStr, bool bInclude = false);
 
 FARString &CutToFolderNameIfFolder(FARString &strPath);
 

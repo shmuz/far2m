@@ -814,8 +814,7 @@ HANDLE PluginW::OpenFilePlugin(
     const wchar_t *Name,
     const unsigned char *Data,
     int DataSize,
-    int OpMode
-)
+    DWORD OpMode)
 {
 	HANDLE hResult = INVALID_HANDLE_VALUE;
 
@@ -958,7 +957,7 @@ void PluginW::FreeVirtualFindData(
 	}
 }
 
-bool PluginW::GetLinkTarget(HANDLE hPanel, PluginPanelItem *PanelItem, FARString &result, int OpMode)
+bool PluginW::GetLinkTarget(HANDLE hPanel, PluginPanelItem *PanelItem, FARString &result, DWORD OpMode)
 {
 	if (!pGetLinkTargetW) {
 		return false;
@@ -980,7 +979,7 @@ int PluginW::GetFiles(
     int ItemsNumber,
     int Move,
     const wchar_t **DestPath,
-    int OpMode
+    DWORD OpMode
 )
 {
 	int nResult = -1;
@@ -1002,7 +1001,7 @@ int PluginW::PutFiles(
     PluginPanelItem *PanelItem,
     int ItemsNumber,
     int Move,
-    int OpMode
+    DWORD OpMode
 )
 {
 	int nResult = -1;
@@ -1024,7 +1023,7 @@ int PluginW::DeleteFiles(
     HANDLE hPanel,
     PluginPanelItem *PanelItem,
     int ItemsNumber,
-    int OpMode
+    DWORD OpMode
 )
 {
 	BOOL bResult = FALSE;
@@ -1041,7 +1040,7 @@ int PluginW::DeleteFiles(
 }
 
 
-int PluginW::MakeDirectory(HANDLE hPanel, const wchar_t **Name, int OpMode)
+int PluginW::MakeDirectory(HANDLE hPanel, const wchar_t **Name, DWORD OpMode)
 {
 	int nResult = -1;
 
@@ -1061,7 +1060,7 @@ int PluginW::ProcessHostFile(
     HANDLE hPanel,
     PluginPanelItem *PanelItem,
     int ItemsNumber,
-    int OpMode
+    DWORD OpMode
 )
 {
 	BOOL bResult = FALSE;
@@ -1119,7 +1118,7 @@ int PluginW::GetFindData(
     HANDLE hPanel,
     PluginPanelItem **pPanelItem,
     int *pItemsNumber,
-    int OpMode
+    DWORD OpMode
 )
 {
 	BOOL bResult = FALSE;
@@ -1173,7 +1172,7 @@ void PluginW::ClosePanel(HANDLE hPanel)
 }
 
 
-int PluginW::SetDirectory(HANDLE hPanel, const wchar_t *Dir, int OpMode)
+int PluginW::SetDirectory(HANDLE hPanel, const wchar_t *Dir, DWORD OpMode)
 {
 	BOOL bResult = FALSE;
 

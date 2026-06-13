@@ -1812,7 +1812,7 @@ int FarEditorSynched(const wchar_t *FileName, const wchar_t *Title, int X1, int 
 	if (Flags & (EF_DELETEONCLOSE | EF_DELETEONLYFILEONCLOSE))
 		TFH = std::make_shared<TempFileHolder>(FileName, (Flags & EF_DELETEONCLOSE) != 0);
 
-	int OpMode = Flags & EF_OPENMODE_MASK;
+	DWORD OpMode = Flags & EF_OPENMODE_MASK;
 
 	/*$ 15.05.2002 SKV
 	  Запретим вызов немодального редактора, если находимся в модальном
