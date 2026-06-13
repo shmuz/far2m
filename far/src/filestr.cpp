@@ -157,7 +157,7 @@ int OldGetFileString::GetAnsiString(char **DestStr, int &Length)
 		CurLength = 1;
 		bCrCr = false;
 	} else {
-		while (1) {
+		while (true) {
 			if (ReadPos >= ReadSize) {
 				if (!(ReadSize = (int)fread(ReadBuf.data(), 1, ReadBuf.size(), SrcFile))) {
 					if (!CurLength)
@@ -240,7 +240,7 @@ int OldGetFileString::GetUnicodeString(wchar_t **DestStr, int &Length, bool bBig
 		CurLength = 1;
 		bCrCr = false;
 	} else {
-		while (1) {
+		while (true) {
 			if (ReadPos >= ReadSize) {
 				if (!(ReadSize = (int)fread(wReadBuf.data(), 1, wReadBuf.size() * sizeof(wchar_t), SrcFile))) {
 					if (!CurLength)

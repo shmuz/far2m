@@ -51,20 +51,20 @@ static LONG_PTR WINAPI SearchReplaceDlgProc(HANDLE hDlg, int Msg, int Param1, LO
 {
 	if (Msg == DN_CLOSE && Param1 >= 0)
 	{
-		const wchar_t *Txt = (const wchar_t*)SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR, PosSearchText, 0);
+		const wchar_t *Txt = (const wchar_t*)SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR, PosSearchText);
 		if (*Txt == 0)
 		{
-			SendDlgMessage(hDlg, DM_SETFOCUS, PosSearchText, 0);
+			SendDlgMessage(hDlg, DM_SETFOCUS, PosSearchText);
 			Message(MSG_WARNING, 1, Msg::EditSearchTitle, Msg::EditEmptySearchField, Msg::Ok);
 			return FALSE;
 		}
 
 		if (PosCheckBoxRegexp >= 0
-				&& SendDlgMessage(hDlg, DM_GETCHECK, PosCheckBoxRegexp, 0) == BSTATE_CHECKED)
+				&& SendDlgMessage(hDlg, DM_GETCHECK, PosCheckBoxRegexp) == BSTATE_CHECKED)
 		{
 			RegExp Re;
 			if (!CompileRegexp(Txt, 1, &Re)) {
-				SendDlgMessage(hDlg, DM_SETFOCUS, PosSearchText, 0);
+				SendDlgMessage(hDlg, DM_SETFOCUS, PosSearchText);
 				FARString strMsg(Txt);
 				InsertQuote(strMsg);
 				Message(MSG_WARNING, 1, Msg::EditSearchTitle, Msg::EditInvalidRegexp, strMsg, Msg::Ok);

@@ -2205,7 +2205,7 @@ LONG_PTR WINAPI ViewerSearchDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR P
 	switch (Msg) {
 		case DN_INITDIALOG: {
 			SendDlgMessage(hDlg, DM_SDSETVISIBILITY,
-					SendDlgMessage(hDlg, DM_GETCHECK, SD_RADIO_HEX, 0) == BSTATE_CHECKED, 0);
+					SendDlgMessage(hDlg, DM_GETCHECK, SD_RADIO_HEX) == BSTATE_CHECKED, 0);
 			SendDlgMessage(hDlg, DM_EDITUNCHANGEDFLAG, SD_EDIT_TEXT, 1);
 			SendDlgMessage(hDlg, DM_EDITUNCHANGEDFLAG, SD_EDIT_HEX, 1);
 			return TRUE;
@@ -2220,12 +2220,12 @@ LONG_PTR WINAPI ViewerSearchDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR P
 		}
 		case DN_BTNCLICK: {
 			if ((Param1 == SD_RADIO_TEXT || Param1 == SD_RADIO_HEX) && Param2) {
-				SendDlgMessage(hDlg, DM_ENABLEREDRAW, FALSE, 0);
+				SendDlgMessage(hDlg, DM_ENABLEREDRAW, FALSE);
 				bool Hex = (Param1 == SD_RADIO_HEX);
 				FARString strDataStr;
 				Transform(strDataStr,
 						(const wchar_t *)SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR,
-								Hex ? SD_EDIT_TEXT : SD_EDIT_HEX, 0),
+								Hex ? SD_EDIT_TEXT : SD_EDIT_HEX),
 						Hex ? L'X' : L'S');
 				SendDlgMessage(hDlg, DM_SETTEXTPTR, Hex ? SD_EDIT_HEX : SD_EDIT_TEXT,
 						(LONG_PTR)strDataStr.CPtr());
@@ -2236,14 +2236,14 @@ LONG_PTR WINAPI ViewerSearchDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR P
 							SendDlgMessage(hDlg, DM_EDITUNCHANGEDFLAG, Hex ? SD_EDIT_TEXT : SD_EDIT_HEX, -1));
 				}
 
-				SendDlgMessage(hDlg, DM_ENABLEREDRAW, TRUE, 0);
+				SendDlgMessage(hDlg, DM_ENABLEREDRAW, TRUE);
 				return TRUE;
 			}
 		}
 		case DN_HOTKEY: {
 			if (Param1 == SD_TEXT_SEARCH) {
 				SendDlgMessage(hDlg, DM_SETFOCUS,
-						(SendDlgMessage(hDlg, DM_GETCHECK, SD_RADIO_HEX, 0) == BSTATE_CHECKED)
+						(SendDlgMessage(hDlg, DM_GETCHECK, SD_RADIO_HEX) == BSTATE_CHECKED)
 								? SD_EDIT_HEX
 								: SD_EDIT_TEXT,
 						0);
@@ -2254,10 +2254,10 @@ LONG_PTR WINAPI ViewerSearchDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR P
 		case DN_CLOSE: {
 			if (Param1 >= 0) {
 				int Pos = SendDlgMessage(hDlg, DM_SHOWITEM, SD_EDIT_TEXT, -1) ? SD_EDIT_TEXT : SD_EDIT_HEX;
-				const wchar_t *Txt = (const wchar_t*)SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR, Pos, 0);
+				const wchar_t *Txt = (const wchar_t*)SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR, Pos);
 				bool IsEmpty = (Pos == SD_EDIT_TEXT) ? *Txt == 0 : !IsHexDigit(*Txt);
 				if (IsEmpty) {
-					SendDlgMessage(hDlg, DM_SETFOCUS, Pos, 0);
+					SendDlgMessage(hDlg, DM_SETFOCUS, Pos);
 					Message(MSG_WARNING, 1, Msg::EditSearchTitle, Msg::EditEmptySearchField, Msg::Ok);
 					return FALSE;
 				}

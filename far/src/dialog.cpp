@@ -3728,7 +3728,7 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 
 						break;
 					}
-				}	// while (1)
+				}	// while (true)
 			}
 		}
 	}
@@ -6243,7 +6243,7 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 					WINPORT(Sleep)(10);
 				}
 
-				if (SendDlgMessage(hDlg, DM_SETFOCUS, Param1, 0)) {
+				if (SendDlgMessage(hDlg, DM_SETFOCUS, Param1)) {
 					Dlg->ProcessOpenComboBox(Type, CurItem, Param1);	//?? Param1 ??
 					// Dlg->ProcessKey(KEY_CTRLDOWN);
 					return TRUE;

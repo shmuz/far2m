@@ -768,7 +768,7 @@ void FileFilter::InitFilter(ConfigReader &cfg_reader)
 {
 	FilterData.Free();
 	TempFilterData.Free();
-	while (1) {
+	while (true) {
 		cfg_reader.SelectSectionFmt("Filters/Filter%d", (int)FilterData.getCount());
 
 		FARString strTitle;
@@ -810,7 +810,7 @@ void FileFilter::InitFilter(ConfigReader &cfg_reader)
 	if (!FilterData.getCount())
 		AddDefaultFileFilters();
 
-	while (1) {
+	while (true) {
 		cfg_reader.SelectSectionFmt("Filters/PanelMask%d", (int)TempFilterData.getCount());
 		FARString strMask;
 		if (!cfg_reader.GetString(strMask, "Mask", L"")) {

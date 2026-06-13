@@ -612,9 +612,9 @@ enum enumFileFilterConfig
 
 void FilterDlgRelativeDateItemsUpdate(HANDLE hDlg, bool bClear)
 {
-	SendDlgMessage(hDlg, DM_ENABLEREDRAW, FALSE, 0);
+	SendDlgMessage(hDlg, DM_ENABLEREDRAW, FALSE);
 
-	if (SendDlgMessage(hDlg, DM_GETCHECK, ID_FF_DATERELATIVE, 0)) {
+	if (SendDlgMessage(hDlg, DM_GETCHECK, ID_FF_DATERELATIVE)) {
 		SendDlgMessage(hDlg, DM_SHOWITEM, ID_FF_DATEBEFOREEDIT, 0);
 		SendDlgMessage(hDlg, DM_SHOWITEM, ID_FF_DATEAFTEREDIT, 0);
 		SendDlgMessage(hDlg, DM_SHOWITEM, ID_FF_CURRENT, 0);
@@ -637,12 +637,12 @@ void FilterDlgRelativeDateItemsUpdate(HANDLE hDlg, bool bClear)
 		SendDlgMessage(hDlg, DM_SETTEXTPTR, ID_FF_DAYSBEFOREEDIT, (LONG_PTR)L"");
 	}
 
-	SendDlgMessage(hDlg, DM_ENABLEREDRAW, TRUE, 0);
+	SendDlgMessage(hDlg, DM_ENABLEREDRAW, TRUE);
 }
 
 LONG_PTR WINAPI FileFilterConfigDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 {
-	filterpar_highlight_state_s *fphlstate = (filterpar_highlight_state_s *)SendDlgMessage(hDlg, DM_GETDLGDATA, 0, 0);
+	filterpar_highlight_state_s *fphlstate = (filterpar_highlight_state_s *)SendDlgMessage(hDlg, DM_GETDLGDATA);
 	bool bColorConfig = bool(fphlstate);
 
 	switch (Msg) {
@@ -744,23 +744,23 @@ LONG_PTR WINAPI FileFilterConfigDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_P
 					strTime.Clear();
 				}
 
-				SendDlgMessage(hDlg, DM_ENABLEREDRAW, FALSE, 0);
-				int relative = (int)SendDlgMessage(hDlg, DM_GETCHECK, ID_FF_DATERELATIVE, 0);
+				SendDlgMessage(hDlg, DM_ENABLEREDRAW, FALSE);
+				int relative = (int)SendDlgMessage(hDlg, DM_GETCHECK, ID_FF_DATERELATIVE);
 				int db = relative ? ID_FF_DAYSBEFOREEDIT : ID_FF_DATEBEFOREEDIT;
 				int da = relative ? ID_FF_DAYSAFTEREDIT : ID_FF_DATEAFTEREDIT;
 				SendDlgMessage(hDlg, DM_SETTEXTPTR, da, (LONG_PTR)strDate.CPtr());
 				SendDlgMessage(hDlg, DM_SETTEXTPTR, ID_FF_TIMEAFTEREDIT, (LONG_PTR)strTime.CPtr());
 				SendDlgMessage(hDlg, DM_SETTEXTPTR, db, (LONG_PTR)strDate.CPtr());
 				SendDlgMessage(hDlg, DM_SETTEXTPTR, ID_FF_TIMEBEFOREEDIT, (LONG_PTR)strTime.CPtr());
-				SendDlgMessage(hDlg, DM_SETFOCUS, da, 0);
+				SendDlgMessage(hDlg, DM_SETFOCUS, da);
 				COORD r;
 				r.X = r.Y = 0;
 				SendDlgMessage(hDlg, DM_SETCURSORPOS, da, (LONG_PTR)&r);
-				SendDlgMessage(hDlg, DM_ENABLEREDRAW, TRUE, 0);
+				SendDlgMessage(hDlg, DM_ENABLEREDRAW, TRUE);
 				break;
 			} else if (Param1 == ID_FF_RESET)		// Reset
 			{
-				SendDlgMessage(hDlg, DM_ENABLEREDRAW, FALSE, 0);
+				SendDlgMessage(hDlg, DM_ENABLEREDRAW, FALSE);
 				SendDlgMessage(hDlg, DM_SETTEXTPTR, ID_FF_MASKEDIT, (LONG_PTR)L"*");
 				SendDlgMessage(hDlg, DM_SETTEXTPTR, ID_FF_SIZEFROMEDIT, (LONG_PTR)L"");
 				SendDlgMessage(hDlg, DM_SETTEXTPTR, ID_FF_SIZETOEDIT, (LONG_PTR)L"");
@@ -782,7 +782,7 @@ LONG_PTR WINAPI FileFilterConfigDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_P
 				FilterDlgRelativeDateItemsUpdate(hDlg, true);
 				SendDlgMessage(hDlg, DM_SETCHECK, ID_FF_MATCHATTRIBUTES,
 						bColorConfig ? BSTATE_UNCHECKED : BSTATE_CHECKED);
-				SendDlgMessage(hDlg, DM_ENABLEREDRAW, TRUE, 0);
+				SendDlgMessage(hDlg, DM_ENABLEREDRAW, TRUE);
 				break;
 			} else if (Param1 == ID_FF_MAKETRANSPARENT) {
 				HighlightDataColor *hl = &fphlstate->hl;
@@ -793,7 +793,7 @@ LONG_PTR WINAPI FileFilterConfigDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_P
 												COMMON_LVB_STRIKEOUT | COMMON_LVB_UNDERSCORE | COMMON_LVB_REVERSE_VIDEO));
 
 				SendDlgMessage(hDlg, DM_SETCHECK, ID_HER_MARKINHERIT, BSTATE_CHECKED);
-				SendDlgMessage(hDlg, DM_REDRAW, 0, 0);
+				SendDlgMessage(hDlg, DM_REDRAW);
 				break;
 			} else if (Param1 == ID_FF_DATERELATIVE) {
 				FilterDlgRelativeDateItemsUpdate(hDlg, true);
@@ -819,7 +819,7 @@ LONG_PTR WINAPI FileFilterConfigDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_P
 				uint64_t *mask  = &fphlstate->hl.Mask[(Param1 - ID_HER_NORMALFILE) & 1][(Param1 - ID_HER_NORMALFILE) / 2];
 				GetColorDialogForFileFilter(color, mask);
 
-				int nLength = (int)SendDlgMessage(hDlg, DM_GETTEXTLENGTH, ID_HER_MARKEDIT, 0);
+				int nLength = (int)SendDlgMessage(hDlg, DM_GETTEXTLENGTH, ID_HER_MARKEDIT);
 				if (nLength > HIGHLIGHT_MAX_MARK_LENGTH ) {
 					SendDlgMessage(hDlg, DM_SETTEXTPTRSILENT, ID_HER_MARKEDIT, (LONG_PTR)&fphlstate->hl.Mark[0]);
 				}
@@ -828,7 +828,7 @@ LONG_PTR WINAPI FileFilterConfigDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_P
 					fphlstate->hl.MarkLen = nLength;
 				}
 
-				SendDlgMessage(hDlg, DM_REDRAW, 0, 0);
+				SendDlgMessage(hDlg, DM_REDRAW);
 				return TRUE;
 			}
 
@@ -837,7 +837,7 @@ LONG_PTR WINAPI FileFilterConfigDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_P
 
 			if (Param1 == ID_HER_MARKEDIT) {
 
-				int nLength = (int)SendDlgMessage(hDlg, DM_GETTEXTLENGTH, ID_HER_MARKEDIT, 0);
+				int nLength = (int)SendDlgMessage(hDlg, DM_GETTEXTLENGTH, ID_HER_MARKEDIT);
 				if (nLength > HIGHLIGHT_MAX_MARK_LENGTH ) {
 					SendDlgMessage(hDlg, DM_SETTEXTPTRSILENT, ID_HER_MARKEDIT, (LONG_PTR)&fphlstate->hl.Mark[0]);
 				}
@@ -846,15 +846,15 @@ LONG_PTR WINAPI FileFilterConfigDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_P
 					fphlstate->hl.MarkLen = nLength;
 				}
 
-				SendDlgMessage(hDlg, DM_REDRAW, 0, 0);
+				SendDlgMessage(hDlg, DM_REDRAW);
 				return TRUE;
 			}
 			if (Param1 == ID_HER_INDENTEDIT) {
 
-				int nLength = (int)SendDlgMessage(hDlg, DM_GETTEXTLENGTH, ID_HER_INDENTEDIT, 0);
+				int nLength = (int)SendDlgMessage(hDlg, DM_GETTEXTLENGTH, ID_HER_INDENTEDIT);
 				if (nLength > 2 || nLength < 0) {
 					SendDlgMessage(hDlg, DM_SETTEXTPTRSILENT, ID_HER_INDENTEDIT, (LONG_PTR)&fphlstate->wsIndent[0]);
-					SendDlgMessage(hDlg, DM_REDRAW, 0, 0);
+					SendDlgMessage(hDlg, DM_REDRAW);
 					return TRUE;
 				}
 				wchar_t wsTemp[16];
@@ -862,27 +862,27 @@ LONG_PTR WINAPI FileFilterConfigDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_P
 				for (size_t i = 0; i < (size_t)nLength; i++) {
 					if (wsTemp[i] < L'0' || wsTemp[i] > L'9') {
 						SendDlgMessage(hDlg, DM_SETTEXTPTRSILENT, ID_HER_INDENTEDIT, (LONG_PTR)&fphlstate->wsIndent[0]);
-						SendDlgMessage(hDlg, DM_REDRAW, 0, 0);
+						SendDlgMessage(hDlg, DM_REDRAW);
 						return TRUE;
 					}
 				}
 				size_t v = wcstoul(wsTemp, nullptr, 10);
 				if (v > HIGHLIGHT_MAX_MARK_LENGTH) {
 					SendDlgMessage(hDlg, DM_SETTEXTPTRSILENT, ID_HER_INDENTEDIT, (LONG_PTR)&fphlstate->wsIndent[0]);
-					SendDlgMessage(hDlg, DM_REDRAW, 0, 0);
+					SendDlgMessage(hDlg, DM_REDRAW);
 					return TRUE;
 				}
 				fphlstate->hl.Indent = v;
 				SendDlgMessage(hDlg, DM_GETTEXTPTR, ID_HER_INDENTEDIT, (LONG_PTR)&fphlstate->wsIndent[0]);
 
-				SendDlgMessage(hDlg, DM_REDRAW, 0, 0);
+				SendDlgMessage(hDlg, DM_REDRAW);
 				return TRUE;
 			}
 
 			break;
 		case DN_CLOSE:
 
-			if (Param1 == ID_FF_OK && SendDlgMessage(hDlg, DM_GETCHECK, ID_FF_MATCHSIZE, 0)) {
+			if (Param1 == ID_FF_OK && SendDlgMessage(hDlg, DM_GETCHECK, ID_FF_MATCHSIZE)) {
 				FARString strTemp;
 				wchar_t *temp;
 				temp = strTemp.GetBuffer(SendDlgMessage(hDlg, DM_GETTEXTPTR, ID_FF_SIZEFROMEDIT, 0) + 1);

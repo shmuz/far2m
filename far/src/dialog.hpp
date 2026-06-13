@@ -466,7 +466,7 @@ public:
 
 typedef LONG_PTR(WINAPI *SENDDLGMESSAGE)(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2);
 
-LONG_PTR WINAPI SendDlgMessage(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2);
+LONG_PTR WINAPI SendDlgMessage(HANDLE hDlg, int Msg, int Param1 = 0, LONG_PTR Param2 = 0);
 
 LONG_PTR WINAPI DefDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2);
 

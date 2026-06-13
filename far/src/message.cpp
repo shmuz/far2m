@@ -82,14 +82,14 @@ LONG_PTR WINAPI MsgDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 			}
 		} break;
 		case DN_KEY: {
-			DlgParam *dp = (DlgParam*) SendDlgMessage(hDlg, DM_GETDLGDATA, 0, 0);
+			DlgParam *dp = (DlgParam*) SendDlgMessage(hDlg, DM_GETDLGDATA);
 			if (Param1 == dp->FirstButtonIndex
 					&& (Param2 == KEY_LEFT || Param2 == KEY_NUMPAD4 || Param2 == KEY_SHIFTTAB)) {
-				SendDlgMessage(hDlg, DM_SETFOCUS, dp->LastButtonIndex, 0);
+				SendDlgMessage(hDlg, DM_SETFOCUS, dp->LastButtonIndex);
 				return TRUE;
 			} else if (Param1 == dp->LastButtonIndex
 					&& (Param2 == KEY_RIGHT || Param2 == KEY_NUMPAD6 || Param2 == KEY_TAB)) {
-				SendDlgMessage(hDlg, DM_SETFOCUS, dp->FirstButtonIndex, 0);
+				SendDlgMessage(hDlg, DM_SETFOCUS, dp->FirstButtonIndex);
 				return TRUE;
 			}
 		} break;
@@ -364,7 +364,7 @@ static int ShowMessageSynched(DWORD Flags, int Buttons, const wchar_t *Title, co
 				FlushInputBuffer();
 
 			if (Flags & MSG_KILLSAVESCREEN)
-				SendDlgMessage((HANDLE)&Dlg, DM_KILLSAVESCREEN, 0, 0);
+				SendDlgMessage((HANDLE)&Dlg, DM_KILLSAVESCREEN);
 
 			Dlg.Process();
 			RetCode = Dlg.GetExitCode();

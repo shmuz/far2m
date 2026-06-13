@@ -223,7 +223,7 @@ static void flags_show(HANDLE hDlg, bool toggle)
 
 	VMenu *ListBox = reinterpret_cast<Dialog *>(hDlg)->GetAllItem()[CA_LIST_FLAGS]->ListPtr;
 	FSFileFlags *FFFlags =
-			reinterpret_cast<FSFileFlags *>(SendDlgMessage(hDlg, DM_GETDLGDATA, 0, 0));
+			reinterpret_cast<FSFileFlags *>(SendDlgMessage(hDlg, DM_GETDLGDATA));
 
 	FarListPos ListPos;
 	ListBox->GetSelectPos(&ListPos);
@@ -231,7 +231,7 @@ static void flags_show(HANDLE hDlg, bool toggle)
 	if (toggle && sel_pos)
 		FFFlags->FlagInverse(flags_list[ListPos.SelectPos].flag);
 
-	SendDlgMessage(hDlg, DM_ENABLEREDRAW, FALSE, 0);
+	SendDlgMessage(hDlg, DM_ENABLEREDRAW, FALSE);
 	ListBox->DeleteItems();
 	for (unsigned i=0; i<ARRAYSIZE(flags_list); i++) {
 		GetFlagStr2BarList(i, ch, strListBoxLine,
@@ -245,7 +245,7 @@ static void flags_show(HANDLE hDlg, bool toggle)
 		ListBox->SetSelectPos(&ListPos);
 		ListBox->FastShow();
 	}
-	SendDlgMessage(hDlg, DM_ENABLEREDRAW, TRUE, 0);
+	SendDlgMessage(hDlg, DM_ENABLEREDRAW, TRUE);
 }
 
 static LONG_PTR WINAPI ChattrDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
@@ -272,7 +272,7 @@ static LONG_PTR WINAPI ChattrDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR 
 		case DN_BTNCLICK:
 			if (Param1 == CA_BUTTON_RESET) {
 				FSFileFlags *FFFlags =
-						reinterpret_cast<FSFileFlags *>(SendDlgMessage(hDlg, DM_GETDLGDATA, 0, 0));
+						reinterpret_cast<FSFileFlags *>(SendDlgMessage(hDlg, DM_GETDLGDATA));
 				FFFlags->Reset();
 				flags_show(hDlg, false);
 				return TRUE;

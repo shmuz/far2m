@@ -487,11 +487,11 @@ PHPTR PluginManager::OpenFilePlugin(const wchar_t *FileName, DWORD OpMode, OPENF
 	FARString strFullName;
 
 	OpMode |= (Type == OFP_ALTERNATIVE) ? OPM_PGDN : (Type == OFP_COMMANDS) ? OPM_COMMANDS : 0;
-	AnalyseInfo AnInfo { sizeof(AnalyseInfo), nullptr ,nullptr, 0, OpMode };
+	AnalyseInfo AnInfo { sizeof(AnalyseInfo), nullptr, nullptr, 0, OpMode };
 
 	if (FileName)
 	{
-		ConvertNameToFull(FileName,strFullName);
+		ConvertNameToFull(FileName, strFullName);
 		FileName = strFullName;
 		AnInfo.FileName = FileName;
 	}

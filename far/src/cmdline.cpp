@@ -123,7 +123,7 @@ static void CalcCmdlinePasteDialogLayout(const CmdlinePasteDlgLayout &layout, in
 static INT_PTR WINAPI CmdlinePasteDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 {
 	if (Msg == DN_RESIZECONSOLE) {
-		auto *layout = reinterpret_cast<CmdlinePasteDlgLayout *>(SendDlgMessage(hDlg, DM_GETDLGDATA, 0, 0));
+		auto *layout = reinterpret_cast<CmdlinePasteDlgLayout *>(SendDlgMessage(hDlg, DM_GETDLGDATA));
 		if (!layout)
 			return DefDlgProc(hDlg, Msg, Param1, Param2);
 
@@ -133,7 +133,7 @@ static INT_PTR WINAPI CmdlinePasteDlgProc(HANDLE hDlg, int Msg, int Param1, LONG
 		int dlg_y = 0;
 		CalcCmdlinePasteDialogLayout(*layout, dlg_w, dlg_h, dlg_x, dlg_y);
 
-		SendDlgMessage(hDlg, DM_ENABLEREDRAW, FALSE, 0);
+		SendDlgMessage(hDlg, DM_ENABLEREDRAW, FALSE);
 
 		COORD size = {(SHORT)dlg_w, (SHORT)dlg_h};
 		SendDlgMessage(hDlg, DM_RESIZEDIALOG, 0, reinterpret_cast<LONG_PTR>(&size));
@@ -176,7 +176,7 @@ static INT_PTR WINAPI CmdlinePasteDlgProc(HANDLE hDlg, int Msg, int Param1, LONG
 		rect.Bottom = (SHORT)(dlg_h - 3);
 		SendDlgMessage(hDlg, DM_SETITEMPOSITION, MP_BTN_EXEC_NOASK, reinterpret_cast<LONG_PTR>(&rect));
 
-		SendDlgMessage(hDlg, DM_ENABLEREDRAW, TRUE, 0);
+		SendDlgMessage(hDlg, DM_ENABLEREDRAW, TRUE);
 		return TRUE;
 	}
 
@@ -216,7 +216,7 @@ int ShowMultilinePasteDialog(FARString &text)
 
 	int exit_code = Dlg.GetExitCode();
 	if (exit_code == MP_BTN_EXEC || exit_code == MP_BTN_EXEC_NOASK) {
-		int len = (int)SendDlgMessage((HANDLE)&Dlg, DM_GETTEXTLENGTH, MP_MEMO, 0);
+		int len = (int)SendDlgMessage((HANDLE)&Dlg, DM_GETTEXTLENGTH, MP_MEMO);
 		if (len > 0) {
 			FARString edited;
 			wchar_t *buf = edited.GetBuffer(len + 1);

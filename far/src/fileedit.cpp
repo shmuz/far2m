@@ -92,13 +92,13 @@ static const wchar_t *EOLName(const wchar_t *eol)
 LONG_PTR __stdcall hndOpenEditor(HANDLE hDlg, int msg, int param1, LONG_PTR param2)
 {
 	if (msg == DN_INITDIALOG) {
-		int codepage = *(int *)SendDlgMessage(hDlg, DM_GETDLGDATA, 0, 0);
+		int codepage = *(int *)SendDlgMessage(hDlg, DM_GETDLGDATA);
 		FillCodePagesList(hDlg, ID_OE_CODEPAGE, codepage, true, false);
 	}
 
 	if (msg == DN_CLOSE) {
 		if (param1 == ID_OE_OK) {
-			int *param = (int *)SendDlgMessage(hDlg, DM_GETDLGDATA, 0, 0);
+			int *param = (int *)SendDlgMessage(hDlg, DM_GETDLGDATA);
 			FarListPos pos;
 			SendDlgMessage(hDlg, DM_LISTGETCURPOS, ID_OE_CODEPAGE, (LONG_PTR)&pos);
 			*param = (int)SendDlgMessage(hDlg, DM_LISTGETDATA, ID_OE_CODEPAGE, pos.SelectPos);
@@ -166,7 +166,7 @@ LONG_PTR __stdcall hndSaveFileAs(HANDLE hDlg, int msg, int param1, LONG_PTR para
 
 	switch (msg) {
 		case DN_INITDIALOG: {
-			codepage = *(UINT *)SendDlgMessage(hDlg, DM_GETDLGDATA, 0, 0);
+			codepage = *(UINT *)SendDlgMessage(hDlg, DM_GETDLGDATA);
 			FillCodePagesList(hDlg, ID_SF_CODEPAGE, codepage, false, false);
 
 			if (IsUnicodeOrUtfCodePage(codepage)) {
@@ -180,7 +180,7 @@ LONG_PTR __stdcall hndSaveFileAs(HANDLE hDlg, int msg, int param1, LONG_PTR para
 		}
 		case DN_CLOSE: {
 			if (param1 == ID_SF_OK) {
-				UINT *codepage = (UINT *)SendDlgMessage(hDlg, DM_GETDLGDATA, 0, 0);
+				UINT *codepage = (UINT *)SendDlgMessage(hDlg, DM_GETDLGDATA);
 				FarListPos pos;
 				SendDlgMessage(hDlg, DM_LISTGETCURPOS, ID_SF_CODEPAGE, (LONG_PTR)&pos);
 				*codepage = (UINT)SendDlgMessage(hDlg, DM_LISTGETDATA, ID_SF_CODEPAGE, pos.SelectPos);

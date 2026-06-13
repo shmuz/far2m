@@ -1895,7 +1895,7 @@ void FarMacroApi::dlgsetfocusFunc()
 		Ret = Dlg->VMProcess(MCODE_V_DLGCURPOS);
 		if (static_cast<int>(Index) >= 0)
 		{
-			if (!SendDlgMessage(Dlg, DM_SETFOCUS, Index, 0))
+			if (!SendDlgMessage(Dlg, DM_SETFOCUS, Index))
 				Ret = 0;
 		}
 	}

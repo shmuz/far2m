@@ -691,7 +691,7 @@ static LONG_PTR WINAPI AdvancedDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PT
 
 			if (Param1 == AD_BUTTON_OK) {
 				LPCWSTR Data = reinterpret_cast<LPCWSTR>(
-						SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR, AD_EDIT_SEARCHFIRST, 0));
+						SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR, AD_EDIT_SEARCHFIRST));
 
 				if (Data && *Data && !CheckFileSizeStringFormat(Data)) {
 					Message(MSG_WARNING, 1, Msg::FindFileAdvancedTitle, Msg::BadFileSizeFormat, Msg::Ok);
@@ -752,10 +752,10 @@ static void AdvancedDialog()
 
 static LONG_PTR WINAPI MainDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 {
-	Vars *v = reinterpret_cast<Vars *>(SendDlgMessage(hDlg, DM_GETDLGDATA, 0, 0));
+	Vars *v = reinterpret_cast<Vars *>(SendDlgMessage(hDlg, DM_GETDLGDATA));
 	switch (Msg) {
 		case DN_INITDIALOG: {
-			bool Hex = (SendDlgMessage(hDlg, DM_GETCHECK, FAD_CHECKBOX_HEX, 0) == BSTATE_CHECKED);
+			bool Hex = (SendDlgMessage(hDlg, DM_GETCHECK, FAD_CHECKBOX_HEX) == BSTATE_CHECKED);
 			SendDlgMessage(hDlg, DM_SHOWITEM, FAD_EDIT_TEXT, !Hex);
 			SendDlgMessage(hDlg, DM_SHOWITEM, FAD_EDIT_HEX, Hex);
 			SendDlgMessage(hDlg, DM_ENABLE, FAD_TEXT_CP, !Hex);
@@ -786,7 +786,7 @@ static LONG_PTR WINAPI MainDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 		case DN_CLOSE: {
 			switch (Param1) {
 				case FAD_BUTTON_FIND: {
-					LPCWSTR Mask = (LPCWSTR)SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR, FAD_EDIT_MASK, 0);
+					LPCWSTR Mask = (LPCWSTR)SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR, FAD_EDIT_MASK);
 
 					if (!Mask || !*Mask)
 						Mask = L"*";
@@ -848,11 +848,11 @@ static LONG_PTR WINAPI MainDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 				} break;
 
 				case FAD_CHECKBOX_HEX: {
-					SendDlgMessage(hDlg, DM_ENABLEREDRAW, FALSE, 0);
+					SendDlgMessage(hDlg, DM_ENABLEREDRAW, FALSE);
 					FARString strDataStr;
 					Transform(strDataStr,
 							(LPCWSTR)SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR,
-									Param2 ? FAD_EDIT_TEXT : FAD_EDIT_HEX, 0),
+									Param2 ? FAD_EDIT_TEXT : FAD_EDIT_HEX),
 							Param2 ? L'X' : L'S');
 					SendDlgMessage(hDlg, DM_SETTEXTPTR, Param2 ? FAD_EDIT_HEX : FAD_EDIT_TEXT,
 							(LONG_PTR)strDataStr.CPtr());
@@ -871,7 +871,7 @@ static LONG_PTR WINAPI MainDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 						SendDlgMessage(hDlg, DM_EDITUNCHANGEDFLAG, FAD_EDIT_HEX, UnchangeFlag);
 					}
 
-					SendDlgMessage(hDlg, DM_ENABLEREDRAW, TRUE, 0);
+					SendDlgMessage(hDlg, DM_ENABLEREDRAW, TRUE);
 				} break;
 			}
 
@@ -951,15 +951,14 @@ static LONG_PTR WINAPI MainDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 									// Обрабатываем только таблицы символов
 									if (!(CheckItem.Item.Flags & LIF_SEPARATOR)) {
 										if (SelectedCodePage
-												== (UINT)SendDlgMessage(hDlg, DM_LISTGETDATA, FAD_COMBOBOX_CP,
-														Index)) {
+												== (UINT)SendDlgMessage(hDlg, DM_LISTGETDATA, FAD_COMBOBOX_CP, Index))
+										{
 											if (Item.Item.Flags & LIF_CHECKED)
 												CheckItem.Item.Flags|= LIF_CHECKED;
 											else
 												CheckItem.Item.Flags&= ~LIF_CHECKED;
 
-											SendDlgMessage(hDlg, DM_LISTUPDATE, FAD_COMBOBOX_CP,
-													(LONG_PTR)&CheckItem);
+											SendDlgMessage(hDlg, DM_LISTUPDATE, FAD_COMBOBOX_CP, (LONG_PTR)&CheckItem);
 											break;
 										}
 									}
@@ -1001,8 +1000,8 @@ static LONG_PTR WINAPI MainDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 		}
 		case DN_HOTKEY: {
 			if (Param1 == FAD_TEXT_TEXTHEX) {
-				bool Hex = (SendDlgMessage(hDlg, DM_GETCHECK, FAD_CHECKBOX_HEX, 0) == BSTATE_CHECKED);
-				SendDlgMessage(hDlg, DM_SETFOCUS, Hex ? FAD_EDIT_HEX : FAD_EDIT_TEXT, 0);
+				bool Hex = (SendDlgMessage(hDlg, DM_GETCHECK, FAD_CHECKBOX_HEX) == BSTATE_CHECKED);
+				SendDlgMessage(hDlg, DM_SETFOCUS, Hex ? FAD_EDIT_HEX : FAD_EDIT_TEXT);
 				return FALSE;
 			}
 		}
@@ -1515,7 +1514,7 @@ public:
 
 static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 {
-	Vars *v = reinterpret_cast<Vars *>(SendDlgMessage(hDlg, DM_GETDLGDATA, 0, 0));
+	Vars *v = reinterpret_cast<Vars *>(SendDlgMessage(hDlg, DM_GETDLGDATA));
 	Dialog *Dlg = reinterpret_cast<Dialog *>(hDlg);
 	VMenu *ListBox = Dlg->GetAllItem()[FD_LISTBOX]->ListPtr;
 
@@ -1572,13 +1571,13 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 		v->Finalized = true;
 		FARString strMessage;
 		strMessage.Format(Msg::FindDone, itd.GetFileCount(), itd.GetDirCount());
-		SendDlgMessage(hDlg, DM_ENABLEREDRAW, FALSE, 0);
+		SendDlgMessage(hDlg, DM_ENABLEREDRAW, FALSE);
 		SendDlgMessage(hDlg, DM_SETTEXTPTR, FD_SEPARATOR1, reinterpret_cast<LONG_PTR>(L""));
 		SendDlgMessage(hDlg, DM_SETTEXTPTR, FD_TEXT_STATUS, reinterpret_cast<LONG_PTR>(strMessage.CPtr()));
 		SendDlgMessage(hDlg, DM_SETTEXTPTR, FD_TEXT_STATUS_PERCENTS, reinterpret_cast<LONG_PTR>(L""));
 		SendDlgMessage(hDlg, DM_SETTEXTPTR, FD_BUTTON_STOP,
 				reinterpret_cast<LONG_PTR>(Msg::FindCancel.CPtr()));
-		SendDlgMessage(hDlg, DM_ENABLEREDRAW, TRUE, 0);
+		SendDlgMessage(hDlg, DM_ENABLEREDRAW, TRUE);
 		ConsoleTitle::SetFarTitle(strMessage);
 		if (Opt.NotifOpt.OnFileOperation) {
 			DisplayNotification(Msg::FileOperationComplete, strMessage);
@@ -1592,7 +1591,7 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 			// Переместим фокус на кнопку [Go To]
 			if ((itd.GetDirCount() || itd.GetFileCount()) && !v->FindPositionChanged) {
 				v->FindPositionChanged = true;
-				SendDlgMessage(hDlg, DM_SETFOCUS, FD_BUTTON_GOTO, 0);
+				SendDlgMessage(hDlg, DM_SETFOCUS, FD_BUTTON_GOTO);
 			}
 			return TRUE;
 		} break;
@@ -1627,7 +1626,7 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 				case KEY_TAB: {
 					if (Param1 == FD_BUTTON_STOP) {
 						v->FindPositionChanged = true;
-						SendDlgMessage(hDlg, DM_SETFOCUS, FD_BUTTON_NEW, 0);
+						SendDlgMessage(hDlg, DM_SETFOCUS, FD_BUTTON_NEW);
 						return TRUE;
 					}
 				} break;
@@ -1637,7 +1636,7 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 				case KEY_SHIFTTAB: {
 					if (Param1 == FD_BUTTON_NEW) {
 						v->FindPositionChanged = true;
-						SendDlgMessage(hDlg, DM_SETFOCUS, FD_BUTTON_STOP, 0);
+						SendDlgMessage(hDlg, DM_SETFOCUS, FD_BUTTON_STOP);
 						return TRUE;
 					}
 				} break;
@@ -1690,7 +1689,7 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 						if (ShellSetFileAttributes(NULL,FindItem.FindData.strFileName))
 						{
 							itd.SetFindListItem(ItemIndex, FindItem);
-							SendDlgMessage(hDlg,DM_REDRAW,0,0);
+							SendDlgMessage(hDlg, DM_REDRAW);
 						}
 						return TRUE;
 					}
@@ -1813,8 +1812,8 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 								ViewList.SetCurName(strCurDir);
 							}
 
-							SendDlgMessage(hDlg, DM_SHOWDIALOG, FALSE, 0);
-							SendDlgMessage(hDlg, DM_ENABLEREDRAW, FALSE, 0);
+							SendDlgMessage(hDlg, DM_SHOWDIALOG, FALSE);
+							SendDlgMessage(hDlg, DM_ENABLEREDRAW, FALSE);
 							{
 								FileViewer ShellViewer(strSearchFileName, false, false, false, -1, nullptr,
 										(FindItem.ArcIndex != LIST_INDEX_NONE)
@@ -1834,11 +1833,11 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 								}
 								FrameManager->ExecuteModalEV(true);
 							}
-							SendDlgMessage(hDlg, DM_ENABLEREDRAW, TRUE, 0);
-							SendDlgMessage(hDlg, DM_SHOWDIALOG, TRUE, 0);
+							SendDlgMessage(hDlg, DM_ENABLEREDRAW, TRUE);
+							SendDlgMessage(hDlg, DM_SHOWDIALOG, TRUE);
 						} else {
-							SendDlgMessage(hDlg, DM_SHOWDIALOG, FALSE, 0);
-							SendDlgMessage(hDlg, DM_ENABLEREDRAW, FALSE, 0);
+							SendDlgMessage(hDlg, DM_SHOWDIALOG, FALSE);
+							SendDlgMessage(hDlg, DM_ENABLEREDRAW, FALSE);
 							{
 								/* $ 14.08.2002 VVM
 								  ! Пока-что запретим из поиска переключаться в активный редактор.
@@ -1866,8 +1865,8 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 																	}
 																	else
 																	{
-																		SendDlgMessage(hDlg,DM_ENABLEREDRAW,TRUE,0);
-																		SendDlgMessage(hDlg,DM_SHOWDIALOG,TRUE,0);
+																		SendDlgMessage(hDlg,DM_ENABLEREDRAW,TRUE);
+																		SendDlgMessage(hDlg,DM_SHOWDIALOG,TRUE);
 																		return TRUE;
 																	}
 																}
@@ -1913,8 +1912,8 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 									FrameManager->ProcessKey(KEY_CONSOLE_BUFFER_RESIZE);
 								}
 							}
-							SendDlgMessage(hDlg, DM_ENABLEREDRAW, TRUE, 0);
-							SendDlgMessage(hDlg, DM_SHOWDIALOG, TRUE, 0);
+							SendDlgMessage(hDlg, DM_ENABLEREDRAW, TRUE);
+							SendDlgMessage(hDlg, DM_SHOWDIALOG, TRUE);
 						}
 						Console.SetTitle(strOldTitle);
 					}
@@ -1991,7 +1990,7 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 			int DlgHeight = DlgRect.Bottom - DlgRect.Top + 1;
 			int IncX = pCoord->X - DlgWidth - 2;
 			int IncY = pCoord->Y - DlgHeight - 2;
-			SendDlgMessage(hDlg, DM_ENABLEREDRAW, FALSE, 0);
+			SendDlgMessage(hDlg, DM_ENABLEREDRAW, FALSE);
 
 			for (int i = 0; i <= FD_BUTTON_STOP; i++) {
 				SendDlgMessage(hDlg, DM_SHOWITEM, i, FALSE);
@@ -2039,7 +2038,7 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 				SendDlgMessage(hDlg, DM_SHOWITEM, i, TRUE);
 			}
 
-			SendDlgMessage(hDlg, DM_ENABLEREDRAW, TRUE, 0);
+			SendDlgMessage(hDlg, DM_ENABLEREDRAW, TRUE);
 			return TRUE;
 		} break;
 	}
@@ -2705,7 +2704,7 @@ static bool FindFilesProcess(Vars &v)
 	}
 
 	if (!AnySetFindList) {
-		FindDlg[FD_BUTTON_PANEL].Flags|= DIF_DISABLE;
+		FindDlg[FD_BUTTON_PANEL].Flags |= DIF_DISABLE;
 	}
 
 	Dialog Dlg = Dialog(FindDlg, ARRAYSIZE(FindDlg), FindDlgProc, reinterpret_cast<LONG_PTR>(&v));

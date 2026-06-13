@@ -1843,29 +1843,25 @@ void Help::ReadDocumentsHelp(int TypeIndex)
 	HelpList.clear();
 
 	strCurPluginContents.Clear();
-	StrCount=0;
-	FixCount=1;
-	FixSize=2;
-	StackData.TopStr=0;
-	TopicFound=true;
-	StackData.CurX=StackData.CurY=0;
+	StrCount = 0;
+	FixCount = 1;
+	FixSize = 2;
+	StackData.TopStr = 0;
+	TopicFound = true;
+	StackData.CurX = StackData.CurY = 0;
 	strCtrlColorChar.Clear();
-	const wchar_t *PtrTitle=0, *ContentsName=0;
+	const wchar_t *PtrTitle = 0, *ContentsName = 0;
 	FARString strPath, strFullFileName;
 
 	switch (TypeIndex)
 	{
 		case HIDX_PLUGINS:
-			PtrTitle=Msg::PluginsHelpTitle;
-			ContentsName=L"PluginContents";
+			PtrTitle = Msg::PluginsHelpTitle;
+			ContentsName = L"PluginContents";
 			break;
 	}
 
 	AddTitle(PtrTitle);
-	/* TODO:
-	   1. Поиск (для "документов") не только в каталоге Documets, но
-	      и в плагинах
-	*/
 
 	switch (TypeIndex)
 	{
@@ -1882,7 +1878,7 @@ void Help::ReadDocumentsHelp(int TypeIndex)
 				{
 					FARString strEntryName, strHelpLine, strSecondParam;
 
-					if (GetLangParam(HelpFile,ContentsName,&strEntryName,&strSecondParam, nCodePage))
+					if (GetLangParam(HelpFile, ContentsName, &strEntryName, &strSecondParam, nCodePage))
 					{
 						if (!strSecondParam.IsEmpty())
 							strHelpLine.Format(L"   ~%ls,%ls~@" HelpFormatLink L"@", strEntryName.CPtr(), strSecondParam.CPtr(), strPath.CPtr(),HelpContents);

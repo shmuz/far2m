@@ -801,7 +801,7 @@ int FileList::PrepareColumnWidths(std::vector<Column> &Columns, bool FullScreen)
 			ZeroLengthCount--;
 		}
 
-	while (1) {
+	while (true) {
 		int LastColumn = Columns.size() - 1;
 		TotalWidth = LastColumn - EmptyColumns;
 

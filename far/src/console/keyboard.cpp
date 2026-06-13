@@ -733,7 +733,7 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 		}
 
 		LoopCount++;
-	} // while (1)
+	} // while (true)
 
 	if (rec->EventType==NOOP_EVENT) {
 		Console.ReadInput(*rec);

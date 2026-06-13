@@ -831,9 +831,9 @@ LONG_PTR WINAPI EditMenuDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param
 			if (Param1 == EM_BUTTON_OK) {
 				BOOL Result = TRUE;
 				LPCWSTR HotKey = reinterpret_cast<LPCWSTR>(
-						SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR, EM_HOTKEY_EDIT, 0));
+						SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR, EM_HOTKEY_EDIT));
 				LPCWSTR Label =
-						reinterpret_cast<LPCWSTR>(SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR, EM_LABEL_EDIT, 0));
+						reinterpret_cast<LPCWSTR>(SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR, EM_LABEL_EDIT));
 				int FocusPos = -1;
 
 				if (StrCmp(HotKey, L"--")) {
@@ -855,7 +855,7 @@ LONG_PTR WINAPI EditMenuDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param
 					Message(MSG_WARNING, 1, Msg::UserMenuTitle,
 							((*Label ? Msg::UserMenuInvalidInputHotKey : Msg::UserMenuInvalidInputLabel)),
 							Msg::Ok);
-					SendDlgMessage(hDlg, DM_SETFOCUS, FocusPos, 0);
+					SendDlgMessage(hDlg, DM_SETFOCUS, FocusPos);
 					Result = FALSE;
 				}
 

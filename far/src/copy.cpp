@@ -1224,12 +1224,12 @@ LONG_PTR WINAPI CopyDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 {
 #define DM_CALLTREE (DM_USER + 1)
 #define DM_SWITCHRO (DM_USER + 2)
-	CopyDlgParam *DlgParam = (CopyDlgParam *)SendDlgMessage(hDlg, DM_GETDLGDATA, 0, 0);
+	CopyDlgParam *DlgParam = (CopyDlgParam *)SendDlgMessage(hDlg, DM_GETDLGDATA);
 
 	switch (Msg) {
 		case DN_INITDIALOG:
 			SendDlgMessage(hDlg, DM_SETCOMBOBOXEVENT, ID_SC_COMBO, CBET_KEY | CBET_MOUSE);
-			SendDlgMessage(hDlg, DM_SETMOUSEEVENTNOTIFY, TRUE, 0);
+			SendDlgMessage(hDlg, DM_SETMOUSEEVENTNOTIFY, TRUE);
 			break;
 		case DM_SWITCHRO: {
 			FarListGetItem LGI = {CM_ASKRO};
@@ -1241,7 +1241,7 @@ LONG_PTR WINAPI CopyDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 				LGI.Item.Flags|= LIF_CHECKED;
 
 			SendDlgMessage(hDlg, DM_LISTUPDATE, ID_SC_COMBO, (LONG_PTR)&LGI);
-			SendDlgMessage(hDlg, DM_REDRAW, 0, 0);
+			SendDlgMessage(hDlg, DM_REDRAW);
 			return TRUE;
 		}
 		case DN_BTNCLICK: {
@@ -1254,10 +1254,10 @@ LONG_PTR WINAPI CopyDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 
 			if (Param1 == ID_SC_BTNTREE)    // Tree
 			{
-				SendDlgMessage(hDlg, DM_CALLTREE, 0, 0);
+				SendDlgMessage(hDlg, DM_CALLTREE);
 				return FALSE;
 			} else if (Param1 == ID_SC_BTNCOPY) {
-				SendDlgMessage(hDlg, DM_CLOSE, ID_SC_BTNCOPY, 0);
+				SendDlgMessage(hDlg, DM_CLOSE, ID_SC_BTNCOPY);
 			} else if (Param1 == ID_SC_SPARSEFILES) {
 				SendDlgMessage(hDlg, DM_SETCHECK, ID_SC_USECOW, BSTATE_UNCHECKED);
 			} else if (Param1 == ID_SC_USECOW) {
@@ -1298,19 +1298,19 @@ LONG_PTR WINAPI CopyDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 		case DN_LISTHOTKEY:
 			if (Param1 == ID_SC_COMBO) {
 				if (SendDlgMessage(hDlg, DM_LISTGETCURPOS, ID_SC_COMBO, 0) == CM_ASKRO) {
-					SendDlgMessage(hDlg, DM_SWITCHRO, 0, 0);
+					SendDlgMessage(hDlg, DM_SWITCHRO);
 					return TRUE;
 				}
 			}
 			break;
 		case DN_MOUSEEVENT:
 
-			if (SendDlgMessage(hDlg, DM_GETDROPDOWNOPENED, ID_SC_COMBO, 0)) {
+			if (SendDlgMessage(hDlg, DM_GETDROPDOWNOPENED, ID_SC_COMBO)) {
 				MOUSE_EVENT_RECORD *mer = (MOUSE_EVENT_RECORD *)Param2;
 
-				if (SendDlgMessage(hDlg, DM_LISTGETCURPOS, ID_SC_COMBO, 0) == CM_ASKRO && mer->dwButtonState
+				if (SendDlgMessage(hDlg, DM_LISTGETCURPOS, ID_SC_COMBO) == CM_ASKRO && mer->dwButtonState
 						&& !(mer->dwEventFlags & MOUSE_MOVED)) {
-					SendDlgMessage(hDlg, DM_SWITCHRO, 0, 0);
+					SendDlgMessage(hDlg, DM_SWITCHRO);
 					return FALSE;
 				}
 			}
@@ -1330,10 +1330,10 @@ LONG_PTR WINAPI CopyDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 				 показывался корневой каталог, теперь показывается самый первый каталог
 				 в списке.
 			*/
-			bool MultiCopy = SendDlgMessage(hDlg, DM_GETCHECK, ID_SC_MULTITARGET, 0) == BSTATE_CHECKED;
+			bool MultiCopy = SendDlgMessage(hDlg, DM_GETCHECK, ID_SC_MULTITARGET) == BSTATE_CHECKED;
 			FARString strOldFolder;
 			FarDialogItemData Data;
-			int nLength = (int)SendDlgMessage(hDlg, DM_GETTEXTLENGTH, ID_SC_TARGETEDIT, 0);
+			int nLength = (int)SendDlgMessage(hDlg, DM_GETTEXTLENGTH, ID_SC_TARGETEDIT);
 			Data.PtrData = strOldFolder.GetBuffer(nLength + 1);
 			Data.PtrLength = nLength;
 			SendDlgMessage(hDlg, DM_GETTEXT, ID_SC_TARGETEDIT, (LONG_PTR)&Data);
@@ -1388,7 +1388,7 @@ LONG_PTR WINAPI CopyDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 					}
 
 					SendDlgMessage(hDlg, DM_SETTEXTPTR, ID_SC_TARGETEDIT, (LONG_PTR)strNewFolder.CPtr());
-					SendDlgMessage(hDlg, DM_SETFOCUS, ID_SC_TARGETEDIT, 0);
+					SendDlgMessage(hDlg, DM_SETFOCUS, ID_SC_TARGETEDIT);
 				}
 			}
 
@@ -2822,7 +2822,7 @@ LONG_PTR WINAPI WarnDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 	switch (Msg) {
 		case DM_OPENVIEWER: {
 			LPCWSTR ViewName = nullptr;
-			FARString **WFN = reinterpret_cast<FARString **>(SendDlgMessage(hDlg, DM_GETDLGDATA, 0, 0));
+			FARString **WFN = reinterpret_cast<FARString **>(SendDlgMessage(hDlg, DM_GETDLGDATA));
 
 			if (WFN) {
 				switch (Param1) {
@@ -2854,15 +2854,15 @@ LONG_PTR WINAPI WarnDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 			switch (Param1) {
 				case WDLG_SRCFILEBTN:
 				case WDLG_DSTFILEBTN:
-					SendDlgMessage(hDlg, DM_OPENVIEWER, Param1, 0);
+					SendDlgMessage(hDlg, DM_OPENVIEWER, Param1);
 					break;
 				case WDLG_RENAME: {
 					FARString **WFN =
-							reinterpret_cast<FARString **>(SendDlgMessage(hDlg, DM_GETDLGDATA, 0, 0));
+							reinterpret_cast<FARString **>(SendDlgMessage(hDlg, DM_GETDLGDATA));
 					FARString strDestName = *WFN[1];
 					GenerateName(strDestName, *WFN[2]);
 
-					if (SendDlgMessage(hDlg, DM_GETCHECK, WDLG_CHECKBOX, 0) == BSTATE_UNCHECKED) {
+					if (SendDlgMessage(hDlg, DM_GETCHECK, WDLG_CHECKBOX) == BSTATE_UNCHECKED) {
 						int All = BSTATE_UNCHECKED;
 
 						if (GetString(Msg::CopyRenameTitle, Msg::CopyRenameText, nullptr, strDestName,
@@ -2886,7 +2886,7 @@ LONG_PTR WINAPI WarnDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 		} break;
 		case DN_KEY: {
 			if ((Param1 == WDLG_SRCFILEBTN || Param1 == WDLG_DSTFILEBTN) && Param2 == KEY_F3) {
-				SendDlgMessage(hDlg, DM_OPENVIEWER, Param1, 0);
+				SendDlgMessage(hDlg, DM_OPENVIEWER, Param1);
 			}
 		} break;
 	}

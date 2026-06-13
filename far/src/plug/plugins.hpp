@@ -185,7 +185,7 @@ class PluginManager
 		Plugin *FindPlugin(DWORD SysID);
 		bool FindPlugin(Plugin *pPlugin);
 
-		int GetPluginsCount() const { return PluginsData.size(); }
+		size_t GetPluginsCount() const { return PluginsData.size(); }
 
 		bool IsPluginsLoaded() { return m_Flags.Check(PSIF_PLUGINSLOADED); }
 

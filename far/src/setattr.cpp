@@ -214,7 +214,7 @@ static int DialogID2PreservedOriginalIndex(int id)
 
 static void BlankEditIfChanged(HANDLE hDlg, int EditControl, FARString &Remembered, bool &Changed)
 {
-	LPCWSTR Actual = reinterpret_cast<LPCWSTR>(SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR, EditControl, 0));
+	LPCWSTR Actual = reinterpret_cast<LPCWSTR>(SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR, EditControl));
 	if (!Changed)
 		Changed = StrCmp(Actual, Remembered) != 0;
 
@@ -254,9 +254,9 @@ static char SetAttrGetBitCharFromModeCheckBoxes(HANDLE hDlg, int _i1, int _i2, i
 {
 	int i1, i2, i3;
 
-	i1 = (int)SendDlgMessage(hDlg, DM_GETCHECK, _i1, 0);
-	i2 = (int)SendDlgMessage(hDlg, DM_GETCHECK, _i2, 0);
-	i3 = (int)SendDlgMessage(hDlg, DM_GETCHECK, _i3, 0);
+	i1 = (int)SendDlgMessage(hDlg, DM_GETCHECK, _i1);
+	i2 = (int)SendDlgMessage(hDlg, DM_GETCHECK, _i2);
+	i3 = (int)SendDlgMessage(hDlg, DM_GETCHECK, _i3);
 	if (i1 == BSTATE_3STATE || i2 == BSTATE_3STATE || i3 == BSTATE_3STATE)
 		return '-';
 	else {
@@ -330,14 +330,14 @@ void SetAttrGetModeCheckBoxesFromChar(HANDLE hDlg, wchar_t c, int _i1, int _i2, 
 LONG_PTR WINAPI SetAttrDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 {
 	SetAttrDlgParam *DlgParam =
-			reinterpret_cast<SetAttrDlgParam *>(SendDlgMessage(hDlg, DM_GETDLGDATA, 0, 0));
+			reinterpret_cast<SetAttrDlgParam *>(SendDlgMessage(hDlg, DM_GETDLGDATA));
 	int OrigIdx;
 
 	switch (Msg) {
 			case DN_CLOSE:
 			if (DlgParam->SymLinkInfoCycle == 0) {
 				DlgParam->SymLink = reinterpret_cast<LPCWSTR>
-					(SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR, SA_EDIT_INFO, 0));
+					(SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR, SA_EDIT_INFO));
 			}
 			break;
 
@@ -353,9 +353,9 @@ LONG_PTR WINAPI SetAttrDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 						DlgParam->_b_mode_check_or_edit_process = false;
 					}
 				}
-				int FocusPos = static_cast<int>(SendDlgMessage(hDlg, DM_GETFOCUS, 0, 0));
+				int FocusPos = static_cast<int>(SendDlgMessage(hDlg, DM_GETFOCUS));
 				FARCHECKEDSTATE SubfoldersState = static_cast<FARCHECKEDSTATE>(
-						SendDlgMessage(hDlg, DM_GETCHECK, SA_CHECKBOX_SUBFOLDERS, 0));
+						SendDlgMessage(hDlg, DM_GETCHECK, SA_CHECKBOX_SUBFOLDERS));
 
 				{
 					DlgParam->_b_mode_check_or_edit_process = true;
@@ -470,7 +470,7 @@ LONG_PTR WINAPI SetAttrDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 				switch (DlgParam->SymLinkInfoCycle++) {
 					case 0: {
 							DlgParam->SymLink = reinterpret_cast<LPCWSTR>
-								(SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR, SA_EDIT_INFO, 0));
+								(SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR, SA_EDIT_INFO));
 							ConvertNameToReal(DlgParam->SymLink, strText);
 							SendDlgMessage(hDlg, DM_SETREADONLY, SA_EDIT_INFO, 1);
 						} break;
@@ -501,7 +501,7 @@ LONG_PTR WINAPI SetAttrDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 				}
 				SetAttrCalcBitsCharFromModeCheckBoxes(hDlg);
 				DlgParam->_b_mode_check_or_edit_process = false;
-				SendDlgMessage(hDlg, DM_SETFOCUS, SA_FIXEDIT_MODE_OCTAL, 0);
+				SendDlgMessage(hDlg, DM_SETFOCUS, SA_FIXEDIT_MODE_OCTAL);
 
 			// Set Original? / Set All? / Clear All?
 			} else if (Param1 == SA_BUTTON_ORIGINAL) {
@@ -517,7 +517,7 @@ LONG_PTR WINAPI SetAttrDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 					DlgParam->OAccessTime = DlgParam->OModifyTime = DlgParam->OStatusChangeTime = false;
 				}
 
-				SendDlgMessage(hDlg, DM_SETFOCUS, SA_FIXEDIT_LAST_ACCESS_DATE, 0);
+				SendDlgMessage(hDlg, DM_SETFOCUS, SA_FIXEDIT_LAST_ACCESS_DATE);
 				return TRUE;
 			} else if (Param1 == SA_BUTTON_CURRENT || Param1 == SA_BUTTON_BLANK) {
 				LONG_PTR Value = 0;
@@ -530,7 +530,7 @@ LONG_PTR WINAPI SetAttrDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 				SendDlgMessage(hDlg, DM_SETATTR, SA_TEXT_LAST_MODIFICATION, Value);
 				// SendDlgMessage(hDlg, DM_SETATTR, SA_TEXT_LAST_CHANGE, Value);
 				DlgParam->OAccessTime = DlgParam->OModifyTime = DlgParam->OStatusChangeTime = true;
-				SendDlgMessage(hDlg, DM_SETFOCUS, SA_FIXEDIT_LAST_ACCESS_DATE, 0);
+				SendDlgMessage(hDlg, DM_SETFOCUS, SA_FIXEDIT_LAST_ACCESS_DATE);
 				return TRUE;
 			}
 
@@ -549,7 +549,7 @@ LONG_PTR WINAPI SetAttrDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 					Param1++;
 				}
 
-				SendDlgMessage(hDlg, DM_SETFOCUS, Param1, 0);
+				SendDlgMessage(hDlg, DM_SETFOCUS, Param1);
 			}
 		} break;
 		case DN_EDITCHANGE: {
@@ -558,7 +558,7 @@ LONG_PTR WINAPI SetAttrDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 					if (!DlgParam->_b_mode_check_or_edit_process) {
 						DlgParam->_b_mode_check_or_edit_process = true;
 						std::wstring str_octal;
-						int length = (int)SendDlgMessage(hDlg, DM_GETTEXTLENGTH, SA_FIXEDIT_MODE_OCTAL, 0);
+						int length = (int)SendDlgMessage(hDlg, DM_GETTEXTLENGTH, SA_FIXEDIT_MODE_OCTAL);
 						str_octal.resize(length+1);
 						LONG_PTR rv = SendDlgMessage(hDlg, DM_GETTEXTPTR, SA_FIXEDIT_MODE_OCTAL, (LONG_PTR)&str_octal[0]);
 						if (rv>0) {
@@ -592,7 +592,7 @@ LONG_PTR WINAPI SetAttrDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 			if (Param1 == SA_FIXEDIT_LAST_ACCESS_DATE || Param1 == SA_FIXEDIT_LAST_MODIFICATION_DATE
 					|| Param1 == SA_FIXEDIT_LAST_CHANGE_DATE) {
 				if (GetDateFormat() == 2) {
-					if (reinterpret_cast<LPCWSTR>(SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR, Param1, 0))[0]
+					if (reinterpret_cast<LPCWSTR>(SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR, Param1))[0]
 							== L' ') {
 						COORD Pos;
 						SendDlgMessage(hDlg, DM_GETCURSORPOS, Param1, (LONG_PTR)&Pos);

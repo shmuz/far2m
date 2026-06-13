@@ -705,7 +705,7 @@ void HighlightFiles::HiEdit(int MenuPos)
 	Panel *RightPanel = CtrlObject->Cp()->RightPanel;
 	HiMenu.Show();
 
-	while (1) {
+	while (true) {
 		while (!HiMenu.Done()) {
 			FarKey Key = HiMenu.ReadInput();
 			int SelectPos = HiMenu.GetSelectPos();

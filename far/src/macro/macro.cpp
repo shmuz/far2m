@@ -898,7 +898,7 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg, int Msg, int Param1, L
 
 				if (Result == 0)
 				{
-					SendDlgMessage(hDlg, DM_CLOSE, 1, 0);
+					SendDlgMessage(hDlg, DM_CLOSE, 1);
 					return TRUE;
 				}
 
@@ -917,7 +917,7 @@ LONG_PTR WINAPI KeyMacro::AssignMacroDlgProc(HANDLE hDlg, int Msg, int Param1, L
 					{
 						KMParam->Flags = Data.Flags;
 						KMParam->Changed = true;
-						SendDlgMessage(hDlg, DM_CLOSE, 1, 0);
+						SendDlgMessage(hDlg, DM_CLOSE, 1);
 						return TRUE;
 					}
 				}
@@ -1016,14 +1016,14 @@ LONG_PTR WINAPI KeyMacro::ParamMacroDlgProc(HANDLE hDlg, int Msg, int Param1, LO
 
 			if (Param1 == MS_BUTTON_OK)
 			{
-				LPCWSTR Sequence=(LPCWSTR)SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR, MS_EDIT_SEQUENCE, 0);
+				LPCWSTR Sequence=(LPCWSTR)SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR, MS_EDIT_SEQUENCE);
 
 				if (*Sequence)
 				{
 					if (ParseMacroString(Sequence, KMFLAGS_LUA, true))
 					{
 						m_RecCode = Sequence;
-						m_RecDescription = (LPCWSTR)SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR, MS_EDIT_DESCR, 0);
+						m_RecDescription = (LPCWSTR)SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR, MS_EDIT_DESCR);
 						return TRUE;
 					}
 				}

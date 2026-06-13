@@ -224,7 +224,7 @@ void MaskGroupsSettings()
 	MasksMenu.SetId(MaskGroupsMenuId);
 	MasksMenu.SetBottomTitle(Msg::MaskGroupBottomTitle);
 
-	while (1)
+	while (true)
 	{
 		bool OuterLoop = true;
 		bool MenuModified = false;

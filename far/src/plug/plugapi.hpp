@@ -157,7 +157,7 @@ void WINAPI FarDialogFree(HANDLE hDlg);
 // Функция обработки диалога по умолчанию
 LONG_PTR WINAPI FarDefDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2);
 // Посылка сообщения диалогу
-LONG_PTR WINAPI FarSendDlgMessage(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2);
+LONG_PTR WINAPI FarSendDlgMessage(HANDLE hDlg, int Msg, int Param1 = 0, LONG_PTR Param2 = 0);
 
 int WINAPI farPluginsControl(HANDLE hHandle, int Command, int Param1, LONG_PTR Param2);
 

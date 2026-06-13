@@ -212,7 +212,8 @@ static void AddPluginItems(VMenu &ChDisk, int Pos)
 
 		for (int PluginItem = 0;
 				CtrlObject->Plugins.GetDiskMenuItem(pPlugin, PluginItem, HotKey, strPluginText, Guid);
-				++PluginItem) {
+				++PluginItem)
+		{
 			const auto &strMenuText = strPluginText;
 
 			if (!strMenuText.IsEmpty()) {
@@ -1964,44 +1965,6 @@ bool Panel::SaveShortcutFolder(int Pos)
 	return true;
 }
 
-/*
-int Panel::ProcessShortcutFolder(int Key,BOOL ProcTreePanel)
-{
-	FARString strShortcutFolder, strPluginModule, strPluginFile, strPluginData;
-
-	if (GetShortcutFolder(Key-KEY_RCTRL0,&strShortcutFolder,&strPluginModule,&strPluginFile,&strPluginData))
-	{
-		Panel *AnotherPanel=CtrlObject->Cp()->GetAnotherPanel(this);
-
-		if (ProcTreePanel)
-		{
-			if (AnotherPanel->GetType()==FILE_PANEL)
-			{
-				AnotherPanel->SetCurDir(strShortcutFolder,true);
-				AnotherPanel->Redraw();
-			}
-			else
-			{
-				SetCurDir(strShortcutFolder,true);
-				ProcessKey(KEY_ENTER);
-			}
-		}
-		else
-		{
-			if (AnotherPanel->GetType()==FILE_PANEL && !strPluginModule.IsEmpty())
-			{
-				AnotherPanel->SetCurDir(strShortcutFolder,true);
-				AnotherPanel->Redraw();
-			}
-		}
-
-		return TRUE;
-	}
-
-	return FALSE;
-}
-*/
-
 bool Panel::ExecShortcutFolder(int Pos)
 {
 	BookmarkData Data;
@@ -2051,28 +2014,23 @@ bool Panel::ExecShortcutFolder(int Pos)
 			if (CtrlObject->Cp()->ActivePanel->ProcessPluginEvent(FE_CLOSE, nullptr))
 				return true;
 
-			for (auto pPlugin: CtrlObject->Plugins.GetPlugins()) {
-				if (!StrCmp(pPlugin->GetModuleName(), Data.PluginModule)) {
-					if (pPlugin->HasOpenPlugin()) {
-						PHPTR hNewPlugin = CtrlObject->Plugins.OpenPlugin(pPlugin, OPEN_SHORTCUT,
-								Data.PluginData.CPtr());
+			auto pPlugin = CtrlObject->Plugins.FindPlugin(Data.PluginModule);
+			if (pPlugin && pPlugin->HasOpenPlugin())
+			{
+				PHPTR hNewPlugin = CtrlObject->Plugins.OpenPlugin(pPlugin, OPEN_SHORTCUT, Data.PluginData.CPtr());
 
-						if (hNewPlugin) {
-							int CurFocus = SrcPanel->GetFocus();
+				if (hNewPlugin) {
+					int CurFocus = SrcPanel->GetFocus();
 
-							Panel *NewPanel = CtrlObject->Cp()->ChangePanel(SrcPanel, FILE_PANEL, true, true);
-							NewPanel->SetPluginMode(hNewPlugin, L"",
-									CurFocus || !CtrlObject->Cp()->GetAnotherPanel(NewPanel)->IsVisible());
+					Panel *NewPanel = CtrlObject->Cp()->ChangePanel(SrcPanel, FILE_PANEL, true, true);
+					NewPanel->SetPluginMode(hNewPlugin, L"",
+							CurFocus || !CtrlObject->Cp()->GetAnotherPanel(NewPanel)->IsVisible());
 
-							if (!Data.ShortcutFolder.IsEmpty())
-								CtrlObject->Plugins.SetDirectory(hNewPlugin, Data.ShortcutFolder, OPM_NONE);
+					if (!Data.ShortcutFolder.IsEmpty())
+						CtrlObject->Plugins.SetDirectory(hNewPlugin, Data.ShortcutFolder, OPM_NONE);
 
-							NewPanel->Update(0);
-							NewPanel->Show();
-						}
-					}
-
-					break;
+					NewPanel->Update(0);
+					NewPanel->Show();
 				}
 			}
 		}

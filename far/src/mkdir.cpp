@@ -68,10 +68,10 @@ LONG_PTR WINAPI MkDirDlgProc(HANDLE hDlg,int Msg,int Param1,LONG_PTR Param2)
 		{
 			if (Param1==MKDIR_OK)
 			{
-				auto strDirName = reinterpret_cast<LPCWSTR>(SendDlgMessage(hDlg,DM_GETCONSTTEXTPTR,MKDIR_EDIT,0));
-				Opt.MultiMakeDir = SendDlgMessage(hDlg,DM_GETCHECK,MKDIR_CHECKBOX,0) == BSTATE_CHECKED;
+				auto strDirName = reinterpret_cast<LPCWSTR>(SendDlgMessage(hDlg,DM_GETCONSTTEXTPTR,MKDIR_EDIT));
+				Opt.MultiMakeDir = SendDlgMessage(hDlg,DM_GETCHECK,MKDIR_CHECKBOX) == BSTATE_CHECKED;
 
-				auto pDirList = reinterpret_cast<UserDefinedList*>(SendDlgMessage(hDlg,DM_GETDLGDATA,0,0));
+				auto pDirList = reinterpret_cast<UserDefinedList*>(SendDlgMessage(hDlg,DM_GETDLGDATA));
 
 				bool OK = Opt.MultiMakeDir ? pDirList->Set(strDirName) : pDirList->SetAsIs(strDirName);
 				if (!OK)
