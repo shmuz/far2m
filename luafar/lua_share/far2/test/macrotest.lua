@@ -1209,6 +1209,25 @@ function MT.test_Dlg()
   Keys"Esc"
 end
 
+function MT.test_CtrlF()
+  local fname = "FarEng.lng"
+  local farhome = asrt.str(win.GetEnv("FARHOME"))
+  asrt.istrue(panel.SetPanelDirectory(nil, 1, farhome))
+  asrt.neq(0, Panel.SetPos(0, fname))
+
+  for k=1,2 do
+    asrt.istrue(panel.SetCmdLine(nil, ""))
+    Keys(k==1 and "CtrlF" or "CtrlAltF")
+    asrt.eq(panel.GetCmdLine(), win.JoinPath(farhome,fname).." ")
+  end
+
+  asrt.istrue(panel.SetCmdLine(nil, ""))
+  Keys("CtrlEnter")
+  asrt.eq(panel.GetCmdLine(), win.JoinPath(".",fname).." ")
+
+  asrt.istrue(panel.SetCmdLine(nil, ""))
+end
+
 function MT.test_Plugin()
   -- Plugin.Menu
   asrt.isfalse(Plugin.Menu())
@@ -1452,6 +1471,7 @@ function MT.test_all()
   MT.test_areas()
   MT.test_mf()
   MT.test_CmdLine()
+  MT.test_CtrlF()
   MT.test_Help()
   MT.test_Dlg()
   MT.test_Drv()

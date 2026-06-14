@@ -155,7 +155,7 @@ void FileList::ReadFileNames(int KeepSelection, int IgnoreVisible, int DrawMessa
 			return;
 		}
 	}
-	SortGroupsRead = FALSE;
+	SortGroupsRead = false;
 
 	if (GetFocus())
 		CtrlObject->CmdLine->SetCurDir(strCurDir);
@@ -831,7 +831,7 @@ void FileList::ReadSortGroups(bool UpdateFilterCurrentTime)
 			CtrlObject->HiFiles->UpdateCurrentTime();
 		}
 
-		SortGroupsRead = TRUE;
+		SortGroupsRead = true;
 
 		for (int i = 0; i < FileCount; i++) {
 			ListData[i]->SortGroup = CtrlObject->HiFiles->GetGroup(ListData[i]);

@@ -3831,20 +3831,19 @@ void FileList::CopyNames(bool FullPathName, bool RealName)
 
 FARString &FileList::PluginGetURL(const wchar_t *Name, FARString &strDest)
 {
+	FARString strName(Name);
 	OpenPluginInfo Info = {0};
 	CtrlObject->Plugins.GetOpenPluginInfo(hPlugin, &Info);
 	if (Info.CurURL && Info.CurURL[0]) {
 		strDest = Info.CurURL;
-	} else if (Info.CurDir && Info.CurDir[0]) {
-		strDest = Info.CurDir;
 	} else {
-		//fprintf(stderr, "Both CurDir and CurURL are empty or null\n");
+		strDest = NullToEmpty(Info.CurDir);
 	}
 
 	if (!strDest.IsEmpty())
 		AddEndSlash(strDest);
 
-	strDest += Name;
+	strDest += strName;
 	return strDest;
 }
 

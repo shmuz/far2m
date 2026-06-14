@@ -174,7 +174,7 @@ private:
 
 	bool UpdateRequired;
 	int UpdateRequiredMode, UpdateDisabled;
-	int SortGroupsRead;
+	bool SortGroupsRead;
 	int InternalProcessKey;
 
 	long CacheSelIndex, CacheSelPos;
@@ -187,7 +187,7 @@ private:
 	virtual void SetSelectedFirstMode(int Mode);
 	virtual int GetSelectedFirstMode() { return SelectedFirst; }
 	virtual void DisplayObject();
-	void DeleteListData(FileListItem **(&ListData), int &FileCount);
+	static void DeleteListData(FileListItem **(&ListData), int &FileCount);
 	void Up(int Count);
 	void Down(int Count);
 	void Scroll(int Count);
