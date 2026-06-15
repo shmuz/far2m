@@ -39,7 +39,7 @@ static inline BOOL IsLeapYear(int Year)
 }
 
 
-static void TM2Systemtime(LPSYSTEMTIME lpSystemTime, const struct tm *ptm)
+static void TM2Systemtime(LPSYSTEMTIME lpSystemTime, const struct tm *ptm, int msec = 0)
 {
 	lpSystemTime->wSecond = ptm->tm_sec;
 	lpSystemTime->wMinute = ptm->tm_min;
@@ -48,7 +48,7 @@ static void TM2Systemtime(LPSYSTEMTIME lpSystemTime, const struct tm *ptm)
 	lpSystemTime->wMonth = ptm->tm_mon + 1;
 	lpSystemTime->wYear = ptm->tm_year + 1900;
 	lpSystemTime->wDayOfWeek = ptm->tm_wday;
-	lpSystemTime->wMilliseconds = 0;
+	lpSystemTime->wMilliseconds = msec;
 }
 
 static void Systemtime2TM(const SYSTEMTIME *lpSystemTime, struct tm *ptm)
@@ -60,19 +60,29 @@ static void Systemtime2TM(const SYSTEMTIME *lpSystemTime, struct tm *ptm)
 	ptm->tm_mon = lpSystemTime->wMonth - 1;
 	ptm->tm_year = lpSystemTime->wYear - 1900;
 	ptm->tm_wday = lpSystemTime->wDayOfWeek;
+	ptm->tm_isdst = -1; // prevent garbage data bugs
+	ptm->tm_yday = 0; // incorrect but consistent behavior
 }
 
 
 WINPORT_DECL(GetLocalTime, VOID, (LPSYSTEMTIME lpSystemTime))
 {
-	time_t now = time(NULL);
-	TM2Systemtime(lpSystemTime, localtime(&now));
+	struct timespec ts;
+	clock_gettime(CLOCK_REALTIME, &ts);
+	struct tm tm;
+	localtime_r(&ts.tv_sec, &tm);
+	int ms = ts.tv_nsec / 1000000;
+	TM2Systemtime(lpSystemTime, &tm, ms);
 }
 
 WINPORT_DECL(GetSystemTime, VOID, (LPSYSTEMTIME lpSystemTime))
 {
-	time_t now = time(NULL);
-	TM2Systemtime(lpSystemTime, gmtime(&now));
+	struct timespec ts;
+	clock_gettime(CLOCK_REALTIME, &ts);
+	struct tm tm;
+	gmtime_r(&ts.tv_sec, &tm);
+	int ms = ts.tv_nsec / 1000000;
+	TM2Systemtime(lpSystemTime, &tm, ms);
 }
 
 WINPORT_DECL(FileTime_UnixToWin32, VOID, (struct timespec ts, FILETIME *lpFileTime))

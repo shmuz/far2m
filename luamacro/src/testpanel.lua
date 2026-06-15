@@ -11,11 +11,17 @@ mod.Info = {
 function mod.GetFindData(obj, handle, OpMode)
   if obj.files == nil then
     obj.files = {}
-    local num = tonumber(obj.args:match("^[%w_]+%s+(%d+)")) or 0
+    local num = tonumber(obj.args:match("^%S+%s+(%S+)")) or 0
+    local time = win.SystemTimeToFileTime(win.GetSystemTime())
+    local mode = tonumber("0664", 8)
+
     for k=1,num do
       local name = ("file-%d.txt"):format(k)
       local size = math.random(1000, 9999)
-      obj.files[k] = { FileName=name; FileSize=size; }
+      obj.files[k] = {
+        FileName=name; FileSize=size; UnixMode=mode;
+        CreationTime=time; LastAccessTime=time; LastWriteTime=time;
+      }
     end
   end
   return obj.files
