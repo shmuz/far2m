@@ -831,7 +831,7 @@ int64_t VMenu::VMProcess(int OpCode, void *vParam, int64_t iParam)
 
 					MenuItemEx *_item = GetItemPtr(I);
 
-					if (!ItemIsVisible(_item->Flags))
+					if (!ItemCanHaveFocus(_item->Flags))
 						continue;
 
 					Res = 0;
