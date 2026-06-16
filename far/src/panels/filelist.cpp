@@ -4660,9 +4660,10 @@ const FileListItem *FileList::GetItem(int Index) const
 
 void FileList::ClearAllItem()
 {
-	// удалим пред.значение.
-	for (auto i = PrevDataList.rbegin(); i != PrevDataList.rend(); i++) {
-		DeleteListData((*i)->PrevListData, (*i)->PrevFileCount);    //???
+	for (auto i: PrevDataList) {
+		DeleteListData(i->PrevListData, i->PrevFileCount);
+		delete i;
 	}
+	PrevDataList.clear();
 	SymlinksCache.clear();
 }
