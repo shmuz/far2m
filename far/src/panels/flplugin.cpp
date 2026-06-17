@@ -59,7 +59,7 @@ void FileList::PushPlugin(const wchar_t *HostFile)
 	stItem->strHostFile = HostFile;
 	stItem->strPrevOriginalCurDir = strOriginalCurDir;
 	strOriginalCurDir = strCurDir;
-	stItem->Modified = FALSE;
+	stItem->Modified = false;
 	stItem->PrevViewMode = ViewMode;
 	stItem->PrevSortMode = SortMode;
 	stItem->PrevSortOrder = SortOrder;
@@ -142,12 +142,12 @@ bool FileList::PopPlugin(bool EnableRestoreViewMode)
 	return true;
 }
 
-int FileList::FileNameToPluginItem(const wchar_t *Name, PluginPanelItem *pi)
+bool FileList::FileNameToPluginItem(const wchar_t *Name, PluginPanelItem *pi)
 {
 	FARString strTempDir = Name;
 
 	if (!CutToSlash(strTempDir, true))
-		return FALSE;
+		return false;
 
 	FarChDir(strTempDir);
 	memset(pi, 0, sizeof(*pi));
@@ -155,10 +155,10 @@ int FileList::FileNameToPluginItem(const wchar_t *Name, PluginPanelItem *pi)
 
 	if (apiGetFindDataEx(Name, fdata)) {
 		apiFindDataExToData(&fdata, &pi->FindData);
-		return TRUE;
+		return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 void FileList::FileListToPluginItem(const FileListItem *fi, PluginPanelItem *pi)
@@ -383,7 +383,7 @@ void FileList::PutDizToPlugin(FileList *DestPanel, bool Delete,
 		if (DestPanel->GetModalMode())
 			DestPanel->ReadDiz();
 
-		int DizPresent = FALSE;
+		bool DizPresent = false;
 
 		for (const auto &item: SelItems)
 			if (item.Flags & PPIF_PROCESSDESCR) {
@@ -400,7 +400,7 @@ void FileList::PutDizToPlugin(FileList *DestPanel, bool Delete,
 				}
 
 				if (Code)
-					DizPresent = TRUE;
+					DizPresent = true;
 			}
 
 		if (DizPresent) {
@@ -446,7 +446,7 @@ void FileList::PluginGetFiles(const wchar_t **DestPath, bool Move)
 		if ((Opt.Diz.UpdateMode == DIZ_UPDATE_IF_DISPLAYED && IsDizDisplayed())
 				|| Opt.Diz.UpdateMode == DIZ_UPDATE_ALWAYS) {
 			DizList DestDiz;
-			int DizFound = FALSE;
+			bool DizFound = false;
 
 			for (const auto& item: SelItems)
 				if (item.Flags & PPIF_PROCESSDESCR) {
@@ -454,7 +454,7 @@ void FileList::PluginGetFiles(const wchar_t **DestPath, bool Move)
 						CtrlObject->Cp()->LeftPanel->ReadDiz();
 						CtrlObject->Cp()->RightPanel->ReadDiz();
 						DestDiz.Read(*DestPath);
-						DizFound = TRUE;
+						DizFound = true;
 					}
 
 					FARString strName = item.FindData.lpwszFileName;
@@ -764,7 +764,7 @@ void FileList::ProcessHostFile()
 						Done = ProcessOneHostFile(I);
 
 						if (Done == 1)
-							Select(ListData[I], 0);
+							Select(ListData[I], false);
 						else if (Done == -1)
 							continue;
 						else          // Если ЭТО убрать, то... будем жать ESC до потере пулься
@@ -944,7 +944,7 @@ void FileList::PluginClearSelection(int SelectedItemNumber)
 			}
 
 			if (CurSel == SelectedItemNumber) {
-				Select(ListData[i], FALSE);
+				Select(ListData[i], false);
 				CacheSelClearIndex = SelectedItemNumber;
 				CacheSelClearPos = i;
 				break;
@@ -984,7 +984,7 @@ void FileList::ProcessPluginCommand()
 void FileList::SetPluginModified()
 {
 	if (!PluginsList.empty() && PluginsList.back()) {
-		PluginsList.back()->Modified = TRUE;
+		PluginsList.back()->Modified = true;
 	}
 }
 
@@ -1012,7 +1012,7 @@ void FileList::PluginClearSelection()
 				if (++FileNumber >= FileCount)
 					return;
 
-			Select(ListData[FileNumber++], 0);
+			Select(ListData[FileNumber++], false);
 		}
 	}
 }

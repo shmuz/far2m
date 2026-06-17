@@ -1229,7 +1229,7 @@ int FileList::ProcessKey(FarKey Key)
 				if (Key == KEY_CTRLSHIFTENTER || Key == KEY_CTRLSHIFTNUMENTER) {
 					_MakePath1(Key, strFileName, L" ");
 				} else {
-					int CurrentPath = FALSE;
+					bool CurrentPath = false;
 					assert(CurFile < FileCount);
 					CurPtr = ListData[CurFile];
 
@@ -1245,7 +1245,7 @@ int FileList::ProcessKey(FarKey Key)
 						if (Key != KEY_CTRLALTF)
 							Key = KEY_CTRLF;
 
-						CurrentPath = TRUE;
+						CurrentPath = true;
 					}
 
 					if (Key == KEY_CTRLF || Key == KEY_CTRLALTF) {
@@ -1417,7 +1417,7 @@ int FileList::ProcessKey(FarKey Key)
 			_ALGO(CleverSysLog clv(L"Ctrl-/"));
 			_ALGO(SysLog(L"%ls, FileCount=%d", (PanelMode == PLUGIN_PANEL ? "PluginPanel" : "FilePanel"),
 					FileCount));
-			BOOL NeedChangeDir = TRUE;
+			bool NeedChangeDir = true;
 
 			if (PanelMode == PLUGIN_PANEL)    // && *PluginsList[PluginsListSize-1].HostFile)
 			{
@@ -1427,7 +1427,7 @@ int FileList::ProcessKey(FarKey Key)
 
 				if (!Info.CurDir || !*Info.CurDir) {
 					ChangeDir(L"..");
-					NeedChangeDir = FALSE;
+					NeedChangeDir = false;
 					//"this" мог быть удалён в ChangeDir
 					Panel *ActivePanel = CtrlObject->Cp()->ActivePanel;
 
@@ -1503,7 +1503,7 @@ int FileList::ProcessKey(FarKey Key)
 					(PanelMode == PLUGIN_PANEL ? "PluginPanel" : "FilePanel"), FileCount,
 					_FARKEY_ToName(Key)));
 			OpenPluginInfo Info = {0};
-			BOOL RefreshedPanel = TRUE;
+			bool RefreshedPanel = true;
 
 			if (PanelMode == PLUGIN_PANEL)
 				CtrlObject->Plugins.GetOpenPluginInfo(hPlugin, &Info);
@@ -1514,7 +1514,7 @@ int FileList::ProcessKey(FarKey Key)
 			if ((Key == KEY_SHIFTF4 || FileCount > 0) && SetCurPath()) {
 				int Edit =
 						(Key == KEY_F4 || Key == KEY_ALTF4 || Key == KEY_SHIFTF4 || Key == KEY_CTRLSHIFTF4);
-				BOOL Modaling = FALSE;    ///
+				bool Modaling = false;    ///
 				FARString strPluginData;
 				FARString strFileName;
 				FARString strHostFile = Info.HostFile;
@@ -1525,7 +1525,7 @@ int FileList::ProcessKey(FarKey Key)
 
 				if (PluginMode) {
 					if (Info.Flags & OPIF_REALNAMES)
-						PluginMode = FALSE;
+						PluginMode = false;
 					else
 						strPluginData.Format(L"<%ls:%ls>", (const wchar_t *)strHostFile,
 								(const wchar_t *)strInfoCurDir);
@@ -1557,7 +1557,7 @@ int FileList::ProcessKey(FarKey Key)
 							strFileName = strLastFileName;
 
 							if (IsAbsolutePath(strFileName)) {
-								PluginMode = FALSE;
+								PluginMode = false;
 							}
 
 							size_t pos;
@@ -1648,7 +1648,7 @@ int FileList::ProcessKey(FarKey Key)
 				}
 
 				if (!strFileName.IsEmpty()) {
-					BOOL Processed = FALSE;
+					bool Processed = false;
 
 					if (Edit) {
 						int EnableExternal =
@@ -1660,16 +1660,16 @@ int FileList::ProcessKey(FarKey Key)
 						if (Key == KEY_ALTF4
 								&& ProcessLocalFileTypes(strFileName, FILETYPE_ALTEDIT, !PluginMode,
 										strCurDir))
-							Processed = TRUE;
+							Processed = true;
 
 						else if (Key == KEY_F4
 								&& ProcessLocalFileTypes(strFileName, FILETYPE_EDIT, !PluginMode, strCurDir))
-							Processed = TRUE;
+							Processed = true;
 
 						if (!Processed || Key == KEY_CTRLSHIFTF4) {
 							if (EnableExternal) {
 								ProcessExternal(Opt.strExternalEditor, strFileName, !PluginMode, strCurDir);
-								Processed = TRUE;
+								Processed = true;
 							} else {
 								FileEditor *ShellEditor = PluginMode
 										? new (std::nothrow) FileEditor(strFileName, codepage,
@@ -1713,16 +1713,16 @@ int FileList::ProcessKey(FarKey Key)
 						if (Key == KEY_ALTF3
 								&& ProcessLocalFileTypes(strFileName, FILETYPE_ALTVIEW, !PluginMode,
 										strCurDir))
-							Processed = TRUE;
+							Processed = true;
 
 						else if (Key == KEY_F3
 								&& ProcessLocalFileTypes(strFileName, FILETYPE_VIEW, !PluginMode, strCurDir))
-							Processed = TRUE;
+							Processed = true;
 
 						if (!Processed || Key == KEY_CTRLSHIFTF3) {
 							if (EnableExternal) {
 								ProcessExternal(Opt.strExternalViewer, strFileName, !PluginMode, strCurDir);
-								Processed = TRUE;
+								Processed = true;
 							} else {
 								NamesList ViewList;
 
@@ -1746,7 +1746,7 @@ int FileList::ProcessKey(FarKey Key)
 									}
 								}
 
-								Modaling = FALSE;
+								Modaling = false;
 							}
 						}
 					}
@@ -1761,7 +1761,7 @@ int FileList::ProcessKey(FarKey Key)
 					if (TFH->PutCode != -1) {
 						SetPluginModified();
 					} else {
-						RefreshedPanel = FALSE;
+						RefreshedPanel = false;
 					}
 				}
 
@@ -2293,12 +2293,12 @@ void FileList::ProcessEnter(bool EnableExec, bool SeparateWindow, bool EnableAss
 	FARString strFileName = CurPtr->strName;
 
 	if (CurPtr->FileAttr & FILE_ATTRIBUTE_DIRECTORY) {
-		BOOL IsRealName = FALSE;
+		bool IsRealName = false;
 
 		if (PanelMode == PLUGIN_PANEL) {
 			OpenPluginInfo Info;
 			CtrlObject->Plugins.GetOpenPluginInfo(hPlugin, &Info);
-			IsRealName = Info.Flags & OPIF_REALNAMES;
+			IsRealName = (Info.Flags & OPIF_REALNAMES) != 0;
 		}
 
 		// Shift-Enter на каталоге вызывает проводник
@@ -2898,14 +2898,19 @@ void FileList::MoveToMouse(MOUSE_EVENT_RECORD *MouseEvent)
 	/* $ 11.09.2000 SVS
 	   Bug #17: Проверим на ПОЛНОСТЬЮ пустую колонку.
 	*/
-	if (Opt.PanelRightClickRule == 1)
-		IsEmpty = ((CurColumn - 1) * Height > FileCount);
-	else if (Opt.PanelRightClickRule == 2 && (MouseEvent->dwButtonState & RIGHTMOST_BUTTON_PRESSED)
-			&& ((CurColumn - 1) * Height > FileCount)) {
+	if (Opt.PanelRightClickRule == 1) {
+		IsEmpty = (CurColumn - 1) * Height > FileCount;
+	}
+	else if (Opt.PanelRightClickRule == 2
+			&& (MouseEvent->dwButtonState & RIGHTMOST_BUTTON_PRESSED)
+			&& ((CurColumn - 1) * Height > FileCount))
+	{
 		CurFile = OldCurFile;
-		IsEmpty = TRUE;
-	} else
-		IsEmpty = FALSE;
+		IsEmpty = true;
+	}
+	else {
+		IsEmpty = false;
+	}
 }
 
 void FileList::SetViewMode(int ViewMode)
@@ -2914,19 +2919,22 @@ void FileList::SetViewMode(int ViewMode)
 		ViewMode = VIEW_0;
 
 	bool CurFullScreen = IsFullScreen();
-	int OldOwner = IsColumnDisplayed(OWNER_COLUMN);
-	int OldGroup = IsColumnDisplayed(GROUP_COLUMN);
-	int OldPhysical = IsColumnDisplayed(PHYSICAL_COLUMN);
-	int OldNumLink = IsColumnDisplayed(NUMLINK_COLUMN);
-	int OldDiz = IsColumnDisplayed(DIZ_COLUMN);
+	bool OldOwner = IsColumnDisplayed(OWNER_COLUMN);
+	bool OldGroup = IsColumnDisplayed(GROUP_COLUMN);
+	bool OldPhysical = IsColumnDisplayed(PHYSICAL_COLUMN);
+	bool OldNumLink = IsColumnDisplayed(NUMLINK_COLUMN);
+	bool OldDiz = IsColumnDisplayed(DIZ_COLUMN);
+
 	PrepareViewSettings(ViewMode, nullptr);
-	int NewOwner = IsColumnDisplayed(OWNER_COLUMN);
-	int NewGroup = IsColumnDisplayed(GROUP_COLUMN);
-	int NewPhysical = IsColumnDisplayed(PHYSICAL_COLUMN);
-	int NewNumLink = IsColumnDisplayed(NUMLINK_COLUMN);
-	int NewDiz = IsColumnDisplayed(DIZ_COLUMN);
-	int NewAccessTime = IsColumnDisplayed(ADATE_COLUMN);
-	int ResortRequired = FALSE;
+
+	bool NewOwner = IsColumnDisplayed(OWNER_COLUMN);
+	bool NewGroup = IsColumnDisplayed(GROUP_COLUMN);
+	bool NewPhysical = IsColumnDisplayed(PHYSICAL_COLUMN);
+	bool NewNumLink = IsColumnDisplayed(NUMLINK_COLUMN);
+	bool NewDiz = IsColumnDisplayed(DIZ_COLUMN);
+	bool NewAccessTime = IsColumnDisplayed(ADATE_COLUMN);
+
+	bool ResortRequired = false;
 
 	if (FileCount > 0 && PanelMode != PLUGIN_PANEL
 			&& ((!OldOwner && NewOwner) || (!OldGroup && NewGroup) || (!OldPhysical && NewPhysical)
@@ -3353,12 +3361,12 @@ long FileList::SelectFiles(int Mode, const wchar_t *Mask)
 	if (CurFile >= FileCount)
 		return 0;
 
-	int RawSelection = FALSE;
+	bool RawSelection = false;
 
 	if (PanelMode == PLUGIN_PANEL) {
 		OpenPluginInfo Info;
 		CtrlObject->Plugins.GetOpenPluginInfo(hPlugin, &Info);
-		RawSelection = (Info.Flags & OPIF_RAWSELECTION);
+		RawSelection = (Info.Flags & OPIF_RAWSELECTION) != 0;
 	}
 
 	CurPtr = ListData[CurFile];
@@ -3465,10 +3473,10 @@ long FileList::SelectFiles(int Mode, const wchar_t *Mask)
 		bool Selection = false;
 		for (int I = 0; I < FileCount; I++) {
 			CurPtr = ListData[I];
-			int Match = FALSE;
+			bool Match = false;
 
 			if (Mode == SELECT_INVERT || Mode == SELECT_INVERTALL)
-				Match = TRUE;
+				Match = true;
 			else {
 				if (bUseFilter)
 					Match = Filter.FileInFilter(*CurPtr);
@@ -3572,7 +3580,7 @@ void FileList::CompareDir()
 	Another->ClearSelection();
 	FARString strTempName1, strTempName2;
 	const wchar_t *PtrTempName1, *PtrTempName2;
-	// BOOL OpifRealnames1=FALSE, OpifRealnames2=FALSE;
+	// bool OpifRealnames1=false, OpifRealnames2=false;
 
 	// помечаем ВСЕ, кроме каталогов на активной панели
 	for (int I = 0; I < FileCount; I++) {
@@ -3586,14 +3594,14 @@ void FileList::CompareDir()
 			Another->Select(Another->ListData[J], true);
 	}
 
-	int CompareFatTime = FALSE;
+	bool CompareFatTime = false;
 
 	if (PanelMode == PLUGIN_PANEL) {
 		OpenPluginInfo Info;
 		CtrlObject->Plugins.GetOpenPluginInfo(hPlugin, &Info);
 
 		if (Info.Flags & OPIF_COMPAREFATTIME)
-			CompareFatTime = TRUE;
+			CompareFatTime = true;
 
 		// OpifRealnames1=Info.Flags & OPIF_REALNAMES;
 	}
@@ -3603,7 +3611,7 @@ void FileList::CompareDir()
 		CtrlObject->Plugins.GetOpenPluginInfo(Another->hPlugin, &Info);
 
 		if (Info.Flags & OPIF_COMPAREFATTIME)
-			CompareFatTime = TRUE;
+			CompareFatTime = true;
 
 		// OpifRealnames2=Info.Flags & OPIF_REALNAMES;
 	}

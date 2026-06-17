@@ -112,7 +112,7 @@ struct PluginsListItem
 	FARString strHostFile;
 	FARString strPrevOriginalCurDir;
 	std::map<FARString, FARString> Dir2CursorFile;
-	int Modified;
+	bool Modified;
 	int PrevViewMode;
 	int PrevSortMode;
 	int PrevSortOrder;
@@ -169,7 +169,7 @@ private:
 	int ShiftSelection;
 	int MouseSelection;
 	int SelectedFirst;
-	int IsEmpty;    // указывает на полностью пустую колонку
+	bool IsEmpty;    // указывает на полностью пустую колонку
 	bool AccessTimeUpdateRequired;
 
 	bool UpdateRequired;
@@ -193,14 +193,14 @@ private:
 	void Scroll(int Count);
 	void CorrectPosition();
 	void ShowFileList(bool Fast);
-	void ShowList(int ShowStatus, int StartColumn, OpenPluginInfo &Info);
+	void ShowList(bool ShowStatus, int StartColumn, OpenPluginInfo &Info);
 	void SetShowColor(int Position, int ColorType = HIGHLIGHTCOLORTYPE_FILE);
 	DWORD64 GetShowColor(int Position, int ColorType);
 	void ShowSelectedSize();
 	void ShowTotalSize(OpenPluginInfo &Info);
 	bool ResolveSymlink(FARString &target_path, const wchar_t *link_name, FileListItem *fi);
-	int ConvertName(FARString &strDest, const wchar_t *SrcName, int MaxLength, int RightAlign, int ShowStatus,
-			DWORD dwFileAttr, FileListItem *fi);
+	int ConvertName(FARString &strDest, const wchar_t *SrcName, int MaxLength, bool RightAlign,
+			bool ShowStatus, DWORD dwFileAttr, FileListItem *fi);
 
 	void Select(FileListItem *SelPtr, bool Selection);
 	long SelectFiles(int Mode, const wchar_t *Mask = nullptr);
@@ -369,7 +369,7 @@ public:
 	static void SetFilePanelModes();
 	static void SavePanelModes(ConfigWriter &cfg_writer);
 	static void ReadPanelModes(ConfigReader &cfg_reader);
-	static int FileNameToPluginItem(const wchar_t *Name, PluginPanelItem *pi);
+	static bool FileNameToPluginItem(const wchar_t *Name, PluginPanelItem *pi);
 	static void FileListToPluginItem(const FileListItem *fi, PluginPanelItem *pi);
 	static void FreePluginPanelItem(PluginPanelItem *pi);
 	static size_t FileListToPluginItem2(const FileListItem *fi, PluginPanelItem *pi);

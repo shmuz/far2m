@@ -483,15 +483,9 @@ static void ProcessCommandLine(CommandLineParams &Params, int argc, char **argv)
 		Opt.LoadPlug.PluginsPersonal = false;
 		Opt.LoadPlug.PluginsCacheOnly = false;
 	}
-	else if (Opt.LoadPlug.PluginsCacheOnly) {
-		Opt.LoadPlug.MainPluginDir = false;
-		Opt.LoadPlug.PluginsPersonal = false;
-		Opt.LoadPlug.PluginsCacheOnly = true;
-	}
 	else {
-		Opt.LoadPlug.MainPluginDir = true; // По умолчанию - брать плагины из основного каталога
-		Opt.LoadPlug.PluginsPersonal = true;
-		Opt.LoadPlug.PluginsCacheOnly = false;
+		Opt.LoadPlug.MainPluginDir = !Opt.LoadPlug.PluginsCacheOnly;
+		Opt.LoadPlug.PluginsPersonal = !Opt.LoadPlug.PluginsCacheOnly;
 	}
 }
 
@@ -605,7 +599,9 @@ static int libexec(const char *lib, const char *cd, const char *symbol, int argc
 {
 	void *dl = dlopen(lib, RTLD_LOCAL|RTLD_LAZY);
 	if (!dl) {
-		fprintf(stderr, "libexec('%s', '%s', %d) - %s\n", lib, symbol, argc, dlerror());
+		const char* msg = dlerror();
+		if (!msg) msg = "dlopen error";
+		fprintf(stderr, "libexec('%s', '%s', %d) - %s\n", lib, symbol, argc, msg);
 		return -1;
 	}
 

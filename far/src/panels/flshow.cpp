@@ -331,10 +331,10 @@ void FileList::ShowFileList(bool Fast)
 	FARString strTitle;
 	GetTitle(strTitle, TruncSize, 2);    //,(PanelMode==PLUGIN_PANEL?0:2));
 	int Cells = (int)strTitle.CellsCount();
-	int ClockCorrection = FALSE;
+	bool ClockCorrection = false;
 
 	if ((Opt.Clock && !Opt.ShowMenuBar) && TitleX2 == ScrX - 4) {
-		ClockCorrection = TRUE;
+		ClockCorrection = true;
 		TitleX2+= 4;
 	}
 
@@ -564,8 +564,8 @@ bool FileList::ResolveSymlink(FARString &target_path, const wchar_t *link_name, 
 	return true;
 }
 
-int FileList::ConvertName(FARString &strDest, const wchar_t *SrcName, int MaxLength, int RightAlign,
-		int ShowStatus, DWORD FileAttr, FileListItem *fi)
+int FileList::ConvertName(FARString &strDest, const wchar_t *SrcName, int MaxLength, bool RightAlign,
+		bool ShowStatus, DWORD FileAttr, FileListItem *fi)
 {
 	if (ShowStatus && (FileAttr & FILE_ATTRIBUTE_REPARSE_POINT) != 0) {
 		FARString strTemp;
@@ -871,9 +871,9 @@ static int MakeCurLeftPos(int ColumnWidth, const wchar_t *Str, int LeftPos, int 
 	return out;
 }
 
-void FileList::ShowList(int ShowStatus, int StartColumn, OpenPluginInfo &Info)
+void FileList::ShowList(bool ShowStatus, int StartColumn, OpenPluginInfo &Info)
 {
-	int StatusShown = FALSE;
+	bool StatusShown = false;
 	int MaxLeftPos = 0, MinLeftPos = FALSE;
 	size_t ColumnCount = ShowStatus ? ViewSettings.StatusColumns.size() : ViewSettings.PanelColumns.size();
 
@@ -888,7 +888,7 @@ void FileList::ShowList(int ShowStatus, int StartColumn, OpenPluginInfo &Info)
 			GotoXY(X1 + 1, I);
 		}
 
-		int StatusLine = FALSE;
+		bool StatusLine = false;
 		int Level = 1;
 
 		for (size_t K = 0; K < ColumnCount; K++) {
@@ -899,12 +899,12 @@ void FileList::ShowList(int ShowStatus, int StartColumn, OpenPluginInfo &Info)
 					CurColumn++;
 					continue;
 				} else
-					StatusLine = TRUE;
+					StatusLine = true;
 			}
 
 			int CurX = WhereX();
 			int CurY = WhereY();
-			int ShowDivider = TRUE;
+			bool ShowDivider = true;
 			auto &Columns = ShowStatus ? ViewSettings.StatusColumns : ViewSettings.PanelColumns;
 			int ColumnType = Columns[K].Type & 0xff;
 			int ColumnWidth = Columns[K].Width;
@@ -922,7 +922,7 @@ void FileList::ShowList(int ShowStatus, int StartColumn, OpenPluginInfo &Info)
 				if (!ShowStatus && !StatusShown && CurFile == ListPos && Opt.ShowPanelStatus) {
 					ShowList(TRUE, CurColumn, Info);
 					GotoXY(CurX, CurY);
-					StatusShown = TRUE;
+					StatusShown = true;
 					SetShowColor(ListPos);
 				}
 
@@ -1016,8 +1016,8 @@ void FileList::ShowList(int ShowStatus, int StartColumn, OpenPluginInfo &Info)
 							}
 
 							int CurLeftPos = 0;
-							int RightAlign = (ViewFlags & COLUMN_RIGHTALIGN);
-							int LeftBracket = FALSE, RightBracket = FALSE;
+							bool RightAlign = (ViewFlags & COLUMN_RIGHTALIGN) != 0;
+							bool LeftBracket = false, RightBracket = false;
 
 							if (!ShowStatus && LeftPos) {
 								if (LeftPos > 0 && !RightAlign) {
@@ -1030,11 +1030,11 @@ void FileList::ShowList(int ShowStatus, int StartColumn, OpenPluginInfo &Info)
 										if (Cells + CurRightPos < Width)
 											CurRightPos = Width - Cells;
 										else
-											RightBracket = TRUE;
+											RightBracket = true;
 
 										size_t ng = Cells + CurRightPos - Width;
 										NamePtr += StrSizeOfCells(NamePtr, wcslen(NamePtr), ng, false);
-										RightAlign = FALSE;
+										RightAlign = false;
 
 										if (MinLeftPos > CurRightPos)
 											MinLeftPos = CurRightPos;
@@ -1046,14 +1046,14 @@ void FileList::ShowList(int ShowStatus, int StartColumn, OpenPluginInfo &Info)
 							int TooLong = ConvertName(strName, NamePtr, Width, RightAlign, ShowStatus,
 									ListData[ListPos]->FileAttr, ListData[ListPos]);
 							if (CurLeftPos)
-								LeftBracket = TRUE;
+								LeftBracket = true;
 
 							if (TooLong) {
 								if (RightAlign)
-									LeftBracket = TRUE;
+									LeftBracket = true;
 
 								if (!RightAlign && StrLength(NamePtr) > Width)
-									RightBracket = TRUE;
+									RightBracket = true;
 							}
 
 							if (!ShowStatus) {
@@ -1092,7 +1092,7 @@ void FileList::ShowList(int ShowStatus, int StartColumn, OpenPluginInfo &Info)
 
 									GotoXY(NameX, CurY);
 									Text(closeBracket);
-									ShowDivider = FALSE;
+									ShowDivider = false;
 
 									if (Level == ColumnsInGlobal)
 										SetFarColor(COL_PANELTEXT);
@@ -1233,7 +1233,7 @@ void FileList::ShowList(int ShowStatus, int StartColumn, OpenPluginInfo &Info)
 				FS << fmt::Cells() << fmt::Expand(ColumnWidth) << L"";
 			}
 
-			if (ShowDivider == FALSE)
+			if (!ShowDivider)
 				GotoXY(CurX + ColumnWidth + 1, CurY);
 			else {
 				if (!ShowStatus) {

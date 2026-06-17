@@ -734,7 +734,7 @@ int UserMenu::ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar
 		int OldCmdLineLeftPos = CtrlObject->CmdLine->GetLeftPos();
 		int OldCmdLineSelStart, OldCmdLineSelEnd;
 		CtrlObject->CmdLine->GetSelection(OldCmdLineSelStart, OldCmdLineSelEnd);
-		CtrlObject->CmdLine->LockUpdatePanel(TRUE);
+		CtrlObject->CmdLine->LockUpdatePanel(true);
 
 		// Цикл исполнения команд меню (CommandX)
 		for (;;) {
@@ -795,7 +795,7 @@ int UserMenu::ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar
 			CurLine++;
 		}    // for (;;)
 
-		CtrlObject->CmdLine->LockUpdatePanel(FALSE);
+		CtrlObject->CmdLine->LockUpdatePanel(false);
 
 		if (!strOldCmdLine.IsEmpty())    // восстановим сохраненную командную строку
 		{

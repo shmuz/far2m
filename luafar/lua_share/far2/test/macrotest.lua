@@ -1114,7 +1114,7 @@ local function test_CheckAndGetHotKey()
   Keys("Esc")
 end
 
-function MT.test_Menu()
+local function test_Menu_F11()
   Keys("F11")
   asrt.str(Menu.Value)
   asrt.eq (Menu.Value, Menu.GetValue())
@@ -1130,12 +1130,31 @@ function MT.test_Menu()
   asrt.eq(1, Menu.Filter(0))     -- get status
   asrt.eq(1, Menu.Filter(0, 0))  -- turn filter off
   asrt.eq(0, Menu.Filter(0))     -- get status
+  Keys("Esc")
+end
 
+local function test_Menu_Mantis_2343()
+  -- Pos = Menu.Select(S [,Mode [,Dir]])
+  asrt.istrue(Area.Shell)
+  mf.postmacro(
+    function()
+      asrt.istrue(Area.Menu)
+      asrt.eq(0, Menu.Select("333", 3))
+      Keys("Esc")
+    end)
+  Menu.Show("[111]\n[222]\n\3 [333]\n[444]")
+  asrt.istrue(Area.Shell)
+end
+
+function MT.test_Menu()
+  asrt.func(Menu.Filter)
   asrt.func(Menu.FilterStr)
+  asrt.func(Menu.ItemStatus)
   asrt.func(Menu.Select)
   asrt.func(Menu.Show)
 
-  Keys("Esc")
+  test_Menu_F11()
+  test_Menu_Mantis_2343()
 end
 
 function MT.test_Object()
