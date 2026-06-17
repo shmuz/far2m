@@ -58,7 +58,7 @@ FolderTree::FolderTree(FARString &strResultFolder,int iModalMode,bool IsStandalo
 	IsStandalone(IsStandalone)
 {
 	SetDynamicallyBorn(false);
-	SetRestoreScreenMode(TRUE);
+	SetRestoreScreenMode(true);
 	if (ModalMode != MODALTREE_FREE)
 		strResultFolder.Clear();
 	KeyBarVisible = TRUE;  // Заставим обновлятся кейбар
@@ -75,7 +75,7 @@ FolderTree::FolderTree(FARString &strResultFolder,int iModalMode,bool IsStandalo
 		if (ModalMode == MODALTREE_FREE)
 			Tree->SetRootDir(strResultFolder);
 
-		Tree->SetVisible(TRUE);
+		Tree->SetVisible(true);
 		Tree->Update(0);
 
 		// если было прерывание в процессе сканирования и это было дерево копира...

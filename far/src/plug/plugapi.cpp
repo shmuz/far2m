@@ -819,10 +819,10 @@ static int FarMenuFnSynched(INT_PTR PluginNumber, const GUID *Id, int X, int Y, 
 
 		// флаги меню, с забитым контентом
 		if (Flags & FMENU_AUTOHIGHLIGHT)
-			FarMenu.AssignHighlights(FALSE);
+			FarMenu.AssignHighlights(false);
 
 		if (Flags & FMENU_REVERSEAUTOHIGHLIGHT)
-			FarMenu.AssignHighlights(TRUE);
+			FarMenu.AssignHighlights(true);
 
 		if (Id)
 			FarMenu.SetId(*Id);

@@ -241,7 +241,7 @@ int Select(int HelpLanguage, VMenu **MenuPtr)
 		LangMenu->SetUserData(it->first.CPtr(), 0, LangMenu->AddItem(&LangMenuItem));
 	}
 
-	LangMenu->AssignHighlights(FALSE);
+	LangMenu->AssignHighlights(false);
 	LangMenu->Process();
 
 	if (LangMenu->Modal::GetExitCode() < 0)

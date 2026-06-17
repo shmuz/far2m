@@ -306,7 +306,7 @@ private:
 
 	FARString HelpTopic;
 
-	volatile int DropDownOpened;	// Содержит статус комбобокса и хистори: TRUE - открыт, FALSE - закрыт.
+	volatile bool DropDownOpened;	// Содержит статус комбобокса и хистори: TRUE - открыт, FALSE - закрыт.
 
 	CriticalSection CS;
 
@@ -332,7 +332,7 @@ private:
 	*/
 	void ChangeFocus2(unsigned SetFocusPos);
 
-	unsigned ChangeFocus(unsigned FocusPos, int Step, int SkipGroup);
+	unsigned ChangeFocus(unsigned FocusPos, int Step, bool SkipGroup);
 	bool SelectFromEditHistory(DialogItemEx *CurItem, DlgEdit *EditLine, const wchar_t *HistoryName,
 			FARString &strStr);
 	int SelectFromComboBox(DialogItemEx *CurItem, DlgEdit *EditLine, VMenu *List);
@@ -340,7 +340,7 @@ private:
 
 	void ProcessLastHistory(DialogItemEx *CurItem, int MsgIndex);	// обработка DIF_USELASTHISTORY
 
-	int ProcessHighlighting(FarKey Key, unsigned FocusPos, int Translate);
+	int ProcessHighlighting(FarKey Key, unsigned FocusPos, bool Translate);
 	int CheckHighlights(WORD Chr, int StartPos = 0);
 
 	void SelectOnEntry(unsigned Pos, bool Selected);
@@ -359,8 +359,8 @@ private:
 		+ Функции программного открытия/закрытия комбобокса и хистори
 		и получения статуса открытости/закрытости комбобокса и хистори.
 	*/
-	void SetDropDownOpened(int Status) { DropDownOpened = Status; }
-	int GetDropDownOpened() { return DropDownOpened; }
+	void SetDropDownOpened(bool Status) { DropDownOpened = Status; }
+	bool GetDropDownOpened() { return DropDownOpened; }
 
 	void ProcessCenterGroup();
 	unsigned ProcessRadioButton(unsigned);
@@ -470,7 +470,7 @@ LONG_PTR WINAPI SendDlgMessage(HANDLE hDlg, int Msg, int Param1 = 0, LONG_PTR Pa
 
 LONG_PTR WINAPI DefDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2);
 
-bool IsKeyHighlighted(const wchar_t *Str, FarKey Key, int Translate, int AmpPos = -1);
+bool IsKeyHighlighted(const wchar_t *Str, FarKey Key, bool Translate, int AmpPos = -1);
 
 void DataToItemEx(const DialogDataEx *Data, DialogItemEx *Item, int Count);
 

@@ -1405,7 +1405,7 @@ void Panel::Show()
 
 		if (AnotherPanel->GetFocus()) {
 			if (AnotherPanel->IsFullScreen()) {
-				SetVisible(TRUE);
+				SetVisible(true);
 				return;
 			}
 

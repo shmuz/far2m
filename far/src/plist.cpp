@@ -68,7 +68,7 @@ void ShowProcessList()
 //	if (!EnumWindows(EnumWindowsProc,(LPARAM)&ProcList))
 //		return;
 
-	ProcList.AssignHighlights(FALSE);
+	ProcList.AssignHighlights(false);
 	ProcList.SetBottomTitle(Msg::ProcessListBottom);
 	ProcList.Show();
 

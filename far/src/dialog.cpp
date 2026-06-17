@@ -139,7 +139,7 @@ static inline bool IsItemVerticalSeparator(const struct DialogItemEx* item)
 		(item->Type == DI_VTEXT && (item->Flags & (DIF_SEPARATOR | DIF_SEPARATOR2 | DIF_SEPARATORUSER))));
 }
 
-bool IsKeyHighlighted(const wchar_t *Str, FarKey Key, int Translate, int AmpPos)
+bool IsKeyHighlighted(const wchar_t *Str, FarKey Key, bool Translate, int AmpPos)
 {
 	if (AmpPos == -1) {
 		if (!(Str = wcschr(Str, L'&')))
@@ -459,7 +459,7 @@ void Dialog::Init(FARWINDOWPROC DlgProc,	// Диалоговая процеду�
 	PluginNumber = -1;
 	Dialog::DataDialog = InitParam;
 	DialogMode.Set(DMODE_ISCANMOVE);
-	SetDropDownOpened(FALSE);
+	SetDropDownOpened(false);
 	IsEnableRedraw = 1;
 	InCtlColorDlgItem = 0;
 	FocusPos = (unsigned)-1;
@@ -830,7 +830,7 @@ unsigned Dialog::InitDialogObjects(unsigned ID)
 				ListPtr->ChangeFlags(VMENU_AUTOHIGHLIGHT, ItemFlags & DIF_LISTAUTOHIGHLIGHT);
 
 				if (ItemFlags & DIF_LISTAUTOHIGHLIGHT)
-					ListPtr->AssignHighlights(FALSE);
+					ListPtr->AssignHighlights(false);
 
 				ListPtr->SetDialogStyle(DialogMode.Check(DMODE_WARNINGSTYLE));
 				ListPtr->SetPosition(X1 + CurItem->X1, Y1 + CurItem->Y1, X1 + CurItem->X2, Y1 + CurItem->Y2);
@@ -892,7 +892,7 @@ unsigned Dialog::InitDialogObjects(unsigned ID)
 					ListPtr->ChangeFlags(VMENU_AUTOHIGHLIGHT, ItemFlags & DIF_LISTAUTOHIGHLIGHT);
 
 					if (ItemFlags & DIF_LISTAUTOHIGHLIGHT)
-						ListPtr->AssignHighlights(FALSE);
+						ListPtr->AssignHighlights(false);
 
 					if (CurItem->ListItems && !DialogMode.Check(DMODE_CREATEOBJECTS))
 						ListPtr->AddItem(CurItem->ListItems);
@@ -923,7 +923,7 @@ unsigned Dialog::InitDialogObjects(unsigned ID)
 			);
 			*/
 			if (CurItem->Type == DI_PSWEDIT) {
-				DialogEdit->SetPasswordMode(TRUE);
+				DialogEdit->SetPasswordMode(true);
 				// ...Что бы небыло повадно... и для повыщения защиты, т.с.
 				ItemFlags&= ~DIF_HISTORY;
 			}
@@ -2143,7 +2143,7 @@ void Dialog::ShowDialog(int ID)
 				if (CurItem->Flags & DIF_SHOWAMPERSAND)
 					VText(strStr);
 				else
-					HiText(strStr, ItemColor[1], TRUE);
+					HiText(strStr, ItemColor[1], true);
 
 				break;
 			}
@@ -2900,7 +2900,8 @@ int Dialog::ProcessKey(FarKey Key)
 
 				ShowDialog();
 				return TRUE;
-			} else if (Item[FocusPos]->Type == DI_BUTTON) {
+			}
+			else if (Item[FocusPos]->Type == DI_BUTTON) {
 				Item[FocusPos]->Selected = 1;
 
 				// сообщение - "Кнокна кликнута"
@@ -2913,7 +2914,8 @@ int Dialog::ProcessKey(FarKey Key)
 				ExitCode = FocusPos;
 				CloseDialog();
 				return TRUE;
-			} else {
+			}
+			else {
 				ExitCode = -1;
 
 				for (I = 0; I < ItemCount; I++) {
@@ -3008,23 +3010,7 @@ int Dialog::ProcessKey(FarKey Key)
 				return TRUE;
 			}
 			return ProcessOpenComboBox(Item[FocusPos]->Type, Item[FocusPos], FocusPos);
-			// ЭТО перед default предпоследний!!!
 
-		case KEY_END:
-		case KEY_NUMPAD1:
-
-			if (Item[FocusPos]->Type == DI_USERCONTROL)		// для user-типа вываливаем
-				return TRUE;
-
-			if (FarIsEdit(Item[FocusPos]->Type)) {
-				((DlgEdit *)(Item[FocusPos]->ObjPtr))->ProcessKey(Key);
-				return TRUE;
-			}
-
-			[[fallthrough]];
-
-			// ???
-			// ЭТО перед default последний!!!
 		case KEY_F5:
 			if (Item[FocusPos]->Type == DI_MEMOEDIT) {
 				((DlgEdit *)(Item[FocusPos]->ObjPtr))->ToggleShowWhiteSpace();
@@ -3033,9 +3019,27 @@ int Dialog::ProcessKey(FarKey Key)
 			}
 			break;
 
+		case KEY_F11:
+			if (!CheckDialogMode(DMODE_NOPLUGINS)) {
+				return FrameManager->ProcessKey(Key);
+			}
+			break;
+
+		// ЭТО перед default предпоследний!!!
+		case KEY_END:
+		case KEY_NUMPAD1:
+			if (Item[FocusPos]->Type == DI_USERCONTROL)		// для user-типа вываливаем
+				return TRUE;
+
+			if (FarIsEdit(Item[FocusPos]->Type)) {
+				((DlgEdit *)(Item[FocusPos]->ObjPtr))->ProcessKey(Key);
+				return TRUE;
+			}
+			[[fallthrough]];
+
+		// ЭТО перед default последний!!!
 		case KEY_PGDN:
 		case KEY_NUMPAD3:
-
 			if (Item[FocusPos]->Type == DI_USERCONTROL)		// для user-типа вываливаем
 				return TRUE;
 
@@ -3044,28 +3048,21 @@ int Dialog::ProcessKey(FarKey Key)
 				return TRUE;
 			}
 
-			if (!(Item[FocusPos]->Flags & DIF_EDITOR)) {
-				for (I = 0; I < ItemCount; I++)
+			if (Item[FocusPos]->Flags & DIF_EDITOR)
+				{} // для DIF_EDITOR будет обработано ниже [[fallthrough]]
+			else {
+				for (I = 0; I < ItemCount; I++) {
 					if (Item[I]->DefaultButton) {
 						ChangeFocus2(I);
 						ShowDialog();
 						return TRUE;
 					}
-
+				}
 				return TRUE;
 			}
-			break;
+			[[fallthrough]];
 
-		case KEY_F11: {
-			if (!CheckDialogMode(DMODE_NOPLUGINS)) {
-				return FrameManager->ProcessKey(Key);
-			}
-		} break;
-
-			// для DIF_EDITOR будет обработано ниже
 		default: {
-			//				if(Item[FocusPos].Type == DI_USERCONTROL) // для user-типа вываливаем
-			//					return TRUE;
 			if (Item[FocusPos]->Type == DI_LISTBOX) {
 				VMenu *List = Item[FocusPos]->ListPtr;
 				int CurListPos = List->GetSelectPos();
@@ -3091,10 +3088,12 @@ int Dialog::ProcessKey(FarKey Key)
 
 				if (Key == KEY_CTRLL) { // исключим смену режима RO для поля ввода с клавиатуры
 					return TRUE;
-				} else if (Key == KEY_CTRLA || Key == KEY_CTRLU) {
+				}
+				else if (Key == KEY_CTRLA || Key == KEY_CTRLU) {
 					edt->ProcessKey(Key);
 					return TRUE;
-				} else if ((Item[FocusPos]->Flags & DIF_EDITOR) && !(Item[FocusPos]->Flags & DIF_READONLY)) {
+				}
+				else if ((Item[FocusPos]->Flags & DIF_EDITOR) && !(Item[FocusPos]->Flags & DIF_READONLY)) {
 					switch (Key) {
 						case KEY_BS: {
 							int CurPos = edt->GetCurPos();
@@ -3137,6 +3136,7 @@ int Dialog::ProcessKey(FarKey Key)
 							ShowDialog();
 							return TRUE;
 						}
+
 						case KEY_CTRLY: {
 							for (I = FocusPos; I < ItemCount; I++)
 								if (Item[I]->Flags & DIF_EDITOR) {
@@ -3152,6 +3152,7 @@ int Dialog::ProcessKey(FarKey Key)
 							ShowDialog();
 							return TRUE;
 						}
+
 						case KEY_NUMDEL:
 						case KEY_DEL: {
 							/*
@@ -3200,17 +3201,19 @@ int Dialog::ProcessKey(FarKey Key)
 
 							break;
 						}
+
 						case KEY_PGDN:
 						case KEY_NUMPAD3:
 						case KEY_PGUP:
 						case KEY_NUMPAD9: {
+							int Step = (Key == KEY_PGUP || Key == KEY_NUMPAD9) ? -1 : 1;
 							I = FocusPos;
 
 							while (Item[I]->Flags & DIF_EDITOR)
-								I = ChangeFocus(I, (Key == KEY_PGUP || Key == KEY_NUMPAD9) ? -1 : 1, FALSE);
+								I = ChangeFocus(I, Step, false);
 
 							if (!(Item[I]->Flags & DIF_EDITOR))
-								I = ChangeFocus(I, (Key == KEY_PGUP || Key == KEY_NUMPAD9) ? 1 : -1, FALSE);
+								I = ChangeFocus(I, -Step, false);
 
 							ChangeFocus2(I);
 							ShowDialog();
@@ -3281,10 +3284,10 @@ int Dialog::ProcessKey(FarKey Key)
 					return TRUE;
 			}
 
-			if (ProcessHighlighting(Key, FocusPos, FALSE))
+			if (ProcessHighlighting(Key, FocusPos, false))
 				return TRUE;
 
-			return (Opt.XLat.EnableForDialogs && ProcessHighlighting(Key, FocusPos, TRUE));
+			return (Opt.XLat.EnableForDialogs && ProcessHighlighting(Key, FocusPos, true));
 		}
 	}
 	return FALSE;
@@ -3843,7 +3846,7 @@ bool Dialog::Do_ProcessNextCtrl(bool Up, bool IsRedraw)
 	if (FarIsEdit(Item[FocusPos]->Type) && (Item[FocusPos]->Flags & DIF_EDITOR))
 		PrevPos = ((DlgEdit *)(Item[FocusPos]->ObjPtr))->GetCurPos();
 
-	unsigned I = ChangeFocus(FocusPos, Up ? -1 : 1, FALSE);
+	unsigned I = ChangeFocus(FocusPos, Up ? -1 : 1, false);
 	Item[FocusPos]->Focus = 0;
 	Item[I]->Focus = 1;
 	ChangeFocus2(I);
@@ -3983,9 +3986,9 @@ bool Dialog::Do_ProcessTab(bool Next)
 			I = FocusPos;
 
 			while (Item[I]->Type==DI_EDIT && (Item[I]->Flags & DIF_EDITOR))
-				I = ChangeFocus(I, Next ? 1 : -1, TRUE);
+				I = ChangeFocus(I, Next ? 1 : -1, true);
 		} else {
-			I = ChangeFocus(FocusPos, Next ? 1 : -1, TRUE);
+			I = ChangeFocus(FocusPos, Next ? 1 : -1, true);
 
 			if (!Next)
 				while (I > 0
@@ -4054,7 +4057,7 @@ bool Dialog::Do_ProcessSpace()
 	$ 24.08.2000 SVS
 	Добавка для DI_USERCONTROL
 */
-unsigned Dialog::ChangeFocus(unsigned CurFocusPos, int Step, int SkipGroup)
+unsigned Dialog::ChangeFocus(unsigned CurFocusPos, int Step, bool SkipGroup)
 {
 	CriticalSectionLock Lock(CS);
 	unsigned OrigFocusPos = CurFocusPos;
@@ -4222,7 +4225,7 @@ int Dialog::SelectFromComboBox(DialogItemEx *CurItem,
 //		if (EditX2 - EditX1 < 20)
 //			EditX2 = EditX1 + 20;
 
-	SetDropDownOpened(TRUE);	// Установим флаг "открытия" комбобокса.
+	SetDropDownOpened(true);	// Установим флаг "открытия" комбобокса.
 	DlgProc((HANDLE)this, DN_DROPDOWNOPENED, FocusPos, 1);
 	SetComboBoxPos(CurItem);
 	// Перед отрисовкой спросим об изменении цветовых атрибутов
@@ -4317,7 +4320,7 @@ int Dialog::SelectFromComboBox(DialogItemEx *CurItem,
 	if (Dest == -1)
 		ComboBox->SetSelectPos(OriginalPos, 0);		//????
 
-	SetDropDownOpened(FALSE);						// Установим флаг "закрытия" комбобокса.
+	SetDropDownOpened(false);						// Установим флаг "закрытия" комбобокса.
 	DlgProc((HANDLE)this, DN_DROPDOWNOPENED, FocusPos, 0);
 
 	if (Dest < 0) {
@@ -4369,12 +4372,12 @@ bool Dialog::SelectFromEditHistory(DialogItemEx *CurItem, DlgEdit *EditLine, con
 
 		// запомним (для прорисовки)
 		CurItem->ListPtr = &HistoryMenu;
-		SetDropDownOpened(TRUE);		// Установим флаг "открытия" комбобокса.
+		SetDropDownOpened(true);		// Установим флаг "открытия" комбобокса.
 		DlgProc((HANDLE)this, DN_DROPDOWNOPENED, FocusPos, 1);
 
 		ret = DlgHist.Select(HistoryMenu, this, strStr);
 
-		SetDropDownOpened(FALSE);		// Установим флаг "закрытия" комбобокса.
+		SetDropDownOpened(false);		// Установим флаг "закрытия" комбобокса.
 		DlgProc((HANDLE)this, DN_DROPDOWNOPENED, FocusPos, 0);
 		// забудем (не нужен)
 		CurItem->ListPtr = nullptr;
@@ -4443,7 +4446,7 @@ int Dialog::CheckHighlights(WORD CheckSymbol, int StartPos)
 	Private:
 	Если жмакнули Alt-???
 */
-int Dialog::ProcessHighlighting(FarKey Key, unsigned FocusPos, int Translate)
+int Dialog::ProcessHighlighting(FarKey Key, unsigned FocusPos, bool Translate)
 {
 	CriticalSectionLock Lock(CS);
 	int Type;
@@ -4456,7 +4459,7 @@ int Dialog::ProcessHighlighting(FarKey Key, unsigned FocusPos, int Translate)
 		if ((!FarIsEdit(Type) || (Type == DI_COMBOBOX && (Flags & DIF_DROPDOWNLIST)))
 				&& !(Flags & (DIF_SHOWAMPERSAND | DIF_DISABLE | DIF_HIDDEN)))
 			if (IsKeyHighlighted(Item[I]->strData, Key, Translate)) {
-				int DisableSelect = FALSE;
+				bool DisableSelect = false;
 
 				// Если ЭТО: DlgEdit(пред контрол) и DI_TEXT в одну строку, то...
 				if (I > 0 && Type == DI_TEXT &&										// DI_TEXT
@@ -4472,8 +4475,8 @@ int Dialog::ProcessHighlighting(FarKey Key, unsigned FocusPos, int Translate)
 					if ((Item[I - 1]->Flags & (DIF_DISABLE | DIF_HIDDEN)))	// и не задисаблен
 						break;
 
-					I = ChangeFocus(I, -1, FALSE);
-					DisableSelect = TRUE;
+					I = ChangeFocus(I, -1, false);
+					DisableSelect = true;
 				} else if (Item[I]->Type == DI_TEXT || Item[I]->Type == DI_VTEXT
 						|| Item[I]->Type == DI_SINGLEBOX || Item[I]->Type == DI_DOUBLEBOX) {
 					if (I + 1 < ItemCount)		// ...и следующий контрол
@@ -4486,8 +4489,8 @@ int Dialog::ProcessHighlighting(FarKey Key, unsigned FocusPos, int Translate)
 						if ((Item[I + 1]->Flags & (DIF_DISABLE | DIF_HIDDEN)))	// и не задисаблен
 							break;
 
-						I = ChangeFocus(I, 1, FALSE);
-						DisableSelect = TRUE;
+						I = ChangeFocus(I, 1, false);
+						DisableSelect = true;
 					}
 				}
 
@@ -4585,7 +4588,7 @@ static std::atomic<int> s_in_dialog{0};
 void Dialog::Process()
 {
 //  if(DialogMode.Check(DMODE_SMALLDIALOG))
-	SetRestoreScreenMode(TRUE);
+	SetRestoreScreenMode(true);
 	ClearDone();
 	InitDialog();
 
@@ -6206,7 +6209,7 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 				if (Dlg->DialogMode.Check(DMODE_SHOW))		// && (PrevFlags&DIF_HIDDEN) != (CurItem->Flags&DIF_HIDDEN))//!(CurItem->Flags&DIF_HIDDEN))
 				{
 					if ((CurItem->Flags & DIF_HIDDEN) && Dlg->FocusPos == (unsigned)Param1) {
-						Param2 = Dlg->ChangeFocus(Param1, 1, TRUE);
+						Param2 = Dlg->ChangeFocus(Param1, 1, true);
 						Dlg->ChangeFocus2((int)Param2);
 					}
 
@@ -6224,7 +6227,7 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 			if (!Param2)				// Закрываем любой открытый комбобокс или историю
 			{
 				if (Dlg->GetDropDownOpened()) {
-					Dlg->SetDropDownOpened(FALSE);
+					Dlg->SetDropDownOpened(false);
 					WINPORT(Sleep)(10);
 				}
 
@@ -6239,7 +6242,7 @@ LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 			{
 				// Открываем заданный в Param1 комбобокс или историю
 				if (Dlg->GetDropDownOpened()) {
-					Dlg->SetDropDownOpened(FALSE);
+					Dlg->SetDropDownOpened(false);
 					WINPORT(Sleep)(10);
 				}
 

@@ -57,7 +57,7 @@ HMenu::HMenu(HMenuData *Item,int ItemCount):
 {
 	SetMacroArea(MACROAREA_MAINMENU);
 	SetDynamicallyBorn(false);
-	SetRestoreScreenMode(TRUE);
+	SetRestoreScreenMode(true);
 	FrameManager->ModalizeFrame(this);
 }
 
@@ -310,7 +310,7 @@ int HMenu::ProcessKey(FarKey Key)
 		{
 			for (int i=0; i<ItemCount; i++)
 			{
-				if (IsKeyHighlighted(Item[i].Name,Key,FALSE))
+				if (IsKeyHighlighted(Item[i].Name, Key, false))
 				{
 					Item[SelectPos].Selected=0;
 					Item[i].Selected=1;
@@ -323,7 +323,7 @@ int HMenu::ProcessKey(FarKey Key)
 
 			for (int i=0; i<ItemCount; i++)
 			{
-				if (IsKeyHighlighted(Item[i].Name,Key,TRUE))
+				if (IsKeyHighlighted(Item[i].Name, Key, true))
 				{
 					Item[SelectPos].Selected=0;
 					Item[i].Selected=1;

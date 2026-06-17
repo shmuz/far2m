@@ -91,15 +91,15 @@ RedrawDesktop::~RedrawDesktop()
 
 	if (RightVisible && RightType!=QVIEW_PANEL)
 		//CtrlObject->Cp()->RightPanel->Show();
-		CtrlObject->Cp()->RightPanel->SetVisible(TRUE);
+		CtrlObject->Cp()->RightPanel->SetVisible(true);
 
 	if (LeftVisible)
 		// CtrlObject->Cp()->LeftPanel->Show();
-		CtrlObject->Cp()->LeftPanel->SetVisible(TRUE);
+		CtrlObject->Cp()->LeftPanel->SetVisible(true);
 
 	if (RightVisible && RightType==QVIEW_PANEL)
 		// CtrlObject->Cp()->RightPanel->Show();
-		CtrlObject->Cp()->RightPanel->SetVisible(TRUE);
+		CtrlObject->Cp()->RightPanel->SetVisible(true);
 
 	// Временное решение!
 	// Иначе траблы при пересчете...

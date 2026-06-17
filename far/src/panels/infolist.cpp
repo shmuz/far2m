@@ -862,7 +862,7 @@ int InfoList::OpenDizFile(const wchar_t *DizFile, int YPos)
 			return FALSE;
 
 		_tran(SysLog(L"InfoList::OpenDizFile() create new Viewer = %p", DizView));
-		DizView->SetRestoreScreenMode(FALSE);
+		DizView->SetRestoreScreenMode(false);
 		DizView->SetPosition(X1 + 1, YPos + 1, X2 - 1, Y2 - 1);
 		DizView->SetStatusMode(0);
 		DizView->EnableHideCursor(0);

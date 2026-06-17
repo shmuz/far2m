@@ -612,7 +612,7 @@ void VText(const WCHAR *Str)
 	}
 }
 
-void HiText(const wchar_t *Str, uint64_t HiColor, int isVertText)
+void HiText(const wchar_t *Str, uint64_t HiColor, bool isVertText)
 {
 	FARString strTextStr;
 	uint64_t SaveColor;

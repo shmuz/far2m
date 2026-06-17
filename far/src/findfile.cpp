@@ -2788,7 +2788,7 @@ static bool FindFilesProcess(Vars &v)
 						Panel *ActivePanel = CtrlObject->Cp()->ActivePanel;
 						Panel *NewPanel = CtrlObject->Cp()->ChangePanel(ActivePanel, FILE_PANEL, true, true);
 						NewPanel->SetPluginMode(hNewPlugin, L"", true);
-						NewPanel->SetVisible(TRUE);
+						NewPanel->SetVisible(true);
 						NewPanel->Update(0);
 						// if (FindExitIndex != LIST_INDEX_NONE)
 						// NewPanel->GoToFile(FindList[FindExitIndex].FindData.cFileName);
@@ -2873,7 +2873,7 @@ static bool FindFilesProcess(Vars &v)
 					// Сменим панель на обычную файловую...
 					{
 						FindPanel = CtrlObject->Cp()->ChangePanel(FindPanel, FILE_PANEL, true, true);
-						FindPanel->SetVisible(TRUE);
+						FindPanel->SetVisible(true);
 						FindPanel->Update(0);
 					}
 

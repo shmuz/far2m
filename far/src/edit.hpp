@@ -241,7 +241,7 @@ public:
 	void SetCellCurPos(int NewPos);
 	int GetLeftPos() { return (m_LeftPos); }
 	void SetLeftPos(int NewPos) { m_LeftPos = NewPos; }
-	void SetPasswordMode(int Mode) { Flags.Change(FEDITLINE_PASSWORDMODE, Mode); }
+	void SetPasswordMode(bool Mode) { Flags.Change(FEDITLINE_PASSWORDMODE, Mode); }
 	void SetMaxLength(int Length) { m_MaxLength = Length; }
 
 	// Получение максимального значения строки для потребностей Dialod API

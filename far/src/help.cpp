@@ -181,7 +181,7 @@ Help::Help(const wchar_t *Topic, const wchar_t *Mask, DWORD aFlags):
 
 Help::~Help()
 {
-	SetRestoreScreenMode(FALSE);
+	SetRestoreScreenMode(false);
 
 	if (Stack)        delete Stack;
 

@@ -1341,7 +1341,7 @@ int VMenu::ProcessKey(FarKey Key)
 
 			int OldSelectPos = SelectPos;
 
-			if (!CheckKeyHiOrAcc(Key, 0, 0)) {
+			if (!CheckKeyHiOrAcc(Key, 0, false)) {
 				if (Key == KEY_SHIFTF1 || Key == KEY_F1) {
 					if (ParentDialog)
 						;    // ParentDialog->ProcessKey(Key);
@@ -1350,8 +1350,8 @@ int VMenu::ProcessKey(FarKey Key)
 
 					break;
 				} else {
-					if (!CheckKeyHiOrAcc(Key, 1, FALSE))
-						CheckKeyHiOrAcc(Key, 1, TRUE);
+					if (!CheckKeyHiOrAcc(Key, 1, false))
+						CheckKeyHiOrAcc(Key, 1, true);
 				}
 			}
 
@@ -2236,7 +2236,7 @@ wchar_t VMenu::GetHighlights(const MenuItemEx *_item)
 	return Ch;
 }
 
-void VMenu::AssignHighlights(int Reverse)
+void VMenu::AssignHighlights(bool Reverse)
 {
 	CriticalSectionLock Lock(CS);
 
@@ -2311,7 +2311,7 @@ void VMenu::AssignHighlights(int Reverse)
 	ClearFlags(VMENU_SHOWAMPERSAND);
 }
 
-bool VMenu::CheckKeyHiOrAcc(DWORD Key, int Type, int Translate)
+bool VMenu::CheckKeyHiOrAcc(DWORD Key, int Type, bool Translate)
 {
 	CriticalSectionLock Lock(CS);
 

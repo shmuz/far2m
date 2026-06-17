@@ -1207,8 +1207,8 @@ int FileList::ProcessKey(FarKey Key)
 				NewKey|= KEY_ALT;
 
 			Panel *SrcPanel = CtrlObject->Cp()->GetAnotherPanel(CtrlObject->Cp()->ActivePanel);
-			int OldState = SrcPanel->IsVisible();
-			SrcPanel->SetVisible(1);
+			bool OldState = SrcPanel->IsVisible();
+			SrcPanel->SetVisible(true);
 			SrcPanel->ProcessKey(NewKey);
 			SrcPanel->SetVisible(OldState);
 			SetCurPath();

@@ -225,7 +225,7 @@ private:
 	int GetItemPosition(int Position);
 	static size_t _SetUserData(MenuItemEx *PItem, const void *Data, size_t Size);
 	static void *_GetUserData(MenuItemEx *PItem, void *Data, size_t Size);
-	bool CheckKeyHiOrAcc(DWORD Key, int Type, int Translate);
+	bool CheckKeyHiOrAcc(DWORD Key, int Type, bool Translate);
 	int CheckHighlights(wchar_t Chr, int StartPos = 0);
 	wchar_t GetHighlights(const struct MenuItemEx *_item);
 	bool ShiftItemShowPos(int Pos, int Direct);
@@ -276,7 +276,7 @@ public:
 	DWORD GetFlags() const { return VMFlags.Flags; }
 	DWORD ChangeFlags(DWORD a_Flags, bool Status) { return VMFlags.Change(a_Flags, Status); }
 
-	void AssignHighlights(int Reverse);
+	void AssignHighlights(bool Reverse);
 
 	void SetColors(struct FarListColors *ColorsIn = nullptr);
 	void GetColors(struct FarListColors *ColorsOut);

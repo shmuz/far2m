@@ -93,7 +93,7 @@ void FillText(const WCHAR *Str, size_t Length, DWORD64 Color,CHAR_INFO *BufPtr, 
 
 void Text(FarLangMsg MsgId);
 void VText(const WCHAR *Str);
-void HiText(const WCHAR *Str, uint64_t HiColor, int isVertText = 0);
+void HiText(const WCHAR *Str, uint64_t HiColor, bool isVertText = false);
 void mprintf(const wchar_t *fmt, ...);
 void vmprintf(const wchar_t *fmt, ...);
 void PutText(int X1, int Y1, int X2, int Y2, const CHAR_INFO *Src);

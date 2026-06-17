@@ -2622,7 +2622,7 @@ void EditControl::PopulateCompletionMenu(VMenu &ComplMenu, const FARString &strF
 			FilteredAddToMenu(ComplMenu, strFilter, FARString(possibility));
 
 		if (ComplMenu.GetItemCount() < 10)
-			ComplMenu.AssignHighlights(0);
+			ComplMenu.AssignHighlights(false);
 	} else {
 		if (pHistory) {
 			pHistory->GetAllSimilar(ComplMenu, strFilter);

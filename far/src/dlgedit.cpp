@@ -250,7 +250,7 @@ void DlgEdit::SetMaxLength(int Length)
 		lineEdit->SetMaxLength(Length);
 }
 
-void DlgEdit::SetPasswordMode(int Mode)
+void DlgEdit::SetPasswordMode(bool Mode)
 {
 	if (Type == DLGEDIT_SINGLELINE)
 		lineEdit->SetPasswordMode(Mode);

@@ -1243,7 +1243,7 @@ void PluginManager::Configure(int StartPos)
 			MenuItemNumber = TmpItems.size();
 			FillPluginList(PluginList, TmpItems, HotKeysPresent);
 
-			PluginList.AssignHighlights(FALSE);
+			PluginList.AssignHighlights(false);
 			PluginList.SetBottomTitle(Msg::PluginHotKeyBottom);
 			PluginList.ClearDone();
 			PluginList.SortItems(0, HotKeysPresent ? 3 : 0);
@@ -1418,7 +1418,7 @@ int PluginManager::CommandsMenu(int ModalType, int StartPos, const wchar_t *Hist
 				MenuItemNumber = TmpItems.size();
 				FillPluginList(PluginList, TmpItems, HotKeysPresent);
 
-				PluginList.AssignHighlights(FALSE);
+				PluginList.AssignHighlights(false);
 				PluginList.SetBottomTitle(Msg::PluginHotKeyBottom);
 				PluginList.SortItems(0, HotKeysPresent ? 3 : 0);
 				PluginList.SetSelectPos(StartPos, 1);
