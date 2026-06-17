@@ -254,7 +254,7 @@ public:
 			CtrlObject->CmdLine->ShowBackground();
 			CtrlObject->CmdLine->RedrawWithoutComboBoxMark();
 		}
-		//		CtrlObject->CmdLine->SetString(L"", TRUE);
+		//		CtrlObject->CmdLine->SetString(L"", true);
 		ScrBuf.Flush();
 		WINPORT(GetConsoleMode)(NULL, &_saved_mode);
 		WINPORT(SetConsoleMode) (NULL, _saved_mode | ENABLE_PROCESSED_OUTPUT | ENABLE_WRAP_AT_EOL_OUTPUT
@@ -312,7 +312,7 @@ static int farExecuteASynched(const char *CmdStr, unsigned int ExecFlags)
 	const bool may_notify = (ExecFlags & (EF_NOTIFY | EF_NOWAIT)) == EF_NOTIFY && Opt.NotifOpt.OnConsole;
 	if (ExecFlags & (EF_HIDEOUT | EF_NOWAIT)) {
 		r = NotVTExecute(CmdStr, (ExecFlags & EF_NOWAIT) != 0, (ExecFlags & EF_SUDO) != 0);
-		//		CtrlObject->CmdLine->SetString(L"", TRUE);//otherwise command remain in cmdline
+		//		CtrlObject->CmdLine->SetString(L"", true);//otherwise command remain in cmdline
 		if (may_notify) {
 			DisplayNotification(
 				r ? Msg::ConsoleCommandFailed : Msg::ConsoleCommandComplete,
@@ -510,13 +510,13 @@ int CommandLine::CmdExecute(const wchar_t *CmdLine, bool SeparateWindow, bool Di
 			ScrollScreen(2);
 		}
 
-		SetString(L"", FALSE);
+		SetString(L"", false);
 		SaveBackground();
 
 		r = -1;
 	} else {
 		if (CtrlObject)
-			CtrlObject->CmdLine->SetString(L"", TRUE);
+			CtrlObject->CmdLine->SetString(L"", true);
 
 		char cd_prev[MAX_PATH + 1] = {'.', 0};
 		if (!sdc_getcwd(cd_prev, MAX_PATH)) {

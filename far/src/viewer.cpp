@@ -166,13 +166,13 @@ Viewer::Viewer(bool bQuickView, UINT aCodePage)
 	LastPage = 0;
 	SelectPos = SelectSize = 0;
 	LastSelPos = 0;
-	SetStatusMode(TRUE);
-	HideCursor = TRUE;
-	CodePageChangedByUser = FALSE;
+	SetStatusMode(true);
+	HideCursor = true;
+	CodePageChangedByUser = false;
 	memset(&BMSavePos, 0xff, sizeof(BMSavePos));
 	memset(UndoData, 0xff, sizeof(UndoData));
-	LastKeyUndo = FALSE;
-	InternalKey = FALSE;
+	LastKeyUndo = false;
+	InternalKey = 0;
 	ViewerID = ::NextViewerID++;
 	CtrlObject->Plugins.CurViewer = this;
 	OpenFailed = false;
@@ -344,7 +344,7 @@ int Viewer::OpenFile(const wchar_t *Name, int warning)
 		return FALSE;
 	}
 
-	CodePageChangedByUser = FALSE;
+	CodePageChangedByUser = false;
 
 	ConvertNameToFull(strFileName, strFullFileName);
 	apiGetFindDataForExactPathName(strFileName, ViewFindData);
@@ -400,13 +400,13 @@ int Viewer::OpenFile(const wchar_t *Name, int warning)
 
 			if (CachedCodePage) {
 				VM.CodePage = CachedCodePage;
-				CodePageChangedByUser = TRUE;
+				CodePageChangedByUser = true;
 			}
 
 			if (VM.CodePage == CP_AUTODETECT)
 				VM.CodePage = Opt.ViOpt.DefaultCodePage;
 		} else {
-			CodePageChangedByUser = TRUE;
+			CodePageChangedByUser = true;
 		}
 
 		// BUGBUG
@@ -584,7 +584,7 @@ void Viewer::ShowPage(int nMode)
 						? (visualSelStart + visualSelLength / 2 - correctedWidth / 2)
 						: (visualSelStart - (ViOpt.ShowArrows ? 1 : 0));
 						LeftPos = std::clamp(newLeftPos, 0, std::max(StrLen - correctedWidth, 0));
-						AdjustSelPosition = FALSE;
+						AdjustSelPosition = false;
 						Show();
 						return;
 					}
@@ -865,7 +865,7 @@ void Viewer::ShowStatus()
 		HostFileViewer->ShowStatus();
 }
 
-void Viewer::SetStatusMode(int Mode)
+void Viewer::SetStatusMode(bool Mode)
 {
 	ShowStatusLine = Mode;
 }
@@ -1138,7 +1138,7 @@ int Viewer::ProcessKey(FarKey Key)
 	}
 
 	if (Key != KEY_ALTBS && Key != KEY_CTRLZ && Key != KEY_NONE && Key != KEY_IDLE)
-		LastKeyUndo = FALSE;
+		LastKeyUndo = false;
 
 	if (Key >= KEY_CTRL0 && Key <= KEY_CTRL9) {
 		int Pos = Key - KEY_CTRL0;
@@ -1405,7 +1405,7 @@ int Viewer::ProcessKey(FarKey Key)
 			ChangeViewKeyBar();
 			Show();
 			//    LastSelPos=FilePos;
-			CodePageChangedByUser = TRUE;
+			CodePageChangedByUser = true;
 			return TRUE;
 		}
 		case KEY_SHIFTF8: {
@@ -1422,7 +1422,7 @@ int Viewer::ProcessKey(FarKey Key)
 			}
 
 			if (nCodePage != (UINT)-1) {
-				CodePageChangedByUser = TRUE;
+				CodePageChangedByUser = true;
 
 				if (IsFullWideCodePage(VM.CodePage) && !IsFullWideCodePage(nCodePage)) {
 					FilePos*= sizeof(wchar_t);
@@ -2634,9 +2634,9 @@ void Viewer::Search(int Next, int FirstChar)
 		for (int i = 0; i < FromTop; i++)
 			Up();
 
-		AdjustSelPosition = TRUE;
+		AdjustSelPosition = true;
 		Show();
-		AdjustSelPosition = FALSE;
+		AdjustSelPosition = false;
 	} else {
 		// Show();
 		/* $ 27.01.2003 VVM
@@ -2707,7 +2707,7 @@ void Viewer::SetWrapMode(int Wrap)
 	Viewer::VM.Wrap = Wrap;
 }
 
-void Viewer::EnableHideCursor(int HideCursor)
+void Viewer::EnableHideCursor(bool HideCursor)
 {
 	Viewer::HideCursor = HideCursor;
 }
@@ -3232,9 +3232,9 @@ void Viewer::SelectText(const int64_t &MatchPos, const int64_t &SearchLength, co
 	}
 
 	if (Flags & 1) {
-		AdjustSelPosition = TRUE;
+		AdjustSelPosition = true;
 		Show();
-		AdjustSelPosition = FALSE;
+		AdjustSelPosition = false;
 	}
 }
 

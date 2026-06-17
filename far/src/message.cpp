@@ -104,7 +104,7 @@ static int ShowMessageSynched(DWORD Flags, int Buttons, const wchar_t *Title, co
 	int X1, Y1, X2, Y2;
 	int Length, BtnLength;
 	DWORD I, MaxLength, StrCount;
-	BOOL ErrorSets = FALSE;
+	bool ErrorSets = false;
 	wchar_t *PtrStr;
 	const wchar_t *CPtrStr = nullptr;
 	FARString strErrStr;
@@ -277,7 +277,7 @@ static int ShowMessageSynched(DWORD Flags, int Buttons, const wchar_t *Title, co
 
 		int TypeItem = DI_TEXT;
 		DWORD FlagsItem = DIF_SHOWAMPERSAND;
-		BOOL IsButton = FALSE;
+		bool IsButton = false;
 		int CurItem = 0;
 		bool StrSeparator = false;
 		bool Separator = false;
@@ -297,7 +297,7 @@ static int ShowMessageSynched(DWORD Flags, int Buttons, const wchar_t *Title, co
 				PtrMsgDlg->Focus = TRUE;
 				TypeItem = DI_BUTTON;
 				FlagsItem = DIF_CENTERGROUP;
-				IsButton = TRUE;
+				IsButton = true;
 				Param.FirstButtonIndex = CurItem + 1;
 				Param.LastButtonIndex = CurItem;
 			}

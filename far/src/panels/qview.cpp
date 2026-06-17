@@ -366,8 +366,8 @@ void QuickView::ShowFile(const wchar_t *FileName, int TempFile, PanelHandle *hDi
 			QView = new Viewer(true);
 			QView->SetRestoreScreenMode(false);
 			QView->SetPosition(X1 + 1, Y1 + 1, X2 - 1, Y2 - 3);
-			QView->SetStatusMode(0);
-			QView->EnableHideCursor(0);
+			QView->SetStatusMode(false);
+			QView->EnableHideCursor(false);
 			OldWrapMode = QView->GetWrapMode();
 			OldWrapType = QView->GetWrapType();
 			QView->SetWrapMode(LastWrapMode);

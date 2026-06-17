@@ -4300,7 +4300,7 @@ bool FileList::ApplyCommand()
 			if (!strConvertedCommand.IsEmpty()) {
 				if (!isSilent)                                                                          // TODO: Здесь не isSilent!
 				{
-					CtrlObject->CmdLine->ExecString(strConvertedCommand, FALSE, 0, 0, ListFileUsed);    // Param2 == TRUE?
+					CtrlObject->CmdLine->ExecString(strConvertedCommand, false, false, false, ListFileUsed);    // Param2 == TRUE?
 																										// if (!(Opt.ExcludeCmdHistory&EXCLUDECMDHISTORY_NOTAPPLYCMD))
 					//	CtrlObject->CmdHistory->AddToHistory(strConvertedCommand);
 				} else {

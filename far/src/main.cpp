@@ -258,7 +258,7 @@ static void RunPanelMode(const FARString &strDestName1, const FARString &strDest
 			if (IsPluginPrefixPath(strDestName2))
 			{
 				AnotherPanel()->SetFocus();
-				CtrlObject->CmdLine->ExecString(strDestName2,0);
+				CtrlObject->CmdLine->ExecString(strDestName2, false);
 				AnotherPanel()->SetFocus();
 			}
 		}
@@ -268,7 +268,7 @@ static void RunPanelMode(const FARString &strDestName1, const FARString &strDest
 
 		if (IsPluginPrefixPath(strDestName1))
 		{
-			CtrlObject->CmdLine->ExecString(strDestName1,0);
+			CtrlObject->CmdLine->ExecString(strDestName1, false);
 		}
 
 		// Сначала редравим пассивную панель, а потом активную!

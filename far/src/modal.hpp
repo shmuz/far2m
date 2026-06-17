@@ -47,7 +47,7 @@ class Modal: public Frame
 	protected:
 		INPUT_RECORD ReadRec;
 		FARString strHelpTopic;
-		int  EndLoop;
+		bool EndLoop;
 
 	public:
 		Modal();
@@ -55,7 +55,7 @@ class Modal: public Frame
 
 	public:
 		virtual void GetDialogObjectsData() {};
-		int Done();
+		bool Done() const;
 		void ClearDone();
 		virtual void SetExitCode(int Code);
 
@@ -67,5 +67,4 @@ class Modal: public Frame
 
 		void SetHelp(const wchar_t *Topic);
 		void ShowHelp();
-
 };

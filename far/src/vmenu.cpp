@@ -1088,7 +1088,7 @@ int VMenu::ProcessKey(FarKey Key)
 
 	if (!GetShowItemCount()) {
 		if (!bFilterEnabled && (Key == KEY_ENTER || Key == KEY_NUMENTER)) {
-			EndLoop = TRUE;
+			EndLoop = true;
 			Modal::ExitCode = -1;
 			return TRUE;
 		}
@@ -1124,7 +1124,7 @@ int VMenu::ProcessKey(FarKey Key)
 		case KEY_ENTER:
 			if (!ParentDialog || CheckFlags(VMENU_COMBOBOX)) {
 				if (SelectPos < 0 || ItemCanBeEntered(Item[SelectPos]->Flags)) {
-					EndLoop = TRUE;
+					EndLoop = true;
 					Modal::ExitCode = SelectPos;
 				}
 			}
@@ -1135,7 +1135,7 @@ int VMenu::ProcessKey(FarKey Key)
 			EnableFilter(false);
 
 			if (!ParentDialog || CheckFlags(VMENU_COMBOBOX)) {
-				EndLoop = TRUE;
+				EndLoop = true;
 				Modal::ExitCode = -1;
 			}
 
@@ -1359,7 +1359,7 @@ int VMenu::ProcessKey(FarKey Key)
 					&& SendDlgMessage((HANDLE)ParentDialog, DN_LISTHOTKEY, DialogItemID, SelectPos)) {
 				UpdateItemFlags(OldSelectPos, Item[OldSelectPos]->Flags | LIF_SELECTED);
 				ShowMenu(true);
-				EndLoop = FALSE;
+				EndLoop = false;
 				break;
 			}
 
@@ -1378,7 +1378,7 @@ int VMenu::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 
 	if (!GetShowItemCount()) {
 		if (MouseEvent->dwButtonState && !MouseEvent->dwEventFlags)
-			EndLoop = TRUE;
+			EndLoop = true;
 
 		Modal::ExitCode = -1;
 		return FALSE;
@@ -2317,7 +2317,7 @@ bool VMenu::CheckKeyHiOrAcc(DWORD Key, int Type, bool Translate)
 
 	// не забудем сбросить EndLoop для листбокса, иначе не будут работать хоткеи в активном списке
 	if (CheckFlags(VMENU_LISTBOX))
-		EndLoop = FALSE;
+		EndLoop = false;
 
 	for (int I = 0; I < ItemCount; I++) {
 		MenuItemEx *CurItem = Item[I];
@@ -2331,14 +2331,14 @@ bool VMenu::CheckKeyHiOrAcc(DWORD Key, int Type, bool Translate)
 
 			if ((!ParentDialog || CheckFlags(VMENU_COMBOBOX)) && ItemCanBeEntered(Item[SelectPos]->Flags)) {
 				Modal::ExitCode = I;
-				EndLoop = TRUE;
+				EndLoop = true;
 			}
 
 			break;
 		}
 	}
 
-	return EndLoop == TRUE;
+	return EndLoop;
 }
 
 void VMenu::UpdateMaxLengthFromTitles()

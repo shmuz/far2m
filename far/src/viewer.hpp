@@ -140,18 +140,18 @@ private:
 	int CRSym;
 	int64_t SelectPos, SelectSize;
 	DWORD SelectFlags;
-	int ShowStatusLine, HideCursor;
+	bool ShowStatusLine, HideCursor;
 
 	FARString strTitle;
 
 	FARString strPluginData;
-	int CodePageChangedByUser;
+	bool CodePageChangedByUser;
 	int InternalKey;
 
 	struct InternalViewerBookMark BMSavePos;
 	struct ViewerUndoData UndoData[VIEWER_UNDO_COUNT];
 
-	int LastKeyUndo;
+	bool LastKeyUndo;
 	int Width, XX2;    // , используется при расчете ширины при скролбаре
 	int ViewerID;
 	bool OpenFailed;
@@ -214,8 +214,8 @@ public:
 	virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
 	virtual int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0);
 
-	void SetStatusMode(int Mode);
-	void EnableHideCursor(int HideCursor);
+	void SetStatusMode(bool Mode);
+	void EnableHideCursor(bool HideCursor);
 	int GetWrapMode();
 	void SetWrapMode(int Wrap);
 	int GetWrapType();

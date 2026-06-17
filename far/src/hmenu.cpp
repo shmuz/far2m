@@ -223,7 +223,7 @@ int HMenu::ProcessKey(FarKey Key)
 
 				if (VExitCode!=-1)
 				{
-					EndLoop=TRUE;
+					EndLoop=true;
 					Modal::ExitCode=SelectPos;
 				}
 
@@ -260,7 +260,7 @@ int HMenu::ProcessKey(FarKey Key)
 		case KEY_ESC:
 		case KEY_F10:
 		{
-			EndLoop=TRUE;
+			EndLoop=true;
 			Modal::ExitCode=-1;
 			return FALSE;
 		}

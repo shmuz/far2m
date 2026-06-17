@@ -163,7 +163,7 @@ static const wchar_t *_SubstFileName(const wchar_t *CurStr,TSubstData *PSubstDat
 		}
 
 		WPanel->GetSelNameCompat(nullptr,FileAttrL);
-		int First = TRUE;
+		bool First = true;
 
 		while (WPanel->GetSelNameCompat(&strFileNameL,FileAttrL))
 		{
@@ -175,7 +175,7 @@ static const wchar_t *_SubstFileName(const wchar_t *CurStr,TSubstData *PSubstDat
 //            AddEndSlash(FileNameL);
 			// А нужен ли нам пробел в самом начале?
 			if (First)
-				First = FALSE;
+				First = false;
 			else
 				strOut += L" ";
 

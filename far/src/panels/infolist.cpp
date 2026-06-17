@@ -864,8 +864,8 @@ int InfoList::OpenDizFile(const wchar_t *DizFile, int YPos)
 		_tran(SysLog(L"InfoList::OpenDizFile() create new Viewer = %p", DizView));
 		DizView->SetRestoreScreenMode(false);
 		DizView->SetPosition(X1 + 1, YPos + 1, X2 - 1, Y2 - 1);
-		DizView->SetStatusMode(0);
-		DizView->EnableHideCursor(0);
+		DizView->SetStatusMode(false);
+		DizView->EnableHideCursor(false);
 		OldWrapMode = DizView->GetWrapMode();
 		OldWrapType = DizView->GetWrapType();
 		DizView->SetWrapMode(LastDizWrapMode);

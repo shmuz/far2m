@@ -776,7 +776,7 @@ int UserMenu::ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar
 					//       буфер, а потом его содержимое подсунуть в ScreenBuf...
 
 					if (!isSilent) {
-						CtrlObject->CmdLine->ExecString(strCommand, FALSE, 0, 0, ListFileUsed);
+						CtrlObject->CmdLine->ExecString(strCommand, false, false, false, ListFileUsed);
 					} else {
 						SCOPED_ACTION(SaveScreen);
 						CtrlObject->Cp()->LeftPanel->CloseFile();

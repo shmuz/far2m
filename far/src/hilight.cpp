@@ -700,7 +700,7 @@ void HighlightFiles::HiEdit(int MenuPos)
 	HiMenu.SetId(HighlightMenuId);
 	HiMenu.SetBottomTitle(Msg::HighlightBottom);
 	FillMenu(&HiMenu, MenuPos);
-	int NeedUpdate;
+	bool NeedUpdate;
 	Panel *LeftPanel = CtrlObject->Cp()->LeftPanel;
 	Panel *RightPanel = CtrlObject->Cp()->RightPanel;
 	HiMenu.Show();
@@ -709,7 +709,7 @@ void HighlightFiles::HiEdit(int MenuPos)
 		while (!HiMenu.Done()) {
 			FarKey Key = HiMenu.ReadInput();
 			int SelectPos = HiMenu.GetSelectPos();
-			NeedUpdate = FALSE;
+			NeedUpdate = false;
 
 			switch (Key) {
 					/*
@@ -759,7 +759,7 @@ void HighlightFiles::HiEdit(int MenuPos)
 					HiMenu.Hide();
 					ClearData();
 					InitHighlightFiles();
-					NeedUpdate = TRUE;
+					NeedUpdate = true;
 					break;
 				case KEY_NUMDEL:
 				case KEY_DEL: {
@@ -777,7 +777,7 @@ void HighlightFiles::HiEdit(int MenuPos)
 
 						HiData.deleteItem(RealSelectPos);
 						(*Count)--;
-						NeedUpdate = TRUE;
+						NeedUpdate = true;
 					}
 
 					break;
@@ -790,7 +790,7 @@ void HighlightFiles::HiEdit(int MenuPos)
 
 					if (Count && RealSelectPos < (int)HiData.getCount())
 						if (FileFilterConfig(HiData.getItem(RealSelectPos), true))
-							NeedUpdate = TRUE;
+							NeedUpdate = true;
 
 					break;
 				}
@@ -807,7 +807,7 @@ void HighlightFiles::HiEdit(int MenuPos)
 
 						if (FileFilterConfig(NewHData, true)) {
 							(*Count)++;
-							NeedUpdate = TRUE;
+							NeedUpdate = true;
 						} else
 							HiData.deleteItem(RealSelectPos);
 					}
@@ -826,7 +826,7 @@ void HighlightFiles::HiEdit(int MenuPos)
 							HData->SetTitle(L"");
 
 							if (FileFilterConfig(HData, true)) {
-								NeedUpdate = TRUE;
+								NeedUpdate = true;
 								(*Count)++;
 							} else
 								HiData.deleteItem(RealSelectPos);
@@ -859,7 +859,7 @@ void HighlightFiles::HiEdit(int MenuPos)
 							HiData.swapItems(RealSelectPos, RealSelectPos - 1);
 
 						HiMenu.SetCheck(--SelectPos);
-						NeedUpdate = TRUE;
+						NeedUpdate = true;
 						break;
 					}
 
@@ -888,7 +888,7 @@ void HighlightFiles::HiEdit(int MenuPos)
 							HiData.swapItems(RealSelectPos, RealSelectPos + 1);
 
 						HiMenu.SetCheck(++SelectPos);
-						NeedUpdate = TRUE;
+						NeedUpdate = true;
 					}
 
 					HiMenu.ProcessInput();

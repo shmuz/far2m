@@ -44,7 +44,7 @@ private:
 	virtual void DisplayObject();
 	SudoClientRegion _sdc_rgn;
 	Viewer View;
-	int RedrawTitle;
+	bool RedrawTitle;
 	KeyBar ViewKeyBar;
 	bool AutoClose;
 	bool F3KeyOnly;

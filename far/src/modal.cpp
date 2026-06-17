@@ -44,7 +44,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Modal::Modal():
 	WriteKey(KEY_INVALID),
-	EndLoop(0)
+	EndLoop(false)
 {
 }
 
@@ -115,22 +115,22 @@ void Modal::ProcessInput()
 }
 
 
-int Modal::Done()
+bool Modal::Done() const
 {
-	return(EndLoop);
+	return EndLoop;
 }
 
 
 void Modal::ClearDone()
 {
-	EndLoop=0;
+	EndLoop = false;
 }
 
 
 void Modal::SetExitCode(int Code)
 {
 	ExitCode=Code;
-	EndLoop=TRUE;
+	EndLoop=true;
 }
 
 

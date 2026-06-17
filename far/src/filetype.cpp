@@ -355,7 +355,7 @@ void ProcessExternal(const wchar_t *Command, const wchar_t *Name, bool CanAddHis
 
 		if (strExecStr.At(0) != L'@')
 		{
-			CtrlObject->CmdLine->ExecString(strExecStr, 0, 0, ListFileUsed, true);
+			CtrlObject->CmdLine->ExecString(strExecStr, false, false, ListFileUsed, true);
 		}
 		else
 		{

@@ -909,7 +909,7 @@ int FileEditor::ReProcessKey(FarKey Key, bool CalledFromControl)
 
 					UINT codepage = m_codepage;
 					bool SaveAs = Key == KEY_SHIFTF2 || Flags.Check(FFILEEDIT_SAVETOSAVEAS);
-					int NameChanged = FALSE;
+					bool NameChanged = false;
 					FARString strFullSaveAsName = strFullFileName;
 
 					if (SaveAs) {
@@ -924,7 +924,7 @@ int FileEditor::ReProcessKey(FarKey Key, bool CalledFromControl)
 
 						apiExpandEnvironmentStrings(strSaveAsName, strSaveAsName);
 						NameChanged = StrCmpI(strSaveAsName,
-								(Flags.Check(FFILEEDIT_SAVETOSAVEAS) ? strFullFileName : strFileName));
+								(Flags.Check(FFILEEDIT_SAVETOSAVEAS) ? strFullFileName : strFileName)) != 0;
 
 						if (!NameChanged)
 							FarChDir(strStartDir);    // ПОЧЕМУ? А нужно ли???
