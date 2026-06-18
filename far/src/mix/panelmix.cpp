@@ -148,10 +148,10 @@ bool CheckUpdateAnotherPanel(Panel *SrcPanel,const wchar_t *SelName)
 	return false;
 }
 
-int _MakePath1(DWORD Key, FARString &strPathName, const wchar_t *Param2, int escaping)
+bool _MakePath1(DWORD Key, FARString &strPathName, const wchar_t *Param2, bool escaping)
 {
-	int RetCode = FALSE;
-	int NeedRealName = FALSE;
+	bool RetCode = false;
+	bool NeedRealName = false;
 	strPathName.Clear();
 
 	switch (Key) {
@@ -159,7 +159,7 @@ int _MakePath1(DWORD Key, FARString &strPathName, const wchar_t *Param2, int esc
 		case KEY_CTRLALTBACKBRACKET:	// Вставить реальный (разрешенный) путь из правой панели
 		case KEY_ALTSHIFTBRACKET:		// Вставить реальный (разрешенный) путь из активной панели
 		case KEY_ALTSHIFTBACKBRACKET:	// Вставить реальный (разрешенный) путь из пассивной панели
-			NeedRealName = TRUE;
+			NeedRealName = true;
 		case KEY_CTRLBRACKET:			// Вставить путь из левой панели
 		case KEY_CTRLBACKBRACKET:		// Вставить путь из правой панели
 		case KEY_CTRLSHIFTBRACKET:		// Вставить путь из активной панели
@@ -220,7 +220,7 @@ int _MakePath1(DWORD Key, FARString &strPathName, const wchar_t *Param2, int esc
 				if (Param2)
 					strPathName+= Param2;
 
-				RetCode = TRUE;
+				RetCode = true;
 			}
 		} break;
 	}

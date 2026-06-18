@@ -203,8 +203,8 @@ void FileList::ReadFileNames(int KeepSelection, int IgnoreVisible, int DrawMessa
 	ListData = nullptr;
 	SymlinksCache.clear();
 
-	int ReadOwners = IsColumnDisplayed(OWNER_COLUMN);
-	int ReadGroups = IsColumnDisplayed(GROUP_COLUMN);
+	bool ReadOwners = IsColumnDisplayed(OWNER_COLUMN);
+	bool ReadGroups = IsColumnDisplayed(GROUP_COLUMN);
 	FARString strComputerName;
 
 	WINPORT(SetLastError)(ERROR_SUCCESS);
@@ -216,7 +216,7 @@ void FileList::ReadFileNames(int KeepSelection, int IgnoreVisible, int DrawMessa
 	// wmemset(Title,0x0CD,TitleLength); //BUGBUG
 	// Title[TitleLength]=0;
 	MakeSeparator(TitleLength, Title, 9, nullptr);
-	BOOL IsShowTitle = FALSE;
+	bool IsShowTitle = false;
 	// BOOL NeedHighlight=Opt.Highlight && PanelMode != PLUGIN_PANEL;
 
 	if (!Filter)
@@ -310,7 +310,7 @@ void FileList::ReadFileNames(int KeepSelection, int IgnoreVisible, int DrawMessa
 					if (!IsShowTitle) {
 						if (!DrawMessage) {
 							Text(X1 + 1, Y1, FarColorToReal(COL_PANELBOX), Title);
-							IsShowTitle = TRUE;
+							IsShowTitle = true;
 							SetFarColor(Focus ? COL_PANELSELECTEDTITLE : COL_PANELTITLE);
 						}
 					}
@@ -338,12 +338,12 @@ void FileList::ReadFileNames(int KeepSelection, int IgnoreVisible, int DrawMessa
 				|| FindErrorCode == ERROR_FILE_NOT_FOUND))
 		Message(MSG_WARNING | MSG_ERRORTYPE, 1, Msg::Error, Msg::ReadFolderError, Msg::Ok);
 	/*
-	int NetRoot=FALSE;
+	bool NetRoot=false;
 	if (strCurDir.At(0)==GOOD_SLASH && strCurDir.At(1)==GOOD_SLASH)
 	{
 		const wchar_t *ChPtr=wcschr(strCurDir.CPtr()+2,'/');
 		if (!ChPtr || !wcschr(ChPtr+1,L'/'))
-			NetRoot=TRUE;
+			NetRoot=true;
 	}
 	*/
 
@@ -428,7 +428,7 @@ void FileList::ReadFileNames(int KeepSelection, int IgnoreVisible, int DrawMessa
 	if (Opt.Highlight && FileCount)
 		CtrlObject->HiFiles->GetHiColor(&ListData[0], FileCount, false, &MarkLM);
 
-	CreateChangeNotification(FALSE);
+	CreateChangeNotification(false);
 	CorrectPosition();
 
 	if (KeepSelection || PrevSelFileCount > 0) {
@@ -503,7 +503,7 @@ bool FileList::UpdateIfChanged(int UpdateMode)
 	return false;
 }
 
-void FileList::CreateChangeNotification(int CheckTree)
+void FileList::CreateChangeNotification(bool CheckTree)
 {
 	wchar_t RootDir[4] = L" :/";
 	DWORD DriveType = DRIVE_REMOTE;
@@ -516,7 +516,7 @@ void FileList::CreateChangeNotification(int CheckTree)
 
 	if (Opt.AutoUpdateRemoteDrive || (DriveType != DRIVE_REMOTE)) {
 		ListChange.reset();
-		ListChange.reset(IFSNotify_Create(strCurDir.GetMB(), CheckTree != FALSE, FSNW_NAMES_AND_STATS));
+		ListChange.reset(IFSNotify_Create(strCurDir.GetMB(), CheckTree, FSNW_NAMES_AND_STATS));
 	}
 }
 
@@ -654,7 +654,7 @@ void FileList::UpdatePlugin(int KeepSelection, int IgnoreVisible)
 	// Рефреш текущему времени для фильтра перед началом операции
 	Filter->UpdateCurrentTime();
 	CtrlObject->HiFiles->UpdateCurrentTime();
-	int DotsPresent = FALSE;
+	bool DotsPresent = false;
 	int FileListCount = 0;
 	bool UseFilter = Filter->IsEnabledOnPanel();
 
@@ -686,7 +686,7 @@ void FileList::UpdatePlugin(int KeepSelection, int IgnoreVisible)
 		}
 
 		if (TestParentFolderName(CurListData->strName)) {
-			DotsPresent = TRUE;
+			DotsPresent = true;
 			CurListData->FileAttr|= FILE_ATTRIBUTE_DIRECTORY;
 		} else if (!(CurListData->FileAttr & FILE_ATTRIBUTE_DIRECTORY)) {
 			TotalFileCount++;
@@ -771,7 +771,7 @@ void FileList::ReadDiz(PluginPanelItem *ItemList, int ItemLength, DWORD dwFlags)
 		if (!Info.DescrFilesNumber)
 			return;
 
-		int GetCode = TRUE;
+		bool GetCode = true;
 
 		/* $ 25.02.2001 VVM
 			+ Обработка флага RDF_NO_UPDATE */
@@ -803,7 +803,7 @@ void FileList::ReadDiz(PluginPanelItem *ItemList, int ItemLength, DWORD dwFlags)
 							}
 
 							apiRemoveDirectory(strTempDir);
-							// ViewPanel->ShowFile(nullptr,FALSE,nullptr);
+							// ViewPanel->ShowFile(nullptr,false,nullptr);
 						}
 					}
 				}

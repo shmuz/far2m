@@ -545,7 +545,7 @@ bool Edit::ProcessInsPath(FarKey Key, int PrevSelStart, int PrevSelEnd)
 			RetCode = true;
 	} else                                                 // Пути/имена?
 	{
-		RetCode = _MakePath1(Key, Data.ShortcutFolder, L"", 0) != 0; // 0 - always not escaping path names
+		RetCode = _MakePath1(Key, Data.ShortcutFolder, L"", false) != 0; // 0 - always not escaping path names
 	}
 
 	// Если что-нить получилось, именно его и вставим (PathName)
@@ -1040,10 +1040,10 @@ int Edit::ProcessKey(FarKey Key)
 
 			// BUGBUG
 			for (;;) {
-				int StopDelete = FALSE;
+				bool StopDelete = false;
 
 				if (m_CurPos > 1 && IsSpaceX(m_CurPos - 1) != IsSpaceX(m_CurPos - 2))
-					StopDelete = TRUE;
+					StopDelete = true;
 
 				RecurseProcessKey(KEY_BS);
 

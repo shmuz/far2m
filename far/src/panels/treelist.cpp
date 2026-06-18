@@ -438,7 +438,7 @@ int TreeList::ReadTree()
 	   а восстанавливает сохраненный образ экрана, то нарисуем чистую панель */
 	// Redraw();
 	TreeCount = 1;
-	int FirstCall = TRUE, AscAbort = FALSE;
+	bool FirstCall = true, AscAbort = false;
 	TreeStartTime = GetProcessUptimeMSec();
 	SCOPED_ACTION(RefreshFrameManager)(ScrX, ScrY, TreeStartTime, false);    // DontRedrawFrame);
 	ScTree.SetFindPath(strRoot, L"*", FSCANTREE_NOFILES | FSCANTREE_NODEVICES, Opt.Tree.ExclSubTreeMask);
@@ -450,7 +450,7 @@ int TreeList::ReadTree()
 
 		if (CheckForEscSilent()) {
 			AscAbort = ConfirmAbortOp();
-			FirstCall = TRUE;
+			FirstCall = true;
 		}
 
 		if (AscAbort)
@@ -461,7 +461,7 @@ int TreeList::ReadTree()
 					(TreeItem **)realloc(ListData, (TreeCount + 256 + 1) * sizeof(TreeItem *));
 
 			if (!TmpListData) {
-				AscAbort = TRUE;
+				AscAbort = true;
 				break;
 			}
 
@@ -529,7 +529,7 @@ void TreeList::SaveTreeFile()
 		/* $ 16.10.2000 tran
 		   если диск должен кешироваться, то и пытаться не стоит */
 		if (MustBeCached(strRoot))
-			if (!GetCacheTreeName(strRoot, strName, TRUE)
+			if (!GetCacheTreeName(strRoot, strName, true)
 					|| !TreeFile.Open(strName, GENERIC_WRITE, FILE_SHARE_READ, nullptr, OPEN_ALWAYS,
 							FILE_ATTRIBUTE_NORMAL))
 				return;
@@ -560,12 +560,12 @@ void TreeList::SaveTreeFile()
 		apiSetFileAttributes(strName, FileAttributes);
 }
 
-int TreeList::GetCacheTreeName(const wchar_t *Root, FARString &strName, int CreateDir)
+bool TreeList::GetCacheTreeName(const wchar_t *Root, FARString &strName, bool CreateDir)
 {
 	struct statvfs svfs = {};
 
 	if (sdc_statvfs(Wide2MB(Root).c_str(), &svfs) != 0) {
-		return FALSE;
+		return false;
 	}
 
 	FARString strFolderName;
@@ -578,7 +578,7 @@ int TreeList::GetCacheTreeName(const wchar_t *Root, FARString &strName, int Crea
 	}
 
 	strName.Format(L"%ls/%lx", strFolderName.CPtr(), (unsigned long)svfs.f_fsid);
-	return TRUE;
+	return true;
 }
 
 void TreeList::GetRoot()
@@ -630,16 +630,16 @@ void TreeList::SyncDir()
 
 void TreeList::PR_MsgReadTree()
 {
-	int FirstCall = 1;
+	bool FirstCall = true;
 	PreRedrawItem preRedrawItem = PreRedraw.Peek();
 	TreeList::MsgReadTree(preRedrawItem.Param.Flags, FirstCall);
 }
 
-int TreeList::MsgReadTree(int TreeCount, int FirstCall)
+bool TreeList::MsgReadTree(int TreeCount, bool FirstCall)
 {
 	/* $ 24.09.2001 VVM
 	  ! Писать сообщение о чтении дерева только, если это заняло более 500 мсек. */
-	BOOL IsChangeConsole = LastScrX != ScrX || LastScrY != ScrY;
+	bool IsChangeConsole = LastScrX != ScrX || LastScrY != ScrY;
 
 	if (IsChangeConsole) {
 		LastScrX = ScrX;
@@ -656,7 +656,7 @@ int TreeList::MsgReadTree(int TreeCount, int FirstCall)
 		TreeStartTime = GetProcessUptimeMSec();
 	}
 
-	return 1;
+	return true;
 }
 
 bool TreeList::FillLastData()
@@ -777,7 +777,7 @@ int TreeList::ProcessKey(FarKey Key)
 				CopyToClipboard(strQuotedName);
 			} else {
 				if (Key == KEY_SHIFTENTER || Key == KEY_SHIFTNUMENTER) {
-					Execute(strQuotedName, TRUE, TRUE);
+					Execute(strQuotedName, true, true);
 				} else {
 					strQuotedName+= L" ";
 					CtrlObject->CmdLine->InsertString(strQuotedName);
@@ -1328,7 +1328,7 @@ int TreeList::ReadTreeFile()
 	File TreeFile;
 	if (MustBeCached(strRoot)
 			|| (!TreeFile.Open(strName, FILE_READ_DATA, FILE_SHARE_READ, nullptr, OPEN_EXISTING))) {
-		if (!GetCacheTreeName(strRoot, strName, FALSE)
+		if (!GetCacheTreeName(strRoot, strName, false)
 				|| (!TreeFile.Open(strName, FILE_READ_DATA, FILE_SHARE_READ, nullptr, OPEN_EXISTING))) {
 			// RestoreState();
 			return FALSE;
@@ -1574,7 +1574,7 @@ void TreeList::ReadSubTree(const wchar_t *Path)
 
 	ConvertNameToFull(Path, strDirName);
 	AddTreeName(strDirName);
-	int FirstCall = TRUE, AscAbort = FALSE;
+	bool FirstCall = true, AscAbort = false;
 	ScTree.SetFindPath(strDirName, L"*", 0, Opt.Tree.ExclSubTreeMask);
 	LastScrX = ScrX;
 	LastScrY = ScrY;
@@ -1585,7 +1585,7 @@ void TreeList::ReadSubTree(const wchar_t *Path)
 
 			if (CheckForEscSilent()) {
 				AscAbort = ConfirmAbortOp();
-				FirstCall = TRUE;
+				FirstCall = true;
 			}
 
 			if (AscAbort)
@@ -1614,7 +1614,7 @@ void TreeList::ReadCache(const wchar_t *TreeRoot)
 		FlushCache();
 
 	if (MustBeCached(TreeRoot) || !(TreeFile = fopen(Wide2MB(strTreeName).c_str(), FOPEN_READ)))
-		if (!GetCacheTreeName(TreeRoot, strTreeName, FALSE)
+		if (!GetCacheTreeName(TreeRoot, strTreeName, false)
 				|| !(TreeFile = fopen(Wide2MB(strTreeName).c_str(), FOPEN_READ))) {
 			ClearCache(1);
 			return;
@@ -1689,7 +1689,7 @@ void TreeList::UpdateViewPanel()
 		GetCurDir(strCurName);
 
 		if (AnotherPanel->GetType() == QVIEW_PANEL && SetCurPath())
-			((QuickView *)AnotherPanel)->ShowFile(strCurName, FALSE, nullptr);
+			((QuickView *)AnotherPanel)->ShowFile(strCurName, false, nullptr);
 	}
 }
 

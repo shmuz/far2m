@@ -107,7 +107,7 @@ InfoList::InfoList()
 InfoList::~InfoList()
 {
 	CloseFile();
-	SetMacroArea(TRUE);
+	SetMacroArea(true);
 }
 
 // перерисовка, только если мы текущий фрейм
@@ -899,16 +899,16 @@ int InfoList::OpenDizFile(const wchar_t *DizFile, int YPos)
 void InfoList::SetFocus()
 {
 	Panel::SetFocus();
-	SetMacroArea(FALSE);
+	SetMacroArea(false);
 }
 
 void InfoList::KillFocus()
 {
 	Panel::KillFocus();
-	SetMacroArea(TRUE);
+	SetMacroArea(true);
 }
 
-void InfoList::SetMacroArea(int Restore)
+void InfoList::SetMacroArea(bool Restore)
 {
 	if (!CtrlObject)
 		return;

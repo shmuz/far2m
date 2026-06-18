@@ -75,7 +75,7 @@ public:
 	virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
 	virtual int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0);
 	virtual void Update(int Mode);
-	void ShowFile(const wchar_t *FileName, int TempFile, PanelHandle *hDirPlugin);
+	void ShowFile(const wchar_t *FileName, bool TempFile, PanelHandle *hDirPlugin);
 	virtual void CloseFile();
 	virtual void QViewDelTempName();
 

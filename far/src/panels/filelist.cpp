@@ -3531,9 +3531,9 @@ void FileList::UpdateViewPanel()
 
 		if (PanelMode != PLUGIN_PANEL || CtrlObject->Plugins.UseFarCommand(hPlugin, PLUGIN_FARGETFILE)) {
 			if (TestParentFolderName(CurPtr->strName))
-				ViewPanel->ShowFile(strCurDir, FALSE, nullptr);
+				ViewPanel->ShowFile(strCurDir, false, nullptr);
 			else
-				ViewPanel->ShowFile(CurPtr->strName, FALSE, nullptr);
+				ViewPanel->ShowFile(CurPtr->strName, false, nullptr);
 		} else if (!(CurPtr->FileAttr & FILE_ATTRIBUTE_DIRECTORY)) {
 			FARString strTempDir, strFileName;
 			strFileName = CurPtr->strName;
@@ -3549,16 +3549,16 @@ void FileList::UpdateViewPanel()
 			FreePluginPanelItem(&PanelItem);
 
 			if (!Result) {
-				ViewPanel->ShowFile(nullptr, FALSE, nullptr);
+				ViewPanel->ShowFile(nullptr, false, nullptr);
 				apiRemoveDirectory(strTempDir);
 				return;
 			}
 
-			ViewPanel->ShowFile(strFileName, TRUE, nullptr);
+			ViewPanel->ShowFile(strFileName, true, nullptr);
 		} else if (!TestParentFolderName(CurPtr->strName))
-			ViewPanel->ShowFile(CurPtr->strName, FALSE, hPlugin);
+			ViewPanel->ShowFile(CurPtr->strName, false, hPlugin);
 		else
-			ViewPanel->ShowFile(nullptr, FALSE, nullptr);
+			ViewPanel->ShowFile(nullptr, false, nullptr);
 
 		SetTitle();
 	}
@@ -4306,7 +4306,7 @@ bool FileList::ApplyCommand()
 				} else {
 					CtrlObject->Cp()->LeftPanel->CloseFile();
 					CtrlObject->Cp()->RightPanel->CloseFile();
-					Execute(strConvertedCommand, FALSE, 0, ListFileUsed, true);
+					Execute(strConvertedCommand, false, false, ListFileUsed, true);
 				}
 			}
 
@@ -4423,7 +4423,7 @@ void FileList::CountDirSize(DWORD PluginFlags)
 	SortFileList(true);
 	ShowFileList(true);
 	CtrlObject->Cp()->Redraw();
-	CreateChangeNotification(FALSE);    // initially here was TRUE, but size is actually NOT recalculated recursively on deep change, so changing this to FALSE should not break anything, however give MUCH better performance due to inotify is slow on multiple directories
+	CreateChangeNotification(false);    // initially here was true, but size is actually NOT recalculated recursively on deep change, so changing this to FALSE should not break anything, however give MUCH better performance due to inotify is slow on multiple directories
 }
 
 int FileList::GetPrevViewMode()

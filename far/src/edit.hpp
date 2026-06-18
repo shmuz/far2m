@@ -264,7 +264,7 @@ public:
 	bool IsSelection() { return m_SelStart != -1 || m_SelEnd != 0; }
 	void GetRealSelection(int &Start, int &End);
 	void SetEditBeyondEnd(bool Mode) { Flags.Change(FEDITLINE_EDITBEYONDEND, Mode); }
-	void SetEditorMode(int Mode) { Flags.Change(FEDITLINE_EDITORMODE, Mode); }
+	void SetEditorMode(bool Mode) { Flags.Change(FEDITLINE_EDITORMODE, Mode); }
 	void ExpandTabs();
 
 	void InsertTab();

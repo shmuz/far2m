@@ -281,7 +281,7 @@ bool apiPathIsFile(LPCWSTR lpPathName);
 
 struct IUnmakeWritable
 {
-	virtual ~IUnmakeWritable() {} 
+	virtual ~IUnmakeWritable() {}
 	virtual void Unmake() = 0;
 };
 
@@ -294,11 +294,11 @@ class TemporaryMakeWritable
 	IUnmakeWritablePtr _unmake;
 
 public:
-	inline TemporaryMakeWritable(LPCWSTR lpFileName) 
+	inline TemporaryMakeWritable(LPCWSTR lpFileName)
 		: _unmake(apiMakeWritable(lpFileName))
 	{
 	}
-	
+
 	inline ~TemporaryMakeWritable()
 	{
 		if (_unmake)
@@ -308,10 +308,7 @@ public:
 
 void InitCurrentDirectory();
 
-BOOL apiSetCurrentDirectory(
-	LPCWSTR lpPathName,
-	bool Validate = true
-);
+bool apiSetCurrentDirectory(LPCWSTR lpPathName, bool Validate = true);
 
 // for elevation only, dont' use outside.
 bool CreateSymbolicLinkInternal(LPCWSTR Object,LPCWSTR Target, DWORD dwFlags);

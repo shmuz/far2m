@@ -90,9 +90,9 @@ public:
 	virtual const wchar_t *GetTypeName() { return L"[FileView]"; }    ///
 	virtual int GetType() { return MODALTYPE_VIEWER; }
 
-	void SetEnableF6(int AEnable)
+	void SetEnableF6(bool Enable)
 	{
-		DisableEdit = !AEnable;
+		DisableEdit = !Enable;
 		InitKeyBar();
 	}
 	void SetFileHolder(FileHolderPtr Observer) { View.SetFileHolder(Observer); }

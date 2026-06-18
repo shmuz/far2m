@@ -6218,7 +6218,7 @@ Edit *Editor::CreateString(const wchar_t *lpwszStr, int nLength)
 
 		pEdit->SetCurPos(0);
 		pEdit->SetObjectColor(FarColorToReal(COL_EDITORTEXT), FarColorToReal(COL_EDITORSELECTEDTEXT));
-		pEdit->SetEditorMode(TRUE);
+		pEdit->SetEditorMode(true);
 		pEdit->SetWordDiv(m_EdOpt.strWordDiv);
 		pEdit->SetShowWhiteSpace(m_EdOpt.ShowWhiteSpace);
 	}

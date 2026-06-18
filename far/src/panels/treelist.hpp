@@ -116,8 +116,8 @@ private:
 	bool RestoreState();
 
 private:
-	static int MsgReadTree(int TreeCount, int FirstCall);
-	static int GetCacheTreeName(const wchar_t *Root, FARString &strName, int CreateDir);
+	static bool MsgReadTree(int TreeCount, bool FirstCall);
+	static bool GetCacheTreeName(const wchar_t *Root, FARString &strName, bool CreateDir);
 
 public:
 	TreeList(int IsPanel = TRUE);

@@ -99,9 +99,9 @@ public:
 	void SetLockEditor(bool LockMode);
 	bool IsFullScreen() { return Flags.Check(FFILEEDIT_FULLSCREEN); }
 	void SetNamesList(NamesList *Names);
-	void SetEnableF6(int AEnableF6)
+	void SetEnableF6(bool Enable)
 	{
-		Flags.Change(FFILEEDIT_ENABLEF6, AEnableF6);
+		Flags.Change(FFILEEDIT_ENABLEF6, Enable);
 		InitKeyBar();
 	}
 	void SetFileHolder(FileHolderPtr Observer) { FHP = Observer; }

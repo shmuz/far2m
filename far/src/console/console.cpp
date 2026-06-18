@@ -142,7 +142,7 @@ UINT console::GetInputCodepage()
 
 bool console::SetInputCodepage(UINT Codepage)
 {
-	return TRUE;	// SetConsoleCP(Codepage)!=FALSE;
+	return true;	// SetConsoleCP(Codepage)!=FALSE;
 }
 
 UINT console::GetOutputCodepage()
@@ -152,7 +152,7 @@ UINT console::GetOutputCodepage()
 
 bool console::SetOutputCodepage(UINT Codepage)
 {
-	return TRUE;	// SetConsoleOutputCP(Codepage)!=FALSE;
+	return true;	// SetConsoleOutputCP(Codepage)!=FALSE;
 }
 
 bool console::SetControlHandler(PHANDLER_ROUTINE HandlerRoutine, bool Add)

@@ -462,7 +462,7 @@ bool Language::Init(const wchar_t *path, bool wide, int expected_max_id)
 	FARString lang_name = Opt.strLanguage;
 
 	FILE *lang_file =
-			OpenLangFile(path, LangFileMask, Opt.strLanguage, _message_file, codepage, FALSE, &lang_name);
+			OpenLangFile(path, LangFileMask, Opt.strLanguage, _message_file, codepage, false, &lang_name);
 
 	if (!lang_file) {
 		_last_error = LERROR_FILE_NOT_FOUND;

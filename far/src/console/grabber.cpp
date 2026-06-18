@@ -60,7 +60,7 @@ Grabber::Grabber()
 		GetCursorPos(_area.cur_x, _area.cur_y);
 
 	_area.left = -1;
-	SetCursorType(TRUE, 60);
+	SetCursorType(true, 60);
 	_prev_area = NormalizedArea();
 	_reset_area = true;
 	DisplayObject();
@@ -225,7 +225,7 @@ int Grabber::ProcessKey(FarKey key)
 		0,0 консоли.
 		Не было учтено режима выполнения макроса.
 	*/
-	SetCursorType(TRUE, 60);
+	SetCursorType(true, 60);
 
 	if (CtrlObject->Macro.IsExecuting()) {
 		if ((key & KEY_SHIFT) && key != KEY_NONE && _reset_area)

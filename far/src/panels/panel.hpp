@@ -143,7 +143,7 @@ protected:
 	FARString strCurDir;
 	int Focus;
 	int Type;
-	int EnableUpdate;
+	bool EnableUpdate;
 	int PanelMode;
 	int SortMode;
 	int SortOrder;
@@ -340,7 +340,7 @@ public:
 	void ChangeDisk();
 	int GetFocus() { return (Focus); }
 	int GetType() { return (Type); }
-	void SetUpdateMode(int Mode) { EnableUpdate = Mode; }
+	void SetUpdateMode(bool Mode) { EnableUpdate = Mode; }
 	bool MakeListFile(FARString &strListFileName, const wchar_t *Modifers = nullptr);
 	bool SetCurPath();
 

@@ -285,14 +285,14 @@ bool ProcessLocalFileTypes(const wchar_t *Name, int Mode, bool CanAddHistory,
 				SCOPED_ACTION(SaveScreen);
 				CtrlObject->Cp()->LeftPanel->CloseFile();
 				CtrlObject->Cp()->RightPanel->CloseFile();
-				Execute(strCommand, 0, 0, ListFileUsed, true);
+				Execute(strCommand, false, false, ListFileUsed, true);
 #else
 				// здесь была бага с прорисовкой (и... вывод данных
 				// на команду "@type !@!" пропадал с экрана)
 				// сделаем по аналогии с CommandLine::CmdExecute()
 				{
 					RedrawDesktop RdrwDesktop(true);
-					Execute(strCommand, 0, 0, ListFileUsed);
+					Execute(strCommand, false, false, ListFileUsed);
 					ScrollScreen(1); // обязательно, иначе деструктор RedrawDesktop
 					// проредравив экран забьет последнюю строку вывода.
 				}
@@ -362,7 +362,7 @@ void ProcessExternal(const wchar_t *Command, const wchar_t *Name, bool CanAddHis
 			SCOPED_ACTION(SaveScreen);
 			CtrlObject->Cp()->LeftPanel->CloseFile();
 			CtrlObject->Cp()->RightPanel->CloseFile();
-			Execute(strExecStr.CPtr()+1, 0, 0, ListFileUsed);
+			Execute(strExecStr.CPtr()+1, false, false, ListFileUsed);
 		}
 	}
 

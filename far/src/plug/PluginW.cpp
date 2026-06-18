@@ -266,10 +266,10 @@ bool PluginW::SaveToCache()
 	if ((Info.Flags & PF_PRELOAD) != 0)
 	{
 		kfh.SetInt(GetSettingsName(), szCache_Preload, 1);
-		WorkFlags.Change(PIWF_PRELOADED, TRUE);
+		WorkFlags.Change(PIWF_PRELOADED, true);
 		return true;
 	}
-	WorkFlags.Change(PIWF_PRELOADED, FALSE);
+	WorkFlags.Change(PIWF_PRELOADED, false);
 
 	kfh.SetString(GetSettingsName(), "ID", m_strModuleID.c_str());
 

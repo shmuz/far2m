@@ -1820,7 +1820,7 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 												? nullptr
 												: (Opt.FindOpt.CollectFiles ? &ViewList : nullptr));
 								ShellViewer.SetDynamicallyBorn(false);
-								ShellViewer.SetEnableF6(TRUE);
+								ShellViewer.SetEnableF6(true);
 
 								// FindFileArcIndex нельзя здесь использовать
 								// Он может быть уже другой.
@@ -1891,7 +1891,7 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 									std::shared_ptr<FindDlg_TempFileHolder> TFH;
 									FileEditor ShellEditor(strSearchFileName, CP_AUTODETECT, 0);
 									ShellEditor.SetDynamicallyBorn(false);
-									ShellEditor.SetEnableF6(TRUE);
+									ShellEditor.SetEnableF6(true);
 
 									// FindFileArcIndex нельзя здесь использовать
 									// Он может быть уже другой.
@@ -2405,8 +2405,7 @@ static void ScanPluginTree(HANDLE hDlg, PHPTR hPlugin, DWORD Flags, int &Recurse
 	{
 		if (!StopFlag) {
 			SCOPED_ACTION(PluginLocker);
-			GetFindDataResult =
-					CtrlObject->Plugins.GetFindData(hPlugin, &PanelData, &ItemCount, OPM_FIND) != FALSE;
+			GetFindDataResult = CtrlObject->Plugins.GetFindData(hPlugin, &PanelData, &ItemCount, OPM_FIND);
 		}
 	}
 	if (!GetFindDataResult) {

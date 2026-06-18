@@ -50,12 +50,12 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <atomic>
 
 
-BOOL FarChDir(const wchar_t *NewDir)
+bool FarChDir(const wchar_t *NewDir)
 {
 	if (!NewDir || !*NewDir)
-		return FALSE;
+		return false;
 
-	BOOL rc=FALSE;
+	bool rc = false;
 	FARString strCurDir;
 
 	// remove redundant slashes
@@ -209,14 +209,14 @@ int CheckShortcutFolder(FARString &pTestPath, bool IsHostFile, bool Silent)
 void CreatePath(FARString &strPath)
 {
 	wchar_t *ChPtr = strPath.GetBuffer();
-	BOOL bEnd = FALSE;
+	bool bEnd = false;
 
 	for (;;)
 	{
 		if (!*ChPtr || IsSlash(*ChPtr))
 		{
 			if (!*ChPtr)
-				bEnd = TRUE;
+				bEnd = true;
 
 			*ChPtr = 0;
 

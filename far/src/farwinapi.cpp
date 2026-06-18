@@ -414,7 +414,7 @@ DWORD apiGetCurrentDirectory(FARString &strCurDir)
 	return static_cast<DWORD>(strCurDir.GetLength());
 }
 
-BOOL apiSetCurrentDirectory(LPCWSTR lpPathName, bool Validate)
+bool apiSetCurrentDirectory(LPCWSTR lpPathName, bool Validate)
 {
 	// correct path to our standard
 	FARString strDir = lpPathName;
@@ -422,17 +422,17 @@ BOOL apiSetCurrentDirectory(LPCWSTR lpPathName, bool Validate)
 		DeleteEndSlash(strDir);
 
 	if (strDir == strCurrentDirectory())
-		return TRUE;
+		return true;
 
 	if (Validate) {
 		DWORD attr = WINPORT(GetFileAttributes)(lpPathName);
 		if (attr == INVALID_FILE_ATTRIBUTES) {
 			fprintf(stderr, "apiSetCurrentDirectory: get attr error %u for %ls\n", WINPORT(GetLastError()),
 					lpPathName);
-			return FALSE;
+			return false;
 		} else if ((attr & FILE_ATTRIBUTE_DIRECTORY) == 0) {
 			fprintf(stderr, "apiSetCurrentDirectory: not dir attr 0x%x for %ls\n", attr, lpPathName);
-			return FALSE;
+			return false;
 		}
 	}
 
@@ -445,12 +445,12 @@ BOOL apiSetCurrentDirectory(LPCWSTR lpPathName, bool Validate)
 			fprintf(stderr, "apiSetCurrentDirectory: set curdir error %u for %ls\n", WINPORT(GetLastError()),
 					lpPathName);
 			if (Validate) {
-				return FALSE;
+				return false;
 			}
 		}
 	}
 
-	return TRUE;
+	return true;
 }
 
 void apiGetTempPath(FARString &strBuffer)

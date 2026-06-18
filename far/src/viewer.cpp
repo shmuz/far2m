@@ -1065,13 +1065,17 @@ int64_t Viewer::VMProcess(int OpCode, void *vParam, int64_t iParam)
 {
 	switch (OpCode) {
 		case MCODE_C_EMPTY:
-			return (int64_t)!FileSize;
+			return !FileSize;
+
 		case MCODE_C_SELECTED:
-			return (int64_t)(SelectSize ? TRUE : FALSE);
+			return SelectSize ? TRUE : FALSE;
+
 		case MCODE_C_EOF:
-			return (int64_t)(LastPage || !ViewFile.Opened());
+			return LastPage || !ViewFile.Opened();
+
 		case MCODE_C_BOF:
-			return (int64_t)(!FilePos || !ViewFile.Opened());
+			return !FilePos || !ViewFile.Opened();
+
 		case MCODE_V_VIEWERSTATE: {
 			DWORD MacroViewerState = 0;
 			MacroViewerState|= VM.Wrap ? 0x00000008 : 0;
@@ -1079,12 +1083,14 @@ int64_t Viewer::VMProcess(int OpCode, void *vParam, int64_t iParam)
 			MacroViewerState|= VM.Hex ? 0x00000020 : 0;
 			MacroViewerState|= Opt.OnlyEditorViewerUsed ? 0x08000000 | 0x00000800 : 0;
 			MacroViewerState|= HostFileViewer && !HostFileViewer->GetCanLoseFocus() ? 0x00000800 : 0;
-			return (int64_t)MacroViewerState;
+			return MacroViewerState;
 		}
+
 		case MCODE_V_ITEMCOUNT:    // ItemCount - число элементов в текущем объекте
-			return (int64_t)GetViewFileSize();
+			return GetViewFileSize();
+
 		case MCODE_V_CURPOS:       // CurPos - текущий индекс в текущем объекте
-			return (int64_t)(GetViewFilePos() + 1);
+			return GetViewFilePos() + 1;
 	}
 
 	return 0;

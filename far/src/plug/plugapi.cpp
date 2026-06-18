@@ -1750,7 +1750,7 @@ static int FarViewerSynched(const wchar_t *FileName, const wchar_t *Title, int X
 			return FALSE;
 
 		ApplyViewerDeleteOnClose(Viewer, FileName, Flags);
-		Viewer->SetEnableF6((Flags & VF_ENABLE_F6));
+		Viewer->SetEnableF6((Flags & VF_ENABLE_F6) != 0);
 
 		/* $ 21.05.2002 SKV
 		  Запускаем свой цикл только если не был указан флаг.
@@ -1767,7 +1767,7 @@ static int FarViewerSynched(const wchar_t *FileName, const wchar_t *Title, int X
 		/* 09.09.2001 IS ! Добавим имя файла в историю, если потребуется */
 		FileViewer Viewer(FileName, false, DisableHistory, Title, X1, Y1, X2, Y2, CodePage);
 
-		Viewer.SetEnableF6(Flags & VF_ENABLE_F6);
+		Viewer.SetEnableF6((Flags & VF_ENABLE_F6) != 0);
 
 		/* $ 28.05.2001 По умолчанию Вьюер, поэтому нужно здесь признак выставиль явно */
 		Viewer.SetDynamicallyBorn(false);
@@ -1801,9 +1801,10 @@ int FarEditorSynched(const wchar_t *FileName, const wchar_t *Title, int X1, int 
 	 Проверка флагов редактора (раньше они игнорировались) и открытие
 	 немодального редактора, если есть соответствующий флаг
 	*/
-	int CreateNew = (Flags & EF_CREATENEW) ? TRUE : FALSE;
-	int Locked = (Flags & EF_LOCKED) ? TRUE : FALSE;
-	int DisableHistory = (Flags & EF_DISABLEHISTORY) ? TRUE : FALSE;
+	bool CreateNew      = (Flags & EF_CREATENEW) != 0;
+	bool Locked         = (Flags & EF_LOCKED) != 0;
+	bool DisableHistory = (Flags & EF_DISABLEHISTORY) != 0;
+	bool EnableF6       = (Flags & EF_ENABLE_F6) != 0;
 	/* $ 14.06.2002 IS
 	   Обработка EF_DELETEONLYFILEONCLOSE - этот флаг имеет более низкий
 	   приоритет по сравнению с EF_DELETEONCLOSE
@@ -1843,7 +1844,7 @@ int FarEditorSynched(const wchar_t *FileName, const wchar_t *Title, int X1, int 
 				return editorExitCode;
 			}
 
-			Editor->SetEnableF6((Flags & EF_ENABLE_F6));
+			Editor->SetEnableF6(EnableF6);
 			Editor->SetPluginTitle(Title);
 
 			/* $ 21.05.2002 SKV - Запускаем свой цикл, только если не был указан флаг. */
@@ -1872,7 +1873,7 @@ int FarEditorSynched(const wchar_t *FileName, const wchar_t *Title, int X1, int 
 			ExitCode = editorExitCode;
 		else {
 			Editor.SetDynamicallyBorn(false);
-			Editor.SetEnableF6((Flags & EF_ENABLE_F6));
+			Editor.SetEnableF6(EnableF6);
 			Editor.SetPluginTitle(Title);
 			/* $ 15.05.2002 SKV
 			  Зафиксируем вход и выход в/из модального редактора.

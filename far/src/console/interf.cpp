@@ -82,7 +82,7 @@ void InitConsole()
 {
 	InitRecodeOutTable();
 	Console.GetCursorInfo(InitialCursorInfo);
-	Console.SetControlHandler(CtrlHandler, TRUE);
+	Console.SetControlHandler(CtrlHandler, true);
 	Console.GetMode(Console.GetInputHandle(), InitialConsoleMode);
 	Console.GetTitle(strInitTitle);
 	Console.GetWindowRect(InitWindowRect);
@@ -1241,7 +1241,7 @@ bool CheckForInactivityExit()
 			&& GetProcessUptimeMSec() - StartIdleTime > Opt.InactivityExitTime * 60000 && FrameManager
 			&& FrameManager->GetFrameCount() == 1
 			&& (!CtrlObject || !CtrlObject->Plugins.HasBackgroundTasks())) {
-		FrameManager->ExitMainLoop(FALSE);
+		FrameManager->ExitMainLoop(false);
 		return true;
 	}
 

@@ -555,7 +555,7 @@ m1:
 						continue;
 					}
 
-					int Splitted=0;
+					bool Splitted = false;
 
 					for (int I=(int)strSplitLine.GetLength()-1; I > 0; I--)
 					{
@@ -589,7 +589,7 @@ m1:
 								strSplitLine.ReleaseBuffer();
 
 								HighlightsCorrection(strSplitLine);
-								Splitted=TRUE;
+								Splitted = true;
 								break;
 							}
 							else

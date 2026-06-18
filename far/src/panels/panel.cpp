@@ -126,7 +126,7 @@ const ChDiskPluginItem &ChDiskPluginItem::operator=(const ChDiskPluginItem &rhs)
 Panel::Panel()
 	:
 	Focus(0),
-	EnableUpdate(TRUE),
+	EnableUpdate(true),
 	PanelMode(NORMAL_PANEL),
 	PrevViewMode(VIEW_3),
 	NumericSort(0),
@@ -517,7 +517,7 @@ int Panel::ChangeDiskMenu(int Pos, bool FirstCall)
 				case KEY_SHIFTNUMENTER:
 				case KEY_SHIFTENTER: {
 					if (item && !item->pPlugin) {
-						Execute(item->location.path, TRUE, TRUE);
+						Execute(item->location.path, true, true);
 					}
 				} break;
 				case KEY_CTRLPGUP:

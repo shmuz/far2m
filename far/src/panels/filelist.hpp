@@ -284,7 +284,7 @@ public:
 	virtual void UpdateIfRequired();
 
 	virtual bool SendKeyToPlugin(FarKey Key, bool Pred = false);
-	void CreateChangeNotification(int CheckTree);
+	void CreateChangeNotification(bool CheckTree);
 	virtual void CloseChangeNotification();
 	virtual void SortFileList(bool KeepPosition);
 	virtual void SetViewMode(int ViewMode);

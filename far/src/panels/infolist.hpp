@@ -94,7 +94,7 @@ private:
 	void ClearTitles();
 
 	int OpenDizFile(const wchar_t *DizFile, int YPos);
-	void SetMacroArea(int Restore = FALSE);
+	void SetMacroArea(bool Restore = false);
 	void DynamicUpdateKeyBar();
 
 public:

@@ -828,11 +828,11 @@ int PluginManager::ProcessDialogEvent(int Event, void *Param)
 	return FALSE;
 }
 
-int PluginManager::GetFindData(PHPTR ph, PluginPanelItem **pItems, int *pItemsNumber, DWORD OpMode)
+bool PluginManager::GetFindData(PHPTR ph, PluginPanelItem **pItems, int *pItemsNumber, DWORD OpMode)
 {
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	*pItemsNumber = 0;
-	return ph->pPlugin->GetFindData(ph->hPanel, pItems, pItemsNumber, OpMode);
+	return ph->pPlugin->GetFindData(ph->hPanel, pItems, pItemsNumber, OpMode) != 0;
 }
 
 
@@ -842,12 +842,12 @@ void PluginManager::FreeFindData(PHPTR ph, PluginPanelItem *pItems, int ItemsNum
 }
 
 
-int PluginManager::GetVirtualFindData(
+bool PluginManager::GetVirtualFindData(
 		PHPTR ph, PluginPanelItem **pItems, int *pItemsNumber, const wchar_t *Path)
 {
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
 	*pItemsNumber = 0;
-	return ph->pPlugin->GetVirtualFindData(ph->hPanel, pItems, pItemsNumber, Path);
+	return ph->pPlugin->GetVirtualFindData(ph->hPanel, pItems, pItemsNumber, Path) != 0;
 }
 
 
@@ -857,10 +857,10 @@ void PluginManager::FreeVirtualFindData(PHPTR ph, PluginPanelItem *PanelItem, in
 }
 
 
-int PluginManager::SetDirectory(PHPTR ph, const wchar_t *Dir, DWORD OpMode)
+bool PluginManager::SetDirectory(PHPTR ph, const wchar_t *Dir, DWORD OpMode)
 {
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
-	return ph->pPlugin->SetDirectory(ph->hPanel, Dir, OpMode);
+	return ph->pPlugin->SetDirectory(ph->hPanel, Dir, OpMode) != 0;
 }
 
 
@@ -942,7 +942,7 @@ bool PluginManager::GetFile(
 }
 
 
-int PluginManager::DeleteFiles(
+bool PluginManager::DeleteFiles(
     PHPTR ph,
     PluginPanelItem *PanelItem,
     int ItemsNumber,
@@ -956,7 +956,7 @@ int PluginManager::DeleteFiles(
 	if (Code)
 		ReadUserBackground(&SaveScr); //???
 
-	return Code;
+	return Code != 0;
 }
 
 

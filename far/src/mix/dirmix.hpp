@@ -51,7 +51,7 @@ enum TESTFOLDERCONST  // for TestFolder()
    Если ChangeDir==FALSE, то не меняем текущий  диск, а только устанавливаем
    переменные окружения.
 */
-BOOL FarChDir(const wchar_t *NewDir);
+bool FarChDir(const wchar_t *NewDir);
 
 TESTFOLDERCONST TestFolder(const wchar_t *Name);
 int CheckShortcutFolder(FARString &pTestPath, bool IsHostFile, bool Silent=false);

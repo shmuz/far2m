@@ -378,7 +378,7 @@ int FileViewer::ProcessKey(FarKey Key)
 				}
 				else
 				{
-					ShellEditor->SetEnableF6(TRUE);
+					ShellEditor->SetEnableF6(true);
 					ShellEditor->SetFileHolder(View.GetFileHolder());
 					/* $ 07.05.2001 DJ сохраняем NamesList */
 					ShellEditor->SetNamesList(View.GetNamesList());
@@ -614,7 +614,7 @@ int FileViewer::GetViewerID() const
 void ModalViewFile(const std::string &pathname)
 {
 	FileViewer Viewer(StrMB2Wide(pathname).c_str(),
-		FALSE, FALSE, FALSE, -1, nullptr, nullptr, FALSE, CP_AUTODETECT);
+		false, false, false, -1, nullptr, nullptr, false, CP_AUTODETECT);
 	Viewer.SetDynamicallyBorn(false);
 	FrameManager->ExecuteModalEV(false);
 	const int r = Viewer.GetExitCode();
@@ -631,7 +631,7 @@ void ViewConsoleHistory(HANDLE con_hnd, bool modal, bool autoclose)
 	std::shared_ptr<TempFileHolder> tfh(std::make_shared<TempFileHolder>(histfile, false));
 
 	FileViewer *Viewer = new (std::nothrow) FileViewer(histfile,
-		!modal, TRUE, TRUE, -1, nullptr, nullptr, FALSE, CP_UTF8);
+		!modal, true, true, -1, nullptr, nullptr, false, CP_UTF8);
 	Viewer->SetFileHolder(tfh);
 	Viewer->SetDynamicallyBorn(!modal);
 	Viewer->ProcessKey(KEY_END); // scroll to the end

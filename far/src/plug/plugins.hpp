@@ -213,17 +213,17 @@ class PluginManager
 	public:
 		void  ClosePanel(PHPTR ph); // decreases refcnt and actually closes plugin if refcnt reached zero
 		int   Compare(PHPTR ph, const PluginPanelItem *Item1, const PluginPanelItem *Item2, unsigned int Mode);
-		int   DeleteFiles(PHPTR ph, PluginPanelItem *PanelItem, int ItemsNumber, DWORD OpMode);
+		bool  DeleteFiles(PHPTR ph, PluginPanelItem *PanelItem, int ItemsNumber, DWORD OpMode);
 		void  FreeFindData(PHPTR ph, PluginPanelItem *PanelItem, int ItemsNumber);
 		void  FreeVirtualFindData(PHPTR ph, PluginPanelItem *PanelItem, int ItemsNumber);
 		void  GetCustomData(FileListItem *ListItem);
 		bool  GetFile(PHPTR ph, PluginPanelItem *PanelItem, const wchar_t *DestPath, FARString &strResultName, DWORD OpMode);
 		int   GetFiles(PHPTR ph, PluginPanelItem *PanelItem, int ItemsNumber, bool Move, const wchar_t **DestPath, DWORD OpMode);
-		int   GetFindData(PHPTR ph, PluginPanelItem **pPanelItem, int *pItemsNumber, DWORD OpMode);
+		bool  GetFindData(PHPTR ph, PluginPanelItem **pPanelItem, int *pItemsNumber, DWORD OpMode);
 		bool  GetLinkTarget(PHPTR ph, PluginPanelItem *PanelItem, FARString &result, DWORD OpMode);
 		void  GetOpenPluginInfo(PHPTR ph, OpenPluginInfo *Info);
 		FARString GetPluginModuleName(PHPTR ph);
-		int   GetVirtualFindData(PHPTR ph, PluginPanelItem **pPanelItem, int *pItemsNumber, const wchar_t *Path);
+		bool  GetVirtualFindData(PHPTR ph, PluginPanelItem **pPanelItem, int *pItemsNumber, const wchar_t *Path);
 		int   MakeDirectory(PHPTR ph, const wchar_t **Name, DWORD OpMode);
 		bool  MayExitFar();
 		PHPTR OpenFilePlugin(const wchar_t *Name, DWORD OpMode, OPENFILEPLUGINTYPE Type, Plugin *pDesiredPlugin = nullptr);
@@ -240,7 +240,7 @@ class PluginManager
 		int   ProcessViewerEvent(int Event, int ViewerId);
 		int   PutFiles(PHPTR ph, PluginPanelItem *PanelItem, int ItemsNumber, bool Move, DWORD OpMode);
 		void  RetainPanel(PHPTR ph); // increments refcnt
-		int   SetDirectory(PHPTR ph, const wchar_t *Dir, DWORD OpMode);
+		bool  SetDirectory(PHPTR ph, const wchar_t *Dir, DWORD OpMode);
 
 		void BackgroundTaskStarted(const wchar_t *Info);
 		void BackgroundTaskFinished(const wchar_t *Info);

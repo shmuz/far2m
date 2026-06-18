@@ -781,7 +781,7 @@ int UserMenu::ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar
 						SCOPED_ACTION(SaveScreen);
 						CtrlObject->Cp()->LeftPanel->CloseFile();
 						CtrlObject->Cp()->RightPanel->CloseFile();
-						Execute(strCommand, 0, 0, ListFileUsed, true);
+						Execute(strCommand, false, false, ListFileUsed, true);
 					}
 				}
 			}    // strCommand != "REM"

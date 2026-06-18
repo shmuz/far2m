@@ -1812,7 +1812,7 @@ void Dialog::ShowDialog(int ID)
 
 		// перед прорисовкой подложки окна диалога
 		if (!DialogMode.Check(DMODE_NODRAWSHADOW))
-			Shadow(DialogMode.Check(DMODE_FULLSHADOW) != FALSE);	// "наводим" тень
+			Shadow(DialogMode.Check(DMODE_FULLSHADOW));	// "наводим" тень
 
 		if (!DialogMode.Check(DMODE_NODRAWPANEL)) {
 

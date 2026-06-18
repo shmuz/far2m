@@ -289,7 +289,7 @@ static const wchar_t *_SubstFileName(const wchar_t *CurStr,TSubstData *PSubstDat
 
 		if (RealPath)
 		{
-			_MakePath1(PSubstData->PassivePanel?KEY_ALTSHIFTBACKBRACKET:KEY_ALTSHIFTBRACKET,strCurDir,L"");
+			_MakePath1(PSubstData->PassivePanel ? KEY_ALTSHIFTBACKBRACKET : KEY_ALTSHIFTBRACKET, strCurDir, L"");
 			Unquote(strCurDir);
 		}
 
