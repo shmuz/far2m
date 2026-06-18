@@ -466,8 +466,17 @@ static int win_GetTimeZoneInformation (lua_State *L)
 
 static int win_Sleep (lua_State *L)
 {
-	unsigned usec = (unsigned) (luaL_checknumber(L,1) * 1000); // msec -> mcsec
-	usleep(usec);
+	double msec = luaL_checknumber(L, 1);
+	struct timespec ts;
+
+	// Extract whole seconds
+	ts.tv_sec = (time_t)(msec / 1000);
+	// Extract remaining milliseconds and convert to nanoseconds
+	ts.tv_nsec = (long)((msec - (ts.tv_sec * 1000)) * 1000000);
+
+	while (nanosleep(&ts, &ts) == -1 && errno == EINTR) {
+		// Loop handles the case where the sleep is interrupted by a system signal
+	}
 	return 0;
 }
 
