@@ -2022,7 +2022,7 @@ void VMenu::ShowMenu(bool IsParent)
 				}
 
 				SetColor(Colors[VMenuColorSeparator]);
-				BoxText(TmpStr, FALSE);
+				BoxText(TmpStr, false);
 
 				if (!Item[I]->strName.IsEmpty()) {
 					int ItemWidth = (int)Item[I]->strName.GetLength();

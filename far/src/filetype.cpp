@@ -341,7 +341,7 @@ void ProcessExternal(const wchar_t *Command, const wchar_t *Name, bool CanAddHis
 	FARString strExecStr = Command;
 	FARString strFullExecStr = Command;
 	{
-		/*int PreserveLFN=*/SubstFileName(strExecStr,Name,&strListName,&strAnotherListName);
+		SubstFileName(strExecStr,Name,&strListName,&strAnotherListName);
 		bool ListFileUsed=!strListName.IsEmpty()||!strAnotherListName.IsEmpty();
 
 		//PreserveLongName PreserveName(PreserveLFN);

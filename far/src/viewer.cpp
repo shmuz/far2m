@@ -163,7 +163,7 @@ Viewer::Viewer(bool bQuickView, UINT aCodePage)
 	LeftPos = 0;
 	SecondPos = 0;
 	FileSize = 0;
-	LastPage = 0;
+	LastPage = false;
 	SelectPos = SelectSize = 0;
 	LastSelPos = 0;
 	SetStatusMode(true);
@@ -271,7 +271,7 @@ void Viewer::KeepInitParameters()
 	InitHex = VM.Hex;
 }
 
-int Viewer::OpenFile(const wchar_t *Name, int warning)
+int Viewer::OpenFile(const wchar_t *Name, bool warning)
 {
 	VM.CodePage = DefCodePage;
 	DefCodePage = CP_AUTODETECT;
@@ -281,7 +281,7 @@ int Viewer::OpenFile(const wchar_t *Name, int warning)
 
 	DWORD FileAttr = apiGetFileAttributes(Name);
 	if (FileAttr != INVALID_FILE_ATTRIBUTES && (FileAttr & FILE_ATTRIBUTE_DEVICE) != 0) {    // avoid stuck
-		OpenFailed = TRUE;
+		OpenFailed = true;
 		return FALSE;
 	}
 
@@ -704,7 +704,7 @@ void Viewer::ShowHex()
 					   убираем показ пустой строки, если длина
 					   файла кратна 16 */
 					EndFile = 1;
-					LastPage = 1;
+					LastPage = true;
 
 					if (!X) {
 						wcscpy(OutStr, L"");
@@ -729,7 +729,7 @@ void Viewer::ShowHex()
 					}
 
 					TextStr[TextPos++] = Ch;
-					LastPage = 0;
+					LastPage = false;
 				}
 
 				if (X == 3)
@@ -762,7 +762,7 @@ void Viewer::ShowHex()
 					   убираем показ пустой строки, если длина
 					   файла кратна 16 */
 					EndFile = 1;
-					LastPage = 1;
+					LastPage = true;
 
 					if (!X) {
 						wcscpy(OutStr, L"");
@@ -784,7 +784,7 @@ void Viewer::ShowHex()
 						Ch = L' ';
 
 					TextStr[TextPos++] = Ch;
-					LastPage = 0;
+					LastPage = false;
 				}
 
 				if (X == 7)
@@ -1217,7 +1217,7 @@ int Viewer::ProcessKey(FarKey Key)
 				CtrlObject->Cp()->ActivePanel->Redraw();
 
 			Show();
-			return (TRUE);
+			return TRUE;
 		}
 		case KEY_IDLE: {
 			if (ViewFile.Opened()) {
@@ -1243,12 +1243,12 @@ int Viewer::ProcessKey(FarKey Key)
 						if (FilePos > FileSize)
 							ProcessKey(KEY_CTRLEND);
 						else {
-							int64_t PrevLastPage = LastPage;
+							bool PrevLastPage = LastPage;
 							Show();
 
 							if (PrevLastPage && !LastPage) {
 								ProcessKey(KEY_CTRLEND);
-								LastPage = TRUE;
+								LastPage = true;
 							}
 						}
 					}
@@ -1327,7 +1327,7 @@ int Viewer::ProcessKey(FarKey Key)
 							FarChDir(strViewDir);
 					}
 
-					if (OpenFile(strName, TRUE)) {
+					if (OpenFile(strName, true)) {
 						SecondPos = 0;
 						Show();
 					}
@@ -1357,7 +1357,7 @@ int Viewer::ProcessKey(FarKey Key)
 			FARString reopenFileName = strFileName;
 			if (VM.Processed || !strProcessedViewName.IsEmpty()) {
 				DefCodePage = VM.CodePage;
-				OpenFile(reopenFileName, TRUE);
+				OpenFile(reopenFileName, true);
 			}
 			Show();
 			return true;
@@ -1897,7 +1897,7 @@ int Viewer::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 			}
 		}
 
-		return (TRUE);
+		return TRUE;
 	}
 
 	/* $ 16.12.2000 tran
@@ -1929,12 +1929,12 @@ int Viewer::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 		//_D(SysLog(L"MsX=%i, XTable=%i, XPos=%i",MsX,XTable,XPos));
 		if (MouseX >= XCodePage && MouseX <= XCodePage + 10) {
 			ProcessKey(KEY_SHIFTF8);
-			return (TRUE);
+			return TRUE;
 		}
 
 		if (MouseX >= XPos && MouseX <= XPos + 7 + 1 + 4 + 1 + 3) {
 			ProcessKey(KEY_ALTF8);
-			return (TRUE);
+			return TRUE;
 		}
 	}
 
@@ -1980,7 +1980,7 @@ void Viewer::Up()
 	else
 		return;
 
-	LastPage = 0;
+	LastPage = false;
 
 	if (VM.Hex) {
 		// Alter-1: here we use BYTE COUNT, while in Down handler we use ::vread which may

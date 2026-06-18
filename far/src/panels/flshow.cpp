@@ -392,7 +392,7 @@ void FileList::ShowFileList(bool Fast)
 		ShowTotalSize(Info);
 	}
 
-	ShowList(FALSE, 0, Info);
+	ShowList(false, 0, Info);
 	ShowSelectedSize();
 
 	if (Opt.ShowPanelScrollbar) {
@@ -920,7 +920,7 @@ void FileList::ShowList(bool ShowStatus, int StartColumn, OpenPluginInfo &Info)
 
 			if (ListPos < FileCount) {
 				if (!ShowStatus && !StatusShown && CurFile == ListPos && Opt.ShowPanelStatus) {
-					ShowList(TRUE, CurColumn, Info);
+					ShowList(true, CurColumn, Info);
 					GotoXY(CurX, CurY);
 					StatusShown = true;
 					SetShowColor(ListPos);

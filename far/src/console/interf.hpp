@@ -99,7 +99,7 @@ void vmprintf(const wchar_t *fmt, ...);
 void PutText(int X1, int Y1, int X2, int Y2, const CHAR_INFO *Src);
 void GetText(int X1, int Y1, int X2, int Y2, CHAR_INFO *Dest, int DestSize);
 void BoxText(wchar_t Chr);
-void BoxText(const wchar_t *Str, int IsVert = 0);
+void BoxText(const wchar_t *Str, bool IsVert = false);
 
 void SetScreen(int X1, int Y1, int X2, int Y2, wchar_t Ch, uint64_t Color);
 void MakeShadow(int X1, int Y1, int X2, int Y2, SaveScreen *ss = NULL);

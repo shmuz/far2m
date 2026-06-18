@@ -195,13 +195,13 @@ void Help::Hide()
 }
 
 
-int Help::ReadHelp(const wchar_t *Mask)
+bool Help::ReadHelp(const wchar_t *Mask)
 {
 	wchar_t *ReadStr;
 	FARString strSplitLine;
-	int Formatting=TRUE,RepeatLastLine,BreakProcess;
+	bool Formatting = true, RepeatLastLine, BreakProcess;
 	size_t PosTab;
-	const int MaxLength=X2-X1-1;
+	const int MaxLength = X2 - X1 - 1;
 	FARString strTabSpace;
 	FARString strPath;
 
@@ -211,7 +211,7 @@ int Help::ReadHelp(const wchar_t *Mask)
 		size_t pos;
 
 		if (!strPath.Pos(pos,HelpEndLink))
-			return FALSE;
+			return false;
 
 		StackData.strHelpTopic = strPath.CPtr() + pos + 1;
 		strPath.Truncate(pos);
@@ -228,7 +228,7 @@ int Help::ReadHelp(const wchar_t *Mask)
 	{
 		strFullHelpPathName.Clear();
 		ReadDocumentsHelp(HIDX_PLUGINS);
-		return TRUE;
+		return true;
 	}
 
 	UINT nCodePage = CP_UTF8;
@@ -249,7 +249,7 @@ int Help::ReadHelp(const wchar_t *Mask)
 			}
 		}
 
-		return FALSE;
+		return false;
 	}
 
 	FARString strReadStr;
@@ -284,16 +284,16 @@ int Help::ReadHelp(const wchar_t *Mask)
 	{
 		Search(HelpFile,nCodePage);
 		fclose(HelpFile);
-		return TRUE;
+		return true;
 	}
 
-	StrCount=0;
-	FixCount=0;
-	TopicFound=false;
-	RepeatLastLine=FALSE;
-	BreakProcess=FALSE;
-	int NearTopicFound=0;
-	wchar_t PrevSymbol=0;
+	StrCount = 0;
+	FixCount = 0;
+	TopicFound = false;
+	RepeatLastLine = false;
+	BreakProcess = false;
+	int NearTopicFound = 0;
+	wchar_t PrevSymbol = 0;
 
 	LPWSTR TabSpace=strTabSpace.GetBuffer(CtrlTabSize+1);
 	for (int i=0; i < CtrlTabSize; i++)
@@ -332,7 +332,7 @@ int Help::ReadHelp(const wchar_t *Mask)
 				else
 				{
 					strReadStr.Clear();
-					RepeatLastLine=TRUE;
+					RepeatLastLine = true;
 					continue;
 				}
 
@@ -386,7 +386,7 @@ int Help::ReadHelp(const wchar_t *Mask)
 			MI++;
 		}
 
-		RepeatLastLine=FALSE;
+		RepeatLastLine = false;
 
 		while (strReadStr.Pos(PosTab,L'\t'))
 		{
@@ -420,21 +420,21 @@ int Help::ReadHelp(const wchar_t *Mask)
 			{
 				if (!StrCmp(strReadStr,L"@+"))
 				{
-					Formatting=TRUE;
-					PrevSymbol=0;
+					Formatting = true;
+					PrevSymbol = 0;
 					continue;
 				}
 
 				if (!StrCmp(strReadStr,L"@-"))
 				{
-					Formatting=FALSE;
-					PrevSymbol=0;
+					Formatting = false;
+					PrevSymbol = 0;
 					continue;
 				}
 
 				if (strSplitLine.At(0))
 				{
-					BreakProcess=TRUE;
+					BreakProcess = true;
 					strReadStr.Clear();
 					PrevSymbol=0;
 					goto m1;
@@ -504,7 +504,7 @@ m1:
 								}
 							}
 							else
-								RepeatLastLine=TRUE;
+								RepeatLastLine = true;
 						}
 						else if (!strReadStr.IsEmpty())
 						{
@@ -536,7 +536,7 @@ m1:
 							continue;
 						}
 						else
-							RepeatLastLine=TRUE;
+							RepeatLastLine = true;
 					}
 
 					if (!RepeatLastLine)

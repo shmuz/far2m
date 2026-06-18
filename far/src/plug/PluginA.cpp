@@ -729,7 +729,7 @@ int PluginA::GetFiles(
     HANDLE hPanel,
     PluginPanelItem *PanelItem,
     int ItemsNumber,
-    int Move,
+    bool Move,
     const wchar_t **DestPath,
     DWORD OpMode)
 {
@@ -759,7 +759,7 @@ int PluginA::PutFiles(
     HANDLE hPanel,
     PluginPanelItem *PanelItem,
     int ItemsNumber,
-    int Move,
+    bool Move,
     DWORD OpMode)
 {
 	int nResult = -1;

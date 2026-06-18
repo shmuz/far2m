@@ -68,7 +68,7 @@ QuickView::QuickView()
 QuickView::~QuickView()
 {
 	CloseFile();
-	SetMacroArea(TRUE);
+	SetMacroArea(true);
 }
 
 FARString &QuickView::GetTitle(FARString &strTitle, int SubLen, int TruncSize)
@@ -372,7 +372,7 @@ void QuickView::ShowFile(const wchar_t *FileName, int TempFile, PanelHandle *hDi
 			OldWrapType = QView->GetWrapType();
 			QView->SetWrapMode(LastWrapMode);
 			QView->SetWrapType(LastWrapType);
-			QView->OpenFile(strCurFileName, FALSE);
+			QView->OpenFile(strCurFileName, false);
 		}
 	}
 
@@ -466,16 +466,16 @@ void QuickView::SetFocus()
 {
 	Panel::SetFocus();
 	SetTitle();
-	SetMacroArea(FALSE);
+	SetMacroArea(false);
 }
 
 void QuickView::KillFocus()
 {
 	Panel::KillFocus();
-	SetMacroArea(TRUE);
+	SetMacroArea(true);
 }
 
-void QuickView::SetMacroArea(int Restore)
+void QuickView::SetMacroArea(bool Restore)
 {
 	if (!CtrlObject)
 		return;

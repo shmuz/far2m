@@ -267,7 +267,7 @@ public:
 		ChangeFlags(VMENU_WARNDIALOG, Style);
 		SetColors(nullptr);
 	}
-	void SetUpdateRequired(int SetUpdate) { ChangeFlags(VMENU_UPDATEREQUIRED, SetUpdate); }
+	void SetUpdateRequired(bool SetUpdate) { ChangeFlags(VMENU_UPDATEREQUIRED, SetUpdate); }
 	void SetBoxType(int BoxType);
 
 	void SetFlags(DWORD a_Flags) { VMFlags.Set(a_Flags); }

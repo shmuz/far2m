@@ -1153,7 +1153,7 @@ int Edit::ProcessKey(FarKey Key)
 
 		case KEY_CTRLY: {
 			if (Flags.Check(FEDITLINE_READONLY | FEDITLINE_DROPDOWNBOX))
-				return (TRUE);
+				return TRUE;
 
 			m_PrevCurPos = m_CurPos;
 			m_LeftPos = m_CurPos = 0;
@@ -1166,7 +1166,7 @@ int Edit::ProcessKey(FarKey Key)
 
 		case KEY_CTRLK: {
 			if (Flags.Check(FEDITLINE_READONLY | FEDITLINE_DROPDOWNBOX))
-				return (TRUE);
+				return TRUE;
 
 			if (m_CurPos >= StrSize())
 				return FALSE;
@@ -1240,7 +1240,7 @@ int Edit::ProcessKey(FarKey Key)
 		case KEY_NUMDEL:
 		case KEY_DEL: {
 			if (Flags.Check(FEDITLINE_READONLY | FEDITLINE_DROPDOWNBOX))
-				return (TRUE);
+				return TRUE;
 
 			if (m_CurPos >= StrSize())
 				return FALSE;

@@ -50,7 +50,7 @@ KeyBar::KeyBar():
 	CtrlState(0),
 	ShiftState(0),
 	DisableMask(0),
-	RegReaded(FALSE)
+	RegReaded(false)
 {
 	_OT(SysLog(L"[%p] KeyBar::KeyBar()", this));
 	memset(KeyTitles, 0, sizeof(KeyTitles));
@@ -261,7 +261,7 @@ void KeyBar::ReadRegGroup(const wchar_t *RegGroup, const wchar_t *Language)
 			}
 		}
 
-		RegReaded = TRUE;
+		RegReaded = true;
 	}
 }
 

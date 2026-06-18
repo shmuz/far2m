@@ -48,19 +48,19 @@ class FilePanels:public Frame
 		typedef class Frame inherited;
 
 	public:
-		Panel *LastLeftFilePanel,
-		*LastRightFilePanel;
-		Panel *LeftPanel,
-		*RightPanel,
-		*ActivePanel;
+		Panel *LastLeftFilePanel;
+		Panel *LastRightFilePanel;
+		Panel *LeftPanel;
+		Panel *RightPanel;
+		Panel *ActivePanel;
 
 		KeyBar      MainKeyBar;
 		MenuBar     TopMenuBar;
 
-		int LastLeftType,
-		LastRightType;
-		int LeftStateBeforeHide,
-		RightStateBeforeHide;
+		int LastLeftType;
+		int LastRightType;
+		bool LeftStateBeforeHide;
+		bool RightStateBeforeHide;
 
 	public:
 		FilePanels();
@@ -81,11 +81,11 @@ class FilePanels:public Frame
 
 		virtual int ProcessKey(FarKey Key);
 		virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
-		virtual int64_t VMProcess(int OpCode,void *vParam=nullptr,int64_t iParam=0);
+		virtual int64_t VMProcess(int OpCode, void *vParam=nullptr, int64_t iParam=0);
 
-		int SetAnotherPanelFocus();
-		int SwapPanels();
-		int ChangePanelViewMode(Panel *Current,int Mode,bool RefreshFrame);
+		bool SetAnotherPanelFocus();
+		bool SwapPanels();
+		bool ChangePanelViewMode(Panel *Current, int Mode, bool RefreshFrame);
 
 		virtual void SetScreenPosition();
 

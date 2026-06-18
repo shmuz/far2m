@@ -136,7 +136,7 @@ private:
 	int64_t LastSelPos;
 
 	int64_t LeftPos;
-	int64_t LastPage;
+	bool LastPage;
 	int CRSym;
 	int64_t SelectPos, SelectSize;
 	DWORD SelectFlags;
@@ -207,7 +207,7 @@ public:
 	virtual ~Viewer();
 
 public:
-	int OpenFile(const wchar_t *Name, int warning);
+	int OpenFile(const wchar_t *Name, bool warning);
 	void SetViewKeyBar(KeyBar *ViewKeyBar);
 
 	virtual int ProcessKey(FarKey Key);

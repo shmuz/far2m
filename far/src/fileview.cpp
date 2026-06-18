@@ -112,7 +112,7 @@ void FileViewer::Init(const wchar_t *name, bool EnableSwitch, bool disableHistor
                       long ViewStartPos, const wchar_t *PluginData,
                       NamesList *ViewNamesList, bool ToSaveAs)
 {
-	RedrawTitle = FALSE;
+	RedrawTitle = false;
 	ViewKeyBar.SetOwner(this);
 	ViewKeyBar.SetPosition(X1,Y2,X2,Y2);
 	KeyBarVisible = Opt.ViOpt.ShowKeyBar;
@@ -129,7 +129,7 @@ void FileViewer::Init(const wchar_t *name, bool EnableSwitch, bool disableHistor
 	SaveToSaveAs=ToSaveAs;
 	InitKeyBar();
 
-	if (!View.OpenFile(strName,TRUE)) // $ 04.07.2000 tran + add TRUE as 'warning' parameter
+	if (!View.OpenFile(strName, true)) // $ 04.07.2000 tran + add TRUE as 'warning' parameter
 	{
 		DisableHistory = true;  // $ 26.03.2002 DJ - при неудаче открытия - не пишем мусор в историю
 		ExitCode=FALSE;
@@ -287,7 +287,7 @@ int FileViewer::ProcessKey(FarKey Key)
 #endif
 		case KEY_CTRLF7: {
 			GrepFilter();
-			return (TRUE);
+			return TRUE;
 		}
 		/* $ 22.07.2000 tran
 		   + выход по ctrl-f10 с установкой курсора на файл */
@@ -303,8 +303,8 @@ int FileViewer::ProcessKey(FarKey Key)
 			FARString strFileName;
 			View.GetFileName(strFileName);
 			CtrlObject->Cp()->GoToFile(strFileName);
-			RedrawTitle = TRUE;
-			return (TRUE);
+			RedrawTitle = true;
+			return TRUE;
 		}
 		// $ 15.07.2000 tran + CtrlB switch KeyBar
 		case KEY_CTRLB:
@@ -316,13 +316,13 @@ int FileViewer::ProcessKey(FarKey Key)
 			ViewKeyBar.Refresh(Opt.ViOpt.ShowKeyBar);
 			Show();
 			KeyBarVisible = Opt.ViOpt.ShowKeyBar;
-			return (TRUE);
+			return TRUE;
 		case KEY_CTRLSHIFTB:
 		{
 			Opt.ViOpt.ShowTitleBar=!Opt.ViOpt.ShowTitleBar;
 			TitleBarVisible = Opt.ViOpt.ShowTitleBar;
 			Show();
-			return (TRUE);
+			return TRUE;
 		}
 		case KEY_CTRLO:
 
@@ -466,7 +466,7 @@ void FileViewer::GrepFilter()
 		UngreppedPos = View.GetFilePos();
 	}
 	auto NewFH = GrepFile(UngreppedFH);
-	if (!NewFH || !View.OpenFile(NewFH->GetPathName(), TRUE)) {
+	if (!NewFH || !View.OpenFile(NewFH->GetPathName(), true)) {
 		GrepFilterDismiss();
 		return;
 	}
@@ -478,7 +478,7 @@ void FileViewer::GrepFilter()
 
 void FileViewer::GrepFilterDismiss()
 {
-	View.OpenFile(UngreppedFH->GetPathName(), TRUE);
+	View.OpenFile(UngreppedFH->GetPathName(), true);
 	View.SetFileHolder(UngreppedFH);
 	View.SetFilePos(UngreppedPos);
 	UngreppedFH.reset();
@@ -507,7 +507,7 @@ int FileViewer::GetTypeAndName(FARString &strType, FARString &strName)
 void FileViewer::ShowConsoleTitle()
 {
 	View.ShowConsoleTitle();
-	RedrawTitle = FALSE;
+	RedrawTitle = false;
 }
 
 
@@ -589,7 +589,7 @@ void FileViewer::ShowStatus()
 	    Msg::ViewerStatusCol.CPtr(),
 	    View.LeftPos,
 	    Opt.ViewerEditorClock ? L"":L" ",
-	    (View.LastPage ? 100:ToPercent64(View.FilePos,View.FileSize))
+	    (View.LastPage ? 100 : ToPercent64(View.FilePos, View.FileSize))
 	);
 	SetFarColor(COL_VIEWERSTATUS);
 	GotoXY(X1,Y1);

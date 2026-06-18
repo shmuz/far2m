@@ -78,7 +78,7 @@ extern long CallMallocFree;
 class SaveScreen;
 extern SaveScreen *GlobalSaveScrPtr;
 
-extern int CriticalInternalError;
+extern bool CriticalInternalError;
 
 extern int _localLastError;
 

@@ -179,8 +179,8 @@ class PluginA: public Plugin
 		int GetVirtualFindData(HANDLE hPanel, PluginPanelItem **pPanelItem, int *pItemsNumber, const wchar_t *Path);
 		int SetDirectory(HANDLE hPanel, const wchar_t *Dir, DWORD OpMode);
 		bool GetLinkTarget(HANDLE hPanel, PluginPanelItem *PanelItem, FARString &result, DWORD OpMode);
-		int GetFiles(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber, int Move, const wchar_t **DestPath, DWORD OpMode);
-		int PutFiles(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber, int Move, DWORD OpMode);
+		int GetFiles(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber, bool Move, const wchar_t **DestPath, DWORD OpMode);
+		int PutFiles(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber, bool Move, DWORD OpMode);
 		int DeleteFiles(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber, DWORD OpMode);
 		int MakeDirectory(HANDLE hPanel, const wchar_t **Name, DWORD OpMode);
 		int ProcessHostFile(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber, DWORD OpMode);

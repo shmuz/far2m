@@ -565,7 +565,7 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 							}
 							SaveHistory();
 							HistoryMenu.Modal::SetExitCode(Pos.SelectPos);
-							HistoryMenu.SetUpdateRequired(TRUE);
+							HistoryMenu.SetUpdateRequired(true);
 							IsUpdate = true;
 							ResetPosition();
 						}
@@ -622,7 +622,7 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 						ResetPosition();
 						SaveHistory();
 						HistoryMenu.Modal::SetExitCode(Pos.SelectPos);
-						HistoryMenu.SetUpdateRequired(TRUE);
+						HistoryMenu.SetUpdateRequired(true);
 						IsUpdate = true;
 						SetUpMenuPos = true;
 					}
@@ -639,7 +639,7 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 							ResetPosition();
 							SaveHistory();
 							HistoryMenu.Modal::SetExitCode(Pos.SelectPos);
-							HistoryMenu.SetUpdateRequired(TRUE);
+							HistoryMenu.SetUpdateRequired(true);
 							IsUpdate = true;
 							SetUpMenuPos = true;
 						}
@@ -665,7 +665,7 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 						HistoryMenu.Hide();
 						SaveHistory();
 						HistoryMenu.Modal::SetExitCode(Pos.SelectPos);
-						HistoryMenu.SetUpdateRequired(TRUE);
+						HistoryMenu.SetUpdateRequired(true);
 						IsUpdate = true;
 					}
 
@@ -677,7 +677,7 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 					mIterCommon = CurrentIter;
 					DeltaMenuPos = Pos.SelectPos - Pos.TopPos;
 					HistoryMenu.Modal::SetExitCode(Pos.SelectPos);
-					HistoryMenu.SetUpdateRequired(TRUE);
+					HistoryMenu.SetUpdateRequired(true);
 					IsUpdate = true;
 					break;
 

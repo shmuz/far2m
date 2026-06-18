@@ -63,8 +63,8 @@ FilePanels::FilePanels():
 	ActivePanel(nullptr),
 	LastLeftType(0),
 	LastRightType(0),
-	LeftStateBeforeHide(0),
-	RightStateBeforeHide(0)
+	LeftStateBeforeHide(false),
+	RightStateBeforeHide(false)
 {
 	_OT(SysLog(L"[%p] FilePanels::FilePanels()", this));
 	SetMacroArea(MACROAREA_SHELL);
@@ -255,16 +255,16 @@ void FilePanels::DeletePanel(Panel *Deleted)
 	delete Deleted;
 }
 
-int FilePanels::SetAnotherPanelFocus()
+bool FilePanels::SetAnotherPanelFocus()
 {
-	int Ret=FALSE;
+	bool Ret = false;
 
-	if (ActivePanel==LeftPanel)
+	if (ActivePanel == LeftPanel)
 	{
 		if (RightPanel->IsVisible())
 		{
 			RightPanel->SetFocus();
-			Ret=TRUE;
+			Ret = true;
 		}
 	}
 	else
@@ -272,7 +272,7 @@ int FilePanels::SetAnotherPanelFocus()
 		if (LeftPanel->IsVisible())
 		{
 			LeftPanel->SetFocus();
-			Ret=TRUE;
+			Ret = true;
 		}
 	}
 
@@ -280,41 +280,28 @@ int FilePanels::SetAnotherPanelFocus()
 }
 
 
-int FilePanels::SwapPanels()
+bool FilePanels::SwapPanels()
 {
-	int Ret=FALSE; // это значит ни одна из панелей не видна
+	bool Ret = false; // это значит ни одна из панелей не видна
 
 	if (LeftPanel->IsVisible() || RightPanel->IsVisible())
 	{
-		int XL1,YL1,XL2,YL2;
-		int XR1,YR1,XR2,YR2;
-		LeftPanel->GetPosition(XL1,YL1,XL2,YL2);
-		RightPanel->GetPosition(XR1,YR1,XR2,YR2);
-
 		if (!LeftPanel->ViewSettings.FullScreen || !RightPanel->ViewSettings.FullScreen)
 		{
-			Opt.WidthDecrement=-Opt.WidthDecrement;
+			Opt.WidthDecrement = -Opt.WidthDecrement;
 
-			Opt.LeftHeightDecrement^=Opt.RightHeightDecrement;
-			Opt.RightHeightDecrement=Opt.LeftHeightDecrement^Opt.RightHeightDecrement;
-			Opt.LeftHeightDecrement^=Opt.RightHeightDecrement;
-
+			Opt.LeftHeightDecrement ^= Opt.RightHeightDecrement;
+			Opt.RightHeightDecrement = Opt.LeftHeightDecrement^Opt.RightHeightDecrement;
+			Opt.LeftHeightDecrement ^= Opt.RightHeightDecrement;
 		}
 
-		Panel *Swap;
-		int SwapType;
-		Swap=LeftPanel;
-		LeftPanel=RightPanel;
-		RightPanel=Swap;
-		Swap=LastLeftFilePanel;
-		LastLeftFilePanel=LastRightFilePanel;
-		LastRightFilePanel=Swap;
-		SwapType=LastLeftType;
-		LastLeftType=LastRightType;
-		LastRightType=SwapType;
+		std::swap(LeftPanel, RightPanel);
+		std::swap(LastLeftFilePanel, LastRightFilePanel);
+		std::swap(LastLeftType, LastRightType);
 		FileFilter::SwapFilter();
-		Ret=TRUE;
+		Ret = true;
 	}
+
 	SetScreenPosition();
 	FrameManager->RefreshFrame();
 	return Ret;
@@ -509,7 +496,7 @@ int FilePanels::ProcessKey(FarKey Key)
 				else
 				{
 					if (!LeftStateBeforeHide && !RightStateBeforeHide)
-						LeftStateBeforeHide=RightStateBeforeHide=TRUE;
+						LeftStateBeforeHide = RightStateBeforeHide = true;
 
 					if (LeftStateBeforeHide)
 						LeftPanel->Show();
@@ -735,7 +722,7 @@ int FilePanels::ProcessKey(FarKey Key)
 	return TRUE;
 }
 
-int FilePanels::ChangePanelViewMode(Panel *Current,int Mode,bool RefreshFrame)
+bool FilePanels::ChangePanelViewMode(Panel *Current, int Mode, bool RefreshFrame)
 {
 	if (Current && Mode >= VIEW_0 && Mode <= VIEW_9)
 	{
@@ -748,10 +735,10 @@ int FilePanels::ChangePanelViewMode(Panel *Current,int Mode,bool RefreshFrame)
 		if (RefreshFrame)
 			FrameManager->RefreshFrame();
 
-		return TRUE;
+		return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 Panel* FilePanels::ChangePanelToFilled(Panel *Current,int NewType)
@@ -1002,19 +989,19 @@ void FilePanels::DisplayObject()
 
 #else
 	Panel *PassivePanel=nullptr;
-	int PassiveIsLeftFlag=TRUE;
+	bool PassiveIsLeftFlag=true;
 
 	if (Opt.LeftPanel.Focus)
 	{
 		ActivePanel=LeftPanel;
 		PassivePanel=RightPanel;
-		PassiveIsLeftFlag=FALSE;
+		PassiveIsLeftFlag=false;
 	}
 	else
 	{
 		ActivePanel=RightPanel;
 		PassivePanel=LeftPanel;
-		PassiveIsLeftFlag=TRUE;
+		PassiveIsLeftFlag=true;
 	}
 
 	//! Вначале "показываем" пассивную панель

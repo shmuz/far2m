@@ -119,7 +119,7 @@ FILE *OpenLangFile(FARString strPath, const wchar_t *Mask, const wchar_t *Langua
 	return out;
 }
 
-int GetLangParam(FILE *SrcFile, const wchar_t *ParamName, FARString *strParam1, FARString *strParam2,
+bool GetLangParam(FILE *SrcFile, const wchar_t *ParamName, FARString *strParam1, FARString *strParam2,
 		UINT nCodePage)
 {
 	wchar_t ReadStr[1024];
@@ -130,7 +130,7 @@ int GetLangParam(FILE *SrcFile, const wchar_t *ParamName, FARString *strParam1, 
 		$ 29.11.2001 DJ
 		не поганим позицию в файле; дальше @Contents не читаем
 	*/
-	BOOL Found = FALSE;
+	bool Found = false;
 	long OldPos = ftell(SrcFile);
 
 	StringReader SR;
@@ -158,7 +158,7 @@ int GetLangParam(FILE *SrcFile, const wchar_t *ParamName, FARString *strParam1, 
 				}
 
 				RemoveTrailingSpaces(*strParam1);
-				Found = TRUE;
+				Found = true;
 				break;
 			}
 		} else if (!StrCmpNI(ReadStr, L"@Contents", 9))
@@ -166,7 +166,7 @@ int GetLangParam(FILE *SrcFile, const wchar_t *ParamName, FARString *strParam1, 
 	}
 
 	fseek(SrcFile, OldPos, SEEK_SET);
-	return (Found);
+	return Found;
 }
 
 int Select(int HelpLanguage, VMenu **MenuPtr)
@@ -258,7 +258,7 @@ int Select(int HelpLanguage, VMenu **MenuPtr)
 	+ Новый метод, для получения параметров для .Options
 	.Options <KeyName>=<Value>
 */
-int GetOptionsParam(FILE *SrcFile, const wchar_t *KeyName, FARString &strValue, UINT nCodePage)
+bool GetOptionsParam(FILE *SrcFile, const wchar_t *KeyName, FARString &strValue, UINT nCodePage)
 {
 	wchar_t ReadStr[1024];
 	FARString strFullParamName;
@@ -280,14 +280,14 @@ int GetOptionsParam(FILE *SrcFile, const wchar_t *KeyName, FARString &strValue, 
 
 				if (!StrCmpI(strFullParamName, KeyName)) {
 					fseek(SrcFile, CurFilePos, SEEK_SET);
-					return TRUE;
+					return true;
 				}
 			}
 		}
 	}
 
 	fseek(SrcFile, CurFilePos, SEEK_SET);
-	return FALSE;
+	return false;
 }
 
 ///////////////////////////////////////

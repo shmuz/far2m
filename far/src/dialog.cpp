@@ -2537,10 +2537,10 @@ bool Dialog::ProcessMoveDialog(DWORD Key)
 			Show();
 		}
 
-		return (TRUE);
+		return TRUE;
 	}
 
-	return (FALSE);
+	return FALSE;
 }
 
 int64_t Dialog::VMProcess(int OpCode, void *vParam, int64_t iParam)

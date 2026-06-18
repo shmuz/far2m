@@ -173,7 +173,7 @@ class Plugin
 		virtual void   FreeFindData(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber) = 0;
 		virtual void   FreeVirtualFindData(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber) = 0;
 		virtual int    GetCustomData(const wchar_t *FilePath, wchar_t **CustomData) = 0;
-		virtual int    GetFiles(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber, int Move, const wchar_t **DestPath, DWORD OpMode) = 0;
+		virtual int    GetFiles(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber, bool Move, const wchar_t **DestPath, DWORD OpMode) = 0;
 		virtual int    GetFindData(HANDLE hPanel, PluginPanelItem **pPanelItem, int *pItemsNumber, DWORD OpMode) = 0;
 		virtual bool   GetLinkTarget(HANDLE hPanel, PluginPanelItem *PanelItem, FARString &result, DWORD OpMode) = 0;
 		virtual void   GetOpenPluginInfo(HANDLE hPanel, OpenPluginInfo *Info) = 0;
@@ -193,7 +193,7 @@ class Plugin
 		virtual int    ProcessKey(HANDLE hPanel, int Key, unsigned int dwControlState) = 0;
 		virtual int    ProcessSynchroEvent(int Event, void *Param) = 0;
 		virtual int    ProcessViewerEvent(int Event, void *Param) = 0;
-		virtual int    PutFiles(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber, int Move, DWORD OpMode) = 0;
+		virtual int    PutFiles(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber, bool Move, DWORD OpMode) = 0;
 		virtual int    SetDirectory(HANDLE hPanel, const wchar_t *Dir, DWORD OpMode) = 0;
 		virtual int    SetFindList(HANDLE hPanel, const PluginPanelItem *PanelItem, int ItemsNumber) = 0;
 		virtual bool   SetStartupInfo() = 0;

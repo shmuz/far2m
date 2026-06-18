@@ -410,7 +410,7 @@ Frame *Manager::FrameMenu()
 		ModalMenu.SetId(ScreensSwitchId);
 
 		if (!CheckCanLoseFocus)
-			ModalMenuItem.SetDisable(TRUE);
+			ModalMenuItem.SetDisable(true);
 
 		for (int I=0; I < (int)FrameList.size(); I++)
 		{

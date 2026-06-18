@@ -4290,7 +4290,7 @@ bool FileList::ApplyCommand()
 	while (GetSelNameCompat(&strSelName, FileAttr) && !CheckForEsc()) {
 		FARString strListName, strAnotherListName;
 		FARString strConvertedCommand = strCommand;
-		/*int PreserveLFN=*/SubstFileName(strConvertedCommand, strSelName, &strListName, &strAnotherListName);
+		SubstFileName(strConvertedCommand, strSelName, &strListName, &strAnotherListName);
 		bool ListFileUsed = !strListName.IsEmpty() || !strAnotherListName.IsEmpty();
 
 		{

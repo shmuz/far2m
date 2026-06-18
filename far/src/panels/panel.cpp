@@ -1131,7 +1131,7 @@ bool Panel::PanelProcessMouse(MOUSE_EVENT_RECORD *MouseEvent, int &RetCode)
 		if (MouseEvent->dwMousePosition.X == ScrX) {
 			if (Opt.ScreenSaver && !(MouseEvent->dwButtonState & 3)) {
 				EndDrag();
-				ScreenSaver(TRUE);
+				ScreenSaver(true);
 				return true;
 			}
 		} else {
@@ -1534,7 +1534,7 @@ int Panel::SetPluginCommand(int Command, int Param1, LONG_PTR Param2)
 
 	switch (Command) {
 		case FCTL_SETVIEWMODE:
-			Result = FPanels->ChangePanelViewMode(this, Param1, FPanels->IsTopFrame());
+			Result = FPanels->ChangePanelViewMode(this, Param1, FPanels->IsTopFrame()) ? TRUE : FALSE;
 			break;
 
 		case FCTL_SETSORTMODE: {

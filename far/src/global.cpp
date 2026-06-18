@@ -84,7 +84,7 @@ long CallMallocFree = 0;
 class SaveScreen;
 SaveScreen *GlobalSaveScrPtr=nullptr;
 
-int CriticalInternalError=FALSE;
+bool CriticalInternalError = false;
 
 int _localLastError=0;
 

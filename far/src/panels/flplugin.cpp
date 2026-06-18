@@ -504,15 +504,16 @@ void FileList::PluginToPluginFiles(bool Move)
 
 	if (!SelItems.empty()) {
 		const wchar_t *lpwszTempDir = strTempDir;
-		int PutCode =
-				CtrlObject->Plugins.GetFiles(hPlugin, SelItems.data(), SelItems.size(), FALSE, &lpwszTempDir, OPM_SILENT);
+		int PutCode = CtrlObject->Plugins.GetFiles(hPlugin, SelItems.data(), SelItems.size(), false,
+				&lpwszTempDir, OPM_SILENT);
 		strTempDir = lpwszTempDir;
 
 		if (PutCode == 1 || PutCode == 2) {
 			FARString strSaveDir;
 			apiGetCurrentDirectory(strSaveDir);
 			FarChDir(strTempDir);
-			PutCode = CtrlObject->Plugins.PutFiles(AnotherFilePanel->hPlugin, SelItems.data(), SelItems.size(), false, OPM_NONE);
+			PutCode = CtrlObject->Plugins.PutFiles(AnotherFilePanel->hPlugin, SelItems.data(),
+					SelItems.size(), false, OPM_NONE);
 
 			if (PutCode == 1 || PutCode == 2) {
 				if (!ReturnCurrentFile)
@@ -586,7 +587,7 @@ void FileList::PluginHostGetFiles()
 			if (CtrlObject->Plugins.GetFindData(hCurPlugin, &ItemList, &ItemNumber, OPM_NONE)) {
 				_ALGO(SysLog(L"call Plugins.GetFiles()"));
 				const wchar_t *lpwszDestPath = strDestPath;
-				ExitLoop = CtrlObject->Plugins.GetFiles(hCurPlugin, ItemList, ItemNumber, FALSE,
+				ExitLoop = CtrlObject->Plugins.GetFiles(hCurPlugin, ItemList, ItemNumber, false,
 								   &lpwszDestPath, OpMode) != 1;
 				strDestPath = lpwszDestPath;
 
@@ -685,7 +686,8 @@ int FileList::PluginPutFilesToAnother(bool Move, Panel *AnotherPanel)
 	if (!SelItems.empty()) {
 		SetCurPath();
 		_ALGO(SysLog(L"call Plugins.PutFiles"));
-		PutCode = CtrlObject->Plugins.PutFiles(AnotherFilePanel->hPlugin, SelItems.data(), SelItems.size(), Move, OPM_NONE);
+		PutCode = CtrlObject->Plugins.PutFiles(AnotherFilePanel->hPlugin, SelItems.data(), SelItems.size(),
+				Move, OPM_NONE);
 
 		if (PutCode == 1 || PutCode == 2) {
 			if (!ReturnCurrentFile) {

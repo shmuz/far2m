@@ -62,8 +62,8 @@ struct TSubstData
 	FARString strNameOnly;
 	FARString strAnotherNameOnly;
 	FARString strCmdDir;
-	int  PreserveLFN;
-	int  PassivePanel;
+	bool PreserveLFN;
+	bool PassivePanel;
 
 	Panel *AnotherPanel;
 	Panel *ActivePanel;
@@ -88,14 +88,14 @@ static const wchar_t *_SubstFileName(const wchar_t *CurStr,TSubstData *PSubstDat
 	if (!StrCmpN(CurStr,L"!#",2))
 	{
 		CurStr+=2;
-		PSubstData->PassivePanel=TRUE;
+		PSubstData->PassivePanel=true;
 		return CurStr;
 	}
 
 	if (!StrCmpN(CurStr,L"!^",2))
 	{
 		CurStr+=2;
-		PSubstData->PassivePanel=FALSE;
+		PSubstData->PassivePanel=false;
 		return CurStr;
 	}
 
@@ -153,7 +153,7 @@ static const wchar_t *_SubstFileName(const wchar_t *CurStr,TSubstData *PSubstDat
 	        (!StrCmpN(CurStr,L"!&",2) && CurStr[2] != L'?'))
 	{
 		FARString strFileNameL;
-		Panel *WPanel=PSubstData->PassivePanel?PSubstData->AnotherPanel:PSubstData->ActivePanel;
+		Panel *WPanel = PSubstData->PassivePanel ? PSubstData->AnotherPanel : PSubstData->ActivePanel;
 		DWORD FileAttrL;
 		int CntSkip=2;
 
@@ -262,7 +262,7 @@ static const wchar_t *_SubstFileName(const wchar_t *CurStr,TSubstData *PSubstDat
 		strOut += filename;
 
 		CurStr+=3;
-		PSubstData->PreserveLFN=TRUE;
+		PSubstData->PreserveLFN=true;
 		return CurStr;
 	}
 
@@ -346,7 +346,7 @@ static const wchar_t *_SubstFileName(const wchar_t *CurStr,TSubstData *PSubstDat
   Преобразование метасимволов ассоциации файлов в реальные значения
 
 */
-int SubstFileName(FARString &strStr,            // результирующая строка
+bool SubstFileName(FARString &strStr,            // результирующая строка
                   const wchar_t *Name,           // Длинное имя
                   FARString *pListName,
                   FARString *pAnotherListName,
@@ -392,8 +392,8 @@ int SubstFileName(FARString &strStr,            // результирующая 
 	if (PSubstData->strAnotherNameOnly.RPos(pos,L'.'))
 		PSubstData->strAnotherNameOnly.Truncate(pos);
 
-	PSubstData->PreserveLFN=FALSE;
-	PSubstData->PassivePanel=FALSE; // первоначально речь идет про активную панель!
+	PSubstData->PreserveLFN=false;
+	PSubstData->PassivePanel=false; // первоначально речь идет про активную панель!
 	FARString strTmp = strStr;
 
 	if (!IgnoreInput)

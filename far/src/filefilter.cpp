@@ -266,7 +266,7 @@ bool FileFilter::FilterEdit()
 
 				FilterList.SetCheck(NewCheck, SelPos);
 				FilterList.SetSelectPos(SelPos, 1);
-				FilterList.SetUpdateRequired(TRUE);
+				FilterList.SetUpdateRequired(true);
 				FilterList.FastShow();
 				FilterList.ProcessKey(KEY_DOWN);
 				bNeedUpdate = true;
@@ -277,7 +277,7 @@ bool FileFilter::FilterEdit()
 					FilterList.SetCheck(FALSE, I);
 				}
 
-				FilterList.SetUpdateRequired(TRUE);
+				FilterList.SetUpdateRequired(true);
 				FilterList.FastShow();
 				break;
 			}
@@ -298,7 +298,7 @@ bool FileFilter::FilterEdit()
 						FilterList.DeleteItem(SelPos);
 						FilterList.AddItem(&ListItem, SelPos);
 						FilterList.SetSelectPos(SelPos, 1);
-						FilterList.SetUpdateRequired(TRUE);
+						FilterList.SetUpdateRequired(true);
 						FilterList.FastShow();
 						bNeedUpdate = true;
 					}
@@ -408,7 +408,7 @@ bool FileFilter::FilterEdit()
 					}
 
 					FilterList.SetSelectPos(NewPos, 1);
-					FilterList.SetUpdateRequired(TRUE);
+					FilterList.SetUpdateRequired(true);
 					FilterList.FastShow();
 					bNeedUpdate = true;
 				}

@@ -62,7 +62,7 @@ private:
 	virtual void DisplayObject();
 	void PrintText(const wchar_t *Str);
 
-	void SetMacroArea(int Restore = FALSE);
+	void SetMacroArea(bool Restore = false);
 
 	void DynamicUpdateKeyBar();
 

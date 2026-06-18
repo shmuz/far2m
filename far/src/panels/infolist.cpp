@@ -877,7 +877,7 @@ int InfoList::OpenDizFile(const wchar_t *DizFile, int YPos)
 	}
 
 	if (bOK) {
-		if (!DizView->OpenFile(DizFile, FALSE)) {
+		if (!DizView->OpenFile(DizFile, false)) {
 			delete DizView;
 			DizView = nullptr;
 			return FALSE;

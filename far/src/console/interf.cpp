@@ -283,17 +283,17 @@ void CheckForPendingCtrlHandleEvent()
 
 void ShowTime(int ShowAlways)
 {
-	FARString strClockText;
-	static SYSTEMTIME lasttm = {0, 0, 0, 0, 0, 0, 0, 0};
-	SYSTEMTIME tm;
-	WINPORT(GetLocalTime)(&tm);
-	CHAR_INFO ScreenClockText[5];
-	GetText(ScrX - 4, 0, ScrX, 0, ScreenClockText, sizeof(ScreenClockText));
+	static SYSTEMTIME lasttm = {};
 
 	if (ShowAlways == 2) {
 		memset(&lasttm, 0, sizeof(lasttm));
 		return;
 	}
+
+	SYSTEMTIME tm;
+	WINPORT(GetLocalTime)(&tm);
+	CHAR_INFO ScreenClockText[5];
+	GetText(ScrX - 4, 0, ScrX, 0, ScreenClockText, sizeof(ScreenClockText));
 
 	if ((!ShowAlways && lasttm.wMinute == tm.wMinute && lasttm.wHour == tm.wHour
 				&& ScreenClockText[2].Char.UnicodeChar == L':')
@@ -302,6 +302,7 @@ void ShowTime(int ShowAlways)
 
 	ProcessShowClock++;
 	lasttm = tm;
+	FARString strClockText;
 	strClockText.Format(L"%02d:%02d", tm.wHour, tm.wMinute);
 	GotoXY(ScrX - 4, 0);
 	// Здесь хрень какая-то получается с ModType - все время не верное значение!
@@ -857,7 +858,7 @@ void BoxText(wchar_t Chr)
 	BoxText(Str);
 }
 
-void BoxText(const wchar_t *Str, int IsVert)
+void BoxText(const wchar_t *Str, bool IsVert)
 {
 	if (IsVert)
 		VText(Str);

@@ -739,7 +739,7 @@ void HighlightFiles::HiEdit(int MenuPos)
 
 						ffp->SetFlags(FFFT_CUSTOM, flags ^ FFF_DISABLED);
 
-						HiMenu.SetUpdateRequired(TRUE);
+						HiMenu.SetUpdateRequired(true);
 						HiMenu.FastShow();
 						HiMenu.ProcessKey(KEY_DOWN);
 						NeedUpdate = true;

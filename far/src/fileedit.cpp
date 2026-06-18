@@ -851,7 +851,7 @@ int FileEditor::ReProcessKey(FarKey Key, bool CalledFromControl)
 					m_editor->Show();    //???
 				}
 
-				return (TRUE);
+				return TRUE;
 			}
 			/* $ 24.08.2000 SVS
 			   + Добавляем реакцию показа бакграунда на клавишу CtrlAltShift
@@ -1043,12 +1043,12 @@ int FileEditor::ReProcessKey(FarKey Key, bool CalledFromControl)
 					Flags.Set(FFILEEDIT_REDRAWTITLE);
 				}
 
-				return (TRUE);
+				return TRUE;
 			}
 
 			case KEY_ALTF10: {
 				FrameManager->ExitMainLoop(true);
-				return (TRUE);
+				return TRUE;
 			}
 
 			case KEY_CTRLB: {
@@ -1060,14 +1060,14 @@ int FileEditor::ReProcessKey(FarKey Key, bool CalledFromControl)
 				EditKeyBar.Refresh(Opt.EdOpt.ShowKeyBar);
 				Show();
 				KeyBarVisible = Opt.EdOpt.ShowKeyBar;
-				return (TRUE);
+				return TRUE;
 			}
 
 			case KEY_CTRLSHIFTB: {
 				Opt.EdOpt.ShowTitleBar = !Opt.EdOpt.ShowTitleBar;
 				TitleBarVisible = Opt.EdOpt.ShowTitleBar;
 				Show();
-				return (TRUE);
+				return TRUE;
 			}
 
 			case KEY_SHIFTF10:

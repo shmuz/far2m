@@ -2209,15 +2209,16 @@ COPY_CODES ShellCopy::ShellCopyOneFileNoRetry(const wchar_t *Src, const FAR_FIND
 		uint64_t SaveTotalSize = TotalCopiedSize;
 
 		if (Rename) {
-			int MoveCode = FALSE;
+			bool MoveCode = false;
 			bool AskDelete;
 
 			if (!Append) {
 				FARString strSrcFullName;
 				ConvertNameToFull(Src, strSrcFullName);
 
-				MoveCode = apiMoveFileEx(strSrcFullName, strDestPath,
-						SameName ? MOVEFILE_COPY_ALLOWED : MOVEFILE_COPY_ALLOWED | MOVEFILE_REPLACE_EXISTING);
+				MoveCode = apiMoveFileEx(strSrcFullName, strDestPath, SameName
+						? MOVEFILE_COPY_ALLOWED
+						: MOVEFILE_COPY_ALLOWED | MOVEFILE_REPLACE_EXISTING) != 0;
 
 				if (!MoveCode && WINPORT(GetLastError)() == ERROR_NOT_SAME_DEVICE) {
 					return COPY_FAILURE;
@@ -2236,14 +2237,17 @@ COPY_CODES ShellCopy::ShellCopyOneFileNoRetry(const wchar_t *Src, const FAR_FIND
 
 				switch (CopyCode) {
 					case COPY_SUCCESS:
-						MoveCode = TRUE;
+						MoveCode = true;
 						break;
+
 					case COPY_FAILUREREAD:
 					case COPY_FAILURE:
-						MoveCode = FALSE;
+						MoveCode = false;
 						break;
+
 					case COPY_CANCEL:
 						return COPY_CANCEL;
+
 					case COPY_NEXT:
 						return COPY_NEXT;
 				}

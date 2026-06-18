@@ -142,7 +142,7 @@ class Help:public Frame
 		SearchReplaceDlgParams LastSearch;
 	private:
 		virtual void DisplayObject();
-		int  ReadHelp(const wchar_t *Mask=nullptr);
+		bool ReadHelp(const wchar_t *Mask=nullptr);
 		void AddLine(const wchar_t *Line);
 		void AddTitle(const wchar_t *Title);
 		void HighlightsCorrection(FARString &strStr);

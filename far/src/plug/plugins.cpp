@@ -904,7 +904,7 @@ bool PluginManager::GetFile(
 		SaveScr = new SaveScreen; //???
 
 	UndoGlobalSaveScrPtr UndSaveScr(SaveScr);
-	int GetCode = ph->pPlugin->GetFiles(ph->hPanel, PanelItem, 1, 0, &DestPath, OpMode);
+	int GetCode = ph->pPlugin->GetFiles(ph->hPanel, PanelItem, 1, false, &DestPath, OpMode);
 	FARString strFindPath;
 	strFindPath = DestPath;
 	AddEndSlash(strFindPath);

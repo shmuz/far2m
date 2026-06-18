@@ -567,7 +567,7 @@ int CommandLine::ProcessKey(FarKey Key)
 		return TRUE;
 
 		case KEY_F11:
-			CtrlObject->Plugins.CommandsMenu(FALSE, FALSE, 0);
+			CtrlObject->Plugins.CommandsMenu(0, 0);
 			return TRUE;
 
 		case KEY_ALTF11:
@@ -659,7 +659,7 @@ int CommandLine::ProcessKey(FarKey Key)
 		case KEY_OP_XLAT:
 		{
 			// 13.12.2000 SVS - ! Для CmdLine - если нет выделения, преобразуем всю строку (XLat)
-			CmdStr.Xlat(Opt.XLat.Flags&XLAT_CONVERTALLCMDLINE?TRUE:FALSE);
+			CmdStr.Xlat(Opt.XLat.Flags & XLAT_CONVERTALLCMDLINE ? true : false);
 
 			// иначе неправильно работает ctrl-end
 			strLastCmdStr = CmdStr.GetStringAddr();

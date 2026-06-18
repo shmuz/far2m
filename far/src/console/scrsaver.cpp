@@ -172,19 +172,19 @@ static void ShowSaver(int Step)
 		}
 }
 
-int ScreenSaver(int EnableExit)
+bool ScreenSaver(bool EnableExit)
 {
 	INPUT_RECORD rec;
 	clock_t WaitTime;
 
 	if (ScreenSaverActive)
-		return 1;
+		return true;
 
 	SCOPED_ACTION(ChangePriority)(ChangePriority::IDLE);
 
 	for (WaitTime = GetProcessUptimeMSec(); GetProcessUptimeMSec() - WaitTime < 500;) {
 		if (PeekInputRecord(&rec))
-			return 1;
+			return true;
 
 		WINPORT(Sleep)(100);
 	}
@@ -207,7 +207,7 @@ int ScreenSaver(int EnableExit)
 
 		while (!PeekInputRecord(&rec)) {
 			if (EnableExit && CheckForInactivityExit())
-				return 0;
+				return false;
 
 			WINPORT(Sleep)(50);
 			ShowSaver(Step++);
@@ -218,5 +218,5 @@ int ScreenSaver(int EnableExit)
 	if (!WinPortTesting())
 		FlushInputBuffer();
 	StartIdleTime = GetProcessUptimeMSec();
-	return 1;
+	return true;
 }
