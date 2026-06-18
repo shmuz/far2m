@@ -832,7 +832,7 @@ int TreeList::ProcessKey(FarKey Key)
 			if (SetCurPath() && TreeCount > 0) {
 				Panel *AnotherPanel = CtrlObject->Cp()->GetAnotherPanel(this);
 				int Ask = ((Key != KEY_DRAGCOPY && Key != KEY_DRAGMOVE) || Opt.Confirm.Drag);
-				int Move = (Key == KEY_F6 || Key == KEY_DRAGMOVE);
+				bool Move = (Key == KEY_F6 || Key == KEY_DRAGMOVE);
 				int ToPlugin = AnotherPanel->GetMode() == PLUGIN_PANEL && AnotherPanel->IsVisible()
 						&& !CtrlObject->Plugins.UseFarCommand(AnotherPanel->GetPluginHandle(),
 								PLUGIN_FARPUTFILES);
