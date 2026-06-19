@@ -371,7 +371,7 @@ void ScreenBuf::Flush(bool Force)
 			SBFlags.Set(SBFLAGS_FLUSHED);
 
 			if (WaitInMainLoop && Opt.Clock && !ProcessShowClock) {
-				ShowTime(FALSE);
+				ShowTime(SHTM_LAZY);
 			}
 
 			std::vector<SMALL_RECT> WriteList;

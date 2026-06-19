@@ -538,7 +538,7 @@ int CommandLine::ProcessKey(FarKey Key)
 			Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
 			{
 				// TODO: здесь можно добавить проверку, что мы в корне диска и отсутствие файла Tree.Far...
-				FolderTree Tree(strStr, MODALTREE_ACTIVE, TRUE, FALSE);
+				FolderTree Tree(strStr, MODALTREE_ACTIVE, true, false);
 			}
 			CtrlObject->Cp()->RedrawKeyBar();
 

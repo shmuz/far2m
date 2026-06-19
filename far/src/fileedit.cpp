@@ -791,7 +791,7 @@ int FileEditor::ReProcessKey(FarKey Key, bool CalledFromControl)
 						Viewer->SetPluginData(strPluginData);
 					}
 
-					ShowTime(2);
+					ShowTime(SHTM_RESET);
 				}
 
 				return TRUE;
@@ -2102,7 +2102,7 @@ void FileEditor::ShowStatus()
 	}
 
 	if (bShowClock)
-		ShowTime(FALSE);
+		ShowTime(SHTM_LAZY);
 }
 
 /* $ 13.02.2001

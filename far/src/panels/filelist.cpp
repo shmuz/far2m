@@ -1840,7 +1840,7 @@ int FileList::ProcessKey(FarKey Key)
 
 				if (RealName) {
 					int ToPlugin = 0;
-					ShellCopy ShCopy(this, Key == KEY_SHIFTF6, FALSE, TRUE, TRUE, ToPlugin, nullptr);
+					ShellCopy ShCopy(this, Key == KEY_SHIFTF6, false, true, true, ToPlugin, nullptr);
 				} else {
 					ProcessCopyKeys(Key == KEY_SHIFTF5 ? KEY_F5 : KEY_F6);
 				}
@@ -4542,7 +4542,7 @@ void FileList::ProcessCopyKeys(FarKey Key)
 						&& !CtrlObject->Plugins.UseFarCommand(AnotherPanel->GetPluginHandle(),
 								PLUGIN_FARPUTFILES)) {
 					ToPlugin = 2;
-					ShellCopy ShCopy(this, Move, FALSE, FALSE, Ask, ToPlugin, strPluginDestPath);
+					ShellCopy ShCopy(this, Move, false, false, Ask, ToPlugin, strPluginDestPath);
 				}
 
 				if (ToPlugin != -1) {
@@ -4583,7 +4583,7 @@ void FileList::ProcessCopyKeys(FarKey Key)
 					&& Key != KEY_ALTF6
 					&& !CtrlObject->Plugins.UseFarCommand(AnotherPanel->GetPluginHandle(),
 							PLUGIN_FARPUTFILES);
-			ShellCopy ShCopy(this, Move, Key == KEY_ALTF6, FALSE, Ask, ToPlugin, nullptr, Drag && AnotherDir);
+			ShellCopy ShCopy(this, Move, Key == KEY_ALTF6, false, Ask, ToPlugin, nullptr, Drag && AnotherDir);
 
 			if (ToPlugin == 1)
 				PluginPutFilesToAnother(Move, AnotherPanel);

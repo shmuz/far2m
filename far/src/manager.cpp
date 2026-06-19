@@ -1343,7 +1343,7 @@ void Manager::RefreshCommit(Frame *aFrame)
 		Opt.ViewerEditorClock : (WaitInMainLoop && Opt.Clock);
 
 	if (bShowTime)
-		ShowTime(1);
+		ShowTime(SHTM_FORCE);
 }
 
 void Manager::ExecuteCommit(Frame *aFrame)

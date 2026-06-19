@@ -53,7 +53,11 @@ enum
 	SHORT_DOUBLE_BOX
 };
 
-void ShowTime(int ShowAlways);
+enum eShowTime {
+	SHTM_LAZY, SHTM_FORCE, SHTM_RESET
+};
+
+void ShowTime(eShowTime Mode);
 
 /*
 	$ 14.02.2001 SKV

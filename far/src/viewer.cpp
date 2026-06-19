@@ -1263,7 +1263,7 @@ int Viewer::ProcessKey(FarKey Key)
 
 			if (Opt.ViewerEditorClock && HostFileViewer && HostFileViewer->IsFullScreen()
 					&& Opt.ViOpt.ShowTitleBar)
-				ShowTime(FALSE);
+				ShowTime(SHTM_LAZY);
 
 			return TRUE;
 		}

@@ -830,7 +830,7 @@ int Editor::ProcessKey(FarKey Key)
 	if (Key == KEY_IDLE) {
 		if (Opt.ViewerEditorClock && m_HostFileEditor && m_HostFileEditor->IsFullScreen()
 				&& Opt.EdOpt.ShowTitleBar)
-			ShowTime(FALSE);
+			ShowTime(SHTM_LAZY);
 
 		return TRUE;
 	}

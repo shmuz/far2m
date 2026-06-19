@@ -281,11 +281,11 @@ void CheckForPendingCtrlHandleEvent()
 	CloseFAR = true;
 }
 
-void ShowTime(int ShowAlways)
+void ShowTime(eShowTime Mode)
 {
 	static SYSTEMTIME lasttm = {};
 
-	if (ShowAlways == 2) {
+	if (Mode == SHTM_RESET) {
 		memset(&lasttm, 0, sizeof(lasttm));
 		return;
 	}
@@ -295,7 +295,7 @@ void ShowTime(int ShowAlways)
 	CHAR_INFO ScreenClockText[5];
 	GetText(ScrX - 4, 0, ScrX, 0, ScreenClockText, sizeof(ScreenClockText));
 
-	if ((!ShowAlways && lasttm.wMinute == tm.wMinute && lasttm.wHour == tm.wHour
+	if ((Mode == SHTM_LAZY && lasttm.wMinute == tm.wMinute && lasttm.wHour == tm.wHour
 				&& ScreenClockText[2].Char.UnicodeChar == L':')
 			|| ScreenSaverActive)
 		return;

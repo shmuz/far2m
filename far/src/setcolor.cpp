@@ -478,7 +478,7 @@ void GetColor(int ColorIndex)
 		}
 
 		if (Opt.Clock)
-			ShowTime(1);
+			ShowTime(SHTM_FORCE);
 
 		ScrBuf.Unlock();				// разрешаем прорисовку
 		FrameManager->Commit();			// коммитим.

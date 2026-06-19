@@ -181,19 +181,19 @@ class ShellCopy
 		COPY_CODES ShellCopyOneFile(const wchar_t *Src,
 		                            const FAR_FIND_DATA_EX &SrcData,
 		                            FARString &strDest,
-		                            int KeepPathPos, int Rename);
+		                            int KeepPathPos, bool Rename);
 		COPY_CODES ShellCopyOneFileNoRetry(const wchar_t *Src,
 		                            const FAR_FIND_DATA_EX &SrcData,
 		                            FARString &strDest,
-		                            int KeepPathPos, int Rename);
+		                            int KeepPathPos, bool Rename);
 
 		int  ShellCopyFile(const wchar_t *SrcName,const FAR_FIND_DATA_EX &SrcData,
-		                   FARString &strDestName,int Append);
+		                   FARString &strDestName,bool Append);
 
 		int  DeleteAfterMove(const wchar_t *Name,DWORD Attr);
 		void SetDestDizPath(const wchar_t *DestPath);
-		int  AskOverwrite(const FAR_FIND_DATA_EX &SrcData,const wchar_t *SrcName,const wchar_t *DestName,
-		                  DWORD DestAttr,int SameName,int Rename,int AskAppend,
+		bool AskOverwrite(const FAR_FIND_DATA_EX &SrcData,const wchar_t *SrcName,const wchar_t *DestName,
+		                  DWORD DestAttr,bool SameName,bool Rename,bool AskAppend,
 		                  int &Append,FARString &strNewName,int &RetCode);
 		bool CalcTotalSize();
 
@@ -201,7 +201,7 @@ class ShellCopy
 		COPY_CODES CopySymLink(const wchar_t *ExistingName, const wchar_t *NewName, const FAR_FIND_DATA_EX &SrcData);
 
 	public:
-		ShellCopy(Panel *SrcPanel,int Move,int Link,int CurrentOnly,int Ask,
+		ShellCopy(Panel *SrcPanel, bool Move, bool Link, bool CurrentOnly, bool Ask,
 		          int &ToPlugin, const wchar_t *PluginDestPath, bool ToSubdir=false);
 		~ShellCopy();
 };

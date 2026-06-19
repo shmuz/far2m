@@ -819,7 +819,7 @@ int TreeList::ProcessKey(FarKey Key)
 		case KEY_SHIFTF6: {
 			if (SetCurPath()) {
 				int ToPlugin = 0;
-				ShellCopy ShCopy(this, Key == KEY_SHIFTF6, FALSE, TRUE, TRUE, ToPlugin, nullptr);
+				ShellCopy ShCopy(this, Key == KEY_SHIFTF6, false, true, true, ToPlugin, nullptr);
 			}
 
 			return TRUE;
@@ -831,18 +831,18 @@ int TreeList::ProcessKey(FarKey Key)
 		case KEY_DRAGMOVE: {
 			if (SetCurPath() && TreeCount > 0) {
 				Panel *AnotherPanel = CtrlObject->Cp()->GetAnotherPanel(this);
-				int Ask = ((Key != KEY_DRAGCOPY && Key != KEY_DRAGMOVE) || Opt.Confirm.Drag);
+				bool Ask = ((Key != KEY_DRAGCOPY && Key != KEY_DRAGMOVE) || Opt.Confirm.Drag);
 				bool Move = (Key == KEY_F6 || Key == KEY_DRAGMOVE);
 				int ToPlugin = AnotherPanel->GetMode() == PLUGIN_PANEL && AnotherPanel->IsVisible()
 						&& !CtrlObject->Plugins.UseFarCommand(AnotherPanel->GetPluginHandle(),
 								PLUGIN_FARPUTFILES);
-				int Link = (Key == KEY_ALTF6 && !ToPlugin);
+				bool Link = (Key == KEY_ALTF6 && !ToPlugin);
 
 				if (Key == KEY_ALTF6 && !Link)    // молча отвалим :-)
 					return TRUE;
 
 				{
-					ShellCopy ShCopy(this, Move, Link, FALSE, Ask, ToPlugin, nullptr);
+					ShellCopy ShCopy(this, Move, Link, false, Ask, ToPlugin, nullptr);
 				}
 
 				if (ToPlugin == 1) {

@@ -607,7 +607,7 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 	int EnableShowTime=Opt.Clock && (WaitInMainLoop || (CtrlObject && CtrlObject->Macro.GetArea()==MACROAREA_SEARCH));
 
 	if (EnableShowTime)
-		ShowTime(1);
+		ShowTime(SHTM_FORCE);
 
 	ScrBuf.Flush();
 
@@ -663,7 +663,7 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 			clock_t CurTime=GetProcessUptimeMSec();
 
 			if (EnableShowTime)
-				ShowTime(0);
+				ShowTime(SHTM_LAZY);
 
 			if (WaitInMainLoop)
 			{
@@ -874,7 +874,7 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 	Console.ReadInput(*rec);
 
 	if (EnableShowTime)
-		ShowTime(1);
+		ShowTime(SHTM_FORCE);
 
 	/*& 17.05.2001 OT Изменился размер консоли, генерим клавишу*/
 	if (rec->EventType == WINDOW_BUFFER_SIZE_EVENT) {

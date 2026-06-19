@@ -52,7 +52,7 @@ class UserMenu
 		bool MenuFromAnyFile;
 
 		void ProcessUserMenu(bool ChooseMenuType, const wchar_t *MenuFileName);
-		int DeleteMenuRecord(const wchar_t *MenuKey, int DeletePos);
+		bool DeleteMenuRecord(const wchar_t *MenuKey, int DeletePos);
 		bool EditMenu(const wchar_t *MenuKey, int EditPos, int TotalRecords, bool Create);
 		int ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar_t *RootMenuKey,
 			const wchar_t *Title=nullptr);

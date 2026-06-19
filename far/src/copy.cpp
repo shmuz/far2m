@@ -571,10 +571,10 @@ ShellCopyBuffer::~ShellCopyBuffer()
 }
 
 ShellCopy::ShellCopy(Panel *SrcPanel,    // исходная панель (активная)
-		int Move,                        // =1 - операция Move
-		int Link,                        // =1 - Sym/Hard Link
-		int CurrentOnly,                 // =1 - только текущий файл, под курсором
-		int Ask,                         // =1 - выводить диалог?
+		bool Move,                       // =1 - операция Move
+		bool Link,                       // =1 - Sym/Hard Link
+		bool CurrentOnly,                // =1 - только текущий файл, под курсором
+		bool Ask,                        // =1 - выводить диалог?
 		int &ToPlugin,                   // =?
 		const wchar_t *PluginDestPath, bool ToSubdir)
 	:
@@ -866,7 +866,7 @@ ShellCopy::ShellCopy(Panel *SrcPanel,    // исходная панель (ак�
 		InsertQuote(strCopyDlgValue);
 
 		if (!DestList.Set(strCopyDlgValue))
-			Ask = TRUE;
+			Ask = true;
 	}
 
 	// ***********************************************************************
@@ -1087,7 +1087,7 @@ ShellCopy::ShellCopy(Panel *SrcPanel,    // исходная панель (ак�
 			}
 
 			if (CountTarget > 1)
-				Move = 0;
+				Move = false;
 
 			for (size_t DLI = 0; nullptr != (NamePtr = DestList.Get(DLI)); ++DLI) {
 				CurCopiedSize = 0;
@@ -1126,7 +1126,7 @@ ShellCopy::ShellCopy(Panel *SrcPanel,    // исходная панель (ак�
 					}
 				}
 
-				CP = new CopyProgress(Move != 0, ShowTotalCopySize, ShowCopyTime);
+				CP = new CopyProgress(Move, ShowTotalCopySize, ShowCopyTime);
 				// Обнулим инфу про дизы
 				strDestDizPath.Clear();
 				Flags.DIZREAD = false;
@@ -1868,7 +1868,7 @@ ShellCopy::CreateSymLink(const char *Target, const wchar_t *NewName, const FAR_F
 	if (errno == EEXIST) {
 		int RetCode = 0, Append = 0;
 		FARString strNewName = NewName, strTarget = Target;
-		if (AskOverwrite(SrcData, strTarget, NewName, 0, 0, 0, 0, Append, strNewName, RetCode)) {
+		if (AskOverwrite(SrcData, strTarget, NewName, 0, false, false, false, Append, strNewName, RetCode)) {
 			if (strNewName == NewName) {
 				fprintf(stderr, "CreateSymLink('%s', '%ls') - overwriting and strNewName='%ls'\n", Target,
 						NewName, strNewName.CPtr());
@@ -1976,7 +1976,7 @@ ShellCopy::CopySymLink(const wchar_t *ExistingName, const wchar_t *NewName, cons
 }
 
 COPY_CODES ShellCopy::ShellCopyOneFile(const wchar_t *Src, const FAR_FIND_DATA_EX &SrcData,
-		FARString &strDest, int KeepPathPos, int Rename)
+		FARString &strDest, int KeepPathPos, bool Rename)
 {
 	for (;;) {
 		COPY_CODES out = ShellCopyOneFileNoRetry(Src, SrcData, strDest, KeepPathPos, Rename);
@@ -1986,7 +1986,7 @@ COPY_CODES ShellCopy::ShellCopyOneFile(const wchar_t *Src, const FAR_FIND_DATA_E
 }
 
 COPY_CODES ShellCopy::ShellCopyOneFileNoRetry(const wchar_t *Src, const FAR_FIND_DATA_EX &SrcData,
-		FARString &strDest, int KeepPathPos, int Rename)
+		FARString &strDest, int KeepPathPos, bool Rename)
 {
 	CurCopiedSize = 0;    // Сбросить текущий прогресс
 
@@ -2012,7 +2012,8 @@ COPY_CODES ShellCopy::ShellCopyOneFileNoRetry(const wchar_t *Src, const FAR_FIND
 			DestAttr = DestData.dwFileAttributes;
 	}
 
-	int SameName = 0, Append = 0;
+	bool SameName = false;
+	int Append = 0;
 
 	if (DestAttr != INVALID_FILE_ATTRIBUTES && (DestAttr & FILE_ATTRIBUTE_DIRECTORY)) {
 		int CmpCode = CmpFullNames(Src, strDestPath);
@@ -2024,7 +2025,7 @@ COPY_CODES ShellCopy::ShellCopyOneFileNoRetry(const wchar_t *Src, const FAR_FIND
 
 		if (CmpCode == 1)    // TODO: error check
 		{
-			SameName = 1;
+			SameName = true;
 
 			if (Rename) {
 				CmpCode = !StrCmp(PointToName(Src), PointToName(strDestPath));
@@ -2172,7 +2173,7 @@ COPY_CODES ShellCopy::ShellCopyOneFileNoRetry(const wchar_t *Src, const FAR_FIND
 
 			if (CmpCode == 1)    // TODO: error check
 			{
-				SameName = 1;
+				SameName = true;
 
 				if (Rename) {
 					CmpCode = !StrCmp(PointToName(Src), PointToName(strDestPath));
@@ -2188,7 +2189,7 @@ COPY_CODES ShellCopy::ShellCopyOneFileNoRetry(const wchar_t *Src, const FAR_FIND
 		int RetCode = 0;
 		FARString strNewName;
 
-		if (!AskOverwrite(SrcData, Src, strDestPath, DestAttr, SameName, Rename, (Flags.LINK ? 0 : 1), Append,
+		if (!AskOverwrite(SrcData, Src, strDestPath, DestAttr, SameName, Rename, !Flags.LINK, Append,
 					strNewName, RetCode)) {
 			return ((COPY_CODES)RetCode);
 		}
@@ -2232,7 +2233,7 @@ COPY_CODES ShellCopy::ShellCopyOneFileNoRetry(const wchar_t *Src, const FAR_FIND
 				AskDelete = false;
 			} else {
 				do {
-					CopyCode = ShellCopyFile(Src, SrcData, strDestPath, Append);
+					CopyCode = ShellCopyFile(Src, SrcData, strDestPath, Append != 0);
 				} while (CopyCode == COPY_RETRY);
 
 				switch (CopyCode) {
@@ -2272,7 +2273,7 @@ COPY_CODES ShellCopy::ShellCopyOneFileNoRetry(const wchar_t *Src, const FAR_FIND
 			}
 		} else {
 			do {
-				CopyCode = ShellCopyFile(Src, SrcData, strDestPath, Append);
+				CopyCode = ShellCopyFile(Src, SrcData, strDestPath, Append != 0);
 			} while (CopyCode == COPY_RETRY);
 
 			if (Append && DestData.dwUnixMode != 0
@@ -2327,7 +2328,7 @@ COPY_CODES ShellCopy::ShellCopyOneFileNoRetry(const wchar_t *Src, const FAR_FIND
 		int RetCode;
 		FARString strNewName;
 
-		if (!AskOverwrite(SrcData, Src, strDestPath, DestAttr, SameName, Rename, (Flags.LINK ? 0 : 1), Append,
+		if (!AskOverwrite(SrcData, Src, strDestPath, DestAttr, SameName, Rename, !Flags.LINK, Append,
 					strNewName, RetCode))
 			return ((COPY_CODES)RetCode);
 
@@ -2723,7 +2724,7 @@ static dev_t GetRDev(FARString SrcName)
 }
 
 int ShellCopy::ShellCopyFile(const wchar_t *SrcName, const FAR_FIND_DATA_EX &SrcData, FARString &strDestName,
-		int Append)
+		bool Append)
 {
 	OrigScrX = ScrX;
 	OrigScrY = ScrY;
@@ -2773,7 +2774,7 @@ int ShellCopy::ShellCopyFile(const wchar_t *SrcName, const FAR_FIND_DATA_EX &Src
 		}
 #endif
 
-		ShellFileTransfer(SrcName, SrcData, strDestName, Append != 0, CopyBuffer, Flags).Do();
+		ShellFileTransfer(SrcName, SrcData, strDestName, Append, CopyBuffer, Flags).Do();
 		return CP->Cancelled() ? COPY_CANCEL : COPY_SUCCESS;
 	} catch (ErrnoSaver &ErSr) {
 		_localLastError = ErSr.Get();
@@ -2899,8 +2900,8 @@ LONG_PTR WINAPI WarnDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 	return DefDlgProc(hDlg, Msg, Param1, Param2);
 }
 
-int ShellCopy::AskOverwrite(const FAR_FIND_DATA_EX &SrcData, const wchar_t *SrcName, const wchar_t *DestName,
-		DWORD DestAttr, int SameName, int Rename, int AskAppend, int &Append, FARString &strNewName,
+bool ShellCopy::AskOverwrite(const FAR_FIND_DATA_EX &SrcData, const wchar_t *SrcName, const wchar_t *DestName,
+		DWORD DestAttr, bool SameName, bool Rename, bool AskAppend, int &Append, FARString &strNewName,
 		int &RetCode)
 {
 	enum
@@ -2933,10 +2934,10 @@ int ShellCopy::AskOverwrite(const FAR_FIND_DATA_EX &SrcData, const wchar_t *SrcN
 
 	if (DestAttr == INVALID_FILE_ATTRIBUTES)
 		if ((DestAttr = apiGetFileAttributes(DestName)) == INVALID_FILE_ATTRIBUTES)
-			return TRUE;
+			return true;
 
 	if (DestAttr & FILE_ATTRIBUTE_DIRECTORY)
-		return TRUE;
+		return true;
 
 	int MsgCode = OvrMode;
 	FARString strDestName = DestName;
@@ -3034,7 +3035,7 @@ int ShellCopy::AskOverwrite(const FAR_FIND_DATA_EX &SrcData, const wchar_t *SrcN
 			OvrMode = 2;
 		case 2:
 			RetCode = COPY_NEXT;
-			return FALSE;
+			return false;
 		case 5:
 			OvrMode = 5;
 			GenerateName(strDestName, strRenamedFilesPath);
@@ -3051,7 +3052,7 @@ int ShellCopy::AskOverwrite(const FAR_FIND_DATA_EX &SrcData, const wchar_t *SrcN
 		case -2:
 		case 8:
 			RetCode = COPY_CANCEL;
-			return FALSE;
+			return false;
 	}
 
 	if (RetCode != COPY_RETRY) {
@@ -3129,12 +3130,12 @@ int ShellCopy::AskOverwrite(const FAR_FIND_DATA_EX &SrcData, const wchar_t *SrcN
 					ReadOnlyOvrMode = 2;
 				case 2:
 					RetCode = COPY_NEXT;
-					return FALSE;
+					return false;
 				case -1:
 				case -2:
 				case 8:
 					RetCode = COPY_CANCEL;
-					return FALSE;
+					return false;
 			}
 		}
 
@@ -3143,7 +3144,7 @@ int ShellCopy::AskOverwrite(const FAR_FIND_DATA_EX &SrcData, const wchar_t *SrcN
 			apiMakeWritable(DestName);
 	}
 
-	return TRUE;
+	return true;
 }
 
 bool ShellCopy::CalcTotalSize()

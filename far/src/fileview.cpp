@@ -384,7 +384,7 @@ int FileViewer::ProcessKey(FarKey Key)
 					ShellEditor->SetNamesList(View.GetNamesList());
 					FrameManager->DeleteFrame(this); // Insert уже есть внутри конструктора
 				}
-				ShowTime(2);
+				ShowTime(SHTM_RESET);
 			}
 
 			return TRUE;
@@ -596,7 +596,7 @@ void FileViewer::ShowStatus()
 	FS << fmt::Cells() << fmt::LeftAlign() << fmt::Size(View.Width+(View.ViOpt.ShowScrollbar?1:0)) << strStatus;
 
 	if (Opt.ViewerEditorClock && IsFullScreen())
-		ShowTime(FALSE);
+		ShowTime(SHTM_LAZY);
 }
 
 void FileViewer::OnChangeFocus(int focus)

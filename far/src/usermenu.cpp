@@ -832,8 +832,8 @@ LONG_PTR WINAPI EditMenuDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param
 				BOOL Result = TRUE;
 				LPCWSTR HotKey = reinterpret_cast<LPCWSTR>(
 						SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR, EM_HOTKEY_EDIT));
-				LPCWSTR Label =
-						reinterpret_cast<LPCWSTR>(SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR, EM_LABEL_EDIT));
+				LPCWSTR Label = reinterpret_cast<LPCWSTR>(
+						SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR, EM_LABEL_EDIT));
 				int FocusPos = -1;
 
 				if (StrCmp(HotKey, L"--")) {
@@ -1015,7 +1015,7 @@ bool UserMenu::EditMenu(const wchar_t *MenuKey, int EditPos, int TotalRecords, b
 	return Result;
 }
 
-int UserMenu::DeleteMenuRecord(const wchar_t *MenuKey, int DeletePos)
+bool UserMenu::DeleteMenuRecord(const wchar_t *MenuKey, int DeletePos)
 {
 	FormatString strRegKey;
 	strRegKey << MenuKey << L"/Item" << DeletePos;
@@ -1025,11 +1025,10 @@ int UserMenu::DeleteMenuRecord(const wchar_t *MenuKey, int DeletePos)
 	FARString strItemName = strRecText;
 	InsertQuote(strItemName);
 
-	if (0
-			!= Message(MSG_WARNING, 2, Msg::UserMenuTitle,
-					SubMenu ? Msg::AskDeleteSubMenuItem : Msg::AskDeleteMenuItem, strItemName, Msg::Delete,
-					Msg::Cancel)) {
-		return FALSE;
+	if (0 != Message(MSG_WARNING, 2, Msg::UserMenuTitle,
+				SubMenu ? Msg::AskDeleteSubMenuItem : Msg::AskDeleteMenuItem, strItemName, Msg::Delete,
+				Msg::Cancel)) {
+		return false;
 	}
 
 	MenuModified = MenuNeedRefresh = true;
@@ -1043,7 +1042,7 @@ int UserMenu::DeleteMenuRecord(const wchar_t *MenuKey, int DeletePos)
 		cfg_writer.DefragIndexedSections(DefragPrefix.GetMB().c_str());
 	}
 	ConfigReaderScope::Update(s_cfg_reader);
-	return TRUE;
+	return true;
 }
 
 bool UserMenu::MoveMenuItem(const wchar_t *MenuKey, int Pos, int NewPos)
