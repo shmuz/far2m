@@ -539,13 +539,12 @@ bool Edit::ProcessInsPath(FarKey Key, int PrevSelStart, int PrevSelEnd)
 	bool RetCode = false;
 	BookmarkData Data;
 
-	if (Key >= KEY_RCTRL0 && Key <= KEY_RCTRL9)    // шорткаты?
-	{
+	if (Key >= KEY_RCTRL0 && Key <= KEY_RCTRL9) {   // шорткаты?
 		if (Bookmarks().Get(Key - KEY_RCTRL0, Data))
 			RetCode = true;
-	} else                                                 // Пути/имена?
-	{
-		RetCode = _MakePath1(Key, Data.ShortcutFolder, L"", false) != 0; // 0 - always not escaping path names
+	}
+	else {                                          // Пути/имена?
+		RetCode = _MakePath1(Key, Data.ShortcutFolder, L"", false); // 0 - always not escaping path names
 	}
 
 	// Если что-нить получилось, именно его и вставим (PathName)

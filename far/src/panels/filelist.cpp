@@ -4423,7 +4423,9 @@ void FileList::CountDirSize(DWORD PluginFlags)
 	SortFileList(true);
 	ShowFileList(true);
 	CtrlObject->Cp()->Redraw();
-	CreateChangeNotification(false);    // initially here was true, but size is actually NOT recalculated recursively on deep change, so changing this to FALSE should not break anything, however give MUCH better performance due to inotify is slow on multiple directories
+	CreateChangeNotification(false); // initially here was TRUE, but size is actually NOT recalculated
+		// recursively on deep change, so changing this to FALSE should not break anything,
+		// however give MUCH better performance due to inotify is slow on multiple directories
 }
 
 int FileList::GetPrevViewMode()
