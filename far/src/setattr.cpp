@@ -618,7 +618,7 @@ LONG_PTR WINAPI SetAttrDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 					ft = *reinterpret_cast<PFILETIME>(Param2);
 				}
 
-				ConvertDate(ft, strDate, strTime, 12, FALSE, FALSE, 2, TRUE);
+				ConvertDate(ft, strDate, strTime, 12, 2, true);
 			}
 
 			// Глянем на место, где был клик
@@ -1067,14 +1067,13 @@ bool ShellSetFileAttributes(Panel *SrcPanel, LPCWSTR Object)
 				if (Opt.SetAttrFolderRules) {
 					if (DlgParam.Plugin || apiGetFindDataEx(strSelName, FindData)) {
 						ConvertDate(FindData.ftUnixAccessTime, AttrDlg[SA_FIXEDIT_LAST_ACCESS_DATE].strData,
-								AttrDlg[SA_FIXEDIT_LAST_ACCESS_TIME].strData, 12, FALSE, FALSE, 2, TRUE);
+								AttrDlg[SA_FIXEDIT_LAST_ACCESS_TIME].strData, 12, 2, true);
 						ConvertDate(FindData.ftUnixModificationTime,
 								AttrDlg[SA_FIXEDIT_LAST_MODIFICATION_DATE].strData,
-								AttrDlg[SA_FIXEDIT_LAST_MODIFICATION_TIME].strData, 12, FALSE, FALSE, 2,
-								TRUE);
+								AttrDlg[SA_FIXEDIT_LAST_MODIFICATION_TIME].strData, 12, 2, true);
 						ConvertDate(FindData.ftUnixStatusChangeTime,
 								AttrDlg[SA_FIXEDIT_LAST_CHANGE_DATE].strData,
-								AttrDlg[SA_FIXEDIT_LAST_CHANGE_TIME].strData, 12, FALSE, FALSE, 2, TRUE);
+								AttrDlg[SA_FIXEDIT_LAST_CHANGE_TIME].strData, 12, 2, true);
 					}
 				}
 
@@ -1110,8 +1109,7 @@ bool ShellSetFileAttributes(Panel *SrcPanel, LPCWSTR Object)
 
 			if (DlgParam.Plugin || apiGetFindDataEx(strSelName, FindData)) {
 				for (size_t i = 0; i < ARRAYSIZE(Dates); i++) {
-					ConvertDate(*TimeValues[i], AttrDlg[Dates[i]].strData, AttrDlg[Times[i]].strData, 12,
-							FALSE, FALSE, 2, TRUE);
+					ConvertDate(*TimeValues[i], AttrDlg[Dates[i]].strData, AttrDlg[Times[i]].strData, 12, 2, true);
 				}
 			}
 

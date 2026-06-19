@@ -1348,11 +1348,11 @@ void WIN32_FIND_DATA_Dump(const wchar_t *Title,const WIN32_FIND_DATA &wfd,FILE *
 			fwprintf(fp,L"%*s %ls     FILE_ATTRIBUTE_VIRTUAL             (0x00010000)\n",12,L"",space);
 
 		FARString D, T;
-		ConvertDate(wfd.ftCreationTime,D,T,8,FALSE,FALSE,TRUE);
+		ConvertDate(wfd.ftCreationTime,D,T,8,1,false);
 		fwprintf(fp,L"%*s %ls  ftCreationTime        =0x%08X 0x%08X\n",12,L"",space,wfd.ftCreationTime.dwHighDateTime,wfd.ftCreationTime.dwLowDateTime);
-		ConvertDate(wfd.ftLastAccessTime,D,T,8,FALSE,FALSE,TRUE);
+		ConvertDate(wfd.ftLastAccessTime,D,T,8,1,false);
 		fwprintf(fp,L"%*s %ls  ftLastAccessTime      =0x%08X 0x%08X\n",12,L"",space,wfd.ftLastAccessTime.dwHighDateTime,wfd.ftLastAccessTime.dwLowDateTime);
-		ConvertDate(wfd.ftLastWriteTime,D,T,8,FALSE,FALSE,TRUE);
+		ConvertDate(wfd.ftLastWriteTime,D,T,8,1,false);
 		fwprintf(fp,L"%*s %ls  ftLastWriteTime       =0x%08X 0x%08X\n",12,L"",space,wfd.ftLastWriteTime.dwHighDateTime,wfd.ftLastWriteTime.dwLowDateTime);
 		LARGE_INTEGER Number;
 		Number.QuadPart=wfd.nFileSize;

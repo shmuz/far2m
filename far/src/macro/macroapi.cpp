@@ -2765,19 +2765,19 @@ void FarMacroApi::panelitemFunc()
 				return PushInteger(filelistItem->FileAttr);
 
 			case 3:  // CreationTime
-				ConvertDate(filelistItem->CreationTime,strDate,strTime,8,FALSE,FALSE,TRUE,TRUE);
+				ConvertDate(filelistItem->CreationTime,strDate,strTime,8,1,true);
 				strDate += L" ";
 				strDate += strTime;
 				return PushString(strDate);
 
 			case 4:  // AccessTime
-				ConvertDate(filelistItem->AccessTime,strDate,strTime,8,FALSE,FALSE,TRUE,TRUE);
+				ConvertDate(filelistItem->AccessTime,strDate,strTime,8,1,true);
 				strDate += L" ";
 				strDate += strTime;
 				return PushString(strDate);
 
 			case 5:  // WriteTime
-				ConvertDate(filelistItem->WriteTime,strDate,strTime,8,FALSE,FALSE,TRUE,TRUE);
+				ConvertDate(filelistItem->WriteTime,strDate,strTime,8,1,true);
 				strDate += L" ";
 				strDate += strTime;
 				return PushString(strDate);
@@ -2826,7 +2826,7 @@ void FarMacroApi::panelitemFunc()
 				return PushInteger(0);
 
 			case 20:  // ChangeTime
-				ConvertDate(filelistItem->ChangeTime,strDate,strTime,8,FALSE,FALSE,TRUE,TRUE);
+				ConvertDate(filelistItem->ChangeTime,strDate,strTime,8,1,true);
 				strDate += L" ";
 				strDate += strTime;
 				return PushString(strDate);

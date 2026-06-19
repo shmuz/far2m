@@ -690,14 +690,11 @@ void ConvertDate_ResetInit()
 }
 
 void ConvertDate(const FILETIME &ft, FARString &strDateText, FARString &strTimeText, int TimeLength,
-		int Brief, int TextMonth, int FullYear, int DynInit)
+		int FullYear, bool DynInit, bool Brief, bool TextMonth)
 {
 	static int WDateFormat;
 	static wchar_t WDateSeparator, WTimeSeparator, WDecimalSeparator;
-	//static bool Init = false;
 	static SYSTEMTIME lt;
-	int DateFormat;
-	wchar_t DateSeparator, TimeSeparator, DecimalSeparator;
 
 	if (!Init) {
 		WDateFormat = GetDateFormat();
@@ -708,23 +705,22 @@ void ConvertDate(const FILETIME &ft, FARString &strDateText, FARString &strTimeT
 		Init = true;
 	}
 
-	DateFormat = DynInit ? GetDateFormat() : WDateFormat;
-	DateSeparator = DynInit ? GetDateSeparator() : WDateSeparator;
-	TimeSeparator = DynInit ? GetTimeSeparator() : WTimeSeparator;
-	DecimalSeparator = DynInit ? GetDecimalSeparator() : WDecimalSeparator;
-	int CurDateFormat = DateFormat;
+	int CurDateFormat = DynInit ? GetDateFormat() : WDateFormat;
+	wchar_t DateSeparator = DynInit ? GetDateSeparator() : WDateSeparator;
+	wchar_t TimeSeparator = DynInit ? GetTimeSeparator() : WTimeSeparator;
+	wchar_t DecimalSeparator = DynInit ? GetDecimalSeparator() : WDecimalSeparator;
 
 	if (Brief && CurDateFormat == 2)
 		CurDateFormat = 0;
-
-	SYSTEMTIME st;
-	FILETIME ct;
 
 	if (!ft.dwHighDateTime) {
 		strDateText.Clear();
 		strTimeText.Clear();
 		return;
 	}
+
+	SYSTEMTIME st;
+	FILETIME ct;
 
 	WINPORT(FileTimeToLocalFileTime)(&ft, &ct);
 	WINPORT(FileTimeToSystemTime)(&ct, &st);
@@ -756,7 +752,7 @@ void ConvertDate(const FILETIME &ft, FARString &strDateText, FARString &strTimeT
 		int Year = st.wYear;
 
 		if (!FullYear)
-			Year%= 100;
+			Year %= 100;
 
 		if (TextMonth) {
 			const wchar_t *Month = (Msg::MonthJan + st.wMonth - 1);

@@ -455,7 +455,7 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 		{
 			if (Opt.HistoryShowDates && !IsSameDay(Item->Timestamp, CurTimestamp)) {
 				FARString strDate, strTime;
-				ConvertDate(Item->Timestamp, strDate, strTime, 0);
+				ConvertDate(Item->Timestamp, strDate, strTime, 0, 0, false);
 				MenuItem.Clear();
 				MenuItem.strName = strDate;
 				MenuItem.Flags = LIF_SEPARATOR;

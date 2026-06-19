@@ -2981,11 +2981,11 @@ bool ShellCopy::AskOverwrite(const FAR_FIND_DATA_EX &SrcData, const wchar_t *Src
 				FormatString strDestSizeText;
 				strDestSizeText << DestSize;
 				FARString strDateText, strTimeText;
-				ConvertDate(SrcLastWriteTime, strDateText, strTimeText, 8, FALSE, FALSE, TRUE, TRUE);
+				ConvertDate(SrcLastWriteTime, strDateText, strTimeText, 8, 1, true);
 				strSrcFileStr
 						<< fmt::Cells() << fmt::LeftAlign() << fmt::Expand(17) << Msg::CopySource << L" "
 						<< fmt::Size(25) << strSrcSizeText << L" " << strDateText << L" " << strTimeText;
-				ConvertDate(DestData.ftLastWriteTime, strDateText, strTimeText, 8, FALSE, FALSE, TRUE, TRUE);
+				ConvertDate(DestData.ftLastWriteTime, strDateText, strTimeText, 8, 1, true);
 				strDestFileStr
 						<< fmt::Cells() << fmt::LeftAlign() << fmt::Expand(17) << Msg::CopyDest << L" "
 						<< fmt::Size(25) << strDestSizeText << L" " << strDateText << L" " << strTimeText;
@@ -3076,13 +3076,11 @@ bool ShellCopy::AskOverwrite(const FAR_FIND_DATA_EX &SrcData, const wchar_t *Src
 					uint64_t DestSize = DestData.nFileSize;
 					FormatString strDestSizeText;
 					strDestSizeText << DestSize;
-					ConvertDate(SrcData.ftLastWriteTime, strDateText, strTimeText, 8, FALSE, FALSE, TRUE,
-							TRUE);
+					ConvertDate(SrcData.ftLastWriteTime, strDateText, strTimeText, 8, 1, true);
 					strSrcFileStr
 							<< fmt::Cells() << fmt::LeftAlign() << fmt::Expand(17) << Msg::CopySource << L" "
 							<< fmt::Size(25) << strSrcSizeText << L" " << strDateText << L" " << strTimeText;
-					ConvertDate(DestData.ftLastWriteTime, strDateText, strTimeText, 8, FALSE, FALSE, TRUE,
-							TRUE);
+					ConvertDate(DestData.ftLastWriteTime, strDateText, strTimeText, 8, 1, true);
 					strDestFileStr
 							<< fmt::Cells() << fmt::LeftAlign() << fmt::Expand(17) << Msg::CopyDest << L" "
 							<< fmt::Size(25) << strDestSizeText << L" " << strDateText << L" " << strTimeText;

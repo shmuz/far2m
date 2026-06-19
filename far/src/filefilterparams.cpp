@@ -738,7 +738,7 @@ LONG_PTR WINAPI FileFilterConfigDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_P
 
 				if (Param1 == ID_FF_CURRENT) {
 					WINPORT(GetSystemTimeAsFileTime)(&ft);
-					ConvertDate(ft, strDate, strTime, 12, FALSE, FALSE, 2);
+					ConvertDate(ft, strDate, strTime, 12, 2, false);
 				} else {
 					strDate.Clear();
 					strTime.Clear();
@@ -1141,9 +1141,9 @@ bool FileFilterConfig(FileFilterParams *FF, bool ColorConfig)
 				FilterDlg[ID_FF_TIMEBEFOREEDIT].strData);
 	} else {
 		ConvertDate(DateAfter, FilterDlg[ID_FF_DATEAFTEREDIT].strData, FilterDlg[ID_FF_TIMEAFTEREDIT].strData,
-				12, FALSE, FALSE, 2);
+				12, 2, false);
 		ConvertDate(DateBefore, FilterDlg[ID_FF_DATEBEFOREEDIT].strData,
-				FilterDlg[ID_FF_TIMEBEFOREEDIT].strData, 12, FALSE, FALSE, 2);
+				FilterDlg[ID_FF_TIMEBEFOREEDIT].strData, 12, 2, false);
 	}
 
 	if (!FilterDlg[ID_FF_MATCHDATE].Selected)

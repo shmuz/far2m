@@ -534,20 +534,20 @@ const FARString FormatStr_DateTime(const FILETIME *FileTime,int ColumnType,DWORD
 			return std::move(strResult.strValue());
 	}
 
-	int ColumnWidth=Width;
-	int Brief=Flags & COLUMN_BRIEF;
-	int TextMonth=Flags & COLUMN_MONTH;
-	int FullYear=FALSE;
+	int ColumnWidth = Width;
+	bool Brief = (Flags & COLUMN_BRIEF) != 0;
+	bool TextMonth = (Flags & COLUMN_MONTH) != 0;
+	int FullYear = FALSE;
 
 	switch(ColumnType)
 	{
 		case DATE_COLUMN:
 		case TIME_COLUMN:
 		{
-			Brief=FALSE;
-			TextMonth=FALSE;
+			Brief = false;
+			TextMonth = false;
 			if (ColumnType == DATE_COLUMN)
-				FullYear=ColumnWidth>9;
+				FullYear = ColumnWidth > 9;
 			break;
 		}
 		case WDATE_COLUMN:
@@ -557,19 +557,19 @@ const FARString FormatStr_DateTime(const FILETIME *FileTime,int ColumnType,DWORD
 		{
 			if (!Brief)
 			{
-				int CmpWidth=ColumnWidth-TextMonth;
+				int CmpWidth = ColumnWidth - TextMonth;
 
 				if (CmpWidth==15 || CmpWidth==16 || CmpWidth==18 || CmpWidth==19 || CmpWidth>21)
 					FullYear=TRUE;
 			}
-			ColumnWidth-=9;
+			ColumnWidth -= 9;
 			break;
 		}
 	}
 
 	FARString strDateStr,strTimeStr;
 
-	ConvertDate(*FileTime,strDateStr,strTimeStr,ColumnWidth,Brief,TextMonth,FullYear);
+	ConvertDate(*FileTime,strDateStr,strTimeStr,ColumnWidth,FullYear,false,Brief,TextMonth);
 
 	strResult << fmt::Size(Width);
 	switch(ColumnType)
