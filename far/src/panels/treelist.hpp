@@ -89,7 +89,7 @@ private:
 private:
 	void SetMacroArea(bool Restore = false);
 	virtual void DisplayObject();
-	void DisplayTree(int Fast);
+	void DisplayTree(bool Fast);
 	void DisplayTreeName(const wchar_t *Name, int Pos);
 	void LevelUp();
 	void Up(int Count);
@@ -120,7 +120,7 @@ private:
 	static bool GetCacheTreeName(const wchar_t *Root, FARString &strName, bool CreateDir);
 
 public:
-	TreeList(int IsPanel = TRUE);
+	TreeList(bool IsPanel = true);
 	virtual ~TreeList();
 
 public:
@@ -141,7 +141,8 @@ public:
 
 	virtual void UpdateViewPanel();
 	virtual void MoveToMouse(MOUSE_EVENT_RECORD *MouseEvent);
-	virtual bool FindPartName(const wchar_t *Name, int Next, int Direct = 1, int ExcludeSets = 0, bool UseXlat = false);
+	virtual bool FindPartName(const wchar_t *Name, bool Next, int Direct, bool ExcludeSets,
+			bool UseXlat = false);
 
 	virtual bool GoToFile(long idxItem);
 	virtual bool GoToFile(const wchar_t *Name, bool OnlyPartName = false);

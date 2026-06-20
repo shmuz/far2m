@@ -1363,11 +1363,9 @@ LONG_PTR WINAPI CopyDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 			if (DlgParam->AltF10 != -1) {
 				{
 					FARString strNewFolder2;
-					FolderTree Tree(strNewFolder2,
-							(DlgParam->AltF10 == 1
-											? MODALTREE_PASSIVE
-											: (DlgParam->AltF10 == 2 ? MODALTREE_FREE : MODALTREE_ACTIVE)),
-							FALSE, FALSE);
+					int ModalMode = (DlgParam->AltF10 == 1) ? MODALTREE_PASSIVE
+							: (DlgParam->AltF10 == 2) ? MODALTREE_FREE : MODALTREE_ACTIVE;
+					FolderTree Tree(strNewFolder2, ModalMode, false, false);
 					strNewFolder = strNewFolder2;
 				}
 

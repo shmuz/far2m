@@ -65,7 +65,7 @@ FolderTree::FolderTree(FARString &strResultFolder,int iModalMode,bool IsStandalo
 	//TopScreen=new SaveScreen;
 	SetCoords();
 
-	if ((Tree=new(std::nothrow) TreeList(FALSE)))
+	if ((Tree=new(std::nothrow) TreeList(false)))
 	{
 		CtrlObject->Macro.SetArea(MACROAREA_FINDFOLDER);
 		SetMacroArea(MACROAREA_FINDFOLDER);
@@ -240,7 +240,7 @@ int FolderTree::ProcessKey(FarKey Key)
 		{
 			FARString strName;
 			FindEdit->GetString(strName);
-			Tree->FindPartName(strName,TRUE,Key==KEY_CTRLSHIFTENTER||Key == KEY_CTRLSHIFTNUMENTER?-1:1,1);
+			Tree->FindPartName(strName, true, (Key & KEY_SHIFT) ? -1 : 1, true);
 			DrawEdit();
 		}
 		break;
@@ -287,7 +287,7 @@ int FolderTree::ProcessKey(FarKey Key)
 				FARString strName;
 				FindEdit->GetString(strName);
 
-				if (Tree->FindPartName(strName,FALSE,1,1))
+				if (Tree->FindPartName(strName,false,1,true))
 					strLastName = strName;
 				else
 				{

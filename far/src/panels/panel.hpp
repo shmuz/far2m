@@ -242,11 +242,11 @@ public:
 
 	virtual void CloseChangeNotification() {}
 	virtual bool
-	FindPartName(const wchar_t *Name, int Next, int Direct = 1, int ExcludeSets = 0, bool UseXlat = false)
+	FindPartName(const wchar_t *Name, bool Next, int Direct, bool ExcludeSets, bool UseXlat = false)
 	{
 		return false;
 	}
-	bool FindPartNameXLat(const wchar_t *Name, int Next, int Direct = 1, int ExcludeSets = 0);
+	bool FindPartNameXLat(const wchar_t *Name, bool Next, int Direct, bool ExcludeSets);
 
 	virtual bool GoToFile(long idxItem) { return true; }
 	virtual bool GoToFile(const wchar_t *Name, bool OnlyPartName = false) { return true; }

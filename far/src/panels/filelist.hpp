@@ -306,7 +306,7 @@ public:
 	PHPTR OpenFilePlugin(const wchar_t *FileName, bool PushPrev, OPENFILEPLUGINTYPE Type);
 	virtual bool GetFileName(FARString &strName, int Pos, DWORD &FileAttr) const;
 	virtual int GetCurrentPos() const;
-	virtual bool FindPartName(const wchar_t *Name, int Next, int Direct = 1, int ExcludeSets = 0,
+	virtual bool FindPartName(const wchar_t *Name, bool Next, int Direct, bool ExcludeSets,
 			bool UseXlat = false);
 
 	virtual bool GoToFile(long idxItem);

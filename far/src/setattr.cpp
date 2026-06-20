@@ -1077,7 +1077,7 @@ bool ShellSetFileAttributes(Panel *SrcPanel, LPCWSTR Object)
 					}
 				}
 
-				FolderPresent = TRUE;
+				FolderPresent = true;
 			}
 
 			if ((FileAttr != INVALID_FILE_ATTRIBUTES)

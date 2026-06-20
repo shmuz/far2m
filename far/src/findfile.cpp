@@ -2455,8 +2455,7 @@ static void ScanPluginTree(HANDLE hDlg, PHPTR hPlugin, DWORD Flags, int &Recurse
 				bool SetDirectoryResult = false;
 				{
 					SCOPED_ACTION(PluginLocker);
-					SetDirectoryResult =
-							CtrlObject->Plugins.SetDirectory(hPlugin, strCurName, OPM_FIND) != FALSE;
+					SetDirectoryResult = CtrlObject->Plugins.SetDirectory(hPlugin, strCurName, OPM_FIND);
 				}
 				if (SetDirectoryResult) {
 					strPluginSearchPath+= strCurName;
@@ -2475,8 +2474,7 @@ static void ScanPluginTree(HANDLE hDlg, PHPTR hPlugin, DWORD Flags, int &Recurse
 					bool SetDirectoryResult = false;
 					{
 						SCOPED_ACTION(PluginLocker);
-						SetDirectoryResult =
-								CtrlObject->Plugins.SetDirectory(hPlugin, L"..", OPM_FIND) != FALSE;
+						SetDirectoryResult = CtrlObject->Plugins.SetDirectory(hPlugin, L"..", OPM_FIND);
 					}
 					if (!SetDirectoryResult) {
 						StopFlag = true;

@@ -863,7 +863,7 @@ void Panel::FastFindProcessName(Edit *FindEdit, const wchar_t *Src, FARString &s
 				break;
 			}
 
-			if (FindPartNameXLat(Ptr, FALSE, 1, 1)) {
+			if (FindPartNameXLat(Ptr, false, 1, true)) {
 				//				Key=*(EndPtr-1);
 				*EndPtr = 0;
 				FindEdit->SetString(Ptr);
@@ -1007,13 +1007,13 @@ void Panel::FastFind(int FirstKey)
 				}
 				case KEY_CTRLNUMENTER:
 				case KEY_CTRLENTER:
-					FindPartNameXLat(strName, TRUE, 1, 1);
+					FindPartNameXLat(strName, true, 1, true);
 					FindEdit.Show();
 					FastFindShow(FindX, FindY);
 					break;
 				case KEY_CTRLSHIFTNUMENTER:
 				case KEY_CTRLSHIFTENTER:
-					FindPartNameXLat(strName, TRUE, -1, 1);
+					FindPartNameXLat(strName, true, -1, true);
 					FindEdit.Show();
 					FastFindShow(FindX, FindY);
 					break;
@@ -1049,7 +1049,7 @@ void Panel::FastFind(int FirstKey)
 							FindEdit.SetString(strName);
 						}
 
-						if (FindPartNameXLat(strName, FALSE, 1, 1)) {
+						if (FindPartNameXLat(strName, false, 1, true)) {
 							strLastName = strName;
 						} else {
 							if (CtrlObject->Macro.IsExecuting())    // && CtrlObject->Macro.GetLevelState() > 0) // если вставка макросом...
@@ -2058,7 +2058,7 @@ bool Panel::ExecShortcutFolder(int Pos)
 }
 
 // Just as FindPartName(), but with retry support through keyboard layout translation, specially for FastFind
-bool Panel::FindPartNameXLat(const wchar_t *Name, int Next, int Direct, int ExcludeSets)
+bool Panel::FindPartNameXLat(const wchar_t *Name, bool Next, int Direct, bool ExcludeSets)
 {
 	return FindPartName(Name, Next, Direct, ExcludeSets, Opt.XLat.EnableForFastFileFind);
 }

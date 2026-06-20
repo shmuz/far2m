@@ -168,7 +168,7 @@ static struct TreeListCache
 
 } TreeCache, tempTreeCache;
 
-TreeList::TreeList(int IsPanel)
+TreeList::TreeList(bool IsPanel)
 	:
 	PrevMacroArea(MACROAREA_LAST),
 	ListData(nullptr),
@@ -238,7 +238,7 @@ void TreeList::DisplayObject()
 			}
 		}
 
-		DisplayTree(FALSE);
+		DisplayTree(false);
 	}
 
 	Flags.Clear(FSCROBJ_ISREDRAWING);
@@ -251,7 +251,7 @@ FARString &TreeList::GetTitle(FARString &strTitle, int SubLen, int TruncSize)
 	return strTitle;
 }
 
-void TreeList::DisplayTree(int Fast)
+void TreeList::DisplayTree(bool Fast)
 {
 	wchar_t TreeLineSymbol[4][3] = {
 			{L' ',                   L' ',              0},
@@ -955,7 +955,7 @@ int TreeList::ProcessKey(FarKey Key)
 			if (Opt.Tree.AutoChangeFolder && !ModalMode)
 				ProcessKey(KEY_ENTER);
 			else
-				DisplayTree(TRUE);
+				DisplayTree(true);
 
 			return TRUE;
 		}
@@ -975,7 +975,7 @@ int TreeList::ProcessKey(FarKey Key)
 			if (Opt.Tree.AutoChangeFolder && !ModalMode)
 				ProcessKey(KEY_ENTER);
 			else
-				DisplayTree(TRUE);
+				DisplayTree(true);
 
 			return TRUE;
 		}
@@ -1010,7 +1010,7 @@ int TreeList::ProcessKey(FarKey Key)
 		case KEY_NUMPAD9: {
 			CurTopFile-= Y2 - Y1 - 3 - ModalMode;
 			CurFile-= Y2 - Y1 - 3 - ModalMode;
-			DisplayTree(TRUE);
+			DisplayTree(true);
 
 			if (Opt.Tree.AutoChangeFolder && !ModalMode)
 				ProcessKey(KEY_ENTER);
@@ -1021,7 +1021,7 @@ int TreeList::ProcessKey(FarKey Key)
 		case KEY_NUMPAD3: {
 			CurTopFile+= Y2 - Y1 - 3 - ModalMode;
 			CurFile+= Y2 - Y1 - 3 - ModalMode;
-			DisplayTree(TRUE);
+			DisplayTree(true);
 
 			if (Opt.Tree.AutoChangeFolder && !ModalMode)
 				ProcessKey(KEY_ENTER);
@@ -1089,26 +1089,26 @@ void TreeList::LevelUp()
 			break;
 		}
 
-	DisplayTree(TRUE);
+	DisplayTree(true);
 }
 
 void TreeList::Up(int Count)
 {
 	CurFile-= Count;
-	DisplayTree(TRUE);
+	DisplayTree(true);
 }
 
 void TreeList::Down(int Count)
 {
 	CurFile+= Count;
-	DisplayTree(TRUE);
+	DisplayTree(true);
 }
 
 void TreeList::Scroll(int Count)
 {
 	CurFile+= Count;
 	CurTopFile+= Count;
-	DisplayTree(TRUE);
+	DisplayTree(true);
 }
 
 void TreeList::CorrectPosition()
@@ -1221,7 +1221,7 @@ int TreeList::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 
 		if (MouseY > ScrollY && MouseY < ScrollY + Height - 1 && Height > 2) {
 			CurFile = (TreeCount - 1) * (MouseY - ScrollY) / (Height - 2);
-			DisplayTree(TRUE);
+			DisplayTree(true);
 
 			if (!ModalMode)
 				SetFocus();
@@ -1238,7 +1238,7 @@ int TreeList::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 			SetFocus();
 
 		MoveToMouse(MouseEvent);
-		DisplayTree(TRUE);
+		DisplayTree(true);
 
 		if (!TreeCount)
 			return TRUE;
@@ -1407,7 +1407,7 @@ int TreeList::ReadTreeFile()
 	return FillLastData();
 }
 
-bool TreeList::FindPartName(const wchar_t *Name, int Next, int Direct, int ExcludeSets, bool UseXlat)
+bool TreeList::FindPartName(const wchar_t *Name, bool Next, int Direct, bool ExcludeSets, bool UseXlat)
 {
 	FARString strMask;
 	strMask = Name;
@@ -1423,7 +1423,7 @@ bool TreeList::FindPartName(const wchar_t *Name, int Next, int Direct, int Exclu
 		if (CmpName(strMask, ListData[i]->strName, true)) {
 			CurFile = i;
 			CurTopFile = CurFile - (Y2 - Y1 - 1) / 2;
-			DisplayTree(TRUE);
+			DisplayTree(true);
 			return true;
 		}
 	}
@@ -1432,7 +1432,7 @@ bool TreeList::FindPartName(const wchar_t *Name, int Next, int Direct, int Exclu
 		if (CmpName(strMask, ListData[i]->strName, true)) {
 			CurFile = i;
 			CurTopFile = CurFile - (Y2 - Y1 - 1) / 2;
-			DisplayTree(TRUE);
+			DisplayTree(true);
 			return true;
 		}
 	}

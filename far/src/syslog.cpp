@@ -1127,7 +1127,7 @@ void INPUT_RECORD_DumpBuffer(FILE *fp)
 	if (!IsLogON())
 		return;
 
-	int InternalLog=fp?FALSE:TRUE;
+	bool InternalLog = !fp;
 	DWORD ReadCount2;
 	// берем количество оставшейся порции эвентов
 	Console.GetNumberOfInputEvents(ReadCount2);
@@ -1204,7 +1204,7 @@ void GetVolumeInformation_Dump(const wchar_t *Title,LPCWSTR lpRootPathName,LPCWS
 	if (!IsLogON())
 		return;
 
-	int InternalLog=fp?FALSE:TRUE;
+	bool InternalLog = !fp;
 	const wchar_t *space=MakeSpace();
 
 	if (InternalLog)
@@ -1288,7 +1288,7 @@ void WIN32_FIND_DATA_Dump(const wchar_t *Title,const WIN32_FIND_DATA &wfd,FILE *
 	if (!IsLogON())
 		return;
 
-	int InternalLog=fp?FALSE:TRUE;
+	bool InternalLog = !fp;
 	const wchar_t *space=MakeSpace();
 
 	if (InternalLog)
@@ -1378,7 +1378,7 @@ void PanelViewSettings_Dump(const wchar_t *Title,const PanelViewSettings &ViewSe
 	if (!IsLogON())
 		return;
 
-	int InternalLog=fp?FALSE:TRUE;
+	bool InternalLog = !fp;
 	const wchar_t *space=MakeSpace();
 
 	if (InternalLog)
