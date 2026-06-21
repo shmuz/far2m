@@ -1771,19 +1771,27 @@ void FarMacroApi::panelsetpathFunc()
 	PushBoolean(Ret);
 }
 
+enum
+{
+	f_fattr_fs,
+	f_pattr_panel,
+	f_fexist_fs,
+	f_fexist_panel,
+};
+
 void FarMacroApi::fattrFuncImpl(int Type)
 {
 	DWORD FileAttr=INVALID_FILE_ATTRIBUTES;
 	long Pos=-1;
 
-	if (Type == 0 || Type == 2) // не панели: fattr(0) & fexist(2)
+	if (Type == f_fattr_fs || Type == f_fexist_fs)
 	{
 		auto Params = parseParams(1);
 		FAR_FIND_DATA_EX FindData;
 		apiGetFindDataEx(Params[0].toString(), FindData);
 		FileAttr=FindData.dwFileAttributes;
 	}
-	else // panel.fattr(1) & panel.fexist(3)
+	else
 	{
 		auto Params = parseParams(2);
 		int typePanel = Params[0].getInt32();
@@ -1792,10 +1800,10 @@ void FarMacroApi::fattrFuncImpl(int Type)
 		Panel *SelPanel = SelectPanel(typePanel);
 		if (SelPanel)
 		{
-			if (FindAnyOfChars(Str, "*?") )
+			if (FindAnyOfChars(Str, L"*?") )
 				Pos=SelPanel->FindFirst(Str);
 			else
-				Pos=SelPanel->FindFile(Str, FindAnyOfChars(Str, "/") ? FALSE : TRUE);
+				Pos=SelPanel->FindFile(Str, !FindAnyOfChars(Str, L"/"));
 
 			if (Pos >= 0)
 			{
@@ -1805,12 +1813,12 @@ void FarMacroApi::fattrFuncImpl(int Type)
 		}
 	}
 
-	if (Type == 2) // fexist(2)
+	if (Type == f_fexist_fs)
 	{
 		return PushBoolean(FileAttr!=INVALID_FILE_ATTRIBUTES);
 	}
 
-	if (Type == 3) // panel.fexist(3)
+	if (Type == f_fexist_panel)
 		FileAttr=(DWORD)Pos+1;
 
 	auto Ret = (FileAttr == INVALID_FILE_ATTRIBUTES) ? -1 : static_cast<int64_t>(FileAttr);
