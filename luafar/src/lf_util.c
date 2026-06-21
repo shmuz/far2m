@@ -130,6 +130,7 @@ int DecodeAttributes(const char* str)
 		else if (c == 'G') attr |= FILE_ATTRIBUTE_DEVICE_CHAR;
 		else if (c == 'F') attr |= FILE_ATTRIBUTE_DEVICE_FIFO;
 		else if (c == 'K') attr |= FILE_ATTRIBUTE_DEVICE_SOCK;
+		else if (c == 'L') attr |= FILE_ATTRIBUTE_HARDLINKS;
 	}
 	return attr;
 }
@@ -168,6 +169,7 @@ void PushAttrString(lua_State *L, int attr)
 	if (attr & FILE_ATTRIBUTE_DEVICE_CHAR)         *p++ = 'g';
 	if (attr & FILE_ATTRIBUTE_DEVICE_FIFO)         *p++ = 'f';
 	if (attr & FILE_ATTRIBUTE_DEVICE_SOCK)         *p++ = 'k';
+	if (attr & FILE_ATTRIBUTE_HARDLINKS)           *p++ = 'l';
 
 	lua_pushlstring(L, buf, p-buf);
 }
