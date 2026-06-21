@@ -464,6 +464,7 @@ void Dialog::Init(FARWINDOWPROC DlgProc,	// Диалоговая процеду�
 	InCtlColorDlgItem = 0;
 	FocusPos = (unsigned)-1;
 	PrevFocusPos = (unsigned)-1;
+	AltState = CtrlState = ShiftState = 0;
 
 	if (!DlgProc)		// функция должна быть всегда!!!
 	{
