@@ -4036,7 +4036,7 @@ static BOOL NonModal(TDialogData *dd)
 	return dd && !dd->isModal;
 }
 
-LONG_PTR LF_DlgProc(lua_State *L, HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
+static LONG_PTR WINAPI DlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 {
 	TDialogData *dd = (TDialogData*) PSInfo.SendDlgMessage(hDlg,DM_GETDLGDATA,0,0);
 	if (dd->wasError)
@@ -4045,7 +4045,7 @@ LONG_PTR LF_DlgProc(lua_State *L, HANDLE hDlg, int Msg, int Param1, LONG_PTR Par
 	if (Msg == DN_GETDIALOGINFO)
 		 return FALSE;
 
-	L = dd->L; // the dialog may be called from a lua_State other than the main one
+	lua_State *L = dd->L; // the dialog may be called from a lua_State other than the main one
 	int Param1_mod = DN_ConvertParam1(Msg, Param1);
 
 	lua_pushlightuserdata (L, dd);       //+1   retrieve the table
@@ -4165,7 +4165,7 @@ static int far_DialogInit(lua_State *L)
 	FARAPIDEFDLGPROC Proc = NULL;
 	LONG_PTR Param = 0;
 	if (lua_isfunction(L, 9)) {
-		Proc = pd->DlgProc;
+		Proc = DlgProc;
 		Param = (LONG_PTR)dd;
 		if (lua_gettop(L) >= 10) {
 			lua_pushvalue(L,10);

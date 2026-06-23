@@ -30,7 +30,6 @@ typedef struct
 	const void*    Private;      // +
 
 	DWORD          PluginId;
-	FARWINDOWPROC  DlgProc;
 	lua_State*     MainLuaState;
 	char*          ShareDir;
 	DWORD          Flags;
@@ -44,7 +43,6 @@ DLLFUNC int  LF_Message(lua_State* L, const wchar_t* aMsg, const wchar_t* aTitle
 DLLFUNC void LF_RunLuafarInit(lua_State *L);
 DLLFUNC BOOL LF_RunDefaultScript(lua_State* L);
 DLLFUNC const wchar_t *LF_Gsub (lua_State *L, const wchar_t *s, const wchar_t *p, const wchar_t *r);
-DLLFUNC LONG_PTR LF_DlgProc(lua_State *L, HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2);
 
 DLLFUNC void   LF_ClosePanel (lua_State* L, HANDLE hPanel);
 DLLFUNC int    LF_Compare (lua_State* L, HANDLE hPanel,const struct PluginPanelItem *Item1,const struct PluginPanelItem *Item2,unsigned int Mode);

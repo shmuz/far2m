@@ -64,9 +64,9 @@ struct CommandLineParams {
 	int CntDestName = 0;
 	FARString DestNames[2];
 
-	void AddDestName(const FARString &Name, bool cdCommand) {
-		if (CntDestName < 2 && !Name.IsEmpty())
-		{
+	void AddDestName(const FARString &Name, bool cdCommand)
+	{
+		if (CntDestName < 2 && !Name.IsEmpty()) {
 			if (!cdCommand && IsPluginPrefixPath(Name)) {
 				DestNames[CntDestName++] = Name;
 			}

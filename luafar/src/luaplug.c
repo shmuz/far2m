@@ -28,11 +28,6 @@ LUAPLUG int luaopen_luaplug (lua_State *L)
 }
 //---------------------------------------------------------------------------
 
-static LONG_PTR WINAPI DlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
-{
-	return LF_DlgProc(LS, hDlg, Msg, Param1, Param2);
-}
-
 LUAPLUG void SetStartupInfoW(const struct PluginStartupInfo *aInfo)
 {
 	if (!aInfo->LuafarLoaded)
@@ -44,7 +39,6 @@ LUAPLUG void SetStartupInfoW(const struct PluginStartupInfo *aInfo)
 	PluginData.ModuleName    = aInfo->ModuleName;
 	PluginData.ModuleNumber  = aInfo->ModuleNumber;
 	PluginData.Private       = aInfo->Private;
-	PluginData.DlgProc       = DlgProc;
 	PluginData.PluginId      = globInfo.SysID;
 	PluginData.GetGlobalInfo = GetGlobalInfoW;
 #ifdef SETPACKAGEPATH
