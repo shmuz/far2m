@@ -61,10 +61,25 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 struct CommandLineParams {
 	int StartLine = -1;
 	int StartChar = -1;
+	int CntDestName = 0;
 	FARString DestNames[2];
+
+	void AddDestName(const FARString &Name, bool cdCommand) {
+		if (CntDestName < 2 && !Name.IsEmpty())
+		{
+			if (!cdCommand && IsPluginPrefixPath(Name)) {
+				DestNames[CntDestName++] = Name;
+			}
+			else {
+				FARString tmpStr;
+				ConvertNameToFull(Name, tmpStr);
+				if (apiGetFileAttributes(tmpStr) != INVALID_FILE_ATTRIBUTES)
+					DestNames[CntDestName++] = tmpStr;
+			}
+		}
+	}
 };
 
-static const char EnvFarSettings[] = "FARSETTINGS"; // used in utils/src/InMy.cpp
 static unsigned int gMainThreadID;
 
 static void print_help(const char *self)
@@ -186,7 +201,7 @@ static void Write_FAR2M_CWD()
 	}
 }
 
-static void RunEditorOrViewerMode(int StartLine, int StartChar)
+static void RunEditorOrViewerMode(const CommandLineParams &Params)
 {
 	clock_t cl_start = clock();
 	Panel *DummyPanel = new Panel;
@@ -207,7 +222,7 @@ static void RunEditorOrViewerMode(int StartLine, int StartChar)
 	if (IsEditor)
 	{
 		auto ShellEditor = new FileEditor(Opt.strEditViewArg, CP_AUTODETECT,
-				FFILEEDIT_CANNEWFILE | FFILEEDIT_ENABLEF6, StartLine, StartChar);
+				FFILEEDIT_CANNEWFILE | FFILEEDIT_ENABLEF6, Params.StartLine, Params.StartChar);
 
 		if (!ShellEditor->GetExitCode())
 			FrameManager->ExitMainLoop(false);
@@ -230,19 +245,19 @@ static void RunEditorOrViewerMode(int StartLine, int StartChar)
 	delete DummyPanel;
 }
 
-static void RunPanelMode(const FARString &strDestName1, const FARString &strDestName2)
+static void RunPanelMode(const CommandLineParams &Params)
 {
 	clock_t cl_start = clock();
 
 	// воспользуемся тем, что ControlObject::Init() создает панели, юзая Opt.*
-	UpdatePathOptions(strDestName1, Opt.LeftPanel.Focus);
-	UpdatePathOptions(strDestName2, !Opt.LeftPanel.Focus);
+	UpdatePathOptions(Params.DestNames[0], Opt.LeftPanel.Focus);
+	UpdatePathOptions(Params.DestNames[1], !Opt.LeftPanel.Focus);
 
 	// теперь все готово - создаем панели!
 	CtrlObject->Init();
 
 	// а теперь "провалимся" в каталог или хост-файл (если получится ;-)
-	if (!strDestName1.IsEmpty())  // активная панель
+	if (Params.CntDestName > 0)  // активная панель
 	{
 		// Always update pointers as prefixed plugin calls could recreate one or both panels
 		auto ActivePanel = [&]() { return CtrlObject->Cp()->ActivePanel; };
@@ -250,15 +265,15 @@ static void RunPanelMode(const FARString &strDestName1, const FARString &strDest
 
 		FARString strCurDir;
 
-		if (!strDestName2.IsEmpty())  // пассивная панель
+		if (Params.CntDestName > 1)  // пассивная панель
 		{
 			AnotherPanel()->GetCurDir(strCurDir);
 			FarChDir(strCurDir);
 
-			if (IsPluginPrefixPath(strDestName2))
+			if (IsPluginPrefixPath(Params.DestNames[1]))
 			{
 				AnotherPanel()->SetFocus();
-				CtrlObject->CmdLine->ExecString(strDestName2, false);
+				CtrlObject->CmdLine->ExecString(Params.DestNames[1], false);
 				AnotherPanel()->SetFocus();
 			}
 		}
@@ -266,9 +281,9 @@ static void RunPanelMode(const FARString &strDestName1, const FARString &strDest
 		ActivePanel()->GetCurDir(strCurDir);
 		FarChDir(strCurDir);
 
-		if (IsPluginPrefixPath(strDestName1))
+		if (IsPluginPrefixPath(Params.DestNames[0]))
 		{
-			CtrlObject->CmdLine->ExecString(strDestName1, false);
+			CtrlObject->CmdLine->ExecString(Params.DestNames[0], false);
 		}
 
 		// Сначала редравим пассивную панель, а потом активную!
@@ -281,9 +296,7 @@ static void RunPanelMode(const FARString &strDestName1, const FARString &strDest
 	Write_FAR2M_CWD();
 }
 
-static int MainProcess(
-		const FARString &strDestName1, const FARString &strDestName2,
-		int StartLine, int StartChar)
+static int MainProcess(const CommandLineParams &Params)
 {
 	SCOPED_ACTION(InterThreadCallsDispatcherThread);
 	{
@@ -294,9 +307,9 @@ static int MainProcess(
 		SetFarColor(COL_COMMANDLINEUSERSCREEN, true);
 
 		if (Opt.OnlyEditorViewerUsed == Options::INCLUDING_PANELS)
-			RunPanelMode(strDestName1, strDestName2);
+			RunPanelMode(Params);
 		else
-			RunEditorOrViewerMode(StartLine, StartChar);
+			RunEditorOrViewerMode(Params);
 
 		// очистим за собой!
 		SetScreen(0, 0, ScrX, ScrY, L' ', FarColorToReal(COL_COMMANDLINEUSERSCREEN));
@@ -336,7 +349,6 @@ static void SetupFarPath(const char *Arg0)
 static void ProcessCommandLine(CommandLineParams &Params, int argc, char **argv)
 {
 	bool bCustomPlugins = false;
-	int CntDestName = 0; // количество параметров-имен каталогов
 
 	for (int I=1; I<argc; I++)
 	{
@@ -461,20 +473,8 @@ static void ProcessCommandLine(CommandLineParams &Params, int argc, char **argv)
 			}
 		}
 
-		if (!switchHandled) // простые параметры. Их может быть max две штукА.
-		{
-			if (CntDestName < 2 && !arg_w.IsEmpty())
-			{
-				if (!cdCommand && IsPluginPrefixPath(arg_w)) {
-					Params.DestNames[CntDestName++] = arg_w;
-				}
-				else {
-					FARString tmpStr = arg_w;
-					ConvertNameToFull(tmpStr, tmpStr);
-					if (apiGetFileAttributes(tmpStr) != INVALID_FILE_ATTRIBUTES)
-						Params.DestNames[CntDestName++] = tmpStr;
-				}
-			}
+		if (!switchHandled) { // простые параметры. Их может быть max две штукА.
+			Params.AddDestName(arg_w, cdCommand);
 		}
 	}
 
@@ -559,7 +559,7 @@ int FarAppMain(int argc, char **argv)
 	if ( Opt.OnlyEditorViewerUsed == Options::ONLY_EDITOR && Opt.strEditViewArg.IsEmpty() )
 		Opt.strEditViewArg = Msg::NewFileName;
 
-	int Result = MainProcess(Params.DestNames[0], Params.DestNames[1], Params.StartLine, Params.StartChar);
+	int Result = MainProcess(Params);
 
 	EmptyInternalClipboard();
 	VTShell_Shutdown();//ensure VTShell deinitialized before statics destructors called
@@ -645,8 +645,7 @@ static void SetCustomSettings(const char *arg)
 	fprintf(stderr, "%s: '%s'\n", __FUNCTION__, refined.c_str());
 
 	if (!refined.empty()) {
-		// could use FARPROFILE/FARLOCALPROFILE for that but it would be abusing
-		setenv(EnvFarSettings, refined.c_str(), 1);
+		setenv(ENV_FARSETTINGS, refined.c_str(), 1);
 	}
 }
 
@@ -689,7 +688,7 @@ int _cdecl main(int argc, char *argv[])
 		}
 	}
 
-	unsetenv(EnvFarSettings); // don't inherit from parent process
+	unsetenv(ENV_FARSETTINGS); // don't inherit from parent process
 
 	const char *askpass = getenv("SUDO_ASKPASS");
 	if (askpass && strstr(askpass, "far2l_askpass")) {

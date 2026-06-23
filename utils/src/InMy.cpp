@@ -115,7 +115,7 @@ public:
 	void Update()
 	{
 		std::string settings;
-		const char *settings_env = getenv("FARSETTINGS");
+		const char *settings_env = getenv(ENV_FARSETTINGS);
 		if (settings_env && *settings_env) {
 			settings = settings_env;
 			// cosmetic sanity
