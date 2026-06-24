@@ -74,160 +74,145 @@ typedef void (WINAPI *PLUGINSETSTARTUPINFOW)(const PluginStartupInfo *Info);
 
 class PluginW: public Plugin
 {
-	private:
-		PLUGINANALYSEW               pAnalyseW;
-		PLUGINCLOSEANALYSEW          pCloseAnalyseW;
-		PLUGINCLOSEPLUGINW           pClosePluginW;
-		PLUGINCOMPAREW               pCompareW;
-		PLUGINCONFIGUREV3W           pConfigureV3W;
-		PLUGINCONFIGUREW             pConfigureW;
-		PLUGINDELETEFILESW           pDeleteFilesW;
-		PLUGINEXITFARW               pExitFARW;
-		PLUGINFREECUSTOMDATAW        pFreeCustomDataW;
-		PLUGINFREEFINDDATAW          pFreeFindDataW;
-		PLUGINFREEVIRTUALFINDDATAW   pFreeVirtualFindDataW;
-		PLUGINGETCUSTOMDATAW         pGetCustomDataW;
-		PLUGINGETFILESW              pGetFilesW;
-		PLUGINGETFINDDATAW           pGetFindDataW;
-		PLUGINGETLINKTARGETW         pGetLinkTargetW;
-		PLUGINGETOPENPLUGININFOW     pGetOpenPluginInfoW;
-		PLUGINGETPLUGININFOW         pGetPluginInfoW;
-		PLUGINGETVIRTUALFINDDATAW    pGetVirtualFindDataW;
-		PLUGINMAKEDIRECTORYW         pMakeDirectoryW;
-		PLUGINMAYEXITFARW            pMayExitFARW;
-		PLUGINMINFARVERSIONW         pMinFarVersionW;
-		PLUGINOPENFILEPLUGINW        pOpenFilePluginW;
-		PLUGINOPENPLUGINW            pOpenPluginW;
-		PLUGINPROCESSCONSOLEINPUTW   pProcessConsoleInputW;
-		PLUGINPROCESSDIALOGEVENTW    pProcessDialogEventW;
-		PLUGINPROCESSEDITOREVENTW    pProcessEditorEventW;
-		PLUGINPROCESSEDITOREVENTV3W  pProcessEditorEventV3W;
-		PLUGINPROCESSEDITORINPUTW    pProcessEditorInputW;
-		PLUGINPROCESSEVENTW          pProcessEventW;
-		PLUGINPROCESSHOSTFILEW       pProcessHostFileW;
-		PLUGINPROCESSKEYW            pProcessKeyW;
-		PLUGINPROCESSSYNCHROEVENTW   pProcessSynchroEventW;
-		PLUGINPROCESSVIEWEREVENTW    pProcessViewerEventW;
-		PLUGINPUTFILESW              pPutFilesW;
-		PLUGINSETDIRECTORYW          pSetDirectoryW;
-		PLUGINSETFINDLISTW           pSetFindListW;
-		PLUGINSETSTARTUPINFOW        pSetStartupInfoW;
+private:
+	PLUGINANALYSEW               pAnalyseW;
+	PLUGINCLOSEANALYSEW          pCloseAnalyseW;
+	PLUGINCLOSEPLUGINW           pClosePluginW;
+	PLUGINCOMPAREW               pCompareW;
+	PLUGINCONFIGUREV3W           pConfigureV3W;
+	PLUGINCONFIGUREW             pConfigureW;
+	PLUGINDELETEFILESW           pDeleteFilesW;
+	PLUGINEXITFARW               pExitFARW;
+	PLUGINFREECUSTOMDATAW        pFreeCustomDataW;
+	PLUGINFREEFINDDATAW          pFreeFindDataW;
+	PLUGINFREEVIRTUALFINDDATAW   pFreeVirtualFindDataW;
+	PLUGINGETCUSTOMDATAW         pGetCustomDataW;
+	PLUGINGETFILESW              pGetFilesW;
+	PLUGINGETFINDDATAW           pGetFindDataW;
+	PLUGINGETLINKTARGETW         pGetLinkTargetW;
+	PLUGINGETOPENPLUGININFOW     pGetOpenPluginInfoW;
+	PLUGINGETPLUGININFOW         pGetPluginInfoW;
+	PLUGINGETVIRTUALFINDDATAW    pGetVirtualFindDataW;
+	PLUGINMAKEDIRECTORYW         pMakeDirectoryW;
+	PLUGINMAYEXITFARW            pMayExitFARW;
+	PLUGINMINFARVERSIONW         pMinFarVersionW;
+	PLUGINOPENFILEPLUGINW        pOpenFilePluginW;
+	PLUGINOPENPLUGINW            pOpenPluginW;
+	PLUGINPROCESSCONSOLEINPUTW   pProcessConsoleInputW;
+	PLUGINPROCESSDIALOGEVENTW    pProcessDialogEventW;
+	PLUGINPROCESSEDITOREVENTW    pProcessEditorEventW;
+	PLUGINPROCESSEDITOREVENTV3W  pProcessEditorEventV3W;
+	PLUGINPROCESSEDITORINPUTW    pProcessEditorInputW;
+	PLUGINPROCESSEVENTW          pProcessEventW;
+	PLUGINPROCESSHOSTFILEW       pProcessHostFileW;
+	PLUGINPROCESSKEYW            pProcessKeyW;
+	PLUGINPROCESSSYNCHROEVENTW   pProcessSynchroEventW;
+	PLUGINPROCESSVIEWEREVENTW    pProcessViewerEventW;
+	PLUGINPUTFILESW              pPutFilesW;
+	PLUGINSETDIRECTORYW          pSetDirectoryW;
+	PLUGINSETFINDLISTW           pSetFindListW;
+	PLUGINSETSTARTUPINFOW        pSetStartupInfoW;
 
-	public:
+public:
 
-		PluginW(PluginManager *owner,
-				const FARString &strModuleName,
-				const std::string &settingsName,
-				const std::string &moduleID);
-		~PluginW();
+	PluginW(PluginManager *owner,
+			const FARString &strModuleName,
+			const std::string &settingsName,
+			const std::string &moduleID);
+	~PluginW() override;
 
-		bool IsOemPlugin() override {return false;}
+	const wchar_t* GetMsg(int nID) { return Lang.GetMsgWide(nID); }
 
-		bool Load();
-		bool LoadFromCache();
+	bool  CheckWorkFlags(DWORD flags) override { return WorkFlags.Check(flags); }
+	void  CloseLang() override { Lang.Close(); }
+	const FARString& GetModuleName() const override { return m_strModuleName; }
+	const char* GetSettingsName() override { return m_strSettingsName.c_str(); }
+	DWORD GetWorkFlags() override { return WorkFlags.Flags; }
+	bool  InitLang(const wchar_t *Path) override { return Lang.Init(Path,true); }
+	bool  IsOemPlugin() override {return false;}
+	bool  IsPanelPlugin() override;
+	bool  Load() override;
+	bool  LoadFromCache() override;
+	bool  SaveToCache() override;
+	int   Unload(bool bExitFAR) override;
 
-		bool SaveToCache();
+	bool HasAnalyse()               override { return pAnalyseW != nullptr; }
+	bool HasCloseAnalyse()          override { return pCloseAnalyseW != nullptr; }
+	bool HasClosePlugin()           override { return pClosePluginW != nullptr; }
+	bool HasCompare()               override { return pCompareW != nullptr; }
+	bool HasConfigure()             override { return pConfigureW != nullptr; }
+	bool HasConfigureV3()           override { return pConfigureV3W != nullptr; }
+	bool HasDeleteFiles()           override { return pDeleteFilesW != nullptr; }
+	bool HasExitFAR()               override { return pExitFARW != nullptr; }
+	bool HasFreeCustomData()        override { return pFreeCustomDataW != nullptr; }
+	bool HasFreeFindData()          override { return pFreeFindDataW != nullptr; }
+	bool HasFreeVirtualFindData()   override { return pFreeVirtualFindDataW != nullptr; }
+	bool HasGetCustomData()         override { return pGetCustomDataW != nullptr; }
+	bool HasGetFiles()              override { return pGetFilesW != nullptr; }
+	bool HasGetFindData()           override { return pGetFindDataW != nullptr; }
+	bool HasGetLinkTarget()         override { return pGetLinkTargetW != nullptr; }
+	bool HasGetOpenPluginInfo()     override { return pGetOpenPluginInfoW != nullptr; }
+	bool HasGetPluginInfo()         override { return pGetPluginInfoW != nullptr; }
+	bool HasGetVirtualFindData()    override { return pGetVirtualFindDataW != nullptr; }
+	bool HasMakeDirectory()         override { return pMakeDirectoryW != nullptr; }
+	bool HasMayExitFAR()            override { return pMayExitFARW != nullptr; }
+	bool HasMinFarVersion()         override { return pMinFarVersionW != nullptr; }
+	bool HasOpenFilePlugin()        override { return pOpenFilePluginW != nullptr; }
+	bool HasOpenPlugin()            override { return pOpenPluginW != nullptr; }
+	bool HasProcessConsoleInput()   override { return pProcessConsoleInputW != nullptr; }
+	bool HasProcessDialogEvent()    override { return pProcessDialogEventW != nullptr; }
+	bool HasProcessEditorEvent()    override { return pProcessEditorEventW != nullptr; }
+	bool HasProcessEditorEventV3()  override { return pProcessEditorEventV3W != nullptr; }
+	bool HasProcessEditorInput()    override { return pProcessEditorInputW != nullptr; }
+	bool HasProcessEvent()          override { return pProcessEventW != nullptr; }
+	bool HasProcessHostFile()       override { return pProcessHostFileW != nullptr; }
+	bool HasProcessKey()            override { return pProcessKeyW != nullptr; }
+	bool HasProcessSynchroEvent()   override { return pProcessSynchroEventW != nullptr; }
+	bool HasProcessViewerEvent()    override { return pProcessViewerEventW != nullptr; }
+	bool HasPutFiles()              override { return pPutFilesW != nullptr; }
+	bool HasSetDirectory()          override { return pSetDirectoryW != nullptr; }
+	bool HasSetFindList()           override { return pSetFindListW != nullptr; }
+	bool HasSetStartupInfo()        override { return pSetStartupInfoW != nullptr; }
 
-		int Unload(bool bExitFAR);
+public:
+	HANDLE Analyse(const AnalyseInfo *Info) override;
+	bool   CheckMinFarVersion() override;
+	void   CloseAnalyse(const CloseAnalyseInfo *Info) override;
+	void   ClosePanel(HANDLE hPanel) override;
+	int    Compare(HANDLE hPanel, const PluginPanelItem *Item1, const PluginPanelItem *Item2, DWORD Mode) override;
+	int    Configure(int MenuItem) override;
+	int    ConfigureV3(const ConfigureInfo *Info) override;
+	int    DeleteFiles(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber, DWORD OpMode) override;
+	void   ExitFAR() override;
+	void   FreeCustomData(wchar_t *CustomData) override;
+	void   FreeFindData(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber) override;
+	void   FreeVirtualFindData(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber) override;
+	int    GetCustomData(const wchar_t *FilePath, wchar_t **CustomData) override;
+	int    GetFiles(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber, bool Move, const wchar_t **DestPath, DWORD OpMode) override;
+	int    GetFindData(HANDLE hPanel, PluginPanelItem **pPanelItem, int *pItemsNumber, DWORD OpMode) override;
+	bool   GetLinkTarget(HANDLE hPanel, PluginPanelItem *PanelItem, FARString &result, DWORD OpMode) override;
+	void   GetOpenPluginInfo(HANDLE hPanel, OpenPluginInfo *Info) override;
+	bool   GetPluginInfo(PluginInfo *pi) override;
+	int    GetVirtualFindData(HANDLE hPanel, PluginPanelItem **pPanelItem, int *pItemsNumber, const wchar_t *Path) override;
+	int    MakeDirectory(HANDLE hPanel, const wchar_t **Name, DWORD OpMode) override;
+	bool   MayExitFAR() override;
+	HANDLE OpenFilePlugin(const wchar_t *Name, const unsigned char *Data, int DataSize, DWORD OpMode) override;
+	HANDLE OpenPlugin(int OpenFrom, const void *Item) override;
+	int    ProcessConsoleInput(INPUT_RECORD *D) override;
+	int    ProcessDialogEvent(int Event, void *Param) override;
+	int    ProcessEditorEvent(int Event, void *Param) override;
+	int    ProcessEditorEventV3(const ProcessEditorEventInfo *Info) override;
+	int    ProcessEditorInput(const INPUT_RECORD *D) override;
+	int    ProcessEvent(HANDLE hPanel, int Event, void *Param) override;
+	int    ProcessHostFile(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber, DWORD OpMode) override;
+	int    ProcessKey(HANDLE hPanel, int Key, unsigned int dwControlState) override;
+	int    ProcessSynchroEvent(int Event, void *Param) override;
+	int    ProcessViewerEvent(int Event, void *Param) override;
+	int    PutFiles(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber, bool Move, DWORD OpMode) override;
+	int    SetDirectory(HANDLE hPanel, const wchar_t *Dir, DWORD OpMode) override;
+	int    SetFindList(HANDLE hPanel, const PluginPanelItem *PanelItem, int ItemsNumber) override;
+	bool   SetStartupInfo() override;
 
-		bool IsPanelPlugin();
-
-		bool HasAnalyse()               override { return pAnalyseW != nullptr; }
-		bool HasCloseAnalyse()          override { return pCloseAnalyseW != nullptr; }
-		bool HasClosePlugin()           override { return pClosePluginW != nullptr; }
-		bool HasCompare()               override { return pCompareW != nullptr; }
-		bool HasConfigure()             override { return pConfigureW != nullptr; }
-		bool HasConfigureV3()           override { return pConfigureV3W != nullptr; }
-		bool HasDeleteFiles()           override { return pDeleteFilesW != nullptr; }
-		bool HasExitFAR()               override { return pExitFARW != nullptr; }
-		bool HasFreeCustomData()        override { return pFreeCustomDataW != nullptr; }
-		bool HasFreeFindData()          override { return pFreeFindDataW != nullptr; }
-		bool HasFreeVirtualFindData()   override { return pFreeVirtualFindDataW != nullptr; }
-		bool HasGetCustomData()         override { return pGetCustomDataW != nullptr; }
-		bool HasGetFiles()              override { return pGetFilesW != nullptr; }
-		bool HasGetFindData()           override { return pGetFindDataW != nullptr; }
-		bool HasGetLinkTarget()         override { return pGetLinkTargetW  !=  nullptr; }
-		bool HasGetOpenPluginInfo()     override { return pGetOpenPluginInfoW != nullptr; }
-		bool HasGetPluginInfo()         override { return pGetPluginInfoW != nullptr; }
-		bool HasGetVirtualFindData()    override { return pGetVirtualFindDataW != nullptr; }
-		bool HasMakeDirectory()         override { return pMakeDirectoryW != nullptr; }
-		bool HasMayExitFAR()            override { return pMayExitFARW != nullptr; }
-		bool HasMinFarVersion()         override { return pMinFarVersionW != nullptr; }
-		bool HasOpenFilePlugin()        override { return pOpenFilePluginW != nullptr; }
-		bool HasOpenPlugin()            override { return pOpenPluginW != nullptr; }
-		bool HasProcessConsoleInput()   override { return pProcessConsoleInputW != nullptr; }
-		bool HasProcessDialogEvent()    override { return pProcessDialogEventW != nullptr; }
-		bool HasProcessEditorEvent()    override { return pProcessEditorEventW != nullptr; }
-		bool HasProcessEditorEventV3()  override { return pProcessEditorEventV3W != nullptr; }
-		bool HasProcessEditorInput()    override { return pProcessEditorInputW != nullptr; }
-		bool HasProcessEvent()          override { return pProcessEventW != nullptr; }
-		bool HasProcessHostFile()       override { return pProcessHostFileW != nullptr; }
-		bool HasProcessKey()            override { return pProcessKeyW != nullptr; }
-		bool HasProcessSynchroEvent()   override { return pProcessSynchroEventW != nullptr; }
-		bool HasProcessViewerEvent()    override { return pProcessViewerEventW != nullptr; }
-		bool HasPutFiles()              override { return pPutFilesW != nullptr; }
-		bool HasSetDirectory()          override { return pSetDirectoryW != nullptr; }
-		bool HasSetFindList()           override { return pSetFindListW != nullptr; }
-		bool HasSetStartupInfo()        override { return pSetStartupInfoW != nullptr; }
-
-		const FARString &GetModuleName() const { return m_strModuleName; }
-		const char *GetSettingsName() { return m_strSettingsName.c_str(); }
-		bool CheckWorkFlags(DWORD flags) { return WorkFlags.Check(flags); }
-		DWORD GetWorkFlags() { return WorkFlags.Flags; }
-
-		bool InitLang(const wchar_t *Path) { return Lang.Init(Path,true); }
-		void CloseLang() { Lang.Close(); }
-		const wchar_t *GetMsg(int nID) { return Lang.GetMsgWide(nID); }
-
-	public:
-
-		bool SetStartupInfo();
-		bool CheckMinFarVersion();
-
-		HANDLE Analyse(const AnalyseInfo *Info);
-		void CloseAnalyse(const CloseAnalyseInfo *Info);
-
-		HANDLE OpenPlugin(int OpenFrom, const void *Item);
-		HANDLE OpenFilePlugin(const wchar_t *Name, const unsigned char *Data, int DataSize, DWORD OpMode);
-
-		int SetFindList(HANDLE hPanel, const PluginPanelItem *PanelItem, int ItemsNumber);
-		int GetFindData(HANDLE hPanel, PluginPanelItem **pPanelItem, int *pItemsNumber, DWORD OpMode);
-		int GetVirtualFindData(HANDLE hPanel, PluginPanelItem **pPanelItem, int *pItemsNumber, const wchar_t *Path);
-		int SetDirectory(HANDLE hPanel, const wchar_t *Dir, DWORD OpMode);
-		bool GetLinkTarget(HANDLE hPanel, PluginPanelItem *PanelItem, FARString &result, DWORD OpMode);
-		int GetFiles(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber, bool Move, const wchar_t **DestPath, DWORD OpMode);
-		int PutFiles(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber, bool Move, DWORD OpMode);
-		int DeleteFiles(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber, DWORD OpMode);
-		int MakeDirectory(HANDLE hPanel, const wchar_t **Name, DWORD OpMode);
-		int ProcessHostFile(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber, DWORD OpMode);
-		int ProcessKey(HANDLE hPanel, int Key, unsigned int dwControlState);
-		int ProcessEvent(HANDLE hPanel, int Event, void *Param);
-		int Compare(HANDLE hPanel, const PluginPanelItem *Item1, const PluginPanelItem *Item2, DWORD Mode);
-
-		int GetCustomData(const wchar_t *FilePath, wchar_t **CustomData);
-		void FreeCustomData(wchar_t *CustomData);
-
-		void GetOpenPluginInfo(HANDLE hPanel, OpenPluginInfo *Info);
-		void FreeFindData(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber);
-		void FreeVirtualFindData(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber);
-		void ClosePanel(HANDLE hPanel);
-
-		int ProcessEditorInput(const INPUT_RECORD *D);
-		int ProcessEditorEvent(int Event, void *Param);
-		int ProcessEditorEventV3(const ProcessEditorEventInfo *Info);
-		int ProcessViewerEvent(int Event, void *Param);
-		int ProcessDialogEvent(int Event, void *Param);
-		int ProcessSynchroEvent(int Event, void *Param);
-		int ProcessConsoleInput(INPUT_RECORD *D);
-
-		bool GetPluginInfo(PluginInfo *pi);
-		int Configure(int MenuItem);
-		int ConfigureV3(const ConfigureInfo *Info);
-
-		bool MayExitFAR();
-		void ExitFAR();
-
-	private:
-
-		void ClearExports();
+private:
+	void ClearExports();
 };
