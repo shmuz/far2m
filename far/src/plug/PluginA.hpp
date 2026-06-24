@@ -109,7 +109,7 @@ class PluginA: public Plugin
 				const std::string &moduleID);
 		~PluginA();
 
-		bool IsOemPlugin() {return true;}
+		bool IsOemPlugin() override {return true;}
 
 		bool Load();
 		bool LoadFromCache();
@@ -120,43 +120,43 @@ class PluginA: public Plugin
 
 		bool IsPanelPlugin();
 
-		bool HasAnalyse() { return false; }
-		bool HasCloseAnalyse() { return false; }
-		bool HasClosePlugin() { return pClosePlugin!=nullptr; }
-		bool HasCompare() { return pCompare!=nullptr; }
-		bool HasConfigure() { return pConfigure!=nullptr; }
-		bool HasConfigureV3() { return false; }
-		bool HasDeleteFiles() { return pDeleteFiles!=nullptr; }
-		bool HasExitFAR() { return pExitFAR!=nullptr; }
-		bool HasFreeCustomData() { return false; }
-		bool HasFreeFindData() { return pFreeFindData!=nullptr; }
-		bool HasFreeVirtualFindData() { return pFreeVirtualFindData!=nullptr; }
-		bool HasGetCustomData()  { return false; }
-		bool HasGetFiles() { return pGetFiles!=nullptr; }
-		bool HasGetFindData() { return pGetFindData!=nullptr; }
-		bool HasGetLinkTarget() { return false; }
-		bool HasGetOpenPluginInfo() { return pGetOpenPluginInfo!=nullptr; }
-		bool HasGetPluginInfo() { return pGetPluginInfo!=nullptr; }
-		bool HasGetVirtualFindData() { return pGetVirtualFindData!=nullptr; }
-		bool HasMakeDirectory() { return pMakeDirectory!=nullptr; }
-		bool HasMayExitFAR() { return pMayExitFAR!=nullptr; }
-		bool HasMinFarVersion() { return pMinFarVersion!=nullptr; }
-		bool HasOpenFilePlugin() { return pOpenFilePlugin!=nullptr; }
-		bool HasOpenPlugin() { return pOpenPlugin!=nullptr; }
-		bool HasProcessConsoleInput() { return false; }
-		bool HasProcessDialogEvent() { return pProcessDialogEvent!=nullptr; }
-		bool HasProcessEditorEvent() { return pProcessEditorEvent!=nullptr; }
-		bool HasProcessEditorEventV3() { return false; } //TODO
-		bool HasProcessEditorInput() { return pProcessEditorInput!=nullptr; }
-		bool HasProcessEvent() { return pProcessEvent!=nullptr; }
-		bool HasProcessHostFile() { return pProcessHostFile!=nullptr; }
-		bool HasProcessKey() { return pProcessKey!=nullptr; }
-		bool HasProcessSynchroEvent() { return false; }
-		bool HasProcessViewerEvent() { return pProcessViewerEvent!=nullptr; }
-		bool HasPutFiles() { return pPutFiles!=nullptr; }
-		bool HasSetDirectory() { return pSetDirectory!=nullptr; }
-		bool HasSetFindList() { return pSetFindList!=nullptr; }
-		bool HasSetStartupInfo() { return pSetStartupInfo!=nullptr; }
+		bool HasAnalyse()               override { return false; }
+		bool HasCloseAnalyse()          override { return false; }
+		bool HasClosePlugin()           override { return pClosePlugin != nullptr; }
+		bool HasCompare()               override { return pCompare != nullptr; }
+		bool HasConfigure()             override { return pConfigure != nullptr; }
+		bool HasConfigureV3()           override { return false; }
+		bool HasDeleteFiles()           override { return pDeleteFiles != nullptr; }
+		bool HasExitFAR()               override { return pExitFAR != nullptr; }
+		bool HasFreeCustomData()        override { return false; }
+		bool HasFreeFindData()          override { return pFreeFindData != nullptr; }
+		bool HasFreeVirtualFindData()   override { return pFreeVirtualFindData != nullptr; }
+		bool HasGetCustomData()         override { return false; }
+		bool HasGetFiles()              override { return pGetFiles != nullptr; }
+		bool HasGetFindData()           override { return pGetFindData != nullptr; }
+		bool HasGetLinkTarget()         override { return false; }
+		bool HasGetOpenPluginInfo()     override { return pGetOpenPluginInfo != nullptr; }
+		bool HasGetPluginInfo()         override { return pGetPluginInfo != nullptr; }
+		bool HasGetVirtualFindData()    override { return pGetVirtualFindData != nullptr; }
+		bool HasMakeDirectory()         override { return pMakeDirectory != nullptr; }
+		bool HasMayExitFAR()            override { return pMayExitFAR != nullptr; }
+		bool HasMinFarVersion()         override { return pMinFarVersion != nullptr; }
+		bool HasOpenFilePlugin()        override { return pOpenFilePlugin != nullptr; }
+		bool HasOpenPlugin()            override { return pOpenPlugin != nullptr; }
+		bool HasProcessConsoleInput()   override { return false; }
+		bool HasProcessDialogEvent()    override { return pProcessDialogEvent != nullptr; }
+		bool HasProcessEditorEvent()    override { return pProcessEditorEvent != nullptr; }
+		bool HasProcessEditorEventV3()  override { return false; } //TODO
+		bool HasProcessEditorInput()    override { return pProcessEditorInput != nullptr; }
+		bool HasProcessEvent()          override { return pProcessEvent != nullptr; }
+		bool HasProcessHostFile()       override { return pProcessHostFile != nullptr; }
+		bool HasProcessKey()            override { return pProcessKey != nullptr; }
+		bool HasProcessSynchroEvent()   override { return false; }
+		bool HasProcessViewerEvent()    override { return pProcessViewerEvent != nullptr; }
+		bool HasPutFiles()              override { return pPutFiles != nullptr; }
+		bool HasSetDirectory()          override { return pSetDirectory != nullptr; }
+		bool HasSetFindList()           override { return pSetFindList != nullptr; }
+		bool HasSetStartupInfo()        override { return pSetStartupInfo != nullptr; }
 
 		const FARString &GetModuleName() const { return m_strModuleName; }
 		const char *GetSettingsName() { return m_strSettingsName.c_str(); }

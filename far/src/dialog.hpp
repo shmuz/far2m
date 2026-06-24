@@ -318,7 +318,7 @@ private:
 
 private:
 	void Init(FARWINDOWPROC DlgProc, LONG_PTR InitParam);
-	virtual void DisplayObject();
+	void DisplayObject() override;
 	void DeleteDialogObjects();
 	int LenStrItem(int ID, const wchar_t *lpwszStr = nullptr);
 
@@ -395,14 +395,14 @@ public:
 			LONG_PTR InitParam = 0);
 	Dialog(FarDialogItem *SrcItem, unsigned SrcItemCount, FARWINDOWPROC DlgProc = nullptr,
 			LONG_PTR InitParam = 0);
-	virtual ~Dialog();
+	~Dialog() override;
 
 public:
-	virtual int ProcessKey(FarKey Key);
-	virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
-	virtual int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0);
-	virtual void Show();
-	virtual void Hide();
+	int ProcessKey(FarKey Key) override;
+	int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent) override;
+	int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0) override;
+	void Show() override;
+	void Hide() override;
 	void FastShow() { ShowDialog(); }
 
 	void GetDialogObjectsData();
@@ -427,19 +427,19 @@ public:
 	void ShowHelp();
 	int Done() { return DialogMode.Check(DMODE_ENDLOOP); }
 	void ClearDone();
-	virtual void SetExitCode(int Code);
-	virtual void OnChangeFocus(int focus);
+	void SetExitCode(int Code) override;
+	void OnChangeFocus(bool focus) override;
 
 	void CloseDialog();
 
-	virtual int GetTypeAndName(FARString &strType, FARString &strName);
-	virtual int GetType() { return MODALTYPE_DIALOG; }
-	virtual const wchar_t *GetTypeName() { return L"[Dialog]"; };
+	int GetTypeAndName(FARString &strType, FARString &strName) override;
+	int GetType() override { return MODALTYPE_DIALOG; }
+	const wchar_t *GetTypeName() override { return L"[Dialog]"; };
 
 	/* $ Введена для нужд CtrlAltShift OT */
-	virtual int FastHide();
-	virtual void ResizeConsole();
-	//		virtual void OnDestroy();
+	int FastHide() override;
+	void ResizeConsole() override;
+	//		void OnDestroy() override;
 
 	// For MACRO
 	const DialogItemEx **GetAllItem() { return (const DialogItemEx **)Item; };
@@ -452,10 +452,10 @@ public:
 
 	LONG_PTR WINAPI DlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2);
 
-	virtual void SetPosition(int X1, int Y1, int X2, int Y2);
+	void SetPosition(int X1, int Y1, int X2, int Y2) override;
 
 	bool IsInited();
-	bool ProcessEvents();
+	bool ProcessEvents() override;
 
 	void SetId(const GUID &Id);
 	bool IsRedrawEnabled() const { return IsEnableRedraw > 0; }

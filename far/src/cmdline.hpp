@@ -55,7 +55,7 @@ private:
 	int PushDirStackSize;
 
 private:
-	virtual void DisplayObject();
+	void DisplayObject() override;
 	int CmdExecute(const wchar_t *CmdLine, bool SeparateWindow, bool DirectRun, bool WaitForIdle = false,
 			bool Silent = false, bool RunAs = false);
 	void GetPrompt(FARString &strDestStr);
@@ -67,14 +67,14 @@ private:
 
 public:
 	CommandLine();
-	virtual ~CommandLine();
+	~CommandLine() override;
 
 public:
-	virtual int ProcessKey(FarKey Key);
-	virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
-	virtual int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0);
+	int ProcessKey(FarKey Key) override;
+	int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent) override;
+	int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0) override;
 
-	virtual void ResizeConsole();
+	void ResizeConsole() override;
 
 	std::string GetConsoleLog(HANDLE con_hnd, bool colored);
 	const FARString &GetCurDir();

@@ -40,8 +40,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class FileViewer : public Frame
 {
 private:
-	virtual void Show();
-	virtual void DisplayObject();
+	void Show() override;
+	void DisplayObject() override;
 	SudoClientRegion _sdc_rgn;
 	Viewer View;
 	bool RedrawTitle;
@@ -54,7 +54,6 @@ private:
 
 	FARString strName;
 
-	typedef class Frame inherited;
 	/* $ 17.08.2001 KM
 	  Добавлено для поиска по AltF7. При редактировании найденного файла из
 	  архива для клавиши F2 сделать вызов ShiftF2.
@@ -73,22 +72,22 @@ public:
 			NamesList *ViewNamesList = nullptr, bool ToSaveAs = false, UINT aCodePage = CP_AUTODETECT);
 	FileViewer(const wchar_t *Name, bool EnableSwitch, bool DisableHistory, const wchar_t *Title, int X1,
 			int Y1, int X2, int Y2, UINT aCodePage = CP_AUTODETECT);
-	virtual ~FileViewer();
+	~FileViewer() override;
 
 public:
 	void Init(const wchar_t *Name, bool EnableSwitch, bool DisableHistory, long ViewStartPos,
 			const wchar_t *PluginData, NamesList *ViewNamesList, bool ToSaveAs);
-	virtual void InitKeyBar();
-	virtual int ProcessKey(FarKey Key);
-	virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
-	virtual int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0);
-	virtual void ShowConsoleTitle();
-	virtual void OnDestroy();
-	virtual void OnChangeFocus(int focus);
+	void InitKeyBar() override;
+	int ProcessKey(FarKey Key) override;
+	int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent) override;
+	int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0) override;
+	void ShowConsoleTitle() override;
+	void OnDestroy() override;
+	void OnChangeFocus(bool focus) override;
 
-	virtual int GetTypeAndName(FARString &strType, FARString &strName);
-	virtual const wchar_t *GetTypeName() { return L"[FileView]"; }    ///
-	virtual int GetType() { return MODALTYPE_VIEWER; }
+	int GetTypeAndName(FARString &strType, FARString &strName) override;
+	const wchar_t *GetTypeName() override { return L"[FileView]"; }    ///
+	int GetType() override { return MODALTYPE_VIEWER; }
 
 	void SetEnableF6(bool Enable)
 	{
@@ -99,7 +98,7 @@ public:
 	void SetPluginData(const wchar_t *PluginData) { strPluginData = PluginData; }
 
 	/* $ Введена для нужд CtrlAltShift OT */
-	virtual int FastHide();
+	int FastHide() override;
 
 	/* $ 17.08.2001 KM
 	  Добавлено для поиска по AltF7. При редактировании найденного файла из
@@ -112,7 +111,7 @@ public:
 	}
 	int ViewerControl(int Command, void *Param);
 	bool IsFullScreen() { return FullScreen; }
-	virtual FARString &GetTitle(FARString &Title, int SubLen = -1, int TruncSize = 0);
+	FARString &GetTitle(FARString &Title, int SubLen = -1, int TruncSize = 0) override;
 	int64_t GetViewFileSize() const;
 	int64_t GetViewFilePos() const;
 	void ShowStatus();

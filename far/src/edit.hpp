@@ -137,7 +137,7 @@ private:
 	bool m_HasSpecialWidthChars;
 
 private:
-	virtual void DisplayObject();
+	void DisplayObject() override;
 	bool InsertKey(FarKey Key);
 	int RecurseProcessKey(FarKey Key);
 	void DeleteBlock();
@@ -173,7 +173,7 @@ protected:
 
 public:
 	Edit(ScreenObject *pOwner = nullptr, Callback *aCallback = nullptr);
-	virtual ~Edit();
+	~Edit() override;
 
 public:
 	DWORD SetCodePage(UINT codepage);	// BUGBUG
@@ -181,9 +181,9 @@ public:
 	int StrSize() const { return m_Str.GetLength(); }
 
 	virtual void FastShow();
-	virtual int ProcessKey(FarKey Key);
-	virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
-	virtual int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0);
+	int ProcessKey(FarKey Key) override;
+	int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent) override;
+	int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0) override;
 
 	// ! Функция установки текущих Color,SelColor и ColorUnChanged!
 	void SetObjectColor(uint64_t Color, uint64_t SelColor = 0xf,
@@ -319,9 +319,9 @@ public:
 
 	EditControl(ScreenObject *pOwner = nullptr, Callback *aCallback = nullptr,
 			History *iHistory = 0, FarList *iList = 0, DWORD iFlags = 0);
-	virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
-	virtual void Show();
-	virtual void Changed(bool DelBlock = false);
+	int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent) override;
+	void Show() override;
+	void Changed(bool DelBlock = false) override;
 	void SetCallbackState(bool Enable) { m_Callback.Active = Enable; }
 
 	void AutoComplete(bool Manual, bool DelBlock);

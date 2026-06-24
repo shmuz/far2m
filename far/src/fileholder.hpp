@@ -35,11 +35,11 @@ class TempFileHolder : public FileHolder
 	TempFileHolder &operator=(const TempFileHolder &) = delete;
 
 protected:
-	virtual void OnFileEdited(const wchar_t *FileName);
+	void OnFileEdited(const wchar_t *FileName) override;
 
 public:
 	TempFileHolder(const FARString &temp_file_name, bool delete_parent_dir = true);
-	virtual ~TempFileHolder();
+	~TempFileHolder() override;
 };
 
 class TempFileUploadHolder : public TempFileHolder
@@ -47,13 +47,13 @@ class TempFileUploadHolder : public TempFileHolder
 	struct timespec _mtim{};
 
 	void GetCurrentTimestamp();
-	virtual void OnFileEdited(const wchar_t *FileName);
+	void OnFileEdited(const wchar_t *FileName) override;
 
 protected:
 	virtual bool UploadTempFile() = 0;
 
 public:
 	TempFileUploadHolder(const FARString &temp_file_name, bool delete_parent_dir = true);
-	virtual ~TempFileUploadHolder();
+	~TempFileUploadHolder() override;
 	void CheckForChanges();
 };

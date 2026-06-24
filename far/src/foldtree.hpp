@@ -58,26 +58,26 @@ class FolderTree:public Frame
 
 	private:
 		void DrawEdit();
-		virtual void DisplayObject();
+		void DisplayObject() override;
 		void SetCoords();
 
 	public:
 		FolderTree(FARString &strResultFolder, int ModalMode, bool IsStandalone, bool IsFullScreen);
-		virtual ~FolderTree();
+		~FolderTree() override;
 
 	public:
-		virtual int ProcessKey(FarKey Key);
-		virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
+		int ProcessKey(FarKey Key) override;
+		int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent) override;
 
-		virtual void InitKeyBar();
-		virtual void OnChangeFocus(int focus); // вызывается при смене фокуса
-		virtual void SetScreenPosition();
-		virtual void ResizeConsole();
+		void InitKeyBar() override;
+		void OnChangeFocus(bool focus) override; // вызывается при смене фокуса
+		void SetScreenPosition() override;
+		void ResizeConsole() override;
 		/* $ Введена для нужд CtrlAltShift OT */
-		virtual int  FastHide();
+		int  FastHide() override;
 
-		virtual const wchar_t *GetTypeName() {return L"[FolderTree]";}
-		virtual int GetTypeAndName(FARString &strType, FARString &strName);
-		virtual int GetType() { return MODALTYPE_FINDFOLDER; }
+		const wchar_t *GetTypeName() override {return L"[FolderTree]";}
+		int GetTypeAndName(FARString &strType, FARString &strName) override;
+		int GetType() override { return MODALTYPE_FINDFOLDER; }
 
 };

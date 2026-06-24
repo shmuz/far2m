@@ -4685,7 +4685,7 @@ void Dialog::SetExitCode(int Code)
 	// CloseDialog();
 }
 
-void Dialog::OnChangeFocus(int focus)
+void Dialog::OnChangeFocus(bool focus)
 {
 	Frame::OnChangeFocus(focus);
 	if (GetCanLoseFocus())

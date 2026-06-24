@@ -166,7 +166,7 @@ private:
 	FileHolderPtr FHP;
 
 private:
-	virtual void DisplayObject();
+	void DisplayObject() override;
 
 	void ShowPage(int nMode);
 
@@ -204,15 +204,15 @@ private:
 
 public:
 	Viewer(bool bQuickView = false, UINT aCodePage = CP_AUTODETECT);
-	virtual ~Viewer();
+	~Viewer() override;
 
 public:
 	int OpenFile(const wchar_t *Name, bool warning);
 	void SetViewKeyBar(KeyBar *ViewKeyBar);
 
-	virtual int ProcessKey(FarKey Key);
-	virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
-	virtual int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0);
+	int ProcessKey(FarKey Key) override;
+	int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent) override;
+	int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0) override;
 
 	void SetStatusMode(bool Mode);
 	void EnableHideCursor(bool HideCursor);
@@ -224,7 +224,7 @@ public:
 	void GetFileName(FARString &strName);
 	void SetProcessed(bool Processed);
 	bool GetProcessed() const { return VM.Processed; }
-	virtual void ShowConsoleTitle();
+	void ShowConsoleTitle() override;
 
 	void SetTitle(const wchar_t *Title);
 	FARString &GetTitle(FARString &Title, int SubLen = -1, int TruncSize = 0);

@@ -59,7 +59,7 @@ private:
 	int OldWrapType;
 
 private:
-	virtual void DisplayObject();
+	void DisplayObject() override;
 	void PrintText(const wchar_t *Str);
 
 	void SetMacroArea(bool Restore = false);
@@ -68,22 +68,22 @@ private:
 
 public:
 	QuickView();
-	virtual ~QuickView();
+	~QuickView() override;
 
 public:
-	virtual int ProcessKey(FarKey Key);
-	virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
-	virtual int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0);
-	virtual void Update(int Mode);
+	int ProcessKey(FarKey Key) override;
+	int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent) override;
+	int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0) override;
+	void Update(int Mode) override;
 	void ShowFile(const wchar_t *FileName, bool TempFile, PanelHandle *hDirPlugin);
-	virtual void CloseFile();
-	virtual void QViewDelTempName();
+	void CloseFile() override;
+	void QViewDelTempName() override;
 
-	virtual bool UpdateIfChanged(int UpdateMode);
-	virtual void SetTitle();
-	virtual FARString &GetTitle(FARString &Title, int SubLen = -1, int TruncSize = 0);
-	virtual void SetFocus();
-	virtual void KillFocus();
-	virtual bool UpdateKeyBar();
-	virtual bool GetCurName(FARString &strName);
+	bool UpdateIfChanged(int UpdateMode) override;
+	void SetTitle() override;
+	FARString &GetTitle(FARString &Title, int SubLen = -1, int TruncSize = 0) override;
+	void SetFocus() override;
+	void KillFocus() override;
+	bool UpdateKeyBar() override;
+	bool GetCurName(FARString &strName) override;
 };

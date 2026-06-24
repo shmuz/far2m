@@ -87,7 +87,7 @@ bool Frame::IsTopFrame()
 	return FrameManager->GetCurrentFrame() == this;
 }
 
-void Frame::OnChangeFocus(int focus)
+void Frame::OnChangeFocus(bool focus)
 {
 	if (focus)
 	{

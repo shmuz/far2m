@@ -38,9 +38,9 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class MenuBar:public ScreenObject
 {
 	private:
-		virtual void DisplayObject();
+		void DisplayObject() override;
 
 	public:
 		MenuBar() {}
-		virtual ~MenuBar() {}
+		~MenuBar() override {}
 };

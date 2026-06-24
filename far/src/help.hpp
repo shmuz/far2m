@@ -141,7 +141,7 @@ class Help:public Frame
 
 		SearchReplaceDlgParams LastSearch;
 	private:
-		virtual void DisplayObject();
+		void DisplayObject() override;
 		bool ReadHelp(const wchar_t *Mask=nullptr);
 		void AddLine(const wchar_t *Line);
 		void AddTitle(const wchar_t *Title);
@@ -160,25 +160,25 @@ class Help:public Frame
 
 	public:
 		Help(const wchar_t *Topic,const wchar_t *Mask=nullptr,DWORD Flags=0);
-		virtual ~Help();
+		~Help() override;
 
 	public:
-		virtual void Hide();
-		virtual int  ProcessKey(FarKey Key);
-		virtual int  ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
-		virtual void InitKeyBar();
+		void Hide() override;
+		int  ProcessKey(FarKey Key) override;
+		int  ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent) override;
+		void InitKeyBar() override;
 		bool GetError() {return ErrorHelp;}
-		virtual void SetScreenPosition();
-		virtual void OnChangeFocus(int focus); // вызывается при смене фокуса
-		virtual void ResizeConsole();
+		void SetScreenPosition() override;
+		void OnChangeFocus(bool focus) override; // вызывается при смене фокуса
+		void ResizeConsole() override;
 
-		virtual int  FastHide(); // Введена для нужд CtrlAltShift
+		int  FastHide() override; // Введена для нужд CtrlAltShift
 
-		virtual const wchar_t *GetTypeName() {return L"[Help]";}
-		virtual int GetTypeAndName(FARString &strType, FARString &strName);
-		virtual int GetType() { return MODALTYPE_HELP; }
+		const wchar_t *GetTypeName() override {return L"[Help]";}
+		int GetTypeAndName(FARString &strType, FARString &strName) override;
+		int GetType() override { return MODALTYPE_HELP; }
 
-		virtual int64_t VMProcess(int OpCode,void *vParam,int64_t iParam);
+		int64_t VMProcess(int OpCode,void *vParam,int64_t iParam) override;
 
 		static FARString &MkTopic(INT_PTR PluginNumber,const wchar_t *HelpTopic,FARString &strTopic);
 };

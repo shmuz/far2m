@@ -42,7 +42,6 @@ class Modal: public Frame
 	private:
 		FarKey  ReadKey;
 		FarKey  WriteKey;
-		typedef ScreenObject inherited;
 
 	protected:
 		INPUT_RECORD ReadRec;
@@ -51,13 +50,13 @@ class Modal: public Frame
 
 	public:
 		Modal();
-		virtual ~Modal() {}
+		~Modal() override {}
 
 	public:
 		virtual void GetDialogObjectsData() {};
 		bool Done() const;
 		void ClearDone();
-		virtual void SetExitCode(int Code);
+		void SetExitCode(int Code) override;
 
 		virtual void Process();
 

@@ -192,7 +192,7 @@ protected:
 
 public:
 	Panel();
-	virtual ~Panel();
+	~Panel() override;
 
 public:
 	virtual bool SendKeyToPlugin(FarKey Key, bool Pred = false) { return false; }

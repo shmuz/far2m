@@ -238,7 +238,7 @@ private:
 		NEXT_NONE, NEXT_FORWARD, NEXT_REVERSE
 	};
 	int GetTopScreenLineNumber();
-	virtual void DisplayObject();
+	void DisplayObject() override;
 	void ShowEditor(bool CurLineOnly);
 	void DeleteString(Edit *DelPtr, int LineNumber, bool DeleteLast, int UndoLine);
 	void InsertString();
@@ -310,7 +310,7 @@ private:
 
 public:
 	Editor(ScreenObject *pOwner = nullptr, bool DialogUsed = false);
-	virtual ~Editor();
+	~Editor() override;
 
 public:
 	int GetEditorID() const { return m_EditorID; }
@@ -326,9 +326,9 @@ public:
 	int SetRawData(const wchar_t *SrcBuf, int SizeSrcBuf, bool TextFormat); // преобразование из буфера в список
 	int GetRawData(wchar_t **DestBuf, int &SizeDestBuf, bool TextFormat = false); // преобраз. из списка в буфер
 
-	virtual int ProcessKey(FarKey Key);
-	virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
-	virtual int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0);
+	int ProcessKey(FarKey Key) override;
+	int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent) override;
+	int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0) override;
 
 	void KeepInitParameters();
 	void SetStartPos(int LineNum, int CharNum);
@@ -422,5 +422,5 @@ public:
 	void DrawScrollbar();
 	void AutoDeleteColors();
 
-	virtual void SetPosition(int X1, int Y1, int X2, int Y2);
+	void SetPosition(int X1, int Y1, int X2, int Y2) override;
 };

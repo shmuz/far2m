@@ -71,7 +71,7 @@ class Frame: public ScreenObject
 
 	public:
 		Frame();
-		virtual ~Frame();
+		~Frame() override;
 
 		virtual bool GetCanLoseFocus(bool DynamicMode=false) { return(CanLoseFocus); }
 		void SetCanLoseFocus(bool Mode) { CanLoseFocus=Mode; }
@@ -87,8 +87,8 @@ class Frame: public ScreenObject
 
 		virtual void OnDestroy();  // вызывается перед уничтожением окна
 		virtual void OnCreate() {};   // вызывается перед созданием окна
-		virtual void OnChangeFocus(int focus); // вызывается при смене фокуса
-		virtual void Refresh() {OnChangeFocus(1);}  // Просто перерисоваться :)
+		virtual void OnChangeFocus(bool focus); // вызывается при смене фокуса
+		virtual void Refresh() {OnChangeFocus(true);}  // Просто перерисоваться :)
 
 		virtual void InitKeyBar() {}
 		void SetKeyBar(KeyBar *FrameKeyBar);

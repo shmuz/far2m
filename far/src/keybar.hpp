@@ -75,17 +75,17 @@ class KeyBar: public ScreenObject
 
 	private:
 		void RefreshObject(bool render);
-		virtual void DisplayObject();
+		void DisplayObject() override;
 
 	public:
 		KeyBar();
-		virtual  ~KeyBar() {}
+		~KeyBar() override {}
 
 	public:
 		void Refresh(bool show, bool force_refresh_fkeys = false);
 
-		virtual int ProcessKey(FarKey Key);
-		virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
+		int ProcessKey(FarKey Key) override;
+		int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent) override;
 
 		void ReadRegGroup(const wchar_t *RegGroup, const wchar_t *Language);
 		void SetRegGroup(int Group);
@@ -113,5 +113,5 @@ class KeyBar: public ScreenObject
 		void Change(int Group,const wchar_t *NewStr,int Pos);
 
 		void RedrawIfChanged();
-		virtual void ResizeConsole();
+		void ResizeConsole() override;
 };

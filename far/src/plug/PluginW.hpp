@@ -121,7 +121,7 @@ class PluginW: public Plugin
 				const std::string &moduleID);
 		~PluginW();
 
-		bool IsOemPlugin() {return false;}
+		bool IsOemPlugin() override {return false;}
 
 		bool Load();
 		bool LoadFromCache();
@@ -132,43 +132,43 @@ class PluginW: public Plugin
 
 		bool IsPanelPlugin();
 
-		bool HasAnalyse() { return pAnalyseW!=nullptr; }
-		bool HasCloseAnalyse() { return pCloseAnalyseW!=nullptr; }
-		bool HasClosePlugin() { return pClosePluginW!=nullptr; }
-		bool HasCompare() { return pCompareW!=nullptr; }
-		bool HasConfigure() { return pConfigureW!=nullptr; }
-		bool HasConfigureV3() { return pConfigureV3W!=nullptr; }
-		bool HasDeleteFiles() { return pDeleteFilesW!=nullptr; }
-		bool HasExitFAR() { return pExitFARW!=nullptr; }
-		bool HasFreeCustomData() { return pFreeCustomDataW!=nullptr; }
-		bool HasFreeFindData() { return pFreeFindDataW!=nullptr; }
-		bool HasFreeVirtualFindData() { return pFreeVirtualFindDataW!=nullptr; }
-		bool HasGetCustomData()  { return pGetCustomDataW!=nullptr; }
-		bool HasGetFiles() { return pGetFilesW!=nullptr; }
-		bool HasGetFindData() { return pGetFindDataW!=nullptr; }
-		bool HasGetLinkTarget() { return pGetLinkTargetW != nullptr; }
-		bool HasGetOpenPluginInfo() { return pGetOpenPluginInfoW!=nullptr; }
-		bool HasGetPluginInfo() { return pGetPluginInfoW!=nullptr; }
-		bool HasGetVirtualFindData() { return pGetVirtualFindDataW!=nullptr; }
-		bool HasMakeDirectory() { return pMakeDirectoryW!=nullptr; }
-		bool HasMayExitFAR() { return pMayExitFARW!=nullptr; }
-		bool HasMinFarVersion() { return pMinFarVersionW!=nullptr; }
-		bool HasOpenFilePlugin() { return pOpenFilePluginW!=nullptr; }
-		bool HasOpenPlugin() { return pOpenPluginW!=nullptr; }
-		bool HasProcessConsoleInput() { return pProcessConsoleInputW!=nullptr; }
-		bool HasProcessDialogEvent() { return pProcessDialogEventW!=nullptr; }
-		bool HasProcessEditorEvent() { return pProcessEditorEventW!=nullptr; }
-		bool HasProcessEditorEventV3() { return pProcessEditorEventV3W!=nullptr; }
-		bool HasProcessEditorInput() { return pProcessEditorInputW!=nullptr; }
-		bool HasProcessEvent() { return pProcessEventW!=nullptr; }
-		bool HasProcessHostFile() { return pProcessHostFileW!=nullptr; }
-		bool HasProcessKey() { return pProcessKeyW!=nullptr; }
-		bool HasProcessSynchroEvent() { return pProcessSynchroEventW!=nullptr; }
-		bool HasProcessViewerEvent() { return pProcessViewerEventW!=nullptr; }
-		bool HasPutFiles() { return pPutFilesW!=nullptr; }
-		bool HasSetDirectory() { return pSetDirectoryW!=nullptr; }
-		bool HasSetFindList() { return pSetFindListW!=nullptr; }
-		bool HasSetStartupInfo() { return pSetStartupInfoW!=nullptr; }
+		bool HasAnalyse()               override { return pAnalyseW != nullptr; }
+		bool HasCloseAnalyse()          override { return pCloseAnalyseW != nullptr; }
+		bool HasClosePlugin()           override { return pClosePluginW != nullptr; }
+		bool HasCompare()               override { return pCompareW != nullptr; }
+		bool HasConfigure()             override { return pConfigureW != nullptr; }
+		bool HasConfigureV3()           override { return pConfigureV3W != nullptr; }
+		bool HasDeleteFiles()           override { return pDeleteFilesW != nullptr; }
+		bool HasExitFAR()               override { return pExitFARW != nullptr; }
+		bool HasFreeCustomData()        override { return pFreeCustomDataW != nullptr; }
+		bool HasFreeFindData()          override { return pFreeFindDataW != nullptr; }
+		bool HasFreeVirtualFindData()   override { return pFreeVirtualFindDataW != nullptr; }
+		bool HasGetCustomData()         override { return pGetCustomDataW != nullptr; }
+		bool HasGetFiles()              override { return pGetFilesW != nullptr; }
+		bool HasGetFindData()           override { return pGetFindDataW != nullptr; }
+		bool HasGetLinkTarget()         override { return pGetLinkTargetW  !=  nullptr; }
+		bool HasGetOpenPluginInfo()     override { return pGetOpenPluginInfoW != nullptr; }
+		bool HasGetPluginInfo()         override { return pGetPluginInfoW != nullptr; }
+		bool HasGetVirtualFindData()    override { return pGetVirtualFindDataW != nullptr; }
+		bool HasMakeDirectory()         override { return pMakeDirectoryW != nullptr; }
+		bool HasMayExitFAR()            override { return pMayExitFARW != nullptr; }
+		bool HasMinFarVersion()         override { return pMinFarVersionW != nullptr; }
+		bool HasOpenFilePlugin()        override { return pOpenFilePluginW != nullptr; }
+		bool HasOpenPlugin()            override { return pOpenPluginW != nullptr; }
+		bool HasProcessConsoleInput()   override { return pProcessConsoleInputW != nullptr; }
+		bool HasProcessDialogEvent()    override { return pProcessDialogEventW != nullptr; }
+		bool HasProcessEditorEvent()    override { return pProcessEditorEventW != nullptr; }
+		bool HasProcessEditorEventV3()  override { return pProcessEditorEventV3W != nullptr; }
+		bool HasProcessEditorInput()    override { return pProcessEditorInputW != nullptr; }
+		bool HasProcessEvent()          override { return pProcessEventW != nullptr; }
+		bool HasProcessHostFile()       override { return pProcessHostFileW != nullptr; }
+		bool HasProcessKey()            override { return pProcessKeyW != nullptr; }
+		bool HasProcessSynchroEvent()   override { return pProcessSynchroEventW != nullptr; }
+		bool HasProcessViewerEvent()    override { return pProcessViewerEventW != nullptr; }
+		bool HasPutFiles()              override { return pPutFilesW != nullptr; }
+		bool HasSetDirectory()          override { return pSetDirectoryW != nullptr; }
+		bool HasSetFindList()           override { return pSetFindListW != nullptr; }
+		bool HasSetStartupInfo()        override { return pSetStartupInfoW != nullptr; }
 
 		const FARString &GetModuleName() const { return m_strModuleName; }
 		const char *GetSettingsName() { return m_strSettingsName.c_str(); }

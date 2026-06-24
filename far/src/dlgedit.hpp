@@ -64,21 +64,21 @@ public:
 	BitFlags &Flags();
 
 	DlgEdit(Dialog *pOwner, unsigned Index, DLGEDITTYPE Type);
-	virtual ~DlgEdit();
+	~DlgEdit() override;
 
-	virtual int ProcessKey(FarKey Key);
-	virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
+	int ProcessKey(FarKey Key) override;
+	int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent) override;
 
-	virtual void Show();
-	virtual void SetPosition(int X1, int Y1, int X2, int Y2);
-	virtual void GetPosition(int &X1, int &Y1, int &X2, int &Y2);
+	void Show() override;
+	void SetPosition(int X1, int Y1, int X2, int Y2) override;
+	void GetPosition(int &X1, int &Y1, int &X2, int &Y2) override;
 
-	virtual void Hide();
-	virtual void Hide0();
-	virtual void ShowConsoleTitle();
-	virtual void SetScreenPosition();
-	virtual void ResizeConsole();
-	virtual int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0);
+	void Hide() override;
+	void Hide0() override;
+	void ShowConsoleTitle() override;
+	void SetScreenPosition() override;
+	void ResizeConsole() override;
+	int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0) override;
 
 	void SetDialogParent(DWORD Sets);
 	void SetDropDownBox(int NewDropDownBox);
@@ -184,7 +184,7 @@ private:
 	bool m_dialogHasFocus;
 	bool m_dialogEditorOpened;
 
-	virtual void DisplayObject();
+	void DisplayObject() override;
 	static void EditChange(void *aParam);
 	void DoEditChange();
 };

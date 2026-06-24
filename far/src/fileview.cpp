@@ -599,7 +599,7 @@ void FileViewer::ShowStatus()
 		ShowTime(SHTM_LAZY);
 }
 
-void FileViewer::OnChangeFocus(int focus)
+void FileViewer::OnChangeFocus(bool focus)
 {
 	Frame::OnChangeFocus(focus);
 	CtrlObject->Plugins.CurViewer=&View;

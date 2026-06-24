@@ -1152,7 +1152,7 @@ void Manager::DeactivateCommit(Frame *aDeactivated, Frame *aActivated)
 	_FRAMELOG("DeactivateCommit (activated)", aActivated);
 	DeactivatedFrame = nullptr;
 
-	aDeactivated->OnChangeFocus(0);
+	aDeactivated->OnChangeFocus(false);
 
 	if (!ModalStack.empty() && aDeactivated == ModalStack.back())
 	{

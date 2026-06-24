@@ -2173,7 +2173,7 @@ void FileEditor::SetEditorOptions(EditorOptions &EdOpt)
 	// m_editor->SetBSLikeDel(EdOpt.BSLikeDel);
 }
 
-void FileEditor::OnChangeFocus(int focus)
+void FileEditor::OnChangeFocus(bool focus)
 {
 	Frame::OnChangeFocus(focus);
 	CtrlObject->Plugins.CurEditor = this;

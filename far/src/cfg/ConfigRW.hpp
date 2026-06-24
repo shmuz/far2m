@@ -28,7 +28,7 @@ class ConfigReader : public ConfigSection
 	const KeyFileValues *_selected_section_values = nullptr;
 	bool _has_section = false;
 
-	virtual void OnSectionSelected();
+	void OnSectionSelected() override;
 
 public:
 	ConfigReader();
@@ -59,7 +59,7 @@ class ConfigWriter : public ConfigSection
 	KeyFileHelper *_selected_kfh = nullptr;
 	size_t _bytes_space_interval = 0;
 
-	virtual void OnSectionSelected();
+	void OnSectionSelected() override;
 
 	std::vector<std::string> EnumIndexedSections(const char *indexed_prefix);
 

@@ -219,7 +219,7 @@ private:
 	bool IdExist;
 
 private:
-	virtual void DisplayObject();
+	void DisplayObject() override;
 	void ShowMenu(bool IsParent = false);
 	void DrawTitles();
 	int GetItemPosition(int Position);
@@ -249,15 +249,15 @@ public:
 	VMenu(const wchar_t *Title, MenuDataEx *Data, int ItemCount, int MaxHeight = 0, DWORD Flags = 0,
 			FARWINDOWPROC Proc = nullptr, Dialog *ParentDialog = nullptr);
 
-	virtual ~VMenu();
+	~VMenu() override;
 
 	void FastShow() { ShowMenu(); }
-	virtual void Show();
-	virtual void Hide();
+	void Show() override;
+	void Hide() override;
 	void ResetCursor();
 
 	void SetTitle(const wchar_t *Title);
-	virtual FARString &GetTitle(FARString &strDest, int SubLen = -1, int TruncSize = 0);
+	FARString &GetTitle(FARString &strDest, int SubLen = -1, int TruncSize = 0) override;
 	const wchar_t *GetPtrTitle() { return strTitle.CPtr(); }
 
 	void SetBottomTitle(const wchar_t *BottomTitle);
@@ -282,10 +282,10 @@ public:
 	void GetColors(struct FarListColors *ColorsOut);
 	void SetOneColor(int Index, uint64_t Color);
 
-	virtual int ProcessKey(FarKey Key);
-	virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
-	virtual int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0);
-	virtual FarKey ReadInput(INPUT_RECORD *GetReadRec = nullptr);
+	int ProcessKey(FarKey Key) override;
+	int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent) override;
+	int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0) override;
+	FarKey ReadInput(INPUT_RECORD *GetReadRec = nullptr) override;
 
 	void DeleteItems();
 	int DeleteItem(int ID, int Count = 1);
@@ -319,17 +319,17 @@ public:
 
 	bool UpdateRequired();
 
-	virtual void ResizeConsole();
+	void ResizeConsole() override;
 
 	struct MenuItemEx *GetItemPtr(int Position = -1);
 
 	void SortItems(int Direction = 0, int Offset = 0);
 	bool GetVMenuInfo(struct FarListInfo *Info);
 
-	virtual const wchar_t *GetTypeName() { return L"[VMenu]"; }
-	virtual int GetTypeAndName(FARString &strType, FARString &strName);
+	const wchar_t *GetTypeName() override { return L"[VMenu]"; }
+	int GetTypeAndName(FARString &strType, FARString &strName) override;
 
-	virtual int GetType() { return CheckFlags(VMENU_COMBOBOX) ? MODALTYPE_COMBOBOX : MODALTYPE_VMENU; }
+	int GetType() override { return CheckFlags(VMENU_COMBOBOX) ? MODALTYPE_COMBOBOX : MODALTYPE_VMENU; }
 
 	void SetMaxHeight(int NewMaxHeight);
 

@@ -2027,7 +2027,7 @@ static int RunURL(const wchar_t *Protocol, wchar_t *URLPath)
 	return EditCode;
 }
 
-void Help::OnChangeFocus(int Focus)
+void Help::OnChangeFocus(bool Focus)
 {
 	if (Focus)
 	{

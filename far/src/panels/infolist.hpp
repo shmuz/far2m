@@ -51,15 +51,15 @@ public:
 		:
 		InRecursion(0)
 	{}
-	virtual ~DizViewer() {}
-	virtual int ProcessKey(FarKey Key)
+	~DizViewer() override {}
+	int ProcessKey(FarKey Key) override
 	{
 		InRecursion++;
 		int res = Viewer::ProcessKey(Key);
 		InRecursion--;
 		return res;
 	}
-	virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
+	int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent) override
 	{
 		InRecursion++;
 		int res = Viewer::ProcessMouse(MouseEvent);
@@ -80,7 +80,7 @@ private:
 	std::vector<InfoListSectionState> SectionState;
 
 private:
-	virtual void DisplayObject();
+	void DisplayObject() override;
 	void ShowGitStatus(int &YPos);
 	void ShowDirDescription(int YPos);
 	void ShowPluginDescription(int YPos);
@@ -99,17 +99,17 @@ private:
 
 public:
 	InfoList();
-	virtual ~InfoList();
+	~InfoList() override;
 
 public:
-	virtual int ProcessKey(FarKey Key);
-	virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
-	virtual int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0);
-	virtual void Update(int Mode);
-	virtual void SetFocus();
-	virtual void KillFocus();
-	virtual FARString &GetTitle(FARString &Title, int SubLen = -1, int TruncSize = 0);
-	virtual bool UpdateKeyBar();
-	virtual void CloseFile();
-	virtual bool GetCurName(FARString &strName);
+	int ProcessKey(FarKey Key) override;
+	int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent) override;
+	int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0) override;
+	void Update(int Mode) override;
+	void SetFocus() override;
+	void KillFocus() override;
+	FARString &GetTitle(FARString &Title, int SubLen = -1, int TruncSize = 0) override;
+	bool UpdateKeyBar() override;
+	void CloseFile() override;
+	bool GetCurName(FARString &strName) override;
 };

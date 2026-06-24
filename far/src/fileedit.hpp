@@ -93,7 +93,7 @@ public:
 			const wchar_t *PluginData = nullptr, int OpenModeExstFile = FEOPMODE_QUERY);
 	FileEditor(const wchar_t *Name, UINT codepage, DWORD InitFlags, int StartLine, int StartChar,
 			const wchar_t *Title, int X1, int Y1, int X2, int Y2, int OpenModeExstFile = FEOPMODE_QUERY);
-	virtual ~FileEditor();
+	~FileEditor() override;
 
 	void ShowStatus();
 	void SetLockEditor(bool LockMode);
@@ -113,16 +113,16 @@ public:
 		Flags.Change(FFILEEDIT_SAVETOSAVEAS, ToSaveAs);
 		InitKeyBar();
 	}
-	virtual bool IsFileModified() const { return m_editor->IsFileModified(); }
-	virtual int GetTypeAndName(FARString &strType, FARString &strName);
+	bool IsFileModified() const override { return m_editor->IsFileModified(); }
+	int GetTypeAndName(FARString &strType, FARString &strName) override;
 	int EditorControl(int Command, void *Param);
 	void SetCodePage(UINT codepage);    // BUGBUG
 	bool IsFileChanged() const { return m_editor->IsFileChanged(); }
-	virtual int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0);
+	int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0) override;
 	void GetEditorOptions(EditorOptions &EdOpt);
 	void SetEditorOptions(EditorOptions &EdOpt);
 	void CodepageChangedByUser() { Flags.Set(FFILEEDIT_CODEPAGECHANGEDBYUSER); }
-	virtual void Show();
+	void Show() override;
 	void SetPluginTitle(const wchar_t *PluginTitle);
 	int GetEditorID() const;
 
@@ -150,7 +150,7 @@ private:
 	int SaveAsTextFormat;
 	FileHolderPtr FHP;
 
-	virtual void DisplayObject();
+	void DisplayObject() override;
 	int ProcessQuitKey(bool FirstSave, bool NeedQuestion = true);
 	bool UpdateFileList();
 	bool DecideAboutSignature();
@@ -158,21 +158,21 @@ private:
 	bool AskOverwrite(const FARString &FileName);
 	void Init(const wchar_t *Name, UINT codepage, const wchar_t *Title, DWORD InitFlags, int StartLine,
 			int StartChar, const wchar_t *PluginData, int OpenModeExstFile);
-	virtual void InitKeyBar();
-	virtual int ProcessKey(FarKey Key);
-	virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
-	virtual void ShowConsoleTitle();
-	virtual void OnChangeFocus(int focus);
-	virtual void SetScreenPosition();
-	virtual const wchar_t *GetTypeName() { return L"[FileEdit]"; }
-	virtual int GetType() { return MODALTYPE_EDITOR; }
-	virtual void OnDestroy();
-	virtual bool GetCanLoseFocus(bool DynamicMode = false);
-	virtual int FastHide();    // для нужд CtrlAltShift
+	void InitKeyBar() override;
+	int ProcessKey(FarKey Key) override;
+	int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent) override;
+	void ShowConsoleTitle() override;
+	void OnChangeFocus(bool focus) override;
+	void SetScreenPosition() override;
+	const wchar_t *GetTypeName() override { return L"[FileEdit]"; }
+	int GetType() override { return MODALTYPE_EDITOR; }
+	void OnDestroy() override;
+	bool GetCanLoseFocus(bool DynamicMode = false) override;
+	int FastHide() override;    // для нужд CtrlAltShift
 	// возвращает признак того, является ли файл временным
 	// используется для принятия решения переходить в каталог по CtrlF10
 	bool isTemporary();
-	virtual void ResizeConsole();
+	void ResizeConsole() override;
 	int LoadFile(const wchar_t *Name, int &UserBreak);
 	// TextFormat, Codepage и AddSignature используются ТОЛЬКО, если bSaveAs = true!
 
@@ -181,7 +181,7 @@ private:
 	int SaveFile(const wchar_t *Name, bool Ask, bool bSaveAs, int TextFormat = 0, UINT Codepage = CP_UTF8,
 			bool AddSignature = false);
 	void SetTitle(const wchar_t *Title);
-	virtual FARString &GetTitle(FARString &Title, int SubLen = -1, int TruncSize = 0);
+	FARString &GetTitle(FARString &Title, int SubLen = -1, int TruncSize = 0) override;
 	bool SetFileName(const wchar_t *NewFileName);
 	int ProcessEditorInput(INPUT_RECORD *Rec);
 	void ChangeEditKeyBar();

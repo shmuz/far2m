@@ -44,8 +44,7 @@ class CommandLine;
 class FilePanels:public Frame
 {
 	private:
-		virtual void DisplayObject();
-		typedef class Frame inherited;
+		void DisplayObject() override;
 
 	public:
 		Panel *LastLeftFilePanel;
@@ -64,7 +63,7 @@ class FilePanels:public Frame
 
 	public:
 		FilePanels();
-		virtual ~FilePanels();
+		~FilePanels() override;
 
 	public:
 		void Init();
@@ -79,30 +78,30 @@ class FilePanels:public Frame
 
 		void   SetupKeyBar();
 
-		virtual int ProcessKey(FarKey Key);
-		virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
-		virtual int64_t VMProcess(int OpCode, void *vParam=nullptr, int64_t iParam=0);
+		int ProcessKey(FarKey Key) override;
+		int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent) override;
+		int64_t VMProcess(int OpCode, void *vParam=nullptr, int64_t iParam=0) override;
 
 		bool SetAnotherPanelFocus();
 		bool SwapPanels();
 		bool ChangePanelViewMode(Panel *Current, int Mode, bool RefreshFrame);
 
-		virtual void SetScreenPosition();
+		void SetScreenPosition() override;
 
 		void Update();
 
-		virtual int GetTypeAndName(FARString &strType, FARString &strName);
-		virtual int GetType() { return MODALTYPE_PANELS; }
-		virtual const wchar_t *GetTypeName() {return L"[FilePanels]";}
+		int GetTypeAndName(FARString &strType, FARString &strName) override;
+		int GetType() override { return MODALTYPE_PANELS; }
+		const wchar_t *GetTypeName() override {return L"[FilePanels]";}
 
-		virtual void OnChangeFocus(int focus);
+		void OnChangeFocus(bool focus) override;
 
-		virtual void RedrawKeyBar(); // virtual
-		virtual void ShowConsoleTitle();
-		virtual void ResizeConsole();
-		virtual int FastHide();
-		virtual void Refresh();
+		void RedrawKeyBar() override; // virtual
+		void ShowConsoleTitle() override;
+		void ResizeConsole() override;
+		int FastHide() override;
+		void Refresh() override;
 		void GoToFile(const wchar_t *FileName);
 
-		virtual FARMACROAREA GetMacroArea();
+		FARMACROAREA GetMacroArea() override;
 };

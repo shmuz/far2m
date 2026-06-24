@@ -940,7 +940,7 @@ int  FilePanels::GetTypeAndName(FARString &strType, FARString &strName)
 	return(MODALTYPE_PANELS);
 }
 
-void FilePanels::OnChangeFocus(int f)
+void FilePanels::OnChangeFocus(bool f)
 {
 	_OT(SysLog(L"FilePanels::OnChangeFocus(%i)",f));
 
@@ -960,7 +960,7 @@ void FilePanels::OnChangeFocus(int f)
 		*/
 //    Redraw();
 		ActivePanel->SetCurPath();
-		Frame::OnChangeFocus(1);
+		Frame::OnChangeFocus(true);
 	}
 }
 
@@ -1070,8 +1070,8 @@ void FilePanels::Refresh()
 	  Вызовем так, а не Frame::OnChangeFocus,
 	  который из этого и позовётся.
 	*/
-	//Frame::OnChangeFocus(1);
-	OnChangeFocus(1);
+	//Frame::OnChangeFocus(true);
+	OnChangeFocus(true);
 }
 
 void FilePanels::GoToFile(const wchar_t *FileName)

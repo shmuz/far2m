@@ -149,7 +149,7 @@ void FolderTree::SetCoords()
 	}
 }
 
-void FolderTree::OnChangeFocus(int focus)
+void FolderTree::OnChangeFocus(bool focus)
 {
 	if (focus)
 		Show();

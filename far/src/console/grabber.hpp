@@ -55,14 +55,14 @@ private:
 	GrabberArea NormalizedArea() const;
 
 private:
-	virtual void DisplayObject();
-	virtual int ProcessKey(FarKey Key);
-	virtual int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent);
+	void DisplayObject() override;
+	int ProcessKey(FarKey Key) override;
+	int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent) override;
 	void CopyGrabbedArea(bool append);
 	void Reset();
 
 	Grabber();
-	virtual ~Grabber();
+	~Grabber() override;
 
 public:
 	static bool Run();

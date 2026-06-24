@@ -938,7 +938,7 @@ class FileList_TempFileHolder : public TempFileUploadHolder
 {
 	PHPTR hPlugin;
 
-	virtual bool UploadTempFile()
+	bool UploadTempFile() override
 	{
 		FARString strSaveDir;
 		apiGetCurrentDirectory(strSaveDir);
@@ -999,7 +999,7 @@ public:
 		CtrlObject->Plugins.RetainPanel(hPlugin);
 	}
 
-	virtual ~FileList_TempFileHolder() { CtrlObject->Plugins.ClosePanel(hPlugin); }
+	~FileList_TempFileHolder() override { CtrlObject->Plugins.ClosePanel(hPlugin); }
 };
 
 int FileList::ProcessKey(FarKey Key)
