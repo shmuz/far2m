@@ -297,6 +297,13 @@ void CommandLine::DisplayObject()
 	GotoXY(X2+1, Y1);
 	SetFarColor(COL_COMMANDLINEPREFIX);
 	Text(L"\x2191");
+
+	if (auto frame = FrameManager->GetTopModal()) {
+		if (auto tp = frame->GetType(); tp == MODALTYPE_EDITOR || tp == MODALTYPE_VIEWER) {
+			FrameManager->RefreshFrame();
+			FrameManager->Commit();
+		}
+	}
 }
 
 void CommandLine::DrawComboBoxMark(wchar_t MarkChar)
