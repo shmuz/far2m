@@ -59,8 +59,6 @@ void Modal::Process()
 		ProcessInput();
 		DispatchInterThreadCalls();
 	}
-
-	GetDialogObjectsData();
 }
 
 

@@ -96,7 +96,7 @@ class FilePanels:public Frame
 
 		void OnChangeFocus(bool focus) override;
 
-		void RedrawKeyBar() override; // virtual
+		void RedrawKeyBar() override;
 		void ShowConsoleTitle() override;
 		void ResizeConsole() override;
 		int FastHide() override;

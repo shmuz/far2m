@@ -53,7 +53,6 @@ class Modal: public Frame
 		~Modal() override {}
 
 	public:
-		virtual void GetDialogObjectsData() {};
 		bool Done() const;
 		void ClearDone();
 		void SetExitCode(int Code) override;
