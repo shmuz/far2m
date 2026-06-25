@@ -471,7 +471,7 @@ bool FileList::UpdateIfChanged(int UpdateMode)
 		if ((IsVisible() && (GetProcessUptimeMSec() - LastUpdateTime > 2000))
 				|| (UpdateMode != UIC_UPDATE_NORMAL)) {
 			if (UpdateMode == UIC_UPDATE_NORMAL)
-				ProcessPluginEvent(FE_IDLE, nullptr);
+				ProcessPluginEvent(FE_IDLE);
 
 			/* $ 24.12.2002 VVM
 			  ! Поменяем логику обновления панелей. */

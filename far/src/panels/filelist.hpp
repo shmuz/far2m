@@ -351,7 +351,7 @@ public:
 	void PluginEndSelection();
 
 	void SetPluginModified() override;
-	int ProcessPluginEvent(int Event, void *Param) override;
+	int ProcessPluginEvent(int Event, void *Param = nullptr) override;
 	void SetTitle() override;
 	// FARString &GetTitle(FARString &Title,int SubLen=-1,int TruncSize=0) override;
 	int PluginPanelHelp(PHPTR ph);

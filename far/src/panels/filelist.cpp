@@ -416,13 +416,13 @@ void FileList::SortFileList(bool KeepPosition)
 			bool bCallEvents = (PanelMode == PLUGIN_PANEL) && hPlugin;
 			hSortPlugin = bCallEvents && hPlugin->pPlugin->HasCompare() ? hPlugin : nullptr;
 
-			if (bCallEvents && ProcessPluginEvent(FE_STARTSORT, nullptr))
+			if (bCallEvents && ProcessPluginEvent(FE_STARTSORT))
 				hSortPlugin = nullptr;
 
 			qsort(ListData, FileCount, sizeof(*ListData), SortList);
 
 			if (bCallEvents)
-				ProcessPluginEvent(FE_ENDSORT, nullptr);
+				ProcessPluginEvent(FE_ENDSORT);
 		}
 		else if (SortMode >= PanelSortMode::BY_USER) {
 			custom_sort::CustomSort cs{};
@@ -2187,13 +2187,13 @@ int FileList::ProcessKey(FarKey Key)
 				ReadSortGroups();
 
 			SortFileList(true);
-			ProcessPluginEvent(FE_CHANGESORTPARAMS, nullptr);
+			ProcessPluginEvent(FE_CHANGESORTPARAMS);
 			Show();
 			return TRUE;
 		case KEY_SHIFTF12:
 			SelectedFirst = !SelectedFirst;
 			SortFileList(true);
-			ProcessPluginEvent(FE_CHANGESORTPARAMS, nullptr);
+			ProcessPluginEvent(FE_CHANGESORTPARAMS);
 			Show();
 			return TRUE;
 		case KEY_CTRLPGUP:
@@ -2417,7 +2417,7 @@ bool FileList::SetCurDir(const wchar_t *NewDir, bool ClosePlugin, bool ShowMessa
 		bool CheckFullScreen = IsFullScreen();
 
 		for (;;) {
-			if (ProcessPluginEvent(FE_CLOSE, nullptr))
+			if (ProcessPluginEvent(FE_CLOSE))
 				return FALSE;
 
 			if (!PopPlugin(true))
@@ -2473,7 +2473,7 @@ bool FileList::ChangeDir(const wchar_t *NewDir, bool ShowMessage)
 		bool SetDirectorySuccess = true;
 
 		if (dot2Present && strInfoCurDir.IsEmpty()) {
-			if (ProcessPluginEvent(FE_CLOSE, nullptr))
+			if (ProcessPluginEvent(FE_CLOSE))
 				return true;
 
 			PluginClosed = true;
@@ -3003,7 +3003,7 @@ void FileList::ApplySortMode(int SortMode)
 	if (FileCount > 0)
 		SortFileList(true);
 
-	ProcessPluginEvent(FE_CHANGESORTPARAMS, nullptr);
+	ProcessPluginEvent(FE_CHANGESORTPARAMS);
 	FrameManager->RefreshFrame();
 }
 
@@ -3037,7 +3037,7 @@ void FileList::ChangeNumericSort(int Mode)
 {
 	Panel::ChangeNumericSort(Mode);
 	SortFileList(true);
-	ProcessPluginEvent(FE_CHANGESORTPARAMS, nullptr);
+	ProcessPluginEvent(FE_CHANGESORTPARAMS);
 	Show();
 }
 
@@ -3045,7 +3045,7 @@ void FileList::ChangeCaseSensitiveSort(int Mode)
 {
 	Panel::ChangeCaseSensitiveSort(Mode);
 	SortFileList(true);
-	ProcessPluginEvent(FE_CHANGESORTPARAMS, nullptr);
+	ProcessPluginEvent(FE_CHANGESORTPARAMS);
 	Show();
 }
 
@@ -3053,7 +3053,7 @@ void FileList::ChangeDirectoriesFirst(int Mode)
 {
 	Panel::ChangeDirectoriesFirst(Mode);
 	SortFileList(true);
-	ProcessPluginEvent(FE_CHANGESORTPARAMS, nullptr);
+	ProcessPluginEvent(FE_CHANGESORTPARAMS);
 	Show();
 }
 
@@ -4470,7 +4470,7 @@ PHPTR FileList::OpenFilePlugin(const wchar_t *FileName, bool PushPrev, OPENFILEP
 {
 	if (!PushPrev && PanelMode == PLUGIN_PANEL) {
 		for (;;) {
-			if (ProcessPluginEvent(FE_CLOSE, nullptr))
+			if (ProcessPluginEvent(FE_CLOSE))
 				return PHPTR_STOP;
 
 			if (!PopPlugin(true))
@@ -4595,14 +4595,14 @@ void FileList::SetSelectedFirstMode(int Mode)
 {
 	SelectedFirst = Mode;
 	SortFileList(true);
-	ProcessPluginEvent(FE_CHANGESORTPARAMS, nullptr);
+	ProcessPluginEvent(FE_CHANGESORTPARAMS);
 }
 
 void FileList::ChangeSortOrder(int NewOrder)
 {
 	Panel::ChangeSortOrder(NewOrder);
 	SortFileList(true);
-	ProcessPluginEvent(FE_CHANGESORTPARAMS, nullptr);
+	ProcessPluginEvent(FE_CHANGESORTPARAMS);
 	Show();
 }
 

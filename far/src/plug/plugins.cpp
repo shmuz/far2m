@@ -1152,7 +1152,7 @@ bool PluginManager::SetNewPanel(PHPTR panelHandle)
 	//BUGBUG: Закрытие панели? Нужно ли оно?
 	//BUGBUG: В ProcessCommandLine зовется перед Open, а в CPT_MENU - после
 	Panel *ActivePanel = CtrlObject->Cp()->ActivePanel;
-	if (ActivePanel->ProcessPluginEvent(FE_CLOSE, nullptr))
+	if (ActivePanel->ProcessPluginEvent(FE_CLOSE))
 	{
 		ClosePanel(panelHandle);
 		return false;
@@ -1768,7 +1768,7 @@ bool PluginManager::ProcessCommandLine(const wchar_t *CommandParam, Panel *Targe
 	Panel *ActivePanel = CtrlObject->Cp()->ActivePanel;
 	Panel *CurPanel = Target ? Target : ActivePanel;
 
-	if (CurPanel->ProcessPluginEvent(FE_CLOSE,nullptr))
+	if (CurPanel->ProcessPluginEvent(FE_CLOSE))
 		return false;
 
 	PluginData* PData = nullptr;

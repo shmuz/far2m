@@ -448,7 +448,7 @@ int FilePanels::ProcessKey(FarKey Key)
 				if (ActivePanel->GetType()==NewType)
 					AnotherPanel=ActivePanel;
 
-				if (!AnotherPanel->ProcessPluginEvent(FE_CLOSE,nullptr))
+				if (!AnotherPanel->ProcessPluginEvent(FE_CLOSE))
 				{
 					if (AnotherPanel->GetType()==NewType)
 						/* $ 19.09.2000 IS
@@ -743,7 +743,7 @@ bool FilePanels::ChangePanelViewMode(Panel *Current, int Mode, bool RefreshFrame
 
 Panel* FilePanels::ChangePanelToFilled(Panel *Current,int NewType)
 {
-	if (Current->GetType()!=NewType && !Current->ProcessPluginEvent(FE_CLOSE,nullptr))
+	if (Current->GetType()!=NewType && !Current->ProcessPluginEvent(FE_CLOSE))
 	{
 		Current->Hide();
 		Current=ChangePanel(Current,NewType,false,false);

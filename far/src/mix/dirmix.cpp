@@ -200,7 +200,7 @@ int CheckShortcutFolder(FARString &pTestPath, bool IsHostFile, bool Silent)
 			return 0;
 	}
 
-	if (CtrlObject->Cp()->ActivePanel->ProcessPluginEvent(FE_CLOSE,nullptr))
+	if (CtrlObject->Cp()->ActivePanel->ProcessPluginEvent(FE_CLOSE))
 		return -1;
 
 	return 1;

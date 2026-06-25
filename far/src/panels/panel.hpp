@@ -314,7 +314,7 @@ public:
 	virtual void GetOpenPluginInfo(struct OpenPluginInfo *Info) {}
 	virtual void SetPluginMode(PHPTR hPlugin, const wchar_t *PluginFile, bool SendOnFocus = false) {}
 	virtual void SetPluginModified() {}
-	virtual int ProcessPluginEvent(int Event, void *Param) { return FALSE; }
+	virtual int ProcessPluginEvent(int Event, void *Param = nullptr) { return FALSE; }
 	virtual PHPTR GetPluginHandle() const { return nullptr; }
 	virtual void SetTitle();
 	virtual FARString &GetTitle(FARString &Title, int SubLen = -1, int TruncSize = 0);

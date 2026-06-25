@@ -91,7 +91,7 @@ void FileList::ShowFileList(bool Fast)
 	OpenPluginInfo Info;
 
 	if (PanelMode == PLUGIN_PANEL) {
-		if (ProcessPluginEvent(FE_REDRAW, nullptr))
+		if (ProcessPluginEvent(FE_REDRAW))
 			return;
 
 		CtrlObject->Plugins.GetOpenPluginInfo(hPlugin, &Info);

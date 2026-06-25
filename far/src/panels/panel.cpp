@@ -689,7 +689,7 @@ int Panel::ChangeDiskMenu(int Pos, bool FirstCall)
 		}
 	}    // эта скобка надо, см. M#605
 
-	if (ProcessPluginEvent(FE_CLOSE, nullptr))
+	if (ProcessPluginEvent(FE_CLOSE))
 		return -1;
 
 	ScrBuf.Flush();
@@ -1106,7 +1106,7 @@ void Panel::SetFocus()
 		CtrlObject->Cp()->ActivePanel = this;
 	}
 
-	ProcessPluginEvent(FE_GOTFOCUS, nullptr);
+	ProcessPluginEvent(FE_GOTFOCUS);
 
 	if (!GetFocus()) {
 		CtrlObject->Cp()->RedrawKeyBar();
@@ -1119,7 +1119,7 @@ void Panel::SetFocus()
 void Panel::KillFocus()
 {
 	Focus = FALSE;
-	ProcessPluginEvent(FE_KILLFOCUS, nullptr);
+	ProcessPluginEvent(FE_KILLFOCUS);
 	Redraw();
 }
 
@@ -2011,7 +2011,7 @@ bool Panel::ExecShortcutFolder(int Pos)
 		}
 		else
 		{
-			if (CtrlObject->Cp()->ActivePanel->ProcessPluginEvent(FE_CLOSE, nullptr))
+			if (CtrlObject->Cp()->ActivePanel->ProcessPluginEvent(FE_CLOSE))
 				return true;
 
 			auto pPlugin = CtrlObject->Plugins.FindPlugin(Data.PluginModule);

@@ -692,8 +692,8 @@ void Manager::ExitMainLoop(bool Ask, int ExitCode)
 			//      глюки, например, при перезагрузке
 			FilePanels *cp = CtrlObject->Cp();
 
-			if (!cp || (!cp->LeftPanel->ProcessPluginEvent(FE_CLOSE, nullptr) &&
-			            !cp->RightPanel->ProcessPluginEvent(FE_CLOSE, nullptr)))
+			if (!cp || (!cp->LeftPanel->ProcessPluginEvent(FE_CLOSE) &&
+			            !cp->RightPanel->ProcessPluginEvent(FE_CLOSE)))
 			{
 				EndLoop = true;
 			}
