@@ -515,18 +515,21 @@ int Panel::ChangeDiskMenu(int Pos, bool FirstCall)
 			switch (Key) {
 				// Shift-Enter в меню выбора дисков вызывает проводник для данного диска
 				case KEY_SHIFTNUMENTER:
-				case KEY_SHIFTENTER: {
+				case KEY_SHIFTENTER:
 					if (item && !item->pPlugin) {
 						Execute(item->location.path, true, true);
 					}
-				} break;
+					break;
+
 				case KEY_CTRLPGUP:
-				case KEY_CTRLNUMPAD9: {
-					if (Opt.PgUpChangeDisk)
+				case KEY_CTRLNUMPAD9:
+					if (Opt.PgUpChangeDisk) {
 						return -1;
-				} break;
+					}
+					break;
+
 				case KEY_INS:
-				case KEY_NUMPAD0: {
+				case KEY_NUMPAD0:
 					//					if (item && item->kind == PanelMenuItem::SHORTCUT)
 					//					{
 					//						SaveShortcutFolder(item->nItem);
@@ -536,9 +539,9 @@ int Panel::ChangeDiskMenu(int Pos, bool FirstCall)
 						ShowBookmarksMenu();
 					}
 					return SelPos;
-				} break;
+
 				case KEY_CTRLA:
-				case KEY_F4: {
+				case KEY_F4:
 					if (item) {
 						if (item->kind == PanelMenuItem::PLUGIN) {
 							if (item->pPlugin) {
@@ -559,14 +562,13 @@ int Panel::ChangeDiskMenu(int Pos, bool FirstCall)
 						}
 					}
 					break;
-				}
+
 				case KEY_NUMDEL:
 				case KEY_DEL:
-
 				case KEY_SHIFTNUMDEL:
 				case KEY_SHIFTDECIMAL:
-				case KEY_SHIFTDEL: {
-					if (item)
+				case KEY_SHIFTDEL:
+					if (item) {
 						switch (item->kind) {
 							case PanelMenuItem::MOUNTPOINT: {
 								FARString path(item->location.path);
@@ -581,27 +583,34 @@ int Panel::ChangeDiskMenu(int Pos, bool FirstCall)
 								return SelPos;
 							}
 
-							default:;
+							default:
+								break;
 						}
-				} break;
+					}
+					break;
+
 				case KEY_CTRL1:
 				case KEY_RCTRL1:
 					Opt.ChangeDriveMode^= DRIVE_SHOW_TYPE;
 					return SelPos;
+
 				case KEY_CTRL2:
 				case KEY_RCTRL2:
 					Opt.ChangeDriveMode^= DRIVE_SHOW_NETNAME;
 					return SelPos;
+
 				case KEY_CTRL3:
 				case KEY_RCTRL3:
 					Opt.ChangeDriveMode^= DRIVE_SHOW_LABEL;
 					return SelPos;
+
 				case KEY_CTRL4:
 				case KEY_RCTRL4:
 					Opt.ChangeDriveMode^= DRIVE_SHOW_FILESYSTEM;
 					return SelPos;
+
 				case KEY_CTRL5:
-				case KEY_RCTRL5: {
+				case KEY_RCTRL5:
 					if (Opt.ChangeDriveMode & DRIVE_SHOW_SIZE) {
 						Opt.ChangeDriveMode^= DRIVE_SHOW_SIZE;
 						Opt.ChangeDriveMode|= DRIVE_SHOW_SIZE_FLOAT;
@@ -611,59 +620,64 @@ int Panel::ChangeDiskMenu(int Pos, bool FirstCall)
 						else
 							Opt.ChangeDriveMode^= DRIVE_SHOW_SIZE;
 					}
-
 					return SelPos;
-				}
+
 				case KEY_CTRL6:
 				case KEY_RCTRL6:
 					Opt.ChangeDriveMode^= DRIVE_SHOW_MOUNTS;
 					return SelPos;
+
 				case KEY_CTRL7:
 				case KEY_RCTRL7:
 					Opt.ChangeDriveMode^= DRIVE_SHOW_PLUGINS;
 					return SelPos;
+
 				case KEY_CTRL8:
 				case KEY_RCTRL8:
 					Opt.ChangeDriveMode^= DRIVE_SHOW_BOOKMARKS;
 					return SelPos;
+
 				case KEY_CTRL9:
 				case KEY_RCTRL9:
 					Opt.ChangeDriveMode^= DRIVE_SHOW_REMOTE;
 					return SelPos;
+
 				case KEY_F9:
 					ConfigureChangeDriveMode();
 					return SelPos;
-				case KEY_SHIFTF1: {
+
+				case KEY_SHIFTF1:
 					if (item && item->pPlugin) {
 						// Вызываем нужный топик, который передали в CommandsMenu()
 						FarShowHelp(item->pPlugin->GetModuleName(), nullptr,
 								FHELP_SELFHELP | FHELP_NOSHOWERROR | FHELP_USECONTENTS);
 					}
-
 					break;
-				}
+
 				case KEY_F3:
 					if (item && item->pPlugin) {
 						CtrlObject->Plugins.ShowPluginInfo(item->pPlugin, item->nItem, item->Guid);
 					}
 					break;
-				case KEY_ALTSHIFTF9:
 
+				case KEY_ALTSHIFTF9:
 					if (Opt.ChangeDriveMode & DRIVE_SHOW_PLUGINS) {
 						ChDisk.Hide();
 						CtrlObject->Plugins.Configure();
 					}
-
 					return SelPos;
-				case KEY_SHIFTF9:
 
+				case KEY_SHIFTF9:
 					if (item && item->pPlugin
 							&& (item->pPlugin->HasConfigure() || item->pPlugin->HasConfigureV3()))
+					{
 						CtrlObject->Plugins.ConfigureCurrent(item->pPlugin, item->nItem, &item->Guid);
-
+					}
 					return SelPos;
+
 				case KEY_CTRLR:
 					return SelPos;
+
 				default:
 					ChDisk.ProcessInput();
 					break;

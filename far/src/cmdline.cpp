@@ -574,7 +574,7 @@ int CommandLine::ProcessKey(FarKey Key)
 		return TRUE;
 
 		case KEY_F11:
-			CtrlObject->Plugins.CommandsMenu(0, 0);
+			CtrlObject->Plugins.CommandsMenu(0);
 			return TRUE;
 
 		case KEY_ALTF11:

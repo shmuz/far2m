@@ -1317,7 +1317,7 @@ void PluginManager::Configure(int StartPos)
 	}
 }
 
-int PluginManager::CommandsMenu(int ModalType, int StartPos, const wchar_t *HistoryName)
+int PluginManager::CommandsMenu(int ModalType, const wchar_t *HistoryName, int StartPos)
 {
 	if (ModalType == MODALTYPE_DIALOG)
 	{
@@ -1438,7 +1438,8 @@ int PluginManager::CommandsMenu(int ModalType, int StartPos, const wchar_t *Hist
 					case KEY_SHIFTF1:
 						// Вызываем нужный топик, который передали в CommandsMenu()
 						if (item)
-							FarShowHelp(item->pPlugin->GetModuleName(),HistoryName,FHELP_SELFHELP|FHELP_NOSHOWERROR|FHELP_USECONTENTS);
+							FarShowHelp(item->pPlugin->GetModuleName(), HistoryName,
+									FHELP_SELFHELP | FHELP_NOSHOWERROR | FHELP_USECONTENTS);
 						break;
 
 					case KEY_F3:

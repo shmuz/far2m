@@ -185,31 +185,31 @@ void Manager::DeleteFrame(Frame *Deleted)
 	}
 }
 
-void Manager::ModalizeFrame(Frame *Modalized)
+void Manager::ModalizeFrame(Frame *aFrame)
 {
-	_FRAMELOG("ModalizeFrame", Modalized);
+	_FRAMELOG("ModalizeFrame", aFrame);
 
 	if (ActivatedFrame) // Issue #26 (the 1-st problem)
 	{
 		ActivateCommit(ActivatedFrame);
 	}
 
-	CurrentFrame->PushFrame(Modalized);
+	CurrentFrame->PushFrame(aFrame);
 }
 
-void Manager::UnmodalizeFrame(Frame *Unmodalized)
+void Manager::UnmodalizeFrame(Frame *aFrame)
 {
-	_FRAMELOG("UnmodalizeFrame", Unmodalized);
+	_FRAMELOG("UnmodalizeFrame", aFrame);
 
-	for (auto iFrame: FrameList)
+	for (auto I: FrameList)
 	{
-		if (iFrame->RemoveModal(Unmodalized))
+		if (I->RemoveModal(aFrame))
 			break;
 	}
 
-	for (auto iFrame: ModalStack)
+	for (auto I: ModalStack)
 	{
-		if (iFrame->RemoveModal(Unmodalized))
+		if (I->RemoveModal(aFrame))
 			break;
 	}
 }
@@ -236,12 +236,12 @@ void Manager::ExecuteNonModal()
 		ProcessMainLoop();
 }
 
-void Manager::ExecuteModal(Frame *Executed)
+void Manager::ExecuteModal(Frame *aFrame)
 {
-	_FRAMELOG("ExecuteModal", Executed);
+	_FRAMELOG("ExecuteModal", aFrame);
 
-	if (Executed)
-		ExecutedFrame = Executed;
+	if (aFrame)
+		ExecutedFrame = aFrame;
 
 	if (!ExecutedFrame)
 		return;
@@ -278,7 +278,7 @@ static FARString FrameMenuNumTextPrefix(int i)
 	FARString out;
 	if (i < 10)
 		out.Format(L"&%d ", i);
-	else if (i - 10 < 'Z' - 'A')
+	else if (i < 36)
 		out.Format(L"&%c ", char(i - 10 + 'A'));
 	else
 		out.Format(L"&  ");
@@ -471,12 +471,12 @@ bool Manager::ShowBackground()
 	return false;
 }
 
-void Manager::ActivateFrame(Frame *Activated)
+void Manager::ActivateFrame(Frame *aFrame)
 {
-	_FRAMELOG("ActivateFrame", Activated);
+	_FRAMELOG("ActivateFrame", aFrame);
 
-	if (!ActivatedFrame && Activated && (InList(Activated) || InStack(Activated)))
-		ActivatedFrame = Activated;
+	if (!ActivatedFrame && aFrame && (InList(aFrame) || InStack(aFrame)))
+		ActivatedFrame = aFrame;
 }
 
 void Manager::ActivateFrame(int Index)
@@ -683,7 +683,6 @@ int Manager::ProcessKey(FarKey Key)
 			switch (CurrentFrame->GetType())
 			{
 				case MODALTYPE_PANELS:
-				{
 					_ALGO(CleverSysLog clv(L"Manager::ProcessKey()"));
 					_ALGO(SysLog(L"Key=%ls", _FARKEY_ToName(Key)));
 
@@ -691,22 +690,21 @@ int Manager::ProcessKey(FarKey Key)
 						return TRUE;
 
 					break;
-				}
+
 				case MODALTYPE_VIEWER:
 					//if(((FileViewer*)CurrentFrame)->ProcessViewerInput(FrameManager->GetLastInputRecord()))
 					//  return TRUE;
 					break;
+
 				case MODALTYPE_EDITOR:
 					//if(((FileEditor*)CurrentFrame)->ProcessEditorInput(FrameManager->GetLastInputRecord()))
 					//  return TRUE;
 					break;
+
 				case MODALTYPE_DIALOG:
 					//((Dialog*)CurrentFrame)->CallDlgProc(DN_KEY,((Dialog*)CurrentFrame)->GetDlgFocusPos(),Key);
 					break;
-				case MODALTYPE_VMENU:
-				case MODALTYPE_HELP:
-				case MODALTYPE_COMBOBOX:
-				case MODALTYPE_FINDFOLDER:
+
 				default:
 					break;
 			}
@@ -717,12 +715,11 @@ int Manager::ProcessKey(FarKey Key)
 		/***   КОТОРЫЕ НЕЛЬЗЯ НАМАКРОСИТЬ    ***/
 		switch (Key)
 		{
-			case KEY_ALT|KEY_NUMPAD0:
+			case KEY_ALT | KEY_NUMPAD0:
 			case KEY_ALTINS:
-			{
 				Grabber::Run();
 				return TRUE;
-			}
+
 			case KEY_CONSOLE_BUFFER_RESIZE:
 				WINPORT(Sleep)(10);
 				ResizeAllFrame();
@@ -788,10 +785,12 @@ int Manager::ProcessKey(FarKey Key)
 				case KEY_CTRLW:
 					ShowProcessList();
 					return TRUE;
+
 				case KEY_F11:
 					PluginsMenu();
 					RefreshFrame();
 					return TRUE;
+
 				case KEY_ALTF9:
 				{
 					WINPORT(Sleep)(10);
@@ -826,6 +825,7 @@ int Manager::ProcessKey(FarKey Key)
 
 					return TRUE;
 				}
+
 				case KEY_F12:
 				{
 					auto CurFrame = GetCurrentFrame();
@@ -899,15 +899,14 @@ int Manager::ProcessKey(FarKey Key)
 
 					break;
 				}
+
 				case KEY_CTRLTAB:
 				case KEY_CTRLSHIFTTAB:
-
 					if (CurrentFrame->GetCanLoseFocus())
 					{
 						DeactivateFrame(CurrentFrame, Key == KEY_CTRLTAB ? 1 : -1);
 						return TRUE;
 					}
-
 					break;
 			}
 		}
@@ -924,14 +923,7 @@ int Manager::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 	// При каптюренной мыши отдаем управление заданному объекту
 //    if (ScreenObject::CaptureMouseObject)
 //      return ScreenObject::CaptureMouseObject->ProcessMouse(MouseEvent);
-	int ret = FALSE;
-
-//    _D(SysLog(1,"Manager::ProcessMouse()"));
-	if (CurrentFrame)
-		ret = CurrentFrame->ProcessMouse(MouseEvent);
-
-//    _D(SysLog(L"Manager::ProcessMouse() ret=%i",ret));
-	return ret;
+	return CurrentFrame ? CurrentFrame->ProcessMouse(MouseEvent) : FALSE;
 }
 
 void Manager::PluginsMenu()
@@ -966,11 +958,7 @@ void Manager::PluginsMenu()
 			}
 		}
 
-		// в редакторе, вьюере или диалоге покажем свою помощь по Shift-F1
-		const wchar_t *Topic = curType == MODALTYPE_EDITOR ? L"Editor" :
-		                       curType == MODALTYPE_VIEWER ? L"Viewer" :
-		                       curType == MODALTYPE_DIALOG ? L"Dialog" : nullptr;
-		CtrlObject->Plugins.CommandsMenu(curType, 0,Topic);
+		CtrlObject->Plugins.CommandsMenu(curType);
 	}
 }
 
@@ -991,38 +979,25 @@ Frame *Manager::GetModal(size_t Index) const
 
 Frame *Manager::GetFrameEx(int Pos) const
 {
-	Frame *fr = nullptr;
-
 	//  Если Pos == -1 то берем текущий фрейм
 	if (Pos == -1) {
-		fr = GetTopModal();
-		if (fr && dynamic_cast<VMenu*>(fr) && !fr->IsVisible())
-			fr = GetCurrentFrame();
+		Frame *topModal = GetTopModal();
+		bool bHiddenMenu = topModal && dynamic_cast<VMenu*>(topModal) && !topModal->IsVisible();
+		return bHiddenMenu ? GetCurrentFrame() : topModal;
 	}
-	else
-		fr = GetFrame(Pos);
-
-	return fr;
+	return GetFrame(Pos);
 }
 
-int Manager::IndexOfStack(Frame *Frame) const
+int Manager::IndexOfStack(Frame *aFrame) const
 {
-	for (int i=0; i < (int)ModalStack.size(); i++)
-	{
-		if (Frame == ModalStack[i])
-			return i;
-	}
-	return -1;
+	auto it = std::find(ModalStack.begin(), ModalStack.end(), aFrame);
+	return it != ModalStack.end() ? std::distance(ModalStack.begin(), it) : -1;
 }
 
-int Manager::IndexOfList(Frame *Frame) const
+int Manager::IndexOfList(Frame *aFrame) const
 {
-	for (int i=0; i < (int)FrameList.size(); i++)
-	{
-		if (Frame == FrameList[i])
-			return i;
-	}
-	return -1;
+	auto it = std::find(FrameList.begin(), FrameList.end(), aFrame);
+	return it != FrameList.end() ? std::distance(FrameList.begin(), it) : -1;
 }
 
 void Manager::Commit(int Count)

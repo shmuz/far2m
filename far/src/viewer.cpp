@@ -1458,7 +1458,7 @@ int Viewer::ProcessKey(FarKey Key)
 			return TRUE;
 		}
 		case KEY_F11: {
-			CtrlObject->Plugins.CommandsMenu(MODALTYPE_VIEWER, 0, L"Viewer");
+			CtrlObject->Plugins.CommandsMenu(MODALTYPE_VIEWER, L"Viewer");
 			Show();
 			return TRUE;
 		}

@@ -202,13 +202,6 @@ BOOL WINAPI FarShowHelpSynched(const wchar_t *ModuleName, const wchar_t *HelpTop
 		strTopic = HelpTopic + ((*HelpTopic == L':') ? 1 : 0);
 	else {
 		if (ModuleName) {
-			// FHELP_SELFHELP=0 - трактовать первый пар-р как Info.ModuleName
-			//                   и показать топик из хелпа вызвавшего плагина
-			/*
-				$ 17.11.2000 SVS
-				А значение FHELP_SELFHELP равно чему? Правильно - 0
-				И фигля здесь удивлятся тому, что функция не работает :-(
-			*/
 			if (Flags == FHELP_SELFHELP || (Flags & (FHELP_CUSTOMFILE | FHELP_CUSTOMPATH))) {
 				strPath = ModuleName;
 
@@ -954,55 +947,58 @@ static HANDLE FarDialogInitSynched(INT_PTR PluginNumber, const GUID *Id, int X1,
 		return hDlg;
 
 	// ФИЧА! нельзя указывать отрицательные X2 и Y2
-	const auto fixCoord = [](int first, int second) { return (first < 0 && second == 0) ? 1 : second; };
-	X2 = fixCoord(X1, X2);
-	Y2 = fixCoord(Y1, Y2);
-	const auto checkCoord = [](int first, int second) { return second >= 0 && ((first < 0) ? (second > 0) : (first <= second)); };
+	const auto checkCoord = [](int first, int second) {
+		if (second < 0) return false;
+		if (first < 0) return (second > 0);
+		return (first <= second);
+	};
+
+	if (X1 < 0 && X2 == 0) X2 = 1;
+	if (Y1 < 0 && Y2 == 0) Y2 = 1;
 	if (!checkCoord(X1, X2) || !checkCoord(Y1, Y2))
 		return hDlg;
 
-	{
-		Dialog *FarDialog = new (std::nothrow) Dialog(Item, ItemsNumber, DlgProc, Param);
+	Dialog *FarDialog = new (std::nothrow) Dialog(Item, ItemsNumber, DlgProc, Param);
 
-		if (!FarDialog)
-			return hDlg;
+	if (!FarDialog)
+		return hDlg;
 
-		hDlg = (HANDLE)FarDialog;
-		FarDialog->SetPosition(X1, Y1, X2, Y2);
+	hDlg = (HANDLE)FarDialog;
+	FarDialog->SetPosition(X1, Y1, X2, Y2);
 
-		if (Flags & FDLG_WARNING)
-			FarDialog->SetDialogMode(DMODE_WARNINGSTYLE);
+	if (Flags & FDLG_WARNING)
+		FarDialog->SetDialogMode(DMODE_WARNINGSTYLE);
 
-		if (Flags & FDLG_SMALLDIALOG)
-			FarDialog->SetDialogMode(DMODE_SMALLDIALOG);
+	if (Flags & FDLG_SMALLDIALOG)
+		FarDialog->SetDialogMode(DMODE_SMALLDIALOG);
 
-		if (Flags & FDLG_NODRAWSHADOW)
-			FarDialog->SetDialogMode(DMODE_NODRAWSHADOW);
+	if (Flags & FDLG_NODRAWSHADOW)
+		FarDialog->SetDialogMode(DMODE_NODRAWSHADOW);
 
-		if (Flags & FDLG_NODRAWPANEL)
-			FarDialog->SetDialogMode(DMODE_NODRAWPANEL);
+	if (Flags & FDLG_NODRAWPANEL)
+		FarDialog->SetDialogMode(DMODE_NODRAWPANEL);
 
-		if (Flags & FDLG_KEEPCONSOLETITLE)
-			FarDialog->SetDialogMode(DMODE_KEEPCONSOLETITLE);
+	if (Flags & FDLG_KEEPCONSOLETITLE)
+		FarDialog->SetDialogMode(DMODE_KEEPCONSOLETITLE);
 
-		if (Flags & FDLG_REGULARIDLE)
-			FarDialog->SetRegularIdle(true);
+	if (Flags & FDLG_REGULARIDLE)
+		FarDialog->SetRegularIdle(true);
 
-		FarDialog->SetHelp(HelpTopic);
-		/* $ 29.08.2000 SVS
-		   Запомним номер плагина - сейчас в основном для формирования HelpTopic
-		*/
-		FarDialog->SetPluginNumber(PluginNumber);
+	FarDialog->SetHelp(HelpTopic);
+	/* $ 29.08.2000 SVS
+	   Запомним номер плагина - сейчас в основном для формирования HelpTopic
+	*/
+	FarDialog->SetPluginNumber(PluginNumber);
 
-		if (Id)
-			FarDialog->SetId(*Id);
+	if (Id)
+		FarDialog->SetId(*Id);
 
-		if (Flags & FDLG_NONMODAL) {
-			FarDialog->SetCanLoseFocus(true);
-			FarDialog->SetDynamicallyBorn(true);
-			FarDialog->Process();
-		}
+	if (Flags & FDLG_NONMODAL) {
+		FarDialog->SetCanLoseFocus(true);
+		FarDialog->SetDynamicallyBorn(true);
+		FarDialog->Process();
 	}
+
 	return hDlg;
 }
 

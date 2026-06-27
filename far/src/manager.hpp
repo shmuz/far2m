@@ -148,9 +148,9 @@ class Manager
 		Frame *GetModal(size_t Index) const;
 		Frame *GetFrameEx(int Pos = -1) const;
 
-		int IndexOfList(Frame *Frame) const;
+		int IndexOfList(Frame *frame) const;
 
-		int IndexOfStack(Frame *Frame) const;
+		int IndexOfStack(Frame *frame) const;
 		bool HaveAnyFrame() const;
 
 		bool InList(Frame *frame) const { return IndexOfList(frame)!=-1; }
@@ -165,12 +165,12 @@ class Manager
 
 		Frame *GetBottomFrame() const { return GetFrame(FramePos); }
 
-		bool ManagerIsDown() const {return EndLoop;}
-		bool ManagerStarted() const {return StartManager;}
+		bool ManagerIsDown() const { return EndLoop; }
+		bool ManagerStarted() const { return StartManager; }
 
 		void InitKeyBar();
 
-		bool InModalEV() const {return ModalEVCount!=0;}
+		bool InModalEV() const { return ModalEVCount != 0; }
 
 		void ResizeAllFrame();
 

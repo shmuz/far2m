@@ -191,7 +191,7 @@ class PluginManager
 
 		void Configure(int StartPos=0);
 		void ConfigureCurrent(Plugin *pPlugin, int INum, const GUID *Guid);
-		int CommandsMenu(int ModalType, int StartPos, const wchar_t *HistoryName=nullptr);
+		int CommandsMenu(int ModalType, const wchar_t *HistoryName = nullptr, int StartPos = 0);
 		bool GetDiskMenuItem(Plugin *pPlugin, int PluginItem, wchar_t& PluginHotkey, FARString &strPluginText, GUID &Guid);
 
 		bool UseFarCommand(PHPTR ph, int CommandType);
