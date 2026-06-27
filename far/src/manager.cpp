@@ -1145,20 +1145,6 @@ void Manager::DeleteCommit(Frame *aFrame)
 	_FRAMELOG("DeleteCommit", aFrame);
 	DeletedFrame = nullptr;
 
-	/* $ 14.05.2002 SKV
-	  Надёжнее найти и удалить именно то, что
-	  нужно, а не просто верхний.
-	*/
-	int Index = IndexOfStack(aFrame);
-	if (Index != -1)
-	{
-		ModalStack.erase(ModalStack.begin()+Index);
-		if (!ModalStack.empty())
-		{
-			ActivateFrame(ModalStack.back());
-		}
-	}
-
 	for (auto iFrame: FrameList)
 	{
 		if (iFrame->FrameToBack == aFrame)
@@ -1167,7 +1153,7 @@ void Manager::DeleteCommit(Frame *aFrame)
 		}
 	}
 
-	Index = IndexOfList(aFrame);
+	int Index = IndexOfList(aFrame);
 	if (Index != -1)
 	{
 		_DUMP_FRAME_LIST();
@@ -1211,12 +1197,22 @@ void Manager::DeleteCommit(Frame *aFrame)
 		delete aFrame;
 	}
 
-	// Полагаемся на то, что в ActivateFrame не будет переписан уже
-	// присвоенный  ActivatedFrame
-	if (!ModalStack.empty())
-		ActivateFrame(ModalStack.back());
-	else
-		ActivateFrame(FramePos);
+	if (Index == -1)
+	{
+		/* $ 14.05.2002 SKV
+			Надёжнее найти и удалить именно то, что
+			нужно, а не просто верхний.
+		*/
+		Index = IndexOfStack(aFrame);
+		if (Index != -1)
+		{
+			ActivateFrame(FramePos);
+			Commit();
+			ModalStack.erase(ModalStack.begin() + Index);
+			if (!ModalStack.empty())
+				ActivateFrame(ModalStack.back());
+		}
+	}
 }
 
 void Manager::InsertCommit(Frame *aFrame)

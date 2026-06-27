@@ -1017,7 +1017,7 @@ static int FarDialogRunSynched(HANDLE hDlg)
 		if (FarDialog->GetCanLoseFocus()) {
 			return -1;
 		}
-		SCOPED_ACTION(LockBottomFrame);    // временно отменим прорисовку фрейма
+		// SCOPED_ACTION(LockBottomFrame);    // временно отменим прорисовку фрейма
 		// CtrlObject->Plugins.Flags.Clear(PSIF_DIALOG);
 		FarDialog->Process();
 		ExitCode = FarDialog->GetExitCode();
