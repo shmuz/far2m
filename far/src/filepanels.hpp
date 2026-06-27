@@ -91,8 +91,8 @@ class FilePanels:public Frame
 		void Update();
 
 		int GetTypeAndName(FARString &strType, FARString &strName) override;
-		int GetType() override { return MODALTYPE_PANELS; }
-		const wchar_t *GetTypeName() override {return L"[FilePanels]";}
+		int GetType() const override { return MODALTYPE_PANELS; }
+		const wchar_t *GetTypeName() const override {return L"[FilePanels]";}
 
 		void OnChangeFocus(bool focus) override;
 

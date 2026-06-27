@@ -109,76 +109,76 @@ class HelpRecord
 
 class Help:public Frame
 {
-	private:
-		ChangeMacroArea Cma;
-		bool  ErrorHelp;            // true - ошибка! Например - нет такого топика
-		SaveScreen *TopScreen;      // область сохранения под хелпом
-		KeyBar      HelpKeyBar;     // кейбар
-		CallBackStack *Stack;       // стек возврата
-		FARString  strFullHelpPathName;
+private:
+	ChangeMacroArea Cma;
+	bool  ErrorHelp;            // true - ошибка! Например - нет такого топика
+	SaveScreen *TopScreen;      // область сохранения под хелпом
+	KeyBar      HelpKeyBar;     // кейбар
+	CallBackStack *Stack;       // стек возврата
+	FARString  strFullHelpPathName;
 
-		StackHelpData StackData;
-		std::vector<HelpRecord> HelpList; // "хелп" в памяти.
+	StackHelpData StackData;
+	std::vector<HelpRecord> HelpList; // "хелп" в памяти.
 
-		int   StrCount;             // количество строк в теме
-		int   FixCount;             // количество строк непрокручиваемой области
-		int   FixSize;              // Размер непрокручиваемой области
-		bool  TopicFound;           // true - топик найден
-		bool  IsNewTopic;           // это новый топик?
-		bool  MouseDown;
+	int   StrCount;             // количество строк в теме
+	int   FixCount;             // количество строк непрокручиваемой области
+	int   FixSize;              // Размер непрокручиваемой области
+	bool  TopicFound;           // true - топик найден
+	bool  IsNewTopic;           // это новый топик?
+	bool  MouseDown;
 
-		FARString strCtrlColorChar;    // CtrlColorChar - опция! для спецсимвола-
-		//   символа - для атрибутов
-		uint64_t CurColor;			// CurColor - текущий цвет отрисовки
-		int   CtrlTabSize;          // CtrlTabSize - опция! размер табуляции
+	FARString strCtrlColorChar;    // CtrlColorChar - опция! для спецсимвола-
+	//   символа - для атрибутов
+	uint64_t CurColor;			// CurColor - текущий цвет отрисовки
+	int   CtrlTabSize;          // CtrlTabSize - опция! размер табуляции
 
-		FARString strCurPluginContents; // помним PluginContents (для отображения в заголовке)
+	FARString strCurPluginContents; // помним PluginContents (для отображения в заголовке)
 
-		DWORD LastStartPos;
-		DWORD StartPos;
+	DWORD LastStartPos;
+	DWORD StartPos;
 
-		FARString strCtrlStartPosChar;
+	FARString strCtrlStartPosChar;
 
-		SearchReplaceDlgParams LastSearch;
-	private:
-		void DisplayObject() override;
-		bool ReadHelp(const wchar_t *Mask=nullptr);
-		void AddLine(const wchar_t *Line);
-		void AddTitle(const wchar_t *Title);
-		void HighlightsCorrection(FARString &strStr);
-		void FastShow();
-		void DrawWindowFrame();
-		void OutString(const wchar_t *Str);
-		int  StringLen(const wchar_t *Str);
-		void CorrectPosition();
-		bool IsReferencePresent();
-		void MoveToReference(int Forward,int CurScreen);
-		void ReadDocumentsHelp(int TypeIndex);
-		void Search(FILE *HelpFile,uintptr_t nCodePage);
-		int  JumpTopic(const wchar_t *JumpTopic=nullptr);
-		const HelpRecord* GetHelpItem(int Pos);
+	SearchReplaceDlgParams LastSearch;
+private:
+	void DisplayObject() override;
+	bool ReadHelp(const wchar_t *Mask=nullptr);
+	void AddLine(const wchar_t *Line);
+	void AddTitle(const wchar_t *Title);
+	void HighlightsCorrection(FARString &strStr);
+	void FastShow();
+	void DrawWindowFrame();
+	void OutString(const wchar_t *Str);
+	int  StringLen(const wchar_t *Str);
+	void CorrectPosition();
+	bool IsReferencePresent();
+	void MoveToReference(int Forward,int CurScreen);
+	void ReadDocumentsHelp(int TypeIndex);
+	void Search(FILE *HelpFile,uintptr_t nCodePage);
+	int  JumpTopic(const wchar_t *JumpTopic=nullptr);
+	const HelpRecord* GetHelpItem(int Pos);
 
-	public:
-		Help(const wchar_t *Topic,const wchar_t *Mask=nullptr,DWORD Flags=0);
-		~Help() override;
+public:
+	Help(const wchar_t *Topic,const wchar_t *Mask=nullptr,DWORD Flags=0);
+	~Help() override;
 
-	public:
-		void Hide() override;
-		int  ProcessKey(FarKey Key) override;
-		int  ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent) override;
-		void InitKeyBar() override;
-		bool GetError() {return ErrorHelp;}
-		void SetScreenPosition() override;
-		void OnChangeFocus(bool focus) override; // вызывается при смене фокуса
-		void ResizeConsole() override;
+public:
+	void Hide() override;
+	int  ProcessKey(FarKey Key) override;
+	int  ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent) override;
+	void InitKeyBar() override;
+	bool GetError() {return ErrorHelp;}
+	void SetScreenPosition() override;
+	void OnChangeFocus(bool focus) override; // вызывается при смене фокуса
+	void ResizeConsole() override;
 
-		int  FastHide() override; // Введена для нужд CtrlAltShift
+	int  FastHide() override; // Введена для нужд CtrlAltShift
 
-		const wchar_t *GetTypeName() override {return L"[Help]";}
-		int GetTypeAndName(FARString &strType, FARString &strName) override;
-		int GetType() override { return MODALTYPE_HELP; }
+	const wchar_t *GetTypeName() const override {return L"[Help]";}
+	int GetTypeAndName(FARString &strType, FARString &strName) override;
+	int GetType() const override { return MODALTYPE_HELP; }
 
-		int64_t VMProcess(int OpCode,void *vParam,int64_t iParam) override;
+	int64_t VMProcess(int OpCode,void *vParam,int64_t iParam) override;
 
-		static FARString &MkTopic(INT_PTR PluginNumber,const wchar_t *HelpTopic,FARString &strTopic);
+	static FARString &MkTopic(INT_PTR PluginNumber,const wchar_t *HelpTopic,FARString &strTopic);
 };

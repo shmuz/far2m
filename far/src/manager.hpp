@@ -43,7 +43,7 @@ class Manager
 	private:
 		std::vector<Frame*> ModalStack; // Стек модальных фреймов
 		std::vector<Frame*> FrameList;  // Очередь немодальных фреймов
-		int  FramePos;           // Индекс текущий немодального фрейма. Он не всегда совпадает с CurrentFrame
+		int FramePos = -1;      // Индекс текущий немодального фрейма. Он не всегда совпадает с CurrentFrame
 		// текущий немодальный фрейм можно получить с помощью GetBottomFrame();
 
 		/*$ Претенденты на ... */
@@ -66,7 +66,7 @@ class Manager
 		  2) не только для editor/viewer'ов.
 		*/
 		int ModalEVCount;
-		int RegularIdleWanters = 0;
+		int RegularIdleWanters;
 		int FolderChangedCount;
 
 		bool EndLoop;            // Признак выхода из цикла
@@ -87,8 +87,8 @@ class Manager
 		void ExecuteCommit(Frame *aFrame);
 
 	public:
-		Manager();
-		~Manager();
+		Manager() = default;
+		~Manager() = default;
 
 	public:
 		// Эти функции можно безопасно вызывать практически из любого места кода
@@ -117,21 +117,14 @@ class Manager
 		void UnmodalizeFrame(Frame *Unmodalized); // Убрать из "очереди" немодального фрейма
 
 		void CloseAll();
-		/* $ 29.12.2000 IS
-		     Аналог CloseAll, но разрешает продолжение полноценной работы в фаре,
-		     если пользователь продолжил редактировать файл.
-		     Возвращает true, если все закрыли и можно выходить из фара.
-		*/
 		bool ExitAll();
 
-		int  GetModalCount() const {return ModalStack.size();}
-		int  GetFrameCount() const {return FrameList.size();}
-		int  GetFrameCountByType(int Type) const;
+		int GetModalCount() const { return ModalStack.size(); }
+		int GetFrameCount() const { return FrameList.size(); }
+		int GetFrameCountByType(int Type) const;
 
 		void Commit(int Count=0);  // завершает транзакцию по изменениям в очереди и стеке фреймов
 		// Она в цикле вызывает себя, пока хотя бы один из указателей отличен от nullptr
-
-		int CountFramesWithName(const wchar_t *Name, bool IgnoreCase=true) const;
 
 		bool IsPanelsActive() const; // используется как признак WaitInMainLoop
 		Frame* FindFrameByFile(int ModalType,const wchar_t *FileName,const wchar_t *Dir=nullptr) const;

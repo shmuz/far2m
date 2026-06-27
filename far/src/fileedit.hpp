@@ -164,8 +164,8 @@ private:
 	void ShowConsoleTitle() override;
 	void OnChangeFocus(bool focus) override;
 	void SetScreenPosition() override;
-	const wchar_t *GetTypeName() override { return L"[FileEdit]"; }
-	int GetType() override { return MODALTYPE_EDITOR; }
+	const wchar_t *GetTypeName() const override { return L"[FileEdit]"; }
+	int GetType() const override { return MODALTYPE_EDITOR; }
 	void OnDestroy() override;
 	bool GetCanLoseFocus(bool DynamicMode = false) override;
 	int FastHide() override;    // для нужд CtrlAltShift

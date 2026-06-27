@@ -97,27 +97,6 @@ void _FRAMELOG(const char* prefix, Frame* frame)
 
 Manager *FrameManager;
 
-Manager::Manager():
-	FramePos(-1),
-	InsertedFrame(nullptr),
-	DeletedFrame(nullptr),
-	ActivatedFrame(nullptr),
-	RefreshedFrame(nullptr),
-	DeactivatedFrame(nullptr),
-	ExecutedFrame(nullptr),
-	CurrentFrame(nullptr),
-	ModalEVCount(0),
-	FolderChangedCount(0),
-	EndLoop(false),
-	StartManager(false)
-{
-}
-
-Manager::~Manager()
-{
-}
-
-
 /* $ 29.12.2000 IS
   Аналог CloseAll, но разрешает продолжение полноценной работы в фаре,
   если пользователь продолжил редактировать файл.
@@ -125,9 +104,9 @@ Manager::~Manager()
 */
 bool Manager::ExitAll()
 {
-	for (int i=(int)ModalStack.size()-1; i >= 0; i--)
+	for (auto i=ModalStack.size(); i > 0; )
 	{
-		Frame *iFrame = ModalStack[i];
+		Frame *iFrame = ModalStack[--i];
 
 		if (!iFrame->GetCanLoseFocus(false))
 		{
@@ -140,9 +119,9 @@ bool Manager::ExitAll()
 		}
 	}
 
-	for (int i=(int)FrameList.size()-1; i >= 0; i--)
+	for (auto i=FrameList.size(); i > 0; )
 	{
-		Frame *iFrame = FrameList[i];
+		Frame *iFrame = FrameList[--i];
 
 		if (!iFrame->GetCanLoseFocus(true))
 		{
@@ -261,7 +240,10 @@ void Manager::ExecuteModal(Frame *Executed)
 {
 	_FRAMELOG("ExecuteModal", Executed);
 
-	if (!(ExecutedFrame = Executed ? Executed : ExecutedFrame))
+	if (Executed)
+		ExecutedFrame = Executed;
+
+	if (!ExecutedFrame)
 		return;
 
 	auto ModalStartLevel = ModalStack.size();
@@ -289,25 +271,6 @@ void Manager::ExecuteModalEV(bool RefreshScreen)
 		ProcessKey(KEY_CONSOLE_BUFFER_RESIZE); //redraw all
 		Commit();
 	}
-}
-
-/* $ 11.10.2001 IS
-   Подсчитать количество фреймов с указанным именем.
-*/
-int Manager::CountFramesWithName(const wchar_t *Name, bool IgnoreCase) const
-{
-	int Counter = 0;
-	auto cmpfunc = IgnoreCase ? StrCmpI : StrCmp;
-	FARString strType, strCurName;
-
-	for (const auto iFrame: FrameList)
-	{
-		iFrame->GetTypeAndName(strType, strCurName);
-
-		if (!cmpfunc(Name, strCurName)) ++Counter;
-	}
-
-	return Counter;
 }
 
 static FARString FrameMenuNumTextPrefix(int i)
@@ -605,16 +568,18 @@ void Manager::SetLastInputRecord(const INPUT_RECORD *Rec)
 
 void Manager::ProcessMainLoop()
 {
-	if (CurrentFrame)
-		CtrlObject->Macro.SetArea(CurrentFrame->GetMacroArea());
-
 	DispatchInterThreadCalls();
 
-	if (CurrentFrame && !CurrentFrame->ProcessEvents())
+	if (!CurrentFrame)
+		return;
+
+	CtrlObject->Macro.SetArea(CurrentFrame->GetMacroArea());
+
+	if (!CurrentFrame->ProcessEvents())
 	{
 		ProcessKey(KEY_IDLE);
 	}
-	else if (CurrentFrame)
+	else
 	{
 		// Mantis#0000073: Не работает автоскролинг в QView
 		WaitInMainLoop = IsPanelsActive() && ((FilePanels*)CurrentFrame)->ActivePanel->GetType() != QVIEW_PANEL;
@@ -704,33 +669,6 @@ void Manager::ExitMainLoop(bool Ask, int ExitCode)
 		}
 	}
 }
-
-#if defined(FAR_ALPHA_VERSION)
-#include <float.h>
-#if defined(_MSC_VER)
-#pragma warning( push )
-#pragma warning( disable : 4717)
-//#ifdef __cplusplus
-//#if defined(_MSC_VER < 1500) // TODO: See REMINDER file, section intrin.h
-#ifndef _M_IA64
-extern "C" void __ud2();
-#else
-extern "C" void __setReg(int, uint64_t);
-#endif
-//#endif                       // TODO: See REMINDER file, section intrin.h
-//#endif
-#endif
-static void Test_EXCEPTION_STACK_OVERFLOW(char* target)
-{
-	char Buffer[1024]; /* чтобы быстрее рвануло */
-	strcpy(Buffer, "zzzz");
-	Test_EXCEPTION_STACK_OVERFLOW(Buffer);
-}
-#if defined(_MSC_VER)
-#pragma warning( pop )
-#endif
-#endif
-
 
 int Manager::ProcessKey(FarKey Key)
 {

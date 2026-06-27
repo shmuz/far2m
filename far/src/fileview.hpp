@@ -86,8 +86,8 @@ public:
 	void OnChangeFocus(bool focus) override;
 
 	int GetTypeAndName(FARString &strType, FARString &strName) override;
-	const wchar_t *GetTypeName() override { return L"[FileView]"; }    ///
-	int GetType() override { return MODALTYPE_VIEWER; }
+	const wchar_t *GetTypeName() const override { return L"[FileView]"; }
+	int GetType() const override { return MODALTYPE_VIEWER; }
 
 	void SetEnableF6(bool Enable)
 	{

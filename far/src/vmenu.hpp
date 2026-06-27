@@ -326,10 +326,9 @@ public:
 	void SortItems(int Direction = 0, int Offset = 0);
 	bool GetVMenuInfo(struct FarListInfo *Info);
 
-	const wchar_t *GetTypeName() override { return L"[VMenu]"; }
+	const wchar_t *GetTypeName() const override { return L"[VMenu]"; }
 	int GetTypeAndName(FARString &strType, FARString &strName) override;
-
-	int GetType() override { return CheckFlags(VMENU_COMBOBOX) ? MODALTYPE_COMBOBOX : MODALTYPE_VMENU; }
+	int GetType() const override { return CheckFlags(VMENU_COMBOBOX) ? MODALTYPE_COMBOBOX : MODALTYPE_VMENU; }
 
 	void SetMaxHeight(int NewMaxHeight);
 

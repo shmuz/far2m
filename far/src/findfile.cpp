@@ -1835,82 +1835,33 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 							}
 							SendDlgMessage(hDlg, DM_ENABLEREDRAW, TRUE);
 							SendDlgMessage(hDlg, DM_SHOWDIALOG, TRUE);
-						} else {
+						}
+						else {
 							SendDlgMessage(hDlg, DM_SHOWDIALOG, FALSE);
 							SendDlgMessage(hDlg, DM_ENABLEREDRAW, FALSE);
 							{
-								/* $ 14.08.2002 VVM
-								  ! Пока-что запретим из поиска переключаться в активный редактор.
-									К сожалению, манагер на это не способен сейчас
-															int FramePos=FrameManager->FindFrameByFile(MODALTYPE_EDITOR,SearchFileName);
-															int SwitchTo=FALSE;
-															if (FramePos!=-1)
-															{
-																if (!(*FrameManager)[FramePos]->GetCanLoseFocus(true) ||
-																	Opt.Confirm.AllowReedit)
-																{
-																	char MsgFullFileName[NM];
-																	far_strncpy(MsgFullFileName,SearchFileName,sizeof(MsgFullFileName));
-																	int MsgCode=Message(0,2,Msg::FindFileTitle,
-																				TruncPathStr(MsgFullFileName,ScrX-16),
-																				Msg::AskReload,
-																				Msg::Current,Msg::NewOpen);
-																	if (!MsgCode)
-																	{
-																		SwitchTo=TRUE;
-																	}
-																	else if (MsgCode==1)
-																	{
-																		SwitchTo=FALSE;
-																	}
-																	else
-																	{
-																		SendDlgMessage(hDlg,DM_ENABLEREDRAW,TRUE);
-																		SendDlgMessage(hDlg,DM_SHOWDIALOG,TRUE);
-																		return TRUE;
-																	}
-																}
-																else
-																{
-																	SwitchTo=TRUE;
-																}
-															}
-															if (SwitchTo)
-															{
-																(*FrameManager)[FramePos]->SetCanLoseFocus(false);
-																(*FrameManager)[FramePos]->SetDynamicallyBorn(false);
-																FrameManager->ActivateFrame(FramePos);
-																FrameManager->ExecuteModalEV ();
-																// FrameManager->ExecuteNonModal();
-																// заставляем рефрешиться экран
-																FrameManager->ProcessKey(KEY_CONSOLE_BUFFER_RESIZE);
-															}
-															else
-								*/
-								{
-									std::shared_ptr<FindDlg_TempFileHolder> TFH;
-									FileEditor ShellEditor(strSearchFileName, CP_AUTODETECT, 0);
-									ShellEditor.SetDynamicallyBorn(false);
-									ShellEditor.SetEnableF6(true);
+								std::shared_ptr<FindDlg_TempFileHolder> TFH;
+								FileEditor ShellEditor(strSearchFileName, CP_AUTODETECT, 0);
+								ShellEditor.SetDynamicallyBorn(false);
+								ShellEditor.SetEnableF6(true);
 
-									// FindFileArcIndex нельзя здесь использовать
-									// Он может быть уже другой.
-									if (FindItem.ArcIndex != LIST_INDEX_NONE) {
-										ARCLIST Item;
-										itd.GetArcListItem(FindItem.ArcIndex, Item);
-										if (0 == (Item.Flags & OPIF_REALNAMES)) { // see https://github.com/elfmz/far2l/issues/2223
-											TFH = std::make_shared<FindDlg_TempFileHolder>(strSearchFileName,
-													FindItem.ArcIndex, FindItem.FindData);
-											ShellEditor.SetFileHolder(TFH);
-										}
+								// FindFileArcIndex нельзя здесь использовать
+								// Он может быть уже другой.
+								if (FindItem.ArcIndex != LIST_INDEX_NONE) {
+									ARCLIST Item;
+									itd.GetArcListItem(FindItem.ArcIndex, Item);
+									if (0 == (Item.Flags & OPIF_REALNAMES)) { // see https://github.com/elfmz/far2l/issues/2223
+										TFH = std::make_shared<FindDlg_TempFileHolder>(strSearchFileName,
+												FindItem.ArcIndex, FindItem.FindData);
+										ShellEditor.SetFileHolder(TFH);
 									}
-									FrameManager->ExecuteModalEV(false);
-									if (TFH) {
-										TFH->CheckForChanges();
-									}
-									// заставляем рефрешиться экран
-									FrameManager->ProcessKey(KEY_CONSOLE_BUFFER_RESIZE);
 								}
+								FrameManager->ExecuteModalEV(false);
+								if (TFH) {
+									TFH->CheckForChanges();
+								}
+								// заставляем рефрешиться экран
+								FrameManager->ProcessKey(KEY_CONSOLE_BUFFER_RESIZE);
 							}
 							SendDlgMessage(hDlg, DM_ENABLEREDRAW, TRUE);
 							SendDlgMessage(hDlg, DM_SHOWDIALOG, TRUE);

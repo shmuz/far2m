@@ -50,34 +50,34 @@ class VMenu;
 
 class HMenu: public Modal
 {
-	private:
-		VMenu *SubMenu;
-		struct HMenuData *Item;
-		int SelectPos;
-		int ItemCount;
-		int VExitCode;
-		int ItemX[16];
-		CriticalSection CS;
+private:
+	VMenu *SubMenu;
+	struct HMenuData *Item;
+	int SelectPos;
+	int ItemCount;
+	int VExitCode;
+	int ItemX[16];
+	CriticalSection CS;
 
-	private:
-		void DisplayObject() override;
-		void ShowMenu();
-		void ProcessSubMenu(struct MenuDataEx *Data,int DataCount,const wchar_t *SubMenuHelp,
-		                    int X,int Y,int &Position);
-		wchar_t GetHighlights(const struct HMenuData *_item);
-		int CheckHighlights(WORD CheckSymbol,int StartPos=0);
+private:
+	void DisplayObject() override;
+	void ShowMenu();
+	void ProcessSubMenu(struct MenuDataEx *Data,int DataCount,const wchar_t *SubMenuHelp,
+	                    int X,int Y,int &Position);
+	wchar_t GetHighlights(const HMenuData *item);
+	int CheckHighlights(WORD CheckSymbol,int StartPos=0);
 
-	public:
-		HMenu(struct HMenuData *Item,int ItemCount);
-		~HMenu() override;
+public:
+	HMenu(struct HMenuData *Item,int ItemCount);
+	~HMenu() override;
 
-	public:
-		int ProcessKey(FarKey Key) override;
-		int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent) override;
-		int64_t VMProcess(int OpCode,void *vParam=nullptr,int64_t iParam=0) override;
+public:
+	int ProcessKey(FarKey Key) override;
+	int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent) override;
+	int64_t VMProcess(int OpCode,void *vParam=nullptr,int64_t iParam=0) override;
 
-		void Process() override;
-		void ResizeConsole() override;
+	void Process() override;
+	void ResizeConsole() override;
 
-		void GetExitCode(int &ExitCode,int &VExitCode);
+	void GetExitCode(int &ExitCode,int &VExitCode);
 };

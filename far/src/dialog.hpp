@@ -433,8 +433,8 @@ public:
 	void CloseDialog();
 
 	int GetTypeAndName(FARString &strType, FARString &strName) override;
-	int GetType() override { return MODALTYPE_DIALOG; }
-	const wchar_t *GetTypeName() override { return L"[Dialog]"; };
+	int GetType() const override { return MODALTYPE_DIALOG; }
+	const wchar_t *GetTypeName() const override { return L"[Dialog]"; };
 
 	/* $ Введена для нужд CtrlAltShift OT */
 	int FastHide() override;

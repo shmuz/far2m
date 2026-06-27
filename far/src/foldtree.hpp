@@ -43,41 +43,40 @@ class SaveScreen;
 
 class FolderTree:public Frame
 {
-	private:
-		ChangeMacroArea Cma;
-		TreeList *Tree;
-		Edit *FindEdit;
+private:
+	ChangeMacroArea Cma;
+	TreeList *Tree;
+	Edit *FindEdit;
 
-		KeyBar TreeKeyBar;     // кейбар
-		int ModalMode;
-		bool IsFullScreen;
-		bool IsStandalone;
+	KeyBar TreeKeyBar;     // кейбар
+	int ModalMode;
+	bool IsFullScreen;
+	bool IsStandalone;
 
-		FARString strNewFolder;
-		FARString strLastName;
+	FARString strNewFolder;
+	FARString strLastName;
 
-	private:
-		void DrawEdit();
-		void DisplayObject() override;
-		void SetCoords();
+private:
+	void DrawEdit();
+	void DisplayObject() override;
+	void SetCoords();
 
-	public:
-		FolderTree(FARString &strResultFolder, int ModalMode, bool IsStandalone, bool IsFullScreen);
-		~FolderTree() override;
+public:
+	FolderTree(FARString &strResultFolder, int ModalMode, bool IsStandalone, bool IsFullScreen);
+	~FolderTree() override;
 
-	public:
-		int ProcessKey(FarKey Key) override;
-		int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent) override;
+public:
+	int ProcessKey(FarKey Key) override;
+	int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent) override;
 
-		void InitKeyBar() override;
-		void OnChangeFocus(bool focus) override; // вызывается при смене фокуса
-		void SetScreenPosition() override;
-		void ResizeConsole() override;
-		/* $ Введена для нужд CtrlAltShift OT */
-		int  FastHide() override;
+	void InitKeyBar() override;
+	void OnChangeFocus(bool focus) override; // вызывается при смене фокуса
+	void SetScreenPosition() override;
+	void ResizeConsole() override;
+	/* $ Введена для нужд CtrlAltShift OT */
+	int  FastHide() override;
 
-		const wchar_t *GetTypeName() override {return L"[FolderTree]";}
-		int GetTypeAndName(FARString &strType, FARString &strName) override;
-		int GetType() override { return MODALTYPE_FINDFOLDER; }
-
+	const wchar_t *GetTypeName() const override {return L"[FolderTree]";}
+	int GetTypeAndName(FARString &strType, FARString &strName) override;
+	int GetType() const override { return MODALTYPE_FINDFOLDER; }
 };

@@ -39,30 +39,30 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 class Modal: public Frame
 {
-	private:
-		FarKey  ReadKey;
-		FarKey  WriteKey;
+private:
+	FarKey  ReadKey;
+	FarKey  WriteKey;
 
-	protected:
-		INPUT_RECORD ReadRec;
-		FARString strHelpTopic;
-		bool EndLoop;
+protected:
+	INPUT_RECORD ReadRec;
+	FARString strHelpTopic;
+	bool EndLoop;
 
-	public:
-		Modal();
-		~Modal() override {}
+public:
+	Modal();
+	~Modal() override {}
 
-	public:
-		bool Done() const;
-		void ClearDone();
-		void SetExitCode(int Code) override;
+public:
+	bool Done() const;
+	void ClearDone();
+	void SetExitCode(int Code) override;
 
-		virtual void Process();
+	virtual void Process();
 
-		virtual FarKey ReadInput(INPUT_RECORD *GetReadRec=nullptr);
-		void WriteInput(FarKey Key);
-		void ProcessInput();
+	virtual FarKey ReadInput(INPUT_RECORD *GetReadRec=nullptr);
+	void WriteInput(FarKey Key);
+	void ProcessInput();
 
-		void SetHelp(const wchar_t *Topic);
-		void ShowHelp();
+	void SetHelp(const wchar_t *Topic);
+	void ShowHelp();
 };
