@@ -155,33 +155,33 @@ void Manager::CloseAll()
 	FramePos = 0;
 }
 
-void Manager::InsertFrame(Frame *Inserted)
+void Manager::InsertFrame(Frame *aFrame)
 {
-	_FRAMELOG("InsertFrame", Inserted);
+	_FRAMELOG("InsertFrame", aFrame);
 
-	InsertedFrame = Inserted;
+	InsertedFrame = aFrame;
 }
 
-void Manager::DeleteFrame(Frame *Deleted)
+void Manager::DeleteFrame(Frame *aFrame)
 {
-	_FRAMELOG("DeleteFrame", Deleted);
+	_FRAMELOG("DeleteFrame", aFrame);
 
-	if (!Deleted)
+	if (!aFrame)
 	{
 		DeletedFrame = CurrentFrame;
 	}
 	else
 	{
-		for (auto iFrame: FrameList)
+		for (auto I: FrameList)
 		{
-			if (iFrame->RemoveModal(Deleted))
+			if (I->RemoveModal(aFrame))
 			{
 				//### it seems we never get here
-				//Log("if (iFrame->RemoveModal(Deleted))");
+				//Log("if (iFrame->RemoveModal(aFrame))");
 				return;
 			}
 		}
-		DeletedFrame = Deleted;
+		DeletedFrame = aFrame;
 	}
 }
 
@@ -216,23 +216,23 @@ void Manager::UnmodalizeFrame(Frame *aFrame)
 
 void Manager::ExecuteNonModal()
 {
-	Frame *NonModal = InsertedFrame ? InsertedFrame : ExecutedFrame ? ExecutedFrame : ActivatedFrame;
-	_FRAMELOG("ExecuteNonModal", NonModal);
+	Frame *iFrame = InsertedFrame ? InsertedFrame : ExecutedFrame ? ExecutedFrame : ActivatedFrame;
+	_FRAMELOG("ExecuteNonModal", iFrame);
 
-	if (!NonModal)
+	if (!iFrame)
 		return;
 
-	if (InList(NonModal))
+	if (InList(iFrame))
 	{
-		ActivateFrame(NonModal);
+		ActivateFrame(iFrame);
 	}
 	else
 	{
 		ExecutedFrame = nullptr;
-		InsertCommit(NonModal);
+		InsertCommit(iFrame);
 	}
 
-	while (Commit(0), CurrentFrame == NonModal && !EndLoop)
+	while (Commit(), CurrentFrame == iFrame && !EndLoop)
 		ProcessMainLoop();
 }
 
@@ -250,9 +250,8 @@ void Manager::ExecuteModal(Frame *aFrame)
 	bool OriginalStartManager = StartManager;
 	StartManager = true;
 
-	while (Commit(0), ModalStack.size() > ModalStartLevel) {
+	while (Commit(), ModalStack.size() > ModalStartLevel)
 		ProcessMainLoop();
-	}
 
 	StartManager = OriginalStartManager;
 }
@@ -314,8 +313,7 @@ public:
 			return;
 		}
 		_vts_base_index = GetItemCount() + 1;
-		MenuItemEx mi;
-		mi.Clear();
+		MenuItemEx mi{};
 		mi.strName = Msg::BackgroundCommands;
 		mi.Flags = LIF_SEPARATOR;
 		AddItem(&mi);
@@ -352,10 +350,7 @@ public:
 */
 Frame *Manager::FrameMenu()
 {
-	/* $ 28.04.2002 KM
-	    Флаг для определения того, что меню переключения
-	    экранов уже активировано.
-	*/
+	// Флаг для определения того, что меню переключения экранов уже активировано.
 	static bool AlreadyShown = false;
 
 	if (AlreadyShown)
@@ -399,7 +394,6 @@ Frame *Manager::FrameMenu()
 		AlreadyShown = true;
 		ExitCode = ModalMenu.Do();
 		AlreadyShown = false;
-//		ExitCode = ModalMenu.Modal::GetExitCode();
 	}
 
 	if (CheckCanLoseFocus) {
@@ -1160,7 +1154,7 @@ void Manager::DeleteCommit(Frame *aFrame)
 
 		aFrame->DestroyAllModal();
 
-		FrameList.erase(FrameList.begin()+Index);
+		FrameList.erase(FrameList.begin() + Index);
 
 		if (FramePos >= (int)FrameList.size())
 		{
