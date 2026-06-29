@@ -8,6 +8,6 @@ SHAREDSYMBOL void WINAPI GetGlobalInfoW(struct GlobalInfo *aInfo)
   aInfo->Version       = Version;
   aInfo->Title         = L"OpenWith";
   aInfo->Description   = L"Provides a context menu to open the currently selected file(s)";
-  aInfo->Author        = L"spnethw, FAR People";
+  aInfo->Author        = L"Ivan <spnethw@gmail.com>";
   aInfo->UseMenuGuids  = 0;
 }
