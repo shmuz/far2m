@@ -1733,8 +1733,10 @@ static int FarViewerSynched(const wchar_t *FileName, const wchar_t *Title, int X
 	bool DisableHistory = (Flags & VF_DISABLEHISTORY) != 0;
 
 	// $ 15.05.2002 SKV - Запретим вызов немодального редактора вьюера из модального.
-	if (FrameManager->InModalEV()) {
-		Flags&= ~VF_NONMODAL;
+	if (Flags & VF_NONMODAL) {
+		Frame *top = FrameManager->GetTopModal();
+		if ((top && !top->GetCanLoseFocus(false)) || FrameManager->InModalEV())
+			Flags &= ~VF_NONMODAL;
 	}
 
 	if (Flags & VF_NONMODAL) {
@@ -1815,8 +1817,10 @@ int FarEditorSynched(const wchar_t *FileName, const wchar_t *Title, int X1, int 
 	  Запретим вызов немодального редактора, если находимся в модальном
 	  редакторе или вьюере.
 	*/
-	if (FrameManager->InModalEV()) {
-		Flags&= ~EF_NONMODAL;
+	if (Flags & EF_NONMODAL) {
+		Frame *top = FrameManager->GetTopModal();
+		if ((top && !top->GetCanLoseFocus(false)) || FrameManager->InModalEV())
+			Flags &= ~EF_NONMODAL;
 	}
 
 	int editorExitCode;
