@@ -2263,7 +2263,8 @@ int FileEditor::EditorControl(int Command, void *Param)
 			return TRUE;
 		}
 		case ECTL_REDRAW: {
-			FileEditor::DisplayObject();
+			FrameManager->RefreshFrame();
+			FrameManager->Commit();
 			ScrBuf.Flush();
 			return TRUE;
 		}
