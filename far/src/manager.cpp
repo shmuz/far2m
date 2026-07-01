@@ -1236,6 +1236,9 @@ void Manager::RefreshCommit(Frame *aFrame)
 
 		aFrame->Refresh();
 
+		if (auto tm = GetTopModal(); tm && tm->IsVisible() && tm != aFrame)
+			tm->Refresh();
+
 		while (aFrame->NextModal)
 			aFrame = aFrame->NextModal;
 
