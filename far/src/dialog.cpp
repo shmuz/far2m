@@ -1863,7 +1863,7 @@ void Dialog::ShowDialog(int ID)
 			Перед прорисовкой каждого элемента посылаем сообщение
 			посредством функции SendDlgMessage - в ней делается все!
 		*/
-		if (!SendDlgMessage((HANDLE)this, DN_DRAWDLGITEM, I, 0))
+		if (!SendDlgMessage(this, DN_DRAWDLGITEM, I, 0))
 			continue;
 
 		int LenText;
@@ -2360,7 +2360,7 @@ void Dialog::ShowDialog(int ID)
 			Убираем вызов плагиновго обработчика.
 		*/
 		// DlgProc(DN_DRAWDIALOGDONE,1,0);
-		DefDlgProc((HANDLE)this, DN_DRAWDIALOGDONE, 1, 0);
+		DefDlgProc(this, DN_DRAWDIALOGDONE, 1, 0);
 	} else
 		DlgProc(DN_DRAWDIALOGDONE, 0, 0);
 }
@@ -2906,7 +2906,7 @@ int Dialog::ProcessKey(FarKey Key)
 				Item[FocusPos]->Selected = 1;
 
 				// сообщение - "Кнокна кликнута"
-				if (SendDlgMessage((HANDLE)this, DN_BTNCLICK, FocusPos, 0))
+				if (SendDlgMessage(this, DN_BTNCLICK, FocusPos, 0))
 					return TRUE;
 
 				if (Item[FocusPos]->Flags & DIF_BTNNOCLOSE)
@@ -2954,7 +2954,7 @@ int Dialog::ProcessKey(FarKey Key)
 				const int CHKState = (Key == KEY_ADD) ? 1 : (Key == KEY_SUBTRACT) ? 0 : 2;
 
 				if (Item[FocusPos]->Selected != CHKState) {
-					if (SendDlgMessage((HANDLE)this, DN_BTNCLICK, FocusPos, CHKState)) {
+					if (SendDlgMessage(this, DN_BTNCLICK, FocusPos, CHKState)) {
 						Item[FocusPos]->Selected = CHKState;
 						ShowDialog();
 					}
@@ -3362,7 +3362,7 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 					int NewListPos = List->GetSelectPos();
 
 					if (NewListPos != Pos
-							&& !SendDlgMessage((HANDLE)this, DN_LISTCHANGE, I, (LONG_PTR)NewListPos)) {
+							&& !SendDlgMessage(this, DN_LISTCHANGE, I, (LONG_PTR)NewListPos)) {
 						List->SetCheck(CheckedListItem, Pos);
 
 						if (DialogMode.Check(DMODE_SHOW) && !(Item[I]->Flags & DIF_HIDDEN))
@@ -3370,7 +3370,7 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 					} else {
 						Pos = NewListPos;
 					}
-				} else if (!SendDlgMessage((HANDLE)this, DN_MOUSECLICK, I, (LONG_PTR)MouseEvent)) {
+				} else if (!SendDlgMessage(this, DN_MOUSECLICK, I, (LONG_PTR)MouseEvent)) {
 #if 1
 					List->ProcessMouse(MouseEvent);
 					int NewListPos = List->GetSelectPos();
@@ -3381,7 +3381,7 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 
 					if (!InScroolBar &&																	// вне скроллбара и
 							NewListPos != Pos &&														// позиция изменилась и
-							!SendDlgMessage((HANDLE)this, DN_LISTCHANGE, I, (LONG_PTR)NewListPos))		// и плагин сказал в морг
+							!SendDlgMessage(this, DN_LISTCHANGE, I, (LONG_PTR)NewListPos))		// и плагин сказал в морг
 					{
 						List->SetCheck(CheckedListItem, Pos);
 
@@ -3399,7 +3399,7 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 
 #else
 
-					if (SendDlgMessage((HANDLE)this, DN_LISTCHANGE, I, (LONG_PTR)Pos)) {
+					if (SendDlgMessage(this, DN_LISTCHANGE, I, (LONG_PTR)Pos)) {
 						if (MsX == X1 + Item[I]->X2 && MsY >= Y1 + Item[I]->Y1 && MsY <= Y1 + Item[I]->Y2)
 							List->ProcessMouse(MouseEvent);		// забыл проверить на клик на скролбар (KM)
 						else
@@ -3412,14 +3412,14 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 				return TRUE;
 			} else {
 				if (!MouseEvent->dwButtonState
-						|| SendDlgMessage((HANDLE)this, DN_MOUSECLICK, I, (LONG_PTR)MouseEvent)) {
+						|| SendDlgMessage(this, DN_MOUSECLICK, I, (LONG_PTR)MouseEvent)) {
 					if ((I == FocusPos && (Item[I]->IFlags.Flags & DLGIIF_LISTREACTIONFOCUS))
 							|| (I != FocusPos && (Item[I]->IFlags.Flags & DLGIIF_LISTREACTIONNOFOCUS))) {
 						List->ProcessMouse(MouseEvent);
 						int NewListPos = List->GetSelectPos();
 
 						if (NewListPos != Pos
-								&& !SendDlgMessage((HANDLE)this, DN_LISTCHANGE, I, (LONG_PTR)NewListPos)) {
+								&& !SendDlgMessage(this, DN_LISTCHANGE, I, (LONG_PTR)NewListPos)) {
 							List->SetCheck(CheckedListItem, Pos);
 
 							if (DialogMode.Check(DMODE_SHOW) && !(Item[I]->Flags & DIF_HIDDEN))
@@ -3808,8 +3808,8 @@ unsigned Dialog::ProcessRadioButton(unsigned CurRB)
 		При изменении состояния каждого элемента посылаем сообщение
 		посредством функции SendDlgMessage - в ней делается все!
 	*/
-	if (!SendDlgMessage((HANDLE)this, DN_BTNCLICK, PrevRB, 0)
-			|| !SendDlgMessage((HANDLE)this, DN_BTNCLICK, CurRB, 1)) {
+	if (!SendDlgMessage(this, DN_BTNCLICK, PrevRB, 0)
+			|| !SendDlgMessage(this, DN_BTNCLICK, CurRB, 1)) {
 		// вернем назад, если пользователь не захотел...
 		Item[CurRB]->Selected = 0;
 		Item[PrevRB]->Selected = 1;
@@ -4023,7 +4023,7 @@ bool Dialog::Do_ProcessSpace()
 
 		OldFocusPos = FocusPos;
 
-		if (!SendDlgMessage((HANDLE)this, DN_BTNCLICK, FocusPos, Item[FocusPos]->Selected))
+		if (!SendDlgMessage(this, DN_BTNCLICK, FocusPos, Item[FocusPos]->Selected))
 			Item[OldFocusPos]->Selected = OldSelected;
 
 		ShowDialog();
@@ -4776,15 +4776,13 @@ LONG_PTR WINAPI DefDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 
 	FarDialogEvent de = {hDlg, Msg, Param1, Param2, 0};
 
-	if (!reinterpret_cast<Dialog *>(hDlg)->CheckDialogMode(DMODE_NOPLUGINS)) {
+	Dialog *Dlg = reinterpret_cast<Dialog*>(hDlg);
+	if (!Dlg->CheckDialogMode(DMODE_NOPLUGINS)) {
 		if (CtrlObject->Plugins.ProcessDialogEvent(DE_DEFDLGPROCINIT, &de)) {
 			return de.Result;
 		}
 	}
-	Dialog *Dlg = (Dialog *)hDlg;
 	CriticalSectionLock Lock(Dlg->CS);
-	DialogItemEx *CurItem = nullptr;
-	int Type = 0;
 
 	switch (Msg) {
 		case DN_INITDIALOG:
@@ -4833,8 +4831,7 @@ LONG_PTR WINAPI DefDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 	if (Param1 < 0 || (unsigned)Param1 >= Dlg->ItemCount || !Dlg->Item)
 		return 0;
 
-	CurItem = Dlg->Item[Param1];
-	Type = CurItem->Type;
+	DialogItemEx *CurItem = Dlg->Item[Param1];
 
 	switch (Msg) {
 		case DN_MOUSECLICK:
@@ -4842,14 +4839,16 @@ LONG_PTR WINAPI DefDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 		case DM_GETSELECTION:	// Msg=DM_GETSELECTION, Param1=ID, Param2=*EditorSelect
 		case DM_SETSELECTION:
 			return FALSE;
+
 		case DN_DRAWDLGITEM:
 		case DN_HOTKEY:
 		case DN_EDITCHANGE:
 		case DN_LISTCHANGE:
 		case DN_MOUSEEVENT:
 			return TRUE;
+
 		case DN_BTNCLICK:
-			return (Type == DI_BUTTON && !(CurItem->Flags & DIF_BTNNOCLOSE)) ? FALSE : TRUE;
+			return CurItem->Type != DI_BUTTON || (CurItem->Flags & DIF_BTNNOCLOSE);
 	}
 
 	return 0;
