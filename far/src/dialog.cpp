@@ -4738,28 +4738,6 @@ void Dialog::ResizeConsole()
 	}
 };
 
-// void Dialog::OnDestroy()
-//{
-//	/*
-//	$ 21.04.2002 KM
-//	Эта функция потеряла своё значение при текущем менеджере
-//	и системе создания и уничтожения фреймов.
-//	*/
-//	if(DialogMode.Check(DMODE_RESIZED))
-//	{
-//		Frame *BFrame=FrameManager->GetBottomFrame();
-//		if(BFrame)
-//			BFrame->UnlockRefresh();
-//		/*
-//			$ 21.04.2002 KM
-//			А вот этот DM_KILLSAVESCREEN здесь только вредит. Удаление
-//			диалога происходит без восстановления ShadowSaveScr и вот
-//			они: "артефакты" непрорисовки.
-//		*/
-//		SendDlgMessage((HANDLE)this,DM_KILLSAVESCREEN,0,0);
-//	}
-// };
-
 LONG_PTR WINAPI Dialog::DlgProc(int Msg, int Param1, LONG_PTR Param2)
 {
 	if (DialogMode.Check(DMODE_ENDLOOP))
