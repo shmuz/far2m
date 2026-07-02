@@ -2258,7 +2258,9 @@ LONG_PTR WINAPI ViewerSearchDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR P
 			break;
 		}
 		case DN_CLOSE: {
-			if (Param1 >= 0) {
+			if (Param1 >= 0
+					&& Param1 + 1U != reinterpret_cast<Dialog*>(hDlg)->GetAllItemCount()) // button Cancel is the last element
+			{
 				int Pos = SendDlgMessage(hDlg, DM_SHOWITEM, SD_EDIT_TEXT, -1) ? SD_EDIT_TEXT : SD_EDIT_HEX;
 				const wchar_t *Txt = (const wchar_t*)SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR, Pos);
 				bool IsEmpty = (Pos == SD_EDIT_TEXT) ? *Txt == 0 : !IsHexDigit(*Txt);

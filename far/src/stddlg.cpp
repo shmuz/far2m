@@ -49,7 +49,8 @@ static int PosCheckBoxRegexp;
 
 static LONG_PTR WINAPI SearchReplaceDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 {
-	if (Msg == DN_CLOSE && Param1 >= 0)
+	if (Msg == DN_CLOSE && Param1 >= 0
+			&& Param1 + 1U != reinterpret_cast<Dialog*>(hDlg)->GetAllItemCount()) // button Cancel is the last element
 	{
 		const wchar_t *Txt = (const wchar_t*)SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR, PosSearchText);
 		if (*Txt == 0)
