@@ -450,7 +450,7 @@ public:
 			FarDialogItemFlags UncheckedSkip, FarDialogItemFlags CheckedSet, FarDialogItemFlags CheckedSkip,
 			FarDialogItemFlags Checked3Set = DIF_NONE, FarDialogItemFlags Checked3Skip = DIF_NONE);
 
-	LONG_PTR WINAPI DlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2);
+	LONG_PTR WINAPI DlgProc(int Msg, int Param1, LONG_PTR Param2);
 
 	void SetPosition(int X1, int Y1, int X2, int Y2) override;
 
