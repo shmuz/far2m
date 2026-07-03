@@ -359,7 +359,7 @@ private:
 		и получения статуса открытости/закрытости комбобокса и хистори.
 	*/
 	void SetDropDownOpened(bool Status) { DropDownOpened = Status; }
-	bool GetDropDownOpened() { return DropDownOpened; }
+	bool GetDropDownOpened() const { return DropDownOpened; }
 
 	void ProcessCenterGroup();
 	unsigned ProcessRadioButton(unsigned);
@@ -397,28 +397,37 @@ public:
 	~Dialog() override;
 
 public:
-	LONG_PTR DefDlgProc(int Msg, int Param1, LONG_PTR Param2);
-	LONG_PTR SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2);
+	int FastHide() override;
+	int GetType() const override { return MODALTYPE_DIALOG; }
+	const wchar_t *GetTypeName() const override { return L"[Dialog]"; };
+	int GetTypeAndName(FARString &strType, FARString &strName) override;
+	void Hide() override;
+	void OnChangeFocus(bool focus) override;
+	bool ProcessEvents() const override;
 	int ProcessKey(FarKey Key) override;
 	int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent) override;
-	int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0) override;
+	void ResizeConsole() override;
+	void SetExitCode(int Code) override;
+	void SetPosition(int X1, int Y1, int X2, int Y2) override;
 	void Show() override;
-	void Hide() override;
+	int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0) override;
+
+	LONG_PTR DlgProc(int Msg, int Param1, LONG_PTR Param2);
+	LONG_PTR DefDlgProc(int Msg, int Param1, LONG_PTR Param2);
+	LONG_PTR SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2);
+	LONG_PTR SendDlgMessage(int Msg, int Param1, LONG_PTR Param2);
+
+	bool CheckDialogMode(DWORD flags) const { return DialogMode.Check(flags); }
 	void FastShow() { ShowDialog(); }
-
 	void GetDialogObjectsData();
-
 	void SetDialogMode(DWORD flags) { DialogMode.Set(flags); }
-	bool CheckDialogMode(DWORD flags) { return DialogMode.Check(flags); }
 
-	// метод для перемещения диалога
 	void AdjustEditPos(int dx, int dy);
-
-	bool IsMoving() { return DialogMode.Check(DMODE_DRAGGED); }
+	bool IsMoving() const { return DialogMode.Check(DMODE_DRAGGED); }
 	void SetModeMoving(bool IsMoving) { DialogMode.Change(DMODE_ISCANMOVE, IsMoving); }
-	bool GetModeMoving() { return DialogMode.Check(DMODE_ISCANMOVE); }
+	bool GetModeMoving() const { return DialogMode.Check(DMODE_ISCANMOVE); }
 	void SetDialogData(LONG_PTR NewDataDialog);
-	LONG_PTR GetDialogData() { return DataDialog; };
+	LONG_PTR GetDialogData() const { return DataDialog; };
 
 	void InitDialog();
 	void Process();
@@ -426,38 +435,20 @@ public:
 
 	void SetHelp(const wchar_t *Topic);
 	void ShowHelp();
-	int Done() { return DialogMode.Check(DMODE_ENDLOOP); }
+	int Done() const { return DialogMode.Check(DMODE_ENDLOOP); }
 	void ClearDone();
-	void SetExitCode(int Code) override;
-	void OnChangeFocus(bool focus) override;
-
 	void CloseDialog();
-
-	int GetTypeAndName(FARString &strType, FARString &strName) override;
-	int GetType() const override { return MODALTYPE_DIALOG; }
-	const wchar_t *GetTypeName() const override { return L"[Dialog]"; };
-
-	/* $ Введена для нужд CtrlAltShift OT */
-	int FastHide() override;
-	void ResizeConsole() override;
-	//		void OnDestroy() override;
 
 	// For MACRO
 	const DialogItemEx **GetAllItem() { return (const DialogItemEx **)Item; };
-	unsigned GetAllItemCount() { return ItemCount; };	// количество элементов диалога
-	unsigned GetDlgFocusPos() { return FocusPos; };
+	unsigned GetAllItemCount() const { return ItemCount; };	// количество элементов диалога
+	unsigned GetDlgFocusPos() const { return FocusPos; };
 
 	int SetAutomation(WORD IDParent, WORD id, FarDialogItemFlags UncheckedSet,
 			FarDialogItemFlags UncheckedSkip, FarDialogItemFlags CheckedSet, FarDialogItemFlags CheckedSkip,
 			FarDialogItemFlags Checked3Set = DIF_NONE, FarDialogItemFlags Checked3Skip = DIF_NONE);
 
-	LONG_PTR DlgProc(int Msg, int Param1, LONG_PTR Param2);
-
-	void SetPosition(int X1, int Y1, int X2, int Y2) override;
-
 	bool IsInited();
-	bool ProcessEvents() override;
-
 	void SetId(const GUID &Id);
 	bool IsRedrawEnabled() const { return IsEnableRedraw > 0; }
 	Editor* GetMemoEdit(int Pos = -1) const;

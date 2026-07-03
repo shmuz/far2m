@@ -1068,7 +1068,7 @@ void Dialog::ProcessLastHistory(DialogItemEx *CurItem, int MsgIndex)
 			FarDialogItemData IData;
 			IData.PtrData = const_cast<wchar_t *>(strData.CPtr());
 			IData.PtrLength = (int)strData.GetLength();
-			SendDlgMessage(this, DM_SETTEXT, MsgIndex, (LONG_PTR)&IData);
+			SendDlgMessage(DM_SETTEXT, MsgIndex, (LONG_PTR)&IData);
 		}
 	}
 }
@@ -1826,7 +1826,7 @@ void Dialog::ShowDialog(int ID)
 			Перед прорисовкой каждого элемента посылаем сообщение
 			посредством функции SendDlgMessage - в ней делается все!
 		*/
-		if (!SendDlgMessage(this, DN_DRAWDLGITEM, I, 0))
+		if (!SendDlgMessage(DN_DRAWDLGITEM, I, 0))
 			continue;
 
 		int LenText;
@@ -1846,18 +1846,10 @@ void Dialog::ShowDialog(int ID)
 
 		CtlColorDlgItem(I, CurItem, ItemColor);
 
-		for (size_t g = 0; g < DLG_ITEM_MAX_CUST_COLORS; g++)
+		for (size_t g = 0; g < DLG_ITEM_MAX_CUST_COLORS; g++) {
 			if (CurItem->customItemColor[g])
 				ItemColor[g] = CurItem->customItemColor[g];
-
-#if 0
-
-		// TODO: прежде чем эту строку применять... нужно проверить _ВСЕ_ диалоги на предмет X2, Y2. !!!
-		if (((CX1 > -1) && (CX2 > 0) && (CX2 > CX1)) &&
-				((CY1 > -1) && (CY2 > 0) && (CY2 > CY1)))
-			SetScreen(X1+CX1, Y1+CY1, X1+CX2, Y1+CY2, ' ', Attr&0xFF);
-
-#endif
+		}
 
 		switch (CurItem->Type) {
 				/* ***************************************************************** */
@@ -2664,7 +2656,7 @@ int Dialog::ProcessKey(FarKey Key)
 	}
 
 	if (Key == KEY_KILLFOCUS || Key == KEY_GOTFOCUS) {
-		DlgProc(DN_ACTIVATEAPP, Key == KEY_KILLFOCUS ? FALSE : TRUE, 0);
+		DlgProc(DN_ACTIVATEAPP, Key == KEY_GOTFOCUS, 0);
 		return FALSE;
 	}
 
@@ -2869,7 +2861,7 @@ int Dialog::ProcessKey(FarKey Key)
 				Item[FocusPos]->Selected = 1;
 
 				// сообщение - "Кнокна кликнута"
-				if (SendDlgMessage(this, DN_BTNCLICK, FocusPos, 0))
+				if (SendDlgMessage(DN_BTNCLICK, FocusPos, 0))
 					return TRUE;
 
 				if (Item[FocusPos]->Flags & DIF_BTNNOCLOSE)
@@ -2917,7 +2909,7 @@ int Dialog::ProcessKey(FarKey Key)
 				const int CHKState = (Key == KEY_ADD) ? 1 : (Key == KEY_SUBTRACT) ? 0 : 2;
 
 				if (Item[FocusPos]->Selected != CHKState) {
-					if (SendDlgMessage(this, DN_BTNCLICK, FocusPos, CHKState)) {
+					if (SendDlgMessage(DN_BTNCLICK, FocusPos, CHKState)) {
 						Item[FocusPos]->Selected = CHKState;
 						ShowDialog();
 					}
@@ -3306,12 +3298,13 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 		Type = Item[I]->Type;
 
 		if (Type == DI_LISTBOX && MsY >= Y1 + Item[I]->Y1 && MsY <= Y1 + Item[I]->Y2
-				&& MsX >= X1 + Item[I]->X1 && MsX <= X1 + Item[I]->X2) {
+				&& MsX >= X1 + Item[I]->X1 && MsX <= X1 + Item[I]->X2)
+		{
 			VMenu *List = Item[I]->ListPtr;
 			int Pos = List->GetSelectPos();
 			auto CheckedListItem = List->GetCheck(-1);
 
-			if ((MouseEvent->dwButtonState & FROM_LEFT_1ST_BUTTON_PRESSED)) {
+			if (MouseEvent->dwButtonState & FROM_LEFT_1ST_BUTTON_PRESSED) {
 				if (FocusPos != I) {
 					ChangeFocus2(I);
 					ShowDialog();
@@ -3325,7 +3318,7 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 					int NewListPos = List->GetSelectPos();
 
 					if (NewListPos != Pos
-							&& !SendDlgMessage(this, DN_LISTCHANGE, I, (LONG_PTR)NewListPos)) {
+							&& !SendDlgMessage(DN_LISTCHANGE, I, (LONG_PTR)NewListPos)) {
 						List->SetCheck(CheckedListItem, Pos);
 
 						if (DialogMode.Check(DMODE_SHOW) && !(Item[I]->Flags & DIF_HIDDEN))
@@ -3333,8 +3326,8 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 					} else {
 						Pos = NewListPos;
 					}
-				} else if (!SendDlgMessage(this, DN_MOUSECLICK, I, (LONG_PTR)MouseEvent)) {
-#if 1
+				}
+				else if (!SendDlgMessage(DN_MOUSECLICK, I, (LONG_PTR)MouseEvent)) {
 					List->ProcessMouse(MouseEvent);
 					int NewListPos = List->GetSelectPos();
 					int InScroolBar =
@@ -3344,7 +3337,7 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 
 					if (!InScroolBar &&																	// вне скроллбара и
 							NewListPos != Pos &&														// позиция изменилась и
-							!SendDlgMessage(this, DN_LISTCHANGE, I, (LONG_PTR)NewListPos))		// и плагин сказал в морг
+							!SendDlgMessage(DN_LISTCHANGE, I, (LONG_PTR)NewListPos))		// и плагин сказал в морг
 					{
 						List->SetCheck(CheckedListItem, Pos);
 
@@ -3359,30 +3352,20 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 							return TRUE;
 						}
 					}
-
-#else
-
-					if (SendDlgMessage(this, DN_LISTCHANGE, I, (LONG_PTR)Pos)) {
-						if (MsX == X1 + Item[I]->X2 && MsY >= Y1 + Item[I]->Y1 && MsY <= Y1 + Item[I]->Y2)
-							List->ProcessMouse(MouseEvent);		// забыл проверить на клик на скролбар (KM)
-						else
-							ProcessKey(KEY_ENTER, I);
-					}
-
-#endif
 				}
 
 				return TRUE;
-			} else {
+			}
+			else {
 				if (!MouseEvent->dwButtonState
-						|| SendDlgMessage(this, DN_MOUSECLICK, I, (LONG_PTR)MouseEvent)) {
+						|| SendDlgMessage(DN_MOUSECLICK, I, (LONG_PTR)MouseEvent)) {
 					if ((I == FocusPos && (Item[I]->IFlags.Flags & DLGIIF_LISTREACTIONFOCUS))
 							|| (I != FocusPos && (Item[I]->IFlags.Flags & DLGIIF_LISTREACTIONNOFOCUS))) {
 						List->ProcessMouse(MouseEvent);
 						int NewListPos = List->GetSelectPos();
 
 						if (NewListPos != Pos
-								&& !SendDlgMessage(this, DN_LISTCHANGE, I, (LONG_PTR)NewListPos)) {
+								&& !SendDlgMessage(DN_LISTCHANGE, I, (LONG_PTR)NewListPos)) {
 							List->SetCheck(CheckedListItem, Pos);
 
 							if (DialogMode.Check(DMODE_SHOW) && !(Item[I]->Flags & DIF_HIDDEN))
@@ -3506,7 +3489,7 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 			}
 		}
 
-		if ((MouseEvent->dwButtonState & FROM_LEFT_1ST_BUTTON_PRESSED)) {
+		if (MouseEvent->dwButtonState & FROM_LEFT_1ST_BUTTON_PRESSED) {
 			// for (I=0;I<ItemCount;I++)
 
 			for (I = ItemCount - 1; I != (unsigned)-1; I--) {
@@ -3771,8 +3754,7 @@ unsigned Dialog::ProcessRadioButton(unsigned CurRB)
 		При изменении состояния каждого элемента посылаем сообщение
 		посредством функции SendDlgMessage - в ней делается все!
 	*/
-	if (!SendDlgMessage(this, DN_BTNCLICK, PrevRB, 0)
-			|| !SendDlgMessage(this, DN_BTNCLICK, CurRB, 1)) {
+	if (!SendDlgMessage(DN_BTNCLICK, PrevRB, 0) || !SendDlgMessage(DN_BTNCLICK, CurRB, 1)) {
 		// вернем назад, если пользователь не захотел...
 		Item[CurRB]->Selected = 0;
 		Item[PrevRB]->Selected = 1;
@@ -3986,7 +3968,7 @@ bool Dialog::Do_ProcessSpace()
 
 		OldFocusPos = FocusPos;
 
-		if (!SendDlgMessage(this, DN_BTNCLICK, FocusPos, Item[FocusPos]->Selected))
+		if (!SendDlgMessage(DN_BTNCLICK, FocusPos, Item[FocusPos]->Selected))
 			Item[OldFocusPos]->Selected = OldSelected;
 
 		ShowDialog();
@@ -4687,7 +4669,7 @@ void Dialog::ResizeConsole()
 	}
 
 	COORD c = {(SHORT)(ScrX + 1), (SHORT)(ScrY + 1)};
-	SendDlgMessage(reinterpret_cast<HANDLE>(this), DN_RESIZECONSOLE, 0, reinterpret_cast<LONG_PTR>(&c));
+	SendDlgMessage(DN_RESIZECONSOLE, 0, reinterpret_cast<LONG_PTR>(&c));
 
 	int x1, y1, x2, y2;
 	GetPosition(x1, y1, x2, y2);
@@ -4696,7 +4678,7 @@ void Dialog::ResizeConsole()
 	if (c.X != x1 || c.Y != y1) {
 		c.X = x1;
 		c.Y = y1;
-		SendDlgMessage(reinterpret_cast<HANDLE>(this), DM_MOVEDIALOG, TRUE, reinterpret_cast<LONG_PTR>(&c));
+		SendDlgMessage(DM_MOVEDIALOG, TRUE, reinterpret_cast<LONG_PTR>(&c));
 		Dialog::SetComboBoxPos();
 	}
 };
@@ -4828,7 +4810,12 @@ LONG_PTR Dialog::CallDlgProc(int nMsg, int nParam1, LONG_PTR nParam2)
 	return DlgProc(nMsg, nParam1, nParam2);
 }
 
-//////////////////////////////////////////////////////////////////////////
+/*
+	$ 28.07.2000 SVS
+	Посылка сообщения диалогу
+	Некоторые сообщения эта функция обрабатывает сама, не передавая управление
+	обработчику диалога.
+*/
 LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 {
 	SCOPED_ACTION(CriticalSectionLock)(CS);
@@ -5058,7 +5045,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 		/*****************************************************************/
 		case DM_SETMOUSEEVENTNOTIFY:	// Param1 = 1 on, 0 off, -1 - get
 		{
-			int State = DialogMode.Check(DMODE_MOUSEEVENT) ? TRUE : FALSE;
+			int State = DialogMode.Check(DMODE_MOUSEEVENT);
 
 			if (Param1 != -1) {
 				if (!Param1)
@@ -5148,26 +5135,26 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 
 	switch (Msg) {
 			/*****************************************************************/
-		case DM_LISTSORT:				// Param1=ID Param=Direct {0|1}
-		case DM_LISTADD:				// Param1=ID Param2=FarList: ItemsNumber=Count, Items=Src
-		case DM_LISTADDSTR:				// Param1=ID Param2=String
-		case DM_LISTDELETE:				// Param1=ID Param2=FarListDelete: StartIndex=BeginIndex, Count=количество (<=0 - все!)
-		case DM_LISTGETITEM:			// Param1=ID Param2=FarListGetItem: ItemsNumber=Index, Items=Dest
-		case DM_LISTSET:				// Param1=ID Param2=FarList: ItemsNumber=Count, Items=Src
-		case DM_LISTGETCURPOS:			// Param1=ID Param2=FarListPos
-		case DM_LISTSETCURPOS:			// Param1=ID Param2=FarListPos Ret: RealPos
-		case DM_LISTUPDATE:				// Param1=ID Param2=FarList: ItemsNumber=Index, Items=Src
-		case DM_LISTINFO:				// Param1=ID Param2=FarListInfo
-		case DM_LISTFINDSTRING:			// Param1=ID Param2=FarListFind
-		case DM_LISTINSERT:				// Param1=ID Param2=FarListInsert
-		case DM_LISTGETDATA:			// Param1=ID Param2=Index
-		case DM_LISTSETDATA:			// Param1=ID Param2=FarListItemData
-		case DM_LISTSETTITLES:			// Param1=ID Param2=FarListTitles: TitleLen=strlen(Title), BottomLen=strlen(Bottom)
-		case DM_LISTGETTITLES:			// Param1=ID Param2=FarListTitles: TitleLen=strlen(Title), BottomLen=strlen(Bottom)
-		case DM_LISTGETDATASIZE:		// Param1=ID Param2=Index
-		case DM_LISTSETMOUSEREACTION:	// Param1=ID Param2=FARLISTMOUSEREACTIONTYPE Ret=OldSets
-		case DM_SETCOMBOBOXEVENT:		// Param1=ID Param2=FARCOMBOBOXEVENTTYPE Ret=OldSets
-		case DM_GETCOMBOBOXEVENT:		// Param1=ID Param2=0 Ret=Sets
+		case DM_LISTADD:
+		case DM_LISTADDSTR:
+		case DM_LISTDELETE:
+		case DM_LISTFINDSTRING:
+		case DM_LISTGETCURPOS:
+		case DM_LISTGETDATA:
+		case DM_LISTGETDATASIZE:
+		case DM_LISTGETITEM:
+		case DM_LISTGETTITLES:
+		case DM_LISTINFO:
+		case DM_LISTINSERT:
+		case DM_LISTSET:
+		case DM_LISTSETCURPOS:
+		case DM_LISTSETDATA:
+		case DM_LISTSETMOUSEREACTION:
+		case DM_LISTSETTITLES:
+		case DM_LISTSORT:
+		case DM_LISTUPDATE:
+		case DM_GETCOMBOBOXEVENT:
+		case DM_SETCOMBOBOXEVENT:
 		{
 			if (Type == DI_LISTBOX || Type == DI_COMBOBOX) {
 				VMenu *ListBox = CurItem->ListPtr;
@@ -5606,8 +5593,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 				int CCX = CurItem->UCData->CursorPos.X;
 				int CCY = CurItem->UCData->CursorPos.Y;
 
-				if (DialogMode.Check(DMODE_SHOW) && FocusPos == (unsigned)Param1 && CCX != -1
-						&& CCY != -1)
+				if (DialogMode.Check(DMODE_SHOW) && FocusPos == (unsigned)Param1 && CCX != -1 && CCY != -1)
 					SetCursorType(CurItem->UCData->CursorVisible, CurItem->UCData->CursorSize);
 			}
 
@@ -5647,7 +5633,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 
 			if (Ret && (CurItem->Flags & DIF_AUTOMATION) && CurItem->AutoCount && CurItem->AutoPtr) {
 				DialogItemAutomation *Auto = CurItem->AutoPtr;
-				Param2%= 3;
+				Param2 %= 3;
 
 				for (UINT I = 0; I < CurItem->AutoCount; ++I, ++Auto) {
 					DWORD NewFlags = Item[Auto->ID]->Flags;
@@ -5691,9 +5677,9 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 					Param2 = ++Selected;
 
 				if (CurItem->Flags & DIF_3STATE)
-					Param2%= 3;
+					Param2 %= 3;
 				else
-					Param2&= 1;
+					Param2 &= 1;
 
 				CurItem->Selected = (int)Param2;
 
@@ -5701,7 +5687,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 					// автоматизация
 					if ((CurItem->Flags & DIF_AUTOMATION) && CurItem->AutoCount && CurItem->AutoPtr) {
 						DialogItemAutomation *Auto = CurItem->AutoPtr;
-						Param2%= 3;
+						Param2 %= 3;
 
 						for (UINT I = 0; I < CurItem->AutoCount; ++I, ++Auto) {
 							DWORD NewFlags = Item[Auto->ID]->Flags;
@@ -5780,7 +5766,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 
 			if (Param2) {
 				FarDialogItemData IData = {0, (wchar_t *)Param2};
-				return SendDlgMessage(this, DM_GETTEXT, Param1, (LONG_PTR)&IData);
+				return SendDlgMessage(DM_GETTEXT, Param1, (LONG_PTR)&IData);
 			}
 			[[fallthrough]];
 
@@ -5927,7 +5913,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 				return 0;
 
 			FarDialogItemData IData = {(size_t)StrLength((wchar_t *)Param2), (wchar_t *)Param2};
-			return SendDlgMessage(this, DM_SETTEXT, Param1, (LONG_PTR)&IData);
+			return SendDlgMessage(DM_SETTEXT, Param1, (LONG_PTR)&IData);
 		}
 
 		case DM_SETTEXTPTRSILENT: {
@@ -5939,7 +5925,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 
 			reinterpret_cast<DlgEdit *>(CurItem->ObjPtr)->SetCallbackState(false);
 			FarDialogItemData IData = {(size_t)StrLength((wchar_t *)Param2), (wchar_t *)Param2};
-			intptr_t rv = SendDlgMessage(this, DM_SETTEXT, Param1, (LONG_PTR)&IData);
+			intptr_t rv = SendDlgMessage(DM_SETTEXT, Param1, (LONG_PTR)&IData);
 			reinterpret_cast<DlgEdit *>(CurItem->ObjPtr)->SetCallbackState(true);
 
 			return rv;
@@ -6044,7 +6030,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 							if (ListMenuItem) {
 								LUpdate.Item.Flags = ListMenuItem->Flags;
 								LUpdate.Item.Text = Ptr;
-								SendDlgMessage(this, DM_LISTUPDATE, Param1, (LONG_PTR)&LUpdate);
+								SendDlgMessage(DM_LISTUPDATE, Param1, (LONG_PTR)&LUpdate);
 							}
 
 							break;
@@ -6161,7 +6147,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 				}
 			}
 
-			return (PrevFlags & DIF_HIDDEN) ? FALSE : TRUE;
+			return !(PrevFlags & DIF_HIDDEN);
 		}
 		/*****************************************************************/
 		case DM_SETDROPDOWNOPENED:		// Param1=ID; Param2={TRUE|FALSE}
@@ -6188,7 +6174,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 					WINPORT(Sleep)(10);
 				}
 
-				if (SendDlgMessage(this, DM_SETFOCUS, Param1)) {
+				if (SendDlgMessage(DM_SETFOCUS, Param1, 0)) {
 					ProcessOpenComboBox(Type, CurItem, Param1);	//?? Param1 ??
 					// ProcessKey(KEY_CTRLDOWN);
 					return TRUE;
@@ -6198,17 +6184,12 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 
 			return FALSE;
 		}
-		/* KM $ */
 		/*****************************************************************/
 		case DM_SETITEMPOSITION:	// Param1 = ID; Param2 = SMALL_RECT
 		{
 			return SetItemRect((int)Param1, (SMALL_RECT *)Param2);
 		}
 		/*****************************************************************/
-		/*
-			$ 31.08.2000 SVS
-			+ переключение/получение состояния Enable/Disable элемента
-		*/
 		case DM_ENABLE: {
 			DWORD PrevFlags = CurItem->Flags;
 
@@ -6228,17 +6209,8 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 				ScrBuf.Flush();
 			}
 
-			return (PrevFlags & DIF_DISABLE) ? FALSE : TRUE;
+			return !(PrevFlags & DIF_DISABLE);
 		}
-
-//* `DM_SETREADONLY` - changes readonly-ness of selected dialog edit control item
-//* `DM_GETCOLOR` - retrieves current color attributes of selected dialog item
-//* `DM_SETCOLOR` - changes current color attributes of selected dialog item
-//* `DM_SETTRUECOLOR` - sets 24-bit RGB colors to selected dialog item, can be used within DN_CTLCOLORDLGITEM handler to provide extra coloring.
-//* `DM_GETTRUECOLOR` - retrieves 24-bit RGB colors of selected dialog item, if they were set before by DM_SETTRUECOLOR.
-//* `ECTL_ADDTRUECOLOR` - applies coloring to editor like ECTL_ADDCOLOR does but allows to specify 24 RGB color using EditorTrueColor structure.
-//* `ECTL_GETTRUECOLOR` - retrieves coloring of editor like ECTL_GETCOLOR does but gets 24 RGB color using EditorTrueColor structure.
-
 
 //		case DM_GETCOLOR: {
 //			*(DWORD *)Param2 = (DWORD)CtlColorDlgItem(Param1, CurItem);
@@ -6418,17 +6390,16 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 	return CallDlgProc(Msg, Param1, Param2);
 }
 
+LONG_PTR Dialog::SendDlgMessage(int Msg, int Param1, LONG_PTR Param2)
+{
+	return ::SendDlgMessage(this, Msg, Param1, Param2);
+}
+
 LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 {
 	return reinterpret_cast<Dialog*>(hDlg)->SendDlgMessageSynched(Msg, Param1, Param2);
 }
 
-/*
-	$ 28.07.2000 SVS
-	Посылка сообщения диалогу
-	Некоторые сообщения эта функция обрабатывает сама, не передавая управление
-	обработчику диалога.
-*/
 LONG_PTR WINAPI SendDlgMessage(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 {
 	if (!hDlg)
@@ -6482,14 +6453,14 @@ void Dialog::SetComboBoxPos(DialogItemEx *CurItem)
 	}
 }
 
-bool Dialog::ProcessEvents()
+bool Dialog::ProcessEvents() const
 {
 	return !DialogMode.Check(DMODE_ENDLOOP);
 }
 
-void Dialog::SetId(const GUID &Id)
+void Dialog::SetId(const GUID &Guid)
 {
-	this->Id = Id;
+	Id = Guid;
 	IdExist = true;
 }
 

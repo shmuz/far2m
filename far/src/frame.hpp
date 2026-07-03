@@ -85,7 +85,7 @@ public:
 	virtual void OnChangeFocus(bool focus); // вызывается при смене фокуса
 	virtual void OnCreate() {};  // вызывается перед созданием окна
 	virtual void OnDestroy();  // вызывается перед уничтожением окна
-	virtual bool ProcessEvents() { return true; }
+	virtual bool ProcessEvents() const { return true; }
 	virtual void RedrawKeyBar() { Frame::UpdateKeyBar(); }
 	virtual void Refresh() { OnChangeFocus(true); }  // Просто перерисоваться :)
 	virtual void ResizeConsole();
