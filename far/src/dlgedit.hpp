@@ -175,7 +175,7 @@ public:
 
 private:
 	Dialog *m_Dialog;
-	unsigned m_Index;
+	int m_Index;
 	DLGEDITTYPE Type;
 	History *iHistory;
 

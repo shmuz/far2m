@@ -462,8 +462,8 @@ void Dialog::Init(FARWINDOWPROC aDlgProc,	// Диалоговая процеду
 	SetDropDownOpened(false);
 	IsEnableRedraw = 1;
 	InCtlColorDlgItem = 0;
-	FocusPos = (unsigned)-1;
-	PrevFocusPos = (unsigned)-1;
+	FocusPos = -1;
+	PrevFocusPos = -1;
 	AltState = CtrlState = ShiftState = 0;
 
 	if (!aDlgProc)		// функция должна быть всегда!!!
@@ -496,7 +496,7 @@ Dialog::~Dialog()
 	Hide();
 	ScrBuf.Flush();
 
-	for (unsigned i = 0; i < ItemCount; i++)
+	for (int i = 0; i < ItemCount; i++)
 		delete Item[i];
 
 	free(Item);
@@ -542,7 +542,7 @@ void Dialog::InitDialog()
 	if (!DialogMode.Check(DMODE_INITOBJECTS))		// самодостаточный вариант, когда
 	{												// элементы инициализируются при первом вызове.
 		CheckDialogCoord();
-		unsigned InitFocus = InitDialogObjects();
+		int InitFocus = InitDialogObjects();
 		auto Result = DlgProc(DN_INITDIALOG, InitFocus, DataDialog);
 
 		if (ExitCode == -1) {
@@ -632,7 +632,7 @@ void Dialog::ProcessCenterGroup()
 {
 	SCOPED_ACTION(CriticalSectionLock)(CS);
 
-	for (unsigned I = 0; I < ItemCount; I++) {
+	for (int I = 0; I < ItemCount; I++) {
 		/*
 			Последовательно объявленные элементы с флагом DIF_CENTERGROUP
 			и одинаковой вертикальной позицией будут отцентрированы в диалоге.
@@ -644,7 +644,7 @@ void Dialog::ProcessCenterGroup()
 						|| Item[I - 1]->Y1 != Item[I]->Y1)) {
 			int Length = 0;
 
-			for (UINT J = I;
+			for (int J = I;
 					J < ItemCount && (Item[J]->Flags & DIF_CENTERGROUP) && Item[J]->Y1 == Item[I]->Y1; J++) {
 				Length+= LenStrItem(J);
 
@@ -673,7 +673,7 @@ void Dialog::ProcessCenterGroup()
 
 			int StartX = Max(0, (X2 - X1 + 1 - Length) / 2);
 
-			for (UINT J = I;
+			for (int J = I;
 					J < ItemCount && (Item[J]->Flags & DIF_CENTERGROUP) && Item[J]->Y1 == Item[I]->Y1; J++) {
 				Item[J]->X1 = StartX;
 				StartX+= LenStrItem(J);
@@ -698,7 +698,6 @@ void Dialog::ProcessCenterGroup()
 	}
 }
 
-//////////////////////////////////////////////////////////////////////////
 /*
 	Public:
 	Инициализация элементов диалога.
@@ -706,12 +705,12 @@ void Dialog::ProcessCenterGroup()
 	InitDialogObjects возвращает ID элемента с фокусом ввода
 	Параметр - для выборочной реинициализации элементов. ID = -1 - касаемо всех объектов
 */
-unsigned Dialog::InitDialogObjects(unsigned ID)
+int Dialog::InitDialogObjects(int ID)
 {
 	SCOPED_ACTION(CriticalSectionLock)(CS);
-	unsigned InitItemCount;
+	int InitItemCount;
 
-	if (ID == (unsigned)-1)		// инициализируем все?
+	if (ID == -1)		// инициализируем все?
 	{
 		ID = 0;
 		InitItemCount = ItemCount;
@@ -719,14 +718,14 @@ unsigned Dialog::InitDialogObjects(unsigned ID)
 	else if (ID < ItemCount)
 		InitItemCount = ID + 1;
 	else
-		return (unsigned)-1;
+		return -1;
 
 	// если FocusPos в пределах и элемент задисаблен, то ищем сначала
-	if (FocusPos != (unsigned)-1 && FocusPos < ItemCount && !IsItemFocusable(Item[FocusPos]))
-		FocusPos = (unsigned)-1;	// будем искать сначала!
+	if (FocusPos != -1 && FocusPos < ItemCount && !IsItemFocusable(Item[FocusPos]))
+		FocusPos = -1;	// будем искать сначала!
 
 	// предварительный цикл по поводу кнопок
-	for (unsigned I = ID; I < InitItemCount; I++) {
+	for (int I = ID; I < InitItemCount; I++) {
 		DialogItemEx *CurItem = Item[I];
 		DWORD ItemFlags = CurItem->Flags;
 		int Type = CurItem->Type;
@@ -747,7 +746,7 @@ unsigned Dialog::InitDialogObjects(unsigned ID)
 			}
 		}
 		// предварительный поик фокуса
-		if (FocusPos == (unsigned)-1 && IsItemFocusable(CurItem) && CurItem->Focus)
+		if (FocusPos == -1 && IsItemFocusable(CurItem) && CurItem->Focus)
 			FocusPos = I;		// запомним первый фокусный элемент
 
 		CurItem->Focus = 0;		// сбросим для всех, чтобы не оказалось,
@@ -772,8 +771,8 @@ unsigned Dialog::InitDialogObjects(unsigned ID)
 		Опять про фокус ввода - теперь, если "чудо" забыло выставить
 		хотя бы один, то ставим на первый подходящий
 	*/
-	if (FocusPos == (unsigned)-1) {
-		for (unsigned I = 0; I < ItemCount; I++)		// по всем!!!!
+	if (FocusPos == -1) {
+		for (int I = 0; I < ItemCount; I++)		// по всем!!!!
 		{
 			DialogItemEx *CurItem = Item[I];
 
@@ -784,7 +783,7 @@ unsigned Dialog::InitDialogObjects(unsigned ID)
 		}
 	}
 
-	if (FocusPos == (unsigned)-1)		// ну ни хрена себе - нет ни одного
+	if (FocusPos == -1)		// ну ни хрена себе - нет ни одного
 	{									// элемента с возможностью фокуса
 		FocusPos = 0;					// убится, блин
 	}
@@ -794,7 +793,7 @@ unsigned Dialog::InitDialogObjects(unsigned ID)
 	// а теперь все сначала и по полной программе...
 	ProcessCenterGroup();	// сначала отцентрируем
 
-	for (unsigned I = ID; I < InitItemCount; I++) {
+	for (int I = ID; I < InitItemCount; I++) {
 		DialogItemEx *CurItem = Item[I];
 		int Type = CurItem->Type;
 		DWORD ItemFlags = CurItem->Flags;
@@ -1032,7 +1031,7 @@ const wchar_t *Dialog::GetDialogTitle()
 	SCOPED_ACTION(CriticalSectionLock)(CS);
 	DialogItemEx *CurItem, *CurItemList = nullptr;
 
-	for (unsigned I = 0; I < ItemCount; I++) {
+	for (int I = 0; I < ItemCount; I++) {
 		CurItem = Item[I];
 
 		// по первому попавшемуся "тексту" установим заголовок консоли!
@@ -1080,7 +1079,7 @@ static int ToRange(int Val, int Min, int Max)
 }
 
 // Изменение координат и/или размеров итема диалога.
-bool Dialog::SetItemRect(unsigned ID, SMALL_RECT *aRect)
+bool Dialog::SetItemRect(int ID, SMALL_RECT *aRect)
 {
 	SCOPED_ACTION(CriticalSectionLock)(CS);
 
@@ -1134,7 +1133,7 @@ bool Dialog::SetItemRect(unsigned ID, SMALL_RECT *aRect)
 	return TRUE;
 }
 
-bool Dialog::GetItemRect(unsigned I, SMALL_RECT &Rect)
+bool Dialog::GetItemRect(int I, SMALL_RECT &Rect)
 {
 	SCOPED_ACTION(CriticalSectionLock)(CS);
 
@@ -1257,7 +1256,7 @@ void Dialog::DeleteDialogObjects()
 	SCOPED_ACTION(CriticalSectionLock)(CS);
 	DialogItemEx *CurItem;
 
-	for (unsigned I = 0; I < ItemCount; I++) {
+	for (int I = 0; I < ItemCount; I++) {
 		CurItem = Item[I];
 
 		switch (CurItem->Type) {
@@ -1303,7 +1302,7 @@ void Dialog::GetDialogObjectsData()
 	int Type;
 	DialogItemEx *CurItem;
 
-	for (unsigned I = 0; I < ItemCount; I++) {
+	for (int I = 0; I < ItemCount; I++) {
 		CurItem = Item[I];
 		DWORD IFlags = CurItem->Flags;
 
@@ -1752,7 +1751,7 @@ void Dialog::ShowDialog(int ID)
 	FARString strStr;
 	DialogItemEx *CurItem;
 	int X, Y;
-	unsigned DrawItemCount;
+	int DrawItemCount;
 	uint64_t ItemColor[DLG_ITEM_MAX_CUST_COLORS] = {};
 
 	// Если не разрешена отрисовка, то вываливаем.
@@ -1804,7 +1803,7 @@ void Dialog::ShowDialog(int ID)
 		bool CursorVisible = false;
 		DWORD CursorSize = 0;
 
-		if ((int)FocusPos != ID) {
+		if (FocusPos != ID) {
 			if (Item[FocusPos]->Type == DI_USERCONTROL && Item[FocusPos]->UCData->CursorPos.X != -1
 					&& Item[FocusPos]->UCData->CursorPos.Y != -1) {
 				CursorVisible = Item[FocusPos]->UCData->CursorVisible;
@@ -1815,7 +1814,7 @@ void Dialog::ShowDialog(int ID)
 		SetCursorType(CursorVisible, CursorSize);
 	}
 
-	for (auto I = (unsigned)ID; I < DrawItemCount; I++) {
+	for (auto I = ID; I < DrawItemCount; I++) {
 		CurItem = Item[I];
 
 		if (CurItem->Flags & DIF_HIDDEN)
@@ -2282,7 +2281,7 @@ void Dialog::ShowDialog(int ID)
 
 	// КОСТЫЛЬ!
 	// но работает ;-)
-	for (unsigned I = 0; I < ItemCount; I++) {
+	for (int I = 0; I < ItemCount; I++) {
 		CurItem = Item[I];
 
 		if (CurItem->ListPtr && GetDropDownOpened() && CurItem->ListPtr->IsVisible()) {
@@ -2638,7 +2637,7 @@ int Dialog::ProcessKey(FarKey Key)
 	SCOPED_ACTION(CriticalSectionLock)(CS);
 	_DIALOG(CleverSysLog CL(L"Dialog::ProcessKey"));
 	_DIALOG(SysLog(L"Param: Key=%ls", _FARKEY_ToName(Key)));
-	unsigned I;
+	int I;
 	FARString strStr;
 
 	if ((ShiftPressed != ShiftState || CtrlPressed != CtrlState || AltPressed != AltState) && !DialogMode.Check(DMODE_KEY)) {
@@ -2818,7 +2817,7 @@ int Dialog::ProcessKey(FarKey Key)
 			if (FarIsEditNoCombobox(Item[FocusPos]->Type)
 					&& (Item[FocusPos]->Flags & DIF_EDITOR) && !(Item[FocusPos]->Flags & DIF_READONLY))
 			{
-				unsigned EditorLastPos;
+				int EditorLastPos;
 
 				for (EditorLastPos = I = FocusPos; I < ItemCount; I++)
 					if (FarIsEdit(Item[I]->Type) && (Item[I]->Flags & DIF_EDITOR))
@@ -3249,9 +3248,9 @@ int Dialog::ProcessKey(FarKey Key)
 	return FALSE;
 }
 
-void Dialog::ProcessKey(FarKey Key, unsigned ItemPos)
+void Dialog::ProcessKey(FarKey Key, int ItemPos)
 {
-	unsigned SavedFocusPos = FocusPos;
+	int SavedFocusPos = FocusPos;
 	FocusPos = ItemPos;
 	ProcessKey(Key);
 	if (FocusPos == ItemPos)
@@ -3271,7 +3270,7 @@ void Dialog::ProcessKey(FarKey Key, unsigned ItemPos)
 int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 {
 	SCOPED_ACTION(CriticalSectionLock)(CS);
-	unsigned I;
+	int I;
 	int MsX, MsY;
 	int Type;
 	SMALL_RECT Rect;
@@ -3291,7 +3290,7 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 	MsY = MouseEvent->dwMousePosition.Y;
 
 	// for (I=0;I<ItemCount;I++)
-	for (I = ItemCount - 1; I != (unsigned)-1; I--) {
+	for (I = ItemCount - 1; I != -1; I--) {
 		if (Item[I]->Flags & (DIF_DISABLE | DIF_HIDDEN))
 			continue;
 
@@ -3440,7 +3439,7 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 	if (!MouseEvent->dwEventFlags || MouseEvent->dwEventFlags == DOUBLE_CLICK) {
 		// первый цикл - все за исключением рамок.
 		// for (I=0; I < ItemCount;I++)
-		for (I = ItemCount - 1; I != (unsigned)-1; I--) {
+		for (I = ItemCount - 1; I != -1; I--) {
 			if (Item[I]->Flags & (DIF_DISABLE | DIF_HIDDEN))
 				continue;
 
@@ -3492,7 +3491,7 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 		if (MouseEvent->dwButtonState & FROM_LEFT_1ST_BUTTON_PRESSED) {
 			// for (I=0;I<ItemCount;I++)
 
-			for (I = ItemCount - 1; I != (unsigned)-1; I--) {
+			for (I = ItemCount - 1; I != -1; I--) {
 				// Исключаем из списка оповещаемых о мыши недоступные элементы
 				if (Item[I]->Flags & (DIF_DISABLE | DIF_HIDDEN))
 					continue;
@@ -3686,7 +3685,7 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 	return FALSE;
 }
 
-bool Dialog::ProcessOpenComboBox(int Type, DialogItemEx *CurItem, unsigned CurFocusPos)
+bool Dialog::ProcessOpenComboBox(int Type, DialogItemEx *CurItem, int CurFocusPos)
 {
 	SCOPED_ACTION(CriticalSectionLock)(CS);
 	FARString strStr;
@@ -3714,11 +3713,11 @@ bool Dialog::ProcessOpenComboBox(int Type, DialogItemEx *CurItem, unsigned CurFo
 	return true;
 }
 
-unsigned Dialog::ProcessRadioButton(unsigned CurRB)
+int Dialog::ProcessRadioButton(int CurRB)
 {
 	SCOPED_ACTION(CriticalSectionLock)(CS);
-	unsigned PrevRB = CurRB, J;
-	unsigned I;
+	int PrevRB = CurRB, J;
+	int I;
 
 	for (I = CurRB;; I--) {
 		if (!I)
@@ -3772,7 +3771,7 @@ bool Dialog::Do_ProcessFirstCtrl()
 		((DlgEdit *)(Item[FocusPos]->ObjPtr))->ProcessKey(KEY_HOME);
 		return true;
 	} else {
-		for (unsigned I = 0; I < ItemCount; I++)
+		for (int I = 0; I < ItemCount; I++)
 			if (IsItemFocusable(Item[I])) {
 				ChangeFocus2(I);
 				ShowDialog();
@@ -3786,13 +3785,13 @@ bool Dialog::Do_ProcessFirstCtrl()
 bool Dialog::Do_ProcessNextCtrl(bool Up, bool IsRedraw)
 {
 	SCOPED_ACTION(CriticalSectionLock)(CS);
-	unsigned OldPos = FocusPos;
-	unsigned PrevPos = 0;
+	int OldPos = FocusPos;
+	int PrevPos = 0;
 
 	if (FarIsEdit(Item[FocusPos]->Type) && (Item[FocusPos]->Flags & DIF_EDITOR))
 		PrevPos = ((DlgEdit *)(Item[FocusPos]->ObjPtr))->GetCurPos();
 
-	unsigned I = ChangeFocus(FocusPos, Up ? -1 : 1, false);
+	int I = ChangeFocus(FocusPos, Up ? -1 : 1, false);
 	Item[FocusPos]->Focus = 0;
 	Item[I]->Focus = 1;
 	ChangeFocus2(I);
@@ -3818,7 +3817,7 @@ bool Dialog::MoveToCtrlHorizontal(bool right)
 		Dist        = 0,
 		MinPos      = 0;
 
-	for (unsigned int I = 0; I < ItemCount; I++) {
+	for (int I = 0; I < ItemCount; I++) {
 		//first, let's find nearest borders
 		if (IsItemHorizontalSeparator(Item[I])) {
 			if (Item[I]->X1 < Item[FocusPos]->X1){
@@ -3874,7 +3873,7 @@ bool Dialog::MoveToCtrlVertical(bool up)
 		Dist         = 0,
 		MinPos       = 0;
 
-	for (unsigned int I = 0; I < ItemCount; I++) {
+	for (int I = 0; I < ItemCount; I++) {
 		//first, let's find nearest borders
 		if (IsItemVerticalSeparator(Item[I])) {
 			if (Item[I]->Y1 < Item[FocusPos]->Y1){
@@ -3924,7 +3923,7 @@ bool Dialog::MoveToCtrlVertical(bool up)
 bool Dialog::Do_ProcessTab(bool Next)
 {
 	SCOPED_ACTION(CriticalSectionLock)(CS);
-	unsigned I;
+	int I;
 
 	if (ItemCount > 1) {
 		// Must check for DI_EDIT since DIF_EDITOR and DIF_LISTNOAMPERSAND are equal
@@ -4003,10 +4002,10 @@ bool Dialog::Do_ProcessSpace()
 	$ 24.08.2000 SVS
 	Добавка для DI_USERCONTROL
 */
-unsigned Dialog::ChangeFocus(unsigned CurFocusPos, int Step, bool SkipGroup)
+int Dialog::ChangeFocus(int CurFocusPos, int Step, bool SkipGroup)
 {
 	SCOPED_ACTION(CriticalSectionLock)(CS);
-	unsigned OrigFocusPos = CurFocusPos;
+	int OrigFocusPos = CurFocusPos;
 
 	for (;;) {
 		CurFocusPos += Step;
@@ -4043,7 +4042,7 @@ unsigned Dialog::ChangeFocus(unsigned CurFocusPos, int Step, bool SkipGroup)
 	Изменяет фокус ввода между двумя элементами.
 	Вынесен отдельно с тем, чтобы обработать DN_KILLFOCUS & DM_SETFOCUS
 */
-void Dialog::ChangeFocus2(unsigned SetFocusPos)
+void Dialog::ChangeFocus2(int SetFocusPos)
 {
 	SCOPED_ACTION(CriticalSectionLock)(CS);
 	int FocusPosNeed = -1;
@@ -4119,7 +4118,7 @@ void Dialog::ChangeFocus2(unsigned SetFocusPos)
 	Функция SelectOnEntry - выделение строки редактирования
 	Обработка флага DIF_SELECTONENTRY
 */
-void Dialog::SelectOnEntry(unsigned Pos, bool Selected)
+void Dialog::SelectOnEntry(int Pos, bool Selected)
 {
 	// if(!DialogMode.Check(DMODE_SHOW))
 	//	return;
@@ -4166,7 +4165,7 @@ int Dialog::SelectFromComboBox(DialogItemEx *CurItem,
 	SCOPED_ACTION(CriticalSectionLock)(CS);
 	FARString strStr;
 	int I, Dest, OriginalPos;
-	unsigned CurFocusPos = FocusPos;
+	int CurFocusPos = FocusPos;
 
 //		if (EditX2 - EditX1 < 20)
 //			EditX2 = EditX1 + 20;
@@ -4392,13 +4391,13 @@ int Dialog::CheckHighlights(WORD CheckSymbol, int StartPos)
 	Private:
 	Если жмакнули Alt-???
 */
-int Dialog::ProcessHighlighting(FarKey Key, unsigned FocusPos, bool Translate)
+int Dialog::ProcessHighlighting(FarKey Key, int FocusPos, bool Translate)
 {
 	SCOPED_ACTION(CriticalSectionLock)(CS);
 	int Type;
 	DWORD Flags;
 
-	for (unsigned I = 0; I < ItemCount; I++) {
+	for (int I = 0; I < ItemCount; I++) {
 		Type = Item[I]->Type;
 		Flags = Item[I]->Flags;
 
@@ -4484,7 +4483,7 @@ void Dialog::AdjustEditPos(int dx, int dy)
 
 	ScreenObject *DialogScrObject;
 
-	for (unsigned I = 0; I < ItemCount; I++) {
+	for (int I = 0; I < ItemCount; I++) {
 		CurItem = Item[I];
 		int Type = CurItem->Type;
 
@@ -4563,7 +4562,7 @@ void Dialog::Process()
 	}
 
 	if (pSaveItemEx)
-		for (unsigned i = 0; i < ItemCount; i++)
+		for (int i = 0; i < ItemCount; i++)
 			DialogItemExToDialogItemEx(Item[i], &pSaveItemEx[i]);
 }
 
@@ -4769,7 +4768,7 @@ LONG_PTR Dialog::DefDlgProc(int Msg, int Param1, LONG_PTR Param2)
 	}
 
 	// предварительно проверим...
-	if (Param1 < 0 || (unsigned)Param1 >= ItemCount || !Item)
+	if (Param1 < 0 || Param1 >= ItemCount || !Item)
 		return 0;
 
 	DialogItemEx *CurItem = Item[Param1];
@@ -4865,7 +4864,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 					DialogMode.Set(DMODE_DRAWING);
 					SMALL_RECT Rect;
 
-					for (unsigned int I = 0; I < ItemCount; I++) {
+					for (int I = 0; I < ItemCount; I++) {
 						DialogItemEx *cItem = Item[I];
 
 						if (cItem->Flags & DIF_HIDDEN)
@@ -5122,7 +5121,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 		$ 09.12.2001 DJ
 		для DM_USER проверять _не_надо_!
 	*/
-	if ((unsigned)Param1 >= ItemCount || !Item)
+	if (Param1 >= ItemCount || !Item)
 		return 0;
 
 	size_t Len = 0;
@@ -5495,7 +5494,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 				CurItem->UCData->CursorPos.Y = Coord.Y - CurItem->Y1;
 
 				// переместим если надо
-				if (DialogMode.Check(DMODE_SHOW) && FocusPos == (unsigned)Param1) {
+				if (DialogMode.Check(DMODE_SHOW) && FocusPos == Param1) {
 					// что-то одно надо убрать :-)
 					MoveCursor(Coord.X + X1, Coord.Y + Y1);	// ???
 					ShowDialog(Param1);							// ???
@@ -5593,7 +5592,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 				int CCX = CurItem->UCData->CursorPos.X;
 				int CCY = CurItem->UCData->CursorPos.Y;
 
-				if (DialogMode.Check(DMODE_SHOW) && FocusPos == (unsigned)Param1 && CCX != -1 && CCY != -1)
+				if (DialogMode.Check(DMODE_SHOW) && FocusPos == Param1 && CCX != -1 && CCY != -1)
 					SetCursorType(CurItem->UCData->CursorVisible, CurItem->UCData->CursorSize);
 			}
 
@@ -5740,12 +5739,12 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 			if (!IsItemFocusable(CurItem))
 				return FALSE;
 
-			if (FocusPos == (unsigned)Param1)	// уже и так установлено все!
+			if (FocusPos == Param1)	// уже и так установлено все!
 				return TRUE;
 
 			ChangeFocus2(Param1);
 
-			if (FocusPos == (unsigned)Param1) {
+			if (FocusPos == Param1) {
 				ShowDialog();
 				return TRUE;
 			}
@@ -6136,7 +6135,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 
 				if (DialogMode.Check(DMODE_SHOW))		// && (PrevFlags&DIF_HIDDEN) != (CurItem->Flags&DIF_HIDDEN))//!(CurItem->Flags&DIF_HIDDEN))
 				{
-					if ((CurItem->Flags & DIF_HIDDEN) && FocusPos == (unsigned)Param1) {
+					if ((CurItem->Flags & DIF_HIDDEN) && FocusPos == Param1) {
 						Param2 = ChangeFocus(Param1, 1, true);
 						ChangeFocus2((int)Param2);
 					}

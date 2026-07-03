@@ -278,12 +278,14 @@ class Dialog : public Frame
 {
 	friend class DlgEdit;
 	friend class History;
+	friend LONG_PTR WINAPI DefDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2);
+	friend LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2);
 
 private:
 	ChangeMacroArea Cma;
 	INT_PTR PluginNumber;		// Номер плагина, для формирования HelpTopic
-	unsigned FocusPos;			// всегда известно какой элемент в фокусе
-	unsigned PrevFocusPos;		// всегда известно какой элемент был в фокусе
+	int FocusPos;						// всегда известно какой элемент в фокусе
+	int PrevFocusPos;				// всегда известно какой элемент был в фокусе
 	int IsEnableRedraw;			// Разрешена перерисовка диалога? ( > 0 - разрешена)
 	int InCtlColorDlgItem;
 	BitFlags DialogMode;		// Флаги текущего режима диалога
@@ -294,7 +296,7 @@ private:
 	DialogItemEx **Item;		// массив элементов диалога
 	DialogItemEx *pSaveItemEx;	// пользовательский массив элементов диалога
 
-	unsigned ItemCount;			// количество элементов диалога
+	int ItemCount;			// количество элементов диалога
 
 	ConsoleTitle *OldTitle;		// предыдущий заголовок
 
@@ -329,9 +331,9 @@ private:
 		+ Изменяет фокус ввода между двумя элементами.
 		Вынесен отдельно для того, чтобы обработать DMSG_KILLFOCUS & DMSG_SETFOCUS
 	*/
-	void ChangeFocus2(unsigned SetFocusPos);
+	void ChangeFocus2(int SetFocusPos);
 
-	unsigned ChangeFocus(unsigned FocusPos, int Step, bool SkipGroup);
+	int ChangeFocus(int FocusPos, int Step, bool SkipGroup);
 	bool SelectFromEditHistory(DialogItemEx *CurItem, DlgEdit *EditLine, const wchar_t *HistoryName,
 			FARString &strStr);
 	int SelectFromComboBox(DialogItemEx *CurItem, DlgEdit *EditLine, VMenu *List);
@@ -339,19 +341,19 @@ private:
 
 	void ProcessLastHistory(DialogItemEx *CurItem, int MsgIndex);	// обработка DIF_USELASTHISTORY
 
-	int ProcessHighlighting(FarKey Key, unsigned FocusPos, bool Translate);
+	int ProcessHighlighting(FarKey Key, int FocusPos, bool Translate);
 	int CheckHighlights(WORD Chr, int StartPos = 0);
 
-	void SelectOnEntry(unsigned Pos, bool Selected);
+	void SelectOnEntry(int Pos, bool Selected);
 
 	void CheckDialogCoord();
-	bool GetItemRect(unsigned I, SMALL_RECT &Rect);
+	bool GetItemRect(int I, SMALL_RECT &Rect);
 	bool ItemHasDropDownArrow(const DialogItemEx *Item);
 
 	// возвращает заголовок диалога (текст первого текста или фрейма)
 	const wchar_t *GetDialogTitle();
 
-	bool SetItemRect(unsigned ID, SMALL_RECT *Rect);
+	bool SetItemRect(int ID, SMALL_RECT *Rect);
 
 	/*
 		$ 23.06.2001 KM
@@ -362,11 +364,11 @@ private:
 	bool GetDropDownOpened() const { return DropDownOpened; }
 
 	void ProcessCenterGroup();
-	unsigned ProcessRadioButton(unsigned);
+	int ProcessRadioButton(int);
 
-	unsigned InitDialogObjects(unsigned ID = (unsigned)-1);
+	int InitDialogObjects(int ID = -1);
 
-	bool ProcessOpenComboBox(int Type, DialogItemEx *CurItem, unsigned CurFocusPos);
+	bool ProcessOpenComboBox(int Type, DialogItemEx *CurItem, int CurFocusPos);
 	bool ProcessMoveDialog(DWORD Key);
 
 	bool Do_ProcessTab(bool Next);
@@ -385,9 +387,13 @@ private:
 	bool Do_ProcessSpace();
 	void SetComboBoxPos(DialogItemEx *Item = nullptr);
 
-	LONG_PTR CallDlgProc(int nMsg, int nParam1, LONG_PTR nParam2);
+	LONG_PTR CallDlgProc(int nMsg, int Param1, LONG_PTR Param2);
+	LONG_PTR DefDlgProc(int Msg, int Param1, LONG_PTR Param2);
+	LONG_PTR DlgProc(int Msg, int Param1, LONG_PTR Param2);
+	LONG_PTR SendDlgMessage(int Msg, int Param1, LONG_PTR Param2);
+	LONG_PTR SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2);
 
-	void ProcessKey(FarKey Key, unsigned ItemPos);
+	void ProcessKey(FarKey Key, int ItemPos);
 
 public:
 	Dialog(DialogItemEx *SrcItem, unsigned SrcItemCount, FARWINDOWPROC DlgProc = nullptr,
@@ -411,11 +417,6 @@ public:
 	void SetPosition(int X1, int Y1, int X2, int Y2) override;
 	void Show() override;
 	int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0) override;
-
-	LONG_PTR DlgProc(int Msg, int Param1, LONG_PTR Param2);
-	LONG_PTR DefDlgProc(int Msg, int Param1, LONG_PTR Param2);
-	LONG_PTR SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2);
-	LONG_PTR SendDlgMessage(int Msg, int Param1, LONG_PTR Param2);
 
 	bool CheckDialogMode(DWORD flags) const { return DialogMode.Check(flags); }
 	void FastShow() { ShowDialog(); }
@@ -441,8 +442,8 @@ public:
 
 	// For MACRO
 	const DialogItemEx **GetAllItem() { return (const DialogItemEx **)Item; };
-	unsigned GetAllItemCount() const { return ItemCount; };	// количество элементов диалога
-	unsigned GetDlgFocusPos() const { return FocusPos; };
+	int GetAllItemCount() const { return ItemCount; };	// количество элементов диалога
+	int GetDlgFocusPos() const { return FocusPos; };
 
 	int SetAutomation(WORD IDParent, WORD id, FarDialogItemFlags UncheckedSet,
 			FarDialogItemFlags UncheckedSkip, FarDialogItemFlags CheckedSet, FarDialogItemFlags CheckedSkip,
