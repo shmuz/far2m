@@ -277,7 +277,7 @@ class ConsoleTitle;
 class Dialog : public Frame
 {
 	friend class DlgEdit;
-	friend LONG_PTR WINAPI DefDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2);
+	friend class History;
 
 private:
 	ChangeMacroArea Cma;
@@ -397,6 +397,7 @@ public:
 	~Dialog() override;
 
 public:
+	LONG_PTR DefDlgProc(int Msg, int Param1, LONG_PTR Param2);
 	LONG_PTR SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2);
 	int ProcessKey(FarKey Key) override;
 	int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent) override;
@@ -450,7 +451,7 @@ public:
 			FarDialogItemFlags UncheckedSkip, FarDialogItemFlags CheckedSet, FarDialogItemFlags CheckedSkip,
 			FarDialogItemFlags Checked3Set = DIF_NONE, FarDialogItemFlags Checked3Skip = DIF_NONE);
 
-	LONG_PTR WINAPI DlgProc(int Msg, int Param1, LONG_PTR Param2);
+	LONG_PTR DlgProc(int Msg, int Param1, LONG_PTR Param2);
 
 	void SetPosition(int X1, int Y1, int X2, int Y2) override;
 
@@ -460,11 +461,7 @@ public:
 	void SetId(const GUID &Id);
 	bool IsRedrawEnabled() const { return IsEnableRedraw > 0; }
 	Editor* GetMemoEdit(int Pos = -1) const;
-
-	friend class History;
 };
-
-typedef LONG_PTR(WINAPI *SENDDLGMESSAGE)(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2);
 
 LONG_PTR WINAPI SendDlgMessage(HANDLE hDlg, int Msg, int Param1 = 0, LONG_PTR Param2 = 0);
 

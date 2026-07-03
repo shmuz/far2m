@@ -210,7 +210,7 @@ void DialogItemExToDialogItemEx(DialogItemEx *pSrc, DialogItemEx *pDest)
 	pDest->SelStart = pSrc->SelStart;
 	pDest->SelEnd = pSrc->SelEnd;
 
-    memcpy(pDest->customItemColor, pSrc->customItemColor, sizeof(pDest->customItemColor));
+	memcpy(pDest->customItemColor, pSrc->customItemColor, sizeof(pDest->customItemColor));
 }
 
 static void ConvertItemSmall(FarDialogItem *Item, const DialogItemEx *Data)
@@ -409,28 +409,28 @@ void DataToItemEx(const DialogDataEx *Data, DialogItemEx *Item, int Count)
 }
 
 Dialog::Dialog(DialogItemEx *SrcItem,		// Набор элементов диалога
-		unsigned SrcItemCount,				// Количество элементов
-		FARWINDOWPROC DlgProc,				// Диалоговая процедура
-		LONG_PTR InitParam)					// Ассоцированные с диалогом данные
+		unsigned aSrcItemCount,				// Количество элементов
+		FARWINDOWPROC aDlgProc,				// Диалоговая процедура
+		LONG_PTR aInitParam)				// Ассоцированные с диалогом данные
 	:
 	Cma(MACROAREA_DIALOG), AltState(0), CtrlState(0), ShiftState(0)
 {
-	Dialog::Item = (DialogItemEx **)malloc(sizeof(DialogItemEx *) * SrcItemCount);
+	Dialog::Item = (DialogItemEx **)malloc(sizeof(DialogItemEx *) * aSrcItemCount);
 
-	for (unsigned i = 0; i < SrcItemCount; i++) {
+	for (unsigned i = 0; i < aSrcItemCount; i++) {
 		Dialog::Item[i] = new DialogItemEx;
 		Dialog::Item[i]->Clear();
 		DialogItemExToDialogItemEx(&SrcItem[i], Dialog::Item[i]);
 	}
 
-	Dialog::ItemCount = SrcItemCount;
+	Dialog::ItemCount = aSrcItemCount;
 	Dialog::pSaveItemEx = SrcItem;
-	Init(DlgProc, InitParam);
+	Init(aDlgProc, aInitParam);
 }
 
 Dialog::Dialog(FarDialogItem *SrcItem,		// Набор элементов диалога
-		unsigned SrcItemCount,				// Количество элементов
-		FARWINDOWPROC DlgProc,				// Диалоговая процедура
+		unsigned SrcItemCount,			// Количество элементов
+		FARWINDOWPROC aDlgProc,			// Диалоговая процедура
 		LONG_PTR InitParam)					// Ассоцированные с диалогом данные
 	:
 	Cma(MACROAREA_DIALOG)
@@ -446,18 +446,18 @@ Dialog::Dialog(FarDialogItem *SrcItem,		// Набор элементов диа�
 
 	Dialog::ItemCount = SrcItemCount;
 	Dialog::pSaveItemEx = nullptr;
-	Init(DlgProc, InitParam);
+	Init(aDlgProc, InitParam);
 }
 
-void Dialog::Init(FARWINDOWPROC DlgProc,	// Диалоговая процедура
-		LONG_PTR InitParam)					// Ассоцированные с диалогом данные
+void Dialog::Init(FARWINDOWPROC aDlgProc,	// Диалоговая процедура
+		LONG_PTR aInitParam)					// Ассоцированные с диалогом данные
 {
 	SetMacroArea(MACROAREA_DIALOG);
 	SetDynamicallyBorn(false);				// $OT: По умолчанию все диалоги создаются статически
 	CanLoseFocus = false;
 	// Номер плагина, вызвавшего диалог (-1 = Main)
 	PluginNumber = -1;
-	Dialog::DataDialog = InitParam;
+	DataDialog = aInitParam;
 	DialogMode.Set(DMODE_ISCANMOVE);
 	SetDropDownOpened(false);
 	IsEnableRedraw = 1;
@@ -466,14 +466,14 @@ void Dialog::Init(FARWINDOWPROC DlgProc,	// Диалоговая процеду�
 	PrevFocusPos = (unsigned)-1;
 	AltState = CtrlState = ShiftState = 0;
 
-	if (!DlgProc)		// функция должна быть всегда!!!
+	if (!aDlgProc)		// функция должна быть всегда!!!
 	{
-		DlgProc = DefDlgProc;
+		aDlgProc = ::DefDlgProc;
 		// знать диалог в старом стиле - учтем этот факт!
 		DialogMode.Set(DMODE_OLDSTYLE);
 	}
 
-	Dialog::RealDlgProc = DlgProc;
+	RealDlgProc = aDlgProc;
 
 	//_SVS(SysLog(L"Dialog =%d",CtrlObject->Macro.GetMode()));
 	// запоминаем предыдущий заголовок консоли
@@ -512,7 +512,7 @@ Dialog::~Dialog()
 
 void Dialog::CheckDialogCoord()
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 
 	if (X1 == -1)		// задано центрирование диалога по горизонтали?
 	{					//   X2 при этом = ширине диалога.
@@ -537,13 +537,13 @@ void Dialog::CheckDialogCoord()
 
 void Dialog::InitDialog()
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 
 	if (!DialogMode.Check(DMODE_INITOBJECTS))		// самодостаточный вариант, когда
 	{												// элементы инициализируются при первом вызове.
 		CheckDialogCoord();
 		unsigned InitFocus = InitDialogObjects();
-		int Result = (int)DlgProc(DN_INITDIALOG, InitFocus, DataDialog);
+		auto Result = DlgProc(DN_INITDIALOG, InitFocus, DataDialog);
 
 		if (ExitCode == -1) {
 			if (Result) {
@@ -577,7 +577,7 @@ void Dialog::InitDialog()
 */
 void Dialog::Show()
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 	_tran(SysLog(L"[%p] Dialog::Show()", this));
 
 	if (!DialogMode.Check(DMODE_INITOBJECTS))
@@ -602,7 +602,7 @@ void Dialog::Show()
 // Цель перехвата данной функции - управление видимостью...
 void Dialog::Hide()
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 	_tran(SysLog(L"[%p] Dialog::Hide()", this));
 
 	if (!DialogMode.Check(DMODE_INITOBJECTS))
@@ -619,7 +619,7 @@ void Dialog::Hide()
 */
 void Dialog::DisplayObject()
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 
 	if (DialogMode.Check(DMODE_SHOW)) {
 		SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
@@ -630,7 +630,7 @@ void Dialog::DisplayObject()
 // пересчитать координаты для элементов с DIF_CENTERGROUP
 void Dialog::ProcessCenterGroup()
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 
 	for (unsigned I = 0; I < ItemCount; I++) {
 		/*
@@ -706,39 +706,30 @@ void Dialog::ProcessCenterGroup()
 	InitDialogObjects возвращает ID элемента с фокусом ввода
 	Параметр - для выборочной реинициализации элементов. ID = -1 - касаемо всех объектов
 */
-/*
-	TODO: Необходимо применить ProcessRadioButton для исправления
-		кривых рук некоторых плагинописателей (а надо?)
-*/
 unsigned Dialog::InitDialogObjects(unsigned ID)
 {
-	CriticalSectionLock Lock(CS);
-	unsigned I, J;
-	int Type;
-	DialogItemEx *CurItem;
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 	unsigned InitItemCount;
-	DWORD ItemFlags;
-	_DIALOG(CleverSysLog CL(L"Init Dialog"));
 
 	if (ID == (unsigned)-1)		// инициализируем все?
 	{
 		ID = 0;
 		InitItemCount = ItemCount;
-	} else if (ID + 1 > ItemCount) {
-		return (unsigned)-1;
-	} else {
-		InitItemCount = ID + 1;
 	}
+	else if (ID < ItemCount)
+		InitItemCount = ID + 1;
+	else
+		return (unsigned)-1;
 
 	// если FocusPos в пределах и элемент задисаблен, то ищем сначала
 	if (FocusPos != (unsigned)-1 && FocusPos < ItemCount && !IsItemFocusable(Item[FocusPos]))
 		FocusPos = (unsigned)-1;	// будем искать сначала!
 
 	// предварительный цикл по поводу кнопок
-	for (I = ID; I < InitItemCount; I++) {
-		CurItem = Item[I];
-		ItemFlags = CurItem->Flags;
-		Type = CurItem->Type;
+	for (unsigned I = ID; I < InitItemCount; I++) {
+		DialogItemEx *CurItem = Item[I];
+		DWORD ItemFlags = CurItem->Flags;
+		int Type = CurItem->Type;
 
 		if (Type == DI_BUTTON && ItemFlags & DIF_SETSHIELD) {
 			CurItem->strData = FARString(L"\x2580\x2584 ") + CurItem->strData;
@@ -782,9 +773,9 @@ unsigned Dialog::InitDialogObjects(unsigned ID)
 		хотя бы один, то ставим на первый подходящий
 	*/
 	if (FocusPos == (unsigned)-1) {
-		for (I = 0; I < ItemCount; I++)		// по всем!!!!
+		for (unsigned I = 0; I < ItemCount; I++)		// по всем!!!!
 		{
-			CurItem = Item[I];
+			DialogItemEx *CurItem = Item[I];
 
 			if (IsItemFocusable(CurItem)) {
 				FocusPos = I;
@@ -803,10 +794,10 @@ unsigned Dialog::InitDialogObjects(unsigned ID)
 	// а теперь все сначала и по полной программе...
 	ProcessCenterGroup();	// сначала отцентрируем
 
-	for (I = ID; I < InitItemCount; I++) {
-		CurItem = Item[I];
-		Type = CurItem->Type;
-		ItemFlags = CurItem->Flags;
+	for (unsigned I = ID; I < InitItemCount; I++) {
+		DialogItemEx *CurItem = Item[I];
+		int Type = CurItem->Type;
+		DWORD ItemFlags = CurItem->Flags;
 
 		if (Type == DI_LISTBOX) {
 			if (!DialogMode.Check(DMODE_CREATEOBJECTS)) {
@@ -915,14 +906,6 @@ unsigned Dialog::InitDialogObjects(unsigned ID)
 
 			DialogEdit->SetPosition(X1 + CurItem->X1, Y1 + CurItem->Y1, X1 + CurItem->X2, Y1 + CurItem->Y2);
 
-			/*
-			DialogEdit->SetObjectColor(
-				FarColorToReal(DialogMode.Check(DMODE_WARNINGSTYLE) ?
-					((ItemFlags&DIF_DISABLE)?COL_WARNDIALOGEDITDISABLED:COL_WARNDIALOGEDIT):
-					((ItemFlags&DIF_DISABLE)?COL_DIALOGEDITDISABLED:COL_DIALOGEDIT)),
-				FarColorToReal((ItemFlags&DIF_DISABLE)?COL_DIALOGEDITDISABLED:COL_DIALOGEDITSELECTED)
-			);
-			*/
 			if (CurItem->Type == DI_PSWEDIT) {
 				DialogEdit->SetPasswordMode(true);
 				// ...Что бы небыло повадно... и для повыщения защиты, т.с.
@@ -998,7 +981,7 @@ unsigned Dialog::InitDialogObjects(unsigned ID)
 				unsigned Length = CurItem->ListItems->ItemsNumber;
 				// CurItem->ListPtr->AddItem(CurItem->ListItems);
 
-				for (J = 0; J < Length; J++) {
+				for (unsigned J = 0; J < Length; J++) {
 					if (ListItems[J].Flags & LIF_SELECTED) {
 						const auto Text = NullToEmpty(ListItems[J].Text);
 
@@ -1046,7 +1029,7 @@ unsigned Dialog::InitDialogObjects(unsigned ID)
 
 const wchar_t *Dialog::GetDialogTitle()
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 	DialogItemEx *CurItem, *CurItemList = nullptr;
 
 	for (unsigned I = 0; I < ItemCount; I++) {
@@ -1054,12 +1037,11 @@ const wchar_t *Dialog::GetDialogTitle()
 
 		// по первому попавшемуся "тексту" установим заголовок консоли!
 		if ((CurItem->Type == DI_TEXT || CurItem->Type == DI_DOUBLEBOX || CurItem->Type == DI_SINGLEBOX)) {
-			const wchar_t *Ptr = CurItem->strData;
-
-			for (; *Ptr; Ptr++)
+			for (const wchar_t *Ptr = CurItem->strData; *Ptr; Ptr++)
 				if (!IsSpace(*Ptr) && !IsEol(*Ptr))
 					return (Ptr);
-		} else if (CurItem->Type == DI_LISTBOX && !I)
+		}
+		else if (CurItem->Type == DI_LISTBOX && !I)
 			CurItemList = CurItem;
 	}
 
@@ -1072,7 +1054,7 @@ const wchar_t *Dialog::GetDialogTitle()
 
 void Dialog::ProcessLastHistory(DialogItemEx *CurItem, int MsgIndex)
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 	FARString &strData = CurItem->strData;
 
 	if (strData.IsEmpty()) {
@@ -1100,7 +1082,7 @@ static int ToRange(int Val, int Min, int Max)
 // Изменение координат и/или размеров итема диалога.
 bool Dialog::SetItemRect(unsigned ID, SMALL_RECT *aRect)
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 
 	if (ID >= ItemCount)
 		return FALSE;
@@ -1154,7 +1136,7 @@ bool Dialog::SetItemRect(unsigned ID, SMALL_RECT *aRect)
 
 bool Dialog::GetItemRect(unsigned I, SMALL_RECT &Rect)
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 
 	if (I >= ItemCount)
 		return false;
@@ -1272,7 +1254,7 @@ bool Dialog::ItemHasDropDownArrow(const DialogItemEx *Item)
 */
 void Dialog::DeleteDialogObjects()
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 	DialogItemEx *CurItem;
 
 	for (unsigned I = 0; I < ItemCount; I++) {
@@ -1317,7 +1299,7 @@ void Dialog::DeleteDialogObjects()
 */
 void Dialog::GetDialogObjectsData()
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 	int Type;
 	DialogItemEx *CurItem;
 
@@ -1391,35 +1373,16 @@ void Dialog::GetDialogObjectsData()
 				break;
 		}
 
-#if 0
-
-		if ((Type == DI_COMBOBOX || Type == DI_LISTBOX) && CurItem->ListPtr && CurItem->ListItems && DlgProc == DefDlgProc)
-		{
-			int ListPos=CurItem->ListPtr->GetSelectPos();
-
-			if (ListPos < CurItem->ListItems->ItemsNumber)
-			{
-				for (int J=0; J < CurItem->ListItems->ItemsNumber; ++J)
-					CurItem->ListItems->Items[J].Flags&=~LIF_SELECTED;
-
-				CurItem->ListItems->Items[ListPos].Flags|=LIF_SELECTED;
-			}
-		}
-
-#else
-
 		if ((Type == DI_COMBOBOX || Type == DI_LISTBOX)) {
 			CurItem->ListPos = CurItem->ListPtr ? CurItem->ListPtr->GetSelectPos() : 0;
 		}
-
-#endif
 	}
 }
 
 // Функция формирования и запроса цветов.
 DWORD Dialog::CtlColorDlgItem(int ItemPos, const DialogItemEx *CurItem, uint64_t *Color)
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 	const int Type = CurItem->Type;
 	const int Focus = CurItem->Focus;
 	const int Default = CurItem->DefaultButton;
@@ -1781,7 +1744,7 @@ static void SetColorFrame(DWORD Attr, const std::unique_ptr<DialogItemTrueColors
 */
 void Dialog::ShowDialog(int ID)
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 
 	if (Locked())
 		return;
@@ -2360,14 +2323,14 @@ void Dialog::ShowDialog(int ID)
 			Убираем вызов плагиновго обработчика.
 		*/
 		// DlgProc(DN_DRAWDIALOGDONE,1,0);
-		DefDlgProc(this, DN_DRAWDIALOGDONE, 1, 0);
+		DefDlgProc(DN_DRAWDIALOGDONE, 1, 0);
 	} else
 		DlgProc(DN_DRAWDIALOGDONE, 0, 0);
 }
 
 int Dialog::LenStrItem(int ID, const wchar_t *lpwszStr)
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 
 	if (!lpwszStr)
 		lpwszStr = Item[ID]->strData;
@@ -2377,7 +2340,7 @@ int Dialog::LenStrItem(int ID, const wchar_t *lpwszStr)
 
 bool Dialog::ProcessMoveDialog(DWORD Key)
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 
 	if (DialogMode.Check(DMODE_DRAGGED))	// если диалог таскается
 	{
@@ -2680,7 +2643,7 @@ int64_t Dialog::VMProcess(int OpCode, void *vParam, int64_t iParam)
 */
 int Dialog::ProcessKey(FarKey Key)
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 	_DIALOG(CleverSysLog CL(L"Dialog::ProcessKey"));
 	_DIALOG(SysLog(L"Param: Key=%ls", _FARKEY_ToName(Key)));
 	unsigned I;
@@ -3315,7 +3278,7 @@ void Dialog::ProcessKey(FarKey Key, unsigned ItemPos)
 */
 int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 	unsigned I;
 	int MsX, MsY;
 	int Type;
@@ -3742,7 +3705,7 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 
 bool Dialog::ProcessOpenComboBox(int Type, DialogItemEx *CurItem, unsigned CurFocusPos)
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 	FARString strStr;
 	DlgEdit *CurEditLine;
 
@@ -3770,7 +3733,7 @@ bool Dialog::ProcessOpenComboBox(int Type, DialogItemEx *CurItem, unsigned CurFo
 
 unsigned Dialog::ProcessRadioButton(unsigned CurRB)
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 	unsigned PrevRB = CurRB, J;
 	unsigned I;
 
@@ -3821,7 +3784,7 @@ unsigned Dialog::ProcessRadioButton(unsigned CurRB)
 
 bool Dialog::Do_ProcessFirstCtrl()
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 
 	if (FarIsEdit(Item[FocusPos]->Type)) {
 		((DlgEdit *)(Item[FocusPos]->ObjPtr))->ProcessKey(KEY_HOME);
@@ -3840,7 +3803,7 @@ bool Dialog::Do_ProcessFirstCtrl()
 
 bool Dialog::Do_ProcessNextCtrl(bool Up, bool IsRedraw)
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 	unsigned OldPos = FocusPos;
 	unsigned PrevPos = 0;
 
@@ -3978,7 +3941,7 @@ bool Dialog::MoveToCtrlVertical(bool up)
 
 bool Dialog::Do_ProcessTab(bool Next)
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 	unsigned I;
 
 	if (ItemCount > 1) {
@@ -4010,7 +3973,7 @@ bool Dialog::Do_ProcessTab(bool Next)
 
 bool Dialog::Do_ProcessSpace()
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 	int OldFocusPos;
 
 	if (Item[FocusPos]->Type == DI_CHECKBOX) {
@@ -4060,7 +4023,7 @@ bool Dialog::Do_ProcessSpace()
 */
 unsigned Dialog::ChangeFocus(unsigned CurFocusPos, int Step, bool SkipGroup)
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 	unsigned OrigFocusPos = CurFocusPos;
 
 	for (;;) {
@@ -4100,7 +4063,7 @@ unsigned Dialog::ChangeFocus(unsigned CurFocusPos, int Step, bool SkipGroup)
 */
 void Dialog::ChangeFocus2(unsigned SetFocusPos)
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 	int FocusPosNeed = -1;
 
 	if (IsItemFocusable(Item[SetFocusPos])) {
@@ -4196,7 +4159,7 @@ int Dialog::SetAutomation(WORD IDParent, WORD id, FarDialogItemFlags UncheckedSe
 		FarDialogItemFlags UncheckedSkip, FarDialogItemFlags CheckedSet, FarDialogItemFlags CheckedSkip,
 		FarDialogItemFlags Checked3Set, FarDialogItemFlags Checked3Skip)
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 	int Ret = FALSE;
 
 	if (IDParent < ItemCount && (Item[IDParent]->Flags & DIF_AUTOMATION) && id < ItemCount
@@ -4218,7 +4181,7 @@ int Dialog::SelectFromComboBox(DialogItemEx *CurItem,
 		DlgEdit *EditLine,		// строка редактирования
 		VMenu *ComboBox)		// список строк
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 	FARString strStr;
 	int I, Dest, OriginalPos;
 	unsigned CurFocusPos = FocusPos;
@@ -4351,7 +4314,7 @@ int Dialog::SelectFromComboBox(DialogItemEx *CurItem,
 bool Dialog::SelectFromEditHistory(DialogItemEx *CurItem, DlgEdit *EditLine, const wchar_t *HistoryName,
 		FARString &strIStr)
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 
 	if (!EditLine)
 		return false;
@@ -4402,7 +4365,7 @@ bool Dialog::SelectFromEditHistory(DialogItemEx *CurItem, DlgEdit *EditLine, con
 */
 int Dialog::AddToEditHistory(const wchar_t *AddStr, const wchar_t *HistoryName)
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 
 	FARString strRegKey = fmtSavedDialogHistory;
 	strRegKey+= HistoryName;
@@ -4414,7 +4377,7 @@ int Dialog::AddToEditHistory(const wchar_t *AddStr, const wchar_t *HistoryName)
 
 int Dialog::CheckHighlights(WORD CheckSymbol, int StartPos)
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 	int Type, I;
 	DWORD Flags;
 
@@ -4449,7 +4412,7 @@ int Dialog::CheckHighlights(WORD CheckSymbol, int StartPos)
 */
 int Dialog::ProcessHighlighting(FarKey Key, unsigned FocusPos, bool Translate)
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 	int Type;
 	DWORD Flags;
 
@@ -4530,7 +4493,7 @@ int Dialog::ProcessHighlighting(FarKey Key, unsigned FocusPos, bool Translate)
 */
 void Dialog::AdjustEditPos(int dx, int dy)
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 	DialogItemEx *CurItem;
 	int x1, x2, y1, y2;
 
@@ -4624,7 +4587,7 @@ void Dialog::Process()
 
 void Dialog::CloseDialog()
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 	GetDialogObjectsData();
 
 	if (DlgProc(DN_CLOSE, ExitCode, 0)) {
@@ -4653,7 +4616,7 @@ void Dialog::CloseDialog()
 */
 void Dialog::SetHelp(const wchar_t *Topic)
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 
 	if (Topic)
 		HelpTopic = Topic;
@@ -4663,7 +4626,7 @@ void Dialog::SetHelp(const wchar_t *Topic)
 
 void Dialog::ShowHelp()
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 
 	if (!HelpTopic.IsEmpty())
 		Help Hlp(HelpTopic);
@@ -4671,14 +4634,14 @@ void Dialog::ShowHelp()
 
 void Dialog::ClearDone()
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 	ExitCode = -1;
 	DialogMode.Clear(DMODE_ENDLOOP);
 }
 
 void Dialog::SetExitCode(int Code)
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 	ExitCode = Code;
 	DialogMode.Set(DMODE_ENDLOOP);
 	// CloseDialog();
@@ -4697,7 +4660,7 @@ void Dialog::OnChangeFocus(bool focus)
 */
 int Dialog::GetTypeAndName(FARString &strType, FARString &strName)
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 	strType = Msg::DialogType;
 	strName.Clear();
 	const wchar_t *lpwszTitle = GetDialogTitle();
@@ -4715,7 +4678,7 @@ int Dialog::FastHide()
 
 void Dialog::ResizeConsole()
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 
 	DialogMode.Set(DMODE_RESIZED);
 
@@ -4738,7 +4701,7 @@ void Dialog::ResizeConsole()
 	}
 };
 
-LONG_PTR WINAPI Dialog::DlgProc(int Msg, int Param1, LONG_PTR Param2)
+LONG_PTR Dialog::DlgProc(int Msg, int Param1, LONG_PTR Param2)
 {
 	if (DialogMode.Check(DMODE_ENDLOOP))
 		return 0;
@@ -4765,24 +4728,20 @@ LONG_PTR WINAPI Dialog::DlgProc(int Msg, int Param1, LONG_PTR Param2)
 	Вот именно эта функция и является последним рубежом обработки диалога.
 	Т.е. здесь должна быть ВСЯ обработка ВСЕХ сообщений!!!
 */
-LONG_PTR WINAPI DefDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
+LONG_PTR Dialog::DefDlgProc(int Msg, int Param1, LONG_PTR Param2)
 {
 	_DIALOG(CleverSysLog CL(L"Dialog.DefDlgProc()"));
-	_DIALOG(SysLog(L"hDlg=%p, Msg=%ls, Param1=%d (0x%08X), Param2=%d (0x%08X)", hDlg, _DLGMSG_ToName(Msg),
+	_DIALOG(SysLog(L"hDlg=%p, Msg=%ls, Param1=%d (0x%08X), Param2=%d (0x%08X)", this, _DLGMSG_ToName(Msg),
 			Param1, Param1, Param2, Param2));
 
-	if (!hDlg || hDlg == INVALID_HANDLE_VALUE)
-		return 0;
+	FarDialogEvent de = {this, Msg, Param1, Param2, 0};
 
-	FarDialogEvent de = {hDlg, Msg, Param1, Param2, 0};
-
-	Dialog *Dlg = reinterpret_cast<Dialog*>(hDlg);
-	if (!Dlg->CheckDialogMode(DMODE_NOPLUGINS)) {
+	if (!CheckDialogMode(DMODE_NOPLUGINS)) {
 		if (CtrlObject->Plugins.ProcessDialogEvent(DE_DEFDLGPROCINIT, &de)) {
 			return de.Result;
 		}
 	}
-	CriticalSectionLock Lock(Dlg->CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 
 	switch (Msg) {
 		case DN_INITDIALOG:
@@ -4807,10 +4766,10 @@ LONG_PTR WINAPI DefDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 					2) когда диалог перемещается из угла
 					сделал вывод красных палочек по углам
 				*/
-				Text(Dlg->X1, Dlg->Y1, 0xCE, L"\\");
-				Text(Dlg->X1, Dlg->Y2, 0xCE, L"/");
-				Text(Dlg->X2, Dlg->Y1, 0xCE, L"/");
-				Text(Dlg->X2, Dlg->Y2, 0xCE, L"\\");
+				Text(X1, Y1, 0xCE, L"\\");
+				Text(X1, Y2, 0xCE, L"/");
+				Text(X2, Y1, 0xCE, L"/");
+				Text(X2, Y2, 0xCE, L"\\");
 			}
 
 			return TRUE;
@@ -4828,10 +4787,10 @@ LONG_PTR WINAPI DefDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 	}
 
 	// предварительно проверим...
-	if (Param1 < 0 || (unsigned)Param1 >= Dlg->ItemCount || !Dlg->Item)
+	if (Param1 < 0 || (unsigned)Param1 >= ItemCount || !Item)
 		return 0;
 
-	DialogItemEx *CurItem = Dlg->Item[Param1];
+	DialogItemEx *CurItem = Item[Param1];
 
 	switch (Msg) {
 		case DN_MOUSECLICK:
@@ -4854,9 +4813,18 @@ LONG_PTR WINAPI DefDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 	return 0;
 }
 
+LONG_PTR WINAPI DefDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
+{
+	if (!hDlg || hDlg == INVALID_HANDLE_VALUE)
+		return 0;
+
+	Dialog *Dlg = reinterpret_cast<Dialog*>(hDlg);
+	return Dlg->DefDlgProc(Msg, Param1, Param2);
+}
+
 LONG_PTR Dialog::CallDlgProc(int nMsg, int nParam1, LONG_PTR nParam2)
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 	return DlgProc(nMsg, nParam1, nParam2);
 }
 
@@ -6471,7 +6439,7 @@ LONG_PTR WINAPI SendDlgMessage(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 
 void Dialog::SetPosition(int x1, int y1, int x2, int y2)
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 
 	if (x1 >= 0)
 		RealWidth = x2 - x1 + 1;
@@ -6488,7 +6456,7 @@ void Dialog::SetPosition(int x1, int y1, int x2, int y2)
 //////////////////////////////////////////////////////////////////////////
 bool Dialog::IsInited()
 {
-	CriticalSectionLock Lock(CS);
+	SCOPED_ACTION(CriticalSectionLock)(CS);
 	return DialogMode.Check(DMODE_INITOBJECTS);
 }
 
