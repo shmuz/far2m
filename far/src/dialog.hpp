@@ -277,7 +277,6 @@ class ConsoleTitle;
 class Dialog : public Frame
 {
 	friend class DlgEdit;
-	friend LONG_PTR SendDlgMessageSynched(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2);
 	friend LONG_PTR WINAPI DefDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2);
 
 private:
@@ -398,6 +397,7 @@ public:
 	~Dialog() override;
 
 public:
+	LONG_PTR SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2);
 	int ProcessKey(FarKey Key) override;
 	int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent) override;
 	int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0) override;

@@ -1103,7 +1103,7 @@ namespace oldfar
 
 	struct ViewerInfo
 	{
-		int               StructSize;
+		size_t            StructSize;
 		int               ViewerID;
 		const char       *FileName;
 		INT64          FileSize;
@@ -1581,7 +1581,7 @@ namespace oldfar
 
 	typedef struct FarStandardFunctions
 	{
-		int StructSize;
+		size_t StructSize;
 
 		FARSTDATOI                 atoi;
 		FARSTDATOI64               atoi64;
@@ -1642,7 +1642,7 @@ namespace oldfar
 
 	struct PluginStartupInfo
 	{
-		int                    StructSize;
+		size_t                 StructSize;
 		char                   ModuleName[NM];
 		INT_PTR                ModuleNumber;
 		const char            *RootKey;
@@ -1692,7 +1692,7 @@ namespace oldfar
 
 	struct PluginInfo
 	{
-		int StructSize;
+		size_t StructSize;
 		DWORD Flags;
 		const char * const *DiskMenuStrings;
 		int *DiskMenuNumbers;
@@ -1795,7 +1795,7 @@ namespace oldfar
 
 	struct OpenPluginInfo
 	{
-		int                   StructSize;
+		size_t                StructSize;
 		DWORD                 Flags;
 		const char           *HostFile;
 		const char           *CurDir;
