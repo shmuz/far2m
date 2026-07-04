@@ -293,7 +293,7 @@ private:
 	LONG_PTR DataDialog;		// Данные, специфические для конкретного экземпляра диалога
 								//           (первоначально здесь параметр, переданный в конструктор)
 
-	DialogItemEx **Item;		// массив элементов диалога
+	std::vector<DialogItemEx> Item;	// массив элементов диалога
 	DialogItemEx *pSaveItemEx;	// пользовательский массив элементов диалога
 
 	int ItemCount;			// количество элементов диалога
@@ -325,7 +325,7 @@ private:
 
 	void ShowDialog(int ID = -1);	// ID=-1 - отрисовать весь диалог
 
-	DWORD CtlColorDlgItem(int ItemPos, const DialogItemEx *CurItem, uint64_t *ItemColor);
+	DWORD CtlColorDlgItem(int ItemPos, const DialogItemEx &CurItem, uint64_t *ItemColor);
 	/*
 		$ 28.07.2000 SVS
 		+ Изменяет фокус ввода между двумя элементами.
@@ -334,12 +334,12 @@ private:
 	void ChangeFocus2(int SetFocusPos);
 
 	int ChangeFocus(int FocusPos, int Step, bool SkipGroup);
-	bool SelectFromEditHistory(DialogItemEx *CurItem, DlgEdit *EditLine, const wchar_t *HistoryName,
+	bool SelectFromEditHistory(DialogItemEx &CurItem, DlgEdit *EditLine, const wchar_t *HistoryName,
 			FARString &strStr);
-	int SelectFromComboBox(DialogItemEx *CurItem, DlgEdit *EditLine, VMenu *List);
+	int SelectFromComboBox(DialogItemEx &CurItem, DlgEdit *EditLine, VMenu *List);
 	int AddToEditHistory(const wchar_t *AddStr, const wchar_t *HistoryName);
 
-	void ProcessLastHistory(DialogItemEx *CurItem, int MsgIndex);	// обработка DIF_USELASTHISTORY
+	void ProcessLastHistory(DialogItemEx &CurItem, int MsgIndex);	// обработка DIF_USELASTHISTORY
 
 	int ProcessHighlighting(FarKey Key, int FocusPos, bool Translate);
 	int CheckHighlights(WORD Chr, int StartPos = 0);
@@ -348,7 +348,7 @@ private:
 
 	void CheckDialogCoord();
 	bool GetItemRect(int I, SMALL_RECT &Rect);
-	bool ItemHasDropDownArrow(const DialogItemEx *Item);
+	bool ItemHasDropDownArrow(const DialogItemEx &Item) const;
 
 	// возвращает заголовок диалога (текст первого текста или фрейма)
 	const wchar_t *GetDialogTitle();
@@ -368,7 +368,7 @@ private:
 
 	int InitDialogObjects(int ID = -1);
 
-	bool ProcessOpenComboBox(int Type, DialogItemEx *CurItem, int CurFocusPos);
+	bool ProcessOpenComboBox(int Type, DialogItemEx &CurItem, int CurFocusPos);
 	bool ProcessMoveDialog(DWORD Key);
 
 	bool Do_ProcessTab(bool Next);
@@ -441,7 +441,7 @@ public:
 	void CloseDialog();
 
 	// For MACRO
-	const DialogItemEx **GetAllItem() { return (const DialogItemEx **)Item; };
+	const DialogItemEx *GetAllItem() { return Item.data(); };
 	int GetAllItemCount() const { return ItemCount; };	// количество элементов диалога
 	int GetDlgFocusPos() const { return FocusPos; };
 

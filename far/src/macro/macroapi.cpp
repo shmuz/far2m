@@ -2074,7 +2074,7 @@ void FarMacroApi::dlggetvalueFunc()
 			Index = Dlg->GetDlgFocusPos();
 
 		int DlgItemCount = Dlg->GetAllItemCount();
-		const DialogItemEx **DlgItem = Dlg->GetAllItem();
+		const DialogItemEx *DlgItem = Dlg->GetAllItem();
 
 		if (Index == -1)
 		{
@@ -2095,7 +2095,7 @@ void FarMacroApi::dlggetvalueFunc()
 		}
 		else if (Index < DlgItemCount && DlgItem)
 		{
-			const DialogItemEx *Item=DlgItem[Index];
+			const DialogItemEx *Item = &DlgItem[Index];
 			int ItemType=Item->Type;
 			DWORD ItemFlags=Item->Flags;
 

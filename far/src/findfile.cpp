@@ -1516,7 +1516,7 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 {
 	Vars *v = reinterpret_cast<Vars *>(SendDlgMessage(hDlg, DM_GETDLGDATA));
 	Dialog *Dlg = reinterpret_cast<Dialog *>(hDlg);
-	VMenu *ListBox = Dlg->GetAllItem()[FD_LISTBOX]->ListPtr;
+	VMenu *ListBox = Dlg->GetAllItem()[FD_LISTBOX].ListPtr;
 
 	static bool Recurse = false;
 	static DWORD ShowTime = 0;
@@ -2003,7 +2003,7 @@ AddMenuRecord(HANDLE hDlg, const wchar_t *FullName, const FAR_FIND_DATA_EX &Find
 	if (!hDlg)
 		return;
 
-	VMenu *ListBox = reinterpret_cast<Dialog *>(hDlg)->GetAllItem()[FD_LISTBOX]->ListPtr;
+	VMenu *ListBox = reinterpret_cast<Dialog *>(hDlg)->GetAllItem()[FD_LISTBOX].ListPtr;
 
 	if (!ListBox->GetItemCount()) {
 		SendDlgMessage(hDlg, DM_ENABLE, FD_BUTTON_GOTO, TRUE);

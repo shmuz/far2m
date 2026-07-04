@@ -221,7 +221,7 @@ static void flags_show(HANDLE hDlg, bool toggle)
 	char ch;
 	FARString strFlagsBar, strListBoxLine;
 
-	VMenu *ListBox = reinterpret_cast<Dialog *>(hDlg)->GetAllItem()[CA_LIST_FLAGS]->ListPtr;
+	VMenu *ListBox = reinterpret_cast<Dialog *>(hDlg)->GetAllItem()[CA_LIST_FLAGS].ListPtr;
 	FSFileFlags *FFFlags =
 			reinterpret_cast<FSFileFlags *>(SendDlgMessage(hDlg, DM_GETDLGDATA));
 
@@ -252,7 +252,7 @@ static LONG_PTR WINAPI ChattrDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR 
 {
 	switch (Msg) {
 		case DN_INITDIALOG: {
-			VMenu *ListBox = reinterpret_cast<Dialog *>(hDlg)->GetAllItem()[CA_LIST_FLAGS]->ListPtr;
+			VMenu *ListBox = reinterpret_cast<Dialog *>(hDlg)->GetAllItem()[CA_LIST_FLAGS].ListPtr;
 			ListBox->ClearFlags(VMENU_MOUSEREACTION);
 			flags_show(hDlg, false);
 			return TRUE;
