@@ -2064,86 +2064,81 @@ void FarMacroApi::dlggetvalueFunc()
 {
 	auto Params = parseParams(2);
 	TVar Ret(-1);
-	int Index=(int)Params[0].getInteger()-1;
+	int Index = (int)Params[0].getInteger() - 1;
 	int InfoID = Params[1].getInt32();
 	auto Dlg = dynamic_cast<Dialog*>(FrameManager->GetCurrentFrame());
 
-	if (Dlg && CtrlObject->Macro.GetArea()==MACROAREA_DIALOG)
+	if (Dlg && CtrlObject->Macro.GetArea() == MACROAREA_DIALOG)
 	{
 		if (Params[0].isUnknown() || ((Params[0].isInteger() || Params[0].isDouble()) && Index < -1))
 			Index = Dlg->GetDlgFocusPos();
 
-		int DlgItemCount = Dlg->ItemCount();
 		const DialogItemEx *DlgItem = Dlg->GetAllItem();
 
 		if (Index == -1)
 		{
 			SMALL_RECT Rect;
 
-			if (SendDlgMessage(Dlg,DM_GETDLGRECT,0,(LONG_PTR)&Rect))
+			if (SendDlgMessage(Dlg, DM_GETDLGRECT, 0, (LONG_PTR)&Rect))
 			{
 				switch (InfoID)
 				{
-					case 0: Ret=(int64_t)DlgItemCount; break;
-					case 2: Ret=Rect.Left; break;
-					case 3: Ret=Rect.Top; break;
-					case 4: Ret=Rect.Right; break;
-					case 5: Ret=Rect.Bottom; break;
-					case 6: Ret=(int64_t)Dlg->GetDlgFocusPos()+1; break;
+					case 0: Ret = Dlg->ItemCount(); break;
+					case 2: Ret = Rect.Left; break;
+					case 3: Ret = Rect.Top; break;
+					case 4: Ret = Rect.Right; break;
+					case 5: Ret = Rect.Bottom; break;
+					case 6: Ret = Dlg->GetDlgFocusPos()+1; break;
 				}
 			}
 		}
-		else if (Index < DlgItemCount && DlgItem)
+		else if (Index < Dlg->ItemCount() && DlgItem)
 		{
-			const DialogItemEx *Item = &DlgItem[Index];
-			int ItemType=Item->Type;
-			DWORD ItemFlags=Item->Flags;
+			const DialogItemEx &Item = DlgItem[Index];
+			int ItemType = Item.Type;
+			DWORD ItemFlags = Item.Flags;
 
 			if (!InfoID)
 			{
 				if (ItemType == DI_CHECKBOX || ItemType == DI_RADIOBUTTON)
 				{
-					InfoID=7;
+					InfoID = 7;
 				}
 				else if (ItemType == DI_COMBOBOX || ItemType == DI_LISTBOX)
 				{
-					FarListGetItem ListItem;
-					ListItem.ItemIndex=Item->ListPtr->GetSelectPos();
+					FarListGetItem ListItem {};
+					ListItem.ItemIndex = Item.ListPtr->GetSelectPos();
 
-					if (SendDlgMessage(Dlg,DM_LISTGETITEM,Index,(LONG_PTR)&ListItem))
-					{
-						Ret=ListItem.Item.Text;
-					}
+					if (SendDlgMessage(Dlg, DM_LISTGETITEM, Index, (LONG_PTR)&ListItem))
+						Ret = ListItem.Item.Text;
 					else
-					{
-						Ret=L"";
-					}
+						Ret = L"";
 
-					InfoID=-1;
+					InfoID = -1;
 				}
 				else
 				{
-					InfoID=10;
+					InfoID = 10;
 				}
 			}
 
 			switch (InfoID)
 			{
-				case 1: Ret=ItemType;    break;
-				case 2: Ret=Item->X1;    break;
-				case 3: Ret=Item->Y1;    break;
-				case 4: Ret=Item->X2;    break;
-				case 5: Ret=Item->Y2;    break;
-				case 6: Ret=Item->Focus; break;
+				case 1: Ret = ItemType;   break;
+				case 2: Ret = Item.X1;    break;
+				case 3: Ret = Item.Y1;    break;
+				case 4: Ret = Item.X2;    break;
+				case 5: Ret = Item.Y2;    break;
+				case 6: Ret = Item.Focus; break;
 				case 7:
 				{
 					if (ItemType == DI_CHECKBOX || ItemType == DI_RADIOBUTTON)
 					{
-						Ret=Item->Selected;
+						Ret = Item.Selected;
 					}
 					else if (ItemType == DI_COMBOBOX || ItemType == DI_LISTBOX)
 					{
-						Ret=Item->ListPtr->GetSelectPos()+1;
+						Ret = Item.ListPtr->GetSelectPos()+1;
 					}
 					else
 					{
@@ -2151,15 +2146,15 @@ void FarMacroApi::dlggetvalueFunc()
 					}
 					break;
 				}
-				case 8: Ret=(int64_t)ItemFlags; break;
-				case 9: Ret=Item->DefaultButton; break;
+				case 8: Ret = (int64_t)ItemFlags; break;
+				case 9: Ret = Item.DefaultButton; break;
 				case 10:
 				{
-					Ret=Item->strData.CPtr();
+					Ret=Item.strData.CPtr();
 					if (FarIsEdit(ItemType))
 					{
-						if (auto EditPtr = (DlgEdit*)(Item->ObjPtr))
-							Ret=EditPtr->GetStringAddr();
+						if (auto EditPtr = (DlgEdit*)(Item.ObjPtr))
+							Ret = EditPtr->GetStringAddr();
 					}
 					break;
 				}
@@ -2167,7 +2162,7 @@ void FarMacroApi::dlggetvalueFunc()
 				{
 					if (ItemType == DI_COMBOBOX || ItemType == DI_LISTBOX)
 					{
-						Ret = Item->ListPtr->GetItemCount();
+						Ret = Item.ListPtr->GetItemCount();
 					}
 					break;
 				}
