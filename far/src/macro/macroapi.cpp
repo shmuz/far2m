@@ -2073,7 +2073,7 @@ void FarMacroApi::dlggetvalueFunc()
 		if (Params[0].isUnknown() || ((Params[0].isInteger() || Params[0].isDouble()) && Index < -1))
 			Index = Dlg->GetDlgFocusPos();
 
-		int DlgItemCount = Dlg->GetAllItemCount();
+		int DlgItemCount = Dlg->ItemCount();
 		const DialogItemEx *DlgItem = Dlg->GetAllItem();
 
 		if (Index == -1)

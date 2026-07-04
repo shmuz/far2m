@@ -178,7 +178,7 @@ int DlgEdit::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 void DlgEdit::DisplayObject()
 {
 	if (Type == DLGEDIT_MULTILINE) {
-		if (m_Dialog && m_Index < m_Dialog->ItemCount) {
+		if (m_Dialog && m_Index < m_Dialog->ItemCount()) {
 			DialogItemEx &CurItem = m_Dialog->Item[m_Index];
 			multiEdit->SetShowCursor(CurItem.Focus != 0);
 		}
@@ -200,7 +200,7 @@ void DlgEdit::SetPosition(int x1, int y1, int x2, int y2)
 void DlgEdit::Show()
 {
 	if (Type == DLGEDIT_MULTILINE) {
-		if (m_Dialog && m_Index < m_Dialog->ItemCount) {
+		if (m_Dialog && m_Index < m_Dialog->ItemCount()) {
 			DialogItemEx &CurItem = m_Dialog->Item[m_Index];
 			multiEdit->SetShowCursor(CurItem.Focus != 0);
 		}
@@ -496,7 +496,7 @@ uint64_t DlgEdit::GetObjectColorUnChanged()
 void DlgEdit::FastShow()
 {
 	if (Type == DLGEDIT_MULTILINE) {
-		if (m_Dialog && m_Index < m_Dialog->ItemCount) {
+		if (m_Dialog && m_Index < m_Dialog->ItemCount()) {
 			DialogItemEx &CurItem = m_Dialog->Item[m_Index];
 			multiEdit->SetShowCursor(CurItem.Focus != 0);
 		}

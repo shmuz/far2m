@@ -296,8 +296,6 @@ private:
 	std::vector<DialogItemEx> Item;	// массив элементов диалога
 	DialogItemEx *pSaveItemEx;	// пользовательский массив элементов диалога
 
-	int ItemCount;			// количество элементов диалога
-
 	ConsoleTitle *OldTitle;		// предыдущий заголовок
 
 	FARWINDOWPROC RealDlgProc;	// функция обработки диалога
@@ -442,7 +440,7 @@ public:
 
 	// For MACRO
 	const DialogItemEx *GetAllItem() const { return Item.data(); };
-	int GetAllItemCount() const { return ItemCount; };	// количество элементов диалога
+	int ItemCount() const { return Item.size(); };	// количество элементов диалога
 	int GetDlgFocusPos() const { return FocusPos; };
 
 	int SetAutomation(WORD IDParent, WORD id, FarDialogItemFlags UncheckedSet,
