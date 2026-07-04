@@ -441,7 +441,7 @@ public:
 	void CloseDialog();
 
 	// For MACRO
-	const DialogItemEx *GetAllItem() { return Item.data(); };
+	const DialogItemEx *GetAllItem() const { return Item.data(); };
 	int GetAllItemCount() const { return ItemCount; };	// количество элементов диалога
 	int GetDlgFocusPos() const { return FocusPos; };
 

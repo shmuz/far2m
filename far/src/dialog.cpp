@@ -423,8 +423,8 @@ Dialog::Dialog(DialogItemEx *SrcItem,		// Набор элементов диал
 		DialogItemExToDialogItemEx(&SrcItem[i], &Item.back());
 	}
 
-	Dialog::ItemCount = aSrcItemCount;
-	Dialog::pSaveItemEx = SrcItem;
+	ItemCount = aSrcItemCount;
+	pSaveItemEx = SrcItem;
 	Init(aDlgProc, aInitParam);
 }
 
@@ -444,8 +444,8 @@ Dialog::Dialog(FarDialogItem *SrcItem,		// Набор элементов диа�
 		ConvertItemEx(CVTITEM_FROMPLUGIN, &SrcItem[i], &Item.back(), 1);
 	}
 
-	Dialog::ItemCount = SrcItemCount;
-	Dialog::pSaveItemEx = nullptr;
+	ItemCount = SrcItemCount;
+	pSaveItemEx = nullptr;
 	Init(aDlgProc, InitParam);
 }
 
@@ -3110,7 +3110,7 @@ int Dialog::ProcessKey(FarKey Key)
 								DEL у итемов, имеющих DIF_EDITOR, работал без учета
 								выделения...
 							*/
-							if (FocusPos < ItemCount + 1 && (Item[FocusPos + 1].Flags & DIF_EDITOR)) {
+							if (FocusPos + 1 < ItemCount && (Item[FocusPos + 1].Flags & DIF_EDITOR)) {
 								int CurPos = edt->GetCurPos();
 								int Length = edt->GetLength();
 								int SelStart, SelEnd;
