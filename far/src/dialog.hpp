@@ -197,7 +197,7 @@ struct DialogItemEx
 		Y1 = Other.Y1;
 		Y2 = Other.Y2;
 
-        memcpy(customItemColor, Other.customItemColor, sizeof(customItemColor));
+		memcpy(customItemColor, Other.customItemColor, sizeof(customItemColor));
 
 		Focus = Other.Focus;
 		Reserved = Other.Reserved;
@@ -245,6 +245,10 @@ struct DialogItemEx
 		}
 		return false;
 	}
+
+	bool HasDropDownArrow() const;
+	bool IsHorizontalSeparator() const;
+	bool IsVerticalSeparator() const;
 };
 
 /*
@@ -323,7 +327,7 @@ private:
 
 	void ShowDialog(int ID = -1);	// ID=-1 - отрисовать весь диалог
 
-	DWORD CtlColorDlgItem(int ItemPos, const DialogItemEx &CurItem, uint64_t *ItemColor);
+	DWORD CtlColorDlgItem(int ItemPos, uint64_t *ItemColor);
 	/*
 		$ 28.07.2000 SVS
 		+ Изменяет фокус ввода между двумя элементами.
@@ -345,12 +349,11 @@ private:
 	void SelectOnEntry(int Pos, bool Selected);
 
 	void CheckDialogCoord();
-	bool GetItemRect(int I, SMALL_RECT &Rect);
-	bool ItemHasDropDownArrow(const DialogItemEx &Item) const;
 
 	// возвращает заголовок диалога (текст первого текста или фрейма)
 	const wchar_t *GetDialogTitle();
 
+	bool GetItemRect(int I, SMALL_RECT &Rect);
 	bool SetItemRect(int ID, SMALL_RECT *Rect);
 
 	/*
@@ -434,7 +437,7 @@ public:
 
 	void SetHelp(const wchar_t *Topic);
 	void ShowHelp();
-	int Done() const { return DialogMode.Check(DMODE_ENDLOOP); }
+	bool Done() const { return DialogMode.Check(DMODE_ENDLOOP); }
 	void ClearDone();
 	void CloseDialog();
 

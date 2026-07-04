@@ -124,19 +124,19 @@ static inline bool IsItemFocusable(const DialogItemEx& item)
 /**
  * check if dialog item is horizontal separator.
 */
-static inline bool IsItemHorizontalSeparator(const struct DialogItemEx& item)
+bool DialogItemEx::IsHorizontalSeparator() const
 {
-	return (item.Type == DI_SINGLEBOX || item.Type == DI_DOUBLEBOX ||
-		(item.Type == DI_TEXT && (item.Flags & (DIF_SEPARATOR | DIF_SEPARATOR2 | DIF_SEPARATORUSER))));
+	return (Type == DI_SINGLEBOX || Type == DI_DOUBLEBOX ||
+		(Type == DI_TEXT && (Flags & (DIF_SEPARATOR | DIF_SEPARATOR2 | DIF_SEPARATORUSER))));
 }
 
 /**
  * check if dialog item is vertical separator.
 */
-static inline bool IsItemVerticalSeparator(const struct DialogItemEx& item)
+bool DialogItemEx::IsVerticalSeparator() const
 {
-	return (item.Type == DI_SINGLEBOX || item.Type == DI_DOUBLEBOX ||
-		(item.Type == DI_VTEXT && (item.Flags & (DIF_SEPARATOR | DIF_SEPARATOR2 | DIF_SEPARATORUSER))));
+	return (Type == DI_SINGLEBOX || Type == DI_DOUBLEBOX ||
+		(Type == DI_VTEXT && (Flags & (DIF_SEPARATOR | DIF_SEPARATOR2 | DIF_SEPARATORUSER))));
 }
 
 bool IsKeyHighlighted(const wchar_t *Str, FarKey Key, bool Translate, int AmpPos)
@@ -1152,9 +1152,9 @@ bool Dialog::GetItemRect(int I, SMALL_RECT &Rect)
 		case DI_MEMOEDIT:
 			break;
 		default:
-			Len = ((ItemFlags & DIF_SHOWAMPERSAND)
+			Len = (ItemFlags & DIF_SHOWAMPERSAND)
 							? (int)CurItem.strData.CellsCount()
-							: HiStrCellsCount(CurItem.strData));
+							: HiStrCellsCount(CurItem.strData);
 			break;
 	}
 
@@ -1234,10 +1234,10 @@ bool Dialog::GetItemRect(int I, SMALL_RECT &Rect)
 	return true;
 }
 
-bool Dialog::ItemHasDropDownArrow(const DialogItemEx &Item) const
+bool DialogItemEx::HasDropDownArrow() const
 {
-	return ((!Item.strHistory.IsEmpty() && (Item.Flags & DIF_HISTORY) && Opt.Dialogs.EditHistory)
-			|| (Item.Type == DI_COMBOBOX && Item.ListPtr && Item.ListPtr->GetItemCount() > 0));
+	return (!strHistory.IsEmpty() && (Flags & DIF_HISTORY) && Opt.Dialogs.EditHistory)
+			|| (Type == DI_COMBOBOX && ListPtr && ListPtr->GetItemCount() > 0);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1361,16 +1361,17 @@ void Dialog::GetDialogObjectsData()
 				break;
 		}
 
-		if ((Type == DI_COMBOBOX || Type == DI_LISTBOX)) {
+		if (Type == DI_COMBOBOX || Type == DI_LISTBOX) {
 			CurItem.ListPos = CurItem.ListPtr ? CurItem.ListPtr->GetSelectPos() : 0;
 		}
 	}
 }
 
 // Функция формирования и запроса цветов.
-DWORD Dialog::CtlColorDlgItem(int ItemPos, const DialogItemEx &CurItem, uint64_t *Color)
+DWORD Dialog::CtlColorDlgItem(int ItemPos, uint64_t *Color)
 {
 	SCOPED_ACTION(CriticalSectionLock)(CS);
+	const auto &CurItem = Item[ItemPos];
 	const int Type = CurItem.Type;
 	const int Focus = CurItem.Focus;
 	const int Default = CurItem.DefaultButton;
@@ -1831,7 +1832,7 @@ void Dialog::ShowDialog(int ID)
 		short CW = CX2 - CX1 + 1;
 		short CH = CY2 - CY1 + 1;
 
-		CtlColorDlgItem(I, CurItem, ItemColor);
+		CtlColorDlgItem(I, ItemColor);
 
 		for (size_t g = 0; g < DLG_ITEM_MAX_CUST_COLORS; g++) {
 			if (CurItem.customItemColor[g])
@@ -2192,7 +2193,7 @@ void Dialog::ShowDialog(int ID)
 				if (DialogMode.Check(DMODE_DRAGGED))
 					SetCursorType(false, 0);
 
-				if (ItemHasDropDownArrow(CurItem)) {
+				if (CurItem.HasDropDownArrow()) {
 					int EditX1, EditY1, EditX2, EditY2;
 					EditPtr->GetPosition(EditX1, EditY1, EditX2, EditY2);
 					// Text((CurItem.Type == DI_COMBOBOX?"\x1F":"\x19"));
@@ -3485,7 +3486,7 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 				Rect.Top+= Y1;
 				Rect.Right+= X1;
 				Rect.Bottom+= Y1;
-				if (ItemHasDropDownArrow(Item[I]))
+				if (Item[I].HasDropDownArrow())
 					Rect.Right++;
 
 				if (MsX >= Rect.Left && MsY >= Rect.Top && MsX <= Rect.Right && MsY <= Rect.Bottom) {
@@ -3529,7 +3530,7 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 							return TRUE;
 						} else {
 							// Проверка на DI_COMBOBOX здесь лишняя. Убрана (KM).
-							if (MsX == EditX2 + 1 && MsY == EditY1 && ItemHasDropDownArrow(Item[I])) {
+							if (MsX == EditX2 + 1 && MsY == EditY1 && Item[I].HasDropDownArrow()) {
 								EditLine->SetClearFlag(false);	// раз уж покусились на, то и...
 
 								ChangeFocus2(I);
@@ -3793,15 +3794,15 @@ bool Dialog::Do_ProcessNextCtrl(bool Up, bool IsRedraw)
 
 bool Dialog::MoveToCtrlHorizontal(bool right)
 {
-	int MinDist     = RealWidth,
-		LeftBorder  = 0,
-		RightBorder = RealWidth,
-		Dist        = 0,
-		MinPos      = 0;
+	int MinDist     = RealWidth;
+	int	LeftBorder  = 0;
+	int	RightBorder = RealWidth;
+	int	Dist        = 0;
+	int	MinPos      = 0;
 
 	for (int I = 0; I < ItemCount(); I++) {
 		//first, let's find nearest borders
-		if (IsItemHorizontalSeparator(Item[I])) {
+		if (Item[I].IsHorizontalSeparator()) {
 			if (Item[I].X1 < Item[FocusPos].X1){
 				if (LeftBorder < Item[I].X1) {
 					LeftBorder = Item[I].X1;
@@ -3834,30 +3835,28 @@ bool Dialog::MoveToCtrlHorizontal(bool right)
 	if (MinDist < RealWidth) {
 		ChangeFocus2(MinPos);
 
-		if (Item[MinPos].Flags & DIF_MOVESELECT) {
+		if (Item[MinPos].Flags & DIF_MOVESELECT)
 			Do_ProcessSpace();
-		} else {
+		else
 			ShowDialog();
-		}
-	} else {
-		return Do_ProcessNextCtrl(!right);
 	}
-
+	else
+		return Do_ProcessNextCtrl(!right);
 
 	return true;
 }
 
 bool Dialog::MoveToCtrlVertical(bool up)
 {
-	int MinDist      = RealHeight,
-		UpperBorder  = 0,
-		BottomBorder = RealHeight,
-		Dist         = 0,
-		MinPos       = 0;
+	int MinDist      = RealHeight;
+	int UpperBorder  = 0;
+	int BottomBorder = RealHeight;
+	int Dist         = 0;
+	int MinPos       = 0;
 
 	for (int I = 0; I < ItemCount(); I++) {
 		//first, let's find nearest borders
-		if (IsItemVerticalSeparator(Item[I])) {
+		if (Item[I].IsVerticalSeparator()) {
 			if (Item[I].Y1 < Item[FocusPos].Y1){
 				if (UpperBorder < Item[I].Y1) {
 					UpperBorder = Item[I].Y1;
@@ -3890,14 +3889,13 @@ bool Dialog::MoveToCtrlVertical(bool up)
 	if (MinDist < 3) {
 		ChangeFocus2(MinPos);
 
-		if (Item[MinPos].Flags & DIF_MOVESELECT) {
+		if (Item[MinPos].Flags & DIF_MOVESELECT)
 			Do_ProcessSpace();
-		} else {
+		else
 			ShowDialog();
-		}
-	} else {
-		return Do_ProcessNextCtrl(up);
 	}
+	else
+		return Do_ProcessNextCtrl(up);
 
 	return true;
 }
@@ -6207,7 +6205,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 
 		case DM_GETDEFAULTCOLOR: {
 			if (Param2)
-				CtlColorDlgItem(Param1, CurItem, (uint64_t *)Param2);
+				CtlColorDlgItem(Param1, (uint64_t *)Param2);
 
 			return TRUE;
 		}
@@ -6417,8 +6415,7 @@ void Dialog::SetComboBoxPos(DialogItemEx *CurItem)
 		int EditX1, EditY1, EditX2, EditY2;
 		((DlgEdit *)CurItem->ObjPtr)->GetPosition(EditX1, EditY1, EditX2, EditY2);
 
-		if (EditX2 - EditX1 < 20)
-			EditX2 = EditX1 + 20;
+		EditX2 = Max(EditX2, EditX1 + 20);
 
 		if (ScrY - EditY1 < Min(Opt.Dialogs.CBoxMaxHeight, CurItem->ListPtr->GetItemCount()) + 2
 				&& EditY1 > ScrY / 2)
