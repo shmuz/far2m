@@ -435,7 +435,10 @@ end
 local function MenuLoop()
 --far.MacroLoadAll()
 
+  local windowInfo = far.AdvControl("ACTL_GETWINDOWINFO") -- must be called before opening the menu
+  local onTopModal = windowInfo and bit64.band(windowInfo.Flags, F.WIF_MODAL) ~= 0
   local farRect = far.AdvControl("ACTL_GETFARRECT")
+
   local props = {
     Title = Title,
     Flags = {FMENU_SHOWAMPERSAND=1,FMENU_WRAPMODE=1,FMENU_CHANGECONSOLETITLE=1},
@@ -458,15 +461,9 @@ local function MenuLoop()
       if isMoonScript then
         startline = utils.GetMoonscriptLineNumber(m.FileName,startline) or startline
       end
-      if IsModalEditor then
-        editor.Editor(m.FileName,nil,nil,nil,nil,nil,nil,startline,nil,65001)
-      else
-        local a = far.MacroGetArea()
-        if a==F.MACROAREA_SHELL or a==F.MACROAREA_EDITOR or a==F.MACROAREA_VIEWER then
-          local flags = {EF_NONMODAL=1,EF_IMMEDIATERETURN=1}
-          editor.Editor(m.FileName,nil,nil,nil,nil,nil,flags,startline,nil,65001)
-        end
-      end
+      local flags = not IsModalEditor and
+          {EF_NONMODAL=1, EF_IMMEDIATERETURN=1, EF_ENABLE_F6=1} or nil
+      editor.Editor(m.FileName,nil,nil,nil,nil,nil,flags,startline,nil,65001)
     else
       if m.code then utils.EditUnsavedMacro(m.LoadedMacrosIndex)
       else mf.postmacro(mf.acall, Message, Msg.MBNoFileNameAvail)
@@ -475,15 +472,23 @@ local function MenuLoop()
   end
 
   local function Callback(Pos, Key, Items)
+    local Ret = F.FMCB_DONTPROCESSKEY
+
     if Key == "F1" then
       ShowHelp()
     elseif Key == "F3" and Items[Pos] then
       ShowInfo(Items[Pos].macro)
-    elseif Key == "ShiftF4" and Items[Pos] then
-      Edit(Items[Pos], true)
-    elseif Key == "F4" and not Items[Pos] then
-      return F.FMCB_DONTPROCESSKEY -- break key will not be processed
+    elseif (Key == "ShiftF4" or Key == "F4") and Items[Pos] then
+      if (Key == "ShiftF4") or onTopModal then
+        Edit(Items[Pos], true)
+      else
+        Ret = nil -- process F4 as a break key (close the menu then open the editor)
+      end
+    else
+      Ret = nil -- all other keys are processed by the menu
     end
+
+    return Ret
   end
 
   while true do
