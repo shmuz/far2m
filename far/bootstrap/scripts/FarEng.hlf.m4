@@ -1209,7 +1209,7 @@ $ #Menus: commands menu#
                         detailed description.
 
    #Edit user menu#       Allows to edit main or local ~user menu~@UserMenu@.
-                        You may press #Ins# to insert, #Del# to delete
+                        You may press #Ins# or #Ctrl+N# to insert, #Del# to delete
                         and #F4# to edit menu records.
 
    #Edit associations#    Displays the list of ~file associations~@FileAssoc@.
