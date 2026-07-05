@@ -127,6 +127,13 @@ usqlite.py
     standard file list. FAR2L calls the OpenFilePlugin method of
     active plugins, and the first one to respond becomes active.
 
+ustealer.py
+    This plugin allows you to view password fields in dialogues,
+    e.g. open the netrocks host list, select the one with a password,
+    press F11 to open the plugin and enter 15 in the position field.
+    After pressing the read button in the value field, you will see
+    the read password.
+
 utranslate.py
     The plugin allows you to translate and check text for correctness
     using Google Translate.
