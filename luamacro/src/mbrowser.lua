@@ -435,7 +435,7 @@ end
 local function MenuLoop()
 --far.MacroLoadAll()
 
-  local windowInfo = far.AdvControl("ACTL_GETWINDOWINFO") -- must be called before opening the menu
+  local windowInfo = far.AdvControl("ACTL_GETWINDOWINFO") -- get this before the menu is called
   local onTopModal = windowInfo and bit64.band(windowInfo.Flags, F.WIF_MODAL) ~= 0
   local farRect = far.AdvControl("ACTL_GETFARRECT")
 
@@ -447,7 +447,10 @@ local function MenuLoop()
   }
 
   local bkeys = {
-    {BreakKey="F4"}, {BreakKey="C+H"}, {BreakKey="C+PRIOR"}, {BreakKey="C+R"},
+    { BreakKey="F4",      act="edit", modal=false, },
+    { BreakKey="C+H",     act="hide",              },
+    { BreakKey="C+PRIOR", act="goto",              },
+    { BreakKey="C+R",     act="reload",            },
   }
   for k in pairs(CmpFuncs) do bkeys[#bkeys+1] = {BreakKey=k} end
 
@@ -587,15 +590,15 @@ local function MenuLoop()
       end
       props.SelectIndex = 1
     ----------------------------------------------------------------------------
-    elseif BrKey=="C+H" then -- hide inactive macros
+    elseif item.act == "hide" then -- hide inactive macros
       ShowOnlyActive = not ShowOnlyActive
       props.SelectIndex = nil
     ----------------------------------------------------------------------------
-    elseif BrKey=="F4" and items[pos] then -- edit
+    elseif item.act == "edit" and items[pos] then -- edit
       Edit(items[pos], false)
       break
     ----------------------------------------------------------------------------
-    elseif BrKey=="C+PRIOR" and items[pos] then -- CtrlPgUp - locate the file in active panel
+    elseif item.act == "goto" and items[pos] then -- CtrlPgUp - locate the file in active panel
       local m = items[pos].macro
       if m.FileName then
         if LocateFile(m.FileName) then
@@ -607,7 +610,7 @@ local function MenuLoop()
         Message(Msg.MBNoFileNameAvail)
       end
     ----------------------------------------------------------------------------
-    elseif BrKey=="C+R" then -- CtrlR - reload macros
+    elseif item.act == "reload" then -- CtrlR - reload macros
       far.Message(Msg.MReloadMacros,"","")
       far.MacroLoadAll()
       win.Sleep(400)
