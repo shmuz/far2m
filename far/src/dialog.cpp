@@ -98,12 +98,9 @@ enum DLGITEMINTERNALFLAGS
 const wchar_t *fmtSavedDialogHistory = L"SavedDialogHistory/";
 
 //////////////////////////////////////////////////////////////////////////
-/**
- * check if dialog element can be focused
-*/
-static inline bool IsItemFocusable(const DialogItemEx& item)
+bool DialogItemEx::IsFocusable() const
 {
-	switch (item.Type)
+	switch (Type)
 	{
 		case DI_EDIT:
 		case DI_FIXEDIT:
@@ -115,7 +112,7 @@ static inline bool IsItemFocusable(const DialogItemEx& item)
 		case DI_RADIOBUTTON:
 		case DI_LISTBOX:
 		case DI_USERCONTROL:
-			return !(item.Flags & (DIF_NOFOCUS | DIF_DISABLE | DIF_HIDDEN));
+			return !(Flags & (DIF_NOFOCUS | DIF_DISABLE | DIF_HIDDEN));
 		default:
 			return false;
 	}
@@ -184,72 +181,71 @@ bool IsKeyHighlighted(const wchar_t *Str, FarKey Key, bool Translate, int AmpPos
 	return false;
 }
 
-void DialogItemExToDialogItemEx(DialogItemEx *pSrc, DialogItemEx *pDest)
+void DialogItemEx::ToDialogItemEx(DialogItemEx *pDest) const
 {
-	pDest->Type = pSrc->Type;
-	pDest->X1 = pSrc->X1;
-	pDest->Y1 = pSrc->Y1;
-	pDest->X2 = pSrc->X2;
-	pDest->Y2 = pSrc->Y2;
-	pDest->Focus = pSrc->Focus;
-	pDest->Reserved = pSrc->Reserved;
-	pDest->strHistory = pSrc->strHistory;
-	pDest->strMask = pSrc->strMask;
-	pDest->Flags = pSrc->Flags;
-	pDest->DefaultButton = pSrc->DefaultButton;
+	pDest->Type = Type;
+	pDest->X1 = X1;
+	pDest->Y1 = Y1;
+	pDest->X2 = X2;
+	pDest->Y2 = Y2;
+	pDest->Focus = Focus;
+	pDest->Reserved = Reserved;
+	pDest->strHistory = strHistory;
+	pDest->strMask = strMask;
+	pDest->Flags = Flags;
+	pDest->DefaultButton = DefaultButton;
 	pDest->nMaxLength = 0;
-	pDest->strData = pSrc->strData;
-	pDest->ID = pSrc->ID;
-	pDest->IFlags = pSrc->IFlags;
-	pDest->AutoCount = pSrc->AutoCount;
-	pDest->AutoPtr = pSrc->AutoPtr;
-	pDest->UserData = pSrc->UserData;
-	pDest->ObjPtr = pSrc->ObjPtr;
-	pDest->ListPtr = pSrc->ListPtr;
-	pDest->UCData = pSrc->UCData;
-	pDest->SelStart = pSrc->SelStart;
-	pDest->SelEnd = pSrc->SelEnd;
+	pDest->strData = strData;
+	pDest->ID = ID;
+	pDest->IFlags = IFlags;
+	pDest->AutoCount = AutoCount;
+	pDest->AutoPtr = AutoPtr;
+	pDest->UserData = UserData;
+	pDest->ObjPtr = ObjPtr;
+	pDest->ListPtr = ListPtr;
+	pDest->UCData = UCData;
+	pDest->SelStart = SelStart;
+	pDest->SelEnd = SelEnd;
 
-	memcpy(pDest->customItemColor, pSrc->customItemColor, sizeof(pDest->customItemColor));
+	memcpy(pDest->customItemColor, customItemColor, sizeof(pDest->customItemColor));
 }
 
-static void ConvertItemSmall(FarDialogItem *Item, const DialogItemEx *Data)
+void DialogItemEx::ConvertItemSmall(FarDialogItem *Item) const
 {
-	Item->Type = Data->Type;
-	Item->X1 = Data->X1;
-	Item->Y1 = Data->Y1;
-	Item->X2 = Data->X2;
-	Item->Y2 = Data->Y2;
-	Item->Focus = Data->Focus;
-	Item->Flags = Data->Flags;
-	Item->DefaultButton = Data->DefaultButton;
-	Item->MaxLen = Data->nMaxLength;
+	Item->Type = Type;
+	Item->X1 = X1;
+	Item->Y1 = Y1;
+	Item->X2 = X2;
+	Item->Y2 = Y2;
+	Item->Focus = Focus;
+	Item->Flags = Flags;
+	Item->DefaultButton = DefaultButton;
+	Item->MaxLen = nMaxLength;
 	Item->PtrData = nullptr;
 
 	Item->Param.History = nullptr;
-	if (Data->Type == DI_LISTBOX || Data->Type == DI_COMBOBOX) {
-		Item->Param.ListPos = Data->ListPtr ? Data->ListPtr->GetSelectPos() : 0;
-	} else if ((Data->Type == DI_EDIT || Data->Type == DI_FIXEDIT) && Data->Flags & DIF_HISTORY) {
-		Item->Param.History = Data->strHistory;
-	} else if (Data->Type == DI_FIXEDIT && Data->Flags & DIF_MASKEDIT) {
-		Item->Param.Mask = Data->strMask;
-	} else {
-		Item->Param.Reserved = Data->Reserved;
-	}
+	if (Type == DI_LISTBOX || Type == DI_COMBOBOX)
+		Item->Param.ListPos = ListPtr ? ListPtr->GetSelectPos() : 0;
+	else if ((Type == DI_EDIT || Type == DI_FIXEDIT) && Flags & DIF_HISTORY)
+		Item->Param.History = strHistory;
+	else if (Type == DI_FIXEDIT && Flags & DIF_MASKEDIT)
+		Item->Param.Mask = strMask;
+	else
+		Item->Param.Reserved = Reserved;
 }
 
-static size_t ItemStringAndSize(const DialogItemEx *Data, FARString &ItemString)
+size_t DialogItemEx::StringAndSize(FARString &ItemString) const
 {
 	DlgEdit *EditPtr;
-	if (FarIsEdit(Data->Type) && (EditPtr = Data->GetEdit()) != nullptr)
+	if (FarIsEdit(Type) && (EditPtr = GetEdit()) != nullptr)
 		EditPtr->GetString(ItemString);
 	else
-		ItemString = Data->strData;
+		ItemString = strData;
 
 	size_t sz = ItemString.GetLength();
 
-	if (sz > Data->nMaxLength && Data->nMaxLength > 0)
-		sz = Data->nMaxLength;
+	if (sz > nMaxLength && nMaxLength > 0)
+		sz = nMaxLength;
 
 	return sz;
 }
@@ -266,11 +262,11 @@ bool ConvertItemEx(CVTITEMFLAGS FromPlugin, FarDialogItem *Item, DialogItemEx *D
 		case CVTITEM_TOPLUGINSHORT:
 
 			for (I = 0; I < Count; I++, ++Item, ++Data) {
-				ConvertItemSmall(Item, Data);
+				Data->ConvertItemSmall(Item);
 
 				if (FromPlugin == CVTITEM_TOPLUGIN) {
 					FARString str;
-					size_t sz = ItemStringAndSize(Data, str);
+					size_t sz = Data->StringAndSize(str);
 
 					wchar_t *p = (wchar_t *)malloc((sz + 1) * sizeof(wchar_t));
 					Item->PtrData = p;
@@ -331,7 +327,7 @@ bool ConvertItemEx(CVTITEMFLAGS FromPlugin, FarDialogItem *Item, DialogItemEx *D
 	return true;
 }
 
-static size_t ConvertItemEx2(FarDialogItem *Item, const DialogItemEx *Data)
+size_t DialogItemEx::ConvertItemEx2(FarDialogItem *Item) const
 {
 	FarDialogItem LocalItem, *pAll = &LocalItem;
 	Sizer sizer(Item, SIZE_MAX);
@@ -339,19 +335,19 @@ static size_t ConvertItemEx2(FarDialogItem *Item, const DialogItemEx *Data)
 		pAll = Item;
 
 	if (Item)
-		ConvertItemSmall(pAll, Data); // place here, because it sets pAll->PtrData to nullptr
+		ConvertItemSmall(pAll); // place here, because it sets pAll->PtrData to nullptr
 
 	FARString str;
-	ItemStringAndSize(Data, str);
+	StringAndSize(str);
 	pAll->PtrData = sizer.AddFARString(str);
 
-	if (Data->Type == DI_LISTBOX || Data->Type == DI_COMBOBOX) {
+	if (Type == DI_LISTBOX || Type == DI_COMBOBOX) {
 		FarList LocalFarList, *pFarList = &LocalFarList;
 		pAll->Param.ListItems = pFarList;
 		if (auto ptr = sizer.AddObject<FarList>())
 			pAll->Param.ListItems = pFarList = ptr;
 
-		auto Menu = Data->ListPtr;
+		auto Menu = ListPtr;
 		int Count = Menu->GetItemCount();
 		pFarList->ItemsNumber = Count;
 		pFarList->Items = sizer.AddObject<FarListItem>(Count);
@@ -419,7 +415,7 @@ Dialog::Dialog(DialogItemEx *SrcItem,		// Набор элементов диал
 	for (unsigned i = 0; i < aSrcItemCount; i++) {
 		Item.emplace_back();
 		Item.back().Clear();
-		DialogItemExToDialogItemEx(&SrcItem[i], &Item.back());
+		SrcItem[i].ToDialogItemEx(&Item.back());
 	}
 
 	pSaveItemEx = SrcItem;
@@ -714,7 +710,7 @@ int Dialog::InitDialogObjects(int ID)
 		return -1;
 
 	// если FocusPos в пределах и элемент задисаблен, то ищем сначала
-	if (FocusPos != -1 && FocusPos < ItemCount() && !IsItemFocusable(Item[FocusPos]))
+	if (FocusPos != -1 && FocusPos < ItemCount() && !Item[FocusPos].IsFocusable())
 		FocusPos = -1;	// будем искать сначала!
 
 	// предварительный цикл по поводу кнопок
@@ -739,7 +735,7 @@ int Dialog::InitDialogObjects(int ID)
 			}
 		}
 		// предварительный поик фокуса
-		if (FocusPos == -1 && IsItemFocusable(CurItem) && CurItem.Focus)
+		if (FocusPos == -1 && CurItem.IsFocusable() && CurItem.Focus)
 			FocusPos = I;		// запомним первый фокусный элемент
 
 		CurItem.Focus = 0;		// сбросим для всех, чтобы не оказалось,
@@ -769,7 +765,7 @@ int Dialog::InitDialogObjects(int ID)
 		{
 			DialogItemEx &CurItem = Item[I];
 
-			if (IsItemFocusable(CurItem)) {
+			if (CurItem.IsFocusable()) {
 				FocusPos = I;
 				break;
 			}
@@ -3746,7 +3742,7 @@ bool Dialog::Do_ProcessFirstCtrl()
 		return true;
 	} else {
 		for (int I = 0; I < ItemCount(); I++)
-			if (IsItemFocusable(Item[I])) {
+			if (Item[I].IsFocusable()) {
 				ChangeFocus2(I);
 				ShowDialog();
 				break;
@@ -3806,7 +3802,7 @@ bool Dialog::MoveToCtrlHorizontal(bool right)
 		}
 
 		//find nearest item _inside_ nearest borders
-		if (I != FocusPos && IsItemFocusable(Item[I]) && Item[I].Y1 == Item[FocusPos].Y1) {
+		if (I != FocusPos && Item[I].IsFocusable() && Item[I].Y1 == Item[FocusPos].Y1) {
 			Dist = Item[I].X1 - Item[FocusPos].X1;
 
 			if ((!right && Dist < 0 &&(Item[I].X1 > LeftBorder))
@@ -3860,7 +3856,7 @@ bool Dialog::MoveToCtrlVertical(bool up)
 		}
 
 		//find nearest item _inside_ nearest borders
-		if (I != FocusPos && IsItemFocusable(Item[I]) && Item[I].X1 == Item[FocusPos].X1) {
+		if (I != FocusPos && Item[I].IsFocusable() && Item[I].X1 == Item[FocusPos].X1) {
 			Dist = Item[I].Y1 - Item[FocusPos].Y1;
 
 			if ((up && Dist < 0 && (Item[I].Y1 > UpperBorder))
@@ -3989,7 +3985,7 @@ int Dialog::ChangeFocus(int CurFocusPos, int Step, bool SkipGroup)
 			CurFocusPos = 0;
 		}
 
-		if (IsItemFocusable(Item[CurFocusPos])) {
+		if (Item[CurFocusPos].IsFocusable()) {
 			//move straight to selected radio when SkipGroup is true
 			if (Item[CurFocusPos].Type == DI_RADIOBUTTON && !(SkipGroup && Item[CurFocusPos].Selected)) {
 				continue;
@@ -4018,7 +4014,7 @@ void Dialog::ChangeFocus2(int SetFocusPos)
 	SCOPED_ACTION(CriticalSectionLock)(CS);
 	int FocusPosNeed = -1;
 
-	if (IsItemFocusable(Item[SetFocusPos])) {
+	if (Item[SetFocusPos].IsFocusable()) {
 		if (DialogMode.Check(DMODE_INITOBJECTS)) {
 			FocusPosNeed = (int)DlgProc(DN_KILLFOCUS, FocusPos, 0);
 
@@ -4026,7 +4022,7 @@ void Dialog::ChangeFocus2(int SetFocusPos)
 				return;
 		}
 
-		if (FocusPosNeed >= 0 && FocusPosNeed < ItemCount() && IsItemFocusable(Item[FocusPosNeed]))
+		if (FocusPosNeed >= 0 && FocusPosNeed < ItemCount() && Item[FocusPosNeed].IsFocusable())
 			SetFocusPos = FocusPosNeed;
 
 		Item[FocusPos].Focus = 0;
@@ -4360,19 +4356,19 @@ int Dialog::CheckHighlights(WORD CheckSymbol, int StartPos)
 	Private:
 	Если жмакнули Alt-???
 */
-int Dialog::ProcessHighlighting(FarKey Key, int FocusPos, bool Translate)
+bool Dialog::ProcessHighlighting(FarKey Key, int FocusPos, bool Translate)
 {
 	SCOPED_ACTION(CriticalSectionLock)(CS);
-	int Type;
-	DWORD Flags;
 
 	for (int I = 0; I < ItemCount(); I++) {
-		Type = Item[I].Type;
-		Flags = Item[I].Flags;
+		int Type = Item[I].Type;
+		DWORD Flags = Item[I].Flags;
 
 		if ((!FarIsEdit(Type) || (Type == DI_COMBOBOX && (Flags & DIF_DROPDOWNLIST)))
 				&& !(Flags & (DIF_SHOWAMPERSAND | DIF_DISABLE | DIF_HIDDEN)))
-			if (IsKeyHighlighted(Item[I].strData, Key, Translate)) {
+		{
+			if (IsKeyHighlighted(Item[I].strData, Key, Translate))
+			{
 				bool DisableSelect = false;
 
 				// Если ЭТО: DlgEdit(пред контрол) и DI_TEXT в одну строку, то...
@@ -4391,8 +4387,10 @@ int Dialog::ProcessHighlighting(FarKey Key, int FocusPos, bool Translate)
 
 					I = ChangeFocus(I, -1, false);
 					DisableSelect = true;
-				} else if (Item[I].Type == DI_TEXT || Item[I].Type == DI_VTEXT
-						|| Item[I].Type == DI_SINGLEBOX || Item[I].Type == DI_DOUBLEBOX) {
+				}
+				else if (Item[I].Type == DI_TEXT || Item[I].Type == DI_VTEXT
+						|| Item[I].Type == DI_SINGLEBOX || Item[I].Type == DI_DOUBLEBOX)
+				{
 					if (I + 1 < ItemCount())		// ...и следующий контрол
 					{
 						// Сначала сообщим о случившемся факте процедуре обработки диалога, а потом...
@@ -4400,7 +4398,7 @@ int Dialog::ProcessHighlighting(FarKey Key, int FocusPos, bool Translate)
 							break;	// сказали не продолжать обработку...
 
 						// ... если следующий контрол задизаблен или невидим, тогда выходим.
-						if ((Item[I + 1].Flags & (DIF_DISABLE | DIF_HIDDEN)))	// и не задисаблен
+						if (Item[I + 1].Flags & (DIF_DISABLE | DIF_HIDDEN))	// и не задисаблен
 							break;
 
 						I = ChangeFocus(I, 1, false);
@@ -4416,25 +4414,28 @@ int Dialog::ProcessHighlighting(FarKey Key, int FocusPos, bool Translate)
 				ShowDialog();
 
 				if ((Item[I].Type == DI_CHECKBOX || Item[I].Type == DI_RADIOBUTTON)
-						&& (!DisableSelect || (Item[I].Flags & DIF_MOVESELECT))) {
+						&& (!DisableSelect || (Item[I].Flags & DIF_MOVESELECT)))
+				{
 					Do_ProcessSpace();
-					return TRUE;
-				} else if (Item[I].Type == DI_BUTTON) {
+					return true;
+				}
+				else if (Item[I].Type == DI_BUTTON) {
 					ProcessKey(KEY_ENTER, I);
-					return TRUE;
+					return true;
 				}
 				// при ComboBox`е - "вываливаем" последний //????
 				else if (Item[I].Type == DI_COMBOBOX) {
 					ProcessOpenComboBox(Item[I].Type, Item[I], I);
 					// ProcessKey(KEY_CTRLDOWN);
-					return TRUE;
+					return true;
 				}
 
-				return TRUE;
+				return true;
 			}
+		}
 	}
 
-	return FALSE;
+	return false;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -4530,7 +4531,7 @@ void Dialog::Process()
 
 	if (pSaveItemEx)
 		for (int i = 0; i < ItemCount(); i++)
-			DialogItemExToDialogItemEx(&Item[i], &pSaveItemEx[i]);
+			Item[i].ToDialogItemEx(&pSaveItemEx[i]);
 }
 
 void Dialog::CloseDialog()
@@ -5703,7 +5704,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 		}
 		/*****************************************************************/
 		case DM_SETFOCUS: {
-			if (!IsItemFocusable(CurItem))
+			if (!CurItem.IsFocusable())
 				return FALSE;
 
 			if (FocusPos == Param1)	// уже и так установлено все!
@@ -6040,7 +6041,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 		/*****************************************************************/
 		case DM_GETDLGITEM: {
 			FarDialogItem *Item = (FarDialogItem *)Param2;
-			return (LONG_PTR)ConvertItemEx2(Item, &CurItem);
+			return (LONG_PTR)CurItem.ConvertItemEx2(Item);
 		}
 		/*****************************************************************/
 		case DM_GETDLGITEMSHORT: {

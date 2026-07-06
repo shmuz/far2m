@@ -250,6 +250,11 @@ struct DialogItemEx
 	bool HasDropDownArrow() const;
 	bool IsHorizontalSeparator() const;
 	bool IsVerticalSeparator() const;
+	bool IsFocusable() const;
+	void ToDialogItemEx(DialogItemEx *pDest) const;
+	void ConvertItemSmall(FarDialogItem *Item) const;
+	size_t ConvertItemEx2(FarDialogItem *Item) const;
+	size_t StringAndSize(FARString &ItemString) const;
 	DlgEdit* GetEdit() { return static_cast<DlgEdit*>(ObjPtr); }
 	DlgEdit* GetEdit() const { return static_cast<DlgEdit*>(ObjPtr); }
 };
@@ -346,7 +351,7 @@ private:
 
 	void ProcessLastHistory(DialogItemEx &CurItem, int MsgIndex);	// обработка DIF_USELASTHISTORY
 
-	int ProcessHighlighting(FarKey Key, int FocusPos, bool Translate);
+	bool ProcessHighlighting(FarKey Key, int FocusPos, bool Translate);
 	int CheckHighlights(WORD Chr, int StartPos = 0);
 
 	void SelectOnEntry(int Pos, bool Selected);
