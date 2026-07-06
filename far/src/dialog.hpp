@@ -46,6 +46,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 class History;
 class Editor;
+class DlgEdit;
 
 // Флаги текущего режима диалога
 enum DIALOG_MODES
@@ -249,6 +250,8 @@ struct DialogItemEx
 	bool HasDropDownArrow() const;
 	bool IsHorizontalSeparator() const;
 	bool IsVerticalSeparator() const;
+	DlgEdit* GetEdit() { return static_cast<DlgEdit*>(ObjPtr); }
+	DlgEdit* GetEdit() const { return static_cast<DlgEdit*>(ObjPtr); }
 };
 
 /*
