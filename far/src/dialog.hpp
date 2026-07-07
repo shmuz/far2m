@@ -247,16 +247,18 @@ struct DialogItemEx
 		return false;
 	}
 
-	bool HasDropDownArrow() const;
-	bool IsHorizontalSeparator() const;
-	bool IsVerticalSeparator() const;
-	bool IsFocusable() const;
-	void ToDialogItemEx(DialogItemEx *pDest) const;
-	void ConvertItemSmall(FarDialogItem *Item) const;
-	size_t ConvertItemEx2(FarDialogItem *Item) const;
-	size_t StringAndSize(FARString &ItemString) const;
-	DlgEdit* GetEdit() { return static_cast<DlgEdit*>(ObjPtr); }
+	bool     ConvertFromPlugin(const FarDialogItem *Item, bool Short);
+	bool     ConvertToPlugin(FarDialogItem *Item, bool Short) const;
+	size_t   ConvertItemEx2(FarDialogItem *Item) const;
+	void     ConvertItemSmall(FarDialogItem *Item) const;
 	DlgEdit* GetEdit() const { return static_cast<DlgEdit*>(ObjPtr); }
+	DlgEdit* GetEdit() { return static_cast<DlgEdit*>(ObjPtr); }
+	bool     HasDropDownArrow() const;
+	bool     IsFocusable() const;
+	bool     IsHorizontalSeparator() const;
+	bool     IsVerticalSeparator() const;
+	size_t   StringAndSize(FARString &ItemString) const;
+	void     ToDialogItemEx(DialogItemEx *pDest) const;
 };
 
 /*
@@ -361,8 +363,8 @@ private:
 	// возвращает заголовок диалога (текст первого текста или фрейма)
 	const wchar_t *GetDialogTitle();
 
-	bool GetItemRect(int I, SMALL_RECT &Rect);
-	bool SetItemRect(int ID, SMALL_RECT *Rect);
+	bool GetItemRect(int ID, SMALL_RECT &Rect);
+	bool SetItemRect(int ID, const SMALL_RECT *Rect);
 
 	/*
 		$ 23.06.2001 KM

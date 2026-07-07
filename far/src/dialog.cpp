@@ -67,15 +67,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define VTEXT_ADN_SEPARATORS 1
 
-// Флаги для функции ConvertItem
-enum CVTITEMFLAGS
-{
-	CVTITEM_TOPLUGIN        = 0,
-	CVTITEM_FROMPLUGIN      = 1,
-	CVTITEM_TOPLUGINSHORT   = 2,
-	CVTITEM_FROMPLUGINSHORT = 3
-};
-
 enum DLGEDITLINEFLAGS
 {
 	DLGEDITLINE_CLEARSELONKILLFOCUS = 0x00000001,		// управляет выделением блока при потере фокуса ввода
@@ -250,78 +241,70 @@ size_t DialogItemEx::StringAndSize(FARString &ItemString) const
 	return sz;
 }
 
-bool ConvertItemEx(CVTITEMFLAGS FromPlugin, FarDialogItem *Item, DialogItemEx *Data, unsigned Count)
+bool DialogItemEx::ConvertFromPlugin(const FarDialogItem *Item, bool Short)
 {
-	unsigned I;
-
-	if (!Item || !Data)
+	if (!Item)
 		return false;
 
-	switch (FromPlugin) {
-		case CVTITEM_TOPLUGIN:
-		case CVTITEM_TOPLUGINSHORT:
+	X1 = Item->X1;
+	Y1 = Item->Y1;
+	X2 = Item->X2;
+	Y2 = Item->Y2;
+	Focus = Item->Focus;
+	Reserved = 0;
 
-			for (I = 0; I < Count; I++, ++Item, ++Data) {
-				Data->ConvertItemSmall(Item);
+	if ((Item->Type == DI_EDIT || Item->Type == DI_FIXEDIT) && (Item->Flags & DIF_HISTORY))
+		strHistory = Item->Param.History;
+	else if (Item->Type == DI_FIXEDIT && Item->Flags & DIF_MASKEDIT)
+		strMask = Item->Param.Mask;
+	else
+		Reserved = Item->Param.Reserved;
 
-				if (FromPlugin == CVTITEM_TOPLUGIN) {
-					FARString str;
-					size_t sz = Data->StringAndSize(str);
+	Flags = Item->Flags;
+	DefaultButton = Item->DefaultButton;
+	Type = Item->Type;
 
-					wchar_t *p = (wchar_t *)malloc((sz + 1) * sizeof(wchar_t));
-					Item->PtrData = p;
+	if (!Short) {
+		strData = Item->PtrData;
+		nMaxLength = Item->MaxLen;
 
-					if (!p)		// TODO: may be needed message?
-						return false;
+		if (nMaxLength > 0)
+			strData.Truncate(nMaxLength);
+	}
 
-					wmemcpy(p, str.CPtr(), sz);
-					p[sz] = L'\0';
-				}
-			}
+	ListItems = Item->Param.ListItems;
 
-			break;
-		case CVTITEM_FROMPLUGIN:
-		case CVTITEM_FROMPLUGINSHORT:
+	if (X2 < X1)
+		X2 = X1;
 
-			for (I = 0; I < Count; I++, ++Item, ++Data) {
-				Data->X1 = Item->X1;
-				Data->Y1 = Item->Y1;
-				Data->X2 = Item->X2;
-				Data->Y2 = Item->Y2;
-				Data->Focus = Item->Focus;
-				Data->Reserved = 0;
-				if ((Item->Type == DI_EDIT || Item->Type == DI_FIXEDIT) && Item->Flags & DIF_HISTORY) {
-					Data->strHistory = Item->Param.History;
-				} else if (Item->Type == DI_FIXEDIT && Item->Flags & DIF_MASKEDIT) {
-					Data->strMask = Item->Param.Mask;
-				} else {
-					Data->Reserved = Item->Param.Reserved;
-				}
-				Data->Flags = Item->Flags;
-				Data->DefaultButton = Item->DefaultButton;
-				Data->Type = Item->Type;
+	if (Y2 < Y1)
+		Y2 = Y1;
 
-				if (FromPlugin == CVTITEM_FROMPLUGIN) {
-					Data->strData = Item->PtrData;
-					Data->nMaxLength = Item->MaxLen;
+	if ((Type == DI_COMBOBOX || Type == DI_LISTBOX) && !IsPtr(Item->Param.ListItems))
+		ListItems = nullptr;
 
-					if (Data->nMaxLength > 0)
-						Data->strData.Truncate(Data->nMaxLength);
-				}
+	return true;
+}
 
-				Data->ListItems = Item->Param.ListItems;
+bool DialogItemEx::ConvertToPlugin(FarDialogItem *Item, bool Short) const
+{
+	if (!Item)
+		return false;
 
-				if (Data->X2 < Data->X1)
-					Data->X2 = Data->X1;
+	ConvertItemSmall(Item);
 
-				if (Data->Y2 < Data->Y1)
-					Data->Y2 = Data->Y1;
+	if (!Short) {
+		FARString str;
+		size_t sz = StringAndSize(str);
 
-				if ((Data->Type == DI_COMBOBOX || Data->Type == DI_LISTBOX) && !IsPtr(Item->Param.ListItems))
-					Data->ListItems = nullptr;
-			}
+		wchar_t *p = (wchar_t *)malloc((sz + 1) * sizeof(wchar_t));
+		Item->PtrData = p;
 
-			break;
+		if (!p)		// TODO: may be needed message?
+			return false;
+
+		wmemcpy(p, str.CPtr(), sz);
+		p[sz] = L'\0';
 	}
 
 	return true;
@@ -435,7 +418,7 @@ Dialog::Dialog(FarDialogItem *SrcItem,		// Набор элементов диа�
 		Item.emplace_back();
 		Item.back().Clear();
 		// BUGBUG add error check
-		ConvertItemEx(CVTITEM_FROMPLUGIN, &SrcItem[i], &Item.back(), 1);
+		Item.back().ConvertFromPlugin(&SrcItem[i], false);
 	}
 
 	pSaveItemEx = nullptr;
@@ -1061,56 +1044,53 @@ void Dialog::ProcessLastHistory(DialogItemEx &CurItem, int MsgIndex)
 	}
 }
 
-
-static int ToRange(int Val, int Min, int Max)
-{
-	return std::clamp(Val, Min, Max);
-}
-
 // Изменение координат и/или размеров итема диалога.
-bool Dialog::SetItemRect(int ID, SMALL_RECT *aRect)
+bool Dialog::SetItemRect(int ID, const SMALL_RECT *Rect)
 {
 	SCOPED_ACTION(CriticalSectionLock)(CS);
 
 	if (ID >= ItemCount())
 		return FALSE;
 
+	auto Clamp = [](int Val, int Min, int Max) {
+		return std::clamp(Val, Min, Max);
+	};
 
-	auto Rect = *aRect;
-	Rect.Left = ToRange(Rect.Left, 0, X2-X1);
-	Rect.Top = ToRange(Rect.Top, 0, Y2-Y1);
-	Rect.Right = ToRange(Rect.Right, Rect.Left, X2-X1);
-	Rect.Bottom = ToRange(Rect.Bottom, Rect.Top, Y2-Y1);
+	const int Left   = Clamp(Rect->Left, 0, X2-X1);
+	const int Top    = Clamp(Rect->Top, 0, Y2-Y1);
+	const int Right  = Clamp(Rect->Right, Left, X2-X1);
+	const int Bottom = Clamp(Rect->Bottom, Top, Y2-Y1);
 
 	DialogItemEx &CurItem = Item[ID];
 	int Type = CurItem.Type;
-	CurItem.X1 = Rect.Left;
-	CurItem.Y1 = (Rect.Top < 0) ? 0 : Rect.Top;
+	CurItem.X1 = Left;
+	CurItem.Y1 = Max(0, Top);
 
 	if (FarIsEdit(Type)) {
 		DlgEdit *DialogEdit = CurItem.GetEdit();
-		CurItem.X2 = Rect.Right;
-		CurItem.Y2 = (Type == DI_MEMOEDIT ? Rect.Bottom : 0);
-		const int edit_bottom = (Type == DI_MEMOEDIT ? Rect.Bottom : Rect.Top);
-		DialogEdit->SetPosition(X1 + Rect.Left, Y1 + Rect.Top, X1 + Rect.Right, Y1 + edit_bottom);
-	} else if (Type == DI_LISTBOX) {
-		CurItem.X2 = Rect.Right;
-		CurItem.Y2 = Rect.Bottom;
-		CurItem.ListPtr->SetPosition(X1 + Rect.Left, Y1 + Rect.Top, X1 + Rect.Right, Y1 + Rect.Bottom);
+		CurItem.X2 = Right;
+		CurItem.Y2 = (Type == DI_MEMOEDIT) ? Bottom : 0;
+		const int edit_bottom = (Type == DI_MEMOEDIT) ? Bottom : Top;
+		DialogEdit->SetPosition(X1 + Left, Y1 + Top, X1 + Right, Y1 + edit_bottom);
+	}
+	else if (Type == DI_LISTBOX) {
+		CurItem.X2 = Right;
+		CurItem.Y2 = Bottom;
+		CurItem.ListPtr->SetPosition(X1 + Left, Y1 + Top, X1 + Right, Y1 + Bottom);
 		CurItem.ListPtr->SetMaxHeight(CurItem.Y2 - CurItem.Y1 + 1);
 	}
 
 	switch (Type) {
 		case DI_TEXT:
-			CurItem.X2 = Rect.Right;
+			CurItem.X2 = Right;
 			CurItem.Y2 = 0;	// ???
 			break;
 		case DI_VTEXT:
 		case DI_DOUBLEBOX:
 		case DI_SINGLEBOX:
 		case DI_USERCONTROL:
-			CurItem.X2 = Rect.Right;
-			CurItem.Y2 = Rect.Bottom;
+			CurItem.X2 = Right;
+			CurItem.Y2 = Bottom;
 			break;
 	}
 
@@ -1235,7 +1215,6 @@ bool DialogItemEx::HasDropDownArrow() const
 			|| (Type == DI_COMBOBOX && ListPtr && ListPtr->GetItemCount() > 0);
 }
 
-//////////////////////////////////////////////////////////////////////////
 /*
 	Private:
 	Получение данных и удаление "редакторов"
@@ -1276,7 +1255,6 @@ void Dialog::DeleteDialogObjects()
 	}
 }
 
-//////////////////////////////////////////////////////////////////////////
 /*
 	Public:
 		Сохраняет значение из полей редактирования.
@@ -5574,7 +5552,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 		case DN_EDITCHANGE: {
 			FarDialogItem Item;
 
-			if (!ConvertItemEx(CVTITEM_TOPLUGIN, &Item, &CurItem, 1))
+			if (!CurItem.ConvertToPlugin(&Item, false))
 				return FALSE;	// no memory TODO: may be needed diagnostic
 
 			INT_PTR I = 0;
@@ -5689,7 +5667,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 		case DN_DRAWDLGITEM: {
 			FarDialogItem Item;
 
-			if (!ConvertItemEx(CVTITEM_TOPLUGIN, &Item, &CurItem, 1))
+			if (!CurItem.ConvertToPlugin(&Item, false))
 				return FALSE;	// no memory TODO: may be needed diagnostic
 
 			INT_PTR I = CallDlgProc(Msg, Param1, (LONG_PTR)&Item);
@@ -6045,9 +6023,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 		}
 		/*****************************************************************/
 		case DM_GETDLGITEMSHORT: {
-			if (Param2 && ConvertItemEx(CVTITEM_TOPLUGINSHORT, (FarDialogItem *)Param2, &CurItem, 1))
-				return TRUE;
-			return FALSE;
+			return Param2 && CurItem.ConvertToPlugin((FarDialogItem *)Param2, true);
 		}
 		/*****************************************************************/
 		case DM_SETDLGITEM:
@@ -6059,8 +6035,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 				return FALSE;
 
 			// не менять
-			if (!ConvertItemEx((Msg == DM_SETDLGITEM) ? CVTITEM_FROMPLUGIN : CVTITEM_FROMPLUGINSHORT,
-						(FarDialogItem *)Param2, &CurItem, 1))
+			if (!CurItem.ConvertFromPlugin((FarDialogItem *)Param2, Msg == DM_SETDLGITEMSHORT))
 				return FALSE;	// invalid parameters
 
 			CurItem.Type = Type;
