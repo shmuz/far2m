@@ -78,15 +78,15 @@ enum DIALOG_MODES
 
 // #define DIMODE_REDRAW       0x00000001 // требуется принудительная прорисовка итема?
 
-#define MakeDialogItemsEx(Data, Item)                                                                          \
-	DialogItemEx Item[ARRAYSIZE(Data)];                                                                        \
+#define MakeDialogItemsEx(Data, Item)	\
+	DialogItemEx Item[ARRAYSIZE(Data)] {};	\
 	DataToItemEx(Data, Item, ARRAYSIZE(Data));
 
 // Структура, описывающая автоматизацию для DIF_AUTOMATION
 // на первом этапе - примитивная - выставление флагов у элементов для CheckBox
 struct DialogItemAutomation
 {
-	WORD ID;			// Для этого элемента...
+	int ID;			// Для этого элемента...
 	DWORD Flags[3][2];	// ...выставить вот эти флаги
 						// [0] - Unchecked, [1] - Checked, [2] - 3Checked
 						// [][0] - Set, [][1] - Skip
@@ -129,7 +129,6 @@ struct DialogItemEx
 	FARString strHistory;
 	FARString strMask;
 
-//	std::unique_ptr<DialogItemTrueColors> TrueColors;
 	uint64_t customItemColor[DLG_ITEM_MAX_CUST_COLORS];
 
 	DWORD Flags;
@@ -138,7 +137,7 @@ struct DialogItemEx
 	FARString strData;
 	size_t nMaxLength;
 
-	WORD ID;
+	int ID;
 	BitFlags IFlags;
 	unsigned AutoCount;		// Автоматизация
 	DialogItemAutomation *AutoPtr;
@@ -152,71 +151,10 @@ struct DialogItemEx
 	int SelStart;
 	int SelEnd;
 
-	DialogItemEx() {}
-	DialogItemEx(const DialogItemEx &Other) { Copy(Other); }
-
-	DialogItemEx &operator=(const DialogItemEx &Other)
-	{
-		Copy(Other);
-		return *this;
-	}
-
-	void Clear()
-	{
-//		TrueColors.reset();
-		memset(customItemColor, 0, sizeof(customItemColor));
-		Type = 0;
-		X1 = 0;
-		Y1 = 0;
-		X2 = 0;
-		Y2 = 0;
-		Focus = 0;
-		Reserved = 0;
-		strHistory.Clear();
-		strMask.Clear();
-		Flags = 0;
-		DefaultButton = 0;
-		strData.Clear();
-		nMaxLength = 0;
-		ID = 0;
-		IFlags.ClearAll();
-		AutoCount = 0;
-		AutoPtr = nullptr;
-		UserData = 0;
-		ObjPtr = nullptr;
-		ListPtr = nullptr;
-		UCData = nullptr;
-		SelStart = 0;
-		SelEnd = 0;
-	}
-
-	void Copy(const DialogItemEx &Other)
-	{
-		Type = Other.Type;
-		X1 = Other.X1;
-		X2 = Other.X2;
-		Y1 = Other.Y1;
-		Y2 = Other.Y2;
-
-		memcpy(customItemColor, Other.customItemColor, sizeof(customItemColor));
-
-		Focus = Other.Focus;
-		Reserved = Other.Reserved;
-		Flags = Other.Flags;
-		DefaultButton = Other.DefaultButton;
-		strData = Other.strData;
-		nMaxLength = Other.nMaxLength;
-		ID = Other.ID;
-		IFlags = Other.IFlags;
-		AutoCount = Other.AutoCount;
-		AutoPtr = Other.AutoPtr;
-		UserData = Other.UserData;
-		ObjPtr = Other.ObjPtr;
-		ListPtr = Other.ListPtr;
-		UCData = Other.UCData;
-		SelStart = Other.SelStart;
-		SelEnd = Other.SelEnd;
-	}
+	DialogItemEx() = default;
+	DialogItemEx(const DialogItemEx &Other) = default;
+	DialogItemEx &operator=(const DialogItemEx &Other) = default;
+	void Clear() { *this = DialogItemEx{}; }
 
 	void Indent(int Delta)
 	{
@@ -385,14 +323,8 @@ private:
 	bool Do_ProcessTab(bool Next);
 	bool Do_ProcessNextCtrl(bool Next, bool IsRedraw = true);
 
-	/**
-	 * move focus to right or left dialog item.
-	*/
-	bool MoveToCtrlHorizontal(bool right);
-	/**
-	 * move focus to up or down dialog item.
-	*/
-	bool MoveToCtrlVertical(bool up);
+	bool MoveToCtrlHorizontal(bool right); // move focus to right or left dialog item.
+	bool MoveToCtrlVertical(bool up); // move focus to up or down dialog item.
 
 	bool Do_ProcessFirstCtrl();
 	bool Do_ProcessSpace();
@@ -456,7 +388,7 @@ public:
 	int ItemCount() const { return Item.size(); };	// количество элементов диалога
 	int GetDlgFocusPos() const { return FocusPos; };
 
-	int SetAutomation(WORD IDParent, WORD id, FarDialogItemFlags UncheckedSet,
+	bool SetAutomation(int IDParent, int id, FarDialogItemFlags UncheckedSet,
 			FarDialogItemFlags UncheckedSkip, FarDialogItemFlags CheckedSet, FarDialogItemFlags CheckedSkip,
 			FarDialogItemFlags Checked3Set = DIF_NONE, FarDialogItemFlags Checked3Skip = DIF_NONE);
 
