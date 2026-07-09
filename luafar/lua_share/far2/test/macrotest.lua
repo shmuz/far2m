@@ -742,6 +742,7 @@ local function test_Far_GetConfig()
     "Cmdline.ImitateNumpadKeys",
     "Cmdline.PromptFormat",
     "Cmdline.ShellCmd",
+    "Cmdline.ShowStartupBanner",
     "Cmdline.Splitter",
     "Cmdline.UsePromptFormat",
     "Cmdline.UseShell",

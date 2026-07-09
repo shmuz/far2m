@@ -2371,8 +2371,29 @@ but this block.
 disabled, you may use the #Ctrl-Shift-End# key to autocomplete a line. The autocomplete
 feature is disabled while a macro is being recorded or executed.
 
+  #Command output splitter#
+  Enables the display of dividing lines between command outputs in the built-in ~Terminal~@Terminal@.
+  A green line of "-" characters indicates successful command execution, and a yellow
+line of "~~" characters indicates errors. This makes the output more structured and helps
+to evaluate the results of command execution faster.
+
+  #Wait keypress before close#
+  Pause for key press after executing a command in the built-in ~Terminal~@Terminal@ before
+showing the panels. Possible values: Never/On error/Always.
+
   #Set command line prompt format#
   This option allows to set the default FAR2M command ~line prompt~@CommandPrompt@.
+
+  #Use shell#
+  Force the use of the specified command shell in the built-in ~terminal~@Terminal@.
+  If no shell is provided, far2m will attempt to use the system shell (#$SHELL#). If the system
+shell does not meet far2m's internal requirements, #bash# will be used as a fallback.
+  Be aware that, currently, full support is available only for #bash#, and working with other
+command shells may have significant limitations or errors.
+
+  #Show startup banner in built-in terminal#
+  Display a text block containing the far2m version, copyright notices, and keyboard tips
+under the panels at launch.
 
 @AutoCompleteSettings
 $ #Settings dialog: AutoComplete#

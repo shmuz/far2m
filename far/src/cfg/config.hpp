@@ -454,6 +454,7 @@ struct Options
 	int ShowScreensNumber;
 	int ShowSortMode;
 	int ShowMenuBar;
+	int ShowStartupBanner;
 	int FormatNumberSeparators;
 	bool CleanAscii;
 	bool NoGraphics;

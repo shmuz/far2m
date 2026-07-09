@@ -176,6 +176,7 @@ static FARConfig CFG[]
 	{OST_COMMON, NSecCmdline, "WaitKeypress",                &Opt.CmdLine.WaitKeypress, 1},
 	{OST_COMMON, NSecCmdline, "VTLogLimit",                  &Opt.CmdLine.VTLogLimit, 5000},
 	{OST_COMMON, NSecCmdline, "ImitateNumpadKeys",           &Opt.CmdLine.ImitateNumpadKeys, 0, OPT_BOOLEAN},
+	{OST_COMMON, NSecCmdline, "ShowStartupBanner",           &Opt.ShowStartupBanner, 1, OPT_BOOLEAN},
 	{OST_NONE,   NSecCmdline, "AskOnMultilinePaste",         &Opt.CmdLine.AskOnMultilinePaste, 1, OPT_BOOLEAN},
 
 	{OST_COMMON, NSecInterface, "Mouse",                     &Opt.Mouse, 1, OPT_BOOLEAN},

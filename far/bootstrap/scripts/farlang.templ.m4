@@ -1891,15 +1891,15 @@ upd:"Panels: files via system types (xdg-open)"
 upd:"Panels: files via system types (xdg-open)"
 
 ConfigSaveHistoryOptAssFar
-"Панели: файлы по ассоциациям &типов far2l"
-"Panels: files via &far2l associations"
-upd:"Panels: files via far2l associations"
-upd:"Panels: files via far2l associations"
-upd:"Panels: files via far2l associations"
-upd:"Panels: files via far2l associations"
-upd:"Panels: files via far2l associations"
-upd:"Panels: files via far2l associations"
-upd:"Panels: files via far2l associations"
+"Панели: файлы по ассоциациям &типов far2m"
+"Panels: files via &far2m associations"
+upd:"Panels: files via far2m associations"
+upd:"Panels: files via far2m associations"
+upd:"Panels: files via far2m associations"
+upd:"Panels: files via far2m associations"
+upd:"Panels: files via far2m associations"
+upd:"Panels: files via far2m associations"
+upd:"Panels: files via far2m associations"
 
 ConfigSaveHistoryOptExecPanel
 "Панели: испол&няемые файлы"
@@ -2940,6 +2940,17 @@ upd:"Use shell"
 upd:"Use shell"
 "Використовувати &шелл"
 "Ужываць &shell"
+
+ConfigShowStartupBanner
+"Показывать стартовый баннер во встроенном терминале"
+"Show startup banner in built-in terminal"
+"Zobrazovat úvodní banner v integrovaném terminálu"
+"Startbanner im integrierten Terminal anzeigen"
+"Indítási szalaghirdetés megjelenítése a beépített terminálban"
+"Pokazywać baner startowy we wbudowanym terminalu"
+"Mostrar el banner de inicio en la terminal integrada"
+"Показувати стартовий банер у вбудованому терміналі"
+"Паказваць стартовы банэр ва ўбудаваным тэрмінале"
 
 ConfigCmdlineUsePromptFormat
 "Установить &формат командной строки"
@@ -14873,15 +14884,15 @@ ChAttrTitle
 "chattr / chflags"
 
 ChAttrWarnSystem
-"Far2l пока ещё не умеет работать с флагами на Вашей системе"
-"Far2l doesn't know how to handle flags on your system yet"
-upd:"Far2l doesn't know how to handle flags on your system yet"
-upd:"Far2l doesn't know how to handle flags on your system yet"
-upd:"Far2l doesn't know how to handle flags on your system yet"
-upd:"Far2l doesn't know how to handle flags on your system yet"
-upd:"Far2l doesn't know how to handle flags on your system yet"
-upd:"Far2l doesn't know how to handle flags on your system yet"
-upd:"Far2l doesn't know how to handle flags on your system yet"
+"Far2m пока ещё не умеет работать с флагами на Вашей системе"
+"Far2m doesn't know how to handle flags on your system yet"
+upd:"Far2m doesn't know how to handle flags on your system yet"
+upd:"Far2m doesn't know how to handle flags on your system yet"
+upd:"Far2m doesn't know how to handle flags on your system yet"
+upd:"Far2m doesn't know how to handle flags on your system yet"
+upd:"Far2m doesn't know how to handle flags on your system yet"
+upd:"Far2m doesn't know how to handle flags on your system yet"
+upd:"Far2m doesn't know how to handle flags on your system yet"
 
 ChAttrWarnNoOne
 "Применимо только к одному объекту.\nСейчас на панели выбрано несколько объектов."
