@@ -92,21 +92,13 @@ struct DialogItemAutomation
 						// [][0] - Set, [][1] - Skip
 };
 
-class DlgUserControl
+struct DlgUserCursor
 {
-public:
-	COORD CursorPos;
-	bool CursorVisible;
-	DWORD CursorSize;
+	COORD Pos {-1, -1};
+	bool  Visible {};
+	DWORD Size { static_cast<DWORD>(-1) };
 
-public:
-	DlgUserControl()
-		:
-		CursorVisible(false), CursorSize(static_cast<DWORD>(-1))
-	{
-		CursorPos.X = CursorPos.Y = -1;
-	}
-	~DlgUserControl(){};
+	DlgUserCursor() = default;
 };
 
 /*
@@ -129,7 +121,7 @@ struct DialogItemEx
 	FARString strHistory;
 	FARString strMask;
 
-	uint64_t customItemColor[DLG_ITEM_MAX_CUST_COLORS];
+	uint64_t customColor[DLG_ITEM_MAX_CUST_COLORS];
 
 	DWORD Flags;
 	int DefaultButton;
@@ -146,7 +138,7 @@ struct DialogItemEx
 	// прочее
 	void *ObjPtr;
 	VMenu *ListPtr;
-	DlgUserControl *UCData;
+	DlgUserCursor *UCData;
 
 	int SelStart;
 	int SelEnd;
@@ -158,8 +150,8 @@ struct DialogItemEx
 
 	void Indent(int Delta)
 	{
-		X1+= Delta;
-		X2+= Delta;
+		X1 += Delta;
+		X2 += Delta;
 	}
 
 	bool AddAutomation(int id, FarDialogItemFlags UncheckedSet, FarDialogItemFlags UncheckedSkip,
@@ -185,18 +177,17 @@ struct DialogItemEx
 		return false;
 	}
 
-	bool     ConvertFromPlugin(const FarDialogItem *Item, bool Short);
-	bool     ConvertToPlugin(FarDialogItem *Item, bool Short) const;
-	size_t   ConvertItemEx2(FarDialogItem *Item) const;
-	void     ConvertItemSmall(FarDialogItem *Item) const;
+	void     CopyToItemSmall(FarDialogItem *Item) const;
+	bool     CopyToPluginItem(FarDialogItem *Item, bool shortMode) const;
+	size_t   GetDlgItem(FarDialogItem *Item) const;
 	DlgEdit* GetEdit() const { return static_cast<DlgEdit*>(ObjPtr); }
 	DlgEdit* GetEdit() { return static_cast<DlgEdit*>(ObjPtr); }
+	size_t   GetStringAndSize(FARString &ItemString) const;
 	bool     HasDropDownArrow() const;
 	bool     IsFocusable() const;
 	bool     IsHorizontalSeparator() const;
 	bool     IsVerticalSeparator() const;
-	size_t   StringAndSize(FARString &ItemString) const;
-	void     ToDialogItemEx(DialogItemEx *pDest) const;
+	bool     SetFromPluginItem(const FarDialogItem *Item, bool shortMode);
 };
 
 /*
@@ -208,7 +199,7 @@ Russian Help Encyclopedia of Developer")
 struct DialogDataEx
 {
 	WORD Type;
-	short X1, Y1, X2, Y2;
+	int X1, Y1, X2, Y2;
 	union
 	{
 		DWORD_PTR Reserved;

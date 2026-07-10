@@ -172,13 +172,7 @@ bool IsKeyHighlighted(const wchar_t *Str, FarKey Key, bool Translate, int AmpPos
 	return false;
 }
 
-void DialogItemEx::ToDialogItemEx(DialogItemEx *pDest) const
-{
-	*pDest = *this;
-	pDest->nMaxLength = 0;
-}
-
-void DialogItemEx::ConvertItemSmall(FarDialogItem *Item) const
+void DialogItemEx::CopyToItemSmall(FarDialogItem *Item) const
 {
 	Item->Type = Type;
 	Item->X1 = X1;
@@ -202,7 +196,7 @@ void DialogItemEx::ConvertItemSmall(FarDialogItem *Item) const
 		Item->Param.Reserved = Reserved;
 }
 
-size_t DialogItemEx::StringAndSize(FARString &ItemString) const
+size_t DialogItemEx::GetStringAndSize(FARString &ItemString) const
 {
 	DlgEdit *EditPtr;
 	if (FarIsEdit(Type) && (EditPtr = GetEdit()) != nullptr)
@@ -218,7 +212,7 @@ size_t DialogItemEx::StringAndSize(FARString &ItemString) const
 	return sz;
 }
 
-bool DialogItemEx::ConvertFromPlugin(const FarDialogItem *Item, bool Short)
+bool DialogItemEx::SetFromPluginItem(const FarDialogItem *Item, bool shortMode)
 {
 	if (!Item)
 		return false;
@@ -241,7 +235,7 @@ bool DialogItemEx::ConvertFromPlugin(const FarDialogItem *Item, bool Short)
 	DefaultButton = Item->DefaultButton;
 	Type = Item->Type;
 
-	if (!Short) {
+	if (!shortMode) {
 		strData = Item->PtrData;
 		nMaxLength = Item->MaxLen;
 
@@ -257,16 +251,16 @@ bool DialogItemEx::ConvertFromPlugin(const FarDialogItem *Item, bool Short)
 	return true;
 }
 
-bool DialogItemEx::ConvertToPlugin(FarDialogItem *Item, bool Short) const
+bool DialogItemEx::CopyToPluginItem(FarDialogItem *Item, bool shortMode) const
 {
 	if (!Item)
 		return false;
 
-	ConvertItemSmall(Item);
+	CopyToItemSmall(Item);
 
-	if (!Short) {
+	if (!shortMode) {
 		FARString str;
-		size_t sz = StringAndSize(str);
+		size_t sz = GetStringAndSize(str);
 
 		wchar_t *p = (wchar_t *)malloc((sz + 1) * sizeof(wchar_t));
 		Item->PtrData = p;
@@ -281,7 +275,7 @@ bool DialogItemEx::ConvertToPlugin(FarDialogItem *Item, bool Short) const
 	return true;
 }
 
-size_t DialogItemEx::ConvertItemEx2(FarDialogItem *Item) const
+size_t DialogItemEx::GetDlgItem(FarDialogItem *Item) const
 {
 	FarDialogItem LocalItem, *pAll = &LocalItem;
 	Sizer sizer(Item, SIZE_MAX);
@@ -289,10 +283,10 @@ size_t DialogItemEx::ConvertItemEx2(FarDialogItem *Item) const
 		pAll = Item;
 
 	if (Item)
-		ConvertItemSmall(pAll); // place here, because it sets pAll->PtrData to nullptr
+		CopyToItemSmall(pAll); // place here, because it sets pAll->PtrData to nullptr
 
 	FARString str;
-	StringAndSize(str);
+	GetStringAndSize(str);
 	pAll->PtrData = sizer.AddFARString(str);
 
 	if (Type == DI_LISTBOX || Type == DI_COMBOBOX) {
@@ -363,8 +357,7 @@ Dialog::Dialog(DialogItemEx *SrcItem,		// Набор элементов диал
 	Item.reserve(SrcItemCount);
 
 	for (unsigned i = 0; i < SrcItemCount; i++) {
-		Item.emplace_back();
-		SrcItem[i].ToDialogItemEx(&Item.back());
+		Item.emplace_back(SrcItem[i]);
 	}
 
 	pSaveItemEx = SrcItem;
@@ -383,7 +376,7 @@ Dialog::Dialog(FarDialogItem *SrcItem,		// Набор элементов диа�
 	for (unsigned i = 0; i < SrcItemCount; i++) {
 		Item.emplace_back();
 		// BUGBUG add error check
-		Item.back().ConvertFromPlugin(&SrcItem[i], false);
+		Item.back().SetFromPluginItem(&SrcItem[i], false);
 	}
 
 	pSaveItemEx = nullptr;
@@ -711,9 +704,7 @@ int Dialog::InitDialogObjects(int ID)
 	if (FocusPos == -1) {
 		for (int I = 0; I < ItemCount(); I++)		// по всем!!!!
 		{
-			DialogItemEx &CurItem = Item[I];
-
-			if (CurItem.IsFocusable()) {
+			if (Item[I].IsFocusable()) {
 				FocusPos = I;
 				break;
 			}
@@ -950,7 +941,7 @@ int Dialog::InitDialogObjects(int ID)
 				DialogEdit->SetReadOnly(true);
 		} else if (Type == DI_USERCONTROL) {
 			if (!DialogMode.Check(DMODE_CREATEOBJECTS))
-				CurItem.UCData = new DlgUserControl;
+				CurItem.UCData = new DlgUserCursor {};
 		}
 
 		CurItem.Flags = ItemFlags;
@@ -1726,10 +1717,10 @@ void Dialog::ShowDialog(int ID)
 		DWORD CursorSize = 0;
 
 		if (FocusPos != ID) {
-			if (Item[FocusPos].Type == DI_USERCONTROL && Item[FocusPos].UCData->CursorPos.X != -1
-					&& Item[FocusPos].UCData->CursorPos.Y != -1) {
-				CursorVisible = Item[FocusPos].UCData->CursorVisible;
-				CursorSize = Item[FocusPos].UCData->CursorSize;
+			const auto UCData = Item[FocusPos].UCData;
+			if (Item[FocusPos].Type == DI_USERCONTROL && UCData->Pos.X != -1 && UCData->Pos.Y != -1) {
+				CursorVisible = UCData->Visible;
+				CursorSize = UCData->Size;
 			}
 		}
 
@@ -1751,25 +1742,18 @@ void Dialog::ShowDialog(int ID)
 			continue;
 
 		int LenText;
-		short CX1 = CurItem.X1;
-		short CY1 = CurItem.Y1;
-		short CX2 = CurItem.X2;
-		short CY2 = CurItem.Y2;
-
-		if (CX2 > X2 - X1)
-			CX2 = X2 - X1;
-
-		if (CY2 > Y2 - Y1)
-			CY2 = Y2 - Y1;
-
-		short CW = CX2 - CX1 + 1;
-		short CH = CY2 - CY1 + 1;
+		int CX1 = CurItem.X1;
+		int CY1 = CurItem.Y1;
+		int CX2 = Min(CurItem.X2, X2 - X1);
+		int CY2 = Min(CurItem.Y2, Y2 - Y1);
+		int CW = CX2 - CX1 + 1;
+		int CH = CY2 - CY1 + 1;
 
 		CtlColorDlgItem(I, ItemColor);
 
-		for (size_t g = 0; g < DLG_ITEM_MAX_CUST_COLORS; g++) {
-			if (CurItem.customItemColor[g])
-				ItemColor[g] = CurItem.customItemColor[g];
+		for (size_t I = 0; I < DLG_ITEM_MAX_CUST_COLORS; I++) {
+			if (CurItem.customColor[I])
+				ItemColor[I] = CurItem.customColor[I];
 		}
 
 		switch (CurItem.Type) {
@@ -2109,7 +2093,7 @@ void Dialog::ShowDialog(int ID)
 					break;
 
 //				EditPtr->SetObjectColor(Attr & 0xFF, HIBYTE(LOWORD(Attr)), LOBYTE(HIWORD(Attr)));
-				EditPtr->SetObjectColor(ItemColor[0],ItemColor[1],ItemColor[2]);
+				EditPtr->SetObjectColor(ItemColor[0], ItemColor[1], ItemColor[2]);
 
 				if (CurItem.Focus) {
 					// Отключение мигающего курсора при перемещении диалога
@@ -2186,10 +2170,10 @@ void Dialog::ShowDialog(int ID)
 				}
 				// не забудем переместить курсор, если он позиционирован.
 				if (FocusPos == I) {
-					if (CurItem.UCData->CursorPos.X != -1 && CurItem.UCData->CursorPos.Y != -1) {
-						MoveCursor(CurItem.UCData->CursorPos.X + CX1 + X1,
-								CurItem.UCData->CursorPos.Y + CY1 + Y1);
-						SetCursorType(CurItem.UCData->CursorVisible, CurItem.UCData->CursorSize);
+					if (CurItem.UCData->Pos.X != -1 && CurItem.UCData->Pos.Y != -1) {
+						MoveCursor(CurItem.UCData->Pos.X + CX1 + X1,
+								CurItem.UCData->Pos.Y + CY1 + Y1);
+						SetCursorType(CurItem.UCData->Visible, CurItem.UCData->Size);
 					} else
 						SetCursorType(false, -1);
 				}
@@ -2520,7 +2504,7 @@ int64_t Dialog::VMProcess(int OpCode, void *vParam, int64_t iParam)
 				case DI_USERCONTROL:
 
 					if (OpCode == MCODE_V_CURPOS)
-						return Item[FocusPos].UCData->CursorPos.X;
+						return Item[FocusPos].UCData->Pos.X;
 
 				case DI_BUTTON:
 				case DI_CHECKBOX:
@@ -3187,7 +3171,6 @@ void Dialog::ProcessKey(FarKey Key, int ItemPos)
 int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 {
 	SCOPED_ACTION(CriticalSectionLock)(CS);
-	int I;
 	int MsX, MsY;
 	int Type;
 	SMALL_RECT Rect;
@@ -3206,16 +3189,17 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 	MsX = MouseEvent->dwMousePosition.X;
 	MsY = MouseEvent->dwMousePosition.Y;
 
-	for (I = ItemCount() - 1; I != -1; I--) {
-		if (Item[I].Flags & (DIF_DISABLE | DIF_HIDDEN))
+	for (int I = ItemCount() - 1; I != -1; I--) {
+		const auto &CurItem = Item[I];
+		if (CurItem.Flags & (DIF_DISABLE | DIF_HIDDEN))
 			continue;
 
-		Type = Item[I].Type;
+		Type = CurItem.Type;
 
-		if (Type == DI_LISTBOX && MsY >= Y1 + Item[I].Y1 && MsY <= Y1 + Item[I].Y2
-				&& MsX >= X1 + Item[I].X1 && MsX <= X1 + Item[I].X2)
+		if (Type == DI_LISTBOX && MsY >= Y1 + CurItem.Y1 && MsY <= Y1 + CurItem.Y2
+				&& MsX >= X1 + CurItem.X1 && MsX <= X1 + CurItem.X2)
 		{
-			VMenu *List = Item[I].ListPtr;
+			VMenu *List = CurItem.ListPtr;
 			int Pos = List->GetSelectPos();
 			auto CheckedListItem = List->GetCheck(-1);
 
@@ -3226,8 +3210,7 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 				}
 
 				if (MouseEvent->dwEventFlags != DOUBLE_CLICK
-						&& !(Item[I].IFlags.Flags
-								& (DLGIIF_LISTREACTIONFOCUS | DLGIIF_LISTREACTIONNOFOCUS))) {
+						&& !(CurItem.IFlags.Check(DLGIIF_LISTREACTIONFOCUS | DLGIIF_LISTREACTIONNOFOCUS))) {
 
 					List->ProcessMouse(MouseEvent);
 					int NewListPos = List->GetSelectPos();
@@ -3236,7 +3219,7 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 							&& !SendDlgMessage(DN_LISTCHANGE, I, (LONG_PTR)NewListPos)) {
 						List->SetCheck(CheckedListItem, Pos);
 
-						if (DialogMode.Check(DMODE_SHOW) && !(Item[I].Flags & DIF_HIDDEN))
+						if (DialogMode.Check(DMODE_SHOW) && !(CurItem.Flags & DIF_HIDDEN))
 							ShowDialog(I);	// FocusPos
 					} else {
 						Pos = NewListPos;
@@ -3246,7 +3229,7 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 					List->ProcessMouse(MouseEvent);
 					int NewListPos = List->GetSelectPos();
 					int InScroolBar =
-							(MsX == X1 + Item[I].X2 && MsY >= Y1 + Item[I].Y1 && MsY <= Y1 + Item[I].Y2)
+							(MsX == X1 + CurItem.X2 && MsY >= Y1 + CurItem.Y1 && MsY <= Y1 + CurItem.Y2)
 							&& (List->CheckFlags(VMENU_LISTBOX | VMENU_ALWAYSSCROLLBAR)
 									|| Opt.ShowMenuScrollbar);
 
@@ -3256,12 +3239,12 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 					{
 						List->SetCheck(CheckedListItem, Pos);
 
-						if (DialogMode.Check(DMODE_SHOW) && !(Item[I].Flags & DIF_HIDDEN))
+						if (DialogMode.Check(DMODE_SHOW) && !(CurItem.Flags & DIF_HIDDEN))
 							ShowDialog(I);	// FocusPos
 					} else {
 						Pos = NewListPos;
 
-						if (!InScroolBar && !(Item[I].Flags & DIF_LISTNOCLOSE)) {
+						if (!InScroolBar && !(CurItem.Flags & DIF_LISTNOCLOSE)) {
 							ExitCode = I;
 							CloseDialog();
 							return TRUE;
@@ -3272,20 +3255,19 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 				return TRUE;
 			}
 			else {
-				if (!MouseEvent->dwButtonState
-						|| SendDlgMessage(DN_MOUSECLICK, I, (LONG_PTR)MouseEvent)) {
-					if ((I == FocusPos && (Item[I].IFlags.Flags & DLGIIF_LISTREACTIONFOCUS))
-							|| (I != FocusPos && (Item[I].IFlags.Flags & DLGIIF_LISTREACTIONNOFOCUS))) {
+				if (!MouseEvent->dwButtonState || SendDlgMessage(DN_MOUSECLICK, I, (LONG_PTR)MouseEvent)) {
+					if ((I == FocusPos && CurItem.IFlags.Check(DLGIIF_LISTREACTIONFOCUS))
+							|| (I != FocusPos && CurItem.IFlags.Check(DLGIIF_LISTREACTIONNOFOCUS))) {
 						List->ProcessMouse(MouseEvent);
 						int NewListPos = List->GetSelectPos();
 
-						if (NewListPos != Pos
-								&& !SendDlgMessage(DN_LISTCHANGE, I, (LONG_PTR)NewListPos)) {
+						if (NewListPos != Pos && !SendDlgMessage(DN_LISTCHANGE, I, (LONG_PTR)NewListPos)) {
 							List->SetCheck(CheckedListItem, Pos);
 
-							if (DialogMode.Check(DMODE_SHOW) && !(Item[I].Flags & DIF_HIDDEN))
+							if (DialogMode.Check(DMODE_SHOW) && !(CurItem.Flags & DIF_HIDDEN))
 								ShowDialog(I);	// FocusPos
-						} else
+						}
+						else
 							Pos = NewListPos;
 					}
 				}
@@ -3354,7 +3336,7 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 
 	if (!MouseEvent->dwEventFlags || MouseEvent->dwEventFlags == DOUBLE_CLICK) {
 		// первый цикл - все за исключением рамок.
-		for (I = ItemCount() - 1; I != -1; I--) {
+		for (int I = ItemCount() - 1; I != -1; I--) {
 			if (Item[I].Flags & (DIF_DISABLE | DIF_HIDDEN))
 				continue;
 
@@ -3404,7 +3386,7 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 		}
 
 		if (MouseEvent->dwButtonState & FROM_LEFT_1ST_BUTTON_PRESSED) {
-			for (I = ItemCount() - 1; I != -1; I--) {
+			for (int I = ItemCount() - 1; I != -1; I--) {
 				// Исключаем из списка оповещаемых о мыши недоступные элементы
 				if (Item[I].Flags & (DIF_DISABLE | DIF_HIDDEN))
 					continue;
@@ -4455,7 +4437,7 @@ void Dialog::Process()
 
 	if (pSaveItemEx)
 		for (int i = 0; i < ItemCount(); i++)
-			Item[i].ToDialogItemEx(&pSaveItemEx[i]);
+			pSaveItemEx[i] = Item[i];
 }
 
 void Dialog::CloseDialog()
@@ -4725,6 +4707,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 			[[fallthrough]];
 			/*****************************************************************/
 		case DM_MOVEDIALOG: {
+			auto Coord = reinterpret_cast<COORD*>(Param2);
 			int W1 = X2 - X1 + 1;
 			int H1 = Y2 - Y1 + 1;
 			OldX1 = X1;
@@ -4735,21 +4718,21 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 			// переместили
 			if (Param1 > 0)		// абсолютно?
 			{
-				X1 = ((COORD *)Param2)->X;
-				Y1 = ((COORD *)Param2)->Y;
+				X1 = Coord->X;
+				Y1 = Coord->Y;
 				X2 = W1;
 				Y2 = H1;
 				CheckDialogCoord();
 			} else if (!Param1)		// значит относительно
 			{
-				X1+= ((COORD *)Param2)->X;
-				Y1+= ((COORD *)Param2)->Y;
+				X1+= Coord->X;
+				Y1+= Coord->Y;
 			} else		// Resize, Param2=width/height
 			{
 				int OldW1 = W1;
 				int OldH1 = H1;
-				W1 = ((COORD *)Param2)->X;
-				H1 = ((COORD *)Param2)->Y;
+				W1 = Coord->X;
+				H1 = Coord->Y;
 				RealWidth = W1;
 				RealHeight = H1;
 
@@ -4806,11 +4789,11 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 
 			if (Param1 < 0)		// размер?
 			{
-				((COORD *)Param2)->X = X2 - X1 + 1;
-				((COORD *)Param2)->Y = Y2 - Y1 + 1;
+				Coord->X = X2 - X1 + 1;
+				Coord->Y = Y2 - Y1 + 1;
 			} else {
-				((COORD *)Param2)->X = X1;
-				((COORD *)Param2)->Y = Y1;
+				Coord->X = X1;
+				Coord->Y = Y1;
 			}
 
 			bool Visible = IsVisible();	// && DialogMode.Check(DMODE_INITOBJECTS);
@@ -4875,9 +4858,9 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 		}
 		/*****************************************************************/
 		case DM_SETDLGDATA: {
-			LONG_PTR PrewDataDialog = DataDialog;
+			LONG_PTR PrevData = DataDialog;
 			DataDialog = Param2;
-			return PrewDataDialog;
+			return PrevData;
 		}
 		/*****************************************************************/
 		case DM_GETDLGDATA: {
@@ -4957,13 +4940,13 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 
 			if (Param2)
 			{
-				DialogInfo *di=reinterpret_cast<DialogInfo*>(Param2);
+				auto di = reinterpret_cast<DialogInfo*>(Param2);
 				if (IdExist)
 				{
-					if (di->StructSize >= offsetof(DialogInfo, Id)+sizeof(di->Id))
+					if (di->StructSize >= offsetof(DialogInfo, Id) + sizeof(di->Id))
 					{
-						di->Id=Id;
-						Result=TRUE;
+						di->Id = Id;
+						Result = TRUE;
 					}
 				}
 
@@ -5014,7 +4997,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 		$ 09.12.2001 DJ
 		для DM_USER проверять _не_надо_!
 	*/
-	if (Param1 >= ItemCount() || Item.empty())
+	if (Param1 < 0 || Param1 >= ItemCount() || Item.empty())
 		return 0;
 
 	size_t Len = 0;
@@ -5023,7 +5006,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 	const wchar_t *Ptr = CurItem.strData;
 
 	if (FarIsEdit(Type) && CurItem.GetEdit())
-		Ptr = const_cast<const wchar_t *>(CurItem.GetEdit()->GetStringAddr());
+		Ptr = CurItem.GetEdit()->GetStringAddr();
 
 	switch (Msg) {
 			/*****************************************************************/
@@ -5153,8 +5136,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 							FarListItemData *ListItems = (FarListItemData *)Param2;
 
 							if (ListItems && ListItems->Index < ListBox->GetItemCount()) {
-								Ret = ListBox->SetUserData(ListItems->Data, ListItems->DataSize,
-										ListItems->Index);
+								Ret = ListBox->SetUserData(ListItems->Data, ListItems->DataSize, ListItems->Index);
 
 								if (!Ret && ListBox->GetUserData(nullptr, 0, ListItems->Index))
 									Ret = sizeof(DWORD);
@@ -5198,14 +5180,12 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 
 								if (!strTitle.IsEmpty() || !strBottomTitle.IsEmpty()) {
 									if (ListTitle->Title && ListTitle->TitleLen)
-										far_wcsncpy((wchar_t *)ListTitle->Title, strTitle,
-												ListTitle->TitleLen);
+										far_wcsncpy((wchar_t *)ListTitle->Title, strTitle, ListTitle->TitleLen);
 									else
 										ListTitle->TitleLen = (int)strTitle.GetLength() + 1;
 
 									if (ListTitle->Bottom && ListTitle->BottomLen)
-										far_wcsncpy((wchar_t *)ListTitle->Bottom, strBottomTitle,
-												ListTitle->BottomLen);
+										far_wcsncpy((wchar_t *)ListTitle->Bottom, strBottomTitle, ListTitle->BottomLen);
 									else
 										ListTitle->BottomLen = (int)strBottomTitle.GetLength() + 1;
 
@@ -5342,14 +5322,16 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 			if (!Param2)
 				return FALSE;
 
+			auto Coord = reinterpret_cast<COORD*>(Param2);
+
 			if (FarIsEdit(Type) && CurItem.GetEdit()) {
 				DlgEdit *EditPtr = CurItem.GetEdit();
-				((COORD *)Param2)->X = EditPtr->GetCurPos();
-				((COORD *)Param2)->Y = (Type == DI_MEMOEDIT) ? EditPtr->GetCurRow() : 0;
+				Coord->X = EditPtr->GetCurPos();
+				Coord->Y = (Type == DI_MEMOEDIT) ? EditPtr->GetCurRow() : 0;
 				return TRUE;
 			} else if (Type == DI_USERCONTROL && CurItem.UCData) {
-				((COORD *)Param2)->X = CurItem.UCData->CursorPos.X;
-				((COORD *)Param2)->Y = CurItem.UCData->CursorPos.Y;
+				Coord->X = CurItem.UCData->Pos.X;
+				Coord->Y = CurItem.UCData->Pos.Y;
 				return TRUE;
 			}
 
@@ -5357,40 +5339,35 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 		}
 		/*****************************************************************/
 		case DM_SETCURSORPOS: {
-			if (FarIsEdit(Type) && CurItem.GetEdit() && ((COORD *)Param2)->X >= 0) {
+			const auto Coord = reinterpret_cast<COORD*>(Param2);
+
+			if (FarIsEdit(Type) && CurItem.GetEdit() && Coord->X >= 0) {
 				DlgEdit *EditPtr = CurItem.GetEdit();
 				if (Type == DI_MEMOEDIT)
-					EditPtr->SetCurPos(((COORD *)Param2)->X, ((COORD *)Param2)->Y);
+					EditPtr->SetCurPos(Coord->X, Coord->Y);
 				else
-					EditPtr->SetCurPos(((COORD *)Param2)->X);
+					EditPtr->SetCurPos(Coord->X);
 				// EditPtr->Show();
 				ShowDialog(Param1);
 				return TRUE;
-			} else if (Type == DI_USERCONTROL && CurItem.UCData) {
+			}
+			else if (Type == DI_USERCONTROL && CurItem.UCData) {
 				/*
 					учтем, что координаты для этого элемента всегда относительные!
 					и начинаются с 0,0
 				*/
-				COORD Coord = *(COORD *)Param2;
-				Coord.X+= CurItem.X1;
-
-				if (Coord.X > CurItem.X2)
-					Coord.X = CurItem.X2;
-
-				Coord.Y+= CurItem.Y1;
-
-				if (Coord.Y > CurItem.Y2)
-					Coord.Y = CurItem.Y2;
+				int X = Min(CurItem.X1 + Coord->X, CurItem.X2);
+				int Y = Min(CurItem.Y1 + Coord->Y, CurItem.Y2);
 
 				// Запомним
-				CurItem.UCData->CursorPos.X = Coord.X - CurItem.X1;
-				CurItem.UCData->CursorPos.Y = Coord.Y - CurItem.Y1;
+				CurItem.UCData->Pos.X = X - CurItem.X1;
+				CurItem.UCData->Pos.Y = Y - CurItem.Y1;
 
 				// переместим если надо
 				if (DialogMode.Check(DMODE_SHOW) && FocusPos == Param1) {
 					// что-то одно надо убрать :-)
-					MoveCursor(Coord.X + X1, Coord.Y + Y1);	// ???
-					ShowDialog(Param1);							// ???
+					MoveCursor(X + X1, Y + Y1);	// ???
+					ShowDialog(Param1);					// ???
 				}
 
 				return TRUE;
@@ -5462,7 +5439,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 				CurItem.GetEdit()->GetCursorType(Visible, Size);
 				return MAKELONG(Visible, Size);
 			} else if (Type == DI_USERCONTROL && CurItem.UCData) {
-				return MAKELONG(CurItem.UCData->CursorVisible, CurItem.UCData->CursorSize);
+				return MAKELONG(CurItem.UCData->Visible, CurItem.UCData->Size);
 			}
 
 			return FALSE;
@@ -5478,15 +5455,15 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 				CurItem.GetEdit()->GetCursorType(Visible, Size);
 				CurItem.GetEdit()->SetCursorType(LOWORD(Param2) != 0, HIWORD(Param2));
 			} else if (Type == DI_USERCONTROL && CurItem.UCData) {
-				Visible = CurItem.UCData->CursorVisible;
-				Size = CurItem.UCData->CursorSize;
-				CurItem.UCData->CursorVisible = LOWORD(Param2) != 0;
-				CurItem.UCData->CursorSize = HIWORD(Param2);
-				int CCX = CurItem.UCData->CursorPos.X;
-				int CCY = CurItem.UCData->CursorPos.Y;
+				Visible = CurItem.UCData->Visible;
+				Size = CurItem.UCData->Size;
+				CurItem.UCData->Visible = LOWORD(Param2) != 0;
+				CurItem.UCData->Size = HIWORD(Param2);
+				int CCX = CurItem.UCData->Pos.X;
+				int CCY = CurItem.UCData->Pos.Y;
 
 				if (DialogMode.Check(DMODE_SHOW) && FocusPos == Param1 && CCX != -1 && CCY != -1)
-					SetCursorType(CurItem.UCData->CursorVisible, CurItem.UCData->CursorSize);
+					SetCursorType(CurItem.UCData->Visible, CurItem.UCData->Size);
 			}
 
 			return MAKELONG(Visible, Size);
@@ -5499,7 +5476,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 		case DN_EDITCHANGE: {
 			FarDialogItem Item;
 
-			if (!CurItem.ConvertToPlugin(&Item, false))
+			if (!CurItem.CopyToPluginItem(&Item, false))
 				return FALSE;	// no memory TODO: may be needed diagnostic
 
 			INT_PTR I = 0;
@@ -5614,7 +5591,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 		case DN_DRAWDLGITEM: {
 			FarDialogItem Item;
 
-			if (!CurItem.ConvertToPlugin(&Item, false))
+			if (!CurItem.CopyToPluginItem(&Item, false))
 				return FALSE;	// no memory TODO: may be needed diagnostic
 
 			INT_PTR I = CallDlgProc(Msg, Param1, (LONG_PTR)&Item);
@@ -5966,11 +5943,11 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 		/*****************************************************************/
 		case DM_GETDLGITEM: {
 			FarDialogItem *Item = (FarDialogItem *)Param2;
-			return (LONG_PTR)CurItem.ConvertItemEx2(Item);
+			return (LONG_PTR)CurItem.GetDlgItem(Item);
 		}
 		/*****************************************************************/
 		case DM_GETDLGITEMSHORT: {
-			return Param2 && CurItem.ConvertToPlugin((FarDialogItem *)Param2, true);
+			return Param2 && CurItem.CopyToPluginItem((FarDialogItem *)Param2, true);
 		}
 		/*****************************************************************/
 		case DM_SETDLGITEM:
@@ -5982,7 +5959,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 				return FALSE;
 
 			// не менять
-			if (!CurItem.ConvertFromPlugin((FarDialogItem *)Param2, Msg == DM_SETDLGITEMSHORT))
+			if (!CurItem.SetFromPluginItem((FarDialogItem *)Param2, Msg == DM_SETDLGITEMSHORT))
 				return FALSE;	// invalid parameters
 
 			CurItem.Type = Type;
@@ -6125,13 +6102,13 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 		///case DM_GETCOLOR:///
 		case DM_GETTRUECOLOR: {
 			if (Param2)
-				memcpy((void*)Param2, CurItem.customItemColor, sizeof(CurItem.customItemColor));
+				memcpy((void*)Param2, CurItem.customColor, sizeof(CurItem.customColor));
 //			if (!CurItem.TrueColors) {
 //				memset((uint64_t *)Param2, 0, sizeof(DialogItemTrueColors));
 //			} else {
 //				*(DialogItemTrueColors *)Param2 = *CurItem.TrueColors;
 //			}
-//			Param2 = CurItem.customItemColor
+//			Param2 = CurItem.customColor
 
 			return TRUE;
 		}
@@ -6139,7 +6116,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 		///case DM_SETCOLOR:///
 		case DM_SETTRUECOLOR: {
 			if (Param2)
-				memcpy(CurItem.customItemColor, (void*)Param2, sizeof(CurItem.customItemColor));
+				memcpy(CurItem.customColor, (void*)Param2, sizeof(CurItem.customColor));
 
 //			if (!CurItem.TrueColors) {
 //				CurItem.TrueColors.reset(new DialogItemTrueColors);
@@ -6311,7 +6288,7 @@ void Dialog::SetPosition(int x1, int y1, int x2, int y2)
 
 	ScreenObject::SetPosition(x1, y1, x2, y2);
 }
-//////////////////////////////////////////////////////////////////////////
+
 bool Dialog::IsInited()
 {
 	SCOPED_ACTION(CriticalSectionLock)(CS);
@@ -6329,11 +6306,9 @@ void Dialog::SetComboBoxPos(DialogItemEx *CurItem)
 
 		EditX2 = Max(EditX2, EditX1 + 20);
 
-		if (ScrY - EditY1 < Min(Opt.Dialogs.CBoxMaxHeight, CurItem->ListPtr->GetItemCount()) + 2
-				&& EditY1 > ScrY / 2)
-			CurItem->ListPtr->SetPosition(EditX1,
-					Max(0, EditY1 - 1 - Min(Opt.Dialogs.CBoxMaxHeight, CurItem->ListPtr->GetItemCount()) - 1),
-					EditX2, EditY1 - 1);
+		auto height = Min(Opt.Dialogs.CBoxMaxHeight, CurItem->ListPtr->GetItemCount());
+		if ((ScrY - EditY1 < height + 2) && (EditY1 > ScrY / 2))
+			CurItem->ListPtr->SetPosition(EditX1, Max(0, EditY1 - 1 - height - 1), EditX2, EditY1 - 1);
 		else
 			CurItem->ListPtr->SetPosition(EditX1, EditY1 + 1, EditX2, 0);
 	}
