@@ -317,6 +317,7 @@ private:
 	LONG_PTR SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2);
 
 	void ProcessKey(FarKey Key, int ItemPos);
+	void ApplyAutomation(const DialogItemEx &SrcItem);
 
 public:
 	Dialog(DialogItemEx *SrcItem, unsigned SrcItemCount, FARWINDOWPROC DlgProc = nullptr,

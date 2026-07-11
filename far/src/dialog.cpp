@@ -5477,16 +5477,8 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 		case DN_BTNCLICK: {
 			LONG_PTR Ret = CallDlgProc(Msg, Param1, Param2);
 
-			if (Ret && (CurItem.Flags & DIF_AUTOMATION) && !CurItem.Auto.empty()) {
-				const auto iParam = Param2 % (CurItem.Flags & DIF_3STATE ? 3 : 2);
-
-				for (auto &A: CurItem.Auto) {
-					auto &TargetItem = Item[A.Target];
-					TargetItem.Flags &= ~A.Flags[iParam][1];
-					TargetItem.Flags |= A.Flags[iParam][0];
-					// здесь намеренно в обработчик не посылаются эвенты об изменении состояния...
-				}
-			}
+			if (Ret && (CurItem.Flags & DIF_AUTOMATION) && !CurItem.Auto.empty())
+				ApplyAutomation(CurItem);
 
 			return Ret;
 		}
@@ -5522,15 +5514,8 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 				CurItem.Selected = State;
 
 				if (Selected != State && DialogMode.Check(DMODE_SHOW)) {
-					// автоматизация
 					if ((CurItem.Flags & DIF_AUTOMATION) && !CurItem.Auto.empty()) {
-						for (auto &A: CurItem.Auto) {
-							auto &TargetItem = Item[A.Target];
-							TargetItem.Flags &= ~A.Flags[State][1];
-							TargetItem.Flags |= A.Flags[State][0];
-							// здесь намеренно в обработчик не посылаются эвенты об изменении состояния...
-						}
-
+						ApplyAutomation(CurItem);
 						Param1 = -1;
 					}
 
@@ -6292,4 +6277,15 @@ Editor* Dialog::GetMemoEdit(int Pos) const
 		return Item[Pos].GetEdit()->GetMemoEdit();
 	}
 	return nullptr;
+}
+
+void Dialog::ApplyAutomation(const DialogItemEx &SrcItem)
+{
+	const auto &State = SrcItem.Selected;
+	for (auto &A: SrcItem.Auto) {
+		auto &TargetItem = Item[A.Target];
+		TargetItem.Flags &= ~A.Flags[State][1];
+		TargetItem.Flags |= A.Flags[State][0];
+		// здесь намеренно в обработчик не посылаются эвенты об изменении состояния...
+	}
 }
