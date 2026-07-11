@@ -88,7 +88,6 @@ enum DLGITEMINTERNALFLAGS
 
 const wchar_t *fmtSavedDialogHistory = L"SavedDialogHistory/";
 
-//////////////////////////////////////////////////////////////////////////
 bool DialogItemEx::IsFocusable() const
 {
 	switch (Type)
@@ -412,11 +411,9 @@ void Dialog::Init(FARWINDOWPROC aDlgProc,	// Диалоговая процеду
 	//_SVS(SysLog(L"Dialog =%d",CtrlObject->Macro.GetMode()));
 	// запоминаем предыдущий заголовок консоли
 	OldTitle = new ConsoleTitle;
-	IdExist = false;
-	Id = {};
+	Id.reset();
 }
 
-//////////////////////////////////////////////////////////////////////////
 /*
 	Public, Virtual:
 	Деструктор класса Dialog
@@ -489,17 +486,14 @@ void Dialog::InitDialog()
 		DialogMode.Set(DMODE_INITOBJECTS);
 		DialogInfo di = {sizeof(di)};
 
-		if (DlgProc(DN_GETDIALOGINFO, 0, reinterpret_cast<LONG_PTR>(&di))) {
+		if (DlgProc(DN_GETDIALOGINFO, 0, reinterpret_cast<LONG_PTR>(&di)))
 			Id = di.Id;
-			IdExist = true;
-		}
 
 		SetMacroArea(Item[InitFocus].Type == DI_MEMOEDIT ? MACROAREA_MEMOEDIT : MACROAREA_DIALOG);
 		DlgProc(DN_GOTFOCUS, InitFocus, 0);
 	}
 }
 
-//////////////////////////////////////////////////////////////////////////
 /*
 	Public, Virtual:
 	Расчет значений координат окна диалога и вызов функции
@@ -542,7 +536,6 @@ void Dialog::Hide()
 	ScreenObject::Hide();
 }
 
-//////////////////////////////////////////////////////////////////////////
 /*
 	Private, Virtual:
 	Инициализация объектов и вывод диалога на экран.
@@ -1179,7 +1172,7 @@ void Dialog::DeleteDialogObjects()
 {
 	SCOPED_ACTION(CriticalSectionLock)(CS);
 
-	for (const auto &CurItem: Item) {
+	for (auto &CurItem: Item) {
 		switch (CurItem.Type) {
 			case DI_EDIT:
 			case DI_FIXEDIT:
@@ -1206,8 +1199,7 @@ void Dialog::DeleteDialogObjects()
 		}
 
 		if (CurItem.Flags & DIF_AUTOMATION)
-			if (CurItem.AutoPtr)
-				free(CurItem.AutoPtr);
+			CurItem.Auto.clear();
 	}
 }
 
@@ -1650,7 +1642,6 @@ static void SetColorFrame(DWORD Attr, const std::unique_ptr<DialogItemTrueColors
 }
 */
 
-//////////////////////////////////////////////////////////////////////////
 /*
 	Private:
 		Отрисовка элементов диалога на экране.
@@ -2484,7 +2475,7 @@ int64_t Dialog::VMProcess(int OpCode, void *vParam, int64_t iParam)
 		case MCODE_V_DLGINFOID:		// Dlg.Info.Id
 		{
 			static FARString strId;
-			strId = GuidToString(Id);
+			strId = GuidToString(Id ? *Id : GUID{});
 			return reinterpret_cast<INT64>(strId.CPtr());
 		}
 		case MCODE_V_ITEMCOUNT:
@@ -2528,7 +2519,6 @@ int64_t Dialog::VMProcess(int OpCode, void *vParam, int64_t iParam)
 	return 0;
 }
 
-//////////////////////////////////////////////////////////////////////////
 /*
 	Public, Virtual:
 		Обработка данных от клавиатуры.
@@ -3158,7 +3148,6 @@ void Dialog::ProcessKey(FarKey Key, int ItemPos)
 		FocusPos = SavedFocusPos;
 }
 
-//////////////////////////////////////////////////////////////////////////
 /*
 	Public, Virtual:
 		Обработка данных от "мыши".
@@ -3873,7 +3862,6 @@ bool Dialog::Do_ProcessSpace()
 	return true;
 }
 
-//////////////////////////////////////////////////////////////////////////
 /*
 	Private:
 	Изменяет фокус ввода (воздействие клавишами
@@ -3918,7 +3906,6 @@ int Dialog::ChangeFocus(int CurFocusPos, int Step, bool SkipGroup)
 	return CurFocusPos;
 }
 
-//////////////////////////////////////////////////////////////////////////
 /*
 	Private:
 	Изменяет фокус ввода между двумя элементами.
@@ -4017,21 +4004,17 @@ void Dialog::SelectOnEntry(int Pos, bool Selected)
 	}
 }
 
-bool Dialog::SetAutomation(int IDParent, int id, FarDialogItemFlags UncheckedSet,
+void Dialog::SetAutomation(int IDParent, int id, FarDialogItemFlags UncheckedSet,
 		FarDialogItemFlags UncheckedSkip, FarDialogItemFlags CheckedSet, FarDialogItemFlags CheckedSkip,
 		FarDialogItemFlags Checked3Set, FarDialogItemFlags Checked3Skip)
 {
 	SCOPED_ACTION(CriticalSectionLock)(CS);
-	bool Ret = false;
-
 	if (IDParent < ItemCount() && (Item[IDParent].Flags & DIF_AUTOMATION) && id < ItemCount()
 			&& IDParent != id)		// Сами себя не юзаем!
 	{
-		Ret = Item[IDParent].AddAutomation(id, UncheckedSet, UncheckedSkip, CheckedSet, CheckedSkip,
+		Item[IDParent].AddAutomation(id, UncheckedSet, UncheckedSkip, CheckedSet, CheckedSkip,
 				Checked3Set, Checked3Skip);
 	}
-
-	return Ret;
 }
 
 /*
@@ -4164,7 +4147,6 @@ int Dialog::SelectFromComboBox(DialogItemEx &CurItem,
 	return KEY_ENTER;
 }
 
-//////////////////////////////////////////////////////////////////////////
 /*
 	Private:
 	Заполняем выпадающий список из истории
@@ -4216,7 +4198,6 @@ bool Dialog::SelectFromEditHistory(DialogItemEx &CurItem, DlgEdit *EditLine, con
 	return false;
 }
 
-//////////////////////////////////////////////////////////////////////////
 /*
 	Private:
 	Работа с историей - добавление и reorder списка
@@ -4577,7 +4558,6 @@ LONG_PTR Dialog::DlgProc(int Msg, int Param1, LONG_PTR Param2)
 	return Result;
 }
 
-//////////////////////////////////////////////////////////////////////////
 /*
 	$ 28.07.2000 SVS
 	функция обработки диалога (по умолчанию)
@@ -4941,16 +4921,13 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 			if (Param2)
 			{
 				auto di = reinterpret_cast<DialogInfo*>(Param2);
-				if (IdExist)
+				if (Id && (di->StructSize >= offsetof(DialogInfo, Id) + sizeof(di->Id)))
 				{
-					if (di->StructSize >= offsetof(DialogInfo, Id) + sizeof(di->Id))
-					{
-						di->Id = Id;
-						Result = TRUE;
-					}
+					di->Id = *Id;
+					Result = TRUE;
 				}
 
-				if (di->StructSize >= offsetof(DialogInfo, Owner)+sizeof(di->Owner))
+				if (di->StructSize >= offsetof(DialogInfo, Owner) + sizeof(di->Owner))
 				{
 					di->Owner = 0;
 					if (PluginNumber != -1)
@@ -5500,16 +5477,14 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 		case DN_BTNCLICK: {
 			LONG_PTR Ret = CallDlgProc(Msg, Param1, Param2);
 
-			if (Ret && (CurItem.Flags & DIF_AUTOMATION) && CurItem.AutoCount && CurItem.AutoPtr) {
-				DialogItemAutomation *Auto = CurItem.AutoPtr;
-				Param2 %= 3;
+			if (Ret && (CurItem.Flags & DIF_AUTOMATION) && !CurItem.Auto.empty()) {
+				const auto iParam = Param2 % (CurItem.Flags & DIF_3STATE ? 3 : 2);
 
-				for (UINT I = 0; I < CurItem.AutoCount; ++I, ++Auto) {
-					DWORD NewFlags = Item[Auto->ID].Flags;
-					Item[Auto->ID].Flags =
-							(NewFlags & (~Auto->Flags[Param2][1])) | Auto->Flags[Param2][0];
-					// здесь намеренно в обработчик не посылаются эвенты об изменении
-					// состояния...
+				for (auto &A: CurItem.Auto) {
+					auto &TargetItem = Item[A.Target];
+					TargetItem.Flags &= ~A.Flags[iParam][1];
+					TargetItem.Flags |= A.Flags[iParam][0];
+					// здесь намеренно в обработчик не посылаются эвенты об изменении состояния...
 				}
 			}
 
@@ -5539,31 +5514,21 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 		}
 		/*****************************************************************/
 		case DM_SETCHECK: {
-			if (Type == DI_CHECKBOX) {
+			if (Type == DI_CHECKBOX)
+			{
 				int Selected = CurItem.Selected;
+				int State = (Param2 == BSTATE_TOGGLE) ? (Selected + 1) : (int)Param2;
+				State %= (CurItem.Flags & DIF_3STATE) ? 3 : 2;
+				CurItem.Selected = State;
 
-				if (Param2 == BSTATE_TOGGLE)
-					Param2 = ++Selected;
-
-				if (CurItem.Flags & DIF_3STATE)
-					Param2 %= 3;
-				else
-					Param2 &= 1;
-
-				CurItem.Selected = (int)Param2;
-
-				if (Selected != (int)Param2 && DialogMode.Check(DMODE_SHOW)) {
+				if (Selected != State && DialogMode.Check(DMODE_SHOW)) {
 					// автоматизация
-					if ((CurItem.Flags & DIF_AUTOMATION) && CurItem.AutoCount && CurItem.AutoPtr) {
-						DialogItemAutomation *Auto = CurItem.AutoPtr;
-						Param2 %= 3;
-
-						for (UINT I = 0; I < CurItem.AutoCount; ++I, ++Auto) {
-							DWORD NewFlags = Item[Auto->ID].Flags;
-							Item[Auto->ID].Flags =
-									(NewFlags & (~Auto->Flags[Param2][1])) | Auto->Flags[Param2][0];
-							// здесь намеренно в обработчик не посылаются эвенты об изменении
-							// состояния...
+					if ((CurItem.Flags & DIF_AUTOMATION) && !CurItem.Auto.empty()) {
+						for (auto &A: CurItem.Auto) {
+							auto &TargetItem = Item[A.Target];
+							TargetItem.Flags &= ~A.Flags[State][1];
+							TargetItem.Flags |= A.Flags[State][0];
+							// здесь намеренно в обработчик не посылаются эвенты об изменении состояния...
 						}
 
 						Param1 = -1;
@@ -5574,7 +5539,8 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 				}
 
 				return Selected;
-			} else if (Type == DI_RADIOBUTTON) {
+			}
+			else if (Type == DI_RADIOBUTTON) {
 				Param1 = ProcessRadioButton(Param1);
 
 				if (DialogMode.Check(DMODE_SHOW)) {
@@ -6317,12 +6283,6 @@ void Dialog::SetComboBoxPos(DialogItemEx *CurItem)
 bool Dialog::ProcessEvents() const
 {
 	return !DialogMode.Check(DMODE_ENDLOOP);
-}
-
-void Dialog::SetId(const GUID &Guid)
-{
-	Id = Guid;
-	IdExist = true;
 }
 
 Editor* Dialog::GetMemoEdit(int Pos) const

@@ -3278,10 +3278,9 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			break;
 
 		case DM_SETCHECK:
-			if (lua_isnumber(L,pos4))
-				Param2 = lua_tointeger(L,pos4);
-			else
-				Param2 = lua_toboolean(L,pos4) ? BSTATE_CHECKED : BSTATE_UNCHECKED;
+			Param2 = lua_isboolean(L, pos4)
+				? (lua_toboolean(L, pos4) ? BSTATE_CHECKED : BSTATE_UNCHECKED)
+				: check_env_flag(L, pos4);
 			break;
 
 		case DM_GETDEFAULTCOLOR:

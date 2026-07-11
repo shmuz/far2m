@@ -36,13 +36,13 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "frame.hpp"
+#include <optional>
 #include <farplug-wide.h>
-#include <memory>
-#include "vmenu.hpp"
-#include "chgmmode.hpp"
 #include "bitflags.hpp"
+#include "chgmmode.hpp"
 #include "CriticalSections.hpp"
+#include "frame.hpp"
+#include "vmenu.hpp"
 
 class History;
 class Editor;
@@ -86,7 +86,7 @@ enum DIALOG_MODES
 // на первом этапе - примитивная - выставление флагов у элементов для CheckBox
 struct DialogItemAutomation
 {
-	int ID;			// Для этого элемента...
+	int Target;			// Для этого элемента...
 	DWORD Flags[3][2];	// ...выставить вот эти флаги
 						// [0] - Unchecked, [1] - Checked, [2] - 3Checked
 						// [][0] - Set, [][1] - Skip
@@ -131,8 +131,7 @@ struct DialogItemEx
 
 	int ID;
 	BitFlags IFlags;
-	unsigned AutoCount;		// Автоматизация
-	DialogItemAutomation *AutoPtr;
+	std::vector<DialogItemAutomation> Auto;
 	DWORD_PTR UserData;		// ассоциированные данные
 
 	// прочее
@@ -154,27 +153,18 @@ struct DialogItemEx
 		X2 += Delta;
 	}
 
-	bool AddAutomation(int id, FarDialogItemFlags UncheckedSet, FarDialogItemFlags UncheckedSkip,
-			FarDialogItemFlags CheckedSet, FarDialogItemFlags CheckedSkip, FarDialogItemFlags Checked3Set,
-			FarDialogItemFlags Checked3Skip)
+	void AddAutomation(int id, FarDialogItemFlags UncheckedSet, FarDialogItemFlags UncheckedSkip,
+			FarDialogItemFlags CheckedSet, FarDialogItemFlags CheckedSkip,
+			FarDialogItemFlags Checked3Set, FarDialogItemFlags Checked3Skip)
 	{
-		DialogItemAutomation *Auto;
-
-		if ((Auto = (DialogItemAutomation *)realloc(AutoPtr,
-						sizeof(DialogItemAutomation) * (AutoCount + 1)))) {
-			AutoPtr = Auto;
-			Auto = AutoPtr + AutoCount;
-			Auto->ID = id;
-			Auto->Flags[0][0] = UncheckedSet;
-			Auto->Flags[0][1] = UncheckedSkip;
-			Auto->Flags[1][0] = CheckedSet;
-			Auto->Flags[1][1] = CheckedSkip;
-			Auto->Flags[2][0] = Checked3Set;
-			Auto->Flags[2][1] = Checked3Skip;
-			AutoCount++;
-			return true;
-		}
-		return false;
+		auto &A = Auto.emplace_back();
+		A.Target = id;
+		A.Flags[0][0] = UncheckedSet;
+		A.Flags[0][1] = UncheckedSkip;
+		A.Flags[1][0] = CheckedSet;
+		A.Flags[1][1] = CheckedSkip;
+		A.Flags[2][0] = Checked3Set;
+		A.Flags[2][1] = Checked3Skip;
 	}
 
 	void     CopyToItemSmall(FarDialogItem *Item) const;
@@ -254,8 +244,7 @@ private:
 
 	int RealWidth, RealHeight;
 
-	GUID Id;
-	bool IdExist;
+	std::optional<GUID> Id;
 	int AltState, CtrlState, ShiftState;
 
 private:
@@ -379,12 +368,12 @@ public:
 	int ItemCount() const { return Item.size(); };	// количество элементов диалога
 	int GetDlgFocusPos() const { return FocusPos; };
 
-	bool SetAutomation(int IDParent, int id, FarDialogItemFlags UncheckedSet,
+	void SetAutomation(int IDParent, int id, FarDialogItemFlags UncheckedSet,
 			FarDialogItemFlags UncheckedSkip, FarDialogItemFlags CheckedSet, FarDialogItemFlags CheckedSkip,
 			FarDialogItemFlags Checked3Set = DIF_NONE, FarDialogItemFlags Checked3Skip = DIF_NONE);
 
 	bool IsInited();
-	void SetId(const GUID &Id);
+	void SetId(const GUID &Guid) { Id = Guid; }
 	bool IsRedrawEnabled() const { return IsEnableRedraw > 0; }
 	Editor* GetMemoEdit(int Pos = -1) const;
 };
