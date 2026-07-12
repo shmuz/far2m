@@ -87,7 +87,6 @@ VMenu::VMenu(const wchar_t *Title,    // заголовок меню
 	ClearFlags(VMENU_SHOWAMPERSAND | VMENU_MOUSEDOWN);
 	GetCursorType(PrevCursorVisible, PrevCursorSize);
 	bRightBtnPressed = false;
-	IdExist = false;
 	Id = {};
 
 	// инициализируем перед тем, как добавлять айтема
@@ -2831,12 +2830,6 @@ int VMenu::FindItem(int StartIndex, const wchar_t *Pattern, DWORD a_Flags)
 	}
 
 	return -1;
-}
-
-void VMenu::SetId(const GUID &aId)
-{
-	Id = aId;
-	IdExist = true;
 }
 
 struct SortItemParam

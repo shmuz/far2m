@@ -411,7 +411,7 @@ void Dialog::Init(FARWINDOWPROC aDlgProc,	// Диалоговая процеду
 	//_SVS(SysLog(L"Dialog =%d",CtrlObject->Macro.GetMode()));
 	// запоминаем предыдущий заголовок консоли
 	OldTitle = new ConsoleTitle;
-	Id.reset();
+	Id = {};
 }
 
 /*
@@ -2475,7 +2475,7 @@ int64_t Dialog::VMProcess(int OpCode, void *vParam, int64_t iParam)
 		case MCODE_V_DLGINFOID:		// Dlg.Info.Id
 		{
 			static FARString strId;
-			strId = GuidToString(Id ? *Id : GUID{});
+			strId = GuidToString(Id);
 			return reinterpret_cast<INT64>(strId.CPtr());
 		}
 		case MCODE_V_ITEMCOUNT:
@@ -4921,9 +4921,9 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 			if (Param2)
 			{
 				auto di = reinterpret_cast<DialogInfo*>(Param2);
-				if (Id && (di->StructSize >= offsetof(DialogInfo, Id) + sizeof(di->Id)))
+				if (di->StructSize >= offsetof(DialogInfo, Id) + sizeof(di->Id))
 				{
-					di->Id = *Id;
+					di->Id = Id;
 					Result = TRUE;
 				}
 
@@ -6281,7 +6281,7 @@ Editor* Dialog::GetMemoEdit(int Pos) const
 
 void Dialog::ApplyAutomation(const DialogItemEx &SrcItem)
 {
-	const auto &State = SrcItem.Selected;
+	const auto State = SrcItem.Selected;
 	for (auto &A: SrcItem.Auto) {
 		auto &TargetItem = Item[A.Target];
 		TargetItem.Flags &= ~A.Flags[State][1];

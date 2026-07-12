@@ -36,7 +36,6 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <optional>
 #include <farplug-wide.h>
 #include "bitflags.hpp"
 #include "chgmmode.hpp"
@@ -244,7 +243,7 @@ private:
 
 	int RealWidth, RealHeight;
 
-	std::optional<GUID> Id;
+	GUID Id;
 	int AltState, CtrlState, ShiftState;
 
 private:

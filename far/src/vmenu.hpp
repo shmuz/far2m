@@ -216,7 +216,6 @@ private:
 	bool bRightBtnPressed;
 
 	GUID Id;
-	bool IdExist;
 
 private:
 	void DisplayObject() override;
@@ -341,6 +340,6 @@ public:
 	static LONG_PTR WINAPI DefMenuProc(HANDLE hVMenu, int Msg, int Param1, LONG_PTR Param2);
 	static LONG_PTR WINAPI SendMenuMessage(HANDLE hVMenu, int Msg, int Param1, LONG_PTR Param2);
 
-	void SetId(const GUID &Id);
+	void SetId(const GUID &Guid) { Id = Guid; }
 	Dialog *GetDialog() const { return ParentDialog; }
 };
