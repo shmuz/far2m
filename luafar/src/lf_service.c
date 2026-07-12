@@ -10,36 +10,43 @@
 #include <lualib.h>
 
 #include "far3parts.h"
-#include "lf_bit64.h"
 #include "lf_farlibs.h"
-#include "lf_string.h"
 #include "lf_util.h"
+#include "lf_string.h"
+#include "lf_bit64.h"
 #include "lf_service.h"
 
-extern void push_far_flags (lua_State *L); // from generated file farflags.c
-
-extern int  luaopen_far_host(lua_State *L);
-extern int  luaopen_regex (lua_State*);
-extern int  luaopen_usercontrol (lua_State*);
-extern int  luaopen_timer (lua_State *L);
-extern int  luaopen_unicode (lua_State *L);
-extern int  luaopen_utf8 (lua_State *L);
-extern int  luaopen_sysutils (lua_State *L);
-extern int  luaopen_win (lua_State *L);
-extern int  luaopen_lpeg (lua_State *L);
-
-extern int  far_MacroCallFar(lua_State *L);
-extern int  far_MacroCallToLua(lua_State *L);
-extern void PackMacroValues(lua_State* L, size_t Count, const struct FarMacroValue* Values);
-extern int  pcall_msg (lua_State* L, int narg, int nret);
-extern void PushPluginTable(lua_State* L, HANDLE hPlugin);
-extern void PushPluginObject(lua_State* L, HANDLE hPlugin);
-extern BOOL RunDefaultScript(lua_State* L, int ForFirstTime);
+#if 0
+# if LUA_VERSION_NUM == 501
+#  define LUADLL "lua51.dll"
+# elif LUA_VERSION_NUM == 502
+#  define LUADLL "lua52.dll"
+# endif
+#endif
 
 struct PluginStartupInfo PSInfo; // DON'T ever use fields ModuleName and ModuleNumber of PSInfo
                                  // because they contain data of the 1-st loaded LuaFAR plugin.
                                  // Instead, get them via GetPluginData(L).
 struct FarStandardFunctions FSF;
+
+extern int luaopen_far_host(lua_State *L);
+extern int luaopen_regex(lua_State*);
+extern int luaopen_usercontrol(lua_State*);
+extern int luaopen_timer(lua_State *L);
+extern int luaopen_unicode(lua_State *L);
+extern int luaopen_utf8(lua_State *L);
+extern int luaopen_sysutils(lua_State *L);
+extern int luaopen_win(lua_State *L);
+extern int luaopen_lpeg(lua_State *L);
+
+extern int  pcall_msg(lua_State* L, int narg, int nret);
+extern void push_flags_table(lua_State *L);
+extern int far_MacroCallFar(lua_State *L);
+extern int far_MacroCallToLua(lua_State *L);
+extern void PackMacroValues(lua_State* L, size_t Count, const struct FarMacroValue* Values);
+extern void PushPluginTable(lua_State* L, HANDLE hPlugin);
+extern void PushPluginObject(lua_State* L, HANDLE hPlugin);
+extern BOOL RunDefaultScript(lua_State* L, int ForFirstTime);
 
 const char FarFileFilterType[] = "FarFileFilter";
 const char FarDialogType[]     = "FarDialog";
@@ -3237,7 +3244,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			break;
 	}
 
-	//Param2 and the rest
+	// Param2 and the rest
 	switch(Msg)
 	{
 		default:
@@ -3277,41 +3284,9 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			Param2 = GetEnableFromLua(L, pos4);
 			break;
 
-		case DM_SETCHECK:
-			Param2 = lua_isboolean(L, pos4)
-				? (lua_toboolean(L, pos4) ? BSTATE_CHECKED : BSTATE_UNCHECKED)
-				: check_env_flag(L, pos4);
+		case DM_LISTGETDATASIZE:
+			Param2 = luaL_checkinteger(L, pos4) - 1;
 			break;
-
-		case DM_GETDEFAULTCOLOR:
-		case DM_GETCOLOR: //same as DM_GETTRUECOLOR
-		{
-			const int MAXCOLORS = DLG_ITEM_MAX_CUST_COLORS;
-			uint64_t Colors[MAXCOLORS];
-			SendDlgMessage(hDlg, Msg, Param1, Colors);
-			lua_createtable(L, MAXCOLORS, 0);
-			for (int i=0; i < MAXCOLORS; i++) {
-				PushFarColor(L, Colors[i]);
-				lua_rawseti(L, -2, i+1);
-			}
-			return 1;
-		}
-
-		case DM_SETCOLOR: {  //same as DM_SETTRUECOLOR
-			const int MAXCOLORS = DLG_ITEM_MAX_CUST_COLORS;
-			uint64_t Colors[MAXCOLORS];
-			luaL_argcheck(L, lua_istable(L,pos4), pos4, "table expected");
-			memset(Colors, 0, sizeof(Colors));
-			for (int i=0; i < MAXCOLORS; i++) {
-				lua_rawgeti(L, pos4, i+1);
-				if (!lua_isnil(L, -1)) {
-					Colors[i] = GetFarColor64(L, -1);
-				}
-				lua_pop(L,1);
-			}
-			lua_pushinteger (L, SendDlgMessage(hDlg, Msg, Param1, Colors));
-			return 1;
-		}
 
 		case DM_LISTADDSTR:
 		case DM_ADDHISTORY:
@@ -3324,12 +3299,15 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			Param2 = (LONG_PTR) opt_utf8_string(L, pos4, NULL);
 			break;
 
-		case DM_LISTSETMOUSEREACTION:
-			Param2 = get_env_flag(L, pos4, NULL);
+		case DM_SETCHECK:
+			Param2 = lua_isboolean(L, pos4)
+				? (lua_toboolean(L, pos4) ? BSTATE_CHECKED : BSTATE_UNCHECKED)
+				: check_env_flag(L, pos4);
 			break;
 
 		case DM_GETCURSORPOS:
-			if (SendDlgMessage(hDlg, Msg, Param1, &coord)) {
+			if (SendDlgMessage(hDlg, Msg, Param1, &coord))
+			{
 				lua_createtable(L,0,2);
 				PutNumToTable(L, "X", coord.X);
 				PutNumToTable(L, "Y", coord.Y);
@@ -3339,8 +3317,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 
 		case DM_GETDIALOGINFO:
 		{
-			struct DialogInfo dlg_info;
-			dlg_info.StructSize = sizeof(dlg_info);
+			struct DialogInfo dlg_info = { sizeof(dlg_info) };
 			if (SendDlgMessage(hDlg, Msg, Param1, &dlg_info))
 			{
 				lua_createtable(L,0,2);
@@ -3445,7 +3422,8 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			return 1;
 		}
 
-		case DM_KEY: {
+		case DM_KEY:
+		{
 			luaL_checktype(L, pos4, LUA_TTABLE);
 			res = lua_objlen(L, pos4);
 			if (res) {
@@ -3462,7 +3440,8 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 		}
 
 		case DM_LISTADD:
-		case DM_LISTSET: {
+		case DM_LISTSET:
+		{
 			luaL_checktype(L, pos4, LUA_TTABLE);
 			lua_createtable(L, 1, 0); // "history table"
 			lua_insert(L, pos4);
@@ -3521,6 +3500,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 				PutWStrToTable(L, "Text", flgi.Item.Text, -1);
 				return 1;
 			}
+
 			return lua_pushnil(L), 1;
 		}
 
@@ -3607,10 +3587,6 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			return 1;
 		}
 
-		case DM_LISTGETDATASIZE:
-			Param2 = luaL_checkinteger(L, pos4) - 1;
-			break;
-
 		case DM_LISTSETDATA:
 		{
 			struct FarListItemData flid;
@@ -3618,10 +3594,12 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 			int Index = GetOptIntFromTable(L, "Index", 1) - 1;
 			lua_getfenv(L, 1);
 			lua_getfield(L, pos4, "Data");
-			if (lua_isnil(L,-1)) { // nil is not allowed
+			if (lua_isnil(L,-1)) // nil is not allowed
+			{
 				lua_pushinteger(L,0);
 				return 1;
 			}
+
 			listdata_t *oldData = (listdata_t*)PSInfo.SendDlgMessage(hDlg, DM_LISTGETDATA, Param1, Index);
 			if (oldData &&
 				sizeof(listdata_t) == PSInfo.SendDlgMessage(hDlg, DM_LISTGETDATASIZE, Param1, Index) &&
@@ -3643,7 +3621,8 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 		{
 			int Index = (int)luaL_checkinteger(L, pos4) - 1;
 			listdata_t *Data = (listdata_t*)PSInfo.SendDlgMessage(hDlg, DM_LISTGETDATA, Param1, Index);
-			if (Data) {
+			if (Data)
+			{
 				if (sizeof(listdata_t) == PSInfo.SendDlgMessage(hDlg, DM_LISTGETDATASIZE, Param1, Index) &&
 					Data->Id == pluginData)
 				{
@@ -3722,9 +3701,44 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 				lua_pushboolean(L, 0);
 			return 1;
 		}
+
+		case DM_GETDEFAULTCOLOR:
+		case DM_GETCOLOR: //same as DM_GETTRUECOLOR
+		{
+			const int MAXCOLORS = DLG_ITEM_MAX_CUST_COLORS;
+			uint64_t Colors[MAXCOLORS];
+			SendDlgMessage(hDlg, Msg, Param1, Colors);
+			lua_createtable(L, MAXCOLORS, 0);
+			for (int i=0; i < MAXCOLORS; i++) {
+				PushFarColor(L, Colors[i]);
+				lua_rawseti(L, -2, i+1);
+			}
+			return 1;
+		}
+
+		case DM_SETCOLOR: {  //same as DM_SETTRUECOLOR
+			const int MAXCOLORS = DLG_ITEM_MAX_CUST_COLORS;
+			uint64_t Colors[MAXCOLORS];
+			luaL_argcheck(L, lua_istable(L,pos4), pos4, "table expected");
+			memset(Colors, 0, sizeof(Colors));
+			for (int i=0; i < MAXCOLORS; i++) {
+				lua_rawgeti(L, pos4, i+1);
+				if (!lua_isnil(L, -1)) {
+					Colors[i] = GetFarColor64(L, -1);
+				}
+				lua_pop(L,1);
+			}
+			lua_pushinteger (L, SendDlgMessage(hDlg, Msg, Param1, Colors));
+			return 1;
+		}
+
+		case DM_LISTSETMOUSEREACTION:
+			Param2 = get_env_flag(L, pos4, NULL);
+			break;
 	}
-	res = PSInfo.SendDlgMessage (hDlg, Msg, Param1, Param2);
-	lua_pushinteger (L, res + res_incr);
+
+	res = PSInfo.SendDlgMessage(hDlg, Msg, Param1, Param2);
+	lua_pushinteger(L, res + res_incr);
 	return 1;
 }
 
@@ -3738,7 +3752,6 @@ DlgMethod( Close,                  DM_CLOSE)
 DlgMethod( EditUnchangedFlag,      DM_EDITUNCHANGEDFLAG)
 DlgMethod( Enable,                 DM_ENABLE)
 DlgMethod( EnableRedraw,           DM_ENABLEREDRAW)
-DlgMethod( First,                  DM_FIRST)
 DlgMethod( GetCheck,               DM_GETCHECK)
 DlgMethod( GetColor,               DM_GETCOLOR)
 DlgMethod( GetComboboxEvent,       DM_GETCOMBOBOXEVENT)
@@ -5918,7 +5931,6 @@ static const luaL_Reg dialog_methods[] =
 	PAIR( dlg, EditUnchangedFlag),
 	PAIR( dlg, Enable),
 	PAIR( dlg, EnableRedraw),
-	PAIR( dlg, First),
 	PAIR( dlg, GetCheck),
 	PAIR( dlg, GetColor),
 	PAIR( dlg, GetComboboxEvent),
@@ -6279,24 +6291,11 @@ static int luaopen_far (lua_State *L)
 
 	NewVirtualKeyTable(L, FALSE);
 	lua_setfield(L, LUA_REGISTRYINDEX, FAR_VIRTUALKEYS);
-
 	luaL_register(L, "far", far_funcs);
 	PutStrToTable (L, "Flavor", "far2m");
-	push_far_flags(L);
-	lua_pushvalue(L, -1);
-	lua_setfield(L, -3, "Flags");
-	lua_pushvalue(L, -1);           // for compatibility with Far3 scripts
-	lua_setfield(L, -3, "Colors");  // +++
-	lua_setfield(L, LUA_REGISTRYINDEX, FAR_FLAGSTABLE);
 
 	luaopen_far_host(L);
 	lua_setfield(L, -2, "Host");
-
-#if !defined(__DragonFly__) && !defined(__ANDROID__) && !defined(__APPLE__)
-	lua_pushcfunction(L, luaopen_timer);
-	lua_call(L, 0, 1);
-	lua_setfield(L, -2, "Timer");
-#endif
 
 	if (pd->Private && pd->PluginId == LuamacroId)
 	{
@@ -6305,6 +6304,19 @@ static int luaopen_far (lua_State *L)
 		lua_pushcfunction(L, far_MacroCallToLua);
 		lua_setfield(L, -2, "MacroCallToLua");
 	}
+
+	push_flags_table(L);
+	lua_pushvalue(L, -1);
+	lua_setfield(L, -3, "Flags");
+	lua_pushvalue(L, -1);           // for compatibility with Far3 scripts
+	lua_setfield(L, -3, "Colors");  // +++
+	lua_setfield(L, LUA_REGISTRYINDEX, FAR_FLAGSTABLE);
+
+#if !defined(__DragonFly__) && !defined(__ANDROID__) && !defined(__APPLE__)
+	lua_pushcfunction(L, luaopen_timer);
+	lua_call(L, 0, 1);
+	lua_setfield(L, -2, "Timer");
+#endif
 
 	lua_newtable(L);
 	lua_setglobal(L, "export");

@@ -152,7 +152,7 @@ typedef struct {
 ]]
 
 local file_bottom_1 = [[
-void push_far_flags (lua_State *L)
+void push_flags_table (lua_State *L)
 {
 ]]
 
