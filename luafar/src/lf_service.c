@@ -187,6 +187,7 @@ static flags_t get_env_flag(lua_State *L, int pos, int *success)
 	int dummy;
 	const char *str;
 	flags_t ret = 0;
+	int top = lua_gettop(L);
 
 	if (success)
 		*success = TRUE;
@@ -211,7 +212,6 @@ static flags_t get_env_flag(lua_State *L, int pos, int *success)
 				ret = (flags_t)lua_tonumber(L, -1); // IMPORTANT: cast to signed integer.
 			else if (!bit64_getvalue(L, -1, &ret))
 				*success = FALSE;
-			lua_pop(L, 2);
 			break;
 
 		default:
@@ -220,6 +220,7 @@ static flags_t get_env_flag(lua_State *L, int pos, int *success)
 			break;
 	}
 
+	lua_settop(L, top);
 	return ret;
 }
 
@@ -1579,37 +1580,42 @@ static void PushNameFromKey(lua_State *L, FarKey Key)
 	lua_call(L, 1, 1);
 }
 
-void PushInputRecord (lua_State* L, const INPUT_RECORD *Rec)
+void PushInputRecord (lua_State* L, const INPUT_RECORD* ir)
 {
 	lua_newtable(L);                   //+2: Func,Tbl
-	PutNumToTable(L, "EventType", Rec->EventType);
-	switch (Rec->EventType) {
+	PutIntToTable(L, "EventType", ir->EventType);
+
+	switch(ir->EventType)
+	{
 		case KEY_EVENT:
-			PutBoolToTable(L,"KeyDown",         Rec->Event.KeyEvent.bKeyDown);
-			PutNumToTable(L, "RepeatCount",     Rec->Event.KeyEvent.wRepeatCount);
-			PutNumToTable(L, "VirtualKeyCode",  Rec->Event.KeyEvent.wVirtualKeyCode);
-			PutNumToTable(L, "VirtualScanCode", Rec->Event.KeyEvent.wVirtualScanCode);
-			PutWStrToTable(L, "UnicodeChar",   &Rec->Event.KeyEvent.uChar.UnicodeChar, 1);
-			PutNumToTable(L, "ControlKeyState", Rec->Event.KeyEvent.dwControlKeyState);
-			PushNameFromInputRecord(L, Rec);
+			PutBoolToTable(L,"KeyDown", ir->Event.KeyEvent.bKeyDown);
+			PutNumToTable(L, "RepeatCount", ir->Event.KeyEvent.wRepeatCount);
+			PutNumToTable(L, "VirtualKeyCode", ir->Event.KeyEvent.wVirtualKeyCode);
+			PutNumToTable(L, "VirtualScanCode", ir->Event.KeyEvent.wVirtualScanCode);
+			PutWStrToTable(L, "UnicodeChar", &ir->Event.KeyEvent.uChar.UnicodeChar, 1);
+			PutNumToTable(L, "ControlKeyState", ir->Event.KeyEvent.dwControlKeyState);
+			PushNameFromInputRecord(L, ir);
 			lua_setfield(L, -2, "FarKeyName");
 			break;
 
 		case MOUSE_EVENT:
-			PutMouseEvent(L, &Rec->Event.MouseEvent, TRUE);
+			PutMouseEvent(L, &ir->Event.MouseEvent, TRUE);
 			break;
 
 		case WINDOW_BUFFER_SIZE_EVENT:
-			PutNumToTable(L, "SizeX", Rec->Event.WindowBufferSizeEvent.dwSize.X);
-			PutNumToTable(L, "SizeY", Rec->Event.WindowBufferSizeEvent.dwSize.Y);
+			PutNumToTable(L, "SizeX", ir->Event.WindowBufferSizeEvent.dwSize.X);
+			PutNumToTable(L, "SizeY", ir->Event.WindowBufferSizeEvent.dwSize.Y);
 			break;
 
 		case MENU_EVENT:
-			PutNumToTable(L, "CommandId", Rec->Event.MenuEvent.dwCommandId);
+			PutNumToTable(L, "CommandId", ir->Event.MenuEvent.dwCommandId);
 			break;
 
 		case FOCUS_EVENT:
-			PutBoolToTable(L, "SetFocus", Rec->Event.FocusEvent.bSetFocus);
+			PutBoolToTable(L,"SetFocus", ir->Event.FocusEvent.bSetFocus);
+			break;
+
+		default:
 			break;
 	}
 }
@@ -1630,11 +1636,9 @@ static int editor_ReadInput(lua_State *L)
 void FillInputRecord(lua_State *L, int pos, INPUT_RECORD *ir)
 {
 	int success = 0;
-
 	pos = abs_index(L, pos);
 	luaL_checktype(L, pos, LUA_TTABLE);
 	memset(ir, 0, sizeof(INPUT_RECORD));
-
 	// determine event type
 	lua_getfield(L, pos, "EventType");
 	ir->EventType = get_env_flag(L, -1, &success);
@@ -1663,7 +1667,6 @@ void FillInputRecord(lua_State *L, int pos, INPUT_RECORD *ir)
 			ir->Event.KeyEvent.wRepeatCount = GetOptIntFromTable(L, "RepeatCount", 1);
 			ir->Event.KeyEvent.wVirtualKeyCode = GetOptIntFromTable(L, "VirtualKeyCode", 0);
 			ir->Event.KeyEvent.wVirtualScanCode = GetOptIntFromTable(L, "VirtualScanCode", 0);
-
 			lua_getfield(L, -1, "UnicodeChar");
 			if (lua_type(L,-1) == LUA_TSTRING) {
 				size_t size;
@@ -1829,7 +1832,7 @@ static int far_Menu(lua_State *L)
 
 	int Flags = FMENU_WRAPMODE;
 	lua_getfield(L, POS_PROPS, "Flags");
-	if (!lua_isnil(L, -1))     Flags = CheckFlags(L, -1);
+	if (!lua_isnil(L, -1)) Flags = CheckFlags(L, -1);
 
 	const wchar_t *Title = L"Menu";
 	lua_getfield(L, POS_PROPS, "Title");
@@ -1857,12 +1860,13 @@ static int far_Menu(lua_State *L)
 
 	// Items
 	struct FarMenuItemEx *Items =
-			(struct FarMenuItemEx*) lua_newuserdata(L, ItemsNumber*sizeof(struct FarMenuItemEx));
+		(struct FarMenuItemEx*) lua_newuserdata(L, ItemsNumber*sizeof(struct FarMenuItemEx));
 	luaL_ref(L, POS_STORE);
 	memset(Items, 0, ItemsNumber*sizeof(struct FarMenuItemEx));
 	struct FarMenuItemEx *pItem = Items;
 
-	for(int i=0; i < ItemsNumber; i++,pItem++,lua_pop(L,1)) {
+	for(int i=0; i < ItemsNumber; i++,pItem++,lua_pop(L,1))
+	{
 		static const char key[] = "text";
 		lua_pushinteger(L, i+1);
 		lua_gettable(L, POS_ITEMS);
@@ -1877,13 +1881,18 @@ static int far_Menu(lua_State *L)
 
 		//-------------------------------------------------------------------------
 		lua_getfield(L, -1, key);
+
 		if (lua_isstring(L,-1))  pItem->Text = StoreTempString(L, POS_STORE);
-		else if (!lua_isnil(L,-1)) return luaLF_FieldError (L, key, "string");
+		else if (!lua_isnil(L,-1)) return luaLF_FieldError(L, key, "string");
+
 		if (!pItem->Text)
 			lua_pop(L, 1);
+
 		//-------------------------------------------------------------------------
 		lua_getfield(L,-1,"checked");
-		if (lua_type(L,-1) == LUA_TSTRING) {
+
+		if (lua_type(L,-1) == LUA_TSTRING)
+		{
 			const wchar_t* s = utf8_to_wcstring(L,-1,NULL);
 			if (s) pItem->Flags |= s[0];
 		}
@@ -1900,8 +1909,11 @@ static int far_Menu(lua_State *L)
 		}
 		//-------------------------------------------------------------------------
 		if (GetBoolFromTable(L, "separator")) pItem->Flags |= MIF_SEPARATOR;
+
 		if (GetBoolFromTable(L, "disable"))   pItem->Flags |= MIF_DISABLE;
+
 		if (GetBoolFromTable(L, "grayed"))    pItem->Flags |= MIF_GRAYED;
+
 		if (GetBoolFromTable(L, "hidden"))    pItem->Flags |= MIF_HIDDEN;
 		//-------------------------------------------------------------------------
 		lua_getfield(L, -1, "AccelKey");
@@ -1912,13 +1924,13 @@ static int far_Menu(lua_State *L)
 		Items[SelectIndex].Flags |= MIF_SELECTED;
 
 	// Break Keys
-	int BreakCode = 0, *pBreakCode = NULL;
+	int BreakCode = 0;
 	int NumBreakCodes = 0;
 	int *pBreakKeys = NULL;
-
+	int *pBreakCode = NULL;
 	if (lua_type(L, POS_BKEYS) == LUA_TSTRING)
 	{
-		const char *ptr = lua_tostring(L,POS_BKEYS);
+		const char *ptr = lua_tostring(L, POS_BKEYS);
 		lua_newtable(L);
 		while (*ptr)
 		{
@@ -1931,27 +1943,32 @@ static int far_Menu(lua_State *L)
 			lua_setfield(L,-2,"BreakKey");
 			lua_rawseti(L,-2,++NumBreakCodes);
 		}
-		lua_replace(L,POS_BKEYS);
+		lua_replace(L, POS_BKEYS);
 	}
 	else
 		NumBreakCodes = lua_istable(L,POS_BKEYS) ? (int)lua_objlen(L,POS_BKEYS) : 0;
 
-	if (NumBreakCodes) {
+	if (NumBreakCodes)
+	{
 		int* BreakKeys = (int*)lua_newuserdata(L, (1+NumBreakCodes)*sizeof(int));
 		luaL_ref(L, POS_STORE);
 		// get virtualkeys table from the registry; push it on top
 		lua_pushstring(L, FAR_VIRTUALKEYS);
 		lua_rawget(L, LUA_REGISTRYINDEX);
 		// push breakkeys table on top
-		lua_pushvalue(L, POS_BKEYS);      // vk=-2; bk=-1;
+		lua_pushvalue(L, POS_BKEYS);        // vk=-2; bk=-1;
 
 		int ind_target = 0;
-		for(int ind=0; ind < NumBreakCodes; ind++) {
+		for (int ind=0; ind < NumBreakCodes; ind++)
+		{
 			// get next break key (optional modifier plus virtual key)
 			lua_pushinteger(L,ind+1);       // vk=-3; bk=-2;
 			lua_gettable(L,-2);             // vk=-3; bk=-2;
-			if (!lua_istable(L,-1))  { lua_pop(L,1); continue; }
+
+			if (!lua_istable(L,-1)) { lua_pop(L,1); continue; }
+
 			lua_getfield(L, -1, "BreakKey");// vk=-4; bk=-3;
+
 			if (!lua_isstring(L,-1)) { lua_pop(L,2); continue; }
 
 			// first try to use "Far key names" instead of "virtual key names"
@@ -1977,18 +1994,26 @@ static int far_Menu(lua_State *L)
 			}
 
 			// separate modifier and virtual key strings
+			const char* s = lua_tostring(L,-1);
+
 			char buf[32];
 			int mod = 0;
-			const char* s = lua_tostring(L,-1);
 			if (strlen(s) >= sizeof(buf)) { lua_pop(L,2); continue; }
+
 			char* vk = buf;
 			do *vk++ = toupper(*s); while(*s++); // copy and convert to upper case
 			vk = strchr(buf, '+');  // virtual key
-			if (vk) {
+
+			if (vk)
+			{
 				*vk++ = '\0';
+
 				if (strchr(buf,'C')) mod |= PKF_CONTROL;
+
 				if (strchr(buf,'A')) mod |= PKF_ALT;
+
 				if (strchr(buf,'S')) mod |= PKF_SHIFT;
+
 				mod <<= 16;
 				// replace on stack: break key name with virtual key name
 				lua_pop(L, 1);
@@ -2029,10 +2054,12 @@ static int far_Menu(lua_State *L)
 	}
 	else if (ret == -1)
 		return lua_pushnil(L), 1;
-	else {
+	else
+	{
 		lua_pushinteger(L, ret+1);
 		lua_gettable(L, POS_ITEMS);
 	}
+
 	lua_pushinteger(L, ret+1);
 	return 2;
 }
@@ -2234,7 +2261,6 @@ void LF_Error(lua_State *L, const wchar_t* aMsg)
 // Return: -1 if escape pressed, else - button number chosen (1 based).
 static int far_Message(lua_State *L)
 {
-	const wchar_t *Msg;
 	luaL_checkany(L,1);
 	lua_settop(L,6);
 
@@ -2248,7 +2274,7 @@ static int far_Message(lua_State *L)
 	lua_pushlstring(L, copy, MsgLen);
 	free(copy);
 
-	Msg = check_utf8_string(L, -1, NULL);
+	const wchar_t *Msg = check_utf8_string(L, -1, NULL);
 	lua_replace(L,1);
 
 	const wchar_t *Title     = opt_utf8_string(L, 2, L"Message");
@@ -2275,7 +2301,6 @@ static int panel_ClosePanel(lua_State *L)
 	const wchar_t *dir = opt_utf8_string(L, 2, NULL);
 	lua_pushboolean(L, PSInfo.Control(handle, FCTL_CLOSEPLUGIN, 0, (LONG_PTR)dir));
 	return 1;
-
 }
 
 static int panel_GetPanelInfo(lua_State *L)
@@ -6418,7 +6443,7 @@ static void InitLuaState (lua_State *L, TPluginData *aPlugData, lua_CFunction aO
 	lua_pushliteral(L, "");                     //+3
 	lua_getmetatable(L, -1);                    //+4
 	lua_pushvalue(L, -4);                       //+5
-	lua_setfield(L, -2, "__index");	            //+4
+	lua_setfield(L, -2, "__index");             //+4
 	lua_pop(L, 4);                              //+0
 	// add utf8.reformat
 	(void) luaL_dostring(L, utf8_reformat);
