@@ -1273,17 +1273,15 @@ static int editor_Select(lua_State *L)
 		success = FillEditorSelect(L, 2, &es);
 	else
 	{
-		es.BlockType = get_env_flag(L, 2, &success);
-		if (success) {
-			es.BlockStartLine = luaL_optinteger(L, 3, 0) - 1;
-			es.BlockStartPos  = luaL_optinteger(L, 4, 0) - 1;
-			es.BlockWidth     = luaL_optinteger(L, 5, -1);
-			es.BlockHeight    = luaL_optinteger(L, 6, -1);
-		}
+		es.BlockType = (int) check_env_flag(L, 2);
+		es.BlockStartLine = luaL_optinteger(L, 3, 0) - 1;
+		es.BlockStartPos  = luaL_optinteger(L, 4, 0) - 1;
+		es.BlockWidth     = luaL_optinteger(L, 5, -1);
+		es.BlockHeight    = luaL_optinteger(L, 6, -1);
 	}
 
-	success = success && PSInfo.EditorControlV2(EditorId, ECTL_SELECT, &es);
-	return lua_pushboolean(L, success), 1;
+	lua_pushboolean(L, success && PSInfo.EditorControlV2(EditorId, ECTL_SELECT, &es));
+	return 1;
 }
 
 // This function is that long because FAR API does not supply needed
@@ -2878,12 +2876,14 @@ static int GetDialogItemType(lua_State* L, int key, int item)
 // the table is on lua stack top
 flags_t GetItemFlags(lua_State* L, int flag_index, int item_index)
 {
+	int success;
 	lua_pushinteger(L, flag_index);
 	lua_gettable(L, -2);
-	int ok;
-	flags_t flags = GetFlagCombination (L, -1, &ok);
-	if (!ok)
+	flags_t flags = GetFlagCombination(L, -1, &success);
+
+	if (!success)
 		return luaL_error(L, "unsupported flag in dialog item %d", item_index);
+
 	lua_pop(L, 1);
 	return flags;
 }
@@ -3520,7 +3520,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 
 		case DM_LISTFINDSTRING:
 		{
-			struct FarListFind flf;
+			struct FarListFind flf = {};
 			luaL_checktype(L, pos4, LUA_TTABLE);
 			flf.StartIndex = GetOptIntFromTable(L, "StartIndex", 1) - 1;
 			lua_getfield(L, pos4, "Pattern");
@@ -3534,7 +3534,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 
 		case DM_LISTGETCURPOS:
 		{
-			struct FarListPos flp;
+			struct FarListPos flp = {};
 			SendDlgMessage(hDlg, Msg, Param1, &flp);
 			lua_createtable(L,0,2);
 			PutIntToTable(L, "SelectPos", flp.SelectPos+1);
@@ -3544,7 +3544,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 
 		case DM_LISTGETITEM:
 		{
-			struct FarListGetItem flgi;
+			struct FarListGetItem flgi = {};
 			flgi.ItemIndex = luaL_checkinteger(L, pos4) - 1;
 			if (SendDlgMessage(hDlg, Msg, Param1, &flgi))
 			{
@@ -3559,7 +3559,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 
 		case DM_LISTGETTITLES:
 		{
-			struct FarListTitles flt;
+			struct FarListTitles flt = {};
 			flt.Title = buf;
 			flt.Bottom = buf + ARRAYSIZE(buf)/2;
 			flt.TitleLen = ARRAYSIZE(buf)/2;
@@ -3577,7 +3577,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 
 		case DM_LISTSETTITLES:
 		{
-			struct FarListTitles flt;
+			struct FarListTitles flt = {};
 			luaL_checktype(L, pos4, LUA_TTABLE);
 			lua_getfield(L, pos4, "Title");
 			flt.Title = lua_isstring(L,-1) ? check_utf8_string(L,-1,NULL) : NULL;
@@ -3589,7 +3589,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 
 		case DM_LISTINFO:
 		{
-			struct FarListInfo fli;
+			struct FarListInfo fli = {};
 			if (SendDlgMessage(hDlg, Msg, Param1, &fli))
 			{
 				lua_createtable(L,0,6);
@@ -3606,7 +3606,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 
 		case DM_LISTINSERT:
 		{
-			struct FarListInsert flins;
+			struct FarListInsert flins = {};
 			luaL_checktype(L, pos4, LUA_TTABLE);
 			flins.Index = GetOptIntFromTable(L, "Index", 1) - 1;
 			lua_getfield(L, pos4, "Text");
@@ -3620,7 +3620,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 
 		case DM_LISTUPDATE:
 		{
-			struct FarListUpdate flu;
+			struct FarListUpdate flu = {};
 			luaL_checktype(L, pos4, LUA_TTABLE);
 			flu.Index = GetOptIntFromTable(L, "Index", 1) - 1;
 			lua_getfield(L, pos4, "Text");
@@ -3632,7 +3632,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 
 		case DM_LISTSETCURPOS:
 		{
-			struct FarListPos flp;
+			struct FarListPos flp = {};
 			luaL_checktype(L, pos4, LUA_TTABLE);
 			flp.SelectPos = GetOptIntFromTable(L, "SelectPos", 1) - 1;
 			flp.TopPos = GetOptIntFromTable(L, "TopPos", 1) - 1;
@@ -3642,7 +3642,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 
 		case DM_LISTSETDATA:
 		{
-			struct FarListItemData flid;
+			struct FarListItemData flid = {};
 			luaL_checktype(L, pos4, LUA_TTABLE);
 			int Index = GetOptIntFromTable(L, "Index", 1) - 1;
 			lua_getfenv(L, 1);
@@ -4550,11 +4550,11 @@ static int far_Text(lua_State *L)
 	return 0;
 }
 
-static int far_CopyToClipboard (lua_State *L)
+static int far_CopyToClipboard(lua_State *L)
 {
 	const wchar_t *str = check_utf8_string(L,1,NULL);
-	int r = FSF.CopyToClipboard(str);
-	return lua_pushboolean(L, r), 1;
+	int ret = FSF.CopyToClipboard(str);
+	return lua_pushboolean(L, ret), 1;
 }
 
 static int far_PasteFromClipboard (lua_State *L)
@@ -4896,9 +4896,10 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 	COORD coord;
 
 	if (Delta == 0)
-		Command = check_env_flag(L, 1);
+		Command = (int) check_env_flag(L, 1);
 
-	switch (Command) {
+	switch(Command)
+	{
 		default:
 			return luaL_argerror(L, 1, "command not supported");
 
@@ -4919,13 +4920,36 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 			int1 = PtrAdvControl(pd->ModuleNumber, Command, (void*)luaL_optinteger(L,pos2,0), NULL);
 			return lua_pushinteger(L, int1), 1;
 
-		case ACTL_GETCOLOR: {
+		case ACTL_SETCURRENTWINDOW:
+			int1 = luaL_checkinteger(L, pos2) - 1;
+			int1 = PtrAdvControl(pd->ModuleNumber, ACTL_SETCURRENTWINDOW, (void*)int1, NULL);
+			if (int1)
+				PtrAdvControl(pd->ModuleNumber, ACTL_COMMIT, NULL, NULL);
+			return lua_pushinteger(L, int1), 1;
+
+		case ACTL_WAITKEY:
+		{
+			if (lua_isnumber(L, pos2))
+				int1 = lua_tointeger(L, pos2);
+			else
+				int1 = OptFlags(L, pos2, -1);
+
+			if (int1 < -1) //this prevents program freeze
+				int1 = -1;
+
+			lua_pushinteger(L, PtrAdvControl(pd->ModuleNumber, Command, (void*)int1, NULL));
+			return 1;
+		}
+
+		case ACTL_GETCOLOR:
+		{
 			uint64_t color;
 			uintptr_t index = check_env_flag(L, pos2);
 			if (PtrAdvControl(pd->ModuleNumber, Command, (void*)index, &color))
 				PushFarColor(L, color);
 			else
 				lua_pushnil(L);
+
 			return 1;
 		}
 
@@ -4950,28 +4974,8 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 				return 1;
 			}
 
-		case ACTL_WAITKEY:
-			if (lua_isnumber(L, pos2))
-				int1 = lua_tointeger(L, pos2);
-			else
-				int1 = OptFlags(L, pos2, -1);
-			if (int1 < -1) //this prevents program freeze
-				int1 = -1;
-			lua_pushinteger(L, PtrAdvControl(pd->ModuleNumber, Command, (void*)int1, NULL));
-			return 1;
-
-		case ACTL_SETCURRENTWINDOW:
-			int1 = luaL_checkinteger(L, pos2) - 1;
-			int1 = PtrAdvControl(pd->ModuleNumber, ACTL_SETCURRENTWINDOW, (void*)int1, NULL);
-			if (int1)
-				PtrAdvControl(pd->ModuleNumber, ACTL_COMMIT, NULL, NULL);
-			return lua_pushinteger(L, int1), 1;
-
-		case ACTL_GETSYSWORDDIV:
-			PtrAdvControl(pd->ModuleNumber, Command, buf, NULL);
-			return push_utf8_string(L,buf,-1), 1;
-
-		case ACTL_GETARRAYCOLOR: {
+		case ACTL_GETARRAYCOLOR:
+		{
 			intptr_t size = PtrAdvControl(pd->ModuleNumber, Command, NULL, NULL);
 			uint64_t *p = (uint64_t*) lua_newuserdata(L, size * sizeof(uint64_t));
 			PtrAdvControl(pd->ModuleNumber, Command, (void*)size, p);
@@ -4983,7 +4987,8 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 			return 1;
 		}
 
-		case ACTL_GETFARVERSION: {
+		case ACTL_GETFARVERSION:
+		{
 			DWORD n = PtrAdvControl(pd->ModuleNumber, Command, NULL, NULL);
 			int v1 = (n >> 16);
 			int v2 = n & 0xffff;
@@ -4996,14 +5001,8 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 			return 1;
 		}
 
-		case ACTL_GETFARCOMMITTIME: {
-			uint64_t commit_time = 0;
-			PtrAdvControl(pd->ModuleNumber, Command, &commit_time, NULL);
-			lua_pushnumber(L, commit_time);
-			return 1;
-		}
-
-		case ACTL_GETWINDOWINFO: {
+		case ACTL_GETWINDOWINFO:
+		{
 			struct WindowInfo wi;
 			memset(&wi, 0, sizeof(wi));
 			wi.Pos = luaL_optinteger(L, pos2, 0) - 1;
@@ -5039,7 +5038,8 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 			return 1;
 		}
 
-		case ACTL_SETARRAYCOLOR: {
+		case ACTL_SETARRAYCOLOR:
+		{
 			struct FarSetColors fsc;
 			++pos2; // make compatible with far3
 			luaL_checktype(L, pos2, LUA_TTABLE);
@@ -5092,11 +5092,8 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 			lua_pushinteger(L, PtrAdvControl(pd->ModuleNumber, Command, &coord, NULL));
 			return 1;
 
-		case ACTL_WINPORTBACKEND:
-			PtrAdvControl(pd->ModuleNumber, Command, buf, NULL);
-			return push_utf8_string(L,buf,-1), 1;
-
-		case ACTL_GETWINDOWTYPE: {
+		case ACTL_GETWINDOWTYPE:
+		{
 			struct WindowType wt = { sizeof(wt) };
 
 			if (PtrAdvControl(pd->ModuleNumber, Command, 0, &wt)) {
@@ -5107,6 +5104,23 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 
 			return 1;
 		}
+
+		case ACTL_GETSYSWORDDIV:
+			PtrAdvControl(pd->ModuleNumber, Command, buf, NULL);
+			return push_utf8_string(L,buf,-1), 1;
+
+		case ACTL_GETFARCOMMITTIME:
+		{
+			uint64_t commit_time = 0;
+			PtrAdvControl(pd->ModuleNumber, Command, &commit_time, NULL);
+			lua_pushnumber(L, commit_time);
+			return 1;
+		}
+
+		case ACTL_WINPORTBACKEND:
+			PtrAdvControl(pd->ModuleNumber, Command, buf, NULL);
+			return push_utf8_string(L,buf,-1), 1;
+
 		//case ACTL_KEYMACRO:  //  not supported as it's replaced by separate functions far.MacroXxx
 	}
 }
@@ -5126,8 +5140,8 @@ AdvCommand( GetCursorPos,           ACTL_GETCURSORPOS)
 AdvCommand( GetDescSettings,        ACTL_GETDESCSETTINGS)
 AdvCommand( GetDialogSettings,      ACTL_GETDIALOGSETTINGS)
 AdvCommand( GetFarCommitTime,       ACTL_GETFARCOMMITTIME)
-AdvCommand( GetFarRect,             ACTL_GETFARRECT)
 AdvCommand( GetFarManagerVersion,   ACTL_GETFARVERSION)
+AdvCommand( GetFarRect,             ACTL_GETFARRECT)
 AdvCommand( GetInterfaceSettings,   ACTL_GETINTERFACESETTINGS)
 AdvCommand( GetPanelSettings,       ACTL_GETPANELSETTINGS)
 AdvCommand( GetPluginMaxReadData,   ACTL_GETPLUGINMAXREADDATA)
