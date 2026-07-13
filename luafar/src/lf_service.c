@@ -4974,13 +4974,19 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 				return 1;
 			}
 
+		case ACTL_SETPROGRESSSTATE:
+			return 0;
+
+		case ACTL_SETPROGRESSVALUE:
+			return 0;
+
 		case ACTL_GETARRAYCOLOR:
 		{
 			intptr_t size = PtrAdvControl(pd->ModuleNumber, Command, NULL, NULL);
 			uint64_t *p = (uint64_t*) lua_newuserdata(L, size * sizeof(uint64_t));
 			PtrAdvControl(pd->ModuleNumber, Command, (void*)size, p);
 			lua_createtable(L, size, 0);
-			for (int i=0; i < size; i++) {
+			for(int i=0; i < size; i++) {
 				PushFarColor(L, p[i]);
 				lua_rawseti(L, -2, i+1);
 			}
@@ -4992,7 +4998,8 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 			DWORD n = PtrAdvControl(pd->ModuleNumber, Command, NULL, NULL);
 			int v1 = (n >> 16);
 			int v2 = n & 0xffff;
-			if (lua_toboolean(L, pos2)) {
+			if (lua_toboolean(L, pos2))
+			{
 				lua_pushinteger(L, v1);
 				lua_pushinteger(L, v2);
 				return 2;
@@ -5070,6 +5077,7 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 			}
 			else
 				lua_pushnil(L);
+
 			return 1;
 		}
 
@@ -5081,6 +5089,7 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 			}
 			else
 				lua_pushnil(L);
+
 			return 1;
 
 		case ACTL_SETCURSORPOS:
@@ -5096,7 +5105,8 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 		{
 			struct WindowType wt = { sizeof(wt) };
 
-			if (PtrAdvControl(pd->ModuleNumber, Command, 0, &wt)) {
+			if (PtrAdvControl(pd->ModuleNumber, Command, 0, &wt))
+			{
 				lua_createtable(L, 0, 1);
 				PutIntToTable(L, "Type", wt.Type);
 			}
