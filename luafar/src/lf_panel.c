@@ -4,6 +4,7 @@
 #include <lauxlib.h>
 
 #include "lf_luafar.h"
+#include "lf_flags.h"
 #include "lf_service.h"
 #include "lf_string.h"
 #include "lf_util.h"
