@@ -1,5 +1,5 @@
-#ifndef LUAFAR_H
-#define LUAFAR_H
+#ifndef LF_LUAFAR_H
+#define LF_LUAFAR_H
 
 #define LUAFAR_INTERNALS
 
@@ -79,4 +79,4 @@ DLLFUNC void   LF_CloseAnalyse(lua_State* L, const struct CloseAnalyseInfo *Info
 }
 #endif
 
-#endif // LUAFAR_H
+#endif // LF_LUAFAR_H
