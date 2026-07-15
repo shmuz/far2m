@@ -24,23 +24,23 @@ add_custom_command(
 set(SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/farflags.c
   src/lf_bit64.c
-  src/lf_exported.c
-  src/lf_regex.c
-  src/lf_luamacro.c
-  src/lf_usercontrol.c
-  src/lf_utf8lib.c
-  src/lf_service.c
   src/lf_dialog.c
   src/lf_editor.c
-  src/lf_flags.c
-  src/lf_panel.c
-  src/lf_slnunico.c
-  src/lf_sysutils.c
-  src/lf_string.c
-  src/lf_util.c
-  src/lf_win.c
+  src/lf_exported.c
   src/lf_farhost.cpp
   src/lf_farlibs.cpp
+  src/lf_flags.c
+  src/lf_luamacro.c
+  src/lf_panel.c
+  src/lf_regex.c
+  src/lf_service.c
+  src/lf_slnunico.c
+  src/lf_string.c
+  src/lf_sysutils.c
+  src/lf_usercontrol.c
+  src/lf_utf8lib.c
+  src/lf_util.c
+  src/lf_win.c
   src/LPeg/lpcap.c
   src/LPeg/lpcode.c
   src/LPeg/lpcset.c

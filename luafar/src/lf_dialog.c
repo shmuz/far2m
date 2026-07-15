@@ -258,7 +258,7 @@ static void PushDlgItem (lua_State *L, const struct FarDialogItem* pItem, BOOL t
 	PutIntToArray(L, 11, pItem->MaxLen);
 }
 
-LONG_PTR SendDlgMessage(HANDLE hDlg, int Msg, int Param1, void *Param2)
+static LONG_PTR SendDlgMessage(HANDLE hDlg, int Msg, int Param1, void *Param2)
 {
 	return PSInfo.SendDlgMessage(hDlg, Msg, Param1, (LONG_PTR)Param2);
 }
@@ -311,19 +311,19 @@ TDialogData* NewDialogData(lua_State* L, HANDLE hDlg, BOOL isOwned)
 	return dd;
 }
 
-TDialogData* CheckDialog(lua_State* L, int pos)
+static TDialogData* CheckDialog(lua_State* L, int pos)
 {
 	return (TDialogData*)luaL_checkudata(L, pos, FarDialogType);
 }
 
-TDialogData* CheckValidDialog(lua_State* L, int pos)
+static TDialogData* CheckValidDialog(lua_State* L, int pos)
 {
 	TDialogData* dd = CheckDialog(L, pos);
 	luaL_argcheck(L, dd->hDlg != INVALID_HANDLE_VALUE, pos, "closed dialog");
 	return dd;
 }
 
-HANDLE CheckDialogHandle (lua_State* L, int pos)
+static HANDLE CheckDialogHandle (lua_State* L, int pos)
 {
 	return CheckValidDialog(L, pos)->hDlg;
 }

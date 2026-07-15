@@ -24,16 +24,16 @@ struct FarStandardFunctions FSF;
 
 extern int luaopen_dialog(lua_State *L);
 extern int luaopen_editor(lua_State *L);
-extern int luaopen_panel(lua_State *L);
 extern int luaopen_far_host(lua_State *L);
-extern int luaopen_regex(lua_State*);
-extern int luaopen_usercontrol(lua_State*);
+extern int luaopen_lpeg(lua_State *L);
+extern int luaopen_panel(lua_State *L);
+extern int luaopen_regex(lua_State *L);
+extern int luaopen_sysutils(lua_State *L);
 extern int luaopen_timer(lua_State *L);
 extern int luaopen_unicode(lua_State *L);
+extern int luaopen_usercontrol(lua_State *L);
 extern int luaopen_utf8(lua_State *L);
-extern int luaopen_sysutils(lua_State *L);
 extern int luaopen_win(lua_State *L);
-extern int luaopen_lpeg(lua_State *L);
 
 extern void push_flags_table(lua_State *L);
 extern int far_MacroCallFar(lua_State *L);
