@@ -23,6 +23,7 @@ add_custom_command(
 
 set(SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/farflags.c
+  src/lf_advcontrol.c
   src/lf_bit64.c
   src/lf_dialog.c
   src/lf_editor.c
