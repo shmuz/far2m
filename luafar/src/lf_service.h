@@ -21,6 +21,7 @@ void         LF_Error(lua_State *L, const wchar_t* aMsg);
 void         NewVirtualKeyTable(lua_State* L, BOOL twoways);
 GUID         OptGuid(lua_State *L, int pos);
 HANDLE       OptHandle(lua_State *L);
+void         PackMacroValues(lua_State* L, size_t Count, const struct FarMacroValue* Values);
 int          pcall_msg(lua_State* L, int narg, int nret);
 LONG_PTR     ProcessDNResult(lua_State *L, int Msg, LONG_PTR Param2);
 int          PushDMParams (lua_State *L, int Msg, int Param1);

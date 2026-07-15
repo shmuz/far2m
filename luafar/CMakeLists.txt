@@ -32,6 +32,7 @@ set(SOURCES
   src/lf_farlibs.cpp
   src/lf_flags.c
   src/lf_luamacro.c
+  src/lf_macro.c
   src/lf_panel.c
   src/lf_regex.c
   src/lf_service.c
