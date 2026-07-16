@@ -3927,7 +3927,8 @@ void Dialog::ChangeFocus2(int SetFocusPos)
 		if (FocusPosNeed >= 0 && FocusPosNeed < ItemCount() && Item[FocusPosNeed].IsFocusable())
 			SetFocusPos = FocusPosNeed;
 
-		Item[FocusPos].Focus = 0;
+		for (auto &i: Item)
+			i.Focus = 0;
 
 		// "снимать выделение при потере фокуса?"
 		if (FarIsEdit(Item[FocusPos].Type)
