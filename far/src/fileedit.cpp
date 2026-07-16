@@ -1868,8 +1868,10 @@ int FileEditor::SaveFile(const wchar_t *Name, bool Ask, bool bSaveAs, int TextFo
 	//    Flags.Clear(FEDITOR_LOCKMODE);
 	/* 28.12.2001 VVM
 	  ! Проверить на успешную запись */
-	if (RetCode == SAVEFILE_SUCCESS)
+	if (RetCode == SAVEFILE_SUCCESS) {
 		m_editor->TextChanged(false);
+		m_editor->Flags.Set(FEDITOR_NEWUNDO);
+	}
 
 	if (GetDynamicallyBorn())    // принудительно сбросим Title // Flags.Check(FFILEEDIT_SAVETOSAVEAS) ????????
 		strTitle.Clear();
