@@ -40,7 +40,6 @@ extern int luaopen_win(lua_State *L);
 extern void push_flags_table(lua_State *L);
 extern int far_MacroCallFar(lua_State *L);
 extern int far_MacroCallToLua(lua_State *L);
-extern void PackMacroValues(lua_State* L, size_t Count, const struct FarMacroValue* Values);
 extern void PushPluginTable(lua_State* L, HANDLE hPlugin);
 extern BOOL RunDefaultScript(lua_State* L, int ForFirstTime);
 
