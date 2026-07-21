@@ -64,9 +64,9 @@ FileViewer::FileViewer(FileViewerParams &P) :
 {
 	_OT(SysLog(L"[%p] FileViewer::FileViewer(I variant...)", this));
 	SetPosition(0,0,ScrX,ScrY);
+	Init(P.Name, P.EnableSwitch, P.DisableHistory, P.ViewStartPos, P.PluginData, P.ViewNamesList, P.ToSaveAs);
 	if (P.FHP)
 		SetFileHolder(P.FHP);
-	Init(P.Name, P.EnableSwitch, P.DisableHistory, P.ViewStartPos, P.PluginData, P.ViewNamesList, P.ToSaveAs);
 }
 
 
