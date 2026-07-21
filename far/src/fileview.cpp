@@ -57,16 +57,16 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "GrepFile.hpp"
 #include "exitcode.hpp"
 
-FileViewer::FileViewer(const wchar_t *Name, bool EnableSwitch, bool DisableHistory,
-                       bool DisableEdit, long ViewStartPos, const wchar_t *PluginData,
-                       NamesList *ViewNamesList, bool ToSaveAs, UINT aCodePage):
-	View(false,aCodePage),
+FileViewer::FileViewer(FileViewerParams &P) :
+	View(false, P.CodePage),
 	FullScreen(true),
-	DisableEdit(DisableEdit)
+	DisableEdit(P.DisableEdit)
 {
 	_OT(SysLog(L"[%p] FileViewer::FileViewer(I variant...)", this));
 	SetPosition(0,0,ScrX,ScrY);
-	Init(Name, EnableSwitch, DisableHistory, ViewStartPos, PluginData, ViewNamesList, ToSaveAs);
+	if (P.FHP)
+		SetFileHolder(P.FHP);
+	Init(P.Name, P.EnableSwitch, P.DisableHistory, P.ViewStartPos, P.PluginData, P.ViewNamesList, P.ToSaveAs);
 }
 
 
@@ -129,6 +129,12 @@ void FileViewer::Init(const wchar_t *name, bool EnableSwitch, bool disableHistor
 	SaveToSaveAs=ToSaveAs;
 	InitKeyBar();
 
+	if (ViewStartPos!=-1)
+		View.SetFilePos(ViewStartPos);
+
+	if (ViewNamesList)
+		View.SetNamesList(ViewNamesList);
+
 	if (!View.OpenFile(strName, true)) // $ 04.07.2000 tran + add TRUE as 'warning' parameter
 	{
 		DisableHistory = true;  // $ 26.03.2002 DJ - при неудаче открытия - не пишем мусор в историю
@@ -136,12 +142,6 @@ void FileViewer::Init(const wchar_t *name, bool EnableSwitch, bool disableHistor
 		CtrlObject->Macro.SetArea(OldMacroArea);
 		return;
 	}
-
-	if (ViewStartPos!=-1)
-		View.SetFilePos(ViewStartPos);
-
-	if (ViewNamesList)
-		View.SetNamesList(ViewNamesList);
 
 	ExitCode=TRUE;
 	ViewKeyBar.Refresh(true);
@@ -613,8 +613,9 @@ int FileViewer::GetViewerID() const
 
 void ModalViewFile(const std::string &pathname)
 {
-	FileViewer Viewer(StrMB2Wide(pathname).c_str(),
-		false, false, false, -1, nullptr, nullptr, false, CP_AUTODETECT);
+	FARString strPathName(pathname);
+	FileViewerParams Params { strPathName };
+	FileViewer Viewer(Params);
 	Viewer.SetDynamicallyBorn(false);
 	FrameManager->ExecuteModalEV(false);
 	const int r = Viewer.GetExitCode();
@@ -628,11 +629,14 @@ void ViewConsoleHistory(HANDLE con_hnd, bool modal, bool autoclose)
 	if (histfile.IsEmpty())
 		return;
 
-	std::shared_ptr<TempFileHolder> tfh(std::make_shared<TempFileHolder>(histfile, false));
+	FileViewerParams Params { histfile };
+	Params.FHP = std::make_shared<TempFileHolder>(histfile, false);
+	Params.EnableSwitch = !modal;
+	Params.DisableHistory = true;
+	Params.DisableEdit = true;
+	Params.CodePage = CP_UTF8;
 
-	FileViewer *Viewer = new (std::nothrow) FileViewer(histfile,
-		!modal, true, true, -1, nullptr, nullptr, false, CP_UTF8);
-	Viewer->SetFileHolder(tfh);
+	FileViewer *Viewer = new (std::nothrow) FileViewer(Params);
 	Viewer->SetDynamicallyBorn(!modal);
 	Viewer->ProcessKey(KEY_END); // scroll to the end
 	if (autoclose)

@@ -1815,10 +1815,11 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 							SendDlgMessage(hDlg, DM_SHOWDIALOG, FALSE);
 							SendDlgMessage(hDlg, DM_ENABLEREDRAW, FALSE);
 							{
-								FileViewer ShellViewer(strSearchFileName, false, false, false, -1, nullptr,
-										(FindItem.ArcIndex != LIST_INDEX_NONE)
-												? nullptr
-												: (Opt.FindOpt.CollectFiles ? &ViewList : nullptr));
+								FileViewerParams Params { strSearchFileName };
+								if (FindItem.ArcIndex == LIST_INDEX_NONE && Opt.FindOpt.CollectFiles)
+									Params.ViewNamesList = &ViewList;
+
+								FileViewer ShellViewer(Params);
 								ShellViewer.SetDynamicallyBorn(false);
 								ShellViewer.SetEnableF6(true);
 

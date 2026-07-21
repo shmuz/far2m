@@ -229,7 +229,8 @@ static void RunEditorOrViewerMode(const CommandLineParams &Params)
 	}
 	else
 	{
-		auto ShellViewer = new FileViewer(Opt.strEditViewArg, false);
+		FileViewerParams Params { Opt.strEditViewArg };
+		auto ShellViewer = new FileViewer(Params);
 
 		if (!ShellViewer->GetExitCode())
 			FrameManager->ExitMainLoop(false);

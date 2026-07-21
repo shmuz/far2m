@@ -37,6 +37,19 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "viewer.hpp"
 #include "keybar.hpp"
 
+struct FileViewerParams {
+	const wchar_t *Name;
+	FileHolderPtr FHP {};
+	bool EnableSwitch;
+	bool DisableHistory;
+	bool DisableEdit;
+	long ViewStartPos = -1;
+	const wchar_t *PluginData;
+	NamesList *ViewNamesList;
+	bool ToSaveAs;
+	UINT CodePage = CP_AUTODETECT;
+};
+
 class FileViewer : public Frame
 {
 private:
@@ -67,9 +80,7 @@ private:
 	void GrepFilterDismiss();
 
 public:
-	FileViewer(const wchar_t *Name, bool EnableSwitch = false, bool DisableHistory = false,
-			bool DisableEdit = false, long ViewStartPos = -1, const wchar_t *PluginData = nullptr,
-			NamesList *ViewNamesList = nullptr, bool ToSaveAs = false, UINT aCodePage = CP_AUTODETECT);
+	FileViewer(FileViewerParams &Params);
 	FileViewer(const wchar_t *Name, bool EnableSwitch, bool DisableHistory, const wchar_t *Title, int X1,
 			int Y1, int X2, int Y2, UINT aCodePage = CP_AUTODETECT);
 	~FileViewer() override;

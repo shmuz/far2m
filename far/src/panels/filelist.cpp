@@ -1735,8 +1735,12 @@ int FileList::ProcessKey(FarKey Key)
 									ViewList.SetCurName(strFileName);
 								}
 
-								FileViewer *ShellViewer = new (std::nothrow) FileViewer(strFileName, true,
-										PluginMode, false, -1, strPluginData, &ViewList);
+								FileViewerParams Params { strFileName };
+								Params.EnableSwitch = true;
+								Params.DisableHistory = PluginMode;
+								Params.PluginData = strPluginData;
+								Params.ViewNamesList = &ViewList;
+								FileViewer *ShellViewer = new (std::nothrow) FileViewer(Params);
 
 								if (ShellViewer) {
 									if (!ShellViewer->GetExitCode()) {

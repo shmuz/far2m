@@ -965,7 +965,9 @@ void CommandLine::ShowViewEditHistory()
 		{
 			case HR_VIEWER:
 			{
-				new FileViewer(strStr, true);
+				FileViewerParams Params { strStr };
+				Params.EnableSwitch = true;
+				new FileViewer(Params);
 				break;
 			}
 			case HR_EDITOR: // обычное открытие в редакторе

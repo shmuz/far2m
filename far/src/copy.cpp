@@ -2838,7 +2838,9 @@ LONG_PTR WINAPI WarnDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 						break;
 				}
 
-				FileViewer Viewer(ViewName, false, false, true, -1, nullptr, nullptr, false);
+				FileViewerParams Params { ViewName };
+				Params.DisableEdit = true;
+				FileViewer Viewer(Params);
 				Viewer.SetDynamicallyBorn(false);
 				// а этот трюк не даст пользователю сменить текущий каталог по CtrlF10 и этим ввести в заблуждение копир:
 				Viewer.SetFileHolder(std::make_shared<FileHolder>(ViewName, true));
