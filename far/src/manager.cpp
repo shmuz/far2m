@@ -587,7 +587,7 @@ void Manager::ProcessMainLoop()
 				MOUSE_EVENT_RECORD mer = LastInputRecord.Event.MouseEvent;
 				ProcessMouse(&mer);
 		}
-		else
+		else if (Key != KEY_NONE)
 			ProcessKey(Key);
 	}
 }

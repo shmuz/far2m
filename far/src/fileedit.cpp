@@ -789,11 +789,11 @@ int FileEditor::ReProcessKey(FarKey Key, bool CalledFromControl)
 						Params.EnableSwitch = GetCanLoseFocus();
 						Params.DisableHistory = Flags.Check(FFILEEDIT_DISABLEHISTORY);
 						Params.ViewStartPos = FilePos;
+						Params.PluginData = strPluginData;
 						Params.ViewNamesList = EditNamesList;
 						Params.ToSaveAs = Flags.Check(FFILEEDIT_SAVETOSAVEAS);
 						Params.CodePage = cp;
-						auto *Viewer = new FileViewer(Params);
-						Viewer->SetPluginData(strPluginData);
+						new FileViewer(Params);
 					}
 
 					ShowTime(SHTM_RESET);

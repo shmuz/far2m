@@ -1496,21 +1496,20 @@ FarKey WINAPI KeyNameToKey(const wchar_t *Name)
 	if (!Name || !*Name)
 		return KEY_INVALID;
 
-	uint32_t Key=0;
-
-	int I, Pos;
+	uint32_t Key = 0;
+	int Pos = 0;
 	FARString strTmpName = Name;
 	strTmpName.Upper();
-	int Len=(int)strTmpName.GetLength();
+	const int Len = (int)strTmpName.GetLength();
 
 	// пройдемся по всем модификаторам
-	for (Pos=I=0; I < int(ARRAYSIZE(ModifKeyName)); ++I)
+	for (const auto &K: ModifKeyName)
 	{
-		if (wcsstr(strTmpName,ModifKeyName[I].UName) && !(Key&ModifKeyName[I].Key))
+		if (wcsstr(strTmpName, K.UName) && !(Key & K.Key))
 		{
-			int CntReplace=ReplaceStrings(strTmpName,ModifKeyName[I].UName,L"",-1,true);
-			Key|=ModifKeyName[I].Key;
-			Pos+=ModifKeyName[I].Len*CntReplace;
+			int CntReplace = ReplaceStrings(strTmpName, K.UName, L"", -1, true);
+			Key |= K.Key;
+			Pos += K.Len * CntReplace;
 		}
 	}
 
@@ -1518,20 +1517,23 @@ FarKey WINAPI KeyNameToKey(const wchar_t *Name)
 	if (Pos < Len)
 	{
 		// сначала - FKeys1 - Вариант (1)
-		const wchar_t* Ptr=Name+Pos;
-		int PtrLen = Len-Pos;
+		const wchar_t* Ptr = Name + Pos;
+		int PtrLen = Len - Pos;
+		bool Found = false;
 
-		for (I=(int)ARRAYSIZE(FKeys1)-1; I>=0; I--)
+		for (int I = (int)ARRAYSIZE(FKeys1)-1; I >= 0; I--)
 		{
-			if (PtrLen == FKeys1[I].Len && !StrCmpI(Ptr,FKeys1[I].Name))
+			const auto &K = FKeys1[I];
+			if (PtrLen == K.Len && !StrCmpI(Ptr, K.Name))
 			{
-				Key|=FKeys1[I].Key;
-				Pos+=FKeys1[I].Len;
+				Key |= K.Key;
+				Pos += K.Len;
+				Found = true;
 				break;
 			}
 		}
 
-		if (I == -1) // F-клавиш нет?
+		if (!Found) // F-клавиш нет?
 		{
 			/*
 				здесь только 5 оставшихся вариантов:
@@ -1544,26 +1546,26 @@ FarKey WINAPI KeyNameToKey(const wchar_t *Name)
 
 			if (Len == 1 || Pos == Len-1) // Вариант (2)
 			{
-				int Chr=Name[Pos];
+				int Chr = Name[Pos];
 
 				// если были модификаторы Alt/Ctrl, то преобразуем в "физичекую клавишу" (независимо от языка)
-				if (Key&(KEY_ALT|KEY_RCTRL|KEY_CTRL|KEY_RALT))
+				if (Key & (KEY_ALT|KEY_RCTRL|KEY_CTRL|KEY_RALT))
 				{
 					if (Chr > 0x7F)
-						Chr=KeyToKeyLayout(Chr);
+						Chr = KeyToKeyLayout(Chr);
 
-					Chr=Upper(Chr);
+					Chr = Upper(Chr);
 				}
 
-				Key|=Chr;
+				Key |= Chr;
 
 				if (Chr)
 					Pos++;
 			}
 			else if (Key == KEY_ALT || Key == KEY_RALT || Key == KEY_M_SPEC || Key == KEY_M_OEM) // Варианты (3), (4) и (5)
 			{
-				wchar_t *endptr=nullptr;
-				uint32_t K=static_cast<uint32_t>(wcstoul(Ptr, &endptr, 10));
+				wchar_t *endptr = nullptr;
+				auto K = static_cast<uint32_t>(wcstoul(Ptr, &endptr, 10));
 
 				if (Ptr+5 == endptr)
 				{
@@ -1577,102 +1579,72 @@ FarKey WINAPI KeyNameToKey(const wchar_t *Name)
 							Key = (Key|(K+KEY_FKEY_BEGIN)) & (~(KEY_M_SPEC|KEY_M_OEM)); break;
 					}
 
-					Pos=Len;
+					Pos = Len;
 				}
 			}
 			// Вариант (6). Уже "собран".
 		}
 	}
 
-	/*
-	if(!(Key&(KEY_ALT|KEY_RCTRL|KEY_CTRL|KEY_RALT|KEY_ALTDIGIT)) && (Key&KEY_SHIFT) && LocalIsalpha(Key&(~KEY_CTRLMASK)))
-	{
-		Key&=~KEY_SHIFT;
-		Key=LocalUpper(Key);
-	}
-	*/
-	return (!Key || Pos < Len)? KEY_INVALID : Key;
+	return (Key && Pos >= Len) ? Key : KEY_INVALID;
 }
 
-BOOL WINAPI KeyToText(FarKey Key0, FARString &strKeyText0)
+BOOL WINAPI KeyToText(FarKey Key, FARString &strKeyText)
 {
-	FARString strKeyText;
-	FARString strKeyTemp;
-	int I;
-	DWORD Key = Key0, FKey = STRIP_KEY_CODE(Key0);
-	//if(Key >= KEY_MACRO_BASE && Key <= KEY_MACRO_ENDBASE)
-	//  return KeyMacroToText(Key0, strKeyText0);
+	strKeyText.Clear();
+	DWORD FKey = STRIP_KEY_CODE(Key);
 
-	if (Key&KEY_ALTDIGIT)
-		strKeyText.Format(L"Alt%05d", Key&FKey);
+	if (Key & KEY_ALTDIGIT)
+	{
+		strKeyText.Format(L"Alt%05d", FKey);
+	}
 	else
 	{
-		GetShiftKeyName(strKeyText,Key);
+		bool Found = false;
+		GetShiftKeyName(strKeyText, Key);
 
-		for (I=0; I<int(ARRAYSIZE(FKeys1)); I++)
+		for (const auto &K: FKeys1)
 		{
-			if (FKey==FKeys1[I].Key)
+			if (FKey == K.Key)
 			{
-				strKeyText += FKeys1[I].Name;
+				strKeyText += K.Name;
+				Found = true;
 				break;
 			}
 		}
 
-		if (I  == ARRAYSIZE(FKeys1))
+		if (!Found)
 		{
 			if (FKey >= KEY_VK_0xFF_BEGIN && FKey <= KEY_VK_0xFF_END)
 			{
-				strKeyTemp.Format(L"Spec%05d",FKey-KEY_VK_0xFF_BEGIN);
-				strKeyText += strKeyTemp;
+				strKeyText += FARString().Format(L"Spec%05d", FKey - KEY_VK_0xFF_BEGIN);
 			}
 			else if (FKey > KEY_LAUNCH_APP2 && FKey < KEY_CTRLALTSHIFTPRESS)
 			{
-				strKeyTemp.Format(L"Oem%05d",FKey-KEY_FKEY_BEGIN);
-				strKeyText += strKeyTemp;
+				strKeyText += FARString().Format(L"Oem%05d", FKey - KEY_FKEY_BEGIN);
 			}
 			else
 			{
-#if defined(SYSLOG)
+				FKey = Upper(Key & 0xFFFF);
 
-				// Этот кусок кода нужен только для того, что "спецклавиши" логировались нормально
-				for (I=0; I<ARRAYSIZE(SpecKeyName); I++)
-					if (FKey==SpecKeyName[I].Key)
-					{
-						strKeyText += SpecKeyName[I].Name;
-						break;
-					}
+				wchar_t KeyText[2] = {0};
 
-				if (I  == ARRAYSIZE(SpecKeyName))
-#endif
+				if (FKey >= L'A' && FKey <= L'Z')
 				{
-					FKey=Upper(Key&0xFFFF);
-
-					wchar_t KeyText[2]={0};
-
-					if (FKey >= L'A' && FKey <= L'Z')
-					{
-						if (Key&(KEY_RCTRL|KEY_CTRL|KEY_ALT|KEY_RALT)) // ??? а если есть другие модификаторы ???
-							KeyText[0]=(wchar_t)FKey; // для клавиш с модификаторами подставляем "латиницу" в верхнем регистре
-						else
-							KeyText[0]=(wchar_t)(Key&0xFFFF);
-					}
+					if (Key & (KEY_RCTRL|KEY_CTRL|KEY_ALT|KEY_RALT)) // ??? а если есть другие модификаторы ???
+						KeyText[0] = (wchar_t)FKey; // для клавиш с модификаторами подставляем "латиницу" в верхнем регистре
 					else
-						KeyText[0]=Key&0xFFFF;
-
-					strKeyText += KeyText;
+						KeyText[0] = (wchar_t)(Key & 0xFFFF);
 				}
-			}
-		}
+				else
+					KeyText[0] = Key & 0xFFFF;
 
-		if (strKeyText.IsEmpty())
-		{
-			strKeyText0.Clear();
-			return FALSE;
+				strKeyText += KeyText;
+			}
 		}
 	}
 
-	strKeyText0 = strKeyText;
-	return TRUE;
+	return !strKeyText.IsEmpty();
 }
 
 static const unsigned char VKeys[] = { // generated by VkKeyScanW() on Windows

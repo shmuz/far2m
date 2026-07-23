@@ -48,9 +48,7 @@ NamesList::~NamesList()
 
 void NamesList::AddName(const wchar_t *Name)
 {
-	m_Names.emplace_back();
-	auto &pName = m_Names.back();
-	pName = Name ? Name : L"";
+	m_Names.emplace_back(NullToEmpty(Name));
 	m_CurrentName = --m_Names.end();
 }
 
@@ -85,7 +83,7 @@ void NamesList::SetCurName(const wchar_t *Name)
 		if (!StrCmp(Name, *pCurName))
 		{
 			m_CurrentName = pCurName;
-			return;
+			break;
 		}
 	}
 }

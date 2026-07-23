@@ -285,10 +285,11 @@ int FileViewer::ProcessKey(FarKey Key)
 			return TRUE;
 		}
 #endif
-		case KEY_CTRLF7: {
+
+		case KEY_CTRLF7:
 			GrepFilter();
 			return TRUE;
-		}
+
 		/* $ 22.07.2000 tran
 		   + выход по ctrl-f10 с установкой курсора на файл */
 		case KEY_CTRLF10:
@@ -306,6 +307,7 @@ int FileViewer::ProcessKey(FarKey Key)
 			RedrawTitle = true;
 			return TRUE;
 		}
+
 		// $ 15.07.2000 tran + CtrlB switch KeyBar
 		case KEY_CTRLB:
 			Opt.ViOpt.ShowKeyBar=!Opt.ViOpt.ShowKeyBar;
@@ -317,15 +319,14 @@ int FileViewer::ProcessKey(FarKey Key)
 			Show();
 			KeyBarVisible = Opt.ViOpt.ShowKeyBar;
 			return TRUE;
+
 		case KEY_CTRLSHIFTB:
-		{
-			Opt.ViOpt.ShowTitleBar=!Opt.ViOpt.ShowTitleBar;
+			Opt.ViOpt.ShowTitleBar = !Opt.ViOpt.ShowTitleBar;
 			TitleBarVisible = Opt.ViOpt.ShowTitleBar;
 			Show();
 			return TRUE;
-		}
-		case KEY_CTRLO:
 
+		case KEY_CTRLO:
 			if (!Opt.OnlyEditorViewerUsed)
 			{
 				if (FrameManager->ShowBackground())
@@ -335,11 +336,10 @@ int FileViewer::ProcessKey(FarKey Key)
 					FrameManager->RefreshFrame();
 				}
 			}
-
 			return TRUE;
+
 		case KEY_F3:
 		case KEY_NUMPAD5:  case KEY_SHIFTNUMPAD5:
-
 			if (F3KeyOnly)
 				return TRUE;
 
@@ -347,8 +347,8 @@ int FileViewer::ProcessKey(FarKey Key)
 		case KEY_F10:
 			FrameManager->DeleteFrame();
 			return TRUE;
-		case KEY_F6:
 
+		case KEY_F6:
 			if (!DisableEdit)
 			{
 				UINT cp=View.VM.CodePage;
@@ -388,14 +388,14 @@ int FileViewer::ProcessKey(FarKey Key)
 			}
 
 			return TRUE;
-			// Печать файла с использованием плагина PrintMan
+
+		// Печать файла с использованием плагина PrintMan
 		case KEY_ALTF5:
-		{
 			if (Opt.UsePrintManager && CtrlObject->Plugins.FindPlugin(SYSID_PRINTMANAGER))
 				CtrlObject->Plugins.CallPlugin(SYSID_PRINTMANAGER,OPEN_VIEWER,nullptr); // printman
 
 			return TRUE;
-		}
+
 		case KEY_ALTSHIFTF9:
 			// Работа с локальной копией ViewerOptions
 			ViewerOptions ViOpt;
@@ -415,15 +415,17 @@ int FileViewer::ProcessKey(FarKey Key)
 
 			View.Show();
 			return TRUE;
+
 		case KEY_ALTF10:
 			FrameManager->ExitMainLoop(true);
 			return TRUE;
-		case KEY_ALTF11:
 
+		case KEY_ALTF11:
 			if (GetCanLoseFocus())
 				CtrlObject->CmdLine->ShowViewEditHistory();
 
 			return TRUE;
+
 		default:
 //      Этот кусок - на будущее (по аналогии с редактором :-)
 //      if (CtrlObject->Macro.IsExecuting() || !View.ProcessViewerInput(&ReadRec))
@@ -643,7 +645,6 @@ void ViewConsoleHistory(HANDLE con_hnd, bool modal, bool autoclose)
 		Viewer->SetAutoClose(true);
 	if (modal)
 		FrameManager->ExecuteModalEV(false);
-	const int r = Viewer->GetExitCode();
-	if (!r || modal)
+	if (!Viewer->GetExitCode() || modal)
 		delete Viewer;
 }
