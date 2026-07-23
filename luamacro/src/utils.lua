@@ -914,6 +914,7 @@ local function LoadMacros (unload, paths)
       export.GetContentData   = export_GetContentData
     end
 
+    far.SetErrorMode(0x00)
     LoadMacrosDone = true
   end
 

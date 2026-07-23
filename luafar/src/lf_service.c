@@ -1214,13 +1214,18 @@ const wchar_t *LF_Gsub (lua_State *L, const wchar_t *s, const wchar_t *p, const 
 void LF_Error(lua_State *L, const wchar_t* aMsg)
 {
 	TPluginData *pd = GetPluginData(L);
+	if (pd->Flags & PDF_MUTE_ERRORS_1)
+		return;
+
 	if (!aMsg) aMsg = L"<non-string error message>";
 
 	lua_pushlstring(L, (const char*)pd->ModuleName, wcslen(pd->ModuleName)*sizeof(wchar_t));
 	lua_pushlstring(L, (const char*)L":\n", sizeof(wchar_t) * 2);
 	LF_Gsub(L, aMsg, L"\n\t", L"\n   ");
 	lua_concat(L, 3);
-	LF_Message(L, (const wchar_t*)lua_tostring(L,-1), L"Error", L"OK", "wl", NULL, NULL);
+	if (1 == LF_Message(L, (const wchar_t*)lua_tostring(L,-1), L"Error", L"OK;Mute", "wl", NULL, NULL))
+		pd->Flags |= PDF_MUTE_ERRORS_1;
+
 	lua_pop(L, 1);
 }
 
@@ -2499,6 +2504,28 @@ static int far_DetectCodePage(lua_State *L)
 	return 1;
 }
 
+static int far_GetErrorMode(lua_State *L)
+{
+	TPluginData *pd = GetPluginData(L);
+	lua_Integer Mode = (pd->Flags & PDF_MUTE_ERRORS_1) ? 0x01 : 0x00;
+	lua_pushinteger(L, Mode);
+	return 1;
+}
+
+static int far_SetErrorMode(lua_State *L)
+{
+	TPluginData *pd = GetPluginData(L);
+	lua_Integer PrevMode = (pd->Flags & PDF_MUTE_ERRORS_1) ? 0x01 : 0x00;
+	lua_Integer NewMode = luaL_checkinteger(L, 1);
+	if (NewMode & 0x01)
+		pd->Flags |= PDF_MUTE_ERRORS_1;
+	else
+		pd->Flags &= ~PDF_MUTE_ERRORS_1;
+
+	lua_pushinteger(L, PrevMode);
+	return 1;
+}
+
 static int far_VTEnumBackground(lua_State *L)
 {
 	size_t count = FSF.VTEnumBackground(NULL, 0);
@@ -2574,6 +2601,7 @@ static const luaL_Reg far_funcs[] =
 	PAIR( far, GenerateName),
 	PAIR( far, GetCurrentDirectory),
 	PAIR( far, GetDirList),
+	PAIR( far, GetErrorMode),
 	PAIR( far, GetFileGroup),
 	PAIR( far, GetFileOwner),
 	PAIR( far, GetMsg),
@@ -2619,6 +2647,7 @@ static const luaL_Reg far_funcs[] =
 	PAIR( far, RestoreScreen),
 	PAIR( far, RunDefaultScript),
 	PAIR( far, SaveScreen),
+	PAIR( far, SetErrorMode),
 	PAIR( far, Show),
 	PAIR( far, ShowHelp),
 	PAIR( far, SplitCmdLine),
