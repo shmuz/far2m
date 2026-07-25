@@ -385,8 +385,6 @@ void InitKeysArray()
 //Сравнивает если Key и CompareKey это одна и та же клавиша в разных раскладках
 bool KeyToKeyLayoutCompare(FarKey Key, FarKey CompareKey)
 {
-	_KEYMACRO(CleverSysLog Clev(L"KeyToKeyLayoutCompare()"));
-	_KEYMACRO(SysLog(L"Param: Key=%08X",Key));
 //	Key = KeyToVKey[Key&0xFFFF]&0xFF;
 //	CompareKey = KeyToVKey[CompareKey&0xFFFF]&0xFF;
 	if (!Key)
@@ -402,8 +400,6 @@ bool KeyToKeyLayoutCompare(FarKey Key, FarKey CompareKey)
 //Должно вернуть клавишный Eng эквивалент Key
 FarKey KeyToKeyLayout(FarKey Key)
 {
-	_KEYMACRO(CleverSysLog Clev(L"KeyToKeyLayout()"));
-	_KEYMACRO(SysLog(L"Param: Key=%08X",Key));
 	if (uint32_t(Key) > 0x7f) {
 		return Xlator(0).Transcode(Key);
 	}
@@ -521,7 +517,6 @@ static DWORD KeyMsClick2ButtonState(DWORD Key,DWORD& Event)
 
 FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,bool AllowSynchro)
 {
-	_KEYMACRO(CleverSysLog Clev(L"GetInputRecord()"));
 	static bool LastEventIdle = false;
 	FarKey CalcKey;
 	static int LastMsClickMacroKey=0;
@@ -593,7 +588,6 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 	{
 		CalcKey = KeyQueue->Get();
 
-		_KEYMACRO(SysLog(L"[%d] CALL CtrlObject->Macro.ProcessKey(%ls)",__LINE__,_FARKEY_ToName(CalcKey)));
 		FrameManager->SetLastInputRecord(rec);
 		if (!ExcludeMacro && CtrlObject && CtrlObject->Macro.ProcessKey(CalcKey,rec))
 		{
@@ -860,7 +854,6 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 
 	if (ReturnAltValue)
 	{
-		_KEYMACRO(SysLog(L"[%d] CALL CtrlObject->Macro.ProcessKey(%ls)",__LINE__,_FARKEY_ToName(CalcKey)));
 		FrameManager->SetLastInputRecord(rec);
 		if (CtrlObject && CtrlObject->Macro.ProcessKey(CalcKey,rec))
 		{
@@ -990,7 +983,6 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 			}
 
 			{
-				_KEYMACRO(SysLog(L"[%d] CALL CtrlObject->Macro.ProcessKey(%ls)",__LINE__,_FARKEY_ToName(Key)));
 				if(FrameManager)
 				{
 					FrameManager->SetLastInputRecord(rec);
@@ -1227,7 +1219,6 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 						return MsCalcKey;
 					else if (FrameManager)
 					{
-						_KEYMACRO(SysLog(L"[%d] CALL CtrlObject->Macro.ProcessKey(%ls)",__LINE__,_FARKEY_ToName(MsCalcKey)));
 						FrameManager->SetLastInputRecord(rec);
 						if (CtrlObject->Macro.ProcessKey(MsCalcKey,rec))
 						{
@@ -1240,7 +1231,6 @@ FarKey GetInputRecordImpl(INPUT_RECORD *rec,bool ExcludeMacro,bool ProcessMouse,
 		}
 	}
 
-	_KEYMACRO(SysLog(L"[%d] CALL CtrlObject->Macro.ProcessKey(%ls)",__LINE__,_FARKEY_ToName(CalcKey)));
 	if(FrameManager)
 	{
 		FrameManager->SetLastInputRecord(rec);
@@ -1368,9 +1358,9 @@ FarKey WaitKey(FarKey KeyWait, DWORD delayMS, bool ExcludeMacro, bool EnableQuic
 	return Key;
 }
 
-int WriteInput(wchar_t Key)
+bool WriteInput(wchar_t Key)
 {
-	return KeyQueue ? KeyQueue->Put(Key) : 0;
+	return KeyQueue && KeyQueue->Put(Key);
 }
 
 bool CheckForEscSilent()
@@ -1999,7 +1989,6 @@ FarKey CalcKeyCode(INPUT_RECORD *rec, bool RealKey, bool ApiCall)
 			{
 				if (CtrlObject->Macro.IsRecording())
 				{
-					_KEYMACRO(SysLog(L"[%d] CALL CtrlObject->Macro.ProcessKey(KEY_INS|KEY_ALT)",__LINE__));
 					CtrlObject->Macro.ProcessKey(KEY_INS|KEY_ALT);
 				}
 

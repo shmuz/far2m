@@ -33,8 +33,6 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <WinCompat.h>
-
 template <class Object>
 class FarQueue
 {
@@ -46,20 +44,18 @@ private:
 	int Back;
 
 private:
-	void increment(int &x);
+	void increment(int &x) const;
 
 public:
-	FarQueue(int SizeQueue = 64);
+	FarQueue(int SizeQueue);
 	~FarQueue();
 
 public:
-	int Init(int SizeQueue);
-
 	bool isEmpty() const;
 	bool isFull() const;
 
 	Object Peek() const;
 
 	Object Get();
-	int Put(const Object &x);
+	bool Put(const Object &x);
 };

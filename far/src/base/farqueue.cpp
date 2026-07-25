@@ -49,17 +49,21 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 template <class Object>
 FarQueue<Object>::FarQueue(int SizeQueue)
-	:
-	Array(nullptr)
 {
-	Init(SizeQueue);
+	Array = new (std::nothrow) Object[Size = SizeQueue];
+
+	if (!Array)
+		Size = 0;
+
+	CurrentSize = 0;
+	Front = 0;
+	Back = -1;
 }
 
 template <class Object>
 FarQueue<Object>::~FarQueue()
 {
-	if (Array)
-		delete[] Array;
+	delete[] Array;
 }
 
 template <class Object>
@@ -75,29 +79,9 @@ bool FarQueue<Object>::isFull() const
 }
 
 template <class Object>
-int FarQueue<Object>::Init(int SizeQueue)
-{
-	if (Array)
-		delete[] Array;
-
-	Array = new (std::nothrow) Object[Size = SizeQueue];
-
-	if (!Array)
-		Size = 0;
-
-	CurrentSize = 0;
-	Front = 0;
-	Back = -1;
-	return Size;
-}
-
-template <class Object>
 Object FarQueue<Object>::Peek() const
 {
-	if (isEmpty())
-		return 0;
-
-	return Array[Front];
+	return isEmpty() ? 0 : Array[Front];
 }
 
 template <class Object>
@@ -113,19 +97,19 @@ Object FarQueue<Object>::Get()
 }
 
 template <class Object>
-int FarQueue<Object>::Put(const Object &x)
+bool FarQueue<Object>::Put(const Object &x)
 {
 	if (isFull())
-		return FALSE;
+		return false;
 
 	increment(Back);
 	Array[Back] = x;
 	CurrentSize++;
-	return TRUE;
+	return true;
 }
 
 template <class Object>
-void FarQueue<Object>::increment(int &x)
+void FarQueue<Object>::increment(int &x) const
 {
 	if (++x == Size)
 		x = 0;
@@ -140,7 +124,7 @@ template class FarQueue<DWORD>;
 void main()
 {
 	FarQueue<int> *q;
-	q=new FarQueue<int>(1);
+	q=new FarQueue<int>(10);
 
 	for (int j = 0; j < 5; j++)
 	{

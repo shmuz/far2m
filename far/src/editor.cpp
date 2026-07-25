@@ -97,8 +97,6 @@ Editor::Editor(ScreenObject *Owner, bool DialogUsed)
 	m_LastGetLineNumber(0),
 	m_showCursor(true)
 {
-	_KEYMACRO(SysLog(L"Editor::Editor()"));
-	_KEYMACRO(SysLog(1));
 	m_LastSearch.CaseSens = GlobalSearchCase;
 	m_LastSearch.WholeWords = GlobalSearchWholeWords;
 	m_LastSearch.Reverse = GlobalSearchReverse;
@@ -135,8 +133,6 @@ Editor::~Editor()
 	FreeAllocatedData();
 	KeepInitParameters();
 	IdMap.erase(m_EditorID);
-	_KEYMACRO(SysLog(-1));
-	_KEYMACRO(SysLog(L"Editor::~Editor()"));
 }
 
 void Editor::FreeAllocatedData(bool FreeUndo)
@@ -843,8 +839,6 @@ int Editor::ProcessKey(FarKey Key)
 			return TRUE;
 	}
 
-	_KEYMACRO(CleverSysLog SL(L"Editor::ProcessKey()"));
-	_KEYMACRO(SysLog(L"Key=%ls", _FARKEY_ToName(Key)));
 	int CurPos = m_CurLine->GetCurPos();
 	int CurVisPos = GetLineCurPos();
 	bool isk = IsShiftKey(Key);
@@ -956,7 +950,6 @@ int Editor::ProcessKey(FarKey Key)
 		case KEY_CTRLSHIFTLEFT:
 		case KEY_CTRLSHIFTNUMPAD4: /* 12.11.2002 DJ */
 		{
-			_KEYMACRO(CleverSysLog SL(L"Editor::ProcessKey(KEY_SHIFT*)"));
 			_SVS(SysLog(L"[%d] SelStart=%d, SelEnd=%d", __LINE__, SelStart, SelEnd));
 			UnmarkEmptyBlock();    // уберем выделение, если его размер равен 0
 			_bg.SetNeedCheckUnmark(true);

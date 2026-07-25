@@ -2190,19 +2190,6 @@ void FileEditor::OnChangeFocus(bool focus)
 
 int FileEditor::EditorControl(int Command, void *Param)
 {
-#if defined(SYSLOG_KEYMACRO)
-	_KEYMACRO(CleverSysLog SL(L"FileEditor::EditorControl()"));
-
-	if (Command == ECTL_READINPUT || Command == ECTL_PROCESSINPUT) {
-		_KEYMACRO(SysLog(L"(Command=%ls, Param=[%d/0x%08X]) Macro.IsExecuting()=%d", _ECTL_ToName(Command),
-				(int)((DWORD_PTR)Param), (int)((DWORD_PTR)Param), CtrlObject->Macro.IsExecuting()));
-	}
-
-#else
-	_ECTLLOG(CleverSysLog SL(L"FileEditor::EditorControl()"));
-	_ECTLLOG(SysLog(L"(Command=%ls, Param=[%d/0x%08X])", _ECTL_ToName(Command), (int)Param, Param));
-#endif
-
 	if (m_bClosing && (Command != ECTL_GETINFO) && (Command != ECTL_GETBOOKMARKS)
 			&& (Command != ECTL_GETFILENAME))
 		return FALSE;
