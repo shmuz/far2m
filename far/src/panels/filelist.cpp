@@ -3374,7 +3374,7 @@ long FileList::SelectFiles(int Mode, const wchar_t *Mask)
 	}
 
 	CurPtr = ListData[CurFile];
-	FARString strCurName = CurPtr->strName;
+	FARString strCurName = PointToName(CurPtr->strName);
 
 	if (Mode == SELECT_ADDEXT || Mode == SELECT_REMOVEEXT) {
 		size_t pos;
@@ -3485,7 +3485,7 @@ long FileList::SelectFiles(int Mode, const wchar_t *Mask)
 				if (bUseFilter)
 					Match = Filter.FileInFilter(*CurPtr);
 				else
-					Match = FileMask.Compare(CurPtr->strName, Opt.PanelCaseSensitiveCompareSelect, false);
+					Match = FileMask.Compare(PointToName(CurPtr->strName), Opt.PanelCaseSensitiveCompareSelect, false);
 			}
 
 			if (Match) {
