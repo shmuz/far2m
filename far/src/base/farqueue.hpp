@@ -4,7 +4,20 @@
 farqueue.hpp
 
 Шаблон работы с очередью
+Использование:
+	FarQueue<int> *q;
+	q=new FarQueue<int>(10);
+
+	for( int j = 0; j < 5; j++ )
+	{
+		for( int i = 0; i < 5; i++ )
+			q->Put( i );
+
+		while( !q->isEmpty( ) )
+			cout << q->Get( ) << endl;
+	}
 */
+
 /*
 Copyright (c) 1996 Eugene Roshal
 Copyright (c) 2000 Far Group
@@ -44,18 +57,44 @@ private:
 	int Back;
 
 private:
-	void increment(int &x) const;
+	void increment(int &x) const {
+		if (++x == Size) x = 0;
+	}
 
 public:
-	FarQueue(int SizeQueue);
-	~FarQueue();
+	FarQueue(int SizeQueue) : Size(SizeQueue), CurrentSize(0), Front(0), Back(-1)
+	{
+		Array = new (std::nothrow) Object[Size = SizeQueue];
+		if (!Array)
+			Size = 0;
+	}
+
+	~FarQueue() { delete[] Array; }
 
 public:
-	bool isEmpty() const;
-	bool isFull() const;
+	bool isEmpty() const { return CurrentSize == 0; }
+	bool isFull()  const { return CurrentSize == Size; }
+	Object Peek()  const { return isEmpty() ? 0 : Array[Front]; }
 
-	Object Peek() const;
+	Object Get()
+	{
+		if (isEmpty())
+			return 0;
 
-	Object Get();
-	bool Put(const Object &x);
+		CurrentSize--;
+		Object FrontItem = Array[Front];
+		increment(Front);
+		return FrontItem;
+	}
+
+	bool Put(const Object &x)
+	{
+		if (isFull())
+			return false;
+
+		increment(Back);
+		Array[Back] = x;
+		CurrentSize++;
+		return true;
+	}
 };
