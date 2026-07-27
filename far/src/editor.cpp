@@ -2931,8 +2931,10 @@ void Editor::DeleteString(Edit *DelPtr, int LineNumber, bool DeleteLast, int Und
 	if (DelPtr->m_prev) {
 		DelPtr->m_prev->m_next = DelPtr->m_next;
 
-		if (DelPtr == m_EndList)
+		if (DelPtr == m_EndList) {
 			m_EndList = m_EndList->m_prev;
+			m_EndList->SetEOL(L"");
+		}
 	}
 
 	if (DelPtr->m_next)
