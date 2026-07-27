@@ -64,7 +64,7 @@ private:
 public:
 	FarQueue(int SizeQueue) : Size(SizeQueue), CurrentSize(0), Front(0), Back(-1)
 	{
-		Array = new (std::nothrow) Object[Size = SizeQueue];
+		Array = new (std::nothrow) Object[Size];
 		if (!Array)
 			Size = 0;
 	}

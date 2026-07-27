@@ -3485,7 +3485,7 @@ long FileList::SelectFiles(int Mode, const wchar_t *Mask)
 				if (bUseFilter)
 					Match = Filter.FileInFilter(*CurPtr);
 				else
-					Match = FileMask.Compare(PointToName(CurPtr->strName), Opt.PanelCaseSensitiveCompareSelect, false);
+					Match = FileMask.Compare(CurPtr->strName, Opt.PanelCaseSensitiveCompareSelect, true);
 			}
 
 			if (Match) {
