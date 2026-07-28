@@ -639,8 +639,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 
 		case DM_SETTEXT:
 		{
-			struct FarDialogItemData fdid;
-			fdid.PtrLength = 0;
+			struct FarDialogItemData fdid = {};
 			fdid.PtrData = check_utf8_string(L, pos4, &fdid.PtrLength);
 			lua_pushinteger(L, SendDlgMessage(hDlg, Msg, Param1, &fdid));
 			return 1;
@@ -1596,6 +1595,8 @@ static const luaL_Reg dialog_funcs[] =
 	PAIR( far, SendDlgMessage),
 	PAIR( far, SetDlgItem),
 	PAIR( far, SubscribeDialogDrawEvents),
+
+	{NULL, NULL},
 };
 
 static const char far_Dialog[] =
