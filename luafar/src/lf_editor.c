@@ -7,6 +7,7 @@
 #include "lf_flags.h"
 #include "lf_service.h"
 #include "lf_string.h"
+#include "lf_util.h"
 
 void PushEditorSetPosition(lua_State *L, const struct EditorSetPosition *esp)
 {

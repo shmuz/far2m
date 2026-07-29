@@ -2523,9 +2523,6 @@ static int luaopen_far (lua_State *L)
 	lua_setfield(L, -2, "__index");
 	luaL_register(L, NULL, filefilter_methods);
 
-	lua_pushcfunction(L, luaopen_usercontrol);
-	lua_call(L, 0, 0);
-
 	luaL_newmetatable(L, PluginHandleType);
 	lua_pushvalue(L, -1);
 	lua_setfield(L, -2, "__index");
@@ -2572,6 +2569,7 @@ static void InitLuaState (lua_State *L, TPluginData *aPlugData, lua_CFunction aO
 		luaopen_regex,
 		luaopen_sysutils,
 		luaopen_unicode,
+		luaopen_usercontrol,
 		luaopen_utf8,
 		luaopen_viewer,
 		luaopen_win,

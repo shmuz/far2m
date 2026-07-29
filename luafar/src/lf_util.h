@@ -17,6 +17,8 @@
 
 #define COLLECTOR_UD "Collector_UserData"
 
+#define PAIR(prefix,txt) {#txt, prefix ## _ ## txt}
+
 typedef struct {
 	TPluginData *plugin_data;
 	void     *timer_id;

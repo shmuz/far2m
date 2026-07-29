@@ -661,8 +661,6 @@ static int ustring_lenW(lua_State *L)
 	return 1;
 }
 
-#define PAIR(prefix,txt) {#txt, prefix ## _ ## txt}
-
 static const luaL_Reg ustring_funcs[] = {
 	PAIR( ustring, EnumSystemCodePages),
 	PAIR( ustring, GetACP),

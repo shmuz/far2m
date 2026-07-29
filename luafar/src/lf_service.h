@@ -6,8 +6,6 @@
 
 #define TKEY_BINARY "__binary"
 
-#define PAIR(prefix,txt) {#txt, prefix ## _ ## txt}
-
 static const DWORD LuamacroId = 0x4EBBEFC8;
 
 void         ConvertLuaValue(lua_State *L, int pos, struct FarMacroValue *target);

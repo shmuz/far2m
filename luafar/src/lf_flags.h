@@ -1,6 +1,9 @@
 #ifndef LF_FLAGS_H
 #define LF_FLAGS_H
 
+#include <stdint.h>
+#include <lua.h>
+
 extern const char FAR_FLAGSTABLE[];
 
 typedef int64_t flags_t;

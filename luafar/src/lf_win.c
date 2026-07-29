@@ -777,8 +777,6 @@ static int win_GetEnvironmentStrings(lua_State *L)
 	return 1;
 }
 
-#define PAIR(prefix,txt) {#txt, prefix ## _ ## txt}
-
 static const luaL_Reg win_funcs[] = {
 	PAIR( win, Clock),
 	PAIR( win, CompareString),

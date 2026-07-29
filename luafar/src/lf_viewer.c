@@ -1,15 +1,8 @@
 #include <windows.h>
-#include <dirent.h> //opendir
-#include <stdlib.h>
-#include <ctype.h>
 
 #include <lua.h>
 #include <lauxlib.h>
-#include <lualib.h>
 
-#include "far3parts.h"
-#include "lf_bit64.h"
-#include "lf_farlibs.h"
 #include "lf_flags.h"
 #include "lf_service.h"
 #include "lf_string.h"
