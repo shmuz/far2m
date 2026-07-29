@@ -674,12 +674,10 @@ const luaL_Reg regex_functions[] =
 
 int luaopen_regex(lua_State *L)
 {
-	const char *libname;
 	luaL_newmetatable(L, TYPE_REGEX);
 	lua_pushvalue(L, -1);
 	lua_setfield(L, -2, "__index");
 	luaL_register(L, NULL, regex_methods);
-	libname = lua_isstring(L, 1) ? lua_tostring(L, 1) : "regex";
-	luaL_register(L, libname, regex_functions);
+	luaL_register(L, "regex", regex_functions);
 	return 1;
 }

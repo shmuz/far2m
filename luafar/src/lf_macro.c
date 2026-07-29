@@ -355,13 +355,11 @@ static const luaL_Reg far_funcs[] =
 
 int luaopen_macro(lua_State *L)
 {
-	int top = lua_gettop(L);
 	luaL_register(L, "far", far_funcs);
 
 	luaL_newmetatable(L, AddMacroDataType);
 	lua_pushcfunction(L, AddMacroData_gc);
 	lua_setfield(L, -2, "__gc");
 
-	lua_settop(L, top);
 	return 0;
 }

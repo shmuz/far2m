@@ -8,11 +8,11 @@
 #include "far3parts.h"
 #include <farkeys.h>
 
-#include "lf_util.h"
-#include "lf_string.h"
 #include "lf_bit64.h"
 #include "lf_flags.h"
 #include "lf_service.h"
+#include "lf_string.h"
+#include "lf_util.h"
 
 extern HANDLE Open_Luamacro (lua_State* L, INT_PTR Item);
 

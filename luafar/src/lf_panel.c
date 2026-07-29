@@ -530,6 +530,5 @@ static const luaL_Reg panel_funcs[] =
 int luaopen_panel(lua_State *L)
 {
 	luaL_register(L, "panel", panel_funcs);
-	lua_pop(L, 1);
 	return 0;
 }

@@ -334,9 +334,7 @@ static const luaL_Reg actl_funcs[] =
 
 int luaopen_actl(lua_State *L)
 {
-	int top = lua_gettop(L);
 	luaL_register(L, "far", far_funcs);
 	luaL_register(L, "actl", actl_funcs);
-	lua_settop(L, top);
 	return 0;
 }

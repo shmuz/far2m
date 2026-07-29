@@ -1619,11 +1619,9 @@ static const char far_Dialog[] =
   "return ret\n"
 "end";
 
-// the "far" table must be on Lua stack top
 int luaopen_dialog(lua_State *L)
 {
-	int top = lua_gettop(L);
-	luaL_register(L, NULL, dialog_funcs);
+	luaL_register(L, "far", dialog_funcs);
 
 	lua_newtable(L);
 	lua_setfield(L, LUA_REGISTRYINDEX, FAR_DN_STORAGE);
@@ -1637,6 +1635,5 @@ int luaopen_dialog(lua_State *L)
 
 	(void) luaL_dostring(L, far_Dialog);
 
-	lua_settop(L, top);
 	return 0;
 }

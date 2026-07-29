@@ -42,6 +42,7 @@ set(SOURCES
   src/lf_usercontrol.c
   src/lf_utf8lib.c
   src/lf_util.c
+  src/lf_viewer.c
   src/lf_win.c
   src/LPeg/lpcap.c
   src/LPeg/lpcode.c

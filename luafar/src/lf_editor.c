@@ -875,6 +875,5 @@ static const luaL_Reg editor_funcs[] =
 int luaopen_editor(lua_State *L)
 {
 	luaL_register(L, "editor", editor_funcs);
-	lua_pop(L, 1);
 	return 0;
 }

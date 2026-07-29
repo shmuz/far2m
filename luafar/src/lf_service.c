@@ -35,6 +35,7 @@ extern int luaopen_timer(lua_State *L);
 extern int luaopen_unicode(lua_State *L);
 extern int luaopen_usercontrol(lua_State *L);
 extern int luaopen_utf8(lua_State *L);
+extern int luaopen_viewer(lua_State *L);
 extern int luaopen_win(lua_State *L);
 
 extern void push_flags_table(lua_State *L);
@@ -360,12 +361,6 @@ static int far_PluginStartupInfo(lua_State *L)
 	return 1;
 }
 
-static int far_GetPluginId(lua_State *L)
-{
-	lua_pushinteger(L, GetPluginData(L)->PluginId);
-	return 1;
-}
-
 static void PushGlobalInfo(lua_State *L, const struct GlobalInfo *info)
 {
 	lua_createtable(L, 0, 7);
@@ -467,11 +462,6 @@ int SetKeyBar(lua_State *L, BOOL IsEditor)
 	                        PSInfo.ViewerControlV2(frameId, VCTL_SETKEYBAR, param);
 	lua_pushboolean(L, result != 0);
 	return 1;
-}
-
-static int viewer_SetKeyBar(lua_State *L)
-{
-	return SetKeyBar(L, FALSE);
 }
 
 void PushFarColor(lua_State *L, uint64_t value)
@@ -1338,159 +1328,6 @@ static int far_SaveScreen (lua_State *L)
 	*(void**)lua_newuserdata(L, sizeof(void*)) = PSInfo.SaveScreen(X1,Y1,X2,Y2);
 	luaL_getmetatable(L, SavedScreenType);
 	lua_setmetatable(L, -2);
-	return 1;
-}
-
-static int push_viewer_filename(lua_State *L, int Id)
-{
-	int size = PSInfo.ViewerControlV2(Id, VCTL_GETFILENAME, NULL);
-	if (!size) return 0;
-
-	wchar_t* fname = (wchar_t*)lua_newuserdata(L, size * sizeof(wchar_t));
-	size = PSInfo.ViewerControlV2(Id, VCTL_GETFILENAME, fname);
-
-	if (size)
-	{
-		push_utf8_string(L, fname, -1);
-		lua_remove(L, -2);
-		return 1;
-	}
-
-	lua_pop(L,1);
-	return 0;
-}
-
-static int viewer_Viewer(lua_State *L)
-{
-	const wchar_t* FileName = check_utf8_string(L, 1, NULL);
-	const wchar_t* Title    = opt_utf8_string(L, 2, NULL);
-	int X1 = luaL_optinteger(L, 3, 0);
-	int Y1 = luaL_optinteger(L, 4, 0);
-	int X2 = luaL_optinteger(L, 5, -1);
-	int Y2 = luaL_optinteger(L, 6, -1);
-	int Flags = OptFlags(L, 7, 0);
-	int CodePage = luaL_optinteger(L, 8, CP_AUTODETECT);
-	int ret = PSInfo.Viewer(FileName, Title, X1, Y1, X2, Y2, Flags, CodePage);
-	lua_pushboolean(L, ret);
-	return 1;
-}
-
-static int viewer_GetFileName(lua_State *L)
-{
-	int viewerId = luaL_optinteger(L,1,-1);
-
-	if (!push_viewer_filename(L, viewerId)) lua_pushnil(L);
-
-	return 1;
-}
-
-static int viewer_GetInfo(lua_State *L)
-{
-	int ViewerId = luaL_optinteger(L, 1, -1);
-	struct ViewerInfo vi = { sizeof(vi) };
-
-	if (PSInfo.ViewerControlV2(ViewerId, VCTL_GETINFO, &vi))
-	{
-		lua_createtable(L, 0, 10);
-		PutNumToTable(L, "ViewerID", vi.ViewerID);
-
-		if (push_viewer_filename(L, ViewerId))
-			lua_setfield(L, -2, "FileName");
-
-		PutNumToTable(L,  "FileSize", (double) vi.FileSize);
-		PutNumToTable(L,  "FilePos", (double) vi.FilePos);
-		PutNumToTable(L,  "WindowSizeX", vi.WindowSizeX);
-		PutNumToTable(L,  "WindowSizeY", vi.WindowSizeY);
-		PutNumToTable(L,  "Options", vi.Options);
-		PutNumToTable(L,  "TabSize", vi.TabSize);
-		PutNumToTable(L,  "LeftPos", vi.LeftPos + 1);
-
-		flags_t Flags = (vi.CurMode.Wrap ? VMF_WRAP : 0) | (vi.CurMode.WordWrap ? VMF_WORDWRAP : 0);
-		lua_createtable(L, 0, 4);
-		PutNumToTable(L, "CodePage", vi.CurMode.CodePage);
-		PutFlagsToTable(L, "Flags",  Flags);
-		PutNumToTable(L, "ViewMode", vi.CurMode.Hex ? VMT_HEX : VMT_TEXT);
-		PutBoolToTable (L, "Processed",  vi.CurMode.Processed);
-		lua_setfield(L, -2, "CurMode");
-	}
-	else
-		lua_pushnil(L);
-
-	return 1;
-}
-
-static int viewer_Quit(lua_State *L)
-{
-	int ViewerId = luaL_optinteger(L, 1, -1);
-	lua_pushboolean(L, PSInfo.ViewerControlV2(ViewerId, VCTL_QUIT, NULL));
-	return 1;
-}
-
-static int viewer_Redraw(lua_State *L)
-{
-	int ViewerId = luaL_optinteger(L, 1, -1);
-	PSInfo.ViewerControlV2(ViewerId, VCTL_REDRAW, NULL);
-	return 0;
-}
-
-static int viewer_Select(lua_State *L)
-{
-	int ViewerId = luaL_optinteger(L,1,-1);
-	struct ViewerSelect vs;
-	vs.BlockStartPos = (int64_t)luaL_checknumber(L,2);
-	vs.BlockLen = luaL_checkinteger(L,3);
-	lua_pushboolean(L, PSInfo.ViewerControlV2(ViewerId, VCTL_SELECT, &vs));
-	return 1;
-}
-
-static int viewer_SetPosition(lua_State *L)
-{
-	int viewerId = luaL_optinteger(L,1,-1);
-	struct ViewerSetPosition vsp;
-	if (lua_istable(L, 2)) {
-		lua_settop(L, 2);
-		vsp.StartPos = (int64_t)GetOptNumFromTable(L, "StartPos", 0);
-		vsp.LeftPos = (int64_t)GetOptNumFromTable(L, "LeftPos", 1) - 1;
-		vsp.Flags   = GetFlagsFromTable(L, -1, "Flags");
-	}
-	else {
-		vsp.StartPos = (int64_t)luaL_optnumber(L,2,0);
-		vsp.LeftPos = (int64_t)luaL_optnumber(L,3,1) - 1;
-		vsp.Flags = OptFlags(L,4,0);
-	}
-	if (PSInfo.ViewerControlV2(viewerId, VCTL_SETPOSITION, &vsp))
-		lua_pushnumber(L, (double)vsp.StartPos);
-	else
-		lua_pushnil(L);
-	return 1;
-}
-
-static int viewer_SetMode(lua_State *L)
-{
-	int success;
-	struct ViewerSetMode vsm = {};
-	int ViewerId = luaL_optinteger(L, 1, -1);
-	luaL_checktype(L, 2, LUA_TTABLE);
-	lua_getfield(L, 2, "Type");
-	vsm.Type = get_env_flag(L, -1, &success);
-
-	if (!success)
-		return lua_pushboolean(L,0), 1;
-
-	lua_getfield(L, 2, "iParam");
-
-	if (lua_isnumber(L, -1))
-		vsm.Param.iParam = lua_tointeger(L, -1);
-	else
-		return lua_pushboolean(L,0), 1;
-
-	lua_getfield(L, 2, "Flags");
-	vsm.Flags = GetFlagCombination (L, -1, &success);
-
-	if (!success)
-		return lua_pushboolean(L,0), 1;
-
-	lua_pushboolean(L, PSInfo.ViewerControlV2(ViewerId, VCTL_SETMODE, &vsm));
 	return 1;
 }
 
@@ -2479,6 +2316,12 @@ static int far_DetectCodePage(lua_State *L)
 	return 1;
 }
 
+static int far_GetPluginId(lua_State *L)
+{
+	lua_pushinteger(L, GetPluginData(L)->PluginId);
+	return 1;
+}
+
 static int far_GetErrorMode(lua_State *L)
 {
 	TPluginData *pd = GetPluginData(L);
@@ -2533,21 +2376,6 @@ static const luaL_Reg filefilter_methods[] =
 	{"OpenFiltersMenu",  filefilter_OpenMenu},
 	{"StartingToFilter", filefilter_Starting},
 	{"IsFileInFilter",   filefilter_IsFileInFilter},
-
-	{NULL, NULL},
-};
-
-static const luaL_Reg viewer_funcs[] =
-{
-	PAIR( viewer, GetFileName),
-	PAIR( viewer, GetInfo),
-	PAIR( viewer, Quit),
-	PAIR( viewer, Redraw),
-	PAIR( viewer, Select),
-	PAIR( viewer, SetKeyBar),
-	PAIR( viewer, SetMode),
-	PAIR( viewer, SetPosition),
-	PAIR( viewer, Viewer),
 
 	{NULL, NULL},
 };
@@ -2690,14 +2518,6 @@ static int luaopen_far (lua_State *L)
 	lua_newtable(L);
 	lua_setglobal(L, "export");
 
-	luaopen_actl(L);
-	luaopen_dialog(L);
-	luaopen_editor(L);
-	luaopen_macro(L);
-	luaopen_panel(L);
-	luaopen_regex(L);
-	luaL_register(L, "viewer", viewer_funcs);
-
 	luaL_newmetatable(L, FarFileFilterType);
 	lua_pushvalue(L,-1);
 	lua_setfield(L, -2, "__index");
@@ -2740,14 +2560,21 @@ void LF_RunLuafarInit(lua_State* L)
 
 static void InitLuaState (lua_State *L, TPluginData *aPlugData, lua_CFunction aOpenLibs)
 {
-	lua_CFunction func_arr[] = {
-		luaopen_far,
+	static lua_CFunction func_arr[] = {
+		luaopen_actl,
 		luaopen_bit64,
+		luaopen_dialog,
+		luaopen_editor,
+		luaopen_far,
+		luaopen_lpeg,
+		luaopen_macro,
+		luaopen_panel,
+		luaopen_regex,
+		luaopen_sysutils,
 		luaopen_unicode,
 		luaopen_utf8,
+		luaopen_viewer,
 		luaopen_win,
-		luaopen_sysutils,
-		luaopen_lpeg,
 	};
 
 	// open Lua libraries
