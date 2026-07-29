@@ -279,17 +279,18 @@ void FillPluginPanelItem (lua_State *L, struct PluginPanelItem *pi, int index)
 }
 
 // FindData table is on the stack top. It is popped off the stack on return.
-void FillFindData(lua_State* L, HANDLE hPanel, struct PluginPanelItem **pPanelItems, int *pItemsNumber)
+static void FillFindData(lua_State* L, HANDLE hPanel, struct PluginPanelItem **pPanelItems, int *pItemsNumber)
 {
-	// allocate an extra item to avoid implementation defined malloc(0);
-	size_t numLines = lua_objlen(L, -1);
-	struct PluginPanelItem *ppi = (struct PluginPanelItem *) malloc(sizeof(*ppi) * (numLines + 1));
+	*pItemsNumber = 0;
+	*pPanelItems = NULL;
 
-	if (!ppi)
+	// allocate an extra item to avoid implementation defined malloc(0);
+	size_t numItems = lua_objlen(L, -1);
+	struct PluginPanelItem *items = (struct PluginPanelItem*) malloc(sizeof(*items) * (numItems + 1));
+
+	if (!items)
 	{
 		lua_pop(L, 1);                           //+0
-		*pItemsNumber = 0;
-		*pPanelItems = NULL;
 		return;
 	}
 
@@ -301,22 +302,21 @@ void FillFindData(lua_State* L, HANDLE hPanel, struct PluginPanelItem **pPanelIt
 	lua_pushvalue(L,-1);                 //+4: PTbl,FindData,UData,UData
 	lua_setfield(L, -4, COLLECTOR_UD);   //+3: PTbl,FindData,UData
 
-	// PTbl[ppi] = Coll
+	// PTbl[items] = Coll
 	lua_newtable(L);                     //+4  PTbl,FindData,UData,Coll
-	lua_pushlightuserdata(L, ppi);       //+5  PTbl,FindData,UData,Coll,ppi
-	lua_pushvalue(L,-2);                 //+6: PTbl,FindData,UData,Coll,ppi,Coll
+	lua_pushlightuserdata(L, items);     //+5  PTbl,FindData,UData,Coll,items
+	lua_pushvalue(L,-2);                 //+6: PTbl,FindData,UData,Coll,items,Coll
 	lua_rawset(L, -6);                   //+4: PTbl,FindData,UData,Coll
 
 	size_t num = 0;
-	for(size_t i = 1; i <= numLines; i++)
+	for (; num < numItems; ++num)
 	{
-		lua_pushinteger(L, i);             //+5  Ptbl,FindData,Udata,Coll,i
+		lua_pushinteger(L, num+1);         //+5  Ptbl,FindData,Udata,Coll,i
 		lua_gettable(L, -4);               //+5: Ptbl,FindData,Udata,Coll,FindData[i]
 
 		if (lua_istable(L, -1))
 		{
-			FillPluginPanelItem(L, ppi+num, num+1);
-			++num;
+			FillPluginPanelItem(L, items+num, num+1);
 			lua_pop(L,1);                    //+4
 		}
 		else
@@ -328,7 +328,7 @@ void FillFindData(lua_State* L, HANDLE hPanel, struct PluginPanelItem **pPanelIt
 
 	lua_pop(L,4);                        //+0
 	*pItemsNumber = num;
-	*pPanelItems = ppi;
+	*pPanelItems = items;
 }
 
 int LF_GetFindData(lua_State* L, HANDLE hPanel, struct PluginPanelItem **pPanelItem,

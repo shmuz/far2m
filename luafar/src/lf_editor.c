@@ -8,6 +8,27 @@
 #include "lf_service.h"
 #include "lf_string.h"
 
+void PushEditorSetPosition(lua_State *L, const struct EditorSetPosition *esp)
+{
+	lua_createtable(L, 0, 6);
+	PutIntToTable(L, "CurLine",       esp->CurLine + 1);
+	PutIntToTable(L, "CurPos",        esp->CurPos + 1);
+	PutIntToTable(L, "CurTabPos",     esp->CurTabPos + 1);
+	PutIntToTable(L, "TopScreenLine", esp->TopScreenLine + 1);
+	PutIntToTable(L, "LeftPos",       esp->LeftPos + 1);
+	PutIntToTable(L, "Overtype",      esp->Overtype);
+}
+
+void FillEditorSetPosition(lua_State *L, struct EditorSetPosition *esp)
+{
+	esp->CurLine   = GetOptIntFromTable(L, "CurLine", 0) - 1;
+	esp->CurPos    = GetOptIntFromTable(L, "CurPos", 0) - 1;
+	esp->CurTabPos = GetOptIntFromTable(L, "CurTabPos", 0) - 1;
+	esp->TopScreenLine = GetOptIntFromTable(L, "TopScreenLine", 0) - 1;
+	esp->LeftPos   = GetOptIntFromTable(L, "LeftPos", 0) - 1;
+	esp->Overtype  = GetOptIntFromTable(L, "Overtype", -1);
+}
+
 static int push_editor_filename(lua_State *L, int Id)
 {
 	int size = PSInfo.EditorControlV2(Id, ECTL_GETFILENAME, NULL);

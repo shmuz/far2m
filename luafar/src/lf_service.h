@@ -12,6 +12,8 @@ static const DWORD LuamacroId = 0x4EBBEFC8;
 
 void         ConvertLuaValue(lua_State *L, int pos, struct FarMacroValue *target);
 int          Dialog_getvalue(lua_State *L, int pos, HANDLE *target);
+int          far_MacroCallFar(lua_State *L);
+int          far_MacroCallToLua(lua_State *L);
 int          FillEditorSelect(lua_State *L, int pos_table, struct EditorSelect *es);
 void         FillEditorSetPosition(lua_State *L, struct EditorSetPosition *esp);
 void         FillInputRecord(lua_State *L, int pos, INPUT_RECORD *ir);
@@ -31,9 +33,11 @@ void         PushInputRecord(lua_State *L, const INPUT_RECORD* ir);
 void         PushOptPluginTable(lua_State *L, HANDLE handle);
 void         PushPanelItems(lua_State *L, HANDLE handle, const struct PluginPanelItem *PanelItems, int ItemsNumber);
 void         PushPluginObject(lua_State* L, HANDLE hPlugin);
+void         PushPluginTable(lua_State* L, HANDLE hPlugin);
 void         PutMouseEvent(lua_State *L, const MOUSE_EVENT_RECORD* rec, BOOL table_exist);
 void         PutRECTToTable(lua_State *L, const char* key, RECT rect);
 DWORD        RGBFromFarTrueColor(const struct FarTrueColor *tc);
+BOOL         RunDefaultScript(lua_State* L, int ForFirstTime);
 int          SetKeyBar(lua_State *L, BOOL IsEditor);
 
 extern const char* VirtualKeyStrings[256];

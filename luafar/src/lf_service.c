@@ -10,12 +10,12 @@
 #include <lualib.h>
 
 #include "far3parts.h"
-#include "lf_flags.h"
-#include "lf_farlibs.h"
-#include "lf_util.h"
-#include "lf_string.h"
 #include "lf_bit64.h"
+#include "lf_farlibs.h"
+#include "lf_flags.h"
 #include "lf_service.h"
+#include "lf_string.h"
+#include "lf_util.h"
 
 struct PluginStartupInfo PSInfo; // DON'T ever use fields ModuleName and ModuleNumber of PSInfo
                                  // because they contain data of the 1-st loaded LuaFAR plugin.
@@ -38,10 +38,6 @@ extern int luaopen_utf8(lua_State *L);
 extern int luaopen_win(lua_State *L);
 
 extern void push_flags_table(lua_State *L);
-extern int far_MacroCallFar(lua_State *L);
-extern int far_MacroCallToLua(lua_State *L);
-extern void PushPluginTable(lua_State* L, HANDLE hPlugin);
-extern BOOL RunDefaultScript(lua_State* L, int ForFirstTime);
 
 const char FarFileFilterType[] = "FarFileFilter";
 const char PluginHandleType[]  = "FarPluginHandle";
@@ -241,29 +237,8 @@ static const wchar_t* StoreTempString(lua_State *L, int store_stack_pos)
 	return s;
 }
 
-void PushEditorSetPosition(lua_State *L, const struct EditorSetPosition *esp)
-{
-	lua_createtable(L, 0, 6);
-	PutIntToTable(L, "CurLine",       esp->CurLine + 1);
-	PutIntToTable(L, "CurPos",        esp->CurPos + 1);
-	PutIntToTable(L, "CurTabPos",     esp->CurTabPos + 1);
-	PutIntToTable(L, "TopScreenLine", esp->TopScreenLine + 1);
-	PutIntToTable(L, "LeftPos",       esp->LeftPos + 1);
-	PutIntToTable(L, "Overtype",      esp->Overtype);
-}
-
-void FillEditorSetPosition(lua_State *L, struct EditorSetPosition *esp)
-{
-	esp->CurLine   = GetOptIntFromTable(L, "CurLine", 0) - 1;
-	esp->CurPos    = GetOptIntFromTable(L, "CurPos", 0) - 1;
-	esp->CurTabPos = GetOptIntFromTable(L, "CurTabPos", 0) - 1;
-	esp->TopScreenLine = GetOptIntFromTable(L, "TopScreenLine", 0) - 1;
-	esp->LeftPos   = GetOptIntFromTable(L, "LeftPos", 0) - 1;
-	esp->Overtype  = GetOptIntFromTable(L, "Overtype", -1);
-}
-
 //a table expected on Lua stack top
-static void PushFarFindData(lua_State *L, const struct FAR_FIND_DATA *wfd)
+static void PutFarFindData(lua_State *L, const struct FAR_FIND_DATA *wfd)
 {
 	PutAttrToTable     (L,                       wfd->dwFileAttributes);
 	PutNumToTable      (L, "FileSize",           (double)wfd->nFileSize);
@@ -310,7 +285,7 @@ void PushPanelItem(lua_State *L, const struct PluginPanelItem *PanelItem)
 {
 	lua_newtable(L); // "PanelItem"
 
-	PushFarFindData(L, &PanelItem->FindData);
+	PutFarFindData(L, &PanelItem->FindData);
 	PutFlagsToTable(L, "Flags", PanelItem->Flags);
 	PutNumToTable(L, "NumberOfLinks", PanelItem->NumberOfLinks);
 	PutNumToTable(L, "CRC32", PanelItem->CRC32);
@@ -1278,7 +1253,7 @@ static int far_GetDirList (lua_State *L)
 		lua_createtable(L, ItemsNumber, 0); // "PanelItems"
 		for(int i=0; i < ItemsNumber; i++) {
 			lua_newtable(L);
-			PushFarFindData (L, PanelItems + i);
+			PutFarFindData (L, PanelItems + i);
 			lua_rawseti(L, -2, i+1);
 		}
 		PSInfo.FreeDirList (PanelItems, ItemsNumber);
@@ -1864,7 +1839,7 @@ static int WINAPI FrsUserFunc(const struct FAR_FIND_DATA *FData, const wchar_t *
 
 	lua_pushvalue(L, 3); // push the Lua function
 	lua_newtable(L);
-	PushFarFindData(L, FData);
+	PutFarFindData(L, FData);
 	push_utf8_string(L, FullName, -1);
 	for (int i=1; i<=Data->nparams; i++)
 		lua_pushvalue(L, 4+i);
