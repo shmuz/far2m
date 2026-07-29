@@ -6,15 +6,14 @@
 #include <lua.h>
 #include <lauxlib.h>
 
-#include "lf_util.h"
+#include "lf_common.h"
 #include "lf_string.h"
-
-static const char strFileHandle[] = "sysutils.file_handle";
+#include "lf_util.h"
 
 // lua stack index of 1 is assumed
 static HANDLE* checkFileHandle(lua_State *L)
 {
-	HANDLE* pHandle = (HANDLE*)luaL_checkudata(L, 1, strFileHandle);
+	HANDLE* pHandle = (HANDLE*)luaL_checkudata(L, 1, TYPE_FILEHANDLE);
 	if (*pHandle == INVALID_HANDLE_VALUE)
 		luaL_error(L, "operation on closed file handle");
 	return pHandle;
@@ -24,7 +23,7 @@ static void registerFileHandle(lua_State *L, HANDLE handle)
 {
 	HANDLE *pHandle = (HANDLE*)lua_newuserdata(L, sizeof(HANDLE));
 	*pHandle = handle;
-	luaL_getmetatable(L, strFileHandle);
+	luaL_getmetatable(L, TYPE_FILEHANDLE);
 	lua_setmetatable(L, -2);
 }
 
@@ -214,17 +213,12 @@ static const luaL_Reg FileHandle_funcs[] = {
 	{NULL, NULL}
 };
 
-static void createmeta(lua_State *L, const char *name)
+int luaopen_sysutils (lua_State *L)
 {
-	luaL_newmetatable(L, name);   /* create new metatable */
+	luaL_newmetatable(L, TYPE_FILEHANDLE);   /* create new metatable */
 	lua_pushliteral(L, "__index");
 	lua_pushvalue(L, -2);         /* push metatable */
 	lua_rawset(L, -3);            /* metatable.__index = metatable */
-}
-
-int luaopen_sysutils (lua_State *L)
-{
-	createmeta(L, strFileHandle);
 	luaL_register(L, NULL, FileHandle_funcs);
 	luaL_register(L, "win", su_funcs);
 	return 1;

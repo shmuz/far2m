@@ -12,6 +12,7 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
+#include "lf_common.h"
 #include "lf_service.h"
 #include "lf_util.h"
 
@@ -221,8 +222,6 @@ static void * _timer_thread(void * data)
 		return NULL;
 }
 
-static const char FarTimerType[] = "FarTimer";
-
 static void timer_handler(timer_node *timer_id, void *user_data)
 {
 	TSynchroData *sd;
@@ -285,7 +284,7 @@ static int far_Timer (lua_State *L)
 
 	td->timer_id = start_timer(td->interval, timer_handler, TIMER_PERIODIC, td, td->plugin_data);
 	if (td->timer_id) {
-		luaL_getmetatable(L, FarTimerType);
+		luaL_getmetatable(L, TYPE_TIMER);
 		lua_setmetatable(L, -2);
 		td->enabled = 1;
 		return 1;
@@ -298,7 +297,7 @@ static int far_Timer (lua_State *L)
 
 static TTimerData* CheckTimer(lua_State* L, int pos)
 {
-	return (TTimerData*)luaL_checkudata(L, pos, FarTimerType);
+	return (TTimerData*)luaL_checkudata(L, pos, TYPE_TIMER);
 }
 
 static TTimerData* CheckValidTimer(lua_State* L, int pos)
@@ -320,9 +319,9 @@ static int timer_tostring (lua_State *L)
 {
 	TTimerData* td = CheckTimer(L, 1);
 	if (td->closeStage == 0)
-		lua_pushfstring(L, "%s (%p)", FarTimerType, td);
+		lua_pushfstring(L, "%s (%p)", TYPE_TIMER, td);
 	else
-		lua_pushfstring(L, "%s (closed)", FarTimerType);
+		lua_pushfstring(L, "%s (closed)", TYPE_TIMER);
 	return 1;
 }
 
@@ -386,7 +385,7 @@ int luaopen_timer(lua_State *L)
 		lua_setmetatable(L, -2);           //+1
 		lua_pushvalue(L, -1);              //+2
 		lua_rawset(L, LUA_REGISTRYINDEX);  //+0 place it in Lua registry (both as the key and the value)
-		luaL_newmetatable(L, FarTimerType);
+		luaL_newmetatable(L, TYPE_TIMER);
 		luaL_register(L, NULL, timer_methods);
 		lua_pushcfunction(L, far_Timer);
 	}

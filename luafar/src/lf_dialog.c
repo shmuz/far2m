@@ -1,15 +1,15 @@
 #include <lua.h>
 #include <lauxlib.h>
 
-#include "lf_luafar.h"
-#include "lf_flags.h"
-#include "lf_service.h"
 #include "lf_bit64.h"
+#include "lf_common.h"
+#include "lf_flags.h"
+#include "lf_luafar.h"
+#include "lf_service.h"
 #include "lf_string.h"
 #include "lf_util.h"
 
-const char FarDialogType[]   = "FarDialog";
-const char FAR_DN_STORAGE[]  = "FAR_DN_STORAGE";
+const char FAR_DN_STORAGE[] = "FAR_DN_STORAGE";
 
 static LONG_PTR GetEnableFromLua (lua_State *L, int pos)
 {
@@ -29,7 +29,7 @@ int Dialog_getvalue(lua_State *L, int pos, HANDLE *target)
 	{
 		int equal;
 		lua_getmetatable(L, pos);
-		luaL_getmetatable(L, FarDialogType);
+		luaL_getmetatable(L, TYPE_DIALOG);
 		equal = lua_rawequal(L, -1, -2);
 		lua_pop(L, 2);
 		if (equal && target)
@@ -299,7 +299,7 @@ TDialogData* NewDialogData(lua_State* L, HANDLE hDlg, BOOL isOwned)
 	dd->wasError = FALSE;
 	dd->isModal  = TRUE;
 	dd->dataRef  = LUA_REFNIL;
-	luaL_getmetatable(L, FarDialogType);
+	luaL_getmetatable(L, TYPE_DIALOG);
 	lua_setmetatable(L, -2);
 
 	if (isOwned)
@@ -313,7 +313,7 @@ TDialogData* NewDialogData(lua_State* L, HANDLE hDlg, BOOL isOwned)
 
 static TDialogData* CheckDialog(lua_State* L, int pos)
 {
-	return (TDialogData*)luaL_checkudata(L, pos, FarDialogType);
+	return (TDialogData*)luaL_checkudata(L, pos, TYPE_DIALOG);
 }
 
 static TDialogData* CheckValidDialog(lua_State* L, int pos)
@@ -1467,9 +1467,9 @@ static int dialog_tostring (lua_State *L)
 {
 	TDialogData* dd = CheckDialog(L, 1);
 	if (dd->hDlg != INVALID_HANDLE_VALUE)
-		lua_pushfstring(L, "%s (%p)", FarDialogType, dd->hDlg);
+		lua_pushfstring(L, "%s (%p)", TYPE_DIALOG, dd->hDlg);
 	else
-		lua_pushfstring(L, "%s (closed)", FarDialogType);
+		lua_pushfstring(L, "%s (closed)", TYPE_DIALOG);
 	return 1;
 }
 
@@ -1626,7 +1626,7 @@ int luaopen_dialog(lua_State *L)
 	lua_newtable(L);
 	lua_setfield(L, LUA_REGISTRYINDEX, FAR_DN_STORAGE);
 
-	luaL_newmetatable(L, FarDialogType);
+	luaL_newmetatable(L, TYPE_DIALOG);
 	lua_pushvalue(L,-1);
 	lua_setfield(L, -2, "__index");
 	lua_pushcfunction(L, DialogHandleEqual);

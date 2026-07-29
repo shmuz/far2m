@@ -11,6 +11,7 @@
 
 #include "far3parts.h"
 #include "lf_bit64.h"
+#include "lf_common.h"
 #include "lf_farlibs.h"
 #include "lf_flags.h"
 #include "lf_service.h"
@@ -40,13 +41,9 @@ extern int luaopen_win(lua_State *L);
 
 extern void push_flags_table(lua_State *L);
 
-const char FarFileFilterType[] = "FarFileFilter";
-const char PluginHandleType[]  = "FarPluginHandle";
-const char SavedScreenType[]   = "FarSavedScreen";
-
-const char FAR_PLUGINDATA[]    = "far.plugindata";
-const char FAR_VIRTUALKEYS[]   = "far.virtualkeys";
-const char FAR_FLAGSTABLE[]    = "far.Flags";
+const char FAR_PLUGINDATA[]  = "far.plugindata";
+const char FAR_VIRTUALKEYS[] = "far.virtualkeys";
+const char FAR_FLAGSTABLE[]  = "far.Flags";
 
 const char* VirtualKeyStrings[256] =
 {
@@ -159,7 +156,7 @@ static void PushPluginHandle(lua_State *L, HANDLE Handle)
 	{
 		HANDLE *p = (HANDLE*)lua_newuserdata(L, sizeof(HANDLE));
 		*p = Handle;
-		luaL_getmetatable(L, PluginHandleType);
+		luaL_getmetatable(L, TYPE_PLUGINHANDLE);
 		lua_setmetatable(L, -2);
 	}
 	else
@@ -168,7 +165,7 @@ static void PushPluginHandle(lua_State *L, HANDLE Handle)
 
 static int PluginHandle_rawhandle(lua_State *L)
 {
-	void* Handle = *(void**)luaL_checkudata(L, 1, PluginHandleType);
+	void* Handle = *(void**)luaL_checkudata(L, 1, TYPE_PLUGINHANDLE);
 	lua_pushlightuserdata(L, Handle);
 	return 1;
 }
@@ -1277,11 +1274,11 @@ static int far_GetPluginDirList (lua_State *L)
 
 static int SavedScreen_tostring (lua_State *L)
 {
-	void **pp = (void**)luaL_checkudata(L, 1, SavedScreenType);
+	void **pp = (void**)luaL_checkudata(L, 1, TYPE_SAVEDSCREEN);
 	if (*pp)
-		lua_pushfstring(L, "%s (%p)", SavedScreenType, *pp);
+		lua_pushfstring(L, "%s (%p)", TYPE_SAVEDSCREEN, *pp);
 	else
-		lua_pushfstring(L, "%s (freed)", SavedScreenType);
+		lua_pushfstring(L, "%s (freed)", TYPE_SAVEDSCREEN);
 	return 1;
 }
 
@@ -1293,7 +1290,7 @@ static int far_RestoreScreen (lua_State *L)
 		PSInfo.RestoreScreen(NULL);
 	else
 	{
-		void **pp = (void**)luaL_checkudata(L, 1, SavedScreenType);
+		void **pp = (void**)luaL_checkudata(L, 1, TYPE_SAVEDSCREEN);
 		if (*pp)
 		{
 			PSInfo.RestoreScreen(*pp);
@@ -1307,7 +1304,7 @@ static int far_RestoreScreen (lua_State *L)
 //   handle:    handle of saved screen.
 static int far_FreeScreen(lua_State *L)
 {
-	void **pp = (void**)luaL_checkudata(L, 1, SavedScreenType);
+	void **pp = (void**)luaL_checkudata(L, 1, TYPE_SAVEDSCREEN);
 	if (*pp)
 	{
 		PSInfo.FreeScreen(*pp);
@@ -1326,7 +1323,7 @@ static int far_SaveScreen (lua_State *L)
 	int Y2 = luaL_optinteger(L,4,-1);
 
 	*(void**)lua_newuserdata(L, sizeof(void*)) = PSInfo.SaveScreen(X1,Y1,X2,Y2);
-	luaL_getmetatable(L, SavedScreenType);
+	luaL_getmetatable(L, TYPE_SAVEDSCREEN);
 	lua_setmetatable(L, -2);
 	return 1;
 }
@@ -1854,7 +1851,7 @@ void NewVirtualKeyTable(lua_State* L, BOOL twoways)
 
 HANDLE* CheckFileFilter(lua_State* L, int pos)
 {
-	return (HANDLE*)luaL_checkudata(L, pos, FarFileFilterType);
+	return (HANDLE*)luaL_checkudata(L, pos, TYPE_FILEFILTER);
 }
 
 HANDLE CheckValidFileFilter(lua_State* L, int pos)
@@ -1872,7 +1869,7 @@ static int far_CreateFileFilter(lua_State *L)
 
 	if (PSInfo.FileFilterControl(hHandle, FFCTL_CREATEFILEFILTER, filterType, (LONG_PTR)pOutHandle))
 	{
-		luaL_getmetatable(L, FarFileFilterType);
+		luaL_getmetatable(L, TYPE_FILEFILTER);
 		lua_setmetatable(L, -2);
 	}
 	else
@@ -1906,9 +1903,9 @@ static int filefilter_tostring(lua_State *L)
 {
 	HANDLE *h = CheckFileFilter(L, 1);
 	if (*h != INVALID_HANDLE_VALUE)
-		lua_pushfstring(L, "%s (%p)", FarFileFilterType, h);
+		lua_pushfstring(L, "%s (%p)", TYPE_FILEFILTER, h);
 	else
-		lua_pushfstring(L, "%s (closed)", FarFileFilterType);
+		lua_pushfstring(L, "%s (closed)", TYPE_FILEFILTER);
 	return 1;
 }
 
@@ -1954,7 +1951,7 @@ static int far_ForcedLoadPlugin(lua_State *L) { return plugin_load(L, PCTL_FORCE
 
 static int far_UnloadPlugin(lua_State *L)
 {
-	void* Handle = *(void**)luaL_checkudata(L, 1, PluginHandleType);
+	void* Handle = *(void**)luaL_checkudata(L, 1, TYPE_PLUGINHANDLE);
 	lua_pushboolean(L, PSInfo.PluginsControlV3(Handle, PCTL_UNLOADPLUGIN, 0, 0) != 0);
 	return 1;
 }
@@ -2015,7 +2012,7 @@ static void PutPluginMenuItemToTable(lua_State *L, const char* Field, const wcha
 static int far_GetPluginInformation(lua_State *L)
 {
 	struct FarGetPluginInformation *pi;
-	HANDLE Handle = *(HANDLE*)luaL_checkudata(L, 1, PluginHandleType);
+	HANDLE Handle = *(HANDLE*)luaL_checkudata(L, 1, TYPE_PLUGINHANDLE);
 	size_t size = PSInfo.PluginsControlV3(Handle, PCTL_GETPLUGININFORMATION, 0, 0);
 
 	if (size == 0) return lua_pushnil(L), 1;
@@ -2518,18 +2515,18 @@ static int luaopen_far (lua_State *L)
 	lua_newtable(L);
 	lua_setglobal(L, "export");
 
-	luaL_newmetatable(L, FarFileFilterType);
+	luaL_newmetatable(L, TYPE_FILEFILTER);
 	lua_pushvalue(L,-1);
 	lua_setfield(L, -2, "__index");
 	luaL_register(L, NULL, filefilter_methods);
 
-	luaL_newmetatable(L, PluginHandleType);
+	luaL_newmetatable(L, TYPE_PLUGINHANDLE);
 	lua_pushvalue(L, -1);
 	lua_setfield(L, -2, "__index");
 	lua_pushcfunction(L, PluginHandle_rawhandle);
 	lua_setfield(L, -2, "rawhandle");
 
-	luaL_newmetatable(L, SavedScreenType);
+	luaL_newmetatable(L, TYPE_SAVEDSCREEN);
 	lua_pushcfunction(L, far_FreeScreen);
 	lua_setfield(L, -2, "__gc");
 	lua_pushcfunction(L, SavedScreen_tostring);

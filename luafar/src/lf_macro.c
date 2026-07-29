@@ -4,13 +4,12 @@
 #include <lauxlib.h>
 
 #include "lf_bit64.h"
+#include "lf_common.h"
 #include "lf_flags.h"
 #include "lf_luafar.h"
 #include "lf_service.h"
 #include "lf_string.h"
 #include "lf_util.h"
-
-const char AddMacroDataType[]  = "FarAddMacroData";
 
 void ConvertLuaValue (lua_State *L, int pos, struct FarMacroValue *target)
 {
@@ -268,7 +267,7 @@ static int far_MacroAdd(lua_State* L)
 		lua_isfunction(L, 6) ? lua_pushvalue(L, 6) : lua_pushboolean(L, 1);
 		Id->funcref = luaL_ref(L, LUA_REGISTRYINDEX);
 		Id->L = pd->MainLuaState;
-		luaL_getmetatable(L, AddMacroDataType);
+		luaL_getmetatable(L, TYPE_ADDMACRODATA);
 		lua_setmetatable(L, -2);
 		lua_pushlightuserdata(L, Id); // Place it in the registry to protect from gc. It should be collected only at lua_close().
 		lua_pushvalue(L, -2);
@@ -283,7 +282,7 @@ static int far_MacroAdd(lua_State* L)
 static int far_MacroDelete(lua_State* L)
 {
 	int result = FALSE;
-	MacroAddData *Id = (MacroAddData*)luaL_checkudata(L, 1, AddMacroDataType);
+	MacroAddData *Id = (MacroAddData*)luaL_checkudata(L, 1, TYPE_ADDMACRODATA);
 
 	if (Id->L)
 	{
@@ -357,7 +356,7 @@ int luaopen_macro(lua_State *L)
 {
 	luaL_register(L, "far", far_funcs);
 
-	luaL_newmetatable(L, AddMacroDataType);
+	luaL_newmetatable(L, TYPE_ADDMACRODATA);
 	lua_pushcfunction(L, AddMacroData_gc);
 	lua_setfield(L, -2, "__gc");
 
