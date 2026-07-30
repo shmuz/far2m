@@ -363,7 +363,8 @@ static void ProcessCommandLine(CommandLineParams &Params, int argc, char **argv)
 		if (argLen > 1 && arg_w[0] == L'-')
 		{
 			switchHandled = true;
-			FARString argUpper = arg_w.Upper();
+			FARString argUpper(arg_w);
+			argUpper.Upper();
 
 			if (argUpper == L"-A")
 				Opt.CleanAscii = true;
