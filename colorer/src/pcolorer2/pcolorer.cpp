@@ -88,7 +88,7 @@ SHAREDSYMBOL void WINAPI ExitFARW()
 */
 SHAREDSYMBOL HANDLE WINAPI OpenPluginW(int OpenFrom, INT_PTR Item)
 {
-  if (OpenFrom == OPEN_EDITOR) {
+  if (OpenFrom == OPEN_EDITOR || OpenFrom == (OPEN_FROMMACRO | MACROAREA_EDITOR)) {
     editorSet->openMenu();
   }
 
