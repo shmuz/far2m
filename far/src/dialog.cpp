@@ -4704,16 +4704,18 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 				X2 = W1;
 				Y2 = H1;
 				CheckDialogCoord();
-			} else if (!Param1)		// значит относительно
+			}
+			else if (!Param1)		// значит относительно
 			{
 				X1+= Coord->X;
 				Y1+= Coord->Y;
-			} else		// Resize, Param2=width/height
+			}
+			else		// Resize, Param2=width/height
 			{
 				int OldW1 = W1;
 				int OldH1 = H1;
-				W1 = Coord->X;
-				H1 = Coord->Y;
+				W1 = Max<int>(4, Coord->X);
+				H1 = Max<int>(4, Coord->Y);
 				RealWidth = W1;
 				RealHeight = H1;
 
