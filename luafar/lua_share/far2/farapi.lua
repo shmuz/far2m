@@ -916,6 +916,7 @@ typedef BOOL (__stdcall *FARAPISHOWHELP)(
 
 enum ADVANCED_CONTROL_COMMANDS
 { // don't change enum values!
+	ACTL_GETFARMANAGERVERSION = 0,
 	ACTL_GETFARVERSION        = 0,
 	ACTL_GETSYSWORDDIV        = 2,
 	ACTL_WAITKEY              = 3,

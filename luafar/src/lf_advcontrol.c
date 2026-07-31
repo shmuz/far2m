@@ -116,18 +116,17 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 			return 1;
 		}
 
-		case ACTL_GETFARVERSION:
+		case ACTL_GETFARMANAGERVERSION:
 		{
 			DWORD n = PtrAdvControl(pd->ModuleNumber, Command, NULL, NULL);
-			int v1 = (n >> 16);
-			int v2 = n & 0xffff;
+			int arr[5] = { (n >> 16), (n & 0xFFFF) };
 			if (lua_toboolean(L, pos2))
 			{
-				lua_pushinteger(L, v1);
-				lua_pushinteger(L, v2);
-				return 2;
+				for (int i=0; i < ARRAYSIZE(arr); i++)
+					lua_pushinteger(L, arr[i]);
+				return ARRAYSIZE(arr);
 			}
-			lua_pushfstring(L, "%d.%d", v1, v2);
+			lua_pushfstring(L, "%d.%d.0.0.0", arr[0], arr[1]);
 			return 1;
 		}
 
@@ -273,7 +272,7 @@ AdvCommand( GetCursorPos,           ACTL_GETCURSORPOS)
 AdvCommand( GetDescSettings,        ACTL_GETDESCSETTINGS)
 AdvCommand( GetDialogSettings,      ACTL_GETDIALOGSETTINGS)
 AdvCommand( GetFarCommitTime,       ACTL_GETFARCOMMITTIME)
-AdvCommand( GetFarManagerVersion,   ACTL_GETFARVERSION)
+AdvCommand( GetFarManagerVersion,   ACTL_GETFARMANAGERVERSION)
 AdvCommand( GetFarRect,             ACTL_GETFARRECT)
 AdvCommand( GetInterfaceSettings,   ACTL_GETINTERFACESETTINGS)
 AdvCommand( GetPanelSettings,       ACTL_GETPANELSETTINGS)
