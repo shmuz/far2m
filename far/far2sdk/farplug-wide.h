@@ -1948,6 +1948,7 @@ enum EDITOR_OPTIONS
 	EOPT_SHOWTITLEBAR      = 0x00000800,
 	EOPT_SHOWKEYBAR        = 0x00001000,
 	EOPT_SHOWSCROLLBAR     = 0x00002000,
+	EOPT_MEMOEDIT          = 0x00004000,
 };
 
 
@@ -1989,7 +1990,6 @@ struct EditorInfo
 	UINT CodePage;
 	RECT WindowArea;
 	RECT ClientArea;
-	int IsMemoEdit;
 };
 
 struct EditorBookMarks
