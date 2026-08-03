@@ -8,7 +8,7 @@ local F         = far.Flags
 local DirSep    = package.config:sub(1,1)
 local OsWin     = DirSep == "\\"
 local OsLin     = not OsWin
-local FarVer    = F.ACTL_GETFARMANAGERVERSION and 3 or 2 -- luacheck:ignore
+local FarVer    = far.AdvControl(F.ACTL_GETFARMANAGERVERSION, true)
 local band, bor = bit64.band, bit64.bor
 local Send      = far.SendDlgMessage
 local Colors    = far.Colors
