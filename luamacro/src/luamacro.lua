@@ -378,25 +378,20 @@ local function ShowAndPass(...) far.Show(...) return ... end
 
 local function Open_CommandLine (strCmdLine)
   local prefix, text = strCmdLine:match("^%s*([^:%s]+):%s*(.-)%s*$")
-  if not prefix then return end -- this can occur with Plugin.Command()
+  if not prefix then -- this can occur with Plugin.Command()
+    return
+  end
+  ----------------------------------------------------------------------------
   prefix = prefix:lower()
+  local Command = text:match("%S*")
+  local cmd = Command:lower()
   ----------------------------------------------------------------------------
-  if prefix == "far" then
-    local cmd = text:match("%S*"):lower()
-    if cmd == "about" then
-      require("far2.far_about")()
-    elseif cmd == "config" then
-      require("far2.far_config")()
-    elseif cmd ~= "" then
-      ErrMsg(Msg.CL_UnsupportedCommand..prefix..":"..cmd)
-    end
-  ----------------------------------------------------------------------------
-  elseif prefix == "lm" or prefix == "macro" then
-    if text == "" then
-      About(); return;
-    end
-    local cmd = text:match("%S*"):lower()
-    if cmd == "load" then
+  if prefix == "lm" or prefix == "macro" then
+    if cmd == "" then
+      About()
+    elseif cmd == "about" then
+      About()
+    elseif cmd == "load" then
       local paths = text:match("%S.*",5)
       paths = paths and paths:gsub([[^"(.+)"$]], "%1")
       far.MacroLoadAll(paths)
@@ -404,8 +399,6 @@ local function Open_CommandLine (strCmdLine)
       utils.WriteMacros()
     elseif cmd == "unload" then
       utils.UnloadMacros()
-    elseif cmd == "about" then
-      About()
     elseif cmd == "test" then
       far.MacroPost( [[
         local function Quit(n) actl.Quit(n) Keys("Esc") end
@@ -416,12 +409,12 @@ local function Open_CommandLine (strCmdLine)
         OK = pcall(R.test_all)
         Quit(OK and 0 or 3)
       ]], 0, "CtrlShiftF12")
-    elseif cmd == "panel" then
-      return Shared.TestPanel, { args=text; }
     elseif cmd == "browser" then
       macrobrowser()
-    elseif cmd ~= "" then
-      ErrMsg(Msg.CL_UnsupportedCommand..prefix..":"..cmd)
+    elseif cmd == "panel" then
+      return Shared.TestPanel, { args=text; }
+    else
+      ErrMsg(Msg.CL_UnsupportedCommand..prefix..":"..Command)
     end
   ----------------------------------------------------------------------------
   elseif prefix == "lua" or prefix == "moon" or prefix == "luas" or prefix == "moons" then
@@ -447,6 +440,15 @@ local function Open_CommandLine (strCmdLine)
       end
     else
       ErrMsg(f2)
+    end
+  ----------------------------------------------------------------------------
+  elseif prefix == "far" then
+    if cmd == "about" then
+      require("far2.far_about")()
+    elseif cmd == "config" then
+      require("far2.far_config")()
+    elseif cmd ~= "" then
+      ErrMsg(Msg.CL_UnsupportedCommand..prefix..":"..Command)
     end
   ----------------------------------------------------------------------------
   elseif prefix=="edit" or prefix=="view" or prefix=="load" or prefix=="unload" or prefix=="goto" then
