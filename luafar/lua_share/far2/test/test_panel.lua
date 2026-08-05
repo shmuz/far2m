@@ -200,6 +200,35 @@ local function test_Panel_Select(pan)
 end
 
 
+-- commit 5fb5ca9a
+-- Fix TranslateKeyToVK function (from far2l)
+local function test_panel_5fb5ca9a()
+  local vk = win.GetVirtualKeys ()
+  Plugin.Command(far.GetPluginId(), "macro:panel 4")
+  asrt.istrue(APanel.Plugin)
+  asrt.eq(APanel.ItemCount, 5)
+  local state = 0
+
+  mf.AddExitHandler(function() _G.ProcessKeyCallback = nil; end)
+
+  _G.ProcessKeyCallback =
+    function(obj, handle, Key, ControlState)
+      if Key == vk.RETURN and ControlState == 0 then
+        asrt.istrue(panel.ClosePanel(handle))
+        state = 1
+      end
+    end
+
+  Keys("End")
+  asrt.istrue(APanel.Plugin)
+  Keys("NumEnter")
+  asrt.isfalse(APanel.Plugin)
+  asrt.eq(state, 1)
+
+  _G.ProcessKeyCallback = nil
+end
+
+
 local function test_all()
   test_APanel()
   test_PPanel()
@@ -207,6 +236,7 @@ local function test_all()
   test_Panel_SetPath()
   test_Panel_Select(0)
   test_Panel_Select(1)
+  test_panel_5fb5ca9a()
 
   asrt.eq (Panel.FAttr(0, ":"), -1)
   asrt.eq (Panel.FAttr(1, ":"), -1)

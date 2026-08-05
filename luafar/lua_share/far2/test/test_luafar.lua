@@ -747,7 +747,7 @@ end
 -- The reason was sloppy detection of Far version in simpledialog.lua module.
 local function test_dialog_cef18f95()
   -- open far:config dialog
-  Keys("Esc"); print("far:config"); Keys("Enter")
+  Plugin.Command(far.GetPluginId(), "far:config")
   asrt.istrue(Area.Dialog)
   asrt.eq(Dlg.Id, far.Guids.AdvancedConfigId)
   local wInfo = asrt.table(actl.GetWindowInfo())
@@ -1009,7 +1009,7 @@ function LF.test_Guids()
 
   asrt.table(far.Guids)
 
-  Keys("Esc"); print("far:config"); Keys("Enter")
+  Plugin.Command(far.GetPluginId(), "far:config")
   test_one_guid( "AdvancedConfigId")
 
   print("far:about"); Keys("Enter")

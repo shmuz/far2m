@@ -44,4 +44,11 @@ function mod.ProcessPanelEvent(obj, handle, Event, Param)
   end
 end
 
+function mod.ProcessKey(obj, handle, Key, ControlState)
+  local func = ProcessKeyCallback -- luacheck:ignore (for testing purposes)
+  if type(func) == "function" then
+    func(obj, handle, Key, ControlState)
+  end
+end
+
 return mod
