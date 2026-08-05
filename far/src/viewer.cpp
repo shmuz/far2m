@@ -3406,7 +3406,8 @@ int Viewer::ViewerControl(int Command, void *Param)
 		// Param=0
 		case VCTL_REDRAW: {
 			ChangeViewKeyBar();
-			Show();
+			FrameManager->RefreshFrame(HostFileViewer);
+			FrameManager->Commit();
 			ScrBuf.Flush();
 			return TRUE;
 		}
