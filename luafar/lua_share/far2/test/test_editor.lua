@@ -347,11 +347,33 @@ local function test_multiple_instances()
   asrt.istrue(Area.Shell)
 end
 
+-- commit bc3a1124
+-- Editor: fix last line deletion
+local function test_editor_bc3a1124()
+  local flags = "EF_NONMODAL EF_IMMEDIATERETURN EF_DISABLEHISTORY"
+  local fname = far.InMyTemp(win.Uuid("U"))
+
+  editor.Editor(fname,nil,nil,nil,nil,nil,flags)
+  asrt.istrue(Area.Editor)
+  Keys("Enter CtrlZ F2 Esc")
+  asrt.istrue(Area.Shell)
+
+  editor.Editor(fname,nil,nil,nil,nil,nil,flags)
+  asrt.istrue(Area.Editor)
+  local info = asrt.table(editor.GetInfo())
+  asrt.eq(1, info.TotalLines)
+
+  Keys("Esc")
+  asrt.istrue(Area.Shell)
+  asrt.istrue(win.DeleteFile(fname))
+end
+
 local function test_all()
   test_Editor_Sel()
   test_Misc()
   test_issue_3129()
   test_multiple_instances()
+  test_editor_bc3a1124()
 end
 
 return {

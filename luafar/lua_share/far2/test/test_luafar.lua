@@ -657,7 +657,7 @@ function LF.test_win()
   asrt.table (win.GetSystemTime())
 end
 
-function LF.test_dialog_1()
+local function test_dialog_1()
   local sd = require"far2.simpledialog"
   local tt = {"foo","bar","baz"}
 
@@ -699,7 +699,7 @@ function LF.test_dialog_1()
   assert(Items.data == tt[3])
 end
 
-function LF.test_dialog_issue_28()
+local function test_dialog_issue_28()
   local sd=require "far2.simpledialog"
   local checkValue = nil
   local items = {
@@ -724,7 +724,7 @@ function LF.test_dialog_issue_28()
   asrt.istrue(checkValue)
 end
 
-local function test_usercontrol()
+local function test_dialog_usercontrol()
   local w, h = 40, 12
   local uc = asrt.udata(far.CreateUserControl(w, h))
 
@@ -742,10 +742,64 @@ local function test_usercontrol()
   asrt.err(function() uc[#uc + 1] = {} end)
 end
 
+-- Commit cef18f95
+-- The far:config dialog didn't respond to F4, Enter, Del, CtrlH...
+-- The reason was sloppy detection of Far version in simpledialog.lua module.
+local function test_dialog_cef18f95()
+  -- open far:config dialog
+  Keys("Esc"); print("far:config"); Keys("Enter")
+  asrt.istrue(Area.Dialog)
+  asrt.eq(Dlg.Id, far.Guids.AdvancedConfigId)
+  local wInfo = asrt.table(actl.GetWindowInfo())
+  local hDlg  = asrt.udata(wInfo.Id)
+  local index = asrt.num( hDlg:ListFindString(nil, { Pattern="*Cmdline.AutoComplete*"}) )
+  asrt.eq(index, hDlg:ListSetCurPos(nil, {SelectPos=index}))
+
+  -- collect initial state data
+  local wasFalse, wasTrue, isFalse, isTrue
+  local item  = asrt.table(hDlg:ListGetItem(nil, index))
+  wasFalse = nil ~= item.Text:find("false")
+  wasTrue  = nil ~= item.Text:find("true")
+  asrt.neq(wasFalse, wasTrue)
+
+  -- toggle the boolean
+  Keys("F4")
+  item  = asrt.table(hDlg:ListGetItem(nil, index))
+  isFalse = nil ~= item.Text:find("false")
+  isTrue  = nil ~= item.Text:find("true")
+  asrt.eq(isFalse, wasTrue)
+  asrt.eq(isTrue, wasFalse)
+
+  -- toggle the boolean again to its original state
+  Keys("Enter")
+  item  = asrt.table(hDlg:ListGetItem(nil, index))
+  isFalse = nil ~= item.Text:find("false")
+  isTrue  = nil ~= item.Text:find("true")
+  asrt.eq(isFalse, wasFalse)
+  asrt.eq(isTrue, wasTrue)
+
+  -- close far:config dialog
+  Keys("Esc")
+  asrt.istrue(Area.Shell)
+end
+
+-- commit daee1a50
+-- DM_RESIZEDIALOG: prevent crashes
+local function test_dialog_daee1a50()
+  Keys("AltF7")
+  asrt.eq(Dlg.Id, far.Guids.FindFileId)
+  local hDlg = asrt.udata(actl.GetWindowInfo().Id)
+  hDlg:ResizeDialog(nil, {Y=-1,X=-1})
+  hDlg:ResizeDialog(nil, {Y=0, X=0})
+  Keys("Esc")
+end
+
 function LF.test_dialog()
-  LF.test_dialog_1()
-  LF.test_dialog_issue_28()
-  test_usercontrol()
+  test_dialog_1()
+  test_dialog_issue_28()
+  test_dialog_usercontrol()
+  test_dialog_cef18f95()
+  test_dialog_daee1a50()
 end
 
 function LF.test_far_Menu1()
