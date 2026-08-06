@@ -4534,158 +4534,192 @@ by manually editing the registry or by using special tools/plugins.
 documentation.
 
 @KeyMacroList
-$ #Макросы: Список установленных макросов#
-    Ниже приведен список разделов, в которых можно узнать какие ~макросы~@KeyMacro@
-действуют в текущей сессии Far Manager.
+$ #Macros: The list of installed macros#
+ The following is a list of topics where you can find out which ~macros~@KeyMacro@
+are available in the current Far Manager session.
 
-  ~Общие макросы#~@KeyMacroCommonList@
+ ~Common macros#~@KeyMacroCommonList@
 
-  ~Панели~@KeyMacroShellList@
-  ~Панель быстрого просмотра~@KeyMacroQViewList@
-  ~Панель папок~@KeyMacroTreeList@
-  ~Информационная панель~@KeyMacroInfoList@
+ ~File panels~@KeyMacroShellList@
+ ~Quick View panel~@KeyMacroQViewList@
+ ~Tree panel~@KeyMacroTreeList@
+ ~Info panel~@KeyMacroInfoList@
 
-  ~Быстрый поиск в панелях~@KeyMacroSearchList@
-  ~Поиск папки~@KeyMacroFindFolderList@
+ ~Fast Find in panels~@KeyMacroSearchList@
+ ~Find Folder~@KeyMacroFindFolderList@
 
-  ~Диалоги~@KeyMacroDialogList@
+ ~Dialogs~@KeyMacroDialogList@
 
-  ~Главное меню~@KeyMacroMainMenuList@
-  ~Меню выбора дисков~@KeyMacroDisksList@
-  ~Меню пользователя~@KeyMacroUserMenuList@
-  ~Прочие меню~@KeyMacroMenuList@
+ ~Main menu~@KeyMacroMainMenuList@
+ ~Change drive menu~@KeyMacroDisksList@
+ ~User menu~@KeyMacroUserMenuList@
+ ~Other menus~@KeyMacroMenuList@
 
-  ~Программа просмотра~@KeyMacroViewerList@
-  ~Редактор~@KeyMacroEditList@
+ ~Viewer~@KeyMacroViewerList@
+ ~Editor~@KeyMacroEditList@
 
-  ~Файл помощи#~@KeyMacroHelpList@
+ ~Help window#~@KeyMacroHelpList@
 
-  ~Остальные области~@KeyMacroOtherList@
+ ~Other areas~@KeyMacroOtherList@
 
 @KeyMacroCommonList
-$ #Макросы: Общие#
-    Ниже приведены комбинации макроклавиш, действующих везде.
-    Описание для каждой макроклавиши берется из реестра (поле Description).
+$ #Macros: Common macros#
+ The following macro keys are available in all areas.
 
 <!Macro:Common!>
 
+ See also ~"The list of installed macros"~@KeyMacroList@
+
+
 @KeyMacroQViewList
-$ #Макросы: Панель быстрого просмотра#
-    Ниже приведены комбинации макроклавиш, действующих в панели быстрого просмотра.
-    Описание для каждой макроклавиши берется из реестра (поле Description).
+$ #Macros: Quick View panel#
+ The following macro keys are available in Quick View panel.
 
 <!Macro:Common!>
 <!Macro:Qview!>
 
+ See also ~"The list of installed macros"~@KeyMacroList@
+
+
 @KeyMacroMainMenuList
-$ #Макросы: Главное меню#
-    Ниже приведены комбинации макроклавиш, действующих в главном меню.
-    Описание для каждой макроклавиши берется из реестра (поле Description).
+$ #Macros: Main Menu#
+ The following macro keys are available in Main Menu.
 
 <!Macro:Common!>
 <!Macro:MainMenu!>
 
+ See also ~"The list of installed macros"~@KeyMacroList@
+
+
 @KeyMacroTreeList
-$ #Макросы: Панель папок#
-    Ниже приведены комбинации макроклавиш, действующих в панели папок.
-    Описание для каждой макроклавиши берется из реестра (поле Description).
+$ #Macros: Tree Panel#
+ The following macro keys are available in Tree Panel.
 
 <!Macro:Common!>
 <!Macro:Tree!>
 
+ See also ~"The list of installed macros"~@KeyMacroList@
+
+
 @KeyMacroDialogList
-$ #Макросы: Диалоги#
-    Ниже приведены комбинации макроклавиш, действующих в диалогах.
-    Описание для каждой макроклавиши берется из реестра (поле Description).
+$ #Macros: Dialogs#
+ The following macro keys are available in dialogs.
 
 <!Macro:Common!>
 <!Macro:Dialog!>
 
+ See also ~"The list of installed macros"~@KeyMacroList@
+
+
 @KeyMacroInfoList
-$ #Макросы: Информационная панель#
-    Ниже приведены комбинации макроклавиш, действующих в информационной панели.
-    Описание для каждой макроклавиши берется из реестра (поле Description).
+$ #Macros: Info Panel#
+ The following macro keys are available in Info Panel.
 
 <!Macro:Common!>
 <!Macro:Info!>
 
+ See also ~"The list of installed macros"~@KeyMacroList@
+
+
 @KeyMacroDisksList
-$ #Макросы: Меню выбора дисков#
-    Ниже приведены комбинации макроклавиш, действующих в меню выбора дисков.
-    Описание для каждой макроклавиши берется из реестра (поле Description).
+$ #Macros: Change Drive menu#
+ The following macro keys are available in Change Drive menu.
 
 <!Macro:Common!>
 <!Macro:Disks!>
 
+ See also ~"The list of installed macros"~@KeyMacroList@
+
+
 @KeyMacroUserMenuList
-$ #Макросы: Меню пользователя#
-    Ниже приведены комбинации макроклавиш, действующих в пользовательском меню.
-    Описание для каждой макроклавиши берется из реестра (поле Description).
+$ #Macros: User Menu#
+ The following macro keys are available in User Menu.
 
 <!Macro:Common!>
 <!Macro:UserMenu!>
 
+ See also ~"The list of installed macros"~@KeyMacroList@
+
+
 @KeyMacroShellList
-$ #Макросы: Панели#
-    Ниже приведены комбинации макроклавиш, действующих в файловых панелях.
-    Описание для каждой макроклавиши берется из реестра (поле Description).
+$ #Macros: File panels#
+ The following macro keys are available in file panels.
 
 <!Macro:Common!>
 <!Macro:Shell!>
 
+ See also ~"The list of installed macros"~@KeyMacroList@
+
+
 @KeyMacroSearchList
-$ #Макросы: Быстрый поиск в панелях#
-    Ниже приведены комбинации макроклавиш, действующих в быстром поиске файловых панелей.
-    Описание для каждой макроклавиши берется из реестра (поле Description).
+$ #Macros: Fast Find in panels#
+ The following macro keys are available in Fast Find dialog.
 
 <!Macro:Common!>
 <!Macro:Search!>
 
+ See also ~"The list of installed macros"~@KeyMacroList@
+
+
 @KeyMacroFindFolderList
-$ #Макросы: Поиск папки#
-    Ниже приведены комбинации макроклавиш, действующих в поиске папки.
-    Описание для каждой макроклавиши берется из реестра (поле Description).
+$ #Macros: Find Folder#
+ The following macro keys are available in Find Folder window.
 
 <!Macro:Common!>
 <!Macro:FindFolder!>
 
+ See also ~"The list of installed macros"~@KeyMacroList@
+
+
 @KeyMacroEditList
-$ #Макросы: Редактор#
-    Macro-commands available in the editor are listed below. Descriptions are read from the registry.
+$ #Macros: Editor#
+ Macro-commands available in the editor are listed below.
 
 <!Macro:Common!>
 <!Macro:Editor!>
 
+ See also ~"The list of installed macros"~@KeyMacroList@
+
+
 @KeyMacroViewerList
-$ #Макросы: Программа просмотра#
-    Macro-commands available in the viewer are listed below. Descriptions are read from the registry.
+$ #Macros: Viewer#
+ Macro-commands available in the viewer are listed below.
 
 <!Macro:Common!>
 <!Macro:Viewer!>
 
+ See also ~"The list of installed macros"~@KeyMacroList@
+
+
 @KeyMacroMenuList
-$ #Макросы: Прочие меню#
-    Ниже приведены комбинации макроклавиш, действующих в прочих меню.
-    Описание для каждой макроклавиши берется из реестра (поле Description).
+$ #Macros: Other menus#
+ The following macro keys are available in other menus.
 
 <!Macro:Common!>
 <!Macro:Menu!>
 
+ See also ~"The list of installed macros"~@KeyMacroList@
+
+
 @KeyMacroHelpList
-$ #Макросы: Файл помощи#
-    Ниже приведены комбинации макроклавиш, действующих в файле помощи.
-    Описание для каждой макроклавиши берется из реестра (поле Description).
+$ #Macros: Help window#
+ The following macro keys are available in Help window.
 
 <!Macro:Common!>
 <!Macro:Help!>
 
+ See also ~"The list of installed macros"~@KeyMacroList@
+
+
 @KeyMacroOtherList
-$ #Макросы: Остальные области#
-    Ниже приведены комбинации макроклавиш, действующих в других областях: копировании текста с экрана, вертикальных меню.
-    Описание для каждой макроклавиши берется из реестра (поле Description).
+$ #Macros: Other areas#
+ The following macro keys are available in other areas: screen grabber, vertical menus.
 
 <!Macro:Common!>
 <!Macro:Other!>
+
+ See also ~"The list of installed macros"~@KeyMacroList@
+
 
 @FarAbout
 $ #About FAR#
