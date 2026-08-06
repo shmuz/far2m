@@ -85,7 +85,7 @@ add_custom_command(TARGET bootstrap
 
 add_custom_command(TARGET bootstrap
     POST_BUILD
-    COMMAND "cp" "-t" "${INSTALL_DIR}" ${HLFFILES}
+    COMMAND "cp" ${HLFFILES} "${INSTALL_DIR}"
 )
 
 add_custom_command(TARGET bootstrap
