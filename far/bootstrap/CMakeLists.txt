@@ -51,7 +51,7 @@ add_custom_command(OUTPUT "${BOOTSTRAP}/farversion.inc"
 )
 
 # List of langs for help files
-set(LANGS "Eng" "Rus" "Hun" "Ukr")
+set(LANGS "Eng" "Rus" "Ukr")
 foreach(LANG ${LANGS})
   add_custom_command(OUTPUT "${BOOTSTRAP}/Far${LANG}.hlf"
     COMMAND ${LUACMD} --mkhlf "${SCRIPTS}/Far${LANG}.hlf.m4" > "${BOOTSTRAP}/Far${LANG}.hlf"
@@ -85,7 +85,7 @@ add_custom_command(TARGET bootstrap
 
 add_custom_command(TARGET bootstrap
     POST_BUILD
-    COMMAND "cp" "${BOOTSTRAP}/*.hlf" "${INSTALL_DIR}"
+    COMMAND "cp" "-t" "${INSTALL_DIR}" ${HLFFILES}
 )
 
 add_custom_command(TARGET bootstrap
