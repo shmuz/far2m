@@ -214,8 +214,7 @@ local function EV_Handler (macros, filename, ...)
   local indexes,priorities = {},{}
   for i,m in ipairs(macros) do
     indexes[i],priorities[i] = i, -1
-    m = LoadedMacros[m]
-    if m and ((not m.filemask) or (filename and CheckFileName(m.filemask, filename))) then
+    if (not m.filemask) or (filename and CheckFileName(m.filemask, filename)) then
       if m.condition then
         local pr = m.condition(...)
         if pr then
@@ -237,7 +236,7 @@ local function EV_Handler (macros, filename, ...)
   -- Execute.
   for _,i in ipairs(indexes) do
     if priorities[i] < 0 then break end
-    local ret = LoadedMacros[macros[i]].action(...)
+    local ret = macros[i].action(...)
     if ret then
       if macros==Events.dialogevent or macros==Events.editorinput or macros==Events.synchroevent then
         return ret
@@ -401,16 +400,13 @@ local function AddRegularMacro (srctable, FileName)
     macro.action = function() end -- intended use: do all the things in condition()
   end
 
-  table.insert(LoadedMacros, macro)
-  macro.index = #LoadedMacros
-
   local arFound = {} -- prevent multiple inclusions, i.e. area="Editor Editor"
   for a in srctable.area:lower():gmatch("%S+") do
     local arTable = Areas[a]
     if arTable and not arFound[a] then
       if macro.keyregex then
         arTable[1] = arTable[1] or {}
-        table.insert(arTable[1], macro.index)
+        table.insert(arTable[1], macro)
       else
         local keyFound = {} -- prevent multiple inclusions
         for k in macro.key:lower():gmatch("%S+") do
@@ -419,7 +415,7 @@ local function AddRegularMacro (srctable, FileName)
             local normkey = t[i]
             if not keyFound[normkey] then
               arTable[normkey] = arTable[normkey] or {}
-              table.insert(arTable[normkey], macro.index)
+              table.insert(arTable[normkey], macro)
               keyFound[normkey] = true
             end
           end
@@ -429,9 +425,7 @@ local function AddRegularMacro (srctable, FileName)
     end
   end
 
-  if next(arFound) == nil then
-    table.remove(LoadedMacros)
-  else
+  if next(arFound) then
     macro.flags = StringToFlags(srctable.flags, FileName)
 
     if type(srctable.description)=="string" then macro.description=srctable.description end
@@ -460,6 +454,8 @@ local function AddRegularMacro (srctable, FileName)
 
     macro.data = {}
     for k,v in pairs(srctable) do macro.data[k]=v; end
+    macro.index = #LoadedMacros+1
+    LoadedMacros[macro.index] = macro
     return macro
   end
 end
@@ -484,20 +480,20 @@ local function AddRecordedMacro (srctable, filename)
   end
 
   local macro = { FileName=filename }
-  table.insert(LoadedMacros, macro)
-  macro.index = #LoadedMacros
-
   local t,n = ExpandKey(key)
   for i=1,n do
     local normkey = t[i]
     arTable[normkey] = arTable[normkey] or {}
-    arTable[normkey].recorded = macro.index
+    arTable[normkey].recorded = macro
   end
 
   for _,v in ipairs{"area","key","action","code","description"} do macro[v]=srctable[v] end
 
   macro.flags = StringToFlags(srctable.flags, filename)
   if type(macro.description)~="string" then macro.description=nil end
+
+  macro.index = #LoadedMacros+1
+  LoadedMacros[macro.index] = macro
 end
 
 local AddEvent_fields = {"group","action","description","priority","condition","filemask"}
@@ -507,11 +503,8 @@ local function AddEvent (srctable, FileName)
 
   if type(srctable.action)~="function" then return end
 
-  local macro = {}
-  table.insert(LoadedMacros, macro)
-  macro.index = #LoadedMacros
-
-  table.insert(Events[group], macro.index)
+  local macro={}
+  table.insert(Events[group], macro)
 
   for _,v in ipairs(AddEvent_fields) do macro[v]=srctable[v] end
   macro.FileName = FileName
@@ -525,6 +518,8 @@ local function AddEvent (srctable, FileName)
   end
   AddId(macro, srctable)
 
+  macro.index = #LoadedMacros+1
+  LoadedMacros[macro.index] = macro
   return macro
 end
 
@@ -757,7 +752,6 @@ local function LoadMacros (unload, paths)
   local newAreas = {}
   Events = {}
   EnumState = {}
-  local OldLoadedMacros = LoadedMacros
   LoadedMacros = {}
   AddedMenuItems = {}
   AddedPrefixes = { [1]="" }
@@ -782,15 +776,14 @@ local function LoadMacros (unload, paths)
     for a,areatable in pairs(Areas) do
       for k,macroarray in pairs(areatable) do
         for _,m in ipairs(macroarray) do
-          m = OldLoadedMacros[m]
-          if m and m.guid and not m.disabled then
+          if m.guid and not m.disabled then
             newAreas[a][k] = newAreas[a][k] or {}
+            table.insert(newAreas[a][k], m)
             if not IdUpdated[m] then
               IdUpdated[m] = true
-              table.insert(LoadedMacros, m)
-              m.index = #LoadedMacros
+              m.index = #LoadedMacros+1
+              LoadedMacros[m.index] = m
             end
-            table.insert(newAreas[a][k], m.index)
           end
         end
       end
@@ -967,7 +960,7 @@ local function WriteMacros()
 
   for areaname,area in pairs(Areas) do
     for keyname,macroarray in pairs(area) do
-      local macro = LoadedMacros[macroarray.recorded]
+      local macro = macroarray.recorded
       if macro and macro.needsave then
         WriteOneMacro(dir, macro, macro.key, macro.disabled)
         macro.needsave = nil
@@ -1066,7 +1059,7 @@ local function GetMacro (argMode, argKey, argUseCommon, argCheckOnly)
   for _,areaname in ipairs(Names) do
     local areatable = Areas[areaname]
     if areatable and areatable[key] then
-      local m = LoadedMacros[areatable[key].recorded]
+      local m = areatable[key].recorded
       if m and not m.disabled and (argCheckOnly or MacroCallFar(MCODE_F_CHECKALL,argMode,m.flags,nil,nil)) then
         return m, areaname, true
       end
@@ -1098,8 +1091,7 @@ local function GetMacro (argMode, argKey, argUseCommon, argCheckOnly)
       local macros = areatable[key]
       if macros then
         for _,m in ipairs(macros) do
-          m = LoadedMacros[m]
-          if m and not m.disabled then
+          if not m.disabled then
             if argCheckOnly then return m, areaname end
             ExamineMacro(m, areaname)
           end
@@ -1108,8 +1100,7 @@ local function GetMacro (argMode, argKey, argUseCommon, argCheckOnly)
       local macros_regex = areatable[1]
       if macros_regex then
         for _,m in ipairs(macros_regex) do
-          m = LoadedMacros[m]
-          if m and not m.disabled and m.keyregex:match(key) then
+          if not m.disabled and m.keyregex:match(key) then
             if argCheckOnly then return m, areaname end
             ExamineMacro(m, areaname)
           end
@@ -1190,7 +1181,6 @@ local function ProcessRecordedMacro (Mode, Key, code, flags, description)
       local k = keys[i]
       local m = Areas[area][k] and Areas[area][k].recorded or
                 Areas["common"][k] and Areas["common"][k].recorded
-      m = LoadedMacros[m]
       if m then
         m.disabled,m.needsave = true,true
         break
@@ -1204,13 +1194,13 @@ local function ProcessRecordedMacro (Mode, Key, code, flags, description)
     needsave=true
   }
   local existing = Areas[area][keys[1]] and Areas[area][keys[1]].recorded
-  macro.index = existing or #LoadedMacros+1
+  macro.index = existing and existing.index or #LoadedMacros+1
   LoadedMacros[macro.index] = macro
 
   for i=1,numkeys do
     local k = keys[i]
     Areas[area][k] = Areas[area][k] or {}
-    Areas[area][k].recorded = macro.index
+    Areas[area][k].recorded = macro
   end
 end
 
@@ -1230,8 +1220,7 @@ local function DelMacro (guid, callbackId) -- MCTL_DELMACRO
   for _,areatable in pairs(Areas) do
     for _,macroarray in pairs(areatable) do
       for _,m in ipairs(macroarray) do
-        m = LoadedMacros[m]
-        if m and m.guid and m.guid==guid and m.callbackId==callbackId and not m.disabled then
+        if m.guid and m.guid==guid and m.callbackId==callbackId and not m.disabled then
           m.disabled = true
           return true
         end
@@ -1252,7 +1241,7 @@ local function RunStartMacro()
   for k=1,2 do
     if k==2 then mtable = Areas.common end
     for _,macros in pairs(mtable) do
-      local m = LoadedMacros[macros.recorded]
+      local m = macros.recorded
       if m and not m.disabled and m.flags and band(m.flags,mc.MFLAGS_RUNAFTERFARSTART)~=0 and not m.autostartdone then
         m.autostartdone=true
         if MacroCallFar(MCODE_F_CHECKALL, mode, m.flags) then
@@ -1260,8 +1249,7 @@ local function RunStartMacro()
         end
       end
       for _,m in ipairs(macros) do
-        m = LoadedMacros[macros.recorded]
-        if m and not m.disabled and m.flags and band(m.flags,mc.MFLAGS_RUNAFTERFARSTART)~=0 and not m.autostartdone then
+        if not m.disabled and m.flags and band(m.flags,mc.MFLAGS_RUNAFTERFARSTART)~=0 and not m.autostartdone then
           m.autostartdone=true
           if MacroCallFar(MCODE_F_CHECKALL, mode, m.flags) then
             if not m.condition or m.condition(nil, m.data) then
