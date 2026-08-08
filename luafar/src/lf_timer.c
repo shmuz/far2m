@@ -61,6 +61,23 @@ static int initialize()
 	return 1;
 }
 
+static void convert_msec(unsigned int msec, struct itimerspec *val, t_timer type)
+{
+	val->it_value.tv_sec = msec / 1000;
+	val->it_value.tv_nsec = (msec % 1000) * 1000000;
+
+	if (type == TIMER_PERIODIC)
+	{
+		val->it_interval.tv_sec= msec / 1000;
+		val->it_interval.tv_nsec = (msec % 1000) * 1000000;
+	}
+	else
+	{
+		val->it_interval.tv_sec = 0;
+		val->it_interval.tv_nsec = 0;
+	}
+}
+
 static timer_node * start_timer(unsigned int interval, time_handler handler, t_timer type,
 		void *user_data, void *plugin_id)
 {
@@ -85,20 +102,7 @@ static timer_node * start_timer(unsigned int interval, time_handler handler, t_t
 				return 0;
 		}
 
-		new_value.it_value.tv_sec = interval / 1000;
-		new_value.it_value.tv_nsec = (interval % 1000)* 1000000;
-
-		if (type == TIMER_PERIODIC)
-		{
-			new_value.it_interval.tv_sec= interval / 1000;
-			new_value.it_interval.tv_nsec = (interval %1000) * 1000000;
-		}
-		else
-		{
-			new_value.it_interval.tv_sec= 0;
-			new_value.it_interval.tv_nsec = 0;
-		}
-
+		convert_msec(interval, &new_value, type);
 		timerfd_settime(new_node->fd, 0, &new_value, NULL);
 
 		/*Inserting the timer node into the list*/
@@ -110,34 +114,30 @@ static timer_node * start_timer(unsigned int interval, time_handler handler, t_t
 
 static void stop_timer(timer_node * node)
 {
-		if (node == NULL) return;
+	if (node == NULL) return;
 
-		close(node->fd);
+	close(node->fd);
 
-		if (node == g_head)
-		{
-				g_head = g_head->next;
-		} else {
-
-				timer_node * tmp = g_head;
-
-				while(tmp && tmp->next != node) tmp = tmp->next;
-
-				if (tmp)
-				{
-						/*tmp->next can not be NULL here.*/
-						tmp->next = tmp->next->next;
-				}
+	if (node == g_head) {
+		g_head = g_head->next;
+	}
+	else {
+		for (timer_node *tmp = g_head; tmp; tmp = tmp->next) {
+			if (tmp->next == node) {
+				tmp->next = node->next;
+				break;
+			}
 		}
-		free(node);
+	}
+	free(node);
 }
 
 static void finalize(void *plugin_id)
 {
 	timer_node extra;
-	timer_node * tmp = &extra;
+	timer_node *tmp = &extra;
 
-	for(tmp->next = g_head; tmp->next; )
+	for (tmp->next = g_head; tmp->next; )
 	{
 		timer_node *node = tmp->next;
 		if (node->plugin_id == plugin_id)
@@ -163,13 +163,9 @@ static void finalize(void *plugin_id)
 
 static timer_node * _get_timer_from_fd(int fd)
 {
-		timer_node * tmp = g_head;
-
-		while(tmp)
+		for (timer_node *tmp = g_head; tmp; tmp = tmp->next)
 		{
 				if (tmp->fd == fd) return tmp;
-
-				tmp = tmp->next;
 		}
 		return NULL;
 }
@@ -177,9 +173,6 @@ static timer_node * _get_timer_from_fd(int fd)
 static void * _timer_thread(void * data)
 {
 		struct pollfd ufds[MAX_TIMER_COUNT] = {{0}};
-		int iMaxCount = 0;
-		timer_node * tmp = NULL;
-		int read_fds = 0, i, s;
 		uint64_t exp;
 
 		while(1)
@@ -188,29 +181,25 @@ static void * _timer_thread(void * data)
 				pthread_testcancel();
 				pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 
-				iMaxCount = 0;
-				tmp = g_head;
+				int iMaxCount = 0;
+				timer_node *tmp = g_head;
 
-				memset(ufds, 0, sizeof(struct pollfd)*MAX_TIMER_COUNT);
-				while(tmp)
+				memset(ufds, 0, sizeof(ufds));
+				for (;  tmp;  tmp = tmp->next, iMaxCount++)
 				{
 						ufds[iMaxCount].fd = tmp->fd;
 						ufds[iMaxCount].events = POLLIN;
-						iMaxCount++;
-
-						tmp = tmp->next;
 				}
-				read_fds = poll(ufds, iMaxCount, 100);
 
-				if (read_fds <= 0) continue;
+				if (poll(ufds, iMaxCount, 100) <= 0) continue;
 
-				for (i = 0; i < iMaxCount; i++)
+				for (int i = 0; i < iMaxCount; i++)
 				{
 						if (ufds[i].revents & POLLIN)
 						{
-								s = read(ufds[i].fd, &exp, sizeof(uint64_t));
+								int s = read(ufds[i].fd, &exp, sizeof(exp));
 
-								if (s != sizeof(uint64_t)) continue;
+								if (s != sizeof(exp)) continue;
 
 								tmp = _get_timer_from_fd(ufds[i].fd);
 
@@ -355,7 +344,18 @@ static int timer_newindex (lua_State *L)
 		lua_pushvalue(L, 3);
 		lua_rawseti(L, -2, 1);
 	}
-	else luaL_error(L, "attempt to call non-existent method");
+	else if (!strcmp(method, "Interval")) {
+		td->interval = (unsigned int)luaL_checkinteger(L, 3);
+
+		struct itimerspec new_value;
+		convert_msec(td->interval, &new_value, TIMER_PERIODIC);
+
+		timer_node *node = (timer_node*) td->timer_id;
+		timerfd_settime(node->fd, 0, &new_value, NULL);
+	}
+	else
+		luaL_error(L, "attempt to call non-existent method");
+
 	return 0;
 }
 
