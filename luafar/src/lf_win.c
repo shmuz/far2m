@@ -511,37 +511,6 @@ static int win_system(lua_State *L)
 	return 1;
 }
 
-static int win_EnsureColorsAreInverted(lua_State *L)
-{
-	SHORT x = (SHORT) luaL_checkinteger(L,1);
-	SHORT y = (SHORT) luaL_checkinteger(L,2);
-	CHAR_INFO ci = {};
-	SMALL_RECT Rect = {x, y, x, y};
-	COORD Coord1={1,1}, Coord0={0,0}, CoordXY={x,y};
-	WINPORT(ReadConsoleOutput)(0, &ci, Coord1, Coord0, &Rect);
-
-	if (ci.Attributes & COMMON_LVB_REVERSE_VIDEO)
-		return 0;	// this cell is already tweaked during prev paint
-
-	DWORD64 InvColors = COMMON_LVB_REVERSE_VIDEO;
-
-	InvColors|= ((ci.Attributes & 0x0f) << 4) | ((ci.Attributes & 0xf0) >> 4);
-
-	InvColors|= (ci.Attributes & (COMMON_LVB_UNDERSCORE | COMMON_LVB_STRIKEOUT));
-
-	if (ci.Attributes & FOREGROUND_TRUECOLOR) {
-		SET_RGB_BACK(InvColors, GET_RGB_FORE(ci.Attributes));
-	}
-
-	if (ci.Attributes & BACKGROUND_TRUECOLOR) {
-		SET_RGB_FORE(InvColors, GET_RGB_BACK(ci.Attributes));
-	}
-
-	DWORD NumberOfAttrsWritten = 0;
-	WINPORT(FillConsoleOutputAttribute) (0, InvColors, 1, CoordXY, &NumberOfAttrsWritten);
-	return 0;
-}
-
 static int win_JoinPath(lua_State *L)
 {
 	int empty=1, was_slash=0;
@@ -783,7 +752,6 @@ static const luaL_Reg win_funcs[] = {
 	PAIR( win, CopyFile),
 	PAIR( win, CreateDir),
 	PAIR( win, DeleteFile),
-	PAIR( win, EnsureColorsAreInverted),
 	PAIR( win, ExpandEnv),
 	PAIR( win, ExtractKey),
 	PAIR( win, ExtractKeyEx),
