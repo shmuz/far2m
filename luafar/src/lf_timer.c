@@ -134,24 +134,19 @@ static void stop_timer(timer_node * node)
 
 static void finalize(void *plugin_id)
 {
-	timer_node extra;
-	timer_node *tmp = &extra;
-
-	for (tmp->next = g_head; tmp->next; )
+	for (timer_node *tmp = g_head; tmp; )
 	{
-		timer_node *node = tmp->next;
-		if (node->plugin_id == plugin_id)
+		timer_node *next = tmp->next;
+		if (tmp->plugin_id == plugin_id)
 		{
-			close(node->fd);
-			if (g_head == node)
+			close(tmp->fd);
+			if (g_head == tmp)
 			{
-				g_head = node->next;
+				g_head = next;
 			}
-			tmp->next = node->next;
-			free(node);
+			free(tmp);
 		}
-		else
-			tmp = node;
+		tmp = next;
 	}
 
 	if (g_ref_cnt && --g_ref_cnt == 0)
