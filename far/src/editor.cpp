@@ -395,18 +395,12 @@ void Editor::ShowEditor(bool CurLineOnly)
 		  Send EE_REDRAW with param=2 if text was just modified.
 		*/
 		if (!ScrBuf.GetLockCount()) {
-			auto NeedRedraw = true || !Flags.Check(FEDITOR_DIALOGMEMOEDIT) // "true" is here intentionally
-						|| (CtrlObject && CtrlObject->Plugins.CurDialogEditor == this);
-
 			if (Flags.Check(FEDITOR_JUSTMODIFIED)) {
 				Flags.Clear(FEDITOR_JUSTMODIFIED);
-
-				if (NeedRedraw)
-					CtrlObject->Plugins.ProcessEditorEvent(EE_REDRAW, EEREDRAW_CHANGE, this);
+				CtrlObject->Plugins.ProcessEditorEvent(EE_REDRAW, EEREDRAW_CHANGE, this);
 			}
 			else {
-				if (NeedRedraw)
-					CtrlObject->Plugins.ProcessEditorEvent(EE_REDRAW, CurLineOnly ? EEREDRAW_LINE : EEREDRAW_ALL, this);
+				CtrlObject->Plugins.ProcessEditorEvent(EE_REDRAW, CurLineOnly ? EEREDRAW_LINE : EEREDRAW_ALL, this);
 			}
 		}
 	}

@@ -223,35 +223,30 @@ int64_t FileViewer::VMProcess(int OpCode,void *vParam,int64_t iParam)
 {
 	if (OpCode == MCODE_F_KEYBAR_SHOW)
 	{
-		int PrevMode = Opt.ViOpt.ShowKeyBar ? 2:1;
+		int PrevMode = Opt.ViOpt.ShowKeyBar ? 2 : 1;
 		switch (iParam)
 		{
 			case 0:
-				break;
-
+				return PrevMode;
 			case 1:
-				Opt.ViOpt.ShowKeyBar = 0;
-				goto Label3;
-
+				Opt.ViOpt.ShowKeyBar = TRUE;
+				break;
 			case 2:
-				Opt.ViOpt.ShowKeyBar = 1;
-				goto Label3;
-
-			case 3: Label3:
-				Opt.ViOpt.ShowKeyBar=!Opt.ViOpt.ShowKeyBar;
-
-				if (!Opt.ViOpt.ShowKeyBar)
-					ViewKeyBar.Hide0(); // 0 mean - Don't purge saved screen
-
-				ViewKeyBar.Refresh(Opt.ViOpt.ShowKeyBar);
-				Show();
-				KeyBarVisible = Opt.ViOpt.ShowKeyBar;
+				Opt.ViOpt.ShowKeyBar = FALSE;
 				break;
-
+			case 3:
+				Opt.ViOpt.ShowKeyBar = !Opt.ViOpt.ShowKeyBar;
+				break;
 			default:
-				PrevMode=0;
-				break;
+				return 0;
 		}
+
+		if (!Opt.ViOpt.ShowKeyBar)
+			ViewKeyBar.Hide0(); // 0 mean - Don't purge saved screen
+
+		ViewKeyBar.Refresh(Opt.ViOpt.ShowKeyBar);
+		Show();
+		KeyBarVisible = Opt.ViOpt.ShowKeyBar;
 		return PrevMode;
 	}
 	return View.VMProcess(OpCode,vParam,iParam);

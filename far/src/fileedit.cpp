@@ -671,35 +671,33 @@ int64_t FileEditor::VMProcess(int OpCode, void *vParam, int64_t iParam)
 	if (OpCode == MCODE_V_ITEMCOUNT || OpCode == MCODE_V_EDITORLINES)
 		return (int64_t)(m_editor->m_NumLastLine);
 
-	if (OpCode == MCODE_F_KEYBAR_SHOW) {
+	if (OpCode == MCODE_F_KEYBAR_SHOW)
+	{
 		int PrevMode = Opt.EdOpt.ShowKeyBar ? 2 : 1;
 		switch (iParam) {
 			case 0:
-				break;
+				return PrevMode;
 			case 1:
-				Opt.EdOpt.ShowKeyBar = 0;
-				goto Label3;
+				Opt.EdOpt.ShowKeyBar = TRUE;
+				break;
 			case 2:
-				Opt.EdOpt.ShowKeyBar = 1;
-				goto Label3;
+				Opt.EdOpt.ShowKeyBar = FALSE;
+				break;
 			case 3:
-			Label3:
 				Opt.EdOpt.ShowKeyBar = !Opt.EdOpt.ShowKeyBar;
-
-				if (!Opt.EdOpt.ShowKeyBar)
-					EditKeyBar.Hide0();    // 0 mean - Don't purge saved screen
-
-				EditKeyBar.Refresh(Opt.EdOpt.ShowKeyBar);
-				Show();
-				KeyBarVisible = Opt.EdOpt.ShowKeyBar;
 				break;
 			default:
-				PrevMode = 0;
-				break;
+				return 0;
 		}
+
+		if (!Opt.EdOpt.ShowKeyBar)
+			EditKeyBar.Hide0();    // 0 mean - Don't purge saved screen
+
+		EditKeyBar.Refresh(Opt.EdOpt.ShowKeyBar);
+		Show();
+		KeyBarVisible = Opt.EdOpt.ShowKeyBar;
 		return PrevMode;
 	}
-
 	return m_editor->VMProcess(OpCode, vParam, iParam);
 }
 

@@ -175,12 +175,12 @@ void FileFilter::FillMenu(VMenu &FilterList)
 		far_qsort((void *)ExtPtr, ExtCount, MAX_PATH * sizeof(wchar_t), ExtSort);
 		ListItem.Clear();
 
-		for (int i = 0, h = L'1'; i < ExtCount;
-				i++, (h == L'9' ? h = L'A' : (h == L'Z' || h ? h++ : h = 0))) {
+		for (int i = 0, h = L'1'; i < ExtCount; i++) {
 			wchar_t *CurExtPtr = ExtPtr + i * MAX_PATH;
 			MenuString(ListItem.strName, nullptr, attrstyle, false, h, true, CurExtPtr, Msg::PanelFileType);
 			ListItem.SetCheck(CurExtPtr[StrLength(CurExtPtr) + 1]);
 			FilterList.SetUserData(CurExtPtr, 0, FilterList.AddItem(&ListItem));
+			h = (h==0 || h==L'Z') ? 0 : (h==L'9') ? L'A' : h + 1;
 		}
 
 		free(ExtPtr);

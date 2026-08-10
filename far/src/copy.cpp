@@ -1683,11 +1683,9 @@ COPY_CODES ShellCopy::CopyFileTree(const wchar_t *Dest)
 												== 0
 										|| Flags.SYMLINK == COPY_SYMLINK_ASIS)) {
 							AttemptToMove = true;
-							int Ret = COPY_SUCCESS;
 							FARString strCopyDest = strDest;
 
-							Ret = ShellCopyOneFile(strFullName, SrcData, strCopyDest, KeepPathPos,
-									NeedRename);
+							int Ret = ShellCopyOneFile(strFullName, SrcData, strCopyDest, KeepPathPos, NeedRename);
 
 							switch (Ret)    // 1
 							{
@@ -2231,7 +2229,7 @@ COPY_CODES ShellCopy::ShellCopyOneFileNoRetry(const wchar_t *Src, const FAR_FIND
 				AskDelete = false;
 			} else {
 				do {
-					CopyCode = ShellCopyFile(Src, SrcData, strDestPath, Append != 0);
+					CopyCode = ShellCopyFile(Src, SrcData, strDestPath, true);
 				} while (CopyCode == COPY_RETRY);
 
 				switch (CopyCode) {
