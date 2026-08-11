@@ -105,6 +105,13 @@ struct MenuItemEx
 
 	int ShowPos;
 
+	bool CanHaveFocus() const;
+	bool CanBeEntered() const;
+	bool IsVisible() const;
+	bool HasBigUserData() const;
+	size_t SetUserData(const void *Data, size_t Size);
+	void*  GetUserData(void *Data, size_t Size);
+
 	void SetCheck(int Value)
 	{
 		if (Value) {
@@ -222,15 +229,10 @@ private:
 	void ShowMenu(bool IsParent = false);
 	void DrawTitles();
 	int GetItemPosition(int Position);
-	static size_t _SetUserData(MenuItemEx *PItem, const void *Data, size_t Size);
-	static void *_GetUserData(MenuItemEx *PItem, void *Data, size_t Size);
 	bool CheckKeyHiOrAcc(DWORD Key, int Type, bool Translate);
 	int CheckHighlights(wchar_t Chr, int StartPos = 0);
 	wchar_t GetHighlights(const struct MenuItemEx *_item);
 	bool ShiftItemShowPos(int Pos, int Direct);
-	static bool ItemCanHaveFocus(DWORD Flags);
-	static bool ItemCanBeEntered(DWORD Flags);
-	static bool ItemIsVisible(DWORD Flags);
 	void UpdateMaxLengthFromTitles();
 	void UpdateMaxLength(int Length);
 	void UpdateInternalCounters(DWORD OldFlags, DWORD NewFlags);
@@ -307,7 +309,7 @@ public:
 
 	void *GetUserData(void *Data, size_t Size, int Position = -1);
 	size_t GetUserDataSize(int Position = -1);
-	size_t SetUserData(LPCVOID Data, size_t Size = 0, int Position = -1);
+	size_t SetUserData(const void *Data, size_t Size = 0, int Position = -1);
 
 	int GetSelectPos() { return SelectPos; }
 	int GetSelectPos(FarListPos *ListPos);

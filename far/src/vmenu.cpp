@@ -155,22 +155,32 @@ void VMenu::ResetCursor()
 	GetCursorType(PrevCursorVisible, PrevCursorSize);
 }
 
-// может иметь фокус
-bool VMenu::ItemCanHaveFocus(DWORD a_Flags)
+inline bool ItemCanHaveFocus(DWORD Flags)
 {
-	return !(a_Flags & (LIF_DISABLE | LIF_HIDDEN | LIF_SEPARATOR));
+	return !(Flags & (LIF_DISABLE | LIF_HIDDEN | LIF_SEPARATOR));
+}
+
+// может иметь фокус
+bool MenuItemEx::CanHaveFocus() const
+{
+	return ItemCanHaveFocus(Flags);
 }
 
 // может быть выбран
-bool VMenu::ItemCanBeEntered(DWORD a_Flags)
+bool MenuItemEx::CanBeEntered() const
 {
-	return !(a_Flags & (LIF_DISABLE | LIF_HIDDEN | LIF_GRAYED | LIF_SEPARATOR));
+	return !(Flags & (LIF_DISABLE | LIF_HIDDEN | LIF_GRAYED | LIF_SEPARATOR));
 }
 
 // видимый
-bool VMenu::ItemIsVisible(DWORD a_Flags)
+bool MenuItemEx::IsVisible() const
 {
-	return !(a_Flags & (LIF_HIDDEN));
+	return !(Flags & LIF_HIDDEN);
+}
+
+bool MenuItemEx::HasBigUserData() const
+{
+	return UserDataSize > sizeof(void*) && UserData != nullptr;
 }
 
 bool VMenu::UpdateRequired()
@@ -185,13 +195,13 @@ void VMenu::UpdateInternalCounters(DWORD OldFlags, DWORD NewFlags)
 	if (OldFlags & MIF_SUBMENU)
 		ItemSubMenusCount--;
 
-	if (!ItemIsVisible(OldFlags))
+	if (OldFlags & LIF_HIDDEN)
 		ItemHiddenCount--;
 
 	if (NewFlags & MIF_SUBMENU)
 		ItemSubMenusCount++;
 
-	if (!ItemIsVisible(NewFlags))
+	if (NewFlags & LIF_HIDDEN)
 		ItemHiddenCount++;
 }
 
@@ -254,7 +264,7 @@ int VMenu::SetSelectPos(int Pos, int Direct, bool stop_on_edge)
 			}
 		}
 
-		if (ItemCanHaveFocus(Item[Pos]->Flags))
+		if (Item[Pos]->CanHaveFocus())
 			break;
 
 		if (Pos == 0) {
@@ -318,11 +328,11 @@ void VMenu::UpdateSelectPos()
 		return;
 
 	// если selection стоит в некорректном месте - сбросим его
-	if (SelectPos >= 0 && !ItemCanHaveFocus(Item[SelectPos]->Flags))
+	if (SelectPos >= 0 && !Item[SelectPos]->CanHaveFocus())
 		SelectPos = -1;
 
 	for (int i = 0; i < ItemCount; i++) {
-		if (!ItemCanHaveFocus(Item[i]->Flags)) {
+		if (!Item[i]->CanHaveFocus()) {
 			Item[i]->SetSelect(false);
 		} else {
 			if (SelectPos == -1) {
@@ -414,12 +424,8 @@ int VMenu::AddItem(const MenuItemEx *NewItem, int PosAdd)
 	if (!NewItem)
 		return -1;
 
-	if (PosAdd > ItemCount)
-		PosAdd = ItemCount;
-
 	// Если < 0 - однозначно ставим в нулевую позицию, т.е добавка сверху
-	if (PosAdd < 0)
-		PosAdd = 0;
+	PosAdd = std::clamp(PosAdd, 0, ItemCount);
 
 	SetFlags(VMENU_UPDATEREQUIRED);
 
@@ -443,7 +449,7 @@ int VMenu::AddItem(const MenuItemEx *NewItem, int PosAdd)
 	Item[PosAdd]->Flags = 0;
 	Item[PosAdd]->strName = NewItem->strName;
 	Item[PosAdd]->AccelKey = NewItem->AccelKey;
-	_SetUserData(Item[PosAdd], NewItem->UserData, NewItem->UserDataSize);
+	Item[PosAdd]->SetUserData(NewItem->UserData, NewItem->UserDataSize);
 	Item[PosAdd]->AmpPos = -1;
 	Item[PosAdd]->ShowPos = 0;
 
@@ -465,8 +471,7 @@ int VMenu::UpdateItem(const FarListUpdate *NewItem)
 		// Освободим память... от ранее занятого ;-)
 		MenuItemEx *PItem = Item[NewItem->Index];
 
-		if (PItem->UserDataSize > sizeof(PItem->UserData) && PItem->UserData
-				&& (NewItem->Item.Flags & LIF_DELETEUSERDATA)) {
+		if (PItem->HasBigUserData() && (NewItem->Item.Flags & LIF_DELETEUSERDATA)) {
 			free(PItem->UserData);
 			PItem->UserData = nullptr;
 			PItem->UserDataSize = 0;
@@ -510,7 +515,7 @@ int VMenu::DeleteItem(int ID, int Count)
 	for (int I = 0; I < Count; ++I) {
 		MenuItemEx *PtrItem = Item[ID + I];
 
-		if (PtrItem->UserDataSize > sizeof(PtrItem->UserData) && PtrItem->UserData)
+		if (PtrItem->HasBigUserData())
 			free(PtrItem->UserData);
 
 		UpdateInternalCounters(PtrItem->Flags, 0);
@@ -544,7 +549,7 @@ void VMenu::DeleteItems()
 
 	if (Item) {
 		for (int I = 0; I < ItemCount; ++I) {
-			if (Item[I]->UserDataSize > sizeof(Item[I]->UserData) && Item[I]->UserData)
+			if (Item[I]->HasBigUserData())
 				free(Item[I]->UserData);
 
 			delete Item[I];
@@ -633,7 +638,7 @@ void VMenu::FilterStringUpdated(bool bLonger)
 		// строка фильтра увеличилась
 		for (int i = 0; i < ItemCount; i++) {
 			// Нет смысла накладывать фильтр на разделители
-			if (ItemIsVisible(Item[i]->Flags)) {
+			if (Item[i]->IsVisible()) {
 				if (Item[i]->Flags & LIF_SEPARATOR) {
 					// В предыдущей группе все элементы скрыты, разделитель перед группой - не нужен
 					if (PrevSeparator != -1) {
@@ -658,10 +663,10 @@ void VMenu::FilterStringUpdated(bool bLonger)
 				} else {
 					PrevGroup = i;
 					if (LowerVisible == -2) {
-						if (ItemCanHaveFocus(Item[i]->Flags))
+						if (Item[i]->CanHaveFocus())
 							UpperVisible = i;
 					} else if (LowerVisible == -1) {
-						if (ItemCanHaveFocus(Item[i]->Flags))
+						if (Item[i]->CanHaveFocus())
 							LowerVisible = i;
 					}
 					// Этот разделитель - оставить видимым
@@ -678,7 +683,7 @@ void VMenu::FilterStringUpdated(bool bLonger)
 	} else {
 		// строка фильтра сократилась
 		for (int i = 0; i < ItemCount; i++) {
-			if (!ItemIsVisible(Item[i]->Flags)) {
+			if (!Item[i]->IsVisible()) {
 				if (Item[i]->Flags & LIF_SEPARATOR) {
 					PrevSeparator = i;
 				} else if (StrStrI(Item[i]->strName, strFilter)) {
@@ -687,7 +692,7 @@ void VMenu::FilterStringUpdated(bool bLonger)
 				}
 			}
 
-			if (ItemIsVisible(Item[i]->Flags)) {
+			if (Item[i]->IsVisible()) {
 				if (Item[i]->Flags & LIF_SEPARATOR) {
 					PrevGroup = -1;
 					if ((PrevSeparator != -1))
@@ -830,7 +835,7 @@ int64_t VMenu::VMProcess(int OpCode, void *vParam, int64_t iParam)
 
 					MenuItemEx *_item = GetItemPtr(I);
 
-					if (!ItemCanHaveFocus(_item->Flags))
+					if (!_item->CanHaveFocus())
 						continue;
 
 					Res = 0;
@@ -1122,7 +1127,7 @@ int VMenu::ProcessKey(FarKey Key)
 		case KEY_NUMENTER:
 		case KEY_ENTER:
 			if (!ParentDialog || CheckFlags(VMENU_COMBOBOX)) {
-				if (SelectPos < 0 || ItemCanBeEntered(Item[SelectPos]->Flags)) {
+				if (SelectPos < 0 || Item[SelectPos]->CanBeEntered()) {
 					EndLoop = true;
 					Modal::ExitCode = SelectPos;
 				}
@@ -1489,7 +1494,7 @@ int VMenu::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 
 		MsPos = VisualPosToReal(MsPos);
 
-		if (MsPos >= 0 && MsPos < ItemCount && ItemCanHaveFocus(Item[MsPos]->Flags)) {
+		if (MsPos >= 0 && MsPos < ItemCount && Item[MsPos]->CanHaveFocus()) {
 			if (MouseX != PrevMouseX || MouseY != PrevMouseY || !MouseEvent->dwEventFlags) {
 				/* TODO:
 
@@ -1577,7 +1582,7 @@ int VMenu::GetVisualPos(int Pos)
 	int v = 0;
 
 	for (int i = 0; i < Pos; i++) {
-		if (ItemIsVisible(Item[i]->Flags))
+		if (Item[i]->IsVisible())
 			v++;
 	}
 
@@ -1596,7 +1601,7 @@ int VMenu::VisualPosToReal(int VPos)
 		return ItemCount;
 
 	for (int i = 0; i < ItemCount; i++) {
-		if (ItemIsVisible(Item[i]->Flags)) {
+		if (Item[i]->IsVisible()) {
 			if (!VPos--)
 				return i;
 		}
@@ -1975,7 +1980,7 @@ void VMenu::ShowMenu(bool IsParent)
 		GotoXY(X1, Y);
 
 		if (I < ItemCount) {
-			if (!ItemIsVisible(Item[I]->Flags)) {
+			if (!Item[I]->IsVisible()) {
 				Y--;
 				continue;
 			}
@@ -2188,7 +2193,7 @@ int VMenu::CheckHighlights(wchar_t CheckSymbol, int StartPos)
 		CheckSymbol = Upper(CheckSymbol);
 
 	for (int I = StartPos; I < ItemCount; I++) {
-		if (!ItemIsVisible(Item[I]->Flags))
+		if (!Item[I]->IsVisible())
 			continue;
 
 		wchar_t Ch = GetHighlights(Item[I]);
@@ -2321,14 +2326,14 @@ bool VMenu::CheckKeyHiOrAcc(DWORD Key, int Type, bool Translate)
 	for (int I = 0; I < ItemCount; I++) {
 		MenuItemEx *CurItem = Item[I];
 
-		if (ItemCanHaveFocus(CurItem->Flags)
+		if (CurItem->CanHaveFocus()
 				&& ((!Type && CurItem->AccelKey && Key == CurItem->AccelKey)
 						|| (Type && !CheckFlags(VMENU_SHOWAMPERSAND)
 								&& IsKeyHighlighted(CurItem->strName, Key, Translate, CurItem->AmpPos)))) {
 			SetSelectPos(I, 1);
 			ShowMenu(true);
 
-			if ((!ParentDialog || CheckFlags(VMENU_COMBOBOX)) && ItemCanBeEntered(Item[SelectPos]->Flags)) {
+			if ((!ParentDialog || CheckFlags(VMENU_COMBOBOX)) && Item[SelectPos]->CanBeEntered()) {
 				Modal::ExitCode = I;
 				EndLoop = true;
 			}
@@ -2665,11 +2670,8 @@ MenuItemEx *VMenu::GetItemPtr(int Position)
 	return Item[ItemPos];
 }
 
-void *VMenu::_GetUserData(MenuItemEx *PItem, void *Data, size_t Size)
+void *MenuItemEx::GetUserData(void *Data, size_t Size)
 {
-	size_t UserDataSize = PItem->UserDataSize;
-	void *UserData = PItem->UserData; // UserData содержит: либо указатель на что-то либо sizeof(void*)!
-
 	if (Size > 0 && Data)
 	{
 		if (UserDataSize > 0)  // данные есть?
@@ -2681,7 +2683,7 @@ void *VMenu::_GetUserData(MenuItemEx *PItem, void *Data, size_t Size)
 		}
 		else    // ... данных нет, значит лудим имя пункта!
 		{
-			memcpy(Data, PItem->strName.CPtr(),	Min(Size, (PItem->strName.GetLength() + 1) * sizeof(wchar_t)));
+			memcpy(Data, strName.CPtr(), Min(Size, (strName.GetLength() + 1) * sizeof(wchar_t)));
 		}
 	}
 
@@ -2697,49 +2699,49 @@ size_t VMenu::GetUserDataSize(int Position)
 	return ItemPos < 0 ? 0 : Item[ItemPos]->UserDataSize;
 }
 
-size_t VMenu::_SetUserData(MenuItemEx *PItem,
+size_t MenuItemEx::SetUserData(
 		const void *Data,    // Данные
 		size_t Size)         // Размер, если =0 то предполагается, что в Data-строка
 {
-	if (PItem->UserDataSize > sizeof(PItem->UserData) && PItem->UserData)
-		free(PItem->UserData);
+	if (HasBigUserData())
+		free(UserData);
 
-	PItem->UserDataSize = 0;
-	PItem->UserData = nullptr;
+	UserDataSize = 0;
+	UserData = nullptr;
 
 	if (Data) {
 		size_t SizeReal = Size;
 
 		// Если Size=0, то подразумевается, что в Data находится ASCIIZ строка
-		if (!Size)
+		if (Size == 0)
 			SizeReal = (StrLength((const wchar_t *)Data) + 1) * sizeof(wchar_t);
 
 		// если размер данных Size=0 или Size больше sizeof(void*)
-		if (!Size || Size > sizeof(PItem->UserData)) {
+		if (Size == 0 || Size > sizeof(void*)) {
 			// размер больше sizeof(void*)?
-			if (SizeReal > sizeof(PItem->UserData)) {
+			if (SizeReal > sizeof(void*)) {
 				// ...значит выделяем нужную память.
-				if ((PItem->UserData = malloc(SizeReal))) {
-					PItem->UserDataSize = SizeReal;
-					memcpy(PItem->UserData, Data, SizeReal);
+				if ((UserData = malloc(SizeReal))) {
+					UserDataSize = SizeReal;
+					memcpy(UserData, Data, SizeReal);
 				}
-			} else    // ЭТА СТРОКА ПОМЕЩАЕТСЯ В sizeof(void*)!
-			{
-				PItem->UserDataSize = SizeReal;
-				memcpy(&PItem->UserData, Data, SizeReal);
 			}
-		} else                                 // Ок. данные помещаются в sizeof(void*)...
-		{
-			PItem->UserDataSize = 0;           // признак того, что данных либо нет, либо
-			PItem->UserData = (void *)Data;    // они помещаются в 4 байта
+			else {   // ЭТА СТРОКА ПОМЕЩАЕТСЯ В sizeof(void*)!
+				UserDataSize = SizeReal;
+				memcpy(&UserData, Data, SizeReal);
+			}
+		}
+		else {                      	// Ок. данные помещаются в sizeof(void*)...
+			UserDataSize = 0;           // признак того, что данных либо нет, либо
+			UserData = (void *)Data;    // они помещаются в 4 байта
 		}
 	}
 
-	return PItem->UserDataSize;
+	return UserDataSize;
 }
 
 // Присовокупить к итему данные.
-size_t VMenu::SetUserData(LPCVOID Data,  // Данные
+size_t VMenu::SetUserData(const void *Data,  // Данные
 		size_t Size,                    // Размер, если =0 то предполагается, что в Data-строка
 		int Position)                   // номер итема
 {
@@ -2750,7 +2752,7 @@ size_t VMenu::SetUserData(LPCVOID Data,  // Данные
 	if (ItemPos < 0)
 		return 0;
 
-	return _SetUserData(Item[ItemPos], Data, Size);
+	return Item[ItemPos]->SetUserData(Data, Size);
 }
 
 // Получить данные
@@ -2763,7 +2765,7 @@ void *VMenu::GetUserData(void *Data, size_t Size, int Position)
 	if (ItemPos < 0)
 		return nullptr;
 
-	return _GetUserData(Item[ItemPos], Data, Size);
+	return Item[ItemPos]->GetUserData(Data, Size);
 }
 
 FarListItem *VMenu::MenuItem2FarList(const MenuItemEx *MItem, FarListItem *FItem)
