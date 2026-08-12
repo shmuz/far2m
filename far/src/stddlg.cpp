@@ -33,18 +33,13 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
-
-#include "stddlg.hpp"
-#include "lang.hpp"
-#include "keys.hpp"
 #include "dialog.hpp"
-#include "ctrlobj.hpp"
-#include "strmix.hpp"
-#include "DlgGuid.hpp"
+#include "lang.hpp"
 #include "message.hpp"
-#include "RegExp.hpp"
+#include "stddlg.hpp"
+#include "strmix.hpp"
 
-static int PosSearchText = 2;
+static int PosEditSearchText;
 static int PosCheckBoxRegexp;
 
 static LONG_PTR WINAPI SearchReplaceDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
@@ -52,10 +47,10 @@ static LONG_PTR WINAPI SearchReplaceDlgProc(HANDLE hDlg, int Msg, int Param1, LO
 	if (Msg == DN_CLOSE && Param1 >= 0
 			&& Param1 + 1 != reinterpret_cast<Dialog*>(hDlg)->ItemCount()) // button Cancel is the last element
 	{
-		const wchar_t *Txt = (const wchar_t*)SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR, PosSearchText);
+		auto Txt = (const wchar_t*)SendDlgMessage(hDlg, DM_GETCONSTTEXTPTR, PosEditSearchText);
 		if (*Txt == 0)
 		{
-			SendDlgMessage(hDlg, DM_SETFOCUS, PosSearchText);
+			SendDlgMessage(hDlg, DM_SETFOCUS, PosEditSearchText);
 			Message(MSG_WARNING, 1, Msg::EditSearchTitle, Msg::EditEmptySearchField, Msg::Ok);
 			return FALSE;
 		}
@@ -65,7 +60,7 @@ static LONG_PTR WINAPI SearchReplaceDlgProc(HANDLE hDlg, int Msg, int Param1, LO
 		{
 			RegExp Re;
 			if (!CompileRegexp(Txt, 1, &Re)) {
-				SendDlgMessage(hDlg, DM_SETFOCUS, PosSearchText);
+				SendDlgMessage(hDlg, DM_SETFOCUS, PosEditSearchText);
 				FARString strMsg(Txt);
 				InsertQuote(strMsg);
 				Message(MSG_WARNING, 1, Msg::EditSearchTitle, Msg::EditInvalidRegexp, strMsg, Msg::Ok);
@@ -79,20 +74,15 @@ static LONG_PTR WINAPI SearchReplaceDlgProc(HANDLE hDlg, int Msg, int Param1, LO
 bool GetSearchReplaceParams(
 		bool IsReplaceMode,
 		SearchReplaceDlgParams &Par,
-		const wchar_t *TextHistoryName,
+		const wchar_t *SearchHistoryName,
 		const wchar_t *ReplaceHistoryName,
-		const wchar_t *HelpTopic)
+		const wchar_t *HelpTopic,
+		const GUID *Guid)
 {
 	PosCheckBoxRegexp = -1;
 
-	static const auto TextHistoryName0 = L"SearchText";
-	static const auto ReplaceHistoryName0 = L"ReplaceText";
-
-	if (!TextHistoryName)
-		TextHistoryName=TextHistoryName0;
-
-	if (!ReplaceHistoryName)
-		ReplaceHistoryName=ReplaceHistoryName0;
+	SearchHistoryName = NullToEmpty(SearchHistoryName);
+	ReplaceHistoryName = NullToEmpty(ReplaceHistoryName);
 
 	if (IsReplaceMode)
 	{
@@ -111,6 +101,7 @@ bool GetSearchReplaceParams(
 			BTNREPLACE,
 			BTNCANCEL,
 		};
+		PosEditSearchText = EDSEARCH;
 		/*
 		  0         1         2         3         4         5         6         7
 		  0123456789012345678901234567890123456789012345678901234567890123456789012345
@@ -156,7 +147,7 @@ bool GetSearchReplaceParams(
 		const int HeightColMax = Max(HeightCol1, HeightCol2);
 		MakeDialogItemsEx(ReplaceDlgData,ReplaceDlg);
 
-		auto DeleteCheckBox = [&] (int Index, int Column)
+		auto HideCheckBox = [&] (int Index, int Column)
 		{
 			const auto MaxIndex = (Column == 1) ? COL1_HIGH : COL2_HIGH;
 
@@ -171,13 +162,13 @@ bool GetSearchReplaceParams(
 			}
 		};
 
-		if (!*TextHistoryName)
+		if (!*SearchHistoryName)
 		{
 			ReplaceDlg[EDSEARCH].strHistory.Clear();
 			ReplaceDlg[EDSEARCH].Flags &= ~DIF_HISTORY;
 		}
 		else
-			ReplaceDlg[EDSEARCH].strHistory=TextHistoryName;
+			ReplaceDlg[EDSEARCH].strHistory = SearchHistoryName;
 
 		if (!*ReplaceHistoryName)
 		{
@@ -185,7 +176,7 @@ bool GetSearchReplaceParams(
 			ReplaceDlg[EDREPLACE].Flags &= ~DIF_HISTORY;
 		}
 		else
-			ReplaceDlg[EDREPLACE].strHistory=ReplaceHistoryName;
+			ReplaceDlg[EDREPLACE].strHistory = ReplaceHistoryName;
 
 		ReplaceDlg[EDSEARCH].strData = Par.SearchStr;
 		ReplaceDlg[EDREPLACE].strData = Par.ReplaceStr;
@@ -193,17 +184,17 @@ bool GetSearchReplaceParams(
 		if (Par.CaseSens >= 0)
 			ReplaceDlg[CBCASE].Selected = Par.CaseSens;
 		else
-			DeleteCheckBox(CBCASE, 1);
+			HideCheckBox(CBCASE, 1);
 
 		if (Par.WholeWords >= 0)
 			ReplaceDlg[CBWHWORDS].Selected = Par.WholeWords;
 		else
-			DeleteCheckBox(CBWHWORDS, 1);
+			HideCheckBox(CBWHWORDS, 1);
 
 		if (Par.Reverse >= 0)
 			ReplaceDlg[CBREVERSE].Selected = Par.Reverse;
 		else
-			DeleteCheckBox(CBREVERSE, 1);
+			HideCheckBox(CBREVERSE, 1);
 
 		if (Par.Regexp >= 0)
 		{
@@ -211,7 +202,7 @@ bool GetSearchReplaceParams(
 			ReplaceDlg[CBREGEXP].Selected = Par.Regexp;
 		}
 		else
-			DeleteCheckBox(CBREGEXP, 2);
+			HideCheckBox(CBREGEXP, 2);
 
 		//сдвигаем кнопки
 		int DeltaCol = HeightColMax - Max(HeightCol1, HeightCol2);
@@ -235,7 +226,8 @@ bool GetSearchReplaceParams(
 		{
 			Dialog Dlg(ReplaceDlg, ARRAYSIZE(ReplaceDlgData), SearchReplaceDlgProc);
 			Dlg.SetPosition(-1,-1,76,HeightDialog);
-			Dlg.SetId(EditorReplaceId);
+			if (Guid)
+				Dlg.SetId(*Guid);
 
 			if (HelpTopic && *HelpTopic)
 				Dlg.SetHelp(HelpTopic);
@@ -278,6 +270,7 @@ bool GetSearchReplaceParams(
 			BTNSEARCH,
 			BTNCANCEL,
 		};
+		PosEditSearchText = EDSEARCH;
 		/*
 		  0         1         2         3         4         5         6         7
 		  0123456789012345678901234567890123456789012345678901234567890123456789012345
@@ -319,7 +312,7 @@ bool GetSearchReplaceParams(
 		const int HeightColMax = Max(HeightCol1, HeightCol2);
 		MakeDialogItemsEx(SearchDlgData,SearchDlg);
 
-		auto DeleteCheckBox = [&] (int Index, int Column)
+		auto HideCheckBox = [&] (int Index, int Column)
 		{
 			const auto MaxIndex = (Column == 1) ? COL1_HIGH : COL2_HIGH;
 
@@ -334,30 +327,30 @@ bool GetSearchReplaceParams(
 			}
 		};
 
-		if (!*TextHistoryName)
+		if (!*SearchHistoryName)
 		{
 			SearchDlg[EDSEARCH].strHistory.Clear();
 			SearchDlg[EDSEARCH].Flags &= ~DIF_HISTORY;
 		}
 		else
-			SearchDlg[EDSEARCH].strHistory=TextHistoryName;
+			SearchDlg[EDSEARCH].strHistory = SearchHistoryName;
 
 		SearchDlg[EDSEARCH].strData = Par.SearchStr;
 
 		if (Par.CaseSens >= 0)
 			SearchDlg[CBCASE].Selected = Par.CaseSens;
 		else
-			DeleteCheckBox(CBCASE, 1);
+			HideCheckBox(CBCASE, 1);
 
 		if (Par.WholeWords >= 0)
 			SearchDlg[CBWHWORDS].Selected = Par.WholeWords;
 		else
-			DeleteCheckBox(CBWHWORDS, 1);
+			HideCheckBox(CBWHWORDS, 1);
 
 		if (Par.Reverse >= 0)
 			SearchDlg[CBREVERSE].Selected = Par.Reverse;
 		else
-			DeleteCheckBox(CBREVERSE, 1);
+			HideCheckBox(CBREVERSE, 1);
 
 		if (Par.Regexp >= 0)
 		{
@@ -365,12 +358,12 @@ bool GetSearchReplaceParams(
 			SearchDlg[CBREGEXP].Selected = Par.Regexp;
 		}
 		else
-			DeleteCheckBox(CBREGEXP, 2);
+			HideCheckBox(CBREGEXP, 2);
 
 		if (Par.SelectFound >= 0)
 			SearchDlg[CBSELFOUND].Selected = Par.SelectFound;
 		else
-			DeleteCheckBox(CBSELFOUND, 2);
+			HideCheckBox(CBSELFOUND, 2);
 
 		//сдвигаем кнопки
 		int DeltaCol = HeightColMax - Max(HeightCol1, HeightCol2);
@@ -394,7 +387,8 @@ bool GetSearchReplaceParams(
 		{
 			Dialog Dlg(SearchDlg, ARRAYSIZE(SearchDlg), SearchReplaceDlgProc);
 			Dlg.SetPosition(-1,-1,76,HeightDialog);
-			Dlg.SetId(Par.Reverse >= 0 ? EditorSearchId : HelpSearchId);
+			if (Guid)
+				Dlg.SetId(*Guid);
 
 			if (HelpTopic && *HelpTopic)
 				Dlg.SetHelp(HelpTopic);
@@ -437,14 +431,13 @@ int WINAPI GetString(
     DWORD Flags,
     int *CheckBoxValue,
     const wchar_t *CheckBoxText,
-    const GUID *Guid
-)
+    const GUID *Guid)
 {
-	int Substract=5; // дополнительная величина :-)
+	int Subtract = 5; // дополнительная величина :-)
 	int ExitCode;
-	bool addCheckBox=Flags&FIB_CHECKBOX && CheckBoxValue && CheckBoxText;
-	int offset=addCheckBox?2:0;
-	DialogDataEx StrDlgData[]=
+	bool addCheckBox = (Flags & FIB_CHECKBOX) && CheckBoxValue && CheckBoxText;
+	int offset = addCheckBox ? 2 : 0;
+	DialogDataEx StrDlgData[] =
 	{
 		{DI_DOUBLEBOX, 3, 1, 72, 4, {}, 0,                                L""},
 		{DI_TEXT,      5, 2,  0, 2, {}, DIF_SHOWAMPERSAND,                L""},
@@ -459,43 +452,39 @@ int WINAPI GetString(
 
 	if (addCheckBox)
 	{
-		Substract-=2;
-		StrDlg[0].Y2+=2;
-		StrDlg[4].Selected=(*CheckBoxValue)?TRUE:FALSE;
+		Subtract -= 2;
+		StrDlg[0].Y2 += 2;
+		StrDlg[4].Selected = (*CheckBoxValue) ? TRUE:FALSE;
 		StrDlg[4].strData = CheckBoxText;
 	}
 
-	if (Flags&FIB_BUTTONS)
+	if (Flags & FIB_BUTTONS)
 	{
-		Substract-=3;
-		StrDlg[0].Y2+=2;
-		StrDlg[2].DefaultButton=FALSE;
-		StrDlg[5+offset].Y1=StrDlg[4+offset].Y1=5+offset;
-		StrDlg[4+offset].Type=StrDlg[5+offset].Type=DI_BUTTON;
-		StrDlg[4+offset].Flags=StrDlg[5+offset].Flags=DIF_CENTERGROUP;
-		StrDlg[4+offset].DefaultButton=TRUE;
+		Subtract -= 3;
+		StrDlg[0].Y2 += 2;
+		StrDlg[2].DefaultButton = FALSE;
+		StrDlg[5+offset].Y1 = StrDlg[4+offset].Y1 = 5+offset;
+		StrDlg[4+offset].Type = StrDlg[5+offset].Type = DI_BUTTON;
+		StrDlg[4+offset].Flags = StrDlg[5+offset].Flags = DIF_CENTERGROUP;
+		StrDlg[4+offset].DefaultButton = TRUE;
 		StrDlg[4+offset].strData = Msg::Ok;
 		StrDlg[5+offset].strData = Msg::Cancel;
 	}
 
-	if (Flags&FIB_EXPANDENV)
-	{
-		StrDlg[2].Flags|=DIF_EDITEXPAND;
-	}
+	if (Flags & FIB_EXPANDENV)
+		StrDlg[2].Flags |= DIF_EDITEXPAND;
 
-	if (Flags&FIB_EDITPATH)
-	{
-		StrDlg[2].Flags|=DIF_EDITPATH;
-	}
+	if (Flags & FIB_EDITPATH)
+		StrDlg[2].Flags |= DIF_EDITPATH;
 
 	if (HistoryName)
 	{
-		StrDlg[2].strHistory=HistoryName;
-		StrDlg[2].Flags|=DIF_HISTORY|(Flags&FIB_NOUSELASTHISTORY?0:DIF_USELASTHISTORY);
+		StrDlg[2].strHistory = HistoryName;
+		StrDlg[2].Flags |= DIF_HISTORY | (Flags & FIB_NOUSELASTHISTORY ? 0 : DIF_USELASTHISTORY);
 	}
 
-	if (Flags&FIB_PASSWORD)
-		StrDlg[2].Type=DI_PSWEDIT;
+	if (Flags & FIB_PASSWORD)
+		StrDlg[2].Type = DI_PSWEDIT;
 
 	if (Title)
 		StrDlg[0].strData = Title;
@@ -505,16 +494,16 @@ int WINAPI GetString(
 		StrDlg[1].strData = Prompt;
 		TruncStrFromEnd(StrDlg[1].strData, 66);
 
-		if (Flags&FIB_NOAMPERSAND)
-			StrDlg[1].Flags&=~DIF_SHOWAMPERSAND;
+		if (Flags & FIB_NOAMPERSAND)
+			StrDlg[1].Flags &= ~DIF_SHOWAMPERSAND;
 	}
 
 	if (SrcText)
 		StrDlg[2].strData = SrcText;
 
 	{
-		Dialog Dlg(StrDlg,ARRAYSIZE(StrDlg)-Substract);
-		Dlg.SetPosition(-1,-1,76,offset+((Flags&FIB_BUTTONS)?8:6));
+		Dialog Dlg(StrDlg, ARRAYSIZE(StrDlg) - Subtract);
+		Dlg.SetPosition(-1,-1,76,offset+((Flags & FIB_BUTTONS) ? 8 : 6));
 
 		if (HelpTopic)
 			Dlg.SetHelp(HelpTopic);
@@ -524,18 +513,18 @@ int WINAPI GetString(
 
 		Dlg.Process();
 
-		ExitCode=Dlg.GetExitCode();
+		ExitCode = Dlg.GetExitCode();
 	}
 
 	if (ExitCode == 2 || ExitCode == 4 || (addCheckBox && ExitCode == 6))
 	{
-		if (!(Flags&FIB_ENABLEEMPTY) && StrDlg[2].strData.IsEmpty())
+		if (!(Flags & FIB_ENABLEEMPTY) && StrDlg[2].strData.IsEmpty())
 			return FALSE;
 
 		strDestText = StrDlg[2].strData;
 
 		if (addCheckBox)
-			*CheckBoxValue=StrDlg[4].Selected;
+			*CheckBoxValue = StrDlg[4].Selected;
 
 		return TRUE;
 	}

@@ -56,7 +56,7 @@ struct SearchReplaceDlgParams {
 		Params
 				Структура, содержащая входные параметры диалога. Если диалог не был отменён,
 				то выходные параметры диалога будут записаны в эту же структуру.
-		TextHistoryName
+		SearchHistoryName
 				Имя истории строки поиска.
 				Если установлено в nullptr, то по умолчанию принимается значение "SearchText".
 				Если установлено в пустую строку, то история вестись не будет.
@@ -72,22 +72,23 @@ struct SearchReplaceDlgParams {
 		FALSE - пользователь отказался от диалога (Esc)
 */
 bool GetSearchReplaceParams(
-    bool IsReplaceMode,
+		bool IsReplaceMode,
 		SearchReplaceDlgParams &Params,
-    const wchar_t *TextHistoryName,
-    const wchar_t *ReplaceHistoryName,
-    const wchar_t *HelpTopic = nullptr
+		const wchar_t *SearchHistoryName,
+		const wchar_t *ReplaceHistoryName,
+		const wchar_t *HelpTopic = nullptr,
+		const GUID *Guid = nullptr
 );
 
 int WINAPI GetString(
-    const wchar_t *Title,
-    const wchar_t *SubTitle,
-    const wchar_t *HistoryName,
-    const wchar_t *SrcText,
-    FARString &strDestText,
-    const wchar_t *HelpTopic = nullptr,
-    DWORD Flags = 0,
-    int *CheckBoxValue = nullptr,
-    const wchar_t *CheckBoxText = nullptr,
-    const GUID *Guid = nullptr
+		const wchar_t *Title,
+		const wchar_t *SubTitle,
+		const wchar_t *HistoryName,
+		const wchar_t *SrcText,
+		FARString &strDestText,
+		const wchar_t *HelpTopic = nullptr,
+		DWORD Flags = 0,
+		int *CheckBoxValue = nullptr,
+		const wchar_t *CheckBoxText = nullptr,
+		const GUID *Guid = nullptr
 );

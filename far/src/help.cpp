@@ -54,6 +54,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "exitcode.hpp"
 #include "filestr.hpp"
 #include "stddlg.hpp"
+#include "DlgGuid.hpp"
 
 // Стек возврата
 class CallBackStack
@@ -1286,7 +1287,7 @@ int Help::ProcessKey(FarKey Key)
 			// не поганим SelTopic, если и так в FoundContents
 			if (StrCmpI(StackData.strHelpTopic,FoundContents))
 			{
-				if (GetSearchReplaceParams(false, LastSearch, L"HelpSearch", L""))
+				if (GetSearchReplaceParams(false, LastSearch, L"HelpSearch", nullptr, nullptr, &HelpSearchId))
 				{
 					Stack->Push(&StackData);
 					IsNewTopic = true;

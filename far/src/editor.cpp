@@ -3311,7 +3311,8 @@ bool Editor::Search(bool ReplaceMode, NextType NextTp)
 				LS.SearchStr = FARString(Ptr, (size_t)EndPickPos - StartPickPos + 1);
 		}
 
-		if (GetSearchReplaceParams(ReplaceMode, LS, TextHistoryName,	ReplaceHistoryName, L"EditorSearch"))
+		if (GetSearchReplaceParams(ReplaceMode, LS, TextHistoryName, ReplaceHistoryName, L"EditorSearch",
+					ReplaceMode ? &EditorReplaceId : &EditorSearchId))
 			m_LastSearch = LS;
 		else
 			return false;
