@@ -71,7 +71,7 @@ struct SearchReplaceDlgParams {
 		TRUE  - пользователь подтвердил свои намерения
 		FALSE - пользователь отказался от диалога (Esc)
 */
-int WINAPI GetSearchReplaceParams(
+bool GetSearchReplaceParams(
     bool IsReplaceMode,
 		SearchReplaceDlgParams &Params,
     const wchar_t *TextHistoryName,

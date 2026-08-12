@@ -76,7 +76,7 @@ static LONG_PTR WINAPI SearchReplaceDlgProc(HANDLE hDlg, int Msg, int Param1, LO
 	return DefDlgProc(hDlg, Msg, Param1, Param2);
 }
 
-int WINAPI GetSearchReplaceParams(
+bool GetSearchReplaceParams(
 		bool IsReplaceMode,
 		SearchReplaceDlgParams &Par,
 		const wchar_t *TextHistoryName,
@@ -88,8 +88,6 @@ int WINAPI GetSearchReplaceParams(
 	static const auto TextHistoryName0 = L"SearchText";
 	static const auto ReplaceHistoryName0 = L"ReplaceText";
 
-	int HeightDialog, DeltaCol1, DeltaCol2, DeltaCol, I;
-
 	if (!TextHistoryName)
 		TextHistoryName=TextHistoryName0;
 
@@ -98,6 +96,21 @@ int WINAPI GetSearchReplaceParams(
 
 	if (IsReplaceMode)
 	{
+		enum {
+			DBOX,
+			LBSEARCH,
+			EDSEARCH,
+			LBREPLACE,
+			EDREPLACE,
+			SEP1,
+			CBCASE,
+			CBWHWORDS,
+			CBREVERSE,
+			CBREGEXP,
+			SEP2,
+			BTNREPLACE,
+			BTNCANCEL,
+		};
 		/*
 		  0         1         2         3         4         5         6         7
 		  0123456789012345678901234567890123456789012345678901234567890123456789012345
@@ -135,116 +148,87 @@ int WINAPI GetSearchReplaceParams(
 		//индекс самого нижнего чекбокса каждой колонки в диалоге.
 		//предполагаем, что чекбокс на позиции Y+1 имеет индекс, на единицу больший
 		//чекбокса той же колонки на позиции Y.
-		static const int COL1_HIGH=8;
-		static const int COL2_HIGH=9;
-		HeightDialog=14;
-		DeltaCol1=0;
-		DeltaCol2=0;
+		const int COL1_HIGH = CBREVERSE;
+		const int COL2_HIGH = CBREGEXP;
+		int HeightDialog = 14;
+		int HeightCol1 = 3;
+		int HeightCol2 = 1;
+		const int HeightColMax = Max(HeightCol1, HeightCol2);
 		MakeDialogItemsEx(ReplaceDlgData,ReplaceDlg);
+
+		auto DeleteCheckBox = [&] (int Index, int Column)
+		{
+			const auto MaxIndex = (Column == 1) ? COL1_HIGH : COL2_HIGH;
+
+			if (Column == 1) --HeightCol1; else --HeightCol2;
+
+			ReplaceDlg[Index].Flags |= (DIF_HIDDEN | DIF_DISABLE);
+
+			for (int I = Index+1; I <= MaxIndex; ++I)
+			{
+				ReplaceDlg[I].Y1--;
+				ReplaceDlg[I].Y2--;
+			}
+		};
 
 		if (!*TextHistoryName)
 		{
-			ReplaceDlg[2].strHistory.Clear();
-			ReplaceDlg[2].Flags&=~DIF_HISTORY;
+			ReplaceDlg[EDSEARCH].strHistory.Clear();
+			ReplaceDlg[EDSEARCH].Flags &= ~DIF_HISTORY;
 		}
 		else
-			ReplaceDlg[2].strHistory=TextHistoryName;
+			ReplaceDlg[EDSEARCH].strHistory=TextHistoryName;
 
 		if (!*ReplaceHistoryName)
 		{
-			ReplaceDlg[4].strHistory.Clear();
-			ReplaceDlg[4].Flags&=~DIF_HISTORY;
+			ReplaceDlg[EDREPLACE].strHistory.Clear();
+			ReplaceDlg[EDREPLACE].Flags &= ~DIF_HISTORY;
 		}
 		else
-			ReplaceDlg[4].strHistory=ReplaceHistoryName;
+			ReplaceDlg[EDREPLACE].strHistory=ReplaceHistoryName;
 
-		ReplaceDlg[2].strData = Par.SearchStr;
-		ReplaceDlg[4].strData = Par.ReplaceStr;
+		ReplaceDlg[EDSEARCH].strData = Par.SearchStr;
+		ReplaceDlg[EDREPLACE].strData = Par.ReplaceStr;
 
 		if (Par.CaseSens >= 0)
-			ReplaceDlg[6].Selected = Par.CaseSens;
+			ReplaceDlg[CBCASE].Selected = Par.CaseSens;
 		else
-		{
-			DeltaCol1++;
-			ReplaceDlg[0].Y2--;
-			ReplaceDlg[6].Type=DI_TEXT;
-
-			for (I=7; I <= COL1_HIGH; ++I)
-			{
-				ReplaceDlg[I].Y1--;
-				ReplaceDlg[I].Y2--;
-			}
-		}
+			DeleteCheckBox(CBCASE, 1);
 
 		if (Par.WholeWords >= 0)
-			ReplaceDlg[7].Selected = Par.WholeWords;
+			ReplaceDlg[CBWHWORDS].Selected = Par.WholeWords;
 		else
-		{
-			DeltaCol1++;
-			ReplaceDlg[0].Y2--;
-			ReplaceDlg[7].Type=DI_TEXT;
-
-			for (I=8; I <= COL1_HIGH; ++I)
-			{
-				ReplaceDlg[I].Y1--;
-				ReplaceDlg[I].Y2--;
-			}
-		}
+			DeleteCheckBox(CBWHWORDS, 1);
 
 		if (Par.Reverse >= 0)
-			ReplaceDlg[8].Selected = Par.Reverse;
+			ReplaceDlg[CBREVERSE].Selected = Par.Reverse;
 		else
-		{
-			DeltaCol1++;
-			ReplaceDlg[0].Y2--;
-			ReplaceDlg[8].Type=DI_TEXT;
-
-			for (I=9; I <= COL1_HIGH; ++I)
-			{
-				ReplaceDlg[I].Y1--;
-				ReplaceDlg[I].Y2--;
-			}
-		}
+			DeleteCheckBox(CBREVERSE, 1);
 
 		if (Par.Regexp >= 0)
 		{
-			PosCheckBoxRegexp = 9;
-			ReplaceDlg[9].Selected = Par.Regexp;
+			PosCheckBoxRegexp = CBREGEXP;
+			ReplaceDlg[CBREGEXP].Selected = Par.Regexp;
 		}
 		else
-		{
-			DeltaCol2++;
-			ReplaceDlg[0].Y2--;
-			ReplaceDlg[9].Type=DI_TEXT;
-
-			for (I=10; I <= COL2_HIGH; ++I)
-			{
-				ReplaceDlg[I].Y1--;
-				ReplaceDlg[I].Y2--;
-			}
-		}
+			DeleteCheckBox(CBREGEXP, 2);
 
 		//сдвигаем кнопки
-		DeltaCol=(DeltaCol1<DeltaCol2)?DeltaCol1:DeltaCol2;
+		int DeltaCol = HeightColMax - Max(HeightCol1, HeightCol2);
 
-		if (DeltaCol>0)
+		if (DeltaCol > 0)
 		{
-			HeightDialog-=DeltaCol;
+			// нам не нужны 2 разделительных линии
+			if (DeltaCol == HeightColMax)
+				DeltaCol++;
 
-			for (I=10; I < (int)ARRAYSIZE(ReplaceDlgData); ++I)
-			{
-				ReplaceDlg[I].Y1-=DeltaCol;
-				ReplaceDlg[I].Y2-=DeltaCol;
-			}
-		}
+			ReplaceDlg[DBOX].Y2 -= DeltaCol;
+			HeightDialog -= DeltaCol;
 
-		// нам не нужны 2 разделительных линии
-		if (HeightDialog == 11)
-		{
-			for (I=10; I < (int)ARRAYSIZE(ReplaceDlgData); ++I)
+			for (size_t I = SEP2; I < ARRAYSIZE(ReplaceDlgData); ++I)
 			{
-				ReplaceDlg[I].Y1--;
-				ReplaceDlg[I].Y2--;
+				ReplaceDlg[I].Y1 -= DeltaCol;
+				ReplaceDlg[I].Y2 -= DeltaCol;
 			}
 		}
 
@@ -258,24 +242,42 @@ int WINAPI GetSearchReplaceParams(
 
 			Dlg.Process();
 
-			if (Dlg.GetExitCode()!=11)
-				return FALSE;
+			if (Dlg.GetExitCode() != BTNREPLACE)
+				return false;
 		}
 
-		Par.SearchStr = ReplaceDlg[2].strData;
+		Par.SearchStr = ReplaceDlg[EDSEARCH].strData;
 
-		Par.ReplaceStr = ReplaceDlg[4].strData;
+		Par.ReplaceStr = ReplaceDlg[EDREPLACE].strData;
 
-		if (Par.CaseSens >= 0)    Par.CaseSens = ReplaceDlg[6].Selected;
+		if (Par.CaseSens >= 0)
+			Par.CaseSens = ReplaceDlg[CBCASE].Selected;
 
-		if (Par.WholeWords >= 0)  Par.WholeWords = ReplaceDlg[7].Selected;
+		if (Par.WholeWords >= 0)
+			Par.WholeWords = ReplaceDlg[CBWHWORDS].Selected;
 
-		if (Par.Reverse >= 0)     Par.Reverse = ReplaceDlg[8].Selected;
+		if (Par.Reverse >= 0)
+			Par.Reverse = ReplaceDlg[CBREVERSE].Selected;
 
-		if (Par.Regexp >= 0)      Par.Regexp = ReplaceDlg[9].Selected;
+		if (Par.Regexp >= 0)
+			Par.Regexp = ReplaceDlg[CBREGEXP].Selected;
 	}
 	else
 	{
+		enum {
+			DBOX,
+			LBSEARCH,
+			EDSEARCH,
+			SEP1,
+			CBCASE,
+			CBWHWORDS,
+			CBREVERSE,
+			CBREGEXP,
+			CBSELFOUND,
+			SEP2,
+			BTNSEARCH,
+			BTNCANCEL,
+		};
 		/*
 		  0         1         2         3         4         5         6         7
 		  0123456789012345678901234567890123456789012345678901234567890123456789012345
@@ -309,49 +311,85 @@ int WINAPI GetSearchReplaceParams(
 		//индекс самого нижнего чекбокса каждой колонки в диалоге.
 		//предполагаем, что чекбокс на позиции Y+1 имеет индекс, на единицу больший
 		//чекбокса той же колонки на позиции Y.
-		HeightDialog=12;
+		const int COL1_HIGH = CBREVERSE;
+		const int COL2_HIGH = CBSELFOUND;
+		int HeightDialog = 12;
+		int HeightCol1 = 3;
+		int HeightCol2 = 2;
+		const int HeightColMax = Max(HeightCol1, HeightCol2);
 		MakeDialogItemsEx(SearchDlgData,SearchDlg);
+
+		auto DeleteCheckBox = [&] (int Index, int Column)
+		{
+			const auto MaxIndex = (Column == 1) ? COL1_HIGH : COL2_HIGH;
+
+			if (Column == 1) --HeightCol1; else --HeightCol2;
+
+			SearchDlg[Index].Flags |= (DIF_HIDDEN | DIF_DISABLE);
+
+			for (int I = Index + 1; I <= MaxIndex; ++I)
+			{
+				SearchDlg[I].Y1--;
+				SearchDlg[I].Y2--;
+			}
+		};
 
 		if (!*TextHistoryName)
 		{
-			SearchDlg[2].strHistory.Clear();
-			SearchDlg[2].Flags&=~DIF_HISTORY;
+			SearchDlg[EDSEARCH].strHistory.Clear();
+			SearchDlg[EDSEARCH].Flags &= ~DIF_HISTORY;
 		}
 		else
-			SearchDlg[2].strHistory=TextHistoryName;
+			SearchDlg[EDSEARCH].strHistory=TextHistoryName;
 
-		SearchDlg[2].strData = Par.SearchStr;
+		SearchDlg[EDSEARCH].strData = Par.SearchStr;
 
 		if (Par.CaseSens >= 0)
-			SearchDlg[4].Selected = Par.CaseSens;
+			SearchDlg[CBCASE].Selected = Par.CaseSens;
+		else
+			DeleteCheckBox(CBCASE, 1);
 
 		if (Par.WholeWords >= 0)
-			SearchDlg[5].Selected = Par.WholeWords;
+			SearchDlg[CBWHWORDS].Selected = Par.WholeWords;
+		else
+			DeleteCheckBox(CBWHWORDS, 1);
 
 		if (Par.Reverse >= 0)
-			SearchDlg[6].Selected = Par.Reverse;
+			SearchDlg[CBREVERSE].Selected = Par.Reverse;
 		else
-		{
-			HeightDialog--;
-			SearchDlg[0].Y2--;
-			SearchDlg[6].Flags |= (DIF_DISABLE|DIF_HIDDEN);
-			for (int i=9; i<12; i++)
-			{
-				SearchDlg[i].Y1--;
-				SearchDlg[i].Y2--;
-			}
-		}
+			DeleteCheckBox(CBREVERSE, 1);
 
 		if (Par.Regexp >= 0)
 		{
-			PosCheckBoxRegexp = 7;
-			SearchDlg[7].Selected = Par.Regexp;
+			PosCheckBoxRegexp = CBREGEXP;
+			SearchDlg[CBREGEXP].Selected = Par.Regexp;
 		}
+		else
+			DeleteCheckBox(CBREGEXP, 2);
 
 		if (Par.SelectFound >= 0)
-			SearchDlg[8].Selected = Par.SelectFound;
+			SearchDlg[CBSELFOUND].Selected = Par.SelectFound;
 		else
-			SearchDlg[8].Flags |= (DIF_DISABLE|DIF_HIDDEN);
+			DeleteCheckBox(CBSELFOUND, 2);
+
+		//сдвигаем кнопки
+		int DeltaCol = HeightColMax - Max(HeightCol1, HeightCol2);
+
+		if (DeltaCol > 0)
+		{
+			// нам не нужны 2 разделительных линии
+			if (DeltaCol == HeightColMax)
+				DeltaCol++;
+
+			SearchDlg[DBOX].Y2 -= DeltaCol;
+			HeightDialog -= DeltaCol;
+
+			for (size_t I = SEP2; I < ARRAYSIZE(SearchDlgData); ++I)
+			{
+				SearchDlg[I].Y1 -= DeltaCol;
+				SearchDlg[I].Y2 -= DeltaCol;
+			}
+		}
 
 		{
 			Dialog Dlg(SearchDlg, ARRAYSIZE(SearchDlg), SearchReplaceDlgProc);
@@ -363,29 +401,29 @@ int WINAPI GetSearchReplaceParams(
 
 			Dlg.Process();
 
-			if (Dlg.GetExitCode()!=10)
-				return FALSE;
+			if (Dlg.GetExitCode() != BTNSEARCH)
+				return false;
 		}
 
-		Par.SearchStr = SearchDlg[2].strData;
+		Par.SearchStr = SearchDlg[EDSEARCH].strData;
 
 		if (Par.CaseSens >= 0)
-			Par.CaseSens = SearchDlg[4].Selected;
+			Par.CaseSens = SearchDlg[CBCASE].Selected;
 
 		if (Par.WholeWords >= 0)
-			Par.WholeWords = SearchDlg[5].Selected;
+			Par.WholeWords = SearchDlg[CBWHWORDS].Selected;
 
 		if (Par.Reverse >= 0)
-			Par.Reverse = SearchDlg[6].Selected;
+			Par.Reverse = SearchDlg[CBREVERSE].Selected;
 
 		if (Par.Regexp >= 0)
-			Par.Regexp = SearchDlg[7].Selected;
+			Par.Regexp = SearchDlg[CBREGEXP].Selected;
 
 		if (Par.SelectFound)
-			Par.SelectFound = SearchDlg[8].Selected;
+			Par.SelectFound = SearchDlg[CBSELFOUND].Selected;
 	}
 
-	return TRUE;
+	return true;
 }
 
 
