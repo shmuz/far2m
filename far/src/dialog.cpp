@@ -6030,52 +6030,25 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 			return !(PrevFlags & DIF_DISABLE);
 		}
 
-//		case DM_GETCOLOR: {
-//			*(DWORD *)Param2 = (DWORD)CtlColorDlgItem(Param1, CurItem);
-//			*(DWORD *)Param2|= (CurItem.Flags & DIF_SETCOLOR);
-//			return TRUE;
-//		}
-
-//		case DM_SETCOLOR: {
-//			CurItem.Flags&= ~(DIF_SETCOLOR | DIF_COLORMASK);
-//			CurItem.Flags|= Param2 & (DIF_SETCOLOR | DIF_COLORMASK);
-//			if (DialogMode.Check(DMODE_SHOW)) {		//???
-//				ShowDialog(Param1);
-//				ScrBuf.Flush();
-//			}
-//			return TRUE;
-//		}
-
-		case DM_GETDEFAULTCOLOR: {
-			if (Param2)
+		case DM_GETDEFAULTCOLOR:
+			if (Param2) {
 				CtlColorDlgItem(Param1, (uint64_t *)Param2);
-
-			return TRUE;
-		}
+				return TRUE;
+			}
+			return FALSE;
 
 		///case DM_GETCOLOR:///
-		case DM_GETTRUECOLOR: {
-			if (Param2)
+		case DM_GETTRUECOLOR:
+			if (Param2) {
 				memcpy((void*)Param2, CurItem.customColor, sizeof(CurItem.customColor));
-//			if (!CurItem.TrueColors) {
-//				memset((uint64_t *)Param2, 0, sizeof(DialogItemTrueColors));
-//			} else {
-//				*(DialogItemTrueColors *)Param2 = *CurItem.TrueColors;
-//			}
-//			Param2 = CurItem.customColor
-
-			return TRUE;
-		}
+				return TRUE;
+			}
+			return FALSE;
 
 		///case DM_SETCOLOR:///
 		case DM_SETTRUECOLOR: {
 			if (Param2)
 				memcpy(CurItem.customColor, (void*)Param2, sizeof(CurItem.customColor));
-
-//			if (!CurItem.TrueColors) {
-//				CurItem.TrueColors.reset(new DialogItemTrueColors);
-//			}
-//			*CurItem.TrueColors = *(const DialogItemTrueColors *)Param2;
 
 			if (InCtlColorDlgItem == 0 && DialogMode.Check(DMODE_SHOW)) {		//???
 				ShowDialog(Param1);

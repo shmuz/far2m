@@ -267,9 +267,9 @@ static void PushDlgItemNum(lua_State *L, HANDLE hDlg, int numitem, int pos_table
 {
 	int size = SendDlgMessage(hDlg, DM_GETDLGITEM, numitem, NULL);
 	if (size > 0) {
-		BOOL table_exist = lua_istable(L, pos_table);
+		int table_exist = lua_istable(L, pos_table);
 		struct FarDialogItem* pItem = (struct FarDialogItem*) lua_newuserdata(L, size);
-		SendDlgMessage(hDlg, DM_GETDLGITEM, numitem, pItem);
+		(void) SendDlgMessage(hDlg, DM_GETDLGITEM, numitem, pItem);
 		if (table_exist)
 			lua_pushvalue(L, pos_table);
 		PushDlgItem(L, pItem, table_exist);
@@ -705,7 +705,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 		case DM_LISTGETCURPOS:
 		{
 			struct FarListPos flp = {};
-			SendDlgMessage(hDlg, Msg, Param1, &flp);
+			(void) SendDlgMessage(hDlg, Msg, Param1, &flp);
 			lua_createtable(L,0,2);
 			PutIntToTable(L, "SelectPos", flp.SelectPos+1);
 			PutIntToTable(L, "TopPos", flp.TopPos+1);
@@ -930,12 +930,16 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 		{
 			const int MAXCOLORS = DLG_ITEM_MAX_CUST_COLORS;
 			uint64_t Colors[MAXCOLORS];
-			SendDlgMessage(hDlg, Msg, Param1, Colors);
-			lua_createtable(L, MAXCOLORS, 0);
-			for (int i=0; i < MAXCOLORS; i++) {
-				PushFarColor(L, Colors[i]);
-				lua_rawseti(L, -2, i+1);
+			if (SendDlgMessage(hDlg, Msg, Param1, Colors)) {
+				lua_createtable(L, MAXCOLORS, 0);
+				for (int i=0; i < MAXCOLORS; i++) {
+					PushFarColor(L, Colors[i]);
+					lua_rawseti(L, -2, i+1);
+				}
 			}
+			else
+				lua_pushnil(L);
+
 			return 1;
 		}
 

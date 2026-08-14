@@ -94,13 +94,8 @@ static void FillMPR (lua_State* L, struct MacroPluginReturn* Ret, intptr_t Retur
 				{
 					Ret->Values[idx].Type = FMVT_INTEGER;
 					Ret->Values[idx].Value.Integer = val64;
-					lua_pop(L,1);
 				}
-				else
-				{
-					Ret->Values[idx].Type = FMVT_NIL;
-					lua_pop(L,1);
-				}
+				lua_pop(L,1);
 				break;
 		}
 	}

@@ -356,8 +356,6 @@ enum FarMessagesProc
 
 	DM_SETREADONLY,
 
-//	DM_GETCOLOR,
-//	DM_SETCOLOR,
 	DM_GETDEFAULTCOLOR, // Param1 - Item ID, Param2 - uint64_t * -> uint64_t ItemColors[DLG_ITEM_MAX_CUST_COLORS]
 
 	DM_GETTRUECOLOR,	// Param1 - Item ID, Param2 - uint64_t * -> uint64_t ItemColors[DLG_ITEM_MAX_CUST_COLORS]

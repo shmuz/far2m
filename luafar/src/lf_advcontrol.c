@@ -98,8 +98,6 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 			}
 
 		case ACTL_SETPROGRESSSTATE:
-			return 0;
-
 		case ACTL_SETPROGRESSVALUE:
 			return 0;
 
@@ -238,6 +236,7 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 		}
 
 		case ACTL_GETSYSWORDDIV:
+		case ACTL_WINPORTBACKEND:
 			PtrAdvControl(pd->ModuleNumber, Command, buf, NULL);
 			return push_utf8_string(L,buf,-1), 1;
 
@@ -248,10 +247,6 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 			lua_pushnumber(L, commit_time);
 			return 1;
 		}
-
-		case ACTL_WINPORTBACKEND:
-			PtrAdvControl(pd->ModuleNumber, Command, buf, NULL);
-			return push_utf8_string(L,buf,-1), 1;
 
 		//case ACTL_KEYMACRO:  //  not supported as it's replaced by separate functions far.MacroXxx
 	}
