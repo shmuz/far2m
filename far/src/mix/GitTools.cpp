@@ -16,7 +16,7 @@ FARString GetGitBranchName(FARString const &path)
         if (branchName.empty())
             return {};
 
-        auto result = FARString{};
+        FARString result;
         result.Append("{");
         result.Append(branchName);
         result.Append("} ");

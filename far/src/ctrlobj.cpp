@@ -97,18 +97,18 @@ void ControlObject::Init()
 	FPanels = new FilePanels();
 	CmdLine = new CommandLine();
 	CmdLine->SaveBackground(0, 0, ScrX, ScrY);
-	this->MainKeyBar = &(FPanels->MainKeyBar);
-	this->TopMenuBar = &(FPanels->TopMenuBar);
+	MainKeyBar = &FPanels->MainKeyBar;
+	TopMenuBar = &FPanels->TopMenuBar;
 	FPanels->Init();
 	FPanels->SetScreenPosition();
 
 	if (Opt.ShowMenuBar)
-		this->TopMenuBar->Show();
+		TopMenuBar->Show();
 
 	//  FPanels->Redraw();
 	CmdLine->Show();
 
-	this->MainKeyBar->Refresh(Opt.ShowKeyBar);
+	MainKeyBar->Refresh(Opt.ShowKeyBar);
 
 	Cp()->LeftPanel->Update(0);
 	Cp()->RightPanel->Update(0);
@@ -121,13 +121,13 @@ void ControlObject::Init()
 	Cp()->ActivePanel->GetCurDir(strStartCurDir);
 	FarChDir(strStartCurDir);
 	Cp()->ActivePanel->SetFocus();
-	{
-		FARString strOldTitle;
-		Console.GetTitle(strOldTitle);
-		FrameManager->Commit();
-		Plugins.LoadPlugins();
-		Console.SetTitle(strOldTitle);
-	}
+
+	FARString strOldTitle;
+	Console.GetTitle(strOldTitle);
+	FrameManager->Commit();
+	Plugins.LoadPlugins();
+	Console.SetTitle(strOldTitle);
+
 	Macro.LoadMacros(true);
 	FPanels->LeftPanel->SetCustomSortMode(Opt.LeftPanel.SortMode, sort_order::keep, false);
 	FPanels->RightPanel->SetCustomSortMode(Opt.RightPanel.SortMode, sort_order::keep, false);
@@ -178,7 +178,7 @@ ControlObject::~ControlObject()
 	CtrlObject = nullptr;
 }
 
-void ControlObject::ShowStartupBanner(LPCWSTR EmergencyMsg)
+void ControlObject::ShowStartupBanner(const wchar_t *EmergencyMsg)
 {
 	std::vector<FARString> Lines;
 

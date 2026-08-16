@@ -62,16 +62,16 @@ class ControlObject
 		void CreateFilePanels();
 
 		CommandLine *CmdLine;
-		History *CmdHistory,*FolderHistory,*ViewHistory;
+		History *CmdHistory, *FolderHistory, *ViewHistory;
 
 		KeyBar *MainKeyBar;
 		MenuBar *TopMenuBar;
 		HighlightFiles *HiFiles;
-		FilePositionCache *ViewerPosCache,*EditorPosCache;
+		FilePositionCache *ViewerPosCache, *EditorPosCache;
 		KeyMacro Macro;
 		PluginManager Plugins;
 
-		static void ShowStartupBanner(LPCWSTR EmergencyMsg = nullptr);
+		static void ShowStartupBanner(const wchar_t *EmergencyMsg = nullptr);
 };
 
 extern ControlObject *CtrlObject;

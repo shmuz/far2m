@@ -1749,7 +1749,7 @@ void Edit::SetBinaryString(const wchar_t *Str, int Length)
 		*/
 		RefreshStrByMask(!*Str);
 	} else {
-		m_Str = FARString(Str, Length);
+		m_Str.Copy(Str, Length);
 
 		if (m_TabExpandMode == EXPAND_ALLTABS)
 			ExpandTabs();

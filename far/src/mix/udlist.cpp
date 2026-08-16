@@ -137,7 +137,7 @@ bool UserDefinedList::Set(const wchar_t* List, bool AddToList)
 	{
 		if (Length > 0)
 		{
-			item.Str = FARString(CurPtr, Length);
+			item.Str.Copy(CurPtr, Length);
 
 			if (!(mProcessRegexp && *CurPtr == L'/'))
 			{

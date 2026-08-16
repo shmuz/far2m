@@ -64,20 +64,7 @@ struct CommandLineParams {
 	int CntDestName = 0;
 	FARString DestNames[2];
 
-	void AddDestName(const FARString &Name, bool cdCommand)
-	{
-		if (CntDestName < 2 && !Name.IsEmpty()) {
-			if (!cdCommand && IsPluginPrefixPath(Name)) {
-				DestNames[CntDestName++] = Name;
-			}
-			else {
-				FARString tmpStr;
-				ConvertNameToFull(Name, tmpStr);
-				if (apiGetFileAttributes(tmpStr) != INVALID_FILE_ATTRIBUTES)
-					DestNames[CntDestName++] = tmpStr;
-			}
-		}
-	}
+	CommandLineParams(int argc, char **argv);
 };
 
 static unsigned int gMainThreadID;
@@ -258,28 +245,28 @@ static void RunPanelMode(const CommandLineParams &Params)
 	CtrlObject->Init();
 
 	// а теперь "провалимся" в каталог или хост-файл (если получится ;-)
-	if (Params.CntDestName > 0)  // активная панель
+	if (Params.CntDestName > 0)
 	{
 		// Always update pointers as prefixed plugin calls could recreate one or both panels
-		auto ActivePanel = [&]() { return CtrlObject->Cp()->ActivePanel; };
-		auto AnotherPanel = [&]() { return CtrlObject->Cp()->GetAnotherPanel(ActivePanel()); };
+		auto ActivePanel = [&] { return CtrlObject->Cp()->ActivePanel; };
+		auto PassivePanel = [&] { return CtrlObject->Cp()->GetAnotherPanel(ActivePanel()); };
 
 		FARString strCurDir;
 
 		if (Params.CntDestName > 1)  // пассивная панель
 		{
-			AnotherPanel()->GetCurDir(strCurDir);
+			PassivePanel()->GetCurDir(strCurDir);
 			FarChDir(strCurDir);
 
 			if (IsPluginPrefixPath(Params.DestNames[1]))
 			{
-				AnotherPanel()->SetFocus();
+				PassivePanel()->SetFocus();
 				CtrlObject->CmdLine->ExecString(Params.DestNames[1], false);
-				AnotherPanel()->SetFocus();
+				PassivePanel()->SetFocus();
 			}
 		}
 
-		ActivePanel()->GetCurDir(strCurDir);
+		ActivePanel()->GetCurDir(strCurDir);  // активная панель
 		FarChDir(strCurDir);
 
 		if (IsPluginPrefixPath(Params.DestNames[0]))
@@ -288,7 +275,7 @@ static void RunPanelMode(const CommandLineParams &Params)
 		}
 
 		// Сначала редравим пассивную панель, а потом активную!
-		AnotherPanel()->Redraw();
+		PassivePanel()->Redraw();
 		ActivePanel()->Redraw();
 	}
 
@@ -347,7 +334,7 @@ static void SetupFarPath(const char *Arg0)
 	}
 }
 
-static void ProcessCommandLine(CommandLineParams &Params, int argc, char **argv)
+CommandLineParams::CommandLineParams(int argc, char **argv)
 {
 	bool bCustomPlugins = false;
 
@@ -412,8 +399,8 @@ static void ProcessCommandLine(CommandLineParams &Params, int argc, char **argv)
 					unsigned int stLine, stChar;
 					int N = sscanf(argv[I] + 2, "%u:%u", &stLine, &stChar);
 					if (N > 0) {
-						Params.StartLine = stLine;
-						if (N > 1) Params.StartChar = stChar;
+						StartLine = stLine;
+						if (N > 1) StartChar = stChar;
 					}
 					else continue;
 				}
@@ -459,33 +446,39 @@ static void ProcessCommandLine(CommandLineParams &Params, int argc, char **argv)
 					UserDefinedList Udl(ULF_UNIQUE | ULF_CASESENSITIVE, L":");
 					if (Udl.Set(arg_w.CPtr() + 2))
 					{
+						auto &customPath = Opt.LoadPlug.strCustomPluginsPath;
 						for (size_t i=0; i < Udl.Size(); i++)
 						{
 							FARString path = Udl.Get(i);
 							apiExpandEnvironmentStrings(path, path);
 							// Unquote(path);
 							ConvertNameToFull(path, path);
-							if (!Opt.LoadPlug.strCustomPluginsPath.IsEmpty()) {
-								Opt.LoadPlug.strCustomPluginsPath += L':';
+							if (!customPath.IsEmpty()) {
+								customPath += L':';
 							}
-							Opt.LoadPlug.strCustomPluginsPath += path;
+							customPath += path;
 						}
 					}
 				}
 			}
 		}
 
-		if (!switchHandled) { // простые параметры. Их может быть max две штукА.
-			Params.AddDestName(arg_w, cdCommand);
+		if (!switchHandled) {
+			if (CntDestName < 2 && !arg_w.IsEmpty()) { // простые параметры. Их может быть max две штукА.
+				if (!cdCommand && IsPluginPrefixPath(arg_w)) {
+					DestNames[CntDestName++] = arg_w;
+				}
+				else {
+					FARString fullName;
+					ConvertNameToFull(arg_w, fullName);
+					if (apiGetFileAttributes(fullName) != INVALID_FILE_ATTRIBUTES)
+						DestNames[CntDestName++] = fullName;
+				}
+			}
 		}
 	}
 
-	if (bCustomPlugins) { //если есть ключ /p то он отменяет /co
-		Opt.LoadPlug.MainPluginDir = false;
-		Opt.LoadPlug.PluginsPersonal = false;
-		Opt.LoadPlug.PluginsCacheOnly = false;
-	}
-	else {
+	if (!bCustomPlugins) { //если есть ключ /p то он отменяет /co
 		Opt.LoadPlug.MainPluginDir = !Opt.LoadPlug.PluginsCacheOnly;
 		Opt.LoadPlug.PluginsPersonal = !Opt.LoadPlug.PluginsCacheOnly;
 	}
@@ -523,9 +516,7 @@ int FarAppMain(int argc, char **argv)
 	AddEndSlash(g_strFarPath);
 
 	ConfigOptLoad();
-
-	CommandLineParams Params;
-	ProcessCommandLine(Params, argc, argv); // call it *after* ConfigOptLoad()
+	CommandLineParams Params(argc, argv); // it's after ConfigOptLoad() to be able to override
 
 	//Инициализация массива клавиш. Должна быть после CopyGlobalSettings!
 	InitKeysArray();

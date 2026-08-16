@@ -1290,7 +1290,7 @@ static FARString ReplaceBrackets(
 							case L't' : strPart = L'\t'; break;
 							case L'\\': strPart = L'\\'; break;
 							case L'$' : strPart = L'$' ; break;
-							default   : strPart = FARString(p, 2); break;
+							default   : strPart.Copy(p, 2); break;
 						}
 						pos += 2;
 					}
@@ -1351,7 +1351,7 @@ static FARString ReplaceBrackets(
 				}
 				else if (State == ST_ORDERED_2 && p[0] != L'}') // alien char; insert the "buffer" as is;
 				{                                               // don't increment 'pos'
-					strPart = FARString(start, p - start);
+					strPart.Copy(start, p - start);
 					State = ST_COMMON;
 				}
 				else // valid group syntax found
@@ -1359,12 +1359,12 @@ static FARString ReplaceBrackets(
 					if (index < Match.Matches.size())
 					{
 						const auto& match = Match.Matches[index];
-						strPart = FARString(SearchStr + match.start, match.end - match.start);
+						strPart.Copy(SearchStr + match.start, match.end - match.start);
 					}
 					else // invalid index; insert the "buffer" as is
 					{
 						auto end = (State == ST_ORDERED_1) ? p : p + 1;
-						strPart = FARString(start, end - start);
+						strPart.Copy(start, end - start);
 					}
 					pos += (State == ST_ORDERED_1) ? 0 : 1;
 					State = ST_COMMON;
@@ -1384,19 +1384,19 @@ static FARString ReplaceBrackets(
 						if (idx < Match.Matches.size())
 						{
 							const auto& match = Match.Matches[idx];
-							strPart = FARString(SearchStr + match.start, match.end - match.start);
+							strPart.Copy(SearchStr + match.start, match.end - match.start);
 						}
 					}
 					else //insert named group "as is"
 					{
-						strPart = FARString(start, p - start);
+						strPart.Copy(start, p - start);
 					}
 					State = ST_COMMON;
 					pos++;
 				}
 				else // named group not closed; don't increment 'pos'
 				{
-					strPart = FARString(start, (p-1) - start);
+					strPart.Copy(start, (p-1) - start);
 					State = ST_COMMON;
 				}
 				break;

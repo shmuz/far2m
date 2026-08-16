@@ -3308,7 +3308,7 @@ bool Editor::Search(bool ReplaceMode, NextType NextTp)
 					&StartPickPos, &EndPickPos, GetWordDiv());
 
 			if (Ptr)
-				LS.SearchStr = FARString(Ptr, (size_t)EndPickPos - StartPickPos + 1);
+				LS.SearchStr.Copy(Ptr, (size_t)EndPickPos - StartPickPos + 1);
 		}
 
 		if (GetSearchReplaceParams(ReplaceMode, LS, TextHistoryName, ReplaceHistoryName, L"EditorSearch",

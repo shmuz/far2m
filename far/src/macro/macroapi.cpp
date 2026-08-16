@@ -1115,7 +1115,7 @@ void KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 					if (auto Result = f->VMProcess(CheckCode, nullptr, MenuItemPos))
 					{
 						auto HotKey = static_cast<wchar_t>(Result);
-						tmpStr = FARString(&HotKey, 1);
+						tmpStr.Copy(HotKey);
 						Out = tmpStr.CPtr();
 					}
 				}
