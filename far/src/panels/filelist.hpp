@@ -290,7 +290,7 @@ public:
 	void SetViewMode(int ViewMode) override;
 	void SetSortMode(int SortMode, bool KeepOrder = false) override;
 	void ApplySortMode(int SortMode);
-	void SetCustomSortMode(int Mode, int Order, bool InvertByDefault);
+	void SetCustomSortMode(int Mode, int Order, bool InvertByDefault) override;
 	void ChangeSortOrder(int NewOrder) override;
 	void ChangeNumericSort(int Mode) override;
 	void ChangeCaseSensitiveSort(int Mode) override;

@@ -319,7 +319,7 @@ public:
 	virtual void SetTitle();
 	virtual FARString &GetTitle(FARString &Title, int SubLen = -1, int TruncSize = 0);
 
-	virtual int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0);
+	int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0) override;
 
 	/* $ 30.04.2001 DJ
 	   функция вызывается для обновления кейбара; если возвращает FALSE,
@@ -333,8 +333,8 @@ public:
 	bool SaveShortcutFolder(int Pos);
 
 	static void EndDrag();
-	virtual void Hide();
-	virtual void Show();
+	void Hide() override;
+	void Show() override;
 	int SetPluginCommand(int Command, int Param1, LONG_PTR Param2);
 	bool PanelProcessMouse(MOUSE_EVENT_RECORD *MouseEvent, int &RetCode);
 	void ChangeDisk();

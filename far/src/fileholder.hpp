@@ -55,5 +55,5 @@ protected:
 public:
 	TempFileUploadHolder(const FARString &temp_file_name, bool delete_parent_dir = true);
 	~TempFileUploadHolder() override;
-	void CheckForChanges();
+	void CheckForChanges() override;
 };

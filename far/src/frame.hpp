@@ -88,7 +88,7 @@ public:
 	virtual bool ProcessEvents() const { return true; }
 	virtual void RedrawKeyBar() { Frame::UpdateKeyBar(); }
 	virtual void Refresh() { OnChangeFocus(true); }  // Просто перерисоваться :)
-	virtual void ResizeConsole();
+	void ResizeConsole() override;
 	virtual void SetExitCode(int Code) { ExitCode = Code; }
 
 	void DestroyAllModal();
