@@ -103,11 +103,19 @@ static bool GetFreeBSDSysInfo(freebsd_sysinfo &si) {
 		si.sharedram = static_cast<uint64_t>(vmt.t_armshr) * page_size;
 	}
 
-	// 4. Buffer RAM (vfs.bufspace)
+	// 4. Buffer RAM / Disk Cache (vfs.bufspace + ZFS ARC)
 	long bufspace = 0;
 	len = sizeof(bufspace);
-	sysctlbyname("vfs.bufspace", &bufspace, &len, NULL, 0);
-	si.bufferram = static_cast<uint64_t>(bufspace);
+	if (sysctlbyname("vfs.bufspace", &bufspace, &len, NULL, 0) == 0) {
+		si.bufferram = static_cast<uint64_t>(bufspace);
+	}
+
+	// Add ZFS ARC size if ZFS is active
+	uint64_t arc_size = 0;
+	len = sizeof(arc_size);
+	if (sysctlbyname("kstat.zfs.misc.arcstats.size", &arc_size, &len, NULL, 0) == 0) {
+		si.bufferram += arc_size;
+	}
 
 	// 5. Total and Free Swap (vm.swap_info MIB)
 	int mib_swap[3];
