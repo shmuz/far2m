@@ -65,6 +65,82 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 #include <sys/statvfs.h>
 
+#if defined(__FreeBSD__)
+#include <sys/types.h>
+#include <sys/sysctl.h>
+#include <sys/vmmeter.h>
+#include <unistd.h>
+
+struct freebsd_sysinfo {
+	uint64_t totalram{0};
+	uint64_t freeram{0};
+	uint64_t sharedram{0};
+	uint64_t bufferram{0};
+	uint64_t totalswap{0};
+	uint64_t freeswap{0};
+};
+
+static bool GetFreeBSDSysInfo(freebsd_sysinfo &si) {
+	size_t len = 0;
+	int page_size = getpagesize();
+
+	// 1. Total RAM (hw.physmem)
+	len = sizeof(si.totalram);
+	if (sysctlbyname("hw.physmem", &si.totalram, &len, NULL, 0) != 0) {
+		return false;
+	}
+
+	// 2. Free RAM (Free Pages * Page Size)
+	uint32_t free_count = 0;
+	len = sizeof(free_count);
+	sysctlbyname("vm.stats.vm.v_free_count", &free_count, &len, NULL, 0);
+	si.freeram = static_cast<uint64_t>(free_count) * page_size;
+
+	// 3. Shared RAM (Active Shared Real Memory)
+	struct vmtotal vmt{};
+	len = sizeof(vmt);
+	if (sysctlbyname("vm.vmtotal", &vmt, &len, NULL, 0) == 0) {
+		si.sharedram = static_cast<uint64_t>(vmt.t_armshr) * page_size;
+	}
+
+	// 4. Buffer RAM (vfs.bufspace)
+	long bufspace = 0;
+	len = sizeof(bufspace);
+	sysctlbyname("vfs.bufspace", &bufspace, &len, NULL, 0);
+	si.bufferram = static_cast<uint64_t>(bufspace);
+
+	// 5. Total and Free Swap (vm.swap_info MIB)
+	int mib_swap[3];
+	size_t mib_len = 3;
+	if (sysctlnametomib("vm.swap_info", mib_swap, &mib_len) == 0) {
+		struct {
+			int xsw_version;
+			dev_t xsw_dev;
+			int xsw_flags;
+			int xsw_nblks;
+			int xsw_used;
+		} xsw{};
+
+		for (int i = 0; ; i++) {
+			mib_swap[2] = i;
+			len = sizeof(xsw);
+			if (sysctl(mib_swap, 3, &xsw, &len, NULL, 0) != 0 || len == 0) {
+				break;
+			}
+			uint64_t total = static_cast<uint64_t>(xsw.xsw_nblks) * page_size;
+			uint64_t used = static_cast<uint64_t>(xsw.xsw_used) * page_size;
+
+			si.totalswap += total;
+			if (total >= used) {
+				si.freeswap += (total - used);
+			}
+		}
+	}
+
+	return true;
+}
+#endif
+
 static int LastDizWrapMode = -1;
 static int LastDizWrapType = -1;
 static int LastDizShowScrollbar = -1;
@@ -449,7 +525,50 @@ void InfoList::DisplayObject()
 			PrintInfo(strOutStr);
 		}
 
-#elif !defined(__FreeBSD__) && !defined(__DragonFly__) && !defined(__HAIKU__)
+#elif defined(__FreeBSD__)
+		freebsd_sysinfo si;
+		if (GetFreeBSDSysInfo(si)) {
+			DWORD dwMemoryLoad = 100 - ToPercent64(si.freeram + si.freeswap, si.totalram + si.totalswap);
+
+			GotoXY(X1 + 2, CurY++);
+			PrintText(Msg::InfoMemoryLoad);
+			strOutStr.Format(L"%d%%", dwMemoryLoad);
+			PrintInfo(strOutStr);
+
+			GotoXY(X1 + 2, CurY++);
+			PrintText(Msg::InfoMemoryTotal);
+			InsertCommas(si.totalram, strOutStr);
+			PrintInfo(strOutStr);
+
+			GotoXY(X1 + 2, CurY++);
+			PrintText(Msg::InfoMemoryFree);
+			InsertCommas(si.freeram, strOutStr);
+			PrintInfo(strOutStr);
+
+			GotoXY(X1 + 2, CurY++);
+			PrintText(Msg::InfoSharedMemory);
+			InsertCommas(si.sharedram, strOutStr);
+			PrintInfo(strOutStr);
+
+			GotoXY(X1 + 2, CurY++);
+			PrintText(Msg::InfoBufferMemory);
+			InsertCommas(si.bufferram, strOutStr);
+			PrintInfo(strOutStr);
+
+			GotoXY(X1 + 2, CurY++);
+			PrintText(Msg::InfoPageFileTotal);
+			InsertCommas(si.totalswap, strOutStr);
+			PrintInfo(strOutStr);
+
+			if (si.totalswap != 0 ) {
+				GotoXY(X1 + 2, CurY++);
+				PrintText(Msg::InfoPageFileFree);
+				InsertCommas(si.freeswap, strOutStr);
+				PrintInfo(strOutStr);
+			}
+		}
+
+#elif !defined(__DragonFly__) && !defined(__HAIKU__)
 		struct sysinfo si = {};
 		if (sysinfo(&si) == 0) {
 			DWORD dwMemoryLoad = 100 - ToPercent64(si.freeram + si.freeswap, si.totalram + si.totalswap);
