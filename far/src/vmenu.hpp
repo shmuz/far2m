@@ -237,7 +237,7 @@ private:
 	void UpdateMaxLength(int Length);
 	void UpdateInternalCounters(DWORD OldFlags, DWORD NewFlags);
 	void RestoreFilteredItems();
-	void FilterStringUpdated(bool bLonger);
+	void FilterStringUpdated();
 	void FilterUpdateHeight(bool bShrink = false);
 	bool IsFilterEditKey(FarKey Key);
 	bool ShouldSendKeyToFilter(FarKey Key);

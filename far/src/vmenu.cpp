@@ -157,7 +157,7 @@ void VMenu::ResetCursor()
 
 inline bool ItemCanHaveFocus(DWORD Flags)
 {
-	return !(Flags & (LIF_DISABLE | LIF_HIDDEN | LIF_SEPARATOR));
+	return !(Flags & (LIF_DISABLE | LIF_HIDDEN | LIF_FILTERED | LIF_SEPARATOR));
 }
 
 // может иметь фокус
@@ -169,13 +169,13 @@ bool MenuItemEx::CanHaveFocus() const
 // может быть выбран
 bool MenuItemEx::CanBeEntered() const
 {
-	return !(Flags & (LIF_DISABLE | LIF_HIDDEN | LIF_GRAYED | LIF_SEPARATOR));
+	return !(Flags & (LIF_DISABLE | LIF_HIDDEN | LIF_GRAYED | LIF_FILTERED | LIF_SEPARATOR));
 }
 
 // видимый
 bool MenuItemEx::IsVisible() const
 {
-	return !(Flags & LIF_HIDDEN);
+	return !(Flags & (LIF_HIDDEN | LIF_FILTERED));
 }
 
 bool MenuItemEx::HasBigUserData() const
@@ -605,10 +605,12 @@ void VMenu::SetCheck(int Check, int Position)
 void VMenu::RestoreFilteredItems()
 {
 	for (int i = 0; i < ItemCount; i++) {
-		Item[i]->Flags&= ~LIF_HIDDEN;
+		if (Item[i]->Flags & LIF_FILTERED) {
+			Item[i]->Flags &= ~LIF_FILTERED;
+			if (Item[i]->IsVisible())
+				--ItemHiddenCount;
+		}
 	}
-
-	ItemHiddenCount = 0;
 
 	FilterUpdateHeight();
 
@@ -617,110 +619,107 @@ void VMenu::RestoreFilteredItems()
 	SetSelectPos(&pos);
 }
 
-void VMenu::FilterStringUpdated(bool bLonger)
+void VMenu::FilterStringUpdated()
 {
 	int PrevSeparator = -1, PrevGroup = -1;
 	int UpperVisible = -1, LowerVisible = -2;
 	bool bBottomMode = false;
 
-	if (SelectPos > 0) {
+	if (SelectPos > 0)
+	{
 		// Определить, в верхней или нижней части расположен курсор
-		int TopVisible = GetVisualPos(TopPos);
-		int SelectedVisible = GetVisualPos(SelectPos);
-		int BottomVisible = (TopVisible + MaxHeight > GetShowItemCount())
-				? (TopVisible + MaxHeight - 1)
-				: (GetShowItemCount() - 1);
-		if (SelectedVisible >= ((TopVisible + BottomVisible) >> 1))
+		const auto TopVisible = GetVisualPos(TopPos);
+		const auto SelectedVisible = GetVisualPos(SelectPos);
+		const auto BottomVisible = (TopVisible+MaxHeight > GetShowItemCount()) ? (TopVisible+MaxHeight-1) : (GetShowItemCount()-1);
+		if (SelectedVisible >= ((TopVisible+BottomVisible)>>1))
 			bBottomMode = true;
 	}
 
-	if (bLonger) {
-		// строка фильтра увеличилась
-		for (int i = 0; i < ItemCount; i++) {
-			// Нет смысла накладывать фильтр на разделители
-			if (Item[i]->IsVisible()) {
-				if (Item[i]->Flags & LIF_SEPARATOR) {
-					// В предыдущей группе все элементы скрыты, разделитель перед группой - не нужен
-					if (PrevSeparator != -1) {
-						Item[PrevSeparator]->Flags|= LIF_HIDDEN;
-						ItemHiddenCount++;
-					}
-					if (Item[i]->strName.IsEmpty() && PrevGroup == -1) {
-						Item[i]->Flags|= LIF_HIDDEN;
-						ItemHiddenCount++;
-						PrevSeparator = -1;
-					} else {
-						PrevSeparator = i;
-					}
-				} else if (!StrStrI(Item[i]->strName, strFilter)) {
-					Item[i]->Flags|= LIF_HIDDEN;
-					ItemHiddenCount++;
-					if (SelectPos == i) {
-						Item[i]->Flags&= ~LIF_SELECTED;
-						SelectPos = -1;
-						LowerVisible = -1;
-					}
-				} else {
-					PrevGroup = i;
-					if (LowerVisible == -2) {
-						if (Item[i]->CanHaveFocus())
-							UpperVisible = i;
-					} else if (LowerVisible == -1) {
-						if (Item[i]->CanHaveFocus())
-							LowerVisible = i;
-					}
-					// Этот разделитель - оставить видимым
-					if (PrevSeparator != -1)
-						PrevSeparator = -1;
-				}
-			}
-		}
-		// В предыдущей группе все элементы скрыты, разделитель перед группой - не нужен
-		if (PrevSeparator != -1) {
-			Item[PrevSeparator]->Flags|= LIF_HIDDEN;
-			ItemHiddenCount++;
-		}
-	} else {
-		// строка фильтра сократилась
-		for (int i = 0; i < ItemCount; i++) {
-			if (!Item[i]->IsVisible()) {
-				if (Item[i]->Flags & LIF_SEPARATOR) {
-					PrevSeparator = i;
-				} else if (StrStrI(Item[i]->strName, strFilter)) {
-					Item[i]->Flags&= ~LIF_HIDDEN;
-					ItemHiddenCount--;
-				}
-			}
+	ItemHiddenCount=0;
 
-			if (Item[i]->IsVisible()) {
-				if (Item[i]->Flags & LIF_SEPARATOR) {
-					PrevGroup = -1;
-					if ((PrevSeparator != -1))
-						PrevSeparator = -1;
-				} else {
-					if (PrevSeparator != -1) {
-						if (!Item[PrevSeparator]->strName.IsEmpty() || PrevGroup != -1) {
-							// Разделитель перед ранее скрытой группой был скрыт
-							Item[PrevSeparator]->Flags&= ~LIF_HIDDEN;
-							ItemHiddenCount--;
-						}
-						PrevSeparator = -1;
-					}
-					PrevGroup = i;
-				}
-			}
+	for (int index = 0; index < ItemCount; index++)
+	{
+		auto& CurItem = *Item[index];
+		CurItem.Flags &= ~LIF_FILTERED;
+
+		if (!CurItem.IsVisible())
+		{
+			++ItemHiddenCount;
+			continue;
 		}
 
-		FilterUpdateHeight();
+		if (CurItem.Flags & LIF_SEPARATOR)
+		{
+			// В предыдущей группе все элементы скрыты, разделитель перед группой - не нужен
+			if (PrevSeparator != -1)
+			{
+				Item[PrevSeparator]->Flags |= LIF_FILTERED;
+				ItemHiddenCount++;
+			}
+
+			if (CurItem.strName.IsEmpty() && PrevGroup == -1)
+			{
+				CurItem.Flags |= LIF_FILTERED;
+				ItemHiddenCount++;
+				PrevSeparator = -1;
+			}
+			else
+			{
+				PrevSeparator = index;
+			}
+		}
+		else
+		{
+			auto strNameCopy = CurItem.strName;
+			if(!StrStrI(RemoveHighlights(RemoveExternalSpaces(strNameCopy)), strFilter))
+			{
+				CurItem.Flags |= LIF_FILTERED;
+				ItemHiddenCount++;
+				if (SelectPos == index)
+				{
+					CurItem.Flags &= ~LIF_SELECTED;
+					SelectPos = -1;
+					LowerVisible = -1;
+				}
+			}
+			else
+			{
+				PrevGroup = index;
+				if (LowerVisible == -2)
+				{
+					if (CurItem.CanHaveFocus())
+						UpperVisible = index;
+				}
+				else if (LowerVisible == -1)
+				{
+					if (CurItem.CanHaveFocus())
+						LowerVisible = index;
+				}
+				// Этот разделитель - оставить видимым
+				if (PrevSeparator != -1)
+					PrevSeparator = -1;
+			}
+		}
 	}
 
-	if (GetShowItemCount() > 0) {
+	// В предыдущей группе все элементы скрыты, разделитель перед группой - не нужен
+	if (PrevSeparator != -1)
+	{
+		Item[PrevSeparator]->Flags |= LIF_FILTERED;
+		ItemHiddenCount++;
+	}
+
+	FilterUpdateHeight();
+
+	if (GetShowItemCount()>0)
+	{
 		// Подровнять, а то в нижней части списка может оставаться куча пустых строк
-		FarListPos pos = {SelectPos, -1};
-		if (SelectPos < 0) {
-			pos.SelectPos = bBottomMode ? ((LowerVisible > 0) ? LowerVisible : UpperVisible) : UpperVisible;
+		FarListPos pos{ SelectPos, -1 };
+		if (SelectPos<0)
+		{
+			pos.SelectPos = bBottomMode ? ((LowerVisible>0) ? LowerVisible : UpperVisible) : UpperVisible;
 			if (pos.SelectPos == -1)
-				pos.SelectPos = bBottomMode ? VisualPosToReal(GetShowItemCount() - 1) : 0;
+				pos.SelectPos = bBottomMode ? VisualPosToReal(GetShowItemCount()-1) : 0;
 		}
 		SetSelectPos(&pos);
 	}
@@ -988,7 +987,11 @@ int64_t VMenu::VMProcess(int OpCode, void *vParam, int64_t iParam)
 					break;
 
 				case 3:
-					RetValue = ItemHiddenCount;
+					RetValue = 0;
+					for (int i = 0; i < ItemCount; i++) {
+						if (Item[i]->Flags & LIF_FILTERED)
+							RetValue++;
+					}
 					break;
 
 				case 4:
@@ -1024,7 +1027,7 @@ int64_t VMenu::VMProcess(int OpCode, void *vParam, int64_t iParam)
 					FARString oldFilter = strFilter;
 					strFilter.Clear();
 					AddToFilter(ptrStr->CPtr());
-					FilterStringUpdated(true);
+					FilterStringUpdated();
 					bFilterLocked = prevLocked;
 					DisplayObject();
 					*ptrStr = oldFilter;
@@ -1079,7 +1082,7 @@ int VMenu::ProcessKey(FarKey Key)
 			if (strFilter.IsEmpty())
 				RestoreFilteredItems();
 			else
-				FilterStringUpdated(true);
+				FilterStringUpdated();
 
 			DisplayObject();
 
@@ -1296,7 +1299,7 @@ int VMenu::ProcessKey(FarKey Key)
 					if (strFilter.IsEmpty())
 						RestoreFilteredItems();
 					else
-						FilterStringUpdated(true);
+						FilterStringUpdated();
 
 					DisplayObject();
 				}
@@ -1337,7 +1340,7 @@ int VMenu::ProcessKey(FarKey Key)
 					strFilter+= (wchar_t)Key;
 				}
 
-				FilterStringUpdated(Key != KEY_BS);
+				FilterStringUpdated();
 				DisplayObject();
 
 				return TRUE;
@@ -1721,7 +1724,7 @@ void VMenu::Show()
 	}
 
 	if (bFilterEnabled)
-		FilterStringUpdated(true);
+		FilterStringUpdated();
 
 	if (X2 > X1 && Y2 + (CheckFlags(VMENU_SHOWNOBOX) ? 1 : 0) > Y1) {
 		if (!CheckFlags(VMENU_LISTBOX)) {
