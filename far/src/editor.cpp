@@ -2412,7 +2412,7 @@ int Editor::ProcessKey(FarKey Key)
 					Show();
 				}
 
-				int SkipCheckUndo = (Key == KEY_RIGHT || Key == KEY_NUMPAD6 || Key == KEY_CTRLLEFT
+				bool SkipCheckUndo = (Key == KEY_RIGHT || Key == KEY_NUMPAD6 || Key == KEY_CTRLLEFT
 						|| Key == KEY_CTRLNUMPAD4 || Key == KEY_CTRLRIGHT || Key == KEY_CTRLNUMPAD6
 						|| Key == KEY_HOME || Key == KEY_NUMPAD7 || Key == KEY_END || Key == KEY_NUMPAD1
 						|| Key == KEY_CTRLS);
@@ -2458,15 +2458,18 @@ int Editor::ProcessKey(FarKey Key)
 					return TRUE;
 				}
 
+				FARString CmpStr;
 				const wchar_t *Str;
-
-				wchar_t *CmpStr = nullptr;
-
-				int Length, CurPos;
+				int Length;
 
 				m_CurLine->GetBinaryString(&Str, nullptr, Length);
 
-				CurPos = m_CurLine->GetCurPos();
+				if (!SkipCheckUndo)
+				{
+					CmpStr.Copy(Str, Length);
+				}
+
+				int CurPos = m_CurLine->GetCurPos();
 
 				if (IsCharKey(Key) && CurPos > 0 && !Length) {
 					Edit *PrevLine = m_CurLine->m_prev;
@@ -2504,20 +2507,11 @@ int Editor::ProcessKey(FarKey Key)
 					}
 				}
 
-				if (!SkipCheckUndo) {
-					m_CurLine->GetBinaryString(&Str, nullptr, Length);
-					CurPos = m_CurLine->GetCurPos();
-					CmpStr = new wchar_t[Length + 1];
-					wmemcpy(CmpStr, Str, Length);
-					CmpStr[Length] = 0;
-				}
-
 				int LeftPos = m_CurLine->GetLeftPos();
 
 				if (Key == KEY_OP_XLAT) {
 					Xlat();
 					Show();
-					delete[] CmpStr;
 					return TRUE;
 				}
 
@@ -2550,8 +2544,6 @@ int Editor::ProcessKey(FarKey Key)
 							AddUndoData(UNDO_EDIT, CmpStr, m_CurLine->GetEOL(), m_NumLine, CurPos, Length);    // EOL? - m_CurLine->GetEOL()  m_GlobalEOL   ""
 							TextChanged(true);
 						}
-
-						delete[] CmpStr;
 					}
 
 					// <Bug 794>
@@ -2606,8 +2598,7 @@ int Editor::ProcessKey(FarKey Key)
 					// </Bug 794>
 					ShowEditor(LeftPos == m_CurLine->GetLeftPos());
 					return TRUE;
-				} else if (!SkipCheckUndo)
-					delete[] CmpStr;
+				}
 
 				if (m_VBlockStart)
 					Show();
