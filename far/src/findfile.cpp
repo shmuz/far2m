@@ -2446,31 +2446,33 @@ static void ScanPluginTree(HANDLE hDlg, PHPTR hPlugin, DWORD Flags, int &Recurse
 static void DoPrepareFileList(HANDLE hDlg)
 {
 	ThreadedWorkQueuePtrScope wqs(pWorkQueue);
-	FARString strRoot = CtrlObject->CmdLine->GetCurDir();
 
-	UserDefinedList List(ULF_UNIQUE, L";");
+	std::vector<FARString> List;
 
 	if (SearchMode == FINDAREA_INPATH) {
 		FARString strPathEnv;
 		apiGetEnvironmentVariable(L"PATH", strPathEnv);
-		size_t pos;
-		while (strPathEnv.Pos(pos, L':')) {
-			strPathEnv.Replace(pos, 1, L';');
+		size_t nPos, nStartPos = 0;
+		for (;  strPathEnv.Pos(nPos, L':', nStartPos);  nStartPos = nPos+1) {
+			if (nPos != nStartPos)
+				List.emplace_back(strPathEnv + nStartPos, nPos - nStartPos);
 		}
-		List.Set(strPathEnv);
-	} else if (SearchMode == FINDAREA_ROOT) {
-		strRoot = L"/";
-		List.Set(strRoot);
-	} else if (SearchMode == FINDAREA_ALL || SearchMode == FINDAREA_ALL_BUTNETWORK) {
-		List.AddItem(L"/");
-	} else {
-		List.Set(strRoot);
+		if (nStartPos != strPathEnv.GetLength())
+			List.emplace_back(strPathEnv + nStartPos);
+	}
+	else if (SearchMode == FINDAREA_ROOT) {
+		List.emplace_back(L"/");
+	}
+	else if (SearchMode == FINDAREA_ALL || SearchMode == FINDAREA_ALL_BUTNETWORK) {
+		List.emplace_back(L"/");
+	}
+	else {
+		FARString curDir = CtrlObject->CmdLine->GetCurDir();
+		List.emplace_back(curDir);
 	}
 
-	const wchar_t *pwRoot;
-	for (size_t LI = 0; (pwRoot = List.Get(LI)) != nullptr; ++LI) {
-		strRoot = pwRoot;
-		DoScanTree(hDlg, strRoot);
+	for (auto& str: List) {
+		DoScanTree(hDlg, str);
 	}
 }
 
