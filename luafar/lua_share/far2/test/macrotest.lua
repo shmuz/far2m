@@ -1484,6 +1484,57 @@ function MT.test_mantis_1722()
   asrt.eq(Dlg[1][10], "W123")
 end
 
+--[[------------------------------------------------------------------------------------------------
+0002554: При фильтрации видны элементы меню скрытые с помощью MIF_HIDDEN
+
+Description:
+Если активировать фильтр меню (RAlt), и начать фильтровать список, то подходящие под фильтр элементы
+(с флагом MIF_HIDDEN) также будут видны.
+
+Даже если ни один из скрытых элементов не подходит, то при отмене фильтра все они появятся.
+--]]------------------------------------------------------------------------------------------------
+function MT.test_mantis_2554()
+  local Items = {
+    {text="hidden", hidden=true}, {text="visible"},
+  }
+
+  local AssertInvariant = function()
+    asrt.eq(0x20, Menu.ItemStatus(1)) -- Если флаг установлен, то пункт меню не выводится на экран.
+    asrt.eq(0x01, Menu.ItemStatus(2)) -- Признак активности. Только один пункт может быть активным.
+  end
+  local AssertFilterIsOff = function() asrt.eq(0, Menu.Filter(0,-1)) end
+  local AssertFilterIsOn  = function() asrt.eq(1, Menu.Filter(0,-1)) end
+
+  -- open the menu
+  asrt.istrue(Area.Shell)
+  mf.acall(far.Menu,{},Items)
+  asrt.istrue(Area.Menu)
+  AssertFilterIsOff()
+  AssertInvariant()
+
+  -- turn the menu filter on
+  Keys("CtrlAltF")
+  AssertFilterIsOn()
+  AssertInvariant()
+
+  -- input something into the filter
+  Keys("I")
+  AssertInvariant()
+  Keys("BS")
+  AssertInvariant()
+  AssertFilterIsOn()
+
+  -- turn the menu filter off
+  Keys("CtrlAltF")
+  AssertFilterIsOff()
+  AssertInvariant()
+
+  -- close the menu
+  asrt.istrue(Area.Menu)
+  Keys("Esc")
+  asrt.istrue(Area.Shell)
+end
+
 function MT.test_all()
   asrt.istrue(Area.Shell, "Run these tests from the Shell area.")
   asrt.isfalse(APanel.Plugin or PPanel.Plugin, "Run these tests when neither of panels is a plugin panel.")
@@ -1505,6 +1556,7 @@ function MT.test_all()
   MT.test_UserDefinedList()
   MT.test_F3_F4_F8()
   MT.test_Delete_Wipe()
+  MT.test_mantis_2554()
 
   MT.Mod_Editor.test_all()
   MT.Mod_FSF.test_all()

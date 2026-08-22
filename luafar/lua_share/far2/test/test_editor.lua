@@ -368,12 +368,92 @@ local function test_editor_bc3a1124()
   asrt.istrue(win.DeleteFile(fname))
 end
 
+local function test_mantis_2571()
+  local flags = "EF_NONMODAL EF_IMMEDIATERETURN EF_DISABLEHISTORY"
+  local fname = far.InMyTemp(win.Uuid("U"))
+
+  -- open the editor
+  editor.Editor(fname,nil,nil,nil,nil,nil,flags)
+  asrt.istrue(Area.Editor)
+
+  local EI = asrt.table(editor.GetInfo())
+  asrt.eq(1, EI.TotalLines)
+
+  -- input some text
+  for k = 1,8 do
+    editor.InsertString()
+    editor.SetString(nil, k, "12345678")
+  end
+  for _ = 1,4 do editor.InsertString() end
+
+  EI = asrt.table(editor.GetInfo())
+  asrt.eq(13, EI.TotalLines)
+
+  -- insert a vertical block
+  Keys("CtrlHome 3*AltRight 7*AltDown CtrlC CtrlU CtrlV")
+  EI = asrt.table(editor.GetInfo())
+  asrt.eq(15, EI.TotalLines)
+
+  -- undo
+  Keys("CtrlZ")
+  EI = asrt.table(editor.GetInfo())
+  asrt.eq(13, EI.TotalLines)
+
+  -- check
+  for k = 1,EI.TotalLines do
+    local T = asrt.table(editor.GetString(nil, k))
+    asrt.eq(T.StringText, k <= 8 and "12345678" or "")
+  end
+
+  -- clean
+  Keys("F2 Esc")
+  asrt.istrue(Area.Shell)
+  asrt.istrue(win.DeleteFile(fname))
+end
+
+local function test_mantis_3367()
+  local flags = "EF_NONMODAL EF_IMMEDIATERETURN EF_DISABLEHISTORY"
+  local fname = far.InMyTemp(win.Uuid("U"))
+
+  -- open the editor
+  editor.Editor(fname,nil,nil,nil,nil,nil,flags)
+  asrt.istrue(Area.Editor)
+
+  -- set ESPT_CURSORBEYONDEOL option to true
+  local EI = asrt.table(editor.GetInfo())
+  asrt.eq(1, EI.TotalLines)
+  asrt.eq(0, band(EI.CurState, F.ECSTATE_MODIFIED))
+  local BeyondEOL = band(EI.Options, F.EOPT_CURSORBEYONDEOL) ~= 0
+  asrt.istrue(editor.SetParam(nil, "ESPT_CURSORBEYONDEOL", true))
+
+  -- move right and input some characters
+  Keys("8*Right a b c")
+  EI = asrt.table(editor.GetInfo())
+  asrt.neq(0, band(EI.CurState, F.ECSTATE_MODIFIED))
+  local T = asrt.table(editor.GetString(nil, 1))
+  asrt.eq(T.StringText, "        abc")
+
+  -- undo the input characters
+  Keys("CtrlZ")
+  EI = asrt.table(editor.GetInfo())
+  asrt.eq(0, band(EI.CurState, F.ECSTATE_MODIFIED))
+  T = asrt.table(editor.GetString(nil, 1))
+  asrt.eq(T.StringText, "")
+
+  -- restore BeyondEOL and clean
+  asrt.istrue(editor.SetParam(nil, "ESPT_CURSORBEYONDEOL", BeyondEOL))
+  Keys("Esc")
+  asrt.istrue(Area.Shell)
+end
+
 local function test_all()
   test_Editor_Sel()
   test_Misc()
   test_issue_3129()
   test_multiple_instances()
   test_editor_bc3a1124()
+  test_mantis_2571()
+  test_mantis_3367()
 end
 
 return {
