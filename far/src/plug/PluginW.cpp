@@ -154,7 +154,6 @@ static size_t WINAPI FarKeyToName(FarKey Key,wchar_t *KeyText,size_t Size)
 		wmemcpy(KeyText, strKT.CPtr(), minLen);
 		KeyText[minLen] = 0;
 	}
-	else if (KeyText) *KeyText = 0;
 
 	return (len+1);
 }
