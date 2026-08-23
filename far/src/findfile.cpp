@@ -2265,7 +2265,7 @@ static void ArchiveSearch(HANDLE hDlg, const wchar_t *ArcName)
 	SearchMode = SaveSearchMode;
 }
 
-static void DoScanTree(HANDLE hDlg, FARString &strRoot)
+static void DoScanTree(HANDLE hDlg, const FARString &strRoot)
 {
 	ScanTree ScTree(false, !(SearchMode == FINDAREA_CURRENT_ONLY || SearchMode == FINDAREA_INPATH),
 			Opt.FindOpt.FindSymLinks);
@@ -2447,7 +2447,7 @@ static void DoPrepareFileList(HANDLE hDlg)
 {
 	ThreadedWorkQueuePtrScope wqs(pWorkQueue);
 
-	std::vector<FARString> List;
+	std::set<FARString> List;
 
 	if (SearchMode == FINDAREA_INPATH) {
 		FARString strPathEnv;
@@ -2455,23 +2455,23 @@ static void DoPrepareFileList(HANDLE hDlg)
 		size_t nPos, nStartPos = 0;
 		for (;  strPathEnv.Pos(nPos, L':', nStartPos);  nStartPos = nPos+1) {
 			if (nPos != nStartPos)
-				List.emplace_back(strPathEnv + nStartPos, nPos - nStartPos);
+				List.emplace(strPathEnv + nStartPos, nPos - nStartPos);
 		}
 		if (nStartPos != strPathEnv.GetLength())
-			List.emplace_back(strPathEnv + nStartPos);
+			List.emplace(strPathEnv + nStartPos);
 	}
 	else if (SearchMode == FINDAREA_ROOT) {
-		List.emplace_back(L"/");
+		List.emplace(L"/");
 	}
 	else if (SearchMode == FINDAREA_ALL || SearchMode == FINDAREA_ALL_BUTNETWORK) {
-		List.emplace_back(L"/");
+		List.emplace(L"/");
 	}
 	else {
 		FARString curDir = CtrlObject->CmdLine->GetCurDir();
-		List.emplace_back(curDir);
+		List.emplace(curDir);
 	}
 
-	for (auto& str: List) {
+	for (const auto& str: List) {
 		DoScanTree(hDlg, str);
 	}
 }
