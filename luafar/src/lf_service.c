@@ -1415,9 +1415,7 @@ static int far_KeyToName (lua_State *L)
 {
 	wchar_t buf[256];
 	FarKey Key = (FarKey)luaL_checkinteger(L,1);
-	if (Key == KEY_NONE)
-		lua_pushstring(L, "None"); // because FarKeyToName(KEY_NONE) produces character \x1
-	else if (FSF.FarKeyToName(Key, buf, ARRAYSIZE(buf)-1))
+	if (FSF.FarKeyToName(Key, buf, ARRAYSIZE(buf)-1))
 		push_utf8_string(L, buf, -1);
 	else
 		lua_pushnil(L);

@@ -143,7 +143,7 @@ static size_t WINAPI FarKeyToName(FarKey Key,wchar_t *KeyText,size_t Size)
 {
 	FARString strKT;
 
-	if (!KeyToText(Key,strKT))
+	if (Key == KEY_NONE || !KeyToText(Key,strKT))
 		return 0;
 
 	const size_t len = strKT.GetLength();
