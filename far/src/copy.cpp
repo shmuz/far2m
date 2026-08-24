@@ -582,7 +582,7 @@ ShellCopy::ShellCopy(Panel *SrcPanel,    // исходная панель (ак�
 {
 	UseFilter = LastUseFilter;
 	Filter = nullptr;
-	UserDefinedList DestList(ULF_UNIQUE | ULF_CASESENSITIVE);
+	UserDefinedList DestList(ULF_UNIQUE);
 	CopyDlgParam CDP{};
 	if (!(CDP.SelCount = SrcPanel->GetSelCount()))
 		return;
@@ -1344,7 +1344,7 @@ LONG_PTR WINAPI CopyDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 				strNewFolder = strOldFolder;
 
 				if (MultiCopy) {
-					UserDefinedList DestList(ULF_UNIQUE | ULF_CASESENSITIVE);
+					UserDefinedList DestList(ULF_UNIQUE);
 
 					if (DestList.Set(strOldFolder)) {
 						const wchar_t *NamePtr = DestList.Get(0);

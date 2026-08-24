@@ -1318,7 +1318,7 @@ function MT.test_UserDefinedList()
   local SORT             = 0x020
   local NOTTRIM          = 0x040
   local ACCOUNTEMPTYLINE = 0x100
-  local CASESENSITIVE    = 0x200
+  local CASEINSENSITIVE  = 0x200
 
   local cases = {
     {0,                    "",                         false},
@@ -1340,9 +1340,9 @@ function MT.test_UserDefinedList()
     ----------------------------------------------------------------------------
     {0,                    "abc,def;123",              "abc","def","123"},--used both , and ; delims
     ----------------------------------------------------------------------------
-    {UNIQUE,               "abc,Abc;ABc",              "ABc"},             --case insensitive
-    {UNIQUE+CASESENSITIVE, "abc,Abc;ABc",              "abc","Abc","ABc"}, --case sensitive
-    {UNIQUE+CASESENSITIVE, "abc,abc;abc",              "abc"},
+    {UNIQUE+CASEINSENSITIVE, "abc,Abc;ABc",            "ABc"},             --case insensitive
+    {UNIQUE,                 "abc,Abc;ABc",            "abc","Abc","ABc"}, --case sensitive
+    {UNIQUE,                 "abc,abc;abc",            "abc"},
     ----------------------------------------------------------------------------
     {0,                    "789,456,123",              "789","456","123"}, --as is
     {SORT,                 "789,456,123",              "123","456","789"}, --sorted

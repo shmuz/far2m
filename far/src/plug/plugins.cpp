@@ -377,7 +377,7 @@ void PluginManager::LoadPlugins()
 			|| (Opt.LoadPlug.PluginsPersonal && !Opt.LoadPlug.strPersonalPluginsPath.IsEmpty()))
 	{
 		ScanTree ScTree(false, true, Opt.LoadPlug.ScanSymlinks);
-		UserDefinedList PluginPathList(ULF_UNIQUE | ULF_CASESENSITIVE, L":");  // хранение списка каталогов
+		UserDefinedList PluginPathList(ULF_UNIQUE, L":");  // хранение списка каталогов
 		FARString strPluginsDir;
 		FARString strFullName;
 		FAR_FIND_DATA_EX FindData;

@@ -443,7 +443,7 @@ CommandLineParams::CommandLineParams(int argc, char **argv)
 				bCustomPlugins = true;
 				if (argLen > 2)
 				{
-					UserDefinedList Udl(ULF_UNIQUE | ULF_CASESENSITIVE, L":");
+					UserDefinedList Udl(ULF_UNIQUE, L":");
 					if (Udl.Set(arg_w.CPtr() + 2))
 					{
 						auto &customPath = Opt.LoadPlug.strCustomPluginsPath;

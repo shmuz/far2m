@@ -90,7 +90,7 @@ UserDefinedList::UserDefinedList(DWORD Flags, const wchar_t *Separator)
 	mSort = (Flags & ULF_SORT) != 0;
 	mTrim = (Flags & ULF_NOTTRIM) == 0;
 	mAccountEmptyLine = (Flags & ULF_ACCOUNTEMPTYLINE) != 0;
-	mCaseSensitive = (Flags & ULF_CASESENSITIVE) != 0;
+	mCaseSensitive = (Flags & ULF_CASEINSENSITIVE) == 0;
 	mProcessRegexp = (Flags & ULF_PROCESSREGEXP) != 0;
 
 	if (Separator) {
