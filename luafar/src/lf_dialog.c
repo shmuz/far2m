@@ -647,19 +647,52 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 
 		case DM_KEY:
 		{
-			luaL_checktype(L, pos4, LUA_TTABLE);
-			res = lua_objlen(L, pos4);
-			if (res) {
-				DWORD* arr = (DWORD*)lua_newuserdata(L, res * sizeof(DWORD));
-				for(int i=0; i<res; i++) {
-					lua_pushinteger(L,i+1);
-					lua_gettable(L,pos4);
-					arr[i] = lua_tointeger(L,-1);
-					lua_pop(L,1);
+			res = 0;
+
+			if (lua_istable(L, pos4)) {
+				size_t count = lua_objlen(L, pos4);
+				if (count) {
+					DWORD *arr = (DWORD*)lua_newuserdata(L, count * sizeof(DWORD));
+					for (int i=0; i < count; i++) {
+						lua_pushinteger(L, i+1);
+						lua_gettable(L, pos4);
+						arr[i] = lua_tointeger(L, -1);
+						lua_pop(L, 1);
+					}
+					res = SendDlgMessage (hDlg, Msg, res, arr);
 				}
-				res = SendDlgMessage (hDlg, Msg, res, arr);
 			}
-			return lua_pushinteger(L, res), 1;
+			else if (lua_isstring(L, pos4)) {
+				wchar_t *str = check_utf8_string(L, pos4, NULL);
+				wchar_t *p, *q;
+				size_t count = 0;
+
+				for (p=str; *p; count++) {
+					while (iswspace(*p)) p++;
+					if (*p == 0) break;
+					while (*p && !iswspace(*p)) p++;
+				}
+
+				if (count) {
+					DWORD *arr = (DWORD*)lua_newuserdata(L, count * sizeof(DWORD));
+					p = str;
+					for (size_t i=0; i < count; i++) {
+						while (iswspace(*p)) p++;
+						q = p;
+						while (*p && !iswspace(*p)) p++;
+						*p++ = 0;
+						arr[i] = FSF.FarNameToKey(q);
+						if (arr[i] == KEY_INVALID)
+							luaL_argerror(L, pos4, "invalid key");
+					}
+					res = SendDlgMessage(hDlg, Msg, count, arr);
+				}
+			}
+			else
+				luaL_typerror(L, pos4, "table or string");
+
+			lua_pushinteger(L, res);
+			return 1;
 		}
 
 		case DM_LISTADD:
