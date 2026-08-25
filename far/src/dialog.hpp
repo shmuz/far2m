@@ -317,6 +317,8 @@ private:
 
 	void ProcessKey(FarKey Key, int ItemPos);
 	void ApplyAutomation(const DialogItemEx &SrcItem);
+	void GetDialogObjectsData();
+	void GetDialogObjectsExpandData();
 
 public:
 	Dialog(DialogItemEx *SrcItem, unsigned SrcItemCount, FARWINDOWPROC DlgProc = nullptr,
@@ -343,7 +345,6 @@ public:
 
 	bool CheckDialogMode(DWORD flags) const { return DialogMode.Check(flags); }
 	void FastShow() { ShowDialog(); }
-	void GetDialogObjectsData();
 	void SetDialogMode(DWORD flags) { DialogMode.Set(flags); }
 
 	void AdjustEditPos(int dx, int dy);

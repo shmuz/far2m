@@ -1203,6 +1203,57 @@ void Dialog::DeleteDialogObjects()
 	}
 }
 
+void Dialog::GetDialogObjectsExpandData()
+{
+	DlgEdit *EditPtr;
+	for (auto &CurItem: Item)
+	{
+		switch (CurItem.Type)
+		{
+			case DI_EDIT:
+			case DI_COMBOBOX:
+				EditPtr = CurItem.GetEdit();
+				if (EditPtr && (CurItem.Flags & DIF_EDITEXPAND))
+				{
+					// подготовим данные, получим данные
+					FARString strData;
+					EditPtr->GetString(strData);
+
+					/*
+						$ 01.08.2000 SVS
+						! В History должно заносится значение (для DIF_EXPAND...) перед
+						расширением среды!
+					*/
+					/*
+						$ 05.07.2000 SVS $
+						Проверка - этот элемент предполагает расширение переменных среды?
+						т.к. функция GetDialogObjectsData() может вызываться самостоятельно
+						Но надо проверить!
+					*/
+					/*
+						$ 04.12.2000 SVS
+						! Для DI_PSWEDIT и DI_FIXEDIT обработка DIF_EDITEXPAND не нужна
+						(DI_FIXEDIT допускается для случая если нету маски)
+					*/
+
+					apiExpandEnvironmentStrings(strData, strData);
+					// как бы грязный хак, нам нужно обновить строку чтоб отдавалась правильная строка
+					// для различных DM_* после закрытия диалога, но ни в коем случае нельзя чтоб
+					// высылался DN_EDITCHANGE для этого изменения, ибо диалог уже закрыт.
+					EditPtr->SetCallbackState(false);
+					EditPtr->SetString(strData);
+					EditPtr->SetCallbackState(true);
+
+					CurItem.strData = strData;
+				}
+				break;
+
+			default:
+				break;
+		}
+	}
+}
+
 /*
 	Public:
 		Сохраняет значение из полей редактирования.
@@ -1210,62 +1261,30 @@ void Dialog::DeleteDialogObjects()
 */
 void Dialog::GetDialogObjectsData()
 {
-	SCOPED_ACTION(CriticalSectionLock)(CS);
-	int Type;
-
 	for (auto &CurItem: Item) {
-		DWORD IFlags = CurItem.Flags;
+		const auto Type = CurItem.Type;
+		const auto IFlags = CurItem.Flags;
 
-		switch (Type = CurItem.Type) {
+		switch (Type) {
 			case DI_MEMOEDIT:
 			case DI_EDIT:
 			case DI_FIXEDIT:
 			case DI_PSWEDIT:
-			case DI_COMBOBOX: {
+			case DI_COMBOBOX:
 				if (DlgEdit *EditPtr = CurItem.GetEdit()) {
-					// подготовим данные, получим данные
 					FARString strData;
 					EditPtr->GetString(strData);
 
-					if (ExitCode >= 0 && (IFlags & DIF_HISTORY) && !(IFlags & DIF_MANUALADDHISTORY) &&		// при мануале не добавляем
-							!CurItem.strHistory.IsEmpty() && Opt.Dialogs.EditHistory) {
+					// при мануале не добавляем
+					if (ExitCode >= 0 && (IFlags & DIF_HISTORY) && !(IFlags & DIF_MANUALADDHISTORY) &&
+							!CurItem.strHistory.IsEmpty() && Opt.Dialogs.EditHistory)
+					{
 						AddToEditHistory(strData, CurItem.strHistory);
 					}
-
-					/*
-						$ 01.08.2000 SVS
-						! В History должно заносится значение (для DIF_EXPAND...) перед
-						расширением среды!
-					*/
-
-					/*
-						$ 05.07.2000 SVS $
-						Проверка - этот элемент предполагает расширение переменных среды?
-						т.к. функция GetDialogObjectsData() может вызываться самостоятельно
-						Но надо проверить!
-					*/
-
-					/*
-						$ 04.12.2000 SVS
-						! Для DI_PSWEDIT и DI_FIXEDIT обработка DIF_EDITEXPAND не нужна
-						(DI_FIXEDIT допускается для случая если нету маски)
-					*/
-
-					if ((IFlags & DIF_EDITEXPAND) && Type != DI_PSWEDIT && Type != DI_FIXEDIT) {
-						apiExpandEnvironmentStrings(strData, strData);
-						// как бы грязный хак, нам нужно обновить строку чтоб отдавалась правильная строка
-						// для различных DM_* после закрытия диалога, но ни в коем случае нельзя чтоб
-						// высылался DN_EDITCHANGE для этого изменения, ибо диалог уже закрыт.
-						EditPtr->SetCallbackState(false);
-						EditPtr->SetString(strData);
-						EditPtr->SetCallbackState(true);
-					}
-
 					CurItem.strData = strData;
 				}
-
 				break;
-			}
+
 			case DI_LISTBOX:
 				/*
 				if(CurItem.ListPtr)
@@ -4427,24 +4446,26 @@ void Dialog::CloseDialog()
 	SCOPED_ACTION(CriticalSectionLock)(CS);
 	GetDialogObjectsData();
 
-	if (DlgProc(DN_CLOSE, ExitCode, 0)) {
-		DialogMode.Set(DMODE_ENDLOOP);
-		Hide();
+	if (!DlgProc(DN_CLOSE, ExitCode, 0))
+		return;
 
-		if (DialogMode.Check(DMODE_BEGINLOOP)
-				&& (DialogMode.Check(DMODE_MSGINTERNAL) || FrameManager->ManagerStarted()))
+	GetDialogObjectsExpandData();
+	DialogMode.Set(DMODE_ENDLOOP);
+	Hide();
+
+	if (DialogMode.Check(DMODE_BEGINLOOP)
+			&& (DialogMode.Check(DMODE_MSGINTERNAL) || FrameManager->ManagerStarted()))
+	{
+		DialogMode.Clear(DMODE_BEGINLOOP);
+		FrameManager->DeleteFrame(this);
+
+		if (!GetDynamicallyBorn())  //this condition prevents crash "delete(this)" with non-modal plugin dialogs
 		{
-			DialogMode.Clear(DMODE_BEGINLOOP);
-			FrameManager->DeleteFrame(this);
-
-			if (!GetDynamicallyBorn())  //this condition prevents crash "delete(this)" with non-modal plugin dialogs
-			{
-				FrameManager->Commit(1); // This fixes issues #28 and #58
-			}
+			FrameManager->Commit(1); // This fixes issues #28 and #58
 		}
-
-		_DIALOG(CleverSysLog CL(L"Close Dialog"));
 	}
+
+	_DIALOG(CleverSysLog CL(L"Close Dialog"));
 }
 
 /*
