@@ -623,9 +623,9 @@ void DlgEdit::SetReadOnly(bool NewReadOnly)
 BitFlags &DlgEdit::Flags()
 {
 	if (Type == DLGEDIT_MULTILINE)
-		return multiEdit->Flags;
+		return multiEdit->soFlags;
 	else
-		return lineEdit->Flags;
+		return lineEdit->soFlags;
 }
 
 void DlgEdit::Hide()

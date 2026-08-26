@@ -97,11 +97,11 @@ public:
 
 	void ShowStatus();
 	void SetLockEditor(bool LockMode);
-	bool IsFullScreen() { return Flags.Check(FFILEEDIT_FULLSCREEN); }
+	bool IsFullScreen() { return soFlags.Check(FFILEEDIT_FULLSCREEN); }
 	void SetNamesList(NamesList *Names);
 	void SetEnableF6(bool Enable)
 	{
-		Flags.Change(FFILEEDIT_ENABLEF6, Enable);
+		soFlags.Change(FFILEEDIT_ENABLEF6, Enable);
 		InitKeyBar();
 	}
 	void SetFileHolder(FileHolderPtr Observer) { FHP = Observer; }
@@ -110,7 +110,7 @@ public:
 	// архива для клавиши F2 сделать вызов ShiftF2.
 	void SetSaveToSaveAs(int ToSaveAs)
 	{
-		Flags.Change(FFILEEDIT_SAVETOSAVEAS, ToSaveAs);
+		soFlags.Change(FFILEEDIT_SAVETOSAVEAS, ToSaveAs);
 		InitKeyBar();
 	}
 	bool IsFileModified() const override { return m_editor->IsFileModified(); }
@@ -121,7 +121,7 @@ public:
 	int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0) override;
 	void GetEditorOptions(EditorOptions &EdOpt);
 	void SetEditorOptions(EditorOptions &EdOpt);
-	void CodepageChangedByUser() { Flags.Set(FFILEEDIT_CODEPAGECHANGEDBYUSER); }
+	void CodepageChangedByUser() { soFlags.Set(FFILEEDIT_CODEPAGECHANGEDBYUSER); }
 	void Show() override;
 	void SetPluginTitle(const wchar_t *PluginTitle);
 	int GetEditorID() const;

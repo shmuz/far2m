@@ -128,7 +128,7 @@ VMenu::~VMenu()
 	if (!CheckFlags(VMENU_LISTBOX) && CtrlObject)
 		CtrlObject->Macro.SetArea(PrevMacroArea);
 
-	bool WasVisible = Flags.Check(FSCROBJ_VISIBLE);
+	bool WasVisible = soFlags.Check(FSCROBJ_VISIBLE);
 	Hide();
 	DeleteItems();
 	SetCursorType(PrevCursorVisible, PrevCursorSize);

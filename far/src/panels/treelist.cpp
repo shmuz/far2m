@@ -182,9 +182,9 @@ TreeList::TreeList(bool IsPanel)
 {
 	Type = TREE_PANEL;
 	CurFile = CurTopFile = 0;
-	Flags.Set(FTREELIST_UPDATEREQUIRED);
-	Flags.Clear(FTREELIST_TREEISPREPARED);
-	Flags.Change(FTREELIST_ISPANEL, IsPanel);
+	soFlags.Set(FTREELIST_UPDATEREQUIRED);
+	soFlags.Clear(FTREELIST_TREEISPREPARED);
+	soFlags.Change(FTREELIST_ISPANEL, IsPanel);
 }
 
 TreeList::~TreeList()
@@ -212,12 +212,12 @@ void TreeList::SetRootDir(const wchar_t *NewRootDir)
 
 void TreeList::DisplayObject()
 {
-	if (Flags.Check(FSCROBJ_ISREDRAWING))
+	if (soFlags.Check(FSCROBJ_ISREDRAWING))
 		return;
 
-	Flags.Set(FSCROBJ_ISREDRAWING);
+	soFlags.Set(FSCROBJ_ISREDRAWING);
 
-	if (Flags.Check(FTREELIST_UPDATEREQUIRED))
+	if (soFlags.Check(FTREELIST_UPDATEREQUIRED))
 		Update(0);
 
 	if (ExitCode) {
@@ -241,7 +241,7 @@ void TreeList::DisplayObject()
 		DisplayTree(false);
 	}
 
-	Flags.Clear(FSCROBJ_ISREDRAWING);
+	soFlags.Clear(FSCROBJ_ISREDRAWING);
 }
 
 FARString &TreeList::GetTitle(FARString &strTitle, int SubLen, int TruncSize)
@@ -288,7 +288,7 @@ void TreeList::DisplayTree(bool Fast)
 		SetFarColor(COL_PANELTEXT);
 		Text(L" ");
 
-		if (J < TreeCount && Flags.Check(FTREELIST_TREEISPREPARED)) {
+		if (J < TreeCount && soFlags.Check(FTREELIST_TREEISPREPARED)) {
 			CurPtr = ListData[J];
 
 			if (!J) {
@@ -363,17 +363,17 @@ void TreeList::Update(int Mode)
 		return;
 
 	if (!IsVisible()) {
-		Flags.Set(FTREELIST_UPDATEREQUIRED);
+		soFlags.Set(FTREELIST_UPDATEREQUIRED);
 		return;
 	}
 
-	Flags.Clear(FTREELIST_UPDATEREQUIRED);
+	soFlags.Clear(FTREELIST_UPDATEREQUIRED);
 	GetRoot();
 	int LastTreeCount = TreeCount;
-	Flags.Clear(FTREELIST_TREEISPREPARED);
+	soFlags.Clear(FTREELIST_TREEISPREPARED);
 	bool RetFromReadTree = ReadTreeFile() || ReadTree();
 
-	Flags.Set(FTREELIST_TREEISPREPARED);
+	soFlags.Set(FTREELIST_TREEISPREPARED);
 
 	if (RetFromReadTree) {
 		if (TreeCount > 0 && !((Mode & UPDATE_KEEP_SELECTION) && LastTreeCount == TreeCount)) {
@@ -388,14 +388,14 @@ void TreeList::Update(int Mode)
 		}
 	}
 	else {
-		if (!Flags.Check(FTREELIST_ISPANEL)) {
+		if (!soFlags.Check(FTREELIST_ISPANEL)) {
 			ExitCode = 0;
 			return;
 		}
 
 		Show();
 
-		if (!Flags.Check(FTREELIST_ISPANEL)) {
+		if (!soFlags.Check(FTREELIST_ISPANEL)) {
 			Panel *AnotherPanel = CtrlObject->Cp()->GetAnotherPanel(this);
 			AnotherPanel->Update(UPDATE_KEEP_SELECTION | UPDATE_SECONDARY);
 			AnotherPanel->Redraw();
@@ -476,7 +476,7 @@ int TreeList::ReadTree()
 		TreeCount++;
 	}
 
-	if (AscAbort && !Flags.Check(FTREELIST_ISPANEL)) {
+	if (AscAbort && !soFlags.Check(FTREELIST_ISPANEL)) {
 		if (ListData) {
 			for (long i = 0; i < TreeCount; i++)
 				delete ListData[i];
@@ -500,7 +500,7 @@ int TreeList::ReadTree()
 	if (!AscAbort)
 		SaveTreeFile();
 
-	if (!FirstCall && !Flags.Check(FTREELIST_ISPANEL)) {    // Перерисуем другую панель - удалим следы сообщений :)
+	if (!FirstCall && !soFlags.Check(FTREELIST_ISPANEL)) {    // Перерисуем другую панель - удалим следы сообщений :)
 		Panel *AnotherPanel = CtrlObject->Cp()->GetAnotherPanel(this);
 		AnotherPanel->Redraw();
 	}

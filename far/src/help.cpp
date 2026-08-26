@@ -112,7 +112,7 @@ static const wchar_t *PluginContents=L"__PluginContents__";
 static const wchar_t *HelpOnHelpTopic=L":Help";
 static const wchar_t *HelpContents=L"Contents";
 
-Help::Help(const wchar_t *Topic, const wchar_t *Mask, DWORD aFlags):
+Help::Help(const wchar_t *Topic, const wchar_t *Mask, DWORD Flags):
 	Cma(MACROAREA_HELP),
 	ErrorHelp(true),
 	IsNewTopic(true),
@@ -126,7 +126,7 @@ Help::Help(const wchar_t *Topic, const wchar_t *Mask, DWORD aFlags):
 	SetDynamicallyBorn(false);
 	Stack=new CallBackStack;
 	StackData.Clear();
-	StackData.Flags = aFlags;
+	StackData.Flags = Flags;
 	StackData.strHelpMask = Mask; // сохраним маску файла
 	TopScreen=new SaveScreen;
 	StackData.strHelpTopic = Topic;
@@ -138,7 +138,7 @@ Help::Help(const wchar_t *Topic, const wchar_t *Mask, DWORD aFlags):
 	else
 		SetPosition(4,2,ScrX-4,ScrY-2);
 
-	if (!ReadHelp(StackData.strHelpMask) && (aFlags & FHELP_USECONTENTS))
+	if (!ReadHelp(StackData.strHelpMask) && (Flags & FHELP_USECONTENTS))
 	{
 		StackData.strHelpTopic = Topic;
 
@@ -158,7 +158,7 @@ Help::Help(const wchar_t *Topic, const wchar_t *Mask, DWORD aFlags):
 
 	if (!HelpList.empty())
 	{
-		ScreenObject::Flags.Clear(FHELPOBJ_ERRCANNOTOPENHELP);
+		soFlags.Clear(FHELPOBJ_ERRCANNOTOPENHELP);
 		InitKeyBar();
 		SetMacroArea(MACROAREA_HELP);
 		MoveToReference(1,1);
@@ -168,14 +168,14 @@ Help::Help(const wchar_t *Topic, const wchar_t *Mask, DWORD aFlags):
 	{
 		ErrorHelp = true;
 
-		if (!(aFlags & FHELP_NOSHOWERROR))
+		if (!(Flags & FHELP_NOSHOWERROR))
 		{
-			if (!ScreenObject::Flags.Check(FHELPOBJ_ERRCANNOTOPENHELP))
+			if (!soFlags.Check(FHELPOBJ_ERRCANNOTOPENHELP))
 			{
 				Message(MSG_WARNING,1,Msg::HelpTitle,Msg::HelpTopicNotFound,StackData.strHelpTopic,Msg::Ok);
 			}
 
-			ScreenObject::Flags.Clear(FHELPOBJ_ERRCANNOTOPENHELP);
+			soFlags.Clear(FHELPOBJ_ERRCANNOTOPENHELP);
 		}
 	}
 }
@@ -240,9 +240,9 @@ bool Help::ReadHelp(const wchar_t *Mask)
 	{
 		ErrorHelp = true;
 
-		if (!ScreenObject::Flags.Check(FHELPOBJ_ERRCANNOTOPENHELP))
+		if (!soFlags.Check(FHELPOBJ_ERRCANNOTOPENHELP))
 		{
-			ScreenObject::Flags.Set(FHELPOBJ_ERRCANNOTOPENHELP);
+			soFlags.Set(FHELPOBJ_ERRCANNOTOPENHELP);
 
 			if (!(StackData.Flags&FHELP_NOSHOWERROR))
 			{
@@ -1500,7 +1500,7 @@ int Help::JumpTopic(const wchar_t *JumpTopic)
 		ReadHelp(StackData.strHelpMask);
 	}
 
-	ScreenObject::Flags.Clear(FHELPOBJ_ERRCANNOTOPENHELP);
+	soFlags.Clear(FHELPOBJ_ERRCANNOTOPENHELP);
 
 	if (HelpList.empty())
 	{
@@ -1544,7 +1544,7 @@ int Help::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 
 	if ((MsX<X1 || MsY<Y1 || MsX>X2 || MsY>Y2) && MouseEventFlags != MOUSE_MOVED)
 	{
-		if (Flags.Check(HELPMODE_CLICKOUTSIDE))
+		if (soFlags.Check(HELPMODE_CLICKOUTSIDE))
 		{
 			// Вываливаем если предыдущий эвент не был двойным кликом
 			if (PreMouseEventFlags != DOUBLE_CLICK)
@@ -1552,7 +1552,7 @@ int Help::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 		}
 
 		if (MouseEvent->dwButtonState)
-			Flags.Set(HELPMODE_CLICKOUTSIDE);
+			soFlags.Set(HELPMODE_CLICKOUTSIDE);
 
 		return TRUE;
 	}
@@ -2039,8 +2039,8 @@ void Help::OnChangeFocus(bool Focus)
 void Help::ResizeConsole()
 {
 	auto OldIsNewTopic = IsNewTopic;
-	bool ErrCannotOpenHelp = ScreenObject::Flags.Check(FHELPOBJ_ERRCANNOTOPENHELP);
-	ScreenObject::Flags.Set(FHELPOBJ_ERRCANNOTOPENHELP);
+	bool ErrCannotOpenHelp = soFlags.Check(FHELPOBJ_ERRCANNOTOPENHELP);
+	soFlags.Set(FHELPOBJ_ERRCANNOTOPENHELP);
 	IsNewTopic = false;
 	delete TopScreen;
 	TopScreen=nullptr;
@@ -2060,7 +2060,7 @@ void Help::ResizeConsole()
 	StackData.CurX--;
 	MoveToReference(1,1);
 	IsNewTopic = OldIsNewTopic;
-	ScreenObject::Flags.Change(FHELPOBJ_ERRCANNOTOPENHELP,ErrCannotOpenHelp);
+	soFlags.Change(FHELPOBJ_ERRCANNOTOPENHELP,ErrCannotOpenHelp);
 	FrameManager->ImmediateHide();
 	FrameManager->RefreshFrame();
 }

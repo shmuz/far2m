@@ -250,10 +250,10 @@ void InfoList::DisplayObject()
 		Reenter(BitFlags &Flags) : mFlags(Flags) { mFlags.Set(FSCROBJ_ISREDRAWING); }
 		~Reenter() { mFlags.Clear(FSCROBJ_ISREDRAWING); }
 	};
-	if (Flags.Check(FSCROBJ_ISREDRAWING))
+	if (soFlags.Check(FSCROBJ_ISREDRAWING))
 		return;
 
-	SCOPED_ACTION(Reenter)(Flags);
+	SCOPED_ACTION(Reenter)(soFlags);
 	FARString strTitle;
 	FARString strOutStr;
 	FARString strRealDir;

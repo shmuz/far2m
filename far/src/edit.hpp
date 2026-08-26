@@ -195,13 +195,13 @@ public:
 	void SetTabSize(int NewSize) { m_TabSize = NewSize; }
 	int GetTabSize() { return m_TabSize; }
 
-	void SetDelRemovesBlocks(int Mode) { Flags.Change(FEDITLINE_DELREMOVESBLOCKS, Mode); }
-	int GetDelRemovesBlocks() { return Flags.Check(FEDITLINE_DELREMOVESBLOCKS); }
+	void SetDelRemovesBlocks(int Mode) { soFlags.Change(FEDITLINE_DELREMOVESBLOCKS, Mode); }
+	int GetDelRemovesBlocks() { return soFlags.Check(FEDITLINE_DELREMOVESBLOCKS); }
 
-	void SetPersistentBlocks(int Mode) { Flags.Change(FEDITLINE_PERSISTENTBLOCKS, Mode); }
-	int GetPersistentBlocks() { return Flags.Check(FEDITLINE_PERSISTENTBLOCKS); }
+	void SetPersistentBlocks(int Mode) { soFlags.Change(FEDITLINE_PERSISTENTBLOCKS, Mode); }
+	int GetPersistentBlocks() { return soFlags.Check(FEDITLINE_PERSISTENTBLOCKS); }
 
-	void SetShowWhiteSpace(int Mode) { Flags.Change(FEDITLINE_SHOWWHITESPACE, Mode); }
+	void SetShowWhiteSpace(int Mode) { soFlags.Change(FEDITLINE_SHOWWHITESPACE, Mode); }
 
 	void GetString(wchar_t *Str, int MaxSize) const;
 	void GetString(FARString &strStr) const;
@@ -229,8 +229,8 @@ public:
 	bool Search(const FARString &Str, FARString &ReplaceStr, int Position, int Case, int WholeWords,
 			int Reverse, RegExp *RE, int& SearchLength);
 
-	void SetClearFlag(bool Add) { Flags.Change(FEDITLINE_CLEARFLAG, Add); }
-	bool GetClearFlag() { return Flags.Check(FEDITLINE_CLEARFLAG); }
+	void SetClearFlag(bool Add) { soFlags.Change(FEDITLINE_CLEARFLAG, Add); }
+	bool GetClearFlag() { return soFlags.Check(FEDITLINE_CLEARFLAG); }
 	void SetCurPos(int NewPos)
 	{
 		m_CurPos = NewPos;
@@ -241,7 +241,7 @@ public:
 	void SetCellCurPos(int NewPos);
 	int GetLeftPos() { return (m_LeftPos); }
 	void SetLeftPos(int NewPos) { m_LeftPos = NewPos; }
-	void SetPasswordMode(bool Mode) { Flags.Change(FEDITLINE_PASSWORDMODE, Mode); }
+	void SetPasswordMode(bool Mode) { soFlags.Change(FEDITLINE_PASSWORDMODE, Mode); }
 	void SetMaxLength(int Length) { m_MaxLength = Length; }
 
 	// Получение максимального значения строки для потребностей Dialod API
@@ -250,8 +250,8 @@ public:
 	void SetInputMask(const wchar_t *InputMask);
 	const wchar_t *GetInputMask() { return m_Mask.CPtr(); }
 
-	void SetOvertypeMode(bool Mode) { Flags.Change(FEDITLINE_OVERTYPE, Mode); }
-	bool GetOvertypeMode() { return Flags.Check(FEDITLINE_OVERTYPE); }
+	void SetOvertypeMode(bool Mode) { soFlags.Change(FEDITLINE_OVERTYPE, Mode); }
+	bool GetOvertypeMode() { return soFlags.Check(FEDITLINE_OVERTYPE); }
 
 	void SetConvertTabs(int Mode) { m_TabExpandMode = Mode; }
 	int GetConvertTabs() { return m_TabExpandMode; }
@@ -263,8 +263,8 @@ public:
 	void GetSelection(int &Start, int &End);
 	bool IsSelection() { return m_SelStart != -1 || m_SelEnd != 0; }
 	void GetRealSelection(int &Start, int &End);
-	void SetEditBeyondEnd(bool Mode) { Flags.Change(FEDITLINE_EDITBEYONDEND, Mode); }
-	void SetEditorMode(bool Mode) { Flags.Change(FEDITLINE_EDITORMODE, Mode); }
+	void SetEditBeyondEnd(bool Mode) { soFlags.Change(FEDITLINE_EDITBEYONDEND, Mode); }
+	void SetEditorMode(bool Mode) { soFlags.Change(FEDITLINE_EDITORMODE, Mode); }
 	void ExpandTabs();
 
 	void InsertTab();
@@ -279,11 +279,11 @@ public:
 	void SetDialogParent(DWORD Sets);
 	void SetCursorType(bool Visible, DWORD Size);
 	void GetCursorType(bool &Visible, DWORD &Size);
-	void SetCursorVisibleFlag(bool Visible) { Flags.Change(FEDITLINE_CURSORVISIBLE, Visible); }
-	bool GetReadOnly() { return Flags.Check(FEDITLINE_READONLY); }
-	void SetReadOnly(bool NewReadOnly) { Flags.Change(FEDITLINE_READONLY, NewReadOnly); }
-	int GetDropDownBox() { return Flags.Check(FEDITLINE_DROPDOWNBOX); }
-	void SetDropDownBox(int NewDropDownBox) { Flags.Change(FEDITLINE_DROPDOWNBOX, NewDropDownBox); }
+	void SetCursorVisibleFlag(bool Visible) { soFlags.Change(FEDITLINE_CURSORVISIBLE, Visible); }
+	bool GetReadOnly() { return soFlags.Check(FEDITLINE_READONLY); }
+	void SetReadOnly(bool NewReadOnly) { soFlags.Change(FEDITLINE_READONLY, NewReadOnly); }
+	int GetDropDownBox() { return soFlags.Check(FEDITLINE_DROPDOWNBOX); }
+	void SetDropDownBox(int NewDropDownBox) { soFlags.Change(FEDITLINE_DROPDOWNBOX, NewDropDownBox); }
 	void SetWordDiv(const FARString &WordDiv) { m_strWordDiv = &WordDiv; }
 	virtual void Changed(bool DelBlock = false);
 };

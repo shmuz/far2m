@@ -340,7 +340,7 @@ public:
 	void SetHostFileEditor(FileEditor *Editor) { m_HostFileEditor = Editor; }
 	static void SetReplaceMode(bool Mode);
 	FileEditor *GetHostFileEditor() { return m_HostFileEditor; }
-	void PrepareResizedConsole() { Flags.Set(FEDITOR_ISRESIZEDCONSOLE); }
+	void PrepareResizedConsole() { soFlags.Set(FEDITOR_ISRESIZEDCONSOLE); }
 
 	void SetTabSize(int NewSize);
 	int GetTabSize() const { return m_EdOpt.TabSize; }
@@ -404,8 +404,8 @@ public:
 	Edit *InsertString(const wchar_t *lpwszStr, int nLength, Edit *pAfter=nullptr, int AfterLineNumber=-1);
 
 	void SetDialogParent(DWORD Sets);
-	void SetReadOnly(bool NewReadOnly) { Flags.Change(FEDITOR_LOCKMODE, NewReadOnly); }
-	bool GetReadOnly() { return Flags.Check(FEDITOR_LOCKMODE); }
+	void SetReadOnly(bool NewReadOnly) { soFlags.Change(FEDITOR_LOCKMODE, NewReadOnly); }
+	bool GetReadOnly() { return soFlags.Check(FEDITOR_LOCKMODE); }
 	void SetOvertypeMode(int Mode);
 	int GetOvertypeMode();
 	void SetEditBeyondEnd(int Mode);

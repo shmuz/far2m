@@ -653,7 +653,7 @@ static int DoSendDlgMessage (lua_State *L, int Msg, int delta)
 				size_t count = lua_objlen(L, pos4);
 				if (count) {
 					DWORD *arr = (DWORD*)lua_newuserdata(L, count * sizeof(DWORD));
-					for (int i=0; i < count; i++) {
+					for (size_t i=0; i < count; i++) {
 						lua_pushinteger(L, i+1);
 						lua_gettable(L, pos4);
 						arr[i] = lua_tointeger(L, -1);

@@ -50,7 +50,7 @@ enum
 class ScreenObject
 {
 protected:
-	BitFlags Flags;
+	BitFlags soFlags; // ScreenObject flags
 	SaveScreen *ShadowSaveScr;
 	int X1, Y1, X2, Y2;
 	int ObjWidth, ObjHeight;
@@ -93,9 +93,9 @@ public:
 
 	void SavePrevScreen();
 	void Redraw();
-	bool IsVisible() const { return Flags.Check(FSCROBJ_VISIBLE); }
-	void SetVisible(bool Visible) { Flags.Change(FSCROBJ_VISIBLE, Visible); }
-	void SetRestoreScreenMode(bool Mode) { Flags.Change(FSCROBJ_ENABLERESTORESCREEN, Mode); }
+	bool IsVisible() const { return soFlags.Check(FSCROBJ_VISIBLE); }
+	void SetVisible(bool Visible) { soFlags.Change(FSCROBJ_VISIBLE, Visible); }
+	void SetRestoreScreenMode(bool Mode) { soFlags.Change(FSCROBJ_ENABLERESTORESCREEN, Mode); }
 	void Shadow(bool Full = false);
 
 	static void SetCapture(ScreenObject *Obj);

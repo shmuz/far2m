@@ -82,10 +82,10 @@ FARString &QuickView::GetTitle(FARString &strTitle, int SubLen, int TruncSize)
 
 void QuickView::DisplayObject()
 {
-	if (Flags.Check(FSCROBJ_ISREDRAWING))
+	if (soFlags.Check(FSCROBJ_ISREDRAWING))
 		return;
 
-	Flags.Set(FSCROBJ_ISREDRAWING);
+	soFlags.Set(FSCROBJ_ISREDRAWING);
 	FARString strTitle;
 
 	if (!QView && !ProcessingPluginCommand)
@@ -208,7 +208,7 @@ void QuickView::DisplayObject()
 	} else if (QView)
 		QView->Show();
 
-	Flags.Clear(FSCROBJ_ISREDRAWING);
+	soFlags.Clear(FSCROBJ_ISREDRAWING);
 }
 
 int64_t QuickView::VMProcess(int OpCode, void *vParam, int64_t iParam)
