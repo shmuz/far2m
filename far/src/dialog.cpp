@@ -1257,43 +1257,14 @@ void Dialog::GetDialogObjectsExpandData()
 */
 void Dialog::GetDialogObjectsData()
 {
-	for (auto &CurItem: Items) {
-		const auto Type = CurItem.Type;
-		const auto IFlags = CurItem.Flags;
-
-		switch (Type) {
-			case DI_MEMOEDIT:
-			case DI_EDIT:
-			case DI_FIXEDIT:
-			case DI_PSWEDIT:
-			case DI_COMBOBOX:
-				if (DlgEdit *EditPtr = CurItem.GetEdit()) {
-					FARString strData;
-					EditPtr->GetString(strData);
-
-					// при мануале не добавляем
-					if (ExitCode >= 0 && (IFlags & DIF_HISTORY) && !(IFlags & DIF_MANUALADDHISTORY) &&
-							!CurItem.strHistory.IsEmpty() && Opt.Dialogs.EditHistory)
-					{
-						AddToEditHistory(strData, CurItem.strHistory);
-					}
-					CurItem.strData = strData;
-				}
-				break;
-
-			case DI_LISTBOX:
-				/*
-				if(CurItem.ListPtr)
-				{
-					CurItem.ListPos=CurItem.ListPtr->GetSelectPos();
-					break;
-				}
-				*/
-				break;
+	for (auto &item: Items) {
+		if (FarIsEdit(item.Type)) {
+			if (DlgEdit *edit = item.GetEdit())
+				edit->GetString(item.strData);
 		}
 
-		if (Type == DI_COMBOBOX || Type == DI_LISTBOX) {
-			CurItem.ListPos = CurItem.ListPtr ? CurItem.ListPtr->GetSelectPos() : 0;
+		if (item.Type == DI_COMBOBOX || item.Type == DI_LISTBOX) {
+			item.ListPos = item.ListPtr ? item.ListPtr->GetSelectPos() : 0;
 		}
 	}
 }
@@ -4438,6 +4409,18 @@ void Dialog::CloseDialog()
 
 	if (!DlgProc(DN_CLOSE, ExitCode, 0))
 		return;
+
+	if (ExitCode >= 0 && Opt.Dialogs.EditHistory) {
+		for (const auto &it: Items) {
+			if (it.Type == DI_EDIT || it.Type == DI_FIXEDIT || it.Type == DI_COMBOBOX) {
+				if ((it.Flags & DIF_HISTORY) && !(it.Flags & DIF_MANUALADDHISTORY)
+					&& !(it.Flags & DIF_HIDDEN) && !it.strHistory.IsEmpty())
+				{
+					AddToEditHistory(it.strData, it.strHistory);
+				}
+			}
+		}
+	}
 
 	GetDialogObjectsExpandData();
 	DialogMode.Set(DMODE_ENDLOOP);

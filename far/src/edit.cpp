@@ -2418,11 +2418,8 @@ void Edit::ApplyColor()
 		xTabPos = RealEnd;
 		xTabEditorPos = End;
 
-		if (Start < 0)
-			Start = 0;
-
-		if (End > ObjWidth - 1)
-			End = ObjWidth - 1;
+		Start = Max(Start, 0);
+		End = Min(End, ObjWidth - 1);
 
 		// Устанавливаем длину раскрашиваемого элемента
 		Length = End - Start + 1;

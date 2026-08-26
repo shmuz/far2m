@@ -364,7 +364,7 @@ void FileEditor::Init(const wchar_t *Name, UINT codepage, const wchar_t *Title, 
 	};
 
 	SysErrorCode = 0;
-	int BlankFileName = !StrCmp(Name, Msg::NewFileName);
+	bool BlankFileName = !StrCmp(Name, Msg::NewFileName);
 	// AY: флаг оповещающий закрытие редактора.
 	m_bClosing = false;
 	bEE_READ_Sent = false;
@@ -386,8 +386,7 @@ void FileEditor::Init(const wchar_t *Name, UINT codepage, const wchar_t *Title, 
 	KeyBarVisible = Opt.EdOpt.ShowKeyBar;
 	TitleBarVisible = Opt.EdOpt.ShowTitleBar;
 	// $ 17.08.2001 KM - Добавлено для поиска по AltF7. При редактировании найденного файла из архива для клавиши F2 сделать вызов ShiftF2.
-	soFlags.Change(FFILEEDIT_SAVETOSAVEAS,
-			(InitFlags & FFILEEDIT_SAVETOSAVEAS) == FFILEEDIT_SAVETOSAVEAS || BlankFileName != 0);
+	soFlags.Change(FFILEEDIT_SAVETOSAVEAS, (InitFlags & FFILEEDIT_SAVETOSAVEAS) || BlankFileName);
 
 	if (!*Name) {
 		ExitCode = XC_OPEN_ERROR;

@@ -790,6 +790,7 @@ static int editor_GetVirtualFileName(lua_State *L)
 static int editor_SetSavedState(lua_State *L)
 {
 	int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
+	luaL_checkany(L, 2);
 	int value = lua_toboolean(L, 2);
 	int ret = PSInfo.EditorControlV2(EditorId, ECTL_SETSAVEDSTATE, &value);
 	lua_pushboolean(L, ret);
