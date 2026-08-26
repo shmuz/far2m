@@ -97,7 +97,7 @@ DlgEdit::DlgEdit(Dialog *pOwner, unsigned Index, DLGEDITTYPE Type)
 			multiEdit = new Editor(pOwner, true);	// ??? (pOwner) ?
 			multiEdit->SetShowScrollBar(1);
 			if (pOwner) {
-				DialogItemEx &CurItem = pOwner->Item[Index];
+				DialogItemEx &CurItem = pOwner->Items[Index];
 				if (IsPtr(CurItem.UserData)) {
 					multiEdit->SetVirtualFileName(reinterpret_cast<const wchar_t *>(CurItem.UserData));
 				}
@@ -112,7 +112,7 @@ DlgEdit::DlgEdit(Dialog *pOwner, unsigned Index, DLGEDITTYPE Type)
 			DWORD iFlags=0;
 			if(pOwner)
 			{
-				DialogItemEx &CurItem=pOwner->Item[Index];
+				DialogItemEx &CurItem=pOwner->Items[Index];
 				if(Opt.Dialogs.AutoComplete && CurItem.Flags&(DIF_HISTORY|DIF_EDITPATH)
 						&& !(CurItem.Flags&DIF_DROPDOWNLIST) && !(CurItem.Flags&DIF_NOAUTOCOMPLETE))
 				{
@@ -179,7 +179,7 @@ void DlgEdit::DisplayObject()
 {
 	if (Type == DLGEDIT_MULTILINE) {
 		if (m_Dialog && m_Index < m_Dialog->ItemCount()) {
-			DialogItemEx &CurItem = m_Dialog->Item[m_Index];
+			DialogItemEx &CurItem = m_Dialog->Items[m_Index];
 			multiEdit->SetShowCursor(CurItem.Focus != 0);
 		}
 		NotifyDialogEditorFocus(multiEdit, m_dialogEditorOpened, m_dialogHasFocus, true);
@@ -201,7 +201,7 @@ void DlgEdit::Show()
 {
 	if (Type == DLGEDIT_MULTILINE) {
 		if (m_Dialog && m_Index < m_Dialog->ItemCount()) {
-			DialogItemEx &CurItem = m_Dialog->Item[m_Index];
+			DialogItemEx &CurItem = m_Dialog->Items[m_Index];
 			multiEdit->SetShowCursor(CurItem.Focus != 0);
 		}
 		NotifyDialogEditorFocus(multiEdit, m_dialogEditorOpened, m_dialogHasFocus, true);
@@ -497,7 +497,7 @@ void DlgEdit::FastShow()
 {
 	if (Type == DLGEDIT_MULTILINE) {
 		if (m_Dialog && m_Index < m_Dialog->ItemCount()) {
-			DialogItemEx &CurItem = m_Dialog->Item[m_Index];
+			DialogItemEx &CurItem = m_Dialog->Items[m_Index];
 			multiEdit->SetShowCursor(CurItem.Focus != 0);
 		}
 		NotifyDialogEditorFocus(multiEdit, m_dialogEditorOpened, m_dialogHasFocus, false);

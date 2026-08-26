@@ -353,10 +353,10 @@ Dialog::Dialog(DialogItemEx *SrcItem,		// Набор элементов диал
 	:
 	Cma(MACROAREA_DIALOG), AltState(0), CtrlState(0), ShiftState(0)
 {
-	Item.reserve(SrcItemCount);
+	Items.reserve(SrcItemCount);
 
 	for (unsigned i = 0; i < SrcItemCount; i++) {
-		Item.emplace_back(SrcItem[i]);
+		Items.emplace_back(SrcItem[i]);
 	}
 
 	pSaveItemEx = SrcItem;
@@ -370,12 +370,12 @@ Dialog::Dialog(FarDialogItem *SrcItem,		// Набор элементов диа�
 	:
 	Cma(MACROAREA_DIALOG)
 {
-	Item.reserve(SrcItemCount);
+	Items.reserve(SrcItemCount);
 
 	for (unsigned i = 0; i < SrcItemCount; i++) {
-		Item.emplace_back();
+		Items.emplace_back();
 		// BUGBUG add error check
-		Item.back().SetFromPluginItem(&SrcItem[i], false);
+		Items.back().SetFromPluginItem(&SrcItem[i], false);
 	}
 
 	pSaveItemEx = nullptr;
@@ -489,7 +489,7 @@ void Dialog::InitDialog()
 		if (DlgProc(DN_GETDIALOGINFO, 0, reinterpret_cast<LONG_PTR>(&di)))
 			Id = di.Id;
 
-		SetMacroArea(Item[InitFocus].Type == DI_MEMOEDIT ? MACROAREA_MEMOEDIT : MACROAREA_DIALOG);
+		SetMacroArea(Items[InitFocus].Type == DI_MEMOEDIT ? MACROAREA_MEMOEDIT : MACROAREA_DIALOG);
 		DlgProc(DN_GOTFOCUS, InitFocus, 0);
 	}
 }
@@ -562,17 +562,17 @@ void Dialog::ProcessCenterGroup()
 			Их координаты X не важны. Удобно использовать для центрирования
 			групп кнопок.
 		*/
-		if ((Item[I].Flags & DIF_CENTERGROUP)
-				&& (I == 0 || (Item[I - 1].Flags & DIF_CENTERGROUP) == 0
-						|| Item[I - 1].Y1 != Item[I].Y1)) {
+		if ((Items[I].Flags & DIF_CENTERGROUP)
+				&& (I == 0 || (Items[I - 1].Flags & DIF_CENTERGROUP) == 0
+						|| Items[I - 1].Y1 != Items[I].Y1)) {
 			int Length = 0;
 
 			for (int J = I;
-					J < ItemCount() && (Item[J].Flags & DIF_CENTERGROUP) && Item[J].Y1 == Item[I].Y1; J++) {
+					J < ItemCount() && (Items[J].Flags & DIF_CENTERGROUP) && Items[J].Y1 == Items[I].Y1; J++) {
 				Length+= LenStrItem(J);
 
-				if (!Item[J].strData.IsEmpty())
-					switch (Item[J].Type) {
+				if (!Items[J].strData.IsEmpty())
+					switch (Items[J].Type) {
 						case DI_BUTTON:
 							Length++;
 							break;
@@ -583,8 +583,8 @@ void Dialog::ProcessCenterGroup()
 					}
 			}
 
-			if (!Item[I].strData.IsEmpty())
-				switch (Item[I].Type) {
+			if (!Items[I].strData.IsEmpty())
+				switch (Items[I].Type) {
 					case DI_BUTTON:
 						Length--;
 						break;
@@ -597,12 +597,12 @@ void Dialog::ProcessCenterGroup()
 			int StartX = Max(0, (X2 - X1 + 1 - Length) / 2);
 
 			for (int J = I;
-					J < ItemCount() && (Item[J].Flags & DIF_CENTERGROUP) && Item[J].Y1 == Item[I].Y1; J++) {
-				Item[J].X1 = StartX;
+					J < ItemCount() && (Items[J].Flags & DIF_CENTERGROUP) && Items[J].Y1 == Items[I].Y1; J++) {
+				Items[J].X1 = StartX;
 				StartX+= LenStrItem(J);
 
-				if (!Item[J].strData.IsEmpty())
-					switch (Item[J].Type) {
+				if (!Items[J].strData.IsEmpty())
+					switch (Items[J].Type) {
 						case DI_BUTTON:
 							StartX++;
 							break;
@@ -612,10 +612,10 @@ void Dialog::ProcessCenterGroup()
 							break;
 					}
 
-				if (StartX == Item[J].X1)
-					Item[J].X2 = StartX;
+				if (StartX == Items[J].X1)
+					Items[J].X2 = StartX;
 				else
-					Item[J].X2 = StartX - 1;
+					Items[J].X2 = StartX - 1;
 			}
 		}
 	}
@@ -644,12 +644,12 @@ int Dialog::InitDialogObjects(int ID)
 		return -1;
 
 	// если FocusPos в пределах и элемент задисаблен, то ищем сначала
-	if (FocusPos != -1 && FocusPos < ItemCount() && !Item[FocusPos].IsFocusable())
+	if (FocusPos != -1 && FocusPos < ItemCount() && !Items[FocusPos].IsFocusable())
 		FocusPos = -1;	// будем искать сначала!
 
 	// предварительный цикл по поводу кнопок
 	for (int I = ID; I < InitItemCount; I++) {
-		DialogItemEx &CurItem = Item[I];
+		DialogItemEx &CurItem = Items[I];
 		DWORD ItemFlags = CurItem.Flags;
 		int Type = CurItem.Type;
 
@@ -697,7 +697,7 @@ int Dialog::InitDialogObjects(int ID)
 	if (FocusPos == -1) {
 		for (int I = 0; I < ItemCount(); I++)		// по всем!!!!
 		{
-			if (Item[I].IsFocusable()) {
+			if (Items[I].IsFocusable()) {
 				FocusPos = I;
 				break;
 			}
@@ -710,12 +710,12 @@ int Dialog::InitDialogObjects(int ID)
 	}
 
 	// ну вот и добрались до!
-	Item[FocusPos].Focus = 1;
+	Items[FocusPos].Focus = 1;
 	// а теперь все сначала и по полной программе...
 	ProcessCenterGroup();	// сначала отцентрируем
 
 	for (int I = ID; I < InitItemCount; I++) {
-		DialogItemEx &CurItem = Item[I];
+		DialogItemEx &CurItem = Items[I];
 		int Type = CurItem.Type;
 		DWORD ItemFlags = CurItem.Flags;
 
@@ -953,7 +953,7 @@ const wchar_t *Dialog::GetDialogTitle()
 	DialogItemEx *CurItemList = nullptr;
 
 	for (int I = 0; I < ItemCount(); I++) {
-		auto CurItem = &Item[I];
+		auto CurItem = &Items[I];
 
 		// по первому попавшемуся "тексту" установим заголовок консоли!
 		if (CurItem->Type == DI_TEXT || CurItem->Type == DI_DOUBLEBOX || CurItem->Type == DI_SINGLEBOX) {
@@ -965,11 +965,7 @@ const wchar_t *Dialog::GetDialogTitle()
 			CurItemList = CurItem;
 	}
 
-	if (CurItemList) {
-		return CurItemList->ListPtr->GetPtrTitle();
-	}
-
-	return nullptr;		//""
+	return CurItemList ? CurItemList->ListPtr->GetPtrTitle() : nullptr;
 }
 
 void Dialog::ProcessLastHistory(DialogItemEx &CurItem, int MsgIndex)
@@ -1010,7 +1006,7 @@ bool Dialog::SetItemRect(int ID, const SMALL_RECT *Rect)
 	const int Right  = Clamp(Rect->Right, Left, X2-X1);
 	const int Bottom = Clamp(Rect->Bottom, Top, Y2-Y1);
 
-	DialogItemEx &CurItem = Item[ID];
+	DialogItemEx &CurItem = Items[ID];
 	int Type = CurItem.Type;
 	CurItem.X1 = Left;
 	CurItem.Y1 = Max(0, Top);
@@ -1058,7 +1054,7 @@ bool Dialog::GetItemRect(int I, SMALL_RECT &Rect)
 	if (I >= ItemCount())
 		return false;
 
-	DialogItemEx &CurItem = Item[I];
+	DialogItemEx &CurItem = Items[I];
 	DWORD ItemFlags = CurItem.Flags;
 	int Type = CurItem.Type;
 	int Len = 0;
@@ -1172,7 +1168,7 @@ void Dialog::DeleteDialogObjects()
 {
 	SCOPED_ACTION(CriticalSectionLock)(CS);
 
-	for (auto &CurItem: Item) {
+	for (auto &CurItem: Items) {
 		switch (CurItem.Type) {
 			case DI_EDIT:
 			case DI_FIXEDIT:
@@ -1206,7 +1202,7 @@ void Dialog::DeleteDialogObjects()
 void Dialog::GetDialogObjectsExpandData()
 {
 	DlgEdit *EditPtr;
-	for (auto &CurItem: Item)
+	for (auto &CurItem: Items)
 	{
 		switch (CurItem.Type)
 		{
@@ -1261,7 +1257,7 @@ void Dialog::GetDialogObjectsExpandData()
 */
 void Dialog::GetDialogObjectsData()
 {
-	for (auto &CurItem: Item) {
+	for (auto &CurItem: Items) {
 		const auto Type = CurItem.Type;
 		const auto IFlags = CurItem.Flags;
 
@@ -1306,7 +1302,7 @@ void Dialog::GetDialogObjectsData()
 DWORD Dialog::CtlColorDlgItem(int ItemPos, uint64_t *Color)
 {
 	SCOPED_ACTION(CriticalSectionLock)(CS);
-	const auto &CurItem = Item[ItemPos];
+	const auto &CurItem = Items[ItemPos];
 	const int Type = CurItem.Type;
 	const int Focus = CurItem.Focus;
 	const int Default = CurItem.DefaultButton;
@@ -1635,7 +1631,7 @@ DWORD Dialog::CtlColorDlgItem(int ItemPos, uint64_t *Color)
 **/
 		}
 		case DI_LISTBOX: {
-			Item[ItemPos].ListPtr->SetColors(nullptr);
+			Items[ItemPos].ListPtr->SetColors(nullptr);
 			return 0;
 		}
 		default: {
@@ -1727,8 +1723,8 @@ void Dialog::ShowDialog(int ID)
 		DWORD CursorSize = 0;
 
 		if (FocusPos != ID) {
-			const auto UCData = Item[FocusPos].UCData;
-			if (Item[FocusPos].Type == DI_USERCONTROL && UCData->Pos.X != -1 && UCData->Pos.Y != -1) {
+			const auto UCData = Items[FocusPos].UCData;
+			if (Items[FocusPos].Type == DI_USERCONTROL && UCData->Pos.X != -1 && UCData->Pos.Y != -1) {
 				CursorVisible = UCData->Visible;
 				CursorSize = UCData->Size;
 			}
@@ -1738,7 +1734,7 @@ void Dialog::ShowDialog(int ID)
 	}
 
 	for (auto I = ID; I < DrawItemCount; I++) {
-		DialogItemEx &CurItem = Item[I];
+		DialogItemEx &CurItem = Items[I];
 
 		if (CurItem.Flags & DIF_HIDDEN)
 			continue;
@@ -1871,7 +1867,7 @@ void Dialog::ShowDialog(int ID)
 						strStr.TruncateByCells(CntChr);
 				}
 
-///					if (CX1 > -1 && CX2 > CX1 && !(Item.Flags & (DIF_SEPARATORUSER|DIF_SEPARATOR|DIF_SEPARATOR2))) //половинчатое решение
+///					if (CX1 > -1 && CX2 > CX1 && !(Items.Flags & (DIF_SEPARATORUSER|DIF_SEPARATOR|DIF_SEPARATOR2))) //половинчатое решение
 ///					{
 ///						SetScreen({ m_Where.left + CX1, m_Where.top + Y, m_Where.left + CX2, m_Where.top + Y }, L' ', ItemColor[0]);
 						/*
@@ -1969,7 +1965,7 @@ void Dialog::ShowDialog(int ID)
 				// нужно ЭТО
 				//SetScreen(X1+CX1,Y1+CY1,X1+CX2,Y1+CY2,' ',Attr&0xFF);
 				// вместо этого:
-///				if (CY1 > -1 && CY2 > CY1 && !(Item.Flags & (DIF_SEPARATORUSER|DIF_SEPARATOR|DIF_SEPARATOR2))) //половинчатое решение
+///				if (CY1 > -1 && CY2 > CY1 && !(Items.Flags & (DIF_SEPARATORUSER|DIF_SEPARATOR|DIF_SEPARATOR2))) //половинчатое решение
 ///				{
 ///					SetScreen({ m_Where.left + X, m_Where.top + CY1, m_Where.left + X, m_Where.top + CY2 }, L' ', ItemColor[0]);
 					/*
@@ -2197,7 +2193,7 @@ void Dialog::ShowDialog(int ID)
 
 	// КОСТЫЛЬ!
 	// но работает ;-)
-	for (const auto &CurItem: Item) {
+	for (const auto &CurItem: Items) {
 		if (CurItem.ListPtr && GetDropDownOpened() && CurItem.ListPtr->IsVisible()) {
 			if ((CurItem.Type == DI_COMBOBOX)
 					|| ((CurItem.Type == DI_EDIT || CurItem.Type == DI_FIXEDIT)
@@ -2238,9 +2234,9 @@ int Dialog::LenStrItem(int ID, const wchar_t *lpwszStr)
 	SCOPED_ACTION(CriticalSectionLock)(CS);
 
 	if (!lpwszStr)
-		lpwszStr = Item[ID].strData;
+		lpwszStr = Items[ID].strData;
 
-	return (Item[ID].Flags & DIF_SHOWAMPERSAND) ? StrZCellsCount(lpwszStr) : HiStrCellsCount(lpwszStr);
+	return (Items[ID].Flags & DIF_SHOWAMPERSAND) ? StrZCellsCount(lpwszStr) : HiStrCellsCount(lpwszStr);
 }
 
 bool Dialog::ProcessMoveDialog(DWORD Key)
@@ -2425,9 +2421,9 @@ int64_t Dialog::VMProcess(int OpCode, void *vParam, int64_t iParam)
 		case MCODE_F_MENU_FILTERSTR: {
 			const wchar_t *str = (const wchar_t *)vParam;
 
-			if (GetDropDownOpened() || Item[FocusPos].Type == DI_LISTBOX) {
-				if (Item[FocusPos].ListPtr)
-					return Item[FocusPos].ListPtr->VMProcess(OpCode, vParam, iParam);
+			if (GetDropDownOpened() || Items[FocusPos].Type == DI_LISTBOX) {
+				if (Items[FocusPos].ListPtr)
+					return Items[FocusPos].ListPtr->VMProcess(OpCode, vParam, iParam);
 			} else if (OpCode == MCODE_F_MENU_CHECKHOTKEY)
 				return CheckHighlights(*str, (int)iParam) + 1;
 
@@ -2440,18 +2436,18 @@ int64_t Dialog::VMProcess(int OpCode, void *vParam, int64_t iParam)
 		case MCODE_C_BOF:
 		case MCODE_C_SELECTED:
 		case MCODE_C_EMPTY: {
-			if (FarIsEdit(Item[FocusPos].Type)) {
-				if (Item[FocusPos].Type == DI_COMBOBOX && GetDropDownOpened())
-					return Item[FocusPos].ListPtr->VMProcess(OpCode, vParam, iParam);
+			if (FarIsEdit(Items[FocusPos].Type)) {
+				if (Items[FocusPos].Type == DI_COMBOBOX && GetDropDownOpened())
+					return Items[FocusPos].ListPtr->VMProcess(OpCode, vParam, iParam);
 				else
-					return Item[FocusPos].GetEdit()->VMProcess(OpCode, vParam, iParam);
-			} else if (Item[FocusPos].Type == DI_LISTBOX && OpCode != MCODE_C_SELECTED)
-				return Item[FocusPos].ListPtr->VMProcess(OpCode, vParam, iParam);
+					return Items[FocusPos].GetEdit()->VMProcess(OpCode, vParam, iParam);
+			} else if (Items[FocusPos].Type == DI_LISTBOX && OpCode != MCODE_C_SELECTED)
+				return Items[FocusPos].ListPtr->VMProcess(OpCode, vParam, iParam);
 
 			return 0;
 		}
 		case MCODE_V_DLGITEMTYPE:
-			switch (auto iType = Item[FocusPos].Type) {
+			switch (auto iType = Items[FocusPos].Type) {
 				case DI_BUTTON:
 				case DI_CHECKBOX:
 				case DI_DOUBLEBOX:
@@ -2499,22 +2495,22 @@ int64_t Dialog::VMProcess(int OpCode, void *vParam, int64_t iParam)
 		}
 		case MCODE_V_ITEMCOUNT:
 		case MCODE_V_CURPOS: {
-			switch (Item[FocusPos].Type) {
+			switch (Items[FocusPos].Type) {
 				case DI_COMBOBOX:
 
-					if (DropDownOpened || (Item[FocusPos].Flags & DIF_DROPDOWNLIST))
-						return Item[FocusPos].ListPtr->VMProcess(OpCode, vParam, iParam);
+					if (DropDownOpened || (Items[FocusPos].Flags & DIF_DROPDOWNLIST))
+						return Items[FocusPos].ListPtr->VMProcess(OpCode, vParam, iParam);
 
 				case DI_EDIT:
 				case DI_PSWEDIT:
 				case DI_FIXEDIT:
-					return Item[FocusPos].GetEdit()->VMProcess(OpCode, vParam, iParam);
+					return Items[FocusPos].GetEdit()->VMProcess(OpCode, vParam, iParam);
 				case DI_LISTBOX:
-					return Item[FocusPos].ListPtr->VMProcess(OpCode, vParam, iParam);
+					return Items[FocusPos].ListPtr->VMProcess(OpCode, vParam, iParam);
 				case DI_USERCONTROL:
 
 					if (OpCode == MCODE_V_CURPOS)
-						return Item[FocusPos].UCData->Pos.X;
+						return Items[FocusPos].UCData->Pos.X;
 
 				case DI_BUTTON:
 				case DI_CHECKBOX:
@@ -2525,10 +2521,10 @@ int64_t Dialog::VMProcess(int OpCode, void *vParam, int64_t iParam)
 			return 0;
 		}
 		case MCODE_F_EDITOR_SEL: {
-			if (FarIsEditNoCombobox(Item[FocusPos].Type)
-					|| (Item[FocusPos].Type == DI_COMBOBOX
-							&& !(DropDownOpened || (Item[FocusPos].Flags & DIF_DROPDOWNLIST)))) {
-				return Item[FocusPos].GetEdit()->VMProcess(OpCode, vParam, iParam);
+			if (FarIsEditNoCombobox(Items[FocusPos].Type)
+					|| (Items[FocusPos].Type == DI_COMBOBOX
+							&& !(DropDownOpened || (Items[FocusPos].Flags & DIF_DROPDOWNLIST)))) {
+				return Items[FocusPos].GetEdit()->VMProcess(OpCode, vParam, iParam);
 			}
 
 			return 0;
@@ -2575,7 +2571,7 @@ int Dialog::ProcessKey(FarKey Key)
 
 	// BugZ#488 - Shift=enter
 	if (ShiftPressed && (Key == KEY_ENTER || Key == KEY_NUMENTER) && !CtrlObject->Macro.IsExecuting()
-			&& Item[FocusPos].Type != DI_BUTTON) {
+			&& Items[FocusPos].Type != DI_BUTTON) {
 		Key = Key == KEY_ENTER ? KEY_SHIFTENTER : KEY_SHIFTNUMENTER;
 	}
 
@@ -2588,17 +2584,17 @@ int Dialog::ProcessKey(FarKey Key)
 		return TRUE;
 
 	// А ХЗ, может в этот момент изменилось состояние элемента!
-	if (Item[FocusPos].Flags & DIF_HIDDEN)
+	if (Items[FocusPos].Flags & DIF_HIDDEN)
 		return TRUE;
 
 	// небольшая оптимизация
-	if (Item[FocusPos].Type == DI_CHECKBOX) {
-		if (!(Item[FocusPos].Flags & DIF_3STATE)) {
+	if (Items[FocusPos].Type == DI_CHECKBOX) {
+		if (!(Items[FocusPos].Flags & DIF_3STATE)) {
 			if (Key == KEY_MULTIPLY)	// в CheckBox 2-state Gray* не работает!
 				Key = KEY_NONE;
 
-			if ((Key == KEY_ADD && !Item[FocusPos].Selected)
-					|| (Key == KEY_SUBTRACT && Item[FocusPos].Selected))
+			if ((Key == KEY_ADD && !Items[FocusPos].Selected)
+					|| (Key == KEY_SUBTRACT && Items[FocusPos].Selected))
 				Key = KEY_SPACE;
 		}
 
@@ -2610,10 +2606,10 @@ int Dialog::ProcessKey(FarKey Key)
 	else if (Key == KEY_MULTIPLY)
 		Key = '*';
 
-	if (Item[FocusPos].Type == DI_BUTTON && Key == KEY_SPACE)
+	if (Items[FocusPos].Type == DI_BUTTON && Key == KEY_SPACE)
 		Key = KEY_ENTER;
 
-	if (Item[FocusPos].Type == DI_LISTBOX) {
+	if (Items[FocusPos].Type == DI_LISTBOX) {
 		switch (Key) {
 			case KEY_HOME:
 			case KEY_NUMPAD7:
@@ -2637,7 +2633,7 @@ int Dialog::ProcessKey(FarKey Key)
 			case KEY_MSWHEEL_RIGHT:
 			case KEY_NUMENTER:
 			case KEY_ENTER:
-				VMenu *List = Item[FocusPos].ListPtr;
+				VMenu *List = Items[FocusPos].ListPtr;
 				int CurListPos = List->GetSelectPos();
 				auto CheckedListItem = List->GetCheck(-1);
 				List->ProcessKey(Key);
@@ -2649,11 +2645,11 @@ int Dialog::ProcessKey(FarKey Key)
 
 					List->SetCheck(CheckedListItem, CurListPos);
 
-					if (DialogMode.Check(DMODE_SHOW) && !(Item[FocusPos].Flags & DIF_HIDDEN))
+					if (DialogMode.Check(DMODE_SHOW) && !(Items[FocusPos].Flags & DIF_HIDDEN))
 						ShowDialog(FocusPos);	// FocusPos
 				}
 
-				if (!(Key == KEY_ENTER || Key == KEY_NUMENTER) || (Item[FocusPos].Flags & DIF_LISTNOCLOSE))
+				if (!(Key == KEY_ENTER || Key == KEY_NUMENTER) || (Items[FocusPos].Flags & DIF_LISTNOCLOSE))
 					return TRUE;
 		}
 	}
@@ -2680,7 +2676,7 @@ int Dialog::ProcessKey(FarKey Key)
 		case KEY_HOME:
 		case KEY_NUMPAD7:
 
-			if (Item[FocusPos].Type == DI_USERCONTROL)		// для user-типа вываливаем
+			if (Items[FocusPos].Type == DI_USERCONTROL)		// для user-типа вываливаем
 				return TRUE;
 
 			return Do_ProcessFirstCtrl();
@@ -2695,14 +2691,14 @@ int Dialog::ProcessKey(FarKey Key)
 		case KEY_CTRLNUMENTER:
 		case KEY_CTRLENTER: {
 			for (I = 0; I < ItemCount(); I++)
-				if (Item[I].DefaultButton) {
-					if (Item[I].Flags & DIF_DISABLE) {
+				if (Items[I].DefaultButton) {
+					if (Items[I].Flags & DIF_DISABLE) {
 						// ProcessKey(KEY_DOWN); // на твой вкус :-)
 						return TRUE;
 					}
 
-					if (!FarIsEdit(Item[I].Type))
-						Item[I].Selected = 1;
+					if (!FarIsEdit(Items[I].Type))
+						Items[I].Selected = 1;
 
 					ExitCode = I;
 					/* $ 18.05.2001 DJ */
@@ -2720,60 +2716,57 @@ int Dialog::ProcessKey(FarKey Key)
 
 		case KEY_NUMENTER:
 		case KEY_ENTER: {
-			if (Item[FocusPos].Type == DI_MEMOEDIT && Item[FocusPos].GetEdit()) {
-				Item[FocusPos].GetEdit()->ProcessKey(Key);
+			if (Items[FocusPos].Type == DI_MEMOEDIT && Items[FocusPos].GetEdit()) {
+				Items[FocusPos].GetEdit()->ProcessKey(Key);
 				ShowDialog();
 				return TRUE;
 			}
-			if (FarIsEditNoCombobox(Item[FocusPos].Type)
-					&& (Item[FocusPos].Flags & DIF_EDITOR) && !(Item[FocusPos].Flags & DIF_READONLY))
+			if (FarIsEditNoCombobox(Items[FocusPos].Type)
+					&& (Items[FocusPos].Flags & DIF_EDITOR) && !(Items[FocusPos].Flags & DIF_READONLY))
 			{
-				int EditorLastPos;
+				int EditorLastPos = FocusPos;
 
-				for (EditorLastPos = I = FocusPos; I < ItemCount(); I++)
-					if (FarIsEdit(Item[I].Type) && (Item[I].Flags & DIF_EDITOR))
+				for (I = FocusPos; I < ItemCount(); I++)
+					if (FarIsEdit(Items[I].Type) && (Items[I].Flags & DIF_EDITOR))
 						EditorLastPos = I;
 					else
 						break;
 
-				if (Item[EditorLastPos].GetEdit()->GetLength())
+				if (Items[EditorLastPos].GetEdit()->GetLength())
 					return TRUE;
 
 				for (I = EditorLastPos; I > FocusPos; I--) {
-					int CurPos;
+					int CurPos = 0;
 
 					if (I == FocusPos + 1)
-						CurPos = Item[I - 1].GetEdit()->GetCurPos();
-					else
-						CurPos = 0;
+						CurPos = Items[I - 1].GetEdit()->GetCurPos();
 
-					Item[I - 1].GetEdit()->GetString(strStr);
+					Items[I - 1].GetEdit()->GetString(strStr);
 					int Length = (int)strStr.GetLength();
-					Item[I].GetEdit()->SetString(CurPos >= Length ? L"" : strStr.CPtr() + CurPos);
+					Items[I].GetEdit()->SetString(CurPos >= Length ? L"" : strStr.CPtr() + CurPos);
 
 					if (CurPos < Length)
 						strStr.Truncate(CurPos);
 
-					Item[I].GetEdit()->SetCurPos(0);
-					Item[I-1].GetEdit()->SetString(strStr);
+					Items[I].GetEdit()->SetCurPos(0);
+					Items[I-1].GetEdit()->SetString(strStr);
 				}
 
 				if (EditorLastPos > FocusPos) {
-					Item[FocusPos].GetEdit()->SetCurPos(0);
+					Items[FocusPos].GetEdit()->SetCurPos(0);
 					Do_ProcessNextCtrl(false, false);
 				}
 
 				ShowDialog();
 				return TRUE;
 			}
-			else if (Item[FocusPos].Type == DI_BUTTON) {
-				Item[FocusPos].Selected = 1;
+			else if (Items[FocusPos].Type == DI_BUTTON) {
+				Items[FocusPos].Selected = 1;
 
-				// сообщение - "Кнокна кликнута"
 				if (SendDlgMessage(DN_BTNCLICK, FocusPos, 0))
 					return TRUE;
 
-				if (Item[FocusPos].Flags & DIF_BTNNOCLOSE)
+				if (Items[FocusPos].Flags & DIF_BTNNOCLOSE)
 					return TRUE;
 
 				ExitCode = FocusPos;
@@ -2784,14 +2777,14 @@ int Dialog::ProcessKey(FarKey Key)
 				ExitCode = -1;
 
 				for (I = 0; I < ItemCount(); I++) {
-					if (Item[I].DefaultButton && !(Item[I].Flags & DIF_BTNNOCLOSE)) {
-						if (Item[I].Flags & DIF_DISABLE) {
+					if (Items[I].DefaultButton && !(Items[I].Flags & DIF_BTNNOCLOSE)) {
+						if (Items[I].Flags & DIF_DISABLE) {
 							// ProcessKey(KEY_DOWN); // на твой вкус :-)
 							return TRUE;
 						}
 
-						//						if (!(FarIsEdit(Item[I].Type) || Item[I].Type == DI_CHECKBOX || Item[I].Type == DI_RADIOBUTTON))
-						//							Item[I].Selected=1;
+						//						if (!(FarIsEdit(Items[I].Type) || Items[I].Type == DI_CHECKBOX || Items[I].Type == DI_RADIOBUTTON))
+						//							Items[I].Selected=1;
 						ExitCode = I;
 						break;
 					}
@@ -2814,12 +2807,12 @@ int Dialog::ProcessKey(FarKey Key)
 		case KEY_SUBTRACT:
 		case KEY_MULTIPLY:
 
-			if (Item[FocusPos].Type == DI_CHECKBOX) {
+			if (Items[FocusPos].Type == DI_CHECKBOX) {
 				const int CHKState = (Key == KEY_ADD) ? 1 : (Key == KEY_SUBTRACT) ? 0 : 2;
 
-				if (Item[FocusPos].Selected != CHKState) {
+				if (Items[FocusPos].Selected != CHKState) {
 					if (SendDlgMessage(DN_BTNCLICK, FocusPos, CHKState)) {
-						Item[FocusPos].Selected = CHKState;
+						Items[FocusPos].Selected = CHKState;
 						ShowDialog();
 					}
 				}
@@ -2835,11 +2828,11 @@ int Dialog::ProcessKey(FarKey Key)
 		case KEY_NUMPAD6:
 		case KEY_SHIFTNUMPAD6:
 		case KEY_MSWHEEL_RIGHT: {
-			if (Item[FocusPos].Type == DI_USERCONTROL)		// для user-типа вываливаем
+			if (Items[FocusPos].Type == DI_USERCONTROL)		// для user-типа вываливаем
 				return TRUE;
 
-			if (FarIsEdit(Item[FocusPos].Type)) {
-				Item[FocusPos].GetEdit()->ProcessKey(Key);
+			if (FarIsEdit(Items[FocusPos].Type)) {
+				Items[FocusPos].GetEdit()->ProcessKey(Key);
 				return TRUE;
 			} else {
 				return MoveToCtrlHorizontal(Key == KEY_RIGHT || Key == KEY_NUMPAD6);
@@ -2850,11 +2843,11 @@ int Dialog::ProcessKey(FarKey Key)
 		case KEY_NUMPAD8:
 		case KEY_DOWN:
 		case KEY_NUMPAD2: {
-			if (Item[FocusPos].Type == DI_USERCONTROL)		// для user-типа вываливаем
+			if (Items[FocusPos].Type == DI_USERCONTROL)		// для user-типа вываливаем
 				return TRUE;
 
-			if (Item[FocusPos].Type == DI_MEMOEDIT && Item[FocusPos].GetEdit()) {
-				Item[FocusPos].GetEdit()->ProcessKey(Key);
+			if (Items[FocusPos].Type == DI_MEMOEDIT && Items[FocusPos].GetEdit()) {
+				Items[FocusPos].GetEdit()->ProcessKey(Key);
 				ShowDialog();
 				return TRUE;
 			}
@@ -2869,16 +2862,16 @@ int Dialog::ProcessKey(FarKey Key)
 		case KEY_CTRLNUMPAD8:
 		case KEY_CTRLDOWN:
 		case KEY_CTRLNUMPAD2:
-			if (Item[FocusPos].Type == DI_MEMOEDIT) {
-				Item[FocusPos].GetEdit()->ProcessKey(Key);
+			if (Items[FocusPos].Type == DI_MEMOEDIT) {
+				Items[FocusPos].GetEdit()->ProcessKey(Key);
 				ShowDialog(FocusPos);
 				return TRUE;
 			}
-			return ProcessOpenComboBox(Item[FocusPos].Type, Item[FocusPos], FocusPos);
+			return ProcessOpenComboBox(Items[FocusPos].Type, Items[FocusPos], FocusPos);
 
 		case KEY_F5:
-			if (Item[FocusPos].Type == DI_MEMOEDIT) {
-				Item[FocusPos].GetEdit()->ToggleShowWhiteSpace();
+			if (Items[FocusPos].Type == DI_MEMOEDIT) {
+				Items[FocusPos].GetEdit()->ToggleShowWhiteSpace();
 				ShowDialog(FocusPos);
 				return TRUE;
 			}
@@ -2893,11 +2886,11 @@ int Dialog::ProcessKey(FarKey Key)
 		// ЭТО перед default предпоследний!!!
 		case KEY_END:
 		case KEY_NUMPAD1:
-			if (Item[FocusPos].Type == DI_USERCONTROL)		// для user-типа вываливаем
+			if (Items[FocusPos].Type == DI_USERCONTROL)		// для user-типа вываливаем
 				return TRUE;
 
-			if (FarIsEdit(Item[FocusPos].Type)) {
-				Item[FocusPos].GetEdit()->ProcessKey(Key);
+			if (FarIsEdit(Items[FocusPos].Type)) {
+				Items[FocusPos].GetEdit()->ProcessKey(Key);
 				return TRUE;
 			}
 			[[fallthrough]];
@@ -2905,19 +2898,17 @@ int Dialog::ProcessKey(FarKey Key)
 		// ЭТО перед default последний!!!
 		case KEY_PGDN:
 		case KEY_NUMPAD3:
-			if (Item[FocusPos].Type == DI_USERCONTROL)		// для user-типа вываливаем
+			if (Items[FocusPos].Type == DI_USERCONTROL)		// для user-типа вываливаем
 				return TRUE;
 
-			if (Item[FocusPos].Type == DI_MEMOEDIT) {
-				Item[FocusPos].GetEdit()->ProcessKey(Key);
+			if (Items[FocusPos].Type == DI_MEMOEDIT) {
+				Items[FocusPos].GetEdit()->ProcessKey(Key);
 				return TRUE;
 			}
 
-			if (Item[FocusPos].Flags & DIF_EDITOR)
-				{} // для DIF_EDITOR будет обработано ниже [[fallthrough]]
-			else {
+			if (!(Items[FocusPos].Flags & DIF_EDITOR)) { // для DIF_EDITOR будет обработано ниже [[fallthrough]]
 				for (I = 0; I < ItemCount(); I++) {
-					if (Item[I].DefaultButton) {
+					if (Items[I].DefaultButton) {
 						ChangeFocus2(I);
 						ShowDialog();
 						return TRUE;
@@ -2928,8 +2919,8 @@ int Dialog::ProcessKey(FarKey Key)
 			[[fallthrough]];
 
 		default: {
-			if (Item[FocusPos].Type == DI_LISTBOX) {
-				VMenu *List = Item[FocusPos].ListPtr;
+			if (Items[FocusPos].Type == DI_LISTBOX) {
+				VMenu *List = Items[FocusPos].ListPtr;
 				int CurListPos = List->GetSelectPos();
 				auto CheckedListItem = List->GetCheck(-1);
 				List->ProcessKey(Key);
@@ -2941,15 +2932,15 @@ int Dialog::ProcessKey(FarKey Key)
 
 					List->SetCheck(CheckedListItem, CurListPos);
 
-					if (DialogMode.Check(DMODE_SHOW) && !(Item[FocusPos].Flags & DIF_HIDDEN))
+					if (DialogMode.Check(DMODE_SHOW) && !(Items[FocusPos].Flags & DIF_HIDDEN))
 						ShowDialog(FocusPos);	// FocusPos
 				}
 
 				return TRUE;
 			}
 
-			if (FarIsEdit(Item[FocusPos].Type)) {
-				DlgEdit *edt = Item[FocusPos].GetEdit();
+			if (FarIsEdit(Items[FocusPos].Type)) {
+				DlgEdit *edt = Items[FocusPos].GetEdit();
 
 				if (Key == KEY_CTRLL) { // исключим смену режима RO для поля ввода с клавиатуры
 					return TRUE;
@@ -2958,7 +2949,7 @@ int Dialog::ProcessKey(FarKey Key)
 					edt->ProcessKey(Key);
 					return TRUE;
 				}
-				else if ((Item[FocusPos].Flags & DIF_EDITOR) && !(Item[FocusPos].Flags & DIF_READONLY)) {
+				else if ((Items[FocusPos].Flags & DIF_EDITOR) && !(Items[FocusPos].Flags & DIF_READONLY)) {
 					switch (Key) {
 						case KEY_BS: {
 							int CurPos = edt->GetCurPos();
@@ -2966,9 +2957,9 @@ int Dialog::ProcessKey(FarKey Key)
 							// В начале строки????
 							if (!edt->GetCurPos()) {
 								// а "выше" тоже DIF_EDITOR?
-								if (FocusPos > 0 && (Item[FocusPos - 1].Flags & DIF_EDITOR)) {
+								if (FocusPos > 0 && (Items[FocusPos - 1].Flags & DIF_EDITOR)) {
 									// добавляем к предыдущему и...
-									DlgEdit *edt_1 = Item[FocusPos - 1].GetEdit();
+									DlgEdit *edt_1 = Items[FocusPos - 1].GetEdit();
 									edt_1->GetString(strStr);
 									CurPos = static_cast<int>(strStr.GetLength());
 									FARString strAdd;
@@ -2977,16 +2968,15 @@ int Dialog::ProcessKey(FarKey Key)
 									edt_1->SetString(strStr);
 
 									for (I = FocusPos + 1; I < ItemCount(); I++) {
-										if (Item[I].Flags & DIF_EDITOR) {
+										if (Items[I].Flags & DIF_EDITOR) {
 											if (I > FocusPos) {
-												Item[I].GetEdit()->GetString(strStr);
-												Item[I - 1].GetEdit()->SetString(strStr);
+												Items[I].GetEdit()->GetString(strStr);
+												Items[I - 1].GetEdit()->SetString(strStr);
 											}
-
-											Item[I].GetEdit()->SetString(L"");
-										} else		// ага, значит FocusPos это есть последний из DIF_EDITOR
-										{
-											Item[I - 1].GetEdit()->SetString(L"");
+											Items[I].GetEdit()->SetString(L"");
+										}
+										else { // ага, значит FocusPos это есть последний из DIF_EDITOR
+											Items[I - 1].GetEdit()->SetString(L"");
 											break;
 										}
 									}
@@ -3004,13 +2994,13 @@ int Dialog::ProcessKey(FarKey Key)
 
 						case KEY_CTRLY: {
 							for (I = FocusPos; I < ItemCount(); I++)
-								if (Item[I].Flags & DIF_EDITOR) {
+								if (Items[I].Flags & DIF_EDITOR) {
 									if (I > FocusPos) {
-										Item[I].GetEdit()->GetString(strStr);
-										Item[I - 1].GetEdit()->SetString(strStr);
+										Items[I].GetEdit()->GetString(strStr);
+										Items[I - 1].GetEdit()->SetString(strStr);
 									}
 
-									Item[I].GetEdit()->SetString(L"");
+									Items[I].GetEdit()->SetString(L"");
 								} else
 									break;
 
@@ -3027,7 +3017,7 @@ int Dialog::ProcessKey(FarKey Key)
 								DEL у итемов, имеющих DIF_EDITOR, работал без учета
 								выделения...
 							*/
-							if (FocusPos + 1 < ItemCount() && (Item[FocusPos + 1].Flags & DIF_EDITOR)) {
+							if (FocusPos + 1 < ItemCount() && (Items[FocusPos + 1].Flags & DIF_EDITOR)) {
 								int CurPos = edt->GetCurPos();
 								int Length = edt->GetLength();
 								int SelStart, SelEnd;
@@ -3043,7 +3033,7 @@ int Dialog::ProcessKey(FarKey Key)
 									ShowDialog();
 									return TRUE;
 								} else if (CurPos >= Length) {
-									DlgEdit *edt_1 = Item[FocusPos + 1].GetEdit();
+									DlgEdit *edt_1 = Items[FocusPos + 1].GetEdit();
 
 									/*
 										$ 12.09.2000 SVS
@@ -3074,10 +3064,10 @@ int Dialog::ProcessKey(FarKey Key)
 							int Step = (Key == KEY_PGUP || Key == KEY_NUMPAD9) ? -1 : 1;
 							I = FocusPos;
 
-							while (Item[I].Flags & DIF_EDITOR)
+							while (Items[I].Flags & DIF_EDITOR)
 								I = ChangeFocus(I, Step, false);
 
-							if (!(Item[I].Flags & DIF_EDITOR))
+							if (!(Items[I].Flags & DIF_EDITOR))
 								I = ChangeFocus(I, -Step, false);
 
 							ChangeFocus2(I);
@@ -3088,7 +3078,7 @@ int Dialog::ProcessKey(FarKey Key)
 					}
 				}
 
-				if (Key == KEY_OP_XLAT && !(Item[FocusPos].Flags & DIF_READONLY)) {
+				if (Key == KEY_OP_XLAT && !(Items[FocusPos].Flags & DIF_READONLY)) {
 					edt->SetClearFlag(false);
 					edt->Xlat();
 
@@ -3100,17 +3090,17 @@ int Dialog::ProcessKey(FarKey Key)
 					return TRUE;
 				}
 
-				if (!(Item[FocusPos].Flags & DIF_READONLY) || IsNavKey(Key)) {
+				if (!(Items[FocusPos].Flags & DIF_READONLY) || IsNavKey(Key)) {
 					// "только что ломанулись и начинать выделение с нуля"?
-					if ((Opt.Dialogs.EditLine & DLGEDITLINE_NEWSELONGOTFOCUS) && Item[FocusPos].SelStart != -1
-							&& PrevFocusPos != FocusPos) {	// && Item[FocusPos].SelEnd)
+					if ((Opt.Dialogs.EditLine & DLGEDITLINE_NEWSELONGOTFOCUS) && Items[FocusPos].SelStart != -1
+							&& PrevFocusPos != FocusPos) {	// && Items[FocusPos].SelEnd)
 
 						edt->Flags().Clear(FEDITLINE_MARKINGBLOCK);
 						PrevFocusPos = FocusPos;
 					}
 
 					if (edt->ProcessKey(Key)) {
-						if (Item[FocusPos].Flags & DIF_READONLY)
+						if (Items[FocusPos].Flags & DIF_READONLY)
 							return TRUE;
 
 						if ((Key == KEY_CTRLEND || Key == KEY_CTRLNUMPAD1)
@@ -3197,8 +3187,8 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 	MsX = MouseEvent->dwMousePosition.X;
 	MsY = MouseEvent->dwMousePosition.Y;
 
-	for (int I = ItemCount() - 1; I != -1; I--) {
-		const auto &CurItem = Item[I];
+	for (int I = ItemCount() - 1; I >= 0; I--) {
+		const auto &CurItem = Items[I];
 		if (CurItem.Flags & (DIF_DISABLE | DIF_HIDDEN))
 			continue;
 
@@ -3291,9 +3281,9 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 			&& (MouseEvent->dwButtonState
 					& (FROM_LEFT_1ST_BUTTON_PRESSED | RIGHTMOST_BUTTON_PRESSED))
 			&& FocusPos < ItemCount()
-			&& !(Item[FocusPos].Flags & (DIF_DISABLE | DIF_HIDDEN))
-			&& Item[FocusPos].Type == DI_MEMOEDIT) {
-		DlgEdit *MultilineEditor = Item[FocusPos].GetEdit();
+			&& !(Items[FocusPos].Flags & (DIF_DISABLE | DIF_HIDDEN))
+			&& Items[FocusPos].Type == DI_MEMOEDIT) {
+		DlgEdit *MultilineEditor = Items[FocusPos].GetEdit();
 		if (MultilineEditor->ProcessMouse(MouseEvent))
 			return TRUE;
 	}
@@ -3320,9 +3310,9 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 			DialogMode.Set(DMODE_CLICKOUTSIDE);
 
 		if (!MouseEvent->dwButtonState && FocusPos < ItemCount()
-				&& !(Item[FocusPos].Flags & (DIF_DISABLE | DIF_HIDDEN))
-				&& FarIsEdit(Item[FocusPos].Type)) {
-			DlgEdit *EditLine = Item[FocusPos].GetEdit();
+				&& !(Items[FocusPos].Flags & (DIF_DISABLE | DIF_HIDDEN))
+				&& FarIsEdit(Items[FocusPos].Type)) {
+			DlgEdit *EditLine = Items[FocusPos].GetEdit();
 			EditLine->ProcessMouse(MouseEvent);
 		}
 
@@ -3331,9 +3321,9 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 	}
 
 	if (!MouseEvent->dwButtonState) {
-		if (FocusPos < ItemCount() && !(Item[FocusPos].Flags & (DIF_DISABLE | DIF_HIDDEN))
-				&& FarIsEdit(Item[FocusPos].Type)) {
-			DlgEdit *EditLine = Item[FocusPos].GetEdit();
+		if (FocusPos < ItemCount() && !(Items[FocusPos].Flags & (DIF_DISABLE | DIF_HIDDEN))
+				&& FarIsEdit(Items[FocusPos].Type)) {
+			DlgEdit *EditLine = Items[FocusPos].GetEdit();
 			if (EditLine->ProcessMouse(MouseEvent))
 				return TRUE;
 		}
@@ -3344,8 +3334,8 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 
 	if (!MouseEvent->dwEventFlags || MouseEvent->dwEventFlags == DOUBLE_CLICK) {
 		// первый цикл - все за исключением рамок.
-		for (int I = ItemCount() - 1; I != -1; I--) {
-			if (Item[I].Flags & (DIF_DISABLE | DIF_HIDDEN))
+		for (int I = ItemCount() - 1; I >= 0; I--) {
+			if (Items[I].Flags & (DIF_DISABLE | DIF_HIDDEN))
 				continue;
 
 			GetItemRect(I, Rect);
@@ -3353,11 +3343,11 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 			Rect.Top+= Y1;
 			Rect.Right+= X1;
 			Rect.Bottom+= Y1;
-			//_D(SysLog(L"? %2d) Rect (%2d,%2d) (%2d,%2d) '%ls'",I,Rect.left,Rect.top,Rect.right,Rect.bottom,Item[I].Data));
+			//_D(SysLog(L"? %2d) Rect (%2d,%2d) (%2d,%2d) '%ls'",I,Rect.left,Rect.top,Rect.right,Rect.bottom,Items[I].Data));
 
 			if (MsX >= Rect.Left && MsY >= Rect.Top && MsX <= Rect.Right && MsY <= Rect.Bottom) {
 				// для прозрачных :-)
-				if (Item[I].Type == DI_SINGLEBOX || Item[I].Type == DI_DOUBLEBOX) {
+				if (Items[I].Type == DI_SINGLEBOX || Items[I].Type == DI_DOUBLEBOX) {
 					// если на рамке, то...
 					if (MsX == Rect.Left || MsX == Rect.Right || MsY == Rect.Top || MsY == Rect.Bottom)
 					{
@@ -3370,20 +3360,20 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 						continue;
 				}
 
-				if (Item[I].Type == DI_USERCONTROL) {
+				if (Items[I].Type == DI_USERCONTROL) {
 					// для user-типа подготовим координаты мыши
 					MouseEvent->dwMousePosition.X-= Rect.Left;
 					MouseEvent->dwMousePosition.Y-= Rect.Top;
 				}
 
-				//_SVS(SysLog(L"+ %2d) Rect (%2d,%2d) (%2d,%2d) '%ls' Dbl=%d",I,Rect.left,Rect.top,Rect.right,Rect.bottom,Item[I].Data,MouseEvent->dwEventFlags==DOUBLE_CLICK));
+				//_SVS(SysLog(L"+ %2d) Rect (%2d,%2d) (%2d,%2d) '%ls' Dbl=%d",I,Rect.left,Rect.top,Rect.right,Rect.bottom,Items[I].Data,MouseEvent->dwEventFlags==DOUBLE_CLICK));
 				if (DlgProc(DN_MOUSECLICK, I, (LONG_PTR)MouseEvent))
 					return TRUE;
 
 				if (!DialogMode.Check(DMODE_SHOW))
 					return TRUE;
 
-				if (Item[I].Type == DI_USERCONTROL) {
+				if (Items[I].Type == DI_USERCONTROL) {
 					ChangeFocus2(I);
 					ShowDialog();
 					return TRUE;
@@ -3394,19 +3384,19 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 		}
 
 		if (MouseEvent->dwButtonState & FROM_LEFT_1ST_BUTTON_PRESSED) {
-			for (int I = ItemCount() - 1; I != -1; I--) {
+			for (int I = ItemCount() - 1; I >= 0; I--) {
 				// Исключаем из списка оповещаемых о мыши недоступные элементы
-				if (Item[I].Flags & (DIF_DISABLE | DIF_HIDDEN))
+				if (Items[I].Flags & (DIF_DISABLE | DIF_HIDDEN))
 					continue;
 
-				Type = Item[I].Type;
+				Type = Items[I].Type;
 
 				GetItemRect(I, Rect);
 				Rect.Left+= X1;
 				Rect.Top+= Y1;
 				Rect.Right+= X1;
 				Rect.Bottom+= Y1;
-				if (Item[I].HasDropDownArrow())
+				if (Items[I].HasDropDownArrow())
 					Rect.Right++;
 
 				if (MsX >= Rect.Left && MsY >= Rect.Top && MsX <= Rect.Right && MsY <= Rect.Bottom) {
@@ -3421,17 +3411,17 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 							но перехода реального на указанный элемент диалога не происходит
 						*/
 						int EditX1, EditY1, EditX2, EditY2;
-						DlgEdit *EditLine = Item[I].GetEdit();
+						DlgEdit *EditLine = Items[I].GetEdit();
 						EditLine->GetPosition(EditX1, EditY1, EditX2, EditY2);
 
-						if (MsY == EditY1 && Type == DI_COMBOBOX && (Item[I].Flags & DIF_DROPDOWNLIST)
+						if (MsY == EditY1 && Type == DI_COMBOBOX && (Items[I].Flags & DIF_DROPDOWNLIST)
 								&& MsX >= EditX1 && MsX <= EditX2 + 1) {
 							EditLine->SetClearFlag(false);
 
 							ChangeFocus2(I);
 							ShowDialog();
 
-							ProcessOpenComboBox(Item[I].Type, Item[I], I);
+							ProcessOpenComboBox(Items[I].Type, Items[I], I);
 
 							return TRUE;
 						}
@@ -3450,15 +3440,15 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 							return TRUE;
 						} else {
 							// Проверка на DI_COMBOBOX здесь лишняя. Убрана (KM).
-							if (MsX == EditX2 + 1 && MsY == EditY1 && Item[I].HasDropDownArrow()) {
+							if (MsX == EditX2 + 1 && MsY == EditY1 && Items[I].HasDropDownArrow()) {
 								EditLine->SetClearFlag(false);	// раз уж покусились на, то и...
 
 								ChangeFocus2(I);
 
-								if (!(Item[I].Flags & DIF_HIDDEN))
+								if (!(Items[I].Flags & DIF_HIDDEN))
 									ShowDialog(I);
 
-								ProcessOpenComboBox(Item[I].Type, Item[I], I);
+								ProcessOpenComboBox(Items[I].Type, Items[I], I);
 
 								return TRUE;
 							}
@@ -3466,16 +3456,16 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 					}
 
 					/* ********************************************************** */
-					if (Type == DI_BUTTON && MsY == Y1 + Item[I].Y1
-							&& MsX < X1 + Item[I].X1 + HiStrCellsCount(Item[I].strData)) {
+					if (Type == DI_BUTTON && MsY == Y1 + Items[I].Y1
+							&& MsX < X1 + Items[I].X1 + HiStrCellsCount(Items[I].strData)) {
 						ChangeFocus2(I);
 						ShowDialog();
 
 						while (IsMouseButtonPressed())
 							;
 
-						if (MouseX < X1 || MouseX > X1 + Item[I].X1 + HiStrCellsCount(Item[I].strData) + 4
-								|| MouseY != Y1 + Item[I].Y1) {
+						if (MouseX < X1 || MouseX > X1 + Items[I].X1 + HiStrCellsCount(Items[I].strData) + 4
+								|| MouseY != Y1 + Items[I].Y1) {
 							ChangeFocus2(I);
 							ShowDialog();
 
@@ -3487,9 +3477,9 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 					}
 
 					/* ********************************************************** */
-					if ((Type == DI_CHECKBOX || Type == DI_RADIOBUTTON) && MsY == Y1 + Item[I].Y1
-							&& MsX < (X1 + Item[I].X1 + HiStrCellsCount(Item[I].strData) + 4
-										- ((Item[I].Flags & DIF_MOVESELECT) != 0))) {
+					if ((Type == DI_CHECKBOX || Type == DI_RADIOBUTTON) && MsY == Y1 + Items[I].Y1
+							&& MsX < (X1 + Items[I].X1 + HiStrCellsCount(Items[I].strData) + 4
+										- ((Items[I].Flags & DIF_MOVESELECT) != 0))) {
 						ChangeFocus2(I);
 						ProcessKey(KEY_SPACE, I);
 						return TRUE;
@@ -3623,10 +3613,10 @@ int Dialog::ProcessRadioButton(int CurRB)
 	int I;
 
 	for (I = CurRB; I; I--) {
-		if (Item[I].Type == DI_RADIOBUTTON && (Item[I].Flags & DIF_GROUP))
+		if (Items[I].Type == DI_RADIOBUTTON && (Items[I].Flags & DIF_GROUP))
 			break;
 
-		if (Item[I - 1].Type != DI_RADIOBUTTON)
+		if (Items[I - 1].Type != DI_RADIOBUTTON)
 			break;
 	}
 
@@ -3636,15 +3626,15 @@ int Dialog::ProcessRadioButton(int CurRB)
 			При изменении состояния каждого элемента посылаем сообщение
 			посредством функции SendDlgMessage - в ней делается все!
 		*/
-		if (Item[I].Selected) {
+		if (Items[I].Selected) {
 			PrevRB = I;
-			Item[I].Selected = 0;
+			Items[I].Selected = 0;
 		}
 
 		++I;
-	} while (I < ItemCount() && Item[I].Type == DI_RADIOBUTTON && !(Item[I].Flags & DIF_GROUP));
+	} while (I < ItemCount() && Items[I].Type == DI_RADIOBUTTON && !(Items[I].Flags & DIF_GROUP));
 
-	Item[CurRB].Selected = 1;
+	Items[CurRB].Selected = 1;
 
 	/*
 		$ 28.07.2000 SVS
@@ -3653,8 +3643,8 @@ int Dialog::ProcessRadioButton(int CurRB)
 	*/
 	if (!SendDlgMessage(DN_BTNCLICK, PrevRB, 0) || !SendDlgMessage(DN_BTNCLICK, CurRB, 1)) {
 		// вернем назад, если пользователь не захотел...
-		Item[CurRB].Selected = 0;
-		Item[PrevRB].Selected = 1;
+		Items[CurRB].Selected = 0;
+		Items[PrevRB].Selected = 1;
 		return PrevRB;
 	}
 
@@ -3665,12 +3655,12 @@ bool Dialog::Do_ProcessFirstCtrl()
 {
 	SCOPED_ACTION(CriticalSectionLock)(CS);
 
-	if (FarIsEdit(Item[FocusPos].Type)) {
-		Item[FocusPos].GetEdit()->ProcessKey(KEY_HOME);
+	if (FarIsEdit(Items[FocusPos].Type)) {
+		Items[FocusPos].GetEdit()->ProcessKey(KEY_HOME);
 		return true;
 	} else {
 		for (int I = 0; I < ItemCount(); I++)
-			if (Item[I].IsFocusable()) {
+			if (Items[I].IsFocusable()) {
 				ChangeFocus2(I);
 				ShowDialog();
 				break;
@@ -3686,18 +3676,18 @@ bool Dialog::Do_ProcessNextCtrl(bool Up, bool IsRedraw)
 	int OldPos = FocusPos;
 	int PrevPos = 0;
 
-	if (FarIsEdit(Item[FocusPos].Type) && (Item[FocusPos].Flags & DIF_EDITOR))
-		PrevPos = Item[FocusPos].GetEdit()->GetCurPos();
+	if (FarIsEdit(Items[FocusPos].Type) && (Items[FocusPos].Flags & DIF_EDITOR))
+		PrevPos = Items[FocusPos].GetEdit()->GetCurPos();
 
 	int I = ChangeFocus(FocusPos, Up ? -1 : 1, false);
-	Item[FocusPos].Focus = 0;
-	Item[I].Focus = 1;
+	Items[FocusPos].Focus = 0;
+	Items[I].Focus = 1;
 	ChangeFocus2(I);
 
-	if (FarIsEdit(Item[I].Type) && (Item[I].Flags & DIF_EDITOR))
-		Item[I].GetEdit()->SetCurPos(PrevPos);
+	if (FarIsEdit(Items[I].Type) && (Items[I].Flags & DIF_EDITOR))
+		Items[I].GetEdit()->SetCurPos(PrevPos);
 
-	if (Item[FocusPos].Type == DI_RADIOBUTTON && (Item[I].Flags & DIF_MOVESELECT))
+	if (Items[FocusPos].Type == DI_RADIOBUTTON && (Items[I].Flags & DIF_MOVESELECT))
 		ProcessKey(KEY_SPACE);
 	else if (IsRedraw) {
 		ShowDialog(OldPos);
@@ -3717,24 +3707,24 @@ bool Dialog::MoveToCtrlHorizontal(bool right)
 
 	for (int I = 0; I < ItemCount(); I++) {
 		//first, let's find nearest borders
-		if (Item[I].IsHorizontalSeparator()) {
-			if (Item[I].X1 < Item[FocusPos].X1){
-				if (LeftBorder < Item[I].X1) {
-					LeftBorder = Item[I].X1;
+		if (Items[I].IsHorizontalSeparator()) {
+			if (Items[I].X1 < Items[FocusPos].X1){
+				if (LeftBorder < Items[I].X1) {
+					LeftBorder = Items[I].X1;
 				}
-			} else if (Item[I].X1 > Item[FocusPos].X1) {
-				if (RightBorder > Item[I].X1) {
-					RightBorder = Item[I].X1;
+			} else if (Items[I].X1 > Items[FocusPos].X1) {
+				if (RightBorder > Items[I].X1) {
+					RightBorder = Items[I].X1;
 				}
 			}
 		}
 
 		//find nearest item _inside_ nearest borders
-		if (I != FocusPos && Item[I].IsFocusable() && Item[I].Y1 == Item[FocusPos].Y1) {
-			Dist = Item[I].X1 - Item[FocusPos].X1;
+		if (I != FocusPos && Items[I].IsFocusable() && Items[I].Y1 == Items[FocusPos].Y1) {
+			Dist = Items[I].X1 - Items[FocusPos].X1;
 
-			if ((!right && Dist < 0 &&(Item[I].X1 > LeftBorder))
-				|| (right && Dist > 0 &&(Item[I].X1 < RightBorder))
+			if ((!right && Dist < 0 &&(Items[I].X1 > LeftBorder))
+				|| (right && Dist > 0 &&(Items[I].X1 < RightBorder))
 			) {
 				if (abs(Dist) < MinDist) {
 					MinDist = abs(Dist);
@@ -3750,7 +3740,7 @@ bool Dialog::MoveToCtrlHorizontal(bool right)
 	if (MinDist < RealWidth) {
 		ChangeFocus2(MinPos);
 
-		if (Item[MinPos].Flags & DIF_MOVESELECT)
+		if (Items[MinPos].Flags & DIF_MOVESELECT)
 			Do_ProcessSpace();
 		else
 			ShowDialog();
@@ -3771,24 +3761,24 @@ bool Dialog::MoveToCtrlVertical(bool up)
 
 	for (int I = 0; I < ItemCount(); I++) {
 		//first, let's find nearest borders
-		if (Item[I].IsVerticalSeparator()) {
-			if (Item[I].Y1 < Item[FocusPos].Y1){
-				if (UpperBorder < Item[I].Y1) {
-					UpperBorder = Item[I].Y1;
+		if (Items[I].IsVerticalSeparator()) {
+			if (Items[I].Y1 < Items[FocusPos].Y1){
+				if (UpperBorder < Items[I].Y1) {
+					UpperBorder = Items[I].Y1;
 				}
-			} else if (Item[I].Y1 > Item[FocusPos].Y1) {
-				if (BottomBorder > Item[I].Y1) {
-					BottomBorder = Item[I].Y1;
+			} else if (Items[I].Y1 > Items[FocusPos].Y1) {
+				if (BottomBorder > Items[I].Y1) {
+					BottomBorder = Items[I].Y1;
 				}
 			}
 		}
 
 		//find nearest item _inside_ nearest borders
-		if (I != FocusPos && Item[I].IsFocusable() && Item[I].X1 == Item[FocusPos].X1) {
-			Dist = Item[I].Y1 - Item[FocusPos].Y1;
+		if (I != FocusPos && Items[I].IsFocusable() && Items[I].X1 == Items[FocusPos].X1) {
+			Dist = Items[I].Y1 - Items[FocusPos].Y1;
 
-			if ((up && Dist < 0 && (Item[I].Y1 > UpperBorder))
-				|| (!up && Dist > 0 && (Item[I].Y1 < BottomBorder))
+			if ((up && Dist < 0 && (Items[I].Y1 > UpperBorder))
+				|| (!up && Dist > 0 && (Items[I].Y1 < BottomBorder))
 			) {
 				if (abs(Dist) < MinDist) {
 					MinDist = abs(Dist);
@@ -3804,7 +3794,7 @@ bool Dialog::MoveToCtrlVertical(bool up)
 	if (MinDist < 3) {
 		ChangeFocus2(MinPos);
 
-		if (Item[MinPos].Flags & DIF_MOVESELECT)
+		if (Items[MinPos].Flags & DIF_MOVESELECT)
 			Do_ProcessSpace();
 		else
 			ShowDialog();
@@ -3822,19 +3812,19 @@ bool Dialog::Do_ProcessTab(bool Next)
 
 	if (ItemCount() > 1) {
 		// Must check for DI_EDIT since DIF_EDITOR and DIF_LISTNOAMPERSAND are equal
-		if (Item[FocusPos].Type==DI_EDIT && (Item[FocusPos].Flags & DIF_EDITOR)) {
+		if (Items[FocusPos].Type==DI_EDIT && (Items[FocusPos].Flags & DIF_EDITOR)) {
 			I = FocusPos;
 
-			while (Item[I].Type==DI_EDIT && (Item[I].Flags & DIF_EDITOR))
+			while (Items[I].Type==DI_EDIT && (Items[I].Flags & DIF_EDITOR))
 				I = ChangeFocus(I, Next ? 1 : -1, true);
 		} else {
 			I = ChangeFocus(FocusPos, Next ? 1 : -1, true);
 
 			if (!Next)
 				while (I > 0
-						&& Item[I].Type == DI_EDIT && Item[I - 1].Type == DI_EDIT
-						&& (Item[I].Flags & DIF_EDITOR) && (Item[I - 1].Flags & DIF_EDITOR)
-						&& !Item[I].GetEdit()->GetLength())
+						&& Items[I].Type == DI_EDIT && Items[I - 1].Type == DI_EDIT
+						&& (Items[I].Flags & DIF_EDITOR) && (Items[I - 1].Flags & DIF_EDITOR)
+						&& !Items[I].GetEdit()->GetLength())
 					I--;
 		}
 	}
@@ -3851,27 +3841,27 @@ bool Dialog::Do_ProcessSpace()
 {
 	SCOPED_ACTION(CriticalSectionLock)(CS);
 
-	if (Item[FocusPos].Type == DI_CHECKBOX) {
-		int OldSelected = Item[FocusPos].Selected;
+	if (Items[FocusPos].Type == DI_CHECKBOX) {
+		int OldSelected = Items[FocusPos].Selected;
 
-		if (Item[FocusPos].Flags & DIF_3STATE) {
-			Item[FocusPos].Selected = (Item[FocusPos].Selected + 1) % 3;
+		if (Items[FocusPos].Flags & DIF_3STATE) {
+			Items[FocusPos].Selected = (Items[FocusPos].Selected + 1) % 3;
 		} else
-			Item[FocusPos].Selected = !Item[FocusPos].Selected;
+			Items[FocusPos].Selected = !Items[FocusPos].Selected;
 
 		int OldFocusPos = FocusPos;
 
-		if (!SendDlgMessage(DN_BTNCLICK, FocusPos, Item[FocusPos].Selected))
-			Item[OldFocusPos].Selected = OldSelected;
+		if (!SendDlgMessage(DN_BTNCLICK, FocusPos, Items[FocusPos].Selected))
+			Items[OldFocusPos].Selected = OldSelected;
 
 		ShowDialog();
 		return true;
-	} else if (Item[FocusPos].Type == DI_RADIOBUTTON) {
+	} else if (Items[FocusPos].Type == DI_RADIOBUTTON) {
 		FocusPos = ProcessRadioButton(FocusPos);
 		ShowDialog();
 		return true;
-	} else if (FarIsEdit(Item[FocusPos].Type) && !(Item[FocusPos].Flags & DIF_READONLY)) {
-		if (Item[FocusPos].GetEdit()->ProcessKey(KEY_SPACE)) {
+	} else if (FarIsEdit(Items[FocusPos].Type) && !(Items[FocusPos].Flags & DIF_READONLY)) {
+		if (Items[FocusPos].GetEdit()->ProcessKey(KEY_SPACE)) {
 			Redraw();	// Перерисовка должна идти после DN_EDITCHANGE (imho)
 		}
 
@@ -3911,9 +3901,9 @@ int Dialog::ChangeFocus(int CurFocusPos, int Step, bool SkipGroup)
 			CurFocusPos = 0;
 		}
 
-		if (Item[CurFocusPos].IsFocusable()) {
+		if (Items[CurFocusPos].IsFocusable()) {
 			//move straight to selected radio when SkipGroup is true
-			if (Item[CurFocusPos].Type != DI_RADIOBUTTON || (SkipGroup && Item[CurFocusPos].Selected))
+			if (Items[CurFocusPos].Type != DI_RADIOBUTTON || (SkipGroup && Items[CurFocusPos].Selected))
 				break;
 		}
 
@@ -3935,7 +3925,7 @@ void Dialog::ChangeFocus2(int SetFocusPos)
 	SCOPED_ACTION(CriticalSectionLock)(CS);
 	int FocusPosNeed = -1;
 
-	if (Item[SetFocusPos].IsFocusable()) {
+	if (Items[SetFocusPos].IsFocusable()) {
 		if (DialogMode.Check(DMODE_INITOBJECTS)) {
 			FocusPosNeed = (int)DlgProc(DN_KILLFOCUS, FocusPos, 0);
 
@@ -3943,37 +3933,37 @@ void Dialog::ChangeFocus2(int SetFocusPos)
 				return;
 		}
 
-		if (FocusPosNeed >= 0 && FocusPosNeed < ItemCount() && Item[FocusPosNeed].IsFocusable())
+		if (FocusPosNeed >= 0 && FocusPosNeed < ItemCount() && Items[FocusPosNeed].IsFocusable())
 			SetFocusPos = FocusPosNeed;
 
-		for (auto &i: Item)
+		for (auto &i: Items)
 			i.Focus = 0;
 
 		// "снимать выделение при потере фокуса?"
-		if (FarIsEdit(Item[FocusPos].Type)
-				&& !(Item[FocusPos].Type == DI_COMBOBOX && (Item[FocusPos].Flags & DIF_DROPDOWNLIST))) {
-			DlgEdit *EditPtr = Item[FocusPos].GetEdit();
-			EditPtr->GetSelection(Item[FocusPos].SelStart, Item[FocusPos].SelEnd);
+		if (FarIsEdit(Items[FocusPos].Type)
+				&& !(Items[FocusPos].Type == DI_COMBOBOX && (Items[FocusPos].Flags & DIF_DROPDOWNLIST))) {
+			DlgEdit *EditPtr = Items[FocusPos].GetEdit();
+			EditPtr->GetSelection(Items[FocusPos].SelStart, Items[FocusPos].SelEnd);
 
 			if ((Opt.Dialogs.EditLine & DLGEDITLINE_CLEARSELONKILLFOCUS)) {
 				EditPtr->Select(-1, 0);
 			}
 		}
 
-		Item[SetFocusPos].Focus = 1;
+		Items[SetFocusPos].Focus = 1;
 
 		// "не восстанавливать выделение при получении фокуса?"
-		if (FarIsEdit(Item[SetFocusPos].Type)
-				&& !(Item[SetFocusPos].Type == DI_COMBOBOX
-						&& (Item[SetFocusPos].Flags & DIF_DROPDOWNLIST)))
+		if (FarIsEdit(Items[SetFocusPos].Type)
+				&& !(Items[SetFocusPos].Type == DI_COMBOBOX
+						&& (Items[SetFocusPos].Flags & DIF_DROPDOWNLIST)))
 		{
-			DlgEdit *EditPtr = Item[SetFocusPos].GetEdit();
+			DlgEdit *EditPtr = Items[SetFocusPos].GetEdit();
 
 			if (!(Opt.Dialogs.EditLine & DLGEDITLINE_NOTSELONGOTFOCUS)) {
 				if (Opt.Dialogs.EditLine & DLGEDITLINE_SELALLGOTFOCUS)
 					EditPtr->Select(0, EditPtr->GetStrSize());
 				else
-					EditPtr->Select(Item[SetFocusPos].SelStart, Item[SetFocusPos].SelEnd);
+					EditPtr->Select(Items[SetFocusPos].SelStart, Items[SetFocusPos].SelEnd);
 			} else {
 				EditPtr->Select(-1, 0);
 			}
@@ -3985,11 +3975,11 @@ void Dialog::ChangeFocus2(int SetFocusPos)
 		}
 
 		// проинформируем листбокс, есть ли у него фокус
-		if (Item[FocusPos].Type == DI_LISTBOX)
-			Item[FocusPos].ListPtr->ClearFlags(VMENU_LISTHASFOCUS);
+		if (Items[FocusPos].Type == DI_LISTBOX)
+			Items[FocusPos].ListPtr->ClearFlags(VMENU_LISTHASFOCUS);
 
-		if (Item[SetFocusPos].Type == DI_LISTBOX)
-			Item[SetFocusPos].ListPtr->SetFlags(VMENU_LISTHASFOCUS);
+		if (Items[SetFocusPos].Type == DI_LISTBOX)
+			Items[SetFocusPos].ListPtr->SetFlags(VMENU_LISTHASFOCUS);
 
 		SelectOnEntry(FocusPos, false);
 		SelectOnEntry(SetFocusPos, true);
@@ -3997,7 +3987,7 @@ void Dialog::ChangeFocus2(int SetFocusPos)
 		PrevFocusPos = FocusPos;
 		FocusPos = SetFocusPos;
 
-		SetMacroArea(Item[FocusPos].Type == DI_MEMOEDIT ? MACROAREA_MEMOEDIT : MACROAREA_DIALOG);
+		SetMacroArea(Items[FocusPos].Type == DI_MEMOEDIT ? MACROAREA_MEMOEDIT : MACROAREA_DIALOG);
 
 		if (DialogMode.Check(DMODE_INITOBJECTS))
 			DlgProc(DN_GOTFOCUS, FocusPos, 0);
@@ -4012,10 +4002,10 @@ void Dialog::SelectOnEntry(int Pos, bool Selected)
 {
 	// if(!DialogMode.Check(DMODE_SHOW))
 	//	return;
-	if (FarIsEdit(Item[Pos].Type) && (Item[Pos].Flags & DIF_SELECTONENTRY))
+	if (FarIsEdit(Items[Pos].Type) && (Items[Pos].Flags & DIF_SELECTONENTRY))
 			//		&& PrevFocusPos != -1 && PrevFocusPos != Pos
 	{
-		if (auto edt = Item[Pos].GetEdit()) {
+		if (auto edt = Items[Pos].GetEdit()) {
 			if (Selected)
 				edt->Select(0, edt->GetLength());
 			else
@@ -4029,10 +4019,10 @@ void Dialog::SetAutomation(int IDParent, int id, FarDialogItemFlags UncheckedSet
 		FarDialogItemFlags Checked3Set, FarDialogItemFlags Checked3Skip)
 {
 	SCOPED_ACTION(CriticalSectionLock)(CS);
-	if (IDParent < ItemCount() && (Item[IDParent].Flags & DIF_AUTOMATION) && id < ItemCount()
+	if (IDParent < ItemCount() && (Items[IDParent].Flags & DIF_AUTOMATION) && id < ItemCount()
 			&& IDParent != id)		// Сами себя не юзаем!
 	{
-		Item[IDParent].AddAutomation(id, UncheckedSet, UncheckedSkip, CheckedSet, CheckedSkip,
+		Items[IDParent].AddAutomation(id, UncheckedSet, UncheckedSkip, CheckedSet, CheckedSkip,
 				Checked3Set, Checked3Skip);
 	}
 }
@@ -4242,12 +4232,12 @@ int Dialog::CheckHighlights(WORD CheckSymbol, int StartPos)
 		StartPos = 0;
 
 	for (int I = StartPos; I < ItemCount(); I++) {
-		int Type = Item[I].Type;
-		DWORD Flags = Item[I].Flags;
+		int Type = Items[I].Type;
+		DWORD Flags = Items[I].Flags;
 
 		if ((!FarIsEdit(Type) || (Type == DI_COMBOBOX && (Flags & DIF_DROPDOWNLIST)))
 				&& !(Flags & (DIF_SHOWAMPERSAND | DIF_DISABLE | DIF_HIDDEN))) {
-			const wchar_t *ChPtr = wcschr(Item[I].strData, L'&');
+			const wchar_t *ChPtr = wcschr(Items[I].strData, L'&');
 
 			if (ChPtr) {
 				WORD Ch = ChPtr[1];
@@ -4271,35 +4261,35 @@ bool Dialog::ProcessHighlighting(FarKey Key, int FocusPos, bool Translate)
 	SCOPED_ACTION(CriticalSectionLock)(CS);
 
 	for (int I = 0; I < ItemCount(); I++) {
-		int Type = Item[I].Type;
-		DWORD Flags = Item[I].Flags;
+		int Type = Items[I].Type;
+		DWORD Flags = Items[I].Flags;
 
 		if ((!FarIsEdit(Type) || (Type == DI_COMBOBOX && (Flags & DIF_DROPDOWNLIST)))
 				&& !(Flags & (DIF_SHOWAMPERSAND | DIF_DISABLE | DIF_HIDDEN)))
 		{
-			if (IsKeyHighlighted(Item[I].strData, Key, Translate))
+			if (IsKeyHighlighted(Items[I].strData, Key, Translate))
 			{
 				bool DisableSelect = false;
 
 				// Если ЭТО: DlgEdit(пред контрол) и DI_TEXT в одну строку, то...
 				if (I > 0 && Type == DI_TEXT &&										// DI_TEXT
-						FarIsEdit(Item[I - 1].Type) &&								// и редактор
-						Item[I].Y1 == Item[I - 1].Y1 &&							// и оба в одну строку
-						(I + 1 < ItemCount() && Item[I].Y1 != Item[I + 1].Y1))		// ...и следующий контрол в другой строке
+						FarIsEdit(Items[I - 1].Type) &&								// и редактор
+						Items[I].Y1 == Items[I - 1].Y1 &&							// и оба в одну строку
+						(I + 1 < ItemCount() && Items[I].Y1 != Items[I + 1].Y1))		// ...и следующий контрол в другой строке
 				{
 					// Сначала сообщим о случившемся факте процедуре обработки диалога, а потом...
 					if (!DlgProc(DN_HOTKEY, I, Key))
 						break;	// сказали не продолжать обработку...
 
 					// ... если предыдущий контрол задизаблен или невидим, тогда выходим.
-					if ((Item[I - 1].Flags & (DIF_DISABLE | DIF_HIDDEN)))	// и не задисаблен
+					if ((Items[I - 1].Flags & (DIF_DISABLE | DIF_HIDDEN)))	// и не задисаблен
 						break;
 
 					I = ChangeFocus(I, -1, false);
 					DisableSelect = true;
 				}
-				else if (Item[I].Type == DI_TEXT || Item[I].Type == DI_VTEXT
-						|| Item[I].Type == DI_SINGLEBOX || Item[I].Type == DI_DOUBLEBOX)
+				else if (Items[I].Type == DI_TEXT || Items[I].Type == DI_VTEXT
+						|| Items[I].Type == DI_SINGLEBOX || Items[I].Type == DI_DOUBLEBOX)
 				{
 					if (I + 1 < ItemCount())		// ...и следующий контрол
 					{
@@ -4308,7 +4298,7 @@ bool Dialog::ProcessHighlighting(FarKey Key, int FocusPos, bool Translate)
 							break;	// сказали не продолжать обработку...
 
 						// ... если следующий контрол задизаблен или невидим, тогда выходим.
-						if (Item[I + 1].Flags & (DIF_DISABLE | DIF_HIDDEN))	// и не задисаблен
+						if (Items[I + 1].Flags & (DIF_DISABLE | DIF_HIDDEN))	// и не задисаблен
 							break;
 
 						I = ChangeFocus(I, 1, false);
@@ -4323,19 +4313,19 @@ bool Dialog::ProcessHighlighting(FarKey Key, int FocusPos, bool Translate)
 				ChangeFocus2(I);
 				ShowDialog();
 
-				if ((Item[I].Type == DI_CHECKBOX || Item[I].Type == DI_RADIOBUTTON)
-						&& (!DisableSelect || (Item[I].Flags & DIF_MOVESELECT)))
+				if ((Items[I].Type == DI_CHECKBOX || Items[I].Type == DI_RADIOBUTTON)
+						&& (!DisableSelect || (Items[I].Flags & DIF_MOVESELECT)))
 				{
 					Do_ProcessSpace();
 					return true;
 				}
-				else if (Item[I].Type == DI_BUTTON) {
+				else if (Items[I].Type == DI_BUTTON) {
 					ProcessKey(KEY_ENTER, I);
 					return true;
 				}
 				// при ComboBox`е - "вываливаем" последний //????
-				else if (Item[I].Type == DI_COMBOBOX) {
-					ProcessOpenComboBox(Item[I].Type, Item[I], I);
+				else if (Items[I].Type == DI_COMBOBOX) {
+					ProcessOpenComboBox(Items[I].Type, Items[I], I);
 					// ProcessKey(KEY_CTRLDOWN);
 					return true;
 				}
@@ -4360,7 +4350,7 @@ void Dialog::AdjustEditPos(int dx, int dy)
 
 	ScreenObject *DialogScrObject;
 
-	for (const auto &CurItem: Item) {
+	for (const auto &CurItem: Items) {
 		int Type = CurItem.Type;
 
 		if ((CurItem.ObjPtr && FarIsEdit(Type)) || (CurItem.ListPtr && Type == DI_LISTBOX)) {
@@ -4438,7 +4428,7 @@ void Dialog::Process()
 
 	if (pSaveItemEx)
 		for (int i = 0; i < ItemCount(); i++)
-			pSaveItemEx[i] = Item[i];
+			pSaveItemEx[i] = Items[i];
 }
 
 void Dialog::CloseDialog()
@@ -4645,10 +4635,10 @@ LONG_PTR Dialog::DefDlgProc(int Msg, int Param1, LONG_PTR Param2)
 	}
 
 	// предварительно проверим...
-	if (Param1 < 0 || Param1 >= ItemCount() || Item.empty())
+	if (Param1 < 0 || Param1 >= ItemCount() || Items.empty())
 		return 0;
 
-	DialogItemEx &CurItem = Item[Param1];
+	DialogItemEx &CurItem = Items[Param1];
 
 	switch (Msg) {
 		case DN_MOUSECLICK:
@@ -4745,7 +4735,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 					SMALL_RECT Rect;
 
 					for (int I = 0; I < ItemCount(); I++) {
-						DialogItemEx &cItem = Item[I];
+						DialogItemEx &cItem = Items[I];
 
 						if (cItem.Flags & DIF_HIDDEN)
 							continue;
@@ -4998,11 +4988,11 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 		$ 09.12.2001 DJ
 		для DM_USER проверять _не_надо_!
 	*/
-	if (Param1 < 0 || Param1 >= ItemCount() || Item.empty())
+	if (Param1 < 0 || Param1 >= ItemCount() || Items.empty())
 		return 0;
 
 	size_t Len = 0;
-	DialogItemEx &CurItem = Item[Param1];
+	DialogItemEx &CurItem = Items[Param1];
 	int Type = CurItem.Type;
 	const wchar_t *Ptr = CurItem.strData;
 
@@ -5111,7 +5101,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 								Item->Text = ListMenuItem->strName;
 								/*
 								if(ListMenuItem->UserDataSize <= sizeof(DWORD)) //???
-									Item->UserData=ListMenuItem->UserData;
+									Items->UserData=ListMenuItem->UserData;
 								*/
 								return TRUE;
 							}
@@ -5480,13 +5470,13 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 			if (!CurItem.CopyToPluginItem(&Item, false))
 				return FALSE;	// no memory TODO: may be needed diagnostic
 
-			INT_PTR I = 0;
+			INT_PTR Ret = 0;
 			if (CurItem.Type == DI_EDIT || CurItem.Type == DI_COMBOBOX || CurItem.Type == DI_FIXEDIT
 					|| CurItem.Type == DI_PSWEDIT) {
 				CurItem.GetEdit()->SetCallbackState(false);
 				const wchar_t *original_PtrData = Item.PtrData;
-				I = CallDlgProc(DN_EDITCHANGE, Param1, (LONG_PTR)&Item);
-				if (I) {
+				Ret = CallDlgProc(DN_EDITCHANGE, Param1, (LONG_PTR)&Item);
+				if (Ret) {
 					if (Type == DI_COMBOBOX && CurItem.ListPtr)
 						CurItem.ListPtr->ChangeFlags(VMENU_DISABLED, CurItem.Flags & DIF_DISABLE);
 				}
@@ -5495,7 +5485,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 				CurItem.GetEdit()->SetCallbackState(true);
 			}
 
-			return I;
+			return Ret;
 		}
 		/*****************************************************************/
 		case DN_BTNCLICK: {
@@ -5564,20 +5554,20 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 		}
 		/*****************************************************************/
 		case DN_DRAWDLGITEM: {
-			FarDialogItem Item;
+			FarDialogItem item;
 
-			if (!CurItem.CopyToPluginItem(&Item, false))
+			if (!CurItem.CopyToPluginItem(&item, false))
 				return FALSE;	// no memory TODO: may be needed diagnostic
 
-			INT_PTR I = CallDlgProc(Msg, Param1, (LONG_PTR)&Item);
+			INT_PTR Ret = CallDlgProc(Msg, Param1, (LONG_PTR)&item);
 
 			if ((Type == DI_LISTBOX || Type == DI_COMBOBOX) && CurItem.ListPtr)
 				CurItem.ListPtr->ChangeFlags(VMENU_DISABLED, CurItem.Flags & DIF_DISABLE);
 
-			if (Item.PtrData)
-				free((wchar_t *)Item.PtrData);
+			if (item.PtrData)
+				free((wchar_t *)item.PtrData);
 
-			return I;
+			return Ret;
 		}
 		/*****************************************************************/
 		case DM_SETFOCUS: {
@@ -6247,7 +6237,7 @@ void Dialog::SetComboBoxPos(DialogItemEx *CurItem)
 {
 	if (GetDropDownOpened()) {
 		if (!CurItem) {
-			CurItem = &Item[FocusPos];
+			CurItem = &Items[FocusPos];
 		}
 		int EditX1, EditY1, EditX2, EditY2;
 		CurItem->GetEdit()->GetPosition(EditX1, EditY1, EditX2, EditY2);
@@ -6270,8 +6260,8 @@ bool Dialog::ProcessEvents() const
 Editor* Dialog::GetMemoEdit(int Pos) const
 {
 	Pos = (Pos < 0) ? FocusPos : Pos;
-	if (Pos >= 0 && Pos < ItemCount() && Item[Pos].Type == DI_MEMOEDIT) {
-		return Item[Pos].GetEdit()->GetMemoEdit();
+	if (Pos >= 0 && Pos < ItemCount() && Items[Pos].Type == DI_MEMOEDIT) {
+		return Items[Pos].GetEdit()->GetMemoEdit();
 	}
 	return nullptr;
 }
@@ -6280,7 +6270,7 @@ void Dialog::ApplyAutomation(const DialogItemEx &SrcItem)
 {
 	const auto State = SrcItem.Selected;
 	for (auto &A: SrcItem.Auto) {
-		auto &TargetItem = Item[A.Target];
+		auto &TargetItem = Items[A.Target];
 		TargetItem.Flags &= ~A.Flags[State][1];
 		TargetItem.Flags |= A.Flags[State][0];
 		// здесь намеренно в обработчик не посылаются эвенты об изменении состояния...

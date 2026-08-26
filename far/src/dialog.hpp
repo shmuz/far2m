@@ -225,7 +225,7 @@ private:
 	LONG_PTR DataDialog;		// Данные, специфические для конкретного экземпляра диалога
 								//           (первоначально здесь параметр, переданный в конструктор)
 
-	std::vector<DialogItemEx> Item;	// массив элементов диалога
+	std::vector<DialogItemEx> Items;	// массив элементов диалога
 	DialogItemEx *pSaveItemEx;	// пользовательский массив элементов диалога
 
 	ConsoleTitle *OldTitle;		// предыдущий заголовок
@@ -365,8 +365,8 @@ public:
 	void CloseDialog();
 
 	// For MACRO
-	const DialogItemEx *GetAllItem() const { return Item.data(); };
-	int ItemCount() const { return Item.size(); };	// количество элементов диалога
+	const DialogItemEx *GetAllItem() const { return Items.data(); };
+	int ItemCount() const { return Items.size(); };	// количество элементов диалога
 	int GetDlgFocusPos() const { return FocusPos; };
 
 	void SetAutomation(int IDParent, int id, FarDialogItemFlags UncheckedSet,
