@@ -2153,8 +2153,8 @@ void FarMacroApi::dlggetvalueFunc()
 					Ret=Item.strData.CPtr();
 					if (FarIsEdit(ItemType))
 					{
-						if (auto EditPtr = (DlgEdit*)(Item.ObjPtr))
-							Ret = EditPtr->GetStringAddr();
+						if (Item.EditPtr)
+							Ret = Item.EditPtr->GetStringAddr();
 					}
 					break;
 				}

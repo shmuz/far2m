@@ -102,7 +102,7 @@ struct DlgUserCursor
 
 /*
 Описывает один элемент диалога - внутренне представление.
-Для плагинов это FarDialogItem (за исключением ObjPtr)
+Для плагинов это FarDialogItem (за исключением EditPtr)
 */
 struct DialogItemEx
 {
@@ -134,7 +134,7 @@ struct DialogItemEx
 	DWORD_PTR UserData;		// ассоциированные данные
 
 	// прочее
-	void *ObjPtr;
+	DlgEdit *EditPtr;
 	VMenu *ListPtr;
 	DlgUserCursor *UCData;
 
@@ -169,8 +169,6 @@ struct DialogItemEx
 	void     CopyToItemSmall(FarDialogItem *Item) const;
 	bool     CopyToPluginItem(FarDialogItem *Item, bool shortMode) const;
 	size_t   GetDlgItem(FarDialogItem *Item) const;
-	DlgEdit* GetEdit() const { return static_cast<DlgEdit*>(ObjPtr); }
-	DlgEdit* GetEdit() { return static_cast<DlgEdit*>(ObjPtr); }
 	size_t   GetStringAndSize(FARString &ItemString) const;
 	bool     HasDropDownArrow() const;
 	bool     IsFocusable() const;
