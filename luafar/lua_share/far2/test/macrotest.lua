@@ -21,6 +21,7 @@ Macro {
 local MT = {} -- "macrotest", this module
 
 local asrt = require "far2.assert"
+MT.Mod_Dialog = require "far2.test.test_dialog";
 MT.Mod_Editor = require "far2.test.test_editor";
 MT.Mod_FSF    = require "far2.test.test_fsf";
 MT.Mod_Luafar = require "far2.test.test_luafar";
@@ -1147,6 +1148,57 @@ local function test_Menu_Mantis_2343()
   asrt.istrue(Area.Shell)
 end
 
+--[[------------------------------------------------------------------------------------------------
+0002554: При фильтрации видны элементы меню скрытые с помощью MIF_HIDDEN
+
+Description:
+Если активировать фильтр меню (RAlt), и начать фильтровать список, то подходящие под фильтр элементы
+(с флагом MIF_HIDDEN) также будут видны.
+
+Даже если ни один из скрытых элементов не подходит, то при отмене фильтра все они появятся.
+--]]------------------------------------------------------------------------------------------------
+local function test_Menu_Mantis_2554()
+  local Items = {
+    {text="hidden", hidden=true}, {text="visible"},
+  }
+
+  local AssertInvariant = function()
+    asrt.eq(0x20, Menu.ItemStatus(1)) -- Если флаг установлен, то пункт меню не выводится на экран.
+    asrt.eq(0x01, Menu.ItemStatus(2)) -- Признак активности. Только один пункт может быть активным.
+  end
+  local AssertFilterIsOff = function() asrt.eq(0, Menu.Filter(0,-1)) end
+  local AssertFilterIsOn  = function() asrt.eq(1, Menu.Filter(0,-1)) end
+
+  -- open the menu
+  asrt.istrue(Area.Shell)
+  mf.acall(far.Menu,{},Items)
+  asrt.istrue(Area.Menu)
+  AssertFilterIsOff()
+  AssertInvariant()
+
+  -- turn the menu filter on
+  Keys("CtrlAltF")
+  AssertFilterIsOn()
+  AssertInvariant()
+
+  -- input something into the filter
+  Keys("I")
+  AssertInvariant()
+  Keys("BS")
+  AssertInvariant()
+  AssertFilterIsOn()
+
+  -- turn the menu filter off
+  Keys("CtrlAltF")
+  AssertFilterIsOff()
+  AssertInvariant()
+
+  -- close the menu
+  asrt.istrue(Area.Menu)
+  Keys("Esc")
+  asrt.istrue(Area.Shell)
+end
+
 function MT.test_Menu()
   asrt.func(Menu.Filter)
   asrt.func(Menu.FilterStr)
@@ -1156,6 +1208,7 @@ function MT.test_Menu()
 
   test_Menu_F11()
   test_Menu_Mantis_2343()
+  test_Menu_Mantis_2554()
 end
 
 function MT.test_Object()
@@ -1456,85 +1509,6 @@ function MT.test_Delete_Wipe()
   asrt.eq(APanel.ItemCount, 1)
 end
 
---[[------------------------------------------------------------------------------------------------
-0001722: DN_EDITCHANGE приходит лишний раз и с ложной информацией
-
-Description:
-  [ Far 2.0.1807, Far 3.0.1897 ]
-  Допустим диалог состоит из единственного элемента DI_EDIT, больше элементов нет. При появлении
-  диалога сразу нажмём на клавишу, допустим, W. Приходят два события DN_EDITCHANGE вместо одного,
-  причём в первом из них PtrData указывает на пустую строку.
-
-  Последующие нажатия на клавиши, вызывающие изменения текста, отрабатываются правильно, лишние
-  ложные события не приходят.
---]]------------------------------------------------------------------------------------------------
-function MT.test_mantis_1722()
-  local check = 0
-  local function DlgProc (hDlg, msg, p1, p2)
-    if msg == F.DN_EDITCHANGE then
-      check = check + 1
-      asrt.eq(p1, 1)
-    end
-  end
-  local Dlg = { {"DI_EDIT", 3,1,56,10, 0,0,0,0, "a"}, }
-  mf.acall(far.Dialog, nil,-1,-1,60,3,"Contents",Dlg, 0, DlgProc)
-  asrt.istrue(Area.Dialog)
-  Keys("W 1 2 3 4 BS Esc")
-  asrt.eq(check, 6)
-  asrt.eq(Dlg[1][10], "W123")
-end
-
---[[------------------------------------------------------------------------------------------------
-0002554: При фильтрации видны элементы меню скрытые с помощью MIF_HIDDEN
-
-Description:
-Если активировать фильтр меню (RAlt), и начать фильтровать список, то подходящие под фильтр элементы
-(с флагом MIF_HIDDEN) также будут видны.
-
-Даже если ни один из скрытых элементов не подходит, то при отмене фильтра все они появятся.
---]]------------------------------------------------------------------------------------------------
-function MT.test_mantis_2554()
-  local Items = {
-    {text="hidden", hidden=true}, {text="visible"},
-  }
-
-  local AssertInvariant = function()
-    asrt.eq(0x20, Menu.ItemStatus(1)) -- Если флаг установлен, то пункт меню не выводится на экран.
-    asrt.eq(0x01, Menu.ItemStatus(2)) -- Признак активности. Только один пункт может быть активным.
-  end
-  local AssertFilterIsOff = function() asrt.eq(0, Menu.Filter(0,-1)) end
-  local AssertFilterIsOn  = function() asrt.eq(1, Menu.Filter(0,-1)) end
-
-  -- open the menu
-  asrt.istrue(Area.Shell)
-  mf.acall(far.Menu,{},Items)
-  asrt.istrue(Area.Menu)
-  AssertFilterIsOff()
-  AssertInvariant()
-
-  -- turn the menu filter on
-  Keys("CtrlAltF")
-  AssertFilterIsOn()
-  AssertInvariant()
-
-  -- input something into the filter
-  Keys("I")
-  AssertInvariant()
-  Keys("BS")
-  AssertInvariant()
-  AssertFilterIsOn()
-
-  -- turn the menu filter off
-  Keys("CtrlAltF")
-  AssertFilterIsOff()
-  AssertInvariant()
-
-  -- close the menu
-  asrt.istrue(Area.Menu)
-  Keys("Esc")
-  asrt.istrue(Area.Shell)
-end
-
 function MT.test_all()
   asrt.istrue(Area.Shell, "Run these tests from the Shell area.")
   asrt.isfalse(APanel.Plugin or PPanel.Plugin, "Run these tests when neither of panels is a plugin panel.")
@@ -1551,13 +1525,12 @@ function MT.test_all()
   MT.test_Mouse()
   MT.test_Object()
   MT.test_Plugin()
-  MT.test_mantis_1722()
   MT.test_coroutine()
   MT.test_UserDefinedList()
   MT.test_F3_F4_F8()
   MT.test_Delete_Wipe()
-  MT.test_mantis_2554()
 
+  MT.Mod_Dialog.test_all()
   MT.Mod_Editor.test_all()
   MT.Mod_FSF.test_all()
   MT.Mod_Luafar.test_all()
