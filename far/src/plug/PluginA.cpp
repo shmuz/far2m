@@ -1188,6 +1188,8 @@ void PluginA::ExitFAR()
 
 void PluginA::ClearExports()
 {
+	pGetGlobalInfoW = nullptr;
+
 	for (const auto& entry : PLUGIN_EXPORTS)
 		entry.setter(this, nullptr);
 }

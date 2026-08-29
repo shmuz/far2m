@@ -1270,6 +1270,8 @@ int PluginW::ProcessConsoleInput(INPUT_RECORD *D)
 
 void PluginW::ClearExports()
 {
+	pGetGlobalInfoW = nullptr;
+
 	for (const auto& entry : PLUGIN_EXPORTS)
 		entry.setter(this, nullptr);
 }
