@@ -549,6 +549,7 @@ static BOOL LoadLuafar()
 			const auto strName = std::string(*path) + name + ext;
 			handle = dlopen(strName.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 		}
+		if (handle) break;
 	}
 
 	if (!handle)
