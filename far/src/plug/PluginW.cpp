@@ -512,43 +512,61 @@ static BOOL LoadLuafar()
 	return TRUE;
 #else
 
-	// 1. Load Lua
+	// 1. Extension & path definitions for system Lua runtime
 #ifdef __APPLE__
 	const char *ext = ".dylib";
-	const char *paths[] = { "", "/opt/homebrew/lib/", nullptr };
+	const char *paths[] = {
+		"",
+		"/opt/homebrew/lib/", // Apple Silicon Homebrew
+		"/usr/local/lib/",    // Intel Homebrew / manual installs
+		"/opt/local/lib/",    // MacPorts
+		nullptr
+	};
 #else
 	const char *ext = ".so";
-	const char *paths[] = { "", "/usr/local/lib/", "/usr/lib/", nullptr };
+	const char *paths[] = {
+		"",
+		"/usr/local/lib/",
+		"/usr/lib/",
+		"/usr/lib64/",
+		"/usr/lib/x86_64-linux-gnu/",  // Debian/Ubuntu x86_64 multiarch
+		"/usr/lib/aarch64-linux-gnu/", // Debian/Ubuntu ARM64 multiarch
+		nullptr
+	};
 #endif
 
-	const char *names[] = { "libluajit-5.1", "liblua5.1" }; // luajit is first by default
+	// 2. Load system LuaJIT / Lua runtime
+	std::array<const char*, 3> names = { "libluajit-5.1", "liblua5.1", "liblua-5.1" };
 	const auto str = getenv("FARPLAINLUA");
 	if (str && (0 == strcmp(str, "1") || 0 == strcasecmp(str, "yes")))
-		std::swap(names[0], names[1]);
+		std::rotate(names.begin(), names.begin() + 1, names.end());
 
 	void *handle = nullptr;
-	for (size_t i=0; i < ARRAYSIZE(names) && !handle; i++)
+	for (const char *name : names)
 	{
-		for (const char **path=paths; *path && !handle; path++)
+		for (const char **path = paths; *path && !handle; path++)
 		{
-			const auto strName = std::string(*path) + names[i] + ext;
-			handle = dlopen(strName.c_str(), RTLD_LAZY|RTLD_GLOBAL);
+			const auto strName = std::string(*path) + name + ext;
+			handle = dlopen(strName.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 		}
 	}
+
 	if (!handle)
 	{
 		Message(MSG_WARNING, 1, Msg::Error, L"Neither LuaJIT nor Lua5.1 library was found", Msg::Ok);
 		return FALSE;
 	}
 
-	// 2. Load LuaFAR
+	// 3. Load LuaFAR binary (always luafar.so)
 	FARString strLuaFar = g_strFarPath + PluginsFolderName + L"/luafar/luafar.so";
 	TranslateFarString<TranslateInstallPath_Share2Lib>(strLuaFar);
-	if (!dlopen(strLuaFar.GetMB().c_str(), RTLD_LAZY|RTLD_GLOBAL))
+
+	if (!dlopen(strLuaFar.GetMB().c_str(), RTLD_LAZY | RTLD_GLOBAL))
 	{
 		Message(MSG_WARNING, 1, Msg::Error, L"Cannot load luafar.so", Msg::Ok);
 		return FALSE;
 	}
+
 	return TRUE;
 #endif // #if defined(USELUA)
 }
