@@ -76,45 +76,40 @@ static const char *szCache_Description = "Description";
 static const char *szCache_Title = "Title";
 static const char *szCache_Version = "Version";
 
-static const char szCache_Configure[] = "Configure";
-static const char szCache_GetFiles[] = "GetFiles";
-static const char szCache_OpenFilePlugin[] = "OpenFilePlugin";
-static const char szCache_OpenPlugin[] = "OpenPlugin";
-static const char szCache_ProcessDialogEvent[] = "ProcessDialogEvent";
-static const char szCache_ProcessEditorEvent[] = "ProcessEditorEvent";
-static const char szCache_ProcessEditorInput[] = "ProcessEditorInput";
-static const char szCache_ProcessHostFile[] = "ProcessHostFile";
-static const char szCache_ProcessViewerEvent[] = "ProcessViewerEvent";
-static const char szCache_SetFindList[] = "SetFindList";
+#define MAKE_ACCESSORS(member_name) \
+	[](PluginA* self) -> void* { return reinterpret_cast<void*>(self->member_name); }, \
+	[](PluginA* self, void* ptr) { self->member_name = reinterpret_cast<decltype(self->member_name)>(ptr); }
 
-static const char NFMP_ClosePlugin[] = "ClosePlugin";
-static const char NFMP_Compare[] = "Compare";
-static const char NFMP_Configure[] = "Configure";
-static const char NFMP_DeleteFiles[] = "DeleteFiles";
-static const char NFMP_ExitFAR[] = "ExitFAR";
-static const char NFMP_FreeFindData[] = "FreeFindData";
-static const char NFMP_FreeVirtualFindData[] = "FreeVirtualFindData";
-static const char NFMP_GetFiles[] = "GetFiles";
-static const char NFMP_GetFindData[] = "GetFindData";
-static const char NFMP_GetMinFarVersion[] = "GetMinFarVersion";
-static const char NFMP_GetOpenPluginInfo[] = "GetOpenPluginInfo";
-static const char NFMP_GetPluginInfo[] = "GetPluginInfo";
-static const char NFMP_GetVirtualFindData[] = "GetVirtualFindData";
-static const char NFMP_MakeDirectory[] = "MakeDirectory";
-static const char NFMP_MayExitFAR[] = "MayExitFAR";
-static const char NFMP_OpenFilePlugin[] = "OpenFilePlugin";
-static const char NFMP_OpenPlugin[] = "OpenPlugin";
-static const char NFMP_ProcessDialogEvent[] = "ProcessDialogEvent";
-static const char NFMP_ProcessEditorEvent[] = "ProcessEditorEvent";
-static const char NFMP_ProcessEditorInput[] = "ProcessEditorInput";
-static const char NFMP_ProcessEvent[] = "ProcessEvent";
-static const char NFMP_ProcessHostFile[] = "ProcessHostFile";
-static const char NFMP_ProcessKey[] = "ProcessKey";
-static const char NFMP_ProcessViewerEvent[] = "ProcessViewerEvent";
-static const char NFMP_PutFiles[] = "PutFiles";
-static const char NFMP_SetDirectory[] = "SetDirectory";
-static const char NFMP_SetFindList[] = "SetFindList";
-static const char NFMP_SetStartupInfo[] = "SetStartupInfo";
+const PluginA::PluginExportEntry PluginA::PLUGIN_EXPORTS[] = {
+	{"ClosePlugin",         false, MAKE_ACCESSORS(pClosePlugin)},
+	{"Compare",             false, MAKE_ACCESSORS(pCompare)},
+	{"Configure",           true , MAKE_ACCESSORS(pConfigure)},
+	{"DeleteFiles",         false, MAKE_ACCESSORS(pDeleteFiles)},
+	{"ExitFAR",             false, MAKE_ACCESSORS(pExitFAR)},
+	{"FreeFindData",        false, MAKE_ACCESSORS(pFreeFindData)},
+	{"FreeVirtualFindData", false, MAKE_ACCESSORS(pFreeVirtualFindData)},
+	{"GetFiles",            true,  MAKE_ACCESSORS(pGetFiles)},
+	{"GetFindData",         false, MAKE_ACCESSORS(pGetFindData)},
+	{"GetOpenPluginInfo",   false, MAKE_ACCESSORS(pGetOpenPluginInfo)},
+	{"GetPluginInfo",       false, MAKE_ACCESSORS(pGetPluginInfo)},
+	{"GetVirtualFindData",  false, MAKE_ACCESSORS(pGetVirtualFindData)},
+	{"MakeDirectory",       false, MAKE_ACCESSORS(pMakeDirectory)},
+	{"MayExitFAR",          false, MAKE_ACCESSORS(pMayExitFAR)},
+	{"MinFarVersion",       false, MAKE_ACCESSORS(pMinFarVersion)},
+	{"OpenFilePlugin",      true,  MAKE_ACCESSORS(pOpenFilePlugin)},
+	{"OpenPlugin",          true,  MAKE_ACCESSORS(pOpenPlugin)},
+	{"ProcessDialogEvent",  true,  MAKE_ACCESSORS(pProcessDialogEvent)},
+	{"ProcessEditorEvent",  true,  MAKE_ACCESSORS(pProcessEditorEvent)},
+	{"ProcessEditorInput",  true,  MAKE_ACCESSORS(pProcessEditorInput)},
+	{"ProcessEvent",        false, MAKE_ACCESSORS(pProcessEvent)},
+	{"ProcessHostFile",     true,  MAKE_ACCESSORS(pProcessHostFile)},
+	{"ProcessKey",          false, MAKE_ACCESSORS(pProcessKey)},
+	{"ProcessViewerEvent",  true,  MAKE_ACCESSORS(pProcessViewerEvent)},
+	{"PutFiles",            false, MAKE_ACCESSORS(pPutFiles)},
+	{"SetDirectory",        false, MAKE_ACCESSORS(pSetDirectory)},
+	{"SetFindList",         true,  MAKE_ACCESSORS(pSetFindList)},
+	{"SetStartupInfo",      false, MAKE_ACCESSORS(pSetStartupInfo)},
+};
 
 
 static void CheckScreenLock()
@@ -176,16 +171,16 @@ bool PluginA::LoadFromCache()
 	strDescription = kfh.GetString(szCache_Description);
 	strTitle = kfh.GetString(szCache_Title);
 
-	load_ptr(kfh, szCache_Configure,          pConfigure);
-	load_ptr(kfh, szCache_GetFiles,           pGetFiles);
-	load_ptr(kfh, szCache_OpenFilePlugin,     pOpenFilePlugin);
-	load_ptr(kfh, szCache_OpenPlugin,         pOpenPlugin);
-	load_ptr(kfh, szCache_ProcessDialogEvent, pProcessDialogEvent);
-	load_ptr(kfh, szCache_ProcessEditorEvent, pProcessEditorEvent);
-	load_ptr(kfh, szCache_ProcessEditorInput, pProcessEditorInput);
-	load_ptr(kfh, szCache_ProcessHostFile,    pProcessHostFile);
-	load_ptr(kfh, szCache_ProcessViewerEvent, pProcessViewerEvent);
-	load_ptr(kfh, szCache_SetFindList,        pSetFindList);
+	// Load cached exports
+	for (const auto& entry : PLUGIN_EXPORTS)
+	{
+		if (entry.cached)
+		{
+			void* ptr = nullptr;
+			load_ptr(kfh, entry.export_name, ptr);
+			entry.setter(this, ptr);
+		}
+	}
 
 	WorkFlags.Set(PIWF_CACHED); //too much "cached" flags
 
@@ -248,16 +243,15 @@ bool PluginA::SaveToCache()
 	kfh.SetUInt(GetSettingsName(), "Flags", Info.Flags);
 	kfh.SetUInt(GetSettingsName(), szCache_SysID, SysID);
 
-	kfh.SetUInt(GetSettingsName(), szCache_Configure,          pConfigure ? 1:0);
-	kfh.SetUInt(GetSettingsName(), szCache_GetFiles,           pGetFiles ? 1:0);
-	kfh.SetUInt(GetSettingsName(), szCache_OpenFilePlugin,     pOpenFilePlugin ? 1:0);
-	kfh.SetUInt(GetSettingsName(), szCache_OpenPlugin,         pOpenPlugin ? 1:0);
-	kfh.SetUInt(GetSettingsName(), szCache_ProcessDialogEvent, pProcessDialogEvent ? 1:0);
-	kfh.SetUInt(GetSettingsName(), szCache_ProcessEditorEvent, pProcessEditorEvent ? 1:0);
-	kfh.SetUInt(GetSettingsName(), szCache_ProcessEditorInput, pProcessEditorInput ? 1:0);
-	kfh.SetUInt(GetSettingsName(), szCache_ProcessHostFile,    pProcessHostFile ? 1:0);
-	kfh.SetUInt(GetSettingsName(), szCache_ProcessViewerEvent, pProcessViewerEvent ? 1:0);
-	kfh.SetUInt(GetSettingsName(), szCache_SetFindList,        pSetFindList ? 1:0);
+	// Save cached exports
+	for (const auto& entry : PLUGIN_EXPORTS)
+	{
+		if (entry.cached)
+		{
+			void* ptr = entry.getter(this);
+			kfh.SetUInt(GetSettingsName(), entry.export_name, ptr ? 1 : 0);
+		}
+	}
 
 	kfh.SetString(GetSettingsName(), szCache_Author, strAuthor);
 	kfh.SetString(GetSettingsName(), szCache_Description, strDescription);
@@ -279,34 +273,13 @@ bool PluginA::Load()
 
 	WorkFlags.Clear(PIWF_CACHED);
 
-	GetModuleFN(pClosePlugin, NFMP_ClosePlugin);
-	GetModuleFN(pCompare, NFMP_Compare);
-	GetModuleFN(pConfigure, NFMP_Configure);
-	GetModuleFN(pDeleteFiles, NFMP_DeleteFiles);
-	GetModuleFN(pExitFAR, NFMP_ExitFAR);
-	GetModuleFN(pFreeFindData, NFMP_FreeFindData);
-	GetModuleFN(pFreeVirtualFindData, NFMP_FreeVirtualFindData);
-	GetModuleFN(pGetFiles, NFMP_GetFiles);
-	GetModuleFN(pGetFindData, NFMP_GetFindData);
-	GetModuleFN(pGetOpenPluginInfo, NFMP_GetOpenPluginInfo);
-	GetModuleFN(pGetPluginInfo, NFMP_GetPluginInfo);
-	GetModuleFN(pGetVirtualFindData, NFMP_GetVirtualFindData);
-	GetModuleFN(pMakeDirectory, NFMP_MakeDirectory);
-	GetModuleFN(pMayExitFAR, NFMP_MayExitFAR);
-	GetModuleFN(pMinFarVersion, NFMP_GetMinFarVersion);
-	GetModuleFN(pOpenFilePlugin, NFMP_OpenFilePlugin);
-	GetModuleFN(pOpenPlugin, NFMP_OpenPlugin);
-	GetModuleFN(pProcessDialogEvent, NFMP_ProcessDialogEvent);
-	GetModuleFN(pProcessEditorEvent, NFMP_ProcessEditorEvent);
-	GetModuleFN(pProcessEditorInput, NFMP_ProcessEditorInput);
-	GetModuleFN(pProcessEvent, NFMP_ProcessEvent);
-	GetModuleFN(pProcessHostFile, NFMP_ProcessHostFile);
-	GetModuleFN(pProcessKey, NFMP_ProcessKey);
-	GetModuleFN(pProcessViewerEvent, NFMP_ProcessViewerEvent);
-	GetModuleFN(pPutFiles, NFMP_PutFiles);
-	GetModuleFN(pSetDirectory, NFMP_SetDirectory);
-	GetModuleFN(pSetFindList, NFMP_SetFindList);
-	GetModuleFN(pSetStartupInfo, NFMP_SetStartupInfo);
+	// Load all exports from module
+	for (const auto& entry : PLUGIN_EXPORTS)
+	{
+		void* ptr = nullptr;
+		GetModuleFN(ptr, entry.export_name);
+		entry.setter(this, ptr);
+	}
 
 	if (CheckMinFarVersion())
 	{
@@ -1215,33 +1188,6 @@ void PluginA::ExitFAR()
 
 void PluginA::ClearExports()
 {
-	pClosePlugin = nullptr;
-	pCompare = nullptr;
-	pConfigure = nullptr;
-	pDeleteFiles = nullptr;
-	pExitFAR = nullptr;
-	pFreeFindData = nullptr;
-	pFreeVirtualFindData = nullptr;
-	pGetFiles = nullptr;
-	pGetFindData = nullptr;
-	pGetGlobalInfoW = nullptr;
-	pGetOpenPluginInfo = nullptr;
-	pGetPluginInfo = nullptr;
-	pGetVirtualFindData = nullptr;
-	pMakeDirectory = nullptr;
-	pMayExitFAR = nullptr;
-	pMinFarVersion = nullptr;
-	pOpenFilePlugin = nullptr;
-	pOpenPlugin = nullptr;
-	pProcessDialogEvent = nullptr;
-	pProcessEditorEvent = nullptr;
-	pProcessEditorInput = nullptr;
-	pProcessEvent = nullptr;
-	pProcessHostFile = nullptr;
-	pProcessKey = nullptr;
-	pProcessViewerEvent = nullptr;
-	pPutFiles = nullptr;
-	pSetDirectory = nullptr;
-	pSetFindList = nullptr;
-	pSetStartupInfo = nullptr;
+	for (const auto& entry : PLUGIN_EXPORTS)
+		entry.setter(this, nullptr);
 }

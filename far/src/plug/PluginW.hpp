@@ -113,6 +113,14 @@ private:
 	PLUGINSETFINDLISTW           pSetFindListW;
 	PLUGINSETSTARTUPINFOW        pSetStartupInfoW;
 
+	// Plugin export table
+	static const struct PluginExportEntry {
+		const char* export_name;
+		bool cached;
+		void* (*getter)(PluginW* self);
+		void  (*setter)(PluginW* self, void* ptr);
+	} PLUGIN_EXPORTS[];
+
 public:
 
 	PluginW(PluginManager *owner,
