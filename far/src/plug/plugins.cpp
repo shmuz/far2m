@@ -739,12 +739,6 @@ void PluginManager::ClosePanel(PHPTR ph)
 	}
 }
 
-void PluginManager::RetainPanel(PHPTR ph)
-{
-	assert(ph->RefCnt > 0);
-	++ph->RefCnt;
-}
-
 FARString PluginManager::GetPluginModuleName(PHPTR ph)
 {
 	return ph->pPlugin->GetModuleName();

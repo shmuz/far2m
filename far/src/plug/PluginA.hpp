@@ -101,13 +101,28 @@ private:
 	PLUGINSETFINDLIST           pSetFindList;
 	PLUGINSETSTARTUPINFO        pSetStartupInfo;
 
-	// Plugin export table
-	static const struct PluginExportEntry {
-		const char* export_name;
+	using GenericMemberPtr = void* PluginA::*;
+
+	struct PluginExportEntry
+	{
+		const char *export_name;
 		bool cached;
-		void* (*getter)(PluginA* self);
-		void  (*setter)(PluginA* self, void* ptr);
-	} PLUGIN_EXPORTS[];
+		GenericMemberPtr member;
+
+		void* get(const PluginA *self) const
+		{
+			void *ptr = nullptr;
+			std::memcpy(&ptr, &(self->*member), sizeof(ptr));
+			return ptr;
+		}
+
+		void set(PluginA *self, void *ptr) const
+		{
+			std::memcpy(&(self->*member), &ptr, sizeof(ptr));
+		}
+	};
+
+	static const PluginExportEntry PLUGIN_EXPORTS[];
 
 public:
 

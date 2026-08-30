@@ -83,50 +83,50 @@ static const char *szCache_Title = "Title";
 static const char *szCache_UseMenuGuids = "UseMenuGuids";
 static const char *szCache_Version = "Version";
 
-#define MAKE_ACCESSORS(member_name) \
-	[](PluginW* self) -> void* { return reinterpret_cast<void*>(self->member_name); }, \
-	[](PluginW* self, void* ptr) { self->member_name = reinterpret_cast<decltype(self->member_name)>(ptr); }
+#define MAKE_EXPORT(name, cached, member) \
+	{ name, cached, reinterpret_cast<PluginW::GenericMemberPtr>(member) }
 
 const PluginW::PluginExportEntry PluginW::PLUGIN_EXPORTS[] = {
-	{"AnalyseW",              true,  MAKE_ACCESSORS(pAnalyseW)},
-	{"CloseAnalyseW",         false, MAKE_ACCESSORS(pCloseAnalyseW)},
-	{"ClosePluginW",          false, MAKE_ACCESSORS(pClosePluginW)},
-	{"CompareW",              false, MAKE_ACCESSORS(pCompareW)},
-	{"ConfigureV3W",          true,  MAKE_ACCESSORS(pConfigureV3W)},
-	{"ConfigureW",            true,  MAKE_ACCESSORS(pConfigureW)},
-	{"DeleteFilesW",          false, MAKE_ACCESSORS(pDeleteFilesW)},
-	{"ExitFARW",              false, MAKE_ACCESSORS(pExitFARW)},
-	{"FreeCustomDataW",       false, MAKE_ACCESSORS(pFreeCustomDataW)},
-	{"FreeFindDataW",         false, MAKE_ACCESSORS(pFreeFindDataW)},
-	{"FreeVirtualFindDataW",  false, MAKE_ACCESSORS(pFreeVirtualFindDataW)},
-	{"GetCustomDataW",        true,  MAKE_ACCESSORS(pGetCustomDataW)},
-	{"GetFilesW",             true,  MAKE_ACCESSORS(pGetFilesW)},
-	{"GetFindDataW",          false, MAKE_ACCESSORS(pGetFindDataW)},
-	{"GetLinkTargetW",        false, MAKE_ACCESSORS(pGetLinkTargetW)},
-	{"GetMinFarVersionW",     false, MAKE_ACCESSORS(pMinFarVersionW)},
-	{"GetOpenPluginInfoW",    false, MAKE_ACCESSORS(pGetOpenPluginInfoW)},
-	{"GetPluginInfoW",        false, MAKE_ACCESSORS(pGetPluginInfoW)},
-	{"GetVirtualFindDataW",   false, MAKE_ACCESSORS(pGetVirtualFindDataW)},
-	{"MakeDirectoryW",        false, MAKE_ACCESSORS(pMakeDirectoryW)},
-	{"MayExitFARW",           false, MAKE_ACCESSORS(pMayExitFARW)},
-	{"OpenFilePluginW",       true,  MAKE_ACCESSORS(pOpenFilePluginW)},
-	{"OpenPluginW",           true,  MAKE_ACCESSORS(pOpenPluginW)},
-	{"ProcessConsoleInputW",  true,  MAKE_ACCESSORS(pProcessConsoleInputW)},
-	{"ProcessDialogEventW",   true,  MAKE_ACCESSORS(pProcessDialogEventW)},
-	{"ProcessEditorEventV3W", true,  MAKE_ACCESSORS(pProcessEditorEventV3W)},
-	{"ProcessEditorEventW",   true,  MAKE_ACCESSORS(pProcessEditorEventW)},
-	{"ProcessEditorInputW",   true,  MAKE_ACCESSORS(pProcessEditorInputW)},
-	{"ProcessEventW",         false, MAKE_ACCESSORS(pProcessEventW)},
-	{"ProcessHostFileW",      true,  MAKE_ACCESSORS(pProcessHostFileW)},
-	{"ProcessKeyW",           false, MAKE_ACCESSORS(pProcessKeyW)},
-	{"ProcessSynchroEventW",  true,  MAKE_ACCESSORS(pProcessSynchroEventW)},
-	{"ProcessViewerEventW",   true,  MAKE_ACCESSORS(pProcessViewerEventW)},
-	{"PutFilesW",             false, MAKE_ACCESSORS(pPutFilesW)},
-	{"SetDirectoryW",         false, MAKE_ACCESSORS(pSetDirectoryW)},
-	{"SetFindListW",          true,  MAKE_ACCESSORS(pSetFindListW)},
-	{"SetStartupInfoW",       false, MAKE_ACCESSORS(pSetStartupInfoW)},
+	MAKE_EXPORT("AnalyseW",              true,  &PluginW::pAnalyseW),
+	MAKE_EXPORT("CloseAnalyseW",         false, &PluginW::pCloseAnalyseW),
+	MAKE_EXPORT("ClosePluginW",          false, &PluginW::pClosePluginW),
+	MAKE_EXPORT("CompareW",              false, &PluginW::pCompareW),
+	MAKE_EXPORT("ConfigureV3W",          true,  &PluginW::pConfigureV3W),
+	MAKE_EXPORT("ConfigureW",            true,  &PluginW::pConfigureW),
+	MAKE_EXPORT("DeleteFilesW",          false, &PluginW::pDeleteFilesW),
+	MAKE_EXPORT("ExitFARW",              false, &PluginW::pExitFARW),
+	MAKE_EXPORT("FreeCustomDataW",       false, &PluginW::pFreeCustomDataW),
+	MAKE_EXPORT("FreeFindDataW",         false, &PluginW::pFreeFindDataW),
+	MAKE_EXPORT("FreeVirtualFindDataW",  false, &PluginW::pFreeVirtualFindDataW),
+	MAKE_EXPORT("GetCustomDataW",        true,  &PluginW::pGetCustomDataW),
+	MAKE_EXPORT("GetFilesW",             true,  &PluginW::pGetFilesW),
+	MAKE_EXPORT("GetFindDataW",          false, &PluginW::pGetFindDataW),
+	MAKE_EXPORT("GetLinkTargetW",        false, &PluginW::pGetLinkTargetW),
+	MAKE_EXPORT("GetMinFarVersionW",     false, &PluginW::pMinFarVersionW),
+	MAKE_EXPORT("GetOpenPluginInfoW",    false, &PluginW::pGetOpenPluginInfoW),
+	MAKE_EXPORT("GetPluginInfoW",        false, &PluginW::pGetPluginInfoW),
+	MAKE_EXPORT("GetVirtualFindDataW",   false, &PluginW::pGetVirtualFindDataW),
+	MAKE_EXPORT("MakeDirectoryW",        false, &PluginW::pMakeDirectoryW),
+	MAKE_EXPORT("MayExitFARW",           false, &PluginW::pMayExitFARW),
+	MAKE_EXPORT("OpenFilePluginW",       true,  &PluginW::pOpenFilePluginW),
+	MAKE_EXPORT("OpenPluginW",           true,  &PluginW::pOpenPluginW),
+	MAKE_EXPORT("ProcessConsoleInputW",  true,  &PluginW::pProcessConsoleInputW),
+	MAKE_EXPORT("ProcessDialogEventW",   true,  &PluginW::pProcessDialogEventW),
+	MAKE_EXPORT("ProcessEditorEventV3W", true,  &PluginW::pProcessEditorEventV3W),
+	MAKE_EXPORT("ProcessEditorEventW",   true,  &PluginW::pProcessEditorEventW),
+	MAKE_EXPORT("ProcessEditorInputW",   true,  &PluginW::pProcessEditorInputW),
+	MAKE_EXPORT("ProcessEventW",         false, &PluginW::pProcessEventW),
+	MAKE_EXPORT("ProcessHostFileW",      true,  &PluginW::pProcessHostFileW),
+	MAKE_EXPORT("ProcessKeyW",           false, &PluginW::pProcessKeyW),
+	MAKE_EXPORT("ProcessSynchroEventW",  true,  &PluginW::pProcessSynchroEventW),
+	MAKE_EXPORT("ProcessViewerEventW",   true,  &PluginW::pProcessViewerEventW),
+	MAKE_EXPORT("PutFilesW",             false, &PluginW::pPutFilesW),
+	MAKE_EXPORT("SetDirectoryW",         false, &PluginW::pSetDirectoryW),
+	MAKE_EXPORT("SetFindListW",          true,  &PluginW::pSetFindListW),
+	MAKE_EXPORT("SetStartupInfoW",       false, &PluginW::pSetStartupInfoW),
 };
 
+#undef MAKE_EXPORT
 
 static size_t WINAPI FarKeyToName(FarKey Key,wchar_t *KeyText,size_t Size)
 {
@@ -212,7 +212,7 @@ bool PluginW::LoadFromCache()
 		{
 			void* ptr = nullptr;
 			load_ptr(kfh, entry.export_name, ptr);
-			entry.setter(this, ptr);
+			entry.set(this, ptr);
 		}
 	}
 
@@ -290,7 +290,7 @@ bool PluginW::SaveToCache()
 	{
 		if (entry.cached)
 		{
-			void* ptr = entry.getter(this);
+			void* ptr = entry.get(this);
 			kfh.SetUInt(GetSettingsName(), entry.export_name, ptr ? 1 : 0);
 		}
 	}
@@ -321,7 +321,7 @@ bool PluginW::Load()
 	{
 		void* ptr = nullptr;
 		GetModuleFN(ptr, entry.export_name);
-		entry.setter(this, ptr);
+		entry.set(this, ptr);
 	}
 
 	if (CheckMinFarVersion())
@@ -1273,5 +1273,5 @@ void PluginW::ClearExports()
 	pGetGlobalInfoW = nullptr;
 
 	for (const auto& entry : PLUGIN_EXPORTS)
-		entry.setter(this, nullptr);
+		entry.set(this, nullptr);
 }

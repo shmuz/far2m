@@ -105,6 +105,8 @@ struct PanelHandle
 
 	PanelHandle() : hPanel(nullptr), pPlugin(nullptr), RefCnt(1) {}
 	PanelHandle(HANDLE panel, Plugin *plugin) : hPanel(panel), pPlugin(plugin), RefCnt(1) {}
+
+	void RetainPanel() { ++RefCnt; }
 };
 
 typedef PanelHandle * PHPTR;
@@ -239,7 +241,6 @@ class PluginManager
 		int   ProcessSynchroEvent(int Event, void* Param);
 		int   ProcessViewerEvent(int Event, int ViewerId);
 		int   PutFiles(PHPTR ph, PluginPanelItem *PanelItem, int ItemsNumber, bool Move, DWORD OpMode);
-		void  RetainPanel(PHPTR ph); // increments refcnt
 		bool  SetDirectory(PHPTR ph, const wchar_t *Dir, DWORD OpMode);
 
 		void BackgroundTaskStarted(const wchar_t *Info);

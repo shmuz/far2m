@@ -32,7 +32,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "plclass.hpp"
 #include "FARString.hpp"
 
-
 typedef HANDLE (WINAPI *PLUGINANALYSEW)(const AnalyseInfo *Info);
 typedef void (WINAPI *PLUGINCLOSEANALYSEW)(const CloseAnalyseInfo *Info);
 typedef void (WINAPI *PLUGINCLOSEPLUGINW)(HANDLE hPanel);
@@ -113,13 +112,28 @@ private:
 	PLUGINSETFINDLISTW           pSetFindListW;
 	PLUGINSETSTARTUPINFOW        pSetStartupInfoW;
 
-	// Plugin export table
-	static const struct PluginExportEntry {
-		const char* export_name;
+	using GenericMemberPtr = void* PluginW::*;
+
+	struct PluginExportEntry
+	{
+		const char *export_name;
 		bool cached;
-		void* (*getter)(PluginW* self);
-		void  (*setter)(PluginW* self, void* ptr);
-	} PLUGIN_EXPORTS[];
+		GenericMemberPtr member;
+
+		void* get(const PluginW *self) const
+		{
+			void *ptr = nullptr;
+			std::memcpy(&ptr, &(self->*member), sizeof(ptr));
+			return ptr;
+		}
+
+		void set(PluginW *self, void *ptr) const
+		{
+			std::memcpy(&(self->*member), &ptr, sizeof(ptr));
+		}
+	};
+
+	static const PluginExportEntry PLUGIN_EXPORTS[];
 
 public:
 

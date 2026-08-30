@@ -996,7 +996,7 @@ public:
 		:
 		TempFileUploadHolder(strTempFileName_), hPlugin(hPlugin_)
 	{
-		CtrlObject->Plugins.RetainPanel(hPlugin);
+		hPlugin->RetainPanel();
 	}
 
 	~FileList_TempFileHolder() override { CtrlObject->Plugins.ClosePanel(hPlugin); }

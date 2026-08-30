@@ -76,41 +76,41 @@ static const char *szCache_Description = "Description";
 static const char *szCache_Title = "Title";
 static const char *szCache_Version = "Version";
 
-#define MAKE_ACCESSORS(member_name) \
-	[](PluginA* self) -> void* { return reinterpret_cast<void*>(self->member_name); }, \
-	[](PluginA* self, void* ptr) { self->member_name = reinterpret_cast<decltype(self->member_name)>(ptr); }
+#define MAKE_EXPORT(name, cached, member) \
+	{ name, cached, reinterpret_cast<PluginA::GenericMemberPtr>(member) }
 
 const PluginA::PluginExportEntry PluginA::PLUGIN_EXPORTS[] = {
-	{"ClosePlugin",         false, MAKE_ACCESSORS(pClosePlugin)},
-	{"Compare",             false, MAKE_ACCESSORS(pCompare)},
-	{"Configure",           true , MAKE_ACCESSORS(pConfigure)},
-	{"DeleteFiles",         false, MAKE_ACCESSORS(pDeleteFiles)},
-	{"ExitFAR",             false, MAKE_ACCESSORS(pExitFAR)},
-	{"FreeFindData",        false, MAKE_ACCESSORS(pFreeFindData)},
-	{"FreeVirtualFindData", false, MAKE_ACCESSORS(pFreeVirtualFindData)},
-	{"GetFiles",            true,  MAKE_ACCESSORS(pGetFiles)},
-	{"GetFindData",         false, MAKE_ACCESSORS(pGetFindData)},
-	{"GetOpenPluginInfo",   false, MAKE_ACCESSORS(pGetOpenPluginInfo)},
-	{"GetPluginInfo",       false, MAKE_ACCESSORS(pGetPluginInfo)},
-	{"GetVirtualFindData",  false, MAKE_ACCESSORS(pGetVirtualFindData)},
-	{"MakeDirectory",       false, MAKE_ACCESSORS(pMakeDirectory)},
-	{"MayExitFAR",          false, MAKE_ACCESSORS(pMayExitFAR)},
-	{"MinFarVersion",       false, MAKE_ACCESSORS(pMinFarVersion)},
-	{"OpenFilePlugin",      true,  MAKE_ACCESSORS(pOpenFilePlugin)},
-	{"OpenPlugin",          true,  MAKE_ACCESSORS(pOpenPlugin)},
-	{"ProcessDialogEvent",  true,  MAKE_ACCESSORS(pProcessDialogEvent)},
-	{"ProcessEditorEvent",  true,  MAKE_ACCESSORS(pProcessEditorEvent)},
-	{"ProcessEditorInput",  true,  MAKE_ACCESSORS(pProcessEditorInput)},
-	{"ProcessEvent",        false, MAKE_ACCESSORS(pProcessEvent)},
-	{"ProcessHostFile",     true,  MAKE_ACCESSORS(pProcessHostFile)},
-	{"ProcessKey",          false, MAKE_ACCESSORS(pProcessKey)},
-	{"ProcessViewerEvent",  true,  MAKE_ACCESSORS(pProcessViewerEvent)},
-	{"PutFiles",            false, MAKE_ACCESSORS(pPutFiles)},
-	{"SetDirectory",        false, MAKE_ACCESSORS(pSetDirectory)},
-	{"SetFindList",         true,  MAKE_ACCESSORS(pSetFindList)},
-	{"SetStartupInfo",      false, MAKE_ACCESSORS(pSetStartupInfo)},
+	MAKE_EXPORT("ClosePlugin",         false, &PluginA::pClosePlugin),
+	MAKE_EXPORT("Compare",             false, &PluginA::pCompare),
+	MAKE_EXPORT("Configure",           true , &PluginA::pConfigure),
+	MAKE_EXPORT("DeleteFiles",         false, &PluginA::pDeleteFiles),
+	MAKE_EXPORT("ExitFAR",             false, &PluginA::pExitFAR),
+	MAKE_EXPORT("FreeFindData",        false, &PluginA::pFreeFindData),
+	MAKE_EXPORT("FreeVirtualFindData", false, &PluginA::pFreeVirtualFindData),
+	MAKE_EXPORT("GetFiles",            true,  &PluginA::pGetFiles),
+	MAKE_EXPORT("GetFindData",         false, &PluginA::pGetFindData),
+	MAKE_EXPORT("GetOpenPluginInfo",   false, &PluginA::pGetOpenPluginInfo),
+	MAKE_EXPORT("GetPluginInfo",       false, &PluginA::pGetPluginInfo),
+	MAKE_EXPORT("GetVirtualFindData",  false, &PluginA::pGetVirtualFindData),
+	MAKE_EXPORT("MakeDirectory",       false, &PluginA::pMakeDirectory),
+	MAKE_EXPORT("MayExitFAR",          false, &PluginA::pMayExitFAR),
+	MAKE_EXPORT("MinFarVersion",       false, &PluginA::pMinFarVersion),
+	MAKE_EXPORT("OpenFilePlugin",      true,  &PluginA::pOpenFilePlugin),
+	MAKE_EXPORT("OpenPlugin",          true,  &PluginA::pOpenPlugin),
+	MAKE_EXPORT("ProcessDialogEvent",  true,  &PluginA::pProcessDialogEvent),
+	MAKE_EXPORT("ProcessEditorEvent",  true,  &PluginA::pProcessEditorEvent),
+	MAKE_EXPORT("ProcessEditorInput",  true,  &PluginA::pProcessEditorInput),
+	MAKE_EXPORT("ProcessEvent",        false, &PluginA::pProcessEvent),
+	MAKE_EXPORT("ProcessHostFile",     true,  &PluginA::pProcessHostFile),
+	MAKE_EXPORT("ProcessKey",          false, &PluginA::pProcessKey),
+	MAKE_EXPORT("ProcessViewerEvent",  true,  &PluginA::pProcessViewerEvent),
+	MAKE_EXPORT("PutFiles",            false, &PluginA::pPutFiles),
+	MAKE_EXPORT("SetDirectory",        false, &PluginA::pSetDirectory),
+	MAKE_EXPORT("SetFindList",         true,  &PluginA::pSetFindList),
+	MAKE_EXPORT("SetStartupInfo",      false, &PluginA::pSetStartupInfo),
 };
 
+#undef MAKE_EXPORT
 
 static void CheckScreenLock()
 {
@@ -178,7 +178,7 @@ bool PluginA::LoadFromCache()
 		{
 			void* ptr = nullptr;
 			load_ptr(kfh, entry.export_name, ptr);
-			entry.setter(this, ptr);
+			entry.set(this, ptr);
 		}
 	}
 
@@ -248,7 +248,7 @@ bool PluginA::SaveToCache()
 	{
 		if (entry.cached)
 		{
-			void* ptr = entry.getter(this);
+			void* ptr = entry.get(this);
 			kfh.SetUInt(GetSettingsName(), entry.export_name, ptr ? 1 : 0);
 		}
 	}
@@ -278,7 +278,7 @@ bool PluginA::Load()
 	{
 		void* ptr = nullptr;
 		GetModuleFN(ptr, entry.export_name);
-		entry.setter(this, ptr);
+		entry.set(this, ptr);
 	}
 
 	if (CheckMinFarVersion())
@@ -1191,5 +1191,5 @@ void PluginA::ClearExports()
 	pGetGlobalInfoW = nullptr;
 
 	for (const auto& entry : PLUGIN_EXPORTS)
-		entry.setter(this, nullptr);
+		entry.set(this, nullptr);
 }
