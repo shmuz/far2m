@@ -303,7 +303,8 @@ public:
 	int GetPrevCaseSensitiveSort() override;
 	int GetPrevDirectoriesFirst() override;
 
-	PHPTR OpenFilePlugin(const wchar_t *FileName, bool PushPrev, OPENFILEPLUGINTYPE Type);
+	PHPTR OpenFilePlugin(const wchar_t *FileName, bool PushPrev, OPENFILEPLUGINTYPE Type,
+			bool *StopProcessingPtr = nullptr);
 	bool GetFileName(FARString &strName, int Pos, DWORD &FileAttr) const override;
 	int GetCurrentPos() const override;
 	bool FindPartName(const wchar_t *Name, bool Next, int Direct, bool ExcludeSets,

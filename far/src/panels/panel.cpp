@@ -762,7 +762,7 @@ bool Panel::SetLocation_Plugin(bool file_plugin, Plugin *plugin, const wchar_t *
 {
 	PHPTR hPlugin;
 	if (file_plugin) {
-		hPlugin = CtrlObject->Plugins.OpenFilePlugin(host_file, OPM_NONE, OFP_ALTERNATIVE, plugin);
+		hPlugin = CtrlObject->Plugins.OpenFilePlugin(host_file, OPM_NONE, OFP_ALTERNATIVE, nullptr, plugin);
 	}
 	else {
 		auto OpenFrom = plugin->UseMenuGuids()

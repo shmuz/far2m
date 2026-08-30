@@ -110,7 +110,6 @@ struct PanelHandle
 };
 
 typedef PanelHandle * PHPTR;
-#define PHPTR_STOP ((PHPTR)(-2))
 
 // параметры вызова макрофункций Plugin.Menu и т.п.
 enum CALLPLUGINFLAGS
@@ -228,7 +227,8 @@ class PluginManager
 		bool  GetVirtualFindData(PHPTR ph, PluginPanelItem **pPanelItem, int *pItemsNumber, const wchar_t *Path);
 		int   MakeDirectory(PHPTR ph, const wchar_t **Name, DWORD OpMode);
 		bool  MayExitFar();
-		PHPTR OpenFilePlugin(const wchar_t *Name, DWORD OpMode, OPENFILEPLUGINTYPE Type, Plugin *pDesiredPlugin = nullptr);
+		PHPTR OpenFilePlugin(const wchar_t *Name, DWORD OpMode, OPENFILEPLUGINTYPE Type,
+				bool *StopProcessingPtr = nullptr, Plugin *pDesiredPlugin = nullptr);
 		PHPTR OpenFindListPlugin(const PluginPanelItem *PanelItem, int ItemsNumber);
 		PHPTR OpenPlugin(Plugin *pPlugin, int OpenFrom, const void *Item);
 		int   ProcessConsoleInput(INPUT_RECORD *Rec);

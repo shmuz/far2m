@@ -2385,21 +2385,23 @@ void FileList::ProcessEnter(bool EnableExec, bool SeparateWindow, bool EnableAss
 			if (PluginMode)
 				QueueDeleteOnClose(strFileName);
 
-		} else if (SetCurPath()) {
-			PHPTR hOpen = nullptr;
-
+		}
+		else if (SetCurPath())
+		{
 			if (EnableAssoc && !EnableExec &&    // не запускаем и не в отдельном окне,
 					!SeparateWindow &&           // следовательно это Ctrl-PgDn
-					ProcessLocalFileTypes(strFileName, FILETYPE_ALTEXEC, !PluginMode, strCurDir)) {
+					ProcessLocalFileTypes(strFileName, FILETYPE_ALTEXEC, !PluginMode, strCurDir))
+			{
 				if (PluginMode)
 					QueueDeleteOnClose(strFileName);
 
 				return;
 			}
 
-			if (SeparateWindow || (hOpen = OpenFilePlugin(strFileName, true, Type)) == nullptr
-					|| hOpen == PHPTR_STOP) {
-				if (EnableExec && hOpen != PHPTR_STOP)
+			bool StopProcessing = false;
+			if (SeparateWindow || !OpenFilePlugin(strFileName, true, Type, &StopProcessing))
+			{
+				if (EnableExec && !StopProcessing)
 				//					if (SeparateWindow || Opt.UseRegisteredTypes)
 				{
 					SetCurPath();    // OpenFilePlugin can change current path
@@ -4470,12 +4472,19 @@ int FileList::GetPrevDirectoriesFirst()
 			: DirectoriesFirst;
 }
 
-PHPTR FileList::OpenFilePlugin(const wchar_t *FileName, bool PushPrev, OPENFILEPLUGINTYPE Type)
+PHPTR FileList::OpenFilePlugin(const wchar_t *FileName, bool PushPrev, OPENFILEPLUGINTYPE Type,
+		bool *StopProcessingPtr)
 {
+	bool StopProcessing_Unused;
+	auto& StopProcessing = StopProcessingPtr ? *StopProcessingPtr : StopProcessing_Unused;
+	StopProcessing = false;
+
 	if (!PushPrev && PanelMode == PLUGIN_PANEL) {
 		for (;;) {
-			if (ProcessPluginEvent(FE_CLOSE))
-				return PHPTR_STOP;
+			if (ProcessPluginEvent(FE_CLOSE)) {
+				StopProcessing = true;
+				return nullptr;
+			}
 
 			if (!PopPlugin(true))
 				break;
@@ -4484,7 +4493,7 @@ PHPTR FileList::OpenFilePlugin(const wchar_t *FileName, bool PushPrev, OPENFILEP
 
 	PHPTR hNewPlugin = OpenPluginForFile(FileName, 0, Type);
 
-	if (hNewPlugin && hNewPlugin != PHPTR_STOP) {
+	if (hNewPlugin) {
 		if (PushPrev) {
 			PrevDataItem *Item = new PrevDataItem;
 			;

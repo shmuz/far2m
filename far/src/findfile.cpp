@@ -1456,8 +1456,7 @@ class FindDlg_TempFileHolder : public TempFileUploadHolder
 			DisablePluginsOutput = true;
 			ArcItem.hPlugin = CtrlObject->Plugins.OpenFilePlugin(strFindArcName, OPM_FIND, OFP_SEARCH);
 			DisablePluginsOutput = SavePluginsOutput;
-			if (ArcItem.hPlugin == PHPTR_STOP || ArcItem.hPlugin == nullptr) {
-				ArcItem.hPlugin = nullptr;
+			if (ArcItem.hPlugin == nullptr) {
 				fprintf(stderr, "OnEditedFileSaved: can't open plugins '%ls'\n", strFindArcName.CPtr());
 				return false;
 			}
@@ -1734,8 +1733,7 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 								itd.SetArcListItem(FindItem.ArcIndex, ArcItem);
 								DisablePluginsOutput = SavePluginsOutput;
 
-								if (ArcItem.hPlugin == PHPTR_STOP || ArcItem.hPlugin == nullptr) {
-									ArcItem.hPlugin = nullptr;
+								if (ArcItem.hPlugin == nullptr) {
 									itd.SetArcListItem(FindItem.ArcIndex, ArcItem);
 									return TRUE;
 								}
@@ -2200,17 +2198,18 @@ static void ArchiveSearch(HANDLE hDlg, const wchar_t *ArcName)
 	_ALGO(CleverSysLog clv(L"FindFiles::ArchiveSearch()"));
 	_ALGO(SysLog(L"ArcName='%ls'", (ArcName ? ArcName : L"nullptr")));
 
+	bool StopProcessing = false;
 	FARString strArcName = ArcName;
 	PHPTR hArc;
 	{
 		SCOPED_ACTION(PluginLocker);
 		auto SavePluginsOutput = DisablePluginsOutput;
 		DisablePluginsOutput = true;
-		hArc = CtrlObject->Plugins.OpenFilePlugin(strArcName, OPM_FIND, OFP_SEARCH);
+		hArc = CtrlObject->Plugins.OpenFilePlugin(strArcName, OPM_FIND, OFP_SEARCH, &StopProcessing);
 		DisablePluginsOutput = SavePluginsOutput;
 	}
 
-	if (hArc == PHPTR_STOP) {
+	if (StopProcessing) {
 		StopFlag = true;
 		_ALGO(SysLog(L"return: hArc==(HANDLE)-2"));
 		return;
@@ -2774,8 +2773,6 @@ static bool FindFilesProcess(Vars &v)
 						FindPanel->SetCurDir(strArcPath, true);
 						ArcItem.hPlugin =
 								((FileList *)FindPanel)->OpenFilePlugin(strArcName, false, OFP_SEARCH);
-						if (ArcItem.hPlugin == PHPTR_STOP)
-							ArcItem.hPlugin = nullptr;
 						itd.SetArcListItem(FindItem.ArcIndex, ArcItem);
 					}
 

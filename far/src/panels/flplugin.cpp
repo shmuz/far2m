@@ -576,10 +576,8 @@ void FileList::PluginHostGetFiles()
 	GetSelNameCompat(nullptr, FileAttr);
 
 	while (!ExitLoop && GetSelNameCompat(&strSelName, FileAttr)) {
-		PHPTR hCurPlugin;
-
-		if ((hCurPlugin = OpenPluginForFile(strSelName, FileAttr, OFP_EXTRACT)) != nullptr
-				&& hCurPlugin != PHPTR_STOP) {
+		PHPTR hCurPlugin = OpenPluginForFile(strSelName, FileAttr, OFP_EXTRACT);
+		if (hCurPlugin) {
 			PluginPanelItem *ItemList;
 			int ItemNumber;
 			_ALGO(SysLog(L"call Plugins.GetFindData()"));
@@ -619,7 +617,7 @@ void FileList::PluginPutFilesToNew()
 	_ALGO(SysLog(L"call Plugins.OpenFilePlugin(nullptr, 0)"));
 	PHPTR hNewPlugin = CtrlObject->Plugins.OpenFilePlugin(nullptr, OPM_NONE, OFP_CREATE);
 
-	if (hNewPlugin && hNewPlugin != PHPTR_STOP) {
+	if (hNewPlugin) {
 		_ALGO(SysLog(L"Create: FileList TmpPanel, FileCount=%d", FileCount));
 		FileList TmpPanel;
 		TmpPanel.SetPluginMode(hNewPlugin, L"");    // SendOnFocus??? true???
@@ -807,7 +805,7 @@ int FileList::ProcessOneHostFile(int Idx)
 	FARString strName = ListData[Idx]->strName;
 	PHPTR hNewPlugin = OpenPluginForFile(strName, ListData[Idx]->FileAttr, OFP_COMMANDS);
 
-	if (hNewPlugin && hNewPlugin != PHPTR_STOP) {
+	if (hNewPlugin) {
 		PluginPanelItem *ItemList;
 		int ItemNumber;
 		_ALGO(SysLog(L"call Plugins.GetFindData"));

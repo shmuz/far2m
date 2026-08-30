@@ -467,7 +467,7 @@ void PluginManager::LoadPluginsFromCache()
 }
 
 PHPTR PluginManager::OpenFilePlugin(const wchar_t *FileName, DWORD OpMode, OPENFILEPLUGINTYPE Type,
-		Plugin *pDesiredPlugin)
+		bool *StopProcessingPtr, Plugin *pDesiredPlugin)
 {
 	struct CallResult
 	{
@@ -480,6 +480,11 @@ PHPTR PluginManager::OpenFilePlugin(const wchar_t *FileName, DWORD OpMode, OPENF
 	};
 
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
+
+	bool StopProcessing_Unused;
+	auto& StopProcessing = StopProcessingPtr ? *StopProcessingPtr : StopProcessing_Unused;
+	StopProcessing = false;
+
 	ConsoleTitle ct(Opt.ShowCheckingFile ? Msg::CheckingFileInPlugin.CPtr() : nullptr);
 	PHPTR hResult = nullptr;
 	CallResult *pCallResult = nullptr;
@@ -551,8 +556,8 @@ PHPTR PluginManager::OpenFilePlugin(const wchar_t *FileName, DWORD OpMode, OPENF
 
 			if (Handle == PANEL_STOP)   //сразу на выход, плагин решил нагло обработать все сам (Autorun/PictureView)!!!
 			{
-				hResult = PHPTR_STOP;
-				break;
+				StopProcessing = true;
+				return nullptr;
 			}
 
 			if (Handle != INVALID_HANDLE_VALUE)
@@ -574,7 +579,7 @@ PHPTR PluginManager::OpenFilePlugin(const wchar_t *FileName, DWORD OpMode, OPENF
 			break;
 	}
 
-	if (!Results.empty() && (hResult != PHPTR_STOP))
+	if (!Results.empty())
 	{
 		bool OnlyOne = (Results.size() == 1) && !(FileName && Opt.PluginConfirm.OpenFilePlugin &&
 			Opt.PluginConfirm.StandardAssociation && Opt.PluginConfirm.EvenIfOnlyOnePlugin);
@@ -615,9 +620,12 @@ PHPTR PluginManager::OpenFilePlugin(const wchar_t *FileName, DWORD OpMode, OPENF
 			}
 
 			if (menu.GetExitCode() == -1)
-				hResult = PHPTR_STOP;
-			else
-				pCallResult = (CallResult*)menu.GetUserData(nullptr, 0);
+			{
+				StopProcessing = true;
+				return nullptr;
+			}
+
+			pCallResult = (CallResult*)menu.GetUserData(nullptr, 0);
 		}
 		else
 		{
@@ -631,7 +639,10 @@ PHPTR PluginManager::OpenFilePlugin(const wchar_t *FileName, DWORD OpMode, OPENF
 			pCallResult->Handle = pCallResult->pPlugin->OpenPlugin(OPEN_ANALYSE, &oaInfo);
 
 			if (pCallResult->Handle == PANEL_STOP)
-				hResult = PHPTR_STOP;
+			{
+				StopProcessing = true;
+				return nullptr;
+			}
 		}
 	}
 
@@ -652,7 +663,7 @@ PHPTR PluginManager::OpenFilePlugin(const wchar_t *FileName, DWORD OpMode, OPENF
 		}
 	}
 
-	if (pCallResult && pCallResult->Handle != INVALID_HANDLE_VALUE && pCallResult->Handle != PANEL_STOP)
+	if (pCallResult && pCallResult->Handle != INVALID_HANDLE_VALUE)
 	{
 		hResult = new PanelHandle(pCallResult->Handle, pCallResult->pPlugin);
 	}
