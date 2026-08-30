@@ -1,4 +1,5 @@
 #include "FarEditorSet.h"
+#include "FarViewer.h"
 #include <KeyFileHelper.h>
 #include <farcolor.h>
 #include <farkeys.h>
@@ -17,6 +18,7 @@ const char cRegCatalog[] = "Catalog";
 const char cRegCrossDraw[] = "CrossDraw";
 const char cRegPairsDraw[] = "PairsDraw";
 const char cRegSyntaxDraw[] = "SyntaxDraw";
+const char cRegViewerColoring[] = "ViewerColoring";
 const char cRegOldOutLine[] = "OldOutlineView";
 const char cRegTrueMod[] = "TrueMod";
 const char cRegChangeBgEditor[] = "ChangeBgEditor";
@@ -32,6 +34,7 @@ const wchar_t cCatalogDefault[] = L"";
 const int cCrossDrawDefault = 2;
 const bool cPairsDrawDefault = true;
 const bool cSyntaxDrawDefault = true;
+const int cViewerColoringDefault = VIEWER_COLORING_QUICK_VIEW;
 const bool cOldOutLineDefault = true;
 const bool cTrueMod = true;
 const bool cChangeBgEditor = false;
@@ -58,6 +61,7 @@ FarEditorSet::FarEditorSet()
 FarEditorSet::~FarEditorSet()
 {
   dropAllEditors(false);
+  farViewerInstances.clear();
 }
 
 void FarEditorSet::openMenu()
@@ -448,7 +452,7 @@ LONG_PTR WINAPI SettingDialogProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Par
 void FarEditorSet::configure(bool fromEditor)
 {
   try {
-    std::array<FarDialogItem, 27> fdi {
+    std::array<FarDialogItem, 29> fdi {
         {
          {DI_DOUBLEBOX, 3, 1, 55, 24, 0, {}, 0, 0, L"", 0},            //  IDX_BOX,
             {DI_CHECKBOX, 5, 2, 0, 0, TRUE, {}, 0, 0, L"", 0},            //  IDX_DISABLED,
@@ -507,6 +511,9 @@ void FarEditorSet::configure(bool fromEditor)
              0,
              L"",
              0},                                                    //  IDX_USER_HRC_SETTINGS_EDIT
+            {DI_TEXT, 5, 17, 0, 17, FALSE, {}, 0, 0, L"", 0},  //  IDX_VIEWER_COLORING_LABEL,
+            {DI_COMBOBOX, 25, 17, 52, 17, FALSE, {}, DIF_LISTWRAPMODE | DIF_DROPDOWNLIST, 0, L"",
+             0},                                                    // IDX_VIEWER_COLORING,
             {DI_SINGLEBOX, 4, 18, 54, 18, TRUE, {}, 0, 0, L"", 0},  //  IDX_TM_BOX,
             {DI_CHECKBOX, 5, 19, 0, 0, TRUE, {}, 0, 0, L"", 0},     //  IDX_TRUEMOD,
             {DI_TEXT, 20, 19, 0, 19, TRUE, {}, 0, 0, L"", 0},       //  IDX_TMMESSAGE,
@@ -531,6 +538,14 @@ void FarEditorSet::configure(bool fromEditor)
     fdi[IDX_PAIRS].Param.Selected = Opt.drawPairs;
     fdi[IDX_SYNTAX].PtrData = GetMsg(mSyntax);
     fdi[IDX_SYNTAX].Param.Selected = Opt.drawSyntax;
+    fdi[IDX_VIEWER_COLORING_LABEL].PtrData = GetMsg(mViewerColoring);
+    std::array<FarListItem, 3> viewerColoringItems {};
+    viewerColoringItems[VIEWER_COLORING_DISABLED].Text = GetMsg(mViewerColoringDisabled);
+    viewerColoringItems[VIEWER_COLORING_QUICK_VIEW].Text = GetMsg(mViewerColoringQuickView);
+    viewerColoringItems[VIEWER_COLORING_ALL].Text = GetMsg(mViewerColoringAll);
+    viewerColoringItems[Opt.viewerColoring].Flags = LIF_SELECTED;
+    FarList viewerColoringList {viewerColoringItems.size(), viewerColoringItems.data()};
+    fdi[IDX_VIEWER_COLORING].Param.ListItems = &viewerColoringList;
     fdi[IDX_OLDOUTLINE].PtrData = GetMsg(mOldOutline);
     fdi[IDX_OLDOUTLINE].Param.Selected = Opt.oldOutline;
     fdi[IDX_CATALOG].PtrData = GetMsg(mCatalogFile);
@@ -601,6 +616,13 @@ void FarEditorSet::configure(bool fromEditor)
       Opt.drawCross = (int) Info.SendDlgMessage(hDlg, DM_GETCHECK, IDX_CROSS, 0);
       Opt.drawPairs = !!Info.SendDlgMessage(hDlg, DM_GETCHECK, IDX_PAIRS, 0);
       Opt.drawSyntax = !!Info.SendDlgMessage(hDlg, DM_GETCHECK, IDX_SYNTAX, 0);
+      const int oldViewerColoring = Opt.viewerColoring;
+      Opt.viewerColoring = std::clamp(
+          static_cast<int>(Info.SendDlgMessage(hDlg, DM_LISTGETCURPOS, IDX_VIEWER_COLORING, 0)),
+          static_cast<int>(VIEWER_COLORING_DISABLED), static_cast<int>(VIEWER_COLORING_ALL));
+      if (Opt.viewerColoring != oldViewerColoring) {
+        farViewerInstances.clear();
+      }
       Opt.oldOutline = !!Info.SendDlgMessage(hDlg, DM_GETCHECK, IDX_OLDOUTLINE, 0);
       Opt.ChangeBgEditor = !!Info.SendDlgMessage(hDlg, DM_GETCHECK, IDX_CHANGE_BG, 0);
       fdi[IDX_TRUEMOD].Param.Selected = !!Info.SendDlgMessage(hDlg, DM_GETCHECK, IDX_TRUEMOD, 0);
@@ -692,6 +714,17 @@ const UnicodeString* FarEditorSet::chooseHRDName(const UnicodeString* current,
   return &(parserFactory->getHrdNode(_hrdClass, *names[result]).hrd_name);
 }
 
+void FarEditorSet::onSynchroTick()
+{
+  if (!Opt.rEnabled) {
+    return;
+  }
+  FarEditor* editor = getCurrentEditor();
+  if (editor && editor->backgroundParseTick()) {
+    colorerRequestSynchro();
+  }
+}
+
 int FarEditorSet::editorInput(const INPUT_RECORD* ir)
 {
   if (Opt.rEnabled) {
@@ -753,6 +786,48 @@ int FarEditorSet::editorEvent(int Event, void* Param)
     msg.append(UnicodeString(e.what()));
     showExceptionMessage(&msg);
     disableColorer();
+  }
+
+  return 0;
+}
+
+int FarEditorSet::viewerEvent(int Event, void* Param)
+{
+  if (Event == VE_CLOSE) {
+    if (Param) {
+      farViewerInstances.erase(*static_cast<int*>(Param));
+    }
+    return 0;
+  }
+
+  if (!Opt.rEnabled || !Opt.drawSyntax || Opt.viewerColoring == VIEWER_COLORING_DISABLED ||
+      !parserFactory || !regionMapper)
+  {
+    return 0;
+  }
+
+  try {
+    ViewerInfo vi {sizeof(vi)};
+    if (!Info.ViewerControl(VCTL_GETINFO, &vi)) {
+      return 0;
+    }
+    if (Event == VE_READ) {
+      farViewerInstances.erase(vi.ViewerID);
+    }
+    else if (Event == VE_REDRAW && !vi.CurMode.Hex && !vi.CurMode.Processed &&
+             (Opt.viewerColoring == VIEWER_COLORING_ALL ||
+              (Opt.viewerColoring == VIEWER_COLORING_QUICK_VIEW &&
+               (vi.Options & VOPT_QUICKVIEW))))
+    {
+      auto& viewer = farViewerInstances[vi.ViewerID];
+      if (!viewer) {
+        viewer = std::make_unique<FarViewer>(&Info, parserFactory.get(), regionMapper.get(),
+                                             useExtendedColors);
+      }
+      viewer->colorize(vi);
+    }
+  } catch (Exception& e) {
+    COLORER_LOG_ERROR("%", e.what());
   }
 
   return 0;
@@ -852,6 +927,7 @@ void FarEditorSet::ReloadBase()
   Info.Message(Info.ModuleNumber, 0, nullptr, &marr[0], 2, 0);
 
   dropAllEditors(true);
+  farViewerInstances.clear();
   regionMapper = nullptr;
 
   useExtendedColors = checkConsoleExtendedColors() && Opt.TrueModOn;
@@ -965,6 +1041,7 @@ void FarEditorSet::disableColorer()
     KeyFileHelper(settingsIni).SetInt(cSectionName, cRegEnabled, Opt.rEnabled);
   }
   dropCurrentEditor(true);
+  farViewerInstances.clear();
 
   regionMapper.reset();
   parserFactory.reset();
@@ -972,6 +1049,7 @@ void FarEditorSet::disableColorer()
 
 void FarEditorSet::ApplySettingsToEditors()
 {
+  farViewerInstances.clear();
   for (auto fe = farEditorInstances.begin(); fe != farEditorInstances.end(); ++fe) {
     fe->second->setTrueMod(useExtendedColors);
     fe->second->setDrawCross(Opt.drawCross);
@@ -1036,6 +1114,9 @@ void FarEditorSet::ReadSettings()
   Opt.drawCross = kfh.GetInt(cRegCrossDraw, cCrossDrawDefault);
   Opt.drawPairs = !!kfh.GetInt(cRegPairsDraw, cPairsDrawDefault);
   Opt.drawSyntax = !!kfh.GetInt(cRegSyntaxDraw, cSyntaxDrawDefault);
+  Opt.viewerColoring = std::clamp(kfh.GetInt(cRegViewerColoring, cViewerColoringDefault),
+                                  static_cast<int>(VIEWER_COLORING_DISABLED),
+                                  static_cast<int>(VIEWER_COLORING_ALL));
   Opt.oldOutline = !!kfh.GetInt(cRegOldOutLine, cOldOutLineDefault);
   Opt.TrueModOn = !!kfh.GetInt(cRegTrueMod, cTrueMod);
   Opt.ChangeBgEditor = !!kfh.GetInt(cRegChangeBgEditor, cChangeBgEditor);
@@ -1051,6 +1132,7 @@ void FarEditorSet::SetDefaultSettings() const
   kfh.SetInt(cSectionName, cRegCrossDraw, cCrossDrawDefault);
   kfh.SetInt(cSectionName, cRegPairsDraw, cPairsDrawDefault);
   kfh.SetInt(cSectionName, cRegSyntaxDraw, cSyntaxDrawDefault);
+  kfh.SetInt(cSectionName, cRegViewerColoring, cViewerColoringDefault);
   kfh.SetInt(cSectionName, cRegOldOutLine, cOldOutLineDefault);
   kfh.SetInt(cSectionName, cRegTrueMod, cTrueMod);
   kfh.SetInt(cSectionName, cRegChangeBgEditor, cChangeBgEditor);
@@ -1068,6 +1150,7 @@ void FarEditorSet::SaveSettings() const
   kfh.SetInt(cSectionName, cRegCrossDraw, Opt.drawCross);
   kfh.SetInt(cSectionName, cRegPairsDraw, Opt.drawPairs);
   kfh.SetInt(cSectionName, cRegSyntaxDraw, Opt.drawSyntax);
+  kfh.SetInt(cSectionName, cRegViewerColoring, Opt.viewerColoring);
   kfh.SetInt(cSectionName, cRegOldOutLine, Opt.oldOutline);
   kfh.SetInt(cSectionName, cRegTrueMod, Opt.TrueModOn);
   kfh.SetInt(cSectionName, cRegChangeBgEditor, Opt.ChangeBgEditor);
@@ -1078,20 +1161,61 @@ void FarEditorSet::SaveSettings() const
 
 bool FarEditorSet::checkConsoleExtendedColors()
 {
-  return WINPORT(GetConsoleColorPalette)(NULL) >= 24;
+  // GetConsoleColorPalette returns:
+  //   4  - true color is disabled (norgb or a basic terminal);
+  //   8  - 256-color terminal (far2l still emits true-color sequences
+  //        and lets the terminal approximate them);
+  //   24 - true color is explicitly supported.
+  // far2l uses true-color palette attributes by default, so the only
+  // case where Colorer should disable TrueMod is the 4-bpp "no rgb" one.
+  return WINPORT(GetConsoleColorPalette)(NULL) >= 8;
+}
+
+namespace {
+  // Internal far2l true-color flags (from WinPort/WinCompat.h)
+  constexpr uint64_t FAR2L_FOREGROUND_TRUECOLOR = 0x0100;
+  constexpr uint64_t FAR2L_BACKGROUND_TRUECOLOR = 0x0200;
+
+  // Colorer stores HRD colors in HTML 0xRRGGBB form, while far2l keeps
+  // 24-bit RGB fields in Windows/COLORREF order (0xBBGGRR).
+  inline uint64_t ColorerRgbToFar(uint32_t rgb)
+  {
+    return (uint64_t(rgb & 0x000000FF) << 16)
+         | (uint64_t(rgb & 0x0000FF00))
+         | (uint64_t(rgb & 0x00FF0000) >> 16);
+  }
 }
 
 bool FarEditorSet::SetBgEditor() const
 {
-  if (Opt.rEnabled && Opt.ChangeBgEditor && !useExtendedColors) {
-    const StyledRegion* def_text =
-        StyledRegion::cast(regionMapper->getRegionDefine(UnicodeString("def:Text")));
-    uint64_t c = (def_text->back << 4) + def_text->fore;
+  if (!Opt.rEnabled || !Opt.ChangeBgEditor)
+    return false;
 
-    FarSetColors fsc {FCLR_REDRAW, COL_EDITORTEXT, 1, &c};
-    return !!Info.AdvControl(Info.ModuleNumber, ACTL_SETARRAYCOLOR, &fsc, nullptr);
+  const StyledRegion* def_text =
+      StyledRegion::cast(regionMapper->getRegionDefine(UnicodeString("def:Text")));
+  if (!def_text)
+    return false;
+
+  uint64_t c = 0;
+
+  if (useExtendedColors) {
+    // Preserve the 16-color fallback of the original palette entry and
+    // overlay the true-color foreground/background from the current HRD.
+    Info.AdvControl(Info.ModuleNumber, ACTL_GETCOLOR, (void*)COL_EDITORTEXT, &c);
+    c &= 0x00FF; // keep only the indexed foreground/background part
+
+    const auto fore = static_cast<uint32_t>(def_text->fore);
+    const auto back = static_cast<uint32_t>(def_text->back);
+
+    c |= (ColorerRgbToFar(fore) << 16) | FAR2L_FOREGROUND_TRUECOLOR;
+    c |= (ColorerRgbToFar(back) << 40) | FAR2L_BACKGROUND_TRUECOLOR;
   }
-  return false;
+  else {
+    c = (static_cast<uint64_t>(def_text->back) << 4) + def_text->fore;
+  }
+
+  FarSetColors fsc {FCLR_REDRAW, COL_EDITORTEXT, 1, &c};
+  return !!Info.AdvControl(Info.ModuleNumber, ACTL_SETARRAYCOLOR, &fsc, nullptr);
 }
 
 UnicodeString FarEditorSet::getParamDefValue(const FileType* type, const UnicodeString& param) const

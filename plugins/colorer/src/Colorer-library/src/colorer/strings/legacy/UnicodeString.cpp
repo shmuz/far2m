@@ -3,6 +3,7 @@
 #include <colorer/strings/legacy/Encodings.h>
 #include <colorer/strings/legacy/UnicodeString.h>
 #include <cstdlib>
+#include <string>
 #include "colorer/Exception.h"
 
 UnicodeString operator+(const UnicodeString& s1, const UnicodeString& s2)
@@ -90,13 +91,17 @@ UnicodeString::UnicodeString(const UnicodeString& cstring, int32_t s, int32_t l)
 
 UnicodeString::UnicodeString(int no)
 {
-  CString dtext = CString(std::to_string(no).c_str());
+  const std::string number_text = std::to_string(no);
+  CString dtext = CString(number_text.c_str());
   construct(&dtext, 0, npos);
 }
 
-int32_t UnicodeString::length() const
+UnicodeString& UnicodeString::toLower()
 {
-  return len;
+  for (auto i = length(); i--;) {
+    wstr[i] = Character::toLowerCase(wstr[i]);
+  }
+  return *this;
 }
 
 UnicodeString& UnicodeString::trim()
@@ -118,11 +123,6 @@ UnicodeString& UnicodeString::trim()
   len = newLength;
   alloc = newLength;
   return *this;
-}
-
-wchar UnicodeString::operator[](int32_t i) const
-{
-  return wstr[i];
 }
 
 UnicodeString::UnicodeString(UnicodeString&& cstring) noexcept
@@ -209,22 +209,21 @@ UnicodeString& UnicodeString::operator=(UnicodeString const& cstring)
   return *this;
 }
 
-int8_t UnicodeString::compare(const UnicodeString& str) const
+int8_t UnicodeString::compare(int sp, int sl, const UnicodeString& str) const
 {
-  int32_t i;
-  auto sl = str.length();
-  auto l = length();
-  for (i = 0; i < sl && i < l; i++) {
-    int cmp = str[i] - this->wstr[i];
-    if (cmp > 0)
-      return -1;
-    if (cmp < 0)
-      return 1;
+  const int32_t l = std::min(str.length(), sl);
+  if (l > 0) {
+    const wchar* a = str.wstr.get();
+    const wchar* b = wstr.get() + sp;
+    for (int32_t i = 0; i < l; i++) {
+      if (a[i] != b[i])
+        return a[i] > b[i] ? -1 : 1;
+    }
   }
-  if (i < sl)
-    return -1;
-  if (i < l)
+  if (l < sl)
     return 1;
+  if (l < str.length())
+    return -1;
   return 0;
 }
 
@@ -266,22 +265,23 @@ bool UnicodeString::equalsIgnoreCase(const UnicodeString* str) const
   return true;
 }
 
-int8_t UnicodeString::caseCompare(const UnicodeString& str) const
+int8_t UnicodeString::caseCompare(int sp, int sl, const UnicodeString& str) const
 {
-  int32_t i;
-  auto sl = str.length();
-  auto l = length();
-  for (i = 0; i < sl && i < l; i++) {
-    int cmp = Character::toLowerCase(str[i]) - Character::toLowerCase((*this)[i]);
-    if (cmp > 0)
-      return -1;
-    if (cmp < 0)
-      return 1;
+  const int32_t l = std::min(str.length(), sl);
+  if (l > 0) {
+    const wchar* a = str.wstr.get();
+    const wchar* b = wstr.get() + sp;
+    for (int32_t i = 0; i < l; i++) {
+      const wchar ca = Character::toLowerCase(a[i]);
+      const wchar cb = Character::toLowerCase(b[i]);
+      if (ca != cb)
+        return ca > cb ? -1 : 1;
+    }
   }
-  if (i < sl)
-    return -1;
-  if (i < l)
+  if (l < sl)
     return 1;
+  if (l < str.length())
+    return -1;
   return 0;
 }
 
@@ -474,11 +474,6 @@ UnicodeString& UnicodeString::findAndReplace(const UnicodeString& pattern, const
 
   *this = *newname;
   return *this;
-}
-
-bool UnicodeString::isEmpty() const
-{
-  return len == 0;
 }
 
 UnicodeString::UnicodeString(const UnicodeString& cstring)

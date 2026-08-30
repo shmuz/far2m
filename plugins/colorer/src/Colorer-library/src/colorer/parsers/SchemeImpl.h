@@ -1,11 +1,12 @@
 #ifndef COLORER_HRCPARSERPELPERS_H
 #define COLORER_HRCPARSERPELPERS_H
 
+#include <array>
+#include <cstdint>
 #include <memory>
 #include <vector>
 #include "colorer/Scheme.h"
 #include "colorer/TextParser.h"
-#include "colorer/cregexp/cregexp.h"
 #include "colorer/parsers/SchemeNode.h"
 
 class FileType;
@@ -31,9 +32,18 @@ class SchemeImpl : public Scheme
   }
 
  protected:
+  struct SearchDispatch
+  {
+    std::array<uint32_t, 129> offsets = {};
+    std::vector<uint16_t> nodeIndexes;
+  };
+
   uUnicodeString schemeName;
   std::vector<std::unique_ptr<SchemeNode>> nodes;
+  std::vector<SchemeNode*> searchNodes;
+  std::unique_ptr<SearchDispatch> searchDispatch;
   FileType* fileType = nullptr;
+  bool virtualTarget = false;
 
   explicit SchemeImpl(const UnicodeString* sn)
   {
