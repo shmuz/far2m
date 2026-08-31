@@ -39,6 +39,7 @@ enum
 	SYSID_PRINTMANAGER      = 0x6E614D50,
 	SYSID_NETWORK           = 0x5774654E,
 	SYSID_LUAMACRO          = 0x4EBBEFC8,
+	SYSID_COLORER           = 0xD2F36B62,
 };
 
 typedef void (WINAPI *PLUGINGETGLOBALINFOW)(GlobalInfo *gi);

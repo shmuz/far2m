@@ -801,11 +801,12 @@ int PluginManager::ProcessViewerEvent(int Event, int ViewerId)
 
 	for (auto pPlugin: PluginsData)
 	{
-		int Id = ViewerId; // a separate copy of ViewerID for each plugin
-
-		// The return value is currently ignored
-		if (pPlugin->HasProcessViewerEvent())
+		// currently far2m doesn't support Colorer in Viewer
+		if (pPlugin->HasProcessViewerEvent() && pPlugin->GetSysID() != SYSID_COLORER)
+		{
+			int Id = ViewerId; // a separate ViewerID copy for each plugin
 			pPlugin->ProcessViewerEvent(Event, &Id);
+		}
 	}
 
 	return 0;
