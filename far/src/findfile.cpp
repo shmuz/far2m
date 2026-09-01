@@ -2596,28 +2596,20 @@ static bool FindFilesProcess(Vars &v)
 	int DlgWidth = ScrX + 1 - 2;
 	int DlgHeight = ScrY + 1 - 2;
 	DialogDataEx FindDlgData[] = {
-			{DI_DOUBLEBOX, 3,                     1,                      (short)(DlgWidth - 4),                               (short)(DlgHeight - 2), {}, DIF_SHOWAMPERSAND,
-             strTitle                                                                                                                                                                                                 },
-			{DI_LISTBOX,   4,                     2,                      (short)(DlgWidth - 5),                               (short)(DlgHeight - 7), {}, DIF_LISTNOBOX | DIF_DISABLE,
-             L""                                                                                                                                                                                                      },
-			{DI_TEXT,      0,                     (short)(DlgHeight - 6), 0,                                                   (short)(DlgHeight - 6), {}, DIF_SEPARATOR2,                          L""               },
-			{DI_TEXT,      5,                     (short)(DlgHeight - 5), (short)(DlgWidth - (strFindStr.IsEmpty() ? 6 : 12)),
-             (short)(DlgHeight - 5),                                                                                                                   {}, DIF_SHOWAMPERSAND,                       strSearchStr      },
-			{DI_TEXT,      (short)(DlgWidth - 9), (short)(DlgHeight - 5), (short)(DlgWidth - 6),
-             (short)(DlgHeight - 5),                                                                                                                   {}, (strFindStr.IsEmpty() ? DIF_HIDDEN : 0), L""               },
-			{DI_TEXT,      0,                     (short)(DlgHeight - 4), 0,                                                   (short)(DlgHeight - 4), {}, DIF_SEPARATOR,                           L""               },
-			{DI_BUTTON,    0,                     (short)(DlgHeight - 3), 0,                                                   (short)(DlgHeight - 3), {},
-             DIF_FOCUS | DIF_DEFAULT | DIF_CENTERGROUP,                                                                                                                                             Msg::FindNewSearch},
-			{DI_BUTTON,    0,                     (short)(DlgHeight - 3), 0,                                                   (short)(DlgHeight - 3), {},
-             DIF_CENTERGROUP | DIF_DISABLE,                                                                                                                                                         Msg::FindGoTo     },
-			{DI_BUTTON,    0,                     (short)(DlgHeight - 3), 0,                                                   (short)(DlgHeight - 3), {},
-             DIF_CENTERGROUP | DIF_DISABLE,                                                                                                                                                         Msg::FindView     },
-			{DI_BUTTON,    0,                     (short)(DlgHeight - 3), 0,                                                   (short)(DlgHeight - 3), {},
-             DIF_CENTERGROUP | DIF_DISABLE,                                                                                                                                                         Msg::FindEdit     },
-			{DI_BUTTON,    0,                     (short)(DlgHeight - 3), 0,                                                   (short)(DlgHeight - 3), {},
-             DIF_CENTERGROUP | DIF_DISABLE,                                                                                                                                                         Msg::FindPanel    },
-			{DI_BUTTON,    0,                     (short)(DlgHeight - 3), 0,                                                   (short)(DlgHeight - 3), {}, DIF_CENTERGROUP,
-             Msg::FindStop                                                                                                                                                                                            }
+			{DI_DOUBLEBOX, 3, 1, (DlgWidth - 4),  (DlgHeight - 2), {}, DIF_SHOWAMPERSAND, strTitle      },
+			{DI_LISTBOX,   4, 2, (DlgWidth - 5),  (DlgHeight - 7), {}, DIF_LISTNOBOX | DIF_DISABLE, L"" },
+			{DI_TEXT,      0, (DlgHeight - 6), 0, (DlgHeight - 6), {}, DIF_SEPARATOR2, L""              },
+			{DI_TEXT,      5, (DlgHeight - 5), (DlgWidth - (strFindStr.IsEmpty() ? 6 : 12)), (DlgHeight - 5),
+			                                                       {}, DIF_SHOWAMPERSAND, strSearchStr },
+			{DI_TEXT,      (DlgWidth - 9), (DlgHeight - 5), (DlgWidth - 6), (DlgHeight - 5),
+			                                                       {}, (strFindStr.IsEmpty() ? DIF_HIDDEN : 0), L"" },
+			{DI_TEXT,      0, (DlgHeight - 4), 0, (DlgHeight - 4), {}, DIF_SEPARATOR, L""               },
+			{DI_BUTTON,    0, (DlgHeight - 3), 0, (DlgHeight - 3), {}, DIF_FOCUS | DIF_DEFAULT | DIF_CENTERGROUP, Msg::FindNewSearch },
+			{DI_BUTTON,    0, (DlgHeight - 3), 0, (DlgHeight - 3), {}, DIF_CENTERGROUP | DIF_DISABLE, Msg::FindGoTo  },
+			{DI_BUTTON,    0, (DlgHeight - 3), 0, (DlgHeight - 3), {}, DIF_CENTERGROUP | DIF_DISABLE, Msg::FindView  },
+			{DI_BUTTON,    0, (DlgHeight - 3), 0, (DlgHeight - 3), {}, DIF_CENTERGROUP | DIF_DISABLE, Msg::FindEdit  },
+			{DI_BUTTON,    0, (DlgHeight - 3), 0, (DlgHeight - 3), {}, DIF_CENTERGROUP | DIF_DISABLE, Msg::FindPanel },
+			{DI_BUTTON,    0, (DlgHeight - 3), 0, (DlgHeight - 3), {}, DIF_CENTERGROUP, Msg::FindStop   },
     };
 	MakeDialogItemsEx(FindDlgData, FindDlg);
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);

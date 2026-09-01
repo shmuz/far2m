@@ -376,15 +376,15 @@ bool ChattrDialog(Panel *SrcPanel)
 	int DlgWidth = (ScrX - 14 < flags_list_x) ? ScrX + 1 - 2 : flags_list_x + 10;
 	int DlgHeight = (ScrY - 11 < flags_list_y) ? ScrY + 1 - 2 : flags_list_y + 9;
 	DialogDataEx ChattrDlgData[] = {
-		{DI_DOUBLEBOX, 3, 1, (short)(DlgWidth - 4), (short)(DlgHeight - 2), {}, DIF_SHOWAMPERSAND, Msg::ChAttrTitle},
-		{DI_TEXT,      4, 2, (short)(DlgWidth - 5), 2, {}, DIF_CENTERTEXT | DIF_SHOWAMPERSAND, strSelName},
-		{DI_TEXT,      4, 3, (short)(DlgWidth - 5), 3, {}, DIF_CENTERTEXT | DIF_SHOWAMPERSAND, L""},
+		{DI_DOUBLEBOX, 3, 1, (DlgWidth - 4), (DlgHeight - 2), {}, DIF_SHOWAMPERSAND, Msg::ChAttrTitle},
+		{DI_TEXT,      4, 2, (DlgWidth - 5), 2, {}, DIF_CENTERTEXT | DIF_SHOWAMPERSAND, strSelName},
+		{DI_TEXT,      4, 3, (DlgWidth - 5), 3, {}, DIF_CENTERTEXT | DIF_SHOWAMPERSAND, L""},
 		{DI_TEXT,      0, 4, 0, 4, {}, DIF_SEPARATOR, L""},
-		{DI_LISTBOX,   4, 5, (short)(DlgWidth - 5), (short)(DlgHeight - 5), {}, DIF_FOCUS | DIF_LISTNOBOX /*| DIF_LISTNOCLOSE*/, L""},
-		{DI_TEXT,      0, (short)(DlgHeight - 4), 0, (short)(DlgHeight - 4), {}, DIF_SEPARATOR, L""},
-		{DI_BUTTON,    0, (short)(DlgHeight - 3), 0, (short)(DlgHeight - 3), {}, DIF_DEFAULT | DIF_CENTERGROUP, Msg::SetAttrSet},
-		{DI_BUTTON,    0, (short)(DlgHeight - 3), 0, (short)(DlgHeight - 3), {}, DIF_CENTERGROUP, Msg::Cancel},
-		{DI_BUTTON,    0, (short)(DlgHeight - 3), 0, (short)(DlgHeight - 3), {}, DIF_CENTERGROUP, Msg::Reset},
+		{DI_LISTBOX,   4, 5, (DlgWidth - 5), (DlgHeight - 5), {}, DIF_FOCUS | DIF_LISTNOBOX /*| DIF_LISTNOCLOSE*/, L""},
+		{DI_TEXT,      0, (DlgHeight - 4), 0, (DlgHeight - 4), {}, DIF_SEPARATOR, L""},
+		{DI_BUTTON,    0, (DlgHeight - 3), 0, (DlgHeight - 3), {}, DIF_DEFAULT | DIF_CENTERGROUP, Msg::SetAttrSet},
+		{DI_BUTTON,    0, (DlgHeight - 3), 0, (DlgHeight - 3), {}, DIF_CENTERGROUP, Msg::Cancel},
+		{DI_BUTTON,    0, (DlgHeight - 3), 0, (DlgHeight - 3), {}, DIF_CENTERGROUP, Msg::Reset},
 	};
 	MakeDialogItemsEx(ChattrDlgData, ChattrDlg);
 

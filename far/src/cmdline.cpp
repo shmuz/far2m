@@ -197,12 +197,12 @@ int ShowMultilinePasteDialog(FARString &text)
 //	const int dlg_h = Max(min_height, Min(ScrY - 2, 20));
 
 	DialogDataEx DlgData[] = {
-		{DI_DOUBLEBOX, 3, 1, (short)(dlg_w - 4), (short)(dlg_h - 2), {}, 0, Msg::MultilinePaste},
-		{DI_MEMOEDIT,  5, 2, (short)(dlg_w - 6), (short)(dlg_h - 5), {}, DIF_FOCUS, L""},
-		{DI_TEXT,      0, (short)sep_y, 0, (short)sep_y, {}, DIF_SEPARATOR, L""},
-		{DI_BUTTON,    0, (short)btn_y, 0, (short)btn_y, {}, DIF_CENTERGROUP, Msg::HCancel},
-		{DI_BUTTON,    0, (short)btn_y, 0, (short)btn_y, {}, DIF_CENTERGROUP | DIF_DEFAULT, Msg::HExecute},
-		{DI_BUTTON,    0, (short)btn_y, 0, (short)btn_y, {}, DIF_CENTERGROUP, Msg::HExecuteNoAsk}
+		{DI_DOUBLEBOX, 3, 1, (dlg_w - 4), (dlg_h - 2), {}, 0, Msg::MultilinePaste},
+		{DI_MEMOEDIT,  5, 2, (dlg_w - 6), (dlg_h - 5), {}, DIF_FOCUS, L""},
+		{DI_TEXT,      0, sep_y, 0, sep_y, {}, DIF_SEPARATOR, L""},
+		{DI_BUTTON,    0, btn_y, 0, btn_y, {}, DIF_CENTERGROUP, Msg::HCancel},
+		{DI_BUTTON,    0, btn_y, 0, btn_y, {}, DIF_CENTERGROUP | DIF_DEFAULT, Msg::HExecute},
+		{DI_BUTTON,    0, btn_y, 0, btn_y, {}, DIF_CENTERGROUP, Msg::HExecuteNoAsk}
 	};
 
 	MakeDialogItemsEx(DlgData, DlgItems);

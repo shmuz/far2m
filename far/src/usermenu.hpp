@@ -35,6 +35,9 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ConfigRW.hpp"
 
+class GetFileString;
+class CachedWrite;
+
 class UserMenu
 {
 		// Режимы показа меню (Menu mode)
@@ -44,7 +47,7 @@ class UserMenu
 			MM_FAR, // Меню из каталога ФАРа
 			MM_USER, // Пользовательское меню
 		};
-		ConfigReaderScope grs;
+		std::unique_ptr<ConfigReader> cfg_reader;
 
 		MENUMODE MenuMode;
 		bool MenuModified;
@@ -55,8 +58,16 @@ class UserMenu
 		bool DeleteMenuRecord(const wchar_t *MenuKey, int DeletePos);
 		bool EditMenu(const wchar_t *MenuKey, int EditPos, int TotalRecords, bool Create);
 		int ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar_t *RootMenuKey,
-			const wchar_t *Title=nullptr);
-		bool MoveMenuItem(const wchar_t *MenuKey,int Pos,int NewPos);
+				const wchar_t *Title = nullptr);
+		bool MoveMenuItem(const wchar_t *MenuKey, int Pos, int NewPos);
+
+		void MenuRegToFile(const wchar_t *MenuKey, File &MenuFile, CachedWrite &CW,
+				bool SingleItemMenu = false);
+		void MenuFileToReg(const wchar_t *MenuKey, File &MenuFile, GetFileString &GetStr,
+				bool SingleItemMenu = false, UINT MenuCP = CP_WIDE_LE);
+		int FillUserMenu(VMenu &UserMenu, const wchar_t *MenuKey, int MenuPos, int *FuncPos,
+				const wchar_t *Name);
+		void UpdateConfigReader();
 
 	public:
 		UserMenu(bool ChooseMenuType, bool FromAnyFile=false, const wchar_t *FileName=L"");
