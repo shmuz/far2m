@@ -40,36 +40,34 @@ class CachedWrite;
 
 class UserMenu
 {
-		// Режимы показа меню (Menu mode)
-		enum MENUMODE
-		{
-			MM_LOCAL, // Локальное меню
-			MM_FAR, // Меню из каталога ФАРа
-			MM_USER, // Пользовательское меню
-		};
-		std::unique_ptr<ConfigReader> cfg_reader;
+private:
+	enum MENUMODE { // Режимы показа меню (Menu mode)
+		MM_LOCAL,  // Локальное меню
+		MM_FAR,    // Меню из каталога ФАРа
+		MM_USER,   // Пользовательское меню
+	};
 
-		MENUMODE MenuMode;
-		bool MenuModified;
-		bool MenuNeedRefresh;
-		bool MenuFromAnyFile;
+	MENUMODE m_MenuMode = MM_LOCAL;
+	bool m_Modified = false;
+	bool m_NeedRefresh = false;
+	const bool m_FromAnyFile;
+	std::unique_ptr<ConfigReader> cfg_reader;
 
-		void ProcessUserMenu(bool ChooseMenuType, const wchar_t *MenuFileName);
-		bool DeleteMenuRecord(const wchar_t *MenuKey, int DeletePos);
-		bool EditMenu(const wchar_t *MenuKey, int EditPos, int TotalRecords, bool Create);
-		int ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar_t *RootMenuKey,
-				const wchar_t *Title = nullptr);
-		bool MoveMenuItem(const wchar_t *MenuKey, int Pos, int NewPos);
+private:
+	bool DeleteMenuRecord(const wchar_t *MenuKey, int DeletePos);
+	bool EditMenu(const wchar_t *MenuKey, int EditPos, int TotalRecords, bool Create);
+	int ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar_t *RootMenuKey,
+			const wchar_t *Title = nullptr);
+	bool MoveMenuItem(const wchar_t *MenuKey, int Pos, int NewPos);
 
-		void MenuRegToFile(const wchar_t *MenuKey, File &MenuFile, CachedWrite &CW,
-				bool SingleItemMenu = false);
-		void MenuFileToReg(const wchar_t *MenuKey, File &MenuFile, GetFileString &GetStr,
-				bool SingleItemMenu = false, UINT MenuCP = CP_WIDE_LE);
-		int FillUserMenu(VMenu &UserMenu, const wchar_t *MenuKey, int MenuPos, int *FuncPos,
-				const wchar_t *Name);
-		void UpdateConfigReader();
+	void MenuRegToFile(const wchar_t *MenuKey, File &MenuFile, CachedWrite &CW,
+			bool SingleItemMenu = false);
+	void MenuFileToReg(const wchar_t *MenuKey, File &MenuFile, GetFileString &GetStr,
+			bool SingleItemMenu = false, UINT MenuCP = CP_WIDE_LE);
+	int FillUserMenu(VMenu &UserMenu, const wchar_t *MenuKey, int MenuPos, int *FuncPos,
+			const wchar_t *Name);
+	void UpdateConfigReader();
 
-	public:
-		UserMenu(bool ChooseMenuType, bool FromAnyFile=false, const wchar_t *FileName=L"");
-		~UserMenu();
+public:
+	UserMenu(bool ChooseMenuType, const wchar_t *FileName = nullptr);
 };

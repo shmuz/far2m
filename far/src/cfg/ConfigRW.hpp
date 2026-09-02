@@ -94,7 +94,7 @@ public:
 	ConfigReaderScope(std::unique_ptr<ConfigReader> &cfg_reader)
 		: _cfg_reader(cfg_reader)
 	{
-		_cfg_reader.reset(new ConfigReader);
+		_cfg_reader = std::make_unique<ConfigReader>();
 	}
 
 	~ConfigReaderScope()
@@ -104,10 +104,8 @@ public:
 
 	static void Update(std::unique_ptr<ConfigReader> &cfg_reader)
 	{
-		if (cfg_reader) {
-			cfg_reader.reset();
-			cfg_reader.reset(new ConfigReader);
-		}
+		if (cfg_reader)
+			cfg_reader = std::make_unique<ConfigReader>();
 	}
 };
 

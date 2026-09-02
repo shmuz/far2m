@@ -159,19 +159,17 @@ FARMACROAREA KeyMacro::m_StartArea;
 void ShowUserMenu(size_t Count, const FarMacroValue *Values)
 {
 	bool ChooseMenuType = false;
-	bool FromAnyFile = false;
-	const wchar_t *FileName = L"";
+	const wchar_t *FileName = nullptr;
 
 	if (Count && Values[0].Type == FMVT_BOOLEAN)
 	{
 		ChooseMenuType = Values[0].Boolean != 0;
 	}
-	else if (Count && IsStr(Values[0]))
+	else if (Count && Values[0].Type == FMVT_STRING)
 	{
-		FromAnyFile = true;
 		FileName = Values[0].String;
 	}
-	UserMenu(ChooseMenuType, FromAnyFile, FileName);
+	UserMenu(ChooseMenuType, FileName);
 }
 
 static const wchar_t* GetMacroLanguage(DWORD Flags)
