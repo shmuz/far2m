@@ -156,7 +156,6 @@ mf.size2str = function(Size, Flags, Width)
 end
 
 mf.usermenu = function(mode, filename)
-  if not panel.CheckPanelsExist() then return end -- mantis #2986 (crash)
   mode = mode or 0
   if type(mode)~="number" then return end
   local sync_call = band(mode,0x100) ~= 0
