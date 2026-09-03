@@ -1280,7 +1280,8 @@ LONG_PTR WINAPI CopyDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 		}
 		case DM_KEY:    // по поводу дерева!
 		{
-			if (Param2 == KEY_ALTF10 || Param2 == KEY_F10 || Param2 == KEY_SHIFTF10) {
+			// KEY_SHIFTF10: better ignore than do stupid things
+			if (Param2 == KEY_ALTF10 || Param2 == KEY_F10 /* || Param2 == KEY_SHIFTF10 */) {
 				DlgParam->AltF10 = Param2 == KEY_ALTF10 ? 1 : (Param2 == KEY_SHIFTF10 ? 2 : 0);
 				SendDlgMessage(hDlg, DM_CALLTREE, DlgParam->AltF10, 0);
 				return TRUE;

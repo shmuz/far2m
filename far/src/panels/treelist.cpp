@@ -262,6 +262,8 @@ void TreeList::DisplayTree(bool Fast)
 	TreeItem *CurPtr;
 	FARString strTitle;
 	LockScreen *LckScreen = nullptr;
+	const int Correct = // a temporary patch for below calculations
+			(ModalMode == MODALTREE_PASSIVE) ? MODALTREE_ACTIVE : ModalMode;
 
 	if (CtrlObject->Cp()->GetAnotherPanel(this)->GetType() == QVIEW_PANEL)
 		LckScreen = new LockScreen;
@@ -273,7 +275,7 @@ void TreeList::DisplayTree(bool Fast)
 
 	if (!Fast) {
 		Box(X1, Y1, X2, Y2, FarColorToReal(COL_PANELBOX), DOUBLE_BOX);
-		DrawSeparator(Y2 - 2 - (ModalMode));
+		DrawSeparator(Y2 - 2 - (Correct));
 		GetTitle(strTitle);
 
 		if (!strTitle.IsEmpty()) {
@@ -283,7 +285,7 @@ void TreeList::DisplayTree(bool Fast)
 		}
 	}
 
-	for (int I = Y1 + 1, J = CurTopFile; I < Y2 - 2 - (ModalMode); I++, J++) {
+	for (int I = Y1 + 1, J = CurTopFile; I < Y2 - 2 - (Correct); I++, J++) {
 		GotoXY(X1 + 1, I);
 		SetFarColor(COL_PANELTEXT);
 		Text(L" ");
