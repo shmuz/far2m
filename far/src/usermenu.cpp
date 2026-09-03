@@ -469,15 +469,8 @@ int UserMenu::FillUserMenu(VMenu &UserMenu, const wchar_t *MenuKey, int MenuPos,
 int UserMenu::ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar_t *MenuRootKey,
 		const wchar_t *Title)
 {
-	MenuItemEx UserMenuItem;
-
 	for (;;) {
-		UserMenuItem.Clear();
 		int NumLine = 0, ExitCode, FuncPos[24];
-
-		// очистка F-хоткеев
-		for (size_t I = 0; I < ARRAYSIZE(FuncPos); I++)
-			FuncPos[I] = -1;
 
 		FARString strName;
 		CtrlObject->Cp()->ActivePanel->GetCurName(strName);
@@ -516,8 +509,10 @@ int UserMenu::ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar
 
 			while (!UserMenu.Done()) {
 				if (m_NeedRefresh) {
-					UserMenu.Hide();    // спрячем
-					// "изнасилуем" (перезаполним :-)
+					for (auto &I: FuncPos) {
+						I = -1;
+					}
+					UserMenu.Hide();
 					NumLine = FillUserMenu(UserMenu, MenuKey, MenuPos, FuncPos, strName);
 					// заставим манагер менюхи корректно отрисовать ширину и
 					// высоту, а заодно и скорректировать вертикальные позиции
@@ -720,7 +715,6 @@ int UserMenu::ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar
 			continue;
 		}
 
-		int CurLine = 0;
 		FARString strCmdLineDir = CtrlObject->CmdLine->GetCurDir();
 		FARString strOldCmdLine;
 		CtrlObject->CmdLine->GetString(strOldCmdLine);
@@ -731,7 +725,7 @@ int UserMenu::ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar
 		CtrlObject->CmdLine->LockUpdatePanel(true);
 
 		// Цикл исполнения команд меню (CommandX)
-		for (;;) {
+		for (int CurLine = 0; ; CurLine++) {
 			FormatString strLineName;
 			FARString strCommand, strListName, strAnotherListName;
 			strLineName << L"Command" << CurLine;
@@ -786,9 +780,7 @@ int UserMenu::ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar
 
 			if (!strAnotherListName.IsEmpty())
 				QueueDeleteOnClose(strAnotherListName);
-
-			CurLine++;
-		}    // for (;;)
+		}
 
 		CtrlObject->CmdLine->LockUpdatePanel(false);
 
