@@ -2004,34 +2004,30 @@ static int FarViewerControlSynchedV2(int ViewerID, int Command, void *Param)
 	if (FrameManager->ManagerIsDown())
 		return 0;
 
-	FileViewer *FoundFileViewer = nullptr;
+	Viewer *CurViewer = CtrlObject->Plugins.CurViewer;
 
-	if (ViewerID == -1) {
-		Viewer *CurViewer = CtrlObject->Plugins.CurViewer;
-		FoundFileViewer = CurViewer ? CurViewer->GetHostFileViewer() : nullptr;
-	}
-	else {
-		int count = FrameManager->GetFrameCount();
-		for (int i = 0; i < count; i++) {
-			auto fviewer = dynamic_cast<FileViewer *>(FrameManager->GetFrame(i));
-			if (fviewer && (fviewer->GetViewerID() == ViewerID)) {
-				FoundFileViewer = fviewer;
-				break;
-			}
-		}
-		if (!FoundFileViewer) {
-			count = FrameManager->GetModalCount();
-			for (int i = 0; i < count; i++) {
-				auto fviewer = dynamic_cast<FileViewer *>(FrameManager->GetModal(i));
-				if (fviewer && (fviewer->GetViewerID() == ViewerID)) {
-					FoundFileViewer = fviewer;
-					break;
-				}
-			}
-		}
+	if (CurViewer && (ViewerID == -1 || ViewerID == CurViewer->GetViewerID())) {
+		if (auto Host = CurViewer->GetHostFileViewer())
+			return Host->ViewerControl(Command, Param);
+		else
+			return CurViewer->ViewerControl(Command, Param);
 	}
 
-	return FoundFileViewer ? FoundFileViewer->ViewerControl(Command, Param) : 0;
+	int count = FrameManager->GetFrameCount();
+	for (int i = 0; i < count; i++) {
+		auto fviewer = dynamic_cast<FileViewer *>(FrameManager->GetFrame(i));
+		if (fviewer && (fviewer->GetViewerID() == ViewerID))
+			return fviewer->ViewerControl(Command, Param);
+	}
+
+	count = FrameManager->GetModalCount();
+	for (int i = 0; i < count; i++) {
+		auto fviewer = dynamic_cast<FileViewer *>(FrameManager->GetModal(i));
+		if (fviewer && (fviewer->GetViewerID() == ViewerID))
+			return fviewer->ViewerControl(Command, Param);
+	}
+
+	return 0;
 }
 
 int WINAPI FarViewerControl(int Command, void *Param)
