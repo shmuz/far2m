@@ -2079,7 +2079,6 @@ void Dialog::ShowDialog(int ID)
 					EditPtr->Show();
 				} else {
 					EditPtr->FastShow();
-					EditPtr->SetLeftPos(0);
 				}
 
 				// Отключение мигающего курсора при перемещении диалога
