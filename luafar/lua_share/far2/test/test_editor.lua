@@ -2,6 +2,18 @@ local asrt = require "far2.assert"
 
 local F = far.Flags
 
+local function OpenTempFile(DeleteOnClose)
+  local fname = asrt.str(far.MkTemp())
+  local flags = { EF_NONMODAL=1; EF_IMMEDIATERETURN=1; EF_DISABLEHISTORY=1; }
+  if DeleteOnClose then flags.EF_DELETEONCLOSE = 1; end
+
+  asrt.eq(F.EEC_MODIFIED, editor.Editor(fname,nil,nil,nil,nil,nil,flags))
+  asrt.istrue(Area.Editor)
+  local EI = asrt.table(editor.GetInfo())
+  asrt.eq(EI.TotalLines, 1)
+  return fname
+end
+
 local function test_Sel_Cmdline(args)
   for _, str in ipairs(args) do
     asrt.istrue(Area.Shell)
@@ -189,12 +201,44 @@ local function test_Sel_Editor(args)
   asrt.istrue(editor.Quit())
 end
 
-local function test_Misc()
-  local fname = far.MkTemp()
-  local flags = {EF_NONMODAL=1, EF_IMMEDIATERETURN=1, EF_DISABLEHISTORY=1, EF_DELETEONCLOSE=1}
-  asrt.eq(editor.Editor(fname,nil,nil,nil,nil,nil,flags), F.EEC_MODIFIED)
-  asrt.istrue(Area.Editor)
+local function test_Editor_InsStr()
+  asrt.func(Editor.InsStr)
 
+  OpenTempFile(true)
+  local N = 5
+  for k = 1,N do
+    editor.InsertString(nil, k)
+    editor.SetString(nil, k, "line "..k)
+  end
+  local EI = editor.GetInfo()
+  asrt.eq(EI.TotalLines, N+1)
+  asrt.eq(EI.CurLine, N+1)
+
+  asrt.eq(0, Editor.InsStr("aaa", N+2))
+
+  asrt.eq(1, Editor.InsStr("aaa", N+1))
+  EI = editor.GetInfo()
+  asrt.eq(EI.TotalLines, N+2)
+  asrt.eq(EI.CurLine, N+1)
+  asrt.eq("aaa", editor.GetString(nil, N+2, 3))
+
+  local curLine, curPos = 2, 3
+  asrt.istrue(editor.SetPosition(nil, curLine, curPos))
+  asrt.eq(1, Editor.InsStr("bbb")) -- insert after current line
+  asrt.eq("line 1", editor.GetString(nil, 1, 3))
+  asrt.eq("line 2", editor.GetString(nil, 2, 3))
+  asrt.eq("bbb",    editor.GetString(nil, 3, 3))
+  EI = editor.GetInfo()
+  asrt.eq(EI.TotalLines, N+3)
+  asrt.eq(EI.CurLine, curLine)
+  asrt.eq(EI.CurPos, curPos)
+
+  editor.Quit()
+  asrt.istrue(Area.Shell)
+end
+
+local function test_Misc()
+  OpenTempFile(true)
   local EI = asrt.table(editor.GetInfo())
 
   local str = ("123456789-"):rep(4)
@@ -235,11 +279,7 @@ end
 
 -- "Several lines are merged into one".
 local function test_issue_3129()
-  local fname = far.InMyTemp("far2m-"..win.Uuid("L"):sub(1,8))
-  local fp = assert(io.open(fname, "w"))
-  fp:close()
-  local flags = {EF_NONMODAL=1, EF_IMMEDIATERETURN=1, EF_DISABLEHISTORY=1}
-  assert(editor.Editor(fname,nil,nil,nil,nil,nil,flags) == F.EEC_MODIFIED)
+  local fname = OpenTempFile(false)
   for k=1,3 do
     editor.InsertString()
     editor.SetString(nil, k, "foo")
@@ -247,7 +287,7 @@ local function test_issue_3129()
   asrt.istrue (editor.SaveFile())
   asrt.istrue (editor.Quit())
   actl.Commit()
-  fp = assert(io.open(fname))
+  local fp = assert(io.open(fname))
   local k = 0
   for line in fp:lines() do
     k = k + 1
@@ -351,7 +391,7 @@ end
 -- Editor: fix last line deletion
 local function test_editor_bc3a1124()
   local flags = "EF_NONMODAL EF_IMMEDIATERETURN EF_DISABLEHISTORY"
-  local fname = far.InMyTemp(win.Uuid("U"))
+  local fname = far.MkTemp()
 
   editor.Editor(fname,nil,nil,nil,nil,nil,flags)
   asrt.istrue(Area.Editor)
@@ -369,15 +409,7 @@ local function test_editor_bc3a1124()
 end
 
 local function test_mantis_2571()
-  local flags = "EF_NONMODAL EF_IMMEDIATERETURN EF_DISABLEHISTORY"
-  local fname = far.InMyTemp(win.Uuid("U"))
-
-  -- open the editor
-  editor.Editor(fname,nil,nil,nil,nil,nil,flags)
-  asrt.istrue(Area.Editor)
-
-  local EI = asrt.table(editor.GetInfo())
-  asrt.eq(1, EI.TotalLines)
+  OpenTempFile(true)
 
   -- input some text
   for k = 1,8 do
@@ -386,7 +418,7 @@ local function test_mantis_2571()
   end
   for _ = 1,4 do editor.InsertString() end
 
-  EI = asrt.table(editor.GetInfo())
+  local EI = asrt.table(editor.GetInfo())
   asrt.eq(13, EI.TotalLines)
 
   -- insert a vertical block
@@ -408,16 +440,10 @@ local function test_mantis_2571()
   -- clean
   Keys("F2 Esc")
   asrt.istrue(Area.Shell)
-  asrt.istrue(win.DeleteFile(fname))
 end
 
 local function test_mantis_3367()
-  local flags = "EF_NONMODAL EF_IMMEDIATERETURN EF_DISABLEHISTORY"
-  local fname = far.InMyTemp(win.Uuid("U"))
-
-  -- open the editor
-  editor.Editor(fname,nil,nil,nil,nil,nil,flags)
-  asrt.istrue(Area.Editor)
+  OpenTempFile(true)
 
   -- set ESPT_CURSORBEYONDEOL option to true
   local EI = asrt.table(editor.GetInfo())
@@ -448,6 +474,7 @@ end
 
 local function test_all()
   test_Editor_Sel()
+  test_Editor_InsStr()
   test_Misc()
   test_issue_3129()
   test_multiple_instances()

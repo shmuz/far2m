@@ -1,5 +1,6 @@
 -- coding: utf-8
--- luacheck: no global
+-- luacheck: globals   APanel Area BM CmdLine Dlg Drv Editor Far Help
+-- luacheck: globals   Menu mf Mouse Object Panel Plugin PPanel Viewer
 
 local Shared = ...
 local utils, yieldcall = Shared.utils, Shared.yieldcall
@@ -380,28 +381,27 @@ Editor.DelLine = function(Line)
 end
 
 Editor.InsStr = function(S, Line)
-  local ok
   if far.MacroGetArea() == F.MACROAREA_EDITOR then
     local info = editor.GetInfo()
     if band(info.CurState, F.ECSTATE_LOCKED) == 0 then
       Line = tonumber(Line)
-      if not Line or Line < 1 then Line = info.CurLine end
-      Line = math.floor(Line)
+      Line = (Line and Line >= 1) and math.floor(Line) or info.CurLine
       if Line <= info.TotalLines then
+        editor.UndoRedo(nil, F.EUR_BEGIN)
+        Line = Line + 1
         if type(S)=="number" then S = tostring(S) end
         if type(S)~="string" then S = "" end
         editor.SetPosition(nil, Line, 1)
-        ok = editor.InsertString()
-        if S ~= "" then
-          editor.SetPosition(nil, Line, 1)
-          editor.SetString(nil, nil, S)
-        end
+        editor.InsertString()
+        editor.SetString(nil, Line, S)
         if info.CurLine > Line then info.CurLine = info.CurLine+1 end
         editor.SetPosition(nil,info) -- restore the position
+        editor.UndoRedo(nil, F.EUR_END)
+        return 1
       end
     end
   end
-  return ok and 1 or 0
+  return 0
 end
 
 Editor.SetStr = function(S, Line)
