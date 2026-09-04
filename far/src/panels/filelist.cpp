@@ -2448,8 +2448,6 @@ bool FileList::ChangeDir(const wchar_t *NewDir, bool ShowMessage)
 {
 	SCOPED_ACTION(SudoClientRegion);
 
-	Panel *AnotherPanel;
-
 	FrameManager->FolderChanged();
 	if (PanelMode != PLUGIN_PANEL && !IsAbsolutePath(NewDir) && !TestCurrentDirectory(strCurDir))
 		FarChDir(strCurDir);
@@ -2673,15 +2671,18 @@ bool FileList::ChangeDir(const wchar_t *NewDir, bool ShowMessage)
 		CurTopFile = UpperFolderTopFile;
 		UpperFolderTopFile = 0;
 		CorrectPosition();
-	} else if (UpdateFlags != UPDATE_KEEP_SELECTION)
-		CurFile = CurTopFile = 0;
+	}
+	else if (UpdateFlags != UPDATE_KEEP_SELECTION) {
+		if (SetDirectorySuccess || ShowMessage)
+			CurFile = CurTopFile = 0;
+	}
 
 	if (GetFocus()) {
 		CtrlObject->CmdLine->SetCurDir(strCurDir);
 		CtrlObject->CmdLine->Show();
 	}
 
-	AnotherPanel = CtrlObject->Cp()->GetAnotherPanel(this);
+	Panel *AnotherPanel = CtrlObject->Cp()->GetAnotherPanel(this);
 
 	if (AnotherPanel->GetType() != FILE_PANEL) {
 		AnotherPanel->SetCurDir(strCurDir, false);
