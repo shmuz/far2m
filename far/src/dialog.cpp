@@ -5821,6 +5821,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 							EditLine->SetReadOnly(false);
 							EditLine->DisableAC();
 							EditLine->SetString(CurItem.strData);
+							EditLine->SetLeftPos(0);
 							EditLine->RevertAC();
 							EditLine->SetReadOnly(ReadOnly);
 
