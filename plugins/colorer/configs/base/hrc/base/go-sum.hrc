@@ -30,16 +30,12 @@
     <entity name="hash" value="[A-Za-z0-9+/=]+"/>
 
     <scheme name="go-sum">
-      <!-- module version h1:hash -->
-      <regexp match="/^\s*(%modulePath;)\s+(%version;)\s+(h1:)\s*(%hash;)\s*$/"
-              region1="ModulePath" region2="Version" region3="HashType" region4="Hash"/>
-
-      <!-- module version/go.mod h1:hash -->
-      <regexp match="/^\s*(%modulePath;)\s+(%version;)(\/go\.mod)\s+(h1:)\s*(%hash;)\s*$/"
+      <!-- module version/go.mod h1:hash (more specific first) -->
+      <regexp match="/(%modulePath;)\s+(%version;)(\/go\.mod)\s+(h1:)\s*(%hash;)/"
               region1="ModulePath" region2="Version" region3="Symbol" region4="HashType" region5="Hash"/>
-
-      <!-- blank lines and leading whitespace are allowed -->
-      <regexp match="/^\s*$/"/>
+      <!-- module version h1:hash -->
+      <regexp match="/(%modulePath;)\s+(%version;)\s+(h1:)\s*(%hash;)/"
+              region1="ModulePath" region2="Version" region3="HashType" region4="Hash"/>
 
       <!-- any unexpected content is an error -->
       <regexp match="/\S/" region="Error" priority="low"/>
