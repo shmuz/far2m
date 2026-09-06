@@ -88,11 +88,22 @@ class ParseCache
   ~ParseCache();
   /**
    * Searched a cache position for the specified line number.
+   * Siblings are ordered by sline and do not overlap; the rightmost
+   * node with sline <= ln is the unique covering candidate (or a
+   * predecessor when that node ends before ln).
    * @param ln     Line number to search for
    * @param cache  Cache entry, filled with last child cache entry.
    * @return       Cache entry, assigned to the specified line number
    */
   ParseCache* searchLine(int ln, ParseCache** cache);
+  /** Delete the children list and clear the search cursor into it. */
+  void dropChildren();
+  /** Delete the sibling suffix starting at next. */
+  void dropNext();
+
+ private:
+  /** Last searched immediate child. idleJob's forward chunks resume here. */
+  ParseCache* search_child = nullptr;
 };
 
 #endif // COLORER_TEXTPARSERPELPERS_H

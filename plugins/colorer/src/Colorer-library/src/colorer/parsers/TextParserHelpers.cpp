@@ -6,8 +6,9 @@
 ParseCache::~ParseCache()
 {
   // COLORER_LOG_DEEPTRACE("[TPCache] ~ParseCache():%,%-%", *scheme->getName(), sline, eline);
+  ParseCache* previous = prev;
   delete backLine;
-  delete children;
+  dropChildren();
   prev = nullptr;
 
   if (next) {
@@ -22,36 +23,84 @@ ParseCache::~ParseCache()
       tmp->next = nullptr;
     }
     delete next;
+    next = nullptr;
   }
 
   delete[] vcache;
+  if (parent && parent->search_child == this) {
+    parent->search_child = previous;
+  }
 }
+
+void ParseCache::dropChildren()
+{
+  delete children;
+  children = nullptr;
+  search_child = nullptr;
+}
+
+void ParseCache::dropNext()
+{
+  delete next;
+  next = nullptr;
+}
+
+namespace {
+
+ParseCache* rightmostAtOrBefore(ParseCache* node, int ln)
+{
+  while (node->next && node->next->sline <= ln) {
+    node = node->next;
+  }
+  return node;
+}
+
+}  // namespace
 
 ParseCache* ParseCache::searchLine(int ln, ParseCache** cache)
 {
-  ParseCache* r1 = nullptr;
-  ParseCache* r2 = nullptr;
-  ParseCache* tmp = this;
   *cache = nullptr;
-  while (tmp) {
-    COLORER_LOG_DEEPTRACE("[TPCache] searchLine() tmp:%,%-%", *tmp->scheme->getName(), tmp->sline, tmp->eline);
-    if (tmp->sline <= ln && tmp->eline >= ln) {
-      if (tmp->children) {
-        r1 = tmp->children->searchLine(ln, &r2);
-      }
-      if (r1) {
-        *cache = r2;
-        return r1;
-      }
-      *cache = r2;  // last child
-      return tmp;
-    }
-    if (tmp->sline <= ln) {
-      *cache = tmp;
-    }
-    tmp = tmp->next;
+
+  ParseCache* node = this;
+  if (parent && parent->search_child) {
+    node = parent->search_child;
   }
-  return nullptr;
+
+  if (node->sline <= ln) {
+    node = rightmostAtOrBefore(node, ln);
+  }
+  else if (node->prev && node->prev->sline <= ln) {
+    // One sibling back: tryParseLine(line+1) then searchLine(line).
+    node = node->prev;
+  }
+  else {
+    // Long jump toward the start: walk from the head, not back from EOF.
+    node = rightmostAtOrBefore(this, ln);
+  }
+
+  if (parent) {
+    parent->search_child = node;
+  }
+  if (node->sline > ln) {
+    return nullptr;
+  }
+
+  COLORER_LOG_DEEPTRACE("[TPCache] searchLine() tmp:%,%-%", *node->scheme->getName(), node->sline, node->eline);
+  if (node->eline < ln) {
+    *cache = node;
+    return nullptr;
+  }
+
+  ParseCache* child_cache = nullptr;
+  if (node->children) {
+    if (auto* found = node->children->searchLine(ln, &child_cache)) {
+      *cache = child_cache;
+      return found;
+    }
+  }
+
+  *cache = child_cache;  // last child
+  return node;
 }
 
 /////////////////////////////////////////////////////////////////////////
