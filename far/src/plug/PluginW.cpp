@@ -452,9 +452,7 @@ static const MacroPrivateInfo MacroInfo
 
 static BOOL LoadLuafar()
 {
-#if !defined(USELUA)
-	return FALSE;
-#elif defined(__ANDROID__)
+#if defined(__ANDROID__)
 	return TRUE;
 #else
 
@@ -515,7 +513,7 @@ static BOOL LoadLuafar()
 	}
 
 	return TRUE;
-#endif // #if defined(USELUA)
+#endif // #if defined(__ANDROID__)
 }
 
 void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandardFunctions *FSF)

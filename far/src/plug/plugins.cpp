@@ -1856,12 +1856,8 @@ void PluginManager::ReadUserBackground(SaveScreen *SaveScr)
 
 bool PluginManager::CallMacroPlugin(OpenMacroPluginInfo *Info)
 {
-#ifdef USELUA
 	Plugin *pPlugin = FindPlugin(SYSID_LUAMACRO);
 	return pPlugin && pPlugin->OpenPlugin(OPEN_LUAMACRO, Info);
-#else
-	return false;
-#endif
 }
 
 void* PluginManager::CallPluginFromMacro(DWORD SysID, OpenMacroInfo *Info)
