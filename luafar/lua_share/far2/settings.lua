@@ -96,17 +96,24 @@ local function deserialize (str, isfile)
   return result,nil
 end
 
-local function get_work_dir(key)
+-- Note: currently there is a single "local" location that ignores $FARSETTINGS
+local function get_work_dir(key, location, create_dir)
   key = key or ""
-  local dir = far.InMyConfig(("plugins/luafar/%08X"):format(far.GetPluginId()))
-  return JoinPath(dir, key)
+  local dir = (location == "local")
+      and JoinPath(far.GetMyHome(), ".local/share/far2m")
+      or  far.InMyConfig()
+  dir = JoinPath(dir, ("plugins/luafar/%08X"):format(far.GetPluginId()), key)
+  if create_dir then
+    win.CreateDir(dir, true)
+  end
+  return dir
 end
 
-local function mdelete (key, name)
+local function mdelete (key, name, location)
   key = key or ""
   checkarg(key, 1, "string")
   checkarg(name, 2, "string")
-  local dir = get_work_dir(key)
+  local dir = get_work_dir(key, location, true)
   if name ~= "*" then
     return win.DeleteFile(JoinPath(dir, name))
   else
@@ -115,13 +122,13 @@ local function mdelete (key, name)
   end
 end
 
-local function msave (key, name, value)
+local function msave (key, name, value, location)
   key = key or ""
   checkarg(key, 1, "string")
   checkarg(name, 2, "string")
   local str = serialize(value)
   if str then
-    local dir = get_work_dir(key)
+    local dir = get_work_dir(key, location, true)
     if win.CreateDir(dir, true) then
       local fp = io.open(JoinPath(dir,name), "w")
       if fp then
@@ -134,11 +141,12 @@ local function msave (key, name, value)
   return false
 end
 
-local function mload (key, name)
+local function mload (key, name, location)
   key = key or ""
   checkarg(key, 1, "string")
   checkarg(name, 2, "string")
-  return deserialize(JoinPath(get_work_dir(key),name), true)
+  local dir = get_work_dir(key, location, false)
+  return deserialize(JoinPath(dir, name), true)
 end
 
 local function field (t, seq)
