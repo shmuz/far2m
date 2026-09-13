@@ -720,6 +720,9 @@ static int FarMenuFnSynched(INT_PTR PluginNumber, const GUID *Id, int X, int Y, 
 		int *BreakCode, const FarMenuItem *Item, int ItemsNumber, FARMENUCALLBACK Callback,
 		void *CallbackData)
 {
+	if (BreakCode)
+		*BreakCode = -1;
+
 	if (FrameManager->ManagerIsDown())
 		return -1;
 
@@ -731,9 +734,6 @@ static int FarMenuFnSynched(INT_PTR PluginNumber, const GUID *Id, int X, int Y, 
 		VMenu FarMenu(Title, nullptr, 0, MaxHeight);
 		CtrlObject->Macro.SetArea(MACROAREA_MENU);
 		FarMenu.SetPosition(X, Y, 0, 0);
-
-		if (BreakCode)
-			*BreakCode = -1;
 
 		{
 			FARString strTopic;
