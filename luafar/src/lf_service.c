@@ -497,6 +497,23 @@ DWORD RGBFromFarTrueColor(const struct FarTrueColor *tc)
 	return (tc->R) | (tc->G << 8) | (tc->B << 16);
 }
 
+static uint64_t GetFgBgFromTable(lua_State *L, const char *Names[2])
+{
+	uint64_t ret = 0;
+	for (int i = 0; i < 2; i++) {
+		lua_getfield(L, -1, Names[i]);
+		if (lua_isnumber(L, -1)) {
+			ret = (uint64_t)lua_tonumber(L, -1)  & 0x00FFFFFF;
+			i = 2; //to end the loop
+		}
+		lua_pop(L, 1);
+	}
+	return ret;
+}
+
+static const char *FgNames[] = { "ForegroundColor", "fg" };
+static const char *BgNames[] = { "BackgroundColor", "bg" };
+
 // partially taken from the Colorer plugin
 uint64_t GetFarColor(lua_State *L, int pos, struct FarTrueColorForeAndBack *fullcolor,
 		int *basecolor, int *isTrueColor)
@@ -508,8 +525,8 @@ uint64_t GetFarColor(lua_State *L, int pos, struct FarTrueColorForeAndBack *full
 	if (lua_istable(L, pos))
 	{
 		lua_pushvalue(L, pos);
-		uint64_t FgColor = GetFgFromTable(L);
-		uint64_t BgColor = GetBgFromTable(L);
+		uint64_t FgColor = GetFgBgFromTable(L, FgNames);
+		uint64_t BgColor = GetFgBgFromTable(L, BgNames);
 		lua_pop(L, 1);
 
 		FAR3COLORFLAGS Flags = CheckFlagsFromTable(L, pos, "Flags");

@@ -20,9 +20,7 @@ ToStringResult safe__tostring_meta(lua_State *L, int idx);
 const char *safe_luaL_tolstring(lua_State *L, int idx, size_t *len);
 int  SysErrorReturn(lua_State *L);
 
-uint64_t GetBgFromTable      (lua_State *L);
 BOOL     GetBoolFromTable    (lua_State *L, const char* key);
-uint64_t GetFgFromTable      (lua_State *L);
 BOOL     GetOptBoolFromTable (lua_State *L, const char* key, BOOL dflt);
 int      GetOptIntFromArray  (lua_State *L, int key, int dflt);
 int      GetOptIntFromTable  (lua_State *L, const char* key, int dflt);
