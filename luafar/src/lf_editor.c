@@ -695,16 +695,16 @@ static int editor_GetColor(lua_State *L)
 		lua_newtable(L); // Color
 
 		if (etc.TrueColor.Fore.Flags & 0x1)
-			PutNumToTable(L, "ForegroundColor", RGBFromFarTrueColor(&etc.TrueColor.Fore));
+			PutFgToTable(L, RGBFromFarTrueColor(&etc.TrueColor.Fore));
 		else {
-			PutNumToTable(L, "ForegroundColor", etc.Base.Color & 0x0F);
+			PutFgToTable(L, etc.Base.Color & 0x0F);
 			Flags |= FCF_FG_INDEX;
 		}
 
 		if (etc.TrueColor.Back.Flags & 0x1)
-			PutNumToTable(L, "BackgroundColor", RGBFromFarTrueColor(&etc.TrueColor.Back));
+			PutBgToTable(L, RGBFromFarTrueColor(&etc.TrueColor.Back));
 		else {
-			PutNumToTable(L, "BackgroundColor", (etc.Base.Color & 0xF0) >> 4);
+			PutBgToTable(L, (etc.Base.Color & 0xF0) >> 4);
 			Flags |= FCF_BG_INDEX;
 		}
 

@@ -468,16 +468,16 @@ void PushFarColor(lua_State *L, uint64_t value)
 	lua_newtable(L);
 	if (value >> 16)
 	{
-		PutIntToTable(L, "ForegroundColor", (value >> 16) & 0xFFFFFF);
-		PutIntToTable(L, "BackgroundColor", (value >> 40) & 0xFFFFFF);
+		PutFgToTable(L, (value >> 16) & 0xFFFFFF);
+		PutBgToTable(L, (value >> 40) & 0xFFFFFF);
 
 		if (value & COMMON_LVB_UNDERSCORE) Flags |= FCF_FG_UNDERLINE_MASK;
 		if (value & COMMON_LVB_STRIKEOUT)  Flags |= FCF_FG_STRIKEOUT;
 	}
 	else
 	{
-		PutIntToTable(L, "ForegroundColor", value & 0x0F);
-		PutIntToTable(L, "BackgroundColor", (value >> 4) & 0x0F);
+		PutFgToTable(L, value & 0x0F);
+		PutBgToTable(L, (value >> 4) & 0x0F);
 		Flags |= (FCF_FG_INDEX | FCF_BG_INDEX);
 	}
 
@@ -508,8 +508,8 @@ uint64_t GetFarColor(lua_State *L, int pos, struct FarTrueColorForeAndBack *full
 	if (lua_istable(L, pos))
 	{
 		lua_pushvalue(L, pos);
-		uint64_t FgColor = GetOptIntFromTable(L, "ForegroundColor", 0) & 0x00FFFFFF;
-		uint64_t BgColor = GetOptIntFromTable(L, "BackgroundColor", 0) & 0x00FFFFFF;
+		uint64_t FgColor = GetFgFromTable(L);
+		uint64_t BgColor = GetBgFromTable(L);
 		lua_pop(L, 1);
 
 		FAR3COLORFLAGS Flags = CheckFlagsFromTable(L, pos, "Flags");
@@ -856,7 +856,7 @@ static int far_Menu(lua_State *L)
 		Items[SelectIndex].Flags |= MIF_SELECTED;
 
 	// Break Keys
-	int BreakCode = 0;
+	int BreakCode = -1;
 	int NumBreakCodes = 0;
 	int *pBreakKeys = NULL;
 	int *pBreakCode = NULL;

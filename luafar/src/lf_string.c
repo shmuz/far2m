@@ -232,6 +232,44 @@ BOOL GetOptBoolFromTable(lua_State *L, const char* key, BOOL dflt)
 	return ret;
 }
 
+static uint64_t GetFgBgFromTable(lua_State *L, const char *Names[2])
+{
+	uint64_t ret = 0;
+	for (int i = 0; i < 2; i++) {
+		lua_getfield(L, -1, Names[i]);
+		if (lua_isnumber(L, -1)) {
+			ret = (uint64_t)lua_tonumber(L, -1)  & 0x00FFFFFF;
+			i = 2; //to end the loop
+		}
+		lua_pop(L, 1);
+	}
+	return ret;
+}
+
+uint64_t GetFgFromTable(lua_State *L)
+{
+	const char *Names[] = { "ForegroundColor", "fg" };
+	return GetFgBgFromTable(L, Names);
+}
+
+uint64_t GetBgFromTable(lua_State *L)
+{
+	const char *Names[] = { "BackgroundColor", "bg" };
+	return GetFgBgFromTable(L, Names);
+}
+
+void PutFgToTable(lua_State *L, uint64_t Value)
+{
+	PutNumToTable(L, "ForegroundColor", Value);
+	PutNumToTable(L, "fg", Value);
+}
+
+void PutBgToTable(lua_State *L, uint64_t Value)
+{
+	PutNumToTable(L, "BackgroundColor", Value);
+	PutNumToTable(L, "bg", Value);
+}
+
 //---------------------------------------------------------------------------
 // Check a multibyte string at 'pos' Lua stack position
 // and convert it in place to UTF-32.
