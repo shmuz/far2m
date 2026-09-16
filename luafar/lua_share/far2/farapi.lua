@@ -2455,7 +2455,7 @@ struct KeyBarTitles
 	wchar_t *CtrlAltTitles[12];
 };
 
-typedef uint32_t OPERATION_MODES;
+typedef int OPERATION_MODES;
 enum {
 	OPM_SILENT     =0x0001,
 	OPM_FIND       =0x0002,
@@ -2651,7 +2651,7 @@ struct AnalyseInfo
 	const wchar_t  *FileName;
 	const void     *Buffer;
 	size_t          BufferSize;
-	DWORD           OpMode;
+	OPERATION_MODES OpMode;
 };
 
 
@@ -2686,32 +2686,32 @@ struct ProcessEditorEventInfo
 	int    __stdcall  CompareW(HANDLE hPanel,const struct PluginPanelItem *Item1,const struct PluginPanelItem *Item2,unsigned int Mode);
 	int    __stdcall  ConfigureW(int ItemNumber);
 	int    __stdcall  ConfigureV3W(const struct ConfigureInfo *Info);
-	int    __stdcall  DeleteFilesW(HANDLE hPanel,struct PluginPanelItem *PanelItem,int ItemsNumber,int OpMode);
+	int    __stdcall  DeleteFilesW(HANDLE hPanel,struct PluginPanelItem *PanelItem,int ItemsNumber,OPERATION_MODES OpMode);
 	void   __stdcall  ExitFARW(void);
 	int    __stdcall  MayExitFARW(void);
 	void   __stdcall  FreeFindDataW(HANDLE hPanel,struct PluginPanelItem *PanelItem,int ItemsNumber);
 	void   __stdcall  FreeVirtualFindDataW(HANDLE hPanel,struct PluginPanelItem *PanelItem,int ItemsNumber);
-	int    __stdcall  GetFilesW(HANDLE hPanel,struct PluginPanelItem *PanelItem,int ItemsNumber,int Move,const wchar_t **DestPath,int OpMode);
-	int    __stdcall  GetFindDataW(HANDLE hPanel,struct PluginPanelItem **pPanelItem,int *pItemsNumber,int OpMode);
-	int    __stdcall  GetLinkTargetW(HANDLE hPanel,struct PluginPanelItem *PanelItem,wchar_t *Target,size_t TargetSize,int OpMode);
+	int    __stdcall  GetFilesW(HANDLE hPanel,struct PluginPanelItem *PanelItem,int ItemsNumber,int Move,const wchar_t **DestPath,OPERATION_MODES OpMode);
+	int    __stdcall  GetFindDataW(HANDLE hPanel,struct PluginPanelItem **pPanelItem,int *pItemsNumber,OPERATION_MODES OpMode);
+	int    __stdcall  GetLinkTargetW(HANDLE hPanel,struct PluginPanelItem *PanelItem,wchar_t *Target,size_t TargetSize,OPERATION_MODES OpMode);
 	int    __stdcall  GetMinFarVersionW(void);
 	void   __stdcall  GetOpenPluginInfoW(HANDLE hPanel,struct OpenPluginInfo *Info);
 	void   __stdcall  GetPluginInfoW(struct PluginInfo *Info);
 	int    __stdcall  GetVirtualFindDataW(HANDLE hPanel,struct PluginPanelItem **pPanelItem,int *pItemsNumber,const wchar_t *Path);
-	int    __stdcall  MakeDirectoryW(HANDLE hPanel,const wchar_t **Name,int OpMode);
-	HANDLE __stdcall  OpenFilePluginW(const wchar_t *Name,const unsigned char *Data,int DataSize,int OpMode);
+	int    __stdcall  MakeDirectoryW(HANDLE hPanel,const wchar_t **Name,OPERATION_MODES OpMode);
+	HANDLE __stdcall  OpenFilePluginW(const wchar_t *Name,const unsigned char *Data,int DataSize,OPERATION_MODES OpMode);
 	HANDLE __stdcall  OpenPluginW(int OpenFrom,INT_PTR Item);
 	int    __stdcall  ProcessDialogEventW(int Event,void *Param);
 	int    __stdcall  ProcessEditorEventW(int Event,void *Param);
 	int    __stdcall  ProcessEditorEventV3W(const struct ProcessEditorEventInfo *Info);
 	int    __stdcall  ProcessEditorInputW(const INPUT_RECORD *Rec);
 	int    __stdcall  ProcessEventW(HANDLE hPanel,int Event,void *Param);
-	int    __stdcall  ProcessHostFileW(HANDLE hPanel,struct PluginPanelItem *PanelItem,int ItemsNumber,int OpMode);
+	int    __stdcall  ProcessHostFileW(HANDLE hPanel,struct PluginPanelItem *PanelItem,int ItemsNumber,OPERATION_MODES OpMode);
 	int    __stdcall  ProcessKeyW(HANDLE hPanel,int Key,unsigned int ControlState);
 	int    __stdcall  ProcessSynchroEventW(int Event,void *Param);
 	int    __stdcall  ProcessViewerEventW(int Event,void *Param);
-	int    __stdcall  PutFilesW(HANDLE hPanel,struct PluginPanelItem *PanelItem,int ItemsNumber,int Move,const wchar_t *SrcPath,int OpMode);
-	int    __stdcall  SetDirectoryW(HANDLE hPanel,const wchar_t *Dir,int OpMode);
+	int    __stdcall  PutFilesW(HANDLE hPanel,struct PluginPanelItem *PanelItem,int ItemsNumber,int Move,const wchar_t *SrcPath,OPERATION_MODES OpMode);
+	int    __stdcall  SetDirectoryW(HANDLE hPanel,const wchar_t *Dir,OPERATION_MODES OpMode);
 	int    __stdcall  SetFindListW(HANDLE hPanel,const struct PluginPanelItem *PanelItem,int ItemsNumber);
 	void   __stdcall  SetStartupInfoW(const struct PluginStartupInfo *Info);
 	void   __stdcall  GetGlobalInfoW(struct GlobalInfo *Info);

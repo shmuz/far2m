@@ -541,7 +541,7 @@ HANDLE PluginA::OpenFilePlugin(
     const wchar_t *Name,
     const unsigned char *Data,
     int DataSize,
-    DWORD OpMode)
+    OPERATION_MODES OpMode)
 {
 	HANDLE hResult = INVALID_HANDLE_VALUE;
 
@@ -693,7 +693,7 @@ void PluginA::FreeVirtualFindData(HANDLE hPanel, PluginPanelItem *PanelItem, int
 	}
 }
 
-bool PluginA::GetLinkTarget(HANDLE hPanel, PluginPanelItem *PanelItem, FARString &result, DWORD OpMode)
+bool PluginA::GetLinkTarget(HANDLE hPanel, PluginPanelItem *PanelItem, FARString &result, OPERATION_MODES OpMode)
 {
 	return false;
 }
@@ -704,7 +704,7 @@ int PluginA::GetFiles(
     int ItemsNumber,
     bool Move,
     const wchar_t **DestPath,
-    DWORD OpMode)
+    OPERATION_MODES OpMode)
 {
 	int nResult = -1;
 
@@ -733,7 +733,7 @@ int PluginA::PutFiles(
     PluginPanelItem *PanelItem,
     int ItemsNumber,
     bool Move,
-    DWORD OpMode)
+    OPERATION_MODES OpMode)
 {
 	int nResult = -1;
 
@@ -755,7 +755,7 @@ int PluginA::DeleteFiles(
     HANDLE hPanel,
     PluginPanelItem *PanelItem,
     int ItemsNumber,
-    DWORD OpMode)
+    OPERATION_MODES OpMode)
 {
 	BOOL bResult = FALSE;
 
@@ -774,7 +774,7 @@ int PluginA::DeleteFiles(
 }
 
 
-int PluginA::MakeDirectory(HANDLE hPanel, const wchar_t **Name, DWORD OpMode)
+int PluginA::MakeDirectory(HANDLE hPanel, const wchar_t **Name, OPERATION_MODES OpMode)
 {
 	int nResult = -1;
 
@@ -795,7 +795,7 @@ int PluginA::MakeDirectory(HANDLE hPanel, const wchar_t **Name, DWORD OpMode)
 }
 
 
-int PluginA::ProcessHostFile(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber, DWORD OpMode)
+int PluginA::ProcessHostFile(HANDLE hPanel, PluginPanelItem *PanelItem, int ItemsNumber, OPERATION_MODES OpMode)
 {
 	BOOL bResult = FALSE;
 
@@ -861,7 +861,7 @@ int PluginA::Compare(HANDLE hPanel, const PluginPanelItem *Item1, const PluginPa
 }
 
 
-int PluginA::GetFindData(HANDLE hPanel, PluginPanelItem **pPanelItem, int *pItemsNumber, DWORD OpMode)
+int PluginA::GetFindData(HANDLE hPanel, PluginPanelItem **pPanelItem, int *pItemsNumber, OPERATION_MODES OpMode)
 {
 	BOOL bResult = FALSE;
 
@@ -926,7 +926,7 @@ void PluginA::ClosePanel(HANDLE hPanel)
 }
 
 
-int PluginA::SetDirectory(HANDLE hPanel, const wchar_t *Dir, DWORD OpMode)
+int PluginA::SetDirectory(HANDLE hPanel, const wchar_t *Dir, OPERATION_MODES OpMode)
 {
 	BOOL bResult = FALSE;
 
