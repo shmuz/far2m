@@ -288,12 +288,13 @@ void FileList::PluginToFileListItem(const PluginPanelItem *pi, FileListItem *fi)
 	fi->CRC32 = pi->CRC32;
 }
 
-PHPTR FileList::OpenPluginForFile(const wchar_t *FileName, DWORD FileAttr, OPENFILEPLUGINTYPE Type)
+PHPTR FileList::OpenPluginForFile(const wchar_t *FileName, DWORD FileAttr, OPENFILEPLUGINTYPE Type,
+	Plugin *pDesiredPlugin)
 {
 	if (FileName && *FileName && !(FileAttr & FILE_ATTRIBUTE_DIRECTORY)) {
 		SetCurPath();
 		CtrlObject->Cp()->GetAnotherPanel(this)->CloseFile();
-		return CtrlObject->Plugins.OpenFilePlugin(FileName, OPM_NONE, Type);
+		return CtrlObject->Plugins.OpenFilePlugin(FileName, OPM_NONE, Type, nullptr, pDesiredPlugin);
 	}
 	return nullptr;
 }

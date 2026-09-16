@@ -2015,8 +2015,10 @@ bool Panel::ExecShortcutFolder(int Pos)
 				SrcPanel->ClearAllItem();
 			}
 
-			if (SrcPanel->GetType() == FILE_PANEL)
-				((FileList *)SrcPanel)->OpenFilePlugin(Data.PluginFile, false, OFP_SHORTCUT);    //???
+			if (auto flist = dynamic_cast<FileList*>(SrcPanel)) {
+				auto pPlugin = CtrlObject->Plugins.FindPlugin(Data.PluginModule);
+				flist->OpenFilePlugin(Data.PluginFile, false, OFP_SHORTCUT, nullptr, pPlugin);    //???
+			}
 
 			if (!Data.ShortcutFolder.IsEmpty())
 				SrcPanel->SetCurDir(Data.ShortcutFolder, false);

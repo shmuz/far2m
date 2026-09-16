@@ -236,7 +236,8 @@ private:
 	void DescribeFiles();
 	void CreatePluginItemList(bool AddTwoDot = true);
 	void DeletePluginItemList();
-	PHPTR OpenPluginForFile(const wchar_t *FileName, DWORD FileAttr, OPENFILEPLUGINTYPE Type);
+	PHPTR OpenPluginForFile(const wchar_t *FileName, DWORD FileAttr, OPENFILEPLUGINTYPE Type,
+			Plugin *pDesiredPlugin = nullptr);
 	int PreparePanelView(PanelViewSettings *PanelView);
 	int PrepareColumnWidths(std::vector<Column> &Columns, bool FullScreen);
 	void PrepareViewSettings(int ViewMode, OpenPluginInfo *PlugInfo);
@@ -304,7 +305,7 @@ public:
 	int GetPrevDirectoriesFirst() override;
 
 	PHPTR OpenFilePlugin(const wchar_t *FileName, bool PushPrev, OPENFILEPLUGINTYPE Type,
-			bool *StopProcessingPtr = nullptr);
+			bool *StopProcessingPtr = nullptr, Plugin *pDesiredPlugin = nullptr);
 	bool GetFileName(FARString &strName, int Pos, DWORD &FileAttr) const override;
 	int GetCurrentPos() const override;
 	bool FindPartName(const wchar_t *Name, bool Next, int Direct, bool ExcludeSets,

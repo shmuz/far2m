@@ -4474,10 +4474,10 @@ int FileList::GetPrevDirectoriesFirst()
 }
 
 PHPTR FileList::OpenFilePlugin(const wchar_t *FileName, bool PushPrev, OPENFILEPLUGINTYPE Type,
-		bool *StopProcessingPtr)
+		bool *StopProcessingPtr, Plugin *pDesiredPlugin)
 {
-	bool StopProcessing_Unused;
-	auto& StopProcessing = StopProcessingPtr ? *StopProcessingPtr : StopProcessing_Unused;
+	bool bDummy;
+	auto& StopProcessing = StopProcessingPtr ? *StopProcessingPtr : bDummy;
 	StopProcessing = false;
 
 	if (!PushPrev && PanelMode == PLUGIN_PANEL) {
@@ -4492,12 +4492,11 @@ PHPTR FileList::OpenFilePlugin(const wchar_t *FileName, bool PushPrev, OPENFILEP
 		}
 	}
 
-	PHPTR hNewPlugin = OpenPluginForFile(FileName, 0, Type);
+	PHPTR hNewPlugin = OpenPluginForFile(FileName, 0, Type, pDesiredPlugin);
 
 	if (hNewPlugin) {
 		if (PushPrev) {
 			PrevDataItem *Item = new PrevDataItem;
-			;
 			Item->PrevListData = ListData;
 			Item->PrevFileCount = FileCount;
 			Item->PrevTopFile = CurTopFile;

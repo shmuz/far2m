@@ -505,16 +505,14 @@ PHPTR PluginManager::OpenFilePlugin(const wchar_t *FileName, OPERATION_MODES OpM
 			? !(Type == OFP_NORMAL || Type == OFP_SEARCH)
 			: Opt.PluginConfirm.OpenFilePlugin != 0;
 
-	Plugin *pPlugin = nullptr;
 	std::unique_ptr<SafeMMap> smm;
 
-	for (auto P: PluginsData)
+	for (auto pPlugin: PluginsData)
 	{
-		pPlugin = P;
-		if (pDesiredPlugin != nullptr && pDesiredPlugin != pPlugin)
+		if (pDesiredPlugin && pDesiredPlugin != pPlugin)
 			continue;
 
-		if (!pPlugin->HasOpenFilePlugin() && !(pPlugin->HasAnalyse() && pPlugin->HasOpenPlugin()))
+		if ( !(pPlugin->HasOpenFilePlugin() || (pPlugin->HasAnalyse() && pPlugin->HasOpenPlugin())) )
 			continue;
 
 		if ((Type == OFP_EXTRACT && !pPlugin->HasGetFiles()) ||
@@ -523,11 +521,11 @@ PHPTR PluginManager::OpenFilePlugin(const wchar_t *FileName, OPERATION_MODES OpM
 			continue;
 		}
 
-		if(FileName && !smm)
+		if (FileName && !smm)
 		{
 			try
 			{
-				smm.reset(new SafeMMap(Wide2MB(FileName).c_str(), SafeMMap::M_READ, Opt.PluginMaxReadData));
+				smm = std::make_unique<SafeMMap>(Wide2MB(FileName).c_str(), SafeMMap::M_READ, Opt.PluginMaxReadData);
 				AnInfo.Buffer = smm->View();
 				AnInfo.BufferSize = smm->Length();
 			}
@@ -579,70 +577,70 @@ PHPTR PluginManager::OpenFilePlugin(const wchar_t *FileName, OPERATION_MODES OpM
 			break;
 	}
 
-	if (!Results.empty())
+	if (Results.empty())
+		return nullptr;
+
+	bool OnlyOne = (Results.size() == 1) && !(FileName && Opt.PluginConfirm.OpenFilePlugin &&
+		Opt.PluginConfirm.StandardAssociation && Opt.PluginConfirm.EvenIfOnlyOnePlugin);
+
+	if (!OnlyOne && ShowMenu)
 	{
-		bool OnlyOne = (Results.size() == 1) && !(FileName && Opt.PluginConfirm.OpenFilePlugin &&
-			Opt.PluginConfirm.StandardAssociation && Opt.PluginConfirm.EvenIfOnlyOnePlugin);
+		VMenu menu(Msg::PluginConfirmationTitle, nullptr, 0, ScrY-4);
+		menu.SetPosition(-1, -1, 0, 0);
+		menu.SetHelp(L"ChoosePluginMenu");
+		menu.SetFlags(VMENU_SHOWAMPERSAND|VMENU_WRAPMODE);
+		MenuItemEx mitem;
 
-		if(!OnlyOne && ShowMenu)
+		for (const auto &res: Results)
 		{
-			VMenu menu(Msg::PluginConfirmationTitle, nullptr, 0, ScrY-4);
-			menu.SetPosition(-1, -1, 0, 0);
-			menu.SetHelp(L"ChoosePluginMenu");
-			menu.SetFlags(VMENU_SHOWAMPERSAND|VMENU_WRAPMODE);
-			MenuItemEx mitem;
-
-			for (const auto &res: Results)
-			{
-				mitem.Clear();
-				mitem.strName = PointToName(res.pPlugin->GetModuleName());
-				//NB: here is really should be used sizeof(handle), not sizeof(*handle)
-				//cuz sizeof(void *) has special meaning in SetUserData!
-				menu.SetUserData(&res, sizeof(&res), menu.AddItem(&mitem));
-			}
-
-			if (Opt.PluginConfirm.StandardAssociation && Type == OFP_NORMAL)
-			{
-				mitem.Clear();
-				mitem.Flags |= MIF_SEPARATOR;
-				menu.AddItem(&mitem);
-				mitem.Clear();
-				mitem.strName = Msg::MenuPluginStdAssociation;
-				menu.AddItem(&mitem);
-			}
-
-			menu.Show();
-
-			while (!menu.Done())
-			{
-				menu.ReadInput();
-				menu.ProcessInput();
-			}
-
-			if (menu.GetExitCode() == -1)
-			{
-				StopProcessing = true;
-				return nullptr;
-			}
-
-			pCallResult = (CallResult*)menu.GetUserData(nullptr, 0);
-		}
-		else
-		{
-			pCallResult = &Results.front();
+			mitem.Clear();
+			mitem.strName = PointToName(res.pPlugin->GetModuleName());
+			//NB: here is really should be used sizeof(handle), not sizeof(*handle)
+			//cuz sizeof(void *) has special meaning in SetUserData!
+			menu.SetUserData(&res, sizeof(&res), menu.AddItem(&mitem));
 		}
 
-		if (pCallResult && pCallResult->FromAnalyse)
+		if (Opt.PluginConfirm.StandardAssociation && Type == OFP_NORMAL)
 		{
-			AnalyseInfo copyInfo = AnInfo;
-			OpenAnalyseInfo oaInfo { sizeof(oaInfo), &copyInfo, pCallResult->Handle };
-			pCallResult->Handle = pCallResult->pPlugin->OpenPlugin(OPEN_ANALYSE, &oaInfo);
+			mitem.Clear();
+			mitem.Flags |= MIF_SEPARATOR;
+			menu.AddItem(&mitem);
+			mitem.Clear();
+			mitem.strName = Msg::MenuPluginStdAssociation;
+			menu.AddItem(&mitem);
+		}
 
-			if (pCallResult->Handle == PANEL_STOP)
-			{
-				StopProcessing = true;
-				return nullptr;
-			}
+		menu.Show();
+
+		while (!menu.Done())
+		{
+			menu.ReadInput();
+			menu.ProcessInput();
+		}
+
+		if (menu.GetExitCode() == -1)
+		{
+			StopProcessing = true;
+			return nullptr;
+		}
+
+		pCallResult = (CallResult*)menu.GetUserData(nullptr, 0);
+	}
+	else
+	{
+		pCallResult = &Results.front();
+	}
+
+	if (pCallResult && pCallResult->FromAnalyse)
+	{
+		AnalyseInfo copyInfo = AnInfo;
+		OpenAnalyseInfo oaInfo { sizeof(oaInfo), &copyInfo, pCallResult->Handle };
+		pCallResult->Handle = pCallResult->pPlugin->OpenPlugin(OPEN_ANALYSE, &oaInfo);
+
+		if (pCallResult->Handle == PANEL_STOP)
+		{
+			StopProcessing = true;
+			return nullptr;
 		}
 	}
 
