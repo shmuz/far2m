@@ -332,7 +332,7 @@ static void FillFindData(lua_State* L, HANDLE hPanel, struct PluginPanelItem **p
 }
 
 int LF_GetFindData(lua_State* L, HANDLE hPanel, struct PluginPanelItem **pPanelItem,
-									 int *pItemsNumber, DWORD OpMode)
+									 int *pItemsNumber, OPERATION_MODES OpMode)
 {
 	if (GetExportFunction(L, "GetFindData"))      //+1: Func
 	{
@@ -396,7 +396,7 @@ void UpdateFileSelection(lua_State* L, struct PluginPanelItem *PanelItems, size_
 //---------------------------------------------------------------------------
 
 int LF_GetFiles(lua_State* L, HANDLE hPanel, struct PluginPanelItem *PanelItem,
-	int ItemsNumber, int Move, const wchar_t **DestPath, DWORD OpMode)
+	int ItemsNumber, int Move, const wchar_t **DestPath, OPERATION_MODES OpMode)
 {
 	int ret = 0;
 
@@ -1031,7 +1031,7 @@ int LF_Configure(lua_State* L, const struct ConfigureInfo *Info)
 }
 
 int LF_DeleteFiles(lua_State* L, HANDLE hPanel, struct PluginPanelItem *PanelItem,
-	int ItemsNumber, DWORD OpMode)
+	int ItemsNumber, OPERATION_MODES OpMode)
 {
 	int res = FALSE;
 
@@ -1054,7 +1054,7 @@ int LF_DeleteFiles(lua_State* L, HANDLE hPanel, struct PluginPanelItem *PanelIte
 // far.MakeDirectory returns 2 values:
 //    a) status (an integer; in accordance to FAR API), and
 //    b) new directory name (a string; optional)
-int LF_MakeDirectory (lua_State* L, HANDLE hPanel, const wchar_t **Name, DWORD OpMode)
+int LF_MakeDirectory (lua_State* L, HANDLE hPanel, const wchar_t **Name, OPERATION_MODES OpMode)
 {
 	int res = 0;
 
@@ -1104,7 +1104,7 @@ int LF_ProcessPanelEvent(lua_State* L, HANDLE hPanel, int Event, void *Param)
 }
 
 int LF_ProcessHostFile(lua_State* L, HANDLE hPanel, struct PluginPanelItem *PanelItem,
-	int ItemsNumber, DWORD OpMode)
+	int ItemsNumber, OPERATION_MODES OpMode)
 {
 	int ret = 0;
 
@@ -1145,7 +1145,7 @@ int LF_ProcessKey(lua_State* L, HANDLE hPanel, int Key, unsigned int ControlStat
 }
 
 int LF_PutFiles(lua_State* L, HANDLE hPanel, struct PluginPanelItem *PanelItems,
-	int ItemsNumber, int Move, const wchar_t *SrcPath, DWORD OpMode)
+	int ItemsNumber, int Move, const wchar_t *SrcPath, OPERATION_MODES OpMode)
 {
 	int ret = 0;
 
@@ -1169,7 +1169,7 @@ int LF_PutFiles(lua_State* L, HANDLE hPanel, struct PluginPanelItem *PanelItems,
 	return ret;
 }
 
-int LF_SetDirectory(lua_State* L, HANDLE hPanel, const wchar_t *Dir, DWORD OpMode)
+int LF_SetDirectory(lua_State* L, HANDLE hPanel, const wchar_t *Dir, OPERATION_MODES OpMode)
 {
 	int ret = 0;
 
@@ -1582,7 +1582,7 @@ int LF_GetLinkTarget(
 	struct PluginPanelItem *PanelItem,
 	wchar_t *Target,
 	size_t TargetSize,
-	DWORD OpMode)
+	OPERATION_MODES OpMode)
 {
 	if (GetExportFunction(L, "GetLinkTarget"))  //+1: Func
 	{

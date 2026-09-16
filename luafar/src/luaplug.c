@@ -79,15 +79,14 @@ LUAPLUG HANDLE OpenPluginW(int OpenFrom, INT_PTR Item)
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_GETFINDDATA) || defined(EXPORT_ALL)
-LUAPLUG int GetFindDataW(HANDLE hPanel, struct PluginPanelItem **pPanelItem,
-												int *pItemsNumber, int OpMode)
+LUAPLUG int GetFindDataW(HANDLE hPanel, struct PluginPanelItem **pPanelItem, int *pItemsNumber,
+	OPERATION_MODES OpMode)
 {
 	return LS ? LF_GetFindData(LS, hPanel, pPanelItem, pItemsNumber, OpMode) : FALSE;
 }
 //---------------------------------------------------------------------------
 
-LUAPLUG void FreeFindDataW(HANDLE hPanel, struct PluginPanelItem *PanelItem,
-												 int ItemsNumber)
+LUAPLUG void FreeFindDataW(HANDLE hPanel, struct PluginPanelItem *PanelItem, int ItemsNumber)
 {
 	if (LS) LF_FreeFindData(LS, hPanel, PanelItem, ItemsNumber);
 }
@@ -104,7 +103,7 @@ LUAPLUG void ClosePluginW(HANDLE hPanel)
 
 #if defined(EXPORT_GETFILES) || defined(EXPORT_ALL)
 LUAPLUG int GetFilesW(HANDLE hPanel, struct PluginPanelItem *PanelItem,
-	int ItemsNumber, int Move, const wchar_t **DestPath, int OpMode)
+	int ItemsNumber, int Move, const wchar_t **DestPath, OPERATION_MODES OpMode)
 {
 	return LS ? LF_GetFiles(LS,hPanel,PanelItem,ItemsNumber,Move,DestPath,OpMode) : 0;
 }
@@ -139,7 +138,7 @@ LUAPLUG int MayExitFARW()
 
 #if defined(EXPORT_COMPARE) || defined(EXPORT_ALL)
 LUAPLUG int CompareW(HANDLE hPanel, const struct PluginPanelItem *Item1,
-										const struct PluginPanelItem *Item2, unsigned int Mode)
+	const struct PluginPanelItem *Item2, unsigned int Mode)
 {
 	return LS ? LF_Compare(LS, hPanel, Item1, Item2, Mode) : 0;
 }
@@ -156,7 +155,7 @@ LUAPLUG int ConfigureV3W(const struct ConfigureInfo *Info)
 
 #if defined(EXPORT_DELETEFILES) || defined(EXPORT_ALL)
 LUAPLUG int DeleteFilesW(HANDLE hPanel, struct PluginPanelItem *PanelItem,
-	int ItemsNumber, int OpMode)
+	int ItemsNumber, OPERATION_MODES OpMode)
 {
 	return LS ? LF_DeleteFiles(LS, hPanel, PanelItem, ItemsNumber, OpMode) : FALSE;
 }
@@ -164,7 +163,7 @@ LUAPLUG int DeleteFilesW(HANDLE hPanel, struct PluginPanelItem *PanelItem,
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_MAKEDIRECTORY) || defined(EXPORT_ALL)
-LUAPLUG int MakeDirectoryW(HANDLE hPanel, const wchar_t **Name, int OpMode)
+LUAPLUG int MakeDirectoryW(HANDLE hPanel, const wchar_t **Name, OPERATION_MODES OpMode)
 {
 	return LS ? LF_MakeDirectory(LS, hPanel, Name, OpMode) : 0;
 }
@@ -181,7 +180,7 @@ LUAPLUG int ProcessEventW(HANDLE hPanel, int Event, void *Param)
 
 #if defined(EXPORT_PROCESSHOSTFILE) || defined(EXPORT_ALL)
 LUAPLUG int ProcessHostFileW(HANDLE hPanel, struct PluginPanelItem *PanelItem,
-	int ItemsNumber, int OpMode)
+	int ItemsNumber, OPERATION_MODES OpMode)
 {
 	return LS ? LF_ProcessHostFile(LS, hPanel, PanelItem, ItemsNumber, OpMode) : FALSE;
 }
@@ -198,7 +197,7 @@ LUAPLUG int ProcessKeyW(HANDLE hPanel, int Key, unsigned int ControlState)
 
 #if defined(EXPORT_PUTFILES) || defined(EXPORT_ALL)
 LUAPLUG int PutFilesW(HANDLE hPanel, struct PluginPanelItem *PanelItem,
-	int ItemsNumber, int Move, const wchar_t *SrcPath, int OpMode)
+	int ItemsNumber, int Move, const wchar_t *SrcPath, OPERATION_MODES OpMode)
 {
 	return LS ? LF_PutFiles(LS, hPanel, PanelItem, ItemsNumber, Move, SrcPath, OpMode) : 0;
 }
@@ -206,7 +205,7 @@ LUAPLUG int PutFilesW(HANDLE hPanel, struct PluginPanelItem *PanelItem,
 //---------------------------------------------------------------------------
 
 #if defined(EXPORT_SETDIRECTORY) || defined(EXPORT_ALL)
-LUAPLUG int SetDirectoryW(HANDLE hPanel, const wchar_t *Dir, int OpMode)
+LUAPLUG int SetDirectoryW(HANDLE hPanel, const wchar_t *Dir, OPERATION_MODES OpMode)
 {
 	return LS ? LF_SetDirectory(LS, hPanel, Dir, OpMode) : FALSE;
 }
@@ -284,7 +283,7 @@ LUAPLUG int ProcessConsoleInputW(INPUT_RECORD *Rec)
 #if defined(EXPORT_GETLINKTARGET) || defined(EXPORT_ALL)
 LUAPLUG int GetLinkTargetW(
 	HANDLE hPanel, struct PluginPanelItem *PanelItem, wchar_t *Target,
-	size_t TargetSize, int OpMode)
+	size_t TargetSize, OPERATION_MODES OpMode)
 {
 	return LS ? LF_GetLinkTarget(LS, hPanel, PanelItem, Target, TargetSize, OpMode) : 0;
 }
