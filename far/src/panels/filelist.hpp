@@ -237,7 +237,7 @@ private:
 	void CreatePluginItemList(bool AddTwoDot = true);
 	void DeletePluginItemList();
 	PHPTR OpenPluginForFile(const wchar_t *FileName, DWORD FileAttr, OPENFILEPLUGINTYPE Type,
-			Plugin *pDesiredPlugin = nullptr);
+			bool *StopProcessingPtr = nullptr, Plugin *pDesiredPlugin = nullptr);
 	int PreparePanelView(PanelViewSettings *PanelView);
 	int PrepareColumnWidths(std::vector<Column> &Columns, bool FullScreen);
 	void PrepareViewSettings(int ViewMode, OpenPluginInfo *PlugInfo);

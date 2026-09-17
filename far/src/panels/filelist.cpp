@@ -4492,7 +4492,7 @@ PHPTR FileList::OpenFilePlugin(const wchar_t *FileName, bool PushPrev, OPENFILEP
 		}
 	}
 
-	PHPTR hNewPlugin = OpenPluginForFile(FileName, 0, Type, pDesiredPlugin);
+	PHPTR hNewPlugin = OpenPluginForFile(FileName, 0, Type, StopProcessingPtr, pDesiredPlugin);
 
 	if (hNewPlugin) {
 		if (PushPrev) {
