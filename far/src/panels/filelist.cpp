@@ -3354,6 +3354,7 @@ long FileList::SelectFiles(int Mode, const wchar_t *Mask)
 	MakeDialogItemsEx(SelectDlgData, SelectDlg);
 	FileFilter Filter(this, FFT_SELECT);
 	bool bUseFilter = false;
+	bool bSkipPath = true;
 	FileListItem *CurPtr;
 	static FARString strPrevMask = L"*";
 	/* $ 20.05.2002 IS
@@ -3377,80 +3378,84 @@ long FileList::SelectFiles(int Mode, const wchar_t *Mask)
 	}
 
 	CurPtr = ListData[CurFile];
-	FARString strCurName = PointToName(CurPtr->strName);
 
 	if (Mode == SELECT_ADDEXT || Mode == SELECT_REMOVEEXT) {
 		size_t pos;
 
+		FARString strCurName = PointToName(CurPtr->strName);
 		if (strCurName.RPos(pos, L'.') && pos != 0) {
 			// Учтем тот момент, что расширение может содержать символы-разделители
 			strRawMask.Format(L"\"*.%ls\"", strCurName.CPtr() + pos + 1);
 			WrapBrackets = true;
-		} else
+		}
+		else
 			strMask = L"/^\\.?[^.]*$/";
 
 		Mode = (Mode == SELECT_ADDEXT) ? SELECT_ADD : SELECT_REMOVE;
-	} else {
-		if (Mode == SELECT_ADDNAME || Mode == SELECT_REMOVENAME) {
-			size_t pos;
-			FARString strTmp = strCurName;
+	}
 
-			if (strTmp.RPos(pos, L'.') && pos != 0)
-				strTmp.Truncate(pos);
+	else if (Mode == SELECT_ADDNAME || Mode == SELECT_REMOVENAME) {
+		size_t pos;
+		FARString strCurName = PointToName(CurPtr->strName);
 
-			strMask.Format(L"/^\\Q%ls\\E(?=\\.[^.]*$|$)/", strTmp.CPtr());
-			if (!Opt.PanelCaseSensitiveCompareSelect)
-				strMask+= L"i";
+		if (strCurName.RPos(pos, L'.') && pos != 0)
+			strCurName.Truncate(pos);
 
-			Mode = (Mode == SELECT_ADDNAME) ? SELECT_ADD : SELECT_REMOVE;
-		} else {
-			if (Mode == SELECT_ADD || Mode == SELECT_REMOVE) {
-				SelectDlg[SELFILES_MASK].strData = strPrevMask;
+		strMask.Format(L"/^\\Q%ls\\E(?=\\.[^.]*$|$)/", strCurName.CPtr());
+		if (!Opt.PanelCaseSensitiveCompareSelect)
+			strMask+= L"i";
 
-				if (Mode == SELECT_ADD)
-					SelectDlg[SELFILES_BORDER].strData = Msg::SelectTitle;
-				else
-					SelectDlg[SELFILES_BORDER].strData = Msg::UnselectTitle;
+		Mode = (Mode == SELECT_ADDNAME) ? SELECT_ADD : SELECT_REMOVE;
+	}
 
-				{
-					Dialog Dlg(SelectDlg, ARRAYSIZE(SelectDlg));
-					Dlg.SetHelp(L"SelectFiles");
-					Dlg.SetPosition(-1, -1, 55, 8);
-					Dlg.SetId(Mode == SELECT_ADD ? SelectDialogId : UnSelectDialogId);
+	else if (Mode == SELECT_ADD || Mode == SELECT_REMOVE) {
+		bSkipPath = false;
+		SelectDlg[SELFILES_MASK].strData = strPrevMask;
 
-					for (;;) {
-						Dlg.ClearDone();
-						Dlg.Process();
+		if (Mode == SELECT_ADD)
+			SelectDlg[SELFILES_BORDER].strData = Msg::SelectTitle;
+		else
+			SelectDlg[SELFILES_BORDER].strData = Msg::UnselectTitle;
 
-						if (Dlg.GetExitCode() == SELFILES_FILTER && Filter.FilterEdit()) {
-							// Рефреш текущему времени для фильтра сразу после выхода из диалога
-							Filter.UpdateCurrentTime();
-							bUseFilter = true;
-							break;
-						}
+		{
+			Dialog Dlg(SelectDlg, ARRAYSIZE(SelectDlg));
+			Dlg.SetHelp(L"SelectFiles");
+			Dlg.SetPosition(-1, -1, 55, 8);
+			Dlg.SetId(Mode == SELECT_ADD ? SelectDialogId : UnSelectDialogId);
 
-						if (Dlg.GetExitCode() != SELFILES_OK)
-							return 0;
+			for (;;) {
+				Dlg.ClearDone();
+				Dlg.Process();
 
-						strMask = SelectDlg[SELFILES_MASK].strData;
-
-						Opt.PanelCaseSensitiveCompareSelect =
-								SelectDlg[SELFILES_CASESENS].Selected == BSTATE_CHECKED;
-
-						if (FileMask.Set(strMask, 0))    // Проверим вводимые пользователем маски на ошибки
-						{
-							strPrevMask = strMask;
-							break;
-						}
-					}
+				if (Dlg.GetExitCode() == SELFILES_FILTER && Filter.FilterEdit()) {
+					// Рефреш текущему времени для фильтра сразу после выхода из диалога
+					Filter.UpdateCurrentTime();
+					bUseFilter = true;
+					break;
 				}
-			} else if (Mode == SELECT_ADDMASK || Mode == SELECT_REMOVEMASK || Mode == SELECT_INVERTMASK) {
-				strMask = Mask;
 
-				if (!FileMask.Set(strMask, 0))    // Проверим маски на ошибки
+				if (Dlg.GetExitCode() != SELFILES_OK)
 					return 0;
+
+				strMask = SelectDlg[SELFILES_MASK].strData;
+
+				Opt.PanelCaseSensitiveCompareSelect =
+						SelectDlg[SELFILES_CASESENS].Selected == BSTATE_CHECKED;
+
+				if (FileMask.Set(strMask, 0))    // Проверим вводимые пользователем маски на ошибки
+				{
+					strPrevMask = strMask;
+					break;
+				}
 			}
 		}
+	}
+
+	else if (Mode == SELECT_ADDMASK || Mode == SELECT_REMOVEMASK || Mode == SELECT_INVERTMASK) {
+		strMask = Mask;
+
+		if (!FileMask.Set(strMask, 0))    // Проверим маски на ошибки
+			return 0;
 	}
 
 	SaveSelection();
@@ -3488,7 +3493,7 @@ long FileList::SelectFiles(int Mode, const wchar_t *Mask)
 				if (bUseFilter)
 					Match = Filter.FileInFilter(*CurPtr);
 				else
-					Match = FileMask.Compare(CurPtr->strName, Opt.PanelCaseSensitiveCompareSelect, true);
+					Match = FileMask.Compare(CurPtr->strName, Opt.PanelCaseSensitiveCompareSelect, bSkipPath);
 			}
 
 			if (Match) {
