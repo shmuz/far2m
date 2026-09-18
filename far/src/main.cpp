@@ -71,48 +71,49 @@ static unsigned int gMainThreadID;
 
 static void print_help(const char *self)
 {
-	printf("FAR2M - dual-panel file manager with built-in terminal\n"
-		"Usage: %s [switches] [[-cd] apath [[-cd] ppath]]\n\n"
+	printf(R"===(FAR2M - dual-panel file manager with built-in terminal
+Usage: %s [switches] [[-cd] apath [[-cd] ppath]]
 
-		"where\n"
-		"  apath - path to folder or file, or plugin command with prefix\n"
-		"          for the active panel\n"
-		"  ppath - path to folder or file, or plugin command with prefix\n"
-		"          for the passive panel\n\n"
+where
+  apath - path to folder or file, or plugin command with prefix
+          for the active panel
+  ppath - path to folder or file, or plugin command with prefix
+          for the passive panel
 
-		"The following switches may be used in the command line:\n\n"
+The following switches may be used in the command line:
 
-		"  -h                         This help\n"
-		"  -a                         Disable display of characters with codes\n"
-		"                             0 - 31 and 255\n"
-		"  -ag                        Disable display of pseudographics with codes > 127\n"
-		"  -an                        Disable display of pseudographics characters\n"
-		"                             completely\n"
-		"  -co                        Load plugins from the cache only\n"
-		"  -cd <path>                 Change panel's directory to specified path\n"
-		"  -m                         Do not load macros\n"
-		"  -ma                        Do not execute auto run macros\n"
-		"  -p[<path>]                 Search for \"common\" plugins in the directory\n"
-		"                             specified by <path>; several search paths can\n"
-		"                             be specified separated by ‘:’\n"
-		"  -u <identity> OR\n"
-		"  -u </path/name>            Specify separate settings via identity\n"
-		"                             or FS location\n"
-		"  -v <filename>              View the specified file\n"
-		"  -v - <command line>        Execute given command line and open viewer\n"
-		"                             with its output\n"
-		"  -e[<line>[:<pos>]] [filename]\n"
-		"                             Edit the specified file with optional cursor\n"
-		"                             position specification or empty new file\n"
-		"  -e[<line>[:<pos>]] - <command line>\n"
-		"                             Execute given command line and open editor\n"
-		"                             with its output\n"
-		"  -set:<parameter>=<value>   Override the configuration parameter\n"
-		"                             Example: far2m -set:Language.Main=English\n"
-		"                                            -set:Screen.Clock=false\n"
-		"                                            -set:XLat.Flags=0xff\n"
-		"\n",
-		self);
+  -h                         This help
+  -a                         Disable display of characters with codes
+                             0 - 31 and 255
+  -ag                        Disable display of pseudographics with codes > 127
+  -an                        Disable display of pseudographics characters
+                             completely
+  -co                        Load plugins from the cache only
+  -cd <path>                 Change panel's directory to specified path
+  -m                         Do not load macros
+  -ma                        Do not execute auto run macros
+  -p[<path>]                 Search for "common" plugins in the directory
+                             specified by <path>; several search paths can
+                             be specified separated by ‘:’
+  -u <identity> OR
+  -u </path/name>            Specify separate settings via identity
+                             or FS location
+  -v <filename>              View the specified file
+  -v - <command line>        Execute given command line and open viewer
+                             with its output
+  -e[<line>[:<pos>]] [filename]
+                             Edit the specified file with optional cursor
+                             position specification or empty new file
+  -e[<line>[:<pos>]] - <command line>
+                             Execute given command line and open editor
+                             with its output
+  -set:<parameter>=<value>   Override the configuration parameter
+                             Example: far2m -set:Language.Main=English
+                                            -set:Screen.Clock=false
+                                            -set:XLat.Flags=0xff
+
+)===", self);
+
 	WinPortHelp();
 }
 

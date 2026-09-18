@@ -595,8 +595,6 @@ PHPTR PluginManager::OpenFilePlugin(const wchar_t *FileName, OPERATION_MODES OpM
 		{
 			mitem.Clear();
 			mitem.strName = PointToName(res.pPlugin->GetModuleName());
-			//NB: here is really should be used sizeof(handle), not sizeof(*handle)
-			//cuz sizeof(void *) has special meaning in SetUserData!
 			menu.SetUserData(&res, sizeof(&res), menu.AddItem(&mitem));
 		}
 
