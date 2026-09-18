@@ -176,17 +176,17 @@ static bool CanSort(int SortMode)
 
 enum SELECT_MODES
 {
-	SELECT_INVERT     = 0,
-	SELECT_INVERTALL  = 1,
-	SELECT_ADD        = 2,
-	SELECT_REMOVE     = 3,
-	SELECT_ADDEXT     = 4,
-	SELECT_REMOVEEXT  = 5,
-	SELECT_ADDNAME    = 6,
-	SELECT_REMOVENAME = 7,
-	SELECT_ADDMASK    = 8,
-	SELECT_REMOVEMASK = 9,
-	SELECT_INVERTMASK = 10,
+	SELECT_INVERT     = 0,   // Multiply
+	SELECT_INVERTALL  = 1,   // CtrlMultiply
+	SELECT_ADD        = 2,   // Add
+	SELECT_REMOVE     = 3,   // Subtract
+	SELECT_ADDEXT     = 4,   // CtrlAdd
+	SELECT_REMOVEEXT  = 5,   // CtrlSubtract
+	SELECT_ADDNAME    = 6,   // AltAdd
+	SELECT_REMOVENAME = 7,   // AltSubtract
+	SELECT_ADDMASK    = 8,   // Panel.Select(<panel>, 1)
+	SELECT_REMOVEMASK = 9,   // Panel.Select(<panel>, 0)
+	SELECT_INVERTMASK = 10,  // Panel.Select(<panel>, 2)
 };
 
 FileList::FileList()
@@ -3381,8 +3381,8 @@ long FileList::SelectFiles(int Mode, const wchar_t *Mask)
 
 	if (Mode == SELECT_ADDEXT || Mode == SELECT_REMOVEEXT) {
 		size_t pos;
-
 		FARString strCurName = PointToName(CurPtr->strName);
+
 		if (strCurName.RPos(pos, L'.') && pos != 0) {
 			// Учтем тот момент, что расширение может содержать символы-разделители
 			strRawMask.Format(L"\"*.%ls\"", strCurName.CPtr() + pos + 1);
@@ -3403,7 +3403,7 @@ long FileList::SelectFiles(int Mode, const wchar_t *Mask)
 
 		strMask.Format(L"/^\\Q%ls\\E(?=\\.[^.]*$|$)/", strCurName.CPtr());
 		if (!Opt.PanelCaseSensitiveCompareSelect)
-			strMask+= L"i";
+			strMask += L"i";
 
 		Mode = (Mode == SELECT_ADDNAME) ? SELECT_ADD : SELECT_REMOVE;
 	}
@@ -3452,6 +3452,7 @@ long FileList::SelectFiles(int Mode, const wchar_t *Mask)
 	}
 
 	else if (Mode == SELECT_ADDMASK || Mode == SELECT_REMOVEMASK || Mode == SELECT_INVERTMASK) {
+		bSkipPath = false;
 		strMask = Mask;
 
 		if (!FileMask.Set(strMask, 0))    // Проверим маски на ошибки
