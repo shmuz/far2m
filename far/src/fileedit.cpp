@@ -2179,7 +2179,6 @@ void FileEditor::SetEditorOptions(EditorOptions &EdOpt)
 
 void FileEditor::OnChangeFocus(bool focus)
 {
-	Frame::OnChangeFocus(focus);
 	CtrlObject->Plugins.CurEditor = this;
 	int FEditEditorID = m_editor->m_EditorID;
 	CtrlObject->Plugins.ProcessEditorEvent(focus ? EE_GOTFOCUS : EE_KILLFOCUS, &FEditEditorID, m_editor);

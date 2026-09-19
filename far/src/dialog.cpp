@@ -4480,7 +4480,6 @@ void Dialog::SetExitCode(int Code)
 
 void Dialog::OnChangeFocus(bool focus)
 {
-	Frame::OnChangeFocus(focus);
 	if (GetCanLoseFocus())
 		DlgProc(focus ? DN_GOTFOCUS : DN_KILLFOCUS, -1, 0);
 }

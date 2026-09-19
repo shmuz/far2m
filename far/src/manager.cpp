@@ -1075,6 +1075,8 @@ void Manager::ActivateCommit(Frame *aFrame)
 	_FRAMELOG("ActivateCommit", aFrame);
 	ActivatedFrame = nullptr;
 
+	aFrame->OnChangeFocus(true);
+
 	if (CurrentFrame == aFrame)
 	{
 		RefreshedFrame = aFrame;

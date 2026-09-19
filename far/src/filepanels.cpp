@@ -945,9 +945,6 @@ void FilePanels::OnChangeFocus(bool f)
 {
 	_OT(SysLog(L"FilePanels::OnChangeFocus(%i)",f));
 
-	/* $ 20.06.2001 tran
-	   баг с отрисовкой при копировании и удалении
-	   не учитывался LockRefreshCount */
 	if (f)
 	{
 		/*$ 22.06.2001 SKV
@@ -955,13 +952,7 @@ void FilePanels::OnChangeFocus(bool f)
 		*/
 		CtrlObject->Cp()->GetAnotherPanel(ActivePanel)->UpdateIfChanged(UIC_UPDATE_FORCE_NOTIFICATION);
 		ActivePanel->UpdateIfChanged(UIC_UPDATE_FORCE_NOTIFICATION);
-		/* $ 13.04.2002 KM
-		  ! ??? Я не понял зачем здесь Redraw, если
-		    Redraw вызывается следом во Frame::OnChangeFocus.
-		*/
-//    Redraw();
 		ActivePanel->SetCurPath();
-		Frame::OnChangeFocus(true);
 	}
 }
 
@@ -1067,11 +1058,7 @@ int FilePanels::FastHide()
 
 void FilePanels::Refresh()
 {
-	/*$ 31.07.2001 SKV
-	  Вызовем так, а не Frame::OnChangeFocus,
-	  который из этого и позовётся.
-	*/
-	//Frame::OnChangeFocus(true);
+	Frame::Refresh();
 	OnChangeFocus(true);
 }
 

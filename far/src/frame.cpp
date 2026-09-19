@@ -87,21 +87,14 @@ bool Frame::IsTopFrame()
 	return FrameManager->GetCurrentFrame() == this;
 }
 
-void Frame::OnChangeFocus(bool focus)
+void Frame::Refresh()
 {
-	if (focus)
-	{
-		Show();
+	Show();
 
-		for (Frame *f=NextModal; f; f=f->NextModal)
-		{
-			if (f->GetType() != MODALTYPE_COMBOBOX && f->IsVisible())
-				f->Show();
-		}
-	}
-	else
+	for (Frame *f=NextModal; f; f=f->NextModal)
 	{
-		Hide();
+		if (f->GetType() != MODALTYPE_COMBOBOX && f->IsVisible())
+			f->Show();
 	}
 }
 

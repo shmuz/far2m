@@ -45,7 +45,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ctrlobj.hpp"
 #include "scrbuf.hpp"
 #include "fileedit.hpp"
-#include "RefreshFrameManager.hpp"
 #include "InterThreadCall.hpp"
 #include "plclass.hpp"
 #include "PluginA.hpp"

@@ -82,12 +82,12 @@ public:
 	virtual const wchar_t *GetTypeName() const { return L"[FarModal]"; }
 	virtual void InitKeyBar() {}
 	virtual bool IsFileModified() const { return false; }
-	virtual void OnChangeFocus(bool focus); // вызывается при смене фокуса
+	virtual void OnChangeFocus(bool focus) {} // вызывается при смене фокуса
 	virtual void OnCreate() {};  // вызывается перед созданием окна
 	virtual void OnDestroy();  // вызывается перед уничтожением окна
 	virtual bool ProcessEvents() const { return true; }
 	virtual void RedrawKeyBar() { Frame::UpdateKeyBar(); }
-	virtual void Refresh() { OnChangeFocus(true); }  // Просто перерисоваться :)
+	virtual void Refresh();
 	void ResizeConsole() override;
 	virtual void SetExitCode(int Code) { ExitCode = Code; }
 

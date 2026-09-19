@@ -598,7 +598,6 @@ void FileViewer::ShowStatus()
 
 void FileViewer::OnChangeFocus(bool focus)
 {
-	Frame::OnChangeFocus(focus);
 	CtrlObject->Plugins.CurViewer=&View;
 	CtrlObject->Plugins.ProcessViewerEvent(focus ? VE_GOTFOCUS : VE_KILLFOCUS, View.ViewerID);
 }
