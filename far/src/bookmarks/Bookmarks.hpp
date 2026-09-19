@@ -4,6 +4,7 @@
 
 struct BookmarkData
 {
+	FARString Title;
 	FARString ShortcutFolder;
 	FARString PluginModule;
 	FARString PluginFile;

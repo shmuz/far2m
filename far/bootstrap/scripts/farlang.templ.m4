@@ -5872,6 +5872,17 @@ FSShortcut
 "Введіть нову закладку:"
 "Увядзіце новую закладку:"
 
+FSShortcutName
+"Название:"
+"Title:"
+"Název:"
+"Titel:"
+"Cím:"
+"Nazwa:"
+"Título:"
+"Назва:"
+"Назва:"
+
 NeedNearPath
 "Перейти в ближайшую доступную папку?"
 "Jump to the nearest existing folder?"

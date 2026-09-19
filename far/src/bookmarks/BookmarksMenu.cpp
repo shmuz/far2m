@@ -85,14 +85,15 @@ static int ShowBookmarksMenuIteration(int Pos)
 
 //wxWidgets doesn't distinguish right/left modifiers
 //			ListItem.strName.Format(L"%ls+&%d   %ls", Msg::RightCtrl.CPtr(), I ,strFolderName.CPtr());
+			const auto &Text = Data.Title.IsEmpty() ? Data.ShortcutFolder : Data.Title;
 			if (I < 10)
 			{
 				ListItem.strName.Format(L"[%ls | Ctrl+Alt] + &%d   %ls",
-						Msg::RightCtrl.CPtr(), I, Data.ShortcutFolder.CPtr());
+						Msg::RightCtrl.CPtr(), I, Text.CPtr());
 			}
 			else
 			{
-				ListItem.strName.Format(L"%ls", Data.ShortcutFolder.CPtr());
+				ListItem.strName.Format(L"%ls", Text.CPtr());
 			}
 			ListItem.SetSelect(I == Pos);
 			FolderList.AddItem(&ListItem);
@@ -163,11 +164,14 @@ static int ShowBookmarksMenuIteration(int Pos)
 				{
 					BookmarkData Data;
 					b.Get(SelPos, Data);
+					FARString strNewTitle = Data.Title;
 					FARString strNewDir = Data.ShortcutFolder;
 					FARString strTemp = strNewDir;
 
 					DialogBuilder Builder(Msg::BookmarksTitle, HelpBookmarks);
 					Builder.SetId(FolderShortcutsDlgId);
+					Builder.AddText(Msg::FSShortcutName);
+					Builder.AddEditField(&strNewTitle, 50, L"FS_Name", 0);
 					Builder.AddText(Msg::FSShortcut);
 					Builder.AddEditField(&strNewDir, 50, L"FS_Path", DIF_EDITPATH);
 					//...
@@ -192,7 +196,7 @@ static int ShowBookmarksMenuIteration(int Pos)
 
 						if (Saved)
 						{
-							BookmarkData NewData { strNewDir };
+							BookmarkData NewData { strNewTitle, strNewDir };
 							b.Set(SelPos, NewData);
 							return SelPos;
 						}

@@ -42,6 +42,7 @@ bool Bookmarks::Set(int index, const BookmarkData &Data)
 	const auto &sec = ToDec(index);
 	_kfh.RemoveSection(sec);
 
+	_kfh.SetString(sec, "Title",      Data.Title.GetMB().c_str());
 	_kfh.SetString(sec, "Path",       Data.ShortcutFolder.GetMB().c_str());
 	_kfh.SetString(sec, "Plugin",     Data.PluginModule.GetMB().c_str());
 	_kfh.SetString(sec, "PluginFile", Data.PluginFile.GetMB().c_str());
@@ -60,6 +61,7 @@ bool Bookmarks::Get(int index, BookmarkData &Data)
 	else
 		Data.ShortcutFolder.Clear();
 
+	Data.Title        = _kfh.GetString(sec, "Title");
 	Data.PluginModule = _kfh.GetString(sec, "Plugin");
 	Data.PluginFile   = _kfh.GetString(sec, "PluginFile");
 	Data.PluginData   = _kfh.GetString(sec, "PluginData");
