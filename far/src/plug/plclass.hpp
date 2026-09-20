@@ -84,6 +84,7 @@ protected:
 
 	bool OpenModule();
 	void CloseModule();
+	bool GetGlobalInfo();
 
 	template <class TFN>
 		void GetModuleFN(TFN &fn, const char *api)
@@ -194,12 +195,12 @@ public:
 	virtual int    SetFindList(HANDLE hPanel, const PluginPanelItem *PanelItem, int ItemsNumber) = 0;
 	virtual bool   SetStartupInfo() = 0;
 
+	const wchar_t *GetTitle() const { return strTitle.CPtr(); }
 	DWORD GetSysID() const { return SysID; }
-	bool GetGlobalInfo();
-	bool IsLoaded() { return m_hModule != nullptr; }
+	bool IsLoaded() const { return m_hModule != nullptr; }
 	static void ShowMessageAboutIllegalPluginVersion(const wchar_t* plg,int required);
-	bool IsLuamacro() { return SysID == SYSID_LUAMACRO; }
-	bool UseMenuGuids() { return bUseMenuGuids; }
+	bool IsLuamacro() const { return SysID == SYSID_LUAMACRO; }
+	bool UseMenuGuids() const { return bUseMenuGuids; }
 };
 
 enum ExceptFunctionsType

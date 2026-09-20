@@ -5861,6 +5861,17 @@ ShortcutPlugin
 "<плагін>"
 "<дадатак>"
 
+FSShortcutName
+"Название:"
+"Title:"
+"Název:"
+"Titel:"
+"Cím:"
+"Nazwa:"
+"Título:"
+"Назва:"
+"Назва:"
+
 FSShortcutPath
 "Путь:"
 "Path:"
@@ -5872,16 +5883,27 @@ FSShortcutPath
 "Шлях:"
 "Шлях:"
 
-FSShortcutName
-"Название:"
-"Title:"
-"Název:"
-"Titel:"
-"Cím:"
-"Nazwa:"
-"Título:"
-"Назва:"
-"Назва:"
+FSShortcutPluginFile
+"Файл:"
+"File:"
+"Soubor:"
+"Datei:"
+"Fájl:"
+"Plik:"
+"Archivo:"
+"Файл:"
+"Файл:"
+
+FSShortcutPluginData
+"Данные:"
+"Data:"
+"Data:"
+"Daten:"
+"Adatok:"
+"Data:"
+"Dato:"
+"Дані:"
+"Дадзеныя:"
 
 NeedNearPath
 "Перейти в ближайшую доступную папку?"

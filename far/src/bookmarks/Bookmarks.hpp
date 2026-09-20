@@ -21,6 +21,7 @@ public:
 	bool Set(int index, const BookmarkData &Data);
 	bool Get(int index, BookmarkData &Data);
 	bool Clear(int index);
+	bool EditItem(int SelPos);
 };
 
 void ShowBookmarksMenu(int Pos = 0);

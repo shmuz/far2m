@@ -57,6 +57,68 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 static const wchar_t HelpBookmarks[] = L"Bookmarks";
 
+bool Bookmarks::EditItem(int SelPos)
+{
+	BookmarkData Data;
+	Get(SelPos, Data);
+
+	DialogBuilder Builder(Msg::BookmarksTitle, HelpBookmarks);
+	Builder.SetId(FolderShortcutsDlgId);
+	Builder.AddText(Msg::FSShortcutName);
+	Builder.AddEditField(&Data.Name, 50, L"FS_Name", 0);
+	Builder.AddText(Msg::FSShortcutPath);
+	Builder.AddEditField(&Data.Folder, 50, L"FS_Path", DIF_EDITPATH);
+	if (Data.PluginId != 0)
+	{
+		Plugin *pPlugin = CtrlObject->Plugins.FindPlugin(Data.PluginId);
+		FARString Text;
+		if (pPlugin) {
+			Text.Format(L" %ls ", pPlugin->GetTitle());
+		}	else {
+			Text.Format(L" 0x%08X ", Data.PluginId);
+		}
+		Builder.AddSeparator(Text);
+		Builder.AddText(Msg::FSShortcutPluginFile);
+		Builder.AddEditField(&Data.PluginFile, 50, L"FS_PluginFile", DIF_EDITPATH);
+		Builder.AddText(Msg::FSShortcutPluginData);
+		Builder.AddEditField(&Data.PluginData, 50, L"FS_PluginData", 0);
+	}
+	//...
+	Builder.AddOKCancel();
+
+	if (Builder.ShowDialog())
+	{
+		bool Saved = true;
+
+		if (Data.PluginId == 0)
+		{
+			auto strNewFolder = Data.Folder;
+			Unquote(strNewFolder);
+
+			if (!IsLocalRootPath(strNewFolder))
+				DeleteEndSlash(strNewFolder);
+
+			auto strTemp = Data.Folder;
+			apiExpandEnvironmentStrings(strNewFolder,strTemp);
+
+			if (apiGetFileAttributes(strTemp) == INVALID_FILE_ATTRIBUTES)
+			{
+				WINPORT(SetLastError)(ERROR_PATH_NOT_FOUND);
+				Saved = !Message(MSG_WARNING | MSG_ERRORTYPE, 2, Msg::Error, strNewFolder,
+						Msg::SaveThisShortcut, Msg::Yes, Msg::No);
+			}
+		}
+
+		if (Saved)
+		{
+			Set(SelPos, Data);
+			return true;
+		}
+	}
+
+	return false;
+}
+
 static int ShowBookmarksMenuIteration(int Pos)
 {
 	int ExitCode=-1;
@@ -157,52 +219,13 @@ static int ShowBookmarksMenuIteration(int Pos)
 					b.Set(SelPos, NewData);
 					return SelPos;
 				}
+
 				case KEY_F4:
-				{
-					BookmarkData Data;
-					b.Get(SelPos, Data);
+					if (b.EditItem(SelPos))
+						return SelPos;
+					else
+						break;
 
-					DialogBuilder Builder(Msg::BookmarksTitle, HelpBookmarks);
-					Builder.SetId(FolderShortcutsDlgId);
-					Builder.AddText(Msg::FSShortcutName);
-					Builder.AddEditField(&Data.Name, 50, L"FS_Name", 0);
-					Builder.AddText(Msg::FSShortcutPath);
-					Builder.AddEditField(&Data.Folder, 50, L"FS_Path", DIF_EDITPATH);
-					//...
-					Builder.AddOKCancel();
-
-					if (Builder.ShowDialog())
-					{
-						bool Saved = true;
-
-						if (Data.PluginId == 0)
-						{
-							auto strNewFolder = Data.Folder;
-							Unquote(strNewFolder);
-
-							if (!IsLocalRootPath(strNewFolder))
-								DeleteEndSlash(strNewFolder);
-
-							FARString strTemp = Data.Folder;
-							apiExpandEnvironmentStrings(strNewFolder,strTemp);
-
-							if (apiGetFileAttributes(strTemp) == INVALID_FILE_ATTRIBUTES)
-							{
-								WINPORT(SetLastError)(ERROR_PATH_NOT_FOUND);
-								Saved = !Message(MSG_WARNING | MSG_ERRORTYPE, 2, Msg::Error, strNewFolder,
-										Msg::SaveThisShortcut, Msg::Yes, Msg::No);
-							}
-						}
-
-						if (Saved)
-						{
-							b.Set(SelPos, Data);
-							return SelPos;
-						}
-					}
-
-					break;
-				}
 				default:
 					FolderList.ProcessInput();
 					break;

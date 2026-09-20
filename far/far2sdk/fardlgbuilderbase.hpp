@@ -602,6 +602,15 @@ class DialogBuilderBase
 			Separator->Y1 = Separator->Y2 = NextY++;
 		}
 
+		// Добавляет сепаратор.
+		void AddSeparator(const wchar_t *Text)
+		{
+			ItemReference Separator = AddDialogItem(DI_TEXT, Text == nullptr ? EMPTY_TEXT : Text);
+			Separator->Flags = DIF_SEPARATOR;
+			Separator->X1 = 3;
+			Separator->Y1 = Separator->Y2 = NextY++;
+		}
+
 		// Добавляет сепаратор и кнопку OK.
 		void AddOK(FarLangMsg OKMessageId)
 		{
