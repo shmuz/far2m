@@ -34,7 +34,7 @@ Bookmarks::Bookmarks()
 
 bool Bookmarks::Set(int index, const BookmarkData &Data)
 {
-	if (Data.Path.IsEmpty() && Data.PluginModule.IsEmpty())
+	if (Data.Folder.IsEmpty() && Data.PluginModule.IsEmpty())
 	{
 		return Clear(index);
 	}
@@ -42,8 +42,8 @@ bool Bookmarks::Set(int index, const BookmarkData &Data)
 	const auto &sec = ToDec(index);
 	_kfh.RemoveSection(sec);
 
-	_kfh.SetString(sec, "Title",      Data.Title.GetMB().c_str());
-	_kfh.SetString(sec, "Path",       Data.Path.GetMB().c_str());
+	_kfh.SetString(sec, "Name",       Data.Name.GetMB().c_str());
+	_kfh.SetString(sec, "Path",       Data.Folder.GetMB().c_str());
 	_kfh.SetString(sec, "Plugin",     Data.PluginModule.GetMB().c_str());
 	_kfh.SetString(sec, "PluginFile", Data.PluginFile.GetMB().c_str());
 	_kfh.SetString(sec, "PluginData", Data.PluginData.GetMB().c_str());
@@ -57,16 +57,16 @@ bool Bookmarks::Get(int index, BookmarkData &Data)
 	FARString strFolder(_kfh.GetString(sec, "Path"));
 
 	if (!strFolder.IsEmpty())
-		apiExpandEnvironmentStrings(strFolder, Data.Path);
+		apiExpandEnvironmentStrings(strFolder, Data.Folder);
 	else
-		Data.Path.Clear();
+		Data.Folder.Clear();
 
-	Data.Title        = _kfh.GetString(sec, "Title");
+	Data.Name         = _kfh.GetString(sec, "Name");
 	Data.PluginModule = _kfh.GetString(sec, "Plugin");
 	Data.PluginFile   = _kfh.GetString(sec, "PluginFile");
 	Data.PluginData   = _kfh.GetString(sec, "PluginData");
 
-	return !Data.Path.IsEmpty() || !Data.PluginModule.IsEmpty();
+	return !Data.Folder.IsEmpty() || !Data.PluginModule.IsEmpty();
 }
 
 bool Bookmarks::Clear(int index)

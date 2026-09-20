@@ -4,8 +4,8 @@
 
 struct BookmarkData
 {
-	FARString Title;
-	FARString Path;
+	FARString Name;
+	FARString Folder;
 	FARString PluginModule;
 	FARString PluginFile;
 	FARString PluginData;

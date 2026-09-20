@@ -75,14 +75,14 @@ static int ShowBookmarksMenuIteration(int Pos)
 			BookmarkData Data;
 			ListItem.Clear();
 			b.Get(I, Data);
-			//TruncStr(Data.Path,60);
+			//TruncStr(Data.Folder,60);
 
-			if (Data.Path.IsEmpty())
+			if (Data.Folder.IsEmpty())
 			{
-				Data.Path = Data.PluginModule.IsEmpty() ? Msg::ShortcutNone : Msg::ShortcutPlugin;
+				Data.Folder = Data.PluginModule.IsEmpty() ? Msg::ShortcutNone : Msg::ShortcutPlugin;
 			}
 
-			const auto &Text = Data.Title.IsEmpty() ? Data.Path : Data.Title;
+			const auto &Text = Data.Name.IsEmpty() ? Data.Folder : Data.Name;
 			if (I < 10)
 			{
 				ListItem.strName.Format(L"[%ls | Ctrl+Alt] + &%d   %ls",
@@ -95,7 +95,7 @@ static int ShowBookmarksMenuIteration(int Pos)
 			ListItem.SetSelect(I == Pos);
 			FolderList.AddItem(&ListItem);
 
-			if (I >= 10 && Data.Path == Msg::ShortcutNone)
+			if (I >= 10 && Data.Folder == Msg::ShortcutNone)
 			{
 				break;
 			}
@@ -142,7 +142,7 @@ static int ShowBookmarksMenuIteration(int Pos)
 				{
 					Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
 					BookmarkData NewData;
-					NewData.Path = CtrlObject->CmdLine->GetCurDir();
+					NewData.Folder = CtrlObject->CmdLine->GetCurDir();
 
 					if (ActivePanel->GetMode() == PLUGIN_PANEL)
 					{
@@ -161,39 +161,39 @@ static int ShowBookmarksMenuIteration(int Pos)
 				{
 					BookmarkData Data;
 					b.Get(SelPos, Data);
-					FARString strNewTitle = Data.Title;
-					FARString strNewPath = Data.Path;
-					FARString strTemp = strNewPath;
+					FARString strNewName = Data.Name;
+					FARString strNewFolder = Data.Folder;
+					FARString strTemp = strNewFolder;
 
 					DialogBuilder Builder(Msg::BookmarksTitle, HelpBookmarks);
 					Builder.SetId(FolderShortcutsDlgId);
 					Builder.AddText(Msg::FSShortcutName);
-					Builder.AddEditField(&strNewTitle, 50, L"FS_Name", 0);
+					Builder.AddEditField(&strNewName, 50, L"FS_Name", 0);
 					Builder.AddText(Msg::FSShortcutPath);
-					Builder.AddEditField(&strNewPath, 50, L"FS_Path", DIF_EDITPATH);
+					Builder.AddEditField(&strNewFolder, 50, L"FS_Path", DIF_EDITPATH);
 					//...
 					Builder.AddOKCancel();
 
 					if (Builder.ShowDialog())
 					{
-						Unquote(strNewPath);
+						Unquote(strNewFolder);
 
-						if (!IsLocalRootPath(strNewPath))
-							DeleteEndSlash(strNewPath);
+						if (!IsLocalRootPath(strNewFolder))
+							DeleteEndSlash(strNewFolder);
 
 						bool Saved = true;
-						apiExpandEnvironmentStrings(strNewPath,strTemp);
+						apiExpandEnvironmentStrings(strNewFolder,strTemp);
 
 						if (apiGetFileAttributes(strTemp) == INVALID_FILE_ATTRIBUTES)
 						{
 							WINPORT(SetLastError)(ERROR_PATH_NOT_FOUND);
-							Saved = !Message(MSG_WARNING | MSG_ERRORTYPE, 2, Msg::Error, strNewPath,
+							Saved = !Message(MSG_WARNING | MSG_ERRORTYPE, 2, Msg::Error, strNewFolder,
 									Msg::SaveThisShortcut, Msg::Yes, Msg::No);
 						}
 
 						if (Saved)
 						{
-							BookmarkData NewData { strNewTitle, strNewPath };
+							BookmarkData NewData { strNewName, strNewFolder };
 							b.Set(SelPos, NewData);
 							return SelPos;
 						}
