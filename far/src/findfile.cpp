@@ -564,34 +564,33 @@ static void InitInFileSearch()
 				cp->LastSymbol = 0;
 				cp->WordFound = false;
 			}
-		} else {
+		}
+		else {
 			// Формируем hex-строку для поиска
 			hexFindStringSize = 0;
 
-			if (SearchHex) {
-				bool flag = false;
-				hexFindString = (unsigned char *)malloc((findStringCount - findStringCount / 3 + 1) / 2);
+			bool flag = false;
+			hexFindString = (unsigned char *)malloc((findStringCount - findStringCount / 3 + 1) / 2);
 
-				for (size_t index = 0; index < strFindStr.GetLength(); index++) {
-					wchar_t symbol = strFindStr.At(index);
-					BYTE offset = 0;
+			for (size_t index = 0; index < strFindStr.GetLength(); index++) {
+				wchar_t symbol = strFindStr.At(index);
+				BYTE offset = 0;
 
-					if (symbol >= L'a' && symbol <= L'f')
-						offset = 87;
-					else if (symbol >= L'A' && symbol <= L'F')
-						offset = 55;
-					else if (symbol >= L'0' && symbol <= L'9')
-						offset = 48;
-					else
-						continue;
+				if (symbol >= L'a' && symbol <= L'f')
+					offset = 87;
+				else if (symbol >= L'A' && symbol <= L'F')
+					offset = 55;
+				else if (symbol >= L'0' && symbol <= L'9')
+					offset = 48;
+				else
+					continue;
 
-					if (!flag)
-						hexFindString[hexFindStringSize++] = ((BYTE)symbol - offset) << 4;
-					else
-						hexFindString[hexFindStringSize - 1]|= ((BYTE)symbol - offset);
+				if (!flag)
+					hexFindString[hexFindStringSize++] = ((BYTE)symbol - offset) << 4;
+				else
+					hexFindString[hexFindStringSize - 1]|= ((BYTE)symbol - offset);
 
-					flag = !flag;
-				}
+				flag = !flag;
 			}
 
 			// Инициализируем данные для алгоритма поиска
@@ -970,33 +969,34 @@ static LONG_PTR WINAPI MainDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 
 			break;
 		}
+
 		case DN_EDITCHANGE: {
 			FarDialogItem &Item = *reinterpret_cast<FarDialogItem *>(Param2);
 
 			switch (Param1) {
-				case FAD_EDIT_TEXT: {
+				case FAD_EDIT_TEXT:
 					// Строка "Содержащих текст"
 					if (!v->FindFoldersChanged) {
 						bool Checked = (Item.PtrData && *Item.PtrData) ? false : Opt.FindOpt.FindFolders;
 						SendDlgMessage(hDlg, DM_SETCHECK, FAD_CHECKBOX_DIRS,
 								Checked ? BSTATE_CHECKED : BSTATE_UNCHECKED);
 					}
-
 					return TRUE;
-				} break;
 
-				case FAD_COMBOBOX_CP: {
+				case FAD_COMBOBOX_CP:
 					// Получаем выбранную в выпадающем списке таблицу символов
 					CodePage = (UINT)SendDlgMessage(hDlg, DM_LISTGETDATA, FAD_COMBOBOX_CP,
 							SendDlgMessage(hDlg, DM_LISTGETCURPOS, FAD_COMBOBOX_CP, 0));
-				}
 					return TRUE;
-				case FAD_COMBOBOX_WHERE: {
+
+				case FAD_COMBOBOX_WHERE:
 					v->SearchFromChanged = true;
-				}
 					return TRUE;
 			}
+
+			break;
 		}
+
 		case DN_HOTKEY: {
 			if (Param1 == FAD_TEXT_TEXTHEX) {
 				bool Hex = (SendDlgMessage(hDlg, DM_GETCHECK, FAD_CHECKBOX_HEX) == BSTATE_CHECKED);
@@ -2320,9 +2320,7 @@ static void DoScanTree(HANDLE hDlg, const FARString &strRoot)
 					}
 				}
 
-				if (((FindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && strFindStr.IsEmpty())
-						|| (!(FindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-								&& !strFindStr.IsEmpty())) {
+				if (bool(FindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == strFindStr.IsEmpty()) {
 					itd.SetFindMessage(strFullName);
 				}
 
@@ -2377,10 +2375,7 @@ static void ScanPluginTree(HANDLE hDlg, PHPTR hPlugin, DWORD Flags, int &Recurse
 				continue;
 
 			if (!UseFilter || Filter->FileInFilter(CurPanelItem->FindData)) {
-				if (((CurPanelItem->FindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-							&& strFindStr.IsEmpty())
-						|| (!(CurPanelItem->FindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-								&& !strFindStr.IsEmpty())) {
+				if (bool(CurPanelItem->FindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == strFindStr.IsEmpty()) {
 					itd.SetFindMessage(strPluginSearchPath + strCurName);
 				}
 
