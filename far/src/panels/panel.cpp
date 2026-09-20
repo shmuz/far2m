@@ -357,14 +357,18 @@ static void AddBookmarkItems(VMenu &ChDisk, int Pos)
 			ChDiskItem.Clear();
 			ChDiskItem.SetSelect(ChDisk.GetItemCount() == Pos);
 
-			if (!Data.PluginFile.IsEmpty()) {
-				ShortcutPath+= Data.PluginFile;
-				ShortcutPath+= L"/";
+			if (!Data.Name.IsEmpty()) {
+				ShortcutPath = Data.Name;
 			}
-			ShortcutPath+= Data.Folder;
-			if (ShortcutPath.IsEmpty()) {
-				ShortcutPath = L"@";
-				ShortcutPath+= Data.PluginModule;
+			else {
+				if (!Data.PluginFile.IsEmpty()) {
+					ShortcutPath+= Data.PluginFile;
+					ShortcutPath+= L"/";
+				}
+				ShortcutPath+= Data.Folder;
+				if (ShortcutPath.IsEmpty()) {
+					ShortcutPath.Format(L"@[%08X]", Data.PluginId);
+				}
 			}
 
 			if (SCPos <= 9)
@@ -1963,7 +1967,7 @@ bool Panel::SaveShortcutFolder(int Pos)
 	if (PanelMode == PLUGIN_PANEL) {
 		PHPTR hPlugin = GetPluginHandle();
 		PanelHandle *ph = hPlugin;
-		Data.PluginModule = ph->pPlugin->GetModuleName();
+		Data.PluginId = ph->pPlugin->GetSysID();
 		OpenPluginInfo Info;
 		CtrlObject->Plugins.GetOpenPluginInfo(hPlugin, &Info);
 		Data.PluginFile = Info.HostFile;
@@ -1999,7 +2003,7 @@ bool Panel::ExecShortcutFolder(int Pos)
 
 	bool CheckFullScreen = SrcPanel->IsFullScreen();
 
-	if (!Data.PluginModule.IsEmpty())
+	if (Data.PluginId != 0)
 	{
 		if (!Data.PluginFile.IsEmpty())
 		{
@@ -2016,7 +2020,7 @@ bool Panel::ExecShortcutFolder(int Pos)
 			}
 
 			if (auto flist = dynamic_cast<FileList*>(SrcPanel)) {
-				auto pPlugin = CtrlObject->Plugins.FindPlugin(Data.PluginModule);
+				auto pPlugin = CtrlObject->Plugins.FindPlugin(Data.PluginId);
 				flist->OpenFilePlugin(Data.PluginFile, false, OFP_SHORTCUT, nullptr, pPlugin);    //???
 			}
 
@@ -2030,7 +2034,7 @@ bool Panel::ExecShortcutFolder(int Pos)
 			if (CtrlObject->Cp()->ActivePanel->ProcessPluginEvent(FE_CLOSE))
 				return true;
 
-			auto pPlugin = CtrlObject->Plugins.FindPlugin(Data.PluginModule);
+			auto pPlugin = CtrlObject->Plugins.FindPlugin(Data.PluginId);
 			if (pPlugin && pPlugin->HasOpenPlugin())
 			{
 				PHPTR hNewPlugin = CtrlObject->Plugins.OpenPlugin(pPlugin, OPEN_SHORTCUT, Data.PluginData.CPtr());

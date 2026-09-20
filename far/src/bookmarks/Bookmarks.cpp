@@ -34,7 +34,7 @@ Bookmarks::Bookmarks()
 
 bool Bookmarks::Set(int index, const BookmarkData &Data)
 {
-	if (Data.Folder.IsEmpty() && Data.PluginModule.IsEmpty())
+	if (Data.Folder.IsEmpty() && Data.PluginId == 0)
 	{
 		return Clear(index);
 	}
@@ -44,9 +44,9 @@ bool Bookmarks::Set(int index, const BookmarkData &Data)
 
 	_kfh.SetString(sec, "Name",       Data.Name.GetMB().c_str());
 	_kfh.SetString(sec, "Path",       Data.Folder.GetMB().c_str());
-	_kfh.SetString(sec, "Plugin",     Data.PluginModule.GetMB().c_str());
 	_kfh.SetString(sec, "PluginFile", Data.PluginFile.GetMB().c_str());
 	_kfh.SetString(sec, "PluginData", Data.PluginData.GetMB().c_str());
+	_kfh.SetUInt  (sec, "PluginId",   Data.PluginId);
 
 	return _kfh.Save();
 }
@@ -62,11 +62,11 @@ bool Bookmarks::Get(int index, BookmarkData &Data)
 		Data.Folder.Clear();
 
 	Data.Name         = _kfh.GetString(sec, "Name");
-	Data.PluginModule = _kfh.GetString(sec, "Plugin");
 	Data.PluginFile   = _kfh.GetString(sec, "PluginFile");
 	Data.PluginData   = _kfh.GetString(sec, "PluginData");
+	Data.PluginId     = _kfh.GetUInt  (sec, "PluginId", 0);
 
-	return !Data.Folder.IsEmpty() || !Data.PluginModule.IsEmpty();
+	return !Data.Folder.IsEmpty() || Data.PluginId != 0;
 }
 
 bool Bookmarks::Clear(int index)

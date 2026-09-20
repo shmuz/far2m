@@ -6,9 +6,9 @@ struct BookmarkData
 {
 	FARString Name;
 	FARString Folder;
-	FARString PluginModule;
 	FARString PluginFile;
 	FARString PluginData;
+	uint32_t  PluginId = 0;
 };
 
 class Bookmarks

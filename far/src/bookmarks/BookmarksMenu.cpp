@@ -79,7 +79,7 @@ static int ShowBookmarksMenuIteration(int Pos)
 
 			if (Data.Folder.IsEmpty())
 			{
-				Data.Folder = Data.PluginModule.IsEmpty() ? Msg::ShortcutNone : Msg::ShortcutPlugin;
+				Data.Folder = (Data.PluginId == 0) ? Msg::ShortcutNone : Msg::ShortcutPlugin;
 			}
 
 			const auto &Text = Data.Name.IsEmpty() ? Data.Folder : Data.Name;
@@ -149,7 +149,7 @@ static int ShowBookmarksMenuIteration(int Pos)
 						OpenPluginInfo Info;
 						ActivePanel->GetOpenPluginInfo(&Info);
 						PanelHandle *ph = ActivePanel->GetPluginHandle();
-						NewData.PluginModule = ph->pPlugin->GetModuleName();
+						NewData.PluginId = ph->pPlugin->GetSysID();
 						NewData.PluginFile = Info.HostFile;
 						NewData.PluginData = Info.ShortcutData;
 					}
@@ -161,40 +161,42 @@ static int ShowBookmarksMenuIteration(int Pos)
 				{
 					BookmarkData Data;
 					b.Get(SelPos, Data);
-					FARString strNewName = Data.Name;
-					FARString strNewFolder = Data.Folder;
-					FARString strTemp = strNewFolder;
 
 					DialogBuilder Builder(Msg::BookmarksTitle, HelpBookmarks);
 					Builder.SetId(FolderShortcutsDlgId);
 					Builder.AddText(Msg::FSShortcutName);
-					Builder.AddEditField(&strNewName, 50, L"FS_Name", 0);
+					Builder.AddEditField(&Data.Name, 50, L"FS_Name", 0);
 					Builder.AddText(Msg::FSShortcutPath);
-					Builder.AddEditField(&strNewFolder, 50, L"FS_Path", DIF_EDITPATH);
+					Builder.AddEditField(&Data.Folder, 50, L"FS_Path", DIF_EDITPATH);
 					//...
 					Builder.AddOKCancel();
 
 					if (Builder.ShowDialog())
 					{
-						Unquote(strNewFolder);
-
-						if (!IsLocalRootPath(strNewFolder))
-							DeleteEndSlash(strNewFolder);
-
 						bool Saved = true;
-						apiExpandEnvironmentStrings(strNewFolder,strTemp);
 
-						if (apiGetFileAttributes(strTemp) == INVALID_FILE_ATTRIBUTES)
+						if (Data.PluginId == 0)
 						{
-							WINPORT(SetLastError)(ERROR_PATH_NOT_FOUND);
-							Saved = !Message(MSG_WARNING | MSG_ERRORTYPE, 2, Msg::Error, strNewFolder,
-									Msg::SaveThisShortcut, Msg::Yes, Msg::No);
+							auto strNewFolder = Data.Folder;
+							Unquote(strNewFolder);
+
+							if (!IsLocalRootPath(strNewFolder))
+								DeleteEndSlash(strNewFolder);
+
+							FARString strTemp = Data.Folder;
+							apiExpandEnvironmentStrings(strNewFolder,strTemp);
+
+							if (apiGetFileAttributes(strTemp) == INVALID_FILE_ATTRIBUTES)
+							{
+								WINPORT(SetLastError)(ERROR_PATH_NOT_FOUND);
+								Saved = !Message(MSG_WARNING | MSG_ERRORTYPE, 2, Msg::Error, strNewFolder,
+										Msg::SaveThisShortcut, Msg::Yes, Msg::No);
+							}
 						}
 
 						if (Saved)
 						{
-							BookmarkData NewData { strNewName, strNewFolder };
-							b.Set(SelPos, NewData);
+							b.Set(SelPos, Data);
 							return SelPos;
 						}
 					}
