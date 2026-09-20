@@ -5861,16 +5861,16 @@ ShortcutPlugin
 "<плагін>"
 "<дадатак>"
 
-FSShortcut
-"Введите новую закладку:"
-"Enter bookmark path:"
-"Zadejte novou zkratku:"
-"Neue Verknüpfung:"
-"A gyorsbillentyűhöz rendelt mappa:"
-"Wprowadź nowy skrót:"
-"Ingrése nuevo acceso:"
-"Введіть нову закладку:"
-"Увядзіце новую закладку:"
+FSShortcutPath
+"Путь:"
+"Path:"
+"Cesta:"
+"Pfad:"
+"Elérési út:"
+"Ścieżka:"
+"Ruta:"
+"Шлях:"
+"Шлях:"
 
 FSShortcutName
 "Название:"
