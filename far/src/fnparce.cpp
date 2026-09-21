@@ -753,7 +753,7 @@ static int IsReplaceVariable(const wchar_t *str,
 			else if (count_scob < 0)
 				return -1;
 		}
-		else if ((*s == L'?') && ((!beg_firstpart_scob && !end_firstpart_scob) || (beg_firstpart_scob && end_firstpart_scob)))
+		else if ((*s == L'?') && bool(beg_firstpart_scob) == bool(end_firstpart_scob))
 		{
 			was_quest = true;
 		}
@@ -798,7 +798,7 @@ static int IsReplaceVariable(const wchar_t *str,
 			else if (second_count_scob < 0)
 				return -1;
 		}
-		else if ((*s == L'!') && ((!beg_secondpart_scob && !end_secondpart_scob) || (beg_secondpart_scob && end_secondpart_scob)))
+		else if ((*s == L'!') && bool(beg_secondpart_scob) == bool(end_secondpart_scob))
 		{
 			was_asterics = true;
 		}

@@ -2092,19 +2092,17 @@ void FarMacroApi::dlggetvalueFunc()
 				}
 			}
 		}
-		else if (Index < Dlg->ItemCount() && DlgItem)
+		else if (Index < Dlg->ItemCount())
 		{
 			const DialogItemEx &Item = DlgItem[Index];
-			int ItemType = Item.Type;
-			DWORD ItemFlags = Item.Flags;
 
 			if (!InfoID)
 			{
-				if (ItemType == DI_CHECKBOX || ItemType == DI_RADIOBUTTON)
+				if (Item.Type == DI_CHECKBOX || Item.Type == DI_RADIOBUTTON)
 				{
 					InfoID = 7;
 				}
-				else if (ItemType == DI_COMBOBOX || ItemType == DI_LISTBOX)
+				else if (Item.Type == DI_COMBOBOX || Item.Type == DI_LISTBOX)
 				{
 					FarListGetItem ListItem {};
 					ListItem.ItemIndex = Item.ListPtr->GetSelectPos();
@@ -2124,7 +2122,7 @@ void FarMacroApi::dlggetvalueFunc()
 
 			switch (InfoID)
 			{
-				case 1: Ret = ItemType;   break;
+				case 1: Ret = Item.Type;   break;
 				case 2: Ret = Item.X1;    break;
 				case 3: Ret = Item.Y1;    break;
 				case 4: Ret = Item.X2;    break;
@@ -2132,11 +2130,11 @@ void FarMacroApi::dlggetvalueFunc()
 				case 6: Ret = Item.Focus; break;
 				case 7:
 				{
-					if (ItemType == DI_CHECKBOX || ItemType == DI_RADIOBUTTON)
+					if (Item.Type == DI_CHECKBOX || Item.Type == DI_RADIOBUTTON)
 					{
 						Ret = Item.Selected;
 					}
-					else if (ItemType == DI_COMBOBOX || ItemType == DI_LISTBOX)
+					else if (Item.Type == DI_COMBOBOX || Item.Type == DI_LISTBOX)
 					{
 						Ret = Item.ListPtr->GetSelectPos()+1;
 					}
@@ -2146,12 +2144,12 @@ void FarMacroApi::dlggetvalueFunc()
 					}
 					break;
 				}
-				case 8: Ret = (int64_t)ItemFlags; break;
+				case 8: Ret = (int64_t)Item.Flags; break;
 				case 9: Ret = Item.DefaultButton; break;
 				case 10:
 				{
 					Ret=Item.strData.CPtr();
-					if (FarIsEdit(ItemType))
+					if (FarIsEdit(Item.Type))
 					{
 						if (Item.EditPtr)
 							Ret = Item.EditPtr->GetStringAddr();
@@ -2160,7 +2158,7 @@ void FarMacroApi::dlggetvalueFunc()
 				}
 				case 11:
 				{
-					if (ItemType == DI_COMBOBOX || ItemType == DI_LISTBOX)
+					if (Item.Type == DI_COMBOBOX || Item.Type == DI_LISTBOX)
 					{
 						Ret = Item.ListPtr->GetItemCount();
 					}

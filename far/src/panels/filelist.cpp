@@ -2941,8 +2941,6 @@ void FileList::SetViewMode(int ViewMode)
 	bool NewDiz = IsColumnDisplayed(DIZ_COLUMN);
 	bool NewAccessTime = IsColumnDisplayed(ADATE_COLUMN);
 
-	bool ResortRequired = false;
-
 	if (FileCount > 0 && PanelMode != PLUGIN_PANEL
 			&& ((!OldOwner && NewOwner) || (!OldGroup && NewGroup) || (!OldPhysical && NewPhysical)
 					|| (!OldNumLink && NewNumLink) || (AccessTimeUpdateRequired && NewAccessTime)))
@@ -2977,15 +2975,6 @@ void FileList::SetViewMode(int ViewMode)
 		//    SetScreenPosition();
 		ViewSettingsToText(ViewSettings.PanelColumns, strColumnTypes, strColumnWidths);
 		ProcessPluginEvent(FE_CHANGEVIEWMODE, (void *)strColumnTypes.CPtr());
-	}
-
-	if (ResortRequired) {
-		SortFileList(true);
-		ShowFileList(true);
-		Panel *AnotherPanel = CtrlObject->Cp()->GetAnotherPanel(this);
-
-		if (AnotherPanel->GetType() == TREE_PANEL)
-			AnotherPanel->Redraw();
 	}
 }
 

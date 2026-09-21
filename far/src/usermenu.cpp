@@ -589,7 +589,6 @@ int UserMenu::ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar
 						break;
 					}
 
-					// case KEY_ALTSHIFTF4:  // редактировать только текущий пункт (если субменю - то все субменю)
 					case KEY_CTRLF4:    // редактировать все меню
 					{
 						FrameManager->GetFrame(0)->Unlock();
@@ -601,16 +600,11 @@ int UserMenu::ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar
 							break;
 						}
 
-						FARString strCurrentKey;
-
-						if (Key == KEY_ALTSHIFTF4)
-							strCurrentKey.Format(L"%ls/Item%d", MenuKey, MenuPos);
-						else
-							strCurrentKey = MenuRootKey;
+						FARString strCurrentKey = MenuRootKey;
 						CachedWrite CW(MenuFile);
 						WCHAR Data = SIGN_WIDE_LE;
 						CW.Write(&Data, sizeof(WCHAR));
-						MenuRegToFile(strCurrentKey, MenuFile, CW, Key == KEY_ALTSHIFTF4);
+						MenuRegToFile(strCurrentKey, MenuFile, CW, false);
 						CW.Flush();
 						m_NeedRefresh = true;
 						MenuFile.Close();
@@ -625,12 +619,9 @@ int UserMenu::ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar
 
 							if (!ShellEditor.IsFileChanged()
 									|| (!MenuFile.Open(strMenuFileName, GENERIC_READ, FILE_SHARE_READ,
-											nullptr, OPEN_EXISTING))) {
+											nullptr, OPEN_EXISTING)))
+							{
 								apiDeleteFile(strMenuFileName);
-
-								if (Key == KEY_ALTSHIFTF4)    // для текущего пункта меню закрывать не надо
-									break;
-
 								return 0;
 							}
 						}
@@ -639,14 +630,11 @@ int UserMenu::ProcessSingleMenu(const wchar_t *MenuKey, int MenuPos, const wchar
 						}
 						UpdateConfigReader();
 						GetFileString GetStr(MenuFile);
-						MenuFileToReg(strCurrentKey, MenuFile, GetStr, Key == KEY_ALTSHIFTF4);
+						MenuFileToReg(strCurrentKey, MenuFile, GetStr, false);
 						MenuFile.Close();
 						apiDeleteFile(strMenuFileName);
 						m_Modified = true;
 						UserMenu.Hide();
-
-						if (Key == KEY_ALTSHIFTF4)    // для текущего пункта меню закрывать не надо
-							break;
 
 						return 0;    // Закрыть меню
 					}

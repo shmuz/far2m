@@ -115,7 +115,7 @@ public:
 	  Добавлено для поиска по AltF7. При редактировании найденного файла из
 	  архива для клавиши F2 сделать вызов ShiftF2.
 	*/
-	void SetSaveToSaveAs(int ToSaveAs)
+	void SetSaveToSaveAs(bool ToSaveAs)
 	{
 		SaveToSaveAs = ToSaveAs;
 		InitKeyBar();

@@ -117,7 +117,7 @@ int64_t HMenu::VMProcess(int OpCode,void *vParam,int64_t iParam)
 		case MCODE_C_BOF:
 			return !SelectPos;
 		case MCODE_C_SELECTED:
-			return ItemCount > 0 && SelectPos >= 0;
+			return ItemCount > 0;
 		case MCODE_V_ITEMCOUNT:
 			return ItemCount;
 		case MCODE_V_CURPOS:
@@ -125,7 +125,7 @@ int64_t HMenu::VMProcess(int OpCode,void *vParam,int64_t iParam)
 		case MCODE_F_MENU_CHECKHOTKEY:
 		{
 			const wchar_t *str = (const wchar_t *)vParam;
-			return (int64_t)(CheckHighlights((WORD)*str, (int)iParam)+1);
+			return CheckHighlights((WORD)*str, (int)iParam) + 1;
 		}
 		case MCODE_F_MENU_GETHOTKEY:
 		case MCODE_F_MENU_GETVALUE: // S=Menu.GetValue([N])

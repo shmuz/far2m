@@ -677,7 +677,7 @@ static wchar_t *FormatCodePageName(UINT CodePage, wchar_t *CodePageName, size_t 
 			{
 				ConfigWriter(NamesOfCodePagesKey).RemoveKey(strCodePage);
 				IsCodePageNameCustom = false;
-				return Name ? Name : CodePageName;
+				return Name;
 			}
 		}
 		else

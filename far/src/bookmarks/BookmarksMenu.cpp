@@ -160,11 +160,12 @@ static int ShowBookmarksMenuIteration(int Pos)
 			BookmarkData Data;
 			ListItem.Clear();
 			b.Get(I, Data);
-			//TruncStr(Data.Folder,60);
 
+			bool EmptyShortcut = false;
 			FARString Text = MakeName(Data);
 			if (Text.IsEmpty())
 			{
+				EmptyShortcut = true;
 				Text = Msg::ShortcutNone;
 			}
 
@@ -180,10 +181,8 @@ static int ShowBookmarksMenuIteration(int Pos)
 			ListItem.SetSelect(I == Pos);
 			FolderList.AddItem(&ListItem);
 
-			if (I >= 10 && Text == Msg::ShortcutNone)
-			{
+			if (I >= 10 && EmptyShortcut)
 				break;
-			}
 		}
 
 		FolderList.Show();
