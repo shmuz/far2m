@@ -1,6 +1,7 @@
 #pragma once
 #include <KeyFileHelper.h>
 #include "FARString.hpp"
+#include "plclass.hpp"
 
 struct BookmarkData
 {
@@ -8,7 +9,7 @@ struct BookmarkData
 	FARString Folder;
 	FARString PluginFile;
 	FARString PluginData;
-	uint32_t  PluginId = 0;
+	uint32_t  PluginId = SYSID_FAR;
 };
 
 class Bookmarks

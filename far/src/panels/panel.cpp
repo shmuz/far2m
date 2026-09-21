@@ -1955,7 +1955,7 @@ bool Panel::GetShortcutInfo(ShortcutInfo& Info) const
 		Info.ShortcutFolder = strCurDir;
 		Info.PluginFile.Clear();
 		Info.PluginData.Clear();
-		Info.PluginId = 0;
+		Info.PluginId = SYSID_FAR;
 		return true;
 	}
 }
@@ -2003,10 +2003,12 @@ bool Panel::ExecShortcutFolder(int Pos)
 
 	bool CheckFullScreen = SrcPanel->IsFullScreen();
 
-	if (Data.PluginId != 0)
+	if (Data.PluginId != SYSID_FAR)
 	{
 		if (!Data.PluginFile.IsEmpty())
 		{
+			apiExpandEnvironmentStrings(Data.PluginFile, Data.PluginFile);
+
 			if (CheckShortcutFolder(Data.PluginFile, true) != 1)
 				return true;
 

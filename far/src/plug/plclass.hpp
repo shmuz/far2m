@@ -36,6 +36,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 enum
 {
+	SYSID_FAR               = 0,
 	SYSID_PRINTMANAGER      = 0x6E614D50,
 	SYSID_NETWORK           = 0x5774654E,
 	SYSID_LUAMACRO          = 0x4EBBEFC8,
@@ -72,7 +73,7 @@ protected:
 	   Network      = 0x5774654E (NetW)
 	   PrintManager = 0x6E614D50 (PMan)  SYSID_PRINTMANAGER
 	*/
-	DWORD SysID = 0;
+	DWORD SysID = SYSID_FAR;
 
 	FARString strTitle;
 	FARString strDescription;

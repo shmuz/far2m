@@ -68,14 +68,14 @@ bool Bookmarks::EditItem(int SelPos)
 	Builder.AddEditField(&Data.Name, 50, L"FS_Name", 0);
 	Builder.AddText(Msg::FSShortcutPath);
 	Builder.AddEditField(&Data.Folder, 50, L"FS_Path", DIF_EDITPATH);
-	if (Data.PluginId != 0)
+	if (Data.PluginId != SYSID_FAR)
 	{
 		Plugin *pPlugin = CtrlObject->Plugins.FindPlugin(Data.PluginId);
 		FARString Text;
 		if (pPlugin) {
 			Text.Format(L" %ls ", pPlugin->GetTitle());
 		}	else {
-			Text.Format(L" 0x%08X ", Data.PluginId);
+			Text.Format(L" Plugin: 0x%08X ", Data.PluginId);
 		}
 		Builder.AddSeparator(Text);
 		Builder.AddText(Msg::FSShortcutPluginFile);
@@ -90,7 +90,7 @@ bool Bookmarks::EditItem(int SelPos)
 	{
 		bool Saved = true;
 
-		if (Data.PluginId == 0)
+		if (Data.PluginId == SYSID_FAR)
 		{
 			auto strNewFolder = Data.Folder;
 			Unquote(strNewFolder);
@@ -119,6 +119,29 @@ bool Bookmarks::EditItem(int SelPos)
 	return false;
 }
 
+static FARString MakeName(const BookmarkData &Item)
+{
+	if (!Item.Name.IsEmpty())
+		return Item.Name;
+
+	if (Item.PluginId == SYSID_FAR)
+		return Item.Folder;
+
+	FormatString Text;
+	const auto plugin = CtrlObject->Plugins.FindPlugin(Item.PluginId);
+
+	if (plugin)
+		Text << plugin->GetTitle();
+	else
+		Text << FARString().Format(L"0x%08X", Item.PluginId);
+
+	Text << L" : " << Item.PluginFile
+	     << L" : " << Item.Folder
+	     << L" : " << Item.PluginData;
+
+	return Text.strValue();
+}
+
 static int ShowBookmarksMenuIteration(int Pos)
 {
 	int ExitCode=-1;
@@ -139,12 +162,12 @@ static int ShowBookmarksMenuIteration(int Pos)
 			b.Get(I, Data);
 			//TruncStr(Data.Folder,60);
 
-			if (Data.Folder.IsEmpty())
+			FARString Text = MakeName(Data);
+			if (Text.IsEmpty())
 			{
-				Data.Folder = (Data.PluginId == 0) ? Msg::ShortcutNone : Msg::ShortcutPlugin;
+				Text = Msg::ShortcutNone;
 			}
 
-			const auto &Text = Data.Name.IsEmpty() ? Data.Folder : Data.Name;
 			if (I < 10)
 			{
 				ListItem.strName.Format(L"[%ls | Ctrl+Alt] + &%d   %ls",
@@ -157,7 +180,7 @@ static int ShowBookmarksMenuIteration(int Pos)
 			ListItem.SetSelect(I == Pos);
 			FolderList.AddItem(&ListItem);
 
-			if (I >= 10 && Data.Folder == Msg::ShortcutNone)
+			if (I >= 10 && Text == Msg::ShortcutNone)
 			{
 				break;
 			}
@@ -203,20 +226,20 @@ static int ShowBookmarksMenuIteration(int Pos)
 				case KEY_INS:
 				{
 					Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
-					BookmarkData NewData;
-					NewData.Folder = CtrlObject->CmdLine->GetCurDir();
+					BookmarkData Data;
+					Data.Folder = CtrlObject->CmdLine->GetCurDir();
 
 					if (ActivePanel->GetMode() == PLUGIN_PANEL)
 					{
 						OpenPluginInfo Info;
 						ActivePanel->GetOpenPluginInfo(&Info);
 						PanelHandle *ph = ActivePanel->GetPluginHandle();
-						NewData.PluginId = ph->pPlugin->GetSysID();
-						NewData.PluginFile = Info.HostFile;
-						NewData.PluginData = Info.ShortcutData;
+						Data.PluginId = ph->pPlugin->GetSysID();
+						Data.PluginFile = Info.HostFile;
+						Data.PluginData = Info.ShortcutData;
 					}
 
-					b.Set(SelPos, NewData);
+					b.Set(SelPos, Data);
 					return SelPos;
 				}
 

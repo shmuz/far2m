@@ -5850,17 +5850,6 @@ ShortcutNone
 "<відсутня>"
 "<адчсутнічае>"
 
-ShortcutPlugin
-"<плагин>"
-"<plugin>"
-"<plugin>"
-"<Plugin>"
-"<plugin>"
-"<plugin>"
-"<plugin>"
-"<плагін>"
-"<дадатак>"
-
 FSShortcutName
 "Название:"
 "Title:"

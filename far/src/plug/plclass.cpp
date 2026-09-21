@@ -107,8 +107,8 @@ bool Plugin::GetGlobalInfo()
 		GlobalInfo gi { sizeof(GlobalInfo) };
 		EXECUTE_FUNCTION(pGetGlobalInfoW(&gi), es);
 
-		if (gi.StructSize && gi.Title && *gi.Title && gi.Description && *gi.Description
-				&& gi.Author && *gi.Author && gi.SysID)
+		if (gi.StructSize && (gi.Title && *gi.Title) && (gi.Description && *gi.Description)
+				&& (gi.Author && *gi.Author) && (gi.SysID != SYSID_FAR))
 		{
 			auto pPlugin = CtrlObject->Plugins.FindPlugin(gi.SysID);
 			if (!pPlugin || pPlugin == this) { // check for duplicate SysID's

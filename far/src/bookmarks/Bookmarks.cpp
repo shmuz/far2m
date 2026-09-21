@@ -34,7 +34,7 @@ Bookmarks::Bookmarks()
 
 bool Bookmarks::Set(int index, const BookmarkData &Data)
 {
-	if (Data.Folder.IsEmpty() && Data.PluginId == 0)
+	if (Data.Folder.IsEmpty() && Data.PluginId == SYSID_FAR)
 	{
 		return Clear(index);
 	}
@@ -64,9 +64,9 @@ bool Bookmarks::Get(int index, BookmarkData &Data)
 	Data.Name         = _kfh.GetString(sec, "Name");
 	Data.PluginFile   = _kfh.GetString(sec, "PluginFile");
 	Data.PluginData   = _kfh.GetString(sec, "PluginData");
-	Data.PluginId     = _kfh.GetUInt  (sec, "PluginId", 0);
+	Data.PluginId     = _kfh.GetUInt  (sec, "PluginId", SYSID_FAR);
 
-	return !Data.Folder.IsEmpty() || Data.PluginId != 0;
+	return !Data.Folder.IsEmpty() || Data.PluginId != SYSID_FAR;
 }
 
 bool Bookmarks::Clear(int index)
