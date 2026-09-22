@@ -247,30 +247,30 @@ int GetDirInfo(const wchar_t *Title, const wchar_t *DirName, uint32_t &DirCount,
 int GetPluginDirInfo(PanelHandle *ph, const wchar_t *DirName, uint32_t &DirCount, uint32_t &FileCount,
 		uint64_t &FileSize, uint64_t &PhysicalSize)
 {
-	PluginPanelItem *PanelItem = nullptr;
-	int ItemsNumber;
+	PluginPanelItem *PanelItems = nullptr;
+	int ItemsNumber = 0;
 	DirCount = FileCount = 0;
 	FileSize = PhysicalSize = 0;
-	int ExitCode = FarGetPluginDirList((INT_PTR)ph->pPlugin, ph->hPanel, DirName, &PanelItem, &ItemsNumber);
+	int ExitCode = FarGetPluginDirList((INT_PTR)ph->pPlugin, ph->hPanel, DirName, &PanelItems, &ItemsNumber);
 
-	if (ExitCode)
+	if (ExitCode && PanelItems)
 	{
 		for (int I = 0; I < ItemsNumber; I++) {
-			if (PanelItem[I].FindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+			const auto &Item = PanelItems[I];
+			if (Item.FindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
 				DirCount++;
 			}
 			else {
 				FileCount++;
-				FileSize+= PanelItem[I].FindData.nFileSize;
-				PhysicalSize+= PanelItem[I].FindData.nPhysicalSize
-						? PanelItem[I].FindData.nPhysicalSize
-						: PanelItem[I].FindData.nFileSize;
+				FileSize += Item.FindData.nFileSize;
+				PhysicalSize += Item.FindData.nPhysicalSize
+						? Item.FindData.nPhysicalSize : Item.FindData.nFileSize;
 			}
 		}
 	}
 
-	if (PanelItem)
-		FarFreePluginDirList(PanelItem, ItemsNumber);
+	if (PanelItems)
+		FarFreePluginDirList(PanelItems, ItemsNumber);
 
 	return (ExitCode);
 }

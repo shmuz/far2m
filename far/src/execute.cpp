@@ -185,7 +185,7 @@ bool IsDirectExecutableFilePath(const char *path)
 static void CallExec(const char *CmdStr)
 {
 	int r = execl("/bin/sh", "sh", "-c", CmdStr, NULL);
-	fprintf(stderr, "CallExec: execl returned %d errno %u\n", r, errno);
+	fprintf(stderr, "CallExec: execl returned %d errno %d\n", r, errno);
 	_exit(r);	// forget about static object, just exit
 	exit(r);
 }

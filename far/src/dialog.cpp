@@ -949,22 +949,21 @@ int Dialog::InitDialogObjects(int ID)
 const wchar_t *Dialog::GetDialogTitle()
 {
 	SCOPED_ACTION(CriticalSectionLock)(CS);
-	DialogItemEx *CurItemList = nullptr;
 
 	for (int I = 0; I < ItemCount(); I++) {
-		auto CurItem = &Items[I];
+		const auto &Item = Items[I];
 
 		// по первому попавшемуся "тексту" установим заголовок консоли!
-		if (CurItem->Type == DI_TEXT || CurItem->Type == DI_DOUBLEBOX || CurItem->Type == DI_SINGLEBOX) {
-			for (const wchar_t *Ptr = CurItem->strData; *Ptr; Ptr++)
+		if (Item.Type == DI_TEXT || Item.Type == DI_DOUBLEBOX || Item.Type == DI_SINGLEBOX) {
+			for (const wchar_t *Ptr = Item.strData; *Ptr; Ptr++)
 				if (!IsSpace(*Ptr) && !IsEol(*Ptr))
 					return Ptr;
 		}
-		else if (CurItem->Type == DI_LISTBOX && I == 0)
-			CurItemList = CurItem;
+		else if (Item.Type == DI_LISTBOX && I == 0)
+			return Item.ListPtr->GetPtrTitle();
 	}
 
-	return CurItemList ? CurItemList->ListPtr->GetPtrTitle() : nullptr;
+	return L"";
 }
 
 void Dialog::ProcessLastHistory(DialogItemEx &CurItem, int MsgIndex)
@@ -4318,24 +4317,22 @@ void Dialog::AdjustEditPos(int dx, int dy)
 	if (!DialogMode.Check(DMODE_CREATEOBJECTS))
 		return;
 
-	ScreenObject *DialogScrObject;
+	for (const auto &Item: Items) {
+		ScreenObject *ScrObject = nullptr;
 
-	for (const auto &CurItem: Items) {
-		int Type = CurItem.Type;
+		if (Item.Type == DI_LISTBOX)
+			ScrObject = Item.ListPtr;
+		else if (FarIsEdit(Item.Type))
+			ScrObject = Item.EditPtr;
 
-		if ((CurItem.EditPtr && FarIsEdit(Type)) || (CurItem.ListPtr && Type == DI_LISTBOX)) {
-			if (Type == DI_LISTBOX)
-				DialogScrObject = CurItem.ListPtr;
-			else
-				DialogScrObject = CurItem.EditPtr;
-
+		if (ScrObject) {
 			int x1, x2, y1, y2;
-			DialogScrObject->GetPosition(x1, y1, x2, y2);
+			ScrObject->GetPosition(x1, y1, x2, y2);
 			x1 += dx;
 			x2 += dx;
 			y1 += dy;
 			y2 += dy;
-			DialogScrObject->SetPosition(x1, y1, x2, y2);
+			ScrObject->SetPosition(x1, y1, x2, y2);
 		}
 	}
 

@@ -46,7 +46,7 @@ static int VTShell_ExecShell(char *const shell_argv[])
 	int r = (shell_argv[0][0] == '/')
 		? execv(shell_argv[0], shell_argv)
 		: execvp(shell_argv[0], shell_argv);
-	fprintf(stderr, "%s: exec('%s') returned %d errno %u\n",
+	fprintf(stderr, "%s: exec('%s') returned %d errno %d\n",
 		__FUNCTION__, shell_argv[0], r, errno);
 	return -1;
 }

@@ -228,7 +228,7 @@ class VTShell : VTOutputReader::IProcessor, VTInputReader::IProcessor, IVTShell
 		}
 
 		r = VTShell_Leader(shell_argv.data(), _slavename.c_str());
-		fprintf(stderr, "%s: VTShell_Leader('%s', '%s') returned %d errno %u\n",
+		fprintf(stderr, "%s: VTShell_Leader('%s', '%s') returned %d errno %d\n",
 			__FUNCTION__, shell_argv[0], _slavename.c_str(), r, errno);
 
 		int err = errno;

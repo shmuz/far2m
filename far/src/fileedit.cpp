@@ -645,30 +645,30 @@ void FileEditor::DisplayObject()
 int64_t FileEditor::VMProcess(int OpCode, void *vParam, int64_t iParam)
 {
 	if (OpCode == MCODE_V_EDITORSTATE) {
-		DWORD MacroEditState = 0;
-		MacroEditState |= soFlags.Flags & FFILEEDIT_NEW ? 0x00000001 : 0;
-		MacroEditState |= soFlags.Flags & FFILEEDIT_ENABLEF6 ? 0x00000002 : 0;
-		MacroEditState |= m_editor->soFlags.Flags & FEDITOR_MODIFIED ? 0x00000008 : 0;
-		MacroEditState |= m_editor->m_BlockStart ? 0x00000010 : 0;
-		MacroEditState |= m_editor->m_VBlockStart ? 0x00000020 : 0;
-		MacroEditState |= m_editor->soFlags.Flags & FEDITOR_WASCHANGED ? 0x00000040 : 0;
-		MacroEditState |= m_editor->soFlags.Flags & FEDITOR_OVERTYPE ? 0x00000080 : 0;
-		MacroEditState |= m_editor->soFlags.Flags & FEDITOR_CURPOSCHANGEDBYPLUGIN ? 0x00000100 : 0;
-		MacroEditState |= m_editor->soFlags.Flags & FEDITOR_LOCKMODE ? 0x00000200 : 0;
-		MacroEditState |= m_editor->m_EdOpt.PersistentBlocks ? 0x00000400 : 0;
-		MacroEditState |= Opt.OnlyEditorViewerUsed ? 0x08000000 | 0x00000800 : 0;
-		MacroEditState |= !GetCanLoseFocus() ? 0x00000800 : 0;
-		return (int64_t)MacroEditState;
+		DWORD State = 0;
+		State |= soFlags.Flags & FFILEEDIT_NEW                           ? 0x00000001 : 0;
+		State |= soFlags.Flags & FFILEEDIT_ENABLEF6                      ? 0x00000002 : 0;
+		State |= m_editor->soFlags.Flags & FEDITOR_MODIFIED              ? 0x00000008 : 0;
+		State |= m_editor->m_BlockStart                                  ? 0x00000010 : 0;
+		State |= m_editor->m_VBlockStart                                 ? 0x00000020 : 0;
+		State |= m_editor->soFlags.Flags & FEDITOR_WASCHANGED            ? 0x00000040 : 0;
+		State |= m_editor->soFlags.Flags & FEDITOR_OVERTYPE              ? 0x00000080 : 0;
+		State |= m_editor->soFlags.Flags & FEDITOR_CURPOSCHANGEDBYPLUGIN ? 0x00000100 : 0;
+		State |= m_editor->soFlags.Flags & FEDITOR_LOCKMODE              ? 0x00000200 : 0;
+		State |= m_editor->m_EdOpt.PersistentBlocks                      ? 0x00000400 : 0;
+		State |= Opt.OnlyEditorViewerUsed                                ? 0x08000000 | 0x00000800 : 0;
+		State |= !GetCanLoseFocus()                                      ? 0x00000800 : 0;
+		return State;
 	}
 
 	if (OpCode == MCODE_V_EDITORCURPOS)
-		return (int64_t)(m_editor->m_CurLine->GetCellCurPos() + 1);
+		return m_editor->m_CurLine->GetCellCurPos() + 1;
 
 	if (OpCode == MCODE_V_EDITORCURLINE)
-		return (int64_t)(m_editor->m_NumLine + 1);
+		return m_editor->m_NumLine + 1;
 
 	if (OpCode == MCODE_V_ITEMCOUNT || OpCode == MCODE_V_EDITORLINES)
-		return (int64_t)(m_editor->m_NumLastLine);
+		return m_editor->m_NumLastLine;
 
 	if (OpCode == MCODE_F_KEYBAR_SHOW)
 	{

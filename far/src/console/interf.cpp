@@ -931,7 +931,7 @@ bool ScrollBarEx(UINT X1, UINT Y1, UINT Length, UINT64 TopItem, UINT64 ItemsCoun
 		ItemsCount-= 2;
 		UINT CaretPos = static_cast<UINT>(Round(Length * TopItem, ItemsCount));
 		UINT CaretLength =
-				Max(1U, static_cast<UINT>(Round(static_cast<UINT64>(Length * Length), ItemsCount)));
+				Max(1U, static_cast<UINT>(Round(static_cast<UINT64>(Length) * Length, ItemsCount)));
 
 		if (!CaretPos && TopItem) {
 			CaretPos++;

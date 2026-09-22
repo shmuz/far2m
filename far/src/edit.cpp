@@ -2061,7 +2061,6 @@ int Edit::RealPosToCell(int Pos)
 int Edit::RealPosToCell(int PrevLength, int PrevPos, int Pos, int *CorrectPos)
 {
 	// Корректировка табов
-	bool bCorrectPos = CorrectPos && *CorrectPos;
 	if (CorrectPos)
 		*CorrectPos = 0;
 
@@ -2084,10 +2083,10 @@ int Edit::RealPosToCell(int PrevLength, int PrevPos, int Pos, int *CorrectPos)
 			if (m_Str[Index] == L'\t' && m_TabExpandMode != EXPAND_ALLTABS) {
 				// Если есть необходимость делать корректировку табов и эта корректировка
 				// ещё не проводилась, то увеличиваем длину обрабатываемой строки на единицу
-				if (bCorrectPos) {
+				if (CorrectPos) {
 					++Pos;
 					*CorrectPos = 1;
-					bCorrectPos = false;
+					CorrectPos = nullptr;
 				}
 
 				// Расчитываем длину таба с учётом настроек и текущей позиции в строке

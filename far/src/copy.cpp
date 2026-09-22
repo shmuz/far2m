@@ -235,15 +235,14 @@ static void GetTimeText(DWORD Time, FARString &strTimeText)
 
 bool CopyProgress::Timer()
 {
-	bool Result = false;
-	DWORD Time = GetProcessUptimeMSec();
+	DWORD Now = GetProcessUptimeMSec();
 
-	if (!LastWriteTime || (Time - LastWriteTime >= RedrawTimeout)) {
-		LastWriteTime = Time;
-		Result = true;
+	if (!LastWriteTime || (Now - LastWriteTime >= RedrawTimeout)) {
+		LastWriteTime = Now;
+		return true;
 	}
 
-	return Result;
+	return false;
 }
 
 void CopyProgress::Flush()
@@ -1917,7 +1916,7 @@ ShellCopy::CopySymLink(const wchar_t *ExistingName, const wchar_t *NewName, cons
 	char LinkTarget[PATH_MAX + 1];
 	ssize_t r = sdc_readlink(mbExistingName.c_str(), LinkTarget, sizeof(LinkTarget) - 1);
 	if (r <= 0 || r >= (ssize_t)sizeof(LinkTarget) || LinkTarget[0] == 0) {
-		fprintf(stderr, "CopySymLink: r=%ld errno=%u from sdc_readlink('%ls')\n", (long)r, errno,
+		fprintf(stderr, "CopySymLink: r=%ld errno=%d from sdc_readlink('%ls')\n", (long)r, errno,
 				strExistingName.CPtr());
 		return COPY_FAILURE;
 	}
@@ -2544,7 +2543,7 @@ void ShellFileTransfer::Do()
 			if (_Stopwatch < 100) {
 				if (_CopyBuffer.Size < _CopyBuffer.Capacity) {
 					_CopyBuffer.Size = std::min(_CopyBuffer.Size * 2, _CopyBuffer.Capacity);
-					fprintf(stderr, "CopyPieceSize increased to %d\n", _CopyBuffer.Size);
+					fprintf(stderr, "CopyPieceSize increased to %u\n", _CopyBuffer.Size);
 				}
 			} else if (_Stopwatch >= 1000 && _CopyBuffer.Size > (int)COPY_PIECE_MINIMAL) {
 				_CopyBuffer.Size = std::max(_CopyBuffer.Size / 2, (DWORD)COPY_PIECE_MINIMAL);
@@ -2818,7 +2817,7 @@ enum WarnDlgItems
 	WDLG_CANCEL,
 };
 
-#define DM_OPENVIEWER DM_USER + 33
+#define DM_OPENVIEWER (DM_USER + 33)
 
 LONG_PTR WINAPI WarnDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 {

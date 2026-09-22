@@ -297,5 +297,5 @@ const CHAR_INFO &SaveScreen::Read(int X, int Y) const
 		return s_dummy_out;
 	}
 
-	return ScreenBuf[ size_t(Y - Y1) * size_t(X2 - X1 + 1) + size_t(X - X1) ];
+	return ScreenBuf[ (Y - Y1) * (X2 - X1 + 1) + (X - X1) ];
 }

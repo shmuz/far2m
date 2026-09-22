@@ -301,7 +301,7 @@ namespace VTLog
 
 		int fd = open(path.c_str(), O_CREAT | O_TRUNC | O_RDWR | O_CLOEXEC, 0600);
 		if (fd==-1) {
-			fprintf(stderr, "VTLog: errno %u creating '%s'\n", errno, path.c_str() );
+			fprintf(stderr, "VTLog: errno %d creating '%s'\n", errno, path.c_str() );
 			return std::string();
 		}
 
