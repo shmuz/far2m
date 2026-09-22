@@ -117,14 +117,14 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 		case ACTL_GETFARMANAGERVERSION:
 		{
 			DWORD n = PtrAdvControl(pd->ModuleNumber, Command, NULL, NULL);
-			int arr[5] = { (n >> 16), (n & 0xFFFF) };
+			DWORD arr[5] = { n >> 24 , (n >> 16) & 0xFF, 0, n & 0xFFFF, 0 };
 			if (lua_toboolean(L, pos2))
 			{
-				for (int i=0; i < ARRAYSIZE(arr); i++)
+				for (size_t i=0; i < ARRAYSIZE(arr); i++)
 					lua_pushinteger(L, arr[i]);
 				return ARRAYSIZE(arr);
 			}
-			lua_pushfstring(L, "%d.%d.0.0.0", arr[0], arr[1]);
+			lua_pushfstring(L, "%u.%u.%u.%u.%u", arr[0], arr[1], arr[2], arr[3], arr[4]);
 			return 1;
 		}
 

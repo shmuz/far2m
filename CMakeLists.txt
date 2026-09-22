@@ -27,7 +27,9 @@ file(READ "${CMAKE_SOURCE_DIR}/packaging/version" VERSION)
 string(REGEX REPLACE "[\r\n\t ]$" "" VERSION "${VERSION}")
 string(REGEX REPLACE "^([0-9]+)\\..*" "\\1" VERSION_MAJOR "${VERSION}")
 string(REGEX REPLACE "^[0-9]+\\.([0-9]+).*" "\\1" VERSION_MINOR "${VERSION}")
-string(REGEX REPLACE "^[0-9]+\\.[0-9]+\\.(.*)" "\\1" VERSION_PATCH "${VERSION}")
+string(REGEX REPLACE "^[0-9]+\\.[0-9]+\\.(.*)" "\\1" VERSION_BUILD "${VERSION}")
+
+set(VERSION_PATCH ${VERSION_BUILD})
 
 if("${VERSION_MAJOR}" STREQUAL "" OR "${VERSION_MAJOR}" STREQUAL "${VERSION}"
     OR "${VERSION_MINOR}" STREQUAL "" OR "${VERSION_MINOR}" STREQUAL "${VERSION}"

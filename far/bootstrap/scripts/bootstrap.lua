@@ -1,5 +1,5 @@
 -- luacheck: globals
--- globals MAJOR, MINOR, PATCH, ARCH, COMMITTIME must be set from the command line
+-- globals MAJOR, MINOR, BUILD, PATCH, ARCH, COMMITTIME must be set from the command line
 local args = {...}
 
 local COPYRIGHTYEARS = "2016-" .. os.date("%Y")
@@ -11,6 +11,7 @@ local Interpolate_Table = {
   ARCH = ARCH;
   MAJOR = MAJOR;
   MINOR = MINOR;
+  BUILD = BUILD;
   PATCH = PATCH;
   -- calculated
   COPYRIGHTYEARS = COPYRIGHTYEARS;
@@ -35,7 +36,8 @@ const char *Copyright =
 ]]
 
 local function FarVersion()
-  Write(("const uint32_t FAR_VERSION = 0x10000 * %s + %s;"):format(MAJOR, MINOR))
+  Write(("const uint32_t FAR_VERSION = ((%s  & 0xFF) << 24) | ((%s & 0xFF) << 16) | (%s & 0xFFFF);")
+      :format(MAJOR, MINOR, BUILD))
   Write(("const char *FAR_BUILD = \"%s.%s.%s\";"):format(MAJOR, MINOR, PATCH))
   Write(("const uint64_t FAR_COMMITTIME = %s;"):format(COMMITTIME))
   Write(StrCopyright:format(FULLVERSION, COPYRIGHTYEARS))
