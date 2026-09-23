@@ -1366,7 +1366,7 @@ int Viewer::ProcessKey(FarKey Key)
 				OpenFile(reopenFileName, true);
 			}
 			Show();
-			return true;
+			return TRUE;
 		}
 		case KEY_F7: {
 			Search(0, 0);
@@ -1912,13 +1912,13 @@ int Viewer::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 	/* $ 12.10.2001 SKV
 	  угу, а только если он нсть, statusline...
 	*/
-	if (MouseY == (Y1 - 1) && (HostFileViewer && HostFileViewer->IsTitleBarVisible()))    // Status line
+	if (MouseY == (Y1 - 1) && HostFileViewer && HostFileViewer->IsTitleBarVisible())    // Status line
 	{
 		int XCodePage, XPos, NameLength;
 		NameLength = ObjWidth - 40;
 
-		if (Opt.ViewerEditorClock && HostFileViewer && HostFileViewer->IsFullScreen())
-			NameLength-= 6;
+		if (Opt.ViewerEditorClock && HostFileViewer->IsFullScreen())
+			NameLength -= 6;
 
 		if (NameLength < 20)
 			NameLength = 20;

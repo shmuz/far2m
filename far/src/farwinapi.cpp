@@ -264,7 +264,7 @@ FemaleBool File::QueryFileExtendedAttributes(FileExtendedAttributes &xattr)
 				any_ok = true;
 				break;
 			} else if (errno != ERANGE) {
-				fprintf(stderr, "File::QueryFileExtendedAttributes: err=%u for '%s'\n", errno,
+				fprintf(stderr, "File::QueryFileExtendedAttributes: err=%d for '%s'\n", errno,
 						i->first.c_str());
 				i = xattr.erase(i);
 				any_failed = true;
@@ -291,7 +291,7 @@ FemaleBool File::SetFileExtendedAttributes(const FileExtendedAttributes &xattr)
 		} else
 			r = sdc_fsetxattr(fd, i->first.c_str(), &i->second[0], i->second.size(), 0);
 		if (r == -1) {
-			fprintf(stderr, "File::SetFileExtendedAttributes: err=%u for '%s'\n", errno, i->first.c_str());
+			fprintf(stderr, "File::SetFileExtendedAttributes: err=%d for '%s'\n", errno, i->first.c_str());
 			any_failed = true;
 		} else
 			any_ok = true;

@@ -66,7 +66,7 @@ void FilesSuggestor::Suggest(const std::string &filter, std::vector<Suggestion> 
 
 	struct stat dir_st{};
 	if (sdc_stat(dir_path.c_str(), &dir_st) == -1) {
-		fprintf(stderr, "FilesSuggestor: error %u stat '%s'\n", errno, _dir_path.c_str());
+		fprintf(stderr, "FilesSuggestor: error %d stat '%s'\n", errno, _dir_path.c_str());
 		return;
 	}
 
@@ -88,7 +88,7 @@ void FilesSuggestor::Suggest(const std::string &filter, std::vector<Suggestion> 
 	if (need_reenumerate) {
 		WaitThread();
 		if (!StartEnum(dir_path, dir_st)) {
-			fprintf(stderr, "FilesSuggestor: thread start error %u\n", errno);
+			fprintf(stderr, "FilesSuggestor: thread start error %d\n", errno);
 			return;
 		}
 
@@ -167,7 +167,7 @@ void *FilesSuggestor::ThreadProc()
 		sdc_closedir(d);
 
 	} else {
-		fprintf(stderr, "FilesSuggestor: error %u opendir '%s'\n", errno, _dir_path.c_str());
+		fprintf(stderr, "FilesSuggestor: error %d opendir '%s'\n", errno, _dir_path.c_str());
 	}
 
 	return nullptr;

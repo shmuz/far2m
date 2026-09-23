@@ -773,16 +773,15 @@ int PluginManager::ProcessEditorEvent(int Event, void *Param, Editor *EditorInst
 	for (auto pPlugin: PluginsData)
 	{
 		int EditorID = EditorInstance->GetEditorID(); // a separate copy of EditorID for each plugin
-		if (Event == EE_CLOSE)
-			Param = &EditorID;
+		void *argParam = (Event == EE_CLOSE) ? &EditorID : Param;
 
 		if (pPlugin->HasProcessEditorEvent())
 		{
-			pPlugin->ProcessEditorEvent(Event, Param); // the return value is ignored
+			pPlugin->ProcessEditorEvent(Event, argParam); // the return value is ignored
 		}
 		else if (pPlugin->HasProcessEditorEventV3())
 		{
-			ProcessEditorEventInfo Info { sizeof(Info), Event, Param, EditorID };
+			ProcessEditorEventInfo Info { sizeof(Info), Event, argParam, EditorID };
 			pPlugin->ProcessEditorEventV3(&Info);
 		}
 	}

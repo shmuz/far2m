@@ -968,25 +968,20 @@ bool ScrollBarEx(UINT X1, UINT Y1, UINT Length, UINT64 TopItem, UINT64 ItemsCoun
 
 void ScrollBar(int X1, int Y1, int Length, unsigned int Current, unsigned int Total)
 {
-	int ThumbPos;
-
-	if ((Length-= 2) < 1)
+	Length -= 2;
+	if (Length < 1)
 		return;
 
-	if (Total > 0)
-		ThumbPos = Length * Current / Total;
-	else
-		ThumbPos = 0;
+	int ThumbPos = (Total > 0) ? (Length * Current / Total) : 0;
 
-	if (ThumbPos >= Length)
-		ThumbPos = Length - 1;
+	ThumbPos = Min(ThumbPos, Length - 1);
 
 	GotoXY(X1, Y1);
 	{
 		WCHAR StackBuffer[StackBufferSize];
 		LPWSTR HeapBuffer = nullptr;
 		LPWSTR BufPtr = StackBuffer;
-		if (static_cast<size_t>(Length + 3) >= StackBufferSize) {
+		if (Length + 3 >= static_cast<int>(StackBufferSize)) {
 			HeapBuffer = new WCHAR[Length + 3];
 			BufPtr = HeapBuffer;
 		}

@@ -226,15 +226,11 @@ void ConvertInfoPanelLinesA(const oldfar::InfoPanelLine *iplA, InfoPanelLine **p
 void FreeUnicodeInfoPanelLines(InfoPanelLine *iplW, int InfoLinesNumber)
 {
 	for (int i = 0; i < InfoLinesNumber; i++) {
-		if (iplW[i].Text)
-			free((void *)iplW[i].Text);
-
-		if (iplW[i].Data)
-			free((void *)iplW[i].Data);
+		free((void *)iplW[i].Text);
+		free((void *)iplW[i].Data);
 	}
 
-	if (iplW)
-		free((void *)iplW);
+	free((void *)iplW);
 }
 
 void ConvertPanelModesA(const oldfar::PanelMode *pnmA, PanelMode **ppnmW, int iCount)
@@ -464,6 +460,9 @@ void FreeUnicodePanelItem(PluginPanelItem *PanelItem, int ItemsNumber)
 
 void FreePanelItemA(oldfar::PluginPanelItem *PanelItem, int ItemsNumber, bool bFreeArray = true)
 {
+	if (PanelItem == nullptr)
+		return;
+
 	for (int i = 0; i < ItemsNumber; i++) {
 		if (PanelItem[i].Description)
 			free(PanelItem[i].Description);
@@ -1100,11 +1099,9 @@ int WINAPI FarMenuFnA(INT_PTR PluginNumber, int X, int Y, int MaxHeight, DWORD F
 			BreakCode, (FarMenuItem *)mi, ItemsNumber);
 
 	for (int i = 0; i < ItemsNumber; i++)
-		if (mi[i].Text)
-			free((wchar_t *)mi[i].Text);
+		free((wchar_t *)mi[i].Text);
 
-	if (mi)
-		free(mi);
+	free(mi);
 
 	return ret;
 }

@@ -75,7 +75,7 @@ void ScanTree::CheckForEnterSubdir(const FAR_FIND_DATA_EX *fdata)
 	if ((fdata->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0 || !Flags.Check(FSCANTREE_RECUR))
 		return;
 
-	if ((fdata->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0 && fmpExclSubTree.Compare(fdata->strFileName, true) )
+	if (fmpExclSubTree.Compare(fdata->strFileName, true))
 		return;
 
 	if ((fdata->dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0 && !Flags.Check(FSCANTREE_SCANSYMLINK))

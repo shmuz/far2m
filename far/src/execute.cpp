@@ -111,7 +111,7 @@ public:
 
 		struct stat s = {0};
 		if (stat(arg0.c_str(), &s) == -1) {
-			fprintf(stderr, "ExecClassifier('%s', %d) - stat error %u\n", cmd, direct, errno);
+			fprintf(stderr, "ExecClassifier('%s', %d) - stat error %d\n", cmd, direct, errno);
             if ((errno==ENOENT || errno==EACCES) && lstat(arg0.c_str(), &s) != -1)
             {
                 _brokensymlink=true;
@@ -132,7 +132,7 @@ public:
 
 		FDScope f(open(arg0.c_str(), O_RDONLY));
 		if (!f.Valid()) {
-			fprintf(stderr, "ExecClassifier('%s') - open error %u\n", cmd, errno);
+			fprintf(stderr, "ExecClassifier('%s') - open error %d\n", cmd, errno);
 			return;
 		}
 
@@ -225,7 +225,7 @@ static int NotVTExecute(const char *CmdStr, bool NoWait, bool NeedSudo)
 		perror("fork failed");
 	} else if (!NoWait) {
 		if (waitpid(pid, &r, 0) == -1) {
-			fprintf(stderr, "NotVTExecute('%s', %u): waitpid(0x%x) error %u\n", CmdStr, NoWait, pid, errno);
+			fprintf(stderr, "NotVTExecute('%s', %u): waitpid(0x%x) error %d\n", CmdStr, NoWait, pid, errno);
 			r = 1;
 		} else {
 			fprintf(stderr, "NotVTExecute('%s', %u): r=%d\n", CmdStr, NoWait, r);
