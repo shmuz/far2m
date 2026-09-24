@@ -1905,7 +1905,7 @@ void Help::ReadDocumentsHelp(int TypeIndex)
 }
 
 // Формирование топика с учетом разных факторов
-FARString &Help::MkTopic(INT_PTR PluginNumber,const wchar_t *HelpTopic,FARString &strTopic)
+FARString &Help::MkTopic(Plugin *pPlugin,const wchar_t *HelpTopic,FARString &strTopic)
 {
 	strTopic.Clear();
 
@@ -1917,9 +1917,7 @@ FARString &Help::MkTopic(INT_PTR PluginNumber,const wchar_t *HelpTopic,FARString
 		}
 		else
 		{
-			Plugin *pPlugin = (Plugin*)PluginNumber;
-
-			if (PluginNumber != -1 && pPlugin && *HelpTopic!=HelpBeginLink)
+			if (pPlugin && *HelpTopic != HelpBeginLink)
 			{
 				strTopic.Format(HelpFormatLinkModule, pPlugin->GetModuleName().CPtr(), HelpTopic);
 			}

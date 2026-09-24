@@ -737,8 +737,9 @@ static int FarMenuFnSynched(INT_PTR PluginNumber, const GUID *Id, int X, int Y, 
 
 		{
 			FARString strTopic;
+			auto pPlugin = (PluginNumber <= 0) ? nullptr : reinterpret_cast<Plugin*>(PluginNumber);
 
-			if (Help::MkTopic(PluginNumber, HelpTopic, strTopic))
+			if (Help::MkTopic(pPlugin, HelpTopic, strTopic))
 				FarMenu.SetHelp(strTopic);
 		}
 
@@ -988,7 +989,7 @@ static HANDLE FarDialogInitSynched(INT_PTR PluginNumber, const GUID *Id, int X1,
 	/* $ 29.08.2000 SVS
 	   Запомним номер плагина - сейчас в основном для формирования HelpTopic
 	*/
-	FarDialog->SetPluginNumber(PluginNumber);
+	FarDialog->SetPluginOwner(PluginNumber);
 
 	if (Id)
 		FarDialog->SetId(*Id);
@@ -1157,8 +1158,9 @@ static int FarMessageFnSynched(INT_PTR PluginNumber, const GUID *Id, DWORD Flags
 	// запоминаем топик
 	if (PluginNumber != -1) {
 		FARString strTopic;
+		auto pPlugin = reinterpret_cast<Plugin*>(PluginNumber);
 
-		if (Help::MkTopic(PluginNumber, HelpTopic, strTopic))
+		if (Help::MkTopic(pPlugin, HelpTopic, strTopic))
 			SetMessageHelp(strTopic);
 	}
 

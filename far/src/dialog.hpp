@@ -43,9 +43,11 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "frame.hpp"
 #include "vmenu.hpp"
 
-class History;
-class Editor;
+class ConsoleTitle;
 class DlgEdit;
+class Editor;
+class History;
+class Plugin;
 
 // Флаги текущего режима диалога
 enum DIALOG_MODES
@@ -201,9 +203,6 @@ struct DialogDataEx
 	const wchar_t *Data;
 };
 
-class DlgEdit;
-class ConsoleTitle;
-
 class Dialog : public Frame
 {
 	friend class DlgEdit;
@@ -213,7 +212,7 @@ class Dialog : public Frame
 
 private:
 	ChangeMacroArea Cma;
-	INT_PTR PluginNumber;		// Номер плагина, для формирования HelpTopic
+	Plugin* PluginOwner;    // Плагин, для формирования HelpTopic
 	int FocusPos;						// всегда известно какой элемент в фокусе
 	int PrevFocusPos;				// всегда известно какой элемент был в фокусе
 	int IsEnableRedraw;			// Разрешена перерисовка диалога? ( > 0 - разрешена)
@@ -354,7 +353,9 @@ public:
 
 	void InitDialog();
 	void Process();
-	void SetPluginNumber(INT_PTR NewPluginNumber) { PluginNumber = NewPluginNumber; }
+	void SetPluginOwner(INT_PTR PluginNumber) {
+		PluginOwner = PluginNumber <= 0 ? nullptr : reinterpret_cast<Plugin*>(PluginNumber);
+	}
 
 	void SetHelp(const wchar_t *Topic);
 	void ShowHelp();

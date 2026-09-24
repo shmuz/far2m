@@ -907,7 +907,7 @@ static bool GetColorDialogInner(uint64_t *color, uint64_t *mask, bool bRGB, bool
 		Dlg.SetAutomation(ID_ST_CHECKBOX_STYLE_ENABLE, sup_styles[i].id, DIF_DISABLE, DIF_NONE, DIF_NONE, DIF_DISABLE);
 	}
 
-	Dlg.SetPluginNumber(PluginNumber);
+	Dlg.SetPluginOwner(PluginNumber);
 	Dlg.Process();
 	int ExitCode = Dlg.GetExitCode();
 

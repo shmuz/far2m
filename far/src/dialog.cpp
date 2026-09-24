@@ -387,8 +387,7 @@ void Dialog::Init(FARWINDOWPROC aDlgProc,	// Диалоговая процеду
 	SetMacroArea(MACROAREA_DIALOG);
 	SetDynamicallyBorn(false);				// $OT: По умолчанию все диалоги создаются статически
 	CanLoseFocus = false;
-	// Номер плагина, вызвавшего диалог (-1 = Main)
-	PluginNumber = -1;
+	PluginOwner = nullptr;				// Плагин, вызвавший диалог (nullptr = Main)
 	DataDialog = aInitParam;
 	DialogMode.Set(DMODE_ISCANMOVE);
 	SetDropDownOpened(false);
@@ -2378,6 +2377,8 @@ bool Dialog::ProcessMoveDialog(DWORD Key)
 
 int64_t Dialog::VMProcess(int OpCode, void *vParam, int64_t iParam)
 {
+	const auto &FocusItem = Items[FocusPos];
+
 	switch (OpCode) {
 		case MCODE_F_MENU_CHECKHOTKEY:
 		case MCODE_F_MENU_GETHOTKEY:
@@ -2389,34 +2390,33 @@ int64_t Dialog::VMProcess(int OpCode, void *vParam, int64_t iParam)
 		case MCODE_F_MENU_FILTERSTR: {
 			const wchar_t *str = (const wchar_t *)vParam;
 
-			if (GetDropDownOpened() || Items[FocusPos].Type == DI_LISTBOX) {
-				if (Items[FocusPos].ListPtr)
-					return Items[FocusPos].ListPtr->VMProcess(OpCode, vParam, iParam);
-			} else if (OpCode == MCODE_F_MENU_CHECKHOTKEY)
+			if (GetDropDownOpened() || FocusItem.Type == DI_LISTBOX) {
+				if (FocusItem.ListPtr)
+					return FocusItem.ListPtr->VMProcess(OpCode, vParam, iParam);
+			}
+			else if (OpCode == MCODE_F_MENU_CHECKHOTKEY)
 				return CheckHighlights(*str, (int)iParam) + 1;
 
 			return 0;
 		}
-	}
 
-	switch (OpCode) {
 		case MCODE_C_EOF:
 		case MCODE_C_BOF:
 		case MCODE_C_SELECTED:
-		case MCODE_C_EMPTY: {
-			if (FarIsEdit(Items[FocusPos].Type)) {
-				if (Items[FocusPos].Type == DI_COMBOBOX && GetDropDownOpened())
-					return Items[FocusPos].ListPtr->VMProcess(OpCode, vParam, iParam);
+		case MCODE_C_EMPTY:
+			if (FarIsEdit(FocusItem.Type)) {
+				if (FocusItem.Type == DI_COMBOBOX && GetDropDownOpened())
+					return FocusItem.ListPtr->VMProcess(OpCode, vParam, iParam);
 				else
-					return Items[FocusPos].EditPtr->VMProcess(OpCode, vParam, iParam);
+					return FocusItem.EditPtr->VMProcess(OpCode, vParam, iParam);
 			}
-			else if (Items[FocusPos].Type == DI_LISTBOX && OpCode != MCODE_C_SELECTED)
-				return Items[FocusPos].ListPtr->VMProcess(OpCode, vParam, iParam);
+			else if (FocusItem.Type == DI_LISTBOX && OpCode != MCODE_C_SELECTED)
+				return FocusItem.ListPtr->VMProcess(OpCode, vParam, iParam);
 
 			return 0;
-		}
+
 		case MCODE_V_DLGITEMTYPE:
-			switch (auto iType = Items[FocusPos].Type) {
+			switch (FocusItem.Type) {
 				case DI_BUTTON:
 				case DI_CHECKBOX:
 				case DI_DOUBLEBOX:
@@ -2429,75 +2429,65 @@ int64_t Dialog::VMProcess(int OpCode, void *vParam, int64_t iParam)
 				case DI_TEXT:
 				case DI_USERCONTROL:
 				case DI_VTEXT:
-					return iType;
+					return FocusItem.Type;
 				case DI_COMBOBOX:
 				case DI_EDIT:
-					return iType | (DropDownOpened ? 0x8000 : 0);
+					return FocusItem.Type | (DropDownOpened ? 0x8000 : 0);
 				default:
 					return -1;
 			}
 
 		case MCODE_V_DLGINFOOWNER: // Dlg.Owner
-		{
-			if (PluginNumber == -1)
-				return 0;
-			auto Plug = reinterpret_cast<Plugin*>(PluginNumber);
-			return Plug->GetSysID();
-		}
+			return PluginOwner ? PluginOwner->GetSysID() : 0;
+
 		case MCODE_V_DLGITEMCOUNT:		// Dlg.ItemCount()
-		{
 			return ItemCount();
-		}
+
 		case MCODE_V_DLGCURPOS:		// Dlg.CurPos
-		{
 			return FocusPos + 1;
-		}
+
 		case MCODE_V_DLGPREVPOS:    // Dlg.PrevPos
-		{
 			return PrevFocusPos + 1;
-		}
+
 		case MCODE_V_DLGINFOID:		// Dlg.Info.Id
 		{
 			static FARString strId;
 			strId = GuidToString(Id);
 			return reinterpret_cast<INT64>(strId.CPtr());
 		}
+
 		case MCODE_V_ITEMCOUNT:
-		case MCODE_V_CURPOS: {
-			switch (Items[FocusPos].Type) {
+		case MCODE_V_CURPOS:
+			switch (FocusItem.Type) {
 				case DI_COMBOBOX:
 
-					if (DropDownOpened || (Items[FocusPos].Flags & DIF_DROPDOWNLIST))
-						return Items[FocusPos].ListPtr->VMProcess(OpCode, vParam, iParam);
+					if (DropDownOpened || (FocusItem.Flags & DIF_DROPDOWNLIST))
+						return FocusItem.ListPtr->VMProcess(OpCode, vParam, iParam);
 
 				case DI_EDIT:
 				case DI_PSWEDIT:
 				case DI_FIXEDIT:
-					return Items[FocusPos].EditPtr->VMProcess(OpCode, vParam, iParam);
+					return FocusItem.EditPtr->VMProcess(OpCode, vParam, iParam);
+
 				case DI_LISTBOX:
-					return Items[FocusPos].ListPtr->VMProcess(OpCode, vParam, iParam);
+					return FocusItem.ListPtr->VMProcess(OpCode, vParam, iParam);
+
 				case DI_USERCONTROL:
-
 					if (OpCode == MCODE_V_CURPOS)
-						return Items[FocusPos].UCData->Pos.X;
+						return FocusItem.UCData->Pos.X;
 
-				case DI_BUTTON:
-				case DI_CHECKBOX:
-				case DI_RADIOBUTTON:
+				default:
 					return 0;
 			}
 
-			return 0;
-		}
-		case MCODE_F_EDITOR_SEL: {
-			if (FarIsEditNoCombobox(Items[FocusPos].Type)
-					|| (Items[FocusPos].Type == DI_COMBOBOX
-							&& !(DropDownOpened || (Items[FocusPos].Flags & DIF_DROPDOWNLIST)))) {
-				return Items[FocusPos].EditPtr->VMProcess(OpCode, vParam, iParam);
+		case MCODE_F_EDITOR_SEL:
+			if (FarIsEditNoCombobox(FocusItem.Type)
+					|| (FocusItem.Type == DI_COMBOBOX
+							&& !(DropDownOpened || (FocusItem.Flags & DIF_DROPDOWNLIST))))
+			{
+				return FocusItem.EditPtr->VMProcess(OpCode, vParam, iParam);
 			}
-
 			return 0;
-		}
 	}
 
 	return 0;
@@ -2629,7 +2619,7 @@ int Dialog::ProcessKey(FarKey Key)
 			// Перед выводом диалога посылаем сообщение в обработчик
 			//   и если вернули что надо, то выводим подсказку
 			auto Topic = (const wchar_t*) DlgProc(DN_HELP, FocusPos, (LONG_PTR)HelpTopic.CPtr());
-			if (!Help::MkTopic(PluginNumber, Topic, strStr).IsEmpty()) {
+			if (!Help::MkTopic(PluginOwner, Topic, strStr).IsEmpty()) {
 				Help Hlp(strStr);
 			}
 			return TRUE;
@@ -4921,12 +4911,7 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 
 				if (di->StructSize >= offsetof(DialogInfo, Owner) + sizeof(di->Owner))
 				{
-					di->Owner = 0;
-					if (PluginNumber != -1)
-					{
-						auto Plug = reinterpret_cast<Plugin*>(PluginNumber);
-						di->Owner = Plug->GetSysID();
-					}
+					di->Owner = PluginOwner ? PluginOwner->GetSysID() : 0;
 				}
 			}
 

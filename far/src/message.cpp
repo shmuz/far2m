@@ -353,7 +353,7 @@ static int ShowMessageSynched(DWORD Flags, int Buttons, const wchar_t *Title, co
 			if (!strHelpTopic.IsEmpty())
 				Dlg.SetHelp(strHelpTopic);
 
-			Dlg.SetPluginNumber(PluginNumber);    // Запомним номер плагина
+			Dlg.SetPluginOwner(PluginNumber);    // Запомним номер плагина
 
 			if (IsWarningStyle) {
 				Dlg.SetDialogMode(DMODE_WARNINGSTYLE);

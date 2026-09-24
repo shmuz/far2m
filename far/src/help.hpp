@@ -39,6 +39,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "stddlg.hpp"
 
 class CallBackStack;
+class Plugin;
 
 #define HelpBeginLink L'<'
 #define HelpEndLink L'>'
@@ -180,5 +181,5 @@ public:
 
 	int64_t VMProcess(int OpCode,void *vParam,int64_t iParam) override;
 
-	static FARString &MkTopic(INT_PTR PluginNumber,const wchar_t *HelpTopic,FARString &strTopic);
+	static FARString &MkTopic(Plugin *pPlugin,const wchar_t *HelpTopic,FARString &strTopic);
 };
