@@ -2387,18 +2387,15 @@ int64_t Dialog::VMProcess(int OpCode, void *vParam, int64_t iParam)
 		case MCODE_F_MENU_ITEMSTATUS:
 		case MCODE_V_MENU_VALUE:
 		case MCODE_F_MENU_FILTER:
-		case MCODE_F_MENU_FILTERSTR: {
-			const wchar_t *str = (const wchar_t *)vParam;
-
+		case MCODE_F_MENU_FILTERSTR:
 			if (GetDropDownOpened() || FocusItem.Type == DI_LISTBOX) {
 				if (FocusItem.ListPtr)
 					return FocusItem.ListPtr->VMProcess(OpCode, vParam, iParam);
 			}
 			else if (OpCode == MCODE_F_MENU_CHECKHOTKEY)
-				return CheckHighlights(*str, (int)iParam) + 1;
+				return CheckHighlights(*static_cast<wchar_t*>(vParam), static_cast<int>(iParam)) + 1;
 
 			return 0;
-		}
 
 		case MCODE_C_EOF:
 		case MCODE_C_BOF:
@@ -4951,16 +4948,14 @@ LONG_PTR Dialog::SendDlgMessageSynched(int Msg, int Param1, LONG_PTR Param2)
 		$ 09.12.2001 DJ
 		для DM_USER проверять _не_надо_!
 	*/
-	if (Param1 < 0 || Param1 >= ItemCount() || Items.empty())
+	if (Param1 < 0 || Param1 >= ItemCount())
 		return 0;
 
 	size_t Len = 0;
 	DialogItemEx &CurItem = Items[Param1];
-	int Type = CurItem.Type;
-	const wchar_t *Ptr = CurItem.strData;
-
-	if (FarIsEdit(Type) && CurItem.EditPtr)
-		Ptr = CurItem.EditPtr->GetStringAddr();
+	const int Type = CurItem.Type;
+	const wchar_t *Ptr = (FarIsEdit(Type) && CurItem.EditPtr)
+			? CurItem.EditPtr->GetStringAddr() : CurItem.strData.CPtr();
 
 	switch (Msg) {
 			/*****************************************************************/
