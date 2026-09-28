@@ -14498,7 +14498,7 @@ upd:" Ownership (chown) "
 
 SetAttrOwner
 "В&ладелец:"
-"O&wner:"
+"Own&er:"
 "&Vlastník:"
 "&Besitzer:"
 "Tula&jdonos:"

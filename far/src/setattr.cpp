@@ -853,7 +853,7 @@ bool ShellSetFileAttributes(Panel *SrcPanel, LPCWSTR Object)
 	SudoClientRegion scr;
 
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
-	short DlgX = 70, DlgY = 25;
+	short DlgX = 72, DlgY = 25;
 
 	int SelCount = SrcPanel ? SrcPanel->GetSelCount() : 1;
 
@@ -869,71 +869,71 @@ bool ShellSetFileAttributes(Panel *SrcPanel, LPCWSTR Object)
 	static const wchar_t VerticalLine[] = {BoxSymbols[BS_V1], BoxSymbols[BS_V1], BoxSymbols[BS_V1], 0};
 
 	DialogDataEx AttrDlgData[] = {
-		{DI_DOUBLEBOX, 3,                   1,               short(DlgX - 4),  short(DlgY - 2), {}, 0, Msg::SetAttrTitle},
-		{DI_TEXT,      -1,                  2,               0,                2,               {}, 0, Msg::SetAttrFor},
-		{DI_TEXT,      -1,                  3,               0,                3,               {}, DIF_SHOWAMPERSAND, L""},
-		{DI_TEXT,      3,                   4,               0,                4,               {}, DIF_SEPARATOR, L""},
-		{DI_TEXT,      5,                   5,               17,               5,               {}, DIF_FOCUS, Msg::SetAttrBriefInfo}, // if symlink in will Button & need first focus here
-		{DI_EDIT,      18,                  5,               short(DlgX - 6),  5,               {}, DIF_SELECTONENTRY | DIF_FOCUS | DIF_READONLY, L""}, // not readonly only if symlink
-		{DI_TEXT,      3,                   6,               0,                6,               {}, DIF_SEPARATOR, Msg::SetAttrOwnerTitle},
-		{DI_TEXT,      5,                   7,               17,               7,               {}, 0, Msg::SetAttrOwner},
-		//{DI_EDIT,      18,                  6,               short(DlgX - 6),  6,               {}, 0, L""},
-		{DI_COMBOBOX,  18,                  7,               short(DlgX-6),    7,               {}, DIF_DROPDOWNLIST|DIF_LISTNOAMPERSAND|DIF_LISTWRAPMODE,L""},
-		{DI_TEXT,      5,                   8,               17,               8,               {}, 0, Msg::SetAttrGroup},
-		//{DI_EDIT,      18,                  7,               short(DlgX - 6),  7,               {}, 0, L""},
-		{DI_COMBOBOX,  18,                  8,               short(DlgX-6),    8,               {}, DIF_DROPDOWNLIST|DIF_LISTNOAMPERSAND|DIF_LISTWRAPMODE,L""},
+		{DI_DOUBLEBOX, 3,              1,               (DlgX - 4),  (DlgY - 2),      {}, 0, Msg::SetAttrTitle},
+		{DI_TEXT,      -1,             2,               0,           2,               {}, 0, Msg::SetAttrFor},
+		{DI_TEXT,      -1,             3,               0,           3,               {}, DIF_SHOWAMPERSAND, L""},
+		{DI_TEXT,      3,              4,               0,           4,               {}, DIF_SEPARATOR, L""},
+		{DI_TEXT,      5,              5,               17,          5,               {}, DIF_FOCUS, Msg::SetAttrBriefInfo}, // if symlink in will Button & need first focus here
+		{DI_EDIT,      18,             5,               (DlgX - 6),  5,               {}, DIF_SELECTONENTRY | DIF_FOCUS | DIF_READONLY, L""}, // not readonly only if symlink
+		{DI_TEXT,      3,              6,               0,           6,               {}, DIF_SEPARATOR, Msg::SetAttrOwnerTitle},
+		{DI_TEXT,      5,              7,               17,          7,               {}, 0, Msg::SetAttrOwner},
+		//{DI_EDIT,      18,             6,               (DlgX - 6),  6,               {}, 0, L""},
+		{DI_COMBOBOX,  18,             7,               (DlgX-6),    7,               {}, DIF_DROPDOWNLIST|DIF_LISTNOAMPERSAND|DIF_LISTWRAPMODE,L""},
+		{DI_TEXT,      5,              8,               17,          8,               {}, 0, Msg::SetAttrGroup},
+		//{DI_EDIT,      18,             7,               (DlgX - 6),  7,               {}, 0, L""},
+		{DI_COMBOBOX,  18,             8,               (DlgX-6),    8,               {}, DIF_DROPDOWNLIST|DIF_LISTNOAMPERSAND|DIF_LISTWRAPMODE,L""},
 
-		{DI_TEXT,      3,                   9,               0,                9,               {}, DIF_SEPARATOR, Msg::SetAttrModeTitle},
-		{DI_VTEXT,     39,                  10,              39,               12,              {}, DIF_BOXCOLOR, VerticalLine},
-		{DI_VTEXT,     51,                  10,              51,               12,              {}, DIF_BOXCOLOR, VerticalLine},
+		{DI_TEXT,      3,              9,               0,           9,               {}, DIF_SEPARATOR, Msg::SetAttrModeTitle},
+		{DI_VTEXT,     39,             10,              39,          12,              {}, DIF_BOXCOLOR, VerticalLine},
+		{DI_VTEXT,     52,             10,              52,          12,              {}, DIF_BOXCOLOR, VerticalLine},
 
-		{DI_TEXT,      5,                   10,              18,               10,              {}, 0, Msg::SetAttrAccessUser},
-		{DI_CHECKBOX,  19,                  10,              23,               10,              {}, DIF_3STATE, Msg::SetAttrAccessUserRead},
-		{DI_CHECKBOX,  26,                  10,              30,               10,              {}, DIF_3STATE, Msg::SetAttrAccessUserWrite},
-		{DI_CHECKBOX,  33,                  10,              37,               10,              {}, DIF_3STATE, Msg::SetAttrAccessUserExecute},
-		{DI_TEXT,      5,                   11,              18,               11,              {}, 0, Msg::SetAttrAccessGroup},
-		{DI_CHECKBOX,  19,                  11,              23,               11,              {}, DIF_3STATE, Msg::SetAttrAccessGroupRead},
-		{DI_CHECKBOX,  26,                  11,              30,               11,              {}, DIF_3STATE, Msg::SetAttrAccessGroupWrite},
-		{DI_CHECKBOX,  33,                  11,              37,               11,              {}, DIF_3STATE, Msg::SetAttrAccessGroupExecute},
-		{DI_TEXT,      5,                   12,              18,               12,              {}, 0, Msg::SetAttrAccessOther},
-		{DI_CHECKBOX,  19,                  12,              23,               12,              {}, DIF_3STATE, Msg::SetAttrAccessOtherRead},
-		{DI_CHECKBOX,  26,                  12,              30,               12,              {}, DIF_3STATE, Msg::SetAttrAccessOtherWrite},
-		{DI_CHECKBOX,  33,                  12,              37,               12,              {}, DIF_3STATE, Msg::SetAttrAccessOtherExecute},
+		{DI_TEXT,      5,              10,              18,          10,              {}, 0, Msg::SetAttrAccessUser},
+		{DI_CHECKBOX,  19,             10,              23,          10,              {}, DIF_3STATE, Msg::SetAttrAccessUserRead},
+		{DI_CHECKBOX,  26,             10,              30,          10,              {}, DIF_3STATE, Msg::SetAttrAccessUserWrite},
+		{DI_CHECKBOX,  33,             10,              37,          10,              {}, DIF_3STATE, Msg::SetAttrAccessUserExecute},
+		{DI_TEXT,      5,              11,              18,          11,              {}, 0, Msg::SetAttrAccessGroup},
+		{DI_CHECKBOX,  19,             11,              23,          11,              {}, DIF_3STATE, Msg::SetAttrAccessGroupRead},
+		{DI_CHECKBOX,  26,             11,              30,          11,              {}, DIF_3STATE, Msg::SetAttrAccessGroupWrite},
+		{DI_CHECKBOX,  33,             11,              37,          11,              {}, DIF_3STATE, Msg::SetAttrAccessGroupExecute},
+		{DI_TEXT,      5,              12,              18,          12,              {}, 0, Msg::SetAttrAccessOther},
+		{DI_CHECKBOX,  19,             12,              23,          12,              {}, DIF_3STATE, Msg::SetAttrAccessOtherRead},
+		{DI_CHECKBOX,  26,             12,              30,          12,              {}, DIF_3STATE, Msg::SetAttrAccessOtherWrite},
+		{DI_CHECKBOX,  33,             12,              37,          12,              {}, DIF_3STATE, Msg::SetAttrAccessOtherExecute},
 
-		{DI_CHECKBOX,  40,                  10,              52,               10,              {}, DIF_3STATE, Msg::SetAttrSUID},
-		{DI_CHECKBOX,  40,                  11,              52,               11,              {}, DIF_3STATE, Msg::SetAttrSGID},
-		{DI_CHECKBOX,  40,                  12,              52,               12,              {}, DIF_3STATE, Msg::SetAttrSticky},
+		{DI_CHECKBOX,  41,             10,              53,          10,              {}, DIF_3STATE, Msg::SetAttrSUID},
+		{DI_CHECKBOX,  41,             11,              53,          11,              {}, DIF_3STATE, Msg::SetAttrSGID},
+		{DI_CHECKBOX,  41,             12,              53,          12,              {}, DIF_3STATE, Msg::SetAttrSticky},
 
-		{DI_TEXT,      52,                  10,              62,               10,              {}, 0, L"O&ctal: SUGO"},
-		{DI_FIXEDIT,   59,                  11,              62,               11,              {(DWORD_PTR)L"####"}, DIF_MASKEDIT, L""},
-		{DI_BUTTON,    52,                  12,              62,               12,              {}, DIF_BTNNOCLOSE, Msg::SetAttrModeOriginal},
+		{DI_TEXT,      54,             10,              64,          10,              {}, 0, L"O&ctal: SUGO"},
+		{DI_FIXEDIT,   61,             11,              64,          11,              {(DWORD_PTR)L"####"}, DIF_MASKEDIT, L""},
+		{DI_BUTTON,    54,             12,              64,          12,              {}, DIF_BTNNOCLOSE, Msg::SetAttrModeOriginal},
 
-		{DI_TEXT,      3,                   13,              0,                13,               {}, DIF_SEPARATOR, Msg::SetAttrAttributesTitle},
-		{DI_CHECKBOX,  ColX1Of3,            14,              0,                14,               {}, DIF_FOCUS | DIF_3STATE, Msg::SetAttrImmutable},
-		{DI_CHECKBOX,  ColX2Of3,            14,              0,                14,               {}, DIF_3STATE, Msg::SetAttrAppend},
+		{DI_TEXT,      3,              13,              0,           13,              {}, DIF_SEPARATOR, Msg::SetAttrAttributesTitle},
+		{DI_CHECKBOX,  ColX1Of3,       14,              0,           14,              {}, DIF_FOCUS | DIF_3STATE, Msg::SetAttrImmutable},
+		{DI_CHECKBOX,  ColX2Of3,       14,              0,           14,              {}, DIF_3STATE, Msg::SetAttrAppend},
 #if defined(__APPLE__) || defined(__FreeBSD__) || defined(__DragonFly__)
-		{DI_CHECKBOX,  ColX3Of3,            14,              0,                14,               {}, DIF_3STATE, Msg::SetAttrHidden},
+		{DI_CHECKBOX,  ColX3Of3,       14,              0,           14,              {}, DIF_3STATE, Msg::SetAttrHidden},
 #endif
 
-		{DI_TEXT,      3,                   15,              0,                15,              {}, DIF_SEPARATOR, L""},
-		{DI_TEXT,      short(DlgX - 29),    16,              0,                16,              {}, 0, L""},
-		{DI_TEXT,      5,                   17,              0,                17,              {}, 0, Msg::SetAttrAccessTime},
-		{DI_FIXEDIT,   short(DlgX - 29),    17,              short(DlgX - 19), 17,              {}, DIF_MASKEDIT, L""},
-		{DI_FIXEDIT,   short(DlgX - 17),    17,              short(DlgX - 6),  17,              {}, DIF_MASKEDIT, L""},
-		{DI_TEXT,      5,                   18,              0,                18,              {}, 0, Msg::SetAttrModificationTime},
-		{DI_FIXEDIT,   short(DlgX - 29),    18,              short(DlgX - 19), 18,              {}, DIF_MASKEDIT, L""},
-		{DI_FIXEDIT,   short(DlgX - 17),    18,              short(DlgX - 6),  18,              {}, DIF_MASKEDIT, L""},
-		{DI_TEXT,      5,                   19,              0,                19,              {}, 0, Msg::SetAttrStatusChangeTime},
-		{DI_FIXEDIT,   short(DlgX - 29),    19,              short(DlgX - 19), 19,              {}, DIF_MASKEDIT | DIF_READONLY, L""},
-		{DI_FIXEDIT,   short(DlgX - 17),    19,              short(DlgX - 6),  19,              {}, DIF_MASKEDIT | DIF_READONLY, L""},
-		{DI_BUTTON,    0,                   20,              0,                20,              {}, DIF_CENTERGROUP | DIF_BTNNOCLOSE, Msg::SetAttrOriginal},
-		{DI_BUTTON,    0,                   20,              0,                20,              {}, DIF_CENTERGROUP | DIF_BTNNOCLOSE, Msg::SetAttrCurrent},
-		{DI_BUTTON,    0,                   20,              0,                20,              {}, DIF_CENTERGROUP | DIF_BTNNOCLOSE, Msg::SetAttrBlank},
-		{DI_TEXT,      3,                   21,              0,                21,              {}, DIF_SEPARATOR | DIF_HIDDEN, L""},
-		{DI_CHECKBOX,  5,                   22,              0,                22,              {}, DIF_DISABLE | DIF_HIDDEN, Msg::SetAttrSubfolders},
-		{DI_TEXT,      3,                   short(DlgY - 4), 0,                short(DlgY - 4), {}, DIF_SEPARATOR, L""},
-		{DI_BUTTON,    0,                   short(DlgY - 3), 0,                short(DlgY - 3), {}, DIF_DEFAULT | DIF_CENTERGROUP, Msg::SetAttrSet},
-		{DI_BUTTON,    0,                   short(DlgY - 3), 0,                short(DlgY - 3), {}, DIF_CENTERGROUP,  Msg::Cancel}
+		{DI_TEXT,      3,              15,              0,           15,              {}, DIF_SEPARATOR, L""},
+		{DI_TEXT,      (DlgX - 29),    16,              0,           16,              {}, 0, L""},
+		{DI_TEXT,      5,              17,              0,           17,              {}, 0, Msg::SetAttrAccessTime},
+		{DI_FIXEDIT,   (DlgX - 29),    17,              (DlgX - 19), 17,              {}, DIF_MASKEDIT, L""},
+		{DI_FIXEDIT,   (DlgX - 17),    17,              (DlgX - 6),  17,              {}, DIF_MASKEDIT, L""},
+		{DI_TEXT,      5,              18,              0,           18,              {}, 0, Msg::SetAttrModificationTime},
+		{DI_FIXEDIT,   (DlgX - 29),    18,              (DlgX - 19), 18,              {}, DIF_MASKEDIT, L""},
+		{DI_FIXEDIT,   (DlgX - 17),    18,              (DlgX - 6),  18,              {}, DIF_MASKEDIT, L""},
+		{DI_TEXT,      5,              19,              0,           19,              {}, 0, Msg::SetAttrStatusChangeTime},
+		{DI_FIXEDIT,   (DlgX - 29),    19,              (DlgX - 19), 19,              {}, DIF_MASKEDIT | DIF_READONLY, L""},
+		{DI_FIXEDIT,   (DlgX - 17),    19,              (DlgX - 6),  19,              {}, DIF_MASKEDIT | DIF_READONLY, L""},
+		{DI_BUTTON,    0,              20,              0,           20,              {}, DIF_CENTERGROUP | DIF_BTNNOCLOSE, Msg::SetAttrOriginal},
+		{DI_BUTTON,    0,              20,              0,           20,              {}, DIF_CENTERGROUP | DIF_BTNNOCLOSE, Msg::SetAttrCurrent},
+		{DI_BUTTON,    0,              20,              0,           20,              {}, DIF_CENTERGROUP | DIF_BTNNOCLOSE, Msg::SetAttrBlank},
+		{DI_TEXT,      3,              21,              0,           21,              {}, DIF_SEPARATOR | DIF_HIDDEN, L""},
+		{DI_CHECKBOX,  5,              22,              0,           22,              {}, DIF_DISABLE | DIF_HIDDEN, Msg::SetAttrSubfolders},
+		{DI_TEXT,      3,              (DlgY - 4),      0,   (DlgY - 4),              {}, DIF_SEPARATOR, L""},
+		{DI_BUTTON,    0,              (DlgY - 3),      0,   (DlgY - 3),              {}, DIF_DEFAULT | DIF_CENTERGROUP, Msg::SetAttrSet},
+		{DI_BUTTON,    0,              (DlgY - 3),      0,   (DlgY - 3),              {}, DIF_CENTERGROUP,  Msg::Cancel}
 	};
 	MakeDialogItemsEx(AttrDlgData, AttrDlg);
 	SetAttrDlgParam DlgParam{};
