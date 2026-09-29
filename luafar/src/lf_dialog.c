@@ -9,11 +9,11 @@
 #include "lf_string.h"
 #include "lf_util.h"
 
-const char FAR_DN_STORAGE[] = "FAR_DN_STORAGE";
+static const char FAR_DN_STORAGE[] = "FAR_DN_STORAGE";
 
-static LONG_PTR GetEnableFromLua (lua_State *L, int pos)
+static intptr_t GetEnableFromLua (lua_State *L, int pos)
 {
-	LONG_PTR ret;
+	intptr_t ret;
 	if (lua_isnoneornil(L,pos)) //get state
 		ret = -1;
 	else if (lua_isnumber(L,pos))
@@ -57,16 +57,19 @@ static flags_t GetItemFlags(lua_State* L, int flag_index, int item_index)
 	return flags;
 }
 
-static int GetDialogItemType(lua_State* L, int key, int item)
+static flags_t GetDialogItemType(lua_State* L, int key, int item)
 {
-	int ok;
+	int success;
 	lua_pushinteger(L, key);
 	lua_gettable(L, -2);
-	int iType = get_env_flag(L, -1, &ok);
-	if (!ok) {
+	flags_t iType = get_env_flag(L, -1, &success);
+
+	if (!success)
+	{
 		const char* sType = lua_tostring(L, -1);
 		return luaL_error(L, "%s - unsupported type in dialog item %d", sType, item);
 	}
+
 	lua_pop(L, 1);
 	return iType;
 }
@@ -81,54 +84,78 @@ static struct FarList* CreateList(lua_State *L, int historyindex)
 	lua_rawseti(L, historyindex, ++len);  // +1; put into "histories" table to avoid being gc'ed
 	list->ItemsNumber = n;
 	list->Items = (struct FarListItem*)(list+1);
-	for(int i=0; i<n; i++)
+
+	for (int i=0; i<n; i++)
 	{
 		struct FarListItem *p = list->Items + i;
 		lua_pushinteger(L, i+1); // +2
 		lua_gettable(L,-2);      // +2
+
 		if (lua_type(L,-1) != LUA_TTABLE)
 			luaL_error(L, "value at index %d is not a table", i+1);
+
 		p->Text = NULL;
 		lua_getfield(L, -1, "Text"); // +3
+
 		if (lua_isstring(L,-1))
 		{
-			lua_pushvalue(L,-1);                     // +4
-			p->Text = check_utf8_string(L,-1,NULL);  // +4
-			lua_rawseti(L, historyindex, ++len);     // +3
+			lua_pushvalue(L,-1);       // +4
+			p->Text = check_utf8_string(L,-1,NULL); // +4
+			lua_rawseti(L, historyindex, ++len);  // +3
 		}
+
 		lua_pop(L, 1);                 // +2
 		p->Flags = CheckFlagsFromTable(L, -1, "Flags");
 		lua_pop(L, 1);                 // +1
 	}
+
 	return list;
+}
+
+static void PushList (lua_State *L, const struct FarList *list)
+{
+	lua_createtable(L, list->ItemsNumber, 0);
+	for (int i=0; i < list->ItemsNumber; i++)
+	{
+		lua_createtable(L,0,2);
+		PutFlagsToTable(L, "Flags", list->Items[i].Flags);
+		PutWStrToTable(L, "Text", list->Items[i].Text, -1);
+		lua_rawseti(L,-2,i+1);
+		if (list->Items[i].Flags & LIF_SELECTED)
+			PutIntToTable(L, "SelectIndex", i+1);
+	}
 }
 
 // - This function, among other things, makes "conversion" from far3 to far2 API.
 // - Item table is on Lua stack top.
-static void SetFarDialogItem(lua_State *L, struct FarDialogItem* Item, int itemindex, int historyindex)
+static void SetFarDialogItem(lua_State *L, struct FarDialogItem* Item, int itemindex,
+                             int historyindex)
 {
-	++itemindex;
-	flags_t Flags = GetItemFlags(L, 9, itemindex);
-	memset(Item, 0, sizeof(*Item));
-
+	memset(Item, 0, sizeof(struct FarDialogItem));
 	// positions 1-5
-	Item->Type  = GetDialogItemType (L, 1, itemindex);
-	Item->X1    = GetIntFromArray   (L, 2);
-	Item->Y1    = GetIntFromArray   (L, 3);
-	Item->X2    = GetIntFromArray   (L, 4);
-	Item->Y2    = GetIntFromArray   (L, 5);
+	Item->Type  = GetDialogItemType(L, 1, itemindex+1);
+	Item->X1    = GetIntFromArray(L, 2);
+	Item->Y1    = GetIntFromArray(L, 3);
+	Item->X2    = GetIntFromArray(L, 4);
+	Item->Y2    = GetIntFromArray(L, 5);
+	flags_t Flags = GetItemFlags(L, 9, itemindex+1);
 
 	// position 6
-	if (Item->Type==DI_LISTBOX || Item->Type==DI_COMBOBOX) {
-		lua_pushinteger(L, 6);   // +1
-		lua_gettable(L, -2);     // +1
+	if (Item->Type==DI_LISTBOX || Item->Type==DI_COMBOBOX)
+	{
+		int SelectIndex;
+		lua_rawgeti(L, -1, 6);             // +1
+
 		if (lua_type(L,-1) != LUA_TTABLE)
-			luaLF_SlotError (L, 7, "table");
+			luaLF_SlotError(L, 6, "table");
+
 		Item->ListItems = CreateList(L, historyindex);
-		int SelectIndex = GetOptIntFromTable(L, "SelectIndex", -1);
+		SelectIndex = GetOptIntFromTable(L, "SelectIndex", -1);
+
 		if (SelectIndex > 0 && SelectIndex <= (int)lua_objlen(L,-1))
 			Item->ListItems->Items[SelectIndex-1].Flags |= LIF_SELECTED;
-		lua_pop(L,1);                    // 0
+
+		lua_pop(L,1);                      // 0
 	}
 	else if (Item->Type == DI_USERCONTROL)
 	{
@@ -180,7 +207,8 @@ static void SetFarDialogItem(lua_State *L, struct FarDialogItem* Item, int itemi
 	// position 10
 	lua_pushinteger(L, 10); // +1
 	lua_gettable(L, -2);    // +1
-	if (lua_isstring(L, -1)) {
+	if (lua_isstring(L, -1))
+	{
 		Item->PtrData = check_utf8_string (L, -1, NULL); // +1
 		size_t len = lua_objlen(L, historyindex);
 		lua_rawseti (L, historyindex, len+1); // +0; put into "histories" table to avoid being gc'ed
@@ -192,32 +220,18 @@ static void SetFarDialogItem(lua_State *L, struct FarDialogItem* Item, int itemi
 	Item->MaxLen = GetOptIntFromArray(L, 11, 0);
 }
 
-static void PushList (lua_State *L, const struct FarList *list)
-{
-	lua_createtable(L, list->ItemsNumber, 0);
-	for (int i=0; i < list->ItemsNumber; i++)
-	{
-		lua_createtable(L, 0, 2);
-		PutFlagsToTable(L, "Flags", list->Items[i].Flags);
-		PutWStrToTable(L, "Text", list->Items[i].Text, -1);
-		lua_rawseti(L, -2, i + 1);
-		if (list->Items[i].Flags & LIF_SELECTED)
-			PutIntToTable(L, "SelectIndex", i + 1);
-	}
-}
-
 // This function, among other things, makes "conversion" from far2 to far3 API
-static void PushDlgItem (lua_State *L, const struct FarDialogItem* pItem, BOOL table_exist)
+static void PushDlgItem(lua_State *L, const struct FarDialogItem* pItem, BOOL table_exist)
 {
 	if (! table_exist)
 		lua_createtable(L, 11, 0);
 
 	// position 1-5
-	PutIntToArray  (L, 1, pItem->Type);
-	PutIntToArray  (L, 2, pItem->X1);
-	PutIntToArray  (L, 3, pItem->Y1);
-	PutIntToArray  (L, 4, pItem->X2);
-	PutIntToArray  (L, 5, pItem->Y2);
+	PutIntToArray(L, 1, pItem->Type);
+	PutIntToArray(L, 2, pItem->X1);
+	PutIntToArray(L, 3, pItem->Y1);
+	PutIntToArray(L, 4, pItem->X2);
+	PutIntToArray(L, 5, pItem->Y2);
 
 	// position 6
 	if ((pItem->Type == DI_LISTBOX || pItem->Type == DI_COMBOBOX) && pItem->ListItems)
