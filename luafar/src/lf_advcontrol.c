@@ -10,13 +10,13 @@
 #include "lf_string.h"
 #include "lf_util.h"
 
-static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Command, int Delta)
+static int DoAdvControl (lua_State *L, FARAPIADVCONTROL AdvControl, int Command, int Delta)
 {
-	int pos2 = 2-Delta;
-	TPluginData* pd = GetPluginData(L);
-	intptr_t int1;
-	wchar_t buf[300];
-	COORD coord;
+	int pos2 = 2 - Delta;
+	const intptr_t ModuleNumber = GetPluginData(L)->ModuleNumber;
+	intptr_t Int1 = 0;
+	COORD Coord = {};
+	void *Param1 = NULL, *Param2 = NULL;
 
 	if (Delta == 0)
 		Command = (int) check_env_flag(L, 1);
@@ -26,6 +26,11 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 		default:
 			return luaL_argerror(L, 1, "command not supported");
 
+		case ACTL_COMMIT:
+		case ACTL_GETWINDOWCOUNT:
+		case ACTL_REDRAWALL:
+			break;
+
 		case ACTL_GETCONFIRMATIONS:
 		case ACTL_GETDESCSETTINGS:
 		case ACTL_GETDIALOGSETTINGS:
@@ -33,42 +38,36 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 		case ACTL_GETPANELSETTINGS:
 		case ACTL_GETPLUGINMAXREADDATA:
 		case ACTL_GETSYSTEMSETTINGS:
-		case ACTL_GETWINDOWCOUNT:
-		case ACTL_COMMIT:
-		case ACTL_REDRAWALL:
-			int1 = PtrAdvControl(pd->ModuleNumber, Command, NULL, NULL);
-			return lua_pushinteger(L, int1), 1;
+			break;
 
 		case ACTL_QUIT:
-			int1 = PtrAdvControl(pd->ModuleNumber, Command, (void*)luaL_optinteger(L,pos2,0), NULL);
-			return lua_pushinteger(L, int1), 1;
+			Param1 = (void*)luaL_optinteger(L, pos2, 0);
+			break;
 
 		case ACTL_SETCURRENTWINDOW:
-			int1 = luaL_checkinteger(L, pos2) - 1;
-			int1 = PtrAdvControl(pd->ModuleNumber, ACTL_SETCURRENTWINDOW, (void*)int1, NULL);
-			if (int1)
-				PtrAdvControl(pd->ModuleNumber, ACTL_COMMIT, NULL, NULL);
-			return lua_pushinteger(L, int1), 1;
+			Int1 = luaL_checkinteger(L, pos2) - 1;
+			Int1 = AdvControl(ModuleNumber, ACTL_SETCURRENTWINDOW, (void*)Int1, NULL);
+			if (Int1)
+				AdvControl(ModuleNumber, ACTL_COMMIT, NULL, NULL);
+			return lua_pushinteger(L, Int1), 1;
 
 		case ACTL_WAITKEY:
-		{
 			if (lua_isnumber(L, pos2))
-				int1 = lua_tointeger(L, pos2);
+				Int1 = lua_tointeger(L, pos2);
 			else
-				int1 = OptFlags(L, pos2, -1);
+				Int1 = OptFlags(L, pos2, -1);
 
-			if (int1 < -1) //this prevents program freeze
-				int1 = -1;
+			if (Int1 < -1) //this prevents program freeze
+				Int1 = -1;
 
-			lua_pushinteger(L, PtrAdvControl(pd->ModuleNumber, Command, (void*)int1, NULL));
-			return 1;
-		}
+			Param1 = (void*)Int1;
+			break;
 
 		case ACTL_GETCOLOR:
 		{
 			uint64_t color;
 			uintptr_t index = check_env_flag(L, pos2);
-			if (PtrAdvControl(pd->ModuleNumber, Command, (void*)index, &color))
+			if (AdvControl(ModuleNumber, Command, (void*)index, &color))
 				PushFarColor(L, color);
 			else
 				lua_pushnil(L);
@@ -87,13 +86,13 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 					lua_rawseti(L, -2, j++);
 				}
 				sd->ref = luaL_ref(L, LUA_REGISTRYINDEX);
-				lua_pushinteger(L, PtrAdvControl(pd->ModuleNumber, Command, sd, NULL));
+				lua_pushinteger(L, AdvControl(ModuleNumber, Command, sd, NULL));
 				return 1;
 			}
 			else {
 				luaL_argcheck(L, lua_isnumber(L,pos2), pos2, "integer or function expected");
 				TSynchroData *sd = CreateSynchroData(SYNCHRO_COMMON, lua_tointeger(L,pos2), NULL);
-				lua_pushinteger(L, PtrAdvControl(pd->ModuleNumber, Command, sd, NULL));
+				lua_pushinteger(L, AdvControl(ModuleNumber, Command, sd, NULL));
 				return 1;
 			}
 
@@ -103,12 +102,14 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 
 		case ACTL_GETARRAYCOLOR:
 		{
-			intptr_t size = PtrAdvControl(pd->ModuleNumber, Command, NULL, NULL);
-			uint64_t *p = (uint64_t*) lua_newuserdata(L, size * sizeof(uint64_t));
-			PtrAdvControl(pd->ModuleNumber, Command, (void*)size, p);
-			lua_createtable(L, size, 0);
-			for(int i=0; i < size; i++) {
-				PushFarColor(L, p[i]);
+			intptr_t len = AdvControl(ModuleNumber, Command, NULL, NULL);
+			uint64_t *arr = (uint64_t*) lua_newuserdata(L, len * sizeof(uint64_t));
+			AdvControl(ModuleNumber, Command, (void*)len, arr);
+			lua_createtable(L, len, 0);
+
+			for(intptr_t i=0; i < len; i++)
+			{
+				PushFarColor(L, arr[i]);
 				lua_rawseti(L, -2, i+1);
 			}
 			return 1;
@@ -116,7 +117,7 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 
 		case ACTL_GETFARMANAGERVERSION:
 		{
-			DWORD n = PtrAdvControl(pd->ModuleNumber, Command, NULL, NULL);
+			DWORD n = AdvControl(ModuleNumber, Command, NULL, NULL);
 			DWORD arr[5] = { n >> 24 , (n >> 16) & 0xFF, 0, n & 0xFFFF, 0 };
 			if (lua_toboolean(L, pos2))
 			{
@@ -134,13 +135,13 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 			memset(&wi, 0, sizeof(wi));
 			wi.Pos = luaL_optinteger(L, pos2, 0) - 1;
 
-			if (!PtrAdvControl(pd->ModuleNumber, Command, &wi, NULL))
+			if (!AdvControl(ModuleNumber, Command, &wi, NULL))
 				return lua_pushnil(L), 1;
 
 			wi.TypeName = (wchar_t*)lua_newuserdata(L, (wi.TypeNameSize + wi.NameSize) * sizeof(wchar_t));
 			wi.Name = wi.TypeName + wi.TypeNameSize;
 
-			if (!PtrAdvControl(pd->ModuleNumber, Command, &wi, NULL))
+			if (!AdvControl(ModuleNumber, Command, &wi, NULL))
 				return lua_pushnil(L), 1;
 
 			lua_createtable(L, 0, 6);
@@ -181,14 +182,14 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 				fsc.Colors[i] = GetFarColor64(L, -1);
 				lua_pop(L,1);
 			}
-			lua_pushinteger(L, PtrAdvControl(pd->ModuleNumber, Command, &fsc, NULL));
+			lua_pushinteger(L, AdvControl(ModuleNumber, Command, &fsc, NULL));
 			return 1;
 		}
 
 		case ACTL_GETFARRECT:
 		{
 			SMALL_RECT sr;
-			if (PtrAdvControl(pd->ModuleNumber, Command, &sr, NULL)) {
+			if (AdvControl(ModuleNumber, Command, &sr, NULL)) {
 				lua_createtable(L, 0, 4);
 				PutIntToTable(L, "Left",   sr.Left);
 				PutIntToTable(L, "Top",    sr.Top);
@@ -202,10 +203,10 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 		}
 
 		case ACTL_GETCURSORPOS:
-			if (PtrAdvControl(pd->ModuleNumber, Command, &coord, NULL)) {
+			if (AdvControl(ModuleNumber, Command, &Coord, NULL)) {
 				lua_createtable(L, 0, 2);
-				PutIntToTable(L, "X", coord.X);
-				PutIntToTable(L, "Y", coord.Y);
+				PutIntToTable(L, "X", Coord.X);
+				PutIntToTable(L, "Y", Coord.Y);
 			}
 			else
 				lua_pushnil(L);
@@ -215,17 +216,17 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 		case ACTL_SETCURSORPOS:
 			luaL_checktype(L, pos2, LUA_TTABLE);
 			lua_getfield(L, pos2, "X");
-			coord.X = lua_tointeger(L, -1);
+			Coord.X = (SHORT) lua_tointeger(L, -1);
 			lua_getfield(L, pos2, "Y");
-			coord.Y = lua_tointeger(L, -1);
-			lua_pushinteger(L, PtrAdvControl(pd->ModuleNumber, Command, &coord, NULL));
-			return 1;
+			Coord.Y = (SHORT) lua_tointeger(L, -1);
+			Param1 = &Coord;
+			break;
 
 		case ACTL_GETWINDOWTYPE:
 		{
 			struct WindowType wt = { sizeof(wt) };
 
-			if (PtrAdvControl(pd->ModuleNumber, Command, 0, &wt))
+			if (AdvControl(ModuleNumber, Command, 0, &wt))
 			{
 				lua_createtable(L, 0, 1);
 				PutIntToTable(L, "Type", wt.Type);
@@ -237,19 +238,30 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL PtrAdvControl, int Comma
 
 		case ACTL_GETSYSWORDDIV:
 		case ACTL_WINPORTBACKEND:
-			PtrAdvControl(pd->ModuleNumber, Command, buf, NULL);
-			return push_utf8_string(L,buf,-1), 1;
+		{
+			int size = AdvControl(ModuleNumber, Command, NULL, NULL);
+			void* buf = lua_newuserdata(L, (size + 1) * sizeof(wchar_t));
+			if (buf)
+			{
+				AdvControl(ModuleNumber, Command, buf, NULL);
+				return push_utf8_string(L, (const wchar_t*)buf, -1), 1;
+			}
+			return lua_pushnil(L), 1;
+		}
 
 		case ACTL_GETFARCOMMITTIME:
 		{
 			uint64_t commit_time = 0;
-			PtrAdvControl(pd->ModuleNumber, Command, &commit_time, NULL);
+			AdvControl(ModuleNumber, Command, &commit_time, NULL);
 			lua_pushnumber(L, commit_time);
 			return 1;
 		}
 
 		//case ACTL_KEYMACRO:  //  not supported as it's replaced by separate functions far.MacroXxx
 	}
+
+	lua_pushinteger(L, AdvControl(ModuleNumber, Command, Param1, Param2));
+	return 1;
 }
 
 static int far_AdvControl(lua_State *L) { return DoAdvControl(L, PSInfo.AdvControl, 0, 0); }

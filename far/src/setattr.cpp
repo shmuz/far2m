@@ -278,52 +278,15 @@ static void SetAttrCalcBitsCharFromModeCheckBoxes(HANDLE hDlg)
 
 void SetAttrGetModeCheckBoxesFromChar(HANDLE hDlg, wchar_t c, int _i1, int _i2, int _i3)
 {
-	switch(c) {
-		case L'0':
-			SendDlgMessage(hDlg, DM_SETCHECK, _i1, BSTATE_UNCHECKED);
-			SendDlgMessage(hDlg, DM_SETCHECK, _i2, BSTATE_UNCHECKED);
-			SendDlgMessage(hDlg, DM_SETCHECK, _i3, BSTATE_UNCHECKED);
-			break;
-		case L'1':
-			SendDlgMessage(hDlg, DM_SETCHECK, _i1, BSTATE_CHECKED);
-			SendDlgMessage(hDlg, DM_SETCHECK, _i2, BSTATE_UNCHECKED);
-			SendDlgMessage(hDlg, DM_SETCHECK, _i3, BSTATE_UNCHECKED);
-			break;
-		case L'2':
-			SendDlgMessage(hDlg, DM_SETCHECK, _i1, BSTATE_UNCHECKED);
-			SendDlgMessage(hDlg, DM_SETCHECK, _i2, BSTATE_CHECKED);
-			SendDlgMessage(hDlg, DM_SETCHECK, _i3, BSTATE_UNCHECKED);
-			break;
-		case L'3':
-			SendDlgMessage(hDlg, DM_SETCHECK, _i1, BSTATE_CHECKED);
-			SendDlgMessage(hDlg, DM_SETCHECK, _i2, BSTATE_CHECKED);
-			SendDlgMessage(hDlg, DM_SETCHECK, _i3, BSTATE_UNCHECKED);
-			break;
-		case L'4':
-			SendDlgMessage(hDlg, DM_SETCHECK, _i1, BSTATE_UNCHECKED);
-			SendDlgMessage(hDlg, DM_SETCHECK, _i2, BSTATE_UNCHECKED);
-			SendDlgMessage(hDlg, DM_SETCHECK, _i3, BSTATE_CHECKED);
-			break;
-		case L'5':
-			SendDlgMessage(hDlg, DM_SETCHECK, _i1, BSTATE_CHECKED);
-			SendDlgMessage(hDlg, DM_SETCHECK, _i2, BSTATE_UNCHECKED);
-			SendDlgMessage(hDlg, DM_SETCHECK, _i3, BSTATE_CHECKED);
-			break;
-		case L'6':
-			SendDlgMessage(hDlg, DM_SETCHECK, _i1, BSTATE_UNCHECKED);
-			SendDlgMessage(hDlg, DM_SETCHECK, _i2, BSTATE_CHECKED);
-			SendDlgMessage(hDlg, DM_SETCHECK, _i3, BSTATE_CHECKED);
-			break;
-		case L'7':
-			SendDlgMessage(hDlg, DM_SETCHECK, _i1, BSTATE_CHECKED);
-			SendDlgMessage(hDlg, DM_SETCHECK, _i2, BSTATE_CHECKED);
-			SendDlgMessage(hDlg, DM_SETCHECK, _i3, BSTATE_CHECKED);
-			break;
-		default:
-			SendDlgMessage(hDlg, DM_SETCHECK, _i1, BSTATE_3STATE);
-			SendDlgMessage(hDlg, DM_SETCHECK, _i2, BSTATE_3STATE);
-			SendDlgMessage(hDlg, DM_SETCHECK, _i3, BSTATE_3STATE);
-			break;
+	if (c -= L'0'; c >= 0 && c <= 7) {
+		SendDlgMessage(hDlg, DM_SETCHECK, _i1, (c & 1) ? BSTATE_CHECKED : BSTATE_UNCHECKED);
+		SendDlgMessage(hDlg, DM_SETCHECK, _i2, (c & 2) ? BSTATE_CHECKED : BSTATE_UNCHECKED);
+		SendDlgMessage(hDlg, DM_SETCHECK, _i3, (c & 4) ? BSTATE_CHECKED : BSTATE_UNCHECKED);
+	}
+	else {
+		SendDlgMessage(hDlg, DM_SETCHECK, _i1, BSTATE_3STATE);
+		SendDlgMessage(hDlg, DM_SETCHECK, _i2, BSTATE_3STATE);
+		SendDlgMessage(hDlg, DM_SETCHECK, _i3, BSTATE_3STATE);
 	}
 }
 
@@ -850,10 +813,10 @@ ListPwGrEnt::ListPwGrEnt(bool bGroups, int SelCount)
 
 bool ShellSetFileAttributes(Panel *SrcPanel, LPCWSTR Object)
 {
-	SudoClientRegion scr;
+	SCOPED_ACTION(SudoClientRegion);
 
 	SCOPED_ACTION(ChangePriority)(ChangePriority::NORMAL);
-	short DlgX = 72, DlgY = 25;
+	int DlgX = 72, DlgY = 25;
 
 	int SelCount = SrcPanel ? SrcPanel->GetSelCount() : 1;
 
@@ -861,12 +824,12 @@ bool ShellSetFileAttributes(Panel *SrcPanel, LPCWSTR Object)
 		return false;
 	}
 
-	const short ColX1Of3 = 5;
-	const short ColX2Of3 = ColX1Of3 + (DlgX - 3) / 3;
+	const int ColX1Of3 = 5;
+	const int ColX2Of3 = ColX1Of3 + (DlgX - 3) / 3;
 #if defined(__APPLE__) || defined(__FreeBSD__) || defined(__DragonFly__)
-	const short ColX3Of3 = ColX2Of3 + (DlgX - 3) / 3;
+	const int ColX3Of3 = ColX2Of3 + (DlgX - 3) / 3;
 #endif
-	static const wchar_t VerticalLine[] = {BoxSymbols[BS_V1], BoxSymbols[BS_V1], BoxSymbols[BS_V1], 0};
+	const wchar_t VerticalLine[] = {BoxSymbols[BS_V1], BoxSymbols[BS_V1], BoxSymbols[BS_V1], 0};
 
 	DialogDataEx AttrDlgData[] = {
 		{DI_DOUBLEBOX, 3,              1,               (DlgX - 4),  (DlgY - 2),      {}, 0, Msg::SetAttrTitle},
@@ -877,10 +840,8 @@ bool ShellSetFileAttributes(Panel *SrcPanel, LPCWSTR Object)
 		{DI_EDIT,      18,             5,               (DlgX - 6),  5,               {}, DIF_SELECTONENTRY | DIF_FOCUS | DIF_READONLY, L""}, // not readonly only if symlink
 		{DI_TEXT,      3,              6,               0,           6,               {}, DIF_SEPARATOR, Msg::SetAttrOwnerTitle},
 		{DI_TEXT,      5,              7,               17,          7,               {}, 0, Msg::SetAttrOwner},
-		//{DI_EDIT,      18,             6,               (DlgX - 6),  6,               {}, 0, L""},
 		{DI_COMBOBOX,  18,             7,               (DlgX-6),    7,               {}, DIF_DROPDOWNLIST|DIF_LISTNOAMPERSAND|DIF_LISTWRAPMODE,L""},
 		{DI_TEXT,      5,              8,               17,          8,               {}, 0, Msg::SetAttrGroup},
-		//{DI_EDIT,      18,             7,               (DlgX - 6),  7,               {}, 0, L""},
 		{DI_COMBOBOX,  18,             8,               (DlgX-6),    8,               {}, DIF_DROPDOWNLIST|DIF_LISTNOAMPERSAND|DIF_LISTWRAPMODE,L""},
 
 		{DI_TEXT,      3,              9,               0,           9,               {}, DIF_SEPARATOR, Msg::SetAttrModeTitle},
@@ -954,7 +915,6 @@ bool ShellSetFileAttributes(Panel *SrcPanel, LPCWSTR Object)
 
 		if (!(Info.Flags & OPIF_REALNAMES)) {
 			AttrDlg[SA_BUTTON_SET].Flags|= DIF_DISABLE;
-			//AttrDlg[SA_BUTTON_BRIEFINFO].Flags|= DIF_DISABLE;
 			DlgParam.Plugin = true;
 		}
 	}
