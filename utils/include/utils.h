@@ -30,7 +30,7 @@
 # define st_atim st_atimespec
 #endif
 
-#define ENV_FARSETTINGS "FARSETTINGS"
+#define ENV_FARSETTINGS "FAR2M_SETTINGS"
 
 template <class StrT>
 	size_t StrStartsFrom(const StrT &haystack, const typename StrT::value_type needle)
