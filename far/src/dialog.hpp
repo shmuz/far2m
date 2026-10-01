@@ -354,7 +354,7 @@ public:
 	void InitDialog();
 	void Process();
 	void SetPluginOwner(INT_PTR PluginNumber) {
-		PluginOwner = PluginNumber <= 0 ? nullptr : reinterpret_cast<Plugin*>(PluginNumber);
+		PluginOwner = PluginNumber == -1 ? nullptr : reinterpret_cast<Plugin*>(PluginNumber);
 	}
 
 	void SetHelp(const wchar_t *Topic);
