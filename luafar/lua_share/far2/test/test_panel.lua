@@ -82,9 +82,14 @@ local function test_Panel_SetPath()
   local adir_old = panel.GetPanelDirectory(nil,1).Name
   local pdir_old = panel.GetPanelDirectory(nil,0).Name
   --test
-  local pdir = "/bin"
+  local pdir = "/home"
   local adir = "/usr/bin"
   local afile = "ldd"
+  local termux_root = win.GetEnv("TERMUX__ROOTFS_DIR") -- Termux (Android)
+  if termux_root then
+    pdir = win.JoinPath(termux_root, pdir)
+    adir = win.JoinPath(termux_root, adir)
+  end
   asrt.istrue(Panel.SetPath(1, pdir))
   asrt.istrue(Panel.SetPath(0, adir, afile))
   asrt.eq (pdir, panel.GetPanelDirectory(nil,0).Name)
