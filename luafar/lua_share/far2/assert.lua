@@ -1,12 +1,17 @@
 local AF = "my assertion failed"
 local asrt = {}
 
-function asrt.eq(a,b,m)      assert(a == b, m or AF)               return true; end
-function asrt.neq(a,b,m)     assert(a ~= b, m or AF)               return true; end
-function asrt.lt(a,b,m)      assert(a < b,  m or AF)               return true; end
-function asrt.gt(a,b,m)      assert(a > b,  m or AF)               return true; end
-function asrt.lte(a,b,m)     assert(a <= b, m or AF)               return true; end
-function asrt.gte(a,b,m)     assert(a >= b, m or AF)               return true; end
+local function args2error(a, b, op, m)
+  local msg = ("%s: %s %s %s"):format(m or AF, tostring(a), op, tostring(b))
+  error(msg, 3)
+end
+
+function asrt.eq(a,b,m)      if a == b  then return true else args2error(a,b,"==",m) end; end
+function asrt.neq(a,b,m)     if a ~= b  then return true else args2error(a,b,"~=",m) end; end
+function asrt.lt(a,b,m)      if a < b   then return true else args2error(a,b,"<",m)  end; end
+function asrt.gt(a,b,m)      if a > b   then return true else args2error(a,b,">",m)  end; end
+function asrt.lte(a,b,m)     if a <= b  then return true else args2error(a,b,"<=",m) end; end
+function asrt.gte(a,b,m)     if a >= b  then return true else args2error(a,b,">=",m) end; end
 function asrt.num(v,m)       assert(type(v)=="number", m or AF)    return v; end
 function asrt.str(v,m)       assert(type(v)=="string", m or AF)    return v; end
 function asrt.table(v,m)     assert(type(v)=="table", m or AF)     return v; end

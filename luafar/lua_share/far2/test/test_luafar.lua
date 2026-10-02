@@ -1008,6 +1008,9 @@ function LF.test_Guids()
 
   asrt.table(far.Guids)
 
+  -- Work from TEMP directory to avoid read-only media, etc
+  asrt.istrue(panel.SetPanelDirectory(nil, 1, TmpDir))
+
   Plugin.Command(far.GetPluginId(), "far:config")
   test_one_guid( "AdvancedConfigId")
 
@@ -1051,8 +1054,11 @@ function LF.test_Guids()
   test_one_guid( "EditorReplaceId",             nil, "ShiftF4 Del Enter CtrlF7", 2)
   test_one_guid( "EditorSearchId",              nil, "ShiftF4 Del Enter F7", 2)
   test_one_guid( "EditorCanNotEditDirectoryId", nil, "ShiftF4 . . Enter", 1)
-  test_one_guid( "SelectFromEditHistoryId",     nil, "ShiftF4 A Enter Esc ShiftF4 CtrlDown", 2)
   test_one_guid( "FarAskQuitId",                nil, "F10")
+
+  local h_old = Far.DisableHistory(0x07) -- disable all histories except dialog edit
+  test_one_guid( "SelectFromEditHistoryId", nil, "ShiftF4 A Enter Esc ShiftF4 CtrlDown", 2)
+  Far.DisableHistory(h_old) -- restore the old state
 
   local myMenu
   myMenu = function() mf.mainmenu("fileassociations") end
