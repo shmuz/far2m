@@ -1797,8 +1797,17 @@ void Dialog::ShowDialog(int ID)
 				strStr = CurItem.strData;
 				LenText = LenStrItem(I, strStr);
 
-				if (!(CurItem.Flags & (DIF_SEPARATORUSER | DIF_SEPARATOR | DIF_SEPARATOR2))
-						&& (CurItem.Flags & DIF_CENTERTEXT) && CX1 != -1)
+				if (CurItem.Flags & (DIF_SEPARATORUSER | DIF_SEPARATOR | DIF_SEPARATOR2))
+				{
+					if (!strStr.IsEmpty())
+					{
+						if (!strStr.Begins(L' '))
+							strStr.Insert(0, L' ');
+						if (!strStr.Ends(L' '))
+							strStr.Append(L' ');
+					}
+				}
+				else if ((CurItem.Flags & DIF_CENTERTEXT) && CX1 != -1)
 				{
 					if (LenText < CX2 - CX1 + 1) // center text if it's length < calculated length
 						LenText = LenStrItem(I, CenterStr(strStr, strStr, CX2 - CX1 + 1));
@@ -1822,7 +1831,6 @@ void Dialog::ShowDialog(int ID)
 						&& !(CurItem.Flags & (DIF_SEPARATORUSER | DIF_SEPARATOR | DIF_SEPARATOR2))) {		// половинчатое решение
 
 					int CntChr = CX2 - CX1 + 1;
-//					SetColorNormal(Attr, CurItem.TrueColors);
 					SetColor(ItemColor[0]);
 					GotoXY(X1 + X, Y1 + Y);
 
@@ -1835,26 +1843,7 @@ void Dialog::ShowDialog(int ID)
 						strStr.TruncateByCells(CntChr);
 				}
 
-///					if (CX1 > -1 && CX2 > CX1 && !(Items.Flags & (DIF_SEPARATORUSER|DIF_SEPARATOR|DIF_SEPARATOR2))) //половинчатое решение
-///					{
-///						SetScreen({ m_Where.left + CX1, m_Where.top + Y, m_Where.left + CX2, m_Where.top + Y }, L' ', ItemColor[0]);
-						/*
-						int CntChr=CX2-CX1+1;
-						SetColor(ItemColor[0]);
-						GotoXY(X1+X, Y1+Y);
-
-						if (X1+X+CntChr-1 > X2)
-							CntChr=X2-(X1+X)+1;
-
-						Text(string(CntChr, L' '));
-
-						if (CntChr < LenText)
-							strStr.SetLength(CntChr);
-						*/
-///					}
-
 				if (CurItem.Flags & (DIF_SEPARATORUSER | DIF_SEPARATOR | DIF_SEPARATOR2)) {
-//					SetColorFrame(Attr, CurItem.TrueColors);
 					SetColor(ItemColor[2]);
 					GotoXY(X1
 									+ ((CurItem.Flags & DIF_SEPARATORUSER)
@@ -1870,7 +1859,6 @@ void Dialog::ShowDialog(int ID)
 							CurItem.strMask);
 				}
 
-//				SetColorNormal(Attr, CurItem.TrueColors);
 				SetColor(ItemColor[0]);
 				GotoXY(X1 + X, Y1 + Y);
 
