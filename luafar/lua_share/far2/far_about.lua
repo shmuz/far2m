@@ -7,9 +7,9 @@ local function os_release()
   if fp then
     local txt = fp:read("*all")
     fp:close()
-    name = txt:match("PRETTY_NAME%s*=%s*([^\n]+)")
+    name = txt:match("PRETTY_NAME%s*=%s*([^\r\n]+)")
     if name then
-      name = name:gsub("^\"(.+)\"$", "%1")
+      name = name:gsub("^[\"'](.*)[\"']$", "%1")
     end
   end
   return name
@@ -18,7 +18,7 @@ end
 local function GetLuaEngineInfo()
   if jit then
     local str = jit.version:match(("%d"):rep(10))
-    str = str and os.date(" (%Y-%m-%d)", str) or ""
+    str = str and os.date(" (%Y-%m-%d)", tonumber(str)) or ""
     return jit.version .. str
   else
     return _VERSION
