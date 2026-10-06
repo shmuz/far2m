@@ -309,7 +309,7 @@ void PushPanelItem(lua_State *L, const struct PluginPanelItem *PanelItem)
 	}
 	else {
 		lua_pushlightuserdata(L, (void*)PanelItem->UserData);
-		lua_setfield(L, -2, "UserData");
+		lua_setfield(L, -2, "ExtUserData"); // as in far3
 	}
 }
 
