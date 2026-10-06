@@ -929,7 +929,9 @@ void Help::OutString(const wchar_t *Str)
 				if (*(++Str)==L'@' && *(Str-1)!=L'@')
 					break;
 
-			Str++;
+			if (*Str)
+				Str++;
+
 			continue;
 		}
 
@@ -1011,7 +1013,9 @@ int Help::StringLen(const wchar_t *Str)
 				if (*(++Str)==L'@' && *(Str-1)!=L'@')
 					break;
 
-			Str++;
+			if (*Str)
+				Str++;
+
 			continue;
 		}
 
