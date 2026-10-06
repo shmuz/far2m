@@ -998,8 +998,15 @@ int LF_Compare(lua_State* L, HANDLE hPanel, const struct PluginPanelItem *Item1,
 	if (GetExportFunction(L, "Compare"))    //+1: Func
 	{
 		PushPluginPair(L, hPanel);           //+3: Func,Pair
-		PushPanelItem(L, Item1);             //+4
-		PushPanelItem(L, Item2);             //+5
+
+		PushPluginTable(L, hPanel);          //for obtaining UserData
+		PushPanelItem(L, Item1);
+		lua_remove(L, -2);                   //+4
+
+		PushPluginTable(L, hPanel);          //for obtaining UserData
+		PushPanelItem(L, Item2);
+		lua_remove(L, -2);                   //+5
+
 		lua_pushinteger(L, Mode);            //+6
 
 		if (0 == pcall_msg(L, 5, 1))          //+1
