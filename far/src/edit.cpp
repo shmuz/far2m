@@ -2869,7 +2869,7 @@ void EditControl::AutoComplete(bool Manual, bool DelBlock)
 		// BUGBUG, hack
 		auto Wait = WaitInMainLoop;
 		WaitInMainLoop = true;
-		if (!CtrlObject->Macro.ProcessKey(Key))
+		if (!CtrlObject->Macro.ProcessKey(Key) && pOwner)
 			pOwner->ProcessKey(Key);
 		WaitInMainLoop = Wait;
 		Show();
