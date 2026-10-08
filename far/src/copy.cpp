@@ -2907,23 +2907,23 @@ bool ShellCopy::AskOverwrite(const FAR_FIND_DATA_EX &SrcData, const wchar_t *Src
 		WARN_DLG_HEIGHT = 13,
 		WARN_DLG_WIDTH  = 72,
 	};
+	auto FlagAppend = AskAppend ? 0 : (DIF_DISABLE | DIF_HIDDEN);
 	DialogDataEx WarnCopyDlgData[] = {
-			{DI_DOUBLEBOX, 3, 1,  WARN_DLG_WIDTH - 4, WARN_DLG_HEIGHT - 2, {}, 0,                                                              Msg::Warning           },
-			{DI_TEXT,      5, 2,  WARN_DLG_WIDTH - 6, 2,                   {}, DIF_CENTERTEXT,                                                 Msg::CopyFileExist     },
-			{DI_EDIT,      5, 3,  WARN_DLG_WIDTH - 6, 3,                   {}, DIF_READONLY,                                                   (wchar_t *)DestName    },
-			{DI_TEXT,      3, 4,  0,                  4,                   {}, DIF_SEPARATOR,                                                  L""                    },
-			{DI_BUTTON,    5, 5,  WARN_DLG_WIDTH - 6, 5,                   {}, DIF_BTNNOCLOSE | DIF_NOBRACKETS,                                L""                    },
-			{DI_BUTTON,    5, 6,  WARN_DLG_WIDTH - 6, 6,                   {}, DIF_BTNNOCLOSE | DIF_NOBRACKETS,                                L""                    },
-			{DI_TEXT,      3, 7,  0,                  7,                   {}, DIF_SEPARATOR,                                                  L""                    },
-			{DI_CHECKBOX,  5, 8,  0,                  8,                   {}, DIF_FOCUS,                                                      Msg::CopyRememberChoice},
-			{DI_TEXT,      3, 9,  0,                  9,                   {}, DIF_SEPARATOR,                                                  L""                    },
+			{DI_DOUBLEBOX, 3, 1,  WARN_DLG_WIDTH - 4, WARN_DLG_HEIGHT - 2, {}, 0,                               Msg::Warning           },
+			{DI_TEXT,      5, 2,  WARN_DLG_WIDTH - 6, 2,                   {}, DIF_CENTERTEXT,                  Msg::CopyFileExist     },
+			{DI_EDIT,      5, 3,  WARN_DLG_WIDTH - 6, 3,                   {}, DIF_READONLY,                    (wchar_t *)DestName    },
+			{DI_TEXT,      3, 4,  0,                  4,                   {}, DIF_SEPARATOR,                   L""                    },
+			{DI_BUTTON,    5, 5,  WARN_DLG_WIDTH - 6, 5,                   {}, DIF_BTNNOCLOSE | DIF_NOBRACKETS, L""                    },
+			{DI_BUTTON,    5, 6,  WARN_DLG_WIDTH - 6, 6,                   {}, DIF_BTNNOCLOSE | DIF_NOBRACKETS, L""                    },
+			{DI_TEXT,      3, 7,  0,                  7,                   {}, DIF_SEPARATOR,                   L""                    },
+			{DI_CHECKBOX,  5, 8,  0,                  8,                   {}, DIF_FOCUS,                       Msg::CopyRememberChoice},
+			{DI_TEXT,      3, 9,  0,                  9,                   {}, DIF_SEPARATOR,                   L""                    },
 
-			{DI_BUTTON,    0, 10, 0,                  10,                  {}, DIF_DEFAULT | DIF_CENTERGROUP,                                  Msg::CopyOverwrite     },
-			{DI_BUTTON,    0, 10, 0,                  10,                  {}, DIF_CENTERGROUP,                                                Msg::CopySkipOvr       },
-			{DI_BUTTON,    0, 10, 0,                  10,                  {}, DIF_CENTERGROUP,                                                Msg::CopyRename        },
-			{DI_BUTTON,    0, 10, 0,                  10,                  {}, DIF_CENTERGROUP | (AskAppend ? 0 : (DIF_DISABLE | DIF_HIDDEN)),
-             Msg::CopyAppend                                                                                                                                          },
-			{DI_BUTTON,    0, 10, 0,                  10,                  {}, DIF_CENTERGROUP,                                                Msg::CopyCancelOvr     }
+			{DI_BUTTON,    0, 10, 0,                  10,                  {}, DIF_DEFAULT | DIF_CENTERGROUP,   Msg::CopyOverwrite     },
+			{DI_BUTTON,    0, 10, 0,                  10,                  {}, DIF_CENTERGROUP,                 Msg::CopySkipOvr       },
+			{DI_BUTTON,    0, 10, 0,                  10,                  {}, DIF_CENTERGROUP,                 Msg::CopyRename        },
+			{DI_BUTTON,    0, 10, 0,                  10,                  {}, DIF_CENTERGROUP | FlagAppend,    Msg::CopyAppend        },
+			{DI_BUTTON,    0, 10, 0,                  10,                  {}, DIF_CENTERGROUP,                 Msg::CopyCancelOvr     }
     };
 	FAR_FIND_DATA_EX DestData;
 	DestData.Clear();

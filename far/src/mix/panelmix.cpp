@@ -160,6 +160,7 @@ bool _MakePath1(DWORD Key, FARString &strPathName, const wchar_t *Param2, bool e
 		case KEY_ALTSHIFTBRACKET:		// Вставить реальный (разрешенный) путь из активной панели
 		case KEY_ALTSHIFTBACKBRACKET:	// Вставить реальный (разрешенный) путь из пассивной панели
 			NeedRealName = true;
+			[[fallthrough]];
 		case KEY_CTRLBRACKET:			// Вставить путь из левой панели
 		case KEY_CTRLBACKBRACKET:		// Вставить путь из правой панели
 		case KEY_CTRLSHIFTBRACKET:		// Вставить путь из активной панели
@@ -214,7 +215,7 @@ bool _MakePath1(DWORD Key, FARString &strPathName, const wchar_t *Param2, bool e
 					AddEndSlash(strPathName);
 				}
 
-				if (escaping & Opt.QuotedName & QUOTEDNAME_INSERT)
+				if (escaping && (Opt.QuotedName & QUOTEDNAME_INSERT))
 					EscapeSpace(strPathName);
 
 				if (Param2)

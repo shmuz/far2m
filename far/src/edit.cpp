@@ -544,7 +544,7 @@ bool Edit::ProcessInsPath(FarKey Key, int PrevSelStart, int PrevSelEnd)
 			RetCode = true;
 	}
 	else {                                          // Пути/имена?
-		RetCode = _MakePath1(Key, Data.Folder, L"", false); // 0 - always not escaping path names
+		RetCode = _MakePath1(Key, Data.Folder, nullptr, false); // always not escaping path names
 	}
 
 	// Если что-нить получилось, именно его и вставим (PathName)

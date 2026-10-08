@@ -718,9 +718,9 @@ void KeyMacro::CallFar(int CheckCode, const FarMacroCall* Data)
 		case MCODE_V_APANEL_UNCPATH: // APanel.UNCPath
 		case MCODE_V_PPANEL_UNCPATH: // PPanel.UNCPath
 		{
-			const wchar_t *ptr = L"";
-			if (_MakePath1(CheckCode == MCODE_V_APANEL_UNCPATH ? KEY_ALTSHIFTBRACKET : KEY_ALTSHIFTBACKBRACKET,
-					tmpStr, L""))
+			auto ptr = L"";
+			auto key = CheckCode == MCODE_V_APANEL_UNCPATH ? KEY_ALTSHIFTBRACKET : KEY_ALTSHIFTBACKBRACKET;
+			if (_MakePath1(key, tmpStr))
 			{
 				UnquoteExternal(tmpStr);
 				DeleteEndSlash(tmpStr);

@@ -286,36 +286,36 @@ FileEditor::FileEditor(const wchar_t *Name, UINT codepage, DWORD InitFlags, int 
 }
 
 FileEditor::FileEditor(const wchar_t *Name, UINT codepage, DWORD InitFlags, int StartLine, int StartChar,
-		const wchar_t *Title, int X1, int Y1, int X2, int Y2, int OpenModeExstFile)
+		const wchar_t *Title, int x1, int y1, int x2, int y2, int OpenModeExstFile)
 	:
 	BadConversion(false), SaveAsTextFormat(0)
 {
 	soFlags.Set(InitFlags);
 
-	if (X1 < 0)
-		X1 = 0;
+	if (x1 < 0)
+		x1 = 0;
 
-	if (X2 < 0 || X2 > ScrX)
-		X2 = ScrX;
+	if (x2 < 0 || x2 > ScrX)
+		x2 = ScrX;
 
-	if (Y1 < 0)
-		Y1 = 0;
+	if (y1 < 0)
+		y1 = 0;
 
-	if (Y2 < 0 || Y2 > ScrY)
-		Y2 = ScrY;
+	if (y2 < 0 || y2 > ScrY)
+		y2 = ScrY;
 
-	if (X1 >= X2) {
-		X1 = 0;
-		X2 = ScrX;
+	if (x1 >= x2) {
+		x1 = 0;
+		x2 = ScrX;
 	}
 
-	if (Y1 >= Y2) {
-		Y1 = 0;
-		Y2 = ScrY;
+	if (y1 >= y2) {
+		y1 = 0;
+		y2 = ScrY;
 	}
 
-	ScreenObject::SetPosition(X1, Y1, X2, Y2);
-	soFlags.Change(FFILEEDIT_FULLSCREEN, (!X1 && !Y1 && X2 == ScrX && Y2 == ScrY));
+	ScreenObject::SetPosition(x1, y1, x2, y2);
+	soFlags.Change(FFILEEDIT_FULLSCREEN, (!x1 && !y1 && x2 == ScrX && y2 == ScrY));
 	Init(Name, codepage, Title, InitFlags, StartLine, StartChar, L"", OpenModeExstFile);
 }
 

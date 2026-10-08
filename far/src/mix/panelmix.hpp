@@ -39,7 +39,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 void ShellUpdatePanels(Panel *SrcPanel, bool NeedSetUpADir = false);
 bool CheckUpdateAnotherPanel(Panel *SrcPanel, const wchar_t *SelName);
 
-bool _MakePath1(DWORD Key, FARString &strPathName, const wchar_t *Param2, bool escaping = true);
+bool _MakePath1(DWORD Key, FARString &strPathName, const wchar_t *Param2 = nullptr, bool escaping = true);
 
 const FARString FormatStr_Attribute(DWORD FileAttributes, DWORD UnixMode, int Width=-1);
 const FARString FormatStr_DateTime(const FILETIME *FileTime,int ColumnType,DWORD Flags,int Width);

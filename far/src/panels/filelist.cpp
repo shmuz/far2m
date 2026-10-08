@@ -1287,7 +1287,7 @@ int FileList::ProcessKey(FarKey Key)
 		{
 			FARString strPanelDir;
 
-			if (_MakePath1(Key, strPanelDir, L""))
+			if (_MakePath1(Key, strPanelDir))
 				CtrlObject->CmdLine->InsertString(strPanelDir);
 
 			return TRUE;
