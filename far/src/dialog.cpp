@@ -971,16 +971,15 @@ void Dialog::ProcessLastHistory(DialogItemEx &CurItem, int MsgIndex)
 	FARString &strData = CurItem.strData;
 
 	if (strData.IsEmpty()) {
-		FARString strRegKey = fmtSavedDialogHistory;
-		strRegKey+= CurItem.strHistory;
-		History::ReadLastItem(strRegKey.GetMB().c_str(), strData);
+		FARString strRegKey = fmtSavedDialogHistory + CurItem.strHistory;
+		History::ReadLastItem(strRegKey, strData);
 
 		if (MsgIndex != -1) {
 			// обработка DM_SETHISTORY => надо пропустить изменение текста через
 			// диалоговую функцию
 			FarDialogItemData IData;
 			IData.PtrData = const_cast<wchar_t *>(strData.CPtr());
-			IData.PtrLength = (int)strData.GetLength();
+			IData.PtrLength = strData.GetLength();
 			SendDlgMessage(DM_SETTEXT, MsgIndex, (LONG_PTR)&IData);
 		}
 	}

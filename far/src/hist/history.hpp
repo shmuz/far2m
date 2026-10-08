@@ -79,22 +79,11 @@ struct HistoryRecord
 {
 	int Type  = HR_DEFAULT;
 	bool Lock = false;
-	bool Marked = false;
 	FARString strName;
 	FARString strExtra;
+	//FARString strPluginFile;
 	FILETIME Timestamp{};
-
-	const HistoryRecord &operator=(const HistoryRecord &rhs)
-	{
-		if (this != &rhs) {
-			strName = rhs.strName;
-			strExtra = rhs.strExtra;
-			Type = rhs.Type;
-			Lock = rhs.Lock;
-			Timestamp = rhs.Timestamp;
-		}
-		return *this;
-	}
+	//uint32_t PluginId = SYSID_FAR;
 };
 
 class History
@@ -133,7 +122,7 @@ public:
 public:
 	void AddToHistory(const wchar_t *Str, const wchar_t *Extra = nullptr, int Type = HR_DEFAULT,
 		const wchar_t *Prefix = nullptr);
-	static bool ReadLastItem(const char *RegKey, FARString &strStr);
+	static bool ReadLastItem(const FARString &RegKey, FARString &strStr);
 	int Select(FARString &strOut, int &TypeOut);
 	int Select(VMenu &HistoryMenu, Dialog *Dlg, FARString &strOut);
 	void GetPrev(FARString &strStr);

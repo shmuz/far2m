@@ -193,8 +193,6 @@ int ShowMultilinePasteDialog(FARString &text)
 	const int dlg_h = Max(min_height, Min(ScrY - 2, Max(20, (ScrY * 2) / 3)));
 	const int sep_y = dlg_h - 4;
 	const int btn_y = dlg_h - 3;
-//	const int dlg_w = Max(min_width, Min(ScrX - 2, 76));
-//	const int dlg_h = Max(min_height, Min(ScrY - 2, 20));
 
 	DialogDataEx DlgData[] = {
 		{DI_DOUBLEBOX, 3, 1, (dlg_w - 4), (dlg_h - 2), {}, 0, Msg::MultilinePaste},
@@ -216,11 +214,11 @@ int ShowMultilinePasteDialog(FARString &text)
 
 	int exit_code = Dlg.GetExitCode();
 	if (exit_code == MP_BTN_EXEC || exit_code == MP_BTN_EXEC_NOASK) {
-		int len = (int)SendDlgMessage((HANDLE)&Dlg, DM_GETTEXTLENGTH, MP_MEMO);
+		size_t len = (size_t)SendDlgMessage((HANDLE)&Dlg, DM_GETTEXTLENGTH, MP_MEMO);
 		if (len > 0) {
 			FARString edited;
 			wchar_t *buf = edited.GetBuffer(len + 1);
-			FarDialogItemData data = {(size_t)len, buf};
+			FarDialogItemData data = {len, buf};
 			SendDlgMessage((HANDLE)&Dlg, DM_GETTEXT, MP_MEMO, (LONG_PTR)&data);
 			edited.ReleaseBuffer(len);
 			text = edited;

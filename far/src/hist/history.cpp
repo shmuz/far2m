@@ -253,10 +253,10 @@ bool History::SaveHistory()
 	return ret;
 }
 
-bool History::ReadLastItem(const char *RegKey, FARString &Str)
+bool History::ReadLastItem(const FARString &RegKey, FARString &Str)
 {
 	Str.Clear();
-	ConfigReader cfg_reader(RegKey);
+	ConfigReader cfg_reader(RegKey.GetMB().c_str());
 	return cfg_reader.HasSection() && cfg_reader.GetString(Str, NKeyLastItem);
 }
 
@@ -295,8 +295,7 @@ bool History::ReadHistory()
 
 	size_t LinesPos = 0, TypesPos = 0, LocksPos = 0, TimePos = 0, ExtrasPos = 0;
 	for (size_t Count=0; LinesPos < strLines.GetLength() && Count < mMaxCount; Count++) {
-		mList.push_front(HistoryRecord());
-		auto &AddRecord = mList.front();
+		auto &AddRecord = mList.emplace_front();
 
 		if (Version == SAVE_VERSION) {
 			if (ExtractHistoryString(AddRecord.strName, strLines, LinesPos)) {
@@ -546,22 +545,19 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 				case KEY_CTRLR:    // обновить с удалением недоступных
 					if (mHistoryType == HISTORYTYPE_FOLDER || mHistoryType == HISTORYTYPE_VIEW)
 					{
-						int DelCount = 0;
+						std::vector<std::list<HistoryRecord>::iterator> to_remove;
 
-						for (auto &Item: mList) {
-							Item.Marked = !Item.Lock && apiGetFileAttributes(Item.strName) == INVALID_FILE_ATTRIBUTES;
-							if (Item.Marked)
-								++DelCount;
+						for (auto it = mList.begin(); it != mList.end(); ++it) {
+							if (!it->Lock && apiGetFileAttributes(it->strName) == INVALID_FILE_ATTRIBUTES)
+								to_remove.push_back(it);
 						}
 
+						int DelCount = (int)to_remove.size();
 						if (DelCount && 0 == Message(MSG_WARNING, 2, Title,
 								FARString().Format(Msg::HistoryRefreshConfirm, DelCount), Msg::Ok, Msg::Cancel))
 						{
-							for (auto Item = mList.begin(); Item != mList.end(); ) {
-								if (Item->Marked)
-									Item = mList.erase(Item);
-								else
-									++Item;
+							for (auto it : to_remove) {
+								mList.erase(it); //with std::list, other iterators aren't invalidated
 							}
 							SaveHistory();
 							HistoryMenu.Modal::SetExitCode(Pos.SelectPos);

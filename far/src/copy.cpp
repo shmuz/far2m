@@ -1333,7 +1333,7 @@ LONG_PTR WINAPI CopyDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 			bool MultiCopy = SendDlgMessage(hDlg, DM_GETCHECK, ID_SC_MULTITARGET) == BSTATE_CHECKED;
 			FARString strOldFolder;
 			FarDialogItemData Data;
-			int nLength = (int)SendDlgMessage(hDlg, DM_GETTEXTLENGTH, ID_SC_TARGETEDIT);
+			size_t nLength = (size_t)SendDlgMessage(hDlg, DM_GETTEXTLENGTH, ID_SC_TARGETEDIT);
 			Data.PtrData = strOldFolder.GetBuffer(nLength + 1);
 			Data.PtrLength = nLength;
 			SendDlgMessage(hDlg, DM_GETTEXT, ID_SC_TARGETEDIT, (LONG_PTR)&Data);
