@@ -329,6 +329,8 @@ public:
 
 	virtual long GetFileCount() const { return 0; }
 
+	bool ExecShortcutFolder(const FARString &Folder, const FARString &PluginFile,
+			const FARString &PluginData, uint32_t  PluginId);
 	bool ExecShortcutFolder(int Pos);
 	bool SaveShortcutFolder(int Pos);
 

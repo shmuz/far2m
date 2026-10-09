@@ -4112,7 +4112,7 @@ bool Dialog::SelectFromEditHistory(DialogItemEx &CurItem, DlgEdit *EditLine, con
 	if (!EditLine)
 		return false;
 
-	FARString strStr;
+	HistoryRecord OutRec;
 	int ret = HRT_CANCEL;
 	FARString strRegKey = fmtSavedDialogHistory;
 	strRegKey+= HistoryName;
@@ -4122,7 +4122,7 @@ bool Dialog::SelectFromEditHistory(DialogItemEx &CurItem, DlgEdit *EditLine, con
 	{
 		// создание пустого вертикального меню
 		VMenu HistoryMenu(L"", nullptr, 0, Opt.Dialogs.CBoxMaxHeight,
-				VMENU_ALWAYSSCROLLBAR | VMENU_COMBOBOX | VMENU_NOTCHANGE);
+				VMENU_ALWAYSSCROLLBAR | VMENU_COMBOBOX | VMENU_NOTCHANGE, nullptr, this);
 		HistoryMenu.SetFlags(VMENU_SHOWAMPERSAND);
 		HistoryMenu.SetBoxType(SHORT_SINGLE_BOX);
 		HistoryMenu.SetId(SelectFromEditHistoryId);
@@ -4132,7 +4132,7 @@ bool Dialog::SelectFromEditHistory(DialogItemEx &CurItem, DlgEdit *EditLine, con
 		SetDropDownOpened(true);		// Установим флаг "открытия" комбобокса.
 		DlgProc(DN_DROPDOWNOPENED, FocusPos, 1);
 
-		ret = DlgHist.Select(HistoryMenu, this, strStr);
+		ret = DlgHist.Select(HistoryMenu, OutRec);
 
 		SetDropDownOpened(false);		// Установим флаг "закрытия" комбобокса.
 		DlgProc(DN_DROPDOWNOPENED, FocusPos, 0);
@@ -4141,7 +4141,7 @@ bool Dialog::SelectFromEditHistory(DialogItemEx &CurItem, DlgEdit *EditLine, con
 	}
 
 	if (ret != HRT_CANCEL) {
-		EditLine->SetString(strStr);
+		EditLine->SetString(OutRec.strName);
 		EditLine->SetLeftPos(0);
 		EditLine->SetClearFlag(false);
 		Redraw();

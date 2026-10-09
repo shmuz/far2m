@@ -1986,11 +1986,16 @@ bool Panel::SaveShortcutFolder(int Pos)
 bool Panel::ExecShortcutFolder(int Pos)
 {
 	BookmarkData Data;
-	if (!Bookmarks().Get(Pos, Data))
-		return false;
+	return Bookmarks().Get(Pos, Data)
+		&& ExecShortcutFolder(Data.Folder, Data.PluginFile, Data.PluginData, Data.PluginId);
+}
 
+bool Panel::ExecShortcutFolder(const FARString &aFolder, const FARString &aPluginFile,
+			const FARString &aPluginData, uint32_t aPluginId)
+{
 	Panel *SrcPanel = this;
 	Panel *AnotherPanel = CtrlObject->Cp()->GetAnotherPanel(this);
+	FARString strPluginFile;
 
 	switch (GetType()) {
 		case TREE_PANEL:
@@ -2003,31 +2008,31 @@ bool Panel::ExecShortcutFolder(int Pos)
 
 	bool CheckFullScreen = SrcPanel->IsFullScreen();
 
-	if (Data.PluginId != SYSID_FAR)
+	if (aPluginId != SYSID_FAR)
 	{
-		if (!Data.PluginFile.IsEmpty())
+		if (!aPluginFile.IsEmpty())
 		{
-			apiExpandEnvironmentStrings(Data.PluginFile, Data.PluginFile);
+			apiExpandEnvironmentStrings(aPluginFile, strPluginFile);
 
-			if (CheckShortcutFolder(Data.PluginFile, true) != 1)
+			if (CheckShortcutFolder(strPluginFile, true) != 1)
 				return true;
 
 			/* Своеобразное решение BugZ#50 */
-			FARString strRealDir = Data.PluginFile;
+			FARString strRealDir = strPluginFile;
 
 			if (CutToSlash(strRealDir)) {
 				SrcPanel->SetCurDir(strRealDir, true);
-				SrcPanel->GoToFile(PointToName(Data.PluginFile));
+				SrcPanel->GoToFile(PointToName(strPluginFile));
 				SrcPanel->ClearAllItem();
 			}
 
 			if (auto flist = dynamic_cast<FileList*>(SrcPanel)) {
-				auto pPlugin = CtrlObject->Plugins.FindPlugin(Data.PluginId);
-				flist->OpenFilePlugin(Data.PluginFile, false, OFP_SHORTCUT, nullptr, pPlugin);    //???
+				auto pPlugin = CtrlObject->Plugins.FindPlugin(aPluginId);
+				flist->OpenFilePlugin(strPluginFile, false, OFP_SHORTCUT, nullptr, pPlugin);    //???
 			}
 
-			if (!Data.Folder.IsEmpty())
-				SrcPanel->SetCurDir(Data.Folder, false);
+			if (!aFolder.IsEmpty())
+				SrcPanel->SetCurDir(aFolder, false);
 
 			SrcPanel->Show();
 		}
@@ -2036,10 +2041,10 @@ bool Panel::ExecShortcutFolder(int Pos)
 			if (CtrlObject->Cp()->ActivePanel->ProcessPluginEvent(FE_CLOSE))
 				return true;
 
-			auto pPlugin = CtrlObject->Plugins.FindPlugin(Data.PluginId);
+			auto pPlugin = CtrlObject->Plugins.FindPlugin(aPluginId);
 			if (pPlugin && pPlugin->HasOpenPlugin())
 			{
-				PHPTR hNewPlugin = CtrlObject->Plugins.OpenPlugin(pPlugin, OPEN_SHORTCUT, Data.PluginData.CPtr());
+				PHPTR hNewPlugin = CtrlObject->Plugins.OpenPlugin(pPlugin, OPEN_SHORTCUT, aPluginData);
 
 				if (hNewPlugin) {
 					int CurFocus = SrcPanel->GetFocus();
@@ -2048,8 +2053,8 @@ bool Panel::ExecShortcutFolder(int Pos)
 					NewPanel->SetPluginMode(hNewPlugin, L"",
 							CurFocus || !CtrlObject->Cp()->GetAnotherPanel(NewPanel)->IsVisible());
 
-					if (!Data.Folder.IsEmpty())
-						CtrlObject->Plugins.SetDirectory(hNewPlugin, Data.Folder, OPM_NONE);
+					if (!aFolder.IsEmpty())
+						CtrlObject->Plugins.SetDirectory(hNewPlugin, aFolder, OPM_NONE);
 
 					NewPanel->Update(0);
 					NewPanel->Show();
@@ -2060,7 +2065,7 @@ bool Panel::ExecShortcutFolder(int Pos)
 		return true;
 	}
 
-	if (CheckShortcutFolder(Data.PluginFile, true) != 1)
+	if (CheckShortcutFolder(strPluginFile, true) != 1)
 		return true;
 
 	/*
@@ -2070,7 +2075,7 @@ bool Panel::ExecShortcutFolder(int Pos)
 	}
 	*/
 
-	SrcPanel->SetCurDir(Data.Folder, true);
+	SrcPanel->SetCurDir(aFolder, true);
 
 	if (CheckFullScreen != SrcPanel->IsFullScreen())
 		CtrlObject->Cp()->GetAnotherPanel(SrcPanel)->Show();

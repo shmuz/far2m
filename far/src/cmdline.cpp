@@ -509,14 +509,15 @@ int CommandLine::ProcessKey(FarKey Key)
 		case KEY_ALTF8:
 		{
 			int Type;
-			int SelectType=CtrlObject->CmdHistory->Select(strStr, Type);
+			HistoryRecord RecOut;
+			int SelectType=CtrlObject->CmdHistory->Select(RecOut, Type);
 			switch (SelectType)
 			{
 				case HRT_ENTER:
 				case HRT_SHIFTENTER:
 				case HRT_CTRLALTENTER:
 					CmdStr.DisableAC();
-					SetString(strStr);
+					SetString(RecOut.strName);
 					ProcessKey(SelectType == HRT_CTRLALTENTER ? FarKey(KEY_CTRLALTENTER)
 						: SelectType == HRT_ENTER ? FarKey(KEY_ENTER)
 						: FarKey(KEY_SHIFTENTER));
@@ -524,7 +525,7 @@ int CommandLine::ProcessKey(FarKey Key)
 					break;
 
 				case HRT_CTRLENTER:
-					SetString(strStr);
+					SetString(RecOut.strName);
 					break;
 			}
 			return TRUE;
@@ -583,40 +584,39 @@ int CommandLine::ProcessKey(FarKey Key)
 		case KEY_ALTF12:
 		{
 			int Type;
-			int SelectType=CtrlObject->FolderHistory->Select(strStr, Type);
-
+			HistoryRecord RecOut;
+			int SelectType=CtrlObject->FolderHistory->Select(RecOut, Type);
 			if (SelectType == HRT_ENTER || SelectType == HRT_SHIFTENTER || SelectType == HRT_CTRLSHIFTENTER)
 			{
 				if (SelectType == HRT_SHIFTENTER)
 					CtrlObject->FolderHistory->SetAddMode(false, HRD_CASESENS, true);
 
-				// пусть плагин сам прыгает... ;-)
-				Panel *Panel=CtrlObject->Cp()->ActivePanel;
+				Panel *TargetPanel = CtrlObject->Cp()->ActivePanel;
 
 				if (SelectType == HRT_CTRLSHIFTENTER) // на пассивную панель со сменой позиции
-					Panel=CtrlObject->Cp()->GetAnotherPanel(Panel);
+					TargetPanel = CtrlObject->Cp()->GetAnotherPanel(TargetPanel);
 
-				//Type==1 - плагиновый путь
-				//Type==0 - обычный путь
-				//если путь плагиновый то сначала попробуем запустить его (а вдруг там префикс)
-				//ну а если путь не плагиновый то запускать его точно не надо
-				if (!Type || !CtrlObject->Plugins.ProcessCommandLine(strStr, Panel))
+				if (RecOut.PluginId == SYSID_FAR)
 				{
-					if (Panel->GetMode() == PLUGIN_PANEL || CheckShortcutFolder(strStr, false))
+					if (TargetPanel->GetMode() == PLUGIN_PANEL || CheckShortcutFolder(RecOut.strName, false))
 					{
-						Panel->SetCurDir(strStr, Type ? false:true);
+						TargetPanel->SetCurDir(RecOut.strName, Type == 0);
 						// restore current directory to active panel path
 						if(SelectType == HRT_CTRLSHIFTENTER)
 						{
 							CtrlObject->Cp()->ActivePanel->SetCurPath();
 						}
-						Panel->Redraw();
+						TargetPanel->Redraw();
 						CtrlObject->FolderHistory->SetAddMode(true, HRD_CASESENS, true);
 					}
 				}
+				else
+				{
+					TargetPanel->ExecShortcutFolder(RecOut.strName, RecOut.strFile, RecOut.strData, RecOut.PluginId);
+				}
 			}
 			else if (SelectType == HRT_CTRLENTER)
-				SetString(strStr);
+				SetString(RecOut.strName);
 		}
 		return TRUE;
 
@@ -641,7 +641,7 @@ int CommandLine::ProcessKey(FarKey Key)
 			if (!(Opt.ExcludeCmdHistory & EXCLUDECMDHISTORY_NOTCMDLINE)) {
 				FARString curDir;
 				ActivePanel->GetCurDirPluginAware(curDir);
-				CtrlObject->CmdHistory->AddToHistory(strStr, curDir);
+				CtrlObject->CmdHistory->AddToHistory(strStr, HR_DEFAULT, curDir);
 			}
 
 			if (ActivePanel->ProcessPluginEvent(FE_COMMAND, (void *)strStr.CPtr())) {
@@ -948,14 +948,15 @@ void CommandLine::GetPrompt(FARString &strDestStr)
 
 void CommandLine::ShowViewEditHistory()
 {
-	FARString strStr;
+	HistoryRecord RecOut;
 	int Type;
-	int SelectType=CtrlObject->ViewHistory->Select(strStr, Type);
+	int SelectType=CtrlObject->ViewHistory->Select(RecOut, Type);
+	const FARString &strStr = RecOut.strName;
 
 	if (SelectType == HRT_ENTER || SelectType == HRT_SHIFTENTER)
 	{
 		if (SelectType == HRT_ENTER)
-			CtrlObject->ViewHistory->AddToHistory(strStr, nullptr, Type);
+			CtrlObject->ViewHistory->AddToHistory(strStr, Type);
 
 		CtrlObject->ViewHistory->SetAddMode(false, HRD_CASESENS, true);
 

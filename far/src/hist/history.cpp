@@ -49,10 +49,11 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "vmenu.hpp"
 
 static const char NKeyExtras[]   = "Extras";
+static const char NKeyFiles[ ]   = "Files";
 static const char NKeyLastItem[] = "LastItem";
 static const char NKeyLines[]    = "Lines";
 static const char NKeyLocks[]    = "Locks";
-static const char NKeyPosition[] = "Position";
+static const char NKeyPluginId[] = "PluginId";
 static const char NKeyTimes[]    = "Times";
 static const char NKeyTypes[]    = "Types";
 static const char NKeyVersion[]  = "Version";
@@ -126,7 +127,8 @@ bool History::IsAllowedForHistory(const wchar_t *Str) const
 	return true;
 }
 
-void History::AddToHistory(const wchar_t *Str, const wchar_t *Extra, int Type, const wchar_t *Prefix)
+void History::AddToHistory(const wchar_t *Str, int Type, const wchar_t *Data, uint32_t PluginId,
+		const wchar_t *File)
 {
 	if (!mEnableAdd)
 		return;
@@ -143,16 +145,12 @@ void History::AddToHistory(const wchar_t *Str, const wchar_t *Extra, int Type, c
 
 	HistoryRecord AddRecord;
 
-	if (mHistoryType == HISTORYTYPE_FOLDER && Prefix && *Prefix) {
-		AddRecord.strName = Prefix;
-		AddRecord.strName+= L":";
-	}
-
-	AddRecord.strName+= Str;
+	AddRecord.strName = Str;
 	AddRecord.Type = Type;
-	if (Extra) {
-		AddRecord.strExtra = Extra;
-	}
+	AddRecord.PluginId = PluginId;
+
+	if (Data) AddRecord.strData = Data;
+	if (File) AddRecord.strFile = File;
 
 	if (mRemoveDups != HRD_NOREMOVE) // удалять дубликаты?
 	{
@@ -201,17 +199,22 @@ bool History::SaveHistory()
 	bool ret = false;
 	try {
 		bool HasExtras = false;
-		FARString strTypes, strLines, strLocks, strExtras;
+		FARString strTypes, strLines, strLocks, strExtras, strFiles;
 		std::vector<FILETIME> vTimes;
-		int Position = -1;
+		std::vector<uint32_t> vPluginId;
 		FARString strLastItem;
 		FILETIME timeLastItem {};
 
 		for (auto It = mList.crbegin(); It != mList.crend(); ++It) {
 			AppendHistoryString(strLines, It->strName);
-			AppendHistoryString(strExtras, It->strExtra);
-			if (!It->strExtra.IsEmpty())
+			AppendHistoryString(strExtras, It->strData);
+			if (!It->strData.IsEmpty())
 				HasExtras = true;
+
+			if (mHistoryType == HISTORYTYPE_FOLDER) {
+				AppendHistoryString(strFiles, It->strFile);
+				vPluginId.push_back(It->PluginId);
+			}
 
 			if (mSaveType)
 				strTypes+= L'0' + It->Type;
@@ -235,9 +238,12 @@ bool History::SaveHistory()
 		if (mSaveType) {
 			cfg_writer.SetString(NKeyTypes, strTypes);
 		}
+		if (mHistoryType == HISTORYTYPE_FOLDER) {
+			cfg_writer.SetString(NKeyFiles, strFiles);
+			cfg_writer.SetBytes(NKeyPluginId, (unsigned char*)&vPluginId[0], vPluginId.size()*sizeof(uint32_t), sizeof(uint32_t));
+		}
 		cfg_writer.SetString(NKeyLocks, strLocks);
-		cfg_writer.SetBytes(NKeyTimes, (const unsigned char *)&vTimes[0], vTimes.size() * sizeof(FILETIME));
-		cfg_writer.SetInt(NKeyPosition, Position);
+		cfg_writer.SetBytes(NKeyTimes, (unsigned char*)&vTimes[0], vTimes.size()*sizeof(FILETIME), sizeof(FILETIME));
 		cfg_writer.SetString(NKeyLastItem, strLastItem);
 		cfg_writer.SetInt(NKeyVersion, SAVE_VERSION);
 
@@ -278,8 +284,8 @@ static bool ExtractHistoryString(FARString &Trg, const FARString &Src, size_t &P
 
 bool History::ReadHistory()
 {
-	FARString strLines, strExtras, strLocks, strTypes;
-	std::vector<unsigned char> vTimes;
+	FARString strLines, strExtras, strLocks, strTypes, strFiles;
+	std::vector<unsigned char> vTimes, vPluginId;
 
 	ConfigReader cfg_reader(mStrRegKey);
 
@@ -287,19 +293,21 @@ bool History::ReadHistory()
 		return false;
 
 	int Version = cfg_reader.GetInt(NKeyVersion, SAVE_VERSION - 1);
-	int Position = cfg_reader.GetInt(NKeyPosition, -1);
 	cfg_reader.GetBytes(vTimes, NKeyTimes);
+	cfg_reader.GetBytes(vPluginId, NKeyPluginId);
 	cfg_reader.GetString(strLocks, NKeyLocks);
 	cfg_reader.GetString(strTypes, NKeyTypes);
 	cfg_reader.GetString(strExtras, NKeyExtras);
+	cfg_reader.GetString(strFiles, NKeyFiles);
 
-	size_t LinesPos = 0, TypesPos = 0, LocksPos = 0, TimePos = 0, ExtrasPos = 0;
+	size_t LinesPos = 0, TypesPos = 0, LocksPos = 0, TimePos = 0, ExtrasPos = 0, FilesPos = 0, PluginIdPos = 0;
 	for (size_t Count=0; LinesPos < strLines.GetLength() && Count < mMaxCount; Count++) {
 		auto &AddRecord = mList.emplace_front();
 
 		if (Version == SAVE_VERSION) {
 			if (ExtractHistoryString(AddRecord.strName, strLines, LinesPos)) {
-				ExtractHistoryString(AddRecord.strExtra, strExtras, ExtrasPos);
+				ExtractHistoryString(AddRecord.strData, strExtras, ExtrasPos);
+				ExtractHistoryString(AddRecord.strFile, strFiles, FilesPos);
 			}
 			else {
 				mList.pop_front();
@@ -316,7 +324,7 @@ bool History::ReadHistory()
 
 			AddRecord.strName = strLines.SubStr(LinesPos, LineEnd - LinesPos);
 			LinesPos = LineEnd + 1;
-			AddRecord.strExtra = strExtras.SubStr(ExtrasPos, ExtraEnd - ExtrasPos);
+			AddRecord.strData = strExtras.SubStr(ExtrasPos, ExtraEnd - ExtrasPos);
 			ExtrasPos = ExtraEnd + 1;
 		}
 
@@ -339,8 +347,10 @@ bool History::ReadHistory()
 			TimePos+= sizeof(FILETIME);
 		}
 
-		if ((int)Count == Position)
-			mIterCommon = mList.begin();
+		if (PluginIdPos + sizeof(uint32_t) <= vPluginId.size()) {
+			memcpy(&AddRecord.PluginId, vPluginId.data() + PluginIdPos, sizeof(uint32_t));
+			PluginIdPos+= sizeof(uint32_t);
+		}
 	}
 
 	mLoadedStat = cfg_reader.LoadedSectionStat();
@@ -374,7 +384,7 @@ const wchar_t *History::GetDelTitle() const
 	}
 }
 
-int History::Select(FARString &strOut, int &TypeOut)
+int History::Select(HistoryRecord &RecOut, int &TypeOut)
 {
 	const wchar_t *Title, *HelpTopic;
 	const GUID *Guid;
@@ -409,18 +419,46 @@ int History::Select(FARString &strOut, int &TypeOut)
 	HistoryMenu.SetId(*Guid);
 	HistoryMenu.SetPosition(-1, -1, 0, 0);
 
-	return ProcessMenu(HistoryMenu, Title, Height, strOut, TypeOut, nullptr);
+	return ProcessMenu(HistoryMenu, Title, Height, RecOut, TypeOut);
 }
 
-int History::Select(VMenu &HistoryMenu, Dialog *Dlg, FARString &strOut)
+int History::Select(VMenu &HistoryMenu, HistoryRecord &RecOut)
 {
 	int TypeOut = HR_DEFAULT;
-	return ProcessMenu(HistoryMenu, nullptr, Opt.Dialogs.CBoxMaxHeight, strOut, TypeOut, Dlg);
+	return ProcessMenu(HistoryMenu, nullptr, Opt.Dialogs.CBoxMaxHeight, RecOut, TypeOut);
 }
 
-int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, FARString &strOut,
-		int &TypeOut, Dialog *Dlg)
+void History::MakeItemText(const HistoryRecord &Rec, FARString &strText)
 {
+	strText.Clear();
+
+	if (mHistoryType == HISTORYTYPE_FOLDER && Rec.PluginId != SYSID_FAR) {
+		Plugin *pPlugin = CtrlObject->Plugins.FindPlugin(Rec.PluginId);
+		if (pPlugin) {
+			strText.Format(L"%ls:", pPlugin->GetTitle());
+		}
+		else {
+			strText.Format(L"{%08X}:", Rec.PluginId);
+		}
+		strText += Rec.strFile;
+		strText += L":";
+		strText += Rec.strName;
+	}
+	else {
+		if (mHistoryType == HISTORYTYPE_VIEW) {
+			strText += GetNamePrefix(Rec.Type);
+			strText += L":";
+			strText += (Rec.Type == HR_EDITOR_RO ? L"-" : L" ");
+		}
+		strText += Rec.strName;
+	}
+}
+
+int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, HistoryRecord &RecOut,
+		int &TypeOut)
+{
+	Dialog *Dlg = HistoryMenu.GetDialog();
+	TypeOut = HR_DEFAULT;
 	MenuItemEx MenuItem;
 	auto SelectedRecord = mList.end();
 	FarListPos Pos = {0, 0};
@@ -462,18 +500,8 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 				CurTimestamp = Item->Timestamp;
 			}
 
-			FARString strRecord;
-
-			if (mHistoryType == HISTORYTYPE_VIEW) {
-				strRecord+= GetNamePrefix(Item->Type);
-				strRecord+= L":";
-				strRecord+= (Item->Type == HR_EDITOR_RO ? L"-" : L" ");
-			}
-
-			strRecord+= Item->strName;
-
 			MenuItem.Clear();
-			MenuItem.strName = strRecord;
+			MakeItemText(*Item, MenuItem.strName);
 			MenuItem.SetCheck(Item->Lock ? 1 : 0);
 
 			if (!SetUpMenuPos) {
@@ -702,6 +730,7 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 			if (HR != HR_EXTERNAL && HR != HR_EXTERNAL_WAIT // ignore external
 					&& RetCode != HRT_CTRLENTER
 					&& (mHistoryType == HISTORYTYPE_VIEW || (mHistoryType == HISTORYTYPE_FOLDER && HR == HR_DEFAULT))
+					&& SelectedRecord->PluginId == SYSID_FAR
 					&& apiGetFileAttributes(SelectedRecord->strName) == INVALID_FILE_ATTRIBUTES)
 			{
 				WINPORT(SetLastError)(ERROR_FILE_NOT_FOUND);
@@ -730,7 +759,8 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, F
 		mIterCommon = SelectedRecord;
 	}
 
-	strOut = SelectedRecord->strName;
+	//RecOut.strName = SelectedRecord->strName;
+	RecOut = *SelectedRecord;
 
 	switch(RetCode) {
 		case HRT_CANCEL:

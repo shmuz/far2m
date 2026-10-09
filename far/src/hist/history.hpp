@@ -77,13 +77,13 @@ enum history_remove_dups
 
 struct HistoryRecord
 {
-	int Type  = HR_DEFAULT;
+	int Type = HR_DEFAULT;
+	FILETIME Timestamp {};
+	uint32_t PluginId = SYSID_FAR;
 	bool Lock = false;
 	FARString strName;
-	FARString strExtra;
-	//FARString strPluginFile;
-	FILETIME Timestamp{};
-	//uint32_t PluginId = SYSID_FAR;
+	FARString strData;
+	FARString strFile;
 };
 
 class History
@@ -108,11 +108,11 @@ private:
 	bool EqualType(int Type1, int Type2) const;
 	const wchar_t *GetDelTitle() const;
 	bool IsAllowedForHistory(const wchar_t *Str) const;
-	int ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, FARString &strOut,
-		int &TypeOut, Dialog *Dlg);
+	int ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, HistoryRecord &RecOut, int &TypeOut);
 	bool ReadHistory();
 	bool SaveHistory();
 	void SyncChanges();
+	void MakeItemText(const HistoryRecord &Rec, FARString &strText);
 
 public:
 	History(enumHISTORYTYPE TypeHistory, size_t HistoryCount, const std::string &RegKey,
@@ -120,11 +120,12 @@ public:
 	~History() {}
 
 public:
-	void AddToHistory(const wchar_t *Str, const wchar_t *Extra = nullptr, int Type = HR_DEFAULT,
-		const wchar_t *Prefix = nullptr);
+	void AddToHistory(const wchar_t *Str,
+			int Type = HR_DEFAULT, const wchar_t *Data = nullptr, uint32_t PluginId = SYSID_FAR,
+			const wchar_t *File = nullptr);
 	static bool ReadLastItem(const FARString &RegKey, FARString &strStr);
-	int Select(FARString &strOut, int &TypeOut);
-	int Select(VMenu &HistoryMenu, Dialog *Dlg, FARString &strOut);
+	int Select(HistoryRecord &recOut, int &TypeOut);
+	int Select(VMenu &HistoryMenu, HistoryRecord &recOut);
 	void GetPrev(FARString &strStr);
 	void GetNext(FARString &strStr);
 	bool GetSimilar(FARString &strStr, int LastCmdPartLength, bool bAppend = false);

@@ -80,7 +80,7 @@ public:
 	void SetInt(const std::string &name, int value);
 	void SetUInt(const std::string &name, unsigned int value);
 	void SetULL(const std::string &name, unsigned long long value);
-	void SetBytes(const std::string &name, const unsigned char *buf, size_t len);
+	void SetBytes(const std::string &name, const unsigned char *buf, size_t len, int interval = -1);
 	template <class POD> void SetPOD(const std::string &name, const POD &pod)
 		{ SetBytes(name, (const unsigned char *)&pod, sizeof(pod)); }
 	void RemoveKey(const std::string &name);

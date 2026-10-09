@@ -206,19 +206,7 @@ void ConfigWriter::OnSectionSelected()
 	}
 	_selected_kfh =	selected_kfh.get();
 
-	if (IsSectionOrSubsection(_section, "Colors")) {
-		_bytes_space_interval = 1;
-
-	} else if (IsSectionOrSubsection(_section, "SavedHistory")
-		|| IsSectionOrSubsection(_section, "SavedDialogHistory")
-		|| IsSectionOrSubsection(_section, "SavedFolderHistory")
-		|| IsSectionOrSubsection(_section, "SavedViewHistory")) {
-
-		_bytes_space_interval = sizeof(FILETIME);
-
-	} else {
-		_bytes_space_interval = 0;
-	}
+	_bytes_space_interval = IsSectionOrSubsection(_section, "Colors") ? 1 : 0;
 }
 
 void ConfigWriter::RemoveSection()
@@ -361,9 +349,10 @@ void ConfigWriter::SetULL(const std::string &name, unsigned long long value)
 	_selected_kfh->SetULL(_section, name, value);
 }
 
-void ConfigWriter::SetBytes(const std::string &name, const unsigned char *buf, size_t len)
+void ConfigWriter::SetBytes(const std::string &name, const unsigned char *buf, size_t len, int interval)
 {
-	_selected_kfh->SetBytes(_section, name, buf, len, _bytes_space_interval);
+	size_t space_interval = interval < 0 ? _bytes_space_interval : (size_t)interval;
+	_selected_kfh->SetBytes(_section, name, buf, len, space_interval);
 }
 
 void ConfigWriter::RemoveKey(const std::string &name)
