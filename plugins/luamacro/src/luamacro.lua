@@ -547,7 +547,7 @@ function export.Open (OpenFrom, guid, ...)
       if mod_guid then
         local mod = utils.GetPanelModules()[win.Uuid(mod_guid)]
         if mod and type(mod.Open) == "function" then
-          local obj = mod.Open(OpenFrom, guid, Item)
+          local obj = mod.Open(OpenFrom, guid, data)
           return obj and { module=mod; object=obj }
         end
       end

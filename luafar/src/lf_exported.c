@@ -768,7 +768,10 @@ void LF_GetOpenPanelInfo(lua_State* L, HANDLE hPanel, struct OpenPluginInfo *aIn
 	Info->StartSortMode  = GetFlagsFromTable (L, -1, "StartSortMode");
 	Info->StartSortOrder = GetOptIntFromTable(L, "StartSortOrder", 0);
 	//---------------------------------------------------------------------------
-	Info->ShortcutData = AddStringToCollectorField (L, cpos, "ShortcutData");
+	// _ModuleShortcutData is a non-standard field used with LuaMacro panel modules
+	Info->ShortcutData = AddStringToCollectorField(L, cpos, "_ModuleShortcutData");
+	if (Info->ShortcutData == NULL)
+		Info->ShortcutData = AddStringToCollectorField(L, cpos, "ShortcutData");
 	//---------------------------------------------------------------------------
 	lua_settop(L, stack_top);
 	*aInfo = *Info;
