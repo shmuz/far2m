@@ -583,7 +583,7 @@ int CommandLine::ProcessKey(FarKey Key)
 
 		case KEY_ALTF12:
 		{
-			int Type;
+			int Type = 0;
 			HistoryRecord RecOut;
 			int SelectType=CtrlObject->FolderHistory->Select(RecOut, Type);
 			if (SelectType == HRT_ENTER || SelectType == HRT_SHIFTENTER || SelectType == HRT_CTRLSHIFTENTER)
@@ -600,7 +600,7 @@ int CommandLine::ProcessKey(FarKey Key)
 				{
 					if (TargetPanel->GetMode() == PLUGIN_PANEL || CheckShortcutFolder(RecOut.strName, false))
 					{
-						TargetPanel->SetCurDir(RecOut.strName, Type == 0);
+						TargetPanel->SetCurDir(RecOut.strName, true);
 						// restore current directory to active panel path
 						if(SelectType == HRT_CTRLSHIFTENTER)
 						{

@@ -759,7 +759,6 @@ int History::ProcessMenu(VMenu &HistoryMenu, const wchar_t *Title, int Height, H
 		mIterCommon = SelectedRecord;
 	}
 
-	//RecOut.strName = SelectedRecord->strName;
 	RecOut = *SelectedRecord;
 
 	switch(RetCode) {

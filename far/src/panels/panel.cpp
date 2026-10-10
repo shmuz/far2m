@@ -1904,6 +1904,14 @@ int Panel::SetPluginCommand(int Command, int Param1, LONG_PTR Param2)
 			break;
 		}
 
+		case FCTL_SETPANELDIR_V2:
+			if (Param2) {
+				const auto fpd = reinterpret_cast<FarPanelDirectory*>(Param2);
+				Result = ExecShortcutFolder(NullToEmpty(fpd->Name), NullToEmpty(fpd->File),
+						NullToEmpty(fpd->Param), fpd->PluginId);
+			}
+			break;
+
 		case FCTL_SETACTIVEPANEL: {
 			if (IsVisible()) {
 				SetFocus();

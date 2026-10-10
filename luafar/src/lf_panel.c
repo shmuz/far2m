@@ -262,26 +262,29 @@ static int panel_GetPanelDirectory(lua_State *L)
 
 static int panel_SetPanelDirectory(lua_State *L)
 {
+	struct FarPanelDirectory fpd = { sizeof(fpd) }; // also sets fpd.PluginId = FarId
 	HANDLE handle = OptHandle2(L);
-	LONG_PTR param2 = 0;
 
-	if (lua_istable(L, 3)) {
+	if (lua_istable(L, 3))
+	{
+		lua_getfield(L, 3, "PluginId");
+		fpd.PluginId = lua_tointeger(L, -1);
+
 		lua_getfield(L, 3, "Name");
-		if (lua_isstring(L, -1)) {
-			param2 = (LONG_PTR)check_utf8_string(L, -1, NULL);
-		}
+		if (lua_isstring(L, -1)) fpd.Name = check_utf8_string(L, -1, NULL);
+
+		lua_getfield(L, 3, "Param");
+		if (lua_isstring(L, -1)) fpd.Param = check_utf8_string(L, -1, NULL);
+
+		lua_getfield(L, 3, "File");
+		if (lua_isstring(L, -1)) fpd.File = check_utf8_string(L, -1, NULL);
 	}
-	else if (lua_isstring(L, 3)) {
-		param2 = (LONG_PTR)check_utf8_string(L, 3, NULL);
-	}
+	else if (lua_isstring(L, 3))
+		fpd.Name = check_utf8_string(L, 3, NULL);
 	else
 		luaL_argerror(L, 3, "table or string");
 
-	int ret = param2 ? PSInfo.Control(handle, FCTL_SETPANELDIR, 0, param2) : 0;
-	if (ret) {
-		PSInfo.Control(handle, FCTL_REDRAWPANEL, 0, 0); //not required in Far3
-	}
-	lua_pushboolean(L, ret);
+	lua_pushboolean(L, PSInfo.Control(handle, FCTL_SETPANELDIR_V2, 0, (LONG_PTR)&fpd) != 0);
 	return 1;
 }
 

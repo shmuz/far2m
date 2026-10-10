@@ -1216,6 +1216,7 @@ static int FarControlSynched(HANDLE hPanel, int Command, int Param1, LONG_PTR Pa
 		case FCTL_UPDATEPANEL:
 		case FCTL_REDRAWPANEL:
 		case FCTL_SETPANELDIR:
+		case FCTL_SETPANELDIR_V2:
 		case FCTL_BEGINSELECTION:
 		case FCTL_SETSELECTION:
 		case FCTL_CLEARSELECTION:
