@@ -2104,17 +2104,6 @@ void VMenu::ShowMenu(bool IsParent)
 
 				strMenuLine.Append(strMItemPtr);
 
-				{
-					// табуляции меняем только при показе!!!
-					// для сохранение оригинальной строки!!!
-					wchar_t *TabPtr, *TmpStr = strMenuLine.GetBuffer();
-
-					while ((TabPtr = wcschr(TmpStr, L'\t')))
-						*TabPtr = L' ';
-
-					strMenuLine.ReleaseBuffer(strMenuLine.GetLength());
-				}
-
 				uint64_t Col;
 
 				if (!(Item[I]->Flags & LIF_DISABLE)) {
