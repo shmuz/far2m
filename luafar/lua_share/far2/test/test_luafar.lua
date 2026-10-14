@@ -1012,9 +1012,11 @@ function LF.test_Guids()
   asrt.istrue(panel.SetPanelDirectory(nil, 1, TmpDir))
 
   Plugin.Command(far.GetPluginId(), "far:config")
+  Keys("F1");       asrt.istrue(Area.Help);  Keys("Esc");  asrt.istrue(Area.Dialog);
+  Keys("ShiftF1");  asrt.istrue(Area.Help);  Keys("Esc");  asrt.istrue(Area.Dialog); -- crash case 2026-10-14
   test_one_guid( "AdvancedConfigId")
 
-  print("far:about"); Keys("Enter")
+  Plugin.Command(far.GetPluginId(), "far:about")
   asrt.eq(Menu.Id, "01EB28A5-0A1A-4383-8536-0E4C24CC279B"); Keys("Esc");
 
   test_one_guid( "ApplyCommandId",           nil, "CtrlG")
