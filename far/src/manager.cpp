@@ -1075,11 +1075,10 @@ void Manager::ActivateCommit(Frame *aFrame)
 	_FRAMELOG("ActivateCommit", aFrame);
 	ActivatedFrame = nullptr;
 
-	aFrame->OnChangeFocus(true);
-
 	if (CurrentFrame == aFrame)
 	{
 		RefreshedFrame = aFrame;
+		aFrame->OnChangeFocus(true);
 		return;
 	}
 
@@ -1104,6 +1103,8 @@ void Manager::ActivateCommit(Frame *aFrame)
 	}
 
 	RefreshedFrame = CurrentFrame = aFrame;
+
+	aFrame->OnChangeFocus(true);
 }
 
 void Manager::UpdateCommit(Frame *aDeleted, Frame *aInserted, Frame *aExecuted)
