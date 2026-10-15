@@ -2,16 +2,18 @@
 -- author  : Shmuel Zeigerman
 -- action  : INI-file parser
 
+local str_find, str_match, str_sub, str_gsub = string.find, string.match, string.sub, string.gsub
+
 local lib, section = {}, {}
 local mt_lib     = {__index=lib}
 local mt_section = {__index=section}
 
 local function get_secname(line)
-  return line:match("^%s*%[%s*([^%s%]].-)%s*%]")
+  return str_match(line, "^%s*%[%s*([^%s%]].-)%s*%]")
 end
 
 local function get_key_val(line)
- return line:match("^%s*([^=%s][^=]-)%s*=%s*(.-)%s*$")
+ return str_match(line, "^%s*([^=%s][^=]-)%s*=%s*(.-)%s*$")
 end
 
 -- @param fname     : name of ini-file
@@ -35,23 +37,23 @@ function lib.New(fname, nocomment)
   setmetatable(self, mt_lib)
   local cursection
   for line in fp:lines() do
-    if line:find("^%s*[^;%s]") then -- not comment or empty line
+    if str_find(line, "^%s*[^;%s]") then -- not comment or empty line
       local secname = get_secname(line)
       if secname then
         cursection = self:add_section(secname) -- this allows a section to appear multiple times in the file
       elseif cursection then
         local key,val = get_key_val(line)
         if key then
-          local first = val:sub(1,1)
+          local first = str_sub(val,1,1)
           if first == '"' then
-            val = val:match('^"(.*)"') -- in double quotes
+            val = str_match(val, '^"(.*)"') -- in double quotes
           elseif first == "'" then
-            val = val:match("^'(.*)'") -- in single quotes
+            val = str_match(val, "^'(.*)'") -- in single quotes
           else
             if not nocomment then
-              val = val:match("^[^;]+")  -- semicolon starts the comment
+              val = str_match(val, "^[^;]+")  -- semicolon starts the comment
             end
-            val = val and val:gsub("%s+$","")
+            val = val and str_gsub(val, "%s+$","")
           end
           if val then
             cursection:set(key,val)
