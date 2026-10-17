@@ -463,7 +463,7 @@ bool apiExpandEnvironmentStrings(const wchar_t *src, FARString &strDest)
 	std::string s;
 	Wide2MB(src, s);
 	bool out = Environment::ExpandString(s, false);
-	strDest = s;
+	strDest = StrMB2Wide(s).c_str();
 	return out;
 }
 

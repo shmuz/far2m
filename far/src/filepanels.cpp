@@ -73,7 +73,7 @@ FilePanels::FilePanels():
 //  _D(SysLog(L"MainKeyBar=0x%p",&MainKeyBar));
 }
 
-static void PrepareOptFolder(FARString &strSrc, int IsLocalPath_FarPath)
+static void PrepareOptFolder(FARString &strSrc, bool IsLocalPath_FarPath)
 {
 	if (strSrc.IsEmpty())
 	{
@@ -118,7 +118,7 @@ void FilePanels::Init()
 	ActivePanel->SetFocus();
 
 	// пытаемся избавиться от зависания при запуске
-	int IsLocalPath_FarPath=IsLocalPath(g_strFarPath);
+	bool IsLocalPath_FarPath=IsLocalPath(g_strFarPath);
 	PrepareOptFolder(Opt.strLeftFolder,IsLocalPath_FarPath);
 	PrepareOptFolder(Opt.strRightFolder,IsLocalPath_FarPath);
 
