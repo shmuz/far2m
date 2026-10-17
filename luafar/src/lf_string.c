@@ -9,6 +9,7 @@
 
 #include "lf_string.h"
 #include "lf_util.h"
+#include "lf_farlibs.h"
 
 const char *global_tolstring(lua_State *L, int idx, size_t *len)
 {
@@ -283,9 +284,21 @@ wchar_t* convert_multibyte_string (lua_State *L, int pos, UINT codepage,
 	return target;
 }
 
+// Was: return convert_multibyte_string(L, pos, CP_UTF8, 0, pTrgSize, TRUE);
+// Now: using MB2Wide() as it preserves invalid UTF-8 parts.
 wchar_t* check_utf8_string (lua_State *L, int pos, size_t* pTrgSize)
 {
-	return convert_multibyte_string(L, pos, CP_UTF8, 0, pTrgSize, TRUE);
+	if (pos < 0)
+		pos += lua_gettop(L) + 1;
+
+	size_t srcLen;
+	const char* src = luaL_checklstring(L, pos, &srcLen);
+	Push_MB2Wide(L, src, srcLen, 0); //+1
+	lua_replace(L, pos); //+0
+	if (pTrgSize)
+		*pTrgSize = lua_objlen(L, pos) / sizeof(wchar_t) - 1;
+
+	return (wchar_t*) lua_touserdata(L, pos);
 }
 
 wchar_t* utf8_to_wcstring (lua_State *L, int pos, size_t* pTrgSize)

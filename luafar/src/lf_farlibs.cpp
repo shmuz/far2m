@@ -58,6 +58,16 @@ int far_SudoCRCall(lua_State *L) // sudo client region call
 	return luaL_error(L, lua_tostring(L, -1));
 }
 
+void Push_MB2Wide(lua_State *L, const char *src, size_t len, int append)
+{
+	std::wstring dst;
+	MB2Wide(src, len, dst, append);
+	size_t wsize = dst.size();
+	wchar_t *arr = (wchar_t*)lua_newuserdata(L, (wsize + 1) * sizeof(wchar_t));
+	wmemcpy(arr, dst.data(), wsize);
+	arr[wsize] = 0;
+}
+
 int wrap_sdc_utimens(const char *filename, const struct timespec times[2])
 {
 	return sdc_utimens(filename, times);
