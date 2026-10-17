@@ -293,7 +293,7 @@ wchar_t* check_utf8_string (lua_State *L, int pos, size_t* pTrgSize)
 
 	size_t srcLen;
 	const char* src = luaL_checklstring(L, pos, &srcLen);
-	Push_MB2Wide(L, src, srcLen, 0); //+1
+	Push_MB2Wide(L, src, srcLen); //+1
 	lua_replace(L, pos); //+0
 	if (pTrgSize)
 		*pTrgSize = lua_objlen(L, pos) / sizeof(wchar_t) - 1;
@@ -347,9 +347,14 @@ char* push_multibyte_string(lua_State* L, UINT CodePage, const wchar_t* str, int
 	return target;
 }
 
+// Was: push_multibyte_string(L, CP_UTF8, str, numchars, 0);
+// Now: using Wide2MB as a counterpart to MB2Wide
 void push_utf8_string (lua_State* L, const wchar_t* str, int numchars)
 {
-	push_multibyte_string(L, CP_UTF8, str, numchars, 0);
+	if (str)
+		Push_Wide2MB(L, str, numchars);
+	else
+		lua_pushnil(L);
 }
 
 void push_oem_string (lua_State* L, const wchar_t* str, int numchars)
