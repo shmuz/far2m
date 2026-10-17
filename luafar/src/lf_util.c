@@ -169,7 +169,7 @@ void PushAttrString(lua_State *L, int attr)
 	if (attr & FILE_ATTRIBUTE_DEVICE_CHAR)         *p++ = 'g';
 	if (attr & FILE_ATTRIBUTE_DEVICE_FIFO)         *p++ = 'f';
 	if (attr & FILE_ATTRIBUTE_DEVICE_SOCK)         *p++ = 'k';
-	if (attr & FILE_ATTRIBUTE_HARDLINKS)           *p++ = 'l';
+	if ((attr & FILE_ATTRIBUTE_HARDLINKS) && !(attr & FILE_ATTRIBUTE_DIRECTORY)) *p++ = 'l';
 
 	lua_pushlstring(L, buf, p-buf);
 }
