@@ -406,11 +406,13 @@ std::wstring long_path(const std::wstring &path)
 std::wstring long_path_norm(const std::wstring &path)
 {
 	auto nt_path = long_path(path);
+#if 0
 	auto p = nt_path.find(L'\\');
 	while (p != std::wstring::npos) {
 		nt_path[p] = L'/';
 		p = nt_path.find(L'\\', p + 1);
 	}
+#endif
 	return nt_path;
 }
 
@@ -664,8 +666,8 @@ static const wchar_t LeftPointing_Double_Angle_Quotation_Mark = L'\u00AB';	  // 
 static const wchar_t RightPointing_Double_Angle_Quotation_Mark = L'\u00BB';	   // '»'
 // static const wchar_t Single_RightPointing_Angle_Quotation_Mark = L'\u203A'; // '›'
 
-static wchar_t quotes2[2] = {LeftPointing_Double_Angle_Quotation_Mark,
-		RightPointing_Double_Angle_Quotation_Mark};
+// static wchar_t quotes2[2] = {LeftPointing_Double_Angle_Quotation_Mark,
+//		RightPointing_Double_Angle_Quotation_Mark};
 // static wchar_t quotes1[2] = { Single_LeftPointing_Angle_Quotation_Mark,
 // Single_RightPointing_Angle_Quotation_Mark };
 
@@ -676,12 +678,12 @@ static const wchar_t Horizontal_Ellipsis = L'\u2026';	 // '…'
 static const wchar_t American_Full_Stop = L'\u0589';	 // '։' --missed in Lucida Console font
 // static const wchar_t Raised Colon                              = L'\u02F8'; // '˸' --missed in Lucida
 // Console font
-static wchar_t colons[2] = {Horizontal_Ellipsis, American_Full_Stop};
+// static wchar_t colons[2] = {Horizontal_Ellipsis, American_Full_Stop};
 
 // '*'
 static const wchar_t Currency_Sign = L'\u00A4';				// '¤'
 static const wchar_t Six_Pointed_Black_Star = L'\u0589';	// '✶' --missed in Lucida Console font
-static wchar_t asterisks[2] = {Currency_Sign, Six_Pointed_Black_Star};
+// static wchar_t asterisks[2] = {Currency_Sign, Six_Pointed_Black_Star};
 
 // '?'
 static const wchar_t Inverted_Question_Mark = L'\u00BF';	// '¿'
@@ -696,7 +698,7 @@ static const wchar_t Broken_Bar = L'\u00A6';	// '¦'
 // '"'
 static const wchar_t Left_Double_Quotation_Mark = L'\u201C';	 // '“'
 static const wchar_t Right_Double_Quotation_Mark = L'\u201D';	 // '”'
-static wchar_t quotes3[2] = {Left_Double_Quotation_Mark, Right_Double_Quotation_Mark};
+// static wchar_t quotes3[2] = {Left_Double_Quotation_Mark, Right_Double_Quotation_Mark};
 
 // '/'
 static const wchar_t Fraction_Slash = L'\u2044';	// '⁄'
@@ -825,9 +827,10 @@ std::wstring correct_filename(const std::wstring &orig_name, int mode, bool alt_
 
 	auto name(orig_name);
 	if (m > 0) {
-		int i = 0, q = 0;
+		int i = 0; // , q = 0;
 		for (const auto c : name) {
 			switch (c) {
+#if 0
 				case L'<':
 					name[i] = m > 1 ? quotes2[0] : simple_replace_char;
 					break;
@@ -850,12 +853,15 @@ std::wstring correct_filename(const std::wstring &orig_name, int mode, bool alt_
 					name[i] = m > 1 ? quotes3[q] : simple_replace_char;
 					q = 1 - q;
 					break;
+#endif
 				case L'/':
 					name[i] = m > 1 ? Fraction_Slash : simple_replace_char;
 					break;
+#if 0
 				case L'\\':
 					name[i] = m > 1 ? Not_Sign : simple_replace_char;
 					break;
+#endif
 				default:
 					if (c < L' ' && c > L'\0')
 						name[i] = m > 1 ? control_chars[c - L'\x01'] : simple_replace_char;

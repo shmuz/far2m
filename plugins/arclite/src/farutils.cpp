@@ -22,7 +22,8 @@ extern std::wstring g_plugin_path;
 
 std::wstring get_plugin_module_path()
 {
-	return search_and_replace(extract_file_path(g_far.ModuleName), L"\\", L"/");
+	//return search_and_replace(extract_file_path(g_far.ModuleName), L"\\", L"/");
+	return extract_file_path(g_far.ModuleName);
 }
 
 const wchar_t *msg_ptr(int id)
@@ -1146,7 +1147,8 @@ void close_panel(HANDLE h_panel, const std::wstring &dir)
 
 void open_help(const std::wstring &topic)
 {
-	g_far.ShowHelp(search_and_replace(g_far.ModuleName, L"\\", L"/").c_str(), topic.c_str(), FHELP_SELFHELP);
+	//g_far.ShowHelp(search_and_replace(g_far.ModuleName, L"\\", L"/").c_str(), topic.c_str(), FHELP_SELFHELP);
+	g_far.ShowHelp(g_far.ModuleName, topic.c_str(), FHELP_SELFHELP);
 }
 
 INT_PTR Settings::control(uint32_t command, void *param)

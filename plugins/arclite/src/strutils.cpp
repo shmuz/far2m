@@ -222,7 +222,8 @@ std::wstring format_data_size(uint64_t value, const wchar_t *suffixes[5])
 
 bool is_slash(wchar_t c)
 {
-	return c == L'\\' || c == L'/';
+	//return c == L'\\' || c == L'/';
+	return c == LGOOD_SLASH;
 }
 
 std::wstring unquote(const std::wstring &str)
