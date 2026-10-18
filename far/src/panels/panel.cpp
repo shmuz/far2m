@@ -2076,14 +2076,8 @@ bool Panel::ExecShortcutFolder(const FARString &aFolder, const FARString &aPlugi
 	if (CheckShortcutFolder(strPluginFile, true) != 1)
 		return true;
 
-	/*
-	if (SrcPanel->GetType()!=FILE_PANEL)
-	{
-		SrcPanel=CtrlObject->Cp()->ChangePanel(SrcPanel,FILE_PANEL,true,true);
-	}
-	*/
-
-	SrcPanel->SetCurDir(aFolder, true);
+	if (!SrcPanel->SetCurDir(aFolder, true))
+		return false;
 
 	if (CheckFullScreen != SrcPanel->IsFullScreen())
 		CtrlObject->Cp()->GetAnotherPanel(SrcPanel)->Show();

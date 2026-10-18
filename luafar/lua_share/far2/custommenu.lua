@@ -182,7 +182,7 @@ function List:SetSize()
     local wd = 0
     for _,v in ipairs(self.drawitems) do
       local text = self:GetItemText(v)
-      local len = text:len() + (v.separator and 1 or 0)
+      local len = CellsCount(text) + (v.separator and 1 or 0)
       wd = max(wd, len)
       if wd > self.wmax then break end -- this check is needed for performance (with big lists && long lines)
     end
