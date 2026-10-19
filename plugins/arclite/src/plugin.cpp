@@ -1793,11 +1793,6 @@ SHAREDSYMBOL HANDLE WINAPI OpenPluginW(int OpenFrom, INT_PTR Data)
 			OpenOptions options;
 			options.detect = item == detect_menu_id;
 
-//			fprintf(stderr, "OpenFrom == OPEN_PLUGINSMENU !!!\n");
-
-//			fprintf(stderr, "detect_menu_id = %u item = %u\n", detect_menu_id, item );
-//			fprintf(stderr, "Option detect = %u\n", options.detect );
-
 			PanelInfo panel_info;
 			if (!Far::get_panel_info(PANEL_ACTIVE, panel_info)) {
 				return INVALID_HANDLE_VALUE;
@@ -1877,124 +1872,120 @@ SHAREDSYMBOL HANDLE WINAPI OpenPluginW(int OpenFrom, INT_PTR Data)
 		}
 	}
 
-#if 1
-  else if (OpenFrom == OPEN_COMMANDLINE) {
+	else if (OpenFrom == OPEN_COMMANDLINE) {
 
-    try {
-//      CommandArgs cmd_args = parse_command(reinterpret_cast<OpenCommandLineInfo*>(Data)->CommandLine);
-      CommandArgs cmd_args = parse_command((const wchar_t *)Data);
-      switch (cmd_args.cmd) {
-      case cmdOpen: {
-        OpenOptions options = parse_open_command(cmd_args).options;
-        options.arc_path = Far::get_absolute_path(options.arc_path);
+		try {
+			// CommandArgs cmd_args = parse_command(reinterpret_cast<OpenCommandLineInfo*>(Data)->CommandLine);
+			CommandArgs cmd_args = parse_command((const wchar_t *)Data);
+			switch (cmd_args.cmd) {
+			case cmdOpen: {
+				OpenOptions options = parse_open_command(cmd_args).options;
+				options.arc_path = Far::get_absolute_path(options.arc_path);
 
-		if (ArcAPI::have_virt_destructor()) {
-	        auto plugin = Plugin<true>::open(*Archive<true>::open(options));
-			  if (plugin) {
-				  plugin->recursive_panel = options.recursive_panel;
-				  plugin->del_on_close = options.delete_on_close;
-			  }
-			  return plugin;
+				if (ArcAPI::have_virt_destructor()) {
+					auto plugin = Plugin<true>::open(*Archive<true>::open(options));
+					if (plugin) {
+						plugin->recursive_panel = options.recursive_panel;
+						plugin->del_on_close = options.delete_on_close;
+					}
+					return plugin;
+				}
+				else {
+					auto plugin = Plugin<false>::open(*Archive<false>::open(options));
+					if (plugin) {
+						plugin->recursive_panel = options.recursive_panel;
+						plugin->del_on_close = options.delete_on_close;
+					}
+					return plugin;
+				}
+			}
+			case cmdCreate:
+			case cmdUpdate:
+				if (ArcAPI::have_virt_destructor())
+					Plugin<true>::cmdline_update(parse_update_command(cmd_args));
+				else
+					Plugin<false>::cmdline_update(parse_update_command(cmd_args));
+				break;
+			case cmdExtract:
+				if (ArcAPI::have_virt_destructor())
+					Plugin<true>::cmdline_extract(parse_extract_command(cmd_args));
+				else
+					Plugin<false>::cmdline_extract(parse_extract_command(cmd_args));
+				break;
+			case cmdExtractItems:
+				if (ArcAPI::have_virt_destructor())
+					Plugin<true>::cmdline_extract(parse_extractitems_command(cmd_args));
+				else
+					Plugin<false>::cmdline_extract(parse_extractitems_command(cmd_args));
+				break;
+			case cmdDeleteItems:
+				if (ArcAPI::have_virt_destructor())
+					Plugin<true>::cmdline_delete(parse_extractitems_command(cmd_args));
+				else
+					Plugin<false>::cmdline_delete(parse_extractitems_command(cmd_args));
+				break;
+			case cmdTest:
+				if (ArcAPI::have_virt_destructor())
+					Plugin<true>::cmdline_test(parse_test_command(cmd_args));
+				else
+					Plugin<false>::cmdline_test(parse_test_command(cmd_args));
+				break;
+			}
 		}
-		else {
-	        auto plugin = Plugin<false>::open(*Archive<false>::open(options));
-			  if (plugin) {
-				  plugin->recursive_panel = options.recursive_panel;
-				  plugin->del_on_close = options.delete_on_close;
-			  }
-			  return plugin;
+		catch (const Error& e) {
+			if (e.code == E_BAD_FORMAT)
+				Far::open_help(L"Prefix");
+			else
+				throw;
 		}
-      }
-      case cmdCreate:
-      case cmdUpdate:
-		if (ArcAPI::have_virt_destructor())
-	        Plugin<true>::cmdline_update(parse_update_command(cmd_args));
-		else
-	        Plugin<false>::cmdline_update(parse_update_command(cmd_args));
-        break;
-      case cmdExtract:
-		if (ArcAPI::have_virt_destructor())
-	        Plugin<true>::cmdline_extract(parse_extract_command(cmd_args));
-		else
-	        Plugin<false>::cmdline_extract(parse_extract_command(cmd_args));
-        break;
-      case cmdExtractItems:
-		if (ArcAPI::have_virt_destructor())
-	        Plugin<true>::cmdline_extract(parse_extractitems_command(cmd_args));
-		else
-	        Plugin<false>::cmdline_extract(parse_extractitems_command(cmd_args));
-        break;
-      case cmdDeleteItems:
-		if (ArcAPI::have_virt_destructor())
-	        Plugin<true>::cmdline_delete(parse_extractitems_command(cmd_args));
-		else
-	        Plugin<false>::cmdline_delete(parse_extractitems_command(cmd_args));
-        break;
-      case cmdTest:
-		if (ArcAPI::have_virt_destructor())
-	        Plugin<true>::cmdline_test(parse_test_command(cmd_args));
-		else
-	        Plugin<false>::cmdline_test(parse_test_command(cmd_args));
-        break;
-      }
-    }
-    catch (const Error& e) {
-      if (e.code == E_BAD_FORMAT)
-        Far::open_help(L"Prefix");
-      else
-        throw;
-    }
-  }
-#endif
-#if 1
-  else if (OpenFrom == OPEN_FROMMACRO) {
-    try {
-//      CommandArgs cmd_args = parse_plugin_call(reinterpret_cast<const OpenMacroInfo*>(Data));
-      CommandArgs cmd_args = parse_plugin_call(reinterpret_cast<const OpenMacroInfo*>(Data));
+	}
 
-      switch (cmd_args.cmd) {
-      case cmdCreate:
-      case cmdUpdate:
-		if (ArcAPI::have_virt_destructor())
-	        Plugin<true>::cmdline_update(parse_update_command(cmd_args));
-		else
-	        Plugin<false>::cmdline_update(parse_update_command(cmd_args));
-        break;
-      case cmdExtract:
-		if (ArcAPI::have_virt_destructor())
-	        Plugin<true>::cmdline_extract(parse_extract_command(cmd_args));
-		else
-	        Plugin<false>::cmdline_extract(parse_extract_command(cmd_args));
-        break;
-      case cmdExtractItems:
-		if (ArcAPI::have_virt_destructor())
-	        Plugin<true>::cmdline_extract(parse_extractitems_command(cmd_args));
-		else
-	        Plugin<false>::cmdline_extract(parse_extractitems_command(cmd_args));
-        break;
-      case cmdDeleteItems:
-		if (ArcAPI::have_virt_destructor())
-	        Plugin<true>::cmdline_delete(parse_extractitems_command(cmd_args));
-		else
-	        Plugin<false>::cmdline_delete(parse_extractitems_command(cmd_args));
-        break;
-      case cmdTest:
-		if (ArcAPI::have_virt_destructor())
-	        Plugin<true>::cmdline_test(parse_test_command(cmd_args));
-		else
-	        Plugin<false>::cmdline_test(parse_test_command(cmd_args));
-        break;
-      default:
-        break;
-      }
-    }
-    catch (const Error& e) {
-      (void)e; //if (e.code != E_BAD_FORMAT) throw;
-      return INVALID_HANDLE_VALUE;
-    }
-    return INVALID_HANDLE_VALUE;
-  }
-#endif
+	else if (OpenFrom == OPEN_FROMMACRO) {
+		try {
+			CommandArgs cmd_args = parse_plugin_call(reinterpret_cast<const OpenMacroInfo*>(Data));
+
+			switch (cmd_args.cmd) {
+			case cmdCreate:
+			case cmdUpdate:
+				if (ArcAPI::have_virt_destructor())
+					Plugin<true>::cmdline_update(parse_update_command(cmd_args));
+				else
+					Plugin<false>::cmdline_update(parse_update_command(cmd_args));
+				break;
+			case cmdExtract:
+				if (ArcAPI::have_virt_destructor())
+					Plugin<true>::cmdline_extract(parse_extract_command(cmd_args));
+				else
+					Plugin<false>::cmdline_extract(parse_extract_command(cmd_args));
+				break;
+			case cmdExtractItems:
+				if (ArcAPI::have_virt_destructor())
+					Plugin<true>::cmdline_extract(parse_extractitems_command(cmd_args));
+				else
+					Plugin<false>::cmdline_extract(parse_extractitems_command(cmd_args));
+				break;
+			case cmdDeleteItems:
+				if (ArcAPI::have_virt_destructor())
+					Plugin<true>::cmdline_delete(parse_extractitems_command(cmd_args));
+				else
+					Plugin<false>::cmdline_delete(parse_extractitems_command(cmd_args));
+				break;
+			case cmdTest:
+				if (ArcAPI::have_virt_destructor())
+					Plugin<true>::cmdline_test(parse_test_command(cmd_args));
+				else
+					Plugin<false>::cmdline_test(parse_test_command(cmd_args));
+				break;
+			default:
+				break;
+			}
+		}
+		catch (const Error& e) {
+			(void)e; //if (e.code != E_BAD_FORMAT) throw;
+			return INVALID_HANDLE_VALUE;
+		}
+		return INVALID_HANDLE_VALUE;
+	}
 
 	else if (OpenFrom == OPEN_ANALYSE) {
 		const OpenAnalyseInfo *oai = reinterpret_cast<const OpenAnalyseInfo *>(Data);
