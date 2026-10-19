@@ -1982,7 +1982,7 @@ SHAREDSYMBOL HANDLE WINAPI OpenPluginW(int OpenFrom, INT_PTR Data)
 		}
 		catch (const Error& e) {
 			(void)e; //if (e.code != E_BAD_FORMAT) throw;
-			return INVALID_HANDLE_VALUE;
+			return nullptr;
 		}
 		return INVALID_HANDLE_VALUE;
 	}

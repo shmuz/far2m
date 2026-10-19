@@ -1865,6 +1865,11 @@ void* PluginManager::CallPluginFromMacro(DWORD SysID, OpenMacroInfo *Info)
 
 	if (PluginPanel)
 	{
+		if (PluginPanel->hPanel == INVALID_HANDLE_VALUE)
+		{
+			delete PluginPanel;
+			return INVALID_HANDLE_VALUE;
+		}
 		if (IsPointer(PluginPanel->hPanel))
 		{
 			FarMacroCall *fmc = reinterpret_cast<FarMacroCall*>(PluginPanel->hPanel);
@@ -2105,8 +2110,14 @@ bool PluginManager::CallPluginItemExecute(Plugin *pPlugin, CallPluginInfo *Data)
 PHPTR PluginManager::OpenPlugin(Plugin *pPlugin, int OpenFrom, const void *Item)
 {
 	HANDLE hPanel = pPlugin->OpenPlugin(OpenFrom, Item);
-	return (hPanel == nullptr || hPanel == INVALID_HANDLE_VALUE)
-			? nullptr : new PanelHandle(hPanel, pPlugin);
+
+	if (hPanel == nullptr)
+		return nullptr;
+
+	if (hPanel == INVALID_HANDLE_VALUE && OpenFrom != OPEN_FROMMACRO)
+		return nullptr;
+
+	return new PanelHandle(hPanel, pPlugin);
 }
 
 void PluginManager::GetCustomData(FileListItem *ListItem)
