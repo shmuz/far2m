@@ -143,6 +143,7 @@ VMenu::~VMenu()
 				case WTYPE_PANELS:
 				case WTYPE_EDITOR:
 				case WTYPE_VIEWER:
+				case WTYPE_DIALOG:
 					FrameManager->RefreshFrame();
 					break;
 			}
