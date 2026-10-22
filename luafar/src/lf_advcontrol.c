@@ -257,6 +257,10 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL AdvControl, int Command,
 			return 1;
 		}
 
+		case ACTL_GETFARHWND:
+			lua_pushlightuserdata(L, (void*) AdvControl(ModuleNumber, Command, NULL, NULL));
+			return 1;
+
 		//case ACTL_KEYMACRO:  //  not supported as it's replaced by separate functions far.MacroXxx
 	}
 

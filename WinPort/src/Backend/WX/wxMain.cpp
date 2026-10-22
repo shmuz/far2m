@@ -2330,3 +2330,42 @@ void WinPortPanel::OnConsoleOverrideColor(DWORD Index, DWORD *ColorFG, DWORD *Co
 	auto fn = std::bind(&ConsoleOverrideColorInMain, Index, ColorFG, ColorBK);
 	CallInMainNoRet(fn);
 }
+
+void *WinPortPanel::OnConsoleGetNativeWindowHandle()
+{
+#ifdef __WXGTK__
+	// Panel is the direct drawing canvas
+	void *widget = GetHandle();
+	if (!widget && _frame) {
+		widget = _frame->GetHandle();
+	}
+
+	if (widget) {
+		typedef void* (*gtk_widget_get_window_t)(void*);
+		typedef unsigned long (*gdk_x11_window_get_xid_t)(void*);
+		typedef unsigned long (*gdk_x11_drawable_get_xid_t)(void*);
+
+		static auto pfn_gtk_widget_get_window = (gtk_widget_get_window_t)dlsym(RTLD_DEFAULT, "gtk_widget_get_window");
+		static auto pfn_gdk_x11_window_get_xid = (gdk_x11_window_get_xid_t)dlsym(RTLD_DEFAULT, "gdk_x11_window_get_xid");
+		static auto pfn_gdk_x11_drawable_get_xid = (gdk_x11_drawable_get_xid_t)dlsym(RTLD_DEFAULT, "gdk_x11_drawable_get_xid");
+
+		void *gdk_win = pfn_gtk_widget_get_window ? pfn_gtk_widget_get_window(widget) : nullptr;
+		if (gdk_win) {
+			unsigned long xid = 0;
+			if (pfn_gdk_x11_window_get_xid) {
+				xid = pfn_gdk_x11_window_get_xid(gdk_win);
+			} else if (pfn_gdk_x11_drawable_get_xid) {
+				xid = pfn_gdk_x11_drawable_get_xid(gdk_win);
+			}
+			if (xid != 0) {
+				return (void *)(uintptr_t)xid;
+			}
+		}
+	}
+#elif defined(__WXMSW__)
+	return (void *)GetHWND();
+#elif defined(__WXMAC__) || defined(__WXOSX__)
+	return (void *)GetHandle();
+#endif
+	return nullptr;
+}

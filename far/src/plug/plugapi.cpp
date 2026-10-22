@@ -76,6 +76,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "strmix.hpp"
 #include "vtshell.h"
 #include "vtlog.h"
+#include "WinPort.h"
 
 #define FAR_ALIGNAS(value, alignment) ((value + (alignment - 1)) & ~(alignment - 1))
 #define FAR_ALIGN(value)          FAR_ALIGNAS(value, sizeof(void *))
@@ -507,7 +508,8 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 			пригодится плагинам
 		*/
 		case ACTL_GETFARHWND: {
-			return 0;
+			//return 0;
+			return (INT_PTR)WinPortGetFarHWND();
 		}
 
 		case ACTL_GETDIALOGSETTINGS: {

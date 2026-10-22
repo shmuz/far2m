@@ -192,6 +192,7 @@ public:
 	void OnChar( wxKeyEvent& event );
 	virtual void OnTouchbarKey(bool alternate, int index);
 	void SetClientCharSize(int cw, int ch);
+	virtual void *OnConsoleGetNativeWindowHandle() override;
 };
 
 ///////////////////////////////////////////

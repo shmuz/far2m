@@ -73,6 +73,12 @@ extern "C" {
 	//   and *len set to valid data size in that buffer.
 	// - otherwise returns NULL and zero *len
 	const char *WinPortStderrTrace(size_t *len);
+
+	// no explanation
+	void *WinPortGetFarHWND();
+	BOOL WinPortSetConsoleImage(const char *id, unsigned long long flags, COORD pos, unsigned int width, unsigned int height, const void *buffer);
+	BOOL WinPortDeleteConsoleImage(const char *id);
+	void WinPortGetConsoleImageCaps(WinportGraphicsInfo *wgi);
 #endif /* FAR_PYTHON_GEN */
 
 #ifndef FAR_PYTHON_GEN

@@ -921,3 +921,30 @@ bool ConsoleOutput::OnDeleteConsoleImage(const char *id)
 {
 	return _backend->OnDeleteConsoleImage(id);
 }
+
+void *ConsoleOutput::GetNativeWindowHandle()
+{
+	return _backend ? _backend->OnConsoleGetNativeWindowHandle() : nullptr;
+}
+
+extern "C" void *WinPortGetFarHWND()
+{
+	return g_winport_con_out ? g_winport_con_out->GetNativeWindowHandle() : nullptr;
+}
+
+extern "C" BOOL WinPortSetConsoleImage(const char *id, unsigned long long flags, COORD pos, unsigned int width, unsigned int height, const void *buffer)
+{
+	return g_winport_con_out ? g_winport_con_out->OnSetConsoleImage(id, flags, pos, width, height, buffer) : false;
+}
+
+extern "C" BOOL WinPortDeleteConsoleImage(const char *id)
+{
+	return g_winport_con_out ? g_winport_con_out->OnDeleteConsoleImage(id) : false;
+}
+
+extern "C" void WinPortGetConsoleImageCaps(WinportGraphicsInfo *wgi)
+{
+	if (g_winport_con_out && wgi) {
+		g_winport_con_out->OnGetConsoleImageCaps(wgi);
+	}
+}
