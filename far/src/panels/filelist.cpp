@@ -1349,15 +1349,15 @@ int FileList::ProcessKey(FarKey Key)
 			RestoreSelection();
 			return TRUE;
 		}
-		case KEY_CTRLM | KEY_ALT: {
+		case KEY_CTRLALTM: {
 			if (!Opt.ShowFilenameMarks)
-				Opt.ShowFilenameMarks^= 1;
+				Opt.ShowFilenameMarks ^= 1;
 			else {
 				if (!Opt.FilenameMarksAlign)
-					Opt.FilenameMarksAlign^= 1;
+					Opt.FilenameMarksAlign ^= 1;
 				else {
-					Opt.ShowFilenameMarks^= 1;
-					Opt.FilenameMarksAlign^= 1;
+					Opt.ShowFilenameMarks ^= 1;
+					Opt.FilenameMarksAlign ^= 1;
 				}
 			}
 			Redraw();

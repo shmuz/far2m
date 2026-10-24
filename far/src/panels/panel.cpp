@@ -1636,6 +1636,7 @@ int Panel::SetPluginCommand(int Command, int Param1, LONG_PTR Param2)
 				Info->OwnerHandle = ph->pPlugin;
 				Info->OwnerID = ph->pPlugin->GetSysID();
 			}
+
 			int X1, Y1, X2, Y2;
 			GetPosition(X1, Y1, X2, Y2);
 			Info->PanelRect.left = X1;
@@ -1645,39 +1646,34 @@ int Panel::SetPluginCommand(int Command, int Param1, LONG_PTR Param2)
 			Info->Visible = IsVisible();
 			Info->Focus = GetFocus();
 			Info->ViewMode = GetViewMode();
-			if ((Info->SortMode = GetSortMode()) < PanelSortMode::COUNT)
-				Info->SortMode+= SM_UNSORTED - UNSORTED;
-			{
-				static struct
-				{
-					int *Opt;
-					DWORD Flags;
-				} PFLAGS[] = {
-						{&Opt.ShowHidden,         PFLAGS_SHOWHIDDEN        },
-						{&Opt.Highlight,          PFLAGS_HIGHLIGHT         },
-						{&Opt.ShowFilenameMarks,  PFLAGS_HL_MARKERS_NOSHOW },
-						{&Opt.FilenameMarksAlign, PFLAGS_HL_MARKERS_NOALIGN},
-				};
-				DWORD Flags = 0;
+			Info->SortMode = GetSortMode();
+			if (Info->SortMode < PanelSortMode::COUNT)
+				Info->SortMode += (SM_UNSORTED - UNSORTED);
 
-				for (size_t I = 0; I < ARRAYSIZE(PFLAGS); ++I)
-					if (*(PFLAGS[I].Opt))
-						Flags|= PFLAGS[I].Flags;
+			struct {
+				int Opt;
+				DWORD Flags;
+			}
+			PFLAGS[] = {
+				{ Opt.ShowHidden,                      PFLAGS_SHOWHIDDEN         },
+				{ Opt.Highlight,                       PFLAGS_HIGHLIGHT          },
+				{ !Opt.ShowFilenameMarks,              PFLAGS_HL_MARKERS_NOSHOW  },
+				{ !Opt.FilenameMarksAlign,             PFLAGS_HL_MARKERS_NOALIGN },
+				{ GetSortOrder() < 0,                  PFLAGS_REVERSESORTORDER   },
+				{ GetSortGroups(),                     PFLAGS_USESORTGROUPS      },
+				{ GetSelectedFirstMode(),              PFLAGS_SELECTEDFIRST      },
+				{ GetDirectoriesFirst(),               PFLAGS_DIRECTORIESFIRST   },
+				{ GetNumericSort(),                    PFLAGS_NUMERICSORT        },
+				{ GetCaseSensitiveSort(),              PFLAGS_CASESENSITIVESORT  },
+				{ CtrlObject->Cp()->LeftPanel == this, PFLAGS_PANELLEFT          },
+			};
 
-				Flags|= GetSortOrder() < 0 ? PFLAGS_REVERSESORTORDER : 0;
-				Flags|= GetSortGroups() ? PFLAGS_USESORTGROUPS : 0;
-				Flags|= GetSelectedFirstMode() ? PFLAGS_SELECTEDFIRST : 0;
-				Flags|= GetDirectoriesFirst() ? PFLAGS_DIRECTORIESFIRST : 0;
-				Flags|= GetNumericSort() ? PFLAGS_NUMERICSORT : 0;
-				Flags|= GetCaseSensitiveSort() ? PFLAGS_CASESENSITIVESORT : 0;
-
-				if (CtrlObject->Cp()->LeftPanel == this)
-					Flags|= PFLAGS_PANELLEFT;
-
-				Info->Flags = Flags;
+			for (const auto &item : PFLAGS) {
+				if (item.Opt)
+					Info->Flags |= item.Flags;
 			}
 
-			if (GetType() == FILE_PANEL) {
+			if (DestFilePanel) {
 				static int Reenter = 0;
 
 				if (!Reenter && Info->Plugin) {
@@ -1686,19 +1682,19 @@ int Panel::SetPluginCommand(int Command, int Param1, LONG_PTR Param2)
 					DestFilePanel->GetOpenPluginInfo(&PInfo);
 
 					if (PInfo.Flags & OPIF_REALNAMES)
-						Info->Flags|= PFLAGS_REALNAMES;
+						Info->Flags |= PFLAGS_REALNAMES;
 
 					if (!(PInfo.Flags & OPIF_USEHIGHLIGHTING))
-						Info->Flags&= ~PFLAGS_HIGHLIGHT;
+						Info->Flags &= ~PFLAGS_HIGHLIGHT;
 
 					if (PInfo.Flags & OPIF_USECRC32)
-						Info->Flags|= PFLAGS_USECRC32;
+						Info->Flags |= PFLAGS_USECRC32;
 
 					if (PInfo.Flags & OPIF_HL_MARKERS_NOSHOW)       // (?) condition added by analogy:
-						Info->Flags|= PFLAGS_HL_MARKERS_NOSHOW;     //  may not be completely correct
+						Info->Flags |= PFLAGS_HL_MARKERS_NOSHOW;     //  may not be completely correct
 
 					if (PInfo.Flags & OPIF_HL_MARKERS_NOALIGN)      // (?) condition added by analogy:
-						Info->Flags|= PFLAGS_HL_MARKERS_NOALIGN;    //  may not be completely correct
+						Info->Flags |= PFLAGS_HL_MARKERS_NOALIGN;    //  may not be completely correct
 
 					Reenter--;
 				}
@@ -1707,7 +1703,7 @@ int Panel::SetPluginCommand(int Command, int Param1, LONG_PTR Param2)
 			}
 
 			if (!Info->Plugin)    // $ 12.12.2001 DJ - на неплагиновой панели - всегда реальные имена
-				Info->Flags|= PFLAGS_REALNAMES;
+				Info->Flags |= PFLAGS_REALNAMES;
 
 			Result = TRUE;
 			break;
