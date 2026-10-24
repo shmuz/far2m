@@ -910,9 +910,6 @@ int Manager::ProcessKey(FarKey Key)
 
 int Manager::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 {
-	// При каптюренной мыши отдаем управление заданному объекту
-//    if (ScreenObject::CaptureMouseObject)
-//      return ScreenObject::CaptureMouseObject->ProcessMouse(MouseEvent);
 	return CurrentFrame ? CurrentFrame->ProcessMouse(MouseEvent) : FALSE;
 }
 

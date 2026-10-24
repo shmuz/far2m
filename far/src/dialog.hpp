@@ -66,13 +66,11 @@ enum DIALOG_MODES
 	DMODE_RESIZED       = 0x00010000,		//
 	DMODE_ENDLOOP       = 0x00020000,		// Конец цикла обработки диалога?
 	DMODE_BEGINLOOP     = 0x00040000,		// Начало цикла обработки диалога?
-	// DMODE_OWNSITEMS           =0x00080000, // если TRUE, Dialog освобождает список Item в деструкторе
 	DMODE_NODRAWSHADOW     = 0x00100000,	// не рисовать тень?
 	DMODE_NODRAWPANEL      = 0x00200000,	// не рисовать подложку?
 	DMODE_FULLSHADOW       = 0x00400000,
 	DMODE_NOPLUGINS        = 0x00800000,
 	DMODE_KEEPCONSOLETITLE = 0x10000000,	// не изменять заголовок консоли
-	DMODE_CLICKOUTSIDE     = 0x20000000,	// было нажатие мыши вне диалога?
 	DMODE_MSGINTERNAL      = 0x40000000,	// Внутренняя Message?
 	DMODE_OLDSTYLE         = 0x80000000,	// Диалог в старом (до 1.70) стиле
 };

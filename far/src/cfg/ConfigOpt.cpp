@@ -133,7 +133,7 @@ struct FARConfig
 		DWORD ArrSize;
 	};
 	union {
-	  const wchar_t *DefStr;   // строка по умолчанию
+	  const wchar_t *DefStr = nullptr;   // строка по умолчанию
 	  const BYTE    *DefArr;   // данные по умолчанию
 	};
 
@@ -141,16 +141,16 @@ struct FARConfig
 		SaveType(save),ValType(OPT_BINARY),KeyName(key),ValName(val),VoidPtr(trg),ArrSize(size),DefArr(dflt) {}
 
 	constexpr FARConfig(OptSaveType save, const char *key, const char *val, DWORD *trg, DWORD dflt, OPT_TYPE Type=OPT_DWORD) :
-		SaveType(save),ValType(Type),KeyName(key),ValName(val),DWordPtr(trg),DefDWord(dflt),DefStr(nullptr) {}
+		SaveType(save),ValType(Type),KeyName(key),ValName(val),DWordPtr(trg),DefDWord(dflt) {}
 
 	constexpr FARConfig(OptSaveType save, const char *key, const char *val, int *trg, int dflt, OPT_TYPE Type=OPT_DWORD) :
-		SaveType(save),ValType(Type),KeyName(key),ValName(val),IntPtr(trg),DefInt(dflt),DefStr(nullptr) {}
+		SaveType(save),ValType(Type),KeyName(key),ValName(val),IntPtr(trg),DefInt(dflt) {}
 
 	constexpr FARConfig(OptSaveType save, const char *key, const char *val, int *trg, bool dflt) :
-		SaveType(save),ValType(OPT_BOOLEAN),KeyName(key),ValName(val),IntPtr(trg),DefInt(dflt),DefStr(nullptr) {}
+		SaveType(save),ValType(OPT_BOOLEAN),KeyName(key),ValName(val),IntPtr(trg),DefInt(dflt) {}
 
 	constexpr FARConfig(OptSaveType save, const char *key, const char *val, bool *trg, bool dflt) :
-		SaveType(save),ValType(OPT_REALBOOLEAN),KeyName(key),ValName(val),BoolPtr(trg),DefBool(dflt),DefStr(nullptr) {}
+		SaveType(save),ValType(OPT_REALBOOLEAN),KeyName(key),ValName(val),BoolPtr(trg),DefBool(dflt) {}
 
 	constexpr FARConfig(OptSaveType save, const char *key, const char *val, FARString *trg, const wchar_t *dflt) :
 		SaveType(save),ValType(OPT_SZ),KeyName(key),ValName(val),StrPtr(trg),DefDWord(0),DefStr(dflt) {}

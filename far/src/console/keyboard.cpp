@@ -66,7 +66,6 @@ FarQueue<DWORD> *KeyQueue = nullptr;
 int AltPressed = 0, CtrlPressed = 0, ShiftPressed = 0;
 int RightAltPressed = 0, RightCtrlPressed = 0, RightShiftPressed = 0;
 DWORD MouseButtonState = 0, PrevMouseButtonState = 0;
-int PrevLButtonPressed = 0, PrevRButtonPressed = 0, PrevMButtonPressed = 0;
 SHORT PrevMouseX = 0, PrevMouseY = 0, MouseX = 0, MouseY = 0;
 int PreMouseEventFlags = 0,MouseEventFlags = 0;
 

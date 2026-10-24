@@ -37,8 +37,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "savescr.hpp"
 #include "interf.hpp"
 
-ScreenObject *ScreenObject::CaptureMouseObject = nullptr;
-
 ScreenObject::ScreenObject()
 	:
 	ShadowSaveScr(nullptr),
@@ -220,9 +218,4 @@ void ScreenObject::Shadow(bool Full)
 			MakeShadow(X2 + 1, Y1 + 1, X2 + 2, Y2 + 1, ShadowSaveScr);
 		}
 	}
-}
-
-void ScreenObject::SetCapture(ScreenObject *Obj)
-{
-	ScreenObject::CaptureMouseObject = Obj;
 }

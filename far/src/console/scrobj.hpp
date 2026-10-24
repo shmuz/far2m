@@ -60,7 +60,6 @@ protected:
 
 public:
 	SaveScreen *SaveScr;
-	static ScreenObject *CaptureMouseObject;
 
 private:
 	virtual void DisplayObject(){};

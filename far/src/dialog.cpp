@@ -3232,25 +3232,19 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 	}
 
 	if (MsX < X1 || MsY < Y1 || MsX > X2 || MsY > Y2) {
-		if (DialogMode.Check(DMODE_CLICKOUTSIDE)
-				&& !DlgProc(DN_MOUSECLICK, -1, (LONG_PTR)MouseEvent)) {
+		if (MouseEvent->dwButtonState && !DlgProc(DN_MOUSECLICK, -1, (LONG_PTR)MouseEvent)) {
 			if (!DialogMode.Check(DMODE_SHOW))
 				return FALSE;
 
-			//		if (!(MouseEvent->dwButtonState & FROM_LEFT_1ST_BUTTON_PRESSED) && PrevLButtonPressed && ScreenObject::CaptureMouseObject)
 			if (!(MouseEvent->dwButtonState & FROM_LEFT_1ST_BUTTON_PRESSED)
 					&& (PrevMouseButtonState & FROM_LEFT_1ST_BUTTON_PRESSED)
 					&& (Opt.Dialogs.MouseButton & DMOUSEBUTTON_LEFT))
 				ProcessKey(KEY_ESC);
-			//		else if (!(MouseEvent->dwButtonState & RIGHTMOST_BUTTON_PRESSED) && PrevRButtonPressed && ScreenObject::CaptureMouseObject)
 			else if (!(MouseEvent->dwButtonState & RIGHTMOST_BUTTON_PRESSED)
 					&& (PrevMouseButtonState & RIGHTMOST_BUTTON_PRESSED)
 					&& (Opt.Dialogs.MouseButton & DMOUSEBUTTON_RIGHT))
 				ProcessKey(KEY_ENTER);
 		}
-
-		if (MouseEvent->dwButtonState)
-			DialogMode.Set(DMODE_CLICKOUTSIDE);
 
 		if (!MouseEvent->dwButtonState && FocusPos < ItemCount()
 				&& !(Items[FocusPos].Flags & (DIF_DISABLE | DIF_HIDDEN))
@@ -3259,7 +3253,6 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 			EditLine->ProcessMouse(MouseEvent);
 		}
 
-		// ScreenObject::SetCapture(this);
 		return TRUE;
 	}
 
@@ -3270,8 +3263,6 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 			if (EditLine->ProcessMouse(MouseEvent))
 				return TRUE;
 		}
-		DialogMode.Clear(DMODE_CLICKOUTSIDE);
-		//		ScreenObject::SetCapture(nullptr);
 		return FALSE;
 	}
 
