@@ -1196,11 +1196,12 @@ void Manager::DeleteCommit(Frame *aFrame)
 		Index = IndexOfStack(aFrame);
 		if (Index != -1)
 		{
-			ActivateFrame(FramePos);
-			Commit();
 			ModalStack.erase(ModalStack.begin() + Index);
 			if (!ModalStack.empty())
 				ActivateFrame(ModalStack.back());
+			else if (!FrameList.empty())
+				ActivateFrame(FrameList[FramePos]);
+			Commit();
 		}
 	}
 }
