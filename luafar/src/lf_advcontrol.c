@@ -283,6 +283,7 @@ AdvCommand( GetCursorPos,           ACTL_GETCURSORPOS)
 AdvCommand( GetDescSettings,        ACTL_GETDESCSETTINGS)
 AdvCommand( GetDialogSettings,      ACTL_GETDIALOGSETTINGS)
 AdvCommand( GetFarCommitTime,       ACTL_GETFARCOMMITTIME)
+AdvCommand( GetFarHwnd,             ACTL_GETFARHWND)
 AdvCommand( GetFarManagerVersion,   ACTL_GETFARMANAGERVERSION)
 AdvCommand( GetFarRect,             ACTL_GETFARRECT)
 AdvCommand( GetInterfaceSettings,   ACTL_GETINTERFACESETTINGS)
@@ -320,6 +321,7 @@ static const luaL_Reg actl_funcs[] =
 	PAIR( adv, GetDescSettings),
 	PAIR( adv, GetDialogSettings),
 	PAIR( adv, GetFarCommitTime),
+	PAIR( adv, GetFarHwnd),
 	PAIR( adv, GetFarRect),
 	PAIR( adv, GetFarManagerVersion),
 	PAIR( adv, GetInterfaceSettings),
