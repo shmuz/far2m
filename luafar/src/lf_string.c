@@ -288,6 +288,9 @@ wchar_t* convert_multibyte_string (lua_State *L, int pos, UINT codepage,
 // Now: using MB2Wide() as it preserves invalid UTF-8 parts.
 wchar_t* check_utf8_string (lua_State *L, int pos, size_t* pTrgSize)
 {
+	if (GetPluginData(L)->Flags & PDF_MB2WIDE_METHOD)
+		return convert_multibyte_string(L, pos, CP_UTF8, 0, pTrgSize, TRUE);
+
 	if (pos < 0)
 		pos += lua_gettop(L) + 1;
 
@@ -351,10 +354,15 @@ char* push_multibyte_string(lua_State* L, UINT CodePage, const wchar_t* str, int
 // Now: using Wide2MB as a counterpart to MB2Wide
 void push_utf8_string (lua_State* L, const wchar_t* str, int numchars)
 {
-	if (str)
-		Push_Wide2MB(L, str, numchars);
-	else
-		lua_pushnil(L);
+	if (GetPluginData(L)->Flags & PDF_WIDE2MB_METHOD) {
+		push_multibyte_string(L, CP_UTF8, str, numchars, 0);
+	}
+	else {
+		if (str)
+			Push_Wide2MB(L, str, numchars);
+		else
+			lua_pushnil(L);
+	}
 }
 
 void push_oem_string (lua_State* L, const wchar_t* str, int numchars)
@@ -691,6 +699,29 @@ static int ustring_lenW(lua_State *L)
 	return 1;
 }
 
+static int ustring_SetUtf8Conversion(lua_State *L)
+{
+	enum { MB = 0x1, WIDE = 0x2 };
+	TPluginData *pd = GetPluginData(L);
+	DWORD old_flags = 0;
+	if (pd->Flags & PDF_MB2WIDE_METHOD) old_flags |= MB;
+	if (pd->Flags & PDF_WIDE2MB_METHOD) old_flags |= WIDE;
+
+	if (!lua_isnoneornil(L, 1))
+	{
+		lua_Integer param = luaL_checkinteger(L, 1);
+
+		if (param & MB) pd->Flags |= PDF_MB2WIDE_METHOD;
+		else pd->Flags &= ~PDF_MB2WIDE_METHOD;
+
+		if (param & WIDE) pd->Flags |= PDF_WIDE2MB_METHOD;
+		else pd->Flags &= ~PDF_WIDE2MB_METHOD;
+	}
+
+	lua_pushinteger(L, old_flags);
+	return 1;
+}
+
 static const luaL_Reg ustring_funcs[] = {
 	PAIR( ustring, EnumSystemCodePages),
 	PAIR( ustring, GetACP),
@@ -701,6 +732,7 @@ static const luaL_Reg ustring_funcs[] = {
 	PAIR( ustring, MultiByteToWideChar),
 	PAIR( ustring, OemToUtf8),
 	PAIR( ustring, SetFileAttr),
+	PAIR( ustring, SetUtf8Conversion),
 	PAIR( ustring, subW),
 	PAIR( ustring, Utf32ToUtf8),
 	PAIR( ustring, Utf8ToOem),
