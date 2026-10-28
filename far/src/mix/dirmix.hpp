@@ -61,5 +61,6 @@ void CreatePath(FARString &strPath);
 std::string GetHelperPathName(const char *name);
 std::string GetMyScriptQuoted(const char *name);
 
+void CleanupTemporaryOpenPaths(bool clean_ours, bool clean_dead);
 void PrepareTemporaryOpenPath(FARString &Path);
 FARString DefaultPanelInitialDirectory();

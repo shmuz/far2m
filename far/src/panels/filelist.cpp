@@ -2363,9 +2363,6 @@ void FileList::ProcessEnter(bool EnableExec, bool SeparateWindow, bool EnableAss
 		if (EnableExec && SetCurPath() && !SeparateWindow
 				&& ProcessLocalFileTypes(strFileName, FILETYPE_EXEC, !PluginMode, strCurDir))
 		{
-			if (PluginMode)
-				QueueDeleteOnClose(strFileName);
-
 			return;
 		}
 
@@ -2381,10 +2378,6 @@ void FileList::ProcessEnter(bool EnableExec, bool SeparateWindow, bool EnableAss
 				CtrlObject->CmdHistory->AddToHistory(strFileName, HR_DEFAULT, strCurDir);
 
 			CtrlObject->CmdLine->ExecString(strFileName, SeparateWindow, true, false, false, RunAs);
-
-			if (PluginMode)
-				QueueDeleteOnClose(strFileName);
-
 		}
 		else if (SetCurPath())
 		{
@@ -2392,9 +2385,6 @@ void FileList::ProcessEnter(bool EnableExec, bool SeparateWindow, bool EnableAss
 					!SeparateWindow &&           // следовательно это Ctrl-PgDn
 					ProcessLocalFileTypes(strFileName, FILETYPE_ALTEXEC, !PluginMode, strCurDir))
 			{
-				if (PluginMode)
-					QueueDeleteOnClose(strFileName);
-
 				return;
 			}
 
@@ -2407,9 +2397,6 @@ void FileList::ProcessEnter(bool EnableExec, bool SeparateWindow, bool EnableAss
 					SetCurPath();    // OpenFilePlugin can change current path
 					ProcessGlobalFileTypes(strFileName, RunAs, !PluginMode, strCurDir);
 				}
-
-				if (PluginMode)
-					QueueDeleteOnClose(strFileName);
 			}
 
 			return;

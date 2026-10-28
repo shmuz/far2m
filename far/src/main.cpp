@@ -557,6 +557,10 @@ int FarAppMain(int argc, char **argv)
 
 	EmptyInternalClipboard();
 	VTShell_Shutdown();//ensure VTShell deinitialized before statics destructors called
+
+	// Clean up all temporary files opened by this instance (and any dead instances)
+	CleanupTemporaryOpenPaths(true, true);
+
 	_OT(SysLog(L"[[[[[Exit of FAR]]]]]]]]]"));
 	return Result;
 }

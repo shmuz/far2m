@@ -48,6 +48,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "scantree.hpp"
 #include "delete.hpp"
 #include <atomic>
+#include <signal.h>
 
 
 bool FarChDir(const wchar_t *NewDir)
@@ -264,34 +265,47 @@ std::string GetMyScriptQuoted(const char *name)
 	return out;
 }
 
+void CleanupTemporaryOpenPaths(bool clean_ours, bool clean_dead)
+{
+	std::string open_dir = InMyTemp("open");
+	DIR *d = opendir(open_dir.c_str());
+	if (!d)
+		return;
+
+	const pid_t my_pid = getpid();
+	struct dirent *de;
+	std::vector<std::string> to_delete;
+
+	while ((de = readdir(d)) != nullptr) {
+		if (de->d_name[0] == '.')
+			continue;
+
+		unsigned int dir_pid = 0;
+		if (sscanf(de->d_name, "%u_", &dir_pid) == 1) {
+			if (clean_ours && (pid_t)dir_pid == my_pid) {
+				to_delete.push_back(open_dir + "/" + de->d_name);
+			} else if (clean_dead && (pid_t)dir_pid != my_pid) {
+				// If the owning instance no longer exists, reap it
+				if (kill((pid_t)dir_pid, 0) == -1 && errno == ESRCH) {
+					to_delete.push_back(open_dir + "/" + de->d_name);
+				}
+			}
+		}
+	}
+	closedir(d);
+
+	for (const auto &path : to_delete) {
+		FARString wPath(path.c_str());
+		DeleteDirTree(wPath.CPtr());
+	}
+}
+
 void PrepareTemporaryOpenPath(FARString &Path)
 {
+	// Housekeeping: purge leftovers from dead/crashed instances
+	CleanupTemporaryOpenPaths(false, true);
+
 	Path = InMyTemp("open");
-
-	std::vector<FARString> outdated;
-
-	ScanTree scan_tree(false, false);
-	scan_tree.SetFindPath(Path.CPtr(), L"*", 0);
-	FAR_FIND_DATA_EX found_data;
-	FARString found_name;
-	time_t now = time(nullptr);
-	while (scan_tree.GetNextName(&found_data, found_name)) {
-		struct timespec ts_mod = {}, ts_change = {};
-		WINPORT(FileTimeToLocalFileTime)(&found_data.ftUnixModificationTime, &found_data.ftUnixModificationTime);
-		WINPORT(FileTimeToLocalFileTime)(&found_data.ftUnixStatusChangeTime, &found_data.ftUnixStatusChangeTime);
-		WINPORT(FileTime_Win32ToUnix)(&found_data.ftUnixModificationTime, &ts_mod);
-		WINPORT(FileTime_Win32ToUnix)(&found_data.ftUnixStatusChangeTime, &ts_change);
-		time_t delta = std::min(now - ts_mod.tv_sec, now - ts_change.tv_sec);
-		if (delta > 60) {//one minute ought be enouht to open anything (c)
-			outdated.push_back(found_name);
-			fprintf(stderr, "PrepareTemporaryOpenPath: delta=%u for '%ls'\n",
-				(unsigned int)delta, found_name.CPtr());
-		}
-	};
-
-	for (const auto &p : outdated) {
-		DeleteDirTree(p.CPtr());
-	}
 	apiCreateDirectory(Path, nullptr);
 
 	static std::atomic<unsigned short> s_counter{0};
