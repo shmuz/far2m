@@ -1681,7 +1681,7 @@ int main(int argc, char * argv[])
 
 	//rt.inet.begin()->CreateIpRoute(L"192.168.2.0", L"255.255.255.0", L"192.168.2.1", L"eth0", 0);
 
-	system("mv /tmp/far2l.netcfg.log .");
+	system("mv /tmp/far2m.netcfg.log .");
 	return 0;
 }
 #endif //MAIN_NETROUTES

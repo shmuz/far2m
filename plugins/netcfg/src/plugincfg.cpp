@@ -16,7 +16,7 @@
 #define LOG_SOURCE_FILE "plugincfg.cpp"
 #define LOG_MAX_PATH 256
 
-static char initial_log[LOG_MAX_PATH] = {'/','t','m','p','/','f','a','r','2','l','.','n','e','t','c','f','g','.','l','o','g',0};
+static char initial_log[LOG_MAX_PATH] = "/tmp/far2m.netcfg.log";
 const char * LOG_FILE = initial_log;
 //static_assert( sizeof("/dev/null") < LOG_MAX_PATH );
 

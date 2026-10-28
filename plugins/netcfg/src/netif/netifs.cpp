@@ -1073,7 +1073,7 @@ int main(int argc, char * argv[])
 		NetInterface net_if = NetInterface(L"lo");
 	}
 
-	system("mv /tmp/far2l.netcfg.log .");
+	system("mv /tmp/far2m.netcfg.log .");
 	return 0;
 }
 
