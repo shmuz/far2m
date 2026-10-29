@@ -2658,6 +2658,7 @@ int LF_LuaOpen (const struct PluginStartupInfo *aInfo, TPluginData* aPlugData, l
 	lua_State *L = lua_open();
 	if (L) {
 		// place pointer to plugin data in the L's registry -
+		aPlugData->Flags |= (PDF_MB2WIDE_METHOD | PDF_WIDE2MB_METHOD);
 		aPlugData->MainLuaState = L;
 		lua_pushlightuserdata(L, aPlugData);
 		lua_setfield(L, LUA_REGISTRYINDEX, FAR_PLUGINDATA);
