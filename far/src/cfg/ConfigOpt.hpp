@@ -63,6 +63,8 @@ void ConfigOptAssertLoaded();
 int  ConfigOptGetIndex(const wchar_t *wKeyName);
 bool ConfigOptGetValue(size_t Index, GetConfig& Data);
 void ConfigOptLoad();
+void ConfigOptFromCmdLine();
+void ConfigOptSanitize();
 void ConfigOptSave(bool Ask);
 void ConfigOptSaveAutoOptions();
 bool ConfigOptSetBinary(size_t Index, const void *Data, DWORD Size);

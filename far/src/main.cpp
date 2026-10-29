@@ -518,6 +518,8 @@ int FarAppMain(int argc, char **argv)
 
 	ConfigOptLoad();
 	CommandLineParams Params(argc, argv); // it's after ConfigOptLoad() to be able to override
+	ConfigOptFromCmdLine();
+	ConfigOptSanitize();
 
 	//Инициализация массива клавиш. Должна быть после CopyGlobalSettings!
 	InitKeysArray();

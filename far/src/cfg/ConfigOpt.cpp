@@ -59,6 +59,7 @@ void SanitizeHistoryCounts();
 void SanitizeIndentationCounts();
 
 static bool g_config_ready = false;
+static bool ExplicitWindowMode = false;
 
 // Стандартный набор разделителей
 static const wchar_t *WordDiv0 = L"~!%^&*()+|{}:\"<>?`-=\\[];',./";
@@ -592,7 +593,8 @@ bool ConfigOptSetBinary(size_t I, const void *Data, DWORD Size)
 	return false;
 }
 
-static void ConfigOptFromCmdLine()
+/* Command line config modifiers */
+void ConfigOptFromCmdLine()
 {
 	for (const auto &Str: Opt.CmdLineStrings)
 	{
@@ -641,10 +643,8 @@ void ConfigOptLoad()
 {
 	ConfigReader cfg_reader;
 
-	/* <ПРЕПРОЦЕССЫ> *************************************************** */
-	bool ExplicitWindowMode = Opt.WindowMode;
+	ExplicitWindowMode = Opt.WindowMode;
 	//Opt.LCIDSort=LOCALE_USER_DEFAULT; // проинициализируем на всякий случай
-	/* *************************************************** </ПРЕПРОЦЕССЫ> */
 
 	for (size_t I=0; I < ARRAYSIZE(CFG); ++I)
 	{
@@ -674,11 +674,11 @@ void ConfigOptLoad()
 				break;
 		}
 	}
+}
 
-	/* Command line config modifiers */
-	ConfigOptFromCmdLine();
-
-	/* <ПОСТПРОЦЕССЫ> *************************************************** */
+void ConfigOptSanitize()
+{
+	ConfigReader cfg_reader;
 
 	SanitizeHistoryCounts();
 	SanitizeIndentationCounts();
@@ -687,7 +687,7 @@ void ConfigOptLoad()
 
 	Opt.PluginMaxReadData = std::max(Opt.PluginMaxReadData, 0x1000u);
 
-	if(ExplicitWindowMode)
+	if (ExplicitWindowMode)
 	{
 		Opt.WindowMode = true;
 	}
@@ -754,7 +754,6 @@ void ConfigOptLoad()
 	FileFilter::InitFilter(cfg_reader);
 
 	g_config_ready = true;
-	/* *************************************************** </ПОСТПРОЦЕССЫ> */
 }
 
 void ConfigOptAssertLoaded()
