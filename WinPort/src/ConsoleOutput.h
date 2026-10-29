@@ -64,77 +64,77 @@ class ConsoleOutput : public IConsoleOutput
 	size_t ModifySequenceAt(SequenceModifier &sm, COORD &pos);
 	void ScrollOutputOnOverflow(SMALL_RECT &area);
 
-	virtual const WCHAR *LockedGetTitle();
-	virtual CHAR_INFO *LockedDirectLineAccess(size_t line_index, unsigned int &width);
-	virtual void Unlock();
+	const WCHAR *LockedGetTitle() override;
+	CHAR_INFO *LockedDirectLineAccess(size_t line_index, unsigned int &width) override;
+	void Unlock() override;
 	void SetUpdateCellArea(SMALL_RECT &area, COORD pos);
 	void CopyFrom(const ConsoleOutput &co);
 
 public:
 	ConsoleOutput();
-	virtual void SetBackend(IConsoleOutputBackend *listener);
+	void SetBackend(IConsoleOutputBackend *listener) override;
 
-	virtual void SetAttributes(DWORD64 attributes);
-	virtual DWORD64 GetAttributes();
+	void SetAttributes(DWORD64 attributes) override;
+	DWORD64 GetAttributes() override;
 
-	virtual	void SetCursorBlinkTime(DWORD interval);
-	virtual void SetCursor(COORD pos);
-	virtual void SetCursor(UCHAR height, bool visible);
-	virtual COORD GetCursor();
-	virtual COORD GetCursor(UCHAR &height, bool &visible);
+	virtual	void SetCursorBlinkTime(DWORD interval) override;
+	void SetCursor(COORD pos) override;
+	void SetCursor(UCHAR height, bool visible) override;
+	COORD GetCursor() override;
+	COORD GetCursor(UCHAR &height, bool &visible) override;
 
-	virtual void SetSize(unsigned int width, unsigned int height);
-	virtual void GetSize(unsigned int &width, unsigned int &height);
+	void SetSize(unsigned int width, unsigned int height) override;
+	void GetSize(unsigned int &width, unsigned int &height) override;
 
-	virtual COORD GetLargestConsoleWindowSize();
-	virtual void SetWindowMaximized(bool maximized);
+	COORD GetLargestConsoleWindowSize() override;
+	void SetWindowMaximized(bool maximized) override;
 
-	virtual void SetWindowInfo(bool absolute, const SMALL_RECT &rect);
-	virtual void SetTitle(const WCHAR *title);
+	void SetWindowInfo(bool absolute, const SMALL_RECT &rect) override;
+	void SetTitle(const WCHAR *title) override;
 
-	virtual DWORD GetMode();
-	virtual void SetMode(DWORD mode);
+	DWORD GetMode() override;
+	void SetMode(DWORD mode) override;
 
-	virtual void Read(CHAR_INFO *data, COORD data_size, COORD data_pos, SMALL_RECT &screen_rect);
-	virtual void Write(const CHAR_INFO *data, COORD data_size, COORD data_pos, SMALL_RECT &screen_rect);
-	virtual bool Read(CHAR_INFO &data, COORD screen_pos);
-	virtual bool Write(const CHAR_INFO &data, COORD screen_pos);
+	void Read(CHAR_INFO *data, COORD data_size, COORD data_pos, SMALL_RECT &screen_rect) override;
+	void Write(const CHAR_INFO *data, COORD data_size, COORD data_pos, SMALL_RECT &screen_rect) override;
+	bool Read(CHAR_INFO &data, COORD screen_pos) override;
+	bool Write(const CHAR_INFO &data, COORD screen_pos) override;
 
-	virtual size_t WriteString(const WCHAR *data, size_t count);
-	virtual size_t WriteStringAt(const WCHAR *data, size_t count, COORD &pos);
-	virtual size_t FillCharacterAt(WCHAR cCharacter, size_t count, COORD &pos);
-	virtual size_t FillAttributeAt(DWORD64 qAttribute, size_t count, COORD &pos);
+	size_t WriteString(const WCHAR *data, size_t count) override;
+	size_t WriteStringAt(const WCHAR *data, size_t count, COORD &pos) override;
+	size_t FillCharacterAt(WCHAR cCharacter, size_t count, COORD &pos) override;
+	size_t FillAttributeAt(DWORD64 qAttribute, size_t count, COORD &pos) override;
 
-	virtual bool Scroll(const SMALL_RECT *lpScrollRectangle, const SMALL_RECT *lpClipRectangle,
-				COORD dwDestinationOrigin, const CHAR_INFO *lpFill);
+	bool Scroll(const SMALL_RECT *lpScrollRectangle, const SMALL_RECT *lpClipRectangle,
+				COORD dwDestinationOrigin, const CHAR_INFO *lpFill) override;
 
-	virtual void SetScrollRegion(SHORT top, SHORT bottom);
-	virtual void GetScrollRegion(SHORT &top, SHORT &bottom);
-	virtual void SetScrollCallback(PCONSOLE_SCROLL_CALLBACK pCallback, PVOID pContext);
+	void SetScrollRegion(SHORT top, SHORT bottom) override;
+	void GetScrollRegion(SHORT &top, SHORT &bottom) override;
+	void SetScrollCallback(PCONSOLE_SCROLL_CALLBACK pCallback, PVOID pContext) override;
 
-	virtual void AdhocQuickEdit();
-	virtual DWORD64 SetConsoleTweaks(DWORD64 tweaks);
-	virtual void ConsoleChangeFont();
-	virtual void ConsoleSaveWindowState();
-	virtual bool IsActive();
-	virtual void ConsoleDisplayNotification(const WCHAR *title, const WCHAR *text);
-	virtual bool ConsoleBackgroundMode(bool TryEnterBackgroundMode);
-	virtual bool SetFKeyTitles(const CHAR **titles);
-	virtual BYTE GetColorPalette();
-	virtual void GetBasePalette(void *p);
-	virtual bool SetBasePalette(void *p);
-	virtual void OverrideColor(DWORD Index, DWORD *ColorFG, DWORD *ColorBK);
-	virtual void RepaintsDeferStart();
-	virtual void RepaintsDeferFinish(bool force);
+	void AdhocQuickEdit() override;
+	DWORD64 SetConsoleTweaks(DWORD64 tweaks) override;
+	void ConsoleChangeFont() override;
+	void ConsoleSaveWindowState() override;
+	bool IsActive() override;
+	void ConsoleDisplayNotification(const WCHAR *title, const WCHAR *text) override;
+	bool ConsoleBackgroundMode(bool TryEnterBackgroundMode) override;
+	bool SetFKeyTitles(const CHAR **titles) override;
+	BYTE GetColorPalette() override;
+	void GetBasePalette(void *p) override;
+	bool SetBasePalette(void *p) override;
+	void OverrideColor(DWORD Index, DWORD *ColorFG, DWORD *ColorBK) override;
+	void RepaintsDeferStart() override;
+	void RepaintsDeferFinish(bool force) override;
 
-	virtual IConsoleOutput *ForkConsoleOutput(HANDLE con_handle);
-	virtual void JoinConsoleOutput(IConsoleOutput *con_out);
+	IConsoleOutput *ForkConsoleOutput(HANDLE con_handle) override;
+	void JoinConsoleOutput(IConsoleOutput *con_out) override;
 
-	virtual unsigned int WaitForChange(unsigned int prev_change_id, unsigned int timeout_msec = -1);
-	virtual const char *BackendInfo(int entity);
-	virtual void *GetNativeWindowHandle() override;
+	unsigned int WaitForChange(unsigned int prev_change_id, unsigned int timeout_msec = -1) override;
+	const char *BackendInfo(int entity) override;
+	void *GetNativeWindowHandle() override;
 
-	virtual void OnGetConsoleImageCaps(WinportGraphicsInfo *wgi);
-	virtual bool OnSetConsoleImage(const char *id, DWORD64 flags, COORD pos, DWORD width, DWORD height, const void *buffer);
-	virtual bool OnDeleteConsoleImage(const char *id);
+	void OnGetConsoleImageCaps(WinportGraphicsInfo *wgi) override;
+	bool OnSetConsoleImage(const char *id, DWORD64 flags, COORD pos, DWORD width, DWORD height, const void *buffer) override;
+	bool OnDeleteConsoleImage(const char *id) override;
 };
