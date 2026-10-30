@@ -1878,11 +1878,13 @@ int Panel::SetPluginCommand(int Command, int Param1, LONG_PTR Param2)
 			if (Info) {
 				CurFile = Info->CurrentItem;
 				CurTopFile = Info->TopPanelItem;
+				FrameManager->RefreshFrame();
 			}
-
-			// $ 12.05.2001 DJ перерисовываемся только в том случае, если мы - текущий фрейм
-			if (FPanels->IsTopFrame())
-				Redraw();
+			else {
+				// $ 12.05.2001 DJ перерисовываемся только в том случае, если мы - текущий фрейм
+				if (FPanels->IsTopFrame())
+					Redraw();
+			}
 
 			Result = TRUE;
 			break;
