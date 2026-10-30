@@ -1034,7 +1034,6 @@ int FileList::ProcessKey(FarKey Key)
 			case KEY_CTRLALTBACKBRACKET:
 			case KEY_ALTSHIFTBRACKET:
 			case KEY_ALTSHIFTBACKBRACKET:
-				break;
 			case KEY_CTRLG:
 			case KEY_SHIFTF4:
 			case KEY_F7:
@@ -1093,30 +1092,27 @@ int FileList::ProcessKey(FarKey Key)
 	}
 
 	switch (Key) {
-		case KEY_F1: {
+		case KEY_F1:
 			_ALGO(CleverSysLog clv(L"F1"));
 			_ALGO(SysLog(L"%ls, FileCount=%d", (PanelMode == PLUGIN_PANEL ? "PluginPanel" : "FilePanel"),
 					FileCount));
 
-			if (PanelMode == PLUGIN_PANEL && PluginPanelHelp(hPlugin))
-				return TRUE;
+			return (PanelMode == PLUGIN_PANEL && PluginPanelHelp(hPlugin));
 
-			return FALSE;
-		}
-		case KEY_ALTSHIFTF9: {
+		case KEY_ALTSHIFTF9:
 			if (PanelMode == PLUGIN_PANEL)
 				CtrlObject->Plugins.ConfigureCurrent(hPlugin->pPlugin, 0, &FarGuid);
 			else
 				CtrlObject->Plugins.Configure();
 
 			return TRUE;
-		}
-		case KEY_SHIFTSUBTRACT: {
+
+		case KEY_SHIFTSUBTRACT:
 			SaveSelection();
 			ClearSelection();
 			Redraw();
 			return TRUE;
-		}
+
 		case KEY_SHIFTADD: {
 			SaveSelection();
 
@@ -1133,40 +1129,51 @@ int FileList::ProcessKey(FarKey Key)
 			Redraw();
 			return TRUE;
 		}
+
 		case KEY_ADD:
 			SelectFiles(SELECT_ADD);
 			return TRUE;
+
 		case KEY_SUBTRACT:
 			SelectFiles(SELECT_REMOVE);
 			return TRUE;
+
 		case KEY_CTRLADD:
 			SelectFiles(SELECT_ADDEXT);
 			return TRUE;
+
 		case KEY_CTRLSUBTRACT:
 			SelectFiles(SELECT_REMOVEEXT);
 			return TRUE;
+
 		case KEY_ALTADD:
 			SelectFiles(SELECT_ADDNAME);
 			return TRUE;
+
 		case KEY_ALTSUBTRACT:
 			SelectFiles(SELECT_REMOVENAME);
 			return TRUE;
+
 		case KEY_MULTIPLY:
 			SelectFiles(SELECT_INVERT);
 			return TRUE;
+
 		case KEY_CTRLMULTIPLY:
 			SelectFiles(SELECT_INVERTALL);
 			return TRUE;
+
 		case KEY_ALTLEFT:    // Прокрутка длинных имен и описаний
 		case KEY_ALTHOME:    // Прокрутка длинных имен и описаний - в начало
 			LeftPos = (Key == KEY_ALTHOME) ? -0x7fff : LeftPos - 1;
 			Redraw();
 			return TRUE;
+
 		case KEY_ALTRIGHT:    // Прокрутка длинных имен и описаний
 		case KEY_ALTEND:      // Прокрутка длинных имен и описаний - в конец
 			LeftPos = (Key == KEY_ALTEND) ? 0x7fff : LeftPos + 1;
 			Redraw();
 			return TRUE;
+
 		case KEY_CTRLINS:
 		case KEY_CTRLNUMPAD0:
 		case KEY_CTRLSHIFTINS:
@@ -1214,6 +1221,7 @@ int FileList::ProcessKey(FarKey Key)
 			SetCurPath();
 			return TRUE;
 		}
+
 		case KEY_CTRLNUMENTER:
 		case KEY_CTRLSHIFTNUMENTER:
 		case KEY_CTRLENTER:
@@ -1276,6 +1284,7 @@ int FileList::ProcessKey(FarKey Key)
 
 			return TRUE;
 		}
+
 		case KEY_CTRLALTBRACKET:          // Вставить реальный (разрешенный) путь из левой панели
 		case KEY_CTRLALTBACKBRACKET:      // Вставить реальный (разрешенный) путь из правой панели
 		case KEY_ALTSHIFTBRACKET:         // Вставить реальный (разрешенный) путь из активной панели
@@ -1292,6 +1301,7 @@ int FileList::ProcessKey(FarKey Key)
 
 			return TRUE;
 		}
+
 		case KEY_CTRLA: {
 			_ALGO(CleverSysLog clv(L"Ctrl-A"));
 
@@ -1302,6 +1312,7 @@ int FileList::ProcessKey(FarKey Key)
 
 			return TRUE;
 		}
+
 		case KEY_CTRLALTA: {
 			_ALGO(CleverSysLog clv(L"Ctrl-Alt-A"));
 
@@ -1312,6 +1323,7 @@ int FileList::ProcessKey(FarKey Key)
 
 			return TRUE;
 		}
+
 		case KEY_CTRLG: {
 			_ALGO(CleverSysLog clv(L"Ctrl-G"));
 
@@ -1330,12 +1342,13 @@ int FileList::ProcessKey(FarKey Key)
 
 			return TRUE;
 		}
-		case KEY_CTRLZ:
 
+		case KEY_CTRLZ:
 			if (FileCount > 0 && PanelMode == NORMAL_PANEL && SetCurPath())
 				DescribeFiles();
 
 			return TRUE;
+
 		case KEY_CTRLH: {
 			Opt.ShowHidden = !Opt.ShowHidden;
 			Update(UPDATE_KEEP_SELECTION);
@@ -1345,10 +1358,11 @@ int FileList::ProcessKey(FarKey Key)
 			AnotherPanel->Redraw();
 			return TRUE;
 		}
-		case KEY_CTRLM: {
+
+		case KEY_CTRLM:
 			RestoreSelection();
 			return TRUE;
-		}
+
 		case KEY_CTRLALTM: {
 			if (!Opt.ShowFilenameMarks)
 				Opt.ShowFilenameMarks ^= 1;
@@ -1366,6 +1380,7 @@ int FileList::ProcessKey(FarKey Key)
 			AnotherPanel->Redraw();
 			return TRUE;
 		}
+
 		case KEY_CTRLR: {
 			Update(UPDATE_KEEP_SELECTION | UPDATE_CAN_BE_ANNOYING);
 			Redraw();
@@ -1379,10 +1394,11 @@ int FileList::ProcessKey(FarKey Key)
 			}
 			break;
 		}
-		case KEY_CTRLN: {
+
+		case KEY_CTRLN:
 			Redraw();
 			return TRUE;
-		}
+
 		case KEY_NUMENTER:
 		case KEY_SHIFTNUMENTER:
 		case KEY_ENTER:
@@ -1407,10 +1423,9 @@ int FileList::ProcessKey(FarKey Key)
 			return TRUE;
 		}
 
-		case KEY_CTRL | '`': {
+		case KEY_CTRL | '`':
 			SetLocation_Directory(CachedHomeDir());
 			return TRUE;
-		}
 
 		case KEY_CTRLBACKSLASH | KEY_ALT:
 		case KEY_CTRLBACKSLASH: {
@@ -1447,6 +1462,7 @@ int FileList::ProcessKey(FarKey Key)
 			CtrlObject->Cp()->ActivePanel->Show();
 			return TRUE;
 		}
+
 		case KEY_SHIFTF1: {
 			_ALGO(CleverSysLog clv(L"Shift-F1"));
 			_ALGO(SysLog(L"%ls, FileCount=%d", (PanelMode == PLUGIN_PANEL ? "PluginPanel" : "FilePanel"),
@@ -1457,6 +1473,7 @@ int FileList::ProcessKey(FarKey Key)
 
 			return TRUE;
 		}
+
 		case KEY_SHIFTF2: {
 			_ALGO(CleverSysLog clv(L"Shift-F2"));
 			_ALGO(SysLog(L"%ls, FileCount=%d", (PanelMode == PLUGIN_PANEL ? "PluginPanel" : "FilePanel"),
@@ -1482,6 +1499,7 @@ int FileList::ProcessKey(FarKey Key)
 
 			return TRUE;
 		}
+
 		case KEY_SHIFTF3: {
 			_ALGO(CleverSysLog clv(L"Shift-F3"));
 			_ALGO(SysLog(L"%ls, FileCount=%d", (PanelMode == PLUGIN_PANEL ? "PluginPanel" : "FilePanel"),
@@ -1489,6 +1507,7 @@ int FileList::ProcessKey(FarKey Key)
 			ProcessHostFile();
 			return TRUE;
 		}
+
 		case KEY_F3:
 		case KEY_NUMPAD5:
 		case KEY_SHIFTNUMPAD5:
@@ -1583,18 +1602,20 @@ int FileList::ProcessKey(FarKey Key)
 									// strFileName.ReleaseBuffer (); это не надо так как строка не поменялась
 								}
 							}
-						} else if (PluginMode)    // пустое имя файла в панели плагина не разрешается!
-						{
+						}
+						else if (PluginMode) {  // пустое имя файла в панели плагина не разрешается!
 							SetMessageHelp(L"WarnEditorPluginName");
 
 							if (Message(MSG_WARNING, 2, Msg::Warning, Msg::EditNewPlugin1, Msg::EditNewPath3,
 										Msg::Cancel))
 								return FALSE;
-						} else {
+						}
+						else {
 							strFileName = Msg::NewFileName;
 						}
 					} while (strFileName.IsEmpty());
-				} else {
+				}
+				else {
 					assert(CurFile < FileCount);
 					CurPtr = ListData[CurFile];
 
@@ -1703,7 +1724,8 @@ int FileList::ProcessKey(FarKey Key)
 								}
 							}
 						}
-					} else {
+					}
+					else {
 						int EnableExternal =
 								((Key == KEY_F3 && Opt.ViOpt.UseExternalViewer)
 										|| (Key == KEY_ALTF3 && !Opt.ViOpt.UseExternalViewer))
@@ -1723,7 +1745,8 @@ int FileList::ProcessKey(FarKey Key)
 							if (EnableExternal) {
 								ProcessExternal(Opt.strExternalViewer, strFileName, !PluginMode, strCurDir);
 								Processed = true;
-							} else {
+							}
+							else {
 								NamesList ViewList;
 
 								if (!PluginMode) {
@@ -1745,7 +1768,8 @@ int FileList::ProcessKey(FarKey Key)
 								if (ShellViewer) {
 									if (!ShellViewer->GetExitCode()) {
 										delete ShellViewer;
-									} else if (PluginMode) {
+									}
+									else if (PluginMode) {
 										ShellViewer->SetFileHolder(TFH);
 									}
 								}
@@ -1764,7 +1788,8 @@ int FileList::ProcessKey(FarKey Key)
 					TFH->CheckForChanges();
 					if (TFH->PutCode != -1) {
 						SetPluginModified();
-					} else {
+					}
+					else {
 						RefreshedPanel = false;
 					}
 				}
@@ -1783,7 +1808,8 @@ int FileList::ProcessKey(FarKey Key)
 					}
 					//          else
 					//            SetTitle();
-				} else if (PanelMode == NORMAL_PANEL)
+				}
+				else if (PanelMode == NORMAL_PANEL)
 					AccessTimeUpdateRequired = true;
 			}
 
@@ -1794,6 +1820,7 @@ int FileList::ProcessKey(FarKey Key)
 			//      CtrlObject->Cp()->Redraw();
 			return TRUE;
 		}
+
 		case KEY_F5:
 		case KEY_F6:
 		case KEY_ALTF6:
@@ -1823,6 +1850,7 @@ int FileList::ProcessKey(FarKey Key)
 
 			return TRUE;
 		}
+
 		case KEY_SHIFTF5:
 		case KEY_SHIFTF6: {
 			_ALGO(CleverSysLog clv(L"Shift-F5/Shift-F6"));
@@ -1845,7 +1873,8 @@ int FileList::ProcessKey(FarKey Key)
 				if (RealName) {
 					int ToPlugin = 0;
 					ShellCopy ShCopy(this, Key == KEY_SHIFTF6, false, true, true, ToPlugin, nullptr);
-				} else {
+				}
+				else {
 					ProcessCopyKeys(Key == KEY_SHIFTF5 ? KEY_F5 : KEY_F6);
 				}
 
@@ -1861,6 +1890,7 @@ int FileList::ProcessKey(FarKey Key)
 
 			return TRUE;
 			}
+
 		case KEY_F7: {
 			_ALGO(CleverSysLog clv(L"F7"));
 			_ALGO(SysLog(L"%ls, FileCount=%d", (PanelMode == PLUGIN_PANEL ? "PluginPanel" : "FilePanel"),
@@ -1894,12 +1924,14 @@ int FileList::ProcessKey(FarKey Key)
 						AnotherPanel->SetCurDir(strCurDir, false);
 						AnotherPanel->Redraw();
 					}
-				} else
+				}
+				else
 					ShellMakeDir(this);
 			}
 
 			return TRUE;
 		}
+
 		case KEY_F8:
 		case KEY_SHIFTDEL:
 		case KEY_SHIFTF8:
@@ -1935,15 +1967,18 @@ int FileList::ProcessKey(FarKey Key)
 
 			return TRUE;
 		}
+
 		// $ 26.07.2001 VVM  С альтом скролим всегда по 1
 		case KEY_MSWHEEL_UP:
 		case (KEY_MSWHEEL_UP | KEY_ALT):
 			Scroll(Key & KEY_ALT ? -1 : -Opt.MsWheelDelta);
 			return TRUE;
+
 		case KEY_MSWHEEL_DOWN:
 		case (KEY_MSWHEEL_DOWN | KEY_ALT):
 			Scroll(Key & KEY_ALT ? 1 : Opt.MsWheelDelta);
 			return TRUE;
+
 		case KEY_MSWHEEL_LEFT:
 		case (KEY_MSWHEEL_LEFT | KEY_ALT): {
 			int Roll = Key & KEY_ALT ? 1 : Opt.MsHWheelDelta;
@@ -1953,6 +1988,7 @@ int FileList::ProcessKey(FarKey Key)
 
 			return TRUE;
 		}
+
 		case KEY_MSWHEEL_RIGHT:
 		case (KEY_MSWHEEL_RIGHT | KEY_ALT): {
 			int Roll = Key & KEY_ALT ? 1 : Opt.MsHWheelDelta;
@@ -1962,34 +1998,41 @@ int FileList::ProcessKey(FarKey Key)
 
 			return TRUE;
 		}
+
 		case KEY_HOME:
 		case KEY_NUMPAD7:
-			Up(0x7fffff);
+			Up(FileCount);
 			return TRUE;
+
 		case KEY_END:
 		case KEY_NUMPAD1:
-			Down(0x7fffff);
+			Down(FileCount);
 			return TRUE;
+
 		case KEY_UP:
 		case KEY_NUMPAD8:
 			Up(1);
 			return TRUE;
+
 		case KEY_DOWN:
 		case KEY_NUMPAD2:
 			Down(1);
 			return TRUE;
+
 		case KEY_PGUP:
 		case KEY_NUMPAD9:
 			N = Columns * Height - 1;
 			CurTopFile-= N;
 			Up(N);
 			return TRUE;
+
 		case KEY_PGDN:
 		case KEY_NUMPAD3:
 			N = Columns * Height - 1;
 			CurTopFile+= N;
 			Down(N);
 			return TRUE;
+
 		case KEY_LEFT:
 		case KEY_NUMPAD4:
 
@@ -2002,6 +2045,7 @@ int FileList::ProcessKey(FarKey Key)
 			}
 
 			return FALSE;
+
 		case KEY_RIGHT:
 		case KEY_NUMPAD6:
 
@@ -2036,6 +2080,7 @@ int FileList::ProcessKey(FarKey Key)
 			ShowFileList(true);
 			return TRUE;
 		}
+
 		case KEY_SHIFTEND:
 		case KEY_SHIFTNUMPAD1: {
 			InternalProcessKey++;
@@ -2054,6 +2099,7 @@ int FileList::ProcessKey(FarKey Key)
 			ShowFileList(true);
 			return TRUE;
 		}
+
 		case KEY_SHIFTPGUP:
 		case KEY_SHIFTNUMPAD9:
 		case KEY_SHIFTPGDN:
@@ -2074,6 +2120,7 @@ int FileList::ProcessKey(FarKey Key)
 			ShowFileList(true);
 			return TRUE;
 		}
+
 		case KEY_SHIFTLEFT:
 		case KEY_SHIFTNUMPAD4:
 		case KEY_SHIFTRIGHT:
@@ -2107,6 +2154,7 @@ int FileList::ProcessKey(FarKey Key)
 
 			return FALSE;
 		}
+
 		case KEY_SHIFTUP:
 		case KEY_SHIFTNUMPAD8:
 		case KEY_SHIFTDOWN:
@@ -2138,6 +2186,7 @@ int FileList::ProcessKey(FarKey Key)
 			ShowFileList(true);
 			return TRUE;
 		}
+
 		case KEY_INS:
 		case KEY_NUMPAD0: {
 			if (!FileCount)
@@ -2154,6 +2203,7 @@ int FileList::ProcessKey(FarKey Key)
 			ShowFileList(true);
 			return TRUE;
 		}
+
 		case KEY_CTRLF3:
 			SetSortMode(BY_NAME);
 			return TRUE;
@@ -2184,6 +2234,7 @@ int FileList::ProcessKey(FarKey Key)
 		case KEY_CTRLF12:
 			SelectSortMode();
 			return TRUE;
+
 		case KEY_SHIFTF11:
 			SortGroups = !SortGroups;
 
@@ -2194,12 +2245,14 @@ int FileList::ProcessKey(FarKey Key)
 			ProcessPluginEvent(FE_CHANGESORTPARAMS);
 			Show();
 			return TRUE;
+
 		case KEY_SHIFTF12:
 			SelectedFirst = !SelectedFirst;
 			SortFileList(true);
 			ProcessPluginEvent(FE_CHANGESORTPARAMS);
 			Show();
 			return TRUE;
+
 		case KEY_CTRLPGUP:
 		case KEY_CTRLNUMPAD9: {
 			//"this" может быть удалён в ChangeDir
@@ -2212,8 +2265,9 @@ int FileList::ProcessKey(FarKey Key)
 				CtrlObject->Cp()->GetAnotherPanel(NewActivePanel)->Show();
 
 			NewActivePanel->Show();
-		}
 			return TRUE;
+		}
+
 		case KEY_CTRLPGDN:
 		case KEY_CTRLNUMPAD3:
 		case KEY_CTRLSHIFTPGDN:
