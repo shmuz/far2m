@@ -161,7 +161,8 @@ const wchar_t* _AddStringToCollector(lua_State *L, int pos)
 {
 	if (lua_isstring(L,-1))
 	{
-		const wchar_t* s = check_utf8_string(L, -1, NULL);
+		//don't use check_utf8_string here as it may crash Far in GetFindData on invalid UTF-8 strings
+		const wchar_t* s = utf8_to_wcstring(L, -1, NULL);
 		lua_rawseti(L, pos, (int)lua_objlen(L, pos) + 1);
 		return s;
 	}

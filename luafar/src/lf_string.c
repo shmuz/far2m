@@ -284,13 +284,8 @@ wchar_t* convert_multibyte_string (lua_State *L, int pos, UINT codepage,
 	return target;
 }
 
-// Was: return convert_multibyte_string(L, pos, CP_UTF8, 0, pTrgSize, TRUE);
-// Now: using MB2Wide() as it preserves invalid UTF-8 parts.
-wchar_t* check_utf8_string (lua_State *L, int pos, size_t* pTrgSize)
+static wchar_t* MB2Wide(lua_State *L, int pos, size_t* pTrgSize)
 {
-	if (GetPluginData(L)->Flags & PDF_MB2WIDE_METHOD)
-		return convert_multibyte_string(L, pos, CP_UTF8, 0, pTrgSize, TRUE);
-
 	if (pos < 0)
 		pos += lua_gettop(L) + 1;
 
@@ -304,9 +299,24 @@ wchar_t* check_utf8_string (lua_State *L, int pos, size_t* pTrgSize)
 	return (wchar_t*) lua_touserdata(L, pos);
 }
 
+wchar_t* check_utf8_string (lua_State *L, int pos, size_t* pTrgSize)
+{
+	if (GetPluginData(L)->Flags & PDF_MB2WIDE_METHOD)
+		return MB2Wide(L, pos, pTrgSize);
+	else
+		return convert_multibyte_string(L, pos, CP_UTF8, 0, pTrgSize, TRUE);
+}
+
 wchar_t* utf8_to_wcstring (lua_State *L, int pos, size_t* pTrgSize)
 {
-	return convert_multibyte_string(L, pos, CP_UTF8, 0, pTrgSize, FALSE);
+	wchar_t *s = NULL;
+	if ((GetPluginData(L)->Flags & PDF_MB2WIDE_METHOD) == 0)
+		s = convert_multibyte_string(L, pos, CP_UTF8, 0, pTrgSize, FALSE);
+
+	if (s == NULL)
+		s = MB2Wide(L, pos, pTrgSize);
+
+	return s;
 }
 
 const wchar_t* opt_utf8_string (lua_State *L, int pos, const wchar_t* dflt)
@@ -355,14 +365,13 @@ char* push_multibyte_string(lua_State* L, UINT CodePage, const wchar_t* str, int
 void push_utf8_string (lua_State* L, const wchar_t* str, int numchars)
 {
 	if (GetPluginData(L)->Flags & PDF_WIDE2MB_METHOD) {
-		push_multibyte_string(L, CP_UTF8, str, numchars, 0);
-	}
-	else {
 		if (str)
 			Push_Wide2MB(L, str, numchars);
 		else
 			lua_pushnil(L);
 	}
+	else
+		push_multibyte_string(L, CP_UTF8, str, numchars, 0);
 }
 
 void push_oem_string (lua_State* L, const wchar_t* str, int numchars)
