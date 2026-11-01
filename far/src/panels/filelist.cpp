@@ -197,7 +197,6 @@ FileList::FileList()
 	FileCount(0),
 	hPlugin(nullptr),
 	UpperFolderTopFile(0),
-	LastCurFile(-1),
 	ReturnCurrentFile(false),
 	SelFileCount(0),
 	GetSelPosition(0),
@@ -3993,21 +3992,21 @@ void FileList::EditFilter()
 void FileList::SelectSortMode()
 {
 	MenuDataEx InitSortMenuModes[] = {
-			{Msg::MenuSortByName,         LIF_SELECTED, KEY_CTRLF3 },
-            {Msg::MenuSortByExt,          0,            KEY_CTRLF4 },
-			{Msg::MenuSortByWrite,        0,            KEY_CTRLF5 },
-            {Msg::MenuSortBySize,         0,            KEY_CTRLF6 },
-			{Msg::MenuUnsorted,           0,            KEY_CTRLF7 },
-            {Msg::MenuSortByCreation,     0,            KEY_CTRLF8 },
-			{Msg::MenuSortByAccess,       0,            KEY_CTRLF9 },
-            {Msg::MenuSortByChange,       0,            0          },
-			{Msg::MenuSortByDiz,          0,            KEY_CTRLF10},
-            {Msg::MenuSortByOwner,        0,            KEY_CTRLF11},
-			{Msg::MenuSortByPhysicalSize, 0,            0          },
-            {Msg::MenuSortByNumLinks,     0,            0          },
-			{Msg::MenuSortByFullName,     0,            0          },
-            {Msg::MenuSortByCustomData,   0,            0          }
-    };
+			{ Msg::MenuSortByName,         LIF_SELECTED, KEY_CTRLF3  },
+			{ Msg::MenuSortByExt,          0,            KEY_CTRLF4  },
+			{ Msg::MenuSortByWrite,        0,            KEY_CTRLF5  },
+			{ Msg::MenuSortBySize,         0,            KEY_CTRLF6  },
+			{ Msg::MenuUnsorted,           0,            KEY_CTRLF7  },
+			{ Msg::MenuSortByCreation,     0,            KEY_CTRLF8  },
+			{ Msg::MenuSortByAccess,       0,            KEY_CTRLF9  },
+			{ Msg::MenuSortByChange,       0,            0           },
+			{ Msg::MenuSortByDiz,          0,            KEY_CTRLF10 },
+			{ Msg::MenuSortByOwner,        0,            KEY_CTRLF11 },
+			{ Msg::MenuSortByPhysicalSize, 0,            0           },
+			{ Msg::MenuSortByNumLinks,     0,            0           },
+			{ Msg::MenuSortByFullName,     0,            0           },
+			{ Msg::MenuSortByCustomData,   0,            0           }
+	};
 	static_assert(ARRAYSIZE(InitSortMenuModes) == PanelSortMode::COUNT, "Error!");
 
 	int end_normal = ARRAYSIZE(InitSortMenuModes);
@@ -4036,13 +4035,14 @@ void FileList::SelectSortMode()
 					MenuDataEx item = {mpr->Values[i + 2].String};
 					SortMenu.emplace_back(item);
 				}
-			} else
+			}
+			else
 				mpr = nullptr;
 		}
 	}
 
-	static int SortModes[] = {BY_NAME, BY_EXT, BY_MTIME, BY_SIZE, UNSORTED, BY_CTIME, BY_ATIME, BY_CHTIME,
-			BY_DIZ, BY_OWNER, BY_PHYSICALSIZE, BY_NUMLINKS, BY_FULLNAME, BY_CUSTOMDATA};
+	static const int SortModes[] = {BY_NAME, BY_EXT, BY_MTIME, BY_SIZE, UNSORTED, BY_CTIME, BY_ATIME,
+			BY_CHTIME, BY_DIZ, BY_OWNER, BY_PHYSICALSIZE, BY_NUMLINKS, BY_FULLNAME, BY_CUSTOMDATA};
 	static_assert(ARRAYSIZE(SortModes) == PanelSortMode::COUNT, "Error!");
 
 	{
@@ -4052,7 +4052,8 @@ void FileList::SelectSortMode()
 		if (ItemIterator != SortModes + PanelSortMode::COUNT) {
 			SortMenu[ItemIterator - SortModes].SetCheck(Check);
 			SortMenu[ItemIterator - SortModes].SetSelect(true);
-		} else if (mpr) {
+		}
+		else if (mpr) {
 			for (size_t i = 0; i < mpr->Count; i+= 3) {
 				if (mpr->Values[i].Double == SortMode) {
 					SortMenu[ARRAYSIZE(SortModes) + 1 + i / 3].SetCheck(Check);

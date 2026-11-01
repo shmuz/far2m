@@ -160,7 +160,6 @@ void FileList::ReadFileNames(int KeepSelection, int IgnoreVisible, int DrawMessa
 	if (GetFocus())
 		CtrlObject->CmdLine->SetCurDir(strCurDir);
 
-	LastCurFile = -1;
 	Panel *AnotherPanel = CtrlObject->Cp()->GetAnotherPanel(this);
 	AnotherPanel->QViewDelTempName();
 	int PrevSelFileCount = SelFileCount;
@@ -576,7 +575,6 @@ void FileList::UpdatePlugin(int KeepSelection, int IgnoreVisible)
 	FARString strCurName, strNextCurName;
 	int OldFileCount = 0;
 	CloseChangeNotification();
-	LastCurFile = -1;
 	OpenPluginInfo Info;
 	CtrlObject->Plugins.GetOpenPluginInfo(hPlugin, &Info);
 

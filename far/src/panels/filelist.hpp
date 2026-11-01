@@ -151,7 +151,7 @@ private:
 	std::list<PrevDataItem *> PrevDataList;
 	std::list<PluginsListItem *> PluginsList;
 	std::unique_ptr<IFSNotify> ListChange;
-	long UpperFolderTopFile, LastCurFile;
+	long UpperFolderTopFile;
 	bool ReturnCurrentFile;
 	long SelFileCount;
 	long GetSelPosition, LastSelPosition;
