@@ -209,7 +209,7 @@ static void SetFarDialogItem(lua_State *L, struct FarDialogItem* Item, int itemi
 	lua_gettable(L, -2);    // +1
 	if (lua_isstring(L, -1))
 	{
-		Item->PtrData = check_utf8_string (L, -1, NULL); // +1
+		Item->PtrData = utf8_to_wcstring(L, -1, NULL); // +1
 		size_t len = lua_objlen(L, historyindex);
 		lua_rawseti (L, historyindex, len+1); // +0; put into "histories" table to avoid being gc'ed
 	}
