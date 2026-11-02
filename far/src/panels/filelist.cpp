@@ -197,6 +197,7 @@ FileList::FileList()
 	FileCount(0),
 	hPlugin(nullptr),
 	UpperFolderTopFile(0),
+	LastCurFile(-1),
 	ReturnCurrentFile(false),
 	SelFileCount(0),
 	GetSelPosition(0),
@@ -1003,7 +1004,7 @@ public:
 
 int FileList::ProcessKey(FarKey Key)
 {
-
+	LastCurFile = -1;
 	FileListItem *CurPtr = nullptr;
 	int N;
 	int CmdLength = CtrlObject->CmdLine->GetLength();

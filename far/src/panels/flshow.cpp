@@ -403,8 +403,10 @@ void FileList::ShowFileList(bool Fast)
 
 	ShowScreensCount();
 
-	if (!ProcessingPluginCommand)
+	if (!ProcessingPluginCommand && LastCurFile != CurFile) {
+		LastCurFile = CurFile;
 		UpdateViewPanel();
+	}
 
 	if (PanelMode == PLUGIN_PANEL)
 		CtrlObject->Cp()->RedrawKeyBar();
