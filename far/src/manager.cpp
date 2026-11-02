@@ -246,8 +246,15 @@ void Manager::ExecuteModal(Frame *aFrame)
 	bool OriginalStartManager = StartManager;
 	StartManager = true;
 
-	while (Commit(), ModalStack.size() > ModalStartLevel)
+	Commit();
+
+	while (ModalStack.size() > ModalStartLevel)
+	{
 		ProcessMainLoop();
+
+		if (ModalStack.size() > ModalStartLevel)
+			Commit();
+	}
 
 	StartManager = OriginalStartManager;
 }
@@ -1198,10 +1205,9 @@ void Manager::DeleteCommit(Frame *aFrame)
 		{
 			ModalStack.erase(ModalStack.begin() + Index);
 			if (!ModalStack.empty())
-				ActivateFrame(ModalStack.back());
+				ActivateCommit(ModalStack.back());
 			else if (!FrameList.empty())
-				ActivateFrame(FrameList[FramePos]);
-			Commit();
+				ActivateCommit(FrameList[FramePos]);
 		}
 	}
 }
