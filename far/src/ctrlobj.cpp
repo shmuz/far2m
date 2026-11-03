@@ -58,6 +58,7 @@ ControlObject *CtrlObject;
 ControlObject::ControlObject()
 	:
 	FPanels(0),
+	CmdLine(0),
 	CmdHistory(0),
 	FolderHistory(0),
 	ViewHistory(0),
@@ -81,7 +82,9 @@ ControlObject::ControlObject()
 			&Opt.SaveViewHistory, true);
 	FolderHistory->SetAddMode(true, HRD_CASESENS, true);
 	ViewHistory->SetAddMode(true, HRD_CASESENS, true);
-	CmdLine = new CommandLine(); // allows UserMenu to work in "far2m -e" and "far2m -v" modes
+	if (Opt.OnlyEditorViewerUsed != Options::INCLUDING_PANELS) {
+		CmdLine = new CommandLine(); // allows UserMenu to work in "far2m -e" and "far2m -v" modes
+	}
 }
 
 void ControlObject::Init()
@@ -95,6 +98,7 @@ void ControlObject::Init()
 	GotoXY(0, ScrY - 2);
 	MoveCursor(0, ScrY - 1);
 	FPanels = new FilePanels();
+	CmdLine = new CommandLine();
 	CmdLine->SaveBackground(0, 0, ScrX, ScrY);
 	MainKeyBar = &FPanels->MainKeyBar;
 	TopMenuBar = &FPanels->TopMenuBar;
