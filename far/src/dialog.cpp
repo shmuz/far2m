@@ -3232,25 +3232,35 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 	}
 
 	if (MsX < X1 || MsY < Y1 || MsX > X2 || MsY > Y2) {
-		if (MouseEvent->dwButtonState && !DlgProc(DN_MOUSECLICK, -1, (LONG_PTR)MouseEvent)) {
+		if (MouseEvent->dwButtonState) {
+			if (DlgProc(DN_MOUSECLICK, -1, (LONG_PTR)MouseEvent))
+				return TRUE;
+
 			if (!DialogMode.Check(DMODE_SHOW))
 				return FALSE;
 
-			if (!(MouseEvent->dwButtonState & FROM_LEFT_1ST_BUTTON_PRESSED)
-					&& (PrevMouseButtonState & FROM_LEFT_1ST_BUTTON_PRESSED)
-					&& (Opt.Dialogs.MouseButton & DMOUSEBUTTON_LEFT))
-				ProcessKey(KEY_ESC);
-			else if (!(MouseEvent->dwButtonState & RIGHTMOST_BUTTON_PRESSED)
-					&& (PrevMouseButtonState & RIGHTMOST_BUTTON_PRESSED)
-					&& (Opt.Dialogs.MouseButton & DMOUSEBUTTON_RIGHT))
-				ProcessKey(KEY_ENTER);
-		}
+			DialogMode.Set(DMODE_CLICKOUTSIDE);
+		} else {
+			if (DialogMode.Check(DMODE_CLICKOUTSIDE)) {
+				DialogMode.Clear(DMODE_CLICKOUTSIDE);
 
-		if (!MouseEvent->dwButtonState && FocusPos < ItemCount()
-				&& !(Items[FocusPos].Flags & (DIF_DISABLE | DIF_HIDDEN))
-				&& FarIsEdit(Items[FocusPos].Type)) {
-			DlgEdit *EditLine = Items[FocusPos].EditPtr;
-			EditLine->ProcessMouse(MouseEvent);
+				if (!DialogMode.Check(DMODE_SHOW))
+					return FALSE;
+
+				if ((PrevMouseButtonState & FROM_LEFT_1ST_BUTTON_PRESSED)
+						&& (Opt.Dialogs.MouseButton & DMOUSEBUTTON_LEFT))
+					ProcessKey(KEY_ESC);
+				else if ((PrevMouseButtonState & RIGHTMOST_BUTTON_PRESSED)
+						&& (Opt.Dialogs.MouseButton & DMOUSEBUTTON_RIGHT))
+					ProcessKey(KEY_ENTER);
+			}
+
+			if (FocusPos < ItemCount()
+					&& !(Items[FocusPos].Flags & (DIF_DISABLE | DIF_HIDDEN))
+					&& FarIsEdit(Items[FocusPos].Type)) {
+				DlgEdit *EditLine = Items[FocusPos].EditPtr;
+				EditLine->ProcessMouse(MouseEvent);
+			}
 		}
 
 		return TRUE;
@@ -3263,6 +3273,7 @@ int Dialog::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 			if (EditLine->ProcessMouse(MouseEvent))
 				return TRUE;
 		}
+		DialogMode.Clear(DMODE_CLICKOUTSIDE);
 		return FALSE;
 	}
 
