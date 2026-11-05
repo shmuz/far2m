@@ -909,17 +909,20 @@ const char *ConsoleOutput::BackendInfo(int entity)
 
 void ConsoleOutput::OnGetConsoleImageCaps(WinportGraphicsInfo *wgi)
 {
-	_backend->OnGetConsoleImageCaps(wgi);
+	if (_backend)
+		_backend->OnGetConsoleImageCaps(wgi);
+	else
+		memset(wgi, 0, sizeof(*wgi));
 }
 
 bool ConsoleOutput::OnSetConsoleImage(const char *id, DWORD64 flags, COORD pos, DWORD width, DWORD height, const void *buffer)
 {
-	return _backend->OnSetConsoleImage(id, flags, pos, width, height, buffer);
+	return _backend ? _backend->OnSetConsoleImage(id, flags, pos, width, height, buffer) : false;
 }
 
 bool ConsoleOutput::OnDeleteConsoleImage(const char *id)
 {
-	return _backend->OnDeleteConsoleImage(id);
+	return _backend ? _backend->OnDeleteConsoleImage(id) : false;
 }
 
 void *ConsoleOutput::GetNativeWindowHandle()
