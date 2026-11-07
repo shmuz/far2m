@@ -915,9 +915,13 @@ void ConsoleOutput::OnGetConsoleImageCaps(WinportGraphicsInfo *wgi)
 		memset(wgi, 0, sizeof(*wgi));
 }
 
-bool ConsoleOutput::OnSetConsoleImage(const char *id, DWORD64 flags, COORD pos, DWORD width, DWORD height, const void *buffer)
+bool ConsoleOutput::OnSetConsoleImage(const char *id, DWORD64 flags, const SMALL_RECT *area, DWORD width, DWORD height, const void *buffer)
 {
-	return _backend ? _backend->OnSetConsoleImage(id, flags, pos, width, height, buffer) : false;
+	bool bad = (!id || !buffer || !area || width == 0 || height == 0);
+	if (bad || !_backend) {
+		return false;
+	}
+	return _backend->OnSetConsoleImage(id, flags, area, width, height, buffer);
 }
 
 bool ConsoleOutput::OnDeleteConsoleImage(const char *id)
@@ -935,9 +939,9 @@ extern "C" void *WinPortGetFarHWND()
 	return g_winport_con_out ? g_winport_con_out->GetNativeWindowHandle() : nullptr;
 }
 
-extern "C" BOOL WinPortSetConsoleImage(const char *id, unsigned long long flags, COORD pos, unsigned int width, unsigned int height, const void *buffer)
+extern "C" BOOL WinPortSetConsoleImage(const char *id, unsigned long long flags, const SMALL_RECT *area, unsigned int width, unsigned int height, const void *buffer)
 {
-	return g_winport_con_out ? g_winport_con_out->OnSetConsoleImage(id, flags, pos, width, height, buffer) : false;
+	return (g_winport_con_out && area) ? g_winport_con_out->OnSetConsoleImage(id, flags, area, width, height, buffer) : FALSE;
 }
 
 extern "C" BOOL WinPortDeleteConsoleImage(const char *id)

@@ -76,7 +76,7 @@ extern "C" {
 
 	// no explanation
 	void *WinPortGetFarHWND();
-	BOOL WinPortSetConsoleImage(const char *id, unsigned long long flags, COORD pos, unsigned int width, unsigned int height, const void *buffer);
+	BOOL WinPortSetConsoleImage(const char *id, unsigned long long flags, const SMALL_RECT *area, unsigned int width, unsigned int height, const void *buffer);
 	BOOL WinPortDeleteConsoleImage(const char *id);
 	void WinPortGetConsoleImageCaps(WinportGraphicsInfo *wgi);
 #endif /* FAR_PYTHON_GEN */

@@ -135,6 +135,6 @@ public:
 	void *GetNativeWindowHandle() override;
 
 	void OnGetConsoleImageCaps(WinportGraphicsInfo *wgi) override;
-	bool OnSetConsoleImage(const char *id, DWORD64 flags, COORD pos, DWORD width, DWORD height, const void *buffer) override;
+	bool OnSetConsoleImage(const char *id, DWORD64 flags, const SMALL_RECT *area, DWORD width, DWORD height, const void *buffer) override;
 	bool OnDeleteConsoleImage(const char *id) override;
 };

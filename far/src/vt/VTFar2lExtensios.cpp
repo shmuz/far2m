@@ -525,18 +525,20 @@ void VTFar2lExtensios::OnInteract_ImageSet(StackSerializer &stk_ser)
 {
 	DWORD64 flags{};
 	DWORD width{}, height{};
-	COORD pos{};
+	SMALL_RECT area{};
 	const std::string &id = stk_ser.PopStr();
 	stk_ser.PopNum(flags);
-	stk_ser.PopNum(pos.X);
-	stk_ser.PopNum(pos.Y);
+	stk_ser.PopNum(area.Left);
+	stk_ser.PopNum(area.Top);
+	stk_ser.PopNum(area.Right);
+	stk_ser.PopNum(area.Bottom);
 	stk_ser.PopNum(width);
 	stk_ser.PopNum(height);
 	uint8_t ok = 0;
 	if (width && height) {
 		std::vector<char> bitmap(size_t(width) * height * 4);
 		stk_ser.Pop(bitmap.data(), bitmap.size());
-		ok = WINPORT(SetConsoleImage)(NULL, id.c_str(), flags, pos, width, height, bitmap.data()) ? 1 : 0;
+		ok = WINPORT(SetConsoleImage)(NULL, id.c_str(), flags, &area, width, height, bitmap.data()) ? 1 : 0;
 	}
 	stk_ser.Clear();
 	stk_ser.PushNum(ok);

@@ -1716,8 +1716,8 @@ void WinPortPanel::OnPaint( wxPaintEvent& event )
 			wxRect img_rc, rc = rgn.GetBox();
 			for (auto& it : _images) {
 				auto sz = it.second.bitmap.GetSize();
-				img_rc.SetLeft(_paint_context.FontWidth() * it.second.pos.X);
-				img_rc.SetTop(_paint_context.FontHeight() * it.second.pos.Y);
+				img_rc.SetLeft(_paint_context.FontWidth() * it.second.area.Left);
+				img_rc.SetTop(_paint_context.FontHeight() * it.second.area.Top);
 				img_rc.SetWidth(sz.GetWidth());
 				img_rc.SetHeight(sz.GetHeight());
 				if (rc.Intersects(img_rc)) {
@@ -2169,7 +2169,7 @@ void WinPortPanel::OnGetConsoleImageCaps(WinportGraphicsInfo *wgi)
 	wgi->PixPerCell.Y = _paint_context.FontHeight();
 }
 
-bool WinPortPanel::OnSetConsoleImage(const char *id, DWORD64 flags, COORD pos, DWORD width, DWORD height, const void *buffer)
+bool WinPortPanel::OnSetConsoleImage(const char *id, DWORD64 flags, const SMALL_RECT *area, DWORD width, DWORD height, const void *buffer)
 {
 	std::string str_id(id);
 	try {
@@ -2204,7 +2204,7 @@ bool WinPortPanel::OnSetConsoleImage(const char *id, DWORD64 flags, COORD pos, D
 
 		std::lock_guard<std::mutex> lock(_images);
 		auto &img = _images[str_id];
-		img.pos = pos;
+		img.area = *area;
 		img.bitmap = *wx_img;
 	} catch (...) {
 		_images.erase(str_id);

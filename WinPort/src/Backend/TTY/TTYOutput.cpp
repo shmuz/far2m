@@ -595,8 +595,8 @@ void TTYOutput::SendKittyImage(const std::string &str_id, const TTYConsoleImage 
     std::string base64_data;
     base64_encode(base64_data, img.pixel_data.data(), img.pixel_data.size());
 
-	MoveCursorStrict(img.pos.Y + 1, img.pos.X + 1);
-    
+	MoveCursorStrict(img.area.Top + 1, img.area.Left + 1);
+
     for (size_t offset = 0;offset < base64_data.length(); ) {
         const size_t chunk_len = std::min(base64_data.length() - offset, (size_t)4096);
         const unsigned more_to_follow = (offset + chunk_len < base64_data.length()) ? 1 : 0;

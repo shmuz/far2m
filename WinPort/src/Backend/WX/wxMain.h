@@ -97,7 +97,7 @@ class WinPortPanel: public wxPanel, protected IConsoleOutputBackend
 	struct wxConsoleImage
 	{
 		wxBitmap bitmap;
-		COORD pos;
+		SMALL_RECT area{};
 	};
 	struct Images : std::map<std::string, wxConsoleImage>, std::mutex {} _images;
 
@@ -182,7 +182,7 @@ class WinPortPanel: public wxPanel, protected IConsoleOutputBackend
 	void OnConsoleSetCursorBlinkTime(DWORD interval) override;
 	const char *OnConsoleBackendInfo(int entity) override;
 	void OnGetConsoleImageCaps(WinportGraphicsInfo *wgi) override;
-	bool OnSetConsoleImage(const char *id, DWORD64 flags, COORD pos, DWORD width, DWORD height, const void *buffer) override;
+	bool OnSetConsoleImage(const char *id, DWORD64 flags, const SMALL_RECT *area, DWORD width, DWORD height, const void *buffer) override;
 	bool OnDeleteConsoleImage(const char *id) override;
 
 public:

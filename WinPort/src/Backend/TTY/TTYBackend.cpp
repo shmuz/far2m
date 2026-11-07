@@ -1394,8 +1394,13 @@ void TTYBackend::OnGetConsoleImageCaps(WinportGraphicsInfo *wgi)
 	}
 }
 
-bool TTYBackend::OnSetConsoleImage(const char *id, DWORD64 flags, COORD pos, DWORD width, DWORD height, const void *buffer)
+bool TTYBackend::OnSetConsoleImage(const char *id, DWORD64 flags, const SMALL_RECT *area,
+		DWORD width, DWORD height, const void *buffer)
 {
+	if (!area) {
+		return false;
+	}
+
 	size_t buffer_size;
 	if (flags == WP_IMG_RGBA) {
 		buffer_size = size_t(width) * height * 4;
@@ -1412,8 +1417,11 @@ bool TTYBackend::OnSetConsoleImage(const char *id, DWORD64 flags, COORD pos, DWO
 			stk_ser.Push(buffer, buffer_size);
 			stk_ser.PushNum(height);
 			stk_ser.PushNum(width);
-			stk_ser.PushNum(pos.Y);
-			stk_ser.PushNum(pos.X);
+			// Push bounding rect in reverse order so the receiver pops: Left, Top, Right, Bottom
+			stk_ser.PushNum(area->Bottom);
+			stk_ser.PushNum(area->Right);
+			stk_ser.PushNum(area->Top);
+			stk_ser.PushNum(area->Left);
 			stk_ser.PushNum(flags);
 			stk_ser.PushStr(id);
 			stk_ser.PushNum(FARTTY_INTERACT_IMAGE_SET);
@@ -1431,13 +1439,12 @@ bool TTYBackend::OnSetConsoleImage(const char *id, DWORD64 flags, COORD pos, DWO
 		std::lock_guard<std::mutex> lock(_images_mutex);
 		auto &img = _images[str_id];
 
-	
 		img.pixel_data.assign(static_cast<const uint8_t*>(buffer), static_cast<const uint8_t*>(buffer) + buffer_size);
 
 		img.bpp = (flags == WP_IMG_RGBA) ? 32 : 24;
 		img.width = width;
 		img.height = height;
-		img.pos = pos;
+		img.area = *area; // Stored bounding rectangle
 
 		_images_to_display.insert(str_id);
 	} catch (...) {
