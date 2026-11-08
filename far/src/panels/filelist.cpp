@@ -459,32 +459,26 @@ int _cdecl SortList(const void *el1, const void *el2)
 {
 	int RetCode;
 	int64_t RetCode64;
-	FileListItem *SPtr1 = ((FileListItem **)el1)[0];
-	FileListItem *SPtr2 = ((FileListItem **)el2)[0];
+	FileListItem *SPtr1 = *(FileListItem **)el1;
+	FileListItem *SPtr2 = *(FileListItem **)el2;
 
-	if (SPtr1->strName.GetLength() == 2 && SPtr1->strName.At(0) == L'.' && SPtr1->strName.At(1) == L'.')
+	if (SPtr1->strName == L"..")
 		return -1;
 
-	if (SPtr2->strName.GetLength() == 2 && SPtr2->strName.At(0) == L'.' && SPtr2->strName.At(1) == L'.')
+	if (SPtr2->strName == L"..")
 		return 1;
 
-	if (ListSortMode == UNSORTED) {
-		if (ListSelectedFirst && SPtr1->Selected != SPtr2->Selected)
-			return SPtr1->Selected > SPtr2->Selected ? -1 : 1;
-
-		return (SPtr1->Position > SPtr2->Position) ? ListSortOrder : -ListSortOrder;
-	}
-
 	if (ListDirectoriesFirst) {
-		if ((SPtr1->FileAttr & FILE_ATTRIBUTE_DIRECTORY) < (SPtr2->FileAttr & FILE_ATTRIBUTE_DIRECTORY))
-			return 1;
-
-		if ((SPtr1->FileAttr & FILE_ATTRIBUTE_DIRECTORY) > (SPtr2->FileAttr & FILE_ATTRIBUTE_DIRECTORY))
-			return -1;
+		auto a1 = SPtr1->FileAttr & FILE_ATTRIBUTE_DIRECTORY, a2 = SPtr2->FileAttr & FILE_ATTRIBUTE_DIRECTORY;
+		if (a1 != a2)
+			return a1 ? -1 : 1;
 	}
 
 	if (ListSelectedFirst && SPtr1->Selected != SPtr2->Selected)
 		return SPtr1->Selected > SPtr2->Selected ? -1 : 1;
+
+	if (ListSortMode == UNSORTED)
+		return (SPtr1->Position > SPtr2->Position) ? ListSortOrder : -ListSortOrder;
 
 	if (ListSortGroups && (ListSortMode == BY_NAME || ListSortMode == BY_EXT || ListSortMode == BY_FULLNAME)
 			&& SPtr1->SortGroup != SPtr2->SortGroup)
