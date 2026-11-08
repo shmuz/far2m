@@ -1290,7 +1290,7 @@ static bool ScanFile(const wchar_t *Name)
 				} while (++index <= bufferCount - findStringCount);
 
 				// Выходим, если мы вышли за пределы количества байт разрешённых для поиска
-				if (SearchInFirst && SearchInFirst >= alreadyRead) {
+				if (SearchInFirst && SearchInFirst <= alreadyRead) {
 					if (IsLastPage) return false;
 					else continue;
 				}
