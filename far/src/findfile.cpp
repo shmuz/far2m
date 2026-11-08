@@ -344,16 +344,15 @@ static bool UseFilter = false;
 static UINT CodePage = CP_AUTODETECT;
 static UINT64 SearchInFirst = 0;
 
-static int codePagesCount;
-
 struct CodePageInfo
 {
-	UINT CodePage;
-	UINT MaxCharSize;
-	wchar_t LastSymbol;
-	bool WordFound;
-} *codePages;
+	UINT CodePage {};
+	UINT MaxCharSize {};
+	wchar_t LastSymbol {};
+	bool WordFound {};
+};
 
+static std::vector<CodePageInfo> codePages;
 static unsigned char *hexFindString;
 static size_t hexFindStringSize;
 static wchar_t *findString, *findStringBuffer;
@@ -498,8 +497,7 @@ static void InitInFileSearch()
 
 				// Добавляем стандартные таблицы символов
 				if (!hasSelected) {
-					codePagesCount = StandardCPCount;
-					codePages = (CodePageInfo *)malloc(codePagesCount * sizeof(CodePageInfo));
+					codePages.resize(StandardCPCount);
 					codePages[0].CodePage = WINPORT(GetOEMCP)();
 					codePages[1].CodePage = WINPORT(GetACP)();
 					codePages[2].CodePage = CP_KOI8R;
@@ -511,10 +509,9 @@ static void InitInFileSearch()
 					codePages[7].CodePage = CP_UTF32LE;
 					codePages[8].CodePage = CP_UTF32BE;
 #endif
-				} else {
-					codePagesCount = 0;
-					codePages = nullptr;
 				}
+				else
+					codePages.clear();
 
 				// Добавляем стандартные таблицы символов
 				for (const auto &cp : codepages) {
@@ -536,33 +533,28 @@ static void InitInFileSearch()
 								continue;
 						}
 
-						codePages = (CodePageInfo *)realloc((void *)codePages,
-								++codePagesCount * sizeof(CodePageInfo));
-						codePages[codePagesCount - 1].CodePage = codePage;
+						codePages.emplace_back().CodePage = codePage;
 					}
 				}
 			} else {
-				codePagesCount = 1;
-				codePages = (CodePageInfo *)malloc(codePagesCount * sizeof(CodePageInfo));
+				codePages.resize(1);
 				codePages[0].CodePage = CodePage;
 			}
 
-			for (int index = 0; index < codePagesCount; index++) {
-				CodePageInfo *cp = codePages + index;
-
-				if (IsFullWideCodePage(cp->CodePage)) {
-					cp->MaxCharSize = sizeof(wchar_t);
+			for (auto &cp: codePages) {
+				if (IsFullWideCodePage(cp.CodePage)) {
+					cp.MaxCharSize = sizeof(wchar_t);
 				} else {
 					CPINFO cpi;
 
-					if (!WINPORT(GetCPInfo)(cp->CodePage, &cpi))
+					if (!WINPORT(GetCPInfo)(cp.CodePage, &cpi))
 						cpi.MaxCharSize = 0;    // Считаем, что ошибка и потом такие таблицы в поиске пропускаем
 
-					cp->MaxCharSize = cpi.MaxCharSize;
+					cp.MaxCharSize = cpi.MaxCharSize;
 				}
 
-				cp->LastSymbol = 0;
-				cp->WordFound = false;
+				cp.LastSymbol = 0;
+				cp.WordFound = false;
 			}
 		}
 		else {
@@ -615,10 +607,7 @@ static void ReleaseInFileSearch()
 			skipCharsTable = nullptr;
 		}
 
-		if (codePages) {
-			free(codePages);
-			codePages = nullptr;
-		}
+		codePages.clear();
 
 		if (findStringBuffer) {
 			free(findStringBuffer);
@@ -1094,8 +1083,6 @@ static int FindStringBMH(const unsigned char *searchBuffer, size_t searchBufferC
 
 static bool ScanFile(const wchar_t *Name)
 {
-#define CONTINUE() { if (cpIndex == codePagesCount - 1) return false; else continue; }
-
 	// Длина строки поиска
 	const size_t findStringCount = strFindStr.GetLength();
 
@@ -1161,33 +1148,36 @@ static bool ScanFile(const wchar_t *Name)
 				return true;
 		}
 		else {
-			for (int cpIndex = 0; cpIndex < codePagesCount; cpIndex++) {
-				// Информация о кодовой странице
-				CodePageInfo *cpi = codePages + cpIndex;
+			for (auto &cpi: codePages) {
+				const bool IsLastPage = (&cpi == &codePages.back());
 
 				// Пропускаем ошибочные кодовые страницы
-				if (!cpi->MaxCharSize)
+				if (!cpi.MaxCharSize)
 					continue;
 
 				// Если начало файла очищаем информацию о поиске по словам
 				if (WholeWords && alreadyRead == readBlockSize) {
-					cpi->WordFound = false;
-					cpi->LastSymbol = 0;
+					cpi.WordFound = false;
+					cpi.LastSymbol = 0;
 				}
 
 				// Если ничего не прочитали
 				if (!readBlockSize) {
 					// Если поиск по словам и в конце предыдущего блока было что-то найдено,
 					// то считаем, что нашли то, что нужно
-					if (WholeWords && cpi->WordFound)
+					if (WholeWords && cpi.WordFound)
 						return true;
+					else if (IsLastPage)
+						return false;
 					else
-						CONTINUE()
+						continue;
 				}
 
 				// Выходим, если прочитали меньше размера строки поиска и нет поиска по словам
-				if (readBlockSize < findStringCount && !(WholeWords && cpi->WordFound))
-					CONTINUE()
+				if (readBlockSize < findStringCount && !(WholeWords && cpi.WordFound)) {
+					if (IsLastPage) return false;
+					else continue;
+				}
 
 				// Количество символов в выходном буфере
 				unsigned int bufferCount;
@@ -1196,17 +1186,19 @@ static bool ScanFile(const wchar_t *Name)
 				wchar_t *buffer;
 
 				// Перегоняем буфер в wchar_t
-				if (IsFullWideCodePage(cpi->CodePage)) {
+				if (IsFullWideCodePage(cpi.CodePage)) {
 					// Вычисляем размер буфера в wchar_t
 					bufferCount = readBlockSize / sizeof(wchar_t);
 
 					// Выходим, если размер буфера меньше длины строки посика
-					if (bufferCount < findStringCount)
-						CONTINUE()
+					if (bufferCount < findStringCount) {
+						if (IsLastPage) return false;
+						else continue;
+					}
 
 					// Копируем буфер чтения в буфер сравнения
 					// todo
-					if (cpi->CodePage == CP_WIDE_BE) {
+					if (cpi.CodePage == CP_WIDE_BE) {
 						WideReverse((const wchar_t *)readBufferA.data(), readBuffer.data(), bufferCount);
 						buffer = readBuffer.data();
 					} else {
@@ -1214,30 +1206,34 @@ static bool ScanFile(const wchar_t *Name)
 					}
 				} else {
 					// Конвертируем буфер чтения из кодировки поиска в wchar_t
-					bufferCount = WINPORT(MultiByteToWideChar)(cpi->CodePage, 0, readBufferA.data(),
+					bufferCount = WINPORT(MultiByteToWideChar)(cpi.CodePage, 0, readBufferA.data(),
 							readBlockSize, readBuffer.data(), ElementCount);
 
 					// Выходим, если нам не удалось сконвертировать строку
-					if (!bufferCount)
-						CONTINUE()
+					if (!bufferCount) {
+						if (IsLastPage) return false;
+						else continue;
+					}
 
 					// Если прочитали меньше размера строки поиска и поиска по словам, то проверяем
 					// первый символ блока на разделитель и выходим
 					// Если у нас поиск по словам и в конце предыдущего блока было вхождение
-					if (WholeWords && cpi->WordFound) {
+					if (WholeWords && cpi.WordFound) {
 						// Если конец файла, то считаем, что есть разделитель в конце
 						if (findStringCount - 1 >= bufferCount)
 							return true;
 						// Проверяем первый символ текущего блока с учётом обратного смещения, которое делается
 						// при переходе между блоками
-						cpi->LastSymbol = readBuffer[findStringCount - 1];
+						cpi.LastSymbol = readBuffer[findStringCount - 1];
 
-						if (IsWordDiv(cpi->LastSymbol))
+						if (IsWordDiv(cpi.LastSymbol))
 							return true;
 
 						// Если размер буфера меньше размера слова, то выходим
-						if (readBlockSize < findStringCount)
-							CONTINUE()
+						if (readBlockSize < findStringCount) {
+							if (IsLastPage) return false;
+							else continue;
+						}
 					}
 
 					// Устанавливаем буфер сравнения
@@ -1269,13 +1265,13 @@ static bool ScanFile(const wchar_t *Name)
 						// Если мы находимся в начале файла, то считаем, что разделитель есть
 						// Если мы находимся в начале блока, то проверяем является
 						// или нет последний символ предыдущего блока разделителем
-						if (alreadyRead == readBlockSize || IsWordDiv(cpi->LastSymbol))
+						if (alreadyRead == readBlockSize || IsWordDiv(cpi.LastSymbol))
 							firstWordDiv = true;
 					} else {
 						// Проверяем является или нет предыдущий найденному символ блока разделителем
-						cpi->LastSymbol = buffer[index - 1];
+						cpi.LastSymbol = buffer[index - 1];
 
-						if (IsWordDiv(cpi->LastSymbol))
+						if (IsWordDiv(cpi.LastSymbol))
 							firstWordDiv = true;
 					}
 
@@ -1284,24 +1280,26 @@ static bool ScanFile(const wchar_t *Name)
 						// Если блок выбран не до конца
 						if (index + findStringCount != bufferCount) {
 							// Проверяем является или нет последующий за найденным символ блока разделителем
-							cpi->LastSymbol = buffer[index + findStringCount];
+							cpi.LastSymbol = buffer[index + findStringCount];
 
-							if (IsWordDiv(cpi->LastSymbol))
+							if (IsWordDiv(cpi.LastSymbol))
 								return true;
 						} else
-							cpi->WordFound = true;
+							cpi.WordFound = true;
 					}
 				} while (++index <= bufferCount - findStringCount);
 
 				// Выходим, если мы вышли за пределы количества байт разрешённых для поиска
-				if (SearchInFirst && SearchInFirst >= alreadyRead)
-					CONTINUE()
+				if (SearchInFirst && SearchInFirst >= alreadyRead) {
+					if (IsLastPage) return false;
+					else continue;
+				}
 				// Запоминаем последний символ блока
-				cpi->LastSymbol = buffer[bufferCount - 1];
+				cpi.LastSymbol = buffer[bufferCount - 1];
 			}
 
 			// Получаем смещение на которое мы отступили при переходе между блоками
-			offset = (int)((CodePage == CP_AUTODETECT ? sizeof(wchar_t) : codePages->MaxCharSize)
+			offset = (int)((CodePage == CP_AUTODETECT ? sizeof(wchar_t) : codePages[0].MaxCharSize)
 					* (findStringCount - 1));
 		}
 
@@ -1315,7 +1313,6 @@ static bool ScanFile(const wchar_t *Name)
 	}
 
 	return false;
-#undef CONTINUE
 }
 
 static void
