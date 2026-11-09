@@ -348,8 +348,6 @@ struct CodePageInfo
 {
 	UINT CodePage {};
 	UINT MaxCharSize {};
-	wchar_t LastSymbol {};
-	bool WordFound {};
 };
 
 static std::vector<CodePageInfo> codePages;
@@ -552,9 +550,6 @@ static void InitInFileSearch()
 
 					cp.MaxCharSize = cpi.MaxCharSize;
 				}
-
-				cp.LastSymbol = 0;
-				cp.WordFound = false;
 			}
 		}
 		else {
@@ -1083,6 +1078,13 @@ static int FindStringBMH(const unsigned char *searchBuffer, size_t searchBufferC
 
 static bool ScanFile(const wchar_t *Name)
 {
+	struct PageScanState {
+		wchar_t LastSymbol = 0;
+		bool WordFound = false;
+	};
+
+	std::vector<PageScanState> pageStates(codePages.size());
+
 	// Длина строки поиска
 	const size_t findStringCount = strFindStr.GetLength();
 
@@ -1148,8 +1150,10 @@ static bool ScanFile(const wchar_t *Name)
 				return true;
 		}
 		else {
-			for (auto &cpi: codePages) {
-				const bool IsLastPage = (&cpi == &codePages.back());
+			for (size_t i = 0; i < codePages.size(); ++i) {
+				const auto &cpi = codePages[i];
+				auto &state = pageStates[i];
+				const bool IsLastPage = (i == codePages.size() - 1);
 
 				// Пропускаем ошибочные кодовые страницы
 				if (!cpi.MaxCharSize)
@@ -1157,15 +1161,15 @@ static bool ScanFile(const wchar_t *Name)
 
 				// Если начало файла очищаем информацию о поиске по словам
 				if (WholeWords && alreadyRead == readBlockSize) {
-					cpi.WordFound = false;
-					cpi.LastSymbol = 0;
+					state.WordFound = false;
+					state.LastSymbol = 0;
 				}
 
 				// Если ничего не прочитали
 				if (!readBlockSize) {
 					// Если поиск по словам и в конце предыдущего блока было что-то найдено,
 					// то считаем, что нашли то, что нужно
-					if (WholeWords && cpi.WordFound)
+					if (WholeWords && state.WordFound)
 						return true;
 					else if (IsLastPage)
 						return false;
@@ -1174,7 +1178,7 @@ static bool ScanFile(const wchar_t *Name)
 				}
 
 				// Выходим, если прочитали меньше размера строки поиска и нет поиска по словам
-				if (readBlockSize < findStringCount && !(WholeWords && cpi.WordFound)) {
+				if (readBlockSize < findStringCount && !(WholeWords && state.WordFound)) {
 					if (IsLastPage) return false;
 					else continue;
 				}
@@ -1218,15 +1222,15 @@ static bool ScanFile(const wchar_t *Name)
 					// Если прочитали меньше размера строки поиска и поиска по словам, то проверяем
 					// первый символ блока на разделитель и выходим
 					// Если у нас поиск по словам и в конце предыдущего блока было вхождение
-					if (WholeWords && cpi.WordFound) {
+					if (WholeWords && state.WordFound) {
 						// Если конец файла, то считаем, что есть разделитель в конце
 						if (findStringCount - 1 >= bufferCount)
 							return true;
 						// Проверяем первый символ текущего блока с учётом обратного смещения, которое делается
 						// при переходе между блоками
-						cpi.LastSymbol = readBuffer[findStringCount - 1];
+						state.LastSymbol = readBuffer[findStringCount - 1];
 
-						if (IsWordDiv(cpi.LastSymbol))
+						if (IsWordDiv(state.LastSymbol))
 							return true;
 
 						// Если размер буфера меньше размера слова, то выходим
@@ -1265,13 +1269,13 @@ static bool ScanFile(const wchar_t *Name)
 						// Если мы находимся в начале файла, то считаем, что разделитель есть
 						// Если мы находимся в начале блока, то проверяем является
 						// или нет последний символ предыдущего блока разделителем
-						if (alreadyRead == readBlockSize || IsWordDiv(cpi.LastSymbol))
+						if (alreadyRead == readBlockSize || IsWordDiv(state.LastSymbol))
 							firstWordDiv = true;
 					} else {
 						// Проверяем является или нет предыдущий найденному символ блока разделителем
-						cpi.LastSymbol = buffer[index - 1];
+						state.LastSymbol = buffer[index - 1];
 
-						if (IsWordDiv(cpi.LastSymbol))
+						if (IsWordDiv(state.LastSymbol))
 							firstWordDiv = true;
 					}
 
@@ -1280,12 +1284,12 @@ static bool ScanFile(const wchar_t *Name)
 						// Если блок выбран не до конца
 						if (index + findStringCount != bufferCount) {
 							// Проверяем является или нет последующий за найденным символ блока разделителем
-							cpi.LastSymbol = buffer[index + findStringCount];
+							state.LastSymbol = buffer[index + findStringCount];
 
-							if (IsWordDiv(cpi.LastSymbol))
+							if (IsWordDiv(state.LastSymbol))
 								return true;
 						} else
-							cpi.WordFound = true;
+							state.WordFound = true;
 					}
 				} while (++index <= bufferCount - findStringCount);
 
@@ -1295,7 +1299,7 @@ static bool ScanFile(const wchar_t *Name)
 					else continue;
 				}
 				// Запоминаем последний символ блока
-				cpi.LastSymbol = buffer[bufferCount - 1];
+				state.LastSymbol = buffer[bufferCount - 1];
 			}
 
 			// Получаем смещение на которое мы отступили при переходе между блоками
