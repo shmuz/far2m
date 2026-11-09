@@ -1151,6 +1151,19 @@ static bool ScanFile(const wchar_t *Name)
 		if (!file.Read(readBufferA.data() + overlap, bytesToRead, &bytesReadFromFile))
 			return false;
 
+		// Если ничего не прочитали (EOF)
+		if (bytesReadFromFile == 0) {
+			// Если поиск по словам и в конце предыдущего блока было что-то найдено,
+			// то считаем, что нашли то, что нужно
+			if (WholeWords) {
+				for (const auto &state : pageStates) {
+					if (state.WordFound)
+						return true;
+				}
+			}
+			break;
+		}
+
 		DWORD readBlockSize = static_cast<DWORD>(overlap + bytesReadFromFile);
 		alreadyRead += bytesReadFromFile;
 
@@ -1160,14 +1173,14 @@ static bool ScanFile(const wchar_t *Name)
 			LastPercents = Percents;
 		}
 
+		// Для hex и обыкновенного поиска разные ветки
 		if (SearchHex) {
-			// Выходим, если ничего не прочитали или прочитали мало
-			if (!readBlockSize || readBlockSize < hexFindStringSize)
-				return false;
-
-			// Ищем
-			if (FindStringBMH((const unsigned char *)readBufferA.data(), readBlockSize) != -1)
-				return true;
+			// Выходим, если прочитали мало (при коротком чтении ждем следующих данных)
+			if (readBlockSize >= hexFindStringSize) {
+				// Ищем
+				if (FindStringBMH((const unsigned char *)readBufferA.data(), readBlockSize) != -1)
+					return true;
+			}
 		}
 		else {
 			for (size_t i = 0; i < codePages.size(); ++i) {
@@ -1185,22 +1198,9 @@ static bool ScanFile(const wchar_t *Name)
 					state.LastSymbol = 0;
 				}
 
-				// Если ничего не прочитали
-				if (!readBlockSize) {
-					// Если поиск по словам и в конце предыдущего блока было что-то найдено,
-					// то считаем, что нашли то, что нужно
-					if (WholeWords && state.WordFound)
-						return true;
-					else if (IsLastPage)
-						return false;
-					else
-						continue;
-				}
-
 				// Выходим, если прочитали меньше размера строки поиска и нет поиска по словам
 				if (readBlockSize < findStringCount && !(WholeWords && state.WordFound)) {
-					if (IsLastPage) return false;
-					else continue;
+					continue;
 				}
 
 				// Количество символов в выходном буфере
@@ -1216,8 +1216,7 @@ static bool ScanFile(const wchar_t *Name)
 
 					// Выходим, если размер буфера меньше длины строки поиска
 					if (bufferCount < findStringCount) {
-						if (IsLastPage) return false;
-						else continue;
+						continue;
 					}
 
 					// Копируем буфер чтения в буфер сравнения
@@ -1235,11 +1234,12 @@ static bool ScanFile(const wchar_t *Name)
 
 					// Выходим, если нам не удалось сконвертировать строку
 					if (!bufferCount) {
-						if (IsLastPage) return false;
-						else continue;
+						continue;
 					}
 
 					if (WholeWords && state.WordFound) {
+						state.WordFound = false;
+
 						// Если конец файла, то считаем, что есть разделитель в конце
 						if (findStringCount - 1 >= bufferCount)
 							return true;
@@ -1253,8 +1253,7 @@ static bool ScanFile(const wchar_t *Name)
 
 						// Если размер буфера меньше размера слова, то выходим
 						if (readBlockSize < findStringCount) {
-							if (IsLastPage) return false;
-							else continue;
+							continue;
 						}
 					}
 
@@ -1282,7 +1281,11 @@ static bool ScanFile(const wchar_t *Name)
 					// Если идёт поиск по словам, то делаем соответвующие проверки
 					bool firstWordDiv = false;
 
+					// Если мы находимся в начале блока
 					if (!index) {
+						// Если мы находимся в начале файла, то считаем, что разделитель есть
+						// Если мы находимся в начале блока, то проверяем является
+						// или нет последний символ предыдущего блока разделителем
 						if (isFirstBlock || IsWordDiv(state.LastSymbol))
 							firstWordDiv = true;
 					} else {
@@ -1315,17 +1318,6 @@ static bool ScanFile(const wchar_t *Name)
 				// Запоминаем последний символ блока
 				state.LastSymbol = buffer[bufferCount - 1];
 			}
-		}
-
-		// Если файл прочитан до конца, проверяем отложенное совпадение по словам на границе EOF
-		if (bytesReadFromFile < bytesToRead) {
-			if (WholeWords) {
-				for (const auto &state : pageStates) {
-					if (state.WordFound)
-						return true;
-				}
-			}
-			break;
 		}
 
 		// Переносим хвост блока в начало буфера для следующей итерации
