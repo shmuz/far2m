@@ -1534,6 +1534,7 @@ static LONG_PTR WINAPI FindDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Pa
 
 				if (!strFindStr.IsEmpty()) {
 					FARString strFStr(strFindStr);
+					strFStr.Truncate(20); // it's needed as TruncStrFromEnd is very slow on long strings
 					TruncStrFromEnd(strFStr, 10);
 					FARString strTemp(L" \"");
 					strTemp+= strFStr+= "\"";
@@ -2580,6 +2581,7 @@ static bool FindFilesProcess(Vars &v)
 
 	if (!strFindStr.IsEmpty()) {
 		FARString strFStr = strFindStr;
+		strFStr.Truncate(20); // it's needed as TruncStrFromEnd is very slow on long strings
 		TruncStrFromEnd(strFStr, 10);
 		InsertQuote(strFStr);
 		FARString strTemp = L" ";
