@@ -1098,19 +1098,27 @@ static bool ScanFile(const wchar_t *Name)
 				FILE_FLAG_SEQUENTIAL_SCAN))
 		return false;
 
-	constexpr size_t ElementCount = 0x10000;
+	const size_t ElementCount = [&]() -> size_t {
+		size_t patternBytes = hexFindStringSize;
+		if (!SearchHex) {
+			size_t maxCharSize = 1;
+			for (const auto &cp : codePages) {
+				maxCharSize = std::max<size_t>(maxCharSize, cp.MaxCharSize);
+			}
+			patternBytes = findStringCount * maxCharSize;
+		}
+
+		constexpr size_t MinChunkSize = 0x10000;      // 64 KB
+		constexpr size_t MaxChunkSize = 0x4000000;    // 64 MB
+		return std::clamp<size_t>(patternBytes * 4, MinChunkSize, MaxChunkSize);
+	}();
+
 	std::vector<char> readBufferA(ElementCount, 0);
 	std::vector<wchar_t> readBuffer(ElementCount, 0);
 
-	// Количество считанных из файла байт
-	DWORD readBlockSize = 0;
-	// Количество прочитанных из файла байт
-	uint64_t alreadyRead = 0;
-	// Смещение на которое мы отступили при переходе между блоками
-	int offset = 0;
-
-	if (SearchHex)
-		offset = (int)hexFindStringSize - 1;
+	const size_t offset = SearchHex
+			? (hexFindStringSize - 1)
+			: ((CodePage == CP_AUTODETECT ? sizeof(wchar_t) : codePages[0].MaxCharSize) * (findStringCount - 1));
 
 	UINT64 FileSize = 0;
 	file.GetSize(FileSize);
@@ -1120,26 +1128,38 @@ static bool ScanFile(const wchar_t *Name)
 	}
 
 	UINT LastPercents = 0;
+	uint64_t alreadyRead = 0;
+	size_t overlap = 0;
+	bool isFirstBlock = true;
 
 	// Основной цикл чтения из файла
-
-	while (!StopFlag
-			&& file.Read(readBufferA.data(),
-					(!SearchInFirst || alreadyRead + ElementCount <= SearchInFirst)
-							? ElementCount
-							: static_cast<DWORD>(SearchInFirst - alreadyRead),
-					&readBlockSize))
+	while (!StopFlag)
 	{
+		DWORD bytesToRead = static_cast<DWORD>(ElementCount - overlap);
+
+		if (SearchInFirst) {
+			if (alreadyRead >= SearchInFirst)
+				break;
+			if (alreadyRead + bytesToRead > SearchInFirst)
+				bytesToRead = static_cast<DWORD>(SearchInFirst - alreadyRead);
+		}
+
+		if (bytesToRead == 0)
+			break;
+
+		DWORD bytesReadFromFile = 0;
+		if (!file.Read(readBufferA.data() + overlap, bytesToRead, &bytesReadFromFile))
+			return false;
+
+		DWORD readBlockSize = static_cast<DWORD>(overlap + bytesReadFromFile);
+		alreadyRead += bytesReadFromFile;
+
 		UINT Percents = static_cast<UINT>(FileSize ? alreadyRead * 100 / FileSize : 0);
 		if (Percents != LastPercents) {
 			itd.SetPercent(Percents);
 			LastPercents = Percents;
 		}
 
-		// Увеличиваем счётчик прочитанных байт
-		alreadyRead+= readBlockSize;
-
-		// Для hex и обыкновенного поиска разные ветки
 		if (SearchHex) {
 			// Выходим, если ничего не прочитали или прочитали мало
 			if (!readBlockSize || readBlockSize < hexFindStringSize)
@@ -1160,7 +1180,7 @@ static bool ScanFile(const wchar_t *Name)
 					continue;
 
 				// Если начало файла очищаем информацию о поиске по словам
-				if (WholeWords && alreadyRead == readBlockSize) {
+				if (WholeWords && isFirstBlock) {
 					state.WordFound = false;
 					state.LastSymbol = 0;
 				}
@@ -1194,7 +1214,7 @@ static bool ScanFile(const wchar_t *Name)
 					// Вычисляем размер буфера в wchar_t
 					bufferCount = readBlockSize / sizeof(wchar_t);
 
-					// Выходим, если размер буфера меньше длины строки посика
+					// Выходим, если размер буфера меньше длины строки поиска
 					if (bufferCount < findStringCount) {
 						if (IsLastPage) return false;
 						else continue;
@@ -1219,13 +1239,11 @@ static bool ScanFile(const wchar_t *Name)
 						else continue;
 					}
 
-					// Если прочитали меньше размера строки поиска и поиска по словам, то проверяем
-					// первый символ блока на разделитель и выходим
-					// Если у нас поиск по словам и в конце предыдущего блока было вхождение
 					if (WholeWords && state.WordFound) {
 						// Если конец файла, то считаем, что есть разделитель в конце
 						if (findStringCount - 1 >= bufferCount)
 							return true;
+
 						// Проверяем первый символ текущего блока с учётом обратного смещения, которое делается
 						// при переходе между блоками
 						state.LastSymbol = readBuffer[findStringCount - 1];
@@ -1259,17 +1277,13 @@ static bool ScanFile(const wchar_t *Name)
 						return true;
 
 					// Устанавливаем позицию в исходном буфере
-					index+= foundIndex;
+					index += foundIndex;
 
 					// Если идёт поиск по словам, то делаем соответвующие проверки
 					bool firstWordDiv = false;
 
-					// Если мы находимся в начале блока
 					if (!index) {
-						// Если мы находимся в начале файла, то считаем, что разделитель есть
-						// Если мы находимся в начале блока, то проверяем является
-						// или нет последний символ предыдущего блока разделителем
-						if (alreadyRead == readBlockSize || IsWordDiv(state.LastSymbol))
+						if (isFirstBlock || IsWordDiv(state.LastSymbol))
 							firstWordDiv = true;
 					} else {
 						// Проверяем является или нет предыдущий найденному символ блока разделителем
@@ -1301,19 +1315,23 @@ static bool ScanFile(const wchar_t *Name)
 				// Запоминаем последний символ блока
 				state.LastSymbol = buffer[bufferCount - 1];
 			}
-
-			// Получаем смещение на которое мы отступили при переходе между блоками
-			offset = (int)((CodePage == CP_AUTODETECT ? sizeof(wchar_t) : codePages[0].MaxCharSize)
-					* (findStringCount - 1));
 		}
 
-		// Если мы потенциально прочитали не весь файл
-		if (readBlockSize == ElementCount) {
-			// Отступаем назад на длину слова поиска минус 1
-			if (!file.SetPointer(-1 * offset, nullptr, FILE_CURRENT))
-				return false;
-			alreadyRead-= offset;
+		// Если файл прочитан до конца, проверяем отложенное совпадение по словам на границе EOF
+		if (bytesReadFromFile < bytesToRead) {
+			if (WholeWords) {
+				for (const auto &state : pageStates) {
+					if (state.WordFound)
+						return true;
+				}
+			}
+			break;
 		}
+
+		// Переносим хвост блока в начало буфера для следующей итерации
+		overlap = std::min<size_t>(offset, readBlockSize);
+		std::memmove(readBufferA.data(), readBufferA.data() + readBlockSize - overlap, overlap);
+		isFirstBlock = false;
 	}
 
 	return false;
