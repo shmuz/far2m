@@ -1002,6 +1002,7 @@ int Editor::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_CTRLSHIFTPGDN:
 		case KEY_CTRLSHIFTNUMPAD3:
 		case KEY_CTRLSHIFTEND:
@@ -1033,6 +1034,7 @@ int Editor::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_SHIFTPGUP:
 		case KEY_SHIFTNUMPAD9: {
 			m_Pasting++;
@@ -1053,6 +1055,7 @@ int Editor::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_SHIFTPGDN:
 		case KEY_SHIFTNUMPAD3: {
 			m_Pasting++;
@@ -1073,6 +1076,7 @@ int Editor::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_SHIFTHOME:
 		case KEY_SHIFTNUMPAD7: {
 			m_Pasting++;
@@ -1094,6 +1098,7 @@ int Editor::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_SHIFTEND:
 		case KEY_SHIFTNUMPAD1: {
 			{
@@ -1125,6 +1130,7 @@ int Editor::ProcessKey(FarKey Key)
 			}
 			return TRUE;
 		}
+
 		case KEY_SHIFTLEFT:
 		case KEY_SHIFTNUMPAD4: {
 			_SVS(CleverSysLog SL(L"case KEY_SHIFTLEFT"));
@@ -1166,6 +1172,7 @@ int Editor::ProcessKey(FarKey Key)
 			ShowEditor(OldCur == m_CurLine && LeftPos == m_CurLine->GetLeftPos());
 			return TRUE;
 		}
+
 		case KEY_SHIFTRIGHT:
 		case KEY_SHIFTNUMPAD6: {
 			_SVS(CleverSysLog SL(L"case KEY_SHIFTRIGHT"));
@@ -1199,6 +1206,7 @@ int Editor::ProcessKey(FarKey Key)
 			ShowEditor(OldCur == m_CurLine && OldLeft == m_CurLine->GetLeftPos());
 			return TRUE;
 		}
+
 		case KEY_CTRLSHIFTLEFT:
 		case KEY_CTRLSHIFTNUMPAD4: {
 			_SVS(CleverSysLog SL(L"case KEY_CTRLSHIFTLEFT"));
@@ -1253,6 +1261,7 @@ int Editor::ProcessKey(FarKey Key)
 			}
 			return TRUE;
 		}
+
 		case KEY_CTRLSHIFTRIGHT:
 		case KEY_CTRLSHIFTNUMPAD6: {
 			_SVS(CleverSysLog SL(L"case KEY_CTRLSHIFTRIGHT"));
@@ -1290,6 +1299,7 @@ int Editor::ProcessKey(FarKey Key)
 			}
 			return TRUE;
 		}
+
 		case KEY_SHIFTDOWN:
 		case KEY_SHIFTNUMPAD2: {
 			if (!m_CurLine->m_next)
@@ -1364,6 +1374,7 @@ int Editor::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_SHIFTUP:
 		case KEY_SHIFTNUMPAD8: {
 			if (!m_CurLine->m_prev)
@@ -1433,20 +1444,21 @@ int Editor::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
-		case KEY_CTRLADD: {
+
+		case KEY_CTRLADD:
 			Copy(true);
 			return TRUE;
-		}
-		case KEY_CTRLA: {
+
+		case KEY_CTRLA:
 			UnmarkBlock();
 			SelectAll();
 			return TRUE;
-		}
-		case KEY_CTRLU: {
+
+		case KEY_CTRLU:
 			UnmarkMacroBlock();
 			UnmarkBlock();
 			return TRUE;
-		}
+
 		case KEY_CTRLC:
 		case KEY_CTRLINS:
 		case KEY_CTRLNUMPAD0: {
@@ -1460,6 +1472,7 @@ int Editor::ProcessKey(FarKey Key)
 			Copy(false);
 			return TRUE;
 		}
+
 		case KEY_CTRLP:
 		case KEY_CTRLM: {
 			if (soFlags.Check(FEDITOR_LOCKMODE))
@@ -1496,6 +1509,7 @@ int Editor::ProcessKey(FarKey Key)
 
 			return TRUE;
 		}
+
 		case KEY_CTRLX:
 		case KEY_SHIFTDEL:
 		case KEY_SHIFTNUMDEL:
@@ -1512,12 +1526,13 @@ int Editor::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_CTRLV:
 		case KEY_SHIFTINS:
-		case KEY_SHIFTNUMPAD0: {
+		case KEY_SHIFTNUMPAD0:
 			ProcessPasteEvent();
 			return TRUE;
-		}
+
 		case KEY_LEFT:
 		case KEY_NUMPAD4: {
 			soFlags.Set(FEDITOR_NEWUNDO);
@@ -1535,12 +1550,13 @@ int Editor::ProcessKey(FarKey Key)
 
 			return TRUE;
 		}
+
 		case KEY_INS:
-		case KEY_NUMPAD0: {
+		case KEY_NUMPAD0:
 			soFlags.Swap(FEDITOR_OVERTYPE);
 			Show();
 			return TRUE;
-		}
+
 		case KEY_NUMDEL:
 		case KEY_DEL: {
 			if (!soFlags.Check(FEDITOR_LOCKMODE)) {
@@ -1604,6 +1620,7 @@ int Editor::ProcessKey(FarKey Key)
 
 			return TRUE;
 		}
+
 		case KEY_BS: {
 			if (!soFlags.Check(FEDITOR_LOCKMODE)) {
 				// Bs в самом начале нихрена ничего не удаляет, посему не будем выставлять
@@ -1640,6 +1657,7 @@ int Editor::ProcessKey(FarKey Key)
 
 			return TRUE;
 		}
+
 		case KEY_CTRLBS: {
 			if (!soFlags.Check(FEDITOR_LOCKMODE)) {
 				TextChanged(true);
@@ -1658,6 +1676,7 @@ int Editor::ProcessKey(FarKey Key)
 
 			return TRUE;
 		}
+
 		case KEY_UP:
 		case KEY_NUMPAD8: {
 			{
@@ -1680,6 +1699,7 @@ int Editor::ProcessKey(FarKey Key)
 			}
 			return TRUE;
 		}
+
 		case KEY_DOWN:
 		case KEY_NUMPAD2: {
 			{
@@ -1702,6 +1722,7 @@ int Editor::ProcessKey(FarKey Key)
 			}
 			return TRUE;
 		}
+
 		case KEY_MSWHEEL_UP:
 		case (KEY_MSWHEEL_UP | KEY_ALT): {
 			int Roll = Key & KEY_ALT ? 1 : Opt.MsWheelDeltaEdit;
@@ -1711,6 +1732,7 @@ int Editor::ProcessKey(FarKey Key)
 
 			return TRUE;
 		}
+
 		case KEY_MSWHEEL_DOWN:
 		case (KEY_MSWHEEL_DOWN | KEY_ALT): {
 			int Roll = Key & KEY_ALT ? 1 : Opt.MsWheelDeltaEdit;
@@ -1720,6 +1742,7 @@ int Editor::ProcessKey(FarKey Key)
 
 			return TRUE;
 		}
+
 		case KEY_MSWHEEL_LEFT:
 		case (KEY_MSWHEEL_LEFT | KEY_ALT): {
 			int Roll = Key & KEY_ALT ? 1 : Opt.MsHWheelDeltaEdit;
@@ -1729,6 +1752,7 @@ int Editor::ProcessKey(FarKey Key)
 
 			return TRUE;
 		}
+
 		case KEY_MSWHEEL_RIGHT:
 		case (KEY_MSWHEEL_RIGHT | KEY_ALT): {
 			int Roll = Key & KEY_ALT ? 1 : Opt.MsHWheelDeltaEdit;
@@ -1738,20 +1762,21 @@ int Editor::ProcessKey(FarKey Key)
 
 			return TRUE;
 		}
+
 		case KEY_CTRLUP:
-		case KEY_CTRLNUMPAD8: {
+		case KEY_CTRLNUMPAD8:
 			soFlags.Set(FEDITOR_NEWUNDO);
 			ScrollUp();
 			Show();
 			return TRUE;
-		}
+
 		case KEY_CTRLDOWN:
-		case KEY_CTRLNUMPAD2: {
+		case KEY_CTRLNUMPAD2:
 			soFlags.Set(FEDITOR_NEWUNDO);
 			ScrollDown();
 			Show();
 			return TRUE;
-		}
+
 		case KEY_PGUP:
 		case KEY_NUMPAD9: {
 			soFlags.Set(FEDITOR_NEWUNDO);
@@ -1762,6 +1787,7 @@ int Editor::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_PGDN:
 		case KEY_NUMPAD3: {
 			soFlags.Set(FEDITOR_NEWUNDO);
@@ -1772,55 +1798,54 @@ int Editor::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_CTRLHOME:
 		case KEY_CTRLNUMPAD7:
 		case KEY_CTRLPGUP:
 		case KEY_CTRLNUMPAD9: {
-			{
-				soFlags.Set(FEDITOR_NEWUNDO);
-				int StartPos = m_CurLine->GetCellCurPos();
-				m_NumLine = 0;
-				m_TopScreen = m_CurLine = m_TopList;
+			soFlags.Set(FEDITOR_NEWUNDO);
+			int StartPos = m_CurLine->GetCellCurPos();
+			m_NumLine = 0;
+			m_TopScreen = m_CurLine = m_TopList;
 
-				if (Key == KEY_CTRLHOME || Key == KEY_CTRLNUMPAD7)
-					m_CurLine->SetCurPos(0);
-				else
-					m_CurLine->SetCellCurPos(StartPos);
+			if (Key == KEY_CTRLHOME || Key == KEY_CTRLNUMPAD7)
+				m_CurLine->SetCurPos(0);
+			else
+				m_CurLine->SetCellCurPos(StartPos);
 
-				Show();
-			}
+			Show();
 			return TRUE;
 		}
+
 		case KEY_CTRLEND:
 		case KEY_CTRLNUMPAD1:
 		case KEY_CTRLPGDN:
 		case KEY_CTRLNUMPAD3: {
-			{
-				soFlags.Set(FEDITOR_NEWUNDO);
-				int StartPos = m_CurLine->GetCellCurPos();
-				m_NumLine = m_NumLastLine - 1;
-				m_CurLine = m_EndList;
-				m_TopScreen = m_CurLine;
+			soFlags.Set(FEDITOR_NEWUNDO);
+			int StartPos = m_CurLine->GetCellCurPos();
+			m_NumLine = m_NumLastLine - 1;
+			m_CurLine = m_EndList;
+			m_TopScreen = m_CurLine;
 
-				for (int I = Y1; I < Y2 && m_TopScreen->m_prev; I++) {
-					m_TopScreen->SetPosition(X1, I, m_XX2, I);
-					m_TopScreen = m_TopScreen->m_prev;
-				}
-
-				m_CurLine->SetLeftPos(0);
-
-				if (Key == KEY_CTRLEND || Key == KEY_CTRLNUMPAD1) {
-					m_CurLine->SetCurPos(m_CurLine->GetLength());
-					m_CurLine->FastShow();
-				} else
-					m_CurLine->SetCellCurPos(StartPos);
-
-				Show();
+			for (int I = Y1; I < Y2 && m_TopScreen->m_prev; I++) {
+				m_TopScreen->SetPosition(X1, I, m_XX2, I);
+				m_TopScreen = m_TopScreen->m_prev;
 			}
+
+			m_CurLine->SetLeftPos(0);
+
+			if (Key == KEY_CTRLEND || Key == KEY_CTRLNUMPAD1) {
+				m_CurLine->SetCurPos(m_CurLine->GetLength());
+				m_CurLine->FastShow();
+			} else
+				m_CurLine->SetCellCurPos(StartPos);
+
+			Show();
 			return TRUE;
 		}
+
 		case KEY_NUMENTER:
-		case KEY_ENTER: {
+		case KEY_ENTER:
 			if (m_Pasting || !ShiftPressed || CtrlObject->Macro.IsExecuting()) {
 				if (!m_Pasting && !m_EdOpt.PersistentBlocks && m_BlockStart)
 					DeleteBlock();
@@ -1830,9 +1855,8 @@ int Editor::ProcessKey(FarKey Key)
 				m_CurLine->FastShow();
 				Show();
 			}
-
 			return TRUE;
-		}
+
 		case KEY_CTRLN: {
 			soFlags.Set(FEDITOR_NEWUNDO);
 
@@ -1845,31 +1869,31 @@ int Editor::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_CTRLE: {
-			{
-				soFlags.Set(FEDITOR_NEWUNDO);
-				Edit *CurPtr = m_TopScreen;
-				bool CurLineFound = false;
+			soFlags.Set(FEDITOR_NEWUNDO);
+			Edit *CurPtr = m_TopScreen;
+			bool CurLineFound = false;
 
-				for (int I = Y1; I < Y2; I++) {
-					if (!CurPtr->m_next)
-						break;
+			for (int I = Y1; I < Y2; I++) {
+				if (!CurPtr->m_next)
+					break;
 
-					if (CurPtr == m_CurLine)
-						CurLineFound = true;
+				if (CurPtr == m_CurLine)
+					CurLineFound = true;
 
-					if (CurLineFound)
-						m_NumLine++;
+				if (CurLineFound)
+					m_NumLine++;
 
-					CurPtr = CurPtr->m_next;
-				}
-
-				m_CurLine = CurPtr;
-				m_CurLine->SetCurPos(CurPos);
-				Show();
+				CurPtr = CurPtr->m_next;
 			}
+
+			m_CurLine = CurPtr;
+			m_CurLine->SetCurPos(CurPos);
+			Show();
 			return TRUE;
 		}
+
 		case KEY_CTRLL: {
 			soFlags.Swap(FEDITOR_LOCKMODE);
 
@@ -1878,41 +1902,42 @@ int Editor::ProcessKey(FarKey Key)
 
 			return TRUE;
 		}
-		case KEY_CTRLY: {
+
+		case KEY_CTRLY:
 			DeleteString(m_CurLine, m_NumLine, false, m_NumLine);
 			Show();
 			return TRUE;
-		}
+
 		case KEY_F7: {
 			if (Search(false, NEXT_NONE))
 				GlobalReplaceMode = false;
 
 			return TRUE;
 		}
-		case KEY_CTRLF7: {
+
+		case KEY_CTRLF7:
 			if (!soFlags.Check(FEDITOR_LOCKMODE)) {
 				if (Search(true, NEXT_NONE))
 					GlobalReplaceMode = true;
 			}
+			return TRUE;
 
-			return TRUE;
-		}
-		case KEY_SHIFTF7: {
+		case KEY_SHIFTF7:
 			TurnOffMarkingBlock();
-			Search(GlobalReplaceMode, m_LastSearch.Reverse ? NEXT_REVERSE : NEXT_FORWARD);
+			Search(GlobalReplaceMode, NEXT_FORWARD);
 			return TRUE;
-		}
-		case KEY_ALTF7: {
+
+		case KEY_ALTF7:
 			TurnOffMarkingBlock();
-			Search(GlobalReplaceMode, m_LastSearch.Reverse ? NEXT_FORWARD : NEXT_REVERSE);
+			Search(GlobalReplaceMode, NEXT_BACKWARD);
 			return TRUE;
-		}
-		case KEY_F11: {
+
+		case KEY_F11:
 			return TRUE;
-		}
+
 		case KEY_CTRLSHIFTZ:
 		case KEY_ALTBS:
-		case KEY_CTRLZ: {
+		case KEY_CTRLZ:
 			if (!soFlags.Check(FEDITOR_LOCKMODE)) {
 				Lock();
 				Undo(Key == KEY_CTRLSHIFTZ);
@@ -1920,38 +1945,34 @@ int Editor::ProcessKey(FarKey Key)
 				Unlock();
 				Show();
 			}
-
 			return TRUE;
-		}
+
 		case KEY_ALTF8: {
-			{
-				GoToPosition();
+			GoToPosition();
 
-				// <GOTO_UNMARK:1>
-				if (!m_EdOpt.PersistentBlocks)
-					UnmarkBlock();
+			// <GOTO_UNMARK:1>
+			if (!m_EdOpt.PersistentBlocks)
+				UnmarkBlock();
 
-				// </GOTO_UNMARK>
-				Show();
-			}
+			// </GOTO_UNMARK>
+			Show();
 			return TRUE;
 		}
-		case KEY_ALTU: {
+
+		case KEY_ALTU:
 			if (!soFlags.Check(FEDITOR_LOCKMODE)) {
 				BlockLeft();
 				Show();
 			}
-
 			return TRUE;
-		}
-		case KEY_ALTI: {
+
+		case KEY_ALTI:
 			if (!soFlags.Check(FEDITOR_LOCKMODE)) {
 				BlockRight();
 				Show();
 			}
-
 			return TRUE;
-		}
+
 		case KEY_ALTSHIFTLEFT:
 		case KEY_ALTSHIFTNUMPAD4:
 		case KEY_ALTLEFT: {
@@ -1987,6 +2008,7 @@ int Editor::ProcessKey(FarKey Key)
 			//_D(SysLog(L"~~~~~~~~~~~~~~~~ KEY_ALTLEFT END, m_VBlockY=%i:%i, m_VBlockX=%i:%i",m_VBlockY,m_VBlockSizeY,m_VBlockX,m_VBlockSizeX));
 			return TRUE;
 		}
+
 		case KEY_ALTSHIFTRIGHT:
 		case KEY_ALTSHIFTNUMPAD6:
 		case KEY_ALTRIGHT: {
@@ -2037,82 +2059,81 @@ int Editor::ProcessKey(FarKey Key)
 			//_D(SysLog(L"~~~~~~~~~~~~~~~~ KEY_ALTRIGHT END, m_VBlockY=%i:%i, m_VBlockX=%i:%i",m_VBlockY,m_VBlockSizeY,m_VBlockX,m_VBlockSizeX));
 			return TRUE;
 		}
+
 		/* $ 29.06.2000 IG
 		  + CtrlAltLeft, CtrlAltRight для вертикальный блоков
 		*/
 		case KEY_CTRLALTLEFT:
 		case KEY_CTRLALTNUMPAD4: {
-			{
-				bool SkipSpace = true;
-				m_Pasting++;
-				Lock();
+			bool SkipSpace = true;
+			m_Pasting++;
+			Lock();
 
-				for (;;) {
-					const wchar_t *Str;
-					int Length;
-					m_CurLine->GetBinaryString(&Str, nullptr, Length);
-					int CurPos = m_CurLine->GetCurPos();
+			for (;;) {
+				const wchar_t *Str;
+				int Length;
+				m_CurLine->GetBinaryString(&Str, nullptr, Length);
+				int CurPos = m_CurLine->GetCurPos();
 
-					if (CurPos > Length) {
-						m_CurLine->ProcessKey(KEY_END);
-						CurPos = m_CurLine->GetCurPos();
-					}
-
-					if (!CurPos)
-						break;
-
-					if (IsSpace(Str[CurPos - 1]) || IsWordDiv(m_EdOpt.strWordDiv, Str[CurPos - 1])) {
-						if (SkipSpace) {
-							ProcessKey(KEY_ALTSHIFTLEFT);
-							continue;
-						} else
-							break;
-					}
-
-					SkipSpace = false;
-					ProcessKey(KEY_ALTSHIFTLEFT);
+				if (CurPos > Length) {
+					m_CurLine->ProcessKey(KEY_END);
+					CurPos = m_CurLine->GetCurPos();
 				}
 
-				m_Pasting--;
-				Unlock();
-				Show();
+				if (!CurPos)
+					break;
+
+				if (IsSpace(Str[CurPos - 1]) || IsWordDiv(m_EdOpt.strWordDiv, Str[CurPos - 1])) {
+					if (SkipSpace) {
+						ProcessKey(KEY_ALTSHIFTLEFT);
+						continue;
+					} else
+						break;
+				}
+
+				SkipSpace = false;
+				ProcessKey(KEY_ALTSHIFTLEFT);
 			}
+
+			m_Pasting--;
+			Unlock();
+			Show();
 			return TRUE;
 		}
+
 		case KEY_CTRLALTRIGHT:
 		case KEY_CTRLALTNUMPAD6: {
-			{
-				bool SkipSpace = true;
-				m_Pasting++;
-				Lock();
+			bool SkipSpace = true;
+			m_Pasting++;
+			Lock();
 
-				for (;;) {
-					const wchar_t *Str;
-					int Length;
-					m_CurLine->GetBinaryString(&Str, nullptr, Length);
-					int CurPos = m_CurLine->GetCurPos();
+			for (;;) {
+				const wchar_t *Str;
+				int Length;
+				m_CurLine->GetBinaryString(&Str, nullptr, Length);
+				int CurPos = m_CurLine->GetCurPos();
 
-					if (CurPos >= Length)
+				if (CurPos >= Length)
+					break;
+
+				if (IsSpace(Str[CurPos]) || IsWordDiv(m_EdOpt.strWordDiv, Str[CurPos])) {
+					if (SkipSpace) {
+						ProcessKey(KEY_ALTSHIFTRIGHT);
+						continue;
+					} else
 						break;
-
-					if (IsSpace(Str[CurPos]) || IsWordDiv(m_EdOpt.strWordDiv, Str[CurPos])) {
-						if (SkipSpace) {
-							ProcessKey(KEY_ALTSHIFTRIGHT);
-							continue;
-						} else
-							break;
-					}
-
-					SkipSpace = false;
-					ProcessKey(KEY_ALTSHIFTRIGHT);
 				}
 
-				m_Pasting--;
-				Unlock();
-				Show();
+				SkipSpace = false;
+				ProcessKey(KEY_ALTSHIFTRIGHT);
 			}
+
+			m_Pasting--;
+			Unlock();
+			Show();
 			return TRUE;
 		}
+
 		case KEY_ALTSHIFTUP:
 		case KEY_ALTSHIFTNUMPAD8:
 		case KEY_ALTUP: {
@@ -2144,6 +2165,7 @@ int Editor::ProcessKey(FarKey Key)
 			//_D(SysLog(L"~~~~~~~~ ALT_PGUP, m_VBlockY=%i:%i, m_VBlockX=%i:%i",m_VBlockY,m_VBlockSizeY,m_VBlockX,m_VBlockSizeX));
 			return TRUE;
 		}
+
 		case KEY_ALTSHIFTDOWN:
 		case KEY_ALTSHIFTNUMPAD2:
 		case KEY_ALTDOWN: {
@@ -2175,6 +2197,7 @@ int Editor::ProcessKey(FarKey Key)
 			//_D(SysLog(L"~~~~ Key_AltDOWN: m_VBlockY=%i:%i, m_VBlockX=%i:%i",m_VBlockY,m_VBlockSizeY,m_VBlockX,m_VBlockSizeX));
 			return TRUE;
 		}
+
 		case KEY_ALTSHIFTHOME:
 		case KEY_ALTSHIFTNUMPAD7:
 		case KEY_ALTHOME: {
@@ -2189,6 +2212,7 @@ int Editor::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_ALTSHIFTEND:
 		case KEY_ALTSHIFTNUMPAD1:
 		case KEY_ALTEND: {
@@ -2208,6 +2232,7 @@ int Editor::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_ALTSHIFTPGUP:
 		case KEY_ALTSHIFTNUMPAD9:
 		case KEY_ALTPGUP: {
@@ -2222,6 +2247,7 @@ int Editor::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_ALTSHIFTPGDN:
 		case KEY_ALTSHIFTNUMPAD3:
 		case KEY_ALTPGDN: {
@@ -2236,6 +2262,7 @@ int Editor::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_CTRLALTPGUP:
 		case KEY_CTRLALTNUMPAD9:
 		case KEY_CTRLALTHOME:
@@ -2254,6 +2281,7 @@ int Editor::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_CTRLALTPGDN:
 		case KEY_CTRLALTNUMPAD3:
 		case KEY_CTRLALTEND:
@@ -2272,6 +2300,7 @@ int Editor::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_CTRLALTBRACKET:          // Вставить реальный (разрешенный) путь из левой панели
 		case KEY_CTRLALTBACKBRACKET:      // Вставить реальный (разрешенный) путь из правой панели
 		case KEY_ALTSHIFTBRACKET:         // Вставить реальный (разрешенный) путь из активной панели
@@ -2283,7 +2312,7 @@ int Editor::ProcessKey(FarKey Key)
 		case KEY_CTRLSHIFTNUMENTER:
 		case KEY_SHIFTNUMENTER:
 		case KEY_CTRLSHIFTENTER:
-		case KEY_SHIFTENTER: {
+		case KEY_SHIFTENTER:
 			if (!soFlags.Check(FEDITOR_LOCKMODE)) {
 				m_Pasting++;
 				AddUndoData(UNDO_BEGIN);
@@ -2300,9 +2329,8 @@ int Editor::ProcessKey(FarKey Key)
 				AddUndoData(UNDO_END);
 				Show();
 			}
-
 			return TRUE;
-		}
+
 		case KEY_CTRLQ: {
 			if (!soFlags.Check(FEDITOR_LOCKMODE)) {
 				soFlags.Set(FEDITOR_PROCESSCTRLQ);
@@ -2327,6 +2355,7 @@ int Editor::ProcessKey(FarKey Key)
 
 			return TRUE;
 		}
+
 		case KEY_OP_SELWORD: {
 			int SStart, SEnd;
 			m_Pasting++;
@@ -2353,6 +2382,7 @@ int Editor::ProcessKey(FarKey Key)
 			Show();
 			return TRUE;
 		}
+
 		case KEY_OP_PLAINTEXT: {
 			if (!soFlags.Check(FEDITOR_LOCKMODE)) {
 				FARString strTStr = CtrlObject->Macro.GetStringToPrint();
@@ -2384,225 +2414,226 @@ int Editor::ProcessKey(FarKey Key)
 
 			return TRUE;
 		}
+
 		default: {
+			if ((Key == KEY_CTRLDEL || Key == KEY_CTRLNUMDEL || Key == KEY_CTRLDECIMAL || Key == KEY_CTRLT)
+					&& CurPos >= m_CurLine->GetLength())
 			{
-				if ((Key == KEY_CTRLDEL || Key == KEY_CTRLNUMDEL || Key == KEY_CTRLDECIMAL
-							|| Key == KEY_CTRLT)
-						&& CurPos >= m_CurLine->GetLength()) {
-					/*$ 08.12.2000 skv
-					  - CTRL-DEL в начале строки при выделенном блоке и
-						включенном EditorDelRemovesBlocks
-					*/
-					int save = m_EdOpt.DelRemovesBlocks;
-					m_EdOpt.DelRemovesBlocks = 0;
-					int ret = ProcessKey(KEY_DEL);
-					m_EdOpt.DelRemovesBlocks = save;
-					return ret;
+				/*$ 08.12.2000 skv
+					- CTRL-DEL в начале строки при выделенном блоке и
+					включенном EditorDelRemovesBlocks
+				*/
+				int save = m_EdOpt.DelRemovesBlocks;
+				m_EdOpt.DelRemovesBlocks = 0;
+				int ret = ProcessKey(KEY_DEL);
+				m_EdOpt.DelRemovesBlocks = save;
+				return ret;
+			}
+
+			if (!m_Pasting && !m_EdOpt.PersistentBlocks && m_BlockStart && IsCharKey(Key))
+			{
+				DeleteBlock();
+				/* $ 19.09.2002 SKV
+					Однако надо.
+					Иначе есди при надичии выделения набирать
+					текст с шифтом флаги не сбросятся и следующий
+					выделенный блок будет глючный.
+				*/
+				TurnOffMarkingBlock();
+				Show();
+			}
+
+			bool SkipCheckUndo = (Key == KEY_RIGHT || Key == KEY_NUMPAD6 || Key == KEY_CTRLLEFT
+					|| Key == KEY_CTRLNUMPAD4 || Key == KEY_CTRLRIGHT || Key == KEY_CTRLNUMPAD6
+					|| Key == KEY_HOME || Key == KEY_NUMPAD7 || Key == KEY_END || Key == KEY_NUMPAD1
+					|| Key == KEY_CTRLS);
+
+			if (soFlags.Check(FEDITOR_LOCKMODE) && !SkipCheckUndo)
+				return TRUE;
+
+			if ((Key == KEY_CTRLLEFT || Key == KEY_CTRLNUMPAD4) && !m_CurLine->GetCurPos()) {
+				m_Pasting++;
+				ProcessKey(KEY_LEFT);
+				m_Pasting--;
+				/* $ 24.9.2001 SKV
+					fix бага с ctrl-left в начале строки
+					в блоке с переопределённым плагином фоном.
+				*/
+				ShowEditor(false);
+				// if(!soFlags.Check(FEDITOR_DIALOGMEMOEDIT)){
+				// CtrlObject->Plugins.CurEditor=m_HostFileEditor; // this;
+				//_D(SysLog(L"%08d EE_REDRAW",__LINE__));
+				// CtrlObject->Plugins.ProcessEditorEvent(EE_REDRAW,EEREDRAW_ALL);
+				// }
+				return TRUE;
+			}
+
+			if (((!m_EdOpt.CursorBeyondEOL && (Key == KEY_RIGHT || Key == KEY_NUMPAD6))
+						|| Key == KEY_CTRLRIGHT || Key == KEY_CTRLNUMPAD6)
+					&& m_CurLine->GetCurPos() >= m_CurLine->GetLength() && m_CurLine->m_next) {
+				m_Pasting++;
+				ProcessKey(KEY_HOME);
+				ProcessKey(KEY_DOWN);
+				m_Pasting--;
+
+				if (!soFlags.Check(FEDITOR_DIALOGMEMOEDIT)) {
+					CtrlObject->Plugins.CurEditor = m_HostFileEditor;    // this;
+					CtrlObject->Plugins.ProcessEditorEvent(EE_REDRAW, EEREDRAW_ALL, this);
 				}
 
-				if (!m_Pasting && !m_EdOpt.PersistentBlocks && m_BlockStart && IsCharKey(Key)) {
-					DeleteBlock();
-					/* $ 19.09.2002 SKV
-					  Однако надо.
-					  Иначе есди при надичии выделения набирать
-					  текст с шифтом флаги не сбросятся и следующий
-					  выделенный блок будет глючный.
-					*/
-					TurnOffMarkingBlock();
-					Show();
-				}
+				/*$ 03.02.2001 SKV
+					А то EEREDRAW_ALL то уходит, а на самом деле
+					только текущая линия перерисовывается.
+				*/
+				ShowEditor(false);
+				return TRUE;
+			}
 
-				bool SkipCheckUndo = (Key == KEY_RIGHT || Key == KEY_NUMPAD6 || Key == KEY_CTRLLEFT
-						|| Key == KEY_CTRLNUMPAD4 || Key == KEY_CTRLRIGHT || Key == KEY_CTRLNUMPAD6
-						|| Key == KEY_HOME || Key == KEY_NUMPAD7 || Key == KEY_END || Key == KEY_NUMPAD1
-						|| Key == KEY_CTRLS);
+			FARString CmpStr;
+			const wchar_t *Str;
+			int Length;
 
-				if (soFlags.Check(FEDITOR_LOCKMODE) && !SkipCheckUndo)
-					return TRUE;
+			m_CurLine->GetBinaryString(&Str, nullptr, Length);
 
-				if ((Key == KEY_CTRLLEFT || Key == KEY_CTRLNUMPAD4) && !m_CurLine->GetCurPos()) {
-					m_Pasting++;
-					ProcessKey(KEY_LEFT);
-					m_Pasting--;
-					/* $ 24.9.2001 SKV
-					  fix бага с ctrl-left в начале строки
-					  в блоке с переопределённым плагином фоном.
-					*/
-					ShowEditor(false);
-					// if(!soFlags.Check(FEDITOR_DIALOGMEMOEDIT)){
-					// CtrlObject->Plugins.CurEditor=m_HostFileEditor; // this;
-					//_D(SysLog(L"%08d EE_REDRAW",__LINE__));
-					// CtrlObject->Plugins.ProcessEditorEvent(EE_REDRAW,EEREDRAW_ALL);
-					// }
-					return TRUE;
-				}
+			if (!SkipCheckUndo)
+			{
+				CmpStr.Copy(Str, Length);
+			}
 
-				if (((!m_EdOpt.CursorBeyondEOL && (Key == KEY_RIGHT || Key == KEY_NUMPAD6))
-							|| Key == KEY_CTRLRIGHT || Key == KEY_CTRLNUMPAD6)
-						&& m_CurLine->GetCurPos() >= m_CurLine->GetLength() && m_CurLine->m_next) {
-					m_Pasting++;
-					ProcessKey(KEY_HOME);
-					ProcessKey(KEY_DOWN);
-					m_Pasting--;
+			int CurPos = m_CurLine->GetCurPos();
 
-					if (!soFlags.Check(FEDITOR_DIALOGMEMOEDIT)) {
-						CtrlObject->Plugins.CurEditor = m_HostFileEditor;    // this;
-						CtrlObject->Plugins.ProcessEditorEvent(EE_REDRAW, EEREDRAW_ALL, this);
-					}
+			if (IsCharKey(Key) && CurPos > 0 && !Length) {
+				Edit *PrevLine = m_CurLine->m_prev;
 
-					/*$ 03.02.2001 SKV
-					  А то EEREDRAW_ALL то уходит, а на самом деле
-					  только текущая линия перерисовывается.
-					*/
-					ShowEditor(false);
-					return TRUE;
-				}
+				while (PrevLine && !PrevLine->GetLength())
+					PrevLine = PrevLine->m_prev;
 
-				FARString CmpStr;
-				const wchar_t *Str;
-				int Length;
+				if (PrevLine) {
+					int TabPos = m_CurLine->GetCellCurPos();
+					m_CurLine->SetCurPos(0);
+					const wchar_t *PrevStr = nullptr;
+					int PrevLength = 0;
+					PrevLine->GetBinaryString(&PrevStr, nullptr, PrevLength);
 
-				m_CurLine->GetBinaryString(&Str, nullptr, Length);
+					for (int I = 0; I < PrevLength && IsSpace(PrevStr[I]); I++) {
+						int NewTabPos = m_CurLine->GetCellCurPos();
 
-				if (!SkipCheckUndo)
-				{
-					CmpStr.Copy(Str, Length);
-				}
+						if (NewTabPos == TabPos)
+							break;
 
-				int CurPos = m_CurLine->GetCurPos();
+						if (NewTabPos > TabPos) {
+							m_CurLine->ProcessKey(KEY_BS);
 
-				if (IsCharKey(Key) && CurPos > 0 && !Length) {
-					Edit *PrevLine = m_CurLine->m_prev;
+							while (m_CurLine->GetCellCurPos() < TabPos)
+								m_CurLine->ProcessKey(' ');
 
-					while (PrevLine && !PrevLine->GetLength())
-						PrevLine = PrevLine->m_prev;
-
-					if (PrevLine) {
-						int TabPos = m_CurLine->GetCellCurPos();
-						m_CurLine->SetCurPos(0);
-						const wchar_t *PrevStr = nullptr;
-						int PrevLength = 0;
-						PrevLine->GetBinaryString(&PrevStr, nullptr, PrevLength);
-
-						for (int I = 0; I < PrevLength && IsSpace(PrevStr[I]); I++) {
-							int NewTabPos = m_CurLine->GetCellCurPos();
-
-							if (NewTabPos == TabPos)
-								break;
-
-							if (NewTabPos > TabPos) {
-								m_CurLine->ProcessKey(KEY_BS);
-
-								while (m_CurLine->GetCellCurPos() < TabPos)
-									m_CurLine->ProcessKey(' ');
-
-								break;
-							}
-
-							if (NewTabPos < TabPos)
-								m_CurLine->ProcessKey(PrevStr[I]);
+							break;
 						}
 
-						m_CurLine->SetCellCurPos(TabPos);
+						if (NewTabPos < TabPos)
+							m_CurLine->ProcessKey(PrevStr[I]);
+					}
+
+					m_CurLine->SetCellCurPos(TabPos);
+				}
+			}
+
+			int LeftPos = m_CurLine->GetLeftPos();
+
+			if (Key == KEY_OP_XLAT) {
+				Xlat();
+				Show();
+				return TRUE;
+			}
+
+			// <comment> - это требуется для корректной работы логики блоков для Ctrl-K
+			int PreSelStart, PreSelEnd;
+			m_CurLine->GetSelection(PreSelStart, PreSelEnd);
+			// </comment>
+			// AY: Это что бы при FastShow LeftPos не становился в конец строки.
+			m_CurLine->ObjWidth = m_XX2 - X1 + 1;
+
+			if (m_CurLine->ProcessKey(Key)) {
+				int SelStart, SelEnd;
+
+				/* $ 17.09.2002 SKV
+					Если находимся в середине блока,
+					в начале строки, и нажимаем tab, который заменяется
+					на пробелы, выделение съедет. Это фикс.
+				*/
+				if (Key == KEY_TAB && m_CurLine->GetConvertTabs() && m_BlockStart && m_BlockStart != m_CurLine) {
+					m_CurLine->GetSelection(SelStart, SelEnd);
+					m_CurLine->Select(SelStart == -1 ? -1 : 0, SelEnd);
+				}
+
+				if (!SkipCheckUndo) {
+					const wchar_t *NewCmpStr;
+					int NewLength;
+					m_CurLine->GetBinaryString(&NewCmpStr, nullptr, NewLength);
+
+					if (NewLength != Length || memcmp(CmpStr, NewCmpStr, Length * sizeof(wchar_t))) {
+						AddUndoData(UNDO_EDIT, CmpStr, m_CurLine->GetEOL(), m_NumLine, CurPos, Length);    // EOL? - m_CurLine->GetEOL()  m_GlobalEOL   ""
+						TextChanged(true);
 					}
 				}
 
-				int LeftPos = m_CurLine->GetLeftPos();
+				// <Bug 794>
+				// обработаем только первую и последнюю строку с блоком
+				if (Key == KEY_CTRLK && m_EdOpt.PersistentBlocks) {
+					if (m_CurLine == m_BlockStart) {
+						if (CurPos) {
+							m_CurLine->GetSelection(SelStart, SelEnd);
 
-				if (Key == KEY_OP_XLAT) {
-					Xlat();
-					Show();
-					return TRUE;
-				}
+							// 1. блок за концом строки (CurPos был ближе к началу, чем SelStart)
+							if ((SelEnd == -1 && PreSelStart > CurPos) || SelEnd > CurPos)
+								SelStart = SelEnd = -1;    // в этом случае снимаем выделение
 
-				// <comment> - это требуется для корректной работы логики блоков для Ctrl-K
-				int PreSelStart, PreSelEnd;
-				m_CurLine->GetSelection(PreSelStart, PreSelEnd);
-				// </comment>
-				// AY: Это что бы при FastShow LeftPos не становился в конец строки.
-				m_CurLine->ObjWidth = m_XX2 - X1 + 1;
+							// 2. CurPos внутри блока
+							else if (SelEnd == -1 && PreSelEnd > CurPos && SelStart < CurPos)
+								SelEnd = PreSelEnd;    // в этом случае усекаем блок
 
-				if (m_CurLine->ProcessKey(Key)) {
-					int SelStart, SelEnd;
-
-					/* $ 17.09.2002 SKV
-					  Если находимся в середине блока,
-					  в начале строки, и нажимаем tab, который заменяется
-					  на пробелы, выделение съедет. Это фикс.
-					*/
-					if (Key == KEY_TAB && m_CurLine->GetConvertTabs() && m_BlockStart && m_BlockStart != m_CurLine) {
-						m_CurLine->GetSelection(SelStart, SelEnd);
-						m_CurLine->Select(SelStart == -1 ? -1 : 0, SelEnd);
-					}
-
-					if (!SkipCheckUndo) {
-						const wchar_t *NewCmpStr;
-						int NewLength;
-						m_CurLine->GetBinaryString(&NewCmpStr, nullptr, NewLength);
-
-						if (NewLength != Length || memcmp(CmpStr, NewCmpStr, Length * sizeof(wchar_t))) {
-							AddUndoData(UNDO_EDIT, CmpStr, m_CurLine->GetEOL(), m_NumLine, CurPos, Length);    // EOL? - m_CurLine->GetEOL()  m_GlobalEOL   ""
-							TextChanged(true);
+							// 3. блок остался слева от CurPos или выделение нужно снять (см. выше)
+							if (SelEnd >= CurPos || SelStart == -1)
+								m_CurLine->Select(SelStart, CurPos);
+						} else {
+							m_CurLine->Select(-1, -1);
+							m_BlockStart = m_BlockStart->m_next;
 						}
-					}
+					} else    // ЗДЕСЬ ЗАСАДА !!! ЕСЛИ ВЫДЕЛЕННЫЙ БЛОК ДОСТАТОЧНО БОЛЬШОЙ (ПО СТРОКАМ), ТО ЦИКЛ ПЕРЕБОРА... МОЖЕТ ЗАТЯНУТЬ...
+					{
+						// найдем эту последнюю строку (и последняя ли она)
+						Edit *CurPtrBlock = m_BlockStart, *CurPtrBlock2 = m_BlockStart;
 
-					// <Bug 794>
-					// обработаем только первую и последнюю строку с блоком
-					if (Key == KEY_CTRLK && m_EdOpt.PersistentBlocks) {
-						if (m_CurLine == m_BlockStart) {
+						while (CurPtrBlock) {
+							CurPtrBlock->GetRealSelection(SelStart, SelEnd);
+
+							if (SelStart == -1)
+								break;
+
+							CurPtrBlock2 = CurPtrBlock;
+							CurPtrBlock = CurPtrBlock->m_next;
+						}
+
+						if (m_CurLine == CurPtrBlock2) {
 							if (CurPos) {
 								m_CurLine->GetSelection(SelStart, SelEnd);
-
-								// 1. блок за концом строки (CurPos был ближе к началу, чем SelStart)
-								if ((SelEnd == -1 && PreSelStart > CurPos) || SelEnd > CurPos)
-									SelStart = SelEnd = -1;    // в этом случае снимаем выделение
-
-								// 2. CurPos внутри блока
-								else if (SelEnd == -1 && PreSelEnd > CurPos && SelStart < CurPos)
-									SelEnd = PreSelEnd;    // в этом случае усекаем блок
-
-								// 3. блок остался слева от CurPos или выделение нужно снять (см. выше)
-								if (SelEnd >= CurPos || SelStart == -1)
-									m_CurLine->Select(SelStart, CurPos);
+								m_CurLine->Select(SelStart, CurPos);
 							} else {
 								m_CurLine->Select(-1, -1);
-								m_BlockStart = m_BlockStart->m_next;
-							}
-						} else    // ЗДЕСЬ ЗАСАДА !!! ЕСЛИ ВЫДЕЛЕННЫЙ БЛОК ДОСТАТОЧНО БОЛЬШОЙ (ПО СТРОКАМ), ТО ЦИКЛ ПЕРЕБОРА... МОЖЕТ ЗАТЯНУТЬ...
-						{
-							// найдем эту последнюю строку (и последняя ли она)
-							Edit *CurPtrBlock = m_BlockStart, *CurPtrBlock2 = m_BlockStart;
-
-							while (CurPtrBlock) {
-								CurPtrBlock->GetRealSelection(SelStart, SelEnd);
-
-								if (SelStart == -1)
-									break;
-
-								CurPtrBlock2 = CurPtrBlock;
-								CurPtrBlock = CurPtrBlock->m_next;
-							}
-
-							if (m_CurLine == CurPtrBlock2) {
-								if (CurPos) {
-									m_CurLine->GetSelection(SelStart, SelEnd);
-									m_CurLine->Select(SelStart, CurPos);
-								} else {
-									m_CurLine->Select(-1, -1);
-									CurPtrBlock2 = CurPtrBlock2->m_next;
-								}
+								CurPtrBlock2 = CurPtrBlock2->m_next;
 							}
 						}
 					}
-
-					// </Bug 794>
-					ShowEditor(LeftPos == m_CurLine->GetLeftPos());
-					return TRUE;
 				}
 
-				if (m_VBlockStart)
-					Show();
+				// </Bug 794>
+				ShowEditor(LeftPos == m_CurLine->GetLeftPos());
+				return TRUE;
 			}
+
+			if (m_VBlockStart)
+				Show();
+
 			return FALSE;
 		}
 	}
@@ -3278,47 +3309,49 @@ void Editor::ScrollUp()
 */
 bool Editor::Search(bool ReplaceMode, NextType NextTp)
 {
-	FARString strMsgStr;
-	const wchar_t *TextHistoryName = L"SearchText";
-	const wchar_t *ReplaceHistoryName = L"ReplaceText";
-	bool ReplaceAll = false;
-	bool Match = false;
-	bool UserBreak = false;
-	bool Next = (NextTp != NEXT_NONE);
+	const auto SearchHistoryName = L"SearchText";
+	const auto ReplaceHistoryName = L"ReplaceText";
+	const auto HelpTopic = L"EditorSearch";
 
-	if (Next && m_LastSearch.SearchStr.IsEmpty())
-		return true;
+	SearchReplaceDlgParams LS = m_LastSearch;
 
-	auto LS = m_LastSearch;
-	LS.Reverse = (NextTp == NEXT_NONE) ? m_LastSearch.Reverse : (NextTp == NEXT_REVERSE);
-
-	if (!Next) {
-		if (m_EdOpt.SearchPickUpWord) {
-			int StartPickPos = -1, EndPickPos = -1;
+	if (NextTp != NEXT_NONE)
+	{
+		LS.Reverse = (NextTp == NEXT_FORWARD) ? 0 : 1;
+	}
+	else
+	{
+		if (m_EdOpt.SearchPickUpWord)
+		{
+			int StartPos = -1, EndPos = -1;
 			const wchar_t *Ptr = CalcWordFromString(m_CurLine->GetStringAddr(), m_CurLine->GetCurPos(),
-					&StartPickPos, &EndPickPos, GetWordDiv());
+					&StartPos, &EndPos, GetWordDiv());
 
 			if (Ptr)
-				LS.SearchStr.Copy(Ptr, (size_t)EndPickPos - StartPickPos + 1);
+				LS.SearchStr.Copy(Ptr, EndPos - StartPos + 1);
 		}
 
-		if (GetSearchReplaceParams(ReplaceMode, LS, TextHistoryName, ReplaceHistoryName, L"EditorSearch",
+		if (GetSearchReplaceParams(ReplaceMode, LS, SearchHistoryName, ReplaceHistoryName, HelpTopic,
 					ReplaceMode ? &EditorReplaceId : &EditorSearchId))
 			m_LastSearch = LS;
 		else
 			return false;
-
-		if (LS.SearchStr.IsEmpty())
-			return true;
 	}
+
+	if (LS.SearchStr.IsEmpty())
+		return true;
+
+	bool ReplaceAll = false;
+	bool MatchFound = false;
+	bool UserBreak = false;
+	FARString strMsgStr = LS.SearchStr;
+	InsertQuote(strMsgStr);
 
 	if (!m_EdOpt.PersistentBlocks || (LS.SelectFound && !ReplaceMode))
 		UnmarkBlock();
 
 	{
 		SCOPED_ACTION(TPreRedrawFuncGuard)(Editor::PR_EditorShowMsg);
-		strMsgStr = LS.SearchStr;
-		InsertQuote(strMsgStr);
 		SetCursorType(false, -1);
 
 		const int StartLine = m_NumLine;
@@ -3351,7 +3384,7 @@ bool Editor::Search(bool ReplaceMode, NextType NextTp)
 			}
 		};
 
-		if (Next) {
+		if (NextTp != NEXT_NONE) {
 			if (!LS.Reverse)
 				++FromPos;
 			else if (--FromPos < 0)
@@ -3571,7 +3604,7 @@ bool Editor::Search(bool ReplaceMode, NextType NextTp)
 					}
 				}
 
-				Match = true;
+				MatchFound = true;
 
 				if (!ReplaceMode)
 					break;
@@ -3592,9 +3625,10 @@ bool Editor::Search(bool ReplaceMode, NextType NextTp)
 			}
 		}
 	}
+
 	Show();
 
-	if (!Match && !UserBreak)
+	if (!MatchFound && !UserBreak)
 		Message(MSG_WARNING, 1, &EditSearchNotFound, Msg::EditSearchTitle, Msg::EditNotFound, strMsgStr, Msg::Ok);
 
 	return true;

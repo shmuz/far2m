@@ -235,7 +235,7 @@ private:
 
 private:
 	enum NextType {
-		NEXT_NONE, NEXT_FORWARD, NEXT_REVERSE
+		NEXT_NONE, NEXT_FORWARD, NEXT_BACKWARD
 	};
 	int GetTopScreenLineNumber();
 	void DisplayObject() override;

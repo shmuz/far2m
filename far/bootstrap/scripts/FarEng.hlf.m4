@@ -2527,8 +2527,8 @@ $ #Viewer: control keys#
     #F6#                 Switch to ~editor~@Editor@
     #Alt-F5#             Print the file ("Print manager" plugin is used).
     #F7#                 ~Search~@ViewerSearch@
-    #Shift-F7, Space#    Continue search
-    #Alt-F7#             Continue search in "reverse" mode
+    #Shift-F7, Space#    Continue search in forward direction
+    #Alt-F7#             Continue search in backward direction
     #Ctrl-F7#            ~Grep filter~@GrepFilter@
     #F8#                 Toggle ~ANSI/OEM~@CodePagesSet@/UTF8 code page
     #Shift-F8#           Select code page
