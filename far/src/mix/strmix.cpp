@@ -1493,28 +1493,30 @@ bool SearchString(const wchar_t *Source, int StrSize, const FARString& Str, FARS
 			regex_match rmatch, rtemp;
 			bool found = false;
 
+			auto View = ReStringView(Source, StrSize);
+
 			if (!Reverse)
 			{
-				if (Re->SearchEx(ReStringView(Source, StrSize),Position,rmatch))
-					found = true;
+				found = Re->SearchEx(View, Position, rmatch);
 			}
 			else
 			{
-				// Do a search from 0-th position to check if a match exists at all.
-				// It greatly speeds up the common search cases.
-				auto View = ReStringView(Source, Min(Position + 1, StrSize));
-				if (Re->SearchEx(View, 0, rtemp) && rtemp.Matches[0].start <= Position)
+				int search_pos = 0;
+
+				// Scan forward within the line; retain the last match starting at or before Position
+				while (search_pos <= Position && Re->SearchEx(View, search_pos, rtemp))
 				{
-					for (int pos=Position; pos >= 0; --pos)
-					{
-						if (Re->SearchEx(View, pos, rmatch) && rmatch.Matches[0].start <= Position)
-						{
-							found = true;
-							break;
-						}
-					}
+					if (rtemp.Matches[0].start > Position)
+						break;
+
+					rmatch = rtemp;
+					found = true;
+
+					// Advance to prevent zero-length match infinite loops
+					search_pos = Max(rtemp.Matches[0].end, search_pos + 1);
 				}
 			}
+
 			if (found)
 			{
 				SearchLength = rmatch.Matches[0].end - rmatch.Matches[0].start;
