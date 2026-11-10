@@ -1110,7 +1110,7 @@ static bool ScanFile(const wchar_t *Name)
 
 		constexpr size_t MinChunkSize = 0x10000;      // 64 KB
 		constexpr size_t MaxChunkSize = 0x4000000;    // 64 MB
-		return std::clamp<size_t>(patternBytes * 4, MinChunkSize, MaxChunkSize);
+		return std::clamp(patternBytes * 4, MinChunkSize, MaxChunkSize);
 	}();
 
 	std::vector<char> readBufferA(ElementCount, 0);

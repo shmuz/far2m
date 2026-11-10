@@ -3354,18 +3354,13 @@ bool Editor::Search(bool ReplaceMode, NextType NextTp)
 		SCOPED_ACTION(TPreRedrawFuncGuard)(Editor::PR_EditorShowMsg);
 		SetCursorType(false, -1);
 
+		RegExp re;
+		if (LS.Regexp && !CompileRegexp(LS.SearchStr, LS.CaseSens, &re))
+			return true;
+
 		const int StartLine = m_NumLine;
 		int NewNumLine = m_NumLine;
 		DWORD StartTime = WINPORT(GetTickCount)();
-
-		RegExp re;
-		if (LS.Regexp && !CompileRegexp(LS.SearchStr, LS.CaseSens, &re)) {
-			FARString strMsg(LS.SearchStr);
-			InsertQuote(strMsg);
-			Message(MSG_WARNING, 1, Msg::EditSearchTitle, Msg::EditInvalidRegexp, strMsg, Msg::Ok);
-			return true;
-		}
-
 		Edit *CurPtr = m_CurLine;
 		int FromPos = m_CurLine->GetCurPos();
 
@@ -3397,11 +3392,9 @@ bool Editor::Search(bool ReplaceMode, NextType NextTp)
 			if (CurTime - StartTime > RedrawTimeout) {
 				StartTime = CurTime;
 
-				if (CheckForEscSilent()) {
-					if (ConfirmAbortOp()) {
-						UserBreak = true;
-						break;
-					}
+				if (CheckForEscSilent() && ConfirmAbortOp()) {
+					UserBreak = true;
+					break;
 				}
 
 				SetCursorType(false, -1);
@@ -3414,7 +3407,7 @@ bool Editor::Search(bool ReplaceMode, NextType NextTp)
 			FARString ReplaceStrCurrent(ReplaceMode ? LS.ReplaceStr : L"");
 
 			if (CurPtr->Search(LS.SearchStr, ReplaceStrCurrent, FromPos, LS.CaseSens, LS.WholeWords,
-					LS.Reverse, LS.Regexp ? &re:nullptr, SearchLength))
+					LS.Reverse, LS.Regexp ? &re : nullptr, SearchLength))
 			{
 				bool ReverseNewLine = false;
 				const bool EmptyMatch = (SearchLength == 0);

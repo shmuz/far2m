@@ -1490,9 +1490,9 @@ bool SearchString(const wchar_t *Source, int StrSize, const FARString& Str, FARS
 	{
 		if (Re)
 		{
-			regex_match rmatch;
-
+			regex_match rmatch, rtemp;
 			bool found = false;
+
 			if (!Reverse)
 			{
 				if (Re->SearchEx(ReStringView(Source, StrSize),Position,rmatch))
@@ -1500,12 +1500,14 @@ bool SearchString(const wchar_t *Source, int StrSize, const FARString& Str, FARS
 			}
 			else
 			{
+				// Do a search from 0-th position to check if a match exists at all.
+				// It greatly speeds up the common search cases.
 				auto View = ReStringView(Source, Min(Position + 1, StrSize));
-				for (int pos=Position; pos >= 0; --pos)
+				if (Re->SearchEx(View, 0, rtemp) && rtemp.Matches[0].start <= Position)
 				{
-					if (Re->SearchEx(View, pos, rmatch))
+					for (int pos=Position; pos >= 0; --pos)
 					{
-						if (rmatch.Matches[0].start <= Position)
+						if (Re->SearchEx(View, pos, rmatch) && rmatch.Matches[0].start <= Position)
 						{
 							found = true;
 							break;
