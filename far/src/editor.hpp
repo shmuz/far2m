@@ -176,6 +176,11 @@ private:
 	int m_LastChangeStrPos;
 	int m_NumLastLine;
 	int m_NumLine;
+
+	Edit *m_LastSearchLine {};   // Pointer to the line of the last match
+	int m_LastSearchPos {};      // Start position of the last match
+	int m_LastSearchLen {};      // Length of the last match (SearchLength)
+
 	/* $ 26.02.2001 IS
 		 Сюда запомним размер табуляции и в дальнейшем будем использовать его,
 		 а не Opt.TabSize
@@ -307,6 +312,7 @@ private:
 	wchar_t *Block2Text(wchar_t *ptrInitData);
 	wchar_t *VBlock2Text(wchar_t *ptrInitData);
 	void TurnOffMarkingBlock();
+	void ResetLastSearch();
 
 public:
 	Editor(ScreenObject *pOwner = nullptr, bool DialogUsed = false);

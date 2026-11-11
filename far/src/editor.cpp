@@ -152,6 +152,7 @@ void Editor::FreeAllocatedData(bool FreeUndo)
 	m_TopList = m_EndList = m_CurLine = nullptr;
 	m_NumLastLine = 0;
 	m_NumLine = 0;
+	ResetLastSearch();
 }
 
 void Editor::KeepInitParameters()
@@ -2985,6 +2986,9 @@ void Editor::DeleteString(Edit *DelPtr, int LineNumber, bool DeleteLast, int Und
 		m_LastGetLineNumber = 0;
 	}
 
+	if (DelPtr == m_LastSearchLine)
+		ResetLastSearch();
+
 	m_AutoDeletedColors.erase(DelPtr);
 
 	delete DelPtr;
@@ -3380,10 +3384,18 @@ bool Editor::Search(bool ReplaceMode, NextType NextTp)
 		};
 
 		if (NextTp != NEXT_NONE) {
-			if (!LS.Reverse)
-				++FromPos;
+			if (!LS.Reverse) {
+				if (CurPtr == m_LastSearchLine && FromPos == m_LastSearchPos)
+					FromPos += Max(m_LastSearchLen, 1);
+
+				if (FromPos > CurPtr->GetLength())
+					ChangeLine();
+			}
 			else if (--FromPos < 0)
 				ChangeLine();
+		}
+		else {
+			ResetLastSearch();
 		}
 
 		while (CurPtr) {
@@ -3412,6 +3424,10 @@ bool Editor::Search(bool ReplaceMode, NextType NextTp)
 				bool ReverseNewLine = false;
 				const bool EmptyMatch = (SearchLength == 0);
 				bool Skip = false;
+
+				m_LastSearchLine = CurPtr;
+				m_LastSearchPos = CurPtr->GetCurPos();
+				m_LastSearchLen = SearchLength;
 
 				if (LS.SelectFound && !ReplaceMode) {
 					m_Pasting++;
@@ -3482,6 +3498,8 @@ bool Editor::Search(bool ReplaceMode, NextType NextTp)
 
 					if (!MsgCode || MsgCode == 1) {
 						m_Pasting++;
+
+						ResetLastSearch();
 
 						/*$ 15.08.2000 skv
 						  If Replace FARString doesn't contain control symbols (tab and return),
@@ -3608,9 +3626,26 @@ bool Editor::Search(bool ReplaceMode, NextType NextTp)
 				else {
 					FromPos = m_CurLine->GetCurPos();
 
-					if (Skip || EmptyMatch)
-						if (!LS.Reverse)
+					if (Skip) {
+						if (!LS.Reverse) {
+							FromPos += (SearchLength > 0) ? SearchLength : 1;
+							if (FromPos > CurPtr->GetLength())
+								ChangeLine();
+						} else {
+							if (--FromPos < 0)
+								ChangeLine();
+						}
+					}
+					else if (EmptyMatch) {
+						if (!LS.Reverse) {
 							FromPos++;
+							if (FromPos > CurPtr->GetLength())
+								ChangeLine();
+						} else {
+							if (--FromPos < 0)
+								ChangeLine();
+						}
+					}
 				}
 			}
 			else {
@@ -3621,8 +3656,12 @@ bool Editor::Search(bool ReplaceMode, NextType NextTp)
 
 	Show();
 
-	if (!MatchFound && !UserBreak)
-		Message(MSG_WARNING, 1, &EditSearchNotFound, Msg::EditSearchTitle, Msg::EditNotFound, strMsgStr, Msg::Ok);
+	if (!MatchFound) {
+		ResetLastSearch();
+
+		if (!UserBreak)
+			Message(MSG_WARNING, 1, &EditSearchNotFound, Msg::EditSearchTitle, Msg::EditNotFound, strMsgStr, Msg::Ok);
+	}
 
 	return true;
 }
@@ -4340,6 +4379,7 @@ void Editor::Undo(bool redo)
 	if (level)
 		uend = ustart;
 
+	ResetLastSearch();
 	UnmarkBlock();
 	auto ud = ustart;
 
@@ -5025,6 +5065,9 @@ int Editor::EditorControl(int Command, void *Param)
 
 				if (DestLine == -1)
 					DestLine = m_NumLine;
+
+				if (CurPtr == m_LastSearchLine)
+					ResetLastSearch();
 
 				wmemcpy(NewStr, SetString->StringText, Length);
 				wmemcpy(NewStr + Length, EOL, LengthEOL);
@@ -6527,4 +6570,11 @@ bool Editor::MarkBlockFromPlugin(bool SelVBlock, int SelStartLine, int SelStartP
 	}
 
 	return true;
+}
+
+void Editor::ResetLastSearch()
+{
+	m_LastSearchLine = nullptr;
+	m_LastSearchPos = 0;
+	m_LastSearchLen = 0;
 }
