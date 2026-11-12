@@ -3656,12 +3656,8 @@ bool Editor::Search(bool ReplaceMode, NextType NextTp)
 
 	Show();
 
-	if (!MatchFound) {
-		ResetLastSearch();
-
-		if (!UserBreak)
-			Message(MSG_WARNING, 1, &EditSearchNotFound, Msg::EditSearchTitle, Msg::EditNotFound, strMsgStr, Msg::Ok);
-	}
+	if (!MatchFound && !UserBreak)
+		Message(MSG_WARNING, 1, &EditSearchNotFound, Msg::EditSearchTitle, Msg::EditNotFound, strMsgStr, Msg::Ok);
 
 	return true;
 }
