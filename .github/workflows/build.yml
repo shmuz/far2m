@@ -84,9 +84,11 @@ jobs:
         shell: bash
         run: FAR2M_STD=- ./far2m -u ./profile --tty lm:test -set:Panel.Highlight=false
 
-  macos15-arm64-clang16:
+  # macos15-arm64-clang16:
+  macos-latest:
     if: ${{ !(github.event_name == 'push' && github.ref == 'refs/heads/master' && github.repository != 'shmuz/far2m') }}
-    runs-on: macos-15
+    # runs-on: macos-15
+    runs-on: macos-latest
 
     steps:
 
