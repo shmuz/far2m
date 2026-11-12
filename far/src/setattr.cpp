@@ -249,13 +249,11 @@ static std::wstring BriefInfo(const FARString &strSelName)
 	return out;
 }
 
-static char SetAttrGetBitCharFromModeCheckBoxes(HANDLE hDlg, int _i1, int _i2, int _i3)
+static char GetBitCharFromModeCheckBoxes(HANDLE hDlg, int _i1, int _i2, int _i3)
 {
-	int i1, i2, i3;
-
-	i1 = (int)SendDlgMessage(hDlg, DM_GETCHECK, _i1);
-	i2 = (int)SendDlgMessage(hDlg, DM_GETCHECK, _i2);
-	i3 = (int)SendDlgMessage(hDlg, DM_GETCHECK, _i3);
+	auto i1 = SendDlgMessage(hDlg, DM_GETCHECK, _i1);
+	auto i2 = SendDlgMessage(hDlg, DM_GETCHECK, _i2);
+	auto i3 = SendDlgMessage(hDlg, DM_GETCHECK, _i3);
 	if (i1 == BSTATE_3STATE || i2 == BSTATE_3STATE || i3 == BSTATE_3STATE)
 		return '-';
 	else {
@@ -264,35 +262,35 @@ static char SetAttrGetBitCharFromModeCheckBoxes(HANDLE hDlg, int _i1, int _i2, i
 	}
 }
 
-static void SetAttrCalcBitsCharFromModeCheckBoxes(HANDLE hDlg)
+static void CalcBitsCharFromModeCheckBoxes(HANDLE hDlg)
 {
 	wchar_t str_octal[5] = {0};
-	str_octal[0] = SetAttrGetBitCharFromModeCheckBoxes(hDlg, SA_CHECKBOX_STICKY, SA_CHECKBOX_SGID, SA_CHECKBOX_SUID);
-	str_octal[1] = SetAttrGetBitCharFromModeCheckBoxes(hDlg, SA_CHECKBOX_USER_EXECUTE,  SA_CHECKBOX_USER_WRITE,  SA_CHECKBOX_USER_READ);
-	str_octal[2] = SetAttrGetBitCharFromModeCheckBoxes(hDlg, SA_CHECKBOX_GROUP_EXECUTE, SA_CHECKBOX_GROUP_WRITE, SA_CHECKBOX_GROUP_READ);
-	str_octal[3] = SetAttrGetBitCharFromModeCheckBoxes(hDlg, SA_CHECKBOX_OTHER_EXECUTE, SA_CHECKBOX_OTHER_WRITE, SA_CHECKBOX_OTHER_READ);
+	str_octal[0] = GetBitCharFromModeCheckBoxes(hDlg, SA_CHECKBOX_STICKY, SA_CHECKBOX_SGID, SA_CHECKBOX_SUID);
+	str_octal[1] = GetBitCharFromModeCheckBoxes(hDlg, SA_CHECKBOX_USER_EXECUTE,  SA_CHECKBOX_USER_WRITE,  SA_CHECKBOX_USER_READ);
+	str_octal[2] = GetBitCharFromModeCheckBoxes(hDlg, SA_CHECKBOX_GROUP_EXECUTE, SA_CHECKBOX_GROUP_WRITE, SA_CHECKBOX_GROUP_READ);
+	str_octal[3] = GetBitCharFromModeCheckBoxes(hDlg, SA_CHECKBOX_OTHER_EXECUTE, SA_CHECKBOX_OTHER_WRITE, SA_CHECKBOX_OTHER_READ);
 
 	SendDlgMessage(hDlg, DM_SETTEXTPTR, SA_FIXEDIT_MODE_OCTAL, (LONG_PTR)str_octal);
 }
 
-void SetAttrGetModeCheckBoxesFromChar(HANDLE hDlg, wchar_t c, int _i1, int _i2, int _i3)
+static void SetModeCheckBoxesFromChar(HANDLE hDlg, wchar_t c, int i1, int i2, int i3)
 {
-	if (c -= L'0'; c >= 0 && c <= 7) {
-		SendDlgMessage(hDlg, DM_SETCHECK, _i1, (c & 1) ? BSTATE_CHECKED : BSTATE_UNCHECKED);
-		SendDlgMessage(hDlg, DM_SETCHECK, _i2, (c & 2) ? BSTATE_CHECKED : BSTATE_UNCHECKED);
-		SendDlgMessage(hDlg, DM_SETCHECK, _i3, (c & 4) ? BSTATE_CHECKED : BSTATE_UNCHECKED);
+	if (c >= L'0' && c <= L'7') {
+		c -= L'0';
+		SendDlgMessage(hDlg, DM_SETCHECK, i1, (c & 1) ? BSTATE_CHECKED : BSTATE_UNCHECKED);
+		SendDlgMessage(hDlg, DM_SETCHECK, i2, (c & 2) ? BSTATE_CHECKED : BSTATE_UNCHECKED);
+		SendDlgMessage(hDlg, DM_SETCHECK, i3, (c & 4) ? BSTATE_CHECKED : BSTATE_UNCHECKED);
 	}
 	else {
-		SendDlgMessage(hDlg, DM_SETCHECK, _i1, BSTATE_3STATE);
-		SendDlgMessage(hDlg, DM_SETCHECK, _i2, BSTATE_3STATE);
-		SendDlgMessage(hDlg, DM_SETCHECK, _i3, BSTATE_3STATE);
+		SendDlgMessage(hDlg, DM_SETCHECK, i1, BSTATE_3STATE);
+		SendDlgMessage(hDlg, DM_SETCHECK, i2, BSTATE_3STATE);
+		SendDlgMessage(hDlg, DM_SETCHECK, i3, BSTATE_3STATE);
 	}
 }
 
 LONG_PTR WINAPI SetAttrDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2)
 {
-	SetAttrDlgParam *DlgParam =
-			reinterpret_cast<SetAttrDlgParam *>(SendDlgMessage(hDlg, DM_GETDLGDATA));
+	const auto DlgParam = reinterpret_cast<SetAttrDlgParam *>(SendDlgMessage(hDlg, DM_GETDLGDATA));
 	int OrigIdx;
 
 	switch (Msg) {
@@ -311,7 +309,7 @@ LONG_PTR WINAPI SetAttrDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 					DlgParam->OriginalCBAttr2[OrigIdx] = 0;
 					if( !DlgParam->_b_mode_check_or_edit_process) {
 						DlgParam->_b_mode_check_or_edit_process = true;
-						SetAttrCalcBitsCharFromModeCheckBoxes(hDlg);
+						CalcBitsCharFromModeCheckBoxes(hDlg);
 						DlgParam->_b_mode_check_or_edit_process = false;
 					}
 				}
@@ -418,7 +416,7 @@ LONG_PTR WINAPI SetAttrDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 
 						DlgParam->OSubfoldersState = SubfoldersState;
 					}
-					SetAttrCalcBitsCharFromModeCheckBoxes(hDlg);
+					CalcBitsCharFromModeCheckBoxes(hDlg);
 					DlgParam->_b_mode_check_or_edit_process = false;
 				}
 
@@ -461,7 +459,7 @@ LONG_PTR WINAPI SetAttrDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 					SendDlgMessage(hDlg, DM_SETCHECK, PreserveOriginalIDs[i],
 							DlgParam->OriginalCBAttr0[i]);
 				}
-				SetAttrCalcBitsCharFromModeCheckBoxes(hDlg);
+				CalcBitsCharFromModeCheckBoxes(hDlg);
 				DlgParam->_b_mode_check_or_edit_process = false;
 				SendDlgMessage(hDlg, DM_SETFOCUS, SA_FIXEDIT_MODE_OCTAL);
 
@@ -520,15 +518,14 @@ LONG_PTR WINAPI SetAttrDlgProc(HANDLE hDlg, int Msg, int Param1, LONG_PTR Param2
 					if (!DlgParam->_b_mode_check_or_edit_process) {
 						DlgParam->_b_mode_check_or_edit_process = true;
 						std::wstring str_octal;
-						int length = (int)SendDlgMessage(hDlg, DM_GETTEXTLENGTH, SA_FIXEDIT_MODE_OCTAL);
+						auto length = SendDlgMessage(hDlg, DM_GETTEXTLENGTH, SA_FIXEDIT_MODE_OCTAL);
 						str_octal.resize(length+1);
-						LONG_PTR rv = SendDlgMessage(hDlg, DM_GETTEXTPTR, SA_FIXEDIT_MODE_OCTAL, (LONG_PTR)&str_octal[0]);
-						if (rv>0) {
-							length = str_octal.length();
-							SetAttrGetModeCheckBoxesFromChar(hDlg, length<1 ? ' ' : str_octal[0], SA_CHECKBOX_STICKY, SA_CHECKBOX_SGID, SA_CHECKBOX_SUID);
-							SetAttrGetModeCheckBoxesFromChar(hDlg, length<2 ? ' ' : str_octal[1], SA_CHECKBOX_USER_EXECUTE,  SA_CHECKBOX_USER_WRITE,  SA_CHECKBOX_USER_READ);
-							SetAttrGetModeCheckBoxesFromChar(hDlg, length<3 ? ' ' : str_octal[2], SA_CHECKBOX_GROUP_EXECUTE, SA_CHECKBOX_GROUP_WRITE, SA_CHECKBOX_GROUP_READ);
-							SetAttrGetModeCheckBoxesFromChar(hDlg, length<4 ? ' ' : str_octal[3], SA_CHECKBOX_OTHER_EXECUTE, SA_CHECKBOX_OTHER_WRITE, SA_CHECKBOX_OTHER_READ);
+						if (SendDlgMessage(hDlg, DM_GETTEXTPTR, SA_FIXEDIT_MODE_OCTAL, (LONG_PTR)&str_octal[0])) {
+							str_octal.resize(4, L' ');
+							SetModeCheckBoxesFromChar(hDlg, str_octal[0], SA_CHECKBOX_STICKY, SA_CHECKBOX_SGID, SA_CHECKBOX_SUID);
+							SetModeCheckBoxesFromChar(hDlg, str_octal[1], SA_CHECKBOX_USER_EXECUTE,  SA_CHECKBOX_USER_WRITE,  SA_CHECKBOX_USER_READ);
+							SetModeCheckBoxesFromChar(hDlg, str_octal[2], SA_CHECKBOX_GROUP_EXECUTE, SA_CHECKBOX_GROUP_WRITE, SA_CHECKBOX_GROUP_READ);
+							SetModeCheckBoxesFromChar(hDlg, str_octal[3], SA_CHECKBOX_OTHER_EXECUTE, SA_CHECKBOX_OTHER_WRITE, SA_CHECKBOX_OTHER_READ);
 						}
 						DlgParam->_b_mode_check_or_edit_process = false;
 					}
@@ -1259,7 +1256,7 @@ bool ShellSetFileAttributes(Panel *SrcPanel, LPCWSTR Object)
 		}*/
 
 		Dlg.SetPosition(-1, -1, DlgX, DlgY);
-		SetAttrCalcBitsCharFromModeCheckBoxes(&Dlg);	// set octal
+		CalcBitsCharFromModeCheckBoxes(&Dlg);	// set octal
 		Dlg.Process();
 
 		switch (Dlg.GetExitCode()) {
