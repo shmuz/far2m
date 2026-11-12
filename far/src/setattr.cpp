@@ -182,7 +182,6 @@ enum DIALOGMODE
 struct SetAttrDlgParam
 {
 	bool Plugin = false;
-	DWORD FileSystemFlags = 0;
 	DIALOGMODE DialogMode;
 	FARString strSelName;
 	FARString strOwner;
@@ -915,6 +914,10 @@ bool ShellSetFileAttributes(Panel *SrcPanel, LPCWSTR Object)
 
 		if (!(Info.Flags & OPIF_REALNAMES)) {
 			AttrDlg[SA_BUTTON_SET].Flags|= DIF_DISABLE;
+			AttrDlg[SA_TEXT_OWNER].Flags|= DIF_DISABLE;
+			AttrDlg[SA_COMBO_OWNER].Flags|= DIF_DISABLE;
+			AttrDlg[SA_TEXT_GROUP].Flags|= DIF_DISABLE;
+			AttrDlg[SA_COMBO_GROUP].Flags|= DIF_DISABLE;
 			DlgParam.Plugin = true;
 		}
 	}
@@ -977,7 +980,7 @@ bool ShellSetFileAttributes(Panel *SrcPanel, LPCWSTR Object)
 		AttrDlg[SA_FIXEDIT_LAST_ACCESS_TIME].strMask = AttrDlg[SA_FIXEDIT_LAST_MODIFICATION_TIME].strMask =
 				AttrDlg[SA_FIXEDIT_LAST_CHANGE_TIME].strMask = strTMask;
 		bool FolderPresent = false;//, LinkPresent = false;
-		int  FolderCount = 0, Link2FileCount = 0, Link2DirCount = 0;
+		int  FolderCount = 0, Link2FileCount = 0, Link2DirCount = 0, DeviceCount = 0;
 		FARString strLinkName;
 
 		if (SelCount == 1) {
@@ -1079,8 +1082,10 @@ bool ShellSetFileAttributes(Panel *SrcPanel, LPCWSTR Object)
 				SrcPanel->GetCurDir(strCurDir);
 			}
 
-			GetFileOwner(strComputerName, strSelName, AttrDlg[SA_COMBO_OWNER].strData);
-			GetFileGroup(strComputerName, strSelName, AttrDlg[SA_COMBO_GROUP].strData);
+			if (!DlgParam.Plugin) { // we can obtain owner/group only in real filesystem
+				GetFileOwner(strComputerName, strSelName, AttrDlg[SA_COMBO_OWNER].strData);
+				GetFileGroup(strComputerName, strSelName, AttrDlg[SA_COMBO_GROUP].strData);
+			}
 		}		// end of if (SelCount==1)
 		else {
 			for (size_t i = 0; i < ARRAYSIZE(AP); i++) {
@@ -1107,7 +1112,7 @@ bool ShellSetFileAttributes(Panel *SrcPanel, LPCWSTR Object)
 				SrcPanel->GetSelName(nullptr, FileAttr, FileMode);
 			}
 			FolderPresent = false;
-			FolderCount = 0; Link2FileCount = 0; Link2DirCount = 0;
+			FolderCount = 0; Link2FileCount = 0; Link2DirCount = 0; DeviceCount = 0;
 
 			if (SrcPanel) {
 				FARString strComputerName;
@@ -1134,6 +1139,8 @@ bool ShellSetFileAttributes(Panel *SrcPanel, LPCWSTR Object)
 					}
 					else if (FileAttr & FILE_ATTRIBUTE_REPARSE_POINT)
 						Link2FileCount++;
+					else if (FileAttr & FILE_ATTRIBUTE_DEVICE)
+						DeviceCount++;
 
 					for (size_t i = 0; i < ARRAYSIZE(AP); i++) {
 						if (FileMode & AP[i].Mode) {
@@ -1192,8 +1199,10 @@ bool ShellSetFileAttributes(Panel *SrcPanel, LPCWSTR Object)
 
 			{
 				FARString strTmp, strSep=L" (";
-				int FilesCount = SelCount-FolderCount-Link2FileCount-Link2DirCount;
+				int FilesCount = SelCount-DeviceCount-FolderCount-Link2FileCount-Link2DirCount;
 				strTmp.Format(Msg::SetAttrInfoSelAll, SelCount);
+				if (DeviceCount>0)
+				{ strTmp.AppendFormat(Msg::SetAttrInfoSelDevices, strSep.CPtr(), DeviceCount); strSep=L", "; }
 				if (FolderCount>0)
 				{ strTmp.AppendFormat(Msg::SetAttrInfoSelDirs, strSep.CPtr(), FolderCount); strSep=L", "; }
 				if (FilesCount>0)
