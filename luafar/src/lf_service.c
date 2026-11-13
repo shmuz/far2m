@@ -518,6 +518,7 @@ static const char *BgNames[] = { "BackgroundColor", "bg" };
 uint64_t GetFarColor(lua_State *L, int pos, struct FarTrueColorForeAndBack *fullcolor,
 		int *basecolor, int *isTrueColor)
 {
+	int64_t color64;
 	memset(fullcolor, 0, sizeof(*fullcolor));
 	*basecolor = 0;
 	*isTrueColor = 0;
@@ -558,6 +559,11 @@ uint64_t GetFarColor(lua_State *L, int pos, struct FarTrueColorForeAndBack *full
 
 			return (BgColor << 40) | (FgColor << 16) | (*basecolor & 0xFFFF);
 		}
+	}
+	else if (bit64_getvalue(L, pos, &color64))
+	{
+		*isTrueColor = 1;
+		return color64;
 	}
 	else if (lua_isnumber(L, pos))
 	{
