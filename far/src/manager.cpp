@@ -1239,6 +1239,10 @@ void Manager::RefreshCommit(Frame *aFrame)
 
 		aFrame->Refresh();
 
+		// aFrame may have been closed and deleted during Refresh() (e.g., via EE_REDRAW).
+		if (!InList(aFrame) && !InStack(aFrame))
+			return;
+
 		if (auto tm = GetTopModal(); tm && tm->IsVisible() && tm != aFrame)
 			tm->Refresh();
 

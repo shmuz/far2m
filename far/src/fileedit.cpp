@@ -821,6 +821,10 @@ int FileEditor::ReProcessKey(FarKey Key, bool CalledFromControl)
 
 	if (!CalledFromControl && CtrlObject->Macro.CanSendKeysToPlugin()) {
 		ProcessedNext = !ProcessEditorInput(FrameManager->GetLastInputRecord());
+
+		// ProcessEditorInput() may have closed and deleted this FileEditor.
+		if (!FrameManager->InList(this) && !FrameManager->InStack(this))
+			return TRUE;
 	}
 
 	if (ProcessedNext) {

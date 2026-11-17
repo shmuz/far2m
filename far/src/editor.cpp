@@ -403,6 +403,9 @@ void Editor::ShowEditor(bool CurLineOnly)
 			else {
 				CtrlObject->Plugins.ProcessEditorEvent(EE_REDRAW, CurLineOnly ? EEREDRAW_LINE : EEREDRAW_ALL, this);
 			}
+			// Editor buffer may have been freed while processing EE_REDRAW.
+			if (!m_TopList || !m_CurLine)
+				return;
 		}
 	}
 
