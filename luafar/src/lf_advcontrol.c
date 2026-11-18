@@ -117,15 +117,17 @@ static int DoAdvControl (lua_State *L, FARAPIADVCONTROL AdvControl, int Command,
 
 		case ACTL_GETFARMANAGERVERSION:
 		{
-			DWORD n = AdvControl(ModuleNumber, Command, NULL, NULL);
-			DWORD arr[5] = { n >> 24 , (n >> 16) & 0xFF, 0, n & 0xFFFF, 0 };
+			struct VersionInfo Info;
+			AdvControl(ModuleNumber, Command, NULL, &Info);
 			if (lua_toboolean(L, pos2))
 			{
-				for (size_t i=0; i < ARRAYSIZE(arr); i++)
-					lua_pushinteger(L, arr[i]);
-				return ARRAYSIZE(arr);
+				lua_pushinteger(L, Info.Major);
+				lua_pushinteger(L, Info.Minor);
+				lua_pushinteger(L, Info.Revision);
+				lua_pushinteger(L, Info.Build);
+				return 4;
 			}
-			lua_pushfstring(L, "%u.%u.%u.%u.%u", arr[0], arr[1], arr[2], arr[3], arr[4]);
+			lua_pushfstring(L, "%u.%u.%u.%u", Info.Major, Info.Minor, Info.Revision, Info.Build);
 			return 1;
 		}
 

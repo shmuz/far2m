@@ -7,6 +7,7 @@
 #include "message.hpp"
 #include "plugins.hpp"
 #include "ctrlobj.hpp"
+#include "farversion.h"
 
 #include <errno.h>
 #include <dlfcn.h>
@@ -107,7 +108,7 @@ bool Plugin::GetGlobalInfo()
 		GlobalInfo gi { sizeof(GlobalInfo) };
 		EXECUTE_FUNCTION(pGetGlobalInfoW(&gi), es);
 
-		if (gi.StructSize && (gi.Title && *gi.Title) && (gi.Description && *gi.Description)
+		if (gi.StructSize >= sizeof(gi) && (gi.Title && *gi.Title) && (gi.Description && *gi.Description)
 				&& (gi.Author && *gi.Author) && (gi.SysID != SYSID_FAR))
 		{
 			auto pPlugin = CtrlObject->Plugins.FindPlugin(gi.SysID);
@@ -116,6 +117,7 @@ bool Plugin::GetGlobalInfo()
 				strTitle = gi.Title;
 				strDescription = gi.Description;
 				strAuthor = gi.Author;
+				m_MinFarVersion = gi.MinFarVersion;
 				m_PlugVersion = gi.Version;
 				bUseMenuGuids = (gi.UseMenuGuids != 0);
 				return true;
@@ -128,12 +130,16 @@ bool Plugin::GetGlobalInfo()
 	return false;
 }
 
-void Plugin::ShowMessageAboutIllegalPluginVersion(const wchar_t* plg,int required)
+bool Plugin::CheckMinFarVersion()
 {
-	FARString strMsg1, strMsg2;
-	strMsg1.Format(Msg::PlgRequired,
-	               (int)(HIWORD(required)),(int)(LOWORD(required)));
-	strMsg2.Format(Msg::PlgRequired2,
-	               (int)(HIWORD(FAR_VERSION)),(int)(LOWORD(FAR_VERSION)));
-	Message(MSG_WARNING,1,Msg::Error,Msg::PlgBadVers,plg,strMsg1,strMsg2,Msg::Ok);
+	if (CheckVersion(&FARVERSION_INFO, &m_MinFarVersion))
+		return true;
+
+	FARString str1, str2;
+	const VersionInfo &req = m_MinFarVersion, &cur = FARVERSION_INFO;
+	str1.Format(L"%ls %u.%u.%u", Msg::PlgRequired.CPtr(), req.Major, req.Minor, req.Build);
+	str2.Format(L"%ls %u.%u.%u", Msg::PlgRequired2.CPtr(), cur.Major, cur.Minor, cur.Build);
+	Message(MSG_WARNING, 1, Msg::Error, Msg::PlgBadVers, m_strModuleName.CPtr(), str1, str2, Msg::Ok);
+	return false;
 }
+

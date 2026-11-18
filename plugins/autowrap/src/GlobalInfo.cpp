@@ -2,10 +2,10 @@
 
 SHAREDSYMBOL void WINAPI GetGlobalInfoW(struct GlobalInfo *aInfo)
 {
-  struct VersionInfo Version = { 0,0,0,0 };
   aInfo->StructSize    = sizeof(*aInfo);
+  aInfo->MinFarVersion = MAKEFARVERSION2(2,9,0,0);
+  aInfo->Version       = MAKEFARVERSION2(0,0,0,0);
   aInfo->SysID         = 0xDEEC52C3;
-  aInfo->Version       = Version;
   aInfo->Title         = L"AutoWrap";
   aInfo->Description   = L"Auto wrap for Far editor";
   aInfo->Author        = L"Eugene Roshal, FAR Group, FAR People";

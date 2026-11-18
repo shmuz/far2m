@@ -78,6 +78,7 @@ protected:
 	FARString strTitle;
 	FARString strDescription;
 	FARString strAuthor;
+	VersionInfo m_MinFarVersion{};
 	VersionInfo m_PlugVersion{};
 	bool bUseMenuGuids = false;
 
@@ -140,7 +141,6 @@ public:
 	virtual bool HasGetVirtualFindData() = 0;
 	virtual bool HasMakeDirectory() = 0;
 	virtual bool HasMayExitFAR() = 0;
-	virtual bool HasMinFarVersion() = 0;
 	virtual bool HasOpenFilePlugin() = 0;
 	virtual bool HasOpenPlugin() = 0;
 	virtual bool HasProcessConsoleInput() = 0;
@@ -159,7 +159,6 @@ public:
 	virtual bool HasSetStartupInfo() = 0;
 
 	virtual HANDLE Analyse(const AnalyseInfo *Info) = 0;
-	virtual bool   CheckMinFarVersion() = 0;
 	virtual void   CloseAnalyse(const CloseAnalyseInfo *Info) = 0;
 	virtual void   ClosePanel(HANDLE hPanel) = 0;
 	virtual int    Compare(HANDLE hPanel, const PluginPanelItem *Item1, const PluginPanelItem *Item2, DWORD Mode) = 0;
@@ -199,9 +198,9 @@ public:
 	const wchar_t *GetTitle() const { return strTitle.CPtr(); }
 	DWORD GetSysID() const { return SysID; }
 	bool IsLoaded() const { return m_hModule != nullptr; }
-	static void ShowMessageAboutIllegalPluginVersion(const wchar_t* plg,int required);
 	bool IsLuamacro() const { return SysID == SYSID_LUAMACRO; }
 	bool UseMenuGuids() const { return bUseMenuGuids; }
+	bool CheckMinFarVersion();
 };
 
 enum ExceptFunctionsType

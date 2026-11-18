@@ -3079,14 +3079,9 @@ INT_PTR WINAPI FarAdvControlA(INT_PTR ModuleNumber, int Command, void *Param)
 #endif
 
 	switch (Command) {
-		case oldfar::ACTL_GETFARVERSION: {
-			DWORD FarVer = (DWORD)FarAdvControl(ModuleNumber, ACTL_GETFARVERSION, nullptr, nullptr);
+		case oldfar::ACTL_GETFARVERSION:
+			return FarAdvControl(ModuleNumber, ACTL_GETFARMANAGERVERSION, nullptr, Param);
 
-			if (Param)
-				*(DWORD *)Param = FarVer;
-
-			return FarVer;
-		}
 		case oldfar::ACTL_CONSOLEMODE:
 			return FALSE;
 

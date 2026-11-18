@@ -1,8 +1,10 @@
 #pragma once
 
-extern const uint32_t FAR_VERSION;
+#include "farplug-wide.h"
+
 extern const char *FAR_BUILD;
 extern const uint64_t FAR_COMMITTIME;
+extern const VersionInfo FARVERSION_INFO;
 
 extern const char *Copyright;
 

@@ -447,8 +447,8 @@ end
 function LF.test_AdvControl_Misc()
   local t
 
-  asrt.eq (far.AdvControl("ACTL_GETFARVERSION"):sub(1,1), "2")
-  asrt.eq (far.AdvControl("ACTL_GETFARVERSION",true), 2)
+  asrt.eq (far.AdvControl("ACTL_GETFARMANAGERVERSION"):sub(1,1), "2")
+  asrt.eq (far.AdvControl("ACTL_GETFARMANAGERVERSION",true), 2)
 
   t = far.AdvControl("ACTL_GETFARRECT")
   assert(t.Left>=0 and t.Top>=0 and t.Right>t.Left and t.Bottom>t.Top)

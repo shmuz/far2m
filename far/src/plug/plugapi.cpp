@@ -76,6 +76,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "strmix.hpp"
 #include "vtshell.h"
 #include "vtlog.h"
+#include "farversion.h"
 
 #define FAR_ALIGNAS(value, alignment) ((value + (alignment - 1)) & ~(alignment - 1))
 #define FAR_ALIGN(value)          FAR_ALIGNAS(value, sizeof(void *))
@@ -286,7 +287,7 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 	};
 
 	switch (Command) {
-		case ACTL_GETFARVERSION:
+		case ACTL_GETFARMANAGERVERSION:
 		case ACTL_GETSYSWORDDIV:
 		case ACTL_GETCOLOR:
 		case ACTL_GETARRAYCOLOR:
@@ -313,11 +314,11 @@ static INT_PTR WINAPI FarAdvControlSynched(INT_PTR ModuleNumber, int Command, vo
 	}
 
 	switch (Command) {
-		case ACTL_GETFARVERSION: {
-			if (Param1)
-				*(DWORD *)Param1 = FAR_VERSION;
+		case ACTL_GETFARMANAGERVERSION: {
+			if (Param2)
+				*(VersionInfo*)Param2 = FARVERSION_INFO;
 
-			return FAR_VERSION;
+			return TRUE;
 		}
 
 		case ACTL_GETFARCOMMITTIME: {

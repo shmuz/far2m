@@ -93,7 +93,6 @@ const PluginA::PluginExportEntry PluginA::PLUGIN_EXPORTS[] = {
 	MAKE_EXPORT("GetVirtualFindData",  false, &PluginA::pGetVirtualFindData),
 	MAKE_EXPORT("MakeDirectory",       false, &PluginA::pMakeDirectory),
 	MAKE_EXPORT("MayExitFAR",          false, &PluginA::pMayExitFAR),
-	MAKE_EXPORT("MinFarVersion",       false, &PluginA::pMinFarVersion),
 	MAKE_EXPORT("OpenFilePlugin",      true,  &PluginA::pOpenFilePlugin),
 	MAKE_EXPORT("OpenPlugin",          true,  &PluginA::pOpenPlugin),
 	MAKE_EXPORT("ProcessDialogEvent",  true,  &PluginA::pProcessDialogEvent),
@@ -434,25 +433,6 @@ bool PluginA::SetStartupInfo()
 		CreatePluginStartupInfoA(this, &_info, &_fsf);
 		ExecuteStruct es(EXCEPT_SETSTARTUPINFO);
 		EXECUTE_FUNCTION(pSetStartupInfo(&_info), es);
-	}
-
-	return true;
-}
-
-bool PluginA::CheckMinFarVersion()
-{
-	if (pMinFarVersion)
-	{
-		ExecuteStruct es(EXCEPT_MINFARVERSION);
-		EXECUTE_FUNCTION_EX(pMinFarVersion(), es);
-
-		DWORD FVer = (DWORD)es.nResult;
-
-		if (FVer > FAR_VERSION)
-		{
-			ShowMessageAboutIllegalPluginVersion(m_strModuleName,FVer);
-			return false;
-		}
 	}
 
 	return true;

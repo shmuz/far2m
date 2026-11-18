@@ -94,7 +94,6 @@ private:
 	PLUGINGETVIRTUALFINDDATAW    pGetVirtualFindDataW;
 	PLUGINMAKEDIRECTORYW         pMakeDirectoryW;
 	PLUGINMAYEXITFARW            pMayExitFARW;
-	PLUGINMINFARVERSIONW         pMinFarVersionW;
 	PLUGINOPENFILEPLUGINW        pOpenFilePluginW;
 	PLUGINOPENPLUGINW            pOpenPluginW;
 	PLUGINPROCESSCONSOLEINPUTW   pProcessConsoleInputW;
@@ -178,7 +177,6 @@ public:
 	bool HasGetVirtualFindData()    override { return pGetVirtualFindDataW != nullptr; }
 	bool HasMakeDirectory()         override { return pMakeDirectoryW != nullptr; }
 	bool HasMayExitFAR()            override { return pMayExitFARW != nullptr; }
-	bool HasMinFarVersion()         override { return pMinFarVersionW != nullptr; }
 	bool HasOpenFilePlugin()        override { return pOpenFilePluginW != nullptr; }
 	bool HasOpenPlugin()            override { return pOpenPluginW != nullptr; }
 	bool HasProcessConsoleInput()   override { return pProcessConsoleInputW != nullptr; }
@@ -198,7 +196,6 @@ public:
 
 public:
 	HANDLE Analyse(const AnalyseInfo *Info) override;
-	bool   CheckMinFarVersion() override;
 	void   CloseAnalyse(const CloseAnalyseInfo *Info) override;
 	void   ClosePanel(HANDLE hPanel) override;
 	int    Compare(HANDLE hPanel, const PluginPanelItem *Item1, const PluginPanelItem *Item2, DWORD Mode) override;

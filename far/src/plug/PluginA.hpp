@@ -86,7 +86,6 @@ private:
 	PLUGINGETVIRTUALFINDDATA    pGetVirtualFindData;
 	PLUGINMAKEDIRECTORY         pMakeDirectory;
 	PLUGINMAYEXITFAR            pMayExitFAR;
-	PLUGINMINFARVERSION         pMinFarVersion;
 	PLUGINOPENFILEPLUGIN        pOpenFilePlugin;
 	PLUGINOPENPLUGIN            pOpenPlugin;
 	PLUGINPROCESSDIALOGEVENT    pProcessDialogEvent;
@@ -167,7 +166,6 @@ public:
 	bool HasGetVirtualFindData()    override { return pGetVirtualFindData != nullptr; }
 	bool HasMakeDirectory()         override { return pMakeDirectory != nullptr; }
 	bool HasMayExitFAR()            override { return pMayExitFAR != nullptr; }
-	bool HasMinFarVersion()         override { return pMinFarVersion != nullptr; }
 	bool HasOpenFilePlugin()        override { return pOpenFilePlugin != nullptr; }
 	bool HasOpenPlugin()            override { return pOpenPlugin != nullptr; }
 	bool HasProcessConsoleInput()   override { return false; }
@@ -187,7 +185,6 @@ public:
 
 public:
 	HANDLE Analyse(const AnalyseInfo *Info) override { return INVALID_HANDLE_VALUE; }
-	bool   CheckMinFarVersion() override;
 	void   CloseAnalyse(const CloseAnalyseInfo *Info) override {}
 	void   ClosePanel(HANDLE hPanel) override;
 	int    Compare(HANDLE hPanel, const PluginPanelItem *Item1, const PluginPanelItem *Item2, DWORD Mode) override;

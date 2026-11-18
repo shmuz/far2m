@@ -2,10 +2,10 @@
 
 SHAREDSYMBOL void WINAPI GetGlobalInfoW(struct GlobalInfo *aInfo)
 {
-  struct VersionInfo Version = { 0,0,0,0 };
   aInfo->StructSize    = sizeof(*aInfo);
+  aInfo->MinFarVersion = MAKEFARVERSION2(2,9,0,0);
+  aInfo->Version       = MAKEFARVERSION2(0,0,0,0);
   aInfo->SysID         = 0x7E9585C2;
-  aInfo->Version       = Version;
   aInfo->Title         = L"Python";
   aInfo->Description   = L"Python plugin";
   aInfo->Author        = L"Grzegorz Makarewicz";

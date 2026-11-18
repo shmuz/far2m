@@ -924,7 +924,6 @@ typedef BOOL (__stdcall *FARAPISHOWHELP)(
 enum ADVANCED_CONTROL_COMMANDS
 { // don't change enum values!
 	ACTL_GETFARMANAGERVERSION = 0,
-	ACTL_GETFARVERSION        = 0,
 	ACTL_GETSYSWORDDIV        = 2,
 	ACTL_WAITKEY              = 3,
 	ACTL_GETCOLOR             = 4,
@@ -2626,11 +2625,26 @@ struct VersionInfo
 	DWORD Build;
 };
 
+static __inline BOOL CheckVersion(const struct VersionInfo* Current, const struct VersionInfo* Required)
+{
+	if (Current->Major != Required->Major) return (Current->Major > Required->Major);
+	if (Current->Minor != Required->Minor) return (Current->Minor > Required->Minor);
+	if (Current->Build != Required->Build) return (Current->Build > Required->Build);
+	return (Current->Revision >= Required->Revision);
+}
+
+static __inline struct VersionInfo MAKEFARVERSION2(DWORD Major, DWORD Minor, DWORD Revision, DWORD Build)
+{
+	const struct VersionInfo Info = {Major, Minor, Revision, Build};
+	return Info;
+}
+
 struct GlobalInfo
 {
 	size_t StructSize;
-	DWORD SysID;
+	struct VersionInfo MinFarVersion;
 	struct VersionInfo Version;
+	DWORD SysID;
 	const wchar_t *Title;
 	const wchar_t *Description;
 	const wchar_t *Author;
@@ -2695,7 +2709,6 @@ struct ProcessEditorEventInfo
 	int    __stdcall  GetFilesW(HANDLE hPanel,struct PluginPanelItem *PanelItem,int ItemsNumber,int Move,const wchar_t **DestPath,OPERATION_MODES OpMode);
 	int    __stdcall  GetFindDataW(HANDLE hPanel,struct PluginPanelItem **pPanelItem,int *pItemsNumber,OPERATION_MODES OpMode);
 	int    __stdcall  GetLinkTargetW(HANDLE hPanel,struct PluginPanelItem *PanelItem,wchar_t *Target,size_t TargetSize,OPERATION_MODES OpMode);
-	int    __stdcall  GetMinFarVersionW(void);
 	void   __stdcall  GetOpenPluginInfoW(HANDLE hPanel,struct OpenPluginInfo *Info);
 	void   __stdcall  GetPluginInfoW(struct PluginInfo *Info);
 	int    __stdcall  GetVirtualFindDataW(HANDLE hPanel,struct PluginPanelItem **pPanelItem,int *pItemsNumber,const wchar_t *Path);

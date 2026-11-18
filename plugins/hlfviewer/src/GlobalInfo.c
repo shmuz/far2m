@@ -2,19 +2,12 @@
 
 SHAREDSYMBOL void WINAPI GetGlobalInfoW(struct GlobalInfo *aInfo)
 {
-  struct VersionInfo Version = { 3,0,0,52 };
   aInfo->StructSize    = sizeof(*aInfo);
+  aInfo->MinFarVersion = MAKEFARVERSION2(2,9,0,0);
+  aInfo->Version       = MAKEFARVERSION2(3,0,0,52);
   aInfo->SysID         = 0x1AF0754D;
-  aInfo->Version       = Version;
   aInfo->Title         = L"HlfViewer";
   aInfo->Description   = L"Hlf-file Viewer for Far Manager";
   aInfo->Author        = L"Far Group, Shmuel Zeigerman";
   aInfo->UseMenuGuids  = 1;
 }
-//---------------------------------------------------------------------------
-
-SHAREDSYMBOL int WINAPI GetMinFarVersionW(void)
-{
-  return MAKEFARVERSION(2,4);
-}
-//---------------------------------------------------------------------------
