@@ -287,6 +287,9 @@ function LF.test_RegexControl()
   -- Issue #609 (https://github.com/FarGroup/FarManager/issues/609)
   c1 = regex.match("88", "(8)+")
   asrt.eq(c1, "8")
+
+  -- test regex flags
+  require("far2.test.regex.test_regex_flags")()
 end
 
 function LF.test_utf8_len()

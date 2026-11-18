@@ -219,8 +219,6 @@ private:
 
 		std::unordered_map<std::wstring, size_t> NamedGroups;
 
-		bool ignorecase{};
-
 #ifdef RE_DEBUG
 		std::wstring resrc;
 #endif
@@ -236,7 +234,7 @@ private:
 		// TODO: split to compile errors (stateful) and match errors (stateless)
 		bool SetError(int _code, int pos) const { errorcode = _code; errorpos = pos; return false; }
 
-		int StrCmp(const wchar_t*& str,const wchar_t* start,const wchar_t* end) const;
+		int StrCmp(const wchar_t*& str, const wchar_t* start, const wchar_t* end, bool icase) const;
 
 	public:
 		//! Default constructor.

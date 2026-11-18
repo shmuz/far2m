@@ -399,6 +399,7 @@ enum REOp
 struct REOpCode_data
 {
 	int		op; //movable<int>
+	bool	ignorecase = false;
 #ifdef RE_DEBUG
 	int    srcpos;
 #endif
@@ -703,8 +704,6 @@ bool RegExp::Compile(ReStringView const src, int options)
 		Regex = src;
 	}
 
-	ignorecase = (options&OP_IGNORECASE) != 0;
-
 	const auto relength = CalcLength(Regex);
 	if (!relength)
 		return false;
@@ -859,9 +858,12 @@ static int CalcPatternLength(const RegExp::REOpCode* from, const RegExp::REOpCod
 bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int srclength, int options)
 {
 	REOpCode* brackets[MAXDEPTH];
+	int bracket_options[MAXDEPTH];
 	// current brackets depth
 	// one place reserved for surrounding 'main' brackets
 	int brdepth=1;
+	bracket_options[0] = options;
+	bool can_quantify = false;
 	// compiling interior of lookbehind
 	// used to apply restrictions of lookbehind
 	int lookbehind=0;
@@ -894,11 +896,15 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 
 		if (inquote && src[i]!=backslashChar)
 		{
-			op->op=ignorecase?opSymbolIgnoreCase:opSymbol;
-			op->symbol=ignorecase?TOLOWER(src[i]):src[i];
+			const bool icase = (options & OP_IGNORECASE) != 0;
+			op->ignorecase = icase;
+			op->op = icase ? opSymbolIgnoreCase : opSymbol;
+			op->symbol = icase ? TOLOWER(src[i]) : src[i];
 
-			if (ignorecase && TOUPPER(op->symbol)==op->symbol)op->op=opSymbol;
+			if (icase && TOUPPER(op->symbol) == op->symbol)
+				op->op = opSymbol;
 
+			can_quantify = true;
 			continue;
 		}
 
@@ -910,24 +916,29 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 
 			if (inquote && src[i]!='E')
 			{
-				op->op=opSymbol;
-				op->symbol=backslashChar;
+				const bool icase = (options & OP_IGNORECASE) != 0;
+				op->op = opSymbol;
+				op->symbol = backslashChar;
 				op = &code[pos];
 				pos++;
-				op->op=ignorecase?opSymbolIgnoreCase:opSymbol;
-				op->symbol=ignorecase?TOLOWER(src[i]):src[i];
+				op->ignorecase = icase;
+				op->op = icase ? opSymbolIgnoreCase : opSymbol;
+				op->symbol = icase ? TOLOWER(src[i]) : src[i];
 
-				if (ignorecase && TOUPPER(op->symbol)==op->symbol)op->op=opSymbol;
+				if (icase && TOUPPER(op->symbol) == op->symbol)
+					op->op = opSymbol;
 
+				can_quantify = true;
 				continue;
 			}
 
 			op->op=opType;
+			can_quantify = true;
 
 			switch (src[i])
 			{
-				case 'Q':inquote=1; pos--; continue;
-				case 'E':inquote=0; pos--; continue;
+				case 'Q':inquote=1; pos--; can_quantify = false; continue;
+				case 'E':inquote=0; pos--; can_quantify = false; continue;
 				case 'b':op->op=opWordBound; continue;
 				case 'B':op->op=opNotWordBound; continue;
 				case 'D':op->op=opNotType; [[fallthrough]];
@@ -949,10 +960,11 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 				case 't':op->op=opSymbol; op->symbol='\t'; continue;
 				case 'f':op->op=opSymbol; op->symbol='\f'; continue;
 				case 'e':op->op=opSymbol; op->symbol=27; continue;
-				case 'O':op->op=opNoReturn; continue;
+				case 'O':op->op=opNoReturn; can_quantify = false; continue;
 				case 'p':
 				{
 					op->op = opNamedBackRef;
+					op->ignorecase = (options & OP_IGNORECASE) != 0;
 					i++;
 
 					if (src[i] != L'{')
@@ -991,11 +1003,13 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 
 					if(isxdigit(src[i]))
 					{
+						const bool icase = (options & OP_IGNORECASE) != 0;
 						int c=TOLOWER(src[i])-'0';
 
 						if (c>9)c-='a'-'0'-10;
 
-						op->op=ignorecase?opSymbolIgnoreCase:opSymbol;
+						op->ignorecase = icase;
+						op->op = icase ? opSymbolIgnoreCase : opSymbol;
 						op->symbol=c;
 						for(int j=1,k=i;j<4 && k+j<srclength;j++)
 						{
@@ -1012,7 +1026,7 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 								break;
 							}
 						}
-						if (ignorecase)
+						if (icase)
 						{
 							op->symbol=TOLOWER(op->symbol);
 							if (TOUPPER(op->symbol)==TOLOWER(op->symbol))
@@ -1032,6 +1046,7 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 					{
 						int save=i;
 						op->op=opBackRef;
+						op->ignorecase = (options & OP_IGNORECASE) != 0;
 						op->refindex=GetNum(src,i); i--;
 
 						if (op->refindex<=0 || op->refindex>brcount || !closedbrackets[op->refindex])
@@ -1048,8 +1063,10 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 							return SetError(errInvalidEscape, i + (src - start) - 1);
 						}
 
-						op->op=ignorecase?opSymbolIgnoreCase:opSymbol;
-						op->symbol=ignorecase?TOLOWER(src[i]):src[i];
+						const bool icase = (options & OP_IGNORECASE) != 0;
+						op->ignorecase = icase;
+						op->op = icase ? opSymbolIgnoreCase : opSymbol;
+						op->symbol = icase ? TOLOWER(src[i]) : src[i];
 
 						if (TOLOWER(op->symbol)==TOUPPER(op->symbol))
 						{
@@ -1059,6 +1076,7 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 				}
 			}
 
+			can_quantify = true;
 			continue;
 		}
 
@@ -1075,6 +1093,7 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 					op->op=opCharAny;
 				}
 
+				can_quantify = true;
 				continue;
 			}
 			case '^':
@@ -1088,6 +1107,7 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 					op->op=opDataStart;
 				}
 
+				can_quantify = true;
 				continue;
 			}
 			case '$':
@@ -1101,6 +1121,7 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 					op->op=opDataEnd;
 				}
 
+				can_quantify = true;
 				continue;
 			}
 			case '|':
@@ -1126,6 +1147,7 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 
 				brackets[brdepth++]=op;
 				op->op=opAlternative;
+				can_quantify = false;
 				continue;
 			}
 			case '(':
@@ -1179,6 +1201,72 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 							op->nbracket.index = brcount;
 							i += len;
 						} break;
+						case 'i':
+						case 'm':
+						case 's':
+						case 'x':
+						case '-':
+						{
+							int new_options = options;
+							bool enable = true;
+							bool have_flag = false;
+
+							for (; i < srclength; ++i)
+							{
+								switch (src[i])
+								{
+									case 'i':
+										if (enable) new_options |= OP_IGNORECASE; else new_options &= ~OP_IGNORECASE;
+										have_flag = true;
+										continue;
+									case 'm':
+										if (enable) new_options |= OP_MULTILINE; else new_options &= ~OP_MULTILINE;
+										have_flag = true;
+										continue;
+									case 's':
+										if (enable) new_options |= OP_SINGLELINE; else new_options &= ~OP_SINGLELINE;
+										have_flag = true;
+										continue;
+									case 'x':
+										if (enable) new_options |= OP_XTENDEDSYNTAX; else new_options &= ~OP_XTENDEDSYNTAX;
+										have_flag = true;
+										continue;
+									case '-':
+										if (!enable)
+											return SetError(errOptions, i + (src - start));
+										enable = false;
+										have_flag = false;
+										continue;
+									default:
+										break;
+								}
+								break;
+							}
+
+							if (!have_flag || i >= srclength)
+								return SetError(errOptions, i + (src - start));
+
+							if (src[i] == ':')
+							{
+								op->bracket.index = -1;
+								bracket_options[brdepth] = options;
+								options = new_options;
+								brackets[brdepth++] = op;
+								can_quantify = false;
+								continue;
+							}
+							else if (src[i] == ')')
+							{
+								options = new_options;
+								pos--;
+								can_quantify = false;
+								continue;
+							}
+							else
+							{
+								return SetError(errOptions, i + (src - start));
+							}
+						}
 						default:
 						{
 							return SetError(errSyntax, i + (src - start));
@@ -1192,8 +1280,10 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 					op->bracket.index=brcount;
 				}
 
+				bracket_options[brdepth] = options;
 				brackets[brdepth]=op;
 				brdepth++;
+				can_quantify = false;
 				continue;
 			}
 			case ')':
@@ -1206,6 +1296,8 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 					brackets[brdepth]->alternative.endindex=op;
 					brdepth--;
 				}
+
+				options = bracket_options[brdepth];
 
 				switch (brackets[brdepth]->op)
 				{
@@ -1262,10 +1354,12 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 					}
 				}
 
+				can_quantify = true;
 				continue;
 			}
 			case '[':
 			{
+				const bool icase = (options & OP_IGNORECASE) != 0;
 				i++;
 				bool negative = false;
 
@@ -1394,7 +1488,7 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 						}
 						else
 						{
-							if (options&OP_IGNORECASE)
+							if (icase)
 							{
 								tmpclass->SetBit(TOLOWER(lastchar));
 								tmpclass->SetBit(TOUPPER(lastchar));
@@ -1466,7 +1560,7 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 
 							for (int j=lastchar; j<=to; j++)
 							{
-								if (ignorecase)
+								if (icase)
 								{
 									tmpclass->SetBit(TOLOWER(j));
 									tmpclass->SetBit(TOUPPER(j));
@@ -1485,7 +1579,7 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 
 					lastchar=src[i];
 
-					if (ignorecase)
+					if (icase)
 					{
 						tmpclass->SetBit(TOLOWER(lastchar));
 						tmpclass->SetBit(TOUPPER(lastchar));
@@ -1510,8 +1604,9 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 					op->symbolclass = nullptr;
 					tmpclass = nullptr;
 					op->op=negative?opNotSymbol:opSymbol;
+					op->ignorecase = icase;
 
-					if (ignorecase)
+					if (icase)
 					{
 						op->op+=2;
 						op->symbol=TOLOWER(lastchar);
@@ -1524,6 +1619,7 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 
 				if (tmpclass)
 					tmpclass->negative = negative;
+				can_quantify = true;
 				continue;
 			}
 			case '+':
@@ -1531,6 +1627,9 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 			case '?':
 			case '{':
 			{
+				if (!can_quantify)
+					return SetError(errInvalidQuantifiersCombination, i + (src - start));
+
 				int min=0,max=0;
 
 				switch (src[i])
@@ -1579,6 +1678,7 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 
 				pos--;
 				op = code.data() + pos - 1;
+				can_quantify = false;
 
 				if (min==1 && max==1)continue;
 
@@ -1671,6 +1771,7 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 					++i;
 				}
 
+				can_quantify = false;
 				continue;
 			}// case +*?{
 			case ' ':
@@ -1687,9 +1788,11 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 			[[fallthrough]];
 			default:
 			{
-				op->op=options&OP_IGNORECASE?opSymbolIgnoreCase:opSymbol;
+				const bool icase = (options & OP_IGNORECASE) != 0;
+				op->ignorecase = icase;
+				op->op = icase ? opSymbolIgnoreCase : opSymbol;
 
-				if (ignorecase)
+				if (icase)
 				{
 					op->symbol=TOLOWER(src[i]);
 				}
@@ -1697,6 +1800,8 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 				{
 					op->symbol=src[i];
 				}
+
+				can_quantify = true;
 			}
 		}//switch(src[i])
 	}//for()
@@ -1751,11 +1856,11 @@ static const RegExp::StateStackItem& FindStateByPos(const std::vector<RegExp::St
 		[&](const RegExp::StateStackItem& i){ return i.pos == pos && i.op == op; });
 }
 
-int RegExp::StrCmp(const wchar_t*& str, const wchar_t* start, const wchar_t* end) const
+int RegExp::StrCmp(const wchar_t*& str, const wchar_t* start, const wchar_t* end, bool icase) const
 {
 	const wchar_t* save=str;
 
-	if (ignorecase)
+	if (icase)
 	{
 		while (start<end)
 		{
@@ -2334,7 +2439,7 @@ bool RegExp::InnerMatch(const wchar_t* const start, const wchar_t* str, const wc
 
 					if (m->start==-1 || m->end==-1)break;
 
-					if (ignorecase)
+					if (op->ignorecase)
 					{
 						j=m->end;
 
@@ -2450,7 +2555,7 @@ bool RegExp::InnerMatch(const wchar_t* const start, const wchar_t* str, const wc
 					j=op->range.min;
 					st.max=op->range.max-j;
 
-					if (ignorecase)
+					if (op->ignorecase)
 					{
 						for (i=0; i<j; i++,str++)
 						{
@@ -2511,7 +2616,7 @@ bool RegExp::InnerMatch(const wchar_t* const start, const wchar_t* str, const wc
 					j=op->range.min;
 					st.max=op->range.max-j;
 
-					if (ignorecase)
+					if (op->ignorecase)
 					{
 						for (i=0; i<j; i++,str++)
 						{
@@ -2702,7 +2807,7 @@ bool RegExp::InnerMatch(const wchar_t* const start, const wchar_t* str, const wc
 
 					for (i=0; i<j; i++)
 					{
-						if (str>strend || !StrCmp(str,start+m->start,start+m->end))break;
+						if (str>strend || !StrCmp(str,start+m->start,start+m->end,op->ignorecase))break;
 					}
 
 					if (i<j)break;
@@ -2711,11 +2816,11 @@ bool RegExp::InnerMatch(const wchar_t* const start, const wchar_t* str, const wc
 
 					if (!minimizing)
 					{
-						while (str<strend && StrCmp(str,start+m->start,start+m->end) && st.max--);
+						while (str<strend && StrCmp(str,start+m->start,start+m->end,op->ignorecase) && st.max--);
 					}
 					else
 					{
-						MinSkip(st, [&](const wchar_t* Str) { return this->StrCmp(Str, start + m->start, start + m->end) != 0; });
+						MinSkip(st, [&](const wchar_t* Str) { return this->StrCmp(Str, start + m->start, start + m->end, op->ignorecase) != 0; });
 
 						if (st.max==-1)break;
 					}
@@ -2955,7 +3060,7 @@ bool RegExp::InnerMatch(const wchar_t* const start, const wchar_t* str, const wc
 					str = ps.savestr;
 					op = ps.pos;
 
-					if (ignorecase)
+					if (op->ignorecase)
 					{
 						if (str<strend && TOLOWER(*str)==op->symbol)
 						{
@@ -2990,7 +3095,7 @@ bool RegExp::InnerMatch(const wchar_t* const start, const wchar_t* str, const wc
 					str = ps.savestr;
 					op = ps.pos;
 
-					if (ignorecase)
+					if (op->ignorecase)
 					{
 						if (str<strend && TOLOWER(*str)!=op->symbol)
 						{
@@ -3098,7 +3203,7 @@ bool RegExp::InnerMatch(const wchar_t* const start, const wchar_t* str, const wc
 						m = &match[Iterator->second];
 					}
 
-					if (str+m->end-m->start<strend && StrCmp(str,start+m->start,start+m->end))
+					if (str+m->end-m->start<strend && StrCmp(str,start+m->start,start+m->end,op->ignorecase))
 					{
 						ps.savestr = str;
 					}
@@ -3454,7 +3559,7 @@ bool RegExp::Optimize()
 			case opSymbolRange:
 			case opSymbolMinRange:
 			{
-				if (ignorecase)
+				if (op->ignorecase)
 				{
 					first.SetBit(TOLOWER(op->range.symbol));
 					first.SetBit(TOUPPER(op->range.symbol));
@@ -3703,7 +3808,7 @@ void RegExp::TrimTail(const wchar_t* const start, const wchar_t*& strend) const
 		{
 			if (!op->range.min)break;
 
-			if (ignorecase)
+			if (op->ignorecase)
 			{
 				while (strend>=start && TOLOWER(*strend)!=op->range.symbol)strend--;
 			}
@@ -3719,7 +3824,7 @@ void RegExp::TrimTail(const wchar_t* const start, const wchar_t*& strend) const
 		{
 			if (!op->range.min)break;
 
-			if (ignorecase)
+			if (op->ignorecase)
 			{
 				while (strend>=start && TOLOWER(*strend)==op->range.symbol)strend--;
 			}
@@ -3762,36 +3867,3 @@ void RegExp::TrimTail(const wchar_t* const start, const wchar_t*& strend) const
 
 	strend++;
 }
-
-#ifdef ENABLE_TESTS
-
-#include "testing.hpp"
-
-TEST_CASE("regex")
-{
-	{
-		RegExp re;
-		REQUIRE(re.Compile(L"/a*?ca/"sv));
-
-		RegExpMatch m = { -1, -1 };
-		int n = 1;
-		REQUIRE(re.Search(L"abca", &m, n));
-		REQUIRE(n == 1);
-		REQUIRE(m.start == 2);
-		REQUIRE(m.end == 4);
-	}
-
-	{
-		RegExp re;
-		REQUIRE(re.Compile(L"/^\\[([\\w.]+)\\]:\\s*\\[(.*)\\]$/"sv, OP_PERLSTYLE));
-
-		RegExpMatch m = { -1, -1 };
-		int n = 1;
-		REQUIRE(re.Search(L"[init.svc.imsdatadaemon]: [running]", &m, n));
-		REQUIRE(n == 1);
-		REQUIRE(m.start == 0);
-		REQUIRE(m.end == 35);
-	}
-
-}
-#endif

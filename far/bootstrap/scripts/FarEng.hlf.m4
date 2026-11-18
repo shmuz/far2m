@@ -4121,6 +4121,15 @@ zero-size expression.
  #(?{name}pattern)# - ^<wrap>group with a name.
 The name must contain only word characters (#\w#) and spaces (#\s#).
 
+ #(?flags)# - ^<wrap>set or clear options for the remainder of the current group (or the entire expression if outside any group). Supported flags:
+   #i# - case-insensitive matching;
+   #m# - multiline mode (^ and $ match line start and line end);
+   #s# - single-line mode (. matches newline characters as well);
+   #x# - extended syntax (unescaped whitespace characters are ignored);
+   #-# - negates the flags that follow it (e.g., #(?-i)#, #(?im-sx)#).
+
+ #(?flags:pattern)# - ^<wrap>non-capturing group that matches #pattern# with the specified options enabled or disabled, restoring the previous options after the closing parenthesis. For example, #(?i:abc)def# matches "ABCdef" but not "ABCDEF".
+
  #Quantifiers#
 
  Any character, group or class can be followed by a quantifier:
