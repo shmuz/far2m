@@ -400,6 +400,7 @@ struct REOpCode_data
 {
 	int		op; //movable<int>
 	bool	ignorecase = false;
+	bool	atomic = false;
 #ifdef RE_DEBUG
 	int    srcpos;
 #endif
@@ -1161,6 +1162,7 @@ bool RegExp::InnerCompile(const wchar_t* const start, const wchar_t* src, int sr
 					switch (src[i])
 					{
 						case ':':op->bracket.index=-1; break;
+						case '>':op->bracket.index=-1; op->atomic=true; break;
 						case '=':op->op=opLookAhead; havelookahead=1; break;
 						case '!':op->op=opNotLookAhead; havelookahead=1; break;
 						case '<':
@@ -2149,6 +2151,14 @@ bool RegExp::InnerMatch(const wchar_t* const start, const wchar_t* str, const wc
 				}
 				case opOpenBracket:
 				{
+					if (op->atomic)
+					{
+						StateStackItem st;
+						st.op = opNoReturn;
+						st.pos = op;
+						stack.emplace_back(st);
+					}
+
 					if (op->bracket.index >= 0)
 					{
 						//if (inrangebracket) Mantis#1388
@@ -2205,10 +2215,29 @@ bool RegExp::InnerMatch(const wchar_t* const start, const wchar_t* str, const wc
 				}
 				case opClosingBracket:
 				{
+					const auto CommitAtomic = [&](const REOpCode* open_op)
+					{
+						if (!open_op->atomic)
+							return;
+
+						const auto rit = std::find_if(stack.rbegin(), stack.rend(),
+							[&](const StateStackItem& item) { return item.op == opNoReturn && item.pos == open_op; });
+						if (rit != stack.rend())
+						{
+							const auto it = std::prev(rit.base());
+							stack.erase(
+								std::remove_if(it, stack.end(),
+									[](const StateStackItem& item) { return item.op != opOpenBracket && item.op != opNamedBracket; }),
+								stack.end());
+						}
+					};
+
 					switch (op->bracket.pairindex->op)
 					{
 						case opOpenBracket:
 						{
+							CommitAtomic(op->bracket.pairindex);
+
 							if (op->bracket.index >= 0)
 							{
 								match[op->bracket.index].end = str - start;
@@ -2227,6 +2256,7 @@ bool RegExp::InnerMatch(const wchar_t* const start, const wchar_t* str, const wc
 						}
 						case opBracketRange:
 						{
+							CommitAtomic(op->bracket.pairindex);
 							auto st = FindStateByPos(stack, op->bracket.pairindex,opBracketRange);
 
 							if (str==st.startstr)
@@ -2249,6 +2279,14 @@ bool RegExp::InnerMatch(const wchar_t* const start, const wchar_t* str, const wc
 								st.savestr=str;
 								op=st.pos;
 								stack.emplace_back(st);
+
+								if (op->atomic)
+								{
+									StateStackItem Item;
+									Item.op = opNoReturn;
+									Item.pos = op;
+									stack.emplace_back(Item);
+								}
 
 								if (op->range.bracket.index >= 0)
 								{
@@ -2297,6 +2335,14 @@ bool RegExp::InnerMatch(const wchar_t* const start, const wchar_t* str, const wc
 							op=st.pos;
 							stack.emplace_back(st);
 
+							if (op->atomic)
+							{
+								StateStackItem Item;
+								Item.op = opNoReturn;
+								Item.pos = op;
+								stack.emplace_back(Item);
+							}
+
 							if (op->range.bracket.index >= 0)
 							{
 								StateStackItem Item;
@@ -2321,6 +2367,7 @@ bool RegExp::InnerMatch(const wchar_t* const start, const wchar_t* str, const wc
 						}
 						case opBracketMinRange:
 						{
+							CommitAtomic(op->bracket.pairindex);
 							auto& ps = FindStateByPos(stack, op->bracket.pairindex, opBracketMinRange);
 							auto st = ps;
 
@@ -2334,6 +2381,14 @@ bool RegExp::InnerMatch(const wchar_t* const start, const wchar_t* str, const wc
 								st.savestr=str;
 								op=st.pos;
 								stack.emplace_back(st);
+
+								if (op->atomic)
+								{
+									StateStackItem Item;
+									Item.op = opNoReturn;
+									Item.pos = op;
+									stack.emplace_back(Item);
+								}
 
 								if (op->range.bracket.index >= 0)
 								{
@@ -2857,6 +2912,14 @@ bool RegExp::InnerMatch(const wchar_t* const start, const wchar_t* str, const wc
 						stack.emplace_back(st);
 					}
 
+					if (op->atomic && !(op->op == opBracketMinRange && !op->range.min))
+					{
+						StateStackItem st;
+						st.op = opNoReturn;
+						st.pos = op;
+						stack.emplace_back(st);
+					}
+
 					if (op->range.nextalt)
 					{
 						StateStackItem st;
@@ -3263,6 +3326,14 @@ bool RegExp::InnerMatch(const wchar_t* const start, const wchar_t* str, const wc
 						op = ps.pos;
 						str = ps.savestr;
 
+						if (op->atomic)
+						{
+							StateStackItem st;
+							st.op = opNoReturn;
+							st.pos = op;
+							stack.emplace_back(st);
+						}
+
 						if (op->range.bracket.index >= 0)
 						{
 							match[op->range.bracket.index].start = str - start;
@@ -3337,6 +3408,9 @@ bool RegExp::InnerMatch(const wchar_t* const start, const wchar_t* str, const wc
 				}
 				case opNoReturn:
 				{
+					if (ps.pos)
+						continue;
+
 					return false;
 				}
 			}//switch(op)

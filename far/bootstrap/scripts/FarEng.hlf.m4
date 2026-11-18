@@ -4130,6 +4130,8 @@ The name must contain only word characters (#\w#) and spaces (#\s#).
 
  #(?flags:pattern)# - ^<wrap>non-capturing group that matches #pattern# with the specified options enabled or disabled, restoring the previous options after the closing parenthesis. For example, #(?i:abc)def# matches "ABCdef" but not "ABCDEF".
 
+ #(?>pattern)# - ^<wrap>atomic (non-backtracking) non-capturing group. Once #pattern# matches, any backtracking positions saved inside it are discarded, so the engine will not retry alternative paths within #pattern# if the rest of the expression fails. For example, #(?>a+)ab# does not match "aaab".
+
  #Quantifiers#
 
  Any character, group or class can be followed by a quantifier:

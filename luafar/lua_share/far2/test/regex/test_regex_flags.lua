@@ -101,6 +101,20 @@ local function run_regexp_tests()
     -- 14. Empty flag groups
     { [[^(?i)$]], nil, "", 1, 0 },
     { [[^(?i:)$]], nil, "", 1, 0 },
+
+    -- 15. Atomic groups (?>subexp)
+    { [[^(?>a+)ab$]], nil, "aaab", nil },
+    { [[^(?>a+)b$]], nil, "aaab", 1, 4 },
+    { [[^(?>ab|a)b$]], nil, "ab", nil },
+    { [[^(?>ab|ac)d$]], nil, "acd", 1, 3 },
+    { [[^(?:(?>a+)ab|a+b)$]], nil, "aaab", 1, 4 },
+    { [[^(?>a(?>b|bc)d)$]], nil, "abcd", nil },
+    { [[^(?>a(?>b|bc)d)$]], nil, "abd", 1, 3 },
+    { [[^(?>a+)+ab$]], nil, "aaab", nil },
+    { [[^(?>a+)+?ab$]], nil, "aaab", nil },
+    { [[^(?>(?i)ab)cd$]], nil, "ABcd", 1, 4 },
+    { [[^(?>(?i)ab)cd$]], nil, "ABCD", nil },
+    { [[(?<=(?>ab|cd))e]], nil, "cde", 3, 3 },
   }
 
   for i, c in ipairs(cases) do
@@ -111,7 +125,7 @@ local function run_regexp_tests()
         i, c[1], tostring(c[4]), tostring(c[5]), tostring(s), tostring(e)))
   end
 
-  -- 15. Capture indexing and named captures via tfind / match / gsub / gmatch
+  -- 16. Capture indexing and named captures via tfind / match / gsub / gmatch
   do
     local rx = assert(regex.new([[(?i)(a)(?i:b)(?{third}c)]]))
     assert(rx:bracketscount() == 3)
@@ -120,6 +134,14 @@ local function run_regexp_tests()
 
     local s, e, t = rx:tfind("ABC")
     assert(s == 1 and e == 3 and t[1] == "A" and t[2] == "C" and t.third == "C")
+
+    local rx_atomic = assert(regex.new([[^(?>([ab]+))c$]]))
+    assert(rx_atomic:bracketscount() == 2)
+    assert(rx_atomic:match("abc") == "ab")
+
+    local rx_atomic_rb = assert(regex.new([[^(?:(?>([ab]+))c|abbd)$]]))
+    local rs, re, rt = rx_atomic_rb:tfind("abbd")
+    assert(rs == 1 and re == 4 and rt[1] == false)
 
     local out, n = regex.gsub("foo-FOO bar-bAr", [[([a-z]+)-(?i)\1]], "%1")
     assert(out == "foo bar" and n == 2)
@@ -131,7 +153,7 @@ local function run_regexp_tests()
     assert(#items == 3 and items[1] == "Abc" and items[2] == "DEF" and items[3] == "gHi")
   end
 
-  -- 16. Malformed flag constructs & invalid quantifier placement
+  -- 17. Malformed flag constructs & invalid quantifier placement
   local invalid = {
     "(?)",
     "(?-)",
@@ -139,7 +161,9 @@ local function run_regexp_tests()
     "(?i-)",
     "(?z)",
     "(?i:abc",
+    "(?>abc",
     "(?i)+",
+    "(?>+)",
     "a(?i)+",
     "a{1,1}+",
     "a{1,1}?",
