@@ -125,6 +125,7 @@ public:
 	void Show() override;
 	void SetPluginTitle(const wchar_t *PluginTitle);
 	int GetEditorID() const;
+	int ReProcessKey(FarKey Key, bool CalledFromPlugin = true);
 
 private:
 	Editor *m_editor;
@@ -154,7 +155,6 @@ private:
 	int ProcessQuitKey(bool FirstSave, bool NeedQuestion = true);
 	bool UpdateFileList();
 	bool DecideAboutSignature();
-	int ReProcessKey(FarKey Key, bool CalledFromControl = true);
 	bool AskOverwrite(const FARString &FileName);
 	void Init(const wchar_t *Name, UINT codepage, const wchar_t *Title, DWORD InitFlags, int StartLine,
 			int StartChar, const wchar_t *PluginData, int OpenModeExstFile);

@@ -333,6 +333,7 @@ public:
 	int GetRawData(wchar_t **DestBuf, int &SizeDestBuf, bool TextFormat = false); // преобраз. из списка в буфер
 
 	int ProcessKey(FarKey Key) override;
+	int ReProcessKey(FarKey Key, bool CalledFromPlugin = true);
 	int ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent) override;
 	int64_t VMProcess(int OpCode, void *vParam = nullptr, int64_t iParam = 0) override;
 

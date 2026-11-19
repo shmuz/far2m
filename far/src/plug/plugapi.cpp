@@ -1976,7 +1976,11 @@ static int FarEditorControlSynchedV2(int EditorID, int Command, void *Param)
 	if (EditorID == -1)
 	{
 		// BUGBUG: guess which editor is really current at this moment
-		if (auto Dlg = dynamic_cast<Dialog*>(FrameManager->GetTopModal()))
+		auto *Dlg = dynamic_cast<Dialog*>(FrameManager->GetCurrentFrame());
+		if (!Dlg)
+			Dlg = dynamic_cast<Dialog*>(FrameManager->GetTopModal());
+
+		if (Dlg)
 		{
 			editor = Dlg->GetMemoEdit();
 			editor = editor ? editor : CtrlObject->Plugins.CurDialogEditor;

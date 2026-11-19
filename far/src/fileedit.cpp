@@ -705,7 +705,7 @@ int FileEditor::ProcessKey(FarKey Key)
 	return ReProcessKey(Key, false);
 }
 
-int FileEditor::ReProcessKey(FarKey Key, bool CalledFromControl)
+int FileEditor::ReProcessKey(FarKey Key, bool CalledFromPlugin)
 {
 	SCOPED_ACTION(SudoClientRegion);
 	if (Key != KEY_F4 && Key != KEY_IDLE)
@@ -819,7 +819,7 @@ int FileEditor::ReProcessKey(FarKey Key, bool CalledFromControl)
 	_SVS(if (Key == 'n' || Key == 'm'))
 	_SVS(SysLog(L"%d Key='%c'", __LINE__, Key));
 
-	if (!CalledFromControl && CtrlObject->Macro.CanSendKeysToPlugin()) {
+	if (!CalledFromPlugin && CtrlObject->Macro.CanSendKeysToPlugin()) {
 		ProcessedNext = !ProcessEditorInput(FrameManager->GetLastInputRecord());
 
 		// ProcessEditorInput() may have closed and deleted this FileEditor.
@@ -2354,43 +2354,6 @@ int FileEditor::EditorControl(int Command, void *Param)
 			FrameManager->DeleteFrame(this);
 			FrameManager->Commit();
 			return TRUE;
-		}
-		case ECTL_READINPUT: {
-			//	if (!CtrlObject->Macro.CanSendKeysToPlugin())
-			//	{
-			//		return FALSE;
-			//	}
-
-			if (Param) {
-				INPUT_RECORD *rec = (INPUT_RECORD *)Param;
-				FarKey Key;
-
-				for (;;) {
-					Key = GetInputRecord(rec);
-
-					if ((!rec->EventType || rec->EventType == KEY_EVENT)
-							&& ((Key >= KEY_MACRO_BASE && Key <= KEY_MACRO_ENDBASE)
-									|| (Key >= KEY_OP_BASE && Key <= KEY_OP_ENDBASE)))    // исключаем MACRO
-						ReProcessKey(Key);
-					else
-						break;
-				}
-
-				// if(Key==KEY_CONSOLE_BUFFER_RESIZE) //????
-				//   Show();                          //????
-#if defined(SYSLOG_KEYMACRO)
-
-				if (rec->EventType == KEY_EVENT) {
-					SysLog(L"ECTL_READINPUT={KEY_EVENT,{%d,%d,Vk=0x%04X,0x%08X}}",
-							rec->Event.KeyEvent.bKeyDown, rec->Event.KeyEvent.wRepeatCount,
-							rec->Event.KeyEvent.wVirtualKeyCode, rec->Event.KeyEvent.dwControlKeyState);
-				}
-
-#endif
-				return TRUE;
-			}
-
-			return FALSE;
 		}
 		case ECTL_PROCESSINPUT: {
 			if (Param) {

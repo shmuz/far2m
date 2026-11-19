@@ -821,6 +821,11 @@ void Editor::ProcessPasteEvent()
 
 int Editor::ProcessKey(FarKey Key)
 {
+	return ReProcessKey(Key, false);
+}
+
+int Editor::ReProcessKey(FarKey Key, bool CalledFromPlugin)
+{
 	if (Key == KEY_IDLE) {
 		if (Opt.ViewerEditorClock && m_HostFileEditor && m_HostFileEditor->IsFullScreen()
 				&& Opt.EdOpt.ShowTitleBar)
@@ -832,7 +837,7 @@ int Editor::ProcessKey(FarKey Key)
 	if (Key == KEY_NONE)
 		return TRUE;
 
-	if (soFlags.Check(FEDITOR_DIALOGMEMOEDIT)) {
+	if (!CalledFromPlugin && soFlags.Check(FEDITOR_DIALOGMEMOEDIT)) {
 		if (CtrlObject->Plugins.ProcessEditorInput(FrameManager->GetLastInputRecord()))
 			return TRUE;
 	}
@@ -5364,6 +5369,33 @@ int Editor::EditorControl(int Command, void *Param)
 			break;
 		}
 
+		case ECTL_READINPUT: {
+			if (Param) {
+				INPUT_RECORD *rec = (INPUT_RECORD *)Param;
+				FarKey Key;
+
+				for (;;) {
+					Key = GetInputRecord(rec);
+
+					if ((!rec->EventType || rec->EventType == KEY_EVENT)
+							&& ((Key >= KEY_MACRO_BASE && Key <= KEY_MACRO_ENDBASE)
+									|| (Key >= KEY_OP_BASE && Key <= KEY_OP_ENDBASE)))    // исключаем MACRO
+					{
+						if (m_HostFileEditor)
+							m_HostFileEditor->ReProcessKey(Key);
+						else
+							ReProcessKey(Key, true);
+					}
+					else
+						break;
+				}
+
+				return TRUE;
+			}
+
+			return FALSE;
+		}
+
 		case ECTL_PROCESSINPUT: {
 			if (Param) {
 				INPUT_RECORD *rec = (INPUT_RECORD *)Param;
@@ -5375,7 +5407,8 @@ int Editor::EditorControl(int Command, void *Param)
 					ProcessMouse(&rec->Event.MouseEvent);
 				else {
 					FarKey Key = CalcKeyCode(rec, false);
-					ProcessKey(Key);
+					if (!ReProcessKey(Key, true) && GetOwner())
+						GetOwner()->ProcessKey(Key);
 				}
 
 				return TRUE;
@@ -5386,7 +5419,7 @@ int Editor::EditorControl(int Command, void *Param)
 
 		// должно выполняется в FileEditor::EditorControl()
 		case ECTL_PROCESSKEY: {
-			ProcessKey((int)(INT_PTR)Param);
+			ReProcessKey((FarKey)(INT_PTR)Param, true);
 			return TRUE;
 		}
 
