@@ -1320,18 +1320,21 @@ void PluginManager::Configure(int StartPos)
 
 int PluginManager::CommandsMenu(int ModalType, const wchar_t *HistoryName, int StartPos)
 {
-	if (ModalType == MODALTYPE_DIALOG)
-	{
-		auto Dlg = dynamic_cast<Dialog*>(FrameManager->GetCurrentFrame());
-		if (!Dlg || Dlg->CheckDialogMode(DMODE_NOPLUGINS))
-			return 0;
-	}
-
-	int MenuItemNumber = 0;
 	bool IsEditor = ModalType == MODALTYPE_EDITOR;
 	bool IsViewer = ModalType == MODALTYPE_VIEWER;
 	bool IsDialog = ModalType == MODALTYPE_DIALOG;
 	bool IsPanels = !IsEditor && !IsViewer && !IsDialog;
+
+	if (IsDialog)
+	{
+		auto Dlg = dynamic_cast<Dialog*>(FrameManager->GetCurrentFrame());
+		if (!Dlg || Dlg->CheckDialogMode(DMODE_NOPLUGINS))
+			return 0;
+
+		IsEditor = Dlg->GetMemoEdit();
+	}
+
+	int MenuItemNumber = 0;
 	PluginMenuItemData SelItem {};
 	{
 		ChangeMacroArea Cma(MACROAREA_MENU);
@@ -1370,10 +1373,10 @@ int PluginManager::CommandsMenu(int ModalType, const wchar_t *HistoryName, int S
 					else
 						continue;
 
-					if ((IsEditor && !(IFlags & PF_EDITOR)) ||
-							(IsViewer && !(IFlags & PF_VIEWER)) ||
-							(IsDialog && !(IFlags & PF_DIALOG)) ||
-							(IsPanels && (IFlags & PF_DISABLEPANELS)))
+					if ( !( (IsEditor &&  (IFlags & PF_EDITOR)) ||
+					        (IsViewer &&  (IFlags & PF_VIEWER)) ||
+					        (IsDialog &&  (IFlags & PF_DIALOG)) ||
+					        (IsPanels && !(IFlags & PF_DISABLEPANELS))))
 						continue;
 
 					for (int J = 0; ; J++)
