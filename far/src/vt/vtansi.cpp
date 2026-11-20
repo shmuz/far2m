@@ -317,6 +317,8 @@ struct VTAnsiContext
 	WCHAR char_buffer[BUFFER_SIZE];
 	WCHAR prev_char;
 	bool  wrapped;
+	COORD disabled_cursor_pos{};
+	bool  has_disabled_cursor_pos = false;
 
 	bool  charset_shifted = false;
 	WCHAR charset_selection[2] = {L'B', L'B'};
@@ -1383,6 +1385,7 @@ struct VTAnsiContext
 		ansi_state = STATE();
 		prev_char = 0;
 		wrapped = false;
+		has_disabled_cursor_pos = false;
 
 		state = 1;
 		prefix = 0;
@@ -1624,6 +1627,13 @@ VTAnsi::~VTAnsi()
 
 void VTAnsi::DisableOutput()
 {
+	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	if (WINPORT(GetConsoleScreenBufferInfo)(_ctx->vt_shell->ConsoleHandle(), &csbi)) {
+		_ctx->disabled_cursor_pos = csbi.dwCursorPosition;
+		_ctx->has_disabled_cursor_pos = true;
+	} else {
+		_ctx->has_disabled_cursor_pos = false;
+	}
 	_ctx->output_disabled = true;
 }
 
@@ -1631,6 +1641,10 @@ void VTAnsi::EnableOutput()
 {
 	if (_ctx->output_disabled) {
 		_ctx->chars_in_buffer = 0;
+		if (_ctx->has_disabled_cursor_pos) {
+			WINPORT(SetConsoleCursorPosition)(_ctx->vt_shell->ConsoleHandle(), _ctx->disabled_cursor_pos);
+			_ctx->has_disabled_cursor_pos = false;
+		}
 		_ctx->output_disabled = false;
 	}
 }
