@@ -1205,7 +1205,18 @@ void Manager::DeleteCommit(Frame *aFrame)
 		{
 			ModalStack.erase(ModalStack.begin() + Index);
 			if (!ModalStack.empty())
+			{
+				if (FramePos >= 0 && FramePos < (int)FrameList.size())
+					FrameList[FramePos]->Show();
+
+				for (size_t i = 0; i + 1 < ModalStack.size(); ++i)
+				{
+					if (ModalStack[i]->IsVisible())
+						ModalStack[i]->Show();
+				}
+
 				ActivateCommit(ModalStack.back());
+			}
 			else if (!FrameList.empty())
 				ActivateCommit(FrameList[FramePos]);
 		}
