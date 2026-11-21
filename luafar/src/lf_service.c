@@ -19,7 +19,6 @@
 #include "lf_util.h"
 
 struct PluginStartupInfo PSInfo; // DON'T ever use fields ModuleName and ModuleNumber of PSInfo
-struct PluginStartupInfo PSInfo; // DON'T ever use fields ModuleName and ModuleNumber of PSInfo
                                  // because they contain data of the 1-st loaded LuaFAR plugin.
                                  // Instead, get them via GetPluginData(L).
 struct FarStandardFunctions FSF;
