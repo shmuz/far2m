@@ -19,6 +19,7 @@
 #include "lf_util.h"
 
 struct PluginStartupInfo PSInfo; // DON'T ever use fields ModuleName and ModuleNumber of PSInfo
+struct PluginStartupInfo PSInfo; // DON'T ever use fields ModuleName and ModuleNumber of PSInfo
                                  // because they contain data of the 1-st loaded LuaFAR plugin.
                                  // Instead, get them via GetPluginData(L).
 struct FarStandardFunctions FSF;
@@ -2380,6 +2381,133 @@ static int far_VTLogExport(lua_State *L)
 	return 1;
 }
 
+static int far_GetScreenCell(lua_State *L)
+{
+	COORD size = {1, 1}, origin = {0, 0};
+	SMALL_RECT region;
+	CHAR_INFO ci = {0};
+
+	lua_Integer x = luaL_checkinteger(L, 1);
+	lua_Integer y = luaL_checkinteger(L, 2);
+	lua_pushnil(L);
+	if (x < 1 || x > 0x8000 || y < 1 || y > 0x8000)
+		return 1; /* out of bounds -> nil */
+
+	region.Left = region.Right = (SHORT)(x - 1);
+	region.Top = region.Bottom = (SHORT)(y - 1);
+
+	/* Flush pending ScrBuf changes to WinPort before reading */
+	PSInfo.Text(0, 0, 0, NULL);
+
+	if (!WINPORT(ReadConsoleOutput)(NULL, &ci, size, origin, &region))
+		return 1; /* out of bounds -> nil */
+
+	if ((ci.Char.UnicodeChar & COMPOSITE_CHAR_MARK) != 0)
+	{
+		const wchar_t *comp = WINPORT(CompositeCharLookup)(ci.Char.UnicodeChar);
+		push_utf8_string(L, comp ? comp : L"", -1);
+	}
+	else
+	{
+		wchar_t ch = (wchar_t)ci.Char.UnicodeChar;
+		push_utf8_string(L, &ch, 1);
+	}
+
+	bit64_push(L, ci.Attributes);
+	return 2;
+}
+
+static int far_GetScreenRect(lua_State *L)
+{
+	lua_Integer x1 = luaL_checkinteger(L, 1);
+	lua_Integer y1 = luaL_checkinteger(L, 2);
+	lua_Integer x2 = luaL_checkinteger(L, 3);
+	lua_Integer y2 = luaL_checkinteger(L, 4);
+	lua_pushnil(L);
+
+	if (x1 < 1 || y1 < 1 || x2 < x1 || y2 < y1 ||
+	    x2 > 0x8000 || y2 > 0x8000 ||
+	    x2 - x1 >= 0x7FFF || y2 - y1 >= 0x7FFF)
+		return 1; /* out of bounds -> nil */
+
+	--x1; --y1; --x2; --y2;
+
+	SHORT w = (SHORT)(x2 - x1 + 1);
+	SHORT h = (SHORT)(y2 - y1 + 1);
+	COORD size = {w, h}, origin = {0, 0};
+	SMALL_RECT region = {(SHORT)x1, (SHORT)y1, (SHORT)x2, (SHORT)y2};
+
+	CHAR_INFO *buf = (CHAR_INFO *)lua_newuserdata(L, sizeof(CHAR_INFO) * w * h);
+	memset(buf, 0, sizeof(CHAR_INFO) * w * h);
+
+	/* Flush pending ScrBuf changes to WinPort once for the entire rectangle */
+	PSInfo.Text(0, 0, 0, NULL);
+
+	if (!WINPORT(ReadConsoleOutput)(NULL, buf, size, origin, &region))
+		return 1;
+
+	int actual_w = (region.Right >= region.Left) ? (region.Right - region.Left + 1) : 0;
+	int actual_h = (region.Bottom >= region.Top) ? (region.Bottom - region.Top + 1) : 0;
+	if (actual_w <= 0 || actual_h <= 0)
+		return 1; /* out of bounds -> nil */
+
+	size_t max_wlen = (size_t)actual_w;
+	for (int r = 0; r < actual_h; ++r)
+	{
+		size_t row_wlen = 0;
+		const CHAR_INFO *row = buf + r * w;
+		for (int c = 0; c < actual_w; ++c)
+		{
+			if ((row[c].Char.UnicodeChar & ((COMP_CHAR)1 << 63)) != 0)
+			{
+				const wchar_t *comp = WINPORT(CompositeCharLookup)(row[c].Char.UnicodeChar);
+				row_wlen += comp ? wcslen(comp) : 0;
+			}
+			else
+				row_wlen += 1;
+		}
+		if (row_wlen > max_wlen)
+			max_wlen = row_wlen;
+	}
+
+	wchar_t *wrow = (wchar_t *)lua_newuserdata(L, max_wlen * sizeof(wchar_t));
+
+	lua_createtable(L, actual_h, 0);            /* rows */
+	lua_createtable(L, actual_w * actual_h, 0); /* attrs */
+
+	int attr_idx = 1;
+	for (int r = 0; r < actual_h; ++r)
+	{
+		const CHAR_INFO *row = buf + r * w;
+		size_t pos = 0;
+		for (int c = 0; c < actual_w; ++c)
+		{
+			if ((row[c].Char.UnicodeChar & ((COMP_CHAR)1 << 63)) != 0)
+			{
+				const wchar_t *comp = WINPORT(CompositeCharLookup)(row[c].Char.UnicodeChar);
+				if (comp)
+				{
+					size_t len = wcslen(comp);
+					memcpy(wrow + pos, comp, len * sizeof(wchar_t));
+					pos += len;
+				}
+			}
+			else
+			{
+				wrow[pos++] = (wchar_t)row[c].Char.UnicodeChar;
+			}
+
+			bit64_push(L, row[c].Attributes);
+			lua_rawseti(L, -2, attr_idx++);
+		}
+
+		push_utf8_string(L, wrow, pos);
+		lua_rawseti(L, -3, r + 1);
+	}
+
+	return 2; /* rows, attrs */
+}
+
 static const luaL_Reg filefilter_methods[] =
 {
 	{"__gc",             filefilter_gc},
@@ -2428,6 +2556,8 @@ static const luaL_Reg far_funcs[] =
 	PAIR( far, GetPluginInformation),
 	PAIR( far, GetPlugins),
 	PAIR( far, GetReparsePointInfo),
+	PAIR( far, GetScreenCell),
+	PAIR( far, GetScreenRect),
 	PAIR( far, InMyCache),
 	PAIR( far, InMyConfig),
 	PAIR( far, InMyTemp),
