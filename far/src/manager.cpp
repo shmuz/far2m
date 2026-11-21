@@ -242,17 +242,18 @@ void Manager::ExecuteModal(Frame *aFrame)
 	if (!ExecutedFrame)
 		return;
 
+	Frame *ModalFrame = ExecutedFrame;
 	auto ModalStartLevel = ModalStack.size();
 	bool OriginalStartManager = StartManager;
 	StartManager = true;
 
 	Commit();
 
-	while (ModalStack.size() > ModalStartLevel)
+	while (ModalStack.size() > ModalStartLevel || InStack(ModalFrame))
 	{
 		ProcessMainLoop();
 
-		if (ModalStack.size() > ModalStartLevel)
+		if (ModalStack.size() > ModalStartLevel || InStack(ModalFrame))
 			Commit();
 	}
 
