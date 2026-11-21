@@ -447,7 +447,7 @@ typedef struct _CHAR_INFO {
     DWORD64 Attributes;
 } CHAR_INFO, *PCHAR_INFO;
 
-#define COMPOSITE_CHAR_MARK (COMP_CHAR(1) << 63)
+#define COMPOSITE_CHAR_MARK ((COMP_CHAR)1 << 63)
 
 #define CI_SET_ATTR(CI, ATTR)       { (CI).Attributes = (DWORD64)ATTR; }
 #define CI_SET_WCHAR(CI, WC)        { (CI).Char.UnicodeChar = (COMP_CHAR)(uint32_t)(WC); }
