@@ -18,6 +18,7 @@ class ArchiveTester
 private:
 	UInt32 src_dir_index;
 	std::shared_ptr<Archive<UseVirtualDestructor>> archive;
+	std::shared_ptr<Error> op_error;
 
 	std::wstring file_path;
 	UInt64 completed;
@@ -45,10 +46,12 @@ private:
 	}
 
 public:
-	ArchiveTester(UInt32 src_dir_index, std::shared_ptr<Archive<UseVirtualDestructor>> archive)
+	ArchiveTester(UInt32 src_dir_index, std::shared_ptr<Archive<UseVirtualDestructor>> archive,
+			std::shared_ptr<Error> op_error)
 		: ProgressMonitor(Far::get_msg(MSG_PROGRESS_TEST)),
 		  src_dir_index(src_dir_index),
 		  archive(archive),
+		  op_error(std::move(op_error)),
 		  completed(0),
 		  total(0)
 	{}
@@ -112,19 +115,41 @@ public:
 		bool encrypted = !archive->m_password.empty();
 		Error error;
 		error.code = E_MESSAGE;
-		if (resultEOperationResult == NArchive::NExtract::NOperationResult::kUnsupportedMethod)
-			error.messages.emplace_back(Far::get_msg(MSG_ERROR_EXTRACT_UNSUPPORTED_METHOD));
-		else if (resultEOperationResult == NArchive::NExtract::NOperationResult::kDataError)
-			error.messages.emplace_back(Far::get_msg(
-					encrypted ? MSG_ERROR_EXTRACT_DATA_ERROR_ENCRYPTED : MSG_ERROR_EXTRACT_DATA_ERROR));
-		else if (resultEOperationResult == NArchive::NExtract::NOperationResult::kCRCError)
-			error.messages.emplace_back(Far::get_msg(
-					encrypted ? MSG_ERROR_EXTRACT_CRC_ERROR_ENCRYPTED : MSG_ERROR_EXTRACT_CRC_ERROR));
-		else
-			error.messages.emplace_back(Far::get_msg(MSG_ERROR_EXTRACT_UNKNOWN));
+		switch (resultEOperationResult) {
+			case NArchive::NExtract::NOperationResult::kUnsupportedMethod:
+				error.messages.emplace_back(Far::get_msg(MSG_ERROR_EXTRACT_UNSUPPORTED_METHOD));
+				break;
+			case NArchive::NExtract::NOperationResult::kDataError:
+				error.messages.emplace_back(Far::get_msg(
+						encrypted ? MSG_ERROR_EXTRACT_DATA_ERROR_ENCRYPTED : MSG_ERROR_EXTRACT_DATA_ERROR));
+				break;
+			case NArchive::NExtract::NOperationResult::kCRCError:
+				error.messages.emplace_back(Far::get_msg(
+						encrypted ? MSG_ERROR_EXTRACT_CRC_ERROR_ENCRYPTED : MSG_ERROR_EXTRACT_CRC_ERROR));
+				break;
+			case NArchive::NExtract::NOperationResult::kUnavailable:
+				error.messages.emplace_back(Far::get_msg(MSG_ERROR_EXTRACT_UNAVAILABLE_DATA));
+				break;
+			case NArchive::NExtract::NOperationResult::kUnexpectedEnd:
+				error.messages.emplace_back(Far::get_msg(MSG_ERROR_EXTRACT_UNEXPECTED_END_DATA));
+				break;
+			case NArchive::NExtract::NOperationResult::kIsNotArc:
+				error.messages.emplace_back(Far::get_msg(MSG_ERROR_EXTRACT_IS_NOT_ARCHIVE));
+				break;
+			case NArchive::NExtract::NOperationResult::kHeadersError:
+				error.messages.emplace_back(Far::get_msg(MSG_ERROR_EXTRACT_HEADERS_ERROR));
+				break;
+			case NArchive::NExtract::NOperationResult::kWrongPassword:
+				error.messages.emplace_back(Far::get_msg(MSG_ERROR_EXTRACT_WRONG_PASSWORD));
+				break;
+			default:
+				error.messages.emplace_back(Far::get_msg(MSG_ERROR_EXTRACT_UNKNOWN));
+				break;
+		}
 		error.messages.emplace_back(file_path);
 		error.messages.emplace_back(archive->arc_path);
-		throw error;
+		*op_error = std::move(error);
+		return E_ABORT;
 		COM_ERROR_HANDLER_END
 	}
 
@@ -172,7 +197,9 @@ void Archive<UseVirtualDestructor>::test(UInt32 src_dir_index, const std::vector
 			std::back_insert_iterator<std::vector<UInt32>>(indices));
 	std::sort(indices.begin(), indices.end());
 
-	ComObject<IArchiveExtractCallback<UseVirtualDestructor>> tester(new ArchiveTester<UseVirtualDestructor>(src_dir_index, this->shared_from_this()));
+	auto op_error = std::make_shared<Error>();
+	ComObject<IArchiveExtractCallback<UseVirtualDestructor>> tester(
+			new ArchiveTester<UseVirtualDestructor>(src_dir_index, this->shared_from_this(), op_error));
 
 	std::promise<int> promise;
 	std::future<int> future = promise.get_future();
@@ -193,6 +220,8 @@ void Archive<UseVirtualDestructor>::test(UInt32 src_dir_index, const std::vector
 
 	test_thread.join();
 	int errc = future.get();
+	if (*op_error)
+		throw *op_error;
 	COM_ERROR_CHECK(errc);
 //	COM_ERROR_CHECK(in_arc->Extract(indices.data(), static_cast<UInt32>(indices.size()), 1, tester));
 }

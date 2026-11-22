@@ -1516,6 +1516,8 @@ void Archive<UseVirtualDestructor>::open(const OpenOptions &options, Archives<Us
 			entry_index = 0;
 		}
 
+		arc_info = archives[parent_idx]->get_file_info(entry_index);
+
 		fprintf(stderr, "Attempting to get stream for entry_index: %u\n", entry_index);
 		bool bInArcStream = archives[parent_idx]->get_stream(entry_index, stream.ref());
 
@@ -1523,7 +1525,7 @@ void Archive<UseVirtualDestructor>::open(const OpenOptions &options, Archives<Us
 			fprintf(stderr, "Failed to get direct stream, falling back to extraction method\n");
 
 			UInt32 indices[2] = { entry_index, 0 };
-			FindData ef = archives[parent_idx]->get_file_info(entry_index);
+			const FindData &ef = arc_info;
 			fprintf(stderr, "Entry file info: name='%ls', size=%" PRIu64 ", is_dir=%s\n", ef.cFileName, ef.size(), ef.is_dir() ? "true" : "false");
 			if (ef.is_dir()) {
 				fprintf(stderr, "Entry is a directory - STOPPING\n");
@@ -1798,7 +1800,13 @@ void Archive<UseVirtualDestructor>::open(const OpenOptions &options, Archives<Us
 			archives.push_back(archive);
 
 			if (!options.nochain) {
+				size_t prev_size = archives.size();
 				open(options, archives);
+				if (arc_entry->type == c_split && !options.detect && archives.size() == prev_size) {
+					archives.pop_back();
+					first_open = false;
+					continue;
+				}
 			}
 			if (!options.detect && !have_tail) {
 				break;

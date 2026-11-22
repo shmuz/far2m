@@ -911,7 +911,7 @@ public:
 				open_options.arc_path = arc_list[i];
 				open_options.detect = false;
 				open_options.open_ex = false; // !
-				open_options.nochain = true;
+				open_options.nochain = false; // chain split/nested archives (e.g. .001 -> .7z)
 				open_options.arc_types = ArcAPI::formats().get_arc_types();
 				archives = Archive<UseVirtualDestructor>::open(open_options);
 				if (archives->empty())
