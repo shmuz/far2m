@@ -148,13 +148,13 @@ class Manager
 		Frame *GetModal(size_t Index) const;
 		Frame *GetFrameEx(int Pos = -1) const;
 
-		int IndexOfList(Frame *frame) const;
+		int IndexOfList(const Frame *frame) const;
 
-		int IndexOfStack(Frame *frame) const;
+		int IndexOfStack(const Frame *frame) const;
 		bool HaveAnyFrame() const;
 
-		bool InList(Frame *frame) const { return IndexOfList(frame)!=-1; }
-		bool InStack(Frame *frame) const { return IndexOfStack(frame)!=-1; }
+		bool InList(const Frame *frame) const { return IndexOfList(frame)!=-1; }
+		bool InStack(const Frame *frame) const { return IndexOfStack(frame)!=-1; }
 
 		void ImmediateHide();
 		/* $ 13.04.2002 KM

@@ -242,18 +242,17 @@ void Manager::ExecuteModal(Frame *aFrame)
 	if (!ExecutedFrame)
 		return;
 
-	Frame *ModalFrame = ExecutedFrame;
-	auto ModalStartLevel = ModalStack.size();
-	bool OriginalStartManager = StartManager;
+	const Frame *ModalFrame = ExecutedFrame;
+	const bool OriginalStartManager = StartManager;
 	StartManager = true;
 
 	Commit();
 
-	while (ModalStack.size() > ModalStartLevel || InStack(ModalFrame))
+	for (bool mloop = true; InStack(ModalFrame); mloop = !mloop)
 	{
-		ProcessMainLoop();
-
-		if (ModalStack.size() > ModalStartLevel || InStack(ModalFrame))
+		if (mloop)
+			ProcessMainLoop();
+		else
 			Commit();
 	}
 
@@ -983,13 +982,13 @@ Frame *Manager::GetFrameEx(int Pos) const
 	return GetFrame(Pos);
 }
 
-int Manager::IndexOfStack(Frame *aFrame) const
+int Manager::IndexOfStack(const Frame *aFrame) const
 {
 	auto it = std::find(ModalStack.begin(), ModalStack.end(), aFrame);
 	return it != ModalStack.end() ? std::distance(ModalStack.begin(), it) : -1;
 }
 
-int Manager::IndexOfList(Frame *aFrame) const
+int Manager::IndexOfList(const Frame *aFrame) const
 {
 	auto it = std::find(FrameList.begin(), FrameList.end(), aFrame);
 	return it != FrameList.end() ? std::distance(FrameList.begin(), it) : -1;
