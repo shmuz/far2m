@@ -21,11 +21,12 @@ Macro {
 local MT = {} -- "macrotest", this module
 
 local asrt = require "far2.assert"
-MT.Mod_Dialog = require "far2.test.test_dialog";
-MT.Mod_Editor = require "far2.test.test_editor";
-MT.Mod_FSF    = require "far2.test.test_fsf";
-MT.Mod_Luafar = require "far2.test.test_luafar";
-MT.Mod_Panel  = require "far2.test.test_panel";
+MT.Mod_Dialog = require "far2.test.test_dialog"
+MT.Mod_Editor = require "far2.test.test_editor"
+MT.Mod_FSF    = require "far2.test.test_fsf"
+MT.Mod_Luafar = require "far2.test.test_luafar"
+MT.Mod_Panel  = require "far2.test.test_panel"
+MT.Mod_Redraw = require "far2.test.stacked_modal_redraw"
 
 local MacroKeys -- keys that invoke the whole macrotest from a macro
 local F = far.Flags
@@ -1542,8 +1543,10 @@ function MT.test_all()
   MT.Mod_FSF.test_all()
   MT.Mod_Luafar.test_all()
   MT.Mod_Panel.test_all()
+  MT.Mod_Redraw()
 
   actl.RedrawAll()
+  far.Text()
 end
 
 return MT
