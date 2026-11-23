@@ -886,6 +886,8 @@ public:
 		try {
 			archive->test(src_dir_index, indices);
 		} catch (const Error &error) {
+			if (error.code == E_ABORT)
+				throw;
 			err.Append(error);
 		}
 		if (err)

@@ -19,6 +19,7 @@ private:
 	UInt32 src_dir_index;
 	std::shared_ptr<Archive<UseVirtualDestructor>> archive;
 	std::shared_ptr<Error> op_error;
+	std::shared_ptr<std::atomic<bool>> aborted;
 
 	std::wstring file_path;
 	UInt64 completed;
@@ -45,13 +46,27 @@ private:
 		progress_text = st.str();
 	}
 
+	void update_progress()
+	{
+		if (aborted->load(std::memory_order_acquire))
+			FAIL(E_ABORT);
+		try {
+			update_ui();
+		} catch (const Error &e) {
+			if (e.code == E_ABORT)
+				aborted->store(true, std::memory_order_release);
+			throw;
+		}
+	}
+
 public:
 	ArchiveTester(UInt32 src_dir_index, std::shared_ptr<Archive<UseVirtualDestructor>> archive,
-			std::shared_ptr<Error> op_error)
+			std::shared_ptr<Error> op_error, std::shared_ptr<std::atomic<bool>> aborted)
 		: ProgressMonitor(Far::get_msg(MSG_PROGRESS_TEST)),
 		  src_dir_index(src_dir_index),
 		  archive(archive),
 		  op_error(std::move(op_error)),
+		  aborted(std::move(aborted)),
 		  completed(0),
 		  total(0)
 	{}
@@ -66,7 +81,7 @@ public:
 	{
 		COM_ERROR_HANDLER_BEGIN
 		total = total_value;
-		update_ui();
+		update_progress();
 		return S_OK;
 		COM_ERROR_HANDLER_END
 	}
@@ -76,7 +91,7 @@ public:
 		COM_ERROR_HANDLER_BEGIN
 		if (completeValue) {
 			completed = *completeValue;
-			update_ui();
+			update_progress();
 		}
 		return S_OK;
 		COM_ERROR_HANDLER_END
@@ -86,6 +101,8 @@ public:
 	GetStream(UInt32 index, ISequentialOutStream<UseVirtualDestructor> **outStream, Int32 askExtractMode) noexcept override
 	{
 		COM_ERROR_HANDLER_BEGIN
+		if (aborted->load(std::memory_order_acquire))
+			return E_ABORT;
 		const ArcFileInfo &file_info = archive->file_list[index];
 		file_path = file_info.name;
 		UInt32 parent_index = file_info.parent;
@@ -94,7 +111,7 @@ public:
 			file_path.insert(0, 1, L'/').insert(0, parent_file_info.name);
 			parent_index = parent_file_info.parent;
 		}
-		update_ui();
+		update_progress();
 		*outStream = nullptr;
 		return S_OK;
 		COM_ERROR_HANDLER_END
@@ -103,6 +120,8 @@ public:
 	STDMETHODIMP PrepareOperation(Int32 askExtractMode) noexcept override
 	{
 		COM_ERROR_HANDLER_BEGIN
+		if (aborted->load(std::memory_order_acquire))
+			return E_ABORT;
 		return S_OK;
 		COM_ERROR_HANDLER_END
 	}
@@ -110,6 +129,8 @@ public:
 	STDMETHODIMP SetOperationResult(Int32 resultEOperationResult) noexcept override
 	{
 		COM_ERROR_HANDLER_BEGIN
+		if (aborted->load(std::memory_order_acquire))
+			return E_ABORT;
 		if (resultEOperationResult == NArchive::NExtract::NOperationResult::kOK)
 			return S_OK;
 		bool encrypted = !archive->m_password.empty();
@@ -198,8 +219,9 @@ void Archive<UseVirtualDestructor>::test(UInt32 src_dir_index, const std::vector
 	std::sort(indices.begin(), indices.end());
 
 	auto op_error = std::make_shared<Error>();
+	auto aborted = std::make_shared<std::atomic<bool>>(false);
 	ComObject<IArchiveExtractCallback<UseVirtualDestructor>> tester(
-			new ArchiveTester<UseVirtualDestructor>(src_dir_index, this->shared_from_this(), op_error));
+			new ArchiveTester<UseVirtualDestructor>(src_dir_index, this->shared_from_this(), op_error, aborted));
 
 	std::promise<int> promise;
 	std::future<int> future = promise.get_future();
@@ -220,6 +242,8 @@ void Archive<UseVirtualDestructor>::test(UInt32 src_dir_index, const std::vector
 
 	test_thread.join();
 	int errc = future.get();
+	if (aborted->load(std::memory_order_acquire))
+		FAIL(E_ABORT);
 	if (*op_error)
 		throw *op_error;
 	COM_ERROR_CHECK(errc);
