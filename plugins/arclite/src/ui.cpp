@@ -2156,8 +2156,6 @@ void show_error_log(const ErrorLog &error_log)
 	TempFile temp_file;
 	File file(temp_file.get_path(), GENERIC_WRITE, FILE_SHARE_READ, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL);
 
-	const wchar_t sig = 0xFEFF;
-	file.write(&sig, sizeof(sig));
 	std::wstring line;
 	for (const auto &error : error_log) {
 		line.clear();
@@ -2180,7 +2178,8 @@ void show_error_log(const ErrorLog &error_log)
 		for (const auto &w : error.warnings)
 			line.append(L"  ").append(w).append(1, L'\n');
 		line.append(1, L'\n');
-		file.write(line.data(), static_cast<unsigned>(line.size()) * sizeof(wchar_t));
+		std::string mb_line = Wide2MB(line.c_str());
+		file.write(mb_line.data(), static_cast<unsigned>(mb_line.size()));
 	}
 	file.close();
 

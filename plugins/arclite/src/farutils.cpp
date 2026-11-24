@@ -247,7 +247,7 @@ void flush_screen()
 
 intptr_t viewer(const std::wstring &file_name, const std::wstring &title, uint32_t flags)
 {
-	return g_far.Viewer(file_name.c_str(), title.c_str(), 0, 0, -1, -1, flags, 0);
+	return g_far.Viewer(file_name.c_str(), title.c_str(), 0, 0, -1, -1, flags, CP_UTF8);
 }
 
 intptr_t editor(const std::wstring &file_name, const std::wstring &title, uint32_t flags)
