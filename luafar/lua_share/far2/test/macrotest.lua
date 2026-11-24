@@ -1546,7 +1546,6 @@ function MT.test_all()
   MT.Mod_Redraw()
 
   actl.RedrawAll()
-  far.Text()
 end
 
 return MT
