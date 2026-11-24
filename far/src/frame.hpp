@@ -50,6 +50,7 @@ enum
 	MODALTYPE_HELP,
 	MODALTYPE_COMBOBOX,
 	MODALTYPE_FINDFOLDER,
+	MODALTYPE_SEARCH,
 };
 
 class Frame: public ScreenObject

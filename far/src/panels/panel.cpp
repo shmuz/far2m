@@ -76,6 +76,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "xlat.hpp"
 #include "DlgGuid.hpp"
 #include "sizer.hpp"
+#include "fastfind.hpp"
 #include "vt/vtshell.h"
 #include <StackHeapArray.hpp>
 
@@ -861,43 +862,6 @@ int Panel::OnFCtlSetLocation(const FarPanelLocation *location)
 	return SetLocation_Plugin(false, pPlugin, location->Path, nullptr, location->Item);
 }
 
-void Panel::FastFindProcessName(Edit *FindEdit, const wchar_t *Src, FARString &strLastName,
-		FARString &strName)
-{
-	wchar_t *Ptr =
-			(wchar_t *)malloc((StrLength(Src) + StrLength(FindEdit->GetStringAddr()) + 32) * sizeof(wchar_t));
-
-	if (Ptr) {
-		wcscpy(Ptr, FindEdit->GetStringAddr());
-		wchar_t *EndPtr = Ptr + StrLength(Ptr);
-		wcscat(Ptr, Src);
-		Unquote(EndPtr);
-		EndPtr = Ptr + StrLength(Ptr);
-		//		DWORD Key;
-
-		for (;;) {
-			if (EndPtr == Ptr) {
-				//				Key=KEY_NONE;
-				break;
-			}
-
-			if (FindPartNameXLat(Ptr, false, 1, true)) {
-				//				Key=*(EndPtr-1);
-				*EndPtr = 0;
-				FindEdit->SetString(Ptr);
-				strLastName = Ptr;
-				strName = Ptr;
-				FindEdit->Show();
-				break;
-			}
-
-			*--EndPtr = 0;
-		}
-
-		free(Ptr);
-	}
-}
-
 int64_t Panel::VMProcess(int OpCode, void *vParam, int64_t iParam)
 {
 	return 0;
@@ -929,167 +893,12 @@ static FarKey _CorrectFastFindKbdLayout(INPUT_RECORD *rec, FarKey Key)
 
 void Panel::FastFind(int FirstKey)
 {
-	// // _SVS(CleverSysLog Clev(L"Panel::FastFind"));
-	INPUT_RECORD rec;
-	FARString strLastName, strName;
-	FarKey Key, KeyToProcess = 0;
+	FarKey KeyToProcess = KEY_NONE;
 	WaitInFastFind++;
 	{
-		int FindX = Min(X1 + 9, ScrX - 22);
-		int FindY = Min(Y2, ScrY - 2);
-		SCOPED_ACTION(ChangeMacroArea)(MACROAREA_SEARCH);
-		SaveScreen SaveScr(FindX, FindY, FindX + 21, FindY + 2);
-		FastFindShow(FindX, FindY);
-		Edit FindEdit;
-		FindEdit.SetPosition(FindX + 2, FindY + 1, FindX + 19, FindY + 1);
-		FindEdit.SetEditBeyondEnd(false);
-		FindEdit.SetObjectColor(FarColorToReal(COL_DIALOGEDIT));
-		FindEdit.Show();
-
-		while (!KeyToProcess) {
-			if (FirstKey) {
-				FirstKey = _CorrectFastFindKbdLayout(FrameManager->GetLastInputRecord(), FirstKey);
-				// // _SVS(SysLog(L"Panel::FastFind  FirstKey=%ls  %ls",_FARKEY_ToName(FirstKey),_INPUT_RECORD_Dump(FrameManager->GetLastInputRecord())));
-				// // _SVS(SysLog(L"if (FirstKey)"));
-				Key = FirstKey;
-			} else {
-				// // _SVS(SysLog(L"else if (FirstKey)"));
-				Key = GetInputRecord(&rec);
-
-				if (rec.EventType == MOUSE_EVENT) {
-					if (!(rec.Event.MouseEvent.dwButtonState & 3))
-						continue;
-					else
-						Key = KEY_ESC;
-				} else if (!rec.EventType || rec.EventType == KEY_EVENT) {
-					// для вставки воспользуемся макродвижком...
-					if (Key == KEY_CTRLV || Key == KEY_SHIFTINS || Key == KEY_SHIFTNUMPAD0) {
-						wchar_t *ClipText = PasteFromClipboard();
-
-						if (ClipText) {
-							if (*ClipText) {
-								FastFindProcessName(&FindEdit, ClipText, strLastName, strName);
-								FastFindShow(FindX, FindY);
-							}
-
-							free(ClipText);
-						}
-
-						continue;
-					} else if (Key == KEY_OP_XLAT) {
-						FARString strTempName;
-						FindEdit.Xlat();
-						FindEdit.GetString(strTempName);
-						FindEdit.SetString(L"");
-						FastFindProcessName(&FindEdit, strTempName, strLastName, strName);
-						FastFindShow(FindX, FindY);
-						continue;
-					} else if (Key == KEY_OP_PLAINTEXT) {
-						FARString strTempName;
-						FindEdit.ProcessKey(Key);
-						FindEdit.GetString(strTempName);
-						FindEdit.SetString(L"");
-						FastFindProcessName(&FindEdit, strTempName, strLastName, strName);
-						FastFindShow(FindX, FindY);
-						continue;
-					} else
-						Key = _CorrectFastFindKbdLayout(&rec, Key);
-				}
-			}
-
-			if (Key == KEY_ESC || Key == KEY_F10) {
-				KeyToProcess = KEY_NONE;
-				break;
-			}
-
-			// // _SVS(if (!FirstKey) SysLog(L"Panel::FastFind  Key=%ls  %ls",_FARKEY_ToName(Key),_INPUT_RECORD_Dump(&rec)));
-			if (Key >= KEY_ALT_BASE + 0x01 && Key <= KEY_ALT_BASE + 65535)
-				Key = Lower(static_cast<WCHAR>(Key - KEY_ALT_BASE));
-
-			if (Key >= KEY_ALTSHIFT_BASE + 0x01 && Key <= KEY_ALTSHIFT_BASE + 65535)
-				Key = Lower(static_cast<WCHAR>(Key - KEY_ALTSHIFT_BASE));
-
-			if (Key == KEY_MULTIPLY)
-				Key = L'*';
-
-			switch (Key) {
-				case KEY_F1: {
-					FindEdit.Hide();
-					SaveScr.RestoreArea();
-					{
-						Help Hlp(L"FastFind");
-					}
-					FindEdit.Show();
-					FastFindShow(FindX, FindY);
-					break;
-				}
-				case KEY_CTRLNUMENTER:
-				case KEY_CTRLENTER:
-					FindPartNameXLat(strName, true, 1, true);
-					FindEdit.Show();
-					FastFindShow(FindX, FindY);
-					break;
-				case KEY_CTRLSHIFTNUMENTER:
-				case KEY_CTRLSHIFTENTER:
-					FindPartNameXLat(strName, true, -1, true);
-					FindEdit.Show();
-					FastFindShow(FindX, FindY);
-					break;
-				case KEY_NONE:
-				case KEY_IDLE:
-					break;
-				default:
-
-					if ((Key < 32 || Key >= 65536) && Key != KEY_BS && Key != KEY_CTRLY && Key != KEY_CTRLBS
-							&& Key != KEY_ALT && Key != KEY_SHIFT && Key != KEY_CTRL && Key != KEY_RALT
-							&& Key != KEY_RCTRL && !(Key == KEY_CTRLINS || Key == KEY_CTRLNUMPAD0)
-							&& !(Key == KEY_SHIFTINS || Key == KEY_SHIFTNUMPAD0)) {
-						KeyToProcess = Key;
-						break;
-					}
-
-					if (FindEdit.ProcessKey(Key)) {
-						FindEdit.GetString(strName);
-
-						// уберем двойные '**'
-						if (strName.GetLength() > 1 && strName.At(strName.GetLength() - 1) == L'*'
-								&& strName.At(strName.GetLength() - 2) == L'*') {
-							strName.Truncate(strName.GetLength() - 1);
-							FindEdit.SetString(strName);
-						}
-
-						/* $ 09.04.2001 SVS
-						   проблемы с быстрым поиском.
-						   Подробнее в 00573.ChangeDirCrash.txt
-						*/
-						if (strName.At(0) == L'"') {
-							strName.LShift(1);
-							FindEdit.SetString(strName);
-						}
-
-						if (FindPartNameXLat(strName, false, 1, true)) {
-							strLastName = strName;
-						} else {
-							if (CtrlObject->Macro.IsExecuting())    // && CtrlObject->Macro.GetLevelState() > 0) // если вставка макросом...
-							{
-								// CtrlObject->Macro.DropProcess(); // ... то дропнем макропроцесс
-								// CtrlObject->Macro.PopState();
-								;
-							}
-
-							FindEdit.SetString(strLastName);
-							strName = strLastName;
-						}
-
-						FindEdit.Show();
-						FastFindShow(FindX, FindY);
-					}
-
-					break;
-			}
-
-			FirstKey = 0;
-		}
+		::FastFind FindDlg(this, FirstKey);
+		FindDlg.Process();
+		KeyToProcess = FindDlg.GetKeyToProcess();
 	}
 	WaitInFastFind--;
 	Show();
@@ -1099,21 +908,8 @@ void Panel::FastFind(int FirstKey)
 
 	if ((KeyToProcess == KEY_ENTER || KeyToProcess == KEY_NUMENTER) && ActivePanel->GetType() == TREE_PANEL)
 		((TreeList *)ActivePanel)->ProcessEnter();
-	else
+	else if (KeyToProcess != KEY_NONE)
 		CtrlObject->Cp()->ProcessKey(KeyToProcess);
-}
-
-void Panel::FastFindShow(int FindX, int FindY)
-{
-	SetFarColor(COL_DIALOGTEXT);
-	GotoXY(FindX + 1, FindY + 1);
-	Text(L" ");
-	GotoXY(FindX + 20, FindY + 1);
-	Text(L" ");
-	Box(FindX, FindY, FindX + 21, FindY + 2, FarColorToReal(COL_DIALOGBOX), DOUBLE_BOX);
-	GotoXY(FindX + 7, FindY);
-	SetFarColor(COL_DIALOGBOXTITLE);
-	Text(Msg::SearchFileTitle);
 }
 
 void Panel::SetFocus()

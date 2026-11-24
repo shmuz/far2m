@@ -80,6 +80,7 @@ src/panels/flupdate.cpp
 src/panels/infolist.cpp
 src/panels/qview.cpp
 src/panels/treelist.cpp
+src/panels/fastfind.cpp
 
 src/console/AnsiEsc.cpp
 src/console/keyboard.cpp
