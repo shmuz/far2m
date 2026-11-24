@@ -406,6 +406,16 @@ static int win_IsProcess64bit(lua_State *L)
 	return 1;
 }
 
+static inline int is_var_start(unsigned char c)
+{
+	return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '_';
+}
+
+static inline int is_var_char(unsigned char c)
+{
+	return is_var_start(c) || (c >= '0' && c <= '9');
+}
+
 static int win_ExpandEnv (lua_State *L)
 {
 	const char *p = luaL_checkstring(L, 1);
@@ -416,29 +426,67 @@ static int win_ExpandEnv (lua_State *L)
 	if (*p == '~' && (p[1] == 0 || p[1] == GOOD_SLASH)) {
 		lua_pushcfunction(L, far_GetMyHome);
 		lua_call(L, 0, 1);
-		luaL_addvalue(&buf);
-		++p;
+		if (lua_isstring(L, -1)) {
+			luaL_addvalue(&buf);
+			++p;
+		}
+		else {
+			lua_pop(L, 1);
+		}
 	}
 
 	while (*p) {
-		const char *q, *r;
-		if ( (q = strstr(p, "${")) && (r = strchr(q+2, '}')) ) {
-			lua_pushlstring(L, q+2, r-q-2);
-			const char *s = getenv(lua_tostring(L,-1));
-			lua_pop(L,1); // keep stack balance
-			if (s) {
-				luaL_addlstring(&buf, p, q-p);
-				luaL_addstring(&buf, s);
-			}
-			else {
-				luaL_addlstring(&buf, p, remove ? q-p : r+1-p);
-			}
-			p = r + 1;
-		}
-		else {
+		const char *q = strchr(p, '$');
+		if (!q) {
 			luaL_addstring(&buf, p);
 			break;
 		}
+
+		const char *name_start = NULL;
+		const char *name_end = NULL;
+		const char *token_end = NULL;
+
+		if (q[1] == '{') {
+			const char *r = strchr(q + 2, '}');
+			const char *next = strchr(q + 2, '$');
+			if (next && (!r || next < r)) {
+				luaL_addlstring(&buf, p, next - p);
+				p = next;
+				continue;
+			}
+			if (!r) {
+				luaL_addstring(&buf, p);
+				break;
+			}
+			name_start = q + 2;
+			name_end = r;
+			token_end = r + 1;
+		}
+		else if (is_var_start(q[1])) {
+			const char *r = q + 2;
+			while (is_var_char(*r))
+				++r;
+			name_start = q + 1;
+			name_end = r;
+			token_end = r;
+		}
+		else {
+			luaL_addlstring(&buf, p, q + 1 - p);
+			p = q + 1;
+			continue;
+		}
+
+		lua_pushlstring(L, name_start, name_end - name_start);
+		const char *s = getenv(lua_tostring(L, -1));
+		lua_pop(L, 1); // keep stack balance
+		if (s) {
+			luaL_addlstring(&buf, p, q - p);
+			luaL_addstring(&buf, s);
+		}
+		else {
+			luaL_addlstring(&buf, p, remove ? q - p : token_end - p);
+		}
+		p = token_end;
 	}
 	luaL_pushresult(&buf);
 	return 1;
