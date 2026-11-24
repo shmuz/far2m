@@ -18,9 +18,8 @@ typedef struct _CHAR_INFO    CHAR_INFO;
 
 typedef uint32_t FARMESSAGEFLAGS;
 typedef GUID UUID;
-enum {
-	DLG_ITEM_MAX_CUST_COLORS = 5
-};
+
+enum { DLG_ITEM_MAX_CUST_COLORS = 5 };
 enum {
 	FMSG_WARNING             = 0x00000001,
 	FMSG_ERRORTYPE           = 0x00000002,
@@ -2107,7 +2106,7 @@ enum EXECUTEFLAGS
 typedef int (__stdcall *FAREXECUTE)(const wchar_t *CmdStr, unsigned int ExecFlags);
 typedef int (__stdcall *FAREXECUTE_LIBRARY)(const wchar_t *Library, const wchar_t *Symbol, const wchar_t *CmdStr, unsigned int ExecFlags);
 typedef void (__stdcall *FARDISPLAYNOTIFICATION)(const wchar_t *action, const wchar_t *object);
-typedef int (__stdcall *FARDISPATCHNTRTHRDCALLS)();
+typedef int (__stdcall *FARDISPATCHNTRTHRDCALLS)(void);
 typedef void (__stdcall *FARBACKGROUNDTASK)(const wchar_t *Info, BOOL Started);
 typedef size_t (__stdcall *FARSTRCELLSCOUNT)(const wchar_t *Str, size_t CharsCount);
 typedef size_t (__stdcall *FARSTRSIZEOFCELLS)(const wchar_t *Str, size_t CharsCount, size_t *CellsCount, BOOL RoundUp);

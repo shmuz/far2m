@@ -54,50 +54,6 @@ other possible license with no implications from the above license on them.
 
 #include "../../WinPort/windows.h"
 
-#ifdef FAR_USE_INTERNALS
-#else // ELSE FAR_USE_INTERNALS
-
-#if 1
-#else
-#if !defined(_INC_WINDOWS) && !defined(_WINDOWS_)
-#if (defined(__GNUC__) || defined(_MSC_VER)) && !defined(_WIN64)
-#if !defined(_WINCON_H) && !defined(_WINCON_)
-#define _WINCON_H
-#define _WINCON_ // to prevent including wincon.h
-#if defined(_MSC_VER)
-#pragma pack(push,2)
-#else
-#pragma pack(2)
-#endif
-#include<windows.h>
-#if defined(_MSC_VER)
-#pragma pack(pop)
-#else
-#pragma pack()
-#endif
-#undef _WINCON_
-#undef  _WINCON_H
-
-#if defined(_MSC_VER)
-#pragma pack(push,8)
-#else
-#pragma pack(8)
-#endif
-#include<wincon.h>
-#if defined(_MSC_VER)
-#pragma pack(pop)
-#else
-#pragma pack()
-#endif
-#endif
-#define _WINCON_
-#else
-#include<windows.h>
-#endif
-#endif
-#endif // END FAR_USE_INTERNALS
-#endif
-
 #if defined(__BORLANDC__)
 #ifndef _WIN64
 #pragma option -a2
@@ -142,8 +98,7 @@ typedef struct _CHAR_INFO    CHAR_INFO;
 typedef uint32_t FARMESSAGEFLAGS;
 typedef GUID UUID;
 
-FAR_INLINE_CONSTANT size_t
-	DLG_ITEM_MAX_CUST_COLORS = 5;
+enum { DLG_ITEM_MAX_CUST_COLORS = 5 };
 
 FAR_INLINE_CONSTANT FARMESSAGEFLAGS
 	FMSG_WARNING             = 0x00000001,
@@ -261,8 +216,8 @@ enum FarDialogItemFlags
 };
 
 #ifdef LUAFAR_INTERNALS    // luafar only; use 53 bits at most
-#define	DIF_DEFAULTBUTTON  (1LL << 32)
-#define	DIF_FOCUS          (1LL << 33)
+#define	DIF_DEFAULTBUTTON  (1ULL << 32)
+#define	DIF_FOCUS          (1ULL << 33)
 #endif
 
 enum FarMessagesProc
@@ -597,36 +552,6 @@ struct DialogInfo
 	GUID Id;
 	DWORD Owner;
 };
-
-#define Dlg_RedrawDialog(Info,hDlg)            Info.SendDlgMessage(hDlg,DM_REDRAW,0,0)
-
-#define Dlg_GetDlgData(Info,hDlg)              Info.SendDlgMessage(hDlg,DM_GETDLGDATA,0,0)
-#define Dlg_SetDlgData(Info,hDlg,Data)         Info.SendDlgMessage(hDlg,DM_SETDLGDATA,0,(LONG_PTR)Data)
-
-#define Dlg_GetDlgItemData(Info,hDlg,ID)       Info.SendDlgMessage(hDlg,DM_GETITEMDATA,0,0)
-#define Dlg_SetDlgItemData(Info,hDlg,ID,Data)  Info.SendDlgMessage(hDlg,DM_SETITEMDATA,0,(LONG_PTR)Data)
-
-#define DlgItem_GetFocus(Info,hDlg)            Info.SendDlgMessage(hDlg,DM_GETFOCUS,0,0)
-#define DlgItem_SetFocus(Info,hDlg,ID)         Info.SendDlgMessage(hDlg,DM_SETFOCUS,ID,0)
-#define DlgItem_Enable(Info,hDlg,ID)           Info.SendDlgMessage(hDlg,DM_ENABLE,ID,TRUE)
-#define DlgItem_Disable(Info,hDlg,ID)          Info.SendDlgMessage(hDlg,DM_ENABLE,ID,FALSE)
-#define DlgItem_IsEnable(Info,hDlg,ID)         Info.SendDlgMessage(hDlg,DM_ENABLE,ID,-1)
-#define DlgItem_SetText(Info,hDlg,ID,Str)      Info.SendDlgMessage(hDlg,DM_SETTEXTPTR,ID,(LONG_PTR)Str)
-
-#define DlgItem_GetCheck(Info,hDlg,ID)         Info.SendDlgMessage(hDlg,DM_GETCHECK,ID,0)
-#define DlgItem_SetCheck(Info,hDlg,ID,State)   Info.SendDlgMessage(hDlg,DM_SETCHECK,ID,State)
-
-#define DlgEdit_AddHistory(Info,hDlg,ID,Str)   Info.SendDlgMessage(hDlg,DM_ADDHISTORY,ID,(LONG_PTR)Str)
-
-#define DlgList_AddString(Info,hDlg,ID,Str)    Info.SendDlgMessage(hDlg,DM_LISTADDSTR,ID,(LONG_PTR)Str)
-#define DlgList_GetCurPos(Info,hDlg,ID)        Info.SendDlgMessage(hDlg,DM_LISTGETCURPOS,ID,0)
-#define DlgList_SetCurPos(Info,hDlg,ID,NewPos) {struct FarListPos LPos={NewPos,-1};Info.SendDlgMessage(hDlg,DM_LISTSETCURPOS,ID,(LONG_PTR)&LPos);}
-#define DlgList_ClearList(Info,hDlg,ID)        Info.SendDlgMessage(hDlg,DM_LISTDELETE,ID,0)
-#define DlgList_DeleteItem(Info,hDlg,ID,Index) {struct FarListDelete FLDItem={Index,1}; Info.SendDlgMessage(hDlg,DM_LISTDELETE,ID,(LONG_PTR)&FLDItem);}
-#define DlgList_SortUp(Info,hDlg,ID)           Info.SendDlgMessage(hDlg,DM_LISTSORT,ID,0)
-#define DlgList_SortDown(Info,hDlg,ID)         Info.SendDlgMessage(hDlg,DM_LISTSORT,ID,1)
-#define DlgList_GetItemData(Info,hDlg,ID,Index)          Info.SendDlgMessage(hDlg,DM_LISTGETDATA,ID,Index)
-#define DlgList_SetItemStrAsData(Info,hDlg,ID,Index,Str) {struct FarListItemData FLID{Index,0,Str,0}; Info.SendDlgMessage(hDlg,DM_LISTSETDATA,ID,(LONG_PTR)&FLID);}
 
 enum FARDIALOGFLAGS
 {
@@ -1839,11 +1764,11 @@ enum SYNCHRO_EVENTS
 	SE_FOLDERCHANGED  =1,
 };
 
-#define EEREDRAW_ALL    (void*)0
-#define EEREDRAW_CHANGE (void*)1
-#define EEREDRAW_LINE   (void*)2
+#define EEREDRAW_ALL    ((void*) 0)
+#define EEREDRAW_CHANGE ((void*) 1)
+#define EEREDRAW_LINE   ((void*) 2)
 
-#define CURRENT_EDITOR -1
+#define CURRENT_EDITOR (-1)
 
 enum EDITOR_CONTROL_COMMANDS
 {
@@ -2375,7 +2300,7 @@ enum EXECUTEFLAGS
 typedef int (WINAPI *FAREXECUTE)(const wchar_t *CmdStr, unsigned int ExecFlags);
 typedef int (WINAPI *FAREXECUTE_LIBRARY)(const wchar_t *Library, const wchar_t *Symbol, const wchar_t *CmdStr, unsigned int ExecFlags);
 typedef void (WINAPI *FARDISPLAYNOTIFICATION)(const wchar_t *action, const wchar_t *object);
-typedef int (WINAPI *FARDISPATCHNTRTHRDCALLS)();
+typedef int (WINAPI *FARDISPATCHNTRTHRDCALLS)(void);
 
 // If plugin implements tasks running in background it may invoke this function to indicate about
 // pending task in left-top corner. Info is a short description of task or just its owner and must
@@ -3044,7 +2969,7 @@ extern "C"
 	void   WINAPI _export CloseAnalyseW(const struct CloseAnalyseInfo *Info);
 
 #ifdef __cplusplus
-};
+}
 #endif
 
 #ifndef _WIN64
