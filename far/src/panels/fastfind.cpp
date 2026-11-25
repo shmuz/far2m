@@ -102,7 +102,7 @@ void FastFind::ShowBorder()
 
 void FastFind::ProcessName(const wchar_t *Src)
 {
-	FARString strBuffer = FindEdit.GetStringAddr();
+	FARString strBuffer = FindEdit.GetString();
 	int OldLen = strBuffer.GetLength();
 	strBuffer += Src;
 
@@ -141,9 +141,8 @@ int FastFind::ProcessKey(FarKey Key)
 	}
 	else if (Key == KEY_OP_XLAT)
 	{
-		FARString strTempName;
 		FindEdit.Xlat();
-		FindEdit.GetString(strTempName);
+		FARString strTempName = FindEdit.GetString();
 		FindEdit.SetString(L"");
 		ProcessName(strTempName);
 		Redraw();
@@ -151,9 +150,8 @@ int FastFind::ProcessKey(FarKey Key)
 	}
 	else if (Key == KEY_OP_PLAINTEXT)
 	{
-		FARString strTempName;
 		FindEdit.ProcessKey(Key);
-		FindEdit.GetString(strTempName);
+		FARString strTempName = FindEdit.GetString();
 		FindEdit.SetString(L"");
 		ProcessName(strTempName);
 		Redraw();
@@ -199,7 +197,7 @@ int FastFind::ProcessKey(FarKey Key)
 		//### case KEY_RCTRLNUMENTER:
 		case KEY_CTRLENTER:
 		//### case KEY_RCTRLENTER:
-			OwnerPanel->FindPartNameXLat(FindEdit.GetStringAddr(), true, 1, true);
+			OwnerPanel->FindPartNameXLat(FindEdit.GetString(), true, 1, true);
 			Redraw();
 			break;
 
@@ -207,7 +205,7 @@ int FastFind::ProcessKey(FarKey Key)
 		//### case KEY_RCTRLSHIFTNUMENTER:
 		case KEY_CTRLSHIFTENTER:
 		//### case KEY_RCTRLSHIFTENTER:
-			OwnerPanel->FindPartNameXLat(FindEdit.GetStringAddr(), true, -1, true);
+			OwnerPanel->FindPartNameXLat(FindEdit.GetString(), true, -1, true);
 			Redraw();
 			break;
 
@@ -229,11 +227,10 @@ int FastFind::ProcessKey(FarKey Key)
 				return TRUE;
 			}
 
-			FARString strLastName = FindEdit.GetStringAddr();
+			FARString strLastName = FindEdit.GetString();
 			if (FindEdit.ProcessKey(Key))
 			{
-				FARString strName;
-				FindEdit.GetString(strName);
+				FARString strName = FindEdit.GetString();
 
 				if (strName.GetLength() > 1
 						&& strName.At(strName.GetLength() - 1) == L'*'
@@ -273,7 +270,7 @@ int FastFind::ProcessMouse(MOUSE_EVENT_RECORD *MouseEvent)
 int FastFind::GetTypeAndName(FARString &strType, FARString &strName)
 {
 	strType = Msg::SearchFileTitle;
-	strName = FindEdit.GetStringAddr();
+	strName = FindEdit.GetString();
 	return MODALTYPE_SEARCH;
 }
 

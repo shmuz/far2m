@@ -204,9 +204,7 @@ public:
 	void SetShowWhiteSpace(int Mode) { soFlags.Change(FEDITLINE_SHOWWHITESPACE, Mode); }
 
 	void GetString(wchar_t *Str, int MaxSize) const;
-	void GetString(FARString &strStr) const;
-
-	const wchar_t *GetStringAddr();
+	const FARString& GetString() const { return m_Str; }
 
 	void SetHiString(const wchar_t *Str);
 	void SetString(const wchar_t *Str, int Length = -1);

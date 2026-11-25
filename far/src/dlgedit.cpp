@@ -312,7 +312,7 @@ const wchar_t *DlgEdit::GetStringAddr()
 	if (Type == DLGEDIT_MULTILINE) {
 		return nullptr;
 	} else
-		return lineEdit->GetStringAddr();
+		return lineEdit->GetString();
 }
 
 void DlgEdit::SetHiString(const wchar_t *Str)
@@ -382,7 +382,7 @@ void DlgEdit::GetString(FARString &strStr, int Row)
 				strStr.Clear();
 				return;
 			}
-			line->GetString(strStr);
+			strStr = line->GetString();
 		} else {
 			wchar_t *buf = nullptr;
 			int size = 0;
@@ -394,7 +394,7 @@ void DlgEdit::GetString(FARString &strStr, int Row)
 			free(buf);
 		}
 	} else
-		lineEdit->GetString(strStr);
+		strStr = lineEdit->GetString();
 }
 
 void DlgEdit::SetCurPos(int NewCol, int NewRow) // Row==-1 - current line

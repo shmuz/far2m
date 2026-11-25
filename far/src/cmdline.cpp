@@ -341,8 +341,7 @@ int64_t CommandLine::VMProcess(int OpCode, void *vParam, int64_t iParam)
 
 void CommandLine::ProcessCompletion(bool possibilities)
 {
-	FARString strStr;
-	CmdStr.GetString(strStr);
+	FARString strStr = CmdStr.GetString();
 	if (!strStr.IsEmpty()) {
 		std::string cmd = strStr.GetMB();
 		VTCompletor vtc;
@@ -427,7 +426,7 @@ int CommandLine::ProcessKey(FarKey Key)
 	if ((Key==KEY_CTRLEND || Key==KEY_CTRLNUMPAD1) && CmdStr.GetCurPos()==CmdStr.GetLength())
 	{
 		if (LastCmdPartLength==-1)
-			strLastCmdStr = CmdStr.GetStringAddr();
+			strLastCmdStr = CmdStr.GetString();
 
 		strStr = strLastCmdStr;
 		int CurCmdPartLength=(int)strStr.GetLength();
@@ -435,7 +434,7 @@ int CommandLine::ProcessKey(FarKey Key)
 
 		if (LastCmdPartLength==-1)
 		{
-			strLastCmdStr = CmdStr.GetStringAddr();
+			strLastCmdStr = CmdStr.GetString();
 			LastCmdPartLength=CurCmdPartLength;
 		}
 		CmdStr.DisableAC();
@@ -630,7 +629,7 @@ int CommandLine::ProcessKey(FarKey Key)
 			Panel *ActivePanel=CtrlObject->Cp()->ActivePanel;
 			CmdStr.Select(-1, 0);
 			CmdStr.Show();
-			CmdStr.GetString(strStr);
+			strStr = CmdStr.GetString();
 			RemoveTrailingSpaces(strStr, true);
 
 			if (strStr.IsEmpty())
@@ -667,7 +666,7 @@ int CommandLine::ProcessKey(FarKey Key)
 			CmdStr.Xlat(Opt.XLat.Flags & XLAT_CONVERTALLCMDLINE ? true : false);
 
 			// иначе неправильно работает ctrl-end
-			strLastCmdStr = CmdStr.GetStringAddr();
+			strLastCmdStr = CmdStr.GetString();
 			LastCmdPartLength=(int)strLastCmdStr.GetLength();
 
 			return TRUE;
@@ -717,7 +716,7 @@ int CommandLine::ProcessKey(FarKey Key)
 			if (Key == KEY_CTRLV || Key == KEY_SHIFTINS || Key == KEY_SHIFTNUMPAD0) {
 				wchar_t *ClipText = PasteFromClipboard();
 				if (ClipText && wcschr(ClipText, L'\n') && wcschr(ClipText, L'\n')[1] != L'\0') {
-					CmdStr.GetString(strStr);
+					strStr = CmdStr.GetString();
 					FARString strToExec = strStr.SubStr(0, CmdStr.GetCurPos()) + ClipText + strStr.SubStr(CmdStr.GetCurPos());
 					RemoveTrailingSpaces(strToExec);
 					if (Opt.CmdLine.AskOnMultilinePaste) {

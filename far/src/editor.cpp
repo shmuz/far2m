@@ -2372,7 +2372,7 @@ int Editor::ReProcessKey(FarKey Key, bool CalledFromPlugin)
 			UnmarkBlock();
 
 			// m_CurLine->TableSet ??? => UseDecodeTable?m_CurLine->TableSet:nullptr !!!
-			if (CalcWordFromString(m_CurLine->GetStringAddr(), CurPos, &SStart, &SEnd, m_EdOpt.strWordDiv)) {
+			if (CalcWordFromString(m_CurLine->GetString(), CurPos, &SStart, &SEnd, m_EdOpt.strWordDiv)) {
 				m_CurLine->Select(SStart, SEnd + (SEnd < m_CurLine->StrSize() ? 1 : 0));
 
 				if (m_CurLine->IsSelection()) {
@@ -2987,7 +2987,7 @@ void Editor::DeleteString(Edit *DelPtr, int LineNumber, bool DeleteLast, int Und
 		m_VBlockStart = m_VBlockStart->m_next;
 
 	if (UndoLine != -1)
-		AddUndoData(UNDO_DELSTR, DelPtr->GetStringAddr(), DelPtr->GetEOL(), UndoLine, 0, DelPtr->GetLength());
+		AddUndoData(UNDO_DELSTR, DelPtr->GetString(), DelPtr->GetEOL(), UndoLine, 0, DelPtr->GetLength());
 
 	if (m_LastGetLine == DelPtr) {
 		m_LastGetLine = nullptr;
@@ -3336,11 +3336,11 @@ bool Editor::Search(bool ReplaceMode, NextType NextTp)
 		if (m_EdOpt.SearchPickUpWord)
 		{
 			int StartPos = -1, EndPos = -1;
-			const wchar_t *Ptr = CalcWordFromString(m_CurLine->GetStringAddr(), m_CurLine->GetCurPos(),
+			bool Found = CalcWordFromString(m_CurLine->GetString(), m_CurLine->GetCurPos(),
 					&StartPos, &EndPos, GetWordDiv());
 
-			if (Ptr)
-				LS.SearchStr.Copy(Ptr, EndPos - StartPos + 1);
+			if (Found)
+				LS.SearchStr.Copy(m_CurLine->GetString() + StartPos, EndPos - StartPos + 1);
 		}
 
 		if (GetSearchReplaceParams(ReplaceMode, LS, SearchHistoryName, ReplaceHistoryName, HelpTopic,
@@ -3483,7 +3483,7 @@ bool Editor::Search(bool ReplaceMode, NextType NextTp)
 						ScrBuf.ApplyColor(CurX, CurY,
 								CurPtr->RealPosToCell(CurPtr->CellPosToReal(CurX) + SearchLength) - 1, CurY,
 								FarColorToReal(COL_EDITORSELECTEDTEXT));
-						FARString QSearchStr(CurPtr->GetStringAddr() + CurPtr->GetCurPos(), SearchLength);
+						FARString QSearchStr(CurPtr->GetString() + CurPtr->GetCurPos(), SearchLength);
 						FARString QReplaceStr = ReplaceStrCurrent;
 						InsertQuote(ReplaceNulls(QSearchStr));
 						InsertQuote(ReplaceNulls(QReplaceStr));
@@ -4352,7 +4352,7 @@ void Editor::AddUndoData(int Type, const wchar_t *Str, const wchar_t *Eol, int S
 
 void Editor::AddUndoData(Edit *pEdit, int StrNum)
 {
-	AddUndoData(UNDO_EDIT, pEdit->GetStringAddr(), pEdit->GetEOL(), StrNum,
+	AddUndoData(UNDO_EDIT, pEdit->GetString(), pEdit->GetEOL(), StrNum,
 			pEdit->GetCurPos(), pEdit->GetLength());
 }
 
@@ -4393,7 +4393,7 @@ void Editor::Undo(bool redo)
 
 		switch (ud->Type) {
 			case UNDO_INSSTR:
-				ud->SetData(UNDO_DELSTR, m_CurLine->GetStringAddr(), m_CurLine->GetEOL(), ud->StrNum, ud->StrPos,
+				ud->SetData(UNDO_DELSTR, m_CurLine->GetString(), m_CurLine->GetEOL(), ud->StrNum, ud->StrPos,
 						m_CurLine->GetLength());
 				DeleteString(m_CurLine, m_NumLine, true, m_NumLine > 0 ? m_NumLine - 1 : m_NumLine);
 				break;
@@ -4420,7 +4420,7 @@ void Editor::Undo(bool redo)
 				break;
 			case UNDO_EDIT: {
 				EditorUndoData tmp;
-				tmp.SetData(UNDO_EDIT, m_CurLine->GetStringAddr(), m_CurLine->GetEOL(), ud->StrNum, ud->StrPos,
+				tmp.SetData(UNDO_EDIT, m_CurLine->GetString(), m_CurLine->GetEOL(), ud->StrNum, ud->StrPos,
 						m_CurLine->GetLength());
 
 				if (ud->Str) {
@@ -6049,7 +6049,7 @@ void Editor::Xlat()
 			if (CopySize > TBlockSizeX)
 				CopySize = TBlockSizeX;
 
-			AddUndoData(UNDO_EDIT, CurPtr->GetStringAddr(), CurPtr->GetEOL(), m_BlockStartLine + Line,
+			AddUndoData(UNDO_EDIT, CurPtr->GetString(), CurPtr->GetEOL(), m_BlockStartLine + Line,
 					m_CurLine->GetCurPos(), CurPtr->GetLength());
 			auto Buf = CurPtr->m_Str.GetBuffer();
 			::Xlat(Buf, TBlockX, TBlockX + CopySize, Opt.XLat.Flags);
@@ -6075,7 +6075,7 @@ void Editor::Xlat()
 				if (EndSel == -1)
 					EndSel = CurPtr->GetLength();    // StrLength(CurPtr->Str);
 
-				AddUndoData(UNDO_EDIT, CurPtr->GetStringAddr(), CurPtr->GetEOL(), m_BlockStartLine + Line,
+				AddUndoData(UNDO_EDIT, CurPtr->GetString(), CurPtr->GetEOL(), m_BlockStartLine + Line,
 						m_CurLine->GetCurPos(), CurPtr->GetLength());
 				auto Buf = CurPtr->m_Str.GetBuffer();
 				::Xlat(Buf, StartSel, EndSel, Opt.XLat.Flags);
@@ -6110,7 +6110,7 @@ void Editor::Xlat()
 				while (end < StrSize && !IsWordDiv(Opt.XLat.strWordDivForXlat, Str[end]))
 					end++;
 
-				AddUndoData(UNDO_EDIT, m_CurLine->GetStringAddr(), m_CurLine->GetEOL(), m_NumLine, start,
+				AddUndoData(UNDO_EDIT, m_CurLine->GetString(), m_CurLine->GetEOL(), m_NumLine, start,
 						m_CurLine->GetLength());
 				auto Buf = Str.GetBuffer();
 				::Xlat(Buf, start, end, Opt.XLat.Flags);

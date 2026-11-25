@@ -1049,39 +1049,33 @@ FARString& WINAPI FarFormatText(const wchar_t *SrcText,     // источник
 	return strDestText;
 }
 
-/*
-  Ptr=CalcWordFromString(Str,I,&Start,&End);
-  far_strncpy(Dest,Ptr,End-Start+1);
-  Dest[End-Start+1]=0;
-
-// Параметры:
-//   WordDiv  - набор разделителей слова в кодировке OEM
-  возвращает указатель на начало слова
-*/
-
-const wchar_t * CalcWordFromString(const wchar_t *Str,int CurPos,int *Start,int *End, const wchar_t *WordDiv0)
+//   WordDiv  - набор разделителей слова
+// возвращает найдено или нет
+bool CalcWordFromString(const FARString &Str,int CurPos,int *Start,int *End, const wchar_t *WordDiv)
 {
 	int StartWPos, EndWPos;
 
-	const int StrSize = StrLength(Str);
+	const int StrSize = (int)Str.GetLength();
 
 	if (CurPos < 0 || CurPos > StrSize)
-		return nullptr;
+		return false;
 
-	if (IsWordDivSTNR(WordDiv0, Str[CurPos]))
+	auto IsWordDiv = [&] (int Pos) { return IsWordDivSTNR(WordDiv, Str[Pos]); };
+
+	if (IsWordDiv(CurPos))
 	{
 		// вычисляем дистанцию - куда копать, где ближе слово - слева или справа
 		int L, R;
 
 		// копаем влево
-		for (L = CurPos - 1; (L >= 0 && IsWordDivSTNR(WordDiv0, Str[L])); --L);
+		for (L = CurPos - 1; L >= 0 && IsWordDiv(L); --L);
 
 		// копаем вправо
-		for (R = CurPos + 1; (R < StrSize && IsWordDivSTNR(WordDiv0, Str[R])); ++R);
+		for (R = CurPos + 1; R < StrSize && IsWordDiv(R); ++R);
 
 		if ( L < 0) {
 			if (R >= StrSize)
-				return nullptr;
+				return false;
 
 			StartWPos = EndWPos = R;
 
@@ -1099,15 +1093,15 @@ const wchar_t * CalcWordFromString(const wchar_t *Str,int CurPos,int *Start,int 
 		EndWPos = StartWPos = CurPos;
 	}
 
-	for ( ; (StartWPos > 0 && !IsWordDivSTNR(WordDiv0, Str[StartWPos - 1])); --StartWPos);
+	for ( ; StartWPos > 0 && !IsWordDiv(StartWPos - 1); --StartWPos);
 
-	for ( ; (EndWPos + 1 < StrSize && !IsWordDivSTNR(WordDiv0, Str[EndWPos + 1])); ++EndWPos);
+	for ( ; EndWPos + 1 < StrSize && !IsWordDiv(EndWPos + 1); ++EndWPos);
 
 
 	*Start = StartWPos;
 	*End = EndWPos;
 
-	return Str + StartWPos;
+	return true;
 }
 
 

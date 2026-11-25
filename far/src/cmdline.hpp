@@ -80,7 +80,7 @@ public:
 	const FARString &GetCurDir();
 	void SetCurDir(const wchar_t *CurDir);
 
-	void GetString(FARString &strStr) { CmdStr.GetString(strStr); }
+	void GetString(FARString &strStr) { strStr = CmdStr.GetString(); }
 	int GetLength() { return CmdStr.GetLength(); }
 	void SetString(const wchar_t *Str, bool Redraw = true);
 	void InsertString(const wchar_t *Str);

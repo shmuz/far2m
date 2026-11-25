@@ -1606,16 +1606,6 @@ void Edit::GetString(wchar_t *Str, int MaxSize) const
 	Str[MaxSize - 1] = 0;
 }
 
-void Edit::GetString(FARString &strStr) const
-{
-	strStr = m_Str;
-}
-
-const wchar_t *Edit::GetStringAddr()
-{
-	return m_Str.CPtr();
-}
-
 void Edit::SetHiString(const wchar_t *Str)
 {
 	if (soFlags.Check(FEDITLINE_READONLY))
@@ -2711,11 +2701,10 @@ void EditControl::AutoCompleteProcMenu(int &Result, bool Manual, bool DelBlock, 
 					// ввод
 					if ((MenuKey >= int(L' ') && MenuKey <= MAX_VKEY_CODE) || MenuKey == KEY_BS
 							|| MenuKey == KEY_DEL || MenuKey == KEY_NUMDEL) {
-						FARString strPrev;
-						GetString(strPrev);
+						FARString strPrev = GetString();
 						DeleteBlock();
 						ProcessKey(MenuKey);
-						GetString(strTemp);
+						strTemp = GetString();
 						if (StrCmp(strPrev, strTemp)) {
 							ComplMenu.DeleteItems();
 							PrevPos = 0;

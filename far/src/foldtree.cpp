@@ -238,8 +238,7 @@ int FolderTree::ProcessKey(FarKey Key)
 		case KEY_CTRLENTER:
 		case KEY_CTRLSHIFTENTER:
 		{
-			FARString strName;
-			FindEdit->GetString(strName);
+			FARString strName = FindEdit->GetString();
 			Tree->FindPartName(strName, true, (Key & KEY_SHIFT) ? -1 : 1, true);
 			DrawEdit();
 		}
@@ -284,8 +283,7 @@ int FolderTree::ProcessKey(FarKey Key)
 			*/
 			if (FindEdit->ProcessKey(Key))
 			{
-				FARString strName;
-				FindEdit->GetString(strName);
+				FARString strName = FindEdit->GetString();
 
 				if (Tree->FindPartName(strName,false,1,true))
 					strLastName = strName;
