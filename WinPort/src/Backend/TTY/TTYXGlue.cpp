@@ -286,17 +286,31 @@ void *TTYXClipboard::OnClipboardSetData(UINT format, void *data)
 
 		auto &d = (*_pending_set)[format_name];
 		if (format == CF_UNICODETEXT) {
+			size_t wlen = len / sizeof(wchar_t);
+			const wchar_t *wdata = (const wchar_t *)data;
+			if (wlen > 0 && wdata[wlen - 1] == L'\0') {
+				--wlen;
+			}
 			std::string str;
-			Wide2MB((const wchar_t *)data, wcsnlen((const wchar_t *)data, len / sizeof(wchar_t)), str);
+			if (wlen > 0) {
+				Wide2MB(wdata, wlen, str);
+			}
 			d.resize(str.size());
-			memcpy(d.data(), str.c_str(), d.size());
+			if (!d.empty()) {
+				memcpy(d.data(), str.data(), d.size());
+			}
 
 		} else {
 			if (format == CF_TEXT) {
-				len = strnlen((const char *)data, len);
+				const char *cdata = (const char *)data;
+				if (len > 0 && cdata[len - 1] == '\0') {
+					--len;
+				}
 			}
 			d.resize(len);
-			memcpy(d.data(), data, d.size());
+			if (!d.empty()) {
+				memcpy(d.data(), data, d.size());
+			}
 		}
 
 		return data;
@@ -319,24 +333,35 @@ void *TTYXClipboard::OnClipboardGetData(UINT format)
 		if (_ttyx->GetClipboard(format_name, data)) {
 			if (format == CF_UNICODETEXT || format == CF_TEXT) {
 				const char *utf8 = (const char *)data.data();
-				size_t utf8_len = strnlen(utf8, data.size());
+				const size_t utf8_len = data.size();
 				if (format == CF_UNICODETEXT) {
 					std::wstring ws;
-					MB2Wide(utf8, utf8_len, ws);
+					if (utf8_len > 0) {
+						MB2Wide(utf8, utf8_len, ws);
+					}
 					const size_t sz = (ws.size() + 1) * sizeof(wchar_t);
 					out = WINPORT(ClipboardAlloc)(sz);
-					if (out)
-						memcpy(out, ws.c_str(), sz);
+					if (out) {
+						if (!ws.empty()) {
+							memcpy(out, ws.data(), ws.size() * sizeof(wchar_t));
+						}
+						((wchar_t *)out)[ws.size()] = L'\0';
+					}
 				} else {
 					out = WINPORT(ClipboardAlloc)(utf8_len + 1);
-					if (out)
-						memcpy(out, data.data(), utf8_len + 1);
+					if (out) {
+						if (utf8_len > 0) {
+							memcpy(out, utf8, utf8_len);
+						}
+						((char *)out)[utf8_len] = '\0';
+					}
 				}
 
 			} else {
 				out = WINPORT(ClipboardAlloc)(data.size());
-				if (out)
+				if (out && !data.empty()) {
 					memcpy(out, data.data(), data.size());
+				}
 			}
 		}
 	} catch (std::exception &e) {

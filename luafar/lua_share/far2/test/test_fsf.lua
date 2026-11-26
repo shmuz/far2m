@@ -8,7 +8,7 @@ local band, bor = bit64.band, bit64.bor
 
 local function test_Clipboard()
   local orig = far.PasteFromClipboard()
-  local values = { "Человек", "foo", "", n=3 }
+  local values = { "Чело\0\0век", nil, "foo", "", n=4 }
   for k=1,values.n do
     local v = values[k]
     far.CopyToClipboard(v)

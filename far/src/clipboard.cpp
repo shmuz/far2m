@@ -209,7 +209,7 @@ bool Clipboard::Copy(const wchar_t *Data, size_t DataSize, bool IsVertical)
 		return false;
 	}
 
-	if (Data && DataSize) {
+	if (DataSize) {
 		wmemcpy(CData, Data, DataSize);
 	}
 	CData[DataSize] = L'\0';

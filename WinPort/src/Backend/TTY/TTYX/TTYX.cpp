@@ -37,6 +37,7 @@ class TTYX
 	Atom _targets_atom;
 	Atom _text_atom;
 	Atom _utf8_atom;
+	Atom _utf8_mime_atom;
 	Atom _clipboard_atom;
 	Atom _xsel_data_atom;
 	int _display_fd;
@@ -307,35 +308,55 @@ class TTYX
 		return out;
 	}
 
+	bool IsExpectedSelectionTarget(Atom actual_target) const
+	{
+		if (actual_target == None) {
+			return false;
+		}
+		if (actual_target == _get_clipboard.a) {
+			return true;
+		}
+		if (_get_clipboard.a == _utf8_mime_atom || _get_clipboard.a == _utf8_atom
+				|| _get_clipboard.a == _text_atom || _get_clipboard.a == XA_STRING) {
+			return actual_target == _utf8_mime_atom || actual_target == _utf8_atom
+					|| actual_target == _text_atom || actual_target == XA_STRING;
+		}
+		return false;
+	}
+
 	void DispatchSelectionNotify(XEvent &event)
 	{
 		if (event.xselection.property != None) {
 			Atom target {};
-			int format;
-			unsigned long size, n;
-			unsigned char* data = NULL;
+			int format = 0;
+			unsigned long size = 0, n = 0;
+			unsigned char *data = NULL;
 			XGetWindowProperty(event.xselection.display,
 				event.xselection.requestor, event.xselection.property,
 				0L, (~0L), 0, AnyPropertyType, &target, &format, &size, &n, &data);
-			if (target == _get_clipboard.a) {
-				if (_get_clipboard.state == GetClipboardContext::REQUESTING) {
+			if (event.xselection.target == _get_clipboard.a
+					&& _get_clipboard.state == GetClipboardContext::REQUESTING) {
+				if (IsExpectedSelectionTarget(target) && format == 8) {
 					_get_clipboard.state = GetClipboardContext::PRESENT;
 					if (_get_clipboard.data) {
 						_get_clipboard.data->resize(size);
-						memcpy(_get_clipboard.data->data(), data, size);
+						if (size > 0 && data) {
+							memcpy(_get_clipboard.data->data(), data, size);
+						}
 					}
-				}
-				XFree(data);
-
-			} else {
-				fprintf(stderr, "DispatchSelectionNotify: wrong target=0x%lx\n", (unsigned long)target);
-				if (!target) {
+				} else {
+					fprintf(stderr, "DispatchSelectionNotify: wrong target=0x%lx format=%d\n",
+						(unsigned long)target, format);
 					_get_clipboard.state = GetClipboardContext::MISSING;
 				}
 			}
+			if (data) {
+				XFree(data);
+			}
 			XDeleteProperty(event.xselection.display, event.xselection.requestor, event.xselection.property);
 
-		} else if (_get_clipboard.state == GetClipboardContext::REQUESTING) {
+		} else if (_get_clipboard.state == GetClipboardContext::REQUESTING
+				&& (event.xselection.target == _get_clipboard.a || event.xselection.target == None)) {
 			_get_clipboard.state = GetClipboardContext::MISSING;
 		}
 	}
@@ -358,6 +379,7 @@ class TTYX
 				if (it.first.empty()) {
 					supported.emplace_back(XA_STRING);
 					supported.emplace_back(_utf8_atom);
+					supported.emplace_back(_utf8_mime_atom);
 				} else {
 					supported.emplace_back(CustomFormatAtom(it.first));
 				}
@@ -373,7 +395,8 @@ class TTYX
 				throw std::runtime_error("no data to set");
 			}
 			std::string format_name;
-			if (ev.target != XA_STRING && ev.target != _text_atom && ev.target != _utf8_atom) {
+			if (ev.target != XA_STRING && ev.target != _text_atom
+					&& ev.target != _utf8_atom && ev.target != _utf8_mime_atom) {
 				format_name = CustomFormatFromAtom(ev.target);
 				if (format_name.empty()) {
 					throw std::runtime_error("unregistered target");
@@ -384,8 +407,11 @@ class TTYX
 			if (it == _set_clipboard->end()) {
 				throw std::runtime_error("mismatching target");
 			}
+			const unsigned char *prop_data = it->second.empty()
+				? reinterpret_cast<const unsigned char *>("")
+				: it->second.data();
 			r = XChangeProperty(ev.display, ev.requestor, ev.property, ev.target, 8,
-				PropModeReplace, it->second.data(), it->second.size());
+				PropModeReplace, prop_data, it->second.size());
 
 			} catch (std::exception &e) {
 			fprintf(stderr, "SelectionRequest: %s\n", e.what());
@@ -518,7 +544,8 @@ public:
 	{
 		_targets_atom = XInternAtom(_display, "TARGETS", 0);
 		_text_atom = XInternAtom(_display, "TEXT", 0);
-		_utf8_atom = XInternAtom(_display, "UTF8_STRING", 1);
+		_utf8_atom = XInternAtom(_display, "UTF8_STRING", 0);
+		_utf8_mime_atom = XInternAtom(_display, "text/plain;charset=utf-8", 0);
 		_clipboard_atom = XInternAtom(_display, "CLIPBOARD", 0);
 		_xsel_data_atom = XInternAtom(_display, "XSEL_DATA", 0);
 	}
@@ -532,11 +559,12 @@ public:
 #endif
 	}
 
-	bool GetClipboard(const std::string &type, std::vector<unsigned char> *data = nullptr)
+	bool RequestClipboardAtom(Atom a, std::vector<unsigned char> *data)
 	{
-		_get_clipboard.a = type.empty()
-			? (_utf8_atom == None ? XA_STRING : _utf8_atom)
-			: CustomFormatAtom(type);
+		if (a == None) {
+			return false;
+		}
+		_get_clipboard.a = a;
 		_get_clipboard.data = data;
 		_get_clipboard.state = GetClipboardContext::REQUESTING;
 		XConvertSelection(_display, _clipboard_atom,
@@ -547,6 +575,20 @@ public:
 		} while (_get_clipboard.state == GetClipboardContext::REQUESTING);
 
 		return _get_clipboard.state == GetClipboardContext::PRESENT;
+	}
+
+	bool GetClipboard(const std::string &type, std::vector<unsigned char> *data = nullptr)
+	{
+		if (!type.empty()) {
+			return RequestClipboardAtom(CustomFormatAtom(type), data);
+		}
+		if (RequestClipboardAtom(_utf8_mime_atom, data)) {
+			return true;
+		}
+		if (RequestClipboardAtom(_utf8_atom, data)) {
+			return true;
+		}
+		return RequestClipboardAtom(XA_STRING, data);
 	}
 
 	void SetClipboard(std::unique_ptr<Type2Data> &&td)
