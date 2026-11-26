@@ -203,8 +203,8 @@ DWORD Edit::SetCodePage(UINT codepage)
 			length2 = WINPORT(MultiByteToWideChar)(codepage, 0, decoded, length, encoded, length2);
 			encoded[length2] = L'\0';
 			free(decoded);
-			m_Str = encoded;
-			m_Str.Truncate(length2);
+			m_Str.Copy(encoded, length2);
+			free(encoded);
 			m_HasSpecialWidthChars = false;
 			CheckForSpecialWidthChars();
 		}
@@ -1349,14 +1349,13 @@ int Edit::ProcessKey(FarKey Key)
 			if (!soFlags.Check(FEDITLINE_PASSWORDMODE)) {
 				if (m_SelStart == -1 || m_SelStart >= m_SelEnd) {
 					if (!m_Mask.IsEmpty()) {
-						std::wstring TrimmedStr(m_Str, CalcRTrimmedStrSize());
-						CopyToClipboard(TrimmedStr.c_str());
+						CopyToClipboard(m_Str.CPtr(), CalcRTrimmedStrSize());
 					} else {
-						CopyToClipboard(m_Str);
+						CopyToClipboard(m_Str.CPtr(), m_Str.GetLength());
 					}
 				} else if (m_SelEnd <= StrSize()) // TODO: если в начало условия добавить "StrSize() &&", то пропадет баг "Ctrl-Ins в пустой строке очищает клипборд"
 				{
-					CopyToClipboard(FARString(m_Str+m_SelStart, m_SelEnd-m_SelStart));
+					CopyToClipboard(m_Str.CPtr() + m_SelStart, m_SelEnd - m_SelStart);
 				}
 			}
 
@@ -1365,37 +1364,47 @@ int Edit::ProcessKey(FarKey Key)
 
 		case KEY_SHIFTINS:
 		case KEY_SHIFTNUMPAD0: {
-			wchar_t *ClipText = PasteFromClipboardEx(m_MaxLength);
+			size_t ClipLen = 0;
+			wchar_t *ClipText = PasteFromClipboardEx(ClipLen, m_MaxLength);
 
 			if (!ClipText)
 				return TRUE;
+
+			if (!soFlags.Check(FEDITLINE_EDITORMODE)) {
+				ClipLen = wcsnlen(ClipText, ClipLen);
+				ClipText[ClipLen] = L'\0';
+			}
 
 			if (!soFlags.Check(FEDITLINE_PERSISTENTBLOCKS)) {
 				DisableCallback DC(m_Callback);
 				DeleteBlock();
 			}
 
-			for (int i = StrLength(m_Str) - 1; i >= 0 && IsEolX(i); i--)
-				m_Str.ReplaceChar(i, 0);
+			for (int i = StrSize() - 1; i >= 0 && IsEolX(i); i--)
+				m_Str.Truncate(i);
 
-			for (int i = 0; ClipText[i]; i++) {
+			for (size_t i = 0; i < ClipLen; i++) {
 				if (IsEol(ClipText[i])) {
-					if (IsEol(ClipText[i + 1]))
-						wmemmove(&ClipText[i], &ClipText[i + 1], StrLength(&ClipText[i + 1]) + 1);
+					if (i + 1 < ClipLen && IsEol(ClipText[i + 1])) {
+						wmemmove(&ClipText[i], &ClipText[i + 1], ClipLen - i);
+						--ClipLen;
+					}
 
-					if (!ClipText[i + 1])
-						ClipText[i] = 0;
-					else
+					if (i + 1 == ClipLen) {
+						--ClipLen;
+						ClipText[ClipLen] = L'\0';
+					} else {
 						ClipText[i] = L' ';
+					}
 				}
 			}
 
 			if (soFlags.Check(FEDITLINE_CLEARFLAG)) {
 				m_LeftPos = 0;
 				soFlags.Clear(FEDITLINE_CLEARFLAG);
-				SetString(ClipText);
+				SetBinaryString(ClipText, static_cast<int>(ClipLen));
 			} else {
-				InsertString(ClipText);
+				InsertBinaryString(ClipText, static_cast<int>(ClipLen));
 			}
 
 			free(ClipText);
@@ -1614,7 +1623,7 @@ void Edit::SetHiString(const wchar_t *Str)
 	FARString NewStr;
 	HiText2Str(NewStr, Str);
 	Select(-1, 0);
-	SetBinaryString(NewStr, StrLength(NewStr));
+	SetBinaryString(NewStr, NewStr.GetLength());
 }
 
 void Edit::SetString(const wchar_t *Str, int Length)
@@ -1733,11 +1742,11 @@ void Edit::SetBinaryString(const wchar_t *Str, int Length)
 			i++;
 		}
 
-		/* Здесь необходимо условие (!*Str), т.к. для очистки строки
+		/* Здесь необходимо условие (!Str || !Length), т.к. для очистки строки
 		   обычно вводится нечто вроде SetBinaryString("",0)
 		   Т.е. таким образом мы добиваемся "инициализации" строки с маской
 		*/
-		RefreshStrByMask(!*Str);
+		RefreshStrByMask(!Str || !Length);
 	} else {
 		m_Str.Copy(Str, Length);
 
@@ -1774,11 +1783,14 @@ bool Edit::GetSelString(wchar_t *Str, int MaxSize)
 	int CopyLength;
 
 	if (m_SelEnd == -1)
-		CopyLength = MaxSize;
+		CopyLength = Min(MaxSize - 1, StrSize() - m_SelStart);
 	else
-		CopyLength = Min(MaxSize, m_SelEnd - m_SelStart + 1);
+		CopyLength = Min(MaxSize - 1, Min(m_SelEnd, StrSize()) - m_SelStart);
 
-	far_wcsncpy(Str, m_Str + m_SelStart, CopyLength);
+	if (CopyLength > 0) {
+		wmemmove(Str, m_Str.CPtr() + m_SelStart, CopyLength);
+	}
+	Str[Max(CopyLength, 0)] = 0;
 	return true;
 }
 
@@ -1789,10 +1801,8 @@ bool Edit::GetSelString(FARString &Str)
 		return false;
 	}
 
-	int CopyLength = m_SelEnd - m_SelStart + 1;
-	wchar_t *Buf = Str.GetBuffer(CopyLength + 1);
-	far_wcsncpy(Buf, m_Str + m_SelStart, CopyLength);
-	Str.ReleaseBuffer();
+	int CopyLength = (m_SelEnd == -1) ? (StrSize() - m_SelStart) : (Min(m_SelEnd, StrSize()) - m_SelStart);
+	Str.Copy(m_Str.CPtr() + m_SelStart, CopyLength);
 	return true;
 }
 
@@ -2429,11 +2439,13 @@ void Edit::ApplyColor()
 */
 void Edit::Xlat(bool All)
 {
+	const int Len = StrSize();
+
 	//   Для CmdLine - если нет выделения, преобразуем всю строку
 	if (All && m_SelStart == -1 && !m_SelEnd) {
 		auto Buf = m_Str.GetBuffer();
-		::Xlat(Buf, 0, StrLength(Buf), Opt.XLat.Flags);
-		m_Str.ReleaseBuffer();
+		::Xlat(Buf, 0, Len, Opt.XLat.Flags);
+		m_Str.ReleaseBuffer(Len);
 		Changed();
 		Show();
 		return;
@@ -2441,11 +2453,11 @@ void Edit::Xlat(bool All)
 
 	if (m_SelStart != -1 && m_SelStart != m_SelEnd) {
 		if (m_SelEnd == -1)
-			m_SelEnd = StrLength(m_Str);
+			m_SelEnd = Len;
 
 		auto Buf = m_Str.GetBuffer();
 		::Xlat(Buf, m_SelStart, m_SelEnd, Opt.XLat.Flags);
-		m_Str.ReleaseBuffer();
+		m_Str.ReleaseBuffer(Len);
 		Changed();
 		Show();
 	}
@@ -2458,7 +2470,7 @@ void Edit::Xlat(bool All)
 		   Обрабатываем только то слово, на котором стоит курсор, или то слово, что
 		   находится левее позиции курсора на 1 символ
 		*/
-		int start = m_CurPos, end, StrSize = StrLength(m_Str);
+		int start = m_CurPos, end;
 		bool DoXlat = true;
 
 		if (IsWordDiv(Opt.XLat.strWordDivForXlat, m_Str[start])) {
@@ -2475,12 +2487,12 @@ void Edit::Xlat(bool All)
 			start++;
 			end = start + 1;
 
-			while (end < StrSize && !IsWordDiv(Opt.XLat.strWordDivForXlat, m_Str[end]))
+			while (end < Len && !IsWordDiv(Opt.XLat.strWordDivForXlat, m_Str[end]))
 				end++;
 
 			auto Buf = m_Str.GetBuffer();
 			::Xlat(Buf, start, end, Opt.XLat.Flags);
-			m_Str.ReleaseBuffer();
+			m_Str.ReleaseBuffer(Len);
 			Changed();
 			Show();
 		}
@@ -2688,7 +2700,10 @@ void EditControl::AutoCompleteProcMenu(int &Result, bool Manual, bool DelBlock, 
 					int m_CurPos = ComplMenu.GetSelectPos();
 					if (m_CurPos >= 0 && PrevPos != m_CurPos) {
 						PrevPos = m_CurPos;
-						SetString(m_CurPos ? ComplMenu.GetItemPtr(m_CurPos)->strName : strTemp);
+						if (m_CurPos)
+							SetString(ComplMenu.GetItemPtr(m_CurPos)->strName);
+						else
+							SetString(strTemp.CPtr(), strTemp.GetLength());
 						Show();
 					}
 				}
@@ -2842,7 +2857,7 @@ int EditControl::AutoCompleteProc(bool Manual, bool DelBlock, FarKey &BackKey)
 	int Result = 0;
 	static int Reenter = 0;
 
-	if (ECFlags.Check(EC_ENABLEAUTOCOMPLETE) && *m_Str && !Reenter
+	if (ECFlags.Check(EC_ENABLEAUTOCOMPLETE) && !m_Str.IsEmpty() && !Reenter
 			&& (Manual || CtrlObject->Macro.GetState() == MACROSTATE_NOMACRO)) {
 		Reenter++;
 		AutoCompleteProcMenu(Result, Manual, DelBlock, BackKey);

@@ -259,7 +259,7 @@ private:
 	void TextChanged(bool State);
 
 	int CalcDistance(Edit *From, Edit *To, int MaxDist);
-	void Paste(const wchar_t *Src = nullptr);
+	void Paste(const wchar_t *Src = nullptr, int SrcSize = -1);
 	void Copy(bool Append);
 	void DeleteBlock();
 	bool MarkBlockFromPlugin(bool SelVBlock, int SelStartLine, int SelStartPos, int SelWidth, int SelHeight);
@@ -280,7 +280,7 @@ private:
 	void BlockRight();
 	void DeleteVBlock();
 	void VCopy(bool Append);
-	void VPaste(wchar_t *ClipText);
+	void VPaste(wchar_t *ClipText, size_t ClipSize);
 	void VBlockShift(bool Left);
 	Edit *GetStringByNumber(int DestLine);
 	static void EditorShowMsg(const wchar_t *Title, const wchar_t *Msg, const wchar_t *Name, int Percent);
@@ -309,7 +309,9 @@ private:
 	int BlockStart2NumLine(int *Pos);
 	int BlockEnd2NumLine(int *Pos);
 	bool CheckLine(Edit *line);
+	wchar_t *Block2Text(wchar_t *ptrInitData, size_t InitSize, size_t &OutSize);
 	wchar_t *Block2Text(wchar_t *ptrInitData);
+	wchar_t *VBlock2Text(wchar_t *ptrInitData, size_t InitSize, size_t &OutSize);
 	wchar_t *VBlock2Text(wchar_t *ptrInitData);
 	void TurnOffMarkingBlock();
 	void ResetLastSearch();

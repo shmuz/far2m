@@ -779,14 +779,15 @@ int64_t Editor::VMProcess(int OpCode, void *vParam, int64_t iParam)
 		{
 			FARString strText;
 			wchar_t *Text;
+			size_t TextSize = 0;
 
 			if (m_VBlockStart)
-				Text = VBlock2Text(nullptr);
+				Text = VBlock2Text(nullptr, 0, TextSize);
 			else
-				Text = Block2Text(nullptr);
+				Text = Block2Text(nullptr, 0, TextSize);
 
 			if (Text) {
-				strText = Text;
+				strText.Copy(Text, TextSize);
 				free(Text);
 			}
 
@@ -2398,11 +2399,13 @@ int Editor::ReProcessKey(FarKey Key, bool CalledFromPlugin)
 				if (strTStr.IsEmpty())
 					return TRUE;
 
-				for (wchar_t *Ptr = strTStr.GetBuffer(); *Ptr; ++Ptr) {
-					if (*Ptr == L'\n') // заменим L'\n' на L'\r' по правилам Paset ;-)
-						*Ptr = L'\r';
+				const size_t TStrLen = strTStr.GetLength();
+				wchar_t *Ptr = strTStr.GetBuffer();
+				for (size_t i = 0; i < TStrLen; ++i) {
+					if (Ptr[i] == L'\n') // заменим L'\n' на L'\r' по правилам Paset ;-)
+						Ptr[i] = L'\r';
 				}
-				strTStr.ReleaseBuffer();
+				strTStr.ReleaseBuffer(TStrLen);
 
 				m_Pasting++;
 				//_SVS(SysLogDump(Fmt,0,TStr,strlen(TStr),nullptr));
@@ -2414,7 +2417,7 @@ int Editor::ReProcessKey(FarKey Key, bool CalledFromPlugin)
 				}
 
 				// AddUndoData(m_CurLine, m_NumLine);
-				Paste(strTStr);
+				Paste(strTStr.CPtr(), static_cast<int>(TStrLen));
 				// if (!m_EdOpt.PersistentBlocks && IsBlock)
 				UnmarkBlock();
 				m_Pasting--;
@@ -3112,8 +3115,9 @@ void Editor::InsertString()
 		int StrSize = CurPos;
 
 		if (m_EdOpt.AutoIndent && NewLineEmpty) {
-			RemoveTrailingSpaces(NewCurLineStr, false);
-			StrSize = StrLength(NewCurLineStr);
+			while (StrSize > 0 && IsSpace(NewCurLineStr[StrSize - 1]))
+				--StrSize;
+			NewCurLineStr.Truncate(StrSize);
 		}
 
 		m_CurLine->SetBinaryString(NewCurLineStr, StrSize);
@@ -3670,12 +3674,13 @@ bool Editor::Search(bool ReplaceMode, NextType NextTp)
 	return true;
 }
 
-void Editor::Paste(const wchar_t *Src)
+void Editor::Paste(const wchar_t *Src, int SrcSize)
 {
 	if (soFlags.Check(FEDITOR_LOCKMODE))
 		return;
 
 	wchar_t *ClipText = (wchar_t *)Src;
+	size_t ClipSize = 0;
 	bool IsDeleteClipText = false;
 
 	if (!ClipText) {
@@ -3685,9 +3690,9 @@ void Editor::Paste(const wchar_t *Src)
 			return;
 
 		bool IsVertical = false;
-		ClipText = clip.Paste(IsVertical);
+		ClipText = clip.Paste(IsVertical, ClipSize);
 		if (ClipText && IsVertical) {
-			VPaste(ClipText);
+			VPaste(ClipText, ClipSize);
 			clip.Close();
 			return;
 		}
@@ -3695,9 +3700,11 @@ void Editor::Paste(const wchar_t *Src)
 		clip.Close();
 
 		IsDeleteClipText = true;
+	} else {
+		ClipSize = (SrcSize >= 0) ? static_cast<size_t>(SrcSize) : wcslen(ClipText);
 	}
 
-	if (ClipText && *ClipText) {
+	if (ClipText && ClipSize > 0) {
 		AddUndoData(UNDO_BEGIN);
 		soFlags.Set(FEDITOR_NEWUNDO);
 		TextChanged(true);
@@ -3720,20 +3727,20 @@ void Editor::Paste(const wchar_t *Src)
 		int StartPos = m_CurLine->GetCurPos();
 		int oldAutoIndent = m_EdOpt.AutoIndent;
 
-		for (int I = 0; ClipText[I];) {
+		for (size_t I = 0; I < ClipSize;) {
 			if (ClipText[I] == L'\n' || ClipText[I] == L'\r') {
 				m_CurLine->Select(StartPos, -1);
 				StartPos = 0;
 				m_EdOpt.AutoIndent = FALSE;
 				ProcessKey(KEY_ENTER);
 
-				if (ClipText[I] == L'\r' && ClipText[I + 1] == L'\n')
+				if (ClipText[I] == L'\r' && I + 1 < ClipSize && ClipText[I + 1] == L'\n')
 					I++;
 
 				I++;
 			} else {
-				if (m_EdOpt.AutoIndent)    // первый символ вставим так, чтобы
-				{                        // сработал автоотступ
+				if (m_EdOpt.AutoIndent && ClipText[I] != L'\0')    // первый символ вставим так, чтобы
+				{                                                   // сработал автоотступ
 					// ProcessKey(UseDecodeTable?TableSet.DecodeTable[(unsigned)ClipText[I]]:ClipText[I]); //BUGBUG
 					ProcessKey(ClipText[I]);    // BUGBUG
 					I++;
@@ -3743,9 +3750,9 @@ void Editor::Paste(const wchar_t *Src)
 						StartPos--;
 				}
 
-				int Pos = I;
+				size_t Pos = I;
 
-				while (ClipText[Pos] && ClipText[Pos] != L'\n' && ClipText[Pos] != L'\r')
+				while (Pos < ClipSize && ClipText[Pos] != L'\n' && ClipText[Pos] != L'\r')
 					Pos++;
 
 				if (Pos > I) {
@@ -3754,7 +3761,7 @@ void Editor::Paste(const wchar_t *Src)
 					m_CurLine->GetBinaryString(&Str, nullptr, Length);
 					CurPos = m_CurLine->GetCurPos();
 					AddUndoData(UNDO_EDIT, Str, m_CurLine->GetEOL(), m_NumLine, CurPos, Length);    // EOL? - m_CurLine->GetEOL()  m_GlobalEOL   ""
-					m_CurLine->InsertBinaryString(&ClipText[I], Pos - I);
+					m_CurLine->InsertBinaryString(&ClipText[I], static_cast<int>(Pos - I));
 				}
 
 				I = Pos;
@@ -3787,29 +3794,32 @@ void Editor::Copy(bool Append)
 	}
 
 	wchar_t *CopyData = nullptr;
+	size_t InitSize = 0;
 
 	Clipboard clip;
 
 	if (!clip.Open())
 		return;
 
-	if (Append)
-		CopyData = clip.Paste();
+	if (Append) {
+		bool DummyVertical = false;
+		CopyData = clip.Paste(DummyVertical, InitSize);
+	}
 
-	if ((CopyData = Block2Text(CopyData))) {
-		clip.Copy(CopyData);
+	size_t CopySize = 0;
+	if ((CopyData = Block2Text(CopyData, InitSize, CopySize))) {
+		clip.Copy(CopyData, CopySize);
 		free(CopyData);
 	}
 
 	clip.Close();
 }
 
-wchar_t *Editor::Block2Text(wchar_t *ptrInitData)
+wchar_t *Editor::Block2Text(wchar_t *ptrInitData, size_t InitSize, size_t &OutSize)
 {
-	size_t DataSize = 0;
-
-	if (ptrInitData)
-		DataSize = wcslen(ptrInitData);
+	OutSize = 0;
+	size_t DataSize = ptrInitData ? InitSize : 0;
+	const size_t EolLen = wcslen(NATIVE_EOLW);
 
 	size_t TotalChars = DataSize;
 	int StartSel, EndSel;
@@ -3819,7 +3829,7 @@ wchar_t *Editor::Block2Text(wchar_t *ptrInitData)
 			break;
 		if (EndSel == -1) {
 			TotalChars+= Ptr->GetLength() - StartSel;
-			TotalChars+= wcslen(NATIVE_EOLW);    // CRLF
+			TotalChars+= EolLen;    // CRLF
 		} else
 			TotalChars+= EndSel - StartSel;
 	}
@@ -3835,10 +3845,9 @@ wchar_t *Editor::Block2Text(wchar_t *ptrInitData)
 	}
 
 	if (ptrInitData) {
-		wcscpy(CopyData, ptrInitData);
+		if (InitSize)
+			wmemcpy(CopyData, ptrInitData, InitSize);
 		free(ptrInitData);
-	} else {
-		*CopyData = 0;
 	}
 
 	for (Edit *Ptr = m_BlockStart; Ptr; Ptr = Ptr->m_next) {
@@ -3846,22 +3855,31 @@ wchar_t *Editor::Block2Text(wchar_t *ptrInitData)
 		if (StartSel == -1)
 			break;
 
-		int Length;
-		if (EndSel == -1)
-			Length = Ptr->GetLength() - StartSel;
-		else
-			Length = EndSel - StartSel;
+		const wchar_t *CurStr = nullptr;
+		int LineLen = 0;
+		Ptr->GetBinaryString(&CurStr, nullptr, LineLen);
 
-		Ptr->GetSelString(CopyData + DataSize, Length + 1);
-		DataSize+= Length;
+		int Length = (EndSel == -1) ? (LineLen - StartSel) : (Min(EndSel, LineLen) - StartSel);
+		if (Length > 0) {
+			wmemcpy(CopyData + DataSize, CurStr + StartSel, Length);
+			DataSize+= Length;
+		}
 
 		if (EndSel == -1) {
-			wcscpy(CopyData + DataSize, NATIVE_EOLW);
-			DataSize+= wcslen(NATIVE_EOLW);
+			wmemcpy(CopyData + DataSize, NATIVE_EOLW, EolLen);
+			DataSize+= EolLen;
 		}
 	}
 
+	CopyData[DataSize] = L'\0';
+	OutSize = DataSize;
 	return CopyData;
+}
+
+wchar_t *Editor::Block2Text(wchar_t *ptrInitData)
+{
+	size_t OutSize = 0;
+	return Block2Text(ptrInitData, ptrInitData ? wcslen(ptrInitData) : 0, OutSize);
 }
 
 void Editor::DeleteBlock()
@@ -4728,32 +4746,35 @@ void Editor::DeleteVBlock()
 void Editor::VCopy(bool Append)
 {
 	wchar_t *CopyData = nullptr;
+	size_t InitSize = 0;
 
 	Clipboard clip;
 
 	if (!clip.Open())
 		return;
 
-	if (Append)
-		CopyData = clip.Paste();
+	if (Append) {
+		bool DummyVertical = false;
+		CopyData = clip.Paste(DummyVertical, InitSize);
+	}
 
-	if ((CopyData = VBlock2Text(CopyData))) {
-		clip.Copy(CopyData, true);
+	size_t CopySize = 0;
+	if ((CopyData = VBlock2Text(CopyData, InitSize, CopySize))) {
+		clip.Copy(CopyData, CopySize, true);
 		free(CopyData);
 	}
 
 	clip.Close();
 }
 
-wchar_t *Editor::VBlock2Text(wchar_t *ptrInitData)
+wchar_t *Editor::VBlock2Text(wchar_t *ptrInitData, size_t InitSize, size_t &OutSize)
 {
-	size_t DataSize = 0;
-
-	if (ptrInitData)
-		DataSize = wcslen(ptrInitData);
+	OutSize = 0;
+	size_t DataSize = ptrInitData ? InitSize : 0;
+	const size_t EolLen = wcslen(NATIVE_EOLW);
 
 	// RealPos всегда <= TabPos, поэтому берём максимальный размер буффера
-	size_t TotalChars = DataSize + (m_VBlockSizeX + wcslen(NATIVE_EOLW)) * m_VBlockSizeY + 1;
+	size_t TotalChars = DataSize + (m_VBlockSizeX + EolLen) * m_VBlockSizeY + 1;
 
 	wchar_t *CopyData = (wchar_t *)malloc(TotalChars * sizeof(wchar_t));
 
@@ -4765,10 +4786,9 @@ wchar_t *Editor::VBlock2Text(wchar_t *ptrInitData)
 	}
 
 	if (ptrInitData) {
-		wcscpy(CopyData, ptrInitData);
+		if (InitSize)
+			wmemcpy(CopyData, ptrInitData, InitSize);
 		free(ptrInitData);
-	} else {
-		*CopyData = 0;
 	}
 
 	Edit *CurPtr = m_VBlockStart;
@@ -4795,19 +4815,29 @@ wchar_t *Editor::VBlock2Text(wchar_t *ptrInitData)
 		}
 
 		DataSize+= TBlockSizeX;
-		wcscpy(CopyData + DataSize, NATIVE_EOLW);
-		DataSize+= wcslen(NATIVE_EOLW);
+		wmemcpy(CopyData + DataSize, NATIVE_EOLW, EolLen);
+		DataSize+= EolLen;
 	}
 
+	CopyData[DataSize] = L'\0';
+	OutSize = DataSize;
 	return CopyData;
 }
 
-void Editor::VPaste(wchar_t *ClipText)
+wchar_t *Editor::VBlock2Text(wchar_t *ptrInitData)
 {
-	if (soFlags.Check(FEDITOR_LOCKMODE))
-		return;
+	size_t OutSize = 0;
+	return VBlock2Text(ptrInitData, ptrInitData ? wcslen(ptrInitData) : 0, OutSize);
+}
 
-	if (*ClipText) {
+void Editor::VPaste(wchar_t *ClipText, size_t ClipSize)
+{
+	if (soFlags.Check(FEDITOR_LOCKMODE)) {
+		free(ClipText);
+		return;
+	}
+
+	if (ClipSize > 0) {
 		AddUndoData(UNDO_BEGIN);
 		soFlags.Set(FEDITOR_NEWUNDO);
 		TextChanged(true);
@@ -4830,11 +4860,16 @@ void Editor::VPaste(wchar_t *ClipText)
 		m_VBlockSizeY = 0;
 		Edit *SavedTopScreen = m_TopScreen;
 
-		for (int I = 0; ClipText[I]; I++)
-			if (ClipText[I] != '\r' && ClipText[I] != '\n') {
-				ProcessKey(ClipText[I]);
+		for (size_t I = 0; I < ClipSize; I++) {
+			if (ClipText[I] != L'\r' && ClipText[I] != L'\n') {
+				if (ClipText[I] == L'\0') {
+					AddUndoData(m_CurLine, m_NumLine);
+					m_CurLine->InsertBinaryString(L"\0", 1);
+				} else {
+					ProcessKey(ClipText[I]);
+				}
 			} else {
-				const size_t EolLength = (ClipText[I] == '\r' || ClipText[I + 1] == '\n') ? 2 : 1;
+				const size_t EolLength = (ClipText[I] == L'\r' && I + 1 < ClipSize && ClipText[I + 1] == L'\n') ? 2 : 1;
 
 				int CurWidth = m_CurLine->GetCellCurPos() - StartPos;
 
@@ -4844,12 +4879,12 @@ void Editor::VPaste(wchar_t *ClipText)
 				m_VBlockSizeY++;
 
 				if (!m_CurLine->m_next) {
-					if (ClipText[I + EolLength]) {
+					if (I + EolLength < ClipSize) {
 						ProcessKey(KEY_END);
 						ProcessKey(KEY_ENTER);
 
 						// Mantis 0002966: Неправильная вставка вертикального блока в конце файла
-						for (int I = 0; I < StartPos; I++)
+						for (int J = 0; J < StartPos; J++)
 							ProcessKey(L' ');
 					}
 				} else {
@@ -4859,8 +4894,8 @@ void Editor::VPaste(wchar_t *ClipText)
 				}
 
 				I+= EolLength - 1;
-				continue;
 			}
+		}
 
 		int CurWidth = m_CurLine->GetCellCurPos() - StartPos;
 
@@ -6053,7 +6088,7 @@ void Editor::Xlat()
 					m_CurLine->GetCurPos(), CurPtr->GetLength());
 			auto Buf = CurPtr->m_Str.GetBuffer();
 			::Xlat(Buf, TBlockX, TBlockX + CopySize, Opt.XLat.Flags);
-			CurPtr->m_Str.ReleaseBuffer();
+			CurPtr->m_Str.ReleaseBuffer(Length);
 		}
 
 		DoXlat = true;
@@ -6072,14 +6107,15 @@ void Editor::Xlat()
 				if (StartSel == -1)
 					break;
 
+				const int CurLen = CurPtr->GetLength();
 				if (EndSel == -1)
-					EndSel = CurPtr->GetLength();    // StrLength(CurPtr->Str);
+					EndSel = CurLen;    // StrLength(CurPtr->Str);
 
 				AddUndoData(UNDO_EDIT, CurPtr->GetString(), CurPtr->GetEOL(), m_BlockStartLine + Line,
-						m_CurLine->GetCurPos(), CurPtr->GetLength());
+						m_CurLine->GetCurPos(), CurLen);
 				auto Buf = CurPtr->m_Str.GetBuffer();
 				::Xlat(Buf, StartSel, EndSel, Opt.XLat.Flags);
-				CurPtr->m_Str.ReleaseBuffer();
+				CurPtr->m_Str.ReleaseBuffer(CurLen);
 				Line++;
 				CurPtr = CurPtr->m_next;
 			}
@@ -6111,10 +6147,10 @@ void Editor::Xlat()
 					end++;
 
 				AddUndoData(UNDO_EDIT, m_CurLine->GetString(), m_CurLine->GetEOL(), m_NumLine, start,
-						m_CurLine->GetLength());
+						StrSize);
 				auto Buf = Str.GetBuffer();
 				::Xlat(Buf, start, end, Opt.XLat.Flags);
-				Str.ReleaseBuffer();
+				Str.ReleaseBuffer(StrSize);
 			}
 		}
 	}

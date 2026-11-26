@@ -33,6 +33,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "headers.hpp"
 
+#include <algorithm>
 #include "clipboard.hpp"
 #include "console.hpp"
 
@@ -195,11 +196,23 @@ bool Clipboard::IsFormatAvailable(UINT Format)
 }
 
 // Перед вставкой производится очистка буфера
-bool Clipboard::Copy(const wchar_t *Data, bool IsVertical)
+bool Clipboard::Copy(const wchar_t *Data, size_t DataSize, bool IsVertical)
 {
 	Empty();
 
-	if (!AddData(CF_UNICODETEXT, Data, (wcslen(Data) + 1) * sizeof(wchar_t))) {
+	const size_t AllocSize = (DataSize + 1) * sizeof(wchar_t);
+	wchar_t *CData = (wchar_t *)WINPORT(ClipboardAlloc)(AllocSize);
+	if (!CData) {
+		return false;
+	}
+
+	if (Data && DataSize) {
+		wmemcpy(CData, Data, DataSize);
+	}
+	CData[DataSize] = L'\0';
+
+	if (!SetData(CF_UNICODETEXT, (HANDLE)CData)) {
+		WINPORT(ClipboardFree)(CData);
 		return false;
 	}
 
@@ -211,6 +224,11 @@ bool Clipboard::Copy(const wchar_t *Data, bool IsVertical)
 	}
 
 	return true;
+}
+
+bool Clipboard::Copy(const wchar_t *Data, bool IsVertical)
+{
+	return Copy(Data, Data ? wcslen(Data) : 0, IsVertical);
 }
 
 bool Clipboard::AddData(UINT FormatType, const void *Data, size_t Size)
@@ -235,26 +253,35 @@ bool Clipboard::AddData(UINT FormatType, const void *Data, size_t Size)
 
 // max - без учета символа конца строки!
 // max = -1 - there is no limit!
-wchar_t *Clipboard::Paste(bool &IsVertical, int MaxChars)
+wchar_t *Clipboard::Paste(bool &IsVertical, size_t &DataSize, int MaxChars)
 {
-	PVOID ClipData = GetData(CF_UNICODETEXT);
+	DataSize = 0;
+	IsVertical = false;
 
+	PVOID ClipData = GetData(CF_UNICODETEXT);
 	if (!ClipData)
 		return nullptr;
 
-	size_t CharsCount = wcsnlen((const wchar_t *)ClipData,
-		WINPORT(ClipboardSize)(ClipData) / sizeof(wchar_t));
+	size_t CharsCount = WINPORT(ClipboardSize)(ClipData) / sizeof(wchar_t);
+	if (CharsCount > 0 && ((const wchar_t *)ClipData)[CharsCount - 1] == L'\0') {
+		--CharsCount;
+	}
 
-	if (MaxChars >= 0 && CharsCount < (size_t)MaxChars)
+	if (MaxChars >= 0 && CharsCount > (size_t)MaxChars)
 		CharsCount = (size_t)MaxChars;
 
-	IsVertical = false;
 	wchar_t *ClipText = (wchar_t *)malloc((CharsCount + 1) * sizeof(wchar_t));
 	if (ClipText) {
-		wmemcpy(ClipText, (const wchar_t *)ClipData, CharsCount);
-		ClipText[CharsCount] = 0;
+		if (CharsCount) {
+			wmemcpy(ClipText, (const wchar_t *)ClipData, CharsCount);
+		}
+		ClipText[CharsCount] = L'\0';
+		DataSize = CharsCount;
 
-		if (wcsstr(ClipText, NATIVE_EOLW)) {
+		const size_t EolLen = wcslen(NATIVE_EOLW);
+		if (EolLen > 0 && CharsCount >= EolLen
+				&& std::search(ClipText, ClipText + CharsCount, NATIVE_EOLW, NATIVE_EOLW + EolLen)
+						!= ClipText + CharsCount) {
 			UINT FormatType = RegisterFormat(FAR_VerticalBlock_Unicode);
 			if (FormatType && IsFormatAvailable(FormatType)) {
 				IsVertical = true;
@@ -265,40 +292,65 @@ wchar_t *Clipboard::Paste(bool &IsVertical, int MaxChars)
 	return ClipText;
 }
 
+wchar_t *Clipboard::Paste(bool &IsVertical, int MaxChars)
+{
+	size_t DataSize;
+	return Paste(IsVertical, DataSize, MaxChars);
+}
+
 wchar_t *Clipboard::Paste()
 {
 	bool IsVertical;
-	return Paste(IsVertical);
+	size_t DataSize;
+	return Paste(IsVertical, DataSize);
 }
 
 /* ------------------------------------------------------------ */
-int WINAPI CopyToClipboard(const wchar_t *Data)
+int WINAPI CopyToClipboard(const wchar_t *Data, size_t DataSize)
 {
 	Clipboard clip;
 
 	if (!clip.Open())
 		return FALSE;
 
-	BOOL ret = clip.Copy(Data);
+	BOOL ret = clip.Copy(Data, DataSize);
 
 	clip.Close();
 
 	return ret;
 }
 
-wchar_t *PasteFromClipboardEx(int MaxChars)
+int WINAPI CopyToClipboard(const wchar_t *Data)
+{
+	return CopyToClipboard(Data, Data ? wcslen(Data) : 0);
+}
+
+wchar_t *PasteFromClipboardEx(size_t &DataSize, int MaxChars)
 {
 	Clipboard clip;
 
-	if (!clip.Open())
+	if (!clip.Open()) {
+		DataSize = 0;
 		return nullptr;
+	}
 
 	bool IsVertical;
-	wchar_t *ClipText = clip.Paste(IsVertical, MaxChars);
+	wchar_t *ClipText = clip.Paste(IsVertical, DataSize, MaxChars);
 
 	clip.Close();
 
 	return ClipText;
+}
+
+wchar_t *PasteFromClipboardEx(int MaxChars)
+{
+	size_t DataSize;
+	return PasteFromClipboardEx(DataSize, MaxChars);
+}
+
+wchar_t * WINAPI PasteFromClipboard(size_t &DataSize)
+{
+	return PasteFromClipboardEx(DataSize);
 }
 
 wchar_t * WINAPI PasteFromClipboard()
@@ -323,3 +375,4 @@ BOOL EmptyInternalClipboard()
 
 	return ret;
 }
+

@@ -35,8 +35,11 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <WinCompat.h>
 
+int WINAPI CopyToClipboard(const wchar_t *Data, size_t DataSize);
 int WINAPI CopyToClipboard(const wchar_t *Data);
+wchar_t* PasteFromClipboardEx(size_t &DataSize, int MaxChars = -1);
 wchar_t* PasteFromClipboardEx(int MaxChars = -1);
+wchar_t* WINAPI PasteFromClipboard(size_t &DataSize);
 wchar_t* WINAPI PasteFromClipboard();
 BOOL EmptyInternalClipboard();
 
@@ -59,7 +62,9 @@ public:
 	BOOL Open();
 	BOOL Close();
 	BOOL Empty();
+	bool Copy(const wchar_t *Data, size_t DataSize, bool IsVertical = false);
 	bool Copy(const wchar_t *Data, bool IsVertical = false);
+	wchar_t *Paste(bool &IsVertical, size_t &DataSize, int MaxChars = -1);
 	wchar_t *Paste(bool &IsVertical, int MaxChars = -1);
 	wchar_t *Paste();
 
@@ -71,3 +76,4 @@ private:
 	HANDLE GetData(UINT uFormat);
 	HANDLE SetData(UINT uFormat, HANDLE hMem);
 };
+
