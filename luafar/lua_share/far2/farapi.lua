@@ -1992,6 +1992,8 @@ typedef int (__stdcall *FARSTDLOCALSTRICMP)(const wchar_t *s1,const wchar_t *s2)
 typedef int (__stdcall *FARSTDLOCALSTRNICMP)(const wchar_t *s1,const wchar_t *s2,int n);
 typedef int (__stdcall *FARSTDLOCALSTRCMP)(const wchar_t *s1,const wchar_t *s2);
 typedef int (__stdcall *FARSTDLOCALSTRNCMP)(const wchar_t *s1,const wchar_t *s2,int n);
+typedef int (__stdcall *FARSTDCLIPBOARDCOPYLEN)(const wchar_t *Data, size_t DataSize);
+typedef wchar_t *(__stdcall *FARSTDCLIPBOARDPASTELEN)(size_t *DataSize);
 
 enum PROCESSNAME_FLAGS
 {
@@ -2252,8 +2254,8 @@ typedef struct FarStandardFunctions
 	FARSTDGETFILEGROUP         GetFileGroup;
 	FARFORMATFILESIZE          FormatFileSize;
 
-	FARSTDLOCALSTRICMP         LStrcmp;
-	FARSTDLOCALSTRNICMP        LStrncmp;
+	FARSTDLOCALSTRCMP          LStrcmp;
+	FARSTDLOCALSTRNCMP         LStrncmp;
 
 	FARAPIVT_ENUM_BACKGROUND   VTEnumBackground;
 	FARAPIVT_LOGEXPORT         VTLogExport;
@@ -2269,6 +2271,9 @@ typedef struct FarStandardFunctions
 	FARGETDATESEPARATOR        GetDateSeparator;
 	FARGETTIMESEPARATOR        GetTimeSeparator;
 	FARGETDECIMALSEPARATOR     GetDecimalSeparator;
+
+	FARSTDCLIPBOARDCOPYLEN     CopyToClipboardLen;
+	FARSTDCLIPBOARDPASTELEN    PasteFromClipboardLen;
 
 } FARSTANDARDFUNCTIONS;
 

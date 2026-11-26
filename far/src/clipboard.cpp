@@ -200,6 +200,9 @@ bool Clipboard::Copy(const wchar_t *Data, size_t DataSize, bool IsVertical)
 {
 	Empty();
 
+	if (Data == nullptr)
+		return true;
+
 	const size_t AllocSize = (DataSize + 1) * sizeof(wchar_t);
 	wchar_t *CData = (wchar_t *)WINPORT(ClipboardAlloc)(AllocSize);
 	if (!CData) {
@@ -376,3 +379,16 @@ BOOL EmptyInternalClipboard()
 	return ret;
 }
 
+int WINAPI CopyToClipboardLen(const wchar_t *Data, size_t DataSize)
+{
+	return CopyToClipboard(Data, DataSize);
+}
+
+wchar_t * WINAPI PasteFromClipboardLen(size_t *DataSize)
+{
+	size_t Size = 0;
+	wchar_t *Ret = PasteFromClipboardEx(Size);
+	if (DataSize)
+		*DataSize = Size;
+	return Ret;
+}

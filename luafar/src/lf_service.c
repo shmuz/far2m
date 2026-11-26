@@ -1412,16 +1412,18 @@ static int far_Text(lua_State *L)
 
 static int far_CopyToClipboard(lua_State *L)
 {
-	const wchar_t *str = check_utf8_string(L,1,NULL);
-	int ret = FSF.CopyToClipboard(str);
+	size_t len = 0;
+	const wchar_t *str = lua_isnoneornil(L, 1) ? NULL : check_utf8_string(L, 1, &len);
+	int ret = FSF.CopyToClipboardLen(str, len);
 	return lua_pushboolean(L, ret), 1;
 }
 
-static int far_PasteFromClipboard (lua_State *L)
+static int far_PasteFromClipboard(lua_State *L)
 {
-	wchar_t* str = FSF.PasteFromClipboard();
+	size_t len = 0;
+	wchar_t *str = FSF.PasteFromClipboardLen(&len);
 	if (str) {
-		push_utf8_string(L, str, -1);
+		push_utf8_string(L, str, len);
 		FSF.DeleteBuffer(str);
 	}
 	else lua_pushnil(L);

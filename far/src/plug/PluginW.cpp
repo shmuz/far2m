@@ -584,6 +584,8 @@ void CreatePluginStartupInfo(Plugin *pPlugin, PluginStartupInfo *PSI, FarStandar
 		StandardFunctions.VTEnumBackground = farAPIVTEnumBackground;
 		StandardFunctions.VTLogExport = farAPIVTLogExportW;
 		StandardFunctions.XLat = Xlat;
+		StandardFunctions.CopyToClipboardLen = CopyToClipboardLen;
+		StandardFunctions.PasteFromClipboardLen = PasteFromClipboardLen;
 
 		StandardFunctions.ESetFileGroup = farESetFileGroup;
 		StandardFunctions.ESetFileMode = farESetFileMode;

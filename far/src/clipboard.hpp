@@ -37,10 +37,13 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 int WINAPI CopyToClipboard(const wchar_t *Data, size_t DataSize);
 int WINAPI CopyToClipboard(const wchar_t *Data);
+int WINAPI CopyToClipboardLen(const wchar_t *Data, size_t DataSize);
+
 wchar_t* PasteFromClipboardEx(size_t &DataSize, int MaxChars = -1);
 wchar_t* PasteFromClipboardEx(int MaxChars = -1);
 wchar_t* WINAPI PasteFromClipboard(size_t &DataSize);
 wchar_t* WINAPI PasteFromClipboard();
+wchar_t* WINAPI PasteFromClipboardLen(size_t *DataSize);
 BOOL EmptyInternalClipboard();
 
 class Clipboard
