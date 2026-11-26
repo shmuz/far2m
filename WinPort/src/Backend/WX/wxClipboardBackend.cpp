@@ -161,7 +161,8 @@ bool wxClipboardBackend::OnClipboardIsFormatAvailable(UINT format)
 	}
 
 	if (format==CF_UNICODETEXT || format==CF_TEXT) {
-		return wxTheClipboard->IsSupported( wxDF_TEXT ) ? TRUE : FALSE;
+		return (wxTheClipboard->IsSupported(wxDataFormat(wxT("text/plain;charset=utf-8"))) ||
+			wxTheClipboard->IsSupported(wxDF_TEXT)) ? TRUE : FALSE;
 
 	} else {
 		const wxDataFormat *data_format = g_wx_custom_formats.Lookup(format);
@@ -207,14 +208,18 @@ void *wxClipboardBackend::OnClipboardSetData(UINT format, void *data)
 	}
 
 	if (format==CF_UNICODETEXT) {
-
-		wxString wx_str((const wchar_t *)data);
+		size_t wlen = len / sizeof(wchar_t);
+		const wchar_t *wdata = (const wchar_t *)data;
+		if (wlen > 0 && wdata[wlen - 1] == L'\0') {
+			--wlen;
+		}
+		wxString wx_str(wdata, wlen);
 
 		g_wx_data_to_clipboard->Add(new wxTextDataObjectTweaked(wx_str));
 
 		wxCustomDataObject *cdo = new wxCustomDataObject(wxT("text/plain;charset=utf-8"));
-		const std::string &tmp = wx_str.ToStdString();
-		cdo->SetData(tmp.size(), tmp.c_str()); // not including ending NUL char
+		const auto &utf8 = wx_str.utf8_str();
+		cdo->SetData(utf8.length(), utf8.data()); // not including ending NUL char
 		g_wx_data_to_clipboard->Add(cdo);
 
 
@@ -223,11 +228,16 @@ void *wxClipboardBackend::OnClipboardSetData(UINT format, void *data)
 #endif
 
 	} else if (format==CF_TEXT) {
+		size_t clen = len;
+		const char *cdata = (const char *)data;
+		if (clen > 0 && cdata[clen - 1] == '\0') {
+			--clen;
+		}
 
-		g_wx_data_to_clipboard->Add(new wxTextDataObjectTweaked(wxString::FromUTF8((const char *)data)));
+		g_wx_data_to_clipboard->Add(new wxTextDataObjectTweaked(wxString::FromUTF8(cdata, clen)));
 
 		wxCustomDataObject *cdo = new wxCustomDataObject(wxT("text/plain;charset=utf-8"));
-		cdo->SetData(strlen((const char *)data), data); // not including ending NUL char
+		cdo->SetData(clen, cdata); // not including ending NUL char
 		g_wx_data_to_clipboard->Add(cdo);
 
 #if (CLIPBOARD_HACK)
@@ -263,23 +273,25 @@ void *wxClipboardBackend::OnClipboardGetData(UINT format)
 		wxString wx_str;
 		bool data_found = false;
 
+		wxCustomDataObject cdo_utf8(wxT("text/plain;charset=utf-8"));
+		if (wxTheClipboard->IsSupported(cdo_utf8.GetFormat()) && wxTheClipboard->GetData(cdo_utf8)) {
+			const void *cdo_data = cdo_utf8.GetData();
+			size_t cdo_size = cdo_utf8.GetSize();
+			if (cdo_size == 0 || cdo_data != nullptr) {
+				fprintf(stderr, "OnClipboardGetData(%u) - found MIME-compatible text format (%lu bytes)\n",
+					format, (unsigned long)cdo_size);
+				if (cdo_size > 0) {
+					wx_str = wxString::FromUTF8(static_cast<const char *>(cdo_data), cdo_size);
+				}
+				data_found = true;
+			}
+		}
+
 		wxTextDataObject data;
-		if (wxTheClipboard->GetData( data )) {
+		if (!data_found && wxTheClipboard->GetData( data )) {
 			fprintf(stderr, "OnClipboardGetData(%u) - found wx-compatible text format\n", format);
 			wx_str = data.GetText();
 			data_found = true;
-		}
-
-		wxCustomDataObject cdo_utf8(wxT("text/plain;charset=utf-8"));
-		if (!data_found && wxTheClipboard->GetData(cdo_utf8)) {
-			const void* cdo_data = cdo_utf8.GetData();
-			size_t cdo_size = cdo_utf8.GetSize();
-			if (cdo_size > 0) {
-				fprintf(stderr, "OnClipboardGetData(%u) - found MIME-compatible text format\n", format);
-				const char *str = static_cast<const char*>(cdo_data);
-				wx_str = wxString::FromUTF8(str, strnlen(str, cdo_size));
-				data_found = true;
-			}
 		}
 
 		if (!data_found) {
@@ -288,12 +300,33 @@ void *wxClipboardBackend::OnClipboardGetData(UINT format)
 		}
 
 		if (format == CF_UNICODETEXT) {
-			const auto &wc = wx_str.wc_str();
-			p = ClipboardAllocFromZeroTerminatedString<wchar_t>(wc);
+#if wxUSE_UNICODE_WCHAR
+			const wchar_t *wc_ptr = wx_str.wc_str();
+			const size_t wc_len = wx_str.length();
+#else
+			const wxScopedWCharBuffer wc = wx_str.wc_str();
+			const wchar_t *wc_ptr = wc.data();
+			const size_t wc_len = wc.length();
+#endif
+			const size_t alloc_size = (wc_len + 1) * sizeof(wchar_t);
+			p = WINPORT(ClipboardAlloc)(alloc_size);
+			if (p) {
+				if (wc_len) {
+					wmemcpy((wchar_t *)p, wc_ptr, wc_len);
+				}
+				((wchar_t *)p)[wc_len] = L'\0';
+			}
 
 		} else {
 			const auto &utf8 = wx_str.utf8_str();
-			p = ClipboardAllocFromZeroTerminatedString<char>(utf8);
+			const size_t alloc_size = (utf8.length() + 1) * sizeof(char);
+			p = WINPORT(ClipboardAlloc)(alloc_size);
+			if (p) {
+				if (utf8.length()) {
+					memcpy(p, utf8.data(), utf8.length());
+				}
+				((char *)p)[utf8.length()] = '\0';
+			}
 		}
 
 	} else {
