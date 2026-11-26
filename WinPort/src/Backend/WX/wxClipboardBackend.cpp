@@ -1,4 +1,6 @@
 #include <stdlib.h>
+#include <string.h>
+#include <string>
 #include <map>
 #include <algorithm>
 #include <wx/wx.h>
@@ -58,6 +60,7 @@ public:
 } g_wx_custom_formats;
 
 static wxDataObjectComposite *g_wx_data_to_clipboard = nullptr;
+static bool g_wx_clipboard_empty_pending = false;
 
 wxClipboardBackend::wxClipboardBackend()
 {
@@ -85,6 +88,7 @@ bool wxClipboardBackend::OnClipboardOpen()
 		return false;
 	}
 
+	g_wx_clipboard_empty_pending = false;
 	fprintf(stderr, "OpenClipboard\n");
 	return true;
 }
@@ -106,9 +110,13 @@ void wxClipboardBackend::OnClipboardClose()
 		}
 		g_wx_data_to_clipboard = nullptr;
 
+	} else if (g_wx_clipboard_empty_pending) {
+		wxTheClipboard->Clear();
+
 	} else {
 		fprintf(stderr, "CloseClipboard without data\n");
 	}
+	g_wx_clipboard_empty_pending = false;
 
 #if !defined(__WXGTK__)
 	// it never did what supposed to, and under Ubuntu 22.04/Wayland it started to kill gnome-shell
@@ -150,7 +158,7 @@ void wxClipboardBackend::OnClipboardEmpty()
 	fprintf(stderr, "EmptyClipboard\n");
 	delete g_wx_data_to_clipboard;
 	g_wx_data_to_clipboard = nullptr;
-	wxTheClipboard->Clear();
+	g_wx_clipboard_empty_pending = true;
 }
 
 bool wxClipboardBackend::OnClipboardIsFormatAvailable(UINT format)
@@ -161,7 +169,9 @@ bool wxClipboardBackend::OnClipboardIsFormatAvailable(UINT format)
 	}
 
 	if (format==CF_UNICODETEXT || format==CF_TEXT) {
-		return (wxTheClipboard->IsSupported(wxDataFormat(wxT("text/plain;charset=utf-8"))) ||
+		return (wxTheClipboard->IsSupported(wxDataFormat(wxT("application/x-far-utf8"))) ||
+			wxTheClipboard->IsSupported(wxDataFormat(wxT("text/plain;charset=utf-8"))) ||
+			wxTheClipboard->IsSupported(wxDF_UNICODETEXT) ||
 			wxTheClipboard->IsSupported(wxDF_TEXT)) ? TRUE : FALSE;
 
 	} else {
@@ -207,21 +217,36 @@ void *wxClipboardBackend::OnClipboardSetData(UINT format, void *data)
 		g_wx_data_to_clipboard = new wxDataObjectComposite;
 	}
 
+	auto add_utf8_text = [](const char *utf8_data, size_t utf8_len) {
+		const size_t text_len = strnlen(utf8_data, utf8_len);
+		g_wx_data_to_clipboard->Add(
+			new wxTextDataObjectTweaked(wxString::FromUTF8(utf8_data, text_len)));
+
+		const wxDataFormat mime_utf8(wxT("text/plain;charset=utf-8"));
+		if (mime_utf8 != wxDataFormat(wxDF_UNICODETEXT)) {
+			wxCustomDataObject *cdo = new wxCustomDataObject(mime_utf8);
+			cdo->SetData(utf8_len, utf8_data);
+			g_wx_data_to_clipboard->Add(cdo);
+		}
+
+		if (text_len < utf8_len) {
+			wxCustomDataObject *cdo_raw = new wxCustomDataObject(wxDataFormat(wxT("application/x-far-utf8")));
+			cdo_raw->SetData(utf8_len, utf8_data);
+			g_wx_data_to_clipboard->Add(cdo_raw);
+		}
+	};
+
 	if (format==CF_UNICODETEXT) {
 		size_t wlen = len / sizeof(wchar_t);
 		const wchar_t *wdata = (const wchar_t *)data;
 		if (wlen > 0 && wdata[wlen - 1] == L'\0') {
 			--wlen;
 		}
-		wxString wx_str(wdata, wlen);
-
-		g_wx_data_to_clipboard->Add(new wxTextDataObjectTweaked(wx_str));
-
-		wxCustomDataObject *cdo = new wxCustomDataObject(wxT("text/plain;charset=utf-8"));
-		const auto &utf8 = wx_str.utf8_str();
-		cdo->SetData(utf8.length(), utf8.data()); // not including ending NUL char
-		g_wx_data_to_clipboard->Add(cdo);
-
+		std::string utf8;
+		if (wlen > 0) {
+			Wide2MB(wdata, wlen, utf8);
+		}
+		add_utf8_text(utf8.data(), utf8.size());
 
 #if (CLIPBOARD_HACK)
 		CopyToPasteboard((const wchar_t *)data);
@@ -233,12 +258,7 @@ void *wxClipboardBackend::OnClipboardSetData(UINT format, void *data)
 		if (clen > 0 && cdata[clen - 1] == '\0') {
 			--clen;
 		}
-
-		g_wx_data_to_clipboard->Add(new wxTextDataObjectTweaked(wxString::FromUTF8(cdata, clen)));
-
-		wxCustomDataObject *cdo = new wxCustomDataObject(wxT("text/plain;charset=utf-8"));
-		cdo->SetData(clen, cdata); // not including ending NUL char
-		g_wx_data_to_clipboard->Add(cdo);
+		add_utf8_text(cdata, clen);
 
 #if (CLIPBOARD_HACK)
 		CopyToPasteboard((const char *)data);
@@ -270,27 +290,44 @@ void *wxClipboardBackend::OnClipboardGetData(UINT format)
 	PVOID p = nullptr;
 	if (format==CF_UNICODETEXT || format==CF_TEXT) {
 
-		wxString wx_str;
+		std::string raw_utf8;
 		bool data_found = false;
 
-		wxCustomDataObject cdo_utf8(wxT("text/plain;charset=utf-8"));
-		if (wxTheClipboard->IsSupported(cdo_utf8.GetFormat()) && wxTheClipboard->GetData(cdo_utf8)) {
-			const void *cdo_data = cdo_utf8.GetData();
-			size_t cdo_size = cdo_utf8.GetSize();
-			if (cdo_size == 0 || cdo_data != nullptr) {
-				fprintf(stderr, "OnClipboardGetData(%u) - found MIME-compatible text format (%lu bytes)\n",
-					format, (unsigned long)cdo_size);
-				if (cdo_size > 0) {
-					wx_str = wxString::FromUTF8(static_cast<const char *>(cdo_data), cdo_size);
-				}
-				data_found = true;
+		auto try_custom_utf8 = [&](const wxDataFormat &fmt) -> bool {
+			wxCustomDataObject cdo(fmt);
+			if (!wxTheClipboard->IsSupported(fmt) || !wxTheClipboard->GetData(cdo)) {
+				return false;
 			}
+			const void *cdo_data = cdo.GetData();
+			const size_t cdo_size = cdo.GetSize();
+			if (cdo_size > 0 && !cdo_data) {
+				return false;
+			}
+			if (cdo_size > 0) {
+				raw_utf8.assign(static_cast<const char *>(cdo_data), cdo_size);
+			}
+			return true;
+		};
+
+		if (try_custom_utf8(wxDataFormat(wxT("application/x-far-utf8")))) {
+			fprintf(stderr, "OnClipboardGetData(%u) - found raw UTF-8 format (%lu bytes)\n",
+				format, (unsigned long)raw_utf8.size());
+			data_found = true;
+		}
+
+		const wxDataFormat mime_utf8(wxT("text/plain;charset=utf-8"));
+		if (!data_found && mime_utf8 != wxDataFormat(wxDF_UNICODETEXT) && try_custom_utf8(mime_utf8)) {
+			fprintf(stderr, "OnClipboardGetData(%u) - found MIME-compatible text format (%lu bytes)\n",
+				format, (unsigned long)raw_utf8.size());
+			data_found = true;
 		}
 
 		wxTextDataObject data;
 		if (!data_found && wxTheClipboard->GetData( data )) {
 			fprintf(stderr, "OnClipboardGetData(%u) - found wx-compatible text format\n", format);
-			wx_str = data.GetText();
+			const wxString text = data.GetText();
+			const auto utf8 = text.utf8_str();
+			raw_utf8.assign(utf8.data(), utf8.length());
 			data_found = true;
 		}
 
@@ -300,32 +337,27 @@ void *wxClipboardBackend::OnClipboardGetData(UINT format)
 		}
 
 		if (format == CF_UNICODETEXT) {
-#if wxUSE_UNICODE_WCHAR
-			const wchar_t *wc_ptr = wx_str.wc_str();
-			const size_t wc_len = wx_str.length();
-#else
-			const wxScopedWCharBuffer wc = wx_str.wc_str();
-			const wchar_t *wc_ptr = wc.data();
-			const size_t wc_len = wc.length();
-#endif
-			const size_t alloc_size = (wc_len + 1) * sizeof(wchar_t);
+			std::wstring ws;
+			if (!raw_utf8.empty()) {
+				MB2Wide(raw_utf8.data(), raw_utf8.size(), ws);
+			}
+			const size_t alloc_size = (ws.size() + 1) * sizeof(wchar_t);
 			p = WINPORT(ClipboardAlloc)(alloc_size);
 			if (p) {
-				if (wc_len) {
-					wmemcpy((wchar_t *)p, wc_ptr, wc_len);
+				if (!ws.empty()) {
+					wmemcpy((wchar_t *)p, ws.data(), ws.size());
 				}
-				((wchar_t *)p)[wc_len] = L'\0';
+				((wchar_t *)p)[ws.size()] = L'\0';
 			}
 
 		} else {
-			const auto &utf8 = wx_str.utf8_str();
-			const size_t alloc_size = (utf8.length() + 1) * sizeof(char);
+			const size_t alloc_size = (raw_utf8.size() + 1) * sizeof(char);
 			p = WINPORT(ClipboardAlloc)(alloc_size);
 			if (p) {
-				if (utf8.length()) {
-					memcpy(p, utf8.data(), utf8.length());
+				if (!raw_utf8.empty()) {
+					memcpy(p, raw_utf8.data(), raw_utf8.size());
 				}
-				((char *)p)[utf8.length()] = '\0';
+				((char *)p)[raw_utf8.size()] = '\0';
 			}
 		}
 
