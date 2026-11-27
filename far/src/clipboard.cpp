@@ -281,14 +281,14 @@ wchar_t *Clipboard::Paste(bool &IsVertical, size_t &DataSize, int MaxChars)
 		ClipText[CharsCount] = L'\0';
 		DataSize = CharsCount;
 
-		const size_t EolLen = wcslen(NATIVE_EOLW);
-		if (EolLen > 0 && CharsCount >= EolLen
-				&& std::search(ClipText, ClipText + CharsCount, NATIVE_EOLW, NATIVE_EOLW + EolLen)
-						!= ClipText + CharsCount) {
+		const wchar_t *Eol = NATIVE_EOLW;
+		const size_t EolLen = wcslen(Eol);
+		if (CharsCount >= EolLen
+				&& std::search(ClipText, ClipText + CharsCount, Eol, Eol + EolLen) != ClipText + CharsCount)
+		{
 			UINT FormatType = RegisterFormat(FAR_VerticalBlock_Unicode);
-			if (FormatType && IsFormatAvailable(FormatType)) {
+			if (FormatType && IsFormatAvailable(FormatType))
 				IsVertical = true;
-			}
 		}
 	}
 
