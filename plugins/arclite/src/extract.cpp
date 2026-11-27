@@ -896,6 +896,7 @@ class ArchiveExtractor : public IArchiveExtractCallback<UseVirtualDestructor>,
 private:
 	std::wstring file_path;
 	ArcFileInfo file_info;
+	UInt32 file_index = 0;
 	UInt32 src_dir_index;
 	std::wstring dst_dir;
 	std::shared_ptr<Archive<UseVirtualDestructor>> archive;
@@ -954,6 +955,7 @@ public:
 	{
 		COM_ERROR_HANDLER_BEGIN
 		*outStream = nullptr;
+		file_index = index;
 		file_info = archive->file_list[index];
 		if (file_info.is_dir)
 			return S_OK;
@@ -962,6 +964,7 @@ public:
 			auto it_hlmap = hlmap.find(file_info.hl_group);
 			if (it_hlmap != hlmap.end()) {
 				index = it_hlmap->second;
+				file_index = index;
 				file_info = archive->file_list[index];
 			}
 			else {
@@ -1040,7 +1043,7 @@ public:
 		CriticalSectionLock lock(GetSync());
 		COM_ERROR_HANDLER_BEGIN
 		RETRY_OR_IGNORE_BEGIN
-		bool encrypted = !archive->m_password.empty();
+		bool encrypted = !archive->m_password.empty() || archive->get_encrypted(file_index);
 		Error error;
 		switch (resultEOperationResult) {
 			case NArchive::NExtract::NOperationResult::kOK:
@@ -1075,6 +1078,7 @@ public:
 				error.messages.emplace_back(Far::get_msg(MSG_ERROR_EXTRACT_HEADERS_ERROR));
 				break;
 			case NArchive::NExtract::NOperationResult::kWrongPassword:
+				archive->m_password.clear();
 				error.messages.emplace_back(Far::get_msg(MSG_ERROR_EXTRACT_WRONG_PASSWORD));
 				break;
 			default:

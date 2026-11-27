@@ -22,6 +22,7 @@ private:
 	std::shared_ptr<std::atomic<bool>> aborted;
 
 	std::wstring file_path;
+	UInt32 file_index = 0;
 	UInt64 completed;
 	UInt64 total;
 	void do_update_ui() override
@@ -61,12 +62,12 @@ private:
 
 public:
 	ArchiveTester(UInt32 src_dir_index, std::shared_ptr<Archive<UseVirtualDestructor>> archive,
-			std::shared_ptr<Error> op_error, std::shared_ptr<std::atomic<bool>> aborted)
+			std::shared_ptr<Error> error_ptr, std::shared_ptr<std::atomic<bool>> abort_flag)
 		: ProgressMonitor(Far::get_msg(MSG_PROGRESS_TEST)),
 		  src_dir_index(src_dir_index),
 		  archive(archive),
-		  op_error(std::move(op_error)),
-		  aborted(std::move(aborted)),
+		  op_error(std::move(error_ptr)),
+		  aborted(std::move(abort_flag)),
 		  completed(0),
 		  total(0)
 	{}
@@ -103,6 +104,7 @@ public:
 		COM_ERROR_HANDLER_BEGIN
 		if (aborted->load(std::memory_order_acquire))
 			return E_ABORT;
+		file_index = index;
 		const ArcFileInfo &file_info = archive->file_list[index];
 		file_path = file_info.name;
 		UInt32 parent_index = file_info.parent;
@@ -131,9 +133,10 @@ public:
 		COM_ERROR_HANDLER_BEGIN
 		if (aborted->load(std::memory_order_acquire))
 			return E_ABORT;
-		if (resultEOperationResult == NArchive::NExtract::NOperationResult::kOK)
+		if (resultEOperationResult == NArchive::NExtract::NOperationResult::kOK
+				|| resultEOperationResult == NArchive::NExtract::NOperationResult::kDataAfterEnd)
 			return S_OK;
-		bool encrypted = !archive->m_password.empty();
+		bool encrypted = !archive->m_password.empty() || archive->get_encrypted(file_index);
 		Error error;
 		error.code = E_MESSAGE;
 		switch (resultEOperationResult) {
@@ -141,10 +144,12 @@ public:
 				error.messages.emplace_back(Far::get_msg(MSG_ERROR_EXTRACT_UNSUPPORTED_METHOD));
 				break;
 			case NArchive::NExtract::NOperationResult::kDataError:
+				archive->m_password.clear();
 				error.messages.emplace_back(Far::get_msg(
 						encrypted ? MSG_ERROR_EXTRACT_DATA_ERROR_ENCRYPTED : MSG_ERROR_EXTRACT_DATA_ERROR));
 				break;
 			case NArchive::NExtract::NOperationResult::kCRCError:
+				archive->m_password.clear();
 				error.messages.emplace_back(Far::get_msg(
 						encrypted ? MSG_ERROR_EXTRACT_CRC_ERROR_ENCRYPTED : MSG_ERROR_EXTRACT_CRC_ERROR));
 				break;
@@ -161,6 +166,7 @@ public:
 				error.messages.emplace_back(Far::get_msg(MSG_ERROR_EXTRACT_HEADERS_ERROR));
 				break;
 			case NArchive::NExtract::NOperationResult::kWrongPassword:
+				archive->m_password.clear();
 				error.messages.emplace_back(Far::get_msg(MSG_ERROR_EXTRACT_WRONG_PASSWORD));
 				break;
 			default:
