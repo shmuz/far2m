@@ -79,10 +79,18 @@ jobs:
         run: |
           cmake --build _build --config $BUILD_TYPE
 
+  #   - name: Test plugin luamacro
+  #     working-directory: ${{github.workspace}}/_build/install
+  #     shell: bash
+  #     run: FAR2M_STD=- ./far2m -u ./profile --tty lm:test -set:Panel.Highlight=false
+
       - name: Test plugin luamacro
         working-directory: ${{github.workspace}}/_build/install
         shell: bash
-        run: FAR2M_STD=- ./far2m -u ./profile --tty lm:test -set:Panel.Highlight=false
+        run: |
+          TERM=xterm-256color LANG=C.UTF-8 \
+            timeout -k 10 5m \
+            script -qefc "stty cols 120 rows 40; FAR2M_STD=- ./far2m -u ./profile --tty lm:test -set:Panel.Highlight=false" /dev/null
 
   # macos15-arm64-clang16:
   #   if: ${{ !(github.event_name == 'push' && github.ref == 'refs/heads/master' && github.repository != 'shmuz/far2m') }}
