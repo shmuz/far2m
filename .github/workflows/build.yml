@@ -89,8 +89,8 @@ jobs:
         shell: bash
         run: |
           TERM=xterm-256color LANG=C.UTF-8 \
-            timeout -k 10 30s \
-            script -qefc "stty cols 120 rows 40; FAR2M_STD=./native_log ./far2m -u ./profile --tty lm:test -set:Panel.Highlight=false" /dev/null
+            timeout -k 5 30s \
+            script -qefc "stty cols 120 rows 40; ./far2m -u ./profile --tty lm:test -set:Panel.Highlight=false" "$RUNNER_TEMP/far2m_tty.log"
 
       - name: Dump far2m TUI screen on failure
         if: failure()
