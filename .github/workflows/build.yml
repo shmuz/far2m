@@ -89,8 +89,19 @@ jobs:
         shell: bash
         run: |
           TERM=xterm-256color LANG=C.UTF-8 \
-            timeout -k 10 5m \
-            script -qefc "stty cols 120 rows 40; FAR2M_STD=- ./far2m -u ./profile --tty lm:test -set:Panel.Highlight=false" /dev/null
+            timeout -k 10 30s \
+            script -qefc "stty cols 120 rows 40; FAR2M_STD=./native_log ./far2m -u ./profile --tty lm:test -set:Panel.Highlight=false" /dev/null
+
+      - name: Dump far2m TUI screen on failure
+        if: failure()
+        shell: bash
+        run: |
+          python3 -c '
+          import re, sys
+          data = open(sys.argv[1], "rb").read().decode("utf-8", "replace")
+          clean = re.sub(r"\x1b(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~]|\][^\x07\x1b]*(?:\x07|\x1b\\))", "", data)
+          print(clean[-4000:])
+          ' "$RUNNER_TEMP/far2m_tty.log"
 
   # macos15-arm64-clang16:
   #   if: ${{ !(github.event_name == 'push' && github.ref == 'refs/heads/master' && github.repository != 'shmuz/far2m') }}
